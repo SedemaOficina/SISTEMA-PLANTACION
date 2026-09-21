@@ -240,7 +240,7 @@ SRP.registros = {
       ' (' + esc(SRP.PERFILES[h.perfil] ? SRP.PERFILES[h.perfil].etiqueta : h.perfil) + ')' + (h.detalle ? '. ' + esc(h.detalle) : '') + '</li>').join('')
       : '<li>Registro de la carga inicial de datos de prueba; sin cambios posteriores.</li>';
     this.el('dlg-detalle-cuerpo').innerHTML =
-      (r.foto_base64 ? '<img class="foto-vista" src="' + r.foto_base64 + '" alt="Fotografía del árbol registrado">' : '<p class="nota">Registro sin fotografía.</p>') +
+      (r.foto_base64 ? '<img class="revision-foto" src="' + r.foto_base64 + '" alt="Fotografía del árbol registrado">' : '<p class="nota">Registro sin fotografía.</p>') +
       '<dl class="detalle">' + filas.map(([k, x]) => '<div><dt>' + k + '</dt><dd>' + esc(x) + '</dd></div>').join('') + '</dl>' +
       '<h3>Historial</h3><ul class="historial">' + lineas + '</ul>';
     this.el('dlg-detalle').showModal();

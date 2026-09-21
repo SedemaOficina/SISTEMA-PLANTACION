@@ -16,11 +16,17 @@ SRP.util = {
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   },
 
-  // AAAA-MM-DD -> DD-MM-AAAA
+  MESES_CORTOS: ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'],
+
+  /* AAAA-MM-DD -> DD-MMM-AAAA, con el mes en letras: 21-SEP-2026.
+     Dos números seguidos se confunden entre sí y con el formato de otros países; el mes escrito
+     no deja lugar a duda. Es sólo para mostrar: lo que se guarda y se compara sigue siendo
+     AAAA-MM-DD, que ordena bien por sí solo. */
   formatearFecha(iso) {
     if (!iso) return '';
     const [a, m, d] = iso.slice(0, 10).split('-');
-    return d + '-' + m + '-' + a;
+    const mes = this.MESES_CORTOS[Number(m) - 1];
+    return mes ? d + '-' + mes + '-' + a : d + '-' + m + '-' + a;
   },
 
   formatearFechaHora(iso) {

@@ -3,7 +3,8 @@ window.SRP = window.SRP || {};
 
 SRP.formulario = {
   OTRA: '__otra__',
-  estado: { especieId: null, foto: null, fotoId: null, territorio: null, editando: null, idPrevisto: null },
+  estado: { especieId: null, foto: null, fotoId: null, fotoNombre: '', fotoBytes: 0,
+            territorio: null, editando: null, idPrevisto: null },
 
   el(id) { return document.getElementById(id); },
 
@@ -33,7 +34,12 @@ SRP.formulario = {
       if (this.el('campo-programa').value) this.avanzarFoco('campo-programa');
     });
     this.el('foto-archivo').addEventListener('change', (e) => this.cargarFoto(e.target));
-    this.el('btn-foto-quitar').addEventListener('click', () => this.ponerFoto(null, null));
+    this.el('btn-foto-quitar').innerHTML = SRP.ICONOS.svg('basura', 20);
+    this.el('btn-foto-quitar').addEventListener('click', () => {
+      this.ponerFoto(null, null);
+      SRP.util.anunciar('Fotografía quitada.');
+      this.el('etq-foto').focus();
+    });
     this.el('form-plantacion').addEventListener('submit', (e) => { e.preventDefault(); this.revisar(); });
     this.el('btn-resumen-guardar').innerHTML = SRP.ICONOS.svg('palomita') + '<span>Guardar</span>';
     this.el('btn-resumen-corregir').innerHTML = SRP.ICONOS.svg('lapiz') + '<span>Corregir</span>';
@@ -164,7 +170,7 @@ SRP.formulario = {
       this.el('campo-especie').value = 'Otra especie';
       this.mostrarOtra(true, textoOtra);
     } else {
-      this.el('campo-especie').value = SRP.ref.nombreCatalogo(id);
+      this.el('campo-especie').value = SRP.ref.textoEspecie(id);
       this.mostrarOtra(false);
     }
     this.cerrarCombo();
@@ -182,21 +188,29 @@ SRP.formulario = {
     entrada.value = '';   // permite volver a elegir el mismo archivo
     if (!archivo) return;
     try {
-      const datos = await SRP.foto.comprimir(archivo);
-      this.ponerFoto(datos, SRP.util.generarId());
+      const f = await SRP.foto.comprimir(archivo);
+      this.ponerFoto(f.datos, SRP.util.generarId(), f.nombre, f.bytes);
       SRP.util.anunciar('Fotografía agregada.');
     } catch (err) {
       SRP.util.anunciar(err.message + ' Intente con otra fotografía.', 'alerta');
     }
   },
 
-  ponerFoto(datos, id) {
-    this.estado.foto = datos; this.estado.fotoId = id;
-    const vista = this.el('foto-vista');
-    vista.hidden = !datos;
-    if (datos) vista.src = datos; else vista.removeAttribute('src');
-    this.el('btn-foto-quitar').hidden = !datos;
-    // El mismo botón sirve para poner y para cambiar: el texto dice cuál de las dos cosas hace
+  ponerFoto(datos, id, nombre, bytes) {
+    this.estado.foto = datos;
+    this.estado.fotoId = id;
+    this.estado.fotoNombre = nombre || '';
+    this.estado.fotoBytes = bytes || (datos ? SRP.foto.pesoDe(datos) : 0);
+    this.el('ficha-foto').hidden = !datos;
+    if (datos) {
+      this.el('foto-vista').src = datos;
+      // Sin nombre de archivo —una foto ya guardada que se vuelve a abrir— se nombra por lo que es
+      this.el('foto-nombre').textContent = this.estado.fotoNombre || 'Fotografía del registro';
+      this.el('foto-peso').textContent = SRP.foto.formatearPeso(this.estado.fotoBytes);
+    } else {
+      this.el('foto-vista').removeAttribute('src');
+    }
+    // La zona de carga dice si va a poner la primera foto o a reemplazar la que hay
     this.el('texto-foto').textContent = datos ? 'Cambiar fotografía' : 'Agregar fotografía';
   },
 
@@ -235,7 +249,8 @@ SRP.formulario = {
       especie_otra: otra ? this.el('campo-otra-especie').value.trim() : '',
       programa_id: this.el('campo-programa').value,
       fecha_plantacion: this.el('campo-fecha').value,
-      foto_base64: this.estado.foto, foto_id: this.estado.fotoId
+      foto_base64: this.estado.foto, foto_id: this.estado.fotoId,
+      foto_nombre: this.estado.fotoNombre, foto_bytes: this.estado.fotoBytes
     };
   },
 
@@ -262,7 +277,7 @@ SRP.formulario = {
       ['Colonia', esc(SRP.ref.territorio(v.colonia)), null],
       ['Coordenadas', v.lat.toFixed(6) + ', ' + v.lng.toFixed(6), 'punto'],
       ['Cabo', esc(this.el('campo-cabo').value), null],
-      ['Fotografía', v.foto_base64 ? 'Incluida' : 'Sin fotografía', 'foto']
+      ['Fotografía', v.foto_base64 ? esc(SRP.foto.formatearPeso(v.foto_bytes)) + ' incluida' : 'Sin fotografía', 'foto']
     ];
 
     this.el('revision-lista').innerHTML = filas.map(([etiqueta, valor, campo]) => {
@@ -395,7 +410,7 @@ SRP.formulario = {
     this.llenarProgramas(registro.programa_id);
     if (registro.especie_id) this.elegirEspecie(registro.especie_id);
     else this.elegirEspecie(this.OTRA, registro.especie_otra);
-    this.ponerFoto(registro.foto_base64, registro.foto_id);
+    this.ponerFoto(registro.foto_base64, registro.foto_id, registro.foto_nombre, registro.foto_bytes);
     SRP.app.mostrarVista('registrar');
     SRP.mapa.colocar(registro.lat, registro.lng, 'Ubicación registrada.', true);
   },

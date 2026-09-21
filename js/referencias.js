@@ -20,6 +20,13 @@ SRP.ref = {
 
   nombreCatalogo(id) { const c = this.catalogoPorId[id]; return c ? c.nombre : ''; },
 
+  // Una especie se nombra igual en todas partes: común y científico, como viene en el catálogo
+  textoEspecie(id) {
+    const e = this.catalogoPorId[id];
+    if (!e) return '';
+    return e.nombre_cientifico ? e.nombre + ' (' + e.nombre_cientifico + ')' : e.nombre;
+  },
+
   nombreUsuario(id) { return SRP.util.nombreCompleto(this.usuarioPorId[id]) || 'Usuario no identificado'; },
 
   // Nombre de especie para mostrar: catálogo o texto libre de "Otra especie"

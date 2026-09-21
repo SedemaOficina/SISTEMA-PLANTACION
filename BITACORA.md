@@ -210,3 +210,34 @@ alcaldía y colonia en la ficha.
 errores de consola; prueba de migración, 9 comprobaciones; revisión de presentación en ocho
 combinaciones de ancho y zoom; auditorías de estilos, código sin uso, identificadores y textos.
 Una comprobación nueva verifica que ningún campo obligatorio se quede sin asterisco.
+
+## Bloque 9 — Ficha de la fotografía, fechas legibles y base sin migraciones (21-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.5.1.
+
+**Peticiones de Liber:** el campo de fotografía como una ficha de archivo —zona de carga, y debajo
+miniatura, nombre, peso y papelera— para poder quitarla si fue la equivocada; que al elegir una
+especie el campo quede con el nombre común y el científico, como en el catálogo; que las fechas se
+muestren como 21-SEP-2026; y borrar lo acumulado para empezar sin migraciones, porque todo son
+datos de prueba.
+
+**Sobre la base sin migraciones.** Se consolidó la estructura definitiva en una sola, se retiró la
+migración anterior y su prueba, y se añadió lo que faltaba: un dispositivo que ya abrió una
+estructura posterior no puede abrirla hacia atrás, así que la base se descarta y se rehace. Eso
+vale **sólo mientras todo sea ficticio**, y queda dicho junto al código y en las decisiones: con
+el primer dato real, cada cambio de estructura vuelve a ser una migración que conserva lo
+guardado. La prueba correspondiente (`prueba_base_vieja.py`) construye una base con una estructura
+muy posterior, abre el sistema y comprueba que arranca, que queda en la estructura de ahora y que
+los datos de prueba se siembran de nuevo.
+
+**Sobre el peso de la fotografía:** se muestra el de la imagen ya comprimida. Enseñar el tamaño
+del archivo original sería decir un número que no corresponde a nada de lo que se guarda.
+
+**Defecto encontrado y corregido:** la zona de carga no apilaba su icono y sus textos, porque
+`.campo label { display: block }` vencía a `.zona-foto` por tener la misma especificidad y venir
+después. Es el segundo caso igual en dos bloques, así que la revisión de presentación incorpora
+ahora una comprobación que declara qué debe valer cada regla de disposición y avisa cuando otra la
+anula, en las ocho combinaciones de ancho y zoom.
+
+**Verificación:** sintaxis; 124 comprobaciones del recorrido, sin errores de consola; prueba de
+base anterior, 4 comprobaciones; revisión de presentación con la comprobación nueva; auditorías de
+estilos, código sin uso, identificadores y textos.

@@ -3,6 +3,19 @@
 window.SRP = window.SRP || {};
 
 SRP.foto = {
+  // Peso real de lo que se guarda, calculado del texto base64: cada 4 caracteres son 3 bytes
+  pesoDe(dataUrl) {
+    const b64 = dataUrl.slice(dataUrl.indexOf(',') + 1);
+    const relleno = (b64.endsWith('==') ? 2 : b64.endsWith('=') ? 1 : 0);
+    return Math.round(b64.length * 3 / 4) - relleno;
+  },
+
+  formatearPeso(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB';
+    return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+  },
+
   comprimir(archivo) {
     return new Promise((resolver, rechazar) => {
       if (!archivo || !archivo.type.startsWith('image/')) { rechazar(new Error('El archivo no es una imagen.')); return; }
@@ -19,7 +32,8 @@ SRP.foto = {
         lienzo.height = Math.round(img.naturalHeight * escala);
         lienzo.getContext('2d').drawImage(img, 0, 0, lienzo.width, lienzo.height);
         URL.revokeObjectURL(url);
-        resolver(lienzo.toDataURL('image/jpeg', CALIDAD));
+        const datos = lienzo.toDataURL('image/jpeg', CALIDAD);
+        resolver({ datos, nombre: archivo.name, bytes: SRP.foto.pesoDe(datos) });
       };
       img.onerror = () => { URL.revokeObjectURL(url); rechazar(new Error('No se pudo leer la imagen.')); };
       img.src = url;

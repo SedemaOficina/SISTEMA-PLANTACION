@@ -5,13 +5,18 @@ window.SRP = window.SRP || {};
 SRP.almacen = {
   db: null,
 
+  /* ESTRUCTURA DE LA BASE.
+     Mientras todo sea ficticio, un cambio de estructura se hace aquí y la base se recrea: es lo
+     que pidió Liber para no arrastrar migraciones de una nomenclatura que todavía se está
+     decidiendo. Se borra lo que haya en el dispositivo, y no importa porque son datos de prueba.
+
+     [pendiente] En cuanto exista el primer dato real esto deja de valer: a partir de ahí cada
+     cambio de estructura es una migración numerada que conserva lo guardado (Norma 4.1 y 4.2),
+     y ESTRUCTURA_VERSION deja de poder bajar ni cambiar de significado. */
   MIGRACIONES: {
-    // No se edita una migración ya publicada, aunque los nombres hayan cambiado después:
-    // los dispositivos que la corrieron tienen exactamente esta estructura. Lo que cambia
-    // va en la siguiente.
     1(db) {
       const pl = db.createObjectStore('plantaciones', { keyPath: 'id' });
-      pl.createIndex('registrador_id', 'registrador_id');
+      pl.createIndex('cabo_id', 'cabo_id');
       pl.createIndex('fecha_plantacion', 'fecha_plantacion');
       pl.createIndex('estatus', 'estatus');
       db.createObjectStore('usuarios', { keyPath: 'id' });
@@ -19,43 +24,6 @@ SRP.almacen = {
       ca.createIndex('tipo', 'tipo');
       const bi = db.createObjectStore('bitacora', { keyPath: 'id' });
       bi.createIndex('entidad_id', 'entidad_id');
-    },
-
-    /* 2: «registrador» pasa a llamarse «cabo» y «jefe de registradores» a «coordinador»,
-       que son los términos que usa el personal. Cambia el nombre, no el significado.
-       Renombrar sólo en el código habría dejado los dispositivos ya usados con los campos
-       viejos: un cabo dejaría de ver sus propios registros. Por eso el cambio de datos
-       también es migración (Norma 4.2). */
-    2(db, tx) {
-      const pl = tx.objectStore('plantaciones');
-      if (pl.indexNames.contains('registrador_id')) pl.deleteIndex('registrador_id');
-      if (!pl.indexNames.contains('cabo_id')) pl.createIndex('cabo_id', 'cabo_id');
-
-      pl.openCursor().onsuccess = (ev) => {
-        const c = ev.target.result; if (!c) return;
-        const r = c.value;
-        if ('registrador_id' in r) { r.cabo_id = r.registrador_id; delete r.registrador_id; c.update(r); }
-        c.continue();
-      };
-
-      const PERFIL = { REGISTRADOR: 'CABO', JEFE: 'COORDINADOR' };
-      tx.objectStore('usuarios').openCursor().onsuccess = (ev) => {
-        const c = ev.target.result; if (!c) return;
-        const u = c.value; let tocado = false;
-        if ('jefe_id' in u) { u.coordinador_id = u.jefe_id; delete u.jefe_id; tocado = true; }
-        if (PERFIL[u.perfil]) { u.perfil = PERFIL[u.perfil]; tocado = true; }
-        if (tocado) c.update(u);
-        c.continue();
-      };
-
-      // La bitácora guarda el perfil de quien actuó: se traduce para que el historial
-      // siga siendo legible, sin alterar qué se hizo ni cuándo.
-      tx.objectStore('bitacora').openCursor().onsuccess = (ev) => {
-        const c = ev.target.result; if (!c) return;
-        const b = c.value;
-        if (PERFIL[b.perfil]) { b.perfil = PERFIL[b.perfil]; c.update(b); }
-        c.continue();
-      };
     }
   },
 
@@ -63,12 +31,38 @@ SRP.almacen = {
     return new Promise((resolver, rechazar) => {
       const pet = indexedDB.open(SRP.CONFIG.DB_NOMBRE, SRP.CONFIG.DB_VERSION);
       pet.onupgradeneeded = (ev) => {
-        // pet.transaction es la transacción de la actualización: la única desde la que se
-        // pueden cambiar índices y datos a la vez
         for (let v = ev.oldVersion + 1; v <= SRP.CONFIG.DB_VERSION; v++) this.MIGRACIONES[v](pet.result, pet.transaction);
       };
       pet.onsuccess = () => { this.db = pet.result; resolver(); };
-      pet.onerror = () => rechazar(pet.error);
+      // Un dispositivo que abrió una estructura posterior a la que pide este código no puede
+      // abrirla hacia atrás. Mientras los datos sean ficticios se descarta y se rehace; con
+      // datos reales esto tendría que ser una migración, nunca un borrado.
+      pet.onerror = () => {
+        if (pet.error && pet.error.name === 'VersionError' && SRP.CONFIG.ES_FICTICIO) {
+          this.rehacerBase().then(resolver, rechazar);
+        } else {
+          rechazar(pet.error);
+        }
+      };
+    });
+  },
+
+  rehacerBase() {
+    return new Promise((resolver, rechazar) => {
+      const borrado = indexedDB.deleteDatabase(SRP.CONFIG.DB_NOMBRE);
+      const seguir = () => {
+        const pet2 = indexedDB.open(SRP.CONFIG.DB_NOMBRE, SRP.CONFIG.DB_VERSION);
+        pet2.onupgradeneeded = (ev) => {
+          for (let v = ev.oldVersion + 1; v <= SRP.CONFIG.DB_VERSION; v++) this.MIGRACIONES[v](pet2.result, pet2.transaction);
+        };
+        pet2.onsuccess = () => { this.db = pet2.result; resolver(); };
+        pet2.onerror = () => rechazar(pet2.error);
+      };
+      borrado.onsuccess = seguir;
+      borrado.onerror = () => rechazar(borrado.error);
+      // Si otra pestaña tiene la base abierta, el borrado se queda esperando: se avisa
+      borrado.onblocked = () => rechazar(new Error(
+        'Hay otra pestaña con el sistema abierto. Ciérrela y vuelva a cargar esta página.'));
     });
   },
 

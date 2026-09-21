@@ -109,6 +109,8 @@ main:focus { outline: none; }
 .btn-editar { background: var(--fondo); color: var(--editar); border-color: var(--editar); }
 /* Botón sólo de icono: la etiqueta la lleva aria-label, y el título dice a qué campo se refiere */
 .btn-texto-editar { background: none; color: var(--editar); text-decoration: underline; padding: 0 var(--e-2); }
+/* Botón sin palabra: sólo donde lo que representa ya está escrito al lado, y con aria-label */
+.btn-icono-solo { min-width: var(--toque); padding: 0; flex-shrink: 0; }
 .btn-chico { min-height: 40px; padding: 0 var(--e-3); font-size: var(--t-s); }
 .btn-ancho { width: 100%; max-width: 22rem; }
 
@@ -164,7 +166,26 @@ main:focus { outline: none; }
 .combo-opcion { padding: var(--e-2) var(--e-3); min-height: var(--toque); cursor: pointer; border-bottom: 1px solid var(--borde-suave); }
 .combo-opcion small { display: block; color: var(--gris); font-style: italic; }
 
-.foto-vista { display: block; max-height: 14rem; border-radius: var(--radio); margin-bottom: var(--e-3); }
+/* Zona de carga y ficha del archivo: se ve qué se subió y se puede quitar de un toque */
+/* Doble selector a propósito: `.campo label { display: block }` tiene la misma especificidad
+   y ganaba por orden, así que la zona no apilaba su icono y sus textos. */
+.zona-foto,
+.campo .zona-foto {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--e-1);
+  padding: var(--e-5) var(--e-4); border: 2px dashed var(--borde-control); border-radius: var(--radio);
+  color: var(--guinda); cursor: pointer; text-align: center; margin-bottom: 0;
+}
+.zona-foto-titulo { font-family: var(--fuente-titulo); font-weight: 600; }
+.zona-foto-ayuda { color: var(--gris); font-size: var(--t-s); }
+
+.ficha-foto {
+  display: flex; align-items: center; gap: var(--e-3); margin-top: var(--e-3);
+  padding: var(--e-2); border: 1px solid var(--borde-suave); border-radius: var(--radio); background: var(--fondo-suave);
+}
+.ficha-foto-miniatura { width: 56px; height: 56px; object-fit: cover; border-radius: var(--radio-control); flex-shrink: 0; }
+.ficha-foto-datos { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.ficha-foto-nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ficha-foto-peso { color: var(--gris); font-size: var(--t-s); }
 
 .chips { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-bottom: var(--e-4); }
 .chip { min-height: 40px; padding: 0 var(--e-3); border: 1px solid var(--borde-control); border-radius: 20px; background: var(--fondo); color: var(--texto); cursor: pointer; }
@@ -219,6 +240,8 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 
 /* ========== 5. ESTADOS ========== */
 .btn-primario:hover { background: var(--guinda-oscuro); }
+.zona-foto:hover { border-color: var(--guinda); background: var(--fondo-suave); }
+.zona-foto:focus-within { outline: 3px solid var(--foco); outline-offset: 2px; }
 .btn:disabled { opacity: 0.55; cursor: not-allowed; }
 .pestana[aria-current="page"] { color: var(--guinda); border-bottom-color: var(--guinda); }
 .chip[aria-pressed="true"] { background: var(--guinda); border-color: var(--guinda); color: var(--fondo); }
