@@ -116,13 +116,33 @@ SRP.almacen = {
     });
   },
 
+  selloGuardado() {
+    try { return localStorage.getItem(SRP.CONFIG.CLAVE_SELLO); } catch (e) { return null; }
+  },
+
+  anotarSello() {
+    try { localStorage.setItem(SRP.CONFIG.CLAVE_SELLO, SRP.CONFIG.SELLO_DATOS); } catch (e) { /* sin persistencia */ }
+  },
+
+  // Devuelve true si tuvo que rehacer los datos de prueba, para poder avisarlo
   async sembrarSiVacio() {
     const existentes = await this.todos('usuarios');
-    if (existentes.length) return;
+    const selloViejo = this.selloGuardado();
+    if (existentes.length && selloViejo === SRP.CONFIG.SELLO_DATOS) return false;
+    if (existentes.length) {           // hay datos, pero de una versión anterior de las pruebas
+      await this.restablecer();
+      return true;
+    }
+    await this.sembrar();
+    return false;
+  },
+
+  async sembrar() {
     const d = SRP.DATOS_FICTICIOS;
     await this._tx(['usuarios', 'catalogos', 'plantaciones'], 'readwrite', (tx) => {
       d.usuarios.forEach(u => tx.objectStore('usuarios').put(u));
       d.catalogos.forEach(c => tx.objectStore('catalogos').put(c));
+      // Si alguna vez vuelven a cargarse plantaciones de prueba, su territorio se deriva aquí
       d.plantaciones.forEach(p => {
         const t = SRP.derivacion.derivar(p.lat, p.lng);
         tx.objectStore('plantaciones').put(Object.assign({}, p, {
@@ -130,13 +150,14 @@ SRP.almacen = {
         }));
       });
     });
+    this.anotarSello();
   },
 
   async restablecer() {
     await this._tx(['usuarios', 'catalogos', 'plantaciones', 'bitacora'], 'readwrite', (tx) => {
       ['usuarios', 'catalogos', 'plantaciones', 'bitacora'].forEach(a => tx.objectStore(a).clear());
     });
-    await this.sembrarSiVacio();
+    await this.sembrar();
   }
 };
 

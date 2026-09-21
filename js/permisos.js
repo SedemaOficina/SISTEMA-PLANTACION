@@ -15,7 +15,17 @@ SRP.PERFILES = {
 };
 
 SRP.permisos = {
-  de(usuario) { return SRP.PERFILES[usuario.perfil] || SRP.PERFILES.VIEWER; },
+  /* Un perfil que no está en el catálogo se trata como el de menos alcance, que es lo seguro,
+     pero nunca en silencio: antes, una cuenta con un perfil viejo aparecía como «Consulta» sin
+     que nada lo dijera, y costó ver por qué. */
+  de(usuario) {
+    const p = SRP.PERFILES[usuario.perfil];
+    if (p) return p;
+    SRP.permisos.perfilesDesconocidos.add(usuario.perfil);
+    return SRP.PERFILES.VIEWER;
+  },
+
+  perfilesDesconocidos: new Set(),
 
   // ¿El registro está dentro del alcance del usuario?
   alcanza(usuario, registro, usuariosPorId) {

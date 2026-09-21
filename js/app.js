@@ -12,8 +12,10 @@ SRP.app = {
     this.el('banda-ficticio').hidden = !SRP.CONFIG.ES_FICTICIO;
     try {
       await SRP.almacen.abrir();
-      if (SRP.CONFIG.ES_FICTICIO) await SRP.almacen.sembrarSiVacio();
+      let resembrado = false;
+      if (SRP.CONFIG.ES_FICTICIO) resembrado = await SRP.almacen.sembrarSiVacio();
       await SRP.ref.recargar();
+      if (resembrado) setTimeout(() => SRP.util.anunciar('Los datos de prueba se actualizaron a la versión nueva.'), 400);
     } catch (err) {
       this.el('principal').innerHTML = '<div class="errores"><h2>No se pudo abrir el almacenamiento del dispositivo</h2>' +
         '<p>' + SRP.util.escapar(err.message) + '. Revise que el navegador no esté en modo privado.</p></div>';

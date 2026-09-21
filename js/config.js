@@ -12,13 +12,21 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 9',
+  ETAPA: 'Bloque 10',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
   ES_FICTICIO: true,
 
   DB_NOMBRE: 'srp_db',
+
+  /* SELLO DE LOS DATOS DE PRUEBA. Se cambia cada vez que cambian los datos ficticios o el
+     significado de alguno de sus campos. El dispositivo guarda el sello con el que sembró; si
+     no coincide con este, vuelve a sembrar. Sin esto, un teléfono que ya había abierto el
+     sistema se queda con los datos anteriores: al renombrar los perfiles, todas las cuentas
+     aparecían como «Consulta», porque su perfil ya no existía. */
+  SELLO_DATOS: '2026-09-21-arranque-limpio',
+  CLAVE_SELLO: 'srp_sello_datos',
   DB_VERSION: 1,
   CLAVE_SESION: 'srp_sesion_usuario_id',
 
