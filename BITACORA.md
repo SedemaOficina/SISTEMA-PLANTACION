@@ -44,3 +44,21 @@ concuerda en singular y plural, también en el aviso de eliminación bloqueada.
 cuatro perfiles, sin errores de consola; auditorías de hojas de estilo (sin clases sin uso, sin
 selectores duplicados, sin colores fuera de `:root`, un solo `!important`, el de reduced-motion),
 código sin uso, identificadores del HTML y textos.
+
+## Bloque 3 — Publicación en la cuenta institucional (21-09-2026)
+Etapa 1. Estado: **abierto**, a la espera del envío al repositorio.
+
+**Por qué:** en el teléfono, la ubicación GPS y la cámara sólo funcionan en una dirección
+`https://`. Sin publicar no hay prueba de campo, que es el uso real del sistema.
+
+**Qué se hizo:** repositorio git iniciado en la carpeta del proyecto, con dos entregas que
+reproducen la historia documentada arriba (v0.1.0 y v0.2.0) y destino
+`SedemaOficina/SISTEMA-PLANTACION`. Se verificó que los archivos de la versión probada llegaron
+intactos a la entrega (huellas md5 idénticas en los diez archivos principales).
+
+**Fuera del repositorio** (`.gitignore`): `historial/`, `_to_delete/`, y basura del sistema
+operativo. Las copias fechadas se conservan en disco pero ya no hacen falta: el historial lo
+lleva git.
+
+**Falta para cerrar el bloque:** enviar al repositorio, activar la publicación, abrirlo desde el
+teléfono y verificar que GPS y cámara respondan.

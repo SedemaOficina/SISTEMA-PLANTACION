@@ -26,13 +26,17 @@
 | D22 | Al agregar en cualquier catálogo, la clave se sugiere a partir del nombre: sin acentos, mayúsculas, guion bajo; editable antes de guardar y fija después | Definido por Liber. La unión de datos se hace por clave (Norma 6.5), así que debe ser estable y legible |
 | D23 | Si la clave sugerida ya existe, se propone con sufijo _2, _3 | Dos valores con la misma clave harían ambigua la unión |
 | D24 | Las claves del catálogo real de especies se cargan tal cual; la generación automática aplica sólo a lo que se agregue después | Definido por Liber: su archivo ya trae claves propias |
+| D25 | El repositorio vive en la cuenta institucional: `SedemaOficina/SISTEMA-PLANTACION` | Definido por Liber, 21-09-2026. Resuelve la Norma 1.7 desde el inicio: ninguna llave crítica a nombre de una persona |
+| D26 | El repositorio y el sitio son públicos mientras dure el prototipo, con la banda «Datos ficticios de prueba» visible | Definido por Liber. Publicar es la única forma de probar GPS y cámara desde el teléfono, y un repositorio privado con cuenta gratuita no puede publicar con Pages |
+| D27 | El historial pasa a git; la carpeta `historial/` se conserva pero queda fuera del repositorio | Ya hay control de versiones (Norma 12.8), así que las copias fechadas dejan de ser necesarias |
 
 ## Pendientes de decisión
+
+- [pendiente] Al salir de prototipo: revisar si el repositorio y el sitio siguen siendo públicos
 - [pendiente] ¿El Jefe de registradores también registra plantaciones? ¿Puede eliminar? (hoy: registra sí, elimina no)
 - [pendiente] ¿Quién asigna el jefe a cada registrador? (hoy: nadie; Fase 2, Administración global)
 - [pendiente] Proveedor de mapa base para producción (OpenStreetMap no admite uso institucional intensivo)
 - [pendiente] Capas reales de colonias y malla UGA: origen, fecha de corte y área responsable
 - [pendiente] Validación del catálogo de especies y su clasificación Nativa / Introducida por el área técnica
 - [pendiente] Formato de las claves del catálogo real de especies, para confirmar que no choquen con las generadas
-- [pendiente] Cuenta institucional para el repositorio y la publicación (Norma 1.7)
 - [pendiente] Aviso de privacidad: el sistema recaba nombre, área y cargo del personal (Norma 1.8)
