@@ -47,11 +47,13 @@ SRP.usuarios = {
     const filas = lista.map(u => {
       const n = this.uso[u.id] || 0;
       const soyYo = u.id === yo;
-      const acciones = ['<button type="button" class="btn btn-secundario btn-chico" data-accion="editar" data-id="' + u.id + '">Editar</button>'];
+      const acciones = ['<button type="button" class="btn btn-editar btn-chico" data-accion="editar" data-id="' + u.id + '">' +
+        SRP.ICONOS.svg('lapiz', 16) + '<span>Editar</span></button>'];
       // Nadie se desactiva ni se elimina a sí mismo: dejaría el sistema sin quien administre
       if (!soyYo) {
         acciones.push('<button type="button" class="btn btn-secundario btn-chico" data-accion="estado" data-id="' + u.id + '">' + (u.activo ? 'Desactivar' : 'Activar') + '</button>');
-        if (n === 0) acciones.push('<button type="button" class="btn btn-texto btn-chico" data-accion="eliminar" data-id="' + u.id + '">Eliminar</button>');
+        if (n === 0) acciones.push('<button type="button" class="btn btn-peligro btn-chico" data-accion="eliminar" data-id="' + u.id + '">' +
+          SRP.ICONOS.svg('basura', 16) + '<span>Eliminar</span></button>');
       }
       return '<tr><td data-etiqueta="Nombre">' + esc(SRP.util.nombreCompleto(u)) + (soyYo ? ' <span class="insignia">usted</span>' : '') + '</td>' +
         '<td data-etiqueta="Correo">' + esc(u.correo) + '</td>' +
@@ -177,7 +179,7 @@ SRP.usuarios = {
     const activar = !u.activo;
     if (!activar) {
       const ok = await SRP.app.confirmar('¿Desactivar la cuenta de ' + SRP.util.nombreCompleto(u) +
-        '? Dejará de poder entrar; sus registros se conservan y siguen a su nombre.', 'Desactivar');
+        '? Dejará de poder entrar; sus registros se conservan y siguen a su nombre.', 'Desactivar', 'palomita');
       if (!ok) return;
     }
     const nuevo = Object.assign({}, u, { activo: activar, editado_por_id: SRP.sesion.usuario.id, fecha_ultima_edicion: SRP.util.ahoraISO() });

@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 5',
+  ETAPA: 'Bloque 6',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -32,9 +32,23 @@ SRP.CONFIG = {
     ZOOM_MAX: 19,
     ZOOM_PUNTO: 17,
     LIMITES: [[19.04, -99.37], [19.60, -98.94]],   // ámbito CDMX; fuera de aquí el punto no es válido
-    // [pendiente] OpenStreetMap no admite uso institucional intensivo: definir proveedor antes de producción.
-    MOSAICOS_URL: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    MOSAICOS_ATRIBUCION: '&copy; colaboradores de OpenStreetMap',
+
+    /* CAPAS DEL MAPA BASE, en orden de dibujo: la imagen de satélite abajo y, encima, una capa
+       transparente con los nombres de calles y lugares. En campo se ubica el árbol por lo que se
+       ve —la banqueta, el camellón, el árbol vecino—, no por el trazo de la calle, pero sin los
+       nombres nadie sabe dónde está parado.
+       [pendiente] Proveedor para producción (Norma 6.8): el servicio de Esri se usa aquí con su
+       atribución, pero su uso gratuito tiene límites que hay que revisar antes de operar con
+       cientos de personas en campo. */
+    CAPAS: [
+      { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        atribucion: 'Imagen: Esri, Maxar, Earthstar Geographics y la comunidad de usuarios de Esri',
+        base: true },
+      { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',
+        atribucion: 'Vías: Esri', base: false },
+      { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+        atribucion: '', base: false }
+    ],
     GPS_ESPERA_MS: 15000
   },
 

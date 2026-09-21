@@ -8,9 +8,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cabin:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.3.1">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.3.1">
-<link rel="stylesheet" href="css/estilos.css?v=0.3.1">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.4.0">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.4.0">
+<link rel="stylesheet" href="css/estilos.css?v=0.4.0">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -108,10 +108,15 @@
         <legend>Fotografía <span class="opcional">(opcional)</span></legend>
         <img id="foto-vista" class="foto-vista" alt="Fotografía del árbol registrado" hidden>
         <div class="fila-botones">
-          <label class="btn btn-secundario" for="foto-camara">Tomar foto</label>
-          <input type="file" id="foto-camara" accept="image/*" capture="environment" class="oculto-visual">
-          <label class="btn btn-secundario" for="foto-galeria">Elegir de galería</label>
-          <input type="file" id="foto-galeria" accept="image/*" class="oculto-visual">
+          <!-- Un solo selector, sin «capture»: así el teléfono ofrece su propio menú —tomar foto,
+               biblioteca, archivos— en vez de obligar a elegir de antemano entre dos botones. -->
+          <label class="btn btn-secundario btn-ancho" for="foto-archivo" id="etq-foto">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+              <path fill="currentColor" d="M9 2l-1.8 2H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2h-3.2L15 2H9zm3 5a6 6 0 110 12 6 6 0 010-12zm0 2a4 4 0 100 8 4 4 0 000-8z"/>
+            </svg>
+            <span id="texto-foto">Agregar fotografía</span>
+          </label>
+          <input type="file" id="foto-archivo" accept="image/*" class="oculto-visual">
           <button type="button" id="btn-foto-quitar" class="btn btn-texto" hidden>Quitar foto</button>
         </div>
       </fieldset>
@@ -122,14 +127,6 @@
       </div>
     </form>
 
-    <div id="panel-guardado" class="panel-guardado" hidden tabindex="-1">
-      <h2 id="panel-guardado-titulo">Registro guardado</h2>
-      <p id="panel-guardado-detalle"></p>
-      <div class="acciones">
-        <button type="button" id="btn-registro-nuevo" class="btn btn-primario">Agregar registro nuevo</button>
-        <button type="button" id="btn-ir-registros" class="btn btn-secundario">Ver mis registros</button>
-      </div>
-    </div>
   </section>
 
   <!-- REGISTROS -->
@@ -146,14 +143,19 @@
         <div class="campo"><label for="filtro-anio">Año</label><select id="filtro-anio"></select></div>
         <div class="campo"><label for="filtro-mes">Mes</label><select id="filtro-mes"></select></div>
       </div>
-      <div class="campo-doble">
-        <div class="campo"><label for="filtro-desde">Desde</label><input type="date" id="filtro-desde"></div>
-        <div class="campo"><label for="filtro-hasta">Hasta</label><input type="date" id="filtro-hasta"></div>
-      </div>
-      <div id="caja-filtro-registrador" class="campo" hidden>
-        <label for="filtro-registrador">Registrador</label><select id="filtro-registrador"></select>
-      </div>
-      <button type="button" id="btn-filtrar" class="btn btn-secundario">Aplicar rango</button>
+      <!-- El rango y el filtro por persona se usan de vez en cuando; los atajos y las listas de
+           arriba cubren el trabajo diario. Plegados, los registros caben en la primera pantalla. -->
+      <details class="filtros-mas">
+        <summary>Más filtros</summary>
+        <div class="campo-doble">
+          <div class="campo"><label for="filtro-desde">Desde</label><input type="date" id="filtro-desde"></div>
+          <div class="campo"><label for="filtro-hasta">Hasta</label><input type="date" id="filtro-hasta"></div>
+        </div>
+        <div id="caja-filtro-registrador" class="campo" hidden>
+          <label for="filtro-registrador">Registrador</label><select id="filtro-registrador"></select>
+        </div>
+        <button type="button" id="btn-filtrar" class="btn btn-secundario">Aplicar</button>
+      </details>
     </div>
     <p id="registros-total" class="total" aria-live="polite"></p>
     <ul id="lista-registros" class="lista-registros"></ul>
@@ -207,10 +209,22 @@
 
 <dialog id="dlg-resumen" aria-labelledby="dlg-resumen-titulo">
   <h2 id="dlg-resumen-titulo">Revise antes de guardar</h2>
-  <div id="dlg-resumen-cuerpo"></div>
+  <div id="revision-mapa" class="revision-mapa" role="img" aria-label="Mapa con la ubicación del árbol"></div>
+  <img id="revision-foto" class="revision-foto" alt="Fotografía del árbol registrado" hidden>
+  <dl id="revision-lista" class="revision-lista"></dl>
   <div class="acciones">
-    <button type="button" id="btn-resumen-guardar" class="btn btn-primario">Guardar</button>
-    <button type="button" id="btn-resumen-corregir" class="btn btn-secundario">Corregir</button>
+    <button type="button" id="btn-resumen-guardar" class="btn btn-exito"></button>
+    <button type="button" id="btn-resumen-corregir" class="btn btn-editar"></button>
+  </div>
+</dialog>
+
+<dialog id="dlg-guardado" aria-labelledby="dlg-guardado-titulo">
+  <h2 id="dlg-guardado-titulo" class="titulo-exito"></h2>
+  <p id="dlg-guardado-detalle"></p>
+  <p id="dlg-guardado-id" class="revision-nota"></p>
+  <div class="acciones">
+    <button type="button" id="btn-registro-nuevo" class="btn btn-primario">Agregar registro nuevo</button>
+    <button type="button" id="btn-ir-registros" class="btn btn-secundario">Ver mis registros</button>
   </div>
 </dialog>
 
@@ -230,7 +244,7 @@
     <div class="campo solo-especie"><label for="cat-grupo">Grupo</label>
       <select id="cat-grupo"><option value="Nativa">Nativa</option><option value="Introducida">Introducida</option></select></div>
     <div class="acciones">
-      <button type="submit" class="btn btn-primario">Guardar</button>
+      <button type="submit" class="btn btn-exito" id="btn-cat-guardar">Guardar</button>
       <button type="button" id="btn-cat-cancelar" class="btn btn-secundario">Cancelar</button>
     </div>
   </form>
@@ -258,7 +272,7 @@
     <div class="campo"><label for="usr-perfil">Perfil</label><select id="usr-perfil" required></select><p id="usr-perfil-ayuda" class="nota"></p></div>
     <div class="campo" id="caja-usr-jefe"><label for="usr-jefe">Jefe</label><select id="usr-jefe"></select></div>
     <div class="acciones">
-      <button type="submit" class="btn btn-primario">Guardar</button>
+      <button type="submit" class="btn btn-exito" id="btn-usr-guardar">Guardar</button>
       <button type="button" id="btn-usr-cancelar" class="btn btn-secundario">Cancelar</button>
     </div>
   </form>
@@ -269,29 +283,30 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.3.1"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.3.1"></script>
-<script src="vendor/turf-pip.min.js?v=0.3.1"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.3.1"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.3.1"></script>
+<script src="vendor/leaflet.js?v=0.4.0"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.4.0"></script>
+<script src="vendor/turf-pip.min.js?v=0.4.0"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.4.0"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.4.0"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.3.1"></script>
-<script src="js/util.js?v=0.3.1"></script>
-<script src="assets/logo.js?v=0.3.1"></script>
-<script src="assets/capas-ficticias.js?v=0.3.1"></script>
-<script src="js/datos-ficticios.js?v=0.3.1"></script>
-<script src="js/permisos.js?v=0.3.1"></script>
-<script src="js/derivacion.js?v=0.3.1"></script>
-<script src="js/almacen.js?v=0.3.1"></script>
-<script src="js/sesion.js?v=0.3.1"></script>
-<script src="js/referencias.js?v=0.3.1"></script>
-<script src="js/mapa.js?v=0.3.1"></script>
-<script src="js/foto.js?v=0.3.1"></script>
-<script src="js/formulario.js?v=0.3.1"></script>
-<script src="js/registros.js?v=0.3.1"></script>
-<script src="js/reportes.js?v=0.3.1"></script>
-<script src="js/catalogos.js?v=0.3.1"></script>
-<script src="js/usuarios.js?v=0.3.1"></script>
-<script src="js/app.js?v=0.3.1"></script>
+<script src="js/config.js?v=0.4.0"></script>
+<script src="js/util.js?v=0.4.0"></script>
+<script src="js/iconos.js?v=0.4.0"></script>
+<script src="assets/logo.js?v=0.4.0"></script>
+<script src="assets/capas-ficticias.js?v=0.4.0"></script>
+<script src="js/datos-ficticios.js?v=0.4.0"></script>
+<script src="js/permisos.js?v=0.4.0"></script>
+<script src="js/derivacion.js?v=0.4.0"></script>
+<script src="js/almacen.js?v=0.4.0"></script>
+<script src="js/sesion.js?v=0.4.0"></script>
+<script src="js/referencias.js?v=0.4.0"></script>
+<script src="js/mapa.js?v=0.4.0"></script>
+<script src="js/foto.js?v=0.4.0"></script>
+<script src="js/formulario.js?v=0.4.0"></script>
+<script src="js/registros.js?v=0.4.0"></script>
+<script src="js/reportes.js?v=0.4.0"></script>
+<script src="js/catalogos.js?v=0.4.0"></script>
+<script src="js/usuarios.js?v=0.4.0"></script>
+<script src="js/app.js?v=0.4.0"></script>
 </body>
 </html>

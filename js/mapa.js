@@ -23,13 +23,19 @@ SRP.mapa = {
       center: c.CENTRO, zoom: c.ZOOM_INICIAL, minZoom: c.ZOOM_MIN, maxZoom: c.ZOOM_MAX,
       maxBounds: c.LIMITES, maxBoundsViscosity: 1, gestureHandling: true
     });
+    // Sólo la capa de imagen avisa si no carga: las de nombres son complemento, y su ausencia
+    // no impide colocar el punto.
     let fallas = 0;
-    L.tileLayer(c.MOSAICOS_URL, { attribution: c.MOSAICOS_ATRIBUCION, maxZoom: c.ZOOM_MAX })
-      .on('tileerror', () => {
-        fallas += 1;
-        if (fallas === 3) this.estado('El mapa base no cargó. Puede tocar el mapa para colocar el punto o capturar coordenadas a mano.', 'alerta');
-      })
-      .addTo(this.mapa);
+    c.CAPAS.forEach(capa => {
+      const capaLeaflet = L.tileLayer(capa.url, { attribution: capa.atribucion, maxZoom: c.ZOOM_MAX });
+      if (capa.base) {
+        capaLeaflet.on('tileerror', () => {
+          fallas += 1;
+          if (fallas === 3) this.estado('La imagen del mapa no cargó. Puede tocar el mapa para colocar el punto o capturar coordenadas a mano.', 'alerta');
+        });
+      }
+      capaLeaflet.addTo(this.mapa);
+    });
     this.icono = L.divIcon({ className: 'pin', html: this.ICONO_SVG, iconSize: [36, 48], iconAnchor: [18, 46] });
     this.mapa.on('click', (e) => this.colocar(e.latlng.lat, e.latlng.lng, 'Punto colocado en el mapa.'));
     this.agregarControlUbicacion();

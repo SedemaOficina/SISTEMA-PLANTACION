@@ -43,9 +43,10 @@ SRP.app = {
     const faltan = [
       ['form-acceso', 'la pantalla de acceso'],
       ['vista-usuarios', 'la pantalla de usuarios'],
-      ['panel-guardado', 'el panel de registro guardado']
+      ['dlg-guardado', 'el aviso de registro guardado'],
+      ['revision-lista', 'la ficha de revisión']
     ].filter(([id]) => !document.getElementById(id)).map(([, que]) => que);
-    const modulos = ['util', 'permisos', 'sesion', 'almacen', 'ref', 'formulario', 'registros', 'catalogos', 'usuarios']
+    const modulos = ['util', 'ICONOS', 'permisos', 'sesion', 'almacen', 'ref', 'formulario', 'registros', 'catalogos', 'usuarios']
       .filter(m => !SRP[m]);
     if (!faltan.length && !modulos.length) return true;
     document.body.innerHTML =
@@ -162,15 +163,21 @@ SRP.app = {
 
   /* ---------- Diálogos ---------- */
   iniciarDialogos() {
+    // Los botones fijos del HTML reciben aquí su icono, para no repetir el SVG en la página
+    this.el('btn-cat-guardar').innerHTML = SRP.ICONOS.svg('palomita') + '<span>Guardar</span>';
+    this.el('btn-usr-guardar').innerHTML = SRP.ICONOS.svg('palomita') + '<span>Guardar</span>';
     this.el('btn-confirmar-si').addEventListener('click', () => this.el('dlg-confirmar').close('si'));
     this.el('btn-confirmar-no').addEventListener('click', () => this.el('dlg-confirmar').close('no'));
   },
 
-  confirmar(texto, textoBoton) {
+  // icono: 'basura' para lo que se elimina, 'palomita' para lo que sólo se confirma
+  confirmar(texto, textoBoton, icono) {
     return new Promise((resolver) => {
       const dlg = this.el('dlg-confirmar');
       this.el('dlg-confirmar-texto').textContent = texto;
-      this.el('btn-confirmar-si').textContent = textoBoton;
+      const b = this.el('btn-confirmar-si');
+      b.innerHTML = SRP.ICONOS.svg(icono || 'basura') + '<span>' + SRP.util.escapar(textoBoton) + '</span>';
+      b.className = 'btn ' + (icono === 'palomita' ? 'btn-exito' : 'btn-peligro');
       dlg.returnValue = '';
       dlg.addEventListener('close', () => resolver(dlg.returnValue === 'si'), { once: true });
       dlg.showModal();

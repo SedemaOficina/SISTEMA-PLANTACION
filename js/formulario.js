@@ -3,7 +3,7 @@ window.SRP = window.SRP || {};
 
 SRP.formulario = {
   OTRA: '__otra__',
-  estado: { especieId: null, foto: null, fotoId: null, territorio: null, editando: null },
+  estado: { especieId: null, foto: null, fotoId: null, territorio: null, editando: null, idPrevisto: null },
 
   el(id) { return document.getElementById(id); },
 
@@ -11,21 +11,34 @@ SRP.formulario = {
     SRP.mapa.iniciar((lat, lng) => this.alMoverPunto(lat, lng));
     this.el('btn-coord-aplicar').addEventListener('click', () => this.aplicarCoordenadasManuales());
     this.iniciarCombo();
-    this.el('foto-camara').addEventListener('change', (e) => this.cargarFoto(e.target));
-    this.el('foto-galeria').addEventListener('change', (e) => this.cargarFoto(e.target));
+    this.el('foto-archivo').addEventListener('change', (e) => this.cargarFoto(e.target));
     this.el('btn-foto-quitar').addEventListener('click', () => this.ponerFoto(null, null));
     this.el('form-plantacion').addEventListener('submit', (e) => { e.preventDefault(); this.revisar(); });
+    this.el('btn-resumen-guardar').innerHTML = SRP.ICONOS.svg('palomita') + '<span>Guardar</span>';
+    this.el('btn-resumen-corregir').innerHTML = SRP.ICONOS.svg('lapiz') + '<span>Corregir</span>';
     this.el('btn-resumen-corregir').addEventListener('click', () => this.el('dlg-resumen').close());
+    // Al cerrar la ficha se destruye su mapa: si no, queda un mapa vivo en un diálogo oculto
+    // y su marcador se confunde con el del mapa principal.
+    this.el('dlg-resumen').addEventListener('close', () => {
+      if (this.mapaRevision) { this.mapaRevision.remove(); this.mapaRevision = null; }
+    });
+    // Cada dato de la ficha lleva su botón de corregir; la ubicación lleva al mapa
+    this.el('revision-lista').addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-campo]'); if (!b) return;
+      this.corregirCampo(b.dataset.campo);
+    });
     this.el('btn-resumen-guardar').addEventListener('click', () => this.guardar());
     this.el('btn-cancelar-edicion').addEventListener('click', () => { this.limpiar(); SRP.app.mostrarVista('registros'); });
     this.el('btn-registro-nuevo').addEventListener('click', () => this.nuevoRegistro());
-    this.el('btn-ir-registros').addEventListener('click', () => SRP.app.mostrarVista('registros'));
+    this.el('btn-ir-registros').addEventListener('click', () => {
+      this.el('dlg-guardado').close();
+      this.estado.idPrevisto = null;
+      SRP.app.mostrarVista('registros');
+    });
   },
 
   // Se llama cada vez que se entra a la vista Registrar
   preparar() {
-    this.el('panel-guardado').hidden = true;
-    this.el('form-plantacion').hidden = false;
     this.llenarProgramas();
     if (!this.estado.editando) {
       this.el('campo-registrador').value = SRP.util.nombreCompleto(SRP.sesion.usuario);
@@ -157,6 +170,8 @@ SRP.formulario = {
     vista.hidden = !datos;
     if (datos) vista.src = datos; else vista.removeAttribute('src');
     this.el('btn-foto-quitar').hidden = !datos;
+    // El mismo botón sirve para poner y para cambiar: el texto dice cuál de las dos cosas hace
+    this.el('texto-foto').textContent = datos ? 'Cambiar fotografía' : 'Agregar fotografía';
   },
 
   /* ---------- Validación y resumen ---------- */
@@ -202,21 +217,79 @@ SRP.formulario = {
     const errores = this.validar();
     this.mostrarErrores(errores);
     if (errores.length) return;
+
+    // El identificador se fija aquí y es el que se guarda: así la ficha muestra el real.
+    if (!this.estado.idPrevisto) this.estado.idPrevisto = SRP.util.generarId();
+    const id = this.estado.editando ? this.estado.editando.id : this.estado.idPrevisto;
+
     const v = this.valores();
     const esp = SRP.ref.especieDe(v);
+    const esc = SRP.util.escapar;
+
+    // La ubicación no se teclea: se corrige volviendo a colocar el punto en el mapa.
     const filas = [
-      ['Ubicación', v.lat.toFixed(6) + ', ' + v.lng.toFixed(6)],
-      ['Alcaldía', SRP.ref.territorio(v.alcaldia)],
-      ['Colonia', SRP.ref.territorio(v.colonia)],
-      ['Especie', esp.comun + (esp.cientifico ? ' (' + esp.cientifico + ')' : '')],
-      ['Programa', SRP.ref.nombreCatalogo(v.programa_id)],
-      ['Fecha de plantación', SRP.util.formatearFecha(v.fecha_plantacion)],
-      ['Registrador', this.el('campo-registrador').value],
-      ['Fotografía', v.foto_base64 ? 'Sí' : 'Sin fotografía']
+      ['Identificador', '<span class="revision-id">' + esc(id) + '</span>', null],
+      ['Especie', esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : ''), 'especie'],
+      ['Programa', esc(SRP.ref.nombreCatalogo(v.programa_id)), 'programa'],
+      ['Fecha de plantación', esc(SRP.util.formatearFecha(v.fecha_plantacion)), 'fecha'],
+      ['Alcaldía', esc(SRP.ref.territorio(v.alcaldia)), 'punto'],
+      ['Colonia', esc(SRP.ref.territorio(v.colonia)), 'punto'],
+      ['Coordenadas', v.lat.toFixed(6) + ', ' + v.lng.toFixed(6), 'punto'],
+      ['Registrador', esc(this.el('campo-registrador').value), null],
+      ['Fotografía', v.foto_base64 ? 'Incluida' : 'Sin fotografía', 'foto']
     ];
-    this.el('dlg-resumen-cuerpo').innerHTML = '<dl class="detalle">' + filas.map(([k, x]) =>
-      '<div><dt>' + k + '</dt><dd>' + SRP.util.escapar(x) + '</dd></div>').join('') + '</dl>';
+
+    this.el('revision-lista').innerHTML = filas.map(([etiqueta, valor, campo]) => {
+      const boton = campo
+        ? '<button type="button" class="btn btn-editar btn-chico btn-icono" data-campo="' + campo + '" ' +
+          'aria-label="Corregir ' + etiqueta.toLowerCase() + '" title="Corregir ' + etiqueta.toLowerCase() + '">' +
+          SRP.ICONOS.svg('lapiz', 16) + '</button>'
+        : '<span></span>';
+      return '<div class="revision-fila"><dt>' + etiqueta + '</dt><dd>' + valor + '</dd>' + boton + '</div>';
+    }).join('') +
+      '<p class="revision-nota">El identificador lo asigna el sistema y no se modifica. ' +
+      'La ubicación, la alcaldía y la colonia se corrigen volviendo a colocar el punto en el mapa.</p>';
+
+    const foto = this.el('revision-foto');
+    foto.hidden = !v.foto_base64;
+    if (v.foto_base64) foto.src = v.foto_base64; else foto.removeAttribute('src');
+
     this.el('dlg-resumen').showModal();
+    this.dibujarMapaRevision(v.lat, v.lng);
+  },
+
+  // Mapa de sólo lectura con el punto: confirma de un vistazo que está donde debe.
+  // Se destruye al cerrar para no dejar un mapa vivo en un diálogo oculto.
+  dibujarMapaRevision(lat, lng) {
+    if (typeof L === 'undefined') return;
+    const c = SRP.CONFIG.MAPA;
+    const m = L.map('revision-mapa', {
+      center: [lat, lng], zoom: c.ZOOM_PUNTO, zoomControl: false, attributionControl: false,
+      dragging: false, scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false, keyboard: false
+    });
+    c.CAPAS.forEach(capa => L.tileLayer(capa.url, { maxZoom: c.ZOOM_MAX }).addTo(m));
+    L.marker([lat, lng], { icon: SRP.mapa.icono, interactive: false }).addTo(m);
+    this.mapaRevision = m;
+    setTimeout(() => m.invalidateSize(), 60);
+  },
+
+  // Cierra la ficha y lleva a donde se corrige ese dato
+  corregirCampo(campo) {
+    this.el('dlg-resumen').close();
+    if (campo === 'punto') {
+      SRP.mapa.estado('Vuelva a colocar el punto: toque el mapa o arrastre el marcador.');
+      this.el('mapa').scrollIntoView({ block: 'center' });
+      const ctrl = document.querySelector('.ctrl-ubicacion');
+      if (ctrl) ctrl.focus();
+      return;
+    }
+    if (campo === 'foto') { this.el('etq-foto').scrollIntoView({ block: 'center' }); this.el('foto-archivo').click(); return; }
+    const destino = { especie: 'campo-especie', programa: 'campo-programa', fecha: 'campo-fecha' }[campo];
+    if (!destino) return;
+    const el = this.el(destino);
+    el.scrollIntoView({ block: 'center' });
+    el.focus();
+    if (destino === 'campo-especie') el.select();
   },
 
   /* ---------- Guardar ---------- */
@@ -240,7 +313,7 @@ SRP.formulario = {
         SRP.app.mostrarVista('registros');
       } else {
         const nuevo = Object.assign({
-          id: SRP.util.generarId(), es_ficticio: SRP.CONFIG.ES_FICTICIO, estatus: 'activo',
+          id: this.estado.idPrevisto, es_ficticio: SRP.CONFIG.ES_FICTICIO, estatus: 'activo',
           registrador_id: u.id, lat_original: v.lat, lng_original: v.lng,
           fecha_registro: ahora, fecha_ultima_edicion: null, editado_por_id: null
         }, v);
@@ -261,17 +334,18 @@ SRP.formulario = {
   // explícitamente en vez de dejar el formulario a medio limpiar sin decir nada.
   mostrarGuardado(registro) {
     const esp = SRP.ref.especieDe(registro);
-    this.el('panel-guardado-detalle').textContent = esp.comun + ', ' +
+    this.el('dlg-guardado-titulo').innerHTML = SRP.ICONOS.svg('palomita', 22) + '<span>Registro guardado</span>';
+    this.el('dlg-guardado-detalle').textContent = esp.comun + ', ' +
       SRP.ref.territorio(registro.colonia) + ', ' + SRP.util.formatearFecha(registro.fecha_plantacion) + '.';
-    this.el('form-plantacion').hidden = true;
-    this.el('panel-guardado').hidden = false;
-    this.el('panel-guardado').focus();
+    this.el('dlg-guardado-id').textContent = 'Identificador: ' + registro.id;
+    this.el('dlg-guardado').showModal();
+    this.el('btn-registro-nuevo').focus();
   },
 
   // Conserva programa, fecha y ubicación: los árboles de una jornada comparten los tres
   nuevoRegistro() {
-    this.el('panel-guardado').hidden = true;
-    this.el('form-plantacion').hidden = false;
+    this.el('dlg-guardado').close();
+    this.estado.idPrevisto = null;          // cada registro estrena identificador
     this.el('campo-especie').value = '';
     this.estado.especieId = null;
     this.mostrarOtra(false);
@@ -303,6 +377,7 @@ SRP.formulario = {
 
   limpiar() {
     this.estado.editando = null;
+    this.estado.idPrevisto = null;
     this.el('titulo-registrar').textContent = 'Nuevo registro';
     this.el('edicion-aviso').hidden = true;
     this.el('btn-cancelar-edicion').hidden = true;

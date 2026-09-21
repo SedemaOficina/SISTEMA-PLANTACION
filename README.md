@@ -57,6 +57,11 @@ propia dirección, así que la versión se escribe en un solo lugar.
 Si aun así alguien cae en una mezcla, el sistema lo detecta al abrir y explica en pantalla cómo
 forzar la recarga, en vez de quedarse en blanco.
 
+## Mapa
+La capa base es imagen de satélite de Esri, con los nombres de vías y lugares encima. Las tres
+capas se declaran en `CAPAS`, dentro de `js/config.js`; cambiar de proveedor es cambiar esa lista.
+La atribución se muestra en el mapa porque la licencia lo exige.
+
 ## Datos
 Todo vive en el navegador de cada dispositivo (IndexedDB). Borrar los datos del navegador borra
 los registros. En Fase 1 no hay respaldo ni envío a servidor.

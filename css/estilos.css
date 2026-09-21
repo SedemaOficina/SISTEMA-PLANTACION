@@ -13,10 +13,16 @@
   --fondo-suave: #F7F1F3;
   --borde-control: #767679;    /* contorno de controles: ≥3:1 sobre blanco */
   --borde-suave: #E3DCDF;
-  --error: #A33A00;            /* distinto del guinda: el color de la casa no significa error */
-  --error-fondo: #FFF3EC;
+  /* Colores por significado (Norma 8.4). Entre ellos hay ~1.1:1 de contraste, así que el color
+     nunca va solo: cada acción lleva su icono y su palabra.
+     Guinda: acción de la casa, sin carga (entrar, dar de alta, generar).
+     Verde: guardar y confirmar.  Rojo: eliminar y error.  Dorado oscuro: corregir y editar. */
+  --error: #B3261E;
+  --error-fondo: #FDECEA;
   --exito: #1F6B3E;
   --exito-fondo: #EEF7F1;
+  --editar: #7E5F30;           /* el dorado institucional oscurecido hasta cumplir contraste */
+  --editar-fondo: #F7F2EA;
   --foco: #1A5FB4;
 
   --fuente-titulo: 'Cabin', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
@@ -90,7 +96,12 @@ main:focus { outline: none; }
 .btn-secundario { background: var(--fondo); color: var(--guinda); border-color: var(--guinda); }
 .btn-texto { background: none; color: var(--guinda); text-decoration: underline; padding: 0 var(--e-2); }
 .btn-peligro { background: var(--error); color: var(--fondo); }
+.btn-exito { background: var(--exito); color: var(--fondo); }
+.btn-editar { background: var(--fondo); color: var(--editar); border-color: var(--editar); }
+/* Botón sólo de icono: la etiqueta la lleva aria-label, y el título dice a qué campo se refiere */
+.btn-icono { min-width: var(--toque); padding: 0 var(--e-2); }
 .btn-chico { min-height: 40px; padding: 0 var(--e-3); font-size: var(--t-s); }
+.btn-ancho { width: 100%; }
 
 .campo { margin-bottom: var(--e-4); border: 0; padding: 0; min-width: 0; }
 .campo label, .campo legend { display: block; font-weight: 500; margin-bottom: var(--e-1); }
@@ -134,9 +145,10 @@ main:focus { outline: none; }
 
 .franja-edicion { background: var(--fondo-suave); border-left: 4px solid var(--guinda); padding: var(--e-3) var(--e-4); }
 
-.panel-guardado { border: 1px solid var(--exito); border-left: 6px solid var(--exito); border-radius: var(--radio); background: var(--exito-fondo); padding: var(--e-4); }
-.panel-guardado h2 { color: var(--exito); }
-.panel-guardado:focus { outline: none; }
+/* El aviso de guardado es un modal: aparece sobre el formulario y obliga a decidir qué sigue,
+   registrar otro árbol o ir al listado, que es lo que se hace en campo. */
+#dlg-guardado { border-top-color: var(--exito); }
+.titulo-exito { color: var(--exito); display: flex; align-items: center; gap: var(--e-2); }
 
 .aviso-simulado { margin: var(--e-3) 0 0; padding: var(--e-2) var(--e-3); border-left: 4px solid var(--error); background: var(--error-fondo); color: var(--error); font-size: var(--t-s); }
 
@@ -155,6 +167,7 @@ main:focus { outline: none; }
 .chip { min-height: 40px; padding: 0 var(--e-3); border: 1px solid var(--borde-control); border-radius: 20px; background: var(--fondo); color: var(--texto); cursor: pointer; }
 
 .filtros { border-bottom: 1px solid var(--borde-suave); padding-bottom: var(--e-4); }
+.filtros-mas summary { min-height: var(--toque); display: flex; align-items: center; color: var(--guinda); cursor: pointer; }
 
 .lista-registros { list-style: none; margin: 0; padding: 0; }
 .registro { display: flex; justify-content: space-between; gap: var(--e-3); padding: var(--e-3) 0; border-bottom: 1px solid var(--borde-suave); }
@@ -173,6 +186,16 @@ main:focus { outline: none; }
 .tabla-acciones { display: flex; flex-wrap: wrap; gap: var(--e-1); }
 
 .estado-texto { font-size: var(--t-xs); font-weight: 500; }
+
+/* Ficha de revisión previa: cada dato con su botón de corregir */
+.revision-mapa { height: 190px; border: 1px solid var(--borde-control); border-radius: var(--radio); margin-bottom: var(--e-3); }
+.revision-foto { display: block; max-height: 11rem; border-radius: var(--radio); margin: 0 auto var(--e-3); }
+.revision-lista { margin: 0 0 var(--e-4); }
+.revision-fila { display: grid; grid-template-columns: 8.5rem 1fr auto; gap: var(--e-2); align-items: center; padding: var(--e-2) 0; border-bottom: 1px solid var(--borde-suave); }
+.revision-fila dt { color: var(--gris); font-size: var(--t-s); }
+.revision-fila dd { margin: 0; overflow-wrap: anywhere; }
+.revision-id { font-family: ui-monospace, 'Courier New', monospace; font-size: var(--t-xs); }
+.revision-nota { color: var(--gris); font-size: var(--t-xs); margin: 0; }
 
 .detalle { margin: 0 0 var(--e-4); }
 .detalle div { display: grid; grid-template-columns: 9rem 1fr; gap: var(--e-2); padding: var(--e-1) 0; border-bottom: 1px solid var(--borde-suave); }
@@ -210,6 +233,12 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
   .campo-doble { grid-template-columns: 1fr; }
   .campo-doble-fijo { grid-template-columns: 1fr 1fr; }
   .detalle div { grid-template-columns: 1fr; gap: 0; }
+  .revision-fila { grid-template-columns: 1fr auto; }
+  .revision-fila dt { grid-column: 1 / -1; }
+  /* En teléfono los botones van en fila bajo los datos: apilados a la derecha triplicaban
+     el alto de cada registro y obligaban a desplazarse para ver tres árboles. */
+  .registro { flex-direction: column; gap: var(--e-2); }
+  .registro-acciones { flex-direction: row; flex-wrap: wrap; }
   .tabla thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .tabla tr { display: block; border: 1px solid var(--borde-suave); border-radius: var(--radio); margin-bottom: var(--e-3); }
   .tabla td { display: grid; grid-template-columns: 6.5rem 1fr; gap: var(--e-2); }

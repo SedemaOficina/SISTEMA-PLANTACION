@@ -68,7 +68,8 @@ SRP.catalogos = {
     const filas = items.map(c => {
       const uso = this.uso[c.id] || 0;
       const eliminar = uso === 0
-        ? '<button type="button" class="btn btn-texto btn-chico" data-accion="eliminar" data-id="' + c.id + '">Eliminar</button>'
+        ? '<button type="button" class="btn btn-peligro btn-chico" data-accion="eliminar" data-id="' + c.id + '">' +
+          SRP.ICONOS.svg('basura', 16) + '<span>Eliminar</span></button>'
         : '';
       // data-etiqueta: en teléfono cada renglón se muestra como ficha con su etiqueta
       return '<tr><td data-etiqueta="Nombre">' + esc(c.nombre) + '</td>' +
@@ -77,7 +78,8 @@ SRP.catalogos = {
         '<td data-etiqueta="Estado"><span class="estado-texto" data-activo="' + c.activo + '">' + (c.activo ? 'Activo' : 'Inactivo') + '</span></td>' +
         '<td data-etiqueta="Uso">' + uso + ' ' + unidad(uso) + '</td>' +
         '<td data-etiqueta="Acciones"><div class="tabla-acciones">' +
-        '<button type="button" class="btn btn-secundario btn-chico" data-accion="editar" data-id="' + c.id + '">Editar</button>' +
+        '<button type="button" class="btn btn-editar btn-chico" data-accion="editar" data-id="' + c.id + '">' +
+        SRP.ICONOS.svg('lapiz', 16) + '<span>Editar</span></button>' +
         '<button type="button" class="btn btn-secundario btn-chico" data-accion="estado" data-id="' + c.id + '">' + (c.activo ? 'Desactivar' : 'Activar') + '</button>' +
         eliminar + '</div></td></tr>';
     }).join('');
@@ -173,7 +175,7 @@ SRP.catalogos = {
   async cambiarEstado(item) {
     const activar = !item.activo;
     if (!activar) {
-      const ok = await SRP.app.confirmar('¿Desactivar «' + item.nombre + '»? Dejará de ofrecerse en los formularios; los registros que ya lo usan no cambian.', 'Desactivar');
+      const ok = await SRP.app.confirmar('¿Desactivar «' + item.nombre + '»? Dejará de ofrecerse en los formularios; los registros que ya lo usan no cambian.', 'Desactivar', 'palomita');
       if (!ok) return;
     }
     const nuevo = Object.assign({}, item, { activo: activar, editado_por_id: SRP.sesion.usuario.id, fecha_ultima_edicion: SRP.util.ahoraISO() });

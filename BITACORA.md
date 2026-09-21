@@ -98,3 +98,43 @@ sirve».
 **Verificación:** recorrido automatizado de 79 comprobaciones, sin errores de consola, incluidas
 dos nuevas: que todos los archivos propios lleven marca y que la versión del pie salga de ella.
 Se probó además el caso de versión mezclada, forzándolo, y muestra el aviso.
+
+## Bloque 6 — Mapa de satélite, fotografía y lenguaje de los botones (21-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.4.0.
+
+**Peticiones de Liber:** (1) capa base de satélite con las calles visibles, sin otra capa; (2) un
+solo botón de fotografía que despliegue el menú del teléfono, como en la imagen que envió; (3) la
+ficha de revisión con botón para corregir cada dato, vista del mapa con el punto y la fotografía,
+más el identificador, que no se edita, y con la ubicación corregible sólo volviendo a colocar el
+punto; (4) el aviso de guardado como modal que sustituye a la ficha; (5) botones con carga
+psicológica: guardar en verde con palomita, eliminar en rojo con bote de basura, corregir en otro
+color con lápiz.
+
+**Qué se construyó:** imagen de satélite de Esri con los nombres de vías y lugares encima, con su
+atribución; un solo selector de fotografía sin `capture`, de modo que el teléfono ofrece su menú
+nativo, y el botón cambia de «Agregar» a «Cambiar fotografía» según haya foto; ficha de revisión
+con mapa de sólo lectura, fotografía, identificador y un botón de corregir por dato, que cierra la
+ficha y deja el foco donde se corrige; aviso de guardado como modal con los dos caminos;
+paleta por significado con icono y palabra en cada acción.
+
+**Medición de color (Norma 8.4):** verde 6.50:1, rojo 6.54:1 y dorado oscuro 5.89:1 sobre blanco,
+todos por encima del mínimo. Entre sí, en cambio, hay 1.01 a 1.30:1: en luminancia son casi el
+mismo color, así que quien no distingue el tono depende del icono y del texto. Por eso ninguna
+acción va sólo con color. El rojo de error se unificó con el de eliminar (#B3261E).
+
+**Eliminado y por qué:** la capa de OpenStreetMap y `MOSAICOS_URL`, sustituidas por `CAPAS`; los
+dos botones de fotografía y sus dos selectores; el panel de guardado en línea, ahora modal; la
+clase `.btn-editar-solido`, que quedó sin uso.
+
+**Defecto encontrado y corregido durante la prueba:** el mapa de la ficha de revisión seguía vivo
+al cerrarla, y su marcador se contaba junto con el del mapa principal.
+
+**Ajuste de la misma pasada:** en el teléfono, los botones de cada registro pasaron de una columna
+a la derecha a una fila debajo, y el rango de fechas se plegó en «Más filtros»: entre ambas cosas,
+los registros vuelven a caber en la primera pantalla.
+
+**Verificación:** sintaxis de todos los .js; recorrido automatizado de 99 comprobaciones, sin
+errores de consola; auditorías de estilos, código sin uso, identificadores y textos, limpias.
+
+**No verificado aquí:** que las teselas de satélite carguen. La red de esta sesión bloquea el
+dominio del proveedor; se comprueba al abrir el sitio desde el teléfono.
