@@ -339,3 +339,57 @@ escala de énfasis, los campos del punto, la fecha sin valor y el formulario en 
 enumera el estado entero y falla nombrando qué quedó sucio, no comprobando campo por campo—; 37 de
 auditoría, dos de ellas la comparación del mapeo contra la realidad; la revisión de presentación en
 ocho combinaciones de ancho y zoom; y las dos pruebas de migración de datos y base anteriores.
+
+---
+
+## Bloque 13 — De dónde salió la coordenada, y cómo se llama la cifra
+
+Este bloque no nació de un defecto sino de una conversación sobre la meta del programa: 500 mil
+árboles a 2030, con una fotografía que es opcional y que, según la operación real, la mayoría de
+los registros no va a llevar.
+
+**Si la fotografía no es la prueba, la coordenada lo es.** Y hasta ahora el sistema trataba todas
+las coordenadas por igual. Guardaba `lat` y `lng`, pero tiraba dos datos que ya tenía en la mano:
+
+- **La precisión del GPS.** El aparato la devuelve en cada lectura y el sistema la mostraba en
+  pantalla —«precisión ±112 m»— sin guardarla. Un punto con ±8 m y uno con ±500 m quedaban
+  idénticos en la base, y no lo son: el segundo puede estar a cinco cuadras del árbol.
+- **De dónde salió el punto.** Hay cuatro caminos —el botón de GPS, tocar el mapa, teclear
+  coordenadas y arrastrar el pin— y el registro no distinguía ninguno. No es lo mismo un punto
+  tomado con el aparato junto al árbol que uno colocado desde una oficina tres días después.
+
+Ahora se guardan `punto_origen` y `gps_precision_m`, y se ven en la pantalla de captura, en la
+ficha de revisión y en el detalle. Son datos que sólo existen en el instante de la captura: si no
+se escriben entonces, no se reconstruyen nunca.
+
+**La regla que los sostiene:** la precisión se guarda **si y sólo si** el origen es `gps`. Al
+mover el punto a mano, el margen del aparato deja de describirlo y se borra, en vez de quedarse
+junto a una coordenada nueva insinuando una exactitud que ya no tiene. La auditoría comprueba esa
+equivalencia en cada corrida, en los cuatro orígenes.
+
+**Cómo se llama la cifra.** Operativamente no se alcanzará a registrar todo lo que se plante, así
+que el número del sistema y el número del programa van a diferir, y la diferencia será grande. El
+reporte ahora se titula «Reporte de árboles registrados», su total dice «árboles registrados» y
+lleva al pie una línea que lo delimita: la cifra corresponde a lo registrado dentro del filtro y no
+equivale al total plantado. Es una etiqueta que no cuesta nada y protege a quien firme el documento.
+
+**Calidad de la ubicación en el reporte.** El PDF informa qué proporción de los registros se ubicó
+con GPS. Una columna por renglón habría abultado la tabla; una cifra al pie dice lo mismo y se
+compara entre periodos.
+
+**La auditoría del mapeo se ganó el sueldo.** Al agregar los dos campos, la comprobación que
+compara `MAPEO-CAMPOS.md` contra lo que el sistema guarda de verdad falló nombrándolos, antes de
+que el documento envejeciera en silencio. Para eso se escribió.
+
+**Decisiones y pendientes.** Se registraron las decisiones D33 a D39 y se abrió en `DECISIONES.md`
+una sección de pendientes para antes de montar en los servidores del SIA: el módulo `plantacion`
+antecesor y sus claves de especies, la salida de la fotografía a archivo, el disco que habrá que
+pedirle a ADIP según la proporción que suba foto, colonia contra unidad territorial, los límites de
+nginx, el contexto seguro que exige la geolocalización, y el estado de difusión pública del sitio.
+Más tres decisiones de programa: qué cuenta como plantado, cómo se evita el doble conteo y si la
+fotografía es por árbol o por jornada.
+
+**Verificación:** 140 comprobaciones del recorrido, seis de ellas nuevas sobre los cuatro orígenes
+del punto y la regla de la precisión; 39 de auditoría, dos nuevas sobre el origen y la
+equivalencia; la revisión de presentación en ocho combinaciones de ancho y zoom; y las dos pruebas
+de migración. Se revisó además el PDF generado, renglón por renglón.

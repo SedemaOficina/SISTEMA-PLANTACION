@@ -102,6 +102,7 @@ SRP.formulario = {
      vuelven al guion, porque un dato viejo junto a un punto nuevo es peor que ninguno. */
   mostrarPunto(lat, lng, t) {
     this.el('dato-coordenadas').textContent = (t && lat !== null) ? lat.toFixed(6) + ', ' + lng.toFixed(6) : '—';
+    this.el('dato-origen').textContent = t ? SRP.mapa.textoOrigen(SRP.mapa.origen, SRP.mapa.precision) : '—';
     this.el('dato-alcaldia').textContent = t ? SRP.ref.territorio(t.alcaldia) : '—';
     this.el('dato-colonia').textContent = t ? SRP.ref.territorio(t.colonia) : '—';
   },
@@ -113,7 +114,7 @@ SRP.formulario = {
       SRP.mapa.estado('Escriba latitud y longitud en grados decimales, por ejemplo 19.4326 y -99.1332.', 'alerta');
       return;
     }
-    SRP.mapa.colocar(lat, lng, 'Punto capturado a mano.', true);
+    SRP.mapa.colocar(lat, lng, 'Punto capturado a mano.', { origen: 'manual', centrar: true });
   },
 
   /* ---------- Autocompletado de especie ---------- */
@@ -251,6 +252,7 @@ SRP.formulario = {
     const otra = this.estado.especieId === this.OTRA;
     return {
       lat: SRP.mapa.lat, lng: SRP.mapa.lng,
+      punto_origen: SRP.mapa.origen, gps_precision_m: SRP.mapa.precision,
       alcaldia: this.estado.territorio.alcaldia, colonia: this.estado.territorio.colonia,
       uga: this.estado.territorio.uga, capa_version: this.estado.territorio.capa_version,
       especie_id: otra ? null : this.estado.especieId,
@@ -284,6 +286,7 @@ SRP.formulario = {
       ['Alcaldía', esc(SRP.ref.territorio(v.alcaldia)), null],
       ['Colonia', esc(SRP.ref.territorio(v.colonia)), null],
       ['Coordenadas', v.lat.toFixed(6) + ', ' + v.lng.toFixed(6), 'punto'],
+      ['Cómo se obtuvo', esc(SRP.mapa.textoOrigen(v.punto_origen, v.gps_precision_m)), null],
       ['Cabo', esc(this.nombreCabo()), null],
       ['Fotografía', v.foto_base64
         ? '<img class="revision-foto" src="' + v.foto_base64 + '" alt="Fotografía del árbol que se va a registrar">'
@@ -345,7 +348,7 @@ SRP.formulario = {
     try {
       if (this.estado.editando) {
         const previo = this.estado.editando;
-        const cambiados = ['lat', 'lng', 'especie_id', 'especie_otra', 'programa_id', 'fecha_plantacion', 'foto_id']
+        const cambiados = ['lat', 'lng', 'punto_origen', 'especie_id', 'especie_otra', 'programa_id', 'fecha_plantacion', 'foto_id']
           .filter(k => (previo[k] || null) !== (v[k] || null));
         const nuevo = Object.assign({}, previo, v, { fecha_ultima_edicion: ahora, editado_por_id: u.id });
         await SRP.almacen.guardarConBitacora('plantaciones', nuevo,
@@ -413,7 +416,10 @@ SRP.formulario = {
     else this.elegirEspecie(this.OTRA, registro.especie_otra);
     this.ponerFoto(registro.foto_base64, registro.foto_id, registro.foto_nombre, registro.foto_bytes);
     SRP.app.mostrarVista('registrar');
-    SRP.mapa.colocar(registro.lat, registro.lng, 'Ubicación registrada.', true);
+    // Al editar se restituye el origen que quedó guardado: abrir un registro no lo convierte
+    // en un punto señalado a mano.
+    SRP.mapa.colocar(registro.lat, registro.lng, 'Ubicación registrada.',
+      { origen: registro.punto_origen, precision: registro.gps_precision_m, centrar: true });
   },
 
   /* Deja la pantalla como recién abierta. Ni un campo conserva el valor anterior: ni la fecha

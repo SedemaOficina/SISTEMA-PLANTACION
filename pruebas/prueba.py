@@ -3,6 +3,7 @@ from playwright.sync_api import sync_playwright
 import os
 BASE='http://127.0.0.1:8099/'
 HOY='2026-09-21'
+SRP_GPS='GPS del dispositivo'
 errores=[]; res=[]
 def ok(c,m): res.append(('OK ' if c else 'FALLA ')+m)
 
@@ -32,7 +33,7 @@ with sync_playwright() as p:
 
     # ---------- ACCESO ----------
     ok(pg.is_visible('#vista-acceso'),'la pantalla de acceso abre primero')
-    ok('0.5.4' in pg.inner_text('#version'),'la versión sale de la marca del archivo: '+pg.inner_text('#version'))
+    ok('0.5.5' in pg.inner_text('#version'),'la versión sale de la marca del archivo: '+pg.inner_text('#version'))
     sinmarca=pg.evaluate("""() => [...document.querySelectorAll('script[src],link[rel=stylesheet][href]')]
         .map(e=>e.src||e.href).filter(u=>u.includes('127.0.0.1')&&!u.includes('?v=')).length""")
     ok(sinmarca==0,'todos los archivos propios llevan marca de versión')
@@ -98,9 +99,9 @@ with sync_playwright() as p:
     ok(pg.locator('.ficha-datos').count()==0,'bajo el mapa ya no cuelga el recuadro de datos')
     ok(pg.inner_text('#dato-coordenadas')=='—' and pg.inner_text('#dato-alcaldia')=='—',
        'sin punto, los campos del punto están en blanco')
-    ok(pg.locator('#campo-punto-x').count()==0 and pg.locator('.campo-punto .campo-lectura').count()==3,
-       'coordenadas, alcaldía y colonia son tres campos de sólo lectura')
-    ok(pg.evaluate("['dato-coordenadas','dato-alcaldia','dato-colonia'].every(i=>document.querySelector('label[for='+i+']'))"),
+    ok(pg.locator('.campo-punto .campo-lectura').count()==4,
+       'coordenadas, origen, alcaldía y colonia son cuatro campos de sólo lectura')
+    ok(pg.evaluate("['dato-coordenadas','dato-origen','dato-alcaldia','dato-colonia'].every(i=>document.querySelector('label[for='+i+']'))"),
        'y cada uno lleva su etiqueta, como cualquier campo')
 
     pg.click('#btn-ubicacion'); pg.wait_for_timeout(800)
@@ -118,6 +119,37 @@ with sync_playwright() as p:
     ok('btn-editar' in corr['clase'] and corr['color']==corr['editar'],
        'y toma el dorado de corregir: '+corr['color'])
     ok(corr['icono'],'con el lápiz, porque el color nunca va solo')
+
+    # DE DÓNDE SALIÓ EL PUNTO. Sin fotografía obligatoria, la coordenada es la prueba, y no
+    # todas valen lo mismo. Se comprueba en los cuatro caminos por los que se puede colocar.
+    ok(SRP_GPS in pg.inner_text('#dato-origen') and '±' in pg.inner_text('#dato-origen'),
+       'el punto del GPS se guarda como tal, con su precisión: '+pg.inner_text('#dato-origen'))
+    ok(pg.evaluate("SRP.mapa.origen")=='gps' and isinstance(pg.evaluate("SRP.mapa.precision"), int),
+       'y la precisión queda en número, no sólo en el mensaje de pantalla')
+
+    # Al capturar a mano, el margen del aparato deja de describir el punto y se borra
+    pg.click('.coord-manual summary'); pg.wait_for_timeout(200)
+    ok(pg.is_visible('#coord-lat'),'el desplegable de captura manual abre al pulsarlo')
+    pg.fill('#coord-lat','19.4400'); pg.fill('#coord-lng','-99.1400')
+    pg.click('#btn-coord-aplicar'); pg.wait_for_timeout(500)
+    ok(pg.evaluate("SRP.mapa.origen")=='manual' and pg.evaluate("SRP.mapa.precision") is None,
+       'un punto capturado a mano no hereda la precisión del GPS')
+    ok('mano' in pg.inner_text('#dato-origen'),'y lo dice en pantalla: '+pg.inner_text('#dato-origen'))
+
+    # La regla que sostiene el dato: sólo el GPS tiene precisión, pase lo que pase
+    invariante=pg.evaluate("""() => {
+      const casos = [['gps', 12], ['mapa', 12], ['manual', 12], ['ajustado', 12]];
+      const antes = { lat: SRP.mapa.lat, lng: SRP.mapa.lng, origen: SRP.mapa.origen, precision: SRP.mapa.precision };
+      const malos = casos.filter(([origen, precision]) => {
+        SRP.mapa.colocar(19.4326, -99.1332, 'prueba', { origen, precision });
+        return (SRP.mapa.precision !== null) !== (origen === 'gps');
+      }).map(c => c[0]);
+      SRP.mapa.colocar(antes.lat, antes.lng, 'prueba', { origen: antes.origen, precision: antes.precision });
+      return malos;
+    }""")
+    ok(invariante==[],'la precisión existe si y sólo si el punto vino del GPS; falla en '+str(invariante))
+
+    pg.click('#btn-ubicacion'); pg.wait_for_timeout(800)   # se deja en GPS para lo que sigue
 
     # La fecha no se hereda ni se supone: se elige a propósito
     ok(pg.input_value('#campo-fecha')=='','la fecha de plantación arranca sin valor')

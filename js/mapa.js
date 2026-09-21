@@ -6,6 +6,30 @@ window.SRP = window.SRP || {};
 
 SRP.mapa = {
   mapa: null, marcador: null, lat: null, lng: null, alCambiar: null,
+  origen: null, precision: null,
+
+  /* DE DÓNDE SALIÓ EL PUNTO.
+     Cuando la fotografía es opcional —y en campo la mayoría de los registros no va a
+     llevarla—, la coordenada carga con el peso de la prueba. Y no todas las coordenadas
+     valen lo mismo: una tomada con el aparato en la mano junto al árbol no es lo mismo que
+     una señalada en el mapa desde una oficina tres días después. El sistema ya sabe cuál de
+     las cuatro fue; lo que faltaba era guardarlo. Es un dato que sólo existe en el instante
+     de la captura: si no se escribe entonces, no se reconstruye nunca. */
+  ORIGENES: {
+    gps:      'GPS del dispositivo',
+    mapa:     'Señalado en el mapa',
+    manual:   'Capturado a mano',
+    ajustado: 'Ajustado arrastrando el pin'
+  },
+
+  /* La precisión acompaña al origen y sólo tiene sentido con él: se guarda únicamente
+     cuando el punto viene del GPS, así que nunca puede leerse como el margen de error de un
+     punto que en realidad se señaló con el dedo. La auditoría comprueba esa regla. */
+  textoOrigen(origen, precision) {
+    const etiqueta = SRP.mapa.ORIGENES[origen];
+    if (!etiqueta) return 'No registrado';
+    return etiqueta + (origen === 'gps' && precision != null ? ' (±' + Math.round(precision) + ' m)' : '');
+  },
 
   // Icono propio e incrustado: el de Leaflet se descarga de un servidor externo
   ICONO_SVG: '<svg width="24" height="32" viewBox="0 0 36 48" aria-hidden="true">' +
@@ -38,7 +62,7 @@ SRP.mapa = {
     });
     // La punta del pin marca la coordenada exacta: el anclaje va en ella, no en el centro
     this.icono = L.divIcon({ className: 'pin', html: this.ICONO_SVG, iconSize: [24, 32], iconAnchor: [12, 31] });
-    this.mapa.on('click', (e) => this.colocar(e.latlng.lat, e.latlng.lng, 'Punto colocado en el mapa.'));
+    this.mapa.on('click', (e) => this.colocar(e.latlng.lat, e.latlng.lng, 'Punto colocado en el mapa.', { origen: 'mapa' }));
   },
 
   // Mientras se busca la señal, el botón avisa que está trabajando
@@ -76,22 +100,32 @@ SRP.mapa = {
     p.dataset.tipo = tipo || 'normal';
   },
 
-  // Devuelve false si el punto está fuera del ámbito
-  colocar(lat, lng, mensaje, centrar) {
+  /* Coloca el punto y deja constancia de cómo llegó ahí.
+     `op`: { origen, precision, centrar }. El origen es obligatorio en la práctica: sin él el
+     registro no puede decir de dónde salió su coordenada. Devuelve false si cae fuera del ámbito. */
+  colocar(lat, lng, mensaje, op) {
+    op = op || {};
     if (!SRP.derivacion.dentroDelAmbito(lat, lng)) {
       this.estado('El punto está fuera de la Ciudad de México. Ubíquelo dentro del territorio.', 'alerta');
       return false;
     }
     this.lat = Number(lat.toFixed(6));
     this.lng = Number(lng.toFixed(6));
+    this.origen = op.origen || null;
+    // Sólo el GPS tiene precisión. Al mover el punto a mano, el margen del aparato deja de
+    // describirlo, así que se borra en vez de quedarse mintiendo sobre la coordenada nueva.
+    this.precision = op.origen === 'gps' && op.precision != null ? Math.round(op.precision) : null;
     if (this.mapa) {
       if (!this.marcador) {
         this.marcador = L.marker([this.lat, this.lng], { icon: this.icono, draggable: true, keyboard: true, title: 'Ubicación del árbol' }).addTo(this.mapa);
-        this.marcador.on('dragend', () => { const p = this.marcador.getLatLng(); this.colocar(p.lat, p.lng, 'Punto ajustado.'); });
+        this.marcador.on('dragend', () => {
+          const p = this.marcador.getLatLng();
+          this.colocar(p.lat, p.lng, 'Punto ajustado.', { origen: 'ajustado' });
+        });
       } else {
         this.marcador.setLatLng([this.lat, this.lng]);
       }
-      if (centrar) this.mapa.setView([this.lat, this.lng], Math.max(this.mapa.getZoom(), SRP.CONFIG.MAPA.ZOOM_PUNTO));
+      if (op.centrar) this.mapa.setView([this.lat, this.lng], Math.max(this.mapa.getZoom(), SRP.CONFIG.MAPA.ZOOM_PUNTO));
     }
     // Sin la coordenada: la franja dice qué pasó, y el dato vive en su campo del formulario
     this.estado(mensaje);
@@ -111,7 +145,8 @@ SRP.mapa = {
       (pos) => {
         this.marcarBuscando(false);
         this.colocar(pos.coords.latitude, pos.coords.longitude,
-          'Ubicación obtenida (precisión ±' + Math.round(pos.coords.accuracy) + ' m).', true);
+          'Ubicación obtenida (precisión ±' + Math.round(pos.coords.accuracy) + ' m).',
+          { origen: 'gps', precision: pos.coords.accuracy, centrar: true });
       },
       (err) => {
         this.marcarBuscando(false);
@@ -126,6 +161,7 @@ SRP.mapa = {
   limpiar() {
     if (this.marcador) { this.marcador.remove(); this.marcador = null; }
     this.lat = null; this.lng = null;
+    this.origen = null; this.precision = null;
     this.refrescarBotonUbicacion();
   },
 

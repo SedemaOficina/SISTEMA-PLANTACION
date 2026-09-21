@@ -73,7 +73,9 @@ with sync_playwright() as p:
           programaInexistente: ps.filter(p=>!cat[p.programa_id]).map(p=>p.id),
           estatusRaro: [...new Set(ps.map(p=>p.estatus))].filter(e=>!['activo','eliminado'].includes(e)),
           fechaMalFormada: ps.filter(p=>!/^\\d{4}-\\d{2}-\\d{2}$/.test(p.fecha_plantacion)).map(p=>p.id),
-          fueraDeAmbito: ps.filter(p=>!SRP.derivacion.dentroDelAmbito(p.lat,p.lng)).map(p=>p.id)
+          fueraDeAmbito: ps.filter(p=>!SRP.derivacion.dentroDelAmbito(p.lat,p.lng)).map(p=>p.id),
+          sinOrigen: ps.filter(p=>!SRP.mapa.ORIGENES[p.punto_origen]).map(p=>p.id),
+          precisionHuerfana: ps.filter(p=>(p.gps_precision_m!=null)!==(p.punto_origen==='gps')).map(p=>p.id)
         });
       });
     })""")
@@ -87,6 +89,9 @@ with sync_playwright() as p:
     mirar(not r['estatusRaro'], 'los estados son los previstos', str(r['estatusRaro']))
     mirar(not r['fechaMalFormada'], 'las fechas guardadas tienen el formato de siempre', str(r['fechaMalFormada']))
     mirar(not r['fueraDeAmbito'], 'ninguna plantación cae fuera de la ciudad', str(r['fueraDeAmbito']))
+    mirar(not r['sinOrigen'], 'toda plantación dice de dónde salió su coordenada', str(r['sinOrigen']))
+    # Si esta regla se rompe, un punto señalado con el dedo puede leerse como medido con GPS
+    mirar(not r['precisionHuerfana'], 'la precisión aparece si y sólo si el punto vino del GPS', str(r['precisionHuerfana']))
 
     # --- 4. Lo que ve la persona ---
     opciones = pg.eval_on_selector_all('#sel-usuario-prueba option', 'os=>os.map(o=>o.textContent)')

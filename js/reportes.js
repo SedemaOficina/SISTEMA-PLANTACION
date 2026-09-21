@@ -17,7 +17,7 @@ SRP.reportes = {
     doc.addImage(SRP.LOGO_BASE64, 'PNG', 20, 12, 70, 14);
     doc.setDrawColor(...C.guinda); doc.setLineWidth(0.4); doc.line(20, 30, ancho - 20, 30);
     doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(...C.guinda);
-    doc.text('REPORTE DE PLANTACIONES', ancho / 2, 40, { align: 'center' });
+    doc.text('REPORTE DE ÁRBOLES REGISTRADOS', ancho / 2, 40, { align: 'center' });
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(...C.gris);
     doc.text(hoy.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }), ancho / 2, 46, { align: 'center' });
     doc.setTextColor(35, 37, 38);
@@ -46,9 +46,27 @@ SRP.reportes = {
     let y = doc.lastAutoTable.finalY + 8;
     if (y > alto - 40) { doc.addPage(); y = 25; }
     doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...C.guinda);
-    doc.text('Total: ' + registros.length + (registros.length === 1 ? ' registro' : ' registros'), 20, y);
+    doc.text('Total: ' + registros.length + (registros.length === 1 ? ' árbol registrado' : ' árboles registrados'), 20, y);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(35, 37, 38);
     Object.keys(porPrograma).sort().forEach((n, i) => doc.text(n + ': ' + porPrograma[n], 20, y + 6 + i * 5));
+    let yy = y + 6 + Object.keys(porPrograma).length * 5;
+
+    /* CALIDAD DE LA UBICACIÓN.
+       Cuando la fotografía es opcional, la coordenada es la prueba, y quien lea el reporte
+       merece saber de qué clase de coordenada se trata. Una fila por punto abultaría la tabla;
+       una cifra al pie dice lo mismo y se compara de un año a otro. */
+    const conGps = registros.filter(r => r.punto_origen === 'gps').length;
+    if (registros.length) {
+      doc.text('Ubicados con GPS del dispositivo: ' + conGps + ' de ' + registros.length +
+               ' (' + Math.round(conGps * 100 / registros.length) + '%)', 20, yy + 5);
+      yy += 5;
+    }
+
+    /* La cifra del sistema no es la cifra del programa: se registra lo que alcanza a
+       registrarse. Decirlo en el documento protege a quien lo firma. */
+    doc.setFontSize(8); doc.setTextColor(...C.gris);
+    doc.text('Cifra de árboles registrados en el sistema dentro del filtro indicado. No equivale', 20, yy + 7);
+    doc.text('necesariamente al total plantado en el periodo.', 20, yy + 11);
 
     // Pie en todas las páginas
     const paginas = doc.getNumberOfPages();

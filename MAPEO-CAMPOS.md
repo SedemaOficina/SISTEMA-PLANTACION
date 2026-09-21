@@ -31,6 +31,8 @@ Pantalla **Registrar**. Almacén `plantaciones`.
 | — (el encabezado dice quién tiene la sesión) | `cabo_id` | Sí | Sesión | Remite a `usuarios.id`. No es un campo del formulario: se toma de la sesión. Al editar conserva al cabo que capturó, no a quien corrige |
 | Coordenadas (latitud, longitud) | `lat` | Sí | Persona | Del botón de ubicación, de tocar el mapa o de la captura manual. Campo de sólo lectura: se cambia moviendo el punto |
 | Coordenadas (latitud, longitud) | `lng` | Sí | Persona | Ídem. Los dos se muestran juntos en un solo campo |
+| Cómo se obtuvo el punto | `punto_origen` | Sí | Sistema | `gps`, `mapa`, `manual` o `ajustado`. Lo determina la acción con que se colocó el punto, no una elección de quien captura. Campo de sólo lectura |
+| Cómo se obtuvo el punto | `gps_precision_m` | No | Sistema | Margen de error en metros que reporta el aparato. **Existe si y sólo si `punto_origen` es `gps`**: al mover el punto a mano el margen deja de describirlo y se borra, para que nunca pueda leerse como la precisión de una coordenada señalada con el dedo. La auditoría comprueba esta regla |
 | — | `lat_original`, `lng_original` | Sí | Sistema | Dónde quedó el punto la primera vez, antes de cualquier arrastre |
 | Alcaldía | `alcaldia` | No | Capa geográfica | Sale del punto contra `alcaldias_colonias`. Campo de sólo lectura; no se teclea ni se edita |
 | Colonia | `colonia` | No | Capa geográfica | Ídem, también de sólo lectura |
@@ -40,13 +42,19 @@ Pantalla **Registrar**. Almacén `plantaciones`.
 | Especifique la especie | `especie_otra` | Sólo con «Otra especie» | Persona | Texto libre, para lo que no está en el catálogo |
 | Programa | `programa_id` | Sí | Catálogo | Remite a `catalogos.id` con `tipo = programa` |
 | Fecha de plantación | `fecha_plantacion` | Sí | Persona | `AAAA-MM-DD`. Arranca **sin valor**: se elige a propósito en cada registro, nunca se hereda del anterior. No puede ser posterior a hoy. Se muestra como 21-SEP-2026 |
-| Fotografía | `foto_base64` | No | Persona | La imagen ya comprimida, incrustada |
+| Fotografía | `foto_base64` | No | Persona | La imagen ya comprimida, incrustada. [pendiente] En Fase 2 sale del registro y se guarda como archivo, siguiendo la práctica que el SIA ya usa en sus otros módulos |
 | — | `foto_id` | No | Sistema | UUID de la fotografía |
 | — | `foto_nombre` | No | Persona | Nombre del archivo que se eligió |
 | — | `foto_bytes` | No | Sistema | Peso de la imagen **ya comprimida**, no del archivo original |
 | — | `fecha_registro` | Sí | Sistema | Cuándo se guardó |
 | — | `fecha_ultima_edicion` | No | Sistema | Nulo mientras no se edite |
 | — | `editado_por_id` | No | Sistema | Remite a `usuarios.id`. Quién hizo la última edición |
+
+**Por qué se guarda el origen del punto.** La fotografía es opcional y en campo la mayoría de los
+registros no va a llevarla. Eso convierte a la coordenada en la prueba de que el árbol existe, y no
+todas las coordenadas valen lo mismo: una tomada con el aparato junto al árbol no es una señalada
+en el mapa desde una oficina. El sistema siempre supo cuál de las cuatro fue; lo que faltaba era
+escribirlo. Es un dato que sólo existe en el instante de la captura y no se reconstruye después.
 
 **Campos que se muestran pero no se guardan aquí:** el nombre común y el científico de la especie,
 y el nombre del programa, salen del catálogo cada vez que se pintan. Si se corrige un nombre en

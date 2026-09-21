@@ -34,8 +34,31 @@
 | D30 | «Agregar registro nuevo» deja el formulario en blanco: ni especie, ni programa, ni fecha, ni fotografía, ni punto. Revierte a D-anterior, que conservaba programa, fecha y ubicación | Definido por Liber. Lo heredado se guarda sin que nadie lo note, y la coordenada del árbol anterior es el peor caso: se ve bien estando mal. Sólo sobrevive el encuadre del mapa, que no es un dato |
 | D31 | Coordenadas, alcaldía y colonia salen del recuadro bajo el mapa y pasan a ser campos del formulario, de sólo lectura. Bajo el mapa queda únicamente el aviso de lo que ocurrió | Definido por Liber. Son datos del registro y se leen donde están los demás; el recuadro los presentaba como parte del mapa |
 | D32 | Se retira el campo «Estás registrando como» y la nota del asterisco de la pantalla de registro | Definido por Liber: el encabezado ya dice quién tiene la sesión. Lo obligatorio pasa a anunciarse con el atributo `required`, además del asterisco |
+| D33 | Cada registro guarda de dónde salió su coordenada (`punto_origen`: GPS, mapa, manual o ajustado) y, cuando vino del GPS, el margen de error del aparato (`gps_precision_m`) | Definido por Liber: la fotografía es opcional y la mayoría de los registros no la llevará, así que la coordenada carga con la prueba. Una tomada junto al árbol no vale lo mismo que una señalada desde una oficina, y ese dato sólo existe en el instante de la captura |
+| D34 | La precisión se guarda si y sólo si el origen es `gps`; al mover el punto a mano se borra | Un margen de ±8 m junto a una coordenada que después se arrastró describiría algo que ya no existe. La auditoría comprueba la regla en cada corrida |
+| D35 | El sistema llama a su cifra «árboles registrados», nunca «plantados», en pantalla y en el PDF, y el reporte lo dice expresamente | Definido por Liber: operativamente no se alcanzará a registrar todo lo que se plante, así que las dos cifras van a diferir. Nombrarlo protege a quien firme el documento |
+| D36 | El PDF informa qué proporción de los registros se ubicó con GPS | Quien lee el reporte necesita saber de qué clase de coordenada se trata; una fila por punto abultaría la tabla, una cifra al pie se compara entre periodos |
+| D37 | La fotografía es opcional y prioritaria sólo después del registro: si la imagen falla, el registro se conserva y la foto se adjunta después | Definido por Liber. En campo hay señal mala y batería baja; una imagen de 100 KB no puede tumbar un registro de 400 bytes |
+| D38 | El SRP es la fuente del registro individual; el SIA construye encima el visor global, los tableros y la cifra pública, sobre una copia publicada, no sobre la base viva | Una consulta de análisis no puede competir con la captura en campo, que es lo que no puede fallar. Confirmado con la arquitectura del SIA: un esquema y una cuenta de servicio por módulo |
+| D39 | El mapa de puntos de las pantallas de registros (cabo y coordinador) sí es del SRP; el mapa global es del SIA vía GeoServer | Los primeros son herramientas de trabajo sobre volúmenes pequeños; el global necesita agregación en servidor, y el SIA ya publica WMS/WFS/WMTS |
 
 ## Pendientes de decisión
+
+### Para resolver antes de montar en los servidores del SIA
+
+- [pendiente] **El módulo `plantacion` que ya existe.** El backend del SIA tiene un módulo Plantación y `bd_csia` un esquema `plantacion`. Liber confirma que es un antecesor mal construido que el SRP sustituye. Antes de descartarlo hay que revisar **si su catálogo de especies ya tiene claves en uso**, para no estrenar claves distintas para las mismas especies (ver D22–D24)
+- [pendiente] **Dónde viven las fotografías.** Hoy van incrustadas en el registro. Deben salir a archivo, como ya hace el SIA en sus otros módulos. Sin eso, ni el teléfono del cabo ni el volumen del servidor .196 aguantan: quedan ~6 GB libres, que a 100 KB por imagen cubren unos 60 mil archivos
+- [pendiente] **Cuánto disco pedir a ADIP.** Depende de qué proporción suba foto: 10% son ~5 GB, 20% ~10 GB, 30% ~15 GB para la meta de 500 mil. ADIP autoriza con uso real medido, así que **el sistema debe reportar desde el primer mes cuántos registros llevan foto y cuánto pesan**, para que la solicitud sea una proyección con evidencia y no una estimación
+- [pendiente] **Colonia o unidad territorial.** El SRP deriva y guarda *colonia*; el esquema `territorio` del SIA es el marco compartido, con 16 alcaldías y 1,817 unidades territoriales. Si el marco oficial de reporte es la UT, las cifras no amarran. Confirmar cuál es la unidad oficial y, si aplica, derivar las dos
+- [pendiente] **Límites de nginx.** El servidor web tiene configurados límites de velocidad y de tamaño de subida. Con decenas de cuadrillas subiendo fotos a la vez se tocan; conocer el límite antes, no el primer día
+- [pendiente] **HTTPS y geolocalización.** El navegador sólo entrega la posición del GPS en contexto seguro. Hacia el ciudadano hay HTTPS porque ADIP lo termina, pero una prueba por HTTP dentro de la red interna dejará el botón de ubicación sin responder, y parecerá un defecto del sistema
+- [pendiente] **El sitio aún no se declara apto para difusión pública masiva.** Aclarar si montar el SRP ahí cuenta como difusión pública, dado que el personal de campo entra por el dominio público
+
+### Para resolver en el diseño del programa
+
+- [pendiente] **Qué cuenta como plantado.** ¿El árbol puesto en tierra o el árbol vivo a los seis meses? Si se va a reportar supervivencia, hace falta un **registro de seguimiento**: un evento posterior sobre el mismo árbol. Afecta el diseño desde ahora, porque obliga a que el identificador pueda recibir visitas posteriores y no sólo el alta
+- [pendiente] **Cómo se evita el doble conteo**, con dos cuadrillas registrando el mismo árbol o un árbol repuesto contado dos veces
+- [pendiente] **¿Una fotografía por árbol o por jornada?** A una por árbol, la meta de 500 mil son ~50 GB; a una por frente de trabajo (≈1 por cada 30 árboles), ~1.7 GB. Es una decisión de programa, no de sistema, y es la diferencia entre pedir un volumen nuevo a ADIP o caber en lo que ya hay
 
 - [pendiente] ¿El apellido materno debe ser obligatorio? Hoy es opcional: hay personas que no lo tienen
 - [pendiente] ¿Puede una persona editar sus propios datos, o sólo la Administración global?
