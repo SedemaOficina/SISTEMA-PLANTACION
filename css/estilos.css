@@ -13,7 +13,16 @@
   --fondo-suave: #F7F1F3;
   --borde-control: #767679;    /* contorno de controles: ≥3:1 sobre blanco */
   --borde-suave: #E3DCDF;
-  /* Colores por significado (Norma 8.4). Entre ellos hay ~1.1:1 de contraste, así que el color
+  /* ESCALA DE ÉNFASIS. Un control se ve según lo que pesa, no según quién lo escribió.
+     Hay tres niveles y sólo tres, en toda la aplicación:
+       1. Acción principal de la pantalla  → .btn-primario   (guinda relleno; una por bloque)
+       2. Alterna del mismo rango          → .btn-secundario (guinda de contorno)
+       3. Apoyo: desplegar, salir, ampliar → .enlace / .btn-texto / summary (gris subrayado)
+     El guinda queda reservado a los niveles 1 y 2. Si una acción de apoyo se pinta de guinda
+     —como estaba «Capturar coordenadas a mano» bajo el botón de ubicación— las dos parecen
+     lo mismo y la persona no sabe cuál es el camino normal.
+
+     Colores por significado (Norma 8.4). Entre ellos hay ~1.1:1 de contraste, así que el color
      nunca va solo: cada acción lleva su icono y su palabra.
      Guinda: acción de la casa, sin carga (entrar, dar de alta, generar).
      Verde: guardar y confirmar.  Rojo: eliminar y error.  Dorado oscuro: corregir y editar. */
@@ -63,6 +72,9 @@ h1[tabindex="-1"]:focus { outline: none; }
 .encabezado-usuario { display: flex; flex-direction: column; align-items: flex-end; gap: var(--e-1); min-width: 0; text-align: right; }
 /* Salir de la sesión se decide donde se ve de quién es: junto al nombre, no al pie de la página */
 .encabezado-acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--e-2); margin-top: var(--e-1); }
+/* Sin caja que los separe, dos enlaces seguidos se leen como una sola frase: va un punto medio
+   en medio. Si el segundo está oculto no se dibuja, porque cuelga de él. */
+.encabezado-acciones .enlace + .enlace::before { content: '·'; margin-right: var(--e-2); text-decoration: none; display: inline-block; }
 .encabezado-nombre { font-size: var(--t-s); font-weight: 500; overflow-wrap: anywhere; }
 main { padding: var(--e-4); }
 main:focus { outline: none; }
@@ -78,7 +90,9 @@ main:focus { outline: none; }
 
 .banda-ficticio { margin: 0; padding: var(--e-2) var(--e-4); background: var(--gris); color: var(--fondo); font-size: var(--t-xs); text-align: center; }
 
-.insignia { display: inline-block; padding: 0 var(--e-2); border: 1px solid var(--guinda); border-radius: var(--radio-control); color: var(--guinda); font-size: var(--t-xs); font-weight: 500; }
+/* El perfil es una etiqueta, no un control: con contorno guinda se leía igual que un botón
+   secundario y la gente intentaba pulsarlo. Fondo suave y gris, que es lo que es. */
+.insignia { display: inline-block; padding: 0 var(--e-2); border-radius: var(--radio-control); background: var(--fondo-suave); color: var(--gris); font-size: var(--t-xs); font-weight: 500; }
 
 .pestanas { display: flex; border-bottom: 1px solid var(--borde-suave); max-width: var(--ancho-max-tabla); margin: 0 auto; padding: 0 var(--e-4); }
 .pestana {
@@ -105,7 +119,25 @@ main:focus { outline: none; }
 }
 .btn-primario { background: var(--guinda); color: var(--fondo); }
 .btn-secundario { background: var(--fondo); color: var(--guinda); border-color: var(--guinda); }
-.btn-texto { background: none; color: var(--guinda); text-decoration: underline; padding: 0 var(--e-2); }
+/* Nivel 3 de la escala de énfasis: texto clicable, gris y subrayado, sin caja.
+   .btn-texto va dentro de main, donde conserva los 48 px de .btn; .enlace es la misma idea
+   en el encabezado, donde no hay que llenar un renglón de formulario. */
+.btn-texto { background: none; color: var(--gris); text-decoration: underline; text-underline-offset: 3px; padding: 0 var(--e-2); }
+.enlace {
+  background: none; border: 0; padding: 0; min-height: 32px;
+  font: inherit; font-size: var(--t-s); color: var(--gris);
+  text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+}
+/* Un desplegable es nivel 3: guarda lo que se usa de vez en cuando. Mismo gris subrayado que
+   el resto del nivel, más su triángulo, para que no compita con el botón que tiene encima. */
+.desplegable summary { display: flex; align-items: center; gap: var(--e-2); min-height: var(--toque); color: var(--gris); font-size: var(--t-s); cursor: pointer; list-style: none; }
+.desplegable summary::-webkit-details-marker { display: none; }
+.desplegable summary::before {
+  content: ''; flex-shrink: 0; width: 0; height: 0;
+  border-left: 6px solid currentColor; border-top: 5px solid transparent; border-bottom: 5px solid transparent;
+}
+.desplegable summary span { text-decoration: underline; text-underline-offset: 3px; }
+
 .btn-peligro { background: var(--error); color: var(--fondo); }
 .btn-exito { background: var(--exito); color: var(--fondo); }
 .btn-editar { background: var(--fondo); color: var(--editar); border-color: var(--editar); }
@@ -141,14 +173,18 @@ main:focus { outline: none; }
 
 .mapa-bloque { margin-bottom: var(--e-5); }
 .mapa { height: clamp(260px, 45vh, 420px); border: 1px solid var(--borde-control); border-radius: var(--radio) var(--radio) 0 0; background: var(--fondo-suave); }
-.ficha-territorial { border: 1px solid var(--borde-control); border-top: 3px solid var(--guinda); border-radius: 0 0 var(--radio) var(--radio); padding: var(--e-3) var(--e-4); margin-bottom: var(--e-3); }
-.ficha-estado { font-size: var(--t-s); margin-bottom: var(--e-2); }
-.ficha-datos { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-3); margin: 0; }
-.ficha-datos dt { font-size: var(--t-xs); color: var(--gris); }
-.ficha-datos dd { margin: 0; font-family: var(--fuente-titulo); font-weight: 600; overflow-wrap: anywhere; }
+/* Franja pegada al mapa: es su acuse de recibo, no un dato del registro */
+.ficha-estado { border: 1px solid var(--borde-control); border-top: 3px solid var(--guinda); border-radius: 0 0 var(--radio) var(--radio); padding: var(--e-3) var(--e-4); margin: 0; font-size: var(--t-s); }
+/* Campo de sólo lectura: misma caja y misma altura que un campo que sí se escribe, en gris
+   sobre fondo suave, igual que .campo input[readonly]. Que se vea que es respuesta, no pregunta. */
+.campo-punto { margin-top: var(--e-4); }
+.campo-lectura {
+  display: flex; align-items: center; width: 100%; min-height: var(--toque);
+  padding: var(--e-2) var(--e-3); border: 1px solid var(--borde-suave); border-radius: var(--radio-control);
+  background: var(--fondo-suave); color: var(--gris); overflow-wrap: anywhere;
+}
 .pin { background: none; border: 0; }
 .coord-manual { margin-bottom: var(--e-3); }
-.coord-manual summary { min-height: var(--toque); display: flex; align-items: center; color: var(--guinda); cursor: pointer; }
 
 .franja-edicion { background: var(--fondo-suave); border-left: 4px solid var(--guinda); padding: var(--e-3) var(--e-4); }
 
@@ -193,7 +229,6 @@ main:focus { outline: none; }
 .chip { min-height: 40px; padding: 0 var(--e-3); border: 1px solid var(--borde-control); border-radius: 20px; background: var(--fondo); color: var(--texto); cursor: pointer; }
 
 .filtros { border-bottom: 1px solid var(--borde-suave); padding-bottom: var(--e-4); }
-.filtros-mas summary { min-height: var(--toque); display: flex; align-items: center; color: var(--guinda); cursor: pointer; }
 
 .lista-registros { list-style: none; margin: 0; padding: 0; }
 .registro { display: flex; justify-content: space-between; gap: var(--e-3); padding: var(--e-3) 0; border-bottom: 1px solid var(--borde-suave); }
@@ -241,6 +276,10 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 
 /* ========== 5. ESTADOS ========== */
 .btn-primario:hover { background: var(--guinda-oscuro); }
+/* El nivel 3 se pinta de guinda sólo al señalarlo: ahí ya no hay confusión posible,
+   porque el puntero está encima y nada más cambia de color al mismo tiempo. */
+.enlace:hover, .btn-texto:hover, .desplegable summary:hover { color: var(--guinda); }
+.desplegable[open] summary::before { transform: rotate(90deg); }
 .zona-foto:hover { border-color: var(--guinda); background: var(--fondo-suave); }
 .zona-foto:focus-within { outline: 3px solid var(--foco); outline-offset: 2px; }
 .btn:disabled { opacity: 0.55; cursor: not-allowed; }
@@ -263,13 +302,12 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 /* ========== 7. @MEDIA ========== */
 @media (max-width: 480px) {
   .encabezado-logo { height: 26px; }
-  /* En teléfono el bloque de usuario baja a su propia fila: ahí los dos botones caben en línea,
+  /* En teléfono el bloque de usuario baja a su propia fila: ahí los dos enlaces caben en línea,
      en vez de apilarse y estirar el encabezado. */
   .encabezado-interior { flex-wrap: wrap; row-gap: var(--e-2); padding-bottom: var(--e-2); }
   .encabezado-usuario { flex: 1 0 100%; flex-direction: row; flex-wrap: wrap; align-items: center;
                         gap: var(--e-2); text-align: left; }
   .encabezado-acciones { flex: 1 0 100%; justify-content: flex-start; }
-  .encabezado-acciones .btn { flex: 1; }
   .campo-doble { grid-template-columns: 1fr; }
   .campo-doble-fijo { grid-template-columns: 1fr 1fr; }
   .revision-fila { grid-template-columns: 1fr auto; }

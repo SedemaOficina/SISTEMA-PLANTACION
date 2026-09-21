@@ -281,3 +281,61 @@ perfil que la tiene, y avisa si alguna no abre.
 visual de las fichas y sobre los botones de sesión; 35 de auditoría de consistencia; la revisión
 de presentación en ocho combinaciones de ancho y zoom; y las auditorías de estilos, código sin
 uso, identificadores y textos.
+
+---
+
+## Bloque 12 — Mapeo de campos, escala de énfasis y formulario en blanco
+
+**Documento de mapeo de campos.** `MAPEO-CAMPOS.md` reúne, módulo por módulo, la etiqueta que se
+ve en pantalla, el nombre con que se guarda, si es obligatorio y de dónde sale el dato: de la
+persona, de un catálogo, de la capa geográfica, del sistema o de la sesión. Los campos no se
+escribieron de memoria: se extrajeron ejecutando el sistema y capturando un árbol. Lleva además
+una tabla de lo que se reutiliza entre módulos y otra de lo previsto que todavía no existe, porque
+un campo sin uso es una promesa de que el sistema hace algo que no hace.
+
+El documento se comprueba solo. La auditoría compara la lista contra los campos que el sistema
+guarda de verdad, en los dos sentidos: lo que se guarda tiene que estar escrito, y lo escrito tiene
+que existir. Un documento de campos que nadie comprueba envejece en silencio y acaba mintiendo.
+
+**Escala de énfasis.** Liber señaló que «Registrar ubicación del punto» y «Capturar coordenadas a
+mano» eran las dos guindas y parecían del mismo tipo. La corrección no fue de ese caso sino de la
+regla: hay tres niveles en toda la aplicación —guinda relleno para la acción principal, guinda de
+contorno para la alterna del mismo rango, gris subrayado para lo de apoyo— y el guinda queda
+reservado a los dos primeros. Se revisó dónde más pasaba lo mismo: los dos desplegables
+(«Capturar coordenadas a mano» y «Más filtros»), los botones de texto («Mostrar más», «Cancelar
+edición», «Restablecer datos de prueba») y la insignia del perfil, que con contorno guinda se leía
+como un botón secundario siendo una etiqueta que no se pulsa.
+
+**Cerrar sesión y cambiar de usuario** pasan a texto clicable, sin caja, con un punto medio entre
+los dos. En el encabezado no hay acción principal que sostener.
+
+**El botón de ubicación distingue capturar de corregir.** Sin punto es la acción principal: guinda
+relleno, icono de ubicación, «Registrar ubicación del punto». Con punto puesto ya no se captura
+sino que se corrige, y se ve como todo lo que se corrige en el sistema: dorado, lápiz y
+«Actualizar ubicación con mi posición». El color nunca va solo (Norma 8.4).
+
+**El formulario arranca en blanco, y vuelve a blanco.** La fecha de plantación ya no se rellena con
+la de hoy y el programa no se preselecciona aunque el catálogo tenga uno solo. «Agregar registro
+nuevo» limpia todo: especie, programa, fecha, fotografía, coordenadas escritas a mano, derivación
+territorial y punto. Antes conservaba programa, fecha y ubicación porque los árboles de una jornada
+suelen compartirlos; en campo eso se convierte en el dato del árbol anterior guardado sin que nadie
+lo note, y la coordenada heredada es el peor de los casos, porque se ve bien estando mal. Lo único
+que sobrevive es el encuadre del mapa, que no es un dato y no se guarda en ningún lado.
+
+**Los datos del punto son campos del formulario.** Coordenadas, alcaldía y colonia salen del
+recuadro que colgaba del mapa y pasan a campos de sólo lectura, con su etiqueta, donde están los
+demás datos del registro. Bajo el mapa queda únicamente el aviso de lo que ocurrió —si hubo señal,
+con qué precisión, qué hacer si falló—, ya sin repetir la coordenada. Son `<output>` y no
+`<input readonly>` porque su contenido es texto: así el lector de pantalla anuncia el cambio en
+cuanto el punto se mueve.
+
+**Eliminado:** el campo «Estás registrando como» y la nota del asterisco en la pantalla de
+registro. El encabezado ya dice quién tiene la sesión abierta, y en edición el aviso de la franja
+dice quién capturó el registro. Como la nota explicaba el asterisco, lo obligatorio pasa a
+anunciarse también con el atributo `required`, que es lo que lee un lector de pantalla.
+
+**Verificación:** 134 comprobaciones del recorrido completo, catorce de ellas nuevas sobre la
+escala de énfasis, los campos del punto, la fecha sin valor y el formulario en blanco —esta última
+enumera el estado entero y falla nombrando qué quedó sucio, no comprobando campo por campo—; 37 de
+auditoría, dos de ellas la comparación del mapeo contra la realidad; la revisión de presentación en
+ocho combinaciones de ancho y zoom; y las dos pruebas de migración de datos y base anteriores.

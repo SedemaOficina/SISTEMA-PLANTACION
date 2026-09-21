@@ -2,6 +2,7 @@
 from playwright.sync_api import sync_playwright
 import os
 BASE='http://127.0.0.1:8099/'
+HOY='2026-09-21'
 errores=[]; res=[]
 def ok(c,m): res.append(('OK ' if c else 'FALLA ')+m)
 
@@ -12,7 +13,7 @@ def registrar(pg, busqueda, especie_id, programa='p-refor', fecha=None, foto=Non
     pg.fill('#campo-especie', busqueda); pg.wait_for_timeout(200)
     pg.dispatch_event('.combo-opcion[data-id="%s"]' % especie_id, 'mousedown'); pg.wait_for_timeout(150)
     pg.select_option('#campo-programa', programa); pg.wait_for_timeout(150)
-    if fecha: pg.fill('#campo-fecha', fecha)
+    pg.fill('#campo-fecha', fecha or HOY)
     if foto: pg.set_input_files('#foto-archivo', foto); pg.wait_for_timeout(800)
     pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(800)
     ident = pg.inner_text('#revision-lista .revision-id')
@@ -31,7 +32,7 @@ with sync_playwright() as p:
 
     # ---------- ACCESO ----------
     ok(pg.is_visible('#vista-acceso'),'la pantalla de acceso abre primero')
-    ok('0.5.3' in pg.inner_text('#version'),'la versión sale de la marca del archivo: '+pg.inner_text('#version'))
+    ok('0.5.4' in pg.inner_text('#version'),'la versión sale de la marca del archivo: '+pg.inner_text('#version'))
     sinmarca=pg.evaluate("""() => [...document.querySelectorAll('script[src],link[rel=stylesheet][href]')]
         .map(e=>e.src||e.href).filter(u=>u.includes('127.0.0.1')&&!u.includes('?v=')).length""")
     ok(sinmarca==0,'todos los archivos propios llevan marca de versión')
@@ -56,7 +57,11 @@ with sync_playwright() as p:
     ok(pg.locator('#herramientas-prueba #btn-cambiar-perfil').count()==0,'ya no está duplicado al pie')
 
     # ---------- REGISTRAR ----------
-    ok('Estás registrando como' in pg.inner_text('label[for=campo-cabo]'),'la etiqueta dice a nombre de quién se registra')
+    # A nombre de quién se registra lo dice el encabezado; no se repite como campo
+    ok(pg.locator('#campo-cabo').count()==0,'la pantalla no repite el nombre de quien captura')
+    ok(pg.locator('#vista-registrar .nota-obligatorio').count()==0,'ni la nota del asterisco')
+    ok(pg.evaluate("['campo-especie','campo-programa','campo-fecha'].every(i=>document.getElementById(i).required)"),
+       'lo obligatorio lo anuncia el atributo required, no sólo el asterisco')
     orden=pg.evaluate("""()=>{const t=document.getElementById('vista-registrar').innerHTML;
         return [t.indexOf('btn-ubicacion'), t.indexOf('coord-manual'), t.indexOf('id="mapa"')];}""")
     ok(orden[0]<orden[1]<orden[2],'orden: botón de ubicación, captura a mano y luego el mapa')
@@ -70,9 +75,55 @@ with sync_playwright() as p:
     ok('World_Imagery' in capas[0] and len(capas)==3,'la capa de abajo es satélite, con nombres encima')
     ok('Esri' in pg.inner_text('.leaflet-control-attribution'),'se muestra la atribución del proveedor')
 
+    # ESCALA DE ÉNFASIS: una acción de apoyo nunca se pinta como la principal de la pantalla.
+    # Eran las dos guindas y no se distinguía cuál era el camino normal.
+    enfasis=pg.evaluate("""() => {
+      const c = e => getComputedStyle(e).color;
+      const principal = document.getElementById('btn-ubicacion');
+      return {
+        principal_relleno: getComputedStyle(principal).backgroundColor,
+        apoyo: c(document.querySelector('.coord-manual summary')),
+        gris: c(document.querySelector('.nota')),
+        cerrar_caja: getComputedStyle(document.getElementById('btn-cerrar-sesion')).backgroundColor,
+        cerrar_borde: getComputedStyle(document.getElementById('btn-cerrar-sesion')).borderTopWidth,
+        cerrar_subrayado: getComputedStyle(document.getElementById('btn-cerrar-sesion')).textDecorationLine
+      };
+    }""")
+    ok(enfasis['principal_relleno']=='rgb(157, 33, 72)','la acción principal es el guinda relleno')
+    ok(enfasis['apoyo']==enfasis['gris'],'y la de apoyo va en gris, no en guinda: '+enfasis['apoyo'])
+    ok(enfasis['cerrar_caja']=='rgba(0, 0, 0, 0)' and enfasis['cerrar_borde']=='0px','cerrar sesión es texto, sin caja')
+    ok(enfasis['cerrar_subrayado']=='underline','y va subrayado para que se vea que se pulsa')
+
+    # Los datos del punto son campos del formulario, no un recuadro bajo el mapa
+    ok(pg.locator('.ficha-datos').count()==0,'bajo el mapa ya no cuelga el recuadro de datos')
+    ok(pg.inner_text('#dato-coordenadas')=='—' and pg.inner_text('#dato-alcaldia')=='—',
+       'sin punto, los campos del punto están en blanco')
+    ok(pg.locator('#campo-punto-x').count()==0 and pg.locator('.campo-punto .campo-lectura').count()==3,
+       'coordenadas, alcaldía y colonia son tres campos de sólo lectura')
+    ok(pg.evaluate("['dato-coordenadas','dato-alcaldia','dato-colonia'].every(i=>document.querySelector('label[for='+i+']'))"),
+       'y cada uno lleva su etiqueta, como cualquier campo')
+
     pg.click('#btn-ubicacion'); pg.wait_for_timeout(800)
     ok('Ficticia' in pg.inner_text('#dato-alcaldia'),'el botón ubica y deriva alcaldía: '+pg.inner_text('#dato-alcaldia'))
+    ok(pg.inner_text('#dato-coordenadas').count('.')==2,'la coordenada se escribe en su campo: '+pg.inner_text('#dato-coordenadas'))
+    ok(',' not in pg.inner_text('#mapa-estado'),'y ya no se repite bajo el mapa: '+pg.inner_text('#mapa-estado'))
     ok('Actualizar ubicación' in pg.inner_text('#btn-ubicacion'),'con punto puesto, el botón pasa a actualizar')
+    # Con punto puesto ya no se captura: se corrige, y se ve como todo lo que se corrige
+    corr=pg.evaluate("""() => {
+      const b = document.getElementById('btn-ubicacion');
+      return { clase: b.className, color: getComputedStyle(b).color,
+               editar: getComputedStyle(document.getElementById('btn-resumen-corregir')).color,
+               icono: b.innerHTML.includes(SRP.ICONOS.lapiz.match(/d="([^"]+)"/)[1]) };
+    }""")
+    ok('btn-editar' in corr['clase'] and corr['color']==corr['editar'],
+       'y toma el dorado de corregir: '+corr['color'])
+    ok(corr['icono'],'con el lápiz, porque el color nunca va solo')
+
+    # La fecha no se hereda ni se supone: se elige a propósito
+    ok(pg.input_value('#campo-fecha')=='','la fecha de plantación arranca sin valor')
+    pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(300)
+    ok('fecha' in pg.inner_text('#resumen-errores').lower(),'y sin ella no se puede revisar ni guardar')
+    pg.fill('#campo-fecha', HOY)
 
     pg.fill('#campo-especie','frax'); pg.wait_for_timeout(120)
     ok(pg.locator('.combo-opcion').count()==2,'el autocompletado busca por nombre científico')
@@ -127,18 +178,34 @@ with sync_playwright() as p:
     ok(pg.is_hidden('#dlg-resumen') and pg.is_visible('#dlg-guardado'),'al guardar se cierra la ficha y se abre el aviso')
     ok('Fresno' in pg.inner_text('#dlg-guardado-detalle'),'el aviso dice qué se guardó')
     ok(id1 in pg.inner_text('#dlg-guardado-id'),'se guardó con el identificador que mostró la ficha')
-    prog=pg.input_value('#campo-programa'); fech=pg.input_value('#campo-fecha')
     pg.click('#btn-registro-nuevo'); pg.wait_for_timeout(500)
     ok(pg.is_hidden('#dlg-guardado'),'«Agregar registro nuevo» cierra el aviso')
     ok(pg.evaluate("document.activeElement.id")=='btn-ubicacion','y deja el foco en el botón de ubicación')
-    ok(pg.input_value('#campo-especie')=='' and pg.is_hidden('#ficha-foto'),'el registro nuevo empieza sin especie ni foto')
-    ok(pg.input_value('#campo-programa')==prog and pg.input_value('#campo-fecha')==fech,'y conserva programa y fecha de la jornada')
-    ok(pg.locator('.leaflet-marker-icon').count()==1,'y la ubicación')
+    # Nada del árbol anterior sobrevive: un dato heredado se guarda sin que nadie lo note,
+    # y la coordenada del árbol de antes se ve bien estando mal.
+    restos=pg.evaluate("""() => ({
+      especie: document.getElementById('campo-especie').value,
+      otra: document.getElementById('caja-otra-especie').hidden ? '' : 'visible',
+      programa: document.getElementById('campo-programa').value,
+      fecha: document.getElementById('campo-fecha').value,
+      lat_mano: document.getElementById('coord-lat').value,
+      lng_mano: document.getElementById('coord-lng').value,
+      coordenadas: document.getElementById('dato-coordenadas').textContent,
+      alcaldia: document.getElementById('dato-alcaldia').textContent,
+      colonia: document.getElementById('dato-colonia').textContent,
+      foto: document.getElementById('ficha-foto').hidden ? '' : 'visible',
+      errores: document.getElementById('resumen-errores').hidden ? '' : 'visible',
+      marcadores: document.querySelectorAll('.leaflet-marker-icon').length,
+      punto: SRP.mapa.lat, territorio: SRP.formulario.estado.territorio,
+      identificador: SRP.formulario.estado.idPrevisto
+    })""")
+    sucios=[k for k,v in restos.items() if v not in ('', 0, None, '—')]
+    ok(sucios==[],'el registro nuevo arranca en blanco; con resto en: '+str(sucios))
 
     # Validación
     pg.fill('#campo-fecha','2030-01-01'); pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(300)
-    ok(pg.locator('#resumen-errores li').count()==2,'valida especie sin elegir y fecha futura')
-    pg.fill('#campo-fecha', fech)
+    ok(pg.locator('#resumen-errores li').count()==4,'valida ubicación, especie, programa y fecha futura')
+    pg.fill('#campo-fecha', HOY)
 
     # Se capturan más árboles para poder probar listados y filtros
     ids=[id1]

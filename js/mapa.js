@@ -47,18 +47,27 @@ SRP.mapa = {
     if (!b) return;
     b.disabled = buscando;
     b.setAttribute('aria-busy', String(buscando));
-    b.innerHTML = SRP.ICONOS.svg('ubicacion', 20) +
-      '<span>' + (buscando ? 'Buscando señal…' : this.textoBotonUbicacion()) + '</span>';
+    if (buscando) b.innerHTML = SRP.ICONOS.svg('ubicacion', 20) + '<span>Buscando señal…</span>';
+    else this.refrescarBotonUbicacion();
   },
 
-  // El botón dice si va a poner el punto o a moverlo
-  textoBotonUbicacion() {
-    return this.lat === null ? 'Registrar ubicación del punto' : 'Actualizar ubicación con mi posición';
+  /* EL BOTÓN CAMBIA CON EL ESTADO DEL PUNTO.
+     Sin punto es la acción principal de la pantalla: guinda relleno, icono de ubicación, y
+     dice que va a registrarlo. Con punto puesto ya no se está capturando sino corrigiendo, y
+     eso se ve igual que en toda la aplicación: dorado, lápiz y la palabra actualizar (Norma
+     8.4, el color nunca va solo). Así nadie vuelve a pulsarlo creyendo que aún no hay punto. */
+  aparienciaBotonUbicacion() {
+    return this.lat === null
+      ? { clase: 'btn btn-primario btn-ancho', icono: 'ubicacion', texto: 'Registrar ubicación del punto' }
+      : { clase: 'btn btn-editar btn-ancho',   icono: 'lapiz',     texto: 'Actualizar ubicación con mi posición' };
   },
 
   refrescarBotonUbicacion() {
     const b = document.getElementById('btn-ubicacion');
-    if (b && !b.disabled) b.innerHTML = SRP.ICONOS.svg('ubicacion', 20) + '<span>' + this.textoBotonUbicacion() + '</span>';
+    if (!b || b.disabled) return;
+    const a = this.aparienciaBotonUbicacion();
+    b.className = a.clase;
+    b.innerHTML = SRP.ICONOS.svg(a.icono, 20) + '<span>' + a.texto + '</span>';
   },
 
   estado(texto, tipo) {
@@ -84,7 +93,8 @@ SRP.mapa = {
       }
       if (centrar) this.mapa.setView([this.lat, this.lng], Math.max(this.mapa.getZoom(), SRP.CONFIG.MAPA.ZOOM_PUNTO));
     }
-    this.estado(mensaje + ' ' + this.lat.toFixed(6) + ', ' + this.lng.toFixed(6));
+    // Sin la coordenada: la franja dice qué pasó, y el dato vive en su campo del formulario
+    this.estado(mensaje);
     this.refrescarBotonUbicacion();
     if (this.alCambiar) this.alCambiar(this.lat, this.lng);
     return true;

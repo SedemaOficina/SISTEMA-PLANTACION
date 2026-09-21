@@ -8,9 +8,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cabin:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.5.3">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.5.3">
-<link rel="stylesheet" href="css/estilos.css?v=0.5.3">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.5.4">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.5.4">
+<link rel="stylesheet" href="css/estilos.css?v=0.5.4">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -24,8 +24,8 @@
       <span id="usuario-nombre" class="encabezado-nombre"></span>
       <span id="usuario-perfil" class="insignia"></span>
       <div class="encabezado-acciones">
-        <button type="button" id="btn-cerrar-sesion" class="btn btn-secundario btn-chico">Cerrar sesión</button>
-        <button type="button" id="btn-cambiar-perfil" class="btn btn-editar btn-chico" hidden>Cambiar usuario (pruebas)</button>
+        <button type="button" id="btn-cerrar-sesion" class="enlace">Cerrar sesión</button>
+        <button type="button" id="btn-cambiar-perfil" class="enlace" hidden>Cambiar usuario (pruebas)</button>
       </div>
     </div>
   </div>
@@ -72,15 +72,12 @@
   <!-- REGISTRAR -->
   <section id="vista-registrar" class="vista" hidden aria-labelledby="titulo-registrar">
     <h1 id="titulo-registrar">Nuevo registro</h1>
-    <p class="nota nota-obligatorio">Los campos marcados con <span class="obligatorio" aria-hidden="true">*</span> son obligatorios.</p>
     <p id="edicion-aviso" class="franja-edicion" hidden></p>
-
-    <div class="campo"><label for="campo-cabo">Estás registrando como:</label><input id="campo-cabo" readonly></div>
 
     <h2 class="titulo-bloque">Ubicación <span class="obligatorio" aria-hidden="true">*</span></h2>
     <button type="button" id="btn-ubicacion" class="btn btn-primario btn-ancho"></button>
-    <details class="coord-manual">
-      <summary>Capturar coordenadas a mano</summary>
+    <details class="coord-manual desplegable">
+      <summary><span>Capturar coordenadas a mano</span></summary>
       <div class="campo-doble">
         <div class="campo"><label for="coord-lat">Latitud</label><input id="coord-lat" inputmode="decimal" placeholder="19.432600"></div>
         <div class="campo"><label for="coord-lng">Longitud</label><input id="coord-lng" inputmode="decimal" placeholder="-99.133200"></div>
@@ -90,13 +87,25 @@
 
     <div class="mapa-bloque">
       <div id="mapa" class="mapa" aria-label="Mapa para ubicar el árbol. Toque el mapa o arrastre el marcador."></div>
-      <div class="ficha-territorial" aria-live="polite">
-        <p id="mapa-estado" class="ficha-estado">Obteniendo su ubicación…</p>
-        <dl class="ficha-datos">
-          <div><dt>Alcaldía</dt><dd id="dato-alcaldia">—</dd></div>
-          <div><dt>Colonia</dt><dd id="dato-colonia">—</dd></div>
-        </dl>
+      <!-- Bajo el mapa queda sólo el aviso de lo que pasó: si hubo señal, con qué precisión,
+           qué hacer si falló. Los datos del punto son campos del formulario, más abajo. -->
+      <p id="mapa-estado" class="ficha-estado" aria-live="polite">Obteniendo su ubicación…</p>
+    </div>
+
+    <!-- Lo que sale del punto se presenta como cualquier otro dato del registro, en campos de
+         sólo lectura: se lee igual que el resto y queda claro que no se teclea. Son <output>
+         y no <input readonly> porque su contenido es texto: así el lector de pantalla anuncia
+         el cambio en cuanto el punto se mueve. -->
+    <div class="campo-punto">
+      <div class="campo"><label for="dato-coordenadas">Coordenadas (latitud, longitud)</label>
+        <output id="dato-coordenadas" class="campo-lectura" for="mapa">—</output></div>
+      <div class="campo-doble">
+        <div class="campo"><label for="dato-alcaldia">Alcaldía</label>
+          <output id="dato-alcaldia" class="campo-lectura" for="mapa">—</output></div>
+        <div class="campo"><label for="dato-colonia">Colonia</label>
+          <output id="dato-colonia" class="campo-lectura" for="mapa">—</output></div>
       </div>
+      <p class="nota">Los tres salen del punto en el mapa. Para cambiarlos hay que volver a colocarlo.</p>
     </div>
 
     <form id="form-plantacion" novalidate>
@@ -104,7 +113,7 @@
 
       <div class="campo combo">
         <label for="campo-especie" id="etq-especie"><span id="etq-especie-texto">Especie</span> <span class="obligatorio" aria-hidden="true">*</span></label>
-        <input id="campo-especie" role="combobox" aria-autocomplete="list" aria-expanded="false"
+        <input id="campo-especie" role="combobox" required aria-autocomplete="list" aria-expanded="false"
                aria-controls="lista-especies" autocomplete="off" placeholder="Nombre común o científico">
         <ul id="lista-especies" class="combo-lista" role="listbox" aria-labelledby="etq-especie" hidden></ul>
       </div>
@@ -113,8 +122,8 @@
         <input id="campo-otra-especie">
       </div>
 
-      <div class="campo"><label for="campo-programa">Programa <span class="obligatorio" aria-hidden="true">*</span></label><select id="campo-programa"></select></div>
-      <div class="campo"><label for="campo-fecha">Fecha de plantación <span class="obligatorio" aria-hidden="true">*</span></label><input type="date" id="campo-fecha"></div>
+      <div class="campo"><label for="campo-programa">Programa <span class="obligatorio" aria-hidden="true">*</span></label><select id="campo-programa" required></select></div>
+      <div class="campo"><label for="campo-fecha">Fecha de plantación <span class="obligatorio" aria-hidden="true">*</span></label><input type="date" id="campo-fecha" required></div>
 
       <fieldset class="campo foto">
         <legend>Fotografía <span class="opcional">(opcional)</span></legend>
@@ -166,8 +175,8 @@
       </div>
       <!-- El rango y el filtro por persona se usan de vez en cuando; los atajos y las listas de
            arriba cubren el trabajo diario. Plegados, los registros caben en la primera pantalla. -->
-      <details class="filtros-mas">
-        <summary>Más filtros</summary>
+      <details class="filtros-mas desplegable">
+        <summary><span>Más filtros</span></summary>
         <div class="campo-doble">
           <div class="campo"><label for="filtro-desde">Desde</label><input type="date" id="filtro-desde"></div>
           <div class="campo"><label for="filtro-hasta">Hasta</label><input type="date" id="filtro-hasta"></div>
@@ -305,30 +314,30 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.5.3"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.5.3"></script>
-<script src="vendor/turf-pip.min.js?v=0.5.3"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.5.3"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.5.3"></script>
+<script src="vendor/leaflet.js?v=0.5.4"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.5.4"></script>
+<script src="vendor/turf-pip.min.js?v=0.5.4"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.5.4"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.5.4"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.5.3"></script>
-<script src="js/util.js?v=0.5.3"></script>
-<script src="js/iconos.js?v=0.5.3"></script>
-<script src="assets/logo.js?v=0.5.3"></script>
-<script src="assets/capas-ficticias.js?v=0.5.3"></script>
-<script src="js/datos-ficticios.js?v=0.5.3"></script>
-<script src="js/permisos.js?v=0.5.3"></script>
-<script src="js/derivacion.js?v=0.5.3"></script>
-<script src="js/almacen.js?v=0.5.3"></script>
-<script src="js/sesion.js?v=0.5.3"></script>
-<script src="js/referencias.js?v=0.5.3"></script>
-<script src="js/mapa.js?v=0.5.3"></script>
-<script src="js/foto.js?v=0.5.3"></script>
-<script src="js/formulario.js?v=0.5.3"></script>
-<script src="js/registros.js?v=0.5.3"></script>
-<script src="js/reportes.js?v=0.5.3"></script>
-<script src="js/catalogos.js?v=0.5.3"></script>
-<script src="js/usuarios.js?v=0.5.3"></script>
-<script src="js/app.js?v=0.5.3"></script>
+<script src="js/config.js?v=0.5.4"></script>
+<script src="js/util.js?v=0.5.4"></script>
+<script src="js/iconos.js?v=0.5.4"></script>
+<script src="assets/logo.js?v=0.5.4"></script>
+<script src="assets/capas-ficticias.js?v=0.5.4"></script>
+<script src="js/datos-ficticios.js?v=0.5.4"></script>
+<script src="js/permisos.js?v=0.5.4"></script>
+<script src="js/derivacion.js?v=0.5.4"></script>
+<script src="js/almacen.js?v=0.5.4"></script>
+<script src="js/sesion.js?v=0.5.4"></script>
+<script src="js/referencias.js?v=0.5.4"></script>
+<script src="js/mapa.js?v=0.5.4"></script>
+<script src="js/foto.js?v=0.5.4"></script>
+<script src="js/formulario.js?v=0.5.4"></script>
+<script src="js/registros.js?v=0.5.4"></script>
+<script src="js/reportes.js?v=0.5.4"></script>
+<script src="js/catalogos.js?v=0.5.4"></script>
+<script src="js/usuarios.js?v=0.5.4"></script>
+<script src="js/app.js?v=0.5.4"></script>
 </body>
 </html>

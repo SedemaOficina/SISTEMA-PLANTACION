@@ -99,6 +99,56 @@ with sync_playwright() as p:
     desconocidos = pg.evaluate("[...SRP.permisos.perfilesDesconocidos]")
     mirar(not desconocidos, 'ningún perfil desconocido apareció al pintar', str(desconocidos))
     mirar(not errores, 'sin errores en consola', str(errores))
+
+    # --- 5. El mapeo de campos contra la realidad ---
+    # Un documento de campos que nadie comprueba envejece en silencio y acaba mintiendo. Aquí se
+    # compara en los dos sentidos: lo que el sistema guarda tiene que estar escrito, y lo escrito
+    # tiene que existir. La bitácora arranca vacía, así que sus campos se le piden a quien los
+    # produce, sin guardar nada, en vez de copiarlos a mano.
+    reales = pg.evaluate("""async () => {
+      const campos = async (almacen, muestra) => {
+        const filas = await SRP.almacen.todos(almacen);
+        const s = new Set(muestra || []);
+        filas.forEach(f => Object.keys(f).forEach(k => s.add(k)));
+        return [...s];
+      };
+      // La bitácora se firma con quien tiene la sesión: se presta una y se devuelve
+      const bitacora = () => {
+        const previo = SRP.sesion.usuario;
+        SRP.sesion.usuario = previo || SRP.ref.usuarios[0];
+        const campos = Object.keys(SRP.bitacora.entrada('CREADO', 'plantacion', 'x', 'y'));
+        SRP.sesion.usuario = previo;
+        return campos;
+      };
+      const plant = Object.keys(Object.assign(
+        { id:1, estatus:1, es_ficticio:1, cabo_id:1, lat_original:1, lng_original:1,
+          fecha_registro:1, fecha_ultima_edicion:1, editado_por_id:1 },
+        SRP.formulario.valores.call({
+          estado: { especieId: 'x', foto: null, fotoId: null, fotoNombre: '', fotoBytes: 0,
+                    territorio: { alcaldia:'a', colonia:'c', uga:'u', capa_version:'v' } },
+          OTRA: '__otra__', el: (i) => document.getElementById(i)
+        })));
+      return {
+        plantaciones: plant,
+        usuarios: await campos('usuarios'),
+        catalogos: await campos('catalogos'),
+        bitacora: bitacora()
+      };
+    }""")
+    import re, os
+    ruta = 'MAPEO-CAMPOS.md' if os.path.exists('MAPEO-CAMPOS.md') else os.path.join('..', 'MAPEO-CAMPOS.md')
+    texto = open(ruta, encoding='utf-8').read()
+    documentados = set(re.findall(r'`([a-z_][a-z0-9_]*)`', texto))
+    guardados = set()
+    for lista in reales.values():
+        guardados.update(lista)
+    sin_documentar = sorted(guardados - documentados)
+    mirar(not sin_documentar, 'todo campo que se guarda está en el mapeo', str(sin_documentar))
+    # Al revés sólo se revisan los nombres con guion bajo: los de una palabra (`id`, `clave`,
+    # `tipo`) aparecen en el texto por otras razones y darían falsos positivos.
+    inventados = sorted(c for c in documentados if '_' in c and c not in guardados
+                        and not c.startswith(('alcaldias_', 'nombre_cientifico')))
+    mirar(not inventados, 'y el mapeo no inventa campos que no existen', str(inventados))
     b.close()
 
 malos = [h for h in hallazgos if not h[0]]

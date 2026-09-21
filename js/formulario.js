@@ -67,10 +67,8 @@ SRP.formulario = {
   // Se llama cada vez que se entra a la vista Registrar
   preparar() {
     this.llenarProgramas();
-    if (!this.estado.editando) {
-      this.el('campo-cabo').value = SRP.util.nombreCompleto(SRP.sesion.usuario);
-      if (!this.el('campo-fecha').value) this.el('campo-fecha').value = SRP.util.fechaHoy();
-      if (SRP.mapa.lat === null) SRP.mapa.estado('Use el botón de ubicación para tomar su posición, o toque el mapa para colocar el punto.');
+    if (!this.estado.editando && SRP.mapa.lat === null) {
+      SRP.mapa.estado('Use el botón de ubicación para tomar su posición, o toque el mapa para colocar el punto.');
     }
     this.el('campo-fecha').max = SRP.util.fechaHoy();
     SRP.mapa.refrescar();
@@ -83,7 +81,9 @@ SRP.formulario = {
     if (previo && !opciones.find(o => o.id === previo) && SRP.ref.catalogoPorId[previo]) opciones.push(SRP.ref.catalogoPorId[previo]);
     sel.innerHTML = '<option value="">Seleccione un programa</option>' + opciones.map(o =>
       '<option value="' + o.id + '">' + SRP.util.escapar(o.nombre) + (o.activo ? '' : ' (inactivo)') + '</option>').join('');
-    sel.value = previo || (opciones.length === 1 ? opciones[0].id : '');
+    // Sin preselección: el formulario arranca en blanco aunque el catálogo tenga un solo
+    // programa, para que la elección siempre sea de quien captura.
+    sel.value = previo || '';
   },
 
   alMoverPunto(lat, lng) {
@@ -92,10 +92,18 @@ SRP.formulario = {
     if (document.activeElement === this.el('btn-ubicacion')) this.avanzarFoco('btn-ubicacion');
     const t = SRP.derivacion.derivar(lat, lng);
     this.estado.territorio = t;
-    this.el('dato-alcaldia').textContent = SRP.ref.territorio(t.alcaldia);
-    this.el('dato-colonia').textContent = SRP.ref.territorio(t.colonia);
+    this.mostrarPunto(lat, lng, t);
+    // La captura a mano refleja el punto vigente: quien la abra corrige sobre lo que ya hay
     this.el('coord-lat').value = lat.toFixed(6);
     this.el('coord-lng').value = lng.toFixed(6);
+  },
+
+  /* Los tres campos de sólo lectura del punto, en un solo lugar: sin territorio, los tres
+     vuelven al guion, porque un dato viejo junto a un punto nuevo es peor que ninguno. */
+  mostrarPunto(lat, lng, t) {
+    this.el('dato-coordenadas').textContent = (t && lat !== null) ? lat.toFixed(6) + ', ' + lng.toFixed(6) : '—';
+    this.el('dato-alcaldia').textContent = t ? SRP.ref.territorio(t.alcaldia) : '—';
+    this.el('dato-colonia').textContent = t ? SRP.ref.territorio(t.colonia) : '—';
   },
 
   aplicarCoordenadasManuales() {
@@ -276,7 +284,7 @@ SRP.formulario = {
       ['Alcaldía', esc(SRP.ref.territorio(v.alcaldia)), null],
       ['Colonia', esc(SRP.ref.territorio(v.colonia)), null],
       ['Coordenadas', v.lat.toFixed(6) + ', ' + v.lng.toFixed(6), 'punto'],
-      ['Cabo', esc(this.el('campo-cabo').value), null],
+      ['Cabo', esc(this.nombreCabo()), null],
       ['Fotografía', v.foto_base64
         ? '<img class="revision-foto" src="' + v.foto_base64 + '" alt="Fotografía del árbol que se va a registrar">'
         : 'Sin fotografía', 'foto']
@@ -294,6 +302,15 @@ SRP.formulario = {
 
     this.el('dlg-resumen').showModal();
     this.dibujarMapaRevision(v.lat, v.lng);
+  },
+
+  /* Quién queda como autor. En alta es quien tiene la sesión abierta —el encabezado lo dice
+     arriba, por eso ya no hay campo—; en edición sigue siendo el cabo que lo capturó, que no
+     tiene por qué ser quien corrige. */
+  nombreCabo() {
+    return this.estado.editando
+      ? SRP.ref.nombreUsuario(this.estado.editando.cabo_id)
+      : SRP.util.nombreCompleto(SRP.sesion.usuario);
   },
 
   dibujarMapaRevision(lat, lng) {
@@ -368,15 +385,13 @@ SRP.formulario = {
     this.el('btn-registro-nuevo').focus();
   },
 
-  // Conserva programa, fecha y ubicación: los árboles de una jornada comparten los tres
+  /* El formulario arranca en blanco en cada registro. Antes conservaba programa, fecha y
+     ubicación porque los árboles de una jornada suelen compartirlos; en campo eso se convierte
+     en el dato del árbol anterior guardado sin que nadie lo note, y la coordenada heredada es
+     el peor de los casos: se ve bien y está mal. Se prefiere volver a capturar. */
   nuevoRegistro() {
     this.el('dlg-guardado').close();
-    this.estado.idPrevisto = null;          // cada registro estrena identificador
-    this.el('campo-especie').value = '';
-    this.estado.especieId = null;
-    this.mostrarOtra(false);
-    this.ponerFoto(null, null);
-    this.mostrarErrores([]);
+    this.limpiar();
     SRP.mapa.refrescar();
     this.el('btn-ubicacion').scrollIntoView({ block: 'center' });
     this.el('btn-ubicacion').focus();
@@ -392,7 +407,6 @@ SRP.formulario = {
       ' capturado por ' + SRP.ref.nombreUsuario(registro.cabo_id) + '. Los cambios quedan en el historial.';
     aviso.hidden = false;
     this.el('btn-cancelar-edicion').hidden = false;
-    this.el('campo-cabo').value = SRP.ref.nombreUsuario(registro.cabo_id);
     this.el('campo-fecha').value = registro.fecha_plantacion;
     this.llenarProgramas(registro.programa_id);
     if (registro.especie_id) this.elegirEspecie(registro.especie_id);
@@ -402,19 +416,26 @@ SRP.formulario = {
     SRP.mapa.colocar(registro.lat, registro.lng, 'Ubicación registrada.', true);
   },
 
+  /* Deja la pantalla como recién abierta. Ni un campo conserva el valor anterior: ni la fecha
+     —que se elige a propósito, no se hereda—, ni el programa, ni las coordenadas escritas a
+     mano, ni la derivación territorial. Lo único que sobrevive es el encuadre del mapa, que
+     no es un dato: ayuda a situarse y no se guarda en ningún lado. */
   limpiar() {
     this.estado.editando = null;
     this.estado.idPrevisto = null;
+    this.estado.territorio = null;
     this.el('titulo-registrar').textContent = 'Nuevo registro';
     this.el('edicion-aviso').hidden = true;
     this.el('btn-cancelar-edicion').hidden = true;
     this.el('campo-especie').value = ''; this.estado.especieId = null; this.mostrarOtra(false);
-    this.el('campo-fecha').value = SRP.util.fechaHoy();
+    this.el('campo-programa').value = '';
+    this.el('campo-fecha').value = '';
+    this.el('coord-lat').value = '';
+    this.el('coord-lng').value = '';
     this.ponerFoto(null, null);
     this.mostrarErrores([]);
     SRP.mapa.limpiar();
-    this.el('dato-alcaldia').textContent = '—';
-    this.el('dato-colonia').textContent = '—';
-    this.el('campo-cabo').value = SRP.util.nombreCompleto(SRP.sesion.usuario);
+    this.mostrarPunto(null, null, null);
+    SRP.mapa.estado('Use el botón de ubicación para tomar su posición, o toque el mapa para colocar el punto.');
   }
 };
