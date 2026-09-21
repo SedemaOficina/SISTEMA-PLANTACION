@@ -1,0 +1,13 @@
+# Copias fechadas anteriores al control de versiones: el historial lo lleva git desde ahora
+historial/
+
+# Carpeta de archivos que Liber borra a mano (norma 14)
+_to_delete/
+
+# Carpeta de preparación para subir a mano; no forma parte del repositorio
+_publicar/
+
+# Basura del sistema operativo
+Thumbs.db
+desktop.ini
+.DS_Store

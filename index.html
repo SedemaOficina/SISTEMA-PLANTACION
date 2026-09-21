@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#9D2148">
+<title>Registro de Plantaciones | SEDEMA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cabin:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="vendor/leaflet.css">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css">
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+<a class="saltar" href="#principal">Saltar al contenido</a>
+
+<p id="banda-ficticio" class="banda-ficticio" hidden>Datos ficticios de prueba. No usar para reportes oficiales.</p>
+
+<header class="encabezado">
+  <img id="logo" class="encabezado-logo" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente">
+  <div id="encabezado-usuario" class="encabezado-usuario" hidden>
+    <span id="usuario-nombre" class="encabezado-nombre"></span>
+    <span id="usuario-perfil" class="insignia"></span>
+  </div>
+</header>
+
+<nav id="navegacion" class="pestanas" aria-label="Secciones" hidden>
+  <button type="button" class="pestana" data-vista="registrar">Registrar</button>
+  <button type="button" class="pestana" data-vista="registros">Registros</button>
+  <button type="button" class="pestana" data-vista="catalogos">Catálogos</button>
+</nav>
+
+<main id="principal" tabindex="-1">
+
+  <!-- ACCESO -->
+  <section id="vista-acceso" class="vista" hidden aria-labelledby="titulo-acceso">
+    <h1 id="titulo-acceso">Registro de plantaciones</h1>
+    <p class="entrada">Identifíquese una sola vez. Este dispositivo recordará sus datos y cada árbol que registre quedará a su nombre.</p>
+
+    <form id="form-alta" class="tarjeta" novalidate>
+      <h2>Alta de registrador</h2>
+      <div id="alta-errores" class="errores" tabindex="-1" hidden></div>
+      <div class="campo"><label for="alta-nombre">Nombre(s)</label><input id="alta-nombre" name="nombre" autocomplete="given-name" required></div>
+      <div class="campo"><label for="alta-ap">Apellido paterno</label><input id="alta-ap" name="apellido_paterno" autocomplete="family-name" required></div>
+      <div class="campo"><label for="alta-am">Apellido materno</label><input id="alta-am" name="apellido_materno" required></div>
+      <div class="campo"><label for="alta-area">Área a la que pertenece</label><select id="alta-area" name="area_id" required></select></div>
+      <div class="campo"><label for="alta-cargo">Cargo y rol</label><input id="alta-cargo" name="cargo_rol" required placeholder="p. ej. Técnico de campo"></div>
+      <button type="submit" class="btn btn-primario">Entrar</button>
+    </form>
+
+    <div id="acceso-prueba" class="tarjeta tarjeta-prueba" hidden>
+      <h2>Entrar con un usuario de prueba</h2>
+      <p class="nota">Sólo en desarrollo: permite revisar cómo ve el sistema cada perfil.</p>
+      <div class="campo"><label for="sel-usuario-prueba">Usuario ficticio</label><select id="sel-usuario-prueba"></select></div>
+      <button type="button" id="btn-entrar-prueba" class="btn btn-secundario">Entrar con este usuario</button>
+    </div>
+  </section>
+
+  <!-- REGISTRAR -->
+  <section id="vista-registrar" class="vista" hidden aria-labelledby="titulo-registrar">
+    <h1 id="titulo-registrar">Nuevo registro</h1>
+    <p id="edicion-aviso" class="franja-edicion" hidden></p>
+
+    <div class="mapa-bloque">
+      <div id="mapa" class="mapa" aria-label="Mapa para ubicar el árbol. Toque el mapa o arrastre el marcador."></div>
+      <div class="ficha-territorial" aria-live="polite">
+        <p id="mapa-estado" class="ficha-estado">Obteniendo su ubicación…</p>
+        <dl class="ficha-datos">
+          <div><dt>Alcaldía</dt><dd id="dato-alcaldia">—</dd></div>
+          <div><dt>Colonia</dt><dd id="dato-colonia">—</dd></div>
+        </dl>
+      </div>
+      <div class="fila-botones">
+        <button type="button" id="btn-gps" class="btn btn-secundario">Usar mi ubicación</button>
+      </div>
+      <details class="coord-manual">
+        <summary>Capturar coordenadas a mano</summary>
+        <div class="campo-doble">
+          <div class="campo"><label for="coord-lat">Latitud</label><input id="coord-lat" inputmode="decimal" placeholder="19.432600"></div>
+          <div class="campo"><label for="coord-lng">Longitud</label><input id="coord-lng" inputmode="decimal" placeholder="-99.133200"></div>
+        </div>
+        <button type="button" id="btn-coord-aplicar" class="btn btn-secundario">Colocar punto</button>
+      </details>
+    </div>
+
+    <form id="form-plantacion" novalidate>
+      <div id="resumen-errores" class="errores" tabindex="-1" hidden></div>
+
+      <div class="campo combo">
+        <label for="campo-especie" id="etq-especie">Especie</label>
+        <input id="campo-especie" role="combobox" aria-autocomplete="list" aria-expanded="false"
+               aria-controls="lista-especies" autocomplete="off" placeholder="Nombre común o científico">
+        <ul id="lista-especies" class="combo-lista" role="listbox" aria-labelledby="etq-especie" hidden></ul>
+      </div>
+      <div class="campo" id="caja-otra-especie" hidden>
+        <label for="campo-otra-especie">Especifique la especie</label>
+        <input id="campo-otra-especie">
+      </div>
+
+      <div class="campo"><label for="campo-programa">Programa</label><select id="campo-programa"></select></div>
+      <div class="campo"><label for="campo-fecha">Fecha de plantación</label><input type="date" id="campo-fecha"></div>
+      <div class="campo"><label for="campo-registrador">Registrador</label><input id="campo-registrador" readonly></div>
+
+      <fieldset class="campo foto">
+        <legend>Fotografía <span class="opcional">(opcional)</span></legend>
+        <img id="foto-vista" class="foto-vista" alt="Fotografía del árbol registrado" hidden>
+        <div class="fila-botones">
+          <label class="btn btn-secundario" for="foto-camara">Tomar foto</label>
+          <input type="file" id="foto-camara" accept="image/*" capture="environment" class="oculto-visual">
+          <label class="btn btn-secundario" for="foto-galeria">Elegir de galería</label>
+          <input type="file" id="foto-galeria" accept="image/*" class="oculto-visual">
+          <button type="button" id="btn-foto-quitar" class="btn btn-texto" hidden>Quitar foto</button>
+        </div>
+      </fieldset>
+
+      <div class="acciones">
+        <button type="submit" class="btn btn-primario">Revisar y guardar</button>
+        <button type="button" id="btn-cancelar-edicion" class="btn btn-texto" hidden>Cancelar edición</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- REGISTROS -->
+  <section id="vista-registros" class="vista" hidden aria-labelledby="titulo-registros">
+    <h1 id="titulo-registros">Mis registros</h1>
+    <div class="filtros">
+      <div id="filtro-meses" class="chips" role="group" aria-label="Filtrar por mes"></div>
+      <div class="campo-doble">
+        <div class="campo"><label for="filtro-desde">Desde</label><input type="date" id="filtro-desde"></div>
+        <div class="campo"><label for="filtro-hasta">Hasta</label><input type="date" id="filtro-hasta"></div>
+      </div>
+      <div id="caja-filtro-registrador" class="campo" hidden>
+        <label for="filtro-registrador">Registrador</label><select id="filtro-registrador"></select>
+      </div>
+      <button type="button" id="btn-filtrar" class="btn btn-secundario">Aplicar filtro</button>
+    </div>
+    <p id="registros-total" class="total" aria-live="polite"></p>
+    <ul id="lista-registros" class="lista-registros"></ul>
+    <button type="button" id="btn-mas" class="btn btn-texto" hidden>Mostrar más</button>
+    <div class="acciones">
+      <button type="button" id="btn-pdf" class="btn btn-primario">Generar reporte PDF</button>
+    </div>
+  </section>
+
+  <!-- CATÁLOGOS -->
+  <section id="vista-catalogos" class="vista" hidden aria-labelledby="titulo-catalogos">
+    <h1 id="titulo-catalogos">Catálogos</h1>
+    <div id="cat-tipos" class="chips" role="group" aria-label="Catálogo">
+      <button type="button" class="chip" data-tipo="programa" aria-pressed="true">Programas</button>
+      <button type="button" class="chip" data-tipo="area" aria-pressed="false">Áreas</button>
+      <button type="button" class="chip" data-tipo="especie" aria-pressed="false">Especies</button>
+    </div>
+    <div class="fila-botones">
+      <div id="caja-cat-buscar" class="campo campo-crece" hidden>
+        <label for="cat-buscar">Buscar especie</label><input id="cat-buscar" type="search">
+      </div>
+      <button type="button" id="btn-cat-agregar" class="btn btn-primario">Agregar</button>
+    </div>
+    <p class="nota">Un valor con registros asignados no se elimina: se desactiva. Deja de ofrecerse en el formulario y los registros existentes lo conservan.</p>
+    <div class="tabla-caja"><table id="tabla-catalogo" class="tabla"></table></div>
+  </section>
+</main>
+
+<footer class="pie">
+  <p>Sistema de Registro de Plantaciones. Versión <span id="version"></span></p>
+  <div id="herramientas-prueba" class="fila-botones" hidden>
+    <button type="button" id="btn-cambiar-perfil" class="btn btn-texto">Cambiar de usuario (pruebas)</button>
+    <button type="button" id="btn-restablecer" class="btn btn-texto">Restablecer datos de prueba</button>
+  </div>
+</footer>
+
+<div id="aviso" class="aviso" role="status" aria-live="polite" hidden></div>
+
+<dialog id="dlg-resumen" aria-labelledby="dlg-resumen-titulo">
+  <h2 id="dlg-resumen-titulo">Revise antes de guardar</h2>
+  <div id="dlg-resumen-cuerpo"></div>
+  <div class="acciones">
+    <button type="button" id="btn-resumen-guardar" class="btn btn-primario">Guardar</button>
+    <button type="button" id="btn-resumen-corregir" class="btn btn-secundario">Corregir</button>
+  </div>
+</dialog>
+
+<dialog id="dlg-detalle" aria-labelledby="dlg-detalle-titulo">
+  <h2 id="dlg-detalle-titulo">Detalle del registro</h2>
+  <div id="dlg-detalle-cuerpo"></div>
+  <div class="acciones"><button type="button" id="btn-detalle-cerrar" class="btn btn-secundario">Cerrar</button></div>
+</dialog>
+
+<dialog id="dlg-catalogo" aria-labelledby="dlg-catalogo-titulo">
+  <form id="form-catalogo" novalidate>
+    <h2 id="dlg-catalogo-titulo">Agregar</h2>
+    <div id="cat-errores" class="errores" tabindex="-1" hidden></div>
+    <div class="campo"><label for="cat-nombre" id="etq-cat-nombre">Nombre</label><input id="cat-nombre" required></div>
+    <div class="campo"><label for="cat-clave">Clave</label><input id="cat-clave" required aria-describedby="cat-clave-ayuda"><p id="cat-clave-ayuda" class="nota">Mayúsculas, números y guion bajo. No se puede cambiar después.</p></div>
+    <div class="campo solo-especie"><label for="cat-cientifico">Nombre científico</label><input id="cat-cientifico"></div>
+    <div class="campo solo-especie"><label for="cat-grupo">Grupo</label>
+      <select id="cat-grupo"><option value="Nativa">Nativa</option><option value="Introducida">Introducida</option></select></div>
+    <div class="acciones">
+      <button type="submit" class="btn btn-primario">Guardar</button>
+      <button type="button" id="btn-cat-cancelar" class="btn btn-secundario">Cancelar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlg-confirmar" aria-labelledby="dlg-confirmar-texto">
+  <p id="dlg-confirmar-texto"></p>
+  <div class="acciones">
+    <button type="button" id="btn-confirmar-si" class="btn btn-peligro"></button>
+    <button type="button" id="btn-confirmar-no" class="btn btn-secundario">Cancelar</button>
+  </div>
+</dialog>
+
+<!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
+<script src="vendor/leaflet.js"></script>
+<script src="vendor/leaflet-gesture-handling.min.js"></script>
+<script src="vendor/turf-pip.min.js"></script>
+<script src="vendor/jspdf.umd.min.js"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js"></script>
+<!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
+<script src="js/config.js"></script>
+<script src="js/util.js"></script>
+<script src="assets/logo.js"></script>
+<script src="assets/capas-ficticias.js"></script>
+<script src="js/datos-ficticios.js"></script>
+<script src="js/permisos.js"></script>
+<script src="js/derivacion.js"></script>
+<script src="js/almacen.js"></script>
+<script src="js/sesion.js"></script>
+<script src="js/referencias.js"></script>
+<script src="js/mapa.js"></script>
+<script src="js/foto.js"></script>
+<script src="js/formulario.js"></script>
+<script src="js/registros.js"></script>
+<script src="js/reportes.js"></script>
+<script src="js/catalogos.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,293 @@
+/* FORMULARIO DE PLANTACIÓN: alta y edición comparten la misma pantalla y las mismas reglas. */
+window.SRP = window.SRP || {};
+
+SRP.formulario = {
+  OTRA: '__otra__',
+  estado: { especieId: null, foto: null, fotoId: null, territorio: null, editando: null },
+
+  el(id) { return document.getElementById(id); },
+
+  iniciar() {
+    SRP.mapa.iniciar((lat, lng) => this.alMoverPunto(lat, lng));
+    this.el('btn-gps').addEventListener('click', () => SRP.mapa.ubicar());
+    this.el('btn-coord-aplicar').addEventListener('click', () => this.aplicarCoordenadasManuales());
+    this.iniciarCombo();
+    this.el('foto-camara').addEventListener('change', (e) => this.cargarFoto(e.target));
+    this.el('foto-galeria').addEventListener('change', (e) => this.cargarFoto(e.target));
+    this.el('btn-foto-quitar').addEventListener('click', () => this.ponerFoto(null, null));
+    this.el('form-plantacion').addEventListener('submit', (e) => { e.preventDefault(); this.revisar(); });
+    this.el('btn-resumen-corregir').addEventListener('click', () => this.el('dlg-resumen').close());
+    this.el('btn-resumen-guardar').addEventListener('click', () => this.guardar());
+    this.el('btn-cancelar-edicion').addEventListener('click', () => { this.limpiar(); SRP.app.mostrarVista('registros'); });
+  },
+
+  // Se llama cada vez que se entra a la vista Registrar
+  preparar() {
+    this.llenarProgramas();
+    if (!this.estado.editando) {
+      this.el('campo-registrador').value = SRP.util.nombreCompleto(SRP.sesion.usuario);
+      if (!this.el('campo-fecha').value) this.el('campo-fecha').value = SRP.util.fechaHoy();
+      if (SRP.mapa.lat === null) SRP.mapa.ubicar();
+    }
+    this.el('campo-fecha').max = SRP.util.fechaHoy();
+    SRP.mapa.refrescar();
+  },
+
+  llenarProgramas(actualId) {
+    const sel = this.el('campo-programa');
+    const previo = actualId || sel.value;
+    const opciones = SRP.ref.deTipo('programa', true);
+    if (previo && !opciones.find(o => o.id === previo) && SRP.ref.catalogoPorId[previo]) opciones.push(SRP.ref.catalogoPorId[previo]);
+    sel.innerHTML = '<option value="">Seleccione un programa</option>' + opciones.map(o =>
+      '<option value="' + o.id + '">' + SRP.util.escapar(o.nombre) + (o.activo ? '' : ' (inactivo)') + '</option>').join('');
+    sel.value = previo || (opciones.length === 1 ? opciones[0].id : '');
+  },
+
+  alMoverPunto(lat, lng) {
+    const t = SRP.derivacion.derivar(lat, lng);
+    this.estado.territorio = t;
+    this.el('dato-alcaldia').textContent = SRP.ref.territorio(t.alcaldia);
+    this.el('dato-colonia').textContent = SRP.ref.territorio(t.colonia);
+    this.el('coord-lat').value = lat.toFixed(6);
+    this.el('coord-lng').value = lng.toFixed(6);
+  },
+
+  aplicarCoordenadasManuales() {
+    const lat = parseFloat(this.el('coord-lat').value.replace(',', '.'));
+    const lng = parseFloat(this.el('coord-lng').value.replace(',', '.'));
+    if (Number.isNaN(lat) || Number.isNaN(lng)) {
+      SRP.mapa.estado('Escriba latitud y longitud en grados decimales, por ejemplo 19.4326 y -99.1332.', 'alerta');
+      return;
+    }
+    SRP.mapa.colocar(lat, lng, 'Punto capturado a mano.', true);
+  },
+
+  /* ---------- Autocompletado de especie ---------- */
+  iniciarCombo() {
+    const entrada = this.el('campo-especie');
+    const lista = this.el('lista-especies');
+    this.comboActivo = -1;
+    entrada.addEventListener('input', () => { this.estado.especieId = null; this.mostrarOtra(false); this.filtrarEspecies(); });
+    entrada.addEventListener('focus', () => this.filtrarEspecies());
+    entrada.addEventListener('blur', () => setTimeout(() => this.cerrarCombo(), 150));
+    entrada.addEventListener('keydown', (e) => {
+      const opciones = lista.querySelectorAll('.combo-opcion');
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (lista.hidden) this.filtrarEspecies();
+        const n = opciones.length; if (!n) return;
+        this.comboActivo = e.key === 'ArrowDown' ? (this.comboActivo + 1) % n : (this.comboActivo - 1 + n) % n;
+        this.resaltar(opciones);
+      } else if (e.key === 'Enter' && !lista.hidden && this.comboActivo >= 0) {
+        e.preventDefault(); opciones[this.comboActivo].dispatchEvent(new Event('mousedown'));
+      } else if (e.key === 'Escape') { this.cerrarCombo(); }
+    });
+    lista.addEventListener('mousedown', (e) => {
+      const li = e.target.closest('.combo-opcion'); if (!li) return;
+      e.preventDefault(); this.elegirEspecie(li.dataset.id);
+    });
+  },
+
+  filtrarEspecies() {
+    const q = SRP.util.normalizar(this.el('campo-especie').value);
+    const coinciden = SRP.ref.deTipo('especie', true)
+      .filter(e => !q || SRP.util.normalizar(e.nombre).includes(q) || SRP.util.normalizar(e.nombre_cientifico).includes(q))
+      .slice(0, 8);
+    const lista = this.el('lista-especies');
+    lista.innerHTML = coinciden.map(e =>
+      '<li class="combo-opcion" role="option" id="op-' + e.id + '" data-id="' + e.id + '" aria-selected="false">' +
+      SRP.util.escapar(e.nombre) + '<small>' + SRP.util.escapar(e.nombre_cientifico) + '</small></li>').join('') +
+      '<li class="combo-opcion" role="option" id="op-otra" data-id="' + this.OTRA + '" aria-selected="false">Otra especie<small>No está en el catálogo</small></li>';
+    lista.hidden = false;
+    this.el('campo-especie').setAttribute('aria-expanded', 'true');
+    this.comboActivo = -1;
+  },
+
+  resaltar(opciones) {
+    opciones.forEach((o, i) => o.setAttribute('aria-selected', String(i === this.comboActivo)));
+    const act = opciones[this.comboActivo];
+    this.el('campo-especie').setAttribute('aria-activedescendant', act.id);
+    act.scrollIntoView({ block: 'nearest' });
+  },
+
+  cerrarCombo() {
+    this.el('lista-especies').hidden = true;
+    this.el('campo-especie').setAttribute('aria-expanded', 'false');
+    this.el('campo-especie').removeAttribute('aria-activedescendant');
+  },
+
+  elegirEspecie(id, textoOtra) {
+    this.estado.especieId = id;
+    if (id === this.OTRA) {
+      this.el('campo-especie').value = 'Otra especie';
+      this.mostrarOtra(true, textoOtra);
+    } else {
+      this.el('campo-especie').value = SRP.ref.nombreCatalogo(id);
+      this.mostrarOtra(false);
+    }
+    this.cerrarCombo();
+  },
+
+  mostrarOtra(ver, texto) {
+    this.el('caja-otra-especie').hidden = !ver;
+    if (!ver) this.el('campo-otra-especie').value = '';
+    else { this.el('campo-otra-especie').value = texto || ''; if (!texto) this.el('campo-otra-especie').focus(); }
+  },
+
+  /* ---------- Foto ---------- */
+  async cargarFoto(entrada) {
+    const archivo = entrada.files[0];
+    entrada.value = '';   // permite volver a elegir el mismo archivo
+    if (!archivo) return;
+    try {
+      const datos = await SRP.foto.comprimir(archivo);
+      this.ponerFoto(datos, SRP.util.generarId());
+      SRP.util.anunciar('Fotografía agregada.');
+    } catch (err) {
+      SRP.util.anunciar(err.message + ' Intente con otra fotografía.', 'alerta');
+    }
+  },
+
+  ponerFoto(datos, id) {
+    this.estado.foto = datos; this.estado.fotoId = id;
+    const vista = this.el('foto-vista');
+    vista.hidden = !datos;
+    if (datos) vista.src = datos; else vista.removeAttribute('src');
+    this.el('btn-foto-quitar').hidden = !datos;
+  },
+
+  /* ---------- Validación y resumen ---------- */
+  validar() {
+    const errores = [];
+    if (SRP.mapa.lat === null) errores.push(['btn-gps', 'Falta la ubicación: use su ubicación, toque el mapa o capture coordenadas.']);
+    if (!this.estado.especieId) errores.push(['campo-especie', 'Elija una especie de la lista o la opción «Otra especie».']);
+    if (this.estado.especieId === this.OTRA && !this.el('campo-otra-especie').value.trim())
+      errores.push(['campo-otra-especie', 'Escriba qué especie es.']);
+    if (!this.el('campo-programa').value) errores.push(['campo-programa', 'Elija el programa.']);
+    const f = this.el('campo-fecha').value;
+    if (!f) errores.push(['campo-fecha', 'Indique la fecha de plantación.']);
+    else if (f > SRP.util.fechaHoy()) errores.push(['campo-fecha', 'La fecha de plantación no puede ser posterior a hoy.']);
+    return errores;
+  },
+
+  mostrarErrores(errores) {
+    ['campo-especie', 'campo-otra-especie', 'campo-programa', 'campo-fecha'].forEach(id => this.el(id).removeAttribute('aria-invalid'));
+    const caja = this.el('resumen-errores');
+    if (!errores.length) { caja.hidden = true; return; }
+    errores.forEach(([id]) => { if (id !== 'btn-gps') this.el(id).setAttribute('aria-invalid', 'true'); });
+    caja.innerHTML = '<h2>Falta corregir ' + errores.length + (errores.length === 1 ? ' dato' : ' datos') + '</h2><ul>' +
+      errores.map(([id, t]) => '<li><a href="#' + id + '">' + t + '</a></li>').join('') + '</ul>';
+    caja.hidden = false;
+    caja.focus();
+  },
+
+  valores() {
+    const otra = this.estado.especieId === this.OTRA;
+    return {
+      lat: SRP.mapa.lat, lng: SRP.mapa.lng,
+      alcaldia: this.estado.territorio.alcaldia, colonia: this.estado.territorio.colonia,
+      uga: this.estado.territorio.uga, capa_version: this.estado.territorio.capa_version,
+      especie_id: otra ? null : this.estado.especieId,
+      especie_otra: otra ? this.el('campo-otra-especie').value.trim() : '',
+      programa_id: this.el('campo-programa').value,
+      fecha_plantacion: this.el('campo-fecha').value,
+      foto_base64: this.estado.foto, foto_id: this.estado.fotoId
+    };
+  },
+
+  revisar() {
+    const errores = this.validar();
+    this.mostrarErrores(errores);
+    if (errores.length) return;
+    const v = this.valores();
+    const esp = SRP.ref.especieDe(v);
+    const filas = [
+      ['Ubicación', v.lat.toFixed(6) + ', ' + v.lng.toFixed(6)],
+      ['Alcaldía', SRP.ref.territorio(v.alcaldia)],
+      ['Colonia', SRP.ref.territorio(v.colonia)],
+      ['Especie', esp.comun + (esp.cientifico ? ' (' + esp.cientifico + ')' : '')],
+      ['Programa', SRP.ref.nombreCatalogo(v.programa_id)],
+      ['Fecha de plantación', SRP.util.formatearFecha(v.fecha_plantacion)],
+      ['Registrador', this.el('campo-registrador').value],
+      ['Fotografía', v.foto_base64 ? 'Sí' : 'Sin fotografía']
+    ];
+    this.el('dlg-resumen-cuerpo').innerHTML = '<dl class="detalle">' + filas.map(([k, x]) =>
+      '<div><dt>' + k + '</dt><dd>' + SRP.util.escapar(x) + '</dd></div>').join('') + '</dl>';
+    this.el('dlg-resumen').showModal();
+  },
+
+  /* ---------- Guardar ---------- */
+  async guardar() {
+    const v = this.valores();
+    const u = SRP.sesion.usuario;
+    const ahora = SRP.util.ahoraISO();
+    const boton = this.el('btn-resumen-guardar');
+    boton.disabled = true;
+    try {
+      if (this.estado.editando) {
+        const previo = this.estado.editando;
+        const cambiados = ['lat', 'lng', 'especie_id', 'especie_otra', 'programa_id', 'fecha_plantacion', 'foto_id']
+          .filter(k => (previo[k] || null) !== (v[k] || null));
+        const nuevo = Object.assign({}, previo, v, { fecha_ultima_edicion: ahora, editado_por_id: u.id });
+        await SRP.almacen.guardarConBitacora('plantaciones', nuevo,
+          SRP.bitacora.entrada('EDITADO', 'plantacion', nuevo.id, cambiados.length ? 'Campos: ' + cambiados.join(', ') : 'Sin cambios en los datos'));
+        this.el('dlg-resumen').close();
+        this.limpiar();
+        SRP.util.anunciar('Cambios guardados.');
+        SRP.app.mostrarVista('registros');
+      } else {
+        const nuevo = Object.assign({
+          id: SRP.util.generarId(), es_ficticio: SRP.CONFIG.ES_FICTICIO, estatus: 'activo',
+          registrador_id: u.id, lat_original: v.lat, lng_original: v.lng,
+          fecha_registro: ahora, fecha_ultima_edicion: null, editado_por_id: null
+        }, v);
+        await SRP.almacen.guardarConBitacora('plantaciones', nuevo, SRP.bitacora.entrada('CREADO', 'plantacion', nuevo.id));
+        this.el('dlg-resumen').close();
+        // Se conservan programa, fecha y ubicación: en campo se registran varios árboles seguidos
+        this.el('campo-especie').value = ''; this.estado.especieId = null; this.mostrarOtra(false);
+        this.ponerFoto(null, null);
+        SRP.util.anunciar('Registro guardado.');
+        this.el('campo-especie').focus();
+      }
+    } catch (err) {
+      SRP.util.anunciar('No se pudo guardar: ' + err.message + '. Sus datos siguen en pantalla; intente de nuevo.', 'alerta');
+    } finally {
+      boton.disabled = false;
+    }
+  },
+
+  /* ---------- Edición ---------- */
+  editar(registro) {
+    this.limpiar();
+    this.estado.editando = registro;
+    this.el('titulo-registrar').textContent = 'Editar registro';
+    const aviso = this.el('edicion-aviso');
+    aviso.textContent = 'Está editando el registro del ' + SRP.util.formatearFecha(registro.fecha_plantacion) +
+      ' capturado por ' + SRP.ref.nombreUsuario(registro.registrador_id) + '. Los cambios quedan en el historial.';
+    aviso.hidden = false;
+    this.el('btn-cancelar-edicion').hidden = false;
+    this.el('campo-registrador').value = SRP.ref.nombreUsuario(registro.registrador_id);
+    this.el('campo-fecha').value = registro.fecha_plantacion;
+    this.llenarProgramas(registro.programa_id);
+    if (registro.especie_id) this.elegirEspecie(registro.especie_id);
+    else this.elegirEspecie(this.OTRA, registro.especie_otra);
+    this.ponerFoto(registro.foto_base64, registro.foto_id);
+    SRP.app.mostrarVista('registrar');
+    SRP.mapa.colocar(registro.lat, registro.lng, 'Ubicación registrada.', true);
+  },
+
+  limpiar() {
+    this.estado.editando = null;
+    this.el('titulo-registrar').textContent = 'Nuevo registro';
+    this.el('edicion-aviso').hidden = true;
+    this.el('btn-cancelar-edicion').hidden = true;
+    this.el('campo-especie').value = ''; this.estado.especieId = null; this.mostrarOtra(false);
+    this.el('campo-fecha').value = SRP.util.fechaHoy();
+    this.ponerFoto(null, null);
+    this.mostrarErrores([]);
+    SRP.mapa.limpiar();
+    this.el('dato-alcaldia').textContent = '—';
+    this.el('dato-colonia').textContent = '—';
+    this.el('campo-registrador').value = SRP.util.nombreCompleto(SRP.sesion.usuario);
+  }
+};
