@@ -29,10 +29,18 @@ SRP.util = {
     return d.toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
   },
 
-  nombreMes(aaaamm) {
+  // 'AAAA-MM' -> 'Septiembre de 2026'; con soloMes, -> 'Septiembre'
+  nombreMes(aaaamm, soloMes) {
     const [a, m] = aaaamm.split('-').map(Number);
-    const t = new Date(a, m - 1, 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' });
+    const t = new Date(a, m - 1, 1).toLocaleDateString('es-MX', soloMes ? { month: 'long' } : { month: 'long', year: 'numeric' });
     return t.charAt(0).toUpperCase() + t.slice(1);
+  },
+
+  // Clave sugerida a partir de un nombre: sin acentos, mayúsculas, guion bajo.
+  // 'Reforestación Urbana' -> 'REFORESTACION_URBANA'. Editable antes de guardar.
+  claveDesdeNombre(nombre) {
+    return this.normalizar(nombre).toUpperCase()
+      .replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 30).replace(/_+$/, '');
   },
 
   escapar(texto) {

@@ -100,6 +100,8 @@ main:focus { outline: none; }
 }
 .campo input[readonly] { background: var(--fondo-suave); border-color: var(--borde-suave); color: var(--gris); }
 .campo-doble { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-3); }
+/* Excepción deliberada: Año y Mes son cortos y caben en dos columnas hasta en teléfono */
+.campo-doble-fijo { grid-template-columns: 1fr 1fr; }
 .campo-crece { flex: 1; margin-bottom: 0; }
 
 .fila-botones { display: flex; flex-wrap: wrap; gap: var(--e-2); align-items: flex-end; margin-bottom: var(--e-3); }
@@ -191,6 +193,7 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 @media (max-width: 480px) {
   .encabezado-logo { height: 26px; }
   .campo-doble { grid-template-columns: 1fr; }
+  .campo-doble-fijo { grid-template-columns: 1fr 1fr; }
   .detalle div { grid-template-columns: 1fr; gap: 0; }
   .tabla thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .tabla tr { display: block; border: 1px solid var(--borde-suave); border-radius: var(--radio); margin-bottom: var(--e-3); }

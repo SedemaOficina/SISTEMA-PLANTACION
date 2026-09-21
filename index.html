@@ -125,7 +125,16 @@
   <section id="vista-registros" class="vista" hidden aria-labelledby="titulo-registros">
     <h1 id="titulo-registros">Mis registros</h1>
     <div class="filtros">
-      <div id="filtro-meses" class="chips" role="group" aria-label="Filtrar por mes"></div>
+      <div id="filtro-atajos" class="chips" role="group" aria-label="Periodos frecuentes">
+        <button type="button" class="chip" data-atajo="mes">Este mes</button>
+        <button type="button" class="chip" data-atajo="mes-pasado">Mes pasado</button>
+        <button type="button" class="chip" data-atajo="anio">Este año</button>
+        <button type="button" class="chip" data-atajo="todos">Todos</button>
+      </div>
+      <div class="campo-doble campo-doble-fijo">
+        <div class="campo"><label for="filtro-anio">Año</label><select id="filtro-anio"></select></div>
+        <div class="campo"><label for="filtro-mes">Mes</label><select id="filtro-mes"></select></div>
+      </div>
       <div class="campo-doble">
         <div class="campo"><label for="filtro-desde">Desde</label><input type="date" id="filtro-desde"></div>
         <div class="campo"><label for="filtro-hasta">Hasta</label><input type="date" id="filtro-hasta"></div>
@@ -133,7 +142,7 @@
       <div id="caja-filtro-registrador" class="campo" hidden>
         <label for="filtro-registrador">Registrador</label><select id="filtro-registrador"></select>
       </div>
-      <button type="button" id="btn-filtrar" class="btn btn-secundario">Aplicar filtro</button>
+      <button type="button" id="btn-filtrar" class="btn btn-secundario">Aplicar rango</button>
     </div>
     <p id="registros-total" class="total" aria-live="polite"></p>
     <ul id="lista-registros" class="lista-registros"></ul>
@@ -192,7 +201,7 @@
     <h2 id="dlg-catalogo-titulo">Agregar</h2>
     <div id="cat-errores" class="errores" tabindex="-1" hidden></div>
     <div class="campo"><label for="cat-nombre" id="etq-cat-nombre">Nombre</label><input id="cat-nombre" required></div>
-    <div class="campo"><label for="cat-clave">Clave</label><input id="cat-clave" required aria-describedby="cat-clave-ayuda"><p id="cat-clave-ayuda" class="nota">Mayúsculas, números y guion bajo. No se puede cambiar después.</p></div>
+    <div class="campo"><label for="cat-clave">Clave</label><input id="cat-clave" required aria-describedby="cat-clave-ayuda"><p id="cat-clave-ayuda" class="nota">Se sugiere a partir del nombre. Puede cambiarla ahora; después ya no.</p></div>
     <div class="campo solo-especie"><label for="cat-cientifico">Nombre científico</label><input id="cat-cientifico"></div>
     <div class="campo solo-especie"><label for="cat-grupo">Grupo</label>
       <select id="cat-grupo"><option value="Nativa">Nativa</option><option value="Introducida">Introducida</option></select></div>

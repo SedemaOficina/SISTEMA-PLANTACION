@@ -4,6 +4,7 @@ window.SRP = window.SRP || {};
 
 SRP.catalogos = {
   tipo: 'programa', editando: null,
+  claveTocada: false,   // deja de sugerir en cuanto la persona escribe su propia clave
   ETIQUETA: { programa: 'programa', area: 'área', especie: 'especie' },
 
   el(id) { return document.getElementById(id); },
@@ -17,6 +18,18 @@ SRP.catalogos = {
       this.preparar();
     });
     this.el('cat-buscar').addEventListener('input', () => this.pintar());
+    // La clave se propone a partir del nombre mientras nadie la edite a mano
+    this.el('cat-nombre').addEventListener('input', () => {
+      if (this.editando || this.claveTocada) return;
+      this.el('cat-clave').value = this.claveLibre(SRP.util.claveDesdeNombre(this.el('cat-nombre').value));
+    });
+    // La clave siempre se guarda y se ve en mayúsculas, se escriba como se escriba
+    this.el('cat-clave').addEventListener('input', (e) => {
+      this.claveTocada = true;
+      const pos = e.target.selectionStart;
+      e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, '_');
+      e.target.setSelectionRange(pos, pos);
+    });
     this.el('btn-cat-agregar').addEventListener('click', () => this.abrirFormulario(null));
     this.el('btn-cat-cancelar').addEventListener('click', () => this.el('dlg-catalogo').close());
     this.el('form-catalogo').addEventListener('submit', (e) => { e.preventDefault(); this.guardar(); });
@@ -44,7 +57,10 @@ SRP.catalogos = {
     const esc = SRP.util.escapar;
     const q = SRP.util.normalizar(this.el('cat-buscar').value);
     const esEspecie = this.tipo === 'especie';
-    const unidad = this.tipo === 'area' ? 'usuarios' : 'registros';
+    // Singular y plural: «1 registro», no «1 registros»
+    const unidad = (n) => this.tipo === 'area'
+      ? (n === 1 ? 'usuario' : 'usuarios')
+      : (n === 1 ? 'registro' : 'registros');
     const items = SRP.ref.deTipo(this.tipo, false).filter(c => !q ||
       SRP.util.normalizar(c.nombre).includes(q) || SRP.util.normalizar(c.nombre_cientifico).includes(q));
     const cab = '<thead><tr><th scope="col">Nombre</th>' + (esEspecie ? '<th scope="col">Nombre científico</th><th scope="col">Grupo</th>' : '') +
@@ -59,7 +75,7 @@ SRP.catalogos = {
         (esEspecie ? '<td data-etiqueta="Científico"><i>' + esc(c.nombre_cientifico) + '</i></td><td data-etiqueta="Grupo">' + esc(c.grupo) + '</td>' : '') +
         '<td data-etiqueta="Clave">' + esc(c.clave) + '</td>' +
         '<td data-etiqueta="Estado"><span class="estado-texto" data-activo="' + c.activo + '">' + (c.activo ? 'Activo' : 'Inactivo') + '</span></td>' +
-        '<td data-etiqueta="Uso">' + uso + ' ' + unidad + '</td>' +
+        '<td data-etiqueta="Uso">' + uso + ' ' + unidad(uso) + '</td>' +
         '<td data-etiqueta="Acciones"><div class="tabla-acciones">' +
         '<button type="button" class="btn btn-secundario btn-chico" data-accion="editar" data-id="' + c.id + '">Editar</button>' +
         '<button type="button" class="btn btn-secundario btn-chico" data-accion="estado" data-id="' + c.id + '">' + (c.activo ? 'Desactivar' : 'Activar') + '</button>' +
@@ -68,8 +84,21 @@ SRP.catalogos = {
     this.el('tabla-catalogo').innerHTML = cab + '<tbody>' + (filas || '<tr><td colspan="7">Sin resultados.</td></tr>') + '</tbody>';
   },
 
+  // Si la clave propuesta ya existe, agrega _2, _3… hasta encontrar una libre
+  claveLibre(base) {
+    if (!base) return '';
+    const usadas = SRP.ref.catalogos.filter(c => c.tipo === this.tipo).map(c => c.clave);
+    if (!usadas.includes(base)) return base;
+    for (let n = 2; n < 100; n++) {
+      const tope = base.slice(0, 30 - String(n).length - 1);
+      if (!usadas.includes(tope + '_' + n)) return tope + '_' + n;
+    }
+    return base;
+  },
+
   abrirFormulario(item) {
     this.editando = item;
+    this.claveTocada = false;
     const esEspecie = this.tipo === 'especie';
     this.el('dlg-catalogo-titulo').textContent = (item ? 'Editar ' : 'Agregar ') + this.ETIQUETA[this.tipo];
     this.el('etq-cat-nombre').textContent = esEspecie ? 'Nombre común' : 'Nombre';
@@ -157,7 +186,8 @@ SRP.catalogos = {
   async eliminar(item) {
     await this.preparar();                        // recuenta el uso justo antes de decidir
     if (this.uso[item.id]) {
-      SRP.util.anunciar('No se puede eliminar: tiene ' + this.uso[item.id] + ' registros asignados. Desactívelo.', 'alerta');
+      const n = this.uso[item.id];
+      SRP.util.anunciar('No se puede eliminar: tiene ' + n + (n === 1 ? ' registro asignado' : ' registros asignados') + '. Desactívelo.', 'alerta');
       return;
     }
     const ok = await SRP.app.confirmar('¿Eliminar «' + item.nombre + '»? No tiene registros asignados. La bitácora conserva la constancia.', 'Eliminar');

@@ -2,28 +2,48 @@
 window.SRP = window.SRP || {};
 
 SRP.registros = {
-  filtro: { mes: null, desde: '', hasta: '', registrador: '' },
+  // anio y mes son el camino normal; desde/hasta es el rango fino. Los dos no conviven:
+  // elegir uno limpia el otro, para que la pantalla nunca muestre dos criterios a la vez.
+  filtro: { anio: '', mes: '', desde: '', hasta: '', registrador: '' },
   visibles: [], filtrados: [], mostrados: 0,
 
   el(id) { return document.getElementById(id); },
 
   iniciar() {
-    this.el('filtro-meses').addEventListener('click', (e) => {
+    this.el('filtro-atajos').addEventListener('click', (e) => {
       const b = e.target.closest('.chip'); if (!b) return;
-      this.filtro.mes = b.dataset.mes || null;
-      this.el('filtro-desde').value = ''; this.el('filtro-hasta').value = '';
-      this.filtro.desde = ''; this.filtro.hasta = '';
+      this.aplicarAtajo(b.dataset.atajo);
+    });
+    this.el('filtro-anio').addEventListener('change', () => {
+      this.filtro.anio = this.el('filtro-anio').value;
+      this.filtro.mes = '';                 // al cambiar de año, el mes elegido puede no existir ahí
+      this.limpiarRango();
+      this.llenarMeses();
+      this.sincronizarControles();
+      this.aplicar();
+    });
+    this.el('filtro-mes').addEventListener('change', () => {
+      this.filtro.mes = this.el('filtro-mes').value;
+      if (this.filtro.mes && !this.filtro.anio) {   // un mes sin año no significa nada
+        this.filtro.anio = this.aniosDisponibles()[0] || String(new Date().getFullYear());
+        this.el('filtro-anio').value = this.filtro.anio;
+      }
+      this.limpiarRango();
+      this.sincronizarControles();
       this.aplicar();
     });
     this.el('btn-filtrar').addEventListener('click', () => {
-      this.filtro.desde = this.el('filtro-desde').value;
-      this.filtro.hasta = this.el('filtro-hasta').value;
-      this.filtro.registrador = this.el('filtro-registrador').value;
-      if (this.filtro.desde || this.filtro.hasta) this.filtro.mes = null;
-      if (this.filtro.desde && this.filtro.hasta && this.filtro.desde > this.filtro.hasta) {
+      const desde = this.el('filtro-desde').value;
+      const hasta = this.el('filtro-hasta').value;
+      if (desde && hasta && desde > hasta) {
         SRP.util.anunciar('La fecha «Desde» es posterior a «Hasta». Corrija el rango.', 'alerta');
         return;
       }
+      this.filtro.desde = desde;
+      this.filtro.hasta = hasta;
+      this.filtro.registrador = this.el('filtro-registrador').value;
+      if (desde || hasta) { this.filtro.anio = ''; this.filtro.mes = ''; }
+      this.sincronizarControles();
       this.aplicar();
     });
     this.el('btn-mas').addEventListener('click', () => this.pintar(true));
@@ -58,33 +78,100 @@ SRP.registros = {
         .map(([id, n]) => '<option value="' + id + '">' + SRP.util.escapar(n) + '</option>').join('');
       sel.value = this.filtro.registrador;
     }
-    this.pintarMeses();
+    this.llenarAnios();
+    this.llenarMeses();
+    this.sincronizarControles();
     this.aplicar();
   },
 
-  pintarMeses() {
-    const meses = [...new Set(this.visibles.map(r => r.fecha_plantacion.slice(0, 7)))].sort().reverse().slice(0, 6);
-    const chip = (valor, texto) => '<button type="button" class="chip" data-mes="' + valor + '" aria-pressed="' +
-      String((this.filtro.mes || '') === valor) + '">' + texto + '</button>';
-    this.el('filtro-meses').innerHTML = chip('', 'Todos') + meses.map(m => chip(m, SRP.util.nombreMes(m))).join('');
+  /* ---------- Periodo ---------- */
+
+  // Años con registros, del más reciente al más antiguo
+  aniosDisponibles() {
+    return [...new Set(this.visibles.map(r => r.fecha_plantacion.slice(0, 4)))].sort().reverse();
+  },
+
+  llenarAnios() {
+    const anios = this.aniosDisponibles();
+    const actual = String(new Date().getFullYear());
+    if (!anios.includes(actual)) anios.unshift(actual);   // el año en curso siempre se puede elegir
+    this.el('filtro-anio').innerHTML = '<option value="">Todos</option>' +
+      anios.map(a => '<option value="' + a + '">' + a + '</option>').join('');
+  },
+
+  // Sólo los meses que tienen registros en el año elegido: evita elegir un mes vacío
+  llenarMeses() {
+    const anio = this.filtro.anio;
+    const meses = anio
+      ? [...new Set(this.visibles.filter(r => r.fecha_plantacion.startsWith(anio)).map(r => r.fecha_plantacion.slice(5, 7)))].sort()
+      : [];
+    const sel = this.el('filtro-mes');
+    sel.innerHTML = '<option value="">Todos</option>' +
+      meses.map(m => '<option value="' + m + '">' + SRP.util.nombreMes('2000-' + m, true) + '</option>').join('');
+    sel.disabled = !anio;
+    sel.value = meses.includes(this.filtro.mes) ? this.filtro.mes : '';
+    if (sel.value !== this.filtro.mes) this.filtro.mes = sel.value;
+  },
+
+  aplicarAtajo(atajo) {
+    const hoy = new Date();
+    const f = this.filtro;
+    if (atajo === 'todos') { f.anio = ''; f.mes = ''; }
+    else if (atajo === 'anio') { f.anio = String(hoy.getFullYear()); f.mes = ''; }
+    else {
+      const d = new Date(hoy.getFullYear(), hoy.getMonth() - (atajo === 'mes-pasado' ? 1 : 0), 1);
+      f.anio = String(d.getFullYear());
+      f.mes = String(d.getMonth() + 1).padStart(2, '0');
+    }
+    this.limpiarRango();
+    this.llenarMeses();            // ajusta el mes si ese año no tiene registros de ese mes
+    this.sincronizarControles();
+    this.aplicar();
+  },
+
+  limpiarRango() {
+    this.filtro.desde = ''; this.filtro.hasta = '';
+    this.el('filtro-desde').value = ''; this.el('filtro-hasta').value = '';
+  },
+
+  // Deja los controles mostrando exactamente lo que dice this.filtro
+  sincronizarControles() {
+    const f = this.filtro;
+    this.el('filtro-anio').value = f.anio;
+    this.el('filtro-mes').value = f.mes;
+    this.el('filtro-mes').disabled = !f.anio;
+    const hoy = new Date();
+    const mesActual = String(hoy.getFullYear()) + '-' + String(hoy.getMonth() + 1).padStart(2, '0');
+    const d = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
+    const mesPasado = String(d.getFullYear()) + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    const periodo = f.anio ? f.anio + (f.mes ? '-' + f.mes : '') : '';
+    const sinRango = !f.desde && !f.hasta;
+    const activo = {
+      mes: sinRango && periodo === mesActual,
+      'mes-pasado': sinRango && periodo === mesPasado,
+      anio: sinRango && periodo === String(hoy.getFullYear()),
+      todos: sinRango && periodo === ''
+    };
+    this.el('filtro-atajos').querySelectorAll('.chip').forEach(c =>
+      c.setAttribute('aria-pressed', String(!!activo[c.dataset.atajo])));
   },
 
   aplicar() {
     const f = this.filtro;
+    const periodo = f.anio ? f.anio + (f.mes ? '-' + f.mes : '') : '';
     this.filtrados = this.visibles.filter(r =>
-      (!f.mes || r.fecha_plantacion.startsWith(f.mes)) &&
+      (!periodo || r.fecha_plantacion.startsWith(periodo)) &&
       (!f.desde || r.fecha_plantacion >= f.desde) &&
       (!f.hasta || r.fecha_plantacion <= f.hasta) &&
       (!f.registrador || r.registrador_id === f.registrador));
-    this.el('filtro-meses').querySelectorAll('.chip').forEach(c =>
-      c.setAttribute('aria-pressed', String((f.mes || '') === c.dataset.mes && !f.desde && !f.hasta)));
     this.pintar(false);
   },
 
   descripcionFiltro() {
     const f = this.filtro;
     const partes = [];
-    if (f.mes) partes.push(SRP.util.nombreMes(f.mes));
+    if (f.anio && f.mes) partes.push(SRP.util.nombreMes(f.anio + '-' + f.mes));
+    else if (f.anio) partes.push('Año ' + f.anio);
     if (f.desde || f.hasta) partes.push('Del ' + (f.desde ? SRP.util.formatearFecha(f.desde) : 'inicio') + ' al ' + (f.hasta ? SRP.util.formatearFecha(f.hasta) : 'hoy'));
     if (f.registrador) partes.push('Registrador: ' + SRP.ref.nombreUsuario(f.registrador));
     return partes.length ? partes.join('. ') : 'Todos los registros';
