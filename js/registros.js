@@ -61,6 +61,10 @@ SRP.registros = {
     });
     this.el('btn-pdf').addEventListener('click', () => SRP.reportes.generar(this.filtrados, this.descripcionFiltro()));
     this.el('btn-detalle-cerrar').addEventListener('click', () => this.el('dlg-detalle').close());
+    // Al cerrar, su mapa se destruye: uno vivo en un diálogo oculto sigue consumiendo y contando
+    this.el('dlg-detalle').addEventListener('close', () => {
+      if (this.mapaDetalle) { this.mapaDetalle.remove(); this.mapaDetalle = null; }
+    });
   },
 
   async preparar() {
@@ -222,28 +226,41 @@ SRP.registros = {
     this.el('btn-pdf').disabled = n === 0;
   },
 
+  /* El detalle se lee igual que la ficha de revisión: el mapa arriba, los datos con su etiqueta
+     en negritas, la fotografía al final donde se la nombra, y el historial cerrando. Así quien
+     revisa un registro guardado ve lo mismo, en el mismo orden, que quien lo capturó. */
   async verDetalle(r) {
     const esc = SRP.util.escapar;
     const esp = SRP.ref.especieDe(r);
     const filas = [
-      ['Fecha de plantación', SRP.util.formatearFecha(r.fecha_plantacion)],
-      ['Especie', esp.comun + (esp.cientifico ? ' (' + esp.cientifico + ')' : '')],
-      ['Programa', SRP.ref.nombreCatalogo(r.programa_id)],
-      ['Alcaldía', SRP.ref.territorio(r.alcaldia)],
-      ['Colonia', SRP.ref.territorio(r.colonia)],
+      ['Identificador', '<span class="revision-id">' + esc(r.id) + '</span>'],
+      ['Especie', esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : '')],
+      ['Programa', esc(SRP.ref.nombreCatalogo(r.programa_id))],
+      ['Fecha de plantación', esc(SRP.util.formatearFecha(r.fecha_plantacion))],
+      ['Alcaldía', esc(SRP.ref.territorio(r.alcaldia))],
+      ['Colonia', esc(SRP.ref.territorio(r.colonia))],
       ['Coordenadas', r.lat.toFixed(6) + ', ' + r.lng.toFixed(6)],
-      ['Cabo', SRP.ref.nombreUsuario(r.cabo_id)]
+      ['Cabo', esc(SRP.ref.nombreUsuario(r.cabo_id))],
+      ['Fotografía', r.foto_base64
+        ? '<img class="revision-foto" src="' + r.foto_base64 + '" alt="Fotografía del árbol registrado">'
+        : 'Sin fotografía']
     ];
+
     const historial = await SRP.bitacora.deEntidad(r.id);
     const lineas = historial.length ? historial.map(h =>
       '<li>' + SRP.util.formatearFechaHora(h.fecha) + ': ' + esc(h.accion.toLowerCase()) + ' por ' + esc(h.usuario_nombre) +
-      ' (' + esc(SRP.PERFILES[h.perfil] ? SRP.PERFILES[h.perfil].etiqueta : h.perfil) + ')' + (h.detalle ? '. ' + esc(h.detalle) : '') + '</li>').join('')
-      : '<li>Registro de la carga inicial de datos de prueba; sin cambios posteriores.</li>';
+      ' (' + esc(SRP.PERFILES[h.perfil] ? SRP.PERFILES[h.perfil].etiqueta : h.perfil) + ')' +
+      (h.detalle ? '. ' + esc(h.detalle) : '') + '</li>').join('')
+      : '<li>Sin movimientos registrados.</li>';
+
     this.el('dlg-detalle-cuerpo').innerHTML =
-      (r.foto_base64 ? '<img class="revision-foto" src="' + r.foto_base64 + '" alt="Fotografía del árbol registrado">' : '<p class="nota">Registro sin fotografía.</p>') +
-      '<dl class="detalle">' + filas.map(([k, x]) => '<div><dt>' + k + '</dt><dd>' + esc(x) + '</dd></div>').join('') + '</dl>' +
-      '<h3>Historial</h3><ul class="historial">' + lineas + '</ul>';
+      '<dl class="revision-lista">' + filas.map(([etiqueta, valor]) =>
+        '<div class="revision-fila revision-fila-sola"><dt>' + etiqueta + '</dt><dd>' + valor + '</dd></div>').join('') + '</dl>' +
+      '<h3 class="titulo-bloque">Historial</h3><ul class="historial">' + lineas + '</ul>';
+
     this.el('dlg-detalle').showModal();
+    if (this.mapaDetalle) { this.mapaDetalle.remove(); this.mapaDetalle = null; }
+    this.mapaDetalle = SRP.mapa.estatico('detalle-mapa', r.lat, r.lng);
   },
 
   async eliminar(r) {

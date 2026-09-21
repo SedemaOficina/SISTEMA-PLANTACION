@@ -8,9 +8,9 @@ SRP.mapa = {
   mapa: null, marcador: null, lat: null, lng: null, alCambiar: null,
 
   // Icono propio e incrustado: el de Leaflet se descarga de un servidor externo
-  ICONO_SVG: '<svg width="36" height="48" viewBox="0 0 36 48" aria-hidden="true">' +
-    '<path d="M18 2C9.2 2 2 9.1 2 17.9 2 30 18 46 18 46s16-16 16-28.1C34 9.1 26.8 2 18 2z" fill="#9D2148" stroke="#fff" stroke-width="2"/>' +
-    '<circle cx="18" cy="18" r="6.5" fill="#fff" stroke="#B28E5C" stroke-width="2.5"/></svg>',
+  ICONO_SVG: '<svg width="24" height="32" viewBox="0 0 36 48" aria-hidden="true">' +
+    '<path d="M18 2C9.2 2 2 9.1 2 17.9 2 30 18 46 18 46s16-16 16-28.1C34 9.1 26.8 2 18 2z" fill="#9D2148" stroke="#fff" stroke-width="2.5"/>' +
+    '<circle cx="18" cy="18" r="6.5" fill="#fff" stroke="#B28E5C" stroke-width="3"/></svg>',
 
   iniciar(alCambiar) {
     this.alCambiar = alCambiar;
@@ -36,7 +36,8 @@ SRP.mapa = {
       }
       capaLeaflet.addTo(this.mapa);
     });
-    this.icono = L.divIcon({ className: 'pin', html: this.ICONO_SVG, iconSize: [36, 48], iconAnchor: [18, 46] });
+    // La punta del pin marca la coordenada exacta: el anclaje va en ella, no en el centro
+    this.icono = L.divIcon({ className: 'pin', html: this.ICONO_SVG, iconSize: [24, 32], iconAnchor: [12, 31] });
     this.mapa.on('click', (e) => this.colocar(e.latlng.lat, e.latlng.lng, 'Punto colocado en el mapa.'));
   },
 
@@ -119,5 +120,21 @@ SRP.mapa = {
   },
 
   // Leaflet necesita recalcular su tamaño cuando su contenedor pasa de oculto a visible
-  refrescar() { if (this.mapa) setTimeout(() => this.mapa.invalidateSize(), 50); }
+  refrescar() { if (this.mapa) setTimeout(() => this.mapa.invalidateSize(), 50); },
+
+  /* Mapa de sólo lectura con un punto, para las fichas: confirma de un vistazo que el árbol
+     está donde debe. Devuelve la instancia; quien la abre se encarga de destruirla al cerrar,
+     porque un mapa vivo dentro de un diálogo oculto sigue contando como mapa. */
+  estatico(idContenedor, lat, lng) {
+    if (typeof L === 'undefined') return null;
+    const c = SRP.CONFIG.MAPA;
+    const m = L.map(idContenedor, {
+      center: [lat, lng], zoom: c.ZOOM_PUNTO, zoomControl: false, attributionControl: false,
+      dragging: false, scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false, keyboard: false
+    });
+    c.CAPAS.forEach(capa => L.tileLayer(capa.url, { maxZoom: c.ZOOM_MAX }).addTo(m));
+    L.marker([lat, lng], { icon: this.icono, interactive: false }).addTo(m);
+    setTimeout(() => m.invalidateSize(), 60);
+    return m;
+  }
 };

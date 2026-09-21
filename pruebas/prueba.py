@@ -31,7 +31,7 @@ with sync_playwright() as p:
 
     # ---------- ACCESO ----------
     ok(pg.is_visible('#vista-acceso'),'la pantalla de acceso abre primero')
-    ok('0.5.2' in pg.inner_text('#version'),'la versión sale de la marca del archivo: '+pg.inner_text('#version'))
+    ok('0.5.3' in pg.inner_text('#version'),'la versión sale de la marca del archivo: '+pg.inner_text('#version'))
     sinmarca=pg.evaluate("""() => [...document.querySelectorAll('script[src],link[rel=stylesheet][href]')]
         .map(e=>e.src||e.href).filter(u=>u.includes('127.0.0.1')&&!u.includes('?v=')).length""")
     ok(sinmarca==0,'todos los archivos propios llevan marca de versión')
@@ -51,6 +51,9 @@ with sync_playwright() as p:
     pg.click('#form-acceso button[type=submit]'); pg.wait_for_timeout(700)
     ok(pg.is_visible('#vista-registrar') and 'Fulana' in pg.inner_text('#usuario-nombre'),'se entra con el correo, sin importar mayúsculas')
     ok('Cabo' in pg.inner_text('#usuario-perfil'),'y el perfil dice Cabo: '+pg.inner_text('#usuario-perfil'))
+    ok(pg.is_visible('#btn-cerrar-sesion'),'cerrar sesión está junto al nombre, en el encabezado')
+    ok(pg.is_visible('#btn-cambiar-perfil'),'y cambiar de usuario, mientras haya datos de prueba')
+    ok(pg.locator('#herramientas-prueba #btn-cambiar-perfil').count()==0,'ya no está duplicado al pie')
 
     # ---------- REGISTRAR ----------
     ok('Estás registrando como' in pg.inner_text('label[for=campo-cabo]'),'la etiqueta dice a nombre de quién se registra')
@@ -99,7 +102,16 @@ with sync_playwright() as p:
     pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(900)
     ok(pg.is_visible('#dlg-resumen'),'la ficha de revisión aparece antes de guardar')
     ok(pg.locator('#revision-mapa .leaflet-marker-icon').count()==1,'la ficha muestra el mapa con el punto')
-    ok(pg.is_visible('#revision-foto'),'y la fotografía')
+    ok(pg.locator('.revision-fila', has_text='Fotografía').locator('img.revision-foto').count()==1,
+       'y la fotografía, en su propio renglón al final')
+    ok(pg.locator('#revision-lista').bounding_box()['y'] < pg.locator('img.revision-foto').bounding_box()['y'],
+       'la fotografía va debajo de los datos, no encima')
+    ok(pg.evaluate("getComputedStyle(document.querySelector('.revision-fila dt')).fontWeight")=='700',
+       'las etiquetas de la ficha van en negritas')
+    ok(float(pg.evaluate("parseFloat(getComputedStyle(document.querySelector('.revision-nota')).marginTop)"))>=12,
+       'la nota del final tiene aire arriba')
+    ok(pg.evaluate("SRP.mapa.icono.options.iconSize[0]")<=24,
+       'el pin es discreto (%s px de ancho)' % pg.evaluate("SRP.mapa.icono.options.iconSize[0]"))
     id1=pg.inner_text('#revision-lista .revision-id')
     ok(len(id1)>20,'la ficha muestra el identificador')
     ok(pg.locator('.revision-fila', has_text='Identificador').locator('button').count()==0,'el identificador no se edita')
@@ -169,9 +181,20 @@ with sync_playwright() as p:
     d.value.save_as('/home/claude/srp/reporte_prueba.pdf')
     ok(os.path.getsize('/home/claude/srp/reporte_prueba.pdf')>20000,'el reporte PDF se genera: '+d.value.suggested_filename)
 
-    pg.click('#lista-registros button[data-accion=ver] >> nth=0'); pg.wait_for_timeout(400)
+    pg.click('#lista-registros button[data-accion=ver] >> nth=0'); pg.wait_for_timeout(900)
+    ok(pg.locator('#detalle-mapa .leaflet-marker-icon').count()==1,'el detalle trae el mapa con el punto')
+    ok(pg.evaluate("getComputedStyle(document.querySelector('#dlg-detalle-cuerpo dt')).fontWeight")=='700',
+       'con las etiquetas en negritas')
+    fila_foto=pg.locator('#dlg-detalle-cuerpo .revision-fila', has_text='Fotografía')
+    ok(fila_foto.count()==1,'la fotografía tiene su propio renglón')
+    y_foto=fila_foto.bounding_box()['y']
+    y_hist=pg.locator('#dlg-detalle .historial').bounding_box()['y']
+    y_esp=pg.locator('#dlg-detalle-cuerpo .revision-fila', has_text='Especie').bounding_box()['y']
+    ok(y_esp < y_foto < y_hist,'orden: datos, fotografía y al final el historial')
     ok('Historial' in pg.inner_text('#dlg-detalle'),'el detalle trae el historial')
-    pg.click('#btn-detalle-cerrar'); pg.wait_for_timeout(200)
+    ok('Identificador' in pg.inner_text('#dlg-detalle'),'y el identificador del registro')
+    pg.click('#btn-detalle-cerrar'); pg.wait_for_timeout(300)
+    ok(pg.evaluate("SRP.registros.mapaDetalle")is None,'al cerrar, su mapa se destruye')
     pg.click('#lista-registros button[data-accion=editar] >> nth=0'); pg.wait_for_timeout(600)
     ok(pg.is_visible('#edicion-aviso'),'editar abre el formulario precargado')
     pg.fill('#campo-especie','ahuehu'); pg.wait_for_timeout(150)
@@ -196,7 +219,11 @@ with sync_playwright() as p:
     ok(pg.is_visible('#caja-filtro-cabo'),'sí tiene filtro por cabo')
 
     # ---------- ADMINISTRACIÓN: catálogos ----------
-    pg.click('#btn-cambiar-perfil'); pg.select_option('#sel-usuario-prueba','u-admin-1'); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(500)
+    pg.click('#btn-cambiar-perfil'); pg.select_option('#sel-usuario-prueba','u-admin-1'); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(600)
+    ok(pg.is_hidden('.pestana[data-vista=registrar]'),'la administración no tiene pestaña Registrar')
+    ok(pg.is_visible('#vista-registros'),'y entra directamente a Registros')
+    pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(300)
+    ok(pg.is_visible('#vista-registros'),'ni la abre llamándola directamente')
     pg.click('.pestana[data-vista=catalogos]'); pg.wait_for_timeout(500)
     ok(pg.locator('#tabla-catalogo button[data-accion=eliminar]').count()==0,'un programa en uso no ofrece Eliminar')
     pg.click('#btn-cat-agregar'); pg.wait_for_timeout(300)
@@ -263,7 +290,9 @@ with sync_playwright() as p:
     f2=pg.locator('#tabla-usuarios tbody tr', has_text='Fulana')
     f2.locator('button[data-accion=estado]').click(); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
     ok('Inactivo' in pg.locator('#tabla-usuarios tbody tr', has_text='Fulana').inner_text(),'se desactiva una cuenta')
-    pg.click('#btn-cambiar-perfil'); pg.fill('#acceso-correo','cabo@ejemplo.local'); pg.fill('#acceso-clave','x')
+    pg.click('#btn-cerrar-sesion'); pg.wait_for_timeout(400)
+    ok(pg.is_visible('#vista-acceso') and pg.is_hidden('#encabezado-usuario'),'cerrar sesión devuelve al acceso')
+    pg.fill('#acceso-correo','cabo@ejemplo.local'); pg.fill('#acceso-clave','x')
     pg.click('#form-acceso button[type=submit]'); pg.wait_for_timeout(400)
     ok('desactivada' in pg.inner_text('#acceso-errores'),'y la cuenta desactivada ya no entra')
 

@@ -92,11 +92,15 @@ SRP.app = {
       SRP.sesion.iniciar(u);
       this.entrar();
     });
-    this.el('btn-cambiar-perfil').addEventListener('click', () => {
+    // Cerrar sesión y cambiar de usuario hacen lo mismo por dentro; se separan porque una es
+    // del sistema y la otra sólo existe mientras haya datos de prueba.
+    const salir = () => {
       SRP.formulario.limpiar();
       SRP.sesion.cerrar();
       this.mostrarAcceso();
-    });
+    };
+    this.el('btn-cerrar-sesion').addEventListener('click', salir);
+    this.el('btn-cambiar-perfil').addEventListener('click', salir);
     this.el('btn-restablecer').addEventListener('click', async () => {
       const ok = await this.confirmar('¿Restablecer los datos de prueba? Se pierde todo lo capturado en este dispositivo.', 'Restablecer');
       if (!ok) return;
@@ -131,6 +135,7 @@ SRP.app = {
     this.el('usuario-nombre').textContent = SRP.util.nombreCompleto(u);
     this.el('usuario-perfil').textContent = p.etiqueta;
     this.el('encabezado-usuario').hidden = false;
+    this.el('btn-cambiar-perfil').hidden = !SRP.CONFIG.ES_FICTICIO;
     this.el('navegacion').hidden = false;
     this.el('herramientas-prueba').hidden = !SRP.CONFIG.ES_FICTICIO;
     this.el('navegacion').querySelector('[data-vista="registrar"]').hidden = !p.registrar;

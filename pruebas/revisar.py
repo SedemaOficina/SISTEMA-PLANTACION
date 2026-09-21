@@ -10,9 +10,16 @@ with sync_playwright() as p:
     ctx=b.new_context(viewport={'width':int(ancho/escala),'height':int(900/escala)},
                       geolocation={'latitude':19.4326,'longitude':-99.1332},permissions=['geolocation'])
     pg=ctx.new_page(); pg.goto(URL); pg.wait_for_timeout(700)
-    pg.select_option('#sel-usuario-prueba','u-admin-1'); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(500)
-    for vista in ['registrar','registros','catalogos','usuarios']:
-      pg.evaluate(f"SRP.app.mostrarVista('{vista}')"); pg.wait_for_timeout(450)
+    # Cada vista se revisa con el perfil que la tiene: la administración no captura, y el cabo
+    # no ve catálogos ni cuentas.
+    for vista, quien in [('registrar','u-cabo-1'), ('registros','u-admin-1'),
+                         ('catalogos','u-admin-1'), ('usuarios','u-admin-1')]:
+      if pg.is_visible('#btn-cambiar-perfil'): pg.click('#btn-cambiar-perfil'); pg.wait_for_timeout(300)
+      pg.select_option('#sel-usuario-prueba', quien); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(500)
+      pg.evaluate(f"SRP.app.mostrarVista('{vista}')"); pg.wait_for_timeout(500)
+      if not pg.is_visible('#vista-'+vista):
+        problemas.append(f"{nombre}/{vista}: la vista no abrio con {quien}")
+        continue
       # desbordamiento horizontal
       # Lo que la persona nota: que la página entera se pueda arrastrar de lado
       desb=pg.evaluate("""() => {

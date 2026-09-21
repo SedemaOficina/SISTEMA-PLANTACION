@@ -277,7 +277,9 @@ SRP.formulario = {
       ['Colonia', esc(SRP.ref.territorio(v.colonia)), null],
       ['Coordenadas', v.lat.toFixed(6) + ', ' + v.lng.toFixed(6), 'punto'],
       ['Cabo', esc(this.el('campo-cabo').value), null],
-      ['Fotografía', v.foto_base64 ? esc(SRP.foto.formatearPeso(v.foto_bytes)) + ' incluida' : 'Sin fotografía', 'foto']
+      ['Fotografía', v.foto_base64
+        ? '<img class="revision-foto" src="' + v.foto_base64 + '" alt="Fotografía del árbol que se va a registrar">'
+        : 'Sin fotografía', 'foto']
     ];
 
     this.el('revision-lista').innerHTML = filas.map(([etiqueta, valor, campo]) => {
@@ -290,27 +292,12 @@ SRP.formulario = {
       '<p class="revision-nota">El identificador lo asigna el sistema y no se modifica. ' +
       'La alcaldía y la colonia salen del punto: para cambiarlas hay que mover la coordenada.</p>';
 
-    const foto = this.el('revision-foto');
-    foto.hidden = !v.foto_base64;
-    if (v.foto_base64) foto.src = v.foto_base64; else foto.removeAttribute('src');
-
     this.el('dlg-resumen').showModal();
     this.dibujarMapaRevision(v.lat, v.lng);
   },
 
-  // Mapa de sólo lectura con el punto: confirma de un vistazo que está donde debe.
-  // Se destruye al cerrar para no dejar un mapa vivo en un diálogo oculto.
   dibujarMapaRevision(lat, lng) {
-    if (typeof L === 'undefined') return;
-    const c = SRP.CONFIG.MAPA;
-    const m = L.map('revision-mapa', {
-      center: [lat, lng], zoom: c.ZOOM_PUNTO, zoomControl: false, attributionControl: false,
-      dragging: false, scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false, keyboard: false
-    });
-    c.CAPAS.forEach(capa => L.tileLayer(capa.url, { maxZoom: c.ZOOM_MAX }).addTo(m));
-    L.marker([lat, lng], { icon: SRP.mapa.icono, interactive: false }).addTo(m);
-    this.mapaRevision = m;
-    setTimeout(() => m.invalidateSize(), 60);
+    this.mapaRevision = SRP.mapa.estatico('revision-mapa', lat, lng);
   },
 
   // Cierra la ficha y lleva a donde se corrige ese dato

@@ -24,7 +24,7 @@ El sistema arranca con tres cuentas y **ninguna plantación**: se llena con lo q
 
 | Correo | Perfil | Qué puede hacer |
 |---|---|---|
-| administracion@ejemplo.local | Administración global | Todo, más las pestañas Catálogos y Usuarios |
+| administracion@ejemplo.local | Administración global | Ve, edita y elimina todo, y lleva Catálogos y Usuarios. **No captura registros** |
 | coordinador@ejemplo.local | Coordinador | Ve y edita los registros de su cuadrilla; no elimina |
 | cabo@ejemplo.local | Cabo | Registra, y ve, edita y elimina sólo los suyos |
 

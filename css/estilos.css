@@ -61,6 +61,8 @@ h1[tabindex="-1"]:focus { outline: none; }
 }
 .encabezado-logo { height: 34px; width: auto; }
 .encabezado-usuario { display: flex; flex-direction: column; align-items: flex-end; gap: var(--e-1); min-width: 0; text-align: right; }
+/* Salir de la sesión se decide donde se ve de quién es: junto al nombre, no al pie de la página */
+.encabezado-acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--e-2); margin-top: var(--e-1); }
 .encabezado-nombre { font-size: var(--t-s); font-weight: 500; overflow-wrap: anywhere; }
 main { padding: var(--e-4); }
 main:focus { outline: none; }
@@ -215,18 +217,17 @@ main:focus { outline: none; }
 
 /* Ficha de revisión previa: cada dato con su botón de corregir */
 .revision-mapa { height: 190px; border: 1px solid var(--borde-control); border-radius: var(--radio); margin-bottom: var(--e-3); }
-.revision-foto { display: block; max-height: 11rem; border-radius: var(--radio); margin: 0 auto var(--e-3); }
+/* Dentro de la ficha, la fotografía se ve en su propio renglón, al final, donde se nombra */
+.revision-foto { display: block; max-width: 100%; max-height: 9rem; border-radius: var(--radio-control); }
 .revision-lista { margin: 0 0 var(--e-4); }
 .revision-fila { display: grid; grid-template-columns: 8.5rem 1fr auto; gap: var(--e-2); align-items: center; padding: var(--e-2) 0; border-bottom: 1px solid var(--borde-suave); }
-.revision-fila dt { color: var(--gris); font-size: var(--t-s); }
+/* En el detalle no hay botón de corregir: el valor ocupa lo que dejaba libre */
+.revision-fila-sola { grid-template-columns: 8.5rem 1fr; }
+.revision-fila dt { color: var(--texto); font-size: var(--t-s); font-weight: 700; }
 .revision-fila dd { margin: 0; overflow-wrap: anywhere; }
 .revision-id { font-family: ui-monospace, 'Courier New', monospace; font-size: var(--t-xs); }
-.revision-nota { color: var(--gris); font-size: var(--t-xs); margin: 0; }
+.revision-nota { color: var(--gris); font-size: var(--t-xs); margin: var(--e-4) 0 0; line-height: 1.6; }
 
-.detalle { margin: 0 0 var(--e-4); }
-.detalle div { display: grid; grid-template-columns: 9rem 1fr; gap: var(--e-2); padding: var(--e-1) 0; border-bottom: 1px solid var(--borde-suave); }
-.detalle dt { color: var(--gris); font-size: var(--t-s); }
-.detalle dd { margin: 0; overflow-wrap: anywhere; }
 .historial { padding-left: var(--e-5); font-size: var(--t-s); }
 
 dialog { width: min(40rem, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); border: 0; border-top: 4px solid var(--guinda); border-radius: var(--radio); padding: var(--e-5); }
@@ -262,10 +263,17 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 /* ========== 7. @MEDIA ========== */
 @media (max-width: 480px) {
   .encabezado-logo { height: 26px; }
+  /* En teléfono el bloque de usuario baja a su propia fila: ahí los dos botones caben en línea,
+     en vez de apilarse y estirar el encabezado. */
+  .encabezado-interior { flex-wrap: wrap; row-gap: var(--e-2); padding-bottom: var(--e-2); }
+  .encabezado-usuario { flex: 1 0 100%; flex-direction: row; flex-wrap: wrap; align-items: center;
+                        gap: var(--e-2); text-align: left; }
+  .encabezado-acciones { flex: 1 0 100%; justify-content: flex-start; }
+  .encabezado-acciones .btn { flex: 1; }
   .campo-doble { grid-template-columns: 1fr; }
   .campo-doble-fijo { grid-template-columns: 1fr 1fr; }
-  .detalle div { grid-template-columns: 1fr; gap: 0; }
   .revision-fila { grid-template-columns: 1fr auto; }
+  .revision-fila-sola { grid-template-columns: 1fr; }
   .revision-fila dt { grid-column: 1 / -1; }
   /* En teléfono los botones van en fila bajo los datos: apilados a la derecha triplicaban
      el alto de cada registro y obligaban a desplazarse para ver tres árboles. */

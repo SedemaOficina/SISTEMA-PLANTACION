@@ -241,3 +241,43 @@ anula, en las ocho combinaciones de ancho y zoom.
 **Verificación:** sintaxis; 124 comprobaciones del recorrido, sin errores de consola; prueba de
 base anterior, 4 comprobaciones; revisión de presentación con la comprobación nueva; auditorías de
 estilos, código sin uso, identificadores y textos.
+
+## Bloque 11 — Fichas legibles y la administración deja de capturar (21-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.5.3.
+
+**Peticiones de Liber, sobre capturas de la ficha de revisión y del detalle:** el pin es tan grande
+que tapa lo que hay alrededor del punto, en los dos mapas; la fotografía debe verse abajo, en el
+renglón donde se la nombra, en lugar del texto con su peso; la nota del final está demasiado junta
+al resto; las etiquetas de campo deben ir en negritas para distinguirlas de un vistazo; el detalle
+de un registro debe parecerse a la ficha —mapa, etiquetas en negritas, fotografía e historial
+abajo—; y la Administración global no debe tener módulo de Registrar.
+
+**Sobre lo último:** quien registra en campo es el cabo, y el registro tiene que quedar a nombre de
+quien plantó el árbol, no de quien administra el sistema. La Administración conserva el resto:
+ve, edita y elimina cualquier registro, y lleva catálogos y cuentas.
+
+**Qué se hizo:** pin de 24×32 px anclado en la punta, que es la que marca la coordenada; la
+fotografía pasa a su propio renglón al final de ambas fichas; aire alrededor de la nota; etiquetas
+en negritas; y el detalle rehecho con la misma estructura y las mismas clases que la ficha de
+revisión, de modo que quien revisa un registro guardado ve lo mismo, en el mismo orden, que quien
+lo capturó.
+
+**Una pieza que estaba duplicada:** el mapa de sólo lectura se escribía en el formulario y habría
+que haberlo repetido en el detalle. Se movió a `SRP.mapa.estatico()`, que ambos usan. Cada ficha
+destruye su mapa al cerrarse: uno vivo dentro de un diálogo oculto sigue consumiendo y, como ya se
+vio en el Bloque 6, su marcador se cuenta junto con el del mapa principal.
+
+**Eliminado:** las clases propias del detalle, que quedaron sin uso al adoptar las de la ficha.
+
+**También en este bloque:** cerrar sesión y cambiar de usuario pasan al encabezado, junto al
+nombre y el perfil, y desaparecen del pie. En teléfono el bloque de usuario baja a su propia fila
+para que los dos botones quepan en línea en vez de apilarse; el encabezado queda en 138 px.
+
+**Ajuste en la revisión de presentación:** recorría todas las vistas con la Administración, que ya
+no tiene Registrar, de modo que medía un mapa de cero píxeles. Ahora cada vista se revisa con el
+perfil que la tiene, y avisa si alguna no abre.
+
+**Verificación:** 120 comprobaciones del recorrido, diez de ellas nuevas sobre el orden y el peso
+visual de las fichas y sobre los botones de sesión; 35 de auditoría de consistencia; la revisión
+de presentación en ocho combinaciones de ancho y zoom; y las auditorías de estilos, código sin
+uso, identificadores y textos.

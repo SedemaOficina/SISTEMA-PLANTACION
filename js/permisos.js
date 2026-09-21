@@ -8,8 +8,10 @@ SRP.PERFILES = {
                  descripcion: 'Registra plantaciones y ve, edita y elimina únicamente las suyas.' },
   COORDINADOR: { etiqueta: 'Coordinador',            alcance: 'equipo',  registrar: true,  editar: true,  eliminar: false, catalogos: false, usuarios: false, // [pendiente] confirmar si registra y si elimina
                  descripcion: 'Ve y edita los registros de los cabos que tiene asignados. No elimina.' },
-  ADMIN:       { etiqueta: 'Administración global',  alcance: 'todos',   registrar: true,  editar: true,  eliminar: true,  catalogos: true,  usuarios: true,
-                 descripcion: 'Ve y modifica todo, y administra los catálogos y las cuentas de usuario.' },
+  // No captura: administra. Quien registra en campo es el cabo, y el registro debe quedar
+  // a nombre de quien plantó el árbol, no de quien administra el sistema.
+  ADMIN:       { etiqueta: 'Administración global',  alcance: 'todos',   registrar: false, editar: true,  eliminar: true,  catalogos: true,  usuarios: true,
+                 descripcion: 'Ve, edita y elimina todo, y administra los catálogos y las cuentas. No captura registros.' },
   VIEWER:      { etiqueta: 'Consulta',               alcance: 'todos',   registrar: false, editar: false, eliminar: false, catalogos: false, usuarios: false,
                  descripcion: 'Ve todos los registros y genera reportes. No captura ni modifica nada.' }
 };
