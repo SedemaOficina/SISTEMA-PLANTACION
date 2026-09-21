@@ -27,11 +27,11 @@ SRP.reportes = {
       doc.setTextColor(163, 58, 0); doc.text('Documento de prueba con datos ficticios. Sin validez oficial.', 20, 65);
     }
 
-    const cabecera = ['Fecha plantación', 'Especie', 'Alcaldía', 'Colonia'].concat(variosAutores ? ['Registrador'] : []);
+    const cabecera = ['Fecha plantación', 'Especie', 'Alcaldía', 'Colonia'].concat(variosAutores ? ['Cabo'] : []);
     const cuerpo = registros.map(r => [
       SRP.util.formatearFecha(r.fecha_plantacion), SRP.ref.especieDe(r).comun,
       SRP.ref.territorio(r.alcaldia), SRP.ref.territorio(r.colonia)
-    ].concat(variosAutores ? [SRP.ref.nombreUsuario(r.registrador_id)] : []));
+    ].concat(variosAutores ? [SRP.ref.nombreUsuario(r.cabo_id)] : []));
 
     doc.autoTable({
       head: [cabecera], body: cuerpo, startY: 70, margin: { left: 20, right: 20, bottom: 22 },

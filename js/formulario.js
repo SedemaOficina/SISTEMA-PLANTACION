@@ -7,10 +7,31 @@ SRP.formulario = {
 
   el(id) { return document.getElementById(id); },
 
+  /* AVANCE AUTOMÁTICO DEL FOCO.
+     En campo se captura con una mano y sin mirar la pantalla entre dato y dato: al resolver un
+     campo, el siguiente debe estar listo. Sólo se avanza cuando la respuesta quedó cerrada
+     —una especie elegida de la lista, un programa seleccionado— nunca mientras se escribe, para
+     no arrebatar el foco a media palabra. El orden es el mismo que se ve en la pantalla. */
+  ORDEN_FOCO: ['btn-ubicacion', 'campo-especie', 'campo-programa', 'campo-fecha'],
+
+  avanzarFoco(desde) {
+    const i = this.ORDEN_FOCO.indexOf(desde);
+    if (i < 0 || i + 1 >= this.ORDEN_FOCO.length) return;
+    const siguiente = this.el(this.ORDEN_FOCO[i + 1]);
+    if (!siguiente || siguiente.disabled) return;
+    siguiente.focus({ preventScroll: true });
+    siguiente.scrollIntoView({ block: 'center' });
+  },
+
   iniciar() {
     SRP.mapa.iniciar((lat, lng) => this.alMoverPunto(lat, lng));
+    this.el('btn-ubicacion').addEventListener('click', () => SRP.mapa.ubicar());
+    SRP.mapa.refrescarBotonUbicacion();
     this.el('btn-coord-aplicar').addEventListener('click', () => this.aplicarCoordenadasManuales());
     this.iniciarCombo();
+    this.el('campo-programa').addEventListener('change', () => {
+      if (this.el('campo-programa').value) this.avanzarFoco('campo-programa');
+    });
     this.el('foto-archivo').addEventListener('change', (e) => this.cargarFoto(e.target));
     this.el('btn-foto-quitar').addEventListener('click', () => this.ponerFoto(null, null));
     this.el('form-plantacion').addEventListener('submit', (e) => { e.preventDefault(); this.revisar(); });
@@ -41,9 +62,9 @@ SRP.formulario = {
   preparar() {
     this.llenarProgramas();
     if (!this.estado.editando) {
-      this.el('campo-registrador').value = SRP.util.nombreCompleto(SRP.sesion.usuario);
+      this.el('campo-cabo').value = SRP.util.nombreCompleto(SRP.sesion.usuario);
       if (!this.el('campo-fecha').value) this.el('campo-fecha').value = SRP.util.fechaHoy();
-      if (SRP.mapa.lat === null) SRP.mapa.estado('Toque el control de ubicación del mapa para usar su posición, o toque el mapa para colocar el punto.');
+      if (SRP.mapa.lat === null) SRP.mapa.estado('Use el botón de ubicación para tomar su posición, o toque el mapa para colocar el punto.');
     }
     this.el('campo-fecha').max = SRP.util.fechaHoy();
     SRP.mapa.refrescar();
@@ -60,6 +81,9 @@ SRP.formulario = {
   },
 
   alMoverPunto(lat, lng) {
+    // Sólo cuando el punto lo puso el botón: si se está arrastrando el marcador, quitar el
+    // foco a media maniobra sería peor que dejarlo donde está.
+    if (document.activeElement === this.el('btn-ubicacion')) this.avanzarFoco('btn-ubicacion');
     const t = SRP.derivacion.derivar(lat, lng);
     this.estado.territorio = t;
     this.el('dato-alcaldia').textContent = SRP.ref.territorio(t.alcaldia);
@@ -100,7 +124,9 @@ SRP.formulario = {
     });
     lista.addEventListener('mousedown', (e) => {
       const li = e.target.closest('.combo-opcion'); if (!li) return;
-      e.preventDefault(); this.elegirEspecie(li.dataset.id);
+      e.preventDefault();
+      this.elegirEspecie(li.dataset.id);
+      if (li.dataset.id !== this.OTRA) this.avanzarFoco('campo-especie');
     });
   },
 
@@ -177,7 +203,7 @@ SRP.formulario = {
   /* ---------- Validación y resumen ---------- */
   validar() {
     const errores = [];
-    if (SRP.mapa.lat === null) errores.push(['mapa', 'Falta la ubicación: toque el control de ubicación del mapa, toque el mapa o capture coordenadas.']);
+    if (SRP.mapa.lat === null) errores.push(['btn-ubicacion', 'Falta la ubicación: use el botón de ubicación, toque el mapa o capture coordenadas.']);
     if (!this.estado.especieId) errores.push(['campo-especie', 'Elija una especie de la lista o la opción «Otra especie».']);
     if (this.estado.especieId === this.OTRA && !this.el('campo-otra-especie').value.trim())
       errores.push(['campo-otra-especie', 'Escriba qué especie es.']);
@@ -192,7 +218,7 @@ SRP.formulario = {
     ['campo-especie', 'campo-otra-especie', 'campo-programa', 'campo-fecha'].forEach(id => this.el(id).removeAttribute('aria-invalid'));
     const caja = this.el('resumen-errores');
     if (!errores.length) { caja.hidden = true; return; }
-    errores.forEach(([id]) => { if (id !== 'mapa') this.el(id).setAttribute('aria-invalid', 'true'); });
+    errores.forEach(([id]) => { if (id !== 'btn-ubicacion') this.el(id).setAttribute('aria-invalid', 'true'); });
     caja.innerHTML = '<h2>Falta corregir ' + errores.length + (errores.length === 1 ? ' dato' : ' datos') + '</h2><ul>' +
       errores.map(([id, t]) => '<li><a href="#' + id + '">' + t + '</a></li>').join('') + '</ul>';
     caja.hidden = false;
@@ -232,10 +258,10 @@ SRP.formulario = {
       ['Especie', esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : ''), 'especie'],
       ['Programa', esc(SRP.ref.nombreCatalogo(v.programa_id)), 'programa'],
       ['Fecha de plantación', esc(SRP.util.formatearFecha(v.fecha_plantacion)), 'fecha'],
-      ['Alcaldía', esc(SRP.ref.territorio(v.alcaldia)), 'punto'],
-      ['Colonia', esc(SRP.ref.territorio(v.colonia)), 'punto'],
+      ['Alcaldía', esc(SRP.ref.territorio(v.alcaldia)), null],
+      ['Colonia', esc(SRP.ref.territorio(v.colonia)), null],
       ['Coordenadas', v.lat.toFixed(6) + ', ' + v.lng.toFixed(6), 'punto'],
-      ['Registrador', esc(this.el('campo-registrador').value), null],
+      ['Cabo', esc(this.el('campo-cabo').value), null],
       ['Fotografía', v.foto_base64 ? 'Incluida' : 'Sin fotografía', 'foto']
     ];
 
@@ -247,7 +273,7 @@ SRP.formulario = {
       return '<div class="revision-fila"><dt>' + etiqueta + '</dt><dd>' + valor + '</dd>' + boton + '</div>';
     }).join('') +
       '<p class="revision-nota">El identificador lo asigna el sistema y no se modifica. ' +
-      'La ubicación, la alcaldía y la colonia se corrigen volviendo a colocar el punto en el mapa.</p>';
+      'La alcaldía y la colonia salen del punto: para cambiarlas hay que mover la coordenada.</p>';
 
     const foto = this.el('revision-foto');
     foto.hidden = !v.foto_base64;
@@ -276,10 +302,9 @@ SRP.formulario = {
   corregirCampo(campo) {
     this.el('dlg-resumen').close();
     if (campo === 'punto') {
-      SRP.mapa.estado('Vuelva a colocar el punto: toque el mapa o arrastre el marcador.');
-      this.el('mapa').scrollIntoView({ block: 'center' });
-      const ctrl = document.querySelector('.ctrl-ubicacion');
-      if (ctrl) ctrl.focus();
+      SRP.mapa.estado('Vuelva a colocar el punto: use el botón de ubicación, toque el mapa o arrastre el marcador.');
+      this.el('btn-ubicacion').scrollIntoView({ block: 'center' });
+      this.el('btn-ubicacion').focus();
       return;
     }
     if (campo === 'foto') { this.el('etq-foto').scrollIntoView({ block: 'center' }); this.el('foto-archivo').click(); return; }
@@ -313,7 +338,7 @@ SRP.formulario = {
       } else {
         const nuevo = Object.assign({
           id: this.estado.idPrevisto, es_ficticio: SRP.CONFIG.ES_FICTICIO, estatus: 'activo',
-          registrador_id: u.id, lat_original: v.lat, lng_original: v.lng,
+          cabo_id: u.id, lat_original: v.lat, lng_original: v.lng,
           fecha_registro: ahora, fecha_ultima_edicion: null, editado_por_id: null
         }, v);
         await SRP.almacen.guardarConBitacora('plantaciones', nuevo, SRP.bitacora.entrada('CREADO', 'plantacion', nuevo.id));
@@ -350,8 +375,9 @@ SRP.formulario = {
     this.mostrarOtra(false);
     this.ponerFoto(null, null);
     this.mostrarErrores([]);
-    this.el('campo-especie').focus();
     SRP.mapa.refrescar();
+    this.el('btn-ubicacion').scrollIntoView({ block: 'center' });
+    this.el('btn-ubicacion').focus();
   },
 
   /* ---------- Edición ---------- */
@@ -361,10 +387,10 @@ SRP.formulario = {
     this.el('titulo-registrar').textContent = 'Editar registro';
     const aviso = this.el('edicion-aviso');
     aviso.textContent = 'Está editando el registro del ' + SRP.util.formatearFecha(registro.fecha_plantacion) +
-      ' capturado por ' + SRP.ref.nombreUsuario(registro.registrador_id) + '. Los cambios quedan en el historial.';
+      ' capturado por ' + SRP.ref.nombreUsuario(registro.cabo_id) + '. Los cambios quedan en el historial.';
     aviso.hidden = false;
     this.el('btn-cancelar-edicion').hidden = false;
-    this.el('campo-registrador').value = SRP.ref.nombreUsuario(registro.registrador_id);
+    this.el('campo-cabo').value = SRP.ref.nombreUsuario(registro.cabo_id);
     this.el('campo-fecha').value = registro.fecha_plantacion;
     this.llenarProgramas(registro.programa_id);
     if (registro.especie_id) this.elegirEspecie(registro.especie_id);
@@ -387,6 +413,6 @@ SRP.formulario = {
     SRP.mapa.limpiar();
     this.el('dato-alcaldia').textContent = '—';
     this.el('dato-colonia').textContent = '—';
-    this.el('campo-registrador').value = SRP.util.nombreCompleto(SRP.sesion.usuario);
+    this.el('campo-cabo').value = SRP.util.nombreCompleto(SRP.sesion.usuario);
   }
 };

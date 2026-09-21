@@ -32,6 +32,7 @@ js/permisos.js        ÚNICO lugar con las reglas de cada perfil
 js/almacen.js         Base local (IndexedDB), migraciones y bitácora
 js/sesion.js          Acceso (simulado; se sustituye en Fase 2)
 js/datos-ficticios.js Usuarios, catálogos y 34 plantaciones de prueba
+js/iconos.js          Iconos por significado (guardar, eliminar, editar, ubicar)
 js/derivacion.js      Cruce punto-en-polígono (alcaldía, colonia, UGA)
 js/referencias.js     Catálogos y usuarios en memoria
 js/usuarios.js       Alta y administración de cuentas (sólo Administración global)
@@ -61,6 +62,12 @@ forzar la recarga, en vez de quedarse en blanco.
 La capa base es imagen de satélite de Esri, con los nombres de vías y lugares encima. Las tres
 capas se declaran en `CAPAS`, dentro de `js/config.js`; cambiar de proveedor es cambiar esa lista.
 La atribución se muestra en el mapa porque la licencia lo exige.
+
+## Probar en la computadora
+Abrir `index.html` con doble clic funciona para mirar, pero para probar de verdad conviene
+servirlo: `python3 -m http.server 8099` dentro de esta carpeta, y abrir `http://127.0.0.1:8099/`.
+Así el navegador trata el sistema como en el sitio publicado, y las pruebas automáticas pueden
+comprobar la actualización de la base entre versiones.
 
 ## Datos
 Todo vive en el navegador de cada dispositivo (IndexedDB). Borrar los datos del navegador borra

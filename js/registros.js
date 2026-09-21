@@ -4,7 +4,10 @@ window.SRP = window.SRP || {};
 SRP.registros = {
   // anio y mes son el camino normal; desde/hasta es el rango fino. Los dos no conviven:
   // elegir uno limpia el otro, para que la pantalla nunca muestre dos criterios a la vez.
-  filtro: { anio: '', mes: '', desde: '', hasta: '', registrador: '' },
+  // dia gana sobre anio/mes cuando está puesto; el rango los limpia a los tres.
+  // Al entrar, el filtro es el día de hoy: en campo lo que interesa es la jornada en curso.
+  filtro: { dia: '', anio: '', mes: '', desde: '', hasta: '', cabo: '' },
+  primeraVez: true,
   visibles: [], filtrados: [], mostrados: 0,
 
   el(id) { return document.getElementById(id); },
@@ -15,6 +18,7 @@ SRP.registros = {
       this.aplicarAtajo(b.dataset.atajo);
     });
     this.el('filtro-anio').addEventListener('change', () => {
+      this.filtro.dia = '';
       this.filtro.anio = this.el('filtro-anio').value;
       this.filtro.mes = '';                 // al cambiar de año, el mes elegido puede no existir ahí
       this.limpiarRango();
@@ -23,6 +27,7 @@ SRP.registros = {
       this.aplicar();
     });
     this.el('filtro-mes').addEventListener('change', () => {
+      this.filtro.dia = '';
       this.filtro.mes = this.el('filtro-mes').value;
       if (this.filtro.mes && !this.filtro.anio) {   // un mes sin año no significa nada
         this.filtro.anio = this.aniosDisponibles()[0] || String(new Date().getFullYear());
@@ -41,8 +46,8 @@ SRP.registros = {
       }
       this.filtro.desde = desde;
       this.filtro.hasta = hasta;
-      this.filtro.registrador = this.el('filtro-registrador').value;
-      if (desde || hasta) { this.filtro.anio = ''; this.filtro.mes = ''; }
+      this.filtro.cabo = this.el('filtro-cabo').value;
+      if (desde || hasta) { this.filtro.dia = ''; this.filtro.anio = ''; this.filtro.mes = ''; }
       this.sincronizarControles();
       this.aplicar();
     });
@@ -62,22 +67,25 @@ SRP.registros = {
     const u = SRP.sesion.usuario;
     const alcance = SRP.permisos.de(u).alcance;
     this.el('titulo-registros').textContent =
-      alcance === 'propios' ? 'Mis registros' : alcance === 'equipo' ? 'Registros de mi equipo' : 'Todos los registros';
+      alcance === 'propios' ? 'Mis registros' : alcance === 'equipo' ? 'Registros de mi cuadrilla' : 'Todos los registros';
     const todos = await SRP.almacen.porIndice('plantaciones', 'estatus', 'activo');
     this.visibles = todos.filter(r => SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId))
       .sort((a, b) => b.fecha_plantacion.localeCompare(a.fecha_plantacion) || b.fecha_registro.localeCompare(a.fecha_registro));
 
-    // Filtro por registrador sólo para perfiles que ven a más de una persona
-    const caja = this.el('caja-filtro-registrador');
+    // Filtro por cabo sólo para perfiles que ven a más de una persona
+    const caja = this.el('caja-filtro-cabo');
     caja.hidden = alcance === 'propios';
     if (!caja.hidden) {
-      const ids = [...new Set(this.visibles.map(r => r.registrador_id))];
-      const sel = this.el('filtro-registrador');
+      const ids = [...new Set(this.visibles.map(r => r.cabo_id))];
+      const sel = this.el('filtro-cabo');
       sel.innerHTML = '<option value="">Todos</option>' + ids
         .map(id => [id, SRP.ref.nombreUsuario(id)]).sort((a, b) => a[1].localeCompare(b[1], 'es'))
         .map(([id, n]) => '<option value="' + id + '">' + SRP.util.escapar(n) + '</option>').join('');
-      sel.value = this.filtro.registrador;
+      sel.value = this.filtro.cabo;
     }
+    // El chip lleva la fecha para que nadie dude de qué día habla
+    this.el('chip-hoy').textContent = 'Hoy, ' + SRP.util.formatearFecha(SRP.util.fechaHoy());
+    if (this.primeraVez) { this.primeraVez = false; this.filtro.dia = SRP.util.fechaHoy(); }
     this.llenarAnios();
     this.llenarMeses();
     this.sincronizarControles();
@@ -116,7 +124,9 @@ SRP.registros = {
   aplicarAtajo(atajo) {
     const hoy = new Date();
     const f = this.filtro;
-    if (atajo === 'todos') { f.anio = ''; f.mes = ''; }
+    f.dia = '';
+    if (atajo === 'hoy') { f.dia = SRP.util.fechaHoy(); f.anio = ''; f.mes = ''; }
+    else if (atajo === 'todos') { f.anio = ''; f.mes = ''; }
     else if (atajo === 'anio') { f.anio = String(hoy.getFullYear()); f.mes = ''; }
     else {
       const d = new Date(hoy.getFullYear(), hoy.getMonth() - (atajo === 'mes-pasado' ? 1 : 0), 1);
@@ -147,10 +157,11 @@ SRP.registros = {
     const periodo = f.anio ? f.anio + (f.mes ? '-' + f.mes : '') : '';
     const sinRango = !f.desde && !f.hasta;
     const activo = {
-      mes: sinRango && periodo === mesActual,
-      'mes-pasado': sinRango && periodo === mesPasado,
-      anio: sinRango && periodo === String(hoy.getFullYear()),
-      todos: sinRango && periodo === ''
+      hoy: sinRango && f.dia === SRP.util.fechaHoy(),
+      mes: sinRango && !f.dia && periodo === mesActual,
+      'mes-pasado': sinRango && !f.dia && periodo === mesPasado,
+      anio: sinRango && !f.dia && periodo === String(hoy.getFullYear()),
+      todos: sinRango && !f.dia && periodo === ''
     };
     this.el('filtro-atajos').querySelectorAll('.chip').forEach(c =>
       c.setAttribute('aria-pressed', String(!!activo[c.dataset.atajo])));
@@ -160,20 +171,22 @@ SRP.registros = {
     const f = this.filtro;
     const periodo = f.anio ? f.anio + (f.mes ? '-' + f.mes : '') : '';
     this.filtrados = this.visibles.filter(r =>
+      (!f.dia || r.fecha_plantacion === f.dia) &&
       (!periodo || r.fecha_plantacion.startsWith(periodo)) &&
       (!f.desde || r.fecha_plantacion >= f.desde) &&
       (!f.hasta || r.fecha_plantacion <= f.hasta) &&
-      (!f.registrador || r.registrador_id === f.registrador));
+      (!f.cabo || r.cabo_id === f.cabo));
     this.pintar(false);
   },
 
   descripcionFiltro() {
     const f = this.filtro;
     const partes = [];
-    if (f.anio && f.mes) partes.push(SRP.util.nombreMes(f.anio + '-' + f.mes));
+    if (f.dia) partes.push('Plantaciones del ' + SRP.util.formatearFecha(f.dia));
+    else if (f.anio && f.mes) partes.push(SRP.util.nombreMes(f.anio + '-' + f.mes));
     else if (f.anio) partes.push('Año ' + f.anio);
     if (f.desde || f.hasta) partes.push('Del ' + (f.desde ? SRP.util.formatearFecha(f.desde) : 'inicio') + ' al ' + (f.hasta ? SRP.util.formatearFecha(f.hasta) : 'hoy'));
-    if (f.registrador) partes.push('Registrador: ' + SRP.ref.nombreUsuario(f.registrador));
+    if (f.cabo) partes.push('Cabo: ' + SRP.ref.nombreUsuario(f.cabo));
     return partes.length ? partes.join('. ') : 'Todos los registros';
   },
 
@@ -195,11 +208,15 @@ SRP.registros = {
         '<span class="registro-fecha">' + SRP.util.formatearFecha(r.fecha_plantacion) + '</span>' +
         '<span class="registro-especie">' + esc(esp.comun) + '</span>' +
         '<span class="registro-lugar">' + esc(SRP.ref.territorio(r.alcaldia)) + ', ' + esc(SRP.ref.territorio(r.colonia)) + '</span>' +
-        (variosAutores ? '<span class="registro-autor">' + esc(SRP.ref.nombreUsuario(r.registrador_id)) + '</span>' : '') +
+        (variosAutores ? '<span class="registro-autor">' + esc(SRP.ref.nombreUsuario(r.cabo_id)) + '</span>' : '') +
         '</div><div class="registro-acciones">' + botones.join('') + '</div></li>';
     }).join('');
     const n = this.filtrados.length;
-    this.el('registros-total').textContent = n === 0 ? 'No hay registros con este filtro.'
+    const propios = SRP.permisos.de(u).alcance === 'propios';
+    const vacio = this.filtro.dia === SRP.util.fechaHoy()
+      ? (propios ? 'Todavía no ha registrado ningún árbol hoy.' : 'No hay registros de hoy.') + ' Toque «Todos» para ver los anteriores.'
+      : 'No hay registros con este filtro.';
+    this.el('registros-total').textContent = n === 0 ? vacio
       : 'Total: ' + n + (n === 1 ? ' registro' : ' registros') + (n > pagina.length ? ' (se muestran ' + pagina.length + ')' : '');
     this.el('btn-mas').hidden = n <= pagina.length;
     this.el('btn-pdf').disabled = n === 0;
@@ -215,7 +232,7 @@ SRP.registros = {
       ['Alcaldía', SRP.ref.territorio(r.alcaldia)],
       ['Colonia', SRP.ref.territorio(r.colonia)],
       ['Coordenadas', r.lat.toFixed(6) + ', ' + r.lng.toFixed(6)],
-      ['Registrador', SRP.ref.nombreUsuario(r.registrador_id)]
+      ['Cabo', SRP.ref.nombreUsuario(r.cabo_id)]
     ];
     const historial = await SRP.bitacora.deEntidad(r.id);
     const lineas = historial.length ? historial.map(h =>

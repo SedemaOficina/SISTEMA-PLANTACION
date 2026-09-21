@@ -103,7 +103,7 @@ SRP.catalogos = {
     this.claveTocada = false;
     const esEspecie = this.tipo === 'especie';
     this.el('dlg-catalogo-titulo').textContent = (item ? 'Editar ' : 'Agregar ') + this.ETIQUETA[this.tipo];
-    this.el('etq-cat-nombre').textContent = esEspecie ? 'Nombre común' : 'Nombre';
+    this.el('etq-cat-nombre-texto').textContent = esEspecie ? 'Nombre común' : 'Nombre';
     document.querySelectorAll('.solo-especie').forEach(n => { n.hidden = !esEspecie; });
     this.el('cat-nombre').value = item ? item.nombre : '';
     this.el('cat-clave').value = item ? item.clave : '';

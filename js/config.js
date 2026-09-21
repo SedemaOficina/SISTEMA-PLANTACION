@@ -12,14 +12,14 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 7',
+  ETAPA: 'Bloque 8',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
   ES_FICTICIO: true,
 
   DB_NOMBRE: 'srp_db',
-  DB_VERSION: 1,
+  DB_VERSION: 2,
   CLAVE_SESION: 'srp_sesion_usuario_id',
 
   // [pendiente] Fase 2: proveedor institucional de identidad. Hoy el acceso es simulado.

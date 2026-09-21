@@ -169,3 +169,44 @@ mide el mapa y si algún control queda por debajo del tamaño tocable. Las tres 
 limpias. Auditorías de estilos, código sin uso, identificadores y textos, también.
 
 **Eliminado:** la clase `.btn-icono`, que quedó sin uso al pasar la ficha a botones con palabra.
+
+## Bloque 8 — Cabo y coordinador, campos obligatorios y flujo de captura (21-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.5.0. Base de datos en versión 2.
+
+**Peticiones de Liber:** asterisco en los campos obligatorios; chip de «Hoy» con la fecha, y que sea
+el filtro por omisión; cambiar «registrador» por **cabo** y «jefe de registradores» por
+**coordinador** en plataforma, código y campos; etiqueta «Estás registrando como:»; un botón propio
+para registrar la ubicación, retirando el control de dentro del mapa, con la captura manual justo
+debajo; alcaldía y colonia sin botón de editar en la ficha; el foco en el botón de ubicación al
+empezar otro registro; y que al cerrar un dato el foco pase solo al siguiente.
+
+**El renombre es también una migración.** Cambiarlo sólo en el código habría dejado a cada
+dispositivo ya usado con `registrador_id` y `jefe_id`, de modo que un cabo dejaría de ver sus
+propios registros y un coordinador su cuadrilla, sin error visible. La migración 2 renombra el
+índice, traduce los campos de plantaciones y cuentas, y ajusta el perfil guardado en la bitácora
+para que el historial siga siendo legible, sin tocar qué se hizo ni cuándo. La migración 1 se dejó
+intacta, con la nomenclatura anterior, porque los dispositivos que la corrieron tienen esa
+estructura exacta.
+
+Se escribió una prueba aparte (`prueba_migracion.py`) que construye una base como la dejó la
+versión anterior, abre la aplicación y comprueba las nueve cosas que deben cumplirse: que la base
+suba a la versión 2, que el índice se renombre, que cada plantación conserve a su autor, que no se
+pierda ningún otro dato, que el perfil y el coordinador se traduzcan, que la bitácora conserve
+acción y fecha, y que el cabo migrado entre y siga viendo su registro. Las nueve pasan.
+
+**Cambio en cómo se prueba:** las pruebas pasan de abrir el archivo directamente a servirlo en
+`http://127.0.0.1:8099/`. Con `file://` no es posible preparar la base antes de que arranque la
+aplicación, que es justo lo que hacía falta para probar la actualización entre versiones. De paso,
+el navegador trata el sistema como en el sitio publicado.
+
+**Avance del foco:** sólo se avanza cuando la respuesta quedó cerrada —una especie elegida de la
+lista, un programa seleccionado, un punto tomado con el botón— nunca mientras se escribe ni
+mientras se arrastra el marcador. Arrebatar el foco a media palabra sería peor que no avanzar.
+
+**Eliminado:** el control de ubicación de dentro del mapa y su estilo; los botones de editar de
+alcaldía y colonia en la ficha.
+
+**Verificación:** sintaxis de todos los .js; recorrido automatizado de 116 comprobaciones, sin
+errores de consola; prueba de migración, 9 comprobaciones; revisión de presentación en ocho
+combinaciones de ancho y zoom; auditorías de estilos, código sin uso, identificadores y textos.
+Una comprobación nueva verifica que ningún campo obligatorio se quede sin asterisco.

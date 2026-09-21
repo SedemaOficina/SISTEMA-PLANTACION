@@ -8,9 +8,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cabin:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.4.1">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.4.1">
-<link rel="stylesheet" href="css/estilos.css?v=0.4.1">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.5.0">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.5.0">
+<link rel="stylesheet" href="css/estilos.css?v=0.5.0">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -42,13 +42,14 @@
 
     <form id="form-acceso" class="tarjeta" novalidate>
       <h2>Iniciar sesión</h2>
+      <p class="nota nota-obligatorio">Los campos marcados con <span class="obligatorio" aria-hidden="true">*</span> son obligatorios.</p>
       <div id="acceso-errores" class="errores" tabindex="-1" hidden></div>
       <div class="campo">
-        <label for="acceso-correo">Correo</label>
+        <label for="acceso-correo">Correo <span class="obligatorio" aria-hidden="true">*</span></label>
         <input type="email" id="acceso-correo" autocomplete="username" inputmode="email" autocapitalize="off" spellcheck="false" required>
       </div>
       <div class="campo">
-        <label for="acceso-clave">Contraseña</label>
+        <label for="acceso-clave">Contraseña <span class="obligatorio" aria-hidden="true">*</span></label>
         <input type="password" id="acceso-clave" autocomplete="current-password" required>
       </div>
       <button type="submit" class="btn btn-primario">Entrar</button>
@@ -67,9 +68,21 @@
   <!-- REGISTRAR -->
   <section id="vista-registrar" class="vista" hidden aria-labelledby="titulo-registrar">
     <h1 id="titulo-registrar">Nuevo registro</h1>
+    <p class="nota nota-obligatorio">Los campos marcados con <span class="obligatorio" aria-hidden="true">*</span> son obligatorios.</p>
     <p id="edicion-aviso" class="franja-edicion" hidden></p>
 
-    <div class="campo"><label for="campo-registrador">Registrador</label><input id="campo-registrador" readonly></div>
+    <div class="campo"><label for="campo-cabo">Estás registrando como:</label><input id="campo-cabo" readonly></div>
+
+    <h2 class="titulo-bloque">Ubicación <span class="obligatorio" aria-hidden="true">*</span></h2>
+    <button type="button" id="btn-ubicacion" class="btn btn-primario btn-ancho"></button>
+    <details class="coord-manual">
+      <summary>Capturar coordenadas a mano</summary>
+      <div class="campo-doble">
+        <div class="campo"><label for="coord-lat">Latitud</label><input id="coord-lat" inputmode="decimal" placeholder="19.432600"></div>
+        <div class="campo"><label for="coord-lng">Longitud</label><input id="coord-lng" inputmode="decimal" placeholder="-99.133200"></div>
+      </div>
+      <button type="button" id="btn-coord-aplicar" class="btn btn-secundario">Colocar punto</button>
+    </details>
 
     <div class="mapa-bloque">
       <div id="mapa" class="mapa" aria-label="Mapa para ubicar el árbol. Toque el mapa o arrastre el marcador."></div>
@@ -80,21 +93,13 @@
           <div><dt>Colonia</dt><dd id="dato-colonia">—</dd></div>
         </dl>
       </div>
-      <details class="coord-manual">
-        <summary>Capturar coordenadas a mano</summary>
-        <div class="campo-doble">
-          <div class="campo"><label for="coord-lat">Latitud</label><input id="coord-lat" inputmode="decimal" placeholder="19.432600"></div>
-          <div class="campo"><label for="coord-lng">Longitud</label><input id="coord-lng" inputmode="decimal" placeholder="-99.133200"></div>
-        </div>
-        <button type="button" id="btn-coord-aplicar" class="btn btn-secundario">Colocar punto</button>
-      </details>
     </div>
 
     <form id="form-plantacion" novalidate>
       <div id="resumen-errores" class="errores" tabindex="-1" hidden></div>
 
       <div class="campo combo">
-        <label for="campo-especie" id="etq-especie">Especie</label>
+        <label for="campo-especie" id="etq-especie"><span id="etq-especie-texto">Especie</span> <span class="obligatorio" aria-hidden="true">*</span></label>
         <input id="campo-especie" role="combobox" aria-autocomplete="list" aria-expanded="false"
                aria-controls="lista-especies" autocomplete="off" placeholder="Nombre común o científico">
         <ul id="lista-especies" class="combo-lista" role="listbox" aria-labelledby="etq-especie" hidden></ul>
@@ -104,8 +109,8 @@
         <input id="campo-otra-especie">
       </div>
 
-      <div class="campo"><label for="campo-programa">Programa</label><select id="campo-programa"></select></div>
-      <div class="campo"><label for="campo-fecha">Fecha de plantación</label><input type="date" id="campo-fecha"></div>
+      <div class="campo"><label for="campo-programa">Programa <span class="obligatorio" aria-hidden="true">*</span></label><select id="campo-programa"></select></div>
+      <div class="campo"><label for="campo-fecha">Fecha de plantación <span class="obligatorio" aria-hidden="true">*</span></label><input type="date" id="campo-fecha"></div>
 
       <fieldset class="campo foto">
         <legend>Fotografía <span class="opcional">(opcional)</span></legend>
@@ -137,6 +142,7 @@
     <h1 id="titulo-registros">Mis registros</h1>
     <div class="filtros">
       <div id="filtro-atajos" class="chips" role="group" aria-label="Periodos frecuentes">
+        <button type="button" class="chip" data-atajo="hoy" id="chip-hoy">Hoy</button>
         <button type="button" class="chip" data-atajo="mes">Este mes</button>
         <button type="button" class="chip" data-atajo="mes-pasado">Mes pasado</button>
         <button type="button" class="chip" data-atajo="anio">Este año</button>
@@ -154,8 +160,8 @@
           <div class="campo"><label for="filtro-desde">Desde</label><input type="date" id="filtro-desde"></div>
           <div class="campo"><label for="filtro-hasta">Hasta</label><input type="date" id="filtro-hasta"></div>
         </div>
-        <div id="caja-filtro-registrador" class="campo" hidden>
-          <label for="filtro-registrador">Registrador</label><select id="filtro-registrador"></select>
+        <div id="caja-filtro-cabo" class="campo" hidden>
+          <label for="filtro-cabo">Cabo</label><select id="filtro-cabo"></select>
         </div>
         <button type="button" id="btn-filtrar" class="btn btn-secundario">Aplicar</button>
       </details>
@@ -240,11 +246,12 @@
 <dialog id="dlg-catalogo" aria-labelledby="dlg-catalogo-titulo">
   <form id="form-catalogo" novalidate>
     <h2 id="dlg-catalogo-titulo">Agregar</h2>
+    <p class="nota nota-obligatorio">Los campos marcados con <span class="obligatorio" aria-hidden="true">*</span> son obligatorios.</p>
     <div id="cat-errores" class="errores" tabindex="-1" hidden></div>
-    <div class="campo"><label for="cat-nombre" id="etq-cat-nombre">Nombre</label><input id="cat-nombre" required></div>
-    <div class="campo"><label for="cat-clave">Clave</label><input id="cat-clave" required aria-describedby="cat-clave-ayuda"><p id="cat-clave-ayuda" class="nota">Se sugiere a partir del nombre. Puede cambiarla ahora; después ya no.</p></div>
-    <div class="campo solo-especie"><label for="cat-cientifico">Nombre científico</label><input id="cat-cientifico"></div>
-    <div class="campo solo-especie"><label for="cat-grupo">Grupo</label>
+    <div class="campo"><label for="cat-nombre" id="etq-cat-nombre"><span id="etq-cat-nombre-texto">Nombre</span> <span class="obligatorio" aria-hidden="true">*</span></label><input id="cat-nombre" required></div>
+    <div class="campo"><label for="cat-clave">Clave <span class="obligatorio" aria-hidden="true">*</span></label><input id="cat-clave" required aria-describedby="cat-clave-ayuda"><p id="cat-clave-ayuda" class="nota">Se sugiere a partir del nombre. Puede cambiarla ahora; después ya no.</p></div>
+    <div class="campo solo-especie"><label for="cat-cientifico">Nombre científico <span class="obligatorio" aria-hidden="true">*</span></label><input id="cat-cientifico"></div>
+    <div class="campo solo-especie"><label for="cat-grupo">Grupo <span class="obligatorio" aria-hidden="true">*</span></label>
       <select id="cat-grupo"><option value="Nativa">Nativa</option><option value="Introducida">Introducida</option></select></div>
     <div class="acciones">
       <button type="submit" class="btn btn-exito" id="btn-cat-guardar">Guardar</button>
@@ -265,15 +272,16 @@
 <dialog id="dlg-usuario" aria-labelledby="dlg-usuario-titulo">
   <form id="form-usuario" novalidate>
     <h2 id="dlg-usuario-titulo">Dar de alta</h2>
+    <p class="nota nota-obligatorio">Los campos marcados con <span class="obligatorio" aria-hidden="true">*</span> son obligatorios.</p>
     <div id="usr-errores" class="errores" tabindex="-1" hidden></div>
-    <div class="campo"><label for="usr-nombre">Nombre(s)</label><input id="usr-nombre" required></div>
-    <div class="campo"><label for="usr-ap">Apellido paterno</label><input id="usr-ap" required></div>
+    <div class="campo"><label for="usr-nombre">Nombre(s) <span class="obligatorio" aria-hidden="true">*</span></label><input id="usr-nombre" required></div>
+    <div class="campo"><label for="usr-ap">Apellido paterno <span class="obligatorio" aria-hidden="true">*</span></label><input id="usr-ap" required></div>
     <div class="campo"><label for="usr-am">Apellido materno</label><input id="usr-am"></div>
-    <div class="campo"><label for="usr-correo">Correo</label><input type="email" id="usr-correo" inputmode="email" autocapitalize="off" spellcheck="false" required aria-describedby="usr-correo-ayuda"><p id="usr-correo-ayuda" class="nota">Con él inicia sesión. No se puede cambiar después.</p></div>
-    <div class="campo"><label for="usr-area">Área</label><select id="usr-area" required></select></div>
-    <div class="campo"><label for="usr-cargo">Cargo y rol</label><input id="usr-cargo" required placeholder="p. ej. Técnico de campo"></div>
-    <div class="campo"><label for="usr-perfil">Perfil</label><select id="usr-perfil" required></select><p id="usr-perfil-ayuda" class="nota"></p></div>
-    <div class="campo" id="caja-usr-jefe"><label for="usr-jefe">Jefe</label><select id="usr-jefe"></select></div>
+    <div class="campo"><label for="usr-correo">Correo <span class="obligatorio" aria-hidden="true">*</span></label><input type="email" id="usr-correo" inputmode="email" autocapitalize="off" spellcheck="false" required aria-describedby="usr-correo-ayuda"><p id="usr-correo-ayuda" class="nota">Con él inicia sesión. No se puede cambiar después.</p></div>
+    <div class="campo"><label for="usr-area">Área <span class="obligatorio" aria-hidden="true">*</span></label><select id="usr-area" required></select></div>
+    <div class="campo"><label for="usr-cargo">Cargo y rol <span class="obligatorio" aria-hidden="true">*</span></label><input id="usr-cargo" required placeholder="p. ej. Técnico de campo"></div>
+    <div class="campo"><label for="usr-perfil">Perfil <span class="obligatorio" aria-hidden="true">*</span></label><select id="usr-perfil" required></select><p id="usr-perfil-ayuda" class="nota"></p></div>
+    <div class="campo" id="caja-usr-coordinador"><label for="usr-coordinador">Coordinador</label><select id="usr-coordinador"></select></div>
     <div class="acciones">
       <button type="submit" class="btn btn-exito" id="btn-usr-guardar">Guardar</button>
       <button type="button" id="btn-usr-cancelar" class="btn btn-secundario">Cancelar</button>
@@ -286,30 +294,30 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.4.1"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.4.1"></script>
-<script src="vendor/turf-pip.min.js?v=0.4.1"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.4.1"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.4.1"></script>
+<script src="vendor/leaflet.js?v=0.5.0"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.5.0"></script>
+<script src="vendor/turf-pip.min.js?v=0.5.0"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.5.0"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.5.0"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.4.1"></script>
-<script src="js/util.js?v=0.4.1"></script>
-<script src="js/iconos.js?v=0.4.1"></script>
-<script src="assets/logo.js?v=0.4.1"></script>
-<script src="assets/capas-ficticias.js?v=0.4.1"></script>
-<script src="js/datos-ficticios.js?v=0.4.1"></script>
-<script src="js/permisos.js?v=0.4.1"></script>
-<script src="js/derivacion.js?v=0.4.1"></script>
-<script src="js/almacen.js?v=0.4.1"></script>
-<script src="js/sesion.js?v=0.4.1"></script>
-<script src="js/referencias.js?v=0.4.1"></script>
-<script src="js/mapa.js?v=0.4.1"></script>
-<script src="js/foto.js?v=0.4.1"></script>
-<script src="js/formulario.js?v=0.4.1"></script>
-<script src="js/registros.js?v=0.4.1"></script>
-<script src="js/reportes.js?v=0.4.1"></script>
-<script src="js/catalogos.js?v=0.4.1"></script>
-<script src="js/usuarios.js?v=0.4.1"></script>
-<script src="js/app.js?v=0.4.1"></script>
+<script src="js/config.js?v=0.5.0"></script>
+<script src="js/util.js?v=0.5.0"></script>
+<script src="js/iconos.js?v=0.5.0"></script>
+<script src="assets/logo.js?v=0.5.0"></script>
+<script src="assets/capas-ficticias.js?v=0.5.0"></script>
+<script src="js/datos-ficticios.js?v=0.5.0"></script>
+<script src="js/permisos.js?v=0.5.0"></script>
+<script src="js/derivacion.js?v=0.5.0"></script>
+<script src="js/almacen.js?v=0.5.0"></script>
+<script src="js/sesion.js?v=0.5.0"></script>
+<script src="js/referencias.js?v=0.5.0"></script>
+<script src="js/mapa.js?v=0.5.0"></script>
+<script src="js/foto.js?v=0.5.0"></script>
+<script src="js/formulario.js?v=0.5.0"></script>
+<script src="js/registros.js?v=0.5.0"></script>
+<script src="js/reportes.js?v=0.5.0"></script>
+<script src="js/catalogos.js?v=0.5.0"></script>
+<script src="js/usuarios.js?v=0.5.0"></script>
+<script src="js/app.js?v=0.5.0"></script>
 </body>
 </html>

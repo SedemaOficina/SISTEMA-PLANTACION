@@ -4,10 +4,10 @@
 window.SRP = window.SRP || {};
 
 SRP.PERFILES = {
-  REGISTRADOR: { etiqueta: 'Registrador',            alcance: 'propios', registrar: true,  editar: true,  eliminar: true,  catalogos: false, usuarios: false,
+  CABO:        { etiqueta: 'Cabo',                   alcance: 'propios', registrar: true,  editar: true,  eliminar: true,  catalogos: false, usuarios: false,
                  descripcion: 'Registra plantaciones y ve, edita y elimina únicamente las suyas.' },
-  JEFE:        { etiqueta: 'Jefe de registradores',  alcance: 'equipo',  registrar: true,  editar: true,  eliminar: false, catalogos: false, usuarios: false, // [pendiente] confirmar si registra y si elimina
-                 descripcion: 'Ve y edita los registros de quienes lo tienen asignado como jefe. No elimina.' },
+  COORDINADOR: { etiqueta: 'Coordinador',            alcance: 'equipo',  registrar: true,  editar: true,  eliminar: false, catalogos: false, usuarios: false, // [pendiente] confirmar si registra y si elimina
+                 descripcion: 'Ve y edita los registros de los cabos que tiene asignados. No elimina.' },
   ADMIN:       { etiqueta: 'Administración global',  alcance: 'todos',   registrar: true,  editar: true,  eliminar: true,  catalogos: true,  usuarios: true,
                  descripcion: 'Ve y modifica todo, y administra los catálogos y las cuentas de usuario.' },
   VIEWER:      { etiqueta: 'Consulta',               alcance: 'todos',   registrar: false, editar: false, eliminar: false, catalogos: false, usuarios: false,
@@ -21,10 +21,10 @@ SRP.permisos = {
   alcanza(usuario, registro, usuariosPorId) {
     const alcance = this.de(usuario).alcance;
     if (alcance === 'todos') return true;
-    if (registro.registrador_id === usuario.id) return true;
+    if (registro.cabo_id === usuario.id) return true;
     if (alcance === 'equipo') {
-      const autor = usuariosPorId[registro.registrador_id];
-      return !!autor && autor.jefe_id === usuario.id;
+      const autor = usuariosPorId[registro.cabo_id];
+      return !!autor && autor.coordinador_id === usuario.id;
     }
     return false;
   },

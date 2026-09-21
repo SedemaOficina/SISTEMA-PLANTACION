@@ -87,6 +87,10 @@ main:focus { outline: none; }
 .entrada { color: var(--gris); }
 .nota { color: var(--gris); font-size: var(--t-s); }
 .opcional { font-weight: 400; color: var(--gris); }
+/* El asterisco es la señal visual; el atributo required es lo que anuncia el lector de pantalla */
+.obligatorio { color: var(--error); font-weight: 700; }
+.nota-obligatorio { margin-bottom: var(--e-4); }
+.titulo-bloque { font-size: var(--t-m); margin-bottom: var(--e-2); }
 .total { font-weight: 500; margin-top: var(--e-4); }
 
 .tarjeta { border: 1px solid var(--borde-suave); border-radius: var(--radio); padding: var(--e-4); margin-bottom: var(--e-5); }
@@ -139,15 +143,6 @@ main:focus { outline: none; }
 .ficha-datos dt { font-size: var(--t-xs); color: var(--gris); }
 .ficha-datos dd { margin: 0; font-family: var(--fuente-titulo); font-weight: 600; overflow-wrap: anywhere; }
 .pin { background: none; border: 0; }
-/* Control de ubicación dentro del mapa. Va en la hoja global porque Leaflet lo inserta
-   en su propio contenedor, fuera del alcance de los estilos de la pantalla. */
-.ctrl-ubicacion {
-  display: flex; align-items: center; justify-content: center;
-  width: var(--toque); height: var(--toque); margin: 0 var(--e-3) var(--e-3) 0;
-  border: 2px solid var(--fondo); border-radius: 50%;
-  background: var(--guinda); color: var(--fondo);
-  box-shadow: 0 2px 6px rgba(35, 37, 38, 0.4); cursor: pointer;
-}
 .coord-manual { margin-bottom: var(--e-3); }
 .coord-manual summary { min-height: var(--toque); display: flex; align-items: center; color: var(--guinda); cursor: pointer; }
 

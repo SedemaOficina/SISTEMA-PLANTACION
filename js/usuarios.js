@@ -1,5 +1,5 @@
 /* ADMINISTRACIÓN DE CUENTAS (sólo Administración global).
-   Una sola puerta de alta: aquí se crea la cuenta, se le asigna perfil, área y jefe.
+   Una sola puerta de alta: aquí se crea la cuenta, se le asigna perfil, área y coordinador.
    Nadie se da de alta solo. Todo cambio queda en la bitácora. */
 window.SRP = window.SRP || {};
 
@@ -13,8 +13,16 @@ SRP.usuarios = {
     this.el('btn-usr-agregar').addEventListener('click', () => this.abrirFormulario(null));
     this.el('btn-usr-cancelar').addEventListener('click', () => this.el('dlg-usuario').close());
     this.el('form-usuario').addEventListener('submit', (e) => { e.preventDefault(); this.guardar(); });
-    // El campo Jefe sólo tiene sentido para quien es registrador
-    this.el('usr-perfil').addEventListener('change', () => this.ajustarPorPerfil());
+    // El campo Coordinador sólo tiene sentido para un cabo
+    this.el('usr-perfil').addEventListener('change', () => {
+      this.ajustarPorPerfil();
+      // Un cabo necesita coordinador; los demás perfiles no, así que ahí termina el formulario
+      const sig = this.el('usr-perfil').value === 'CABO' ? 'usr-coordinador' : null;
+      if (sig) this.el(sig).focus({ preventScroll: true });
+    });
+    this.el('usr-area').addEventListener('change', () => {
+      if (this.el('usr-area').value) this.el('usr-cargo').focus({ preventScroll: true });
+    });
     this.el('tabla-usuarios').addEventListener('click', (e) => {
       const b = e.target.closest('button[data-accion]'); if (!b) return;
       const u = SRP.ref.usuarioPorId[b.dataset.id];
@@ -27,7 +35,7 @@ SRP.usuarios = {
   async preparar() {
     const plantaciones = await SRP.almacen.todos('plantaciones');
     this.uso = {};
-    plantaciones.forEach(p => { this.uso[p.registrador_id] = (this.uso[p.registrador_id] || 0) + 1; });
+    plantaciones.forEach(p => { this.uso[p.cabo_id] = (this.uso[p.cabo_id] || 0) + 1; });
     this.pintar();
   },
 
@@ -41,7 +49,7 @@ SRP.usuarios = {
       .sort((a, b) => SRP.util.nombreCompleto(a).localeCompare(SRP.util.nombreCompleto(b), 'es'));
 
     const cab = '<thead><tr><th scope="col">Nombre</th><th scope="col">Correo</th><th scope="col">Área</th>' +
-      '<th scope="col">Cargo y rol</th><th scope="col">Perfil</th><th scope="col">Jefe</th>' +
+      '<th scope="col">Cargo y rol</th><th scope="col">Perfil</th><th scope="col">Coordinador</th>' +
       '<th scope="col">Estado</th><th scope="col">Registros</th><th scope="col">Acciones</th></tr></thead>';
 
     const filas = lista.map(u => {
@@ -60,7 +68,7 @@ SRP.usuarios = {
         '<td data-etiqueta="Área">' + esc(SRP.ref.nombreCatalogo(u.area_id)) + '</td>' +
         '<td data-etiqueta="Cargo y rol">' + esc(u.cargo_rol) + '</td>' +
         '<td data-etiqueta="Perfil">' + esc(SRP.permisos.de(u).etiqueta) + '</td>' +
-        '<td data-etiqueta="Jefe">' + esc(u.jefe_id ? SRP.ref.nombreUsuario(u.jefe_id) : '—') + '</td>' +
+        '<td data-etiqueta="Coordinador">' + esc(u.coordinador_id ? SRP.ref.nombreUsuario(u.coordinador_id) : '—') + '</td>' +
         '<td data-etiqueta="Estado"><span class="estado-texto" data-activo="' + u.activo + '">' + (u.activo ? 'Activo' : 'Inactivo') + '</span></td>' +
         '<td data-etiqueta="Registros">' + n + '</td>' +
         '<td data-etiqueta="Acciones"><div class="tabla-acciones">' + acciones.join('') + '</div></td></tr>';
@@ -80,22 +88,22 @@ SRP.usuarios = {
     this.el('usr-perfil').innerHTML = '<option value="">Seleccione el perfil</option>' +
       Object.keys(SRP.PERFILES).map(k => '<option value="' + k + '">' + esc(SRP.PERFILES[k].etiqueta) + '</option>').join('');
 
-    // Jefe posible: cuentas activas con perfil de jefe o de administración, nunca la persona misma
-    const jefes = SRP.ref.usuarios
-      .filter(u => u.activo && (u.perfil === 'JEFE' || u.perfil === 'ADMIN') && (!usuario || u.id !== usuario.id))
+    // Coordinador posible: cuentas activas de coordinación o administración, nunca la persona misma
+    const coordinadores = SRP.ref.usuarios
+      .filter(u => u.activo && (u.perfil === 'COORDINADOR' || u.perfil === 'ADMIN') && (!usuario || u.id !== usuario.id))
       .sort((a, b) => SRP.util.nombreCompleto(a).localeCompare(SRP.util.nombreCompleto(b), 'es'));
-    this.el('usr-jefe').innerHTML = '<option value="">Sin jefe asignado</option>' +
-      jefes.map(u => '<option value="' + u.id + '">' + esc(SRP.util.nombreCompleto(u)) + '</option>').join('');
+    this.el('usr-coordinador').innerHTML = '<option value="">Sin coordinador asignado</option>' +
+      coordinadores.map(u => '<option value="' + u.id + '">' + esc(SRP.util.nombreCompleto(u)) + '</option>').join('');
   },
 
   ajustarPorPerfil() {
     const perfil = this.el('usr-perfil').value;
     const p = SRP.PERFILES[perfil];
     this.el('usr-perfil-ayuda').textContent = p ? p.descripcion : '';
-    // Sólo un registrador tiene jefe: los demás perfiles no dependen de nadie
-    const conJefe = perfil === 'REGISTRADOR';
-    this.el('caja-usr-jefe').hidden = !conJefe;
-    if (!conJefe) this.el('usr-jefe').value = '';
+    // Sólo un cabo tiene coordinador: los demás perfiles no dependen de nadie
+    const conCoordinador = perfil === 'CABO';
+    this.el('caja-usr-coordinador').hidden = !conCoordinador;
+    if (!conCoordinador) this.el('usr-coordinador').value = '';
   },
 
   abrirFormulario(usuario) {
@@ -109,9 +117,9 @@ SRP.usuarios = {
     this.el('usr-correo').readOnly = !!usuario;   // el correo identifica la cuenta: no cambia
     this.el('usr-area').value = usuario ? usuario.area_id : '';
     this.el('usr-cargo').value = usuario ? usuario.cargo_rol : '';
-    this.el('usr-perfil').value = usuario ? usuario.perfil : 'REGISTRADOR';
+    this.el('usr-perfil').value = usuario ? usuario.perfil : 'CABO';
     this.ajustarPorPerfil();
-    this.el('usr-jefe').value = usuario && usuario.jefe_id ? usuario.jefe_id : '';
+    this.el('usr-coordinador').value = usuario && usuario.coordinador_id ? usuario.coordinador_id : '';
     this.el('usr-errores').hidden = true;
     ['usr-nombre', 'usr-ap', 'usr-correo', 'usr-area', 'usr-cargo', 'usr-perfil'].forEach(id => this.el(id).removeAttribute('aria-invalid'));
     this.el('dlg-usuario').showModal();
@@ -142,7 +150,7 @@ SRP.usuarios = {
       nombre: limpio('usr-nombre'), apellido_paterno: limpio('usr-ap'), apellido_materno: limpio('usr-am'),
       correo: limpio('usr-correo').toLowerCase(), area_id: this.el('usr-area').value,
       cargo_rol: limpio('usr-cargo'), perfil: this.el('usr-perfil').value,
-      jefe_id: this.el('usr-perfil').value === 'REGISTRADOR' ? (this.el('usr-jefe').value || null) : null
+      coordinador_id: this.el('usr-perfil').value === 'CABO' ? (this.el('usr-coordinador').value || null) : null
     };
     const errores = this.validar(d);
     const caja = this.el('usr-errores');
@@ -159,7 +167,7 @@ SRP.usuarios = {
     let u, entrada;
     if (this.editando) {
       const previo = this.editando;
-      const campos = ['nombre', 'apellido_paterno', 'apellido_materno', 'area_id', 'cargo_rol', 'perfil', 'jefe_id'];
+      const campos = ['nombre', 'apellido_paterno', 'apellido_materno', 'area_id', 'cargo_rol', 'perfil', 'coordinador_id'];
       const cambiados = campos.filter(k => (previo[k] || '') !== (d[k] || ''));
       u = Object.assign({}, previo, d, { correo: previo.correo, editado_por_id: yo.id, fecha_ultima_edicion: ahora });
       entrada = SRP.bitacora.entrada('EDITADO', 'usuario', u.id, 'Campos: ' + (cambiados.join(', ') || 'ninguno'));

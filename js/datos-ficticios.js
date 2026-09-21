@@ -40,28 +40,28 @@ window.SRP = window.SRP || {};
   especies[especies.length - 1].activo = false;   // caso de prueba: especie desactivada
 
   // Correos en @ejemplo.local: dominio reservado, nunca entregable (Norma 3)
-  const usuario = (id, correo, nombre, ap, am, area_id, cargo_rol, perfil, jefe_id) => ({
+  const usuario = (id, correo, nombre, ap, am, area_id, cargo_rol, perfil, coordinador_id) => ({
     id, correo, nombre, apellido_paterno: ap, apellido_materno: am, area_id, cargo_rol, perfil,
-    jefe_id: jefe_id || null, activo: true, es_ficticio: true,
+    coordinador_id: coordinador_id || null, activo: true, es_ficticio: true,
     fecha_alta: F, alta_por_id: 'u-admin-1', fecha_ultima_edicion: null, editado_por_id: null
   });
 
   const usuarios = [
-    usuario('u-reg-1', 'fulana@ejemplo.local', 'Fulana', 'de Tal', 'Ejemplo', 'a-div', 'Técnica de campo', 'REGISTRADOR', 'u-jefe-1'),
-    usuario('u-reg-2', 'mengano@ejemplo.local', 'Mengano', 'Pérez', 'Ejemplo', 'a-div', 'Técnico de campo', 'REGISTRADOR', 'u-jefe-1'),
-    // Caso incómodo: nombre largo, sin apellido materno y sin jefe asignado (el jefe no debe ver sus registros)
-    usuario('u-reg-3', 'zutana.delosangeles@ejemplo.local', 'Zutana Maximiliana', 'de los Ángeles Villaseñor', '', 'a-sia', 'Técnica de campo de apoyo a brigadas', 'REGISTRADOR', null),
-    usuario('u-jefe-1', 'perengano@ejemplo.local', 'Perengano', 'Gómez', 'Ejemplo', 'a-div', 'Jefe de registradores', 'JEFE'),
+    usuario('u-cabo-1', 'fulana@ejemplo.local', 'Fulana', 'de Tal', 'Ejemplo', 'a-div', 'Técnica de campo', 'CABO', 'u-coord-1'),
+    usuario('u-cabo-2', 'mengano@ejemplo.local', 'Mengano', 'Pérez', 'Ejemplo', 'a-div', 'Técnico de campo', 'CABO', 'u-coord-1'),
+    // Caso incómodo: nombre largo, sin apellido materno y sin coordinador (su coordinador no debe verla)
+    usuario('u-cabo-3', 'zutana.delosangeles@ejemplo.local', 'Zutana Maximiliana', 'de los Ángeles Villaseñor', '', 'a-sia', 'Técnica de campo de apoyo a brigadas', 'CABO', null),
+    usuario('u-coord-1', 'perengano@ejemplo.local', 'Perengano', 'Gómez', 'Ejemplo', 'a-div', 'Coordinador de cuadrilla', 'COORDINADOR'),
     usuario('u-admin-1', 'administracion@ejemplo.local', 'Administración', 'SIA', 'Ejemplo', 'a-sia', 'Administración global', 'ADMIN'),
     usuario('u-lect-1', 'consulta@ejemplo.local', 'Consulta', 'Solo Lectura', 'Ejemplo', 'a-sia', 'Consulta', 'VIEWER')
   ];
-  usuarios.push(usuario('u-baja-1', 'exempleado@ejemplo.local', 'Exempleado', 'Baja', 'Ejemplo', 'a-div', 'Técnico de campo', 'REGISTRADOR', 'u-jefe-1'));
+  usuarios.push(usuario('u-baja-1', 'exempleado@ejemplo.local', 'Exempleado', 'Baja', 'Ejemplo', 'a-div', 'Técnico de campo', 'CABO', 'u-coord-1'));
   usuarios[usuarios.length - 1].activo = false;   // caso de prueba: cuenta desactivada, no debe poder entrar
 
   // Plantaciones: generador determinista (mismo resultado en cada carga)
   let semilla = 7;
   const azar = () => { semilla = (semilla * 16807) % 2147483647; return (semilla - 1) / 2147483646; };
-  const autores = ['u-reg-1', 'u-reg-1', 'u-reg-1', 'u-reg-2', 'u-reg-2', 'u-reg-3', 'u-jefe-1', 'u-admin-1'];
+  const autores = ['u-cabo-1', 'u-cabo-1', 'u-cabo-1', 'u-cabo-2', 'u-cabo-2', 'u-cabo-3', 'u-coord-1', 'u-admin-1'];
   const especiesActivas = especies.filter(e => e.activo);
   const plantaciones = [];
 
@@ -80,7 +80,7 @@ window.SRP = window.SRP || {};
       id: 'pl-fic-' + String(i + 1).padStart(3, '0'),
       es_ficticio: true,
       estatus: i === 7 ? 'eliminado' : 'activo',      // caso: registro retirado, no debe listarse
-      registrador_id: autor,
+      cabo_id: autor,
       lat, lng, lat_original: lat, lng_original: lng,
       alcaldia: null, colonia: null, uga: null, capa_version: null,   // se derivan al sembrar
       especie_id: otra ? null : esp.id,              // el nombre se lee del catálogo (fuente única)

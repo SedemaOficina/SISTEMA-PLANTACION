@@ -38,35 +38,26 @@ SRP.mapa = {
     });
     this.icono = L.divIcon({ className: 'pin', html: this.ICONO_SVG, iconSize: [36, 48], iconAnchor: [18, 46] });
     this.mapa.on('click', (e) => this.colocar(e.latlng.lat, e.latlng.lng, 'Punto colocado en el mapa.'));
-    this.agregarControlUbicacion();
   },
 
-  /* Control de ubicación dentro del mapa, abajo a la derecha: queda al alcance del pulgar
-     mientras se sostiene el teléfono, que es como se usa en campo. */
-  agregarControlUbicacion() {
-    const Control = L.Control.extend({
-      options: { position: 'bottomright' },
-      onAdd: () => {
-        const b = L.DomUtil.create('button', 'ctrl-ubicacion');
-        b.type = 'button';
-        b.title = 'Usar mi ubicación';
-        b.setAttribute('aria-label', 'Usar mi ubicación');
-        b.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" focusable="false">' +
-          '<path fill="currentColor" d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3a9 9 0 00-7.94-7.94V1h-2v2.06A9 9 0 003.06 11H1v2h2.06A9 9 0 0011 20.94V23h2v-2.06A9 9 0 0020.94 13H23v-2h-2.06zM12 19a7 7 0 110-14 7 7 0 010 14z"/></svg>';
-        L.DomEvent.disableClickPropagation(b);
-        L.DomEvent.on(b, 'click', (e) => { L.DomEvent.stop(e); this.ubicar(); });
-        return b;
-      }
-    });
-    this.controlUbicacion = new Control().addTo(this.mapa);
-  },
-
-  // Mientras se busca la señal, el control avisa que está trabajando
+  // Mientras se busca la señal, el botón avisa que está trabajando
   marcarBuscando(buscando) {
-    const b = document.querySelector('.ctrl-ubicacion');
+    const b = document.getElementById('btn-ubicacion');
     if (!b) return;
     b.disabled = buscando;
     b.setAttribute('aria-busy', String(buscando));
+    b.innerHTML = SRP.ICONOS.svg('ubicacion', 20) +
+      '<span>' + (buscando ? 'Buscando señal…' : this.textoBotonUbicacion()) + '</span>';
+  },
+
+  // El botón dice si va a poner el punto o a moverlo
+  textoBotonUbicacion() {
+    return this.lat === null ? 'Registrar ubicación del punto' : 'Actualizar ubicación con mi posición';
+  },
+
+  refrescarBotonUbicacion() {
+    const b = document.getElementById('btn-ubicacion');
+    if (b && !b.disabled) b.innerHTML = SRP.ICONOS.svg('ubicacion', 20) + '<span>' + this.textoBotonUbicacion() + '</span>';
   },
 
   estado(texto, tipo) {
@@ -93,6 +84,7 @@ SRP.mapa = {
       if (centrar) this.mapa.setView([this.lat, this.lng], Math.max(this.mapa.getZoom(), SRP.CONFIG.MAPA.ZOOM_PUNTO));
     }
     this.estado(mensaje + ' ' + this.lat.toFixed(6) + ', ' + this.lng.toFixed(6));
+    this.refrescarBotonUbicacion();
     if (this.alCambiar) this.alCambiar(this.lat, this.lng);
     return true;
   },
@@ -123,6 +115,7 @@ SRP.mapa = {
   limpiar() {
     if (this.marcador) { this.marcador.remove(); this.marcador = null; }
     this.lat = null; this.lng = null;
+    this.refrescarBotonUbicacion();
   },
 
   // Leaflet necesita recalcular su tamaño cuando su contenedor pasa de oculto a visible
