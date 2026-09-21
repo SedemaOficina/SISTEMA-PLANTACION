@@ -8,9 +8,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cabin:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="vendor/leaflet.css">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css">
-<link rel="stylesheet" href="css/estilos.css">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.3.1">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.3.1">
+<link rel="stylesheet" href="css/estilos.css?v=0.3.1">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -264,30 +264,34 @@
   </form>
 </dialog>
 
+<!-- MARCA DE VERSIÓN: el ?v= de cada archivo propio es lo único que obliga al navegador a
+     descargar la versión nueva. Al cerrar un bloque se actualiza aquí, en todas las etiquetas
+     a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
+     Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js"></script>
-<script src="vendor/leaflet-gesture-handling.min.js"></script>
-<script src="vendor/turf-pip.min.js"></script>
-<script src="vendor/jspdf.umd.min.js"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js"></script>
+<script src="vendor/leaflet.js?v=0.3.1"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.3.1"></script>
+<script src="vendor/turf-pip.min.js?v=0.3.1"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.3.1"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.3.1"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js"></script>
-<script src="js/util.js"></script>
-<script src="assets/logo.js"></script>
-<script src="assets/capas-ficticias.js"></script>
-<script src="js/datos-ficticios.js"></script>
-<script src="js/permisos.js"></script>
-<script src="js/derivacion.js"></script>
-<script src="js/almacen.js"></script>
-<script src="js/sesion.js"></script>
-<script src="js/referencias.js"></script>
-<script src="js/mapa.js"></script>
-<script src="js/foto.js"></script>
-<script src="js/formulario.js"></script>
-<script src="js/registros.js"></script>
-<script src="js/reportes.js"></script>
-<script src="js/catalogos.js"></script>
-<script src="js/usuarios.js"></script>
-<script src="js/app.js"></script>
+<script src="js/config.js?v=0.3.1"></script>
+<script src="js/util.js?v=0.3.1"></script>
+<script src="assets/logo.js?v=0.3.1"></script>
+<script src="assets/capas-ficticias.js?v=0.3.1"></script>
+<script src="js/datos-ficticios.js?v=0.3.1"></script>
+<script src="js/permisos.js?v=0.3.1"></script>
+<script src="js/derivacion.js?v=0.3.1"></script>
+<script src="js/almacen.js?v=0.3.1"></script>
+<script src="js/sesion.js?v=0.3.1"></script>
+<script src="js/referencias.js?v=0.3.1"></script>
+<script src="js/mapa.js?v=0.3.1"></script>
+<script src="js/foto.js?v=0.3.1"></script>
+<script src="js/formulario.js?v=0.3.1"></script>
+<script src="js/registros.js?v=0.3.1"></script>
+<script src="js/reportes.js?v=0.3.1"></script>
+<script src="js/catalogos.js?v=0.3.1"></script>
+<script src="js/usuarios.js?v=0.3.1"></script>
+<script src="js/app.js?v=0.3.1"></script>
 </body>
 </html>

@@ -3,8 +3,16 @@
    sitio hay que tocar otro archivo, el diseño está mal. */
 window.SRP = window.SRP || {};
 
+// La versión se lee de la marca ?v= con que index.html pide este archivo: un solo lugar
+// donde escribirla (Norma 10.2). Si falta la marca, se dice, porque sin ella el navegador
+// puede estar sirviendo una mezcla de versiones.
 SRP.CONFIG = {
-  VERSION: '0.3.0 (Bloque 4)',
+  VERSION: (function () {
+    const src = document.currentScript ? document.currentScript.src : '';
+    const m = src.match(/[?&]v=([^&]+)/);
+    return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
+  })(),
+  ETAPA: 'Bloque 5',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.

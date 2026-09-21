@@ -6,8 +6,9 @@ SRP.app = {
   el(id) { return document.getElementById(id); },
 
   async iniciar() {
+    if (!this.comprobarVersionCompleta()) return;
     this.el('logo').src = SRP.LOGO_BASE64;
-    this.el('version').textContent = SRP.CONFIG.VERSION;
+    this.el('version').textContent = SRP.CONFIG.VERSION + ' (' + SRP.CONFIG.ETAPA + ')';
     this.el('banda-ficticio').hidden = !SRP.CONFIG.ES_FICTICIO;
     try {
       await SRP.almacen.abrir();
@@ -33,6 +34,27 @@ SRP.app = {
 
     const u = await SRP.sesion.leer();
     if (u) this.entrar(); else this.mostrarAcceso();
+  },
+
+  /* Un navegador que ya abrió una versión anterior puede servir unos archivos de su memoria y
+     otros de la red, y esa mezcla no arranca: antes quedaba la pantalla en blanco, sin explicación.
+     Se comprueba que las piezas que deben existir estén, y si no, se dice qué hacer. */
+  comprobarVersionCompleta() {
+    const faltan = [
+      ['form-acceso', 'la pantalla de acceso'],
+      ['vista-usuarios', 'la pantalla de usuarios'],
+      ['panel-guardado', 'el panel de registro guardado']
+    ].filter(([id]) => !document.getElementById(id)).map(([, que]) => que);
+    const modulos = ['util', 'permisos', 'sesion', 'almacen', 'ref', 'formulario', 'registros', 'catalogos', 'usuarios']
+      .filter(m => !SRP[m]);
+    if (!faltan.length && !modulos.length) return true;
+    document.body.innerHTML =
+      '<main><div class="errores"><h2>El navegador guardó una versión incompleta</h2>' +
+      '<p>Quedaron mezclados archivos de una versión anterior con los de la actual, y así el sistema no puede abrir.</p>' +
+      '<p><strong>En la computadora:</strong> mantenga <kbd>Ctrl</kbd> y pulse <kbd>F5</kbd>.<br>' +
+      '<strong>En el teléfono:</strong> cierre por completo la pestaña y vuelva a abrir la dirección; ' +
+      'si sigue igual, borre los datos de este sitio en los ajustes del navegador.</p></div></main>';
+    return false;
   },
 
   /* ---------- Acceso ---------- */

@@ -76,3 +76,25 @@ desactivada y se dejó a una persona sin apellido materno, ambos como casos de p
 **Verificación:** sintaxis de todos los .js; recorrido automatizado de 77 comprobaciones en los
 cinco perfiles de prueba, sin errores de consola; auditorías de hojas de estilo, código sin uso,
 identificadores y textos, todas limpias.
+
+## Bloque 5 — Marca de versión en los archivos (21-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.3.1.
+
+**Hallazgo de Liber, en su teléfono y en su computadora:** tras publicar el Bloque 4, el navegador
+que ya había abierto el sitio mostraba una página casi vacía con la versión anterior en el pie; en
+una ventana de incógnito abría bien. El navegador servía unos archivos de su memoria y otros de la
+red, y esa mezcla no arranca.
+
+**Qué se hizo:** cada archivo propio se pide con una marca `?v=` en `index.html`, que sube al
+cerrar cada bloque; el navegador ve una dirección distinta y no puede reutilizar la anterior.
+`js/config.js` lee ese número de su propia dirección, así que la versión se escribe en un solo
+lugar. Y si aun así alguien cae en una mezcla, al abrir se comprueba que estén las piezas de la
+versión actual y se explica en pantalla cómo forzar la recarga, en vez de quedar en blanco.
+
+**Por qué importa más allá de hoy:** el mismo problema habría aparecido en el teléfono de cada
+técnico en cada publicación, y como no da error visible, se habría diagnosticado como «la app no
+sirve».
+
+**Verificación:** recorrido automatizado de 79 comprobaciones, sin errores de consola, incluidas
+dos nuevas: que todos los archivos propios lleven marca y que la versión del pie salga de ella.
+Se probó además el caso de versión mezclada, forzándolo, y muestra el aviso.
