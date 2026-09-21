@@ -120,10 +120,25 @@ main:focus { outline: none; }
 .ficha-datos dt { font-size: var(--t-xs); color: var(--gris); }
 .ficha-datos dd { margin: 0; font-family: var(--fuente-titulo); font-weight: 600; overflow-wrap: anywhere; }
 .pin { background: none; border: 0; }
+/* Control de ubicación dentro del mapa. Va en la hoja global porque Leaflet lo inserta
+   en su propio contenedor, fuera del alcance de los estilos de la pantalla. */
+.ctrl-ubicacion {
+  display: flex; align-items: center; justify-content: center;
+  width: var(--toque); height: var(--toque); margin: 0 var(--e-3) var(--e-3) 0;
+  border: 2px solid var(--fondo); border-radius: 50%;
+  background: var(--guinda); color: var(--fondo);
+  box-shadow: 0 2px 6px rgba(35, 37, 38, 0.4); cursor: pointer;
+}
 .coord-manual { margin-bottom: var(--e-3); }
 .coord-manual summary { min-height: var(--toque); display: flex; align-items: center; color: var(--guinda); cursor: pointer; }
 
 .franja-edicion { background: var(--fondo-suave); border-left: 4px solid var(--guinda); padding: var(--e-3) var(--e-4); }
+
+.panel-guardado { border: 1px solid var(--exito); border-left: 6px solid var(--exito); border-radius: var(--radio); background: var(--exito-fondo); padding: var(--e-4); }
+.panel-guardado h2 { color: var(--exito); }
+.panel-guardado:focus { outline: none; }
+
+.aviso-simulado { margin: var(--e-3) 0 0; padding: var(--e-2) var(--e-3); border-left: 4px solid var(--error); background: var(--error-fondo); color: var(--error); font-size: var(--t-s); }
 
 .combo { position: relative; }
 .combo-lista {

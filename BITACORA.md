@@ -45,20 +45,34 @@ cuatro perfiles, sin errores de consola; auditorías de hojas de estilo (sin cla
 selectores duplicados, sin colores fuera de `:root`, un solo `!important`, el de reduced-motion),
 código sin uso, identificadores del HTML y textos.
 
-## Bloque 3 — Publicación en la cuenta institucional (21-09-2026)
-Etapa 1. Estado: **abierto**, a la espera del envío al repositorio.
+## Bloque 4 — Acceso con cuenta y administración de usuarios (21-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.3.0.
 
-**Por qué:** en el teléfono, la ubicación GPS y la cámara sólo funcionan en una dirección
-`https://`. Sin publicar no hay prueba de campo, que es el uso real del sistema.
+**Petición de Liber:** (1) la pantalla inicial debe ser un acceso con usuario y contraseña,
+simulado por ahora, y el alta de registrador sale de ahí: va dentro, para dar de alta usuarios;
+(2) quien registra lo hace varias veces en una sesión, así que debe haber un botón de agregar
+registro nuevo; (3) el control de ubicación debe estar en el mapa, en guinda, en lugar del botón
+de abajo, conservando la captura manual de coordenadas.
 
-**Qué se hizo:** repositorio git iniciado en la carpeta del proyecto, con dos entregas que
-reproducen la historia documentada arriba (v0.1.0 y v0.2.0) y destino
-`SedemaOficina/SISTEMA-PLANTACION`. Se verificó que los archivos de la versión probada llegaron
-intactos a la entrega (huellas md5 idénticas en los diez archivos principales).
+**Qué se construyó:** acceso con correo y contraseña; pestaña «Usuarios» sólo para la
+Administración global, con alta, edición, activación, desactivación y eliminación de cuentas,
+asignación de perfil, área y jefe, y buscador; panel de confirmación tras guardar con «Agregar
+registro nuevo», que conserva programa, fecha y ubicación; control de ubicación dentro del mapa,
+abajo a la derecha, con aviso de que está buscando señal.
 
-**Fuera del repositorio** (`.gitignore`): `historial/`, `_to_delete/`, y basura del sistema
-operativo. Las copias fechadas se conservan en disco pero ya no hacen falta: el historial lo
-lleva git.
+**Eliminado y por qué:** el formulario de alta de registrador de la pantalla de acceso y
+`SRP.sesion.registrarNuevo()`, sustituidos por el alta desde Usuarios (D30); el botón «Usar mi
+ubicación» de debajo del mapa, sustituido por el control dentro del mapa (D36); el aviso flotante
+«Registro guardado», que repetía lo que ya dice el panel (Norma 9.4). Sin rastro en código,
+textos ni documentación.
 
-**Falta para cerrar el bloque:** enviar al repositorio, activar la publicación, abrirlo desde el
-teléfono y verificar que GPS y cámara respondan.
+**Declarado en pantalla:** la contraseña no se verifica todavía. Comprobarla en el navegador es
+seguridad aparente; el aviso está en la pantalla de acceso mientras `ES_FICTICIO` sea true, y la
+razón queda en el comentario de `autenticar()` (Norma 9.6).
+
+**Datos ficticios:** los usuarios ahora llevan correo en `@ejemplo.local`; se agregó una cuenta
+desactivada y se dejó a una persona sin apellido materno, ambos como casos de prueba.
+
+**Verificación:** sintaxis de todos los .js; recorrido automatizado de 77 comprobaciones en los
+cinco perfiles de prueba, sin errores de consola; auditorías de hojas de estilo, código sin uso,
+identificadores y textos, todas limpias.

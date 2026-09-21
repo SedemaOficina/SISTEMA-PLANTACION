@@ -21,6 +21,7 @@ SRP.app = {
     SRP.formulario.iniciar();
     SRP.registros.iniciar();
     SRP.catalogos.iniciar();
+    SRP.usuarios.iniciar();
     this.iniciarAcceso();
     this.iniciarDialogos();
 
@@ -36,25 +37,30 @@ SRP.app = {
 
   /* ---------- Acceso ---------- */
   iniciarAcceso() {
-    this.el('form-alta').addEventListener('submit', async (e) => {
+    this.el('form-acceso').addEventListener('submit', (e) => {
       e.preventDefault();
-      const campos = [['alta-nombre', 'nombre', 'Escriba su nombre.'], ['alta-ap', 'apellido_paterno', 'Escriba su apellido paterno.'],
-        ['alta-am', 'apellido_materno', 'Escriba su apellido materno.'], ['alta-area', 'area_id', 'Elija su área.'],
-        ['alta-cargo', 'cargo_rol', 'Escriba su cargo y rol.']];
-      const datos = {}; const errores = [];
-      campos.forEach(([id, clave, msg]) => {
-        const v = this.el(id).value.trim().replace(/\s+/g, ' ');
-        datos[clave] = v;
-        this.el(id).toggleAttribute('aria-invalid', !v);
-        if (!v) errores.push('<li><a href="#' + id + '">' + msg + '</a></li>');
-      });
-      const caja = this.el('alta-errores');
+      const correo = this.el('acceso-correo').value.trim();
+      const clave = this.el('acceso-clave').value;
+      const errores = [];
+      if (!correo) errores.push('<li><a href="#acceso-correo">Escriba su correo.</a></li>');
+      if (!clave) errores.push('<li><a href="#acceso-clave">Escriba su contraseña.</a></li>');
+      this.el('acceso-correo').toggleAttribute('aria-invalid', !correo);
+      this.el('acceso-clave').toggleAttribute('aria-invalid', !clave);
+      const caja = this.el('acceso-errores');
       if (errores.length) { caja.innerHTML = '<ul>' + errores.join('') + '</ul>'; caja.hidden = false; caja.focus(); return; }
+
+      const r = SRP.sesion.autenticar(correo);
+      if (!r.ok) {
+        this.el('acceso-correo').setAttribute('aria-invalid', 'true');
+        caja.innerHTML = '<ul><li>' + SRP.util.escapar(r.motivo) + '</li></ul>';
+        caja.hidden = false; caja.focus();
+        return;
+      }
       caja.hidden = true;
-      await SRP.sesion.registrarNuevo(datos);
-      await SRP.ref.recargar();
+      this.el('acceso-clave').value = '';
       this.entrar();
     });
+
     this.el('btn-entrar-prueba').addEventListener('click', () => {
       const u = SRP.ref.usuarioPorId[this.el('sel-usuario-prueba').value];
       if (!u) return;
@@ -82,13 +88,14 @@ SRP.app = {
     this.el('navegacion').hidden = true;
     this.el('encabezado-usuario').hidden = true;
     this.el('herramientas-prueba').hidden = true;
-    this.el('alta-area').innerHTML = '<option value="">Seleccione su área</option>' +
-      SRP.ref.deTipo('area', true).map(a => '<option value="' + a.id + '">' + SRP.util.escapar(a.nombre) + '</option>').join('');
+    this.el('form-acceso').reset();
+    this.el('acceso-errores').hidden = true;
+    ['acceso-correo', 'acceso-clave'].forEach(id => this.el(id).removeAttribute('aria-invalid'));
     const prueba = this.el('acceso-prueba');
     prueba.hidden = !SRP.CONFIG.ES_FICTICIO;
     if (!prueba.hidden) {
       this.el('sel-usuario-prueba').innerHTML = SRP.ref.usuarios.filter(u => u.activo).map(u =>
-        '<option value="' + u.id + '">' + SRP.util.escapar(SRP.util.nombreCompleto(u)) + ' (' + SRP.permisos.de(u).etiqueta + ')</option>').join('');
+        '<option value="' + u.id + '">' + SRP.util.escapar(SRP.util.nombreCompleto(u)) + ' — ' + SRP.permisos.de(u).etiqueta + '</option>').join('');
     }
     this.mostrarVista('acceso');
   },
@@ -103,6 +110,7 @@ SRP.app = {
     this.el('herramientas-prueba').hidden = !SRP.CONFIG.ES_FICTICIO;
     this.el('navegacion').querySelector('[data-vista="registrar"]').hidden = !p.registrar;
     this.el('navegacion').querySelector('[data-vista="catalogos"]').hidden = !p.catalogos;
+    this.el('navegacion').querySelector('[data-vista="usuarios"]').hidden = !p.usuarios;
     SRP.formulario.limpiar();
     this.mostrarVista(p.registrar ? 'registrar' : 'registros');
   },
@@ -113,7 +121,8 @@ SRP.app = {
     const u = SRP.sesion.usuario;
     if (u) {
       const p = SRP.permisos.de(u);
-      if ((nombre === 'registrar' && !p.registrar) || (nombre === 'catalogos' && !p.catalogos)) nombre = 'registros';
+      if ((nombre === 'registrar' && !p.registrar) || (nombre === 'catalogos' && !p.catalogos) ||
+          (nombre === 'usuarios' && !p.usuarios)) nombre = 'registros';
     }
     this.vista = nombre;
     document.querySelectorAll('.vista').forEach(v => { v.hidden = v.id !== 'vista-' + nombre; });
@@ -123,6 +132,7 @@ SRP.app = {
     if (nombre === 'registrar') SRP.formulario.preparar();
     if (nombre === 'registros') SRP.registros.preparar();
     if (nombre === 'catalogos') SRP.catalogos.preparar();
+    if (nombre === 'usuarios') SRP.usuarios.preparar();
     const titulo = this.el('vista-' + nombre).querySelector('h1');
     if (titulo) { titulo.setAttribute('tabindex', '-1'); titulo.focus({ preventScroll: true }); }
     window.scrollTo(0, 0);

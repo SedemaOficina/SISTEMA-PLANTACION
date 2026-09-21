@@ -9,7 +9,6 @@ SRP.formulario = {
 
   iniciar() {
     SRP.mapa.iniciar((lat, lng) => this.alMoverPunto(lat, lng));
-    this.el('btn-gps').addEventListener('click', () => SRP.mapa.ubicar());
     this.el('btn-coord-aplicar').addEventListener('click', () => this.aplicarCoordenadasManuales());
     this.iniciarCombo();
     this.el('foto-camara').addEventListener('change', (e) => this.cargarFoto(e.target));
@@ -19,10 +18,14 @@ SRP.formulario = {
     this.el('btn-resumen-corregir').addEventListener('click', () => this.el('dlg-resumen').close());
     this.el('btn-resumen-guardar').addEventListener('click', () => this.guardar());
     this.el('btn-cancelar-edicion').addEventListener('click', () => { this.limpiar(); SRP.app.mostrarVista('registros'); });
+    this.el('btn-registro-nuevo').addEventListener('click', () => this.nuevoRegistro());
+    this.el('btn-ir-registros').addEventListener('click', () => SRP.app.mostrarVista('registros'));
   },
 
   // Se llama cada vez que se entra a la vista Registrar
   preparar() {
+    this.el('panel-guardado').hidden = true;
+    this.el('form-plantacion').hidden = false;
     this.llenarProgramas();
     if (!this.estado.editando) {
       this.el('campo-registrador').value = SRP.util.nombreCompleto(SRP.sesion.usuario);
@@ -159,7 +162,7 @@ SRP.formulario = {
   /* ---------- Validación y resumen ---------- */
   validar() {
     const errores = [];
-    if (SRP.mapa.lat === null) errores.push(['btn-gps', 'Falta la ubicación: use su ubicación, toque el mapa o capture coordenadas.']);
+    if (SRP.mapa.lat === null) errores.push(['mapa', 'Falta la ubicación: toque el control de ubicación del mapa, toque el mapa o capture coordenadas.']);
     if (!this.estado.especieId) errores.push(['campo-especie', 'Elija una especie de la lista o la opción «Otra especie».']);
     if (this.estado.especieId === this.OTRA && !this.el('campo-otra-especie').value.trim())
       errores.push(['campo-otra-especie', 'Escriba qué especie es.']);
@@ -174,7 +177,7 @@ SRP.formulario = {
     ['campo-especie', 'campo-otra-especie', 'campo-programa', 'campo-fecha'].forEach(id => this.el(id).removeAttribute('aria-invalid'));
     const caja = this.el('resumen-errores');
     if (!errores.length) { caja.hidden = true; return; }
-    errores.forEach(([id]) => { if (id !== 'btn-gps') this.el(id).setAttribute('aria-invalid', 'true'); });
+    errores.forEach(([id]) => { if (id !== 'mapa') this.el(id).setAttribute('aria-invalid', 'true'); });
     caja.innerHTML = '<h2>Falta corregir ' + errores.length + (errores.length === 1 ? ' dato' : ' datos') + '</h2><ul>' +
       errores.map(([id, t]) => '<li><a href="#' + id + '">' + t + '</a></li>').join('') + '</ul>';
     caja.hidden = false;
@@ -243,17 +246,39 @@ SRP.formulario = {
         }, v);
         await SRP.almacen.guardarConBitacora('plantaciones', nuevo, SRP.bitacora.entrada('CREADO', 'plantacion', nuevo.id));
         this.el('dlg-resumen').close();
-        // Se conservan programa, fecha y ubicación: en campo se registran varios árboles seguidos
-        this.el('campo-especie').value = ''; this.estado.especieId = null; this.mostrarOtra(false);
-        this.ponerFoto(null, null);
-        SRP.util.anunciar('Registro guardado.');
-        this.el('campo-especie').focus();
+        this.mostrarGuardado(nuevo);
       }
     } catch (err) {
       SRP.util.anunciar('No se pudo guardar: ' + err.message + '. Sus datos siguen en pantalla; intente de nuevo.', 'alerta');
     } finally {
       boton.disabled = false;
     }
+  },
+
+  /* ---------- Después de guardar ---------- */
+
+  // En campo se registran varios árboles seguidos, así que el paso siguiente se ofrece
+  // explícitamente en vez de dejar el formulario a medio limpiar sin decir nada.
+  mostrarGuardado(registro) {
+    const esp = SRP.ref.especieDe(registro);
+    this.el('panel-guardado-detalle').textContent = esp.comun + ', ' +
+      SRP.ref.territorio(registro.colonia) + ', ' + SRP.util.formatearFecha(registro.fecha_plantacion) + '.';
+    this.el('form-plantacion').hidden = true;
+    this.el('panel-guardado').hidden = false;
+    this.el('panel-guardado').focus();
+  },
+
+  // Conserva programa, fecha y ubicación: los árboles de una jornada comparten los tres
+  nuevoRegistro() {
+    this.el('panel-guardado').hidden = true;
+    this.el('form-plantacion').hidden = false;
+    this.el('campo-especie').value = '';
+    this.estado.especieId = null;
+    this.mostrarOtra(false);
+    this.ponerFoto(null, null);
+    this.mostrarErrores([]);
+    this.el('campo-especie').focus();
+    SRP.mapa.refrescar();
   },
 
   /* ---------- Edición ---------- */

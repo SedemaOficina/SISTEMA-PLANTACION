@@ -4,7 +4,7 @@
 window.SRP = window.SRP || {};
 
 SRP.CONFIG = {
-  VERSION: '0.2.0 (Bloque 2)',
+  VERSION: '0.3.0 (Bloque 4)',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.

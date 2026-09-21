@@ -39,20 +39,24 @@ window.SRP = window.SRP || {};
     'ESP' + String(i + 1).padStart(3, '0'), e[0], { nombre_cientifico: e[1], grupo: e[2] }));
   especies[especies.length - 1].activo = false;   // caso de prueba: especie desactivada
 
-  const usuario = (id, nombre, ap, am, area_id, cargo_rol, perfil, jefe_id) => ({
-    id, nombre, apellido_paterno: ap, apellido_materno: am, area_id, cargo_rol, perfil,
-    jefe_id: jefe_id || null, activo: true, es_ficticio: true, fecha_alta: F
+  // Correos en @ejemplo.local: dominio reservado, nunca entregable (Norma 3)
+  const usuario = (id, correo, nombre, ap, am, area_id, cargo_rol, perfil, jefe_id) => ({
+    id, correo, nombre, apellido_paterno: ap, apellido_materno: am, area_id, cargo_rol, perfil,
+    jefe_id: jefe_id || null, activo: true, es_ficticio: true,
+    fecha_alta: F, alta_por_id: 'u-admin-1', fecha_ultima_edicion: null, editado_por_id: null
   });
 
   const usuarios = [
-    usuario('u-reg-1', 'Fulana', 'de Tal', 'Ejemplo', 'a-div', 'Técnica de campo', 'REGISTRADOR', 'u-jefe-1'),
-    usuario('u-reg-2', 'Mengano', 'Pérez', 'Ejemplo', 'a-div', 'Técnico de campo', 'REGISTRADOR', 'u-jefe-1'),
-    // Caso incómodo: nombre largo y sin jefe asignado (el jefe no debe ver sus registros)
-    usuario('u-reg-3', 'Zutana Maximiliana', 'de los Ángeles', 'Villaseñor Ejemplo', 'a-sia', 'Técnica de campo de apoyo a brigadas', 'REGISTRADOR', null),
-    usuario('u-jefe-1', 'Perengano', 'Gómez', 'Ejemplo', 'a-div', 'Jefe de registradores', 'JEFE'),
-    usuario('u-admin-1', 'Administración', 'SIA', 'Ejemplo', 'a-sia', 'Administración global', 'ADMIN'),
-    usuario('u-lect-1', 'Consulta', 'Solo Lectura', 'Ejemplo', 'a-sia', 'Consulta', 'VIEWER')
+    usuario('u-reg-1', 'fulana@ejemplo.local', 'Fulana', 'de Tal', 'Ejemplo', 'a-div', 'Técnica de campo', 'REGISTRADOR', 'u-jefe-1'),
+    usuario('u-reg-2', 'mengano@ejemplo.local', 'Mengano', 'Pérez', 'Ejemplo', 'a-div', 'Técnico de campo', 'REGISTRADOR', 'u-jefe-1'),
+    // Caso incómodo: nombre largo, sin apellido materno y sin jefe asignado (el jefe no debe ver sus registros)
+    usuario('u-reg-3', 'zutana.delosangeles@ejemplo.local', 'Zutana Maximiliana', 'de los Ángeles Villaseñor', '', 'a-sia', 'Técnica de campo de apoyo a brigadas', 'REGISTRADOR', null),
+    usuario('u-jefe-1', 'perengano@ejemplo.local', 'Perengano', 'Gómez', 'Ejemplo', 'a-div', 'Jefe de registradores', 'JEFE'),
+    usuario('u-admin-1', 'administracion@ejemplo.local', 'Administración', 'SIA', 'Ejemplo', 'a-sia', 'Administración global', 'ADMIN'),
+    usuario('u-lect-1', 'consulta@ejemplo.local', 'Consulta', 'Solo Lectura', 'Ejemplo', 'a-sia', 'Consulta', 'VIEWER')
   ];
+  usuarios.push(usuario('u-baja-1', 'exempleado@ejemplo.local', 'Exempleado', 'Baja', 'Ejemplo', 'a-div', 'Técnico de campo', 'REGISTRADOR', 'u-jefe-1'));
+  usuarios[usuarios.length - 1].activo = false;   // caso de prueba: cuenta desactivada, no debe poder entrar
 
   // Plantaciones: generador determinista (mismo resultado en cada carga)
   let semilla = 7;

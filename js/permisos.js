@@ -4,10 +4,14 @@
 window.SRP = window.SRP || {};
 
 SRP.PERFILES = {
-  REGISTRADOR: { etiqueta: 'Registrador',            alcance: 'propios', registrar: true,  editar: true,  eliminar: true,  catalogos: false },
-  JEFE:        { etiqueta: 'Jefe de registradores',  alcance: 'equipo',  registrar: true,  editar: true,  eliminar: false, catalogos: false }, // [pendiente] confirmar si registra y si elimina
-  ADMIN:       { etiqueta: 'Administración global',  alcance: 'todos',   registrar: true,  editar: true,  eliminar: true,  catalogos: true  },
-  VIEWER:      { etiqueta: 'Consulta',               alcance: 'todos',   registrar: false, editar: false, eliminar: false, catalogos: false }
+  REGISTRADOR: { etiqueta: 'Registrador',            alcance: 'propios', registrar: true,  editar: true,  eliminar: true,  catalogos: false, usuarios: false,
+                 descripcion: 'Registra plantaciones y ve, edita y elimina únicamente las suyas.' },
+  JEFE:        { etiqueta: 'Jefe de registradores',  alcance: 'equipo',  registrar: true,  editar: true,  eliminar: false, catalogos: false, usuarios: false, // [pendiente] confirmar si registra y si elimina
+                 descripcion: 'Ve y edita los registros de quienes lo tienen asignado como jefe. No elimina.' },
+  ADMIN:       { etiqueta: 'Administración global',  alcance: 'todos',   registrar: true,  editar: true,  eliminar: true,  catalogos: true,  usuarios: true,
+                 descripcion: 'Ve y modifica todo, y administra los catálogos y las cuentas de usuario.' },
+  VIEWER:      { etiqueta: 'Consulta',               alcance: 'todos',   registrar: false, editar: false, eliminar: false, catalogos: false, usuarios: false,
+                 descripcion: 'Ve todos los registros y genera reportes. No captura ni modifica nada.' }
 };
 
 SRP.permisos = {

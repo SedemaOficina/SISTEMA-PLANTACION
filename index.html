@@ -29,6 +29,7 @@
   <button type="button" class="pestana" data-vista="registrar">Registrar</button>
   <button type="button" class="pestana" data-vista="registros">Registros</button>
   <button type="button" class="pestana" data-vista="catalogos">Catálogos</button>
+  <button type="button" class="pestana" data-vista="usuarios">Usuarios</button>
 </nav>
 
 <main id="principal" tabindex="-1">
@@ -36,24 +37,28 @@
   <!-- ACCESO -->
   <section id="vista-acceso" class="vista" hidden aria-labelledby="titulo-acceso">
     <h1 id="titulo-acceso">Registro de plantaciones</h1>
-    <p class="entrada">Identifíquese una sola vez. Este dispositivo recordará sus datos y cada árbol que registre quedará a su nombre.</p>
 
-    <form id="form-alta" class="tarjeta" novalidate>
-      <h2>Alta de registrador</h2>
-      <div id="alta-errores" class="errores" tabindex="-1" hidden></div>
-      <div class="campo"><label for="alta-nombre">Nombre(s)</label><input id="alta-nombre" name="nombre" autocomplete="given-name" required></div>
-      <div class="campo"><label for="alta-ap">Apellido paterno</label><input id="alta-ap" name="apellido_paterno" autocomplete="family-name" required></div>
-      <div class="campo"><label for="alta-am">Apellido materno</label><input id="alta-am" name="apellido_materno" required></div>
-      <div class="campo"><label for="alta-area">Área a la que pertenece</label><select id="alta-area" name="area_id" required></select></div>
-      <div class="campo"><label for="alta-cargo">Cargo y rol</label><input id="alta-cargo" name="cargo_rol" required placeholder="p. ej. Técnico de campo"></div>
+    <form id="form-acceso" class="tarjeta" novalidate>
+      <h2>Iniciar sesión</h2>
+      <div id="acceso-errores" class="errores" tabindex="-1" hidden></div>
+      <div class="campo">
+        <label for="acceso-correo">Correo</label>
+        <input type="email" id="acceso-correo" autocomplete="username" inputmode="email" autocapitalize="off" spellcheck="false" required>
+      </div>
+      <div class="campo">
+        <label for="acceso-clave">Contraseña</label>
+        <input type="password" id="acceso-clave" autocomplete="current-password" required>
+      </div>
       <button type="submit" class="btn btn-primario">Entrar</button>
+      <p class="nota">¿No puede entrar? Su cuenta la da de alta la Administración del sistema.</p>
     </form>
 
     <div id="acceso-prueba" class="tarjeta tarjeta-prueba" hidden>
-      <h2>Entrar con un usuario de prueba</h2>
-      <p class="nota">Sólo en desarrollo: permite revisar cómo ve el sistema cada perfil.</p>
+      <h2>Entrar como usuario de prueba</h2>
+      <p class="nota">Sólo en desarrollo: permite revisar cómo ve el sistema cada perfil, sin escribir credenciales.</p>
       <div class="campo"><label for="sel-usuario-prueba">Usuario ficticio</label><select id="sel-usuario-prueba"></select></div>
       <button type="button" id="btn-entrar-prueba" class="btn btn-secundario">Entrar con este usuario</button>
+      <p class="aviso-simulado">La contraseña todavía no se verifica: basta un correo dado de alta. La verificación real corresponde al proveedor institucional en la siguiente fase.</p>
     </div>
   </section>
 
@@ -70,9 +75,6 @@
           <div><dt>Alcaldía</dt><dd id="dato-alcaldia">—</dd></div>
           <div><dt>Colonia</dt><dd id="dato-colonia">—</dd></div>
         </dl>
-      </div>
-      <div class="fila-botones">
-        <button type="button" id="btn-gps" class="btn btn-secundario">Usar mi ubicación</button>
       </div>
       <details class="coord-manual">
         <summary>Capturar coordenadas a mano</summary>
@@ -119,6 +121,15 @@
         <button type="button" id="btn-cancelar-edicion" class="btn btn-texto" hidden>Cancelar edición</button>
       </div>
     </form>
+
+    <div id="panel-guardado" class="panel-guardado" hidden tabindex="-1">
+      <h2 id="panel-guardado-titulo">Registro guardado</h2>
+      <p id="panel-guardado-detalle"></p>
+      <div class="acciones">
+        <button type="button" id="btn-registro-nuevo" class="btn btn-primario">Agregar registro nuevo</button>
+        <button type="button" id="btn-ir-registros" class="btn btn-secundario">Ver mis registros</button>
+      </div>
+    </div>
   </section>
 
   <!-- REGISTROS -->
@@ -168,6 +179,19 @@
     </div>
     <p class="nota">Un valor con registros asignados no se elimina: se desactiva. Deja de ofrecerse en el formulario y los registros existentes lo conservan.</p>
     <div class="tabla-caja"><table id="tabla-catalogo" class="tabla"></table></div>
+  </section>
+
+  <!-- USUARIOS -->
+  <section id="vista-usuarios" class="vista" hidden aria-labelledby="titulo-usuarios">
+    <h1 id="titulo-usuarios">Usuarios</h1>
+    <div class="fila-botones">
+      <div class="campo campo-crece">
+        <label for="usr-buscar">Buscar</label><input id="usr-buscar" type="search" placeholder="Nombre, correo o área">
+      </div>
+      <button type="button" id="btn-usr-agregar" class="btn btn-primario">Dar de alta</button>
+    </div>
+    <p class="nota">Un usuario con registros a su nombre no se elimina: se desactiva. Deja de poder entrar y sus registros se conservan.</p>
+    <div class="tabla-caja"><table id="tabla-usuarios" class="tabla"></table></div>
   </section>
 </main>
 
@@ -220,6 +244,26 @@
   </div>
 </dialog>
 
+
+<dialog id="dlg-usuario" aria-labelledby="dlg-usuario-titulo">
+  <form id="form-usuario" novalidate>
+    <h2 id="dlg-usuario-titulo">Dar de alta</h2>
+    <div id="usr-errores" class="errores" tabindex="-1" hidden></div>
+    <div class="campo"><label for="usr-nombre">Nombre(s)</label><input id="usr-nombre" required></div>
+    <div class="campo"><label for="usr-ap">Apellido paterno</label><input id="usr-ap" required></div>
+    <div class="campo"><label for="usr-am">Apellido materno</label><input id="usr-am"></div>
+    <div class="campo"><label for="usr-correo">Correo</label><input type="email" id="usr-correo" inputmode="email" autocapitalize="off" spellcheck="false" required aria-describedby="usr-correo-ayuda"><p id="usr-correo-ayuda" class="nota">Con él inicia sesión. No se puede cambiar después.</p></div>
+    <div class="campo"><label for="usr-area">Área</label><select id="usr-area" required></select></div>
+    <div class="campo"><label for="usr-cargo">Cargo y rol</label><input id="usr-cargo" required placeholder="p. ej. Técnico de campo"></div>
+    <div class="campo"><label for="usr-perfil">Perfil</label><select id="usr-perfil" required></select><p id="usr-perfil-ayuda" class="nota"></p></div>
+    <div class="campo" id="caja-usr-jefe"><label for="usr-jefe">Jefe</label><select id="usr-jefe"></select></div>
+    <div class="acciones">
+      <button type="submit" class="btn btn-primario">Guardar</button>
+      <button type="button" id="btn-usr-cancelar" class="btn btn-secundario">Cancelar</button>
+    </div>
+  </form>
+</dialog>
+
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
 <script src="vendor/leaflet.js"></script>
 <script src="vendor/leaflet-gesture-handling.min.js"></script>
@@ -243,6 +287,7 @@
 <script src="js/registros.js"></script>
 <script src="js/reportes.js"></script>
 <script src="js/catalogos.js"></script>
+<script src="js/usuarios.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

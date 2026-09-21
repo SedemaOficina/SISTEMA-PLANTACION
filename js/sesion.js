@@ -26,17 +26,18 @@ SRP.sesion = {
     try { localStorage.removeItem(SRP.CONFIG.CLAVE_SESION); } catch (e) { /* nada que borrar */ }
   },
 
-  async registrarNuevo(datos) {
-    const u = {
-      id: SRP.util.generarId(),
-      nombre: datos.nombre, apellido_paterno: datos.apellido_paterno, apellido_materno: datos.apellido_materno,
-      area_id: datos.area_id, cargo_rol: datos.cargo_rol,
-      perfil: 'REGISTRADOR', jefe_id: null,   // [pendiente] Fase 2: la administración asigna jefe
-      activo: true, es_ficticio: SRP.CONFIG.ES_FICTICIO, fecha_alta: SRP.util.ahoraISO()
-    };
-    this.usuario = u;   // la bitácora necesita al autor
-    await SRP.almacen.guardarConBitacora('usuarios', u, SRP.bitacora.entrada('CREADO', 'usuario', u.id, 'Alta de registrador desde el dispositivo'));
+  /* ACCESO SIMULADO (Fase 1).
+     La contraseña NO se verifica: comprobarla en el navegador es seguridad aparente, porque
+     cualquiera puede leer el código de la página. Lo único que se comprueba es que el correo
+     corresponda a una cuenta dada de alta y activa, que es lo que permite probar el flujo y los
+     perfiles. La verificación real la hace el proveedor institucional en Fase 2, y entonces se
+     sustituye sólo esta función. Ver AUTENTICACION en config.js. */
+  autenticar(correo) {
+    const buscado = SRP.util.normalizar(correo);
+    const u = SRP.ref.usuarios.find(x => SRP.util.normalizar(x.correo) === buscado);
+    if (!u) return { ok: false, motivo: 'Ese correo no está dado de alta. Solicite su cuenta a la Administración del sistema.' };
+    if (!u.activo) return { ok: false, motivo: 'Esa cuenta está desactivada. Consulte con la Administración del sistema.' };
     this.iniciar(u);
-    return u;
+    return { ok: true, usuario: u };
   }
 };

@@ -32,6 +32,35 @@ SRP.mapa = {
       .addTo(this.mapa);
     this.icono = L.divIcon({ className: 'pin', html: this.ICONO_SVG, iconSize: [36, 48], iconAnchor: [18, 46] });
     this.mapa.on('click', (e) => this.colocar(e.latlng.lat, e.latlng.lng, 'Punto colocado en el mapa.'));
+    this.agregarControlUbicacion();
+  },
+
+  /* Control de ubicación dentro del mapa, abajo a la derecha: queda al alcance del pulgar
+     mientras se sostiene el teléfono, que es como se usa en campo. */
+  agregarControlUbicacion() {
+    const Control = L.Control.extend({
+      options: { position: 'bottomright' },
+      onAdd: () => {
+        const b = L.DomUtil.create('button', 'ctrl-ubicacion');
+        b.type = 'button';
+        b.title = 'Usar mi ubicación';
+        b.setAttribute('aria-label', 'Usar mi ubicación');
+        b.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" focusable="false">' +
+          '<path fill="currentColor" d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3a9 9 0 00-7.94-7.94V1h-2v2.06A9 9 0 003.06 11H1v2h2.06A9 9 0 0011 20.94V23h2v-2.06A9 9 0 0020.94 13H23v-2h-2.06zM12 19a7 7 0 110-14 7 7 0 010 14z"/></svg>';
+        L.DomEvent.disableClickPropagation(b);
+        L.DomEvent.on(b, 'click', (e) => { L.DomEvent.stop(e); this.ubicar(); });
+        return b;
+      }
+    });
+    this.controlUbicacion = new Control().addTo(this.mapa);
+  },
+
+  // Mientras se busca la señal, el control avisa que está trabajando
+  marcarBuscando(buscando) {
+    const b = document.querySelector('.ctrl-ubicacion');
+    if (!b) return;
+    b.disabled = buscando;
+    b.setAttribute('aria-busy', String(buscando));
   },
 
   estado(texto, tipo) {
@@ -68,10 +97,15 @@ SRP.mapa = {
       return;
     }
     this.estado('Obteniendo su ubicación…');
+    this.marcarBuscando(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => this.colocar(pos.coords.latitude, pos.coords.longitude,
-        'Ubicación obtenida (precisión ±' + Math.round(pos.coords.accuracy) + ' m).', true),
+      (pos) => {
+        this.marcarBuscando(false);
+        this.colocar(pos.coords.latitude, pos.coords.longitude,
+          'Ubicación obtenida (precisión ±' + Math.round(pos.coords.accuracy) + ' m).', true);
+      },
       (err) => {
+        this.marcarBuscando(false);
         const motivo = err.code === 1 ? 'no se concedió el permiso de ubicación'
           : err.code === 3 ? 'la señal tardó demasiado' : 'no hay señal de ubicación';
         this.estado('No se obtuvo la ubicación: ' + motivo + '. Toque el mapa o capture coordenadas.', 'alerta');

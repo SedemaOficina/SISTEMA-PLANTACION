@@ -34,6 +34,7 @@ js/sesion.js          Acceso (simulado; se sustituye en Fase 2)
 js/datos-ficticios.js Usuarios, catálogos y 34 plantaciones de prueba
 js/derivacion.js      Cruce punto-en-polígono (alcaldía, colonia, UGA)
 js/referencias.js     Catálogos y usuarios en memoria
+js/usuarios.js       Alta y administración de cuentas (sólo Administración global)
 js/mapa.js, foto.js, formulario.js, registros.js, reportes.js, catalogos.js, app.js
 assets/capas-ficticias.js  Capas geográficas FICTICIAS (sustituir por las reales)
 assets/logo.js        Logotipo SEDEMA incrustado
