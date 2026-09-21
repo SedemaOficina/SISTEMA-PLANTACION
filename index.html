@@ -8,9 +8,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cabin:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.4.0">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.4.0">
-<link rel="stylesheet" href="css/estilos.css?v=0.4.0">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.4.1">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.4.1">
+<link rel="stylesheet" href="css/estilos.css?v=0.4.1">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -18,10 +18,12 @@
 <p id="banda-ficticio" class="banda-ficticio" hidden>Datos ficticios de prueba. No usar para reportes oficiales.</p>
 
 <header class="encabezado">
-  <img id="logo" class="encabezado-logo" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente">
-  <div id="encabezado-usuario" class="encabezado-usuario" hidden>
-    <span id="usuario-nombre" class="encabezado-nombre"></span>
-    <span id="usuario-perfil" class="insignia"></span>
+  <div class="encabezado-interior">
+    <img id="logo" class="encabezado-logo" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente">
+    <div id="encabezado-usuario" class="encabezado-usuario" hidden>
+      <span id="usuario-nombre" class="encabezado-nombre"></span>
+      <span id="usuario-perfil" class="insignia"></span>
+    </div>
   </div>
 </header>
 
@@ -67,6 +69,8 @@
     <h1 id="titulo-registrar">Nuevo registro</h1>
     <p id="edicion-aviso" class="franja-edicion" hidden></p>
 
+    <div class="campo"><label for="campo-registrador">Registrador</label><input id="campo-registrador" readonly></div>
+
     <div class="mapa-bloque">
       <div id="mapa" class="mapa" aria-label="Mapa para ubicar el árbol. Toque el mapa o arrastre el marcador."></div>
       <div class="ficha-territorial" aria-live="polite">
@@ -102,7 +106,6 @@
 
       <div class="campo"><label for="campo-programa">Programa</label><select id="campo-programa"></select></div>
       <div class="campo"><label for="campo-fecha">Fecha de plantación</label><input type="date" id="campo-fecha"></div>
-      <div class="campo"><label for="campo-registrador">Registrador</label><input id="campo-registrador" readonly></div>
 
       <fieldset class="campo foto">
         <legend>Fotografía <span class="opcional">(opcional)</span></legend>
@@ -130,7 +133,7 @@
   </section>
 
   <!-- REGISTROS -->
-  <section id="vista-registros" class="vista" hidden aria-labelledby="titulo-registros">
+  <section id="vista-registros" class="vista vista-ancha" hidden aria-labelledby="titulo-registros">
     <h1 id="titulo-registros">Mis registros</h1>
     <div class="filtros">
       <div id="filtro-atajos" class="chips" role="group" aria-label="Periodos frecuentes">
@@ -166,7 +169,7 @@
   </section>
 
   <!-- CATÁLOGOS -->
-  <section id="vista-catalogos" class="vista" hidden aria-labelledby="titulo-catalogos">
+  <section id="vista-catalogos" class="vista vista-ancha" hidden aria-labelledby="titulo-catalogos">
     <h1 id="titulo-catalogos">Catálogos</h1>
     <div id="cat-tipos" class="chips" role="group" aria-label="Catálogo">
       <button type="button" class="chip" data-tipo="programa" aria-pressed="true">Programas</button>
@@ -184,7 +187,7 @@
   </section>
 
   <!-- USUARIOS -->
-  <section id="vista-usuarios" class="vista" hidden aria-labelledby="titulo-usuarios">
+  <section id="vista-usuarios" class="vista vista-ancha" hidden aria-labelledby="titulo-usuarios">
     <h1 id="titulo-usuarios">Usuarios</h1>
     <div class="fila-botones">
       <div class="campo campo-crece">
@@ -283,30 +286,30 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.4.0"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.4.0"></script>
-<script src="vendor/turf-pip.min.js?v=0.4.0"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.4.0"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.4.0"></script>
+<script src="vendor/leaflet.js?v=0.4.1"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.4.1"></script>
+<script src="vendor/turf-pip.min.js?v=0.4.1"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.4.1"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.4.1"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.4.0"></script>
-<script src="js/util.js?v=0.4.0"></script>
-<script src="js/iconos.js?v=0.4.0"></script>
-<script src="assets/logo.js?v=0.4.0"></script>
-<script src="assets/capas-ficticias.js?v=0.4.0"></script>
-<script src="js/datos-ficticios.js?v=0.4.0"></script>
-<script src="js/permisos.js?v=0.4.0"></script>
-<script src="js/derivacion.js?v=0.4.0"></script>
-<script src="js/almacen.js?v=0.4.0"></script>
-<script src="js/sesion.js?v=0.4.0"></script>
-<script src="js/referencias.js?v=0.4.0"></script>
-<script src="js/mapa.js?v=0.4.0"></script>
-<script src="js/foto.js?v=0.4.0"></script>
-<script src="js/formulario.js?v=0.4.0"></script>
-<script src="js/registros.js?v=0.4.0"></script>
-<script src="js/reportes.js?v=0.4.0"></script>
-<script src="js/catalogos.js?v=0.4.0"></script>
-<script src="js/usuarios.js?v=0.4.0"></script>
-<script src="js/app.js?v=0.4.0"></script>
+<script src="js/config.js?v=0.4.1"></script>
+<script src="js/util.js?v=0.4.1"></script>
+<script src="js/iconos.js?v=0.4.1"></script>
+<script src="assets/logo.js?v=0.4.1"></script>
+<script src="assets/capas-ficticias.js?v=0.4.1"></script>
+<script src="js/datos-ficticios.js?v=0.4.1"></script>
+<script src="js/permisos.js?v=0.4.1"></script>
+<script src="js/derivacion.js?v=0.4.1"></script>
+<script src="js/almacen.js?v=0.4.1"></script>
+<script src="js/sesion.js?v=0.4.1"></script>
+<script src="js/referencias.js?v=0.4.1"></script>
+<script src="js/mapa.js?v=0.4.1"></script>
+<script src="js/foto.js?v=0.4.1"></script>
+<script src="js/formulario.js?v=0.4.1"></script>
+<script src="js/registros.js?v=0.4.1"></script>
+<script src="js/reportes.js?v=0.4.1"></script>
+<script src="js/catalogos.js?v=0.4.1"></script>
+<script src="js/usuarios.js?v=0.4.1"></script>
+<script src="js/app.js?v=0.4.1"></script>
 </body>
 </html>

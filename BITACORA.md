@@ -138,3 +138,34 @@ errores de consola; auditorías de estilos, código sin uso, identificadores y t
 
 **No verificado aquí:** que las teselas de satélite carguen. La red de esta sesión bloquea el
 dominio del proveedor; se comprueba al abrir el sitio desde el teléfono.
+
+## Bloque 7 — Ajuste de presentación y ubicación a petición (21-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.4.1.
+
+**Hallazgos de Liber probando en el sitio publicado**, con capturas de escritorio y de teléfono:
+el mapa se estiraba verticalmente al alejar el zoom del navegador; el botón de fotografía y
+varios elementos quedaban desfasados entre escritorio y teléfono; en la ficha de revisión el
+botón de lápiz ocupaba más de lo necesario; la ubicación se pedía sola al entrar, y debe ser
+acción de la persona. Aparte, pidió el campo Registrador arriba del mapa.
+
+**Defecto de fondo encontrado al medir:** la página se podía arrastrar de lado en la pantalla de
+registro, en todos los anchos probados. La causa era de especificidad: `.campo input { width: 100% }`
+y `.oculto-visual` tienen la misma, y ganaba la primera, así que el selector de archivo —invisible—
+medía todo el ancho de la ventana y empujaba el documento. Corregido con `.campo .oculto-visual`,
+que gana por especificidad y no por orden, con la razón anotada junto a la regla.
+
+**Qué se ajustó:** alto del mapa acotado con `clamp`; ancho máximo por vista, 44 rem para
+formularios y 78 rem para las pantallas de tabla, de modo que la de usuarios ya no se corta;
+encabezado, pestañas y pie alineados a un ancho fijo, para que la barra superior no salte al
+cambiar de pestaña; los botones de una fila de tabla dejan de apilarse en pantalla ancha; el campo
+de fecha deja de centrarse y desbordar en Safari de iPhone; el botón de fotografía deja de ocupar
+todo el ancho en monitor; la ficha usa la palabra «Editar»; y la ubicación sólo se obtiene al tocar
+el control, con el mapa diciendo qué hacer mientras tanto.
+
+**Cómo se verificó:** recorrido automatizado de 103 comprobaciones, sin errores de consola, más una
+revisión de presentación en ocho combinaciones de ancho y zoom —360, 390, 768, 1280 y 1920 px, y
+1280 px con zoom al 50, 67 y 200 %— midiendo en cada una si la página se arrastra de lado, cuánto
+mide el mapa y si algún control queda por debajo del tamaño tocable. Las tres medidas quedaron
+limpias. Auditorías de estilos, código sin uso, identificadores y textos, también.
+
+**Eliminado:** la clase `.btn-icono`, que quedó sin uso al pasar la ficha a botones con palabra.

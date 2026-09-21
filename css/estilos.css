@@ -31,7 +31,8 @@
   --t-xs: 0.8125rem; --t-s: 0.9375rem; --t-m: 1rem; --t-l: 1.25rem; --t-xl: 1.625rem;
   --e-1: 0.25rem; --e-2: 0.5rem; --e-3: 0.75rem; --e-4: 1rem; --e-5: 1.5rem; --e-6: 2rem;
   --radio: 6px; --radio-control: 4px;
-  --ancho-max: 44rem;
+  --ancho-max: 44rem;          /* formularios y lectura: línea corta, fácil de leer */
+  --ancho-max-tabla: 78rem;    /* pantallas de tabla: aprovechan el monitor sin cortar columnas */
   --toque: 48px;
 }
 
@@ -53,17 +54,21 @@ input, select, button, textarea { font: inherit; }
 h1[tabindex="-1"]:focus { outline: none; }
 
 /* ========== 3. ESTRUCTURA ========== */
-.encabezado {
+.encabezado { border-bottom: 2px solid var(--dorado); }
+.encabezado-interior {
   display: flex; align-items: center; justify-content: space-between; gap: var(--e-3);
-  padding: var(--e-3) var(--e-4); border-bottom: 2px solid var(--dorado);
+  max-width: var(--ancho-max-tabla); margin: 0 auto; padding: var(--e-3) var(--e-4);
 }
 .encabezado-logo { height: 34px; width: auto; }
 .encabezado-usuario { display: flex; flex-direction: column; align-items: flex-end; gap: var(--e-1); min-width: 0; text-align: right; }
 .encabezado-nombre { font-size: var(--t-s); font-weight: 500; overflow-wrap: anywhere; }
-main { max-width: var(--ancho-max); margin: 0 auto; padding: var(--e-4); }
+main { padding: var(--e-4); }
 main:focus { outline: none; }
-.vista { padding-bottom: var(--e-6); }
-.pie { max-width: var(--ancho-max); margin: 0 auto; padding: var(--e-4); color: var(--gris); font-size: var(--t-xs); border-top: 1px solid var(--borde-suave); }
+/* El ancho se decide por vista, no por el contenedor: un formulario se lee mejor en columna
+   estrecha, y una tabla de nueve columnas necesita el monitor entero. */
+.vista { max-width: var(--ancho-max); margin: 0 auto; padding-bottom: var(--e-6); }
+.vista-ancha { max-width: var(--ancho-max-tabla); }
+.pie { max-width: var(--ancho-max-tabla); margin: 0 auto; padding: var(--e-4); color: var(--gris); font-size: var(--t-xs); border-top: 1px solid var(--borde-suave); }
 
 /* ========== 4. COMPONENTES ========== */
 .saltar { position: absolute; left: -999px; top: 0; background: var(--guinda); color: var(--fondo); padding: var(--e-2) var(--e-4); z-index: 2000; }
@@ -73,7 +78,7 @@ main:focus { outline: none; }
 
 .insignia { display: inline-block; padding: 0 var(--e-2); border: 1px solid var(--guinda); border-radius: var(--radio-control); color: var(--guinda); font-size: var(--t-xs); font-weight: 500; }
 
-.pestanas { display: flex; border-bottom: 1px solid var(--borde-suave); max-width: var(--ancho-max); margin: 0 auto; }
+.pestanas { display: flex; border-bottom: 1px solid var(--borde-suave); max-width: var(--ancho-max-tabla); margin: 0 auto; padding: 0 var(--e-4); }
 .pestana {
   flex: 1; min-height: var(--toque); background: none; border: 0; border-bottom: 3px solid transparent;
   color: var(--gris); font-family: var(--fuente-titulo); font-weight: 600; font-size: var(--t-m); cursor: pointer;
@@ -99,16 +104,19 @@ main:focus { outline: none; }
 .btn-exito { background: var(--exito); color: var(--fondo); }
 .btn-editar { background: var(--fondo); color: var(--editar); border-color: var(--editar); }
 /* Botón sólo de icono: la etiqueta la lleva aria-label, y el título dice a qué campo se refiere */
-.btn-icono { min-width: var(--toque); padding: 0 var(--e-2); }
+.btn-texto-editar { background: none; color: var(--editar); text-decoration: underline; padding: 0 var(--e-2); }
 .btn-chico { min-height: 40px; padding: 0 var(--e-3); font-size: var(--t-s); }
-.btn-ancho { width: 100%; }
+.btn-ancho { width: 100%; max-width: 22rem; }
 
 .campo { margin-bottom: var(--e-4); border: 0; padding: 0; min-width: 0; }
 .campo label, .campo legend { display: block; font-weight: 500; margin-bottom: var(--e-1); }
 .campo input, .campo select {
-  width: 100%; min-height: var(--toque); padding: var(--e-2) var(--e-3);
+  width: 100%; min-width: 0; min-height: var(--toque); padding: var(--e-2) var(--e-3);
   border: 1px solid var(--borde-control); border-radius: var(--radio-control); background: var(--fondo); color: var(--texto);
 }
+/* Safari en iPhone centra el contenido del campo de fecha y lo deja más ancho que su caja */
+.campo input[type="date"] { -webkit-appearance: none; appearance: none; text-align: left; }
+.campo input[type="date"]::-webkit-date-and-time-value { text-align: left; }
 .campo input[readonly] { background: var(--fondo-suave); border-color: var(--borde-suave); color: var(--gris); }
 .campo-doble { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-3); }
 /* Excepción deliberada: Año y Mes son cortos y caben en dos columnas hasta en teléfono */
@@ -124,7 +132,7 @@ main:focus { outline: none; }
 .errores a { color: var(--error); }
 
 .mapa-bloque { margin-bottom: var(--e-5); }
-.mapa { height: 45vh; min-height: 260px; border: 1px solid var(--borde-control); border-radius: var(--radio) var(--radio) 0 0; background: var(--fondo-suave); }
+.mapa { height: clamp(260px, 45vh, 420px); border: 1px solid var(--borde-control); border-radius: var(--radio) var(--radio) 0 0; background: var(--fondo-suave); }
 .ficha-territorial { border: 1px solid var(--borde-control); border-top: 3px solid var(--guinda); border-radius: 0 0 var(--radio) var(--radio); padding: var(--e-3) var(--e-4); margin-bottom: var(--e-3); }
 .ficha-estado { font-size: var(--t-s); margin-bottom: var(--e-2); }
 .ficha-datos { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-3); margin: 0; }
@@ -184,6 +192,8 @@ main:focus { outline: none; }
 .tabla td { padding: var(--e-2); border-bottom: 1px solid var(--borde-suave); vertical-align: top; }
 .tabla tr:nth-child(even) td { background: var(--fondo-suave); }
 .tabla-acciones { display: flex; flex-wrap: wrap; gap: var(--e-1); }
+.tabla td:last-child { white-space: nowrap; }
+.tabla td:last-child .tabla-acciones { flex-wrap: nowrap; }
 
 .estado-texto { font-size: var(--t-xs); font-weight: 500; }
 
@@ -224,7 +234,11 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .ficha-estado[data-tipo="alerta"] { color: var(--error); font-weight: 500; }
 
 /* ========== 6. UTILIDADES ========== */
-.oculto-visual { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* El doble selector no es adorno: `.campo input { width:100% }` tiene la misma especificidad
+   que `.oculto-visual` y estiraba el selector de archivo a todo el ancho; invisible, pero
+   arrastraba la página de lado. `.campo .oculto-visual` gana por especificidad, no por orden. */
+.oculto-visual,
+.campo .oculto-visual { position: absolute; width: 1px; height: 1px; min-height: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 [hidden] { display: none; }
 
 /* ========== 7. @MEDIA ========== */
@@ -244,6 +258,8 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
   .tabla td { display: grid; grid-template-columns: 6.5rem 1fr; gap: var(--e-2); }
   .tabla td::before { content: attr(data-etiqueta); color: var(--gris); font-size: var(--t-xs); }
   .tabla tr:nth-child(even) td { background: none; }
+  .tabla td:last-child { white-space: normal; }
+  .tabla td:last-child .tabla-acciones { flex-wrap: wrap; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }

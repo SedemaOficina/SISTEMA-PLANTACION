@@ -43,7 +43,7 @@ SRP.formulario = {
     if (!this.estado.editando) {
       this.el('campo-registrador').value = SRP.util.nombreCompleto(SRP.sesion.usuario);
       if (!this.el('campo-fecha').value) this.el('campo-fecha').value = SRP.util.fechaHoy();
-      if (SRP.mapa.lat === null) SRP.mapa.ubicar();
+      if (SRP.mapa.lat === null) SRP.mapa.estado('Toque el control de ubicación del mapa para usar su posición, o toque el mapa para colocar el punto.');
     }
     this.el('campo-fecha').max = SRP.util.fechaHoy();
     SRP.mapa.refrescar();
@@ -241,9 +241,8 @@ SRP.formulario = {
 
     this.el('revision-lista').innerHTML = filas.map(([etiqueta, valor, campo]) => {
       const boton = campo
-        ? '<button type="button" class="btn btn-editar btn-chico btn-icono" data-campo="' + campo + '" ' +
-          'aria-label="Corregir ' + etiqueta.toLowerCase() + '" title="Corregir ' + etiqueta.toLowerCase() + '">' +
-          SRP.ICONOS.svg('lapiz', 16) + '</button>'
+        ? '<button type="button" class="btn btn-texto-editar btn-chico" data-campo="' + campo + '" ' +
+          'aria-label="Editar ' + etiqueta.toLowerCase() + '">Editar</button>'
         : '<span></span>';
       return '<div class="revision-fila"><dt>' + etiqueta + '</dt><dd>' + valor + '</dd>' + boton + '</div>';
     }).join('') +
