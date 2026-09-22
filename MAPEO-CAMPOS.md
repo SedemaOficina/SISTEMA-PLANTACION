@@ -97,7 +97,7 @@ Pantalla **Usuarios**, sólo Administración global. Almacén `usuarios`.
 | Apellido materno | `apellido_materno` | No | Persona | Opcional a propósito: hay personas que no lo tienen |
 | Área | `area_id` | Sí | Catálogo | Remite a `catalogos.id` con `tipo = area` |
 | Cargo y rol | `cargo_rol` | Sí | Persona | Texto libre; descriptivo, no gobierna permisos |
-| Perfil | `perfil` | Sí | Persona | `CABO`, `COORDINADOR`, `ADMIN` o `VIEWER`. Es lo que decide qué puede hacer |
+| Perfil | `perfil` | Sí | Persona | `CABO`, `COORDINADOR` o `ADMIN`. Es lo que decide qué puede hacer. Consulta (`VIEWER`) se retiró en D87 |
 | Coordinador | `coordinador_id` | Sólo para perfil CABO | Persona | Remite a `usuarios.id`. Quien lo tiene asignado ve sus registros |
 | Estado | `activo` | Sí | Persona | Una cuenta inactiva no puede entrar; sus registros se conservan |
 | — | `es_ficticio` | Sí | Sistema | |
@@ -150,6 +150,7 @@ Almacén `bitacora`. No se edita desde el sistema.
 | Campo | Obligatorio | Origen | Notas |
 |---|---|---|---|
 | `id` | Sí | Sistema | UUID |
+| `es_ficticio` | Sí | Sistema | Marca de dato de prueba (D87) |
 | `fecha` | Sí | Sistema | Momento del movimiento |
 | `usuario_id` | Sí | Sesión | Remite a `usuarios.id` |
 | `usuario_nombre` | Sí | Sesión | Copia del nombre **a propósito**: si la cuenta se elimina, el historial debe seguir diciendo quién actuó |
@@ -172,6 +173,7 @@ cuenta. Lo que ya vive en los registros —especies, conteos, alcaldía— no se
 | Campo | Obligatorio | Origen | Notas |
 |---|---|---|---|
 | `id` | Sí | Sistema | `fecha|cabo`, o `fecha|TODOS` sin cabo filtrado: un cierre por jornada y cuadrilla |
+| `es_ficticio` | Sí | Sistema | Marca de dato de prueba (D87) |
 | `fecha` | Sí | Sistema | El día del parte, `AAAA-MM-DD` |
 | `cabo_id` | No | Sistema | El cabo por el que se filtró; vacío si el parte es del día completo |
 | `encargado_id` | No | Sesión o Persona | Remite a `usuarios.id`. Para un cabo es él mismo; quien ve a varias personas lo elige entre los cabos con registros ese día (D57) |
@@ -200,7 +202,7 @@ cuenta. Lo que ya vive en los registros —especies, conteos, alcaldía— no se
 | `catalogos.id` (programa) | Catálogos | `plantaciones.programa_id` |
 | `catalogos.id` (área) | Catálogos | `usuarios.area_id` |
 | `activo` | Cuentas y Catálogos | Mismo significado en los dos: deja de ofrecerse o de poder entrar, sin borrar nada |
-| `es_ficticio` | Plantaciones, cuentas y catálogos | Marca de dato de prueba. `cierres` y `bitacora` no la llevan (pendiente en DECISIONES) |
+| `es_ficticio` | Todos | Marca de dato de prueba, en las cinco tablas (cierres y bitácora desde D87) |
 | `fecha_ultima_edicion` + `editado_por_id` | Todos | Mismo par en plantaciones, cuentas, catálogos y cierres |
 
 ---
@@ -212,7 +214,7 @@ cuenta. Lo que ya vive en los registros —especies, conteos, alcaldía— no se
 | Emisión del folio | Tabla de secuencias por celda y año, asignación en transacción con el UUID como clave de idempotencia (R3–R6) | [pendiente] Fase 2, y sólo con la malla UGA corregida y congelada (DECISIONES, pendientes). La estructura ya está en el registro (bloque 23) |
 | Bandeja de especies fuera de catálogo | Donde el SIA resuelve cada `PENDIENTE_VALIDACION`: alta o reasignación | [pendiente] Fase 2, con los catálogos |
 | Posible duplicado | Aviso al sincronizar cuando otro registro cae a menos de la incertidumbre combinada de ambos puntos (suma de sus `gps_precision_m`, piso 5 m) | [pendiente] Fase 2, en el servidor (D69) |
-| Clave de campo del ejemplar | La que el personal ya usa en los partes escritos a mano (`CIZ_366`), pinta en la placa y dicta. Sin ella no se concilia lo ya plantado con lo que capture el SRP | [pendiente] Sin decidir |
+| Clave de campo del ejemplar | La que el personal usa en los partes a mano (`CIZ_366`) | **Descartado** por Liber (D87): no entra como atributo |
 | Colonia del parte | No se pide en el cierre: sale del punto de cada registro, como la alcaldía; un campo libre sería una segunda fuente | Resuelto en el bloque 21 con la capa de colonias |
 | Identificador del servidor | Para relacionar el registro del dispositivo con el del servidor | [pendiente] Fase 2 |
 | Marca de envío | Saber qué registros ya subieron | [pendiente] Fase 2 |

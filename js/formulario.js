@@ -149,10 +149,10 @@ SRP.formulario = {
     const q = this.estado.especieId ? '' : SRP.util.normalizar(this.el('campo-especie').value);
     // También se busca por los otros nombres comunes del catálogo; si coincidió por uno de ellos
     // se dice («también: Fresno»), porque un mismo nombre puede señalar a varias especies (D84)
+    // Sin tope: con el catálogo real (76) la lista completa se recorre con desplazamiento (D87)
     const coinciden = SRP.ref.deTipo('especie', true)
       .map(e => ({ e, por: q ? SRP.ref.especieCoincide(e, q) : true }))
-      .filter(x => x.por)
-      .slice(0, 8);
+      .filter(x => x.por);
     const lista = this.el('lista-especies');
     lista.innerHTML = coinciden.map(({ e, por }) =>
       '<li class="combo-opcion" role="option" id="op-' + e.id + '" data-id="' + e.id + '" aria-selected="false">' +

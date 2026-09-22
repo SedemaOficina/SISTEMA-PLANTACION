@@ -67,6 +67,7 @@ SRP.espejo = {
   // Cierre del parte: lo que se ve en el formulario son sus CAMPOS y el encargado
   NOTAS_CIERRE: {
     id: 'fecha|cabo, o fecha|TODOS sin cabo filtrado: un cierre por jornada y cuadrilla',
+    es_ficticio: 'Verdadero mientras CONFIG.ES_FICTICIO lo esté (D87)',
     fecha: 'El día del parte; sale del filtro, no se captura',
     cabo_id: 'El cabo por el que se filtró; vacío si el parte es del día completo',
     creado_por_id: 'Quién cerró el parte la primera vez; no cambia al regenerar',

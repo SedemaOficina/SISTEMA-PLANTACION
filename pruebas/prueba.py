@@ -14,7 +14,7 @@ def ok(c,m): res.append(('OK ' if c else 'FALLA ')+m)
 
 def registrar(pg, busqueda, especie_id, programa='p-refor', fecha=None, foto=None):
     """Captura un árbol de principio a fin y devuelve el identificador con que se guardó.
-    `busqueda` es lo que se teclea para que la especie salga en la lista, que muestra ocho."""
+    `busqueda` es lo que se teclea para que la especie salga en la lista."""
     pg.click('#btn-ubicacion'); pg.wait_for_timeout(700)
     pg.fill('#campo-especie', busqueda); pg.wait_for_timeout(200)
     pg.dispatch_event('.combo-opcion[data-id="%s"]' % especie_id, 'mousedown'); pg.wait_for_timeout(150)
@@ -439,8 +439,8 @@ with sync_playwright() as p:
     pg.click('#btn-pdf'); pg.wait_for_timeout(400)
     ok(pg.is_visible('#dlg-cierre'),'el botón abre el cierre del parte antes de generar')
     espejoC=pg.evaluate("[...document.querySelectorAll('#espejo-cierre-cuerpo .espejo-campo')].map(e=>e.textContent)")
-    ok(espejoC==['id','fecha','cabo_id','creado_por_id','fecha_creacion','editado_por_id','fecha_ultima_edicion'],
-       'el cierre lleva su espejo con los siete campos que no se capturan: '+', '.join(espejoC))
+    ok(espejoC==['id','es_ficticio','fecha','cabo_id','creado_por_id','fecha_creacion','editado_por_id','fecha_ultima_edicion'],
+       'el cierre lleva su espejo con los ocho campos que no se capturan: '+', '.join(espejoC))
     pg.fill('#cie-chofer','Mengano'); pg.wait_for_timeout(200)
     ok(pg.evaluate("SRP.reportes.cierrePrevisto().chofer")=='Mengano','y lo que se escribe entra al mismo objeto que se guarda')
     ok(pg.is_visible('#cie-encargado-lectura') and pg.is_hidden('#cie-encargado-caja'),
@@ -462,6 +462,7 @@ with sync_playwright() as p:
     pg.click('#btn-senal-cerrar'); pg.wait_for_timeout(200)
     ok('guardados' in pg.inner_text('#aviso-envio') and 'No borre' in pg.inner_text('#aviso-envio') and pg.locator('#vista-registros .bloque .titulo-bloque').count()==1,
        'Reportes dice cuántos registros guarda el dispositivo y qué hacer: '+pg.inner_text('#aviso-envio')[:60])
+    ok(re.search(r'llevan? fotografía \(\d+ KB\)', pg.inner_text('#aviso-envio')) is not None,'y cuántos llevan fotografía y cuánto pesan (D87): '+pg.inner_text('#aviso-envio')[:90])
     pg.click('#btn-ayuda-senal'); pg.wait_for_timeout(200)
     ok(pg.is_visible('#dlg-senal') and pg.locator('#dlg-senal li').count()==5,'la ayuda «¿Qué hacer sin internet?» tiene cinco pasos')
     pg.click('#btn-senal-cerrar'); pg.wait_for_timeout(200)
@@ -482,7 +483,10 @@ with sync_playwright() as p:
     ruta='/home/claude/srp/respaldo_prueba.json'; d2.value.save_as(ruta)
     import json
     resp=json.load(open(ruta,encoding='utf-8'))
-    ok(resp['sistema']=='SRP' and len(resp['plantaciones'])>=4 and 'cierres' in resp and 'bitacora' in resp,'el respaldo lleva plantaciones, cierres y bitácora: %d registros' % len(resp['plantaciones']))
+    ok(resp['sistema']=='SRP' and len(resp['plantaciones'])>=4 and all(k in resp for k in ('cierres','bitacora','usuarios','catalogos')) and len(resp['catalogos'])>=76,
+       'el respaldo lleva las cinco tablas (D87): %d registros, %d catálogos' % (len(resp['plantaciones']), len(resp['catalogos'])))
+    ok(resp['resumen']['con_foto']>=1 and resp['resumen']['foto_bytes']>0,'y el resumen de fotografías: %s' % resp['resumen'])
+    ok(all('es_ficticio' in c for c in resp['cierres']) and all('es_ficticio' in b for b in resp['bitacora']),'cierres y bitácora llevan es_ficticio (D87)')
     ctx2=b.new_context(viewport={'width':390,'height':844}); pg2=ctx2.new_page(); pg2.goto(BASE); pg2.wait_for_timeout(1200)
     pg2.select_option('#sel-usuario-prueba','u-cabo-1'); pg2.click('#btn-entrar-prueba'); pg2.wait_for_timeout(500)
     antes=pg2.evaluate("SRP.almacen.todos('plantaciones').then(r=>r.length)")
@@ -638,8 +642,9 @@ with sync_playwright() as p:
     pg.click('#form-usuario button[type=submit]'); pg.wait_for_timeout(200)
     ok(pg.locator('#usr-errores li').count()==5,'el alta vacía señala los cinco campos obligatorios')
     ok(pg.is_visible('#caja-usr-coordinador'),'el campo Coordinador aparece para perfil Cabo')
-    pg.select_option('#usr-perfil','VIEWER'); pg.wait_for_timeout(200)
-    ok(pg.is_hidden('#caja-usr-coordinador'),'y desaparece para Consulta')
+    pg.select_option('#usr-perfil','ADMIN'); pg.wait_for_timeout(200)
+    ok(pg.is_hidden('#caja-usr-coordinador'),'y desaparece para Administración')
+    ok(pg.locator('#usr-perfil option').count()==4 and pg.locator('#usr-perfil option[value=VIEWER]').count()==0,'el perfil ofrece tres opciones: ya no existe Consulta (D87)')
     ok('No captura' in pg.inner_text('#usr-perfil-ayuda'),'se explica qué puede hacer cada perfil')
     pg.select_option('#usr-perfil','CABO'); pg.wait_for_timeout(200)
     pg.fill('#usr-nombre','Sutana'); pg.fill('#usr-ap','Nueva'); pg.fill('#usr-am','Ejemplo')

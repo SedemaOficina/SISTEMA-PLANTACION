@@ -1,6 +1,6 @@
 # Diccionario de datos e inventario de tablas
 
-**Generado de `esquema.json` por `pruebas/generar_diccionario.py`: no se edita a mano.** Versión del esquema: 2026-09-22. Etapa 1 (Fase 1: dispositivo, sin servidor).
+**Generado de `esquema.json` por `pruebas/generar_diccionario.py`: no se edita a mano.** Versión del esquema: 2026-09-22b. Etapa 1 (Fase 1: dispositivo, sin servidor).
 
 Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo, de dónde sale, qué valores admite y qué regla lo gobierna; qué se deriva sin verse en pantalla; qué se calcula y no se guarda; qué vive sólo en memoria mientras se captura; cómo se relacionan las tablas; y qué reglas aplican hoy en el dispositivo y cuáles esperan al servidor. `pruebas/auditoria.py` compara este esquema contra lo que el sistema guarda de verdad y contra los dominios del código, y avisa si algo sobra, falta o no está regenerado. `MAPEO-CAMPOS.md` sigue siendo la vista por pantalla (etiqueta ↔ campo, con la explicación larga de cada decisión); este documento es la vista por tabla, pensada para construir la base y la API de la Fase 2 sin volver a leer el código.
 
@@ -14,7 +14,7 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 | localStorage `srp_sesion_usuario_id` | id de la cuenta con sesión abierta; el dispositivo queda fijo a esa cuenta (D06) | Lo sustituye el proveedor de identidad institucional; sólo cambia `autenticar()` en js/sesion.js |
 | localStorage `srp_sello_datos` | sello con el que se sembró (SRP.CONFIG.SELLO_DATOS); si no coincide, se vuelve a sembrar | Desaparece con ES_FICTICIO |
 | Caché del service worker (sw.js) | copia de la aplicación para abrir sin señal; no guarda datos | Se conserva |
-| Respaldo `SRP_respaldo_AAAA-MM-DD_<usuario>.json` | {sistema, version, generado, usuario_id, es_ficticio, plantaciones[], cierres[], bitacora[]}: el mismo esquema de las tablas. NO lleva usuarios ni catalogos (pendiente en DECISIONES) | El mismo archivo es lo que el servidor recibiría |
+| Respaldo `SRP_respaldo_AAAA-MM-DD_<usuario>.json` | {sistema, version, generado, usuario_id, es_ficticio, resumen{registros, con_foto, foto_bytes}, plantaciones[], usuarios[], catalogos[], bitacora[], cierres[]}: las cinco tablas con el mismo esquema (D87) | El mismo archivo es lo que el servidor recibiría |
 
 ## 2. Cómo leer la columna «Origen»
 
@@ -35,7 +35,7 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 | `estatus_plantacion` | `activo` · `eliminado` | js/formulario.js registroPrevisto(); js/registros.js eliminar() |
 | `punto_origen` | `gps` · `mapa` · `manual` · `ajustado` | js/mapa.js ORIGENES |
 | `especie_estatus` | `VALIDADA` · `PENDIENTE_VALIDACION` | js/formulario.js valores() (D68) |
-| `perfil` | `CABO` · `COORDINADOR` · `ADMIN` · `VIEWER` | js/permisos.js SRP.PERFILES |
+| `perfil` | `CABO` · `COORDINADOR` · `ADMIN` | js/permisos.js SRP.PERFILES (Consulta/VIEWER retirado en D87) |
 | `tipo_catalogo` | `programa` · `area` · `especie` | js/catalogos.js ETIQUETA |
 | `tipo_distribucion` | `Nativa` · `Endémica` · `Exótica` · `Exótica-Invasora` | SNIB/CONABIO (EncicloVida); lista en index.html #cat-distribucion |
 | `accion_bitacora` | `CREADO` · `EDITADO` · `ELIMINADO` · `ACTIVADO` · `DESACTIVADO` | llamadas a SRP.bitacora.entrada() en formulario, registros, catalogos, usuarios y reportes |
@@ -107,7 +107,7 @@ Cuentas del sistema. Una por persona; el perfil decide qué puede hacer (js/perm
 | `apellido_materno` | text | No | Persona | Texto; '' si no tiene | Apellido materno (opcional) | Opcional a propósito: hay personas que no lo tienen (pendiente: confirmar) |
 | `area_id` | text | No | Catálogo | → catalogos.id con tipo = area | Área | — |
 | `cargo_rol` | text | No | Persona | Texto libre | Cargo y rol | Descriptivo; no gobierna permisos |
-| `perfil` | text | No | Persona | dominio `perfil` | Perfil | Decide alcance y acciones. Una cuenta de administración no puede quitarse a sí misma el perfil ADMIN. Un perfil desconocido se trata como Consulta y se avisa |
+| `perfil` | text | No | Persona | dominio `perfil` | Perfil | Decide alcance y acciones. Una cuenta de administración no puede quitarse a sí misma el perfil ADMIN. Un perfil desconocido queda sin permisos y se avisa (D87) |
 | `coordinador_id` | uuid | Sí | Persona | → usuarios.id con perfil COORDINADOR | Coordinador (sólo con perfil Cabo) | Se pone nulo si el perfil no es CABO. Es lo que define la cuadrilla: el coordinador ve y edita los registros de los cabos que lo tienen asignado |
 | `activo` | boolean | No | Persona | true/false | Estado | Inactiva no puede entrar; sus registros se conservan a su nombre. Con registros a su nombre no se elimina, se desactiva |
 | `es_ficticio` | boolean | No | Sistema | true/false | No | — |
@@ -150,11 +150,12 @@ Los tres catálogos administrables en una sola tabla, distinguidos por `tipo`: p
 Datos de cierre del parte del día: un renglón por jornada y cuadrilla. Todo es opcional y su único destino es el PDF (D58); nada se explota ni se cuenta.
 
 - **Llave:** `id`. **Índices:** `fecha`. **Pantalla:** Reportes → «Datos de cierre del día».
-- **Campos:** 17.
+- **Campos:** 18.
 
 | Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
 |---|---|---|---|---|---|---|
 | `id` | text | No | Sistema | `fecha\|cabo_id` o `fecha\|TODOS` | No | Regenerar el parte del mismo día reabre el mismo cierre (Norma 7.6) |
+| `es_ficticio` | boolean | No | Sistema | true/false | No | Copia de CONFIG.ES_FICTICIO (D87): la depuración de datos de prueba también alcanza a esta tabla |
 | `fecha` | date | No | Sistema | AAAA-MM-DD | Encabezado del diálogo | El día del parte: cualquier día, no sólo hoy (D70) |
 | `cabo_id` | uuid | No | Sistema | → usuarios.id; '' si el parte es del día completo | No | El cabo por el que se filtró el parte |
 | `encargado_id` | uuid | Sí | Sesión | → usuarios.id | Encargado | Para un cabo es él mismo (no se pregunta); quien ve a varias personas lo elige sólo entre los cabos con registros ese día (D57) |
@@ -177,11 +178,12 @@ Datos de cierre del parte del día: un renglón por jornada y cuadrilla. Todo es
 Quién, cuándo y qué, en cada alta, edición, eliminación, activación y desactivación (Norma 7.7, D10). Sólo se escribe; se lee en el historial del detalle de cada registro.
 
 - **Llave:** `id`. **Índices:** `entidad_id`. **Pantalla:** Historial del detalle de un registro.
-- **Campos:** 9.
+- **Campos:** 10.
 
 | Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
 |---|---|---|---|---|---|---|
 | `id` | uuid | No | Sistema | UUID v4 | No | — |
+| `es_ficticio` | boolean | No | Sistema | true/false | No | Copia de CONFIG.ES_FICTICIO (D87): la depuración de datos de prueba también alcanza a esta tabla |
 | `fecha` | timestamptz | No | Sistema | ISO 8601 | Historial | — |
 | `usuario_id` | uuid | No | Sesión | → usuarios.id | No | — |
 | `usuario_nombre` | text | No | Sesión | Nombre completo | Historial | Copia a propósito: si la cuenta se elimina, el historial sigue diciendo quién actuó |
@@ -241,6 +243,8 @@ Se guardan en la tabla, pero nadie los teclea: salen de otro dato o de la sesió
 | Cuenta de registros guardados en el dispositivo (alcance de la sesión) | plantaciones activas que alcanza el perfil | Pastilla de conexión, aviso de guardado, Reportes (D83) |
 | Alcance y acciones permitidas | perfil contra SRP.PERFILES | Toda la interfaz; en Fase 2 se impone en el servidor |
 | `dentro` (el punto cae en alguna alcaldía) | derivar() | Sólo para avisar de un hueco de capa; no se guarda |
+| Registros con fotografía y peso acumulado (para la solicitud de disco a ADIP) | plantaciones activas con foto_base64; suma de foto_bytes | Reportes → «Registros en este dispositivo», y resumen del respaldo (D87) |
+| El PDF del parte del día | cierres + plantaciones del día; no se guarda el archivo, se regenera | Reportes (D58, D70) |
 
 ## 8. Estado efímero (vive sólo en memoria mientras se usa la pantalla)
 
@@ -290,7 +294,7 @@ Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras
 | R-P10 | plantaciones | Al editar se conservan id, cabo_id, lat_original/lng_original, fecha_registro y los folio*; se actualizan fecha_ultima_edicion y editado_por_id, y la bitácora lista los campos cambiados | js/formulario.js registroPrevisto(), guardar() |
 | R-P11 | plantaciones | Eliminar marca estatus = eliminado (con bitácora); nunca se borra el renglón | js/registros.js eliminar() |
 | R-P12 | plantaciones | Folio y campos folio_* nacen nulos y no se tocan en el dispositivo; la pantalla y el PDF dicen PROVISIONAL | js/folio.js; js/formulario.js registroPrevisto() |
-| R-A01 | todas | Alcance por perfil: CABO ve/edita/elimina los suyos; COORDINADOR ve y edita los de sus cabos, no elimina; ADMIN todo, no captura; VIEWER sólo ve | js/permisos.js (fuente única); la interfaz sólo lo refleja |
+| R-A01 | todas | Alcance por perfil: CABO ve/edita/elimina los suyos; COORDINADOR registra, ve y edita los de sus cabos, no elimina; ADMIN todo, no captura. Un perfil desconocido no alcanza nada | js/permisos.js (fuente única); la interfaz sólo lo refleja |
 | R-A02 | todas | Toda alta, edición, eliminación, activación y desactivación escribe bitácora en la misma transacción | js/almacen.js guardarConBitacora(), borrarConBitacora() |
 | R-U01 | usuarios | Nombre, apellido paterno, correo válido y único (insensible a mayúsculas/acentos), área, cargo y perfil válido obligatorios; el correo no cambia después | js/usuarios.js validar() |
 | R-U02 | usuarios | coordinador_id sólo con perfil CABO; con otro perfil se pone nulo | js/usuarios.js guardar() |
@@ -304,7 +308,7 @@ Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras
 | R-R02 | cierres | Todos los campos del cierre son opcionales y ninguno se prellena; el encargado sale de la sesión o se elige entre los cabos con registros ese día | js/reportes.js prepararEncargado() |
 | R-F01 | plantaciones | Filtros de Registros: Hoy / Todos / Un periodo (Desde ≤ Hasta, entra con Aplicar), Año y Mes sólo con registros, Cabo según alcance; ningún control mueve el foco solo (D82) | js/registros.js |
 | R-D01 | todas | Siembra: al abrir con sello distinto de CONFIG.SELLO_DATOS se restablecen las cinco tablas con los datos de arranque (sólo con ES_FICTICIO) | js/almacen.js sembrarSiVacio(); js/config.js |
-| R-D02 | plantaciones, cierres, bitacora | Respaldo: archivo JSON con las tres tablas; restaurar sólo agrega lo que no existe (por id), nunca sobreescribe | js/conexion.js respaldar(), restaurar() |
+| R-D02 | plantaciones, cierres, bitacora | Respaldo: archivo JSON con las cinco tablas y un resumen de fotografías; restaurar sólo agrega lo que no existe (por id), nunca sobreescribe | js/conexion.js respaldar(), restaurar() |
 
 ## 11. Reglas que esperan al servidor (Fase 2)
 
@@ -318,7 +322,7 @@ Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras
 | S-06 | Bandeja de especies fuera de catálogo | Donde el SIA resuelve cada PENDIENTE_VALIDACION: alta en el catálogo (siguiente ESP-0000) o reasignación a una existente; al resolverse cambia especie_id y especie_estatus, nunca el folio | D68 |
 | S-07 | Fotografías a archivo | foto_base64 sale del renglón y se guarda como archivo referido por foto_id, como en los otros módulos del SIA | Pendiente «Dónde viven las fotografías» |
 | S-08 | Rederivación territorial por versión de capa | Al sustituir alcaldías, UGA y colonias por las definitivas, se recalculan alcaldia_cve, alcaldia, colonia_cve, colonia y uga de todo registro cuyo capa_version sea anterior; folio_* no se toca | Pendiente «sustituir las tres capas» |
-| S-09 | Depuración de datos de prueba | Antes de liberar: eliminar todo renglón con es_ficticio = true en plantaciones, usuarios y catalogos, y los cierres y bitácora asociados; cierres y bitacora no llevan es_ficticio (pendiente en DECISIONES) | CONFIG.ES_FICTICIO |
+| S-09 | Depuración de datos de prueba | Antes de liberar: eliminar todo renglón con es_ficticio = true en las cinco tablas (desde D87 cierres y bitacora también llevan la marca) | CONFIG.ES_FICTICIO |
 | S-10 | Restauración por el servidor | El respaldo del dispositivo se entrega al servidor con el mismo esquema; restaurar deja de vivir en las herramientas de prueba | js/conexion.js |
 
 ## 12. Capas y catálogos externos que alimentan campos
@@ -421,6 +425,7 @@ CREATE INDEX catalogos_tipo ON catalogos (tipo);
 
 CREATE TABLE cierres (
   id                       text           NOT NULL,
+  es_ficticio              boolean        NOT NULL,
   fecha                    date           NOT NULL,
   cabo_id                  uuid           NOT NULL,
   encargado_id             uuid           NULL,
@@ -443,6 +448,7 @@ CREATE INDEX cierres_fecha ON cierres (fecha);
 
 CREATE TABLE bitacora (
   id                       uuid           NOT NULL,
+  es_ficticio              boolean        NOT NULL,
   fecha                    timestamptz    NOT NULL,
   usuario_id               uuid           NOT NULL,
   usuario_nombre           text           NOT NULL,

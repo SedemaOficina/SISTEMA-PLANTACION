@@ -28,9 +28,7 @@ window.SRP = window.SRP || {};
 
   // Correos en @ejemplo.local: dominio reservado, nunca entregable (Norma 3)
   /* CUENTAS DE ARRANQUE. Una por perfil operativo, que es lo que pidió Liber para empezar
-     limpio. Correos en @ejemplo.local: dominio reservado, nunca entregable (Norma 3).
-     El perfil de Consulta existe en el sistema pero todavía no tiene cuenta: se crea desde
-     Usuarios cuando haga falta. */
+     limpio. Correos en @ejemplo.local: dominio reservado, nunca entregable (Norma 3). */
   const usuario = (id, correo, nombre, ap, am, area_id, cargo_rol, perfil, coordinador_id) => ({
     id, correo, nombre, apellido_paterno: ap, apellido_materno: am, area_id, cargo_rol, perfil,
     coordinador_id: coordinador_id || null, activo: true, es_ficticio: true,

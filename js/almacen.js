@@ -190,6 +190,7 @@ SRP.bitacora = {
     const u = SRP.sesion.usuario;
     return {
       id: SRP.util.generarId(),
+      es_ficticio: SRP.CONFIG.ES_FICTICIO,   // D87: la depuración de datos de prueba también alcanza a la bitácora
       fecha: SRP.util.ahoraISO(),
       usuario_id: u.id,
       usuario_nombre: SRP.util.nombreCompleto(u),

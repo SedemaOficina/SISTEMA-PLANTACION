@@ -741,3 +741,26 @@ datos» y regla en «Al cerrar un bloque».
 
 **Verificación:** sintaxis; 237 comprobaciones del recorrido; 81 de auditoría; presentación sin
 desbordes. Marca de versión 0.6.14.
+
+## Bloque 34 — Decisiones del Excel y tipografías locales (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.15.
+
+**Qué cambió (D87).** `permisos.js`: fuera `VIEWER`; `SRP.SIN_PERMISOS` para perfiles
+desconocidos (alcance `ninguno`, que `alcanza()` respeta); Coordinador confirmado como registra sí
+/ elimina no. `reportes.js` y `almacen.js`: `es_ficticio` en cierres y bitácora. `conexion.js`:
+respaldo y restauración sobre `SRP.almacen.ALMACENES` (cinco tablas), `resumenFotos()` y
+`registrosPropios()`; el aviso del dispositivo dice cuántos llevan fotografía y cuánto pesan.
+`formulario.js`: la lista de especies sin tope de ocho; placeholder «Toque para ver la lista o
+escriba para buscar». Tipografías: `vendor/fuentes/` (cabin.woff2 variable 400–700,
+roboto-regular/medium/bold.woff2, OFL de Cabin), `@font-face` en `estilos.css`, sin Google Fonts
+en `index.html`, lista explícita en `sw.js`. `SELLO_DATOS` sube.
+
+**Documentación.** esquema.json (perfil con tres valores, `es_ficticio` en dos tablas más, respaldo
+con cinco tablas, dos cálculos nuevos), diccionario regenerado, MAPEO (perfil, cierres, bitácora,
+clave de campo descartada), README (cuentas, estructura, sin Consulta), DECISIONES (D87, diez
+pendientes cerrados, cuatro reabiertos o mantenidos con la decisión de Liber).
+
+**Verificación:** sintaxis; 241 comprobaciones (cuatro nuevas: tres perfiles, respaldo de cinco
+tablas con resumen, `es_ficticio` en cierres y bitácora, contador de fotografías), sin errores de
+consola; 81 de auditoría (perfiles a tres, esquema al día); presentación sin desbordes. El service
+worker guarda 39 archivos, tipografías incluidas. Marca de versión 0.6.15.

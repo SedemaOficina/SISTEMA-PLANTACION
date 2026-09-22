@@ -25,11 +25,8 @@ El sistema arranca con tres cuentas y **ninguna plantación**: se llena con lo q
 | Correo | Perfil | Qué puede hacer |
 |---|---|---|
 | administracion@ejemplo.local | Administración global | Ve, edita y elimina todo, y lleva Catálogos y Usuarios. **No captura registros** |
-| coordinador@ejemplo.local | Coordinador | Ve y edita los registros de su cuadrilla; no elimina |
+| coordinador@ejemplo.local | Coordinador | Registra, y ve y edita los registros de su cuadrilla; no elimina |
 | cabo@ejemplo.local | Cabo | Registra, y ve, edita y elimina sólo los suyos |
-
-El perfil de **Consulta** existe en el sistema pero todavía no tiene cuenta: se crea desde
-Usuarios cuando haga falta. Ve todo y genera reportes, sin capturar ni modificar nada.
 
 Quien captura en campo es un **cabo**; quien lo dirige, un **coordinador**. En el código son
 `CABO` y `COORDINADOR`, y los campos son `cabo_id` en las plantaciones y `coordinador_id` en las
@@ -78,6 +75,7 @@ esquema.json          Fuente única del modelo de datos (D86)
 DICCIONARIO-DATOS.md  Inventario de tablas y diccionario de datos, generado de esquema.json
 MAPEO-CAMPOS.md       Campos vistos por pantalla: etiqueta ↔ campo, obligatorio, origen
 vendor/               Bibliotecas incluidas localmente (Leaflet, jsPDF, Turf)
+vendor/fuentes/       Cabin y Roboto en woff2 (subconjunto latino, ~110 KB); la identidad se ve igual sin señal (D87)
 ```
 
 ## Al cerrar un bloque: subir la marca de versión
@@ -101,8 +99,8 @@ sistema no guardan lo mismo o si el diccionario no está regenerado (D86).
 `SELLO_DATOS`, en `js/config.js`, se cambia cada vez que cambian las cuentas o los catálogos de
 arranque. El dispositivo guarda el sello con el que sembró; si no coincide, vuelve a sembrar y lo
 avisa en pantalla. Sin ese sello, un teléfono que ya había abierto el sistema se queda con los
-datos anteriores: así fue como, al renombrar los perfiles, todas las cuentas aparecieron como
-«Consulta».
+datos anteriores: así fue como, al renombrar los perfiles, todas las cuentas aparecieron con un
+perfil que ya no existía.
 
 ## El reporte del día
 

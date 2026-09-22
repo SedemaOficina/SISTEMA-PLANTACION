@@ -171,6 +171,7 @@ SRP.reportes = {
     ahora = ahora || SRP.util.ahoraISO();
     const cierre = {
       id: this.claveCierre(c.fecha, c.cabo_id),
+      es_ficticio: SRP.CONFIG.ES_FICTICIO,
       fecha: c.fecha,
       cabo_id: c.cabo_id,
       encargado_id: this.encargadoElegido(),

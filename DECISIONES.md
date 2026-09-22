@@ -60,10 +60,12 @@
 ## Pendientes de decisión
 
 - [pendiente] **Icono de la app instalada**: los `assets/icono-192.png` y `icono-512.png` son
-  provisionales (fondo guinda y monograma SRP); sustituir por el icono de la identidad gráfica
-- [pendiente] **Tipografías sin señal**: Cabin y Roboto se cargan de Google Fonts; sin red el
-  teléfono usa su tipografía del sistema. Alojarlas en `vendor/` si se quiere la identidad
-  completa sin conexión (pesan ~200 KB)
+  provisionales (fondo guinda y monograma SRP). Liber entregó el 22-09-2026 el set de iconografía
+  del Manual de Identidad CDMX 2024-2030 (`ICONOS SET.ai`, `RETICULA.ai`, capítulo del manual):
+  es el set para los iconos de la **interfaz**, no el icono de la app. Propuesta: componer el icono
+  de la app con un icono del set (árbol) en blanco sobre guinda, y sustituir los iconos de
+  `js/iconos.js` por los del set (bloque aparte, ver D87)
+- ~~Tipografías sin señal~~ Resuelto en D87: Cabin y Roboto en `vendor/fuentes/` (woff2, ~110 KB)
 
 - [pendiente] **Emisión del folio (Fase 2).** No se emite un solo folio definitivo hasta que el SIA:
   (1) entregue la malla UGA corregida, con identificador de versión y fecha de corte, para
@@ -76,8 +78,6 @@
   la cierre; sin ella el catálogo se degrada con variantes del mismo taxón (D68)
 - [pendiente] **Validación de posible duplicado (Fase 2, servidor).** Con la regla corregida de
   D69, no con 5 m fijos
-- [pendiente] **Clave de campo del ejemplar** (`CIZ_366`, la que pintan en la placa): sigue sin
-  decidir si entra como atributo para conciliar lo ya plantado
 - [pendiente] **Cola de envío al servidor (Fase 2).** Especificación acordada con Liber el
   22-09-2026 a partir de cómo lo resuelve KoboToolbox/Enketo: (1) cada registro guardado queda en
   cola con estado local `guardado` → `enviado` → `con error`; (2) mientras la app esté abierta y
@@ -105,27 +105,31 @@
 
 ### Para resolver en el diseño del programa
 
-- [pendiente] **Qué cuenta como plantado.** ¿El árbol puesto en tierra o el árbol vivo a los seis meses? Si se va a reportar supervivencia, hace falta un **registro de seguimiento**: un evento posterior sobre el mismo árbol. Afecta el diseño desde ahora, porque obliga a que el identificador pueda recibir visitas posteriores y no sólo el alta
+- ~~Qué cuenta como plantado~~ Decidido en D87: sólo el alta. El identificador (UUID y folio inmutable) admite un seguimiento posterior si en Fase 2 se decide
 - [pendiente] **Cómo se evita el doble conteo**, con dos cuadrillas registrando el mismo árbol o un árbol repuesto contado dos veces
-- [pendiente] **¿Una fotografía por árbol o por jornada?** A una por árbol, la meta de 500 mil son ~50 GB; a una por frente de trabajo (≈1 por cada 30 árboles), ~1.7 GB. Es una decisión de programa, no de sistema, y es la diferencia entre pedir un volumen nuevo a ADIP o caber en lo que ya hay
+- ~~¿Una fotografía por árbol o por jornada?~~ Decidido en D87: por ejemplar, opcional. El contador de fotografías (D87) medirá el uso real para la solicitud a ADIP
 
-- [pendiente] ¿El apellido materno debe ser obligatorio? Hoy es opcional: hay personas que no lo tienen
-- [pendiente] ¿Puede una persona editar sus propios datos, o sólo la Administración global?
-- [pendiente] ¿El Coordinador también registra plantaciones? (hoy: registra sí; que no elimina ya está confirmado por Liber)
-- [pendiente] **Perfil Consulta (`VIEWER`).** Sigue definido en `js/permisos.js` (ve todo, no modifica nada) y es el perfil al que cae una cuenta con perfil desconocido, pero no tiene cuenta de arranque y Liber señaló el 22-09-2026 que los perfiles son tres. Decidir: se conserva para el SIA/consulta de tableros, o se retira del código y del esquema
-- [pendiente] **`es_ficticio` en `cierres` y `bitacora`.** Sólo plantaciones, usuarios y catalogos llevan la marca; al depurar los datos de prueba antes de liberar (S-09 del diccionario) los cierres y la bitácora de prueba habría que identificarlos por sus referencias. Decidir si se agrega la marca a las dos tablas
-- [pendiente] **El respaldo no lleva `usuarios` ni `catalogos`.** Una especie o cuenta dada de alta en el dispositivo no viaja en el respaldo; en Fase 1 no importa (los catálogos se siembran), en Fase 2 el servidor es la fuente. Confirmar que basta con eso
+- ~~Apellido materno obligatorio~~ Decidido en D87: opcional
+- ~~¿Cada persona edita sus propios datos?~~ Decidido en D87: sólo Administración global
+- ~~¿El Coordinador registra?~~ Decidido en D87: sí registra; no elimina
+- ~~Perfil Consulta~~ Retirado en D87
+- ~~`es_ficticio` en cierres y bitácora~~ Agregado en D87
+- ~~Respaldo sin usuarios ni catálogos~~ Resuelto en D87: lleva las cinco tablas
+- [pendiente] **Constancia de generación del parte.** Liber decidió (22-09-2026) **no** registrar cada generación del PDF en bitácora; queda sólo CREADO/EDITADO del cierre. Se reabre si en Fase 2 el parte se usa como evidencia formal
+- [pendiente] **Aviso de privacidad** en la pantalla de acceso: Liber lo pospuso (22-09-2026)
+- [pendiente] **Comentarios en el parte PDF** (columna, anexo o no entra): sin decidir; Liber lo dejó para la validación de reportes
+- [pendiente] **Doble conteo, capa oficial de colonias y mapa base para producción**: sin decidir en el Excel del 22-09-2026; siguen abiertos (ver «Para resolver en el diseño del programa»)
 - [pendiente] Proveedor de mapa base para producción (OpenStreetMap no admite uso institucional intensivo)
 - ~~Validación del catálogo de especies y su clasificación~~ Resuelto en D84: catálogo real del SIA con `tipo_distribucion` del SNIB
 - ~~Formato de las claves del catálogo real de especies~~ Resuelto en D84: `ESP-0000`, consecutivo del SIA
-- [pendiente] Cuenta institucional para el repositorio y la publicación (Norma 1.7)
+- ~~Cuenta institucional para el repositorio~~ Resuelto: `SedemaOficina/SISTEMA-PLANTACION`
 - [pendiente] Aviso de privacidad: el sistema recaba nombre, área y cargo del personal (Norma 1.8)
-- [pendiente] Los tres campos del punto ocupan ~240 px en teléfono mientras están vacíos. Se dejan siempre visibles para que el formulario no salte a media captura; revisar con personal en campo si conviene plegarlos hasta que haya punto
+- ~~Plegar los tres campos del punto~~ Decidido en D87: se dejan visibles
 - [pendiente] **El campo «Comentarios» del registro** (opcional, hasta 500 caracteres) todavía no entra al reporte. Queda por decidir en qué forma: columna truncada en la tabla de ejemplares, o un reporte de detalle aparte. La reserva de no tocar `js/reportes.js` hasta terminar el formulario queda levantada por D55–D58, que Liber pidió expresamente
 
-- [pendiente] **Clave de campo del ejemplar.** Los partes que hoy se escriben a mano numeran cada árbol con un prefijo del sitio y un consecutivo: `CIZ_366`, `GMP_196`, `UDG_01`. Es el identificador que el personal dicta, pinta en la placa y usa para hablar entre sí, y el sistema no tiene dónde guardarlo: el reporte numera los ejemplares 1..n dentro del parte, que sirve para leerlo pero no para volver a encontrar un árbol. Es el tercer identificador de la Norma 1.2 —el del sistema de origen—, y sin él no se puede conciliar lo ya plantado con lo que capture el SRP
+- ~~Clave de campo del ejemplar (`CIZ_366`)~~ **Descartada** por Liber en D87: no entra como atributo. Si en Fase 2 hace falta conciliar lo ya plantado, se reabre
 
-- [pendiente] **Colonia en el parte.** El cierre no la pide: no hay capa de colonias (D45) ni catálogo, y un campo libre más sería una segunda fuente para un dato que el sistema va a derivar. Mientras tanto, quien la necesite la escribe dentro del sitio. Se resuelve cuando llegue la capa
+- ~~Colonia en el parte~~ Resuelto en el bloque 21 (D62): sale del punto de cada registro
 
 ---
 
@@ -399,3 +403,27 @@
   `MAPEO-CAMPOS.md` sigue como vista por pantalla y también se audita. Motivo: al pasar a la
   Fase 2 todo lo que se capturó, se derivó o se calculó debe estar en un solo lugar verificado,
   no repartido en el código y en la memoria de las iteraciones. Pedido por Liber, 22-09-2026.
+
+## Bloque 34 — Decisiones del 22-09-2026 (Excel de pendientes)
+
+- **D87. Diecisiete decisiones de Liber, tomadas en el Excel `SRP_decisiones_pendientes_2026-09-22`,
+  y lo que se hizo con cada una.** Sistema, ejecutado en este bloque: (1) **se retira el perfil
+  Consulta (`VIEWER`)**: quedan `CABO`, `COORDINADOR` y `ADMIN`; una cuenta con perfil desconocido
+  ya no cae en Consulta sino en «Perfil no reconocido», sin permisos y con aviso; (2) **no** se
+  registra en bitácora cada generación del parte (queda como pendiente reabrible); (3) **`es_ficticio`
+  entra a `cierres` y `bitacora`**: la depuración de datos de prueba alcanza a las cinco tablas;
+  (4) **el respaldo lleva las cinco tablas** y un resumen de fotografías; (5) **el Coordinador sí
+  registra** y no elimina; (6) sólo Administración edita los datos de una cuenta; (7) apellido
+  materno opcional; (8) **no** se agrega la clave de campo del ejemplar; (9) comentarios en el
+  parte: sin decidir; (10) los tres campos del punto se quedan visibles; (11) **tipografías
+  locales**: Liber entregó Cabin y Roboto; van en `vendor/fuentes/` como woff2 con subconjunto
+  latino (~110 KB), sin Google Fonts, y el service worker las guarda en lista explícita porque el
+  CSS las pide sin marca; (12) icono de la app: Liber entregó el set de iconografía del Manual de
+  Identidad CDMX, que es para la interfaz; el icono de la app se compondrá con él (pendiente, bloque
+  aparte); (13) **contador de fotografías**: «Registros en este dispositivo» dice cuántos llevan
+  fotografía y cuánto pesan, y el respaldo lo lleva en `resumen`; (14) aviso de privacidad:
+  pospuesto. Programa, registrado: (15) **fotografía por ejemplar, opcional**; (16) **sólo el alta
+  cuenta como plantado**; (17) doble conteo, capa oficial de colonias y mapa base: sin decidir.
+  Además, con el catálogo real de 76 especies, **la lista de especies ya no se corta en ocho**: al
+  tocar el campo se ve completa con desplazamiento y al escribir filtra (Liber la creyó incompleta
+  por ese tope). Sube el sello de datos.

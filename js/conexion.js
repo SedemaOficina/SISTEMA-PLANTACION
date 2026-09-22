@@ -61,22 +61,42 @@ SRP.conexion = {
   /* Cuántos registros guarda este dispositivo, en el alcance de quien entró: un cabo cuenta los
      suyos. null cuando todavía no hay sesión o almacén. */
   async contarGuardados() {
+    const mios = await this.registrosPropios();
+    return mios === null ? null : mios.length;
+  },
+
+  // Los registros activos que alcanza quien entró
+  async registrosPropios() {
     if (!SRP.sesion.usuario || !SRP.almacen.db) return null;
     const u = SRP.sesion.usuario;
     const todos = await SRP.almacen.porIndice('plantaciones', 'estatus', 'activo');
-    return todos.filter(r => SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId)).length;
+    return todos.filter(r => SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId));
   },
 
   // Qué hacer con los registros guardados: bloque «Registros en este dispositivo» de Reportes
   async refrescarAvisoEnvio() {
     const caja = this.el('aviso-envio');
     if (!caja) return;
-    const n = await this.contarGuardados();
-    if (n === null) return;
+    const mios = await this.registrosPropios();
+    if (mios === null) return;
+    const n = mios.length;
+    const f = this.resumenFotos(mios);
     const cuenta = n === 1 ? '1 registro guardado' : n + ' registros guardados';
-    caja.innerHTML = '<strong>' + cuenta + '.</strong> ' + (this.enLinea()
+    // Cuántos llevan fotografía y cuánto pesan: la cifra para pedir disco a ADIP (D87)
+    const fotos = n ? ' ' + (f.con_foto === 1 ? '1 lleva fotografía' : f.con_foto + ' llevan fotografía') +
+      (f.con_foto ? ' (' + SRP.foto.formatearPeso(f.foto_bytes) + ')' : '') + '.' : '';
+    caja.innerHTML = '<strong>' + cuenta + '.</strong>' + fotos + ' ' + (this.enLinea()
       ? 'Por ahora no hay envío al servidor: los registros se quedan aquí. Genere el parte del día y compártalo con su coordinador, o guarde un respaldo. <strong>No borre los datos del navegador.</strong>'
       : 'Siga registrando: no hace falta internet. Cuando tenga señal, genere el parte del día y compártalo.');
+  },
+
+  /* Cuántos registros llevan fotografía y cuánto pesan. Es la cifra con la que se pedirá disco a
+     ADIP (D87): una proyección con uso medido, no una estimación. */
+  resumenFotos(plantaciones) {
+    const activos = plantaciones.filter(r => r.estatus === 'activo');
+    const conFoto = activos.filter(r => r.foto_base64);
+    return { registros: activos.length, con_foto: conFoto.length,
+             foto_bytes: conFoto.reduce((s, r) => s + (r.foto_bytes || 0), 0) };
   },
 
   /* ---------- Respaldo ---------- */
@@ -85,7 +105,9 @@ SRP.conexion = {
     const u = SRP.sesion.usuario;
     const datos = { sistema: 'SRP', version: SRP.CONFIG.VERSION, generado: SRP.util.ahoraISO(),
                     usuario_id: u ? u.id : null, es_ficticio: SRP.CONFIG.ES_FICTICIO };
-    for (const a of ['plantaciones', 'cierres', 'bitacora']) datos[a] = await SRP.almacen.todos(a);
+    // Las cinco tablas (D87): restaurar en otro dispositivo debe dejar el sistema igual
+    for (const a of SRP.almacen.ALMACENES) datos[a] = await SRP.almacen.todos(a);
+    datos.resumen = this.resumenFotos(datos.plantaciones);
     const nombre = 'SRP_respaldo_' + SRP.util.fechaHoy() + (u ? '_' + u.id : '') + '.json';
     const blob = new Blob([JSON.stringify(datos)], { type: 'application/json' });
     await SRP.reportes.entregarArchivo(blob, nombre, 'Respaldo del Sistema de Registro de Plantaciones');
@@ -101,7 +123,7 @@ SRP.conexion = {
     try { datos = JSON.parse(await archivo.text()); } catch (e) { SRP.util.anunciar('El archivo no es un respaldo válido.', 'alerta'); return; }
     if (!datos || datos.sistema !== 'SRP') { SRP.util.anunciar('El archivo no es un respaldo del SRP.', 'alerta'); return; }
     let nuevos = 0;
-    for (const a of ['plantaciones', 'cierres', 'bitacora']) {
+    for (const a of SRP.almacen.ALMACENES) {
       for (const obj of (datos[a] || [])) {
         if (await SRP.almacen.uno(a, obj.id)) continue;
         await SRP.almacen.guardarConBitacora(a, obj, null);

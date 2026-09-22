@@ -29,7 +29,7 @@ with sync_playwright() as p:
 
     # --- 2. Perfiles ---
     perfiles = pg.evaluate("Object.keys(SRP.PERFILES)")
-    mirar(sorted(perfiles) == ['ADMIN','CABO','COORDINADOR','VIEWER'],
+    mirar(sorted(perfiles) == ['ADMIN','CABO','COORDINADOR'],
           'el catálogo de perfiles es el acordado', str(perfiles))
     etiquetas = pg.evaluate("Object.values(SRP.PERFILES).map(p=>p.etiqueta)")
     mirar('Cabo' in etiquetas and 'Coordinador' in etiquetas,
@@ -56,7 +56,7 @@ with sync_playwright() as p:
     mirar(sorted(d['perfilesUsados']) == ['ADMIN','CABO','COORDINADOR'],
           'una cuenta por perfil operativo', str(d['perfilesUsados']))
     mirar(not d['perfilDesconocido'], 'toda cuenta tiene un perfil del catálogo', str(d['perfilDesconocido']))
-    mirar(set(d['perfilesUsados']) <= {'CABO','COORDINADOR','ADMIN','VIEWER'},
+    mirar(set(d['perfilesUsados']) <= {'CABO','COORDINADOR','ADMIN'},
           'los perfiles guardados son los de ahora', str(d['perfilesUsados']))
     mirar(not d['sinCorreo'], 'toda cuenta tiene correo', str(d['sinCorreo']))
     mirar(not d['correosRepetidos'], 'ningún correo repetido', str(d['correosRepetidos']))
@@ -123,8 +123,8 @@ with sync_playwright() as p:
     # --- 4. Lo que ve la persona ---
     opciones = pg.eval_on_selector_all('#sel-usuario-prueba option', 'os=>os.map(o=>o.textContent)')
     mirar(len(opciones) == 3, 'el selector ofrece las tres cuentas', str(opciones))
-    mirar(not [o for o in opciones if o.endswith('— Consulta')],
-          'ninguna cuenta aparece como Consulta', str(opciones))
+    mirar(not [o for o in opciones if 'no reconocido' in o or o.endswith('— Consulta')],
+          'ninguna cuenta aparece con perfil no reconocido', str(opciones))
     mirar(any('— Cabo' in o for o in opciones), 'aparecen cuentas de Cabo', str(opciones))
     mirar(any('— Coordinador' in o for o in opciones), 'aparece la cuenta de Coordinador')
     mirar(any('— Administración global' in o for o in opciones), 'aparece la cuenta de Administración')
@@ -167,7 +167,7 @@ with sync_playwright() as p:
         catalogos: await campos('catalogos'),
         /* Igual que las plantaciones: los campos se leen del código, no de lo guardado. Un
            almacén vacío haría pasar por inventado todo lo que el mapeo documenta. */
-        cierres: ['id','fecha','cabo_id','encargado_id','creado_por_id','fecha_creacion',
+        cierres: ['id','es_ficticio','fecha','cabo_id','encargado_id','creado_por_id','fecha_creacion',
                   'editado_por_id','fecha_ultima_edicion'].concat(SRP.reportes.CAMPOS),
         bitacora: bitacora()
       };

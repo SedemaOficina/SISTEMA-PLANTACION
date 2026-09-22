@@ -1,15 +1,37 @@
 {
   "_": "ESQUEMA DE DATOS DEL SRP: fuente única (D86). De aquí se genera DICCIONARIO-DATOS.md con pruebas/generar_diccionario.py, y pruebas/auditoria.py lo compara contra lo que el sistema guarda y contra los dominios del código. Si un campo cambia en el código y no aquí, la auditoría falla.",
-  "version_esquema": "2026-09-22",
+  "version_esquema": "2026-09-22b",
   "etapa": "Etapa 1 (Fase 1: dispositivo, sin servidor)",
   "almacenamiento": {
     "motor": "IndexedDB del navegador, base `srp_db` (SRP.CONFIG.DB_NOMBRE), versión 1",
-    "tablas": ["plantaciones", "usuarios", "catalogos", "bitacora", "cierres"],
+    "tablas": [
+      "plantaciones",
+      "usuarios",
+      "catalogos",
+      "bitacora",
+      "cierres"
+    ],
     "otros": [
-      {"donde": "localStorage `srp_sesion_usuario_id`", "que": "id de la cuenta con sesión abierta; el dispositivo queda fijo a esa cuenta (D06)", "fase2": "Lo sustituye el proveedor de identidad institucional; sólo cambia `autenticar()` en js/sesion.js"},
-      {"donde": "localStorage `srp_sello_datos`", "que": "sello con el que se sembró (SRP.CONFIG.SELLO_DATOS); si no coincide, se vuelve a sembrar", "fase2": "Desaparece con ES_FICTICIO"},
-      {"donde": "Caché del service worker (sw.js)", "que": "copia de la aplicación para abrir sin señal; no guarda datos", "fase2": "Se conserva"},
-      {"donde": "Respaldo `SRP_respaldo_AAAA-MM-DD_<usuario>.json`", "que": "{sistema, version, generado, usuario_id, es_ficticio, plantaciones[], cierres[], bitacora[]}: el mismo esquema de las tablas. NO lleva usuarios ni catalogos (pendiente en DECISIONES)", "fase2": "El mismo archivo es lo que el servidor recibiría"}
+      {
+        "donde": "localStorage `srp_sesion_usuario_id`",
+        "que": "id de la cuenta con sesión abierta; el dispositivo queda fijo a esa cuenta (D06)",
+        "fase2": "Lo sustituye el proveedor de identidad institucional; sólo cambia `autenticar()` en js/sesion.js"
+      },
+      {
+        "donde": "localStorage `srp_sello_datos`",
+        "que": "sello con el que se sembró (SRP.CONFIG.SELLO_DATOS); si no coincide, se vuelve a sembrar",
+        "fase2": "Desaparece con ES_FICTICIO"
+      },
+      {
+        "donde": "Caché del service worker (sw.js)",
+        "que": "copia de la aplicación para abrir sin señal; no guarda datos",
+        "fase2": "Se conserva"
+      },
+      {
+        "donde": "Respaldo `SRP_respaldo_AAAA-MM-DD_<usuario>.json`",
+        "que": "{sistema, version, generado, usuario_id, es_ficticio, resumen{registros, con_foto, foto_bytes}, plantaciones[], usuarios[], catalogos[], bitacora[], cierres[]}: las cinco tablas con el mismo esquema (D87)",
+        "fase2": "El mismo archivo es lo que el servidor recibiría"
+      }
     ]
   },
   "origenes": {
@@ -22,60 +44,411 @@
     "SIA": "Viene del archivo fuente del SIA (catálogo de especies, capas)"
   },
   "dominios": {
-    "estatus_plantacion": {"valores": ["activo", "eliminado"], "fuente": "js/formulario.js registroPrevisto(); js/registros.js eliminar()"},
-    "punto_origen": {"valores": ["gps", "mapa", "manual", "ajustado"], "fuente": "js/mapa.js ORIGENES", "codigo": "Object.keys(SRP.mapa.ORIGENES)"},
-    "especie_estatus": {"valores": ["VALIDADA", "PENDIENTE_VALIDACION"], "fuente": "js/formulario.js valores() (D68)"},
-    "perfil": {"valores": ["CABO", "COORDINADOR", "ADMIN", "VIEWER"], "fuente": "js/permisos.js SRP.PERFILES", "codigo": "Object.keys(SRP.PERFILES)"},
-    "tipo_catalogo": {"valores": ["programa", "area", "especie"], "fuente": "js/catalogos.js ETIQUETA", "codigo": "Object.keys(SRP.catalogos.ETIQUETA)"},
-    "tipo_distribucion": {"valores": ["Nativa", "Endémica", "Exótica", "Exótica-Invasora"], "fuente": "SNIB/CONABIO (EncicloVida); lista en index.html #cat-distribucion", "codigo": "[...document.querySelectorAll('#cat-distribucion option')].map(o => o.value)"},
-    "accion_bitacora": {"valores": ["CREADO", "EDITADO", "ELIMINADO", "ACTIVADO", "DESACTIVADO"], "fuente": "llamadas a SRP.bitacora.entrada() en formulario, registros, catalogos, usuarios y reportes"},
-    "entidad_bitacora": {"valores": ["plantacion", "usuario", "catalogo", "cierre"], "fuente": "ídem"},
-    "alcaldia_cve": {"valores": "16 claves `cvegeo` INEGI (09002…09017)", "fuente": "assets/capa-alcaldias.js (SIA, versión sia-2026-09-21; de prueba, ver pendientes)"},
-    "uga": {"valores": "1,624 claves `AAA-000` de la malla hexagonal", "fuente": "assets/capa-uga.js (SIA, versión sia-2026-09-21; de prueba)"},
-    "colonia_cve": {"valores": "Claves `CVEUT` del IECM 2022 (p. ej. `15-040`)", "fuente": "assets/capa-colonias.js (IECM 2022, versión iecm-2022-prueba; de prueba)"},
-    "id_especie": {"valores": "`ESP-0000`, consecutivo del SIA; hoy ESP-0001…ESP-0076 y las altas continúan en ESP-0077", "fuente": "assets/catalogo-especies.js (CGO_ESPECIES_REFORESTACION_URBANA, 22-09-2026)"}
+    "estatus_plantacion": {
+      "valores": [
+        "activo",
+        "eliminado"
+      ],
+      "fuente": "js/formulario.js registroPrevisto(); js/registros.js eliminar()"
+    },
+    "punto_origen": {
+      "valores": [
+        "gps",
+        "mapa",
+        "manual",
+        "ajustado"
+      ],
+      "fuente": "js/mapa.js ORIGENES",
+      "codigo": "Object.keys(SRP.mapa.ORIGENES)"
+    },
+    "especie_estatus": {
+      "valores": [
+        "VALIDADA",
+        "PENDIENTE_VALIDACION"
+      ],
+      "fuente": "js/formulario.js valores() (D68)"
+    },
+    "perfil": {
+      "valores": [
+        "CABO",
+        "COORDINADOR",
+        "ADMIN"
+      ],
+      "fuente": "js/permisos.js SRP.PERFILES (Consulta/VIEWER retirado en D87)",
+      "codigo": "Object.keys(SRP.PERFILES)"
+    },
+    "tipo_catalogo": {
+      "valores": [
+        "programa",
+        "area",
+        "especie"
+      ],
+      "fuente": "js/catalogos.js ETIQUETA",
+      "codigo": "Object.keys(SRP.catalogos.ETIQUETA)"
+    },
+    "tipo_distribucion": {
+      "valores": [
+        "Nativa",
+        "Endémica",
+        "Exótica",
+        "Exótica-Invasora"
+      ],
+      "fuente": "SNIB/CONABIO (EncicloVida); lista en index.html #cat-distribucion",
+      "codigo": "[...document.querySelectorAll('#cat-distribucion option')].map(o => o.value)"
+    },
+    "accion_bitacora": {
+      "valores": [
+        "CREADO",
+        "EDITADO",
+        "ELIMINADO",
+        "ACTIVADO",
+        "DESACTIVADO"
+      ],
+      "fuente": "llamadas a SRP.bitacora.entrada() en formulario, registros, catalogos, usuarios y reportes"
+    },
+    "entidad_bitacora": {
+      "valores": [
+        "plantacion",
+        "usuario",
+        "catalogo",
+        "cierre"
+      ],
+      "fuente": "ídem"
+    },
+    "alcaldia_cve": {
+      "valores": "16 claves `cvegeo` INEGI (09002…09017)",
+      "fuente": "assets/capa-alcaldias.js (SIA, versión sia-2026-09-21; de prueba, ver pendientes)"
+    },
+    "uga": {
+      "valores": "1,624 claves `AAA-000` de la malla hexagonal",
+      "fuente": "assets/capa-uga.js (SIA, versión sia-2026-09-21; de prueba)"
+    },
+    "colonia_cve": {
+      "valores": "Claves `CVEUT` del IECM 2022 (p. ej. `15-040`)",
+      "fuente": "assets/capa-colonias.js (IECM 2022, versión iecm-2022-prueba; de prueba)"
+    },
+    "id_especie": {
+      "valores": "`ESP-0000`, consecutivo del SIA; hoy ESP-0001…ESP-0076 y las altas continúan en ESP-0077",
+      "fuente": "assets/catalogo-especies.js (CGO_ESPECIES_REFORESTACION_URBANA, 22-09-2026)"
+    }
   },
   "tablas": {
     "plantaciones": {
       "que_es": "Un renglón por ejemplar plantado. Es el registro individual de campo; todo lo demás (partes, tableros, cifra pública) se construye encima (D38).",
       "llave": "id",
-      "indices": ["cabo_id", "fecha_plantacion", "estatus"],
+      "indices": [
+        "cabo_id",
+        "fecha_plantacion",
+        "estatus"
+      ],
       "pantalla": "Nuevo registro (alta y edición), Registros (lista, detalle), Reportes (parte del día)",
       "campos": [
-        {"campo": "id", "tipo": "uuid", "nulo": false, "origen": "Sistema", "dominio": "UUID v4", "pantalla": "Ficha de revisión y aviso de guardado («Identificador»)", "regla": "Se fija al abrir la ficha de revisión y es el que se guarda (idPrevisto); no cambia al editar. En Fase 2 es la clave de idempotencia del envío (R4)"},
-        {"campo": "estatus", "tipo": "text", "nulo": false, "origen": "Sistema", "dominio": "estatus_plantacion", "pantalla": "No (los eliminados no se listan)", "regla": "Nace `activo`; «Eliminar» lo marca `eliminado`, nunca borra (D11, Norma 7.4). Un registro eliminado sigue contando en el uso de catálogos y cuentas"},
-        {"campo": "es_ficticio", "tipo": "boolean", "nulo": false, "origen": "Sistema", "dominio": "true/false", "pantalla": "No", "regla": "Copia de CONFIG.ES_FICTICIO al guardar. Permite depurar los datos de prueba antes de liberar"},
-        {"campo": "cabo_id", "tipo": "uuid", "nulo": false, "origen": "Sesión", "dominio": "→ usuarios.id", "pantalla": "No como campo; el encabezado dice quién tiene la sesión y la ficha lo repite («Cabo»)", "regla": "Quien captura. Al editar se conserva: el autor no cambia de manos aunque corrija un coordinador o la administración"},
-        {"campo": "lat", "tipo": "numeric(9,6)", "nulo": false, "origen": "Persona", "dominio": "Grados decimales WGS84, 6 decimales, dentro de CONFIG.MAPA.LIMITES", "pantalla": "Coordenadas (sólo lectura)", "regla": "Del botón de ubicación, de tocar el mapa o de la captura a mano; se cambia moviendo el punto, no tecleando. Fuera del ámbito de la CDMX el punto se rechaza"},
-        {"campo": "lng", "tipo": "numeric(9,6)", "nulo": false, "origen": "Persona", "dominio": "Ídem", "pantalla": "Coordenadas (sólo lectura)", "regla": "Ídem. Al guardar en GeoJSON el orden es [lng, lat]"},
-        {"campo": "punto_origen", "tipo": "text", "nulo": false, "origen": "Sistema", "dominio": "punto_origen", "pantalla": "«Cómo se obtuvo» (sólo lectura)", "regla": "Lo determina la acción con la que se colocó el punto, no una elección. Es la prueba de cómo se obtuvo la coordenada cuando no hay fotografía"},
-        {"campo": "gps_precision_m", "tipo": "integer", "nulo": true, "origen": "Sistema", "dominio": "Metros, entero; null salvo con GPS", "pantalla": "«Cómo se obtuvo» (±N m)", "regla": "Existe si y sólo si punto_origen = gps: al mover el punto a mano se borra. La auditoría lo comprueba. En Fase 2 alimenta la regla de duplicados (D69)"},
-        {"campo": "lat_original", "tipo": "numeric(9,6)", "nulo": false, "origen": "Sistema", "dominio": "Como lat", "pantalla": "No", "regla": "Dónde quedó el punto la primera vez; no cambia al editar ni al arrastrar"},
-        {"campo": "lng_original", "tipo": "numeric(9,6)", "nulo": false, "origen": "Sistema", "dominio": "Como lng", "pantalla": "No", "regla": "Ídem"},
-        {"campo": "folio", "tipo": "char(22)", "nulo": true, "origen": "Servidor", "dominio": "`SRP-AAA-000-AAAA-00000` (SRP.folio.PATRON)", "pantalla": "«Folio»: PROVISIONAL mientras sea nulo (R1)", "regla": "Nulo en toda la Fase 1. Lo asigna el servidor una sola vez al sincronizar (R3), es inmutable (R7) y no lleva la especie (D67). Condiciones para emitirlo en DECISIONES, pendientes"},
-        {"campo": "folio_uga", "tipo": "char(7)", "nulo": true, "origen": "Servidor", "dominio": "uga o `EXT-000`", "pantalla": "No", "regla": "La celda que quedó dentro del folio, congelada al asignarlo (R8). Distinta de `uga`, que es la vigente"},
-        {"campo": "folio_capa_version", "tipo": "text", "nulo": true, "origen": "Servidor", "dominio": "Como capa_version", "pantalla": "No", "regla": "Versión de las capas con que se derivó el folio; congelada (R8)"},
-        {"campo": "folio_lat", "tipo": "numeric(9,6)", "nulo": true, "origen": "Servidor", "dominio": "Como lat", "pantalla": "No", "regla": "Coordenada empleada al asignar el folio; congelada (R8)"},
-        {"campo": "folio_lng", "tipo": "numeric(9,6)", "nulo": true, "origen": "Servidor", "dominio": "Como lng", "pantalla": "No", "regla": "Ídem"},
-        {"campo": "especie_id", "tipo": "char(8)", "nulo": true, "origen": "Catálogo", "dominio": "→ catalogos.id con tipo = especie (id_especie ESP-0000)", "pantalla": "Especie (autocompletado por nombre común, científico y otros nombres)", "regla": "Obligatoria salvo con «Otra especie», donde queda nula. El registro guarda sólo la clave; género, epíteto, distribución, forma de crecimiento, id_snib e id_enciclovida se obtienen del catálogo (D84)"},
-        {"campo": "especie_otra", "tipo": "text", "nulo": false, "origen": "Persona", "dominio": "Texto libre; '' salvo con «Otra especie»", "pantalla": "Especifique la especie (aparece sólo al elegir «Otra especie»)", "regla": "Obligatoria cuando especie_id es nula. Se vacía al elegir una especie del catálogo"},
-        {"campo": "especie_estatus", "tipo": "text", "nulo": false, "origen": "Sistema", "dominio": "especie_estatus", "pantalla": "No", "regla": "VALIDADA con especie del catálogo; PENDIENTE_VALIDACION con «Otra especie» hasta que el SIA la resuelva desde la bandeja (Fase 2). Al resolverse cambia este atributo, nunca el folio (D68)"},
-        {"campo": "alcaldia_cve", "tipo": "char(5)", "nulo": true, "origen": "Capa", "dominio": "alcaldia_cve", "pantalla": "No", "regla": "Derivada del punto contra la capa de alcaldías. Llave para unir con el esquema territorio del SIA. Nula si el punto cae en un hueco de la capa (se avisa, no se impide guardar)"},
-        {"campo": "alcaldia", "tipo": "text", "nulo": true, "origen": "Capa", "dominio": "Nombre de la alcaldía según la capa", "pantalla": "Alcaldía (sólo lectura)", "regla": "Copia del nombre para leerse sin cargar la capa. Se rederiva cada vez que el punto se mueve; se puede rederivar en lote si la capa cambia (capa_version)"},
-        {"campo": "colonia_cve", "tipo": "text", "nulo": true, "origen": "Capa", "dominio": "colonia_cve", "pantalla": "No", "regla": "Nula fuera de la zona urbana (suelo de conservación): no es defecto (D62). En solape gana la colonia más pequeña"},
-        {"campo": "colonia", "tipo": "text", "nulo": true, "origen": "Capa", "dominio": "Nombre como viene en la capa, mayúsculas y tipo entre paréntesis", "pantalla": "Colonia (sólo lectura): «Sin colonia (fuera de zona urbana)» si es nula", "regla": "Capa de prueba (IECM 2022): se sustituye antes de liberar la etapa"},
-        {"campo": "uga", "tipo": "char(7)", "nulo": true, "origen": "Capa", "dominio": "uga", "pantalla": "No", "regla": "Celda vigente del punto. El prefijo NO es la alcaldía del punto (difieren en la frontera); la alcaldía sale de su propia capa. Cambia si el punto se corrige; folio_uga no"},
-        {"campo": "capa_version", "tipo": "text", "nulo": true, "origen": "Capa", "dominio": "`alcaldias=v;uga=v;colonias=v`", "pantalla": "No", "regla": "Con qué versión de cada capa se derivó; permite rehacer alcaldia/colonia/uga cuando el SIA entregue las capas definitivas"},
-        {"campo": "programa_id", "tipo": "text", "nulo": false, "origen": "Catálogo", "dominio": "→ catalogos.id con tipo = programa", "pantalla": "Programa (lista; Reforestación Urbana primero)", "regla": "Obligatorio; sin preselección"},
-        {"campo": "fecha_plantacion", "tipo": "date", "nulo": false, "origen": "Persona", "dominio": "AAAA-MM-DD, ≤ hoy", "pantalla": "Fecha de plantación (se muestra 21-SEP-2026)", "regla": "Arranca vacía en cada registro; nunca se hereda del anterior. Es la fecha por la que se filtra y por la que se arma el parte del día"},
-        {"campo": "comentarios", "tipo": "varchar(500)", "nulo": false, "origen": "Persona", "dominio": "Texto libre ≤ 500; '' si no se escribe", "pantalla": "Comentarios (opcional)", "regla": "Reincorporado en D50. Todavía no entra al parte PDF (pendiente de validación de reportes). Registros anteriores a D50 no traen la llave y se leen como «Sin comentarios»"},
-        {"campo": "foto_base64", "tipo": "text", "nulo": true, "origen": "Persona", "dominio": "data:image/jpeg;base64,… ya comprimida (≤ 800×600, calidad 0.7)", "pantalla": "Fotografía (opcional)", "regla": "Incrustada en el registro en Fase 1. En Fase 2 sale a archivo, como en los otros módulos del SIA (pendiente «Dónde viven las fotografías»)"},
-        {"campo": "foto_id", "tipo": "uuid", "nulo": true, "origen": "Sistema", "dominio": "UUID v4; null sin foto", "pantalla": "No", "regla": "Identificador de la imagen, para cuando viva como archivo"},
-        {"campo": "foto_nombre", "tipo": "text", "nulo": false, "origen": "Persona", "dominio": "Nombre del archivo elegido; '' sin foto", "pantalla": "Ficha de la foto", "regla": ""},
-        {"campo": "foto_bytes", "tipo": "integer", "nulo": false, "origen": "Sistema", "dominio": "Bytes de la imagen ya comprimida; 0 sin foto", "pantalla": "Ficha de la foto (peso)", "regla": "No es el peso del archivo original"},
-        {"campo": "fecha_registro", "tipo": "timestamptz", "nulo": false, "origen": "Sistema", "dominio": "ISO 8601 con zona (-06:00)", "pantalla": "Detalle", "regla": "Cuándo se guardó por primera vez. Distinta de fecha_plantacion"},
-        {"campo": "fecha_ultima_edicion", "tipo": "timestamptz", "nulo": true, "origen": "Sistema", "dominio": "ISO 8601", "pantalla": "Detalle e historial", "regla": "Nula hasta la primera edición; también se pone al eliminar"},
-        {"campo": "editado_por_id", "tipo": "uuid", "nulo": true, "origen": "Sesión", "dominio": "→ usuarios.id", "pantalla": "Historial", "regla": "Quién hizo la última edición (o la eliminación)"}
+        {
+          "campo": "id",
+          "tipo": "uuid",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "UUID v4",
+          "pantalla": "Ficha de revisión y aviso de guardado («Identificador»)",
+          "regla": "Se fija al abrir la ficha de revisión y es el que se guarda (idPrevisto); no cambia al editar. En Fase 2 es la clave de idempotencia del envío (R4)"
+        },
+        {
+          "campo": "estatus",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "estatus_plantacion",
+          "pantalla": "No (los eliminados no se listan)",
+          "regla": "Nace `activo`; «Eliminar» lo marca `eliminado`, nunca borra (D11, Norma 7.4). Un registro eliminado sigue contando en el uso de catálogos y cuentas"
+        },
+        {
+          "campo": "es_ficticio",
+          "tipo": "boolean",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "true/false",
+          "pantalla": "No",
+          "regla": "Copia de CONFIG.ES_FICTICIO al guardar. Permite depurar los datos de prueba antes de liberar"
+        },
+        {
+          "campo": "cabo_id",
+          "tipo": "uuid",
+          "nulo": false,
+          "origen": "Sesión",
+          "dominio": "→ usuarios.id",
+          "pantalla": "No como campo; el encabezado dice quién tiene la sesión y la ficha lo repite («Cabo»)",
+          "regla": "Quien captura. Al editar se conserva: el autor no cambia de manos aunque corrija un coordinador o la administración"
+        },
+        {
+          "campo": "lat",
+          "tipo": "numeric(9,6)",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Grados decimales WGS84, 6 decimales, dentro de CONFIG.MAPA.LIMITES",
+          "pantalla": "Coordenadas (sólo lectura)",
+          "regla": "Del botón de ubicación, de tocar el mapa o de la captura a mano; se cambia moviendo el punto, no tecleando. Fuera del ámbito de la CDMX el punto se rechaza"
+        },
+        {
+          "campo": "lng",
+          "tipo": "numeric(9,6)",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Ídem",
+          "pantalla": "Coordenadas (sólo lectura)",
+          "regla": "Ídem. Al guardar en GeoJSON el orden es [lng, lat]"
+        },
+        {
+          "campo": "punto_origen",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "punto_origen",
+          "pantalla": "«Cómo se obtuvo» (sólo lectura)",
+          "regla": "Lo determina la acción con la que se colocó el punto, no una elección. Es la prueba de cómo se obtuvo la coordenada cuando no hay fotografía"
+        },
+        {
+          "campo": "gps_precision_m",
+          "tipo": "integer",
+          "nulo": true,
+          "origen": "Sistema",
+          "dominio": "Metros, entero; null salvo con GPS",
+          "pantalla": "«Cómo se obtuvo» (±N m)",
+          "regla": "Existe si y sólo si punto_origen = gps: al mover el punto a mano se borra. La auditoría lo comprueba. En Fase 2 alimenta la regla de duplicados (D69)"
+        },
+        {
+          "campo": "lat_original",
+          "tipo": "numeric(9,6)",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "Como lat",
+          "pantalla": "No",
+          "regla": "Dónde quedó el punto la primera vez; no cambia al editar ni al arrastrar"
+        },
+        {
+          "campo": "lng_original",
+          "tipo": "numeric(9,6)",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "Como lng",
+          "pantalla": "No",
+          "regla": "Ídem"
+        },
+        {
+          "campo": "folio",
+          "tipo": "char(22)",
+          "nulo": true,
+          "origen": "Servidor",
+          "dominio": "`SRP-AAA-000-AAAA-00000` (SRP.folio.PATRON)",
+          "pantalla": "«Folio»: PROVISIONAL mientras sea nulo (R1)",
+          "regla": "Nulo en toda la Fase 1. Lo asigna el servidor una sola vez al sincronizar (R3), es inmutable (R7) y no lleva la especie (D67). Condiciones para emitirlo en DECISIONES, pendientes"
+        },
+        {
+          "campo": "folio_uga",
+          "tipo": "char(7)",
+          "nulo": true,
+          "origen": "Servidor",
+          "dominio": "uga o `EXT-000`",
+          "pantalla": "No",
+          "regla": "La celda que quedó dentro del folio, congelada al asignarlo (R8). Distinta de `uga`, que es la vigente"
+        },
+        {
+          "campo": "folio_capa_version",
+          "tipo": "text",
+          "nulo": true,
+          "origen": "Servidor",
+          "dominio": "Como capa_version",
+          "pantalla": "No",
+          "regla": "Versión de las capas con que se derivó el folio; congelada (R8)"
+        },
+        {
+          "campo": "folio_lat",
+          "tipo": "numeric(9,6)",
+          "nulo": true,
+          "origen": "Servidor",
+          "dominio": "Como lat",
+          "pantalla": "No",
+          "regla": "Coordenada empleada al asignar el folio; congelada (R8)"
+        },
+        {
+          "campo": "folio_lng",
+          "tipo": "numeric(9,6)",
+          "nulo": true,
+          "origen": "Servidor",
+          "dominio": "Como lng",
+          "pantalla": "No",
+          "regla": "Ídem"
+        },
+        {
+          "campo": "especie_id",
+          "tipo": "char(8)",
+          "nulo": true,
+          "origen": "Catálogo",
+          "dominio": "→ catalogos.id con tipo = especie (id_especie ESP-0000)",
+          "pantalla": "Especie (autocompletado por nombre común, científico y otros nombres)",
+          "regla": "Obligatoria salvo con «Otra especie», donde queda nula. El registro guarda sólo la clave; género, epíteto, distribución, forma de crecimiento, id_snib e id_enciclovida se obtienen del catálogo (D84)"
+        },
+        {
+          "campo": "especie_otra",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto libre; '' salvo con «Otra especie»",
+          "pantalla": "Especifique la especie (aparece sólo al elegir «Otra especie»)",
+          "regla": "Obligatoria cuando especie_id es nula. Se vacía al elegir una especie del catálogo"
+        },
+        {
+          "campo": "especie_estatus",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "especie_estatus",
+          "pantalla": "No",
+          "regla": "VALIDADA con especie del catálogo; PENDIENTE_VALIDACION con «Otra especie» hasta que el SIA la resuelva desde la bandeja (Fase 2). Al resolverse cambia este atributo, nunca el folio (D68)"
+        },
+        {
+          "campo": "alcaldia_cve",
+          "tipo": "char(5)",
+          "nulo": true,
+          "origen": "Capa",
+          "dominio": "alcaldia_cve",
+          "pantalla": "No",
+          "regla": "Derivada del punto contra la capa de alcaldías. Llave para unir con el esquema territorio del SIA. Nula si el punto cae en un hueco de la capa (se avisa, no se impide guardar)"
+        },
+        {
+          "campo": "alcaldia",
+          "tipo": "text",
+          "nulo": true,
+          "origen": "Capa",
+          "dominio": "Nombre de la alcaldía según la capa",
+          "pantalla": "Alcaldía (sólo lectura)",
+          "regla": "Copia del nombre para leerse sin cargar la capa. Se rederiva cada vez que el punto se mueve; se puede rederivar en lote si la capa cambia (capa_version)"
+        },
+        {
+          "campo": "colonia_cve",
+          "tipo": "text",
+          "nulo": true,
+          "origen": "Capa",
+          "dominio": "colonia_cve",
+          "pantalla": "No",
+          "regla": "Nula fuera de la zona urbana (suelo de conservación): no es defecto (D62). En solape gana la colonia más pequeña"
+        },
+        {
+          "campo": "colonia",
+          "tipo": "text",
+          "nulo": true,
+          "origen": "Capa",
+          "dominio": "Nombre como viene en la capa, mayúsculas y tipo entre paréntesis",
+          "pantalla": "Colonia (sólo lectura): «Sin colonia (fuera de zona urbana)» si es nula",
+          "regla": "Capa de prueba (IECM 2022): se sustituye antes de liberar la etapa"
+        },
+        {
+          "campo": "uga",
+          "tipo": "char(7)",
+          "nulo": true,
+          "origen": "Capa",
+          "dominio": "uga",
+          "pantalla": "No",
+          "regla": "Celda vigente del punto. El prefijo NO es la alcaldía del punto (difieren en la frontera); la alcaldía sale de su propia capa. Cambia si el punto se corrige; folio_uga no"
+        },
+        {
+          "campo": "capa_version",
+          "tipo": "text",
+          "nulo": true,
+          "origen": "Capa",
+          "dominio": "`alcaldias=v;uga=v;colonias=v`",
+          "pantalla": "No",
+          "regla": "Con qué versión de cada capa se derivó; permite rehacer alcaldia/colonia/uga cuando el SIA entregue las capas definitivas"
+        },
+        {
+          "campo": "programa_id",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Catálogo",
+          "dominio": "→ catalogos.id con tipo = programa",
+          "pantalla": "Programa (lista; Reforestación Urbana primero)",
+          "regla": "Obligatorio; sin preselección"
+        },
+        {
+          "campo": "fecha_plantacion",
+          "tipo": "date",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "AAAA-MM-DD, ≤ hoy",
+          "pantalla": "Fecha de plantación (se muestra 21-SEP-2026)",
+          "regla": "Arranca vacía en cada registro; nunca se hereda del anterior. Es la fecha por la que se filtra y por la que se arma el parte del día"
+        },
+        {
+          "campo": "comentarios",
+          "tipo": "varchar(500)",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto libre ≤ 500; '' si no se escribe",
+          "pantalla": "Comentarios (opcional)",
+          "regla": "Reincorporado en D50. Todavía no entra al parte PDF (pendiente de validación de reportes). Registros anteriores a D50 no traen la llave y se leen como «Sin comentarios»"
+        },
+        {
+          "campo": "foto_base64",
+          "tipo": "text",
+          "nulo": true,
+          "origen": "Persona",
+          "dominio": "data:image/jpeg;base64,… ya comprimida (≤ 800×600, calidad 0.7)",
+          "pantalla": "Fotografía (opcional)",
+          "regla": "Incrustada en el registro en Fase 1. En Fase 2 sale a archivo, como en los otros módulos del SIA (pendiente «Dónde viven las fotografías»)"
+        },
+        {
+          "campo": "foto_id",
+          "tipo": "uuid",
+          "nulo": true,
+          "origen": "Sistema",
+          "dominio": "UUID v4; null sin foto",
+          "pantalla": "No",
+          "regla": "Identificador de la imagen, para cuando viva como archivo"
+        },
+        {
+          "campo": "foto_nombre",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Nombre del archivo elegido; '' sin foto",
+          "pantalla": "Ficha de la foto",
+          "regla": ""
+        },
+        {
+          "campo": "foto_bytes",
+          "tipo": "integer",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "Bytes de la imagen ya comprimida; 0 sin foto",
+          "pantalla": "Ficha de la foto (peso)",
+          "regla": "No es el peso del archivo original"
+        },
+        {
+          "campo": "fecha_registro",
+          "tipo": "timestamptz",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "ISO 8601 con zona (-06:00)",
+          "pantalla": "Detalle",
+          "regla": "Cuándo se guardó por primera vez. Distinta de fecha_plantacion"
+        },
+        {
+          "campo": "fecha_ultima_edicion",
+          "tipo": "timestamptz",
+          "nulo": true,
+          "origen": "Sistema",
+          "dominio": "ISO 8601",
+          "pantalla": "Detalle e historial",
+          "regla": "Nula hasta la primera edición; también se pone al eliminar"
+        },
+        {
+          "campo": "editado_por_id",
+          "tipo": "uuid",
+          "nulo": true,
+          "origen": "Sesión",
+          "dominio": "→ usuarios.id",
+          "pantalla": "Historial",
+          "regla": "Quién hizo la última edición (o la eliminación)"
+        }
       ]
     },
     "usuarios": {
@@ -84,202 +457,1177 @@
       "indices": [],
       "pantalla": "Usuarios (sólo Administración global); Acceso",
       "campos": [
-        {"campo": "id", "tipo": "uuid", "nulo": false, "origen": "Sistema", "dominio": "UUID v4 (las de arranque: u-admin-1, u-coord-1, u-cabo-1)", "pantalla": "No", "regla": ""},
-        {"campo": "correo", "tipo": "text", "nulo": false, "origen": "Persona", "dominio": "Correo válido, en minúsculas, único", "pantalla": "Correo", "regla": "Identifica la cuenta y sirve para entrar; no se puede cambiar después. No tiene que ser institucional"},
-        {"campo": "nombre", "tipo": "text", "nulo": false, "origen": "Persona", "dominio": "Texto", "pantalla": "Nombre(s)", "regla": ""},
-        {"campo": "apellido_paterno", "tipo": "text", "nulo": false, "origen": "Persona", "dominio": "Texto", "pantalla": "Apellido paterno", "regla": ""},
-        {"campo": "apellido_materno", "tipo": "text", "nulo": false, "origen": "Persona", "dominio": "Texto; '' si no tiene", "pantalla": "Apellido materno (opcional)", "regla": "Opcional a propósito: hay personas que no lo tienen (pendiente: confirmar)"},
-        {"campo": "area_id", "tipo": "text", "nulo": false, "origen": "Catálogo", "dominio": "→ catalogos.id con tipo = area", "pantalla": "Área", "regla": ""},
-        {"campo": "cargo_rol", "tipo": "text", "nulo": false, "origen": "Persona", "dominio": "Texto libre", "pantalla": "Cargo y rol", "regla": "Descriptivo; no gobierna permisos"},
-        {"campo": "perfil", "tipo": "text", "nulo": false, "origen": "Persona", "dominio": "perfil", "pantalla": "Perfil", "regla": "Decide alcance y acciones. Una cuenta de administración no puede quitarse a sí misma el perfil ADMIN. Un perfil desconocido se trata como Consulta y se avisa"},
-        {"campo": "coordinador_id", "tipo": "uuid", "nulo": true, "origen": "Persona", "dominio": "→ usuarios.id con perfil COORDINADOR", "pantalla": "Coordinador (sólo con perfil Cabo)", "regla": "Se pone nulo si el perfil no es CABO. Es lo que define la cuadrilla: el coordinador ve y edita los registros de los cabos que lo tienen asignado"},
-        {"campo": "activo", "tipo": "boolean", "nulo": false, "origen": "Persona", "dominio": "true/false", "pantalla": "Estado", "regla": "Inactiva no puede entrar; sus registros se conservan a su nombre. Con registros a su nombre no se elimina, se desactiva"},
-        {"campo": "es_ficticio", "tipo": "boolean", "nulo": false, "origen": "Sistema", "dominio": "true/false", "pantalla": "No", "regla": ""},
-        {"campo": "fecha_alta", "tipo": "timestamptz", "nulo": false, "origen": "Sistema", "dominio": "ISO 8601", "pantalla": "No", "regla": ""},
-        {"campo": "alta_por_id", "tipo": "uuid", "nulo": false, "origen": "Sesión", "dominio": "→ usuarios.id", "pantalla": "No", "regla": "Quién dio de alta la cuenta"},
-        {"campo": "fecha_ultima_edicion", "tipo": "timestamptz", "nulo": true, "origen": "Sistema", "dominio": "ISO 8601", "pantalla": "No", "regla": ""},
-        {"campo": "editado_por_id", "tipo": "uuid", "nulo": true, "origen": "Sesión", "dominio": "→ usuarios.id", "pantalla": "No", "regla": ""}
+        {
+          "campo": "id",
+          "tipo": "uuid",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "UUID v4 (las de arranque: u-admin-1, u-coord-1, u-cabo-1)",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "correo",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Correo válido, en minúsculas, único",
+          "pantalla": "Correo",
+          "regla": "Identifica la cuenta y sirve para entrar; no se puede cambiar después. No tiene que ser institucional"
+        },
+        {
+          "campo": "nombre",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto",
+          "pantalla": "Nombre(s)",
+          "regla": ""
+        },
+        {
+          "campo": "apellido_paterno",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto",
+          "pantalla": "Apellido paterno",
+          "regla": ""
+        },
+        {
+          "campo": "apellido_materno",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto; '' si no tiene",
+          "pantalla": "Apellido materno (opcional)",
+          "regla": "Opcional a propósito: hay personas que no lo tienen (pendiente: confirmar)"
+        },
+        {
+          "campo": "area_id",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Catálogo",
+          "dominio": "→ catalogos.id con tipo = area",
+          "pantalla": "Área",
+          "regla": ""
+        },
+        {
+          "campo": "cargo_rol",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto libre",
+          "pantalla": "Cargo y rol",
+          "regla": "Descriptivo; no gobierna permisos"
+        },
+        {
+          "campo": "perfil",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "perfil",
+          "pantalla": "Perfil",
+          "regla": "Decide alcance y acciones. Una cuenta de administración no puede quitarse a sí misma el perfil ADMIN. Un perfil desconocido queda sin permisos y se avisa (D87)"
+        },
+        {
+          "campo": "coordinador_id",
+          "tipo": "uuid",
+          "nulo": true,
+          "origen": "Persona",
+          "dominio": "→ usuarios.id con perfil COORDINADOR",
+          "pantalla": "Coordinador (sólo con perfil Cabo)",
+          "regla": "Se pone nulo si el perfil no es CABO. Es lo que define la cuadrilla: el coordinador ve y edita los registros de los cabos que lo tienen asignado"
+        },
+        {
+          "campo": "activo",
+          "tipo": "boolean",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "true/false",
+          "pantalla": "Estado",
+          "regla": "Inactiva no puede entrar; sus registros se conservan a su nombre. Con registros a su nombre no se elimina, se desactiva"
+        },
+        {
+          "campo": "es_ficticio",
+          "tipo": "boolean",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "true/false",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "fecha_alta",
+          "tipo": "timestamptz",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "ISO 8601",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "alta_por_id",
+          "tipo": "uuid",
+          "nulo": false,
+          "origen": "Sesión",
+          "dominio": "→ usuarios.id",
+          "pantalla": "No",
+          "regla": "Quién dio de alta la cuenta"
+        },
+        {
+          "campo": "fecha_ultima_edicion",
+          "tipo": "timestamptz",
+          "nulo": true,
+          "origen": "Sistema",
+          "dominio": "ISO 8601",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "editado_por_id",
+          "tipo": "uuid",
+          "nulo": true,
+          "origen": "Sesión",
+          "dominio": "→ usuarios.id",
+          "pantalla": "No",
+          "regla": ""
+        }
       ]
     },
     "catalogos": {
       "que_es": "Los tres catálogos administrables en una sola tabla, distinguidos por `tipo`: programas, áreas y especies. Las especies son el catálogo real del SIA (D84) y llevan campos adicionales.",
       "llave": "id",
-      "indices": ["tipo"],
+      "indices": [
+        "tipo"
+      ],
       "pantalla": "Catálogos (sólo Administración global); alimentan Nuevo registro (especie, programa) y Usuarios (área)",
       "campos": [
-        {"campo": "id", "tipo": "text", "nulo": false, "origen": "Sistema", "dominio": "UUID v4 en programas y áreas (los de arranque: p-refor, p-centro, a-div, a-sia); en especies es la propia clave ESP-0000", "pantalla": "No", "regla": "Es lo que guardan plantaciones.especie_id, plantaciones.programa_id y usuarios.area_id"},
-        {"campo": "tipo", "tipo": "text", "nulo": false, "origen": "Sistema", "dominio": "tipo_catalogo", "pantalla": "Pestaña", "regla": "Lo fija la pestaña en la que se está"},
-        {"campo": "clave", "tipo": "text", "nulo": false, "origen": "Persona", "dominio": "Programas y áreas: `[A-Z0-9_]{2,30}`, única por tipo. Especies: id_especie", "pantalla": "Clave", "regla": "Programas y áreas: se sugiere del nombre, editable antes de guardar, fija después. Especies: consecutivo ESP-0000 que asigna el sistema; nunca se escribe ni se reutiliza"},
-        {"campo": "nombre", "tipo": "text", "nulo": false, "origen": "Persona", "dominio": "Texto, único por tipo", "pantalla": "Nombre / Nombre común", "regla": "En especies es el nombre_comun del catálogo del SIA: la etiqueta de campo"},
-        {"campo": "activo", "tipo": "boolean", "nulo": false, "origen": "Persona", "dominio": "true/false", "pantalla": "Estado", "regla": "Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina (D08)"},
-        {"campo": "es_ficticio", "tipo": "boolean", "nulo": false, "origen": "Sistema", "dominio": "true/false", "pantalla": "No", "regla": "Falso en las 76 especies del catálogo real; verdadero en lo creado en modo de prueba"},
-        {"campo": "creado_por_id", "tipo": "uuid", "nulo": true, "origen": "Sesión", "dominio": "→ usuarios.id; null en las especies del SIA", "pantalla": "No", "regla": ""},
-        {"campo": "fecha_creacion", "tipo": "timestamptz", "nulo": false, "origen": "Sistema", "dominio": "ISO 8601; en las especies del SIA, la fecha de corte", "pantalla": "No", "regla": ""},
-        {"campo": "editado_por_id", "tipo": "uuid", "nulo": true, "origen": "Sesión", "dominio": "→ usuarios.id", "pantalla": "No", "regla": ""},
-        {"campo": "fecha_ultima_edicion", "tipo": "timestamptz", "nulo": true, "origen": "Sistema", "dominio": "ISO 8601", "pantalla": "No", "regla": ""},
-        {"campo": "nombre_cientifico", "tipo": "varchar(140)", "nulo": false, "origen": "Persona", "dominio": "Género + epíteto, sin autoría ni subgénero; único", "pantalla": "Nombre científico (y entre paréntesis en Nuevo registro)", "regla": "Sólo especies. Validado: inicial mayúscula y al menos dos palabras", "solo_tipo": "especie"},
-        {"campo": "genero", "tipo": "varchar(60)", "nulo": false, "origen": "Sistema", "dominio": "Una palabra, inicial mayúscula", "pantalla": "No", "regla": "Sólo especies. Primera palabra del nombre científico; se deriva al guardar", "solo_tipo": "especie"},
-        {"campo": "especie", "tipo": "varchar(80)", "nulo": false, "origen": "Sistema", "dominio": "Epíteto; admite rango infraespecífico", "pantalla": "No", "regla": "Sólo especies. Lo que sigue al género; se deriva al guardar", "solo_tipo": "especie"},
-        {"campo": "otros_nombres_comunes", "tipo": "varchar(400)", "nulo": false, "origen": "Persona", "dominio": "Nombres separados por coma y espacio; '' si no hay", "pantalla": "Otros nombres comunes; en Nuevo registro sólo como criterio de búsqueda («también: Fresno»)", "regla": "Sólo especies. Un mismo nombre puede señalar a varias especies: la búsqueda las ofrece todas, nunca resuelve sola", "solo_tipo": "especie"},
-        {"campo": "tipo_distribucion", "tipo": "text", "nulo": false, "origen": "Persona", "dominio": "tipo_distribucion", "pantalla": "Tipo de distribución (Catálogos)", "regla": "Sólo especies. Campo del SNIB; sustituye a Nativa/Introducida", "solo_tipo": "especie"},
-        {"campo": "formadecrecimiento", "tipo": "varchar(100)", "nulo": false, "origen": "Persona", "dominio": "Árbol · Arbusto · Palma · Liana · Hierba · Sufrútice, varios separados por coma y espacio; '' si no hay", "pantalla": "Forma de crecimiento (Catálogos)", "regla": "Sólo especies. Literal de la ficha técnica", "solo_tipo": "especie"},
-        {"campo": "id_snib", "tipo": "varchar(16)", "nulo": true, "origen": "Persona", "dominio": "Número + ANGIO o GIMNO (IdCAT)", "pantalla": "Id SNIB (Catálogos)", "regla": "Sólo especies. Llave externa al Catálogo Taxonómico de la Biota; puede venir vacía (Quercus rubra)", "solo_tipo": "especie"},
-        {"campo": "id_enciclovida", "tipo": "integer", "nulo": true, "origen": "Persona", "dominio": "Entero", "pantalla": "Id EncicloVida (Catálogos)", "regla": "Sólo especies. Llave para reconsultar la ficha (enciclovida.mx/especies/{id}.json); más completa que el IdCAT", "solo_tipo": "especie"},
-        {"campo": "nota_discrepancia", "tipo": "varchar(700)", "nulo": false, "origen": "SIA", "dominio": "Texto que inicia con CORREGIDO · SIN CAMBIO · SIN REGISTRO · PENDIENTE DE DECISIÓN; '' si no hay", "pantalla": "No", "regla": "Sólo especies. Rastro de auditoría del catálogo; viene del Excel y no se edita en pantalla", "solo_tipo": "especie"}
+        {
+          "campo": "id",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "UUID v4 en programas y áreas (los de arranque: p-refor, p-centro, a-div, a-sia); en especies es la propia clave ESP-0000",
+          "pantalla": "No",
+          "regla": "Es lo que guardan plantaciones.especie_id, plantaciones.programa_id y usuarios.area_id"
+        },
+        {
+          "campo": "tipo",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "tipo_catalogo",
+          "pantalla": "Pestaña",
+          "regla": "Lo fija la pestaña en la que se está"
+        },
+        {
+          "campo": "clave",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Programas y áreas: `[A-Z0-9_]{2,30}`, única por tipo. Especies: id_especie",
+          "pantalla": "Clave",
+          "regla": "Programas y áreas: se sugiere del nombre, editable antes de guardar, fija después. Especies: consecutivo ESP-0000 que asigna el sistema; nunca se escribe ni se reutiliza"
+        },
+        {
+          "campo": "nombre",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto, único por tipo",
+          "pantalla": "Nombre / Nombre común",
+          "regla": "En especies es el nombre_comun del catálogo del SIA: la etiqueta de campo"
+        },
+        {
+          "campo": "activo",
+          "tipo": "boolean",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "true/false",
+          "pantalla": "Estado",
+          "regla": "Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina (D08)"
+        },
+        {
+          "campo": "es_ficticio",
+          "tipo": "boolean",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "true/false",
+          "pantalla": "No",
+          "regla": "Falso en las 76 especies del catálogo real; verdadero en lo creado en modo de prueba"
+        },
+        {
+          "campo": "creado_por_id",
+          "tipo": "uuid",
+          "nulo": true,
+          "origen": "Sesión",
+          "dominio": "→ usuarios.id; null en las especies del SIA",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "fecha_creacion",
+          "tipo": "timestamptz",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "ISO 8601; en las especies del SIA, la fecha de corte",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "editado_por_id",
+          "tipo": "uuid",
+          "nulo": true,
+          "origen": "Sesión",
+          "dominio": "→ usuarios.id",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "fecha_ultima_edicion",
+          "tipo": "timestamptz",
+          "nulo": true,
+          "origen": "Sistema",
+          "dominio": "ISO 8601",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "nombre_cientifico",
+          "tipo": "varchar(140)",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Género + epíteto, sin autoría ni subgénero; único",
+          "pantalla": "Nombre científico (y entre paréntesis en Nuevo registro)",
+          "regla": "Sólo especies. Validado: inicial mayúscula y al menos dos palabras",
+          "solo_tipo": "especie"
+        },
+        {
+          "campo": "genero",
+          "tipo": "varchar(60)",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "Una palabra, inicial mayúscula",
+          "pantalla": "No",
+          "regla": "Sólo especies. Primera palabra del nombre científico; se deriva al guardar",
+          "solo_tipo": "especie"
+        },
+        {
+          "campo": "especie",
+          "tipo": "varchar(80)",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "Epíteto; admite rango infraespecífico",
+          "pantalla": "No",
+          "regla": "Sólo especies. Lo que sigue al género; se deriva al guardar",
+          "solo_tipo": "especie"
+        },
+        {
+          "campo": "otros_nombres_comunes",
+          "tipo": "varchar(400)",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Nombres separados por coma y espacio; '' si no hay",
+          "pantalla": "Otros nombres comunes; en Nuevo registro sólo como criterio de búsqueda («también: Fresno»)",
+          "regla": "Sólo especies. Un mismo nombre puede señalar a varias especies: la búsqueda las ofrece todas, nunca resuelve sola",
+          "solo_tipo": "especie"
+        },
+        {
+          "campo": "tipo_distribucion",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "tipo_distribucion",
+          "pantalla": "Tipo de distribución (Catálogos)",
+          "regla": "Sólo especies. Campo del SNIB; sustituye a Nativa/Introducida",
+          "solo_tipo": "especie"
+        },
+        {
+          "campo": "formadecrecimiento",
+          "tipo": "varchar(100)",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Árbol · Arbusto · Palma · Liana · Hierba · Sufrútice, varios separados por coma y espacio; '' si no hay",
+          "pantalla": "Forma de crecimiento (Catálogos)",
+          "regla": "Sólo especies. Literal de la ficha técnica",
+          "solo_tipo": "especie"
+        },
+        {
+          "campo": "id_snib",
+          "tipo": "varchar(16)",
+          "nulo": true,
+          "origen": "Persona",
+          "dominio": "Número + ANGIO o GIMNO (IdCAT)",
+          "pantalla": "Id SNIB (Catálogos)",
+          "regla": "Sólo especies. Llave externa al Catálogo Taxonómico de la Biota; puede venir vacía (Quercus rubra)",
+          "solo_tipo": "especie"
+        },
+        {
+          "campo": "id_enciclovida",
+          "tipo": "integer",
+          "nulo": true,
+          "origen": "Persona",
+          "dominio": "Entero",
+          "pantalla": "Id EncicloVida (Catálogos)",
+          "regla": "Sólo especies. Llave para reconsultar la ficha (enciclovida.mx/especies/{id}.json); más completa que el IdCAT",
+          "solo_tipo": "especie"
+        },
+        {
+          "campo": "nota_discrepancia",
+          "tipo": "varchar(700)",
+          "nulo": false,
+          "origen": "SIA",
+          "dominio": "Texto que inicia con CORREGIDO · SIN CAMBIO · SIN REGISTRO · PENDIENTE DE DECISIÓN; '' si no hay",
+          "pantalla": "No",
+          "regla": "Sólo especies. Rastro de auditoría del catálogo; viene del Excel y no se edita en pantalla",
+          "solo_tipo": "especie"
+        }
       ]
     },
     "cierres": {
       "que_es": "Datos de cierre del parte del día: un renglón por jornada y cuadrilla. Todo es opcional y su único destino es el PDF (D58); nada se explota ni se cuenta.",
       "llave": "id",
-      "indices": ["fecha"],
+      "indices": [
+        "fecha"
+      ],
       "pantalla": "Reportes → «Datos de cierre del día»",
       "campos": [
-        {"campo": "id", "tipo": "text", "nulo": false, "origen": "Sistema", "dominio": "`fecha|cabo_id` o `fecha|TODOS`", "pantalla": "No", "regla": "Regenerar el parte del mismo día reabre el mismo cierre (Norma 7.6)"},
-        {"campo": "fecha", "tipo": "date", "nulo": false, "origen": "Sistema", "dominio": "AAAA-MM-DD", "pantalla": "Encabezado del diálogo", "regla": "El día del parte: cualquier día, no sólo hoy (D70)"},
-        {"campo": "cabo_id", "tipo": "uuid", "nulo": false, "origen": "Sistema", "dominio": "→ usuarios.id; '' si el parte es del día completo", "pantalla": "No", "regla": "El cabo por el que se filtró el parte"},
-        {"campo": "encargado_id", "tipo": "uuid", "nulo": true, "origen": "Sesión", "dominio": "→ usuarios.id", "pantalla": "Encargado", "regla": "Para un cabo es él mismo (no se pregunta); quien ve a varias personas lo elige sólo entre los cabos con registros ese día (D57)"},
-        {"campo": "creado_por_id", "tipo": "uuid", "nulo": false, "origen": "Sesión", "dominio": "→ usuarios.id", "pantalla": "No", "regla": ""},
-        {"campo": "fecha_creacion", "tipo": "timestamptz", "nulo": false, "origen": "Sistema", "dominio": "ISO 8601", "pantalla": "No", "regla": ""},
-        {"campo": "editado_por_id", "tipo": "uuid", "nulo": false, "origen": "Sesión", "dominio": "→ usuarios.id", "pantalla": "No", "regla": ""},
-        {"campo": "fecha_ultima_edicion", "tipo": "timestamptz", "nulo": false, "origen": "Sistema", "dominio": "ISO 8601", "pantalla": "No", "regla": ""},
-        {"campo": "sitio", "tipo": "text", "nulo": false, "origen": "Persona", "dominio": "Texto libre; '' si no se escribe", "pantalla": "Dirección o sitio", "regla": "Nada se prellena (los partes varían mucho)"},
-        {"campo": "actividades", "tipo": "text", "nulo": false, "origen": "Persona", "dominio": "Texto libre", "pantalla": "Actividades realizadas", "regla": ""},
-        {"campo": "personal", "tipo": "text", "nulo": false, "origen": "Persona", "dominio": "Texto libre", "pantalla": "Personal de SEDEMA participante", "regla": ""},
-        {"campo": "apoyo", "tipo": "text", "nulo": false, "origen": "Persona", "dominio": "Texto libre, varias líneas", "pantalla": "Personal de apoyo", "regla": ""},
-        {"campo": "observaciones", "tipo": "text", "nulo": false, "origen": "Persona", "dominio": "Texto libre", "pantalla": "Observaciones", "regla": "Aquí se explica a mano una diferencia contra la meta"},
-        {"campo": "chofer", "tipo": "text", "nulo": false, "origen": "Persona", "dominio": "Texto libre", "pantalla": "Chófer", "regla": ""},
-        {"campo": "vehiculo_modelo", "tipo": "text", "nulo": false, "origen": "Persona", "dominio": "Texto libre", "pantalla": "Modelo del vehículo", "regla": "Un cierre anterior al bloque 20 traía `vehiculo` en un solo campo: se muestra aquí"},
-        {"campo": "vehiculo_placa", "tipo": "text", "nulo": false, "origen": "Persona", "dominio": "Texto libre", "pantalla": "Placa", "regla": ""},
-        {"campo": "hora", "tipo": "time", "nulo": false, "origen": "Persona", "dominio": "HH:MM; '' si no se elige", "pantalla": "Hora de finalización (selector)", "regla": ""}
+        {
+          "campo": "id",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "`fecha|cabo_id` o `fecha|TODOS`",
+          "pantalla": "No",
+          "regla": "Regenerar el parte del mismo día reabre el mismo cierre (Norma 7.6)"
+        },
+        {
+          "campo": "es_ficticio",
+          "tipo": "boolean",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "true/false",
+          "pantalla": "No",
+          "regla": "Copia de CONFIG.ES_FICTICIO (D87): la depuración de datos de prueba también alcanza a esta tabla"
+        },
+        {
+          "campo": "fecha",
+          "tipo": "date",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "AAAA-MM-DD",
+          "pantalla": "Encabezado del diálogo",
+          "regla": "El día del parte: cualquier día, no sólo hoy (D70)"
+        },
+        {
+          "campo": "cabo_id",
+          "tipo": "uuid",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "→ usuarios.id; '' si el parte es del día completo",
+          "pantalla": "No",
+          "regla": "El cabo por el que se filtró el parte"
+        },
+        {
+          "campo": "encargado_id",
+          "tipo": "uuid",
+          "nulo": true,
+          "origen": "Sesión",
+          "dominio": "→ usuarios.id",
+          "pantalla": "Encargado",
+          "regla": "Para un cabo es él mismo (no se pregunta); quien ve a varias personas lo elige sólo entre los cabos con registros ese día (D57)"
+        },
+        {
+          "campo": "creado_por_id",
+          "tipo": "uuid",
+          "nulo": false,
+          "origen": "Sesión",
+          "dominio": "→ usuarios.id",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "fecha_creacion",
+          "tipo": "timestamptz",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "ISO 8601",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "editado_por_id",
+          "tipo": "uuid",
+          "nulo": false,
+          "origen": "Sesión",
+          "dominio": "→ usuarios.id",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "fecha_ultima_edicion",
+          "tipo": "timestamptz",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "ISO 8601",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "sitio",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto libre; '' si no se escribe",
+          "pantalla": "Dirección o sitio",
+          "regla": "Nada se prellena (los partes varían mucho)"
+        },
+        {
+          "campo": "actividades",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto libre",
+          "pantalla": "Actividades realizadas",
+          "regla": ""
+        },
+        {
+          "campo": "personal",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto libre",
+          "pantalla": "Personal de SEDEMA participante",
+          "regla": ""
+        },
+        {
+          "campo": "apoyo",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto libre, varias líneas",
+          "pantalla": "Personal de apoyo",
+          "regla": ""
+        },
+        {
+          "campo": "observaciones",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto libre",
+          "pantalla": "Observaciones",
+          "regla": "Aquí se explica a mano una diferencia contra la meta"
+        },
+        {
+          "campo": "chofer",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto libre",
+          "pantalla": "Chófer",
+          "regla": ""
+        },
+        {
+          "campo": "vehiculo_modelo",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto libre",
+          "pantalla": "Modelo del vehículo",
+          "regla": "Un cierre anterior al bloque 20 traía `vehiculo` en un solo campo: se muestra aquí"
+        },
+        {
+          "campo": "vehiculo_placa",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto libre",
+          "pantalla": "Placa",
+          "regla": ""
+        },
+        {
+          "campo": "hora",
+          "tipo": "time",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "HH:MM; '' si no se elige",
+          "pantalla": "Hora de finalización (selector)",
+          "regla": ""
+        }
       ]
     },
     "bitacora": {
       "que_es": "Quién, cuándo y qué, en cada alta, edición, eliminación, activación y desactivación (Norma 7.7, D10). Sólo se escribe; se lee en el historial del detalle de cada registro.",
       "llave": "id",
-      "indices": ["entidad_id"],
+      "indices": [
+        "entidad_id"
+      ],
       "pantalla": "Historial del detalle de un registro",
       "campos": [
-        {"campo": "id", "tipo": "uuid", "nulo": false, "origen": "Sistema", "dominio": "UUID v4", "pantalla": "No", "regla": ""},
-        {"campo": "fecha", "tipo": "timestamptz", "nulo": false, "origen": "Sistema", "dominio": "ISO 8601", "pantalla": "Historial", "regla": ""},
-        {"campo": "usuario_id", "tipo": "uuid", "nulo": false, "origen": "Sesión", "dominio": "→ usuarios.id", "pantalla": "No", "regla": ""},
-        {"campo": "usuario_nombre", "tipo": "text", "nulo": false, "origen": "Sesión", "dominio": "Nombre completo", "pantalla": "Historial", "regla": "Copia a propósito: si la cuenta se elimina, el historial sigue diciendo quién actuó"},
-        {"campo": "perfil", "tipo": "text", "nulo": false, "origen": "Sesión", "dominio": "perfil", "pantalla": "Historial", "regla": "Con qué perfil actuó en ese momento"},
-        {"campo": "accion", "tipo": "text", "nulo": false, "origen": "Sistema", "dominio": "accion_bitacora", "pantalla": "Historial", "regla": ""},
-        {"campo": "entidad", "tipo": "text", "nulo": false, "origen": "Sistema", "dominio": "entidad_bitacora", "pantalla": "No", "regla": ""},
-        {"campo": "entidad_id", "tipo": "text", "nulo": false, "origen": "Sistema", "dominio": "id de la tabla correspondiente", "pantalla": "No", "regla": "Se escribe en la misma transacción que el dato (guardarConBitacora)"},
-        {"campo": "detalle", "tipo": "text", "nulo": false, "origen": "Sistema", "dominio": "Texto; '' si no aplica", "pantalla": "Historial", "regla": "En una edición, la lista de campos que cambiaron"}
+        {
+          "campo": "id",
+          "tipo": "uuid",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "UUID v4",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "es_ficticio",
+          "tipo": "boolean",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "true/false",
+          "pantalla": "No",
+          "regla": "Copia de CONFIG.ES_FICTICIO (D87): la depuración de datos de prueba también alcanza a esta tabla"
+        },
+        {
+          "campo": "fecha",
+          "tipo": "timestamptz",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "ISO 8601",
+          "pantalla": "Historial",
+          "regla": ""
+        },
+        {
+          "campo": "usuario_id",
+          "tipo": "uuid",
+          "nulo": false,
+          "origen": "Sesión",
+          "dominio": "→ usuarios.id",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "usuario_nombre",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Sesión",
+          "dominio": "Nombre completo",
+          "pantalla": "Historial",
+          "regla": "Copia a propósito: si la cuenta se elimina, el historial sigue diciendo quién actuó"
+        },
+        {
+          "campo": "perfil",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Sesión",
+          "dominio": "perfil",
+          "pantalla": "Historial",
+          "regla": "Con qué perfil actuó en ese momento"
+        },
+        {
+          "campo": "accion",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "accion_bitacora",
+          "pantalla": "Historial",
+          "regla": ""
+        },
+        {
+          "campo": "entidad",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "entidad_bitacora",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "entidad_id",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "id de la tabla correspondiente",
+          "pantalla": "No",
+          "regla": "Se escribe en la misma transacción que el dato (guardarConBitacora)"
+        },
+        {
+          "campo": "detalle",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "Texto; '' si no aplica",
+          "pantalla": "Historial",
+          "regla": "En una edición, la lista de campos que cambiaron"
+        }
       ]
     }
   },
   "relaciones": [
-    {"de": "plantaciones.cabo_id", "a": "usuarios.id", "cardinalidad": "N:1", "regla": "Obligatoria. Define el alcance: un cabo ve los suyos; un coordinador, los de los cabos con coordinador_id = él"},
-    {"de": "plantaciones.editado_por_id", "a": "usuarios.id", "cardinalidad": "N:1", "regla": "Opcional"},
-    {"de": "plantaciones.especie_id", "a": "catalogos.id (tipo especie)", "cardinalidad": "N:1", "regla": "Nula sólo con «Otra especie» (entonces especie_otra obligatoria y especie_estatus = PENDIENTE_VALIDACION)"},
-    {"de": "plantaciones.programa_id", "a": "catalogos.id (tipo programa)", "cardinalidad": "N:1", "regla": "Obligatoria"},
-    {"de": "plantaciones.alcaldia_cve / colonia_cve / uga", "a": "capas del SIA (alcaldías, colonias, UGA)", "cardinalidad": "N:1", "regla": "No son llaves foráneas en la base del dispositivo: son derivaciones del punto, con capa_version para rehacerlas"},
-    {"de": "usuarios.coordinador_id", "a": "usuarios.id", "cardinalidad": "N:1", "regla": "Sólo con perfil CABO; apunta a una cuenta COORDINADOR"},
-    {"de": "usuarios.area_id", "a": "catalogos.id (tipo area)", "cardinalidad": "N:1", "regla": "Obligatoria"},
-    {"de": "usuarios.alta_por_id / editado_por_id", "a": "usuarios.id", "cardinalidad": "N:1", "regla": ""},
-    {"de": "catalogos.creado_por_id / editado_por_id", "a": "usuarios.id", "cardinalidad": "N:1", "regla": "Nulo en las especies que vienen del SIA"},
-    {"de": "cierres.cabo_id / encargado_id / creado_por_id / editado_por_id", "a": "usuarios.id", "cardinalidad": "N:1", "regla": "cabo_id vacío ('') significa parte del día completo"},
-    {"de": "cierres (fecha, cabo_id)", "a": "plantaciones (fecha_plantacion, cabo_id)", "cardinalidad": "1:N lógica", "regla": "El parte de un día reúne las plantaciones activas con esa fecha_plantacion (y ese cabo); no hay llave: se calcula"},
-    {"de": "bitacora.entidad_id", "a": "plantaciones.id / usuarios.id / catalogos.id / cierres.id según entidad", "cardinalidad": "N:1", "regla": "Sin restricción de integridad: la bitácora sobrevive a la eliminación de la entidad"},
-    {"de": "bitacora.usuario_id", "a": "usuarios.id", "cardinalidad": "N:1", "regla": "Sin restricción: conserva usuario_nombre por si la cuenta desaparece"}
+    {
+      "de": "plantaciones.cabo_id",
+      "a": "usuarios.id",
+      "cardinalidad": "N:1",
+      "regla": "Obligatoria. Define el alcance: un cabo ve los suyos; un coordinador, los de los cabos con coordinador_id = él"
+    },
+    {
+      "de": "plantaciones.editado_por_id",
+      "a": "usuarios.id",
+      "cardinalidad": "N:1",
+      "regla": "Opcional"
+    },
+    {
+      "de": "plantaciones.especie_id",
+      "a": "catalogos.id (tipo especie)",
+      "cardinalidad": "N:1",
+      "regla": "Nula sólo con «Otra especie» (entonces especie_otra obligatoria y especie_estatus = PENDIENTE_VALIDACION)"
+    },
+    {
+      "de": "plantaciones.programa_id",
+      "a": "catalogos.id (tipo programa)",
+      "cardinalidad": "N:1",
+      "regla": "Obligatoria"
+    },
+    {
+      "de": "plantaciones.alcaldia_cve / colonia_cve / uga",
+      "a": "capas del SIA (alcaldías, colonias, UGA)",
+      "cardinalidad": "N:1",
+      "regla": "No son llaves foráneas en la base del dispositivo: son derivaciones del punto, con capa_version para rehacerlas"
+    },
+    {
+      "de": "usuarios.coordinador_id",
+      "a": "usuarios.id",
+      "cardinalidad": "N:1",
+      "regla": "Sólo con perfil CABO; apunta a una cuenta COORDINADOR"
+    },
+    {
+      "de": "usuarios.area_id",
+      "a": "catalogos.id (tipo area)",
+      "cardinalidad": "N:1",
+      "regla": "Obligatoria"
+    },
+    {
+      "de": "usuarios.alta_por_id / editado_por_id",
+      "a": "usuarios.id",
+      "cardinalidad": "N:1",
+      "regla": ""
+    },
+    {
+      "de": "catalogos.creado_por_id / editado_por_id",
+      "a": "usuarios.id",
+      "cardinalidad": "N:1",
+      "regla": "Nulo en las especies que vienen del SIA"
+    },
+    {
+      "de": "cierres.cabo_id / encargado_id / creado_por_id / editado_por_id",
+      "a": "usuarios.id",
+      "cardinalidad": "N:1",
+      "regla": "cabo_id vacío ('') significa parte del día completo"
+    },
+    {
+      "de": "cierres (fecha, cabo_id)",
+      "a": "plantaciones (fecha_plantacion, cabo_id)",
+      "cardinalidad": "1:N lógica",
+      "regla": "El parte de un día reúne las plantaciones activas con esa fecha_plantacion (y ese cabo); no hay llave: se calcula"
+    },
+    {
+      "de": "bitacora.entidad_id",
+      "a": "plantaciones.id / usuarios.id / catalogos.id / cierres.id según entidad",
+      "cardinalidad": "N:1",
+      "regla": "Sin restricción de integridad: la bitácora sobrevive a la eliminación de la entidad"
+    },
+    {
+      "de": "bitacora.usuario_id",
+      "a": "usuarios.id",
+      "cardinalidad": "N:1",
+      "regla": "Sin restricción: conserva usuario_nombre por si la cuenta desaparece"
+    }
   ],
   "derivados": [
-    {"campo": "plantaciones.alcaldia_cve, alcaldia", "de": "lat, lng contra assets/capa-alcaldias.js", "cuando": "Cada vez que el punto se coloca o se mueve (js/derivacion.js derivar); al editar, con el punto vigente", "ver": "Alcaldía como campo de sólo lectura"},
-    {"campo": "plantaciones.colonia_cve, colonia", "de": "lat, lng contra assets/capa-colonias.js (la más pequeña si hay solape)", "cuando": "Ídem", "ver": "Colonia como campo de sólo lectura"},
-    {"campo": "plantaciones.uga", "de": "lat, lng contra assets/capa-uga.js", "cuando": "Ídem", "ver": "No se ve"},
-    {"campo": "plantaciones.capa_version", "de": "meta.version de cada capa cargada", "cuando": "Ídem", "ver": "No se ve"},
-    {"campo": "plantaciones.punto_origen, gps_precision_m", "de": "La acción con la que se colocó el punto (botón GPS, toque en el mapa, captura a mano, arrastre)", "cuando": "Al colocar el punto", "ver": "«Cómo se obtuvo»"},
-    {"campo": "plantaciones.especie_estatus", "de": "especie_id nula o no", "cuando": "Al guardar", "ver": "No se ve"},
-    {"campo": "plantaciones.lat_original, lng_original", "de": "lat, lng del primer guardado", "cuando": "Sólo en el alta", "ver": "No se ve"},
-    {"campo": "plantaciones.cabo_id", "de": "La sesión", "cuando": "En el alta; se conserva al editar", "ver": "Encabezado y ficha"},
-    {"campo": "plantaciones.foto_bytes, foto_id", "de": "La imagen comprimida", "cuando": "Al elegir la foto", "ver": "Ficha de la foto"},
-    {"campo": "catalogos.genero, especie", "de": "nombre_cientifico", "cuando": "Al guardar una especie", "ver": "No se ven"},
-    {"campo": "catalogos.clave (especie)", "de": "Máximo ESP-0000 en uso + 1", "cuando": "Al abrir el alta", "ver": "Clave (sólo lectura)"},
-    {"campo": "cierres.id", "de": "fecha + cabo_id", "cuando": "Al aceptar el cierre", "ver": "No se ve"},
-    {"campo": "cierres.encargado_id", "de": "La sesión si es cabo; elección entre cabos con registros ese día si no", "cuando": "Al abrir el cierre", "ver": "Encargado"},
-    {"campo": "bitacora.usuario_id, usuario_nombre, perfil", "de": "La sesión", "cuando": "En cada movimiento", "ver": "Historial"}
+    {
+      "campo": "plantaciones.alcaldia_cve, alcaldia",
+      "de": "lat, lng contra assets/capa-alcaldias.js",
+      "cuando": "Cada vez que el punto se coloca o se mueve (js/derivacion.js derivar); al editar, con el punto vigente",
+      "ver": "Alcaldía como campo de sólo lectura"
+    },
+    {
+      "campo": "plantaciones.colonia_cve, colonia",
+      "de": "lat, lng contra assets/capa-colonias.js (la más pequeña si hay solape)",
+      "cuando": "Ídem",
+      "ver": "Colonia como campo de sólo lectura"
+    },
+    {
+      "campo": "plantaciones.uga",
+      "de": "lat, lng contra assets/capa-uga.js",
+      "cuando": "Ídem",
+      "ver": "No se ve"
+    },
+    {
+      "campo": "plantaciones.capa_version",
+      "de": "meta.version de cada capa cargada",
+      "cuando": "Ídem",
+      "ver": "No se ve"
+    },
+    {
+      "campo": "plantaciones.punto_origen, gps_precision_m",
+      "de": "La acción con la que se colocó el punto (botón GPS, toque en el mapa, captura a mano, arrastre)",
+      "cuando": "Al colocar el punto",
+      "ver": "«Cómo se obtuvo»"
+    },
+    {
+      "campo": "plantaciones.especie_estatus",
+      "de": "especie_id nula o no",
+      "cuando": "Al guardar",
+      "ver": "No se ve"
+    },
+    {
+      "campo": "plantaciones.lat_original, lng_original",
+      "de": "lat, lng del primer guardado",
+      "cuando": "Sólo en el alta",
+      "ver": "No se ve"
+    },
+    {
+      "campo": "plantaciones.cabo_id",
+      "de": "La sesión",
+      "cuando": "En el alta; se conserva al editar",
+      "ver": "Encabezado y ficha"
+    },
+    {
+      "campo": "plantaciones.foto_bytes, foto_id",
+      "de": "La imagen comprimida",
+      "cuando": "Al elegir la foto",
+      "ver": "Ficha de la foto"
+    },
+    {
+      "campo": "catalogos.genero, especie",
+      "de": "nombre_cientifico",
+      "cuando": "Al guardar una especie",
+      "ver": "No se ven"
+    },
+    {
+      "campo": "catalogos.clave (especie)",
+      "de": "Máximo ESP-0000 en uso + 1",
+      "cuando": "Al abrir el alta",
+      "ver": "Clave (sólo lectura)"
+    },
+    {
+      "campo": "cierres.id",
+      "de": "fecha + cabo_id",
+      "cuando": "Al aceptar el cierre",
+      "ver": "No se ve"
+    },
+    {
+      "campo": "cierres.encargado_id",
+      "de": "La sesión si es cabo; elección entre cabos con registros ese día si no",
+      "cuando": "Al abrir el cierre",
+      "ver": "Encargado"
+    },
+    {
+      "campo": "bitacora.usuario_id, usuario_nombre, perfil",
+      "de": "La sesión",
+      "cuando": "En cada movimiento",
+      "ver": "Historial"
+    }
   ],
   "calculados_no_guardados": [
-    {"que": "Nombre común y científico de la especie, nombre del programa, nombre del cabo", "de": "Los ids contra catalogos y usuarios (SRP.ref)", "donde": "Lista, detalle, ficha, PDF"},
-    {"que": "Folio en pantalla y PDF (PROVISIONAL mientras folio sea nulo) y etiqueta de campo folio · especie · alcaldía · fecha", "de": "SRP.folio.texto / etiqueta", "donde": "Ficha, lista, PDF"},
-    {"que": "Totales del parte: ejemplares, conteo por especie, resumen por programa, alcaldía del sitio", "de": "Las plantaciones del día", "donde": "PDF (Norma 10.2: nunca se capturan)"},
-    {"que": "Uso de cada valor de catálogo y de cada cuenta (N registros)", "de": "Conteo de plantaciones (incluidos eliminados)", "donde": "Catálogos y Usuarios; decide si se puede eliminar"},
-    {"que": "Cuenta de registros guardados en el dispositivo (alcance de la sesión)", "de": "plantaciones activas que alcanza el perfil", "donde": "Pastilla de conexión, aviso de guardado, Reportes (D83)"},
-    {"que": "Alcance y acciones permitidas", "de": "perfil contra SRP.PERFILES", "donde": "Toda la interfaz; en Fase 2 se impone en el servidor"},
-    {"que": "`dentro` (el punto cae en alguna alcaldía)", "de": "derivar()", "donde": "Sólo para avisar de un hueco de capa; no se guarda"}
+    {
+      "que": "Nombre común y científico de la especie, nombre del programa, nombre del cabo",
+      "de": "Los ids contra catalogos y usuarios (SRP.ref)",
+      "donde": "Lista, detalle, ficha, PDF"
+    },
+    {
+      "que": "Folio en pantalla y PDF (PROVISIONAL mientras folio sea nulo) y etiqueta de campo folio · especie · alcaldía · fecha",
+      "de": "SRP.folio.texto / etiqueta",
+      "donde": "Ficha, lista, PDF"
+    },
+    {
+      "que": "Totales del parte: ejemplares, conteo por especie, resumen por programa, alcaldía del sitio",
+      "de": "Las plantaciones del día",
+      "donde": "PDF (Norma 10.2: nunca se capturan)"
+    },
+    {
+      "que": "Uso de cada valor de catálogo y de cada cuenta (N registros)",
+      "de": "Conteo de plantaciones (incluidos eliminados)",
+      "donde": "Catálogos y Usuarios; decide si se puede eliminar"
+    },
+    {
+      "que": "Cuenta de registros guardados en el dispositivo (alcance de la sesión)",
+      "de": "plantaciones activas que alcanza el perfil",
+      "donde": "Pastilla de conexión, aviso de guardado, Reportes (D83)"
+    },
+    {
+      "que": "Alcance y acciones permitidas",
+      "de": "perfil contra SRP.PERFILES",
+      "donde": "Toda la interfaz; en Fase 2 se impone en el servidor"
+    },
+    {
+      "que": "`dentro` (el punto cae en alguna alcaldía)",
+      "de": "derivar()",
+      "donde": "Sólo para avisar de un hueco de capa; no se guarda"
+    },
+    {
+      "que": "Registros con fotografía y peso acumulado (para la solicitud de disco a ADIP)",
+      "de": "plantaciones activas con foto_base64; suma de foto_bytes",
+      "donde": "Reportes → «Registros en este dispositivo», y resumen del respaldo (D87)"
+    },
+    {
+      "que": "El PDF del parte del día",
+      "de": "cierres + plantaciones del día; no se guarda el archivo, se regenera",
+      "donde": "Reportes (D58, D70)"
+    }
   ],
   "efimeros": [
-    {"nombre": "SRP.formulario.estado.idPrevisto", "que": "UUID que se fija al abrir la ficha de revisión y se convierte en plantaciones.id al guardar", "desaparece": "Al guardar, al cancelar o al ir a Registros; el siguiente registro genera otro"},
-    {"nombre": "SRP.formulario.estado.territorio", "que": "Resultado de derivar() del punto vigente (incluye `dentro`)", "desaparece": "Al limpiar el formulario; se vuelve a calcular con cada punto"},
-    {"nombre": "SRP.formulario.estado.foto / fotoId / fotoNombre / fotoBytes", "que": "La imagen comprimida en memoria antes de guardar", "desaparece": "Al quitar la foto o limpiar; se vuelven null / '' / 0"},
-    {"nombre": "SRP.formulario.estado.especieId", "que": "La especie elegida (o `__otra__`)", "desaparece": "Se anula en cuanto se teclea en el campo; sin ella el registro no pasa la validación"},
-    {"nombre": "SRP.formulario.estado.editando", "que": "El registro que se está corrigiendo (copia completa)", "desaparece": "Al guardar o cancelar la edición"},
-    {"nombre": "SRP.mapa.lat / lng / origen / precision", "que": "El punto vigente y cómo se obtuvo", "desaparece": "Al limpiar; `precision` se borra al mover el punto sin GPS"},
-    {"nombre": "SRP.reportes.contexto", "que": "{registros, fecha, cabo_id, previo} de lo que se va a reportar", "desaparece": "Al cerrar el diálogo de cierre"},
-    {"nombre": "SRP.registros.filtro y periodoAbierto", "que": "Estado de los filtros (Hoy/Todos/periodo, año, mes, cabo)", "desaparece": "Al entrar de nuevo a la vista se reinicia a Hoy"},
-    {"nombre": "SRP.catalogos.uso, SRP.usuarios.uso", "que": "Conteos de uso calculados al abrir la vista", "desaparece": "Se recalculan en cada preparar()"},
-    {"nombre": "SRP.catalogos.claveTocada / editando", "que": "Si la persona escribió la clave a mano; qué valor se edita", "desaparece": "Al cerrar el diálogo"},
-    {"nombre": "SRP.ref.catalogos / usuarios / catalogoPorId / usuarioPorId", "que": "Copias en memoria de las dos tablas de referencia", "desaparece": "Se recargan con recargar() tras cada cambio"},
-    {"nombre": "SRP.sesion.usuario", "que": "La cuenta con sesión abierta (objeto completo)", "desaparece": "Al cerrar sesión; el id persiste en localStorage"}
+    {
+      "nombre": "SRP.formulario.estado.idPrevisto",
+      "que": "UUID que se fija al abrir la ficha de revisión y se convierte en plantaciones.id al guardar",
+      "desaparece": "Al guardar, al cancelar o al ir a Registros; el siguiente registro genera otro"
+    },
+    {
+      "nombre": "SRP.formulario.estado.territorio",
+      "que": "Resultado de derivar() del punto vigente (incluye `dentro`)",
+      "desaparece": "Al limpiar el formulario; se vuelve a calcular con cada punto"
+    },
+    {
+      "nombre": "SRP.formulario.estado.foto / fotoId / fotoNombre / fotoBytes",
+      "que": "La imagen comprimida en memoria antes de guardar",
+      "desaparece": "Al quitar la foto o limpiar; se vuelven null / '' / 0"
+    },
+    {
+      "nombre": "SRP.formulario.estado.especieId",
+      "que": "La especie elegida (o `__otra__`)",
+      "desaparece": "Se anula en cuanto se teclea en el campo; sin ella el registro no pasa la validación"
+    },
+    {
+      "nombre": "SRP.formulario.estado.editando",
+      "que": "El registro que se está corrigiendo (copia completa)",
+      "desaparece": "Al guardar o cancelar la edición"
+    },
+    {
+      "nombre": "SRP.mapa.lat / lng / origen / precision",
+      "que": "El punto vigente y cómo se obtuvo",
+      "desaparece": "Al limpiar; `precision` se borra al mover el punto sin GPS"
+    },
+    {
+      "nombre": "SRP.reportes.contexto",
+      "que": "{registros, fecha, cabo_id, previo} de lo que se va a reportar",
+      "desaparece": "Al cerrar el diálogo de cierre"
+    },
+    {
+      "nombre": "SRP.registros.filtro y periodoAbierto",
+      "que": "Estado de los filtros (Hoy/Todos/periodo, año, mes, cabo)",
+      "desaparece": "Al entrar de nuevo a la vista se reinicia a Hoy"
+    },
+    {
+      "nombre": "SRP.catalogos.uso, SRP.usuarios.uso",
+      "que": "Conteos de uso calculados al abrir la vista",
+      "desaparece": "Se recalculan en cada preparar()"
+    },
+    {
+      "nombre": "SRP.catalogos.claveTocada / editando",
+      "que": "Si la persona escribió la clave a mano; qué valor se edita",
+      "desaparece": "Al cerrar el diálogo"
+    },
+    {
+      "nombre": "SRP.ref.catalogos / usuarios / catalogoPorId / usuarioPorId",
+      "que": "Copias en memoria de las dos tablas de referencia",
+      "desaparece": "Se recargan con recargar() tras cada cambio"
+    },
+    {
+      "nombre": "SRP.sesion.usuario",
+      "que": "La cuenta con sesión abierta (objeto completo)",
+      "desaparece": "Al cerrar sesión; el id persiste en localStorage"
+    }
   ],
   "campos_condicionales": [
-    {"campo": "plantaciones.especie_otra", "aparece": "Sólo al elegir «Otra especie»", "se_vacia": "Al elegir una especie del catálogo ('')"},
-    {"campo": "plantaciones.especie_id", "aparece": "Con especie del catálogo", "se_vacia": "Con «Otra especie» (null)"},
-    {"campo": "plantaciones.gps_precision_m", "aparece": "Sólo con punto_origen = gps", "se_vacia": "Al tocar el mapa, capturar a mano o arrastrar (null)"},
-    {"campo": "plantaciones.foto_base64, foto_id, foto_nombre, foto_bytes", "aparece": "Al elegir una foto", "se_vacia": "Al quitarla (null, null, '', 0)"},
-    {"campo": "usuarios.coordinador_id", "aparece": "Sólo con perfil CABO", "se_vacia": "Al cambiar a otro perfil (null)"},
-    {"campo": "catalogos.nombre_cientifico … nota_discrepancia", "aparece": "Sólo en tipo = especie", "se_vacia": "No existen en programas ni áreas"},
-    {"campo": "cierres.cabo_id", "aparece": "Con parte filtrado por cabo", "se_vacia": "'' en el parte del día completo"},
-    {"campo": "cierres.vehiculo (legado)", "aparece": "Sólo en cierres guardados antes del bloque 20", "se_vacia": "Se lee como vehiculo_modelo; no se vuelve a escribir"}
+    {
+      "campo": "plantaciones.especie_otra",
+      "aparece": "Sólo al elegir «Otra especie»",
+      "se_vacia": "Al elegir una especie del catálogo ('')"
+    },
+    {
+      "campo": "plantaciones.especie_id",
+      "aparece": "Con especie del catálogo",
+      "se_vacia": "Con «Otra especie» (null)"
+    },
+    {
+      "campo": "plantaciones.gps_precision_m",
+      "aparece": "Sólo con punto_origen = gps",
+      "se_vacia": "Al tocar el mapa, capturar a mano o arrastrar (null)"
+    },
+    {
+      "campo": "plantaciones.foto_base64, foto_id, foto_nombre, foto_bytes",
+      "aparece": "Al elegir una foto",
+      "se_vacia": "Al quitarla (null, null, '', 0)"
+    },
+    {
+      "campo": "usuarios.coordinador_id",
+      "aparece": "Sólo con perfil CABO",
+      "se_vacia": "Al cambiar a otro perfil (null)"
+    },
+    {
+      "campo": "catalogos.nombre_cientifico … nota_discrepancia",
+      "aparece": "Sólo en tipo = especie",
+      "se_vacia": "No existen en programas ni áreas"
+    },
+    {
+      "campo": "cierres.cabo_id",
+      "aparece": "Con parte filtrado por cabo",
+      "se_vacia": "'' en el parte del día completo"
+    },
+    {
+      "campo": "cierres.vehiculo (legado)",
+      "aparece": "Sólo en cierres guardados antes del bloque 20",
+      "se_vacia": "Se lee como vehiculo_modelo; no se vuelve a escribir"
+    }
   ],
   "reglas_fase1": [
-    {"id": "R-P01", "tabla": "plantaciones", "regla": "Ubicación obligatoria (botón GPS, toque en el mapa o captura a mano) y dentro del ámbito de la CDMX (CONFIG.MAPA.LIMITES)", "donde": "js/formulario.js validar(); js/mapa.js colocar()"},
-    {"id": "R-P02", "tabla": "plantaciones", "regla": "Especie obligatoria: de la lista de activas, o «Otra especie» con texto", "donde": "js/formulario.js validar()"},
-    {"id": "R-P03", "tabla": "plantaciones", "regla": "Programa obligatorio, sin preselección; sólo programas activos (más el del registro que se edita, aunque esté inactivo)", "donde": "js/formulario.js llenarProgramas(), validar()"},
-    {"id": "R-P04", "tabla": "plantaciones", "regla": "Fecha de plantación obligatoria y no posterior a hoy; arranca vacía en cada registro", "donde": "js/formulario.js validar(); campo-fecha.max"},
-    {"id": "R-P05", "tabla": "plantaciones", "regla": "Comentarios hasta 500 caracteres", "donde": "index.html maxlength"},
-    {"id": "R-P06", "tabla": "plantaciones", "regla": "La foto se comprime a ≤ 800×600 JPEG 0.7 antes de guardarse; foto_bytes es el peso comprimido", "donde": "js/foto.js comprimir(); CONFIG.FOTO"},
-    {"id": "R-P07", "tabla": "plantaciones", "regla": "Territorio (alcaldía, colonia, UGA, capa_version) se rederiva con cada movimiento del punto; nunca se teclea. Sin alcaldía se guarda y se avisa; sin colonia es normal fuera de zona urbana", "donde": "js/formulario.js alMoverPunto(); js/derivacion.js"},
-    {"id": "R-P08", "tabla": "plantaciones", "regla": "gps_precision_m existe si y sólo si punto_origen = gps", "donde": "js/mapa.js colocar(); pruebas/auditoria.py"},
-    {"id": "R-P09", "tabla": "plantaciones", "regla": "El formulario arranca en blanco en cada registro: nada se hereda del anterior (ni programa, ni fecha, ni punto)", "donde": "js/formulario.js limpiar(), nuevoRegistro()"},
-    {"id": "R-P10", "tabla": "plantaciones", "regla": "Al editar se conservan id, cabo_id, lat_original/lng_original, fecha_registro y los folio*; se actualizan fecha_ultima_edicion y editado_por_id, y la bitácora lista los campos cambiados", "donde": "js/formulario.js registroPrevisto(), guardar()"},
-    {"id": "R-P11", "tabla": "plantaciones", "regla": "Eliminar marca estatus = eliminado (con bitácora); nunca se borra el renglón", "donde": "js/registros.js eliminar()"},
-    {"id": "R-P12", "tabla": "plantaciones", "regla": "Folio y campos folio_* nacen nulos y no se tocan en el dispositivo; la pantalla y el PDF dicen PROVISIONAL", "donde": "js/folio.js; js/formulario.js registroPrevisto()"},
-    {"id": "R-A01", "tabla": "todas", "regla": "Alcance por perfil: CABO ve/edita/elimina los suyos; COORDINADOR ve y edita los de sus cabos, no elimina; ADMIN todo, no captura; VIEWER sólo ve", "donde": "js/permisos.js (fuente única); la interfaz sólo lo refleja"},
-    {"id": "R-A02", "tabla": "todas", "regla": "Toda alta, edición, eliminación, activación y desactivación escribe bitácora en la misma transacción", "donde": "js/almacen.js guardarConBitacora(), borrarConBitacora()"},
-    {"id": "R-U01", "tabla": "usuarios", "regla": "Nombre, apellido paterno, correo válido y único (insensible a mayúsculas/acentos), área, cargo y perfil válido obligatorios; el correo no cambia después", "donde": "js/usuarios.js validar()"},
-    {"id": "R-U02", "tabla": "usuarios", "regla": "coordinador_id sólo con perfil CABO; con otro perfil se pone nulo", "donde": "js/usuarios.js guardar()"},
-    {"id": "R-U03", "tabla": "usuarios", "regla": "Una cuenta de administración no puede quitarse a sí misma el perfil ADMIN", "donde": "js/usuarios.js validar()"},
-    {"id": "R-U04", "tabla": "usuarios", "regla": "Con registros a su nombre no se elimina: se desactiva. Inactiva no puede entrar; sus registros siguen a su nombre", "donde": "js/usuarios.js eliminar(), cambiarEstado(); js/sesion.js autenticar()"},
-    {"id": "R-C01", "tabla": "catalogos", "regla": "Nombre obligatorio y único por tipo; clave `[A-Z0-9_]{2,30}` única por tipo (programas y áreas), fija después de guardar", "donde": "js/catalogos.js validar()"},
-    {"id": "R-C02", "tabla": "catalogos", "regla": "Especies: científico obligatorio con formato «Genus epíteto» y único; clave ESP-0000 consecutiva que asigna el sistema; id = clave; género y epíteto derivados; id_snib `número+ANGIO|GIMNO`; id_enciclovida entero", "donde": "js/catalogos.js validar(), guardar(), siguienteClaveEspecie()"},
-    {"id": "R-C03", "tabla": "catalogos", "regla": "Con uso (registros o cuentas) no se elimina: se desactiva. Inactivo deja de ofrecerse; lo ya guardado no cambia", "donde": "js/catalogos.js eliminar(), cambiarEstado()"},
-    {"id": "R-C04", "tabla": "catalogos", "regla": "Las 76 especies del SIA se siembran desde assets/catalogo-especies.js (generado del Excel); para cambiarlas se corrige el Excel y se regenera", "donde": "pruebas/generar_especies.py; js/datos-ficticios.js"},
-    {"id": "R-R01", "tabla": "cierres", "regla": "El parte es de un solo día (cualquiera, no sólo hoy) y reúne las plantaciones activas con esa fecha_plantacion en el alcance del perfil, filtrables por cabo; regenerar el mismo día reabre el mismo cierre", "donde": "js/reportes.js registrosDelDia(), abrir(), claveCierre()"},
-    {"id": "R-R02", "tabla": "cierres", "regla": "Todos los campos del cierre son opcionales y ninguno se prellena; el encargado sale de la sesión o se elige entre los cabos con registros ese día", "donde": "js/reportes.js prepararEncargado()"},
-    {"id": "R-F01", "tabla": "plantaciones", "regla": "Filtros de Registros: Hoy / Todos / Un periodo (Desde ≤ Hasta, entra con Aplicar), Año y Mes sólo con registros, Cabo según alcance; ningún control mueve el foco solo (D82)", "donde": "js/registros.js"},
-    {"id": "R-D01", "tabla": "todas", "regla": "Siembra: al abrir con sello distinto de CONFIG.SELLO_DATOS se restablecen las cinco tablas con los datos de arranque (sólo con ES_FICTICIO)", "donde": "js/almacen.js sembrarSiVacio(); js/config.js"},
-    {"id": "R-D02", "tabla": "plantaciones, cierres, bitacora", "regla": "Respaldo: archivo JSON con las tres tablas; restaurar sólo agrega lo que no existe (por id), nunca sobreescribe", "donde": "js/conexion.js respaldar(), restaurar()"}
+    {
+      "id": "R-P01",
+      "tabla": "plantaciones",
+      "regla": "Ubicación obligatoria (botón GPS, toque en el mapa o captura a mano) y dentro del ámbito de la CDMX (CONFIG.MAPA.LIMITES)",
+      "donde": "js/formulario.js validar(); js/mapa.js colocar()"
+    },
+    {
+      "id": "R-P02",
+      "tabla": "plantaciones",
+      "regla": "Especie obligatoria: de la lista de activas, o «Otra especie» con texto",
+      "donde": "js/formulario.js validar()"
+    },
+    {
+      "id": "R-P03",
+      "tabla": "plantaciones",
+      "regla": "Programa obligatorio, sin preselección; sólo programas activos (más el del registro que se edita, aunque esté inactivo)",
+      "donde": "js/formulario.js llenarProgramas(), validar()"
+    },
+    {
+      "id": "R-P04",
+      "tabla": "plantaciones",
+      "regla": "Fecha de plantación obligatoria y no posterior a hoy; arranca vacía en cada registro",
+      "donde": "js/formulario.js validar(); campo-fecha.max"
+    },
+    {
+      "id": "R-P05",
+      "tabla": "plantaciones",
+      "regla": "Comentarios hasta 500 caracteres",
+      "donde": "index.html maxlength"
+    },
+    {
+      "id": "R-P06",
+      "tabla": "plantaciones",
+      "regla": "La foto se comprime a ≤ 800×600 JPEG 0.7 antes de guardarse; foto_bytes es el peso comprimido",
+      "donde": "js/foto.js comprimir(); CONFIG.FOTO"
+    },
+    {
+      "id": "R-P07",
+      "tabla": "plantaciones",
+      "regla": "Territorio (alcaldía, colonia, UGA, capa_version) se rederiva con cada movimiento del punto; nunca se teclea. Sin alcaldía se guarda y se avisa; sin colonia es normal fuera de zona urbana",
+      "donde": "js/formulario.js alMoverPunto(); js/derivacion.js"
+    },
+    {
+      "id": "R-P08",
+      "tabla": "plantaciones",
+      "regla": "gps_precision_m existe si y sólo si punto_origen = gps",
+      "donde": "js/mapa.js colocar(); pruebas/auditoria.py"
+    },
+    {
+      "id": "R-P09",
+      "tabla": "plantaciones",
+      "regla": "El formulario arranca en blanco en cada registro: nada se hereda del anterior (ni programa, ni fecha, ni punto)",
+      "donde": "js/formulario.js limpiar(), nuevoRegistro()"
+    },
+    {
+      "id": "R-P10",
+      "tabla": "plantaciones",
+      "regla": "Al editar se conservan id, cabo_id, lat_original/lng_original, fecha_registro y los folio*; se actualizan fecha_ultima_edicion y editado_por_id, y la bitácora lista los campos cambiados",
+      "donde": "js/formulario.js registroPrevisto(), guardar()"
+    },
+    {
+      "id": "R-P11",
+      "tabla": "plantaciones",
+      "regla": "Eliminar marca estatus = eliminado (con bitácora); nunca se borra el renglón",
+      "donde": "js/registros.js eliminar()"
+    },
+    {
+      "id": "R-P12",
+      "tabla": "plantaciones",
+      "regla": "Folio y campos folio_* nacen nulos y no se tocan en el dispositivo; la pantalla y el PDF dicen PROVISIONAL",
+      "donde": "js/folio.js; js/formulario.js registroPrevisto()"
+    },
+    {
+      "id": "R-A01",
+      "tabla": "todas",
+      "regla": "Alcance por perfil: CABO ve/edita/elimina los suyos; COORDINADOR registra, ve y edita los de sus cabos, no elimina; ADMIN todo, no captura. Un perfil desconocido no alcanza nada",
+      "donde": "js/permisos.js (fuente única); la interfaz sólo lo refleja"
+    },
+    {
+      "id": "R-A02",
+      "tabla": "todas",
+      "regla": "Toda alta, edición, eliminación, activación y desactivación escribe bitácora en la misma transacción",
+      "donde": "js/almacen.js guardarConBitacora(), borrarConBitacora()"
+    },
+    {
+      "id": "R-U01",
+      "tabla": "usuarios",
+      "regla": "Nombre, apellido paterno, correo válido y único (insensible a mayúsculas/acentos), área, cargo y perfil válido obligatorios; el correo no cambia después",
+      "donde": "js/usuarios.js validar()"
+    },
+    {
+      "id": "R-U02",
+      "tabla": "usuarios",
+      "regla": "coordinador_id sólo con perfil CABO; con otro perfil se pone nulo",
+      "donde": "js/usuarios.js guardar()"
+    },
+    {
+      "id": "R-U03",
+      "tabla": "usuarios",
+      "regla": "Una cuenta de administración no puede quitarse a sí misma el perfil ADMIN",
+      "donde": "js/usuarios.js validar()"
+    },
+    {
+      "id": "R-U04",
+      "tabla": "usuarios",
+      "regla": "Con registros a su nombre no se elimina: se desactiva. Inactiva no puede entrar; sus registros siguen a su nombre",
+      "donde": "js/usuarios.js eliminar(), cambiarEstado(); js/sesion.js autenticar()"
+    },
+    {
+      "id": "R-C01",
+      "tabla": "catalogos",
+      "regla": "Nombre obligatorio y único por tipo; clave `[A-Z0-9_]{2,30}` única por tipo (programas y áreas), fija después de guardar",
+      "donde": "js/catalogos.js validar()"
+    },
+    {
+      "id": "R-C02",
+      "tabla": "catalogos",
+      "regla": "Especies: científico obligatorio con formato «Genus epíteto» y único; clave ESP-0000 consecutiva que asigna el sistema; id = clave; género y epíteto derivados; id_snib `número+ANGIO|GIMNO`; id_enciclovida entero",
+      "donde": "js/catalogos.js validar(), guardar(), siguienteClaveEspecie()"
+    },
+    {
+      "id": "R-C03",
+      "tabla": "catalogos",
+      "regla": "Con uso (registros o cuentas) no se elimina: se desactiva. Inactivo deja de ofrecerse; lo ya guardado no cambia",
+      "donde": "js/catalogos.js eliminar(), cambiarEstado()"
+    },
+    {
+      "id": "R-C04",
+      "tabla": "catalogos",
+      "regla": "Las 76 especies del SIA se siembran desde assets/catalogo-especies.js (generado del Excel); para cambiarlas se corrige el Excel y se regenera",
+      "donde": "pruebas/generar_especies.py; js/datos-ficticios.js"
+    },
+    {
+      "id": "R-R01",
+      "tabla": "cierres",
+      "regla": "El parte es de un solo día (cualquiera, no sólo hoy) y reúne las plantaciones activas con esa fecha_plantacion en el alcance del perfil, filtrables por cabo; regenerar el mismo día reabre el mismo cierre",
+      "donde": "js/reportes.js registrosDelDia(), abrir(), claveCierre()"
+    },
+    {
+      "id": "R-R02",
+      "tabla": "cierres",
+      "regla": "Todos los campos del cierre son opcionales y ninguno se prellena; el encargado sale de la sesión o se elige entre los cabos con registros ese día",
+      "donde": "js/reportes.js prepararEncargado()"
+    },
+    {
+      "id": "R-F01",
+      "tabla": "plantaciones",
+      "regla": "Filtros de Registros: Hoy / Todos / Un periodo (Desde ≤ Hasta, entra con Aplicar), Año y Mes sólo con registros, Cabo según alcance; ningún control mueve el foco solo (D82)",
+      "donde": "js/registros.js"
+    },
+    {
+      "id": "R-D01",
+      "tabla": "todas",
+      "regla": "Siembra: al abrir con sello distinto de CONFIG.SELLO_DATOS se restablecen las cinco tablas con los datos de arranque (sólo con ES_FICTICIO)",
+      "donde": "js/almacen.js sembrarSiVacio(); js/config.js"
+    },
+    {
+      "id": "R-D02",
+      "tabla": "plantaciones, cierres, bitacora",
+      "regla": "Respaldo: archivo JSON con las cinco tablas y un resumen de fotografías; restaurar sólo agrega lo que no existe (por id), nunca sobreescribe",
+      "donde": "js/conexion.js respaldar(), restaurar()"
+    }
   ],
   "reglas_fase2": [
-    {"id": "S-01", "que": "Cola de envío", "detalle": "Cada registro guardado queda en cola (guardado → enviado → con error); envío automático en segundo plano con señal, «Enviar ahora», y nada se borra del dispositivo hasta que el servidor confirme. Requiere dos campos nuevos en plantaciones: identificador del servidor y marca de envío (retirados en D17 por no tener uso todavía)", "referencia": "DECISIONES, pendiente «Cola de envío al servidor»; D83"},
-    {"id": "S-02", "que": "Emisión del folio", "detalle": "Tabla de secuencias por celda UGA y año; asignación en transacción con plantaciones.id como clave de idempotencia (R3–R6); se congelan folio_uga, folio_capa_version, folio_lat, folio_lng (R8). Sólo con la malla UGA corregida, versionada y congelada", "referencia": "D67; js/folio.js; pendiente «Emisión del folio»"},
-    {"id": "S-03", "que": "Integridad referencial y unicidad en la base", "detalle": "FK de todas las relaciones de arriba; UNIQUE en usuarios.correo, catalogos (tipo, clave), catalogos (tipo, nombre), catalogos.nombre_cientifico; CHECK de los dominios; la bitácora sin FK a propósito", "referencia": "Esta tabla de relaciones"},
-    {"id": "S-04", "que": "Permisos en el servidor", "detalle": "Las reglas de js/permisos.js se imponen en la API (Norma 7.1); la pantalla sólo las refleja. Autenticación con el proveedor institucional: sólo cambia autenticar() en js/sesion.js", "referencia": "js/permisos.js; D05"},
-    {"id": "S-05", "que": "Posible duplicado", "detalle": "Aviso al sincronizar cuando otro registro cae a menos de la incertidumbre combinada de ambos puntos (suma de gps_precision_m, piso 5 m), en el servidor; nunca con 5 m fijos", "referencia": "D69"},
-    {"id": "S-06", "que": "Bandeja de especies fuera de catálogo", "detalle": "Donde el SIA resuelve cada PENDIENTE_VALIDACION: alta en el catálogo (siguiente ESP-0000) o reasignación a una existente; al resolverse cambia especie_id y especie_estatus, nunca el folio", "referencia": "D68"},
-    {"id": "S-07", "que": "Fotografías a archivo", "detalle": "foto_base64 sale del renglón y se guarda como archivo referido por foto_id, como en los otros módulos del SIA", "referencia": "Pendiente «Dónde viven las fotografías»"},
-    {"id": "S-08", "que": "Rederivación territorial por versión de capa", "detalle": "Al sustituir alcaldías, UGA y colonias por las definitivas, se recalculan alcaldia_cve, alcaldia, colonia_cve, colonia y uga de todo registro cuyo capa_version sea anterior; folio_* no se toca", "referencia": "Pendiente «sustituir las tres capas»"},
-    {"id": "S-09", "que": "Depuración de datos de prueba", "detalle": "Antes de liberar: eliminar todo renglón con es_ficticio = true en plantaciones, usuarios y catalogos, y los cierres y bitácora asociados; cierres y bitacora no llevan es_ficticio (pendiente en DECISIONES)", "referencia": "CONFIG.ES_FICTICIO"},
-    {"id": "S-10", "que": "Restauración por el servidor", "detalle": "El respaldo del dispositivo se entrega al servidor con el mismo esquema; restaurar deja de vivir en las herramientas de prueba", "referencia": "js/conexion.js"}
+    {
+      "id": "S-01",
+      "que": "Cola de envío",
+      "detalle": "Cada registro guardado queda en cola (guardado → enviado → con error); envío automático en segundo plano con señal, «Enviar ahora», y nada se borra del dispositivo hasta que el servidor confirme. Requiere dos campos nuevos en plantaciones: identificador del servidor y marca de envío (retirados en D17 por no tener uso todavía)",
+      "referencia": "DECISIONES, pendiente «Cola de envío al servidor»; D83"
+    },
+    {
+      "id": "S-02",
+      "que": "Emisión del folio",
+      "detalle": "Tabla de secuencias por celda UGA y año; asignación en transacción con plantaciones.id como clave de idempotencia (R3–R6); se congelan folio_uga, folio_capa_version, folio_lat, folio_lng (R8). Sólo con la malla UGA corregida, versionada y congelada",
+      "referencia": "D67; js/folio.js; pendiente «Emisión del folio»"
+    },
+    {
+      "id": "S-03",
+      "que": "Integridad referencial y unicidad en la base",
+      "detalle": "FK de todas las relaciones de arriba; UNIQUE en usuarios.correo, catalogos (tipo, clave), catalogos (tipo, nombre), catalogos.nombre_cientifico; CHECK de los dominios; la bitácora sin FK a propósito",
+      "referencia": "Esta tabla de relaciones"
+    },
+    {
+      "id": "S-04",
+      "que": "Permisos en el servidor",
+      "detalle": "Las reglas de js/permisos.js se imponen en la API (Norma 7.1); la pantalla sólo las refleja. Autenticación con el proveedor institucional: sólo cambia autenticar() en js/sesion.js",
+      "referencia": "js/permisos.js; D05"
+    },
+    {
+      "id": "S-05",
+      "que": "Posible duplicado",
+      "detalle": "Aviso al sincronizar cuando otro registro cae a menos de la incertidumbre combinada de ambos puntos (suma de gps_precision_m, piso 5 m), en el servidor; nunca con 5 m fijos",
+      "referencia": "D69"
+    },
+    {
+      "id": "S-06",
+      "que": "Bandeja de especies fuera de catálogo",
+      "detalle": "Donde el SIA resuelve cada PENDIENTE_VALIDACION: alta en el catálogo (siguiente ESP-0000) o reasignación a una existente; al resolverse cambia especie_id y especie_estatus, nunca el folio",
+      "referencia": "D68"
+    },
+    {
+      "id": "S-07",
+      "que": "Fotografías a archivo",
+      "detalle": "foto_base64 sale del renglón y se guarda como archivo referido por foto_id, como en los otros módulos del SIA",
+      "referencia": "Pendiente «Dónde viven las fotografías»"
+    },
+    {
+      "id": "S-08",
+      "que": "Rederivación territorial por versión de capa",
+      "detalle": "Al sustituir alcaldías, UGA y colonias por las definitivas, se recalculan alcaldia_cve, alcaldia, colonia_cve, colonia y uga de todo registro cuyo capa_version sea anterior; folio_* no se toca",
+      "referencia": "Pendiente «sustituir las tres capas»"
+    },
+    {
+      "id": "S-09",
+      "que": "Depuración de datos de prueba",
+      "detalle": "Antes de liberar: eliminar todo renglón con es_ficticio = true en las cinco tablas (desde D87 cierres y bitacora también llevan la marca)",
+      "referencia": "CONFIG.ES_FICTICIO"
+    },
+    {
+      "id": "S-10",
+      "que": "Restauración por el servidor",
+      "detalle": "El respaldo del dispositivo se entrega al servidor con el mismo esquema; restaurar deja de vivir en las herramientas de prueba",
+      "referencia": "js/conexion.js"
+    }
   ],
   "capas": [
-    {"capa": "alcaldías", "archivo": "assets/capa-alcaldias.js (fuente assets/fuentes/alcaldias_cdmx.json)", "version": "sia-2026-09-21", "alimenta": "alcaldia_cve, alcaldia", "estado": "De prueba: 3 solapes y 5 huecos medidos en el bloque 15; el SIA corrige en la fuente"},
-    {"capa": "malla UGA", "archivo": "assets/capa-uga.js (fuente assets/fuentes/ugasdata.wgs84.json)", "version": "sia-2026-09-21", "alimenta": "uga (y folio_uga en Fase 2)", "estado": "De prueba: 8 claves con prefijo distinto a su alcaldía; sin fecha de corte confirmada"},
-    {"capa": "colonias", "archivo": "assets/capa-colonias.js (fuente assets/fuentes/colonias_iecm2022.geojson)", "version": "iecm-2022-prueba", "alimenta": "colonia_cve, colonia", "estado": "De prueba: cartografía electoral del IECM 2022, no un catálogo del SIA"},
-    {"capa": "catálogo de especies", "archivo": "assets/catalogo-especies.js (fuente assets/fuentes/CGO_ESPECIES_REFORESTACION_URBANA_2026-09-22.xlsx)", "version": "2026-09-22", "alimenta": "catalogos (tipo especie)", "estado": "Definitivo (D84)"}
+    {
+      "capa": "alcaldías",
+      "archivo": "assets/capa-alcaldias.js (fuente assets/fuentes/alcaldias_cdmx.json)",
+      "version": "sia-2026-09-21",
+      "alimenta": "alcaldia_cve, alcaldia",
+      "estado": "De prueba: 3 solapes y 5 huecos medidos en el bloque 15; el SIA corrige en la fuente"
+    },
+    {
+      "capa": "malla UGA",
+      "archivo": "assets/capa-uga.js (fuente assets/fuentes/ugasdata.wgs84.json)",
+      "version": "sia-2026-09-21",
+      "alimenta": "uga (y folio_uga en Fase 2)",
+      "estado": "De prueba: 8 claves con prefijo distinto a su alcaldía; sin fecha de corte confirmada"
+    },
+    {
+      "capa": "colonias",
+      "archivo": "assets/capa-colonias.js (fuente assets/fuentes/colonias_iecm2022.geojson)",
+      "version": "iecm-2022-prueba",
+      "alimenta": "colonia_cve, colonia",
+      "estado": "De prueba: cartografía electoral del IECM 2022, no un catálogo del SIA"
+    },
+    {
+      "capa": "catálogo de especies",
+      "archivo": "assets/catalogo-especies.js (fuente assets/fuentes/CGO_ESPECIES_REFORESTACION_URBANA_2026-09-22.xlsx)",
+      "version": "2026-09-22",
+      "alimenta": "catalogos (tipo especie)",
+      "estado": "Definitivo (D84)"
+    }
   ]
 }

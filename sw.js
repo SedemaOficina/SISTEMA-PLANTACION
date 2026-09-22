@@ -20,7 +20,10 @@ async function archivosDeLaPagina() {
   const r = await fetch(PAGINA + '?v=' + VERSION, { cache: 'no-store' });
   const html = await r.text();
   const propios = [...html.matchAll(/(?:src|href)="((?!https?:)[^"]+\?v=[^"]+)"/g)].map(m => m[1]);
-  return [PAGINA + '?v=' + VERSION, './manifest.webmanifest'].concat(propios);
+  // Las tipografías se piden desde el CSS sin marca, así que van en lista explícita (D87);
+  // cambian con la versión del worker igual que todo lo demás
+  const fuentes = ['cabin', 'roboto-regular', 'roboto-medium', 'roboto-bold'].map(f => './vendor/fuentes/' + f + '.woff2');
+  return [PAGINA + '?v=' + VERSION, './manifest.webmanifest'].concat(propios, fuentes);
 }
 
 self.addEventListener('install', (e) => {

@@ -3,6 +3,15 @@
    Una regla nueva va en su bloque, nunca al final. Sólo clases; sin !important salvo reduced-motion. */
 
 /* ========== 1. VARIABLES ========== */
+/* TIPOGRAFÍAS LOCALES (D87). Cabin (variable, 400–700) y Roboto (400, 500, 700) viven en
+   vendor/fuentes/ en woff2 con subconjunto latino, ~110 KB en total: la identidad se ve igual con o
+   sin señal. El service worker las guarda con la app (sw.js, lista explícita). Cabin bajo OFL
+   (vendor/fuentes/Cabin-OFL.txt); Roboto bajo Apache 2.0. */
+@font-face { font-family: 'Cabin'; src: url('../vendor/fuentes/cabin.woff2') format('woff2'); font-weight: 400 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Roboto'; src: url('../vendor/fuentes/roboto-regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Roboto'; src: url('../vendor/fuentes/roboto-medium.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Roboto'; src: url('../vendor/fuentes/roboto-bold.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+
 :root {
   --guinda: #9D2148;
   --guinda-oscuro: #7A1838;
