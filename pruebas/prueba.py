@@ -73,6 +73,9 @@ with sync_playwright() as p:
     orden=pg.evaluate("""()=>{const t=document.getElementById('vista-registrar').innerHTML;
         return [t.indexOf('btn-ubicacion'), t.indexOf('coord-manual'), t.indexOf('id="mapa"')];}""")
     ok(orden[0]<orden[1]<orden[2],'orden: botón de ubicación, captura a mano y luego el mapa')
+    rev=pg.evaluate("(() => { const b=document.getElementById('btn-revisar'); const r=b.getBoundingClientRect(); const m=document.getElementById('form-plantacion').getBoundingClientRect(); return { verde: getComputedStyle(b).backgroundColor, icono: !!b.querySelector('svg'), alto: Math.round(r.height), ancho: Math.round(r.width), formulario: Math.round(m.width) }; })()")
+    ok(rev['verde']=='rgb(31, 107, 62)' and rev['icono'] and rev['alto']>=56 and rev['ancho']>=rev['formulario']-2,
+       'Revisar y guardar es verde, con disco, alto y de margen a margen en teléfono: %s' % rev)
     ok(pg.locator('.leaflet-marker-icon').count()==0,'la ubicación no se pide sola')
     # Aquí las teselas no cargan (la red de la sesión bloquea al proveedor) y ese aviso pisa al
     # inicial. Lo que se comprueba es lo que importa: el mapa nunca queda mudo sobre qué hacer.
@@ -278,6 +281,8 @@ with sync_playwright() as p:
     ok(pg.inner_text('button[data-campo=especie]').strip()=='Editar','la ficha usa la palabra Editar')
     ok(HOY_TXT in pg.inner_text('#revision-lista'),'las fechas se leen con el mes en letras: '+HOY_TXT)
     ok('PROVISIONAL' in pg.inner_text('#revision-lista .folio-provisional'),'la ficha muestra el folio como PROVISIONAL (R1)')
+    fijo=pg.evaluate("(() => { const d=document.getElementById('dlg-resumen'); d.scrollTop=600; const c=d.querySelector('.dialogo-cabecera').getBoundingClientRect(); const b=document.getElementById('btn-resumen-guardar').getBoundingClientRect(); const dr=d.getBoundingClientRect(); d.scrollTop=0; return { arriba: Math.round(c.top-dr.top), botonVisible: b.top>=dr.top && b.bottom<=dr.bottom, sticky: getComputedStyle(d.querySelector('.dialogo-cabecera')).position }; })()")
+    ok(fijo['sticky']=='sticky' and fijo['botonVisible'] and fijo['arriba']<=8,'Guardar y Corregir quedan fijos arriba aunque se desplace la ficha (D74): %s' % fijo)
     ok(pg.evaluate("SRP.formulario.registroPrevisto().especie_estatus")=='VALIDADA' and
        pg.evaluate("SRP.formulario.valores.call(Object.assign({}, SRP.formulario, {estado: Object.assign({}, SRP.formulario.estado, {especieId: SRP.formulario.OTRA})})).especie_estatus")=='PENDIENTE_VALIDACION',
        '«Otra especie» deja el registro PENDIENTE_VALIDACION; una de catálogo, VALIDADA (D68)')
@@ -367,6 +372,11 @@ with sync_playwright() as p:
     ok(pg.is_hidden('#filtro-desde'),'el rango viene plegado')
     pg.click('.chip[data-atajo=periodo]'); pg.wait_for_timeout(200)
     ok(pg.is_visible('#filtro-desde') and pg.get_attribute('.chip[data-atajo=periodo]','aria-expanded')=='true','«Un periodo» abre Desde/Hasta (D64)')
+    ok(pg.evaluate("document.activeElement.id")=='filtro-desde','y deja el foco en Desde para elegir de inmediato (D75)')
+    pg.fill('#filtro-desde','2026-07-01'); pg.wait_for_timeout(200)
+    ok(pg.evaluate("document.activeElement.id")=='filtro-hasta','al elegir Desde, el foco pasa a Hasta')
+    pg.fill('#filtro-hasta','2026-07-31'); pg.wait_for_timeout(300)
+    ok('Total: 1 ' in pg.inner_text('#registros-total') and pg.get_attribute('.chip[data-atajo=periodo]','aria-pressed')=='true','y al elegir Hasta el periodo se aplica solo: '+pg.inner_text('#registros-total'))
     pg.fill('#filtro-desde','2026-09-30'); pg.fill('#filtro-hasta','2026-09-01'); pg.click('#btn-filtrar'); pg.wait_for_timeout(300)
     ok('posterior' in pg.inner_text('#aviso'),'un rango invertido se rechaza')
     pg.fill('#filtro-desde','2026-08-01'); pg.fill('#filtro-hasta','2026-08-31'); pg.click('#btn-filtrar'); pg.wait_for_timeout(300)

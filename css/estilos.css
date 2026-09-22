@@ -147,6 +147,8 @@ main:focus { outline: none; }
 .btn-icono-solo { min-width: var(--toque); padding: 0; flex-shrink: 0; }
 .btn-chico { min-height: 40px; padding: 0 var(--e-3); font-size: var(--t-s); }
 .btn-ancho { width: 100%; max-width: 22rem; }
+/* La acción que cierra el formulario: más alta y con letra mayor; en teléfono, de margen a margen */
+.btn-destacado { min-height: 56px; font-size: var(--t-m); font-weight: 600; }
 
 .campo { margin-bottom: var(--e-4); border: 0; padding: 0; min-width: 0; }
 .campo label, .campo legend { display: block; font-weight: 500; margin-bottom: var(--e-1); }
@@ -312,6 +314,10 @@ main:focus { outline: none; }
 
 dialog { width: min(40rem, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); border: 0; border-top: 4px solid var(--guinda); border-radius: var(--radio); padding: var(--e-5); }
 dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
+/* Cabecera fija del diálogo: se queda arriba mientras el cuerpo se desplaza; el fondo tapa lo que pasa debajo */
+.dialogo-cabecera { position: sticky; top: calc(-1 * var(--e-5)); z-index: 1; margin: calc(-1 * var(--e-5)) calc(-1 * var(--e-5)) var(--e-3); padding: var(--e-4) var(--e-5) var(--e-3); background: var(--fondo); border-bottom: 1px solid var(--borde-suave); }
+.dialogo-cabecera h2 { margin-top: 0; }
+.acciones-cabecera { margin-top: var(--e-2); }
 
 .aviso {
   position: fixed; left: 50%; bottom: var(--e-5); transform: translateX(-50%); z-index: 3000;
@@ -359,6 +365,7 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
   .encabezado-acciones { flex: 1 0 100%; justify-content: flex-start; }
   .campo-doble { grid-template-columns: 1fr; }
   .campo-triple { grid-template-columns: 1fr; }
+  .btn-destacado { max-width: none; }
   .revision-fila { grid-template-columns: 1fr auto; }
   .revision-fila-sola { grid-template-columns: 1fr; }
   .revision-fila dt { grid-column: 1 / -1; }

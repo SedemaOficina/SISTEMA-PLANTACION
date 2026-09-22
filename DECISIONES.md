@@ -265,3 +265,19 @@
   agrega lo que no existe y nunca sobreescribe, y la prueba automatizada hace el viaje completo a
   un dispositivo limpio. En Fase 2 la restauración la hará el servidor a partir del mismo archivo.
   Incluido con el visto bueno de Liber.
+
+## Bloque 26 — Tres ajustes del formulario en teléfono
+
+- **D73. «Revisar y guardar» es verde, con el disco de guardar, más alto y de margen a margen en
+  teléfono.** Verde porque en la escala de color del sistema es el color de guardar y confirmar
+  (Norma 8.4: el color no va solo; lleva icono y palabra); el disco porque es el signo que todo el
+  mundo lee como «guardar». Pedido por Liber.
+- **D74. En la ficha «Revise antes de guardar», título y acciones quedan fijos arriba.** La ficha
+  es larga (mapa, doce datos, foto) y «Guardar» al pie se perdía: había que desplazarse hasta el
+  final para encontrarlo. La cabecera es pegajosa dentro del diálogo: Guardar y Corregir están
+  siempre a la vista, y la lista se desplaza por debajo. Pedido por Liber.
+- **D75. «Un periodo» abre el selector de fecha, y las fechas se encadenan.** Al tocar el atajo se
+  abre el selector nativo de «Desde» (o queda el foco en él, si el navegador exige un gesto más
+  reciente); al elegir Desde se abre «Hasta»; al elegir Hasta el periodo se aplica solo.
+  «Aplicar» sigue ahí para corregir un extremo. Es el mismo criterio de avance automático del
+  foco del formulario: al resolver un campo, el siguiente está listo. Señalado por Liber.

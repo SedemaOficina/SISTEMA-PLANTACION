@@ -45,6 +45,7 @@ SRP.formulario = {
       this.el('etq-foto').focus();
     });
     this.el('form-plantacion').addEventListener('submit', (e) => { e.preventDefault(); this.revisar(); });
+    this.el('btn-revisar').innerHTML = SRP.ICONOS.svg('disco', 22) + '<span>Revisar y guardar</span>';
     this.el('btn-resumen-guardar').innerHTML = SRP.ICONOS.svg('palomita') + '<span>Guardar</span>';
     this.el('btn-resumen-corregir').innerHTML = SRP.ICONOS.svg('lapiz') + '<span>Corregir</span>';
     this.el('btn-resumen-corregir').addEventListener('click', () => this.el('dlg-resumen').close());

@@ -42,6 +42,13 @@ SRP.registros = {
       this.filtro.cabo = this.el('filtro-cabo').value;
       this.aplicar();
     });
+    // Al elegir Desde se abre Hasta; al elegir Hasta se aplica solo. «Aplicar» queda para corregir (D75)
+    this.el('filtro-desde').addEventListener('change', () => {
+      if (this.el('filtro-desde').value && !this.el('filtro-hasta').value) this.abrirSelector('filtro-hasta');
+    });
+    this.el('filtro-hasta').addEventListener('change', () => {
+      if (this.el('filtro-desde').value && this.el('filtro-hasta').value) this.el('btn-filtrar').click();
+    });
     this.el('btn-filtrar').addEventListener('click', () => {
       const desde = this.el('filtro-desde').value;
       const hasta = this.el('filtro-hasta').value;
@@ -161,7 +168,7 @@ SRP.registros = {
     if (atajo === 'periodo') {
       this.periodoAbierto = true;
       this.sincronizarControles();
-      this.el('filtro-desde').focus();
+      this.abrirSelector('filtro-desde');
       return;
     }
     f.dia = '';
@@ -172,6 +179,15 @@ SRP.registros = {
     this.llenarMeses();            // ajusta el mes si ese año no tiene registros de ese mes
     this.sincronizarControles();
     this.aplicar();
+  },
+
+  /* Abre el selector nativo de fecha si el navegador lo permite (showPicker necesita un gesto
+     reciente de la persona); si no, deja el foco en el campo, que en el teléfono ya lo abre. */
+  abrirSelector(id) {
+    const campo = this.el(id);
+    campo.focus({ preventScroll: true });
+    campo.scrollIntoView({ block: 'center' });
+    try { if (typeof campo.showPicker === 'function') campo.showPicker(); } catch (e) { /* sin gesto reciente: queda el foco */ }
   },
 
   limpiarRango() {

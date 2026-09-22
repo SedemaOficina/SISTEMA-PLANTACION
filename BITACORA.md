@@ -596,3 +596,18 @@ Marca de versión 0.6.6.
 
 **Pendientes anotados:** icono definitivo de la identidad gráfica; tipografías alojadas en
 `vendor/` si se quiere la identidad completa sin señal.
+
+## Bloque 26 — Tres ajustes del formulario en teléfono (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.7.
+
+**Qué cambió.** «Revisar y guardar» pasa a verde con icono de disco, 56 px de alto y ancho
+completo en teléfono (D73); nuevo icono `disco` en `iconos.js`. En la ficha de revisión, el título
+y los botones Guardar y Corregir van en una cabecera pegajosa: no se pierden al desplazar (D74).
+En Registros, «Un periodo» abre el selector de Desde, Desde encadena a Hasta y Hasta aplica el
+periodo (D75); `abrirSelector()` usa `showPicker()` cuando el navegador lo permite y deja el
+foco si no.
+
+**Verificación:** sintaxis; 220 comprobaciones del recorrido (cinco nuevas: color, icono, alto y
+ancho del botón; cabecera fija con el botón visible tras desplazar; foco en Desde, paso a Hasta y
+aplicación automática), sin errores de consola; 45 de auditoría; presentación sin desbordes; sin
+selectores duplicados ni clases sin uso. Marca de versión 0.6.7.
