@@ -714,3 +714,30 @@ nombre con aviso, nombres que señalan a varias, tabla con distribución, cuatro
 en Catálogos por otros nombres, clave consecutiva fija, validaciones y guardado de la especie
 nueva, inactiva fuera del formulario), sin errores de consola; 45 de auditoría con el mapeo al
 día; presentación sin desbordes. Marca de versión 0.6.13.
+
+## Bloque 33 — Inventario de tablas y diccionario de datos (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.14 (sólo cambia la marca y la etapa; no hay cambios
+funcionales).
+
+**Qué se hizo (D86).** `esquema.json` nuevo: 5 tablas, 94 campos con tipo, nulo, origen,
+dominio, pantalla y regla; 12 dominios con su fuente en el código; 13 relaciones; 14 campos
+derivados; 7 cálculos que no se guardan; 12 estados efímeros; 8 campos condicionales; 27 reglas
+de Fase 1 con el archivo donde viven; 10 reglas de Fase 2; 4 capas/catálogos externos.
+`pruebas/generar_diccionario.py` lo convierte en `DICCIONARIO-DATOS.md` (13 secciones, con el
+borrador de tablas PostgreSQL). `pruebas/auditoria.py` gana 30 comprobaciones: almacenes,
+campos por tabla, llaves e índices, dominios contra el código, acciones y entidades de bitácora,
+relaciones, diccionario regenerado y rastro de términos superados en la documentación vigente.
+Prueba negativa hecha: quitar un campo o un valor del esquema hace fallar la auditoría.
+
+**Auditoría de la documentación (pedida por Liber).** Hallazgos y qué se hizo: (1) D02–D06 y
+D12 seguían con «registrador» y «jefe de registradores»: se anotan como superadas y se registra
+D85; el pendiente sobre el «Jefe» se reescribe con el término vigente. (2) MAPEO decía que
+`es_ficticio` está «en los cuatro almacenes»: son tres (plantaciones, usuarios, catalogos); cierres
+y bitácora no la llevan, queda como pendiente de decisión. (3) El perfil Consulta (`VIEWER`) sigue
+en el código sin cuenta, mientras Liber cuenta tres perfiles: pendiente de decisión, no se retira
+sin confirmar. (4) El respaldo no lleva usuarios ni catalogos: pendiente. (5) `programa_id` y
+`area_id` se tipifican como texto (los ids de arranque no son UUID). README: sección «Modelo de
+datos» y regla en «Al cerrar un bloque».
+
+**Verificación:** sintaxis; 237 comprobaciones del recorrido; 81 de auditoría; presentación sin
+desbordes. Marca de versión 0.6.14.

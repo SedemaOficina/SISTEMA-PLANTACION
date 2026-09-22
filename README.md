@@ -74,6 +74,9 @@ assets/capa-alcaldias.js, capa-uga.js, capa-colonias.js  Las mismas capas, compa
 assets/catalogo-especies.js  Catálogo real de especies (76), generado por pruebas/generar_especies.py
 assets/logo.js        Logotipo SEDEMA incrustado
 js/espejo.js          Espejo de campos, sólo en la versión de prueba (se elimina al cerrar la Etapa 1)
+esquema.json          Fuente única del modelo de datos (D86)
+DICCIONARIO-DATOS.md  Inventario de tablas y diccionario de datos, generado de esquema.json
+MAPEO-CAMPOS.md       Campos vistos por pantalla: etiqueta ↔ campo, obligatorio, origen
 vendor/               Bibliotecas incluidas localmente (Leaflet, jsPDF, Turf)
 ```
 
@@ -87,6 +90,11 @@ versión se escribe en un solo lugar.
 
 Si aun así alguien cae en una mezcla, el sistema lo detecta al abrir y explica cómo forzar la
 recarga, en vez de quedarse en blanco.
+
+**Si el bloque tocó algún campo** (nuevo, retirado, otro dominio, otra regla): se actualiza
+`esquema.json`, se regenera el diccionario con `python3 pruebas/generar_diccionario.py` y se
+ajusta `MAPEO-CAMPOS.md`. No es opcional: `pruebas/auditoria.py` falla si el esquema y el
+sistema no guardan lo mismo o si el diccionario no está regenerado (D86).
 
 ## Si cambian los datos de arranque
 
@@ -155,6 +163,16 @@ tiene folio**: lo asigna el servidor una sola vez al sincronizar, y la pantalla 
 PROVISIONAL. `js/folio.js` guarda el patrón, la validación y la etiqueta de campo —lo que el
 servidor reutilizará—; la emisión no existe todavía y depende de que el SIA entregue la malla UGA
 corregida y congelada (DECISIONES D67–D69 y pendientes).
+
+## Modelo de datos
+
+`esquema.json` es la fuente única del modelo: las cinco tablas del dispositivo con cada campo
+(tipo, nulo, origen, dominio, si se ve en pantalla, regla), los dominios y de dónde salen, las
+relaciones, los campos derivados del punto o de la sesión, lo que se calcula y no se guarda, el
+estado que vive sólo en memoria, los campos condicionales, las reglas vigentes con el archivo donde
+viven y las que esperan al servidor. `DICCIONARIO-DATOS.md` se genera de ahí y trae además el
+borrador de tablas PostgreSQL para la Fase 2. `MAPEO-CAMPOS.md` es la misma información vista por
+pantalla (etiqueta ↔ campo). Los tres se auditan (D86).
 
 ## Catálogo de especies
 

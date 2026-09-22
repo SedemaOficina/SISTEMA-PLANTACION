@@ -16,6 +16,11 @@ viejos = ['registrador', 'Registrador', 'REGISTRADOR', 'jefe_id', "'JEFE'", 'Jef
 for termino in viejos:
     donde = [os.path.basename(f) for f in archivos if termino in open(f).read()]
     mirar(not donde, 'sin rastro de «%s» en el código' % termino, ', '.join(donde))
+# Los documentos vigentes tampoco (DECISIONES y BITACORA son historia y conservan lo viejo con nota)
+docs = [APP+'/README.md', APP+'/MAPEO-CAMPOS.md', APP+'/DICCIONARIO-DATOS.md', APP+'/esquema.json']
+for termino in ['Jefe de registradores', 'registrador', '`grupo`', 'cuatro almacenes', 'e-001']:
+    donde = [os.path.basename(f) for f in docs if os.path.exists(f) and termino in open(f, encoding='utf-8').read()]
+    mirar(not donde, 'sin rastro de «%s» en la documentación vigente' % termino, ', '.join(donde))
 
 with sync_playwright() as p:
     b = p.chromium.launch(); pg = b.new_page(); errores = []
@@ -181,6 +186,44 @@ with sync_playwright() as p:
     inventados = sorted(c for c in documentados if '_' in c and c not in guardados
                         and not c.startswith('nombre_cientifico'))
     mirar(not inventados, 'y el mapeo no inventa campos que no existen', str(inventados))
+
+    # --- 5. esquema.json: la fuente única del modelo de datos (D86) ---
+    import json, sys
+    esquema = json.load(open(os.path.join(APP, 'esquema.json'), encoding='utf-8'))
+    almacenes = pg.evaluate("SRP.almacen.ALMACENES")
+    mirar(sorted(esquema['tablas']) == sorted(almacenes) == sorted(esquema['almacenamiento']['tablas']),
+          'el esquema describe exactamente los almacenes que existen', '%s vs %s' % (sorted(esquema['tablas']), sorted(almacenes)))
+    for tabla, def_ in esquema['tablas'].items():
+        en_esquema = set(c['campo'] for c in def_['campos'])
+        en_codigo = set(reales.get(tabla, []))
+        faltan = sorted(en_codigo - en_esquema); sobran = sorted(en_esquema - en_codigo)
+        mirar(not faltan and not sobran, 'esquema.json y el sistema guardan los mismos campos en `%s`' % tabla,
+              ('faltan en el esquema: %s; ' % faltan if faltan else '') + ('sobran en el esquema: %s' % sobran if sobran else ''))
+        for c in def_['campos']:
+            if c['dominio'] in esquema['dominios'] or c['dominio'].startswith('→') or 'dominio' not in c: continue
+    indices = pg.evaluate("(() => { const r = {}; for (const n of SRP.almacen.db.objectStoreNames) { const s = SRP.almacen.db.transaction(n).objectStore(n); r[n] = { llave: s.keyPath, indices: [...s.indexNames] }; } return r; })()")
+    for tabla, def_ in esquema['tablas'].items():
+        mirar(indices[tabla]['llave'] == def_['llave'] and sorted(indices[tabla]['indices']) == sorted(def_['indices']),
+              'llave e índices de `%s` son los del esquema' % tabla, str(indices[tabla]))
+    for nombre, dom in esquema['dominios'].items():
+        if 'codigo' in dom:
+            en_codigo = pg.evaluate(dom['codigo'])
+            mirar(sorted(en_codigo) == sorted(dom['valores']), 'el dominio `%s` coincide con el código' % nombre, '%s vs %s' % (sorted(en_codigo), sorted(dom['valores'])))
+    acciones = set(re.findall(r"bitacora\.entrada\('([A-Z_]+)'", ''.join(open(f, encoding='utf-8').read() for f in glob.glob(APP+'/js/*.js'))))
+    acciones |= set(re.findall(r"'(ACTIVADO|DESACTIVADO)'", ''.join(open(f, encoding='utf-8').read() for f in glob.glob(APP+'/js/*.js'))))
+    mirar(acciones == set(esquema['dominios']['accion_bitacora']['valores']), 'las acciones de bitácora del código son las del esquema', str(sorted(acciones)))
+    entidades = set(re.findall(r"bitacora\.entrada\([^,]+, '([a-z]+)'", ''.join(open(f, encoding='utf-8').read() for f in glob.glob(APP+'/js/*.js'))))
+    mirar(entidades == set(esquema['dominios']['entidad_bitacora']['valores']), 'las entidades de bitácora del código son las del esquema', str(sorted(entidades)))
+    # Toda relación apunta a una tabla que existe y todo campo «→» tiene su relación
+    for r in esquema['relaciones']:
+        destino = r['a'].split('.')[0].split(' ')[0]
+        mirar(destino in esquema['tablas'] or destino.startswith('capas'), 'la relación %s → %s apunta a una tabla del esquema' % (r['de'], r['a']))
+    # El diccionario está regenerado
+    sys.path.insert(0, os.path.join(APP, 'pruebas'))
+    import generar_diccionario
+    generado = generar_diccionario.generar(esquema)
+    actual = open(os.path.join(APP, 'DICCIONARIO-DATOS.md'), encoding='utf-8').read()
+    mirar(generado == actual, 'DICCIONARIO-DATOS.md está regenerado a partir de esquema.json', 'corra pruebas/generar_diccionario.py')
     b.close()
 
 malos = [h for h in hallazgos if not h[0]]

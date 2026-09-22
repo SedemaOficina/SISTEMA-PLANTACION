@@ -5,7 +5,9 @@ completo en el módulo que lo origina; donde se reutiliza se anota con una remis
 describir dos veces la misma cosa y que las dos descripciones acaben diciendo cosas distintas.
 
 Este documento se comprueba solo: `pruebas/auditoria.py` compara esta lista contra los campos que
-el sistema guarda de verdad y avisa si alguno sobra o falta.
+el sistema guarda de verdad y avisa si alguno sobra o falta. La vista por tabla —tipos, llaves,
+índices, dominios, relaciones, reglas y el borrador de la base de la Fase 2— está en
+`DICCIONARIO-DATOS.md`, generado de `esquema.json` (D86).
 
 Mientras dure la Etapa 1, la pantalla de registro lleva al pie un **espejo de campos** que enseña
 en vivo los que aquí aparecen con «—» en la columna de etiqueta: los que viajan a la base sin tener
@@ -198,7 +200,7 @@ cuenta. Lo que ya vive en los registros —especies, conteos, alcaldía— no se
 | `catalogos.id` (programa) | Catálogos | `plantaciones.programa_id` |
 | `catalogos.id` (área) | Catálogos | `usuarios.area_id` |
 | `activo` | Cuentas y Catálogos | Mismo significado en los dos: deja de ofrecerse o de poder entrar, sin borrar nada |
-| `es_ficticio` | Todos | Marca de dato de prueba, en los cuatro almacenes |
+| `es_ficticio` | Plantaciones, cuentas y catálogos | Marca de dato de prueba. `cierres` y `bitacora` no la llevan (pendiente en DECISIONES) |
 | `fecha_ultima_edicion` + `editado_por_id` | Todos | Mismo par en plantaciones, cuentas, catálogos y cierres |
 
 ---

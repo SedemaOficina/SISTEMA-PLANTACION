@@ -3,17 +3,17 @@
 | # | Decisión | Motivo |
 |---|---|---|
 | D01 | Dos fases: Fase 1 local sin servidor; Fase 2 servidor, API y sincronización | Probar el flujo de campo antes de invertir en infraestructura |
-| D02 | Cuatro perfiles: Registrador, Jefe de registradores, Administración global (SIA), Consulta | Definido por Liber, 21-09-2026 |
-| D03 | Jefe edita registros de su equipo; en producción aparece en Fase 2 | Definido por Liber |
-| D04 | Los cuatro perfiles se simulan desde Fase 1 | Definido por Liber: estructura lista antes de datos reales |
+| D02 | Cuatro perfiles: Registrador, Jefe de registradores, Administración global (SIA), Consulta | Definido por Liber, 21-09-2026. **Términos superados por D85**: hoy son Cabo, Coordinador, Administración global y Consulta (`CABO`, `COORDINADOR`, `ADMIN`, `VIEWER`); Consulta está definido en código y sin cuenta, por confirmar |
+| D03 | Jefe edita registros de su equipo; en producción aparece en Fase 2 | Definido por Liber. **Léase Coordinador (D85)**: edita los de sus cabos, no elimina |
+| D04 | Los cuatro perfiles se simulan desde Fase 1 | Definido por Liber: estructura lista antes de datos reales. Las cuentas de arranque son tres (Administración, Coordinador, Cabo) |
 | D05 | Usuarios en tabla USUARIOS de la base (Fase 2); en Fase 1, almacén `usuarios` | Definido por Liber |
-| D06 | Registrador se da de alta con nombre, apellidos, área y cargo-rol; queda fijo en el dispositivo | Cada dispositivo = un registrador |
+| D06 | Registrador se da de alta con nombre, apellidos, área y cargo-rol; queda fijo en el dispositivo | Cada dispositivo = un registrador. **Léase cabo (D85)**; la cuenta también lleva correo y coordinador |
 | D07 | Editor de catálogos sólo para Administración global, en pestaña «Catálogos» | Definido por Liber |
 | D08 | Un valor de catálogo con uso no se elimina: se desactiva | Auditoría completa; los registros conservan su valor |
 | D09 | Catálogos iniciales: programas Reforestación Urbana y Centro Histórico; áreas Dirección de Infraestructura Verde y Coordinación del SIA | Definido por Liber |
 | D10 | Toda alta, edición, eliminación, activación y desactivación queda en bitácora (quién, cuándo, perfil, campos) | Norma 7.7; definido por Liber |
 | D11 | Eliminar un registro lo marca `eliminado`; no se borra | Norma 7.4: un solo camino de retiro, con constancia |
-| D12 | Los registros guardan identificadores de especie, programa y registrador, no sus nombres | Fuente única: renombrar en catálogo actualiza todo. Sustituye el esquema previo que copiaba nombres |
+| D12 | Los registros guardan identificadores de especie, programa y registrador (hoy `cabo_id`, D85), no sus nombres | Fuente única: renombrar en catálogo actualiza todo. Sustituye el esquema previo que copiaba nombres |
 | D13 | Bibliotecas incluidas localmente, no desde CDN | Funciona sin señal y al abrir con doble clic |
 | D14 | Turf empaquetado sólo con punto-en-polígono (12 KB en lugar de 592 KB) | Rendimiento en teléfono modesto |
 | D15 | En bordes entre polígonos gana el primero que contiene el punto | Precedencia declarada (Norma 6.6). [pendiente] revisar con capas reales |
@@ -111,7 +111,10 @@
 
 - [pendiente] ¿El apellido materno debe ser obligatorio? Hoy es opcional: hay personas que no lo tienen
 - [pendiente] ¿Puede una persona editar sus propios datos, o sólo la Administración global?
-- [pendiente] ¿El Jefe de registradores también registra plantaciones? ¿Puede eliminar? (hoy: registra sí, elimina no)
+- [pendiente] ¿El Coordinador también registra plantaciones? (hoy: registra sí; que no elimina ya está confirmado por Liber)
+- [pendiente] **Perfil Consulta (`VIEWER`).** Sigue definido en `js/permisos.js` (ve todo, no modifica nada) y es el perfil al que cae una cuenta con perfil desconocido, pero no tiene cuenta de arranque y Liber señaló el 22-09-2026 que los perfiles son tres. Decidir: se conserva para el SIA/consulta de tableros, o se retira del código y del esquema
+- [pendiente] **`es_ficticio` en `cierres` y `bitacora`.** Sólo plantaciones, usuarios y catalogos llevan la marca; al depurar los datos de prueba antes de liberar (S-09 del diccionario) los cierres y la bitácora de prueba habría que identificarlos por sus referencias. Decidir si se agrega la marca a las dos tablas
+- [pendiente] **El respaldo no lleva `usuarios` ni `catalogos`.** Una especie o cuenta dada de alta en el dispositivo no viaja en el respaldo; en Fase 1 no importa (los catálogos se siembran), en Fase 2 el servidor es la fuente. Confirmar que basta con eso
 - [pendiente] Proveedor de mapa base para producción (OpenStreetMap no admite uso institucional intensivo)
 - ~~Validación del catálogo de especies y su clasificación~~ Resuelto en D84: catálogo real del SIA con `tipo_distribucion` del SNIB
 - ~~Formato de las claves del catálogo real de especies~~ Resuelto en D84: `ESP-0000`, consecutivo del SIA
@@ -375,3 +378,24 @@
   llevan `es_ficticio: false`, y el sello de datos sube para que los dispositivos de prueba
   vuelvan a sembrar. Supera el pendiente de validación del catálogo y el de formato de claves.
   Entregado por Liber, 22-09-2026.
+
+## Bloque 33 — Inventario de tablas y diccionario de datos
+
+- **D85. Terminología de perfiles.** Quien captura en campo es **cabo** y quien lo dirige,
+  **coordinador**: son los términos del personal y sustituyen a «registrador» y «jefe de
+  registradores» de D02–D06 y D12, que se conservan en la tabla como historia con la nota
+  correspondiente. En código: `CABO`, `COORDINADOR`, `ADMIN` (Administración global) y `VIEWER`
+  (Consulta, sin cuenta; ver pendiente). Definido por Liber (bloques anteriores); registrado aquí
+  porque la tabla de decisiones seguía diciendo lo viejo.
+- **D86. `esquema.json` es la fuente única del modelo de datos.** Tablas, campos (tipo, nulo,
+  origen, dominio, pantalla, regla), dominios con su fuente en el código, relaciones, campos
+  derivados, calculados, efímeros y condicionales, reglas de Fase 1 con el archivo donde viven
+  y reglas de Fase 2. De él se genera `DICCIONARIO-DATOS.md` (`pruebas/generar_diccionario.py`),
+  que incluye un borrador de tablas PostgreSQL para la Fase 2; **no se edita a mano**.
+  `pruebas/auditoria.py` compara el esquema contra los almacenes reales (campos, llaves, índices),
+  contra los dominios del código (`SRP.PERFILES`, `SRP.mapa.ORIGENES`, tipos de catálogo, lista
+  de distribución, acciones y entidades de bitácora) y comprueba que el diccionario esté
+  regenerado: un campo nuevo en el código sin su línea en el esquema hace fallar la auditoría.
+  `MAPEO-CAMPOS.md` sigue como vista por pantalla y también se audita. Motivo: al pasar a la
+  Fase 2 todo lo que se capturó, se derivó o se calculó debe estar en un solo lugar verificado,
+  no repartido en el código y en la memoria de las iteraciones. Pedido por Liber, 22-09-2026.
