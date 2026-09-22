@@ -45,7 +45,7 @@
 | D42 | El registro guarda `alcaldia_cve` (clave INEGI) además del nombre | La clave es la llave para unir con el esquema `territorio` del SIA (Norma 6.5); el nombre se guarda aparte para leerse sin cargar la capa, igual que `usuario_nombre` en la bitácora |
 | D43 | Los defectos de la capa de alcaldías —cinco huecos, tres solapes— no se corrigen en el sistema: en un solape gana el primer polígono de la capa; en un hueco se guarda sin alcaldía, se avisa, y se conserva `capa_version` para rederivar | La capa es del SIA y se corrige ahí. Un árbol real plantado en un hueco no puede quedarse sin registrar por un defecto de la capa, y una regla fija garantiza que el mismo punto derive siempre lo mismo |
 | D44 | El ámbito válido sigue siendo la caja de la ciudad, no la unión de las alcaldías | Con la unión, un punto en un hueco de la capa quedaría «fuera de la Ciudad de México» y no se podría guardar |
-| D45 | `colonia` se guarda nula hasta que exista capa, y la pantalla lo dice como pendiente, no como falla | No hay capa de colonias. Mezclar una alcaldía real con una colonia ficticia haría pasar por real un dato inventado |
+| D45 | `colonia` se guarda nula hasta que exista capa, y la pantalla lo dice como pendiente, no como falla | No hay capa de colonias. Mezclar una alcaldía real con una colonia ficticia haría pasar por real un dato inventado. ~~Superada~~ por D62: ya hay capa (de prueba) |
 | D46 | `capa_version` guarda la versión de cada capa por separado (`alcaldias=…;uga=…`) | Las dos llegaron juntas hoy, pero no tienen por qué actualizarse juntas; con una sola versión no se sabría cuál cambió |
 | D47 | El prefijo de la clave UGA no se usa como alcaldía del punto | En la frontera, la celda pertenece a una alcaldía y el punto a otra: 9 celdas tienen su centro en una alcaldía distinta de la de su prefijo. La alcaldía sale de su propia capa |
 | D48 | El botón de ubicación lleva el icono de ubicación en sus dos estados; el estado de corrección se distingue por el color dorado y por el texto «Actualizar…» | Definido por Liber (sustituye la parte del lápiz de D28). El lápiz decía «editar» pero el botón no edita: vuelve a tomar la posición del GPS. El color sigue sin ir solo porque el texto cambia |
@@ -53,11 +53,13 @@
 | D50 | Se reincorpora `comentarios` al registro de plantación: texto libre opcional, hasta 500 caracteres | Definido por Liber. **Modifica D17**, que lo retiró por no tener uso declarado (Norma 1.8); ahora lo tiene: observaciones del cabo sobre el sitio o el ejemplar. Sigue fuera del reporte PDF hasta la validación de reportes (ver pendientes) |
 | D51 | En el selector de programa, «Reforestación Urbana» va primero y el resto en orden alfabético; sigue sin preselección | Definido por Liber: es el programa de casi toda la captura en campo. Se ordena por la clave `REFOR_URBANA`, no por el nombre, para que sobreviva a un cambio de redacción |
 | D52 | La pestaña dice «Nuevo registro» y el formulario ya no repite el título; en edición el título sí se muestra («Editar registro») | Definido por Liber. En alta, pestaña y título decían lo mismo; en edición el contexto cambia respecto a la pestaña y hay que decirlo |
-| D53 | Los atajos de periodo quedan en tres —Hoy, Este mes, Todos— y se agrega «Reiniciar filtros», que devuelve la vista a su estado de entrada: Hoy, sin año ni mes, sin rango y todos los cabos | Definido por Liber. «Mes pasado» y «Este año» se cubren con las listas de Año y Mes. «Todos» sólo quita el periodo y respeta el cabo elegido; Reiniciar lo devuelve todo, por eso son dos controles |
+| D53 | Los atajos de periodo quedan en tres y se agrega «Reiniciar filtros», que devuelve la vista a su estado de entrada: Hoy, sin año ni mes, sin rango y todos los cabos | Definido por Liber. «Mes pasado» y «Este año» se cubren con las listas de Año y Mes. «Todos» sólo quita el periodo y respeta el cabo elegido; Reiniciar lo devuelve todo, por eso son dos controles. ~~Hoy, Este mes, Todos~~: el juego de atajos cambia en D64 |
 | D54 | Los tres datos del punto —Coordenadas, Alcaldía, Colonia— van en una sola fila de tres columnas en escritorio y tableta, y apilados en teléfono | Señalado por Liber: al ocultar «Cómo se obtuvo» (bloque 15) su celda vacía dejó un hueco junto a Coordenadas. El dato oculto sale de la rejilla; sigue anunciándose al lector de pantalla y guardándose |
 | D40 | Espejo de campos al pie del formulario, sólo con datos de prueba: enseña los campos que llegan a la base sin tener lugar en la pantalla, más la entrada de bitácora que se escribiría. **Se elimina al cerrar la Etapa 1** (`js/espejo.js`, su sección en `index.html` y el bloque `.espejo` del CSS; nada más depende de él) | Definido por Liber, para llevar control visual mientras se afina la interfaz. No reconstruye el registro: lee el mismo objeto que escribe Guardar (`registroPrevisto()`), y su lista de campos es lo que queda al restar los visibles, así que un campo nuevo aparece solo. Lo que aún no existe —identificador, marcas de tiempo— se nombra como pendiente en vez de inventarse |
 
 ## Pendientes de decisión
+
+- [pendiente] **Antes de liberar esta etapa: sustituir las tres capas** —alcaldías, malla UGA y colonias— por las definitivas del SIA, con fuente y fecha de corte confirmadas, y volver a correr `pruebas/generar_capas.py`. Las tres cargadas hoy son para probar: alcaldías y UGA traen los defectos medidos en el bloque 15, y colonias es la cartografía electoral del IECM 2022, no un catálogo del SIA. Al sustituirlas se sube `meta.version` y se rederivan los registros existentes. Anotado por Liber, 22-09-2026
 
 ### Para resolver antes de montar en los servidores del SIA
 
@@ -147,3 +149,29 @@
   abría el panel de Compartir del sistema en lugar de guardar el reporte; el destino de Acrobat
   de ese panel recibía un archivo de longitud cero. El criterio es `(hover: none) and
   (pointer: coarse)`, no el ancho de pantalla: una laptop con pantalla táctil sigue descargando.
+
+## Bloque 21 — Capa de colonias (de prueba)
+
+- **D62. Colonias: fuera de zona urbana no hay colonia; en un solape gana la más pequeña; el
+  nombre va como viene.** La capa del IECM 2022 no cubre el suelo de conservación (532 km²):
+  un punto ahí se guarda con `colonia` nula y la pantalla dice «Sin colonia (fuera de zona
+  urbana)», que no es un pendiente ni una falla. En los 215 solapes —una unidad habitacional
+  dibujada encima del pueblo o colonia que la rodea— gana el polígono de menor área, que es la
+  unidad más específica; regla declarada, no dejada al orden del archivo (Norma 6.6). El nombre
+  se guarda como viene, en mayúsculas y con su tipo entre paréntesis (`SAN MIGUEL (BARR)`); sólo
+  se quitan los espacios dobles, que son error de captura. La alcaldía sigue saliendo de su propia
+  capa (D47): doce colonias tienen el interior en otra alcaldía que la que declaran. Se guarda
+  también `colonia_cve` (`CVEUT`) como llave. Las tres reglas definidas por Liber. **La capa es
+  de prueba** y se sustituye antes de liberar la etapa (ver pendientes).
+- **D63. Los avisos de fotografía no se muestran como letrero.** «Fotografía agregada» y
+  «Fotografía quitada» tapaban el formulario para decir algo que ya se ve —la foto aparece o
+  desaparece—. Se retiran de la pantalla y se conservan para el lector de pantalla en una región
+  viva sin letrero (`#aviso-lector`), porque lo que cambia sin recargar se anuncia (Norma 8.1).
+  Señalado por Liber.
+- **D64. En Registros: atajos Hoy · Todos · Un periodo, en ese orden; Desde/Hasta sólo al
+  pedir «Un periodo»; todo el filtro en una fila.** Sustituye el juego de D53: «Este mes» se va
+  (lo cubren las listas de Año y Mes) y el desplegable «Más filtros» desaparece: el rango se
+  abre con el tercer atajo, que queda relleno mientras haya rango aplicado y con contorno
+  mientras esté abierto sin aplicar. El filtro por cabo se aplica al elegirlo, sin botón. Las tres
+  acciones de cada registro (Ver, Editar, Eliminar) van en fila en todo ancho: apiladas, cada
+  registro medía tres botones de alto y la lista crece. Señalado por Liber.

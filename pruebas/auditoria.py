@@ -97,15 +97,18 @@ with sync_playwright() as p:
     capas = pg.evaluate("""() => ({
       alc: SRP.CAPAS.alcaldias.geojson.features.map(f=>f.properties.cvegeo).sort(),
       uga: SRP.CAPAS.uga.geojson.features.map(f=>f.properties.clave).sort(),
+      col: SRP.CAPAS.colonias.geojson.features.map(f=>f.properties.clave).sort(),
       prefijos: [...new Set(SRP.CAPAS.uga.geojson.features.map(f=>f.properties.clave.split('-')[0]))].sort(),
       claves: SRP.CAPAS.alcaldias.geojson.features.map(f=>f.properties.clave).sort(),
-      versiones: [SRP.CAPAS.alcaldias.meta.version, SRP.CAPAS.uga.meta.version]
+      versiones: [SRP.CAPAS.alcaldias.meta.version, SRP.CAPAS.uga.meta.version, SRP.CAPAS.colonias.meta.version]
     })""")
     ruta_f = 'assets/fuentes' if os.path.exists('assets/fuentes') else os.path.join('..', 'assets', 'fuentes')
     orig_a = sorted(f['properties']['cvegeo'] for f in _json.load(open(os.path.join(ruta_f, 'alcaldias_cdmx.json'), encoding='utf-8'))['features'])
     orig_u = sorted(f['properties']['CLAVE'] for f in _json.load(open(os.path.join(ruta_f, 'ugasdata.wgs84.json'), encoding='utf-8'))['features'])
     mirar(capas['alc'] == orig_a, 'la capa de alcaldías cargada trae las mismas 16 claves que el original del SIA')
     mirar(capas['uga'] == orig_u, 'la capa UGA cargada trae las mismas 1,624 claves que el original del SIA')
+    orig_c = sorted(f['properties']['CVEUT'] for f in _json.load(open(os.path.join(ruta_f, 'colonias_iecm2022.geojson'), encoding='utf-8'))['features'])
+    mirar(capas['col'] == orig_c, 'la capa de colonias cargada trae las mismas 1,837 claves que el original del IECM')
     mirar(capas['prefijos'] == capas['claves'], 'cada prefijo de UGA es una alcaldía y cada alcaldía tiene UGAs', str(capas['prefijos']))
     mirar(all(v and 'fictic' not in v for v in capas['versiones']), 'ninguna capa cargada es ficticia', str(capas['versiones']))
     mirar(not r.get('capaVieja'), 'ninguna plantación se derivó con la capa ficticia', str(r.get('capaVieja')))

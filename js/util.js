@@ -73,5 +73,13 @@ SRP.util = {
     zona.hidden = false;
     clearTimeout(SRP.util._temporizadorAviso);
     SRP.util._temporizadorAviso = setTimeout(() => { zona.hidden = true; }, 4500);
+  },
+
+  /* Sólo para el lector de pantalla, sin letrero. Para cambios que en pantalla ya se ven solos
+     —la fotografía aparece o desaparece— y donde el letrero encima estorbaba (bloque 21). */
+  anunciarSilencioso(mensaje) {
+    const zona = document.getElementById('aviso-lector');
+    zona.textContent = '';
+    setTimeout(() => { zona.textContent = mensaje; }, 50);   // el mismo texto dos veces seguidas no se anuncia
   }
 };

@@ -161,7 +161,6 @@ main:focus { outline: none; }
 .campo input[readonly] { background: var(--fondo-suave); border-color: var(--borde-suave); color: var(--gris); }
 .campo-doble { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-3); }
 /* Excepción deliberada: Año y Mes son cortos y caben en dos columnas hasta en teléfono */
-.campo-doble-fijo { grid-template-columns: 1fr 1fr; }
 .campo-triple { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--e-3); }
 .campo-crece { flex: 1; margin-bottom: 0; }
 
@@ -248,16 +247,23 @@ main:focus { outline: none; }
 .chips { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-bottom: var(--e-4); }
 .chip { min-height: 40px; padding: 0 var(--e-3); border: 1px solid var(--borde-control); border-radius: 20px; background: var(--fondo); color: var(--texto); cursor: pointer; }
 
-.filtros { border-bottom: 1px solid var(--borde-suave); padding-bottom: var(--e-4); }
+.filtros { border-bottom: 1px solid var(--borde-suave); padding-bottom: var(--e-3); }
+/* Atajos, listas y reiniciar en una fila que se parte sola en teléfono; alineados por la base */
+.filtros-fila { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--e-3) var(--e-4); }
+.filtros-fila .chips { margin-bottom: 0; }
+.filtros-listas { display: flex; flex-wrap: wrap; gap: var(--e-3); }
+.campo-corto select, .campo-corto input { width: auto; min-width: 8rem; }
+.filtros-periodo { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--e-3); margin-top: var(--e-3); }
 
 .lista-registros { list-style: none; margin: 0; padding: 0; }
-.registro { display: flex; justify-content: space-between; gap: var(--e-3); padding: var(--e-3) 0; border-bottom: 1px solid var(--borde-suave); }
+.registro { display: flex; justify-content: space-between; align-items: center; gap: var(--e-3); padding: var(--e-2) 0; border-bottom: 1px solid var(--borde-suave); }
 .registro-datos { min-width: 0; }
 .registro-fecha { display: block; font-size: var(--t-xs); color: var(--gris); }
 .registro-especie { display: block; font-family: var(--fuente-titulo); font-weight: 600; }
 .registro-lugar, .registro-autor { display: block; font-size: var(--t-s); overflow-wrap: anywhere; }
 .registro-autor { color: var(--gris); }
-.registro-acciones { display: flex; flex-direction: column; gap: var(--e-1); flex-shrink: 0; }
+/* Las tres acciones en fila en todo ancho: apiladas, cada registro medía tres botones de alto y la lista crece (bloque 21) */
+.registro-acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--e-1); flex-shrink: 0; }
 
 .tabla-caja { overflow-x: auto; }
 .tabla { width: 100%; border-collapse: collapse; font-size: var(--t-s); }
@@ -305,6 +311,8 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .btn:disabled { opacity: 0.55; cursor: not-allowed; }
 .pestana[aria-current="page"] { color: var(--guinda); border-bottom-color: var(--guinda); }
 .chip[aria-pressed="true"] { background: var(--guinda); border-color: var(--guinda); color: var(--fondo); }
+/* «Un periodo» abierto pero sin rango aplicado: contorno, porque todavía no filtra */
+.chip[aria-expanded="true"][aria-pressed="false"] { border-color: var(--guinda); color: var(--guinda); }
 /* Con ratón la opción bajo el cursor se marca igual que la elegida con teclado: sin esto la lista se sentía inerte en escritorio */
 .combo-opcion:hover,
 .combo-opcion[aria-selected="true"] { background: var(--fondo-suave); outline: 2px solid var(--guinda); outline-offset: -2px; }
@@ -331,15 +339,14 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
                         gap: var(--e-2); text-align: left; }
   .encabezado-acciones { flex: 1 0 100%; justify-content: flex-start; }
   .campo-doble { grid-template-columns: 1fr; }
-  .campo-doble-fijo { grid-template-columns: 1fr 1fr; }
   .campo-triple { grid-template-columns: 1fr; }
   .revision-fila { grid-template-columns: 1fr auto; }
   .revision-fila-sola { grid-template-columns: 1fr; }
   .revision-fila dt { grid-column: 1 / -1; }
   /* En teléfono los botones van en fila bajo los datos: apilados a la derecha triplicaban
      el alto de cada registro y obligaban a desplazarse para ver tres árboles. */
-  .registro { flex-direction: column; gap: var(--e-2); }
-  .registro-acciones { flex-direction: row; flex-wrap: wrap; }
+  .registro { flex-direction: column; align-items: stretch; gap: var(--e-2); }
+  .registro-acciones { justify-content: flex-start; }
   .tabla thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .tabla tr { display: block; border: 1px solid var(--borde-suave); border-radius: var(--radio); margin-bottom: var(--e-3); }
   .tabla td { display: grid; grid-template-columns: 6.5rem 1fr; gap: var(--e-2); }

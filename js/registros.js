@@ -37,6 +37,11 @@ SRP.registros = {
       this.sincronizarControles();
       this.aplicar();
     });
+    // El cabo se aplica al elegirlo; ya no pasa por «Aplicar», que es sólo del rango
+    this.el('filtro-cabo').addEventListener('change', () => {
+      this.filtro.cabo = this.el('filtro-cabo').value;
+      this.aplicar();
+    });
     this.el('btn-filtrar').addEventListener('click', () => {
       const desde = this.el('filtro-desde').value;
       const hasta = this.el('filtro-hasta').value;
@@ -46,7 +51,6 @@ SRP.registros = {
       }
       this.filtro.desde = desde;
       this.filtro.hasta = hasta;
-      this.filtro.cabo = this.el('filtro-cabo').value;
       if (desde || hasta) { this.filtro.dia = ''; this.filtro.anio = ''; this.filtro.mes = ''; }
       this.sincronizarControles();
       this.aplicar();
@@ -102,6 +106,7 @@ SRP.registros = {
   reiniciarFiltros() {
     this.filtro = { dia: SRP.util.fechaHoy(), anio: '', mes: '', desde: '', hasta: '', cabo: '' };
     this.el('filtro-cabo').value = '';
+    this.periodoAbierto = false;
     this.limpiarRango();
     this.llenarMeses();
     this.sincronizarControles();
@@ -139,15 +144,18 @@ SRP.registros = {
   },
 
   aplicarAtajo(atajo) {
-    const hoy = new Date();
     const f = this.filtro;
+    // «Un periodo» no filtra por sí mismo: abre Desde/Hasta y el filtro entra con «Aplicar»
+    if (atajo === 'periodo') {
+      this.periodoAbierto = true;
+      this.sincronizarControles();
+      this.el('filtro-desde').focus();
+      return;
+    }
     f.dia = '';
     if (atajo === 'hoy') { f.dia = SRP.util.fechaHoy(); f.anio = ''; f.mes = ''; }
-    else if (atajo === 'todos') { f.anio = ''; f.mes = ''; }
-    else {   // 'mes'
-      f.anio = String(hoy.getFullYear());
-      f.mes = String(hoy.getMonth() + 1).padStart(2, '0');
-    }
+    else { f.anio = ''; f.mes = ''; }   // 'todos'
+    this.periodoAbierto = false;
     this.limpiarRango();
     this.llenarMeses();            // ajusta el mes si ese año no tiene registros de ese mes
     this.sincronizarControles();
@@ -165,17 +173,19 @@ SRP.registros = {
     this.el('filtro-anio').value = f.anio;
     this.el('filtro-mes').value = f.mes;
     this.el('filtro-mes').disabled = !f.anio;
-    const hoy = new Date();
-    const mesActual = String(hoy.getFullYear()) + '-' + String(hoy.getMonth() + 1).padStart(2, '0');
     const periodo = f.anio ? f.anio + (f.mes ? '-' + f.mes : '') : '';
     const sinRango = !f.desde && !f.hasta;
     const activo = {
       hoy: sinRango && f.dia === SRP.util.fechaHoy(),
-      mes: sinRango && !f.dia && periodo === mesActual,
-      todos: sinRango && !f.dia && periodo === ''
+      todos: sinRango && !f.dia && periodo === '',
+      periodo: !sinRango   // relleno sólo cuando el rango filtra; abierto sin rango se marca con contorno
     };
     this.el('filtro-atajos').querySelectorAll('.chip').forEach(c =>
       c.setAttribute('aria-pressed', String(!!activo[c.dataset.atajo])));
+    // Desde/Hasta se ven mientras haya rango o se haya pedido «Un periodo»
+    const abierto = !sinRango || !!this.periodoAbierto;
+    this.el('filtro-periodo').hidden = !abierto;
+    this.el('filtro-atajos').querySelector('[data-atajo="periodo"]').setAttribute('aria-expanded', String(abierto));
   },
 
   aplicar() {

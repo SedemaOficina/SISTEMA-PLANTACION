@@ -137,7 +137,7 @@ with sync_playwright() as p:
     despues=pg.locator('#espejo-cuerpo tr', has_text='lat_original').inner_text()
     ok('19.' in despues,'y se llena en cuanto hay punto, sin recargar: '+despues.replace(chr(9),' ')[:50])
     ok(pg.inner_text('#dato-alcaldia')=='Cuauhtémoc','el botón ubica y deriva la alcaldía real: '+pg.inner_text('#dato-alcaldia'))
-    ok('Pendiente' in pg.inner_text('#dato-colonia'),'y la colonia dice que aún no hay capa, no que falló: '+pg.inner_text('#dato-colonia'))
+    ok(pg.inner_text('#dato-colonia')=='CENTRO IV','y la colonia real, como viene en la capa: '+pg.inner_text('#dato-colonia'))
 
     # CAPAS REALES DEL SIA. Puntos conocidos, el hueco medido en la capa y el solape mayor.
     capas=pg.evaluate("""() => {
@@ -145,6 +145,9 @@ with sync_playwright() as p:
       const t0=performance.now(); for (let i=0;i<100;i++) d(19.3+i*0.002,-99.2+i*0.002); const ms=(performance.now()-t0)/100;
       return {
         n:[SRP.CAPAS.alcaldias.geojson.features.length, SRP.CAPAS.uga.geojson.features.length],
+        // Colonias (D62): solape U HAB dentro de pueblo, suelo de conservación, colonia cuyo interior cae en otra alcaldía
+        solapeCol:d(19.332484,-99.217506), conservacion:d(19.1867,-99.2422), cruzaAlc:d(19.31297,-99.046812),
+        nCol:SRP.CAPAS.colonias.geojson.features.length,
         zocalo:d(19.4326,-99.1332), ajusco:d(19.2000,-99.2500), milpa:d(19.1000,-99.0200),
         hueco:d(19.483808,-99.149920),
         solape:[d(19.4406,-99.0895).alcaldia, d(19.4406,-99.0895).alcaldia],
@@ -162,8 +165,15 @@ with sync_playwright() as p:
     ok(capas['solape'][0]==capas['solape'][1]=='Venustiano Carranza','en el solape GAM–VCA siempre gana el mismo polígono')
     ok(capas['fuera'] is None,'fuera de la ciudad no deriva nada')
     ok(float(capas['ms'])<5,'derivar cuesta menos de 5 ms por punto (%s ms)' % capas['ms'])
-    ok('alcaldias=' in capas['zocalo']['capa_version'] and 'uga=' in capas['zocalo']['capa_version'],
+    ok('alcaldias=' in capas['zocalo']['capa_version'] and 'uga=' in capas['zocalo']['capa_version'] and 'colonias=' in capas['zocalo']['capa_version'],
        'la versión guarda la de cada capa: '+capas['zocalo']['capa_version'])
+    # Capa de colonias (D62)
+    ok(capas['nCol']==1837,'la capa de colonias trae las 1,837 unidades territoriales del IECM')
+    ok(capas['zocalo']['colonia']=='CENTRO IV' and capas['zocalo']['colonia_cve']=='15-040','el Zócalo deriva CENTRO IV con su clave CVEUT')
+    ok(capas['solapeCol']['colonia_cve']=='08-017','en un solape gana la colonia más pequeña (U HAB dentro del pueblo): '+str(capas['solapeCol']['colonia']))
+    ok(capas['conservacion']['colonia'] is None and capas['conservacion']['alcaldia']=='Tlalpan','en suelo de conservación hay alcaldía pero no colonia')
+    ok(capas['cruzaAlc']['colonia_cve']=='07-010' and capas['cruzaAlc']['alcaldia']=='Tláhuac',
+       'la alcaldía sale de su capa aunque la colonia diga otra demarcación: '+capas['cruzaAlc']['alcaldia'])
     ok(pg.inner_text('#dato-coordenadas').count('.')==2,'la coordenada se escribe en su campo: '+pg.inner_text('#dato-coordenadas'))
     ok(',' not in pg.inner_text('#mapa-estado'),'y ya no se repite bajo el mapa: '+pg.inner_text('#mapa-estado'))
     ok('Actualizar ubicación' in pg.inner_text('#btn-ubicacion'),'con punto puesto, el botón pasa a actualizar')
@@ -332,18 +342,22 @@ with sync_playwright() as p:
     ok('Total: 1 ' in pg.inner_text('#registros-total'),'julio tiene uno: '+pg.inner_text('#registros-total'))
     ok(pg.locator('#filtro-atajos .chip[aria-pressed=true]').count()==0,'ningún atajo queda marcado al elegir mes suelto')
     ok(pg.is_hidden('#filtro-desde'),'el rango viene plegado')
-    pg.click('.filtros-mas summary'); pg.wait_for_timeout(200)
+    pg.click('.chip[data-atajo=periodo]'); pg.wait_for_timeout(200)
+    ok(pg.is_visible('#filtro-desde') and pg.get_attribute('.chip[data-atajo=periodo]','aria-expanded')=='true','«Un periodo» abre Desde/Hasta (D64)')
     pg.fill('#filtro-desde','2026-09-30'); pg.fill('#filtro-hasta','2026-09-01'); pg.click('#btn-filtrar'); pg.wait_for_timeout(300)
     ok('posterior' in pg.inner_text('#aviso'),'un rango invertido se rechaza')
     pg.fill('#filtro-desde','2026-08-01'); pg.fill('#filtro-hasta','2026-08-31'); pg.click('#btn-filtrar'); pg.wait_for_timeout(300)
     ok('Total: 1 ' in pg.inner_text('#registros-total'),'el rango de agosto trae uno')
     ok(pg.input_value('#filtro-anio')=='','el rango limpia Año y Mes')
+    ok(pg.get_attribute('.chip[data-atajo=periodo]','aria-pressed')=='true','y «Un periodo» queda marcado mientras haya rango')
     # Reiniciar vuelve al estado de entrada: Hoy, sin rango (D53)
     pg.click('#btn-reiniciar-filtros'); pg.wait_for_timeout(300)
     ok(pg.locator('#filtro-atajos .chip[data-atajo=hoy][aria-pressed=true]').count()==1 and pg.input_value('#filtro-desde')=='',
        'Reiniciar filtros vuelve a Hoy y limpia el rango')
     ok('Total: 2 ' in pg.inner_text('#registros-total'),'y lista los de hoy: '+pg.inner_text('#registros-total'))
-    ok(pg.locator('#filtro-atajos .chip').count()==3,'los atajos son tres: Hoy, Este mes y Todos (D53)')
+    ok(pg.is_hidden('#filtro-desde'),'y Reiniciar pliega Desde/Hasta')
+    ok([c for c in pg.eval_on_selector_all('#filtro-atajos .chip','b=>b.map(x=>x.dataset.atajo)')]==['hoy','todos','periodo'],'los atajos son Hoy, Todos y Un periodo, en ese orden (D64)')
+    pg.click('.chip[data-atajo=periodo]'); pg.wait_for_timeout(200)
     pg.fill('#filtro-desde','2026-08-01'); pg.fill('#filtro-hasta','2026-08-31'); pg.click('#btn-filtrar'); pg.wait_for_timeout(300)
     pg.click('.chip[data-atajo=todos]'); pg.wait_for_timeout(300)
     ok(pg.input_value('#filtro-desde')=='','y un atajo limpia el rango')
@@ -356,7 +370,7 @@ with sync_playwright() as p:
     ok(not pg.is_disabled('#btn-pdf'),'con un día elegido, el botón se habilita')
     ok(HOY_TXT in pg.inner_text('#pdf-nota'),'y la nota dice qué se va a reportar: '+pg.inner_text('#pdf-nota'))
     # Un rango con la misma fecha en los dos extremos también es un día
-    pg.evaluate("document.querySelector('.filtros-mas').open = true"); pg.wait_for_timeout(200)
+    pg.click('.chip[data-atajo=periodo]'); pg.wait_for_timeout(200)
     pg.fill('#filtro-desde',HOY); pg.fill('#filtro-hasta',HOY); pg.click('#btn-filtrar'); pg.wait_for_timeout(300)
     ok(not pg.is_disabled('#btn-pdf'),'un rango de un solo día también deja generar')
     pg.click('.chip[data-atajo=hoy]'); pg.wait_for_timeout(300)

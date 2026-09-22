@@ -41,7 +41,8 @@ Pantalla **Nuevo registro**. Almacén `plantaciones`.
 | — | `lat_original`, `lng_original` | Sí | Sistema | Dónde quedó el punto la primera vez, antes de cualquier arrastre |
 | — | `alcaldia_cve` | No | Capa geográfica | Clave INEGI `cvegeo` de la alcaldía (p. ej. `09015`). Es la llave para unir con el esquema `territorio` del SIA; el nombre se guarda aparte para leerse sin cargar la capa |
 | Alcaldía | `alcaldia` | No | Capa geográfica | Nombre, del punto contra la capa `alcaldias` del SIA (16 polígonos). Campo de sólo lectura. Nulo cuando el punto cae en uno de los cinco huecos de la capa: se guarda igual y se avisa |
-| Colonia | `colonia` | No | Capa geográfica | **Siempre nulo por ahora: no hay capa de colonias.** La pantalla lo dice como pendiente, no como falla. [pendiente] Confirmar con el SIA si la unidad oficial es colonia o unidad territorial |
+| — | `colonia_cve` | No | Capa geográfica | Clave `CVEUT` de la unidad territorial del IECM (p. ej. `15-040`); llave para unir con la capa. Nulo fuera de la zona urbana |
+| Colonia | `colonia` | No | Capa geográfica | Nombre como viene en la capa: mayúsculas y tipo entre paréntesis, `SAN MIGUEL (BARR)` (D62). Nulo en suelo de conservación, y la pantalla dice «Sin colonia (fuera de zona urbana)». **Capa de prueba (IECM 2022)**: se sustituye antes de liberar la etapa. [pendiente] Confirmar con el SIA si la unidad oficial es colonia o unidad territorial |
 | — | `uga` | No | Capa geográfica | Clave del hexágono de la malla UGA del SIA (~1 km², 1,624 celdas), p. ej. `TLP-318`. **El prefijo no es la alcaldía del punto**: es la alcaldía a la que se asignó la celda, y en la frontera difieren. La alcaldía sale de su propia capa |
 | — | `capa_version` | No | Sistema | Versión de cada capa con la que se derivó, p. ej. `alcaldias=sia-2026-09-21;uga=sia-2026-09-21`. Permite rehacer el dato cuando una capa cambie |
 | Especie | `especie_id` | Sí | Catálogo | Remite a `catalogos.id` con `tipo = especie`. Vacío cuando se eligió «Otra especie» |
@@ -182,7 +183,7 @@ cuenta. Lo que ya vive en los registros —especies, conteos, alcaldía— no se
 |---|---|---|
 | Folio legible del árbol | Un identificador que la gente pueda dictar por teléfono | [pendiente] Fase 2 |
 | Clave de campo del ejemplar | La que el personal ya usa en los partes escritos a mano (`CIZ_366`), pinta en la placa y dicta. Sin ella no se concilia lo ya plantado con lo que capture el SRP | [pendiente] Sin decidir |
-| Colonia del parte | Hoy no se pide en el cierre: falta la capa (D45) y un campo libre sería una segunda fuente | [pendiente] Cuando llegue la capa |
+| Colonia del parte | No se pide en el cierre: sale del punto de cada registro, como la alcaldía; un campo libre sería una segunda fuente | Resuelto en el bloque 21 con la capa de colonias |
 | Identificador del servidor | Para relacionar el registro del dispositivo con el del servidor | [pendiente] Fase 2 |
 | Marca de envío | Saber qué registros ya subieron | [pendiente] Fase 2 |
 

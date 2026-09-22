@@ -626,3 +626,43 @@ comparte y no descarga.
 encargado es el primer campo; hora y placa se conservan al regenerar), sin errores de consola;
 44 de auditoría (MAPEO-CAMPOS al día con `vehiculo_modelo`, `vehiculo_placa`); presentación sin
 desbordes. Marca de versión 0.6.1.
+
+## Bloque 21 — Capa de colonias de prueba, y Registros más compacto (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.2.
+
+**La capa de colonias (D62).** Llegó `colonias_iecm2022.geojson`: 1,837 unidades territoriales
+del IECM, CRS84, clave `CVEUT` única, 0 geometrías inválidas, 125,555 vértices. Se revisó
+completa antes de tocar código. Lo que trae de defecto, medido: no cubre el suelo de conservación
+(532 km² al sur, más huecos de 8, 6.5, 6.3, 3.4 y 3 km² en Tláhuac, Tlalpan–Xochimilco y
+Cuajimalpa); 215 solapes que suman 1.63 km², casi siempre una unidad habitacional dibujada encima
+del pueblo que la rodea (el mayor, 11 ha, Independencia San Ramón (U HAB) × San Jerónimo
+Aculco-Lídice (PBLO)); límites que no coinciden con los de alcaldías del SIA, con 12 colonias cuyo
+interior cae en otra alcaldía; 23 nombres con espacios dobles. Reglas definidas por Liber: fuera
+de zona urbana no hay colonia y la pantalla lo dice así; en un solape gana la más pequeña; el
+nombre va como viene, en mayúsculas y con su tipo entre paréntesis. La alcaldía sigue saliendo de
+su capa (D47). Entra por el mismo camino que las otras dos: original intacto en `assets/fuentes/`
+(MD5 `e89620199b4cfd29070331efd7a67d48`), compactada por `generar_capas.py` con validación, versión
+`iecm-2022-prueba` en `capa_version`, y `colonia_cve` como llave en el registro. Puntos de prueba:
+el Zócalo deriva CENTRO IV; el solape deriva la U HAB; el suelo de conservación deriva Tlalpan sin
+colonia; la colonia 07-010 conserva Tláhuac como alcaldía aunque el IECM la declare de Iztapalapa.
+Derivar sigue costando 0.3 ms por punto.
+
+**Es una capa de prueba, y las otras dos también.** Pesa 3 MB compactada, mucho para teléfono.
+Queda anotado en DECISIONES como pendiente de Liber: antes de liberar la etapa se sustituyen los
+tres originales —alcaldías, UGA y colonias— por los definitivos del SIA y se vuelve a generar.
+
+**Tres ajustes de pantalla pedidos al probar.** Los letreros «Fotografía agregada/quitada» se
+retiran y pasan a una región viva sin letrero para el lector de pantalla (D63). En Registros, las
+acciones de cada renglón van en fila en todo ancho: en escritorio cada registro baja de ~165 a 83
+px de alto. Y el bloque de filtros se rehace en una fila —Hoy · Todos · Un periodo, listas de Año,
+Mes y Cabo, Reiniciar— con Desde/Hasta sólo al pedir «Un periodo» (D64); el desplegable «Más
+filtros» y el atajo «Este mes» se retiran.
+
+**Retirado:** `.campo-doble-fijo` (sin uso tras rehacer los filtros), el id `cie-encargado-etq`
+(sin nadie que lo nombrara), la nota «Pendiente: aún no hay capa de colonias» y la fila de
+pendientes «Colonia del parte» en MAPEO-CAMPOS, resuelta.
+
+**Verificación:** sintaxis; 190 comprobaciones del recorrido (ocho nuevas: cinco de la capa de
+colonias, tres del filtro por periodo), sin errores de consola; 45 de auditoría (una nueva: las
+claves cargadas de colonias son las 1,837 del original); presentación sin desbordes en ocho
+combinaciones; sin selectores duplicados, clases ni ids sin uso. Marca de versión 0.6.2.

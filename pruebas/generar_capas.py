@@ -3,7 +3,7 @@
 # Los originales viven en assets/fuentes/ y no se tocan: son la constancia de qué se recibió.
 # Este script los valida, se queda sólo con los atributos que el sistema usa, redondea a seis
 # decimales (~11 cm, por debajo de la exactitud de cualquier capa de límites) y escribe dos
-# scripts clásicos que definen SRP.CAPAS.alcaldias y SRP.CAPAS.uga. Clásicos y no módulos,
+# scripts clásicos que definen SRP.CAPAS.alcaldias, SRP.CAPAS.uga y SRP.CAPAS.colonias. Clásicos y no módulos,
 # porque la aplicación también abre con doble clic (file://).
 #
 # Uso:  python3 generar_capas.py          (desde la carpeta de la aplicación o desde pruebas/)
@@ -36,6 +36,15 @@ META = {
         'crs': 'EPSG:4326 (longitud, latitud)',
         'esperados': 1624,
         'clave': 'CLAVE'
+    },
+    'colonias': {
+        'archivo': 'colonias_iecm2022.geojson',
+        'origen': 'IECM 2022, unidades territoriales (colonias, pueblos, barrios, U HAB). CAPA DE PRUEBA: no es la definitiva; se sustituye antes de liberar la etapa, junto con alcaldías y UGA',
+        'version': 'iecm-2022-prueba',
+        'fecha_corte': '2022',
+        'crs': 'EPSG:4326 (longitud, latitud)',
+        'esperados': 1837,
+        'clave': 'CVEUT'
     }
 }
 
@@ -97,6 +106,7 @@ def escribir(nombre, features, props):
 
 alc = cargar('alcaldias')
 uga = cargar('uga')
+col = cargar('colonias')
 
 # El prefijo de la UGA debe ser una clave de alcaldía conocida
 clv = {f['properties']['clv_mun'] for f in alc}
@@ -105,4 +115,8 @@ if raros: fallar(f'UGAs con prefijo que no es alcaldía: {raros}')
 
 escribir('alcaldias', alc, lambda p: {'cvegeo': p['cvegeo'], 'nombre': p['nomgeo'], 'clave': p['clv_mun']})
 escribir('uga', uga, lambda p: {'clave': p['CLAVE']})
+# El nombre va como viene —mayúsculas y tipo entre paréntesis, D62—; sólo se quitan los espacios
+# dobles (23 casos como «GRAL C  A  MADRAZO»), que son error de captura y no parte del nombre.
+# La demarcación del IECM no se conserva: la alcaldía del punto sale de su propia capa (D47).
+escribir('colonias', col, lambda p: {'clave': p['CVEUT'], 'nombre': re.sub(r' {2,}', ' ', p['UT']).strip()})
 print('capas generadas sin hallazgos')

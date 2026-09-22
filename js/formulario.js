@@ -41,7 +41,7 @@ SRP.formulario = {
     this.el('btn-foto-quitar').innerHTML = SRP.ICONOS.svg('basura', 20);
     this.el('btn-foto-quitar').addEventListener('click', () => {
       this.ponerFoto(null, null);
-      SRP.util.anunciar('Fotografía quitada.');
+      SRP.util.anunciarSilencioso('Fotografía quitada.');
       this.el('etq-foto').focus();
     });
     this.el('form-plantacion').addEventListener('submit', (e) => { e.preventDefault(); this.revisar(); });
@@ -212,7 +212,7 @@ SRP.formulario = {
     try {
       const f = await SRP.foto.comprimir(archivo);
       this.ponerFoto(f.datos, SRP.util.generarId(), f.nombre, f.bytes);
-      SRP.util.anunciar('Fotografía agregada.');
+      SRP.util.anunciarSilencioso('Fotografía agregada.');
     } catch (err) {
       SRP.util.anunciar(err.message + ' Intente con otra fotografía.', 'alerta');
     }
@@ -270,7 +270,8 @@ SRP.formulario = {
     return {
       lat: SRP.mapa.lat, lng: SRP.mapa.lng,
       punto_origen: SRP.mapa.origen, gps_precision_m: SRP.mapa.precision,
-      alcaldia_cve: t.alcaldia_cve || null, alcaldia: t.alcaldia || null, colonia: t.colonia || null,
+      alcaldia_cve: t.alcaldia_cve || null, alcaldia: t.alcaldia || null,
+      colonia_cve: t.colonia_cve || null, colonia: t.colonia || null,
       uga: t.uga || null, capa_version: t.capa_version || null,
       especie_id: otra ? null : this.estado.especieId,
       especie_otra: otra ? this.el('campo-otra-especie').value.trim() : '',

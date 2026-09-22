@@ -7,7 +7,16 @@
    pruebas/generar_capas.py:
      alcaldias  16 polígonos, clave INEGI `cvegeo` (09012), nombre y clave corta (TLP)
      uga        1,624 hexágonos de ~1 km², clave `TLP-318`; el prefijo es la alcaldía
-   No hay capa de colonias todavía: `colonia` se guarda nula y la pantalla lo dice.
+     colonias   1,837 unidades territoriales del IECM 2022, clave `CVEUT` (`10-001`). CAPA DE
+                PRUEBA: se sustituye antes de liberar la etapa, con alcaldías y UGA.
+
+   LO QUE SE SABE DE LA CAPA DE COLONIAS (medido al recibirla, D62):
+   - No cubre el suelo de conservación: 532 km² al sur sin colonia. Un punto ahí se guarda con
+     `colonia` nula y la pantalla dice «Sin colonia (fuera de zona urbana)».
+   - 215 solapes (1.6 km²), casi siempre una unidad habitacional dibujada encima del pueblo o
+     colonia que la rodea. Gana el polígono MÁS PEQUEÑO: es la unidad más específica.
+   - Sus límites no coinciden con los de alcaldías: 12 colonias tienen el interior en otra
+     alcaldía. La alcaldía sale de su capa, nunca de la demarcación que trae la colonia (D47).
 
    LO QUE SE SABE DE LA CAPA DE ALCALDÍAS (medido al recibirla, ver DECISIONES.md):
    entre polígonos vecinos hay tres solapes (el mayor, GAM–VCA, de 2.5 ha) y cinco huecos
@@ -39,25 +48,46 @@ SRP.derivacion = {
 
   // Primer feature de la capa que contiene el punto, o null
   buscar(nombre, punto, lng, lat) {
+    return this.buscarTodos(nombre, punto, lng, lat, true)[0] || null;
+  },
+
+  // Todos los features que contienen el punto (o sólo el primero, si `primero`)
+  buscarTodos(nombre, punto, lng, lat, primero) {
     const capa = SRP.CAPAS[nombre];
-    if (!capa) return null;
+    if (!capa) return [];
     const cajas = this.cajasDe(nombre);
     const fs = capa.geojson.features;
+    const dentro = [];
     for (let i = 0; i < fs.length; i++) {
       const [o, s, e, n] = cajas[i];
       if (lng < o || lng > e || lat < s || lat > n) continue;
-      if (window.turfPIP(punto, fs[i])) return fs[i];
+      if (window.turfPIP(punto, fs[i])) { dentro.push(fs[i]); if (primero) break; }
     }
-    return null;
+    return dentro;
+  },
+
+  /* Área planar aproximada (grados², fórmula del zapatero), sólo para COMPARAR polígonos de la
+     misma capa: en un solape de colonias gana el más pequeño (D62). No es una superficie real. */
+  areaDe(feature) {
+    if (feature._area === undefined) {
+      let a = 0;
+      feature.geometry.coordinates.forEach(pg => pg.forEach((anillo, k) => {
+        let s = 0;
+        for (let i = 0; i < anillo.length - 1; i++) s += anillo[i][0] * anillo[i + 1][1] - anillo[i + 1][0] * anillo[i][1];
+        a += (k === 0 ? 1 : -1) * Math.abs(s) / 2;   // el anillo exterior suma; los huecos restan
+      }));
+      feature._area = a;
+    }
+    return feature._area;
   },
 
   derivar(lat, lng) {
-    const r = { alcaldia_cve: null, alcaldia: null, colonia: null, uga: null, capa_version: null, dentro: false };
+    const r = { alcaldia_cve: null, alcaldia: null, colonia_cve: null, colonia: null, uga: null, capa_version: null, dentro: false };
     if (!SRP.CAPAS || typeof window.turfPIP !== 'function') return r;
     const punto = { type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [lng, lat] } }; // GeoJSON: longitud primero
 
     // Qué versión de cada capa se usó, para que el dato se pueda rehacer después
-    r.capa_version = ['alcaldias', 'uga']
+    r.capa_version = ['alcaldias', 'uga', 'colonias']
       .filter(k => SRP.CAPAS[k]).map(k => k + '=' + SRP.CAPAS[k].meta.version).join(';') || null;
 
     const a = this.buscar('alcaldias', punto, lng, lat);
@@ -65,6 +95,13 @@ SRP.derivacion = {
 
     const u = this.buscar('uga', punto, lng, lat);
     if (u) r.uga = u.properties.clave;
+
+    // Colonia: si el punto cae en varias, la más pequeña; si en ninguna, nula (D62)
+    const cs = this.buscarTodos('colonias', punto, lng, lat, false);
+    if (cs.length) {
+      const c = cs.reduce((m, f) => this.areaDe(f) < this.areaDe(m) ? f : m, cs[0]);
+      r.colonia_cve = c.properties.clave; r.colonia = c.properties.nombre;
+    }
 
     return r;
   },

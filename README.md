@@ -59,14 +59,14 @@ js/permisos.js        ÚNICO lugar con las reglas de cada perfil
 js/almacen.js         Base del dispositivo (IndexedDB) y bitácora
 js/sesion.js          Acceso; se sustituye al conectar el proveedor institucional
 js/datos-ficticios.js Cuentas y catálogos de arranque
-js/derivacion.js      Cruce punto-en-polígono (alcaldía, colonia, UGA)
+js/derivacion.js      Cruce punto-en-polígono (alcaldía, UGA, colonia)
 js/referencias.js     Catálogos y cuentas en memoria
 js/iconos.js          Iconos por significado (guardar, eliminar, editar, ubicar)
 js/reportes.js       Cierre del parte del día y reporte PDF de la jornada
 js/mapa.js, foto.js, formulario.js, registros.js, catalogos.js,
 js/usuarios.js, app.js, util.js
-assets/fuentes/       Capas del SIA tal como llegaron (alcaldías y malla UGA); no se editan
-assets/capa-alcaldias.js, capa-uga.js  Las mismas capas, compactadas para la aplicación (generadas)
+assets/fuentes/       Capas tal como llegaron (alcaldías, malla UGA, colonias); no se editan
+assets/capa-alcaldias.js, capa-uga.js, capa-colonias.js  Las mismas capas, compactadas para la aplicación (generadas)
 assets/logo.js        Logotipo SEDEMA incrustado
 js/espejo.js          Espejo de campos, sólo en la versión de prueba (se elimina al cerrar la Etapa 1)
 vendor/               Bibliotecas incluidas localmente (Leaflet, jsPDF, Turf)
@@ -141,8 +141,18 @@ claves únicas, anillos cerrados y sistema de referencia antes de escribir nada.
 |---|---|---|---|---|
 | Alcaldías | `alcaldias_cdmx.json` | 16 | `cvegeo` INEGI | `alcaldia_cve` y `alcaldia` (nombre) |
 | Malla UGA | `ugasdata.wgs84.json` | 1,624 hexágonos de ~1 km² | `CLAVE` (`TLP-318`) | `uga` |
+| Colonias | `colonias_iecm2022.geojson` | 1,837 unidades territoriales del IECM 2022 | `CVEUT` (`10-001`) | `colonia_cve` y `colonia` (nombre) |
 
-No hay capa de colonias todavía: `colonia` se guarda nula y la pantalla lo dice como pendiente.
+**Las tres capas son provisionales, para probar.** Antes de liberar la etapa hay que sustituir
+los tres originales por los definitivos del SIA y volver a correr `generar_capas.py` (ver
+DECISIONES, pendientes). La de colonias pesa 3 MB compactada —125 mil vértices— y es la que más
+conviene revisar en peso al llegar la definitiva.
+
+La capa de colonias no cubre el suelo de conservación (532 km² al sur sin colonia): un punto ahí
+se guarda con `colonia` nula y la pantalla dice «Sin colonia (fuera de zona urbana)». Trae 215
+solapes, casi siempre una unidad habitacional encima del pueblo que la rodea: gana el polígono más
+pequeño. Doce colonias tienen el interior en otra alcaldía que la que declaran: la alcaldía sale de
+su propia capa, nunca de la colonia (D62).
 
 La capa de alcaldías trae, de origen, cinco huecos y tres solapes entre polígonos vecinos (el mayor
 hueco de 1.2 ha, el mayor solape de 2.5 ha). No se corrigen aquí. En un solape gana el primer

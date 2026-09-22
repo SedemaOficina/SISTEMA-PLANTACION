@@ -8,9 +8,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cabin:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.1">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.1">
-<link rel="stylesheet" href="css/estilos.css?v=0.6.1">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.2">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.2">
+<link rel="stylesheet" href="css/estilos.css?v=0.6.2">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -199,30 +199,26 @@
   <section id="vista-registros" class="vista vista-ancha" hidden aria-labelledby="titulo-registros">
     <h1 id="titulo-registros">Mis registros</h1>
     <div class="filtros">
-      <div id="filtro-atajos" class="chips" role="group" aria-label="Periodos frecuentes">
-        <button type="button" class="chip" data-atajo="hoy" id="chip-hoy">Hoy</button>
-        <button type="button" class="chip" data-atajo="mes">Este mes</button>
-        <button type="button" class="chip" data-atajo="todos">Todos</button>
-      </div>
-      <div class="campo-doble campo-doble-fijo">
-        <div class="campo"><label for="filtro-anio">Año</label><select id="filtro-anio"></select></div>
-        <div class="campo"><label for="filtro-mes">Mes</label><select id="filtro-mes"></select></div>
-      </div>
-      <!-- El rango y el filtro por persona se usan de vez en cuando; los atajos y las listas de
-           arriba cubren el trabajo diario. Plegados, los registros caben en la primera pantalla. -->
-      <details class="filtros-mas desplegable">
-        <summary><span>Más filtros</span></summary>
-        <div class="campo-doble">
-          <div class="campo"><label for="filtro-desde">Desde</label><input type="date" id="filtro-desde"></div>
-          <div class="campo"><label for="filtro-hasta">Hasta</label><input type="date" id="filtro-hasta"></div>
+      <!-- Una sola fila: atajos, listas y reiniciar. Desde/Hasta sólo al pedir «Un periodo» (D64) -->
+      <div class="filtros-fila">
+        <div id="filtro-atajos" class="chips" role="group" aria-label="Periodo">
+          <button type="button" class="chip" data-atajo="hoy" id="chip-hoy">Hoy</button>
+          <button type="button" class="chip" data-atajo="todos">Todos</button>
+          <button type="button" class="chip" data-atajo="periodo" aria-controls="filtro-periodo" aria-expanded="false">Un periodo</button>
         </div>
-        <div id="caja-filtro-cabo" class="campo" hidden>
-          <label for="filtro-cabo">Cabo</label><select id="filtro-cabo"></select>
+        <div class="filtros-listas">
+          <div class="campo campo-corto"><label for="filtro-anio">Año</label><select id="filtro-anio"></select></div>
+          <div class="campo campo-corto"><label for="filtro-mes">Mes</label><select id="filtro-mes"></select></div>
+          <div id="caja-filtro-cabo" class="campo campo-corto" hidden><label for="filtro-cabo">Cabo</label><select id="filtro-cabo"></select></div>
         </div>
+        <!-- Vuelve al estado con que se abre la vista (Hoy, sin rango, todos los cabos). «Todos» sólo quita el periodo -->
+        <button type="button" id="btn-reiniciar-filtros" class="btn btn-texto">Reiniciar filtros</button>
+      </div>
+      <div id="filtro-periodo" class="filtros-periodo" hidden>
+        <div class="campo campo-corto"><label for="filtro-desde">Desde</label><input type="date" id="filtro-desde"></div>
+        <div class="campo campo-corto"><label for="filtro-hasta">Hasta</label><input type="date" id="filtro-hasta"></div>
         <button type="button" id="btn-filtrar" class="btn btn-secundario">Aplicar</button>
-      </details>
-      <!-- Vuelve al estado con que se abre la vista (Hoy, sin rango, todos los cabos). «Todos» sólo quita el periodo -->
-      <button type="button" id="btn-reiniciar-filtros" class="btn btn-texto">Reiniciar filtros</button>
+      </div>
     </div>
     <p id="registros-total" class="total" aria-live="polite"></p>
     <ul id="lista-registros" class="lista-registros"></ul>
@@ -273,6 +269,8 @@
 </footer>
 
 <div id="aviso" class="aviso" role="status" aria-live="polite" hidden></div>
+<!-- Región viva sin letrero: cambios que ya se ven en pantalla pero el lector debe oír -->
+<div id="aviso-lector" class="oculto-visual" role="status" aria-live="polite"></div>
 
 <dialog id="dlg-resumen" aria-labelledby="dlg-resumen-titulo">
   <h2 id="dlg-resumen-titulo">Revise antes de guardar</h2>
@@ -329,7 +327,7 @@
     <!-- El encargado abre el parte: es el primer dato que se lee en el papel (D60). Un cabo es el
          encargado de su propio parte y no lo elige; quien ve a varias personas sí -->
     <div class="campo">
-      <label for="cie-encargado" id="cie-encargado-etq">Encargado</label>
+      <label for="cie-encargado">Encargado</label>
       <p id="cie-encargado-lectura" class="campo-lectura" hidden></p>
       <span id="cie-encargado-caja" hidden><select id="cie-encargado"></select></span>
     </div>
@@ -401,34 +399,35 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.6.1"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.1"></script>
-<script src="vendor/turf-pip.min.js?v=0.6.1"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.6.1"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.1"></script>
+<script src="vendor/leaflet.js?v=0.6.2"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.2"></script>
+<script src="vendor/turf-pip.min.js?v=0.6.2"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.6.2"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.2"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.6.1"></script>
-<script src="js/util.js?v=0.6.1"></script>
-<script src="js/iconos.js?v=0.6.1"></script>
-<script src="assets/logo.js?v=0.6.1"></script>
+<script src="js/config.js?v=0.6.2"></script>
+<script src="js/util.js?v=0.6.2"></script>
+<script src="js/iconos.js?v=0.6.2"></script>
+<script src="assets/logo.js?v=0.6.2"></script>
 <!-- Capas territoriales del SIA, compactadas por pruebas/generar_capas.py desde assets/fuentes/ -->
-<script src="assets/capa-alcaldias.js?v=0.6.1"></script>
-<script src="assets/capa-uga.js?v=0.6.1"></script>
-<script src="js/datos-ficticios.js?v=0.6.1"></script>
-<script src="js/permisos.js?v=0.6.1"></script>
-<script src="js/derivacion.js?v=0.6.1"></script>
-<script src="js/almacen.js?v=0.6.1"></script>
-<script src="js/sesion.js?v=0.6.1"></script>
-<script src="js/referencias.js?v=0.6.1"></script>
-<script src="js/mapa.js?v=0.6.1"></script>
-<script src="js/foto.js?v=0.6.1"></script>
-<script src="js/formulario.js?v=0.6.1"></script>
+<script src="assets/capa-alcaldias.js?v=0.6.2"></script>
+<script src="assets/capa-uga.js?v=0.6.2"></script>
+<script src="assets/capa-colonias.js?v=0.6.2"></script>
+<script src="js/datos-ficticios.js?v=0.6.2"></script>
+<script src="js/permisos.js?v=0.6.2"></script>
+<script src="js/derivacion.js?v=0.6.2"></script>
+<script src="js/almacen.js?v=0.6.2"></script>
+<script src="js/sesion.js?v=0.6.2"></script>
+<script src="js/referencias.js?v=0.6.2"></script>
+<script src="js/mapa.js?v=0.6.2"></script>
+<script src="js/foto.js?v=0.6.2"></script>
+<script src="js/formulario.js?v=0.6.2"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.6.1"></script>
-<script src="js/registros.js?v=0.6.1"></script>
-<script src="js/reportes.js?v=0.6.1"></script>
-<script src="js/catalogos.js?v=0.6.1"></script>
-<script src="js/usuarios.js?v=0.6.1"></script>
-<script src="js/app.js?v=0.6.1"></script>
+<script src="js/espejo.js?v=0.6.2"></script>
+<script src="js/registros.js?v=0.6.2"></script>
+<script src="js/reportes.js?v=0.6.2"></script>
+<script src="js/catalogos.js?v=0.6.2"></script>
+<script src="js/usuarios.js?v=0.6.2"></script>
+<script src="js/app.js?v=0.6.2"></script>
 </body>
 </html>
