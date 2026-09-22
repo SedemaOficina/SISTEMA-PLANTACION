@@ -10,9 +10,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cabin:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.11">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.11">
-<link rel="stylesheet" href="css/estilos.css?v=0.6.11">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.12">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.12">
+<link rel="stylesheet" href="css/estilos.css?v=0.6.12">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -38,6 +38,7 @@
 <nav id="navegacion" class="pestanas" aria-label="Secciones" hidden>
   <button type="button" class="pestana" data-vista="registrar">Nuevo registro</button>
   <button type="button" class="pestana" data-vista="registros">Registros</button>
+  <button type="button" class="pestana" data-vista="reportes">Reportes</button>
   <button type="button" class="pestana" data-vista="catalogos">Catálogos</button>
   <button type="button" class="pestana" data-vista="usuarios">Usuarios</button>
 </nav>
@@ -237,13 +238,22 @@
     <button type="button" id="btn-mas" class="btn btn-texto" hidden>Mostrar más</button>
     </section>
 
-    <!-- El parte es de un día, de cualquier día: se elige aquí y la lista se filtra a él (D70) -->
+  </section>
+
+  <!-- REPORTES: las dos salidas de datos del dispositivo, el parte del día y el respaldo (D81) -->
+  <section id="vista-reportes" class="vista" hidden aria-labelledby="titulo-reportes">
+    <h1 id="titulo-reportes">Reportes</h1>
+
+    <!-- El parte es de un día, de cualquier día (D70); aquí se elige el día y, quien ve a varias personas, el cabo -->
     <section class="bloque" aria-labelledby="titulo-parte">
     <h2 id="titulo-parte" class="titulo-bloque">Parte del día</h2>
-    <div class="acciones acciones-reporte">
+    <div class="filtros-fila">
       <div class="campo campo-corto"><label for="pdf-dia">Día del parte</label><input type="date" id="pdf-dia"></div>
+      <div id="caja-pdf-cabo" class="campo campo-corto" hidden><label for="pdf-cabo">Cabo</label><select id="pdf-cabo"></select></div>
+    </div>
+    <p id="pdf-nota" class="nota" aria-live="polite"></p>
+    <div class="acciones">
       <button type="button" id="btn-pdf" class="btn btn-primario">Generar reporte del día</button>
-      <p id="pdf-nota" class="nota" aria-live="polite"></p>
     </div>
     </section>
 
@@ -324,6 +334,7 @@
   <h2 id="dlg-guardado-titulo" class="titulo-exito"></h2>
   <p id="dlg-guardado-detalle"></p>
   <p id="dlg-guardado-id" class="revision-nota"></p>
+  <p id="dlg-guardado-dispositivo" class="nota" aria-live="polite"></p>
   <div class="acciones">
     <button type="button" id="btn-registro-nuevo" class="btn btn-primario">Agregar registro nuevo</button>
     <button type="button" id="btn-ir-registros" class="btn btn-secundario">Ver mis registros</button>
@@ -466,37 +477,37 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.6.11"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.11"></script>
-<script src="vendor/turf-pip.min.js?v=0.6.11"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.6.11"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.11"></script>
+<script src="vendor/leaflet.js?v=0.6.12"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.12"></script>
+<script src="vendor/turf-pip.min.js?v=0.6.12"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.6.12"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.12"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.6.11"></script>
-<script src="js/util.js?v=0.6.11"></script>
-<script src="js/iconos.js?v=0.6.11"></script>
-<script src="assets/logo.js?v=0.6.11"></script>
+<script src="js/config.js?v=0.6.12"></script>
+<script src="js/util.js?v=0.6.12"></script>
+<script src="js/iconos.js?v=0.6.12"></script>
+<script src="assets/logo.js?v=0.6.12"></script>
 <!-- Capas territoriales del SIA, compactadas por pruebas/generar_capas.py desde assets/fuentes/ -->
-<script src="assets/capa-alcaldias.js?v=0.6.11"></script>
-<script src="assets/capa-uga.js?v=0.6.11"></script>
-<script src="assets/capa-colonias.js?v=0.6.11"></script>
-<script src="js/datos-ficticios.js?v=0.6.11"></script>
-<script src="js/permisos.js?v=0.6.11"></script>
-<script src="js/derivacion.js?v=0.6.11"></script>
-<script src="js/almacen.js?v=0.6.11"></script>
-<script src="js/sesion.js?v=0.6.11"></script>
-<script src="js/referencias.js?v=0.6.11"></script>
-<script src="js/folio.js?v=0.6.11"></script>
-<script src="js/conexion.js?v=0.6.11"></script>
-<script src="js/mapa.js?v=0.6.11"></script>
-<script src="js/foto.js?v=0.6.11"></script>
-<script src="js/formulario.js?v=0.6.11"></script>
+<script src="assets/capa-alcaldias.js?v=0.6.12"></script>
+<script src="assets/capa-uga.js?v=0.6.12"></script>
+<script src="assets/capa-colonias.js?v=0.6.12"></script>
+<script src="js/datos-ficticios.js?v=0.6.12"></script>
+<script src="js/permisos.js?v=0.6.12"></script>
+<script src="js/derivacion.js?v=0.6.12"></script>
+<script src="js/almacen.js?v=0.6.12"></script>
+<script src="js/sesion.js?v=0.6.12"></script>
+<script src="js/referencias.js?v=0.6.12"></script>
+<script src="js/folio.js?v=0.6.12"></script>
+<script src="js/conexion.js?v=0.6.12"></script>
+<script src="js/mapa.js?v=0.6.12"></script>
+<script src="js/foto.js?v=0.6.12"></script>
+<script src="js/formulario.js?v=0.6.12"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.6.11"></script>
-<script src="js/registros.js?v=0.6.11"></script>
-<script src="js/reportes.js?v=0.6.11"></script>
-<script src="js/catalogos.js?v=0.6.11"></script>
-<script src="js/usuarios.js?v=0.6.11"></script>
-<script src="js/app.js?v=0.6.11"></script>
+<script src="js/espejo.js?v=0.6.12"></script>
+<script src="js/registros.js?v=0.6.12"></script>
+<script src="js/reportes.js?v=0.6.12"></script>
+<script src="js/catalogos.js?v=0.6.12"></script>
+<script src="js/usuarios.js?v=0.6.12"></script>
+<script src="js/app.js?v=0.6.12"></script>
 </body>
 </html>

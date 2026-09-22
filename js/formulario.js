@@ -8,21 +8,11 @@ SRP.formulario = {
 
   el(id) { return document.getElementById(id); },
 
-  /* AVANCE AUTOMÁTICO DEL FOCO.
-     En campo se captura con una mano y sin mirar la pantalla entre dato y dato: al resolver un
-     campo, el siguiente debe estar listo. Sólo se avanza cuando la respuesta quedó cerrada
-     —una especie elegida de la lista, un programa seleccionado— nunca mientras se escribe, para
-     no arrebatar el foco a media palabra. El orden es el mismo que se ve en la pantalla. */
-  ORDEN_FOCO: ['btn-ubicacion', 'campo-especie', 'campo-programa', 'campo-fecha'],
-
-  avanzarFoco(desde) {
-    const i = this.ORDEN_FOCO.indexOf(desde);
-    if (i < 0 || i + 1 >= this.ORDEN_FOCO.length) return;
-    const siguiente = this.el(this.ORDEN_FOCO[i + 1]);
-    if (!siguiente || siguiente.disabled) return;
-    siguiente.focus({ preventScroll: true });
-    siguiente.scrollIntoView({ block: 'center' });
-  },
+  /* SIN AVANCE AUTOMÁTICO DEL FOCO (D82).
+     Hasta el bloque 30 el formulario saltaba solo al campo siguiente al cerrar una respuesta
+     (ubicación → especie → programa → fecha). En uso real desorientaba: la pantalla se desplazaba
+     sin que el usuario lo pidiera y en móvil abría selectores por su cuenta. Ningún campo mueve
+     el foco por sí mismo; el usuario decide a dónde ir. */
 
   iniciar() {
     SRP.mapa.iniciar((lat, lng) => this.alMoverPunto(lat, lng));
@@ -34,9 +24,6 @@ SRP.formulario = {
     });
     this.el('btn-coord-aplicar').addEventListener('click', () => this.aplicarCoordenadasManuales());
     this.iniciarCombo();
-    this.el('campo-programa').addEventListener('change', () => {
-      if (this.el('campo-programa').value) this.avanzarFoco('campo-programa');
-    });
     this.el('foto-archivo').addEventListener('change', (e) => this.cargarFoto(e.target));
     this.el('btn-foto-quitar').innerHTML = SRP.ICONOS.svg('basura', 20);
     this.el('btn-foto-quitar').addEventListener('click', () => {
@@ -95,9 +82,6 @@ SRP.formulario = {
   },
 
   alMoverPunto(lat, lng) {
-    // Sólo cuando el punto lo puso el botón: si se está arrastrando el marcador, quitar el
-    // foco a media maniobra sería peor que dejarlo donde está.
-    if (document.activeElement === this.el('btn-ubicacion')) this.avanzarFoco('btn-ubicacion');
     const t = SRP.derivacion.derivar(lat, lng);
     this.estado.territorio = t;
     this.mostrarPunto(lat, lng, t);
@@ -155,7 +139,6 @@ SRP.formulario = {
       const li = e.target.closest('.combo-opcion'); if (!li) return;
       e.preventDefault();
       this.elegirEspecie(li.dataset.id);
-      if (li.dataset.id !== this.OTRA) this.avanzarFoco('campo-especie');
     });
   },
 
@@ -431,6 +414,14 @@ SRP.formulario = {
     this.el('dlg-guardado-id').textContent = 'Identificador: ' + registro.id;
     this.el('dlg-guardado').showModal();
     this.el('btn-registro-nuevo').focus();
+    // Quedó en este dispositivo y cuántos van (D83); la pastilla del encabezado se pone al día
+    this.el('dlg-guardado-dispositivo').textContent = '';
+    SRP.conexion.refrescar().then(async () => {
+      const n = await SRP.conexion.contarGuardados();
+      if (n === null) return;
+      this.el('dlg-guardado-dispositivo').textContent = 'Quedó guardado en este dispositivo. ' +
+        (n === 1 ? 'Es el primero.' : 'Ya son ' + n + '.') + (SRP.conexion.enLinea() ? '' : ' No hace falta internet para seguir.');
+    });
   },
 
   /* El formulario arranca en blanco en cada registro. Antes conservaba programa, fecha y

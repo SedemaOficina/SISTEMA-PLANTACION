@@ -48,6 +48,7 @@ SRP.app = {
     const faltan = [
       ['form-acceso', 'la pantalla de acceso'],
       ['vista-usuarios', 'la pantalla de usuarios'],
+      ['vista-reportes', 'la pantalla de reportes'],
       ['dlg-guardado', 'el aviso de registro guardado'],
       ['revision-lista', 'la ficha de revisión'],
       ['espejo-campos', 'el espejo de campos de prueba']
@@ -147,6 +148,7 @@ SRP.app = {
     this.el('navegacion').querySelector('[data-vista="usuarios"]').hidden = !p.usuarios;
     SRP.formulario.limpiar();
     this.mostrarVista(p.registrar ? 'registrar' : 'registros');
+    SRP.conexion.refrescar();   // la pastilla cuenta los registros del alcance de quien entró (D83)
   },
 
   /* ---------- Vistas ---------- */
@@ -165,6 +167,7 @@ SRP.app = {
     });
     if (nombre === 'registrar') SRP.formulario.preparar();
     if (nombre === 'registros') SRP.registros.preparar();
+    if (nombre === 'reportes') SRP.reportes.preparar();
     if (nombre === 'catalogos') SRP.catalogos.preparar();
     if (nombre === 'usuarios') SRP.usuarios.preparar();
     const titulo = this.el('vista-' + nombre).querySelector('h1');

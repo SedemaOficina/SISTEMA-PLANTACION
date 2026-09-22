@@ -13,16 +13,8 @@ SRP.usuarios = {
     this.el('btn-usr-agregar').addEventListener('click', () => this.abrirFormulario(null));
     this.el('btn-usr-cancelar').addEventListener('click', () => this.el('dlg-usuario').close());
     this.el('form-usuario').addEventListener('submit', (e) => { e.preventDefault(); this.guardar(); });
-    // El campo Coordinador sólo tiene sentido para un cabo
-    this.el('usr-perfil').addEventListener('change', () => {
-      this.ajustarPorPerfil();
-      // Un cabo necesita coordinador; los demás perfiles no, así que ahí termina el formulario
-      const sig = this.el('usr-perfil').value === 'CABO' ? 'usr-coordinador' : null;
-      if (sig) this.el(sig).focus({ preventScroll: true });
-    });
-    this.el('usr-area').addEventListener('change', () => {
-      if (this.el('usr-area').value) this.el('usr-cargo').focus({ preventScroll: true });
-    });
+    // El campo Coordinador sólo tiene sentido para un cabo. Sin saltos de foco automáticos (D82)
+    this.el('usr-perfil').addEventListener('change', () => this.ajustarPorPerfil());
     this.el('tabla-usuarios').addEventListener('click', (e) => {
       const b = e.target.closest('button[data-accion]'); if (!b) return;
       const u = SRP.ref.usuarioPorId[b.dataset.id];

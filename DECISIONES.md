@@ -78,6 +78,25 @@
   D69, no con 5 m fijos
 - [pendiente] **Clave de campo del ejemplar** (`CIZ_366`, la que pintan en la placa): sigue sin
   decidir si entra como atributo para conciliar lo ya plantado
+- [pendiente] **Cola de envío al servidor (Fase 2).** Especificación acordada con Liber el
+  22-09-2026 a partir de cómo lo resuelve KoboToolbox/Enketo: (1) cada registro guardado queda en
+  cola con estado local `guardado` → `enviado` → `con error`; (2) mientras la app esté abierta y
+  haya señal, un proceso en segundo plano intenta enviar la cola a intervalos y reintenta los
+  fallidos; (3) botón «Enviar ahora» para forzar un intento entre automáticos; (4) nada se borra
+  del dispositivo hasta que el servidor confirme la recepción; (5) la pastilla del encabezado
+  (D83) pasa de «N guardados» a «N pendientes de enviar» y el bloque «Registros en este
+  dispositivo» de Reportes muestra el estado de cada uno. No se adoptan de Kobo: el modal que
+  exige OK en cada envío, la figura de borrador (aquí el registro está completo o no se guarda) ni
+  esconder la cola en una barra lateral
+- [pendiente] **Catálogo real de especies (bloque 32).** Liber entregó el 22-09-2026
+  `CGO_ESPECIES_REFORESTACION_URBANA` (76 especies, verificadas contra EncicloVida/CONABIO):
+  `id_especie` ESP-0001…ESP-0076 como llave, `nombre_comun`, `nombre_cientifico`,
+  `otros_nombres_comunes` (buscables, no resuelven a una sola especie), `tipo_distribucion`
+  (Endémica · Nativa · Exótica · Exótica-Invasora, sustituye a Nativa/Introducida),
+  `formadecrecimiento`, `id_snib`, `id_enciclovida`. Dos filas quedan **pendientes de decisión**
+  de Liber: ESP-0032 y ESP-0033 (*Hesperocyparis* vs *Cupressus*; recomendación del catálogo:
+  cargar *Cupressus* y conservar *Hesperocyparis* como sinónimo buscable). Resuelve los dos
+  pendientes de «validación del catálogo» y «formato de las claves» de abajo
 
 - [pendiente] **Antes de liberar esta etapa: sustituir las tres capas** —alcaldías, malla UGA y colonias— por las definitivas del SIA, con fuente y fecha de corte confirmadas, y volver a correr `pruebas/generar_capas.py`. Las tres cargadas hoy son para probar: alcaldías y UGA traen los defectos medidos en el bloque 15, y colonias es la cartografía electoral del IECM 2022, no un catálogo del SIA. Al sustituirlas se sube `meta.version` y se rederivan los registros existentes. Anotado por Liber, 22-09-2026
 
@@ -322,3 +341,26 @@
   tachadas: «Sin conexión · puede seguir registrando». Dorado y no rojo porque no es un error. Vive
   en el encabezado de sesión, así que se ve en Nuevo registro y en Registros y nunca en el acceso.
   Pedido por Liber.
+
+## Bloque 31 — Reportes aparte, sin saltos de foco, la cuenta a la vista
+
+- **D81. «Reportes» es una pestaña propia.** Lleva el «Parte del día» (día y, para quien ve a
+  varias personas, cabo; consulta propia de los registros del día) y el bloque «Registros en este
+  dispositivo» con respaldo y guía sin internet. «Registros» queda sólo para filtrar, ver, editar
+  y eliminar. Antes las dos cosas convivían en Registros (D79) y la pantalla mezclaba consulta con
+  generación. `descripcionFiltro()` se retiró de registros.js por no tener uso. Propuesto por
+  Liber, confirmado.
+- **D82. Ningún formulario mueve el foco por su cuenta.** Se retira el avance automático de
+  Nuevo registro (ubicación → especie → programa → fecha), el encadenado del filtro por periodo
+  (Desde abría Hasta, Hasta aplicaba: D75 queda superada; «Un periodo» sólo muestra los campos y
+  el rango entra con «Aplicar») y los saltos del alta de cuentas (perfil → coordinador, área →
+  cargo). Desorientaba: la pantalla se desplazaba sola y en móvil se abrían selectores sin
+  pedirlo. Se conservan los focos que la persona pide con su acción: «Editar» desde la ficha,
+  «Agregar registro nuevo», el campo de «Otra especie» al elegirla, y los errores. Pedido por
+  Liber.
+- **D83. La pastilla de conexión lleva la cuenta de registros guardados** («Con conexión · 4
+  guardados») en todas las pantallas, y el aviso «Registro guardado» dice que quedó en este
+  dispositivo y cuántos van, sin pedir otro clic. Con D81 el bloque del dispositivo se fue a
+  Reportes, a donde el cabo no va en campo; la pastilla sí se ve siempre. Tomado de la cola de
+  envío de KoboToolbox, evaluada con Liber; lo que exige servidor queda en el pendiente «Cola de
+  envío (Fase 2)».

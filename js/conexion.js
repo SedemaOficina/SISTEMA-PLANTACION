@@ -8,6 +8,12 @@
    hacer con ellos. Cuando exista el servidor (Fase 2), el mismo aviso dirá «N pendientes de
    enviar» y aquí vivirá el botón de sincronizar.
 
+   LA CUENTA VA EN LA PASTILLA (D83). El bloque «Registros en este dispositivo» vive en Reportes,
+   a donde el cabo no va en campo; la pastilla del encabezado se ve en todas las pantallas, así
+   que lleva la cuenta («Con conexión · 4 guardados») y al tocarla abre la guía. Es lo que hace
+   la cola de envío de KoboToolbox, sin su barra lateral. El aviso de «Registro guardado» dice
+   además que quedó en este dispositivo y cuántos van, sin pedir otro clic.
+
    RESPALDO. Un archivo con todo lo que guarda el dispositivo —plantaciones, cierres y bitácora,
    con el mismo esquema de la base— que se comparte igual que el PDF. Un respaldo que nunca se ha
    restaurado es una suposición (Norma 4.9): por eso «Restaurar respaldo» existe, en las
@@ -42,21 +48,31 @@ SRP.conexion = {
   async refrescar() {
     const con = this.enLinea();
     const ind = this.el('conexion');
+    const n = await this.contarGuardados();
+    const cuenta = n === null ? '' : ' · ' + (n === 1 ? '1 guardado' : n + ' guardados');
     ind.innerHTML = SRP.ICONOS.svg(con ? 'senal' : 'sinSenal', 18) +
-      '<span>' + (con ? 'Con conexión' : 'Sin conexión · puede seguir registrando') + '</span>';
+      '<span>' + (con ? 'Con conexión' : 'Sin conexión') + cuenta + '</span>';
     ind.dataset.estado = con ? 'con' : 'sin';
-    ind.setAttribute('aria-label', (con ? 'Con conexión' : 'Sin conexión, puede seguir registrando') + '. Abrir la guía de qué hacer sin internet');
+    ind.setAttribute('aria-label', (con ? 'Con conexión' : 'Sin conexión, puede seguir registrando') +
+      (n === null ? '' : ', ' + n + ' registros guardados en este dispositivo') + '. Abrir la guía de qué hacer sin internet');
     await this.refrescarAvisoEnvio();
   },
 
-  /* Cuántos registros guarda este dispositivo y qué hacer con ellos. Se cuentan los del alcance
-     de quien entró: un cabo ve los suyos. */
-  async refrescarAvisoEnvio() {
-    const caja = this.el('aviso-envio');
-    if (!caja || !SRP.sesion.usuario || !SRP.almacen.db) return;
+  /* Cuántos registros guarda este dispositivo, en el alcance de quien entró: un cabo cuenta los
+     suyos. null cuando todavía no hay sesión o almacén. */
+  async contarGuardados() {
+    if (!SRP.sesion.usuario || !SRP.almacen.db) return null;
     const u = SRP.sesion.usuario;
     const todos = await SRP.almacen.porIndice('plantaciones', 'estatus', 'activo');
-    const n = todos.filter(r => SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId)).length;
+    return todos.filter(r => SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId)).length;
+  },
+
+  // Qué hacer con los registros guardados: bloque «Registros en este dispositivo» de Reportes
+  async refrescarAvisoEnvio() {
+    const caja = this.el('aviso-envio');
+    if (!caja) return;
+    const n = await this.contarGuardados();
+    if (n === null) return;
     const cuenta = n === 1 ? '1 registro guardado' : n + ' registros guardados';
     caja.innerHTML = '<strong>' + cuenta + '.</strong> ' + (this.enLinea()
       ? 'Por ahora no hay envío al servidor: los registros se quedan aquí. Genere el parte del día y compártalo con su coordinador, o guarde un respaldo. <strong>No borre los datos del navegador.</strong>'

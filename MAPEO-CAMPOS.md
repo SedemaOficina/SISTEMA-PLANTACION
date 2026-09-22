@@ -141,7 +141,8 @@ Almacén `bitacora`. No se edita desde el sistema.
 
 ## Módulo: Cierre del parte del día
 
-Diálogo **Datos de cierre del día**, que se abre al generar el reporte. Almacén `cierres`.
+Diálogo **Datos de cierre del día**, que se abre desde la pestaña **Reportes** al generar el parte
+de un día (D81). Almacén `cierres`.
 Todo lo que aquí se captura es **opcional** y va únicamente al documento: no se explota ni se
 cuenta. Lo que ya vive en los registros —especies, conteos, alcaldía— no se pregunta, se calcula
 (D58).

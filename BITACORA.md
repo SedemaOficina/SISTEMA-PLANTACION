@@ -661,3 +661,32 @@ internet, con lo que la guía queda a un toque en la pantalla principal.
 
 **Verificación:** sintaxis; 225 comprobaciones (una nueva: la pastilla abre la guía), sin errores
 de consola; presentación sin desbordes. Marca de versión 0.6.11.
+
+## Bloque 31 — Reportes aparte, sin saltos de foco, la cuenta a la vista (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.12.
+
+**Reportes (D81).** Nueva pestaña y vista `vista-reportes` con dos bloques: «Parte del día»
+(`pdf-dia` con máximo hoy, `pdf-cabo` sólo para quien ve a varias personas, nota con cuántos
+registros se reportarán y botón que se apaga sin registros) y «Registros en este dispositivo»
+(aviso, respaldo, guía). `SRP.reportes` gana `preparar`, `registrosAlcance`, `registrosDelDia`,
+`refrescarVista` y `generarDesdeVista`; `registros.js` pierde toda la lógica de reporte y el
+`descripcionFiltro()` muerto. `app.js` prepara la vista al entrar y la incluye en la comprobación
+de versión completa.
+
+**Sin saltos de foco (D82).** Fuera `ORDEN_FOCO`/`avanzarFoco` y sus tres llamadas en
+formulario.js; fuera el encadenado Desde → Hasta → Aplicar y `abrirSelector` en registros.js;
+fuera los saltos perfil → coordinador y área → cargo en usuarios.js.
+
+**La cuenta a la vista (D83).** `SRP.conexion.contarGuardados()` alimenta la pastilla («Con
+conexión · N guardados»), el bloque de Reportes y la nueva línea `dlg-guardado-dispositivo` del
+aviso de guardado. La pastilla se refresca al entrar, al guardar y al eliminar.
+
+**Evaluación de KoboToolbox.** A petición de Liber se comparó su cola de envío sin conexión: lo
+que aplica hoy entró como D83; lo que exige servidor quedó especificado en el pendiente «Cola de
+envío al servidor (Fase 2)». Liber entregó además el catálogo real de especies (76), que se
+carga en el bloque 32; queda anotado con sus dos decisiones abiertas.
+
+**Verificación:** sintaxis; 229 comprobaciones (Reportes: bloques, día por omisión, cabo según
+alcance, botón que se apaga; D82: seis; D83: tres), sin errores de consola; 45 de auditoría;
+presentación sin desbordes en ocho combinaciones, ahora con la vista Reportes. Marca de versión
+0.6.12.

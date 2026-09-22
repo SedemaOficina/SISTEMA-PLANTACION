@@ -142,9 +142,9 @@ vuelva a abrir sin red; se registra con la misma marca `?v=` de `index.html`, as
 marca al cerrar un bloque sigue siendo lo único que hay que hacer** para que los teléfonos
 actualicen (el worker nuevo reemplaza al viejo al abrir con señal). `manifest.webmanifest` permite
 instalarla en la pantalla de inicio. En la Etapa 1 no hay servidor: los registros se quedan en el
-dispositivo; el encabezado dice el estado de la conexión, Registros dice cuántos registros guarda
-el dispositivo y qué hacer, y «Guardar respaldo» produce un archivo con todo (se restaura desde
-las herramientas de prueba). Ver D71 y D72.
+dispositivo; la pastilla del encabezado dice el estado de la conexión y cuántos registros guarda
+el dispositivo, Reportes dice qué hacer con ellos, y «Guardar respaldo» produce un archivo con
+todo (se restaura desde las herramientas de prueba). Ver D71, D72, D81 y D83.
 
 ## Folio del ejemplar
 

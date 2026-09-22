@@ -32,6 +32,72 @@ SRP.reportes = {
   iniciar() {
     this.el('form-cierre').addEventListener('submit', (e) => { e.preventDefault(); this.aceptar(); });
     this.el('btn-cierre-cancelar').addEventListener('click', () => this.el('dlg-cierre').close());
+    this.el('pdf-dia').addEventListener('change', () => this.refrescarVista());
+    this.el('pdf-cabo').addEventListener('change', () => this.refrescarVista());
+    this.el('btn-pdf').addEventListener('click', () => this.generarDesdeVista());
+  },
+
+  /* ---------- La vista Reportes (D81) ---------- */
+
+  /* EL PARTE ES DE UN DÍA. Lo decidió Liber: el reporte es el parte de la jornada, y los datos
+     que lo acompañan —chófer, hora de finalización, observaciones— no valen para un mes. Aquí se
+     elige el día (hoy por omisión, nunca futuro) y, quien ve a varias personas, el cabo. La vista
+     no depende de cómo esté filtrada la lista de Registros: hace su propia consulta. */
+  async preparar() {
+    const u = SRP.sesion.usuario;
+    const alcance = SRP.permisos.de(u).alcance;
+    const dia = this.el('pdf-dia');
+    dia.max = SRP.util.fechaHoy();
+    if (!dia.value) dia.value = SRP.util.fechaHoy();
+    const caja = this.el('caja-pdf-cabo');
+    caja.hidden = alcance === 'propios';
+    if (!caja.hidden) {
+      const previo = this.el('pdf-cabo').value;
+      const todos = await this.registrosAlcance();
+      const ids = [...new Set(todos.map(r => r.cabo_id))];
+      this.el('pdf-cabo').innerHTML = '<option value="">Todos los cabos</option>' + ids
+        .map(id => [id, SRP.ref.nombreUsuario(id)]).sort((a, b) => a[1].localeCompare(b[1], 'es'))
+        .map(([id, n]) => '<option value="' + id + '">' + SRP.util.escapar(n) + '</option>').join('');
+      this.el('pdf-cabo').value = ids.includes(previo) ? previo : '';
+    }
+    await this.refrescarVista();
+    if (SRP.conexion) SRP.conexion.refrescarAvisoEnvio();
+  },
+
+  // Todo lo activo que quien entró puede ver
+  async registrosAlcance() {
+    const u = SRP.sesion.usuario;
+    const todos = await SRP.almacen.porIndice('plantaciones', 'estatus', 'activo');
+    return todos.filter(r => SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId));
+  },
+
+  // Los del día elegido (y del cabo elegido), en el orden en que se capturaron
+  async registrosDelDia(dia, caboId) {
+    return (await this.registrosAlcance())
+      .filter(r => r.fecha_plantacion === dia && (!caboId || r.cabo_id === caboId))
+      .sort((a, b) => a.fecha_registro.localeCompare(b.fecha_registro));
+  },
+
+  /* Un botón apagado sin explicación se lee como una falla del sistema (Norma 7.6): la nota dice
+     qué se va a reportar, o qué falta para poder hacerlo. */
+  async refrescarVista() {
+    const dia = this.el('pdf-dia').value;
+    const cabo = this.el('caja-pdf-cabo').hidden ? '' : this.el('pdf-cabo').value;
+    const n = dia ? (await this.registrosDelDia(dia, cabo)).length : 0;
+    this.el('btn-pdf').disabled = !dia || n === 0;
+    this.el('pdf-nota').textContent = !dia
+      ? 'El reporte es el parte de un día. Elija el día del parte.'
+      : n === 0 ? 'No hay registros del ' + SRP.util.formatearFecha(dia) + (cabo ? ' de ' + SRP.ref.nombreUsuario(cabo) : '') + '.'
+      : (n === 1 ? 'Se reportará el registro del ' : 'Se reportarán los ' + n + ' registros del ') + SRP.util.formatearFecha(dia) +
+        (cabo ? ' de ' + SRP.ref.nombreUsuario(cabo) : '') + '. Si ya se generó, se vuelve a abrir con sus datos de cierre para corregirlos.';
+  },
+
+  async generarDesdeVista() {
+    const dia = this.el('pdf-dia').value;
+    const cabo = this.el('caja-pdf-cabo').hidden ? '' : this.el('pdf-cabo').value;
+    const registros = await this.registrosDelDia(dia, cabo);
+    if (!dia || !registros.length) return;
+    this.abrir(registros, dia, cabo);
   },
 
   /* La clave junta el día con el cabo filtrado: un coordinador puede sacar el parte de cada una
