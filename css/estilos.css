@@ -185,6 +185,12 @@ main:focus { outline: none; }
 }
 .pin { background: none; border: 0; }
 .coord-manual { margin-bottom: var(--e-3); }
+/* Icono GPS en lugar del triángulo para "Capturar coordenadas a mano", y ocultar summary cuando se abre */
+#summary-coord::before {
+  content: '📍'; width: auto; height: auto;
+  border: none; font-size: var(--t-m); margin-right: var(--e-1);
+}
+#detalles-coord[open] #summary-coord { display: none; }
 
 .franja-edicion { background: var(--fondo-suave); border-left: 4px solid var(--guinda); padding: var(--e-3) var(--e-4); }
 

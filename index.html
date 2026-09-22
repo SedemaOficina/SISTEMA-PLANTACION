@@ -76,8 +76,8 @@
 
     <h2 class="titulo-bloque">Ubicación <span class="obligatorio" aria-hidden="true">*</span></h2>
     <button type="button" id="btn-ubicacion" class="btn btn-primario btn-ancho"></button>
-    <details class="coord-manual desplegable">
-      <summary><span>Capturar coordenadas a mano</span></summary>
+    <details class="coord-manual desplegable" id="detalles-coord">
+      <summary id="summary-coord"><span>Capturar coordenadas a mano</span></summary>
       <div class="campo-doble">
         <div class="campo"><label for="coord-lat">Latitud</label><input id="coord-lat" inputmode="decimal" placeholder="19.432600"></div>
         <div class="campo"><label for="coord-lng">Longitud</label><input id="coord-lng" inputmode="decimal" placeholder="-99.133200"></div>
@@ -100,7 +100,7 @@
       <div class="campo-doble">
         <div class="campo"><label for="dato-coordenadas">Coordenadas (latitud, longitud)</label>
           <output id="dato-coordenadas" class="campo-lectura" for="mapa">—</output></div>
-        <div class="campo"><label for="dato-origen">Cómo se obtuvo el punto</label>
+        <div class="campo oculto-visual"><label for="dato-origen">Cómo se obtuvo el punto</label>
           <output id="dato-origen" class="campo-lectura" for="mapa">—</output></div>
       </div>
       <div class="campo-doble">
