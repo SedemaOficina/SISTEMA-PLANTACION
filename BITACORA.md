@@ -532,3 +532,19 @@ etiquetas.
 
 **Pendiente registrado:** los reportes PDF se validan en conjunto cuando el formulario esté
 terminado (ver DECISIONES); ahí se decide si `comentarios` entra al reporte.
+
+## Bloque 17 — Reiniciar filtros y menos atajos en Registros (21-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.5.9.
+
+**Qué cambió.** Se retiran los atajos «Mes pasado» y «Este año»: quedan Hoy, Este mes y Todos, y
+lo que cubrían se resuelve con las listas de Año y Mes. Se agrega «Reiniciar filtros», botón de
+apoyo (gris subrayado, D25) al pie del bloque de filtros, que devuelve la vista a su estado de
+entrada: Hoy, sin año ni mes, sin rango y todos los cabos (D53). Se mantiene «Todos» porque hace
+otra cosa: quita el periodo y respeta el cabo elegido.
+
+**Retirado:** las ramas de `aplicarAtajo()` y el cálculo de mes pasado en `sincronizarControles()`
+que sólo servían a los dos chips. D19 queda anotada como modificada por D53.
+
+**Verificación:** sintaxis; 166 comprobaciones del recorrido (tres nuevas: reiniciar vuelve a Hoy
+y limpia el rango, lista los de hoy, y los atajos son tres), sin errores de consola; 44 de la
+auditoría; presentación sin desbordes; sin ids ni funciones sin uso. Marca de versión 0.5.9.

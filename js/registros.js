@@ -51,6 +51,7 @@ SRP.registros = {
       this.sincronizarControles();
       this.aplicar();
     });
+    this.el('btn-reiniciar-filtros').addEventListener('click', () => this.reiniciarFiltros());
     this.el('btn-mas').addEventListener('click', () => this.pintar(true));
     this.el('lista-registros').addEventListener('click', (e) => {
       const b = e.target.closest('button[data-accion]'); if (!b) return;
@@ -96,6 +97,18 @@ SRP.registros = {
     this.aplicar();
   },
 
+  /* Deja los filtros como al abrir la vista por primera vez: Hoy, sin año ni mes, sin rango y
+     todos los cabos. Es distinto de «Todos», que sólo quita el periodo y respeta el cabo. */
+  reiniciarFiltros() {
+    this.filtro = { dia: SRP.util.fechaHoy(), anio: '', mes: '', desde: '', hasta: '', cabo: '' };
+    this.el('filtro-cabo').value = '';
+    this.limpiarRango();
+    this.llenarMeses();
+    this.sincronizarControles();
+    this.aplicar();
+    SRP.util.anunciar('Filtros reiniciados: registros de hoy.');
+  },
+
   /* ---------- Periodo ---------- */
 
   // Años con registros, del más reciente al más antiguo
@@ -131,11 +144,9 @@ SRP.registros = {
     f.dia = '';
     if (atajo === 'hoy') { f.dia = SRP.util.fechaHoy(); f.anio = ''; f.mes = ''; }
     else if (atajo === 'todos') { f.anio = ''; f.mes = ''; }
-    else if (atajo === 'anio') { f.anio = String(hoy.getFullYear()); f.mes = ''; }
-    else {
-      const d = new Date(hoy.getFullYear(), hoy.getMonth() - (atajo === 'mes-pasado' ? 1 : 0), 1);
-      f.anio = String(d.getFullYear());
-      f.mes = String(d.getMonth() + 1).padStart(2, '0');
+    else {   // 'mes'
+      f.anio = String(hoy.getFullYear());
+      f.mes = String(hoy.getMonth() + 1).padStart(2, '0');
     }
     this.limpiarRango();
     this.llenarMeses();            // ajusta el mes si ese año no tiene registros de ese mes
@@ -156,15 +167,11 @@ SRP.registros = {
     this.el('filtro-mes').disabled = !f.anio;
     const hoy = new Date();
     const mesActual = String(hoy.getFullYear()) + '-' + String(hoy.getMonth() + 1).padStart(2, '0');
-    const d = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
-    const mesPasado = String(d.getFullYear()) + '-' + String(d.getMonth() + 1).padStart(2, '0');
     const periodo = f.anio ? f.anio + (f.mes ? '-' + f.mes : '') : '';
     const sinRango = !f.desde && !f.hasta;
     const activo = {
       hoy: sinRango && f.dia === SRP.util.fechaHoy(),
       mes: sinRango && !f.dia && periodo === mesActual,
-      'mes-pasado': sinRango && !f.dia && periodo === mesPasado,
-      anio: sinRango && !f.dia && periodo === String(hoy.getFullYear()),
       todos: sinRango && !f.dia && periodo === ''
     };
     this.el('filtro-atajos').querySelectorAll('.chip').forEach(c =>

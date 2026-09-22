@@ -333,6 +333,13 @@ with sync_playwright() as p:
     pg.fill('#filtro-desde','2026-08-01'); pg.fill('#filtro-hasta','2026-08-31'); pg.click('#btn-filtrar'); pg.wait_for_timeout(300)
     ok('Total: 1 ' in pg.inner_text('#registros-total'),'el rango de agosto trae uno')
     ok(pg.input_value('#filtro-anio')=='','el rango limpia Año y Mes')
+    # Reiniciar vuelve al estado de entrada: Hoy, sin rango (D53)
+    pg.click('#btn-reiniciar-filtros'); pg.wait_for_timeout(300)
+    ok(pg.locator('#filtro-atajos .chip[data-atajo=hoy][aria-pressed=true]').count()==1 and pg.input_value('#filtro-desde')=='',
+       'Reiniciar filtros vuelve a Hoy y limpia el rango')
+    ok('Total: 2 ' in pg.inner_text('#registros-total'),'y lista los de hoy: '+pg.inner_text('#registros-total'))
+    ok(pg.locator('#filtro-atajos .chip').count()==3,'los atajos son tres: Hoy, Este mes y Todos (D53)')
+    pg.fill('#filtro-desde','2026-08-01'); pg.fill('#filtro-hasta','2026-08-31'); pg.click('#btn-filtrar'); pg.wait_for_timeout(300)
     pg.click('.chip[data-atajo=todos]'); pg.wait_for_timeout(300)
     ok(pg.input_value('#filtro-desde')=='','y un atajo limpia el rango')
 
