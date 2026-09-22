@@ -555,3 +555,16 @@ dos casos, y que ningún campo nuevo queda fuera del espejo), sin errores de con
 auditoría (MAPEO-CAMPOS al día con los seis campos); presentación sin desbordes; el PDF generado
 en la prueba trae la columna Folio, PROVISIONAL en cada renglón y la advertencia. Marca de
 versión 0.6.4.
+
+## Bloque 24 — El parte de cualquier día (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.5.
+
+**Qué cambió (D70).** Selector «Día del parte» junto al botón de reporte: elegir una fecha filtra
+la lista a ese día y habilita el reporte, sin pasar por «Un periodo» con Desde = Hasta. El
+selector no admite fechas futuras y se sincroniza con el filtro: al tocar «Hoy» muestra hoy; con
+«Todos» queda vacío y el botón apagado, con la nota que lo explica. La edición del parte no es
+nueva —el cierre se reabre con lo capturado—, pero nadie lo sabía: la nota ahora lo dice.
+
+**Verificación:** sintaxis; 204 comprobaciones del recorrido (tres nuevas: una fecha pasada
+filtra y habilita, ningún atajo queda marcado, el cierre es del día elegido), sin errores de
+consola; 45 de auditoría; presentación sin desbordes. Marca de versión 0.6.5.

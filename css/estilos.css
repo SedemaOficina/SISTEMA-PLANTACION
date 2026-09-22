@@ -166,6 +166,8 @@ main:focus { outline: none; }
 
 .fila-botones { display: flex; flex-wrap: wrap; gap: var(--e-2); align-items: flex-end; margin-bottom: var(--e-3); }
 .acciones { display: flex; flex-wrap: wrap; gap: var(--e-3); margin-top: var(--e-5); }
+.acciones-reporte { align-items: center; }
+.acciones-reporte .nota { flex-basis: 100%; margin: 0; }
 
 .errores { border-left: 4px solid var(--error); background: var(--error-fondo); padding: var(--e-3) var(--e-4); margin-bottom: var(--e-4); }
 .errores h2 { color: var(--error); font-size: var(--t-m); }

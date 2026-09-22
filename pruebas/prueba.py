@@ -396,6 +396,13 @@ with sync_playwright() as p:
     pg.click('.chip[data-atajo=periodo]'); pg.wait_for_timeout(200)
     pg.fill('#filtro-desde',HOY); pg.fill('#filtro-hasta',HOY); pg.click('#btn-filtrar'); pg.wait_for_timeout(300)
     ok(not pg.is_disabled('#btn-pdf'),'un rango de un solo día también deja generar')
+    # Cualquier día, no sólo hoy (D70): el selector «Día del parte» filtra a ese día
+    pg.fill('#pdf-dia','2026-08-10'); pg.dispatch_event('#pdf-dia','change'); pg.wait_for_timeout(300)
+    ok('Total: 1 ' in pg.inner_text('#registros-total') and not pg.is_disabled('#btn-pdf'),'«Día del parte» con una fecha pasada filtra la lista y habilita el reporte: '+pg.inner_text('#pdf-nota'))
+    ok(pg.locator('#filtro-atajos .chip[aria-pressed=true]').count()==0,'y ningún atajo queda marcado, porque no es hoy')
+    pg.click('#btn-pdf'); pg.wait_for_timeout(400)
+    ok('10-AGO-2026' in pg.inner_text('#dlg-cierre-dia'),'el cierre es del día elegido: '+pg.inner_text('#dlg-cierre-dia'))
+    pg.click('#btn-cierre-cancelar'); pg.wait_for_timeout(200)
     pg.click('.chip[data-atajo=hoy]'); pg.wait_for_timeout(300)
 
     pg.click('#btn-pdf'); pg.wait_for_timeout(400)

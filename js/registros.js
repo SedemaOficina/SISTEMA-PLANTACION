@@ -65,6 +65,17 @@ SRP.registros = {
       if (b.dataset.accion === 'eliminar') this.eliminar(r);
     });
     this.el('btn-pdf').addEventListener('click', () => this.generarReporte());
+    // Elegir el día del parte filtra la lista a ese día, como el chip «Hoy» pero con cualquier fecha (D70)
+    this.el('pdf-dia').addEventListener('change', () => {
+      const dia = this.el('pdf-dia').value;
+      if (!dia) return;
+      this.filtro.dia = dia; this.filtro.anio = ''; this.filtro.mes = '';
+      this.periodoAbierto = false;
+      this.limpiarRango();
+      this.llenarMeses();
+      this.sincronizarControles();
+      this.aplicar();
+    });
     this.el('btn-detalle-cerrar').addEventListener('click', () => this.el('dlg-detalle').close());
     // Al cerrar, su mapa se destruye: uno vivo en un diálogo oculto sigue consumiendo y contando
     this.el('dlg-detalle').addEventListener('close', () => {
@@ -260,11 +271,14 @@ SRP.registros = {
     /* Un botón apagado sin explicación se lee como una falla del sistema (Norma 7.6): al lado
        dice qué se va a reportar, o qué falta para poder hacerlo. */
     const dia = this.diaDelFiltro();
+    this.el('pdf-dia').value = dia;
+    this.el('pdf-dia').max = SRP.util.fechaHoy();
     this.el('btn-pdf').disabled = !dia || n === 0;
     this.el('pdf-nota').textContent = !dia
-      ? 'El reporte es el parte de un día. Toque «Hoy», o en «Un periodo» ponga la misma fecha en «Desde» y «Hasta».'
+      ? 'El reporte es el parte de un día. Elija el día del parte, o toque «Hoy».'
       : n === 0 ? 'No hay registros del ' + SRP.util.formatearFecha(dia) + '.'
-      : (n === 1 ? 'Se reportará el registro del ' : 'Se reportarán los ' + n + ' registros del ') + SRP.util.formatearFecha(dia) + '.';
+      : (n === 1 ? 'Se reportará el registro del ' : 'Se reportarán los ' + n + ' registros del ') + SRP.util.formatearFecha(dia) +
+        '. Si ya se generó, se vuelve a abrir con sus datos de cierre para corregirlos.';
   },
 
   /* El detalle se lee igual que la ficha de revisión: el mapa arriba, los datos con su etiqueta

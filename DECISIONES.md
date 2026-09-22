@@ -225,3 +225,12 @@
   frente monoespecífico— se controla con el conteo del parte contra la meta y con la supervisión
   del coordinador. Se difiere íntegro a Fase 2; por ahora se guarda la precisión de cada punto,
   que es el insumo. Señalado por Liber; regla acordada.
+
+## Bloque 24 — El parte de cualquier día
+
+- **D70. El reporte es de un día, de cualquier día, y se puede volver a generar.** D55 dejaba el
+  parte atado al chip «Hoy» o a un rango con Desde = Hasta; en la práctica sólo se sacaba el de
+  hoy. Ahora un selector «Día del parte» junto al botón filtra la lista a la fecha elegida (ayer,
+  la semana pasada) y habilita el reporte; el chip «Hoy» sigue siendo el atajo. Volver a generar
+  el mismo día reabre el cierre con lo capturado —ya era así desde el bloque 19— y lo reescribe,
+  con constancia en bitácora; la nota junto al botón lo dice. Definido por Liber.
