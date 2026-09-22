@@ -64,8 +64,10 @@ js/referencias.js     Catálogos y cuentas en memoria
 js/iconos.js          Iconos por significado (guardar, eliminar, editar, ubicar)
 js/mapa.js, foto.js, formulario.js, registros.js, reportes.js, catalogos.js,
 js/usuarios.js, app.js, util.js
-assets/capas-ficticias.js  Capas geográficas FICTICIAS (sustituir por las reales)
+assets/fuentes/       Capas del SIA tal como llegaron (alcaldías y malla UGA); no se editan
+assets/capa-alcaldias.js, capa-uga.js  Las mismas capas, compactadas para la aplicación (generadas)
 assets/logo.js        Logotipo SEDEMA incrustado
+js/espejo.js          Espejo de campos, sólo en la versión de prueba (se elimina al cerrar la Etapa 1)
 vendor/               Bibliotecas incluidas localmente (Leaflet, jsPDF, Turf)
 ```
 
@@ -104,13 +106,25 @@ La capa base es imagen de satélite de Esri, con los nombres de vías y lugares 
 capas se declaran en `CAPAS`, dentro de `js/config.js`; cambiar de proveedor es cambiar esa lista.
 La atribución se muestra porque la licencia lo exige.
 
-## Sustituir las capas geográficas
+## Capas territoriales
 
-Reemplazar `assets/capas-ficticias.js` conservando `SRP.CAPAS` y estos atributos:
-- `alcaldias_colonias`: polígonos de colonia en EPSG:4326 con `cve_alc`, `alcaldia`, `cve_col`, `colonia`.
-- `uga`: polígonos de la malla con `id_uga`.
+Las capas son del SIA. Los archivos originales viven en `assets/fuentes/` y no se tocan: son la
+constancia de qué se recibió. La aplicación carga versiones compactadas —atributos mínimos, seis
+decimales— que produce `pruebas/generar_capas.py`. **Nunca se editan a mano**: para cambiar una
+capa se sustituye el original y se vuelve a correr el script, que valida cantidad de features,
+claves únicas, anillos cerrados y sistema de referencia antes de escribir nada.
 
-Cada capa lleva `meta` con origen, versión y fecha de corte.
+| Capa | Archivo original | Features | Clave | Qué guarda el registro |
+|---|---|---|---|---|
+| Alcaldías | `alcaldias_cdmx.json` | 16 | `cvegeo` INEGI | `alcaldia_cve` y `alcaldia` (nombre) |
+| Malla UGA | `ugasdata.wgs84.json` | 1,624 hexágonos de ~1 km² | `CLAVE` (`TLP-318`) | `uga` |
+
+No hay capa de colonias todavía: `colonia` se guarda nula y la pantalla lo dice como pendiente.
+
+La capa de alcaldías trae, de origen, cinco huecos y tres solapes entre polígonos vecinos (el mayor
+hueco de 1.2 ha, el mayor solape de 2.5 ha). No se corrigen aquí. En un solape gana el primer
+polígono de la capa; en un hueco el registro se guarda sin alcaldía, con la versión de la capa, para
+rederivarlo cuando se corrija. Al actualizar una capa se sube `meta.version` en `generar_capas.py`.
 
 ## Pruebas
 

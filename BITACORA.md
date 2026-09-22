@@ -435,3 +435,63 @@ bloque en esa anchura.
 campos, valores reales, actualización en vivo sin recargar, y las dos caras de la edición—; 39 de
 auditoría; la revisión de presentación en ocho combinaciones de ancho y zoom; y las dos pruebas de
 migración.
+
+---
+
+## Bloque 15 — Capas reales del SIA: alcaldías y malla UGA
+
+Llegaron los dos GeoJSON. Antes de tocar código se revisaron los dos archivos completos:
+estructura, sistema de referencia, atributos, claves, geometrías y topología.
+
+**Lo que traen.** Alcaldías: 16 MultiPolygon en EPSG:4326, un polígono cada uno, con `cvegeo`
+(clave INEGI, `09012`), `nomgeo` y `clv_mun` (`TLP`); 17,414 vértices y coordenadas con hasta 11
+decimales. UGA: 1,624 hexágonos de 1 km² exacto (0.998–1.001), un solo atributo `CLAVE` con la
+forma `TLP-318`; el prefijo es una de las 16 claves de alcaldía. Sin claves repetidas, sin
+geometrías inválidas, sin anillos abiertos. La malla cubre toda la ciudad y se sale 140 km² por
+los bordes, como corresponde a una malla regular.
+
+**Lo que traen de defecto, medido.** Entre polígonos vecinos de alcaldías hay **tres solapes**
+—GAM–VCA de 25,203 m², CUH–GAM de 6,044 m², GAM–AZC de 27 m²— y **cinco huecos**: uno de
+12,272 m² cerca de 19.4838, -99.1499, y cuatro menores de 339, 94, 12 y 9 m². Son de la fuente y
+se reportan al SIA; el sistema no los corrige. Además, 9 hexágonos tienen su centro en una
+alcaldía distinta de la de su prefijo, y 152 lo tienen fuera de toda alcaldía: son celdas de
+frontera. Consecuencia de diseño: **el prefijo de la UGA no es la alcaldía del punto** (D47).
+
+**Cómo entran al sistema.** Los originales se guardan intactos en `assets/fuentes/`, con su
+suma de verificación anotada abajo. La aplicación carga versiones compactadas que produce
+`pruebas/generar_capas.py`: atributos mínimos, seis decimales (~11 cm, por debajo de la exactitud
+de cualquier capa de límites), sin indentación. El script valida la entrega antes de escribir
+—cantidad de features, claves únicas, anillos cerrados, que las coordenadas caigan en la CDMX,
+que todo prefijo de UGA sea una alcaldía— y si algo no cuadra se detiene sin generar a medias.
+Se probó incrustar la caja de cada feature y se descartó: eran 80 KB de números que se deducen
+de los que ya viajan; la derivación las calcula al cargar en un milisegundo.
+
+**Peso.** 390 KB de alcaldías y 423 KB de UGA. Se cargan una vez y quedan en la memoria del
+navegador con la marca de versión. Derivar un punto cuesta 0.05 ms en promedio gracias al
+descarte por caja; la primera derivación, que calcula las cajas, 5 ms.
+
+**Qué cambia en el registro.** Se guarda `alcaldia_cve` (la clave INEGI, llave para unir con el
+SIA) además del nombre; `uga` pasa a ser la clave real del hexágono; `capa_version` guarda la
+versión de cada capa por separado; `colonia` queda nula, y la pantalla lo dice como pendiente,
+no como falla. Un punto en un hueco de la capa se guarda sin alcaldía, con aviso, y con la
+versión para rederivarlo cuando el SIA corrija la capa: un árbol real no se queda sin registrar
+por un defecto de la geometría (D43, D44).
+
+**Las reglas quedan escritas en la prueba.** Puntos conocidos —Zócalo, Ajusco, Milpa Alta— con
+su alcaldía, su clave INEGI y su UGA; el punto interior del hueco mayor, que deriva UGA y
+versión pero no alcaldía; el solape GAM–VCA, que deriva siempre el mismo polígono; un punto
+fuera de la ciudad; y el costo por derivación. La auditoría comprueba que las claves cargadas
+sean exactamente las del original del SIA, en las dos capas, y que ninguna plantación ni capa
+sea ya ficticia.
+
+**Retirado:** `assets/capas-ficticias.js`. No se borró: está en `_to_delete/`, que git ya no
+sigue, para que Liber lo elimine a mano. El sello de datos cambia para que los dispositivos de
+prueba vuelvan a sembrar y no queden registros derivados con la capa ficticia junto a los reales.
+
+**Sumas de verificación de los originales (MD5):**
+`39b969b9203e3604b711d42dea0bcf73  alcaldias_cdmx.json`,
+`8de0e914d1c5cdca1815a09a7a2481e3  ugasdata.wgs84.json`.
+
+**Verificación:** 161 comprobaciones del recorrido, once nuevas sobre las capas; 44 de auditoría,
+cinco nuevas; la revisión de presentación en ocho combinaciones de ancho y zoom; y las dos pruebas
+de migración.

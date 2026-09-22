@@ -94,6 +94,11 @@ SRP.formulario = {
     const t = SRP.derivacion.derivar(lat, lng);
     this.estado.territorio = t;
     this.mostrarPunto(lat, lng, t);
+    // Un punto dentro de la ciudad sin alcaldía cayó en un hueco de la capa: se avisa, pero no
+    // se impide guardar, porque el árbol es real y el defecto es de la capa.
+    if (!t.alcaldia && SRP.derivacion.dentroDelAmbito(lat, lng)) {
+      SRP.mapa.estado('El punto cae entre los polígonos de la capa de alcaldías; se guarda sin alcaldía y se podrá rederivar.', 'alerta');
+    }
     // La captura a mano refleja el punto vigente: quien la abra corrige sobre lo que ya hay
     this.el('coord-lat').value = lat.toFixed(6);
     this.el('coord-lng').value = lng.toFixed(6);
@@ -104,8 +109,8 @@ SRP.formulario = {
   mostrarPunto(lat, lng, t) {
     this.el('dato-coordenadas').textContent = (t && lat !== null) ? lat.toFixed(6) + ', ' + lng.toFixed(6) : '—';
     this.el('dato-origen').textContent = t ? SRP.mapa.textoOrigen(SRP.mapa.origen, SRP.mapa.precision) : '—';
-    this.el('dato-alcaldia').textContent = t ? SRP.ref.territorio(t.alcaldia) : '—';
-    this.el('dato-colonia').textContent = t ? SRP.ref.territorio(t.colonia) : '—';
+    this.el('dato-alcaldia').textContent = t ? SRP.ref.alcaldia(t.alcaldia) : '—';
+    this.el('dato-colonia').textContent = t ? SRP.ref.colonia(t.colonia) : '—';
     if (SRP.espejo) SRP.espejo.refrescar();
   },
 
@@ -259,7 +264,7 @@ SRP.formulario = {
     return {
       lat: SRP.mapa.lat, lng: SRP.mapa.lng,
       punto_origen: SRP.mapa.origen, gps_precision_m: SRP.mapa.precision,
-      alcaldia: t.alcaldia || null, colonia: t.colonia || null,
+      alcaldia_cve: t.alcaldia_cve || null, alcaldia: t.alcaldia || null, colonia: t.colonia || null,
       uga: t.uga || null, capa_version: t.capa_version || null,
       especie_id: otra ? null : this.estado.especieId,
       especie_otra: otra ? this.el('campo-otra-especie').value.trim() : '',
@@ -289,8 +294,8 @@ SRP.formulario = {
       ['Especie', esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : ''), 'especie'],
       ['Programa', esc(SRP.ref.nombreCatalogo(v.programa_id)), 'programa'],
       ['Fecha de plantación', esc(SRP.util.formatearFecha(v.fecha_plantacion)), 'fecha'],
-      ['Alcaldía', esc(SRP.ref.territorio(v.alcaldia)), null],
-      ['Colonia', esc(SRP.ref.territorio(v.colonia)), null],
+      ['Alcaldía', esc(SRP.ref.alcaldia(v.alcaldia)), null],
+      ['Colonia', esc(SRP.ref.colonia(v.colonia)), null],
       ['Coordenadas', v.lat.toFixed(6) + ', ' + v.lng.toFixed(6), 'punto'],
       ['Cómo se obtuvo', esc(SRP.mapa.textoOrigen(v.punto_origen, v.gps_precision_m)), null],
       ['Cabo', esc(this.nombreCabo()), null],
@@ -307,7 +312,7 @@ SRP.formulario = {
       return '<div class="revision-fila"><dt>' + etiqueta + '</dt><dd>' + valor + '</dd>' + boton + '</div>';
     }).join('') +
       '<p class="revision-nota">El identificador lo asigna el sistema y no se modifica. ' +
-      'La alcaldía y la colonia salen del punto: para cambiarlas hay que mover la coordenada.</p>';
+      'La alcaldía sale del punto: para cambiarla hay que mover la coordenada.</p>';
 
     this.el('dlg-resumen').showModal();
     this.dibujarMapaRevision(v.lat, v.lng);
@@ -403,7 +408,7 @@ SRP.formulario = {
     const esp = SRP.ref.especieDe(registro);
     this.el('dlg-guardado-titulo').innerHTML = SRP.ICONOS.svg('palomita', 22) + '<span>Registro guardado</span>';
     this.el('dlg-guardado-detalle').textContent = esp.comun + ', ' +
-      SRP.ref.territorio(registro.colonia) + ', ' + SRP.util.formatearFecha(registro.fecha_plantacion) + '.';
+      SRP.ref.alcaldia(registro.alcaldia) + ', ' + SRP.util.formatearFecha(registro.fecha_plantacion) + '.';
     this.el('dlg-guardado-id').textContent = 'Identificador: ' + registro.id;
     this.el('dlg-guardado').showModal();
     this.el('btn-registro-nuevo').focus();

@@ -38,5 +38,10 @@ SRP.ref = {
     return { comun: registro.especie_otra || '', cientifico: 'Otra especie, fuera del catálogo' };
   },
 
+  /* Dos ausencias que no son la misma. Sin alcaldía, el punto cayó en un hueco entre los
+     polígonos de la capa (hay cinco, ver derivacion.js) y se dice. Sin colonia, es que la capa
+     todavía no existe: no es un defecto del punto y no debe leerse como tal. */
+  alcaldia(valor) { return valor || 'Sin alcaldía: el punto cae entre los polígonos de la capa'; },
+  colonia(valor) { return valor || 'Pendiente: aún no hay capa de colonias'; },
   territorio(valor) { return valor || 'Fuera de las capas'; }
 };

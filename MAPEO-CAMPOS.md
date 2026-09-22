@@ -18,7 +18,7 @@ que este documento y el sistema dicen lo mismo. Desaparece al cerrar la etapa.
 |---|---|
 | **Persona** | Lo escribe o lo elige quien usa el sistema |
 | **Catálogo** | Se elige de un catálogo administrable; se guarda la clave, no el texto |
-| **Capa geográfica** | Se deriva del punto contra las capas; nadie lo teclea |
+| **Capa geográfica** | Se deriva del punto contra las capas del SIA (`assets/fuentes/`, compactadas por `pruebas/generar_capas.py`); nadie lo teclea |
 | **Sistema** | Lo pone el sistema: identificadores, fechas de registro, marcas de edición |
 | **Sesión** | Se toma de quien tiene la sesión abierta |
 
@@ -39,10 +39,11 @@ Pantalla **Registrar**. Almacén `plantaciones`.
 | Cómo se obtuvo el punto | `punto_origen` | Sí | Sistema | `gps`, `mapa`, `manual` o `ajustado`. Lo determina la acción con que se colocó el punto, no una elección de quien captura. Campo de sólo lectura |
 | Cómo se obtuvo el punto | `gps_precision_m` | No | Sistema | Margen de error en metros que reporta el aparato. **Existe si y sólo si `punto_origen` es `gps`**: al mover el punto a mano el margen deja de describirlo y se borra, para que nunca pueda leerse como la precisión de una coordenada señalada con el dedo. La auditoría comprueba esta regla |
 | — | `lat_original`, `lng_original` | Sí | Sistema | Dónde quedó el punto la primera vez, antes de cualquier arrastre |
-| Alcaldía | `alcaldia` | No | Capa geográfica | Sale del punto contra `alcaldias_colonias`. Campo de sólo lectura; no se teclea ni se edita |
-| Colonia | `colonia` | No | Capa geográfica | Ídem, también de sólo lectura |
-| — | `uga` | No | Capa geográfica | Del punto contra la malla UGA. No se muestra en la ficha |
-| — | `capa_version` | No | Sistema | Versión de la capa con la que se derivó, para saber con qué geometría se resolvió |
+| — | `alcaldia_cve` | No | Capa geográfica | Clave INEGI `cvegeo` de la alcaldía (p. ej. `09015`). Es la llave para unir con el esquema `territorio` del SIA; el nombre se guarda aparte para leerse sin cargar la capa |
+| Alcaldía | `alcaldia` | No | Capa geográfica | Nombre, del punto contra la capa `alcaldias` del SIA (16 polígonos). Campo de sólo lectura. Nulo cuando el punto cae en uno de los cinco huecos de la capa: se guarda igual y se avisa |
+| Colonia | `colonia` | No | Capa geográfica | **Siempre nulo por ahora: no hay capa de colonias.** La pantalla lo dice como pendiente, no como falla. [pendiente] Confirmar con el SIA si la unidad oficial es colonia o unidad territorial |
+| — | `uga` | No | Capa geográfica | Clave del hexágono de la malla UGA del SIA (~1 km², 1,624 celdas), p. ej. `TLP-318`. **El prefijo no es la alcaldía del punto**: es la alcaldía a la que se asignó la celda, y en la frontera difieren. La alcaldía sale de su propia capa |
+| — | `capa_version` | No | Sistema | Versión de cada capa con la que se derivó, p. ej. `alcaldias=sia-2026-09-21;uga=sia-2026-09-21`. Permite rehacer el dato cuando una capa cambie |
 | Especie | `especie_id` | Sí | Catálogo | Remite a `catalogos.id` con `tipo = especie`. Vacío cuando se eligió «Otra especie» |
 | Especifique la especie | `especie_otra` | Sólo con «Otra especie» | Persona | Texto libre, para lo que no está en el catálogo |
 | Programa | `programa_id` | Sí | Catálogo | Remite a `catalogos.id` con `tipo = programa` |

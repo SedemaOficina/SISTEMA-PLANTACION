@@ -30,7 +30,7 @@ SRP.reportes = {
     const cabecera = ['Fecha plantación', 'Especie', 'Alcaldía', 'Colonia'].concat(variosAutores ? ['Cabo'] : []);
     const cuerpo = registros.map(r => [
       SRP.util.formatearFecha(r.fecha_plantacion), SRP.ref.especieDe(r).comun,
-      SRP.ref.territorio(r.alcaldia), SRP.ref.territorio(r.colonia)
+      SRP.ref.alcaldia(r.alcaldia), r.colonia || '—'
     ].concat(variosAutores ? [SRP.ref.nombreUsuario(r.cabo_id)] : []));
 
     doc.autoTable({

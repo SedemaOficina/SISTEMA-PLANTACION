@@ -211,7 +211,8 @@ SRP.registros = {
       return '<li class="registro"><div class="registro-datos">' +
         '<span class="registro-fecha">' + SRP.util.formatearFecha(r.fecha_plantacion) + '</span>' +
         '<span class="registro-especie">' + esc(esp.comun) + '</span>' +
-        '<span class="registro-lugar">' + esc(SRP.ref.territorio(r.alcaldia)) + ', ' + esc(SRP.ref.territorio(r.colonia)) + '</span>' +
+        // En la lista sólo lo que existe: repetir «pendiente» en cada renglón sería ruido
+        '<span class="registro-lugar">' + esc(SRP.ref.alcaldia(r.alcaldia)) + (r.colonia ? ', ' + esc(r.colonia) : '') + '</span>' +
         (variosAutores ? '<span class="registro-autor">' + esc(SRP.ref.nombreUsuario(r.cabo_id)) + '</span>' : '') +
         '</div><div class="registro-acciones">' + botones.join('') + '</div></li>';
     }).join('');
@@ -237,8 +238,8 @@ SRP.registros = {
       ['Especie', esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : '')],
       ['Programa', esc(SRP.ref.nombreCatalogo(r.programa_id))],
       ['Fecha de plantación', esc(SRP.util.formatearFecha(r.fecha_plantacion))],
-      ['Alcaldía', esc(SRP.ref.territorio(r.alcaldia))],
-      ['Colonia', esc(SRP.ref.territorio(r.colonia))],
+      ['Alcaldía', esc(SRP.ref.alcaldia(r.alcaldia))],
+      ['Colonia', esc(SRP.ref.colonia(r.colonia))],
       ['Coordenadas', r.lat.toFixed(6) + ', ' + r.lng.toFixed(6)],
       ['Cómo se obtuvo', esc(SRP.mapa.textoOrigen(r.punto_origen, r.gps_precision_m))],
       ['Cabo', esc(SRP.ref.nombreUsuario(r.cabo_id))],

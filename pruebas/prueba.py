@@ -33,7 +33,7 @@ with sync_playwright() as p:
 
     # ---------- ACCESO ----------
     ok(pg.is_visible('#vista-acceso'),'la pantalla de acceso abre primero')
-    ok('0.5.6' in pg.inner_text('#version'),'la versión sale de la marca del archivo: '+pg.inner_text('#version'))
+    ok('0.5.7' in pg.inner_text('#version'),'la versión sale de la marca del archivo: '+pg.inner_text('#version'))
     sinmarca=pg.evaluate("""() => [...document.querySelectorAll('script[src],link[rel=stylesheet][href]')]
         .map(e=>e.src||e.href).filter(u=>u.includes('127.0.0.1')&&!u.includes('?v=')).length""")
     ok(sinmarca==0,'todos los archivos propios llevan marca de versión')
@@ -129,7 +129,34 @@ with sync_playwright() as p:
     pg.click('#btn-ubicacion'); pg.wait_for_timeout(800)
     despues=pg.locator('#espejo-cuerpo tr', has_text='lat_original').inner_text()
     ok('19.' in despues,'y se llena en cuanto hay punto, sin recargar: '+despues.replace(chr(9),' ')[:50])
-    ok('Ficticia' in pg.inner_text('#dato-alcaldia'),'el botón ubica y deriva alcaldía: '+pg.inner_text('#dato-alcaldia'))
+    ok(pg.inner_text('#dato-alcaldia')=='Cuauhtémoc','el botón ubica y deriva la alcaldía real: '+pg.inner_text('#dato-alcaldia'))
+    ok('Pendiente' in pg.inner_text('#dato-colonia'),'y la colonia dice que aún no hay capa, no que falló: '+pg.inner_text('#dato-colonia'))
+
+    # CAPAS REALES DEL SIA. Puntos conocidos, el hueco medido en la capa y el solape mayor.
+    capas=pg.evaluate("""() => {
+      const d=(la,lo)=>SRP.derivacion.derivar(la,lo);
+      const t0=performance.now(); for (let i=0;i<100;i++) d(19.3+i*0.002,-99.2+i*0.002); const ms=(performance.now()-t0)/100;
+      return {
+        n:[SRP.CAPAS.alcaldias.geojson.features.length, SRP.CAPAS.uga.geojson.features.length],
+        zocalo:d(19.4326,-99.1332), ajusco:d(19.2000,-99.2500), milpa:d(19.1000,-99.0200),
+        hueco:d(19.483808,-99.149920),
+        solape:[d(19.4406,-99.0895).alcaldia, d(19.4406,-99.0895).alcaldia],
+        fuera:d(19.60,-99.37).alcaldia, ms:ms.toFixed(2),
+        origen:SRP.CAPAS.alcaldias.meta.origen.includes('SIA') && SRP.CAPAS.uga.meta.origen.includes('SIA')
+      };
+    }""")
+    ok(capas['n']==[16,1624],'cargan las 16 alcaldías y las 1,624 UGA del SIA: '+str(capas['n']))
+    ok(capas['origen'],'y las capas dicen de dónde vienen')
+    ok(capas['zocalo']['alcaldia']=='Cuauhtémoc' and capas['zocalo']['alcaldia_cve']=='09015','el Zócalo deriva Cuauhtémoc con su clave INEGI')
+    ok(capas['zocalo']['uga'].startswith('CUH-'),'y una UGA de Cuauhtémoc: '+capas['zocalo']['uga'])
+    ok(capas['ajusco']['alcaldia']=='Tlalpan' and capas['milpa']['alcaldia']=='Milpa Alta','el Ajusco es Tlalpan y el sur es Milpa Alta')
+    ok(capas['hueco']['alcaldia'] is None and capas['hueco']['uga'] is not None and capas['hueco']['capa_version'],
+       'en el hueco de la capa no hay alcaldía pero sí UGA y versión, para rederivar después')
+    ok(capas['solape'][0]==capas['solape'][1]=='Venustiano Carranza','en el solape GAM–VCA siempre gana el mismo polígono')
+    ok(capas['fuera'] is None,'fuera de la ciudad no deriva nada')
+    ok(float(capas['ms'])<5,'derivar cuesta menos de 5 ms por punto (%s ms)' % capas['ms'])
+    ok('alcaldias=' in capas['zocalo']['capa_version'] and 'uga=' in capas['zocalo']['capa_version'],
+       'la versión guarda la de cada capa: '+capas['zocalo']['capa_version'])
     ok(pg.inner_text('#dato-coordenadas').count('.')==2,'la coordenada se escribe en su campo: '+pg.inner_text('#dato-coordenadas'))
     ok(',' not in pg.inner_text('#mapa-estado'),'y ya no se repite bajo el mapa: '+pg.inner_text('#mapa-estado'))
     ok('Actualizar ubicación' in pg.inner_text('#btn-ubicacion'),'con punto puesto, el botón pasa a actualizar')

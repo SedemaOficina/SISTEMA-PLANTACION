@@ -75,6 +75,7 @@ with sync_playwright() as p:
           fechaMalFormada: ps.filter(p=>!/^\\d{4}-\\d{2}-\\d{2}$/.test(p.fecha_plantacion)).map(p=>p.id),
           fueraDeAmbito: ps.filter(p=>!SRP.derivacion.dentroDelAmbito(p.lat,p.lng)).map(p=>p.id),
           sinOrigen: ps.filter(p=>!SRP.mapa.ORIGENES[p.punto_origen]).map(p=>p.id),
+          capaVieja: ps.filter(p=>String(p.capa_version||'').includes('fictic')).map(p=>p.id),
           precisionHuerfana: ps.filter(p=>(p.gps_precision_m!=null)!==(p.punto_origen==='gps')).map(p=>p.id)
         });
       });
@@ -90,6 +91,24 @@ with sync_playwright() as p:
     mirar(not r['fechaMalFormada'], 'las fechas guardadas tienen el formato de siempre', str(r['fechaMalFormada']))
     mirar(not r['fueraDeAmbito'], 'ninguna plantación cae fuera de la ciudad', str(r['fueraDeAmbito']))
     mirar(not r['sinOrigen'], 'toda plantación dice de dónde salió su coordenada', str(r['sinOrigen']))
+
+    # --- Capas territoriales: lo cargado coincide con lo recibido del SIA ---
+    import json as _json
+    capas = pg.evaluate("""() => ({
+      alc: SRP.CAPAS.alcaldias.geojson.features.map(f=>f.properties.cvegeo).sort(),
+      uga: SRP.CAPAS.uga.geojson.features.map(f=>f.properties.clave).sort(),
+      prefijos: [...new Set(SRP.CAPAS.uga.geojson.features.map(f=>f.properties.clave.split('-')[0]))].sort(),
+      claves: SRP.CAPAS.alcaldias.geojson.features.map(f=>f.properties.clave).sort(),
+      versiones: [SRP.CAPAS.alcaldias.meta.version, SRP.CAPAS.uga.meta.version]
+    })""")
+    ruta_f = 'assets/fuentes' if os.path.exists('assets/fuentes') else os.path.join('..', 'assets', 'fuentes')
+    orig_a = sorted(f['properties']['cvegeo'] for f in _json.load(open(os.path.join(ruta_f, 'alcaldias_cdmx.json'), encoding='utf-8'))['features'])
+    orig_u = sorted(f['properties']['CLAVE'] for f in _json.load(open(os.path.join(ruta_f, 'ugasdata.wgs84.json'), encoding='utf-8'))['features'])
+    mirar(capas['alc'] == orig_a, 'la capa de alcaldías cargada trae las mismas 16 claves que el original del SIA')
+    mirar(capas['uga'] == orig_u, 'la capa UGA cargada trae las mismas 1,624 claves que el original del SIA')
+    mirar(capas['prefijos'] == capas['claves'], 'cada prefijo de UGA es una alcaldía y cada alcaldía tiene UGAs', str(capas['prefijos']))
+    mirar(all(v and 'fictic' not in v for v in capas['versiones']), 'ninguna capa cargada es ficticia', str(capas['versiones']))
+    mirar(not r.get('capaVieja'), 'ninguna plantación se derivó con la capa ficticia', str(r.get('capaVieja')))
     # Si esta regla se rompe, un punto señalado con el dedo puede leerse como medido con GPS
     mirar(not r['precisionHuerfana'], 'la precisión aparece si y sólo si el punto vino del GPS', str(r['precisionHuerfana']))
 
@@ -152,7 +171,7 @@ with sync_playwright() as p:
     # Al revés sólo se revisan los nombres con guion bajo: los de una palabra (`id`, `clave`,
     # `tipo`) aparecen en el texto por otras razones y darían falsos positivos.
     inventados = sorted(c for c in documentados if '_' in c and c not in guardados
-                        and not c.startswith(('alcaldias_', 'nombre_cientifico')))
+                        and not c.startswith('nombre_cientifico'))
     mirar(not inventados, 'y el mapeo no inventa campos que no existen', str(inventados))
     b.close()
 
