@@ -162,6 +162,7 @@ main:focus { outline: none; }
 .campo-doble { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-3); }
 /* Excepción deliberada: Año y Mes son cortos y caben en dos columnas hasta en teléfono */
 .campo-doble-fijo { grid-template-columns: 1fr 1fr; }
+.campo-triple { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--e-3); }
 .campo-crece { flex: 1; margin-bottom: 0; }
 
 .fila-botones { display: flex; flex-wrap: wrap; gap: var(--e-2); align-items: flex-end; margin-bottom: var(--e-3); }
@@ -304,6 +305,8 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .btn:disabled { opacity: 0.55; cursor: not-allowed; }
 .pestana[aria-current="page"] { color: var(--guinda); border-bottom-color: var(--guinda); }
 .chip[aria-pressed="true"] { background: var(--guinda); border-color: var(--guinda); color: var(--fondo); }
+/* Con ratón la opción bajo el cursor se marca igual que la elegida con teclado: sin esto la lista se sentía inerte en escritorio */
+.combo-opcion:hover,
 .combo-opcion[aria-selected="true"] { background: var(--fondo-suave); outline: 2px solid var(--guinda); outline-offset: -2px; }
 .campo input[aria-invalid="true"], .campo select[aria-invalid="true"] { border: 2px solid var(--error); }
 .aviso[data-tipo="alerta"] { background: var(--error); }
@@ -329,6 +332,7 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
   .encabezado-acciones { flex: 1 0 100%; justify-content: flex-start; }
   .campo-doble { grid-template-columns: 1fr; }
   .campo-doble-fijo { grid-template-columns: 1fr 1fr; }
+  .campo-triple { grid-template-columns: 1fr; }
   .revision-fila { grid-template-columns: 1fr auto; }
   .revision-fila-sola { grid-template-columns: 1fr; }
   .revision-fila dt { grid-column: 1 / -1; }

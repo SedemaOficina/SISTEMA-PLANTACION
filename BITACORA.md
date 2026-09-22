@@ -548,3 +548,22 @@ que sólo servían a los dos chips. D19 queda anotada como modificada por D53.
 **Verificación:** sintaxis; 166 comprobaciones del recorrido (tres nuevas: reiniciar vuelve a Hoy
 y limpia el rango, lista los de hoy, y los atajos son tres), sin errores de consola; 44 de la
 auditoría; presentación sin desbordes; sin ids ni funciones sin uso. Marca de versión 0.5.9.
+
+## Bloque 18 — Dos ajustes de escritorio: lista de especies y fila del punto (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.5.10.
+
+**Qué cambió.** La opción de la lista de especies bajo el cursor se marca igual que la elegida
+con teclado (fondo suave y contorno guinda): con ratón la lista se sentía inerte. Los tres datos
+del punto pasan a una fila de tres columnas en escritorio y tableta, apilados en teléfono (D54);
+el hueco que se veía junto a Coordenadas era la celda del campo «Cómo se obtuvo», oculto desde
+el bloque 15 pero todavía dentro de la rejilla. Ese campo sale de la rejilla y sigue anunciándose
+al lector de pantalla. La nota de ayuda decía «Los cuatro salen del punto»; ahora dice tres.
+
+**Otra prueba que caducaba sola.** El recorrido tenía la fecha de hoy escrita a mano
+(`2026-09-21`); al día siguiente los registros «de hoy» dejaban de serlo, el filtro Hoy quedaba
+vacío y la prueba fallaba sin que nada hubiera cambiado. Ahora la calcula, igual que ayer se hizo
+con la marca de versión.
+
+**Verificación:** las tres cajas alineadas a la misma altura en 1280 y 768 px y apiladas en 390;
+la coordenada cabe sin recorte; 166 comprobaciones del recorrido, sin errores de consola; 44 de
+auditoría; presentación sin desbordes; sin selectores duplicados. Marca de versión 0.5.10.

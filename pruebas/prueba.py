@@ -2,7 +2,12 @@
 from playwright.sync_api import sync_playwright
 import re, os
 BASE='http://127.0.0.1:8099/'
-HOY='2026-09-21'
+# La fecha de hoy se calcula: escrita a mano, la prueba caducaba al día siguiente (los
+# registros «de hoy» dejaban de serlo y el filtro Hoy quedaba vacío)
+import datetime
+HOY=datetime.date.today().isoformat()
+MESES=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC']
+HOY_TXT=HOY[8:10]+'-'+MESES[int(HOY[5:7])-1]+'-'+HOY[0:4]   # como lo pinta SRP.util.formatearFecha
 SRP_GPS='GPS del dispositivo'
 errores=[]; res=[]
 def ok(c,m): res.append(('OK ' if c else 'FALLA ')+m)
@@ -261,7 +266,7 @@ with sync_playwright() as p:
     ok(pg.locator('button[data-campo=punto]').count()==1,'sólo las coordenadas remiten al mapa')
     ok(pg.locator('.revision-fila', has_text='Alcaldía').locator('button').count()==0,'la alcaldía no se edita: sale del punto')
     ok(pg.inner_text('button[data-campo=especie]').strip()=='Editar','la ficha usa la palabra Editar')
-    ok('SEP-2026' in pg.inner_text('#revision-lista'),'las fechas se leen con el mes en letras')
+    ok(HOY_TXT in pg.inner_text('#revision-lista'),'las fechas se leen con el mes en letras: '+HOY_TXT)
     pg.click('button[data-campo=especie]'); pg.wait_for_timeout(400)
     ok(pg.is_hidden('#dlg-resumen') and pg.evaluate("document.activeElement.id")=='campo-especie','Editar cierra la ficha y lleva al campo')
 
@@ -309,7 +314,7 @@ with sync_playwright() as p:
     # ---------- REGISTROS ----------
     pg.click('.pestana[data-vista=registros]'); pg.wait_for_timeout(600)
     hoy_txt=pg.inner_text('#chip-hoy')
-    ok(hoy_txt.startswith('Hoy, ') and 'SEP-2026' in hoy_txt,'el chip de hoy lleva la fecha con el mes en letras: '+hoy_txt)
+    ok(hoy_txt=='Hoy, '+HOY_TXT,'el chip de hoy lleva la fecha con el mes en letras: '+hoy_txt)
     ok(pg.locator('#filtro-atajos .chip[data-atajo=hoy][aria-pressed=true]').count()==1,'al entrar, el filtro es Hoy')
     ok('Total: 2 ' in pg.inner_text('#registros-total'),'sólo los de hoy: '+pg.inner_text('#registros-total'))
     clases=pg.evaluate("""[...document.querySelectorAll('#lista-registros button')].slice(0,3)
