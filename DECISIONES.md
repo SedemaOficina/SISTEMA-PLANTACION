@@ -439,7 +439,7 @@
 
 - **D89. Iconos del set CDMX en acceso, cuenta, pestañas y acciones.** Elegidos por Liber:
   correo #53 y contraseña #63 (etiquetas del acceso), Entrar #11, cuenta con sesión #261,
-  pestañas Nuevo registro #32, Registros #183, Reportes #50, Catálogos #48 y Usuarios #270
+  pestañas Nuevo registro #32, Registros #214 (árbol; el #183 era comida, corregido en el bloque 37), Reportes #50, Catálogos #48 y Usuarios #270
   (las cinco con icono para que la barra sea pareja; Liber marcó tres y las otras dos llevan la
   primera opción propuesta), «¿Qué hacer sin internet?» #24, buscar #4, agregar en catálogos
   #32, dar de alta #264 y avisos informativos #22 (aviso simulado, «Registros en este
@@ -458,3 +458,14 @@
   `assets/logo.js` (SEDEMA incrustado en base64): se movió a `_to_delete/` para que Liber lo
   borre. Los PNG originales viven en `assets/fuentes/logo-reforestacion-urbana/`. Pedido por
   Liber, 22-09-2026.
+
+## Bloque 37 — Ventanas con cabecera fija
+
+- **D91. Toda ventana con contenido lleva la cabecera fija de «Revise antes de guardar»:**
+  título, × arriba a la derecha y la acción principal debajo, fijos mientras el cuerpo se
+  desplaza. Detalle del registro (× y **Editar**, sólo si el perfil puede editar), Datos de cierre
+  del día (× y **Generar reporte**; sin Cancelar), Agregar/Editar de catálogo y Dar de alta/Editar
+  cuenta (× y **Guardar**; sin Cancelar), y «¿Qué hacer sin internet?» (sólo ×; sin Entendido).
+  Una sola regla cierra todas: la clase `dialogo-cerrar`. Se quedan como están el aviso de
+  «Registro guardado» y la confirmación de eliminar: son cortos y su decisión son sus dos botones.
+  Además, la pestaña Registros cambia su icono al árbol #214. Pedido por Liber, 22-09-2026.

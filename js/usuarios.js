@@ -11,7 +11,6 @@ SRP.usuarios = {
   iniciar() {
     this.el('usr-buscar').addEventListener('input', () => this.pintar());
     this.el('btn-usr-agregar').addEventListener('click', () => this.abrirFormulario(null));
-    this.el('btn-usr-cancelar').addEventListener('click', () => this.el('dlg-usuario').close());
     this.el('form-usuario').addEventListener('submit', (e) => { e.preventDefault(); this.guardar(); });
     // El campo Coordinador sólo tiene sentido para un cabo. Sin saltos de foco automáticos (D82)
     this.el('usr-perfil').addEventListener('change', () => this.ajustarPorPerfil());

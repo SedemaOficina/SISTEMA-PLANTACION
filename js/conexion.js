@@ -29,7 +29,6 @@ SRP.conexion = {
     window.addEventListener('offline', () => this.refrescar());
     this.el('btn-ayuda-senal').addEventListener('click', () => this.el('dlg-senal').showModal());
     this.el('conexion').addEventListener('click', () => this.el('dlg-senal').showModal());
-    this.el('btn-senal-cerrar').addEventListener('click', () => this.el('dlg-senal').close());
     this.el('btn-respaldo').addEventListener('click', () => this.respaldar());
     const restaurar = this.el('archivo-restaurar');
     if (restaurar) restaurar.addEventListener('change', (e) => this.restaurar(e.target));

@@ -379,6 +379,13 @@ with sync_playwright() as p:
     campos=pg.evaluate("[...document.querySelectorAll('#dlg-detalle .espejo .espejo-campo')].map(e=>e.textContent)")
     ok('colonia_cve' in campos and 'capa_version' in campos and 'uga' in campos and 'id' not in campos,
        'el detalle lleva su espejo con lo que no se ve (%d campos)' % len(campos))
+    # Todas las ventanas con cabecera fija: título, × y acción arriba (D91)
+    cab=pg.evaluate("""() => ['dlg-detalle','dlg-cierre','dlg-catalogo','dlg-usuario','dlg-senal'].map(id => {
+      const d=document.getElementById(id); const c=d.querySelector('.dialogo-cabecera');
+      return id+':'+(!!c && getComputedStyle(c).position==='sticky' && !!c.querySelector('.dialogo-cerrar svg') && !d.querySelector('.acciones:not(.acciones-cabecera) .btn-secundario'));
+    })""")
+    ok(all(x.endswith('true') for x in cab),'las cinco ventanas llevan cabecera fija con × y sin Cancelar al pie (D91): %s' % cab)
+    ok(pg.is_visible('#btn-detalle-editar'),'el detalle ofrece Editar en la cabecera a quien puede editar')
     pg.click('#btn-detalle-cerrar'); pg.wait_for_timeout(200)
     col=pg.evaluate("getComputedStyle(document.querySelector('#lista-registros button[data-accion=eliminar]')).backgroundColor")
     ok(col=='rgb(179, 38, 30)','el botón de eliminar es rojo')
@@ -431,7 +438,7 @@ with sync_playwright() as p:
     ok(not pg.is_disabled('#btn-pdf') and '10-AGO-2026' in pg.inner_text('#pdf-nota'),'una fecha pasada con registros habilita el parte: '+pg.inner_text('#pdf-nota'))
     pg.click('#btn-pdf'); pg.wait_for_timeout(400)
     ok('10-AGO-2026' in pg.inner_text('#dlg-cierre-dia'),'el cierre es del día elegido: '+pg.inner_text('#dlg-cierre-dia'))
-    pg.click('#btn-cierre-cancelar'); pg.wait_for_timeout(200)
+    pg.click('#btn-cierre-cerrar'); pg.wait_for_timeout(200)
     pg.fill('#pdf-dia','2026-01-05'); pg.dispatch_event('#pdf-dia','change'); pg.wait_for_timeout(400)
     ok(pg.is_disabled('#btn-pdf') and 'No hay registros' in pg.inner_text('#pdf-nota'),'un día sin registros apaga el botón y lo dice: '+pg.inner_text('#pdf-nota'))
     pg.fill('#pdf-dia',HOY); pg.dispatch_event('#pdf-dia','change'); pg.wait_for_timeout(400)
@@ -502,7 +509,7 @@ with sync_playwright() as p:
     ok(pg.input_value('#cie-hora')=='14:30' and pg.input_value('#cie-vehiculo_placa')=='ABC-123','con todos sus campos')
     ok(pg.evaluate("document.getElementById('cie-apoyo').tagName")=='TEXTAREA','personal de apoyo admite varias líneas')
     ok(pg.evaluate("[...document.querySelectorAll('#form-cierre .campo')][0].contains(document.getElementById('cie-encargado'))"),'el encargado es el primer campo del cierre')
-    pg.click('#btn-cierre-cancelar'); pg.wait_for_timeout(300)
+    pg.click('#btn-cierre-cerrar'); pg.wait_for_timeout(300)
     # Los campos vacíos no se inventan: el cierre guardado no trae lo que no se escribió
     vacios=pg.evaluate("async () => { const c = await SRP.almacen.uno('cierres', SRP.reportes.claveCierre(SRP.util.fechaHoy(), '')); return [c.actividades, c.personal, c.observaciones]; }")
     ok(all(v=='' for v in vacios),'y lo que no se escribió queda vacío, no inventado')
@@ -562,7 +569,7 @@ with sync_playwright() as p:
        'al coordinador se le ofrece la lista de cabos responsables')
     opciones=pg.eval_on_selector('#cie-encargado',"s=>[...s.options].map(o=>o.textContent.trim()).filter(Boolean)")
     ok(any('Fulana' in o for o in opciones),'con los cabos que registraron ese día: '+', '.join(opciones))
-    pg.click('#btn-cierre-cancelar'); pg.wait_for_timeout(200)
+    pg.click('#btn-cierre-cerrar'); pg.wait_for_timeout(200)
     pg.click('.pestana[data-vista=registros]'); pg.wait_for_timeout(500)
     pg.click('.chip[data-atajo=todos]'); pg.wait_for_timeout(300)
     # Al abrir para editar un registro ajeno, el espejo enseña que el autor no cambia de manos
@@ -600,7 +607,7 @@ with sync_playwright() as p:
     pg.click('#btn-cat-agregar'); pg.fill('#cat-nombre','Reforestación Urbana'); pg.fill('#cat-clave','REFOR_URBANA')
     pg.click('#form-catalogo button[type=submit]'); pg.wait_for_timeout(300)
     ok(pg.locator('#cat-errores li').count()==2,'se bloquean nombre y clave repetidos')
-    pg.click('#btn-cat-cancelar'); pg.wait_for_timeout(200)
+    pg.click('#btn-cat-cerrar'); pg.wait_for_timeout(200)
     pg.click('#cat-tipos .chip[data-tipo=especie]'); pg.wait_for_timeout(400)
     ok(pg.locator('#tabla-catalogo tbody tr').count()==76 and 'Distribución' in pg.inner_text('#tabla-catalogo thead'),'la tabla lista las 76 especies con su distribución (D84)')
     pg.fill('#cat-buscar','quercus'); pg.wait_for_timeout(200)

@@ -31,7 +31,6 @@ SRP.reportes = {
 
   iniciar() {
     this.el('form-cierre').addEventListener('submit', (e) => { e.preventDefault(); this.aceptar(); });
-    this.el('btn-cierre-cancelar').addEventListener('click', () => this.el('dlg-cierre').close());
     this.el('pdf-dia').addEventListener('change', () => this.refrescarVista());
     this.el('pdf-cabo').addEventListener('change', () => this.refrescarVista());
     this.el('btn-pdf').addEventListener('click', () => this.generarDesdeVista());
@@ -125,7 +124,6 @@ SRP.reportes = {
     if (SRP.espejo) SRP.espejo.refrescarCierre();
 
     this.el('dlg-cierre').showModal();
-    this.el(this.el('cie-encargado-caja').hidden ? 'cie-sitio' : 'cie-encargado').focus();
   },
 
   /* ENCARGADO. Quien captura en campo es responsable de su propio parte, así que a un cabo no se

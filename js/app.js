@@ -198,6 +198,11 @@ SRP.app = {
     // Los botones fijos del HTML reciben aquí su icono, para no repetir el SVG en la página
     this.el('btn-cat-guardar').innerHTML = SRP.ICONOS.svg('palomita') + '<span>Guardar</span>';
     this.el('btn-usr-guardar').innerHTML = SRP.ICONOS.svg('palomita') + '<span>Guardar</span>';
+    // Toda × de cabecera cierra su propio diálogo (D91); cada módulo reacciona al evento «close» si lo necesita
+    document.querySelectorAll('.dialogo-cerrar').forEach(b => {
+      b.innerHTML = SRP.ICONOS.svg('cerrar', 22);
+      b.addEventListener('click', () => b.closest('dialog').close());
+    });
     this.el('btn-confirmar-si').addEventListener('click', () => this.el('dlg-confirmar').close('si'));
     this.el('btn-confirmar-no').addEventListener('click', () => this.el('dlg-confirmar').close('no'));
   },

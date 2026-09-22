@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#9D2148">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.17">
-<link rel="preload" as="image" href="assets/encabezado-ru-movil.png?v=0.6.17">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.18">
+<link rel="preload" as="image" href="assets/encabezado-ru-movil.png?v=0.6.18">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.17">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.17">
-<link rel="stylesheet" href="css/estilos.css?v=0.6.17">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.18">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.18">
+<link rel="stylesheet" href="css/estilos.css?v=0.6.18">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -21,8 +21,8 @@
   <div class="encabezado-interior">
     <!-- Logotipo del Programa de Reforestación Urbana (D90): completo en pantalla ancha; en teléfono, el emblema y el nombre del programa -->
     <picture>
-      <source media="(max-width: 480px)" srcset="assets/encabezado-ru-movil.png?v=0.6.17">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru.png?v=0.6.17" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Reforestación Urbana">
+      <source media="(max-width: 480px)" srcset="assets/encabezado-ru-movil.png?v=0.6.18">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru.png?v=0.6.18" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <span id="usuario-nombre" class="encabezado-nombre"></span>
@@ -342,15 +342,32 @@
 </dialog>
 
 <dialog id="dlg-detalle" aria-labelledby="dlg-detalle-titulo">
-  <h2 id="dlg-detalle-titulo">Detalle del registro</h2>
+  <!-- Cabecera fija como la de «Revise antes de guardar»: título, × y acción siempre a la vista (D91) -->
+  <div class="dialogo-cabecera">
+    <div class="dialogo-titulo">
+      <h2 id="dlg-detalle-titulo" tabindex="-1" autofocus>Detalle del registro</h2>
+      <button type="button" id="btn-detalle-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar"></button>
+    </div>
+    <div class="acciones acciones-cabecera">
+      <button type="button" id="btn-detalle-editar" class="btn btn-editar" hidden></button>
+    </div>
+  </div>
   <div id="detalle-mapa" class="revision-mapa" role="img" aria-label="Mapa con la ubicación del árbol"></div>
   <div id="dlg-detalle-cuerpo"></div>
-  <div class="acciones"><button type="button" id="btn-detalle-cerrar" class="btn btn-secundario">Cerrar</button></div>
 </dialog>
 
 <dialog id="dlg-catalogo" aria-labelledby="dlg-catalogo-titulo">
   <form id="form-catalogo" novalidate>
-    <h2 id="dlg-catalogo-titulo">Agregar</h2>
+  <!-- Cabecera fija como la de «Revise antes de guardar»: título, × y acción siempre a la vista (D91) -->
+  <div class="dialogo-cabecera">
+    <div class="dialogo-titulo">
+      <h2 id="dlg-catalogo-titulo" tabindex="-1" autofocus>Agregar</h2>
+      <button type="button" id="btn-cat-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar sin guardar"></button>
+    </div>
+    <div class="acciones acciones-cabecera">
+      <button type="submit" class="btn btn-exito" id="btn-cat-guardar">Guardar</button>
+    </div>
+  </div>
     <p class="nota nota-obligatorio">Los campos marcados con <span class="obligatorio" aria-hidden="true">*</span> son obligatorios.</p>
     <div id="cat-errores" class="errores" tabindex="-1" hidden></div>
     <div class="campo"><label for="cat-nombre"><span id="etq-cat-nombre-texto">Nombre</span> <span class="obligatorio" aria-hidden="true">*</span></label><input id="cat-nombre" required></div>
@@ -364,10 +381,6 @@
       <div class="campo"><label for="cat-snib">Id SNIB (IdCAT)</label><input id="cat-snib"></div>
       <div class="campo"><label for="cat-enciclovida">Id EncicloVida</label><input id="cat-enciclovida" inputmode="numeric"></div>
     </div>
-    <div class="acciones">
-      <button type="submit" class="btn btn-exito" id="btn-cat-guardar">Guardar</button>
-      <button type="button" id="btn-cat-cancelar" class="btn btn-secundario">Cancelar</button>
-    </div>
   </form>
 </dialog>
 
@@ -376,7 +389,16 @@
      territorio— no se pregunta aquí, se calcula (ver js/reportes.js). -->
 <dialog id="dlg-cierre" aria-labelledby="dlg-cierre-titulo">
   <form id="form-cierre" novalidate>
-    <h2 id="dlg-cierre-titulo">Datos de cierre del día</h2>
+  <!-- Cabecera fija como la de «Revise antes de guardar»: título, × y acción siempre a la vista (D91) -->
+  <div class="dialogo-cabecera">
+    <div class="dialogo-titulo">
+      <h2 id="dlg-cierre-titulo" tabindex="-1" autofocus>Datos de cierre del día</h2>
+      <button type="button" id="btn-cierre-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar sin generar"></button>
+    </div>
+    <div class="acciones acciones-cabecera">
+      <button type="submit" class="btn btn-primario" id="btn-cierre-generar">Generar reporte</button>
+    </div>
+  </div>
     <p class="nota">Parte del <strong id="dlg-cierre-dia"></strong>. <span id="dlg-cierre-cuenta"></span>. Todos los campos son opcionales; los que queden vacíos no aparecen en el reporte.</p>
 
     <!-- El encargado abre el parte: es el primer dato que se lee en el papel (D60). Un cabo es el
@@ -430,15 +452,17 @@
       <p id="espejo-cierre-conteo" class="espejo-ayuda"></p>
     </details>
 
-    <div class="acciones">
-      <button type="submit" class="btn btn-primario" id="btn-cierre-generar">Generar reporte</button>
-      <button type="button" id="btn-cierre-cancelar" class="btn btn-secundario">Cancelar</button>
-    </div>
   </form>
 </dialog>
 
 <dialog id="dlg-senal" aria-labelledby="dlg-senal-titulo">
-  <h2 id="dlg-senal-titulo">¿Qué hacer sin internet?</h2>
+  <!-- Cabecera fija como la de «Revise antes de guardar»: título, × y acción siempre a la vista (D91) -->
+  <div class="dialogo-cabecera">
+    <div class="dialogo-titulo">
+      <h2 id="dlg-senal-titulo" tabindex="-1" autofocus>¿Qué hacer sin internet?</h2>
+      <button type="button" id="btn-senal-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar"></button>
+    </div>
+  </div>
   <ol class="lista-ayuda">
     <li><strong>Siga registrando.</strong> El GPS, la captura y el parte funcionan sin señal. Sólo la imagen del mapa deja de verse; puede tocar el mapa o capturar la coordenada a mano.</li>
     <li><strong>Abra la app al menos una vez con señal</strong> después de instalarla o de que haya versión nueva: así queda guardada en el teléfono y abre aunque no haya red.</li>
@@ -446,7 +470,6 @@
     <li><strong>No borre los datos del navegador</strong> ni use el modo privado: se perderían los registros.</li>
     <li><strong>Si cambia de teléfono</strong>, guarde un respaldo antes y entréguelo a su coordinador.</li>
   </ol>
-  <div class="acciones"><button type="button" id="btn-senal-cerrar" class="btn btn-secundario">Entendido</button></div>
 </dialog>
 
 <dialog id="dlg-confirmar" aria-labelledby="dlg-confirmar-texto">
@@ -460,7 +483,16 @@
 
 <dialog id="dlg-usuario" aria-labelledby="dlg-usuario-titulo">
   <form id="form-usuario" novalidate>
-    <h2 id="dlg-usuario-titulo">Dar de alta</h2>
+  <!-- Cabecera fija como la de «Revise antes de guardar»: título, × y acción siempre a la vista (D91) -->
+  <div class="dialogo-cabecera">
+    <div class="dialogo-titulo">
+      <h2 id="dlg-usuario-titulo" tabindex="-1" autofocus>Dar de alta</h2>
+      <button type="button" id="btn-usr-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar sin guardar"></button>
+    </div>
+    <div class="acciones acciones-cabecera">
+      <button type="submit" class="btn btn-exito" id="btn-usr-guardar">Guardar</button>
+    </div>
+  </div>
     <p class="nota nota-obligatorio">Los campos marcados con <span class="obligatorio" aria-hidden="true">*</span> son obligatorios.</p>
     <div id="usr-errores" class="errores" tabindex="-1" hidden></div>
     <div class="campo"><label for="usr-nombre">Nombre(s) <span class="obligatorio" aria-hidden="true">*</span></label><input id="usr-nombre" required></div>
@@ -471,10 +503,6 @@
     <div class="campo"><label for="usr-cargo">Cargo y rol <span class="obligatorio" aria-hidden="true">*</span></label><input id="usr-cargo" required placeholder="p. ej. Técnico de campo"></div>
     <div class="campo"><label for="usr-perfil">Perfil <span class="obligatorio" aria-hidden="true">*</span></label><select id="usr-perfil" required></select><p id="usr-perfil-ayuda" class="nota"></p></div>
     <div class="campo" id="caja-usr-coordinador"><label for="usr-coordinador">Coordinador</label><select id="usr-coordinador"></select></div>
-    <div class="acciones">
-      <button type="submit" class="btn btn-exito" id="btn-usr-guardar">Guardar</button>
-      <button type="button" id="btn-usr-cancelar" class="btn btn-secundario">Cancelar</button>
-    </div>
   </form>
 </dialog>
 
@@ -483,37 +511,37 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.6.17"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.17"></script>
-<script src="vendor/turf-pip.min.js?v=0.6.17"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.6.17"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.17"></script>
+<script src="vendor/leaflet.js?v=0.6.18"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.18"></script>
+<script src="vendor/turf-pip.min.js?v=0.6.18"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.6.18"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.18"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.6.17"></script>
-<script src="js/util.js?v=0.6.17"></script>
-<script src="js/iconos.js?v=0.6.17"></script>
+<script src="js/config.js?v=0.6.18"></script>
+<script src="js/util.js?v=0.6.18"></script>
+<script src="js/iconos.js?v=0.6.18"></script>
 <!-- Capas territoriales del SIA, compactadas por pruebas/generar_capas.py desde assets/fuentes/ -->
-<script src="assets/capa-alcaldias.js?v=0.6.17"></script>
-<script src="assets/capa-uga.js?v=0.6.17"></script>
-<script src="assets/capa-colonias.js?v=0.6.17"></script>
-<script src="assets/catalogo-especies.js?v=0.6.17"></script>
-<script src="js/datos-ficticios.js?v=0.6.17"></script>
-<script src="js/permisos.js?v=0.6.17"></script>
-<script src="js/derivacion.js?v=0.6.17"></script>
-<script src="js/almacen.js?v=0.6.17"></script>
-<script src="js/sesion.js?v=0.6.17"></script>
-<script src="js/referencias.js?v=0.6.17"></script>
-<script src="js/folio.js?v=0.6.17"></script>
-<script src="js/conexion.js?v=0.6.17"></script>
-<script src="js/mapa.js?v=0.6.17"></script>
-<script src="js/foto.js?v=0.6.17"></script>
-<script src="js/formulario.js?v=0.6.17"></script>
+<script src="assets/capa-alcaldias.js?v=0.6.18"></script>
+<script src="assets/capa-uga.js?v=0.6.18"></script>
+<script src="assets/capa-colonias.js?v=0.6.18"></script>
+<script src="assets/catalogo-especies.js?v=0.6.18"></script>
+<script src="js/datos-ficticios.js?v=0.6.18"></script>
+<script src="js/permisos.js?v=0.6.18"></script>
+<script src="js/derivacion.js?v=0.6.18"></script>
+<script src="js/almacen.js?v=0.6.18"></script>
+<script src="js/sesion.js?v=0.6.18"></script>
+<script src="js/referencias.js?v=0.6.18"></script>
+<script src="js/folio.js?v=0.6.18"></script>
+<script src="js/conexion.js?v=0.6.18"></script>
+<script src="js/mapa.js?v=0.6.18"></script>
+<script src="js/foto.js?v=0.6.18"></script>
+<script src="js/formulario.js?v=0.6.18"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.6.17"></script>
-<script src="js/registros.js?v=0.6.17"></script>
-<script src="js/reportes.js?v=0.6.17"></script>
-<script src="js/catalogos.js?v=0.6.17"></script>
-<script src="js/usuarios.js?v=0.6.17"></script>
-<script src="js/app.js?v=0.6.17"></script>
+<script src="js/espejo.js?v=0.6.18"></script>
+<script src="js/registros.js?v=0.6.18"></script>
+<script src="js/reportes.js?v=0.6.18"></script>
+<script src="js/catalogos.js?v=0.6.18"></script>
+<script src="js/usuarios.js?v=0.6.18"></script>
+<script src="js/app.js?v=0.6.18"></script>
 </body>
 </html>

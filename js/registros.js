@@ -65,7 +65,13 @@ SRP.registros = {
       if (b.dataset.accion === 'editar') SRP.formulario.editar(r);
       if (b.dataset.accion === 'eliminar') this.eliminar(r);
     });
-    this.el('btn-detalle-cerrar').addEventListener('click', () => this.el('dlg-detalle').close());
+    this.el('btn-detalle-editar').innerHTML = SRP.ICONOS.svg('lapiz') + '<span>Editar</span>';
+    // Editar desde el detalle: cierra la ficha y abre el registro en el formulario (D91)
+    this.el('btn-detalle-editar').addEventListener('click', () => {
+      const r = this.detalleActual; if (!r) return;
+      this.el('dlg-detalle').close();
+      SRP.formulario.editar(r);
+    });
     // Al cerrar, su mapa se destruye: uno vivo en un diálogo oculto sigue consumiendo y contando
     this.el('dlg-detalle').addEventListener('close', () => {
       if (this.mapaDetalle) { this.mapaDetalle.remove(); this.mapaDetalle = null; }
@@ -237,6 +243,8 @@ SRP.registros = {
      revisa un registro guardado ve lo mismo, en el mismo orden, que quien lo capturó. */
   async verDetalle(r) {
     const esc = SRP.util.escapar;
+    this.detalleActual = r;
+    this.el('btn-detalle-editar').hidden = !SRP.permisos.puedeEditar(SRP.sesion.usuario, r, SRP.ref.usuarioPorId);
     const esp = SRP.ref.especieDe(r);
     const filas = [
       ['Folio', '<span class="folio-provisional">' + esc(SRP.folio.texto(r)) + '</span>'],

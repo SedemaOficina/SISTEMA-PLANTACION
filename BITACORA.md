@@ -800,3 +800,17 @@ marca `?v=` (la móvil vía `preload`) para que el worker los guarde. El PDF car
 **Verificación:** sintaxis; 241 comprobaciones sin errores de consola; 81 de auditoría;
 presentación sin desbordes en ocho combinaciones (encabezado con logotipo nuevo incluido); el
 worker guarda 41 archivos. Marca de versión 0.6.17.
+
+## Bloque 37 — Ventanas con cabecera fija (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.18.
+
+**Qué cambió (D91).** `index.html`: cabecera `.dialogo-cabecera` (título con foco inicial, ×
+`.dialogo-cerrar`, acción) en `dlg-detalle`, `dlg-cierre`, `dlg-catalogo`, `dlg-usuario` y
+`dlg-senal`; fuera los botones Cancelar/Cerrar/Entendido del pie. `app.js`: un solo manejador para
+todas las ×. `registros.js`: botón Editar en el detalle según `puedeEditar`. Se retiran los
+manejadores sueltos de cancelar en catálogos, usuarios, reportes y conexión, y el foco forzado al
+abrir el cierre. Icono de la pestaña Registros: árbol #214.
+
+**Verificación:** 243 comprobaciones (dos nuevas: las cinco ventanas con cabecera fija, × y sin
+Cancelar; Editar en el detalle), sin errores de consola; auditoría y presentación sin hallazgos.
+Marca de versión 0.6.18.

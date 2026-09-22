@@ -38,7 +38,6 @@ SRP.catalogos = {
       e.target.setSelectionRange(pos, pos);
     });
     this.el('btn-cat-agregar').addEventListener('click', () => this.abrirFormulario(null));
-    this.el('btn-cat-cancelar').addEventListener('click', () => this.el('dlg-catalogo').close());
     this.el('form-catalogo').addEventListener('submit', (e) => { e.preventDefault(); this.guardar(); });
     this.el('tabla-catalogo').addEventListener('click', (e) => {
       const b = e.target.closest('button[data-accion]'); if (!b) return;
