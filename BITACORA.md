@@ -495,3 +495,40 @@ prueba vuelvan a sembrar y no queden registros derivados con la capa ficticia ju
 **Verificación:** 161 comprobaciones del recorrido, once nuevas sobre las capas; 44 de auditoría,
 cinco nuevas; la revisión de presentación en ocho combinaciones de ancho y zoom; y las dos pruebas
 de migración.
+
+## Bloque 16 — Ajustes del formulario pedidos tras probarlo, y auditoría de cierre (21-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.5.8.
+
+**Qué cambió, en el orden en que Liber lo pidió.** El botón de ubicación conserva el icono de
+ubicación en sus dos estados y se oculta mientras «Capturar coordenadas a mano» está desplegado
+(D48, D49). «Reforestación Urbana» encabeza el selector de programa (D51). Vuelve `comentarios`
+al registro como texto libre opcional de hasta 500 caracteres: entra en la ficha de revisión con
+su botón de editar, en el detalle del registro, en la detección de cambios al editar y en el
+espejo; **modifica D17**, que lo había retirado por no tener uso declarado (D50). La pestaña dice
+«Nuevo registro» y el formulario deja de repetir el título; en edición sí se muestra (D52).
+
+**Un tropiezo que conviene dejar escrito.** La primera versión del cambio del icono se aplicó al
+desplegable de coordenadas en vez de al botón de ubicación (commit a15a0b3): un emoji en el
+`summary` y una regla que lo ocultaba. Se revirtió en el commit siguiente. Quedó un rastro —el
+`id="summary-coord"` sin uso— que salió en la auditoría de cierre y se retiró aquí.
+
+**Auditoría de cierre.** Código sin uso: `SRP.ref.territorio()` (nadie la llamaba), los ids
+`summary-coord`, `etq-especie-texto` y `etq-cat-nombre` (sin JS, CSS ni ARIA que los nombrara) y la
+clase `foto` del fieldset (sin regla). Textos que ya no eran ciertos: el comentario de
+`aparienciaBotonUbicacion()` y D28 hablaban del lápiz; MAPEO-CAMPOS decía «Pantalla Registrar» y
+no traía `comentarios`. Hojas de estilo: sin selectores duplicados, sin colores fuera de `:root`
+salvo las dos sombras en `rgba` ya justificadas, `!important` sólo en `prefers-reduced-motion`.
+
+**Lo que las pruebas atraparon.** El recorrido falló dos veces por expectativas viejas, no por
+defectos: pedía el lápiz en el botón y pulsaba el botón de ubicación con el desplegable abierto.
+Ahora comprueba lo nuevo: el botón se oculta con el desplegable abierto y reaparece al cerrarlo,
+y conserva el icono de ubicación con el texto «Actualizar…». La marca de versión, que estaba
+escrita a mano en la prueba, ahora se lee de `index.html`: no volverá a caducar en cada bloque.
+
+**Verificación:** sintaxis de todos los .js; 163 comprobaciones del recorrido en los cuatro
+perfiles, sin errores de consola; 44 de la auditoría de consistencia; revisión de presentación en
+ocho combinaciones de ancho y zoom sin desbordes. Marca de versión subida a 0.5.8 en las 29
+etiquetas.
+
+**Pendiente registrado:** los reportes PDF se validan en conjunto cuando el formulario esté
+terminado (ver DECISIONES); ahí se decide si `comentarios` entra al reporte.

@@ -1,6 +1,6 @@
 # RECORRIDO COMPLETO. El sistema arranca vacío: lo que hace falta para probar se captura aquí.
 from playwright.sync_api import sync_playwright
-import os
+import re, os
 BASE='http://127.0.0.1:8099/'
 HOY='2026-09-21'
 SRP_GPS='GPS del dispositivo'
@@ -33,7 +33,9 @@ with sync_playwright() as p:
 
     # ---------- ACCESO ----------
     ok(pg.is_visible('#vista-acceso'),'la pantalla de acceso abre primero')
-    ok('0.5.7' in pg.inner_text('#version'),'la versión sale de la marca del archivo: '+pg.inner_text('#version'))
+    # La marca se lee de index.html, no se escribe aquí: así la prueba no caduca en cada bloque
+    MARCA=re.search(r'js/config\.js\?v=([\w.]+)', open(os.path.join(os.path.dirname(__file__), '..', 'index.html'), encoding='utf-8').read()).group(1)
+    ok(MARCA in pg.inner_text('#version'),'la versión sale de la marca del archivo: '+pg.inner_text('#version'))
     sinmarca=pg.evaluate("""() => [...document.querySelectorAll('script[src],link[rel=stylesheet][href]')]
         .map(e=>e.src||e.href).filter(u=>u.includes('127.0.0.1')&&!u.includes('?v=')).length""")
     ok(sinmarca==0,'todos los archivos propios llevan marca de versión')
@@ -165,11 +167,13 @@ with sync_playwright() as p:
       const b = document.getElementById('btn-ubicacion');
       return { clase: b.className, color: getComputedStyle(b).color,
                editar: getComputedStyle(document.getElementById('btn-resumen-corregir')).color,
-               icono: b.innerHTML.includes(SRP.ICONOS.lapiz.match(/d="([^"]+)"/)[1]) };
+               icono: b.innerHTML.includes(SRP.ICONOS.ubicacion.match(/d="([^"]+)"/)[1]),
+               texto: b.textContent.trim() };
     }""")
     ok('btn-editar' in corr['clase'] and corr['color']==corr['editar'],
        'y toma el dorado de corregir: '+corr['color'])
-    ok(corr['icono'],'con el lápiz, porque el color nunca va solo')
+    ok(corr['icono'] and corr['texto'].startswith('Actualizar'),
+       'conserva el icono de ubicación y cambia el texto, porque el color nunca va solo (D48)')
 
     # DE DÓNDE SALIÓ EL PUNTO. Sin fotografía obligatoria, la coordenada es la prueba, y no
     # todas valen lo mismo. Se comprueba en los cuatro caminos por los que se puede colocar.
@@ -200,6 +204,11 @@ with sync_playwright() as p:
     }""")
     ok(invariante==[],'la precisión existe si y sólo si el punto vino del GPS; falla en '+str(invariante))
 
+    # Con la captura a mano desplegada no conviven dos formas de fijar el punto: el botón de
+    # ubicación se oculta, y vuelve al cerrar el desplegable (D49)
+    ok(not pg.is_visible('#btn-ubicacion'),'con la captura a mano abierta, el botón de ubicación se oculta')
+    pg.click('.coord-manual summary'); pg.wait_for_timeout(200)
+    ok(pg.is_visible('#btn-ubicacion'),'y reaparece al cerrar el desplegable')
     pg.click('#btn-ubicacion'); pg.wait_for_timeout(800)   # se deja en GPS para lo que sigue
 
     # La fecha no se hereda ni se supone: se elige a propósito

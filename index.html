@@ -8,9 +8,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cabin:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.5.7">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.5.7">
-<link rel="stylesheet" href="css/estilos.css?v=0.5.7">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.5.8">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.5.8">
+<link rel="stylesheet" href="css/estilos.css?v=0.5.8">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -78,7 +78,7 @@
     <h2 class="titulo-bloque">Ubicación <span class="obligatorio" aria-hidden="true">*</span></h2>
     <button type="button" id="btn-ubicacion" class="btn btn-primario btn-ancho"></button>
     <details class="coord-manual desplegable" id="detalles-coord">
-      <summary id="summary-coord"><span>Capturar coordenadas a mano</span></summary>
+      <summary><span>Capturar coordenadas a mano</span></summary>
       <div class="campo-doble">
         <div class="campo"><label for="coord-lat">Latitud</label><input id="coord-lat" inputmode="decimal" placeholder="19.432600"></div>
         <div class="campo"><label for="coord-lng">Longitud</label><input id="coord-lng" inputmode="decimal" placeholder="-99.133200"></div>
@@ -117,7 +117,7 @@
       <div id="resumen-errores" class="errores" tabindex="-1" hidden></div>
 
       <div class="campo combo">
-        <label for="campo-especie" id="etq-especie"><span id="etq-especie-texto">Especie</span> <span class="obligatorio" aria-hidden="true">*</span></label>
+        <label for="campo-especie" id="etq-especie">Especie <span class="obligatorio" aria-hidden="true">*</span></label>
         <input id="campo-especie" role="combobox" required aria-autocomplete="list" aria-expanded="false"
                aria-controls="lista-especies" autocomplete="off" placeholder="Nombre común o científico">
         <ul id="lista-especies" class="combo-lista" role="listbox" aria-labelledby="etq-especie" hidden></ul>
@@ -134,7 +134,7 @@
         <textarea id="campo-comentarios" rows="3" maxlength="500" placeholder="Observaciones del sitio, condición del ejemplar, incidencias…"></textarea>
       </div>
 
-      <fieldset class="campo foto">
+      <fieldset class="campo">
         <legend>Fotografía <span class="opcional">(opcional)</span></legend>
 
         <!-- Zona de carga: un solo selector sin «capture», para que el teléfono ofrezca su menú -->
@@ -304,7 +304,7 @@
     <h2 id="dlg-catalogo-titulo">Agregar</h2>
     <p class="nota nota-obligatorio">Los campos marcados con <span class="obligatorio" aria-hidden="true">*</span> son obligatorios.</p>
     <div id="cat-errores" class="errores" tabindex="-1" hidden></div>
-    <div class="campo"><label for="cat-nombre" id="etq-cat-nombre"><span id="etq-cat-nombre-texto">Nombre</span> <span class="obligatorio" aria-hidden="true">*</span></label><input id="cat-nombre" required></div>
+    <div class="campo"><label for="cat-nombre"><span id="etq-cat-nombre-texto">Nombre</span> <span class="obligatorio" aria-hidden="true">*</span></label><input id="cat-nombre" required></div>
     <div class="campo"><label for="cat-clave">Clave <span class="obligatorio" aria-hidden="true">*</span></label><input id="cat-clave" required aria-describedby="cat-clave-ayuda"><p id="cat-clave-ayuda" class="nota">Se sugiere a partir del nombre. Puede cambiarla ahora; después ya no.</p></div>
     <div class="campo solo-especie"><label for="cat-cientifico">Nombre científico <span class="obligatorio" aria-hidden="true">*</span></label><input id="cat-cientifico"></div>
     <div class="campo solo-especie"><label for="cat-grupo">Grupo <span class="obligatorio" aria-hidden="true">*</span></label>
@@ -350,34 +350,34 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.5.7"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.5.7"></script>
-<script src="vendor/turf-pip.min.js?v=0.5.7"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.5.7"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.5.7"></script>
+<script src="vendor/leaflet.js?v=0.5.8"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.5.8"></script>
+<script src="vendor/turf-pip.min.js?v=0.5.8"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.5.8"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.5.8"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.5.7"></script>
-<script src="js/util.js?v=0.5.7"></script>
-<script src="js/iconos.js?v=0.5.7"></script>
-<script src="assets/logo.js?v=0.5.7"></script>
+<script src="js/config.js?v=0.5.8"></script>
+<script src="js/util.js?v=0.5.8"></script>
+<script src="js/iconos.js?v=0.5.8"></script>
+<script src="assets/logo.js?v=0.5.8"></script>
 <!-- Capas territoriales del SIA, compactadas por pruebas/generar_capas.py desde assets/fuentes/ -->
-<script src="assets/capa-alcaldias.js?v=0.5.7"></script>
-<script src="assets/capa-uga.js?v=0.5.7"></script>
-<script src="js/datos-ficticios.js?v=0.5.7"></script>
-<script src="js/permisos.js?v=0.5.7"></script>
-<script src="js/derivacion.js?v=0.5.7"></script>
-<script src="js/almacen.js?v=0.5.7"></script>
-<script src="js/sesion.js?v=0.5.7"></script>
-<script src="js/referencias.js?v=0.5.7"></script>
-<script src="js/mapa.js?v=0.5.7"></script>
-<script src="js/foto.js?v=0.5.7"></script>
-<script src="js/formulario.js?v=0.5.7"></script>
+<script src="assets/capa-alcaldias.js?v=0.5.8"></script>
+<script src="assets/capa-uga.js?v=0.5.8"></script>
+<script src="js/datos-ficticios.js?v=0.5.8"></script>
+<script src="js/permisos.js?v=0.5.8"></script>
+<script src="js/derivacion.js?v=0.5.8"></script>
+<script src="js/almacen.js?v=0.5.8"></script>
+<script src="js/sesion.js?v=0.5.8"></script>
+<script src="js/referencias.js?v=0.5.8"></script>
+<script src="js/mapa.js?v=0.5.8"></script>
+<script src="js/foto.js?v=0.5.8"></script>
+<script src="js/formulario.js?v=0.5.8"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.5.7"></script>
-<script src="js/registros.js?v=0.5.7"></script>
-<script src="js/reportes.js?v=0.5.7"></script>
-<script src="js/catalogos.js?v=0.5.7"></script>
-<script src="js/usuarios.js?v=0.5.7"></script>
-<script src="js/app.js?v=0.5.7"></script>
+<script src="js/espejo.js?v=0.5.8"></script>
+<script src="js/registros.js?v=0.5.8"></script>
+<script src="js/reportes.js?v=0.5.8"></script>
+<script src="js/catalogos.js?v=0.5.8"></script>
+<script src="js/usuarios.js?v=0.5.8"></script>
+<script src="js/app.js?v=0.5.8"></script>
 </body>
 </html>

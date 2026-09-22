@@ -26,7 +26,7 @@ que este documento y el sistema dicen lo mismo. Desaparece al cerrar la etapa.
 
 ## Módulo: Registro de plantación
 
-Pantalla **Registrar**. Almacén `plantaciones`.
+Pantalla **Nuevo registro**. Almacén `plantaciones`.
 
 | Etiqueta en pantalla | Campo | Obligatorio | Origen | Notas |
 |---|---|---|---|---|
@@ -48,6 +48,7 @@ Pantalla **Registrar**. Almacén `plantaciones`.
 | Especifique la especie | `especie_otra` | Sólo con «Otra especie» | Persona | Texto libre, para lo que no está en el catálogo |
 | Programa | `programa_id` | Sí | Catálogo | Remite a `catalogos.id` con `tipo = programa` |
 | Fecha de plantación | `fecha_plantacion` | Sí | Persona | `AAAA-MM-DD`. Arranca **sin valor**: se elige a propósito en cada registro, nunca se hereda del anterior. No puede ser posterior a hoy. Se muestra como 21-SEP-2026 |
+| Comentarios | `comentarios` | No | Persona | Texto libre, hasta 500 caracteres: observaciones del sitio o del ejemplar. Cadena vacía si no se escribe nada; los registros anteriores a su reincorporación (D50) no traen la llave y se leen como «Sin comentarios» |
 | Fotografía | `foto_base64` | No | Persona | La imagen ya comprimida, incrustada. [pendiente] En Fase 2 sale del registro y se guarda como archivo, siguiendo la práctica que el SIA ya usa en sus otros módulos |
 | — | `foto_id` | No | Sistema | UUID de la fotografía |
 | — | `foto_nombre` | No | Persona | Nombre del archivo que se eligió |

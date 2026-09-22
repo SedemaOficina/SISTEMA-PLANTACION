@@ -43,5 +43,4 @@ SRP.ref = {
      todavía no existe: no es un defecto del punto y no debe leerse como tal. */
   alcaldia(valor) { return valor || 'Sin alcaldía: el punto cae entre los polígonos de la capa'; },
   colonia(valor) { return valor || 'Pendiente: aún no hay capa de colonias'; },
-  territorio(valor) { return valor || 'Fuera de las capas'; }
 };

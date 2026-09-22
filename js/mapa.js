@@ -77,9 +77,10 @@ SRP.mapa = {
 
   /* EL BOTÓN CAMBIA CON EL ESTADO DEL PUNTO.
      Sin punto es la acción principal de la pantalla: guinda relleno, icono de ubicación, y
-     dice que va a registrarlo. Con punto puesto ya no se está capturando sino corrigiendo, y
-     eso se ve igual que en toda la aplicación: dorado, lápiz y la palabra actualizar (Norma
-     8.4, el color nunca va solo). Así nadie vuelve a pulsarlo creyendo que aún no hay punto. */
+     dice que va a registrarlo. Con punto puesto ya no se está capturando sino corrigiendo:
+     dorado y la palabra «Actualizar». El icono es el mismo de ubicación en los dos estados
+     (D48): el color no va solo porque el texto cambia (Norma 8.4). Así nadie vuelve a pulsarlo
+     creyendo que aún no hay punto. */
   aparienciaBotonUbicacion() {
     return this.lat === null
       ? { clase: 'btn btn-primario btn-ancho', icono: 'ubicacion', texto: 'Registrar ubicación del punto' }
