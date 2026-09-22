@@ -217,8 +217,20 @@ SRP.reportes = {
     return [...new Set(registros.map(r => r.alcaldia).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'));
   },
 
-  generar(registros, cierre, fecha) {
+  /* El logotipo del PDF es el mismo archivo del encabezado (D90), siempre la versión completa
+     aunque el teléfono muestre el recorte; el service worker lo tiene, así que también sale sin señal. */
+  cargarLogo() {
+    return new Promise((resolver) => {
+      const img = new Image();
+      img.onload = () => resolver(img);
+      img.onerror = () => resolver(null);
+      img.src = 'assets/encabezado-ru.png?v=' + encodeURIComponent(SRP.CONFIG.VERSION);
+    });
+  },
+
+  async generar(registros, cierre, fecha) {
     if (!window.jspdf) { SRP.util.anunciar('No se pudo cargar el generador de PDF.', 'alerta'); return; }
+    const logo = await this.cargarLogo();
     const u = SRP.sesion.usuario;
     const variosAutores = SRP.permisos.de(u).alcance !== 'propios';
     const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'letter' });
@@ -233,7 +245,7 @@ SRP.reportes = {
        —«Chófer: ______»— parece una plantilla a medio llenar, y lo firma alguien. */
     const hay = (k) => !!(cierre[k] && cierre[k].trim());
 
-    doc.addImage(SRP.LOGO_BASE64, 'PNG', M, 12, 70, 14);
+    if (logo) doc.addImage(logo, 'PNG', M, 14, 90, 90 * logo.naturalHeight / logo.naturalWidth);
     doc.setDrawColor(...C.guinda); doc.setLineWidth(0.4); doc.line(M, 30, ancho - M, 30);
 
     doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(...C.guinda);

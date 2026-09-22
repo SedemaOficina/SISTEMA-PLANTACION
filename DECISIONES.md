@@ -59,10 +59,7 @@
 
 ## Pendientes de decisión
 
-- [pendiente] **Icono de la app instalada**: los `assets/icono-192.png` y `icono-512.png` siguen
-  provisionales (fondo guinda y monograma SRP). Propuesta entregada a Liber el 22-09-2026: un icono
-  del set de iconografía CDMX en blanco sobre guinda (árbol #214, brote #159, hojas #213, bosque
-  #212 o pino #211); falta que elija
+- ~~Icono de la app instalada~~ Resuelto en D90: emblema del Programa de Reforestación Urbana en blanco sobre guinda
 - ~~Tipografías sin señal~~ Resuelto en D87: Cabin y Roboto en `vendor/fuentes/` (woff2, ~110 KB)
 
 - [pendiente] **Emisión del folio (Fase 2).** No se emite un solo folio definitivo hasta que el SIA:
@@ -86,6 +83,7 @@
   dispositivo» de Reportes muestra el estado de cada uno. No se adoptan de Kobo: el modal que
   exige OK en cada envío, la figura de borrador (aquí el registro está completo o no se guarda) ni
   esconder la cola en una barra lateral
+- [pendiente] **Colonias en el teléfono (3 MB) o sólo en el servidor.** El SIA hace los cruces territoriales en PostGIS, no en el dispositivo (llamada del 22-09-2026). El diseño ya lo prevé: el teléfono deriva alcaldía, colonia y UGA para verlas en campo sin señal (provisional, con `capa_version`) y en Fase 2 el servidor rederiva con PostGIS y su resultado manda (S-08). Alcaldías (390 KB) y UGA (423 KB) se quedan en el teléfono; decidir si colonias (3 MB, IECM) se queda o se deriva sólo en el servidor y el cabo la ve al sincronizar. Lo que se pide al SIA: nombre de las tablas del esquema `territorio`, SRID, campos llave, versión y fecha de corte, y una exportación de esas mismas tablas (ST_AsGeoJSON o QGIS) para que teléfono y servidor crucen contra la misma geometría
 - [pendiente] **Antes de liberar esta etapa: sustituir las tres capas** —alcaldías, malla UGA y colonias— por las definitivas del SIA, con fuente y fecha de corte confirmadas, y volver a correr `pruebas/generar_capas.py`. Las tres cargadas hoy son para probar: alcaldías y UGA traen los defectos medidos en el bloque 15, y colonias es la cartografía electoral del IECM 2022, no un catálogo del SIA. Al sustituirlas se sube `meta.version` y se rederivan los registros existentes. Anotado por Liber, 22-09-2026
 
 ### Para resolver antes de montar en los servidores del SIA
@@ -436,3 +434,27 @@
   índice (`--indice` la regenera) y normaliza los elegidos a una caja de 24×24: lo que hay en
   `js/iconos.js` es reproducible. Palomita, lápiz, disco y señal no existen en el set y se
   conservan. El icono `ojo` pasa a llamarse `ver`. Decidido por Liber, 22-09-2026.
+
+## Bloque 36 — Más iconos del set, logotipo del programa e icono de la app
+
+- **D89. Iconos del set CDMX en acceso, cuenta, pestañas y acciones.** Elegidos por Liber:
+  correo #53 y contraseña #63 (etiquetas del acceso), Entrar #11, cuenta con sesión #261,
+  pestañas Nuevo registro #32, Registros #183, Reportes #50, Catálogos #48 y Usuarios #270
+  (las cinco con icono para que la barra sea pareja; Liber marcó tres y las otras dos llevan la
+  primera opción propuesta), «¿Qué hacer sin internet?» #24, buscar #4, agregar en catálogos
+  #32, dar de alta #264 y avisos informativos #22 (aviso simulado, «Registros en este
+  dispositivo»). Sin icono por decisión de Liber: cerrar sesión, generar reporte, guardar
+  respaldo, reiniciar filtros, marca «usted»; la conexión sigue con las ondas. Los iconos se
+  insertan al arrancar (`SRP.app.ponerIconos`, `SRP.ICONOS.poner`) para que el HTML no cargue
+  trazados. Definido por Liber, 22-09-2026.
+- **D90. El logotipo del Programa de Reforestación Urbana es el del encabezado y el del PDF, y
+  su emblema es el icono de la app.** Liber entregó las seis versiones (color, blanco, calado;
+  horizontal y vertical). Encabezado: versión color horizontal completa (Gobierno CDMX ·
+  Secretaría del Medio Ambiente · Reforestación Urbana) en pantalla ancha, y en teléfono el
+  recorte del emblema con el nombre del programa, porque el logotipo completo a 38 px de alto es
+  ilegible. PDF: siempre la versión completa, cargada del mismo archivo (sale sin señal porque el
+  service worker la guarda). Icono de la app: el emblema (árbol y pala) en blanco sobre guinda,
+  esquinas redondeadas, en 192, 512, 512 enmascarable y apple-touch. Deja de usarse
+  `assets/logo.js` (SEDEMA incrustado en base64): se movió a `_to_delete/` para que Liber lo
+  borre. Los PNG originales viven en `assets/fuentes/logo-reforestacion-urbana/`. Pedido por
+  Liber, 22-09-2026.

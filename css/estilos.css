@@ -77,7 +77,7 @@ h1[tabindex="-1"]:focus { outline: none; }
   display: flex; align-items: center; justify-content: space-between; gap: var(--e-3);
   max-width: var(--ancho-max-tabla); margin: 0 auto; padding: var(--e-3) var(--e-4);
 }
-.encabezado-logo { height: 34px; width: auto; }
+.encabezado-logo { height: 40px; width: auto; display: block; }
 .encabezado-usuario { display: flex; flex-direction: column; align-items: flex-end; gap: var(--e-1); min-width: 0; text-align: right; }
 /* Salir de la sesión se decide donde se ve de quién es: junto al nombre, no al pie de la página */
 .encabezado-acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--e-2); margin-top: var(--e-1); }
@@ -107,7 +107,12 @@ main:focus { outline: none; }
 .pestana {
   flex: 1; min-height: var(--toque); background: none; border: 0; border-bottom: 3px solid transparent;
   color: var(--gris); font-family: var(--fuente-titulo); font-weight: 600; font-size: var(--t-m); cursor: pointer;
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: var(--e-1) var(--e-1) var(--e-2);
 }
+.pestana svg { flex: none; }
+/* Etiquetas y avisos con icono del set (D89): el icono va pegado al texto, alineado a la primera línea */
+label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--e-1); }
+.aviso-envio svg, .aviso-simulado svg { float: left; margin: 0.15em var(--e-2) 0 0; }
 
 .entrada { color: var(--gris); }
 .nota { color: var(--gris); font-size: var(--t-s); }
@@ -382,7 +387,7 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 
 /* ========== 7. @MEDIA ========== */
 @media (max-width: 480px) {
-  .encabezado-logo { height: 26px; }
+  .encabezado-logo { height: 38px; }
   /* En teléfono el bloque de usuario baja a su propia fila: ahí los dos enlaces caben en línea,
      en vez de apilarse y estirar el encabezado. */
   .encabezado-interior { flex-wrap: wrap; row-gap: var(--e-2); padding-bottom: var(--e-2); }

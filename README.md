@@ -60,7 +60,7 @@ js/derivacion.js      Cruce punto-en-polígono (alcaldía, UGA, colonia)
 js/folio.js           Patrón, validación y etiqueta del folio; no lo emite
 js/conexion.js        Estado de la conexión, aviso de qué hacer con los registros, respaldo y restauración
 sw.js                 Service worker: la app abre sin señal; versión = marca ?v= de index.html
-manifest.webmanifest  Instalación en pantalla de inicio; iconos provisionales en assets/
+manifest.webmanifest  Instalación en pantalla de inicio; iconos definitivos en assets/ (D90)
 js/referencias.js     Catálogos y cuentas en memoria
 js/iconos.js          Iconos por significado; los del set de iconografía CDMX se extraen con pruebas/extraer_iconos.py (D88)
 js/reportes.js       Cierre del parte del día y reporte PDF de la jornada
@@ -69,7 +69,8 @@ js/usuarios.js, app.js, util.js
 assets/fuentes/       Capas, catálogo de especies y set de iconografía CDMX tal como llegaron; no se editan
 assets/capa-alcaldias.js, capa-uga.js, capa-colonias.js  Las mismas capas, compactadas para la aplicación (generadas)
 assets/catalogo-especies.js  Catálogo real de especies (76), generado por pruebas/generar_especies.py
-assets/logo.js        Logotipo SEDEMA incrustado
+assets/encabezado-ru.png, encabezado-ru-movil.png  Logotipo del Programa de Reforestación Urbana (encabezado y PDF; recorte para teléfono)
+assets/icono-192.png, icono-512.png, icono-512-maskable.png, apple-touch-icon.png  Icono de la app: emblema del programa sobre guinda (D90)
 js/espejo.js          Espejo de campos, sólo en la versión de prueba (se elimina al cerrar la Etapa 1)
 esquema.json          Fuente única del modelo de datos (D86)
 DICCIONARIO-DATOS.md  Inventario de tablas y diccionario de datos, generado de esquema.json

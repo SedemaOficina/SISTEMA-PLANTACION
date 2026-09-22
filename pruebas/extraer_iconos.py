@@ -15,7 +15,13 @@ RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FUENTE = os.path.join(RAIZ, 'assets', 'fuentes', 'ICONOS_SET_CDMX_2024-2030.ai')
 
 # nombre en js/iconos.js → número en la hoja índice
-SELECCION = {'basura': 1, 'cerrar': 31, 'ubicacion': 12, 'camara': 62, 'ver': 21}
+SELECCION = {
+    # bloque 35 (D88)
+    'basura': 1, 'cerrar': 31, 'ubicacion': 12, 'camara': 62, 'ver': 21,
+    # bloque 36 (D89): acceso, cuenta, pestañas y acciones
+    'correo': 53, 'candado': 63, 'entrar': 11, 'usuario': 261, 'mas': 32, 'registros': 183,
+    'reportes': 50, 'catalogos': 48, 'usuarios': 270, 'ayuda': 24, 'buscar': 4, 'usuarioMas': 264, 'info': 22,
+}
 
 def trazados_del_set():
     with tempfile.TemporaryDirectory() as t:

@@ -5,9 +5,26 @@ SRP.app = {
   vista: null,
   el(id) { return document.getElementById(id); },
 
+  /* ICONOS DEL SET CDMX EN ACCESO, PESTAÑAS Y ACCIONES (D89). Se ponen aquí, una vez, para que
+     el HTML no cargue con trazados y el icono viva en un solo lugar (js/iconos.js). */
+  ponerIconos() {
+    const I = SRP.ICONOS;
+    I.poner(document.querySelector('label[for="acceso-correo"]'), 'correo', 18);
+    I.poner(document.querySelector('label[for="acceso-clave"]'), 'candado', 18);
+    I.poner(this.el('form-acceso').querySelector('button[type="submit"]'), 'entrar', 20);
+    I.poner(this.el('btn-entrar-prueba'), 'entrar', 20);
+    const pestana = { registrar: 'mas', registros: 'registros', reportes: 'reportes', catalogos: 'catalogos', usuarios: 'usuarios' };
+    this.el('navegacion').querySelectorAll('.pestana').forEach(b => I.poner(b, pestana[b.dataset.vista], 22));
+    I.poner(this.el('btn-ayuda-senal'), 'ayuda', 20);
+    I.poner(this.el('btn-usr-agregar'), 'usuarioMas', 20);
+    I.poner(document.querySelector('label[for="cat-buscar"]'), 'buscar', 18);
+    I.poner(document.querySelector('label[for="usr-buscar"]'), 'buscar', 18);
+    // Avisos informativos: el icono va al frente del texto
+    document.querySelectorAll('.aviso-simulado').forEach(a => a.insertAdjacentHTML('afterbegin', I.svg('info', 18)));
+  },
+
   async iniciar() {
     if (!this.comprobarVersionCompleta()) return;
-    this.el('logo').src = SRP.LOGO_BASE64;
     this.el('version').textContent = SRP.CONFIG.VERSION + ' (' + SRP.CONFIG.ETAPA + ')';
     this.el('banda-ficticio').hidden = !SRP.CONFIG.ES_FICTICIO;
     try {
@@ -30,6 +47,7 @@ SRP.app = {
     SRP.conexion.iniciar();
     this.iniciarAcceso();
     this.iniciarDialogos();
+    this.ponerIconos();
 
     this.el('navegacion').addEventListener('click', (e) => {
       const b = e.target.closest('.pestana'); if (!b) return;
@@ -137,7 +155,7 @@ SRP.app = {
   entrar() {
     const u = SRP.sesion.usuario;
     const p = SRP.permisos.de(u);
-    this.el('usuario-nombre').textContent = SRP.util.nombreCompleto(u);
+    this.el('usuario-nombre').innerHTML = SRP.ICONOS.svg('usuario', 18) + '<span>' + SRP.util.escapar(SRP.util.nombreCompleto(u)) + '</span>';
     this.el('usuario-perfil').textContent = p.etiqueta;
     this.el('encabezado-usuario').hidden = false;
     this.el('btn-cambiar-perfil').hidden = !SRP.CONFIG.ES_FICTICIO;

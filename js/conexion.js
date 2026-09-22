@@ -85,7 +85,7 @@ SRP.conexion = {
     // Cuántos llevan fotografía y cuánto pesan: la cifra para pedir disco a ADIP (D87)
     const fotos = n ? ' ' + (f.con_foto === 1 ? '1 lleva fotografía' : f.con_foto + ' llevan fotografía') +
       (f.con_foto ? ' (' + SRP.foto.formatearPeso(f.foto_bytes) + ')' : '') + '.' : '';
-    caja.innerHTML = '<strong>' + cuenta + '.</strong>' + fotos + ' ' + (this.enLinea()
+    caja.innerHTML = SRP.ICONOS.svg('info', 18) + '<strong>' + cuenta + '.</strong>' + fotos + ' ' + (this.enLinea()
       ? 'Por ahora no hay envío al servidor: los registros se quedan aquí. Genere el parte del día y compártalo con su coordinador, o guarde un respaldo. <strong>No borre los datos del navegador.</strong>'
       : 'Siga registrando: no hace falta internet. Cuando tenga señal, genere el parte del día y compártalo.');
   },

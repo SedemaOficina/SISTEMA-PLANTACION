@@ -778,3 +778,25 @@ propuesta HTML con las opciones y una hoja índice numerada del set.
 **Verificación:** sintaxis; 241 comprobaciones sin errores de consola; 81 de auditoría;
 presentación sin desbordes; el extractor reproduce exactamente los cinco trazados de iconos.js.
 Marca de versión 0.6.16.
+
+## Bloque 36 — Más iconos, logotipo del programa e icono de la app (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.17.
+
+**Iconos (D89).** Trece iconos más del set en `js/iconos.js` (extraídos con
+`pruebas/extraer_iconos.py`, cuya `SELECCION` los documenta por número) y `SRP.ICONOS.poner()`;
+`SRP.app.ponerIconos()` los coloca al arrancar en etiquetas del acceso, botón Entrar, nombre de
+la cuenta, las cinco pestañas (ahora en columna icono + texto), ayuda sin internet, buscar,
+agregar, dar de alta y avisos informativos. CSS: pestañas en columna, iconos en etiquetas y
+avisos.
+
+**Logotipo e icono (D90).** `assets/encabezado-ru.png` (1400 px, completo) y
+`assets/encabezado-ru-movil.png` (recorte) en un `<picture>` con corte a 480 px; ambos con
+marca `?v=` (la móvil vía `preload`) para que el worker los guarde. El PDF carga el completo con
+`cargarLogo()` y calcula su alto por proporción. `assets/icono-192.png`, `icono-512.png`,
+`icono-512-maskable.png` y `apple-touch-icon.png` generados del emblema en blanco;
+`manifest.webmanifest` con `purpose` separado. `assets/logo.js` fuera de `index.html` y movido a
+`_to_delete/`.
+
+**Verificación:** sintaxis; 241 comprobaciones sin errores de consola; 81 de auditoría;
+presentación sin desbordes en ocho combinaciones (encabezado con logotipo nuevo incluido); el
+worker guarda 41 archivos. Marca de versión 0.6.17.
