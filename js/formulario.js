@@ -47,8 +47,8 @@ SRP.formulario = {
     this.el('form-plantacion').addEventListener('submit', (e) => { e.preventDefault(); this.revisar(); });
     this.el('btn-revisar').innerHTML = SRP.ICONOS.svg('disco', 22) + '<span>Revisar y guardar</span>';
     this.el('btn-resumen-guardar').innerHTML = SRP.ICONOS.svg('palomita') + '<span>Guardar</span>';
-    this.el('btn-resumen-corregir').innerHTML = SRP.ICONOS.svg('lapiz') + '<span>Corregir</span>';
-    this.el('btn-resumen-corregir').addEventListener('click', () => this.el('dlg-resumen').close());
+    this.el('btn-resumen-cerrar').innerHTML = SRP.ICONOS.svg('cerrar', 22);
+    this.el('btn-resumen-cerrar').addEventListener('click', () => this.el('dlg-resumen').close());
     // Al cerrar la ficha se destruye su mapa: si no, queda un mapa vivo en un diálogo oculto
     // y su marcador se confunde con el del mapa principal.
     this.el('dlg-resumen').addEventListener('close', () => {

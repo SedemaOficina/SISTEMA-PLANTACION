@@ -622,3 +622,13 @@ código.
 **Verificación:** sintaxis; 222 comprobaciones (dos nuevas: Editar especie vuelve al campo con
 texto y lista completa; al teclear filtra), sin errores de consola; 45 de auditoría. Marca de
 versión 0.6.8.
+
+## Bloque 28 — La ficha sin «Corregir» (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.9.
+
+**Qué cambió (D77).** Se retira «Corregir» de la ficha de revisión; queda «Guardar» y una × de
+«Cerrar sin guardar» junto al título. Nuevo icono `cerrar`. La prueba que usaba el color de
+«Corregir» como referencia del dorado ahora lee el token `--editar` directamente.
+
+**Verificación:** sintaxis; 223 comprobaciones (una nueva: la × cierra y no existe Corregir), sin
+errores de consola; 45 de auditoría; presentación sin desbordes. Marca de versión 0.6.9.

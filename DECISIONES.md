@@ -292,3 +292,10 @@
   completa mientras la elección siga vigente; en cuanto se teclea, se filtra como siempre. El
   mismo defecto ocurría al volver a tocar el campo en el formulario, y queda resuelto por la
   misma vía.
+
+## Bloque 28 — La ficha sin «Corregir»
+
+- **D77. En la ficha «Revise antes de guardar» ya no hay botón «Corregir»: cada dato tiene su
+  Editar.** Queda una × de «Cerrar sin guardar» en la cabecera (nivel de apoyo, con etiqueta
+  accesible), porque la ficha necesita una salida que no sea guardar ni editar un campo, y en
+  teléfono no hay tecla Esc. Señalado por Liber.
