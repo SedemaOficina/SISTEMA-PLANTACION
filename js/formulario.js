@@ -82,7 +82,9 @@ SRP.formulario = {
   llenarProgramas(actualId) {
     const sel = this.el('campo-programa');
     const previo = actualId || sel.value;
-    const opciones = SRP.ref.deTipo('programa', true);
+    // Reforestación Urbana encabeza la lista: es el programa de casi toda la captura en campo
+    const opciones = SRP.ref.deTipo('programa', true)
+      .sort((a, b) => (b.clave === 'REFOR_URBANA') - (a.clave === 'REFOR_URBANA'));
     if (previo && !opciones.find(o => o.id === previo) && SRP.ref.catalogoPorId[previo]) opciones.push(SRP.ref.catalogoPorId[previo]);
     sel.innerHTML = '<option value="">Seleccione un programa</option>' + opciones.map(o =>
       '<option value="' + o.id + '">' + SRP.util.escapar(o.nombre) + (o.activo ? '' : ' (inactivo)') + '</option>').join('');
@@ -274,6 +276,7 @@ SRP.formulario = {
       especie_otra: otra ? this.el('campo-otra-especie').value.trim() : '',
       programa_id: this.el('campo-programa').value,
       fecha_plantacion: this.el('campo-fecha').value,
+      comentarios: this.el('campo-comentarios').value.trim(),
       foto_base64: this.estado.foto, foto_id: this.estado.fotoId,
       foto_nombre: this.estado.fotoNombre, foto_bytes: this.estado.fotoBytes
     };
@@ -303,6 +306,7 @@ SRP.formulario = {
       ['Coordenadas', v.lat.toFixed(6) + ', ' + v.lng.toFixed(6), 'punto'],
       ['Cómo se obtuvo', esc(SRP.mapa.textoOrigen(v.punto_origen, v.gps_precision_m)), null],
       ['Cabo', esc(this.nombreCabo()), null],
+      ['Comentarios', v.comentarios ? esc(v.comentarios) : 'Sin comentarios', 'comentarios'],
       ['Fotografía', v.foto_base64
         ? '<img class="revision-foto" src="' + v.foto_base64 + '" alt="Fotografía del árbol que se va a registrar">'
         : 'Sin fotografía', 'foto']
@@ -345,7 +349,7 @@ SRP.formulario = {
       return;
     }
     if (campo === 'foto') { this.el('etq-foto').scrollIntoView({ block: 'center' }); this.el('foto-archivo').click(); return; }
-    const destino = { especie: 'campo-especie', programa: 'campo-programa', fecha: 'campo-fecha' }[campo];
+    const destino = { especie: 'campo-especie', programa: 'campo-programa', fecha: 'campo-fecha', comentarios: 'campo-comentarios' }[campo];
     if (!destino) return;
     const el = this.el(destino);
     el.scrollIntoView({ block: 'center' });
@@ -382,7 +386,7 @@ SRP.formulario = {
     try {
       if (this.estado.editando) {
         const previo = this.estado.editando;
-        const cambiados = ['lat', 'lng', 'punto_origen', 'especie_id', 'especie_otra', 'programa_id', 'fecha_plantacion', 'foto_id']
+        const cambiados = ['lat', 'lng', 'punto_origen', 'especie_id', 'especie_otra', 'programa_id', 'fecha_plantacion', 'comentarios', 'foto_id']
           .filter(k => (previo[k] || null) !== (v[k] || null));
         const nuevo = this.registroPrevisto(ahora);
         await SRP.almacen.guardarConBitacora('plantaciones', nuevo,
@@ -441,6 +445,7 @@ SRP.formulario = {
     aviso.hidden = false;
     this.el('btn-cancelar-edicion').hidden = false;
     this.el('campo-fecha').value = registro.fecha_plantacion;
+    this.el('campo-comentarios').value = registro.comentarios || '';
     this.llenarProgramas(registro.programa_id);
     if (registro.especie_id) this.elegirEspecie(registro.especie_id);
     else this.elegirEspecie(this.OTRA, registro.especie_otra);
@@ -466,6 +471,7 @@ SRP.formulario = {
     this.el('campo-especie').value = ''; this.estado.especieId = null; this.mostrarOtra(false);
     this.el('campo-programa').value = '';
     this.el('campo-fecha').value = '';
+    this.el('campo-comentarios').value = '';
     this.el('coord-lat').value = '';
     this.el('coord-lng').value = '';
     this.ponerFoto(null, null);

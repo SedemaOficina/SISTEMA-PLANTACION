@@ -243,6 +243,7 @@ SRP.registros = {
       ['Coordenadas', r.lat.toFixed(6) + ', ' + r.lng.toFixed(6)],
       ['Cómo se obtuvo', esc(SRP.mapa.textoOrigen(r.punto_origen, r.gps_precision_m))],
       ['Cabo', esc(SRP.ref.nombreUsuario(r.cabo_id))],
+      ['Comentarios', r.comentarios ? esc(r.comentarios) : 'Sin comentarios'],
       ['Fotografía', r.foto_base64
         ? '<img class="revision-foto" src="' + r.foto_base64 + '" alt="Fotografía del árbol registrado">'
         : 'Sin fotografía']

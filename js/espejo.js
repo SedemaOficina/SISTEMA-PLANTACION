@@ -23,7 +23,7 @@ window.SRP = window.SRP || {};
 SRP.espejo = {
   // Los que sí tienen su lugar en la pantalla. Todo lo demás cae en el espejo.
   VISIBLES: ['lat', 'lng', 'punto_origen', 'gps_precision_m', 'alcaldia', 'colonia',
-             'especie_id', 'especie_otra', 'programa_id', 'fecha_plantacion',
+             'especie_id', 'especie_otra', 'programa_id', 'fecha_plantacion', 'comentarios',
              'foto_base64', 'foto_nombre', 'foto_bytes'],
 
   // Una línea por campo: de dónde sale y cuándo se fija. Si falta, el campo igual se ve.
