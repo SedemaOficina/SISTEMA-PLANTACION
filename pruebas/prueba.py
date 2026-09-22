@@ -348,9 +348,39 @@ with sync_playwright() as p:
     pg.click('.chip[data-atajo=todos]'); pg.wait_for_timeout(300)
     ok(pg.input_value('#filtro-desde')=='','y un atajo limpia el rango')
 
-    with pg.expect_download() as d: pg.click('#btn-pdf')
+    # ---------- REPORTE DEL DÍA (B19) ----------
+    # El parte es de un día: con «Todos» elegido el botón no genera, y lo dice
+    ok(pg.is_disabled('#btn-pdf'),'con «Todos» el botón de reporte no genera')
+    ok('parte de un día' in pg.inner_text('#pdf-nota'),'y la nota explica por qué: '+pg.inner_text('#pdf-nota'))
+    pg.click('.chip[data-atajo=hoy]'); pg.wait_for_timeout(300)
+    ok(not pg.is_disabled('#btn-pdf'),'con un día elegido, el botón se habilita')
+    ok(HOY_TXT in pg.inner_text('#pdf-nota'),'y la nota dice qué se va a reportar: '+pg.inner_text('#pdf-nota'))
+    # Un rango con la misma fecha en los dos extremos también es un día
+    pg.evaluate("document.querySelector('.filtros-mas').open = true"); pg.wait_for_timeout(200)
+    pg.fill('#filtro-desde',HOY); pg.fill('#filtro-hasta',HOY); pg.click('#btn-filtrar'); pg.wait_for_timeout(300)
+    ok(not pg.is_disabled('#btn-pdf'),'un rango de un solo día también deja generar')
+    pg.click('.chip[data-atajo=hoy]'); pg.wait_for_timeout(300)
+
+    pg.click('#btn-pdf'); pg.wait_for_timeout(400)
+    ok(pg.is_visible('#dlg-cierre'),'el botón abre el cierre del parte antes de generar')
+    ok(pg.is_visible('#cie-encargado-lectura') and pg.is_hidden('#cie-encargado-caja'),
+       'a un cabo no se le pregunta el encargado: es él')
+    ok(pg.inner_text('#cie-encargado-lectura').strip()!='','y sale su nombre: '+pg.inner_text('#cie-encargado-lectura'))
+    pg.fill('#cie-sitio','Calzada de prueba entre calle Uno y calle Dos')
+    pg.fill('#cie-chofer','Fulano de Tal')
+    pg.fill('#cie-hora','14 h')
+    with pg.expect_download() as d: pg.click('#btn-cierre-generar')
     d.value.save_as('/home/claude/srp/reporte_prueba.pdf')
     ok(os.path.getsize('/home/claude/srp/reporte_prueba.pdf')>20000,'el reporte PDF se genera: '+d.value.suggested_filename)
+    ok(HOY in d.value.suggested_filename,'y el archivo lleva el día del parte: '+d.value.suggested_filename)
+    # Lo escrito no se vuelve a pedir al regenerar el parte del mismo día
+    pg.click('#btn-pdf'); pg.wait_for_timeout(400)
+    ok(pg.input_value('#cie-sitio').startswith('Calzada de prueba'),'al regenerar, el cierre ya viene escrito')
+    ok(pg.input_value('#cie-hora')=='14 h','con todos sus campos')
+    pg.click('#btn-cierre-cancelar'); pg.wait_for_timeout(300)
+    # Los campos vacíos no se inventan: el cierre guardado no trae lo que no se escribió
+    vacios=pg.evaluate("async () => { const c = await SRP.almacen.uno('cierres', SRP.reportes.claveCierre(SRP.util.fechaHoy(), '')); return [c.actividades, c.personal, c.observaciones]; }")
+    ok(all(v=='' for v in vacios),'y lo que no se escribió queda vacío, no inventado')
 
     pg.click('#lista-registros button[data-accion=ver] >> nth=0'); pg.wait_for_timeout(900)
     ok(pg.locator('#detalle-mapa .leaflet-marker-icon').count()==1,'el detalle trae el mapa con el punto')
@@ -398,6 +428,15 @@ with sync_playwright() as p:
     ok(pg.locator('button[data-accion=editar]').count()>0 and pg.locator('button[data-accion=eliminar]').count()==0,'edita pero no elimina')
     ok(pg.is_hidden('.pestana[data-vista=catalogos]') and pg.is_hidden('.pestana[data-vista=usuarios]'),'no ve Catálogos ni Usuarios')
     ok(pg.is_visible('#caja-filtro-cabo'),'sí tiene filtro por cabo')
+    # Quien ve a varias personas elige el encargado del parte, y sólo entre quienes registraron (B19)
+    pg.click('.chip[data-atajo=hoy]'); pg.wait_for_timeout(300)
+    pg.click('#btn-pdf'); pg.wait_for_timeout(400)
+    ok(pg.is_visible('#cie-encargado-caja') and pg.is_hidden('#cie-encargado-lectura'),
+       'al coordinador se le ofrece la lista de cabos responsables')
+    opciones=pg.eval_on_selector('#cie-encargado',"s=>[...s.options].map(o=>o.textContent.trim()).filter(Boolean)")
+    ok(any('Fulana' in o for o in opciones),'con los cabos que registraron ese día: '+', '.join(opciones))
+    pg.click('#btn-cierre-cancelar'); pg.wait_for_timeout(200)
+    pg.click('.chip[data-atajo=todos]'); pg.wait_for_timeout(300)
     # Al abrir para editar un registro ajeno, el espejo enseña que el autor no cambia de manos
     pg.click('#lista-registros button[data-accion=editar] >> nth=0'); pg.wait_for_timeout(600)
     ajeno=pg.evaluate("""() => ({

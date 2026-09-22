@@ -567,3 +567,40 @@ con la marca de versión.
 **Verificación:** las tres cajas alineadas a la misma altura en 1280 y 768 px y apiladas en 390;
 la coordenada cabe sin recorte; 166 comprobaciones del recorrido, sin errores de consola; 44 de
 auditoría; presentación sin desbordes; sin selectores duplicados. Marca de versión 0.5.10.
+
+## Bloque 19 — El parte del día: cierre y reporte (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.0.
+
+**Qué cambió.** El reporte deja de ser «los registros que haya en el filtro» y pasa a ser el parte
+de una jornada (D55). El botón se llama «Generar reporte del día», sólo funciona con un día
+elegido, y a su lado una nota dice qué se va a reportar o qué falta para poder hacerlo; un botón
+apagado sin explicación se lee como una falla del sistema (Norma 7.6). Al pulsarlo se abre el
+cierre del parte (D56): sitio, actividades, personal, apoyo, encargado, observaciones, chófer,
+vehículo y hora de finalización, todos opcionales y de texto libre. El encargado no se escribe:
+para un cabo es él, y para quien ve a varias personas es una lista de los cabos que registraron
+ese día (D57).
+
+El PDF se rehízo: cabecera con el logotipo y el filete guinda, recuadro de sitio con la alcaldía
+que el sistema derivó del punto, apartados de actividades y personal, tabla de ejemplares, tabla
+de totales por especie con su total, resumen por programa, observaciones y logística. **Cada
+apartado se dibuja sólo si tiene qué decir**, así que un parte con pocos datos sale limpio en vez
+de lleno de renglones en blanco. Se conservan la cifra de ubicación por GPS y la advertencia de
+que lo registrado no equivale a lo plantado, que venían del reporte anterior.
+
+**Nuevo almacén `cierres`**, con clave `fecha|cabo`, y comprobación de estructura al abrir la base
+(D59): `ALMACENES` declara lo que el código espera, y si falta algo —mientras los datos sean
+ficticios— la base se rehace y se vuelve a sembrar. Sin eso, el teléfono que ya había abierto el
+sistema habría fallado al primer reporte.
+
+**Retirado:** `SRP.reportes.generar(registros, descripcion)` con su firma anterior y el título
+«REPORTE DE ÁRBOLES REGISTRADOS»; `SRP.registros.descripcionFiltro()` se conserva porque sigue
+describiendo el filtro en pantalla. Nada más se eliminó.
+
+**Verificación:** sintaxis de los cinco archivos tocados y del recorrido; 180 comprobaciones del
+recorrido (catorce nuevas: el botón apagado con «Todos» y su explicación, el día por atajo y por
+rango de un día, el cierre que se abre antes de generar, el encargado de lectura para el cabo y de
+lista para el coordinador, el PDF con el día en el nombre, el cierre que vuelve escrito al
+regenerar y los campos vacíos que no se inventan), sin errores de consola; 44 de la auditoría;
+sin desbordamiento horizontal en 1200 y 390 px; PDF revisado a la vista, de una página con los
+apartados vacíos ausentes. Sin CSS nuevo: el cierre usa `.campo`, `.campo-doble`, `.campo-lectura`
+y `.acciones`, que ya existían. Marca de versión 0.6.0.

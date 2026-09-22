@@ -62,7 +62,8 @@ js/datos-ficticios.js Cuentas y catálogos de arranque
 js/derivacion.js      Cruce punto-en-polígono (alcaldía, colonia, UGA)
 js/referencias.js     Catálogos y cuentas en memoria
 js/iconos.js          Iconos por significado (guardar, eliminar, editar, ubicar)
-js/mapa.js, foto.js, formulario.js, registros.js, reportes.js, catalogos.js,
+js/reportes.js       Cierre del parte del día y reporte PDF de la jornada
+js/mapa.js, foto.js, formulario.js, registros.js, catalogos.js,
 js/usuarios.js, app.js, util.js
 assets/fuentes/       Capas del SIA tal como llegaron (alcaldías y malla UGA); no se editan
 assets/capa-alcaldias.js, capa-uga.js  Las mismas capas, compactadas para la aplicación (generadas)
@@ -90,12 +91,34 @@ avisa en pantalla. Sin ese sello, un teléfono que ya había abierto el sistema 
 datos anteriores: así fue como, al renombrar los perfiles, todas las cuentas aparecieron como
 «Consulta».
 
+## El reporte del día
+
+El reporte es el **parte de una jornada**, no de un periodo: el botón sólo genera con un día
+elegido —el atajo «Hoy», o la misma fecha en «Desde» y «Hasta»—. Con mes o año queda apagado y la
+nota de al lado dice qué falta.
+
+Al pulsarlo se abre el **cierre del parte**: sitio, actividades, personal, apoyo, encargado,
+observaciones, chófer, vehículo y hora de finalización. Todos opcionales y de escritura libre, y
+los que quedan vacíos no se imprimen. El encargado no se escribe: para un cabo es él; para quien
+ve a varias personas es una lista de los cabos que registraron ese día.
+
+Los totales por especie, el total de ejemplares, el resumen por programa y la alcaldía del sitio
+**se calculan** a partir de los registros. Un total tecleado es un total que se puede equivocar.
+
+Lo capturado se guarda por día y cuadrilla en el almacén `cierres`: volver a generar el parte de
+un día no obliga a escribirlo otra vez.
+
 ## La base del dispositivo, mientras sea prototipo
 
-Toda la estructura vive en `MIGRACIONES[1]`, dentro de `js/almacen.js`. Mientras los datos sean
-ficticios, un cambio de estructura se hace ahí mismo y la base se rehace sola; no se acumulan
-migraciones. **Esto deja de valer con el primer dato real**: a partir de ahí, cada cambio es una
-migración numerada que conserva lo guardado, y la anterior no se toca.
+Toda la estructura vive en `MIGRACIONES[1]`, dentro de `js/almacen.js`, y los almacenes que el
+código espera se declaran en `ALMACENES`, en el mismo archivo. Al abrir, el sistema comprueba que
+estén todos; si falta alguno —porque el dispositivo ya había abierto una estructura anterior— la
+base se rehace y se vuelve a sembrar. Sin esa comprobación, un almacén nuevo no aparecería nunca
+en un teléfono que ya había entrado, y la pantalla fallaría sin decir por qué.
+
+Mientras los datos sean ficticios, un cambio de estructura se hace ahí mismo y la base se rehace
+sola; no se acumulan migraciones. **Esto deja de valer con el primer dato real**: a partir de ahí,
+cada cambio es una migración numerada que conserva lo guardado, y la anterior no se toca.
 
 Todo vive en el navegador de cada dispositivo. Borrar los datos del navegador borra los registros.
 No hay respaldo ni envío a ningún servidor.

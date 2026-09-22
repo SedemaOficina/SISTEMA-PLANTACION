@@ -1,10 +1,142 @@
-/* REPORTE PDF: tabla de los registros filtrados, con logotipo y resumen por programa. */
+/* REPORTE DIARIO DE PLANTACIÓN.
+   Dos piezas: el formulario de cierre —lo que no está en los registros y sólo va al documento— y
+   el PDF que lo arma.
+
+   POR QUÉ UN SOLO DÍA. El reporte es el parte de la jornada: así se escribe hoy en campo, un
+   parte por día y por cuadrilla. Un reporte que abarcara un mes no tendría chófer ni hora de
+   finalización ni observaciones que valieran para todo el periodo, y esos campos son la mitad del
+   documento. Los filtros de mes, año y rango siguen sirviendo para mirar la lista; para generar
+   el parte hay que estar parado en un día.
+
+   POR QUÉ UN FORMULARIO APARTE Y NO UN ENCABEZADO DE JORNADA. Lo pidió Liber así: el chófer, la
+   hora de finalización y las observaciones se saben al cerrar el día, no al llegar al frente.
+   Pedirlos antes obliga a volver a abrirlos después. Se capturan al generar el reporte, que es
+   cuando la persona ya tiene esos datos enfrente.
+
+   QUÉ NO ENTRA AQUÍ. Todo lo que ya vive en los registros: especies, conteos y territorio se
+   calculan, nunca se teclean. Un total escrito a mano es un total que se puede equivocar. */
 window.SRP = window.SRP || {};
 
 SRP.reportes = {
-  COLOR: { guinda: [157, 33, 72], dorado: [178, 142, 92], gris: [85, 88, 90], fila: [247, 241, 243] },
+  COLOR: { guinda: [157, 33, 72], dorado: [178, 142, 92], gris: [85, 88, 90], fila: [247, 241, 243], tinta: [35, 37, 38] },
 
-  generar(registros, descripcion) {
+  /* Campos del cierre. Todos opcionales y de texto libre: los partes varían de una cuadrilla a
+     otra y de un día a otro, y encajonarlos obligaría a escribir de una forma que no es la suya.
+     El encargado no está en esta lista porque no se escribe: sale de la sesión. */
+  CAMPOS: ['sitio', 'actividades', 'personal', 'apoyo', 'observaciones', 'chofer', 'vehiculo', 'hora'],
+
+  contexto: null,   // { registros, fecha, cabo_id } de lo que se va a reportar
+
+  el(id) { return document.getElementById(id); },
+
+  iniciar() {
+    this.el('form-cierre').addEventListener('submit', (e) => { e.preventDefault(); this.aceptar(); });
+    this.el('btn-cierre-cancelar').addEventListener('click', () => this.el('dlg-cierre').close());
+  },
+
+  /* La clave junta el día con el cabo filtrado: un coordinador puede sacar el parte de cada una
+     de sus cuadrillas el mismo día, y cada uno conserva sus propios datos de cierre. Sin cabo
+     elegido, el parte es del día completo dentro de su alcance. */
+  claveCierre(fecha, caboId) { return fecha + '|' + (caboId || 'TODOS'); },
+
+  /* ---------- Formulario de cierre ---------- */
+
+  async abrir(registros, fecha, caboId) {
+    if (!registros.length) return;
+    this.contexto = { registros, fecha, cabo_id: caboId || '' };
+
+    this.el('dlg-cierre-dia').textContent = SRP.util.formatearFecha(fecha);
+    this.el('dlg-cierre-cuenta').textContent = registros.length +
+      (registros.length === 1 ? ' ejemplar registrado' : ' ejemplares registrados');
+
+    // Lo capturado antes para este mismo día no se vuelve a escribir (Norma 7.6)
+    const previo = await SRP.almacen.uno('cierres', this.claveCierre(fecha, this.contexto.cabo_id));
+    this.CAMPOS.forEach(c => { this.el('cie-' + c).value = previo ? (previo[c] || '') : ''; });
+    this.prepararEncargado(registros, previo);
+
+    this.el('dlg-cierre').showModal();
+    this.el('cie-sitio').focus();
+  },
+
+  /* ENCARGADO. Quien captura en campo es responsable de su propio parte, así que a un cabo no se
+     le pregunta: es él, y el campo se muestra como respuesta, no como pregunta. Quien ve a varias
+     personas —coordinador o administración— sí elige, y sólo entre los cabos que tienen registros
+     ese día: ofrecer el padrón completo sería ofrecer a gente que no estuvo. */
+  prepararEncargado(registros, previo) {
+    const u = SRP.sesion.usuario;
+    const propios = SRP.permisos.de(u).alcance === 'propios';
+    const lectura = this.el('cie-encargado-lectura');
+    const caja = this.el('cie-encargado-caja');
+
+    lectura.hidden = !propios;
+    caja.hidden = propios;
+
+    if (propios) {
+      this.contexto.encargado_id = u.id;
+      lectura.textContent = SRP.util.nombreCompleto(u);
+      return;
+    }
+
+    const ids = [...new Set(registros.map(r => r.cabo_id))]
+      .map(id => [id, SRP.ref.nombreUsuario(id)])
+      .sort((a, b) => a[1].localeCompare(b[1], 'es'));
+    const sel = this.el('cie-encargado');
+    sel.innerHTML = '<option value="">Sin especificar</option>' +
+      ids.map(([id, n]) => '<option value="' + id + '">' + SRP.util.escapar(n) + '</option>').join('');
+    // Con un solo cabo en el día no hay nada que elegir: se propone y se puede cambiar
+    sel.value = (previo && previo.encargado_id) || (ids.length === 1 ? ids[0][0] : '');
+  },
+
+  encargadoElegido() {
+    const propios = SRP.permisos.de(SRP.sesion.usuario).alcance === 'propios';
+    return propios ? this.contexto.encargado_id : this.el('cie-encargado').value;
+  },
+
+  async aceptar() {
+    const c = this.contexto;
+    const previo = await SRP.almacen.uno('cierres', this.claveCierre(c.fecha, c.cabo_id));
+    const ahora = SRP.util.ahoraISO();
+    const cierre = {
+      id: this.claveCierre(c.fecha, c.cabo_id),
+      fecha: c.fecha,
+      cabo_id: c.cabo_id,
+      encargado_id: this.encargadoElegido(),
+      creado_por_id: previo ? previo.creado_por_id : SRP.sesion.usuario.id,
+      fecha_creacion: previo ? previo.fecha_creacion : ahora,
+      editado_por_id: SRP.sesion.usuario.id,
+      fecha_ultima_edicion: ahora
+    };
+    this.CAMPOS.forEach(k => { cierre[k] = this.el('cie-' + k).value.trim(); });
+
+    await SRP.almacen.guardarConBitacora('cierres', cierre,
+      SRP.bitacora.entrada(previo ? 'EDITADO' : 'CREADO', 'cierre', cierre.id,
+        'Cierre del parte del ' + SRP.util.formatearFecha(c.fecha)));
+
+    this.el('dlg-cierre').close();
+    this.generar(c.registros, cierre, c.fecha);
+  },
+
+  /* ---------- El documento ---------- */
+
+  // Conteo por especie, de mayor a menor. Se calcula siempre: nunca se captura (Norma 10.2)
+  totalesPorEspecie(registros) {
+    const m = new Map();
+    registros.forEach(r => {
+      const e = SRP.ref.especieDe(r);
+      const clave = e.comun + '|' + e.cientifico;
+      m.set(clave, (m.get(clave) || 0) + 1);
+    });
+    return [...m.entries()]
+      .map(([clave, n]) => ({ comun: clave.split('|')[0], cientifico: clave.split('|')[1], n }))
+      .sort((a, b) => b.n - a.n || a.comun.localeCompare(b.comun, 'es'));
+  },
+
+  // Alcaldías de los registros del día: el sistema ya las derivó del punto, no se preguntan
+  alcaldiasDe(registros) {
+    return [...new Set(registros.map(r => r.alcaldia).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'));
+  },
+
+  generar(registros, cierre, fecha) {
     if (!window.jspdf) { SRP.util.anunciar('No se pudo cargar el generador de PDF.', 'alerta'); return; }
     const u = SRP.sesion.usuario;
     const variosAutores = SRP.permisos.de(u).alcance !== 'propios';
@@ -12,75 +144,166 @@ SRP.reportes = {
     const ancho = doc.internal.pageSize.getWidth();
     const alto = doc.internal.pageSize.getHeight();
     const C = this.COLOR;
+    const M = 20;                       // margen izquierdo y derecho
+    const util = ancho - M * 2;
     const hoy = new Date();
 
-    doc.addImage(SRP.LOGO_BASE64, 'PNG', 20, 12, 70, 14);
-    doc.setDrawColor(...C.guinda); doc.setLineWidth(0.4); doc.line(20, 30, ancho - 20, 30);
+    /* Cada apartado se dibuja sólo si tiene qué decir. Un documento con renglones en blanco
+       —«Chófer: ______»— parece una plantilla a medio llenar, y lo firma alguien. */
+    const hay = (k) => !!(cierre[k] && cierre[k].trim());
+
+    doc.addImage(SRP.LOGO_BASE64, 'PNG', M, 12, 70, 14);
+    doc.setDrawColor(...C.guinda); doc.setLineWidth(0.4); doc.line(M, 30, ancho - M, 30);
+
     doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(...C.guinda);
-    doc.text('REPORTE DE ÁRBOLES REGISTRADOS', ancho / 2, 40, { align: 'center' });
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(...C.gris);
-    doc.text(hoy.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }), ancho / 2, 46, { align: 'center' });
-    doc.setTextColor(35, 37, 38);
-    doc.text('Generado por: ' + SRP.util.nombreCompleto(u) + ' (' + SRP.permisos.de(u).etiqueta + ')', 20, 55);
-    doc.text('Periodo o filtro: ' + descripcion, 20, 60);
-    if (SRP.CONFIG.ES_FICTICIO) {
-      doc.setTextColor(163, 58, 0); doc.text('Documento de prueba con datos ficticios. Sin validez oficial.', 20, 65);
+    doc.text('REPORTE DIARIO DE PLANTACIÓN', ancho / 2, 40, { align: 'center' });
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(...C.gris);
+    doc.text(SRP.util.formatearFecha(fecha), ancho / 2, 46, { align: 'center' });
+
+    let y = 56;
+    const salto = (necesario) => { if (y + necesario > alto - 24) { doc.addPage(); y = 25; } };
+
+    // Sitio: tal como lo escribió quien cerró el parte, con el territorio que el sistema derivó
+    const alcaldias = this.alcaldiasDe(registros);
+    if (hay('sitio') || alcaldias.length) {
+      const lineas = hay('sitio') ? doc.splitTextToSize(cierre.sitio, util - 8) : [];
+      const territorio = alcaldias.length
+        ? (alcaldias.length === 1 ? 'Alcaldía ' + alcaldias[0] : 'Alcaldías: ' + alcaldias.join(', ')) : '';
+      const altoCaja = 6 + lineas.length * 4.6 + (territorio ? 5 : 0);
+      salto(altoCaja + 4);
+      doc.setDrawColor(...C.tinta); doc.setLineWidth(0.2);
+      doc.rect(M, y, util, altoCaja);
+      let yy = y + 5.5;
+      if (lineas.length) {
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(...C.guinda);
+        doc.text('Sitio:', M + 3, yy);
+        doc.setFont('helvetica', 'normal'); doc.setTextColor(...C.tinta);
+        doc.text(lineas, M + 15, yy);
+        yy += lineas.length * 4.6;
+      }
+      if (territorio) {
+        doc.setFontSize(9); doc.setTextColor(...C.gris);
+        doc.text(territorio, M + 3, lineas.length ? yy + 0.5 : yy);
+      }
+      y += altoCaja + 7;
     }
 
-    const cabecera = ['Fecha plantación', 'Especie', 'Alcaldía', 'Colonia'].concat(variosAutores ? ['Cabo'] : []);
-    const cuerpo = registros.map(r => [
-      SRP.util.formatearFecha(r.fecha_plantacion), SRP.ref.especieDe(r).comun,
-      SRP.ref.alcaldia(r.alcaldia), r.colonia || '—'
-    ].concat(variosAutores ? [SRP.ref.nombreUsuario(r.cabo_id)] : []));
+    // Apartado de texto libre: título guinda y párrafo, sólo si hay contenido
+    const apartado = (titulo, texto) => {
+      const lineas = doc.splitTextToSize(texto, util);
+      salto(10 + lineas.length * 4.6);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...C.guinda);
+      doc.text(titulo.toUpperCase(), M, y);
+      doc.setDrawColor(...C.dorado); doc.setLineWidth(0.2); doc.line(M, y + 1.5, ancho - M, y + 1.5);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(...C.tinta);
+      doc.text(lineas, M, y + 7);
+      y += 7 + lineas.length * 4.6 + 4;
+    };
 
-    doc.autoTable({
-      head: [cabecera], body: cuerpo, startY: 70, margin: { left: 20, right: 20, bottom: 22 },
-      styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 1.8, textColor: [35, 37, 38] },
-      headStyles: { fillColor: C.guinda, textColor: 255, fontStyle: 'bold' },
-      alternateRowStyles: { fillColor: C.fila }
+    if (hay('actividades')) apartado('Actividades realizadas', cierre.actividades);
+
+    const personal = [];
+    if (hay('personal')) personal.push(cierre.personal);
+    if (hay('apoyo')) personal.push('Personal de apoyo: ' + cierre.apoyo);
+    if (cierre.encargado_id) personal.push('Encargado: ' + SRP.ref.nombreUsuario(cierre.encargado_id));
+    if (personal.length) apartado('Personal participante', personal.join('\n'));
+
+    // Ejemplares: uno por renglón, en el orden en que se capturaron
+    const cabecera = ['N.º', 'Especie', 'Nombre científico'].concat(variosAutores ? ['Cabo'] : []);
+    const cuerpo = registros.map((r, i) => {
+      const e = SRP.ref.especieDe(r);
+      return [String(i + 1), e.comun, e.cientifico].concat(variosAutores ? [SRP.ref.nombreUsuario(r.cabo_id)] : []);
     });
+    salto(30);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...C.guinda);
+    doc.text('EJEMPLARES REGISTRADOS', M, y);
+    doc.autoTable({
+      head: [cabecera], body: cuerpo, startY: y + 3, margin: { left: M, right: M, bottom: 22 },
+      styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 1.6, textColor: C.tinta },
+      headStyles: { fillColor: C.guinda, textColor: 255, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: C.fila },
+      columnStyles: { 0: { cellWidth: 12, halign: 'right' }, 2: { fontStyle: 'italic' } }
+    });
+    y = doc.lastAutoTable.finalY + 8;
 
-    // Resumen por programa
+    // Totales por especie: calculados
+    const totales = this.totalesPorEspecie(registros);
+    salto(30);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...C.guinda);
+    doc.text('TOTALES POR ESPECIE', M, y);
+    doc.autoTable({
+      head: [['Especie', 'Nombre científico', 'Ejemplares']],
+      body: totales.map(t => [t.comun, t.cientifico, String(t.n)]),
+      foot: [['Total', '', String(registros.length)]],
+      startY: y + 3, margin: { left: M, right: M, bottom: 22 },
+      styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 1.6, textColor: C.tinta },
+      headStyles: { fillColor: C.guinda, textColor: 255, fontStyle: 'bold' },
+      footStyles: { fillColor: [255, 250, 233], textColor: C.tinta, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: C.fila },
+      columnStyles: { 1: { fontStyle: 'italic' }, 2: { halign: 'right', cellWidth: 26 } }
+    });
+    y = doc.lastAutoTable.finalY + 4;
+    doc.setFont('helvetica', 'italic'); doc.setFontSize(7.5); doc.setTextColor(...C.gris);
+    doc.text('El conteo se calcula a partir de los registros del sistema; no se captura a mano.', M, y);
+    doc.setFont('helvetica', 'normal');
+    y += 8;
+
+    // Resumen por programa: qué programa pagó cada árbol de la jornada
     const porPrograma = {};
-    registros.forEach(r => { const n = SRP.ref.nombreCatalogo(r.programa_id) || 'Sin programa'; porPrograma[n] = (porPrograma[n] || 0) + 1; });
-    let y = doc.lastAutoTable.finalY + 8;
-    if (y > alto - 40) { doc.addPage(); y = 25; }
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...C.guinda);
-    doc.text('Total: ' + registros.length + (registros.length === 1 ? ' árbol registrado' : ' árboles registrados'), 20, y);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(35, 37, 38);
-    Object.keys(porPrograma).sort().forEach((n, i) => doc.text(n + ': ' + porPrograma[n], 20, y + 6 + i * 5));
-    let yy = y + 6 + Object.keys(porPrograma).length * 5;
+    registros.forEach(r => {
+      const n = SRP.ref.nombreCatalogo(r.programa_id) || 'Sin programa';
+      porPrograma[n] = (porPrograma[n] || 0) + 1;
+    });
+    const programas = Object.keys(porPrograma).sort();
+    salto(10 + programas.length * 5);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...C.guinda);
+    doc.text('POR PROGRAMA', M, y);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(...C.tinta);
+    programas.forEach((n, i) => doc.text(n + ': ' + porPrograma[n], M, y + 6 + i * 5));
+    y += 6 + programas.length * 5 + 4;
 
-    /* CALIDAD DE LA UBICACIÓN.
-       Cuando la fotografía es opcional, la coordenada es la prueba, y quien lea el reporte
-       merece saber de qué clase de coordenada se trata. Una fila por punto abultaría la tabla;
-       una cifra al pie dice lo mismo y se compara de un año a otro. */
+    if (hay('observaciones')) apartado('Observaciones', cierre.observaciones);
+
+    // Logística: sólo los datos que se capturaron
+    const log = [];
+    if (hay('chofer')) log.push('Chófer: ' + cierre.chofer);
+    if (hay('vehiculo')) log.push('Vehículo: ' + cierre.vehiculo);
+    if (hay('hora')) log.push('Hora de finalización: ' + cierre.hora);
+    if (log.length) apartado('Logística', log.join('\n'));
+
+    /* CALIDAD DE LA UBICACIÓN. Cuando la fotografía es opcional, la coordenada es la prueba, y
+       quien lea el reporte merece saber de qué clase de coordenada se trata. Una fila por punto
+       abultaría la tabla; una cifra al pie dice lo mismo y se compara de un año a otro. */
     const conGps = registros.filter(r => r.punto_origen === 'gps').length;
-    if (registros.length) {
-      doc.text('Ubicados con GPS del dispositivo: ' + conGps + ' de ' + registros.length +
-               ' (' + Math.round(conGps * 100 / registros.length) + '%)', 20, yy + 5);
-      yy += 5;
-    }
+    salto(24);
+    doc.setFontSize(9.5); doc.setTextColor(...C.tinta);
+    doc.text('Ubicados con GPS del dispositivo: ' + conGps + ' de ' + registros.length +
+             ' (' + Math.round(conGps * 100 / registros.length) + '%)', M, y);
+    y += 7;
 
+    doc.setFontSize(8); doc.setTextColor(...C.gris);
+    doc.text('Generado por ' + SRP.util.nombreCompleto(u) + ' (' + SRP.permisos.de(u).etiqueta + ').', M, y);
     /* La cifra del sistema no es la cifra del programa: se registra lo que alcanza a
        registrarse. Decirlo en el documento protege a quien lo firma. */
-    doc.setFontSize(8); doc.setTextColor(...C.gris);
-    doc.text('Cifra de árboles registrados en el sistema dentro del filtro indicado. No equivale', 20, yy + 7);
-    doc.text('necesariamente al total plantado en el periodo.', 20, yy + 11);
+    doc.text('Cifra de ejemplares registrados en el sistema para esta fecha. No equivale', M, y + 4);
+    doc.text('necesariamente al total plantado ese día.', M, y + 8);
+    if (SRP.CONFIG.ES_FICTICIO) {
+      doc.setTextColor(163, 58, 0);
+      doc.text('Documento de prueba con datos ficticios. Sin validez oficial.', M, y + 14);
+    }
 
     // Pie en todas las páginas
     const paginas = doc.getNumberOfPages();
     const sello = 'SEDEMA, Sistema de Registro de Plantaciones. Generado el ' + SRP.util.formatearFechaHora(hoy.toISOString());
     for (let p = 1; p <= paginas; p++) {
       doc.setPage(p);
-      doc.setDrawColor(...C.dorado); doc.setLineWidth(0.4); doc.line(20, alto - 16, ancho - 20, alto - 16);
+      doc.setDrawColor(...C.dorado); doc.setLineWidth(0.4); doc.line(M, alto - 16, ancho - M, alto - 16);
       doc.setFontSize(8); doc.setTextColor(...C.gris);
-      doc.text(sello, 20, alto - 11);
+      doc.text(sello, M, alto - 11);
       doc.text('Página ' + p + ' de ' + paginas, ancho / 2, alto - 6, { align: 'center' });
     }
 
-    const nombre = 'Reporte_Plantaciones_' + SRP.util.fechaHoy() + '.pdf';
-    this.entregar(doc, nombre);
+    this.entregar(doc, 'Reporte_Plantacion_' + fecha + '.pdf');
   },
 
   // Compartir con las apps del teléfono si el navegador lo permite; si no, descargar
@@ -89,7 +312,7 @@ SRP.reportes = {
     const archivo = new File([blob], nombre, { type: 'application/pdf' });
     if (navigator.canShare && navigator.canShare({ files: [archivo] })) {
       try {
-        await navigator.share({ files: [archivo], title: 'Reporte de plantaciones' });
+        await navigator.share({ files: [archivo], title: 'Reporte diario de plantación' });
         return;
       } catch (err) {
         if (err.name === 'AbortError') return;   // la persona canceló

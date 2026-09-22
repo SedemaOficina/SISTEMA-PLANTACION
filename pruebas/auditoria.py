@@ -156,6 +156,10 @@ with sync_playwright() as p:
         plantaciones: plant,
         usuarios: await campos('usuarios'),
         catalogos: await campos('catalogos'),
+        /* Igual que las plantaciones: los campos se leen del código, no de lo guardado. Un
+           almacén vacío haría pasar por inventado todo lo que el mapeo documenta. */
+        cierres: ['id','fecha','cabo_id','encargado_id','creado_por_id','fecha_creacion',
+                  'editado_por_id','fecha_ultima_edicion'].concat(SRP.reportes.CAMPOS),
         bitacora: bitacora()
       };
     }""")

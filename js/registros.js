@@ -60,7 +60,7 @@ SRP.registros = {
       if (b.dataset.accion === 'editar') SRP.formulario.editar(r);
       if (b.dataset.accion === 'eliminar') this.eliminar(r);
     });
-    this.el('btn-pdf').addEventListener('click', () => SRP.reportes.generar(this.filtrados, this.descripcionFiltro()));
+    this.el('btn-pdf').addEventListener('click', () => this.generarReporte());
     this.el('btn-detalle-cerrar').addEventListener('click', () => this.el('dlg-detalle').close());
     // Al cerrar, su mapa se destruye: uno vivo en un diálogo oculto sigue consumiendo y contando
     this.el('dlg-detalle').addEventListener('close', () => {
@@ -190,6 +190,22 @@ SRP.registros = {
     this.pintar(false);
   },
 
+  /* EL PARTE ES DE UN DÍA. Lo decidió Liber: el reporte es el parte de la jornada, y los datos
+     que lo acompañan —chófer, hora de finalización, observaciones— no valen para un mes. Un día
+     puede llegar por el atajo «Hoy» o por un rango con la misma fecha en los dos extremos. */
+  diaDelFiltro() {
+    const f = this.filtro;
+    if (f.dia) return f.dia;
+    if (f.desde && f.desde === f.hasta) return f.desde;
+    return '';
+  },
+
+  generarReporte() {
+    const dia = this.diaDelFiltro();
+    if (!dia || !this.filtrados.length) return;
+    SRP.reportes.abrir(this.filtrados, dia, this.filtro.cabo);
+  },
+
   descripcionFiltro() {
     const f = this.filtro;
     const partes = [];
@@ -231,7 +247,14 @@ SRP.registros = {
     this.el('registros-total').textContent = n === 0 ? vacio
       : 'Total: ' + n + (n === 1 ? ' registro' : ' registros') + (n > pagina.length ? ' (se muestran ' + pagina.length + ')' : '');
     this.el('btn-mas').hidden = n <= pagina.length;
-    this.el('btn-pdf').disabled = n === 0;
+    /* Un botón apagado sin explicación se lee como una falla del sistema (Norma 7.6): al lado
+       dice qué se va a reportar, o qué falta para poder hacerlo. */
+    const dia = this.diaDelFiltro();
+    this.el('btn-pdf').disabled = !dia || n === 0;
+    this.el('pdf-nota').textContent = !dia
+      ? 'El reporte es el parte de un día. Toque «Hoy», o ponga la misma fecha en «Desde» y «Hasta» dentro de «Más filtros».'
+      : n === 0 ? 'No hay registros del ' + SRP.util.formatearFecha(dia) + '.'
+      : 'Se reportarán los ' + n + (n === 1 ? ' registro' : ' registros') + ' del ' + SRP.util.formatearFecha(dia) + '.';
   },
 
   /* El detalle se lee igual que la ficha de revisión: el mapa arriba, los datos con su etiqueta

@@ -8,9 +8,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cabin:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.5.10">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.5.10">
-<link rel="stylesheet" href="css/estilos.css?v=0.5.10">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.0">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.0">
+<link rel="stylesheet" href="css/estilos.css?v=0.6.0">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -228,7 +228,8 @@
     <ul id="lista-registros" class="lista-registros"></ul>
     <button type="button" id="btn-mas" class="btn btn-texto" hidden>Mostrar más</button>
     <div class="acciones">
-      <button type="button" id="btn-pdf" class="btn btn-primario">Generar reporte PDF</button>
+      <button type="button" id="btn-pdf" class="btn btn-primario">Generar reporte del día</button>
+      <p id="pdf-nota" class="nota" aria-live="polite"></p>
     </div>
   </section>
 
@@ -317,6 +318,50 @@
   </form>
 </dialog>
 
+<!-- CIERRE DEL PARTE DEL DÍA. Todos los campos son opcionales y de escritura libre: los partes
+     varían de una cuadrilla a otra. Lo que ya está en los registros —especies, conteos,
+     territorio— no se pregunta aquí, se calcula (ver js/reportes.js). -->
+<dialog id="dlg-cierre" aria-labelledby="dlg-cierre-titulo">
+  <form id="form-cierre" novalidate>
+    <h2 id="dlg-cierre-titulo">Datos de cierre del día</h2>
+    <p class="nota">Parte del <strong id="dlg-cierre-dia"></strong>. <span id="dlg-cierre-cuenta"></span>. Todos los campos son opcionales; los que queden vacíos no aparecen en el reporte.</p>
+
+    <div class="campo"><label for="cie-sitio">Sitio o dirección de la jornada</label>
+      <textarea id="cie-sitio" rows="2" aria-describedby="cie-sitio-ayuda"></textarea>
+      <p id="cie-sitio-ayuda" class="nota">La alcaldía la pone el sistema con el punto de cada registro; aquí va la calle o el nombre del sitio.</p></div>
+
+    <div class="campo"><label for="cie-actividades">Actividades realizadas</label>
+      <textarea id="cie-actividades" rows="2"></textarea></div>
+
+    <div class="campo"><label for="cie-personal">Personal participante</label>
+      <textarea id="cie-personal" rows="2"></textarea></div>
+
+    <div class="campo"><label for="cie-apoyo">Personal de apoyo</label><input id="cie-apoyo"></div>
+
+    <!-- Un cabo es el encargado de su propio parte y no lo elige; quien ve a varias personas sí -->
+    <div class="campo">
+      <label for="cie-encargado" id="cie-encargado-etq">Encargado</label>
+      <p id="cie-encargado-lectura" class="campo-lectura" hidden></p>
+      <span id="cie-encargado-caja" hidden><select id="cie-encargado"></select></span>
+    </div>
+
+    <div class="campo"><label for="cie-observaciones">Observaciones</label>
+      <textarea id="cie-observaciones" rows="2" aria-describedby="cie-obs-ayuda"></textarea>
+      <p id="cie-obs-ayuda" class="nota">Una por renglón.</p></div>
+
+    <div class="campo-doble">
+      <div class="campo"><label for="cie-chofer">Chófer</label><input id="cie-chofer"></div>
+      <div class="campo"><label for="cie-vehiculo">Vehículo</label><input id="cie-vehiculo"></div>
+    </div>
+    <div class="campo"><label for="cie-hora">Hora de finalización</label><input id="cie-hora"></div>
+
+    <div class="acciones">
+      <button type="submit" class="btn btn-primario" id="btn-cierre-generar">Generar reporte</button>
+      <button type="button" id="btn-cierre-cancelar" class="btn btn-secundario">Cancelar</button>
+    </div>
+  </form>
+</dialog>
+
 <dialog id="dlg-confirmar" aria-labelledby="dlg-confirmar-texto">
   <p id="dlg-confirmar-texto"></p>
   <div class="acciones">
@@ -351,34 +396,34 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.5.10"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.5.10"></script>
-<script src="vendor/turf-pip.min.js?v=0.5.10"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.5.10"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.5.10"></script>
+<script src="vendor/leaflet.js?v=0.6.0"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.0"></script>
+<script src="vendor/turf-pip.min.js?v=0.6.0"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.6.0"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.0"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.5.10"></script>
-<script src="js/util.js?v=0.5.10"></script>
-<script src="js/iconos.js?v=0.5.10"></script>
-<script src="assets/logo.js?v=0.5.10"></script>
+<script src="js/config.js?v=0.6.0"></script>
+<script src="js/util.js?v=0.6.0"></script>
+<script src="js/iconos.js?v=0.6.0"></script>
+<script src="assets/logo.js?v=0.6.0"></script>
 <!-- Capas territoriales del SIA, compactadas por pruebas/generar_capas.py desde assets/fuentes/ -->
-<script src="assets/capa-alcaldias.js?v=0.5.10"></script>
-<script src="assets/capa-uga.js?v=0.5.10"></script>
-<script src="js/datos-ficticios.js?v=0.5.10"></script>
-<script src="js/permisos.js?v=0.5.10"></script>
-<script src="js/derivacion.js?v=0.5.10"></script>
-<script src="js/almacen.js?v=0.5.10"></script>
-<script src="js/sesion.js?v=0.5.10"></script>
-<script src="js/referencias.js?v=0.5.10"></script>
-<script src="js/mapa.js?v=0.5.10"></script>
-<script src="js/foto.js?v=0.5.10"></script>
-<script src="js/formulario.js?v=0.5.10"></script>
+<script src="assets/capa-alcaldias.js?v=0.6.0"></script>
+<script src="assets/capa-uga.js?v=0.6.0"></script>
+<script src="js/datos-ficticios.js?v=0.6.0"></script>
+<script src="js/permisos.js?v=0.6.0"></script>
+<script src="js/derivacion.js?v=0.6.0"></script>
+<script src="js/almacen.js?v=0.6.0"></script>
+<script src="js/sesion.js?v=0.6.0"></script>
+<script src="js/referencias.js?v=0.6.0"></script>
+<script src="js/mapa.js?v=0.6.0"></script>
+<script src="js/foto.js?v=0.6.0"></script>
+<script src="js/formulario.js?v=0.6.0"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.5.10"></script>
-<script src="js/registros.js?v=0.5.10"></script>
-<script src="js/reportes.js?v=0.5.10"></script>
-<script src="js/catalogos.js?v=0.5.10"></script>
-<script src="js/usuarios.js?v=0.5.10"></script>
-<script src="js/app.js?v=0.5.10"></script>
+<script src="js/espejo.js?v=0.6.0"></script>
+<script src="js/registros.js?v=0.6.0"></script>
+<script src="js/reportes.js?v=0.6.0"></script>
+<script src="js/catalogos.js?v=0.6.0"></script>
+<script src="js/usuarios.js?v=0.6.0"></script>
+<script src="js/app.js?v=0.6.0"></script>
 </body>
 </html>

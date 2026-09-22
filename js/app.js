@@ -24,6 +24,7 @@ SRP.app = {
     SRP.formulario.iniciar();
     SRP.espejo.iniciar();          // sólo en la versión de prueba; se elimina al cerrar la Etapa 1
     SRP.registros.iniciar();
+    SRP.reportes.iniciar();
     SRP.catalogos.iniciar();
     SRP.usuarios.iniciar();
     this.iniciarAcceso();

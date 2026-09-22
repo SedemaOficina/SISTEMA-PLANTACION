@@ -87,4 +87,48 @@
 - [pendiente] Cuenta institucional para el repositorio y la publicación (Norma 1.7)
 - [pendiente] Aviso de privacidad: el sistema recaba nombre, área y cargo del personal (Norma 1.8)
 - [pendiente] Los tres campos del punto ocupan ~240 px en teléfono mientras están vacíos. Se dejan siempre visibles para que el formulario no salte a media captura; revisar con personal en campo si conviene plegarlos hasta que haya punto
-- [pendiente] **Reportes PDF (`js/reportes.js`).** Liber los validará en conjunto una vez terminado el formulario; hasta entonces no se modifican. Queda por decidir ahí si el campo «Comentarios» (opcional, hasta 500 caracteres) entra al reporte y en qué forma: columna truncada o reporte de detalle por registro
+- [pendiente] **El campo «Comentarios» del registro** (opcional, hasta 500 caracteres) todavía no entra al reporte. Queda por decidir en qué forma: columna truncada en la tabla de ejemplares, o un reporte de detalle aparte. La reserva de no tocar `js/reportes.js` hasta terminar el formulario queda levantada por D55–D58, que Liber pidió expresamente
+
+- [pendiente] **Clave de campo del ejemplar.** Los partes que hoy se escriben a mano numeran cada árbol con un prefijo del sitio y un consecutivo: `CIZ_366`, `GMP_196`, `UDG_01`. Es el identificador que el personal dicta, pinta en la placa y usa para hablar entre sí, y el sistema no tiene dónde guardarlo: el reporte numera los ejemplares 1..n dentro del parte, que sirve para leerlo pero no para volver a encontrar un árbol. Es el tercer identificador de la Norma 1.2 —el del sistema de origen—, y sin él no se puede conciliar lo ya plantado con lo que capture el SRP
+
+- [pendiente] **Colonia en el parte.** El cierre no la pide: no hay capa de colonias (D45) ni catálogo, y un campo libre más sería una segunda fuente para un dato que el sistema va a derivar. Mientras tanto, quien la necesite la escribe dentro del sitio. Se resuelve cuando llegue la capa
+
+---
+
+## Bloque 19 — El parte del día
+
+- **D55. El reporte es el parte de un día, no de un periodo.** El botón sólo genera cuando el
+  filtro está parado en una fecha: el atajo «Hoy», o un rango con la misma fecha en los dos
+  extremos. Con mes, año o rango amplio queda apagado y la nota de al lado dice qué falta.
+  *Por qué:* los datos que acompañan al parte —chófer, hora de finalización, observaciones— no
+  valen para un mes, y son la mitad del documento. Así se escribe hoy en campo: un parte por
+  jornada y por cuadrilla. *Qué se sacrifica:* ya no hay un PDF de «todo el mes»; los filtros de
+  mes y año siguen sirviendo para mirar la lista en pantalla.
+
+- **D56. Los datos de cierre se capturan al generar el reporte, no al empezar la jornada.** Se
+  consideró un encabezado de jornada que se abriera al llegar al frente y lo descartó Liber: el
+  chófer, la hora de finalización y las observaciones se saben al terminar. Pedirlos antes obliga
+  a volver a abrirlos después. Todos los campos son **opcionales y de texto libre**, porque los
+  partes varían de una cuadrilla a otra; los que quedan vacíos **no se imprimen**, para que el
+  documento no parezca una plantilla a medio llenar. Lo capturado se guarda en el almacén
+  `cierres`, con clave `fecha|cabo`: regenerar el parte de un día no obliga a volver a escribirlo.
+
+- **D57. El encargado sale de la sesión.** A un cabo no se le pregunta: es él, y el campo se
+  muestra como respuesta, no como pregunta. Quien ve a varias personas —coordinador o
+  Administración— lo elige, y sólo entre **los cabos que tienen registros ese día**: ofrecer el
+  padrón completo sería ofrecer a gente que no estuvo. Se guarda `encargado_id`, no el nombre: el
+  nombre se lee de la cuenta, que es su fuente única.
+
+- **D58. Lo que se calcula no se captura.** Los totales por especie, el total de ejemplares, el
+  resumen por programa y la alcaldía del sitio salen de los registros. *Por qué:* el 21 de
+  septiembre de 2026, un parte escrito a mano reportó «apertura de 13 cepas» junto a 112 árboles
+  plantados; los folios listados eran 116 y los totales por especie sumaban 112. Un total que se
+  teclea es un total que se puede equivocar, y el que sale mal es el que se reporta hacia arriba.
+
+- **D59. La estructura de la base se comprueba al abrir.** `SRP.almacen.ALMACENES` declara los
+  almacenes que el código da por existentes, y `abrir()` verifica que estén. Mientras toda la
+  estructura viva en `MIGRACIONES[1]`, un dispositivo que ya abrió el sistema no vuelve a
+  ejecutarla, y un almacén nuevo —como `cierres`— no aparecería solo: la pantalla fallaría al
+  primer reporte sin decir por qué. Es el mismo problema que `SELLO_DATOS` resolvió para los
+  datos, ahora para la estructura. *Sólo vale mientras los datos sean ficticios:* con el primer
+  dato real, un almacén que falta pasa a ser una migración numerada (Norma 4.1), nunca un borrado.

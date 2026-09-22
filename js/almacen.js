@@ -13,6 +13,12 @@ SRP.almacen = {
      [pendiente] En cuanto exista el primer dato real esto deja de valer: a partir de ahí cada
      cambio de estructura es una migración numerada que conserva lo guardado (Norma 4.1 y 4.2),
      y ESTRUCTURA_VERSION deja de poder bajar ni cambiar de significado. */
+  /* Los almacenes que este código da por existentes. Se declaran aquí una sola vez y se
+     comprueban al abrir: mientras la estructura viva entera en MIGRACIONES[1], un dispositivo que
+     ya abrió el sistema no vuelve a ejecutarla, y un almacén nuevo no aparecería solo. Es el mismo
+     problema que SELLO_DATOS resolvió para los datos, ahora para la estructura. */
+  ALMACENES: ['plantaciones', 'usuarios', 'catalogos', 'bitacora', 'cierres'],
+
   MIGRACIONES: {
     1(db) {
       const pl = db.createObjectStore('plantaciones', { keyPath: 'id' });
@@ -24,6 +30,11 @@ SRP.almacen = {
       ca.createIndex('tipo', 'tipo');
       const bi = db.createObjectStore('bitacora', { keyPath: 'id' });
       bi.createIndex('entidad_id', 'entidad_id');
+      /* CIERRES DE PARTE. Lo que acompaña al reporte del día y no vive en los registros: sitio,
+         actividades, personal, observaciones y logística. La clave es «fecha|cabo», para que
+         regenerar el parte de un día no obligue a volver a escribirlo (ver reportes.js). */
+      const ci = db.createObjectStore('cierres', { keyPath: 'id' });
+      ci.createIndex('fecha', 'fecha');
     }
   },
 
@@ -33,7 +44,19 @@ SRP.almacen = {
       pet.onupgradeneeded = (ev) => {
         for (let v = ev.oldVersion + 1; v <= SRP.CONFIG.DB_VERSION; v++) this.MIGRACIONES[v](pet.result, pet.transaction);
       };
-      pet.onsuccess = () => { this.db = pet.result; resolver(); };
+      pet.onsuccess = () => {
+        this.db = pet.result;
+        const faltan = this.ALMACENES.filter(n => !this.db.objectStoreNames.contains(n));
+        if (!faltan.length) { resolver(); return; }
+        /* [pendiente] Con el primer dato real esto deja de valer: un almacén que falta pasa a
+           ser una migración numerada que conserva lo guardado (Norma 4.1), nunca un borrado. */
+        if (!SRP.CONFIG.ES_FICTICIO) {
+          rechazar(new Error('La base de este dispositivo no tiene: ' + faltan.join(', ') + '.'));
+          return;
+        }
+        this.db.close();
+        this.rehacerBase().then(() => this.sembrar()).then(resolver, rechazar);
+      };
       // Un dispositivo que abrió una estructura posterior a la que pide este código no puede
       // abrirla hacia atrás. Mientras los datos sean ficticios se descarta y se rehace; con
       // datos reales esto tendría que ser una migración, nunca un borrado.
@@ -154,8 +177,8 @@ SRP.almacen = {
   },
 
   async restablecer() {
-    await this._tx(['usuarios', 'catalogos', 'plantaciones', 'bitacora'], 'readwrite', (tx) => {
-      ['usuarios', 'catalogos', 'plantaciones', 'bitacora'].forEach(a => tx.objectStore(a).clear());
+    await this._tx(this.ALMACENES, 'readwrite', (tx) => {
+      this.ALMACENES.forEach(n => tx.objectStore(n).clear());
     });
     await this.sembrar();
   }

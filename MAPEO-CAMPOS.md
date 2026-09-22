@@ -127,9 +127,37 @@ Almacén `bitacora`. No se edita desde el sistema.
 | `usuario_nombre` | Sí | Sesión | Copia del nombre **a propósito**: si la cuenta se elimina, el historial debe seguir diciendo quién actuó |
 | `perfil` | Sí | Sesión | Con qué perfil actuó en ese momento |
 | `accion` | Sí | Sistema | `CREADO`, `EDITADO`, `ELIMINADO`, `ACTIVADO` o `DESACTIVADO` |
-| `entidad` | Sí | Sistema | `plantacion`, `usuario` o `catalogo` |
+| `entidad` | Sí | Sistema | `plantacion`, `usuario`, `catalogo` o `cierre` |
 | `entidad_id` | Sí | Sistema | A qué registro se refiere |
 | `detalle` | No | Sistema | Qué cambió; en una edición, la lista de campos |
+
+---
+
+## Módulo: Cierre del parte del día
+
+Diálogo **Datos de cierre del día**, que se abre al generar el reporte. Almacén `cierres`.
+Todo lo que aquí se captura es **opcional** y va únicamente al documento: no se explota ni se
+cuenta. Lo que ya vive en los registros —especies, conteos, alcaldía— no se pregunta, se calcula
+(D58).
+
+| Campo | Obligatorio | Origen | Notas |
+|---|---|---|---|
+| `id` | Sí | Sistema | `fecha|cabo`, o `fecha|TODOS` sin cabo filtrado: un cierre por jornada y cuadrilla |
+| `fecha` | Sí | Sistema | El día del parte, `AAAA-MM-DD` |
+| `cabo_id` | No | Sistema | El cabo por el que se filtró; vacío si el parte es del día completo |
+| `encargado_id` | No | Sesión o Persona | Remite a `usuarios.id`. Para un cabo es él mismo; quien ve a varias personas lo elige entre los cabos con registros ese día (D57) |
+| `sitio` | No | Persona | Calle o nombre del sitio, como se escribe en el parte |
+| `actividades` | No | Persona | |
+| `personal` | No | Persona | Nombres, como se acostumbra escribirlos |
+| `apoyo` | No | Persona | Personal de otra institución |
+| `observaciones` | No | Persona | Una por renglón |
+| `chofer` | No | Persona | |
+| `vehiculo` | No | Persona | |
+| `hora` | No | Persona | Hora de finalización, en texto |
+| `creado_por_id` | Sí | Sesión | Quién cerró el parte la primera vez |
+| `fecha_creacion` | Sí | Sistema | |
+| `editado_por_id` | Sí | Sesión | Quién lo cambió por última vez |
+| `fecha_ultima_edicion` | Sí | Sistema | |
 
 ---
 
@@ -137,13 +165,13 @@ Almacén `bitacora`. No se edita desde el sistema.
 
 | Campo | Se origina en | Se reutiliza en |
 |---|---|---|
-| `usuarios.id` | Cuentas | `plantaciones.cabo_id`, `plantaciones.editado_por_id`, `usuarios.coordinador_id`, `usuarios.alta_por_id`, `catalogos.creado_por_id`, `bitacora.usuario_id` |
+| `usuarios.id` | Cuentas | `plantaciones.cabo_id`, `plantaciones.editado_por_id`, `usuarios.coordinador_id`, `usuarios.alta_por_id`, `catalogos.creado_por_id`, `bitacora.usuario_id`, `cierres.encargado_id`, `cierres.cabo_id` |
 | `catalogos.id` (especie) | Catálogos | `plantaciones.especie_id` |
 | `catalogos.id` (programa) | Catálogos | `plantaciones.programa_id` |
 | `catalogos.id` (área) | Catálogos | `usuarios.area_id` |
 | `activo` | Cuentas y Catálogos | Mismo significado en los dos: deja de ofrecerse o de poder entrar, sin borrar nada |
 | `es_ficticio` | Todos | Marca de dato de prueba, en los cuatro almacenes |
-| `fecha_ultima_edicion` + `editado_por_id` | Todos | Mismo par en plantaciones, cuentas y catálogos |
+| `fecha_ultima_edicion` + `editado_por_id` | Todos | Mismo par en plantaciones, cuentas, catálogos y cierres |
 
 ---
 
@@ -152,6 +180,8 @@ Almacén `bitacora`. No se edita desde el sistema.
 | Campo previsto | Para qué | Cuándo |
 |---|---|---|
 | Folio legible del árbol | Un identificador que la gente pueda dictar por teléfono | [pendiente] Fase 2 |
+| Clave de campo del ejemplar | La que el personal ya usa en los partes escritos a mano (`CIZ_366`), pinta en la placa y dicta. Sin ella no se concilia lo ya plantado con lo que capture el SRP | [pendiente] Sin decidir |
+| Colonia del parte | Hoy no se pide en el cierre: falta la capa (D45) y un campo libre sería una segunda fuente | [pendiente] Cuando llegue la capa |
 | Identificador del servidor | Para relacionar el registro del dispositivo con el del servidor | [pendiente] Fase 2 |
 | Marca de envío | Saber qué registros ya subieron | [pendiente] Fase 2 |
 
