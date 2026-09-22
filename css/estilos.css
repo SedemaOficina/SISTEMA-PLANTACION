@@ -294,6 +294,8 @@ main:focus { outline: none; }
 .revision-fila-sola { grid-template-columns: 8.5rem 1fr; }
 .revision-fila dt { color: var(--texto); font-size: var(--t-s); font-weight: 700; }
 .revision-fila dd { margin: 0; overflow-wrap: anywhere; }
+/* Donde irá el folio: la leyenda se ve distinta de un folio real, para que nadie la copie como si lo fuera */
+.folio-provisional { font-family: ui-monospace, 'Courier New', monospace; letter-spacing: 0.04em; color: var(--gris); }
 .revision-id { font-family: ui-monospace, 'Courier New', monospace; font-size: var(--t-xs); }
 .revision-nota { color: var(--gris); font-size: var(--t-xs); margin: var(--e-4) 0 0; line-height: 1.6; }
 

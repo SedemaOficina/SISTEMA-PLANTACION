@@ -149,7 +149,8 @@ with sync_playwright() as p:
       };
       const plant = Object.keys(Object.assign(
         { id:1, estatus:1, es_ficticio:1, cabo_id:1, lat_original:1, lng_original:1,
-          fecha_registro:1, fecha_ultima_edicion:1, editado_por_id:1 },
+          fecha_registro:1, fecha_ultima_edicion:1, editado_por_id:1,
+          folio:1, folio_uga:1, folio_capa_version:1, folio_lat:1, folio_lng:1 },
         SRP.formulario.valores.call({
           estado: { especieId: 'x', foto: null, fotoId: null, fotoNombre: '', fotoBytes: 0,
                     territorio: { alcaldia:'a', colonia:'c', uga:'u', capa_version:'v' } },

@@ -277,6 +277,10 @@ with sync_playwright() as p:
     ok(pg.locator('.revision-fila', has_text='Alcaldía').locator('button').count()==0,'la alcaldía no se edita: sale del punto')
     ok(pg.inner_text('button[data-campo=especie]').strip()=='Editar','la ficha usa la palabra Editar')
     ok(HOY_TXT in pg.inner_text('#revision-lista'),'las fechas se leen con el mes en letras: '+HOY_TXT)
+    ok('PROVISIONAL' in pg.inner_text('#revision-lista .folio-provisional'),'la ficha muestra el folio como PROVISIONAL (R1)')
+    ok(pg.evaluate("SRP.formulario.registroPrevisto().especie_estatus")=='VALIDADA' and
+       pg.evaluate("SRP.formulario.valores.call(Object.assign({}, SRP.formulario, {estado: Object.assign({}, SRP.formulario.estado, {especieId: SRP.formulario.OTRA})})).especie_estatus")=='PENDIENTE_VALIDACION',
+       '«Otra especie» deja el registro PENDIENTE_VALIDACION; una de catálogo, VALIDADA (D68)')
     pg.click('button[data-campo=especie]'); pg.wait_for_timeout(400)
     ok(pg.is_hidden('#dlg-resumen') and pg.evaluate("document.activeElement.id")=='campo-especie','Editar cierra la ficha y lleva al campo')
 
@@ -320,6 +324,17 @@ with sync_playwright() as p:
     ids.append(registrar(pg,'aile','e-012',fecha='2026-08-10'))             # mes pasado
     ids.append(registrar(pg,'quiebra','e-002',programa='p-centro',fecha='2026-07-05'))
     ok(len(set(ids))==4,'cada árbol recibe su propio identificador')
+    # FOLIO (B23): estructura sin emisión
+    f=pg.evaluate("""() => ({
+      v1: SRP.folio.valido('SRP-TLP-318-2026-00001'), v2: SRP.folio.valido('SRP-TLP-318-2026-1'), v3: SRP.folio.valido('srp-TLP-318-2026-00001'),
+      a1: SRP.folio.armar('TLP-318', 2026, 7), a2: SRP.folio.armar(null, 2026, 12),
+      texto: SRP.folio.texto({ folio: null }), largo: SRP.folio.armar('CUH-021', 2026, 99999).length })""")
+    ok(f['v1'] and not f['v2'] and not f['v3'],'el patrón del folio acepta la forma adoptada y rechaza las demás')
+    ok(f['a1']=='SRP-TLP-318-2026-00007' and f['a2']=='SRP-EXT-000-2026-00012' and f['largo']==22,'armar rellena el consecutivo y usa EXT-000 fuera de la malla: '+f['a1'])
+    ok(f['texto']=='PROVISIONAL','sin folio, la pantalla dice PROVISIONAL')
+    guardado=pg.evaluate("id => SRP.almacen.uno('plantaciones', id)", ids[0])
+    ok(guardado['folio'] is None and guardado['folio_uga'] is None and 'folio_lat' in guardado,'el registro nace con los cinco campos del folio en nulo (R8)')
+    ok(guardado['especie_estatus']=='VALIDADA','una especie de catálogo queda VALIDADA')
 
     # ---------- REGISTROS ----------
     pg.click('.pestana[data-vista=registros]'); pg.wait_for_timeout(600)

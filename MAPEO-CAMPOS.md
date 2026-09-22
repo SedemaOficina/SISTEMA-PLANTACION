@@ -39,6 +39,11 @@ Pantalla **Nuevo registro**. Almacén `plantaciones`.
 | Cómo se obtuvo el punto | `punto_origen` | Sí | Sistema | `gps`, `mapa`, `manual` o `ajustado`. Lo determina la acción con que se colocó el punto, no una elección de quien captura. Campo de sólo lectura |
 | Cómo se obtuvo el punto | `gps_precision_m` | No | Sistema | Margen de error en metros que reporta el aparato. **Existe si y sólo si `punto_origen` es `gps`**: al mover el punto a mano el margen deja de describirlo y se borra, para que nunca pueda leerse como la precisión de una coordenada señalada con el dedo. La auditoría comprueba esta regla |
 | — | `lat_original`, `lng_original` | Sí | Sistema | Dónde quedó el punto la primera vez, antes de cualquier arrastre |
+| Folio | `folio` | No | Servidor | `SRP-AAA-000-AAAA-00000` (22 caracteres): sistema, celda UGA, año, consecutivo por celda y año. **Nulo en toda la Etapa 1**: lo asigna el servidor una sola vez al sincronizar (R3), y la pantalla muestra PROVISIONAL (R1). Inmutable (R7). Nomenclatura en D67; condiciones para emitirlo en pendientes |
+| — | `folio_uga` | No | Servidor | La celda que quedó dentro del folio, congelada al asignarlo (R8). Distinta de `uga`, que es la vigente y sí cambia si el punto se corrige |
+| — | `folio_capa_version` | No | Servidor | Versión de las capas con que se derivó el folio; congelada (R8) |
+| — | `folio_lat`, `folio_lng` | No | Servidor | Coordenada empleada al asignar el folio; congelada (R8) |
+| — | `especie_estatus` | Sí | Sistema | `VALIDADA` si la especie es del catálogo; `PENDIENTE_VALIDACION` con «Otra especie» (D68). Lo resuelve el SIA desde la bandeja de especies fuera de catálogo (Fase 2); al resolverse cambia el atributo, nunca el folio |
 | — | `alcaldia_cve` | No | Capa geográfica | Clave INEGI `cvegeo` de la alcaldía (p. ej. `09015`). Es la llave para unir con el esquema `territorio` del SIA; el nombre se guarda aparte para leerse sin cargar la capa |
 | Alcaldía | `alcaldia` | No | Capa geográfica | Nombre, del punto contra la capa `alcaldias` del SIA (16 polígonos). Campo de sólo lectura. Nulo cuando el punto cae en uno de los cinco huecos de la capa: se guarda igual y se avisa |
 | — | `colonia_cve` | No | Capa geográfica | Clave `CVEUT` de la unidad territorial del IECM (p. ej. `15-040`); llave para unir con la capa. Nulo fuera de la zona urbana |
@@ -181,7 +186,9 @@ cuenta. Lo que ya vive en los registros —especies, conteos, alcaldía— no se
 
 | Campo previsto | Para qué | Cuándo |
 |---|---|---|
-| Folio legible del árbol | Un identificador que la gente pueda dictar por teléfono | [pendiente] Fase 2 |
+| Emisión del folio | Tabla de secuencias por celda y año, asignación en transacción con el UUID como clave de idempotencia (R3–R6) | [pendiente] Fase 2, y sólo con la malla UGA corregida y congelada (DECISIONES, pendientes). La estructura ya está en el registro (bloque 23) |
+| Bandeja de especies fuera de catálogo | Donde el SIA resuelve cada `PENDIENTE_VALIDACION`: alta o reasignación | [pendiente] Fase 2, con los catálogos |
+| Posible duplicado | Aviso al sincronizar cuando otro registro cae a menos de la incertidumbre combinada de ambos puntos (suma de sus `gps_precision_m`, piso 5 m) | [pendiente] Fase 2, en el servidor (D69) |
 | Clave de campo del ejemplar | La que el personal ya usa en los partes escritos a mano (`CIZ_366`), pinta en la placa y dicta. Sin ella no se concilia lo ya plantado con lo que capture el SRP | [pendiente] Sin decidir |
 | Colonia del parte | No se pide en el cierre: sale del punto de cada registro, como la alcaldía; un campo libre sería una segunda fuente | Resuelto en el bloque 21 con la capa de colonias |
 | Identificador del servidor | Para relacionar el registro del dispositivo con el del servidor | [pendiente] Fase 2 |

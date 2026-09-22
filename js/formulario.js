@@ -275,6 +275,8 @@ SRP.formulario = {
       uga: t.uga || null, capa_version: t.capa_version || null,
       especie_id: otra ? null : this.estado.especieId,
       especie_otra: otra ? this.el('campo-otra-especie').value.trim() : '',
+      // «Otra especie» ya no es un problema del identificador: es un pendiente de catálogo (D68)
+      especie_estatus: otra ? 'PENDIENTE_VALIDACION' : 'VALIDADA',
       programa_id: this.el('campo-programa').value,
       fecha_plantacion: this.el('campo-fecha').value,
       comentarios: this.el('campo-comentarios').value.trim(),
@@ -298,6 +300,7 @@ SRP.formulario = {
 
     // La ubicación no se teclea: se corrige volviendo a colocar el punto en el mapa.
     const filas = [
+      ['Folio', '<span class="folio-provisional">' + esc(SRP.folio.PROVISIONAL) + '</span>', null],
       ['Identificador', '<span class="revision-id">' + esc(id) + '</span>', null],
       ['Especie', esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : ''), 'especie'],
       ['Programa', esc(SRP.ref.nombreCatalogo(v.programa_id)), 'programa'],
@@ -320,7 +323,8 @@ SRP.formulario = {
         : '<span></span>';
       return '<div class="revision-fila"><dt>' + etiqueta + '</dt><dd>' + valor + '</dd>' + boton + '</div>';
     }).join('') +
-      '<p class="revision-nota">El identificador lo asigna el sistema y no se modifica. ' +
+      '<p class="revision-nota">El folio lo asignará el servidor al sincronizar; hasta entonces el registro es provisional. ' +
+      'El identificador lo asigna el sistema y no se modifica. ' +
       'La alcaldía sale del punto: para cambiarla hay que mover la coordenada.</p>';
 
     this.el('dlg-resumen').showModal();
@@ -374,7 +378,9 @@ SRP.formulario = {
     return Object.assign({
       id: this.estado.idPrevisto, es_ficticio: SRP.CONFIG.ES_FICTICIO, estatus: 'activo',
       cabo_id: u ? u.id : null, lat_original: v.lat, lng_original: v.lng,
-      fecha_registro: ahora, fecha_ultima_edicion: null, editado_por_id: null
+      fecha_registro: ahora, fecha_ultima_edicion: null, editado_por_id: null,
+      // El folio y lo que se congela con él los pone el servidor al sincronizar (R3, R8); aquí nacen nulos
+      folio: null, folio_uga: null, folio_capa_version: null, folio_lat: null, folio_lng: null
     }, v);
   },
 

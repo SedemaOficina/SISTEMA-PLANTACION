@@ -223,10 +223,10 @@ SRP.reportes = {
     if (personal.length) apartado('Personal participante', personal.join('\n'));
 
     // Ejemplares: uno por renglón, en el orden en que se capturaron
-    const cabecera = ['N.º', 'Especie', 'Nombre científico'].concat(variosAutores ? ['Cabo'] : []);
+    const cabecera = ['N.º', 'Folio', 'Especie', 'Nombre científico'].concat(variosAutores ? ['Cabo'] : []);
     const cuerpo = registros.map((r, i) => {
       const e = SRP.ref.especieDe(r);
-      return [String(i + 1), e.comun, e.cientifico].concat(variosAutores ? [SRP.ref.nombreUsuario(r.cabo_id)] : []);
+      return [String(i + 1), SRP.folio.texto(r), e.comun, e.cientifico].concat(variosAutores ? [SRP.ref.nombreUsuario(r.cabo_id)] : []);
     });
     salto(30);
     doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...C.guinda);
@@ -236,9 +236,17 @@ SRP.reportes = {
       styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 1.6, textColor: C.tinta },
       headStyles: { fillColor: C.guinda, textColor: 255, fontStyle: 'bold' },
       alternateRowStyles: { fillColor: C.fila },
-      columnStyles: { 0: { cellWidth: 12, halign: 'right' }, 2: { fontStyle: 'italic' } }
+      columnStyles: { 0: { cellWidth: 12, halign: 'right' }, 1: { cellWidth: 30 }, 3: { fontStyle: 'italic' } }
     });
-    y = doc.lastAutoTable.finalY + 8;
+    y = doc.lastAutoTable.finalY + 4;
+    // R2: un parte con registros provisionales no es un documento definitivo, y lo dice
+    if (registros.some(r => !SRP.folio.valido(r.folio))) {
+      doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor(...C.gris);
+      doc.text('Registros PROVISIONALES: el folio se asigna al sincronizar con el servidor. Este parte no sustituye al definitivo.', M, y);
+      doc.setFont('helvetica', 'normal');
+      y += 4;
+    }
+    y += 4;
 
     // Totales por especie: calculados
     const totales = this.totalesPorEspecie(registros);

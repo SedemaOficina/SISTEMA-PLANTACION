@@ -242,7 +242,7 @@ SRP.registros = {
       if (SRP.permisos.puedeEditar(u, r, SRP.ref.usuarioPorId)) botones.push(boton('editar', 'btn-editar', 'lapiz', 'Editar'));
       if (SRP.permisos.puedeEliminar(u, r, SRP.ref.usuarioPorId)) botones.push(boton('eliminar', 'btn-peligro', 'basura', 'Eliminar'));
       return '<li class="registro"><div class="registro-datos">' +
-        '<span class="registro-fecha">' + SRP.util.formatearFecha(r.fecha_plantacion) + '</span>' +
+        '<span class="registro-fecha">' + SRP.util.formatearFecha(r.fecha_plantacion) + ' · ' + esc(SRP.folio.texto(r)) + '</span>' +
         '<span class="registro-especie">' + esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : '') + '</span>' +
         // En la lista sólo lo que existe: repetir «pendiente» en cada renglón sería ruido
         '<span class="registro-lugar">' + esc(SRP.ref.alcaldia(r.alcaldia)) + (r.colonia ? ', ' + esc(r.colonia) : '') + '</span>' +
@@ -274,6 +274,7 @@ SRP.registros = {
     const esc = SRP.util.escapar;
     const esp = SRP.ref.especieDe(r);
     const filas = [
+      ['Folio', '<span class="folio-provisional">' + esc(SRP.folio.texto(r)) + '</span>'],
       ['Identificador', '<span class="revision-id">' + esc(r.id) + '</span>'],
       ['Especie', esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : '')],
       ['Programa', esc(SRP.ref.nombreCatalogo(r.programa_id))],

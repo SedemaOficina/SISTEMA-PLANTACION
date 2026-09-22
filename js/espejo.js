@@ -31,7 +31,7 @@ SRP.espejo = {
   // Los que sí tienen su lugar en la pantalla. Todo lo demás cae en el espejo.
   VISIBLES: ['lat', 'lng', 'punto_origen', 'gps_precision_m', 'alcaldia', 'colonia',
              'especie_id', 'especie_otra', 'programa_id', 'fecha_plantacion', 'comentarios',
-             'foto_base64', 'foto_nombre', 'foto_bytes'],
+             'foto_base64', 'foto_nombre', 'foto_bytes', 'folio'],
 
   // Una línea por campo: de dónde sale y cuándo se fija. Si falta, el campo igual se ve.
   NOTAS: {
@@ -46,6 +46,11 @@ SRP.espejo = {
     capa_version: 'Con qué versión de cada capa se derivó; permite rehacer el dato si cambian',
     foto_id: 'UUID de la fotografía; nulo si no hay',
     colonia_cve: 'Clave CVEUT de la unidad territorial (IECM); llave para unir con la capa de colonias',
+    especie_estatus: 'VALIDADA si es del catálogo; PENDIENTE_VALIDACION con «Otra especie», hasta que el SIA la resuelva (D68)',
+    folio_uga: 'La celda UGA que quedó dentro del folio; se congela al asignarlo y no cambia aunque el punto se corrija (R8)',
+    folio_capa_version: 'Versión de las capas con que se derivó el folio; congelada (R8)',
+    folio_lat: 'Coordenada empleada al asignar el folio; congelada (R8)',
+    folio_lng: 'Ídem',
     foto_nombre: 'Nombre del archivo que se cargó; se conserva para la ficha',
     foto_bytes: 'Peso de la fotografía ya comprimida',
     fecha_registro: 'Momento de guardar. Se fija al pulsar Guardar, no antes',
@@ -54,7 +59,7 @@ SRP.espejo = {
   },
 
   // Lo que el detalle del registro sí enseña (registros.js, verDetalle): el resto va al espejo
-  VISIBLES_DETALLE: ['id', 'lat', 'lng', 'punto_origen', 'gps_precision_m', 'alcaldia', 'colonia',
+  VISIBLES_DETALLE: ['id', 'folio', 'lat', 'lng', 'punto_origen', 'gps_precision_m', 'alcaldia', 'colonia',
                      'especie_id', 'especie_otra', 'programa_id', 'fecha_plantacion', 'cabo_id',
                      'comentarios', 'foto_base64'],
 
@@ -93,6 +98,7 @@ SRP.espejo = {
   provisional(k, registro) {
     const editando = !!SRP.formulario.estado.editando;
     if (k === 'id' && !registro.id) return '(se fija al revisar)';
+    if (SRP.folio.CAMPOS.includes(k) && registro[k] === null) return '(lo asigna el servidor al sincronizar)';
     if (k === 'fecha_registro' && !editando) return '(se fija al guardar)';
     if (k === 'fecha_ultima_edicion' && editando) return '(se fija al guardar)';
     if (k === 'editado_por_id' && editando) return this.formatear(registro[k]) + ' (se fija al guardar)';

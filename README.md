@@ -60,6 +60,7 @@ js/almacen.js         Base del dispositivo (IndexedDB) y bitácora
 js/sesion.js          Acceso; se sustituye al conectar el proveedor institucional
 js/datos-ficticios.js Cuentas y catálogos de arranque
 js/derivacion.js      Cruce punto-en-polígono (alcaldía, UGA, colonia)
+js/folio.js           Patrón, validación y etiqueta del folio; no lo emite
 js/referencias.js     Catálogos y cuentas en memoria
 js/iconos.js          Iconos por significado (guardar, eliminar, editar, ubicar)
 js/reportes.js       Cierre del parte del día y reporte PDF de la jornada
@@ -128,6 +129,15 @@ No hay respaldo ni envío a ningún servidor.
 La capa base es imagen de satélite de Esri, con los nombres de vías y lugares encima. Las tres
 capas se declaran en `CAPAS`, dentro de `js/config.js`; cambiar de proveedor es cambiar esa lista.
 La atribución se muestra porque la licencia lo exige.
+
+## Folio del ejemplar
+
+Nomenclatura adoptada: `SRP-AAA-000-AAAA-00000` (sistema, celda UGA, año, consecutivo por celda y
+año; 22 caracteres). La clave de especie queda fuera del folio. En la Etapa 1 **ningún registro
+tiene folio**: lo asigna el servidor una sola vez al sincronizar, y la pantalla y el PDF dicen
+PROVISIONAL. `js/folio.js` guarda el patrón, la validación y la etiqueta de campo —lo que el
+servidor reutilizará—; la emisión no existe todavía y depende de que el SIA entregue la malla UGA
+corregida y congelada (DECISIONES D67–D69 y pendientes).
 
 ## Capas territoriales
 

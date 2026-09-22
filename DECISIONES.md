@@ -59,6 +59,20 @@
 
 ## Pendientes de decisión
 
+- [pendiente] **Emisión del folio (Fase 2).** No se emite un solo folio definitivo hasta que el SIA:
+  (1) entregue la malla UGA corregida, con identificador de versión y fecha de corte, para
+  congelarla como capa de referencia; (2) informe si corregir las ocho claves inconsistentes
+  cambia la clave de otras celdas; (3) confirme nombre, tipo y formato de la llave de la celda y
+  certifique que la malla no tiene huecos ni traslapes en el límite; (4) entregue alcaldías
+  corregida y colonias definitiva; (5) documente que el prefijo UGA no indica territorio. Con eso
+  la Secretaría congela la capa y habilita la emisión. Del análisis de Liber, sección 8
+- [pendiente] **Bandeja de especies fuera de catálogo (Fase 2).** Con un responsable en el SIA que
+  la cierre; sin ella el catálogo se degrada con variantes del mismo taxón (D68)
+- [pendiente] **Validación de posible duplicado (Fase 2, servidor).** Con la regla corregida de
+  D69, no con 5 m fijos
+- [pendiente] **Clave de campo del ejemplar** (`CIZ_366`, la que pintan en la placa): sigue sin
+  decidir si entra como atributo para conciliar lo ya plantado
+
 - [pendiente] **Antes de liberar esta etapa: sustituir las tres capas** —alcaldías, malla UGA y colonias— por las definitivas del SIA, con fuente y fecha de corte confirmadas, y volver a correr `pruebas/generar_capas.py`. Las tres cargadas hoy son para probar: alcaldías y UGA traen los defectos medidos en el bloque 15, y colonias es la cartografía electoral del IECM 2022, no un catálogo del SIA. Al sustituirlas se sube `meta.version` y se rederivan los registros existentes. Anotado por Liber, 22-09-2026
 
 ### Para resolver antes de montar en los servidores del SIA
@@ -179,3 +193,35 @@
   «Generar reporte» (la regla de D40): no puede desfasarse. Los tres se eliminan al cerrar la
   Etapa 1, como D40 lo establece; la lista de qué borrar está en la cabecera de `js/espejo.js`.
   Pedido por Liber.
+
+## Bloque 23 — Folio: la estructura entra, la emisión espera
+
+- **D67. Nomenclatura del folio: `SRP-AAA-000-AAAA-00000`.** Cuatro segmentos congelados al
+  asignar —sistema, celda UGA por cruce contra la malla vigente al alta, año de asignación,
+  consecutivo de cinco dígitos por celda y año—, 22 caracteres. La clave de especie queda fuera
+  del identificador y se conserva como atributo: un ejemplar puede reidentificarse cuantas veces
+  haga falta y puede registrarse sin especie de catálogo sin que el folio cambie. `EXT-000` es la
+  celda reservada para un punto fuera de la malla. Definido por Liber en su análisis de
+  nomenclatura (22-09-2026).
+- **D68. Reglas de operación adoptadas (R1–R10 del análisis).** R1: el registro nace con UUID y
+  la pantalla dice PROVISIONAL hasta sincronizar. R2: nada definitivo —placa, rótulo, reporte—
+  sale de un registro provisional; el PDF lo advierte. R3: el folio se asigna una sola vez, en el
+  servidor, en una transacción. R4: el UUID es la clave de idempotencia. R5–R6: consecutivo de
+  una tabla de secuencias que sólo avanza; los huecos se aceptan, la reutilización no; unicidad en
+  base. R7: inmutable ante cualquier corrección. R8: al asignar se congelan folio, celda, versión
+  de capas y coordenada (`folio_uga`, `folio_capa_version`, `folio_lat`, `folio_lng`); `uga` sigue
+  siendo la vigente. R9: baja lógica, nunca física (ya era así). R10: el folio identifica al
+  ejemplar, no al evento; el seguimiento cuelga del mismo folio. «Otra especie» pasa a ser un
+  pendiente de catálogo: `especie_estatus = PENDIENTE_VALIDACION`. **En la Etapa 1 entra sólo la
+  estructura**: los cinco campos del folio nacen nulos, `js/folio.js` guarda patrón, validación y
+  etiqueta de campo, y la emisión se construye en Fase 2 cuando se cumpla el pendiente.
+- **D69. El duplicado no se detecta por distancia fija.** El análisis proponía avisar cuando otro
+  registro cae a menos de 5 m en 30 días. Con el GPS del teléfono —5–10 m a cielo abierto, 15–30
+  entre edificios— y árboles plantados cada 3–8 m, cinco metros están por debajo del error del
+  instrumento: en una jornada el aviso saltaría en casi todos los árboles (el vecino) y no saltaría
+  en el duplicado real capturado con 15 m de error. Regla corregida, para el servidor: distancia
+  menor que la incertidumbre combinada de ambos puntos (suma de sus `gps_precision_m`), con piso de
+  5 m para puntos a mano o en el mapa. Lo que ningún umbral resuelve —dos cabos, dos teléfonos, un
+  frente monoespecífico— se controla con el conteo del parte contra la meta y con la supervisión
+  del coordinador. Se difiere íntegro a Fase 2; por ahora se guarda la precisión de cada punto,
+  que es el insumo. Señalado por Liber; regla acordada.

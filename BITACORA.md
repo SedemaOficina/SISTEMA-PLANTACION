@@ -521,3 +521,37 @@ científico y colonia, espejo del detalle con `colonia_cve`, espejo del cierre c
 campos, y que lo escrito en el cierre entra al objeto que se guarda), sin errores de consola; 45 de
 auditoría; presentación sin desbordes; sin selectores duplicados, clases ni ids sin uso; sin
 rastro del texto «Más filtros». Marca de versión 0.6.3.
+
+## Bloque 23 — Folio: la estructura entra, la emisión espera (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.4.
+
+**De dónde viene.** Del análisis de nomenclatura de Liber: folio `SRP-AAA-000-AAAA-00000`, con la
+clave de especie fuera del identificador, asignación única en el servidor al sincronizar, UUID
+como clave de idempotencia, tabla de secuencias que sólo avanza, inmutabilidad y baja lógica
+(D67, D68). El análisis condiciona la emisión a que el SIA entregue la malla UGA corregida y
+congelada; por eso en esta etapa **entra la estructura y no la emisión**.
+
+**Qué cambió.** Nuevo `js/folio.js` con el patrón, la validación, `armar()` (con `EXT-000` para
+un punto fuera de la malla) y la etiqueta de campo `folio · especie · alcaldía · fecha`: es el
+código que el servidor reutilizará. El registro nace con cinco campos nulos —`folio`,
+`folio_uga`, `folio_capa_version`, `folio_lat`, `folio_lng`— que se congelan al asignar (R8) y
+quedan aparte de `uga`, que sigue siendo la vigente. `especie_estatus` marca `VALIDADA` o
+`PENDIENTE_VALIDACION` («Otra especie» deja de ser un problema del identificador y pasa a ser un
+pendiente de catálogo). La ficha de revisión, el detalle, cada renglón de Registros y la tabla de
+ejemplares del PDF muestran **PROVISIONAL** donde irá el folio (R1), y el PDF advierte que un
+parte con registros provisionales no sustituye al definitivo (R2). El espejo enseña los cinco
+campos con la leyenda «lo asigna el servidor al sincronizar».
+
+**Lo que se difiere, y por qué, quedó escrito.** En DECISIONES (pendientes) están las cinco
+condiciones del SIA para emitir folios, la bandeja de especies fuera de catálogo y la validación
+de duplicados. Esta última con la regla corregida (D69): el análisis proponía 5 m fijos, pero el
+GPS del teléfono da 5–10 m a cielo abierto y 15–30 entre edificios, y los árboles van cada 3–8 m;
+la regla del servidor será la incertidumbre combinada de ambos puntos, con piso de 5 m para
+puntos a mano o en el mapa. El insumo —`gps_precision_m`— ya se guarda desde el bloque 13.
+
+**Verificación:** sintaxis; 201 comprobaciones del recorrido (siete nuevas: patrón, armado y
+largo del folio, PROVISIONAL en pantalla, cinco campos nulos al nacer, `especie_estatus` en los
+dos casos, y que ningún campo nuevo queda fuera del espejo), sin errores de consola; 45 de
+auditoría (MAPEO-CAMPOS al día con los seis campos); presentación sin desbordes; el PDF generado
+en la prueba trae la columna Folio, PROVISIONAL en cada renglón y la advertencia. Marca de
+versión 0.6.4.
