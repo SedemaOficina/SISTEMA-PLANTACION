@@ -28,14 +28,9 @@ SRP.formulario = {
     SRP.mapa.iniciar((lat, lng) => this.alMoverPunto(lat, lng));
     this.el('btn-ubicacion').addEventListener('click', () => SRP.mapa.ubicar());
     SRP.mapa.refrescarBotonUbicacion();
-    /* Ocultar/mostrar summary de coordenadas manuales según esté open */
+    // Con la captura a mano desplegada se oculta el botón de ubicación: una sola forma de fijar el punto a la vista
     this.el('detalles-coord').addEventListener('toggle', (e) => {
-      const summary = this.el('summary-coord');
-      if (e.target.open) {
-        summary.style.display = 'none';
-      } else {
-        summary.style.display = '';
-      }
+      this.el('btn-ubicacion').hidden = e.target.open;
     });
     this.el('btn-coord-aplicar').addEventListener('click', () => this.aplicarCoordenadasManuales());
     this.iniciarCombo();

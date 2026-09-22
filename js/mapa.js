@@ -83,7 +83,7 @@ SRP.mapa = {
   aparienciaBotonUbicacion() {
     return this.lat === null
       ? { clase: 'btn btn-primario btn-ancho', icono: 'ubicacion', texto: 'Registrar ubicación del punto' }
-      : { clase: 'btn btn-editar btn-ancho',   icono: 'lapiz',     texto: 'Actualizar ubicación con mi posición' };
+      : { clase: 'btn btn-editar btn-ancho',   icono: 'ubicacion', texto: 'Actualizar ubicación con mi posición' };
   },
 
   refrescarBotonUbicacion() {
