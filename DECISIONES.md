@@ -80,3 +80,4 @@
 - [pendiente] Cuenta institucional para el repositorio y la publicación (Norma 1.7)
 - [pendiente] Aviso de privacidad: el sistema recaba nombre, área y cargo del personal (Norma 1.8)
 - [pendiente] Los tres campos del punto ocupan ~240 px en teléfono mientras están vacíos. Se dejan siempre visibles para que el formulario no salte a media captura; revisar con personal en campo si conviene plegarlos hasta que haya punto
+- [pendiente] **Reportes PDF (`js/reportes.js`).** Liber los validará en conjunto una vez terminado el formulario; hasta entonces no se modifican. Queda por decidir ahí si el campo «Comentarios» (opcional, hasta 500 caracteres) entra al reporte y en qué forma: columna truncada o reporte de detalle por registro
