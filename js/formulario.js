@@ -439,6 +439,7 @@ SRP.formulario = {
     this.limpiar();
     this.estado.editando = registro;
     this.el('titulo-registrar').textContent = 'Editar registro';
+    this.el('titulo-registrar').hidden = false;
     const aviso = this.el('edicion-aviso');
     aviso.textContent = 'Está editando el registro del ' + SRP.util.formatearFecha(registro.fecha_plantacion) +
       ' capturado por ' + SRP.ref.nombreUsuario(registro.cabo_id) + '. Los cambios quedan en el historial.';
@@ -466,6 +467,7 @@ SRP.formulario = {
     this.estado.idPrevisto = null;
     this.estado.territorio = null;
     this.el('titulo-registrar').textContent = 'Nuevo registro';
+    this.el('titulo-registrar').hidden = true;
     this.el('edicion-aviso').hidden = true;
     this.el('btn-cancelar-edicion').hidden = true;
     this.el('campo-especie').value = ''; this.estado.especieId = null; this.mostrarOtra(false);

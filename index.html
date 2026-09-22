@@ -32,7 +32,7 @@
 </header>
 
 <nav id="navegacion" class="pestanas" aria-label="Secciones" hidden>
-  <button type="button" class="pestana" data-vista="registrar">Registrar</button>
+  <button type="button" class="pestana" data-vista="registrar">Nuevo registro</button>
   <button type="button" class="pestana" data-vista="registros">Registros</button>
   <button type="button" class="pestana" data-vista="catalogos">Catálogos</button>
   <button type="button" class="pestana" data-vista="usuarios">Usuarios</button>
@@ -71,7 +71,8 @@
 
   <!-- REGISTRAR -->
   <section id="vista-registrar" class="vista" hidden aria-labelledby="titulo-registrar">
-    <h1 id="titulo-registrar">Nuevo registro</h1>
+    <!-- La pestaña ya dice «Nuevo registro»; el título sólo se muestra en edición, donde sí cambia el contexto -->
+    <h1 id="titulo-registrar" hidden>Nuevo registro</h1>
     <p id="edicion-aviso" class="franja-edicion" hidden></p>
 
     <h2 class="titulo-bloque">Ubicación <span class="obligatorio" aria-hidden="true">*</span></h2>
