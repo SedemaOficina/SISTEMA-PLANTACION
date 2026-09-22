@@ -299,3 +299,18 @@
   Editar.** Queda una × de «Cerrar sin guardar» en la cabecera (nivel de apoyo, con etiqueta
   accesible), porque la ficha necesita una salida que no sea guardar ni editar un campo, y en
   teléfono no hay tecla Esc. Señalado por Liber.
+
+## Bloque 29 — La ficha bien apilada y Registros por bloques
+
+- **D78. En la ficha de revisión el mapa va aislado en su propio contexto de apilamiento, el
+  foco inicial es el título y el desplazamiento no se encadena.** En Safari las capas de Leaflet
+  (z-index 200–600) se pintaban sobre la cabecera fija y tapaban «Guardar»; con `isolation:
+  isolate` y `z-index: 0` en la caja del mapa, sus z-index no salen de ella. El foco inicial caía
+  en la × —Enter cerraba—; ahora va al título. `overscroll-behavior: contain` evita que el gesto
+  siga moviendo la página de atrás al llegar al final, y `100dvh` corrige la altura del diálogo con
+  la barra del navegador de iOS. Señalado por Liber con captura.
+- **D79. Registros se organiza en cuatro bloques con título, en el orden en que se usan:
+  Filtrar; la lista; Parte del día; Registros en este dispositivo.** Antes filtros, lista,
+  reporte, aviso y respaldo iban seguidos sin encabezados y se leían como una sola masa. Cada
+  bloque va separado por un filete y con su `h2`; el aviso ya no repite «en este dispositivo»,
+  que es el título. Señalado por Liber.

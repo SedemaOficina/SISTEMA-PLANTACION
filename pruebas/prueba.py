@@ -295,6 +295,9 @@ with sync_playwright() as p:
     pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(800)
     fijo=pg.evaluate("(() => { const d=document.getElementById('dlg-resumen'); d.scrollTop=600; const c=d.querySelector('.dialogo-cabecera').getBoundingClientRect(); const b=document.getElementById('btn-resumen-guardar').getBoundingClientRect(); const dr=d.getBoundingClientRect(); d.scrollTop=0; return { arriba: Math.round(c.top-dr.top), botonVisible: b.top>=dr.top && b.bottom<=dr.bottom, sticky: getComputedStyle(d.querySelector('.dialogo-cabecera')).position }; })()")
     ok(fijo['sticky']=='sticky' and fijo['botonVisible'] and fijo['arriba']<=8,'Guardar y Corregir quedan fijos arriba aunque se desplace la ficha (D74): %s' % fijo)
+    apil=pg.evaluate("(() => { const d=document.getElementById('dlg-resumen'); const m=d.querySelector('.revision-mapa'); const cs=getComputedStyle(m); return { aislado: cs.isolation==='isolate' && cs.zIndex==='0', cab: parseInt(getComputedStyle(d.querySelector('.dialogo-cabecera')).zIndex), foco: document.activeElement.id, contiene: getComputedStyle(d).overscrollBehavior }; })()")
+    ok(apil['aislado'] and apil['cab']>=2 and apil['foco']=='dlg-resumen-titulo' and apil['contiene']=='contain',
+       'el mapa va aislado bajo la cabecera, el foco abre en el título y el desplazamiento no se encadena (D78): %s' % apil)
     ok(pg.evaluate("SRP.formulario.registroPrevisto().especie_estatus")=='VALIDADA' and
        pg.evaluate("SRP.formulario.valores.call(Object.assign({}, SRP.formulario, {estado: Object.assign({}, SRP.formulario.estado, {especieId: SRP.formulario.OTRA})})).especie_estatus")=='PENDIENTE_VALIDACION',
        '«Otra especie» deja el registro PENDIENTE_VALIDACION; una de catálogo, VALIDADA (D68)')
@@ -448,7 +451,7 @@ with sync_playwright() as p:
 
     # ---------- SIN SEÑAL Y RESPALDO (B25) ----------
     ok(pg.inner_text('#conexion')=='Con conexión','el encabezado dice el estado de la conexión con palabras')
-    ok('guardados en este dispositivo' in pg.inner_text('#aviso-envio') and 'No borre' in pg.inner_text('#aviso-envio'),
+    ok('guardados' in pg.inner_text('#aviso-envio') and 'No borre' in pg.inner_text('#aviso-envio') and pg.locator('#vista-registros .bloque .titulo-bloque').count()==3,
        'Registros dice cuántos registros guarda el dispositivo y qué hacer: '+pg.inner_text('#aviso-envio')[:60])
     pg.click('#btn-ayuda-senal'); pg.wait_for_timeout(200)
     ok(pg.is_visible('#dlg-senal') and pg.locator('#dlg-senal li').count()==5,'la ayuda «¿Qué hacer sin internet?» tiene cinco pasos')

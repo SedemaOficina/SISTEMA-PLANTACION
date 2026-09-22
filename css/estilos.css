@@ -108,6 +108,13 @@ main:focus { outline: none; }
 .nota-obligatorio { margin-bottom: var(--e-4); }
 .titulo-bloque { font-size: var(--t-m); margin-bottom: var(--e-2); }
 .total { font-weight: 500; margin-top: var(--e-4); }
+/* Bloques de una vista: separados por un filete y con su título, para que cada cosa tenga su lugar (D79) */
+.bloque { margin-top: var(--e-5); padding-top: var(--e-4); border-top: 1px solid var(--borde-suave); }
+.bloque:first-of-type { margin-top: var(--e-3); padding-top: 0; border-top: 0; }
+.bloque .total { margin-top: 0; }
+.bloque .filtros { border-bottom: 0; padding-bottom: 0; }
+.bloque .acciones { margin-top: var(--e-3); }
+.bloque .aviso-envio { margin-top: 0; }
 
 .tarjeta { border: 1px solid var(--borde-suave); border-radius: var(--radio); padding: var(--e-4); margin-bottom: var(--e-5); }
 .tarjeta-prueba { background: var(--fondo-suave); }
@@ -296,7 +303,9 @@ main:focus { outline: none; }
 .estado-texto { font-size: var(--t-xs); font-weight: 500; }
 
 /* Ficha de revisión previa: cada dato con su botón de corregir */
-.revision-mapa { height: 190px; border: 1px solid var(--borde-control); border-radius: var(--radio); margin-bottom: var(--e-3); }
+/* El mapa va aislado en su propio contexto de apilamiento: los z-index de Leaflet (200–600) no salen de su caja
+   y no pueden pintarse sobre la cabecera fija del diálogo, como pasaba en Safari (D78) */
+.revision-mapa { height: 190px; border: 1px solid var(--borde-control); border-radius: var(--radio); margin-bottom: var(--e-3); position: relative; z-index: 0; isolation: isolate; overflow: hidden; }
 /* Dentro de la ficha, la fotografía se ve en su propio renglón, al final, donde se nombra */
 .revision-foto { display: block; max-width: 100%; max-height: 9rem; border-radius: var(--radio-control); }
 .revision-lista { margin: 0 0 var(--e-4); }
@@ -312,14 +321,17 @@ main:focus { outline: none; }
 
 .historial { padding-left: var(--e-5); font-size: var(--t-s); }
 
-dialog { width: min(40rem, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); border: 0; border-top: 4px solid var(--guinda); border-radius: var(--radio); padding: var(--e-5); }
+dialog { width: min(40rem, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); border: 0; border-top: 4px solid var(--guinda); border-radius: var(--radio); padding: var(--e-5); overscroll-behavior: contain; }
+/* En iOS la barra del navegador hace que 100vh sea más alto que la pantalla y el pie del diálogo quede oculto */
+@supports (height: 100dvh) { dialog { max-height: calc(100dvh - 2rem); } }
 dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 /* Cabecera fija del diálogo: se queda arriba mientras el cuerpo se desplaza; el fondo tapa lo que pasa debajo */
-.dialogo-cabecera { position: sticky; top: calc(-1 * var(--e-5)); z-index: 1; margin: calc(-1 * var(--e-5)) calc(-1 * var(--e-5)) var(--e-3); padding: var(--e-4) var(--e-5) var(--e-3); background: var(--fondo); border-bottom: 1px solid var(--borde-suave); }
+.dialogo-cabecera { position: sticky; top: calc(-1 * var(--e-5)); z-index: 2; margin: calc(-1 * var(--e-5)) calc(-1 * var(--e-5)) var(--e-3); padding: var(--e-4) var(--e-5) var(--e-3); background: var(--fondo); border-bottom: 1px solid var(--borde-suave); }
 .dialogo-cabecera h2 { margin-top: 0; }
 .acciones-cabecera { margin-top: var(--e-2); }
 .dialogo-titulo { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); }
 .dialogo-titulo h2 { margin: 0; }
+.dialogo-titulo h2:focus { outline: none; }
 
 .aviso {
   position: fixed; left: 50%; bottom: var(--e-5); transform: translateX(-50%); z-index: 3000;

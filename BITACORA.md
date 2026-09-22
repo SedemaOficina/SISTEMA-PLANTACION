@@ -632,3 +632,22 @@ Etapa 1. Estado: **cerrado**. Versión 0.6.9.
 
 **Verificación:** sintaxis; 223 comprobaciones (una nueva: la × cierra y no existe Corregir), sin
 errores de consola; 45 de auditoría; presentación sin desbordes. Marca de versión 0.6.9.
+
+## Bloque 29 — La ficha bien apilada y Registros por bloques (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.10.
+
+**Ficha de revisión (D78).** Auditoría de superposiciones hecha como usuario en teléfono: el
+mapa se pintaba sobre la cabecera fija en Safari y ocultaba «Guardar»; el foco abría en la ×; el
+desplazamiento se encadenaba con la página; la altura del diálogo excedía la pantalla con la barra
+de iOS. Cuatro correcciones de estilo y una de marcado (título con `tabindex="-1"` y `autofocus`).
+La prueba mide con `elementFromPoint` que sobre la cabecera sólo está la cabecera, y comprueba
+aislamiento, foco y contención.
+
+**Registros (D79).** Cuatro bloques titulados: Filtrar, lista, Parte del día, Registros en este
+dispositivo. Nueva clase `.bloque` (filete y separación); el `h2` de cada bloque usa
+`.titulo-bloque`, que ya existía.
+
+**Verificación:** sintaxis; 224 comprobaciones (una nueva de apilamiento y foco; la del aviso
+comprueba también los tres títulos), sin errores de consola; 45 de auditoría; presentación sin
+desbordes en ocho combinaciones; sin selectores duplicados ni clases sin uso. Marca de versión
+0.6.10.

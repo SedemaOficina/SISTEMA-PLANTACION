@@ -54,7 +54,7 @@ SRP.conexion = {
     const u = SRP.sesion.usuario;
     const todos = await SRP.almacen.porIndice('plantaciones', 'estatus', 'activo');
     const n = todos.filter(r => SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId)).length;
-    const cuenta = n === 1 ? '1 registro guardado en este dispositivo' : n + ' registros guardados en este dispositivo';
+    const cuenta = n === 1 ? '1 registro guardado' : n + ' registros guardados';
     caja.innerHTML = '<strong>' + cuenta + '.</strong> ' + (this.enLinea()
       ? 'Por ahora no hay envío al servidor: los registros se quedan aquí. Genere el parte del día y compártalo con su coordinador, o guarde un respaldo. <strong>No borre los datos del navegador.</strong>'
       : 'Siga registrando: no hace falta internet. Cuando tenga señal, genere el parte del día y compártalo.');
