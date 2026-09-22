@@ -604,3 +604,25 @@ regenerar y los campos vacíos que no se inventan), sin errores de consola; 44 d
 sin desbordamiento horizontal en 1200 y 390 px; PDF revisado a la vista, de una página con los
 apartados vacíos ausentes. Sin CSS nuevo: el cierre usa `.campo`, `.campo-doble`, `.campo-lectura`
 y `.acciones`, que ya existían. Marca de versión 0.6.0.
+
+## Bloque 20 — Formulario de cierre en el orden del parte, y el PDF se descarga en escritorio (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.1.
+
+**Qué cambió en el cierre (D60).** El encargado pasa al principio; «Personal de apoyo» admite
+varias líneas, como el participante; el vehículo se separa en «Modelo de vehículo» y «Placa»; la
+hora de finalización se elige con el selector de hora del dispositivo y el PDF la imprime como
+`14:30 h`. La logística queda en dos filas: chófer y modelo; placa y hora. Un cierre guardado con
+el campo único `vehiculo` se muestra en «Modelo» al reabrirlo, para no perderlo.
+
+**Defecto encontrado por Liber al probar en escritorio (D61).** Al generar el reporte, Windows
+abría su panel de Compartir en lugar de descargar, y el destino de Acrobat avisaba «archivo de
+longitud cero». El PDF estaba bien (334 KB): el «compartir archivos» pensado para el teléfono
+también existe en Chrome y Edge de Windows. Ahora se comparte sólo en dispositivos táctiles sin
+ratón (`hover: none` y `pointer: coarse`) y en escritorio se descarga. Prueba dirigida: con
+`navigator.share` disponible en los dos contextos, escritorio descarga y no comparte; teléfono
+comparte y no descarga.
+
+**Verificación:** sintaxis; 182 comprobaciones del recorrido (dos nuevas: apoyo es textarea,
+encargado es el primer campo; hora y placa se conservan al regenerar), sin errores de consola;
+44 de auditoría (MAPEO-CAMPOS al día con `vehiculo_modelo`, `vehiculo_placa`); presentación sin
+desbordes. Marca de versión 0.6.1.

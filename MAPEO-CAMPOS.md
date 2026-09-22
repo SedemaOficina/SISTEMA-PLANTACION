@@ -149,11 +149,12 @@ cuenta. Lo que ya vive en los registros —especies, conteos, alcaldía— no se
 | `sitio` | No | Persona | Calle o nombre del sitio, como se escribe en el parte |
 | `actividades` | No | Persona | |
 | `personal` | No | Persona | Nombres, como se acostumbra escribirlos |
-| `apoyo` | No | Persona | Personal de otra institución |
+| `apoyo` | No | Persona | Personal de otra institución; varias líneas |
 | `observaciones` | No | Persona | Una por renglón |
 | `chofer` | No | Persona | |
-| `vehiculo` | No | Persona | |
-| `hora` | No | Persona | Hora de finalización, en texto |
+| `vehiculo_modelo` | No | Persona | Sustituye a `vehiculo` (bloque 20); un cierre anterior se muestra aquí |
+| `vehiculo_placa` | No | Persona | |
+| `hora` | No | Persona | Hora de finalización, `HH:MM` del selector de hora; el PDF le agrega «h» |
 | `creado_por_id` | Sí | Sesión | Quién cerró el parte la primera vez |
 | `fecha_creacion` | Sí | Sistema | |
 | `editado_por_id` | Sí | Sesión | Quién lo cambió por última vez |

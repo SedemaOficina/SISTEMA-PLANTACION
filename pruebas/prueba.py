@@ -368,7 +368,8 @@ with sync_playwright() as p:
     ok(pg.inner_text('#cie-encargado-lectura').strip()!='','y sale su nombre: '+pg.inner_text('#cie-encargado-lectura'))
     pg.fill('#cie-sitio','Calzada de prueba entre calle Uno y calle Dos')
     pg.fill('#cie-chofer','Fulano de Tal')
-    pg.fill('#cie-hora','14 h')
+    pg.fill('#cie-hora','14:30')
+    pg.fill('#cie-vehiculo_modelo','Camioneta de prueba'); pg.fill('#cie-vehiculo_placa','ABC-123')
     with pg.expect_download() as d: pg.click('#btn-cierre-generar')
     d.value.save_as('/home/claude/srp/reporte_prueba.pdf')
     ok(os.path.getsize('/home/claude/srp/reporte_prueba.pdf')>20000,'el reporte PDF se genera: '+d.value.suggested_filename)
@@ -376,7 +377,9 @@ with sync_playwright() as p:
     # Lo escrito no se vuelve a pedir al regenerar el parte del mismo día
     pg.click('#btn-pdf'); pg.wait_for_timeout(400)
     ok(pg.input_value('#cie-sitio').startswith('Calzada de prueba'),'al regenerar, el cierre ya viene escrito')
-    ok(pg.input_value('#cie-hora')=='14 h','con todos sus campos')
+    ok(pg.input_value('#cie-hora')=='14:30' and pg.input_value('#cie-vehiculo_placa')=='ABC-123','con todos sus campos')
+    ok(pg.evaluate("document.getElementById('cie-apoyo').tagName")=='TEXTAREA','personal de apoyo admite varias líneas')
+    ok(pg.evaluate("[...document.querySelectorAll('#form-cierre .campo')][0].contains(document.getElementById('cie-encargado'))"),'el encargado es el primer campo del cierre')
     pg.click('#btn-cierre-cancelar'); pg.wait_for_timeout(300)
     # Los campos vacíos no se inventan: el cierre guardado no trae lo que no se escribió
     vacios=pg.evaluate("async () => { const c = await SRP.almacen.uno('cierres', SRP.reportes.claveCierre(SRP.util.fechaHoy(), '')); return [c.actividades, c.personal, c.observaciones]; }")

@@ -23,7 +23,7 @@ SRP.reportes = {
   /* Campos del cierre. Todos opcionales y de texto libre: los partes varían de una cuadrilla a
      otra y de un día a otro, y encajonarlos obligaría a escribir de una forma que no es la suya.
      El encargado no está en esta lista porque no se escribe: sale de la sesión. */
-  CAMPOS: ['sitio', 'actividades', 'personal', 'apoyo', 'observaciones', 'chofer', 'vehiculo', 'hora'],
+  CAMPOS: ['sitio', 'actividades', 'personal', 'apoyo', 'observaciones', 'chofer', 'vehiculo_modelo', 'vehiculo_placa', 'hora'],
 
   contexto: null,   // { registros, fecha, cabo_id } de lo que se va a reportar
 
@@ -52,10 +52,12 @@ SRP.reportes = {
     // Lo capturado antes para este mismo día no se vuelve a escribir (Norma 7.6)
     const previo = await SRP.almacen.uno('cierres', this.claveCierre(fecha, this.contexto.cabo_id));
     this.CAMPOS.forEach(c => { this.el('cie-' + c).value = previo ? (previo[c] || '') : ''; });
+    // Un cierre guardado antes del bloque 20 traía «vehiculo» en un solo campo: se muestra como modelo
+    if (previo && previo.vehiculo && !previo.vehiculo_modelo) this.el('cie-vehiculo_modelo').value = previo.vehiculo;
     this.prepararEncargado(registros, previo);
 
     this.el('dlg-cierre').showModal();
-    this.el('cie-sitio').focus();
+    this.el(this.el('cie-encargado-caja').hidden ? 'cie-sitio' : 'cie-encargado').focus();
   },
 
   /* ENCARGADO. Quien captura en campo es responsable de su propio parte, así que a un cabo no se
@@ -267,8 +269,10 @@ SRP.reportes = {
     // Logística: sólo los datos que se capturaron
     const log = [];
     if (hay('chofer')) log.push('Chófer: ' + cierre.chofer);
-    if (hay('vehiculo')) log.push('Vehículo: ' + cierre.vehiculo);
-    if (hay('hora')) log.push('Hora de finalización: ' + cierre.hora);
+    if (hay('vehiculo_modelo') || hay('vehiculo_placa')) {
+      log.push('Vehículo: ' + [cierre.vehiculo_modelo, hay('vehiculo_placa') ? 'placa ' + cierre.vehiculo_placa : ''].filter(Boolean).join(', '));
+    }
+    if (hay('hora')) log.push('Hora de finalización: ' + cierre.hora + ' h');
     if (log.length) apartado('Logística', log.join('\n'));
 
     /* CALIDAD DE LA UBICACIÓN. Cuando la fotografía es opcional, la coordenada es la prueba, y
@@ -306,11 +310,18 @@ SRP.reportes = {
     this.entregar(doc, 'Reporte_Plantacion_' + fecha + '.pdf');
   },
 
-  // Compartir con las apps del teléfono si el navegador lo permite; si no, descargar
+  /* En teléfono o tableta, compartir con las apps del dispositivo; en escritorio, descargar.
+     Windows también ofrece «compartir archivos» desde Chrome y Edge, y abría su panel de
+     Compartir en vez de guardar el PDF; el destino de Acrobat de ese panel recibía el archivo
+     vacío (D61). Táctil sin ratón es el criterio, no el tamaño de la pantalla. */
+  esDispositivoTactil() {
+    return window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  },
+
   async entregar(doc, nombre) {
     const blob = doc.output('blob');
     const archivo = new File([blob], nombre, { type: 'application/pdf' });
-    if (navigator.canShare && navigator.canShare({ files: [archivo] })) {
+    if (this.esDispositivoTactil() && navigator.canShare && navigator.canShare({ files: [archivo] })) {
       try {
         await navigator.share({ files: [archivo], title: 'Reporte diario de plantación' });
         return;

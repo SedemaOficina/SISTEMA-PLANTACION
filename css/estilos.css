@@ -155,8 +155,8 @@ main:focus { outline: none; }
   border: 1px solid var(--borde-control); border-radius: var(--radio-control); background: var(--fondo); color: var(--texto);
 }
 /* Safari en iPhone centra el contenido del campo de fecha y lo deja más ancho que su caja */
-.campo input[type="date"] { -webkit-appearance: none; appearance: none; text-align: left; }
-.campo input[type="date"]::-webkit-date-and-time-value { text-align: left; }
+.campo input[type="date"], .campo input[type="time"] { -webkit-appearance: none; appearance: none; text-align: left; }
+.campo input[type="date"]::-webkit-date-and-time-value, .campo input[type="time"]::-webkit-date-and-time-value { text-align: left; }
 .campo textarea { resize: vertical; min-height: 4.5rem; }
 .campo input[readonly] { background: var(--fondo-suave); border-color: var(--borde-suave); color: var(--gris); }
 .campo-doble { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-3); }

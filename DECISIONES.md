@@ -132,3 +132,18 @@
   primer reporte sin decir por qué. Es el mismo problema que `SELLO_DATOS` resolvió para los
   datos, ahora para la estructura. *Sólo vale mientras los datos sean ficticios:* con el primer
   dato real, un almacén que falta pasa a ser una migración numerada (Norma 4.1), nunca un borrado.
+
+## Bloque 20 — Ajustes al formulario de cierre
+
+- **D60. El cierre se captura en el orden en que se lee el parte en papel.** El encargado va
+  primero; luego sitio, actividades, personal participante, personal de apoyo (varias líneas,
+  como el participante), observaciones, y al final la logística: chófer, modelo de vehículo,
+  placa y hora de finalización. El vehículo se separa en modelo y placa porque son dos datos que
+  se piden por separado; la hora se elige con el selector del teléfono, no se teclea, para que
+  siempre salga con el mismo formato en el PDF. Definido por Liber. Un cierre guardado con el
+  campo único `vehiculo` se muestra en «Modelo» al reabrirlo.
+- **D61. El PDF se comparte sólo en dispositivos táctiles sin ratón; en escritorio se
+  descarga.** El «compartir archivos» del navegador también existe en Windows (Chrome y Edge) y
+  abría el panel de Compartir del sistema en lugar de guardar el reporte; el destino de Acrobat
+  de ese panel recibía un archivo de longitud cero. El criterio es `(hover: none) and
+  (pointer: coarse)`, no el ancho de pantalla: una laptop con pantalla táctil sigue descargando.
