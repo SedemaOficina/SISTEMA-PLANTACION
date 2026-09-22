@@ -450,7 +450,10 @@ with sync_playwright() as p:
     ok(HOY in d.value.suggested_filename,'y el archivo lleva el día del parte: '+d.value.suggested_filename)
 
     # ---------- SIN SEÑAL Y RESPALDO (B25) ----------
-    ok(pg.inner_text('#conexion')=='Con conexión','el encabezado dice el estado de la conexión con palabras')
+    ok(pg.inner_text('#conexion').strip()=='Con conexión' and pg.locator('#conexion svg').count()==1 and pg.get_attribute('#conexion','data-estado')=='con','el encabezado dice el estado de la conexión con icono, color y palabras')
+    pg.click('#conexion'); pg.wait_for_timeout(200)
+    ok(pg.is_visible('#dlg-senal'),'y tocar la pastilla abre la guía de qué hacer sin internet (D80)')
+    pg.click('#btn-senal-cerrar'); pg.wait_for_timeout(200)
     ok('guardados' in pg.inner_text('#aviso-envio') and 'No borre' in pg.inner_text('#aviso-envio') and pg.locator('#vista-registros .bloque .titulo-bloque').count()==3,
        'Registros dice cuántos registros guarda el dispositivo y qué hacer: '+pg.inner_text('#aviso-envio')[:60])
     pg.click('#btn-ayuda-senal'); pg.wait_for_timeout(200)
@@ -463,7 +466,7 @@ with sync_playwright() as p:
     pg.reload(); pg.wait_for_timeout(1500)
     ok(pg.is_visible('#vista-registros') or pg.is_visible('#vista-registrar') or pg.is_visible('#form-acceso'),'sin red, la app vuelve a abrir desde el teléfono')
     ok(pg.evaluate("SRP.CONFIG.VERSION")==MARCA,'y es la misma versión')
-    ok(pg.inner_text('#conexion').startswith('Sin conexión'),'el encabezado avisa que no hay señal: '+pg.inner_text('#conexion'))
+    ok(pg.inner_text('#conexion').strip().startswith('Sin conexión') and pg.get_attribute('#conexion','data-estado')=='sin','el encabezado avisa que no hay señal, en dorado y con icono tachado: '+pg.inner_text('#conexion').strip())
     pg.evaluate("SRP.app.mostrarVista('registros')"); pg.wait_for_timeout(500)
     ok('Siga registrando' in pg.inner_text('#aviso-envio'),'y Registros dice que se puede seguir: '+pg.inner_text('#aviso-envio')[:70])
     ctx.set_offline(False); pg.wait_for_timeout(300)

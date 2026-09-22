@@ -651,3 +651,13 @@ dispositivo. Nueva clase `.bloque` (filete y separación); el `h2` de cada bloqu
 comprueba también los tres títulos), sin errores de consola; 45 de auditoría; presentación sin
 desbordes en ocho combinaciones; sin selectores duplicados ni clases sin uso. Marca de versión
 0.6.10.
+
+## Bloque 30 — La conexión se nota (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.11.
+
+**Qué cambió (D80).** El indicador de conexión pasa de texto gris a pastilla con icono (`senal`,
+`sinSenal`), color por estado y etiqueta accesible; es un botón que abre la guía de qué hacer sin
+internet, con lo que la guía queda a un toque en la pantalla principal.
+
+**Verificación:** sintaxis; 225 comprobaciones (una nueva: la pastilla abre la guía), sin errores
+de consola; presentación sin desbordes. Marca de versión 0.6.11.

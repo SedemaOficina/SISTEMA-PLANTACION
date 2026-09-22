@@ -10,6 +10,9 @@ SRP.ICONOS = {
   basura: '<path fill="currentColor" d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>',
   // Disco de guardar: el signo que todo el mundo lee como «guardar», aunque ya nadie use disquetes
   cerrar: '<path fill="currentColor" d="M19 6.4L17.6 5 12 10.6 6.4 5 5 6.4l5.6 5.6L5 17.6 6.4 19l5.6-5.6 5.6 5.6 1.4-1.4-5.6-5.6z"/>',
+  // Señal: ondas de red; sin señal: las mismas ondas tachadas
+  senal: '<path fill="currentColor" d="M12 18a2 2 0 100 4 2 2 0 000-4zm-4.9-3.1l1.4 1.4a5 5 0 017 0l1.4-1.4a7 7 0 00-9.8 0zm-3.5-3.5l1.4 1.4a10 10 0 0114 0l1.4-1.4a12 12 0 00-16.8 0zM.1 7.9l1.4 1.4a15 15 0 0121 0l1.4-1.4a17 17 0 00-23.8 0z"/>',
+  sinSenal: '<path fill="currentColor" d="M2.3 2.3L.9 3.7l3.6 3.6A17 17 0 00.1 7.9l1.4 1.4a15 15 0 014.5-3.2l2.2 2.2a10 10 0 00-4.6 2.8l1.4 1.4a7.9 7.9 0 015.3-2.4l2.5 2.5a5 5 0 00-5.7 1.7l1.4 1.4a3 3 0 014.2 0l6.1 6.1 1.4-1.4L2.3 2.3zM12 18a2 2 0 100 4 2 2 0 000-4zm11.9-10.1a17 17 0 00-14.6-4.7l1.8 1.8a15 15 0 0111.4 4.3l1.4-1.4zm-3.5 3.5a12 12 0 00-6.9-3.3l2.6 2.6a10 10 0 012.9 2.1l1.4-1.4z"/>',
   disco: '<path fill="currentColor" d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4zm-5 16a3 3 0 110-6 3 3 0 010 6zm3-10H5V5h10v4z"/>',
   // Corregir y editar
   lapiz: '<path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>',

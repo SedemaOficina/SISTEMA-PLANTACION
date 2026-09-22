@@ -314,3 +314,11 @@
   reporte, aviso y respaldo iban seguidos sin encabezados y se leían como una sola masa. Cada
   bloque va separado por un filete y con su `h2`; el aviso ya no repite «en este dispositivo»,
   que es el título. Señalado por Liber.
+
+## Bloque 30 — La conexión se nota
+
+- **D80. El estado de la conexión es una pastilla con icono, color y palabras, y tocarla abre
+  la guía «¿Qué hacer sin internet?».** Verde con ondas: «Con conexión»; dorado con las ondas
+  tachadas: «Sin conexión · puede seguir registrando». Dorado y no rojo porque no es un error. Vive
+  en el encabezado de sesión, así que se ve en Nuevo registro y en Registros y nunca en el acceso.
+  Pedido por Liber.

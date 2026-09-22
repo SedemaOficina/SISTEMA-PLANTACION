@@ -22,6 +22,7 @@ SRP.conexion = {
     window.addEventListener('online', () => this.refrescar());
     window.addEventListener('offline', () => this.refrescar());
     this.el('btn-ayuda-senal').addEventListener('click', () => this.el('dlg-senal').showModal());
+    this.el('conexion').addEventListener('click', () => this.el('dlg-senal').showModal());
     this.el('btn-senal-cerrar').addEventListener('click', () => this.el('dlg-senal').close());
     this.el('btn-respaldo').addEventListener('click', () => this.respaldar());
     const restaurar = this.el('archivo-restaurar');
@@ -41,8 +42,10 @@ SRP.conexion = {
   async refrescar() {
     const con = this.enLinea();
     const ind = this.el('conexion');
-    ind.textContent = con ? 'Con conexión' : 'Sin conexión · puede seguir registrando';
+    ind.innerHTML = SRP.ICONOS.svg(con ? 'senal' : 'sinSenal', 18) +
+      '<span>' + (con ? 'Con conexión' : 'Sin conexión · puede seguir registrando') + '</span>';
     ind.dataset.estado = con ? 'con' : 'sin';
+    ind.setAttribute('aria-label', (con ? 'Con conexión' : 'Sin conexión, puede seguir registrando') + '. Abrir la guía de qué hacer sin internet');
     await this.refrescarAvisoEnvio();
   },
 

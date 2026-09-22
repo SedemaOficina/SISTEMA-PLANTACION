@@ -279,9 +279,11 @@ main:focus { outline: none; }
 .registro-fecha { display: block; font-size: var(--t-xs); color: var(--gris); }
 .registro-especie { display: block; font-family: var(--fuente-titulo); font-weight: 600; }
 .registro-especie i { font-weight: 400; color: var(--gris); }
-/* Estado de la conexión: texto siempre; el color acompaña (Norma 8.4) */
-.conexion { font-size: var(--t-xs); color: var(--gris); }
-.conexion[data-estado="sin"] { color: var(--editar); font-weight: 500; }
+/* Estado de la conexión: pastilla con icono, color y palabras (Norma 8.4: el color no va solo).
+   Es un botón: abre la guía de qué hacer sin internet. Verde = todo en orden; dorado = atención, no error */
+.conexion { display: inline-flex; align-items: center; gap: var(--e-1); min-height: 32px; padding: 0 var(--e-3); border-radius: 16px; border: 1px solid transparent; background: var(--fondo-suave); color: var(--gris); font: inherit; font-size: var(--t-xs); font-weight: 500; cursor: pointer; }
+.conexion[data-estado="con"] { background: var(--exito-fondo); color: var(--exito); border-color: var(--exito); }
+.conexion[data-estado="sin"] { background: var(--editar-fondo); color: var(--editar); border-color: var(--editar); }
 .aviso-envio { margin-top: var(--e-4); padding: var(--e-3) var(--e-4); background: var(--fondo-suave); border-left: 4px solid var(--dorado); font-size: var(--t-s); line-height: 1.5; }
 .aviso-envio:empty { display: none; }
 .lista-ayuda { padding-left: 1.2em; line-height: 1.5; }
