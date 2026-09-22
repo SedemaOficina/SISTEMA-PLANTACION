@@ -110,6 +110,7 @@ SRP.registros = {
     this.llenarMeses();
     this.sincronizarControles();
     this.aplicar();
+    if (SRP.conexion) SRP.conexion.refrescarAvisoEnvio();
   },
 
   /* Deja los filtros como al abrir la vista por primera vez: Hoy, sin año ni mes, sin rango y

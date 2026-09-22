@@ -27,6 +27,7 @@ SRP.app = {
     SRP.reportes.iniciar();
     SRP.catalogos.iniciar();
     SRP.usuarios.iniciar();
+    SRP.conexion.iniciar();
     this.iniciarAcceso();
     this.iniciarDialogos();
 

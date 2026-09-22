@@ -59,6 +59,12 @@
 
 ## Pendientes de decisión
 
+- [pendiente] **Icono de la app instalada**: los `assets/icono-192.png` y `icono-512.png` son
+  provisionales (fondo guinda y monograma SRP); sustituir por el icono de la identidad gráfica
+- [pendiente] **Tipografías sin señal**: Cabin y Roboto se cargan de Google Fonts; sin red el
+  teléfono usa su tipografía del sistema. Alojarlas en `vendor/` si se quiere la identidad
+  completa sin conexión (pesan ~200 KB)
+
 - [pendiente] **Emisión del folio (Fase 2).** No se emite un solo folio definitivo hasta que el SIA:
   (1) entregue la malla UGA corregida, con identificador de versión y fecha de corte, para
   congelarla como capa de referencia; (2) informe si corregir las ocho claves inconsistentes
@@ -234,3 +240,28 @@
   la semana pasada) y habilita el reporte; el chip «Hoy» sigue siendo el atajo. Volver a generar
   el mismo día reabre el cierre con lo capturado —ya era así desde el bloque 19— y lo reescribe,
   con constancia en bitácora; la nota junto al botón lo dice. Definido por Liber.
+
+## Bloque 25 — Sin señal: la app abre, y quien registra sabe qué hacer
+
+- **D71. La aplicación abre sin señal y lo dice.** Un *service worker* (`sw.js`) guarda en el
+  dispositivo todo lo que `index.html` pide con marca `?v=` —la lista sale del propio
+  `index.html`, no de una escrita aparte— y lo sirve desde ahí. La versión llega en la dirección
+  de registro (`sw.js?v=0.6.6`), la misma marca de siempre: una versión nueva es un worker nuevo,
+  que llena su caché y borra la anterior al activarse; no hay dos mecanismos de versión. La
+  página se pide primero a la red (3 s) y si no, a la caché: con señal se recibe la versión nueva,
+  sin señal se abre la guardada. Mosaicos y tipografías siguen yendo a la red. Manifiesto para
+  «Agregar a pantalla de inicio». El encabezado dice «Con conexión» o «Sin conexión · puede seguir
+  registrando», con palabras, y Registros muestra cuántos registros guarda el dispositivo y qué
+  hacer con ellos: en la Etapa 1, «no hay envío al servidor; genere el parte y compártalo; no
+  borre los datos del navegador». Ese aviso es el sitio donde en Fase 2 irá «N pendientes de
+  enviar» y el botón de sincronizar. Una pantalla «¿Qué hacer sin internet?» de cinco pasos lo
+  dice en lenguaje de campo. Pedido por Liber.
+- **D72. Respaldo del dispositivo, y se prueba restaurándolo.** «Guardar respaldo» produce un
+  archivo con plantaciones, cierres y bitácora tal como están en la base —mismo esquema— y se
+  entrega igual que el PDF (compartir en táctil, descargar en escritorio). Con cabos reales
+  probando, el riesgo mayor no es la señal sino perder el teléfono o borrar el navegador, y hasta
+  que exista el servidor este archivo es la única copia. Un respaldo que nunca se ha restaurado
+  es una suposición (Norma 4.9): «Restaurar respaldo» existe en las herramientas de prueba, sólo
+  agrega lo que no existe y nunca sobreescribe, y la prueba automatizada hace el viaje completo a
+  un dispositivo limpio. En Fase 2 la restauración la hará el servidor a partir del mismo archivo.
+  Incluido con el visto bueno de Liber.

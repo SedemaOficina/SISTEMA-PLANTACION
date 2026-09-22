@@ -339,17 +339,26 @@ SRP.reportes = {
   },
 
   async entregar(doc, nombre) {
-    const blob = doc.output('blob');
-    const archivo = new File([blob], nombre, { type: 'application/pdf' });
+    const entregado = await this.entregarArchivo(doc.output('blob'), nombre, 'Reporte diario de plantación');
+    if (entregado === 'descarga') SRP.util.anunciar('Reporte descargado: ' + nombre);
+  },
+
+  /* Cualquier archivo —el PDF del parte o el respaldo— se entrega igual: compartir en táctil,
+     descargar en escritorio. Devuelve 'compartido', 'cancelado' o 'descarga'. */
+  async entregarArchivo(blob, nombre, titulo) {
+    const archivo = new File([blob], nombre, { type: blob.type });
     if (this.esDispositivoTactil() && navigator.canShare && navigator.canShare({ files: [archivo] })) {
       try {
-        await navigator.share({ files: [archivo], title: 'Reporte diario de plantación' });
-        return;
+        await navigator.share({ files: [archivo], title: titulo });
+        return 'compartido';
       } catch (err) {
-        if (err.name === 'AbortError') return;   // la persona canceló
+        if (err.name === 'AbortError') return 'cancelado';   // la persona canceló
       }
     }
-    doc.save(nombre);
-    SRP.util.anunciar('Reporte descargado: ' + nombre);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = nombre; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    return 'descarga';
   }
 };

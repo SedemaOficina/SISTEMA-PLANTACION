@@ -568,3 +568,31 @@ nueva —el cierre se reabre con lo capturado—, pero nadie lo sabía: la nota 
 **Verificación:** sintaxis; 204 comprobaciones del recorrido (tres nuevas: una fecha pasada
 filtra y habilita, ningún atajo queda marcado, el cierre es del día elegido), sin errores de
 consola; 45 de auditoría; presentación sin desbordes. Marca de versión 0.6.5.
+
+## Bloque 25 — Sin señal: la app abre, y quien registra sabe qué hacer (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.6.
+
+**De dónde viene.** Liber preguntó si el formulario funciona sin internet y pidió que quien
+registra lo sepa y sepa qué hacer cuando tenga señal. Funcionaba a medias: con la app abierta sí;
+cerrada y sin señal, dependía de la caché del navegador; y nada en pantalla decía que los
+registros se quedan en el teléfono ni que borrar el navegador los pierde.
+
+**Qué cambió (D71, D72).** `sw.js` guarda la app completa (34 archivos, capas incluidas) con la
+marca de versión de `index.html`; la página va primero a la red y, sin ella, a lo guardado.
+Manifiesto e iconos provisionales para instalarla. `js/conexion.js`: indicador «Con conexión» /
+«Sin conexión · puede seguir registrando» en el encabezado; aviso en Registros con cuántos
+registros guarda el dispositivo y qué hacer según haya o no señal; pantalla «¿Qué hacer sin
+internet?» de cinco pasos; «Guardar respaldo» (plantaciones, cierres y bitácora, mismo esquema)
+entregado como el PDF, y «Restaurar respaldo» en las herramientas de prueba, que sólo agrega lo
+que no existe. `entregar()` de reportes se generalizó a `entregarArchivo()` para que el respaldo
+y el PDF salgan por la misma puerta.
+
+**Verificación:** sintaxis; 215 comprobaciones del recorrido (once nuevas), sin errores de
+consola: el worker guarda la app con la marca `srp-0.6.6`; con la red apagada la página vuelve a
+abrir en la misma versión; el encabezado y el aviso cambian de texto; el respaldo lleva las tres
+tablas y se restaura en un contexto limpio (0 → 4) sin duplicar al repetir. 45 de auditoría;
+presentación sin desbordes; sin selectores duplicados, clases, ids ni colores fuera de `:root`.
+Marca de versión 0.6.6.
+
+**Pendientes anotados:** icono definitivo de la identidad gráfica; tipografías alojadas en
+`vendor/` si se quiere la identidad completa sin señal.

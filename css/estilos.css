@@ -270,6 +270,13 @@ main:focus { outline: none; }
 .registro-fecha { display: block; font-size: var(--t-xs); color: var(--gris); }
 .registro-especie { display: block; font-family: var(--fuente-titulo); font-weight: 600; }
 .registro-especie i { font-weight: 400; color: var(--gris); }
+/* Estado de la conexión: texto siempre; el color acompaña (Norma 8.4) */
+.conexion { font-size: var(--t-xs); color: var(--gris); }
+.conexion[data-estado="sin"] { color: var(--editar); font-weight: 500; }
+.aviso-envio { margin-top: var(--e-4); padding: var(--e-3) var(--e-4); background: var(--fondo-suave); border-left: 4px solid var(--dorado); font-size: var(--t-s); line-height: 1.5; }
+.aviso-envio:empty { display: none; }
+.lista-ayuda { padding-left: 1.2em; line-height: 1.5; }
+.lista-ayuda li { margin-bottom: var(--e-2); }
 .registro-lugar, .registro-autor { display: block; font-size: var(--t-s); overflow-wrap: anywhere; }
 .registro-autor { color: var(--gris); }
 /* Las tres acciones en fila en todo ancho: apiladas, cada registro medía tres botones de alto y la lista crece (bloque 21) */

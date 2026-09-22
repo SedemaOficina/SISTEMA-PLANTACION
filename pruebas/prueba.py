@@ -423,6 +423,41 @@ with sync_playwright() as p:
     d.value.save_as('/home/claude/srp/reporte_prueba.pdf')
     ok(os.path.getsize('/home/claude/srp/reporte_prueba.pdf')>20000,'el reporte PDF se genera: '+d.value.suggested_filename)
     ok(HOY in d.value.suggested_filename,'y el archivo lleva el día del parte: '+d.value.suggested_filename)
+
+    # ---------- SIN SEÑAL Y RESPALDO (B25) ----------
+    ok(pg.inner_text('#conexion')=='Con conexión','el encabezado dice el estado de la conexión con palabras')
+    ok('guardados en este dispositivo' in pg.inner_text('#aviso-envio') and 'No borre' in pg.inner_text('#aviso-envio'),
+       'Registros dice cuántos registros guarda el dispositivo y qué hacer: '+pg.inner_text('#aviso-envio')[:60])
+    pg.click('#btn-ayuda-senal'); pg.wait_for_timeout(200)
+    ok(pg.is_visible('#dlg-senal') and pg.locator('#dlg-senal li').count()==5,'la ayuda «¿Qué hacer sin internet?» tiene cinco pasos')
+    pg.click('#btn-senal-cerrar'); pg.wait_for_timeout(200)
+    # El worker guarda la app: sin red, la página vuelve a abrir
+    listo=pg.evaluate("""async () => { const r = await navigator.serviceWorker.ready; for (let i=0;i<50;i++){ const ks = await caches.keys(); if (ks.length) { const c = await caches.open(ks[0]); const k = await c.keys(); if (k.length > 20) return { nombre: ks[0], n: k.length }; } await new Promise(r => setTimeout(r, 200)); } return null; }""")
+    ok(listo and listo['nombre']=='srp-'+MARCA and listo['n']>20,'el service worker guardó la app con la marca de versión: %s' % listo)
+    ctx.set_offline(True)
+    pg.reload(); pg.wait_for_timeout(1500)
+    ok(pg.is_visible('#vista-registros') or pg.is_visible('#vista-registrar') or pg.is_visible('#form-acceso'),'sin red, la app vuelve a abrir desde el teléfono')
+    ok(pg.evaluate("SRP.CONFIG.VERSION")==MARCA,'y es la misma versión')
+    ok(pg.inner_text('#conexion').startswith('Sin conexión'),'el encabezado avisa que no hay señal: '+pg.inner_text('#conexion'))
+    pg.evaluate("SRP.app.mostrarVista('registros')"); pg.wait_for_timeout(500)
+    ok('Siga registrando' in pg.inner_text('#aviso-envio'),'y Registros dice que se puede seguir: '+pg.inner_text('#aviso-envio')[:70])
+    ctx.set_offline(False); pg.wait_for_timeout(300)
+    pg.evaluate("SRP.conexion.refrescar()"); pg.wait_for_timeout(300)
+    # Respaldo: se descarga y se restaura en un dispositivo limpio
+    with pg.expect_download() as d2: pg.click('#btn-respaldo')
+    ruta='/home/claude/srp/respaldo_prueba.json'; d2.value.save_as(ruta)
+    import json
+    resp=json.load(open(ruta,encoding='utf-8'))
+    ok(resp['sistema']=='SRP' and len(resp['plantaciones'])>=4 and 'cierres' in resp and 'bitacora' in resp,'el respaldo lleva plantaciones, cierres y bitácora: %d registros' % len(resp['plantaciones']))
+    ctx2=b.new_context(viewport={'width':390,'height':844}); pg2=ctx2.new_page(); pg2.goto(BASE); pg2.wait_for_timeout(1200)
+    pg2.select_option('#sel-usuario-prueba','u-cabo-1'); pg2.click('#btn-entrar-prueba'); pg2.wait_for_timeout(500)
+    antes=pg2.evaluate("SRP.almacen.todos('plantaciones').then(r=>r.length)")
+    pg2.set_input_files('#archivo-restaurar', ruta); pg2.wait_for_timeout(1200)
+    despues=pg2.evaluate("SRP.almacen.todos('plantaciones').then(r=>r.length)")
+    ok(antes==0 and despues==len(resp['plantaciones']),'y se restaura en un dispositivo limpio: %d → %d registros' % (antes, despues))
+    pg2.set_input_files('#archivo-restaurar', ruta); pg2.wait_for_timeout(800)
+    ok(pg2.evaluate("SRP.almacen.todos('plantaciones').then(r=>r.length)")==despues,'restaurar dos veces no duplica nada')
+    ctx2.close()
     # Lo escrito no se vuelve a pedir al regenerar el parte del mismo día
     pg.click('#btn-pdf'); pg.wait_for_timeout(400)
     ok(pg.input_value('#cie-sitio').startswith('Calzada de prueba'),'al regenerar, el cierre ya viene escrito')

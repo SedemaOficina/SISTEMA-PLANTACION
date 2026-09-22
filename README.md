@@ -61,6 +61,9 @@ js/sesion.js          Acceso; se sustituye al conectar el proveedor instituciona
 js/datos-ficticios.js Cuentas y catálogos de arranque
 js/derivacion.js      Cruce punto-en-polígono (alcaldía, UGA, colonia)
 js/folio.js           Patrón, validación y etiqueta del folio; no lo emite
+js/conexion.js        Estado de la conexión, aviso de qué hacer con los registros, respaldo y restauración
+sw.js                 Service worker: la app abre sin señal; versión = marca ?v= de index.html
+manifest.webmanifest  Instalación en pantalla de inicio; iconos provisionales en assets/
 js/referencias.js     Catálogos y cuentas en memoria
 js/iconos.js          Iconos por significado (guardar, eliminar, editar, ubicar)
 js/reportes.js       Cierre del parte del día y reporte PDF de la jornada
@@ -129,6 +132,19 @@ No hay respaldo ni envío a ningún servidor.
 La capa base es imagen de satélite de Esri, con los nombres de vías y lugares encima. Las tres
 capas se declaran en `CAPAS`, dentro de `js/config.js`; cambiar de proveedor es cambiar esa lista.
 La atribución se muestra porque la licencia lo exige.
+
+## Sin señal
+
+La app funciona sin internet: GPS, captura, guardado (IndexedDB), lista y PDF viven en el
+teléfono; sólo la imagen del mapa deja de cargar, y el sistema avisa y deja colocar el punto. Un
+*service worker* (`sw.js`) guarda la app completa la primera vez que se abre con señal, para que
+vuelva a abrir sin red; se registra con la misma marca `?v=` de `index.html`, así que **subir la
+marca al cerrar un bloque sigue siendo lo único que hay que hacer** para que los teléfonos
+actualicen (el worker nuevo reemplaza al viejo al abrir con señal). `manifest.webmanifest` permite
+instalarla en la pantalla de inicio. En la Etapa 1 no hay servidor: los registros se quedan en el
+dispositivo; el encabezado dice el estado de la conexión, Registros dice cuántos registros guarda
+el dispositivo y qué hacer, y «Guardar respaldo» produce un archivo con todo (se restaura desde
+las herramientas de prueba). Ver D71 y D72.
 
 ## Folio del ejemplar
 
