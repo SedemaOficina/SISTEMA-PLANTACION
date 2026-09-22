@@ -22,6 +22,7 @@ SRP.app = {
       return;
     }
     SRP.formulario.iniciar();
+    SRP.espejo.iniciar();          // sólo en la versión de prueba; se elimina al cerrar la Etapa 1
     SRP.registros.iniciar();
     SRP.catalogos.iniciar();
     SRP.usuarios.iniciar();
@@ -46,9 +47,10 @@ SRP.app = {
       ['form-acceso', 'la pantalla de acceso'],
       ['vista-usuarios', 'la pantalla de usuarios'],
       ['dlg-guardado', 'el aviso de registro guardado'],
-      ['revision-lista', 'la ficha de revisión']
+      ['revision-lista', 'la ficha de revisión'],
+      ['espejo-campos', 'el espejo de campos de prueba']
     ].filter(([id]) => !document.getElementById(id)).map(([, que]) => que);
-    const modulos = ['util', 'ICONOS', 'permisos', 'sesion', 'almacen', 'ref', 'formulario', 'registros', 'catalogos', 'usuarios']
+    const modulos = ['util', 'ICONOS', 'permisos', 'sesion', 'almacen', 'ref', 'formulario', 'espejo', 'registros', 'catalogos', 'usuarios']
       .filter(m => !SRP[m]);
     if (!faltan.length && !modulos.length) return true;
     document.body.innerHTML =

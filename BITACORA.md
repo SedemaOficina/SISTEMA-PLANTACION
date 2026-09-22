@@ -393,3 +393,45 @@ fotografía es por árbol o por jornada.
 del punto y la regla de la precisión; 39 de auditoría, dos nuevas sobre el origen y la
 equivalencia; la revisión de presentación en ocho combinaciones de ancho y zoom; y las dos pruebas
 de migración. Se revisó además el PDF generado, renglón por renglón.
+
+---
+
+## Bloque 14 — Espejo de campos para la versión de prueba
+
+Liber pidió ver, al pie del formulario, los campos que llegan a la base sin tener lugar en la
+pantalla: identificadores, marcas de tiempo, el punto original, la UGA, la versión de la capa.
+Es control visual mientras se afina la interfaz, y **desaparece al cerrar la Etapa 1**.
+
+**Cómo se construyó para que no mienta.** Un panel así es fácil de hacer mal: se escribe una lista
+de campos a mano, se pintan valores calculados aparte, y a las dos semanas enseña algo distinto de
+lo que se guarda. Se evitó de dos maneras:
+
+- No reconstruye el registro. Se extrajo de `guardar()` la armadura del objeto a
+  `registroPrevisto()`, y ahora **los dos —Guardar y el espejo— leen el mismo objeto**. Si el espejo
+  enseña un valor, ese valor es el que se escribe.
+- No tiene lista de campos ocultos. Tiene una lista de los **visibles** —los que sí están en la
+  pantalla— y el espejo es lo que queda al restar. Un campo nuevo aparece solo, sin que nadie se
+  acuerde de agregarlo. La prueba cierra el círculo: entre visibles y espejo no puede faltar ningún
+  campo del registro, y falla nombrando el que falte.
+
+**Lo que aún no existe se nombra, no se inventa.** `registroPrevisto()` pone la hora actual en las
+marcas de tiempo para tener el objeto completo; enseñar esa hora cambiando con cada tecla haría
+creer que ya está fijada. El espejo dice «(se fija al guardar)» o «(se fija al revisar)» donde
+corresponde, en el registro y en la entrada de bitácora.
+
+**En edición cambia de cara:** `cabo_id` conserva al cabo que capturó aunque edite el coordinador,
+`editado_por_id` enseña a quien está editando, y la bitácora anuncia EDITADO. Se comprobó con la
+cabo editando lo suyo y con el coordinador editando lo ajeno.
+
+**Para quitarlo cuando llegue el momento:** borrar `js/espejo.js` y su `<script>`, la sección
+`#espejo-campos` de `index.html` y el bloque `.espejo` del CSS. Está marcado en los tres lugares
+y nada más depende de él: no escribe en ningún almacén ni participa en la validación.
+
+**Ajuste de presentación:** en teléfono el título de cada tabla se rompía palabra por palabra por
+la combinación de `table-layout: fixed` con el apilado en bloque; el `caption` pasa también a
+bloque en esa anchura.
+
+**Verificación:** 150 comprobaciones del recorrido, diez nuevas sobre el espejo —cobertura total de
+campos, valores reales, actualización en vivo sin recargar, y las dos caras de la edición—; 39 de
+auditoría; la revisión de presentación en ocho combinaciones de ancho y zoom; y las dos pruebas de
+migración.

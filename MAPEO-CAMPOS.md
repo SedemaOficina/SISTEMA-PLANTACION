@@ -7,6 +7,11 @@ describir dos veces la misma cosa y que las dos descripciones acaben diciendo co
 Este documento se comprueba solo: `pruebas/auditoria.py` compara esta lista contra los campos que
 el sistema guarda de verdad y avisa si alguno sobra o falta.
 
+Mientras dure la Etapa 1, la pantalla de registro lleva al pie un **espejo de campos** que enseña
+en vivo los que aquí aparecen con «—» en la columna de etiqueta: los que viajan a la base sin tener
+lugar en la interfaz. Sale del mismo objeto que se guarda, así que es la forma más rápida de ver
+que este documento y el sistema dicen lo mismo. Desaparece al cerrar la etapa.
+
 ## Cómo leer la columna «Origen»
 
 | Origen | Qué significa |

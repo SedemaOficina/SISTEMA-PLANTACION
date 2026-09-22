@@ -188,6 +188,22 @@ main:focus { outline: none; }
 
 .franja-edicion { background: var(--fondo-suave); border-left: 4px solid var(--guinda); padding: var(--e-3) var(--e-4); }
 
+/* ESPEJO DE CAMPOS — SE ELIMINA AL CERRAR LA ETAPA 1 (bloque completo, de aquí al cierre).
+   Es una herramienta de trabajo, no parte del sistema: gris, sin guinda y separado por una
+   línea, para que nadie lo confunda con un dato que el personal de campo deba leer. */
+.espejo { margin-top: var(--e-6); padding-top: var(--e-4); border-top: 1px dashed var(--borde-control); color: var(--gris); }
+.espejo-encabezado { font-size: var(--t-m); color: var(--gris); display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); }
+.espejo-marca { padding: 0 var(--e-2); border-radius: var(--radio-control); background: var(--fondo-suave); font-family: var(--fuente-cuerpo); font-size: var(--t-xs); font-weight: 400; }
+.espejo-ayuda { font-size: var(--t-xs); line-height: 1.6; }
+.espejo-tabla { width: 100%; border-collapse: collapse; font-size: var(--t-xs); margin-bottom: var(--e-4); table-layout: fixed; }
+.espejo-tabla caption { text-align: left; font-weight: 500; padding-bottom: var(--e-1); }
+.espejo-tabla th { text-align: left; font-weight: 500; border-bottom: 1px solid var(--borde-suave); padding: var(--e-1) var(--e-2) var(--e-1) 0; }
+.espejo-tabla td { padding: var(--e-1) var(--e-2) var(--e-1) 0; border-bottom: 1px solid var(--borde-suave); vertical-align: top; overflow-wrap: anywhere; }
+.espejo-campo { font-family: ui-monospace, 'Courier New', monospace; width: 11rem; }
+.espejo-valor { font-family: ui-monospace, 'Courier New', monospace; color: var(--texto); }
+.espejo-nota { width: 45%; font-style: italic; }
+/* FIN DEL ESPEJO DE CAMPOS */
+
 /* El aviso de guardado es un modal: aparece sobre el formulario y obliga a decidir qué sigue,
    registrar otro árbol o ir al listado, que es lo que se hace en campo. */
 #dlg-guardado { border-top-color: var(--exito); }
@@ -324,6 +340,12 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
   .tabla tr:nth-child(even) td { background: none; }
   .tabla td:last-child { white-space: normal; }
   .tabla td:last-child .tabla-acciones { flex-wrap: wrap; }
+  /* ESPEJO DE CAMPOS — se elimina al cerrar la Etapa 1 */
+  .espejo-tabla, .espejo-tabla caption, .espejo-tabla tbody, .espejo-tabla tr { display: block; }
+  .espejo-tabla thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .espejo-tabla tr { border-bottom: 1px solid var(--borde-suave); padding: var(--e-2) 0; }
+  .espejo-tabla td { display: block; border: 0; padding: 0; }
+  .espejo-campo, .espejo-nota { width: auto; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }

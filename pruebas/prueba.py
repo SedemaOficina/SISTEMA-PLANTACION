@@ -33,7 +33,7 @@ with sync_playwright() as p:
 
     # ---------- ACCESO ----------
     ok(pg.is_visible('#vista-acceso'),'la pantalla de acceso abre primero')
-    ok('0.5.5' in pg.inner_text('#version'),'la versión sale de la marca del archivo: '+pg.inner_text('#version'))
+    ok('0.5.6' in pg.inner_text('#version'),'la versión sale de la marca del archivo: '+pg.inner_text('#version'))
     sinmarca=pg.evaluate("""() => [...document.querySelectorAll('script[src],link[rel=stylesheet][href]')]
         .map(e=>e.src||e.href).filter(u=>u.includes('127.0.0.1')&&!u.includes('?v=')).length""")
     ok(sinmarca==0,'todos los archivos propios llevan marca de versión')
@@ -104,7 +104,31 @@ with sync_playwright() as p:
     ok(pg.evaluate("['dato-coordenadas','dato-origen','dato-alcaldia','dato-colonia'].every(i=>document.querySelector('label[for='+i+']'))"),
        'y cada uno lleva su etiqueta, como cualquier campo')
 
+    # ESPEJO DE CAMPOS (sólo en la versión de prueba; se elimina al cerrar la Etapa 1).
+    # Lo que importa no es que pinte una tabla, sino que no pueda mentir: lo que enseña sale
+    # del mismo objeto que escribe Guardar, y entre lo visible y el espejo no puede faltar
+    # ningún campo del registro. Si alguien agrega uno nuevo y lo olvida, esto falla.
+    ok(pg.is_visible('#espejo-campos'),'el espejo de campos aparece con datos de prueba')
+    cobertura=pg.evaluate("""() => {
+      const registro = SRP.formulario.registroPrevisto();
+      const enEspejo = [...document.querySelectorAll('#espejo-cuerpo .espejo-campo')].map(e=>e.textContent);
+      const cubiertos = new Set([...SRP.espejo.VISIBLES, ...enEspejo]);
+      return { faltan: Object.keys(registro).filter(k=>!cubiertos.has(k)),
+               sobran: enEspejo.filter(k=>!(k in registro)),
+               cuantos: enEspejo.length };
+    }""")
+    ok(cobertura['faltan']==[] and cobertura['sobran']==[],
+       'ningun campo del registro queda sin enseñarse: faltan %s, sobran %s' % (cobertura['faltan'], cobertura['sobran']))
+    ok(cobertura['cuantos']>=12,'el espejo lista los campos ocultos (%d)' % cobertura['cuantos'])
+    ok(pg.locator('#espejo-bitacora tr').count()>=8,'y los de la bitácora, que se escribe sola al guardar')
+    filaCabo=pg.locator('#espejo-cuerpo tr', has_text='cabo_id').inner_text()
+    ok('u-cabo-1' in filaCabo,'enseña el valor de verdad, no un ejemplo: '+filaCabo.replace(chr(9),' ')[:60])
+    antes=pg.locator('#espejo-cuerpo tr', has_text='lat_original').inner_text()
+    ok('—' in antes,'sin punto, lat_original está vacío')
+
     pg.click('#btn-ubicacion'); pg.wait_for_timeout(800)
+    despues=pg.locator('#espejo-cuerpo tr', has_text='lat_original').inner_text()
+    ok('19.' in despues,'y se llena en cuanto hay punto, sin recargar: '+despues.replace(chr(9),' ')[:50])
     ok('Ficticia' in pg.inner_text('#dato-alcaldia'),'el botón ubica y deriva alcaldía: '+pg.inner_text('#dato-alcaldia'))
     ok(pg.inner_text('#dato-coordenadas').count('.')==2,'la coordenada se escribe en su campo: '+pg.inner_text('#dato-coordenadas'))
     ok(',' not in pg.inner_text('#mapa-estado'),'y ya no se repite bajo el mapa: '+pg.inner_text('#mapa-estado'))
@@ -296,6 +320,16 @@ with sync_playwright() as p:
     ok(pg.evaluate("SRP.registros.mapaDetalle")is None,'al cerrar, su mapa se destruye')
     pg.click('#lista-registros button[data-accion=editar] >> nth=0'); pg.wait_for_timeout(600)
     ok(pg.is_visible('#edicion-aviso'),'editar abre el formulario precargado')
+    # En edición el espejo cambia de cara: conserva al cabo original, anuncia EDITADO y
+    # deja claro que la marca de edición se fija al guardar, no al abrir
+    espejoEd=pg.evaluate("""() => ({
+      cabo: [...document.querySelectorAll('#espejo-cuerpo tr')].find(t=>t.textContent.includes('cabo_id')).children[1].textContent,
+      quien: SRP.sesion.usuario.id,
+      accion: [...document.querySelectorAll('#espejo-bitacora tr')].find(t=>t.textContent.includes('accion')).children[1].textContent,
+      edicion: [...document.querySelectorAll('#espejo-cuerpo tr')].find(t=>t.textContent.includes('fecha_ultima_edicion')).children[1].textContent
+    })""")
+    ok(espejoEd['accion']=='EDITADO' and 'al guardar' in espejoEd['edicion'],
+       'en edición el espejo anuncia EDITADO, con la marca pendiente de fijar')
     pg.fill('#campo-especie','ahuehu'); pg.wait_for_timeout(150)
     pg.dispatch_event('.combo-opcion[data-id="e-005"]','mousedown'); pg.wait_for_timeout(200)
     pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(800)
@@ -316,6 +350,16 @@ with sync_playwright() as p:
     ok(pg.locator('button[data-accion=editar]').count()>0 and pg.locator('button[data-accion=eliminar]').count()==0,'edita pero no elimina')
     ok(pg.is_hidden('.pestana[data-vista=catalogos]') and pg.is_hidden('.pestana[data-vista=usuarios]'),'no ve Catálogos ni Usuarios')
     ok(pg.is_visible('#caja-filtro-cabo'),'sí tiene filtro por cabo')
+    # Al abrir para editar un registro ajeno, el espejo enseña que el autor no cambia de manos
+    pg.click('#lista-registros button[data-accion=editar] >> nth=0'); pg.wait_for_timeout(600)
+    ajeno=pg.evaluate("""() => ({
+      cabo: [...document.querySelectorAll('#espejo-cuerpo tr')].find(t=>t.textContent.includes('cabo_id')).children[1].textContent,
+      editor: [...document.querySelectorAll('#espejo-cuerpo tr')].find(t=>t.textContent.includes('editado_por_id')).children[1].textContent,
+      quien: SRP.sesion.usuario.id })""")
+    ok(ajeno['cabo']=='u-cabo-1' and ajeno['quien']=='u-coord-1',
+       'el coordinador edita y el registro sigue siendo del cabo: cabo_id='+ajeno['cabo'])
+    ok(ajeno['editor'].startswith('u-coord-1'),'y quien edita queda en editado_por_id: '+ajeno['editor'])
+    pg.click('#btn-cancelar-edicion'); pg.wait_for_timeout(400)
 
     # ---------- ADMINISTRACIÓN: catálogos ----------
     pg.click('#btn-cambiar-perfil'); pg.select_option('#sel-usuario-prueba','u-admin-1'); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(600)

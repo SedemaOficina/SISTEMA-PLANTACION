@@ -72,6 +72,7 @@ SRP.formulario = {
     }
     this.el('campo-fecha').max = SRP.util.fechaHoy();
     SRP.mapa.refrescar();
+    if (SRP.espejo) SRP.espejo.refrescar();
   },
 
   llenarProgramas(actualId) {
@@ -105,6 +106,7 @@ SRP.formulario = {
     this.el('dato-origen').textContent = t ? SRP.mapa.textoOrigen(SRP.mapa.origen, SRP.mapa.precision) : '—';
     this.el('dato-alcaldia').textContent = t ? SRP.ref.territorio(t.alcaldia) : '—';
     this.el('dato-colonia').textContent = t ? SRP.ref.territorio(t.colonia) : '—';
+    if (SRP.espejo) SRP.espejo.refrescar();
   },
 
   aplicarCoordenadasManuales() {
@@ -221,6 +223,7 @@ SRP.formulario = {
     }
     // La zona de carga dice si va a poner la primera foto o a reemplazar la que hay
     this.el('texto-foto').textContent = datos ? 'Cambiar fotografía' : 'Agregar fotografía';
+    if (SRP.espejo) SRP.espejo.refrescar();
   },
 
   /* ---------- Validación y resumen ---------- */
@@ -250,11 +253,14 @@ SRP.formulario = {
 
   valores() {
     const otra = this.estado.especieId === this.OTRA;
+    // Sin punto todavía no hay derivación territorial; se devuelven nulos en vez de reventar,
+    // porque el espejo de campos pinta el registro desde antes de que exista la coordenada.
+    const t = this.estado.territorio || {};
     return {
       lat: SRP.mapa.lat, lng: SRP.mapa.lng,
       punto_origen: SRP.mapa.origen, gps_precision_m: SRP.mapa.precision,
-      alcaldia: this.estado.territorio.alcaldia, colonia: this.estado.territorio.colonia,
-      uga: this.estado.territorio.uga, capa_version: this.estado.territorio.capa_version,
+      alcaldia: t.alcaldia || null, colonia: t.colonia || null,
+      uga: t.uga || null, capa_version: t.capa_version || null,
       especie_id: otra ? null : this.estado.especieId,
       especie_otra: otra ? this.el('campo-otra-especie').value.trim() : '',
       programa_id: this.el('campo-programa').value,
@@ -339,6 +345,25 @@ SRP.formulario = {
   },
 
   /* ---------- Guardar ---------- */
+
+  /* EL REGISTRO TAL COMO QUEDARÍA EN LA BASE, en un solo lugar. Lo arma guardar() y lo lee el
+     espejo de campos: así lo que el espejo enseña no puede desfasarse de lo que de verdad se
+     escribe, que es justo el error que un panel de control visual haría fácil cometer. */
+  registroPrevisto(ahora) {
+    const v = this.valores();
+    const u = SRP.sesion.usuario;
+    ahora = ahora || SRP.util.ahoraISO();
+    if (this.estado.editando) {
+      return Object.assign({}, this.estado.editando, v,
+        { fecha_ultima_edicion: ahora, editado_por_id: u ? u.id : null });
+    }
+    return Object.assign({
+      id: this.estado.idPrevisto, es_ficticio: SRP.CONFIG.ES_FICTICIO, estatus: 'activo',
+      cabo_id: u ? u.id : null, lat_original: v.lat, lng_original: v.lng,
+      fecha_registro: ahora, fecha_ultima_edicion: null, editado_por_id: null
+    }, v);
+  },
+
   async guardar() {
     const v = this.valores();
     const u = SRP.sesion.usuario;
@@ -350,7 +375,7 @@ SRP.formulario = {
         const previo = this.estado.editando;
         const cambiados = ['lat', 'lng', 'punto_origen', 'especie_id', 'especie_otra', 'programa_id', 'fecha_plantacion', 'foto_id']
           .filter(k => (previo[k] || null) !== (v[k] || null));
-        const nuevo = Object.assign({}, previo, v, { fecha_ultima_edicion: ahora, editado_por_id: u.id });
+        const nuevo = this.registroPrevisto(ahora);
         await SRP.almacen.guardarConBitacora('plantaciones', nuevo,
           SRP.bitacora.entrada('EDITADO', 'plantacion', nuevo.id, cambiados.length ? 'Campos: ' + cambiados.join(', ') : 'Sin cambios en los datos'));
         this.el('dlg-resumen').close();
@@ -358,11 +383,7 @@ SRP.formulario = {
         SRP.util.anunciar('Cambios guardados.');
         SRP.app.mostrarVista('registros');
       } else {
-        const nuevo = Object.assign({
-          id: this.estado.idPrevisto, es_ficticio: SRP.CONFIG.ES_FICTICIO, estatus: 'activo',
-          cabo_id: u.id, lat_original: v.lat, lng_original: v.lng,
-          fecha_registro: ahora, fecha_ultima_edicion: null, editado_por_id: null
-        }, v);
+        const nuevo = this.registroPrevisto(ahora);
         await SRP.almacen.guardarConBitacora('plantaciones', nuevo, SRP.bitacora.entrada('CREADO', 'plantacion', nuevo.id));
         this.el('dlg-resumen').close();
         this.mostrarGuardado(nuevo);
