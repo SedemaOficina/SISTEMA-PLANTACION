@@ -496,173 +496,28 @@ prueba vuelvan a sembrar y no queden registros derivados con la capa ficticia ju
 cinco nuevas; la revisión de presentación en ocho combinaciones de ancho y zoom; y las dos pruebas
 de migración.
 
-## Bloque 16 — Ajustes del formulario pedidos tras probarlo, y auditoría de cierre (21-09-2026)
-Etapa 1. Estado: **cerrado**. Versión 0.5.8.
+## Bloque 22 — Registros legible, filtros a una altura y el espejo en tres lugares (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.3.
 
-**Qué cambió, en el orden en que Liber lo pidió.** El botón de ubicación conserva el icono de
-ubicación en sus dos estados y se oculta mientras «Capturar coordenadas a mano» está desplegado
-(D48, D49). «Reforestación Urbana» encabeza el selector de programa (D51). Vuelve `comentarios`
-al registro como texto libre opcional de hasta 500 caracteres: entra en la ficha de revisión con
-su botón de editar, en el detalle del registro, en la detección de cambios al editar y en el
-espejo; **modifica D17**, que lo había retirado por no tener uso declarado (D50). La pestaña dice
-«Nuevo registro» y el formulario deja de repetir el título; en edición sí se muestra (D52).
+**Qué cambió.** Cada renglón de Registros dice ahora «Capulín *(Prunus serotina subsp.
+capuli)*» y «Cuauhtémoc, CENTRO IV» (D65). El bloque de filtros pone las etiquetas a la
+izquierda de su control: chips, listas, «Reiniciar» y las fechas de «Un periodo» quedan en una
+misma altura, en escritorio en una sola fila y en teléfono partido en dos o tres. La nota del
+botón de reporte decía «dentro de Más filtros», que ya no existe; ahora dice «en Un periodo». Y
+«Se reportarán los 1 registro» pasa a «Se reportará el registro del…».
 
-**Un tropiezo que conviene dejar escrito.** La primera versión del cambio del icono se aplicó al
-desplegable de coordenadas en vez de al botón de ubicación (commit a15a0b3): un emoji en el
-`summary` y una regla que lo ocultaba. Se revirtió en el commit siguiente. Quedó un rastro —el
-`id="summary-coord"` sin uso— que salió en la auditoría de cierre y se retiró aquí.
+**El espejo, en tres lugares (D66).** Hasta hoy sólo el formulario enseñaba los campos que
+viajan a la base sin verse. Ahora también el detalle de un registro (plegado al pie, con los 14
+campos guardados que la ficha no muestra: `es_ficticio`, `estatus`, `lat_original`,
+`lng_original`, `alcaldia_cve`, `colonia_cve`, `uga`, `capa_version`, `foto_id`, `foto_nombre`,
+`foto_bytes`, `fecha_registro`, `fecha_ultima_edicion`, `editado_por_id`) y el cierre del parte
+(plegado antes de «Generar reporte», con los siete que no se capturan más la entrada de
+bitácora, repintado con cada tecla). Para que el del cierre no pudiera mentir, `aceptar()` dejó
+de armar el objeto a mano: ahora lo pide a `cierrePrevisto()`, el mismo que lee el espejo. Las
+notas del espejo se completaron con `colonia_cve`, `foto_nombre` y `foto_bytes`.
 
-**Auditoría de cierre.** Código sin uso: `SRP.ref.territorio()` (nadie la llamaba), los ids
-`summary-coord`, `etq-especie-texto` y `etq-cat-nombre` (sin JS, CSS ni ARIA que los nombrara) y la
-clase `foto` del fieldset (sin regla). Textos que ya no eran ciertos: el comentario de
-`aparienciaBotonUbicacion()` y D28 hablaban del lápiz; MAPEO-CAMPOS decía «Pantalla Registrar» y
-no traía `comentarios`. Hojas de estilo: sin selectores duplicados, sin colores fuera de `:root`
-salvo las dos sombras en `rgba` ya justificadas, `!important` sólo en `prefers-reduced-motion`.
-
-**Lo que las pruebas atraparon.** El recorrido falló dos veces por expectativas viejas, no por
-defectos: pedía el lápiz en el botón y pulsaba el botón de ubicación con el desplegable abierto.
-Ahora comprueba lo nuevo: el botón se oculta con el desplegable abierto y reaparece al cerrarlo,
-y conserva el icono de ubicación con el texto «Actualizar…». La marca de versión, que estaba
-escrita a mano en la prueba, ahora se lee de `index.html`: no volverá a caducar en cada bloque.
-
-**Verificación:** sintaxis de todos los .js; 163 comprobaciones del recorrido en los cuatro
-perfiles, sin errores de consola; 44 de la auditoría de consistencia; revisión de presentación en
-ocho combinaciones de ancho y zoom sin desbordes. Marca de versión subida a 0.5.8 en las 29
-etiquetas.
-
-**Pendiente registrado:** los reportes PDF se validan en conjunto cuando el formulario esté
-terminado (ver DECISIONES); ahí se decide si `comentarios` entra al reporte.
-
-## Bloque 17 — Reiniciar filtros y menos atajos en Registros (21-09-2026)
-Etapa 1. Estado: **cerrado**. Versión 0.5.9.
-
-**Qué cambió.** Se retiran los atajos «Mes pasado» y «Este año»: quedan Hoy, Este mes y Todos, y
-lo que cubrían se resuelve con las listas de Año y Mes. Se agrega «Reiniciar filtros», botón de
-apoyo (gris subrayado, D25) al pie del bloque de filtros, que devuelve la vista a su estado de
-entrada: Hoy, sin año ni mes, sin rango y todos los cabos (D53). Se mantiene «Todos» porque hace
-otra cosa: quita el periodo y respeta el cabo elegido.
-
-**Retirado:** las ramas de `aplicarAtajo()` y el cálculo de mes pasado en `sincronizarControles()`
-que sólo servían a los dos chips. D19 queda anotada como modificada por D53.
-
-**Verificación:** sintaxis; 166 comprobaciones del recorrido (tres nuevas: reiniciar vuelve a Hoy
-y limpia el rango, lista los de hoy, y los atajos son tres), sin errores de consola; 44 de la
-auditoría; presentación sin desbordes; sin ids ni funciones sin uso. Marca de versión 0.5.9.
-
-## Bloque 18 — Dos ajustes de escritorio: lista de especies y fila del punto (22-09-2026)
-Etapa 1. Estado: **cerrado**. Versión 0.5.10.
-
-**Qué cambió.** La opción de la lista de especies bajo el cursor se marca igual que la elegida
-con teclado (fondo suave y contorno guinda): con ratón la lista se sentía inerte. Los tres datos
-del punto pasan a una fila de tres columnas en escritorio y tableta, apilados en teléfono (D54);
-el hueco que se veía junto a Coordenadas era la celda del campo «Cómo se obtuvo», oculto desde
-el bloque 15 pero todavía dentro de la rejilla. Ese campo sale de la rejilla y sigue anunciándose
-al lector de pantalla. La nota de ayuda decía «Los cuatro salen del punto»; ahora dice tres.
-
-**Otra prueba que caducaba sola.** El recorrido tenía la fecha de hoy escrita a mano
-(`2026-09-21`); al día siguiente los registros «de hoy» dejaban de serlo, el filtro Hoy quedaba
-vacío y la prueba fallaba sin que nada hubiera cambiado. Ahora la calcula, igual que ayer se hizo
-con la marca de versión.
-
-**Verificación:** las tres cajas alineadas a la misma altura en 1280 y 768 px y apiladas en 390;
-la coordenada cabe sin recorte; 166 comprobaciones del recorrido, sin errores de consola; 44 de
-auditoría; presentación sin desbordes; sin selectores duplicados. Marca de versión 0.5.10.
-
-## Bloque 19 — El parte del día: cierre y reporte (22-09-2026)
-Etapa 1. Estado: **cerrado**. Versión 0.6.0.
-
-**Qué cambió.** El reporte deja de ser «los registros que haya en el filtro» y pasa a ser el parte
-de una jornada (D55). El botón se llama «Generar reporte del día», sólo funciona con un día
-elegido, y a su lado una nota dice qué se va a reportar o qué falta para poder hacerlo; un botón
-apagado sin explicación se lee como una falla del sistema (Norma 7.6). Al pulsarlo se abre el
-cierre del parte (D56): sitio, actividades, personal, apoyo, encargado, observaciones, chófer,
-vehículo y hora de finalización, todos opcionales y de texto libre. El encargado no se escribe:
-para un cabo es él, y para quien ve a varias personas es una lista de los cabos que registraron
-ese día (D57).
-
-El PDF se rehízo: cabecera con el logotipo y el filete guinda, recuadro de sitio con la alcaldía
-que el sistema derivó del punto, apartados de actividades y personal, tabla de ejemplares, tabla
-de totales por especie con su total, resumen por programa, observaciones y logística. **Cada
-apartado se dibuja sólo si tiene qué decir**, así que un parte con pocos datos sale limpio en vez
-de lleno de renglones en blanco. Se conservan la cifra de ubicación por GPS y la advertencia de
-que lo registrado no equivale a lo plantado, que venían del reporte anterior.
-
-**Nuevo almacén `cierres`**, con clave `fecha|cabo`, y comprobación de estructura al abrir la base
-(D59): `ALMACENES` declara lo que el código espera, y si falta algo —mientras los datos sean
-ficticios— la base se rehace y se vuelve a sembrar. Sin eso, el teléfono que ya había abierto el
-sistema habría fallado al primer reporte.
-
-**Retirado:** `SRP.reportes.generar(registros, descripcion)` con su firma anterior y el título
-«REPORTE DE ÁRBOLES REGISTRADOS»; `SRP.registros.descripcionFiltro()` se conserva porque sigue
-describiendo el filtro en pantalla. Nada más se eliminó.
-
-**Verificación:** sintaxis de los cinco archivos tocados y del recorrido; 180 comprobaciones del
-recorrido (catorce nuevas: el botón apagado con «Todos» y su explicación, el día por atajo y por
-rango de un día, el cierre que se abre antes de generar, el encargado de lectura para el cabo y de
-lista para el coordinador, el PDF con el día en el nombre, el cierre que vuelve escrito al
-regenerar y los campos vacíos que no se inventan), sin errores de consola; 44 de la auditoría;
-sin desbordamiento horizontal en 1200 y 390 px; PDF revisado a la vista, de una página con los
-apartados vacíos ausentes. Sin CSS nuevo: el cierre usa `.campo`, `.campo-doble`, `.campo-lectura`
-y `.acciones`, que ya existían. Marca de versión 0.6.0.
-
-## Bloque 20 — Formulario de cierre en el orden del parte, y el PDF se descarga en escritorio (22-09-2026)
-Etapa 1. Estado: **cerrado**. Versión 0.6.1.
-
-**Qué cambió en el cierre (D60).** El encargado pasa al principio; «Personal de apoyo» admite
-varias líneas, como el participante; el vehículo se separa en «Modelo de vehículo» y «Placa»; la
-hora de finalización se elige con el selector de hora del dispositivo y el PDF la imprime como
-`14:30 h`. La logística queda en dos filas: chófer y modelo; placa y hora. Un cierre guardado con
-el campo único `vehiculo` se muestra en «Modelo» al reabrirlo, para no perderlo.
-
-**Defecto encontrado por Liber al probar en escritorio (D61).** Al generar el reporte, Windows
-abría su panel de Compartir en lugar de descargar, y el destino de Acrobat avisaba «archivo de
-longitud cero». El PDF estaba bien (334 KB): el «compartir archivos» pensado para el teléfono
-también existe en Chrome y Edge de Windows. Ahora se comparte sólo en dispositivos táctiles sin
-ratón (`hover: none` y `pointer: coarse`) y en escritorio se descarga. Prueba dirigida: con
-`navigator.share` disponible en los dos contextos, escritorio descarga y no comparte; teléfono
-comparte y no descarga.
-
-**Verificación:** sintaxis; 182 comprobaciones del recorrido (dos nuevas: apoyo es textarea,
-encargado es el primer campo; hora y placa se conservan al regenerar), sin errores de consola;
-44 de auditoría (MAPEO-CAMPOS al día con `vehiculo_modelo`, `vehiculo_placa`); presentación sin
-desbordes. Marca de versión 0.6.1.
-
-## Bloque 21 — Capa de colonias de prueba, y Registros más compacto (22-09-2026)
-Etapa 1. Estado: **cerrado**. Versión 0.6.2.
-
-**La capa de colonias (D62).** Llegó `colonias_iecm2022.geojson`: 1,837 unidades territoriales
-del IECM, CRS84, clave `CVEUT` única, 0 geometrías inválidas, 125,555 vértices. Se revisó
-completa antes de tocar código. Lo que trae de defecto, medido: no cubre el suelo de conservación
-(532 km² al sur, más huecos de 8, 6.5, 6.3, 3.4 y 3 km² en Tláhuac, Tlalpan–Xochimilco y
-Cuajimalpa); 215 solapes que suman 1.63 km², casi siempre una unidad habitacional dibujada encima
-del pueblo que la rodea (el mayor, 11 ha, Independencia San Ramón (U HAB) × San Jerónimo
-Aculco-Lídice (PBLO)); límites que no coinciden con los de alcaldías del SIA, con 12 colonias cuyo
-interior cae en otra alcaldía; 23 nombres con espacios dobles. Reglas definidas por Liber: fuera
-de zona urbana no hay colonia y la pantalla lo dice así; en un solape gana la más pequeña; el
-nombre va como viene, en mayúsculas y con su tipo entre paréntesis. La alcaldía sigue saliendo de
-su capa (D47). Entra por el mismo camino que las otras dos: original intacto en `assets/fuentes/`
-(MD5 `e89620199b4cfd29070331efd7a67d48`), compactada por `generar_capas.py` con validación, versión
-`iecm-2022-prueba` en `capa_version`, y `colonia_cve` como llave en el registro. Puntos de prueba:
-el Zócalo deriva CENTRO IV; el solape deriva la U HAB; el suelo de conservación deriva Tlalpan sin
-colonia; la colonia 07-010 conserva Tláhuac como alcaldía aunque el IECM la declare de Iztapalapa.
-Derivar sigue costando 0.3 ms por punto.
-
-**Es una capa de prueba, y las otras dos también.** Pesa 3 MB compactada, mucho para teléfono.
-Queda anotado en DECISIONES como pendiente de Liber: antes de liberar la etapa se sustituyen los
-tres originales —alcaldías, UGA y colonias— por los definitivos del SIA y se vuelve a generar.
-
-**Tres ajustes de pantalla pedidos al probar.** Los letreros «Fotografía agregada/quitada» se
-retiran y pasan a una región viva sin letrero para el lector de pantalla (D63). En Registros, las
-acciones de cada renglón van en fila en todo ancho: en escritorio cada registro baja de ~165 a 83
-px de alto. Y el bloque de filtros se rehace en una fila —Hoy · Todos · Un periodo, listas de Año,
-Mes y Cabo, Reiniciar— con Desde/Hasta sólo al pedir «Un periodo» (D64); el desplegable «Más
-filtros» y el atajo «Este mes» se retiran.
-
-**Retirado:** `.campo-doble-fijo` (sin uso tras rehacer los filtros), el id `cie-encargado-etq`
-(sin nadie que lo nombrara), la nota «Pendiente: aún no hay capa de colonias» y la fila de
-pendientes «Colonia del parte» en MAPEO-CAMPOS, resuelta.
-
-**Verificación:** sintaxis; 190 comprobaciones del recorrido (ocho nuevas: cinco de la capa de
-colonias, tres del filtro por periodo), sin errores de consola; 45 de auditoría (una nueva: las
-claves cargadas de colonias son las 1,837 del original); presentación sin desbordes en ocho
-combinaciones; sin selectores duplicados, clases ni ids sin uso. Marca de versión 0.6.2.
+**Verificación:** sintaxis; 194 comprobaciones del recorrido (cuatro nuevas: renglón con
+científico y colonia, espejo del detalle con `colonia_cve`, espejo del cierre con sus siete
+campos, y que lo escrito en el cierre entra al objeto que se guarda), sin errores de consola; 45 de
+auditoría; presentación sin desbordes; sin selectores duplicados, clases ni ids sin uso; sin
+rastro del texto «Más filtros». Marca de versión 0.6.3.

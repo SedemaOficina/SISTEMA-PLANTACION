@@ -8,9 +8,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cabin:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.2">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.2">
-<link rel="stylesheet" href="css/estilos.css?v=0.6.2">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.3">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.3">
+<link rel="stylesheet" href="css/estilos.css?v=0.6.3">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -358,6 +358,23 @@
       <div class="campo"><label for="cie-hora">Hora de finalización</label><input type="time" id="cie-hora"></div>
     </div>
 
+    <!-- ESPEJO DEL CIERRE — se elimina al cerrar la Etapa 1 (ver js/espejo.js) -->
+    <details id="espejo-cierre" class="desplegable espejo espejo-en-dialogo" hidden>
+      <summary><span>Campos que viajan a la base y no se ven en pantalla</span></summary>
+      <p class="espejo-ayuda">Es el cierre tal como quedaría guardado al pulsar Generar. Sale del mismo objeto que se escribe. <span class="espejo-marca">sólo en la versión de prueba</span></p>
+      <table class="espejo-tabla">
+        <caption>Almacén <code>cierres</code></caption>
+        <thead><tr><th>Campo</th><th>Valor ahora</th><th>De dónde sale</th></tr></thead>
+        <tbody id="espejo-cierre-cuerpo"></tbody>
+      </table>
+      <table class="espejo-tabla">
+        <caption>Almacén <code>bitacora</code>, que se escribe solo al generar</caption>
+        <thead><tr><th>Campo</th><th>Valor ahora</th></tr></thead>
+        <tbody id="espejo-cierre-bitacora"></tbody>
+      </table>
+      <p id="espejo-cierre-conteo" class="espejo-ayuda"></p>
+    </details>
+
     <div class="acciones">
       <button type="submit" class="btn btn-primario" id="btn-cierre-generar">Generar reporte</button>
       <button type="button" id="btn-cierre-cancelar" class="btn btn-secundario">Cancelar</button>
@@ -399,35 +416,35 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.6.2"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.2"></script>
-<script src="vendor/turf-pip.min.js?v=0.6.2"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.6.2"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.2"></script>
+<script src="vendor/leaflet.js?v=0.6.3"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.3"></script>
+<script src="vendor/turf-pip.min.js?v=0.6.3"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.6.3"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.3"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.6.2"></script>
-<script src="js/util.js?v=0.6.2"></script>
-<script src="js/iconos.js?v=0.6.2"></script>
-<script src="assets/logo.js?v=0.6.2"></script>
+<script src="js/config.js?v=0.6.3"></script>
+<script src="js/util.js?v=0.6.3"></script>
+<script src="js/iconos.js?v=0.6.3"></script>
+<script src="assets/logo.js?v=0.6.3"></script>
 <!-- Capas territoriales del SIA, compactadas por pruebas/generar_capas.py desde assets/fuentes/ -->
-<script src="assets/capa-alcaldias.js?v=0.6.2"></script>
-<script src="assets/capa-uga.js?v=0.6.2"></script>
-<script src="assets/capa-colonias.js?v=0.6.2"></script>
-<script src="js/datos-ficticios.js?v=0.6.2"></script>
-<script src="js/permisos.js?v=0.6.2"></script>
-<script src="js/derivacion.js?v=0.6.2"></script>
-<script src="js/almacen.js?v=0.6.2"></script>
-<script src="js/sesion.js?v=0.6.2"></script>
-<script src="js/referencias.js?v=0.6.2"></script>
-<script src="js/mapa.js?v=0.6.2"></script>
-<script src="js/foto.js?v=0.6.2"></script>
-<script src="js/formulario.js?v=0.6.2"></script>
+<script src="assets/capa-alcaldias.js?v=0.6.3"></script>
+<script src="assets/capa-uga.js?v=0.6.3"></script>
+<script src="assets/capa-colonias.js?v=0.6.3"></script>
+<script src="js/datos-ficticios.js?v=0.6.3"></script>
+<script src="js/permisos.js?v=0.6.3"></script>
+<script src="js/derivacion.js?v=0.6.3"></script>
+<script src="js/almacen.js?v=0.6.3"></script>
+<script src="js/sesion.js?v=0.6.3"></script>
+<script src="js/referencias.js?v=0.6.3"></script>
+<script src="js/mapa.js?v=0.6.3"></script>
+<script src="js/foto.js?v=0.6.3"></script>
+<script src="js/formulario.js?v=0.6.3"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.6.2"></script>
-<script src="js/registros.js?v=0.6.2"></script>
-<script src="js/reportes.js?v=0.6.2"></script>
-<script src="js/catalogos.js?v=0.6.2"></script>
-<script src="js/usuarios.js?v=0.6.2"></script>
-<script src="js/app.js?v=0.6.2"></script>
+<script src="js/espejo.js?v=0.6.3"></script>
+<script src="js/registros.js?v=0.6.3"></script>
+<script src="js/reportes.js?v=0.6.3"></script>
+<script src="js/catalogos.js?v=0.6.3"></script>
+<script src="js/usuarios.js?v=0.6.3"></script>
+<script src="js/app.js?v=0.6.3"></script>
 </body>
 </html>

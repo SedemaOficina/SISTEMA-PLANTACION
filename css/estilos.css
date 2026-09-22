@@ -198,6 +198,9 @@ main:focus { outline: none; }
 .espejo-encabezado { font-size: var(--t-m); color: var(--gris); display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); }
 .espejo-marca { padding: 0 var(--e-2); border-radius: var(--radio-control); background: var(--fondo-suave); font-family: var(--fuente-cuerpo); font-size: var(--t-xs); font-weight: 400; }
 .espejo-ayuda { font-size: var(--t-xs); line-height: 1.6; }
+/* Dentro de un diálogo el espejo va plegado y sin el margen grande del formulario */
+.espejo-en-dialogo { margin-top: var(--e-4); padding-top: var(--e-3); }
+.espejo-en-dialogo summary { color: var(--gris); }
 .espejo-tabla { width: 100%; border-collapse: collapse; font-size: var(--t-xs); margin-bottom: var(--e-4); table-layout: fixed; }
 .espejo-tabla caption { text-align: left; font-weight: 500; padding-bottom: var(--e-1); }
 .espejo-tabla th { text-align: left; font-weight: 500; border-bottom: 1px solid var(--borde-suave); padding: var(--e-1) var(--e-2) var(--e-1) 0; }
@@ -249,17 +252,22 @@ main:focus { outline: none; }
 
 .filtros { border-bottom: 1px solid var(--borde-suave); padding-bottom: var(--e-3); }
 /* Atajos, listas y reiniciar en una fila que se parte sola en teléfono; alineados por la base */
-.filtros-fila { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--e-3) var(--e-4); }
+.filtros-fila { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-3) var(--e-4); }
 .filtros-fila .chips { margin-bottom: 0; }
 .filtros-listas { display: flex; flex-wrap: wrap; gap: var(--e-3); }
+/* Etiqueta a la izquierda del control, no encima: así chips, listas y fechas quedan a una altura */
+.campo-corto { display: flex; align-items: center; gap: var(--e-2); margin-bottom: 0; }
+.campo-corto label { margin-bottom: 0; white-space: nowrap; }
 .campo-corto select, .campo-corto input { width: auto; min-width: 8rem; }
-.filtros-periodo { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--e-3); margin-top: var(--e-3); }
+.filtros-fila .btn-texto { margin-left: auto; }
+.filtros-periodo { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-3); margin-top: var(--e-3); }
 
 .lista-registros { list-style: none; margin: 0; padding: 0; }
 .registro { display: flex; justify-content: space-between; align-items: center; gap: var(--e-3); padding: var(--e-2) 0; border-bottom: 1px solid var(--borde-suave); }
 .registro-datos { min-width: 0; }
 .registro-fecha { display: block; font-size: var(--t-xs); color: var(--gris); }
 .registro-especie { display: block; font-family: var(--fuente-titulo); font-weight: 600; }
+.registro-especie i { font-weight: 400; color: var(--gris); }
 .registro-lugar, .registro-autor { display: block; font-size: var(--t-s); overflow-wrap: anywhere; }
 .registro-autor { color: var(--gris); }
 /* Las tres acciones en fila en todo ancho: apiladas, cada registro medía tres botones de alto y la lista crece (bloque 21) */

@@ -243,7 +243,7 @@ SRP.registros = {
       if (SRP.permisos.puedeEliminar(u, r, SRP.ref.usuarioPorId)) botones.push(boton('eliminar', 'btn-peligro', 'basura', 'Eliminar'));
       return '<li class="registro"><div class="registro-datos">' +
         '<span class="registro-fecha">' + SRP.util.formatearFecha(r.fecha_plantacion) + '</span>' +
-        '<span class="registro-especie">' + esc(esp.comun) + '</span>' +
+        '<span class="registro-especie">' + esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : '') + '</span>' +
         // En la lista sólo lo que existe: repetir «pendiente» en cada renglón sería ruido
         '<span class="registro-lugar">' + esc(SRP.ref.alcaldia(r.alcaldia)) + (r.colonia ? ', ' + esc(r.colonia) : '') + '</span>' +
         (variosAutores ? '<span class="registro-autor">' + esc(SRP.ref.nombreUsuario(r.cabo_id)) + '</span>' : '') +
@@ -262,9 +262,9 @@ SRP.registros = {
     const dia = this.diaDelFiltro();
     this.el('btn-pdf').disabled = !dia || n === 0;
     this.el('pdf-nota').textContent = !dia
-      ? 'El reporte es el parte de un día. Toque «Hoy», o ponga la misma fecha en «Desde» y «Hasta» dentro de «Más filtros».'
+      ? 'El reporte es el parte de un día. Toque «Hoy», o en «Un periodo» ponga la misma fecha en «Desde» y «Hasta».'
       : n === 0 ? 'No hay registros del ' + SRP.util.formatearFecha(dia) + '.'
-      : 'Se reportarán los ' + n + (n === 1 ? ' registro' : ' registros') + ' del ' + SRP.util.formatearFecha(dia) + '.';
+      : (n === 1 ? 'Se reportará el registro del ' : 'Se reportarán los ' + n + ' registros del ') + SRP.util.formatearFecha(dia) + '.';
   },
 
   /* El detalle se lee igual que la ficha de revisión: el mapa arriba, los datos con su etiqueta
@@ -299,7 +299,8 @@ SRP.registros = {
     this.el('dlg-detalle-cuerpo').innerHTML =
       '<dl class="revision-lista">' + filas.map(([etiqueta, valor]) =>
         '<div class="revision-fila revision-fila-sola"><dt>' + etiqueta + '</dt><dd>' + valor + '</dd></div>').join('') + '</dl>' +
-      '<h3 class="titulo-bloque">Historial</h3><ul class="historial">' + lineas + '</ul>';
+      '<h3 class="titulo-bloque">Historial</h3><ul class="historial">' + lineas + '</ul>' +
+      (SRP.espejo ? SRP.espejo.htmlDetalle(r) : '');
 
     this.el('dlg-detalle').showModal();
     if (this.mapaDetalle) { this.mapaDetalle.remove(); this.mapaDetalle = null; }

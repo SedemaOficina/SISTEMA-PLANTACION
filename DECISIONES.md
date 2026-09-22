@@ -53,7 +53,7 @@
 | D50 | Se reincorpora `comentarios` al registro de plantación: texto libre opcional, hasta 500 caracteres | Definido por Liber. **Modifica D17**, que lo retiró por no tener uso declarado (Norma 1.8); ahora lo tiene: observaciones del cabo sobre el sitio o el ejemplar. Sigue fuera del reporte PDF hasta la validación de reportes (ver pendientes) |
 | D51 | En el selector de programa, «Reforestación Urbana» va primero y el resto en orden alfabético; sigue sin preselección | Definido por Liber: es el programa de casi toda la captura en campo. Se ordena por la clave `REFOR_URBANA`, no por el nombre, para que sobreviva a un cambio de redacción |
 | D52 | La pestaña dice «Nuevo registro» y el formulario ya no repite el título; en edición el título sí se muestra («Editar registro») | Definido por Liber. En alta, pestaña y título decían lo mismo; en edición el contexto cambia respecto a la pestaña y hay que decirlo |
-| D53 | Los atajos de periodo quedan en tres y se agrega «Reiniciar filtros», que devuelve la vista a su estado de entrada: Hoy, sin año ni mes, sin rango y todos los cabos | Definido por Liber. «Mes pasado» y «Este año» se cubren con las listas de Año y Mes. «Todos» sólo quita el periodo y respeta el cabo elegido; Reiniciar lo devuelve todo, por eso son dos controles. ~~Hoy, Este mes, Todos~~: el juego de atajos cambia en D64 |
+| D53 | Los atajos de periodo quedan en tres —Hoy, Este mes, Todos— y se agrega «Reiniciar filtros», que devuelve la vista a su estado de entrada: Hoy, sin año ni mes, sin rango y todos los cabos | Definido por Liber. «Mes pasado» y «Este año» se cubren con las listas de Año y Mes. «Todos» sólo quita el periodo y respeta el cabo elegido; Reiniciar lo devuelve todo, por eso son dos controles |
 | D54 | Los tres datos del punto —Coordenadas, Alcaldía, Colonia— van en una sola fila de tres columnas en escritorio y tableta, y apilados en teléfono | Señalado por Liber: al ocultar «Cómo se obtuvo» (bloque 15) su celda vacía dejó un hueco junto a Coordenadas. El dato oculto sale de la rejilla; sigue anunciándose al lector de pantalla y guardándose |
 | D40 | Espejo de campos al pie del formulario, sólo con datos de prueba: enseña los campos que llegan a la base sin tener lugar en la pantalla, más la entrada de bitácora que se escribiría. **Se elimina al cerrar la Etapa 1** (`js/espejo.js`, su sección en `index.html` y el bloque `.espejo` del CSS; nada más depende de él) | Definido por Liber, para llevar control visual mientras se afina la interfaz. No reconstruye el registro: lee el mismo objeto que escribe Guardar (`registroPrevisto()`), y su lista de campos es lo que queda al restar los visibles, así que un campo nuevo aparece solo. Lo que aún no existe —identificador, marcas de tiempo— se nombra como pendiente en vez de inventarse |
 
@@ -163,15 +163,19 @@
   capa (D47): doce colonias tienen el interior en otra alcaldía que la que declaran. Se guarda
   también `colonia_cve` (`CVEUT`) como llave. Las tres reglas definidas por Liber. **La capa es
   de prueba** y se sustituye antes de liberar la etapa (ver pendientes).
-- **D63. Los avisos de fotografía no se muestran como letrero.** «Fotografía agregada» y
-  «Fotografía quitada» tapaban el formulario para decir algo que ya se ve —la foto aparece o
-  desaparece—. Se retiran de la pantalla y se conservan para el lector de pantalla en una región
-  viva sin letrero (`#aviso-lector`), porque lo que cambia sin recargar se anuncia (Norma 8.1).
-  Señalado por Liber.
-- **D64. En Registros: atajos Hoy · Todos · Un periodo, en ese orden; Desde/Hasta sólo al
-  pedir «Un periodo»; todo el filtro en una fila.** Sustituye el juego de D53: «Este mes» se va
-  (lo cubren las listas de Año y Mes) y el desplegable «Más filtros» desaparece: el rango se
-  abre con el tercer atajo, que queda relleno mientras haya rango aplicado y con contorno
-  mientras esté abierto sin aplicar. El filtro por cabo se aplica al elegirlo, sin botón. Las tres
-  acciones de cada registro (Ver, Editar, Eliminar) van en fila en todo ancho: apiladas, cada
-  registro medía tres botones de alto y la lista crece. Señalado por Liber.
+
+## Bloque 22 — Registros legible y el espejo en tres lugares
+
+- **D65. Cada renglón de Registros dice nombre común (científico) y alcaldía, colonia; el
+  bloque de filtros va en una sola altura.** Las etiquetas Año, Mes, Cabo, Desde y Hasta van a
+  la izquierda de su control, no encima: con etiqueta arriba los chips quedaban colgando por
+  debajo de las listas y «Reiniciar» flotaba en medio. Señalado por Liber con capturas de
+  escritorio y teléfono.
+- **D66. El espejo de campos vive en los tres sitios donde algo se escribe a la base:** el
+  formulario (registro previsto), el detalle de un registro (lo guardado, en Registros) y el
+  cierre del parte (cierre previsto, en el diálogo de generar reporte). Un solo motor en
+  `js/espejo.js`; cada espejo resta los campos visibles de su pantalla y muestra el resto con
+  su nota. El del cierre lee `SRP.reportes.cierrePrevisto()`, que es el mismo objeto que escribe
+  «Generar reporte» (la regla de D40): no puede desfasarse. Los tres se eliminan al cerrar la
+  Etapa 1, como D40 lo establece; la lista de qué borrar está en la cabecera de `js/espejo.js`.
+  Pedido por Liber.

@@ -51,10 +51,12 @@ SRP.reportes = {
 
     // Lo capturado antes para este mismo día no se vuelve a escribir (Norma 7.6)
     const previo = await SRP.almacen.uno('cierres', this.claveCierre(fecha, this.contexto.cabo_id));
+    this.contexto.previo = previo || null;
     this.CAMPOS.forEach(c => { this.el('cie-' + c).value = previo ? (previo[c] || '') : ''; });
     // Un cierre guardado antes del bloque 20 traía «vehiculo» en un solo campo: se muestra como modelo
     if (previo && previo.vehiculo && !previo.vehiculo_modelo) this.el('cie-vehiculo_modelo').value = previo.vehiculo;
     this.prepararEncargado(registros, previo);
+    if (SRP.espejo) SRP.espejo.refrescarCierre();
 
     this.el('dlg-cierre').showModal();
     this.el(this.el('cie-encargado-caja').hidden ? 'cie-sitio' : 'cie-encargado').focus();
@@ -94,10 +96,13 @@ SRP.reportes = {
     return propios ? this.contexto.encargado_id : this.el('cie-encargado').value;
   },
 
-  async aceptar() {
+  /* EL CIERRE TAL COMO QUEDARÍA EN LA BASE, en un solo lugar: lo escribe aceptar() y lo lee
+     el espejo del cierre, para que lo que el espejo enseña no pueda desfasarse de lo que se
+     guarda (la misma regla que registroPrevisto() en el formulario). */
+  cierrePrevisto(ahora) {
     const c = this.contexto;
-    const previo = await SRP.almacen.uno('cierres', this.claveCierre(c.fecha, c.cabo_id));
-    const ahora = SRP.util.ahoraISO();
+    const previo = c.previo;
+    ahora = ahora || SRP.util.ahoraISO();
     const cierre = {
       id: this.claveCierre(c.fecha, c.cabo_id),
       fecha: c.fecha,
@@ -109,6 +114,13 @@ SRP.reportes = {
       fecha_ultima_edicion: ahora
     };
     this.CAMPOS.forEach(k => { cierre[k] = this.el('cie-' + k).value.trim(); });
+    return cierre;
+  },
+
+  async aceptar() {
+    const c = this.contexto;
+    const previo = c.previo;
+    const cierre = this.cierrePrevisto();
 
     await SRP.almacen.guardarConBitacora('cierres', cierre,
       SRP.bitacora.entrada(previo ? 'EDITADO' : 'CREADO', 'cierre', cierre.id,

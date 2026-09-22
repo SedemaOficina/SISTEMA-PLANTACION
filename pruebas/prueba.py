@@ -330,6 +330,14 @@ with sync_playwright() as p:
     clases=pg.evaluate("""[...document.querySelectorAll('#lista-registros button')].slice(0,3)
         .map(b=>b.className.split(' ')[1]+'/'+(b.querySelector('svg')?'con icono':'SIN ICONO'))""")
     ok(clases==['btn-secundario/con icono','btn-editar/con icono','btn-peligro/con icono'],'ver, editar y eliminar con su color e icono')
+    fila=pg.inner_text('#lista-registros .registro >> nth=0')
+    ok('(' in fila and 'CENTRO IV' in fila,'cada renglón trae común (científico) y alcaldía, colonia: '+fila.replace(chr(10),' | ')[:90])
+    # Espejo en el detalle (B22): los campos guardados que la ficha no enseña
+    pg.click('#lista-registros button[data-accion=ver] >> nth=0'); pg.wait_for_timeout(500)
+    campos=pg.evaluate("[...document.querySelectorAll('#dlg-detalle .espejo .espejo-campo')].map(e=>e.textContent)")
+    ok('colonia_cve' in campos and 'capa_version' in campos and 'uga' in campos and 'id' not in campos,
+       'el detalle lleva su espejo con lo que no se ve (%d campos)' % len(campos))
+    pg.click('#btn-detalle-cerrar'); pg.wait_for_timeout(200)
     col=pg.evaluate("getComputedStyle(document.querySelector('#lista-registros button[data-accion=eliminar]')).backgroundColor")
     ok(col=='rgb(179, 38, 30)','el botón de eliminar es rojo')
     pg.click('.chip[data-atajo=todos]'); pg.wait_for_timeout(300)
@@ -377,6 +385,11 @@ with sync_playwright() as p:
 
     pg.click('#btn-pdf'); pg.wait_for_timeout(400)
     ok(pg.is_visible('#dlg-cierre'),'el botón abre el cierre del parte antes de generar')
+    espejoC=pg.evaluate("[...document.querySelectorAll('#espejo-cierre-cuerpo .espejo-campo')].map(e=>e.textContent)")
+    ok(espejoC==['id','fecha','cabo_id','creado_por_id','fecha_creacion','editado_por_id','fecha_ultima_edicion'],
+       'el cierre lleva su espejo con los siete campos que no se capturan: '+', '.join(espejoC))
+    pg.fill('#cie-chofer','Mengano'); pg.wait_for_timeout(200)
+    ok(pg.evaluate("SRP.reportes.cierrePrevisto().chofer")=='Mengano','y lo que se escribe entra al mismo objeto que se guarda')
     ok(pg.is_visible('#cie-encargado-lectura') and pg.is_hidden('#cie-encargado-caja'),
        'a un cabo no se le pregunta el encargado: es él')
     ok(pg.inner_text('#cie-encargado-lectura').strip()!='','y sale su nombre: '+pg.inner_text('#cie-encargado-lectura'))
