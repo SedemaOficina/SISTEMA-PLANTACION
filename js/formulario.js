@@ -147,13 +147,17 @@ SRP.formulario = {
     // ningún nombre por separado y dejaba la lista en sólo «Otra especie». Mientras la elección
     // siga vigente se ofrece la lista completa; en cuanto se teclea, especieId se anula y se filtra (D76)
     const q = this.estado.especieId ? '' : SRP.util.normalizar(this.el('campo-especie').value);
+    // También se busca por los otros nombres comunes del catálogo; si coincidió por uno de ellos
+    // se dice («también: Fresno»), porque un mismo nombre puede señalar a varias especies (D84)
     const coinciden = SRP.ref.deTipo('especie', true)
-      .filter(e => !q || SRP.util.normalizar(e.nombre).includes(q) || SRP.util.normalizar(e.nombre_cientifico).includes(q))
+      .map(e => ({ e, por: q ? SRP.ref.especieCoincide(e, q) : true }))
+      .filter(x => x.por)
       .slice(0, 8);
     const lista = this.el('lista-especies');
-    lista.innerHTML = coinciden.map(e =>
+    lista.innerHTML = coinciden.map(({ e, por }) =>
       '<li class="combo-opcion" role="option" id="op-' + e.id + '" data-id="' + e.id + '" aria-selected="false">' +
-      SRP.util.escapar(e.nombre) + '<small>' + SRP.util.escapar(e.nombre_cientifico) + '</small></li>').join('') +
+      SRP.util.escapar(e.nombre) + '<small>' + SRP.util.escapar(e.nombre_cientifico) +
+      (typeof por === 'string' ? ' · también: ' + SRP.util.escapar(por) : '') + '</small></li>').join('') +
       '<li class="combo-opcion" role="option" id="op-otra" data-id="' + this.OTRA + '" aria-selected="false">Otra especie<small>No está en el catálogo</small></li>';
     lista.hidden = false;
     this.el('campo-especie').setAttribute('aria-expanded', 'true');

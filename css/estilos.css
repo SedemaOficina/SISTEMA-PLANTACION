@@ -298,6 +298,7 @@ main:focus { outline: none; }
 .tabla th { background: var(--guinda); color: var(--fondo); text-align: left; padding: var(--e-2); font-weight: 500; }
 .tabla td { padding: var(--e-2); border-bottom: 1px solid var(--borde-suave); vertical-align: top; }
 .tabla tr:nth-child(even) td { background: var(--fondo-suave); }
+.tabla-detalle { display: block; font-size: var(--t-xs); color: var(--gris); font-style: normal; }
 .tabla-acciones { display: flex; flex-wrap: wrap; gap: var(--e-1); }
 .tabla td:last-child { white-space: nowrap; }
 .tabla td:last-child .tabla-acciones { flex-wrap: nowrap; }

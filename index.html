@@ -10,9 +10,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cabin:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.12">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.12">
-<link rel="stylesheet" href="css/estilos.css?v=0.6.12">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.13">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.13">
+<link rel="stylesheet" href="css/estilos.css?v=0.6.13">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -354,10 +354,16 @@
     <p class="nota nota-obligatorio">Los campos marcados con <span class="obligatorio" aria-hidden="true">*</span> son obligatorios.</p>
     <div id="cat-errores" class="errores" tabindex="-1" hidden></div>
     <div class="campo"><label for="cat-nombre"><span id="etq-cat-nombre-texto">Nombre</span> <span class="obligatorio" aria-hidden="true">*</span></label><input id="cat-nombre" required></div>
-    <div class="campo"><label for="cat-clave">Clave <span class="obligatorio" aria-hidden="true">*</span></label><input id="cat-clave" required aria-describedby="cat-clave-ayuda"><p id="cat-clave-ayuda" class="nota">Se sugiere a partir del nombre. Puede cambiarla ahora; después ya no.</p></div>
-    <div class="campo solo-especie"><label for="cat-cientifico">Nombre científico <span class="obligatorio" aria-hidden="true">*</span></label><input id="cat-cientifico"></div>
-    <div class="campo solo-especie"><label for="cat-grupo">Grupo <span class="obligatorio" aria-hidden="true">*</span></label>
-      <select id="cat-grupo"><option value="Nativa">Nativa</option><option value="Introducida">Introducida</option></select></div>
+    <div class="campo"><label for="cat-clave">Clave <span class="obligatorio" aria-hidden="true">*</span></label><input id="cat-clave" required aria-describedby="cat-clave-ayuda"><p id="cat-clave-ayuda" class="nota"></p></div>
+    <div class="campo solo-especie"><label for="cat-cientifico">Nombre científico <span class="obligatorio" aria-hidden="true">*</span></label><input id="cat-cientifico" aria-describedby="cat-cientifico-ayuda"><p id="cat-cientifico-ayuda" class="nota">Género y epíteto, sin autoría: «Quercus rugosa».</p></div>
+    <div class="campo solo-especie"><label for="cat-distribucion">Tipo de distribución <span class="obligatorio" aria-hidden="true">*</span></label>
+      <select id="cat-distribucion"><option value="Nativa">Nativa</option><option value="Endémica">Endémica</option><option value="Exótica">Exótica</option><option value="Exótica-Invasora">Exótica-Invasora</option></select></div>
+    <div class="campo solo-especie"><label for="cat-otros-nombres">Otros nombres comunes</label><input id="cat-otros-nombres" aria-describedby="cat-otros-ayuda"><p id="cat-otros-ayuda" class="nota">Separados por coma. Se buscan en el formulario de registro.</p></div>
+    <div class="campo solo-especie"><label for="cat-forma">Forma de crecimiento</label><input id="cat-forma" placeholder="Árbol, Arbusto"></div>
+    <div class="campo-doble solo-especie">
+      <div class="campo"><label for="cat-snib">Id SNIB (IdCAT)</label><input id="cat-snib"></div>
+      <div class="campo"><label for="cat-enciclovida">Id EncicloVida</label><input id="cat-enciclovida" inputmode="numeric"></div>
+    </div>
     <div class="acciones">
       <button type="submit" class="btn btn-exito" id="btn-cat-guardar">Guardar</button>
       <button type="button" id="btn-cat-cancelar" class="btn btn-secundario">Cancelar</button>
@@ -477,37 +483,38 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.6.12"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.12"></script>
-<script src="vendor/turf-pip.min.js?v=0.6.12"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.6.12"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.12"></script>
+<script src="vendor/leaflet.js?v=0.6.13"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.13"></script>
+<script src="vendor/turf-pip.min.js?v=0.6.13"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.6.13"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.13"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.6.12"></script>
-<script src="js/util.js?v=0.6.12"></script>
-<script src="js/iconos.js?v=0.6.12"></script>
-<script src="assets/logo.js?v=0.6.12"></script>
+<script src="js/config.js?v=0.6.13"></script>
+<script src="js/util.js?v=0.6.13"></script>
+<script src="js/iconos.js?v=0.6.13"></script>
+<script src="assets/logo.js?v=0.6.13"></script>
 <!-- Capas territoriales del SIA, compactadas por pruebas/generar_capas.py desde assets/fuentes/ -->
-<script src="assets/capa-alcaldias.js?v=0.6.12"></script>
-<script src="assets/capa-uga.js?v=0.6.12"></script>
-<script src="assets/capa-colonias.js?v=0.6.12"></script>
-<script src="js/datos-ficticios.js?v=0.6.12"></script>
-<script src="js/permisos.js?v=0.6.12"></script>
-<script src="js/derivacion.js?v=0.6.12"></script>
-<script src="js/almacen.js?v=0.6.12"></script>
-<script src="js/sesion.js?v=0.6.12"></script>
-<script src="js/referencias.js?v=0.6.12"></script>
-<script src="js/folio.js?v=0.6.12"></script>
-<script src="js/conexion.js?v=0.6.12"></script>
-<script src="js/mapa.js?v=0.6.12"></script>
-<script src="js/foto.js?v=0.6.12"></script>
-<script src="js/formulario.js?v=0.6.12"></script>
+<script src="assets/capa-alcaldias.js?v=0.6.13"></script>
+<script src="assets/capa-uga.js?v=0.6.13"></script>
+<script src="assets/capa-colonias.js?v=0.6.13"></script>
+<script src="assets/catalogo-especies.js?v=0.6.13"></script>
+<script src="js/datos-ficticios.js?v=0.6.13"></script>
+<script src="js/permisos.js?v=0.6.13"></script>
+<script src="js/derivacion.js?v=0.6.13"></script>
+<script src="js/almacen.js?v=0.6.13"></script>
+<script src="js/sesion.js?v=0.6.13"></script>
+<script src="js/referencias.js?v=0.6.13"></script>
+<script src="js/folio.js?v=0.6.13"></script>
+<script src="js/conexion.js?v=0.6.13"></script>
+<script src="js/mapa.js?v=0.6.13"></script>
+<script src="js/foto.js?v=0.6.13"></script>
+<script src="js/formulario.js?v=0.6.13"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.6.12"></script>
-<script src="js/registros.js?v=0.6.12"></script>
-<script src="js/reportes.js?v=0.6.12"></script>
-<script src="js/catalogos.js?v=0.6.12"></script>
-<script src="js/usuarios.js?v=0.6.12"></script>
-<script src="js/app.js?v=0.6.12"></script>
+<script src="js/espejo.js?v=0.6.13"></script>
+<script src="js/registros.js?v=0.6.13"></script>
+<script src="js/reportes.js?v=0.6.13"></script>
+<script src="js/catalogos.js?v=0.6.13"></script>
+<script src="js/usuarios.js?v=0.6.13"></script>
+<script src="js/app.js?v=0.6.13"></script>
 </body>
 </html>

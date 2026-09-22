@@ -20,6 +20,16 @@ SRP.ref = {
 
   nombreCatalogo(id) { const c = this.catalogoPorId[id]; return c ? c.nombre : ''; },
 
+  /* Búsqueda de especie con un solo criterio en toda la app: nombre común, científico, género y
+     otros nombres comunes del catálogo (D84). `q` ya viene normalizado. Devuelve el otro nombre
+     por el que coincidió, para decirlo en la lista, o '' si coincidió por nombre o científico. */
+  especieCoincide(e, q) {
+    const n = SRP.util.normalizar;
+    if (n(e.nombre).includes(q) || n(e.nombre_cientifico || '').includes(q)) return true;
+    const otro = (e.otros_nombres_comunes || '').split(',').map(t => t.trim()).find(t => t && n(t).includes(q));
+    return otro || false;
+  },
+
   // Una especie se nombra igual en todas partes: común y científico, como viene en el catálogo
   textoEspecie(id) {
     const e = this.catalogoPorId[id];

@@ -50,7 +50,7 @@ Pantalla **Nuevo registro**. Almacén `plantaciones`.
 | Colonia | `colonia` | No | Capa geográfica | Nombre como viene en la capa: mayúsculas y tipo entre paréntesis, `SAN MIGUEL (BARR)` (D62). Nulo en suelo de conservación, y la pantalla dice «Sin colonia (fuera de zona urbana)». **Capa de prueba (IECM 2022)**: se sustituye antes de liberar la etapa. [pendiente] Confirmar con el SIA si la unidad oficial es colonia o unidad territorial |
 | — | `uga` | No | Capa geográfica | Clave del hexágono de la malla UGA del SIA (~1 km², 1,624 celdas), p. ej. `TLP-318`. **El prefijo no es la alcaldía del punto**: es la alcaldía a la que se asignó la celda, y en la frontera difieren. La alcaldía sale de su propia capa |
 | — | `capa_version` | No | Sistema | Versión de cada capa con la que se derivó, p. ej. `alcaldias=sia-2026-09-21;uga=sia-2026-09-21`. Permite rehacer el dato cuando una capa cambie |
-| Especie | `especie_id` | Sí | Catálogo | Remite a `catalogos.id` con `tipo = especie`. Vacío cuando se eligió «Otra especie» |
+| Especie | `especie_id` | Sí | Catálogo | Remite a `catalogos.id` con `tipo = especie`: la clave `ESP-0000` del catálogo del SIA (D84). Vacío cuando se eligió «Otra especie». En pantalla se elige por nombre común, científico o cualquiera de los otros nombres comunes; sólo viaja la clave |
 | Especifique la especie | `especie_otra` | Sólo con «Otra especie» | Persona | Texto libre, para lo que no está en el catálogo |
 | Programa | `programa_id` | Sí | Catálogo | Remite a `catalogos.id` con `tipo = programa` |
 | Fecha de plantación | `fecha_plantacion` | Sí | Persona | `AAAA-MM-DD`. Arranca **sin valor**: se elige a propósito en cada registro, nunca se hereda del anterior. No puede ser posterior a hoy. Se muestra como 21-SEP-2026 |
@@ -72,6 +72,13 @@ escribirlo. Es un dato que sólo existe en el instante de la captura y no se rec
 **Campos que se muestran pero no se guardan aquí:** el nombre común y el científico de la especie,
 y el nombre del programa, salen del catálogo cada vez que se pintan. Si se corrige un nombre en
 Catálogos, se corrige en todos los registros y en el PDF.
+
+**Campos de la especie que viajan a la base sin verse en pantalla:** el registro guarda sólo
+`especie_id`; con esa clave el SIA obtiene del catálogo, sin que se copien al registro, el
+género (`genero`), el epíteto (`especie`), el tipo de distribución (`tipo_distribucion`), la forma
+de crecimiento (`formadecrecimiento`) y las llaves externas de CONABIO (`id_snib`,
+`id_enciclovida`). No se duplican en el registro a propósito: si el SIA corrige un dato del
+catálogo, queda corregido para todas las plantaciones (D84).
 
 ---
 
@@ -100,20 +107,33 @@ Pantalla **Usuarios**, sólo Administración global. Almacén `usuarios`.
 ## Módulo: Catálogos
 
 Pantalla **Catálogos**, sólo Administración global. Almacén `catalogos`. Los tres catálogos
-comparten estructura; las especies añaden dos campos.
+comparten estructura; las especies añaden los campos del catálogo del SIA.
 
 | Etiqueta en pantalla | Campo | Obligatorio | Origen | Notas |
 |---|---|---|---|---|
-| — | `id` | Sí | Sistema | UUID |
+| — | `id` | Sí | Sistema | UUID en programas y áreas. **En especies es la propia clave `ESP-0000`** (D84) |
 | — | `tipo` | Sí | Sistema | `programa`, `area` o `especie`. Lo fija la pestaña en la que se está |
-| Clave | `clave` | Sí | Persona | Se sugiere a partir del nombre, en mayúsculas y sin acentos; editable antes de guardar, fija después. Es la llave con la que se unirán los datos |
-| Nombre / Nombre común | `nombre` | Sí | Persona | Único dentro de su tipo |
-| Nombre científico | `nombre_cientifico` | Sí, sólo en especies | Persona | Único entre las especies |
-| Grupo | `grupo` | Sí, sólo en especies | Persona | `Nativa` o `Introducida`. [pendiente] Por validar con el área técnica |
+| Clave | `clave` | Sí | Persona / Sistema | Programas y áreas: se sugiere a partir del nombre, en mayúsculas y sin acentos; editable antes de guardar, fija después. **Especies: consecutivo `ESP-0000` que asigna el sistema** (siguiente al mayor en uso, sin importar el orden alfabético); nunca se escribe ni se reutiliza. Es la llave con la que se unen los datos |
+| Nombre / Nombre común | `nombre` | Sí | Persona | Único dentro de su tipo. En especies corresponde al *nombre_comun* del catálogo del SIA: la etiqueta que reconoce el personal en campo |
 | Estado | `activo` | Sí | Persona | Un valor inactivo deja de ofrecerse; los registros que ya lo usan no cambian |
-| — | `es_ficticio` | Sí | Sistema | |
-| — | `fecha_creacion`, `creado_por_id` | Sí | Sistema | |
+| — | `es_ficticio` | Sí | Sistema | **Falso en las 76 especies del catálogo real**; verdadero en lo creado en modo de prueba |
+| — | `fecha_creacion`, `creado_por_id` | Sí | Sistema | En las especies del catálogo: fecha de corte del SIA y creador nulo |
 | — | `fecha_ultima_edicion`, `editado_por_id` | No | Sistema | |
+
+**Sólo en especies** (catálogo `CGO_ESPECIES_REFORESTACION_URBANA`, 76 especies verificadas
+contra EncicloVida/CONABIO el 22-09-2026; se genera con `pruebas/generar_especies.py`, D84):
+
+| Etiqueta en pantalla | Campo | Obligatorio | Origen | Se ve en el formulario de registro | Notas |
+|---|---|---|---|---|---|
+| Nombre científico | `nombre_cientifico` | Sí | Persona | Sí, entre paréntesis | Género + epíteto, sin autoría ni subgénero: «Quercus rugosa». Único |
+| — | `genero` | Sí | Sistema | No | Primera palabra del nombre científico; se deriva al guardar |
+| — | `especie` | Sí | Sistema | No | Epíteto (lo que sigue al género; admite rango infraespecífico). Se deriva al guardar |
+| Tipo de distribución | `tipo_distribucion` | Sí | Persona | No | `Endémica` · `Nativa` · `Exótica` · `Exótica-Invasora`, campo del SNIB. Sustituye a Nativa/Introducida |
+| Otros nombres comunes | `otros_nombres_comunes` | No | Persona | Sólo como criterio de búsqueda | Separados por coma y espacio, hasta cinco. **Se buscan** en el formulario de registro y en Catálogos; la lista dice por cuál coincidió («también: Fresno»). Un mismo nombre puede señalar a varias especies, así que nunca resuelve solo |
+| Forma de crecimiento | `formadecrecimiento` | No | Persona | No | Literal de la ficha técnica: `Árbol, Arbusto`… Puede traer varios |
+| Id SNIB (IdCAT) | `id_snib` | No | Persona | No | Número + `ANGIO` o `GIMNO`. Llave externa al SNIB; puede venir vacío (Quercus rubra) |
+| Id EncicloVida | `id_enciclovida` | No | Persona | No | Entero. Llave para reconsultar la ficha por API y enlazarla; más completa que el IdCAT |
+| — | `nota_discrepancia` | No | SIA | No | Rastro de auditoría del catálogo (CORREGIDO · SIN CAMBIO · SIN REGISTRO). Viene del Excel; no se edita en pantalla |
 
 **Uso:** el catálogo de **especies** y el de **programas** alimentan el formulario de registro; el
 de **áreas** alimenta el alta de cuentas. Ninguno se elimina si tiene uso: se desactiva.
@@ -174,7 +194,7 @@ cuenta. Lo que ya vive en los registros —especies, conteos, alcaldía— no se
 | Campo | Se origina en | Se reutiliza en |
 |---|---|---|
 | `usuarios.id` | Cuentas | `plantaciones.cabo_id`, `plantaciones.editado_por_id`, `usuarios.coordinador_id`, `usuarios.alta_por_id`, `catalogos.creado_por_id`, `bitacora.usuario_id`, `cierres.encargado_id`, `cierres.cabo_id` |
-| `catalogos.id` (especie) | Catálogos | `plantaciones.especie_id` |
+| `catalogos.id` (especie, = clave `ESP-0000`) | Catálogo del SIA | `plantaciones.especie_id` |
 | `catalogos.id` (programa) | Catálogos | `plantaciones.programa_id` |
 | `catalogos.id` (área) | Catálogos | `usuarios.area_id` |
 | `activo` | Cuentas y Catálogos | Mismo significado en los dos: deja de ofrecerse o de poder entrar, sin borrar nada |

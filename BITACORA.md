@@ -690,3 +690,27 @@ carga en el bloque 32; queda anotado con sus dos decisiones abiertas.
 alcance, botón que se apaga; D82: seis; D83: tres), sin errores de consola; 45 de auditoría;
 presentación sin desbordes en ocho combinaciones, ahora con la vista Reportes. Marca de versión
 0.6.12.
+
+## Bloque 32 — Catálogo real de especies (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.13.
+
+**Qué cambió (D84).** `assets/fuentes/CGO_ESPECIES_REFORESTACION_URBANA_2026-09-22.xlsx` y
+`pruebas/generar_especies.py` → `assets/catalogo-especies.js` (76 especies, `meta` con fuente,
+fecha de corte y siguiente clave). `datos-ficticios.js` siembra ese catálogo en lugar de las 24
+especies inventadas; `SELLO_DATOS` sube a `2026-09-22-catalogo-especies`. `referencias.js` gana
+`especieCoincide()` (nombre, científico, otros nombres), que usan el autocompletado del
+formulario (con «también: …») y el buscador de Catálogos. `catalogos.js`: tabla con
+Distribución y otros nombres; alta de especie con clave `ESP-0000` consecutiva y fija, tipo de
+distribución, otros nombres, forma de crecimiento, id SNIB e id EncicloVida validados, género y
+epíteto derivados; `grupo` desaparece. `espejo.js` anota qué viaja con `especie_id`.
+
+**Documentación.** MAPEO-CAMPOS: módulo Catálogos reescrito con los campos de especie y la
+columna «se ve en el formulario de registro»; en Registro, apartado de campos de la especie que
+viajan sin verse. README: sección «Catálogo de especies». DECISIONES: D84 y dos pendientes
+resueltos.
+
+**Verificación:** sintaxis; 237 comprobaciones (ocho nuevas: 76 especies, búsqueda por otro
+nombre con aviso, nombres que señalan a varias, tabla con distribución, cuatro Quercus, búsqueda
+en Catálogos por otros nombres, clave consecutiva fija, validaciones y guardado de la especie
+nueva, inactiva fuera del formulario), sin errores de consola; 45 de auditoría con el mapeo al
+día; presentación sin desbordes. Marca de versión 0.6.13.

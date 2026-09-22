@@ -35,6 +35,7 @@ SRP.espejo = {
 
   // Una línea por campo: de dónde sale y cuándo se fija. Si falta, el campo igual se ve.
   NOTAS: {
+    especie_id: 'Llave ESP-0000 del catálogo del SIA; con ella el SIA obtiene género, epíteto, distribución, forma de crecimiento, id SNIB e id EncicloVida sin copiarlos al registro (D84)',
     id: 'UUID. Se fija al abrir la ficha de revisión y es el que se guarda',
     estatus: 'Siempre «activo» al crear. Eliminar marca, no borra',
     es_ficticio: 'Verdadero mientras CONFIG.ES_FICTICIO lo esté',

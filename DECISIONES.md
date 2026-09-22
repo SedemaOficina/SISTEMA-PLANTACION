@@ -88,16 +88,6 @@
   dispositivo» de Reportes muestra el estado de cada uno. No se adoptan de Kobo: el modal que
   exige OK en cada envío, la figura de borrador (aquí el registro está completo o no se guarda) ni
   esconder la cola en una barra lateral
-- [pendiente] **Catálogo real de especies (bloque 32).** Liber entregó el 22-09-2026
-  `CGO_ESPECIES_REFORESTACION_URBANA` (76 especies, verificadas contra EncicloVida/CONABIO):
-  `id_especie` ESP-0001…ESP-0076 como llave, `nombre_comun`, `nombre_cientifico`,
-  `otros_nombres_comunes` (buscables, no resuelven a una sola especie), `tipo_distribucion`
-  (Endémica · Nativa · Exótica · Exótica-Invasora, sustituye a Nativa/Introducida),
-  `formadecrecimiento`, `id_snib`, `id_enciclovida`. Dos filas quedan **pendientes de decisión**
-  de Liber: ESP-0032 y ESP-0033 (*Hesperocyparis* vs *Cupressus*; recomendación del catálogo:
-  cargar *Cupressus* y conservar *Hesperocyparis* como sinónimo buscable). Resuelve los dos
-  pendientes de «validación del catálogo» y «formato de las claves» de abajo
-
 - [pendiente] **Antes de liberar esta etapa: sustituir las tres capas** —alcaldías, malla UGA y colonias— por las definitivas del SIA, con fuente y fecha de corte confirmadas, y volver a correr `pruebas/generar_capas.py`. Las tres cargadas hoy son para probar: alcaldías y UGA traen los defectos medidos en el bloque 15, y colonias es la cartografía electoral del IECM 2022, no un catálogo del SIA. Al sustituirlas se sube `meta.version` y se rederivan los registros existentes. Anotado por Liber, 22-09-2026
 
 ### Para resolver antes de montar en los servidores del SIA
@@ -123,8 +113,8 @@
 - [pendiente] ¿Puede una persona editar sus propios datos, o sólo la Administración global?
 - [pendiente] ¿El Jefe de registradores también registra plantaciones? ¿Puede eliminar? (hoy: registra sí, elimina no)
 - [pendiente] Proveedor de mapa base para producción (OpenStreetMap no admite uso institucional intensivo)
-- [pendiente] Validación del catálogo de especies y su clasificación Nativa / Introducida por el área técnica
-- [pendiente] Formato de las claves del catálogo real de especies, para confirmar que no choquen con las generadas
+- ~~Validación del catálogo de especies y su clasificación~~ Resuelto en D84: catálogo real del SIA con `tipo_distribucion` del SNIB
+- ~~Formato de las claves del catálogo real de especies~~ Resuelto en D84: `ESP-0000`, consecutivo del SIA
 - [pendiente] Cuenta institucional para el repositorio y la publicación (Norma 1.7)
 - [pendiente] Aviso de privacidad: el sistema recaba nombre, área y cargo del personal (Norma 1.8)
 - [pendiente] Los tres campos del punto ocupan ~240 px en teléfono mientras están vacíos. Se dejan siempre visibles para que el formulario no salte a media captura; revisar con personal en campo si conviene plegarlos hasta que haya punto
@@ -364,3 +354,24 @@
   Reportes, a donde el cabo no va en campo; la pastilla sí se ve siempre. Tomado de la cola de
   envío de KoboToolbox, evaluada con Liber; lo que exige servidor queda en el pendiente «Cola de
   envío (Fase 2)».
+
+## Bloque 32 — Catálogo real de especies
+
+- **D84. El catálogo de especies es el del SIA, entra tal cual y su clave es la llave.** Liber
+  entregó `CGO_ESPECIES_REFORESTACION_URBANA` (76 especies, 11 campos, verificadas contra
+  EncicloVida/CONABIO el 22-09-2026), con las discrepancias resueltas en el propio archivo
+  (*Cupressus* en lugar de *Hesperocyparis*, grafías corregidas, *Quercus rubra* sin registro en
+  CONABIO). Se decide: (1) el Excel vive en `assets/fuentes/` y `pruebas/generar_especies.py`
+  lo convierte en `assets/catalogo-especies.js`, que se siembra sin tocar; (2) `id` y `clave`
+  son el `id_especie` (`ESP-0000`), única llave de enlace con las plantaciones, y las altas
+  nuevas continúan el consecutivo sin escribirse a mano; (3) `nombre` es el nombre común (la
+  etiqueta de campo) y el científico se muestra entre paréntesis; (4) `tipo_distribucion` con
+  los cuatro valores del SNIB sustituye a Nativa/Introducida; (5) `genero` y `especie` se
+  derivan del nombre científico al guardar, no se piden; (6) `otros_nombres_comunes` **se
+  buscan** en el formulario y en Catálogos y la lista dice por cuál coincidió, porque un nombre
+  puede señalar a varias especies y no debe resolver solo; (7) `formadecrecimiento`, `id_snib`,
+  `id_enciclovida` y `nota_discrepancia` viajan con la especie y **no se copian al registro**:
+  el registro guarda sólo `especie_id`, y el SIA obtiene lo demás por la clave; (8) las 76
+  llevan `es_ficticio: false`, y el sello de datos sube para que los dispositivos de prueba
+  vuelvan a sembrar. Supera el pendiente de validación del catálogo y el de formato de claves.
+  Entregado por Liber, 22-09-2026.

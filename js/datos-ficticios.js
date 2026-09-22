@@ -1,6 +1,7 @@
 /* DATOS FICTICIOS DE DESARROLLO (Norma 3)
    Mismo esquema que tendrá la base real: sustituirlos es cambiar el origen, nada más.
-   Todo lleva es_ficticio: true. Ningún nombre corresponde a una persona real. */
+   Todo lleva es_ficticio: true, salvo el catálogo de especies, que es el real (D84).
+   Ningún nombre corresponde a una persona real. */
 window.SRP = window.SRP || {};
 
 (function () {
@@ -20,24 +21,10 @@ window.SRP = window.SRP || {};
     cat('area', 'a-sia', 'SIA', 'Coordinación del SIA')
   ];
 
-  // [pendiente] Catálogo y grupo (origen) por validar con el área técnica.
-  const especiesBase = [
-    ['Fresno', 'Fraxinus uhdei', 'Nativa'], ['Encino quiebra hacha', 'Quercus rugosa', 'Nativa'],
-    ['Encino laurelillo', 'Quercus laurina', 'Nativa'], ['Encino', 'Quercus castanea', 'Nativa'],
-    ['Ahuehuete', 'Taxodium mucronatum', 'Nativa'], ['Ahuejote', 'Salix bonplandiana', 'Nativa'],
-    ['Colorín', 'Erythrina coralloides', 'Nativa'], ['Capulín', 'Prunus serotina subsp. capuli', 'Nativa'],
-    ['Tejocote', 'Crataegus mexicana', 'Nativa'], ['Madroño', 'Arbutus xalapensis', 'Nativa'],
-    ['Tepozán', 'Buddleja cordata', 'Nativa'], ['Aile', 'Alnus acuminata', 'Nativa'],
-    ['Cedro blanco', 'Cupressus lusitanica', 'Nativa'], ['Pino ayacahuite', 'Pinus ayacahuite', 'Nativa'],
-    ['Pino de Moctezuma', 'Pinus montezumae', 'Nativa'], ['Pino patula', 'Pinus patula', 'Nativa'],
-    ['Palo dulce', 'Eysenhardtia polystachya', 'Nativa'], ['Tronadora', 'Tecoma stans', 'Nativa'],
-    ['Liquidámbar', 'Liquidambar styraciflua', 'Nativa'], ['Sicomoro', 'Platanus mexicana', 'Nativa'],
-    ['Sauce llorón', 'Salix babylonica', 'Introducida'], ['Jacaranda', 'Jacaranda mimosifolia', 'Introducida'],
-    ['Pirul', 'Schinus molle', 'Introducida'], ['Trueno', 'Ligustrum lucidum', 'Introducida']
-  ];
-  const especies = especiesBase.map((e, i) => cat('especie', 'e-' + String(i + 1).padStart(3, '0'),
-    'ESP' + String(i + 1).padStart(3, '0'), e[0], { nombre_cientifico: e[1], grupo: e[2] }));
-  especies[especies.length - 1].activo = false;   // caso de prueba: especie desactivada
+  /* ESPECIES: catálogo real del SIA (assets/catalogo-especies.js, D84). No son ficticias:
+     llevan es_ficticio false y se siembran tal cual, con su id ESP-0000 como llave. Lo único
+     de prueba que queda aquí son programas, áreas y cuentas. */
+  const especies = SRP.CATALOGO_ESPECIES.especies.map(e => Object.assign({}, e));
 
   // Correos en @ejemplo.local: dominio reservado, nunca entregable (Norma 3)
   /* CUENTAS DE ARRANQUE. Una por perfil operativo, que es lo que pidió Liber para empezar

@@ -69,8 +69,9 @@ js/iconos.js          Iconos por significado (guardar, eliminar, editar, ubicar)
 js/reportes.js       Cierre del parte del día y reporte PDF de la jornada
 js/mapa.js, foto.js, formulario.js, registros.js, catalogos.js,
 js/usuarios.js, app.js, util.js
-assets/fuentes/       Capas tal como llegaron (alcaldías, malla UGA, colonias); no se editan
+assets/fuentes/       Capas y catálogo de especies tal como llegaron del SIA; no se editan
 assets/capa-alcaldias.js, capa-uga.js, capa-colonias.js  Las mismas capas, compactadas para la aplicación (generadas)
+assets/catalogo-especies.js  Catálogo real de especies (76), generado por pruebas/generar_especies.py
 assets/logo.js        Logotipo SEDEMA incrustado
 js/espejo.js          Espejo de campos, sólo en la versión de prueba (se elimina al cerrar la Etapa 1)
 vendor/               Bibliotecas incluidas localmente (Leaflet, jsPDF, Turf)
@@ -154,6 +155,21 @@ tiene folio**: lo asigna el servidor una sola vez al sincronizar, y la pantalla 
 PROVISIONAL. `js/folio.js` guarda el patrón, la validación y la etiqueta de campo —lo que el
 servidor reutilizará—; la emisión no existe todavía y depende de que el SIA entregue la malla UGA
 corregida y congelada (DECISIONES D67–D69 y pendientes).
+
+## Catálogo de especies
+
+Las especies son las reales del SIA: `CGO_ESPECIES_REFORESTACION_URBANA` (76 especies, verificadas
+ficha por ficha contra EncicloVida/CONABIO el 22-09-2026). El Excel vive en `assets/fuentes/` y
+`pruebas/generar_especies.py` lo convierte en `assets/catalogo-especies.js`, que se siembra en el
+almacén `catalogos` tal cual: **la clave es el `id_especie` (`ESP-0001`…) y es la única llave por
+la que se enlazan las plantaciones**; el nombre común es la etiqueta de campo; el tipo de
+distribución (Endémica · Nativa · Exótica · Exótica-Invasora), la forma de crecimiento y los
+identificadores de CONABIO (`id_snib`, `id_enciclovida`) viajan con la especie y no se copian al
+registro. El formulario busca por nombre común, científico y **otros nombres comunes**, y dice por
+cuál coincidió, porque un mismo nombre («Fresno», «Colorín») señala a más de una especie. Las
+altas nuevas desde Catálogos reciben el consecutivo siguiente (`ESP-0077`…). Para cambiar una
+especie del catálogo se corrige el Excel y se vuelve a correr el script; las altas y ediciones
+hechas en Catálogos viven en el almacén del dispositivo. Ver D84 y MAPEO-CAMPOS.
 
 ## Capas territoriales
 

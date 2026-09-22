@@ -235,12 +235,16 @@ with sync_playwright() as p:
     ok('fecha' in pg.inner_text('#resumen-errores').lower(),'y sin ella no se puede revisar ni guardar')
     pg.fill('#campo-fecha', HOY)
 
-    pg.fill('#campo-especie','frax'); pg.wait_for_timeout(120)
-    ok(pg.locator('.combo-opcion').count()==2,'el autocompletado busca por nombre científico')
-    pg.fill('#campo-especie','trueno'); pg.wait_for_timeout(120)
-    ok('Trueno' not in pg.inner_text('#lista-especies'),'una especie inactiva no se ofrece')
+    pg.fill('#campo-especie','fraxinus'); pg.wait_for_timeout(120)
+    ok(pg.locator('.combo-opcion').count()==2 and 'Fresno' in pg.inner_text('#lista-especies'),'el autocompletado busca por nombre científico')
+    # Catálogo real (D84): 76 especies con clave ESP-0000, y se busca también por los otros nombres comunes
+    ok(pg.evaluate("SRP.ref.deTipo('especie', true).length")==76 and pg.evaluate("SRP.CATALOGO_ESPECIES.meta.total")==76,'el catálogo es el real del SIA: 76 especies (D84)')
+    pg.fill('#campo-especie','acecintle'); pg.wait_for_timeout(120)
+    ok(pg.locator('.combo-opcion[data-id="ESP-0001"]').count()==1 and 'también: Acecintle' in pg.inner_text('#lista-especies'),'busca por otro nombre común y dice por cuál coincidió: '+pg.inner_text('.combo-opcion[data-id="ESP-0001"]').replace('\n',' '))
+    pg.fill('#campo-especie','fresno'); pg.wait_for_timeout(120)
+    ok(pg.locator('.combo-opcion[data-id^=ESP]').count()>=2,'un nombre que señala a varias especies las ofrece todas, no resuelve solo (%d)' % pg.locator('.combo-opcion[data-id^=ESP]').count())
     pg.fill('#campo-especie','fres'); pg.wait_for_timeout(120)
-    pg.dispatch_event('.combo-opcion[data-id="e-001"]','mousedown'); pg.wait_for_timeout(200)
+    pg.dispatch_event('.combo-opcion[data-id="ESP-0029"]','mousedown'); pg.wait_for_timeout(200)
     ok(pg.input_value('#campo-especie')=='Fresno (Fraxinus uhdei)','al elegir, el campo queda como en el catálogo')
     ok(pg.evaluate("document.activeElement.id")!='campo-programa','elegir especie no mueve el foco al programa (D82)')
     pg.focus('#campo-programa'); pg.select_option('#campo-programa','p-refor'); pg.wait_for_timeout(200)
@@ -287,8 +291,9 @@ with sync_playwright() as p:
     ok(pg.evaluate("document.activeElement.id")=='campo-especie' and opc>=5 and pg.input_value('#campo-especie')!='',
        'Editar especie vuelve al campo con su texto y la lista completa (%d opciones)' % opc)
     pg.fill('#campo-especie','fres'); pg.wait_for_timeout(200)
-    ok(pg.locator('#lista-especies .combo-opcion').count()==2,'y al teclear vuelve a filtrar')
-    pg.dispatch_event('.combo-opcion[data-id="e-001"]','mousedown'); pg.wait_for_timeout(200)
+    n_fres=pg.evaluate("SRP.ref.deTipo('especie', true).filter(e => SRP.ref.especieCoincide(e, 'fres')).length")+1
+    ok(pg.locator('#lista-especies .combo-opcion').count()==n_fres,'y al teclear vuelve a filtrar (%d)' % pg.locator('#lista-especies .combo-opcion').count())
+    pg.dispatch_event('.combo-opcion[data-id="ESP-0029"]','mousedown'); pg.wait_for_timeout(200)
     pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(800)
     pg.click('#btn-resumen-cerrar'); pg.wait_for_timeout(200)
     ok(not pg.is_visible('#dlg-resumen') and pg.locator('#btn-resumen-corregir').count()==0,'la ficha cierra con la × y ya no hay botón Corregir (D77)')
@@ -342,9 +347,9 @@ with sync_playwright() as p:
 
     # Se capturan más árboles para poder probar listados y filtros
     ids=[id1]
-    ids.append(registrar(pg,'ahuehu','e-005'))                              # hoy
-    ids.append(registrar(pg,'aile','e-012',fecha='2026-08-10'))             # mes pasado
-    ids.append(registrar(pg,'quiebra','e-002',programa='p-centro',fecha='2026-07-05'))
+    ids.append(registrar(pg,'ahuehu','ESP-0070'))                              # hoy
+    ids.append(registrar(pg,'aile','ESP-0002',fecha='2026-08-10'))             # mes pasado
+    ids.append(registrar(pg,'quiebra','ESP-0062',programa='p-centro',fecha='2026-07-05'))
     ok(len(set(ids))==4,'cada árbol recibe su propio identificador')
     # FOLIO (B23): estructura sin emisión
     f=pg.evaluate("""() => ({
@@ -526,7 +531,7 @@ with sync_playwright() as p:
     ok(espejoEd['accion']=='EDITADO' and 'al guardar' in espejoEd['edicion'],
        'en edición el espejo anuncia EDITADO, con la marca pendiente de fijar')
     pg.fill('#campo-especie','ahuehu'); pg.wait_for_timeout(150)
-    pg.dispatch_event('.combo-opcion[data-id="e-005"]','mousedown'); pg.wait_for_timeout(200)
+    pg.dispatch_event('.combo-opcion[data-id="ESP-0070"]','mousedown'); pg.wait_for_timeout(200)
     pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(800)
     pg.click('#btn-resumen-guardar'); pg.wait_for_timeout(700)
     pg.click('.chip[data-atajo=todos]'); pg.wait_for_timeout(300)
@@ -593,11 +598,32 @@ with sync_playwright() as p:
     ok(pg.locator('#cat-errores li').count()==2,'se bloquean nombre y clave repetidos')
     pg.click('#btn-cat-cancelar'); pg.wait_for_timeout(200)
     pg.click('#cat-tipos .chip[data-tipo=especie]'); pg.wait_for_timeout(400)
+    ok(pg.locator('#tabla-catalogo tbody tr').count()==76 and 'Distribución' in pg.inner_text('#tabla-catalogo thead'),'la tabla lista las 76 especies con su distribución (D84)')
     pg.fill('#cat-buscar','quercus'); pg.wait_for_timeout(200)
-    ok(pg.locator('#tabla-catalogo tbody tr').count()==3,'el buscador de especies encuentra los tres Quercus')
+    ok(pg.locator('#tabla-catalogo tbody tr').count()==4,'el buscador de especies encuentra los cuatro Quercus')
+    pg.fill('#cat-buscar','yoyote'); pg.wait_for_timeout(200)
+    n_yoyote=pg.evaluate("SRP.ref.deTipo('especie', false).filter(e => SRP.ref.especieCoincide(e, 'yoyote')).length")
+    ok(pg.locator('#tabla-catalogo tbody tr').count()==n_yoyote and n_yoyote>=1 and 'Codo de fraile' in pg.inner_text('#tabla-catalogo tbody'),'y busca por los otros nombres comunes (%d con «Yoyote»)' % n_yoyote)
     pg.fill('#cat-buscar',''); pg.wait_for_timeout(200)
+    # Alta de especie: clave consecutiva fija, campos del SNIB opcionales, género y epíteto derivados
+    pg.click('#btn-cat-agregar'); pg.wait_for_timeout(200)
+    ok(pg.input_value('#cat-clave')=='ESP-0077' and pg.evaluate("document.getElementById('cat-clave').readOnly"),'la clave de una especie nueva es el consecutivo ESP-0077 y no se escribe')
+    pg.fill('#cat-nombre','Especie de prueba'); pg.fill('#cat-cientifico','quercus mala')
+    pg.fill('#cat-snib','12345'); pg.fill('#cat-enciclovida','abc')
+    pg.click('#form-catalogo button[type=submit]'); pg.wait_for_timeout(300)
+    ok(pg.locator('#cat-errores li').count()==3,'rechaza científico sin mayúscula, id SNIB sin sufijo e id EncicloVida no numérico (%d)' % pg.locator('#cat-errores li').count())
+    pg.fill('#cat-cientifico','Genus prueba'); pg.fill('#cat-snib','99999angio'); pg.fill('#cat-enciclovida','123456')
+    pg.select_option('#cat-distribucion','Exótica'); pg.fill('#cat-otros-nombres','Nombre uno,  Nombre dos ,'); pg.fill('#cat-forma','Árbol, Arbusto')
+    pg.click('#form-catalogo button[type=submit]'); pg.wait_for_timeout(400)
+    nueva=pg.evaluate("SRP.ref.catalogoPorId['ESP-0077']")
+    ok(nueva and nueva['id']=='ESP-0077' and nueva['clave']=='ESP-0077' and nueva['genero']=='Genus' and nueva['especie']=='prueba' and nueva['tipo_distribucion']=='Exótica'
+       and nueva['otros_nombres_comunes']=='Nombre uno, Nombre dos' and nueva['id_snib']=='99999ANGIO' and nueva['id_enciclovida']==123456 and nueva['formadecrecimiento']=='Árbol, Arbusto',
+       'la especie nueva se guarda con id = clave, género y epíteto derivados y los campos del SNIB limpios: %s' % (nueva and {k:nueva[k] for k in ('id','genero','especie','id_snib','id_enciclovida','otros_nombres_comunes')}))
+    pg.fill('#cat-buscar','prueba'); pg.wait_for_timeout(200)
     pg.click('#tabla-catalogo button[data-accion=estado] >> nth=0'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(400)
     ok(pg.locator('.estado-texto[data-activo=false]').count()>=1,'una especie se puede desactivar')
+    ok(pg.evaluate("(() => { const f=SRP.formulario; f.el('campo-especie').value='Genus prueba'; f.estado.especieId=null; f.filtrarEspecies(); const t=f.el('lista-especies').innerText; f.cerrarCombo(); f.el('campo-especie').value=''; return !t.includes('Genus prueba'); })()"),'y una especie inactiva no se ofrece en el formulario')
+    pg.fill('#cat-buscar',''); pg.wait_for_timeout(200)
 
     # ---------- ADMINISTRACIÓN: usuarios ----------
     pg.click('.pestana[data-vista=usuarios]'); pg.wait_for_timeout(500)
