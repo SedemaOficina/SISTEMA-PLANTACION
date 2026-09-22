@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/icono-192.png">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.15">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.15">
-<link rel="stylesheet" href="css/estilos.css?v=0.6.15">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.16">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.16">
+<link rel="stylesheet" href="css/estilos.css?v=0.6.16">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -142,9 +142,7 @@
 
         <!-- Zona de carga: un solo selector sin «capture», para que el teléfono ofrezca su menú -->
         <label class="zona-foto" for="foto-archivo" id="etq-foto">
-          <svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true" focusable="false">
-            <path fill="currentColor" d="M9 2l-1.8 2H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2h-3.2L15 2H9zm3 5a6 6 0 110 12 6 6 0 010-12zm0 2a4 4 0 100 8 4 4 0 000-8z"/>
-          </svg>
+          <span id="icono-foto" aria-hidden="true"></span>
           <span class="zona-foto-titulo" id="texto-foto">Agregar fotografía</span>
           <span class="zona-foto-ayuda">Tomar una foto o elegirla del teléfono</span>
         </label>
@@ -480,38 +478,38 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.6.15"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.15"></script>
-<script src="vendor/turf-pip.min.js?v=0.6.15"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.6.15"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.15"></script>
+<script src="vendor/leaflet.js?v=0.6.16"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.16"></script>
+<script src="vendor/turf-pip.min.js?v=0.6.16"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.6.16"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.16"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.6.15"></script>
-<script src="js/util.js?v=0.6.15"></script>
-<script src="js/iconos.js?v=0.6.15"></script>
-<script src="assets/logo.js?v=0.6.15"></script>
+<script src="js/config.js?v=0.6.16"></script>
+<script src="js/util.js?v=0.6.16"></script>
+<script src="js/iconos.js?v=0.6.16"></script>
+<script src="assets/logo.js?v=0.6.16"></script>
 <!-- Capas territoriales del SIA, compactadas por pruebas/generar_capas.py desde assets/fuentes/ -->
-<script src="assets/capa-alcaldias.js?v=0.6.15"></script>
-<script src="assets/capa-uga.js?v=0.6.15"></script>
-<script src="assets/capa-colonias.js?v=0.6.15"></script>
-<script src="assets/catalogo-especies.js?v=0.6.15"></script>
-<script src="js/datos-ficticios.js?v=0.6.15"></script>
-<script src="js/permisos.js?v=0.6.15"></script>
-<script src="js/derivacion.js?v=0.6.15"></script>
-<script src="js/almacen.js?v=0.6.15"></script>
-<script src="js/sesion.js?v=0.6.15"></script>
-<script src="js/referencias.js?v=0.6.15"></script>
-<script src="js/folio.js?v=0.6.15"></script>
-<script src="js/conexion.js?v=0.6.15"></script>
-<script src="js/mapa.js?v=0.6.15"></script>
-<script src="js/foto.js?v=0.6.15"></script>
-<script src="js/formulario.js?v=0.6.15"></script>
+<script src="assets/capa-alcaldias.js?v=0.6.16"></script>
+<script src="assets/capa-uga.js?v=0.6.16"></script>
+<script src="assets/capa-colonias.js?v=0.6.16"></script>
+<script src="assets/catalogo-especies.js?v=0.6.16"></script>
+<script src="js/datos-ficticios.js?v=0.6.16"></script>
+<script src="js/permisos.js?v=0.6.16"></script>
+<script src="js/derivacion.js?v=0.6.16"></script>
+<script src="js/almacen.js?v=0.6.16"></script>
+<script src="js/sesion.js?v=0.6.16"></script>
+<script src="js/referencias.js?v=0.6.16"></script>
+<script src="js/folio.js?v=0.6.16"></script>
+<script src="js/conexion.js?v=0.6.16"></script>
+<script src="js/mapa.js?v=0.6.16"></script>
+<script src="js/foto.js?v=0.6.16"></script>
+<script src="js/formulario.js?v=0.6.16"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.6.15"></script>
-<script src="js/registros.js?v=0.6.15"></script>
-<script src="js/reportes.js?v=0.6.15"></script>
-<script src="js/catalogos.js?v=0.6.15"></script>
-<script src="js/usuarios.js?v=0.6.15"></script>
-<script src="js/app.js?v=0.6.15"></script>
+<script src="js/espejo.js?v=0.6.16"></script>
+<script src="js/registros.js?v=0.6.16"></script>
+<script src="js/reportes.js?v=0.6.16"></script>
+<script src="js/catalogos.js?v=0.6.16"></script>
+<script src="js/usuarios.js?v=0.6.16"></script>
+<script src="js/app.js?v=0.6.16"></script>
 </body>
 </html>

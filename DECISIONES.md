@@ -59,12 +59,10 @@
 
 ## Pendientes de decisión
 
-- [pendiente] **Icono de la app instalada**: los `assets/icono-192.png` y `icono-512.png` son
-  provisionales (fondo guinda y monograma SRP). Liber entregó el 22-09-2026 el set de iconografía
-  del Manual de Identidad CDMX 2024-2030 (`ICONOS SET.ai`, `RETICULA.ai`, capítulo del manual):
-  es el set para los iconos de la **interfaz**, no el icono de la app. Propuesta: componer el icono
-  de la app con un icono del set (árbol) en blanco sobre guinda, y sustituir los iconos de
-  `js/iconos.js` por los del set (bloque aparte, ver D87)
+- [pendiente] **Icono de la app instalada**: los `assets/icono-192.png` y `icono-512.png` siguen
+  provisionales (fondo guinda y monograma SRP). Propuesta entregada a Liber el 22-09-2026: un icono
+  del set de iconografía CDMX en blanco sobre guinda (árbol #214, brote #159, hojas #213, bosque
+  #212 o pino #211); falta que elija
 - ~~Tipografías sin señal~~ Resuelto en D87: Cabin y Roboto en `vendor/fuentes/` (woff2, ~110 KB)
 
 - [pendiente] **Emisión del folio (Fase 2).** No se emite un solo folio definitivo hasta que el SIA:
@@ -427,3 +425,14 @@
   Además, con el catálogo real de 76 especies, **la lista de especies ya no se corta en ocho**: al
   tocar el campo se ve completa con desplazamiento y al escribir filtra (Liber la creyó incompleta
   por ese tope). Sube el sello de datos.
+
+## Bloque 35 — Iconografía institucional
+
+- **D88. Los iconos de la interfaz salen del set de iconografía del Manual de Identidad Gráfica
+  CDMX 2024-2030 cuando el set los tiene.** Liber entregó `ICONOS SET.ai` (300 iconos, trazo de 12
+  pt sobre retícula de 48, vértices exteriores redondeados) y eligió: basura #1 (eliminar), cerrar
+  #31, ubicación #12 (pin), cámara #62 (agregar fotografía) y ver #21. El archivo vive en
+  `assets/fuentes/` y `pruebas/extraer_iconos.py` agrupa los trazados, los numera como en la hoja
+  índice (`--indice` la regenera) y normaliza los elegidos a una caja de 24×24: lo que hay en
+  `js/iconos.js` es reproducible. Palomita, lápiz, disco y señal no existen en el set y se
+  conservan. El icono `ojo` pasa a llamarse `ver`. Decidido por Liber, 22-09-2026.

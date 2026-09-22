@@ -62,11 +62,11 @@ js/conexion.js        Estado de la conexión, aviso de qué hacer con los regist
 sw.js                 Service worker: la app abre sin señal; versión = marca ?v= de index.html
 manifest.webmanifest  Instalación en pantalla de inicio; iconos provisionales en assets/
 js/referencias.js     Catálogos y cuentas en memoria
-js/iconos.js          Iconos por significado (guardar, eliminar, editar, ubicar)
+js/iconos.js          Iconos por significado; los del set de iconografía CDMX se extraen con pruebas/extraer_iconos.py (D88)
 js/reportes.js       Cierre del parte del día y reporte PDF de la jornada
 js/mapa.js, foto.js, formulario.js, registros.js, catalogos.js,
 js/usuarios.js, app.js, util.js
-assets/fuentes/       Capas y catálogo de especies tal como llegaron del SIA; no se editan
+assets/fuentes/       Capas, catálogo de especies y set de iconografía CDMX tal como llegaron; no se editan
 assets/capa-alcaldias.js, capa-uga.js, capa-colonias.js  Las mismas capas, compactadas para la aplicación (generadas)
 assets/catalogo-especies.js  Catálogo real de especies (76), generado por pruebas/generar_especies.py
 assets/logo.js        Logotipo SEDEMA incrustado

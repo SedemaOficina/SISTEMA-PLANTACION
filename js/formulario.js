@@ -26,6 +26,7 @@ SRP.formulario = {
     this.iniciarCombo();
     this.el('foto-archivo').addEventListener('change', (e) => this.cargarFoto(e.target));
     this.el('btn-foto-quitar').innerHTML = SRP.ICONOS.svg('basura', 20);
+    this.el('icono-foto').innerHTML = SRP.ICONOS.svg('camara', 34);
     this.el('btn-foto-quitar').addEventListener('click', () => {
       this.ponerFoto(null, null);
       SRP.util.anunciarSilencioso('Fotografía quitada.');

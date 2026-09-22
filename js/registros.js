@@ -211,7 +211,7 @@ SRP.registros = {
       const boton = (accion, clase, icono, texto) =>
         '<button type="button" class="btn ' + clase + ' btn-chico" data-accion="' + accion + '" data-id="' + r.id + '">' +
         SRP.ICONOS.svg(icono, 16) + '<span>' + texto + '</span></button>';
-      const botones = [boton('ver', 'btn-secundario', 'ojo', 'Ver')];
+      const botones = [boton('ver', 'btn-secundario', 'ver', 'Ver')];
       if (SRP.permisos.puedeEditar(u, r, SRP.ref.usuarioPorId)) botones.push(boton('editar', 'btn-editar', 'lapiz', 'Editar'));
       if (SRP.permisos.puedeEliminar(u, r, SRP.ref.usuarioPorId)) botones.push(boton('eliminar', 'btn-peligro', 'basura', 'Eliminar'));
       return '<li class="registro"><div class="registro-datos">' +

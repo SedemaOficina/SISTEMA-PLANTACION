@@ -764,3 +764,17 @@ pendientes cerrados, cuatro reabiertos o mantenidos con la decisión de Liber).
 tablas con resumen, `es_ficticio` en cierres y bitácora, contador de fotografías), sin errores de
 consola; 81 de auditoría (perfiles a tres, esquema al día); presentación sin desbordes. El service
 worker guarda 39 archivos, tipografías incluidas. Marca de versión 0.6.15.
+
+## Bloque 35 — Iconografía institucional (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.16.
+
+**Qué cambió (D88).** `assets/fuentes/ICONOS_SET_CDMX_2024-2030.ai` (fuente) y
+`pruebas/extraer_iconos.py` (agrupa los 300 trazados del PDF embebido, los numera y normaliza los
+elegidos). `js/iconos.js`: basura, cerrar, ubicación, cámara y ver tomados del set; `ojo` → `ver`
+(`registros.js`). La cámara de la zona de fotografía deja de ser SVG en línea en `index.html` y la
+pone `formulario.js` desde `SRP.ICONOS` (`#icono-foto`). Para elegirlos se entregó a Liber una
+propuesta HTML con las opciones y una hoja índice numerada del set.
+
+**Verificación:** sintaxis; 241 comprobaciones sin errores de consola; 81 de auditoría;
+presentación sin desbordes; el extractor reproduce exactamente los cinco trazados de iconos.js.
+Marca de versión 0.6.16.
