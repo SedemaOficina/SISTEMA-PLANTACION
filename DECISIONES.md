@@ -281,3 +281,14 @@
   reciente); al elegir Desde se abre «Hasta»; al elegir Hasta el periodo se aplica solo.
   «Aplicar» sigue ahí para corregir un extremo. Es el mismo criterio de avance automático del
   foco del formulario: al resolver un campo, el siguiente está listo. Señalado por Liber.
+
+## Bloque 27 — Editar la especie desde la ficha
+
+- **D76. Al volver al campo de especie con una elección vigente, la lista ofrece todo, y el texto
+  queda seleccionado.** «Editar especie» desde la ficha llevaba al campo con «Ahuejote (Salix
+  bonplandiana)» y el buscador filtraba con ese texto completo, que no coincide con ningún nombre
+  por separado: sólo quedaba «Otra especie». Liber propuso arrancar en blanco; se prefiere
+  conservar el texto seleccionado —se ve qué había y al teclear se reemplaza— y ofrecer la lista
+  completa mientras la elección siga vigente; en cuanto se teclea, se filtra como siempre. El
+  mismo defecto ocurría al volver a tocar el campo en el formulario, y queda resuelto por la
+  misma vía.

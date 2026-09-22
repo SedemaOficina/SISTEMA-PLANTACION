@@ -281,6 +281,15 @@ with sync_playwright() as p:
     ok(pg.inner_text('button[data-campo=especie]').strip()=='Editar','la ficha usa la palabra Editar')
     ok(HOY_TXT in pg.inner_text('#revision-lista'),'las fechas se leen con el mes en letras: '+HOY_TXT)
     ok('PROVISIONAL' in pg.inner_text('#revision-lista .folio-provisional'),'la ficha muestra el folio como PROVISIONAL (R1)')
+    # Editar especie desde la ficha: el texto queda seleccionado y la lista ofrece todo, no sólo «Otra especie» (D76)
+    pg.click('#revision-lista button[data-campo=especie]'); pg.wait_for_timeout(300)
+    opc=pg.locator('#lista-especies .combo-opcion').count()
+    ok(pg.evaluate("document.activeElement.id")=='campo-especie' and opc>=5 and pg.input_value('#campo-especie')!='',
+       'Editar especie vuelve al campo con su texto y la lista completa (%d opciones)' % opc)
+    pg.fill('#campo-especie','fres'); pg.wait_for_timeout(200)
+    ok(pg.locator('#lista-especies .combo-opcion').count()==2,'y al teclear vuelve a filtrar')
+    pg.dispatch_event('.combo-opcion[data-id="e-001"]','mousedown'); pg.wait_for_timeout(200)
+    pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(800)
     fijo=pg.evaluate("(() => { const d=document.getElementById('dlg-resumen'); d.scrollTop=600; const c=d.querySelector('.dialogo-cabecera').getBoundingClientRect(); const b=document.getElementById('btn-resumen-guardar').getBoundingClientRect(); const dr=d.getBoundingClientRect(); d.scrollTop=0; return { arriba: Math.round(c.top-dr.top), botonVisible: b.top>=dr.top && b.bottom<=dr.bottom, sticky: getComputedStyle(d.querySelector('.dialogo-cabecera')).position }; })()")
     ok(fijo['sticky']=='sticky' and fijo['botonVisible'] and fijo['arriba']<=8,'Guardar y Corregir quedan fijos arriba aunque se desplace la ficha (D74): %s' % fijo)
     ok(pg.evaluate("SRP.formulario.registroPrevisto().especie_estatus")=='VALIDADA' and

@@ -611,3 +611,14 @@ foco si no.
 ancho del botón; cabecera fija con el botón visible tras desplazar; foco en Desde, paso a Hasta y
 aplicación automática), sin errores de consola; 45 de auditoría; presentación sin desbordes; sin
 selectores duplicados ni clases sin uso. Marca de versión 0.6.7.
+
+## Bloque 27 — Editar la especie desde la ficha (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.8.
+
+**Qué cambió (D76).** `filtrarEspecies()` ofrece la lista completa mientras haya una especie
+elegida; al teclear, `especieId` se anula y vuelve a filtrar. Una línea, con su porqué en el
+código.
+
+**Verificación:** sintaxis; 222 comprobaciones (dos nuevas: Editar especie vuelve al campo con
+texto y lista completa; al teclear filtra), sin errores de consola; 45 de auditoría. Marca de
+versión 0.6.8.

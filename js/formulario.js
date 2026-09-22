@@ -160,7 +160,10 @@ SRP.formulario = {
   },
 
   filtrarEspecies() {
-    const q = SRP.util.normalizar(this.el('campo-especie').value);
+    // Con una especie ya elegida, el texto del campo es «Común (Científico)», que no coincide con
+    // ningún nombre por separado y dejaba la lista en sólo «Otra especie». Mientras la elección
+    // siga vigente se ofrece la lista completa; en cuanto se teclea, especieId se anula y se filtra (D76)
+    const q = this.estado.especieId ? '' : SRP.util.normalizar(this.el('campo-especie').value);
     const coinciden = SRP.ref.deTipo('especie', true)
       .filter(e => !q || SRP.util.normalizar(e.nombre).includes(q) || SRP.util.normalizar(e.nombre_cientifico).includes(q))
       .slice(0, 8);
