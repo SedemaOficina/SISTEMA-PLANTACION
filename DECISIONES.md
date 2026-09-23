@@ -683,3 +683,14 @@
   `campos-grises`), con sus etiquetas normales. (5) La etiqueta «Fotografía» se alinea con las
   demás: el fieldset y su leyenda traían margen y relleno del navegador. 23-09-2026
   (M02, M57, M58, M40, M26).
+
+## Bloque 52 — Crédito del mapa y autollenado de Safari
+
+- **D108. Dos ajustes de la revisión en iPhone.** (1) En teléfono el crédito del mapa ocupa un
+  renglón que termina en «…» y se despliega completo al tocarlo; sin la bandera del prefijo de
+  Leaflet. La atribución de Esri se conserva íntegra, como exige el proveedor. (2) Para que Safari
+  no ponga la llave, la tarjeta y la ubicación sobre el teclado en campos que no son de contacto:
+  todos los formularios y campos fuera del acceso llevan `autocomplete="off"`, y mientras hay
+  sesión el campo de contraseña sale de la página (vuelve al regresar al acceso, con su
+  autollenado de contraseña). Safari decide al final; el efecto es reducirlo, no garantizarlo.
+  Elegidas por Liber (M22, M23).

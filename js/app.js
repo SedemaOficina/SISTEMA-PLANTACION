@@ -48,6 +48,7 @@ SRP.app = {
     this.iniciarCamposFecha();
     this.iniciarVacios();
     this.iniciarContraste();
+    this.sinAutollenado();
     this.iniciarMenusAcciones();
     this.ponerIconos();
 
@@ -197,6 +198,7 @@ SRP.app = {
   },
 
   mostrarAcceso() {
+    this.campoClave(true);
     this.menuCuenta(false);
     this.el('navegacion').hidden = true;
     this.el('encabezado-usuario').hidden = true;
@@ -227,8 +229,33 @@ SRP.app = {
     this.el('navegacion').querySelector('[data-vista="catalogos"]').hidden = !p.catalogos;
     this.el('navegacion').querySelector('[data-vista="usuarios"]').hidden = !p.usuarios;
     SRP.formulario.limpiar();
+    this.campoClave(false);
     this.mostrarVista(p.registrar ? 'registrar' : 'registros');
     SRP.conexion.refrescar();   // la pastilla cuenta los registros del alcance de quien entró (D83)
+  },
+
+  /* MENOS AUTOLLENADO DE SAFARI (D108). Con un campo de contraseña en la página, Safari trata
+     cualquier campo de texto como posible inicio de sesión y pone sobre el teclado la llave, la
+     tarjeta y la ubicación. Mientras hay sesión, el campo de contraseña sale de la página y se
+     devuelve al volver al acceso. Safari decide al final; esto sólo le quita motivos. */
+  campoClave(poner) {
+    if (!poner && !this._campoClave) {
+      const c = this.el('acceso-clave').closest('.campo');
+      this._marcaClave = document.createComment('campo de contraseña fuera mientras hay sesión (D108)');
+      c.replaceWith(this._marcaClave);
+      this._campoClave = c;
+    } else if (poner && this._campoClave) {
+      this._marcaClave.replaceWith(this._campoClave);
+      this._campoClave = null;
+    }
+  },
+
+  // Fuera del acceso ningún campo pide autollenado: especies, comentarios y datos de cierre no son de contacto (D108)
+  sinAutollenado() {
+    document.querySelectorAll('input, textarea, form').forEach(e => {
+      if (e.closest('#form-acceso') || e.type === 'file' || e.type === 'hidden') return;
+      e.setAttribute('autocomplete', 'off');
+    });
   },
 
   /* ---------- Vistas ---------- */

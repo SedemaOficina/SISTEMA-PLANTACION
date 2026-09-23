@@ -47,6 +47,16 @@ SRP.mapa = {
       center: c.CENTRO, zoom: c.ZOOM_INICIAL, minZoom: c.ZOOM_MIN, maxZoom: c.ZOOM_MAX,
       maxBounds: c.LIMITES, maxBoundsViscosity: 1, gestureHandling: true
     });
+    /* CRÉDITO DEL MAPA (D108). Esri exige su atribución, pero en teléfono ocupaba dos renglones
+       sobre la imagen. Queda en un renglón que termina en «…»; al tocarlo se ve completo. Sin la
+       bandera del prefijo de Leaflet, que no aporta y resta espacio. */
+    this.mapa.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>');
+    const credito = this.mapa.attributionControl.getContainer();
+    credito.setAttribute('title', 'Toque para ver el crédito completo');
+    credito.addEventListener('click', (e) => {
+      if (e.target.closest('a')) return;
+      credito.classList.toggle('credito-abierto');
+    });
     // Sólo la capa de imagen avisa si no carga: las de nombres son complemento, y su ausencia
     // no impide colocar el punto.
     let fallas = 0;

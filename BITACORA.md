@@ -1035,3 +1035,14 @@ Pruebas: siete comprobaciones nuevas.
 
 **Verificación:** 308 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.32.
+
+## Bloque 52 — Crédito del mapa y autollenado de Safari (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.33.
+
+**Qué cambió (D108).** `mapa.js`: prefijo sin bandera y crédito que se despliega al tocarlo.
+`app.js`: `campoClave()` retira y devuelve el campo de contraseña; `sinAutollenado()`. CSS:
+crédito en un renglón en ≤700 px. Pruebas: tres comprobaciones nuevas y la de atribución lee el
+texto completo.
+
+**Verificación:** 311 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.33.

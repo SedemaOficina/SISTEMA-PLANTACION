@@ -111,7 +111,11 @@ with sync_playwright() as p:
        'el mapa siempre dice cómo colocar el punto: '+msj[:60]+'…')
     capas=pg.evaluate("SRP.CONFIG.MAPA.CAPAS.map(c=>c.url)")
     ok('World_Imagery' in capas[0] and len(capas)==3,'la capa de abajo es satélite, con nombres encima')
-    ok('Esri' in pg.inner_text('.leaflet-control-attribution'),'se muestra la atribución del proveedor')
+    ok('Esri' in pg.text_content('.leaflet-control-attribution'),'se muestra la atribución del proveedor')
+    cred=pg.evaluate("(() => { const a=document.querySelector('.leaflet-control-attribution'); const h1=a.getBoundingClientRect().height; a.click(); const h2=a.getBoundingClientRect().height; a.click(); return { un_renglon: h1 < 22, se_abre: h2 > h1, bandera: !!a.querySelector('svg') }; })()")
+    ok(cred=={'un_renglon':True,'se_abre':True,'bandera':False},'en teléfono el crédito del mapa ocupa un renglón y al tocarlo se ve completo (D108): %s' % cred)
+    ok(pg.locator('#acceso-clave').count()==0 and pg.get_attribute('#campo-comentarios','autocomplete')=='off' and pg.get_attribute('#form-plantacion','autocomplete')=='off',
+       'con sesión abierta no hay campo de contraseña en la página y los campos piden no autollenar (D108)')
 
     # ESCALA DE ÉNFASIS: una acción de apoyo nunca se pinta como la principal de la pantalla.
     # Eran las dos guindas y no se distinguía cuál era el camino normal.
@@ -889,6 +893,7 @@ with sync_playwright() as p:
     ok('Inactivo' in pg.locator('#tabla-usuarios tbody tr', has_text='Fulana').inner_text(),'se desactiva una cuenta')
     pg.click('#btn-cuenta'); pg.click('#btn-cerrar-sesion'); pg.wait_for_timeout(400)
     ok(pg.is_visible('#vista-acceso') and pg.is_hidden('#encabezado-usuario'),'cerrar sesión devuelve al acceso')
+    ok(pg.is_visible('#acceso-clave') and pg.get_attribute('#acceso-clave','autocomplete')=='current-password','y el campo de contraseña vuelve, con su autollenado de contraseña (D108)')
     pg.fill('#acceso-correo','cabo@ejemplo.local'); pg.fill('#acceso-clave','x')
     pg.click('#form-acceso button[type=submit]'); pg.wait_for_timeout(400)
     ok('desactivada' in pg.inner_text('#acceso-errores'),'y la cuenta desactivada ya no entra')

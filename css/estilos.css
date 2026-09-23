@@ -644,6 +644,9 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
   .pestana { min-height: 64px; font-size: var(--t-xs); border-bottom: 0; border-top: 3px solid transparent; padding: var(--e-1) 2px; }
   .pestana[aria-current="page"] { border-top-color: var(--guinda); }
   body { padding-bottom: var(--alto-nav); }
+  /* Crédito del mapa en un renglón; al tocarlo se despliega (D108) */
+  .leaflet-control-attribution { max-width: calc(100vw - 4rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+  .leaflet-control-attribution.credito-abierto { white-space: normal; }
   .barra-guardar { bottom: var(--alto-nav); }
 }
 @media (hover: hover) {
