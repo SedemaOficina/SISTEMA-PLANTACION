@@ -77,6 +77,14 @@ with sync_playwright() as p:
     pg.click('#btn-cuenta'); pg.wait_for_timeout(150)
     ok(pg.get_attribute('#btn-cuenta','aria-expanded')=='true' and pg.is_visible('#usuario-nombre') and pg.is_visible('#btn-cerrar-sesion'),'al tocarlo muestra nombre, perfil y cerrar sesión')
     ok(pg.is_visible('#btn-cambiar-perfil'),'y cambiar de usuario, mientras haya datos de prueba')
+    # Modo sol (D106): interruptor en el menú; sube el contraste y se recuerda en el dispositivo
+    ok(pg.get_attribute('#btn-contraste','role')=='switch' and pg.get_attribute('#btn-contraste','aria-checked')=='false','el menú ofrece «Modo sol», apagado de inicio (D106)')
+    pg.click('#btn-contraste'); pg.wait_for_timeout(150)
+    sol=pg.evaluate("(() => ({ modo: document.documentElement.dataset.contraste, marcado: document.getElementById('btn-contraste').getAttribute('aria-checked'), texto: getComputedStyle(document.body).color, guardado: localStorage.getItem(SRP.CONFIG.CLAVE_CONTRASTE) }))()")
+    ok(sol=={'modo':'alto','marcado':'true','texto':'rgb(0, 0, 0)','guardado':'alto'},'al activarlo el texto pasa a negro y la preferencia se guarda (D106): %s' % sol)
+    pg.click('#btn-contraste'); pg.wait_for_timeout(150)
+    ok(pg.evaluate("document.documentElement.dataset.contraste") is None and pg.evaluate("localStorage.getItem(SRP.CONFIG.CLAVE_CONTRASTE)")=='normal','y se apaga igual')
+    pg.mouse.move(1,1)   # el puntero quedaba sobre el botón de ubicación y pintaba su estado hover
     pg.keyboard.press('Escape'); pg.wait_for_timeout(100)
     ok(pg.is_hidden('#menu-cuenta'),'Escape cierra el menú de la cuenta')
     ok(pg.locator('#herramientas-prueba #btn-cambiar-perfil').count()==0,'ya no está duplicado al pie')
@@ -119,7 +127,7 @@ with sync_playwright() as p:
         cerrar_subrayado: getComputedStyle(document.getElementById('btn-cerrar-sesion')).textDecorationLine
       };
     }""")
-    ok(enfasis['principal_relleno']=='rgb(157, 33, 72)','la acción principal es el guinda relleno')
+    ok(enfasis['principal_relleno']=='rgb(157, 33, 72)','la acción principal es el guinda relleno: '+enfasis['principal_relleno'])
     ok(enfasis['apoyo']==enfasis['gris'],'y la de apoyo va en gris, no en guinda: '+enfasis['apoyo'])
     ok(enfasis['cerrar_borde']=='0px' and enfasis['cerrar_caja'] in ('rgba(0, 0, 0, 0)','transparent') and 'underline' not in enfasis['cerrar_subrayado'],
        'cerrar sesión es un renglón de texto del menú de la cuenta, sin caja ni subrayado (D97): %s' % enfasis)

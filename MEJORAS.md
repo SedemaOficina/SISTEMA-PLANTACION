@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.30 (Bloque 49)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.31 (Bloque 50)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -59,6 +59,7 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M55 | Revisión Catálogos/Usuarios | Contador de resultados | Media | 0.6.30 (B49) | Bajo el buscador: «76 especies»; al buscar «quercus», «4 de 76 especies» | Buscador con resultados |
 | M56 | Revisión Catálogos/Usuarios | Nota de una línea | Media | 0.6.30 (B49) | «Lo que tiene registros no se elimina: se desactiva.» | Encabezado de Catálogos |
 | M59 | Petición de Liber | La ficha «Hoy» ya no se repite con el panel abierto | Media | 0.6.30 (B49) | Registros con el panel abierto: no hay ficha bajo «Filtros»; al plegarlo aparece | Registros con «Hoy» elegido |
+| M12 | Lista de diseño #11 | Modo sol (alto contraste) | Media | 0.6.31 (B50) | Icono de usuario › «Modo sol (alto contraste)»: el texto pasa a negro, los campos a blanco con borde y el atajo activo a guinda relleno; se recuerda al volver a abrir | Registros y formulario con el modo activo, y el menú con el interruptor |
 
 ## 2. Por hacer
 
@@ -70,7 +71,6 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M22 | iPhone · Nuevo registro #7 | Crédito de Esri más corto | Baja | Pendiente | Con la revisión del mapa |
 | M23 | iPhone · Nuevo registro #8 | Menos autollenado de Safari | Baja | Pendiente | Con la revisión del mapa; efecto limitado |
 | M26 | iPhone · Formulario lleno #2 | Alinear la etiqueta «Fotografía» | Baja | Propuesto | — |
-| M12 | Lista de diseño #11 | Modo de alto contraste para sol directo | Media | Pendiente | Elegida el 22-09; bloque 50 |
 | M57 | Revisión Catálogos/Usuarios | Atajos Activos / Inactivos / Todos en Usuarios | Media | Propuesto | — |
 | M58 | Revisión Catálogos/Usuarios | «Forma de crecimiento» con botones (Árbol, Arbusto, Palma, Otra) | Baja | Propuesto | — |
 | M45 | Revisión en computadora | Equilibrio en computadora: mapa a la izquierda y formulario a la derecha en Nuevo registro; Reportes centrado | Media | Propuesto | Hoy quedan cargados a la izquierda |
@@ -90,4 +90,4 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 44 hechas · 11 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 45 hechas · 10 por hacer · 2 revisadas · 2 descartadas.

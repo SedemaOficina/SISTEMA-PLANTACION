@@ -1009,3 +1009,16 @@ usuario compacta con contador, ficha «Hoy» sólo plegado) y una ajustada.
 
 **Verificación:** 298 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.30.
+
+## Bloque 50 — Modo sol (alto contraste) (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.31.
+
+**Qué cambió (D106).** `index.html`: interruptor `#btn-contraste` (role=switch) en el menú de la
+cuenta. `config.js`: `CLAVE_CONTRASTE`. `app.js`: `iniciarContraste()`. CSS: variables
+redefinidas en `:root[data-contraste="alto"]`, trazos y pesos del modo, `--texto-guia` para
+placeholder y campos vacíos, interruptor. Pruebas: tres comprobaciones nuevas (interruptor
+apagado de inicio, activar pone texto negro y guarda la preferencia, se apaga) y el puntero se
+retira tras usar el menú para no alterar la prueba de énfasis.
+
+**Verificación:** 301 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.31.

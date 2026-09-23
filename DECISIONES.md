@@ -657,3 +657,14 @@
   registros no se elimina se reduce a una línea. (5) Las fichas de filtros activos (D100) sólo se
   ven con el panel de filtros plegado: abierto, los atajos ya marcan lo mismo y la ficha «Hoy»
   se repetía. Elegidas por Liber, 23-09-2026 (M52–M56 y petición sobre la ficha «Hoy»).
+
+## Bloque 50 — Modo sol (alto contraste)
+
+- **D106. Modo sol para leer a pleno sol.** Interruptor «Modo sol (alto contraste)» en el menú
+  de la cuenta. Al activarlo: texto negro, grises casi negros, bordes suaves a contornos
+  visibles, campos de filtro blancos con borde de 2 px, atajos con borde de 2 px y el activo
+  relleno de guinda con texto blanco, tarjetas con borde de 2 px y texto un punto más pesado.
+  El guinda (8:1) y los colores de significado no cambian. Los textos guía (placeholder y campos
+  vacíos) quedan en gris medio, sin negrita y en cursiva, para no confundirse con lo escrito. Se
+  recuerda en el dispositivo; si el teléfono ya pide más contraste en sus ajustes de
+  accesibilidad y la persona no ha elegido, arranca activado. Elegida por Liber (M12).

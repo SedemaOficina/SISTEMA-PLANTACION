@@ -59,6 +59,23 @@
   --ancho-max: 44rem;          /* formularios y lectura: línea corta, fácil de leer */
   --ancho-max-tabla: 78rem;    /* pantallas de tabla: aprovechan el monitor sin cortar columnas */
   --toque: 48px;
+  --texto-guia: #6B6E70;       /* placeholder y textos guía de campos vacíos */
+}
+
+/* MODO SOL (D106): mismos colores de la casa, más oscuros los que leen. El guinda ya da 8:1 y no
+   cambia; los grises pasan a casi negro, los bordes suaves a contornos visibles y los campos
+   grises de filtro a blanco con borde, que a pleno sol se distinguen mejor. */
+:root[data-contraste="alto"] {
+  --texto: #000000;
+  --gris: #2B2D2E;
+  --borde-control: #1F2021;
+  --borde-suave: #767679;
+  --borde-filtro: #3A3B3D;
+  --fondo-campo: #FFFFFF;
+  --fondo-campo-hover: #F2F2F4;
+  --fondo-suave: #F3E7EB;
+  --dorado: #7E5F30;
+  --texto-guia: #4A4C4E;       /* textos guía: oscuros pero distinguibles de lo escrito */
 }
 
 /* ========== 2. BASE ========== */
@@ -460,6 +477,24 @@ th[aria-sort="descending"] .th-flecha::after { content: '▼'; opacity: 1; }
 .menu-peligro, .menu-peligro svg { color: var(--error); }
 .tabla td:last-child { white-space: nowrap; }
 .tabla td:last-child .tabla-acciones { flex-wrap: nowrap; }
+
+/* Interruptor del modo sol en el menú de la cuenta (D106) */
+.menu-opcion .interruptor { position: relative; flex-shrink: 0; width: 38px; height: 22px; margin-left: auto; border-radius: 11px; background: var(--borde-control); transition: background .15s; }
+.menu-opcion .interruptor::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--fondo); transition: left .15s; }
+.menu-opcion[aria-checked="true"] .interruptor { background: var(--guinda); }
+.menu-opcion[aria-checked="true"] .interruptor::after { left: 19px; }
+
+/* Ajustes del modo sol que no son sólo color: trazo más grueso y texto un punto más pesado */
+[data-contraste="alto"] body { font-weight: 500; }
+[data-contraste="alto"] .zona-filtros .campo select,
+[data-contraste="alto"] .zona-filtros .campo input { border: 2px solid var(--borde-control); }
+[data-contraste="alto"] .chip { border-width: 2px; }
+[data-contraste="alto"] .chip[aria-pressed="true"] { background: var(--guinda); color: var(--fondo); }
+[data-contraste="alto"] .chip[aria-pressed="true"] .chip-sub { color: var(--fondo); }
+[data-contraste="alto"] .registro, [data-contraste="alto"] .tabla tr { border-width: 2px; }
+/* El texto guía no debe confundirse con lo escrito: más claro que el texto, sin negrita y en cursiva */
+[data-contraste="alto"] .campo input::placeholder, [data-contraste="alto"] .campo textarea::placeholder,
+[data-contraste="alto"] .texto-vacio { color: var(--texto-guia); opacity: 1; font-weight: 400; font-style: italic; }
 
 /* Resumen de la tarjeta de teléfono (D105): sólo existe en teléfono */
 .tabla .c-resumen { display: none; }

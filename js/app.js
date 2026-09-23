@@ -47,6 +47,7 @@ SRP.app = {
     this.iniciarDialogos();
     this.iniciarCamposFecha();
     this.iniciarVacios();
+    this.iniciarContraste();
     this.iniciarMenusAcciones();
     this.ponerIconos();
 
@@ -263,6 +264,28 @@ SRP.app = {
      texto guía, que se ve sólo mientras el campo está vacío. Hay valores que el código pone o
      quita sin evento (limpiar, editar, restaurar filtros): una revisión ligera cada medio segundo
      los alcanza sin tener que avisar desde cada módulo. */
+  /* MODO SOL (D106). Sube el contraste para leer a pleno sol: texto negro, contornos oscuros y
+     campos blancos con borde. Se recuerda en el dispositivo. Si el teléfono ya pide más contraste
+     (ajuste de accesibilidad) y la persona no ha elegido, arranca activado. */
+  iniciarContraste() {
+    const clave = SRP.CONFIG.CLAVE_CONTRASTE;
+    let guardado = null;
+    try { guardado = localStorage.getItem(clave); } catch (e) { /* almacenamiento bloqueado */ }
+    const pide = window.matchMedia && window.matchMedia('(prefers-contrast: more)').matches;
+    const poner = (alto) => {
+      if (alto) document.documentElement.dataset.contraste = 'alto';
+      else delete document.documentElement.dataset.contraste;
+      this.el('btn-contraste').setAttribute('aria-checked', String(alto));
+    };
+    poner(guardado ? guardado === 'alto' : pide);
+    this.el('btn-contraste').addEventListener('click', () => {
+      const alto = document.documentElement.dataset.contraste !== 'alto';
+      poner(alto);
+      try { localStorage.setItem(clave, alto ? 'alto' : 'normal'); } catch (e) { /* sin persistencia */ }
+      SRP.util.anunciarSilencioso(alto ? 'Modo sol activado.' : 'Modo sol desactivado.');
+    });
+  },
+
   iniciarVacios() {
     const campos = [...document.querySelectorAll('input[data-vacio]')].map(inp => {
       const env = document.createElement('span');
