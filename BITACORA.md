@@ -858,3 +858,20 @@ Pruebas: ayudante `accion()` que abre la tuerca antes de elegir; cuatro comproba
 
 **Verificación:** 247 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
 desbordes. Marca de versión 0.6.21.
+
+## Bloque 41 — Estilo único de atajos y filtros (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.22.
+
+**Qué cambió (D95).** Maqueta previa con dos variantes; Liber eligió la A (activo suave).
+`index.html`: encabezado de grupo `.grupo-cab` con «Reiniciar filtros»; clase `.zona-filtros`
+en los filtros de Registros, Reportes, Catálogos y Usuarios; «Aplicar» primario; texto guía del
+buscador de especies. CSS: variables `--borde-filtro`, `--fondo-campo`, `--radio-filtro`;
+atajos en rejilla de ancho igual; campos grises con cuadrito de flecha o calendario (SVG en la
+hoja) y lupa del set CDMX; filtros en teléfono de dos en dos. `registros.js`: la fecha de «Hoy»
+en su propio renglón con coma oculta. `app.js`: la fecha de filtro abre el calendario al tocarla;
+la lupa ya no se pone en la etiqueta. Pruebas: la del atajo de hoy lee el texto completo; una
+comprobación nueva del estilo (activo suave, anchos iguales, cuadritos, Reiniciar en el
+encabezado, Aplicar primario).
+
+**Verificación:** 249 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.22.

@@ -376,8 +376,9 @@ with sync_playwright() as p:
 
     # ---------- REGISTROS ----------
     pg.click('.pestana[data-vista=registros]'); pg.wait_for_timeout(600)
-    hoy_txt=pg.inner_text('#chip-hoy')
-    ok(hoy_txt=='Hoy, '+HOY_TXT,'el chip de hoy lleva la fecha con el mes en letras: '+hoy_txt)
+    hoy_txt=pg.text_content('#chip-hoy')
+    ok(hoy_txt=='Hoy, '+HOY_TXT,'el chip de hoy lleva la fecha con el mes en letras (se lee con la coma oculta): '+hoy_txt)
+    ok(pg.evaluate("getComputedStyle(document.querySelector('#chip-hoy .chip-sub')).display")=='block','y la fecha va en un segundo renglón para caber en un tercio del teléfono (D95)')
     ok(pg.locator('#filtro-atajos .chip[data-atajo=hoy][aria-pressed=true]').count()==1,'al entrar, el filtro es Hoy')
     ok('Total: 2 ' in pg.inner_text('#registros-total'),'sólo los de hoy: '+pg.inner_text('#registros-total'))
     # Acciones del renglón en el menú de la tuerca (D94)
@@ -437,6 +438,21 @@ with sync_playwright() as p:
     ok('Total: 2 ' in pg.inner_text('#registros-total'),'y lista los de hoy: '+pg.inner_text('#registros-total'))
     ok(pg.is_hidden('#filtro-desde'),'y Reiniciar pliega Desde/Hasta')
     ok([c for c in pg.eval_on_selector_all('#filtro-atajos .chip','b=>b.map(x=>x.dataset.atajo)')]==['hoy','todos','periodo'],'los atajos son Hoy, Todos y Un periodo, en ese orden (D64)')
+    est=pg.evaluate('''() => {
+      const g = e => getComputedStyle(e);
+      const act = document.querySelector('#filtro-atajos .chip[aria-pressed=true]');
+      const chips = [...document.querySelectorAll('#filtro-atajos .chip')].map(c => Math.round(c.getBoundingClientRect().width));
+      const sel = document.getElementById('filtro-anio'), fec = document.getElementById('filtro-desde');
+      return {
+        suave: g(act).backgroundColor === 'rgb(247, 241, 243)' && g(act).color === 'rgb(157, 33, 72)',
+        iguales: Math.max(...chips) - Math.min(...chips) <= 1,
+        lista: g(sel).appearance === 'none' && g(sel).backgroundImage.includes('svg'),
+        fecha: g(fec).backgroundImage.includes('svg'),
+        reiniciar: !!document.querySelector('.grupo-cab #btn-reiniciar-filtros'),
+        aplicar: document.getElementById('btn-filtrar').classList.contains('btn-primario')
+      };
+    }''')
+    ok(all(est.values()),'estilo de filtros (D95): atajo activo en guinda suave, atajos de ancho igual, lista y fecha con su cuadrito, «Reiniciar» en el encabezado y «Aplicar» como acción principal: '+str(est))
     pg.click('.chip[data-atajo=periodo]'); pg.wait_for_timeout(200)
     pg.fill('#filtro-desde','2026-08-01'); pg.fill('#filtro-hasta','2026-08-31'); pg.click('#btn-filtrar'); pg.wait_for_timeout(300)
     pg.click('.chip[data-atajo=todos]'); pg.wait_for_timeout(300)

@@ -98,8 +98,10 @@ SRP.registros = {
         .map(([id, n]) => '<option value="' + id + '">' + SRP.util.escapar(n) + '</option>').join('');
       sel.value = this.filtro.cabo;
     }
-    // El chip lleva la fecha para que nadie dude de qué día habla
-    this.el('chip-hoy').textContent = 'Hoy, ' + SRP.util.formatearFecha(SRP.util.fechaHoy());
+    // El atajo lleva la fecha para que nadie dude de qué día habla; va en un segundo renglón
+    // para que quepa en un tercio del teléfono. La coma oculta hace que se lea «Hoy, 22-SEP-2026» (D95)
+    const hoy = SRP.util.formatearFecha(SRP.util.fechaHoy());
+    this.el('chip-hoy').innerHTML = 'Hoy<span class="oculto-visual">, </span><span class="chip-sub">' + SRP.util.escapar(hoy) + '</span>';
     if (this.primeraVez) { this.primeraVez = false; this.filtro.dia = SRP.util.fechaHoy(); }
     this.llenarAnios();
     this.llenarMeses();

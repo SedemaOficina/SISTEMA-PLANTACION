@@ -17,8 +17,7 @@ SRP.app = {
     this.el('navegacion').querySelectorAll('.pestana').forEach(b => I.poner(b, pestana[b.dataset.vista], 22));
     I.poner(this.el('btn-ayuda-senal'), 'ayuda', 20);
     I.poner(this.el('btn-usr-agregar'), 'usuarioMas', 20);
-    I.poner(document.querySelector('label[for="cat-buscar"]'), 'buscar', 18);
-    I.poner(document.querySelector('label[for="usr-buscar"]'), 'buscar', 18);
+    // Los buscadores llevan la lupa dentro del campo, desde la hoja de estilos (D95)
     // Avisos informativos: el icono va al frente del texto
     document.querySelectorAll('.aviso-simulado').forEach(a => a.insertAdjacentHTML('afterbegin', I.svg('info', 18)));
   },
@@ -47,6 +46,7 @@ SRP.app = {
     SRP.conexion.iniciar();
     this.iniciarAcceso();
     this.iniciarDialogos();
+    this.iniciarCamposFecha();
     this.iniciarMenusAcciones();
     this.ponerIconos();
 
@@ -255,6 +255,15 @@ SRP.app = {
   },
 
   /* ---------- Diálogos ---------- */
+  // En escritorio, tocar cualquier parte de una fecha de filtro abre el calendario, no sólo el
+  // cuadrito de la derecha (D95). En teléfono el navegador ya lo hace solo.
+  iniciarCamposFecha() {
+    document.addEventListener('click', (e) => {
+      const f = e.target.closest('.zona-filtros input[type="date"]');
+      if (f && typeof f.showPicker === 'function') { try { f.showPicker(); } catch (_) { /* sin gesto válido: se queda con el foco */ } }
+    });
+  },
+
   iniciarDialogos() {
     // Los botones fijos del HTML reciben aquí su icono, para no repetir el SVG en la página
     this.el('btn-cat-guardar').innerHTML = SRP.ICONOS.svg('palomita') + '<span>Guardar</span>';

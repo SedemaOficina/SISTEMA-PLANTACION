@@ -22,6 +22,9 @@
   --fondo-suave: #F7F1F3;
   --borde-control: #767679;    /* contorno de controles: ≥3:1 sobre blanco */
   --borde-suave: #E3DCDF;
+  --borde-filtro: #D5D5D9;     /* atajos: borde suave del estilo de filtros (D95) */
+  --fondo-campo: #F2F2F4;      /* caja gris clara de los campos de filtro */
+  --fondo-campo-hover: #EAEAED;
   /* ESCALA DE ÉNFASIS. Un control se ve según lo que pesa, no según quién lo escribió.
      Hay tres niveles y sólo tres, en toda la aplicación:
        1. Acción principal de la pantalla  → .btn-primario   (guinda relleno; una por bloque)
@@ -48,7 +51,7 @@
 
   --t-xs: 0.8125rem; --t-s: 0.9375rem; --t-m: 1rem; --t-l: 1.25rem; --t-xl: 1.625rem;
   --e-1: 0.25rem; --e-2: 0.5rem; --e-3: 0.75rem; --e-4: 1rem; --e-5: 1.5rem; --e-6: 2rem;
-  --radio: 6px; --radio-control: 4px;
+  --radio: 6px; --radio-control: 4px; --radio-filtro: 10px;
   --ancho-max: 44rem;          /* formularios y lectura: línea corta, fácil de leer */
   --ancho-max-tabla: 78rem;    /* pantallas de tabla: aprovechan el monitor sin cortar columnas */
   --toque: 48px;
@@ -281,20 +284,62 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 .ficha-foto-nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ficha-foto-peso { color: var(--gris); font-size: var(--t-s); }
 
-.chips { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-bottom: var(--e-4); }
-.chip { min-height: 40px; padding: 0 var(--e-3); border: 1px solid var(--borde-control); border-radius: 20px; background: var(--fondo); color: var(--texto); cursor: pointer; }
+/* ---------- Atajos y filtros (D95) ----------
+   Botones de ancho igual con borde suave; el activo en guinda suave, para que el único
+   relleno guinda de la vista sea la acción principal («Aplicar», «Agregar», «Generar»). */
+.chips { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: var(--e-2); margin-bottom: var(--e-4); max-width: 30rem; }
+.chip {
+  min-height: 44px; padding: var(--e-1) var(--e-2); border: 1px solid var(--borde-filtro); border-radius: var(--radio-filtro);
+  position: relative; background: var(--fondo); color: var(--texto); font-weight: 500; font-size: var(--t-s); line-height: 1.2; cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+
+/* Encabezado de grupo: título a la izquierda, «Reiniciar» en guinda a la derecha */
+.grupo-cab { display: flex; justify-content: space-between; align-items: center; gap: var(--e-3); margin-bottom: var(--e-2); }
+.grupo-cab .titulo-bloque { margin-bottom: 0; }
+.btn-reiniciar { background: none; color: var(--guinda); font-weight: 500; font-size: var(--t-s); padding: 0 var(--e-1); min-height: 40px; }
+.btn-reiniciar:hover { text-decoration: underline; text-underline-offset: 3px; }
 
 .filtros { border-bottom: 1px solid var(--borde-suave); padding-bottom: var(--e-3); }
-/* Atajos, listas y reiniciar en una fila que se parte sola en teléfono; alineados por la base */
-.filtros-fila { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-3) var(--e-4); }
-.filtros-fila .chips { margin-bottom: 0; }
-.filtros-listas { display: flex; flex-wrap: wrap; gap: var(--e-3); }
-/* Etiqueta a la izquierda del control, no encima: así chips, listas y fechas quedan a una altura */
-.campo-corto { display: flex; align-items: center; gap: var(--e-2); margin-bottom: 0; }
-.campo-corto label { margin-bottom: 0; white-space: nowrap; }
-.campo-corto select, .campo-corto input { width: auto; min-width: 8rem; }
-.filtros-fila .btn-texto { margin-left: auto; }
-.filtros-periodo { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-3); margin-top: var(--e-3); }
+/* Atajos y listas en una fila que se parte sola en teléfono; alineados por la base */
+.filtros-fila { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--e-3) var(--e-4); }
+.filtros-fila .chips { margin-bottom: 0; flex: 1 1 20rem; max-width: 30rem; }
+.filtros-listas { flex: 2 1 22rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: var(--e-3); }
+/* Etiqueta chica encima del control, como en la maqueta aprobada */
+.campo-corto { margin-bottom: 0; min-width: 9rem; }
+.filtros-fila > .campo-corto { flex: 1 1 11rem; max-width: 18rem; }
+.filtros-periodo { display: grid; grid-template-columns: repeat(2, minmax(0, 12rem)) max-content; justify-content: start; align-items: end; gap: var(--e-3); margin-top: var(--e-3); }
+
+/* Campos de filtro: caja gris clara sin contorno fuerte, esquinas de 10 px y, a la derecha,
+   un cuadrito gris con la flecha (listas) o el calendario (fechas). Siguen siendo controles
+   nativos: el teléfono abre su propio selector y el lector de pantalla los reconoce. */
+.zona-filtros .campo label { font-weight: 400; font-size: var(--t-xs); color: var(--gris); margin-bottom: var(--e-1); }
+.zona-filtros .campo select,
+.zona-filtros .campo input {
+  background-color: var(--fondo-campo); border: 1px solid var(--fondo-campo); border-radius: var(--radio-filtro);
+  -webkit-appearance: none; appearance: none; background-repeat: no-repeat; transition: background-color .15s, border-color .15s;
+}
+.zona-filtros .campo select:hover, .zona-filtros .campo input:hover { background-color: var(--fondo-campo-hover); border-color: var(--fondo-campo-hover); }
+.zona-filtros .campo select:focus, .zona-filtros .campo input:focus { background-color: var(--fondo); border-color: var(--guinda); }
+.zona-filtros .campo select {
+  padding-right: 48px; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='8' fill='%23E6E6E9'/%3E%3Cpath d='M11 13.5l5 5 5-5' fill='none' stroke='%2355585A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: right 7px center; background-size: 32px 32px;
+}
+.zona-filtros .campo input[type="date"] {
+  padding-right: 7px; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='8' fill='%23E6E6E9'/%3E%3Cg transform='translate(8 8)' fill='none' stroke='%2355585A' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='1.5' y='2.5' width='13' height='12' rx='1.5'/%3E%3Cpath d='M11 1v3M5 1v3M1.5 6.5h13'/%3E%3C/g%3E%3C/svg%3E");
+  background-position: right 7px center; background-size: 32px 32px;
+}
+/* El icono propio del navegador queda invisible pero encima del cuadrito: tocar el calendario lo abre */
+.zona-filtros .campo input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0; width: 32px; height: 32px; margin: 0; padding: 0; cursor: pointer; }
+/* La lupa es la del set CDMX (la misma que iba en la etiqueta), ahora dentro del campo */
+.zona-filtros .campo input[type="search"] {
+  padding-left: 40px; cursor: text;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24'%3E%3Cpath fill='%2355585A' d='M 9.22 14.22 C 10.61 14.22 11.79 13.74 12.76 12.76 C 13.73 11.79 14.22 10.61 14.22 9.22 C 14.22 7.84 13.73 6.65 12.76 5.68 C 11.79 4.71 10.61 4.22 9.22 4.22 C 7.83 4.22 6.65 4.71 5.68 5.68 C 4.71 6.65 4.22 7.84 4.22 9.22 C 4.22 10.61 4.71 11.79 5.68 12.76 C 6.65 13.74 7.83 14.22 9.22 14.22 M 20.44 22 L 13.44 15 C 12.89 15.45 12.25 15.8 11.53 16.05 C 10.8 16.31 10.04 16.45 9.22 16.45 C 7.2 16.45 5.5 15.74 4.1 14.35 C 2.7 12.95 2 11.24 2 9.22 C 2 7.2 2.7 5.49 4.1 4.1 C 5.5 2.7 7.2 2 9.22 2 C 11.24 2 12.95 2.7 14.35 4.1 C 15.74 5.49 16.44 7.2 16.44 9.22 C 16.44 10.04 16.31 10.81 16.06 11.53 C 15.79 12.25 15.44 12.89 15 13.44 L 22 20.44 Z M 20.44 22'/%3E%3C/svg%3E");
+  background-position: left 13px center; background-size: 18px 18px;
+}
+.zona-filtros .campo input::placeholder { color: var(--gris); opacity: .8; }
 
 .lista-registros { list-style: none; margin: 0; padding: 0; }
 .registro { display: flex; justify-content: space-between; align-items: center; gap: var(--e-3); padding: var(--e-2) 0; border-bottom: 1px solid var(--borde-suave); }
@@ -387,9 +432,13 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .zona-foto:focus-within { outline: 3px solid var(--foco); outline-offset: 2px; }
 .btn:disabled { opacity: 0.55; cursor: not-allowed; }
 .pestana[aria-current="page"] { color: var(--guinda); border-bottom-color: var(--guinda); }
-.chip[aria-pressed="true"] { background: var(--guinda); border-color: var(--guinda); color: var(--fondo); }
-/* «Un periodo» abierto pero sin rango aplicado: contorno, porque todavía no filtra */
-.chip[aria-expanded="true"][aria-pressed="false"] { border-color: var(--guinda); color: var(--guinda); }
+.chip:hover { background: var(--fondo-campo); }
+.chip-sub { display: block; font-size: var(--t-xs); font-weight: 400; color: var(--gris); }
+.chip[aria-pressed="true"] .chip-sub { color: var(--guinda); }
+/* Activo: guinda suave con borde guinda (propuesta A de la maqueta, D95) */
+.chip[aria-pressed="true"] { background: var(--fondo-suave); border-color: var(--guinda); color: var(--guinda); }
+/* «Un periodo» abierto pero sin rango aplicado: sólo el contorno, porque todavía no filtra */
+.chip[aria-expanded="true"][aria-pressed="false"] { border-color: var(--guinda); color: var(--guinda); background: var(--fondo); }
 /* Con ratón la opción bajo el cursor se marca igual que la elegida con teclado: sin esto la lista se sentía inerte en escritorio */
 .combo-opcion:hover,
 .combo-opcion[aria-selected="true"] { background: var(--fondo-suave); outline: 2px solid var(--guinda); outline-offset: -2px; }
@@ -436,6 +485,14 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
   .espejo-tabla tr { border-bottom: 1px solid var(--borde-suave); padding: var(--e-2) 0; }
   .espejo-tabla td { display: block; border: 0; padding: 0; }
   .espejo-campo, .espejo-nota { width: auto; }
+  /* Filtros en teléfono: atajos a todo el ancho, listas de dos en dos, Desde/Hasta en par y «Aplicar» debajo */
+  .filtros-fila .chips { flex-basis: 100%; max-width: none; }
+  .filtros-listas { grid-template-columns: 1fr 1fr; flex-basis: 100%; }
+  .filtros-listas > .campo:nth-child(3) { grid-column: 1 / -1; }
+  .filtros-periodo { grid-template-columns: 1fr 1fr; }
+  .filtros-periodo .btn { grid-column: 1 / -1; }
+  .filtros-fila > .campo-corto { max-width: none; }
+  .zona-filtros.fila-botones .campo-crece { flex-basis: 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }

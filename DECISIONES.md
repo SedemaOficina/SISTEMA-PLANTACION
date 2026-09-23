@@ -510,3 +510,21 @@
   cierra al elegir, al tocar fuera o con Escape; se recorre con las flechas. El set CDMX no trae
   engrane suelto: se usa un contorno sencillo del mismo peso. Supera el renglón de botones de
   D72/D79 en la lista de registros. Pedido por Liber, 22-09-2026.
+
+## Bloque 41 — Estilo único de atajos y filtros
+
+- **D95. Atajos, filtros y buscadores siguen un solo estilo en toda la plataforma.** Se aplica
+  la propuesta A de la maqueta aprobada por Liber. Los atajos (Hoy/Todos/Un periodo; Programas/
+  Áreas/Especies) son botones de ancho igual con borde suave y esquinas de 10 px; el activo va
+  en guinda suave con borde guinda, de modo que el único relleno guinda de cada vista es la
+  acción principal («Aplicar», que pasa de secundario a primario, «Agregar», «Generar»). Los
+  campos de filtro (listas, fechas y buscadores de Registros, Reportes, Catálogos y Usuarios,
+  marcados con `.zona-filtros`) son cajas gris claro sin contorno fuerte, con etiqueta chica
+  encima y, a la derecha, un cuadrito gris con la flecha o el calendario; los buscadores llevan
+  dentro la lupa del set CDMX (antes iba en la etiqueta). Siguen siendo controles nativos: el
+  teléfono abre su selector y el lector de pantalla los reconoce; en escritorio, tocar cualquier
+  parte de la fecha abre el calendario. «Reiniciar filtros» sube al encabezado del grupo, en
+  guinda a la derecha. «Hoy» muestra la fecha en un segundo renglón para caber en un tercio del
+  teléfono y se sigue leyendo «Hoy, 22-SEP-2026». Los campos de los formularios de captura y de
+  las ventanas conservan su contorno: ahí el límite visible del campo importa más que el
+  parecido con la referencia. Pedido por Liber, 22-09-2026.
