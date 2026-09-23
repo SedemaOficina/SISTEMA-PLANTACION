@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#9D2148">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.23">
-<link rel="preload" as="image" href="assets/encabezado-ru-movil.png?v=0.6.23">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.24">
+<link rel="preload" as="image" href="assets/encabezado-ru-movil.png?v=0.6.24">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.23">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.23">
-<link rel="stylesheet" href="css/estilos.css?v=0.6.23">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.24">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.24">
+<link rel="stylesheet" href="css/estilos.css?v=0.6.24">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -21,8 +21,8 @@
   <div class="encabezado-interior">
     <!-- Logotipo del Programa de Reforestación Urbana (D90): completo en pantalla ancha; en teléfono, el emblema y el nombre del programa -->
     <picture>
-      <source media="(max-width: 480px)" srcset="assets/encabezado-ru-movil.png?v=0.6.23">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru.png?v=0.6.23" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Reforestación Urbana">
+      <source media="(max-width: 480px)" srcset="assets/encabezado-ru-movil.png?v=0.6.24">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru.png?v=0.6.24" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» (D80) -->
@@ -113,9 +113,9 @@
          y no <input readonly> porque su contenido es texto: así el lector de pantalla anuncia
          el cambio en cuanto el punto se mueve. -->
     <div class="campo-punto">
-      <!-- Los tres datos visibles en una sola fila en escritorio; en teléfono se apilan (D54) -->
+      <!-- Los tres datos en una ficha compacta: en fila en escritorio, en renglones etiqueta-valor en teléfono (D54, D98) -->
       <div class="campo-triple">
-        <div class="campo"><label for="dato-coordenadas">Coordenadas (latitud, longitud)</label>
+        <div class="campo"><label for="dato-coordenadas">Coordenadas<span class="oculto-visual"> (latitud, longitud)</span></label>
           <output id="dato-coordenadas" class="campo-lectura" for="mapa">—</output></div>
         <div class="campo"><label for="dato-alcaldia">Alcaldía</label>
           <output id="dato-alcaldia" class="campo-lectura" for="mapa">—</output></div>
@@ -143,8 +143,14 @@
         <input id="campo-otra-especie">
       </div>
 
-      <div class="campo"><label for="campo-programa">Programa <span class="obligatorio" aria-hidden="true">*</span></label><select id="campo-programa" required></select></div>
-      <div class="campo"><label for="campo-fecha">Fecha de plantación <span class="obligatorio" aria-hidden="true">*</span></label><input type="date" id="campo-fecha" required></div>
+      <!-- Con pocos programas se eligen con botones de ancho igual (D98); la lista sigue siendo el
+           dato del formulario y vuelve a verse si el catálogo pasa de cuatro programas -->
+      <div class="campo" id="caja-programa"><label for="campo-programa" id="etq-programa">Programa <span class="obligatorio" aria-hidden="true">*</span></label>
+        <div id="programa-botones" class="chips chips-campo" role="group" aria-labelledby="etq-programa" hidden></div>
+        <select id="campo-programa" required></select></div>
+      <div class="campo"><label for="campo-fecha">Fecha de plantación <span class="obligatorio" aria-hidden="true">*</span></label>
+        <!-- Arranca vacía (D29); «Hoy» la pone de un toque, como elección de quien captura (D98) -->
+        <div class="fecha-con-hoy"><input type="date" id="campo-fecha" required><button type="button" id="btn-fecha-hoy" class="btn btn-secundario">Hoy</button></div></div>
       <div class="campo">
         <label for="campo-comentarios">Comentarios <span class="opcional">(opcional)</span></label>
         <textarea id="campo-comentarios" rows="3" maxlength="500" placeholder="Observaciones del sitio, condición del ejemplar, incidencias…"></textarea>
@@ -525,37 +531,37 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.6.23"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.23"></script>
-<script src="vendor/turf-pip.min.js?v=0.6.23"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.6.23"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.23"></script>
+<script src="vendor/leaflet.js?v=0.6.24"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.24"></script>
+<script src="vendor/turf-pip.min.js?v=0.6.24"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.6.24"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.24"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.6.23"></script>
-<script src="js/util.js?v=0.6.23"></script>
-<script src="js/iconos.js?v=0.6.23"></script>
+<script src="js/config.js?v=0.6.24"></script>
+<script src="js/util.js?v=0.6.24"></script>
+<script src="js/iconos.js?v=0.6.24"></script>
 <!-- Capas territoriales del SIA, compactadas por pruebas/generar_capas.py desde assets/fuentes/ -->
-<script src="assets/capa-alcaldias.js?v=0.6.23"></script>
-<script src="assets/capa-uga.js?v=0.6.23"></script>
-<script src="assets/capa-colonias.js?v=0.6.23"></script>
-<script src="assets/catalogo-especies.js?v=0.6.23"></script>
-<script src="js/datos-ficticios.js?v=0.6.23"></script>
-<script src="js/permisos.js?v=0.6.23"></script>
-<script src="js/derivacion.js?v=0.6.23"></script>
-<script src="js/almacen.js?v=0.6.23"></script>
-<script src="js/sesion.js?v=0.6.23"></script>
-<script src="js/referencias.js?v=0.6.23"></script>
-<script src="js/folio.js?v=0.6.23"></script>
-<script src="js/conexion.js?v=0.6.23"></script>
-<script src="js/mapa.js?v=0.6.23"></script>
-<script src="js/foto.js?v=0.6.23"></script>
-<script src="js/formulario.js?v=0.6.23"></script>
+<script src="assets/capa-alcaldias.js?v=0.6.24"></script>
+<script src="assets/capa-uga.js?v=0.6.24"></script>
+<script src="assets/capa-colonias.js?v=0.6.24"></script>
+<script src="assets/catalogo-especies.js?v=0.6.24"></script>
+<script src="js/datos-ficticios.js?v=0.6.24"></script>
+<script src="js/permisos.js?v=0.6.24"></script>
+<script src="js/derivacion.js?v=0.6.24"></script>
+<script src="js/almacen.js?v=0.6.24"></script>
+<script src="js/sesion.js?v=0.6.24"></script>
+<script src="js/referencias.js?v=0.6.24"></script>
+<script src="js/folio.js?v=0.6.24"></script>
+<script src="js/conexion.js?v=0.6.24"></script>
+<script src="js/mapa.js?v=0.6.24"></script>
+<script src="js/foto.js?v=0.6.24"></script>
+<script src="js/formulario.js?v=0.6.24"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.6.23"></script>
-<script src="js/registros.js?v=0.6.23"></script>
-<script src="js/reportes.js?v=0.6.23"></script>
-<script src="js/catalogos.js?v=0.6.23"></script>
-<script src="js/usuarios.js?v=0.6.23"></script>
-<script src="js/app.js?v=0.6.23"></script>
+<script src="js/espejo.js?v=0.6.24"></script>
+<script src="js/registros.js?v=0.6.24"></script>
+<script src="js/reportes.js?v=0.6.24"></script>
+<script src="js/catalogos.js?v=0.6.24"></script>
+<script src="js/usuarios.js?v=0.6.24"></script>
+<script src="js/app.js?v=0.6.24"></script>
 </body>
 </html>

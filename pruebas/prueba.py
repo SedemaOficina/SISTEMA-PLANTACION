@@ -152,6 +152,11 @@ with sync_playwright() as p:
     despues=pg.locator('#espejo-cuerpo tr', has_text='lat_original').inner_text()
     ok('19.' in despues,'y se llena en cuanto hay punto, sin recargar: '+despues.replace(chr(9),' ')[:50])
     ok(pg.inner_text('#dato-alcaldia')=='Cuauhtémoc','el botón ubica y deriva la alcaldía real: '+pg.inner_text('#dato-alcaldia'))
+    fic=pg.evaluate("(() => { const c=document.querySelector('.campo-punto .campo-triple .campo'); const r=document.querySelector('.campo-punto .campo-triple').getBoundingClientRect(); return { filas: getComputedStyle(c).display, sin_caja: getComputedStyle(document.getElementById('dato-alcaldia')).borderTopStyle, alto: Math.round(r.height) }; })()")
+    ok(fic['filas']=='grid' and fic['sin_caja']=='none' and fic['alto']<170,'en teléfono los datos del punto van en una ficha compacta de renglones etiqueta-valor (D98): %s' % fic)
+    pg.focus('#campo-especie'); pg.wait_for_timeout(150)
+    ok(pg.is_visible('#lista-especies') and pg.locator('#lista-especies .combo-opcion[aria-selected=true]').count()==0,'al abrir la lista de especies ninguna aparece elegida')
+    pg.evaluate("document.getElementById('campo-especie').blur()"); pg.wait_for_timeout(250)
     ok(pg.inner_text('#dato-colonia')=='CENTRO IV','y la colonia real, como viene en la capa: '+pg.inner_text('#dato-colonia'))
 
     # CAPAS DEL SIA. Puntos conocidos, y los dos defectos de la capa anterior que la definitiva corrige (bloque 38).
@@ -278,8 +283,19 @@ with sync_playwright() as p:
     pg.dispatch_event('.combo-opcion[data-id="ESP-0029"]','mousedown'); pg.wait_for_timeout(200)
     ok(pg.input_value('#campo-especie')=='Fresno (Fraxinus uhdei)','al elegir, el campo queda como en el catálogo')
     ok(pg.evaluate("document.activeElement.id")!='campo-programa','elegir especie no mueve el foco al programa (D82)')
-    pg.focus('#campo-programa'); pg.select_option('#campo-programa','p-refor'); pg.wait_for_timeout(200)
-    ok(pg.evaluate("document.activeElement.id")=='campo-programa','elegir programa no mueve el foco a la fecha (D82)')
+    # Programa con botones (D98): sin preselección (D29), un toque elige y el dato sigue en la lista
+    prog=pg.evaluate('''() => ({ n: document.querySelectorAll('#programa-botones .chip').length,
+      marcados: document.querySelectorAll('#programa-botones .chip[aria-pressed=true]').length,
+      lista_oculta: document.getElementById('campo-programa').classList.contains('oculto-visual') })''')
+    ok(prog=={'n':2,'marcados':0,'lista_oculta':True},'con dos programas se eligen con botones, ninguno marcado de inicio: %s' % prog)
+    pg.click('#programa-botones .chip[data-id=p-refor]'); pg.wait_for_timeout(200)
+    ok(pg.input_value('#campo-programa')=='p-refor' and pg.get_attribute('#programa-botones .chip[data-id=p-refor]','aria-pressed')=='true',
+       'un toque elige el programa y el dato queda en la lista del formulario')
+    ok(pg.evaluate("document.activeElement.dataset.id")=='p-refor','elegir programa no mueve el foco a la fecha (D82)')
+    pg.fill('#campo-fecha',''); pg.click('#btn-fecha-hoy'); pg.wait_for_timeout(150)
+    ok(pg.input_value('#campo-fecha')==HOY,'«Hoy» pone la fecha de hoy de un toque (D98)')
+    foco=pg.evaluate("(() => { const e=document.getElementById('campo-comentarios'); e.focus(); const c=getComputedStyle(e); const r=[c.outlineStyle, c.borderTopColor]; e.blur(); return r; })()")
+    ok(foco==['none','rgb(157, 33, 72)'],'el foco de un campo de texto es borde guinda, no contorno azul (D98): %s' % foco)
 
     from PIL import Image; Image.new('RGB',(2400,1800),(70,110,60)).save('/tmp/arbol.jpg',quality=90)
     ok(pg.locator('input[type=file][accept^=image]').count()==1,'hay un solo selector de fotografía')
@@ -287,6 +303,8 @@ with sync_playwright() as p:
     ok(pg.is_hidden('#ficha-foto'),'sin foto no hay ficha de archivo')
     pg.set_input_files('#foto-archivo','/tmp/arbol.jpg'); pg.wait_for_timeout(900)
     ok(pg.is_visible('#ficha-foto') and pg.inner_text('#foto-nombre')=='arbol.jpg','la ficha dice el nombre del archivo')
+    ok(pg.evaluate("(() => { const z=document.getElementById('etq-foto'); return z.classList.contains('con-foto') && getComputedStyle(z).flexDirection==='row' && z.getBoundingClientRect().height < 70; })()"),
+       'con foto cargada la zona de carga se reduce a un renglón «Cambiar fotografía» (D98)')
     ok(any(u in pg.inner_text('#foto-peso') for u in ['KB','MB','B']),'y cuánto pesa ya comprimida: '+pg.inner_text('#foto-peso'))
     dims=pg.evaluate("new Promise(r=>{const i=new Image();i.onload=()=>r([i.width,i.height]);i.src=document.getElementById('foto-vista').src})")
     ok(dims[0]<=800 and dims[1]<=800,'la foto se comprime a %sx%s'%tuple(dims))

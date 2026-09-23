@@ -890,3 +890,21 @@ reescrita para el renglón de texto.
 
 **Verificación:** 257 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.23.
+
+## Bloque 43 — Formulario revisado en iPhone (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.24.
+
+**Origen:** capturas de Liber del formulario en su iPhone 17 (v0.6.22).
+
+**Qué cambió (D98).** `index.html`: botones de programa sobre la lista, botón «Hoy» junto a la
+fecha, etiqueta de coordenadas abreviada (el resto para lector de pantalla). `formulario.js`:
+`iniciarProgramas()`, `pintarProgramas()`, `enfocar()` (errores y corrección llevan al control
+visible), `darEspacioALista()`, clase `con-foto`. CSS: todos los `:hover` pasan a
+`@media (hover: hover)`; foco guinda en campos; ficha compacta del punto; fecha con «Hoy»;
+zona de foto reducida; `.campo .oculto-visual` sin relleno ni borde. `revisar.py` ignora
+controles ocultos a propósito. Pruebas: siete comprobaciones nuevas (botones de programa sin
+preselección y con un toque, «Hoy», foco guinda, zona de foto reducida, ficha compacta, lista
+de especies sin opción marcada) y la del foco del programa reescrita.
+
+**Verificación:** 264 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.24.

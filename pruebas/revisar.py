@@ -60,7 +60,7 @@ with sync_playwright() as p:
       # Los controles propios; los de la atribución de Leaflet no son nuestros
       chicos=pg.evaluate("""() => [...document.querySelectorAll('main button:not([hidden]), main a, main select, main input:not([type=file])')]
         .filter(e=>{const r=e.getBoundingClientRect();
-          return !e.closest('.leaflet-container') && r.width>0 && r.height>0 && r.height<24;})
+          return !e.closest('.leaflet-container') && !e.closest('[aria-hidden=true]') && !e.classList.contains('oculto-visual') && r.width>0 && r.height>0 && r.height<24;})
         .slice(0,3).map(e=>e.tagName.toLowerCase()+'.'+(e.className.toString().split(' ')[0]||'')+' h='+Math.round(e.getBoundingClientRect().height))""")
       if chicos: problemas.append(f"{nombre}/{vista}: controles menores de 24px -> {chicos}")
     pg.screenshot(path=f'rev_{nombre}.png', full_page=(escala==1 and ancho<800))

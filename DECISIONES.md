@@ -546,3 +546,18 @@
   (pruebas)» y «Cerrar sesión» son renglones de texto bajo un filete, como en la mayoría de los
   sistemas, en lugar de un botón con contorno y un enlace subrayado. Supera esa parte de D93.
   Pedido por Liber, 22-09-2026.
+
+## Bloque 43 — Formulario revisado en iPhone
+
+- **D98. Seis ajustes al formulario de Nuevo registro tras revisarlo en un iPhone.**
+  (1) Al tocar Especie en teléfono, el campo sube al tope de la pantalla para que la lista no
+  quede bajo el teclado; es un desplazamiento hasta lo que la persona tocó, no un salto de foco,
+  así que D82 sigue en pie. (2) Los estados de «señalar» (hover) sólo existen con ratón: en
+  iPhone un toque los dejaba pegados, la zona de foto quedaba rosa y la primera especie parecía
+  elegida. Con foto cargada, la zona de carga se reduce a un renglón «Cambiar fotografía».
+  (3) El foco de los campos de texto es un borde guinda de 2 px; el contorno azul queda para
+  botones y enlaces. (4) Con hasta cuatro programas se eligen con botones de ancho igual, sin
+  ninguno marcado de inicio (D29); la lista sigue siendo el dato y reaparece con más de cuatro.
+  (5) Coordenadas, alcaldía y colonia van en una ficha compacta sin cajas de campo: renglones
+  etiqueta-valor en teléfono, tres columnas en escritorio. (6) La fecha sigue arrancando vacía
+  (D29) y lleva al lado un botón «Hoy» que la pone de un toque. Aprobadas por Liber, 22-09-2026.

@@ -24,6 +24,20 @@ SRP.formulario = {
     });
     this.el('btn-coord-aplicar').addEventListener('click', () => this.aplicarCoordenadasManuales());
     this.iniciarCombo();
+    this.iniciarProgramas();
+    // «Hoy» pone la fecha de un toque; sigue siendo una elección de quien captura (D29, D98)
+    this.el('btn-fecha-hoy').addEventListener('click', () => {
+      this.el('campo-fecha').value = SRP.util.fechaHoy();
+      this.el('campo-fecha').removeAttribute('aria-invalid');
+      this.el('campo-fecha').dispatchEvent(new Event('change', { bubbles: true }));
+      if (SRP.espejo) SRP.espejo.refrescar();
+    });
+    // Los enlaces del resumen de errores llevan al control que se ve, aunque el dato viva en otro
+    this.el('resumen-errores').addEventListener('click', (e) => {
+      const a = e.target.closest('a[href^="#"]'); if (!a) return;
+      e.preventDefault();
+      this.enfocar(a.getAttribute('href').slice(1));
+    });
     this.el('foto-archivo').addEventListener('change', (e) => this.cargarFoto(e.target));
     this.el('btn-foto-quitar').innerHTML = SRP.ICONOS.svg('basura', 20);
     this.el('icono-foto').innerHTML = SRP.ICONOS.svg('camara', 34);
@@ -80,6 +94,49 @@ SRP.formulario = {
     // Sin preselección: el formulario arranca en blanco aunque el catálogo tenga un solo
     // programa, para que la elección siempre sea de quien captura.
     sel.value = previo || '';
+    this.pintarProgramas();
+  },
+
+  /* PROGRAMA CON BOTONES (D98). Con hasta cuatro programas se eligen con botones de ancho igual:
+     un toque en lugar de abrir la lista. El <select> sigue siendo el dato (validación, edición y
+     guardado lo leen igual) y sólo se oculta; con más de cuatro vuelve a verse y los botones se van. */
+  MAX_BOTONES_PROGRAMA: 4,
+
+  iniciarProgramas() {
+    this.el('programa-botones').addEventListener('click', (e) => {
+      const b = e.target.closest('.chip'); if (!b) return;
+      const sel = this.el('campo-programa');
+      sel.value = b.dataset.id;
+      sel.removeAttribute('aria-invalid');
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    this.el('campo-programa').addEventListener('change', () => { this.pintarProgramas(); if (SRP.espejo) SRP.espejo.refrescar(); });
+  },
+
+  pintarProgramas() {
+    const sel = this.el('campo-programa');
+    const ops = [...sel.options].filter(o => o.value);
+    const caja = this.el('programa-botones');
+    const botones = ops.length > 0 && ops.length <= this.MAX_BOTONES_PROGRAMA;
+    caja.hidden = !botones;
+    sel.classList.toggle('oculto-visual', botones);
+    if (botones) { sel.setAttribute('tabindex', '-1'); sel.setAttribute('aria-hidden', 'true'); }
+    else { sel.removeAttribute('tabindex'); sel.removeAttribute('aria-hidden'); }
+    caja.dataset.invalido = sel.getAttribute('aria-invalid') === 'true' ? 'true' : 'false';
+    // Si el foco estaba en un botón, se conserva en el mismo programa tras repintar
+    const enfocado = caja.contains(document.activeElement) ? document.activeElement.dataset.id : null;
+    caja.innerHTML = botones ? ops.map(o =>
+      '<button type="button" class="chip" data-id="' + o.value + '" aria-pressed="' + (o.value === sel.value) + '">' +
+      SRP.util.escapar(o.textContent) + '</button>').join('') : '';
+    if (enfocado) { const b = caja.querySelector('[data-id="' + enfocado + '"]'); if (b) b.focus(); }
+  },
+
+  // Lleva el foco al control que la persona ve para ese dato
+  enfocar(id) {
+    let el = this.el(id); if (!el) return;
+    if (id === 'campo-programa' && !this.el('programa-botones').hidden) el = this.el('programa-botones').querySelector('.chip') || el;
+    el.scrollIntoView({ block: 'center' });
+    el.focus();
   },
 
   alMoverPunto(lat, lng) {
@@ -122,7 +179,7 @@ SRP.formulario = {
     const lista = this.el('lista-especies');
     this.comboActivo = -1;
     entrada.addEventListener('input', () => { this.estado.especieId = null; this.mostrarOtra(false); this.filtrarEspecies(); });
-    entrada.addEventListener('focus', () => this.filtrarEspecies());
+    entrada.addEventListener('focus', () => { this.filtrarEspecies(); this.darEspacioALista(); });
     entrada.addEventListener('blur', () => setTimeout(() => this.cerrarCombo(), 150));
     entrada.addEventListener('keydown', (e) => {
       const opciones = lista.querySelectorAll('.combo-opcion');
@@ -141,6 +198,18 @@ SRP.formulario = {
       e.preventDefault();
       this.elegirEspecie(li.dataset.id);
     });
+  },
+
+  /* En teléfono el teclado tapaba la lista y sólo se veían dos especies. Al tocar el campo, éste
+     sube al tope de la pantalla para que la lista use el espacio que queda (D98). No mueve el foco:
+     sólo desplaza la página hasta lo que la persona acaba de tocar (D82 sigue en pie). */
+  darEspacioALista() {
+    if (!window.matchMedia('(max-width: 700px)').matches) return;
+    setTimeout(() => {
+      const e = this.el('campo-especie');
+      const y = e.getBoundingClientRect().top + window.scrollY - 12;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }, 250);
   },
 
   filtrarEspecies() {
@@ -224,8 +293,10 @@ SRP.formulario = {
     } else {
       this.el('foto-vista').removeAttribute('src');
     }
-    // La zona de carga dice si va a poner la primera foto o a reemplazar la que hay
+    // La zona de carga dice si va a poner la primera foto o a reemplazar la que hay; con foto
+    // se reduce a un renglón, porque lo importante ya es la ficha de la foto (D98)
     this.el('texto-foto').textContent = datos ? 'Cambiar fotografía' : 'Agregar fotografía';
+    this.el('etq-foto').classList.toggle('con-foto', !!datos);
     if (SRP.espejo) SRP.espejo.refrescar();
   },
 
@@ -246,8 +317,9 @@ SRP.formulario = {
   mostrarErrores(errores) {
     ['campo-especie', 'campo-otra-especie', 'campo-programa', 'campo-fecha'].forEach(id => this.el(id).removeAttribute('aria-invalid'));
     const caja = this.el('resumen-errores');
-    if (!errores.length) { caja.hidden = true; return; }
+    if (!errores.length) { caja.hidden = true; this.pintarProgramas(); return; }
     errores.forEach(([id]) => { if (id !== 'btn-ubicacion') this.el(id).setAttribute('aria-invalid', 'true'); });
+    this.pintarProgramas();
     caja.innerHTML = '<h2>Falta corregir ' + errores.length + (errores.length === 1 ? ' dato' : ' datos') + '</h2><ul>' +
       errores.map(([id, t]) => '<li><a href="#' + id + '">' + t + '</a></li>').join('') + '</ul>';
     caja.hidden = false;
@@ -348,10 +420,8 @@ SRP.formulario = {
     if (campo === 'foto') { this.el('etq-foto').scrollIntoView({ block: 'center' }); this.el('foto-archivo').click(); return; }
     const destino = { especie: 'campo-especie', programa: 'campo-programa', fecha: 'campo-fecha', comentarios: 'campo-comentarios' }[campo];
     if (!destino) return;
-    const el = this.el(destino);
-    el.scrollIntoView({ block: 'center' });
-    el.focus();
-    if (destino === 'campo-especie') el.select();
+    this.enfocar(destino);
+    if (destino === 'campo-especie') this.el(destino).select();
   },
 
   /* ---------- Guardar ---------- */
@@ -479,6 +549,7 @@ SRP.formulario = {
     this.el('btn-cancelar-edicion').hidden = true;
     this.el('campo-especie').value = ''; this.estado.especieId = null; this.mostrarOtra(false);
     this.el('campo-programa').value = '';
+    this.pintarProgramas();
     this.el('campo-fecha').value = '';
     this.el('campo-comentarios').value = '';
     this.el('coord-lat').value = '';

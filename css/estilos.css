@@ -195,6 +195,17 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 .campo input[type="date"], .campo input[type="time"] { -webkit-appearance: none; appearance: none; text-align: left; }
 .campo input[type="date"]::-webkit-date-and-time-value, .campo input[type="time"]::-webkit-date-and-time-value { text-align: left; }
 .campo textarea { resize: vertical; min-height: 4.5rem; }
+/* Foco en campos de texto (D98): borde guinda de 2 px en lugar del contorno azul, que en iPhone
+   aparece con cada toque y es ajeno a la paleta. El azul se queda para botones y enlaces. */
+.campo input:focus-visible, .campo select:focus-visible, .campo textarea:focus-visible {
+  outline: none; border-color: var(--guinda); box-shadow: 0 0 0 1px var(--guinda);
+}
+.fecha-con-hoy { display: grid; grid-template-columns: 1fr auto; gap: var(--e-2); }
+.fecha-con-hoy .btn { min-width: 5rem; }
+/* Programas como botones: dentro del formulario van a todo el ancho y a la altura de un campo */
+.chips-campo { max-width: none; margin-bottom: 0; }
+.chips-campo .chip { min-height: var(--toque); }
+.chips-campo[data-invalido="true"] .chip { border: 2px solid var(--error); }
 .campo input[readonly] { background: var(--fondo-suave); border-color: var(--borde-suave); color: var(--gris); }
 .campo-doble { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-3); }
 /* Excepción deliberada: Año y Mes son cortos y caben en dos columnas hasta en teléfono */
@@ -239,7 +250,15 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 .ficha-estado { border: 1px solid var(--borde-control); border-top: 3px solid var(--guinda); border-radius: 0 0 var(--radio) var(--radio); padding: var(--e-3) var(--e-4); margin: 0; font-size: var(--t-s); }
 /* Campo de sólo lectura: misma caja y misma altura que un campo que sí se escribe, en gris
    sobre fondo suave, igual que .campo input[readonly]. Que se vea que es respuesta, no pregunta. */
+/* Ficha compacta del punto (D98): los tres datos que salen del mapa, sin cajas de campo. En
+   escritorio en tres columnas; en teléfono en renglones etiqueta-valor. Ocupaba media pantalla. */
 .campo-punto { margin-top: var(--e-4); }
+.campo-punto .campo-triple { gap: 0; border: 1px solid var(--borde-suave); border-radius: var(--radio); background: var(--fondo-suave); }
+.campo-punto .campo-triple .campo { margin: 0; padding: var(--e-2) var(--e-3); }
+.campo-punto .campo-triple .campo + .campo { border-left: 1px solid var(--borde-suave); }
+.campo-punto .campo-triple label { font-weight: 400; font-size: var(--t-xs); color: var(--gris); margin-bottom: 0; }
+.campo-punto .campo-triple .campo-lectura { min-height: 0; padding: 0; border: 0; background: none; color: var(--texto); font-weight: 500; }
+.campo-punto .nota { margin-top: var(--e-2); }
 .campo-lectura {
   display: flex; align-items: center; width: 100%; min-height: var(--toque);
   padding: var(--e-2) var(--e-3); border: 1px solid var(--borde-suave); border-radius: var(--radio-control);
@@ -322,7 +341,6 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 .grupo-cab { display: flex; justify-content: space-between; align-items: center; gap: var(--e-3); margin-bottom: var(--e-2); }
 .grupo-cab .titulo-bloque { margin-bottom: 0; }
 .btn-reiniciar { background: none; color: var(--guinda); font-weight: 500; font-size: var(--t-s); padding: 0 var(--e-1); min-height: 40px; }
-.btn-reiniciar:hover { text-decoration: underline; text-underline-offset: 3px; }
 
 .filtros { border-bottom: 1px solid var(--borde-suave); padding-bottom: var(--e-3); }
 /* Atajos y listas en una fila que se parte sola en teléfono; alineados por la base */
@@ -343,7 +361,7 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
   background-color: var(--fondo-campo); border: 1px solid var(--fondo-campo); border-radius: var(--radio-filtro);
   -webkit-appearance: none; appearance: none; background-repeat: no-repeat; transition: background-color .15s, border-color .15s;
 }
-.zona-filtros .campo select:hover, .zona-filtros .campo input:hover { background-color: var(--fondo-campo-hover); border-color: var(--fondo-campo-hover); }
+
 .zona-filtros .campo select:focus, .zona-filtros .campo input:focus { background-color: var(--fondo); border-color: var(--guinda); }
 .zona-filtros .campo select {
   padding-right: 48px; cursor: pointer;
@@ -395,12 +413,12 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 /* Tuerca de acciones y su menú (D94) */
 .acciones-menu { display: inline-block; }
 .btn.btn-tuerca { width: var(--toque); padding: 0; border-radius: 50%; background: none; color: var(--gris); border: 1px solid transparent; }
-.btn.btn-tuerca:hover, .btn.btn-tuerca[aria-expanded="true"] { background: var(--fondo-suave); color: var(--guinda); border-color: var(--borde-suave); }
+.btn.btn-tuerca[aria-expanded="true"] { background: var(--fondo-suave); color: var(--guinda); border-color: var(--borde-suave); }
 .menu-acciones { position: fixed; z-index: 1300; min-width: 11rem; padding: var(--e-1) 0; background: var(--fondo);
   border: 1px solid var(--borde-suave); border-radius: var(--radio); box-shadow: 0 6px 18px rgba(35, 37, 38, 0.18); }
 .menu-opcion { display: flex; align-items: center; gap: var(--e-2); width: 100%; min-height: var(--toque); padding: 0 var(--e-4);
   background: none; border: 0; font: inherit; color: var(--texto); text-align: left; cursor: pointer; }
-.menu-opcion:hover, .menu-opcion:focus-visible { background: var(--fondo-suave); outline: none; }
+.menu-opcion:focus-visible { background: var(--fondo-suave); outline: none; }
 .menu-opcion svg { color: var(--gris); }
 .menu-sin-icono { width: 18px; }
 .menu-peligro, .menu-peligro svg { color: var(--error); }
@@ -447,24 +465,23 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 }
 
 /* ========== 5. ESTADOS ========== */
-.btn-primario:hover { background: var(--guinda-oscuro); }
-/* El nivel 3 se pinta de guinda sólo al señalarlo: ahí ya no hay confusión posible,
-   porque el puntero está encima y nada más cambia de color al mismo tiempo. */
-.enlace:hover, .btn-texto:hover, .desplegable summary:hover { color: var(--guinda); }
+
+
 .desplegable[open] summary::before { transform: rotate(90deg); }
-.zona-foto:hover { border-color: var(--guinda); background: var(--fondo-suave); }
+
+.campo .zona-foto.con-foto { flex-direction: row; gap: var(--e-2); min-height: var(--toque); padding: var(--e-2) var(--e-3); }
+.zona-foto.con-foto .zona-foto-ayuda { display: none; }
+.zona-foto.con-foto #icono-foto svg { width: 22px; height: 22px; }
 .zona-foto:focus-within { outline: 3px solid var(--foco); outline-offset: 2px; }
 .btn:disabled { opacity: 0.55; cursor: not-allowed; }
 .pestana[aria-current="page"] { color: var(--guinda); border-bottom-color: var(--guinda); }
-.chip:hover { background: var(--fondo-campo); }
+
 .chip-sub { display: block; font-size: var(--t-xs); font-weight: 400; color: var(--gris); }
 .chip[aria-pressed="true"] .chip-sub { color: var(--guinda); }
 /* Activo: guinda suave con borde guinda (propuesta A de la maqueta, D95) */
 .chip[aria-pressed="true"] { background: var(--fondo-suave); border-color: var(--guinda); color: var(--guinda); }
 /* «Un periodo» abierto pero sin rango aplicado: sólo el contorno, porque todavía no filtra */
 .chip[aria-expanded="true"][aria-pressed="false"] { border-color: var(--guinda); color: var(--guinda); background: var(--fondo); }
-/* Con ratón la opción bajo el cursor se marca igual que la elegida con teclado: sin esto la lista se sentía inerte en escritorio */
-.combo-opcion:hover,
 .combo-opcion[aria-selected="true"] { background: var(--fondo-suave); outline: 2px solid var(--guinda); outline-offset: -2px; }
 .campo input[aria-invalid="true"], .campo select[aria-invalid="true"] { border: 2px solid var(--error); }
 .aviso[data-tipo="alerta"] { background: var(--error); }
@@ -476,10 +493,27 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
    que `.oculto-visual` y estiraba el selector de archivo a todo el ancho; invisible, pero
    arrastraba la página de lado. `.campo .oculto-visual` gana por especificidad, no por orden. */
 .oculto-visual,
-.campo .oculto-visual { position: absolute; width: 1px; height: 1px; min-height: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.campo .oculto-visual { position: absolute; width: 1px; height: 1px; min-height: 0; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 [hidden] { display: none; }
 
 /* ========== 7. @MEDIA ========== */
+@media (hover: hover) {
+  /* Los estados de «señalar» sólo existen con ratón (D98). En iPhone y Android un toque dejaba
+     pegado el hover: la zona de foto quedaba rosa y la primera especie parecía elegida. */
+  .btn-reiniciar:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .zona-filtros .campo select:hover,
+  .zona-filtros .campo input:hover { background-color: var(--fondo-campo-hover); border-color: var(--fondo-campo-hover); }
+  .btn.btn-tuerca:hover { background: var(--fondo-suave); color: var(--guinda); border-color: var(--borde-suave); }
+  .menu-opcion:hover { background: var(--fondo-suave); outline: none; }
+  .btn-primario:hover { background: var(--guinda-oscuro); }
+  /* El nivel 3 se pinta de guinda sólo al señalarlo: ahí ya no hay confusión posible,
+     porque el puntero está encima y nada más cambia de color al mismo tiempo. */
+  .enlace:hover, .btn-texto:hover, .desplegable summary:hover { color: var(--guinda); }
+  .zona-foto:hover { border-color: var(--guinda); background: var(--fondo-suave); }
+  .chip:hover { background: var(--fondo-campo); }
+  /* Con ratón la opción bajo el cursor se marca igual que la elegida con teclado */
+  .combo-opcion:hover { background: var(--fondo-suave); outline: 2px solid var(--guinda); outline-offset: -2px; }
+}
 @media (max-width: 480px) {
   .encabezado-logo { max-height: 38px; }
   /* En teléfono logotipo, conexión y cuenta caben en una sola fila (D93) */
@@ -488,6 +522,8 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
   .cx-palabra { display: none; }
   .campo-doble { grid-template-columns: 1fr; }
   .campo-triple { grid-template-columns: 1fr; }
+  .campo-punto .campo-triple .campo { display: grid; grid-template-columns: 6.5rem 1fr; align-items: baseline; gap: var(--e-2); }
+  .campo-punto .campo-triple .campo + .campo { border-left: 0; border-top: 1px solid var(--borde-suave); }
   .btn-destacado { max-width: none; }
   .revision-fila { grid-template-columns: 1fr auto; }
   .revision-fila-sola { grid-template-columns: 1fr; }
