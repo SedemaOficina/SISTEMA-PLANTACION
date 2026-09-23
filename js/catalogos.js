@@ -40,6 +40,11 @@ SRP.catalogos = {
     this.el('btn-cat-agregar').addEventListener('click', () => this.abrirFormulario(null));
     this.el('form-catalogo').addEventListener('submit', (e) => { e.preventDefault(); this.guardar(); });
     this.el('tabla-catalogo').addEventListener('click', (e) => {
+      // Tocar la tarjeta (fuera de la tuerca) abre la edición (D105)
+      if (!e.target.closest('.c-acciones, thead')) {
+        const tr = e.target.closest('tr[data-id]');
+        if (tr) { this.abrirFormulario(SRP.ref.catalogoPorId[tr.dataset.id]); return; }
+      }
       const b = e.target.closest('button[data-accion]'); if (!b) return;
       const item = SRP.ref.catalogoPorId[b.dataset.id];
       if (b.dataset.accion === 'editar') this.abrirFormulario(item);
@@ -78,17 +83,26 @@ SRP.catalogos = {
                      { accion: 'estado', texto: c.activo ? 'Desactivar' : 'Activar' }];
       if (uso === 0) items.push({ accion: 'eliminar', texto: 'Eliminar', icono: 'basura', peligro: true });
       // data-etiqueta: en teléfono cada renglón se muestra como ficha con su etiqueta
-      return '<tr><td data-etiqueta="Nombre">' + esc(c.nombre) + '</td>' +
-        (esEspecie ? '<td data-etiqueta="Científico"><i>' + esc(c.nombre_cientifico) + '</i>' +
+      const estado = '<span class="estado-texto" data-activo="' + c.activo + '">' + (c.activo ? 'Activo' : 'Inactivo') + '</span>';
+      // Clases c-*: en teléfono la fila es una tarjeta compacta (D105): título, científico, un
+      // renglón de resumen y la tuerca arriba a la derecha; el resto de celdas se oculta ahí
+      return '<tr data-id="' + c.id + '"><td class="c-titulo" data-etiqueta="Nombre">' + esc(c.nombre) + '</td>' +
+        (esEspecie ? '<td class="c-sub" data-etiqueta="Científico"><i>' + esc(c.nombre_cientifico) + '</i>' +
           (c.otros_nombres_comunes ? '<small class="tabla-detalle">También: ' + esc(c.otros_nombres_comunes) + '</small>' : '') +
-          '</td><td data-etiqueta="Distribución">' + esc(c.tipo_distribucion || '') + '</td>' : '') +
-        '<td data-etiqueta="Clave">' + esc(c.clave) + '</td>' +
-        '<td data-etiqueta="Estado"><span class="estado-texto" data-activo="' + c.activo + '">' + (c.activo ? 'Activo' : 'Inactivo') + '</span></td>' +
-        '<td data-etiqueta="Uso">' + uso + ' ' + unidad(uso) + '</td>' +
-        '<td data-etiqueta="Acciones">' + SRP.ICONOS.menuAcciones(c.id, c.nombre, items) + '</td></tr>';
+          '</td><td class="c-movil-oculta" data-etiqueta="Distribución">' + esc(c.tipo_distribucion || '') + '</td>' : '') +
+        '<td class="c-movil-oculta" data-etiqueta="Clave">' + esc(c.clave) + '</td>' +
+        '<td class="c-movil-oculta" data-etiqueta="Estado">' + estado + '</td>' +
+        '<td class="c-movil-oculta" data-etiqueta="Uso">' + uso + ' ' + unidad(uso) + '</td>' +
+        '<td class="c-acciones" data-etiqueta="Acciones">' + SRP.ICONOS.menuAcciones(c.id, c.nombre, items) + '</td>' +
+        '<td class="c-resumen">' + estado + '<span>' + [esc(c.clave), esEspecie ? esc(c.tipo_distribucion || '') : '', uso + ' ' + unidad(uso)].filter(Boolean).join(' · ') + '</span></td></tr>';
     }).join('');
     this.el('tabla-catalogo').innerHTML = cab + '<tbody>' + (filas || '<tr><td colspan="7">Sin resultados.</td></tr>') + '</tbody>';
     SRP.util.ordenable(this.el('tabla-catalogo'));
+    // Cuántos hay y cuántos coinciden (D105)
+    const nombres = { programa: ['programa', 'programas'], area: ['área', 'áreas'], especie: ['especie', 'especies'] }[this.tipo];
+    const total = SRP.ref.deTipo(this.tipo, false).length;
+    const pal = (n) => n === 1 ? nombres[0] : nombres[1];
+    this.el('cat-cuenta').textContent = q ? items.length + ' de ' + total + ' ' + pal(total) : total + ' ' + pal(total);
   },
 
   // Si la clave propuesta ya existe, agrega _2, _3… hasta encontrar una libre

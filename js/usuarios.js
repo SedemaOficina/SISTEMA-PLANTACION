@@ -15,6 +15,11 @@ SRP.usuarios = {
     // El campo Coordinador sólo tiene sentido para un cabo. Sin saltos de foco automáticos (D82)
     this.el('usr-perfil').addEventListener('change', () => this.ajustarPorPerfil());
     this.el('tabla-usuarios').addEventListener('click', (e) => {
+      // Tocar la tarjeta (fuera de la tuerca) abre la edición (D105)
+      if (!e.target.closest('.c-acciones, thead')) {
+        const tr = e.target.closest('tr[data-id]');
+        if (tr) { this.abrirFormulario(SRP.ref.usuarioPorId[tr.dataset.id]); return; }
+      }
       const b = e.target.closest('button[data-accion]'); if (!b) return;
       const u = SRP.ref.usuarioPorId[b.dataset.id];
       if (b.dataset.accion === 'editar') this.abrirFormulario(u);
@@ -53,19 +58,26 @@ SRP.usuarios = {
         items.push({ accion: 'estado', texto: u.activo ? 'Desactivar' : 'Activar' });
         if (n === 0) items.push({ accion: 'eliminar', texto: 'Eliminar', icono: 'basura', peligro: true });
       }
-      return '<tr><td data-etiqueta="Nombre">' + esc(SRP.util.nombreCompleto(u)) + (soyYo ? ' <span class="insignia">usted</span>' : '') + '</td>' +
-        '<td data-etiqueta="Correo">' + esc(u.correo) + '</td>' +
-        '<td data-etiqueta="Área">' + esc(SRP.ref.nombreCatalogo(u.area_id)) + '</td>' +
-        '<td data-etiqueta="Cargo y rol">' + esc(u.cargo_rol) + '</td>' +
-        '<td data-etiqueta="Perfil">' + esc(SRP.permisos.de(u).etiqueta) + '</td>' +
-        '<td data-etiqueta="Coordinador">' + esc(u.coordinador_id ? SRP.ref.nombreUsuario(u.coordinador_id) : '—') + '</td>' +
-        '<td data-etiqueta="Estado"><span class="estado-texto" data-activo="' + u.activo + '">' + (u.activo ? 'Activo' : 'Inactivo') + '</span></td>' +
-        '<td data-etiqueta="Registros">' + n + '</td>' +
-        '<td data-etiqueta="Acciones">' + SRP.ICONOS.menuAcciones(u.id, SRP.util.nombreCompleto(u), items) + '</td></tr>';
+      const estado = '<span class="estado-texto" data-activo="' + u.activo + '">' + (u.activo ? 'Activo' : 'Inactivo') + '</span>';
+      // En teléfono, tarjeta compacta (D105): nombre, correo, un renglón de resumen y la tuerca
+      return '<tr data-id="' + u.id + '"><td class="c-titulo" data-etiqueta="Nombre">' + esc(SRP.util.nombreCompleto(u)) + (soyYo ? ' <span class="insignia">usted</span>' : '') + '</td>' +
+        '<td class="c-sub" data-etiqueta="Correo">' + esc(u.correo) + '</td>' +
+        '<td class="c-movil-oculta" data-etiqueta="Área">' + esc(SRP.ref.nombreCatalogo(u.area_id)) + '</td>' +
+        '<td class="c-movil-oculta" data-etiqueta="Cargo y rol">' + esc(u.cargo_rol) + '</td>' +
+        '<td class="c-movil-oculta" data-etiqueta="Perfil">' + esc(SRP.permisos.de(u).etiqueta) + '</td>' +
+        '<td class="c-movil-oculta" data-etiqueta="Coordinador">' + esc(u.coordinador_id ? SRP.ref.nombreUsuario(u.coordinador_id) : '—') + '</td>' +
+        '<td class="c-movil-oculta" data-etiqueta="Estado">' + estado + '</td>' +
+        '<td class="c-movil-oculta" data-etiqueta="Registros">' + n + '</td>' +
+        '<td class="c-acciones" data-etiqueta="Acciones">' + SRP.ICONOS.menuAcciones(u.id, SRP.util.nombreCompleto(u), items) + '</td>' +
+        '<td class="c-resumen">' + estado + '<span>' + [esc(SRP.permisos.de(u).etiqueta), esc(SRP.ref.nombreCatalogo(u.area_id)),
+          u.coordinador_id ? 'coordina ' + esc(SRP.ref.nombreUsuario(u.coordinador_id)) : '',
+          n + (n === 1 ? ' registro' : ' registros')].filter(Boolean).join(' · ') + '</span></td></tr>';
     }).join('');
 
     this.el('tabla-usuarios').innerHTML = cab + '<tbody>' + (filas || '<tr><td colspan="9">Sin resultados.</td></tr>') + '</tbody>';
     SRP.util.ordenable(this.el('tabla-usuarios'));
+    const total = SRP.ref.usuarios.length;
+    this.el('usr-cuenta').textContent = (q ? lista.length + ' de ' : '') + total + (total === 1 ? ' usuario' : ' usuarios');
   },
 
   llenarListas(usuario) {

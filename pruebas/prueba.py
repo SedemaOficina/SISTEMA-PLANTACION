@@ -453,7 +453,9 @@ with sync_playwright() as p:
     ok(det=={'abierto':True,'primero':'Especie','sistema':True,'pie':True},'tocar la tarjeta abre el detalle, que empieza por Especie, deja Folio al final y Editar al pie (D100): %s' % det)
     pg.click('#btn-detalle-cerrar'); pg.wait_for_timeout(200)
     pg.click('.chip[data-atajo=hoy]'); pg.wait_for_timeout(300)
-    ok(('Hoy, '+HOY_TXT) in pg.inner_text('#filtros-activos') and pg.inner_text('#filtros-cuenta')=='1','«Hoy» aparece como ficha y cuenta en «Filtros» (D100)')
+    ok(pg.is_hidden('#filtros-activos') and pg.inner_text('#filtros-cuenta')=='1','con el panel abierto no se repite la ficha «Hoy»; «Filtros» sí cuenta 1 (D105)')
+    pg.click('#btn-filtros'); pg.wait_for_timeout(150)
+    ok(('Hoy, '+HOY_TXT) in pg.inner_text('#filtros-activos'),'con el panel plegado, «Hoy» aparece como ficha (D100, D105)')
     pg.click('#filtros-activos button[data-quitar=periodo]'); pg.wait_for_timeout(300)
     ok('Total: 4 ' in pg.inner_text('#registros-total') and pg.inner_text('#filtros-activos').strip()=='' and pg.is_hidden('#filtros-cuenta'),
        'la × de la ficha quita el periodo y muestra todos: '+pg.inner_text('#registros-total'))
@@ -785,6 +787,10 @@ with sync_playwright() as p:
     ok(pg.evaluate("getComputedStyle(document.getElementById('vista-reportes')).maxWidth===getComputedStyle(document.getElementById('vista-catalogos')).maxWidth"),'todas las vistas miden lo mismo (D100)')
     pg.fill('#cat-buscar','quercus'); pg.wait_for_timeout(200)
     ok(pg.locator('#tabla-catalogo tbody tr').count()==4,'el buscador de especies encuentra los cuatro Quercus')
+    ok(pg.inner_text('#cat-cuenta').strip()=='4 de 76 especies','y el contador dice cuántos coinciden (D105): '+pg.inner_text('#cat-cuenta'))
+    pg.click('#tabla-catalogo tbody tr >> nth=0 >> .c-titulo'); pg.wait_for_timeout(300)
+    ok(pg.is_visible('#dlg-catalogo') and pg.evaluate("!!document.getElementById('btn-cat-guardar').closest('.dialogo-pie')"),'tocar la tarjeta abre la edición, con Guardar al pie (D105)')
+    pg.click('#btn-cat-cerrar'); pg.wait_for_timeout(200)
     pg.fill('#cat-buscar','yoyote'); pg.wait_for_timeout(200)
     n_yoyote=pg.evaluate("SRP.ref.deTipo('especie', false).filter(e => SRP.ref.especieCoincide(e, 'yoyote')).length")
     ok(pg.locator('#tabla-catalogo tbody tr').count()==n_yoyote and n_yoyote>=1 and 'Codo de fraile' in pg.inner_text('#tabla-catalogo tbody'),'y busca por los otros nombres comunes (%d con «Yoyote»)' % n_yoyote)
@@ -818,6 +824,11 @@ with sync_playwright() as p:
     fila_cabo=pg.locator('#tabla-usuarios tbody tr', has_text='Fulana')
     ok(fila_cabo.locator('button[data-accion=eliminar]').count()==0,'una cuenta con registros no ofrece Eliminar')
     ok('Perengano' in fila_cabo.inner_text(),'y muestra quién es su coordinador')
+    tarj=pg.evaluate('''() => { const t=document.getElementById('tabla-usuarios'); const tr=t.querySelector('tbody tr[data-id]'); const r=tr.getBoundingClientRect();
+      const g=tr.querySelector('.btn-tuerca').getBoundingClientRect(); const pie=document.getElementById('btn-usr-guardar').closest('.dialogo-pie');
+      return { alto: Math.round(r.height), tuerca_arriba: g.top - r.top < 24, cuenta: document.getElementById('usr-cuenta').textContent, pie: !!pie }; }''')
+    ok(tarj['alto']<150 and tarj['tuerca_arriba'] and tarj['cuenta'].endswith('usuarios') and tarj['pie'],
+       'en teléfono cada usuario es una tarjeta compacta con la tuerca arriba, hay contador y Guardar va al pie (D105): %s' % tarj)
     pg.click('#btn-usr-agregar'); pg.wait_for_timeout(300)
     pg.click('#form-usuario button[type=submit]'); pg.wait_for_timeout(200)
     ok(pg.locator('#usr-errores li').count()==5,'el alta vacía señala los cinco campos obligatorios')

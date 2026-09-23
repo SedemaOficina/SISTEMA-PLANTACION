@@ -424,6 +424,8 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 /* Filtros activos (D100): fichas con ×; «Filtros» con su número pliega el panel en teléfono */
 .filtros-activos { list-style: none; margin: 0 0 var(--e-2); padding: 0; display: flex; flex-wrap: wrap; gap: var(--e-2); }
 .filtros-activos:empty { display: none; }
+/* Con el panel abierto las fichas repetían lo que ya marcan los atajos: sólo se ven plegado (D105) */
+.filtros-activos:not([data-visible="true"]) { display: none; }
 .ficha-filtro { display: inline-flex; align-items: center; gap: var(--e-1); min-height: 36px; padding: 0 var(--e-1) 0 var(--e-3);
   border-radius: 18px; background: var(--fondo-suave); color: var(--guinda); font-size: var(--t-s); font-weight: 500; }
 .ficha-filtro button { display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 50%; background: none; color: var(--guinda); cursor: pointer; }
@@ -459,6 +461,10 @@ th[aria-sort="descending"] .th-flecha::after { content: '▼'; opacity: 1; }
 .tabla td:last-child { white-space: nowrap; }
 .tabla td:last-child .tabla-acciones { flex-wrap: nowrap; }
 
+/* Resumen de la tarjeta de teléfono (D105): sólo existe en teléfono */
+.tabla .c-resumen { display: none; }
+.tabla-tarjetas tbody tr[data-id] { cursor: pointer; }
+.conteo-lista { font-size: var(--t-s); color: var(--gris); margin: 0 0 var(--e-1); }
 .estado-texto { display: inline-flex; align-items: center; gap: 6px; font-size: var(--t-xs); font-weight: 500; }
 /* Punto de estado, como «● Paid» de la referencia: el color acompaña a la palabra (D100) */
 .estado-texto::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--exito); }
@@ -624,6 +630,16 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
   .tabla tr:nth-child(even) td { background: none; }
   .tabla td:last-child { white-space: normal; }
   .tabla td:last-child .tabla-acciones { flex-wrap: wrap; }
+  /* Tarjeta compacta de Catálogos y Usuarios (D105): título y tuerca arriba, científico o correo,
+     y un renglón de resumen con el estado; las demás celdas se quedan en la tabla de escritorio */
+  .tabla-tarjetas tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--e-2); padding: var(--e-2) var(--e-3); border-radius: var(--radio-filtro); }
+  .tabla-tarjetas td { display: block; grid-column: 1; padding: 0; border: 0; }
+  .tabla-tarjetas td::before { content: none; }
+  .tabla-tarjetas .c-movil-oculta { display: none; }
+  .tabla-tarjetas .c-titulo { font-family: var(--fuente-titulo); font-weight: 600; font-size: var(--t-m); }
+  .tabla-tarjetas .c-sub { color: var(--gris); overflow-wrap: anywhere; }
+  .tabla-tarjetas .c-acciones { grid-column: 2; grid-row: 1 / span 3; align-self: start; margin: calc(-1 * var(--e-1)) calc(-1 * var(--e-2)) 0 0; }
+  .tabla-tarjetas .c-resumen { display: flex; flex-wrap: wrap; align-items: center; gap: 4px var(--e-2); margin-top: var(--e-1); font-size: var(--t-xs); color: var(--gris); }
   /* ESPEJO DE CAMPOS — se elimina al cerrar la Etapa 1 */
   .espejo-tabla, .espejo-tabla caption, .espejo-tabla tbody, .espejo-tabla tr { display: block; }
   .espejo-tabla thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }

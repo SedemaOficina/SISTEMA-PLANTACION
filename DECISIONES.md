@@ -643,3 +643,17 @@
   este dispositivo» (conteo, fotos y aviso). «Guardar respaldo» pasa al menú de la cuenta, porque
   es la única forma de sacar los datos del teléfono mientras no haya servidor; la guía de qué
   hacer sin internet sigue en la pastilla de conexión. 23-09-2026.
+
+## Bloque 49 — Catálogos y Usuarios en teléfono
+
+- **D105. Catálogos y Usuarios como tarjetas en teléfono y fichas de filtro sin duplicar.**
+  (1) En teléfono cada especie, programa, área o usuario es una tarjeta compacta: nombre,
+  científico (o correo), un renglón de resumen con el punto de estado (clave, distribución y uso;
+  o perfil, área, coordinador y registros) y la tuerca arriba a la derecha. Tocar la tarjeta abre
+  la edición. En computadora se conserva la tabla ordenable (D100). Antes cada fila medía 350–400
+  px. (2) En las ventanas de catálogo y de usuario, «Guardar» pasa a la barra fija al pie, a todo
+  el ancho, como en la ficha de revisión y el detalle (D99, D100). (3) Bajo el buscador, un
+  contador: «76 especies», «4 de 76 especies», «3 usuarios». (4) La nota de que lo que tiene
+  registros no se elimina se reduce a una línea. (5) Las fichas de filtros activos (D100) sólo se
+  ven con el panel de filtros plegado: abierto, los atajos ya marcan lo mismo y la ficha «Hoy»
+  se repetía. Elegidas por Liber, 23-09-2026 (M52–M56 y petición sobre la ficha «Hoy»).

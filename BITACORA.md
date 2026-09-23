@@ -992,3 +992,20 @@ dispositivo y respaldo reescritas.
 
 **Verificación:** 294 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.29.
+
+## Bloque 49 — Catálogos y Usuarios en teléfono (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.30.
+
+**Origen:** revisión M24 hecha con capturas propias en tamaño iPhone (perfil de administración)
+y petición de Liber sobre la ficha «Hoy» repetida.
+
+**Qué cambió (D105).** `catalogos.js` y `usuarios.js`: clases `c-titulo`, `c-sub`,
+`c-movil-oculta`, `c-acciones` y celda `c-resumen`; clic en la tarjeta abre la edición;
+contadores `#cat-cuenta` y `#usr-cuenta`. `index.html`: notas de una línea, `tabla-tarjetas`,
+Guardar al pie en las dos ventanas. `registros.js`: fichas visibles sólo con el panel plegado.
+CSS: tarjeta compacta en ≤480 px, contador, fichas condicionadas. Pruebas: cuatro
+comprobaciones nuevas (contador de especies, tarjeta abre edición con Guardar al pie, tarjeta de
+usuario compacta con contador, ficha «Hoy» sólo plegado) y una ajustada.
+
+**Verificación:** 298 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.30.

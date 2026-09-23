@@ -275,6 +275,8 @@ SRP.registros = {
   plegarFiltros(abrir) {
     this.el('panel-filtros').dataset.abierto = String(abrir);
     this.el('btn-filtros').setAttribute('aria-expanded', String(abrir));
+    // Las fichas sólo se ven con el panel plegado: abierto, los atajos ya dicen lo mismo (D105)
+    this.el('filtros-activos').dataset.visible = String(!abrir);
   },
 
   pintar(agregar) {

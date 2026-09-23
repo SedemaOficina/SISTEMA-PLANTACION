@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.29 (Bloque 48)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.30 (Bloque 49)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -53,19 +53,26 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M49 | Petición de Liber (iPhone) | Texto guía en fechas y hora vacías | Media | 0.6.29 (B48) | Nuevo registro: la fecha vacía dice «Seleccione en el calendario»; Desde/Hasta «Elija la fecha»; hora de finalización «Elija la hora» | Fecha vacía |
 | M50 | Petición de Liber | «Reporte» en lugar de «parte» en toda la plataforma | Media | 0.6.29 (B48) | Reportes dice «Reporte del día» y «Día del reporte»; la vista previa, «Vista previa del reporte» | Reportes |
 | M51 | Petición de Liber | Sin el bloque «Registros en este dispositivo»; respaldo en el menú de la cuenta | Media | 0.6.29 (B48) | Reportes sólo tiene el reporte del día; el icono de usuario ofrece «Guardar respaldo» | Reportes y menú de cuenta |
+| M52 | Revisión Catálogos/Usuarios | Tarjetas compactas en teléfono; tocar abre la edición | Alta | 0.6.30 (B49) | En el teléfono, Catálogos › Especies y Usuarios: cada elemento es una tarjeta de 3 renglones con ● estado; tocarla abre la edición | Lista de especies y de usuarios |
+| M53 | Revisión Catálogos/Usuarios | Tuerca arriba a la derecha | Alta | 0.6.30 (B49) | La tuerca va junto al nombre, no en un renglón «Acciones» | Tarjeta con el menú abierto |
+| M54 | Revisión Catálogos/Usuarios | «Guardar» al pie en las ventanas de alta y edición | Alta | 0.6.30 (B49) | «Agregar especie» o «Dar de alta»: Guardar verde a todo el ancho, fijo abajo | Ventana de alta |
+| M55 | Revisión Catálogos/Usuarios | Contador de resultados | Media | 0.6.30 (B49) | Bajo el buscador: «76 especies»; al buscar «quercus», «4 de 76 especies» | Buscador con resultados |
+| M56 | Revisión Catálogos/Usuarios | Nota de una línea | Media | 0.6.30 (B49) | «Lo que tiene registros no se elimina: se desactiva.» | Encabezado de Catálogos |
+| M59 | Petición de Liber | La ficha «Hoy» ya no se repite con el panel abierto | Media | 0.6.30 (B49) | Registros con el panel abierto: no hay ficha bajo «Filtros»; al plegarlo aparece | Registros con «Hoy» elegido |
 
 ## 2. Por hacer
 
 | # | Origen | Mejora | Prioridad | Estado | Nota |
 |---|---|---|---|---|---|
-| M24 | iPhone · siguientes partes | Revisar Catálogos y Usuarios | Alta | Pendiente | Capturas sugeridas: Catálogos › Especies (lista, buscador y ventana de alta); Usuarios (lista y ventana de alta). Reportes ya se revisó (M38–M44) |
 | M40 | iPhone · Cierre #2 | Campos del cierre con el estilo de filtros (caja gris) | Baja | Propuesto | El borde guinda al tocar ya aplica desde 0.6.24 (D98) |
 | M44 | PDF #4 | No partir un apartado corto (Por programa) a la página siguiente cuando cabe | Baja | Propuesto | — |
 | M02 | Lista de diseño #1 | Navegación inferior en teléfono | Alta | Propuesto | Bloque aparte: cambia la estructura |
 | M22 | iPhone · Nuevo registro #7 | Crédito de Esri más corto | Baja | Pendiente | Con la revisión del mapa |
 | M23 | iPhone · Nuevo registro #8 | Menos autollenado de Safari | Baja | Pendiente | Con la revisión del mapa; efecto limitado |
 | M26 | iPhone · Formulario lleno #2 | Alinear la etiqueta «Fotografía» | Baja | Propuesto | — |
-| M12 | Lista de diseño #11 | Modo de alto contraste para sol directo | Media | Pendiente | Elegida el 22-09; bloque 49 |
+| M12 | Lista de diseño #11 | Modo de alto contraste para sol directo | Media | Pendiente | Elegida el 22-09; bloque 50 |
+| M57 | Revisión Catálogos/Usuarios | Atajos Activos / Inactivos / Todos en Usuarios | Media | Propuesto | — |
+| M58 | Revisión Catálogos/Usuarios | «Forma de crecimiento» con botones (Árbol, Arbusto, Palma, Otra) | Baja | Propuesto | — |
 | M45 | Revisión en computadora | Equilibrio en computadora: mapa a la izquierda y formulario a la derecha en Nuevo registro; Reportes centrado | Media | Propuesto | Hoy quedan cargados a la izquierda |
 | M46 | Android | Revisión corta en Android: versión, botón «atrás» con ventanas abiertas, calendario y hora, especies con teclado, precisión, foto, compartir PDF, aviso | Alta | Pendiente | Espera capturas |
 
@@ -73,6 +80,7 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 
 | # | Origen | Qué se revisó | Resultado |
 |---|---|---|---|
+| M24 | Revisión Catálogos/Usuarios | Revisión en tamaño iPhone con capturas propias | Resultó en M52–M58; lo propio de Safari (selectores, teclado) queda por ver en el teléfono |
 | M33 | iPhone · Menú de la tuerca | El menú parecía salir lejos de la tuerca | Era efecto de la captura de página completa; en el teléfono sale junto a su tuerca |
 
 ## 4. Descartadas
@@ -82,4 +90,4 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 38 hechas · 10 por hacer · 1 verificada sin falla · 2 descartadas.
+**Resumen:** 44 hechas · 11 por hacer · 2 revisadas · 2 descartadas.
