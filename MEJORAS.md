@@ -41,18 +41,18 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M22 | iPhone · Nuevo registro #7 | Crédito de Esri más corto | Baja | Pendiente | Con la revisión del mapa |
 | M23 | iPhone · Nuevo registro #8 | Menos autollenado de Safari | Baja | Pendiente | Con la revisión del mapa; efecto limitado |
 | M26 | iPhone · Formulario lleno #2 | Alinear la etiqueta «Fotografía» | Baja | Propuesto | — |
+| M07 | Lista de diseño #6 | Filtros activos como fichas con × y conteo | Media | Pendiente | Elegida el 22-09; bloque 45 |
+| M11 | Lista de diseño #10 | Mismo ancho en todas las vistas | Baja | Pendiente | Elegida el 22-09; bloque 45 |
+| M10 | Lista de diseño #9 | Tablas de escritorio: encabezado fijo, orden por columna, punto de estado | Media | Pendiente | Elegida el 22-09; bloque 45 |
+| M08 | Lista de diseño #7 | Avisos flotantes uniformes con «Deshacer» | Media | Pendiente | Elegida el 22-09; bloque 46 |
+| M09 | Lista de diseño #8 | Vista previa del parte del día antes del PDF | Media | Pendiente | Elegida el 22-09; bloque 46 |
+| M12 | Lista de diseño #11 | Modo de alto contraste para sol directo | Media | Pendiente | Elegida el 22-09; bloque 47 |
 
-## 3. No elegidas o descartadas
+## 3. Descartadas
 
 | # | Origen | Mejora | Prioridad | Estado | Nota |
 |---|---|---|---|---|---|
-| M07 | Lista de diseño #6 | Filtros activos como fichas con × | Media | No elegido | — |
-| M08 | Lista de diseño #7 | Avisos flotantes con «Deshacer» | Media | No elegido | — |
-| M09 | Lista de diseño #8 | Vista previa del parte del día | Media | No elegido | — |
-| M10 | Lista de diseño #9 | Tablas de escritorio: encabezado fijo y orden por columna | Media | No elegido | — |
-| M11 | Lista de diseño #10 | Mismo ancho en todas las vistas | Baja | No elegido | — |
-| M12 | Lista de diseño #11 | Alto contraste para sol directo | Media | No elegido | — |
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 15 hechas · 6 por hacer (3 pendientes, 3 propuestas) · 8 no elegidas o descartadas.
+**Resumen:** 15 hechas · 12 por hacer (9 pendientes, 3 propuestas) · 2 descartadas.
