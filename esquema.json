@@ -103,9 +103,10 @@
         "ELIMINADO",
         "RESTAURADO",
         "ACTIVADO",
-        "DESACTIVADO"
+        "DESACTIVADO",
+        "FOLIO_ASIGNADO"
       ],
-      "fuente": "llamadas a SRP.bitacora.entrada() en formulario, registros, catalogos, usuarios y reportes"
+      "fuente": "llamadas a SRP.bitacora.entrada() en formulario, registros, catalogos, usuarios, reportes y folio (servidor simulado, D110)"
     },
     "entidad_bitacora": {
       "valores": [

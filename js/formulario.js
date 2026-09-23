@@ -488,6 +488,11 @@ SRP.formulario = {
         await SRP.almacen.guardarConBitacora('plantaciones', nuevo, SRP.bitacora.entrada('CREADO', 'plantacion', nuevo.id));
         this.el('dlg-resumen').close();
         this.mostrarGuardado(nuevo);
+        // Con datos de prueba y conexión, el servidor simulado le da folio en seguida (D110)
+        if (await SRP.folio.emitirPendientes()) {
+          const r = await SRP.almacen.uno('plantaciones', nuevo.id);
+          if (r && SRP.folio.valido(r.folio)) this.el('dlg-guardado-id').textContent = 'Folio: ' + SRP.folio.textoLargo(r) + ' · Identificador: ' + r.id;
+        }
       }
     } catch (err) {
       SRP.util.anunciar('No se pudo guardar: ' + err.message + '. Sus datos siguen en pantalla; intente de nuevo.', 'alerta');

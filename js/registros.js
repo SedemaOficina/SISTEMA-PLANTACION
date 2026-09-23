@@ -379,13 +379,13 @@ SRP.registros = {
         : 'Sin fotografía']
     ];
     const sistema = [
-      ['Folio', '<span class="folio-provisional">' + esc(SRP.folio.texto(r)) + '</span>'],
+      ['Folio', '<span class="folio-provisional">' + esc(SRP.folio.textoLargo(r)) + '</span>'],
       ['Identificador', '<span class="revision-id">' + esc(r.id) + '</span>']
     ];
 
     const historial = await SRP.bitacora.deEntidad(r.id);
     const lineas = historial.length ? historial.map(h =>
-      '<li>' + SRP.util.formatearFechaHora(h.fecha) + ': ' + esc(h.accion.toLowerCase()) + ' por ' + esc(h.usuario_nombre) +
+      '<li>' + SRP.util.formatearFechaHora(h.fecha) + ': ' + esc(h.accion.toLowerCase().replace(/_/g, ' ')) + ' por ' + esc(h.usuario_nombre) +
       ' (' + esc(SRP.PERFILES[h.perfil] ? SRP.PERFILES[h.perfil].etiqueta : h.perfil) + ')' +
       (h.detalle ? '. ' + esc(h.detalle) : '') + '</li>').join('')
       : '<li>Sin movimientos registrados.</li>';

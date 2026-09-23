@@ -453,7 +453,14 @@ with sync_playwright() as p:
     ok(f['tope']=='rechazado' and f['cero']=='rechazado','un consecutivo fuera de 1–99 999 se rechaza en vez de recortarse o reiniciarse (R6)')
     ok(f['texto']=='PROVISIONAL','sin folio, la pantalla dice PROVISIONAL')
     guardado=pg.evaluate("id => SRP.almacen.uno('plantaciones', id)", ids[0])
-    ok(guardado['folio'] is None and guardado['folio_uga'] is None and 'folio_lat' in guardado,'el registro nace con los cinco campos del folio en nulo (R8)')
+    nace=pg.evaluate("(() => { const r = SRP.formulario.registroPrevisto(); return SRP.folio.CAMPOS.every(k => k in r && r[k] === null); })()")
+    ok(nace,'el registro nace con los cinco campos del folio en nulo (R8)')
+    # Servidor simulado con datos de prueba (D110): al guardar con conexión recibe folio, una vez, y se congela lo de R8
+    ok(re.fullmatch(r'[A-Z]{3}-\d{3}-\d{5}', guardado['folio'] or '') is not None and guardado['folio_uga']==guardado['folio'][:7]
+       and guardado['folio_lat']==guardado['lat'] and guardado['folio_lng']==guardado['lng'],'con datos de prueba el servidor simulado asigna el folio y congela celda y coordenada (D110): %s' % guardado['folio'])
+    seq=pg.evaluate("(async () => { const b = await SRP.almacen.todos('bitacora'); const s = SRP.folio.leerSecuencias(); const todos = await SRP.almacen.todos('plantaciones'); return { bitacora: b.some(x => x.accion === 'FOLIO_ASIGNADO'), unicos: new Set(todos.filter(t=>t.folio).map(t=>t.folio)).size === todos.filter(t=>t.folio).length, secuencia: Object.values(s).reduce((a,n)=>a+n,0) >= todos.filter(t=>t.folio).length }; })()")
+    ok(seq=={'bitacora':True,'unicos':True,'secuencia':True},'la asignación deja constancia, no repite folios y sale de la secuencia, no de contar registros (R5–R6): %s' % seq)
+    ok(pg.evaluate("SRP.folio.textoLargo({folio:'TLP-318-00001', es_ficticio:true})")=='TLP-318-00001 (simulado)','el folio simulado se escribe con su aviso')
     ok(guardado['especie_estatus']=='VALIDADA','una especie de catálogo queda VALIDADA')
 
     # ---------- REGISTROS ----------
@@ -614,7 +621,7 @@ with sync_playwright() as p:
     pg.click('#btn-cierre-generar'); pg.wait_for_timeout(500)
     prev=pg.inner_text('#previa-hoja')
     ok(pg.is_visible('#dlg-previa') and 'REPORTE DIARIO DE PLANTACIÓN' in prev.upper() and 'Calzada de prueba' in prev and 'Fulano de Tal' in prev
-       and 'TOTALES POR ESPECIE' in prev.upper() and 'PROVISIONALES' in prev,'antes del PDF se ve la vista previa con el sitio, la logística, los totales y la advertencia de provisional (D101)')
+       and 'TOTALES POR ESPECIE' in prev.upper() and ('PROVISIONALES' in prev or 'SIMULADOS' in prev),'antes del PDF se ve la vista previa con el sitio, la logística, los totales y la advertencia de provisional (D101)')
     ok('Personal de apoyo' not in prev,'y como el PDF, un apartado vacío no aparece')
     pg.click('#btn-previa-corregir'); pg.wait_for_timeout(400)
     ok(pg.is_visible('#dlg-cierre') and pg.input_value('#cie-chofer')=='Fulano de Tal','«Corregir datos de cierre» vuelve al formulario con lo escrito')
@@ -653,6 +660,7 @@ with sync_playwright() as p:
     listo=pg.evaluate("""async () => { const r = await navigator.serviceWorker.ready; for (let i=0;i<50;i++){ const ks = await caches.keys(); if (ks.length) { const c = await caches.open(ks[0]); const k = await c.keys(); if (k.length > 20) return { nombre: ks[0], n: k.length }; } await new Promise(r => setTimeout(r, 200)); } return null; }""")
     ok(listo and listo['nombre']=='srp-'+MARCA and listo['n']>20,'el service worker guardó la app con la marca de versión: %s' % listo)
     ctx.set_offline(True)
+    ok(pg.evaluate("SRP.folio.emitirPendientes()")==0,'sin conexión el servidor simulado no emite: lo capturado queda PROVISIONAL hasta que vuelva la señal (D110)')
     pg.reload(); pg.wait_for_timeout(1500)
     ok(pg.is_visible('#vista-registros') or pg.is_visible('#vista-registrar') or pg.is_visible('#form-acceso'),'sin red, la app vuelve a abrir desde el teléfono')
     ok(pg.evaluate("SRP.CONFIG.VERSION")==MARCA,'y es la misma versión')

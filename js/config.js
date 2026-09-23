@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 54',
+  ETAPA: 'Bloque 55',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -29,7 +29,8 @@ SRP.CONFIG = {
   CLAVE_SELLO: 'srp_sello_datos',
   DB_VERSION: 1,
   CLAVE_SESION: 'srp_sesion_usuario_id',
-  CLAVE_CONTRASTE: 'srp_contraste',   // preferencia del modo sol en este dispositivo (D106)
+  CLAVE_CONTRASTE: 'srp_contraste',
+  CLAVE_SECUENCIAS_PRUEBA: 'srp_secuencias_folio_prueba',   // secuencias del servidor simulado (D110)   // preferencia del modo sol en este dispositivo (D106)
 
   // [pendiente] Fase 2: proveedor institucional de identidad. Hoy el acceso es simulado.
   AUTENTICACION: { PROVEEDOR: 'simulado' },

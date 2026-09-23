@@ -1083,3 +1083,19 @@ en pantalla y PDF; emisión en Fase 2 condicionada a las capas definitivas del S
 
 **Verificación:** 315 comprobaciones sin errores de consola; 84 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.35.
+
+## Bloque 55 — Folio simulado con datos de prueba (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.36.
+
+**Qué cambió (D110).** `js/folio.js`: `simulado()`, `leerSecuencias()`, `siguiente()`,
+`emitirPendientes()` y `textoLargo()`. `config.js`: `CLAVE_SECUENCIAS_PRUEBA`. Emisión al guardar
+(`formulario.js`, que además muestra el folio en «Registro guardado»), al entrar (`app.js`) y al
+volver la señal (`conexion.js`). `registros.js`: el detalle escribe «(simulado)» y el historial
+escribe las acciones sin guion bajo. `reportes.js`: aviso de folios simulados en vista previa y
+PDF. `esquema.json`: acción de bitácora `FOLIO_ASIGNADO`; diccionario regenerado. Pruebas: la de
+R8 comprueba el nacimiento en nulo con `registroPrevisto()` y cuatro nuevas (asignación y
+congelamiento, bitácora y unicidad desde la secuencia, texto «(simulado)», sin conexión no se
+emite).
+
+**Verificación:** 319 comprobaciones sin errores de consola; 84 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.36.

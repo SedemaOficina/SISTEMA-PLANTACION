@@ -231,7 +231,9 @@ SRP.app = {
     SRP.formulario.limpiar();
     this.campoClave(false);
     this.mostrarVista(p.registrar ? 'registrar' : 'registros');
-    SRP.conexion.refrescar();   // la pastilla cuenta los registros del alcance de quien entró (D83)
+    SRP.conexion.refrescar();
+    // Datos de prueba con conexión: lo que quedó sin folio lo recibe al entrar (D110)
+    SRP.folio.emitirPendientes().then(n => { if (n && this.vista === 'registros') SRP.registros.preparar(); });   // la pastilla cuenta los registros del alcance de quien entró (D83)
   },
 
   /* MENOS AUTOLLENADO DE SAFARI (D108). Con un campo de contraseña en la página, Safari trata

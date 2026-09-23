@@ -715,3 +715,19 @@
   y los datos del árbol a la derecha; el mapa crece hasta 520 px de alto. Reportes centra su
   contenido y el reporte del día va como tarjeta. Resuelve la media pantalla vacía que dejó D100
   al igualar el ancho de las vistas. En teléfono y tableta no cambia nada. Elegida por Liber (M45).
+
+## Bloque 55 — Folio simulado con datos de prueba
+
+- **D110. Con datos de prueba, un servidor simulado emite el folio.** Para poder ver el folio en
+  la lista, el detalle, la vista previa y el PDF antes de que exista el servidor, cuando
+  `ES_FICTICIO` es verdadero y hay conexión, cada registro de prueba sin folio recibe el suyo al
+  guardarse, al entrar a la app y al volver la señal. Se emite como lo hará el servidor real:
+  una sola vez, con `AAA-000-00000` (D67), consecutivo leído e incrementado de una secuencia por
+  celda que sólo avanza (R5–R6), y se congelan `folio_uga`, `folio_capa_version`, `folio_lat` y
+  `folio_lng` (R8); la bitácora registra `FOLIO_ASIGNADO`. Sin conexión no se emite y el registro
+  sigue PROVISIONAL, como pasará en campo. Límites, a propósito: la secuencia vive en el
+  dispositivo (dos teléfonos de prueba pueden repetir número, que es lo que el servidor evitará)
+  y el folio se muestra como «(simulado)» en el detalle; la vista previa y el PDF advierten
+  «Folios SIMULADOS con datos de prueba: no valen para placas, rótulos ni oficios». Con
+  `ES_FICTICIO` en falso nada de esto corre y D67–D68 rigen tal cual: folio nulo y PROVISIONAL
+  hasta la Fase 2. Pedido por Liber, 23-09-2026.

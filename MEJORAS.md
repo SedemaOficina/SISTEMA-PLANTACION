@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.35 (Bloque 54)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.36 (Bloque 55)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -68,6 +68,7 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M22 | iPhone · Nuevo registro #7 | Crédito del mapa en un renglón | Baja | 0.6.33 (B52) | Nuevo registro: bajo el mapa, «Leaflet \| Imagen: Esri…» en un renglón; al tocarlo se ve completo | Mapa |
 | M23 | iPhone · Nuevo registro #8 | Menos autollenado de Safari | Baja | 0.6.33 (B52) | Tocar Especie o Comentarios: ya no debería salir la barra de llave, tarjeta y ubicación sobre el teclado (Safari decide al final) | Teclado sobre Comentarios |
 | M45 | Revisión en computadora | Nuevo registro en dos columnas y Reportes centrado | Media | 0.6.34 (B53) | En computadora: Nuevo registro muestra el mapa a la izquierda y el formulario a la derecha; Reportes, centrado en tarjeta. En el teléfono no cambia | Nuevo registro y Reportes en computadora |
+| M60 | Petición de Liber | Folio simulado con datos de prueba | Alta | 0.6.36 (B55) | Con conexión, registrar un árbol: «Registro guardado» dice «Folio: CUH-021-00001 (simulado)»; la lista y el detalle lo muestran; la vista previa y el PDF avisan que es simulado. Sin conexión queda PROVISIONAL y recibe folio al volver la señal | Registro guardado, detalle y PDF |
 
 ## 2. Por hacer
 
@@ -90,4 +91,4 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 53 hechas · 2 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 54 hechas · 2 por hacer · 2 revisadas · 2 descartadas.

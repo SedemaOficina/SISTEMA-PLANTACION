@@ -254,7 +254,8 @@ SRP.reportes = {
         return '<tr><td>' + (i + 1) + '</td><td>' + esc(SRP.folio.texto(r)) + '</td><td>' + esc(e.comun) + '</td><td><i>' + esc(e.cientifico) + '</i></td>' +
           (variosAutores ? '<td>' + esc(SRP.ref.nombreUsuario(r.cabo_id)) + '</td>' : '') + '</tr>';
       }).join('') + '</tbody></table></div>' +
-      (registros.some(r => !SRP.folio.valido(r.folio)) ? '<p class="previa-nota">Registros PROVISIONALES: el folio se asigna al sincronizar con el servidor. Este reporte no sustituye al definitivo.</p>' : ''));
+      (registros.some(r => !SRP.folio.valido(r.folio)) ? '<p class="previa-nota">Registros PROVISIONALES: el folio se asigna al sincronizar con el servidor. Este reporte no sustituye al definitivo.</p>' : '') +
+      (registros.some(r => SRP.folio.valido(r.folio) && r.es_ficticio) ? '<p class="previa-nota">Folios SIMULADOS con datos de prueba: no valen para placas, rótulos ni oficios.</p>' : ''));
 
     h += apartado('Totales por especie', '<div class="previa-tabla-caja"><table class="previa-tabla"><thead><tr><th>Especie</th><th>Nombre científico</th><th class="cifra">Ejemplares</th></tr></thead><tbody>' +
       this.totalesPorEspecie(registros).map(t => '<tr><td>' + esc(t.comun) + '</td><td><i>' + esc(t.cientifico) + '</i></td><td class="cifra">' + t.n + '</td></tr>').join('') +
@@ -426,6 +427,13 @@ SRP.reportes = {
     if (registros.some(r => !SRP.folio.valido(r.folio))) {
       doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor(...C.gris);
       doc.text('Registros PROVISIONALES: el folio se asigna al sincronizar con el servidor. Este reporte no sustituye al definitivo.', M, y);
+      doc.setFont('helvetica', 'normal');
+      y += 4;
+    }
+    // D110: un folio simulado se ve igual que uno real; el reporte lo dice
+    if (registros.some(r => SRP.folio.valido(r.folio) && r.es_ficticio)) {
+      doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor(...C.gris);
+      doc.text('Folios SIMULADOS con datos de prueba: no valen para placas, rótulos ni oficios.', M, y);
       doc.setFont('helvetica', 'normal');
       y += 4;
     }

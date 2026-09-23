@@ -25,7 +25,11 @@ SRP.conexion = {
 
   iniciar() {
     this.registrarWorker();
-    window.addEventListener('online', () => this.refrescar());
+    // Al volver la señal, el servidor simulado emite los folios pendientes (D110)
+    window.addEventListener('online', async () => {
+      this.refrescar();
+      if (await SRP.folio.emitirPendientes() && SRP.app.vista === 'registros') SRP.registros.preparar();
+    });
     window.addEventListener('offline', () => this.refrescar());
     this.el('conexion').addEventListener('click', () => this.el('dlg-senal').showModal());
     this.el('btn-respaldo').addEventListener('click', () => { SRP.app.menuCuenta(false); this.respaldar(); });

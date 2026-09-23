@@ -38,7 +38,7 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 | `perfil` | `CABO` · `COORDINADOR` · `ADMIN` | js/permisos.js SRP.PERFILES (Consulta/VIEWER retirado en D87) |
 | `tipo_catalogo` | `programa` · `area` · `especie` | js/catalogos.js ETIQUETA |
 | `tipo_distribucion` | `Nativa` · `Endémica` · `Exótica` · `Exótica-Invasora` | SNIB/CONABIO (EncicloVida); lista en index.html #cat-distribucion |
-| `accion_bitacora` | `CREADO` · `EDITADO` · `ELIMINADO` · `RESTAURADO` · `ACTIVADO` · `DESACTIVADO` | llamadas a SRP.bitacora.entrada() en formulario, registros, catalogos, usuarios y reportes |
+| `accion_bitacora` | `CREADO` · `EDITADO` · `ELIMINADO` · `RESTAURADO` · `ACTIVADO` · `DESACTIVADO` · `FOLIO_ASIGNADO` | llamadas a SRP.bitacora.entrada() en formulario, registros, catalogos, usuarios, reportes y folio (servidor simulado, D110) |
 | `entidad_bitacora` | `plantacion` · `usuario` · `catalogo` · `cierre` | ídem |
 | `alcaldia_cve` | 16 claves `cvegeo` INEGI (09002…09017) | assets/capa-alcaldias.js (SIA con base en INEGI, versión sia-2026-01-01; DEFINITIVA) |
 | `uga` | 1,624 claves `AAA-000` de la malla hexagonal | assets/capa-uga.js (SIA, versión sia-2026-09-22; definitiva, con 8 celdas de prefijo distinto a su alcaldía) |
