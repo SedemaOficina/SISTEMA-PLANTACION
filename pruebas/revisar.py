@@ -14,7 +14,7 @@ with sync_playwright() as p:
     # no ve catálogos ni cuentas.
     for vista, quien in [('registrar','u-cabo-1'), ('registros','u-admin-1'), ('reportes','u-cabo-1'),
                          ('catalogos','u-admin-1'), ('usuarios','u-admin-1')]:
-      if pg.is_visible('#btn-cambiar-perfil'): pg.click('#btn-cambiar-perfil'); pg.wait_for_timeout(300)
+      if pg.is_visible('#btn-cuenta'): pg.click('#btn-cuenta'); pg.click('#btn-cambiar-perfil'); pg.wait_for_timeout(300)
       pg.select_option('#sel-usuario-prueba', quien); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(500)
       pg.evaluate(f"SRP.app.mostrarVista('{vista}')"); pg.wait_for_timeout(500)
       if not pg.is_visible('#vista-'+vista):

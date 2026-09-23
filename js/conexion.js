@@ -48,7 +48,8 @@ SRP.conexion = {
     const con = this.enLinea();
     const ind = this.el('conexion');
     const n = await this.contarGuardados();
-    const cuenta = n === null ? '' : ' · ' + (n === 1 ? '1 guardado' : n + ' guardados');
+    // En teléfono chico la palabra «guardados» se oculta por CSS (queda «Con conexión · 4»); la etiqueta accesible la dice completa (D93)
+    const cuenta = n === null ? '' : ' · ' + n + '<span class="cx-palabra"> ' + (n === 1 ? 'guardado' : 'guardados') + '</span>';
     ind.innerHTML = SRP.ICONOS.svg(con ? 'senal' : 'sinSenal', 18) +
       '<span>' + (con ? 'Con conexión' : 'Sin conexión') + cuenta + '</span>';
     ind.dataset.estado = con ? 'con' : 'sin';

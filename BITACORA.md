@@ -831,3 +831,16 @@ diccionario, MAPEO, README y DECISIONES al día.
 
 **Verificación:** 243 comprobaciones sin errores de consola, 81 de auditoría, presentación sin
 desbordes. Marca de versión 0.6.19.
+
+## Bloque 39 — La cuenta en un menú (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.20.
+
+**Qué cambió (D93).** `index.html`: `#btn-cuenta` con `#menu-cuenta` (nombre, perfil, Cerrar
+sesión, Cambiar usuario de prueba); los ids de siempre se conservan. `app.js`: `menuCuenta()`,
+cierre al tocar fuera y con Escape, etiqueta accesible con nombre y perfil. `conexion.js`: la
+palabra «guardados» en su propio `span`, oculto en teléfono. CSS: encabezado en una fila,
+botón redondo, menú desplegable, pastilla sin partirse. Pruebas: abren el menú antes de salir;
+tres comprobaciones nuevas (menú plegado, contenido al abrir, Escape).
+
+**Verificación:** 244 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
+desbordes en ocho combinaciones; sin desborde a 320, 360 y 390 px. Marca de versión 0.6.20. El logotipo se encoge con su proporción cuando falta ancho (visto a 640 px con zoom al 200 %).

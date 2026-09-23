@@ -77,14 +77,23 @@ h1[tabindex="-1"]:focus { outline: none; }
   display: flex; align-items: center; justify-content: space-between; gap: var(--e-3);
   max-width: var(--ancho-max-tabla); margin: 0 auto; padding: var(--e-3) var(--e-4);
 }
-.encabezado-logo { height: 40px; width: auto; display: block; }
-.encabezado-usuario { display: flex; flex-direction: column; align-items: flex-end; gap: var(--e-1); min-width: 0; text-align: right; }
-/* Salir de la sesión se decide donde se ve de quién es: junto al nombre, no al pie de la página */
-.encabezado-acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--e-2); margin-top: var(--e-1); }
-/* Sin caja que los separe, dos enlaces seguidos se leen como una sola frase: va un punto medio
-   en medio. Si el segundo está oculto no se dibuja, porque cuelga de él. */
-.encabezado-acciones .enlace + .enlace::before { content: '·'; margin-right: var(--e-2); text-decoration: none; display: inline-block; }
-.encabezado-nombre { font-size: var(--t-s); font-weight: 500; overflow-wrap: anywhere; }
+/* El logotipo cede espacio antes que la pastilla o el botón de cuenta: se encoge con su proporción */
+.encabezado-interior > picture { flex: 0 1 auto; min-width: 0; }
+.encabezado-logo { height: auto; max-height: 40px; width: auto; max-width: 100%; display: block; }
+.encabezado-usuario { flex: none; }
+.encabezado-usuario { display: flex; align-items: center; gap: var(--e-2); min-width: 0; }
+/* Menú de la cuenta (D93): un botón con el icono de usuario; al tocarlo aparecen nombre, perfil
+   y las salidas. Ocupa el ancho de un icono en vez de cuatro renglones. */
+.cuenta { position: relative; }
+.conexion { white-space: nowrap; }
+.btn.btn-cuenta { border-radius: 50%; width: var(--toque); padding: 0; background: var(--fondo-suave); color: var(--guinda); border: 1px solid var(--borde-suave); }
+.btn-cuenta[aria-expanded="true"] { background: var(--guinda); color: var(--fondo); }
+.menu-cuenta { position: absolute; right: 0; top: calc(100% + var(--e-2)); z-index: 1200; min-width: 15rem; max-width: calc(100vw - 2rem);
+  padding: var(--e-3) var(--e-4); background: var(--fondo); border: 1px solid var(--borde-suave); border-top: 3px solid var(--guinda);
+  border-radius: var(--radio); box-shadow: 0 6px 18px rgba(35, 37, 38, 0.18); }
+.menu-cuenta p { margin: 0 0 var(--e-2); }
+.menu-cuenta-acciones { display: flex; flex-direction: column; align-items: stretch; gap: var(--e-2); margin-top: var(--e-3); }
+.encabezado-nombre { font-size: var(--t-m); font-weight: 600; overflow-wrap: anywhere; }
 main { padding: var(--e-4); }
 main:focus { outline: none; }
 /* El ancho se decide por vista, no por el contenedor: un formulario se lee mejor en columna
@@ -387,13 +396,11 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 
 /* ========== 7. @MEDIA ========== */
 @media (max-width: 480px) {
-  .encabezado-logo { height: 38px; }
-  /* En teléfono el bloque de usuario baja a su propia fila: ahí los dos enlaces caben en línea,
-     en vez de apilarse y estirar el encabezado. */
-  .encabezado-interior { flex-wrap: wrap; row-gap: var(--e-2); padding-bottom: var(--e-2); }
-  .encabezado-usuario { flex: 1 0 100%; flex-direction: row; flex-wrap: wrap; align-items: center;
-                        gap: var(--e-2); text-align: left; }
-  .encabezado-acciones { flex: 1 0 100%; justify-content: flex-start; }
+  .encabezado-logo { max-height: 38px; }
+  /* En teléfono logotipo, conexión y cuenta caben en una sola fila (D93) */
+  .encabezado-interior { padding: var(--e-2) var(--e-3); gap: var(--e-2); }
+  .conexion { padding: 0 var(--e-2); font-size: 0.75rem; }
+  .cx-palabra { display: none; }
   .campo-doble { grid-template-columns: 1fr; }
   .campo-triple { grid-template-columns: 1fr; }
   .btn-destacado { max-width: none; }

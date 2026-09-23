@@ -60,8 +60,12 @@ with sync_playwright() as p:
     pg.click('#form-acceso button[type=submit]'); pg.wait_for_timeout(700)
     ok(pg.is_visible('#vista-registrar') and 'Fulana' in pg.inner_text('#usuario-nombre'),'se entra con el correo, sin importar mayúsculas')
     ok('Cabo' in pg.inner_text('#usuario-perfil'),'y el perfil dice Cabo: '+pg.inner_text('#usuario-perfil'))
-    ok(pg.is_visible('#btn-cerrar-sesion'),'cerrar sesión está junto al nombre, en el encabezado')
+    ok(pg.is_hidden('#menu-cuenta') and pg.is_visible('#btn-cuenta') and pg.locator('#btn-cuenta svg').count()==1,'la cuenta es un botón con icono; nombre y salidas van plegados (D93)')
+    pg.click('#btn-cuenta'); pg.wait_for_timeout(150)
+    ok(pg.get_attribute('#btn-cuenta','aria-expanded')=='true' and pg.is_visible('#usuario-nombre') and pg.is_visible('#btn-cerrar-sesion'),'al tocarlo muestra nombre, perfil y cerrar sesión')
     ok(pg.is_visible('#btn-cambiar-perfil'),'y cambiar de usuario, mientras haya datos de prueba')
+    pg.keyboard.press('Escape'); pg.wait_for_timeout(100)
+    ok(pg.is_hidden('#menu-cuenta'),'Escape cierra el menú de la cuenta')
     ok(pg.locator('#herramientas-prueba #btn-cambiar-perfil').count()==0,'ya no está duplicado al pie')
 
     # ---------- REGISTRAR ----------
@@ -102,8 +106,7 @@ with sync_playwright() as p:
     }""")
     ok(enfasis['principal_relleno']=='rgb(157, 33, 72)','la acción principal es el guinda relleno')
     ok(enfasis['apoyo']==enfasis['gris'],'y la de apoyo va en gris, no en guinda: '+enfasis['apoyo'])
-    ok(enfasis['cerrar_caja']=='rgba(0, 0, 0, 0)' and enfasis['cerrar_borde']=='0px','cerrar sesión es texto, sin caja')
-    ok(enfasis['cerrar_subrayado']=='underline','y va subrayado para que se vea que se pulsa')
+    ok(enfasis['cerrar_borde']!='0px','cerrar sesión es un botón secundario dentro del menú de la cuenta (D93)')
 
     # Los datos del punto son campos del formulario, no un recuadro bajo el mapa
     ok(pg.locator('.ficha-datos').count()==0,'bajo el mapa ya no cuelga el recuadro de datos')
@@ -315,7 +318,7 @@ with sync_playwright() as p:
     ok('Fresno' in pg.inner_text('#dlg-guardado-detalle'),'el aviso dice qué se guardó')
     ok(id1 in pg.inner_text('#dlg-guardado-id'),'se guardó con el identificador que mostró la ficha')
     ok('en este dispositivo' in pg.inner_text('#dlg-guardado-dispositivo') and 'Es el primero' in pg.inner_text('#dlg-guardado-dispositivo'),'y dice que quedó en este dispositivo y cuántos van (D83): '+pg.inner_text('#dlg-guardado-dispositivo'))
-    ok('1 guardado' in pg.inner_text('#conexion'),'la pastilla del encabezado ya cuenta 1: '+pg.inner_text('#conexion').strip())
+    ok('1 guardado' in pg.text_content('#conexion'),'la pastilla del encabezado ya cuenta 1: '+pg.text_content('#conexion').strip())
     pg.click('#btn-registro-nuevo'); pg.wait_for_timeout(500)
     ok(pg.is_hidden('#dlg-guardado'),'«Agregar registro nuevo» cierra el aviso')
     ok(pg.evaluate("document.activeElement.id")=='btn-ubicacion','y deja el foco en el botón de ubicación')
@@ -463,7 +466,7 @@ with sync_playwright() as p:
     ok(HOY in d.value.suggested_filename,'y el archivo lleva el día del parte: '+d.value.suggested_filename)
 
     # ---------- SIN SEÑAL Y RESPALDO (B25) ----------
-    ok(pg.inner_text('#conexion').strip().startswith('Con conexión · ') and 'guardados' in pg.inner_text('#conexion') and pg.locator('#conexion svg').count()==1 and pg.get_attribute('#conexion','data-estado')=='con','el encabezado dice el estado de la conexión y cuántos registros guarda, con icono y color (D83): '+pg.inner_text('#conexion').strip())
+    ok(pg.text_content('#conexion').strip().startswith('Con conexión · ') and 'guardados' in pg.text_content('#conexion') and pg.locator('#conexion svg').count()==1 and pg.get_attribute('#conexion','data-estado')=='con','el encabezado dice el estado de la conexión y cuántos registros guarda, con icono y color (D83): '+pg.text_content('#conexion').strip())
     pg.click('#conexion'); pg.wait_for_timeout(200)
     ok(pg.is_visible('#dlg-senal'),'y tocar la pastilla abre la guía de qué hacer sin internet (D80)')
     pg.click('#btn-senal-cerrar'); pg.wait_for_timeout(200)
@@ -480,7 +483,7 @@ with sync_playwright() as p:
     pg.reload(); pg.wait_for_timeout(1500)
     ok(pg.is_visible('#vista-registros') or pg.is_visible('#vista-registrar') or pg.is_visible('#form-acceso'),'sin red, la app vuelve a abrir desde el teléfono')
     ok(pg.evaluate("SRP.CONFIG.VERSION")==MARCA,'y es la misma versión')
-    ok(pg.inner_text('#conexion').strip().startswith('Sin conexión · ') and 'guardados' in pg.inner_text('#conexion') and pg.get_attribute('#conexion','data-estado')=='sin','el encabezado avisa que no hay señal, en dorado y con icono tachado, y sigue contando: '+pg.inner_text('#conexion').strip())
+    ok(pg.text_content('#conexion').strip().startswith('Sin conexión · ') and 'guardados' in pg.text_content('#conexion') and pg.get_attribute('#conexion','data-estado')=='sin','el encabezado avisa que no hay señal, en dorado y con icono tachado, y sigue contando: '+pg.text_content('#conexion').strip())
     pg.evaluate("SRP.app.mostrarVista('reportes')"); pg.wait_for_timeout(500)
     ok('Siga registrando' in pg.inner_text('#aviso-envio'),'y Reportes dice que se puede seguir: '+pg.inner_text('#aviso-envio')[:70])
     ctx.set_offline(False); pg.wait_for_timeout(300)
@@ -553,7 +556,7 @@ with sync_playwright() as p:
     ok('Total: 3 ' in pg.inner_text('#registros-total'),'eliminar retira del listado: '+pg.inner_text('#registros-total'))
 
     # ---------- COORDINADOR ----------
-    pg.click('#btn-cambiar-perfil'); pg.select_option('#sel-usuario-prueba','u-coord-1'); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(600)
+    pg.click('#btn-cuenta'); pg.click('#btn-cambiar-perfil'); pg.select_option('#sel-usuario-prueba','u-coord-1'); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(600)
     pg.click('.pestana[data-vista=registros]'); pg.wait_for_timeout(500)
     pg.click('.chip[data-atajo=todos]'); pg.wait_for_timeout(300)
     ok('Total: 3 ' in pg.inner_text('#registros-total'),'el coordinador ve los de su cuadrilla: '+pg.inner_text('#registros-total'))
@@ -584,7 +587,7 @@ with sync_playwright() as p:
     pg.click('#btn-cancelar-edicion'); pg.wait_for_timeout(400)
 
     # ---------- ADMINISTRACIÓN: catálogos ----------
-    pg.click('#btn-cambiar-perfil'); pg.select_option('#sel-usuario-prueba','u-admin-1'); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(600)
+    pg.click('#btn-cuenta'); pg.click('#btn-cambiar-perfil'); pg.select_option('#sel-usuario-prueba','u-admin-1'); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(600)
     ok(pg.is_hidden('.pestana[data-vista=registrar]'),'la administración no tiene pestaña Registrar')
     ok(pg.is_visible('#vista-registros'),'y entra directamente a Registros')
     pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(300)
@@ -664,12 +667,12 @@ with sync_playwright() as p:
     pg.fill('#usr-correo','sutana@ejemplo.local'); pg.select_option('#usr-coordinador','u-coord-1')
     pg.click('#form-usuario button[type=submit]'); pg.wait_for_timeout(500)
     ok('Sutana Nueva Ejemplo' in pg.inner_text('#tabla-usuarios'),'se da de alta la cuenta nueva')
-    pg.click('#btn-cambiar-perfil'); pg.fill('#acceso-correo','sutana@ejemplo.local'); pg.fill('#acceso-clave','x')
+    pg.click('#btn-cuenta'); pg.click('#btn-cambiar-perfil'); pg.fill('#acceso-correo','sutana@ejemplo.local'); pg.fill('#acceso-clave','x')
     pg.click('#form-acceso button[type=submit]'); pg.wait_for_timeout(700)
     ok('Sutana' in pg.inner_text('#usuario-nombre') and pg.is_hidden('.pestana[data-vista=usuarios]'),'la cuenta nueva entra y no ve Usuarios')
     pg.evaluate("SRP.app.mostrarVista('usuarios')"); pg.wait_for_timeout(300)
     ok(pg.is_visible('#vista-registros'),'ni la abre llamándola directamente')
-    pg.click('#btn-cambiar-perfil'); pg.select_option('#sel-usuario-prueba','u-admin-1'); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(500)
+    pg.click('#btn-cuenta'); pg.click('#btn-cambiar-perfil'); pg.select_option('#sel-usuario-prueba','u-admin-1'); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(500)
     pg.click('.pestana[data-vista=usuarios]'); pg.wait_for_timeout(500)
     f=pg.locator('#tabla-usuarios tbody tr', has_text='Sutana')
     f.locator('button[data-accion=eliminar]').click(); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
@@ -677,7 +680,7 @@ with sync_playwright() as p:
     f2=pg.locator('#tabla-usuarios tbody tr', has_text='Fulana')
     f2.locator('button[data-accion=estado]').click(); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
     ok('Inactivo' in pg.locator('#tabla-usuarios tbody tr', has_text='Fulana').inner_text(),'se desactiva una cuenta')
-    pg.click('#btn-cerrar-sesion'); pg.wait_for_timeout(400)
+    pg.click('#btn-cuenta'); pg.click('#btn-cerrar-sesion'); pg.wait_for_timeout(400)
     ok(pg.is_visible('#vista-acceso') and pg.is_hidden('#encabezado-usuario'),'cerrar sesión devuelve al acceso')
     pg.fill('#acceso-correo','cabo@ejemplo.local'); pg.fill('#acceso-clave','x')
     pg.click('#form-acceso button[type=submit]'); pg.wait_for_timeout(400)

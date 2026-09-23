@@ -487,3 +487,14 @@
   movieron a `_to_delete/fuentes-anteriores/` para que Liber los borre; el metadato, el
   diccionario y el estilo SLD de alcaldías se guardan en `assets/fuentes/documentacion/`. Sube el
   sello de datos. Pedido por Liber, 22-09-2026.
+
+## Bloque 39 — La cuenta en un menú
+
+- **D93. El nombre, el perfil y las salidas de la cuenta van en un menú.** En el encabezado
+  quedan el logotipo, la pastilla de conexión (siempre a la vista: es lo que el cabo necesita en
+  campo) y un botón redondo con el icono de usuario. Al tocarlo aparecen el nombre, el perfil,
+  «Cerrar sesión» y, sólo con datos de prueba, «Cambiar usuario (pruebas)», que desaparece con
+  `ES_FICTICIO: false` como ya estaba previsto. El menú se cierra al tocar fuera o con Escape.
+  En teléfono la pastilla dice «Con conexión · 4» (la palabra «guardados» se oculta para caber
+  en una fila; la etiqueta accesible la dice completa). Antes el bloque ocupaba cuatro renglones.
+  Pedido por Liber, 22-09-2026.

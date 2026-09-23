@@ -122,8 +122,15 @@ SRP.app = {
       SRP.sesion.cerrar();
       this.mostrarAcceso();
     };
-    this.el('btn-cerrar-sesion').addEventListener('click', salir);
-    this.el('btn-cambiar-perfil').addEventListener('click', salir);
+    this.el('btn-cerrar-sesion').addEventListener('click', () => { this.menuCuenta(false); salir(); });
+    this.el('btn-cambiar-perfil').addEventListener('click', () => { this.menuCuenta(false); salir(); });
+    // Menú de la cuenta (D93): abre y cierra con el botón; se cierra al tocar fuera o con Escape
+    this.el('btn-cuenta').innerHTML = SRP.ICONOS.svg('usuario', 22);
+    this.el('btn-cuenta').addEventListener('click', () => this.menuCuenta(this.el('menu-cuenta').hidden));
+    document.addEventListener('click', (e) => { if (!e.target.closest('.cuenta')) this.menuCuenta(false); });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !this.el('menu-cuenta').hidden) { this.menuCuenta(false); this.el('btn-cuenta').focus(); }
+    });
     this.el('btn-restablecer').addEventListener('click', async () => {
       const ok = await this.confirmar('¿Restablecer los datos de prueba? Se pierde todo lo capturado en este dispositivo.', 'Restablecer');
       if (!ok) return;
@@ -136,7 +143,13 @@ SRP.app = {
     });
   },
 
+  menuCuenta(abrir) {
+    this.el('menu-cuenta').hidden = !abrir;
+    this.el('btn-cuenta').setAttribute('aria-expanded', String(!!abrir));
+  },
+
   mostrarAcceso() {
+    this.menuCuenta(false);
     this.el('navegacion').hidden = true;
     this.el('encabezado-usuario').hidden = true;
     this.el('herramientas-prueba').hidden = true;
@@ -155,7 +168,8 @@ SRP.app = {
   entrar() {
     const u = SRP.sesion.usuario;
     const p = SRP.permisos.de(u);
-    this.el('usuario-nombre').innerHTML = SRP.ICONOS.svg('usuario', 18) + '<span>' + SRP.util.escapar(SRP.util.nombreCompleto(u)) + '</span>';
+    this.el('usuario-nombre').textContent = SRP.util.nombreCompleto(u);
+    this.el('btn-cuenta').setAttribute('aria-label', 'Cuenta: ' + SRP.util.nombreCompleto(u) + ', ' + p.etiqueta + '. Abrir menú');
     this.el('usuario-perfil').textContent = p.etiqueta;
     this.el('encabezado-usuario').hidden = false;
     this.el('btn-cambiar-perfil').hidden = !SRP.CONFIG.ES_FICTICIO;
