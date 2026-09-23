@@ -74,7 +74,7 @@ SRP.espejo = {
     fecha_creacion: 'Se fija al generar por primera vez',
     editado_por_id: 'Quién generó por última vez',
     fecha_ultima_edicion: 'Se fija en cada generación',
-    arboles_sembrados: 'Se anota en Jornadas, no aquí; el reporte dice si cuadra con los registros (D112)',
+    arboles_plantados: 'Se anota en Jornadas, no aquí; el reporte dice si cuadra con los registros (D112)',
     puntos_revisados: 'Puntos con aviso marcados «Está bien» en Jornadas (D112)'
   },
 

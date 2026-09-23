@@ -199,7 +199,7 @@ SRP.reportes = {
       editado_por_id: SRP.sesion.usuario.id,
       fecha_ultima_edicion: ahora,
       // Lo que se anota en Jornadas no se escribe aquí, pero tampoco se pierde al cerrar el reporte (D112)
-      arboles_sembrados: previo && Number.isInteger(previo.arboles_sembrados) ? previo.arboles_sembrados : null,
+      arboles_plantados: previo && Number.isInteger(previo.arboles_plantados) ? previo.arboles_plantados : null,
       puntos_revisados: previo && Array.isArray(previo.puntos_revisados) ? previo.puntos_revisados : []
     };
     this.CAMPOS.forEach(k => { cierre[k] = this.el('cie-' + k).value.trim(); });
@@ -229,11 +229,11 @@ SRP.reportes = {
     this.el('dlg-previa').showModal();
   },
 
-  // La conciliación de Jornadas en el reporte (D112): sólo si la cuadrilla anotó cuántos sembró
+  // La conciliación de Jornadas en el reporte (D112): sólo si la cuadrilla anotó cuántos plantó
   textoConteo(cierre, registros) {
-    if (!cierre || !Number.isInteger(cierre.arboles_sembrados)) return '';
-    const s = cierre.arboles_sembrados, n = registros.length;
-    return 'Árboles sembrados según la cuadrilla: ' + s + ' · registrados: ' + n + (s === n ? ' (cuadra)' : ' (no cuadra)');
+    if (!cierre || !Number.isInteger(cierre.arboles_plantados)) return '';
+    const s = cierre.arboles_plantados, n = registros.length;
+    return 'Árboles plantados según la cuadrilla: ' + s + ' · registrados: ' + n + (s === n ? ' (cuadra)' : ' (no cuadra)');
   },
 
   htmlPrevia(registros, cierre, fecha) {

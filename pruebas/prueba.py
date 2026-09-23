@@ -624,7 +624,7 @@ with sync_playwright() as p:
     pg.click('#btn-pdf'); pg.wait_for_timeout(400)
     ok(pg.is_visible('#dlg-cierre'),'el botón abre el cierre del reporte antes de generar')
     espejoC=pg.evaluate("[...document.querySelectorAll('#espejo-cierre-cuerpo .espejo-campo')].map(e=>e.textContent)")
-    ok(espejoC==['id','es_ficticio','fecha','cabo_id','creado_por_id','fecha_creacion','editado_por_id','fecha_ultima_edicion','arboles_sembrados','puntos_revisados'],
+    ok(espejoC==['id','es_ficticio','fecha','cabo_id','creado_por_id','fecha_creacion','editado_por_id','fecha_ultima_edicion','arboles_plantados','puntos_revisados'],
        'el cierre lleva su espejo con los diez campos que no se capturan aquí (D112): '+', '.join(espejoC))
     pg.fill('#cie-chofer','Mengano'); pg.wait_for_timeout(200)
     ok(pg.evaluate("SRP.reportes.cierrePrevisto().chofer")=='Mengano','y lo que se escribe entra al mismo objeto que se guarda')
@@ -679,7 +679,12 @@ with sync_playwright() as p:
       return { f, ids }; }""")
     pg.click('#navegacion [data-vista=jornadas]'); pg.wait_for_timeout(700)
     ok(pg.is_visible('#vista-jornadas') and pg.get_attribute('#navegacion [data-vista=jornadas]','aria-current')=='page' and pg.locator('#navegacion .pestana:visible').count()==4,
-       '«Jornadas» es la cuarta sección del menú y abre su vista (D112)')
+       '«Jornadas» es una sección del menú y abre su vista (D112)')
+    ok(pg.eval_on_selector_all('#navegacion .pestana','b=>b.filter(x=>!x.hidden).map(x=>x.dataset.vista)')==['registrar','jornadas','registros','reportes'],'el orden es Nuevo registro, Jornadas, Registros, Reportes (D114)')
+    pg.click('#btn-cuenta'); pg.wait_for_timeout(150)
+    ok(pg.locator('#btn-contraste svg').count()==1 and pg.locator('#btn-cerrar-sesion svg').count()==1 and pg.locator('#menu-cuenta .menu-opcion:visible').count()==pg.locator('#menu-cuenta .menu-opcion:visible svg').count(),
+       'cada opción del menú de la cuenta lleva icono: sol en Modo sol y puerta en Cerrar sesión (D114)')
+    pg.keyboard.press('Escape'); pg.evaluate("SRP.app.menuCuenta(false)"); pg.wait_for_timeout(150)
     ok(pg.evaluate("(() => { const b=document.querySelector('#navegacion [data-vista=jornadas]'); const r=b.getBoundingClientRect(); return r.top > 700 && r.bottom <= 844; })()"),'y en teléfono va en la barra de abajo')
     ok([c for c in pg.eval_on_selector_all('#jornada-atajos .chip','b=>b.map(x=>x.dataset.atajo)')]==['hoy','dia','todas'],'con los atajos Hoy, Un día y Todas')
     tarj=pg.locator('#lista-jornadas .jornada')
@@ -698,9 +703,9 @@ with sync_playwright() as p:
     ok(tonos==['','','rev','rev','err'],'los números llevan el color del aviso: %s' % tonos)
     ok(pg.get_attribute('#jornada-conciliacion','data-tono')=='neutro' and 'Escriba cuántos' in pg.inner_text('#jornada-resultado') and 'Quedan 3 puntos por revisar' in pg.inner_text('#jornada-resultado'),
        'sin conteo, la conciliación pide el número y dice cuántos puntos quedan por revisar')
-    pg.fill('#jornada-sembrados','4'); pg.dispatch_event('#jornada-sembrados','change'); pg.wait_for_timeout(400)
-    ok(pg.get_attribute('#jornada-conciliacion','data-tono')=='err' and 'Sobra 1 registro' in pg.inner_text('#jornada-resultado'),'con 4 sembrados y 5 registrados avisa que sobra 1: '+pg.inner_text('#jornada-resultado'))
-    guardado=pg.evaluate("async () => (await SRP.almacen.uno('cierres', SRP.reportes.claveCierre('%s', SRP.sesion.usuario.id))).arboles_sembrados" % J['f'])
+    pg.fill('#jornada-plantados','4'); pg.dispatch_event('#jornada-plantados','change'); pg.wait_for_timeout(400)
+    ok(pg.get_attribute('#jornada-conciliacion','data-tono')=='err' and 'Sobra 1 registro' in pg.inner_text('#jornada-resultado'),'con 4 plantados y 5 registrados avisa que sobra 1: '+pg.inner_text('#jornada-resultado'))
+    guardado=pg.evaluate("async () => (await SRP.almacen.uno('cierres', SRP.reportes.claveCierre('%s', SRP.sesion.usuario.id))).arboles_plantados" % J['f'])
     ok(guardado==4,'y el conteo queda en el cierre del día de esa jornada')
     # Tocar un punto lo marca en mapa y lista
     pg.click('#jornada-lista .punto-jornada[data-id="%s"] .punto-datos' % J['ids'][1]); pg.wait_for_timeout(300)
@@ -709,7 +714,7 @@ with sync_playwright() as p:
     pg.click('#jornada-lista .punto-jornada[data-id="%s"] [data-accion=eliminar]' % J['ids'][3]); pg.wait_for_timeout(300)
     pg.click('#btn-confirmar-si'); pg.wait_for_timeout(700)
     ok(pg.is_visible('#jornada-detalle') and pg.locator('#jornada-lista .punto-jornada').count()==4 and pg.locator('#jornada-mapa .pin-num').count()==4,'eliminar el duplicado deja la jornada en 4 puntos y sigue en la misma pantalla')
-    ok(pg.get_attribute('#jornada-conciliacion','data-tono')=='rev' and pg.inner_text('#jornada-resultado').startswith('Cuadra: 4 sembrados y 4 registrados'),'y ahora cuadra: '+pg.inner_text('#jornada-resultado'))
+    ok(pg.get_attribute('#jornada-conciliacion','data-tono')=='rev' and pg.inner_text('#jornada-resultado').startswith('Cuadra: 4 plantados y 4 registrados'),'y ahora cuadra: '+pg.inner_text('#jornada-resultado'))
     ok('Posible duplicado' not in pg.inner_text('#jornada-lista'),'ya no hay aviso de duplicado')
     # «Está bien» sobre el lejano
     pg.click('#jornada-lista .punto-jornada[data-id="%s"] [data-accion=bien]' % J['ids'][4]); pg.wait_for_timeout(500)
@@ -725,7 +730,7 @@ with sync_playwright() as p:
     pg.click('#btn-jornada-reporte'); pg.wait_for_timeout(500)
     ok(pg.is_visible('#vista-reportes') and pg.input_value('#pdf-dia')==J['f'],'«Reporte de la jornada» abre Reportes con la fecha de la jornada')
     pg.click('#btn-pdf'); pg.wait_for_timeout(400); pg.click('#btn-cierre-generar'); pg.wait_for_timeout(500)
-    ok('sembrados según la cuadrilla: 4 · registrados: 4 (cuadra)' in pg.inner_text('#previa-hoja'),'y el reporte lleva la conciliación')
+    ok('plantados según la cuadrilla: 4 · registrados: 4 (cuadra)' in pg.inner_text('#previa-hoja'),'y el reporte lleva la conciliación')
     pg.click('#btn-previa-cerrar') if pg.locator('#btn-previa-cerrar').count() else pg.keyboard.press('Escape'); pg.wait_for_timeout(300)
     pg.click('#navegacion [data-vista=jornadas]'); pg.wait_for_timeout(600)
     ok(pg.is_visible('#jornadas-lista-caja') and pg.is_hidden('#jornada-detalle'),'volver a Jornadas abre la lista')
@@ -737,7 +742,7 @@ with sync_playwright() as p:
     pg.evaluate("SRP.app.mostrarVista('reportes')"); pg.wait_for_timeout(300)
 
     # ---------- SIN SEÑAL Y RESPALDO (B25) ----------
-    pg.evaluate("SRP.envio.alCambiar()"); pg.wait_for_timeout(400)   # lo sembrado para Jornadas se retiró a mano: la pastilla se pone al día
+    pg.evaluate("SRP.envio.alCambiar()"); pg.wait_for_timeout(400)   # lo cargado para Jornadas se retiró a mano: la pastilla se pone al día
     ok(pg.text_content('#conexion').strip().startswith('Con conexión · ') and pg.locator('#conexion svg').count()==1 and pg.get_attribute('#conexion','data-estado')=='con','el encabezado dice el estado de la conexión y del envío, con icono y color (D83, D111): '+pg.text_content('#conexion').strip())
     pg.click('#conexion'); pg.wait_for_timeout(200)
     ok(pg.is_visible('#dlg-senal'),'y tocar la pastilla abre la guía de qué hacer sin internet (D80)')

@@ -755,12 +755,12 @@
 ## Bloque 57 — Jornadas y el atajo «Un día»
 
 - **D112. «Jornadas» es la cuarta sección: mapa y lista de lo registrado en un día de trabajo.**
-  Al cierre, cabos y coordinadores necesitan comprobar que cada árbol sembrado tenga su punto y
+  Al cierre, cabos y coordinadores necesitan comprobar que cada árbol plantado tenga su punto y
   corregir lo que salió mal. Una jornada es la fecha de plantación más el cabo, la misma llave
   del cierre del día; si ese día hubo dos sitios a más de 500 m, se muestran como dos tarjetas.
   La revisión tiene el mapa con los puntos numerados en el orden en que se registraron, la lista
-  con el mismo número (tocar uno lo marca en ambos), la conciliación «Árboles sembrados según la
-  cuadrilla» contra los registrados (se guarda en el cierre como `arboles_sembrados` y sale en el
+  con el mismo número (tocar uno lo marca en ambos), la conciliación «Árboles plantados según la
+  cuadrilla» contra los registrados (se guarda en el cierre como `arboles_plantados` y sale en el
   reporte), y avisos por punto: posible duplicado (misma especie a menos de 3 m), lejos del resto
   (a más de 150 m de la mediana de los demás) y precisión baja (peor que 30 m). «Está bien» marca
   el punto como revisado (`puntos_revisados` del cierre); «Eliminar» sólo aparece en duplicados;
@@ -774,3 +774,15 @@
   abrir «Un periodo» y repetirla en Desde y Hasta. «Un día» muestra una sola fecha y filtra en
   cuanto se elige, sin «Aplicar»; esconde año, mes y el rango mientras está activo. Los atajos
   quedan Hoy · Un día · Todos · Un periodo. Pedido por Liber, 23-09-2026.
+
+## Bloque 58 — Vocabulario, iconos del menú y orden de secciones
+
+- **D114. Los árboles se plantan, no se siembran; iconos en el menú de la cuenta; orden de las
+  secciones.** (1) «Sembrar» se reserva a la agricultura: en pantalla, reporte y esquema se dice
+  «plantar»; el campo del cierre pasa de `arboles_sembrados` a `arboles_plantados` (nunca llegó a
+  producción) y la auditoría vigila que el término no vuelva. Cargar los datos de arranque se sigue
+  llamando «sembrar» en `almacen.js`: no habla de árboles. (2) Cada opción del menú de la cuenta
+  lleva icono: sol en «Modo sol», puerta en «Cerrar sesión» (los dos pedidos) y disco, señal
+  tachada y usuario en las demás, por consistencia. (3) Las secciones van en este orden: Nuevo
+  registro, Jornadas, Registros, Reportes (y Catálogos y Usuarios para administración). Pedido por
+  Liber, 23-09-2026.

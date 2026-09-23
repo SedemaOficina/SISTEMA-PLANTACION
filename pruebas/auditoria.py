@@ -172,7 +172,7 @@ with sync_playwright() as p:
         /* Igual que las plantaciones: los campos se leen del código, no de lo guardado. Un
            almacén vacío haría pasar por inventado todo lo que el mapeo documenta. */
         cierres: ['id','es_ficticio','fecha','cabo_id','encargado_id','creado_por_id','fecha_creacion',
-                  'editado_por_id','fecha_ultima_edicion','arboles_sembrados','puntos_revisados'].concat(SRP.reportes.CAMPOS),
+                  'editado_por_id','fecha_ultima_edicion','arboles_plantados','puntos_revisados'].concat(SRP.reportes.CAMPOS),
         bitacora: bitacora()
       };
     }""")
@@ -240,6 +240,13 @@ with sync_playwright() as p:
         for marca in ('SRP-AAA-000-AAAA-00000', 'char(22)', 'SRP-TLP-', "'SRP-' +"):
             if marca in t: viejos.append(f + ': ' + marca)
     mirar(not viejos, 'no queda rastro del folio de 22 caracteres fuera de la bitácora', '; '.join(sorted(set(viejos))))
+    # Los árboles se plantan; «sembrar» es de agricultura (D114). Se revisa lo que ve la persona: pantalla,
+    # reportes y esquema. Cargar los datos de arranque se sigue llamando sembrar en almacen.js: no habla de árboles
+    prohibidos = []
+    for f in ['index.html', 'esquema.json', 'MAPEO-CAMPOS.md', 'MEJORAS.md', 'js/jornadas.js', 'js/reportes.js', 'js/registros.js', 'js/formulario.js', 'js/espejo.js', 'js/conexion.js', 'js/envio.js']:
+        t = open(os.path.join(APP, f), encoding='utf-8').read()
+        if re.search(r'\b(sembrad[oa]s?|sembr[oó]|sembraron|siembras?)\b', t.replace('sello con el que se sembró', '').replace('se siembran desde assets', '').replace('Siembra: al abrir con sello', '')): prohibidos.append(f)
+    mirar(not prohibidos, 'ningún texto de pantalla, reporte ni esquema dice «sembrar» de un árbol: se dice plantar (D114)', ', '.join(prohibidos))
     b.close()
 
 malos = [h for h in hallazgos if not h[0]]

@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#9D2148">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.38">
-<link rel="preload" as="image" href="assets/encabezado-ru-movil.png?v=0.6.38">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.39">
+<link rel="preload" as="image" href="assets/encabezado-ru-movil.png?v=0.6.39">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.38">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.38">
-<link rel="stylesheet" href="css/estilos.css?v=0.6.38">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.39">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.39">
+<link rel="stylesheet" href="css/estilos.css?v=0.6.39">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -21,8 +21,8 @@
   <div class="encabezado-interior">
     <!-- Logotipo del Programa de Reforestación Urbana (D90): completo en pantalla ancha; en teléfono, el emblema y el nombre del programa -->
     <picture>
-      <source media="(max-width: 480px)" srcset="assets/encabezado-ru-movil.png?v=0.6.38">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru.png?v=0.6.38" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Reforestación Urbana">
+      <source media="(max-width: 480px)" srcset="assets/encabezado-ru-movil.png?v=0.6.39">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru.png?v=0.6.39" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» (D80) -->
@@ -61,8 +61,9 @@
 
 <nav id="navegacion" class="pestanas" aria-label="Secciones" hidden>
   <button type="button" class="pestana" data-vista="registrar">Nuevo registro</button>
-  <button type="button" class="pestana" data-vista="registros">Registros</button>
+  <!-- Orden pedido por Liber (D114): Nuevo registro, Jornadas, Registros, Reportes -->
   <button type="button" class="pestana" data-vista="jornadas">Jornadas</button>
+  <button type="button" class="pestana" data-vista="registros">Registros</button>
   <button type="button" class="pestana" data-vista="reportes">Reportes</button>
   <button type="button" class="pestana" data-vista="catalogos">Catálogos</button>
   <button type="button" class="pestana" data-vista="usuarios">Usuarios</button>
@@ -295,7 +296,7 @@
   <section id="vista-jornadas" class="vista" hidden aria-labelledby="titulo-jornadas">
     <div id="jornadas-lista-caja">
       <h1 id="titulo-jornadas">Jornadas</h1>
-      <p class="nota">Cada día de trabajo con su mapa, para comprobar al cierre que cada árbol sembrado tenga su punto.</p>
+      <p class="nota">Cada día de trabajo con su mapa, para comprobar al cierre que cada árbol plantado tenga su punto.</p>
       <section class="bloque" aria-label="Filtros de jornadas">
         <div class="filtros zona-filtros">
           <div class="filtros-fila">
@@ -327,8 +328,8 @@
       <div id="jornada-mapa" class="mapa mapa-jornada" role="region" aria-label="Mapa de la jornada con los puntos numerados"></div>
       <p class="leyenda-jornada" aria-hidden="true"><span><i data-tono=""></i>Registro</span><span><i data-tono="rev"></i>Revisar</span><span><i data-tono="err"></i>Lejos del resto</span></p>
       <div id="jornada-conciliacion" class="conciliacion" data-tono="neutro">
-        <div class="conciliacion-fila"><label for="jornada-sembrados">Árboles sembrados según la cuadrilla</label>
-          <input type="number" id="jornada-sembrados" inputmode="numeric" min="0" max="9999" step="1" placeholder="—"></div>
+        <div class="conciliacion-fila"><label for="jornada-plantados">Árboles plantados según la cuadrilla</label>
+          <input type="number" id="jornada-plantados" inputmode="numeric" min="0" max="9999" step="1" placeholder="—"></div>
         <div class="conciliacion-fila"><span id="jornada-registrados-etiqueta">Registrados en el sistema</span><strong id="jornada-registrados"></strong></div>
         <p id="jornada-resultado" class="conciliacion-resultado" aria-live="polite"></p>
       </div>
@@ -639,39 +640,39 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.6.38"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.38"></script>
-<script src="vendor/turf-pip.min.js?v=0.6.38"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.6.38"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.38"></script>
+<script src="vendor/leaflet.js?v=0.6.39"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.39"></script>
+<script src="vendor/turf-pip.min.js?v=0.6.39"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.6.39"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.39"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.6.38"></script>
-<script src="js/util.js?v=0.6.38"></script>
-<script src="js/iconos.js?v=0.6.38"></script>
+<script src="js/config.js?v=0.6.39"></script>
+<script src="js/util.js?v=0.6.39"></script>
+<script src="js/iconos.js?v=0.6.39"></script>
 <!-- Capas territoriales del SIA, compactadas por pruebas/generar_capas.py desde assets/fuentes/ -->
-<script src="assets/capa-alcaldias.js?v=0.6.38"></script>
-<script src="assets/capa-uga.js?v=0.6.38"></script>
-<script src="assets/capa-colonias.js?v=0.6.38"></script>
-<script src="assets/catalogo-especies.js?v=0.6.38"></script>
-<script src="js/datos-ficticios.js?v=0.6.38"></script>
-<script src="js/permisos.js?v=0.6.38"></script>
-<script src="js/derivacion.js?v=0.6.38"></script>
-<script src="js/almacen.js?v=0.6.38"></script>
-<script src="js/sesion.js?v=0.6.38"></script>
-<script src="js/referencias.js?v=0.6.38"></script>
-<script src="js/folio.js?v=0.6.38"></script>
-<script src="js/conexion.js?v=0.6.38"></script>
-<script src="js/envio.js?v=0.6.38"></script>
-<script src="js/mapa.js?v=0.6.38"></script>
-<script src="js/foto.js?v=0.6.38"></script>
-<script src="js/formulario.js?v=0.6.38"></script>
+<script src="assets/capa-alcaldias.js?v=0.6.39"></script>
+<script src="assets/capa-uga.js?v=0.6.39"></script>
+<script src="assets/capa-colonias.js?v=0.6.39"></script>
+<script src="assets/catalogo-especies.js?v=0.6.39"></script>
+<script src="js/datos-ficticios.js?v=0.6.39"></script>
+<script src="js/permisos.js?v=0.6.39"></script>
+<script src="js/derivacion.js?v=0.6.39"></script>
+<script src="js/almacen.js?v=0.6.39"></script>
+<script src="js/sesion.js?v=0.6.39"></script>
+<script src="js/referencias.js?v=0.6.39"></script>
+<script src="js/folio.js?v=0.6.39"></script>
+<script src="js/conexion.js?v=0.6.39"></script>
+<script src="js/envio.js?v=0.6.39"></script>
+<script src="js/mapa.js?v=0.6.39"></script>
+<script src="js/foto.js?v=0.6.39"></script>
+<script src="js/formulario.js?v=0.6.39"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.6.38"></script>
-<script src="js/registros.js?v=0.6.38"></script>
-<script src="js/jornadas.js?v=0.6.38"></script>
-<script src="js/reportes.js?v=0.6.38"></script>
-<script src="js/catalogos.js?v=0.6.38"></script>
-<script src="js/usuarios.js?v=0.6.38"></script>
-<script src="js/app.js?v=0.6.38"></script>
+<script src="js/espejo.js?v=0.6.39"></script>
+<script src="js/registros.js?v=0.6.39"></script>
+<script src="js/jornadas.js?v=0.6.39"></script>
+<script src="js/reportes.js?v=0.6.39"></script>
+<script src="js/catalogos.js?v=0.6.39"></script>
+<script src="js/usuarios.js?v=0.6.39"></script>
+<script src="js/app.js?v=0.6.39"></script>
 </body>
 </html>

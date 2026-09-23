@@ -1137,3 +1137,16 @@ revisa Jornadas con una abierta.
 
 **Verificación:** 366 comprobaciones sin errores de consola; 84 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.38.
+
+## Bloque 58 — Vocabulario, iconos del menú y orden de secciones (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.39.
+
+**Qué cambió (D114).** «Sembrados» → «plantados» en `index.html`, `jornadas.js`, `reportes.js`,
+`espejo.js`, `esquema.json` (campo `arboles_plantados`), MAPEO y MEJORAS; diccionario regenerado.
+`iconos.js`: `sol` y `salir`; `app.js` pone icono a las cinco opciones del menú de la cuenta.
+`index.html`: pestañas en el orden Nuevo registro, Jornadas, Registros, Reportes. Pruebas: orden
+de las pestañas e iconos del menú; auditoría: el término «sembrar» no aparece en pantalla,
+reportes ni esquema (85 comprobaciones).
+
+**Verificación:** 368 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.39.

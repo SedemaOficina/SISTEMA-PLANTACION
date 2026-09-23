@@ -184,7 +184,7 @@ cuenta. Lo que ya vive en los registros —especies, conteos, alcaldía— no se
 | `observaciones` | No | Persona | Una por renglón |
 | `chofer` | No | Persona | |
 | `vehiculo_modelo` | No | Persona | Sustituye a `vehiculo` (bloque 20); un cierre anterior se muestra aquí |
-| `arboles_sembrados` | No | Persona | Se anota en **Jornadas** («Árboles sembrados según la cuadrilla»); el reporte dice si cuadra con los registros (D112) |
+| `arboles_plantados` | No | Persona | Se anota en **Jornadas** («Árboles plantados según la cuadrilla»); el reporte dice si cuadra con los registros (D112) |
 | `puntos_revisados` | Sí | Persona | Puntos con aviso que alguien marcó «Está bien» en **Jornadas**; lista de `plantaciones.id` (D112) |
 | `vehiculo_placa` | No | Persona | |
 | `hora` | No | Persona | Hora de finalización, `HH:MM` del selector de hora; el PDF le agrega «h» |

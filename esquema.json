@@ -787,7 +787,7 @@
       ]
     },
     "cierres": {
-      "que_es": "Datos de cierre del reporte del día: un renglón por jornada y cuadrilla (`fecha|cabo_id`). Todo es opcional; su destino es el PDF (D58) y, desde D112, la conciliación de la jornada (arboles_sembrados, puntos_revisados).",
+      "que_es": "Datos de cierre del reporte del día: un renglón por jornada y cuadrilla (`fecha|cabo_id`). Todo es opcional; su destino es el PDF (D58) y, desde D112, la conciliación de la jornada (arboles_plantados, puntos_revisados).",
       "llave": "id",
       "indices": [
         "fecha"
@@ -876,12 +876,12 @@
           "regla": ""
         },
         {
-          "campo": "arboles_sembrados",
+          "campo": "arboles_plantados",
           "tipo": "integer",
           "nulo": true,
           "origen": "Persona",
           "dominio": "0–9999; nulo si la cuadrilla no lo anotó",
-          "pantalla": "Jornadas → «Árboles sembrados según la cuadrilla»",
+          "pantalla": "Jornadas → «Árboles plantados según la cuadrilla»",
           "regla": "Conciliación de la jornada (D112): se compara con los registros activos del día y el cabo; el reporte dice si cuadra. Nunca sustituye al conteo de registros"
         },
         {

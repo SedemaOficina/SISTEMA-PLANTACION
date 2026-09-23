@@ -16,6 +16,9 @@ SRP.app = {
     const pestana = { registrar: 'mas', registros: 'registros', jornadas: 'jornadas', reportes: 'reportes', catalogos: 'catalogos', usuarios: 'usuarios' };
     this.el('navegacion').querySelectorAll('.pestana').forEach(b => I.poner(b, pestana[b.dataset.vista], 22));
     I.poner(this.el('btn-usr-agregar'), 'usuarioMas', 20);
+    // Menú de la cuenta con icono en cada opción (D114): el sol y la puerta pedidos por Liber, y el resto por consistencia
+    [['btn-contraste', 'sol'], ['btn-respaldo', 'disco'], ['btn-sin-senal', 'sinSenal'], ['btn-cambiar-perfil', 'usuario'], ['btn-cerrar-sesion', 'salir']]
+      .forEach(([id, icono]) => I.poner(this.el(id), icono, 20));
     // Los buscadores llevan la lupa dentro del campo, desde la hoja de estilos (D95)
     // Avisos informativos: el icono va al frente del texto
     document.querySelectorAll('.aviso-simulado').forEach(a => a.insertAdjacentHTML('afterbegin', I.svg('info', 18)));

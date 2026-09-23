@@ -1,7 +1,7 @@
 /* JORNADAS: MAPA Y LISTA DE LO REGISTRADO EN UNA JORNADA (D112).
 
-   PARA QUÉ. Al cierre, la cuadrilla necesita comprobar que cada árbol sembrado tenga su punto
-   («si sembraron 10, que haya 10») y corregir lo que salió mal. Esta vista junta los registros de
+   PARA QUÉ. Al cierre, la cuadrilla necesita comprobar que cada árbol plantado tenga su punto
+   («si plantaron 10, que haya 10») y corregir lo que salió mal. Esta vista junta los registros de
    una jornada en un mapa con puntos numerados en el orden en que se registraron y, debajo, la
    misma lista con el mismo número.
 
@@ -11,9 +11,9 @@
    sitio. El nombre del sitio sale del cierre («Sitio», primer renglón) o, si no se ha escrito, de
    la colonia más frecuente de los puntos.
 
-   CONCILIACIÓN. Se escribe cuántos árboles sembró la cuadrilla; el sistema lo compara con los
+   CONCILIACIÓN. Se escribe cuántos árboles plantó la cuadrilla; el sistema lo compara con los
    registros y dice si cuadra, si faltan o si sobran. El número se guarda en el cierre del día
-   (`arboles_sembrados`) y sale en el reporte.
+   (`arboles_plantados`) y sale en el reporte.
 
    AVISOS (sin inventar errores: son para revisar, no se corrigen solos):
      duplicado   misma especie a menos de DUPLICADO_M de otro punto de la jornada
@@ -51,7 +51,7 @@ SRP.jornadas = {
       const li = e.target.closest('[data-clave]'); if (li) this.abrir(li.dataset.clave);
     });
     this.el('btn-jornada-volver').addEventListener('click', () => this.cerrar());
-    this.el('jornada-sembrados').addEventListener('change', () => this.guardarConteo());
+    this.el('jornada-plantados').addEventListener('change', () => this.guardarConteo());
     this.el('jornada-lista').addEventListener('click', (e) => this.alTocarLista(e));
     this.el('btn-jornada-faltante').addEventListener('click', () => this.registrarFaltante());
     this.el('btn-jornada-reporte').addEventListener('click', () => this.irAlReporte());
@@ -166,12 +166,12 @@ SRP.jornadas = {
   /* El estado de la jornada en una frase y un tono: lo que se ve en la tarjeta y en la revisión */
   estado(j, avisos, cierre) {
     const pend = this.pendientes(j, avisos, cierre).length;
-    const sembrados = cierre && Number.isInteger(cierre.arboles_sembrados) ? cierre.arboles_sembrados : null;
+    const plantados = cierre && Number.isInteger(cierre.arboles_plantados) ? cierre.arboles_plantados : null;
     const reg = j.totalDia;
     if (pend) return { tono: 'rev', texto: pend === 1 ? '1 punto por revisar' : pend + ' puntos por revisar' };
-    if (sembrados === null) return { tono: 'neutro', texto: 'Sin conteo de la cuadrilla' };
-    if (sembrados === reg) return { tono: 'ok', texto: 'Revisada: ' + reg + ' de ' + sembrados };
-    return { tono: 'err', texto: 'Contados ' + sembrados + ' · registrados ' + reg };
+    if (plantados === null) return { tono: 'neutro', texto: 'Sin conteo de la cuadrilla' };
+    if (plantados === reg) return { tono: 'ok', texto: 'Revisada: ' + reg + ' de ' + plantados };
+    return { tono: 'err', texto: 'Contados ' + plantados + ' · registrados ' + reg };
   },
 
   /* ---------- Lista de jornadas ---------- */
@@ -312,8 +312,8 @@ SRP.jornadas = {
       (this.alcaldiasDe(j).length ? ' · ' + this.alcaldiasDe(j).join(', ') : '');
 
     // Conciliación: se compara con todo lo del día del cabo, aunque se haya partido en sitios
-    const inp = this.el('jornada-sembrados');
-    if (document.activeElement !== inp) inp.value = cierre && Number.isInteger(cierre.arboles_sembrados) ? cierre.arboles_sembrados : '';
+    const inp = this.el('jornada-plantados');
+    if (document.activeElement !== inp) inp.value = cierre && Number.isInteger(cierre.arboles_plantados) ? cierre.arboles_plantados : '';
     this.el('jornada-registrados').textContent = j.totalDia;
     this.el('jornada-registrados-etiqueta').textContent = j.partes > 1 ? 'Registrados en el día (' + j.partes + ' sitios)' : 'Registrados en el sistema';
     this.pintarConciliacion();
@@ -346,24 +346,24 @@ SRP.jornadas = {
 
   pintarConciliacion() {
     const j = this.jornada;
-    const v = this.el('jornada-sembrados').value;
-    const sembrados = v === '' ? null : Number(v);
+    const v = this.el('jornada-plantados').value;
+    const plantados = v === '' ? null : Number(v);
     const reg = j.totalDia;
     const pend = this.pendientes(j, this.avisosActuales || {}, this.cierre).length;
     const caja = this.el('jornada-conciliacion');
     const res = this.el('jornada-resultado');
     const cola = pend ? ' Quedan ' + (pend === 1 ? '1 punto' : pend + ' puntos') + ' por revisar.' : '';
     let tono, texto;
-    if (sembrados === null || !Number.isInteger(sembrados)) {
-      tono = 'neutro'; texto = 'Escriba cuántos árboles sembró la cuadrilla para comprobar que cada uno tenga su punto.' + cola;
-    } else if (sembrados === reg) {
-      tono = pend ? 'rev' : 'ok'; texto = 'Cuadra: ' + sembrados + ' sembrados y ' + reg + ' registrados.' + cola;
-    } else if (sembrados > reg) {
-      const n = sembrados - reg;
-      tono = 'err'; texto = (n === 1 ? 'Falta 1 registro' : 'Faltan ' + n + ' registros') + ': se sembraron ' + sembrados + ' y hay ' + reg + ' puntos.' + cola;
+    if (plantados === null || !Number.isInteger(plantados)) {
+      tono = 'neutro'; texto = 'Escriba cuántos árboles plantó la cuadrilla para comprobar que cada uno tenga su punto.' + cola;
+    } else if (plantados === reg) {
+      tono = pend ? 'rev' : 'ok'; texto = 'Cuadra: ' + plantados + ' plantados y ' + reg + ' registrados.' + cola;
+    } else if (plantados > reg) {
+      const n = plantados - reg;
+      tono = 'err'; texto = (n === 1 ? 'Falta 1 registro' : 'Faltan ' + n + ' registros') + ': se plantaron ' + plantados + ' y hay ' + reg + ' puntos.' + cola;
     } else {
-      const n = reg - sembrados;
-      tono = 'err'; texto = (n === 1 ? 'Sobra 1 registro' : 'Sobran ' + n + ' registros') + ': se sembraron ' + sembrados + ' y hay ' + reg + ' puntos. Busque duplicados en el mapa.' + cola;
+      const n = reg - plantados;
+      tono = 'err'; texto = (n === 1 ? 'Sobra 1 registro' : 'Sobran ' + n + ' registros') + ': se plantaron ' + plantados + ' y hay ' + reg + ' puntos. Busque duplicados en el mapa.' + cola;
     }
     caja.dataset.tono = tono;
     res.textContent = texto;
@@ -431,7 +431,7 @@ SRP.jornadas = {
     const ahora = SRP.util.ahoraISO();
     const base = previo || Object.assign({
       id: this.claveCierre(j), es_ficticio: SRP.CONFIG.ES_FICTICIO, fecha: j.fecha, cabo_id: j.cabo_id,
-      encargado_id: j.cabo_id, creado_por_id: u.id, fecha_creacion: ahora, arboles_sembrados: null, puntos_revisados: []
+      encargado_id: j.cabo_id, creado_por_id: u.id, fecha_creacion: ahora, arboles_plantados: null, puntos_revisados: []
     }, Object.fromEntries(SRP.reportes.CAMPOS.map(k => [k, ''])));
     const cierre = Object.assign({}, base, cambios, { editado_por_id: u.id, fecha_ultima_edicion: ahora });
     await SRP.almacen.guardarConBitacora('cierres', cierre, SRP.bitacora.entrada(previo ? 'EDITADO' : 'CREADO', 'cierre', cierre.id, detalle));
@@ -439,16 +439,16 @@ SRP.jornadas = {
   },
 
   async guardarConteo() {
-    const inp = this.el('jornada-sembrados');
+    const inp = this.el('jornada-plantados');
     const v = inp.value.trim();
     const n = v === '' ? null : Number(v);
     if (n !== null && (!Number.isInteger(n) || n < 0 || n > 9999)) {
       SRP.util.anunciar('Escriba un número entero de árboles, sin decimales.', 'alerta');
-      inp.value = this.cierre && Number.isInteger(this.cierre.arboles_sembrados) ? this.cierre.arboles_sembrados : '';
+      inp.value = this.cierre && Number.isInteger(this.cierre.arboles_plantados) ? this.cierre.arboles_plantados : '';
       return;
     }
-    this.cierre = await this.guardarEnCierre({ arboles_sembrados: n },
-      n === null ? 'Se borró el conteo de la jornada' : 'Conteo de la jornada: ' + n + (n === 1 ? ' árbol sembrado' : ' árboles sembrados'));
+    this.cierre = await this.guardarEnCierre({ arboles_plantados: n },
+      n === null ? 'Se borró el conteo de la jornada' : 'Conteo de la jornada: ' + n + (n === 1 ? ' árbol plantado' : ' árboles plantados'));
     this.pintarConciliacion();
     SRP.util.anunciarSilencioso('Conteo guardado.');
   },

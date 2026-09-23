@@ -147,7 +147,7 @@ Los tres catálogos administrables en una sola tabla, distinguidos por `tipo`: p
 
 ### 4.4 `cierres`
 
-Datos de cierre del reporte del día: un renglón por jornada y cuadrilla (`fecha|cabo_id`). Todo es opcional; su destino es el PDF (D58) y, desde D112, la conciliación de la jornada (arboles_sembrados, puntos_revisados).
+Datos de cierre del reporte del día: un renglón por jornada y cuadrilla (`fecha|cabo_id`). Todo es opcional; su destino es el PDF (D58) y, desde D112, la conciliación de la jornada (arboles_plantados, puntos_revisados).
 
 - **Llave:** `id`. **Índices:** `fecha`. **Pantalla:** Reportes → «Datos de cierre del día».
 - **Campos:** 20.
@@ -163,7 +163,7 @@ Datos de cierre del reporte del día: un renglón por jornada y cuadrilla (`fech
 | `fecha_creacion` | timestamptz | No | Sistema | ISO 8601 | No | — |
 | `editado_por_id` | uuid | No | Sesión | → usuarios.id | No | — |
 | `fecha_ultima_edicion` | timestamptz | No | Sistema | ISO 8601 | No | — |
-| `arboles_sembrados` | integer | Sí | Persona | 0–9999; nulo si la cuadrilla no lo anotó | Jornadas → «Árboles sembrados según la cuadrilla» | Conciliación de la jornada (D112): se compara con los registros activos del día y el cabo; el reporte dice si cuadra. Nunca sustituye al conteo de registros |
+| `arboles_plantados` | integer | Sí | Persona | 0–9999; nulo si la cuadrilla no lo anotó | Jornadas → «Árboles plantados según la cuadrilla» | Conciliación de la jornada (D112): se compara con los registros activos del día y el cabo; el reporte dice si cuadra. Nunca sustituye al conteo de registros |
 | `puntos_revisados` | uuid[] | No | Persona | → plantaciones.id; [] si nadie ha revisado | Jornadas → «Está bien» en un punto con aviso | Puntos con aviso (duplicado, lejos, precisión) que alguien confirmó como correctos (D112); el aviso deja de contarse, no se borra |
 | `sitio` | text | No | Persona | Texto libre; '' si no se escribe | Dirección o sitio | Nada se prellena (los partes varían mucho) |
 | `actividades` | text | No | Persona | Texto libre | Actividades realizadas | — |
@@ -435,7 +435,7 @@ CREATE TABLE cierres (
   fecha_creacion           timestamptz    NOT NULL,
   editado_por_id           uuid           NOT NULL,
   fecha_ultima_edicion     timestamptz    NOT NULL,
-  arboles_sembrados        integer        NULL,
+  arboles_plantados        integer        NULL,
   puntos_revisados         uuid[]         NOT NULL,
   sitio                    text           NOT NULL,
   actividades              text           NOT NULL,
