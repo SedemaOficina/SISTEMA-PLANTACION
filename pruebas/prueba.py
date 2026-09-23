@@ -611,6 +611,8 @@ with sync_playwright() as p:
     ok(pg.input_value('#pdf-dia')==HOY and pg.get_attribute('#pdf-dia','max')==HOY,'el día del reporte arranca en hoy y no admite futuro')
     ok(not pg.is_disabled('#btn-pdf') and HOY_TXT in pg.inner_text('#pdf-nota'),'con registros de hoy, el botón se habilita y la nota dice qué se reporta: '+pg.inner_text('#pdf-nota'))
     ok(pg.is_hidden('#caja-pdf-cabo'),'el cabo no elige cabo')
+    ok(pg.is_hidden('.pestana[data-vista=galeria]') and pg.evaluate("(() => { SRP.app.mostrarVista('galeria'); return SRP.app.vista; })()")=='registros','el cabo no tiene galería de fotografías ni la abre llamándola directamente (D118)')
+    pg.evaluate("SRP.app.mostrarVista('reportes')"); pg.wait_for_timeout(300)
     # Cualquier día, no sólo hoy (D70)
     pg.fill('#pdf-dia','2026-08-10'); pg.dispatch_event('#pdf-dia','change'); pg.wait_for_timeout(400)
     ok(not pg.is_disabled('#btn-pdf') and '10-AGO-2026' in pg.inner_text('#pdf-nota'),'una fecha pasada con registros habilita el reporte: '+pg.inner_text('#pdf-nota'))
@@ -907,9 +909,9 @@ with sync_playwright() as p:
     ok(pg.evaluate("[...document.querySelectorAll('#form-cierre .campo')][0].contains(document.getElementById('cie-encargado'))"),'el encargado es el primer campo del cierre')
     pg.click('#btn-cierre-cerrar'); pg.wait_for_timeout(300)
     # Los campos vacíos no se inventan: el cierre guardado no trae lo que no se escribió
-    vacios=pg.evaluate("async () => { const c = await SRP.almacen.uno('cierres', SRP.reportes.claveCierre(SRP.util.fechaHoy(), SRP.sesion.usuario.id, 1)); return [c.actividades, c.observaciones]; }")
+    vacios=pg.evaluate("async () => { const c = await SRP.almacen.uno('cierres', SRP.reportes.claveCierre(SRP.util.fechaHoy(), SRP.sesion.usuario.id, 1)); return [c.observaciones, 'actividades' in c ? 'sobra' : '', document.getElementById('cie-actividades') ? 'campo' : '']; }")
     ok(pg.evaluate("async () => !(await SRP.almacen.uno('cierres', SRP.reportes.claveCierre(SRP.util.fechaHoy(), '', 1)))"),'el cierre de un cabo se guarda con su propio id, la llave de su jornada (D112)')
-    ok(all(v=='' for v in vacios),'y lo que no se escribió queda vacío, no inventado')
+    ok(all(v=='' for v in vacios),'y lo que no se escribió queda vacío, no inventado; y «Actividades» ya no existe (D118): %s' % vacios)
 
     pg.click('.pestana[data-vista=registros]'); pg.wait_for_timeout(500)
     abrir_filtros(pg)
@@ -973,6 +975,25 @@ with sync_playwright() as p:
     ok(pg.locator('button[data-accion=editar]').count()>0 and pg.locator('button[data-accion=eliminar]').count()==0,'edita pero no elimina')
     ok(pg.is_hidden('.pestana[data-vista=catalogos]') and pg.is_hidden('.pestana[data-vista=usuarios]'),'no ve Catálogos ni Usuarios')
     ok(pg.is_visible('#caja-filtro-cabo'),'sí tiene filtro por cabo')
+    # Galería de fotografías (D118): coordinación y administración la ven; el cabo no
+    ok(pg.is_visible('.pestana[data-vista=galeria]'),'el coordinador ve la sección Fotografías (D118)')
+    pg.click('.pestana[data-vista=galeria]'); pg.wait_for_timeout(600)
+    ok(pg.is_visible('#vista-galeria') and pg.locator('#galeria-rejilla .galeria-foto').count()>=1,'la galería muestra las fotografías de su cuadrilla: %d' % pg.locator('#galeria-rejilla .galeria-foto').count())
+    ok(pg.inner_text('#galeria-cuenta').startswith('1 fotograf') or pg.inner_text('#galeria-cuenta')[0].isdigit(),'con la cuenta y el peso: '+pg.inner_text('#galeria-cuenta'))
+    pg.click('#galeria-rejilla .galeria-foto >> nth=0'); pg.wait_for_timeout(400)
+    ok(pg.is_visible('#dlg-foto') and pg.get_attribute('#dlg-foto-img','src').startswith('data:image/') and 'Cabo' in pg.inner_text('#dlg-foto-datos') and 'Foto_' in pg.inner_text('#dlg-foto-datos'),'tocar una la abre grande con los datos del árbol y el nombre del archivo')
+    with pg.expect_download() as df: pg.click('#btn-foto-descargar')
+    ok(re.fullmatch(r'Foto_[A-Za-z0-9-]+_\d{4}-\d{2}-\d{2}_[A-Za-z0-9_]+\.jpg', df.value.suggested_filename) is not None,'«Descargar» entrega la foto con nombre legible: '+df.value.suggested_filename)
+    pg.click('#btn-foto-registro'); pg.wait_for_timeout(400)
+    ok(pg.is_hidden('#dlg-foto') and pg.is_visible('#dlg-detalle'),'«Ver registro» abre el detalle')
+    pg.click('#btn-detalle-cerrar'); pg.wait_for_timeout(300)
+    with pg.expect_download() as dz: pg.click('#btn-galeria-zip')
+    dz.value.save_as('/home/claude/srp/fotos_prueba.zip')
+    import zipfile
+    with zipfile.ZipFile('/home/claude/srp/fotos_prueba.zip') as z:
+        nombres=z.namelist(); okzip=z.testzip() is None; primero=z.read(nombres[0])[:3]
+    ok(dz.value.suggested_filename.startswith('Fotografias_SRP') and okzip and len(nombres)>=1 and primero==b'\xff\xd8\xff','«Descargar todas» arma un ZIP válido con las fotos en JPEG: %s' % nombres)
+    pg.click('.pestana[data-vista=registros]'); pg.wait_for_timeout(400)
     # Quien ve a varias personas elige el encargado del reporte, y sólo entre quienes registraron (B19)
     pg.click('.pestana[data-vista=reportes]'); pg.wait_for_timeout(600)
     ok(pg.is_visible('#caja-pdf-cabo') and pg.locator('#pdf-cabo option').count()>=1 and pg.locator('#pdf-cabo option[value=""]').count()==0,'el coordinador elige el cabo del reporte en Reportes; ya no hay «Todos los cabos» porque el reporte es de una jornada (D117)')

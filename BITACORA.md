@@ -1181,3 +1181,17 @@ tarjeta con el sitio del cierre); se adaptan las del cierre y el coordinador.
 
 **Verificación:** 388 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.41.
+
+## Bloque 61 — Galería de fotografías y cierre sin «Actividades» (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.42.
+
+**Qué cambió (D118).** Nuevo `js/galeria.js` (filtros, rejilla, foto grande, descarga, ZIP en modo
+almacenar con CRC-32). `permisos.js`: `galeria`. `app.js`: sección, pestaña y candado. `iconos.js`:
+`descargar`. `index.html`: vista, diálogo de foto, pestaña «Fotografías»; sale «Actividades
+realizadas». `reportes.js`: CAMPOS sin `actividades`, ni en vista previa ni en PDF. `esquema.json`,
+MAPEO y diccionario al día. Estilos de rejilla y foto grande. Pruebas: 8 nuevas (galería del
+coordinador, cuenta y peso, foto grande con datos, descarga con nombre legible, «Ver registro»,
+ZIP válido con JPEG, el cabo sin galería, cierre sin «Actividades»); `revisar.py` revisa la galería.
+
+**Verificación:** 396 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.42.

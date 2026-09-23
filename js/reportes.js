@@ -23,7 +23,7 @@ SRP.reportes = {
   /* Campos del cierre. Todos opcionales y de texto libre: los reportes varían de una cuadrilla a
      otra y de un día a otro, y encajonarlos obligaría a escribir de una forma que no es la suya.
      El encargado no está en esta lista porque no se escribe: sale de la sesión. */
-  CAMPOS: ['sitio', 'actividades', 'personal', 'apoyo', 'observaciones', 'chofer', 'vehiculo_modelo', 'vehiculo_placa', 'hora'],
+  CAMPOS: ['sitio', 'personal', 'apoyo', 'observaciones', 'chofer', 'vehiculo_modelo', 'vehiculo_placa', 'hora'],
 
   contexto: null,   // { registros, fecha, cabo_id } de lo que se va a reportar
 
@@ -295,7 +295,6 @@ SRP.reportes = {
         (terr ? '<p class="previa-tenue">' + esc(terr) + '</p>' : '') +
         (this.textoConteo(cierre, registros) ? '<p><strong>' + esc(this.textoConteo(cierre, registros)) + '</strong></p>' : '') + '</div>';
     }
-    if (hay('actividades')) h += apartado('Actividades realizadas', '<p>' + parrafo(cierre.actividades) + '</p>');
     // Personal (D103): el encargado primero y cada grupo con su subtítulo y sus nombres sangrados
     const grupos = this.gruposPersonal(cierre);
     if (grupos.encargado || grupos.listas.length) {
@@ -461,7 +460,6 @@ SRP.reportes = {
       y += 7 + lineas.length * 4.6 + 4;
     };
 
-    if (hay('actividades')) apartado('Actividades realizadas', cierre.actividades);
 
     // Personal (D103): Encargado primero; cada grupo con su subtítulo y los nombres sangrados con
     // viñeta, para que los de apoyo no se lean como participantes

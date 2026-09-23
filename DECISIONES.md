@@ -829,3 +829,17 @@
   «Todos los cabos» del selector de Reportes porque un reporte de varios cabos ya no tiene
   sentido. La tarjeta de la jornada se llama como el sitio escrito en su cierre. Decidido por
   Liber: el reporte es por jornada, 23-09-2026.
+
+## Bloque 61 — Galería de fotografías y cierre sin «Actividades»
+
+- **D118. Sección «Fotografías» para coordinación y administración, con descarga; el cierre ya no
+  pregunta «Actividades realizadas».** (1) Permiso `galeria` (COORDINADOR y ADMIN; el cabo ve sus
+  fotografías en cada registro). La galería enseña las fotografías de los registros activos que
+  alcanza quien entró, con los atajos Hoy · Un día · Todas y el filtro por cabo; una fotografía
+  se abre grande con especie, fecha, cabo, lugar, folio y nombre de archivo, con «Descargar» y
+  «Ver registro»; «Descargar todas» arma un ZIP con las filtradas. El ZIP se arma en la
+  aplicación sin biblioteca, en modo «almacenar» (las JPEG no se comprimen más); los nombres son
+  `Foto_<folio o identificador>_<fecha>_<especie>.jpg`. En teléfono se comparte con las apps del
+  dispositivo y en computadora se descarga (D61). (2) La única actividad es plantar: el campo
+  `actividades` sale del cierre, de la vista previa, del PDF y del esquema; un cierre anterior que
+  lo traiga se ignora. Pedido por Liber, 23-09-2026.

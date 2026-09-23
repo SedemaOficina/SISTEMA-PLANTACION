@@ -151,7 +151,7 @@ Los tres catálogos administrables en una sola tabla, distinguidos por `tipo`: p
 Datos de cierre del reporte de una jornada: un renglón por jornada (`fecha|cabo_id|n`; D117). Todo es opcional; su destino es el PDF (D58) y, desde D112, la conciliación de la jornada (arboles_plantados, puntos_revisados).
 
 - **Llave:** `id`. **Índices:** `fecha`. **Pantalla:** Reportes → «Datos de cierre del día».
-- **Campos:** 22.
+- **Campos:** 21.
 
 | Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
 |---|---|---|---|---|---|---|
@@ -169,7 +169,6 @@ Datos de cierre del reporte de una jornada: un renglón por jornada (`fecha|cabo
 | `arboles_plantados` | integer | Sí | Persona | 0–9999; nulo si la cuadrilla no lo anotó | Jornadas → «Árboles plantados según la cuadrilla» | Conciliación de la jornada (D112): se compara con los registros activos del día y el cabo; el reporte dice si cuadra. Nunca sustituye al conteo de registros |
 | `puntos_revisados` | uuid[] | No | Persona | → plantaciones.id; [] si nadie ha revisado | Jornadas → «Está bien» en un punto con aviso | Puntos con aviso (duplicado, lejos, precisión) que alguien confirmó como correctos (D112); el aviso deja de contarse, no se borra |
 | `sitio` | text | No | Persona | Texto libre; '' si no se escribe | Dirección o sitio | Nada se prellena (los partes varían mucho) |
-| `actividades` | text | No | Persona | Texto libre | Actividades realizadas | — |
 | `personal` | text | No | Persona | Texto libre | Personal de SEDEMA participante | — |
 | `apoyo` | text | No | Persona | Texto libre, varias líneas | Personal de apoyo | — |
 | `observaciones` | text | No | Persona | Texto libre | Observaciones | Aquí se explica a mano una diferencia contra la meta |
@@ -444,7 +443,6 @@ CREATE TABLE cierres (
   arboles_plantados        integer        NULL,
   puntos_revisados         uuid[]         NOT NULL,
   sitio                    text           NOT NULL,
-  actividades              text           NOT NULL,
   personal                 text           NOT NULL,
   apoyo                    text           NOT NULL,
   observaciones            text           NOT NULL,

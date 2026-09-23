@@ -4,20 +4,20 @@
 window.SRP = window.SRP || {};
 
 SRP.PERFILES = {
-  CABO:        { etiqueta: 'Cabo',                   alcance: 'propios', registrar: true,  editar: true,  eliminar: true,  catalogos: false, usuarios: false,
+  CABO:        { etiqueta: 'Cabo',                   alcance: 'propios', registrar: true,  editar: true,  eliminar: true,  catalogos: false, usuarios: false, galeria: false,
                  descripcion: 'Registra plantaciones y ve, edita y elimina únicamente las suyas.' },
-  COORDINADOR: { etiqueta: 'Coordinador',            alcance: 'equipo',  registrar: true,  editar: true,  eliminar: false, catalogos: false, usuarios: false, // registra sí, elimina no (D87)
+  COORDINADOR: { etiqueta: 'Coordinador',            alcance: 'equipo',  registrar: true,  editar: true,  eliminar: false, catalogos: false, usuarios: false, galeria: true, // registra sí, elimina no (D87); ve la galería (D118)
                  descripcion: 'Registra, y ve y edita los registros de los cabos que tiene asignados. No elimina.' },
   // No captura: administra. Quien registra en campo es el cabo, y el registro debe quedar
   // a nombre de quien plantó el árbol, no de quien administra el sistema.
-  ADMIN:       { etiqueta: 'Administración global',  alcance: 'todos',   registrar: false, editar: true,  eliminar: true,  catalogos: true,  usuarios: true,
+  ADMIN:       { etiqueta: 'Administración global',  alcance: 'todos',   registrar: false, editar: true,  eliminar: true,  catalogos: true,  usuarios: true,  galeria: true,
                  descripcion: 'Ve, edita y elimina todo, y administra los catálogos y las cuentas. No captura registros.' }
   // Hubo un cuarto perfil, Consulta (VIEWER): se retiró en D87 por no tener uso. Los tableros de
   // consulta los da el SIA sobre la copia publicada (D38), no esta aplicación.
 };
 
 // Lo que recibe una cuenta cuyo perfil no existe: nada. Nunca un perfil real por omisión.
-SRP.SIN_PERMISOS = { etiqueta: 'Perfil no reconocido', alcance: 'ninguno', registrar: false, editar: false,
+SRP.SIN_PERMISOS = { etiqueta: 'Perfil no reconocido', alcance: 'ninguno', registrar: false, editar: false, galeria: false,
                      eliminar: false, catalogos: false, usuarios: false,
                      descripcion: 'La cuenta tiene un perfil que el sistema no reconoce. Pida a Administración que lo corrija.' };
 

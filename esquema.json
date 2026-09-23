@@ -930,15 +930,6 @@
           "regla": "Nada se prellena (los partes varían mucho)"
         },
         {
-          "campo": "actividades",
-          "tipo": "text",
-          "nulo": false,
-          "origen": "Persona",
-          "dominio": "Texto libre",
-          "pantalla": "Actividades realizadas",
-          "regla": ""
-        },
-        {
           "campo": "personal",
           "tipo": "text",
           "nulo": false,

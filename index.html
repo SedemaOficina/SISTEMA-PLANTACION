@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#9D2148">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.41">
-<link rel="preload" as="image" href="assets/encabezado-ru-movil.png?v=0.6.41">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.42">
+<link rel="preload" as="image" href="assets/encabezado-ru-movil.png?v=0.6.42">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.41">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.41">
-<link rel="stylesheet" href="css/estilos.css?v=0.6.41">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.42">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.42">
+<link rel="stylesheet" href="css/estilos.css?v=0.6.42">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -21,8 +21,8 @@
   <div class="encabezado-interior">
     <!-- Logotipo del Programa de Reforestación Urbana (D90): completo en pantalla ancha; en teléfono, el emblema y el nombre del programa -->
     <picture>
-      <source media="(max-width: 480px)" srcset="assets/encabezado-ru-movil.png?v=0.6.41">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru.png?v=0.6.41" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Reforestación Urbana">
+      <source media="(max-width: 480px)" srcset="assets/encabezado-ru-movil.png?v=0.6.42">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru.png?v=0.6.42" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» (D80) -->
@@ -65,6 +65,7 @@
   <button type="button" class="pestana" data-vista="jornadas">Jornadas</button>
   <button type="button" class="pestana" data-vista="registros">Registros</button>
   <button type="button" class="pestana" data-vista="reportes">Reportes</button>
+  <button type="button" class="pestana" data-vista="galeria">Fotografías</button>
   <button type="button" class="pestana" data-vista="catalogos">Catálogos</button>
   <button type="button" class="pestana" data-vista="usuarios">Usuarios</button>
 </nav>
@@ -362,6 +363,37 @@
 
   </section>
 
+  <!-- FOTOGRAFÍAS (D118): galería para coordinación y administración, con descarga -->
+  <section id="vista-galeria" class="vista vista-ancha" hidden aria-labelledby="titulo-galeria">
+    <h1 id="titulo-galeria">Fotografías</h1>
+    <p class="nota">Las fotografías de los árboles registrados. Toque una para verla grande y descargarla, o descargue todas las filtradas en un archivo ZIP.</p>
+    <section class="bloque" aria-label="Filtros de fotografías">
+      <div class="filtros zona-filtros">
+        <div class="filtros-fila">
+          <div id="galeria-atajos" class="chips" role="group" aria-label="Día">
+            <button type="button" class="chip" data-atajo="hoy" id="galeria-chip-hoy">Hoy</button>
+            <button type="button" class="chip" data-atajo="dia" aria-controls="galeria-un-dia" aria-expanded="false">Un día</button>
+            <button type="button" class="chip" data-atajo="todas">Todas</button>
+          </div>
+          <div class="filtros-listas">
+            <div class="campo campo-corto"><label for="galeria-cabo">Cabo</label><select id="galeria-cabo"></select></div>
+          </div>
+        </div>
+        <div id="galeria-un-dia" class="filtros-periodo filtros-un-dia" hidden>
+          <div class="campo campo-corto"><label for="galeria-dia">Día</label><input type="date" id="galeria-dia" data-vacio="Elija la fecha"></div>
+        </div>
+      </div>
+    </section>
+    <section class="bloque" aria-labelledby="galeria-cuenta">
+      <div class="galeria-barra">
+        <p id="galeria-cuenta" class="conteo-lista" aria-live="polite"></p>
+        <button type="button" id="btn-galeria-zip" class="btn btn-primario" disabled></button>
+      </div>
+      <ul id="galeria-rejilla" class="galeria-rejilla"></ul>
+      <div id="galeria-vacio" class="vacio" aria-live="polite" hidden></div>
+    </section>
+  </section>
+
   <!-- CATÁLOGOS -->
   <section id="vista-catalogos" class="vista vista-ancha" hidden aria-labelledby="titulo-catalogos">
     <h1 id="titulo-catalogos">Catálogos</h1>
@@ -445,6 +477,22 @@
   </div>
 </dialog>
 
+<!-- Una fotografía grande, con los datos del árbol y su descarga (D118) -->
+<dialog id="dlg-foto" aria-labelledby="dlg-foto-titulo">
+  <div class="dialogo-cabecera">
+    <div class="dialogo-titulo">
+      <h2 id="dlg-foto-titulo" tabindex="-1" autofocus></h2>
+      <button type="button" id="btn-foto-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar"></button>
+    </div>
+  </div>
+  <img id="dlg-foto-img" class="foto-grande" src="" alt="">
+  <dl id="dlg-foto-datos" class="revision-lista"></dl>
+  <div class="dialogo-pie fila-botones">
+    <button type="button" id="btn-foto-descargar" class="btn btn-primario"></button>
+    <button type="button" id="btn-foto-registro" class="btn btn-secundario"></button>
+  </div>
+</dialog>
+
 <dialog id="dlg-detalle" aria-labelledby="dlg-detalle-titulo">
   <!-- Cabecera fija como la de «Revise antes de guardar»: título, × y acción siempre a la vista (D91) -->
   <div class="dialogo-cabecera">
@@ -519,8 +567,6 @@
       <textarea id="cie-sitio" rows="2" aria-describedby="cie-sitio-ayuda"></textarea>
       <p id="cie-sitio-ayuda" class="nota">La alcaldía la pone el sistema con el punto de cada registro; aquí va la calle o el nombre del sitio.</p></div>
 
-    <div class="campo"><label for="cie-actividades">Actividades realizadas</label>
-      <textarea id="cie-actividades" rows="2"></textarea></div>
 
     <div class="campo"><label for="cie-personal">Personal participante</label>
       <textarea id="cie-personal" rows="2"></textarea></div>
@@ -642,40 +688,41 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.6.41"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.41"></script>
-<script src="vendor/turf-pip.min.js?v=0.6.41"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.6.41"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.41"></script>
+<script src="vendor/leaflet.js?v=0.6.42"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.42"></script>
+<script src="vendor/turf-pip.min.js?v=0.6.42"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.6.42"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.42"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.6.41"></script>
-<script src="js/util.js?v=0.6.41"></script>
-<script src="js/iconos.js?v=0.6.41"></script>
+<script src="js/config.js?v=0.6.42"></script>
+<script src="js/util.js?v=0.6.42"></script>
+<script src="js/iconos.js?v=0.6.42"></script>
 <!-- Capas territoriales del SIA, compactadas por pruebas/generar_capas.py desde assets/fuentes/ -->
-<script src="assets/capa-alcaldias.js?v=0.6.41"></script>
-<script src="assets/capa-uga.js?v=0.6.41"></script>
-<script src="assets/capa-colonias.js?v=0.6.41"></script>
-<script src="assets/catalogo-especies.js?v=0.6.41"></script>
-<script src="js/datos-ficticios.js?v=0.6.41"></script>
-<script src="js/permisos.js?v=0.6.41"></script>
-<script src="js/derivacion.js?v=0.6.41"></script>
-<script src="js/almacen.js?v=0.6.41"></script>
-<script src="js/sesion.js?v=0.6.41"></script>
-<script src="js/referencias.js?v=0.6.41"></script>
-<script src="js/folio.js?v=0.6.41"></script>
-<script src="js/conexion.js?v=0.6.41"></script>
-<script src="js/envio.js?v=0.6.41"></script>
-<script src="js/mapa.js?v=0.6.41"></script>
-<script src="js/foto.js?v=0.6.41"></script>
-<script src="js/formulario.js?v=0.6.41"></script>
+<script src="assets/capa-alcaldias.js?v=0.6.42"></script>
+<script src="assets/capa-uga.js?v=0.6.42"></script>
+<script src="assets/capa-colonias.js?v=0.6.42"></script>
+<script src="assets/catalogo-especies.js?v=0.6.42"></script>
+<script src="js/datos-ficticios.js?v=0.6.42"></script>
+<script src="js/permisos.js?v=0.6.42"></script>
+<script src="js/derivacion.js?v=0.6.42"></script>
+<script src="js/almacen.js?v=0.6.42"></script>
+<script src="js/sesion.js?v=0.6.42"></script>
+<script src="js/referencias.js?v=0.6.42"></script>
+<script src="js/folio.js?v=0.6.42"></script>
+<script src="js/conexion.js?v=0.6.42"></script>
+<script src="js/envio.js?v=0.6.42"></script>
+<script src="js/mapa.js?v=0.6.42"></script>
+<script src="js/foto.js?v=0.6.42"></script>
+<script src="js/formulario.js?v=0.6.42"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.6.41"></script>
-<script src="js/registros.js?v=0.6.41"></script>
-<script src="js/jornadas.js?v=0.6.41"></script>
-<script src="js/croquis.js?v=0.6.41"></script>
-<script src="js/reportes.js?v=0.6.41"></script>
-<script src="js/catalogos.js?v=0.6.41"></script>
-<script src="js/usuarios.js?v=0.6.41"></script>
-<script src="js/app.js?v=0.6.41"></script>
+<script src="js/espejo.js?v=0.6.42"></script>
+<script src="js/registros.js?v=0.6.42"></script>
+<script src="js/galeria.js?v=0.6.42"></script>
+<script src="js/jornadas.js?v=0.6.42"></script>
+<script src="js/croquis.js?v=0.6.42"></script>
+<script src="js/reportes.js?v=0.6.42"></script>
+<script src="js/catalogos.js?v=0.6.42"></script>
+<script src="js/usuarios.js?v=0.6.42"></script>
+<script src="js/app.js?v=0.6.42"></script>
 </body>
 </html>

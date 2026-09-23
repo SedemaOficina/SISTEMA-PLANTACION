@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.41 (Bloque 60)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.42 (Bloque 61)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -80,6 +80,8 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M69 | Petición de Liber | Colores por significado con icono en Jornadas y «Cancelar» en rojo con tache | Media | 0.6.40 (B59) | En un punto con aviso: «Está bien» verde con palomita, «Eliminar» rojo con bote, «Ver» con ojo. Al eliminar: «Cancelar» rojo de contorno con tache | Lista de puntos con avisos; diálogo de eliminar |
 | M70 | iPhone · Jornadas | Subtítulo sin la fecha repetida y conteo sin autollenado de Safari | Baja | 0.6.40 (B59) | Abrir una jornada: «mié 23-SEP-2026 · Fulana…»; tocar el conteo: no debe salir la barra de llave/tarjeta | Cabecera de la jornada |
 | M71 | Área de plantación (vía Liber) | Varias jornadas de un cabo en un día, con reporte por jornada | Alta | 0.6.41 (B60) | Registra en dos sitios a más de 500 m el mismo día: Jornadas muestra «Jornada 1 de 2» y «2 de 2», cada una con su conteo. Reportes › aparece el selector «Jornada» y sale un PDF por jornada (archivo `_J2`). En un punto › tuerca: «Iniciar otra jornada aquí» / «Unir con la jornada anterior» | Lista con dos jornadas; Reportes con el selector; PDF con «Jornada 2 de 2» |
+| M72 | Petición de Liber | Sección «Fotografías» para coordinación y administración, con descarga y ZIP | Alta | 0.6.42 (B61) | Entrar como coordinador › Fotografías: rejilla con las fotos de la cuadrilla; tocar una: datos y «Descargar»; «Descargar todas»: ZIP. El cabo no ve la sección | Galería; foto grande; el ZIP abierto en la computadora |
+| M73 | Petición de Liber | El cierre ya no pregunta «Actividades realizadas» | Baja | 0.6.42 (B61) | Reportes › Generar: el formulario de cierre empieza en Encargado y Sitio; el PDF no trae el apartado | Formulario de cierre |
 
 ## 2. Por hacer
 

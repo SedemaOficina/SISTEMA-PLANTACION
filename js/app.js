@@ -13,7 +13,7 @@ SRP.app = {
     I.poner(document.querySelector('label[for="acceso-clave"]'), 'candado', 18);
     I.poner(this.el('form-acceso').querySelector('button[type="submit"]'), 'entrar', 20);
     I.poner(this.el('btn-entrar-prueba'), 'entrar', 20);
-    const pestana = { registrar: 'mas', registros: 'registros', jornadas: 'jornadas', reportes: 'reportes', catalogos: 'catalogos', usuarios: 'usuarios' };
+    const pestana = { registrar: 'mas', registros: 'registros', jornadas: 'jornadas', reportes: 'reportes', galeria: 'camara', catalogos: 'catalogos', usuarios: 'usuarios' };
     this.el('navegacion').querySelectorAll('.pestana').forEach(b => I.poner(b, pestana[b.dataset.vista], 22));
     I.poner(this.el('btn-usr-agregar'), 'usuarioMas', 20);
     // Menú de la cuenta con icono en cada opción (D114): el sol y la puerta pedidos por Liber, y el resto por consistencia
@@ -50,6 +50,7 @@ SRP.app = {
     SRP.usuarios.iniciar();
     SRP.conexion.iniciar();
     SRP.jornadas.iniciar();
+    SRP.galeria.iniciar();
     SRP.envio.iniciar();           // envío simulado: sólo con datos de prueba (D111)
     this.iniciarAcceso();
     this.iniciarDialogos();
@@ -235,6 +236,7 @@ SRP.app = {
     this.el('navegacion').hidden = false;
     this.el('herramientas-prueba').hidden = !SRP.CONFIG.ES_FICTICIO;
     this.el('navegacion').querySelector('[data-vista="registrar"]').hidden = !p.registrar;
+    this.el('navegacion').querySelector('[data-vista="galeria"]').hidden = !p.galeria;
     this.el('navegacion').querySelector('[data-vista="catalogos"]').hidden = !p.catalogos;
     this.el('navegacion').querySelector('[data-vista="usuarios"]').hidden = !p.usuarios;
     SRP.formulario.limpiar();
@@ -275,7 +277,7 @@ SRP.app = {
     const u = SRP.sesion.usuario;
     if (u) {
       const p = SRP.permisos.de(u);
-      if ((nombre === 'registrar' && !p.registrar) || (nombre === 'catalogos' && !p.catalogos) ||
+      if ((nombre === 'registrar' && !p.registrar) || (nombre === 'catalogos' && !p.catalogos) || (nombre === 'galeria' && !p.galeria) ||
           (nombre === 'usuarios' && !p.usuarios)) nombre = 'registros';
     }
     this.vista = nombre;
@@ -288,6 +290,7 @@ SRP.app = {
     if (nombre === 'registrar') SRP.formulario.preparar();
     if (nombre === 'registros') SRP.registros.preparar();
     if (nombre === 'jornadas') SRP.jornadas.preparar();
+    if (nombre === 'galeria') SRP.galeria.preparar();
     if (nombre === 'reportes') SRP.reportes.preparar();
     if (nombre === 'catalogos') SRP.catalogos.preparar();
     if (nombre === 'usuarios') SRP.usuarios.preparar();

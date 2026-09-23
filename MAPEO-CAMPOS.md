@@ -181,7 +181,6 @@ cuenta. Lo que ya vive en los registros —especies, conteos, alcaldía— no se
 | `cabo_id` | Sí | Sistema | El cabo de la jornada (D117) |
 | `encargado_id` | No | Sesión o Persona | Remite a `usuarios.id`. Para un cabo es él mismo; quien ve a varias personas lo elige entre los cabos con registros ese día (D57) |
 | `sitio` | No | Persona | Calle o nombre del sitio, como se escribe en el parte |
-| `actividades` | No | Persona | |
 | `personal` | No | Persona | Nombres, como se acostumbra escribirlos |
 | `apoyo` | No | Persona | Personal de otra institución; varias líneas |
 | `observaciones` | No | Persona | Una por renglón |
