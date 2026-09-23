@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.26 (Bloque 45)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.27 (Bloque 46)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -40,18 +40,26 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M34 | iPhone · Detalle | Detalle en orden del formulario, «Datos del sistema» al final y «Editar» al pie | Alta | 0.6.26 (B45) | Abrir un detalle: empieza por Especie; Folio e Identificador al final; «Editar» fijo abajo | Detalle arriba y abajo |
 | M35 | iPhone · Mis registros #4 | Sin «PROVISIONAL» repetido en la lista | Media | 0.6.26 (B45) | La lista ya no dice PROVISIONAL; el detalle sí | Lista |
 | M36 | iPhone · Edición | Al editar se marca la pestaña Registros | Media | 0.6.26 (B45) | Tuerca › Editar: la pestaña marcada es Registros, no «Nuevo registro» | Formulario en edición |
+| M08 | Lista de diseño #7 | Avisos flotantes uniformes con «Deshacer» | Media | 0.6.27 (B46) | Eliminar un registro: arriba sale «Registro eliminado. Deshacer ×»; «Deshacer» lo devuelve. También al reiniciar filtros, quitar la foto y activar/desactivar en Catálogos y Usuarios | Aviso con «Deshacer» |
+| M09 | Lista de diseño #8 | Vista previa del parte antes del PDF | Media | 0.6.27 (B46) | Reportes › Generar reporte del día › «Ver vista previa» (al pie): se ve la hoja del parte; «Generar PDF» o «Corregir datos de cierre» | Vista previa arriba y abajo |
+| M37 | Petición de Liber | Nombre del PDF: Reporte, persona y fecha | Alta | 0.6.27 (B46) | Generar el PDF: el archivo se llama p. ej. Reporte_Perengano_Gomez_Ejemplo_2026-09-22.pdf | Nombre del archivo al compartir o descargar |
 
 ## 2. Por hacer
 
 | # | Origen | Mejora | Prioridad | Estado | Nota |
 |---|---|---|---|---|---|
-| M24 | iPhone · siguientes partes | Revisar Reportes, Catálogos y Usuarios | Alta | Pendiente | Capturas sugeridas: Reportes con el parte del día y el aviso de respaldo; generar el PDF; Catálogos › Especies (lista, buscador y ventana de alta); Usuarios (lista y ventana de alta) |
+| M24 | iPhone · siguientes partes | Revisar Catálogos y Usuarios | Alta | Pendiente | Capturas sugeridas: Catálogos › Especies (lista, buscador y ventana de alta); Usuarios (lista y ventana de alta). Reportes ya se revisó (M38–M44) |
+| M38 | iPhone · Reportes #1 | Cabo a todo el ancho en teléfono (hoy se corta «Perengano Góm…») | Media | Propuesto | — |
+| M39 | iPhone · Cierre #1 | Hora de finalización como hora (selector) con botón «Ahora»; Modelo y Placa en una fila | Media | Propuesto | Igual que «Hoy» en la fecha |
+| M40 | iPhone · Cierre #2 | Campos del cierre con el estilo de filtros (caja gris) o, al menos, el mismo borde guinda al tocar | Baja | Propuesto | — |
+| M41 | PDF #1 | «Personal de apoyo» con sus nombres sangrados y el Encargado primero; hoy los renglones se confunden con los de Personal participante | Alta | Propuesto | — |
+| M42 | PDF #2 | «Total» en Totales por especie alineado a la derecha como las cifras (hoy queda corrido) | Media | Propuesto | — |
+| M43 | PDF #3 | Pesa 808 KB por 2 páginas: comprimir el logotipo para compartirlo por WhatsApp sin problema | Media | Propuesto | — |
+| M44 | PDF #4 | No partir un apartado corto (Por programa) a la página siguiente cuando cabe | Baja | Propuesto | — |
 | M02 | Lista de diseño #1 | Navegación inferior en teléfono | Alta | Propuesto | Bloque aparte: cambia la estructura |
 | M22 | iPhone · Nuevo registro #7 | Crédito de Esri más corto | Baja | Pendiente | Con la revisión del mapa |
 | M23 | iPhone · Nuevo registro #8 | Menos autollenado de Safari | Baja | Pendiente | Con la revisión del mapa; efecto limitado |
 | M26 | iPhone · Formulario lleno #2 | Alinear la etiqueta «Fotografía» | Baja | Propuesto | — |
-| M08 | Lista de diseño #7 | Avisos flotantes uniformes con «Deshacer» | Media | Pendiente | Elegida el 22-09; bloque 46 |
-| M09 | Lista de diseño #8 | Vista previa del parte del día antes del PDF | Media | Pendiente | Elegida el 22-09; bloque 46 |
 | M12 | Lista de diseño #11 | Modo de alto contraste para sol directo | Media | Pendiente | Elegida el 22-09; bloque 47 |
 
 ## 3. Verificadas sin falla
@@ -67,4 +75,4 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 25 hechas · 8 por hacer · 1 verificada sin falla · 2 descartadas.
+**Resumen:** 28 hechas · 13 por hacer · 1 verificada sin falla · 2 descartadas.

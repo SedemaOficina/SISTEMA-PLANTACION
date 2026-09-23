@@ -211,16 +211,17 @@ SRP.catalogos = {
     this.preparar();
   },
 
-  async cambiarEstado(item) {
+  // `deshaciendo`: viene de «Deshacer» del aviso; no se vuelve a preguntar ni a ofrecer deshacer (D101)
+  async cambiarEstado(item, deshaciendo) {
     const activar = !item.activo;
-    if (!activar) {
+    if (!activar && !deshaciendo) {
       const ok = await SRP.app.confirmar('¿Desactivar «' + item.nombre + '»? Dejará de ofrecerse en los formularios; los registros que ya lo usan no cambian.', 'Desactivar', 'palomita');
       if (!ok) return;
     }
     const nuevo = Object.assign({}, item, { activo: activar, editado_por_id: SRP.sesion.usuario.id, fecha_ultima_edicion: SRP.util.ahoraISO() });
     await SRP.almacen.guardarConBitacora('catalogos', nuevo, SRP.bitacora.entrada(activar ? 'ACTIVADO' : 'DESACTIVADO', 'catalogo', item.id));
     await SRP.ref.recargar();
-    SRP.util.anunciar(activar ? 'Valor activado.' : 'Valor desactivado.');
+    SRP.util.anunciar(activar ? 'Valor activado.' : 'Valor desactivado.', 'exito', deshaciendo ? null : { deshacer: () => this.cambiarEstado(nuevo, true) });
     this.preparar();
   },
 

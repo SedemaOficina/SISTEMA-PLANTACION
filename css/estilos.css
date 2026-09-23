@@ -25,6 +25,10 @@
   --borde-filtro: #D5D5D9;     /* atajos: borde suave del estilo de filtros (D95) */
   --fondo-campo: #F2F2F4;      /* caja gris clara de los campos de filtro */
   --fondo-campo-hover: #EAEAED;
+  --aviso-exito: #7CD39A;      /* sobre el fondo oscuro del aviso flotante (D101) */
+  --aviso-alerta: #F28B82;
+  --aviso-accion: #F0D9B5;     /* «Deshacer»: dorado claro, 10:1 sobre el oscuro */
+  --total-fondo: #FFFAE9;      /* renglón de total, igual que en el PDF */
   /* ESCALA DE ÉNFASIS. Un control se ve según lo que pesa, no según quién lo escribió.
      Hay tres niveles y sólo tres, en toda la aplicación:
        1. Acción principal de la pantalla  → .btn-primario   (guinda relleno; una por bloque)
@@ -491,11 +495,40 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .dialogo-titulo h2 { margin: 0; }
 .dialogo-titulo h2:focus { outline: none; }
 
+/* Aviso flotante único (D101): arriba, para no tapar las barras fijas del pie; fondo oscuro
+   neutro con un filete de color e icono que dicen si es éxito o alerta (el color no va solo:
+   también cambian el icono y el texto). «Deshacer» en dorado claro, que contrasta sobre el oscuro. */
 .aviso {
-  position: fixed; left: 50%; bottom: var(--e-5); transform: translateX(-50%); z-index: 3000;
-  max-width: calc(100vw - 2rem); padding: var(--e-3) var(--e-5); border-radius: var(--radio);
-  background: var(--exito); color: var(--fondo); font-weight: 500;
+  position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + var(--e-3)); transform: translateX(-50%); z-index: 3000;
+  width: max-content; max-width: min(34rem, calc(100vw - 2rem)); display: flex; align-items: center; gap: var(--e-2);
+  padding: var(--e-2) var(--e-2) var(--e-2) var(--e-3); border-radius: var(--radio-filtro); border-left: 4px solid var(--exito);
+  background: var(--texto); color: var(--fondo); font-weight: 500; font-size: var(--t-s); box-shadow: 0 8px 24px rgba(0, 0, 0, .25);
 }
+.aviso-icono { display: grid; color: var(--aviso-exito); flex-shrink: 0; }
+.aviso-texto { flex: 1; min-width: 0; }
+.aviso-accion { min-height: 40px; padding: 0 var(--e-3); border: 0; border-radius: 8px; background: none; color: var(--aviso-accion); font: inherit; font-weight: 700; cursor: pointer; }
+.aviso-cerrar { display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: none; color: var(--fondo); opacity: .8; cursor: pointer; flex-shrink: 0; }
+
+/* Vista previa del parte (D101): una hoja blanca con el contenido del PDF */
+.previa-hoja { border: 1px solid var(--borde-suave); border-radius: var(--radio); padding: var(--e-4); background: var(--fondo); box-shadow: 0 2px 10px rgba(0, 0, 0, .06); font-size: var(--t-s); }
+.previa-titulo { text-align: center; text-transform: uppercase; font-family: var(--fuente-titulo); font-weight: 700; color: var(--guinda); margin: 0; }
+.previa-fecha { text-align: center; color: var(--gris); margin: 0 0 var(--e-3); }
+.previa-sitio { border: 1px solid var(--texto); padding: var(--e-2) var(--e-3); margin-bottom: var(--e-3); }
+.previa-sitio p { margin: 0; }
+.previa-sitio strong { color: var(--guinda); }
+.previa-tenue, .previa-nota, .previa-pie { color: var(--gris); }
+.previa-nota { font-size: var(--t-xs); font-style: italic; margin: var(--e-1) 0 0; }
+.previa-pie { font-size: var(--t-xs); margin: var(--e-4) 0 0; }
+.previa-apartado { margin-bottom: var(--e-3); }
+.previa-apartado h3 { font-size: var(--t-xs); text-transform: uppercase; color: var(--guinda); border-bottom: 1px solid var(--dorado); padding-bottom: 2px; margin: 0 0 var(--e-1); }
+.previa-apartado p { margin: 0; }
+.previa-tabla-caja { overflow-x: auto; }
+.previa-tabla { width: 100%; border-collapse: collapse; font-size: var(--t-xs); }
+.previa-tabla th { background: var(--guinda); color: var(--fondo); text-align: left; padding: 3px 5px; }
+.previa-tabla td { padding: 3px 5px; }
+.previa-tabla tbody tr:nth-child(even) td { background: var(--fondo-suave); }
+.previa-tabla tfoot td { font-weight: 700; background: var(--total-fondo); }
+.dialogo-pie .btn-texto { margin-top: var(--e-1); }
 
 /* ========== 5. ESTADOS ========== */
 
@@ -517,7 +550,8 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .chip[aria-expanded="true"][aria-pressed="false"] { border-color: var(--guinda); color: var(--guinda); background: var(--fondo); }
 .combo-opcion[aria-selected="true"] { background: var(--fondo-suave); outline: 2px solid var(--guinda); outline-offset: -2px; }
 .campo input[aria-invalid="true"], .campo select[aria-invalid="true"] { border: 2px solid var(--error); }
-.aviso[data-tipo="alerta"] { background: var(--error); }
+.aviso[data-tipo="alerta"] { border-left-color: var(--aviso-alerta); }
+.aviso[data-tipo="alerta"] .aviso-icono { color: var(--aviso-alerta); }
 .estado-texto[data-activo="false"] { color: var(--error); }
 .ficha-estado[data-tipo="alerta"] { color: var(--error); font-weight: 500; }
 

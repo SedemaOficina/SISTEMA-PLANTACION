@@ -65,14 +65,31 @@ SRP.util = {
     return [u.nombre, u.apellido_paterno, u.apellido_materno].filter(Boolean).join(' ');
   },
 
-  // Aviso para lector de pantalla y mensaje visible breve
-  anunciar(mensaje, tipo) {
+  /* AVISO FLOTANTE (D101). Uno solo para toda la plataforma: icono, texto, × para cerrarlo y,
+     cuando la acción se puede revertir, «Deshacer». Va arriba de la pantalla para no tapar las
+     barras fijas del pie (Revisar y guardar, Guardar, Editar). Dura más si trae «Deshacer» o es
+     una alerta, porque ahí la persona necesita tiempo para leer y decidir.
+     `op`: { deshacer: función, textoAccion: 'Deshacer' } */
+  anunciar(mensaje, tipo, op) {
+    op = op || {};
     const zona = document.getElementById('aviso');
-    zona.textContent = mensaje;
-    zona.dataset.tipo = tipo || 'exito';
+    const alerta = tipo === 'alerta';
+    zona.innerHTML = '<span class="aviso-icono" aria-hidden="true">' + SRP.ICONOS.svg(alerta ? 'info' : 'palomita', 20) + '</span>' +
+      '<span class="aviso-texto"></span>' +
+      (op.deshacer ? '<button type="button" class="aviso-accion"></button>' : '') +
+      '<button type="button" class="aviso-cerrar" aria-label="Cerrar aviso">' + SRP.ICONOS.svg('cerrar', 18) + '</button>';
+    zona.querySelector('.aviso-texto').textContent = mensaje;
+    zona.dataset.tipo = alerta ? 'alerta' : 'exito';
     zona.hidden = false;
+    const cerrar = () => { zona.hidden = true; clearTimeout(SRP.util._temporizadorAviso); };
+    zona.querySelector('.aviso-cerrar').onclick = cerrar;
+    if (op.deshacer) {
+      const b = zona.querySelector('.aviso-accion');
+      b.textContent = op.textoAccion || 'Deshacer';
+      b.onclick = () => { cerrar(); op.deshacer(); };
+    }
     clearTimeout(SRP.util._temporizadorAviso);
-    SRP.util._temporizadorAviso = setTimeout(() => { zona.hidden = true; }, 4500);
+    SRP.util._temporizadorAviso = setTimeout(() => { zona.hidden = true; }, op.deshacer ? 8000 : (alerta ? 7000 : 4500));
   },
 
   /* Sólo para el lector de pantalla, sin letrero. Para cambios que en pantalla ya se ven solos

@@ -174,9 +174,10 @@ SRP.usuarios = {
     this.preparar();
   },
 
-  async cambiarEstado(u) {
+  // `deshaciendo`: viene de «Deshacer» del aviso; no se vuelve a preguntar ni a ofrecer deshacer (D101)
+  async cambiarEstado(u, deshaciendo) {
     const activar = !u.activo;
-    if (!activar) {
+    if (!activar && !deshaciendo) {
       const ok = await SRP.app.confirmar('¿Desactivar la cuenta de ' + SRP.util.nombreCompleto(u) +
         '? Dejará de poder entrar; sus registros se conservan y siguen a su nombre.', 'Desactivar', 'palomita');
       if (!ok) return;
@@ -184,7 +185,7 @@ SRP.usuarios = {
     const nuevo = Object.assign({}, u, { activo: activar, editado_por_id: SRP.sesion.usuario.id, fecha_ultima_edicion: SRP.util.ahoraISO() });
     await SRP.almacen.guardarConBitacora('usuarios', nuevo, SRP.bitacora.entrada(activar ? 'ACTIVADO' : 'DESACTIVADO', 'usuario', u.id));
     await SRP.ref.recargar();
-    SRP.util.anunciar(activar ? 'Cuenta activada.' : 'Cuenta desactivada.');
+    SRP.util.anunciar(activar ? 'Cuenta activada.' : 'Cuenta desactivada.', 'exito', deshaciendo ? null : { deshacer: () => this.cambiarEstado(nuevo, true) });
     this.preparar();
   },
 

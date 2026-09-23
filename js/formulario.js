@@ -42,8 +42,10 @@ SRP.formulario = {
     this.el('btn-foto-quitar').innerHTML = SRP.ICONOS.svg('basura', 20);
     this.el('icono-foto').innerHTML = SRP.ICONOS.svg('camara', 34);
     this.el('btn-foto-quitar').addEventListener('click', () => {
+      const f = { datos: this.estado.foto, id: this.estado.fotoId, nombre: this.estado.fotoNombre, bytes: this.estado.fotoBytes };
       this.ponerFoto(null, null);
-      SRP.util.anunciarSilencioso('Fotografía quitada.');
+      // Quitar la foto por error obligaba a tomarla otra vez; ahora se deshace (D101)
+      SRP.util.anunciar('Fotografía quitada.', 'exito', { deshacer: () => this.ponerFoto(f.datos, f.id, f.nombre, f.bytes) });
       this.el('etq-foto').focus();
     });
     this.el('form-plantacion').addEventListener('submit', (e) => { e.preventDefault(); this.revisar(); });

@@ -570,10 +570,21 @@ with sync_playwright() as p:
     pg.fill('#cie-chofer','Fulano de Tal')
     pg.fill('#cie-hora','14:30')
     pg.fill('#cie-vehiculo_modelo','Camioneta de prueba'); pg.fill('#cie-vehiculo_placa','ABC-123')
-    with pg.expect_download() as d: pg.click('#btn-cierre-generar')
+    ok(pg.inner_text('#btn-cierre-generar').strip()=='Ver vista previa' and pg.evaluate("!!document.getElementById('btn-cierre-generar').closest('.dialogo-pie')"),
+       'el cierre lleva «Ver vista previa» al pie (D101)')
+    pg.click('#btn-cierre-generar'); pg.wait_for_timeout(500)
+    prev=pg.inner_text('#previa-hoja')
+    ok(pg.is_visible('#dlg-previa') and 'REPORTE DIARIO DE PLANTACIÓN' in prev.upper() and 'Calzada de prueba' in prev and 'Fulano de Tal' in prev
+       and 'TOTALES POR ESPECIE' in prev.upper() and 'PROVISIONALES' in prev,'antes del PDF se ve la vista previa con el sitio, la logística, los totales y la advertencia de provisional (D101)')
+    ok('Personal de apoyo' not in prev,'y como el PDF, un apartado vacío no aparece')
+    pg.click('#btn-previa-corregir'); pg.wait_for_timeout(400)
+    ok(pg.is_visible('#dlg-cierre') and pg.input_value('#cie-chofer')=='Fulano de Tal','«Corregir datos de cierre» vuelve al formulario con lo escrito')
+    pg.click('#btn-cierre-generar'); pg.wait_for_timeout(500)
+    with pg.expect_download() as d: pg.click('#btn-previa-generar')
     d.value.save_as('/home/claude/srp/reporte_prueba.pdf')
     ok(os.path.getsize('/home/claude/srp/reporte_prueba.pdf')>20000,'el reporte PDF se genera: '+d.value.suggested_filename)
-    ok(HOY in d.value.suggested_filename,'y el archivo lleva el día del parte: '+d.value.suggested_filename)
+    ok(re.fullmatch(r'Reporte_[A-Za-z0-9_]+_'+HOY+r'\.pdf', d.value.suggested_filename) is not None and '_Ejemplo_' in d.value.suggested_filename,
+       'el archivo se llama «Reporte», el nombre de quien responde y la fecha del parte, sin acentos ni espacios (D102): '+d.value.suggested_filename)
 
     # ---------- SIN SEÑAL Y RESPALDO (B25) ----------
     ok(pg.text_content('#conexion').strip().startswith('Con conexión · ') and 'guardados' in pg.text_content('#conexion') and pg.locator('#conexion svg').count()==1 and pg.get_attribute('#conexion','data-estado')=='con','el encabezado dice el estado de la conexión y cuántos registros guarda, con icono y color (D83): '+pg.text_content('#conexion').strip())
@@ -667,6 +678,17 @@ with sync_playwright() as p:
     pg.click('#btn-detalle-cerrar'); pg.wait_for_timeout(200)
     accion(pg,'#lista-registros','eliminar'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
     ok('Total: 3 ' in pg.inner_text('#registros-total'),'eliminar retira del listado: '+pg.inner_text('#registros-total'))
+    av=pg.evaluate("(() => { const a=document.getElementById('aviso'); const r=a.getBoundingClientRect(); return { texto: a.querySelector('.aviso-texto').textContent, deshacer: !!a.querySelector('.aviso-accion'), cerrar: !!a.querySelector('.aviso-cerrar'), arriba: r.top < innerHeight/3 }; })()")
+    ok(av=={'texto':'Registro eliminado.','deshacer':True,'cerrar':True,'arriba':True},'el aviso flotante va arriba, con × y «Deshacer» (D101): %s' % av)
+    pg.click('#aviso .aviso-accion'); pg.wait_for_timeout(500)
+    ok('Total: 4 ' in pg.inner_text('#registros-total') and 'restaurado' in pg.inner_text('#aviso'),'«Deshacer» devuelve el registro eliminado: '+pg.inner_text('#registros-total'))
+    ok(pg.evaluate("(async () => (await SRP.bitacora.deEntidad(SRP.registros.filtrados[0].id)).length >= 0)()") is True and
+       pg.evaluate("(async () => { const b = await SRP.almacen.todos('bitacora'); return b.some(x => x.accion === 'RESTAURADO'); })()"),'y la bitácora deja constancia con RESTAURADO')
+    accion(pg,'#lista-registros','eliminar'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
+    ok('Total: 3 ' in pg.inner_text('#registros-total'),'se vuelve a eliminar para seguir la prueba')
+    abrir_filtros(pg); pg.click('#btn-reiniciar-filtros'); pg.wait_for_timeout(300)
+    pg.click('#aviso .aviso-accion'); pg.wait_for_timeout(300)
+    ok('Total: 3 ' in pg.inner_text('#registros-total') and pg.get_attribute('.chip[data-atajo=todos]','aria-pressed')=='true','«Deshacer» de Reiniciar filtros devuelve el filtro anterior (D101)')
 
     # ---------- COORDINADOR ----------
     pg.click('#btn-cuenta'); pg.click('#btn-cambiar-perfil'); pg.select_option('#sel-usuario-prueba','u-coord-1'); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(600)

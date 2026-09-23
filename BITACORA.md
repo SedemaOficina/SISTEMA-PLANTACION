@@ -946,3 +946,19 @@ menú sale junto a su tuerca. Era efecto de la captura de página completa. Sin 
 
 **Verificación:** 276 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.26.
+
+## Bloque 46 — Avisos con «Deshacer», vista previa del parte y nombre del PDF (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.27.
+
+**Qué cambió (D101, D102).** `util.js`: `anunciar(mensaje, tipo, op)` con icono, × y
+«Deshacer». `registros.js`: deshacer eliminar (`restaurar()`) y reiniciar filtros
+(`volverAFiltro()`). `formulario.js`: deshacer quitar foto. `catalogos.js` y `usuarios.js`:
+deshacer activar/desactivar. `index.html`: botón del cierre al pie como «Ver vista previa»;
+ventana `#dlg-previa`. `reportes.js`: `htmlPrevia()`, botones Generar PDF y Corregir,
+`nombreArchivo()`. CSS: aviso arriba con fondo oscuro y colores propios de contraste; hoja de
+vista previa. Pruebas: nueve comprobaciones nuevas (aviso arriba con × y Deshacer, Deshacer de
+eliminar y de reiniciar filtros con bitácora, vista previa con apartados y sin los vacíos,
+Corregir vuelve al cierre, nombre del archivo).
+
+**Verificación:** 285 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.27.

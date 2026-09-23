@@ -135,6 +135,7 @@ SRP.registros = {
   /* Deja los filtros como al abrir la vista por primera vez: Hoy, sin año ni mes, sin rango y
      todos los cabos. Es distinto de «Todos», que sólo quita el periodo y respeta el cabo. */
   reiniciarFiltros() {
+    const antes = Object.assign({}, this.filtro);
     this.filtro = { dia: SRP.util.fechaHoy(), anio: '', mes: '', desde: '', hasta: '', cabo: '' };
     this.el('filtro-cabo').value = '';
     this.periodoAbierto = false;
@@ -142,7 +143,18 @@ SRP.registros = {
     this.llenarMeses();
     this.sincronizarControles();
     this.aplicar();
-    SRP.util.anunciar('Filtros reiniciados: registros de hoy.');
+    SRP.util.anunciar('Filtros reiniciados: registros de hoy.', 'exito', { deshacer: () => this.volverAFiltro(antes) });
+  },
+
+  // Devuelve los filtros a como estaban antes de «Reiniciar filtros» (D101)
+  volverAFiltro(f) {
+    this.filtro = Object.assign({}, f);
+    this.el('filtro-cabo').value = f.cabo || '';
+    this.el('filtro-desde').value = f.desde || ''; this.el('filtro-hasta').value = f.hasta || '';
+    this.periodoAbierto = !!(f.desde || f.hasta);
+    this.llenarMeses();
+    this.sincronizarControles();
+    this.aplicar();
   },
 
   /* ---------- Periodo ---------- */
@@ -391,8 +403,17 @@ SRP.registros = {
     // Retiro con constancia: se marca, no se borra (Norma 7.4)
     const nuevo = Object.assign({}, r, { estatus: 'eliminado', fecha_ultima_edicion: SRP.util.ahoraISO(), editado_por_id: SRP.sesion.usuario.id });
     await SRP.almacen.guardarConBitacora('plantaciones', nuevo, SRP.bitacora.entrada('ELIMINADO', 'plantacion', r.id));
-    SRP.util.anunciar('Registro eliminado.');
+    // «Deshacer» devuelve el registro tal como estaba y deja constancia (D101)
+    SRP.util.anunciar('Registro eliminado.', 'exito', { deshacer: () => this.restaurar(r) });
     this.preparar();
     SRP.conexion.refrescar();   // la cuenta de la pastilla baja
+  },
+
+  async restaurar(r) {
+    const vuelto = Object.assign({}, r, { fecha_ultima_edicion: SRP.util.ahoraISO(), editado_por_id: SRP.sesion.usuario.id });
+    await SRP.almacen.guardarConBitacora('plantaciones', vuelto, SRP.bitacora.entrada('RESTAURADO', 'plantacion', r.id, 'Se deshizo la eliminación'));
+    SRP.util.anunciar('Registro restaurado.');
+    this.preparar();
+    SRP.conexion.refrescar();
   }
 };

@@ -594,3 +594,23 @@
   las vistas miden lo mismo; en las de formulario y lectura el contenido conserva su línea
   corta, alineado a la izquierda. Aprobadas por Liber, 22-09-2026 (M05, M07, M10, M11, M30–M32,
   M34–M36).
+
+## Bloque 46 — Avisos con «Deshacer», vista previa del parte y nombre del PDF
+
+- **D101. Un solo aviso flotante y vista previa antes del PDF.** (1) Todos los avisos de la
+  plataforma salen del mismo componente: arriba de la pantalla (para no tapar las barras fijas
+  del pie), fondo oscuro neutro con filete e icono de éxito o alerta, texto, × para cerrarlo y,
+  cuando la acción se puede revertir, «Deshacer». Dura 4.5 s, 7 s si es alerta y 8 s si trae
+  «Deshacer». Se puede deshacer: eliminar un registro (vuelve con bitácora RESTAURADO),
+  reiniciar filtros, quitar la foto del formulario y activar o desactivar un valor de catálogo o
+  una cuenta. (2) El formulario de cierre ya no genera el PDF directo: su botón, al pie, dice
+  «Ver vista previa» y abre una hoja con lo mismo que dirá el PDF (sitio, actividades, personal,
+  ejemplares, totales, programa, observaciones y logística, sin los apartados vacíos). Desde ahí,
+  «Generar PDF» o «Corregir datos de cierre», que vuelve al formulario con lo escrito.
+  Elegidas por Liber, 22-09-2026 (M08, M09).
+- **D102. El PDF se nombra con la palabra Reporte, quién responde y la fecha del parte.**
+  Forma: `Reporte_<Nombre_Apellidos>_<AAAA-MM-DD>.pdf`, p. ej.
+  `Reporte_Perengano_Gomez_Ejemplo_2026-09-22.pdf`. La persona es el encargado del cierre; si no
+  lo hay, el cabo elegido en Reportes; si tampoco, quien genera. Sin acentos ni espacios para que
+  ningún sistema de archivos ni app de mensajería lo altere. Sustituye a
+  `Reporte_Plantacion_<fecha>.pdf`. Pedido por Liber, 22-09-2026.

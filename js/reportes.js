@@ -34,6 +34,18 @@ SRP.reportes = {
     this.el('pdf-dia').addEventListener('change', () => this.refrescarVista());
     this.el('pdf-cabo').addEventListener('change', () => this.refrescarVista());
     this.el('btn-pdf').addEventListener('click', () => this.generarDesdeVista());
+    this.el('btn-previa-generar').innerHTML = SRP.ICONOS.svg('palomita') + '<span>Generar PDF</span>';
+    this.el('btn-previa-generar').addEventListener('click', () => {
+      const v = this.vistaPrevia; if (!v) return;
+      this.el('dlg-previa').close();
+      this.generar(v.registros, v.cierre, v.fecha);
+    });
+    // Corregir vuelve al formulario de cierre con lo ya escrito (se guardó al pedir la vista previa)
+    this.el('btn-previa-corregir').addEventListener('click', () => {
+      const v = this.vistaPrevia; if (!v) return;
+      this.el('dlg-previa').close();
+      this.abrir(v.registros, v.fecha, v.cabo_id);
+    });
   },
 
   /* ---------- La vista Reportes (D81) ---------- */
@@ -192,7 +204,68 @@ SRP.reportes = {
         'Cierre del parte del ' + SRP.util.formatearFecha(c.fecha)));
 
     this.el('dlg-cierre').close();
-    this.generar(c.registros, cierre, c.fecha);
+    this.mostrarPrevia(c.registros, cierre, c.fecha, c.cabo_id);
+  },
+
+  /* VISTA PREVIA DEL PARTE (D101). Lo mismo que dirá el PDF, en el mismo orden y con las mismas
+     reglas (un apartado vacío no aparece), en pantalla y antes de generarlo: así se corrige un
+     dato de cierre sin haber compartido todavía un documento equivocado. No es una imagen del
+     PDF —en iPhone un PDF incrustado sólo enseña la primera página—, sino el mismo contenido. */
+  mostrarPrevia(registros, cierre, fecha, caboId) {
+    this.vistaPrevia = { registros, cierre, fecha, cabo_id: caboId || '' };
+    this.el('previa-hoja').innerHTML = this.htmlPrevia(registros, cierre, fecha);
+    this.el('dlg-previa').showModal();
+  },
+
+  htmlPrevia(registros, cierre, fecha) {
+    const esc = t => SRP.util.escapar(t);
+    const u = SRP.sesion.usuario;
+    const variosAutores = SRP.permisos.de(u).alcance !== 'propios';
+    const hay = (k) => !!(cierre[k] && cierre[k].trim());
+    const parrafo = t => esc(t).replace(/\n/g, '<br>');
+    const apartado = (titulo, cuerpo) => '<section class="previa-apartado"><h3>' + titulo + '</h3>' + cuerpo + '</section>';
+    let h = '<p class="previa-titulo">Reporte diario de plantación</p><p class="previa-fecha">' + esc(SRP.util.formatearFecha(fecha)) + '</p>';
+
+    const alcaldias = this.alcaldiasDe(registros);
+    if (hay('sitio') || alcaldias.length) {
+      const terr = alcaldias.length ? (alcaldias.length === 1 ? 'Alcaldía ' + alcaldias[0] : 'Alcaldías: ' + alcaldias.join(', ')) : '';
+      h += '<div class="previa-sitio">' + (hay('sitio') ? '<p><strong>Sitio:</strong> ' + parrafo(cierre.sitio) + '</p>' : '') +
+        (terr ? '<p class="previa-tenue">' + esc(terr) + '</p>' : '') + '</div>';
+    }
+    if (hay('actividades')) h += apartado('Actividades realizadas', '<p>' + parrafo(cierre.actividades) + '</p>');
+    const personal = [];
+    if (hay('personal')) personal.push(parrafo(cierre.personal));
+    if (hay('apoyo')) personal.push('Personal de apoyo: ' + parrafo(cierre.apoyo));
+    if (cierre.encargado_id) personal.push('Encargado: ' + esc(SRP.ref.nombreUsuario(cierre.encargado_id)));
+    if (personal.length) h += apartado('Personal participante', '<p>' + personal.join('<br>') + '</p>');
+
+    h += apartado('Ejemplares registrados', '<div class="previa-tabla-caja"><table class="previa-tabla"><thead><tr><th>N.º</th><th>Folio</th><th>Especie</th><th>Nombre científico</th>' +
+      (variosAutores ? '<th>Cabo</th>' : '') + '</tr></thead><tbody>' + registros.map((r, i) => {
+        const e = SRP.ref.especieDe(r);
+        return '<tr><td>' + (i + 1) + '</td><td>' + esc(SRP.folio.texto(r)) + '</td><td>' + esc(e.comun) + '</td><td><i>' + esc(e.cientifico) + '</i></td>' +
+          (variosAutores ? '<td>' + esc(SRP.ref.nombreUsuario(r.cabo_id)) + '</td>' : '') + '</tr>';
+      }).join('') + '</tbody></table></div>' +
+      (registros.some(r => !SRP.folio.valido(r.folio)) ? '<p class="previa-nota">Registros PROVISIONALES: el folio se asigna al sincronizar con el servidor. Este parte no sustituye al definitivo.</p>' : ''));
+
+    h += apartado('Totales por especie', '<div class="previa-tabla-caja"><table class="previa-tabla"><thead><tr><th>Especie</th><th>Nombre científico</th><th>Ejemplares</th></tr></thead><tbody>' +
+      this.totalesPorEspecie(registros).map(t => '<tr><td>' + esc(t.comun) + '</td><td><i>' + esc(t.cientifico) + '</i></td><td>' + t.n + '</td></tr>').join('') +
+      '</tbody><tfoot><tr><td>Total</td><td></td><td>' + registros.length + '</td></tr></tfoot></table></div>');
+
+    const porPrograma = {};
+    registros.forEach(r => { const n = SRP.ref.nombreCatalogo(r.programa_id) || 'Sin programa'; porPrograma[n] = (porPrograma[n] || 0) + 1; });
+    h += apartado('Por programa', '<p>' + Object.keys(porPrograma).sort().map(n => esc(n) + ': ' + porPrograma[n]).join('<br>') + '</p>');
+
+    if (hay('observaciones')) h += apartado('Observaciones', '<p>' + parrafo(cierre.observaciones) + '</p>');
+    const log = [];
+    if (hay('chofer')) log.push('Chófer: ' + esc(cierre.chofer));
+    if (hay('vehiculo_modelo') || hay('vehiculo_placa')) log.push('Vehículo: ' + esc([cierre.vehiculo_modelo, hay('vehiculo_placa') ? 'placa ' + cierre.vehiculo_placa : ''].filter(Boolean).join(', ')));
+    if (hay('hora')) log.push('Hora de finalización: ' + esc(cierre.hora) + ' h');
+    if (log.length) h += apartado('Logística', '<p>' + log.join('<br>') + '</p>');
+
+    const conGps = registros.filter(r => r.punto_origen === 'gps').length;
+    h += '<p class="previa-pie">Ubicados con GPS del dispositivo: ' + conGps + ' de ' + registros.length + ' (' + Math.round(conGps * 100 / registros.length) + '%)<br>' +
+      'Generado por ' + esc(SRP.util.nombreCompleto(u)) + ' (' + esc(SRP.permisos.de(u).etiqueta) + ').</p>';
+    return h;
   },
 
   /* ---------- El documento ---------- */
@@ -404,7 +477,19 @@ SRP.reportes = {
       doc.text('Página ' + p + ' de ' + paginas, ancho / 2, alto - 6, { align: 'center' });
     }
 
-    this.entregar(doc, 'Reporte_Plantacion_' + fecha + '.pdf');
+    this.entregar(doc, this.nombreArchivo(cierre, fecha));
+  },
+
+  /* Nombre del PDF (D102): «Reporte», quién responde del parte y la fecha del parte, p. ej.
+     Reporte_Perengano_Gomez_Ejemplo_2026-09-22.pdf. La persona es el encargado del cierre; si no
+     lo hay, el cabo elegido en Reportes; si tampoco, quien genera (el coordinador que saca el de
+     toda su cuadrilla). Sin acentos ni espacios, para que ningún sistema de archivos lo altere. */
+  nombreArchivo(cierre, fecha) {
+    const cabo = this.contexto ? this.contexto.cabo_id : '';
+    const id = (cierre && cierre.encargado_id) || cabo || SRP.sesion.usuario.id;
+    const nombre = (SRP.ref.nombreUsuario(id) || 'SRP').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+    return 'Reporte_' + nombre + '_' + fecha + '.pdf';
   },
 
   /* En teléfono o tableta, compartir con las apps del dispositivo; en escritorio, descargar.
