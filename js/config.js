@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 41',
+  ETAPA: 'Bloque 42',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -57,7 +57,12 @@ SRP.CONFIG = {
       { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
         atribucion: '', base: false }
     ],
-    GPS_ESPERA_MS: 15000
+    GPS_ESPERA_MS: 15000,
+    /* Niveles de la precisión del GPS que se muestran junto al mapa (D96). Con ±10 m el punto cae
+       en la misma banqueta; hasta ±30 m sirve si se revisa en el mapa; más allá conviene esperar o
+       ajustar a mano. Son una guía para el cabo: no impiden guardar. */
+    PRECISION_BUENA_M: 10,
+    PRECISION_ACEPTABLE_M: 30
   },
 
   FOTO: { ANCHO_MAX: 800, ALTO_MAX: 600, CALIDAD: 0.7 },

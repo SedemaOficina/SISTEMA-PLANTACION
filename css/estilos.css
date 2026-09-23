@@ -95,7 +95,9 @@ h1[tabindex="-1"]:focus { outline: none; }
   padding: var(--e-3) var(--e-4); background: var(--fondo); border: 1px solid var(--borde-suave); border-top: 3px solid var(--guinda);
   border-radius: var(--radio); box-shadow: 0 6px 18px rgba(35, 37, 38, 0.18); }
 .menu-cuenta p { margin: 0 0 var(--e-2); }
-.menu-cuenta-acciones { display: flex; flex-direction: column; align-items: stretch; gap: var(--e-2); margin-top: var(--e-3); }
+/* Las salidas de la cuenta son renglones de texto separados por un filete, de orilla a orilla del menú (D97) */
+.menu-cuenta-acciones { display: flex; flex-direction: column; margin: var(--e-3) calc(-1 * var(--e-4)) calc(-1 * var(--e-3)); border-top: 1px solid var(--borde-suave); padding: var(--e-1) 0; }
+.menu-cuenta-acciones .menu-opcion { font-size: var(--t-s); color: var(--texto); }
 .encabezado-nombre { font-size: var(--t-m); font-weight: 600; overflow-wrap: anywhere; }
 main { padding: var(--e-4); }
 main:focus { outline: none; }
@@ -201,6 +203,28 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 
 .fila-botones { display: flex; flex-wrap: wrap; gap: var(--e-2); align-items: flex-end; margin-bottom: var(--e-3); }
 .acciones { display: flex; flex-wrap: wrap; gap: var(--e-3); margin-top: var(--e-5); }
+/* Guardar siempre a la mano (D96): la barra se queda al pie de la pantalla mientras se llena el
+   formulario y vuelve a su lugar al llegar al final. El fondo tapa lo que pasa por debajo. */
+.barra-guardar {
+  position: sticky; bottom: 0; z-index: 5; background: var(--fondo);
+  padding: var(--e-3) 0 calc(var(--e-3) + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--borde-suave); box-shadow: 0 -6px 12px -8px rgba(0, 0, 0, .18);
+}
+
+/* Estado vacío con salida (D96) */
+.vacio { text-align: center; padding: var(--e-5) var(--e-4); border: 1px dashed var(--borde-filtro); border-radius: var(--radio-filtro); background: var(--fondo); }
+.vacio-icono { display: inline-grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: var(--fondo-suave); color: var(--guinda); margin-bottom: var(--e-2); }
+.vacio-titulo { font-family: var(--fuente-titulo); font-weight: 600; font-size: var(--t-m); margin-bottom: var(--e-1); }
+.vacio-texto { color: var(--gris); font-size: var(--t-s); }
+.vacio-acciones { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--e-2); margin-top: var(--e-3); }
+
+/* Precisión del GPS bajo el mapa (D96): punto de color más la palabra; nunca sólo el color */
+.precision { display: inline-flex; align-items: center; gap: var(--e-2); font-weight: 600; padding: 2px var(--e-2); border-radius: 999px; }
+.precision-punto { width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+.precision[data-nivel="buena"] { color: var(--exito); background: var(--exito-fondo); }
+.precision[data-nivel="aceptable"] { color: var(--editar); background: var(--editar-fondo); }
+.precision[data-nivel="baja"] { color: var(--error); background: var(--error-fondo); }
+.precision-consejo { display: block; margin-top: var(--e-1); color: var(--texto); }
 .acciones-reporte { align-items: center; }
 .acciones-reporte .nota { flex-basis: 100%; margin: 0; }
 

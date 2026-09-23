@@ -114,7 +114,8 @@ with sync_playwright() as p:
     }""")
     ok(enfasis['principal_relleno']=='rgb(157, 33, 72)','la acción principal es el guinda relleno')
     ok(enfasis['apoyo']==enfasis['gris'],'y la de apoyo va en gris, no en guinda: '+enfasis['apoyo'])
-    ok(enfasis['cerrar_borde']!='0px','cerrar sesión es un botón secundario dentro del menú de la cuenta (D93)')
+    ok(enfasis['cerrar_borde']=='0px' and enfasis['cerrar_caja'] in ('rgba(0, 0, 0, 0)','transparent') and 'underline' not in enfasis['cerrar_subrayado'],
+       'cerrar sesión es un renglón de texto del menú de la cuenta, sin caja ni subrayado (D97): %s' % enfasis)
 
     # Los datos del punto son campos del formulario, no un recuadro bajo el mapa
     ok(pg.locator('.ficha-datos').count()==0,'bajo el mapa ya no cuelga el recuadro de datos')
@@ -232,6 +233,25 @@ with sync_playwright() as p:
       return malos;
     }""")
     ok(invariante==[],'la precisión existe si y sólo si el punto vino del GPS; falla en '+str(invariante))
+
+    # Precisión a la vista (D96): insignia con palabra y margen, y círculo sobre el mapa
+    prec=pg.evaluate("""() => {
+      const antes = { lat: SRP.mapa.lat, lng: SRP.mapa.lng, origen: SRP.mapa.origen, precision: SRP.mapa.precision };
+      const ver = (origen, precision) => {
+        SRP.mapa.colocar(19.4326, -99.1332, 'Punto colocado.', { origen, precision });
+        const i = document.querySelector('#mapa-estado .precision');
+        return [i ? i.dataset.nivel : null, i ? i.textContent : '', !!SRP.mapa.margen,
+                !!document.querySelector('#mapa-estado .precision-consejo')];
+      };
+      const r = { buena: ver('gps', 8), aceptable: ver('gps', 25), baja: ver('gps', 60), manual: ver('manual', null) };
+      SRP.mapa.colocar(antes.lat, antes.lng, 'prueba', { origen: antes.origen, precision: antes.precision });
+      return r;
+    }""")
+    ok(prec['buena'][:3]==['buena','Precisión buena · ±8 m',True] and not prec['buena'][3],'con ±8 m la precisión es buena, se escribe y se dibuja su círculo: %s' % prec['buena'])
+    ok(prec['aceptable'][0]=='aceptable' and prec['aceptable'][3],'con ±25 m es aceptable y aconseja revisar el punto')
+    ok(prec['baja'][0]=='baja' and prec['baja'][3],'con ±60 m es baja y dice qué hacer')
+    ok(prec['manual'][0] is None and not prec['manual'][2],'un punto a mano no muestra insignia ni círculo')
+    ok(pg.evaluate("getComputedStyle(document.querySelector('.barra-guardar')).position")=='sticky','Revisar y guardar va en una barra fija al pie (D96)')
 
     # Con la captura a mano desplegada no conviven dos formas de fijar el punto: el botón de
     # ubicación se oculta, y vuelve al cerrar el desplegable (D49)
@@ -408,6 +428,13 @@ with sync_playwright() as p:
     ok(col=='rgb(179, 38, 30)','la opción Eliminar va en rojo')
     pg.click('.chip[data-atajo=todos]'); pg.wait_for_timeout(300)
     ok('Total: 4 ' in pg.inner_text('#registros-total'),'«Todos» muestra los cuatro: '+pg.inner_text('#registros-total'))
+    ok(pg.is_hidden('#registros-vacio'),'con registros no hay aviso de vacío')
+    # Estado vacío con salida (D96)
+    pg.click('.chip[data-atajo=periodo]'); pg.fill('#filtro-desde','2020-01-01'); pg.fill('#filtro-hasta','2020-01-31'); pg.click('#btn-filtrar'); pg.wait_for_timeout(300)
+    ok(pg.is_visible('#registros-vacio') and pg.locator('#registros-vacio button[data-vacio=quitar]').count()==1 and pg.inner_text('#registros-total')=='',
+       'un filtro sin resultados muestra el aviso con «Quitar filtros»: '+pg.inner_text('#registros-vacio').replace('\n',' '))
+    pg.click('#registros-vacio button[data-vacio=quitar]'); pg.wait_for_timeout(300)
+    ok('Total: 4 ' in pg.inner_text('#registros-total') and pg.is_hidden('#registros-vacio'),'«Quitar filtros» devuelve los cuatro')
     ok(pg.is_hidden('#caja-filtro-cabo'),'el cabo no tiene filtro por cabo')
     ok(pg.locator('#filtro-anio option').count()==2,'el año lista Todos y 2026')
     pg.select_option('#filtro-anio','2026'); pg.wait_for_timeout(300)

@@ -6,7 +6,7 @@ window.SRP = window.SRP || {};
 
 SRP.mapa = {
   mapa: null, marcador: null, lat: null, lng: null, alCambiar: null,
-  origen: null, precision: null,
+  origen: null, precision: null, margen: null,
 
   /* DE DÓNDE SALIÓ EL PUNTO.
      Cuando la fotografía es opcional —y en campo la mayoría de los registros no va a
@@ -101,6 +101,33 @@ SRP.mapa = {
     p.dataset.tipo = tipo || 'normal';
   },
 
+  /* Nivel de la precisión del GPS (D96): buena, aceptable o baja, con su consejo. El color
+     acompaña a la palabra; nunca la sustituye. */
+  nivelPrecision(m) {
+    const c = SRP.CONFIG.MAPA;
+    if (m <= c.PRECISION_BUENA_M) return { nivel: 'buena', texto: 'Precisión buena', consejo: '' };
+    if (m <= c.PRECISION_ACEPTABLE_M) return { nivel: 'aceptable', texto: 'Precisión aceptable', consejo: 'Revise en el mapa que el punto esté en el árbol.' };
+    return { nivel: 'baja', texto: 'Precisión baja', consejo: 'Espere unos segundos al aire libre y vuelva a ubicar o arrastre el punto hasta el árbol.' };
+  },
+
+  // La franja bajo el mapa con la insignia de precisión y el círculo del margen sobre el mapa
+  mostrarPrecision(m) {
+    const n = this.nivelPrecision(m);
+    const p = document.getElementById('mapa-estado');
+    p.dataset.tipo = 'normal';
+    p.innerHTML = '<span class="precision" data-nivel="' + n.nivel + '"><span class="precision-punto" aria-hidden="true"></span>' +
+      n.texto + ' · ±' + Math.round(m) + ' m</span>' + (n.consejo ? ' <span class="precision-consejo">' + n.consejo + '</span>' : '');
+    this.dibujarMargen(m, n.nivel);
+  },
+
+  // Círculo con el margen del GPS: se ve cuánto terreno cabe en «±m». Sólo existe para puntos del GPS
+  dibujarMargen(m, nivel) {
+    if (this.margen) { this.margen.remove(); this.margen = null; }
+    if (!this.mapa || m == null || this.lat == null) return;
+    const color = { buena: '#1F6B3E', aceptable: '#7E5F30', baja: '#B3261E' }[nivel];
+    this.margen = L.circle([this.lat, this.lng], { radius: m, color, weight: 1.5, fillColor: color, fillOpacity: 0.12, interactive: false }).addTo(this.mapa);
+  },
+
   /* Coloca el punto y deja constancia de cómo llegó ahí.
      `op`: { origen, precision, centrar }. El origen es obligatorio en la práctica: sin él el
      registro no puede decir de dónde salió su coordenada. Devuelve false si cae fuera del ámbito. */
@@ -128,8 +155,10 @@ SRP.mapa = {
       }
       if (op.centrar) this.mapa.setView([this.lat, this.lng], Math.max(this.mapa.getZoom(), SRP.CONFIG.MAPA.ZOOM_PUNTO));
     }
-    // Sin la coordenada: la franja dice qué pasó, y el dato vive en su campo del formulario
-    this.estado(mensaje);
+    // Sin la coordenada: la franja dice qué pasó, y el dato vive en su campo del formulario.
+    // Con GPS la franja es la insignia de precisión; en cualquier otro caso el margen se borra
+    if (this.precision != null) this.mostrarPrecision(this.precision);
+    else { this.estado(mensaje); this.dibujarMargen(null); }
     this.refrescarBotonUbicacion();
     if (this.alCambiar) this.alCambiar(this.lat, this.lng);
     return true;
@@ -146,7 +175,7 @@ SRP.mapa = {
       (pos) => {
         this.marcarBuscando(false);
         this.colocar(pos.coords.latitude, pos.coords.longitude,
-          'Ubicación obtenida (precisión ±' + Math.round(pos.coords.accuracy) + ' m).',
+          'Ubicación obtenida.',
           { origen: 'gps', precision: pos.coords.accuracy, centrar: true });
       },
       (err) => {
@@ -161,6 +190,7 @@ SRP.mapa = {
 
   limpiar() {
     if (this.marcador) { this.marcador.remove(); this.marcador = null; }
+    this.dibujarMargen(null);
     this.lat = null; this.lng = null;
     this.origen = null; this.precision = null;
     this.refrescarBotonUbicacion();

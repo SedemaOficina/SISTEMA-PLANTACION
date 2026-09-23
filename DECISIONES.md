@@ -528,3 +528,21 @@
   teléfono y se sigue leyendo «Hoy, 22-SEP-2026». Los campos de los formularios de captura y de
   las ventanas conservan su contorno: ahí el límite visible del campo importa más que el
   parecido con la referencia. Pedido por Liber, 22-09-2026.
+
+## Bloque 42 — Guardar a la mano, precisión del GPS y estados vacíos
+
+- **D96. Tres ajustes para el trabajo en campo.** (1) «Revisar y guardar» va en una barra fija
+  al pie de la pantalla mientras el formulario está a la vista; al llegar al final vuelve a su
+  lugar. (2) Bajo el mapa, la precisión del GPS se muestra como insignia con punto de color y
+  palabra: buena hasta ±10 m, aceptable hasta ±30 m (aconseja revisar el punto) y baja por
+  encima (aconseja esperar y volver a ubicar o arrastrar el punto). Sobre el mapa se dibuja un
+  círculo del tamaño del margen. Los umbrales viven en `CONFIG.MAPA`; son guía, no impiden
+  guardar. Un punto a mano o ajustado no lleva insignia ni círculo, porque no tiene precisión.
+  (3) Cuando la lista de registros queda vacía, el aviso trae el botón que resuelve: sin
+  registros, «Registrar un árbol» (sólo a quien captura); sin registros de hoy, además «Ver
+  todos»; con un filtro sin resultados, «Quitar filtros» (limpia periodo y cabo). Sustituye al
+  texto «Toque «Todos»…». Elegidas por Liber de la lista de mejoras, 22-09-2026.
+- **D97. Las salidas de la cuenta son texto.** En el menú de la cuenta, «Cambiar usuario
+  (pruebas)» y «Cerrar sesión» son renglones de texto bajo un filete, como en la mayoría de los
+  sistemas, en lugar de un botón con contorno y un enlace subrayado. Supera esa parte de D93.
+  Pedido por Liber, 22-09-2026.

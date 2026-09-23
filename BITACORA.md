@@ -875,3 +875,18 @@ encabezado, Aplicar primario).
 
 **Verificación:** 249 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.22.
+
+## Bloque 42 — Guardar a la mano, precisión del GPS y estados vacíos (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.23.
+
+**Qué cambió (D96, D97).** `index.html`: clase `barra-guardar` en las acciones del formulario;
+`#registros-vacio`; salidas de la cuenta como `menu-opcion`. `config.js`: `PRECISION_BUENA_M` y
+`PRECISION_ACEPTABLE_M`. `mapa.js`: `nivelPrecision()`, `mostrarPrecision()` y `dibujarMargen()`
+(círculo Leaflet que se borra con puntos no GPS y al limpiar). `registros.js`: `pintarVacio()` y
+`quitarFiltros()`. CSS de barra fija, estado vacío, insignia de precisión y menú de cuenta.
+Pruebas: ocho comprobaciones nuevas (tres niveles de precisión y el caso manual, barra fija,
+vacío ausente con datos, filtro sin resultados y «Quitar filtros») y la de cerrar sesión
+reescrita para el renglón de texto.
+
+**Verificación:** 257 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.23.

@@ -58,6 +58,12 @@ SRP.registros = {
     });
     this.el('btn-reiniciar-filtros').addEventListener('click', () => this.reiniciarFiltros());
     this.el('btn-mas').addEventListener('click', () => this.pintar(true));
+    this.el('registros-vacio').addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-vacio]'); if (!b) return;
+      if (b.dataset.vacio === 'todos') this.aplicarAtajo('todos');
+      if (b.dataset.vacio === 'quitar') this.quitarFiltros();
+      if (b.dataset.vacio === 'registrar') SRP.app.mostrarVista('registrar');
+    });
     this.el('lista-registros').addEventListener('click', (e) => {
       const b = e.target.closest('button[data-accion]'); if (!b) return;
       const r = this.visibles.find(x => x.id === b.dataset.id); if (!r) return;
@@ -231,12 +237,52 @@ SRP.registros = {
     }).join('');
     const n = this.filtrados.length;
     const propios = SRP.permisos.de(u).alcance === 'propios';
-    const vacio = this.filtro.dia === SRP.util.fechaHoy()
-      ? (propios ? 'Todavía no ha registrado ningún árbol hoy.' : 'No hay registros de hoy.') + ' Toque «Todos» para ver los anteriores.'
-      : 'No hay registros con este filtro.';
-    this.el('registros-total').textContent = n === 0 ? vacio
+    this.el('registros-total').textContent = n === 0 ? ''
       : 'Total: ' + n + (n === 1 ? ' registro' : ' registros') + (n > pagina.length ? ' (se muestran ' + pagina.length + ')' : '');
+    this.pintarVacio(n === 0, propios, u);
     this.el('btn-mas').hidden = n <= pagina.length;
+  },
+
+  /* Estado vacío con salida (D96): en lugar de pedir «Toque Todos», el aviso trae el botón que
+     resuelve. Tres casos: no hay ningún registro, no hay de hoy, o el filtro no encuentra nada.
+     «Registrar un árbol» sólo aparece a quien captura. */
+  pintarVacio(vacio, propios, u) {
+    const caja = this.el('registros-vacio');
+    caja.hidden = !vacio;
+    if (!vacio) { caja.innerHTML = ''; return; }
+    const puedeRegistrar = !!SRP.permisos.de(u).registrar;
+    const btnRegistrar = puedeRegistrar ? { accion: 'registrar', texto: 'Registrar un árbol', clase: 'btn-primario', icono: 'mas' } : null;
+    let icono = 'registros', titulo, texto, botones;
+    if (this.visibles.length === 0) {
+      titulo = propios ? 'Todavía no ha registrado ningún árbol.' : 'Todavía no hay registros.';
+      texto = puedeRegistrar ? 'Cada árbol que registre aparecerá aquí.' : 'Aparecerán aquí en cuanto los cabos registren árboles.';
+      botones = [btnRegistrar];
+    } else if (this.filtro.dia === SRP.util.fechaHoy() && !this.filtro.desde && !this.filtro.hasta) {
+      titulo = propios ? 'Todavía no ha registrado ningún árbol hoy.' : 'No hay registros de hoy.';
+      texto = 'Los de días anteriores siguen guardados.';
+      botones = [btnRegistrar, { accion: 'todos', texto: 'Ver todos', clase: 'btn-secundario' }];
+    } else {
+      icono = 'buscar';
+      titulo = 'No hay registros con este filtro.';
+      texto = 'Pruebe con otro periodo' + (this.filtro.cabo ? ' u otro cabo' : '') + ', o quite los filtros.';
+      botones = [{ accion: 'quitar', texto: 'Quitar filtros', clase: 'btn-secundario' }];
+    }
+    caja.innerHTML = '<span class="vacio-icono" aria-hidden="true">' + SRP.ICONOS.svg(icono, 32) + '</span>' +
+      '<p class="vacio-titulo">' + titulo + '</p><p class="vacio-texto">' + texto + '</p>' +
+      '<div class="vacio-acciones">' + botones.filter(Boolean).map(b =>
+        '<button type="button" class="btn ' + b.clase + '" data-vacio="' + b.accion + '">' +
+        (b.icono ? SRP.ICONOS.svg(b.icono, 20) : '') + '<span>' + b.texto + '</span></button>').join('') + '</div>';
+  },
+
+  // Quita todo filtro, cabo incluido: lo que pide el estado vacío cuando el filtro no encuentra nada
+  quitarFiltros() {
+    this.filtro = { dia: '', anio: '', mes: '', desde: '', hasta: '', cabo: '' };
+    this.el('filtro-cabo').value = '';
+    this.periodoAbierto = false;
+    this.limpiarRango();
+    this.llenarMeses();
+    this.sincronizarControles();
+    this.aplicar();
   },
 
   /* El detalle se lee igual que la ficha de revisión: el mapa arriba, los datos con su etiqueta
