@@ -579,10 +579,24 @@ with sync_playwright() as p:
     ok('Personal de apoyo' not in prev,'y como el PDF, un apartado vacío no aparece')
     pg.click('#btn-previa-corregir'); pg.wait_for_timeout(400)
     ok(pg.is_visible('#dlg-cierre') and pg.input_value('#cie-chofer')=='Fulano de Tal','«Corregir datos de cierre» vuelve al formulario con lo escrito')
+    # Logística (D103): Modelo y Placa en una fila también en teléfono; «Ahora» pone la hora
+    fila=pg.evaluate("(() => { const a=document.getElementById('cie-vehiculo_modelo').getBoundingClientRect(), b=document.getElementById('cie-vehiculo_placa').getBoundingClientRect(); return Math.abs(a.top-b.top)<2; })()")
+    ok(fila,'Modelo y Placa van en una fila en teléfono (D103)')
+    pg.fill('#cie-hora',''); pg.click('#btn-hora-ahora'); pg.wait_for_timeout(100)
+    ok(re.fullmatch(r'\d\d:\d\d', pg.input_value('#cie-hora')) is not None,'«Ahora» pone la hora actual en la hora de finalización (D103): '+pg.input_value('#cie-hora'))
+    pg.fill('#cie-hora','14:30')
+    pg.fill('#cie-personal','Ana Uno\nBeto Dos'); pg.fill('#cie-apoyo','Carla Tres')
     pg.click('#btn-cierre-generar'); pg.wait_for_timeout(500)
+    pers=pg.evaluate('''() => { const s=[...document.querySelectorAll('#previa-hoja .previa-apartado')].find(x=>x.querySelector('h3').textContent==='Personal participante');
+      return { primero: s.querySelector('p').textContent.startsWith('Encargado'), subt: [...s.querySelectorAll('.previa-subtitulo')].map(x=>x.textContent),
+               apoyo: [...s.querySelectorAll('.previa-lista')].map(u=>u.children.length) }; }''')
+    ok(pers=={'primero':True,'subt':['Participantes','Personal de apoyo'],'apoyo':[2,1]},'en el parte el Encargado va primero y cada grupo lleva su subtítulo y sus nombres aparte (D103): %s' % pers)
+    ok(pg.evaluate("[...document.querySelectorAll('#previa-hoja tfoot td')].pop().classList.contains('cifra')"),'el Total se alinea a la derecha como las cifras (D103)')
     with pg.expect_download() as d: pg.click('#btn-previa-generar')
     d.value.save_as('/home/claude/srp/reporte_prueba.pdf')
-    ok(os.path.getsize('/home/claude/srp/reporte_prueba.pdf')>20000,'el reporte PDF se genera: '+d.value.suggested_filename)
+    peso=os.path.getsize('/home/claude/srp/reporte_prueba.pdf')
+    ok(peso>20000,'el reporte PDF se genera: '+d.value.suggested_filename)
+    ok(peso<150000,'y pesa poco para compartirlo por mensajería (D103): %d KB' % (peso//1024))
     ok(re.fullmatch(r'Reporte_[A-Za-z0-9_]+_'+HOY+r'\.pdf', d.value.suggested_filename) is not None and '_Ejemplo_' in d.value.suggested_filename,
        'el archivo se llama «Reporte», el nombre de quien responde y la fecha del parte, sin acentos ni espacios (D102): '+d.value.suggested_filename)
 
@@ -635,7 +649,7 @@ with sync_playwright() as p:
     ok(pg.evaluate("[...document.querySelectorAll('#form-cierre .campo')][0].contains(document.getElementById('cie-encargado'))"),'el encargado es el primer campo del cierre')
     pg.click('#btn-cierre-cerrar'); pg.wait_for_timeout(300)
     # Los campos vacíos no se inventan: el cierre guardado no trae lo que no se escribió
-    vacios=pg.evaluate("async () => { const c = await SRP.almacen.uno('cierres', SRP.reportes.claveCierre(SRP.util.fechaHoy(), '')); return [c.actividades, c.personal, c.observaciones]; }")
+    vacios=pg.evaluate("async () => { const c = await SRP.almacen.uno('cierres', SRP.reportes.claveCierre(SRP.util.fechaHoy(), '')); return [c.actividades, c.observaciones]; }")
     ok(all(v=='' for v in vacios),'y lo que no se escribió queda vacío, no inventado')
 
     pg.click('.pestana[data-vista=registros]'); pg.wait_for_timeout(500)

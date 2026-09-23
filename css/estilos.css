@@ -528,6 +528,10 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .previa-tabla td { padding: 3px 5px; }
 .previa-tabla tbody tr:nth-child(even) td { background: var(--fondo-suave); }
 .previa-tabla tfoot td { font-weight: 700; background: var(--total-fondo); }
+/* Las cifras, alineadas a la derecha en cuerpo y total (D103) */
+.previa-tabla .cifra { text-align: right; }
+.previa-subtitulo { font-weight: 700; margin-top: var(--e-1); }
+.previa-lista { margin: 0; padding-left: 1.25em; }
 .dialogo-pie .btn-texto { margin-top: var(--e-1); }
 
 /* ========== 5. ESTADOS ========== */
@@ -595,6 +599,9 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
   .conexion { padding: 0 var(--e-2); font-size: 0.75rem; }
   .cx-palabra { display: none; }
   .campo-doble { grid-template-columns: 1fr; }
+  .campo-doble.campo-doble-fijo { grid-template-columns: 1fr 1fr; }
+  /* Reportes: el cabo a todo el ancho para que su nombre no se corte (D103) */
+  .filtros-fila > .campo-corto { flex-basis: 100%; }
   .campo-triple { grid-template-columns: 1fr; }
   .campo-punto .campo-triple .campo { display: grid; grid-template-columns: 6.5rem 1fr; align-items: baseline; gap: var(--e-2); }
   .campo-punto .campo-triple .campo + .campo { border-left: 0; border-top: 1px solid var(--borde-suave); }

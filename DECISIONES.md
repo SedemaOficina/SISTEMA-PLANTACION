@@ -614,3 +614,15 @@
   lo hay, el cabo elegido en Reportes; si tampoco, quien genera. Sin acentos ni espacios para que
   ningún sistema de archivos ni app de mensajería lo altere. Sustituye a
   `Reporte_Plantacion_<fecha>.pdf`. Pedido por Liber, 22-09-2026.
+
+## Bloque 47 — Parte del día: PDF más claro y ligero, cierre más ágil
+
+- **D103. Ajustes al parte del día tras revisar un PDF real.** (1) En «Personal participante»
+  el Encargado va primero y cada grupo lleva su subtítulo («Participantes», «Personal de apoyo»)
+  con los nombres sangrados y con viñeta, uno por renglón; antes los de apoyo se leían como
+  participantes. (2) En «Totales por especie» la cifra del Total y el encabezado «Ejemplares» se
+  alinean a la derecha como las demás cifras. (3) El PDF se genera comprimido y el logotipo se
+  incrusta en JPEG sobre blanco: el archivo pasa de ~800 KB a ~60 KB y se comparte sin problema
+  por mensajería. (4) En Reportes, en teléfono, el cabo va a todo el ancho para que su nombre no
+  se corte. (5) En el cierre, Chófer va solo; Modelo y Placa en una fila también en teléfono; la
+  hora de finalización lleva un botón «Ahora». Elegidas por Liber, 22-09-2026 (M38, M39, M41–M43).

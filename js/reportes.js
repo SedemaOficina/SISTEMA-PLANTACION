@@ -34,6 +34,12 @@ SRP.reportes = {
     this.el('pdf-dia').addEventListener('change', () => this.refrescarVista());
     this.el('pdf-cabo').addEventListener('change', () => this.refrescarVista());
     this.el('btn-pdf').addEventListener('click', () => this.generarDesdeVista());
+    // «Ahora» pone la hora actual en la hora de finalización (D103)
+    this.el('btn-hora-ahora').addEventListener('click', () => {
+      const d = new Date();
+      this.el('cie-hora').value = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+      this.el('cie-hora').dispatchEvent(new Event('input', { bubbles: true }));
+    });
     this.el('btn-previa-generar').innerHTML = SRP.ICONOS.svg('palomita') + '<span>Generar PDF</span>';
     this.el('btn-previa-generar').addEventListener('click', () => {
       const v = this.vistaPrevia; if (!v) return;
@@ -233,11 +239,14 @@ SRP.reportes = {
         (terr ? '<p class="previa-tenue">' + esc(terr) + '</p>' : '') + '</div>';
     }
     if (hay('actividades')) h += apartado('Actividades realizadas', '<p>' + parrafo(cierre.actividades) + '</p>');
-    const personal = [];
-    if (hay('personal')) personal.push(parrafo(cierre.personal));
-    if (hay('apoyo')) personal.push('Personal de apoyo: ' + parrafo(cierre.apoyo));
-    if (cierre.encargado_id) personal.push('Encargado: ' + esc(SRP.ref.nombreUsuario(cierre.encargado_id)));
-    if (personal.length) h += apartado('Personal participante', '<p>' + personal.join('<br>') + '</p>');
+    // Personal (D103): el encargado primero y cada grupo con su subtítulo y sus nombres sangrados
+    const grupos = this.gruposPersonal(cierre);
+    if (grupos.encargado || grupos.listas.length) {
+      h += apartado('Personal participante',
+        (grupos.encargado ? '<p><strong>Encargado:</strong> ' + esc(grupos.encargado) + '</p>' : '') +
+        grupos.listas.map(([t, nombres]) => '<p class="previa-subtitulo">' + t + '</p><ul class="previa-lista">' +
+          nombres.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul>').join(''));
+    }
 
     h += apartado('Ejemplares registrados', '<div class="previa-tabla-caja"><table class="previa-tabla"><thead><tr><th>N.º</th><th>Folio</th><th>Especie</th><th>Nombre científico</th>' +
       (variosAutores ? '<th>Cabo</th>' : '') + '</tr></thead><tbody>' + registros.map((r, i) => {
@@ -247,9 +256,9 @@ SRP.reportes = {
       }).join('') + '</tbody></table></div>' +
       (registros.some(r => !SRP.folio.valido(r.folio)) ? '<p class="previa-nota">Registros PROVISIONALES: el folio se asigna al sincronizar con el servidor. Este parte no sustituye al definitivo.</p>' : ''));
 
-    h += apartado('Totales por especie', '<div class="previa-tabla-caja"><table class="previa-tabla"><thead><tr><th>Especie</th><th>Nombre científico</th><th>Ejemplares</th></tr></thead><tbody>' +
-      this.totalesPorEspecie(registros).map(t => '<tr><td>' + esc(t.comun) + '</td><td><i>' + esc(t.cientifico) + '</i></td><td>' + t.n + '</td></tr>').join('') +
-      '</tbody><tfoot><tr><td>Total</td><td></td><td>' + registros.length + '</td></tr></tfoot></table></div>');
+    h += apartado('Totales por especie', '<div class="previa-tabla-caja"><table class="previa-tabla"><thead><tr><th>Especie</th><th>Nombre científico</th><th class="cifra">Ejemplares</th></tr></thead><tbody>' +
+      this.totalesPorEspecie(registros).map(t => '<tr><td>' + esc(t.comun) + '</td><td><i>' + esc(t.cientifico) + '</i></td><td class="cifra">' + t.n + '</td></tr>').join('') +
+      '</tbody><tfoot><tr><td>Total</td><td></td><td class="cifra">' + registros.length + '</td></tr></tfoot></table></div>');
 
     const porPrograma = {};
     registros.forEach(r => { const n = SRP.ref.nombreCatalogo(r.programa_id) || 'Sin programa'; porPrograma[n] = (porPrograma[n] || 0) + 1; });
@@ -299,12 +308,32 @@ SRP.reportes = {
     });
   },
 
+  /* El PNG con transparencia se incrustaba sin comprimir y era casi todo el peso del PDF. Se pasa
+     a JPEG sobre blanco (el fondo del papel), a la misma resolución: no se nota la diferencia. */
+  logoJPEG(img) {
+    const c = document.createElement('canvas');
+    c.width = img.naturalWidth; c.height = img.naturalHeight;
+    const g = c.getContext('2d');
+    g.fillStyle = '#FFFFFF'; g.fillRect(0, 0, c.width, c.height);
+    g.drawImage(img, 0, 0);
+    return c.toDataURL('image/jpeg', 0.9);
+  },
+
+  // Encargado y listas de personal del cierre, una persona por renglón, sin renglones vacíos
+  gruposPersonal(cierre) {
+    const lista = t => String(t || '').split('\n').map(x => x.trim()).filter(Boolean);
+    const listas = [['Participantes', lista(cierre.personal)], ['Personal de apoyo', lista(cierre.apoyo)]].filter(([, l]) => l.length);
+    return { encargado: cierre.encargado_id ? SRP.ref.nombreUsuario(cierre.encargado_id) : '', listas };
+  },
+
   async generar(registros, cierre, fecha) {
     if (!window.jspdf) { SRP.util.anunciar('No se pudo cargar el generador de PDF.', 'alerta'); return; }
     const logo = await this.cargarLogo();
     const u = SRP.sesion.usuario;
     const variosAutores = SRP.permisos.de(u).alcance !== 'propios';
-    const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'letter' });
+    // compress: los flujos del PDF van comprimidos; con el logotipo en JPEG el archivo baja de
+    // ~800 KB a menos de 100 KB y se comparte sin problema por mensajería (D103)
+    const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'letter', compress: true });
     const ancho = doc.internal.pageSize.getWidth();
     const alto = doc.internal.pageSize.getHeight();
     const C = this.COLOR;
@@ -316,7 +345,7 @@ SRP.reportes = {
        —«Chófer: ______»— parece una plantilla a medio llenar, y lo firma alguien. */
     const hay = (k) => !!(cierre[k] && cierre[k].trim());
 
-    if (logo) doc.addImage(logo, 'PNG', M, 14, 90, 90 * logo.naturalHeight / logo.naturalWidth);
+    if (logo) doc.addImage(this.logoJPEG(logo), 'JPEG', M, 14, 90, 90 * logo.naturalHeight / logo.naturalWidth);
     doc.setDrawColor(...C.guinda); doc.setLineWidth(0.4); doc.line(M, 30, ancho - M, 30);
 
     doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(...C.guinda);
@@ -366,11 +395,15 @@ SRP.reportes = {
 
     if (hay('actividades')) apartado('Actividades realizadas', cierre.actividades);
 
-    const personal = [];
-    if (hay('personal')) personal.push(cierre.personal);
-    if (hay('apoyo')) personal.push('Personal de apoyo: ' + cierre.apoyo);
-    if (cierre.encargado_id) personal.push('Encargado: ' + SRP.ref.nombreUsuario(cierre.encargado_id));
-    if (personal.length) apartado('Personal participante', personal.join('\n'));
+    // Personal (D103): Encargado primero; cada grupo con su subtítulo y los nombres sangrados con
+    // viñeta, para que los de apoyo no se lean como participantes
+    const grupos = this.gruposPersonal(cierre);
+    if (grupos.encargado || grupos.listas.length) {
+      const lineas = [];
+      if (grupos.encargado) lineas.push('Encargado: ' + grupos.encargado);
+      grupos.listas.forEach(([t, nombres]) => { lineas.push(t + ':'); nombres.forEach(n => lineas.push('     •  ' + n)); });
+      apartado('Personal participante', lineas.join('\n'));
+    }
 
     // Ejemplares: uno por renglón, en el orden en que se capturaron
     const cabecera = ['N.º', 'Folio', 'Especie', 'Nombre científico'].concat(variosAutores ? ['Cabo'] : []);
@@ -404,9 +437,10 @@ SRP.reportes = {
     doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...C.guinda);
     doc.text('TOTALES POR ESPECIE', M, y);
     doc.autoTable({
-      head: [['Especie', 'Nombre científico', 'Ejemplares']],
+      head: [['Especie', 'Nombre científico', { content: 'Ejemplares', styles: { halign: 'right' } }]],
       body: totales.map(t => [t.comun, t.cientifico, String(t.n)]),
-      foot: [['Total', '', String(registros.length)]],
+      // La cifra del total se alinea como las de arriba (D103): el pie no hereda columnStyles
+      foot: [['Total', '', { content: String(registros.length), styles: { halign: 'right' } }]],
       startY: y + 3, margin: { left: M, right: M, bottom: 22 },
       styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 1.6, textColor: C.tinta },
       headStyles: { fillColor: C.guinda, textColor: 255, fontStyle: 'bold' },

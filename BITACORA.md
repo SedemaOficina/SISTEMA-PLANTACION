@@ -962,3 +962,18 @@ Corregir vuelve al cierre, nombre del archivo).
 
 **Verificación:** 285 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.27.
+
+## Bloque 47 — Parte del día: PDF más claro y ligero, cierre más ágil (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.28.
+
+**Origen:** PDF real y capturas de Reportes enviados por Liber (v0.6.26).
+
+**Qué cambió (D103).** `reportes.js`: `gruposPersonal()` para el PDF y la vista previa;
+Total y encabezado de Ejemplares a la derecha; `compress: true` y `logoJPEG()`; botón «Ahora».
+`index.html`: logística del cierre reacomodada con `#btn-hora-ahora`. CSS: `campo-doble-fijo`,
+cabo a todo el ancho en Reportes en teléfono, cifras y listas de la vista previa. Pruebas: seis
+comprobaciones nuevas (fila Modelo/Placa, «Ahora», orden del personal, Total a la derecha,
+peso del PDF menor a 150 KB) y dos ajustadas.
+
+**Verificación:** 290 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
+desbordes en ocho combinaciones; PDF de prueba de 60 KB. Marca de versión 0.6.28.
