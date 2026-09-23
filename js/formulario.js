@@ -403,13 +403,13 @@ SRP.formulario = {
   /* «Cómo se obtuvo» con la misma insignia de precisión que bajo el mapa (D99): la ficha es el
      último momento para notar un punto impreciso. Con precisión baja o aceptable se dice qué
      hacer; es aviso, no impide guardar. */
-  textoOrigenRevision(v) {
+  textoOrigenRevision(v, conConsejo = true) {
     const esc = SRP.util.escapar;
     if (v.punto_origen !== 'gps' || v.gps_precision_m == null) return esc(SRP.mapa.textoOrigen(v.punto_origen, v.gps_precision_m));
     const n = SRP.mapa.nivelPrecision(v.gps_precision_m);
     return 'GPS del dispositivo<br><span class="precision" data-nivel="' + n.nivel + '"><span class="precision-punto" aria-hidden="true"></span>' +
       n.texto + ' · ±' + Math.round(v.gps_precision_m) + ' m</span>' +
-      (n.nivel === 'buena' ? '' : '<span class="precision-consejo">Revise el punto; puede corregirlo con «Editar» en Coordenadas.</span>');
+      (n.nivel === 'buena' || !conConsejo ? '' : '<span class="precision-consejo">Revise el punto; puede corregirlo con «Editar» en Coordenadas.</span>');
   },
 
   /* Quién queda como autor. En alta es quien tiene la sesión abierta —el encabezado lo dice

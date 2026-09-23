@@ -241,8 +241,10 @@ SRP.app = {
     }
     this.vista = nombre;
     document.querySelectorAll('.vista').forEach(v => { v.hidden = v.id !== 'vista-' + nombre; });
+    // Al editar se está dentro de Registros, de donde se llegó: «Nuevo registro» no se marca (D100)
+    const marcada = nombre === 'registrar' && SRP.formulario.estado.editando ? 'registros' : nombre;
     this.el('navegacion').querySelectorAll('.pestana').forEach(b => {
-      if (b.dataset.vista === nombre) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+      if (b.dataset.vista === marcada) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
     });
     if (nombre === 'registrar') SRP.formulario.preparar();
     if (nombre === 'registros') SRP.registros.preparar();

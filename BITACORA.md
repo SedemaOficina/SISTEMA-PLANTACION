@@ -924,3 +924,25 @@ con columna de prioridad.
 
 **Verificación:** 268 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.25.
+
+## Bloque 45 — Lista de registros, filtros y tablas (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.26.
+
+**Origen:** capturas de Liber de Mis registros, menú de la tuerca, detalle y edición (v0.6.25),
+más M05, M07, M10 y M11 de la lista de diseño.
+
+**Qué cambió (D100).** `index.html`: botón `#btn-filtros`, `#filtros-activos`, panel
+`#panel-filtros`, cajas de Año y Mes con id, «Editar» del detalle en `#detalle-pie`.
+`registros.js`: tarjeta con miniatura, clic en tarjeta abre el detalle, `pintarFichas()`,
+`plegarFiltros()`, Año/Mes ocultos con el periodo abierto, detalle reordenado con «Datos del
+sistema». `formulario.js`: `textoOrigenRevision()` sin consejo para el detalle. `app.js`: la
+pestaña Registros se marca al editar. `util.js`: `ordenable()` y `ordenarFilas()`, usados por
+`catalogos.js` y `usuarios.js`. CSS: tarjeta, fichas, botón de filtros, panel plegado en
+≤700 px, encabezado fijo y ordenable, punto de estado, mismo ancho de vistas. Pruebas: ayudante
+`abrir_filtros()` y ocho comprobaciones nuevas.
+
+**M33 (menú de la tuerca lejos de la tuerca):** verificado con captura normal del iPhone; el
+menú sale junto a su tuerca. Era efecto de la captura de página completa. Sin falla.
+
+**Verificación:** 276 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.26.

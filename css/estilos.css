@@ -103,8 +103,10 @@ main { padding: var(--e-4); }
 main:focus { outline: none; }
 /* El ancho se decide por vista, no por el contenedor: un formulario se lee mejor en columna
    estrecha, y una tabla de nueve columnas necesita el monitor entero. */
-.vista { max-width: var(--ancho-max); margin: 0 auto; padding-bottom: var(--e-6); }
-.vista-ancha { max-width: var(--ancho-max-tabla); }
+.vista { max-width: var(--ancho-max-tabla); margin: 0 auto; padding-bottom: var(--e-6); }
+/* Todas las vistas miden lo mismo y arrancan en el mismo borde (D100); en las de formulario y
+   lectura el contenido conserva su línea corta, alineado a la izquierda */
+.vista:not(.vista-ancha) > * { max-width: var(--ancho-max); }
 .pie { max-width: var(--ancho-max-tabla); margin: 0 auto; padding: var(--e-4); color: var(--gris); font-size: var(--t-xs); border-top: 1px solid var(--borde-suave); }
 
 /* ========== 4. COMPONENTES ========== */
@@ -383,10 +385,15 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 }
 .zona-filtros .campo input::placeholder { color: var(--gris); opacity: .8; }
 
-.lista-registros { list-style: none; margin: 0; padding: 0; }
-.registro { display: flex; justify-content: space-between; align-items: center; gap: var(--e-3); padding: var(--e-2) 0; border-bottom: 1px solid var(--borde-suave); }
+.lista-registros { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e-2); }
+/* Tarjeta de registro (D100): miniatura, datos y la tuerca arriba a la derecha, en un solo bloque.
+   Antes la tuerca iba en un renglón propio y cada registro gastaba 40 px de hueco. */
+.registro { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; align-items: start; gap: var(--e-3);
+  padding: var(--e-3); border: 1px solid var(--borde-suave); border-radius: var(--radio-filtro); background: var(--fondo); cursor: pointer; }
+.registro-miniatura { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; display: block; }
+.registro-sin-foto { display: grid; place-items: center; background: var(--fondo-suave); color: var(--guinda); }
 .registro-datos { min-width: 0; }
-.registro-fecha { display: block; font-size: var(--t-xs); color: var(--gris); }
+.registro-fecha { display: block; font-size: var(--t-xs); color: var(--gris); margin-top: 2px; }
 .registro-especie { display: block; font-family: var(--fuente-titulo); font-weight: 600; }
 .registro-especie i { font-weight: 400; color: var(--gris); }
 /* Estado de la conexión: pastilla con icono, color y palabras (Norma 8.4: el color no va solo).
@@ -401,9 +408,25 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 .registro-lugar, .registro-autor { display: block; font-size: var(--t-s); overflow-wrap: anywhere; }
 .registro-autor { color: var(--gris); }
 /* Las tres acciones en fila en todo ancho: apiladas, cada registro medía tres botones de alto y la lista crece (bloque 21) */
-.registro-acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--e-1); flex-shrink: 0; }
+.registro-acciones { display: flex; justify-content: flex-end; margin: calc(-1 * var(--e-2)) calc(-1 * var(--e-2)) 0 0; cursor: default; }
 
-.tabla-caja { overflow-x: auto; }
+/* Filtros activos (D100): fichas con ×; «Filtros» con su número pliega el panel en teléfono */
+.filtros-activos { list-style: none; margin: 0 0 var(--e-2); padding: 0; display: flex; flex-wrap: wrap; gap: var(--e-2); }
+.filtros-activos:empty { display: none; }
+.ficha-filtro { display: inline-flex; align-items: center; gap: var(--e-1); min-height: 36px; padding: 0 var(--e-1) 0 var(--e-3);
+  border-radius: 18px; background: var(--fondo-suave); color: var(--guinda); font-size: var(--t-s); font-weight: 500; }
+.ficha-filtro button { display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 50%; background: none; color: var(--guinda); cursor: pointer; }
+.btn.btn-filtros { display: none; min-height: 40px; padding: 0 var(--e-3); gap: var(--e-2); margin-left: auto; }
+.filtros-cuenta { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: var(--guinda); color: var(--fondo); font-size: var(--t-xs); font-weight: 700; }
+.filtros-cuenta[hidden] { display: none; }
+
+/* En escritorio la tabla se desplaza dentro de su caja para que el encabezado quede fijo (D100) */
+.tabla-caja { overflow: auto; max-height: calc(100vh - 15rem); min-height: 12rem; }
+.tabla th { position: sticky; top: 0; z-index: 1; }
+.th-orden { display: inline-flex; align-items: center; gap: var(--e-1); width: 100%; min-height: 32px; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.th-flecha::after { content: '↕'; opacity: .55; font-size: .85em; }
+th[aria-sort="ascending"] .th-flecha::after { content: '▲'; opacity: 1; }
+th[aria-sort="descending"] .th-flecha::after { content: '▼'; opacity: 1; }
 .tabla { width: 100%; border-collapse: collapse; font-size: var(--t-s); }
 .tabla th { background: var(--guinda); color: var(--fondo); text-align: left; padding: var(--e-2); font-weight: 500; }
 .tabla td { padding: var(--e-2); border-bottom: 1px solid var(--borde-suave); vertical-align: top; }
@@ -425,7 +448,10 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 .tabla td:last-child { white-space: nowrap; }
 .tabla td:last-child .tabla-acciones { flex-wrap: nowrap; }
 
-.estado-texto { font-size: var(--t-xs); font-weight: 500; }
+.estado-texto { display: inline-flex; align-items: center; gap: 6px; font-size: var(--t-xs); font-weight: 500; }
+/* Punto de estado, como «● Paid» de la referencia: el color acompaña a la palabra (D100) */
+.estado-texto::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--exito); }
+.estado-texto[data-activo="false"]::before { background: var(--error); }
 
 /* Ficha de revisión previa: cada dato con su botón de corregir */
 /* El mapa va aislado en su propio contexto de apilamiento: los z-index de Leaflet (200–600) no salen de su caja
@@ -504,6 +530,13 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 [hidden] { display: none; }
 
 /* ========== 7. @MEDIA ========== */
+@media (max-width: 700px) {
+  /* Filtros plegados en teléfono (D100): quedan a la vista las fichas y el botón «Filtros» */
+  .btn.btn-filtros { display: inline-flex; margin-left: 0; }
+  .filtros[data-abierto="false"] { display: none; }
+  /* El botón ya dice «Filtros»: el título se queda sólo para el lector de pantalla */
+  #titulo-filtros { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
 @media (hover: hover) {
   /* Los estados de «señalar» sólo existen con ratón (D98). En iPhone y Android un toque dejaba
      pegado el hover: la zona de foto quedaba rosa y la primera especie parecía elegida. */
@@ -537,8 +570,7 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
   .revision-fila dt { grid-column: 1 / -1; }
   /* En teléfono los botones van en fila bajo los datos: apilados a la derecha triplicaban
      el alto de cada registro y obligaban a desplazarse para ver tres árboles. */
-  .registro { flex-direction: column; align-items: stretch; gap: var(--e-2); }
-  .registro-acciones { justify-content: flex-start; }
+  .tabla-caja { max-height: none; min-height: 0; overflow: visible; }
   .tabla thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .tabla tr { display: block; border: 1px solid var(--borde-suave); border-radius: var(--radio); margin-bottom: var(--e-3); }
   .tabla td { display: grid; grid-template-columns: 6.5rem 1fr; gap: var(--e-2); }

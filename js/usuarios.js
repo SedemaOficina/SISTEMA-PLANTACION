@@ -65,6 +65,7 @@ SRP.usuarios = {
     }).join('');
 
     this.el('tabla-usuarios').innerHTML = cab + '<tbody>' + (filas || '<tr><td colspan="9">Sin resultados.</td></tr>') + '</tbody>';
+    SRP.util.ordenable(this.el('tabla-usuarios'));
   },
 
   llenarListas(usuario) {

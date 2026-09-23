@@ -57,6 +57,15 @@ SRP.registros = {
       this.aplicar();
     });
     this.el('btn-reiniciar-filtros').addEventListener('click', () => this.reiniciarFiltros());
+    // En teléfono los filtros se pliegan tras «Filtros» (D100); en escritorio el botón no se ve
+    this.el('btn-filtros').addEventListener('click', () => this.plegarFiltros(this.el('panel-filtros').dataset.abierto !== 'true'));
+    // Cada ficha de filtro activo se quita con su × (D100)
+    this.el('filtros-activos').addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-quitar]'); if (!b) return;
+      if (b.dataset.quitar === 'periodo') this.aplicarAtajo('todos');
+      if (b.dataset.quitar === 'cabo') { this.filtro.cabo = ''; this.el('filtro-cabo').value = ''; this.aplicar(); }
+      SRP.util.anunciarSilencioso('Filtro quitado.');
+    });
     this.el('btn-mas').addEventListener('click', () => this.pintar(true));
     this.el('registros-vacio').addEventListener('click', (e) => {
       const b = e.target.closest('button[data-vacio]'); if (!b) return;
@@ -65,6 +74,14 @@ SRP.registros = {
       if (b.dataset.vacio === 'registrar') SRP.app.mostrarVista('registrar');
     });
     this.el('lista-registros').addEventListener('click', (e) => {
+      // Tocar la tarjeta fuera de la tuerca abre el detalle: el atajo del uso más común (D100).
+      // Con teclado se llega por la tuerca, que ofrece «Ver detalle»
+      if (!e.target.closest('.registro-acciones')) {
+        const li = e.target.closest('.registro[data-id]');
+        const rr = li && this.visibles.find(x => x.id === li.dataset.id);
+        if (rr) this.verDetalle(rr);
+        return;
+      }
       const b = e.target.closest('button[data-accion]'); if (!b) return;
       const r = this.visibles.find(x => x.id === b.dataset.id); if (!r) return;
       if (b.dataset.accion === 'ver') this.verDetalle(r);
@@ -199,6 +216,9 @@ SRP.registros = {
     // Desde/Hasta se ven mientras haya rango o se haya pedido «Un periodo»
     const abierto = !sinRango || !!this.periodoAbierto;
     this.el('filtro-periodo').hidden = !abierto;
+    // Año/Mes y Desde/Hasta son dos maneras de decir el periodo: nunca se ven a la vez (D100)
+    this.el('caja-filtro-anio').hidden = abierto;
+    this.el('caja-filtro-mes').hidden = abierto;
     this.el('filtro-atajos').querySelector('[data-atajo="periodo"]').setAttribute('aria-expanded', String(abierto));
   },
 
@@ -211,7 +231,33 @@ SRP.registros = {
       (!f.desde || r.fecha_plantacion >= f.desde) &&
       (!f.hasta || r.fecha_plantacion <= f.hasta) &&
       (!f.cabo || r.cabo_id === f.cabo));
+    this.pintarFichas();
     this.pintar(false);
+  },
+
+  /* Filtros activos como fichas con × (D100). Lo que ya está a la vista en la lista no se
+     repite: sólo el periodo y el cabo, cuando los hay. El número va también en «Filtros». */
+  pintarFichas() {
+    const f = this.filtro, fmt = d => SRP.util.formatearFecha(d), esc = t => SRP.util.escapar(t);
+    const fichas = [];
+    let periodo = '';
+    if (f.desde || f.hasta) periodo = f.desde && f.hasta ? fmt(f.desde) + ' al ' + fmt(f.hasta) : (f.desde ? 'Desde ' + fmt(f.desde) : 'Hasta ' + fmt(f.hasta));
+    else if (f.dia) periodo = (f.dia === SRP.util.fechaHoy() ? 'Hoy, ' : '') + fmt(f.dia);
+    else if (f.anio) periodo = f.mes ? SRP.util.nombreMes(f.anio + '-' + f.mes) : f.anio;
+    if (periodo) fichas.push(['periodo', periodo]);
+    if (f.cabo) fichas.push(['cabo', 'Cabo: ' + SRP.ref.nombreUsuario(f.cabo)]);
+    this.el('filtros-activos').innerHTML = fichas.map(([q, t]) =>
+      '<li class="ficha-filtro"><span>' + esc(t) + '</span><button type="button" data-quitar="' + q + '" aria-label="Quitar filtro ' + esc(t) + '">' +
+      SRP.ICONOS.svg('cerrar', 16) + '</button></li>').join('');
+    const cuenta = this.el('filtros-cuenta');
+    cuenta.hidden = !fichas.length;
+    cuenta.textContent = fichas.length;
+    this.el('btn-filtros').setAttribute('aria-label', 'Filtros' + (fichas.length ? ', ' + fichas.length + (fichas.length === 1 ? ' activo' : ' activos') : ''));
+  },
+
+  plegarFiltros(abrir) {
+    this.el('panel-filtros').dataset.abierto = String(abrir);
+    this.el('btn-filtros').setAttribute('aria-expanded', String(abrir));
   },
 
   pintar(agregar) {
@@ -227,12 +273,17 @@ SRP.registros = {
       if (SRP.permisos.puedeEditar(u, r, SRP.ref.usuarioPorId)) items.push({ accion: 'editar', texto: 'Editar', icono: 'lapiz' });
       if (SRP.permisos.puedeEliminar(u, r, SRP.ref.usuarioPorId)) items.push({ accion: 'eliminar', texto: 'Eliminar', icono: 'basura', peligro: true });
       const menu = SRP.ICONOS.menuAcciones(r.id, esp.comun + ' del ' + SRP.util.formatearFecha(r.fecha_plantacion), items);
-      return '<li class="registro"><div class="registro-datos">' +
-        '<span class="registro-fecha">' + SRP.util.formatearFecha(r.fecha_plantacion) + ' · ' + esc(SRP.folio.texto(r)) + '</span>' +
+      // Tarjeta (D100): miniatura, especie, lugar y fecha, con la tuerca arriba a la derecha.
+      // «PROVISIONAL» ya no se repite en cada tarjeta: lo dicen el detalle, la ficha y el PDF (R1);
+      // el folio sólo aparece cuando exista
+      const mini = r.foto_base64
+        ? '<img class="registro-miniatura" src="' + r.foto_base64 + '" alt="" loading="lazy">'
+        : '<span class="registro-miniatura registro-sin-foto" aria-hidden="true">' + SRP.ICONOS.svg('registros', 24) + '</span>';
+      return '<li class="registro" data-id="' + r.id + '">' + mini + '<div class="registro-datos">' +
         '<span class="registro-especie">' + esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : '') + '</span>' +
-        // En la lista sólo lo que existe: repetir «pendiente» en cada renglón sería ruido
         '<span class="registro-lugar">' + esc(SRP.ref.alcaldia(r.alcaldia)) + (r.colonia ? ', ' + esc(r.colonia) : '') + '</span>' +
-        (variosAutores ? '<span class="registro-autor">' + esc(SRP.ref.nombreUsuario(r.cabo_id)) + '</span>' : '') +
+        '<span class="registro-fecha">' + SRP.util.formatearFecha(r.fecha_plantacion) + (r.folio ? ' · ' + esc(r.folio) : '') +
+        (variosAutores ? ' · ' + esc(SRP.ref.nombreUsuario(r.cabo_id)) : '') + '</span>' +
         '</div><div class="registro-acciones">' + menu + '</div></li>';
     }).join('');
     const n = this.filtrados.length;
@@ -291,23 +342,26 @@ SRP.registros = {
   async verDetalle(r) {
     const esc = SRP.util.escapar;
     this.detalleActual = r;
-    this.el('btn-detalle-editar').hidden = !SRP.permisos.puedeEditar(SRP.sesion.usuario, r, SRP.ref.usuarioPorId);
+    this.el('detalle-pie').hidden = !SRP.permisos.puedeEditar(SRP.sesion.usuario, r, SRP.ref.usuarioPorId);
     const esp = SRP.ref.especieDe(r);
+    // Mismo orden que el formulario y la ficha de revisión; lo que pone el sistema, al final (D100)
     const filas = [
-      ['Folio', '<span class="folio-provisional">' + esc(SRP.folio.texto(r)) + '</span>'],
-      ['Identificador', '<span class="revision-id">' + esc(r.id) + '</span>'],
       ['Especie', esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : '')],
       ['Programa', esc(SRP.ref.nombreCatalogo(r.programa_id))],
       ['Fecha de plantación', esc(SRP.util.formatearFecha(r.fecha_plantacion))],
       ['Alcaldía', esc(SRP.ref.alcaldia(r.alcaldia))],
       ['Colonia', esc(SRP.ref.colonia(r.colonia))],
       ['Coordenadas', r.lat.toFixed(6) + ', ' + r.lng.toFixed(6)],
-      ['Cómo se obtuvo', esc(SRP.mapa.textoOrigen(r.punto_origen, r.gps_precision_m))],
+      ['Cómo se obtuvo', SRP.formulario.textoOrigenRevision(r, false)],
       ['Cabo', esc(SRP.ref.nombreUsuario(r.cabo_id))],
       ['Comentarios', r.comentarios ? esc(r.comentarios) : 'Sin comentarios'],
       ['Fotografía', r.foto_base64
         ? '<img class="revision-foto" src="' + r.foto_base64 + '" alt="Fotografía del árbol registrado">'
         : 'Sin fotografía']
+    ];
+    const sistema = [
+      ['Folio', '<span class="folio-provisional">' + esc(SRP.folio.texto(r)) + '</span>'],
+      ['Identificador', '<span class="revision-id">' + esc(r.id) + '</span>']
     ];
 
     const historial = await SRP.bitacora.deEntidad(r.id);
@@ -321,6 +375,8 @@ SRP.registros = {
       '<dl class="revision-lista">' + filas.map(([etiqueta, valor]) =>
         '<div class="revision-fila revision-fila-sola"><dt>' + etiqueta + '</dt><dd>' + valor + '</dd></div>').join('') + '</dl>' +
       '<h3 class="titulo-bloque">Historial</h3><ul class="historial">' + lineas + '</ul>' +
+      '<div class="revision-sistema"><p class="revision-sistema-titulo">Datos del sistema</p>' +
+      sistema.map(([etiqueta, valor]) => '<div class="revision-fila revision-fila-sola"><dt>' + etiqueta + '</dt><dd>' + valor + '</dd></div>').join('') + '</div>' +
       (SRP.espejo ? SRP.espejo.htmlDetalle(r) : '');
 
     this.el('dlg-detalle').showModal();

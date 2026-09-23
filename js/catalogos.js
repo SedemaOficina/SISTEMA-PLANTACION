@@ -88,6 +88,7 @@ SRP.catalogos = {
         '<td data-etiqueta="Acciones">' + SRP.ICONOS.menuAcciones(c.id, c.nombre, items) + '</td></tr>';
     }).join('');
     this.el('tabla-catalogo').innerHTML = cab + '<tbody>' + (filas || '<tr><td colspan="7">Sin resultados.</td></tr>') + '</tbody>';
+    SRP.util.ordenable(this.el('tabla-catalogo'));
   },
 
   // Si la clave propuesta ya existe, agrega _2, _3… hasta encontrar una libre

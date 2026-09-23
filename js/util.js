@@ -81,5 +81,42 @@ SRP.util = {
     const zona = document.getElementById('aviso-lector');
     zona.textContent = '';
     setTimeout(() => { zona.textContent = mensaje; }, 50);   // el mismo texto dos veces seguidas no se anuncia
+  },
+
+  /* TABLAS QUE SE ORDENAN (D100). Cada encabezado, salvo «Acciones», se vuelve un botón: un toque
+     ordena de A a Z, otro de Z a A. aria-sort dice al lector de pantalla cómo está ordenada. El
+     orden elegido se recuerda por tabla y se vuelve a aplicar cuando la tabla se repinta. */
+  _orden: {},
+
+  ordenable(tabla) {
+    const ths = [...tabla.querySelectorAll('thead th')];
+    const est = this._orden[tabla.id];
+    ths.forEach((th, i) => {
+      const txt = th.textContent.trim();
+      if (txt === 'Acciones') return;
+      th.innerHTML = '<button type="button" class="th-orden" data-col="' + i + '">' + this.escapar(txt) +
+        '<span class="th-flecha" aria-hidden="true"></span></button>';
+      th.setAttribute('aria-sort', est && est.col === i ? (est.dir > 0 ? 'ascending' : 'descending') : 'none');
+    });
+    if (est) this.ordenarFilas(tabla, est.col, est.dir);
+    tabla.querySelector('thead').onclick = (e) => {
+      const b = e.target.closest('.th-orden'); if (!b) return;
+      const col = Number(b.dataset.col);
+      const prev = this._orden[tabla.id];
+      const dir = prev && prev.col === col ? -prev.dir : 1;
+      this._orden[tabla.id] = { col, dir };
+      ths.forEach(t => { if (t.hasAttribute('aria-sort')) t.setAttribute('aria-sort', 'none'); });
+      ths[col].setAttribute('aria-sort', dir > 0 ? 'ascending' : 'descending');
+      this.ordenarFilas(tabla, col, dir);
+      this.anunciarSilencioso('Ordenado por ' + b.textContent + (dir > 0 ? ', de la A a la Z.' : ', de la Z a la A.'));
+    };
+  },
+
+  ordenarFilas(tabla, col, dir) {
+    const cuerpo = tabla.tBodies[0]; if (!cuerpo) return;
+    const filas = [...cuerpo.rows].filter(f => f.cells.length > col);
+    const valor = f => (f.cells[col].dataset.orden || f.cells[col].textContent).trim();
+    filas.sort((a, b) => dir * valor(a).localeCompare(valor(b), 'es', { numeric: true, sensitivity: 'base' }));
+    filas.forEach(f => cuerpo.appendChild(f));
   }
 };

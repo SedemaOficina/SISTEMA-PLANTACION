@@ -575,3 +575,22 @@
   ficha. (4) Especie y «Especifique la especie» no pasan por el corrector ni por mayúsculas
   automáticas del teléfono, que subrayaban y podían cambiar los nombres científicos.
   Aprobadas por Liber, 22-09-2026.
+
+## Bloque 45 — Lista de registros, filtros y tablas
+
+- **D100. La lista y sus filtros se ajustan al teléfono, y las tablas se ordenan.**
+  (1) Cada registro es una tarjeta: miniatura de la foto (o un árbol si no tiene), especie,
+  lugar y fecha, con la tuerca arriba a la derecha; tocar la tarjeta abre el detalle. La lista
+  ya no repite «PROVISIONAL» en cada registro: lo siguen diciendo el detalle, la ficha de
+  revisión y el PDF, con lo que R1 (D68) se mantiene; el folio aparece en la tarjeta cuando
+  exista. (2) Los filtros activos se ven como fichas con × (periodo y cabo). En teléfono el
+  panel de filtros va plegado tras «Filtros (n)»; en escritorio sigue abierto. (3) Año/Mes y
+  Desde/Hasta ya no se ven a la vez: con «Un periodo» abierto se ocultan Año y Mes. (4) El
+  detalle sigue el orden del formulario, deja Folio e Identificador en «Datos del sistema» y
+  pone «Editar» en la barra fija al pie, como la ficha de revisión (D99); muestra la insignia
+  de precisión. (5) Al editar queda marcada la pestaña Registros. (6) Las tablas de Catálogos y
+  Usuarios se ordenan tocando el encabezado (A-Z / Z-A, con aria-sort), el encabezado queda fijo
+  al desplazar en escritorio y el estado lleva un punto de color junto a la palabra. (7) Todas
+  las vistas miden lo mismo; en las de formulario y lectura el contenido conserva su línea
+  corta, alineado a la izquierda. Aprobadas por Liber, 22-09-2026 (M05, M07, M10, M11, M30–M32,
+  M34–M36).

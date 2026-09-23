@@ -20,6 +20,11 @@ def accion(pg, cont, cual, n=0):
     pg.wait_for_timeout(120)
     loc.click()
 
+def abrir_filtros(pg):
+    """En teléfono los filtros de Registros van plegados (D100): se abren antes de usarlos."""
+    if pg.is_visible('#btn-filtros') and pg.get_attribute('#btn-filtros','aria-expanded')!='true':
+        pg.click('#btn-filtros'); pg.wait_for_timeout(150)
+
 def registrar(pg, busqueda, especie_id, programa='p-refor', fecha=None, foto=None):
     """Captura un árbol de principio a fin y devuelve el identificador con que se guardó.
     `busqueda` es lo que se teclea para que la especie salga en la lista."""
@@ -424,6 +429,26 @@ with sync_playwright() as p:
 
     # ---------- REGISTROS ----------
     pg.click('.pestana[data-vista=registros]'); pg.wait_for_timeout(600)
+    # En teléfono los filtros arrancan plegados; se ve lo que filtra como ficha y cuántos hay (D100)
+    ok(pg.is_hidden('#panel-filtros') and pg.is_visible('#btn-filtros') and pg.inner_text('#filtros-cuenta')=='1'
+       and ('Hoy, '+HOY_TXT) in pg.inner_text('#filtros-activos'),'en teléfono los filtros van plegados, con la ficha «Hoy» y el número en «Filtros» (D100)')
+    tarj=pg.evaluate('''() => { const li=document.querySelector('#lista-registros .registro'); const t=li.querySelector('.btn-tuerca').getBoundingClientRect(); const r=li.getBoundingClientRect();
+      return { arriba: t.top - r.top < 20, derecha: r.right - t.right < 20, alto: Math.round(r.height), mini: !!li.querySelector('.registro-miniatura'),
+               provisional: document.getElementById('lista-registros').textContent.includes('PROVISIONAL') }; }''')
+    ok(tarj['arriba'] and tarj['derecha'] and tarj['alto']<130 and tarj['mini'] and not tarj['provisional'],
+       'cada registro es una tarjeta con miniatura y la tuerca arriba a la derecha, sin «PROVISIONAL» repetido (D100): %s' % tarj)
+    pg.click('#lista-registros .registro >> nth=0 >> .registro-especie'); pg.wait_for_timeout(500)
+    det=pg.evaluate('''() => ({ abierto: document.getElementById('dlg-detalle').open,
+      primero: document.querySelector('#dlg-detalle-cuerpo .revision-lista dt').textContent,
+      sistema: !!document.querySelector('#dlg-detalle-cuerpo .revision-sistema .folio-provisional'),
+      pie: !document.getElementById('detalle-pie').hidden && !!document.querySelector('#detalle-pie #btn-detalle-editar') })''')
+    ok(det=={'abierto':True,'primero':'Especie','sistema':True,'pie':True},'tocar la tarjeta abre el detalle, que empieza por Especie, deja Folio al final y Editar al pie (D100): %s' % det)
+    pg.click('#btn-detalle-cerrar'); pg.wait_for_timeout(200)
+    pg.click('#filtros-activos button[data-quitar=periodo]'); pg.wait_for_timeout(300)
+    ok('Total: 4 ' in pg.inner_text('#registros-total') and pg.inner_text('#filtros-activos').strip()=='' and pg.is_hidden('#filtros-cuenta'),
+       'la × de la ficha quita el periodo y muestra todos: '+pg.inner_text('#registros-total'))
+    abrir_filtros(pg)
+    pg.click('.chip[data-atajo=hoy]'); pg.wait_for_timeout(300)
     hoy_txt=pg.text_content('#chip-hoy')
     ok(hoy_txt=='Hoy, '+HOY_TXT,'el chip de hoy lleva la fecha con el mes en letras (se lee con la coma oculta): '+hoy_txt)
     ok(pg.evaluate("getComputedStyle(document.querySelector('#chip-hoy .chip-sub')).display")=='block','y la fecha va en un segundo renglón para caber en un tercio del teléfono (D95)')
@@ -473,6 +498,7 @@ with sync_playwright() as p:
     ok(pg.is_hidden('#filtro-desde'),'el rango viene plegado')
     pg.click('.chip[data-atajo=periodo]'); pg.wait_for_timeout(200)
     ok(pg.is_visible('#filtro-desde') and pg.get_attribute('.chip[data-atajo=periodo]','aria-expanded')=='true','«Un periodo» abre Desde/Hasta (D64)')
+    ok(pg.is_hidden('#filtro-anio') and pg.is_hidden('#filtro-mes'),'con «Un periodo» abierto no se ven Año y Mes: nunca dos maneras del periodo a la vez (D100)')
     ok(pg.evaluate("document.activeElement.id")!='filtro-desde','y no mueve el foco a Desde (D82)')
     pg.fill('#filtro-desde','2026-07-01'); pg.wait_for_timeout(200)
     ok(pg.evaluate("document.activeElement.id")!='filtro-hasta','al elegir Desde, el foco no pasa a Hasta (D82)')
@@ -602,6 +628,7 @@ with sync_playwright() as p:
     ok(all(v=='' for v in vacios),'y lo que no se escribió queda vacío, no inventado')
 
     pg.click('.pestana[data-vista=registros]'); pg.wait_for_timeout(500)
+    abrir_filtros(pg)
     accion(pg,'#lista-registros','ver'); pg.wait_for_timeout(900)
     ok(pg.locator('#detalle-mapa .leaflet-marker-icon').count()==1,'el detalle trae el mapa con el punto')
     ok(pg.evaluate("getComputedStyle(document.querySelector('#dlg-detalle-cuerpo dt')).fontWeight")=='700',
@@ -618,6 +645,8 @@ with sync_playwright() as p:
     ok(pg.evaluate("SRP.registros.mapaDetalle")is None,'al cerrar, su mapa se destruye')
     accion(pg,'#lista-registros','editar'); pg.wait_for_timeout(600)
     ok(pg.is_visible('#edicion-aviso'),'editar abre el formulario precargado')
+    ok(pg.get_attribute('.pestana[data-vista=registros]','aria-current')=='page' and pg.get_attribute('.pestana[data-vista=registrar]','aria-current') is None,
+       'al editar queda marcada la pestaña Registros, no «Nuevo registro» (D100)')
     # En edición el espejo cambia de cara: conserva al cabo original, anuncia EDITADO y
     # deja claro que la marca de edición se fija al guardar, no al abrir
     espejoEd=pg.evaluate("""() => ({
@@ -642,6 +671,7 @@ with sync_playwright() as p:
     # ---------- COORDINADOR ----------
     pg.click('#btn-cuenta'); pg.click('#btn-cambiar-perfil'); pg.select_option('#sel-usuario-prueba','u-coord-1'); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(600)
     pg.click('.pestana[data-vista=registros]'); pg.wait_for_timeout(500)
+    abrir_filtros(pg)
     pg.click('.chip[data-atajo=todos]'); pg.wait_for_timeout(300)
     ok('Total: 3 ' in pg.inner_text('#registros-total'),'el coordinador ve los de su cuadrilla: '+pg.inner_text('#registros-total'))
     ok('Fulana' in pg.inner_text('#lista-registros'),'con el nombre del cabo')
@@ -658,6 +688,7 @@ with sync_playwright() as p:
     ok(any('Fulana' in o for o in opciones),'con los cabos que registraron ese día: '+', '.join(opciones))
     pg.click('#btn-cierre-cerrar'); pg.wait_for_timeout(200)
     pg.click('.pestana[data-vista=registros]'); pg.wait_for_timeout(500)
+    abrir_filtros(pg)
     pg.click('.chip[data-atajo=todos]'); pg.wait_for_timeout(300)
     # Al abrir para editar un registro ajeno, el espejo enseña que el autor no cambia de manos
     accion(pg,'#lista-registros','editar'); pg.wait_for_timeout(600)
@@ -697,6 +728,14 @@ with sync_playwright() as p:
     pg.click('#btn-cat-cerrar'); pg.wait_for_timeout(200)
     pg.click('#cat-tipos .chip[data-tipo=especie]'); pg.wait_for_timeout(400)
     ok(pg.locator('#tabla-catalogo tbody tr').count()==76 and 'Distribución' in pg.inner_text('#tabla-catalogo thead'),'la tabla lista las 76 especies con su distribución (D84)')
+    pg.evaluate("document.querySelector('#tabla-catalogo th .th-orden').click()"); pg.wait_for_timeout(150)
+    pg.evaluate("document.querySelector('#tabla-catalogo th .th-orden').click()"); pg.wait_for_timeout(150)
+    ordn=pg.evaluate('''() => { const t=document.getElementById('tabla-catalogo'); const v=[...t.tBodies[0].rows].map(r=>r.cells[0].textContent.trim());
+      const z=[...v].sort((a,b)=>b.localeCompare(a,'es',{sensitivity:'base'})); return { sort: t.querySelector('th').getAttribute('aria-sort'), bien: v.join('|')===z.join('|'),
+      acciones: !document.querySelector('#tabla-catalogo th:last-child .th-orden'), fijo: getComputedStyle(t.querySelector('th')).position,
+      punto: getComputedStyle(t.querySelector('.estado-texto'),'::before').width }; }''')
+    ok(ordn=={'sort':'descending','bien':True,'acciones':True,'fijo':'sticky','punto':'8px'},'la tabla se ordena por columna (dos toques: Z a A), el encabezado es fijo y el estado lleva su punto (D100): %s' % ordn)
+    ok(pg.evaluate("getComputedStyle(document.getElementById('vista-reportes')).maxWidth===getComputedStyle(document.getElementById('vista-catalogos')).maxWidth"),'todas las vistas miden lo mismo (D100)')
     pg.fill('#cat-buscar','quercus'); pg.wait_for_timeout(200)
     ok(pg.locator('#tabla-catalogo tbody tr').count()==4,'el buscador de especies encuentra los cuatro Quercus')
     pg.fill('#cat-buscar','yoyote'); pg.wait_for_timeout(200)
