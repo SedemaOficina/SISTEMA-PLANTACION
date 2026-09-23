@@ -461,7 +461,8 @@ SRP.formulario = {
       cabo_id: u ? u.id : null, lat_original: v.lat, lng_original: v.lng,
       fecha_registro: ahora, fecha_ultima_edicion: null, editado_por_id: null,
       // El folio y lo que se congela con él los pone el servidor al sincronizar (R3, R8); aquí nacen nulos
-      folio: null, folio_uga: null, folio_capa_version: null, folio_lat: null, folio_lng: null
+      folio: null, folio_uga: null, folio_capa_version: null, folio_lat: null, folio_lng: null,
+      corte_jornada: null   // corrección a mano del reparto en jornadas (D117); nace sin ella
     }, v);
   },
 

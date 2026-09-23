@@ -33,6 +33,7 @@ SRP.reportes = {
     this.el('form-cierre').addEventListener('submit', (e) => { e.preventDefault(); this.aceptar(); });
     this.el('pdf-dia').addEventListener('change', () => this.refrescarVista());
     this.el('pdf-cabo').addEventListener('change', () => this.refrescarVista());
+    this.el('pdf-jornada').addEventListener('change', () => this.refrescarVista());
     this.el('btn-pdf').addEventListener('click', () => this.generarDesdeVista());
     // «Ahora» pone la hora actual en la hora de finalización (D103)
     this.el('btn-hora-ahora').addEventListener('click', () => {
@@ -44,13 +45,13 @@ SRP.reportes = {
     this.el('btn-previa-generar').addEventListener('click', () => {
       const v = this.vistaPrevia; if (!v) return;
       this.el('dlg-previa').close();
-      this.generar(v.registros, v.cierre, v.fecha);
+      this.generar(v.registros, v.cierre, v.fecha, v.jornada);
     });
     // Corregir vuelve al formulario de cierre con lo ya escrito (se guardó al pedir la vista previa)
     this.el('btn-previa-corregir').addEventListener('click', () => {
       const v = this.vistaPrevia; if (!v) return;
       this.el('dlg-previa').close();
-      this.abrir(v.registros, v.fecha, v.cabo_id);
+      this.abrir(v.registros, v.fecha, v.cabo_id, v.jornada);
     });
   },
 
@@ -69,13 +70,13 @@ SRP.reportes = {
     const caja = this.el('caja-pdf-cabo');
     caja.hidden = alcance === 'propios';
     if (!caja.hidden) {
-      const previo = this.el('pdf-cabo').value;
+      // El reporte es de una jornada, y una jornada es de un cabo (D117): ya no hay «Todos los cabos»
+      const previo = (this.pedido && this.pedido.cabo_id) || this.el('pdf-cabo').value;
       const todos = await this.registrosAlcance();
       const ids = [...new Set(todos.map(r => r.cabo_id))];
-      this.el('pdf-cabo').innerHTML = '<option value="">Todos los cabos</option>' + ids
-        .map(id => [id, SRP.ref.nombreUsuario(id)]).sort((a, b) => a[1].localeCompare(b[1], 'es'))
-        .map(([id, n]) => '<option value="' + id + '">' + SRP.util.escapar(n) + '</option>').join('');
-      this.el('pdf-cabo').value = ids.includes(previo) ? previo : '';
+      const lista = ids.map(id => [id, SRP.ref.nombreUsuario(id)]).sort((a, b) => a[1].localeCompare(b[1], 'es'));
+      this.el('pdf-cabo').innerHTML = lista.map(([id, n]) => '<option value="' + id + '">' + SRP.util.escapar(n) + '</option>').join('');
+      this.el('pdf-cabo').value = ids.includes(previo) ? previo : (lista[0] ? lista[0][0] : '');
     }
     await this.refrescarVista();
     if (SRP.conexion) SRP.conexion.refrescarAvisoEnvio();
@@ -88,55 +89,78 @@ SRP.reportes = {
     return todos.filter(r => SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId));
   },
 
-  // Los del día elegido (y del cabo elegido), en el orden en que se capturaron
-  async registrosDelDia(dia, caboId) {
-    return (await this.registrosAlcance())
-      .filter(r => r.fecha_plantacion === dia && (!caboId || r.cabo_id === caboId))
-      .sort((a, b) => a.fecha_registro.localeCompare(b.fecha_registro));
-  },
+  caboElegido() { return this.el('caja-pdf-cabo').hidden ? SRP.sesion.usuario.id : this.el('pdf-cabo').value; },
 
-  /* Un botón apagado sin explicación se lee como una falla del sistema (Norma 7.6): la nota dice
-     qué se va a reportar, o qué falta para poder hacerlo. */
+  /* EL REPORTE ES DE UNA JORNADA (D117). Con el día y el cabo, las jornadas del día llenan el
+     selector; con una sola, el selector no se ve. Un botón apagado sin explicación se lee como una
+     falla del sistema (Norma 7.6): la nota dice qué se va a reportar, o qué falta para poder hacerlo. */
   async refrescarVista() {
     const dia = this.el('pdf-dia').value;
-    const cabo = this.el('caja-pdf-cabo').hidden ? '' : this.el('pdf-cabo').value;
-    const n = dia ? (await this.registrosDelDia(dia, cabo)).length : 0;
-    this.el('btn-pdf').disabled = !dia || n === 0;
+    const cabo = this.caboElegido();
+    const jornadas = dia && cabo ? await SRP.jornadas.jornadasDe(dia, cabo) : [];
+    const sel = this.el('pdf-jornada');
+    const caja = this.el('caja-pdf-jornada');
+    const previa = (this.pedido && String(this.pedido.n)) || sel.value;
+    this.pedido = null;
+    caja.hidden = jornadas.length < 2;
+    if (jornadas.length) {
+      const nombres = await Promise.all(jornadas.map(async j => SRP.jornadas.nombreSitio(j, await this.cierreDeJornada(j))));
+      sel.innerHTML = jornadas.map((j, i) => '<option value="' + j.n + '">' + j.n + ' · ' + SRP.util.escapar(nombres[i]) + ' (' + j.registros.length + ')</option>').join('');
+      sel.value = jornadas.some(j => String(j.n) === previa) ? previa : String(jornadas[0].n);
+    } else sel.innerHTML = '';
+    const j = jornadas.find(x => String(x.n) === sel.value) || null;
+    const n = j ? j.registros.length : 0;
+    this.jornadaElegida = j;
+    this.el('btn-pdf').disabled = !j;
+    const quien = this.el('caja-pdf-cabo').hidden ? '' : ' de ' + SRP.ref.nombreUsuario(cabo);
     this.el('pdf-nota').textContent = !dia
-      ? 'El reporte es de un día. Elija el día del reporte.'
-      : n === 0 ? 'No hay registros del ' + SRP.util.formatearFecha(dia) + (cabo ? ' de ' + SRP.ref.nombreUsuario(cabo) : '') + '.'
-      : (n === 1 ? 'Se reportará el registro del ' : 'Se reportarán los ' + n + ' registros del ') + SRP.util.formatearFecha(dia) +
-        (cabo ? ' de ' + SRP.ref.nombreUsuario(cabo) : '') + '. Si ya se generó, se vuelve a abrir con sus datos de cierre para corregirlos.';
+      ? 'El reporte es de una jornada. Elija el día.'
+      : !j ? 'No hay registros del ' + SRP.util.formatearFecha(dia) + quien + '.'
+      : (n === 1 ? 'Se reportará el registro' : 'Se reportarán los ' + n + ' registros') + (jornadas.length > 1 ? ' de la jornada ' + j.n + ' de ' + jornadas.length : '') +
+        ' del ' + SRP.util.formatearFecha(dia) + quien + '. Si ya se generó, se vuelve a abrir con sus datos de cierre para corregirlos.';
   },
 
   async generarDesdeVista() {
-    const dia = this.el('pdf-dia').value;
-    // Un cabo reporta su propia jornada: el cierre lleva su id, la misma llave que Jornadas (D112)
-    const cabo = this.el('caja-pdf-cabo').hidden ? SRP.sesion.usuario.id : this.el('pdf-cabo').value;
-    const registros = await this.registrosDelDia(dia, cabo);
-    if (!dia || !registros.length) return;
-    this.abrir(registros, dia, cabo);
+    const j = this.jornadaElegida;
+    if (!j) return;
+    this.abrir(j.registros, j.fecha, j.cabo_id, j);
   },
 
-  /* La clave junta el día con el cabo filtrado: un coordinador puede sacar el reporte de cada una
-     de sus cuadrillas el mismo día, y cada uno conserva sus propios datos de cierre. Sin cabo
-     elegido, el reporte es del día completo dentro de su alcance. */
-  claveCierre(fecha, caboId) { return fecha + '|' + (caboId || 'TODOS'); },
+  /* La llave del cierre es la de la jornada (D117): día, cabo y número de jornada del día. */
+  claveCierre(fecha, caboId, n) { return fecha + '|' + (caboId || 'TODOS') + '|' + (n || 1); },
+
+  /* El cierre de una jornada, con tres caminos: su llave; el id de su primer punto (si el número
+     cambió al eliminar una jornada anterior completa); y lo guardado antes del bloque 60, con la
+     llave del día sin número (`fecha|cabo` o `fecha|TODOS`), sólo para la jornada 1. */
+  async cierreDeJornada(j) {
+    const directo = await SRP.almacen.uno('cierres', this.claveCierre(j.fecha, j.cabo_id, j.n));
+    if (directo) return directo;
+    const delDia = (await SRP.almacen.porIndice('cierres', 'fecha', j.fecha)).filter(c => c.cabo_id === j.cabo_id);
+    const porPunto = delDia.find(c => c.primer_registro_id && j.registros.some(r => r.id === c.primer_registro_id));
+    if (porPunto) return porPunto;
+    if (j.n === 1) {
+      const viejo = delDia.find(c => c.id === j.fecha + '|' + j.cabo_id) ||
+        (await SRP.almacen.uno('cierres', j.fecha + '|TODOS'));
+      if (viejo) return viejo;
+    }
+    return null;
+  },
 
   /* ---------- Formulario de cierre ---------- */
 
-  async abrir(registros, fecha, caboId) {
+  async abrir(registros, fecha, caboId, jornada) {
     if (!registros.length) return;
-    this.contexto = { registros, fecha, cabo_id: caboId || '' };
+    // Sin jornada dada (llamadas antiguas), se toma la que tenga estos registros
+    if (!jornada) jornada = (await SRP.jornadas.jornadasDe(fecha, caboId)).find(j => j.registros.some(r => r.id === registros[0].id)) ||
+      { fecha, cabo_id: caboId, n: 1, total: 1, registros, primer_id: registros[0].id };
+    this.contexto = { registros, fecha, cabo_id: caboId || '', jornada };
 
-    this.el('dlg-cierre-dia').textContent = SRP.util.formatearFecha(fecha);
+    this.el('dlg-cierre-dia').textContent = SRP.util.formatearFecha(fecha) + (jornada.total > 1 ? ' · Jornada ' + jornada.n + ' de ' + jornada.total : '');
     this.el('dlg-cierre-cuenta').textContent = registros.length +
       (registros.length === 1 ? ' ejemplar registrado' : ' ejemplares registrados');
 
-    // Lo capturado antes para este mismo día no se vuelve a escribir (Norma 7.6)
-    // Antes del bloque 57 el cierre de un cabo se guardaba como «fecha|TODOS»: se sigue leyendo
-    const previo = (await SRP.almacen.uno('cierres', this.claveCierre(fecha, this.contexto.cabo_id))) ||
-      (caboId && SRP.permisos.de(SRP.sesion.usuario).alcance === 'propios' ? await SRP.almacen.uno('cierres', this.claveCierre(fecha, '')) : null);
+    // Lo capturado antes para esta misma jornada no se vuelve a escribir (Norma 7.6)
+    const previo = await this.cierreDeJornada(jornada);
     this.contexto.previo = previo || null;
     this.CAMPOS.forEach(c => { this.el('cie-' + c).value = previo ? (previo[c] || '') : ''; });
     // Un cierre guardado antes del bloque 20 traía «vehiculo» en un solo campo: se muestra como modelo
@@ -188,11 +212,14 @@ SRP.reportes = {
     const c = this.contexto;
     const previo = c.previo;
     ahora = ahora || SRP.util.ahoraISO();
+    const j = c.jornada;
     const cierre = {
-      id: this.claveCierre(c.fecha, c.cabo_id),
+      id: this.claveCierre(c.fecha, c.cabo_id, j.n),
       es_ficticio: SRP.CONFIG.ES_FICTICIO,
       fecha: c.fecha,
       cabo_id: c.cabo_id,
+      jornada_n: j.n,
+      primer_registro_id: j.primer_id,
       encargado_id: this.encargadoElegido(),
       creado_por_id: previo ? previo.creado_por_id : SRP.sesion.usuario.id,
       fecha_creacion: previo ? previo.fecha_creacion : ahora,
@@ -216,16 +243,16 @@ SRP.reportes = {
         'Cierre del reporte del ' + SRP.util.formatearFecha(c.fecha)));
 
     this.el('dlg-cierre').close();
-    this.mostrarPrevia(c.registros, cierre, c.fecha, c.cabo_id);
+    this.mostrarPrevia(c.registros, cierre, c.fecha, c.cabo_id, c.jornada);
   },
 
   /* VISTA PREVIA DEL REPORTE (D101). Lo mismo que dirá el PDF, en el mismo orden y con las mismas
      reglas (un apartado vacío no aparece), en pantalla y antes de generarlo: así se corrige un
      dato de cierre sin haber compartido todavía un documento equivocado. No es una imagen del
      PDF —en iPhone un PDF incrustado sólo enseña la primera página—, sino el mismo contenido. */
-  mostrarPrevia(registros, cierre, fecha, caboId) {
-    this.vistaPrevia = { registros, cierre, fecha, cabo_id: caboId || '' };
-    this.el('previa-hoja').innerHTML = this.htmlPrevia(registros, cierre, fecha);
+  mostrarPrevia(registros, cierre, fecha, caboId, jornada) {
+    this.vistaPrevia = { registros, cierre, fecha, cabo_id: caboId || '', jornada };
+    this.el('previa-hoja').innerHTML = this.htmlPrevia(registros, cierre, fecha, jornada);
     this.el('dlg-previa').showModal();
     // El croquis (D115) se arma aparte para no detener la vista previa mientras llegan los mosaicos
     this.ponerCroquisEnPrevia(registros);
@@ -248,14 +275,18 @@ SRP.reportes = {
     return 'Árboles plantados según la cuadrilla: ' + s + ' · registrados: ' + n + (s === n ? ' (cuadra)' : ' (no cuadra)');
   },
 
-  htmlPrevia(registros, cierre, fecha) {
+  // «Jornada 2 de 3» bajo la fecha, sólo cuando el día tuvo más de una (D117)
+  textoJornada(jornada) { return jornada && jornada.total > 1 ? 'Jornada ' + jornada.n + ' de ' + jornada.total : ''; },
+
+  htmlPrevia(registros, cierre, fecha, jornada) {
     const esc = t => SRP.util.escapar(t);
     const u = SRP.sesion.usuario;
     const variosAutores = SRP.permisos.de(u).alcance !== 'propios';
     const hay = (k) => !!(cierre[k] && cierre[k].trim());
     const parrafo = t => esc(t).replace(/\n/g, '<br>');
     const apartado = (titulo, cuerpo) => '<section class="previa-apartado"><h3>' + titulo + '</h3>' + cuerpo + '</section>';
-    let h = '<p class="previa-titulo">Reporte diario de plantación</p><p class="previa-fecha">' + esc(SRP.util.formatearFecha(fecha)) + '</p>';
+    let h = '<p class="previa-titulo">Reporte diario de plantación</p><p class="previa-fecha">' + esc(SRP.util.formatearFecha(fecha)) +
+      (this.textoJornada(jornada) ? ' · ' + esc(this.textoJornada(jornada)) : '') + '</p>';
 
     const alcaldias = this.alcaldiasDe(registros);
     if (hay('sitio') || alcaldias.length) {
@@ -356,7 +387,7 @@ SRP.reportes = {
     return { encargado: cierre.encargado_id ? SRP.ref.nombreUsuario(cierre.encargado_id) : '', listas };
   },
 
-  async generar(registros, cierre, fecha) {
+  async generar(registros, cierre, fecha, jornada) {
     if (!window.jspdf) { SRP.util.anunciar('No se pudo cargar el generador de PDF.', 'alerta'); return; }
     const logo = await this.cargarLogo();
     const u = SRP.sesion.usuario;
@@ -381,7 +412,7 @@ SRP.reportes = {
     doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(...C.guinda);
     doc.text('REPORTE DIARIO DE PLANTACIÓN', ancho / 2, 40, { align: 'center' });
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(...C.gris);
-    doc.text(SRP.util.formatearFecha(fecha), ancho / 2, 46, { align: 'center' });
+    doc.text(SRP.util.formatearFecha(fecha) + (this.textoJornada(jornada) ? ' · ' + this.textoJornada(jornada) : ''), ancho / 2, 46, { align: 'center' });
 
     let y = 56;
     const salto = (necesario) => { if (y + necesario > alto - 24) { doc.addPage(); y = 25; } };
@@ -572,19 +603,20 @@ SRP.reportes = {
       doc.text('Página ' + p + ' de ' + paginas, ancho / 2, alto - 6, { align: 'center' });
     }
 
-    this.entregar(doc, this.nombreArchivo(cierre, fecha));
+    this.entregar(doc, this.nombreArchivo(cierre, fecha, jornada));
   },
 
   /* Nombre del PDF (D102): «Reporte», quién responde del reporte y la fecha del reporte, p. ej.
      Reporte_Perengano_Gomez_Ejemplo_2026-09-22.pdf. La persona es el encargado del cierre; si no
      lo hay, el cabo elegido en Reportes; si tampoco, quien genera (el coordinador que saca el de
      toda su cuadrilla). Sin acentos ni espacios, para que ningún sistema de archivos lo altere. */
-  nombreArchivo(cierre, fecha) {
+  nombreArchivo(cierre, fecha, jornada) {
     const cabo = this.contexto ? this.contexto.cabo_id : '';
     const id = (cierre && cierre.encargado_id) || cabo || SRP.sesion.usuario.id;
     const nombre = (SRP.ref.nombreUsuario(id) || 'SRP').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
-    return 'Reporte_' + nombre + '_' + fecha + '.pdf';
+    // Con más de una jornada en el día, el número va en el nombre: Reporte_Fulana_2026-09-23_J2.pdf (D117)
+    return 'Reporte_' + nombre + '_' + fecha + (jornada && jornada.total > 1 ? '_J' + jornada.n : '') + '.pdf';
   },
 
   /* En teléfono o tableta, compartir con las apps del dispositivo; en escritorio, descargar.

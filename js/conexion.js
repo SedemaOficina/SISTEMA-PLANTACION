@@ -116,8 +116,8 @@ SRP.conexion = {
     const fotos = n ? ' ' + (f.con_foto === 1 ? '1 lleva fotografía' : f.con_foto + ' llevan fotografía') +
       (f.con_foto ? ' (' + SRP.foto.formatearPeso(f.foto_bytes) + ')' : '') + '.' : '';
     caja.innerHTML = SRP.ICONOS.svg('info', 18) + '<strong>' + cuenta + '.</strong>' + fotos + ' ' + (this.enLinea()
-      ? 'Por ahora no hay envío al servidor: los registros se quedan aquí. Genere el reporte del día y compártalo con su coordinador, o guarde un respaldo. <strong>No borre los datos del navegador.</strong>'
-      : 'Siga registrando: no hace falta internet. Cuando tenga señal, genere el reporte del día y compártalo.');
+      ? 'Por ahora no hay envío al servidor: los registros se quedan aquí. Genere el reporte de la jornada y compártalo con su coordinador, o guarde un respaldo. <strong>No borre los datos del navegador.</strong>'
+      : 'Siga registrando: no hace falta internet. Cuando tenga señal, genere el reporte de la jornada y compártalo.');
   },
 
   /* Cuántos registros llevan fotografía y cuánto pesan. Es la cifra con la que se pedirá disco a

@@ -159,7 +159,7 @@ with sync_playwright() as p:
       const plant = Object.keys(Object.assign(
         { id:1, estatus:1, es_ficticio:1, cabo_id:1, lat_original:1, lng_original:1,
           fecha_registro:1, fecha_ultima_edicion:1, editado_por_id:1,
-          folio:1, folio_uga:1, folio_capa_version:1, folio_lat:1, folio_lng:1 },
+          folio:1, folio_uga:1, folio_capa_version:1, folio_lat:1, folio_lng:1, corte_jornada:1 },
         SRP.formulario.valores.call({
           estado: { especieId: 'x', foto: null, fotoId: null, fotoNombre: '', fotoBytes: 0,
                     territorio: { alcaldia:'a', colonia:'c', uga:'u', capa_version:'v' } },
@@ -172,7 +172,7 @@ with sync_playwright() as p:
         /* Igual que las plantaciones: los campos se leen del código, no de lo guardado. Un
            almacén vacío haría pasar por inventado todo lo que el mapeo documenta. */
         cierres: ['id','es_ficticio','fecha','cabo_id','encargado_id','creado_por_id','fecha_creacion',
-                  'editado_por_id','fecha_ultima_edicion','arboles_plantados','puntos_revisados'].concat(SRP.reportes.CAMPOS),
+                  'editado_por_id','fecha_ultima_edicion','jornada_n','primer_registro_id','arboles_plantados','puntos_revisados'].concat(SRP.reportes.CAMPOS),
         bitacora: bitacora()
       };
     }""")

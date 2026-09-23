@@ -1164,3 +1164,20 @@ las acciones, «Cancelar» en rojo.
 
 **Verificación:** 374 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.40.
+
+## Bloque 60 — La jornada es la unidad: varias en un día y un reporte por jornada (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.41.
+
+**Qué cambió (D117).** `jornadas.js`: reparto secuencial por cercanía con correcciones a mano
+(`corte()`), `jornadasDe(fecha, cabo)`, conciliación por jornada, tarjeta «Jornada 2 de 3».
+`reportes.js`: `claveCierre(fecha, cabo, n)`, `cierreDeJornada()` con tres caminos, selector
+«Jornada», `abrir()` con la jornada, «Jornada 2 de 3» en vista previa y PDF, `_J2` en el nombre
+del archivo, sin «Todos los cabos». `formulario.js`: `corte_jornada` nace nulo. `index.html`:
+selector y textos «Reporte de la jornada». `esquema.json`: `corte_jornada` en plantaciones;
+`jornada_n` y `primer_registro_id` en cierres; MAPEO y diccionario al día. Pruebas: 14 nuevas
+(tres sitios → tres jornadas, conciliación propia, llave del cierre, unir y deshacer, separar a
+mano y su rastro, selector en Reportes, cierre y vista previa de la jornada 2, nombre `_J2`,
+tarjeta con el sitio del cierre); se adaptan las del cierre y el coordinador.
+
+**Verificación:** 388 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.41.

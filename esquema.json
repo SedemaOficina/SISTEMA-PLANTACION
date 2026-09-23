@@ -380,6 +380,15 @@
           "regla": "Arranca vacía en cada registro; nunca se hereda del anterior. Es la fecha por la que se filtra y por la que se arma el parte del día"
         },
         {
+          "campo": "corte_jornada",
+          "tipo": "text",
+          "nulo": true,
+          "origen": "Persona",
+          "dominio": "'inicia' | 'continua' | nulo",
+          "pantalla": "Jornadas → tuerca del punto → «Iniciar otra jornada aquí» / «Unir con la jornada anterior»",
+          "regla": "Corrección a mano del reparto en jornadas (D117). Nulo al nacer: el reparto es por cercanía (CONFIG.JORNADA.SEPARAR_M). Queda en el historial como EDITADO"
+        },
+        {
           "campo": "comentarios",
           "tipo": "varchar(500)",
           "nulo": false,
@@ -787,7 +796,7 @@
       ]
     },
     "cierres": {
-      "que_es": "Datos de cierre del reporte del día: un renglón por jornada y cuadrilla (`fecha|cabo_id`). Todo es opcional; su destino es el PDF (D58) y, desde D112, la conciliación de la jornada (arboles_plantados, puntos_revisados).",
+      "que_es": "Datos de cierre del reporte de una jornada: un renglón por jornada (`fecha|cabo_id|n`; D117). Todo es opcional; su destino es el PDF (D58) y, desde D112, la conciliación de la jornada (arboles_plantados, puntos_revisados).",
       "llave": "id",
       "indices": [
         "fecha"
@@ -799,9 +808,9 @@
           "tipo": "text",
           "nulo": false,
           "origen": "Sistema",
-          "dominio": "`fecha|cabo_id` o `fecha|TODOS`",
+          "dominio": "`fecha|cabo_id|n` (jornada n del día; D117). Antes del bloque 60: `fecha|cabo_id` o `fecha|TODOS`, que se siguen leyendo para la jornada 1",
           "pantalla": "No",
-          "regla": "Regenerar el parte del mismo día reabre el mismo cierre (Norma 7.6)"
+          "regla": "Regenerar el reporte de la misma jornada reabre el mismo cierre (Norma 7.6)"
         },
         {
           "campo": "es_ficticio",
@@ -826,9 +835,9 @@
           "tipo": "uuid",
           "nulo": false,
           "origen": "Sistema",
-          "dominio": "→ usuarios.id; '' si el reporte es del día completo (coordinador o administración sin cabo elegido)",
+          "dominio": "→ usuarios.id",
           "pantalla": "No",
-          "regla": "El cabo de la jornada. Un cabo reporta siempre con su propio id (D112); antes del bloque 57 se guardaba como '' y se sigue leyendo"
+          "regla": "El cabo de la jornada (D112, D117). Antes del bloque 57 un cabo guardaba ''; se sigue leyendo"
         },
         {
           "campo": "encargado_id",
@@ -874,6 +883,24 @@
           "dominio": "ISO 8601",
           "pantalla": "No",
           "regla": ""
+        },
+        {
+          "campo": "jornada_n",
+          "tipo": "integer",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "1, 2, 3… número de la jornada en el día del cabo",
+          "pantalla": "«Jornada 2 de 3» en Jornadas y en el reporte",
+          "regla": "Parte de la llave (D117). Se recalcula al reabrir el cierre"
+        },
+        {
+          "campo": "primer_registro_id",
+          "tipo": "uuid",
+          "nulo": true,
+          "origen": "Sistema",
+          "dominio": "→ plantaciones.id",
+          "pantalla": "No",
+          "regla": "Primer punto de la jornada al guardar el cierre: si el número cambió (se eliminó una jornada anterior completa), el cierre se reencuentra por él (D117)"
         },
         {
           "campo": "arboles_plantados",

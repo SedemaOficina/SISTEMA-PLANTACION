@@ -52,7 +52,7 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 Un renglón por ejemplar plantado. Es el registro individual de campo; todo lo demás (partes, tableros, cifra pública) se construye encima (D38).
 
 - **Llave:** `id`. **Índices:** `cabo_id`, `fecha_plantacion`, `estatus`. **Pantalla:** Nuevo registro (alta y edición), Registros (lista, detalle), Reportes (parte del día).
-- **Campos:** 34.
+- **Campos:** 35.
 
 | Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
 |---|---|---|---|---|---|---|
@@ -82,6 +82,7 @@ Un renglón por ejemplar plantado. Es el registro individual de campo; todo lo d
 | `capa_version` | text | Sí | Capa | `alcaldias=v;uga=v;colonias=v` | No | Con qué versión de cada capa se derivó; permite rehacer alcaldia/colonia/uga cuando el SIA entregue las capas definitivas |
 | `programa_id` | text | No | Catálogo | → catalogos.id con tipo = programa | Programa (lista; Reforestación Urbana primero) | Obligatorio; sin preselección |
 | `fecha_plantacion` | date | No | Persona | AAAA-MM-DD, ≤ hoy | Fecha de plantación (se muestra 21-SEP-2026) | Arranca vacía en cada registro; nunca se hereda del anterior. Es la fecha por la que se filtra y por la que se arma el parte del día |
+| `corte_jornada` | text | Sí | Persona | 'inicia' \| 'continua' \| nulo | Jornadas → tuerca del punto → «Iniciar otra jornada aquí» / «Unir con la jornada anterior» | Corrección a mano del reparto en jornadas (D117). Nulo al nacer: el reparto es por cercanía (CONFIG.JORNADA.SEPARAR_M). Queda en el historial como EDITADO |
 | `comentarios` | varchar(500) | No | Persona | Texto libre ≤ 500; '' si no se escribe | Comentarios (opcional) | Reincorporado en D50. Todavía no entra al parte PDF (pendiente de validación de reportes). Registros anteriores a D50 no traen la llave y se leen como «Sin comentarios» |
 | `foto_base64` | text | Sí | Persona | data:image/jpeg;base64,… ya comprimida (≤ 800×600, calidad 0.7) | Fotografía (opcional) | Incrustada en el registro en Fase 1. En Fase 2 sale a archivo, como en los otros módulos del SIA (pendiente «Dónde viven las fotografías») |
 | `foto_id` | uuid | Sí | Sistema | UUID v4; null sin foto | No | Identificador de la imagen, para cuando viva como archivo |
@@ -147,22 +148,24 @@ Los tres catálogos administrables en una sola tabla, distinguidos por `tipo`: p
 
 ### 4.4 `cierres`
 
-Datos de cierre del reporte del día: un renglón por jornada y cuadrilla (`fecha|cabo_id`). Todo es opcional; su destino es el PDF (D58) y, desde D112, la conciliación de la jornada (arboles_plantados, puntos_revisados).
+Datos de cierre del reporte de una jornada: un renglón por jornada (`fecha|cabo_id|n`; D117). Todo es opcional; su destino es el PDF (D58) y, desde D112, la conciliación de la jornada (arboles_plantados, puntos_revisados).
 
 - **Llave:** `id`. **Índices:** `fecha`. **Pantalla:** Reportes → «Datos de cierre del día».
-- **Campos:** 20.
+- **Campos:** 22.
 
 | Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
 |---|---|---|---|---|---|---|
-| `id` | text | No | Sistema | `fecha\|cabo_id` o `fecha\|TODOS` | No | Regenerar el parte del mismo día reabre el mismo cierre (Norma 7.6) |
+| `id` | text | No | Sistema | `fecha\|cabo_id\|n` (jornada n del día; D117). Antes del bloque 60: `fecha\|cabo_id` o `fecha\|TODOS`, que se siguen leyendo para la jornada 1 | No | Regenerar el reporte de la misma jornada reabre el mismo cierre (Norma 7.6) |
 | `es_ficticio` | boolean | No | Sistema | true/false | No | Copia de CONFIG.ES_FICTICIO (D87): la depuración de datos de prueba también alcanza a esta tabla |
 | `fecha` | date | No | Sistema | AAAA-MM-DD | Encabezado del diálogo | El día del parte: cualquier día, no sólo hoy (D70) |
-| `cabo_id` | uuid | No | Sistema | → usuarios.id; '' si el reporte es del día completo (coordinador o administración sin cabo elegido) | No | El cabo de la jornada. Un cabo reporta siempre con su propio id (D112); antes del bloque 57 se guardaba como '' y se sigue leyendo |
+| `cabo_id` | uuid | No | Sistema | → usuarios.id | No | El cabo de la jornada (D112, D117). Antes del bloque 57 un cabo guardaba ''; se sigue leyendo |
 | `encargado_id` | uuid | Sí | Sesión | → usuarios.id | Encargado | Para un cabo es él mismo (no se pregunta); quien ve a varias personas lo elige sólo entre los cabos con registros ese día (D57) |
 | `creado_por_id` | uuid | No | Sesión | → usuarios.id | No | — |
 | `fecha_creacion` | timestamptz | No | Sistema | ISO 8601 | No | — |
 | `editado_por_id` | uuid | No | Sesión | → usuarios.id | No | — |
 | `fecha_ultima_edicion` | timestamptz | No | Sistema | ISO 8601 | No | — |
+| `jornada_n` | integer | No | Sistema | 1, 2, 3… número de la jornada en el día del cabo | «Jornada 2 de 3» en Jornadas y en el reporte | Parte de la llave (D117). Se recalcula al reabrir el cierre |
+| `primer_registro_id` | uuid | Sí | Sistema | → plantaciones.id | No | Primer punto de la jornada al guardar el cierre: si el número cambió (se eliminó una jornada anterior completa), el cierre se reencuentra por él (D117) |
 | `arboles_plantados` | integer | Sí | Persona | 0–9999; nulo si la cuadrilla no lo anotó | Jornadas → «Árboles plantados según la cuadrilla» | Conciliación de la jornada (D112): se compara con los registros activos del día y el cabo; el reporte dice si cuadra. Nunca sustituye al conteo de registros |
 | `puntos_revisados` | uuid[] | No | Persona | → plantaciones.id; [] si nadie ha revisado | Jornadas → «Está bien» en un punto con aviso | Puntos con aviso (duplicado, lejos, precisión) que alguien confirmó como correctos (D112); el aviso deja de contarse, no se borra |
 | `sitio` | text | No | Persona | Texto libre; '' si no se escribe | Dirección o sitio | Nada se prellena (los partes varían mucho) |
@@ -368,6 +371,7 @@ CREATE TABLE plantaciones (
   capa_version             text           NULL,
   programa_id              text           NOT NULL,
   fecha_plantacion         date           NOT NULL,
+  corte_jornada            text           NULL,
   comentarios              varchar(500)   NOT NULL,
   foto_base64              text           NULL,
   foto_id                  uuid           NULL,
@@ -435,6 +439,8 @@ CREATE TABLE cierres (
   fecha_creacion           timestamptz    NOT NULL,
   editado_por_id           uuid           NOT NULL,
   fecha_ultima_edicion     timestamptz    NOT NULL,
+  jornada_n                integer        NOT NULL,
+  primer_registro_id       uuid           NULL,
   arboles_plantados        integer        NULL,
   puntos_revisados         uuid[]         NOT NULL,
   sitio                    text           NOT NULL,

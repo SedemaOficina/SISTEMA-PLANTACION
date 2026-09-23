@@ -808,3 +808,24 @@
   eliminar. (4) El subtítulo de la jornada dice la fecha una sola vez. (5) El campo del conteo
   lleva `autocomplete="off"` para que Safari no ofrezca llave, tarjeta y ubicación. Pedido por
   Liber, 23-09-2026.
+
+## Bloque 60 — La jornada es la unidad: varias en un día, un reporte por jornada
+
+- **D117. Un cabo puede hacer varias jornadas en un día; cada una tiene su revisión, su
+  conciliación y su reporte.** El área de plantación reporta días con dos o tres sitios
+  (Parque de los Pericos en la mañana, Parque Hundido en la tarde). La jornada es fecha + cabo +
+  número del día (1, 2, 3…, en el orden en que se empezaron a registrar). El reparto es
+  automático: cada punto va a la jornada del día que tenga un punto a menos de
+  `CONFIG.JORNADA.SEPARAR_M` (500 m); si ninguna, abre una nueva. Dos correcciones a mano desde la
+  tuerca del punto, guardadas en el registro (`corte_jornada`: 'inicia' | 'continua') y en su
+  historial: «Iniciar otra jornada aquí» y «Unir con la jornada anterior». Se descartó pedir al
+  cabo que «abra» cada jornada con un botón: en campo se olvida y un olvido mezcla dos sitios sin
+  que nadie lo note. La conciliación, los puntos revisados y el cierre son de la jornada: llave
+  `fecha|cabo|n`, y el cierre guarda además `jornada_n` y `primer_registro_id` para reencontrarse
+  si el número cambia (se eliminó una jornada anterior completa); lo guardado antes del bloque 60
+  (`fecha|cabo`, `fecha|TODOS`) se lee para la jornada 1. Reportes: con el día y el cabo, el
+  selector «Jornada» (sólo cuando hay más de una) y un PDF por jornada, con su sitio, sus
+  ejemplares, su croquis y «Jornada 2 de 3» bajo la fecha; el archivo lleva `_J2`. Se retiró
+  «Todos los cabos» del selector de Reportes porque un reporte de varios cabos ya no tiene
+  sentido. La tarjeta de la jornada se llama como el sitio escrito en su cierre. Decidido por
+  Liber: el reporte es por jornada, 23-09-2026.

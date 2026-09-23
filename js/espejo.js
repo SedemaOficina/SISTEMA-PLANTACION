@@ -52,6 +52,7 @@ SRP.espejo = {
     folio_capa_version: 'Versión de las capas con que se derivó el folio; congelada (R8)',
     folio_lat: 'Coordenada empleada al asignar el folio; congelada (R8)',
     folio_lng: 'Ídem',
+    corte_jornada: 'Nulo al nacer. «inicia» o «continua» sólo si alguien corrigió el reparto en Jornadas (D117)',
     foto_nombre: 'Nombre del archivo que se cargó; se conserva para la ficha',
     foto_bytes: 'Peso de la fotografía ya comprimida',
     fecha_registro: 'Momento de guardar. Se fija al pulsar Guardar, no antes',
@@ -66,7 +67,7 @@ SRP.espejo = {
 
   // Cierre del reporte: lo que se ve en el formulario son sus CAMPOS y el encargado
   NOTAS_CIERRE: {
-    id: 'fecha|cabo (un cabo, siempre el suyo), o fecha|TODOS sin cabo filtrado: un cierre por jornada y cuadrilla',
+    id: 'fecha|cabo|n: un cierre por jornada (D117)',
     es_ficticio: 'Verdadero mientras CONFIG.ES_FICTICIO lo esté (D87)',
     fecha: 'El día del reporte; sale del filtro, no se captura',
     cabo_id: 'El cabo por el que se filtró; vacío si el reporte es del día completo',
@@ -75,7 +76,9 @@ SRP.espejo = {
     editado_por_id: 'Quién generó por última vez',
     fecha_ultima_edicion: 'Se fija en cada generación',
     arboles_plantados: 'Se anota en Jornadas, no aquí; el reporte dice si cuadra con los registros (D112)',
-    puntos_revisados: 'Puntos con aviso marcados «Está bien» en Jornadas (D112)'
+    puntos_revisados: 'Puntos con aviso marcados «Está bien» en Jornadas (D112)',
+    jornada_n: 'Número de la jornada en el día del cabo (D117)',
+    primer_registro_id: 'Primer punto de la jornada: por si el número cambia (D117)'
   },
 
   iniciar() {

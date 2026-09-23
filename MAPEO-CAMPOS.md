@@ -45,6 +45,7 @@ Pantalla **Nuevo registro**. Almacén `plantaciones`.
 | — | `folio_uga` | No | Servidor | La celda que quedó dentro del folio, congelada al asignarlo (R8). Distinta de `uga`, que es la vigente y sí cambia si el punto se corrige |
 | — | `folio_capa_version` | No | Servidor | Versión de las capas con que se derivó el folio; congelada (R8) |
 | — | `folio_lat`, `folio_lng` | No | Servidor | Coordenada empleada al asignar el folio; congelada (R8) |
+| — | `corte_jornada` | No | Persona | Nulo al nacer. `inicia` o `continua` si alguien corrigió el reparto en jornadas desde **Jornadas** (D117) |
 | — | `especie_estatus` | Sí | Sistema | `VALIDADA` si la especie es del catálogo; `PENDIENTE_VALIDACION` con «Otra especie» (D68). Lo resuelve el SIA desde la bandeja de especies fuera de catálogo (Fase 2); al resolverse cambia el atributo, nunca el folio |
 | — | `alcaldia_cve` | No | Capa geográfica | Clave INEGI `cvegeo` de la alcaldía (p. ej. `09015`). Es la llave para unir con el esquema `territorio` del SIA; el nombre se guarda aparte para leerse sin cargar la capa |
 | Alcaldía | `alcaldia` | No | Capa geográfica | Nombre, del punto contra la capa `alcaldias` del SIA (16 polígonos). Campo de sólo lectura. Nulo sólo si el punto cayera en un hueco de la capa: se guarda igual y se avisa |
@@ -162,20 +163,22 @@ Almacén `bitacora`. No se edita desde el sistema.
 
 ---
 
-## Módulo: Cierre del parte del día
+## Módulo: Cierre del reporte de la jornada
 
-Diálogo **Datos de cierre del día**, que se abre desde la pestaña **Reportes** al generar el parte
-de un día (D81). Almacén `cierres`.
+Diálogo **Datos de cierre del día**, que se abre desde la pestaña **Reportes** al generar el reporte
+de una jornada (D81, D117). Almacén `cierres`.
 Todo lo que aquí se captura es **opcional** y va únicamente al documento: no se explota ni se
 cuenta. Lo que ya vive en los registros —especies, conteos, alcaldía— no se pregunta, se calcula
 (D58).
 
 | Campo | Obligatorio | Origen | Notas |
 |---|---|---|---|
-| `id` | Sí | Sistema | `fecha|cabo`, o `fecha|TODOS` sin cabo filtrado: un cierre por jornada y cuadrilla. Un cabo guarda siempre con su id (D112) |
+| `id` | Sí | Sistema | `fecha|cabo|n`: un cierre por jornada, con `n` el número de la jornada en el día del cabo (D117). Lo guardado antes (`fecha|cabo`, `fecha|TODOS`) se sigue leyendo para la jornada 1 |
+| `jornada_n` | Sí | Sistema | Número de la jornada en el día (D117) |
+| `primer_registro_id` | No | Sistema | Primer punto de la jornada al guardar; por él se reencuentra el cierre si el número cambia (D117) |
 | `es_ficticio` | Sí | Sistema | Marca de dato de prueba (D87) |
-| `fecha` | Sí | Sistema | El día del parte, `AAAA-MM-DD` |
-| `cabo_id` | No | Sistema | El cabo por el que se filtró; vacío si el parte es del día completo |
+| `fecha` | Sí | Sistema | El día de la jornada, `AAAA-MM-DD` |
+| `cabo_id` | Sí | Sistema | El cabo de la jornada (D117) |
 | `encargado_id` | No | Sesión o Persona | Remite a `usuarios.id`. Para un cabo es él mismo; quien ve a varias personas lo elige entre los cabos con registros ese día (D57) |
 | `sitio` | No | Persona | Calle o nombre del sitio, como se escribe en el parte |
 | `actividades` | No | Persona | |

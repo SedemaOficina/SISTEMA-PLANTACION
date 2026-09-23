@@ -5,10 +5,15 @@
    una jornada en un mapa con puntos numerados en el orden en que se registraron y, debajo, la
    misma lista con el mismo número.
 
-   QUÉ ES UNA JORNADA. Fecha de plantación más cabo: la misma llave del cierre del día
-   (`fecha|cabo_id`), así que no hace falta un dato nuevo. Si ese día el cabo trabajó en dos sitios
-   separados por más de CONFIG.JORNADA.SEPARAR_M, la jornada se parte en dos tarjetas, una por
-   sitio. El nombre del sitio sale del cierre («Sitio», primer renglón) o, si no se ha escrito, de
+   QUÉ ES UNA JORNADA (D117). Un cabo puede hacer varias en un día: Parque de los Pericos en la
+   mañana y Parque Hundido en la tarde. La jornada es fecha + cabo + número del día (1, 2, 3…, en
+   el orden en que se empezaron a registrar). Los puntos se reparten solos: cada uno va a la
+   jornada del día que tenga un punto a menos de CONFIG.JORNADA.SEPARAR_M; si ninguna, abre una
+   nueva. Dos correcciones a mano, guardadas en el registro (`corte_jornada`): «Iniciar otra
+   jornada aquí» ('inicia') y «Unir con la jornada anterior» ('continua'). La conciliación, los
+   puntos revisados y el cierre del reporte son de la jornada, con llave `fecha|cabo|n`; el
+   cierre guarda además el id del primer punto, por si el número cambia al eliminar una jornada
+   entera. El nombre del sitio sale del cierre («Sitio», primer renglón) o, si no se ha escrito, de
    la colonia más frecuente de los puntos.
 
    CONCILIACIÓN. Se escribe cuántos árboles plantó la cuadrilla; el sistema lo compara con los
@@ -77,47 +82,51 @@ SRP.jornadas = {
       .filter(r => SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId));
   },
 
-  /* Agrupa por fecha y cabo, y parte cada grupo por sitio: dos puntos quedan en el mismo sitio si
-     hay una cadena de puntos entre ellos a menos de SEPARAR_M (enlace simple). */
+  /* Reparte los registros en jornadas (D117): por fecha y cabo, y dentro del día por cercanía y
+     por las correcciones a mano. Los puntos se recorren en el orden en que se registraron. */
   agrupar(registros) {
-    const grupos = {};
-    registros.forEach(r => { (grupos[r.fecha_plantacion + '|' + r.cabo_id] = grupos[r.fecha_plantacion + '|' + r.cabo_id] || []).push(r); });
+    const dias = {};
+    registros.forEach(r => { const k = r.fecha_plantacion + '|' + r.cabo_id; (dias[k] = dias[k] || []).push(r); });
     const salida = [];
-    Object.keys(grupos).forEach(clave => {
-      const regs = grupos[clave].sort((a, b) => a.fecha_registro.localeCompare(b.fecha_registro));
-      const padre = regs.map((_, i) => i);
-      const raiz = i => (padre[i] === i ? i : (padre[i] = raiz(padre[i])));
-      for (let i = 0; i < regs.length; i++) {
-        for (let j = i + 1; j < regs.length; j++) {
-          if (this.distancia(regs[i], regs[j]) <= SRP.CONFIG.JORNADA.SEPARAR_M) padre[raiz(i)] = raiz(j);
-        }
-      }
-      // Los sitios salen en el orden en que se empezaron a registrar
-      const partes = [];
-      const indice = {};
-      regs.forEach((r, i) => {
-        const k = raiz(i);
-        if (!(k in indice)) { indice[k] = partes.length; partes.push([]); }
-        partes[indice[k]].push(r);
+    const lim = SRP.CONFIG.JORNADA.SEPARAR_M;
+    Object.keys(dias).forEach(clave => {
+      const regs = dias[clave].sort((a, b) => a.fecha_registro.localeCompare(b.fecha_registro));
+      const grupos = [];
+      regs.forEach(r => {
+        if (r.corte_jornada === 'inicia' || !grupos.length) { grupos.push([r]); return; }
+        if (r.corte_jornada === 'continua') { grupos[grupos.length - 1].push(r); return; }
+        // A la jornada más cercana del día, si alguno de sus puntos queda a menos del límite
+        let mejor = null, dMejor = Infinity;
+        grupos.forEach(g => g.forEach(o => { const d = this.distancia(r, o); if (d < dMejor) { dMejor = d; mejor = g; } }));
+        if (mejor && dMejor <= lim) mejor.push(r); else grupos.push([r]);
       });
       const [fecha, cabo] = clave.split('|');
-      partes.forEach((p, n) => salida.push({
-        clave: clave + '|' + (n + 1), fecha, cabo_id: cabo, parte: n + 1, partes: partes.length,
-        registros: p, totalDia: regs.length
+      grupos.forEach((g, n) => salida.push({
+        clave: clave + '|' + (n + 1), fecha, cabo_id: cabo, n: n + 1, total: grupos.length,
+        registros: g, primer_id: g[0].id
       }));
     });
     return salida.sort((a, b) => b.fecha.localeCompare(a.fecha) ||
-      SRP.ref.nombreUsuario(a.cabo_id).localeCompare(SRP.ref.nombreUsuario(b.cabo_id), 'es') || a.parte - b.parte);
+      SRP.ref.nombreUsuario(a.cabo_id).localeCompare(SRP.ref.nombreUsuario(b.cabo_id), 'es') || a.n - b.n);
   },
 
-  claveCierre(j) { return SRP.reportes.claveCierre(j.fecha, j.cabo_id); },
+  // Las jornadas de un día y un cabo, en orden (para Reportes)
+  async jornadasDe(fecha, caboId) {
+    const regs = (await this.registrosAlcance()).filter(r => r.fecha_plantacion === fecha && r.cabo_id === caboId);
+    return this.agrupar(regs).sort((a, b) => a.n - b.n);
+  },
 
-  async cierreDe(j) { return (await SRP.almacen.uno('cierres', this.claveCierre(j))) || null; },
+  claveCierre(j) { return SRP.reportes.claveCierre(j.fecha, j.cabo_id, j.n); },
+
+  /* El cierre de la jornada: por su llave y, si no está, por el id de su primer punto (el número
+     de jornada pudo cambiar si se eliminó una jornada anterior completa) o, para lo guardado antes
+     del bloque 60, por la llave del día sin número. */
+  async cierreDe(j) { return SRP.reportes.cierreDeJornada(j); },
 
   // El sitio: lo que escribió la cuadrilla en el cierre o, si no, la colonia más frecuente
   nombreSitio(j, cierre) {
     const escrito = cierre && cierre.sitio ? cierre.sitio.split('\n')[0].trim() : '';
-    if (escrito && j.partes === 1) return escrito.length > 60 ? escrito.slice(0, 57) + '…' : escrito;
+    if (escrito) return escrito.length > 60 ? escrito.slice(0, 57) + '…' : escrito;
     const cuenta = {};
     j.registros.forEach(r => { if (r.colonia) cuenta[r.colonia] = (cuenta[r.colonia] || 0) + 1; });
     const top = Object.keys(cuenta).sort((a, b) => cuenta[b] - cuenta[a])[0];
@@ -167,7 +176,7 @@ SRP.jornadas = {
   estado(j, avisos, cierre) {
     const pend = this.pendientes(j, avisos, cierre).length;
     const plantados = cierre && Number.isInteger(cierre.arboles_plantados) ? cierre.arboles_plantados : null;
-    const reg = j.totalDia;
+    const reg = j.registros.length;
     if (pend) return { tono: 'rev', texto: pend === 1 ? '1 punto por revisar' : pend + ' puntos por revisar' };
     if (plantados === null) return { tono: 'neutro', texto: 'Sin conteo de la cuadrilla' };
     if (plantados === reg) return { tono: 'ok', texto: 'Revisada: ' + reg + ' de ' + plantados };
@@ -235,12 +244,13 @@ SRP.jornadas = {
       const est = this.estado(j, this.avisos(j), cierre);
       const n = j.registros.length;
       const especies = new Set(j.registros.map(r => this.claveEspecie(r))).size;
-      const dia = (j.fecha === hoy ? 'Hoy · ' : '') + SRP.envio.diaEnLetra(j.fecha).split(' ')[0].slice(0, 3) + ' ' + SRP.util.formatearFecha(j.fecha);
+      const dia = (j.fecha === hoy ? 'Hoy · ' : '') + SRP.envio.diaEnLetra(j.fecha).split(' ')[0].slice(0, 3) + ' ' + SRP.util.formatearFecha(j.fecha) +
+        (j.total > 1 ? ' · Jornada ' + j.n + ' de ' + j.total : '');
       html.push('<li class="jornada" data-clave="' + esc(j.clave) + '"><button type="button" class="jornada-boton" aria-label="Revisar la jornada del ' +
         esc(SRP.util.formatearFecha(j.fecha)) + ' en ' + esc(this.nombreSitio(j, cierre)) + ', ' + n + (n === 1 ? ' árbol' : ' árboles') + ', ' + esc(est.texto) + '">' +
         this.miniatura(j) +
         '<span class="jornada-datos"><span class="jornada-dia">' + esc(dia) + '</span>' +
-        '<span class="jornada-sitio">' + esc(this.nombreSitio(j, cierre)) + (j.partes > 1 ? ' (sitio ' + j.parte + ' de ' + j.partes + ')' : '') + '</span>' +
+        '<span class="jornada-sitio">' + esc(this.nombreSitio(j, cierre)) + '</span>' +
         '<span class="jornada-cifras">' + esc(this.alcaldiasDe(j).join(', ')) + ' · ' + n + (n === 1 ? ' árbol' : ' árboles') + ' · ' +
         especies + (especies === 1 ? ' especie' : ' especies') + (variosAutores ? ' · ' + esc(SRP.ref.nombreUsuario(j.cabo_id)) : '') + '</span>' +
         '<span class="insignia-jornada" data-tono="' + est.tono + '">' + esc(est.texto) + '</span></span></button></li>');
@@ -306,16 +316,17 @@ SRP.jornadas = {
     const regs = j.registros;
     const h = r => SRP.envio.hora(r.fecha_registro);
 
-    this.el('jornada-titulo').textContent = this.nombreSitio(j, cierre) + (j.partes > 1 ? ' (sitio ' + j.parte + ' de ' + j.partes + ')' : '');
-    this.el('jornada-sub').textContent = SRP.envio.diaEnLetra(j.fecha).split(' ')[0] + ' ' + SRP.util.formatearFecha(j.fecha) + ' · ' +
+    this.el('jornada-titulo').textContent = this.nombreSitio(j, cierre);
+    this.el('jornada-sub').textContent = SRP.envio.diaEnLetra(j.fecha).split(' ')[0] + ' ' + SRP.util.formatearFecha(j.fecha) +
+      (j.total > 1 ? ' · Jornada ' + j.n + ' de ' + j.total : '') + ' · ' +
       SRP.ref.nombreUsuario(j.cabo_id) + ' · ' + h(regs[0]) + (regs.length > 1 ? '–' + h(regs[regs.length - 1]) : '') +
       (this.alcaldiasDe(j).length ? ' · ' + this.alcaldiasDe(j).join(', ') : '');
 
     // Conciliación: se compara con todo lo del día del cabo, aunque se haya partido en sitios
     const inp = this.el('jornada-plantados');
     if (document.activeElement !== inp) inp.value = cierre && Number.isInteger(cierre.arboles_plantados) ? cierre.arboles_plantados : '';
-    this.el('jornada-registrados').textContent = j.totalDia;
-    this.el('jornada-registrados-etiqueta').textContent = j.partes > 1 ? 'Registrados en el día (' + j.partes + ' sitios)' : 'Registrados en el sistema';
+    this.el('jornada-registrados').textContent = j.registros.length;
+    this.el('jornada-registrados-etiqueta').textContent = 'Registrados en esta jornada';
     this.pintarConciliacion();
 
     const puedeEditar = r => SRP.permisos.puedeEditar(u, r, SRP.ref.usuarioPorId);
@@ -325,19 +336,32 @@ SRP.jornadas = {
       const av = avisos[r.id] || [];
       const revisado = av.length && revisados.includes(r.id);
       const tono = !av.length || revisado ? '' : av.some(a => a.tipo === 'lejos') ? 'err' : 'rev';
-      const detalle = av.length
+      const corte = r.corte_jornada === 'inicia' ? '<span class="aviso-punto" data-tono="">Inicia jornada (a mano)</span>'
+        : r.corte_jornada === 'continua' ? '<span class="aviso-punto" data-tono="">Unido a mano</span>' : '';
+      const detalle = corte + (av.length
         ? av.map(a => '<span class="aviso-punto" data-tono="' + (revisado ? 'ok' : tono) + '">' + esc(a.texto) + '</span>').join('') +
           (revisado ? '<span class="aviso-punto" data-tono="ok">Revisado</span>' : '')
-        : (r.punto_origen === 'gps' && r.gps_precision_m ? 'GPS ±' + Math.round(r.gps_precision_m) + ' m' : SRP.mapa.textoOrigen(r.punto_origen, r.gps_precision_m));
+        : (r.punto_origen === 'gps' && r.gps_precision_m ? 'GPS ±' + Math.round(r.gps_precision_m) + ' m' : SRP.mapa.textoOrigen(r.punto_origen, r.gps_precision_m)));
       // Color por significado con icono (Norma 8.4, D116): ver neutro, confirmar verde, eliminar rojo
       const I = SRP.ICONOS.svg;
       const acciones = ['<button type="button" class="btn btn-texto" data-accion="ver" data-id="' + r.id + '">' + I('ver', 18) + '<span>Ver</span></button>'];
+      // Corregir el reparto en jornadas (D117): desde la tuerca, para no cargar la fila
+      const items = [];
+      if (puedeEditar(r)) {
+        if (r.corte_jornada === 'inicia') items.push({ accion: 'corte-quitar', texto: 'Quitar la separación de jornada', icono: 'jornadas' });
+        else if (r.corte_jornada === 'continua') items.push({ accion: 'corte-quitar', texto: 'Deshacer la unión de jornadas', icono: 'jornadas' });
+        else {
+          if (i > 0) items.push({ accion: 'corte-inicia', texto: 'Iniciar otra jornada aquí', icono: 'jornadas' });
+          if (i === 0 && this.jornada.n > 1) items.push({ accion: 'corte-continua', texto: 'Unir con la jornada anterior', icono: 'jornadas' });
+        }
+      }
+      const tuerca = items.length ? SRP.ICONOS.menuAcciones(r.id, 'punto ' + (i + 1), items) : '';
       if (av.length && !revisado && puedeEditar(r)) acciones.push('<button type="button" class="btn btn-texto btn-texto-exito" data-accion="bien" data-id="' + r.id + '">' + I('palomita', 18) + '<span>Está bien</span></button>');
       if (av.some(a => a.tipo === 'duplicado') && !revisado && puedeEliminar(r)) acciones.push('<button type="button" class="btn btn-texto btn-texto-peligro" data-accion="eliminar" data-id="' + r.id + '">' + I('basura', 18) + '<span>Eliminar</span></button>');
       return '<li class="punto-jornada" data-id="' + r.id + '"><span class="punto-num" data-tono="' + tono + '" aria-hidden="true">' + (i + 1) + '</span>' +
         '<div class="punto-datos"><span class="punto-especie"><span class="oculto-visual">Punto ' + (i + 1) + ': </span>' + esc(esp.comun) + '</span>' +
         '<span class="punto-detalle">' + esc(h(r)) + ' · ' + detalle + '</span></div>' +
-        '<div class="punto-acciones">' + acciones.join('') + '</div></li>';
+        '<div class="punto-acciones">' + acciones.join('') + tuerca + '</div></li>';
     }).join('');
 
     const p = SRP.permisos.de(u);
@@ -350,7 +374,7 @@ SRP.jornadas = {
     const j = this.jornada;
     const v = this.el('jornada-plantados').value;
     const plantados = v === '' ? null : Number(v);
-    const reg = j.totalDia;
+    const reg = j.registros.length;
     const pend = this.pendientes(j, this.avisosActuales || {}, this.cierre).length;
     const caja = this.el('jornada-conciliacion');
     const res = this.el('jornada-resultado');
@@ -424,6 +448,21 @@ SRP.jornadas = {
     if (b.dataset.accion === 'ver') { this.volverAlDetalle = true; SRP.registros.verDetalle(r); }
     if (b.dataset.accion === 'bien') await this.marcarRevisado(r);
     if (b.dataset.accion === 'eliminar') { this.volverAlDetalle = true; await SRP.registros.eliminar(r); }
+    if (b.dataset.accion.startsWith('corte-')) await this.corte(r, b.dataset.accion.slice(6));
+  },
+
+  /* Corrección a mano del reparto (D117): queda en el registro y en su historial. Después la
+     jornada se recalcula; si la que se estaba viendo cambió de número, se abre la que tiene el punto. */
+  async corte(r, tipo) {
+    const valor = tipo === 'quitar' ? null : tipo;
+    const nuevo = Object.assign({}, r, { corte_jornada: valor, fecha_ultima_edicion: SRP.util.ahoraISO(), editado_por_id: SRP.sesion.usuario.id });
+    const detalle = valor === 'inicia' ? 'Inicia otra jornada en este punto' : valor === 'continua' ? 'Se une a la jornada anterior' : 'Se quitó la corrección de jornada';
+    await SRP.almacen.guardarConBitacora('plantaciones', nuevo, SRP.bitacora.entrada('EDITADO', 'plantacion', r.id, detalle));
+    if (SRP.envio.simulado()) { SRP.envio.marcarCambios(r.id); SRP.envio.enviar({ silencioso: true }); }
+    await this.pintarLista(true);
+    const j = this.lista.find(x => x.registros.some(p => p.id === r.id));
+    SRP.util.anunciar(detalle + '.');
+    if (j) { this.actual = j.clave; this.jornada = j; await this.pintarDetalle(true); } else await this.cerrar();
   },
 
   /* ---------- Lo que se guarda en el cierre del día ---------- */
@@ -437,7 +476,9 @@ SRP.jornadas = {
       id: this.claveCierre(j), es_ficticio: SRP.CONFIG.ES_FICTICIO, fecha: j.fecha, cabo_id: j.cabo_id,
       encargado_id: j.cabo_id, creado_por_id: u.id, fecha_creacion: ahora, arboles_plantados: null, puntos_revisados: []
     }, Object.fromEntries(SRP.reportes.CAMPOS.map(k => [k, ''])));
-    const cierre = Object.assign({}, base, cambios, { editado_por_id: u.id, fecha_ultima_edicion: ahora });
+    // La llave y el primer punto se ponen al día: un cierre hallado por su primer punto adopta el número actual
+    const cierre = Object.assign({}, base, cambios, { id: this.claveCierre(j), jornada_n: j.n, primer_registro_id: j.primer_id,
+      editado_por_id: u.id, fecha_ultima_edicion: ahora });
     await SRP.almacen.guardarConBitacora('cierres', cierre, SRP.bitacora.entrada(previo ? 'EDITADO' : 'CREADO', 'cierre', cierre.id, detalle));
     return cierre;
   },
@@ -493,7 +534,7 @@ SRP.jornadas = {
   irAlReporte() {
     const j = this.jornada;
     this.el('pdf-dia').value = j.fecha;
-    SRP.reportes.caboPedido = j.cabo_id;
+    SRP.reportes.pedido = { cabo_id: j.cabo_id, n: j.n };
     SRP.app.mostrarVista('reportes');
   }
 };
