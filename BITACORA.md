@@ -1022,3 +1022,16 @@ retira tras usar el menú para no alterar la prueba de énfasis.
 
 **Verificación:** 301 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.31.
+
+## Bloque 51 — Navegación abajo, estado de cuentas y forma de crecimiento (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.32.
+
+**Qué cambió (D107).** CSS: barra de secciones fija abajo en ≤700 px con `--alto-nav`, barra de
+guardar encima, `body` con relleno inferior; `campos-grises` extiende el estilo de los filtros
+al cierre; `chips-multi`; leyenda y fieldset sin margen. `index.html`: `#usr-estado`,
+`#cat-forma-botones` con el campo `#cat-forma` oculto, `campos-grises` en el cierre.
+`catalogos.js`: `FORMAS`, `pintarFormas()`, `alternarForma()`. `usuarios.js`: filtro por estado.
+Pruebas: siete comprobaciones nuevas.
+
+**Verificación:** 308 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.32.

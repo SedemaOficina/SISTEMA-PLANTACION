@@ -4,12 +4,19 @@
 window.SRP = window.SRP || {};
 
 SRP.usuarios = {
-  editando: null, uso: {},
+  editando: null, uso: {}, estado: 'todos',
 
   el(id) { return document.getElementById(id); },
 
   iniciar() {
     this.el('usr-buscar').addEventListener('input', () => this.pintar());
+    // Atajos de estado de la cuenta (D107)
+    this.el('usr-estado').addEventListener('click', (e) => {
+      const b = e.target.closest('.chip'); if (!b) return;
+      this.estado = b.dataset.estado;
+      this.el('usr-estado').querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', String(c === b)));
+      this.pintar();
+    });
     this.el('btn-usr-agregar').addEventListener('click', () => this.abrirFormulario(null));
     this.el('form-usuario').addEventListener('submit', (e) => { e.preventDefault(); this.guardar(); });
     // El campo Coordinador sólo tiene sentido para un cabo. Sin saltos de foco automáticos (D82)
@@ -40,6 +47,7 @@ SRP.usuarios = {
     const q = SRP.util.normalizar(this.el('usr-buscar').value);
     const yo = SRP.sesion.usuario.id;
     const lista = SRP.ref.usuarios
+      .filter(u => this.estado === 'todos' || (this.estado === 'activos') === !!u.activo)
       .filter(u => !q || [SRP.util.nombreCompleto(u), u.correo, SRP.ref.nombreCatalogo(u.area_id)]
         .some(t => SRP.util.normalizar(t).includes(q)))
       .sort((a, b) => SRP.util.nombreCompleto(a).localeCompare(SRP.util.nombreCompleto(b), 'es'));
@@ -77,7 +85,8 @@ SRP.usuarios = {
     this.el('tabla-usuarios').innerHTML = cab + '<tbody>' + (filas || '<tr><td colspan="9">Sin resultados.</td></tr>') + '</tbody>';
     SRP.util.ordenable(this.el('tabla-usuarios'));
     const total = SRP.ref.usuarios.length;
-    this.el('usr-cuenta').textContent = (q ? lista.length + ' de ' : '') + total + (total === 1 ? ' usuario' : ' usuarios');
+    const filtrado = q || this.estado !== 'todos';
+    this.el('usr-cuenta').textContent = (filtrado ? lista.length + ' de ' : '') + total + (total === 1 ? ' usuario' : ' usuarios');
   },
 
   llenarListas(usuario) {

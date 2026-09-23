@@ -668,3 +668,18 @@
   vacíos) quedan en gris medio, sin negrita y en cursiva, para no confundirse con lo escrito. Se
   recuerda en el dispositivo; si el teléfono ya pide más contraste en sus ajustes de
   accesibilidad y la persona no ha elegido, arranca activado. Elegida por Liber (M12).
+
+## Bloque 51 — Navegación abajo, estado de cuentas y forma de crecimiento
+
+- **D107. Cinco ajustes elegidos por Liber de la lista pendiente.** (1) En teléfono (≤700 px)
+  las secciones van en una barra fija abajo, al alcance del pulgar, con la sección activa marcada
+  por un filete guinda arriba; la barra de «Revisar y guardar» sube para quedar encima de ella y
+  respeta la zona segura del iPhone. En computadora siguen arriba. (2) Usuarios lleva atajos
+  Activos / Inactivos / Todos (arranca en Todos) y el contador refleja el filtro. (3) La forma de
+  crecimiento de una especie se elige con seis botones de opción múltiple (Árbol, Arbusto, Palma,
+  Sufrútice, Liana, Hierba, tomados del catálogo real); se guarda igual que antes, como texto
+  separado por comas, y una forma distinta que ya traiga el catálogo se conserva como botón.
+  (4) Los campos del cierre del reporte son cajas grises como los filtros (clase
+  `campos-grises`), con sus etiquetas normales. (5) La etiqueta «Fotografía» se alinea con las
+  demás: el fieldset y su leyenda traían margen y relleno del navegador. 23-09-2026
+  (M02, M57, M58, M40, M26).

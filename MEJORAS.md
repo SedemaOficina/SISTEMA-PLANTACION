@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.31 (Bloque 50)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.32 (Bloque 51)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -60,19 +60,19 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M56 | Revisión Catálogos/Usuarios | Nota de una línea | Media | 0.6.30 (B49) | «Lo que tiene registros no se elimina: se desactiva.» | Encabezado de Catálogos |
 | M59 | Petición de Liber | La ficha «Hoy» ya no se repite con el panel abierto | Media | 0.6.30 (B49) | Registros con el panel abierto: no hay ficha bajo «Filtros»; al plegarlo aparece | Registros con «Hoy» elegido |
 | M12 | Lista de diseño #11 | Modo sol (alto contraste) | Media | 0.6.31 (B50) | Icono de usuario › «Modo sol (alto contraste)»: el texto pasa a negro, los campos a blanco con borde y el atajo activo a guinda relleno; se recuerda al volver a abrir | Registros y formulario con el modo activo, y el menú con el interruptor |
+| M02 | Lista de diseño #1 | Navegación inferior en teléfono | Alta | 0.6.32 (B51) | En el teléfono, las secciones (Nuevo registro, Registros, Reportes…) están abajo; la activa lleva filete guinda arriba. «Revisar y guardar» queda encima de la barra | Cualquier pantalla con la barra abajo |
+| M57 | Revisión Catálogos/Usuarios | Atajos Activos / Inactivos / Todos en Usuarios | Media | 0.6.32 (B51) | Usuarios: tocar «Activos» deja sólo las cuentas activas y el contador dice «3 de 3 usuarios» | Usuarios con «Activos» |
+| M58 | Revisión Catálogos/Usuarios | Forma de crecimiento con botones | Baja | 0.6.32 (B51) | Editar una especie: seis botones (Árbol, Arbusto, Palma, Sufrútice, Liana, Hierba); se marcan varios | Ventana de especie |
+| M40 | iPhone · Cierre | Campos del cierre en caja gris | Baja | 0.6.32 (B51) | «Datos de cierre del día»: los campos son cajas grises; al tocarlos se ponen blancos con borde guinda | Cierre |
+| M26 | iPhone · Formulario | Etiqueta «Fotografía» alineada | Baja | 0.6.32 (B51) | En Nuevo registro, «Fotografía» arranca en el mismo borde que las demás etiquetas | Formulario |
 
 ## 2. Por hacer
 
 | # | Origen | Mejora | Prioridad | Estado | Nota |
 |---|---|---|---|---|---|
-| M40 | iPhone · Cierre #2 | Campos del cierre con el estilo de filtros (caja gris) | Baja | Propuesto | El borde guinda al tocar ya aplica desde 0.6.24 (D98) |
 | M44 | PDF #4 | No partir un apartado corto (Por programa) a la página siguiente cuando cabe | Baja | Propuesto | — |
-| M02 | Lista de diseño #1 | Navegación inferior en teléfono | Alta | Propuesto | Bloque aparte: cambia la estructura |
 | M22 | iPhone · Nuevo registro #7 | Crédito de Esri más corto | Baja | Pendiente | Con la revisión del mapa |
 | M23 | iPhone · Nuevo registro #8 | Menos autollenado de Safari | Baja | Pendiente | Con la revisión del mapa; efecto limitado |
-| M26 | iPhone · Formulario lleno #2 | Alinear la etiqueta «Fotografía» | Baja | Propuesto | — |
-| M57 | Revisión Catálogos/Usuarios | Atajos Activos / Inactivos / Todos en Usuarios | Media | Propuesto | — |
-| M58 | Revisión Catálogos/Usuarios | «Forma de crecimiento» con botones (Árbol, Arbusto, Palma, Otra) | Baja | Propuesto | — |
 | M45 | Revisión en computadora | Equilibrio en computadora: mapa a la izquierda y formulario a la derecha en Nuevo registro; Reportes centrado | Media | Propuesto | Hoy quedan cargados a la izquierda |
 | M46 | Android | Revisión corta en Android: versión, botón «atrás» con ventanas abiertas, calendario y hora, especies con teclado, precisión, foto, compartir PDF, aviso | Alta | Pendiente | Espera capturas |
 
@@ -90,4 +90,4 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 45 hechas · 10 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 50 hechas · 5 por hacer · 2 revisadas · 2 descartadas.

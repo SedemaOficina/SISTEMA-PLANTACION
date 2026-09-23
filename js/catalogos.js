@@ -38,6 +38,9 @@ SRP.catalogos = {
       e.target.setSelectionRange(pos, pos);
     });
     this.el('btn-cat-agregar').addEventListener('click', () => this.abrirFormulario(null));
+    this.el('cat-forma-botones').addEventListener('click', (e) => {
+      const b = e.target.closest('.chip'); if (b) this.alternarForma(b.dataset.forma);
+    });
     this.el('form-catalogo').addEventListener('submit', (e) => { e.preventDefault(); this.guardar(); });
     this.el('tabla-catalogo').addEventListener('click', (e) => {
       // Tocar la tarjeta (fuera de la tuerca) abre la edición (D105)
@@ -105,6 +108,27 @@ SRP.catalogos = {
     this.el('cat-cuenta').textContent = q ? items.length + ' de ' + total + ' ' + pal(total) : total + ' ' + pal(total);
   },
 
+  /* FORMA DE CRECIMIENTO CON BOTONES (D107). Una especie puede tener varias (Árbol, Arbusto), así
+     que cada botón se marca o desmarca por su cuenta. El texto se guarda igual que antes, separado
+     por comas, en el orden de la lista; una forma que ya traiga el catálogo y no esté en la lista
+     se conserva como botón. */
+  FORMAS: ['Árbol', 'Arbusto', 'Palma', 'Sufrútice', 'Liana', 'Hierba'],
+
+  pintarFormas() {
+    const actuales = this.el('cat-forma').value.split(',').map(t => t.trim()).filter(Boolean);
+    const todas = this.FORMAS.concat(actuales.filter(f => !this.FORMAS.includes(f)));
+    this.el('cat-forma-botones').innerHTML = todas.map(f =>
+      '<button type="button" class="chip" data-forma="' + SRP.util.escapar(f) + '" aria-pressed="' + actuales.includes(f) + '">' + SRP.util.escapar(f) + '</button>').join('');
+  },
+
+  alternarForma(forma) {
+    const orden = [...this.el('cat-forma-botones').querySelectorAll('.chip')].map(b => b.dataset.forma);
+    const actuales = new Set(this.el('cat-forma').value.split(',').map(t => t.trim()).filter(Boolean));
+    if (actuales.has(forma)) actuales.delete(forma); else actuales.add(forma);
+    this.el('cat-forma').value = orden.filter(f => actuales.has(f)).join(', ');
+    this.el('cat-forma-botones').querySelectorAll('.chip').forEach(b => b.setAttribute('aria-pressed', String(actuales.has(b.dataset.forma))));
+  },
+
   // Si la clave propuesta ya existe, agrega _2, _3… hasta encontrar una libre
   claveLibre(base) {
     if (!base) return '';
@@ -142,6 +166,7 @@ SRP.catalogos = {
     this.el('cat-distribucion').value = item ? item.tipo_distribucion || 'Nativa' : 'Nativa';
     this.el('cat-otros-nombres').value = item ? item.otros_nombres_comunes || '' : '';
     this.el('cat-forma').value = item ? item.formadecrecimiento || '' : '';
+    this.pintarFormas();
     this.el('cat-snib').value = item ? item.id_snib || '' : '';
     this.el('cat-enciclovida').value = item && item.id_enciclovida !== null && item.id_enciclovida !== undefined ? String(item.id_enciclovida) : '';
     this.el('cat-errores').hidden = true;
