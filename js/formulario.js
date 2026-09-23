@@ -481,18 +481,23 @@ SRP.formulario = {
           SRP.bitacora.entrada('EDITADO', 'plantacion', nuevo.id, cambiados.length ? 'Campos: ' + cambiados.join(', ') : 'Sin cambios en los datos'));
         this.el('dlg-resumen').close();
         this.limpiar();
-        SRP.util.anunciar('Cambios guardados.');
         SRP.app.mostrarVista('registros');
+        if (SRP.envio.simulado()) {
+          // Un registro enviado y luego editado vuelve a la cola (D111)
+          SRP.envio.marcarCambios(nuevo.id);
+          const res = await SRP.envio.enviar({ silencioso: true });
+          SRP.util.anunciar(res && res.enviados ? 'Cambios guardados y enviados al servidor (simulado).'
+            : 'Cambios guardados en el teléfono. Se enviarán solos cuando haya señal.');
+        } else {
+          SRP.util.anunciar('Cambios guardados.');
+        }
       } else {
         const nuevo = this.registroPrevisto(ahora);
         await SRP.almacen.guardarConBitacora('plantaciones', nuevo, SRP.bitacora.entrada('CREADO', 'plantacion', nuevo.id));
         this.el('dlg-resumen').close();
         this.mostrarGuardado(nuevo);
-        // Con datos de prueba y conexión, el servidor simulado le da folio en seguida (D110)
-        if (await SRP.folio.emitirPendientes()) {
-          const r = await SRP.almacen.uno('plantaciones', nuevo.id);
-          if (r && SRP.folio.valido(r.folio)) this.el('dlg-guardado-id').textContent = 'Folio: ' + SRP.folio.textoLargo(r) + ' · Identificador: ' + r.id;
-        }
+        // Con datos de prueba, el registro sale en seguida si hay señal (D111) y recibe folio (D110)
+        if (SRP.envio.simulado()) await this.enviarTrasGuardar(nuevo.id);
       }
     } catch (err) {
       SRP.util.anunciar('No se pudo guardar: ' + err.message + '. Sus datos siguen en pantalla; intente de nuevo.', 'alerta');
@@ -513,14 +518,39 @@ SRP.formulario = {
     this.el('dlg-guardado-id').textContent = 'Identificador: ' + registro.id;
     this.el('dlg-guardado').showModal();
     this.el('btn-registro-nuevo').focus();
-    // Quedó en este dispositivo y cuántos van (D83); la pastilla del encabezado se pone al día
+    // Quedó en este dispositivo y cuántos van (D83); la pastilla del encabezado se pone al día.
+    // Con el envío simulado lo dice enviarTrasGuardar (D111)
     this.el('dlg-guardado-dispositivo').textContent = '';
+    if (SRP.envio.simulado()) return;
     SRP.conexion.refrescar().then(async () => {
       const n = await SRP.conexion.contarGuardados();
       if (n === null) return;
       this.el('dlg-guardado-dispositivo').textContent = 'Quedó guardado en este dispositivo. ' +
         (n === 1 ? 'Es el primero.' : 'Ya son ' + n + '.') + (SRP.conexion.enLinea() ? '' : ' No hace falta internet para seguir.');
     });
+  },
+
+  /* Lo que dice «Registro guardado» con el envío simulado (D111): «Enviando…» mientras sale, y
+     luego enviado con su hora de recepción, o guardado en el teléfono y cuántos esperan. */
+  async enviarTrasGuardar(id) {
+    const caja = this.el('dlg-guardado-dispositivo');
+    const envio = SRP.envio;
+    if (SRP.conexion.enLinea()) { caja.dataset.envio = 'enviando'; caja.textContent = 'Enviando al servidor…'; }
+    await envio.enviar({ silencioso: true });
+    const r = await SRP.almacen.uno('plantaciones', id);
+    if (!r) return;
+    const e = envio.leer();
+    if (envio.estado(r, e) === 'recibido') {
+      this.el('dlg-guardado-id').textContent = 'Folio: ' + SRP.folio.textoLargo(r) + ' · Identificador: ' + r.id;
+      caja.dataset.envio = 'recibido';
+      caja.textContent = 'Enviado al servidor (simulado). Recepción confirmada ' + envio.cuando(e.recibidos[r.id]) + '.';
+    } else {
+      const pend = await envio.pendientesPropios();
+      const n = pend ? pend.length : 1;
+      caja.dataset.envio = 'por_enviar';
+      caja.textContent = 'Sin conexión: quedó guardado en el teléfono y se enviará solo cuando haya señal. ' +
+        (n === 1 ? 'Es el único por enviar.' : 'Registros por enviar: ' + n + '.') + ' Puede seguir registrando.';
+    }
   },
 
   /* El formulario arranca en blanco en cada registro. Antes conservaba programa, fecha y

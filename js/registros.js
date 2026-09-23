@@ -285,7 +285,12 @@ SRP.registros = {
     this.mostrados = agregar ? this.mostrados + SRP.CONFIG.LISTA_PAGINA : SRP.CONFIG.LISTA_PAGINA;
     const pagina = this.filtrados.slice(0, this.mostrados);
     const esc = SRP.util.escapar;
+    // Envío simulado (D111): la tarjeta dice si el registro espera envío; enviado no lleva marca
+    const envio = SRP.envio.simulado() ? SRP.envio.leer() : null;
+    const MARCAS = { por_enviar: 'Por enviar', cambios: 'Cambios por enviar' };
     this.el('lista-registros').innerHTML = pagina.map(r => {
+      const est = envio && r.es_ficticio ? SRP.envio.estado(r, envio) : null;
+      const marca = MARCAS[est] ? '<span class="marca-envio">' + SRP.ICONOS.svg('sinSenal', 14) + MARCAS[est] + '</span>' : '';
       const esp = SRP.ref.especieDe(r);
       // Acciones en el menú de la tuerca (D94): sólo las que el perfil permite
       const items = [{ accion: 'ver', texto: 'Ver detalle', icono: 'ver' }];
@@ -301,8 +306,7 @@ SRP.registros = {
       return '<li class="registro" data-id="' + r.id + '">' + mini + '<div class="registro-datos">' +
         '<span class="registro-especie">' + esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : '') + '</span>' +
         '<span class="registro-lugar">' + esc(SRP.ref.alcaldia(r.alcaldia)) + (r.colonia ? ', ' + esc(r.colonia) : '') + '</span>' +
-        '<span class="registro-fecha">' + SRP.util.formatearFecha(r.fecha_plantacion) + (r.folio ? ' · ' + esc(r.folio) : '') +
-        (variosAutores ? ' · ' + esc(SRP.ref.nombreUsuario(r.cabo_id)) : '') + '</span>' +
+        '<span class="registro-fecha">' + this.htmlFecha(r, variosAutores) + '</span>' + marca +
         '</div><div class="registro-acciones">' + menu + '</div></li>';
     }).join('');
     const n = this.filtrados.length;
@@ -311,6 +315,43 @@ SRP.registros = {
       : 'Total: ' + n + (n === 1 ? ' registro' : ' registros') + (n > pagina.length ? ' (se muestran ' + pagina.length + ')' : '');
     this.pintarVacio(n === 0, propios, u);
     this.el('btn-mas').hidden = n <= pagina.length;
+  },
+
+  htmlFecha(r, variosAutores) {
+    const esc = SRP.util.escapar;
+    return SRP.util.formatearFecha(r.fecha_plantacion) + (r.folio ? ' · ' + esc(r.folio) : '') +
+      (variosAutores ? ' · ' + esc(SRP.ref.nombreUsuario(r.cabo_id)) : '');
+  },
+
+  /* Después de un envío en segundo plano (D111) la lista se corrige en su lugar: folio nuevo y
+     marca «Por enviar» fuera, sin repintar. Repintar cerraría el menú de la tuerca o movería la
+     lista bajo el dedo de quien la está usando. */
+  async refrescarEnvio() {
+    if (!this.visibles) return;
+    const u = SRP.sesion.usuario;
+    const variosAutores = SRP.permisos.de(u).alcance !== 'propios';
+    const e = SRP.envio.leer();
+    const frescos = {};
+    for (const r of await SRP.almacen.porIndice('plantaciones', 'estatus', 'activo')) frescos[r.id] = r;
+    const cambiar = lista => (lista || []).forEach((r, i) => { if (frescos[r.id]) lista[i] = frescos[r.id]; });
+    cambiar(this.visibles); cambiar(this.filtrados);
+    this.el('lista-registros').querySelectorAll('li.registro').forEach(li => {
+      const r = frescos[li.dataset.id];
+      if (!r) return;
+      li.querySelector('.registro-fecha').innerHTML = this.htmlFecha(r, variosAutores);
+      const marca = li.querySelector('.marca-envio');
+      if (marca && r.es_ficticio && SRP.envio.estado(r, e) === 'recibido') marca.remove();
+    });
+  },
+
+  // La fila «Envío» del detalle (D111)
+  textoEnvio(r) {
+    const e = SRP.envio.leer();
+    const est = SRP.envio.estado(r, e);
+    if (est === 'por_enviar') return 'Guardado en el teléfono, por enviar. Se envía solo cuando hay señal.';
+    if (est === 'cambios') return 'Enviado; los cambios posteriores están por enviar.';
+    const cuando = e.recibidos[r.id];
+    return 'Recibido por el servidor' + (cuando ? ' ' + SRP.envio.cuando(cuando) : '') + ' (simulado).';
   },
 
   /* Estado vacío con salida (D96): en lugar de pedir «Toque Todos», el aviso trae el botón que
@@ -382,6 +423,7 @@ SRP.registros = {
       ['Folio', '<span class="folio-provisional">' + esc(SRP.folio.textoLargo(r)) + '</span>'],
       ['Identificador', '<span class="revision-id">' + esc(r.id) + '</span>']
     ];
+    if (SRP.envio.simulado() && r.es_ficticio) sistema.push(['Envío', esc(this.textoEnvio(r))]);
 
     const historial = await SRP.bitacora.deEntidad(r.id);
     const lineas = historial.length ? historial.map(h =>

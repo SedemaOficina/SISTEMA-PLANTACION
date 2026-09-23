@@ -402,8 +402,13 @@ with sync_playwright() as p:
     ok(pg.is_hidden('#dlg-resumen') and pg.is_visible('#dlg-guardado'),'al guardar se cierra la ficha y se abre el aviso')
     ok('Fresno' in pg.inner_text('#dlg-guardado-detalle'),'el aviso dice qué se guardó')
     ok(id1 in pg.inner_text('#dlg-guardado-id'),'se guardó con el identificador que mostró la ficha')
-    ok('en este dispositivo' in pg.inner_text('#dlg-guardado-dispositivo') and 'Es el primero' in pg.inner_text('#dlg-guardado-dispositivo'),'y dice que quedó en este dispositivo y cuántos van (D83): '+pg.inner_text('#dlg-guardado-dispositivo'))
-    ok('1 guardado' in pg.text_content('#conexion'),'la pastilla del encabezado ya cuenta 1: '+pg.text_content('#conexion').strip())
+    ok('Enviando al servidor' in pg.inner_text('#dlg-guardado-dispositivo') and pg.text_content('#conexion').strip()=='Enviando 1…' and pg.get_attribute('#conexion','data-estado')=='enviando',
+       'con señal el registro sale en seguida: el aviso y la pastilla dicen «Enviando…» (D111): '+pg.text_content('#conexion').strip())
+    pg.wait_for_timeout(1600)
+    ok('Enviado al servidor (simulado)' in pg.inner_text('#dlg-guardado-dispositivo') and 'Recepción confirmada hoy a las' in pg.inner_text('#dlg-guardado-dispositivo'),
+       'y luego que el servidor confirmó la recepción, con la hora (D111): '+pg.inner_text('#dlg-guardado-dispositivo'))
+    ok(re.search(r'Folio: [A-Z]{3}-\d{3}-\d{5} \(simulado\)', pg.inner_text('#dlg-guardado-id')) is not None,'con su folio (D110): '+pg.inner_text('#dlg-guardado-id'))
+    ok(pg.text_content('#conexion').strip()=='Con conexión · Al día' and pg.get_attribute('#conexion','data-estado')=='con','la pastilla queda «Al día» (D111)')
     pg.click('#btn-registro-nuevo'); pg.wait_for_timeout(500)
     ok(pg.is_hidden('#dlg-guardado'),'«Agregar registro nuevo» cierra el aviso')
     ok(pg.evaluate("document.activeElement.id")=='btn-ubicacion','y deja el foco en el botón de ubicación')
@@ -648,13 +653,15 @@ with sync_playwright() as p:
        'el archivo se llama «Reporte», el nombre de quien responde y la fecha del reporte, sin acentos ni espacios (D102): '+d.value.suggested_filename)
 
     # ---------- SIN SEÑAL Y RESPALDO (B25) ----------
-    ok(pg.text_content('#conexion').strip().startswith('Con conexión · ') and 'guardados' in pg.text_content('#conexion') and pg.locator('#conexion svg').count()==1 and pg.get_attribute('#conexion','data-estado')=='con','el encabezado dice el estado de la conexión y cuántos registros guarda, con icono y color (D83): '+pg.text_content('#conexion').strip())
+    ok(pg.text_content('#conexion').strip().startswith('Con conexión · ') and pg.locator('#conexion svg').count()==1 and pg.get_attribute('#conexion','data-estado')=='con','el encabezado dice el estado de la conexión y del envío, con icono y color (D83, D111): '+pg.text_content('#conexion').strip())
     pg.click('#conexion'); pg.wait_for_timeout(200)
     ok(pg.is_visible('#dlg-senal'),'y tocar la pastilla abre la guía de qué hacer sin internet (D80)')
     pg.click('#btn-senal-cerrar'); pg.wait_for_timeout(200)
     ok(pg.locator('#aviso-envio').count()==0 and pg.locator('#btn-ayuda-senal').count()==0,'el bloque «Registros en este dispositivo» ya no existe (D104)')
     pg.click('#conexion'); pg.wait_for_timeout(200)
     ok(pg.is_visible('#dlg-senal') and pg.locator('#dlg-senal li').count()==5,'la ayuda «¿Qué hacer sin internet?» tiene cinco pasos')
+    ok(pg.is_visible('#senal-cola') and 'Todo enviado' in pg.inner_text('#senal-cola-texto') and 'Último envío: hoy a las' in pg.inner_text('#senal-cola-texto') and 'se envían solos' in pg.inner_text('#senal-destino'),
+       'con el envío simulado la guía dice cómo va la cola y cuándo fue el último envío (D111): '+pg.inner_text('#senal-cola-texto'))
     pg.click('#btn-senal-cerrar'); pg.wait_for_timeout(200)
     # El worker guarda la app: sin red, la página vuelve a abrir
     listo=pg.evaluate("""async () => { const r = await navigator.serviceWorker.ready; for (let i=0;i<50;i++){ const ks = await caches.keys(); if (ks.length) { const c = await caches.open(ks[0]); const k = await c.keys(); if (k.length > 20) return { nombre: ks[0], n: k.length }; } await new Promise(r => setTimeout(r, 200)); } return null; }""")
@@ -664,7 +671,49 @@ with sync_playwright() as p:
     pg.reload(); pg.wait_for_timeout(1500)
     ok(pg.is_visible('#vista-registros') or pg.is_visible('#vista-registrar') or pg.is_visible('#form-acceso'),'sin red, la app vuelve a abrir desde el teléfono')
     ok(pg.evaluate("SRP.CONFIG.VERSION")==MARCA,'y es la misma versión')
-    ok(pg.text_content('#conexion').strip().startswith('Sin conexión · ') and 'guardados' in pg.text_content('#conexion') and pg.get_attribute('#conexion','data-estado')=='sin','el encabezado avisa que no hay señal, en dorado y con icono tachado, y sigue contando: '+pg.text_content('#conexion').strip())
+    ok(pg.text_content('#conexion').strip().startswith('Sin conexión · ') and pg.get_attribute('#conexion','data-estado')=='sin','el encabezado avisa que no hay señal, en dorado y con icono tachado: '+pg.text_content('#conexion').strip())
+    # ---------- ENVÍO SIMULADO (D111) ----------
+    # Un registro de ayer que nunca salió del teléfono
+    rid=pg.evaluate("""async () => { const u = SRP.sesion.usuario; const base = (await SRP.almacen.porIndice('plantaciones','estatus','activo')).find(r => r.cabo_id === u.id);
+      const ayer = new Date(Date.now() - 86400000).toISOString(); const id = SRP.util.generarId();
+      const r = Object.assign({}, base, { id, folio: null, folio_uga: null, folio_capa_version: null, folio_lat: null, folio_lng: null, fecha_registro: ayer, es_ficticio: true });
+      await SRP.almacen.guardarConBitacora('plantaciones', r, SRP.bitacora.entrada('CREADO','plantacion',id)); await SRP.envio.alCambiar(); return id; }""")
+    pg.wait_for_timeout(300)
+    ok(pg.text_content('#conexion').strip()=='Sin conexión · 1 por enviar' and pg.get_attribute('#conexion','data-estado')=='atraso',
+       'sin señal la pastilla cuenta lo que espera envío y se pone en rojo si hay atraso (D111): '+pg.text_content('#conexion').strip())
+    fr=pg.inner_text('#franja-envio-texto')
+    ok(pg.is_visible('#franja-envio') and fr.startswith('Hoy es ') and 'Tiene 1 registro sin enviar desde el ' in fr and 'Busque señal' in fr,'y la franja dice qué día es y desde cuándo no se envía (D111): '+fr)
+    pg.click('#btn-franja-enviar'); pg.wait_for_timeout(300)
+    ok('Sin conexión' in pg.inner_text('#aviso') and pg.get_attribute('#aviso','data-tipo')=='alerta','«Enviar ahora» sin señal explica que se enviará solo (D111): '+pg.inner_text('#aviso'))
+    pg.evaluate("SRP.app.mostrarVista('registros')"); pg.wait_for_timeout(500)
+    ok(pg.locator('#lista-registros li[data-id="%s"] .marca-envio' % rid).count()==1,'la tarjeta lleva la marca «Por enviar» (D111)')
+    ctx.set_offline(False); pg.wait_for_timeout(300)
+    ok(pg.text_content('#conexion').strip()=='Enviando 1…','al volver la señal sale solo, sin que nadie toque nada (D111)')
+    pg.wait_for_timeout(1700)
+    ok(pg.text_content('#conexion').strip()=='Con conexión · Al día' and pg.is_hidden('#franja-envio'),'y la pastilla queda «Al día» y la franja se va (D111)')
+    ok('1 registro enviado al servidor (simulado)' in pg.inner_text('#aviso'),'con aviso de recepción: '+pg.inner_text('#aviso'))
+    li='#lista-registros li[data-id="%s"]' % rid
+    ok(pg.locator(li+' .marca-envio').count()==0 and re.search(r'[A-Z]{3}-\d{3}-\d{5}', pg.inner_text(li+' .registro-fecha')) is not None,'la tarjeta pierde la marca y muestra su folio, sin repintar la lista (D111)')
+    pg.click(li); pg.wait_for_timeout(500)
+    ok('Recibido por el servidor hoy a las' in pg.inner_text('#dlg-detalle-cuerpo'),'el detalle dice cuándo lo recibió el servidor (D111)')
+    pg.keyboard.press('Escape'); pg.wait_for_timeout(300)
+    est=pg.evaluate("""async () => { SRP.envio.marcarCambios('%s'); const r = await SRP.almacen.uno('plantaciones','%s'); const a = SRP.envio.estado(r);
+      const f = r.folio; await SRP.envio.enviar({ silencioso: true }); const r2 = await SRP.almacen.uno('plantaciones','%s'); return [a, SRP.envio.estado(r2), r2.folio === f]; }""" % (rid,rid,rid))
+    ok(est==['cambios','recibido',True],'una edición posterior vuelve a la cola y se reenvía sin cambiar el folio (D111, R7): %s' % est)
+    # «Simular sin señal»: se comporta como sin conexión sin modo avión, y un corte a medio envío no da nada por recibido
+    pg.click('#btn-cuenta'); pg.wait_for_timeout(150)
+    ok(pg.is_visible('#btn-sin-senal') and pg.get_attribute('#btn-sin-senal','role')=='switch','el menú de cuenta trae «Simular sin señal (pruebas)» (D111)')
+    pg.click('#btn-sin-senal'); pg.wait_for_timeout(300)
+    ok(pg.text_content('#conexion').strip().startswith('Sin conexión') and pg.get_attribute('#btn-sin-senal','aria-checked')=='true','y al activarlo la app se comporta como sin señal (D111)')
+    pg.click('#btn-cuenta'); pg.wait_for_timeout(150); pg.click('#btn-sin-senal'); pg.wait_for_timeout(300)
+    cort=pg.evaluate("""async () => { SRP.envio.marcarCambios('%s'); const p = SRP.envio.enviar({ silencioso: true }); await new Promise(r => setTimeout(r, 200));
+      localStorage.setItem(SRP.CONFIG.CLAVE_SIN_SENAL_PRUEBA, '1'); const res = await p; const r = await SRP.almacen.uno('plantaciones','%s');
+      const est = SRP.envio.estado(r); SRP.envio.forzarSinSenal(false); await SRP.envio.esperar(1600); return [!!res.cortado, est]; }""" % (rid,rid))
+    ok(cort==[True,'cambios'],'si la señal se va a medio envío, nada se da por recibido y el registro sigue en la cola (D111): %s' % cort)
+    # El registro de ayer era sólo para esta prueba: se retira para no alterar las cuentas que siguen
+    pg.evaluate("async () => { const tx = SRP.almacen.db.transaction('plantaciones','readwrite'); tx.objectStore('plantaciones').delete('%s'); await new Promise(r => tx.oncomplete = r); }" % rid)
+    pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(300)
+    ctx.set_offline(True); pg.wait_for_timeout(200)
     pg.evaluate("SRP.app.mostrarVista('reportes')"); pg.wait_for_timeout(500)
     ctx.set_offline(False); pg.wait_for_timeout(300)
     pg.evaluate("SRP.conexion.refrescar()"); pg.wait_for_timeout(300)

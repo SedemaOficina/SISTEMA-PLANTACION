@@ -731,3 +731,23 @@
   «Folios SIMULADOS con datos de prueba: no valen para placas, rótulos ni oficios». Con
   `ES_FICTICIO` en falso nada de esto corre y D67–D68 rigen tal cual: folio nulo y PROVISIONAL
   hasta la Fase 2. Pedido por Liber, 23-09-2026.
+
+## Bloque 56 — Envío al servidor simulado con datos de prueba
+
+- **D111. Con datos de prueba se simula la cola de envío de la Fase 2.** Para ver en pruebas
+  cómo funcionará el envío, con `ES_FICTICIO` cada registro nace «por enviar» y sale solo en
+  cuanto hay señal: al guardar, al entrar, al volver la señal, al volver a la app y cada minuto
+  mientras haya pendientes; «Enviar ahora» lo fuerza. El servidor simulado tarda 1.2 s, confirma
+  la recepción y asigna el folio (D110). Si la señal se va a medio envío, nada se da por recibido.
+  Una edición posterior vuelve a la cola y se reenvía sin cambiar el folio (R7). Estados:
+  por enviar, cambios por enviar, recibido. Avisos: la pastilla del encabezado («Con conexión ·
+  Al día», «Sin conexión · 3 por enviar», «Enviando 3…», en rojo con atraso); «Registro guardado»
+  dice si se envió y a qué hora se confirmó o si quedó en el teléfono; una franja de atraso
+  («Hoy es miércoles 23 de septiembre. Tiene 5 registros sin enviar desde el lunes 21…») cuando
+  hay pendientes de días anteriores o, desde las 17:00, de hoy; la tarjeta lleva «Por enviar» y el
+  detalle la fila «Envío»; la guía «¿Qué hacer sin internet?» muestra la cola y el último envío.
+  El menú de cuenta trae «Simular sin señal (pruebas)» para probar sin modo avión. Límites, a
+  propósito: nada sale del teléfono; lo «recibido» se anota en `localStorage` del dispositivo
+  (`srp_envios_prueba`), no en la base, porque los dos campos de envío siguen pendientes para la
+  Fase 2 (esquema, pendientes). Con `ES_FICTICIO` en falso nada de esto corre y la pantalla dice
+  lo de D83. Pedido por Liber, 23-09-2026.

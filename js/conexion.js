@@ -25,12 +25,13 @@ SRP.conexion = {
 
   iniciar() {
     this.registrarWorker();
-    // Al volver la señal, el servidor simulado emite los folios pendientes (D110)
+    // Al volver la señal se envía la cola (D111); con ella, el servidor simulado emite los folios (D110)
     window.addEventListener('online', async () => {
-      this.refrescar();
-      if (await SRP.folio.emitirPendientes() && SRP.app.vista === 'registros') SRP.registros.preparar();
+      await this.refrescar();
+      await SRP.envio.pintarFranja();
+      SRP.envio.enviar();
     });
-    window.addEventListener('offline', () => this.refrescar());
+    window.addEventListener('offline', async () => { await this.refrescar(); await SRP.envio.pintarFranja(); });
     this.el('conexion').addEventListener('click', () => this.el('dlg-senal').showModal());
     this.el('btn-respaldo').addEventListener('click', () => { SRP.app.menuCuenta(false); this.respaldar(); });
     const restaurar = this.el('archivo-restaurar');
@@ -45,11 +46,13 @@ SRP.conexion = {
     navigator.serviceWorker.register('sw.js?v=' + encodeURIComponent(SRP.CONFIG.VERSION)).catch(() => {});
   },
 
-  enLinea() { return navigator.onLine !== false; },
+  // «Simular sin señal» (pruebas, D111) manda sobre lo que diga el teléfono
+  enLinea() { return navigator.onLine !== false && !SRP.envio.sinSenalForzada(); },
 
   async refrescar() {
     const con = this.enLinea();
     const ind = this.el('conexion');
+    if (SRP.envio.simulado()) return this.refrescarSimulado(ind, con);
     const n = await this.contarGuardados();
     // En teléfono chico la palabra «guardados» se oculta por CSS (queda «Con conexión · 4»); la etiqueta accesible la dice completa (D93)
     const cuenta = n === null ? '' : ' · ' + n + '<span class="cx-palabra"> ' + (n === 1 ? 'guardado' : 'guardados') + '</span>';
@@ -59,6 +62,30 @@ SRP.conexion = {
     ind.setAttribute('aria-label', (con ? 'Con conexión' : 'Sin conexión, puede seguir registrando') +
       (n === null ? '' : ', ' + n + ' registros guardados en este dispositivo') + '. Abrir la guía de qué hacer sin internet');
     await this.refrescarAvisoEnvio();
+  },
+
+  /* La pastilla con el envío simulado (D111): en lugar de cuántos guarda el teléfono, cuántos
+     esperan envío. «Al día» cuando no queda nada; rojo cuando hay atraso (días anteriores o
+     pasada la hora de cierre); «Enviando 3…» mientras dura el envío. */
+  async refrescarSimulado(ind, con) {
+    const pend = await SRP.envio.pendientesPropios();
+    const n = pend === null ? null : pend.length;
+    const enviando = SRP.envio.enCurso;
+    const atraso = SRP.envio.atraso(pend);
+    let texto, etiqueta;
+    if (enviando) {
+      texto = 'Enviando ' + enviando + '…';
+      etiqueta = 'Enviando ' + enviando + (enviando === 1 ? ' registro' : ' registros') + ' al servidor';
+    } else {
+      const cuenta = n === null ? '' : n === 0 ? ' · Al día' : ' · ' + n + '<span class="cx-palabra"> por enviar</span>';
+      texto = (con ? 'Con conexión' : 'Sin conexión') + cuenta;
+      etiqueta = (con ? 'Con conexión' : 'Sin conexión, puede seguir registrando') +
+        (n === null ? '' : n === 0 ? ', todo enviado' : ', ' + n + (n === 1 ? ' registro por enviar' : ' registros por enviar')) +
+        (atraso ? ', con atraso' : '');
+    }
+    ind.innerHTML = SRP.ICONOS.svg(con ? 'senal' : 'sinSenal', 18) + '<span>' + texto + '</span>';
+    ind.dataset.estado = enviando ? 'enviando' : atraso ? 'atraso' : con ? 'con' : 'sin';
+    ind.setAttribute('aria-label', etiqueta + '. Abrir la guía de qué hacer sin internet');
   },
 
   /* Cuántos registros guarda este dispositivo, en el alcance de quien entró: un cabo cuenta los

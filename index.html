@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#9D2148">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.36">
-<link rel="preload" as="image" href="assets/encabezado-ru-movil.png?v=0.6.36">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.37">
+<link rel="preload" as="image" href="assets/encabezado-ru-movil.png?v=0.6.37">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.36">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.36">
-<link rel="stylesheet" href="css/estilos.css?v=0.6.36">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.37">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.37">
+<link rel="stylesheet" href="css/estilos.css?v=0.6.37">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -21,8 +21,8 @@
   <div class="encabezado-interior">
     <!-- Logotipo del Programa de Reforestación Urbana (D90): completo en pantalla ancha; en teléfono, el emblema y el nombre del programa -->
     <picture>
-      <source media="(max-width: 480px)" srcset="assets/encabezado-ru-movil.png?v=0.6.36">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru.png?v=0.6.36" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Reforestación Urbana">
+      <source media="(max-width: 480px)" srcset="assets/encabezado-ru-movil.png?v=0.6.37">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru.png?v=0.6.37" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» (D80) -->
@@ -41,6 +41,9 @@
             <!-- Sólo con datos de prueba; desaparece con ES_FICTICIO: false -->
             <!-- El respaldo vive aquí desde que se retiró el bloque del dispositivo de Reportes (D104) -->
             <button type="button" id="btn-respaldo" class="menu-opcion">Guardar respaldo</button>
+            <!-- Envío simulado (D111): se comporta como sin conexión sin poner el teléfono en modo avión -->
+            <button type="button" id="btn-sin-senal" class="menu-opcion" role="switch" aria-checked="false" hidden>
+              <span>Simular sin señal (pruebas)</span><span class="interruptor" aria-hidden="true"></span></button>
             <button type="button" id="btn-cambiar-perfil" class="menu-opcion" hidden>Cambiar usuario (pruebas)</button>
             <button type="button" id="btn-cerrar-sesion" class="menu-opcion">Cerrar sesión</button>
           </div>
@@ -49,6 +52,12 @@
     </div>
   </div>
 </header>
+
+<!-- Atraso en el envío (D111): días anteriores sin enviar, o pasada la hora de cierre de la jornada -->
+<div id="franja-envio" class="franja-envio" role="status" hidden>
+  <p id="franja-envio-texto"></p>
+  <button type="button" id="btn-franja-enviar" class="btn btn-secundario">Enviar ahora</button>
+</div>
 
 <nav id="navegacion" class="pestanas" aria-label="Secciones" hidden>
   <button type="button" class="pestana" data-vista="registrar">Nuevo registro</button>
@@ -520,10 +529,15 @@
       <button type="button" id="btn-senal-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar"></button>
     </div>
   </div>
+  <!-- La cola de envío, sólo con el envío simulado (D111) -->
+  <div id="senal-cola" class="senal-cola" hidden>
+    <p id="senal-cola-texto" aria-live="polite"></p>
+    <button type="button" id="btn-enviar-ahora" class="btn btn-primario">Enviar ahora</button>
+  </div>
   <ol class="lista-ayuda">
     <li><strong>Siga registrando.</strong> El GPS, la captura y el reporte funcionan sin señal. Sólo la imagen del mapa deja de verse; puede tocar el mapa o capturar la coordenada a mano.</li>
     <li><strong>Abra la app al menos una vez con señal</strong> después de instalarla o de que haya versión nueva: así queda guardada en el teléfono y abre aunque no haya red.</li>
-    <li><strong>Sus registros viven en este teléfono.</strong> Por ahora no se envían a ningún servidor. Cuando tenga señal, genere el reporte del día y compártalo con su coordinador, o guarde un respaldo.</li>
+    <li id="senal-destino"><strong>Sus registros viven en este teléfono.</strong> Por ahora no se envían a ningún servidor. Cuando tenga señal, genere el reporte del día y compártalo con su coordinador, o guarde un respaldo.</li>
     <li><strong>No borre los datos del navegador</strong> ni use el modo privado: se perderían los registros.</li>
     <li><strong>Si cambia de teléfono</strong>, guarde un respaldo antes y entréguelo a su coordinador.</li>
   </ol>
@@ -569,37 +583,38 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.6.36"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.36"></script>
-<script src="vendor/turf-pip.min.js?v=0.6.36"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.6.36"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.36"></script>
+<script src="vendor/leaflet.js?v=0.6.37"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.37"></script>
+<script src="vendor/turf-pip.min.js?v=0.6.37"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.6.37"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.37"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.6.36"></script>
-<script src="js/util.js?v=0.6.36"></script>
-<script src="js/iconos.js?v=0.6.36"></script>
+<script src="js/config.js?v=0.6.37"></script>
+<script src="js/util.js?v=0.6.37"></script>
+<script src="js/iconos.js?v=0.6.37"></script>
 <!-- Capas territoriales del SIA, compactadas por pruebas/generar_capas.py desde assets/fuentes/ -->
-<script src="assets/capa-alcaldias.js?v=0.6.36"></script>
-<script src="assets/capa-uga.js?v=0.6.36"></script>
-<script src="assets/capa-colonias.js?v=0.6.36"></script>
-<script src="assets/catalogo-especies.js?v=0.6.36"></script>
-<script src="js/datos-ficticios.js?v=0.6.36"></script>
-<script src="js/permisos.js?v=0.6.36"></script>
-<script src="js/derivacion.js?v=0.6.36"></script>
-<script src="js/almacen.js?v=0.6.36"></script>
-<script src="js/sesion.js?v=0.6.36"></script>
-<script src="js/referencias.js?v=0.6.36"></script>
-<script src="js/folio.js?v=0.6.36"></script>
-<script src="js/conexion.js?v=0.6.36"></script>
-<script src="js/mapa.js?v=0.6.36"></script>
-<script src="js/foto.js?v=0.6.36"></script>
-<script src="js/formulario.js?v=0.6.36"></script>
+<script src="assets/capa-alcaldias.js?v=0.6.37"></script>
+<script src="assets/capa-uga.js?v=0.6.37"></script>
+<script src="assets/capa-colonias.js?v=0.6.37"></script>
+<script src="assets/catalogo-especies.js?v=0.6.37"></script>
+<script src="js/datos-ficticios.js?v=0.6.37"></script>
+<script src="js/permisos.js?v=0.6.37"></script>
+<script src="js/derivacion.js?v=0.6.37"></script>
+<script src="js/almacen.js?v=0.6.37"></script>
+<script src="js/sesion.js?v=0.6.37"></script>
+<script src="js/referencias.js?v=0.6.37"></script>
+<script src="js/folio.js?v=0.6.37"></script>
+<script src="js/conexion.js?v=0.6.37"></script>
+<script src="js/envio.js?v=0.6.37"></script>
+<script src="js/mapa.js?v=0.6.37"></script>
+<script src="js/foto.js?v=0.6.37"></script>
+<script src="js/formulario.js?v=0.6.37"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.6.36"></script>
-<script src="js/registros.js?v=0.6.36"></script>
-<script src="js/reportes.js?v=0.6.36"></script>
-<script src="js/catalogos.js?v=0.6.36"></script>
-<script src="js/usuarios.js?v=0.6.36"></script>
-<script src="js/app.js?v=0.6.36"></script>
+<script src="js/espejo.js?v=0.6.37"></script>
+<script src="js/registros.js?v=0.6.37"></script>
+<script src="js/reportes.js?v=0.6.37"></script>
+<script src="js/catalogos.js?v=0.6.37"></script>
+<script src="js/usuarios.js?v=0.6.37"></script>
+<script src="js/app.js?v=0.6.37"></script>
 </body>
 </html>

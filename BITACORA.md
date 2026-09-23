@@ -1099,3 +1099,22 @@ emite).
 
 **Verificación:** 319 comprobaciones sin errores de consola; 84 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.36.
+
+## Bloque 56 — Envío al servidor simulado con datos de prueba (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.37.
+
+**Qué cambió (D111).** Nuevo `js/envio.js`: cola, estados, envío con demora y corte, franja de
+atraso, guía con la cola, «Simular sin señal», reintento por minuto y al volver a la app.
+`config.js`: `CLAVE_ENVIOS_PRUEBA`, `CLAVE_SIN_SENAL_PRUEBA`, `DEMORA_ENVIO_PRUEBA_MS`,
+`REINTENTO_ENVIO_MS`, `HORA_CIERRE_JORNADA`. `conexion.js`: `enLinea()` obedece a «Simular sin
+señal»; pastilla con «por enviar», «Al día», «Enviando…» y atraso en rojo. `formulario.js`:
+«Registro guardado» dice «Enviando…» y luego enviado con hora o por enviar; la edición vuelve a
+la cola. `registros.js`: marca «Por enviar», fila «Envío» en el detalle y corrección de la lista
+en su lugar tras un envío (repintar cerraba el menú de la tuerca). `app.js`: envío al entrar.
+`index.html`: franja, cola en la guía, interruptor en el menú. Estilos de pastilla, franja y
+marca. Pruebas: se actualizan las de la pastilla y el aviso de guardado (D83) y se agregan 16
+de D111 (envío al guardar, atraso con fecha, «Enviar ahora» sin señal, envío solo al volver la
+señal, marca y folio en la tarjeta, detalle, reenvío de cambios, interruptor y corte a medio envío).
+
+**Verificación:** 335 comprobaciones sin errores de consola; 84 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.37.

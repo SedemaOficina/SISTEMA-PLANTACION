@@ -43,6 +43,7 @@ SRP.app = {
     SRP.catalogos.iniciar();
     SRP.usuarios.iniciar();
     SRP.conexion.iniciar();
+    SRP.envio.iniciar();           // envío simulado: sólo con datos de prueba (D111)
     this.iniciarAcceso();
     this.iniciarDialogos();
     this.iniciarCamposFecha();
@@ -203,6 +204,7 @@ SRP.app = {
     this.el('navegacion').hidden = true;
     this.el('encabezado-usuario').hidden = true;
     this.el('herramientas-prueba').hidden = true;
+    this.el('franja-envio').hidden = true;
     this.el('form-acceso').reset();
     this.el('acceso-errores').hidden = true;
     ['acceso-correo', 'acceso-clave'].forEach(id => this.el(id).removeAttribute('aria-invalid'));
@@ -232,8 +234,8 @@ SRP.app = {
     this.campoClave(false);
     this.mostrarVista(p.registrar ? 'registrar' : 'registros');
     SRP.conexion.refrescar();
-    // Datos de prueba con conexión: lo que quedó sin folio lo recibe al entrar (D110)
-    SRP.folio.emitirPendientes().then(n => { if (n && this.vista === 'registros') SRP.registros.preparar(); });   // la pastilla cuenta los registros del alcance de quien entró (D83)
+    // Datos de prueba: al entrar se envía lo pendiente y, si no sale, lo dice la franja (D110, D111)
+    SRP.envio.alEntrar();   // la pastilla cuenta los registros del alcance de quien entró (D83)
   },
 
   /* MENOS AUTOLLENADO DE SAFARI (D108). Con un campo de contraseña en la página, Safari trata
