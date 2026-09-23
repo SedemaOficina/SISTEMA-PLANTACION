@@ -105,16 +105,26 @@ with sync_playwright() as p:
     # ---------- INICIAR JORNADA (D119) ----------
     ok(pg.is_visible('#panel-iniciar-jornada') and pg.is_hidden('#registrar-columnas'),'sin jornada abierta, Nuevo registro pide iniciar una antes del formulario (D119)')
     ok(pg.is_hidden('#btn-iniciar-cancelar'),'y sin jornada no hay «Cancelar»: no hay a dónde volver')
-    ok(pg.input_value('#ini-fecha')==HOY and pg.get_attribute('#ini-fecha','max')==HOY,'la fecha de la jornada arranca en hoy y no admite futuro')
+    ok(pg.input_value('#ini-fecha')=='' and pg.get_attribute('#ini-fecha','max')==HOY,'la fecha de la jornada arranca vacía y no admite futuro (D29, D120)')
     pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(300)
-    ok(pg.is_visible('#ini-errores') and 'nombre' in pg.inner_text('#ini-errores').lower(),'sin nombre no se inicia: '+pg.inner_text('#ini-errores'))
+    ok(pg.is_visible('#ini-errores') and 'nombre' in pg.inner_text('#ini-errores').lower() and 'fecha' in pg.inner_text('#ini-errores').lower(),'sin nombre ni fecha no se inicia: '+pg.inner_text('#ini-errores').replace('\n',' | '))
     pg.fill('#ini-nombre','Parque Hundido'); pg.fill('#ini-fecha','2030-01-01'); pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(300)
     ok('posterior a hoy' in pg.inner_text('#ini-errores'),'ni con fecha futura')
-    pg.fill('#ini-fecha', HOY); pg.fill('#ini-comentarios','Jornada de prueba con la comunidad'); pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(600)
+    pg.click('#btn-ini-hoy'); pg.wait_for_timeout(200)
+    ok(pg.input_value('#ini-fecha')==HOY,'«Hoy» pone la fecha de un toque (D120)')
+    pg.fill('#ini-ubicacion','Av. Insurgentes Sur 1500, Benito Juárez'); pg.fill('#ini-comentarios','Jornada de prueba con la comunidad'); pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(600)
     ok(pg.is_hidden('#panel-iniciar-jornada') and pg.is_visible('#registrar-columnas') and pg.is_visible('#franja-jornada'),'con la jornada iniciada aparece el formulario con su franja')
     ok('Parque Hundido' in pg.inner_text('#franja-jornada') and HOY_TXT in pg.inner_text('#franja-jornada') and '0 árboles' in pg.inner_text('#franja-jornada'),'la franja dice la jornada, su fecha y cuántos árboles lleva: '+pg.inner_text('#franja-jornada').replace('\n',' '))
-    jor=pg.evaluate("async () => { const j = (await SRP.almacen.todos('jornadas'))[0]; return [j.nombre, j.fecha, j.comentarios, j.estatus, j.cabo_id]; }")
-    ok(jor==['Parque Hundido', HOY, 'Jornada de prueba con la comunidad', 'abierta', 'u-cabo-1'],'la jornada queda guardada, abierta y a nombre del cabo: %s' % jor)
+    jor=pg.evaluate("async () => { const j = (await SRP.almacen.todos('jornadas'))[0]; return [j.nombre, j.ubicacion, j.fecha, j.comentarios, j.estatus, j.cabo_id]; }")
+    ok(jor==['Parque Hundido', 'Av. Insurgentes Sur 1500, Benito Juárez', HOY, 'Jornada de prueba con la comunidad', 'abierta', 'u-cabo-1'],'la jornada queda guardada con su ubicación, abierta y a nombre del cabo: %s' % jor)
+    ok('Insurgentes' in pg.inner_text('#franja-jornada'),'y la franja muestra la ubicación')
+    # Sin jornada no hay forma de registrar (D120): el formulario no se ve, ni en computadora, y sus botones devuelven al inicio
+    bloqueo=pg.evaluate("""async () => { const j = SRP.activa.jornada; SRP.activa.jornada = null; SRP.activa.mostrarInicio(true);
+      const oculto = getComputedStyle(document.getElementById('registrar-columnas')).display === 'none';
+      document.getElementById('btn-ubicacion').click(); const sigue = !document.getElementById('panel-iniciar-jornada').hidden;
+      SRP.activa.jornada = j; await SRP.activa.preparar(); return [oculto, sigue]; }""")
+    ok(bloqueo==[True,True],'sin jornada el formulario no se muestra ni responde: %s' % bloqueo)
+    esc=pg.evaluate("(() => { const s = document.createElement('style'); s.textContent='#registrar-columnas{display:grid}'; document.head.appendChild(s); const r = getComputedStyle(document.getElementById('registrar-columnas')).display; s.remove(); return r; })()")
     ok(pg.is_hidden('#campo-fecha'),'la fecha de plantación ya no se pide por árbol: se hereda de la jornada')
 
     # ---------- REGISTRAR ----------
@@ -331,18 +341,15 @@ with sync_playwright() as p:
     pg.dispatch_event('.combo-opcion[data-id="ESP-0029"]','mousedown'); pg.wait_for_timeout(200)
     ok(pg.input_value('#campo-especie')=='Fresno (Fraxinus uhdei)','al elegir, el campo queda como en el catálogo')
     ok(pg.evaluate("document.activeElement.id")!='campo-programa','elegir especie no mueve el foco al programa (D82)')
-    # Programa con botones (D98): sin preselección (D29), un toque elige y el dato sigue en la lista
-    prog=pg.evaluate('''() => ({ n: document.querySelectorAll('#programa-botones .chip').length,
-      marcados: document.querySelectorAll('#programa-botones .chip[aria-pressed=true]').length,
-      lista_oculta: document.getElementById('campo-programa').classList.contains('oculto-visual') })''')
-    ok(prog=={'n':2,'marcados':0,'lista_oculta':True},'con dos programas se eligen con botones, ninguno marcado de inicio: %s' % prog)
-    pg.click('#programa-botones .chip[data-id=p-refor]'); pg.wait_for_timeout(200)
-    ok(pg.input_value('#campo-programa')=='p-refor' and pg.get_attribute('#programa-botones .chip[data-id=p-refor]','aria-pressed')=='true',
-       'un toque elige el programa y el dato queda en la lista del formulario')
-    ok(pg.evaluate("document.activeElement.dataset.id")=='p-refor','elegir programa no mueve el foco a la fecha (D82)')
+    # Programa en lista desplegable (D120): los programas crecen; sin preselección (D29)
+    prog=pg.evaluate('''() => ({ botones: document.getElementById('programa-botones').hidden, lista_visible: !document.getElementById('campo-programa').classList.contains('oculto-visual'),
+      opciones: [...document.getElementById('campo-programa').options].filter(o => o.value).length, valor: document.getElementById('campo-programa').value })''')
+    ok(prog=={'botones':True,'lista_visible':True,'opciones':2,'valor':''},'el programa se elige en una lista desplegable, sin botones y sin preselección (D120): %s' % prog)
+    pg.select_option('#campo-programa','p-refor'); pg.wait_for_timeout(200)
+    ok(pg.input_value('#campo-programa')=='p-refor','elegir en la lista deja el dato en el formulario')
     # El texto guía de los campos de fecha vacíos (D104) se comprueba en la fecha de la jornada
     vac=pg.evaluate("(() => { const e=document.getElementById('ini-fecha').closest('.envoltura-vacio'); return e ? e.querySelector('.texto-vacio').textContent : null; })()")
-    ok(vac=='Seleccione en el calendario','la fecha de la jornada lleva el texto guía «Seleccione en el calendario» (D104): %s' % vac)
+    ok(vac=='Seleccione la fecha','la fecha de la jornada lleva el texto guía «Seleccione la fecha» (D104, D120): %s' % vac)
     foco=pg.evaluate("(() => { const e=document.getElementById('campo-comentarios'); e.focus(); const c=getComputedStyle(e); const r=[c.outlineStyle, c.borderTopColor]; e.blur(); return r; })()")
     ok(foco==['none','rgb(157, 33, 72)'],'el foco de un campo de texto es borde guinda, no contorno azul (D98): %s' % foco)
 
@@ -648,8 +655,8 @@ with sync_playwright() as p:
     pg.click('#btn-pdf'); pg.wait_for_timeout(400)
     ok(pg.is_visible('#dlg-cierre'),'el botón abre el cierre del reporte antes de generar')
     espejoC=pg.evaluate("[...document.querySelectorAll('#espejo-cierre-cuerpo .espejo-campo')].map(e=>e.textContent)")
-    ok(espejoC==['id','es_ficticio','nombre','fecha','comentarios','cabo_id','estatus','fecha_inicio','fecha_cierre','creado_por_id','fecha_creacion','editado_por_id','fecha_ultima_edicion','arboles_plantados','puntos_revisados'],
-       'el cierre lleva su espejo con los quince campos de la jornada que no se capturan aquí (D112, D119): '+', '.join(espejoC))
+    ok(espejoC==['id','es_ficticio','nombre','ubicacion','fecha','comentarios','cabo_id','estatus','fecha_inicio','fecha_cierre','creado_por_id','fecha_creacion','editado_por_id','fecha_ultima_edicion','arboles_plantados','puntos_revisados'],
+       'el cierre lleva su espejo con los dieciséis campos de la jornada que no se capturan aquí (D112, D119, D120): '+', '.join(espejoC))
     pg.fill('#cie-chofer','Mengano'); pg.wait_for_timeout(200)
     ok(pg.evaluate("SRP.reportes.cierrePrevisto().chofer")=='Mengano','y lo que se escribe entra al mismo objeto que se guarda')
     ok(pg.is_visible('#cie-encargado-lectura') and pg.is_hidden('#cie-encargado-caja'),

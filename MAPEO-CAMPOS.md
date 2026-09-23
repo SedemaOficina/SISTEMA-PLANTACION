@@ -175,6 +175,7 @@ Almacén `jornadas` (sustituye a `cierres` desde el bloque 62). Lo que ya vive e
 | `id` | Sí | Sistema | UUID; los árboles lo llevan en `plantaciones.jornada_id` |
 | `es_ficticio` | Sí | Sistema | Marca de dato de prueba (D87) |
 | `nombre` | Sí | Persona | Nombre de la jornada: el parque, la calle o el sitio. Es el nombre de la tarjeta en Jornadas y el «Jornada:» del reporte |
+| `ubicacion` | No | Persona | Dirección, parque o referencia (D120); va al reporte bajo el nombre |
 | `fecha` | Sí | Persona | Fecha de la jornada de plantación, `AAAA-MM-DD`, no posterior a hoy; los árboles la heredan |
 | `comentarios` | No | Persona | Se escriben al iniciar; van al reporte como «Comentarios de la jornada» |
 | `cabo_id` | Sí | Sesión | Quien inició la jornada |

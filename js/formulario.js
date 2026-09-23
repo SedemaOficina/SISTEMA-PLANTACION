@@ -16,7 +16,7 @@ SRP.formulario = {
 
   iniciar() {
     SRP.mapa.iniciar((lat, lng) => this.alMoverPunto(lat, lng));
-    this.el('btn-ubicacion').addEventListener('click', () => SRP.mapa.ubicar());
+    this.el('btn-ubicacion').addEventListener('click', () => { if (SRP.activa.exigir()) SRP.mapa.ubicar(); });
     SRP.mapa.refrescarBotonUbicacion();
     // Con la captura a mano desplegada se oculta el botón de ubicación: una sola forma de fijar el punto a la vista
     this.el('detalles-coord').addEventListener('toggle', (e) => {
@@ -48,7 +48,8 @@ SRP.formulario = {
       SRP.util.anunciar('Fotografía quitada.', 'exito', { deshacer: () => this.ponerFoto(f.datos, f.id, f.nombre, f.bytes) });
       this.el('etq-foto').focus();
     });
-    this.el('form-plantacion').addEventListener('submit', (e) => { e.preventDefault(); this.revisar(); });
+    this.el('form-plantacion').addEventListener('submit', (e) => {
+      if (!SRP.activa.exigir()) { e.preventDefault(); return; } e.preventDefault(); this.revisar(); });
     this.el('btn-revisar').innerHTML = SRP.ICONOS.svg('disco', 22) + '<span>Revisar y guardar</span>';
     this.el('btn-resumen-guardar').innerHTML = SRP.ICONOS.svg('palomita') + '<span>Guardar</span>';
     this.el('btn-resumen-cerrar').innerHTML = SRP.ICONOS.svg('cerrar', 22);
@@ -101,10 +102,10 @@ SRP.formulario = {
     this.pintarProgramas();
   },
 
-  /* PROGRAMA CON BOTONES (D98). Con hasta cuatro programas se eligen con botones de ancho igual:
-     un toque en lugar de abrir la lista. El <select> sigue siendo el dato (validación, edición y
-     guardado lo leen igual) y sólo se oculta; con más de cuatro vuelve a verse y los botones se van. */
-  MAX_BOTONES_PROGRAMA: 4,
+  /* PROGRAMA EN LISTA DESPLEGABLE (D120, supera a D98). Los programas crecen con el tiempo, y
+     Liber pidió la lista siempre, no botones. El código de los botones se conserva por si algún día
+     se quiere volver a ellos: con MAX_BOTONES_PROGRAMA en 0 nunca se pintan. */
+  MAX_BOTONES_PROGRAMA: 0,
 
   iniciarProgramas() {
     this.el('programa-botones').addEventListener('click', (e) => {

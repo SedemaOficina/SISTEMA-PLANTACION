@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.43 (Bloque 62)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.44 (Bloque 63)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -83,6 +83,10 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M72 | Petición de Liber | Sección «Fotografías» para coordinación y administración, con descarga y ZIP | Alta | 0.6.42 (B61) | Entrar como coordinador › Fotografías: rejilla con las fotos de la cuadrilla; tocar una: datos y «Descargar»; «Descargar todas»: ZIP. El cabo no ve la sección | Galería; foto grande; el ZIP abierto en la computadora |
 | M73 | Petición de Liber | El cierre ya no pregunta «Actividades realizadas» | Baja | 0.6.42 (B61) | Reportes › Generar: el formulario de cierre empieza en Encargado y Sitio; el PDF no trae el apartado | Formulario de cierre |
 | M74 | Área de plantación (vía Liber) | La jornada se declara antes de registrar: nombre, fecha y comentarios; fecha heredada; cerrar/reabrir; mover árboles entre jornadas; reporte con nombre y comentarios | Alta | 0.6.43 (B62) | Entrar como cabo: aparece «Iniciar jornada» (sin nombre no deja). Al iniciarla, el formulario con la franja verde; registrar un árbol: ya no pide fecha. «Cambiar» › «Iniciar otra jornada». Registrar un árbol lejos: pregunta si es de esta jornada. «Cerrar jornada» lleva a la revisión; ahí «Reabrir». Reportes: la jornada por nombre, con sus comentarios en el PDF. Los registros de prueba anteriores se borran al abrir esta versión | Iniciar jornada; franja; pregunta de distancia; PDF con «Jornada:» |
+| M75 | Revisión de Liber | Sin jornada no se ve ni responde el formulario, también en computadora | Alta | 0.6.44 (B63) | En computadora, entrar como cabo: sólo «Iniciar jornada», sin formulario debajo | Nuevo registro en computadora |
+| M76 | Petición de Liber | Fecha de la jornada con «Hoy» y texto guía «Seleccione la fecha» | Media | 0.6.44 (B63) | Iniciar jornada: la fecha arranca vacía; «Hoy» la pone | Panel de inicio |
+| M77 | Petición de Liber | Campo «Ubicación de la jornada» | Media | 0.6.44 (B63) | Escribir una dirección al iniciar: sale en la franja y en el reporte junto al nombre | Franja; PDF |
+| M78 | Petición de Liber | Programa en lista desplegable en lugar de botones | Media | 0.6.44 (B63) | Nuevo registro › Programa: lista | Formulario |
 
 ## 2. Por hacer
 

@@ -933,6 +933,15 @@
           "regla": "Obligatorio al iniciar: el parque, la calle o el sitio. Es el nombre de la tarjeta en Jornadas y el «Jornada:» del reporte (D119)"
         },
         {
+          "campo": "ubicacion",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto libre, hasta 200; '' si no se escribe",
+          "pantalla": "Ubicación de la jornada",
+          "regla": "Dirección, parque o referencia (D120). Va al reporte bajo el nombre de la jornada"
+        },
+        {
           "campo": "fecha",
           "tipo": "date",
           "nulo": false,

@@ -865,3 +865,18 @@
   vigilando el olvido. Reportes: el selector «Jornada» lista las declaradas por nombre. En
   Fotografías y en el detalle del registro aparece el nombre de la jornada. Pedido por Liber
   (área de plantación), 23-09-2026.
+
+## Bloque 63 — Inicio de jornada: bloqueo real, fecha con «Hoy», ubicación y programa en lista
+
+- **D120. Cuatro ajustes al inicio de jornada tras la revisión de Liber.** (1) En computadora el
+  formulario de registro asomaba bajo «Iniciar jornada»: la regla de dos columnas (D109) ponía
+  `display: grid` y le ganaba al atributo `hidden`. Se corrige de raíz con `[hidden] { display:
+  none !important }` (la única excepción a «sin !important» junto con reduced-motion) y, por si
+  acaso, el botón de ubicación y el envío del formulario exigen jornada abierta y devuelven al
+  panel si no la hay. (2) La fecha de la jornada arranca vacía, con el texto guía «Seleccione la
+  fecha» y el botón «Hoy» a un toque, como el resto de las fechas (D29, D98). (3) Campo abierto
+  «Ubicación de la jornada» (dirección, parque o referencia; opcional), guardado en
+  `jornadas.ubicacion`; va en la franja y en el reporte bajo el nombre. (4) El programa se elige
+  en la lista desplegable, ya no con botones (supera a D98 en ese punto): los programas crecen con
+  el tiempo. De paso se retiró un bloque de estilos duplicado del envío (D111) que había quedado
+  mal pegado. Pedido por Liber, 23-09-2026.

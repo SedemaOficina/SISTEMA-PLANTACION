@@ -1214,3 +1214,17 @@ formulario.
 
 **Verificación:** 402 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.43.
+
+## Bloque 63 — Inicio de jornada: bloqueo real, «Hoy», ubicación y programa en lista (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.44.
+
+**Qué cambió (D120).** `estilos.css`: `[hidden]` con `!important`; bloque duplicado del envío
+retirado. `jornada-activa.js`: `exigir()`, «Hoy», fecha vacía al abrir, campo `ubicacion`, franja
+con ubicación. `formulario.js`: ubicación y envío exigen jornada; `MAX_BOTONES_PROGRAMA` en 0
+(lista desplegable). `reportes.js`: ubicación junto al nombre en vista previa y PDF. `index.html`:
+«Hoy», texto guía y campo de ubicación. `espejo.js`, `esquema.json`, MAPEO y diccionario al día.
+Pruebas: fecha vacía y «Hoy», ubicación guardada y en la franja, bloqueo del formulario sin
+jornada (incluida la regla de computadora), programa en lista.
+
+**Verificación:** 404 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.44.

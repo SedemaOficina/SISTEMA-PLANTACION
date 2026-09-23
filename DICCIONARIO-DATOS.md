@@ -171,13 +171,14 @@ Quién, cuándo y qué, en cada alta, edición, eliminación, activación y desa
 Una jornada de plantación: se declara antes de registrar el primer árbol (D119). Agrupa los registros, lleva la conciliación y la revisión, y guarda los datos de cierre del reporte (antes en la tabla cierres, retirada en el bloque 62).
 
 - **Llave:** `id`. **Índices:** `cabo_id`, `fecha`, `estatus`. **Pantalla:** Nuevo registro → «Iniciar jornada»; Jornadas; Reportes → «Datos de cierre».
-- **Campos:** 23.
+- **Campos:** 24.
 
 | Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
 |---|---|---|---|---|---|---|
 | `id` | uuid | No | Sistema | UUID | No | Se fija al iniciar la jornada |
 | `es_ficticio` | boolean | No | Sistema | true/false | No | Copia de CONFIG.ES_FICTICIO (D87) |
 | `nombre` | text | No | Persona | Texto libre, hasta 120 | Nombre de la jornada | Obligatorio al iniciar: el parque, la calle o el sitio. Es el nombre de la tarjeta en Jornadas y el «Jornada:» del reporte (D119) |
+| `ubicacion` | text | No | Persona | Texto libre, hasta 200; '' si no se escribe | Ubicación de la jornada | Dirección, parque o referencia (D120). Va al reporte bajo el nombre de la jornada |
 | `fecha` | date | No | Persona | AAAA-MM-DD, no posterior a hoy | Fecha de la jornada de plantación | Los árboles la heredan como fecha_plantacion (D119) |
 | `comentarios` | text | No | Persona | Texto libre, hasta 500; '' si no se escribe | Comentarios | Van al reporte como «Comentarios de la jornada» (D119) |
 | `cabo_id` | uuid | No | Sesión | → usuarios.id | No | Quien inició la jornada; sus árboles quedan a su nombre |
@@ -446,6 +447,7 @@ CREATE TABLE jornadas (
   id                       uuid           NOT NULL,
   es_ficticio              boolean        NOT NULL,
   nombre                   text           NOT NULL,
+  ubicacion                text           NOT NULL,
   fecha                    date           NOT NULL,
   comentarios              text           NOT NULL,
   cabo_id                  uuid           NOT NULL,

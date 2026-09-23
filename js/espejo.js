@@ -70,6 +70,7 @@ SRP.espejo = {
     id: 'UUID de la jornada (D119)',
     es_ficticio: 'Verdadero mientras CONFIG.ES_FICTICIO lo esté (D87)',
     nombre: 'Se escribió al iniciar la jornada; aquí no se cambia',
+    ubicacion: 'Dirección, parque o referencia, escrita al iniciar (D120); va al reporte',
     fecha: 'La fecha de la jornada, escrita al iniciarla',
     comentarios: 'Se escribieron al iniciar la jornada; van al reporte',
     cabo_id: 'Quien inició la jornada',

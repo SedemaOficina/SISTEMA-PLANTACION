@@ -39,6 +39,11 @@ SRP.activa = {
     });
     this.el('btn-iniciar-cancelar').addEventListener('click', () => { this.mostrarInicio(false); this.preparar(); });
     this.el('ini-fecha').max = SRP.util.fechaHoy();
+    this.el('btn-ini-hoy').addEventListener('click', () => {
+      this.el('ini-fecha').value = SRP.util.fechaHoy();
+      this.el('ini-fecha').removeAttribute('aria-invalid');
+      this.el('ini-fecha').dispatchEvent(new Event('change', { bubbles: true }));
+    });
     this.el('btn-iniciar-jornada').innerHTML = SRP.ICONOS.svg('palomita', 20) + '<span>Iniciar jornada</span>';
     this.el('btn-iniciar-cancelar').innerHTML = SRP.ICONOS.svg('cerrar', 18) + '<span>Cancelar</span>';
     this.el('btn-jornada-cerrar').innerHTML = SRP.ICONOS.svg('palomita', 18) + '<span>Cerrar jornada</span>';
@@ -80,9 +85,11 @@ SRP.activa = {
     this.el('franja-jornada').hidden = ver;
     this.el('btn-iniciar-cancelar').hidden = !this.jornada;   // sin jornada no hay a dónde volver
     if (ver) {
-      this.el('ini-nombre').value = ''; this.el('ini-comentarios').value = '';
-      this.el('ini-fecha').value = SRP.util.fechaHoy();
+      this.el('ini-nombre').value = ''; this.el('ini-ubicacion').value = ''; this.el('ini-comentarios').value = '';
+      // La fecha se elige a propósito (D29): vacía, con «Hoy» a un toque
+      this.el('ini-fecha').value = '';
       this.el('ini-fecha').dispatchEvent(new Event('change', { bubbles: true }));
+      this.el('ini-errores').hidden = true;
       this.el('ini-nombre').focus({ preventScroll: true });
     }
   },
@@ -118,7 +125,7 @@ SRP.activa = {
     f.dataset.tono = atrasada ? 'alerta' : '';
     this.el('franja-jornada-texto').innerHTML =
       '<span class="franja-jornada-titulo">' + (editando ? 'Registro de la jornada ' : 'Jornada: ') + '<strong>' + esc(j.nombre) + '</strong></span>' +
-      '<span class="franja-jornada-datos">' + esc(SRP.util.formatearFecha(j.fecha)) + ' · ' + n + (n === 1 ? ' árbol' : ' árboles') +
+      '<span class="franja-jornada-datos">' + esc(SRP.util.formatearFecha(j.fecha)) + (j.ubicacion ? ' · ' + esc(j.ubicacion) : '') + ' · ' + n + (n === 1 ? ' árbol' : ' árboles') +
       (j.estatus === 'cerrada' ? ' · cerrada' : '') + (atrasada ? ' · <b>no es de hoy</b>' : '') + '</span>';
     this.el('franja-jornada-acciones').hidden = !!editando;
   },
@@ -127,6 +134,7 @@ SRP.activa = {
 
   async iniciarJornada() {
     const nombre = this.el('ini-nombre').value.trim();
+    const ubicacion = this.el('ini-ubicacion').value.trim();
     const fecha = this.el('ini-fecha').value;
     const comentarios = this.el('ini-comentarios').value.trim();
     const errores = [];
@@ -147,7 +155,7 @@ SRP.activa = {
     const ahora = SRP.util.ahoraISO();
     const j = Object.assign({
       id: SRP.util.generarId(), es_ficticio: SRP.CONFIG.ES_FICTICIO,
-      nombre, fecha, comentarios, cabo_id: u.id, estatus: 'abierta',
+      nombre, ubicacion, fecha, comentarios, cabo_id: u.id, estatus: 'abierta',
       fecha_inicio: ahora, fecha_cierre: null,
       creado_por_id: u.id, fecha_creacion: ahora, editado_por_id: u.id, fecha_ultima_edicion: ahora,
       arboles_plantados: null, puntos_revisados: [], encargado_id: u.id
@@ -198,6 +206,15 @@ SRP.activa = {
       (this.jornada && this.jornada.id === j.id ? ' · activa' : '') + '</span></span></button></li>').join('')
       : '<li class="nota">No hay jornadas abiertas.</li>';
     this.el('dlg-cambiar-jornada').showModal();
+  },
+
+  // Sin jornada abierta no hay formulario: cualquier intento vuelve al panel de inicio (D120)
+  exigir() {
+    if (this.jornada && this.jornada.estatus === 'abierta') return true;
+    if (SRP.formulario.estado.editando) return true;
+    this.mostrarInicio(true);
+    SRP.util.anunciar('Inicie una jornada antes de registrar árboles.', 'alerta');
+    return false;
   },
 
   /* Antes de guardar: si el punto queda lejos de los demás de la jornada, se pregunta (D119).

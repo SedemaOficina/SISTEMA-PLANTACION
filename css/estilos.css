@@ -165,22 +165,7 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 .bloque .total { margin-top: 0; }
 .bloque .filtros { border-bottom: 0; padding-bottom: 0; }
 .bloque .acciones { margin-top: var(--e-3); }
-.bloque /* Envío simulado (D111): «Enviando…» neutro; atraso en rojo, con palabras (el color no va solo) */
-.conexion[data-estado="enviando"] { background: var(--fondo-suave); color: var(--texto); border-color: var(--borde-control); }
-.conexion[data-estado="atraso"] { background: var(--error-fondo); color: var(--error); border-color: var(--error); }
-.marca-envio { display: inline-flex; align-items: center; gap: 4px; margin-top: var(--e-1); padding: 1px var(--e-2); border-radius: 10px;
-  background: var(--editar-fondo); color: var(--editar); font-size: var(--t-xs); font-weight: 500; }
-.franja-envio { display: flex; align-items: center; gap: var(--e-3); flex-wrap: wrap; margin: var(--e-3) max(var(--e-4), calc((100% - var(--ancho-max-tabla)) / 2)) 0;
-  padding: var(--e-3) var(--e-4); background: var(--error-fondo); border-left: 4px solid var(--error); font-size: var(--t-s); line-height: 1.45; }
-.franja-envio[hidden] { display: none; }
-.franja-envio p { flex: 1 1 16rem; margin: 0; }
-.franja-envio strong { color: var(--error); }
-.senal-cola { display: flex; align-items: center; gap: var(--e-3); flex-wrap: wrap; margin: var(--e-3) 0; padding: var(--e-3); border-radius: var(--radio-filtro); background: var(--fondo-suave); }
-.senal-cola[hidden] { display: none; }
-.senal-cola p { flex: 1 1 12rem; margin: 0; font-weight: 500; }
-#dlg-guardado-dispositivo[data-envio="recibido"] { color: var(--exito); }
-#dlg-guardado-dispositivo[data-envio="por_enviar"] { color: var(--editar); }
-.aviso-envio { margin-top: 0; }
+.bloque .aviso-envio { margin-top: 0; }
 
 .tarjeta { border: 1px solid var(--borde-suave); border-radius: var(--radio); padding: var(--e-4); margin-bottom: var(--e-5); }
 .tarjeta-prueba { background: var(--fondo-suave); }
@@ -752,7 +737,9 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
    arrastraba la página de lado. `.campo .oculto-visual` gana por especificidad, no por orden. */
 .oculto-visual,
 .campo .oculto-visual { position: absolute; width: 1px; height: 1px; min-height: 0; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-[hidden] { display: none; }
+/* Lo oculto se oculta aunque otra regla le ponga display (D120): sin esto, en computadora el
+   formulario de registro asomaba bajo «Iniciar jornada» por la regla de dos columnas */
+[hidden] { display: none !important; }
 
 /* ========== 7. @MEDIA ========== */
 /* EQUILIBRIO EN COMPUTADORA (D109). Nuevo registro en dos columnas: ubicación y mapa a la
