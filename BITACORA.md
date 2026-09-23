@@ -908,3 +908,19 @@ de especies sin opción marcada) y la del foco del programa reescrita.
 
 **Verificación:** 264 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.24.
+
+## Bloque 44 — Ficha de revisión revisada en iPhone (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.25.
+
+**Origen:** capturas de Liber del formulario lleno y de la ficha de revisión (v0.6.24).
+
+**Qué cambió (D99).** `index.html`: «Guardar» en `.dialogo-pie` al final de la ficha; atributos
+`spellcheck`, `autocorrect` y `autocapitalize` en los campos de especie. `formulario.js`: filas
+de la ficha en el orden del formulario, apartado «Datos del sistema» y `textoOrigenRevision()`
+con la insignia de precisión. CSS: `.dialogo-pie` y `.revision-sistema`. Pruebas: cuatro
+comprobaciones nuevas (campos de especie sin corrector, Guardar al pie fijo y a todo el ancho,
+orden con Folio e Identificador al final, insignia en «Cómo se obtuvo»). Se crea `MEJORAS.md`
+con columna de prioridad.
+
+**Verificación:** 268 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.25.

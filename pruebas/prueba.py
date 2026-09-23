@@ -80,6 +80,8 @@ with sync_playwright() as p:
     # A nombre de quién se registra lo dice el encabezado; no se repite como campo
     ok(pg.locator('#campo-cabo').count()==0,'la pantalla no repite el nombre de quien captura')
     ok(pg.locator('#vista-registrar .nota-obligatorio').count()==0,'ni la nota del asterisco')
+    ok(pg.evaluate("['campo-especie','campo-otra-especie'].every(i=>{const e=document.getElementById(i); return e.spellcheck===false && e.getAttribute('autocorrect')==='off' && e.getAttribute('autocapitalize')==='off';})"),
+       'los nombres de especie no pasan por corrector ni mayúsculas automáticas (D99)')
     ok(pg.evaluate("['campo-especie','campo-programa','campo-fecha'].every(i=>document.getElementById(i).required)"),
        'lo obligatorio lo anuncia el atributo required, no sólo el asterisco')
     orden=pg.evaluate("""()=>{const t=document.getElementById('vista-registrar').innerHTML;
@@ -348,7 +350,15 @@ with sync_playwright() as p:
     ok(not pg.is_visible('#dlg-resumen') and pg.locator('#btn-resumen-corregir').count()==0,'la ficha cierra con la × y ya no hay botón Corregir (D77)')
     pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(800)
     fijo=pg.evaluate("(() => { const d=document.getElementById('dlg-resumen'); d.scrollTop=600; const c=d.querySelector('.dialogo-cabecera').getBoundingClientRect(); const b=document.getElementById('btn-resumen-guardar').getBoundingClientRect(); const dr=d.getBoundingClientRect(); d.scrollTop=0; return { arriba: Math.round(c.top-dr.top), botonVisible: b.top>=dr.top && b.bottom<=dr.bottom, sticky: getComputedStyle(d.querySelector('.dialogo-cabecera')).position }; })()")
-    ok(fijo['sticky']=='sticky' and fijo['botonVisible'] and fijo['arriba']<=8,'Guardar y Corregir quedan fijos arriba aunque se desplace la ficha (D74): %s' % fijo)
+    ok(fijo['sticky']=='sticky' and fijo['botonVisible'] and fijo['arriba']<=8,'la cabecera queda fija arriba y Guardar a la vista aunque se desplace la ficha (D74, D99): %s' % fijo)
+    pie=pg.evaluate('''() => { const d=document.getElementById('dlg-resumen'); const b=document.getElementById('btn-resumen-guardar');
+      const p=b.closest('.dialogo-pie'); const br=b.getBoundingClientRect(), dr=d.getBoundingClientRect();
+      return { pie: !!p && getComputedStyle(p).position==='sticky', ancho: br.width >= dr.width*0.8, abajo: br.top > dr.top + dr.height/2 }; }''')
+    ok(all(pie.values()),'Guardar va al pie de la ficha, fijo y a todo el ancho (D99): %s' % pie)
+    orden=pg.evaluate("[...document.querySelectorAll('#revision-lista > .revision-fila dt')].map(x=>x.textContent)")
+    ok(orden[0]=='Especie' and 'Folio' not in orden and pg.locator('.revision-sistema .folio-provisional').count()==1 and pg.locator('.revision-sistema .revision-id').count()==1,
+       'la ficha empieza por Especie y deja Folio e Identificador en «Datos del sistema» (D99): %s' % orden[:3])
+    ok(pg.locator('.revision-fila', has_text='Cómo se obtuvo').locator('.precision').count()==1,'«Cómo se obtuvo» muestra la insignia de precisión del GPS (D99)')
     apil=pg.evaluate("(() => { const d=document.getElementById('dlg-resumen'); const m=d.querySelector('.revision-mapa'); const cs=getComputedStyle(m); return { aislado: cs.isolation==='isolate' && cs.zIndex==='0', cab: parseInt(getComputedStyle(d.querySelector('.dialogo-cabecera')).zIndex), foco: document.activeElement.id, contiene: getComputedStyle(d).overscrollBehavior }; })()")
     ok(apil['aislado'] and apil['cab']>=2 and apil['foco']=='dlg-resumen-titulo' and apil['contiene']=='contain',
        'el mapa va aislado bajo la cabecera, el foco abre en el título y el desplazamiento no se encadena (D78): %s' % apil)

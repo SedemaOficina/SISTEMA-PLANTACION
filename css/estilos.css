@@ -442,6 +442,9 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 /* Donde irá el folio: la leyenda se ve distinta de un folio real, para que nadie la copie como si lo fuera */
 .folio-provisional { font-family: ui-monospace, 'Courier New', monospace; letter-spacing: 0.04em; color: var(--gris); }
 .revision-id { font-family: ui-monospace, 'Courier New', monospace; font-size: var(--t-xs); }
+.revision-sistema { margin-top: var(--e-4); }
+.revision-sistema-titulo { font-size: var(--t-xs); font-weight: 700; color: var(--gris); text-transform: uppercase; letter-spacing: .04em; margin: 0; }
+.revision-sistema .revision-fila dt, .revision-sistema .revision-fila dd { font-size: var(--t-xs); color: var(--gris); }
 .revision-nota { color: var(--gris); font-size: var(--t-xs); margin: var(--e-4) 0 0; line-height: 1.6; }
 
 .historial { padding-left: var(--e-5); font-size: var(--t-s); }
@@ -454,6 +457,10 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .dialogo-cabecera { position: sticky; top: calc(-1 * var(--e-5)); z-index: 2; margin: calc(-1 * var(--e-5)) calc(-1 * var(--e-5)) var(--e-3); padding: var(--e-4) var(--e-5) var(--e-3); background: var(--fondo); border-bottom: 1px solid var(--borde-suave); }
 .dialogo-cabecera h2 { margin-top: 0; }
 .acciones-cabecera { margin-top: var(--e-2); }
+/* Barra fija al pie de una ventana: la acción principal a todo el ancho y al alcance del pulgar (D99) */
+.dialogo-pie { position: sticky; bottom: calc(-1 * var(--e-5)); z-index: 2; margin: var(--e-3) calc(-1 * var(--e-5)) calc(-1 * var(--e-5));
+  padding: var(--e-3) var(--e-5) calc(var(--e-3) + env(safe-area-inset-bottom, 0px)); background: var(--fondo);
+  border-top: 1px solid var(--borde-suave); box-shadow: 0 -6px 12px -8px rgba(0, 0, 0, .18); }
 .dialogo-titulo { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); }
 .dialogo-titulo h2 { margin: 0; }
 .dialogo-titulo h2:focus { outline: none; }

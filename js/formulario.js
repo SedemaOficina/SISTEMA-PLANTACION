@@ -362,22 +362,25 @@ SRP.formulario = {
     const esp = SRP.ref.especieDe(v);
     const esc = SRP.util.escapar;
 
-    // La ubicación no se teclea: se corrige volviendo a colocar el punto en el mapa.
+    // Orden del formulario: primero lo que el cabo revisa; los datos que pone el sistema, al final
+    // y en chico (D99). La ubicación no se teclea: se corrige volviendo a colocar el punto.
     const filas = [
-      ['Folio', '<span class="folio-provisional">' + esc(SRP.folio.PROVISIONAL) + '</span>', null],
-      ['Identificador', '<span class="revision-id">' + esc(id) + '</span>', null],
       ['Especie', esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : ''), 'especie'],
       ['Programa', esc(SRP.ref.nombreCatalogo(v.programa_id)), 'programa'],
       ['Fecha de plantación', esc(SRP.util.formatearFecha(v.fecha_plantacion)), 'fecha'],
       ['Alcaldía', esc(SRP.ref.alcaldia(v.alcaldia)), null],
       ['Colonia', esc(SRP.ref.colonia(v.colonia)), null],
       ['Coordenadas', v.lat.toFixed(6) + ', ' + v.lng.toFixed(6), 'punto'],
-      ['Cómo se obtuvo', esc(SRP.mapa.textoOrigen(v.punto_origen, v.gps_precision_m)), null],
+      ['Cómo se obtuvo', this.textoOrigenRevision(v), null],
       ['Cabo', esc(this.nombreCabo()), null],
       ['Comentarios', v.comentarios ? esc(v.comentarios) : 'Sin comentarios', 'comentarios'],
       ['Fotografía', v.foto_base64
         ? '<img class="revision-foto" src="' + v.foto_base64 + '" alt="Fotografía del árbol que se va a registrar">'
         : 'Sin fotografía', 'foto']
+    ];
+    const sistema = [
+      ['Folio', '<span class="folio-provisional">' + esc(SRP.folio.PROVISIONAL) + '</span>'],
+      ['Identificador', '<span class="revision-id">' + esc(id) + '</span>']
     ];
 
     this.el('revision-lista').innerHTML = filas.map(([etiqueta, valor, campo]) => {
@@ -387,12 +390,26 @@ SRP.formulario = {
         : '<span></span>';
       return '<div class="revision-fila"><dt>' + etiqueta + '</dt><dd>' + valor + '</dd>' + boton + '</div>';
     }).join('') +
+      '<div class="revision-sistema"><p class="revision-sistema-titulo">Datos del sistema</p>' +
+      sistema.map(([etiqueta, valor]) => '<div class="revision-fila revision-fila-sola"><dt>' + etiqueta + '</dt><dd>' + valor + '</dd></div>').join('') +
       '<p class="revision-nota">El folio lo asignará el servidor al sincronizar; hasta entonces el registro es provisional. ' +
       'El identificador lo asigna el sistema y no se modifica. ' +
-      'La alcaldía sale del punto: para cambiarla hay que mover la coordenada.</p>';
+      'La alcaldía sale del punto: para cambiarla hay que mover la coordenada.</p></div>';
 
     this.el('dlg-resumen').showModal();
     this.dibujarMapaRevision(v.lat, v.lng);
+  },
+
+  /* «Cómo se obtuvo» con la misma insignia de precisión que bajo el mapa (D99): la ficha es el
+     último momento para notar un punto impreciso. Con precisión baja o aceptable se dice qué
+     hacer; es aviso, no impide guardar. */
+  textoOrigenRevision(v) {
+    const esc = SRP.util.escapar;
+    if (v.punto_origen !== 'gps' || v.gps_precision_m == null) return esc(SRP.mapa.textoOrigen(v.punto_origen, v.gps_precision_m));
+    const n = SRP.mapa.nivelPrecision(v.gps_precision_m);
+    return 'GPS del dispositivo<br><span class="precision" data-nivel="' + n.nivel + '"><span class="precision-punto" aria-hidden="true"></span>' +
+      n.texto + ' · ±' + Math.round(v.gps_precision_m) + ' m</span>' +
+      (n.nivel === 'buena' ? '' : '<span class="precision-consejo">Revise el punto; puede corregirlo con «Editar» en Coordenadas.</span>');
   },
 
   /* Quién queda como autor. En alta es quien tiene la sesión abierta —el encabezado lo dice

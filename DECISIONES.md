@@ -561,3 +561,17 @@
   (5) Coordenadas, alcaldía y colonia van en una ficha compacta sin cajas de campo: renglones
   etiqueta-valor en teléfono, tres columnas en escritorio. (6) La fecha sigue arrancando vacía
   (D29) y lleva al lado un botón «Hoy» que la pone de un toque. Aprobadas por Liber, 22-09-2026.
+
+## Bloque 44 — Ficha de revisión revisada en iPhone
+
+- **D99. La ficha «Revise antes de guardar» sigue el orden del formulario y guarda desde el pie.**
+  (1) Los datos van en el orden en que se capturan (Especie, Programa, Fecha, Alcaldía, Colonia,
+  Coordenadas, Cómo se obtuvo, Cabo, Comentarios, Fotografía); Folio e Identificador bajan a un
+  apartado final «Datos del sistema», en letra chica, porque no son algo que el cabo revise.
+  (2) «Cómo se obtuvo» lleva la misma insignia de precisión que bajo el mapa y, si no es buena,
+  pide revisar el punto con «Editar» en Coordenadas; es aviso, no impide guardar. (3) «Guardar»
+  pasa de la cabecera a una barra fija al pie, verde y a todo el ancho, igual que «Revisar y
+  guardar» en el formulario; la cabecera conserva el título y la ×. Sustituye a D74 en esta
+  ficha. (4) Especie y «Especifique la especie» no pasan por el corrector ni por mayúsculas
+  automáticas del teléfono, que subrayaban y podían cambiar los nombres científicos.
+  Aprobadas por Liber, 22-09-2026.
