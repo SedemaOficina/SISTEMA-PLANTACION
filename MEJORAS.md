@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.39 (Bloque 58)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.40 (Bloque 59)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -75,13 +75,16 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M65 | Petición de Liber | «Plantados» en lugar del término agrícola en toda la app | Alta | 0.6.39 (B58) | Jornadas › revisión: «Árboles plantados según la cuadrilla»; el reporte dice «plantados» | Conciliación |
 | M66 | Petición de Liber | Iconos en Modo sol y Cerrar sesión (y el resto del menú) | Baja | 0.6.39 (B58) | Icono de usuario › cada opción lleva su icono a la izquierda | Menú de la cuenta abierto |
 | M67 | Petición de Liber | Orden: Nuevo registro, Jornadas, Registros, Reportes | Media | 0.6.39 (B58) | Barra de abajo en ese orden | Barra inferior |
+| M64 | Petición de Liber | Croquis de la jornada en el reporte (vista previa y PDF) | Media | 0.6.40 (B59) | Reportes › Vista previa: apartado «Croquis de la jornada» con los puntos numerados como la tabla; con señal debe verse la imagen de satélite de fondo; sin señal, fondo liso y el pie lo dice. Generar el PDF: el croquis va después de la tabla | Vista previa con croquis; hoja del PDF con croquis |
+| M68 | iPhone · Jornadas | El mapa acerca hasta zoom 22: los pines a 3 m ya no se enciman | Alta | 0.6.40 (B59) | Jornadas › jornada con árboles juntos: acercar con dos dedos más allá de donde antes rebotaba | Mapa con los pines separados |
+| M69 | Petición de Liber | Colores por significado con icono en Jornadas y «Cancelar» en rojo con tache | Media | 0.6.40 (B59) | En un punto con aviso: «Está bien» verde con palomita, «Eliminar» rojo con bote, «Ver» con ojo. Al eliminar: «Cancelar» rojo de contorno con tache | Lista de puntos con avisos; diálogo de eliminar |
+| M70 | iPhone · Jornadas | Subtítulo sin la fecha repetida y conteo sin autollenado de Safari | Baja | 0.6.40 (B59) | Abrir una jornada: «mié 23-SEP-2026 · Fulana…»; tocar el conteo: no debe salir la barra de llave/tarjeta | Cabecera de la jornada |
 
 ## 2. Por hacer
 
 | # | Origen | Mejora | Prioridad | Estado | Nota |
 |---|---|---|---|---|---|
 | M44 | PDF #4 | No partir un apartado corto (Por programa) a la página siguiente cuando cabe | Baja | Propuesto | — |
-| M64 | Petición de Liber | Mapa de la jornada en el reporte PDF: imagen satelital con señal, puntos sobre fondo liso sin ella | Media | Propuesto | +2–5 KB sin imagen, +60–120 KB con imagen; CORS de Esri por verificar en el teléfono |
 | M46 | Android | Revisión corta en Android: versión, botón «atrás» con ventanas abiertas, calendario y hora, especies con teclado, precisión, foto, compartir PDF, aviso | Alta | Pendiente | Espera capturas |
 
 ## 3. Verificadas sin falla

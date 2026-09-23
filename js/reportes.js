@@ -227,6 +227,18 @@ SRP.reportes = {
     this.vistaPrevia = { registros, cierre, fecha, cabo_id: caboId || '' };
     this.el('previa-hoja').innerHTML = this.htmlPrevia(registros, cierre, fecha);
     this.el('dlg-previa').showModal();
+    // El croquis (D115) se arma aparte para no detener la vista previa mientras llegan los mosaicos
+    this.ponerCroquisEnPrevia(registros);
+  },
+
+  async ponerCroquisEnPrevia(registros) {
+    const caja = this.el('previa-croquis');
+    if (!caja || !SRP.croquis) return;
+    const c = await SRP.croquis.generar(registros);
+    if (!caja.isConnected) return;   // la vista previa ya se cerró o se repintó
+    if (!c) { caja.innerHTML = '<p class="previa-nota">No se pudo armar el croquis en este dispositivo.</p>'; return; }
+    caja.innerHTML = '<img src="' + c.datos + '" alt="Croquis de la jornada con los ' + registros.length + ' puntos numerados">' +
+      '<p class="previa-nota">' + SRP.util.escapar(c.nota) + '</p>';
   },
 
   // La conciliación de Jornadas en el reporte (D112): sólo si la cuadrilla anotó cuántos plantó
@@ -270,6 +282,9 @@ SRP.reportes = {
       }).join('') + '</tbody></table></div>' +
       (registros.some(r => !SRP.folio.valido(r.folio)) ? '<p class="previa-nota">Registros PROVISIONALES: el folio se asigna al sincronizar con el servidor. Este reporte no sustituye al definitivo.</p>' : '') +
       (registros.some(r => SRP.folio.valido(r.folio) && r.es_ficticio) ? '<p class="previa-nota">Folios SIMULADOS con datos de prueba: no valen para placas, rótulos ni oficios.</p>' : ''));
+
+    // Croquis de la jornada (D115): mismo orden que la tabla; se llena cuando la imagen está lista
+    h += apartado('Croquis de la jornada', '<div id="previa-croquis" class="previa-croquis" aria-live="polite"><p class="previa-nota">Preparando el croquis…</p></div>');
 
     h += apartado('Totales por especie', '<div class="previa-tabla-caja"><table class="previa-tabla"><thead><tr><th>Especie</th><th>Nombre científico</th><th class="cifra">Ejemplares</th></tr></thead><tbody>' +
       this.totalesPorEspecie(registros).map(t => '<tr><td>' + esc(t.comun) + '</td><td><i>' + esc(t.cientifico) + '</i></td><td class="cifra">' + t.n + '</td></tr>').join('') +
@@ -459,6 +474,23 @@ SRP.reportes = {
       y += 4;
     }
     y += 4;
+
+    // Croquis de la jornada (D115): a todo el ancho útil, con su pie; si no cabe en la página, pasa a la siguiente
+    const croquis = SRP.croquis ? await SRP.croquis.generar(registros) : null;
+    if (croquis) {
+      const altoImg = util * SRP.croquis.ALTO / SRP.croquis.ANCHO;
+      salto(altoImg + 16);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...C.guinda);
+      doc.text('CROQUIS DE LA JORNADA', M, y);
+      doc.setDrawColor(...C.dorado); doc.setLineWidth(0.2); doc.line(M, y + 1.5, ancho - M, y + 1.5);
+      doc.addImage(croquis.datos, croquis.formato, M, y + 4, util, altoImg, undefined, 'FAST');
+      doc.setDrawColor(...C.gris); doc.setLineWidth(0.2); doc.rect(M, y + 4, util, altoImg);
+      doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor(...C.gris);
+      const pie = doc.splitTextToSize(croquis.nota, util);
+      doc.text(pie, M, y + 4 + altoImg + 4);
+      doc.setFont('helvetica', 'normal');
+      y += 4 + altoImg + 4 + pie.length * 3.6 + 4;
+    }
 
     // Totales por especie: calculados
     const totales = this.totalesPorEspecie(registros);

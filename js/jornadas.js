@@ -307,7 +307,7 @@ SRP.jornadas = {
     const h = r => SRP.envio.hora(r.fecha_registro);
 
     this.el('jornada-titulo').textContent = this.nombreSitio(j, cierre) + (j.partes > 1 ? ' (sitio ' + j.parte + ' de ' + j.partes + ')' : '');
-    this.el('jornada-sub').textContent = SRP.envio.diaEnLetra(j.fecha) + ' · ' + SRP.util.formatearFecha(j.fecha) + ' · ' +
+    this.el('jornada-sub').textContent = SRP.envio.diaEnLetra(j.fecha).split(' ')[0] + ' ' + SRP.util.formatearFecha(j.fecha) + ' · ' +
       SRP.ref.nombreUsuario(j.cabo_id) + ' · ' + h(regs[0]) + (regs.length > 1 ? '–' + h(regs[regs.length - 1]) : '') +
       (this.alcaldiasDe(j).length ? ' · ' + this.alcaldiasDe(j).join(', ') : '');
 
@@ -329,9 +329,11 @@ SRP.jornadas = {
         ? av.map(a => '<span class="aviso-punto" data-tono="' + (revisado ? 'ok' : tono) + '">' + esc(a.texto) + '</span>').join('') +
           (revisado ? '<span class="aviso-punto" data-tono="ok">Revisado</span>' : '')
         : (r.punto_origen === 'gps' && r.gps_precision_m ? 'GPS ±' + Math.round(r.gps_precision_m) + ' m' : SRP.mapa.textoOrigen(r.punto_origen, r.gps_precision_m));
-      const acciones = ['<button type="button" class="btn btn-texto" data-accion="ver" data-id="' + r.id + '">Ver</button>'];
-      if (av.length && !revisado && puedeEditar(r)) acciones.push('<button type="button" class="btn btn-texto" data-accion="bien" data-id="' + r.id + '">Está bien</button>');
-      if (av.some(a => a.tipo === 'duplicado') && !revisado && puedeEliminar(r)) acciones.push('<button type="button" class="btn btn-texto btn-texto-peligro" data-accion="eliminar" data-id="' + r.id + '">Eliminar</button>');
+      // Color por significado con icono (Norma 8.4, D116): ver neutro, confirmar verde, eliminar rojo
+      const I = SRP.ICONOS.svg;
+      const acciones = ['<button type="button" class="btn btn-texto" data-accion="ver" data-id="' + r.id + '">' + I('ver', 18) + '<span>Ver</span></button>'];
+      if (av.length && !revisado && puedeEditar(r)) acciones.push('<button type="button" class="btn btn-texto btn-texto-exito" data-accion="bien" data-id="' + r.id + '">' + I('palomita', 18) + '<span>Está bien</span></button>');
+      if (av.some(a => a.tipo === 'duplicado') && !revisado && puedeEliminar(r)) acciones.push('<button type="button" class="btn btn-texto btn-texto-peligro" data-accion="eliminar" data-id="' + r.id + '">' + I('basura', 18) + '<span>Eliminar</span></button>');
       return '<li class="punto-jornada" data-id="' + r.id + '"><span class="punto-num" data-tono="' + tono + '" aria-hidden="true">' + (i + 1) + '</span>' +
         '<div class="punto-datos"><span class="punto-especie"><span class="oculto-visual">Punto ' + (i + 1) + ': </span>' + esc(esp.comun) + '</span>' +
         '<span class="punto-detalle">' + esc(h(r)) + ' · ' + detalle + '</span></div>' +
@@ -375,10 +377,12 @@ SRP.jornadas = {
     if (typeof L === 'undefined') return;
     const c = SRP.CONFIG.MAPA;
     if (!this.mapa) {
-      this.mapa = L.map('jornada-mapa', { center: c.CENTRO, zoom: c.ZOOM_INICIAL, minZoom: c.ZOOM_MIN, maxZoom: c.ZOOM_MAX,
+      /* Los árboles de una jornada están a pocos metros y al zoom máximo del proveedor (19) los
+         pines se enciman. El mapa deja acercar hasta ZOOM_JORNADA escalando la imagen (D116). */
+      this.mapa = L.map('jornada-mapa', { center: c.CENTRO, zoom: c.ZOOM_INICIAL, minZoom: c.ZOOM_MIN, maxZoom: c.ZOOM_JORNADA,
         maxBounds: c.LIMITES, maxBoundsViscosity: 1, gestureHandling: true });
       this.mapa.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>');
-      c.CAPAS.forEach(capa => L.tileLayer(capa.url, { attribution: capa.atribucion, maxZoom: c.ZOOM_MAX }).addTo(this.mapa));
+      c.CAPAS.forEach(capa => L.tileLayer(capa.url, { attribution: capa.atribucion, maxZoom: c.ZOOM_JORNADA, maxNativeZoom: c.ZOOM_MAX }).addTo(this.mapa));
       this.capaPuntos = L.layerGroup().addTo(this.mapa);
     }
     this.capaPuntos.clearLayers();
@@ -397,7 +401,7 @@ SRP.jornadas = {
       this.mapa.invalidateSize();
       if (encuadrar && regs.length) {
         if (regs.length === 1) this.mapa.setView([regs[0].lat, regs[0].lng], c.ZOOM_PUNTO);
-        else this.mapa.fitBounds(L.latLngBounds(regs.map(r => [r.lat, r.lng])), { padding: [28, 28], maxZoom: c.ZOOM_MAX - 1 });
+        else this.mapa.fitBounds(L.latLngBounds(regs.map(r => [r.lat, r.lng])), { padding: [28, 28], maxZoom: c.ZOOM_JORNADA - 1 });
       }
     }, 60);
   },

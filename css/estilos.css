@@ -214,6 +214,9 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 .btn-peligro { background: var(--error); color: var(--fondo); }
 .btn-exito { background: var(--exito); color: var(--fondo); }
 .btn-editar { background: var(--fondo); color: var(--editar); border-color: var(--editar); }
+/* Cancelar: rojo de contorno con tache (D116); el rojo relleno queda para eliminar */
+.btn-cancelar { background: var(--fondo); color: var(--error); border-color: var(--error); }
+.btn-texto-exito { color: var(--exito); }
 /* Botón sólo de icono: la etiqueta la lleva aria-label, y el título dice a qué campo se refiere */
 .btn-texto-editar { background: none; color: var(--editar); text-decoration: underline; padding: 0 var(--e-2); }
 /* Botón sin palabra: sólo donde lo que representa ya está escrito al lado, y con aria-label */
@@ -327,11 +330,16 @@ fieldset.campo { margin-inline: 0; }
 .aviso-punto[data-tono="err"] { color: var(--error); }
 .aviso-punto[data-tono="ok"] { color: var(--exito); }
 .punto-acciones { display: flex; gap: 0; flex-wrap: wrap; justify-content: flex-end; }
-.punto-acciones .btn-texto { padding: var(--e-1) var(--e-2); min-height: var(--toque); }
+.punto-acciones .btn-texto { padding: var(--e-1) var(--e-2); min-height: var(--toque); gap: 4px; }
+.punto-acciones .btn-texto svg { flex: none; }
 .btn-texto-peligro { color: var(--error); }
 .barra-jornada { display: flex; gap: var(--e-2); margin-top: var(--e-3); }
 .barra-jornada .btn { flex: 1 1 0; }
 .filtros-un-dia { grid-template-columns: minmax(0, 12rem); }
+
+/* Croquis de la jornada en la vista previa (D115) */
+.previa-croquis img { display: block; width: 100%; height: auto; border: 1px solid var(--borde-suave); border-radius: 6px; }
+.previa-croquis .previa-nota { margin-top: var(--e-1); }
 
 /* Estado vacío con salida (D96) */
 .vacio { text-align: center; padding: var(--e-5) var(--e-4); border: 1px dashed var(--borde-filtro); border-radius: var(--radio-filtro); background: var(--fondo); }

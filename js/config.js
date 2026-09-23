@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 58',
+  ETAPA: 'Bloque 59',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -49,6 +49,7 @@ SRP.CONFIG = {
     ZOOM_MIN: 10,
     ZOOM_MAX: 19,
     ZOOM_PUNTO: 17,
+    ZOOM_JORNADA: 22,      // hasta dónde se acerca el mapa de la jornada, escalando la imagen (D116)
     LIMITES: [[19.04, -99.37], [19.60, -98.94]],   // ámbito CDMX; fuera de aquí el punto no es válido
 
     /* CAPAS DEL MAPA BASE, en orden de dibujo: la imagen de satélite abajo y, encima, una capa

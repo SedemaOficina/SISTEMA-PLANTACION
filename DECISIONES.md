@@ -786,3 +786,25 @@
   tachada y usuario en las demás, por consistencia. (3) Las secciones van en este orden: Nuevo
   registro, Jornadas, Registros, Reportes (y Catálogos y Usuarios para administración). Pedido por
   Liber, 23-09-2026.
+
+## Bloque 59 — Croquis de la jornada en el reporte y revisión de Jornadas en el teléfono
+
+- **D115. El reporte lleva el croquis de la jornada.** Después de la tabla de ejemplares, una
+  imagen con los puntos numerados en el mismo orden que la tabla, barra de escala y norte
+  (`js/croquis.js`). Con conexión lleva de fondo la imagen de satélite del mismo proveedor del
+  mapa (JPEG, 60–120 KB); sin conexión, si los mosaicos no llegan en 8 s o el servidor no permite
+  copiarlos al lienzo, va sobre fondo liso (PNG de pocos KB) y el pie lo dice. Se arma una vez por
+  conjunto de puntos y la reutilizan la vista previa y el PDF. La vista previa abre sin esperar
+  la imagen y la coloca cuando está. [pendiente] Comprobar en el teléfono que los mosaicos de Esri
+  permitan la copia (CORS); si no, el croquis saldrá siempre sin imagen y habrá que cambiar de
+  proveedor o pasar por un servidor propio. Pedido por Liber (M64), 23-09-2026.
+
+- **D116. Revisión de Jornadas con capturas del iPhone.** (1) El mapa de la jornada acepta zoom
+  hasta 22 escalando la imagen (`ZOOM_JORNADA`): al 19, tope del proveedor, dos árboles a 3 m
+  quedaban a 11 px y los pines se encimaban; el teléfono «rebotaba» al intentar acercar más.
+  (2) Las acciones de cada punto siguen la Norma 8.4, color por significado y con icono: «Ver»
+  con ojo, «Está bien» verde con palomita, «Eliminar» rojo con bote. (3) «Cancelar» y «Cancelar
+  edición» van en rojo de contorno con tache (`.btn-cancelar`); el rojo relleno sigue reservado a
+  eliminar. (4) El subtítulo de la jornada dice la fecha una sola vez. (5) El campo del conteo
+  lleva `autocomplete="off"` para que Safari no ofrezca llave, tarjeta y ubicación. Pedido por
+  Liber, 23-09-2026.

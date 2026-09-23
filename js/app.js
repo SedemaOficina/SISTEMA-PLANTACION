@@ -17,6 +17,9 @@ SRP.app = {
     this.el('navegacion').querySelectorAll('.pestana').forEach(b => I.poner(b, pestana[b.dataset.vista], 22));
     I.poner(this.el('btn-usr-agregar'), 'usuarioMas', 20);
     // Menú de la cuenta con icono en cada opción (D114): el sol y la puerta pedidos por Liber, y el resto por consistencia
+    // Cancelar lleva tache y va en rojo de contorno (D116)
+    I.poner(this.el('btn-cancelar-edicion'), 'cerrar', 18);
+    I.poner(this.el('btn-confirmar-no'), 'cerrar', 18);
     [['btn-contraste', 'sol'], ['btn-respaldo', 'disco'], ['btn-sin-senal', 'sinSenal'], ['btn-cambiar-perfil', 'usuario'], ['btn-cerrar-sesion', 'salir']]
       .forEach(([id, icono]) => I.poner(this.el(id), icono, 20));
     // Los buscadores llevan la lupa dentro del campo, desde la hoja de estilos (D95)

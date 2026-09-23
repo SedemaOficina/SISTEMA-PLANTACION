@@ -1150,3 +1150,17 @@ reportes ni esquema (85 comprobaciones).
 
 **Verificación:** 368 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.39.
+
+## Bloque 59 — Croquis en el reporte y revisión de Jornadas (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.40.
+
+**Qué cambió (D115, D116).** Nuevo `js/croquis.js` (Web Mercator, mosaicos con CORS y tiempo
+límite, fondo liso de respaldo, puntos numerados, escala, norte, caché). `reportes.js`: apartado
+«Croquis de la jornada» en vista previa (se llena cuando la imagen está) y PDF. `jornadas.js`:
+zoom hasta 22, acciones con icono y color, subtítulo sin fecha repetida. `index.html`/`app.js`:
+`.btn-cancelar` con tache en «Cancelar» y «Cancelar edición»; `autocomplete="off"` en el conteo.
+`config.js`: `ZOOM_JORNADA`. Pruebas: croquis en vista previa y PDF (peso), encuadre, iconos de
+las acciones, «Cancelar» en rojo.
+
+**Verificación:** 374 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.40.
