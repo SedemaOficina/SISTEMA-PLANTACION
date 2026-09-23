@@ -751,3 +751,26 @@
   (`srp_envios_prueba`), no en la base, porque los dos campos de envío siguen pendientes para la
   Fase 2 (esquema, pendientes). Con `ES_FICTICIO` en falso nada de esto corre y la pantalla dice
   lo de D83. Pedido por Liber, 23-09-2026.
+
+## Bloque 57 — Jornadas y el atajo «Un día»
+
+- **D112. «Jornadas» es la cuarta sección: mapa y lista de lo registrado en un día de trabajo.**
+  Al cierre, cabos y coordinadores necesitan comprobar que cada árbol sembrado tenga su punto y
+  corregir lo que salió mal. Una jornada es la fecha de plantación más el cabo, la misma llave
+  del cierre del día; si ese día hubo dos sitios a más de 500 m, se muestran como dos tarjetas.
+  La revisión tiene el mapa con los puntos numerados en el orden en que se registraron, la lista
+  con el mismo número (tocar uno lo marca en ambos), la conciliación «Árboles sembrados según la
+  cuadrilla» contra los registrados (se guarda en el cierre como `arboles_sembrados` y sale en el
+  reporte), y avisos por punto: posible duplicado (misma especie a menos de 3 m), lejos del resto
+  (a más de 150 m de la mediana de los demás) y precisión baja (peor que 30 m). «Está bien» marca
+  el punto como revisado (`puntos_revisados` del cierre); «Eliminar» sólo aparece en duplicados;
+  «Ver» y «Editar» vuelven a la misma jornada. «Registrar faltante» abre Nuevo registro con la
+  fecha puesta; «Reporte de la jornada» abre Reportes en esa fecha. Va en la barra inferior del
+  teléfono. Para que la llave coincida, un cabo guarda su cierre con su propio id (antes
+  «fecha|TODOS»; se sigue leyendo). El sitio de la tarjeta sale del cierre o, si no, de la colonia
+  más frecuente. Es un módulo aparte y no una vista de Registros por decisión de Liber, 23-09-2026.
+
+- **D113. Atajo «Un día» en Registros y Jornadas.** Para ver una fecha concreta antes había que
+  abrir «Un periodo» y repetirla en Desde y Hasta. «Un día» muestra una sola fecha y filtra en
+  cuanto se elige, sin «Aplicar»; esconde año, mes y el rango mientras está activo. Los atajos
+  quedan Hoy · Un día · Todos · Un periodo. Pedido por Liber, 23-09-2026.

@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 56',
+  ETAPA: 'Bloque 57',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -37,6 +37,8 @@ SRP.CONFIG = {
   DEMORA_ENVIO_PRUEBA_MS: 1200,     // lo que tarda el «envío», para que se vea «Enviando…»
   REINTENTO_ENVIO_MS: 60000,        // reintento mientras haya pendientes
   HORA_CIERRE_JORNADA: 17,          // desde esta hora, lo de hoy sin enviar ya es atraso
+  // Revisión de jornadas (D112): umbrales de los avisos y de la partición por sitio, en metros
+  JORNADA: { DUPLICADO_M: 3, FUERA_M: 150, SEPARAR_M: 500 },
 
   // [pendiente] Fase 2: proveedor institucional de identidad. Hoy el acceso es simulado.
   AUTENTICACION: { PROVEEDOR: 'simulado' },

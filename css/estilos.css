@@ -272,6 +272,67 @@ fieldset.campo { margin-inline: 0; }
   border-top: 1px solid var(--borde-suave); box-shadow: 0 -6px 12px -8px rgba(0, 0, 0, .18);
 }
 
+/* JORNADAS (D112): tarjetas de jornada, revisión con mapa numerado, conciliación y lista de puntos */
+.lista-jornadas { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e-2); }
+.jornada-boton { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: var(--e-3); align-items: start; width: 100%; text-align: left;
+  padding: var(--e-3); border: 1px solid var(--borde-suave); border-radius: var(--radio-filtro); background: var(--fondo); color: inherit; font: inherit; cursor: pointer; }
+.jornada-mini { width: 72px; height: 72px; display: block; }
+.jornada-mini rect { fill: var(--fondo-suave); }
+.jornada-mini circle { fill: var(--guinda); }
+.jornada-datos { min-width: 0; display: grid; gap: 2px; }
+.jornada-dia { font-family: var(--fuente-titulo); font-weight: 600; }
+.jornada-sitio { overflow-wrap: anywhere; }
+.jornada-cifras { font-size: var(--t-xs); color: var(--gris); overflow-wrap: anywhere; }
+.insignia-jornada { display: inline-block; justify-self: start; margin-top: 2px; padding: 1px var(--e-2); border-radius: 10px; font-size: var(--t-xs); font-weight: 500; background: var(--fondo-suave); color: var(--gris); }
+.insignia-jornada[data-tono="ok"] { background: var(--exito-fondo); color: var(--exito); }
+.insignia-jornada[data-tono="rev"] { background: var(--editar-fondo); color: var(--editar); }
+.insignia-jornada[data-tono="err"] { background: var(--error-fondo); color: var(--error); }
+.volver { padding-left: 0; margin-bottom: var(--e-1); }
+.jornada-titulo { margin-bottom: var(--e-1); }
+.mapa-jornada { height: clamp(240px, 40vh, 420px); border-radius: var(--radio); margin-top: var(--e-3); }
+.leyenda-jornada { display: flex; gap: var(--e-3); flex-wrap: wrap; margin: var(--e-2) 0 var(--e-3); font-size: var(--t-xs); color: var(--gris); }
+.leyenda-jornada i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: -1px; background: var(--guinda); }
+.leyenda-jornada i[data-tono="rev"] { background: var(--dorado); }
+.leyenda-jornada i[data-tono="err"] { background: var(--error); }
+/* Pin numerado del mapa: círculo con el número, en el color del aviso; el elegido crece */
+.pin-num { background: none; border: 0; }
+.pin-num span { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--guinda); color: var(--fondo);
+  font: 700 12px/1 var(--fuente-cuerpo); border: 2px solid var(--fondo); box-shadow: 0 1px 3px rgba(0, 0, 0, .35); transition: transform .12s; }
+.pin-num span[data-tono="rev"] { background: var(--dorado); color: var(--texto); }
+.pin-num span[data-tono="err"] { background: var(--error); }
+.pin-num.elegido span { transform: scale(1.35); outline: 3px solid var(--guinda); outline-offset: 1px; }
+.conciliacion { padding: var(--e-3) var(--e-4); border-radius: var(--radio-filtro); border-left: 4px solid var(--gris); background: var(--fondo-suave); margin-bottom: var(--e-3); }
+.conciliacion[data-tono="ok"] { border-color: var(--exito); background: var(--exito-fondo); }
+.conciliacion[data-tono="rev"] { border-color: var(--dorado); background: var(--editar-fondo); }
+.conciliacion[data-tono="err"] { border-color: var(--error); background: var(--error-fondo); }
+.conciliacion-fila { display: flex; justify-content: space-between; align-items: center; gap: var(--e-3); margin-bottom: var(--e-2); }
+.conciliacion-fila label, .conciliacion-fila span { flex: 1 1 auto; }
+.conciliacion-fila strong { font-size: var(--t-l); }
+.conciliacion input { width: 5.5rem; text-align: center; font-size: var(--t-l); font-weight: 600; padding: var(--e-1) var(--e-2); border: 1px solid var(--borde-control); border-radius: var(--radio-control); background: var(--fondo); }
+.conciliacion-resultado { margin: 0; font-size: var(--t-s); font-weight: 500; }
+.conciliacion[data-tono="ok"] .conciliacion-resultado { color: var(--exito); }
+.conciliacion[data-tono="rev"] .conciliacion-resultado { color: var(--editar); }
+.conciliacion[data-tono="err"] .conciliacion-resultado { color: var(--error); }
+.lista-puntos { list-style: none; margin: 0; padding: 0; }
+.punto-jornada { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: var(--e-2); align-items: center; padding: var(--e-2) var(--e-1); border-bottom: 1px solid var(--borde-suave); border-radius: 8px; cursor: pointer; }
+.punto-jornada.elegido { background: var(--fondo-suave); }
+.punto-num { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--guinda); color: var(--fondo); font-size: 12px; font-weight: 700; }
+.punto-num[data-tono="rev"] { background: var(--dorado); color: var(--texto); }
+.punto-num[data-tono="err"] { background: var(--error); }
+.punto-datos { min-width: 0; }
+.punto-especie { display: block; font-weight: 500; }
+.punto-detalle { display: block; font-size: var(--t-xs); color: var(--gris); overflow-wrap: anywhere; }
+.aviso-punto { font-weight: 600; margin-right: var(--e-2); }
+.aviso-punto[data-tono="rev"] { color: var(--editar); }
+.aviso-punto[data-tono="err"] { color: var(--error); }
+.aviso-punto[data-tono="ok"] { color: var(--exito); }
+.punto-acciones { display: flex; gap: 0; flex-wrap: wrap; justify-content: flex-end; }
+.punto-acciones .btn-texto { padding: var(--e-1) var(--e-2); min-height: var(--toque); }
+.btn-texto-peligro { color: var(--error); }
+.barra-jornada { display: flex; gap: var(--e-2); margin-top: var(--e-3); }
+.barra-jornada .btn { flex: 1 1 0; }
+.filtros-un-dia { grid-template-columns: minmax(0, 12rem); }
+
 /* Estado vacío con salida (D96) */
 .vacio { text-align: center; padding: var(--e-5) var(--e-4); border: 1px dashed var(--borde-filtro); border-radius: var(--radio-filtro); background: var(--fondo); }
 .vacio-icono { display: inline-grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: var(--fondo-suave); color: var(--guinda); margin-bottom: var(--e-2); }

@@ -13,7 +13,7 @@ SRP.app = {
     I.poner(document.querySelector('label[for="acceso-clave"]'), 'candado', 18);
     I.poner(this.el('form-acceso').querySelector('button[type="submit"]'), 'entrar', 20);
     I.poner(this.el('btn-entrar-prueba'), 'entrar', 20);
-    const pestana = { registrar: 'mas', registros: 'registros', reportes: 'reportes', catalogos: 'catalogos', usuarios: 'usuarios' };
+    const pestana = { registrar: 'mas', registros: 'registros', jornadas: 'jornadas', reportes: 'reportes', catalogos: 'catalogos', usuarios: 'usuarios' };
     this.el('navegacion').querySelectorAll('.pestana').forEach(b => I.poner(b, pestana[b.dataset.vista], 22));
     I.poner(this.el('btn-usr-agregar'), 'usuarioMas', 20);
     // Los buscadores llevan la lupa dentro del campo, desde la hoja de estilos (D95)
@@ -43,6 +43,7 @@ SRP.app = {
     SRP.catalogos.iniciar();
     SRP.usuarios.iniciar();
     SRP.conexion.iniciar();
+    SRP.jornadas.iniciar();
     SRP.envio.iniciar();           // envío simulado: sólo con datos de prueba (D111)
     this.iniciarAcceso();
     this.iniciarDialogos();
@@ -274,12 +275,13 @@ SRP.app = {
     this.vista = nombre;
     document.querySelectorAll('.vista').forEach(v => { v.hidden = v.id !== 'vista-' + nombre; });
     // Al editar se está dentro de Registros, de donde se llegó: «Nuevo registro» no se marca (D100)
-    const marcada = nombre === 'registrar' && SRP.formulario.estado.editando ? 'registros' : nombre;
+    const marcada = nombre === 'registrar' && SRP.formulario.estado.editando ? (SRP.jornadas.volverAlDetalle ? 'jornadas' : 'registros') : nombre;
     this.el('navegacion').querySelectorAll('.pestana').forEach(b => {
       if (b.dataset.vista === marcada) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
     });
     if (nombre === 'registrar') SRP.formulario.preparar();
     if (nombre === 'registros') SRP.registros.preparar();
+    if (nombre === 'jornadas') SRP.jornadas.preparar();
     if (nombre === 'reportes') SRP.reportes.preparar();
     if (nombre === 'catalogos') SRP.catalogos.preparar();
     if (nombre === 'usuarios') SRP.usuarios.preparar();

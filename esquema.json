@@ -787,7 +787,7 @@
       ]
     },
     "cierres": {
-      "que_es": "Datos de cierre del parte del día: un renglón por jornada y cuadrilla. Todo es opcional y su único destino es el PDF (D58); nada se explota ni se cuenta.",
+      "que_es": "Datos de cierre del reporte del día: un renglón por jornada y cuadrilla (`fecha|cabo_id`). Todo es opcional; su destino es el PDF (D58) y, desde D112, la conciliación de la jornada (arboles_sembrados, puntos_revisados).",
       "llave": "id",
       "indices": [
         "fecha"
@@ -826,9 +826,9 @@
           "tipo": "uuid",
           "nulo": false,
           "origen": "Sistema",
-          "dominio": "→ usuarios.id; '' si el parte es del día completo",
+          "dominio": "→ usuarios.id; '' si el reporte es del día completo (coordinador o administración sin cabo elegido)",
           "pantalla": "No",
-          "regla": "El cabo por el que se filtró el parte"
+          "regla": "El cabo de la jornada. Un cabo reporta siempre con su propio id (D112); antes del bloque 57 se guardaba como '' y se sigue leyendo"
         },
         {
           "campo": "encargado_id",
@@ -874,6 +874,24 @@
           "dominio": "ISO 8601",
           "pantalla": "No",
           "regla": ""
+        },
+        {
+          "campo": "arboles_sembrados",
+          "tipo": "integer",
+          "nulo": true,
+          "origen": "Persona",
+          "dominio": "0–9999; nulo si la cuadrilla no lo anotó",
+          "pantalla": "Jornadas → «Árboles sembrados según la cuadrilla»",
+          "regla": "Conciliación de la jornada (D112): se compara con los registros activos del día y el cabo; el reporte dice si cuadra. Nunca sustituye al conteo de registros"
+        },
+        {
+          "campo": "puntos_revisados",
+          "tipo": "uuid[]",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "→ plantaciones.id; [] si nadie ha revisado",
+          "pantalla": "Jornadas → «Está bien» en un punto con aviso",
+          "regla": "Puntos con aviso (duplicado, lejos, precisión) que alguien confirmó como correctos (D112); el aviso deja de contarse, no se borra"
         },
         {
           "campo": "sitio",

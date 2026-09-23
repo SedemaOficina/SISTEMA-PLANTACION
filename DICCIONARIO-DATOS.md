@@ -147,22 +147,24 @@ Los tres catálogos administrables en una sola tabla, distinguidos por `tipo`: p
 
 ### 4.4 `cierres`
 
-Datos de cierre del parte del día: un renglón por jornada y cuadrilla. Todo es opcional y su único destino es el PDF (D58); nada se explota ni se cuenta.
+Datos de cierre del reporte del día: un renglón por jornada y cuadrilla (`fecha|cabo_id`). Todo es opcional; su destino es el PDF (D58) y, desde D112, la conciliación de la jornada (arboles_sembrados, puntos_revisados).
 
 - **Llave:** `id`. **Índices:** `fecha`. **Pantalla:** Reportes → «Datos de cierre del día».
-- **Campos:** 18.
+- **Campos:** 20.
 
 | Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
 |---|---|---|---|---|---|---|
 | `id` | text | No | Sistema | `fecha\|cabo_id` o `fecha\|TODOS` | No | Regenerar el parte del mismo día reabre el mismo cierre (Norma 7.6) |
 | `es_ficticio` | boolean | No | Sistema | true/false | No | Copia de CONFIG.ES_FICTICIO (D87): la depuración de datos de prueba también alcanza a esta tabla |
 | `fecha` | date | No | Sistema | AAAA-MM-DD | Encabezado del diálogo | El día del parte: cualquier día, no sólo hoy (D70) |
-| `cabo_id` | uuid | No | Sistema | → usuarios.id; '' si el parte es del día completo | No | El cabo por el que se filtró el parte |
+| `cabo_id` | uuid | No | Sistema | → usuarios.id; '' si el reporte es del día completo (coordinador o administración sin cabo elegido) | No | El cabo de la jornada. Un cabo reporta siempre con su propio id (D112); antes del bloque 57 se guardaba como '' y se sigue leyendo |
 | `encargado_id` | uuid | Sí | Sesión | → usuarios.id | Encargado | Para un cabo es él mismo (no se pregunta); quien ve a varias personas lo elige sólo entre los cabos con registros ese día (D57) |
 | `creado_por_id` | uuid | No | Sesión | → usuarios.id | No | — |
 | `fecha_creacion` | timestamptz | No | Sistema | ISO 8601 | No | — |
 | `editado_por_id` | uuid | No | Sesión | → usuarios.id | No | — |
 | `fecha_ultima_edicion` | timestamptz | No | Sistema | ISO 8601 | No | — |
+| `arboles_sembrados` | integer | Sí | Persona | 0–9999; nulo si la cuadrilla no lo anotó | Jornadas → «Árboles sembrados según la cuadrilla» | Conciliación de la jornada (D112): se compara con los registros activos del día y el cabo; el reporte dice si cuadra. Nunca sustituye al conteo de registros |
+| `puntos_revisados` | uuid[] | No | Persona | → plantaciones.id; [] si nadie ha revisado | Jornadas → «Está bien» en un punto con aviso | Puntos con aviso (duplicado, lejos, precisión) que alguien confirmó como correctos (D112); el aviso deja de contarse, no se borra |
 | `sitio` | text | No | Persona | Texto libre; '' si no se escribe | Dirección o sitio | Nada se prellena (los partes varían mucho) |
 | `actividades` | text | No | Persona | Texto libre | Actividades realizadas | — |
 | `personal` | text | No | Persona | Texto libre | Personal de SEDEMA participante | — |
@@ -433,6 +435,8 @@ CREATE TABLE cierres (
   fecha_creacion           timestamptz    NOT NULL,
   editado_por_id           uuid           NOT NULL,
   fecha_ultima_edicion     timestamptz    NOT NULL,
+  arboles_sembrados        integer        NULL,
+  puntos_revisados         uuid[]         NOT NULL,
   sitio                    text           NOT NULL,
   actividades              text           NOT NULL,
   personal                 text           NOT NULL,

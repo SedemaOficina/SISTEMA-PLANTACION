@@ -111,7 +111,8 @@ SRP.reportes = {
 
   async generarDesdeVista() {
     const dia = this.el('pdf-dia').value;
-    const cabo = this.el('caja-pdf-cabo').hidden ? '' : this.el('pdf-cabo').value;
+    // Un cabo reporta su propia jornada: el cierre lleva su id, la misma llave que Jornadas (D112)
+    const cabo = this.el('caja-pdf-cabo').hidden ? SRP.sesion.usuario.id : this.el('pdf-cabo').value;
     const registros = await this.registrosDelDia(dia, cabo);
     if (!dia || !registros.length) return;
     this.abrir(registros, dia, cabo);
@@ -133,7 +134,9 @@ SRP.reportes = {
       (registros.length === 1 ? ' ejemplar registrado' : ' ejemplares registrados');
 
     // Lo capturado antes para este mismo día no se vuelve a escribir (Norma 7.6)
-    const previo = await SRP.almacen.uno('cierres', this.claveCierre(fecha, this.contexto.cabo_id));
+    // Antes del bloque 57 el cierre de un cabo se guardaba como «fecha|TODOS»: se sigue leyendo
+    const previo = (await SRP.almacen.uno('cierres', this.claveCierre(fecha, this.contexto.cabo_id))) ||
+      (caboId && SRP.permisos.de(SRP.sesion.usuario).alcance === 'propios' ? await SRP.almacen.uno('cierres', this.claveCierre(fecha, '')) : null);
     this.contexto.previo = previo || null;
     this.CAMPOS.forEach(c => { this.el('cie-' + c).value = previo ? (previo[c] || '') : ''; });
     // Un cierre guardado antes del bloque 20 traía «vehiculo» en un solo campo: se muestra como modelo
@@ -194,7 +197,10 @@ SRP.reportes = {
       creado_por_id: previo ? previo.creado_por_id : SRP.sesion.usuario.id,
       fecha_creacion: previo ? previo.fecha_creacion : ahora,
       editado_por_id: SRP.sesion.usuario.id,
-      fecha_ultima_edicion: ahora
+      fecha_ultima_edicion: ahora,
+      // Lo que se anota en Jornadas no se escribe aquí, pero tampoco se pierde al cerrar el reporte (D112)
+      arboles_sembrados: previo && Number.isInteger(previo.arboles_sembrados) ? previo.arboles_sembrados : null,
+      puntos_revisados: previo && Array.isArray(previo.puntos_revisados) ? previo.puntos_revisados : []
     };
     this.CAMPOS.forEach(k => { cierre[k] = this.el('cie-' + k).value.trim(); });
     return cierre;
@@ -223,6 +229,13 @@ SRP.reportes = {
     this.el('dlg-previa').showModal();
   },
 
+  // La conciliación de Jornadas en el reporte (D112): sólo si la cuadrilla anotó cuántos sembró
+  textoConteo(cierre, registros) {
+    if (!cierre || !Number.isInteger(cierre.arboles_sembrados)) return '';
+    const s = cierre.arboles_sembrados, n = registros.length;
+    return 'Árboles sembrados según la cuadrilla: ' + s + ' · registrados: ' + n + (s === n ? ' (cuadra)' : ' (no cuadra)');
+  },
+
   htmlPrevia(registros, cierre, fecha) {
     const esc = t => SRP.util.escapar(t);
     const u = SRP.sesion.usuario;
@@ -236,7 +249,8 @@ SRP.reportes = {
     if (hay('sitio') || alcaldias.length) {
       const terr = alcaldias.length ? (alcaldias.length === 1 ? 'Alcaldía ' + alcaldias[0] : 'Alcaldías: ' + alcaldias.join(', ')) : '';
       h += '<div class="previa-sitio">' + (hay('sitio') ? '<p><strong>Sitio:</strong> ' + parrafo(cierre.sitio) + '</p>' : '') +
-        (terr ? '<p class="previa-tenue">' + esc(terr) + '</p>' : '') + '</div>';
+        (terr ? '<p class="previa-tenue">' + esc(terr) + '</p>' : '') +
+        (this.textoConteo(cierre, registros) ? '<p><strong>' + esc(this.textoConteo(cierre, registros)) + '</strong></p>' : '') + '</div>';
     }
     if (hay('actividades')) h += apartado('Actividades realizadas', '<p>' + parrafo(cierre.actividades) + '</p>');
     // Personal (D103): el encargado primero y cada grupo con su subtítulo y sus nombres sangrados
@@ -363,7 +377,8 @@ SRP.reportes = {
       const lineas = hay('sitio') ? doc.splitTextToSize(cierre.sitio, util - 8) : [];
       const territorio = alcaldias.length
         ? (alcaldias.length === 1 ? 'Alcaldía ' + alcaldias[0] : 'Alcaldías: ' + alcaldias.join(', ')) : '';
-      const altoCaja = 6 + lineas.length * 4.6 + (territorio ? 5 : 0);
+      const conteo = this.textoConteo(cierre, registros);
+      const altoCaja = 6 + lineas.length * 4.6 + (territorio ? 5 : 0) + (conteo ? 5 : 0);
       salto(altoCaja + 4);
       doc.setDrawColor(...C.tinta); doc.setLineWidth(0.2);
       doc.rect(M, y, util, altoCaja);
@@ -378,6 +393,12 @@ SRP.reportes = {
       if (territorio) {
         doc.setFontSize(9); doc.setTextColor(...C.gris);
         doc.text(territorio, M + 3, lineas.length ? yy + 0.5 : yy);
+        yy += 5;
+      }
+      if (conteo) {
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...C.tinta);
+        doc.text(conteo, M + 3, lineas.length || territorio ? yy + 0.5 : yy);
+        doc.setFont('helvetica', 'normal');
       }
       y += altoCaja + 7;
     }

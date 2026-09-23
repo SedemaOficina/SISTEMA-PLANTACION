@@ -56,6 +56,13 @@ SRP.registros = {
       this.sincronizarControles();
       this.aplicar();
     });
+    // «Un día» se aplica al elegir la fecha: es un solo dato, no hace falta «Aplicar» (D113)
+    this.el('filtro-dia').addEventListener('change', () => {
+      this.filtro.dia = this.el('filtro-dia').value;
+      this.diaAbierto = true;
+      this.sincronizarControles();
+      this.aplicar();
+    });
     this.el('btn-reiniciar-filtros').addEventListener('click', () => this.reiniciarFiltros());
     // En teléfono los filtros se pliegan tras «Filtros» (D100); en escritorio el botón no se ve
     this.el('btn-filtros').addEventListener('click', () => this.plegarFiltros(this.el('panel-filtros').dataset.abierto !== 'true'));
@@ -95,6 +102,8 @@ SRP.registros = {
       this.el('dlg-detalle').close();
       SRP.formulario.editar(r);
     });
+    // Cerrar el detalle sin editar no deja marcado el regreso a Jornadas
+    this.el('dlg-detalle').addEventListener('close', () => { if (SRP.app.vista === 'jornadas' && !SRP.formulario.estado.editando) SRP.jornadas.volverAlDetalle = false; });
     // Al cerrar, su mapa se destruye: uno vivo en un diálogo oculto sigue consumiendo y contando
     this.el('dlg-detalle').addEventListener('close', () => {
       if (this.mapaDetalle) { this.mapaDetalle.remove(); this.mapaDetalle = null; }
@@ -140,6 +149,8 @@ SRP.registros = {
     this.filtro = { dia: '', anio: '', mes: '', desde: '', hasta: '', cabo: '' };
     this.el('filtro-cabo').value = '';
     this.periodoAbierto = false;
+    this.diaAbierto = false;
+    this.el('filtro-dia').value = '';
     this.limpiarRango();
     this.llenarMeses();
     this.sincronizarControles();
@@ -153,6 +164,8 @@ SRP.registros = {
     this.el('filtro-cabo').value = f.cabo || '';
     this.el('filtro-desde').value = f.desde || ''; this.el('filtro-hasta').value = f.hasta || '';
     this.periodoAbierto = !!(f.desde || f.hasta);
+    this.diaAbierto = !!f.dia && f.dia !== SRP.util.fechaHoy();
+    this.el('filtro-dia').value = this.diaAbierto ? f.dia : '';
     this.llenarMeses();
     this.sincronizarControles();
     this.aplicar();
@@ -193,9 +206,25 @@ SRP.registros = {
     // No abre el selector ni mueve el foco (D82)
     if (atajo === 'periodo') {
       this.periodoAbierto = true;
+      this.diaAbierto = false;
       this.sincronizarControles();
       return;
     }
+    /* «Un día» muestra una sola fecha; filtra en cuanto se elige (D113). Si ya había un día
+       elegido, se conserva; si no, la lista sigue completa hasta elegirlo. */
+    if (atajo === 'dia') {
+      this.diaAbierto = true;
+      this.periodoAbierto = false;
+      f.anio = ''; f.mes = '';
+      f.dia = this.el('filtro-dia').value;
+      this.limpiarRango();
+      this.llenarMeses();
+      this.sincronizarControles();
+      this.aplicar();
+      return;
+    }
+    this.diaAbierto = false;
+    this.el('filtro-dia').value = '';
     f.dia = '';
     if (atajo === 'hoy') { f.dia = SRP.util.fechaHoy(); f.anio = ''; f.mes = ''; }
     else { f.anio = ''; f.mes = ''; }   // 'todos'
@@ -223,9 +252,11 @@ SRP.registros = {
     // otros, aunque el rango entre hasta «Aplicar». Antes «Todos» seguía marcado y «Un periodo»
     // llevaba contorno guinda: parecían elegidos los dos.
     const pidePeriodo = !sinRango || !!this.periodoAbierto;
+    const pideDia = !pidePeriodo && !!this.diaAbierto;
     const activo = {
-      hoy: !pidePeriodo && f.dia === SRP.util.fechaHoy(),
-      todos: !pidePeriodo && !f.dia && periodo === '',
+      hoy: !pidePeriodo && !pideDia && f.dia === SRP.util.fechaHoy(),
+      dia: pideDia,
+      todos: !pidePeriodo && !pideDia && !f.dia && periodo === '',
       periodo: pidePeriodo
     };
     this.el('filtro-atajos').querySelectorAll('.chip').forEach(c =>
@@ -234,9 +265,11 @@ SRP.registros = {
     const abierto = !sinRango || !!this.periodoAbierto;
     this.el('filtro-periodo').hidden = !abierto;
     // Año/Mes y Desde/Hasta son dos maneras de decir el periodo: nunca se ven a la vez (D100)
-    this.el('caja-filtro-anio').hidden = abierto;
-    this.el('caja-filtro-mes').hidden = abierto;
+    this.el('filtro-un-dia').hidden = !pideDia;
+    this.el('caja-filtro-anio').hidden = abierto || pideDia;
+    this.el('caja-filtro-mes').hidden = abierto || pideDia;
     this.el('filtro-atajos').querySelector('[data-atajo="periodo"]').setAttribute('aria-expanded', String(abierto));
+    this.el('filtro-atajos').querySelector('[data-atajo="dia"]').setAttribute('aria-expanded', String(pideDia));
   },
 
   aplicar() {
@@ -390,6 +423,8 @@ SRP.registros = {
     this.filtro = { dia: '', anio: '', mes: '', desde: '', hasta: '', cabo: '' };
     this.el('filtro-cabo').value = '';
     this.periodoAbierto = false;
+    this.diaAbierto = false;
+    this.el('filtro-dia').value = '';
     this.limpiarRango();
     this.llenarMeses();
     this.sincronizarControles();
@@ -454,7 +489,7 @@ SRP.registros = {
     await SRP.almacen.guardarConBitacora('plantaciones', nuevo, SRP.bitacora.entrada('ELIMINADO', 'plantacion', r.id));
     // «Deshacer» devuelve el registro tal como estaba y deja constancia (D101)
     SRP.util.anunciar('Registro eliminado.', 'exito', { deshacer: () => this.restaurar(r) });
-    this.preparar();
+    if (SRP.app.vista === 'jornadas') { SRP.jornadas.volverAlDetalle = false; SRP.jornadas.refrescar(); } else this.preparar();
     SRP.conexion.refrescar();   // la cuenta de la pastilla baja
   },
 
@@ -462,7 +497,7 @@ SRP.registros = {
     const vuelto = Object.assign({}, r, { fecha_ultima_edicion: SRP.util.ahoraISO(), editado_por_id: SRP.sesion.usuario.id });
     await SRP.almacen.guardarConBitacora('plantaciones', vuelto, SRP.bitacora.entrada('RESTAURADO', 'plantacion', r.id, 'Se deshizo la eliminación'));
     SRP.util.anunciar('Registro restaurado.');
-    this.preparar();
+    if (SRP.app.vista === 'jornadas') SRP.jornadas.refrescar(); else this.preparar();
     SRP.conexion.refrescar();
   }
 };

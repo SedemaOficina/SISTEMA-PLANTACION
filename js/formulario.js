@@ -64,7 +64,7 @@ SRP.formulario = {
       this.corregirCampo(b.dataset.campo);
     });
     this.el('btn-resumen-guardar').addEventListener('click', () => this.guardar());
-    this.el('btn-cancelar-edicion').addEventListener('click', () => { this.limpiar(); SRP.app.mostrarVista('registros'); });
+    this.el('btn-cancelar-edicion').addEventListener('click', () => { this.limpiar(); SRP.app.mostrarVista(SRP.jornadas.volverAlDetalle ? 'jornadas' : 'registros'); });
     this.el('btn-registro-nuevo').addEventListener('click', () => this.nuevoRegistro());
     this.el('btn-ir-registros').addEventListener('click', () => {
       this.el('dlg-guardado').close();
@@ -481,7 +481,8 @@ SRP.formulario = {
           SRP.bitacora.entrada('EDITADO', 'plantacion', nuevo.id, cambiados.length ? 'Campos: ' + cambiados.join(', ') : 'Sin cambios en los datos'));
         this.el('dlg-resumen').close();
         this.limpiar();
-        SRP.app.mostrarVista('registros');
+        // Si se llegó desde la revisión de una jornada, se vuelve a ella (D112)
+        SRP.app.mostrarVista(SRP.jornadas.volverAlDetalle ? 'jornadas' : 'registros');
         if (SRP.envio.simulado()) {
           // Un registro enviado y luego editado vuelve a la cola (D111)
           SRP.envio.marcarCambios(nuevo.id);

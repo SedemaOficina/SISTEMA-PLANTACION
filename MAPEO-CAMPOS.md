@@ -172,7 +172,7 @@ cuenta. Lo que ya vive en los registros —especies, conteos, alcaldía— no se
 
 | Campo | Obligatorio | Origen | Notas |
 |---|---|---|---|
-| `id` | Sí | Sistema | `fecha|cabo`, o `fecha|TODOS` sin cabo filtrado: un cierre por jornada y cuadrilla |
+| `id` | Sí | Sistema | `fecha|cabo`, o `fecha|TODOS` sin cabo filtrado: un cierre por jornada y cuadrilla. Un cabo guarda siempre con su id (D112) |
 | `es_ficticio` | Sí | Sistema | Marca de dato de prueba (D87) |
 | `fecha` | Sí | Sistema | El día del parte, `AAAA-MM-DD` |
 | `cabo_id` | No | Sistema | El cabo por el que se filtró; vacío si el parte es del día completo |
@@ -184,6 +184,8 @@ cuenta. Lo que ya vive en los registros —especies, conteos, alcaldía— no se
 | `observaciones` | No | Persona | Una por renglón |
 | `chofer` | No | Persona | |
 | `vehiculo_modelo` | No | Persona | Sustituye a `vehiculo` (bloque 20); un cierre anterior se muestra aquí |
+| `arboles_sembrados` | No | Persona | Se anota en **Jornadas** («Árboles sembrados según la cuadrilla»); el reporte dice si cuadra con los registros (D112) |
+| `puntos_revisados` | Sí | Persona | Puntos con aviso que alguien marcó «Está bien» en **Jornadas**; lista de `plantaciones.id` (D112) |
 | `vehiculo_placa` | No | Persona | |
 | `hora` | No | Persona | Hora de finalización, `HH:MM` del selector de hora; el PDF le agrega «h» |
 | `creado_por_id` | Sí | Sesión | Quién cerró el parte la primera vez |

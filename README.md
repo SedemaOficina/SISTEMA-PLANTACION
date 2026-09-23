@@ -60,6 +60,7 @@ js/derivacion.js      Cruce punto-en-polígono (alcaldía, UGA, colonia)
 js/folio.js           Patrón, validación y etiqueta del folio; sólo lo emite el servidor simulado de prueba (D110)
 js/conexion.js        Estado de la conexión, aviso de qué hacer con los registros, respaldo y restauración
 js/envio.js           Envío al servidor simulado con datos de prueba: cola, avisos de atraso, «Simular sin señal» (D111)
+js/jornadas.js        Sección Jornadas: mapa y lista numerados de un día de trabajo, avisos y conciliación con el cierre (D112)
 sw.js                 Service worker: la app abre sin señal; versión = marca ?v= de index.html
 manifest.webmanifest  Instalación en pantalla de inicio; iconos definitivos en assets/ (D90)
 js/referencias.js     Catálogos y cuentas en memoria

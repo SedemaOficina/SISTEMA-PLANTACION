@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.37 (Bloque 56)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.38 (Bloque 57)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -70,6 +70,8 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M45 | Revisión en computadora | Nuevo registro en dos columnas y Reportes centrado | Media | 0.6.34 (B53) | En computadora: Nuevo registro muestra el mapa a la izquierda y el formulario a la derecha; Reportes, centrado en tarjeta. En el teléfono no cambia | Nuevo registro y Reportes en computadora |
 | M60 | Petición de Liber | Folio simulado con datos de prueba | Alta | 0.6.36 (B55) | Con conexión, registrar un árbol: «Registro guardado» dice «Folio: CUH-021-00001 (simulado)»; la lista y el detalle lo muestran; la vista previa y el PDF avisan que es simulado. Sin conexión queda PROVISIONAL y recibe folio al volver la señal | Registro guardado, detalle y PDF |
 | M61 | Petición de Liber | Envío al servidor simulado: cola, avisos y atraso | Alta | 0.6.37 (B56) | Con señal, registrar: «Registro guardado» dice «Enviando al servidor…» y luego «Enviado… Recepción confirmada hoy a las 12:14». Menú de usuario › «Simular sin señal (pruebas)» y registrar dos: quedan «Por enviar» en la tarjeta y la pastilla dice «Sin conexión · 2 por enviar». Desactivar el interruptor: se envían solos y la pastilla queda «Al día». Pendientes de ayer (o de hoy después de las 17:00): franja roja «Hoy es…» | Registro guardado con y sin señal, lista con «Por enviar» y franja de atraso |
+| M62 | Petición de Liber (cabos y coordinadores) | Sección «Jornadas»: mapa y lista de la jornada con conciliación | Alta | 0.6.38 (B57) | Barra de abajo › Jornadas. Tocar la de hoy: mapa con puntos numerados y la lista igual; tocar un punto lo marca en ambos. Escribir «Árboles sembrados» y ver si cuadra. En un punto con aviso: «Está bien» o «Eliminar». «Ver» › «Editar» vuelve a la jornada. «Reporte de la jornada» abre Reportes en esa fecha | Lista de jornadas, revisión con mapa, conciliación en rojo y en verde |
+| M63 | Petición de Liber | Atajo «Un día» en Registros y Jornadas | Media | 0.6.38 (B57) | Registros › Filtros › «Un día» › elegir ayer: filtra al momento, sin Aplicar | Filtros con «Un día» |
 
 ## 2. Por hacer
 

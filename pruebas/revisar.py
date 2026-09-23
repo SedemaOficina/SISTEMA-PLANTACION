@@ -12,11 +12,14 @@ with sync_playwright() as p:
     pg=ctx.new_page(); pg.goto(URL); pg.wait_for_timeout(700)
     # Cada vista se revisa con el perfil que la tiene: la administración no captura, y el cabo
     # no ve catálogos ni cuentas.
-    for vista, quien in [('registrar','u-cabo-1'), ('registros','u-admin-1'), ('reportes','u-cabo-1'),
+    for vista, quien in [('registrar','u-cabo-1'), ('registros','u-admin-1'), ('jornadas','u-admin-1'), ('reportes','u-cabo-1'),
                          ('catalogos','u-admin-1'), ('usuarios','u-admin-1')]:
       if pg.is_visible('#btn-cuenta'): pg.click('#btn-cuenta'); pg.click('#btn-cambiar-perfil'); pg.wait_for_timeout(300)
       pg.select_option('#sel-usuario-prueba', quien); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(500)
       pg.evaluate(f"SRP.app.mostrarVista('{vista}')"); pg.wait_for_timeout(500)
+      # Jornadas se revisa con una jornada abierta: es la pantalla con mapa, conciliación y lista
+      if vista=='jornadas' and pg.locator('#lista-jornadas .jornada button').count():
+        pg.click('#lista-jornadas .jornada button >> nth=0'); pg.wait_for_timeout(700)
       if not pg.is_visible('#vista-'+vista):
         problemas.append(f"{nombre}/{vista}: la vista no abrio con {quien}")
         continue

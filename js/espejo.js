@@ -66,14 +66,16 @@ SRP.espejo = {
 
   // Cierre del reporte: lo que se ve en el formulario son sus CAMPOS y el encargado
   NOTAS_CIERRE: {
-    id: 'fecha|cabo, o fecha|TODOS sin cabo filtrado: un cierre por jornada y cuadrilla',
+    id: 'fecha|cabo (un cabo, siempre el suyo), o fecha|TODOS sin cabo filtrado: un cierre por jornada y cuadrilla',
     es_ficticio: 'Verdadero mientras CONFIG.ES_FICTICIO lo esté (D87)',
     fecha: 'El día del reporte; sale del filtro, no se captura',
     cabo_id: 'El cabo por el que se filtró; vacío si el reporte es del día completo',
     creado_por_id: 'Quién cerró el reporte la primera vez; no cambia al regenerar',
     fecha_creacion: 'Se fija al generar por primera vez',
     editado_por_id: 'Quién generó por última vez',
-    fecha_ultima_edicion: 'Se fija en cada generación'
+    fecha_ultima_edicion: 'Se fija en cada generación',
+    arboles_sembrados: 'Se anota en Jornadas, no aquí; el reporte dice si cuadra con los registros (D112)',
+    puntos_revisados: 'Puntos con aviso marcados «Está bien» en Jornadas (D112)'
   },
 
   iniciar() {

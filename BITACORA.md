@@ -1118,3 +1118,22 @@ señal, marca y folio en la tarjeta, detalle, reenvío de cambios, interruptor y
 
 **Verificación:** 335 comprobaciones sin errores de consola; 84 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.37.
+
+## Bloque 57 — Jornadas y el atajo «Un día» (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.38.
+
+**Qué cambió (D112, D113).** Nuevo `js/jornadas.js`: agrupación por fecha y cabo con partición
+por sitio, avisos (duplicado, lejos, precisión), mapa Leaflet con pines numerados, conciliación
+guardada en el cierre, «Está bien», regreso a la jornada tras ver, editar o eliminar. `index.html`:
+pestaña y vista «Jornadas», chip «Un día» en Registros. `config.js`: `JORNADA` (3, 150, 500 m).
+`reportes.js`: un cabo guarda el cierre con su id; la conciliación sale en la vista previa y el
+PDF; el cierre conserva `arboles_sembrados` y `puntos_revisados`. `registros.js`: «Un día»,
+eliminar/restaurar refrescan Jornadas. `formulario.js` y `app.js`: la edición vuelve a Jornadas.
+`iconos.js`: icono de mapa. `esquema.json`: dos campos en cierres; diccionario y MAPEO al día.
+Pruebas: 30 nuevas (sección, barra inferior, atajos, tarjeta, mapa y lista numerados, avisos,
+conciliación y su guardado, selección cruzada, eliminar duplicado, «Está bien», ver/editar y
+regreso, reporte con conciliación, «Un día» en ambas vistas, llave del cierre); `revisar.py`
+revisa Jornadas con una abierta.
+
+**Verificación:** 366 comprobaciones sin errores de consola; 84 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.38.
