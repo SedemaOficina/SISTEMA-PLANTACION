@@ -628,6 +628,18 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 [hidden] { display: none; }
 
 /* ========== 7. @MEDIA ========== */
+/* EQUILIBRIO EN COMPUTADORA (D109). Nuevo registro en dos columnas: ubicación y mapa a la
+   izquierda, datos del árbol a la derecha, así el mapa gana tamaño y no queda media pantalla vacía.
+   Reportes centrado, con su bloque como tarjeta. En teléfono y tableta no cambia nada. */
+@media (min-width: 1024px) {
+  #vista-registrar { max-width: var(--ancho-max-tabla); }
+  #vista-registrar > .registrar-columnas { max-width: none; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: var(--e-6); align-items: start; }
+  .registrar-ubicacion .mapa { height: clamp(320px, 52vh, 520px); }
+  #form-plantacion .combo { margin-top: 0; }
+  #vista-reportes > * { margin-inline: auto; }
+  #vista-reportes > h1 { text-align: center; }
+  #vista-reportes .bloque:first-of-type { border: 1px solid var(--borde-suave); border-radius: var(--radio-filtro); padding: var(--e-5); }
+}
 @media (max-width: 700px) {
   /* Filtros plegados en teléfono (D100): quedan a la vista las fichas y el botón «Filtros» */
   .btn.btn-filtros { display: inline-flex; margin-left: 0; }

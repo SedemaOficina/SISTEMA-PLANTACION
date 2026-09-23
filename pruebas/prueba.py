@@ -276,6 +276,10 @@ with sync_playwright() as p:
     ok(prec['baja'][0]=='baja' and prec['baja'][3],'con ±60 m es baja y dice qué hacer')
     ok(prec['manual'][0] is None and not prec['manual'][2],'un punto a mano no muestra insignia ni círculo')
     ok(pg.evaluate("getComputedStyle(document.querySelector('.barra-guardar')).position")=='sticky','Revisar y guardar va en una barra fija al pie (D96)')
+    pg.set_viewport_size({'width':1280,'height':900}); pg.wait_for_timeout(300)
+    col=pg.evaluate("(() => { const m=document.getElementById('mapa').getBoundingClientRect(), f=document.getElementById('form-plantacion').getBoundingClientRect(); return { lado_a_lado: f.left >= m.right, arriba_igual: Math.abs(f.top - document.querySelector('.registrar-ubicacion').getBoundingClientRect().top) < 40 }; })()")
+    ok(col=={'lado_a_lado':True,'arriba_igual':True},'en computadora el mapa va a la izquierda y el formulario a la derecha (D109): %s' % col)
+    pg.set_viewport_size({'width':390,'height':844}); pg.wait_for_timeout(300)
 
     # Con la captura a mano desplegada no conviven dos formas de fijar el punto: el botón de
     # ubicación se oculta, y vuelve al cerrar el desplegable (D49)
@@ -808,6 +812,12 @@ with sync_playwright() as p:
       punto: getComputedStyle(t.querySelector('.estado-texto'),'::before').width }; }''')
     ok(ordn=={'sort':'descending','bien':True,'acciones':True,'fijo':'sticky','punto':'8px'},'la tabla se ordena por columna (dos toques: Z a A), el encabezado es fijo y el estado lleva su punto (D100): %s' % ordn)
     ok(pg.evaluate("getComputedStyle(document.getElementById('vista-reportes')).maxWidth===getComputedStyle(document.getElementById('vista-catalogos')).maxWidth"),'todas las vistas miden lo mismo (D100)')
+    pg.set_viewport_size({'width':1280,'height':900}); pg.wait_for_timeout(300)
+    pg.evaluate("SRP.app.mostrarVista('reportes')"); pg.wait_for_timeout(300)
+    rep=pg.evaluate("(() => { const b=document.querySelector('#vista-reportes .bloque').getBoundingClientRect(); return Math.abs((b.left + b.right)/2 - innerWidth/2) < 40; })()")
+    ok(rep,'en computadora el reporte del día va centrado (D109)')
+    pg.set_viewport_size({'width':390,'height':844}); pg.wait_for_timeout(300)
+    pg.evaluate("SRP.app.mostrarVista('catalogos')"); pg.wait_for_timeout(300)
     pg.fill('#cat-buscar','quercus'); pg.wait_for_timeout(200)
     ok(pg.locator('#tabla-catalogo tbody tr').count()==4,'el buscador de especies encuentra los cuatro Quercus')
     ok(pg.inner_text('#cat-cuenta').strip()=='4 de 76 especies','y el contador dice cuántos coinciden (D105): '+pg.inner_text('#cat-cuenta'))

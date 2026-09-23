@@ -38,7 +38,9 @@ with sync_playwright() as p:
       # alto del mapa
       if vista=='registrar':
         h=pg.evaluate("document.getElementById('mapa').getBoundingClientRect().height")
-        if h>430 or h<255: problemas.append(f"{nombre}: mapa mide {h:.0f}px")
+        # En computadora el mapa va en su propia columna y puede crecer hasta 520 px (D109)
+        tope = 530 if int(ancho/escala) >= 1024 else 430
+        if h>tope or h<255: problemas.append(f"{nombre}: mapa mide {h:.0f}px")
       # Reglas que otra más específica puede estar anulando sin avisar
       anuladas=pg.evaluate("""() => {
         const esperado = [

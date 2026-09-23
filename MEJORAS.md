@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.33 (Bloque 52)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.34 (Bloque 53)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -67,13 +67,13 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M26 | iPhone · Formulario | Etiqueta «Fotografía» alineada | Baja | 0.6.32 (B51) | En Nuevo registro, «Fotografía» arranca en el mismo borde que las demás etiquetas | Formulario |
 | M22 | iPhone · Nuevo registro #7 | Crédito del mapa en un renglón | Baja | 0.6.33 (B52) | Nuevo registro: bajo el mapa, «Leaflet \| Imagen: Esri…» en un renglón; al tocarlo se ve completo | Mapa |
 | M23 | iPhone · Nuevo registro #8 | Menos autollenado de Safari | Baja | 0.6.33 (B52) | Tocar Especie o Comentarios: ya no debería salir la barra de llave, tarjeta y ubicación sobre el teclado (Safari decide al final) | Teclado sobre Comentarios |
+| M45 | Revisión en computadora | Nuevo registro en dos columnas y Reportes centrado | Media | 0.6.34 (B53) | En computadora: Nuevo registro muestra el mapa a la izquierda y el formulario a la derecha; Reportes, centrado en tarjeta. En el teléfono no cambia | Nuevo registro y Reportes en computadora |
 
 ## 2. Por hacer
 
 | # | Origen | Mejora | Prioridad | Estado | Nota |
 |---|---|---|---|---|---|
 | M44 | PDF #4 | No partir un apartado corto (Por programa) a la página siguiente cuando cabe | Baja | Propuesto | — |
-| M45 | Revisión en computadora | Equilibrio en computadora: mapa a la izquierda y formulario a la derecha en Nuevo registro; Reportes centrado | Media | Propuesto | Hoy quedan cargados a la izquierda |
 | M46 | Android | Revisión corta en Android: versión, botón «atrás» con ventanas abiertas, calendario y hora, especies con teclado, precisión, foto, compartir PDF, aviso | Alta | Pendiente | Espera capturas |
 
 ## 3. Verificadas sin falla
@@ -90,4 +90,4 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 52 hechas · 3 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 53 hechas · 2 por hacer · 2 revisadas · 2 descartadas.

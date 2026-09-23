@@ -694,3 +694,11 @@
   sesión el campo de contraseña sale de la página (vuelve al regresar al acceso, con su
   autollenado de contraseña). Safari decide al final; el efecto es reducirlo, no garantizarlo.
   Elegidas por Liber (M22, M23).
+
+## Bloque 53 — Equilibrio en computadora
+
+- **D109. Nuevo registro en dos columnas y Reportes centrado, sólo en computadora (≥1024 px).**
+  Nuevo registro pone la ubicación (botón, captura a mano, mapa y ficha del punto) a la izquierda
+  y los datos del árbol a la derecha; el mapa crece hasta 520 px de alto. Reportes centra su
+  contenido y el reporte del día va como tarjeta. Resuelve la media pantalla vacía que dejó D100
+  al igualar el ancho de las vistas. En teléfono y tableta no cambia nada. Elegida por Liber (M45).

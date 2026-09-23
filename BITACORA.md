@@ -1046,3 +1046,14 @@ texto completo.
 
 **Verificación:** 311 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.33.
+
+## Bloque 53 — Equilibrio en computadora (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.34.
+
+**Qué cambió (D109).** `index.html`: envolturas `.registrar-columnas` y `.registrar-ubicacion`
+en Nuevo registro. CSS: rejilla de dos columnas, mapa más alto y Reportes centrado en ≥1024 px.
+`revisar.py` admite mapa de hasta 530 px en computadora. Pruebas: dos comprobaciones nuevas
+(columnas en Nuevo registro, Reportes centrado).
+
+**Verificación:** 313 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.34.
