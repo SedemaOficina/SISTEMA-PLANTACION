@@ -45,7 +45,6 @@ with sync_playwright() as p:
           ['.zona-foto', 'flexDirection', 'column'],
           ['.ficha-foto', 'display', 'flex'],
           ['.revision-fila', 'display', 'grid'],
-          ['.tabla-acciones', 'display', 'flex'],
           ['.encabezado-interior', 'display', 'flex']
         ];
         return esperado.filter(([sel, prop, val]) => {

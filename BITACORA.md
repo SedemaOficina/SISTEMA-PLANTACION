@@ -844,3 +844,17 @@ tres comprobaciones nuevas (menú plegado, contenido al abrir, Escape).
 
 **Verificación:** 244 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
 desbordes en ocho combinaciones; sin desborde a 320, 360 y 390 px. Marca de versión 0.6.20. El logotipo se encoge con su proporción cuando falta ancho (visto a 640 px con zoom al 200 %).
+
+## Bloque 40 — Acciones de renglón en una tuerca (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.21.
+
+**Qué cambió (D94).** `iconos.js`: icono `tuerca` y `menuAcciones(id, etiqueta, items)`, que
+arma la tuerca y un menú de opciones que conservan `data-accion` y `data-id` (los módulos
+atienden el clic sin cambios). `registros.js`, `catalogos.js` y `usuarios.js` usan el menú.
+`app.js`: `iniciarMenusAcciones()` abre, coloca con `position: fixed`, sigue la tuerca al
+desplazar, cierra al elegir, fuera o con Escape, y recorre con flechas. CSS de tuerca y menú.
+Pruebas: ayudante `accion()` que abre la tuerca antes de elegir; cuatro comprobaciones nuevas
+(tuerca por renglón y menú cerrado, opciones con icono, foco a la primera, Escape).
+
+**Verificación:** 247 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
+desbordes. Marca de versión 0.6.21.

@@ -498,3 +498,15 @@
   En teléfono la pastilla dice «Con conexión · 4» (la palabra «guardados» se oculta para caber
   en una fila; la etiqueta accesible la dice completa). Antes el bloque ocupaba cuatro renglones.
   Pedido por Liber, 22-09-2026.
+
+## Bloque 40 — Acciones de renglón en una tuerca
+
+- **D94. Las acciones de cada renglón van en un menú que abre una tuerca.** En Registros,
+  Catálogos y Usuarios, los botones Ver, Editar, Activar/Desactivar y Eliminar se sustituyen
+  por una tuerca por renglón; al tocarla aparece un menú con las acciones que el perfil permite
+  (las mismas reglas de antes: un coordinador no ve Eliminar, un valor o una cuenta con uso no
+  ofrece Eliminar, nadie se desactiva a sí mismo). Eliminar va en rojo y con su icono. El menú
+  se coloca junto a la tuerca sin que la tabla lo recorte, sigue a la tuerca al desplazar y se
+  cierra al elegir, al tocar fuera o con Escape; se recorre con las flechas. El set CDMX no trae
+  engrane suelto: se usa un contorno sencillo del mismo peso. Supera el renglón de botones de
+  D72/D79 en la lista de registros. Pedido por Liber, 22-09-2026.

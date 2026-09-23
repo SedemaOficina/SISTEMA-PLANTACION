@@ -46,13 +46,12 @@ SRP.usuarios = {
     const filas = lista.map(u => {
       const n = this.uso[u.id] || 0;
       const soyYo = u.id === yo;
-      const acciones = ['<button type="button" class="btn btn-editar btn-chico" data-accion="editar" data-id="' + u.id + '">' +
-        SRP.ICONOS.svg('lapiz', 16) + '<span>Editar</span></button>'];
-      // Nadie se desactiva ni se elimina a sí mismo: dejaría el sistema sin quien administre
+      // Acciones en el menú de la tuerca (D94). Nadie se desactiva ni se elimina a sí mismo:
+      // dejaría el sistema sin quien administre
+      const items = [{ accion: 'editar', texto: 'Editar', icono: 'lapiz' }];
       if (!soyYo) {
-        acciones.push('<button type="button" class="btn btn-secundario btn-chico" data-accion="estado" data-id="' + u.id + '">' + (u.activo ? 'Desactivar' : 'Activar') + '</button>');
-        if (n === 0) acciones.push('<button type="button" class="btn btn-peligro btn-chico" data-accion="eliminar" data-id="' + u.id + '">' +
-          SRP.ICONOS.svg('basura', 16) + '<span>Eliminar</span></button>');
+        items.push({ accion: 'estado', texto: u.activo ? 'Desactivar' : 'Activar' });
+        if (n === 0) items.push({ accion: 'eliminar', texto: 'Eliminar', icono: 'basura', peligro: true });
       }
       return '<tr><td data-etiqueta="Nombre">' + esc(SRP.util.nombreCompleto(u)) + (soyYo ? ' <span class="insignia">usted</span>' : '') + '</td>' +
         '<td data-etiqueta="Correo">' + esc(u.correo) + '</td>' +
@@ -62,7 +61,7 @@ SRP.usuarios = {
         '<td data-etiqueta="Coordinador">' + esc(u.coordinador_id ? SRP.ref.nombreUsuario(u.coordinador_id) : '—') + '</td>' +
         '<td data-etiqueta="Estado"><span class="estado-texto" data-activo="' + u.activo + '">' + (u.activo ? 'Activo' : 'Inactivo') + '</span></td>' +
         '<td data-etiqueta="Registros">' + n + '</td>' +
-        '<td data-etiqueta="Acciones"><div class="tabla-acciones">' + acciones.join('') + '</div></td></tr>';
+        '<td data-etiqueta="Acciones">' + SRP.ICONOS.menuAcciones(u.id, SRP.util.nombreCompleto(u), items) + '</td></tr>';
     }).join('');
 
     this.el('tabla-usuarios').innerHTML = cab + '<tbody>' + (filas || '<tr><td colspan="9">Sin resultados.</td></tr>') + '</tbody>';

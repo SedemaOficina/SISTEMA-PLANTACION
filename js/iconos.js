@@ -58,6 +58,24 @@ SRP.ICONOS = {
   // Aviso informativo (set CDMX #22)
   info: '<path fill="currentColor" d="M 11 17 L 13 17 L 13 11 L 11 11 Z M 12 9 C 12.28 9 12.52 8.9 12.71 8.71 C 12.9 8.52 13 8.29 13 8 C 13 7.71 12.9 7.48 12.71 7.29 C 12.52 7.1 12.28 7 12 7 C 11.71 7 11.48 7.1 11.28 7.29 C 11.1 7.48 11 7.71 11 8 C 11 8.29 11.1 8.52 11.28 8.71 C 11.48 8.9 11.71 9 12 9 M 12 20 C 14.23 20 16.12 19.23 17.67 17.67 C 19.23 16.13 20 14.23 20 12 C 20 9.77 19.23 7.87 17.67 6.33 C 16.12 4.77 14.23 4 12 4 C 9.77 4 7.87 4.77 6.32 6.33 C 4.77 7.87 4 9.77 4 12 C 4 14.23 4.77 16.13 6.32 17.67 C 7.87 19.23 9.77 20 12 20 M 12 22 C 10.61 22 9.31 21.74 8.1 21.21 C 6.88 20.69 5.82 19.97 4.92 19.07 C 4.02 18.17 3.31 17.12 2.79 15.9 C 2.26 14.69 2 13.38 2 12 C 2 10.62 2.26 9.31 2.79 8.1 C 3.31 6.88 4.02 5.82 4.92 4.92 C 5.82 4.02 6.88 3.31 8.1 2.79 C 9.31 2.26 10.61 2 12 2 C 13.38 2 14.69 2.26 15.9 2.79 C 17.11 3.31 18.17 4.02 19.07 4.92 C 19.97 5.82 20.69 6.88 21.21 8.1 C 21.74 9.31 22 10.62 22 12 C 22 13.38 21.74 14.69 21.21 15.9 C 20.69 17.12 19.97 18.17 19.07 19.07 C 18.17 19.97 17.11 20.69 15.9 21.21 C 14.69 21.74 13.38 22 12 22"/>',
 
+  // Tuerca de acciones de un renglón (D94). El set CDMX no trae engrane suelto: contorno sencillo, mismo peso que los del set
+  tuerca: '<path fill="currentColor" d="M19.43 12.98c.04-.32.07-.64.07-.98 0-.34-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46a.5.5 0 00-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65A.49.49 0 0014 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1a.57.57 0 00-.18-.03c-.17 0-.34.09-.43.25l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46a.5.5 0 00.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.06.02.12.03.18.03.17 0 .34-.09.43-.25l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zm-1.98-1.71c.04.31.05.52.05.73 0 .21-.02.43-.05.73l-.14 1.13.89.7 1.08.84-.7 1.21-1.27-.51-1.04-.42-.9.68c-.43.32-.84.56-1.25.73l-1.06.43-.16 1.13-.2 1.35h-1.4l-.19-1.35-.16-1.13-1.06-.43c-.43-.18-.83-.41-1.23-.71l-.91-.7-1.06.43-1.27.51-.7-1.21 1.08-.84.89-.7-.14-1.13c-.03-.31-.05-.54-.05-.74s.02-.43.05-.73l.14-1.13-.89-.7-1.08-.84.7-1.21 1.27.51 1.04.42.9-.68c.43-.32.84-.56 1.25-.73l1.06-.43.16-1.13.2-1.35h1.39l.19 1.35.16 1.13 1.06.43c.43.18.83.41 1.23.71l.91.7 1.06-.43 1.27-.51.7 1.21-1.07.85-.89.7.14 1.13zM12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>',
+
+  /* MENÚ DE ACCIONES DE UN RENGLÓN (D94). En lugar de tres o cuatro botones por renglón, una
+     tuerca que despliega las acciones. Cada opción conserva su data-accion y data-id, así que
+     los módulos siguen atendiendo el clic igual que antes; app.js abre, coloca y cierra el menú.
+     `items`: [{accion, texto, icono, peligro}] */
+  menuAcciones(id, etiqueta, items) {
+    const esc = SRP.util.escapar;
+    return '<div class="acciones-menu">' +
+      '<button type="button" class="btn btn-icono-solo btn-tuerca" aria-haspopup="true" aria-expanded="false" ' +
+      'aria-label="Acciones de ' + esc(etiqueta) + '">' + this.svg('tuerca', 22) + '</button>' +
+      '<div class="menu-acciones" role="menu" hidden>' + items.map(it =>
+        '<button type="button" role="menuitem" class="menu-opcion' + (it.peligro ? ' menu-peligro' : '') + '" data-accion="' + it.accion + '" data-id="' + esc(id) + '">' +
+        (it.icono ? this.svg(it.icono, 18) : '<span class="menu-sin-icono"></span>') + '<span>' + esc(it.texto) + '</span></button>').join('') +
+      '</div></div>';
+  },
+
   /* Antepone un icono a lo que ya tiene el elemento (botón, etiqueta, pestaña) sin tocar su
      contenido: el asterisco de obligatorio y el texto se quedan como estaban. */
   poner(el, nombre, tam) {

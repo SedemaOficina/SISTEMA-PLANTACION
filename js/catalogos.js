@@ -73,10 +73,10 @@ SRP.catalogos = {
       '<th scope="col">Clave</th><th scope="col">Estado</th><th scope="col">Uso</th><th scope="col">Acciones</th></tr></thead>';
     const filas = items.map(c => {
       const uso = this.uso[c.id] || 0;
-      const eliminar = uso === 0
-        ? '<button type="button" class="btn btn-peligro btn-chico" data-accion="eliminar" data-id="' + c.id + '">' +
-          SRP.ICONOS.svg('basura', 16) + '<span>Eliminar</span></button>'
-        : '';
+      // Acciones en el menú de la tuerca (D94); Eliminar sólo si no tiene uso
+      const items = [{ accion: 'editar', texto: 'Editar', icono: 'lapiz' },
+                     { accion: 'estado', texto: c.activo ? 'Desactivar' : 'Activar' }];
+      if (uso === 0) items.push({ accion: 'eliminar', texto: 'Eliminar', icono: 'basura', peligro: true });
       // data-etiqueta: en teléfono cada renglón se muestra como ficha con su etiqueta
       return '<tr><td data-etiqueta="Nombre">' + esc(c.nombre) + '</td>' +
         (esEspecie ? '<td data-etiqueta="Científico"><i>' + esc(c.nombre_cientifico) + '</i>' +
@@ -85,11 +85,7 @@ SRP.catalogos = {
         '<td data-etiqueta="Clave">' + esc(c.clave) + '</td>' +
         '<td data-etiqueta="Estado"><span class="estado-texto" data-activo="' + c.activo + '">' + (c.activo ? 'Activo' : 'Inactivo') + '</span></td>' +
         '<td data-etiqueta="Uso">' + uso + ' ' + unidad(uso) + '</td>' +
-        '<td data-etiqueta="Acciones"><div class="tabla-acciones">' +
-        '<button type="button" class="btn btn-editar btn-chico" data-accion="editar" data-id="' + c.id + '">' +
-        SRP.ICONOS.svg('lapiz', 16) + '<span>Editar</span></button>' +
-        '<button type="button" class="btn btn-secundario btn-chico" data-accion="estado" data-id="' + c.id + '">' + (c.activo ? 'Desactivar' : 'Activar') + '</button>' +
-        eliminar + '</div></td></tr>';
+        '<td data-etiqueta="Acciones">' + SRP.ICONOS.menuAcciones(c.id, c.nombre, items) + '</td></tr>';
     }).join('');
     this.el('tabla-catalogo').innerHTML = cab + '<tbody>' + (filas || '<tr><td colspan="7">Sin resultados.</td></tr>') + '</tbody>';
   },

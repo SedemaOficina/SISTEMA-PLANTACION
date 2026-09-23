@@ -12,6 +12,14 @@ SRP_GPS='GPS del dispositivo'
 errores=[]; res=[]
 def ok(c,m): res.append(('OK ' if c else 'FALLA ')+m)
 
+def accion(pg, cont, cual, n=0):
+    """Elige una acción de renglón: abre la tuerca del renglón y pulsa la opción (D94).
+    `cont` es un selector o un locator que contiene el renglón."""
+    loc = (pg.locator(cont) if isinstance(cont, str) else cont).locator('button[data-accion=%s]' % cual).nth(n)
+    loc.locator('xpath=ancestor::div[contains(@class,"acciones-menu")]').locator('.btn-tuerca').click()
+    pg.wait_for_timeout(120)
+    loc.click()
+
 def registrar(pg, busqueda, especie_id, programa='p-refor', fecha=None, foto=None):
     """Captura un árbol de principio a fin y devuelve el identificador con que se guardó.
     `busqueda` es lo que se teclea para que la especie salga en la lista."""
@@ -372,13 +380,18 @@ with sync_playwright() as p:
     ok(hoy_txt=='Hoy, '+HOY_TXT,'el chip de hoy lleva la fecha con el mes en letras: '+hoy_txt)
     ok(pg.locator('#filtro-atajos .chip[data-atajo=hoy][aria-pressed=true]').count()==1,'al entrar, el filtro es Hoy')
     ok('Total: 2 ' in pg.inner_text('#registros-total'),'sólo los de hoy: '+pg.inner_text('#registros-total'))
-    clases=pg.evaluate("""[...document.querySelectorAll('#lista-registros button')].slice(0,3)
-        .map(b=>b.className.split(' ')[1]+'/'+(b.querySelector('svg')?'con icono':'SIN ICONO'))""")
-    ok(clases==['btn-secundario/con icono','btn-editar/con icono','btn-peligro/con icono'],'ver, editar y eliminar con su color e icono')
+    # Acciones del renglón en el menú de la tuerca (D94)
+    ok(pg.locator('#lista-registros .registro >> nth=0').locator('.btn-tuerca').count()==1 and pg.is_hidden('#lista-registros .menu-acciones >> nth=0'),'cada renglón lleva una tuerca y el menú arranca cerrado (D94)')
+    pg.click('#lista-registros .btn-tuerca >> nth=0'); pg.wait_for_timeout(150)
+    opc=pg.evaluate("""[...document.querySelectorAll('#lista-registros .menu-acciones:not([hidden]) .menu-opcion')].map(b=>b.dataset.accion+'/'+(b.querySelector('svg')?'icono':'-'))""")
+    ok(opc==['ver/icono','editar/icono','eliminar/icono'],'al tocarla ofrece ver, editar y eliminar con icono: %s' % opc)
+    ok(pg.evaluate("document.activeElement.classList.contains('menu-opcion')"),'y el foco pasa a la primera opción')
+    pg.keyboard.press('Escape'); pg.wait_for_timeout(100)
+    ok(pg.is_hidden('#lista-registros .menu-acciones >> nth=0'),'Escape cierra el menú de acciones')
     fila=pg.inner_text('#lista-registros .registro >> nth=0')
     ok('(' in fila and 'CENTRO IV' in fila,'cada renglón trae común (científico) y alcaldía, colonia: '+fila.replace(chr(10),' | ')[:90])
     # Espejo en el detalle (B22): los campos guardados que la ficha no enseña
-    pg.click('#lista-registros button[data-accion=ver] >> nth=0'); pg.wait_for_timeout(500)
+    accion(pg,'#lista-registros','ver'); pg.wait_for_timeout(500)
     campos=pg.evaluate("[...document.querySelectorAll('#dlg-detalle .espejo .espejo-campo')].map(e=>e.textContent)")
     ok('colonia_cve' in campos and 'capa_version' in campos and 'uga' in campos and 'id' not in campos,
        'el detalle lleva su espejo con lo que no se ve (%d campos)' % len(campos))
@@ -390,8 +403,8 @@ with sync_playwright() as p:
     ok(all(x.endswith('true') for x in cab),'las cinco ventanas llevan cabecera fija con × y sin Cancelar al pie (D91): %s' % cab)
     ok(pg.is_visible('#btn-detalle-editar'),'el detalle ofrece Editar en la cabecera a quien puede editar')
     pg.click('#btn-detalle-cerrar'); pg.wait_for_timeout(200)
-    col=pg.evaluate("getComputedStyle(document.querySelector('#lista-registros button[data-accion=eliminar]')).backgroundColor")
-    ok(col=='rgb(179, 38, 30)','el botón de eliminar es rojo')
+    col=pg.evaluate("getComputedStyle(document.querySelector('#lista-registros button[data-accion=eliminar]')).color")
+    ok(col=='rgb(179, 38, 30)','la opción Eliminar va en rojo')
     pg.click('.chip[data-atajo=todos]'); pg.wait_for_timeout(300)
     ok('Total: 4 ' in pg.inner_text('#registros-total'),'«Todos» muestra los cuatro: '+pg.inner_text('#registros-total'))
     ok(pg.is_hidden('#caja-filtro-cabo'),'el cabo no tiene filtro por cabo')
@@ -518,7 +531,7 @@ with sync_playwright() as p:
     ok(all(v=='' for v in vacios),'y lo que no se escribió queda vacío, no inventado')
 
     pg.click('.pestana[data-vista=registros]'); pg.wait_for_timeout(500)
-    pg.click('#lista-registros button[data-accion=ver] >> nth=0'); pg.wait_for_timeout(900)
+    accion(pg,'#lista-registros','ver'); pg.wait_for_timeout(900)
     ok(pg.locator('#detalle-mapa .leaflet-marker-icon').count()==1,'el detalle trae el mapa con el punto')
     ok(pg.evaluate("getComputedStyle(document.querySelector('#dlg-detalle-cuerpo dt')).fontWeight")=='700',
        'con las etiquetas en negritas')
@@ -532,7 +545,7 @@ with sync_playwright() as p:
     ok('Identificador' in pg.inner_text('#dlg-detalle'),'y el identificador del registro')
     pg.click('#btn-detalle-cerrar'); pg.wait_for_timeout(300)
     ok(pg.evaluate("SRP.registros.mapaDetalle")is None,'al cerrar, su mapa se destruye')
-    pg.click('#lista-registros button[data-accion=editar] >> nth=0'); pg.wait_for_timeout(600)
+    accion(pg,'#lista-registros','editar'); pg.wait_for_timeout(600)
     ok(pg.is_visible('#edicion-aviso'),'editar abre el formulario precargado')
     # En edición el espejo cambia de cara: conserva al cabo original, anuncia EDITADO y
     # deja claro que la marca de edición se fija al guardar, no al abrir
@@ -549,10 +562,10 @@ with sync_playwright() as p:
     pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(800)
     pg.click('#btn-resumen-guardar'); pg.wait_for_timeout(700)
     pg.click('.chip[data-atajo=todos]'); pg.wait_for_timeout(300)
-    pg.click('#lista-registros button[data-accion=ver] >> nth=0'); pg.wait_for_timeout(400)
+    accion(pg,'#lista-registros','ver'); pg.wait_for_timeout(400)
     ok('editado' in pg.inner_text('#dlg-detalle'),'el historial registra la edición')
     pg.click('#btn-detalle-cerrar'); pg.wait_for_timeout(200)
-    pg.click('#lista-registros button[data-accion=eliminar] >> nth=0'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
+    accion(pg,'#lista-registros','eliminar'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
     ok('Total: 3 ' in pg.inner_text('#registros-total'),'eliminar retira del listado: '+pg.inner_text('#registros-total'))
 
     # ---------- COORDINADOR ----------
@@ -576,7 +589,7 @@ with sync_playwright() as p:
     pg.click('.pestana[data-vista=registros]'); pg.wait_for_timeout(500)
     pg.click('.chip[data-atajo=todos]'); pg.wait_for_timeout(300)
     # Al abrir para editar un registro ajeno, el espejo enseña que el autor no cambia de manos
-    pg.click('#lista-registros button[data-accion=editar] >> nth=0'); pg.wait_for_timeout(600)
+    accion(pg,'#lista-registros','editar'); pg.wait_for_timeout(600)
     ajeno=pg.evaluate("""() => ({
       cabo: [...document.querySelectorAll('#espejo-cuerpo tr')].find(t=>t.textContent.includes('cabo_id')).children[1].textContent,
       editor: [...document.querySelectorAll('#espejo-cuerpo tr')].find(t=>t.textContent.includes('editado_por_id')).children[1].textContent,
@@ -605,7 +618,7 @@ with sync_playwright() as p:
     ok(pg.input_value('#cat-clave')=='MI_CLAVE_PROPIA','y deja de sugerirse si se editó a mano')
     pg.click('#form-catalogo button[type=submit]'); pg.wait_for_timeout(500)
     ok('Otro Programa' in pg.inner_text('#tabla-catalogo'),'se agrega el programa nuevo')
-    pg.click('#tabla-catalogo button[data-accion=eliminar]'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(400)
+    accion(pg,'#tabla-catalogo','eliminar'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(400)
     ok('Otro Programa' not in pg.inner_text('#tabla-catalogo'),'y se elimina, porque no tiene uso')
     pg.click('#btn-cat-agregar'); pg.fill('#cat-nombre','Reforestación Urbana'); pg.fill('#cat-clave','REFOR_URBANA')
     pg.click('#form-catalogo button[type=submit]'); pg.wait_for_timeout(300)
@@ -634,7 +647,7 @@ with sync_playwright() as p:
        and nueva['otros_nombres_comunes']=='Nombre uno, Nombre dos' and nueva['id_snib']=='99999ANGIO' and nueva['id_enciclovida']==123456 and nueva['formadecrecimiento']=='Árbol, Arbusto',
        'la especie nueva se guarda con id = clave, género y epíteto derivados y los campos del SNIB limpios: %s' % (nueva and {k:nueva[k] for k in ('id','genero','especie','id_snib','id_enciclovida','otros_nombres_comunes')}))
     pg.fill('#cat-buscar','prueba'); pg.wait_for_timeout(200)
-    pg.click('#tabla-catalogo button[data-accion=estado] >> nth=0'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(400)
+    accion(pg,'#tabla-catalogo','estado'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(400)
     ok(pg.locator('.estado-texto[data-activo=false]').count()>=1,'una especie se puede desactivar')
     ok(pg.evaluate("(() => { const f=SRP.formulario; f.el('campo-especie').value='Genus prueba'; f.estado.especieId=null; f.filtrarEspecies(); const t=f.el('lista-especies').innerText; f.cerrarCombo(); f.el('campo-especie').value=''; return !t.includes('Genus prueba'); })()"),'y una especie inactiva no se ofrece en el formulario')
     pg.fill('#cat-buscar',''); pg.wait_for_timeout(200)
@@ -675,10 +688,10 @@ with sync_playwright() as p:
     pg.click('#btn-cuenta'); pg.click('#btn-cambiar-perfil'); pg.select_option('#sel-usuario-prueba','u-admin-1'); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(500)
     pg.click('.pestana[data-vista=usuarios]'); pg.wait_for_timeout(500)
     f=pg.locator('#tabla-usuarios tbody tr', has_text='Sutana')
-    f.locator('button[data-accion=eliminar]').click(); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
+    accion(pg,f,'eliminar'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
     ok('Sutana' not in pg.inner_text('#tabla-usuarios'),'se elimina una cuenta sin registros')
     f2=pg.locator('#tabla-usuarios tbody tr', has_text='Fulana')
-    f2.locator('button[data-accion=estado]').click(); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
+    accion(pg,f2,'estado'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
     ok('Inactivo' in pg.locator('#tabla-usuarios tbody tr', has_text='Fulana').inner_text(),'se desactiva una cuenta')
     pg.click('#btn-cuenta'); pg.click('#btn-cerrar-sesion'); pg.wait_for_timeout(400)
     ok(pg.is_visible('#vista-acceso') and pg.is_hidden('#encabezado-usuario'),'cerrar sesión devuelve al acceso')

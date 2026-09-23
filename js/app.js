@@ -47,6 +47,7 @@ SRP.app = {
     SRP.conexion.iniciar();
     this.iniciarAcceso();
     this.iniciarDialogos();
+    this.iniciarMenusAcciones();
     this.ponerIconos();
 
     this.el('navegacion').addEventListener('click', (e) => {
@@ -140,6 +141,52 @@ SRP.app = {
       SRP.sesion.cerrar();
       this.mostrarAcceso();
       SRP.util.anunciar('Datos de prueba restablecidos.');
+    });
+  },
+
+  /* Menús de acciones de los renglones (D94). Un solo manejador para las tres tablas: la tuerca
+     abre su menú (y cierra cualquier otro); el menú se coloca con position:fixed junto a la
+     tuerca para que ninguna tabla con desplazamiento lo recorte; elegir una opción, tocar fuera o
+     Escape lo cierran; al desplazar, el menú sigue a su tuerca. El clic de la opción lo atiende cada módulo. */
+  iniciarMenusAcciones() {
+    const cerrar = () => document.querySelectorAll('.menu-acciones:not([hidden])').forEach(m => {
+      m.hidden = true; m.previousElementSibling.setAttribute('aria-expanded', 'false');
+    });
+    // Junto a la tuerca, abajo si cabe y si no arriba, sin salirse de la pantalla
+    const colocar = (t, menu) => {
+      const r = t.getBoundingClientRect(), m = menu.getBoundingClientRect();
+      const abajo = r.bottom + m.height + 8 <= window.innerHeight;
+      menu.style.top = (abajo ? r.bottom + 4 : Math.max(8, r.top - m.height - 4)) + 'px';
+      menu.style.left = Math.max(8, Math.min(r.right - m.width, window.innerWidth - m.width - 8)) + 'px';
+    };
+    document.addEventListener('click', (e) => {
+      const t = e.target.closest('.btn-tuerca');
+      if (t) {
+        const menu = t.nextElementSibling; const abrir = menu.hidden;
+        cerrar();
+        if (abrir) {
+          menu.hidden = false; t.setAttribute('aria-expanded', 'true');
+          colocar(t, menu);
+          const primero = menu.querySelector('.menu-opcion'); if (primero) primero.focus({ preventScroll: true });
+        }
+        return;
+      }
+      // Una opción elegida o un clic fuera: el menú se cierra (la opción ya la atendió su módulo)
+      cerrar();
+    });
+    // Al desplazar, el menú sigue a su tuerca en vez de cerrarse: un desplazamiento pequeño del
+    // dedo no debe obligar a abrirlo otra vez
+    window.addEventListener('scroll', () => {
+      const m = document.querySelector('.menu-acciones:not([hidden])');
+      if (m) colocar(m.previousElementSibling, m);
+    }, true);
+    window.addEventListener('resize', cerrar);
+    document.addEventListener('keydown', (e) => {
+      const abierto = document.querySelector('.menu-acciones:not([hidden])'); if (!abierto) return;
+      const ops = [...abierto.querySelectorAll('.menu-opcion')]; const i = ops.indexOf(document.activeElement);
+      if (e.key === 'Escape') { const t = abierto.previousElementSibling; cerrar(); t.focus(); }
+      else if (e.key === 'ArrowDown') { e.preventDefault(); ops[(i + 1) % ops.length].focus(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); ops[(i - 1 + ops.length) % ops.length].focus(); }
     });
   },
 

@@ -214,19 +214,18 @@ SRP.registros = {
     const esc = SRP.util.escapar;
     this.el('lista-registros').innerHTML = pagina.map(r => {
       const esp = SRP.ref.especieDe(r);
-      const boton = (accion, clase, icono, texto) =>
-        '<button type="button" class="btn ' + clase + ' btn-chico" data-accion="' + accion + '" data-id="' + r.id + '">' +
-        SRP.ICONOS.svg(icono, 16) + '<span>' + texto + '</span></button>';
-      const botones = [boton('ver', 'btn-secundario', 'ver', 'Ver')];
-      if (SRP.permisos.puedeEditar(u, r, SRP.ref.usuarioPorId)) botones.push(boton('editar', 'btn-editar', 'lapiz', 'Editar'));
-      if (SRP.permisos.puedeEliminar(u, r, SRP.ref.usuarioPorId)) botones.push(boton('eliminar', 'btn-peligro', 'basura', 'Eliminar'));
+      // Acciones en el menú de la tuerca (D94): sólo las que el perfil permite
+      const items = [{ accion: 'ver', texto: 'Ver detalle', icono: 'ver' }];
+      if (SRP.permisos.puedeEditar(u, r, SRP.ref.usuarioPorId)) items.push({ accion: 'editar', texto: 'Editar', icono: 'lapiz' });
+      if (SRP.permisos.puedeEliminar(u, r, SRP.ref.usuarioPorId)) items.push({ accion: 'eliminar', texto: 'Eliminar', icono: 'basura', peligro: true });
+      const menu = SRP.ICONOS.menuAcciones(r.id, esp.comun + ' del ' + SRP.util.formatearFecha(r.fecha_plantacion), items);
       return '<li class="registro"><div class="registro-datos">' +
         '<span class="registro-fecha">' + SRP.util.formatearFecha(r.fecha_plantacion) + ' · ' + esc(SRP.folio.texto(r)) + '</span>' +
         '<span class="registro-especie">' + esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : '') + '</span>' +
         // En la lista sólo lo que existe: repetir «pendiente» en cada renglón sería ruido
         '<span class="registro-lugar">' + esc(SRP.ref.alcaldia(r.alcaldia)) + (r.colonia ? ', ' + esc(r.colonia) : '') + '</span>' +
         (variosAutores ? '<span class="registro-autor">' + esc(SRP.ref.nombreUsuario(r.cabo_id)) + '</span>' : '') +
-        '</div><div class="registro-acciones">' + botones.join('') + '</div></li>';
+        '</div><div class="registro-acciones">' + menu + '</div></li>';
     }).join('');
     const n = this.filtrados.length;
     const propios = SRP.permisos.de(u).alcance === 'propios';

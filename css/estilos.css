@@ -323,6 +323,18 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 .tabla tr:nth-child(even) td { background: var(--fondo-suave); }
 .tabla-detalle { display: block; font-size: var(--t-xs); color: var(--gris); font-style: normal; }
 .tabla-acciones { display: flex; flex-wrap: wrap; gap: var(--e-1); }
+/* Tuerca de acciones y su menú (D94) */
+.acciones-menu { display: inline-block; }
+.btn.btn-tuerca { width: var(--toque); padding: 0; border-radius: 50%; background: none; color: var(--gris); border: 1px solid transparent; }
+.btn.btn-tuerca:hover, .btn.btn-tuerca[aria-expanded="true"] { background: var(--fondo-suave); color: var(--guinda); border-color: var(--borde-suave); }
+.menu-acciones { position: fixed; z-index: 1300; min-width: 11rem; padding: var(--e-1) 0; background: var(--fondo);
+  border: 1px solid var(--borde-suave); border-radius: var(--radio); box-shadow: 0 6px 18px rgba(35, 37, 38, 0.18); }
+.menu-opcion { display: flex; align-items: center; gap: var(--e-2); width: 100%; min-height: var(--toque); padding: 0 var(--e-4);
+  background: none; border: 0; font: inherit; color: var(--texto); text-align: left; cursor: pointer; }
+.menu-opcion:hover, .menu-opcion:focus-visible { background: var(--fondo-suave); outline: none; }
+.menu-opcion svg { color: var(--gris); }
+.menu-sin-icono { width: 18px; }
+.menu-peligro, .menu-peligro svg { color: var(--error); }
 .tabla td:last-child { white-space: nowrap; }
 .tabla td:last-child .tabla-acciones { flex-wrap: nowrap; }
 
