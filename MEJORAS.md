@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.28 (Bloque 47)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.29 (Bloque 48)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -48,6 +48,11 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M41 | PDF #1 | Personal: Encargado primero y grupos con subtítulo y nombres sangrados | Alta | 0.6.28 (B47) | Escribir dos nombres en Personal participante y uno en Personal de apoyo; en la vista previa y el PDF salen separados con viñeta | Apartado de personal en el PDF |
 | M42 | PDF #2 | Total alineado a la derecha | Media | 0.6.28 (B47) | En «Totales por especie» el número del Total queda bajo las demás cifras | Tabla de totales |
 | M43 | PDF #3 | PDF ligero (de ~800 KB a ~60 KB) | Media | 0.6.28 (B47) | Al compartir el PDF, su tamaño ronda 60 KB | Detalle del archivo al compartir |
+| M47 | Petición de Liber (iPhone) | Registros abre con Todos y los filtros abiertos | Alta | 0.6.29 (B48) | Entrar a Registros: se ven todos, el panel de filtros abierto y ninguna ficha; «Filtros» lo pliega; «Reiniciar filtros» vuelve a Todos | Registros al entrar |
+| M48 | Petición de Liber (iPhone) | Un solo atajo marcado a la vez | Alta | 0.6.29 (B48) | Tocar «Un periodo»: queda marcado sólo él (Todos se desmarca) | Atajos con «Un periodo» |
+| M49 | Petición de Liber (iPhone) | Texto guía en fechas y hora vacías | Media | 0.6.29 (B48) | Nuevo registro: la fecha vacía dice «Seleccione en el calendario»; Desde/Hasta «Elija la fecha»; hora de finalización «Elija la hora» | Fecha vacía |
+| M50 | Petición de Liber | «Reporte» en lugar de «parte» en toda la plataforma | Media | 0.6.29 (B48) | Reportes dice «Reporte del día» y «Día del reporte»; la vista previa, «Vista previa del reporte» | Reportes |
+| M51 | Petición de Liber | Sin el bloque «Registros en este dispositivo»; respaldo en el menú de la cuenta | Media | 0.6.29 (B48) | Reportes sólo tiene el reporte del día; el icono de usuario ofrece «Guardar respaldo» | Reportes y menú de cuenta |
 
 ## 2. Por hacer
 
@@ -60,7 +65,9 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M22 | iPhone · Nuevo registro #7 | Crédito de Esri más corto | Baja | Pendiente | Con la revisión del mapa |
 | M23 | iPhone · Nuevo registro #8 | Menos autollenado de Safari | Baja | Pendiente | Con la revisión del mapa; efecto limitado |
 | M26 | iPhone · Formulario lleno #2 | Alinear la etiqueta «Fotografía» | Baja | Propuesto | — |
-| M12 | Lista de diseño #11 | Modo de alto contraste para sol directo | Media | Pendiente | Elegida el 22-09; bloque 48 |
+| M12 | Lista de diseño #11 | Modo de alto contraste para sol directo | Media | Pendiente | Elegida el 22-09; bloque 49 |
+| M45 | Revisión en computadora | Equilibrio en computadora: mapa a la izquierda y formulario a la derecha en Nuevo registro; Reportes centrado | Media | Propuesto | Hoy quedan cargados a la izquierda |
+| M46 | Android | Revisión corta en Android: versión, botón «atrás» con ventanas abiertas, calendario y hora, especies con teclado, precisión, foto, compartir PDF, aviso | Alta | Pendiente | Espera capturas |
 
 ## 3. Verificadas sin falla
 
@@ -75,4 +82,4 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 33 hechas · 8 por hacer · 1 verificada sin falla · 2 descartadas.
+**Resumen:** 38 hechas · 10 por hacer · 1 verificada sin falla · 2 descartadas.

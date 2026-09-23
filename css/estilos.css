@@ -207,6 +207,13 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
   outline: none; border-color: var(--guinda); box-shadow: 0 0 0 1px var(--guinda);
 }
 .fecha-con-hoy { display: grid; grid-template-columns: 1fr auto; gap: var(--e-2); }
+/* Texto guía en fechas y horas vacías (D104). El iPhone deja el campo en blanco y el atributo
+   placeholder no aplica a estos controles: el texto va encima y se quita en cuanto hay valor. */
+.envoltura-vacio { position: relative; display: block; min-width: 0; }
+.texto-vacio { position: absolute; left: var(--e-3); right: 48px; top: 50%; transform: translateY(-50%); display: none;
+  color: var(--gris); pointer-events: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.envoltura-vacio[data-vacio="true"] .texto-vacio { display: block; }
+.envoltura-vacio[data-vacio="true"] input:not(:focus) { color: transparent; }
 .fecha-con-hoy .btn { min-width: 5rem; }
 /* Programas como botones: dentro del formulario van a todo el ancho y a la altura de un campo */
 .chips-campo { max-width: none; margin-bottom: 0; }
@@ -550,8 +557,6 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .chip[aria-pressed="true"] .chip-sub { color: var(--guinda); }
 /* Activo: guinda suave con borde guinda (propuesta A de la maqueta, D95) */
 .chip[aria-pressed="true"] { background: var(--fondo-suave); border-color: var(--guinda); color: var(--guinda); }
-/* «Un periodo» abierto pero sin rango aplicado: sólo el contorno, porque todavía no filtra */
-.chip[aria-expanded="true"][aria-pressed="false"] { border-color: var(--guinda); color: var(--guinda); background: var(--fondo); }
 .combo-opcion[aria-selected="true"] { background: var(--fondo-suave); outline: 2px solid var(--guinda); outline-offset: -2px; }
 .campo input[aria-invalid="true"], .campo select[aria-invalid="true"] { border: 2px solid var(--error); }
 .aviso[data-tipo="alerta"] { border-left-color: var(--aviso-alerta); }

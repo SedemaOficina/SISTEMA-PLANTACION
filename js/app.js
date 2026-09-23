@@ -15,7 +15,6 @@ SRP.app = {
     I.poner(this.el('btn-entrar-prueba'), 'entrar', 20);
     const pestana = { registrar: 'mas', registros: 'registros', reportes: 'reportes', catalogos: 'catalogos', usuarios: 'usuarios' };
     this.el('navegacion').querySelectorAll('.pestana').forEach(b => I.poner(b, pestana[b.dataset.vista], 22));
-    I.poner(this.el('btn-ayuda-senal'), 'ayuda', 20);
     I.poner(this.el('btn-usr-agregar'), 'usuarioMas', 20);
     // Los buscadores llevan la lupa dentro del campo, desde la hoja de estilos (D95)
     // Avisos informativos: el icono va al frente del texto
@@ -47,6 +46,7 @@ SRP.app = {
     this.iniciarAcceso();
     this.iniciarDialogos();
     this.iniciarCamposFecha();
+    this.iniciarVacios();
     this.iniciarMenusAcciones();
     this.ponerIconos();
 
@@ -259,6 +259,27 @@ SRP.app = {
   /* ---------- Diálogos ---------- */
   // En escritorio, tocar cualquier parte de una fecha de filtro abre el calendario, no sólo el
   // cuadrito de la derecha (D95). En teléfono el navegador ya lo hace solo.
+  /* TEXTO GUÍA EN FECHAS Y HORAS VACÍAS (D104). Cada <input data-vacio="…"> se envuelve con su
+     texto guía, que se ve sólo mientras el campo está vacío. Hay valores que el código pone o
+     quita sin evento (limpiar, editar, restaurar filtros): una revisión ligera cada medio segundo
+     los alcanza sin tener que avisar desde cada módulo. */
+  iniciarVacios() {
+    const campos = [...document.querySelectorAll('input[data-vacio]')].map(inp => {
+      const env = document.createElement('span');
+      env.className = 'envoltura-vacio';
+      inp.parentNode.insertBefore(env, inp);
+      env.appendChild(inp);
+      const t = document.createElement('span');
+      t.className = 'texto-vacio'; t.setAttribute('aria-hidden', 'true'); t.textContent = inp.dataset.vacio;
+      env.appendChild(t);
+      const ver = () => { env.dataset.vacio = String(!inp.value); };
+      ['input', 'change', 'blur', 'focus'].forEach(ev => inp.addEventListener(ev, ver));
+      ver();
+      return ver;
+    });
+    setInterval(() => campos.forEach(ver => ver()), 500);
+  },
+
   iniciarCamposFecha() {
     document.addEventListener('click', (e) => {
       const f = e.target.closest('.zona-filtros input[type="date"]');

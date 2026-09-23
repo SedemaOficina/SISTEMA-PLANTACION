@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#9D2148">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.28">
-<link rel="preload" as="image" href="assets/encabezado-ru-movil.png?v=0.6.28">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.29">
+<link rel="preload" as="image" href="assets/encabezado-ru-movil.png?v=0.6.29">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.28">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.28">
-<link rel="stylesheet" href="css/estilos.css?v=0.6.28">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.29">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.29">
+<link rel="stylesheet" href="css/estilos.css?v=0.6.29">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -21,8 +21,8 @@
   <div class="encabezado-interior">
     <!-- Logotipo del Programa de Reforestación Urbana (D90): completo en pantalla ancha; en teléfono, el emblema y el nombre del programa -->
     <picture>
-      <source media="(max-width: 480px)" srcset="assets/encabezado-ru-movil.png?v=0.6.28">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru.png?v=0.6.28" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Reforestación Urbana">
+      <source media="(max-width: 480px)" srcset="assets/encabezado-ru-movil.png?v=0.6.29">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru.png?v=0.6.29" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» (D80) -->
@@ -36,6 +36,8 @@
           <div class="menu-cuenta-acciones">
             <!-- Opciones de texto, como en cualquier menú de cuenta; no botones (D97) -->
             <!-- Sólo con datos de prueba; desaparece con ES_FICTICIO: false -->
+            <!-- El respaldo vive aquí desde que se retiró el bloque del dispositivo de Reportes (D104) -->
+            <button type="button" id="btn-respaldo" class="menu-opcion">Guardar respaldo</button>
             <button type="button" id="btn-cambiar-perfil" class="menu-opcion" hidden>Cambiar usuario (pruebas)</button>
             <button type="button" id="btn-cerrar-sesion" class="menu-opcion">Cerrar sesión</button>
           </div>
@@ -150,7 +152,7 @@
         <select id="campo-programa" required></select></div>
       <div class="campo"><label for="campo-fecha">Fecha de plantación <span class="obligatorio" aria-hidden="true">*</span></label>
         <!-- Arranca vacía (D29); «Hoy» la pone de un toque, como elección de quien captura (D98) -->
-        <div class="fecha-con-hoy"><input type="date" id="campo-fecha" required><button type="button" id="btn-fecha-hoy" class="btn btn-secundario">Hoy</button></div></div>
+        <div class="fecha-con-hoy"><input type="date" id="campo-fecha" required data-vacio="Seleccione en el calendario"><button type="button" id="btn-fecha-hoy" class="btn btn-secundario">Hoy</button></div></div>
       <div class="campo">
         <label for="campo-comentarios">Comentarios <span class="opcional">(opcional)</span></label>
         <textarea id="campo-comentarios" rows="3" maxlength="500" placeholder="Observaciones del sitio, condición del ejemplar, incidencias…"></textarea>
@@ -220,20 +222,20 @@
   <section id="vista-registros" class="vista vista-ancha" hidden aria-labelledby="titulo-registros">
     <h1 id="titulo-registros">Mis registros</h1>
 
-    <!-- Cuatro bloques con título, en el orden en que se usan: filtrar, ver, sacar el parte, cuidar los datos (D79) -->
+    <!-- Cuatro bloques con título, en el orden en que se usan: filtrar, ver, sacar el reporte, cuidar los datos (D79) -->
     <section class="bloque" aria-labelledby="titulo-filtros">
     <!-- Encabezado del grupo con su «Reiniciar» a la derecha (D95) -->
     <div class="grupo-cab">
       <h2 id="titulo-filtros" class="titulo-bloque">Filtrar</h2>
-      <!-- En teléfono los filtros van plegados tras este botón; en escritorio siempre abiertos (D100) -->
-      <button type="button" id="btn-filtros" class="btn btn-secundario btn-filtros" aria-expanded="false" aria-controls="panel-filtros">
+      <!-- En teléfono los filtros arrancan abiertos y este botón los pliega (D104, antes D100); en escritorio siempre abiertos -->
+      <button type="button" id="btn-filtros" class="btn btn-secundario btn-filtros" aria-expanded="true" aria-controls="panel-filtros">
         <span>Filtros</span><span id="filtros-cuenta" class="filtros-cuenta" hidden></span></button>
       <!-- Vuelve al estado con que se abre la vista (Hoy, sin rango, todos los cabos). «Todos» sólo quita el periodo -->
       <button type="button" id="btn-reiniciar-filtros" class="btn btn-reiniciar">Reiniciar filtros</button>
     </div>
     <!-- Lo que está filtrando ahora, como fichas que se quitan con × (D100) -->
     <ul id="filtros-activos" class="filtros-activos" aria-label="Filtros activos"></ul>
-    <div id="panel-filtros" class="filtros zona-filtros" data-abierto="false">
+    <div id="panel-filtros" class="filtros zona-filtros" data-abierto="true">
       <!-- Una sola fila: atajos y listas. Desde/Hasta sólo al pedir «Un periodo» (D64) -->
       <div class="filtros-fila">
         <div id="filtro-atajos" class="chips" role="group" aria-label="Periodo">
@@ -248,8 +250,8 @@
         </div>
       </div>
       <div id="filtro-periodo" class="filtros-periodo" hidden>
-        <div class="campo campo-corto"><label for="filtro-desde">Desde</label><input type="date" id="filtro-desde"></div>
-        <div class="campo campo-corto"><label for="filtro-hasta">Hasta</label><input type="date" id="filtro-hasta"></div>
+        <div class="campo campo-corto"><label for="filtro-desde">Desde</label><input type="date" id="filtro-desde" data-vacio="Elija la fecha"></div>
+        <div class="campo campo-corto"><label for="filtro-hasta">Hasta</label><input type="date" id="filtro-hasta" data-vacio="Elija la fecha"></div>
         <button type="button" id="btn-filtrar" class="btn btn-primario">Aplicar</button>
       </div>
     </div>
@@ -265,15 +267,15 @@
 
   </section>
 
-  <!-- REPORTES: las dos salidas de datos del dispositivo, el parte del día y el respaldo (D81) -->
+  <!-- REPORTES: el reporte del día (D81). El bloque «Registros en este dispositivo» se retiró (D104); el respaldo pasó al menú de la cuenta -->
   <section id="vista-reportes" class="vista" hidden aria-labelledby="titulo-reportes">
     <h1 id="titulo-reportes">Reportes</h1>
 
-    <!-- El parte es de un día, de cualquier día (D70); aquí se elige el día y, quien ve a varias personas, el cabo -->
-    <section class="bloque" aria-labelledby="titulo-parte">
-    <h2 id="titulo-parte" class="titulo-bloque">Parte del día</h2>
+    <!-- El reporte es de un día, de cualquier día (D70); aquí se elige el día y, quien ve a varias personas, el cabo -->
+    <section class="bloque" aria-labelledby="titulo-reporte">
+    <h2 id="titulo-reporte" class="titulo-bloque">Reporte del día</h2>
     <div class="filtros-fila zona-filtros">
-      <div class="campo campo-corto"><label for="pdf-dia">Día del parte</label><input type="date" id="pdf-dia"></div>
+      <div class="campo campo-corto"><label for="pdf-dia">Día del reporte</label><input type="date" id="pdf-dia"></div>
       <div id="caja-pdf-cabo" class="campo campo-corto" hidden><label for="pdf-cabo">Cabo</label><select id="pdf-cabo"></select></div>
     </div>
     <p id="pdf-nota" class="nota" aria-live="polite"></p>
@@ -282,15 +284,6 @@
     </div>
     </section>
 
-    <!-- Qué guarda este dispositivo y qué hacer con ello; en Fase 2 aquí va «pendientes de enviar» y el botón de sincronizar -->
-    <section class="bloque" aria-labelledby="titulo-dispositivo">
-    <h2 id="titulo-dispositivo" class="titulo-bloque">Registros en este dispositivo</h2>
-    <div id="aviso-envio" class="aviso-envio" aria-live="polite"></div>
-    <div class="acciones">
-      <button type="button" id="btn-respaldo" class="btn btn-secundario">Guardar respaldo</button>
-      <button type="button" id="btn-ayuda-senal" class="btn btn-texto">¿Qué hacer sin internet?</button>
-    </div>
-    </section>
   </section>
 
   <!-- CATÁLOGOS -->
@@ -411,7 +404,7 @@
   </form>
 </dialog>
 
-<!-- CIERRE DEL PARTE DEL DÍA. Todos los campos son opcionales y de escritura libre: los partes
+<!-- CIERRE DEL REPORTE DEL DÍA. Todos los campos son opcionales y de escritura libre: los reportes
      varían de una cuadrilla a otra. Lo que ya está en los registros —especies, conteos,
      territorio— no se pregunta aquí, se calcula (ver js/reportes.js). -->
 <dialog id="dlg-cierre" aria-labelledby="dlg-cierre-titulo">
@@ -423,10 +416,10 @@
       <button type="button" id="btn-cierre-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar sin generar"></button>
     </div>
   </div>
-    <p class="nota">Parte del <strong id="dlg-cierre-dia"></strong>. <span id="dlg-cierre-cuenta"></span>. Todos los campos son opcionales; los que queden vacíos no aparecen en el reporte.</p>
+    <p class="nota">Reporte del <strong id="dlg-cierre-dia"></strong>. <span id="dlg-cierre-cuenta"></span>. Todos los campos son opcionales; los que queden vacíos no aparecen en el reporte.</p>
 
-    <!-- El encargado abre el parte: es el primer dato que se lee en el papel (D60). Un cabo es el
-         encargado de su propio parte y no lo elige; quien ve a varias personas sí -->
+    <!-- El encargado abre el reporte: es el primer dato que se lee en el papel (D60). Un cabo es el
+         encargado de su propio reporte y no lo elige; quien ve a varias personas sí -->
     <div class="campo">
       <label for="cie-encargado">Encargado</label>
       <p id="cie-encargado-lectura" class="campo-lectura" hidden></p>
@@ -457,7 +450,7 @@
       <div class="campo"><label for="cie-vehiculo_placa">Placa</label><input id="cie-vehiculo_placa" autocapitalize="characters"></div>
     </div>
     <div class="campo"><label for="cie-hora">Hora de finalización</label>
-      <div class="fecha-con-hoy"><input type="time" id="cie-hora"><button type="button" id="btn-hora-ahora" class="btn btn-secundario">Ahora</button></div></div>
+      <div class="fecha-con-hoy"><input type="time" id="cie-hora" data-vacio="Elija la hora"><button type="button" id="btn-hora-ahora" class="btn btn-secundario">Ahora</button></div></div>
 
     <!-- ESPEJO DEL CIERRE — se elimina al cerrar la Etapa 1 (ver js/espejo.js) -->
     <details id="espejo-cierre" class="desplegable espejo espejo-en-dialogo" hidden>
@@ -483,11 +476,11 @@
   </form>
 </dialog>
 
-<!-- VISTA PREVIA DEL PARTE (D101): lo mismo que dirá el PDF, en pantalla, antes de generarlo -->
+<!-- VISTA PREVIA DEL REPORTE (D101): lo mismo que dirá el PDF, en pantalla, antes de generarlo -->
 <dialog id="dlg-previa" aria-labelledby="dlg-previa-titulo" class="dialogo-previa">
   <div class="dialogo-cabecera">
     <div class="dialogo-titulo">
-      <h2 id="dlg-previa-titulo" tabindex="-1" autofocus>Vista previa del parte</h2>
+      <h2 id="dlg-previa-titulo" tabindex="-1" autofocus>Vista previa del reporte</h2>
       <button type="button" id="btn-previa-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar sin generar"></button>
     </div>
   </div>
@@ -507,9 +500,9 @@
     </div>
   </div>
   <ol class="lista-ayuda">
-    <li><strong>Siga registrando.</strong> El GPS, la captura y el parte funcionan sin señal. Sólo la imagen del mapa deja de verse; puede tocar el mapa o capturar la coordenada a mano.</li>
+    <li><strong>Siga registrando.</strong> El GPS, la captura y el reporte funcionan sin señal. Sólo la imagen del mapa deja de verse; puede tocar el mapa o capturar la coordenada a mano.</li>
     <li><strong>Abra la app al menos una vez con señal</strong> después de instalarla o de que haya versión nueva: así queda guardada en el teléfono y abre aunque no haya red.</li>
-    <li><strong>Sus registros viven en este teléfono.</strong> Por ahora no se envían a ningún servidor. Cuando tenga señal, genere el parte del día y compártalo con su coordinador, o guarde un respaldo.</li>
+    <li><strong>Sus registros viven en este teléfono.</strong> Por ahora no se envían a ningún servidor. Cuando tenga señal, genere el reporte del día y compártalo con su coordinador, o guarde un respaldo.</li>
     <li><strong>No borre los datos del navegador</strong> ni use el modo privado: se perderían los registros.</li>
     <li><strong>Si cambia de teléfono</strong>, guarde un respaldo antes y entréguelo a su coordinador.</li>
   </ol>
@@ -554,37 +547,37 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.6.28"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.28"></script>
-<script src="vendor/turf-pip.min.js?v=0.6.28"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.6.28"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.28"></script>
+<script src="vendor/leaflet.js?v=0.6.29"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.29"></script>
+<script src="vendor/turf-pip.min.js?v=0.6.29"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.6.29"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.29"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.6.28"></script>
-<script src="js/util.js?v=0.6.28"></script>
-<script src="js/iconos.js?v=0.6.28"></script>
+<script src="js/config.js?v=0.6.29"></script>
+<script src="js/util.js?v=0.6.29"></script>
+<script src="js/iconos.js?v=0.6.29"></script>
 <!-- Capas territoriales del SIA, compactadas por pruebas/generar_capas.py desde assets/fuentes/ -->
-<script src="assets/capa-alcaldias.js?v=0.6.28"></script>
-<script src="assets/capa-uga.js?v=0.6.28"></script>
-<script src="assets/capa-colonias.js?v=0.6.28"></script>
-<script src="assets/catalogo-especies.js?v=0.6.28"></script>
-<script src="js/datos-ficticios.js?v=0.6.28"></script>
-<script src="js/permisos.js?v=0.6.28"></script>
-<script src="js/derivacion.js?v=0.6.28"></script>
-<script src="js/almacen.js?v=0.6.28"></script>
-<script src="js/sesion.js?v=0.6.28"></script>
-<script src="js/referencias.js?v=0.6.28"></script>
-<script src="js/folio.js?v=0.6.28"></script>
-<script src="js/conexion.js?v=0.6.28"></script>
-<script src="js/mapa.js?v=0.6.28"></script>
-<script src="js/foto.js?v=0.6.28"></script>
-<script src="js/formulario.js?v=0.6.28"></script>
+<script src="assets/capa-alcaldias.js?v=0.6.29"></script>
+<script src="assets/capa-uga.js?v=0.6.29"></script>
+<script src="assets/capa-colonias.js?v=0.6.29"></script>
+<script src="assets/catalogo-especies.js?v=0.6.29"></script>
+<script src="js/datos-ficticios.js?v=0.6.29"></script>
+<script src="js/permisos.js?v=0.6.29"></script>
+<script src="js/derivacion.js?v=0.6.29"></script>
+<script src="js/almacen.js?v=0.6.29"></script>
+<script src="js/sesion.js?v=0.6.29"></script>
+<script src="js/referencias.js?v=0.6.29"></script>
+<script src="js/folio.js?v=0.6.29"></script>
+<script src="js/conexion.js?v=0.6.29"></script>
+<script src="js/mapa.js?v=0.6.29"></script>
+<script src="js/foto.js?v=0.6.29"></script>
+<script src="js/formulario.js?v=0.6.29"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.6.28"></script>
-<script src="js/registros.js?v=0.6.28"></script>
-<script src="js/reportes.js?v=0.6.28"></script>
-<script src="js/catalogos.js?v=0.6.28"></script>
-<script src="js/usuarios.js?v=0.6.28"></script>
-<script src="js/app.js?v=0.6.28"></script>
+<script src="js/espejo.js?v=0.6.29"></script>
+<script src="js/registros.js?v=0.6.29"></script>
+<script src="js/reportes.js?v=0.6.29"></script>
+<script src="js/catalogos.js?v=0.6.29"></script>
+<script src="js/usuarios.js?v=0.6.29"></script>
+<script src="js/app.js?v=0.6.29"></script>
 </body>
 </html>

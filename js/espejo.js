@@ -3,7 +3,7 @@
    ESTE ARCHIVO SE ELIMINA AL CERRAR LA ETAPA 1. Para quitarlo bastan cuatro cosas:
      1. borrar este archivo,
      2. borrar su <script> y los tres bloques con clase `espejo` de index.html
-        (formulario, detalle del registro y cierre del parte),
+        (formulario, detalle del registro y cierre del reporte),
      3. borrar el bloque `.espejo` de css/estilos.css,
      4. borrar las tres llamadas a SRP.espejo (formulario.js, registros.js, reportes.js),
         que ya están protegidas con `if (SRP.espejo)`.
@@ -11,7 +11,7 @@
    no participa en la validación. Es una ventana, no una pieza.
 
    TRES ESPEJOS, UN MOTOR (bloque 22). El del formulario enseña el registro previsto; el
-   del detalle, el registro tal como quedó guardado; el del cierre del parte, el cierre
+   del detalle, el registro tal como quedó guardado; el del cierre del reporte, el cierre
    previsto. Los tres restan los campos visibles y pintan el resto con su nota.
    =================================================================================
 
@@ -64,13 +64,13 @@ SRP.espejo = {
                      'especie_id', 'especie_otra', 'programa_id', 'fecha_plantacion', 'cabo_id',
                      'comentarios', 'foto_base64'],
 
-  // Cierre del parte: lo que se ve en el formulario son sus CAMPOS y el encargado
+  // Cierre del reporte: lo que se ve en el formulario son sus CAMPOS y el encargado
   NOTAS_CIERRE: {
     id: 'fecha|cabo, o fecha|TODOS sin cabo filtrado: un cierre por jornada y cuadrilla',
     es_ficticio: 'Verdadero mientras CONFIG.ES_FICTICIO lo esté (D87)',
-    fecha: 'El día del parte; sale del filtro, no se captura',
-    cabo_id: 'El cabo por el que se filtró; vacío si el parte es del día completo',
-    creado_por_id: 'Quién cerró el parte la primera vez; no cambia al regenerar',
+    fecha: 'El día del reporte; sale del filtro, no se captura',
+    cabo_id: 'El cabo por el que se filtró; vacío si el reporte es del día completo',
+    creado_por_id: 'Quién cerró el reporte la primera vez; no cambia al regenerar',
     fecha_creacion: 'Se fija al generar por primera vez',
     editado_por_id: 'Quién generó por última vez',
     fecha_ultima_edicion: 'Se fija en cada generación'
@@ -128,7 +128,7 @@ SRP.espejo = {
       '<thead><tr><th>Campo</th><th>Valor guardado</th><th>De dónde sale</th></tr></thead><tbody>' + f.html + '</tbody></table></details>';
   },
 
-  /* Cierre del parte (reportes.js): el objeto que escribiría «Generar reporte», con lo que la
+  /* Cierre del reporte (reportes.js): el objeto que escribiría «Generar reporte», con lo que la
      pantalla no enseña. Se repinta con cada tecla del formulario de cierre. */
   refrescarCierre() {
     const caja = document.getElementById('espejo-cierre');
@@ -144,7 +144,7 @@ SRP.espejo = {
     };
     const f = this.filas(cierre, visibles, this.NOTAS_CIERRE, prov);
     document.getElementById('espejo-cierre-cuerpo').innerHTML = f.html;
-    const b = SRP.bitacora.entrada(nuevo ? 'CREADO' : 'EDITADO', 'cierre', cierre.id, 'Cierre del parte');
+    const b = SRP.bitacora.entrada(nuevo ? 'CREADO' : 'EDITADO', 'cierre', cierre.id, 'Cierre del reporte');
     const esc = SRP.util.escapar;
     document.getElementById('espejo-cierre-bitacora').innerHTML = Object.keys(b).map(k =>
       '<tr><td class="espejo-campo">' + esc(k) + '</td>' +

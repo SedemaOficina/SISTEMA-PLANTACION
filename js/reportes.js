@@ -2,11 +2,11 @@
    Dos piezas: el formulario de cierre —lo que no está en los registros y sólo va al documento— y
    el PDF que lo arma.
 
-   POR QUÉ UN SOLO DÍA. El reporte es el parte de la jornada: así se escribe hoy en campo, un
-   parte por día y por cuadrilla. Un reporte que abarcara un mes no tendría chófer ni hora de
+   POR QUÉ UN SOLO DÍA. El reporte es de la jornada: así se escribe hoy en campo, un
+   reporte por día y por cuadrilla. Un reporte que abarcara un mes no tendría chófer ni hora de
    finalización ni observaciones que valieran para todo el periodo, y esos campos son la mitad del
    documento. Los filtros de mes, año y rango siguen sirviendo para mirar la lista; para generar
-   el parte hay que estar parado en un día.
+   el reporte hay que estar parado en un día.
 
    POR QUÉ UN FORMULARIO APARTE Y NO UN ENCABEZADO DE JORNADA. Lo pidió Liber así: el chófer, la
    hora de finalización y las observaciones se saben al cerrar el día, no al llegar al frente.
@@ -20,7 +20,7 @@ window.SRP = window.SRP || {};
 SRP.reportes = {
   COLOR: { guinda: [157, 33, 72], dorado: [178, 142, 92], gris: [85, 88, 90], fila: [247, 241, 243], tinta: [35, 37, 38] },
 
-  /* Campos del cierre. Todos opcionales y de texto libre: los partes varían de una cuadrilla a
+  /* Campos del cierre. Todos opcionales y de texto libre: los reportes varían de una cuadrilla a
      otra y de un día a otro, y encajonarlos obligaría a escribir de una forma que no es la suya.
      El encargado no está en esta lista porque no se escribe: sale de la sesión. */
   CAMPOS: ['sitio', 'actividades', 'personal', 'apoyo', 'observaciones', 'chofer', 'vehiculo_modelo', 'vehiculo_placa', 'hora'],
@@ -56,7 +56,7 @@ SRP.reportes = {
 
   /* ---------- La vista Reportes (D81) ---------- */
 
-  /* EL PARTE ES DE UN DÍA. Lo decidió Liber: el reporte es el parte de la jornada, y los datos
+  /* EL REPORTE ES DE UN DÍA. Lo decidió Liber: el reporte es de la jornada, y los datos
      que lo acompañan —chófer, hora de finalización, observaciones— no valen para un mes. Aquí se
      elige el día (hoy por omisión, nunca futuro) y, quien ve a varias personas, el cabo. La vista
      no depende de cómo esté filtrada la lista de Registros: hace su propia consulta. */
@@ -103,7 +103,7 @@ SRP.reportes = {
     const n = dia ? (await this.registrosDelDia(dia, cabo)).length : 0;
     this.el('btn-pdf').disabled = !dia || n === 0;
     this.el('pdf-nota').textContent = !dia
-      ? 'El reporte es el parte de un día. Elija el día del parte.'
+      ? 'El reporte es de un día. Elija el día del reporte.'
       : n === 0 ? 'No hay registros del ' + SRP.util.formatearFecha(dia) + (cabo ? ' de ' + SRP.ref.nombreUsuario(cabo) : '') + '.'
       : (n === 1 ? 'Se reportará el registro del ' : 'Se reportarán los ' + n + ' registros del ') + SRP.util.formatearFecha(dia) +
         (cabo ? ' de ' + SRP.ref.nombreUsuario(cabo) : '') + '. Si ya se generó, se vuelve a abrir con sus datos de cierre para corregirlos.';
@@ -117,9 +117,9 @@ SRP.reportes = {
     this.abrir(registros, dia, cabo);
   },
 
-  /* La clave junta el día con el cabo filtrado: un coordinador puede sacar el parte de cada una
+  /* La clave junta el día con el cabo filtrado: un coordinador puede sacar el reporte de cada una
      de sus cuadrillas el mismo día, y cada uno conserva sus propios datos de cierre. Sin cabo
-     elegido, el parte es del día completo dentro de su alcance. */
+     elegido, el reporte es del día completo dentro de su alcance. */
   claveCierre(fecha, caboId) { return fecha + '|' + (caboId || 'TODOS'); },
 
   /* ---------- Formulario de cierre ---------- */
@@ -144,7 +144,7 @@ SRP.reportes = {
     this.el('dlg-cierre').showModal();
   },
 
-  /* ENCARGADO. Quien captura en campo es responsable de su propio parte, así que a un cabo no se
+  /* ENCARGADO. Quien captura en campo es responsable de su propio reporte, así que a un cabo no se
      le pregunta: es él, y el campo se muestra como respuesta, no como pregunta. Quien ve a varias
      personas —coordinador o administración— sí elige, y sólo entre los cabos que tienen registros
      ese día: ofrecer el padrón completo sería ofrecer a gente que no estuvo. */
@@ -207,13 +207,13 @@ SRP.reportes = {
 
     await SRP.almacen.guardarConBitacora('cierres', cierre,
       SRP.bitacora.entrada(previo ? 'EDITADO' : 'CREADO', 'cierre', cierre.id,
-        'Cierre del parte del ' + SRP.util.formatearFecha(c.fecha)));
+        'Cierre del reporte del ' + SRP.util.formatearFecha(c.fecha)));
 
     this.el('dlg-cierre').close();
     this.mostrarPrevia(c.registros, cierre, c.fecha, c.cabo_id);
   },
 
-  /* VISTA PREVIA DEL PARTE (D101). Lo mismo que dirá el PDF, en el mismo orden y con las mismas
+  /* VISTA PREVIA DEL REPORTE (D101). Lo mismo que dirá el PDF, en el mismo orden y con las mismas
      reglas (un apartado vacío no aparece), en pantalla y antes de generarlo: así se corrige un
      dato de cierre sin haber compartido todavía un documento equivocado. No es una imagen del
      PDF —en iPhone un PDF incrustado sólo enseña la primera página—, sino el mismo contenido. */
@@ -254,7 +254,7 @@ SRP.reportes = {
         return '<tr><td>' + (i + 1) + '</td><td>' + esc(SRP.folio.texto(r)) + '</td><td>' + esc(e.comun) + '</td><td><i>' + esc(e.cientifico) + '</i></td>' +
           (variosAutores ? '<td>' + esc(SRP.ref.nombreUsuario(r.cabo_id)) + '</td>' : '') + '</tr>';
       }).join('') + '</tbody></table></div>' +
-      (registros.some(r => !SRP.folio.valido(r.folio)) ? '<p class="previa-nota">Registros PROVISIONALES: el folio se asigna al sincronizar con el servidor. Este parte no sustituye al definitivo.</p>' : ''));
+      (registros.some(r => !SRP.folio.valido(r.folio)) ? '<p class="previa-nota">Registros PROVISIONALES: el folio se asigna al sincronizar con el servidor. Este reporte no sustituye al definitivo.</p>' : ''));
 
     h += apartado('Totales por especie', '<div class="previa-tabla-caja"><table class="previa-tabla"><thead><tr><th>Especie</th><th>Nombre científico</th><th class="cifra">Ejemplares</th></tr></thead><tbody>' +
       this.totalesPorEspecie(registros).map(t => '<tr><td>' + esc(t.comun) + '</td><td><i>' + esc(t.cientifico) + '</i></td><td class="cifra">' + t.n + '</td></tr>').join('') +
@@ -356,7 +356,7 @@ SRP.reportes = {
     let y = 56;
     const salto = (necesario) => { if (y + necesario > alto - 24) { doc.addPage(); y = 25; } };
 
-    // Sitio: tal como lo escribió quien cerró el parte, con el territorio que el sistema derivó
+    // Sitio: tal como lo escribió quien cerró el reporte, con el territorio que el sistema derivó
     const alcaldias = this.alcaldiasDe(registros);
     if (hay('sitio') || alcaldias.length) {
       const lineas = hay('sitio') ? doc.splitTextToSize(cierre.sitio, util - 8) : [];
@@ -422,10 +422,10 @@ SRP.reportes = {
       columnStyles: { 0: { cellWidth: 12, halign: 'right' }, 1: { cellWidth: 30 }, 3: { fontStyle: 'italic' } }
     });
     y = doc.lastAutoTable.finalY + 4;
-    // R2: un parte con registros provisionales no es un documento definitivo, y lo dice
+    // R2: un reporte con registros provisionales no es un documento definitivo, y lo dice
     if (registros.some(r => !SRP.folio.valido(r.folio))) {
       doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor(...C.gris);
-      doc.text('Registros PROVISIONALES: el folio se asigna al sincronizar con el servidor. Este parte no sustituye al definitivo.', M, y);
+      doc.text('Registros PROVISIONALES: el folio se asigna al sincronizar con el servidor. Este reporte no sustituye al definitivo.', M, y);
       doc.setFont('helvetica', 'normal');
       y += 4;
     }
@@ -514,7 +514,7 @@ SRP.reportes = {
     this.entregar(doc, this.nombreArchivo(cierre, fecha));
   },
 
-  /* Nombre del PDF (D102): «Reporte», quién responde del parte y la fecha del parte, p. ej.
+  /* Nombre del PDF (D102): «Reporte», quién responde del reporte y la fecha del reporte, p. ej.
      Reporte_Perengano_Gomez_Ejemplo_2026-09-22.pdf. La persona es el encargado del cierre; si no
      lo hay, el cabo elegido en Reportes; si tampoco, quien genera (el coordinador que saca el de
      toda su cuadrilla). Sin acentos ni espacios, para que ningún sistema de archivos lo altere. */
@@ -539,7 +539,7 @@ SRP.reportes = {
     if (entregado === 'descarga') SRP.util.anunciar('Reporte descargado: ' + nombre);
   },
 
-  /* Cualquier archivo —el PDF del parte o el respaldo— se entrega igual: compartir en táctil,
+  /* Cualquier archivo —el PDF del reporte o el respaldo— se entrega igual: compartir en táctil,
      descargar en escritorio. Devuelve 'compartido', 'cancelado' o 'descarga'. */
   async entregarArchivo(blob, nombre, titulo) {
     const archivo = new File([blob], nombre, { type: blob.type });

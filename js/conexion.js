@@ -1,7 +1,7 @@
 /* CONEXIÓN, TRABAJO SIN SEÑAL Y RESPALDO (D71, D72).
 
    QUÉ SE LE DICE A QUIEN REGISTRA, Y POR QUÉ. La aplicación funciona sin señal: el GPS, la
-   captura, el guardado y el parte en PDF viven en el teléfono. Lo que no se decía en pantalla es
+   captura, el guardado y el reporte en PDF viven en el teléfono. Lo que no se decía en pantalla es
    qué pasa con esos registros: en la Etapa 1 no hay servidor, así que no hay nada que enviar
    cuando vuelve la señal, y borrar los datos del navegador los pierde. Este módulo pone las tres
    cosas a la vista: el estado de la conexión, cuántos registros guarda este dispositivo y qué
@@ -27,9 +27,8 @@ SRP.conexion = {
     this.registrarWorker();
     window.addEventListener('online', () => this.refrescar());
     window.addEventListener('offline', () => this.refrescar());
-    this.el('btn-ayuda-senal').addEventListener('click', () => this.el('dlg-senal').showModal());
     this.el('conexion').addEventListener('click', () => this.el('dlg-senal').showModal());
-    this.el('btn-respaldo').addEventListener('click', () => this.respaldar());
+    this.el('btn-respaldo').addEventListener('click', () => { SRP.app.menuCuenta(false); this.respaldar(); });
     const restaurar = this.el('archivo-restaurar');
     if (restaurar) restaurar.addEventListener('change', (e) => this.restaurar(e.target));
     this.refrescar();
@@ -73,7 +72,7 @@ SRP.conexion = {
     return todos.filter(r => SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId));
   },
 
-  // Qué hacer con los registros guardados: bloque «Registros en este dispositivo» de Reportes
+  // El bloque «Registros en este dispositivo» se retiró de Reportes (D104); sin su caja no hace nada
   async refrescarAvisoEnvio() {
     const caja = this.el('aviso-envio');
     if (!caja) return;
@@ -86,8 +85,8 @@ SRP.conexion = {
     const fotos = n ? ' ' + (f.con_foto === 1 ? '1 lleva fotografía' : f.con_foto + ' llevan fotografía') +
       (f.con_foto ? ' (' + SRP.foto.formatearPeso(f.foto_bytes) + ')' : '') + '.' : '';
     caja.innerHTML = SRP.ICONOS.svg('info', 18) + '<strong>' + cuenta + '.</strong>' + fotos + ' ' + (this.enLinea()
-      ? 'Por ahora no hay envío al servidor: los registros se quedan aquí. Genere el parte del día y compártalo con su coordinador, o guarde un respaldo. <strong>No borre los datos del navegador.</strong>'
-      : 'Siga registrando: no hace falta internet. Cuando tenga señal, genere el parte del día y compártalo.');
+      ? 'Por ahora no hay envío al servidor: los registros se quedan aquí. Genere el reporte del día y compártalo con su coordinador, o guarde un respaldo. <strong>No borre los datos del navegador.</strong>'
+      : 'Siga registrando: no hace falta internet. Cuando tenga señal, genere el reporte del día y compártalo.');
   },
 
   /* Cuántos registros llevan fotografía y cuánto pesan. Es la cifra con la que se pedirá disco a

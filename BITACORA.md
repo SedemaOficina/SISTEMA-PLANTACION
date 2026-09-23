@@ -977,3 +977,18 @@ peso del PDF menor a 150 KB) y dos ajustadas.
 
 **Verificación:** 290 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
 desbordes en ocho combinaciones; PDF de prueba de 60 KB. Marca de versión 0.6.28.
+
+## Bloque 48 — Registros sin filtro de inicio, «reporte» en vez de «parte» y Reportes simplificado (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.29.
+
+**Qué cambió (D104).** `registros.js`: inicio y reinicio en Todos; un solo atajo marcado.
+`index.html`: panel de filtros abierto de inicio; `data-vacio` en fecha de plantación, Desde,
+Hasta y hora de finalización; «parte» → «reporte»; se retira el bloque del dispositivo de
+Reportes; «Guardar respaldo» en el menú de la cuenta. `app.js`: `iniciarVacios()`.
+`conexion.js`: sin el botón de ayuda de Reportes; respaldo cierra el menú. `reportes.js`,
+`espejo.js`, `almacen.js`: textos. CSS: texto guía de campos vacíos; se quita el contorno de
+«Un periodo» abierto. Pruebas: siete comprobaciones nuevas y las de inicio en Hoy, bloque del
+dispositivo y respaldo reescritas.
+
+**Verificación:** 294 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.29.

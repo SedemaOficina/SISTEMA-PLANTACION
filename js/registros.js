@@ -125,25 +125,26 @@ SRP.registros = {
     // para que quepa en un tercio del teléfono. La coma oculta hace que se lea «Hoy, 22-SEP-2026» (D95)
     const hoy = SRP.util.formatearFecha(SRP.util.fechaHoy());
     this.el('chip-hoy').innerHTML = 'Hoy<span class="oculto-visual">, </span><span class="chip-sub">' + SRP.util.escapar(hoy) + '</span>';
-    if (this.primeraVez) { this.primeraVez = false; this.filtro.dia = SRP.util.fechaHoy(); }
+    // Al entrar se ven todos los registros (D104): «Hoy» queda como atajo, no como filtro de inicio
+    if (this.primeraVez) { this.primeraVez = false; }
     this.llenarAnios();
     this.llenarMeses();
     this.sincronizarControles();
     this.aplicar();
   },
 
-  /* Deja los filtros como al abrir la vista por primera vez: Hoy, sin año ni mes, sin rango y
-     todos los cabos. Es distinto de «Todos», que sólo quita el periodo y respeta el cabo. */
+  /* Deja los filtros como al abrir la vista por primera vez: todos los registros, sin año ni mes,
+     sin rango y todos los cabos (D104). Es distinto de «Todos», que sólo quita el periodo y respeta el cabo. */
   reiniciarFiltros() {
     const antes = Object.assign({}, this.filtro);
-    this.filtro = { dia: SRP.util.fechaHoy(), anio: '', mes: '', desde: '', hasta: '', cabo: '' };
+    this.filtro = { dia: '', anio: '', mes: '', desde: '', hasta: '', cabo: '' };
     this.el('filtro-cabo').value = '';
     this.periodoAbierto = false;
     this.limpiarRango();
     this.llenarMeses();
     this.sincronizarControles();
     this.aplicar();
-    SRP.util.anunciar('Filtros reiniciados: registros de hoy.', 'exito', { deshacer: () => this.volverAFiltro(antes) });
+    SRP.util.anunciar('Filtros reiniciados: todos los registros.', 'exito', { deshacer: () => this.volverAFiltro(antes) });
   },
 
   // Devuelve los filtros a como estaban antes de «Reiniciar filtros» (D101)
@@ -218,10 +219,14 @@ SRP.registros = {
     this.el('filtro-mes').disabled = !f.anio;
     const periodo = f.anio ? f.anio + (f.mes ? '-' + f.mes : '') : '';
     const sinRango = !f.desde && !f.hasta;
+    // Un solo atajo marcado a la vez (D104): al abrir «Un periodo» se marca él y se desmarcan los
+    // otros, aunque el rango entre hasta «Aplicar». Antes «Todos» seguía marcado y «Un periodo»
+    // llevaba contorno guinda: parecían elegidos los dos.
+    const pidePeriodo = !sinRango || !!this.periodoAbierto;
     const activo = {
-      hoy: sinRango && f.dia === SRP.util.fechaHoy(),
-      todos: sinRango && !f.dia && periodo === '',
-      periodo: !sinRango   // relleno sólo cuando el rango filtra; abierto sin rango se marca con contorno
+      hoy: !pidePeriodo && f.dia === SRP.util.fechaHoy(),
+      todos: !pidePeriodo && !f.dia && periodo === '',
+      periodo: pidePeriodo
     };
     this.el('filtro-atajos').querySelectorAll('.chip').forEach(c =>
       c.setAttribute('aria-pressed', String(!!activo[c.dataset.atajo])));

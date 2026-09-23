@@ -626,3 +626,20 @@
   por mensajería. (4) En Reportes, en teléfono, el cabo va a todo el ancho para que su nombre no
   se corte. (5) En el cierre, Chófer va solo; Modelo y Placa en una fila también en teléfono; la
   hora de finalización lleva un botón «Ahora». Elegidas por Liber, 22-09-2026 (M38, M39, M41–M43).
+
+## Bloque 48 — Registros sin filtro de inicio, «reporte» en vez de «parte» y Reportes simplificado
+
+- **D104. Ajustes pedidos por Liber tras usar la 0.6.27 en su iPhone.** (1) Registros abre con
+  todos los registros, sin filtro, y con el panel de filtros abierto también en teléfono;
+  «Filtros» lo pliega. «Reiniciar filtros» vuelve a Todos. Supera el inicio en «Hoy» (D64) y el
+  panel plegado de inicio (D100). (2) Un solo atajo marcado a la vez: al abrir «Un periodo» se
+  marca él y se desmarcan Hoy y Todos, aunque el rango entre hasta «Aplicar»; antes Todos seguía
+  marcado y Un periodo llevaba contorno guinda, y parecían elegidos los dos. (3) Las fechas y la
+  hora vacías muestran un texto guía («Seleccione en el calendario», «Elija la fecha», «Elija la
+  hora»), porque el iPhone las deja en blanco y placeholder no aplica a esos controles. (4) En
+  toda la interfaz, el PDF y los comentarios del código, «parte» pasa a «reporte» («Reporte del
+  día», «Día del reporte», «Vista previa del reporte»). Los identificadores internos y las
+  decisiones anteriores conservan su texto. (5) Se retira de Reportes el bloque «Registros en
+  este dispositivo» (conteo, fotos y aviso). «Guardar respaldo» pasa al menú de la cuenta, porque
+  es la única forma de sacar los datos del teléfono mientras no haya servidor; la guía de qué
+  hacer sin internet sigue en la pastilla de conexión. 23-09-2026.

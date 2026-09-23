@@ -299,7 +299,11 @@ with sync_playwright() as p:
     ok(pg.input_value('#campo-programa')=='p-refor' and pg.get_attribute('#programa-botones .chip[data-id=p-refor]','aria-pressed')=='true',
        'un toque elige el programa y el dato queda en la lista del formulario')
     ok(pg.evaluate("document.activeElement.dataset.id")=='p-refor','elegir programa no mueve el foco a la fecha (D82)')
-    pg.fill('#campo-fecha',''); pg.click('#btn-fecha-hoy'); pg.wait_for_timeout(150)
+    pg.fill('#campo-fecha',''); pg.evaluate("document.getElementById('campo-fecha').blur()"); pg.wait_for_timeout(600)
+    vac=pg.evaluate("(() => { const e=document.getElementById('campo-fecha').closest('.envoltura-vacio'); const t=e.querySelector('.texto-vacio'); return [e.dataset.vacio, getComputedStyle(t).display, t.textContent]; })()")
+    ok(vac==['true','block','Seleccione en el calendario'],'la fecha vacía muestra «Seleccione en el calendario» (D104): %s' % vac)
+    pg.click('#btn-fecha-hoy'); pg.wait_for_timeout(600)
+    ok(pg.evaluate("document.getElementById('campo-fecha').closest('.envoltura-vacio').dataset.vacio")=='false','y el texto guía se quita al poner la fecha')
     ok(pg.input_value('#campo-fecha')==HOY,'«Hoy» pone la fecha de hoy de un toque (D98)')
     foco=pg.evaluate("(() => { const e=document.getElementById('campo-comentarios'); e.focus(); const c=getComputedStyle(e); const r=[c.outlineStyle, c.borderTopColor]; e.blur(); return r; })()")
     ok(foco==['none','rgb(157, 33, 72)'],'el foco de un campo de texto es borde guinda, no contorno azul (D98): %s' % foco)
@@ -429,9 +433,13 @@ with sync_playwright() as p:
 
     # ---------- REGISTROS ----------
     pg.click('.pestana[data-vista=registros]'); pg.wait_for_timeout(600)
-    # En teléfono los filtros arrancan plegados; se ve lo que filtra como ficha y cuántos hay (D100)
-    ok(pg.is_hidden('#panel-filtros') and pg.is_visible('#btn-filtros') and pg.inner_text('#filtros-cuenta')=='1'
-       and ('Hoy, '+HOY_TXT) in pg.inner_text('#filtros-activos'),'en teléfono los filtros van plegados, con la ficha «Hoy» y el número en «Filtros» (D100)')
+    # Al entrar se ven todos y los filtros abiertos; «Filtros» los pliega en teléfono (D104)
+    ok(pg.is_visible('#panel-filtros') and pg.get_attribute('#btn-filtros','aria-expanded')=='true' and pg.is_hidden('#filtros-cuenta')
+       and pg.inner_text('#filtros-activos').strip()=='' and pg.get_attribute('.chip[data-atajo=todos]','aria-pressed')=='true'
+       and 'Total: 4 ' in pg.inner_text('#registros-total'),'al entrar se ven todos los registros, sin filtro, y el panel de filtros abierto (D104): '+pg.inner_text('#registros-total'))
+    pg.click('#btn-filtros'); pg.wait_for_timeout(150)
+    ok(pg.is_hidden('#panel-filtros') and pg.get_attribute('#btn-filtros','aria-expanded')=='false','«Filtros» pliega el panel en teléfono')
+    pg.click('#btn-filtros'); pg.wait_for_timeout(150)
     tarj=pg.evaluate('''() => { const li=document.querySelector('#lista-registros .registro'); const t=li.querySelector('.btn-tuerca').getBoundingClientRect(); const r=li.getBoundingClientRect();
       return { arriba: t.top - r.top < 20, derecha: r.right - t.right < 20, alto: Math.round(r.height), mini: !!li.querySelector('.registro-miniatura'),
                provisional: document.getElementById('lista-registros').textContent.includes('PROVISIONAL') }; }''')
@@ -444,6 +452,8 @@ with sync_playwright() as p:
       pie: !document.getElementById('detalle-pie').hidden && !!document.querySelector('#detalle-pie #btn-detalle-editar') })''')
     ok(det=={'abierto':True,'primero':'Especie','sistema':True,'pie':True},'tocar la tarjeta abre el detalle, que empieza por Especie, deja Folio al final y Editar al pie (D100): %s' % det)
     pg.click('#btn-detalle-cerrar'); pg.wait_for_timeout(200)
+    pg.click('.chip[data-atajo=hoy]'); pg.wait_for_timeout(300)
+    ok(('Hoy, '+HOY_TXT) in pg.inner_text('#filtros-activos') and pg.inner_text('#filtros-cuenta')=='1','«Hoy» aparece como ficha y cuenta en «Filtros» (D100)')
     pg.click('#filtros-activos button[data-quitar=periodo]'); pg.wait_for_timeout(300)
     ok('Total: 4 ' in pg.inner_text('#registros-total') and pg.inner_text('#filtros-activos').strip()=='' and pg.is_hidden('#filtros-cuenta'),
        'la × de la ficha quita el periodo y muestra todos: '+pg.inner_text('#registros-total'))
@@ -452,7 +462,7 @@ with sync_playwright() as p:
     hoy_txt=pg.text_content('#chip-hoy')
     ok(hoy_txt=='Hoy, '+HOY_TXT,'el chip de hoy lleva la fecha con el mes en letras (se lee con la coma oculta): '+hoy_txt)
     ok(pg.evaluate("getComputedStyle(document.querySelector('#chip-hoy .chip-sub')).display")=='block','y la fecha va en un segundo renglón para caber en un tercio del teléfono (D95)')
-    ok(pg.locator('#filtro-atajos .chip[data-atajo=hoy][aria-pressed=true]').count()==1,'al entrar, el filtro es Hoy')
+    ok(pg.locator('#filtro-atajos .chip[aria-pressed=true]').count()==1 and pg.locator('#filtro-atajos .chip[data-atajo=hoy][aria-pressed=true]').count()==1,'«Hoy» queda como único atajo marcado')
     ok('Total: 2 ' in pg.inner_text('#registros-total'),'sólo los de hoy: '+pg.inner_text('#registros-total'))
     # Acciones del renglón en el menú de la tuerca (D94)
     ok(pg.locator('#lista-registros .registro >> nth=0').locator('.btn-tuerca').count()==1 and pg.is_hidden('#lista-registros .menu-acciones >> nth=0'),'cada renglón lleva una tuerca y el menú arranca cerrado (D94)')
@@ -503,7 +513,9 @@ with sync_playwright() as p:
     pg.fill('#filtro-desde','2026-07-01'); pg.wait_for_timeout(200)
     ok(pg.evaluate("document.activeElement.id")!='filtro-hasta','al elegir Desde, el foco no pasa a Hasta (D82)')
     pg.fill('#filtro-hasta','2026-07-31'); pg.wait_for_timeout(300)
-    ok(pg.evaluate("SRP.registros.filtro.desde")=='' and pg.get_attribute('.chip[data-atajo=periodo]','aria-pressed')=='false','y al elegir Hasta no se aplica solo (D82)')
+    ok(pg.evaluate("SRP.registros.filtro.desde")=='','y al elegir Hasta no se aplica solo (D82)')
+    ok(pg.locator('#filtro-atajos .chip[aria-pressed=true]').count()==1 and pg.get_attribute('.chip[data-atajo=periodo]','aria-pressed')=='true',
+       'con «Un periodo» abierto sólo él queda marcado; ya no parecen elegidos dos atajos (D104)')
     pg.click('#btn-filtrar'); pg.wait_for_timeout(300)
     ok('Total: 1 ' in pg.inner_text('#registros-total') and pg.get_attribute('.chip[data-atajo=periodo]','aria-pressed')=='true','el rango entra con «Aplicar»: '+pg.inner_text('#registros-total'))
     pg.fill('#filtro-desde','2026-09-30'); pg.fill('#filtro-hasta','2026-09-01'); pg.click('#btn-filtrar'); pg.wait_for_timeout(300)
@@ -514,9 +526,9 @@ with sync_playwright() as p:
     ok(pg.get_attribute('.chip[data-atajo=periodo]','aria-pressed')=='true','y «Un periodo» queda marcado mientras haya rango')
     # Reiniciar vuelve al estado de entrada: Hoy, sin rango (D53)
     pg.click('#btn-reiniciar-filtros'); pg.wait_for_timeout(300)
-    ok(pg.locator('#filtro-atajos .chip[data-atajo=hoy][aria-pressed=true]').count()==1 and pg.input_value('#filtro-desde')=='',
-       'Reiniciar filtros vuelve a Hoy y limpia el rango')
-    ok('Total: 2 ' in pg.inner_text('#registros-total'),'y lista los de hoy: '+pg.inner_text('#registros-total'))
+    ok(pg.locator('#filtro-atajos .chip[data-atajo=todos][aria-pressed=true]').count()==1 and pg.input_value('#filtro-desde')=='',
+       'Reiniciar filtros vuelve a Todos y limpia el rango (D104)')
+    ok('Total: 4 ' in pg.inner_text('#registros-total'),'y lista todos: '+pg.inner_text('#registros-total'))
     ok(pg.is_hidden('#filtro-desde'),'y Reiniciar pliega Desde/Hasta')
     ok([c for c in pg.eval_on_selector_all('#filtro-atajos .chip','b=>b.map(x=>x.dataset.atajo)')]==['hoy','todos','periodo'],'los atajos son Hoy, Todos y Un periodo, en ese orden (D64)')
     est=pg.evaluate('''() => {
@@ -540,15 +552,15 @@ with sync_playwright() as p:
     ok(pg.input_value('#filtro-desde')=='','y un atajo limpia el rango')
 
     # ---------- REPORTES (B19, B31) ----------
-    ok(pg.locator('#vista-registros #btn-pdf').count()==0 and pg.locator('#vista-registros #aviso-envio').count()==0,'Registros ya no lleva el parte ni el bloque del dispositivo (D81)')
+    ok(pg.locator('#vista-registros #btn-pdf').count()==0 and pg.locator('#vista-registros #aviso-envio').count()==0,'Registros ya no lleva el reporte ni el bloque del dispositivo (D81)')
     pg.click('.pestana[data-vista=reportes]'); pg.wait_for_timeout(600)
-    ok(pg.is_visible('#vista-reportes') and pg.locator('#vista-reportes .bloque .titulo-bloque').count()==2,'la pestaña Reportes abre con sus dos bloques: parte del día y dispositivo')
-    ok(pg.input_value('#pdf-dia')==HOY and pg.get_attribute('#pdf-dia','max')==HOY,'el día del parte arranca en hoy y no admite futuro')
+    ok(pg.is_visible('#vista-reportes') and pg.locator('#vista-reportes .bloque .titulo-bloque').count()==1 and pg.locator('#aviso-envio').count()==0,'la pestaña Reportes abre con el reporte del día y ya no lleva el bloque del dispositivo (D104)')
+    ok(pg.input_value('#pdf-dia')==HOY and pg.get_attribute('#pdf-dia','max')==HOY,'el día del reporte arranca en hoy y no admite futuro')
     ok(not pg.is_disabled('#btn-pdf') and HOY_TXT in pg.inner_text('#pdf-nota'),'con registros de hoy, el botón se habilita y la nota dice qué se reporta: '+pg.inner_text('#pdf-nota'))
     ok(pg.is_hidden('#caja-pdf-cabo'),'el cabo no elige cabo')
     # Cualquier día, no sólo hoy (D70)
     pg.fill('#pdf-dia','2026-08-10'); pg.dispatch_event('#pdf-dia','change'); pg.wait_for_timeout(400)
-    ok(not pg.is_disabled('#btn-pdf') and '10-AGO-2026' in pg.inner_text('#pdf-nota'),'una fecha pasada con registros habilita el parte: '+pg.inner_text('#pdf-nota'))
+    ok(not pg.is_disabled('#btn-pdf') and '10-AGO-2026' in pg.inner_text('#pdf-nota'),'una fecha pasada con registros habilita el reporte: '+pg.inner_text('#pdf-nota'))
     pg.click('#btn-pdf'); pg.wait_for_timeout(400)
     ok('10-AGO-2026' in pg.inner_text('#dlg-cierre-dia'),'el cierre es del día elegido: '+pg.inner_text('#dlg-cierre-dia'))
     pg.click('#btn-cierre-cerrar'); pg.wait_for_timeout(200)
@@ -557,7 +569,7 @@ with sync_playwright() as p:
     pg.fill('#pdf-dia',HOY); pg.dispatch_event('#pdf-dia','change'); pg.wait_for_timeout(400)
 
     pg.click('#btn-pdf'); pg.wait_for_timeout(400)
-    ok(pg.is_visible('#dlg-cierre'),'el botón abre el cierre del parte antes de generar')
+    ok(pg.is_visible('#dlg-cierre'),'el botón abre el cierre del reporte antes de generar')
     espejoC=pg.evaluate("[...document.querySelectorAll('#espejo-cierre-cuerpo .espejo-campo')].map(e=>e.textContent)")
     ok(espejoC==['id','es_ficticio','fecha','cabo_id','creado_por_id','fecha_creacion','editado_por_id','fecha_ultima_edicion'],
        'el cierre lleva su espejo con los ocho campos que no se capturan: '+', '.join(espejoC))
@@ -590,7 +602,7 @@ with sync_playwright() as p:
     pers=pg.evaluate('''() => { const s=[...document.querySelectorAll('#previa-hoja .previa-apartado')].find(x=>x.querySelector('h3').textContent==='Personal participante');
       return { primero: s.querySelector('p').textContent.startsWith('Encargado'), subt: [...s.querySelectorAll('.previa-subtitulo')].map(x=>x.textContent),
                apoyo: [...s.querySelectorAll('.previa-lista')].map(u=>u.children.length) }; }''')
-    ok(pers=={'primero':True,'subt':['Participantes','Personal de apoyo'],'apoyo':[2,1]},'en el parte el Encargado va primero y cada grupo lleva su subtítulo y sus nombres aparte (D103): %s' % pers)
+    ok(pers=={'primero':True,'subt':['Participantes','Personal de apoyo'],'apoyo':[2,1]},'en el reporte el Encargado va primero y cada grupo lleva su subtítulo y sus nombres aparte (D103): %s' % pers)
     ok(pg.evaluate("[...document.querySelectorAll('#previa-hoja tfoot td')].pop().classList.contains('cifra')"),'el Total se alinea a la derecha como las cifras (D103)')
     with pg.expect_download() as d: pg.click('#btn-previa-generar')
     d.value.save_as('/home/claude/srp/reporte_prueba.pdf')
@@ -598,17 +610,15 @@ with sync_playwright() as p:
     ok(peso>20000,'el reporte PDF se genera: '+d.value.suggested_filename)
     ok(peso<150000,'y pesa poco para compartirlo por mensajería (D103): %d KB' % (peso//1024))
     ok(re.fullmatch(r'Reporte_[A-Za-z0-9_]+_'+HOY+r'\.pdf', d.value.suggested_filename) is not None and '_Ejemplo_' in d.value.suggested_filename,
-       'el archivo se llama «Reporte», el nombre de quien responde y la fecha del parte, sin acentos ni espacios (D102): '+d.value.suggested_filename)
+       'el archivo se llama «Reporte», el nombre de quien responde y la fecha del reporte, sin acentos ni espacios (D102): '+d.value.suggested_filename)
 
     # ---------- SIN SEÑAL Y RESPALDO (B25) ----------
     ok(pg.text_content('#conexion').strip().startswith('Con conexión · ') and 'guardados' in pg.text_content('#conexion') and pg.locator('#conexion svg').count()==1 and pg.get_attribute('#conexion','data-estado')=='con','el encabezado dice el estado de la conexión y cuántos registros guarda, con icono y color (D83): '+pg.text_content('#conexion').strip())
     pg.click('#conexion'); pg.wait_for_timeout(200)
     ok(pg.is_visible('#dlg-senal'),'y tocar la pastilla abre la guía de qué hacer sin internet (D80)')
     pg.click('#btn-senal-cerrar'); pg.wait_for_timeout(200)
-    ok('guardados' in pg.inner_text('#aviso-envio') and 'No borre' in pg.inner_text('#aviso-envio') and pg.locator('#vista-registros .bloque .titulo-bloque').count()==1,
-       'Reportes dice cuántos registros guarda el dispositivo y qué hacer: '+pg.inner_text('#aviso-envio')[:60])
-    ok(re.search(r'llevan? fotografía \(\d+ KB\)', pg.inner_text('#aviso-envio')) is not None,'y cuántos llevan fotografía y cuánto pesan (D87): '+pg.inner_text('#aviso-envio')[:90])
-    pg.click('#btn-ayuda-senal'); pg.wait_for_timeout(200)
+    ok(pg.locator('#aviso-envio').count()==0 and pg.locator('#btn-ayuda-senal').count()==0,'el bloque «Registros en este dispositivo» ya no existe (D104)')
+    pg.click('#conexion'); pg.wait_for_timeout(200)
     ok(pg.is_visible('#dlg-senal') and pg.locator('#dlg-senal li').count()==5,'la ayuda «¿Qué hacer sin internet?» tiene cinco pasos')
     pg.click('#btn-senal-cerrar'); pg.wait_for_timeout(200)
     # El worker guarda la app: sin red, la página vuelve a abrir
@@ -620,10 +630,11 @@ with sync_playwright() as p:
     ok(pg.evaluate("SRP.CONFIG.VERSION")==MARCA,'y es la misma versión')
     ok(pg.text_content('#conexion').strip().startswith('Sin conexión · ') and 'guardados' in pg.text_content('#conexion') and pg.get_attribute('#conexion','data-estado')=='sin','el encabezado avisa que no hay señal, en dorado y con icono tachado, y sigue contando: '+pg.text_content('#conexion').strip())
     pg.evaluate("SRP.app.mostrarVista('reportes')"); pg.wait_for_timeout(500)
-    ok('Siga registrando' in pg.inner_text('#aviso-envio'),'y Reportes dice que se puede seguir: '+pg.inner_text('#aviso-envio')[:70])
     ctx.set_offline(False); pg.wait_for_timeout(300)
     pg.evaluate("SRP.conexion.refrescar()"); pg.wait_for_timeout(300)
     # Respaldo: se descarga y se restaura en un dispositivo limpio
+    pg.click('#btn-cuenta'); pg.wait_for_timeout(150)
+    ok(pg.is_visible('#menu-cuenta #btn-respaldo'),'«Guardar respaldo» está en el menú de la cuenta (D104)')
     with pg.expect_download() as d2: pg.click('#btn-respaldo')
     ruta='/home/claude/srp/respaldo_prueba.json'; d2.value.save_as(ruta)
     import json
@@ -641,7 +652,7 @@ with sync_playwright() as p:
     pg2.set_input_files('#archivo-restaurar', ruta); pg2.wait_for_timeout(800)
     ok(pg2.evaluate("SRP.almacen.todos('plantaciones').then(r=>r.length)")==despues,'restaurar dos veces no duplica nada')
     ctx2.close()
-    # Lo escrito no se vuelve a pedir al regenerar el parte del mismo día
+    # Lo escrito no se vuelve a pedir al regenerar el reporte del mismo día
     pg.click('#btn-pdf'); pg.wait_for_timeout(400)
     ok(pg.input_value('#cie-sitio').startswith('Calzada de prueba'),'al regenerar, el cierre ya viene escrito')
     ok(pg.input_value('#cie-hora')=='14:30' and pg.input_value('#cie-vehiculo_placa')=='ABC-123','con todos sus campos')
@@ -714,9 +725,9 @@ with sync_playwright() as p:
     ok(pg.locator('button[data-accion=editar]').count()>0 and pg.locator('button[data-accion=eliminar]').count()==0,'edita pero no elimina')
     ok(pg.is_hidden('.pestana[data-vista=catalogos]') and pg.is_hidden('.pestana[data-vista=usuarios]'),'no ve Catálogos ni Usuarios')
     ok(pg.is_visible('#caja-filtro-cabo'),'sí tiene filtro por cabo')
-    # Quien ve a varias personas elige el encargado del parte, y sólo entre quienes registraron (B19)
+    # Quien ve a varias personas elige el encargado del reporte, y sólo entre quienes registraron (B19)
     pg.click('.pestana[data-vista=reportes]'); pg.wait_for_timeout(600)
-    ok(pg.is_visible('#caja-pdf-cabo') and pg.locator('#pdf-cabo option').count()>=2,'el coordinador elige el cabo del parte en Reportes')
+    ok(pg.is_visible('#caja-pdf-cabo') and pg.locator('#pdf-cabo option').count()>=2,'el coordinador elige el cabo del reporte en Reportes')
     pg.click('#btn-pdf'); pg.wait_for_timeout(400)
     ok(pg.is_visible('#cie-encargado-caja') and pg.is_hidden('#cie-encargado-lectura'),
        'al coordinador se le ofrece la lista de cabos responsables')

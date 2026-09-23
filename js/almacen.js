@@ -30,9 +30,9 @@ SRP.almacen = {
       ca.createIndex('tipo', 'tipo');
       const bi = db.createObjectStore('bitacora', { keyPath: 'id' });
       bi.createIndex('entidad_id', 'entidad_id');
-      /* CIERRES DE PARTE. Lo que acompaña al reporte del día y no vive en los registros: sitio,
+      /* CIERRES DE REPORTE. Lo que acompaña al reporte del día y no vive en los registros: sitio,
          actividades, personal, observaciones y logística. La clave es «fecha|cabo», para que
-         regenerar el parte de un día no obligue a volver a escribirlo (ver reportes.js). */
+         regenerar el reporte de un día no obligue a volver a escribirlo (ver reportes.js). */
       const ci = db.createObjectStore('cierres', { keyPath: 'id' });
       ci.createIndex('fecha', 'fecha');
     }
