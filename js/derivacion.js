@@ -18,14 +18,14 @@
    - Sus límites no coinciden con los de alcaldías: 12 colonias tienen el interior en otra
      alcaldía. La alcaldía sale de su capa, nunca de la demarcación que trae la colonia (D47).
 
-   LO QUE SE SABE DE LA CAPA DE ALCALDÍAS (medido al recibirla, ver DECISIONES.md):
-   entre polígonos vecinos hay tres solapes (el mayor, GAM–VCA, de 2.5 ha) y cinco huecos
-   (el mayor, de 1.2 ha, cerca de 19.4838, -99.1499). Son de la fuente, no se corrigen aquí.
+   LO QUE SE SABE DE LA CAPA DE ALCALDÍAS. La definitiva (sia-2026-01-01, bloque 38) no tiene
+   solapes ni huecos: los tres solapes y cinco huecos de la entrega anterior quedaron corregidos
+   en la fuente. Las dos reglas se conservan como defensa, por si una entrega futura los trae:
    - En un solape gana el primer polígono de la capa que contiene el punto (el borde cuenta
      como dentro). Regla fija, para que el mismo punto derive siempre lo mismo.
    - En un hueco no se deriva alcaldía: el registro se guarda igual, con `alcaldia` nula y
-     `capa_version` puesta, para volver a derivarlo cuando la capa se corrija. Un árbol real
-     plantado ahí no puede quedarse sin registrar por un defecto de la capa. */
+     `capa_version` puesta, para volver a derivarlo. Un árbol real no se queda sin registrar
+     por un defecto de la capa. */
 window.SRP = window.SRP || {};
 
 SRP.derivacion = {

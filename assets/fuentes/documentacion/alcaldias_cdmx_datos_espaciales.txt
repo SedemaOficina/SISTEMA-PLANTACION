@@ -1,0 +1,15 @@
+alcaldias_cdmx.json
+Polígono
+EPSG: 4326
+-99.3649242, 19.0482367, -98.9403028, 19.5927573
+16
+--- Atributos ---
+Atributo: id | Tipo: integer | Longitud aprox: 2
+Atributo: objectid | Tipo: integer | Longitud aprox: 2
+Atributo: cvegeo | Tipo: character | Longitud aprox: 5
+Atributo: cve_ent | Tipo: character | Longitud aprox: 2
+Atributo: cve_mun | Tipo: character | Longitud aprox: 3
+Atributo: nomgeo | Tipo: character | Longitud aprox: 22
+Atributo: shape_length | Tipo: numeric | Longitud aprox: 16 | Decimales: 10
+Atributo: shape_area | Tipo: numeric | Longitud aprox: 16 | Decimales: 7
+========================================

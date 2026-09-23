@@ -40,8 +40,8 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 | `tipo_distribucion` | `Nativa` · `Endémica` · `Exótica` · `Exótica-Invasora` | SNIB/CONABIO (EncicloVida); lista en index.html #cat-distribucion |
 | `accion_bitacora` | `CREADO` · `EDITADO` · `ELIMINADO` · `ACTIVADO` · `DESACTIVADO` | llamadas a SRP.bitacora.entrada() en formulario, registros, catalogos, usuarios y reportes |
 | `entidad_bitacora` | `plantacion` · `usuario` · `catalogo` · `cierre` | ídem |
-| `alcaldia_cve` | 16 claves `cvegeo` INEGI (09002…09017) | assets/capa-alcaldias.js (SIA, versión sia-2026-09-21; de prueba, ver pendientes) |
-| `uga` | 1,624 claves `AAA-000` de la malla hexagonal | assets/capa-uga.js (SIA, versión sia-2026-09-21; de prueba) |
+| `alcaldia_cve` | 16 claves `cvegeo` INEGI (09002…09017) | assets/capa-alcaldias.js (SIA con base en INEGI, versión sia-2026-01-01; DEFINITIVA) |
+| `uga` | 1,624 claves `AAA-000` de la malla hexagonal | assets/capa-uga.js (SIA, versión sia-2026-09-22; definitiva, con 8 celdas de prefijo distinto a su alcaldía) |
 | `colonia_cve` | Claves `CVEUT` del IECM 2022 (p. ej. `15-040`) | assets/capa-colonias.js (IECM 2022, versión iecm-2022-prueba; de prueba) |
 | `id_especie` | `ESP-0000`, consecutivo del SIA; hoy ESP-0001…ESP-0076 y las altas continúan en ESP-0077 | assets/catalogo-especies.js (CGO_ESPECIES_REFORESTACION_URBANA, 22-09-2026) |
 
@@ -329,8 +329,8 @@ Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras
 
 | Capa | Archivo | Versión | Alimenta | Estado |
 |---|---|---|---|---|
-| alcaldías | assets/capa-alcaldias.js (fuente assets/fuentes/alcaldias_cdmx.json) | sia-2026-09-21 | alcaldia_cve, alcaldia | De prueba: 3 solapes y 5 huecos medidos en el bloque 15; el SIA corrige en la fuente |
-| malla UGA | assets/capa-uga.js (fuente assets/fuentes/ugasdata.wgs84.json) | sia-2026-09-21 | uga (y folio_uga en Fase 2) | De prueba: 8 claves con prefijo distinto a su alcaldía; sin fecha de corte confirmada |
+| alcaldías | assets/capa-alcaldias.js (fuente assets/fuentes/alcaldias_cdmx.json, con metadato en assets/fuentes/documentacion/) | sia-2026-01-01 | alcaldia_cve, alcaldia | Definitiva: 16 polígonos, sin solapes ni huecos (bloque 38) |
+| malla UGA | assets/capa-uga.js (fuente assets/fuentes/UGA_CDMX.geojson) | sia-2026-09-22 | uga (y folio_uga en Fase 2) | Definitiva según el SIA; misma geometría que la anterior. Siguen 8 celdas cuyo prefijo no es la alcaldía de su centro (TLP-040, TLP-085, IZP-005, IZP-011, COY-054, MIH-001, MIH-002, IZC-021): no afecta la alcaldía del registro, que sale de su propia capa |
 | colonias | assets/capa-colonias.js (fuente assets/fuentes/colonias_iecm2022.geojson) | iecm-2022-prueba | colonia_cve, colonia | De prueba: cartografía electoral del IECM 2022, no un catálogo del SIA |
 | catálogo de especies | assets/catalogo-especies.js (fuente assets/fuentes/CGO_ESPECIES_REFORESTACION_URBANA_2026-09-22.xlsx) | 2026-09-22 | catalogos (tipo especie) | Definitivo (D84) |
 

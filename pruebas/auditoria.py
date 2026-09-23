@@ -108,8 +108,12 @@ with sync_playwright() as p:
       versiones: [SRP.CAPAS.alcaldias.meta.version, SRP.CAPAS.uga.meta.version, SRP.CAPAS.colonias.meta.version]
     })""")
     ruta_f = 'assets/fuentes' if os.path.exists('assets/fuentes') else os.path.join('..', 'assets', 'fuentes')
-    orig_a = sorted(f['properties']['cvegeo'] for f in _json.load(open(os.path.join(ruta_f, 'alcaldias_cdmx.json'), encoding='utf-8'))['features'])
-    orig_u = sorted(f['properties']['CLAVE'] for f in _json.load(open(os.path.join(ruta_f, 'ugasdata.wgs84.json'), encoding='utf-8'))['features'])
+    # La capa de alcaldías viene como GeoJSON por renglones (un Feature por línea)
+    texto_a = open(os.path.join(ruta_f, 'alcaldias_cdmx.json'), encoding='utf-8').read()
+    try: feats_a = _json.loads(texto_a)['features']
+    except ValueError: feats_a = [_json.loads(l) for l in texto_a.splitlines() if l.strip()]
+    orig_a = sorted(f['properties']['cvegeo'] for f in feats_a)
+    orig_u = sorted(f['properties']['clave'] for f in _json.load(open(os.path.join(ruta_f, 'UGA_CDMX.geojson'), encoding='utf-8'))['features'])
     mirar(capas['alc'] == orig_a, 'la capa de alcaldías cargada trae las mismas 16 claves que el original del SIA')
     mirar(capas['uga'] == orig_u, 'la capa UGA cargada trae las mismas 1,624 claves que el original del SIA')
     orig_c = sorted(f['properties']['CVEUT'] for f in _json.load(open(os.path.join(ruta_f, 'colonias_iecm2022.geojson'), encoding='utf-8'))['features'])

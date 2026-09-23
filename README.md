@@ -198,13 +198,12 @@ claves únicas, anillos cerrados y sistema de referencia antes de escribir nada.
 
 | Capa | Archivo original | Features | Clave | Qué guarda el registro |
 |---|---|---|---|---|
-| Alcaldías | `alcaldias_cdmx.json` | 16 | `cvegeo` INEGI | `alcaldia_cve` y `alcaldia` (nombre) |
-| Malla UGA | `ugasdata.wgs84.json` | 1,624 hexágonos de ~1 km² | `CLAVE` (`TLP-318`) | `uga` |
+| Alcaldías | `alcaldias_cdmx.json` (definitiva; metadato en `fuentes/documentacion/`) | 16 | `cvegeo` INEGI | `alcaldia_cve` y `alcaldia` (nombre) |
+| Malla UGA | `UGA_CDMX.geojson` (definitiva) | 1,624 hexágonos de ~1 km² | `clave` (`TLP-318`) | `uga` |
 | Colonias | `colonias_iecm2022.geojson` | 1,837 unidades territoriales del IECM 2022 | `CVEUT` (`10-001`) | `colonia_cve` y `colonia` (nombre) |
 
-**Las tres capas son provisionales, para probar.** Antes de liberar la etapa hay que sustituir
-los tres originales por los definitivos del SIA y volver a correr `generar_capas.py` (ver
-DECISIONES, pendientes). La de colonias pesa 3 MB compactada —125 mil vértices— y es la que más
+**Alcaldías y UGA son las definitivas del SIA (bloque 38, D92). Colonias sigue siendo de prueba**
+y se sustituye antes de liberar la etapa (ver DECISIONES, pendientes). La de colonias pesa 3 MB compactada —125 mil vértices— y es la que más
 conviene revisar en peso al llegar la definitiva.
 
 La capa de colonias no cubre el suelo de conservación (532 km² al sur sin colonia): un punto ahí
@@ -213,10 +212,12 @@ solapes, casi siempre una unidad habitacional encima del pueblo que la rodea: ga
 pequeño. Doce colonias tienen el interior en otra alcaldía que la que declaran: la alcaldía sale de
 su propia capa, nunca de la colonia (D62).
 
-La capa de alcaldías trae, de origen, cinco huecos y tres solapes entre polígonos vecinos (el mayor
-hueco de 1.2 ha, el mayor solape de 2.5 ha). No se corrigen aquí. En un solape gana el primer
-polígono de la capa; en un hueco el registro se guarda sin alcaldía, con la versión de la capa, para
-rederivarlo cuando se corrija. Al actualizar una capa se sube `meta.version` en `generar_capas.py`.
+La capa definitiva de alcaldías no tiene huecos ni solapes (la anterior traía cinco y tres). Las
+reglas se conservan por si una entrega futura los trae: en un solape gana el primer polígono; en un
+hueco el registro se guarda sin alcaldía, con la versión de la capa, para rederivarlo. La malla UGA
+definitiva tiene la misma geometría que la anterior y conserva ocho celdas cuyo prefijo no es la
+alcaldía de su centro; no afecta al registro, cuya alcaldía sale de su propia capa. Al actualizar una
+capa se sube `meta.version` en `generar_capas.py`.
 
 ## Pruebas
 

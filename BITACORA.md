@@ -814,3 +814,20 @@ abrir el cierre. Icono de la pestaña Registros: árbol #214.
 **Verificación:** 243 comprobaciones (dos nuevas: las cinco ventanas con cabecera fija, × y sin
 Cancelar; Editar en el detalle), sin errores de consola; auditoría y presentación sin hallazgos.
 Marca de versión 0.6.18.
+
+## Bloque 38 — Capas definitivas de alcaldías y UGA (22-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.19.
+
+**Diagnóstico (D92).** Alcaldías nuevas: 16 válidos, 0 solapes, 0 huecos (antes 3 y 5); el punto
+del hueco de 1.2 ha (19.4838, -99.1499) ahora es Gustavo A. Madero. UGA nueva: 1,624 celdas,
+geometría igual a la anterior, ocho prefijos distintos a su alcaldía, cobertura total, sin
+traslapes. **Qué cambió:** `assets/fuentes/alcaldias_cdmx.json` y `UGA_CDMX.geojson` definitivos;
+anteriores en `_to_delete/fuentes-anteriores/`; `assets/fuentes/documentacion/` con metadato,
+diccionario y SLD. `generar_capas.py`: lee GeoJSON por renglones, convierte Polygon a
+MultiPolygon, prefijo por clave INEGI, campo `clave` de la UGA, versiones `sia-2026-01-01` y
+`sia-2026-09-22`. `derivacion.js` y `referencias.js`: comentarios al día. Prueba del hueco y del
+solape reescritas para comprobar la corrección; auditoría lee las fuentes nuevas. Esquema,
+diccionario, MAPEO, README y DECISIONES al día.
+
+**Verificación:** 243 comprobaciones sin errores de consola, 81 de auditoría, presentación sin
+desbordes. Marca de versión 0.6.19.

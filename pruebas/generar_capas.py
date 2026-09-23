@@ -21,21 +21,21 @@ DECIMALES = 6
 META = {
     'alcaldias': {
         'archivo': 'alcaldias_cdmx.json',
-        'origen': 'SIA, entregada el 21-SEP-2026. [pendiente] confirmar fuente (INEGI Marco Geoestadístico) y fecha de corte',
-        'version': 'sia-2026-09-21',
-        'fecha_corte': '2026-09-21',
+        'origen': 'SIA (CSIA/SEDEMA) con base en INEGI, 16 demarcaciones publicadas el 14-AGO-2017; metadato del 01-ENE-2026 (assets/fuentes/documentacion). DEFINITIVA: sin solapes ni huecos (bloque 38)',
+        'version': 'sia-2026-01-01',
+        'fecha_corte': '2026-01-01',
         'crs': 'EPSG:4326 (longitud, latitud)',
         'esperados': 16,
         'clave': 'cvegeo'
     },
     'uga': {
-        'archivo': 'ugasdata.wgs84.json',
-        'origen': 'SIA, entregada el 21-SEP-2026. Malla hexagonal de ~1 km2; el prefijo de la clave es la alcaldía. [pendiente] confirmar fecha de corte',
-        'version': 'sia-2026-09-21',
-        'fecha_corte': '2026-09-21',
+        'archivo': 'UGA_CDMX.geojson',
+        'origen': 'SIA, entregada el 22-SEP-2026 como versión final. Malla hexagonal de ~1 km2, misma geometría que la del 21-SEP. El prefijo de la clave NO indica la alcaldía del punto: 8 celdas siguen con prefijo distinto a su alcaldía (bloque 38)',
+        'version': 'sia-2026-09-22',
+        'fecha_corte': '2026-09-22',
         'crs': 'EPSG:4326 (longitud, latitud)',
         'esperados': 1624,
-        'clave': 'CLAVE'
+        'clave': 'clave'
     },
     'colonias': {
         'archivo': 'colonias_iecm2022.geojson',
@@ -58,10 +58,22 @@ def redondear(o):
 
 def anillo_cerrado(r): return len(r) >= 4 and r[0] == r[-1]
 
+# Prefijo de tres letras de cada alcaldía, por clave INEGI. La capa definitiva ya no lo trae
+# (sí la anterior, como clv_mun); es el mismo que usa la malla UGA en sus claves.
+PREFIJO = {'09002': 'AZC', '09003': 'COY', '09004': 'CUJ', '09005': 'GAM', '09006': 'IZC', '09007': 'IZP',
+           '09008': 'MAC', '09009': 'MLP', '09010': 'AOB', '09011': 'TLH', '09012': 'TLP', '09013': 'XOC',
+           '09014': 'BJU', '09015': 'CUH', '09016': 'MIH', '09017': 'VCA'}
+
 def cargar(nombre):
     m = META[nombre]
     ruta = os.path.join(FUENTES, m['archivo'])
-    d = json.load(open(ruta, encoding='utf-8'))
+    texto = open(ruta, encoding='utf-8').read()
+    try:
+        d = json.loads(texto)
+    except json.JSONDecodeError:
+        # GeoJSON por renglones (un Feature por línea, como exporta la capa definitiva de alcaldías):
+        # se arma la colección en memoria; el original no se toca
+        d = {'type': 'FeatureCollection', 'features': [json.loads(l) for l in texto.splitlines() if l.strip()]}
     fs = d.get('features', [])
     if d.get('type') != 'FeatureCollection': fallar(f'{m["archivo"]}: no es FeatureCollection')
     if len(fs) != m['esperados']: fallar(f'{m["archivo"]}: {len(fs)} features, se esperaban {m["esperados"]}')
@@ -70,6 +82,8 @@ def cargar(nombre):
     if len(set(claves)) != len(claves): fallar(f'{m["archivo"]}: claves repetidas en {m["clave"]}')
     for f in fs:
         g = f['geometry']
+        # Un Polygon se guarda como MultiPolygon de una parte: la derivación trata una sola forma
+        if g['type'] == 'Polygon': g['type'], g['coordinates'] = 'MultiPolygon', [g['coordinates']]
         if g['type'] != 'MultiPolygon': fallar(f'{m["archivo"]}: geometría {g["type"]}, se esperaba MultiPolygon')
         for pg in g['coordinates']:
             for r in pg:
@@ -109,12 +123,13 @@ uga = cargar('uga')
 col = cargar('colonias')
 
 # El prefijo de la UGA debe ser una clave de alcaldía conocida
-clv = {f['properties']['clv_mun'] for f in alc}
-raros = sorted({f['properties']['CLAVE'].split('-')[0] for f in uga} - clv)
+if set(PREFIJO) != {f['properties']['cvegeo'] for f in alc}: fallar('las claves cvegeo no son las 16 esperadas')
+clv = set(PREFIJO.values())
+raros = sorted({f['properties']['clave'].split('-')[0] for f in uga} - clv)
 if raros: fallar(f'UGAs con prefijo que no es alcaldía: {raros}')
 
-escribir('alcaldias', alc, lambda p: {'cvegeo': p['cvegeo'], 'nombre': p['nomgeo'], 'clave': p['clv_mun']})
-escribir('uga', uga, lambda p: {'clave': p['CLAVE']})
+escribir('alcaldias', alc, lambda p: {'cvegeo': p['cvegeo'], 'nombre': p['nomgeo'], 'clave': PREFIJO[p['cvegeo']]})
+escribir('uga', uga, lambda p: {'clave': p['clave']})
 # El nombre va como viene —mayúsculas y tipo entre paréntesis, D62—; sólo se quitan los espacios
 # dobles (23 casos como «GRAL C  A  MADRAZO»), que son error de captura y no parte del nombre.
 # La demarcación del IECM no se conserva: la alcaldía del punto sale de su propia capa (D47).

@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 37',
+  ETAPA: 'Bloque 38',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -25,7 +25,7 @@ SRP.CONFIG = {
      no coincide con este, vuelve a sembrar. Sin esto, un teléfono que ya había abierto el
      sistema se queda con los datos anteriores: al renombrar los perfiles, todas las cuentas
      aparecían con un perfil que ya no existía. */
-  SELLO_DATOS: '2026-09-22-d87',
+  SELLO_DATOS: '2026-09-22-capas-definitivas',
   CLAVE_SELLO: 'srp_sello_datos',
   DB_VERSION: 1,
   CLAVE_SESION: 'srp_sesion_usuario_id',

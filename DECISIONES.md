@@ -84,7 +84,9 @@
   exige OK en cada envío, la figura de borrador (aquí el registro está completo o no se guarda) ni
   esconder la cola en una barra lateral
 - [pendiente] **Colonias en el teléfono (3 MB) o sólo en el servidor.** El SIA hace los cruces territoriales en PostGIS, no en el dispositivo (llamada del 22-09-2026). El diseño ya lo prevé: el teléfono deriva alcaldía, colonia y UGA para verlas en campo sin señal (provisional, con `capa_version`) y en Fase 2 el servidor rederiva con PostGIS y su resultado manda (S-08). Alcaldías (390 KB) y UGA (423 KB) se quedan en el teléfono; decidir si colonias (3 MB, IECM) se queda o se deriva sólo en el servidor y el cabo la ve al sincronizar. Lo que se pide al SIA: nombre de las tablas del esquema `territorio`, SRID, campos llave, versión y fecha de corte, y una exportación de esas mismas tablas (ST_AsGeoJSON o QGIS) para que teléfono y servidor crucen contra la misma geometría
-- [pendiente] **Antes de liberar esta etapa: sustituir las tres capas** —alcaldías, malla UGA y colonias— por las definitivas del SIA, con fuente y fecha de corte confirmadas, y volver a correr `pruebas/generar_capas.py`. Las tres cargadas hoy son para probar: alcaldías y UGA traen los defectos medidos en el bloque 15, y colonias es la cartografía electoral del IECM 2022, no un catálogo del SIA. Al sustituirlas se sube `meta.version` y se rederivan los registros existentes. Anotado por Liber, 22-09-2026
+- ~~Sustituir alcaldías y malla UGA por las definitivas~~ Hecho en el bloque 38 (D92)
+- [pendiente] **Antes de liberar esta etapa: sustituir la capa de colonias** (hoy IECM 2022, de prueba) por la definitiva del SIA, con fuente, llave y fecha de corte, y volver a correr `pruebas/generar_capas.py`. Anotado por Liber, 22-09-2026
+- [pendiente] **Las ocho claves UGA con prefijo distinto a su alcaldía siguen en la malla definitiva** (TLP-040, TLP-085, IZP-005, IZP-011, COY-054, MIH-001, MIH-002, IZC-021). No afectan al registro (la alcaldía sale de su capa), pero sí al folio: una de esas celdas daría `SRP-TLP-040-…` a un árbol de Milpa Alta. Confirmar con el SIA si se quedan así antes de emitir folios (condición 2 y 5 de la emisión)
 
 ### Para resolver antes de montar en los servidores del SIA
 
@@ -93,7 +95,7 @@
 - [pendiente] **Cuánto disco pedir a ADIP.** Depende de qué proporción suba foto: 10% son ~5 GB, 20% ~10 GB, 30% ~15 GB para la meta de 500 mil. ADIP autoriza con uso real medido, así que **el sistema debe reportar desde el primer mes cuántos registros llevan foto y cuánto pesan**, para que la solicitud sea una proyección con evidencia y no una estimación
 - [pendiente] **Colonia o unidad territorial.** Ya llegaron alcaldías y UGA; falta la capa de colonias o de unidades territoriales. El esquema `territorio` del SIA tiene 1,817 unidades territoriales. Confirmar cuál es la unidad oficial de reporte y pedir esa capa; mientras, `colonia` se guarda nula (D45)
 - [pendiente] **Fuente y fecha de corte de las dos capas recibidas.** Los atributos de alcaldías (`cvegeo`, `nomgeo`, `shape_area`, `region`) apuntan al Marco Geoestadístico del INEGI más campos propios; confirmar y anotar en `generar_capas.py`
-- [pendiente] **Reportar al SIA los cinco huecos y tres solapes de la capa de alcaldías**, con sus coordenadas (en `BITACORA.md`, Bloque 15). El mayor hueco, de 1.2 ha, está cerca de 19.4838, -99.1499; el mayor solape, GAM–VCA, de 2.5 ha
+- ~~Reportar al SIA los cinco huecos y tres solapes de la capa de alcaldías~~ Corregidos en la capa definitiva (D92). Antes decía: **Reportar al SIA los cinco huecos y tres solapes de la capa de alcaldías**, con sus coordenadas (en `BITACORA.md`, Bloque 15). El mayor hueco, de 1.2 ha, está cerca de 19.4838, -99.1499; el mayor solape, GAM–VCA, de 2.5 ha
 - [pendiente] **Capas reales de colonias y malla UGA: origen, fecha de corte y área responsable** → resuelto para UGA; queda colonias (arriba)
 - [pendiente] **Límites de nginx.** El servidor web tiene configurados límites de velocidad y de tamaño de subida. Con decenas de cuadrillas subiendo fotos a la vez se tocan; conocer el límite antes, no el primer día
 - [pendiente] **HTTPS y geolocalización.** El navegador sólo entrega la posición del GPS en contexto seguro. Hacia el ciudadano hay HTTPS porque ADIP lo termina, pero una prueba por HTTP dentro de la red interna dejará el botón de ubicación sin responder, y parecerá un defecto del sistema
@@ -469,3 +471,19 @@
   Una sola regla cierra todas: la clase `dialogo-cerrar`. Se quedan como están el aviso de
   «Registro guardado» y la confirmación de eliminar: son cortos y su decisión son sus dos botones.
   Además, la pestaña Registros cambia su icono al árbol #214. Pedido por Liber, 22-09-2026.
+
+## Bloque 38 — Capas definitivas de alcaldías y malla UGA
+
+- **D92. Entran las capas definitivas de alcaldías y UGA; colonias sigue de prueba.** Liber las
+  entregó el 22-09-2026. Diagnóstico antes de cargar: **alcaldías** (INEGI, publicadas 14-AGO-2017;
+  metadato del SIA del 01-ENE-2026, créditos INEGI/SEDEMA/CSIA): 16 polígonos válidos, **sin
+  solapes ni huecos** —los tres solapes (mayor GAM–VCA, 2.5 ha) y cinco huecos (mayor 1.2 ha) de
+  la entrega anterior quedaron corregidos—; el contorno de la ciudad cambia 0.16 km². El archivo
+  viene como GeoJSON por renglones y ya no trae el prefijo de tres letras (`clv_mun`), que
+  `generar_capas.py` toma de la clave INEGI. **Malla UGA**: 1,624 celdas, claves sin repetir, sin
+  traslapes, cubre el 100 % de las alcaldías; **misma geometría que la anterior** (diferencia de
+  redondeo, centroides a menos de 5 mm) y **las ocho claves con prefijo distinto a su alcaldía
+  siguen igual**: no afecta al registro, sí al folio (pendiente). Los originales anteriores se
+  movieron a `_to_delete/fuentes-anteriores/` para que Liber los borre; el metadato, el
+  diccionario y el estilo SLD de alcaldías se guardan en `assets/fuentes/documentacion/`. Sube el
+  sello de datos. Pedido por Liber, 22-09-2026.

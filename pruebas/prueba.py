@@ -142,7 +142,7 @@ with sync_playwright() as p:
     ok(pg.inner_text('#dato-alcaldia')=='Cuauhtémoc','el botón ubica y deriva la alcaldía real: '+pg.inner_text('#dato-alcaldia'))
     ok(pg.inner_text('#dato-colonia')=='CENTRO IV','y la colonia real, como viene en la capa: '+pg.inner_text('#dato-colonia'))
 
-    # CAPAS REALES DEL SIA. Puntos conocidos, el hueco medido en la capa y el solape mayor.
+    # CAPAS DEL SIA. Puntos conocidos, y los dos defectos de la capa anterior que la definitiva corrige (bloque 38).
     capas=pg.evaluate("""() => {
       const d=(la,lo)=>SRP.derivacion.derivar(la,lo);
       const t0=performance.now(); for (let i=0;i<100;i++) d(19.3+i*0.002,-99.2+i*0.002); const ms=(performance.now()-t0)/100;
@@ -163,9 +163,9 @@ with sync_playwright() as p:
     ok(capas['zocalo']['alcaldia']=='Cuauhtémoc' and capas['zocalo']['alcaldia_cve']=='09015','el Zócalo deriva Cuauhtémoc con su clave INEGI')
     ok(capas['zocalo']['uga'].startswith('CUH-'),'y una UGA de Cuauhtémoc: '+capas['zocalo']['uga'])
     ok(capas['ajusco']['alcaldia']=='Tlalpan' and capas['milpa']['alcaldia']=='Milpa Alta','el Ajusco es Tlalpan y el sur es Milpa Alta')
-    ok(capas['hueco']['alcaldia'] is None and capas['hueco']['uga'] is not None and capas['hueco']['capa_version'],
-       'en el hueco de la capa no hay alcaldía pero sí UGA y versión, para rederivar después')
-    ok(capas['solape'][0]==capas['solape'][1]=='Venustiano Carranza','en el solape GAM–VCA siempre gana el mismo polígono')
+    ok(capas['hueco']['alcaldia']=='Gustavo A. Madero' and 'alcaldias=sia-2026-01-01' in capas['hueco']['capa_version'],
+       'el punto que caía en el hueco de 1.2 ha ya deriva alcaldía con la capa definitiva: %s (%s)' % (capas['hueco']['alcaldia'], capas['hueco']['capa_version']))
+    ok(capas['solape'][0]==capas['solape'][1]=='Venustiano Carranza','el antiguo solape GAM–VCA deriva una sola alcaldía')
     ok(capas['fuera'] is None,'fuera de la ciudad no deriva nada')
     ok(float(capas['ms'])<5,'derivar cuesta menos de 5 ms por punto (%s ms)' % capas['ms'])
     ok('alcaldias=' in capas['zocalo']['capa_version'] and 'uga=' in capas['zocalo']['capa_version'] and 'colonias=' in capas['zocalo']['capa_version'],

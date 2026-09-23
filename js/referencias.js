@@ -49,7 +49,7 @@ SRP.ref = {
   },
 
   /* Dos ausencias que no son la misma. Sin alcaldía, el punto cayó en un hueco entre los
-     polígonos de la capa (hay cinco, ver derivacion.js) y se dice. Sin colonia, el punto está
+     polígonos de la capa (la definitiva no tiene; la regla queda por si una entrega los trae) y se dice. Sin colonia, el punto está
      fuera de la zona urbana que la capa cubre —suelo de conservación, casi siempre—: no es un
      defecto del punto ni de la capa, y no debe leerse como tal (D62). */
   alcaldia(valor) { return valor || 'Sin alcaldía: el punto cae entre los polígonos de la capa'; },
