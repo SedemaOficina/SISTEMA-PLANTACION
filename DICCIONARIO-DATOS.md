@@ -38,7 +38,7 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 | `perfil` | `CABO` · `COORDINADOR` · `ADMIN` | js/permisos.js SRP.PERFILES (Consulta/VIEWER retirado en D87) |
 | `tipo_catalogo` | `programa` · `area` · `especie` | js/catalogos.js ETIQUETA |
 | `tipo_distribucion` | `Nativa` · `Endémica` · `Exótica` · `Exótica-Invasora` | SNIB/CONABIO (EncicloVida); lista en index.html #cat-distribucion |
-| `accion_bitacora` | `CREADO` · `EDITADO` · `ELIMINADO` · `ACTIVADO` · `DESACTIVADO` | llamadas a SRP.bitacora.entrada() en formulario, registros, catalogos, usuarios y reportes |
+| `accion_bitacora` | `CREADO` · `EDITADO` · `ELIMINADO` · `RESTAURADO` · `ACTIVADO` · `DESACTIVADO` | llamadas a SRP.bitacora.entrada() en formulario, registros, catalogos, usuarios y reportes |
 | `entidad_bitacora` | `plantacion` · `usuario` · `catalogo` · `cierre` | ídem |
 | `alcaldia_cve` | 16 claves `cvegeo` INEGI (09002…09017) | assets/capa-alcaldias.js (SIA con base en INEGI, versión sia-2026-01-01; DEFINITIVA) |
 | `uga` | 1,624 claves `AAA-000` de la malla hexagonal | assets/capa-uga.js (SIA, versión sia-2026-09-22; definitiva, con 8 celdas de prefijo distinto a su alcaldía) |
@@ -66,7 +66,7 @@ Un renglón por ejemplar plantado. Es el registro individual de campo; todo lo d
 | `gps_precision_m` | integer | Sí | Sistema | Metros, entero; null salvo con GPS | «Cómo se obtuvo» (±N m) | Existe si y sólo si punto_origen = gps: al mover el punto a mano se borra. La auditoría lo comprueba. En Fase 2 alimenta la regla de duplicados (D69) |
 | `lat_original` | numeric(9,6) | No | Sistema | Como lat | No | Dónde quedó el punto la primera vez; no cambia al editar ni al arrastrar |
 | `lng_original` | numeric(9,6) | No | Sistema | Como lng | No | Ídem |
-| `folio` | char(22) | Sí | Servidor | `SRP-AAA-000-AAAA-00000` (SRP.folio.PATRON) | «Folio»: PROVISIONAL mientras sea nulo (R1) | Nulo en toda la Fase 1. Lo asigna el servidor una sola vez al sincronizar (R3), es inmutable (R7) y no lleva la especie (D67). Condiciones para emitirlo en DECISIONES, pendientes |
+| `folio` | char(13) | Sí | Servidor | `AAA-000-00000` (SRP.folio.PATRON): celda UGA y consecutivo de la celda; UNIQUE | «Folio»: PROVISIONAL mientras sea nulo (R1) | Nulo en toda la Fase 1. Lo asigna el servidor una sola vez al sincronizar (R3), es inmutable (R7) y no lleva la especie ni el año (D67). El consecutivo sale de una secuencia perpetua por celda, nunca de MAX+1 (R5–R6). Condiciones para emitirlo en DECISIONES, pendientes |
 | `folio_uga` | char(7) | Sí | Servidor | uga o `EXT-000` | No | La celda que quedó dentro del folio, congelada al asignarlo (R8). Distinta de `uga`, que es la vigente |
 | `folio_capa_version` | text | Sí | Servidor | Como capa_version | No | Versión de las capas con que se derivó el folio; congelada (R8) |
 | `folio_lat` | numeric(9,6) | Sí | Servidor | Como lat | No | Coordenada empleada al asignar el folio; congelada (R8) |
@@ -315,8 +315,8 @@ Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras
 | Id | Qué | Detalle | Referencia |
 |---|---|---|---|
 | S-01 | Cola de envío | Cada registro guardado queda en cola (guardado → enviado → con error); envío automático en segundo plano con señal, «Enviar ahora», y nada se borra del dispositivo hasta que el servidor confirme. Requiere dos campos nuevos en plantaciones: identificador del servidor y marca de envío (retirados en D17 por no tener uso todavía) | DECISIONES, pendiente «Cola de envío al servidor»; D83 |
-| S-02 | Emisión del folio | Tabla de secuencias por celda UGA y año; asignación en transacción con plantaciones.id como clave de idempotencia (R3–R6); se congelan folio_uga, folio_capa_version, folio_lat, folio_lng (R8). Sólo con la malla UGA corregida, versionada y congelada | D67; js/folio.js; pendiente «Emisión del folio» |
-| S-03 | Integridad referencial y unicidad en la base | FK de todas las relaciones de arriba; UNIQUE en usuarios.correo, catalogos (tipo, clave), catalogos (tipo, nombre), catalogos.nombre_cientifico; CHECK de los dominios; la bitácora sin FK a propósito | Esta tabla de relaciones |
+| S-02 | Emisión del folio | Tabla de secuencias por celda UGA, perpetua y monotónica (sin reinicio por ejercicio, administración ni versión); lectura e incremento atómicos, nunca MAX(folio)+1 ni COUNT+1; asignación en transacción con plantaciones.id como clave de idempotencia (R3–R6); se congelan folio_uga, folio_capa_version, folio_lat, folio_lng (R8). Sólo con la malla UGA corregida, versionada y congelada | D67; js/folio.js; pendiente «Emisión del folio» |
+| S-03 | Integridad referencial y unicidad en la base | FK de todas las relaciones de arriba; UNIQUE en plantaciones.folio, usuarios.correo, catalogos (tipo, clave), catalogos (tipo, nombre), catalogos.nombre_cientifico; CHECK de los dominios; la bitácora sin FK a propósito | Esta tabla de relaciones |
 | S-04 | Permisos en el servidor | Las reglas de js/permisos.js se imponen en la API (Norma 7.1); la pantalla sólo las refleja. Autenticación con el proveedor institucional: sólo cambia autenticar() en js/sesion.js | js/permisos.js; D05 |
 | S-05 | Posible duplicado | Aviso al sincronizar cuando otro registro cae a menos de la incertidumbre combinada de ambos puntos (suma de gps_precision_m, piso 5 m), en el servidor; nunca con 5 m fijos | D69 |
 | S-06 | Bandeja de especies fuera de catálogo | Donde el SIA resuelve cada PENDIENTE_VALIDACION: alta en el catálogo (siguiente ESP-0000) o reasignación a una existente; al resolverse cambia especie_id y especie_estatus, nunca el folio | D68 |
@@ -350,7 +350,7 @@ CREATE TABLE plantaciones (
   gps_precision_m          integer        NULL,
   lat_original             numeric(9,6)   NOT NULL,
   lng_original             numeric(9,6)   NOT NULL,
-  folio                    char(22)       NULL,
+  folio                    char(13)       NULL,
   folio_uga                char(7)        NULL,
   folio_capa_version       text           NULL,
   folio_lat                numeric(9,6)   NULL,

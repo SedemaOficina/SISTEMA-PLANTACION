@@ -228,6 +228,18 @@ with sync_playwright() as p:
     generado = generar_diccionario.generar(esquema)
     actual = open(os.path.join(APP, 'DICCIONARIO-DATOS.md'), encoding='utf-8').read()
     mirar(generado == actual, 'DICCIONARIO-DATOS.md está regenerado a partir de esquema.json', 'corra pruebas/generar_diccionario.py')
+    # Folio (D67, 23-09-2026): 13 caracteres, sin prefijo de sistema ni año. No debe quedar rastro
+    # del formato de 22 caracteres fuera de la historia (BITACORA y la nota de sustitución de D67)
+    campo_folio = next(c for c in esquema['tablas']['plantaciones']['campos'] if c['campo'] == 'folio')
+    mirar(campo_folio['tipo'] == 'char(13)' and 'UNIQUE' in campo_folio['dominio'], 'el folio mide 13 caracteres y es único en el esquema', campo_folio['tipo'])
+    patron = pg.evaluate("[SRP.folio.PATRON.source, SRP.folio.LARGO, SRP.folio.armar('TLP-318', 1).length]")
+    mirar(patron == ['^[A-Z]{3}-\\d{3}-\\d{5}$', 13, 13], 'el patrón del folio en el código es AAA-000-00000', str(patron))
+    viejos = []
+    for f in ['js/folio.js', 'esquema.json', 'DICCIONARIO-DATOS.md', 'MAPEO-CAMPOS.md', 'README.md', 'DECISIONES.md', 'index.html'] + [os.path.relpath(x, APP) for x in glob.glob(APP + '/js/*.js')]:
+        t = open(os.path.join(APP, f), encoding='utf-8').read()
+        for marca in ('SRP-AAA-000-AAAA-00000', 'char(22)', 'SRP-TLP-', "'SRP-' +"):
+            if marca in t: viejos.append(f + ': ' + marca)
+    mirar(not viejos, 'no queda rastro del folio de 22 caracteres fuera de la bitácora', '; '.join(sorted(set(viejos))))
     b.close()
 
 malos = [h for h in hallazgos if not h[0]]

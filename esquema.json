@@ -101,6 +101,7 @@
         "CREADO",
         "EDITADO",
         "ELIMINADO",
+        "RESTAURADO",
         "ACTIVADO",
         "DESACTIVADO"
       ],
@@ -235,12 +236,12 @@
         },
         {
           "campo": "folio",
-          "tipo": "char(22)",
+          "tipo": "char(13)",
           "nulo": true,
           "origen": "Servidor",
-          "dominio": "`SRP-AAA-000-AAAA-00000` (SRP.folio.PATRON)",
+          "dominio": "`AAA-000-00000` (SRP.folio.PATRON): celda UGA y consecutivo de la celda; UNIQUE",
           "pantalla": "«Folio»: PROVISIONAL mientras sea nulo (R1)",
-          "regla": "Nulo en toda la Fase 1. Lo asigna el servidor una sola vez al sincronizar (R3), es inmutable (R7) y no lleva la especie (D67). Condiciones para emitirlo en DECISIONES, pendientes"
+          "regla": "Nulo en toda la Fase 1. Lo asigna el servidor una sola vez al sincronizar (R3), es inmutable (R7) y no lleva la especie ni el año (D67). El consecutivo sale de una secuencia perpetua por celda, nunca de MAX+1 (R5–R6). Condiciones para emitirlo en DECISIONES, pendientes"
         },
         {
           "campo": "folio_uga",
@@ -1548,13 +1549,13 @@
     {
       "id": "S-02",
       "que": "Emisión del folio",
-      "detalle": "Tabla de secuencias por celda UGA y año; asignación en transacción con plantaciones.id como clave de idempotencia (R3–R6); se congelan folio_uga, folio_capa_version, folio_lat, folio_lng (R8). Sólo con la malla UGA corregida, versionada y congelada",
+      "detalle": "Tabla de secuencias por celda UGA, perpetua y monotónica (sin reinicio por ejercicio, administración ni versión); lectura e incremento atómicos, nunca MAX(folio)+1 ni COUNT+1; asignación en transacción con plantaciones.id como clave de idempotencia (R3–R6); se congelan folio_uga, folio_capa_version, folio_lat, folio_lng (R8). Sólo con la malla UGA corregida, versionada y congelada",
       "referencia": "D67; js/folio.js; pendiente «Emisión del folio»"
     },
     {
       "id": "S-03",
       "que": "Integridad referencial y unicidad en la base",
-      "detalle": "FK de todas las relaciones de arriba; UNIQUE en usuarios.correo, catalogos (tipo, clave), catalogos (tipo, nombre), catalogos.nombre_cientifico; CHECK de los dominios; la bitácora sin FK a propósito",
+      "detalle": "FK de todas las relaciones de arriba; UNIQUE en plantaciones.folio, usuarios.correo, catalogos (tipo, clave), catalogos (tipo, nombre), catalogos.nombre_cientifico; CHECK de los dominios; la bitácora sin FK a propósito",
       "referencia": "Esta tabla de relaciones"
     },
     {

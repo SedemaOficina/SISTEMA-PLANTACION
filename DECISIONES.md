@@ -86,7 +86,7 @@
 - [pendiente] **Colonias en el teléfono (3 MB) o sólo en el servidor.** El SIA hace los cruces territoriales en PostGIS, no en el dispositivo (llamada del 22-09-2026). El diseño ya lo prevé: el teléfono deriva alcaldía, colonia y UGA para verlas en campo sin señal (provisional, con `capa_version`) y en Fase 2 el servidor rederiva con PostGIS y su resultado manda (S-08). Alcaldías (390 KB) y UGA (423 KB) se quedan en el teléfono; decidir si colonias (3 MB, IECM) se queda o se deriva sólo en el servidor y el cabo la ve al sincronizar. Lo que se pide al SIA: nombre de las tablas del esquema `territorio`, SRID, campos llave, versión y fecha de corte, y una exportación de esas mismas tablas (ST_AsGeoJSON o QGIS) para que teléfono y servidor crucen contra la misma geometría
 - ~~Sustituir alcaldías y malla UGA por las definitivas~~ Hecho en el bloque 38 (D92)
 - [pendiente] **Antes de liberar esta etapa: sustituir la capa de colonias** (hoy IECM 2022, de prueba) por la definitiva del SIA, con fuente, llave y fecha de corte, y volver a correr `pruebas/generar_capas.py`. Anotado por Liber, 22-09-2026
-- [pendiente] **Las ocho claves UGA con prefijo distinto a su alcaldía siguen en la malla definitiva** (TLP-040, TLP-085, IZP-005, IZP-011, COY-054, MIH-001, MIH-002, IZC-021). No afectan al registro (la alcaldía sale de su capa), pero sí al folio: una de esas celdas daría `SRP-TLP-040-…` a un árbol de Milpa Alta. Confirmar con el SIA si se quedan así antes de emitir folios (condición 2 y 5 de la emisión)
+- [pendiente] **Las ocho claves UGA con prefijo distinto a su alcaldía siguen en la malla definitiva** (TLP-040, TLP-085, IZP-005, IZP-011, COY-054, MIH-001, MIH-002, IZC-021). No afectan al registro (la alcaldía sale de su capa), pero sí al folio: una de esas celdas daría `TLP-040-…` a un árbol de Milpa Alta. Confirmar con el SIA si se quedan así antes de emitir folios (condición 2 y 5 de la emisión)
 
 ### Para resolver antes de montar en los servidores del SIA
 
@@ -216,19 +216,32 @@
 
 ## Bloque 23 — Folio: la estructura entra, la emisión espera
 
-- **D67. Nomenclatura del folio: `SRP-AAA-000-AAAA-00000`.** Cuatro segmentos congelados al
-  asignar —sistema, celda UGA por cruce contra la malla vigente al alta, año de asignación,
-  consecutivo de cinco dígitos por celda y año—, 22 caracteres. La clave de especie queda fuera
-  del identificador y se conserva como atributo: un ejemplar puede reidentificarse cuantas veces
-  haga falta y puede registrarse sin especie de catálogo sin que el folio cambie. `EXT-000` es la
-  celda reservada para un punto fuera de la malla. Definido por Liber en su análisis de
-  nomenclatura (22-09-2026).
+- **D67. Nomenclatura del folio: `AAA-000-00000`** (redacción vigente desde el bloque 54; sustituye
+  a la de 22-09-2026, que llevaba además prefijo de sistema y año en 22 caracteres). Dos segmentos
+  congelados al asignar, 13 caracteres fijos, patrón `/^[A-Z]{3}-\d{3}-\d{5}$/`:
+  | Segmento | Formato | Origen |
+  |---|---|---|
+  | Celda UGA | `AAA-000` | Cruce punto-en-polígono contra la malla UGA vigente al alta |
+  | Consecutivo | 5 dígitos | Tabla de secuencias por celda, servida por el servidor |
+  Salen el prefijo de sistema y el año por redundantes con la base: el origen del registro y el
+  ejercicio ya son campos y se consultan por ellos. La clave de especie sigue fuera del
+  identificador y se conserva como atributo. `EXT-000` es la celda reservada para un punto fuera
+  de la malla. Decisión del SIA acordada con Liber (23-09-2026); no se reabre.
 - **D68. Reglas de operación adoptadas (R1–R10 del análisis).** R1: el registro nace con UUID y
   la pantalla dice PROVISIONAL hasta sincronizar. R2: nada definitivo —placa, rótulo, reporte—
   sale de un registro provisional; el PDF lo advierte. R3: el folio se asigna una sola vez, en el
-  servidor, en una transacción. R4: el UUID es la clave de idempotencia. R5–R6: consecutivo de
-  una tabla de secuencias que sólo avanza; los huecos se aceptan, la reutilización no; unicidad en
-  base. R7: inmutable ante cualquier corrección. R8: al asignar se congelan folio, celda, versión
+  servidor, en una transacción. R4: el UUID es la clave de idempotencia. R5–R6 (ampliadas el 23-09-2026 al quitar el año del
+  folio, que era la única señal visible de un reinicio): (a) el consecutivo corre por celda UGA en
+  una tabla de secuencias PERPETUA y MONOTÓNICA; no se reinicia por ejercicio fiscal, por cambio
+  de administración ni por versión del sistema; (b) nunca se calcula con MAX(folio)+1 ni con
+  COUNT(registros)+1 sobre los registros vigentes: sólo se lee e incrementa la secuencia, de forma
+  atómica, dentro de la transacción de asignación; (c) restricción UNIQUE en la columna `folio`;
+  (d) los huecos en la serie son aceptables, la reutilización de un número no lo es; (e) techo de
+  99 999 folios por celda sin reinicio. Regla de desbordamiento: al llegar la secuencia de una
+  celda a 99 999, la asignación se detiene para esa celda con error explícito —el registro queda
+  PROVISIONAL, nunca se recorta ni se reinicia el contador— y se resuelve por decisión expresa del
+  SIA, que puede subdividir la celda en la malla o ampliar el ancho del consecutivo en una
+  versión nueva del patrón que conviva con la anterior; los folios ya emitidos no cambian. R7: inmutable ante cualquier corrección. R8: al asignar se congelan folio, celda, versión
   de capas y coordenada (`folio_uga`, `folio_capa_version`, `folio_lat`, `folio_lng`); `uga` sigue
   siendo la vigente. R9: baja lógica, nunca física (ya era así). R10: el folio identifica al
   ejemplar, no al evento; el seguimiento cuelga del mismo folio. «Otra especie» pasa a ser un

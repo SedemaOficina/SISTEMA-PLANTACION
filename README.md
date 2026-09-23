@@ -156,8 +156,8 @@ todo (se restaura desde las herramientas de prueba). Ver D71, D72, D81 y D83.
 
 ## Folio del ejemplar
 
-Nomenclatura adoptada: `SRP-AAA-000-AAAA-00000` (sistema, celda UGA, año, consecutivo por celda y
-año; 22 caracteres). La clave de especie queda fuera del folio. En la Etapa 1 **ningún registro
+Nomenclatura adoptada: `AAA-000-00000` (celda UGA y consecutivo de la celda; 13 caracteres). El
+consecutivo corre en una secuencia perpetua por celda que no se reinicia nunca. La clave de especie queda fuera del folio. En la Etapa 1 **ningún registro
 tiene folio**: lo asigna el servidor una sola vez al sincronizar, y la pantalla y el PDF dicen
 PROVISIONAL. `js/folio.js` guarda el patrón, la validación y la etiqueta de campo —lo que el
 servidor reutilizará—; la emisión no existe todavía y depende de que el SIA entregue la malla UGA

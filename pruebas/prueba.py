@@ -441,11 +441,16 @@ with sync_playwright() as p:
     ok(len(set(ids))==4,'cada árbol recibe su propio identificador')
     # FOLIO (B23): estructura sin emisión
     f=pg.evaluate("""() => ({
-      v1: SRP.folio.valido('SRP-TLP-318-2026-00001'), v2: SRP.folio.valido('SRP-TLP-318-2026-1'), v3: SRP.folio.valido('srp-TLP-318-2026-00001'),
-      a1: SRP.folio.armar('TLP-318', 2026, 7), a2: SRP.folio.armar(null, 2026, 12),
-      texto: SRP.folio.texto({ folio: null }), largo: SRP.folio.armar('CUH-021', 2026, 99999).length })""")
+      v1: SRP.folio.valido('TLP-318-00001'), v2: SRP.folio.valido('TLP-318-1'), v3: SRP.folio.valido('tlp-318-00001'),
+      v4: SRP.folio.valido('SRP-TLP-318-2026-00001'),
+      a1: SRP.folio.armar('TLP-318', 7), a2: SRP.folio.armar(null, 12),
+      texto: SRP.folio.texto({ folio: null }), largo: SRP.folio.armar('CUH-021', 99999).length,
+      tope: (() => { try { SRP.folio.armar('CUH-021', 100000); return 'aceptado'; } catch (e) { return 'rechazado'; } })(),
+      cero: (() => { try { SRP.folio.armar('CUH-021', 0); return 'aceptado'; } catch (e) { return 'rechazado'; } })() })""")
     ok(f['v1'] and not f['v2'] and not f['v3'],'el patrón del folio acepta la forma adoptada y rechaza las demás')
-    ok(f['a1']=='SRP-TLP-318-2026-00007' and f['a2']=='SRP-EXT-000-2026-00012' and f['largo']==22,'armar rellena el consecutivo y usa EXT-000 fuera de la malla: '+f['a1'])
+    ok(f['a1']=='TLP-318-00007' and f['a2']=='EXT-000-00012' and f['largo']==13,'armar rellena el consecutivo y usa EXT-000 fuera de la malla, en 13 caracteres (D67): '+f['a1'])
+    ok(not f['v4'],'el formato anterior de 22 caracteres ya no es válido (D67)')
+    ok(f['tope']=='rechazado' and f['cero']=='rechazado','un consecutivo fuera de 1–99 999 se rechaza en vez de recortarse o reiniciarse (R6)')
     ok(f['texto']=='PROVISIONAL','sin folio, la pantalla dice PROVISIONAL')
     guardado=pg.evaluate("id => SRP.almacen.uno('plantaciones', id)", ids[0])
     ok(guardado['folio'] is None and guardado['folio_uga'] is None and 'folio_lat' in guardado,'el registro nace con los cinco campos del folio en nulo (R8)')

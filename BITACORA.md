@@ -1057,3 +1057,29 @@ en Nuevo registro. CSS: rejilla de dos columnas, mapa más alto y Reportes centr
 
 **Verificación:** 313 comprobaciones sin errores de consola; 81 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.34.
+
+## Bloque 54 — Nomenclatura del folio: `AAA-000-00000` (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.35.
+
+**De dónde viene.** Decisión del SIA acordada con Liber: el folio pierde el prefijo de sistema y
+el año, redundantes con la base (el origen y el ejercicio ya son campos). La entrada del bloque 23
+se conserva como historia; la redacción vigente está en D67 y en las R5–R6 ampliadas de D68.
+
+**Qué cambió.** `js/folio.js`: `PATRON` `/^[A-Z]{3}-\d{3}-\d{5}$/`, `LARGO` 13, `TECHO` 99 999;
+`armar(uga, consecutivo)` sin año y con rechazo de consecutivos fuera de 1–99 999; cabecera
+reescrita. `esquema.json`: `folio` pasa de char(22) a char(13), dominio nuevo con UNIQUE,
+regla y S-02 con la secuencia perpetua y monotónica, S-03 con UNIQUE en `plantaciones.folio`.
+`DICCIONARIO-DATOS.md` regenerado. `MAPEO-CAMPOS.md` y `README.md` con la nomenclatura nueva.
+`DECISIONES.md`: D67 reescrita con constancia de sustitución, R5–R6 de D68 ampliadas con la
+condición dura y la regla de desbordamiento, ejemplo del pendiente de las claves UGA corregido.
+`auditoria.py`: tres comprobaciones nuevas (esquema en 13 caracteres y único, patrón del código,
+ningún rastro del formato anterior fuera de la bitácora). Pruebas: la del folio reescrita y dos
+nuevas (el formato anterior ya no valida; consecutivo fuera de rango se rechaza).
+
+**Lo que no cambia.** Especie fuera del folio; asignación única en el servidor e inmutable (R7);
+UUID como clave de idempotencia (R4); `EXT-000` fuera de la malla; el folio identifica al
+ejemplar (R10); baja lógica (R9); campos congelados (R8); en Etapa 1 folio nulo y PROVISIONAL
+en pantalla y PDF; emisión en Fase 2 condicionada a las capas definitivas del SIA.
+
+**Verificación:** 315 comprobaciones sin errores de consola; 84 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.35.
