@@ -17,7 +17,7 @@ SRP.almacen = {
      comprueban al abrir: mientras la estructura viva entera en MIGRACIONES[1], un dispositivo que
      ya abrió el sistema no vuelve a ejecutarla, y un almacén nuevo no aparecería solo. Es el mismo
      problema que SELLO_DATOS resolvió para los datos, ahora para la estructura. */
-  ALMACENES: ['plantaciones', 'usuarios', 'catalogos', 'bitacora', 'cierres'],
+  ALMACENES: ['plantaciones', 'usuarios', 'catalogos', 'bitacora', 'jornadas'],
 
   MIGRACIONES: {
     1(db) {
@@ -35,6 +35,16 @@ SRP.almacen = {
          regenerar el reporte de un día no obligue a volver a escribirlo (ver reportes.js). */
       const ci = db.createObjectStore('cierres', { keyPath: 'id' });
       ci.createIndex('fecha', 'fecha');
+    },
+    /* JORNADAS (D119). La jornada se declara antes de registrar y guarda también lo que antes
+       vivía en «cierres» (conteo, puntos revisados, datos de cierre del reporte). La tabla de
+       cierres se retira; los datos de prueba se rehacen al cambiar el sello. */
+    2(db) {
+      const jo = db.createObjectStore('jornadas', { keyPath: 'id' });
+      jo.createIndex('cabo_id', 'cabo_id');
+      jo.createIndex('fecha', 'fecha');
+      jo.createIndex('estatus', 'estatus');
+      if (db.objectStoreNames.contains('cierres')) db.deleteObjectStore('cierres');
     }
   },
 

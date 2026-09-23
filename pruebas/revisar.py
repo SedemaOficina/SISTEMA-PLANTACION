@@ -17,6 +17,9 @@ with sync_playwright() as p:
       if pg.is_visible('#btn-cuenta'): pg.click('#btn-cuenta'); pg.click('#btn-cambiar-perfil'); pg.wait_for_timeout(300)
       pg.select_option('#sel-usuario-prueba', quien); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(500)
       pg.evaluate(f"SRP.app.mostrarVista('{vista}')"); pg.wait_for_timeout(500)
+      # Nuevo registro pide iniciar una jornada (D119): se inicia para revisar el formulario con su mapa
+      if vista=='registrar' and pg.is_visible('#panel-iniciar-jornada'):
+        pg.fill('#ini-nombre','Jornada de revisión'); pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(600)
       # Jornadas se revisa con una jornada abierta: es la pantalla con mapa, conciliación y lista
       if vista=='jornadas' and pg.locator('#lista-jornadas .jornada button').count():
         pg.click('#lista-jornadas .jornada button >> nth=0'); pg.wait_for_timeout(700)

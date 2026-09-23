@@ -80,6 +80,8 @@ SRP.formulario = {
       SRP.mapa.estado('Use el botón de ubicación para tomar su posición, o toque el mapa para colocar el punto.');
     }
     this.el('campo-fecha').max = SRP.util.fechaHoy();
+    // Sin jornada abierta, en lugar del formulario se pide iniciarla (D119)
+    SRP.activa.preparar().then(() => { if (SRP.espejo) SRP.espejo.refrescar(); });
     SRP.mapa.refrescar();
     if (SRP.espejo) SRP.espejo.refrescar();
   },
@@ -310,9 +312,10 @@ SRP.formulario = {
     if (this.estado.especieId === this.OTRA && !this.el('campo-otra-especie').value.trim())
       errores.push(['campo-otra-especie', 'Escriba qué especie es.']);
     if (!this.el('campo-programa').value) errores.push(['campo-programa', 'Elija el programa.']);
+    // La fecha viene de la jornada (D119); sólo se comprueba que exista
     const f = this.el('campo-fecha').value;
-    if (!f) errores.push(['campo-fecha', 'Indique la fecha de plantación.']);
-    else if (f > SRP.util.fechaHoy()) errores.push(['campo-fecha', 'La fecha de plantación no puede ser posterior a hoy.']);
+    if (!f) errores.push(['campo-fecha', 'No hay jornada activa: inicie una antes de registrar.']);
+    else if (f > SRP.util.fechaHoy()) errores.push(['campo-fecha', 'La fecha de la jornada no puede ser posterior a hoy.']);
     return errores;
   },
 
@@ -369,7 +372,7 @@ SRP.formulario = {
     const filas = [
       ['Especie', esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : ''), 'especie'],
       ['Programa', esc(SRP.ref.nombreCatalogo(v.programa_id)), 'programa'],
-      ['Fecha de plantación', esc(SRP.util.formatearFecha(v.fecha_plantacion)), 'fecha'],
+      ['Jornada', esc(this.nombreJornada()) + ' · ' + esc(SRP.util.formatearFecha(v.fecha_plantacion)), null],
       ['Alcaldía', esc(SRP.ref.alcaldia(v.alcaldia)), null],
       ['Colonia', esc(SRP.ref.colonia(v.colonia)), null],
       ['Coordenadas', v.lat.toFixed(6) + ', ' + v.lng.toFixed(6), 'punto'],
@@ -448,6 +451,16 @@ SRP.formulario = {
   /* EL REGISTRO TAL COMO QUEDARÍA EN LA BASE, en un solo lugar. Lo arma guardar() y lo lee el
      espejo de campos: así lo que el espejo enseña no puede desfasarse de lo que de verdad se
      escribe, que es justo el error que un panel de control visual haría fácil cometer. */
+  // La jornada del registro: la activa al crear, la propia al editar (D119)
+  jornadaId() {
+    return this.estado.editando ? (this.estado.editando.jornada_id || null) : (SRP.activa.jornada ? SRP.activa.jornada.id : null);
+  },
+
+  nombreJornada() {
+    const j = this.estado.editando ? this.estado.jornadaEditando : SRP.activa.jornada;
+    return j ? j.nombre : 'Sin jornada';
+  },
+
   registroPrevisto(ahora) {
     const v = this.valores();
     const u = SRP.sesion.usuario;
@@ -462,7 +475,7 @@ SRP.formulario = {
       fecha_registro: ahora, fecha_ultima_edicion: null, editado_por_id: null,
       // El folio y lo que se congela con él los pone el servidor al sincronizar (R3, R8); aquí nacen nulos
       folio: null, folio_uga: null, folio_capa_version: null, folio_lat: null, folio_lng: null,
-      corte_jornada: null   // corrección a mano del reparto en jornadas (D117); nace sin ella
+      jornada_id: this.jornadaId()   // la jornada declarada antes de registrar (D119)
     }, v);
   },
 
@@ -495,9 +508,13 @@ SRP.formulario = {
         }
       } else {
         const nuevo = this.registroPrevisto(ahora);
+        if (!nuevo.jornada_id) { SRP.util.anunciar('No hay jornada activa. Inicie una antes de guardar.', 'alerta'); return; }
+        // Un árbol lejos de los demás de la jornada se pregunta antes de guardar (D119)
+        if (!(await SRP.activa.confirmarDistancia(nuevo.lat, nuevo.lng))) { this.el('dlg-resumen').close(); return; }
         await SRP.almacen.guardarConBitacora('plantaciones', nuevo, SRP.bitacora.entrada('CREADO', 'plantacion', nuevo.id));
         this.el('dlg-resumen').close();
         this.mostrarGuardado(nuevo);
+        SRP.activa.preparar();   // la franja cuenta el árbol nuevo (D119)
         // Con datos de prueba, el registro sale en seguida si hay señal (D111) y recibe folio (D110)
         if (SRP.envio.simulado()) await this.enviarTrasGuardar(nuevo.id);
       }
@@ -571,6 +588,8 @@ SRP.formulario = {
   editar(registro) {
     this.limpiar();
     this.estado.editando = registro;
+    this.estado.jornadaEditando = null;
+    if (registro.jornada_id) SRP.almacen.uno('jornadas', registro.jornada_id).then(j => { this.estado.jornadaEditando = j || null; });
     this.el('titulo-registrar').textContent = 'Editar registro';
     this.el('titulo-registrar').hidden = false;
     const aviso = this.el('edicion-aviso');

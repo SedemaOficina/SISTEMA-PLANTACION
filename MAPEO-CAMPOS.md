@@ -45,7 +45,7 @@ Pantalla **Nuevo registro**. Almacén `plantaciones`.
 | — | `folio_uga` | No | Servidor | La celda que quedó dentro del folio, congelada al asignarlo (R8). Distinta de `uga`, que es la vigente y sí cambia si el punto se corrige |
 | — | `folio_capa_version` | No | Servidor | Versión de las capas con que se derivó el folio; congelada (R8) |
 | — | `folio_lat`, `folio_lng` | No | Servidor | Coordenada empleada al asignar el folio; congelada (R8) |
-| — | `corte_jornada` | No | Persona | Nulo al nacer. `inicia` o `continua` si alguien corrigió el reparto en jornadas desde **Jornadas** (D117) |
+| — | `jornada_id` | Sí | Sistema | La jornada activa al registrar (D119); cambia con «Mover a otra jornada» en **Jornadas** |
 | — | `especie_estatus` | Sí | Sistema | `VALIDADA` si la especie es del catálogo; `PENDIENTE_VALIDACION` con «Otra especie» (D68). Lo resuelve el SIA desde la bandeja de especies fuera de catálogo (Fase 2); al resolverse cambia el atributo, nunca el folio |
 | — | `alcaldia_cve` | No | Capa geográfica | Clave INEGI `cvegeo` de la alcaldía (p. ej. `09015`). Es la llave para unir con el esquema `territorio` del SIA; el nombre se guarda aparte para leerse sin cargar la capa |
 | Alcaldía | `alcaldia` | No | Capa geográfica | Nombre, del punto contra la capa `alcaldias` del SIA (16 polígonos). Campo de sólo lectura. Nulo sólo si el punto cayera en un hueco de la capa: se guarda igual y se avisa |
@@ -56,7 +56,7 @@ Pantalla **Nuevo registro**. Almacén `plantaciones`.
 | Especie | `especie_id` | Sí | Catálogo | Remite a `catalogos.id` con `tipo = especie`: la clave `ESP-0000` del catálogo del SIA (D84). Vacío cuando se eligió «Otra especie». En pantalla se elige por nombre común, científico o cualquiera de los otros nombres comunes; sólo viaja la clave |
 | Especifique la especie | `especie_otra` | Sólo con «Otra especie» | Persona | Texto libre, para lo que no está en el catálogo |
 | Programa | `programa_id` | Sí | Catálogo | Remite a `catalogos.id` con `tipo = programa` |
-| Fecha de plantación | `fecha_plantacion` | Sí | Persona | `AAAA-MM-DD`. Arranca **sin valor**: se elige a propósito en cada registro, nunca se hereda del anterior. No puede ser posterior a hoy. Se muestra como 21-SEP-2026 |
+| Fecha de plantación | `fecha_plantacion` | Sí | Jornada | `AAAA-MM-DD`. Desde el bloque 62 se hereda de la jornada activa (D119): ya no se pide por árbol. Se muestra como 21-SEP-2026 |
 | Comentarios | `comentarios` | No | Persona | Texto libre, hasta 500 caracteres: observaciones del sitio o del ejemplar. Cadena vacía si no se escribe nada; los registros anteriores a su reincorporación (D50) no traen la llave y se leen como «Sin comentarios» |
 | Fotografía | `foto_base64` | No | Persona | La imagen ya comprimida, incrustada. [pendiente] En Fase 2 sale del registro y se guarda como archivo, siguiendo la práctica que el SIA ya usa en sus otros módulos |
 | — | `foto_id` | No | Sistema | UUID de la fotografía |
@@ -157,42 +157,43 @@ Almacén `bitacora`. No se edita desde el sistema.
 | `usuario_nombre` | Sí | Sesión | Copia del nombre **a propósito**: si la cuenta se elimina, el historial debe seguir diciendo quién actuó |
 | `perfil` | Sí | Sesión | Con qué perfil actuó en ese momento |
 | `accion` | Sí | Sistema | `CREADO`, `EDITADO`, `ELIMINADO`, `ACTIVADO` o `DESACTIVADO` |
-| `entidad` | Sí | Sistema | `plantacion`, `usuario`, `catalogo` o `cierre` |
+| `entidad` | Sí | Sistema | `plantacion`, `usuario`, `catalogo` o `jornada` |
 | `entidad_id` | Sí | Sistema | A qué registro se refiere |
 | `detalle` | No | Sistema | Qué cambió; en una edición, la lista de campos |
 
 ---
 
-## Módulo: Cierre del reporte de la jornada
+## Módulo: Jornada (inicio, revisión y cierre del reporte)
 
-Diálogo **Datos de cierre del día**, que se abre desde la pestaña **Reportes** al generar el reporte
-de una jornada (D81, D117). Almacén `cierres`.
-Todo lo que aquí se captura es **opcional** y va únicamente al documento: no se explota ni se
-cuenta. Lo que ya vive en los registros —especies, conteos, alcaldía— no se pregunta, se calcula
-(D58).
+La jornada se declara en **Nuevo registro → «Iniciar jornada»** antes del primer árbol (D119);
+se revisa en **Jornadas** y sus datos de cierre se capturan en **Reportes → «Datos de cierre»**.
+Almacén `jornadas` (sustituye a `cierres` desde el bloque 62). Lo que ya vive en los registros
+—especies, conteos, alcaldía— no se pregunta, se calcula (D58).
 
 | Campo | Obligatorio | Origen | Notas |
 |---|---|---|---|
-| `id` | Sí | Sistema | `fecha|cabo|n`: un cierre por jornada, con `n` el número de la jornada en el día del cabo (D117). Lo guardado antes (`fecha|cabo`, `fecha|TODOS`) se sigue leyendo para la jornada 1 |
-| `jornada_n` | Sí | Sistema | Número de la jornada en el día (D117) |
-| `primer_registro_id` | No | Sistema | Primer punto de la jornada al guardar; por él se reencuentra el cierre si el número cambia (D117) |
+| `id` | Sí | Sistema | UUID; los árboles lo llevan en `plantaciones.jornada_id` |
 | `es_ficticio` | Sí | Sistema | Marca de dato de prueba (D87) |
-| `fecha` | Sí | Sistema | El día de la jornada, `AAAA-MM-DD` |
-| `cabo_id` | Sí | Sistema | El cabo de la jornada (D117) |
-| `encargado_id` | No | Sesión o Persona | Remite a `usuarios.id`. Para un cabo es él mismo; quien ve a varias personas lo elige entre los cabos con registros ese día (D57) |
-| `sitio` | No | Persona | Calle o nombre del sitio, como se escribe en el parte |
+| `nombre` | Sí | Persona | Nombre de la jornada: el parque, la calle o el sitio. Es el nombre de la tarjeta en Jornadas y el «Jornada:» del reporte |
+| `fecha` | Sí | Persona | Fecha de la jornada de plantación, `AAAA-MM-DD`, no posterior a hoy; los árboles la heredan |
+| `comentarios` | No | Persona | Se escriben al iniciar; van al reporte como «Comentarios de la jornada» |
+| `cabo_id` | Sí | Sesión | Quien inició la jornada |
+| `estatus` | Sí | Sistema | `abierta` o `cerrada`; se cierra desde la franja o la revisión, se reabre desde la revisión o con «Registrar faltante» |
+| `fecha_inicio` | Sí | Sistema | Ordena las jornadas del día: «Jornada 2 de 3» |
+| `fecha_cierre` | No | Sistema | Nulo mientras está abierta |
+| `encargado_id` | No | Sesión o Persona | Remite a `usuarios.id`. Para un cabo es él mismo; quien ve a varias personas lo elige entre los cabos con registros en la jornada (D57) |
 | `personal` | No | Persona | Nombres, como se acostumbra escribirlos |
 | `apoyo` | No | Persona | Personal de otra institución; varias líneas |
 | `observaciones` | No | Persona | Una por renglón |
 | `chofer` | No | Persona | |
-| `vehiculo_modelo` | No | Persona | Sustituye a `vehiculo` (bloque 20); un cierre anterior se muestra aquí |
-| `arboles_plantados` | No | Persona | Se anota en **Jornadas** («Árboles plantados según la cuadrilla»); el reporte dice si cuadra con los registros (D112) |
-| `puntos_revisados` | Sí | Persona | Puntos con aviso que alguien marcó «Está bien» en **Jornadas**; lista de `plantaciones.id` (D112) |
+| `vehiculo_modelo` | No | Persona | Sustituye a `vehiculo` (bloque 20) |
 | `vehiculo_placa` | No | Persona | |
 | `hora` | No | Persona | Hora de finalización, `HH:MM` del selector de hora; el PDF le agrega «h» |
-| `creado_por_id` | Sí | Sesión | Quién cerró el parte la primera vez |
+| `arboles_plantados` | No | Persona | Se anota en **Jornadas** («Árboles plantados según la cuadrilla»); el reporte dice si cuadra con los registros (D112) |
+| `puntos_revisados` | Sí | Persona | Puntos con aviso que alguien marcó «Está bien» en **Jornadas**; lista de `plantaciones.id` (D112) |
+| `creado_por_id` | Sí | Sesión | Quién inició la jornada |
 | `fecha_creacion` | Sí | Sistema | |
-| `editado_por_id` | Sí | Sesión | Quién lo cambió por última vez |
+| `editado_por_id` | Sí | Sesión | Quién la cambió por última vez |
 | `fecha_ultima_edicion` | Sí | Sistema | |
 
 ---
@@ -201,13 +202,13 @@ cuenta. Lo que ya vive en los registros —especies, conteos, alcaldía— no se
 
 | Campo | Se origina en | Se reutiliza en |
 |---|---|---|
-| `usuarios.id` | Cuentas | `plantaciones.cabo_id`, `plantaciones.editado_por_id`, `usuarios.coordinador_id`, `usuarios.alta_por_id`, `catalogos.creado_por_id`, `bitacora.usuario_id`, `cierres.encargado_id`, `cierres.cabo_id` |
+| `usuarios.id` | Cuentas | `plantaciones.cabo_id`, `plantaciones.editado_por_id`, `usuarios.coordinador_id`, `usuarios.alta_por_id`, `catalogos.creado_por_id`, `bitacora.usuario_id`, `jornadas.encargado_id`, `jornadas.cabo_id` |
 | `catalogos.id` (especie, = clave `ESP-0000`) | Catálogo del SIA | `plantaciones.especie_id` |
 | `catalogos.id` (programa) | Catálogos | `plantaciones.programa_id` |
 | `catalogos.id` (área) | Catálogos | `usuarios.area_id` |
 | `activo` | Cuentas y Catálogos | Mismo significado en los dos: deja de ofrecerse o de poder entrar, sin borrar nada |
-| `es_ficticio` | Todos | Marca de dato de prueba, en las cinco tablas (cierres y bitácora desde D87) |
-| `fecha_ultima_edicion` + `editado_por_id` | Todos | Mismo par en plantaciones, cuentas, catálogos y cierres |
+| `es_ficticio` | Todos | Marca de dato de prueba, en las cinco tablas (jornadas y bitácora desde D87) |
+| `fecha_ultima_edicion` + `editado_por_id` | Todos | Mismo par en plantaciones, cuentas, catálogos y jornadas |
 
 ---
 

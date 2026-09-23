@@ -292,6 +292,8 @@ fieldset.campo { margin-inline: 0; }
 .insignia-jornada[data-tono="err"] { background: var(--error-fondo); color: var(--error); }
 .volver { padding-left: 0; margin-bottom: var(--e-1); }
 .jornada-titulo { margin-bottom: var(--e-1); }
+.jornada-comentarios { margin: 0 0 var(--e-2); padding: var(--e-2) var(--e-3); border-left: 3px solid var(--dorado); background: var(--fondo-suave); font-size: var(--t-s); white-space: pre-line; }
+#btn-jornada-estado { margin-bottom: var(--e-3); }
 .mapa-jornada { height: clamp(240px, 40vh, 420px); border-radius: var(--radio); margin-top: var(--e-3); }
 .leyenda-jornada { display: flex; gap: var(--e-3); flex-wrap: wrap; margin: var(--e-2) 0 var(--e-3); font-size: var(--t-xs); color: var(--gris); }
 .leyenda-jornada i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: -1px; background: var(--guinda); }
@@ -351,6 +353,21 @@ fieldset.campo { margin-inline: 0; }
 #dlg-foto .fila-botones { display: flex; gap: var(--e-2); }
 #dlg-foto .fila-botones .btn { flex: 1 1 0; }
 @media (max-width: 480px) { .galeria-rejilla { grid-template-columns: repeat(3, minmax(0, 1fr)); } .galeria-pie { font-size: 0.7rem; } }
+
+/* Jornada activa (D119): panel de inicio y franja sobre el formulario */
+.panel-iniciar { max-width: var(--ancho-max); margin: 0 auto var(--e-4); }
+.panel-iniciar .fila-botones { display: flex; gap: var(--e-2); margin-top: var(--e-3); }
+.panel-iniciar .fila-botones .btn { flex: 1 1 0; }
+.franja-jornada { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); flex-wrap: wrap; max-width: var(--ancho-max-tabla); margin: 0 auto var(--e-4);
+  padding: var(--e-3) var(--e-4); border-radius: var(--radio-filtro); background: var(--exito-fondo); border-left: 4px solid var(--exito); }
+.franja-jornada[data-tono="alerta"] { background: var(--editar-fondo); border-left-color: var(--dorado); }
+.franja-jornada p { margin: 0; flex: 1 1 14rem; min-width: 0; }
+.franja-jornada-titulo { display: block; overflow-wrap: anywhere; }
+.franja-jornada-datos { display: block; font-size: var(--t-xs); color: var(--gris); }
+.franja-jornada-acciones { display: flex; gap: var(--e-2); }
+.btn-chico { min-height: 40px; padding: 0 var(--e-3); font-size: var(--t-s); }
+#lista-jornadas-abiertas .jornada-boton[aria-pressed="true"], #lista-mover-jornadas .jornada-boton[aria-pressed="true"] { border-color: var(--guinda); background: var(--fondo-suave); }
+#lista-jornadas-abiertas .jornada-boton, #lista-mover-jornadas .jornada-boton { grid-template-columns: minmax(0, 1fr); }
 
 /* Estado vacío con salida (D96) */
 .vacio { text-align: center; padding: var(--e-5) var(--e-4); border: 1px dashed var(--borde-filtro); border-radius: var(--radio-filtro); background: var(--fondo); }

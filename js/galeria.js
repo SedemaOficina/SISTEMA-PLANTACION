@@ -110,14 +110,16 @@ SRP.galeria = {
 
   /* ---------- Una fotografía ---------- */
 
-  abrir(r) {
+  async abrir(r) {
     this.actual = r;
     const esc = SRP.util.escapar;
     const e = SRP.ref.especieDe(r);
+    const jornada = r.jornada_id ? await SRP.almacen.uno('jornadas', r.jornada_id) : null;
     this.el('dlg-foto-titulo').textContent = e.comun;
     this.el('dlg-foto-img').src = r.foto_base64;
     this.el('dlg-foto-img').alt = 'Fotografía del ' + e.comun + ' registrado el ' + SRP.util.formatearFecha(r.fecha_plantacion);
     this.el('dlg-foto-datos').innerHTML = [
+      ['Jornada', jornada ? jornada.nombre : 'Sin jornada'],
       ['Fecha de plantación', SRP.util.formatearFecha(r.fecha_plantacion)],
       ['Cabo', SRP.ref.nombreUsuario(r.cabo_id)],
       ['Lugar', [SRP.ref.alcaldia(r.alcaldia), r.colonia ? SRP.ref.colonia(r.colonia) : ''].filter(Boolean).join(', ')],

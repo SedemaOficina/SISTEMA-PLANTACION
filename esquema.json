@@ -9,7 +9,7 @@
       "usuarios",
       "catalogos",
       "bitacora",
-      "cierres"
+      "jornadas"
     ],
     "otros": [
       {
@@ -29,7 +29,7 @@
       },
       {
         "donde": "Respaldo `SRP_respaldo_AAAA-MM-DD_<usuario>.json`",
-        "que": "{sistema, version, generado, usuario_id, es_ficticio, resumen{registros, con_foto, foto_bytes}, plantaciones[], usuarios[], catalogos[], bitacora[], cierres[]}: las cinco tablas con el mismo esquema (D87)",
+        "que": "{sistema, version, generado, usuario_id, es_ficticio, resumen{registros, con_foto, foto_bytes}, plantaciones[], usuarios[], catalogos[], bitacora[], jornadas[]}: las cinco tablas con el mismo esquema (D87)",
         "fase2": "El mismo archivo es lo que el servidor recibiría"
       }
     ]
@@ -113,7 +113,7 @@
         "plantacion",
         "usuario",
         "catalogo",
-        "cierre"
+        "jornada"
       ],
       "fuente": "ídem"
     },
@@ -374,19 +374,19 @@
           "campo": "fecha_plantacion",
           "tipo": "date",
           "nulo": false,
-          "origen": "Persona",
+          "origen": "Jornada",
           "dominio": "AAAA-MM-DD, ≤ hoy",
           "pantalla": "Fecha de plantación (se muestra 21-SEP-2026)",
-          "regla": "Arranca vacía en cada registro; nunca se hereda del anterior. Es la fecha por la que se filtra y por la que se arma el parte del día"
+          "regla": "Se hereda de la jornada activa al registrar (D119); «Mover a otra jornada» la ajusta. No posterior a hoy"
         },
         {
-          "campo": "corte_jornada",
-          "tipo": "text",
-          "nulo": true,
-          "origen": "Persona",
-          "dominio": "'inicia' | 'continua' | nulo",
-          "pantalla": "Jornadas → tuerca del punto → «Iniciar otra jornada aquí» / «Unir con la jornada anterior»",
-          "regla": "Corrección a mano del reparto en jornadas (D117). Nulo al nacer: el reparto es por cercanía (CONFIG.JORNADA.SEPARAR_M). Queda en el historial como EDITADO"
+          "campo": "jornada_id",
+          "tipo": "uuid",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "→ jornadas.id",
+          "pantalla": "Jornada (ficha de revisión y detalle)",
+          "regla": "La jornada activa al registrar (D119). Cambia sólo con «Mover a otra jornada» en Jornadas, que también ajusta fecha_plantacion"
         },
         {
           "campo": "comentarios",
@@ -795,205 +795,6 @@
         }
       ]
     },
-    "cierres": {
-      "que_es": "Datos de cierre del reporte de una jornada: un renglón por jornada (`fecha|cabo_id|n`; D117). Todo es opcional; su destino es el PDF (D58) y, desde D112, la conciliación de la jornada (arboles_plantados, puntos_revisados).",
-      "llave": "id",
-      "indices": [
-        "fecha"
-      ],
-      "pantalla": "Reportes → «Datos de cierre del día»",
-      "campos": [
-        {
-          "campo": "id",
-          "tipo": "text",
-          "nulo": false,
-          "origen": "Sistema",
-          "dominio": "`fecha|cabo_id|n` (jornada n del día; D117). Antes del bloque 60: `fecha|cabo_id` o `fecha|TODOS`, que se siguen leyendo para la jornada 1",
-          "pantalla": "No",
-          "regla": "Regenerar el reporte de la misma jornada reabre el mismo cierre (Norma 7.6)"
-        },
-        {
-          "campo": "es_ficticio",
-          "tipo": "boolean",
-          "nulo": false,
-          "origen": "Sistema",
-          "dominio": "true/false",
-          "pantalla": "No",
-          "regla": "Copia de CONFIG.ES_FICTICIO (D87): la depuración de datos de prueba también alcanza a esta tabla"
-        },
-        {
-          "campo": "fecha",
-          "tipo": "date",
-          "nulo": false,
-          "origen": "Sistema",
-          "dominio": "AAAA-MM-DD",
-          "pantalla": "Encabezado del diálogo",
-          "regla": "El día del parte: cualquier día, no sólo hoy (D70)"
-        },
-        {
-          "campo": "cabo_id",
-          "tipo": "uuid",
-          "nulo": false,
-          "origen": "Sistema",
-          "dominio": "→ usuarios.id",
-          "pantalla": "No",
-          "regla": "El cabo de la jornada (D112, D117). Antes del bloque 57 un cabo guardaba ''; se sigue leyendo"
-        },
-        {
-          "campo": "encargado_id",
-          "tipo": "uuid",
-          "nulo": true,
-          "origen": "Sesión",
-          "dominio": "→ usuarios.id",
-          "pantalla": "Encargado",
-          "regla": "Para un cabo es él mismo (no se pregunta); quien ve a varias personas lo elige sólo entre los cabos con registros ese día (D57)"
-        },
-        {
-          "campo": "creado_por_id",
-          "tipo": "uuid",
-          "nulo": false,
-          "origen": "Sesión",
-          "dominio": "→ usuarios.id",
-          "pantalla": "No",
-          "regla": ""
-        },
-        {
-          "campo": "fecha_creacion",
-          "tipo": "timestamptz",
-          "nulo": false,
-          "origen": "Sistema",
-          "dominio": "ISO 8601",
-          "pantalla": "No",
-          "regla": ""
-        },
-        {
-          "campo": "editado_por_id",
-          "tipo": "uuid",
-          "nulo": false,
-          "origen": "Sesión",
-          "dominio": "→ usuarios.id",
-          "pantalla": "No",
-          "regla": ""
-        },
-        {
-          "campo": "fecha_ultima_edicion",
-          "tipo": "timestamptz",
-          "nulo": false,
-          "origen": "Sistema",
-          "dominio": "ISO 8601",
-          "pantalla": "No",
-          "regla": ""
-        },
-        {
-          "campo": "jornada_n",
-          "tipo": "integer",
-          "nulo": false,
-          "origen": "Sistema",
-          "dominio": "1, 2, 3… número de la jornada en el día del cabo",
-          "pantalla": "«Jornada 2 de 3» en Jornadas y en el reporte",
-          "regla": "Parte de la llave (D117). Se recalcula al reabrir el cierre"
-        },
-        {
-          "campo": "primer_registro_id",
-          "tipo": "uuid",
-          "nulo": true,
-          "origen": "Sistema",
-          "dominio": "→ plantaciones.id",
-          "pantalla": "No",
-          "regla": "Primer punto de la jornada al guardar el cierre: si el número cambió (se eliminó una jornada anterior completa), el cierre se reencuentra por él (D117)"
-        },
-        {
-          "campo": "arboles_plantados",
-          "tipo": "integer",
-          "nulo": true,
-          "origen": "Persona",
-          "dominio": "0–9999; nulo si la cuadrilla no lo anotó",
-          "pantalla": "Jornadas → «Árboles plantados según la cuadrilla»",
-          "regla": "Conciliación de la jornada (D112): se compara con los registros activos del día y el cabo; el reporte dice si cuadra. Nunca sustituye al conteo de registros"
-        },
-        {
-          "campo": "puntos_revisados",
-          "tipo": "uuid[]",
-          "nulo": false,
-          "origen": "Persona",
-          "dominio": "→ plantaciones.id; [] si nadie ha revisado",
-          "pantalla": "Jornadas → «Está bien» en un punto con aviso",
-          "regla": "Puntos con aviso (duplicado, lejos, precisión) que alguien confirmó como correctos (D112); el aviso deja de contarse, no se borra"
-        },
-        {
-          "campo": "sitio",
-          "tipo": "text",
-          "nulo": false,
-          "origen": "Persona",
-          "dominio": "Texto libre; '' si no se escribe",
-          "pantalla": "Dirección o sitio",
-          "regla": "Nada se prellena (los partes varían mucho)"
-        },
-        {
-          "campo": "personal",
-          "tipo": "text",
-          "nulo": false,
-          "origen": "Persona",
-          "dominio": "Texto libre",
-          "pantalla": "Personal de SEDEMA participante",
-          "regla": ""
-        },
-        {
-          "campo": "apoyo",
-          "tipo": "text",
-          "nulo": false,
-          "origen": "Persona",
-          "dominio": "Texto libre, varias líneas",
-          "pantalla": "Personal de apoyo",
-          "regla": ""
-        },
-        {
-          "campo": "observaciones",
-          "tipo": "text",
-          "nulo": false,
-          "origen": "Persona",
-          "dominio": "Texto libre",
-          "pantalla": "Observaciones",
-          "regla": "Aquí se explica a mano una diferencia contra la meta"
-        },
-        {
-          "campo": "chofer",
-          "tipo": "text",
-          "nulo": false,
-          "origen": "Persona",
-          "dominio": "Texto libre",
-          "pantalla": "Chófer",
-          "regla": ""
-        },
-        {
-          "campo": "vehiculo_modelo",
-          "tipo": "text",
-          "nulo": false,
-          "origen": "Persona",
-          "dominio": "Texto libre",
-          "pantalla": "Modelo del vehículo",
-          "regla": "Un cierre anterior al bloque 20 traía `vehiculo` en un solo campo: se muestra aquí"
-        },
-        {
-          "campo": "vehiculo_placa",
-          "tipo": "text",
-          "nulo": false,
-          "origen": "Persona",
-          "dominio": "Texto libre",
-          "pantalla": "Placa",
-          "regla": ""
-        },
-        {
-          "campo": "hora",
-          "tipo": "time",
-          "nulo": false,
-          "origen": "Persona",
-          "dominio": "HH:MM; '' si no se elige",
-          "pantalla": "Hora de finalización (selector)",
-          "regla": ""
-        }
-      ]
-    },
     "bitacora": {
       "que_es": "Quién, cuándo y qué, en cada alta, edición, eliminación, activación y desactivación (Norma 7.7, D10). Sólo se escribe; se lee en el historial del detalle de cada registro.",
       "llave": "id",
@@ -1093,6 +894,225 @@
           "regla": "En una edición, la lista de campos que cambiaron"
         }
       ]
+    },
+    "jornadas": {
+      "que_es": "Una jornada de plantación: se declara antes de registrar el primer árbol (D119). Agrupa los registros, lleva la conciliación y la revisión, y guarda los datos de cierre del reporte (antes en la tabla cierres, retirada en el bloque 62).",
+      "llave": "id",
+      "indices": [
+        "cabo_id",
+        "fecha",
+        "estatus"
+      ],
+      "pantalla": "Nuevo registro → «Iniciar jornada»; Jornadas; Reportes → «Datos de cierre»",
+      "campos": [
+        {
+          "campo": "id",
+          "tipo": "uuid",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "UUID",
+          "pantalla": "No",
+          "regla": "Se fija al iniciar la jornada"
+        },
+        {
+          "campo": "es_ficticio",
+          "tipo": "boolean",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "true/false",
+          "pantalla": "No",
+          "regla": "Copia de CONFIG.ES_FICTICIO (D87)"
+        },
+        {
+          "campo": "nombre",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto libre, hasta 120",
+          "pantalla": "Nombre de la jornada",
+          "regla": "Obligatorio al iniciar: el parque, la calle o el sitio. Es el nombre de la tarjeta en Jornadas y el «Jornada:» del reporte (D119)"
+        },
+        {
+          "campo": "fecha",
+          "tipo": "date",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "AAAA-MM-DD, no posterior a hoy",
+          "pantalla": "Fecha de la jornada de plantación",
+          "regla": "Los árboles la heredan como fecha_plantacion (D119)"
+        },
+        {
+          "campo": "comentarios",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto libre, hasta 500; '' si no se escribe",
+          "pantalla": "Comentarios",
+          "regla": "Van al reporte como «Comentarios de la jornada» (D119)"
+        },
+        {
+          "campo": "cabo_id",
+          "tipo": "uuid",
+          "nulo": false,
+          "origen": "Sesión",
+          "dominio": "→ usuarios.id",
+          "pantalla": "No",
+          "regla": "Quien inició la jornada; sus árboles quedan a su nombre"
+        },
+        {
+          "campo": "estatus",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "abierta | cerrada",
+          "pantalla": "Franja de la jornada; Jornadas",
+          "regla": "Se cierra desde la franja o la revisión; se reabre desde la revisión o con «Registrar faltante» (D119)"
+        },
+        {
+          "campo": "fecha_inicio",
+          "tipo": "timestamptz",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "ISO 8601",
+          "pantalla": "No",
+          "regla": "Ordena las jornadas del día: «Jornada 2 de 3»"
+        },
+        {
+          "campo": "fecha_cierre",
+          "tipo": "timestamptz",
+          "nulo": true,
+          "origen": "Sistema",
+          "dominio": "ISO 8601",
+          "pantalla": "No",
+          "regla": "Nulo mientras está abierta"
+        },
+        {
+          "campo": "encargado_id",
+          "tipo": "uuid",
+          "nulo": true,
+          "origen": "Sesión",
+          "dominio": "→ usuarios.id",
+          "pantalla": "Encargado",
+          "regla": "Para un cabo es él mismo (no se pregunta); quien ve a varias personas lo elige sólo entre los cabos con registros ese día (D57)"
+        },
+        {
+          "campo": "creado_por_id",
+          "tipo": "uuid",
+          "nulo": false,
+          "origen": "Sesión",
+          "dominio": "→ usuarios.id",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "fecha_creacion",
+          "tipo": "timestamptz",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "ISO 8601",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "editado_por_id",
+          "tipo": "uuid",
+          "nulo": false,
+          "origen": "Sesión",
+          "dominio": "→ usuarios.id",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "fecha_ultima_edicion",
+          "tipo": "timestamptz",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "ISO 8601",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "arboles_plantados",
+          "tipo": "integer",
+          "nulo": true,
+          "origen": "Persona",
+          "dominio": "0–9999; nulo si la cuadrilla no lo anotó",
+          "pantalla": "Jornadas → «Árboles plantados según la cuadrilla»",
+          "regla": "Conciliación de la jornada (D112): se compara con los registros activos del día y el cabo; el reporte dice si cuadra. Nunca sustituye al conteo de registros"
+        },
+        {
+          "campo": "puntos_revisados",
+          "tipo": "uuid[]",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "→ plantaciones.id; [] si nadie ha revisado",
+          "pantalla": "Jornadas → «Está bien» en un punto con aviso",
+          "regla": "Puntos con aviso (duplicado, lejos, precisión) que alguien confirmó como correctos (D112); el aviso deja de contarse, no se borra"
+        },
+        {
+          "campo": "personal",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto libre",
+          "pantalla": "Personal de SEDEMA participante",
+          "regla": ""
+        },
+        {
+          "campo": "apoyo",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto libre, varias líneas",
+          "pantalla": "Personal de apoyo",
+          "regla": ""
+        },
+        {
+          "campo": "observaciones",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto libre",
+          "pantalla": "Observaciones",
+          "regla": "Aquí se explica a mano una diferencia contra la meta"
+        },
+        {
+          "campo": "chofer",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto libre",
+          "pantalla": "Chófer",
+          "regla": ""
+        },
+        {
+          "campo": "vehiculo_modelo",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto libre",
+          "pantalla": "Modelo del vehículo",
+          "regla": "Un cierre anterior al bloque 20 traía `vehiculo` en un solo campo: se muestra aquí"
+        },
+        {
+          "campo": "vehiculo_placa",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto libre",
+          "pantalla": "Placa",
+          "regla": ""
+        },
+        {
+          "campo": "hora",
+          "tipo": "time",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "HH:MM; '' si no se elige",
+          "pantalla": "Hora de finalización (selector)",
+          "regla": ""
+        }
+      ]
     }
   },
   "relaciones": [
@@ -1151,20 +1171,20 @@
       "regla": "Nulo en las especies que vienen del SIA"
     },
     {
-      "de": "cierres.cabo_id / encargado_id / creado_por_id / editado_por_id",
+      "de": "jornadas.cabo_id / encargado_id / creado_por_id / editado_por_id",
       "a": "usuarios.id",
       "cardinalidad": "N:1",
-      "regla": "cabo_id vacío ('') significa parte del día completo"
+      "regla": "cabo_id es quien inició la jornada (D119)"
     },
     {
-      "de": "cierres (fecha, cabo_id)",
-      "a": "plantaciones (fecha_plantacion, cabo_id)",
-      "cardinalidad": "1:N lógica",
-      "regla": "El parte de un día reúne las plantaciones activas con esa fecha_plantacion (y ese cabo); no hay llave: se calcula"
+      "de": "plantaciones.jornada_id",
+      "a": "jornadas.id",
+      "cardinalidad": "N:1",
+      "regla": "Cada árbol nace en la jornada activa y hereda su fecha (D119); «Mover a otra jornada» la cambia"
     },
     {
       "de": "bitacora.entidad_id",
-      "a": "plantaciones.id / usuarios.id / catalogos.id / cierres.id según entidad",
+      "a": "plantaciones.id / usuarios.id / catalogos.id / jornadas.id según entidad",
       "cardinalidad": "N:1",
       "regla": "Sin restricción de integridad: la bitácora sobrevive a la eliminación de la entidad"
     },
@@ -1243,13 +1263,7 @@
       "ver": "Clave (sólo lectura)"
     },
     {
-      "campo": "cierres.id",
-      "de": "fecha + cabo_id",
-      "cuando": "Al aceptar el cierre",
-      "ver": "No se ve"
-    },
-    {
-      "campo": "cierres.encargado_id",
+      "campo": "jornadas.encargado_id",
       "de": "La sesión si es cabo; elección entre cabos con registros ese día si no",
       "cuando": "Al abrir el cierre",
       "ver": "Encargado"
@@ -1304,7 +1318,7 @@
     },
     {
       "que": "El PDF del parte del día",
-      "de": "cierres + plantaciones del día; no se guarda el archivo, se regenera",
+      "de": "jornada + sus plantaciones; no se guarda el archivo, se regenera",
       "donde": "Reportes (D58, D70)"
     }
   ],
@@ -1400,16 +1414,6 @@
       "campo": "catalogos.nombre_cientifico … nota_discrepancia",
       "aparece": "Sólo en tipo = especie",
       "se_vacia": "No existen en programas ni áreas"
-    },
-    {
-      "campo": "cierres.cabo_id",
-      "aparece": "Con parte filtrado por cabo",
-      "se_vacia": "'' en el parte del día completo"
-    },
-    {
-      "campo": "cierres.vehiculo (legado)",
-      "aparece": "Sólo en cierres guardados antes del bloque 20",
-      "se_vacia": "Se lee como vehiculo_modelo; no se vuelve a escribir"
     }
   ],
   "reglas_fase1": [
@@ -1547,13 +1551,13 @@
     },
     {
       "id": "R-R01",
-      "tabla": "cierres",
-      "regla": "El parte es de un solo día (cualquiera, no sólo hoy) y reúne las plantaciones activas con esa fecha_plantacion en el alcance del perfil, filtrables por cabo; regenerar el mismo día reabre el mismo cierre",
-      "donde": "js/reportes.js registrosDelDia(), abrir(), claveCierre()"
+      "tabla": "jornadas",
+      "regla": "El reporte es de una jornada declarada: reúne las plantaciones activas con ese jornada_id; regenerar la misma jornada reabre sus datos de cierre (D119)",
+      "donde": "js/reportes.js refrescarVista(), abrir(), cierreDeJornada()"
     },
     {
       "id": "R-R02",
-      "tabla": "cierres",
+      "tabla": "jornadas",
       "regla": "Todos los campos del cierre son opcionales y ninguno se prellena; el encargado sale de la sesión o se elige entre los cabos con registros ese día",
       "donde": "js/reportes.js prepararEncargado()"
     },
@@ -1571,7 +1575,7 @@
     },
     {
       "id": "R-D02",
-      "tabla": "plantaciones, cierres, bitacora",
+      "tabla": "plantaciones, jornadas, bitacora",
       "regla": "Respaldo: archivo JSON con las cinco tablas y un resumen de fotografías; restaurar sólo agrega lo que no existe (por id), nunca sobreescribe",
       "donde": "js/conexion.js respaldar(), restaurar()"
     }
@@ -1628,7 +1632,7 @@
     {
       "id": "S-09",
       "que": "Depuración de datos de prueba",
-      "detalle": "Antes de liberar: eliminar todo renglón con es_ficticio = true en las cinco tablas (desde D87 cierres y bitacora también llevan la marca)",
+      "detalle": "Antes de liberar: eliminar todo renglón con es_ficticio = true en las cinco tablas (desde D87 jornadas y bitacora también llevan la marca)",
       "referencia": "CONFIG.ES_FICTICIO"
     },
     {

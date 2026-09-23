@@ -23,7 +23,7 @@ SRP.reportes = {
   /* Campos del cierre. Todos opcionales y de texto libre: los reportes varían de una cuadrilla a
      otra y de un día a otro, y encajonarlos obligaría a escribir de una forma que no es la suya.
      El encargado no está en esta lista porque no se escribe: sale de la sesión. */
-  CAMPOS: ['sitio', 'personal', 'apoyo', 'observaciones', 'chofer', 'vehiculo_modelo', 'vehiculo_placa', 'hora'],
+  CAMPOS: ['personal', 'apoyo', 'observaciones', 'chofer', 'vehiculo_modelo', 'vehiculo_placa', 'hora'],
 
   contexto: null,   // { registros, fecha, cabo_id } de lo que se va a reportar
 
@@ -100,23 +100,21 @@ SRP.reportes = {
     const jornadas = dia && cabo ? await SRP.jornadas.jornadasDe(dia, cabo) : [];
     const sel = this.el('pdf-jornada');
     const caja = this.el('caja-pdf-jornada');
-    const previa = (this.pedido && String(this.pedido.n)) || sel.value;
+    const previa = (this.pedido && this.pedido.id) || sel.value;
     this.pedido = null;
     caja.hidden = jornadas.length < 2;
-    if (jornadas.length) {
-      const nombres = await Promise.all(jornadas.map(async j => SRP.jornadas.nombreSitio(j, await this.cierreDeJornada(j))));
-      sel.innerHTML = jornadas.map((j, i) => '<option value="' + j.n + '">' + j.n + ' · ' + SRP.util.escapar(nombres[i]) + ' (' + j.registros.length + ')</option>').join('');
-      sel.value = jornadas.some(j => String(j.n) === previa) ? previa : String(jornadas[0].n);
-    } else sel.innerHTML = '';
-    const j = jornadas.find(x => String(x.n) === sel.value) || null;
+    sel.innerHTML = jornadas.map(j => '<option value="' + j.id + '">' + j.n + ' · ' + SRP.util.escapar(j.nombre) + ' (' + j.registros.length + ')</option>').join('');
+    if (jornadas.length) sel.value = jornadas.some(j => j.id === previa) ? previa : jornadas[0].id;
+    const j = jornadas.find(x => x.id === sel.value) || null;
     const n = j ? j.registros.length : 0;
     this.jornadaElegida = j;
-    this.el('btn-pdf').disabled = !j;
+    this.el('btn-pdf').disabled = !j || !n;
     const quien = this.el('caja-pdf-cabo').hidden ? '' : ' de ' + SRP.ref.nombreUsuario(cabo);
     this.el('pdf-nota').textContent = !dia
       ? 'El reporte es de una jornada. Elija el día.'
-      : !j ? 'No hay registros del ' + SRP.util.formatearFecha(dia) + quien + '.'
-      : (n === 1 ? 'Se reportará el registro' : 'Se reportarán los ' + n + ' registros') + (jornadas.length > 1 ? ' de la jornada ' + j.n + ' de ' + jornadas.length : '') +
+      : !j ? 'No hay jornadas del ' + SRP.util.formatearFecha(dia) + quien + '.'
+      : !n ? 'La jornada «' + j.nombre + '» no tiene árboles registrados todavía.'
+      : (n === 1 ? 'Se reportará el registro' : 'Se reportarán los ' + n + ' registros') + ' de la jornada «' + j.nombre + '»' + (jornadas.length > 1 ? ' (' + j.n + ' de ' + jornadas.length + ')' : '') +
         ' del ' + SRP.util.formatearFecha(dia) + quien + '. Si ya se generó, se vuelve a abrir con sus datos de cierre para corregirlos.';
   },
 
@@ -126,36 +124,16 @@ SRP.reportes = {
     this.abrir(j.registros, j.fecha, j.cabo_id, j);
   },
 
-  /* La llave del cierre es la de la jornada (D117): día, cabo y número de jornada del día. */
-  claveCierre(fecha, caboId, n) { return fecha + '|' + (caboId || 'TODOS') + '|' + (n || 1); },
-
-  /* El cierre de una jornada, con tres caminos: su llave; el id de su primer punto (si el número
-     cambió al eliminar una jornada anterior completa); y lo guardado antes del bloque 60, con la
-     llave del día sin número (`fecha|cabo` o `fecha|TODOS`), sólo para la jornada 1. */
-  async cierreDeJornada(j) {
-    const directo = await SRP.almacen.uno('cierres', this.claveCierre(j.fecha, j.cabo_id, j.n));
-    if (directo) return directo;
-    const delDia = (await SRP.almacen.porIndice('cierres', 'fecha', j.fecha)).filter(c => c.cabo_id === j.cabo_id);
-    const porPunto = delDia.find(c => c.primer_registro_id && j.registros.some(r => r.id === c.primer_registro_id));
-    if (porPunto) return porPunto;
-    if (j.n === 1) {
-      const viejo = delDia.find(c => c.id === j.fecha + '|' + j.cabo_id) ||
-        (await SRP.almacen.uno('cierres', j.fecha + '|TODOS'));
-      if (viejo) return viejo;
-    }
-    return null;
-  },
+  // El cierre del reporte vive en la jornada (D119): es el mismo registro
+  async cierreDeJornada(j) { return (await SRP.almacen.uno('jornadas', j.id)) || j.dato || null; },
 
   /* ---------- Formulario de cierre ---------- */
 
   async abrir(registros, fecha, caboId, jornada) {
-    if (!registros.length) return;
-    // Sin jornada dada (llamadas antiguas), se toma la que tenga estos registros
-    if (!jornada) jornada = (await SRP.jornadas.jornadasDe(fecha, caboId)).find(j => j.registros.some(r => r.id === registros[0].id)) ||
-      { fecha, cabo_id: caboId, n: 1, total: 1, registros, primer_id: registros[0].id };
+    if (!registros.length || !jornada) return;
     this.contexto = { registros, fecha, cabo_id: caboId || '', jornada };
 
-    this.el('dlg-cierre-dia').textContent = SRP.util.formatearFecha(fecha) + (jornada.total > 1 ? ' · Jornada ' + jornada.n + ' de ' + jornada.total : '');
+    this.el('dlg-cierre-dia').textContent = jornada.nombre + ' · ' + SRP.util.formatearFecha(fecha) + (jornada.total > 1 ? ' · Jornada ' + jornada.n + ' de ' + jornada.total : '');
     this.el('dlg-cierre-cuenta').textContent = registros.length +
       (registros.length === 1 ? ' ejemplar registrado' : ' ejemplares registrados');
 
@@ -212,23 +190,12 @@ SRP.reportes = {
     const c = this.contexto;
     const previo = c.previo;
     ahora = ahora || SRP.util.ahoraISO();
-    const j = c.jornada;
-    const cierre = {
-      id: this.claveCierre(c.fecha, c.cabo_id, j.n),
-      es_ficticio: SRP.CONFIG.ES_FICTICIO,
-      fecha: c.fecha,
-      cabo_id: c.cabo_id,
-      jornada_n: j.n,
-      primer_registro_id: j.primer_id,
+    // La jornada tal cual está guardada, con los datos de cierre encima (D119)
+    const cierre = Object.assign({}, previo || c.jornada.dato || {}, {
       encargado_id: this.encargadoElegido(),
-      creado_por_id: previo ? previo.creado_por_id : SRP.sesion.usuario.id,
-      fecha_creacion: previo ? previo.fecha_creacion : ahora,
       editado_por_id: SRP.sesion.usuario.id,
-      fecha_ultima_edicion: ahora,
-      // Lo que se anota en Jornadas no se escribe aquí, pero tampoco se pierde al cerrar el reporte (D112)
-      arboles_plantados: previo && Number.isInteger(previo.arboles_plantados) ? previo.arboles_plantados : null,
-      puntos_revisados: previo && Array.isArray(previo.puntos_revisados) ? previo.puntos_revisados : []
-    };
+      fecha_ultima_edicion: ahora
+    });
     this.CAMPOS.forEach(k => { cierre[k] = this.el('cie-' + k).value.trim(); });
     return cierre;
   },
@@ -238,9 +205,9 @@ SRP.reportes = {
     const previo = c.previo;
     const cierre = this.cierrePrevisto();
 
-    await SRP.almacen.guardarConBitacora('cierres', cierre,
-      SRP.bitacora.entrada(previo ? 'EDITADO' : 'CREADO', 'cierre', cierre.id,
-        'Cierre del reporte del ' + SRP.util.formatearFecha(c.fecha)));
+    await SRP.almacen.guardarConBitacora('jornadas', cierre,
+      SRP.bitacora.entrada('EDITADO', 'jornada', cierre.id, 'Datos de cierre del reporte'));
+    c.jornada.dato = cierre;
 
     this.el('dlg-cierre').close();
     this.mostrarPrevia(c.registros, cierre, c.fecha, c.cabo_id, c.jornada);
@@ -289,12 +256,15 @@ SRP.reportes = {
       (this.textoJornada(jornada) ? ' · ' + esc(this.textoJornada(jornada)) : '') + '</p>';
 
     const alcaldias = this.alcaldiasDe(registros);
-    if (hay('sitio') || alcaldias.length) {
+    const sitio = jornada ? jornada.nombre : '';
+    if (sitio || alcaldias.length) {
       const terr = alcaldias.length ? (alcaldias.length === 1 ? 'Alcaldía ' + alcaldias[0] : 'Alcaldías: ' + alcaldias.join(', ')) : '';
-      h += '<div class="previa-sitio">' + (hay('sitio') ? '<p><strong>Sitio:</strong> ' + parrafo(cierre.sitio) + '</p>' : '') +
+      h += '<div class="previa-sitio">' + (sitio ? '<p><strong>Jornada:</strong> ' + esc(sitio) + '</p>' : '') +
         (terr ? '<p class="previa-tenue">' + esc(terr) + '</p>' : '') +
         (this.textoConteo(cierre, registros) ? '<p><strong>' + esc(this.textoConteo(cierre, registros)) + '</strong></p>' : '') + '</div>';
     }
+    // Comentarios de la jornada (D119): lo que se escribió al iniciarla
+    if (hay('comentarios')) h += apartado('Comentarios de la jornada', '<p>' + parrafo(cierre.comentarios) + '</p>');
     // Personal (D103): el encargado primero y cada grupo con su subtítulo y sus nombres sangrados
     const grupos = this.gruposPersonal(cierre);
     if (grupos.encargado || grupos.listas.length) {
@@ -418,8 +388,9 @@ SRP.reportes = {
 
     // Sitio: tal como lo escribió quien cerró el reporte, con el territorio que el sistema derivó
     const alcaldias = this.alcaldiasDe(registros);
-    if (hay('sitio') || alcaldias.length) {
-      const lineas = hay('sitio') ? doc.splitTextToSize(cierre.sitio, util - 8) : [];
+    const sitio = jornada ? jornada.nombre : '';
+    if (sitio || alcaldias.length) {
+      const lineas = sitio ? doc.splitTextToSize(sitio, util - 8) : [];
       const territorio = alcaldias.length
         ? (alcaldias.length === 1 ? 'Alcaldía ' + alcaldias[0] : 'Alcaldías: ' + alcaldias.join(', ')) : '';
       const conteo = this.textoConteo(cierre, registros);
@@ -430,9 +401,9 @@ SRP.reportes = {
       let yy = y + 5.5;
       if (lineas.length) {
         doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(...C.guinda);
-        doc.text('Sitio:', M + 3, yy);
+        doc.text('Jornada:', M + 3, yy);
         doc.setFont('helvetica', 'normal'); doc.setTextColor(...C.tinta);
-        doc.text(lineas, M + 15, yy);
+        doc.text(lineas, M + 19, yy);
         yy += lineas.length * 4.6;
       }
       if (territorio) {
@@ -460,6 +431,8 @@ SRP.reportes = {
       y += 7 + lineas.length * 4.6 + 4;
     };
 
+
+    if (hay('comentarios')) apartado('Comentarios de la jornada', cierre.comentarios);
 
     // Personal (D103): Encargado primero; cada grupo con su subtítulo y los nombres sangrados con
     // viñeta, para que los de apoyo no se lean como participantes

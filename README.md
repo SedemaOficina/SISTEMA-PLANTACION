@@ -61,6 +61,7 @@ js/folio.js           Patrón, validación y etiqueta del folio; sólo lo emite 
 js/conexion.js        Estado de la conexión, aviso de qué hacer con los registros, respaldo y restauración
 js/envio.js           Envío al servidor simulado con datos de prueba: cola, avisos de atraso, «Simular sin señal» (D111)
 js/croquis.js         Croquis de la jornada para el reporte: puntos numerados sobre imagen de satélite o fondo liso (D115)
+js/jornada-activa.js  La jornada se declara antes de registrar: inicio, franja, cambiar, cerrar, salvaguarda de distancia (D119)
 js/galeria.js         Sección Fotografías (coordinación y administración): rejilla, foto grande, descarga y ZIP (D118)
 js/jornadas.js        Sección Jornadas: mapa y lista numerados de un día de trabajo, avisos y conciliación con el cierre (D112)
 sw.js                 Service worker: la app abre sin señal; versión = marca ?v= de index.html
@@ -121,8 +122,8 @@ ve a varias personas es una lista de los cabos que registraron ese día.
 Los totales por especie, el total de ejemplares, el resumen por programa y la alcaldía del sitio
 **se calculan** a partir de los registros. Un total tecleado es un total que se puede equivocar.
 
-Lo capturado se guarda por día y cuadrilla en el almacén `cierres`: volver a generar el parte de
-un día no obliga a escribirlo otra vez.
+Lo capturado se guarda en la propia jornada (almacén `jornadas`, D119): volver a generar el
+reporte de una jornada no obliga a escribirlo otra vez.
 
 ## La base del dispositivo, mientras sea prototipo
 

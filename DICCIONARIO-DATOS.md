@@ -7,14 +7,14 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 ## 1. Dónde viven los datos
 
 - **Motor:** IndexedDB del navegador, base `srp_db` (SRP.CONFIG.DB_NOMBRE), versión 1.
-- **Tablas (almacenes):** `plantaciones`, `usuarios`, `catalogos`, `bitacora`, `cierres`.
+- **Tablas (almacenes):** `plantaciones`, `usuarios`, `catalogos`, `bitacora`, `jornadas`.
 
 | Dónde | Qué guarda | En Fase 2 |
 |---|---|---|
 | localStorage `srp_sesion_usuario_id` | id de la cuenta con sesión abierta; el dispositivo queda fijo a esa cuenta (D06) | Lo sustituye el proveedor de identidad institucional; sólo cambia `autenticar()` en js/sesion.js |
 | localStorage `srp_sello_datos` | sello con el que se sembró (SRP.CONFIG.SELLO_DATOS); si no coincide, se vuelve a sembrar | Desaparece con ES_FICTICIO |
 | Caché del service worker (sw.js) | copia de la aplicación para abrir sin señal; no guarda datos | Se conserva |
-| Respaldo `SRP_respaldo_AAAA-MM-DD_<usuario>.json` | {sistema, version, generado, usuario_id, es_ficticio, resumen{registros, con_foto, foto_bytes}, plantaciones[], usuarios[], catalogos[], bitacora[], cierres[]}: las cinco tablas con el mismo esquema (D87) | El mismo archivo es lo que el servidor recibiría |
+| Respaldo `SRP_respaldo_AAAA-MM-DD_<usuario>.json` | {sistema, version, generado, usuario_id, es_ficticio, resumen{registros, con_foto, foto_bytes}, plantaciones[], usuarios[], catalogos[], bitacora[], jornadas[]}: las cinco tablas con el mismo esquema (D87) | El mismo archivo es lo que el servidor recibiría |
 
 ## 2. Cómo leer la columna «Origen»
 
@@ -39,7 +39,7 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 | `tipo_catalogo` | `programa` · `area` · `especie` | js/catalogos.js ETIQUETA |
 | `tipo_distribucion` | `Nativa` · `Endémica` · `Exótica` · `Exótica-Invasora` | SNIB/CONABIO (EncicloVida); lista en index.html #cat-distribucion |
 | `accion_bitacora` | `CREADO` · `EDITADO` · `ELIMINADO` · `RESTAURADO` · `ACTIVADO` · `DESACTIVADO` · `FOLIO_ASIGNADO` | llamadas a SRP.bitacora.entrada() en formulario, registros, catalogos, usuarios, reportes y folio (servidor simulado, D110) |
-| `entidad_bitacora` | `plantacion` · `usuario` · `catalogo` · `cierre` | ídem |
+| `entidad_bitacora` | `plantacion` · `usuario` · `catalogo` · `jornada` | ídem |
 | `alcaldia_cve` | 16 claves `cvegeo` INEGI (09002…09017) | assets/capa-alcaldias.js (SIA con base en INEGI, versión sia-2026-01-01; DEFINITIVA) |
 | `uga` | 1,624 claves `AAA-000` de la malla hexagonal | assets/capa-uga.js (SIA, versión sia-2026-09-22; definitiva, con 8 celdas de prefijo distinto a su alcaldía) |
 | `colonia_cve` | Claves `CVEUT` del IECM 2022 (p. ej. `15-040`) | assets/capa-colonias.js (IECM 2022, versión iecm-2022-prueba; de prueba) |
@@ -81,8 +81,8 @@ Un renglón por ejemplar plantado. Es el registro individual de campo; todo lo d
 | `uga` | char(7) | Sí | Capa | dominio `uga` | No | Celda vigente del punto. El prefijo NO es la alcaldía del punto (difieren en la frontera); la alcaldía sale de su propia capa. Cambia si el punto se corrige; folio_uga no |
 | `capa_version` | text | Sí | Capa | `alcaldias=v;uga=v;colonias=v` | No | Con qué versión de cada capa se derivó; permite rehacer alcaldia/colonia/uga cuando el SIA entregue las capas definitivas |
 | `programa_id` | text | No | Catálogo | → catalogos.id con tipo = programa | Programa (lista; Reforestación Urbana primero) | Obligatorio; sin preselección |
-| `fecha_plantacion` | date | No | Persona | AAAA-MM-DD, ≤ hoy | Fecha de plantación (se muestra 21-SEP-2026) | Arranca vacía en cada registro; nunca se hereda del anterior. Es la fecha por la que se filtra y por la que se arma el parte del día |
-| `corte_jornada` | text | Sí | Persona | 'inicia' \| 'continua' \| nulo | Jornadas → tuerca del punto → «Iniciar otra jornada aquí» / «Unir con la jornada anterior» | Corrección a mano del reparto en jornadas (D117). Nulo al nacer: el reparto es por cercanía (CONFIG.JORNADA.SEPARAR_M). Queda en el historial como EDITADO |
+| `fecha_plantacion` | date | No | Jornada | AAAA-MM-DD, ≤ hoy | Fecha de plantación (se muestra 21-SEP-2026) | Se hereda de la jornada activa al registrar (D119); «Mover a otra jornada» la ajusta. No posterior a hoy |
+| `jornada_id` | uuid | No | Sistema | → jornadas.id | Jornada (ficha de revisión y detalle) | La jornada activa al registrar (D119). Cambia sólo con «Mover a otra jornada» en Jornadas, que también ajusta fecha_plantacion |
 | `comentarios` | varchar(500) | No | Persona | Texto libre ≤ 500; '' si no se escribe | Comentarios (opcional) | Reincorporado en D50. Todavía no entra al parte PDF (pendiente de validación de reportes). Registros anteriores a D50 no traen la llave y se leen como «Sin comentarios» |
 | `foto_base64` | text | Sí | Persona | data:image/jpeg;base64,… ya comprimida (≤ 800×600, calidad 0.7) | Fotografía (opcional) | Incrustada en el registro en Fase 1. En Fase 2 sale a archivo, como en los otros módulos del SIA (pendiente «Dónde viven las fotografías») |
 | `foto_id` | uuid | Sí | Sistema | UUID v4; null sin foto | No | Identificador de la imagen, para cuando viva como archivo |
@@ -146,38 +146,7 @@ Los tres catálogos administrables en una sola tabla, distinguidos por `tipo`: p
 | `id_enciclovida` *(sólo especie)* | integer | Sí | Persona | Entero | Id EncicloVida (Catálogos) | Sólo especies. Llave para reconsultar la ficha (enciclovida.mx/especies/{id}.json); más completa que el IdCAT |
 | `nota_discrepancia` *(sólo especie)* | varchar(700) | No | SIA | Texto que inicia con CORREGIDO · SIN CAMBIO · SIN REGISTRO · PENDIENTE DE DECISIÓN; '' si no hay | No | Sólo especies. Rastro de auditoría del catálogo; viene del Excel y no se edita en pantalla |
 
-### 4.4 `cierres`
-
-Datos de cierre del reporte de una jornada: un renglón por jornada (`fecha|cabo_id|n`; D117). Todo es opcional; su destino es el PDF (D58) y, desde D112, la conciliación de la jornada (arboles_plantados, puntos_revisados).
-
-- **Llave:** `id`. **Índices:** `fecha`. **Pantalla:** Reportes → «Datos de cierre del día».
-- **Campos:** 21.
-
-| Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
-|---|---|---|---|---|---|---|
-| `id` | text | No | Sistema | `fecha\|cabo_id\|n` (jornada n del día; D117). Antes del bloque 60: `fecha\|cabo_id` o `fecha\|TODOS`, que se siguen leyendo para la jornada 1 | No | Regenerar el reporte de la misma jornada reabre el mismo cierre (Norma 7.6) |
-| `es_ficticio` | boolean | No | Sistema | true/false | No | Copia de CONFIG.ES_FICTICIO (D87): la depuración de datos de prueba también alcanza a esta tabla |
-| `fecha` | date | No | Sistema | AAAA-MM-DD | Encabezado del diálogo | El día del parte: cualquier día, no sólo hoy (D70) |
-| `cabo_id` | uuid | No | Sistema | → usuarios.id | No | El cabo de la jornada (D112, D117). Antes del bloque 57 un cabo guardaba ''; se sigue leyendo |
-| `encargado_id` | uuid | Sí | Sesión | → usuarios.id | Encargado | Para un cabo es él mismo (no se pregunta); quien ve a varias personas lo elige sólo entre los cabos con registros ese día (D57) |
-| `creado_por_id` | uuid | No | Sesión | → usuarios.id | No | — |
-| `fecha_creacion` | timestamptz | No | Sistema | ISO 8601 | No | — |
-| `editado_por_id` | uuid | No | Sesión | → usuarios.id | No | — |
-| `fecha_ultima_edicion` | timestamptz | No | Sistema | ISO 8601 | No | — |
-| `jornada_n` | integer | No | Sistema | 1, 2, 3… número de la jornada en el día del cabo | «Jornada 2 de 3» en Jornadas y en el reporte | Parte de la llave (D117). Se recalcula al reabrir el cierre |
-| `primer_registro_id` | uuid | Sí | Sistema | → plantaciones.id | No | Primer punto de la jornada al guardar el cierre: si el número cambió (se eliminó una jornada anterior completa), el cierre se reencuentra por él (D117) |
-| `arboles_plantados` | integer | Sí | Persona | 0–9999; nulo si la cuadrilla no lo anotó | Jornadas → «Árboles plantados según la cuadrilla» | Conciliación de la jornada (D112): se compara con los registros activos del día y el cabo; el reporte dice si cuadra. Nunca sustituye al conteo de registros |
-| `puntos_revisados` | uuid[] | No | Persona | → plantaciones.id; [] si nadie ha revisado | Jornadas → «Está bien» en un punto con aviso | Puntos con aviso (duplicado, lejos, precisión) que alguien confirmó como correctos (D112); el aviso deja de contarse, no se borra |
-| `sitio` | text | No | Persona | Texto libre; '' si no se escribe | Dirección o sitio | Nada se prellena (los partes varían mucho) |
-| `personal` | text | No | Persona | Texto libre | Personal de SEDEMA participante | — |
-| `apoyo` | text | No | Persona | Texto libre, varias líneas | Personal de apoyo | — |
-| `observaciones` | text | No | Persona | Texto libre | Observaciones | Aquí se explica a mano una diferencia contra la meta |
-| `chofer` | text | No | Persona | Texto libre | Chófer | — |
-| `vehiculo_modelo` | text | No | Persona | Texto libre | Modelo del vehículo | Un cierre anterior al bloque 20 traía `vehiculo` en un solo campo: se muestra aquí |
-| `vehiculo_placa` | text | No | Persona | Texto libre | Placa | — |
-| `hora` | time | No | Persona | HH:MM; '' si no se elige | Hora de finalización (selector) | — |
-
-### 4.5 `bitacora`
+### 4.4 `bitacora`
 
 Quién, cuándo y qué, en cada alta, edición, eliminación, activación y desactivación (Norma 7.7, D10). Sólo se escribe; se lee en el historial del detalle de cada registro.
 
@@ -197,6 +166,39 @@ Quién, cuándo y qué, en cada alta, edición, eliminación, activación y desa
 | `entidad_id` | text | No | Sistema | id de la tabla correspondiente | No | Se escribe en la misma transacción que el dato (guardarConBitacora) |
 | `detalle` | text | No | Sistema | Texto; '' si no aplica | Historial | En una edición, la lista de campos que cambiaron |
 
+### 4.5 `jornadas`
+
+Una jornada de plantación: se declara antes de registrar el primer árbol (D119). Agrupa los registros, lleva la conciliación y la revisión, y guarda los datos de cierre del reporte (antes en la tabla cierres, retirada en el bloque 62).
+
+- **Llave:** `id`. **Índices:** `cabo_id`, `fecha`, `estatus`. **Pantalla:** Nuevo registro → «Iniciar jornada»; Jornadas; Reportes → «Datos de cierre».
+- **Campos:** 23.
+
+| Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
+|---|---|---|---|---|---|---|
+| `id` | uuid | No | Sistema | UUID | No | Se fija al iniciar la jornada |
+| `es_ficticio` | boolean | No | Sistema | true/false | No | Copia de CONFIG.ES_FICTICIO (D87) |
+| `nombre` | text | No | Persona | Texto libre, hasta 120 | Nombre de la jornada | Obligatorio al iniciar: el parque, la calle o el sitio. Es el nombre de la tarjeta en Jornadas y el «Jornada:» del reporte (D119) |
+| `fecha` | date | No | Persona | AAAA-MM-DD, no posterior a hoy | Fecha de la jornada de plantación | Los árboles la heredan como fecha_plantacion (D119) |
+| `comentarios` | text | No | Persona | Texto libre, hasta 500; '' si no se escribe | Comentarios | Van al reporte como «Comentarios de la jornada» (D119) |
+| `cabo_id` | uuid | No | Sesión | → usuarios.id | No | Quien inició la jornada; sus árboles quedan a su nombre |
+| `estatus` | text | No | Sistema | abierta \| cerrada | Franja de la jornada; Jornadas | Se cierra desde la franja o la revisión; se reabre desde la revisión o con «Registrar faltante» (D119) |
+| `fecha_inicio` | timestamptz | No | Sistema | ISO 8601 | No | Ordena las jornadas del día: «Jornada 2 de 3» |
+| `fecha_cierre` | timestamptz | Sí | Sistema | ISO 8601 | No | Nulo mientras está abierta |
+| `encargado_id` | uuid | Sí | Sesión | → usuarios.id | Encargado | Para un cabo es él mismo (no se pregunta); quien ve a varias personas lo elige sólo entre los cabos con registros ese día (D57) |
+| `creado_por_id` | uuid | No | Sesión | → usuarios.id | No | — |
+| `fecha_creacion` | timestamptz | No | Sistema | ISO 8601 | No | — |
+| `editado_por_id` | uuid | No | Sesión | → usuarios.id | No | — |
+| `fecha_ultima_edicion` | timestamptz | No | Sistema | ISO 8601 | No | — |
+| `arboles_plantados` | integer | Sí | Persona | 0–9999; nulo si la cuadrilla no lo anotó | Jornadas → «Árboles plantados según la cuadrilla» | Conciliación de la jornada (D112): se compara con los registros activos del día y el cabo; el reporte dice si cuadra. Nunca sustituye al conteo de registros |
+| `puntos_revisados` | uuid[] | No | Persona | → plantaciones.id; [] si nadie ha revisado | Jornadas → «Está bien» en un punto con aviso | Puntos con aviso (duplicado, lejos, precisión) que alguien confirmó como correctos (D112); el aviso deja de contarse, no se borra |
+| `personal` | text | No | Persona | Texto libre | Personal de SEDEMA participante | — |
+| `apoyo` | text | No | Persona | Texto libre, varias líneas | Personal de apoyo | — |
+| `observaciones` | text | No | Persona | Texto libre | Observaciones | Aquí se explica a mano una diferencia contra la meta |
+| `chofer` | text | No | Persona | Texto libre | Chófer | — |
+| `vehiculo_modelo` | text | No | Persona | Texto libre | Modelo del vehículo | Un cierre anterior al bloque 20 traía `vehiculo` en un solo campo: se muestra aquí |
+| `vehiculo_placa` | text | No | Persona | Texto libre | Placa | — |
+| `hora` | time | No | Persona | HH:MM; '' si no se elige | Hora de finalización (selector) | — |
+
 ## 5. Relaciones entre tablas
 
 | De | A | Cardinalidad | Regla |
@@ -210,9 +212,9 @@ Quién, cuándo y qué, en cada alta, edición, eliminación, activación y desa
 | usuarios.area_id | catalogos.id (tipo area) | N:1 | Obligatoria |
 | usuarios.alta_por_id / editado_por_id | usuarios.id | N:1 | — |
 | catalogos.creado_por_id / editado_por_id | usuarios.id | N:1 | Nulo en las especies que vienen del SIA |
-| cierres.cabo_id / encargado_id / creado_por_id / editado_por_id | usuarios.id | N:1 | cabo_id vacío ('') significa parte del día completo |
-| cierres (fecha, cabo_id) | plantaciones (fecha_plantacion, cabo_id) | 1:N lógica | El parte de un día reúne las plantaciones activas con esa fecha_plantacion (y ese cabo); no hay llave: se calcula |
-| bitacora.entidad_id | plantaciones.id / usuarios.id / catalogos.id / cierres.id según entidad | N:1 | Sin restricción de integridad: la bitácora sobrevive a la eliminación de la entidad |
+| jornadas.cabo_id / encargado_id / creado_por_id / editado_por_id | usuarios.id | N:1 | cabo_id es quien inició la jornada (D119) |
+| plantaciones.jornada_id | jornadas.id | N:1 | Cada árbol nace en la jornada activa y hereda su fecha (D119); «Mover a otra jornada» la cambia |
+| bitacora.entidad_id | plantaciones.id / usuarios.id / catalogos.id / jornadas.id según entidad | N:1 | Sin restricción de integridad: la bitácora sobrevive a la eliminación de la entidad |
 | bitacora.usuario_id | usuarios.id | N:1 | Sin restricción: conserva usuario_nombre por si la cuenta desaparece |
 
 ## 6. Campos que se derivan sin capturarse
@@ -232,8 +234,7 @@ Se guardan en la tabla, pero nadie los teclea: salen de otro dato o de la sesió
 | plantaciones.foto_bytes, foto_id | La imagen comprimida | Al elegir la foto | Ficha de la foto |
 | catalogos.genero, especie | nombre_cientifico | Al guardar una especie | No se ven |
 | catalogos.clave (especie) | Máximo ESP-0000 en uso + 1 | Al abrir el alta | Clave (sólo lectura) |
-| cierres.id | fecha + cabo_id | Al aceptar el cierre | No se ve |
-| cierres.encargado_id | La sesión si es cabo; elección entre cabos con registros ese día si no | Al abrir el cierre | Encargado |
+| jornadas.encargado_id | La sesión si es cabo; elección entre cabos con registros ese día si no | Al abrir el cierre | Encargado |
 | bitacora.usuario_id, usuario_nombre, perfil | La sesión | En cada movimiento | Historial |
 
 ## 7. Lo que se calcula y no se guarda
@@ -248,7 +249,7 @@ Se guardan en la tabla, pero nadie los teclea: salen de otro dato o de la sesió
 | Alcance y acciones permitidas | perfil contra SRP.PERFILES | Toda la interfaz; en Fase 2 se impone en el servidor |
 | `dentro` (el punto cae en alguna alcaldía) | derivar() | Sólo para avisar de un hueco de capa; no se guarda |
 | Registros con fotografía y peso acumulado (para la solicitud de disco a ADIP) | plantaciones activas con foto_base64; suma de foto_bytes | Reportes → «Registros en este dispositivo», y resumen del respaldo (D87) |
-| El PDF del parte del día | cierres + plantaciones del día; no se guarda el archivo, se regenera | Reportes (D58, D70) |
+| El PDF del parte del día | jornada + sus plantaciones; no se guarda el archivo, se regenera | Reportes (D58, D70) |
 
 ## 8. Estado efímero (vive sólo en memoria mientras se usa la pantalla)
 
@@ -279,8 +280,6 @@ Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras
 | plantaciones.foto_base64, foto_id, foto_nombre, foto_bytes | Al elegir una foto | Al quitarla (null, null, '', 0) |
 | usuarios.coordinador_id | Sólo con perfil CABO | Al cambiar a otro perfil (null) |
 | catalogos.nombre_cientifico … nota_discrepancia | Sólo en tipo = especie | No existen en programas ni áreas |
-| cierres.cabo_id | Con parte filtrado por cabo | '' en el parte del día completo |
-| cierres.vehiculo (legado) | Sólo en cierres guardados antes del bloque 20 | Se lee como vehiculo_modelo; no se vuelve a escribir |
 
 ## 10. Reglas y validaciones vigentes (Fase 1, en el dispositivo)
 
@@ -308,11 +307,11 @@ Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras
 | R-C02 | catalogos | Especies: científico obligatorio con formato «Genus epíteto» y único; clave ESP-0000 consecutiva que asigna el sistema; id = clave; género y epíteto derivados; id_snib `número+ANGIO\|GIMNO`; id_enciclovida entero | js/catalogos.js validar(), guardar(), siguienteClaveEspecie() |
 | R-C03 | catalogos | Con uso (registros o cuentas) no se elimina: se desactiva. Inactivo deja de ofrecerse; lo ya guardado no cambia | js/catalogos.js eliminar(), cambiarEstado() |
 | R-C04 | catalogos | Las 76 especies del SIA se siembran desde assets/catalogo-especies.js (generado del Excel); para cambiarlas se corrige el Excel y se regenera | pruebas/generar_especies.py; js/datos-ficticios.js |
-| R-R01 | cierres | El parte es de un solo día (cualquiera, no sólo hoy) y reúne las plantaciones activas con esa fecha_plantacion en el alcance del perfil, filtrables por cabo; regenerar el mismo día reabre el mismo cierre | js/reportes.js registrosDelDia(), abrir(), claveCierre() |
-| R-R02 | cierres | Todos los campos del cierre son opcionales y ninguno se prellena; el encargado sale de la sesión o se elige entre los cabos con registros ese día | js/reportes.js prepararEncargado() |
+| R-R01 | jornadas | El reporte es de una jornada declarada: reúne las plantaciones activas con ese jornada_id; regenerar la misma jornada reabre sus datos de cierre (D119) | js/reportes.js refrescarVista(), abrir(), cierreDeJornada() |
+| R-R02 | jornadas | Todos los campos del cierre son opcionales y ninguno se prellena; el encargado sale de la sesión o se elige entre los cabos con registros ese día | js/reportes.js prepararEncargado() |
 | R-F01 | plantaciones | Filtros de Registros: Hoy / Todos / Un periodo (Desde ≤ Hasta, entra con Aplicar), Año y Mes sólo con registros, Cabo según alcance; ningún control mueve el foco solo (D82) | js/registros.js |
 | R-D01 | todas | Siembra: al abrir con sello distinto de CONFIG.SELLO_DATOS se restablecen las cinco tablas con los datos de arranque (sólo con ES_FICTICIO) | js/almacen.js sembrarSiVacio(); js/config.js |
-| R-D02 | plantaciones, cierres, bitacora | Respaldo: archivo JSON con las cinco tablas y un resumen de fotografías; restaurar sólo agrega lo que no existe (por id), nunca sobreescribe | js/conexion.js respaldar(), restaurar() |
+| R-D02 | plantaciones, jornadas, bitacora | Respaldo: archivo JSON con las cinco tablas y un resumen de fotografías; restaurar sólo agrega lo que no existe (por id), nunca sobreescribe | js/conexion.js respaldar(), restaurar() |
 
 ## 11. Reglas que esperan al servidor (Fase 2)
 
@@ -326,7 +325,7 @@ Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras
 | S-06 | Bandeja de especies fuera de catálogo | Donde el SIA resuelve cada PENDIENTE_VALIDACION: alta en el catálogo (siguiente ESP-0000) o reasignación a una existente; al resolverse cambia especie_id y especie_estatus, nunca el folio | D68 |
 | S-07 | Fotografías a archivo | foto_base64 sale del renglón y se guarda como archivo referido por foto_id, como en los otros módulos del SIA | Pendiente «Dónde viven las fotografías» |
 | S-08 | Rederivación territorial por versión de capa | Al sustituir alcaldías, UGA y colonias por las definitivas, se recalculan alcaldia_cve, alcaldia, colonia_cve, colonia y uga de todo registro cuyo capa_version sea anterior; folio_* no se toca | Pendiente «sustituir las tres capas» |
-| S-09 | Depuración de datos de prueba | Antes de liberar: eliminar todo renglón con es_ficticio = true en las cinco tablas (desde D87 cierres y bitacora también llevan la marca) | CONFIG.ES_FICTICIO |
+| S-09 | Depuración de datos de prueba | Antes de liberar: eliminar todo renglón con es_ficticio = true en las cinco tablas (desde D87 jornadas y bitacora también llevan la marca) | CONFIG.ES_FICTICIO |
 | S-10 | Restauración por el servidor | El respaldo del dispositivo se entrega al servidor con el mismo esquema; restaurar deja de vivir en las herramientas de prueba | js/conexion.js |
 
 ## 12. Capas y catálogos externos que alimentan campos
@@ -370,7 +369,7 @@ CREATE TABLE plantaciones (
   capa_version             text           NULL,
   programa_id              text           NOT NULL,
   fecha_plantacion         date           NOT NULL,
-  corte_jornada            text           NULL,
+  jornada_id               uuid           NOT NULL,
   comentarios              varchar(500)   NOT NULL,
   foto_base64              text           NULL,
   foto_id                  uuid           NULL,
@@ -428,32 +427,6 @@ CREATE TABLE catalogos (
 );
 CREATE INDEX catalogos_tipo ON catalogos (tipo);
 
-CREATE TABLE cierres (
-  id                       text           NOT NULL,
-  es_ficticio              boolean        NOT NULL,
-  fecha                    date           NOT NULL,
-  cabo_id                  uuid           NOT NULL,
-  encargado_id             uuid           NULL,
-  creado_por_id            uuid           NOT NULL,
-  fecha_creacion           timestamptz    NOT NULL,
-  editado_por_id           uuid           NOT NULL,
-  fecha_ultima_edicion     timestamptz    NOT NULL,
-  jornada_n                integer        NOT NULL,
-  primer_registro_id       uuid           NULL,
-  arboles_plantados        integer        NULL,
-  puntos_revisados         uuid[]         NOT NULL,
-  sitio                    text           NOT NULL,
-  personal                 text           NOT NULL,
-  apoyo                    text           NOT NULL,
-  observaciones            text           NOT NULL,
-  chofer                   text           NOT NULL,
-  vehiculo_modelo          text           NOT NULL,
-  vehiculo_placa           text           NOT NULL,
-  hora                     time           NOT NULL,
-  PRIMARY KEY (id)
-);
-CREATE INDEX cierres_fecha ON cierres (fecha);
-
 CREATE TABLE bitacora (
   id                       uuid           NOT NULL,
   es_ficticio              boolean        NOT NULL,
@@ -468,6 +441,36 @@ CREATE TABLE bitacora (
   PRIMARY KEY (id)
 );
 CREATE INDEX bitacora_entidad_id ON bitacora (entidad_id);
+
+CREATE TABLE jornadas (
+  id                       uuid           NOT NULL,
+  es_ficticio              boolean        NOT NULL,
+  nombre                   text           NOT NULL,
+  fecha                    date           NOT NULL,
+  comentarios              text           NOT NULL,
+  cabo_id                  uuid           NOT NULL,
+  estatus                  text           NOT NULL,
+  fecha_inicio             timestamptz    NOT NULL,
+  fecha_cierre             timestamptz    NULL,
+  encargado_id             uuid           NULL,
+  creado_por_id            uuid           NOT NULL,
+  fecha_creacion           timestamptz    NOT NULL,
+  editado_por_id           uuid           NOT NULL,
+  fecha_ultima_edicion     timestamptz    NOT NULL,
+  arboles_plantados        integer        NULL,
+  puntos_revisados         uuid[]         NOT NULL,
+  personal                 text           NOT NULL,
+  apoyo                    text           NOT NULL,
+  observaciones            text           NOT NULL,
+  chofer                   text           NOT NULL,
+  vehiculo_modelo          text           NOT NULL,
+  vehiculo_placa           text           NOT NULL,
+  hora                     time           NOT NULL,
+  PRIMARY KEY (id)
+);
+CREATE INDEX jornadas_cabo_id ON jornadas (cabo_id);
+CREATE INDEX jornadas_fecha ON jornadas (fecha);
+CREATE INDEX jornadas_estatus ON jornadas (estatus);
 
 ```
 

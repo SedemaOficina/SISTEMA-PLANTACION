@@ -51,6 +51,7 @@ SRP.app = {
     SRP.conexion.iniciar();
     SRP.jornadas.iniciar();
     SRP.galeria.iniciar();
+    SRP.activa.iniciar();          // la jornada se declara antes de registrar (D119)
     SRP.envio.iniciar();           // envío simulado: sólo con datos de prueba (D111)
     this.iniciarAcceso();
     this.iniciarDialogos();
@@ -241,6 +242,8 @@ SRP.app = {
     this.el('navegacion').querySelector('[data-vista="usuarios"]').hidden = !p.usuarios;
     SRP.formulario.limpiar();
     this.campoClave(false);
+    // La jornada abierta de quien entra queda activa; se avisa si es de otro día (D119)
+    SRP.activa.alEntrar().then(() => { if (this.vista === 'registrar') SRP.activa.preparar(); });
     this.mostrarVista(p.registrar ? 'registrar' : 'registros');
     SRP.conexion.refrescar();
     // Datos de prueba: al entrar se envía lo pendiente y, si no sale, lo dice la franja (D110, D111)

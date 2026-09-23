@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 61',
+  ETAPA: 'Bloque 62',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -25,9 +25,9 @@ SRP.CONFIG = {
      no coincide con este, vuelve a sembrar. Sin esto, un teléfono que ya había abierto el
      sistema se queda con los datos anteriores: al renombrar los perfiles, todas las cuentas
      aparecían con un perfil que ya no existía. */
-  SELLO_DATOS: '2026-09-22-capas-definitivas',
+  SELLO_DATOS: '2026-09-23-jornadas',   // bloque 62: los registros de prueba anteriores no llevan jornada y se descartan (D119)
   CLAVE_SELLO: 'srp_sello_datos',
-  DB_VERSION: 1,
+  DB_VERSION: 2,   // 2: tabla jornadas, sin cierres (D119)
   CLAVE_SESION: 'srp_sesion_usuario_id',
   CLAVE_CONTRASTE: 'srp_contraste',
   CLAVE_SECUENCIAS_PRUEBA: 'srp_secuencias_folio_prueba',   // secuencias del servidor simulado (D110)

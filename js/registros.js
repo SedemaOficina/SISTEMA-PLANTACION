@@ -440,9 +440,11 @@ SRP.registros = {
     this.el('detalle-pie').hidden = !SRP.permisos.puedeEditar(SRP.sesion.usuario, r, SRP.ref.usuarioPorId);
     const esp = SRP.ref.especieDe(r);
     // Mismo orden que el formulario y la ficha de revisión; lo que pone el sistema, al final (D100)
+    const jornada = r.jornada_id ? await SRP.almacen.uno('jornadas', r.jornada_id) : null;
     const filas = [
       ['Especie', esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : '')],
       ['Programa', esc(SRP.ref.nombreCatalogo(r.programa_id))],
+      ['Jornada', jornada ? esc(jornada.nombre) : 'Sin jornada'],
       ['Fecha de plantación', esc(SRP.util.formatearFecha(r.fecha_plantacion))],
       ['Alcaldía', esc(SRP.ref.alcaldia(r.alcaldia))],
       ['Colonia', esc(SRP.ref.colonia(r.colonia))],

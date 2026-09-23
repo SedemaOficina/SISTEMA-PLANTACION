@@ -52,7 +52,7 @@ SRP.espejo = {
     folio_capa_version: 'Versión de las capas con que se derivó el folio; congelada (R8)',
     folio_lat: 'Coordenada empleada al asignar el folio; congelada (R8)',
     folio_lng: 'Ídem',
-    corte_jornada: 'Nulo al nacer. «inicia» o «continua» sólo si alguien corrigió el reparto en Jornadas (D117)',
+    jornada_id: 'La jornada activa al registrar (D119); se cambia con «Mover a otra jornada»',
     foto_nombre: 'Nombre del archivo que se cargó; se conserva para la ficha',
     foto_bytes: 'Peso de la fotografía ya comprimida',
     fecha_registro: 'Momento de guardar. Se fija al pulsar Guardar, no antes',
@@ -67,19 +67,23 @@ SRP.espejo = {
 
   // Cierre del reporte: lo que se ve en el formulario son sus CAMPOS y el encargado
   NOTAS_CIERRE: {
-    id: 'fecha|cabo|n: un cierre por jornada (D117)',
+    id: 'UUID de la jornada (D119)',
     es_ficticio: 'Verdadero mientras CONFIG.ES_FICTICIO lo esté (D87)',
-    fecha: 'El día del reporte; sale del filtro, no se captura',
-    cabo_id: 'El cabo por el que se filtró; vacío si el reporte es del día completo',
-    creado_por_id: 'Quién cerró el reporte la primera vez; no cambia al regenerar',
-    fecha_creacion: 'Se fija al generar por primera vez',
-    editado_por_id: 'Quién generó por última vez',
-    fecha_ultima_edicion: 'Se fija en cada generación',
-    arboles_plantados: 'Se anota en Jornadas, no aquí; el reporte dice si cuadra con los registros (D112)',
-    puntos_revisados: 'Puntos con aviso marcados «Está bien» en Jornadas (D112)',
-    jornada_n: 'Número de la jornada en el día del cabo (D117)',
-    primer_registro_id: 'Primer punto de la jornada: por si el número cambia (D117)'
+    nombre: 'Se escribió al iniciar la jornada; aquí no se cambia',
+    fecha: 'La fecha de la jornada, escrita al iniciarla',
+    comentarios: 'Se escribieron al iniciar la jornada; van al reporte',
+    cabo_id: 'Quien inició la jornada',
+    estatus: 'abierta o cerrada',
+    fecha_inicio: 'Cuándo se inició',
+    fecha_cierre: 'Cuándo se cerró; nulo si sigue abierta',
+    creado_por_id: 'Quién la inició',
+    fecha_creacion: 'Se fija al iniciar',
+    editado_por_id: 'Quién la modificó por última vez',
+    fecha_ultima_edicion: 'Se fija en cada cambio',
+    arboles_plantados: 'Se anota en Jornadas; el reporte dice si cuadra con los registros (D112)',
+    puntos_revisados: 'Puntos con aviso marcados «Está bien» en Jornadas (D112)'
   },
+
 
   iniciar() {
     if (!SRP.CONFIG.ES_FICTICIO) return;
@@ -149,13 +153,13 @@ SRP.espejo = {
     };
     const f = this.filas(cierre, visibles, this.NOTAS_CIERRE, prov);
     document.getElementById('espejo-cierre-cuerpo').innerHTML = f.html;
-    const b = SRP.bitacora.entrada(nuevo ? 'CREADO' : 'EDITADO', 'cierre', cierre.id, 'Cierre del reporte');
+    const b = SRP.bitacora.entrada('EDITADO', 'jornada', cierre.id, 'Datos de cierre del reporte');
     const esc = SRP.util.escapar;
     document.getElementById('espejo-cierre-bitacora').innerHTML = Object.keys(b).map(k =>
       '<tr><td class="espejo-campo">' + esc(k) + '</td>' +
       '<td class="espejo-valor">' + esc((k === 'id' || k === 'fecha') ? '(se fija al generar)' : this.formatear(b[k])) + '</td></tr>').join('');
     document.getElementById('espejo-cierre-conteo').textContent =
-      f.ocultos.length + ' campos en cierres + ' + Object.keys(b).length + ' en bitacora';
+      f.ocultos.length + ' campos en jornadas + ' + Object.keys(b).length + ' en bitacora';
   },
 
   refrescar() {

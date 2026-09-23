@@ -843,3 +843,25 @@
   dispositivo y en computadora se descarga (D61). (2) La única actividad es plantar: el campo
   `actividades` sale del cierre, de la vista previa, del PDF y del esquema; un cierre anterior que
   lo traiga se ignora. Pedido por Liber, 23-09-2026.
+
+## Bloque 62 — La jornada se declara antes de registrar
+
+- **D119. La jornada se declara antes del primer árbol; supera a D117.** La gente trabaja por
+  jornada de plantación, y el área pidió que se capture al inicio y una sola vez: nombre, fecha y
+  comentarios. Sin una jornada abierta, «Nuevo registro» muestra «Iniciar jornada» en lugar del
+  formulario; con una, el formulario lleva la franja de la jornada (nombre, fecha, cuántos árboles)
+  con «Cambiar» (elegir otra abierta o iniciar otra) y «Cerrar jornada» (pasa a su revisión; se
+  puede reabrir desde ahí o con «Registrar faltante»). Cada árbol nace con `jornada_id` y hereda
+  la fecha de plantación: el campo deja de pedirse por árbol (decisión 1 de Liber). Nueva tabla
+  `jornadas` (versión 2 de la base) que además absorbe lo que vivía en `cierres`: conteo, puntos
+  revisados y datos de cierre del reporte; `cierres` se retira y «Sitio» sale del cierre porque
+  lo da el nombre de la jornada (decisión 2). Los comentarios van al reporte como «Comentarios de
+  la jornada» (decisión 3). El reparto automático de D117 se convierte en salvaguarda: un árbol a
+  más de 500 m de los demás de la jornada abierta se pregunta antes de guardar; y la corrección
+  manual pasa a «Mover a otra jornada» desde la tuerca del punto (decisión 4), que también ajusta
+  la fecha. Al entrar con una jornada abierta de otro día se avisa. Los registros de prueba
+  anteriores no llevan jornada: el sello de datos cambia y los dispositivos arrancan en blanco
+  (decisión 5). Se descartó de nuevo pedir la jornada sin salvaguarda: la distancia sigue
+  vigilando el olvido. Reportes: el selector «Jornada» lista las declaradas por nombre. En
+  Fotografías y en el detalle del registro aparece el nombre de la jornada. Pedido por Liber
+  (área de plantación), 23-09-2026.

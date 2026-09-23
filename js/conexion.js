@@ -14,7 +14,7 @@
    la cola de envío de KoboToolbox, sin su barra lateral. El aviso de «Registro guardado» dice
    además que quedó en este dispositivo y cuántos van, sin pedir otro clic.
 
-   RESPALDO. Un archivo con todo lo que guarda el dispositivo —plantaciones, cierres y bitácora,
+   RESPALDO. Un archivo con todo lo que guarda el dispositivo —plantaciones, jornadas y bitácora,
    con el mismo esquema de la base— que se comparte igual que el PDF. Un respaldo que nunca se ha
    restaurado es una suposición (Norma 4.9): por eso «Restaurar respaldo» existe, en las
    herramientas de prueba, y la prueba automatizada hace el viaje completo. */

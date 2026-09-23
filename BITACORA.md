@@ -1195,3 +1195,22 @@ ZIP válido con JPEG, el cabo sin galería, cierre sin «Actividades»); `revisa
 
 **Verificación:** 396 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.42.
+
+## Bloque 62 — La jornada se declara antes de registrar (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.43.
+
+**Qué cambió (D119).** Nuevo `js/jornada-activa.js` (inicio, franja, cambiar, cerrar, reabrir,
+aviso de otro día, salvaguarda de distancia). `almacen.js`: base versión 2 con tabla `jornadas`,
+sin `cierres`. `config.js`: sello de datos nuevo (arranque en blanco). `formulario.js`: fecha
+heredada y oculta, `jornada_id`, comprobación de distancia, fila «Jornada» en la revisión.
+`jornadas.js`: lee la tabla, «Mover a otra jornada», «Cerrar/Reabrir» en la revisión,
+comentarios. `reportes.js`: jornadas por nombre, cierre en la jornada, «Jornada:» y «Comentarios
+de la jornada» en vista previa y PDF, sin «Sitio». `registros.js` y `galeria.js`: fila «Jornada».
+`espejo.js`, `esquema.json`, MAPEO y diccionario al día. `index.html`: panel «Iniciar jornada»,
+franja, diálogos de cambiar y mover. Pruebas: 12 nuevas o reescritas (inicio con validación,
+franja, fecha heredada, tres jornadas declaradas, mover con historial, reabrir/cerrar, selector
+por nombre, cierre y reporte de la jornada); `revisar.py` inicia una jornada para revisar el
+formulario.
+
+**Verificación:** 402 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.43.
