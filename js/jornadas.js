@@ -82,6 +82,14 @@ SRP.jornadas = {
     this.el('btn-jornada-volver').addEventListener('click', () => this.cerrar());
     this.el('jornada-lista').addEventListener('click', (e) => this.alTocarLista(e));
     this.el('btn-jornada-faltante').addEventListener('click', () => this.registrarFaltante());
+    // Editar y eliminar la jornada (D132)
+    this.el('btn-jornada-editar').innerHTML = SRP.ICONOS.svg('lapiz', 18) + '<span>Editar jornada</span>';
+    this.el('btn-jornada-eliminar').innerHTML = SRP.ICONOS.svg('basura', 18) + '<span>Eliminar jornada</span>';
+    this.el('btn-jornada-editar').addEventListener('click', () => this.abrirEditar());
+    this.el('btn-jornada-eliminar').addEventListener('click', () => this.eliminarJornada());
+    this.el('btn-ej-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar cambios</span>';
+    this.el('form-editar-jornada').addEventListener('submit', (e) => { e.preventDefault(); this.guardarEdicion(); });
+    this.el('ej-fecha').addEventListener('change', () => { this.el('ej-nota-fecha').hidden = this.el('ej-fecha').value === (this.cierre && this.cierre.fecha); });
     this.el('btn-jornada-reporte').addEventListener('click', () => this.irAlReporte());
     this.el('btn-jornada-faltante').innerHTML = SRP.ICONOS.svg('mas', 20) + '<span>Registrar faltante</span>';
     this.el('btn-jornada-reporte').innerHTML = SRP.ICONOS.svg('reportes', 20) + '<span>Reporte de la jornada</span>';
@@ -454,6 +462,10 @@ SRP.jornadas = {
     const propia = cierre.cabo_id === u.id;
     const btnEstado = this.el('btn-jornada-estado');
     btnEstado.hidden = !propia;
+    // Editar: quien registra en ella o quien la alcanza (coordinador de ese cabo, administrador); eliminar sólo vacía (D132)
+    const puedeJornada = propia || SRP.permisos.puedeEditar(u, cierre, SRP.ref.usuarioPorId);
+    this.el('btn-jornada-editar').hidden = !puedeJornada;
+    this.el('btn-jornada-eliminar').hidden = !(puedeJornada && regs.length === 0);
     // Cerrar no es aprobar: guinda con candado; reabrir es corregir: dorado con lápiz (D121)
     btnEstado.className = 'btn btn-chico ' + (cierre.estatus === 'abierta' ? 'btn-primario' : 'btn-editar');
     btnEstado.innerHTML = SRP.ICONOS.svg(cierre.estatus === 'abierta' ? 'candado' : 'lapiz', 18) + '<span>' + (cierre.estatus === 'abierta' ? 'Cerrar jornada' : 'Reabrir jornada') + '</span>';
@@ -615,6 +627,86 @@ SRP.jornadas = {
     await SRP.almacen.guardarConBitacora('jornadas', dato, SRP.bitacora.entrada('EDITADO', 'jornada', dato.id, detalle));
     j.dato = dato;
     return dato;
+  },
+
+  /* ---------- Editar y eliminar la jornada (D132) ---------- */
+
+  abrirEditar() {
+    const c = this.cierre; if (!c) return;
+    const sel = this.el('ej-programa');
+    const opciones = SRP.ref.deTipo('programa', true).sort((a, b) => (b.clave === 'REFOR_URBANA') - (a.clave === 'REFOR_URBANA'));
+    if (c.programa_id && !opciones.find(o => o.id === c.programa_id) && SRP.ref.catalogoPorId[c.programa_id]) opciones.push(SRP.ref.catalogoPorId[c.programa_id]);
+    sel.innerHTML = '<option value="">Seleccione un programa</option>' + opciones.map(o => '<option value="' + o.id + '">' + SRP.util.escapar(o.nombre) + '</option>').join('');
+    sel.value = c.programa_id || '';
+    this.el('ej-nombre').value = c.nombre || '';
+    this.el('ej-ubicacion').value = c.ubicacion || '';
+    this.el('ej-meta').value = this.metaDe(c) === null ? '' : this.metaDe(c);
+    this.el('ej-fecha').value = c.fecha; this.el('ej-fecha').max = SRP.util.fechaHoy();
+    this.el('ej-comentarios').value = c.comentarios || '';
+    this.el('ej-nota-fecha').hidden = true;
+    this.el('ej-errores').hidden = true;
+    ['ej-nombre', 'ej-programa', 'ej-meta', 'ej-fecha'].forEach(id => this.el(id).removeAttribute('aria-invalid'));
+    this.el('dlg-editar-jornada').showModal();
+  },
+
+  async guardarEdicion() {
+    const c = this.cierre; if (!c) return;
+    const nombre = this.el('ej-nombre').value.trim();
+    const ubicacion = this.el('ej-ubicacion').value.trim();
+    const programa_id = this.el('ej-programa').value;
+    const metaTexto = this.el('ej-meta').value.trim();
+    const meta_arboles = metaTexto === '' ? null : Number(metaTexto);
+    const fecha = this.el('ej-fecha').value;
+    const comentarios = this.el('ej-comentarios').value.trim();
+    const errores = [];
+    if (!nombre) errores.push(['ej-nombre', 'Escriba el nombre de la jornada.']);
+    if (!programa_id) errores.push(['ej-programa', 'Elija el programa.']);
+    if (meta_arboles === null || !Number.isInteger(meta_arboles) || meta_arboles < 1 || meta_arboles > 9999) errores.push(['ej-meta', 'Escriba cuántos árboles se van a plantar: un entero mayor que cero.']);
+    if (!fecha) errores.push(['ej-fecha', 'Indique la fecha.']);
+    else if (fecha > SRP.util.fechaHoy()) errores.push(['ej-fecha', 'La fecha no puede ser posterior a hoy.']);
+    const caja = this.el('ej-errores');
+    ['ej-nombre', 'ej-programa', 'ej-meta', 'ej-fecha'].forEach(id => this.el(id).removeAttribute('aria-invalid'));
+    if (errores.length) {
+      caja.hidden = false;
+      caja.innerHTML = '<ul>' + errores.map(([id, t]) => '<li><a href="#' + id + '">' + SRP.util.escapar(t) + '</a></li>').join('') + '</ul>';
+      errores.forEach(([id]) => this.el(id).setAttribute('aria-invalid', 'true'));
+      this.el(errores[0][0]).focus();
+      return;
+    }
+    const cambios = { nombre, ubicacion, programa_id, meta_arboles, fecha, comentarios };
+    const v = x => (x === undefined || x === null) ? '' : x;
+    const campos = Object.keys(cambios).filter(k => v(c[k]) !== v(cambios[k]) && !(k === 'meta_arboles' && this.metaDe(c) === meta_arboles));
+    if (!campos.length) { this.el('dlg-editar-jornada').close(); return; }
+    const u = SRP.sesion.usuario;
+    const ahora = SRP.util.ahoraISO();
+    const dato = Object.assign({}, c, cambios, { editado_por_id: u.id, fecha_ultima_edicion: ahora });
+    delete dato.arboles_plantados;
+    await SRP.almacen.guardarConBitacora('jornadas', dato, SRP.bitacora.entrada('EDITADO', 'jornada', c.id, 'Campos: ' + campos.join(', ')));
+    // Los árboles heredan la fecha de su jornada (D119): si cambia, cambian con ella
+    if (campos.includes('fecha')) {
+      for (const r of this.jornada.registros) {
+        const nuevo = Object.assign({}, r, { fecha_plantacion: fecha, editado_por_id: u.id, fecha_ultima_edicion: ahora });
+        await SRP.almacen.guardarConBitacora('plantaciones', nuevo, SRP.bitacora.entrada('EDITADO', 'plantacion', r.id, 'Fecha de plantación por cambio de la jornada: ' + fecha));
+        if (SRP.envio.simulado()) SRP.envio.marcarCambios(r.id);
+      }
+    }
+    if (SRP.activa.jornada && SRP.activa.jornada.id === c.id) SRP.activa.jornada = dato;
+    if (SRP.envio.simulado()) SRP.envio.enviar({ silencioso: true });
+    this.el('dlg-editar-jornada').close();
+    this.volverAlDetalle = true; this.actual = c.id;
+    await this.preparar();
+    SRP.util.anunciar('Jornada actualizada: ' + campos.map(k => ({ nombre: 'nombre', ubicacion: 'ubicación', programa_id: 'programa', meta_arboles: 'meta', fecha: 'fecha', comentarios: 'comentarios' })[k]).join(', ') + '.', 'exito');
+  },
+
+  // Sólo una jornada sin árboles se elimina; con árboles, primero se mueven o se eliminan ellos
+  async eliminarJornada() {
+    const c = this.cierre; if (!c || this.jornada.registros.length) return;
+    const ok = await SRP.app.confirmar('¿Eliminar la jornada «' + c.nombre + '» del ' + SRP.util.formatearFecha(c.fecha) + '? No tiene árboles; no se puede deshacer.', 'Eliminar jornada', 'basura');
+    if (!ok) return;
+    await SRP.almacen.borrarConBitacora('jornadas', c.id, SRP.bitacora.entrada('ELIMINADO', 'jornada', c.id, 'Jornada «' + c.nombre + '» eliminada (sin árboles)'));
+    if (SRP.activa.jornada && SRP.activa.jornada.id === c.id) SRP.activa.jornada = null;
+    await this.cerrar();
+    SRP.util.anunciar('Jornada «' + c.nombre + '» eliminada.', 'exito');
   },
 
   /* El conteo de la cuadrilla (D112) dejó de capturarse aquí: la meta se escribe al iniciar la

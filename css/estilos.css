@@ -961,3 +961,6 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 /* Conciliación con la meta (D131): dos cifras, sin campo */
 .conciliacion-cifras { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: var(--e-2); }
 .conciliacion-cifras .jornada-cifra b { font-size: var(--t-l); }
+
+/* Acciones de la ficha de jornada (D132) */
+.jornada-acciones-cab { display: flex; flex-wrap: wrap; gap: var(--e-2); margin: 0 0 var(--e-3); }

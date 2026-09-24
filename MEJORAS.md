@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.53 (Bloque 72)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.54 (Bloque 73)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -106,6 +106,9 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M95 | Petición de Liber | Ficha de Jornadas: cifras en el orden meta · registrados (grandes) y por revisar · bien · especies; «Abierta» con candado abierto | Media | 0.6.53 (B72) | Jornadas | Ficha |
 | M96 | Petición de Liber | Nuevo registro: un solo panel «JORNADA ACTIVA» (nombre grande, datos, «n de meta árboles», botones) con el último árbol guardado dentro; luego el título «Nuevo árbol» separa el formulario | Alta | 0.6.53 (B72) | Registrar un árbol | Panel + título |
 | M97 | Petición de Liber | Solo se generan reportes de jornadas cerradas: en Reportes el botón se deshabilita y la nota pide cerrarla; en la revisión «Reporte de la jornada» solo aparece cerrada | Alta | 0.6.53 (B72) | Reportes con la jornada abierta | Nota |
+| M98 | Análisis (P1) | «Editar jornada» en su ficha: nombre, ubicación, programa, meta, fecha y comentarios; si cambia la fecha, sus árboles la heredan; queda en el historial. Se puede abierta o cerrada, cumplida o no la meta | Alta | 0.6.54 (B73) | Jornadas › ficha › Editar jornada | Diálogo |
+| M99 | Análisis (P2) | «Eliminar jornada» solo cuando no tiene árboles, con confirmación roja | Alta | 0.6.54 (B73) | Iniciar una jornada y, sin registrar, eliminarla desde su ficha | Ficha vacía |
+| M100 | Observación de Liber | El programa ya no se pregunta por árbol: se hereda de la jornada y el campo queda oculto; solo se ve al editar un registro | Media | 0.6.54 (B73) | Nuevo registro: sin campo Programa | Formulario |
 
 ## 2. Por hacer
 

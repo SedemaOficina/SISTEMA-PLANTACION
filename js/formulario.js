@@ -118,6 +118,8 @@ SRP.formulario = {
     const j = this.estado.editando ? null : SRP.activa.jornada;
     const sel = this.el('campo-programa');
     if (j && j.programa_id && !sel.value) { sel.value = j.programa_id; if (sel.value !== j.programa_id) sel.value = ''; this.pintarProgramas(); }
+    // Con el programa heredado, el campo no se pregunta otra vez (D132): se ve en el panel de la jornada
+    this.el('caja-programa').hidden = !!(j && j.programa_id && sel.value === j.programa_id);
   },
 
   llenarProgramas(actualId) {
@@ -654,6 +656,7 @@ SRP.formulario = {
     if (registro.jornada_id) SRP.almacen.uno('jornadas', registro.jornada_id).then(j => { this.estado.jornadaEditando = j || null; });
     this.el('titulo-registrar').textContent = 'Editar registro';
     this.el('titulo-registrar').hidden = false;
+    this.el('caja-programa').hidden = false;   // al editar, el programa es dato del árbol y se ve
     const aviso = this.el('edicion-aviso');
     aviso.textContent = 'Está editando el registro del ' + SRP.util.formatearFecha(registro.fecha_plantacion) +
       ' capturado por ' + SRP.ref.nombreUsuario(registro.cabo_id) + '. Los cambios quedan en el historial.';

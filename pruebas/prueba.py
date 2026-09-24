@@ -47,7 +47,8 @@ def registrar(pg, busqueda, especie_id, programa='p-refor', fecha=None, foto=Non
     pg.click('#btn-ubicacion'); pg.wait_for_timeout(700)
     pg.fill('#campo-especie', busqueda); pg.wait_for_timeout(200)
     pg.dispatch_event('.combo-opcion[data-id="%s"]' % especie_id, 'mousedown'); pg.wait_for_timeout(150)
-    pg.select_option('#campo-programa', programa); pg.wait_for_timeout(150)
+    # El programa se hereda de la jornada y el campo va oculto (D132); la prueba lo fija en el dato para poder variarlo
+    pg.evaluate("document.getElementById('campo-programa').value = '%s'" % programa); pg.wait_for_timeout(100)
     if foto: pg.set_input_files('#foto-archivo', foto); pg.wait_for_timeout(800)
     pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(800)
     ident = pg.evaluate("SRP.formulario.estado.editando ? SRP.formulario.estado.editando.id : (SRP.formulario.estado.idPrevisto || SRP.formulario.estado.ultimoGuardado)")
@@ -371,9 +372,7 @@ with sync_playwright() as p:
     # Programa en lista desplegable (D120): los programas crecen; sin preselección (D29)
     prog=pg.evaluate('''() => ({ botones: document.getElementById('programa-botones').hidden, lista_visible: !document.getElementById('campo-programa').classList.contains('oculto-visual'),
       opciones: [...document.getElementById('campo-programa').options].filter(o => o.value).length, valor: document.getElementById('campo-programa').value })''')
-    ok(prog=={'botones':True,'lista_visible':True,'opciones':2,'valor':'p-refor'},'el programa se elige en una lista desplegable, sin botones, con el de la jornada ya puesto (D120, D130): %s' % prog)
-    pg.select_option('#campo-programa','p-refor'); pg.wait_for_timeout(200)
-    ok(pg.input_value('#campo-programa')=='p-refor','elegir en la lista deja el dato en el formulario')
+    ok(prog=={'botones':True,'lista_visible':True,'opciones':2,'valor':'p-refor'} and pg.is_hidden('#caja-programa'),'el programa viene de la jornada y ya no se pregunta por árbol: el campo queda oculto con el valor puesto (D120, D130, D132): %s' % prog)
     # El texto guía de los campos de fecha vacíos (D104) se comprueba en la fecha de la jornada
     vac=pg.evaluate("(() => { const e=document.getElementById('ini-fecha').closest('.envoltura-vacio'); return e ? e.querySelector('.texto-vacio').textContent : null; })()")
     ok(vac=='Seleccione la fecha','la fecha de la jornada lleva el texto guía «Seleccione la fecha» (D104, D120): %s' % vac)
@@ -872,6 +871,32 @@ with sync_playwright() as p:
     ok(pg.inner_text('#jornada-titulo')=='Parque Hundido' and 'Jornada 2 de 3' in pg.inner_text('#jornada-sub') and pg.inner_text('#jornada-registrados')=='2','la jornada 2 se revisa sola con su nombre: 2 registrados en esta jornada')
     pg.evaluate("async () => { const j = await SRP.almacen.uno('jornadas', '%s'); j.meta_arboles = 2; await SRP.almacen.guardarConBitacora('jornadas', j, SRP.bitacora.entrada('EDITADO','jornada',j.id,'Meta 2')); await SRP.jornadas.abrir('%s'); }" % (M['jids'][1], M['jids'][1])); pg.wait_for_timeout(600)
     ok(pg.get_attribute('#jornada-conciliacion','data-tono')=='ok' and pg.inner_text('#jornada-meta')=='2','y su conciliación es la suya: cuadra 2 de 2 (D131)')
+    # Editar la jornada (D132): nombre, meta y fecha; los árboles heredan la fecha nueva
+    ok(pg.is_visible('#btn-jornada-editar') and pg.is_hidden('#btn-jornada-eliminar'),'la ficha ofrece «Editar jornada» y, con árboles, no ofrece eliminarla (D132)')
+    pg.click('#btn-jornada-editar'); pg.wait_for_timeout(300)
+    ok(pg.is_visible('#dlg-editar-jornada') and pg.input_value('#ej-nombre')=='Parque Hundido' and pg.input_value('#ej-meta')=='2' and pg.locator('#ej-programa option').count()>=2 and pg.input_value('#ej-fecha')==M['f'],'el diálogo trae los datos de la jornada: nombre, meta, programa y fecha')
+    pg.fill('#ej-nombre',''); pg.click('#btn-ej-guardar'); pg.wait_for_timeout(300)
+    ok(pg.is_visible('#ej-errores') and 'nombre' in pg.inner_text('#ej-errores').lower(),'sin nombre no guarda')
+    otro_dia=(datetime.date.fromisoformat(M['f'])-datetime.timedelta(days=1)).isoformat()
+    pg.fill('#ej-nombre','Parque Hundido, sección norte'); pg.select_option('#ej-programa','p-refor'); pg.fill('#ej-meta','3'); pg.fill('#ej-fecha',otro_dia); pg.dispatch_event('#ej-fecha','change'); pg.wait_for_timeout(200)
+    ok(pg.is_visible('#ej-nota-fecha'),'al cambiar la fecha avisa que los árboles la heredan')
+    pg.click('#btn-ej-guardar'); pg.wait_for_timeout(900)
+    ed=pg.evaluate("async () => { const j = await SRP.almacen.uno('jornadas', '%s'); const r = (await SRP.almacen.todos('plantaciones')).filter(x => x.jornada_id === j.id); return [j.nombre, j.meta_arboles, j.fecha, r.map(x => x.fecha_plantacion), (await SRP.bitacora.deEntidad(j.id)).some(h => h.detalle && h.detalle.includes('Campos: nombre, programa_id, meta_arboles, fecha'))]; }" % M['jids'][1])
+    ok(ed[0]=='Parque Hundido, sección norte' and ed[1]==3 and ed[2]==otro_dia and all(f==otro_dia for f in ed[3]) and ed[4] and pg.inner_text('#jornada-titulo')=='Parque Hundido, sección norte' and pg.inner_text('#jornada-meta')=='3',
+       'la jornada guarda nombre, meta y fecha, sus árboles toman la fecha, queda en el historial y la ficha se repinta (D132): %s' % ed[:3])
+    pg.click('#btn-jornada-editar'); pg.wait_for_timeout(300); pg.fill('#ej-nombre','Parque Hundido'); pg.fill('#ej-meta','2'); pg.fill('#ej-fecha',M['f']); pg.click('#btn-ej-guardar'); pg.wait_for_timeout(900)
+    ok(pg.inner_text('#jornada-titulo')=='Parque Hundido' and pg.evaluate("async () => (await SRP.almacen.uno('jornadas', '%s')).fecha" % M['jids'][1])==M['f'],'y se deja como estaba')
+    # Eliminar una jornada vacía (D132)
+    vacia=iniciar_jornada(pg, 'Jornada por error', M['f'])
+    pg.evaluate("SRP.app.mostrarVista('jornadas')"); pg.wait_for_timeout(500)
+    pg.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg.wait_for_timeout(300); pg.evaluate("SRP.jornadas.abrir('%s')" % vacia); pg.wait_for_timeout(600)
+    ok(pg.is_visible('#btn-jornada-eliminar') and 'btn-peligro-linea' in pg.get_attribute('#btn-jornada-eliminar','class'),'una jornada sin árboles ofrece «Eliminar jornada» en rojo de contorno (D132)')
+    pg.click('#btn-jornada-eliminar'); pg.wait_for_timeout(300)
+    ok(pg.is_visible('#dlg-confirmar') and 'Eliminar jornada' in pg.inner_text('#btn-confirmar-si') and 'btn-peligro' in pg.get_attribute('#btn-confirmar-si','class'),'pide confirmar en rojo')
+    pg.click('#btn-confirmar-si'); pg.wait_for_timeout(700)
+    ok(pg.is_hidden('#jornada-detalle') and pg.evaluate("async () => !(await SRP.almacen.uno('jornadas', '%s'))" % vacia) and pg.evaluate("SRP.activa.jornada === null || SRP.activa.jornada.id !== '%s'" % vacia),'la jornada desaparece, vuelve a la lista y deja de ser la activa')
+    pg.click('#jornada-atajos [data-atajo=dia]'); pg.fill('#jornada-dia', M['f']); pg.dispatch_event('#jornada-dia','change'); pg.wait_for_timeout(500)
+    pg.click('#lista-jornadas .jornada:nth-child(2) button'); pg.wait_for_timeout(800)
     # Mover un árbol de la jornada 2 a la 1
     pg.click('#jornada-lista .punto-jornada[data-id="%s"] .btn-tuerca' % M['ids'][3]); pg.wait_for_timeout(200)
     pg.click('#jornada-lista .punto-jornada[data-id="%s"] [data-accion=mover]' % M['ids'][3]); pg.wait_for_timeout(400)
@@ -1044,6 +1069,7 @@ with sync_playwright() as p:
       accion: [...document.querySelectorAll('#espejo-bitacora tr')].find(t=>t.textContent.includes('accion')).children[1].textContent,
       edicion: [...document.querySelectorAll('#espejo-cuerpo tr')].find(t=>t.textContent.includes('fecha_ultima_edicion')).children[1].textContent
     })""")
+    ok(pg.is_visible('#caja-programa'),'al editar un registro el programa sí se ve: es dato del árbol (D132)')
     ok(espejoEd['accion']=='EDITADO' and 'al guardar' in espejoEd['edicion'],
        'en edición el espejo anuncia EDITADO, con la marca pendiente de fijar')
     pg.fill('#campo-especie','ahuehu'); pg.wait_for_timeout(150)
@@ -1054,7 +1080,8 @@ with sync_playwright() as p:
     accion(pg,'#lista-registros','ver'); pg.wait_for_timeout(400)
     ok('editado' in pg.inner_text('#dlg-detalle'),'el historial registra la edición')
     pg.click('#btn-detalle-cerrar'); pg.wait_for_timeout(200)
-    accion(pg,'#lista-registros','eliminar'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
+    # Se elimina un registro sin fotografía, para que la galería de más adelante conserve la suya
+    accion(pg,pg.locator('#lista-registros .registro:has(.registro-sin-foto)'),'eliminar'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
     ok('Total: 3 ' in pg.inner_text('#registros-total'),'eliminar retira del listado: '+pg.inner_text('#registros-total'))
     av=pg.evaluate("(() => { const a=document.getElementById('aviso'); const r=a.getBoundingClientRect(); return { texto: a.querySelector('.aviso-texto').textContent, deshacer: !!a.querySelector('.aviso-accion'), cerrar: !!a.querySelector('.aviso-cerrar'), arriba: r.top < innerHeight/3 }; })()")
     ok(av=={'texto':'Registro eliminado.','deshacer':True,'cerrar':True,'arriba':True},'el aviso flotante va arriba, con × y «Deshacer» (D101): %s' % av)
@@ -1062,7 +1089,7 @@ with sync_playwright() as p:
     ok('Total: 4 ' in pg.inner_text('#registros-total') and 'restaurado' in pg.inner_text('#aviso'),'«Deshacer» devuelve el registro eliminado: '+pg.inner_text('#registros-total'))
     ok(pg.evaluate("(async () => (await SRP.bitacora.deEntidad(SRP.registros.filtrados[0].id)).length >= 0)()") is True and
        pg.evaluate("(async () => { const b = await SRP.almacen.todos('bitacora'); return b.some(x => x.accion === 'RESTAURADO'); })()"),'y la bitácora deja constancia con RESTAURADO')
-    accion(pg,'#lista-registros','eliminar'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
+    accion(pg,pg.locator('#lista-registros .registro:has(.registro-sin-foto)'),'eliminar'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
     ok('Total: 3 ' in pg.inner_text('#registros-total'),'se vuelve a eliminar para seguir la prueba')
     abrir_filtros(pg); pg.click('#btn-reiniciar-filtros'); pg.wait_for_timeout(300)
     pg.click('#aviso .aviso-accion'); pg.wait_for_timeout(300)

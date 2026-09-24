@@ -996,3 +996,13 @@
   guardado no parece parte del formulario. El reporte es de una jornada cerrada: abierta todavía
   cambia; Reportes deshabilita el botón y lo dice, y la revisión sólo ofrece «Reporte de la
   jornada» cerrada. Pedido por Liber, 23-09-2026.
+- **D132. La jornada se edita y, vacía, se elimina.** En la ficha de la jornada, «Editar jornada»
+  (ámbar, lápiz) abre un diálogo con nombre, ubicación, programa, meta, fecha y comentarios; lo
+  puede usar quien registra en ella o quien la alcanza (coordinador de ese cabo, administrador),
+  esté abierta o cerrada y cumplida o no la meta; cada cambio va a la bitácora con sus campos, y
+  si cambia la fecha sus árboles toman la fecha nueva (heredan, D119) y vuelven a la cola de envío.
+  «Eliminar jornada» (rojo de contorno, bote) sólo aparece sin árboles: con árboles primero se
+  mueven o se eliminan ellos. El programa deja de preguntarse por árbol: se hereda de la jornada,
+  el campo queda oculto en Nuevo registro y sólo se ve al editar un registro, donde es dato del
+  árbol. Propuesto en el análisis del 23-09-2026 (P1, P2) y aprobado por Liber; la observación del
+  programa doble es suya, 24-09-2026.

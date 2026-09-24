@@ -1354,3 +1354,16 @@ título, conciliación con meta, cifras y candados, reporte bloqueado con jornad
 
 **Verificación:** 425 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.53.
+
+## Bloque 73 — Editar y eliminar jornada; programa heredado sin preguntar (24-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.54.
+
+**Qué cambió (D132).** `index.html`: acciones de la ficha (estado, editar, eliminar) y
+`dlg-editar-jornada`. `jornadas.js`: `abrirEditar`, `guardarEdicion` (herencia de fecha a los
+árboles), `eliminarJornada`, permisos con `puedeEditar`. `formulario.js`: `heredarPrograma` oculta
+`#caja-programa`; al editar se muestra. `estilos.css`: `.jornada-acciones-cab`. Pruebas: edición
+con validación y herencia de fecha, eliminación de jornada vacía, campo de programa oculto;
+ayudante `registrar` fija el programa en el dato; la prueba de eliminar elige un registro sin foto.
+
+**Verificación:** 434 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.54.
