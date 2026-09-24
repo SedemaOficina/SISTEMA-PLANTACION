@@ -193,7 +193,7 @@ Almacén `jornadas` (sustituye a `cierres` desde el bloque 62). Lo que ya vive e
 | `vehiculo_modelo` | No | Persona | Sustituye a `vehiculo` (bloque 20) |
 | `vehiculo_placa` | No | Persona | |
 | `hora` | No | Persona | Hora de finalización, `HH:MM` del selector de hora; el PDF le agrega «h» |
-| `arboles_plantados` | No | Persona | Se anota en **Jornadas** («Árboles plantados según la cuadrilla»); el reporte dice si cuadra con los registros (D112) |
+| `meta_arboles` | Sí | Persona | Árboles que se van a plantar, escrito al iniciar la jornada (D131); Jornadas y el reporte comparan contra la meta |
 | `puntos_revisados` | Sí | Persona | Puntos con aviso que alguien marcó «Está bien» en **Jornadas**; lista de `plantaciones.id` (D112) |
 | `creado_por_id` | Sí | Sesión | Quién inició la jornada |
 | `fecha_creacion` | Sí | Sistema | |

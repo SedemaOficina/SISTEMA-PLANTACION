@@ -983,3 +983,16 @@
   `plantaciones.programa_id`. Encima del buscador de especies van las últimas tres de la jornada
   como atajos. Resultado: cinco toques por árbol (ubicación, especie, foto ×2, Guardar). Propuesto
   con números y aprobado por Liber, 23-09-2026.
+- **D131. La meta se declara al iniciar; el reporte es de una jornada cerrada.** Quien inicia la
+  jornada ya sabe cuántos árboles va a plantar: «Árboles que se van a plantar» (`meta_arboles`,
+  obligatoria, 1–9999) sustituye al conteo de la cuadrilla que se capturaba en la revisión (D112);
+  `arboles_plantados` deja de existir (las jornadas viejas se leen como meta). La revisión compara
+  registrados contra la meta: abierta y por debajo es «En curso: n de m», no error; cerrada, falta
+  o sobra en rojo; cuadra en verde. La ficha de Jornadas lleva las cifras meta · registrados
+  (grandes) y por revisar · bien · especies, y «Abierta» con candado abierto. En Nuevo registro
+  hay un solo panel «JORNADA ACTIVA» (nombre grande, fecha, lugar, programa, «n de meta árboles»,
+  Cambiar/Cerrar) con el último árbol guardado dentro, y después el título «Nuevo árbol» (o
+  «Editar árbol») separa el formulario: así siempre se ve en qué jornada se registra y el aviso de
+  guardado no parece parte del formulario. El reporte es de una jornada cerrada: abierta todavía
+  cambia; Reportes deshabilita el botón y lo dice, y la revisión sólo ofrece «Reporte de la
+  jornada» cerrada. Pedido por Liber, 23-09-2026.

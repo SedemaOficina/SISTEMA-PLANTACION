@@ -84,10 +84,11 @@ SRP.activa = {
   mostrarInicio(ver) {
     this.el('panel-iniciar-jornada').hidden = !ver;
     this.el('registrar-columnas').hidden = ver;
+    this.el('titulo-arbol').hidden = ver;
     this.el('franja-jornada').hidden = ver;
     this.el('btn-iniciar-cancelar').hidden = !this.jornada;   // sin jornada no hay a dónde volver
     if (ver) {
-      this.el('ini-nombre').value = ''; this.el('ini-ubicacion').value = ''; this.el('ini-comentarios').value = '';
+      this.el('ini-nombre').value = ''; this.el('ini-ubicacion').value = ''; this.el('ini-comentarios').value = ''; this.el('ini-meta').value = '';
       this.punto = null; this.pintarDetectar();
       this.llenarProgramas();
       // La fecha se elige a propósito (D29): vacía, con «Hoy» a un toque
@@ -106,6 +107,7 @@ SRP.activa = {
       const j = editando.jornada_id ? await SRP.almacen.uno('jornadas', editando.jornada_id) : null;
       this.el('panel-iniciar-jornada').hidden = true;
       this.el('registrar-columnas').hidden = false;
+      this.el('titulo-arbol').hidden = false; this.el('titulo-arbol').textContent = 'Editar árbol';
       this.pintarFranja(j, await (j ? this.registrosDe(j) : []), true);
       SRP.formulario.el('campo-fecha').value = editando.fecha_plantacion;
       await SRP.formulario.pintarEspeciesRecientes();
@@ -115,6 +117,7 @@ SRP.activa = {
     if (!this.jornada) { this.mostrarInicio(true); return; }
     this.el('panel-iniciar-jornada').hidden = true;
     this.el('registrar-columnas').hidden = false;
+    this.el('titulo-arbol').hidden = false; this.el('titulo-arbol').textContent = 'Nuevo árbol';
     this.pintarFranja(this.jornada, await this.registrosDe(this.jornada), false);
     // La fecha de plantación se hereda (D119); el programa y las especies recientes también (D130)
     SRP.formulario.el('campo-fecha').value = this.jornada.fecha;
@@ -130,9 +133,12 @@ SRP.activa = {
     const n = registros.length;
     const atrasada = !editando && j.fecha !== SRP.util.fechaHoy();
     f.dataset.tono = atrasada ? 'alerta' : '';
+    this.el('franja-jornada-rotulo').textContent = editando ? 'Jornada del registro' : 'Jornada activa';
+    if (editando) this.el('franja-guardado').hidden = true;
+    const meta = SRP.jornadas.metaDe(j);
     this.el('franja-jornada-texto').innerHTML =
-      '<span class="franja-jornada-titulo">' + (editando ? 'Registro de la jornada ' : 'Jornada: ') + '<strong>' + esc(j.nombre) + '</strong></span>' +
-      '<span class="franja-jornada-datos">' + esc(SRP.util.formatearFecha(j.fecha)) + (j.ubicacion ? ' · ' + esc(j.ubicacion) : '') + (this.lugarDe(j) ? ' · ' + esc(this.lugarDe(j)) : '') + (j.programa_id ? ' · ' + esc(SRP.ref.nombreCatalogo(j.programa_id)) : '') + ' · ' + n + (n === 1 ? ' árbol' : ' árboles') +
+      '<span class="franja-jornada-titulo"><strong>' + esc(j.nombre) + '</strong></span>' +
+      '<span class="franja-jornada-datos">' + esc(SRP.util.formatearFecha(j.fecha)) + (j.ubicacion ? ' · ' + esc(j.ubicacion) : '') + (this.lugarDe(j) ? ' · ' + esc(this.lugarDe(j)) : '') + (j.programa_id ? ' · ' + esc(SRP.ref.nombreCatalogo(j.programa_id)) : '') + ' · <b>' + n + (meta !== null ? ' de ' + meta : '') + (n === 1 && meta === null ? ' árbol' : ' árboles') + '</b>' +
       (j.estatus === 'cerrada' ? ' · cerrada' : '') + (atrasada ? ' · <b>no es de hoy</b>' : '') + '</span>';
     this.el('franja-jornada-acciones').hidden = !!editando;
   },
@@ -208,13 +214,16 @@ SRP.activa = {
     const fecha = this.el('ini-fecha').value;
     const comentarios = this.el('ini-comentarios').value.trim();
     const programa_id = this.el('ini-programa').value;
+    const metaTexto = this.el('ini-meta').value.trim();
+    const meta_arboles = metaTexto === '' ? null : Number(metaTexto);
     const errores = [];
     if (!nombre) errores.push(['ini-nombre', 'Escriba el nombre de la jornada: el parque, la calle o el sitio.']);
     if (!programa_id) errores.push(['ini-programa', 'Elija el programa de la jornada.']);
+    if (meta_arboles === null || !Number.isInteger(meta_arboles) || meta_arboles < 1 || meta_arboles > 9999) errores.push(['ini-meta', 'Escriba cuántos árboles se van a plantar: un número entero mayor que cero.']);
     if (!fecha) errores.push(['ini-fecha', 'Indique la fecha de la jornada.']);
     else if (fecha > SRP.util.fechaHoy()) errores.push(['ini-fecha', 'La fecha no puede ser posterior a hoy.']);
     const caja = this.el('ini-errores');
-    ['ini-nombre', 'ini-programa', 'ini-fecha'].forEach(id => this.el(id).removeAttribute('aria-invalid'));
+    ['ini-nombre', 'ini-programa', 'ini-meta', 'ini-fecha'].forEach(id => this.el(id).removeAttribute('aria-invalid'));
     if (errores.length) {
       caja.hidden = false;
       caja.innerHTML = '<ul>' + errores.map(([id, t]) => '<li><a href="#' + id + '">' + SRP.util.escapar(t) + '</a></li>').join('') + '</ul>';
@@ -234,7 +243,7 @@ SRP.activa = {
       alcaldia_cve: t.alcaldia_cve || null, alcaldia: t.alcaldia || null, colonia_cve: t.colonia_cve || null, colonia: t.colonia || null,
       fecha_inicio: ahora, fecha_cierre: null,
       creado_por_id: u.id, fecha_creacion: ahora, editado_por_id: u.id, fecha_ultima_edicion: ahora,
-      arboles_plantados: null, puntos_revisados: [], encargado_id: u.id
+      meta_arboles, puntos_revisados: [], encargado_id: u.id
     }, Object.fromEntries(SRP.reportes.CAMPOS.map(k => [k, ''])));
     await SRP.almacen.guardarConBitacora('jornadas', j, SRP.bitacora.entrada('CREADO', 'jornada', j.id, 'Jornada «' + nombre + '» del ' + SRP.util.formatearFecha(fecha)));
     this.jornada = j;

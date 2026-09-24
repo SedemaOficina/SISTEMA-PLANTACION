@@ -198,7 +198,7 @@ Una jornada de plantación: se declara antes de registrar el primer árbol (D119
 | `fecha_creacion` | timestamptz | No | Sistema | ISO 8601 | No | — |
 | `editado_por_id` | uuid | No | Sesión | → usuarios.id | No | — |
 | `fecha_ultima_edicion` | timestamptz | No | Sistema | ISO 8601 | No | — |
-| `arboles_plantados` | integer | Sí | Persona | 0–9999; nulo si la cuadrilla no lo anotó | Jornadas → «Árboles plantados según la cuadrilla» | Conciliación de la jornada (D112): se compara con los registros activos del día y el cabo; el reporte dice si cuadra. Nunca sustituye al conteo de registros |
+| `meta_arboles` | integer | No | Persona | Entero 1–9999 | Árboles que se van a plantar (Iniciar jornada) | Obligatoria al iniciar (D131). Jornadas compara registrados contra la meta (falta/sobra) y el reporte la imprime. Sustituye al conteo de la cuadrilla de D112 |
 | `puntos_revisados` | uuid[] | No | Persona | → plantaciones.id; [] si nadie ha revisado | Jornadas → «Está bien» en un punto con aviso | Puntos con aviso (duplicado, lejos, precisión) que alguien confirmó como correctos (D112); el aviso deja de contarse, no se borra |
 | `personal` | text | No | Persona | Texto libre | Personal de SEDEMA participante | — |
 | `apoyo` | text | No | Persona | Texto libre, varias líneas | Personal de apoyo | — |
@@ -475,7 +475,7 @@ CREATE TABLE jornadas (
   fecha_creacion           timestamptz    NOT NULL,
   editado_por_id           uuid           NOT NULL,
   fecha_ultima_edicion     timestamptz    NOT NULL,
-  arboles_plantados        integer        NULL,
+  meta_arboles             integer        NOT NULL,
   puntos_revisados         uuid[]         NOT NULL,
   personal                 text           NOT NULL,
   apoyo                    text           NOT NULL,

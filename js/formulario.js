@@ -682,6 +682,7 @@ SRP.formulario = {
     this.estado.territorio = null;
     this.el('titulo-registrar').textContent = 'Nuevo registro';
     this.el('titulo-registrar').hidden = true;
+    const ta = this.el('titulo-arbol'); if (ta) ta.textContent = 'Nuevo árbol';
     this.el('edicion-aviso').hidden = true;
     this.el('btn-cancelar-edicion').hidden = true;
     this.el('campo-especie').value = ''; this.estado.especieId = null; this.mostrarOtra(false);

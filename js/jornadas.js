@@ -80,7 +80,6 @@ SRP.jornadas = {
       const li = e.target.closest('[data-clave]'); if (li) this.abrir(li.dataset.clave);
     });
     this.el('btn-jornada-volver').addEventListener('click', () => this.cerrar());
-    this.el('jornada-plantados').addEventListener('change', () => this.guardarConteo());
     this.el('jornada-lista').addEventListener('click', (e) => this.alTocarLista(e));
     this.el('btn-jornada-faltante').addEventListener('click', () => this.registrarFaltante());
     this.el('btn-jornada-reporte').addEventListener('click', () => this.irAlReporte());
@@ -160,6 +159,14 @@ SRP.jornadas = {
 
   nombreSitio(j) { return j.nombre || 'Sin nombre'; },
 
+  // La meta de árboles de la jornada (D131); las jornadas anteriores traían el conteo de la cuadrilla
+  metaDe(j) {
+    const d = j && (j.dato || j);
+    if (!d) return null;
+    if (Number.isInteger(d.meta_arboles)) return d.meta_arboles;
+    return Number.isInteger(d.arboles_plantados) ? d.arboles_plantados : null;
+  },
+
   alcaldiasDe(j) { return [...new Set(j.registros.map(r => SRP.ref.alcaldia(r.alcaldia)).filter(Boolean))]; },
 
   claveEspecie(r) { return r.especie_id || 'otra:' + SRP.util.normalizar(r.especie_otra); },
@@ -202,13 +209,16 @@ SRP.jornadas = {
   /* El estado de la jornada en una frase y un tono: lo que se ve en la tarjeta y en la revisión */
   estado(j, avisos, cierre) {
     const pend = this.pendientes(j, avisos, cierre).length;
-    const plantados = cierre && Number.isInteger(cierre.arboles_plantados) ? cierre.arboles_plantados : null;
+    const meta = this.metaDe(cierre || j);
     const reg = j.registros.length;
     if (pend) return { tono: 'rev', texto: pend === 1 ? '1 punto por revisar' : pend + ' puntos por revisar' };
-    if (j.estatus === 'abierta' && plantados === null) return { tono: 'neutro', texto: reg ? 'Abierta' : 'Abierta, sin árboles' };
-    if (plantados === null) return { tono: 'neutro', texto: 'Sin conteo de la cuadrilla' };
-    if (plantados === reg) return { tono: 'ok', texto: 'Revisada: ' + reg + ' de ' + plantados };
-    return { tono: 'err', texto: 'Contados ' + plantados + ' · registrados ' + reg };
+    if (j.estatus === 'abierta') {
+      if (meta === null) return { tono: 'neutro', texto: reg ? 'En curso' : 'Sin árboles' };
+      return reg >= meta ? { tono: 'ok', texto: 'Meta cumplida: ' + reg + ' de ' + meta } : { tono: 'neutro', texto: 'En curso: ' + reg + ' de ' + meta };
+    }
+    if (meta === null) return { tono: 'neutro', texto: 'Sin meta' };
+    if (reg === meta) return { tono: 'ok', texto: 'Completa: ' + reg + ' de ' + meta };
+    return { tono: 'err', texto: (reg < meta ? 'Faltan ' + (meta - reg) : 'Sobran ' + (reg - meta)) + ' · ' + reg + ' de ' + meta };
   },
 
   /* ---------- Lista de jornadas ---------- */
@@ -348,6 +358,7 @@ SRP.jornadas = {
       const porRevisar = this.pendientes(j, avisos, cierre).length;
       const bien = n - porRevisar;
       const cuando = this.cuando(j.fecha);
+      const meta = this.metaDe(cierre || j);
       const fecha = SRP.envio.diaEnLetra(j.fecha).split(' ')[0].slice(0, 3) + ' ' + SRP.util.formatearFecha(j.fecha);
       const abierta = j.estatus === 'abierta';
       const lugar = this.lugarDe(j);
@@ -359,11 +370,11 @@ SRP.jornadas = {
         '<span class="jornada-cab"><span class="jornada-titulo-caja"><span class="jornada-sitio">' + esc(this.nombreSitio(j)) + '</span>' +
         '<span class="jornada-dia">' + (cuando ? '<b>' + cuando + '</b> · ' : '') + '<span class="jornada-fecha">' + esc(fecha) + '</span>' +
         (j.total > 1 ? ' <span class="jornada-ndn">Jornada ' + j.n + ' de ' + j.total + '</span>' : '') + '</span></span>' + this.miniatura(j, avisos) + '</span>' +
-        '<span class="jornada-estado"><span class="jornada-estatus" data-estatus="' + (abierta ? 'abierta' : 'cerrada') + '">' + SRP.ICONOS.svg(abierta ? 'jornadas' : 'candado', 14) +
+        '<span class="jornada-estado"><span class="jornada-estatus" data-estatus="' + (abierta ? 'abierta' : 'cerrada') + '">' + SRP.ICONOS.svg(abierta ? 'candadoAbierto' : 'candado', 14) +
         '<span>' + (abierta ? 'Abierta' : 'Cerrada') + '</span></span>' +
         '<span class="insignia-jornada" data-tono="' + est.tono + '">' + esc(est.texto) + '</span></span>' +
         (lugar || ubic ? '<span class="jornada-lugar">' + SRP.ICONOS.svg('ubicacion', 16) + '<span>' + esc(lugar) + (ubic ? (lugar ? ' · ' : '') + '<span class="jornada-ubic">' + esc(ubic) + '</span>' : '') + '</span></span>' : '') +
-        '<span class="jornada-cifras">' + cifra(n, n === 1 ? 'árbol' : 'árboles') + cifra(especies, especies === 1 ? 'especie' : 'especies') + cifra(porRevisar, 'por revisar') + cifra(bien, 'bien') + '</span>' +
+        '<span class="jornada-cifras">' + cifra(meta === null ? '—' : meta, 'meta') + cifra(n, 'registrados') + cifra(porRevisar, 'por revisar') + cifra(bien, 'bien') + cifra(especies, especies === 1 ? 'especie' : 'especies') + '</span>' +
         (variosAutores ? '<span class="jornada-cabo">' + SRP.ICONOS.svg('usuario', 14) + '<span>' + esc(SRP.ref.nombreUsuario(j.cabo_id)) + '</span></span>' : '') +
         '</button></li>');
     }
@@ -448,11 +459,12 @@ SRP.jornadas = {
     btnEstado.innerHTML = SRP.ICONOS.svg(cierre.estatus === 'abierta' ? 'candado' : 'lapiz', 18) + '<span>' + (cierre.estatus === 'abierta' ? 'Cerrar jornada' : 'Reabrir jornada') + '</span>';
 
     // Conciliación: se compara con todo lo del día del cabo, aunque se haya partido en sitios
-    const inp = this.el('jornada-plantados');
-    if (document.activeElement !== inp) inp.value = cierre && Number.isInteger(cierre.arboles_plantados) ? cierre.arboles_plantados : '';
+    const meta = this.metaDe(cierre);
+    this.el('jornada-meta').textContent = meta === null ? '—' : meta;
     this.el('jornada-registrados').textContent = j.registros.length;
-    this.el('jornada-registrados-etiqueta').textContent = 'Registrados en esta jornada';
     this.pintarConciliacion();
+    // El reporte es de una jornada cerrada (D131): mientras siga abierta, el botón no se ofrece
+    this.el('btn-jornada-reporte').hidden = cierre.estatus === 'abierta';
 
     const puedeEditar = r => SRP.permisos.puedeEditar(u, r, SRP.ref.usuarioPorId);
     const puedeEliminar = r => SRP.permisos.puedeEliminar(u, r, SRP.ref.usuarioPorId);
@@ -488,8 +500,7 @@ SRP.jornadas = {
 
   pintarConciliacion() {
     const j = this.jornada;
-    const v = this.el('jornada-plantados').value;
-    const plantados = v === '' ? null : Number(v);
+    const plantados = this.metaDe(this.cierre || j);
     const reg = j.registros.length;
     const pend = this.pendientes(j, this.avisosActuales || {}, this.cierre).length;
     const caja = this.el('jornada-conciliacion');
@@ -497,15 +508,18 @@ SRP.jornadas = {
     const cola = pend ? ' Quedan ' + (pend === 1 ? '1 punto' : pend + ' puntos') + ' por revisar.' : '';
     let tono, texto;
     if (plantados === null || !Number.isInteger(plantados)) {
-      tono = 'neutro'; texto = 'Escriba cuántos árboles plantó la cuadrilla para comprobar que cada uno tenga su punto.' + cola;
+      tono = 'neutro'; texto = 'La jornada no tiene meta de árboles (se escribe al iniciarla).' + cola;
     } else if (plantados === reg) {
-      tono = pend ? 'rev' : 'ok'; texto = 'Cuadra: ' + plantados + ' plantados y ' + reg + ' registrados.' + cola;
+      tono = pend ? 'rev' : 'ok'; texto = 'Cuadra: meta de ' + plantados + ' y ' + reg + ' registrados.' + cola;
     } else if (plantados > reg) {
       const n = plantados - reg;
-      tono = 'err'; texto = (n === 1 ? 'Falta 1 registro' : 'Faltan ' + n + ' registros') + ': se plantaron ' + plantados + ' y hay ' + reg + ' puntos.' + cola;
+      // Con la jornada abierta, faltar no es error: se sigue registrando (D131)
+      const abierta = (this.cierre || j).estatus === 'abierta';
+      tono = abierta ? 'neutro' : 'err';
+      texto = (abierta ? 'En curso: ' + reg + ' de ' + plantados + ' (faltan ' + n + ').' : (n === 1 ? 'Falta 1 registro' : 'Faltan ' + n + ' registros') + ': la meta es ' + plantados + ' y hay ' + reg + ' puntos.') + cola;
     } else {
       const n = reg - plantados;
-      tono = 'err'; texto = (n === 1 ? 'Sobra 1 registro' : 'Sobran ' + n + ' registros') + ': se plantaron ' + plantados + ' y hay ' + reg + ' puntos. Busque duplicados en el mapa.' + cola;
+      tono = 'err'; texto = (n === 1 ? 'Sobra 1 registro' : 'Sobran ' + n + ' registros') + ': la meta es ' + plantados + ' y hay ' + reg + ' puntos. Busque duplicados en el mapa.' + cola;
     }
     caja.dataset.tono = tono;
     res.textContent = texto;
@@ -603,20 +617,8 @@ SRP.jornadas = {
     return dato;
   },
 
-  async guardarConteo() {
-    const inp = this.el('jornada-plantados');
-    const v = inp.value.trim();
-    const n = v === '' ? null : Number(v);
-    if (n !== null && (!Number.isInteger(n) || n < 0 || n > 9999)) {
-      SRP.util.anunciar('Escriba un número entero de árboles, sin decimales.', 'alerta');
-      inp.value = this.cierre && Number.isInteger(this.cierre.arboles_plantados) ? this.cierre.arboles_plantados : '';
-      return;
-    }
-    this.cierre = await this.guardarEnCierre({ arboles_plantados: n },
-      n === null ? 'Se borró el conteo de la jornada' : 'Conteo de la jornada: ' + n + (n === 1 ? ' árbol plantado' : ' árboles plantados'));
-    this.pintarConciliacion();
-    SRP.util.anunciarSilencioso('Conteo guardado.');
-  },
+  /* El conteo de la cuadrilla (D112) dejó de capturarse aquí: la meta se escribe al iniciar la
+     jornada (D131) y esta pantalla sólo la compara con lo registrado. */
 
   async marcarRevisado(r) {
     const prev = (this.cierre && this.cierre.puntos_revisados) || [];

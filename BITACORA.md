@@ -1337,3 +1337,20 @@ aviso (precisión ±40 m); franja de guardado con envío y folio; especies recie
 
 **Verificación:** 422 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.52.
+
+## Bloque 72 — Meta de la jornada, panel de jornada y reportes cerrados (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.53.
+
+**Qué cambió (D131).** `index.html`: campo «Árboles que se van a plantar»; panel de jornada con
+rótulo y la franja de guardado dentro; título «Nuevo árbol»; conciliación con cifras y sin campo.
+`jornada-activa.js`: meta obligatoria; franja con «n de meta»; rótulo; título del formulario.
+`jornadas.js`: `metaDe()`, `estado()` con meta y estatus, cinco cifras, candado abierto,
+conciliación sin campo (en curso/falta/sobra), «Reporte de la jornada» sólo cerrada; se retira
+`guardarConteo`. `reportes.js`: botón deshabilitado y nota con la jornada abierta; texto de la
+meta. `iconos.js`: `candadoAbierto`. `estilos.css`: panel, rótulo, título, seis columnas de
+cifras, conciliación. `esquema.json`, `espejo.js`, `auditoria.py`, `MAPEO-CAMPOS.md`, diccionario:
+`meta_arboles` en lugar de `arboles_plantados`. Pruebas: meta obligatoria y en la franja, panel y
+título, conciliación con meta, cifras y candados, reporte bloqueado con jornada abierta.
+
+**Verificación:** 425 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.53.

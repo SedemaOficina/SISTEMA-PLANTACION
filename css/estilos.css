@@ -310,7 +310,10 @@ fieldset.campo { margin-inline: 0; }
 .jornada-datos { min-width: 0; display: grid; gap: 2px; }   /* listas de los diálogos Cambiar/Mover */
 .jornada-datos .jornada-dia { font-family: var(--fuente-titulo); font-weight: 600; }
 .jornada-datos .jornada-cifras { font-size: var(--t-xs); color: var(--gris); overflow-wrap: anywhere; }
-#lista-jornadas .jornada-cifras { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+#lista-jornadas .jornada-cifras { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+#lista-jornadas .jornada-cifra:nth-child(1), #lista-jornadas .jornada-cifra:nth-child(2) { grid-column: span 3; }
+#lista-jornadas .jornada-cifra:nth-child(n+3) { grid-column: span 2; }
+#lista-jornadas .jornada-cifra:nth-child(1) b, #lista-jornadas .jornada-cifra:nth-child(2) b { font-size: var(--t-l); }
 .jornada-cifra { display: flex; flex-direction: column; align-items: center; padding: 6px 4px; border-radius: 8px; background: var(--neutro-fondo); font-size: var(--t-xs); color: var(--gris); line-height: 1.15; text-align: center; }
 .jornada-cifra b { font-size: var(--t-m); color: var(--texto); font-weight: 700; }
 .jornada-cifra[data-cero="true"] b { color: var(--neutro-borde); }
@@ -399,8 +402,14 @@ fieldset.campo { margin-inline: 0; }
 .panel-iniciar .fila-botones { display: flex; gap: var(--e-2); margin-top: var(--e-3); }
 .panel-iniciar .fila-botones .btn { flex: 1 1 0; }
 .franja-jornada { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); flex-wrap: wrap; max-width: var(--ancho-max-tabla); margin: 0 auto var(--e-4);
-  padding: var(--e-3) var(--e-4); border-radius: var(--radio-filtro); background: var(--exito-fondo); border-left: 4px solid var(--exito); }
-.franja-jornada[data-tono="alerta"] { background: var(--editar-fondo); border-left-color: var(--dorado); }
+  padding: var(--e-3) var(--e-4); border-radius: var(--radio-filtro); background: var(--acento-suave); border: 1px solid #D3DBE1; border-left: 4px solid var(--acento); }
+.franja-jornada[data-tono="alerta"] { background: var(--editar-fondo); border-left-color: var(--editar-borde); }
+.franja-jornada-rotulo { flex: 1 1 100%; margin: 0 0 -4px; font-family: var(--fuente-titulo); font-size: var(--t-xs); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--acento); }
+.franja-jornada .franja-jornada-titulo strong { font-size: var(--t-l); font-family: var(--fuente-titulo); }
+/* Dentro del panel, el último guardado (D131): tarjeta blanca con su verde */
+.franja-jornada .franja-guardado { flex: 1 1 100%; margin: var(--e-1) 0 0; background: var(--fondo); border: 1px solid var(--borde-suave); border-left: 4px solid var(--exito); }
+/* Título del formulario: separa el panel de jornada de los campos (D131) */
+.titulo-arbol { max-width: var(--ancho-max-tabla); margin: var(--e-5) auto var(--e-3); padding-top: var(--e-4); border-top: 2px solid var(--borde-suave); color: var(--texto); font-size: var(--t-l); }
 .franja-jornada p { margin: 0; flex: 1 1 14rem; min-width: 0; }
 .franja-jornada-titulo { display: block; overflow-wrap: anywhere; }
 .franja-jornada-datos { display: block; font-size: var(--t-xs); color: var(--gris); }
@@ -948,3 +957,7 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .revision-avisos li + li { margin-top: var(--e-1); }
 .chips-recientes { grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: none; margin-bottom: var(--e-2); }
 .chips-recientes .chip { min-height: 40px; font-size: var(--t-xs); overflow-wrap: anywhere; }
+
+/* Conciliación con la meta (D131): dos cifras, sin campo */
+.conciliacion-cifras { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: var(--e-2); }
+.conciliacion-cifras .jornada-cifra b { font-size: var(--t-l); }

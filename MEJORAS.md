@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.52 (Bloque 71)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.53 (Bloque 72)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -102,6 +102,10 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M91 | Opinión aceptada | Sin modal «Registro guardado»: franja verde arriba del formulario limpio («Guardado: especie · folio · lugar · envío») con «Corregir» y «Ver»; el foco queda en «Registrar ubicación» | Alta | 0.6.52 (B71) | Guardar un árbol | Franja de guardado |
 | M92 | Opinión aceptada | Programa a nivel jornada: se elige en «Iniciar jornada», va en la franja y se hereda en cada árbol (cambiable) | Alta | 0.6.52 (B71) | Iniciar jornada: campo Programa; el formulario ya lo trae | Iniciar jornada |
 | M93 | Opinión aceptada | Últimas tres especies de la jornada como atajos encima del buscador | Media | 0.6.52 (B71) | Registrar dos árboles: aparecen los chips | Chips de especies |
+| M94 | Petición de Liber | Meta de árboles en «Iniciar jornada» («Árboles que se van a plantar», obligatoria); desaparece «Árboles plantados según la cuadrilla» de la revisión, que ahora compara contra la meta (en curso mientras esté abierta; falta/sobra al cerrar) | Alta | 0.6.53 (B72) | Iniciar jornada; abrir la revisión | Iniciar jornada; conciliación |
+| M95 | Petición de Liber | Ficha de Jornadas: cifras en el orden meta · registrados (grandes) y por revisar · bien · especies; «Abierta» con candado abierto | Media | 0.6.53 (B72) | Jornadas | Ficha |
+| M96 | Petición de Liber | Nuevo registro: un solo panel «JORNADA ACTIVA» (nombre grande, datos, «n de meta árboles», botones) con el último árbol guardado dentro; luego el título «Nuevo árbol» separa el formulario | Alta | 0.6.53 (B72) | Registrar un árbol | Panel + título |
+| M97 | Petición de Liber | Solo se generan reportes de jornadas cerradas: en Reportes el botón se deshabilita y la nota pide cerrarla; en la revisión «Reporte de la jornada» solo aparece cerrada | Alta | 0.6.53 (B72) | Reportes con la jornada abierta | Nota |
 
 ## 2. Por hacer
 

@@ -103,16 +103,19 @@ SRP.reportes = {
     const previa = (this.pedido && this.pedido.id) || sel.value;
     this.pedido = null;
     caja.hidden = jornadas.length < 2;
-    sel.innerHTML = jornadas.map(j => '<option value="' + j.id + '">' + j.n + ' · ' + SRP.util.escapar(j.nombre) + ' (' + j.registros.length + ')</option>').join('');
+    sel.innerHTML = jornadas.map(j => '<option value="' + j.id + '">' + j.n + ' · ' + SRP.util.escapar(j.nombre) + ' (' + j.registros.length + (j.estatus === 'abierta' ? ' · abierta' : '') + ')</option>').join('');
     if (jornadas.length) sel.value = jornadas.some(j => j.id === previa) ? previa : jornadas[0].id;
     const j = jornadas.find(x => x.id === sel.value) || null;
     const n = j ? j.registros.length : 0;
+    const abierta = !!j && j.estatus === 'abierta';
     this.jornadaElegida = j;
-    this.el('btn-pdf').disabled = !j || !n;
+    // El reporte es de una jornada cerrada (D131): abierta, todavía puede cambiar
+    this.el('btn-pdf').disabled = !j || !n || abierta;
     const quien = this.el('caja-pdf-cabo').hidden ? '' : ' de ' + SRP.ref.nombreUsuario(cabo);
     this.el('pdf-nota').textContent = !dia
       ? 'El reporte es de una jornada. Elija el día.'
       : !j ? 'No hay jornadas del ' + SRP.util.formatearFecha(dia) + quien + '.'
+      : abierta ? 'La jornada «' + j.nombre + '» sigue abierta. Ciérrela en Jornadas para generar su reporte.'
       : !n ? 'La jornada «' + j.nombre + '» no tiene árboles registrados todavía.'
       : (n === 1 ? 'Se reportará el registro' : 'Se reportarán los ' + n + ' registros') + ' de la jornada «' + j.nombre + '»' + (jornadas.length > 1 ? ' (' + j.n + ' de ' + jornadas.length + ')' : '') +
         ' del ' + SRP.util.formatearFecha(dia) + quien + '. Si ya se generó, se vuelve a abrir con sus datos de cierre para corregirlos.';
@@ -237,9 +240,10 @@ SRP.reportes = {
 
   // La conciliación de Jornadas en el reporte (D112): sólo si la cuadrilla anotó cuántos plantó
   textoConteo(cierre, registros) {
-    if (!cierre || !Number.isInteger(cierre.arboles_plantados)) return '';
-    const s = cierre.arboles_plantados, n = registros.length;
-    return 'Árboles plantados según la cuadrilla: ' + s + ' · registrados: ' + n + (s === n ? ' (cuadra)' : ' (no cuadra)');
+    const s = SRP.jornadas.metaDe(cierre);
+    if (s === null) return '';
+    const n = registros.length;
+    return 'Meta de la jornada: ' + s + ' árboles · registrados: ' + n + (s === n ? ' (cuadra)' : ' (no cuadra)');
   },
 
   // «Jornada 2 de 3» bajo la fecha, sólo cuando el día tuvo más de una (D117)

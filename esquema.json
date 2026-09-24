@@ -1113,13 +1113,13 @@
           "regla": ""
         },
         {
-          "campo": "arboles_plantados",
+          "campo": "meta_arboles",
           "tipo": "integer",
-          "nulo": true,
+          "nulo": false,
           "origen": "Persona",
-          "dominio": "0–9999; nulo si la cuadrilla no lo anotó",
-          "pantalla": "Jornadas → «Árboles plantados según la cuadrilla»",
-          "regla": "Conciliación de la jornada (D112): se compara con los registros activos del día y el cabo; el reporte dice si cuadra. Nunca sustituye al conteo de registros"
+          "dominio": "Entero 1–9999",
+          "pantalla": "Árboles que se van a plantar (Iniciar jornada)",
+          "regla": "Obligatoria al iniciar (D131). Jornadas compara registrados contra la meta (falta/sobra) y el reporte la imprime. Sustituye al conteo de la cuadrilla de D112"
         },
         {
           "campo": "puntos_revisados",
