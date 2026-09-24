@@ -73,10 +73,24 @@ SRP.activa = {
     const ab = await this.abiertas();
     if (!ab.length) return;
     this.jornada = ab[0];
+    this.confirmadaOtroDia = null;
     if (this.jornada.fecha !== SRP.util.fechaHoy()) {
-      SRP.util.anunciar('Tiene abierta la jornada «' + this.jornada.nombre + '» del ' + SRP.util.formatearFecha(this.jornada.fecha) +
-        '. Ciérrela o inicie otra antes de registrar.', 'alerta');
+      // Con acción a la mano (D133): cerrar la de ayer desde el aviso; iniciar la de hoy queda en «Cambiar de jornada»
+      const j = this.jornada;
+      SRP.util.anunciar('Tiene abierta la jornada «' + j.nombre + '» del ' + SRP.util.formatearFecha(j.fecha) + '. Ciérrela o inicie la de hoy antes de registrar.', 'alerta',
+        { deshacer: () => this.cerrarJornada(), textoAccion: 'Cerrar «' + j.nombre + '»' });
     }
+  },
+
+  /* Registrar en una jornada que no es de hoy se confirma una vez por sesión (D133): el árbol
+     tomará la fecha de esa jornada. Devuelve true si se puede seguir. */
+  async confirmarOtroDia() {
+    const j = this.jornada;
+    if (!j || j.fecha === SRP.util.fechaHoy() || this.confirmadaOtroDia === j.id) return true;
+    const ok = await SRP.app.confirmar('La jornada activa «' + j.nombre + '» es del ' + SRP.util.formatearFecha(j.fecha) + ', no de hoy. El árbol quedará con esa fecha. ' +
+      'Si es de hoy, cancele y toque «Cambiar de jornada» para iniciar la de hoy.', 'Sí, es de esa jornada', 'palomita');
+    if (ok) this.confirmadaOtroDia = j.id;
+    return ok;
   },
 
   /* ---------- Pantalla ---------- */
@@ -253,11 +267,25 @@ SRP.activa = {
     SRP.formulario.el('btn-ubicacion').focus({ preventScroll: true });
   },
 
+  /* Lo que queda pendiente al cerrar (D133): puntos por revisar y distancia a la meta. Es aviso, no
+     impedimento: la jornada se puede cerrar así y reabrir después. */
+  async textoCierre(j) {
+    const regs = await this.registrosDe(j);
+    const vista = SRP.jornadas.jornadasAlcance ? (await SRP.jornadas.jornadasAlcance()).find(x => x.id === j.id) : null;
+    const pend = vista ? SRP.jornadas.pendientes(vista, SRP.jornadas.avisos(vista), j).length : 0;
+    const meta = SRP.jornadas.metaDe(j);
+    const n = regs.length;
+    const avisos = [];
+    if (pend) avisos.push(pend === 1 ? '1 punto por revisar' : pend + ' puntos por revisar');
+    if (meta !== null && n < meta) avisos.push((meta - n) + (meta - n === 1 ? ' árbol' : ' árboles') + ' por debajo de la meta (' + n + ' de ' + meta + ')');
+    if (meta !== null && n > meta) avisos.push((n - meta) + (n - meta === 1 ? ' árbol' : ' árboles') + ' por encima de la meta (' + n + ' de ' + meta + ')');
+    const base = '¿Cerrar la jornada «' + j.nombre + '» con ' + n + (n === 1 ? ' árbol' : ' árboles') + '?';
+    return avisos.length ? base + ' Queda pendiente: ' + avisos.join(' · ') + '. Se puede cerrar de todos modos y reabrir después.' : base + ' Se puede reabrir después.';
+  },
+
   async cerrarJornada() {
     const j = this.jornada; if (!j) return;
-    const regs = await this.registrosDe(j);
-    const ok = await SRP.app.confirmar('¿Cerrar la jornada «' + j.nombre + '» con ' + regs.length + (regs.length === 1 ? ' árbol' : ' árboles') +
-      '? Pasará a su revisión; se puede reabrir después.', 'Cerrar jornada', 'candado');
+    const ok = await SRP.app.confirmar(await this.textoCierre(j), 'Cerrar jornada', 'candado');
     if (!ok) return;
     await this.cambiarEstatus(j, 'cerrada');
     this.jornada = null;
@@ -268,8 +296,11 @@ SRP.activa = {
 
   async reabrir(j) {
     await this.cambiarEstatus(j, 'abierta');
-    this.jornada = await SRP.almacen.uno('jornadas', j.id);
-    SRP.util.anunciar('Jornada «' + j.nombre + '» reabierta. Es la activa en Nuevo registro.');
+    // Sólo pasa a ser la activa de quien la reabre si es suya (D133): un coordinador la reabre para su cabo
+    if (j.cabo_id === SRP.sesion.usuario.id) {
+      this.jornada = await SRP.almacen.uno('jornadas', j.id);
+      SRP.util.anunciar('Jornada «' + j.nombre + '» reabierta. Es la activa en Nuevo registro.');
+    } else SRP.util.anunciar('Jornada «' + j.nombre + '» reabierta para ' + SRP.ref.nombreUsuario(j.cabo_id) + '.');
   },
 
   async cambiarEstatus(j, estatus) {

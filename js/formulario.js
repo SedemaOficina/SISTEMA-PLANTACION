@@ -390,6 +390,12 @@ SRP.formulario = {
     };
   },
 
+  // Hay un árbol a medias si ya hay punto, especie, foto o comentario y no es una edición (D133)
+  aMedias() {
+    if (this.estado.editando) return false;
+    return SRP.mapa.lat !== null || !!this.estado.especieId || !!this.estado.foto || !!this.el('campo-comentarios').value.trim();
+  },
+
   /* Al tocar «Guardar» (D130): con errores se señalan; con algo que revisar (precisión que no es
      buena, especie fuera del catálogo, posible duplicado, árbol lejos de la jornada) o en edición,
      se abre la ficha con esos avisos arriba; si no, se guarda de una vez. */
@@ -397,6 +403,8 @@ SRP.formulario = {
     const errores = this.validar();
     this.mostrarErrores(errores);
     if (errores.length) return;
+    // Una jornada que no es de hoy se confirma antes de guardar en ella (D133)
+    if (!this.estado.editando && !(await SRP.activa.confirmarOtroDia())) return;
     // El identificador se fija aquí y es el que se guarda, pase o no por la ficha
     if (!this.estado.editando && !this.estado.idPrevisto) this.estado.idPrevisto = SRP.util.generarId();
     const avisos = await this.avisos(this.valores());

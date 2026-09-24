@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.54 (Bloque 73)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.55 (Bloque 74)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -109,6 +109,10 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M98 | Análisis (P1) | «Editar jornada» en su ficha: nombre, ubicación, programa, meta, fecha y comentarios; si cambia la fecha, sus árboles la heredan; queda en el historial. Se puede abierta o cerrada, cumplida o no la meta | Alta | 0.6.54 (B73) | Jornadas › ficha › Editar jornada | Diálogo |
 | M99 | Análisis (P2) | «Eliminar jornada» solo cuando no tiene árboles, con confirmación roja | Alta | 0.6.54 (B73) | Iniciar una jornada y, sin registrar, eliminarla desde su ficha | Ficha vacía |
 | M100 | Observación de Liber | El programa ya no se pregunta por árbol: se hereda de la jornada y el campo queda oculto; solo se ve al editar un registro | Media | 0.6.54 (B73) | Nuevo registro: sin campo Programa | Formulario |
+| M101 | Análisis (P3) | Un árbol a medias no se pierde en silencio: al cambiar de sección pregunta «¿Descartarlo y salir?» (rojo) | Alta | 0.6.55 (B74) | Poner punto o especie y tocar Jornadas | Diálogo |
+| M102 | Análisis (P4) | «Cerrar jornada» dice lo pendiente: puntos por revisar y árboles por debajo/encima de la meta; se puede cerrar de todos modos | Alta | 0.6.55 (B74) | Cerrar una jornada incompleta | Diálogo |
+| M103 | Análisis (P5) | Coordinador y administrador cierran, reabren y editan las jornadas de sus cabos; reabrir una ajena no la vuelve la activa de quien la reabre | Alta | 0.6.55 (B74) | Entrar como coordinador y abrir una jornada de un cabo | Ficha |
+| M104 | Análisis (P6) | Jornada de otro día abierta: el aviso al entrar trae el botón «Cerrar «nombre»»; guardar en ella pide confirmar una vez («no de hoy; el árbol quedará con esa fecha») | Alta | 0.6.55 (B74) | Entrar con una jornada de ayer abierta; intentar guardar | Aviso y diálogo |
 
 ## 2. Por hacer
 

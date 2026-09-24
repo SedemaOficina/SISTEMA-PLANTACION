@@ -62,8 +62,15 @@ SRP.app = {
     this.iniciarMenusAcciones();
     this.ponerIconos();
 
-    this.el('navegacion').addEventListener('click', (e) => {
+    this.el('navegacion').addEventListener('click', async (e) => {
       const b = e.target.closest('.pestana'); if (!b) return;
+      if (b.dataset.vista === this.vista) return;
+      // Un árbol a medias no se pierde en silencio (D133)
+      if (this.vista === 'registrar' && b.dataset.vista !== 'registrar' && SRP.formulario.aMedias()) {
+        const ok = await this.confirmar('Está capturando un árbol que no se ha guardado. ¿Descartarlo y salir?', 'Descartar el árbol', 'basura');
+        if (!ok) return;
+        SRP.formulario.limpiar();
+      }
       if (SRP.formulario.estado.editando && b.dataset.vista !== 'registrar') SRP.formulario.limpiar();
       this.mostrarVista(b.dataset.vista);
     });

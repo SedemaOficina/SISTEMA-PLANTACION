@@ -50,12 +50,14 @@ def registrar(pg, busqueda, especie_id, programa='p-refor', fecha=None, foto=Non
     # El programa se hereda de la jornada y el campo va oculto (D132); la prueba lo fija en el dato para poder variarlo
     pg.evaluate("document.getElementById('campo-programa').value = '%s'" % programa); pg.wait_for_timeout(100)
     if foto: pg.set_input_files('#foto-archivo', foto); pg.wait_for_timeout(800)
+    editando = pg.evaluate("SRP.formulario.estado.editando ? SRP.formulario.estado.editando.id : null")
     pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(800)
-    ident = pg.evaluate("SRP.formulario.estado.editando ? SRP.formulario.estado.editando.id : (SRP.formulario.estado.idPrevisto || SRP.formulario.estado.ultimoGuardado)")
+    # Una jornada que no es de hoy se confirma una vez (D133)
+    if pg.is_visible('#dlg-confirmar'): pg.click('#btn-confirmar-si'); pg.wait_for_timeout(800)
     # Con precisión buena y sin avisos se guarda de una vez (D130); si algo hay que revisar, la ficha pide confirmar
     if pg.is_visible('#dlg-resumen'): pg.click('#btn-resumen-guardar'); pg.wait_for_timeout(600)
     pg.wait_for_timeout(300)
-    return ident
+    return editando or pg.evaluate("SRP.formulario.estado.ultimoGuardado")
 
 with sync_playwright() as p:
     b=p.chromium.launch()
@@ -911,7 +913,9 @@ with sync_playwright() as p:
     ok(pg.is_visible('#btn-jornada-estado') and 'Reabrir' in pg.inner_text('#btn-jornada-estado') and 'btn-editar' in pg.get_attribute('#btn-jornada-estado','class'),'una jornada cerrada ofrece «Reabrir jornada» en dorado (D121)')
     pg.click('#btn-jornada-estado'); pg.wait_for_timeout(600)
     ok('Cerrar jornada' in pg.inner_text('#btn-jornada-estado') and 'btn-primario' in pg.get_attribute('#btn-jornada-estado','class') and pg.locator('#btn-jornada-estado svg').count()==1 and 'abierta' in pg.inner_text('#jornada-sub') and pg.evaluate("SRP.activa.jornada && SRP.activa.jornada.id")==M['jids'][1],'reabrir la deja abierta y activa; «Cerrar jornada» va en guinda con candado, no en verde (D121)')
-    pg.click('#btn-jornada-estado'); pg.wait_for_timeout(300); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(600)
+    pg.click('#btn-jornada-estado'); pg.wait_for_timeout(300)
+    ok('Queda pendiente' in pg.inner_text('#dlg-confirmar-texto') and 'por debajo de la meta' in pg.inner_text('#dlg-confirmar-texto'),'al cerrar, el diálogo dice lo que queda pendiente frente a la meta (D133): '+pg.inner_text('#dlg-confirmar-texto'))
+    pg.click('#btn-confirmar-si'); pg.wait_for_timeout(600)
     ok('Reabrir' in pg.inner_text('#btn-jornada-estado') and pg.evaluate("SRP.activa.jornada")is None,'y cerrarla la quita de activa')
     # D125: «Cerrar jornada» desde la franja siempre llega a la ficha de esa jornada en Jornadas, aunque sea de otro día y el filtro esté en «Hoy»
     pg.evaluate("SRP.jornadas.aplicarAtajo('hoy')"); pg.wait_for_timeout(200)
@@ -919,6 +923,20 @@ with sync_playwright() as p:
     pg.click('#btn-jornada-cerrar'); pg.wait_for_timeout(300); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(800)
     d125=[pg.is_visible('#vista-jornadas'), pg.is_visible('#jornada-detalle'), pg.inner_text('#jornada-titulo'), pg.get_attribute('#jornada-atajos [data-atajo=dia]','aria-pressed'), pg.input_value('#jornada-dia')]
     ok(d125==[True, True, 'Jornada de ayer', 'true', '2026-09-22'],'cerrar una jornada de otro día desde la franja abre su ficha en Jornadas y ajusta el filtro a ese día (D125): %s' % d125)
+    # D133: registrar en una jornada que no es de hoy se confirma; un árbol a medias no se pierde al cambiar de sección
+    iniciar_jornada(pg, 'Jornada de anteayer', '2026-09-21')
+    pg.click('#btn-ubicacion'); pg.wait_for_timeout(700); pg.fill('#campo-especie','ahuehu'); pg.wait_for_timeout(200); pg.dispatch_event('.combo-opcion[data-id="ESP-0070"]','mousedown'); pg.wait_for_timeout(150)
+    pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(500)
+    ok(pg.is_visible('#dlg-confirmar') and 'no de hoy' in pg.inner_text('#dlg-confirmar-texto') and 'Cambiar de jornada' in pg.inner_text('#dlg-confirmar-texto'),'guardar en una jornada de otro día pide confirmar y dice cómo iniciar la de hoy (D133)')
+    pg.click('#btn-confirmar-no'); pg.wait_for_timeout(300)
+    ok(pg.evaluate("SRP.formulario.aMedias()") and pg.evaluate("(async () => (await SRP.almacen.porIndice('plantaciones','estatus','activo')).filter(r => r.jornada_id === SRP.activa.jornada.id).length)()")==0,'cancelar no guarda y el árbol sigue a medias en pantalla')
+    pg.click('.pestana[data-vista=jornadas]'); pg.wait_for_timeout(300)
+    ok(pg.is_visible('#dlg-confirmar') and 'no se ha guardado' in pg.inner_text('#dlg-confirmar-texto') and 'btn-peligro' in pg.get_attribute('#btn-confirmar-si','class'),'salir con un árbol a medias pide confirmar en rojo (D133)')
+    pg.click('#btn-confirmar-no'); pg.wait_for_timeout(300)
+    ok(pg.is_visible('#vista-registrar') and pg.input_value('#campo-especie')!='','«Cancelar» se queda en el formulario con lo capturado')
+    pg.click('.pestana[data-vista=jornadas]'); pg.wait_for_timeout(300); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
+    ok(pg.is_visible('#vista-jornadas') and not pg.evaluate("SRP.formulario.aMedias()"),'«Descartar» sale y limpia el formulario')
+    pg.evaluate("async () => { const j = SRP.activa.jornada; await SRP.activa.cambiarEstatus(j, 'cerrada'); SRP.activa.jornada = null; }"); pg.wait_for_timeout(300)
     pg.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg.wait_for_timeout(300)
     pg.evaluate("SRP.jornadas.abrir('%s')" % M['jids'][1]); pg.wait_for_timeout(400)   # se vuelve a la jornada 2 para lo que sigue
     # D124: sistema de botones. El acento es pizarra; verde, rojo y ámbar significan; los filtros son píldoras
@@ -1106,6 +1124,19 @@ with sync_playwright() as p:
     ok(pg.is_hidden('.pestana[data-vista=catalogos]') and pg.is_hidden('.pestana[data-vista=usuarios]'),'no ve Catálogos ni Usuarios')
     ok(not pg.evaluate("document.getElementById('caja-filtro-cabo').hidden") and 'cabo' in pg.inner_text('#filtro-mas-filtros summary'),'sí tiene filtro por cabo, dentro de «Más filtros» (D129): '+pg.inner_text('#filtro-mas-filtros summary'))
     # Galería de fotografías (D118): coordinación y administración la ven; el cabo no
+    # El coordinador cierra y reabre las jornadas de sus cabos (D133)
+    pg.click('.pestana[data-vista=jornadas]'); pg.wait_for_timeout(600); pg.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg.wait_for_timeout(300)
+    pg.click('#lista-jornadas .jornada button >> nth=0'); pg.wait_for_timeout(800)
+    ok(pg.is_visible('#btn-jornada-estado') and pg.is_visible('#btn-jornada-editar') and pg.inner_text('#jornada-sub').find('Fulana')>=0,'en la jornada de un cabo, el coordinador ve Cerrar/Reabrir y Editar (D133): '+pg.inner_text('#btn-jornada-estado'))
+    era=pg.inner_text('#btn-jornada-estado')
+    pg.click('#btn-jornada-estado'); pg.wait_for_timeout(300)
+    if pg.is_visible('#dlg-confirmar'): pg.click('#btn-confirmar-si')
+    pg.wait_for_timeout(700)
+    ok(pg.inner_text('#btn-jornada-estado')!=era and pg.evaluate("SRP.activa.jornada === null || SRP.activa.jornada.cabo_id === SRP.sesion.usuario.id"),'cambia el estado de la jornada del cabo sin volverse la activa del coordinador')
+    pg.click('#btn-jornada-estado'); pg.wait_for_timeout(300)
+    if pg.is_visible('#dlg-confirmar'): pg.click('#btn-confirmar-si')
+    pg.wait_for_timeout(700)
+    ok(pg.inner_text('#btn-jornada-estado')==era,'y la deja como estaba')
     ok(pg.is_visible('.pestana[data-vista=galeria]'),'el coordinador ve la sección Fotografías (D118)')
     pg.click('.pestana[data-vista=galeria]'); pg.wait_for_timeout(600)
     ok(pg.is_visible('#vista-galeria') and pg.locator('#galeria-rejilla .galeria-foto').count()>=1,'la galería muestra las fotografías de su cuadrilla: %d' % pg.locator('#galeria-rejilla .galeria-foto').count())

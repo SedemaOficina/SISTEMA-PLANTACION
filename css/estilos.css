@@ -748,8 +748,10 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
   background: var(--texto); color: var(--fondo); font-weight: 500; font-size: var(--t-s); box-shadow: 0 8px 24px rgba(0, 0, 0, .25);
 }
 .aviso-icono { display: grid; color: var(--aviso-exito); flex-shrink: 0; }
-.aviso-texto { flex: 1; min-width: 0; }
-.aviso-accion { min-height: 40px; padding: 0 var(--e-3); border: 0; border-radius: 8px; background: none; color: var(--aviso-accion); font: inherit; font-weight: 700; cursor: pointer; }
+.aviso-texto { flex: 1 1 12rem; min-width: 0; }
+/* Con un texto largo, la acción baja a su propio renglón en vez de aplastar el texto (D133) */
+.aviso { flex-wrap: wrap; }
+.aviso-accion { min-height: 40px; padding: 0 var(--e-3); border: 0; border-radius: 8px; background: none; color: var(--aviso-accion); font: inherit; font-weight: 700; cursor: pointer; margin-left: auto; white-space: nowrap; }
 .aviso-cerrar { display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: none; color: var(--fondo); opacity: .8; cursor: pointer; flex-shrink: 0; }
 
 /* Vista previa del parte (D101): una hoja blanca con el contenido del PDF */

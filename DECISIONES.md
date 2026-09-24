@@ -1006,3 +1006,14 @@
   el campo queda oculto en Nuevo registro y sólo se ve al editar un registro, donde es dato del
   árbol. Propuesto en el análisis del 23-09-2026 (P1, P2) y aprobado por Liber; la observación del
   programa doble es suya, 24-09-2026.
+- **D133. Cuatro salvaguardas de campo.** (1) Al cambiar de sección con un árbol a medias (punto,
+  especie, foto o comentario, sin ser edición) se pregunta «¿Descartarlo y salir?» en rojo; antes
+  se perdía en silencio. (2) «Cerrar jornada», desde la franja o desde la ficha, dice lo que queda
+  pendiente —puntos por revisar y árboles por debajo o por encima de la meta— y deja cerrar de
+  todos modos. (3) Cerrar, reabrir y editar una jornada lo puede hacer quien registra en ella o
+  quien la alcanza (coordinador de ese cabo, administrador); reabrir una jornada ajena no la
+  vuelve la activa de quien la reabre. (4) Con una jornada de otro día abierta, el aviso al entrar
+  trae la acción «Cerrar «nombre»», y guardar en ella se confirma una vez por sesión («no es de
+  hoy; el árbol quedará con esa fecha; cancele y toque Cambiar de jornada para iniciar la de
+  hoy»). El aviso flotante deja bajar su acción a un renglón propio cuando el texto es largo.
+  Propuesto en el análisis del 23-09-2026 (P3–P6) y aprobado por Liber, 24-09-2026.

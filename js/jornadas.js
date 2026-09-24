@@ -103,7 +103,7 @@ SRP.jornadas = {
     this.el('btn-jornada-estado').addEventListener('click', async () => {
       const j = await this.cierreDe(this.jornada); if (!j) return;
       if (j.estatus === 'abierta') {
-        const ok = await SRP.app.confirmar('¿Cerrar la jornada «' + j.nombre + '»? Se puede reabrir después.', 'Cerrar jornada', 'candado');
+        const ok = await SRP.app.confirmar(await SRP.activa.textoCierre(j), 'Cerrar jornada', 'candado');
         if (!ok) return;
         await SRP.activa.cambiarEstatus(j, 'cerrada');
         if (SRP.activa.jornada && SRP.activa.jornada.id === j.id) SRP.activa.jornada = null;
@@ -460,10 +460,10 @@ SRP.jornadas = {
     this.el('jornada-comentarios').textContent = cierre.comentarios || '';
     // Cerrar o reabrir la jornada desde su revisión (D119): quien registra en ella
     const propia = cierre.cabo_id === u.id;
-    const btnEstado = this.el('btn-jornada-estado');
-    btnEstado.hidden = !propia;
-    // Editar: quien registra en ella o quien la alcanza (coordinador de ese cabo, administrador); eliminar sólo vacía (D132)
+    // Cerrar/reabrir, editar: quien registra en ella o quien la alcanza (coordinador de ese cabo, administrador) (D132, D133); eliminar sólo vacía
     const puedeJornada = propia || SRP.permisos.puedeEditar(u, cierre, SRP.ref.usuarioPorId);
+    const btnEstado = this.el('btn-jornada-estado');
+    btnEstado.hidden = !puedeJornada;
     this.el('btn-jornada-editar').hidden = !puedeJornada;
     this.el('btn-jornada-eliminar').hidden = !(puedeJornada && regs.length === 0);
     // Cerrar no es aprobar: guinda con candado; reabrir es corregir: dorado con lápiz (D121)

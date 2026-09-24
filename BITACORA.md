@@ -1367,3 +1367,17 @@ ayudante `registrar` fija el programa en el dato; la prueba de eliminar elige un
 
 **Verificación:** 434 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.54.
+
+## Bloque 74 — Salvaguardas de campo (24-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.55.
+
+**Qué cambió (D133).** `app.js`: confirmación al salir con un árbol a medias. `formulario.js`:
+`aMedias()`, confirmación de jornada de otro día antes de guardar. `jornada-activa.js`:
+`textoCierre()` con pendientes y meta, aviso con acción al entrar, `confirmarOtroDia()`, `reabrir`
+sólo activa si es propia. `jornadas.js`: cerrar/reabrir para quien alcanza la jornada, mismo texto
+de cierre. `estilos.css`: el aviso flotante envuelve su acción. Pruebas: texto de cierre, confirmar
+en jornada de otro día, salir con árbol a medias, coordinador cierra/reabre; ayudante `registrar`
+atiende la confirmación y devuelve el id guardado.
+
+**Verificación:** 443 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.55.
