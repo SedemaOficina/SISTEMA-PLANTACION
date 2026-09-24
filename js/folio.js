@@ -87,6 +87,20 @@ SRP.folio = {
     return pendientes.length;
   },
 
+  /* El folio que tocará a un registro nuevo, para la ficha «Revise antes de guardar» (D126): con datos
+     de prueba, la celda del punto y el consecutivo que sigue, contando los registros de esa celda
+     que aún esperan folio. No incrementa la secuencia: la emisión sigue siendo una sola, al guardar
+     y sincronizar (R3). Sin simulación devuelve null. */
+  async previsto(registro) {
+    if (!this.simulado() || !SRP.almacen.db) return null;
+    const celda = registro.uga && /^[A-Z]{3}-\d{3}$/.test(registro.uga) ? registro.uga : 'EXT-000';
+    const n = (this.leerSecuencias()[celda] || 0) + 1;
+    const enEspera = (await SRP.almacen.todos('plantaciones')).filter(r => r.es_ficticio && !this.valido(r.folio) && r.id !== registro.id &&
+      ((r.uga && /^[A-Z]{3}-\d{3}$/.test(r.uga) ? r.uga : 'EXT-000') === celda)).length;
+    if (n + enEspera > this.TECHO) return null;
+    return this.armar(celda, n + enEspera);
+  },
+
   // Cómo se escribe el folio junto a su aviso: los simulados lo dicen para que nadie los tome por reales
   textoLargo(registro) {
     if (!this.valido(registro.folio)) return this.PROVISIONAL;

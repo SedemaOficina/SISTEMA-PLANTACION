@@ -1274,3 +1274,13 @@ colores nuevos, D124 (acento, radio, píldoras, apoyo, volver) y D125.
 
 **Verificación:** 413 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.47.
+
+## Bloque 67 — Folio previsto en la ficha de revisión (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.48.
+
+**Qué cambió (D126).** `folio.js`: `previsto(registro)`. `formulario.js`: `revisar()` asíncrono;
+filas Fotografía, Folio (previsto o PROVISIONAL), Cabo; sin bloque «Datos del sistema». Pruebas:
+el identificador se lee del estado, folio previsto con patrón y sin gastar secuencia, orden final.
+
+**Verificación:** 411 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.48.

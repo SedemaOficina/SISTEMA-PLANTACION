@@ -935,3 +935,12 @@
   la jornada es de otro día, o en otro cabo), el filtro se ajusta a ella («Un día» con su fecha;
   cabo en «Todos»). Antes, en ese caso, se llegaba a la lista sin la jornada. Pedido por Liber,
   23-09-2026.
+- **D126. La ficha de revisión enseña el folio que tocará y esconde el identificador.** Orden final
+  de la ficha: …, Fotografía, Folio, Cabo. Con datos de prueba el Folio ya no dice PROVISIONAL sino
+  el que recibirá al guardar («COY-049-00002 (simulado)»): la celda del punto y el consecutivo
+  siguiente de la secuencia simulada, contando los registros de esa celda que aún esperan folio
+  (`SRP.folio.previsto`); no incrementa la secuencia, la emisión sigue ocurriendo una sola vez al
+  guardar y sincronizar (R3). Sin simulación (ES_FICTICIO en false) vuelve a decir PROVISIONAL,
+  porque el folio real lo da el servidor. El bloque «Datos del sistema» con el identificador UUID
+  y su nota se quitan de la ficha: es dato interno, no de quien registra; sigue en el detalle del
+  registro y en el espejo. Pedido por Liber, 23-09-2026.

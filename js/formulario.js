@@ -355,7 +355,7 @@ SRP.formulario = {
     };
   },
 
-  revisar() {
+  async revisar() {
     const errores = this.validar();
     this.mostrarErrores(errores);
     if (errores.length) return;
@@ -367,6 +367,9 @@ SRP.formulario = {
     const v = this.valores();
     const esp = SRP.ref.especieDe(v);
     const esc = SRP.util.escapar;
+    const editando = this.estado.editando;
+    const folio = editando && SRP.folio.valido(editando.folio) ? SRP.folio.textoLargo(editando)
+      : await (async () => { const f = await SRP.folio.previsto(Object.assign({ id }, v)); return f ? f + ' (simulado)' : SRP.folio.PROVISIONAL; })();
 
     // Orden del formulario: primero lo que el cabo revisa; los datos que pone el sistema, al final
     // y en chico (D99). La ubicación no se teclea: se corrige volviendo a colocar el punto.
@@ -380,16 +383,14 @@ SRP.formulario = {
       ['Colonia', esc(SRP.ref.colonia(v.colonia)), null],
       ['Coordenadas', v.lat.toFixed(6) + ', ' + v.lng.toFixed(6), 'punto'],
       ['Cómo se obtuvo', this.textoOrigenRevision(v), null],
-      ['Cabo', esc(this.nombreCabo()), null],
       ['Comentarios', v.comentarios ? esc(v.comentarios) : 'Sin comentarios', 'comentarios'],
       ['Fotografía', v.foto_base64
         ? '<img class="revision-foto" src="' + v.foto_base64 + '" alt="Fotografía del árbol que se va a registrar">'
         : 'Sin fotografía', 'foto'],
-      // El folio va a la vista, bajo la fotografía (D123): es lo que la persona citará
-      ['Folio', '<span class="folio-provisional">' + esc(SRP.folio.PROVISIONAL) + '</span>', null]
-    ];
-    const sistema = [
-      ['Identificador', '<span class="revision-id">' + esc(id) + '</span>']
+      // El folio va a la vista, bajo la fotografía (D123), y con datos de prueba se enseña el que
+      // tocará (D126); el identificador interno ya no se muestra
+      ['Folio', '<span class="folio-provisional">' + esc(folio) + '</span>', null],
+      ['Cabo', esc(this.nombreCabo()), null]
     ];
 
     this.el('revision-lista').innerHTML = filas.map(([etiqueta, valor, campo]) => {
@@ -398,12 +399,7 @@ SRP.formulario = {
           'aria-label="Editar ' + etiqueta.toLowerCase() + '">' + SRP.ICONOS.svg('lapiz', 16) + '<span>Editar</span></button>'
         : '<span></span>';
       return '<div class="revision-fila"><dt>' + etiqueta + '</dt><dd>' + valor + '</dd>' + boton + '</div>';
-    }).join('') +
-      '<div class="revision-sistema"><p class="revision-sistema-titulo">Datos del sistema</p>' +
-      sistema.map(([etiqueta, valor]) => '<div class="revision-fila revision-fila-sola"><dt>' + etiqueta + '</dt><dd>' + valor + '</dd></div>').join('') +
-      '<p class="revision-nota">El folio lo asignará el servidor al sincronizar; hasta entonces el registro es provisional. ' +
-      'El identificador lo asigna el sistema y no se modifica. ' +
-      'La alcaldía sale del punto: para cambiarla hay que mover la coordenada.</p></div>';
+    }).join('');
 
     this.el('dlg-resumen').showModal();
     this.dibujarMapaRevision(v.lat, v.lng);

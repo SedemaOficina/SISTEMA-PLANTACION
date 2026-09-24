@@ -48,7 +48,7 @@ def registrar(pg, busqueda, especie_id, programa='p-refor', fecha=None, foto=Non
     pg.select_option('#campo-programa', programa); pg.wait_for_timeout(150)
     if foto: pg.set_input_files('#foto-archivo', foto); pg.wait_for_timeout(800)
     pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(800)
-    ident = pg.inner_text('#revision-lista .revision-id')
+    ident = pg.evaluate("SRP.formulario.estado.editando ? SRP.formulario.estado.editando.id : SRP.formulario.estado.idPrevisto")
     pg.click('#btn-resumen-guardar'); pg.wait_for_timeout(600)
     pg.click('#btn-registro-nuevo'); pg.wait_for_timeout(400)
     return ident
@@ -401,18 +401,17 @@ with sync_playwright() as p:
        'la fotografía va debajo de los datos, no encima')
     ok(pg.evaluate("getComputedStyle(document.querySelector('.revision-fila dt')).fontWeight")=='700',
        'las etiquetas de la ficha van en negritas')
-    ok(float(pg.evaluate("parseFloat(getComputedStyle(document.querySelector('.revision-nota')).marginTop)"))>=12,
-       'la nota del final tiene aire arriba')
     ok(pg.evaluate("SRP.mapa.icono.options.iconSize[0]")<=24,
        'el pin es discreto (%s px de ancho)' % pg.evaluate("SRP.mapa.icono.options.iconSize[0]"))
-    id1=pg.inner_text('#revision-lista .revision-id')
-    ok(len(id1)>20,'la ficha muestra el identificador')
-    ok(pg.locator('.revision-fila', has_text='Identificador').locator('button').count()==0,'el identificador no se edita')
+    id1=pg.evaluate("SRP.formulario.estado.idPrevisto")
+    ok(len(id1)>20 and pg.locator('#revision-lista .revision-id').count()==0 and 'Identificador' not in pg.inner_text('#revision-lista'),'el identificador queda fijado pero ya no se muestra en la ficha (D126)')
     ok(pg.locator('button[data-campo=punto]').count()==1,'sólo las coordenadas remiten al mapa')
     ok(pg.locator('.revision-fila', has_text='Alcaldía').locator('button').count()==0,'la alcaldía no se edita: sale del punto')
     ok(pg.inner_text('button[data-campo=especie]').strip()=='Editar','la ficha usa la palabra Editar')
     ok(HOY_TXT in pg.inner_text('#revision-lista'),'las fechas se leen con el mes en letras: '+HOY_TXT)
-    ok('PROVISIONAL' in pg.inner_text('#revision-lista .folio-provisional'),'la ficha muestra el folio como PROVISIONAL (R1)')
+    fol=pg.inner_text('#revision-lista .folio-provisional')
+    sec=pg.evaluate("SRP.folio.leerSecuencias()")
+    ok(re.match(r'^[A-Z]{3}-\d{3}-\d{5} \(simulado\)$', fol) is not None and int(fol[8:13])>sec.get(fol[:7],0),'con datos de prueba la ficha enseña el folio que tocará, sin gastar la secuencia (D126): %s (secuencia %s)' % (fol, sec.get(fol[:7],0)))
     # Editar especie desde la ficha: el texto queda seleccionado y la lista ofrece todo, no sólo «Otra especie» (D76)
     pg.click('#revision-lista button[data-campo=especie]'); pg.wait_for_timeout(300)
     opc=pg.locator('#lista-especies .combo-opcion').count()
@@ -433,8 +432,8 @@ with sync_playwright() as p:
       return { pie: !!p && getComputedStyle(p).position==='sticky', ancho: br.width >= dr.width*0.8, abajo: br.top > dr.top + dr.height/2 }; }''')
     ok(all(pie.values()),'Guardar va al pie de la ficha, fijo y a todo el ancho (D99): %s' % pie)
     orden=pg.evaluate("[...document.querySelectorAll('#revision-lista > .revision-fila dt')].map(x=>x.textContent)")
-    ok(orden[0]=='Especie' and orden[-1]=='Folio' and orden[-2]=='Fotografía' and pg.locator('.revision-sistema .folio-provisional').count()==0 and pg.locator('.revision-sistema .revision-id').count()==1,
-       'la ficha empieza por Especie, el Folio va bajo la Fotografía y el Identificador queda en «Datos del sistema» (D99, D123): %s' % orden[-3:])
+    ok(orden[0]=='Especie' and orden[-1]=='Cabo' and orden[-2]=='Folio' and orden[-3]=='Fotografía' and pg.locator('.revision-sistema').count()==0,
+       'la ficha empieza por Especie y termina Fotografía, Folio, Cabo, sin «Datos del sistema» (D99, D123, D126): %s' % orden[-3:])
     dist=pg.inner_text('#revision-lista .revision-fila:first-child dd')
     ok('revision-distribucion' in pg.inner_html('#revision-lista .revision-fila:first-child dd') and any(t in dist for t in ['Nativa','Introducida','Endémica','Exótica']),'la fila de Especie dice también el tipo de distribución del catálogo (D123): '+dist.replace('\n',' · '))
     ok(pg.locator('.revision-fila', has_text='Cómo se obtuvo').locator('.precision').count()==1,'«Cómo se obtuvo» muestra la insignia de precisión del GPS (D99)')
