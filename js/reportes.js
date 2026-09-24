@@ -403,7 +403,9 @@ SRP.reportes = {
     doc.text(SRP.util.formatearFecha(fecha) + (this.textoJornada(jornada) ? ' · ' + this.textoJornada(jornada) : ''), ancho / 2, 46, { align: 'center' });
 
     let y = 56;
-    const salto = (necesario) => { if (y + necesario > alto - 24) { doc.addPage(); y = 25; } };
+    // El pie va en alto − 16: un bloque cabe si termina antes de alto − 19 (M44: antes se reservaban
+    // 24 mm más el aire del propio bloque, y un apartado corto saltaba de página cuando sí cabía)
+    const salto = (necesario) => { if (y + necesario > alto - 19) { doc.addPage(); y = 25; } };
 
     // Sitio: tal como lo escribió quien cerró el reporte, con el territorio que el sistema derivó
     const alcaldias = this.alcaldiasDe(registros);
@@ -441,7 +443,7 @@ SRP.reportes = {
     // Apartado de texto libre: título guinda y párrafo, sólo si hay contenido
     const apartado = (titulo, texto) => {
       const lineas = doc.splitTextToSize(texto, util);
-      salto(10 + lineas.length * 4.6);
+      salto(7 + lineas.length * 4.6);   // lo que ocupa hasta su última línea, sin el aire de abajo
       doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...C.guinda);
       doc.text(titulo.toUpperCase(), M, y);
       doc.setDrawColor(...C.dorado); doc.setLineWidth(0.2); doc.line(M, y + 1.5, ancho - M, y + 1.5);
@@ -543,7 +545,7 @@ SRP.reportes = {
       porPrograma[n] = (porPrograma[n] || 0) + 1;
     });
     const programas = Object.keys(porPrograma).sort();
-    salto(10 + programas.length * 5);
+    salto(6 + programas.length * 5);
     doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...C.guinda);
     doc.text('POR PROGRAMA', M, y);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(...C.tinta);

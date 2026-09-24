@@ -16,7 +16,7 @@
 window.SRP = window.SRP || {};
 
 SRP.galeria = {
-  filtro: { dia: '', cabo: '' },
+  filtro: { dia: '', cabo: '', jornada: '' },
   diaAbierto: false,
   fotos: [],
   actual: null,
@@ -29,7 +29,8 @@ SRP.galeria = {
       this.aplicarAtajo(b.dataset.atajo);
     });
     this.el('galeria-dia').addEventListener('change', () => { this.filtro.dia = this.el('galeria-dia').value; this.diaAbierto = true; this.pintar(); });
-    this.el('galeria-cabo').addEventListener('change', () => { this.filtro.cabo = this.el('galeria-cabo').value; this.pintar(); });
+    this.el('galeria-cabo').addEventListener('change', () => { this.filtro.cabo = this.el('galeria-cabo').value; this.filtro.jornada = ''; this.pintar(); });
+    this.el('galeria-jornada').addEventListener('change', () => { this.filtro.jornada = this.el('galeria-jornada').value; this.pintar(); });
     this.el('galeria-rejilla').addEventListener('click', (e) => {
       const b = e.target.closest('button[data-id]'); if (!b) return;
       const r = this.fotos.find(x => x.id === b.dataset.id); if (r) this.abrir(r);
@@ -72,6 +73,7 @@ SRP.galeria = {
 
   aplicarAtajo(atajo) {
     const f = this.filtro;
+    f.jornada = '';   // al cambiar de día, la jornada elegida ya no aplica
     if (atajo === 'hoy') { f.dia = SRP.util.fechaHoy(); this.diaAbierto = false; this.el('galeria-dia').value = ''; }
     if (atajo === 'todas') { f.dia = ''; this.diaAbierto = false; this.el('galeria-dia').value = ''; }
     if (atajo === 'dia') { this.diaAbierto = true; f.dia = this.el('galeria-dia').value; }
@@ -86,16 +88,31 @@ SRP.galeria = {
     this.el('galeria-atajos').querySelector('[data-atajo="dia"]').setAttribute('aria-expanded', String(this.diaAbierto));
   },
 
+  // Las jornadas con fotografías dentro del día y cabo elegidos, la más reciente arriba (D135)
+  llenarJornadas(fotosDiaCabo) {
+    const ids = [...new Set(fotosDiaCabo.map(r => r.jornada_id).filter(Boolean))];
+    const js = ids.map(id => this.jornadasPorId[id]).filter(Boolean).sort((a, b) => b.fecha.localeCompare(a.fecha) || b.fecha_inicio.localeCompare(a.fecha_inicio));
+    const sel = this.el('galeria-jornada');
+    sel.innerHTML = '<option value="">Todas</option>' + js.map(j => '<option value="' + j.id + '">' + SRP.util.escapar(j.nombre) + ' · ' + SRP.util.escapar(SRP.util.formatearFecha(j.fecha)) + '</option>').join('');
+    if (!ids.includes(this.filtro.jornada)) this.filtro.jornada = '';
+    sel.value = this.filtro.jornada;
+    sel.disabled = !js.length;
+  },
+
   async pintar() {
     const f = this.filtro;
     this.sincronizarAtajos();
-    this.fotos = (await this.conFoto()).filter(r => (!f.dia || r.fecha_plantacion === f.dia) && (!f.cabo || r.cabo_id === f.cabo));
+    this.jornadasPorId = Object.fromEntries((await SRP.almacen.todos('jornadas')).map(j => [j.id, j]));
+    const diaCabo = (await this.conFoto()).filter(r => (!f.dia || r.fecha_plantacion === f.dia) && (!f.cabo || r.cabo_id === f.cabo));
+    this.llenarJornadas(diaCabo);
+    this.fotos = diaCabo.filter(r => !f.jornada || r.jornada_id === f.jornada);
     const esc = SRP.util.escapar;
     this.el('galeria-rejilla').innerHTML = this.fotos.map(r => {
       const e = SRP.ref.especieDe(r);
-      return '<li><button type="button" class="galeria-foto" data-id="' + r.id + '" aria-label="' + esc(e.comun) + ', ' + esc(SRP.util.formatearFecha(r.fecha_plantacion)) + ', ' + esc(SRP.ref.nombreUsuario(r.cabo_id)) + '">' +
+      const j = r.jornada_id && this.jornadasPorId[r.jornada_id];
+      return '<li><button type="button" class="galeria-foto" data-id="' + r.id + '" aria-label="' + esc(e.comun) + ', ' + esc(SRP.util.formatearFecha(r.fecha_plantacion)) + (j ? ', ' + esc(j.nombre) : '') + ', ' + esc(SRP.ref.nombreUsuario(r.cabo_id)) + '">' +
         '<img src="' + r.foto_base64 + '" alt="" loading="lazy">' +
-        '<span class="galeria-pie">' + esc(e.comun) + '<br>' + esc(SRP.util.formatearFecha(r.fecha_plantacion)) + '</span></button></li>';
+        '<span class="galeria-pie">' + esc(e.comun) + '<br>' + (j ? '<span class="galeria-jornada">' + esc(j.nombre) + '</span> · ' : '') + esc(SRP.util.formatearFecha(r.fecha_plantacion)) + '</span></button></li>';
     }).join('');
     const n = this.fotos.length;
     const peso = this.fotos.reduce((s, r) => s + (r.foto_bytes || 0), 0);
@@ -104,8 +121,8 @@ SRP.galeria = {
     const vacio = this.el('galeria-vacio');
     vacio.hidden = n > 0;
     if (!n) vacio.innerHTML = '<span class="vacio-icono" aria-hidden="true">' + SRP.ICONOS.svg('camara', 32) + '</span>' +
-      '<p class="vacio-titulo">' + (f.dia || f.cabo ? 'No hay fotografías con estos filtros.' : 'Todavía no hay fotografías.') + '</p>' +
-      '<p class="nota">' + (f.dia || f.cabo ? 'Pruebe con «Todas» o con otro cabo.' : 'Aparecerán aquí las fotografías que los cabos agreguen a sus registros.') + '</p>';
+      '<p class="vacio-titulo">' + (f.dia || f.cabo || f.jornada ? 'No hay fotografías con estos filtros.' : 'Todavía no hay fotografías.') + '</p>' +
+      '<p class="nota">' + (f.dia || f.cabo || f.jornada ? 'Pruebe con «Todas», con otra jornada o con otro cabo.' : 'Aparecerán aquí las fotografías que los cabos agreguen a sus registros.') + '</p>';
   },
 
   /* ---------- Una fotografía ---------- */
@@ -165,7 +182,10 @@ SRP.galeria = {
       });
       const blob = SRP.zip.armar(entradas);
       const f = this.filtro;
-      const nombre = 'Fotografias_SRP' + (f.dia ? '_' + f.dia : '') + (f.cabo ? '_' + SRP.ref.nombreUsuario(f.cabo).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '_') : '') + '.zip';
+      const limpio = t => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, '');
+      const j = f.jornada && this.jornadasPorId[f.jornada];
+      // Con una jornada elegida, el ZIP lleva su nombre y su fecha (D135)
+      const nombre = 'Fotografias_SRP' + (j ? '_' + limpio(j.nombre).slice(0, 40) + '_' + j.fecha : (f.dia ? '_' + f.dia : '')) + (f.cabo ? '_' + limpio(SRP.ref.nombreUsuario(f.cabo)) : '') + '.zip';
       const res = await SRP.reportes.entregarArchivo(blob, nombre, 'Fotografías de los registros');
       if (res !== 'cancelado') SRP.util.anunciar((entradas.length === 1 ? '1 fotografía' : entradas.length + ' fotografías') + ' en ' + nombre + ' (' + SRP.foto.formatearPeso(blob.size) + ').');
     } catch (err) {

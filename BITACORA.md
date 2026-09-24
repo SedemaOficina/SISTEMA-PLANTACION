@@ -1395,3 +1395,14 @@ directa desde Jornadas, filtro por cabo; ayudante `reporte_de`.
 
 **Verificación:** 448 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.56.
+
+## Bloque 76 — Fotografías por jornada y saltos del PDF (24-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.57.
+
+**Qué cambió (D135).** `index.html`: lista «Jornada» en la galería y atajos en orden común.
+`galeria.js`: `filtro.jornada`, `llenarJornadas`, pie con la jornada, ZIP con nombre y fecha.
+`reportes.js`: regla de salto de página ajustada al pie. `estilos.css`: `.galeria-jornada`.
+Pruebas: orden de atajos, lista de jornadas, filtro y ZIP por jornada, limpieza al cambiar de día.
+
+**Verificación:** 453 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.57.

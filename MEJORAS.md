@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.56 (Bloque 75)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.57 (Bloque 76)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -115,12 +115,13 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M104 | Análisis (P6) | Jornada de otro día abierta: el aviso al entrar trae el botón «Cerrar «nombre»»; guardar en ella pide confirmar una vez («no de hoy; el árbol quedará con esa fecha») | Alta | 0.6.55 (B74) | Entrar con una jornada de ayer abierta; intentar guardar | Aviso y diálogo |
 | M105 | Análisis (P7) | La tarjeta de Registros dice a qué jornada pertenece el árbol («Parque Hundido · Benito Juárez, …») | Media | 0.6.56 (B75) | Registros | Tarjeta |
 | M106 | Análisis (P8) | Reportes lista las jornadas cerradas (la más reciente arriba), cada una con «Generar reporte»; con reporte, «Volver a generar» en ámbar y cuándo se generó. Atajos Todas · Hoy · Un día y cabo para coordinación. «Reporte de la jornada» desde Jornadas llega directo al cierre | Media | 0.6.56 (B75) | Reportes | Lista |
+| M107 | Análisis (P9) | Fotografías por jornada: lista «Jornada» con las que tienen fotos (según día y cabo); cada pie dice la jornada; el ZIP de una jornada lleva su nombre y fecha. Atajos Todas · Hoy · Un día | Media | 0.6.57 (B76) | Fotografías › Jornada | Galería filtrada |
+| M108 | Análisis (P12) | PDF: un apartado corto ya no salta de página cuando cabe (el pie va en alto − 16; se reservaban 24 mm más el aire del bloque) | Baja | 0.6.57 (B76) | Generar un reporte con muchos ejemplares | PDF |
 
 ## 2. Por hacer
 
 | # | Origen | Mejora | Prioridad | Estado | Nota |
 |---|---|---|---|---|---|
-| M44 | PDF #4 | No partir un apartado corto (Por programa) a la página siguiente cuando cabe | Baja | Propuesto | — |
 | M46 | Android | Revisión corta en Android: versión, botón «atrás» con ventanas abiertas, calendario y hora, especies con teclado, precisión, foto, compartir PDF, aviso | Alta | Pendiente | Espera capturas |
 
 ## 3. Verificadas sin falla

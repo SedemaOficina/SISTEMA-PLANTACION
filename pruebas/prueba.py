@@ -1174,6 +1174,18 @@ with sync_playwright() as p:
     with zipfile.ZipFile('/home/claude/srp/fotos_prueba.zip') as z:
         nombres=z.namelist(); okzip=z.testzip() is None; primero=z.read(nombres[0])[:3]
     ok(dz.value.suggested_filename.startswith('Fotografias_SRP') and okzip and len(nombres)>=1 and primero==b'\xff\xd8\xff','«Descargar todas» arma un ZIP válido con las fotos en JPEG: %s' % nombres)
+    # Por jornada (D135): la lista trae las jornadas con fotos; elegir una filtra y nombra el ZIP con ella
+    ok([c for c in pg.eval_on_selector_all('#galeria-atajos .chip','b=>b.map(x=>x.dataset.atajo)')]==['todas','hoy','dia'],'los atajos de Fotografías van en el orden Todas, Hoy, Un día (D135)')
+    pg.click('#galeria-atajos [data-atajo=todas]'); pg.wait_for_timeout(300)
+    opciones=pg.eval_on_selector('#galeria-jornada',"s=>[...s.options].map(o=>o.value)")
+    ok(len(opciones)>=2 and opciones[0]=='' and not pg.is_disabled('#galeria-jornada'),'la lista de jornadas ofrece «Todas» y las jornadas con fotografías: %d' % (len(opciones)-1))
+    pg.select_option('#galeria-jornada', opciones[1]); pg.wait_for_timeout(400)
+    nom=pg.evaluate("(async () => (await SRP.almacen.uno('jornadas','%s')).nombre)()" % opciones[1])
+    ok(pg.locator('#galeria-rejilla .galeria-foto').count()>=1 and all(nom in t for t in pg.eval_on_selector_all('#galeria-rejilla .galeria-pie','l=>l.map(x=>x.textContent)')),'elegir una jornada deja sólo sus fotografías, y cada pie dice la jornada')
+    with pg.expect_download() as dzj: pg.click('#btn-galeria-zip')
+    ok(re.match(r'^Fotografias_SRP_[A-Za-z0-9_]+_\d{4}-\d{2}-\d{2}', dzj.value.suggested_filename) is not None,'el ZIP de una jornada lleva su nombre y su fecha: '+dzj.value.suggested_filename)
+    pg.click('#galeria-atajos [data-atajo=hoy]'); pg.wait_for_timeout(300)
+    ok(pg.evaluate("SRP.galeria.filtro.jornada")=='' and pg.input_value('#galeria-jornada')=='','cambiar de día limpia la jornada elegida')
     pg.click('.pestana[data-vista=registros]'); pg.wait_for_timeout(400)
     # Quien ve a varias personas elige el encargado del reporte, y sólo entre quienes registraron (B19)
     pg.click('.pestana[data-vista=reportes]'); pg.wait_for_timeout(600)

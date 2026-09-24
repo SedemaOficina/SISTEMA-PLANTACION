@@ -1027,3 +1027,11 @@
   `reporte_en` al aceptar el cierre. En Registros cada tarjeta dice el nombre de la jornada antes
   de la alcaldía, para que la duda «¿en qué jornada quedó?» se resuelva sin abrir nada. Propuesto en
   el análisis del 23-09-2026 (P7, P8) y aprobado por Liber, 24-09-2026.
+- **D135. Fotografías por jornada; saltos de página del PDF.** La galería añade la lista «Jornada»
+  con las jornadas que tienen fotografías dentro del día y cabo elegidos (la más reciente arriba);
+  elegir una deja sólo sus fotos, cada pie dice la jornada y el ZIP se llama con su nombre y su
+  fecha; cambiar de día o de cabo limpia la jornada elegida. Los atajos quedan en el orden común
+  Todas · Hoy · Un día (sin acordeón: aquí los filtros son pocos, D129). En el PDF, un bloque cabe
+  si termina antes de alto − 19 (el pie va en alto − 16); antes se reservaban 24 mm más el aire
+  del propio bloque y un apartado corto saltaba de página cuando sí cabía (M44). Propuesto en el
+  análisis del 23-09-2026 (P9, P12) y aprobado por Liber, 24-09-2026.

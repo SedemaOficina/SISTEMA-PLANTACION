@@ -973,3 +973,4 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .reporte-ficha .jornada-sitio { font-size: var(--t-m); }
 .reporte-sin { flex: 1 1 100%; margin: 0; }
 .registro-jornada { font-weight: 600; color: var(--texto); }
+.galeria-jornada { font-weight: 600; }
