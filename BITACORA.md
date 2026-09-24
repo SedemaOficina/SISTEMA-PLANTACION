@@ -1421,3 +1421,23 @@ aria-busy del PDF, del ZIP y de «Enviar ahora».
 
 **Verificación:** 471 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.58.
+
+## Bloque 78 — Logotipo con el SIA (24-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.59.
+
+**Qué cambió (D137).** Logotipo nuevo armado con piezas oficiales: el de Reforestación Urbana
+(`assets/fuentes/logo-reforestacion-urbana/ru_color.png`) y el bloque del SIA (emblema y sigla) del
+logotipo institucional `SIA_LOGO-07.png` (Drive del SIA), a la misma escala (escudo CDMX de igual
+ancho), con la sigla alineada a «Secretaría del» y los filetes del original. Fuente en alta:
+`assets/fuentes/logo-reforestacion-urbana/logo_sedema_sia_ru_color.png` (2963 × 263). Web:
+`assets/encabezado-ru-sia.png` (1762 × 144, encabezado y PDF) y `assets/encabezado-ru-sia-movil.png`
+(1114 × 228, SIA · Reforestación Urbana). `index.html`: rutas, texto alternativo y corte del
+`<picture>` de 480 a 767 px (entre 481 y 767 px el completo quedaba de 17 a 27 px de alto).
+`reportes.js`: el logotipo del PDF se fija por su alto (9.3 mm, el que tenía) y no por su ancho;
+pasa de 90 a 114 mm de ancho. Los PNG anteriores, a `_to_delete/`.
+
+**Verificación:** 471 comprobaciones sin errores de consola (en una corrida previa falló «aria-busy
+se quita al terminar», que espera fija 1.5 s; falla igual con la 0.6.58 en el mismo equipo: es de
+tiempo, no de este bloque). 85 de auditoría; presentación sin desbordes en ocho
+combinaciones. Alto del logotipo medido: 24 px a 360, 30 px a 390, 40 px de 481 en adelante. PDF
+revisado a la vista. Marca de versión 0.6.59.

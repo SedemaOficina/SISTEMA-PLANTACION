@@ -74,7 +74,7 @@ js/usuarios.js, app.js, util.js
 assets/fuentes/       Capas, catálogo de especies y set de iconografía CDMX tal como llegaron; no se editan
 assets/capa-alcaldias.js, capa-uga.js, capa-colonias.js  Las mismas capas, compactadas para la aplicación (generadas)
 assets/catalogo-especies.js  Catálogo real de especies (76), generado por pruebas/generar_especies.py
-assets/encabezado-ru.png, encabezado-ru-movil.png  Logotipo del Programa de Reforestación Urbana (encabezado y PDF; recorte para teléfono)
+assets/encabezado-ru-sia.png, encabezado-ru-sia-movil.png  Logotipo Gobierno CDMX · SEDEMA · SIA · Reforestación Urbana (encabezado y PDF; versión SIA · Reforestación Urbana hasta 767 px)
 assets/icono-192.png, icono-512.png, icono-512-maskable.png, apple-touch-icon.png  Icono de la app: emblema del programa sobre guinda (D90)
 js/espejo.js          Espejo de campos, sólo en la versión de prueba (se elimina al cerrar la Etapa 1)
 esquema.json          Fuente única del modelo de datos (D86)

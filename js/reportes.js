@@ -359,7 +359,7 @@ SRP.reportes = {
       const img = new Image();
       img.onload = () => resolver(img);
       img.onerror = () => resolver(null);
-      img.src = 'assets/encabezado-ru.png?v=' + encodeURIComponent(SRP.CONFIG.VERSION);
+      img.src = 'assets/encabezado-ru-sia.png?v=' + encodeURIComponent(SRP.CONFIG.VERSION);
     });
   },
 
@@ -400,7 +400,9 @@ SRP.reportes = {
        —«Chófer: ______»— parece una plantilla a medio llenar, y lo firma alguien. */
     const hay = (k) => !!(cierre[k] && cierre[k].trim());
 
-    if (logo) doc.addImage(this.logoJPEG(logo), 'JPEG', M, 14, 90, 90 * logo.naturalHeight / logo.naturalWidth);
+    // El logotipo se fija por su alto (D137): al sumar el SIA crece a lo ancho, y fijarlo por el
+    // ancho lo habría encogido. 9.3 mm es el alto que tenía con 90 mm de ancho sin el SIA.
+    if (logo) { const hLogo = 9.3; doc.addImage(this.logoJPEG(logo), 'JPEG', M, 14, hLogo * logo.naturalWidth / logo.naturalHeight, hLogo); }
     doc.setDrawColor(...C.guinda); doc.setLineWidth(0.4); doc.line(M, 30, ancho - M, 30);
 
     doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(...C.guinda);

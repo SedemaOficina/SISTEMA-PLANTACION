@@ -1047,3 +1047,10 @@
   alcance a pintarse; al generar el PDF, un aviso «Generando reporte…» y la vista principal con
   aria-busy. Los botones vuelven a su texto e icono al terminar, pase lo que pase. Auditoría UX/UI
   del 24-09-2026, bloque 77, aprobada por Liber.
+- **D137. El logotipo suma el SIA entre la Secretaría y Reforestación Urbana.** Orden: Gobierno
+  CDMX · Secretaría del Medio Ambiente · SIA · Reforestación Urbana, en encabezado y PDF. Se arma
+  con piezas oficiales, sin redibujar: el bloque del SIA sale del logotipo institucional horizontal
+  a color (`SIA_LOGO-07.png`) a la escala del de Reforestación Urbana. En teléfono y tableta chica
+  (hasta 767 px) va SIA · Reforestación Urbana, porque el completo quedaría ilegible. En el PDF el
+  logotipo se fija por su alto (9.3 mm) para que sumar el SIA no encoja el resto. Complementa D90.
+  Pedido por Liber, 24-09-2026.

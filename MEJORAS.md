@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.58 (Bloque 77)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.59 (Bloque 78)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -121,6 +121,7 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M110 | Auditoría UX (N2) | El aviso dura según su largo (+1 s cada 40 caracteres) y no se cierra mientras el puntero está encima | Baja | 0.6.58 (B77) | Un aviso largo | — |
 | M111 | Auditoría UX (N3) | Lo que tarda se dice: «Guardando…», «Enviando…», «Armando…», «Generando reporte…», con aria-busy | Media | 0.6.58 (B77) | Guardar un árbol; Descargar todas | Botón en espera |
 | M112 | Auditoría UX (N4) | Doble toque en «Guardar»: el segundo toque ya no crea otro árbol | Alta | 0.6.58 (B77) | Tocar Guardar dos veces rápido | — |
+| M113 | Petición de Liber | Logotipo con el SIA entre la Secretaría y Reforestación Urbana, en encabezado y PDF; en teléfono, SIA · Reforestación Urbana | Baja | 0.6.59 (B78) | Abrir en computadora y en el teléfono; generar un reporte | Encabezado en ambos; parte superior del PDF |
 
 ## 2. Por hacer
 
