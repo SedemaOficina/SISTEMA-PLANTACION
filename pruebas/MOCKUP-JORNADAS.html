@@ -1,0 +1,134 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mockup · fichas de Jornadas</title>
+<style>
+:root { --acento:#2F4858; --acento-suave:#E9EEF2; --verde:#1E7A46; --verde-suave:#E6F4EA; --rojo:#C62828; --rojo-suave:#FDECEA; --ambar:#8A4B00; --ambar-suave:#FFF4E0; --gris:#55585A; --texto:#232526; --borde:#D5D5D9; --guinda:#9D2148; }
+* { box-sizing: border-box; } body { margin:0; font-family: Roboto, 'Segoe UI', Arial, sans-serif; color: var(--texto); background:#F2F2F4; line-height:1.4; }
+h1,h2,h3 { font-family: Cabin, 'Segoe UI', Arial, sans-serif; margin:0; }
+.marco { display:flex; gap: 28px; flex-wrap: wrap; justify-content:center; padding: 24px 12px; align-items:flex-start; }
+.telefono { width: 390px; background:#fff; border: 10px solid #1d1f21; border-radius: 34px; overflow:hidden; box-shadow: 0 12px 30px rgba(0,0,0,.18); }
+.pantalla { padding: 14px 16px 24px; }
+.pantalla h1 { color: var(--guinda); font-size: 1.6rem; margin-bottom: 4px; }
+.nota { color: var(--gris); font-size: .85rem; margin: 0 0 12px; }
+.leyenda { width: 390px; background:#fff; border:1px solid var(--borde); border-radius:12px; padding: 16px 18px; font-size:.9rem; }
+.leyenda h2 { font-size: 1.05rem; margin-bottom: 8px; }
+.leyenda ol { margin: 0; padding-left: 1.2rem; } .leyenda li { margin-bottom: 8px; } .leyenda b { color: var(--acento); }
+/* filtros */
+.chips { display:flex; gap:8px; flex-wrap:wrap; margin-bottom: 10px; }
+.chip { min-height:40px; padding: 4px 14px; border:1px solid #9AA3AB; border-radius:999px; background:#fff; font: inherit; font-weight:500; font-size:.9rem; }
+.chip[aria-pressed=true] { background: var(--acento); color:#fff; border-color: var(--acento); }
+.chip small { display:block; font-size:.72rem; font-weight:400; opacity:.85; }
+.acordeon { border:1px solid var(--borde); border-radius:10px; margin-bottom: 12px; }
+.acordeon summary { list-style:none; display:flex; align-items:center; justify-content:space-between; padding: 10px 12px; font-weight:500; font-size:.9rem; color: var(--gris); cursor:pointer; }
+.acordeon summary::after { content:''; width:8px; height:8px; border-right:2px solid currentColor; border-bottom:2px solid currentColor; transform: rotate(45deg); margin-right:4px; }
+.acordeon[open] summary::after { transform: rotate(-135deg); }
+.acordeon .cuerpo { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 12px 12px; }
+.campo label { display:block; font-size:.78rem; color: var(--gris); margin-bottom: 3px; }
+.campo select, .campo input { width:100%; min-height: 40px; border:1px solid #9AA3AB; border-radius:8px; padding: 0 10px; font: inherit; background:#fff; }
+.periodo { display:grid; grid-template-columns: 1fr 1fr auto; gap:10px; align-items:end; margin-bottom: 12px; }
+.btn { display:inline-flex; align-items:center; gap:6px; min-height:40px; padding:0 12px; border-radius:8px; border:1.5px solid transparent; font: inherit; font-weight:500; background: var(--acento); color:#fff; }
+.total { font-size:.9rem; color: var(--gris); margin: 6px 0 10px; }
+/* fichas */
+ul.lista { list-style:none; margin:0; padding:0; display:grid; gap: 12px; }
+.ficha { border:1px solid var(--borde); border-radius:12px; padding: 12px 14px; background:#fff; }
+.ficha-cab { display:flex; gap: 12px; align-items:flex-start; }
+.ficha-titulo { flex:1; min-width:0; }
+.ficha h3 { font-size: 1.15rem; line-height:1.2; margin-bottom: 4px; overflow-wrap:anywhere; }
+.ficha-fecha { margin:0; font-size:.88rem; color: var(--texto); }
+.ficha-fecha .fecha { color: var(--gris); }
+.ndn { display:inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: var(--acento-suave); color: var(--acento); font-size:.75rem; font-weight:600; vertical-align: 1px; }
+.mini { width: 64px; height: 64px; flex:none; border-radius: 8px; }
+.ficha-estado { display:flex; gap: 8px; flex-wrap:wrap; align-items:center; margin: 10px 0 8px; }
+.estatus { display:inline-flex; align-items:center; gap:5px; padding: 4px 10px; border-radius: 6px; font-size:.82rem; font-weight:700; letter-spacing:.02em; }
+.estatus.abierta { background: var(--verde); color:#fff; }
+.estatus.cerrada { background: #E4E7EA; color: #2B3238; }
+.revision { padding: 4px 10px; border-radius: 6px; font-size:.82rem; font-weight:500; }
+.revision[data-tono=rev] { background: var(--ambar-suave); color: var(--ambar); }
+.revision[data-tono=ok] { background: var(--verde-suave); color: var(--verde); }
+.revision[data-tono=err] { background: var(--rojo-suave); color: var(--rojo); }
+.revision[data-tono=neutro] { background: #F1F3F5; color: var(--gris); }
+.ficha-lugar { margin: 0 0 8px; font-size:.88rem; }
+.ficha-lugar svg { vertical-align: -3px; margin-right: 4px; color: var(--gris); }
+.ficha-lugar .ubic { color: var(--gris); }
+.ficha-stats { display:grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.stat { display:flex; flex-direction:column; align-items:center; padding: 6px 4px; border-radius: 8px; background:#F6F7F8; font-size:.72rem; color: var(--gris); line-height:1.15; }
+.stat b { font-size: 1.05rem; color: var(--texto); font-weight:700; }
+.stat[data-cero=true] b { color: #9AA3AB; }
+.ficha-cabo { margin: 8px 0 0; font-size:.8rem; color: var(--gris); display:flex; gap:5px; align-items:center; }
+</style></head><body>
+<div class="marco">
+<div class="telefono"><div class="pantalla">
+  <h1>Jornadas</h1>
+  <p class="nota">Cada jornada con su mapa, para comprobar al cierre que cada árbol tenga su punto.</p>
+  <div class="chips">
+    <button class="chip" aria-pressed="true">Todas</button>
+    <button class="chip">Hoy<small>23-SEP-2026</small></button>
+    <button class="chip">Un día</button>
+    <button class="chip">Un periodo</button>
+  </div>
+  <div class="periodo" style="display:none"><div class="campo"><label>Desde</label><input type="date"></div><div class="campo"><label>Hasta</label><input type="date"></div><button class="btn"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M 9.22 14.22 C 10.61 14.22 11.79 13.74 12.76 12.76 C 13.73 11.79 14.22 10.61 14.22 9.22 C 14.22 7.84 13.73 6.65 12.76 5.68 C 11.79 4.71 10.61 4.22 9.22 4.22 C 7.83 4.22 6.65 4.71 5.68 5.68 C 4.71 6.65 4.22 7.84 4.22 9.22 C 4.22 10.61 4.71 11.79 5.68 12.76 C 6.65 13.74 7.83 14.22 9.22 14.22 M 20.44 22 L 13.44 15 C 12.89 15.45 12.25 15.8 11.53 16.05 C 10.8 16.31 10.04 16.45 9.22 16.45 C 7.2 16.45 5.5 15.74 4.1 14.35 C 2.7 12.95 2 11.24 2 9.22 C 2 7.2 2.7 5.49 4.1 4.1 C 5.5 2.7 7.2 2 9.22 2 C 11.24 2 12.95 2.7 14.35 4.1 C 15.74 5.49 16.44 7.2 16.44 9.22 C 16.44 10.04 16.31 10.81 16.06 11.53 C 15.79 12.25 15.44 12.89 15 13.44 L 22 20.44 Z M 20.44 22"/></svg>Aplicar</button></div>
+  <details class="acordeon"><summary>Más filtros: año, mes y cabo</summary>
+    <div class="cuerpo">
+      <div class="campo"><label>Año</label><select><option>Todos</option><option>2026</option></select></div>
+      <div class="campo"><label>Mes</label><select><option>Todos</option><option>Septiembre</option></select></div>
+      <div class="campo"><label>Cabo</label><select><option>Todos</option><option>Fulana de Tal Ejemplo</option></select></div>
+    </div>
+  </details>
+  <p class="total">4 jornadas · 50 árboles</p>
+  <ul class="lista"><li class="ficha">
+  <div class="ficha-cab">
+    <div class="ficha-titulo"><h3>Parque Hundido</h3><p class="ficha-fecha"><b>Hoy</b> · <span class="fecha">mié 23-SEP-2026</span></p></div>
+    <svg class="mini" viewBox="0 0 72 72" aria-hidden="true"><rect width="72" height="72" rx="8" fill="#EEF1F3"/><circle cx="20" cy="22" r="4" fill="#2F4858"/><circle cx="30" cy="40" r="4" fill="#2F4858"/><circle cx="42" cy="28" r="4" fill="#8A4B00"/><circle cx="50" cy="50" r="4" fill="#2F4858"/><circle cx="26" cy="56" r="4" fill="#8A4B00"/><circle cx="58" cy="18" r="4" fill="#C62828"/></svg>
+  </div>
+  <div class="ficha-estado"><span class="estatus abierta"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M15 5.1 9 3 3 5.02V21l6-2.1 6 2.1 6-2.02V3l-6 2.1zm-1 13.6-4-1.4V5.3l4 1.4v12zM5 6.44l3-1.01v12.14l-3 1.05V6.44zm14 11.12-3 1.01V6.43l3-1.05v12.18z"/></svg>Abierta</span><span class="revision" data-tono="rev">3 puntos por revisar</span></div>
+  <p class="ficha-lugar"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M 12 12 C 12.55 12 13.02 11.8 13.41 11.41 C 13.8 11.02 14 10.55 14 10 C 14 9.45 13.8 8.98 13.41 8.59 C 13.02 8.19 12.55 8 12 8 C 11.45 8 10.97 8.19 10.59 8.59 C 10.19 8.98 10 9.45 10 10 C 10 10.55 10.19 11.02 10.59 11.41 C 10.97 11.8 11.45 12 12 12 M 12 19.35 C 14.03 17.48 15.54 15.79 16.52 14.26 C 17.51 12.74 18 11.38 18 10.2 C 18 8.39 17.42 6.9 16.26 5.74 C 15.1 4.58 13.68 4 12 4 C 10.31 4 8.9 4.58 7.74 5.74 C 6.58 6.9 6 8.39 6 10.2 C 6 11.38 6.49 12.74 7.47 14.26 C 8.46 15.79 9.96 17.48 12 19.35 M 12 22 C 9.32 19.71 7.31 17.6 5.99 15.64 C 4.66 13.68 4 11.87 4 10.2 C 4 7.7 4.8 5.71 6.41 4.22 C 8.02 2.74 9.88 2 12 2 C 14.12 2 15.98 2.74 17.59 4.22 C 19.2 5.71 20 7.7 20 10.2 C 20 11.87 19.33 13.68 18.01 15.64 C 16.69 17.6 14.68 19.71 12 22"/></svg>Benito Juárez · Col. Extremadura Insurgentes · <span class="ubic">Av. Insurgentes Sur 1500</span></p>
+  <div class="ficha-stats"><span class="stat" data-cero="false"><b>12</b>árboles</span><span class="stat" data-cero="false"><b>4</b>especies</span><span class="stat" data-cero="false"><b>3</b>por revisar</span><span class="stat" data-cero="false"><b>9</b>bien</span></div>
+</li>
+<li class="ficha">
+  <div class="ficha-cab">
+    <div class="ficha-titulo"><h3>Calz. de Tlalpan frente al metro</h3><p class="ficha-fecha"><b>Ayer</b> · <span class="fecha">mar 22-SEP-2026</span> <span class="ndn">Jornada 2 de 3</span></p></div>
+    <svg class="mini" viewBox="0 0 72 72" aria-hidden="true"><rect width="72" height="72" rx="8" fill="#EEF1F3"/><circle cx="18" cy="18" r="4" fill="#2F4858"/><circle cx="28" cy="30" r="4" fill="#2F4858"/><circle cx="40" cy="24" r="4" fill="#2F4858"/><circle cx="52" cy="40" r="4" fill="#2F4858"/><circle cx="34" cy="50" r="4" fill="#2F4858"/><circle cx="56" cy="58" r="4" fill="#2F4858"/><circle cx="22" cy="60" r="4" fill="#2F4858"/></svg>
+  </div>
+  <div class="ficha-estado"><span class="estatus cerrada"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M 12 17.24 C 12.52 17.24 12.97 17.05 13.34 16.68 C 13.72 16.31 13.9 15.86 13.9 15.33 C 13.9 14.81 13.72 14.36 13.34 13.99 C 12.97 13.61 12.52 13.43 12 13.43 C 11.48 13.43 11.03 13.61 10.66 13.99 C 10.28 14.36 10.1 14.81 10.1 15.33 C 10.1 15.86 10.28 16.31 10.66 16.68 C 11.03 17.05 11.48 17.24 12 17.24 M 9.14 8.67 L 14.86 8.67 L 14.86 6.76 C 14.86 5.97 14.58 5.29 14.02 4.74 C 13.47 4.18 12.79 3.91 12 3.91 C 11.2 3.91 10.53 4.18 9.98 4.74 C 9.42 5.29 9.14 5.97 9.14 6.76 Z M 6.29 10.57 L 6.29 20.09 Z M 17.71 10.57 L 6.29 10.57 L 6.29 20.1 L 17.71 20.1 Z M 6.29 22 C 5.76 22 5.31 21.81 4.94 21.44 C 4.57 21.07 4.38 20.62 4.38 20.09 L 4.38 10.57 C 4.38 10.05 4.57 9.6 4.94 9.23 C 5.31 8.85 5.76 8.67 6.29 8.67 L 7.24 8.67 L 7.24 6.76 C 7.24 5.44 7.7 4.32 8.63 3.39 C 9.56 2.47 10.68 2 12 2 C 13.32 2 14.44 2.47 15.37 3.39 C 16.3 4.32 16.76 5.44 16.76 6.76 L 16.76 8.67 L 17.71 8.67 C 18.24 8.67 18.69 8.85 19.06 9.23 C 19.43 9.6 19.62 10.05 19.62 10.57 L 19.62 20.09 C 19.62 20.62 19.43 21.07 19.06 21.44 C 18.69 21.81 18.24 22 17.71 22 Z M 6.29 22"/></svg>Cerrada</span><span class="revision" data-tono="ok">Revisada: 18 de 18</span></div>
+  <p class="ficha-lugar"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M 12 12 C 12.55 12 13.02 11.8 13.41 11.41 C 13.8 11.02 14 10.55 14 10 C 14 9.45 13.8 8.98 13.41 8.59 C 13.02 8.19 12.55 8 12 8 C 11.45 8 10.97 8.19 10.59 8.59 C 10.19 8.98 10 9.45 10 10 C 10 10.55 10.19 11.02 10.59 11.41 C 10.97 11.8 11.45 12 12 12 M 12 19.35 C 14.03 17.48 15.54 15.79 16.52 14.26 C 17.51 12.74 18 11.38 18 10.2 C 18 8.39 17.42 6.9 16.26 5.74 C 15.1 4.58 13.68 4 12 4 C 10.31 4 8.9 4.58 7.74 5.74 C 6.58 6.9 6 8.39 6 10.2 C 6 11.38 6.49 12.74 7.47 14.26 C 8.46 15.79 9.96 17.48 12 19.35 M 12 22 C 9.32 19.71 7.31 17.6 5.99 15.64 C 4.66 13.68 4 11.87 4 10.2 C 4 7.7 4.8 5.71 6.41 4.22 C 8.02 2.74 9.88 2 12 2 C 14.12 2 15.98 2.74 17.59 4.22 C 19.2 5.71 20 7.7 20 10.2 C 20 11.87 19.33 13.68 18.01 15.64 C 16.69 17.6 14.68 19.71 12 22"/></svg>Coyoacán · Col. Del Carmen</p>
+  <div class="ficha-stats"><span class="stat" data-cero="false"><b>18</b>árboles</span><span class="stat" data-cero="false"><b>6</b>especies</span><span class="stat" data-cero="true"><b>0</b>por revisar</span><span class="stat" data-cero="false"><b>18</b>bien</span></div>
+</li>
+<li class="ficha">
+  <div class="ficha-cab">
+    <div class="ficha-titulo"><h3>Deportivo Xochimilco</h3><p class="ficha-fecha"><b>Ayer</b> · <span class="fecha">mar 22-SEP-2026</span> <span class="ndn">Jornada 1 de 3</span></p></div>
+    <svg class="mini" viewBox="0 0 72 72" aria-hidden="true"><rect width="72" height="72" rx="8" fill="#EEF1F3"/><circle cx="16" cy="20" r="4" fill="#2F4858"/><circle cx="30" cy="26" r="4" fill="#2F4858"/><circle cx="44" cy="20" r="4" fill="#2F4858"/><circle cx="54" cy="36" r="4" fill="#2F4858"/><circle cx="36" cy="44" r="4" fill="#2F4858"/><circle cx="20" cy="52" r="4" fill="#2F4858"/><circle cx="50" cy="56" r="4" fill="#2F4858"/></svg>
+  </div>
+  <div class="ficha-estado"><span class="estatus cerrada"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M 12 17.24 C 12.52 17.24 12.97 17.05 13.34 16.68 C 13.72 16.31 13.9 15.86 13.9 15.33 C 13.9 14.81 13.72 14.36 13.34 13.99 C 12.97 13.61 12.52 13.43 12 13.43 C 11.48 13.43 11.03 13.61 10.66 13.99 C 10.28 14.36 10.1 14.81 10.1 15.33 C 10.1 15.86 10.28 16.31 10.66 16.68 C 11.03 17.05 11.48 17.24 12 17.24 M 9.14 8.67 L 14.86 8.67 L 14.86 6.76 C 14.86 5.97 14.58 5.29 14.02 4.74 C 13.47 4.18 12.79 3.91 12 3.91 C 11.2 3.91 10.53 4.18 9.98 4.74 C 9.42 5.29 9.14 5.97 9.14 6.76 Z M 6.29 10.57 L 6.29 20.09 Z M 17.71 10.57 L 6.29 10.57 L 6.29 20.1 L 17.71 20.1 Z M 6.29 22 C 5.76 22 5.31 21.81 4.94 21.44 C 4.57 21.07 4.38 20.62 4.38 20.09 L 4.38 10.57 C 4.38 10.05 4.57 9.6 4.94 9.23 C 5.31 8.85 5.76 8.67 6.29 8.67 L 7.24 8.67 L 7.24 6.76 C 7.24 5.44 7.7 4.32 8.63 3.39 C 9.56 2.47 10.68 2 12 2 C 13.32 2 14.44 2.47 15.37 3.39 C 16.3 4.32 16.76 5.44 16.76 6.76 L 16.76 8.67 L 17.71 8.67 C 18.24 8.67 18.69 8.85 19.06 9.23 C 19.43 9.6 19.62 10.05 19.62 10.57 L 19.62 20.09 C 19.62 20.62 19.43 21.07 19.06 21.44 C 18.69 21.81 18.24 22 17.71 22 Z M 6.29 22"/></svg>Cerrada</span><span class="revision" data-tono="err">Contados 22 · registrados 20</span></div>
+  <p class="ficha-lugar"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M 12 12 C 12.55 12 13.02 11.8 13.41 11.41 C 13.8 11.02 14 10.55 14 10 C 14 9.45 13.8 8.98 13.41 8.59 C 13.02 8.19 12.55 8 12 8 C 11.45 8 10.97 8.19 10.59 8.59 C 10.19 8.98 10 9.45 10 10 C 10 10.55 10.19 11.02 10.59 11.41 C 10.97 11.8 11.45 12 12 12 M 12 19.35 C 14.03 17.48 15.54 15.79 16.52 14.26 C 17.51 12.74 18 11.38 18 10.2 C 18 8.39 17.42 6.9 16.26 5.74 C 15.1 4.58 13.68 4 12 4 C 10.31 4 8.9 4.58 7.74 5.74 C 6.58 6.9 6 8.39 6 10.2 C 6 11.38 6.49 12.74 7.47 14.26 C 8.46 15.79 9.96 17.48 12 19.35 M 12 22 C 9.32 19.71 7.31 17.6 5.99 15.64 C 4.66 13.68 4 11.87 4 10.2 C 4 7.7 4.8 5.71 6.41 4.22 C 8.02 2.74 9.88 2 12 2 C 14.12 2 15.98 2.74 17.59 4.22 C 19.2 5.71 20 7.7 20 10.2 C 20 11.87 19.33 13.68 18.01 15.64 C 16.69 17.6 14.68 19.71 12 22"/></svg>Xochimilco · Sin colonia (fuera de zona urbana) · <span class="ubic">Periférico Sur, junto al embarcadero</span></p>
+  <div class="ficha-stats"><span class="stat" data-cero="false"><b>20</b>árboles</span><span class="stat" data-cero="false"><b>3</b>especies</span><span class="stat" data-cero="true"><b>0</b>por revisar</span><span class="stat" data-cero="false"><b>20</b>bien</span></div><p class="ficha-cabo"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M 12 9.5 C 12.68 9.5 13.28 9.26 13.77 8.76 C 14.25 8.28 14.5 7.69 14.5 7 C 14.5 6.32 14.25 5.72 13.77 5.24 C 13.28 4.75 12.68 4.5 12 4.5 C 11.31 4.5 10.72 4.75 10.23 5.24 C 9.74 5.72 9.5 6.32 9.5 7 C 9.5 7.69 9.74 8.28 10.23 8.76 C 10.72 9.26 11.31 9.5 12 9.5 M 12 12 C 10.62 12 9.44 11.51 8.47 10.53 C 7.49 9.55 7 8.38 7 7 C 7 5.63 7.49 4.45 8.47 3.47 C 9.44 2.49 10.62 2 12 2 C 13.37 2 14.55 2.49 15.53 3.47 C 16.51 4.45 17 5.63 17 7 C 17 8.38 16.51 9.55 15.53 10.53 C 14.55 11.51 13.37 12 12 12 M 4.5 19.5 L 19.49 19.5 L 19.49 18.5 C 19.49 18.27 19.44 18.06 19.32 17.88 C 19.21 17.68 19.06 17.54 18.87 17.44 C 17.75 16.88 16.61 16.45 15.47 16.17 C 14.32 15.89 13.17 15.75 12 15.75 C 10.83 15.75 9.68 15.89 8.53 16.17 C 7.38 16.45 6.25 16.88 5.13 17.44 C 4.94 17.54 4.79 17.68 4.67 17.88 C 4.56 18.06 4.5 18.27 4.5 18.5 Z M 2 22 L 2 18.5 C 2 17.79 2.18 17.14 2.55 16.55 C 2.91 15.95 3.4 15.5 4 15.19 C 5.29 14.54 6.61 14.06 7.94 13.73 C 9.27 13.41 10.62 13.25 12 13.25 C 13.37 13.25 14.72 13.41 16.06 13.73 C 17.39 14.06 18.7 14.54 20 15.19 C 20.6 15.5 21.09 15.95 21.45 16.55 C 21.81 17.14 22 17.79 22 18.5 L 22 22 Z M 2 22"/></svg>Fulana de Tal Ejemplo</p>
+</li>
+<li class="ficha">
+  <div class="ficha-cab">
+    <div class="ficha-titulo"><h3>Camellón Río Churubusco</h3><p class="ficha-fecha"><span class="fecha">vie 18-SEP-2026</span></p></div>
+    <svg class="mini" viewBox="0 0 72 72" aria-hidden="true"><rect width="72" height="72" rx="8" fill="#EEF1F3"/></svg>
+  </div>
+  <div class="ficha-estado"><span class="estatus abierta"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M15 5.1 9 3 3 5.02V21l6-2.1 6 2.1 6-2.02V3l-6 2.1zm-1 13.6-4-1.4V5.3l4 1.4v12zM5 6.44l3-1.01v12.14l-3 1.05V6.44zm14 11.12-3 1.01V6.43l3-1.05v12.18z"/></svg>Abierta</span><span class="revision" data-tono="neutro">Abierta, sin árboles</span></div>
+  <p class="ficha-lugar"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M 12 12 C 12.55 12 13.02 11.8 13.41 11.41 C 13.8 11.02 14 10.55 14 10 C 14 9.45 13.8 8.98 13.41 8.59 C 13.02 8.19 12.55 8 12 8 C 11.45 8 10.97 8.19 10.59 8.59 C 10.19 8.98 10 9.45 10 10 C 10 10.55 10.19 11.02 10.59 11.41 C 10.97 11.8 11.45 12 12 12 M 12 19.35 C 14.03 17.48 15.54 15.79 16.52 14.26 C 17.51 12.74 18 11.38 18 10.2 C 18 8.39 17.42 6.9 16.26 5.74 C 15.1 4.58 13.68 4 12 4 C 10.31 4 8.9 4.58 7.74 5.74 C 6.58 6.9 6 8.39 6 10.2 C 6 11.38 6.49 12.74 7.47 14.26 C 8.46 15.79 9.96 17.48 12 19.35 M 12 22 C 9.32 19.71 7.31 17.6 5.99 15.64 C 4.66 13.68 4 11.87 4 10.2 C 4 7.7 4.8 5.71 6.41 4.22 C 8.02 2.74 9.88 2 12 2 C 14.12 2 15.98 2.74 17.59 4.22 C 19.2 5.71 20 7.7 20 10.2 C 20 11.87 19.33 13.68 18.01 15.64 C 16.69 17.6 14.68 19.71 12 22"/></svg>Iztapalapa · Col. Leyes de Reforma</p>
+  <div class="ficha-stats"><span class="stat" data-cero="true"><b>0</b>árboles</span><span class="stat" data-cero="true"><b>0</b>especies</span><span class="stat" data-cero="true"><b>0</b>por revisar</span><span class="stat" data-cero="true"><b>0</b>bien</span></div>
+</li></ul>
+</div></div>
+
+<div class="leyenda">
+  <h2>Orden propuesto de cada ficha</h2>
+  <ol>
+    <li><b>Nombre de la jornada</b> — lo que la persona reconoce primero; en grande.</li>
+    <li><b>Cuándo</b> — «Hoy» / «Ayer» en negritas cuando aplica, luego el día con su fecha (mié 23-SEP-2026), y la insignia «Jornada 2 de 3» sólo si ese día hubo más de una.</li>
+    <li><b>Estado</b> — dos etiquetas juntas: <em>Abierta</em> (verde relleno) o <em>Cerrada</em> (gris relleno con candado), y al lado el resultado de la revisión con color: ámbar «3 puntos por revisar», verde «Revisada: 18 de 18», rojo «Contados 22 · registrados 20», gris «Abierta, sin árboles».</li>
+    <li><b>Dónde</b> — alcaldía y colonia de la jornada (las detectadas al iniciarla; si no, las de sus árboles) y, en gris, la ubicación escrita.</li>
+    <li><b>Cuánto</b> — cuatro cifras iguales: árboles · especies · por revisar · bien. Un cero se atenúa para no distraer.</li>
+    <li><b>Quién</b> — el cabo, sólo para coordinador y administrador (el cabo ya sabe que son suyas).</li>
+  </ol>
+  <h2>Filtros</h2>
+  <ol>
+    <li>Atajos en este orden: <b>Todas · Hoy · Un día · Un periodo</b> (Un día abre una fecha; Un periodo abre Desde / Hasta + Aplicar).</li>
+    <li><b>Año, Mes y Cabo</b> en un acordeón cerrado «Más filtros», para que la lista empiece más arriba en el teléfono.</li>
+    <li>La miniatura del mapa se conserva a la derecha del título: puntos en pizarra, ámbar los que hay que revisar, rojo el que quedó lejos.</li>
+  </ol>
+  <p class="nota" style="margin:0">Criterio: identificar → cuándo → estado → dónde → cuánto → quién. Lo que decide si hay que entrar (estado) va arriba de los detalles.</p>
+</div>
+</div>
+</body></html>

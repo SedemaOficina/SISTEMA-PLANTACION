@@ -281,20 +281,48 @@ fieldset.campo { margin-inline: 0; }
 }
 
 /* JORNADAS (D112): tarjetas de jornada, revisión con mapa numerado, conciliación y lista de puntos */
-.lista-jornadas { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e-2); }
-.jornada-boton { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: var(--e-3); align-items: start; width: 100%; text-align: left;
-  padding: var(--e-3); border: 1px solid var(--borde-suave); border-radius: var(--radio-filtro); background: var(--fondo); color: inherit; font: inherit; cursor: pointer; }
-.jornada-mini { width: 72px; height: 72px; display: block; }
-.jornada-mini rect { fill: var(--fondo-suave); }
-.jornada-mini circle { fill: var(--guinda); }
-.jornada-datos { min-width: 0; display: grid; gap: 2px; }
-.jornada-dia { font-family: var(--fuente-titulo); font-weight: 600; }
-.jornada-sitio { overflow-wrap: anywhere; }
-.jornada-cifras { font-size: var(--t-xs); color: var(--gris); overflow-wrap: anywhere; }
-.insignia-jornada { display: inline-block; justify-self: start; margin-top: 2px; padding: 1px var(--e-2); border-radius: 10px; font-size: var(--t-xs); font-weight: 500; background: var(--fondo-suave); color: var(--gris); }
+.lista-jornadas { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e-3); }
+/* Ficha de jornada (D128): nombre → cuándo → estado → dónde → cuánto → quién */
+.jornada-boton { display: grid; gap: var(--e-2); width: 100%; text-align: left; padding: var(--e-3) var(--e-4); border: 1px solid var(--borde-suave); border-radius: var(--radio-filtro); background: var(--fondo); color: inherit; font: inherit; cursor: pointer; }
+.jornada-cab { display: grid; grid-template-columns: minmax(0, 1fr) 64px; gap: var(--e-3); align-items: start; }
+.jornada-titulo-caja { min-width: 0; display: grid; gap: 2px; }
+.jornada-sitio { font-family: var(--fuente-titulo); font-weight: 700; font-size: var(--t-l); line-height: 1.2; overflow-wrap: anywhere; }
+.jornada-dia { font-size: var(--t-s); }
+.jornada-dia b { font-weight: 700; }
+.jornada-fecha { color: var(--gris); }
+.jornada-ndn { display: inline-block; margin-left: 2px; padding: 1px var(--e-2); border-radius: var(--radio-pildora); background: var(--acento-suave); color: var(--acento); font-size: var(--t-xs); font-weight: 600; vertical-align: 1px; }
+.jornada-mini { width: 64px; height: 64px; display: block; border-radius: 8px; }
+.jornada-mini rect { fill: var(--neutro-fondo); }
+.jornada-mini circle { fill: var(--acento); }
+.jornada-mini circle[data-tono="rev"] { fill: var(--editar-borde); }
+.jornada-mini circle[data-tono="err"] { fill: var(--error); }
+.jornada-estado { display: flex; flex-wrap: wrap; gap: var(--e-2); align-items: center; }
+.jornada-estatus { display: inline-flex; align-items: center; gap: 5px; padding: 4px var(--e-3); border-radius: var(--radio-control); font-size: var(--t-xs); font-weight: 700; letter-spacing: .02em; }
+.jornada-estatus[data-estatus="abierta"] { background: var(--exito); color: var(--fondo); }
+.jornada-estatus[data-estatus="cerrada"] { background: var(--acento); color: var(--fondo); }
+.insignia-jornada { display: inline-block; padding: 4px var(--e-3); border-radius: var(--radio-control); font-size: var(--t-xs); font-weight: 500; background: var(--neutro-fondo); color: var(--gris); }
 .insignia-jornada[data-tono="ok"] { background: var(--exito-fondo); color: var(--exito); }
 .insignia-jornada[data-tono="rev"] { background: var(--editar-fondo); color: var(--editar); }
 .insignia-jornada[data-tono="err"] { background: var(--error-fondo); color: var(--error); }
+.jornada-lugar { display: flex; gap: 6px; align-items: flex-start; font-size: var(--t-s); overflow-wrap: anywhere; }
+.jornada-lugar svg { flex: none; margin-top: 3px; color: var(--gris); }
+.jornada-ubic { color: var(--gris); }
+.jornada-datos { min-width: 0; display: grid; gap: 2px; }   /* listas de los diálogos Cambiar/Mover */
+.jornada-datos .jornada-dia { font-family: var(--fuente-titulo); font-weight: 600; }
+.jornada-datos .jornada-cifras { font-size: var(--t-xs); color: var(--gris); overflow-wrap: anywhere; }
+#lista-jornadas .jornada-cifras { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.jornada-cifra { display: flex; flex-direction: column; align-items: center; padding: 6px 4px; border-radius: 8px; background: var(--neutro-fondo); font-size: var(--t-xs); color: var(--gris); line-height: 1.15; text-align: center; }
+.jornada-cifra b { font-size: var(--t-m); color: var(--texto); font-weight: 700; }
+.jornada-cifra[data-cero="true"] b { color: var(--neutro-borde); }
+.jornada-cabo { display: flex; gap: 5px; align-items: center; font-size: var(--t-xs); color: var(--gris); }
+/* Filtros de Jornadas (D128): cuatro atajos y el acordeón «Más filtros» */
+.chips-cuatro { grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: none; }
+.acordeon-filtros { border: 1px solid var(--borde-filtro); border-radius: var(--radio-filtro); margin-top: var(--e-2); }
+.acordeon-filtros summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); min-height: 44px; padding: 0 var(--e-3); font-size: var(--t-s); font-weight: 500; color: var(--gris); cursor: pointer; }
+.acordeon-filtros summary::-webkit-details-marker { display: none; }
+.acordeon-filtros summary::after { content: ''; flex: none; width: 8px; height: 8px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); margin: 0 4px 3px 0; }
+.acordeon-filtros[open] summary::after { transform: rotate(-135deg); margin-bottom: -3px; }
+.acordeon-cuerpo { padding: 0 var(--e-3) var(--e-3); }
 .volver { padding-left: 0; margin-bottom: var(--e-1); }
 .jornada-titulo { margin-bottom: var(--e-1); }
 .jornada-comentarios { margin: 0 0 var(--e-2); padding: var(--e-2) var(--e-3); border-left: 3px solid var(--dorado); background: var(--fondo-suave); font-size: var(--t-s); white-space: pre-line; }
@@ -824,6 +852,7 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
   .enlace:hover, .btn-texto:hover, .desplegable summary:hover { color: var(--acento); }
   .zona-foto:hover { border-color: var(--guinda); background: var(--fondo-suave); }
   .chip:hover { background: var(--fondo-campo); }
+  .chip[aria-pressed="true"]:hover { background: var(--acento-oscuro); }
   /* Con ratón la opción bajo el cursor se marca igual que la elegida con teclado */
   .combo-opcion:hover { background: var(--fondo-suave); outline: 2px solid var(--guinda); outline-offset: -2px; }
 }

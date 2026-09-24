@@ -950,3 +950,16 @@
   Lugar (alcaldía · colonia), Cómo se obtuvo con la misma insignia de precisión que la ficha, y al
   final el envío con su hora (verde con palomita) o la espera de señal (ámbar). Fuera el
   identificador UUID y la fecha suelta. Criterio propuesto y aprobado por Liber, 23-09-2026.
+- **D128. Fichas y filtros de Jornadas.** Criterio de la ficha: identificar → cuándo → estado → dónde
+  → cuánto → quién. Nombre en grande con la miniatura a la derecha (puntos pizarra; ámbar con
+  aviso; rojo lejos del resto); «Hoy» o «Ayer» en negritas cuando aplica, el día con su fecha y la
+  insignia «Jornada n de n» sólo si ese día hubo más de una; dos etiquetas de estado juntas y
+  visibles: **Abierta** (verde relleno) o **Cerrada** (pizarra relleno con candado —no rojo, que
+  en el sistema significa quitar/error y ya lo usa el descuadre de al lado—) más el resultado de
+  la revisión con color; alcaldía · colonia (las detectadas al iniciar la jornada; si no, las de
+  sus árboles) y en gris la ubicación escrita; cuatro cifras iguales: árboles, especies, por
+  revisar, bien (= registros sin aviso pendiente), con los ceros atenuados; el cabo sólo para
+  coordinador y administrador. El total dice «n jornadas · m árboles». Filtros: atajos **Todas ·
+  Hoy · Un día · Un periodo** (Desde/Hasta con «Aplicar», como en Registros, D82) y **Año, Mes y
+  Cabo** plegados en un acordeón «Más filtros» cuyo resumen dice lo elegido dentro; un día gana
+  sobre año/mes y el rango limpia a los tres. Mockup aprobado por Liber, 23-09-2026.

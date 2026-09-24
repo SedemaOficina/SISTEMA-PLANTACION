@@ -24,8 +24,11 @@
 window.SRP = window.SRP || {};
 
 SRP.jornadas = {
-  filtro: { dia: '', cabo: '' },
+  /* Filtros (D128): «Un día» gana sobre año/mes; el rango Desde/Hasta limpia a los tres.
+     Año, mes y cabo viven plegados en «Más filtros». Al entrar se ven todas. */
+  filtro: { dia: '', desde: '', hasta: '', anio: '', mes: '', cabo: '' },
   diaAbierto: false,
+  periodoAbierto: false,
   lista: [],            // jornadas de lo filtrado
   actual: null,         // clave de la jornada abierta
   volverAlDetalle: false,
@@ -40,8 +43,33 @@ SRP.jornadas = {
       this.aplicarAtajo(b.dataset.atajo);
     });
     this.el('jornada-dia').addEventListener('change', () => {
-      this.filtro.dia = this.el('jornada-dia').value;
-      this.diaAbierto = true;
+      const f = this.filtro;
+      f.dia = this.el('jornada-dia').value; f.anio = ''; f.mes = ''; f.desde = ''; f.hasta = '';
+      this.diaAbierto = true; this.periodoAbierto = false;
+      this.pintarLista();
+    });
+    // Desde y Hasta entran con «Aplicar», como en Registros (D82)
+    this.el('btn-jornada-filtrar').innerHTML = SRP.ICONOS.svg('buscar') + '<span>Aplicar</span>';
+    this.el('btn-jornada-filtrar').addEventListener('click', () => {
+      const desde = this.el('jornada-desde').value, hasta = this.el('jornada-hasta').value;
+      if (desde && hasta && desde > hasta) { SRP.util.anunciar('La fecha «Desde» es posterior a «Hasta». Corrija el rango.', 'alerta'); return; }
+      const f = this.filtro;
+      f.desde = desde; f.hasta = hasta;
+      if (desde || hasta) { f.dia = ''; f.anio = ''; f.mes = ''; }
+      this.pintarLista();
+    });
+    this.el('jornada-anio').addEventListener('change', () => {
+      const f = this.filtro;
+      f.anio = this.el('jornada-anio').value; f.mes = ''; f.dia = ''; f.desde = ''; f.hasta = '';
+      this.diaAbierto = false; this.periodoAbierto = false;
+      this.llenarMeses();
+      this.pintarLista();
+    });
+    this.el('jornada-mes').addEventListener('change', () => {
+      const f = this.filtro;
+      f.mes = this.el('jornada-mes').value; f.dia = ''; f.desde = ''; f.hasta = '';
+      if (f.mes && !f.anio) { f.anio = this.aniosDisponibles()[0] || String(new Date().getFullYear()); this.el('jornada-anio').value = f.anio; }
+      this.diaAbierto = false; this.periodoAbierto = false;
       this.pintarLista();
     });
     this.el('jornada-cabo').addEventListener('change', () => {
@@ -210,8 +238,9 @@ SRP.jornadas = {
       if (!this.lista.some(j => j.clave === this.actual)) {
         const j = await SRP.almacen.uno('jornadas', this.actual);
         if (j) {
-          if (j.fecha === SRP.util.fechaHoy()) { this.filtro.dia = j.fecha; this.diaAbierto = false; this.el('jornada-dia').value = ''; }
-          else { this.filtro.dia = j.fecha; this.diaAbierto = true; this.el('jornada-dia').value = j.fecha; }
+          Object.assign(this.filtro, { dia: j.fecha, desde: '', hasta: '', anio: '', mes: '' }); this.periodoAbierto = false;
+          if (j.fecha === SRP.util.fechaHoy()) { this.diaAbierto = false; this.el('jornada-dia').value = ''; }
+          else { this.diaAbierto = true; this.el('jornada-dia').value = j.fecha; }
           if (this.filtro.cabo && this.filtro.cabo !== j.cabo_id) { this.filtro.cabo = ''; if (this.el('jornada-cabo')) this.el('jornada-cabo').value = ''; }
           await this.pintarLista(true);
         }
@@ -225,49 +254,122 @@ SRP.jornadas = {
 
   aplicarAtajo(atajo) {
     const f = this.filtro;
-    if (atajo === 'hoy') { f.dia = SRP.util.fechaHoy(); this.diaAbierto = false; this.el('jornada-dia').value = ''; }
-    if (atajo === 'todas') { f.dia = ''; this.diaAbierto = false; this.el('jornada-dia').value = ''; }
-    if (atajo === 'dia') { this.diaAbierto = true; f.dia = this.el('jornada-dia').value; }
+    const limpiarFechas = () => { f.dia = ''; f.desde = ''; f.hasta = ''; f.anio = ''; f.mes = ''; this.el('jornada-dia').value = ''; this.el('jornada-desde').value = ''; this.el('jornada-hasta').value = ''; };
+    if (atajo === 'hoy') { limpiarFechas(); f.dia = SRP.util.fechaHoy(); this.diaAbierto = false; this.periodoAbierto = false; }
+    if (atajo === 'todas') { limpiarFechas(); this.diaAbierto = false; this.periodoAbierto = false; }
+    // «Un día» y «Un periodo» sólo abren su fecha; filtran al elegirla (D113) o con «Aplicar» (D82)
+    if (atajo === 'dia') { this.diaAbierto = true; this.periodoAbierto = false; f.desde = ''; f.hasta = ''; f.dia = this.el('jornada-dia').value; if (f.dia) { f.anio = ''; f.mes = ''; } }
+    if (atajo === 'periodo') { this.periodoAbierto = true; this.diaAbierto = false; }
     this.pintarLista();
   },
 
   sincronizarAtajos() {
     const f = this.filtro;
-    const activo = { hoy: !this.diaAbierto && f.dia === SRP.util.fechaHoy(), dia: this.diaAbierto, todas: !this.diaAbierto && !f.dia };
+    const activo = { hoy: !this.diaAbierto && !this.periodoAbierto && f.dia === SRP.util.fechaHoy(), dia: this.diaAbierto, periodo: this.periodoAbierto,
+      todas: !this.diaAbierto && !this.periodoAbierto && !f.dia && !f.desde && !f.hasta && !f.anio && !f.mes };
     this.el('jornada-atajos').querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', String(!!activo[c.dataset.atajo])));
     this.el('jornada-un-dia').hidden = !this.diaAbierto;
+    this.el('jornada-periodo').hidden = !this.periodoAbierto;
     this.el('jornada-atajos').querySelector('[data-atajo="dia"]').setAttribute('aria-expanded', String(this.diaAbierto));
+    this.el('jornada-atajos').querySelector('[data-atajo="periodo"]').setAttribute('aria-expanded', String(this.periodoAbierto));
+    this.el('jornada-anio').value = f.anio; this.el('jornada-mes').value = f.mes;
+    // El resumen del acordeón dice qué hay elegido dentro, aunque esté plegado
+    const dentro = [f.anio ? (f.mes ? SRP.util.nombreMes(f.anio + '-' + f.mes, true) + ' ' + f.anio : f.anio) : '', f.cabo ? SRP.ref.nombreUsuario(f.cabo) : ''].filter(Boolean);
+    this.el('jornada-mas-filtros-texto').textContent = dentro.length ? 'Más filtros: ' + dentro.join(' · ') : 'Más filtros: año, mes' + (this.el('caja-jornada-cabo').hidden ? '' : ' y cabo');
+  },
+
+  aniosDisponibles() { return [...new Set(this._todas.map(j => j.fecha.slice(0, 4)))].sort().reverse(); },
+
+  llenarAnios() {
+    const anios = this.aniosDisponibles();
+    const actual = String(new Date().getFullYear());
+    if (!anios.includes(actual)) anios.unshift(actual);
+    this.el('jornada-anio').innerHTML = '<option value="">Todos</option>' + anios.map(a => '<option value="' + a + '">' + a + '</option>').join('');
+    this.el('jornada-anio').value = this.filtro.anio;
+  },
+
+  llenarMeses() {
+    const anio = this.filtro.anio;
+    const meses = anio ? [...new Set(this._todas.filter(j => j.fecha.startsWith(anio)).map(j => j.fecha.slice(5, 7)))].sort() : [];
+    const sel = this.el('jornada-mes');
+    sel.innerHTML = '<option value="">Todos</option>' + meses.map(m => '<option value="' + m + '">' + SRP.util.nombreMes('2000-' + m, true) + '</option>').join('');
+    sel.disabled = !anio;
+    if (!meses.includes(this.filtro.mes)) this.filtro.mes = '';
+    sel.value = this.filtro.mes;
+  },
+
+  cumpleFiltro(j) {
+    const f = this.filtro;
+    if (f.cabo && j.cabo_id !== f.cabo) return false;
+    if (f.dia) return j.fecha === f.dia;
+    if (f.desde && j.fecha < f.desde) return false;
+    if (f.hasta && j.fecha > f.hasta) return false;
+    if (f.anio && !j.fecha.startsWith(f.anio)) return false;
+    if (f.mes && j.fecha.slice(5, 7) !== f.mes) return false;
+    return true;
+  },
+
+  // «Hoy» / «Ayer» delante de la fecha, cuando aplica
+  cuando(fecha) {
+    const hoy = SRP.util.fechaHoy();
+    if (fecha === hoy) return 'Hoy';
+    const ayer = new Date(hoy + 'T12:00:00'); ayer.setDate(ayer.getDate() - 1);
+    const a = ayer.getFullYear() + '-' + String(ayer.getMonth() + 1).padStart(2, '0') + '-' + String(ayer.getDate()).padStart(2, '0');
+    return fecha === a ? 'Ayer' : '';
+  },
+
+  // Dónde: alcaldía y colonia de la jornada si se detectaron al iniciarla; si no, las de sus árboles
+  lugarDe(j) {
+    const d = j.dato || {};
+    if (d.alcaldia || d.colonia) return [d.alcaldia || '', d.colonia ? 'Col. ' + d.colonia : ''].filter(Boolean).join(' · ');
+    const alc = this.alcaldiasDe(j);
+    const cols = [...new Set(j.registros.map(r => r.colonia).filter(Boolean))];
+    return [alc.join(', '), cols.length === 1 ? 'Col. ' + cols[0] : ''].filter(Boolean).join(' · ');
   },
 
   async pintarLista(soloDatos) {
     const f = this.filtro;
+    this._todas = await this.jornadasAlcance();
+    this.llenarAnios(); this.llenarMeses();
     this.sincronizarAtajos();
-    this.lista = (await this.jornadasAlcance()).filter(j => (!f.dia || j.fecha === f.dia) && (!f.cabo || j.cabo_id === f.cabo));
+    this.lista = this._todas.filter(j => this.cumpleFiltro(j));
     if (soloDatos) return;
     const u = SRP.sesion.usuario;
     const variosAutores = SRP.permisos.de(u).alcance !== 'propios';
     const esc = SRP.util.escapar;
-    const hoy = SRP.util.fechaHoy();
     const html = [];
+    let arbolesTotal = 0;
     for (const j of this.lista) {
       const cierre = await this.cierreDe(j);
-      const est = this.estado(j, this.avisos(j), cierre);
-      const n = j.registros.length;
+      const avisos = this.avisos(j);
+      const est = this.estado(j, avisos, cierre);
+      const n = j.registros.length; arbolesTotal += n;
       const especies = new Set(j.registros.map(r => this.claveEspecie(r))).size;
-      const dia = (j.fecha === hoy ? 'Hoy · ' : '') + SRP.envio.diaEnLetra(j.fecha).split(' ')[0].slice(0, 3) + ' ' + SRP.util.formatearFecha(j.fecha) +
-        (j.total > 1 ? ' · Jornada ' + j.n + ' de ' + j.total : '') + (j.estatus === 'abierta' ? ' · abierta' : '');
-      html.push('<li class="jornada" data-clave="' + esc(j.clave) + '"><button type="button" class="jornada-boton" aria-label="Revisar la jornada del ' +
-        esc(SRP.util.formatearFecha(j.fecha)) + ' en ' + esc(this.nombreSitio(j)) + ', ' + n + (n === 1 ? ' árbol' : ' árboles') + ', ' + esc(est.texto) + '">' +
-        this.miniatura(j) +
-        '<span class="jornada-datos"><span class="jornada-dia">' + esc(dia) + '</span>' +
-        '<span class="jornada-sitio">' + esc(this.nombreSitio(j)) + '</span>' +
-        '<span class="jornada-cifras">' + esc(this.alcaldiasDe(j).length ? this.alcaldiasDe(j).join(', ') : (j.dato && j.dato.alcaldia) || '') + ' · ' + n + (n === 1 ? ' árbol' : ' árboles') + ' · ' +
-        especies + (especies === 1 ? ' especie' : ' especies') + (variosAutores ? ' · ' + esc(SRP.ref.nombreUsuario(j.cabo_id)) : '') + '</span>' +
-        '<span class="insignia-jornada" data-tono="' + est.tono + '">' + esc(est.texto) + '</span></span></button></li>');
+      const porRevisar = this.pendientes(j, avisos, cierre).length;
+      const bien = n - porRevisar;
+      const cuando = this.cuando(j.fecha);
+      const fecha = SRP.envio.diaEnLetra(j.fecha).split(' ')[0].slice(0, 3) + ' ' + SRP.util.formatearFecha(j.fecha);
+      const abierta = j.estatus === 'abierta';
+      const lugar = this.lugarDe(j);
+      const ubic = (j.dato && j.dato.ubicacion) || '';
+      const cifra = (v, t) => '<span class="jornada-cifra" data-cero="' + (v === 0) + '"><b>' + v + '</b> ' + t + '</span>';
+      // Orden de la ficha (D128): nombre → cuándo → estado → dónde → cuánto → quién
+      html.push('<li class="jornada" data-clave="' + esc(j.clave) + '"><button type="button" class="jornada-boton" aria-label="Revisar la jornada ' +
+        esc(this.nombreSitio(j)) + ' del ' + esc(SRP.util.formatearFecha(j.fecha)) + ', ' + (abierta ? 'abierta' : 'cerrada') + ', ' + n + (n === 1 ? ' árbol' : ' árboles') + ', ' + esc(est.texto) + '">' +
+        '<span class="jornada-cab"><span class="jornada-titulo-caja"><span class="jornada-sitio">' + esc(this.nombreSitio(j)) + '</span>' +
+        '<span class="jornada-dia">' + (cuando ? '<b>' + cuando + '</b> · ' : '') + '<span class="jornada-fecha">' + esc(fecha) + '</span>' +
+        (j.total > 1 ? ' <span class="jornada-ndn">Jornada ' + j.n + ' de ' + j.total + '</span>' : '') + '</span></span>' + this.miniatura(j, avisos) + '</span>' +
+        '<span class="jornada-estado"><span class="jornada-estatus" data-estatus="' + (abierta ? 'abierta' : 'cerrada') + '">' + SRP.ICONOS.svg(abierta ? 'jornadas' : 'candado', 14) +
+        '<span>' + (abierta ? 'Abierta' : 'Cerrada') + '</span></span>' +
+        '<span class="insignia-jornada" data-tono="' + est.tono + '">' + esc(est.texto) + '</span></span>' +
+        (lugar || ubic ? '<span class="jornada-lugar">' + SRP.ICONOS.svg('ubicacion', 16) + '<span>' + esc(lugar) + (ubic ? (lugar ? ' · ' : '') + '<span class="jornada-ubic">' + esc(ubic) + '</span>' : '') + '</span></span>' : '') +
+        '<span class="jornada-cifras">' + cifra(n, n === 1 ? 'árbol' : 'árboles') + cifra(especies, especies === 1 ? 'especie' : 'especies') + cifra(porRevisar, 'por revisar') + cifra(bien, 'bien') + '</span>' +
+        (variosAutores ? '<span class="jornada-cabo">' + SRP.ICONOS.svg('usuario', 14) + '<span>' + esc(SRP.ref.nombreUsuario(j.cabo_id)) + '</span></span>' : '') +
+        '</button></li>');
     }
     this.el('lista-jornadas').innerHTML = html.join('');
     const n = this.lista.length;
-    this.el('jornadas-total').textContent = n ? 'Total: ' + n + (n === 1 ? ' jornada' : ' jornadas') : '';
+    this.el('jornadas-total').textContent = n ? n + (n === 1 ? ' jornada' : ' jornadas') + ' · ' + arbolesTotal + (arbolesTotal === 1 ? ' árbol' : ' árboles') : '';
     const vacio = this.el('jornadas-vacio');
     vacio.hidden = n > 0;
     if (!n) vacio.innerHTML = '<p><strong>' + (f.dia ? 'No hay jornadas del ' + esc(SRP.util.formatearFecha(f.dia)) + '.' : 'Todavía no hay jornadas.') + '</strong></p>' +
@@ -275,7 +377,8 @@ SRP.jornadas = {
   },
 
   // Miniatura: los puntos de la jornada en un cuadro, sin mapa de fondo (no pide nada a la red)
-  miniatura(j) {
+  miniatura(j, avisos) {
+    avisos = avisos || {};
     if (!j.registros.length) return '<svg class="jornada-mini" viewBox="0 0 80 80" aria-hidden="true"><rect width="80" height="80" rx="8"/></svg>';
     const lats = j.registros.map(r => r.lat), lngs = j.registros.map(r => r.lng);
     const [a, b, c, d] = [Math.min(...lats), Math.max(...lats), Math.min(...lngs), Math.max(...lngs)];
@@ -283,7 +386,8 @@ SRP.jornadas = {
     const pts = j.registros.map(r => {
       const x = 10 + ((r.lng - c) + (span - (d - c)) / 2) / span * 60;
       const y = 70 - ((r.lat - a) + (span - (b - a)) / 2) / span * 60;
-      return '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="3.2"/>';
+      const tono = avisos[r.id] ? (avisos[r.id].some(a => a.tipo === 'lejos') ? 'err' : 'rev') : '';
+      return '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="3.2" data-tono="' + tono + '"/>';
     }).join('');
     return '<svg class="jornada-mini" viewBox="0 0 80 80" aria-hidden="true"><rect width="80" height="80" rx="8"/>' + pts + '</svg>';
   },

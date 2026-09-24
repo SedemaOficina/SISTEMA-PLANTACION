@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.49 (Bloque 68)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.50 (Bloque 69)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -95,6 +95,8 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M84 | Petición de Liber | «Cerrar jornada» desde la franja siempre llega a la ficha de esa jornada en Jornadas, aunque el filtro esté en otro día o cabo (se ajusta solo) | Alta | 0.6.47 (B66) | Iniciar una jornada de ayer, cerrarla desde la franja: abre su ficha con el filtro «Un día» en esa fecha | Ficha de jornada |
 | M85 | Petición de Liber | Ficha «Revise antes de guardar»: termina Fotografía, Folio, Cabo; con datos de prueba el Folio enseña el que tocará (p. ej. COY-049-00002 (simulado)) sin gastar la secuencia; desaparecen «Datos del sistema» y el identificador | Media | 0.6.48 (B67) | Nuevo registro › Revisar: bajar al final de la ficha | Final de la ficha |
 | M86 | Petición de Liber | «Registro guardado» dice, en orden: especie (común y científico), Folio, Jornada · fecha, Lugar (alcaldía · colonia), Cómo se obtuvo con la insignia de precisión, y al final el envío con su hora; sin identificador | Media | 0.6.49 (B68) | Guardar un árbol | Aviso de guardado |
+| M87 | Petición de Liber | Fichas de Jornadas en orden: nombre → «Hoy»/«Ayer» + fecha + «Jornada n de n» → estado muy visible (Abierta verde / Cerrada pizarra con candado + resultado de revisión con color) → alcaldía · colonia · ubicación → cuatro cifras (árboles, especies, por revisar, bien) → cabo (coordinador/admin). Miniatura con puntos ámbar/rojo según aviso | Alta | 0.6.50 (B69) | Jornadas: mirar las fichas | Lista de jornadas |
+| M88 | Petición de Liber | Filtros de Jornadas: Todas · Hoy · Un día · Un periodo (Desde/Hasta + Aplicar); Año, Mes y Cabo plegados en «Más filtros» | Alta | 0.6.50 (B69) | Jornadas: probar cada atajo y abrir «Más filtros» | Filtros |
 
 ## 2. Por hacer
 

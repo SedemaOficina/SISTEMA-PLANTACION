@@ -1295,3 +1295,17 @@ pinta el envío con icono. `estilos.css`: `.guardado-especie`, `.guardado-datos`
 
 **Verificación:** 412 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.49.
+
+## Bloque 69 — Fichas y filtros de Jornadas (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.50.
+
+**Qué cambió (D128).** `index.html`: atajos Todas/Hoy/Un día/Un periodo, Desde/Hasta + Aplicar,
+acordeón «Más filtros» con año, mes y cabo. `jornadas.js`: filtro con dia/desde/hasta/anio/mes/
+cabo, `cumpleFiltro`, `llenarAnios/llenarMeses`, `cuando()`, `lugarDe()`, ficha nueva,
+`miniatura(j, avisos)` con tono por aviso, total con árboles; D125 ajusta también el rango.
+`estilos.css`: ficha (`.jornada-cab`, `.jornada-estatus`, `.jornada-cifras`…), `.chips-cuatro`,
+`.acordeon-filtros`; chip activo oscuro bajo el cursor. Pruebas: orden de atajos, acordeón, orden y
+contenido de la ficha, colores de estado, rango, año y mes.
+
+**Verificación:** 420 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.50.
