@@ -195,6 +195,7 @@ Almacén `jornadas` (sustituye a `cierres` desde el bloque 62). Lo que ya vive e
 | `hora` | No | Persona | Hora de finalización, `HH:MM` del selector de hora; el PDF le agrega «h» |
 | `meta_arboles` | Sí | Persona | Árboles que se van a plantar, escrito al iniciar la jornada (D131); Jornadas y el reporte comparan contra la meta |
 | `puntos_revisados` | Sí | Persona | Puntos con aviso que alguien marcó «Está bien» en **Jornadas**; lista de `plantaciones.id` (D112) |
+| `reporte_en` | No | Sistema | Cuándo se generó el reporte de la jornada (D134); nulo si no se ha generado |
 | `creado_por_id` | Sí | Sesión | Quién inició la jornada |
 | `fecha_creacion` | Sí | Sistema | |
 | `editado_por_id` | Sí | Sesión | Quién la cambió por última vez |

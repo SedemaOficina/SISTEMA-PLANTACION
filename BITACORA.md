@@ -1381,3 +1381,17 @@ atiende la confirmación y devuelve el id guardado.
 
 **Verificación:** 443 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.55.
+
+## Bloque 75 — Reportes por jornada cerrada y jornada en la tarjeta (24-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.56.
+
+**Qué cambió (D134).** `index.html`: Reportes con atajos, cabo y `#pdf-lista`; sin día/selector/
+botón únicos. `reportes.js`: `filtro`, `aplicarAtajo`, `pintarLista`, `preparar` con el pedido
+directo al cierre; `reporte_en` al aceptar. `jornadas.js`: `irAlReporte` sin fecha. `registros.js`:
+nombre de la jornada en la tarjeta. `app.js`: sin `btn-pdf`. `estilos.css`: `.reporte-ficha`,
+`.registro-jornada`. `esquema.json`, `espejo.js`, `auditoria.py`, `MAPEO-CAMPOS.md`, diccionario:
+`reporte_en`. Pruebas: lista de cerradas, atajos, un día, ficha con «Volver a generar», llegada
+directa desde Jornadas, filtro por cabo; ayudante `reporte_de`.
+
+**Verificación:** 448 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.56.

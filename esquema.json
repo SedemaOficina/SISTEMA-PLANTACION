@@ -1131,6 +1131,15 @@
           "regla": "Puntos con aviso (duplicado, lejos, precisión) que alguien confirmó como correctos (D112); el aviso deja de contarse, no se borra"
         },
         {
+          "campo": "reporte_en",
+          "tipo": "datetime",
+          "nulo": true,
+          "origen": "Sistema",
+          "dominio": "ISO 8601; nulo si no se ha generado",
+          "pantalla": "Reportes: «reporte generado …»",
+          "regla": "Se fija al aceptar el cierre del reporte (D134); Reportes ofrece «Volver a generar»"
+        },
+        {
           "campo": "personal",
           "tipo": "text",
           "nulo": false,

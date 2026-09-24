@@ -966,3 +966,10 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 
 /* Acciones de la ficha de jornada (D132) */
 .jornada-acciones-cab { display: flex; flex-wrap: wrap; gap: var(--e-2); margin: 0 0 var(--e-3); }
+
+/* Reportes por jornada cerrada (D134): la ficha no es botón; el botón va a la derecha */
+.reporte-ficha { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2) var(--e-3); cursor: default; }
+.reporte-ficha .jornada-titulo-caja { flex: 1 1 14rem; }
+.reporte-ficha .jornada-sitio { font-size: var(--t-m); }
+.reporte-sin { flex: 1 1 100%; margin: 0; }
+.registro-jornada { font-weight: 600; color: var(--texto); }

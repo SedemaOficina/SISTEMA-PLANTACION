@@ -257,7 +257,7 @@ SRP.activa = {
       alcaldia_cve: t.alcaldia_cve || null, alcaldia: t.alcaldia || null, colonia_cve: t.colonia_cve || null, colonia: t.colonia || null,
       fecha_inicio: ahora, fecha_cierre: null,
       creado_por_id: u.id, fecha_creacion: ahora, editado_por_id: u.id, fecha_ultima_edicion: ahora,
-      meta_arboles, puntos_revisados: [], encargado_id: u.id
+      meta_arboles, puntos_revisados: [], reporte_en: null, encargado_id: u.id
     }, Object.fromEntries(SRP.reportes.CAMPOS.map(k => [k, ''])));
     await SRP.almacen.guardarConBitacora('jornadas', j, SRP.bitacora.entrada('CREADO', 'jornada', j.id, 'Jornada «' + nombre + '» del ' + SRP.util.formatearFecha(fecha)));
     this.jornada = j;

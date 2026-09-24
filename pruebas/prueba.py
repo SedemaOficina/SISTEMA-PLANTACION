@@ -37,6 +37,16 @@ def iniciar_jornada(pg, nombre, fecha=None, comentarios='', programa='p-refor'):
     pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(500)
     return pg.evaluate("SRP.activa.jornada && SRP.activa.jornada.id")
 
+def reporte_de(pg, nombre=None):
+    """Abre el cierre del reporte de una jornada cerrada desde Reportes (D134): la primera de la lista,
+    o la que contenga `nombre`. Devuelve cuántas fichas había."""
+    if not pg.is_visible('#vista-reportes'): pg.evaluate("SRP.app.mostrarVista('reportes')"); pg.wait_for_timeout(500)
+    pg.evaluate("SRP.reportes.aplicarAtajo('todas')"); pg.wait_for_timeout(300)
+    fichas = pg.locator('#pdf-lista .jornada')
+    n = fichas.count()
+    (pg.locator('#pdf-lista .jornada', has_text=nombre) if nombre else fichas.nth(0)).locator('button[data-id]').click(); pg.wait_for_timeout(500)
+    return n
+
 def registrar(pg, busqueda, especie_id, programa='p-refor', fecha=None, foto=None):
     """Captura un árbol de principio a fin y devuelve el identificador con que se guardó.
     `busqueda` es lo que se teclea para que la especie salga en la lista. Con `fecha` distinta de
@@ -540,7 +550,7 @@ with sync_playwright() as p:
     tarj=pg.evaluate('''() => { const li=document.querySelector('#lista-registros .registro'); const t=li.querySelector('.btn-tuerca').getBoundingClientRect(); const r=li.getBoundingClientRect();
       return { arriba: t.top - r.top < 20, derecha: r.right - t.right < 20, alto: Math.round(r.height), mini: !!li.querySelector('.registro-miniatura'),
                provisional: document.getElementById('lista-registros').textContent.includes('PROVISIONAL') }; }''')
-    ok(tarj['arriba'] and tarj['derecha'] and tarj['alto']<130 and tarj['mini'] and not tarj['provisional'],
+    ok(tarj['arriba'] and tarj['derecha'] and tarj['alto']<150 and tarj['mini'] and not tarj['provisional'],
        'cada registro es una tarjeta con miniatura y la tuerca arriba a la derecha, sin «PROVISIONAL» repetido (D100): %s' % tarj)
     pg.click('#lista-registros .registro >> nth=0 >> .registro-especie'); pg.wait_for_timeout(500)
     det=pg.evaluate('''() => ({ abierto: document.getElementById('dlg-detalle').open,
@@ -666,36 +676,41 @@ with sync_playwright() as p:
     pg.click('.chip[data-atajo=todos]'); pg.wait_for_timeout(300)
     ok(pg.input_value('#filtro-desde')=='','y un atajo limpia el rango')
 
-    # ---------- REPORTES (B19, B31) ----------
-    # El reporte es de una jornada cerrada (D131): con la de hoy abierta el botón no se habilita y la nota dice por qué
+    # ---------- REPORTES (B19, B31, D134) ----------
+    # El reporte es de una jornada cerrada (D131): Reportes lista las cerradas; con todo abierto lo dice
     pg.click('.pestana[data-vista=reportes]'); pg.wait_for_timeout(600)
-    ok(pg.is_disabled('#btn-pdf') and 'sigue abierta' in pg.inner_text('#pdf-nota') and 'abierta' in pg.inner_text('#pdf-jornada option >> nth=0') if pg.locator('#pdf-jornada option').count() else pg.is_disabled('#btn-pdf') and 'sigue abierta' in pg.inner_text('#pdf-nota'),
-       'con la jornada abierta no hay reporte y la nota pide cerrarla (D131): '+pg.inner_text('#pdf-nota'))
+    ok(pg.locator('#pdf-lista .jornada').count()==0 and 'Todavía no hay jornadas cerradas' in pg.inner_text('#pdf-nota') and 'ciérrela en Jornadas' in pg.inner_text('#pdf-nota'),
+       'sin jornadas cerradas no hay fichas y la nota pide cerrar (D131, D134): '+pg.inner_text('#pdf-nota'))
     pg.evaluate("async () => { for (const j of await SRP.activa.abiertas()) await SRP.activa.cambiarEstatus(j, 'cerrada'); SRP.activa.jornada = null; }"); pg.wait_for_timeout(300)
     pg.evaluate("SRP.app.mostrarVista('registros')"); pg.wait_for_timeout(300)
     ok(pg.locator('#vista-registros #btn-pdf').count()==0 and pg.locator('#vista-registros #aviso-envio').count()==0,'Registros ya no lleva el reporte ni el bloque del dispositivo (D81)')
+    ok(pg.locator('#lista-registros .registro-jornada').count()==pg.locator('#lista-registros .registro').count() and any('Jornada de prueba' in t for t in pg.eval_on_selector_all('#lista-registros .registro-jornada','l=>l.map(x=>x.textContent)')),'cada tarjeta de Registros dice a qué jornada pertenece el árbol (D134)')
     pg.click('.pestana[data-vista=reportes]'); pg.wait_for_timeout(600)
-    ok(pg.is_visible('#vista-reportes') and pg.locator('#vista-reportes .bloque .titulo-bloque').count()==1 and pg.locator('#aviso-envio').count()==0,'la pestaña Reportes abre con el reporte del día y ya no lleva el bloque del dispositivo (D104)')
-    ok(pg.input_value('#pdf-dia')==HOY and pg.get_attribute('#pdf-dia','max')==HOY,'el día del reporte arranca en hoy y no admite futuro')
-    ok(not pg.is_disabled('#btn-pdf') and HOY_TXT in pg.inner_text('#pdf-nota'),'con registros de hoy, el botón se habilita y la nota dice qué se reporta: '+pg.inner_text('#pdf-nota'))
+    ok(pg.is_visible('#vista-reportes') and pg.locator('#vista-reportes .bloque .titulo-bloque').count()==1 and pg.locator('#aviso-envio').count()==0,'la pestaña Reportes abre con la lista y ya no lleva el bloque del dispositivo (D104)')
+    ok([c for c in pg.eval_on_selector_all('#pdf-atajos .chip','b=>b.map(x=>x.dataset.atajo)')]==['todas','hoy','dia'] and pg.get_attribute('#pdf-atajos [data-atajo=todas]','aria-pressed')=='true','los atajos son Todas, Hoy y Un día, y arranca en Todas (D134)')
+    n_cerradas=pg.locator('#pdf-lista .jornada').count()
+    ok(n_cerradas>=3 and 'jornadas cerradas' in pg.inner_text('#pdf-nota') and pg.locator('#pdf-lista button[data-id]').count()==n_cerradas,'lista las jornadas cerradas, cada una con su botón «Generar reporte»: %d' % n_cerradas)
+    fechas=pg.eval_on_selector_all('#pdf-lista .jornada-fecha:first-of-type','l=>l.map(x=>x.textContent)')
+    ok('Hoy' in pg.inner_text('#pdf-lista .jornada >> nth=0'),'la más reciente arriba: '+pg.inner_text('#pdf-lista .jornada >> nth=0').split('\n')[0])
     ok(pg.is_hidden('#caja-pdf-cabo'),'el cabo no elige cabo')
     ok(pg.is_hidden('.pestana[data-vista=galeria]') and pg.evaluate("(() => { SRP.app.mostrarVista('galeria'); return SRP.app.vista; })()")=='registros','el cabo no tiene galería de fotografías ni la abre llamándola directamente (D118)')
     pg.evaluate("SRP.app.mostrarVista('reportes')"); pg.wait_for_timeout(300)
-    # Cualquier día, no sólo hoy (D70)
-    pg.fill('#pdf-dia','2026-08-10'); pg.dispatch_event('#pdf-dia','change'); pg.wait_for_timeout(400)
-    ok(not pg.is_disabled('#btn-pdf') and '10-AGO-2026' in pg.inner_text('#pdf-nota'),'una fecha pasada con registros habilita el reporte: '+pg.inner_text('#pdf-nota'))
-    pg.click('#btn-pdf'); pg.wait_for_timeout(400)
-    ok('10-AGO-2026' in pg.inner_text('#dlg-cierre-dia'),'el cierre es del día elegido: '+pg.inner_text('#dlg-cierre-dia'))
+    # Cualquier día, no sólo hoy (D70): «Un día»
+    pg.click('#pdf-atajos [data-atajo=dia]'); pg.fill('#pdf-dia','2026-08-10'); pg.dispatch_event('#pdf-dia','change'); pg.wait_for_timeout(400)
+    ok(pg.locator('#pdf-lista .jornada').count()==1 and '10-AGO-2026' in pg.inner_text('#pdf-lista'),'«Un día» deja la jornada cerrada de esa fecha')
+    pg.click('#pdf-lista button[data-id]'); pg.wait_for_timeout(400)
+    ok('10-AGO-2026' in pg.inner_text('#dlg-cierre-dia'),'su botón abre el cierre de esa jornada: '+pg.inner_text('#dlg-cierre-dia'))
     pg.click('#btn-cierre-cerrar'); pg.wait_for_timeout(200)
     pg.fill('#pdf-dia','2026-01-05'); pg.dispatch_event('#pdf-dia','change'); pg.wait_for_timeout(400)
-    ok(pg.is_disabled('#btn-pdf') and 'No hay jornadas' in pg.inner_text('#pdf-nota'),'un día sin jornadas apaga el botón y lo dice: '+pg.inner_text('#pdf-nota'))
-    pg.fill('#pdf-dia',HOY); pg.dispatch_event('#pdf-dia','change'); pg.wait_for_timeout(400)
+    ok(pg.locator('#pdf-lista .jornada').count()==0 and 'No hay jornadas cerradas del 05-ENE-2026' in pg.inner_text('#pdf-nota'),'un día sin jornadas lo dice: '+pg.inner_text('#pdf-nota'))
+    pg.click('#pdf-atajos [data-atajo=hoy]'); pg.wait_for_timeout(400)
+    ok(pg.locator('#pdf-lista .jornada').count()>=1 and all('Hoy' in t for t in pg.eval_on_selector_all('#pdf-lista .jornada','l=>l.map(x=>x.textContent)')),'«Hoy» deja las cerradas de hoy')
 
-    pg.click('#btn-pdf'); pg.wait_for_timeout(400)
+    pg.click('#pdf-lista button[data-id]'); pg.wait_for_timeout(400)
     ok(pg.is_visible('#dlg-cierre'),'el botón abre el cierre del reporte antes de generar')
     espejoC=pg.evaluate("[...document.querySelectorAll('#espejo-cierre-cuerpo .espejo-campo')].map(e=>e.textContent)")
-    ok(espejoC==['id','es_ficticio','nombre','ubicacion','fecha','comentarios','programa_id','cabo_id','estatus','lat','lng','gps_precision_m','alcaldia_cve','alcaldia','colonia_cve','colonia','fecha_inicio','fecha_cierre','creado_por_id','fecha_creacion','editado_por_id','fecha_ultima_edicion','meta_arboles','puntos_revisados'],
-       'el cierre lleva su espejo con los veinticuatro campos de la jornada que no se capturan aquí (D112, D119, D120, D122, D130, D131): '+', '.join(espejoC))
+    ok(espejoC==['id','es_ficticio','nombre','ubicacion','fecha','comentarios','programa_id','cabo_id','estatus','lat','lng','gps_precision_m','alcaldia_cve','alcaldia','colonia_cve','colonia','fecha_inicio','fecha_cierre','creado_por_id','fecha_creacion','editado_por_id','fecha_ultima_edicion','meta_arboles','puntos_revisados','reporte_en'],
+       'el cierre lleva su espejo con los veinticinco campos de la jornada que no se capturan aquí (D112, D119, D120, D122, D130, D131): '+', '.join(espejoC))
     pg.fill('#cie-chofer','Mengano'); pg.wait_for_timeout(200)
     ok(pg.evaluate("SRP.reportes.cierrePrevisto().chofer")=='Mengano','y lo que se escribe entra al mismo objeto que se guarda')
     ok(pg.is_visible('#cie-encargado-lectura') and pg.is_hidden('#cie-encargado-caja'),
@@ -813,9 +828,9 @@ with sync_playwright() as p:
     pg.click('#btn-cancelar-edicion'); pg.wait_for_timeout(600)
     ok(pg.is_visible('#vista-jornadas') and pg.is_visible('#jornada-detalle') and pg.locator('#jornada-lista .punto-jornada').count()==4,'y al cancelar se vuelve a la misma jornada')
     # Reporte de la jornada y regreso a la lista
-    pg.click('#btn-jornada-reporte'); pg.wait_for_timeout(500)
-    ok(pg.is_visible('#vista-reportes') and pg.input_value('#pdf-dia')==J['f'],'«Reporte de la jornada» abre Reportes con la fecha de la jornada')
-    pg.click('#btn-pdf'); pg.wait_for_timeout(400); pg.click('#btn-cierre-generar'); pg.wait_for_timeout(500)
+    pg.click('#btn-jornada-reporte'); pg.wait_for_timeout(700)
+    ok(pg.is_visible('#vista-reportes') and pg.is_visible('#dlg-cierre') and 'Jardín de prueba' in pg.inner_text('#dlg-cierre-dia'),'«Reporte de la jornada» abre Reportes ya en el cierre de esa jornada (D134)')
+    pg.click('#btn-cierre-generar'); pg.wait_for_timeout(500)
     ok('Meta de la jornada: 4 árboles · registrados: 4 (cuadra)' in pg.inner_text('#previa-hoja') and 'Jornada: Jardín de prueba' in pg.inner_text('#previa-hoja'),'y el reporte lleva la conciliación y el nombre de la jornada')
     # Croquis de la jornada (D115): en la vista previa y en el PDF, con los mismos números que la tabla
     pg.wait_for_timeout(1500)
@@ -828,7 +843,7 @@ with sync_playwright() as p:
     dj.value.save_as('/home/claude/srp/reporte_jornada.pdf')
     pj=os.path.getsize('/home/claude/srp/reporte_jornada.pdf')
     ok(20000 < pj < 400000,'el PDF con croquis se genera y pesa poco: %d KB' % (pj//1024))
-    pg.click('#navegacion [data-vista=reportes]'); pg.wait_for_timeout(300); pg.click('#btn-pdf'); pg.wait_for_timeout(400); pg.click('#btn-cierre-generar'); pg.wait_for_timeout(500)
+    reporte_de(pg, 'Jardín de prueba'); pg.click('#btn-cierre-generar'); pg.wait_for_timeout(500)
     pg.click('#btn-previa-cerrar') if pg.locator('#btn-previa-cerrar').count() else pg.keyboard.press('Escape'); pg.wait_for_timeout(300)
     pg.click('#navegacion [data-vista=jornadas]'); pg.wait_for_timeout(600)
     ok(pg.is_visible('#jornadas-lista-caja') and pg.is_hidden('#jornada-detalle'),'volver a Jornadas abre la lista')
@@ -946,11 +961,15 @@ with sync_playwright() as p:
         volver: getComputedStyle(document.getElementById('btn-jornada-volver'), '::before').borderLeftWidth }; }''')
     ok(d124['acento']=='#2F4858' and d124['radio']=='8px' and d124['chip']=='999px' and d124['apoyo']=='rgb(154, 163, 171)' and d124['texto_sub']=='none' and d124['volver']=='2px',
        'sistema de botones (D124): acento pizarra, radio 8, filtros en píldora, apoyo con contorno gris, volver con chevron y sin subrayado: %s' % d124)
-    # Reportes: selector de jornada y un PDF por jornada
-    pg.click('#btn-jornada-reporte'); pg.wait_for_timeout(600)
-    ok(pg.is_visible('#caja-pdf-jornada') and pg.locator('#pdf-jornada option').count()==3 and pg.input_value('#pdf-jornada')==M['jids'][1] and 'Parque Hundido' in pg.inner_text('#pdf-nota'),
-       'Reportes muestra el selector con las 3 jornadas del día y llega con la 2 elegida (D117, D119): '+pg.inner_text('#pdf-nota'))
-    pg.click('#btn-pdf'); pg.wait_for_timeout(400)
+    # Reportes: una ficha por jornada cerrada y un PDF por jornada (D134)
+    pg.click('#btn-jornada-reporte'); pg.wait_for_timeout(700)
+    ok(pg.is_visible('#vista-reportes') and pg.is_visible('#dlg-cierre'),'«Reporte de la jornada» llega al cierre de la jornada 2')
+    pg.click('#btn-cierre-cerrar'); pg.wait_for_timeout(200)
+    pg.click('#pdf-atajos [data-atajo=dia]'); pg.fill('#pdf-dia', M['f']); pg.dispatch_event('#pdf-dia','change'); pg.wait_for_timeout(400)
+    fichas=pg.eval_on_selector_all('#pdf-lista .jornada','l=>l.map(x=>x.textContent)')
+    f2=[f for f in fichas if 'Parque Hundido' in f]
+    ok(len(fichas)==3 and len(f2)==1 and 'Jornada 2 de 3' in f2[0] and 'Volver a generar' not in f2[0],'las tres jornadas cerradas de ese día tienen ficha; la 2 dice «Jornada 2 de 3» y aún no tiene reporte (D134)')
+    pg.locator('#pdf-lista .jornada', has_text='Parque Hundido').locator('button[data-id]').click(); pg.wait_for_timeout(400)
     ok('Parque Hundido' in pg.inner_text('#dlg-cierre-dia') and 'Jornada 2 de 3' in pg.inner_text('#dlg-cierre-dia') and '1 ejemplar' in pg.inner_text('#dlg-cierre-cuenta'),'el cierre es de la jornada 2: '+pg.inner_text('#dlg-cierre-dia'))
     pg.click('#btn-cierre-generar'); pg.wait_for_timeout(600)
     ok('Jornada 2 de 3' in pg.inner_text('#previa-hoja') and pg.locator('#previa-hoja tbody tr').count()>=1 and 'Jornada: Parque Hundido' in pg.inner_text('#previa-hoja'),'la vista previa dice «Jornada 2 de 3» y su nombre, y sólo trae sus ejemplares')
@@ -1048,8 +1067,9 @@ with sync_playwright() as p:
     pg2.set_input_files('#archivo-restaurar', ruta); pg2.wait_for_timeout(800)
     ok(pg2.evaluate("SRP.almacen.todos('plantaciones').then(r=>r.length)")==despues,'restaurar dos veces no duplica nada')
     ctx2.close()
-    # Lo escrito no se vuelve a pedir al regenerar el reporte del mismo día
-    pg.click('#btn-pdf'); pg.wait_for_timeout(400)
+    # Lo escrito no se vuelve a pedir al regenerar el reporte de la misma jornada
+    reporte_de(pg)
+    ok('Volver a generar' in pg.inner_text('#pdf-lista .jornada >> nth=0') and 'reporte generado' in pg.inner_text('#pdf-lista .jornada >> nth=0'),'una jornada con reporte dice cuándo se generó y ofrece «Volver a generar» en ámbar (D134)')
     ok(pg.input_value('#cie-chofer')=='Fulano de Tal','al regenerar, el cierre ya viene escrito')
     ok(pg.input_value('#cie-hora')=='14:30' and pg.input_value('#cie-vehiculo_placa')=='ABC-123','con todos sus campos')
     ok(pg.evaluate("document.getElementById('cie-apoyo').tagName")=='TEXTAREA','personal de apoyo admite varias líneas')
@@ -1157,8 +1177,8 @@ with sync_playwright() as p:
     pg.click('.pestana[data-vista=registros]'); pg.wait_for_timeout(400)
     # Quien ve a varias personas elige el encargado del reporte, y sólo entre quienes registraron (B19)
     pg.click('.pestana[data-vista=reportes]'); pg.wait_for_timeout(600)
-    ok(pg.is_visible('#caja-pdf-cabo') and pg.locator('#pdf-cabo option').count()>=1 and pg.locator('#pdf-cabo option[value=""]').count()==0,'el coordinador elige el cabo del reporte en Reportes; ya no hay «Todos los cabos» porque el reporte es de una jornada (D117)')
-    pg.click('#btn-pdf'); pg.wait_for_timeout(400)
+    ok(pg.is_visible('#caja-pdf-cabo') and pg.locator('#pdf-cabo option').count()>=2 and pg.locator('#pdf-cabo option[value=""]').count()==1 and pg.locator('#pdf-lista .jornada').count()>=1,'el coordinador filtra por cabo y ve las jornadas cerradas de su cuadrilla (D134)')
+    reporte_de(pg)
     ok(pg.is_visible('#cie-encargado-caja') and pg.is_hidden('#cie-encargado-lectura'),
        'al coordinador se le ofrece la lista de cabos responsables')
     opciones=pg.eval_on_selector('#cie-encargado',"s=>[...s.options].map(o=>o.textContent.trim()).filter(Boolean)")

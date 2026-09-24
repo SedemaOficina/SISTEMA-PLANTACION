@@ -747,7 +747,6 @@ SRP.jornadas = {
 
   irAlReporte() {
     const j = this.jornada;
-    this.el('pdf-dia').value = j.fecha;
     SRP.reportes.pedido = { cabo_id: j.cabo_id, id: j.id };
     SRP.app.mostrarVista('reportes');
   }

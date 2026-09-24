@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.55 (Bloque 74)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.56 (Bloque 75)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -113,6 +113,8 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M102 | Análisis (P4) | «Cerrar jornada» dice lo pendiente: puntos por revisar y árboles por debajo/encima de la meta; se puede cerrar de todos modos | Alta | 0.6.55 (B74) | Cerrar una jornada incompleta | Diálogo |
 | M103 | Análisis (P5) | Coordinador y administrador cierran, reabren y editan las jornadas de sus cabos; reabrir una ajena no la vuelve la activa de quien la reabre | Alta | 0.6.55 (B74) | Entrar como coordinador y abrir una jornada de un cabo | Ficha |
 | M104 | Análisis (P6) | Jornada de otro día abierta: el aviso al entrar trae el botón «Cerrar «nombre»»; guardar en ella pide confirmar una vez («no de hoy; el árbol quedará con esa fecha») | Alta | 0.6.55 (B74) | Entrar con una jornada de ayer abierta; intentar guardar | Aviso y diálogo |
+| M105 | Análisis (P7) | La tarjeta de Registros dice a qué jornada pertenece el árbol («Parque Hundido · Benito Juárez, …») | Media | 0.6.56 (B75) | Registros | Tarjeta |
+| M106 | Análisis (P8) | Reportes lista las jornadas cerradas (la más reciente arriba), cada una con «Generar reporte»; con reporte, «Volver a generar» en ámbar y cuándo se generó. Atajos Todas · Hoy · Un día y cabo para coordinación. «Reporte de la jornada» desde Jornadas llega directo al cierre | Media | 0.6.56 (B75) | Reportes | Lista |
 
 ## 2. Por hacer
 

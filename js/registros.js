@@ -115,6 +115,8 @@ SRP.registros = {
     const alcance = SRP.permisos.de(u).alcance;
     this.el('titulo-registros').textContent =
       alcance === 'propios' ? 'Mis registros' : alcance === 'equipo' ? 'Registros de mi cuadrilla' : 'Todos los registros';
+    // Nombre de la jornada de cada registro, para la tarjeta (D134)
+    this.jornadasPorId = Object.fromEntries((await SRP.almacen.todos('jornadas')).map(j => [j.id, j.nombre]));
     const todos = await SRP.almacen.porIndice('plantaciones', 'estatus', 'activo');
     this.visibles = todos.filter(r => SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId))
       .sort((a, b) => b.fecha_plantacion.localeCompare(a.fecha_plantacion) || b.fecha_registro.localeCompare(a.fecha_registro));
@@ -344,7 +346,8 @@ SRP.registros = {
         : '<span class="registro-miniatura registro-sin-foto" aria-hidden="true">' + SRP.ICONOS.svg('registros', 24) + '</span>';
       return '<li class="registro" data-id="' + r.id + '">' + mini + '<div class="registro-datos">' +
         '<span class="registro-especie">' + esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : '') + '</span>' +
-        '<span class="registro-lugar">' + esc(SRP.ref.alcaldia(r.alcaldia)) + (r.colonia ? ', ' + esc(r.colonia) : '') + '</span>' +
+        '<span class="registro-lugar">' + (r.jornada_id && this.jornadasPorId && this.jornadasPorId[r.jornada_id] ? '<b class="registro-jornada">' + esc(this.jornadasPorId[r.jornada_id]) + '</b> · ' : '') +
+        esc(SRP.ref.alcaldia(r.alcaldia)) + (r.colonia ? ', ' + esc(r.colonia) : '') + '</span>' +
         '<span class="registro-fecha">' + this.htmlFecha(r, variosAutores) + '</span>' + marca +
         '</div><div class="registro-acciones">' + menu + '</div></li>';
     }).join('');

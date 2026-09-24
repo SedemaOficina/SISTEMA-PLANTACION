@@ -171,7 +171,7 @@ Quién, cuándo y qué, en cada alta, edición, eliminación, activación y desa
 Una jornada de plantación: se declara antes de registrar el primer árbol (D119). Agrupa los registros, lleva la conciliación y la revisión, y guarda los datos de cierre del reporte (antes en la tabla cierres, retirada en el bloque 62).
 
 - **Llave:** `id`. **Índices:** `cabo_id`, `fecha`, `estatus`. **Pantalla:** Nuevo registro → «Iniciar jornada»; Jornadas; Reportes → «Datos de cierre».
-- **Campos:** 32.
+- **Campos:** 33.
 
 | Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
 |---|---|---|---|---|---|---|
@@ -200,6 +200,7 @@ Una jornada de plantación: se declara antes de registrar el primer árbol (D119
 | `fecha_ultima_edicion` | timestamptz | No | Sistema | ISO 8601 | No | — |
 | `meta_arboles` | integer | No | Persona | Entero 1–9999 | Árboles que se van a plantar (Iniciar jornada) | Obligatoria al iniciar (D131). Jornadas compara registrados contra la meta (falta/sobra) y el reporte la imprime. Sustituye al conteo de la cuadrilla de D112 |
 | `puntos_revisados` | uuid[] | No | Persona | → plantaciones.id; [] si nadie ha revisado | Jornadas → «Está bien» en un punto con aviso | Puntos con aviso (duplicado, lejos, precisión) que alguien confirmó como correctos (D112); el aviso deja de contarse, no se borra |
+| `reporte_en` | datetime | Sí | Sistema | ISO 8601; nulo si no se ha generado | Reportes: «reporte generado …» | Se fija al aceptar el cierre del reporte (D134); Reportes ofrece «Volver a generar» |
 | `personal` | text | No | Persona | Texto libre | Personal de SEDEMA participante | — |
 | `apoyo` | text | No | Persona | Texto libre, varias líneas | Personal de apoyo | — |
 | `observaciones` | text | No | Persona | Texto libre | Observaciones | Aquí se explica a mano una diferencia contra la meta |
@@ -477,6 +478,7 @@ CREATE TABLE jornadas (
   fecha_ultima_edicion     timestamptz    NOT NULL,
   meta_arboles             integer        NOT NULL,
   puntos_revisados         uuid[]         NOT NULL,
+  reporte_en               datetime       NULL,
   personal                 text           NOT NULL,
   apoyo                    text           NOT NULL,
   observaciones            text           NOT NULL,

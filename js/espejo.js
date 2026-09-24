@@ -90,7 +90,8 @@ SRP.espejo = {
     editado_por_id: 'Quién la modificó por última vez',
     fecha_ultima_edicion: 'Se fija en cada cambio',
     meta_arboles: 'Cuántos árboles se van a plantar, escrito al iniciar la jornada (D131); Jornadas y el reporte comparan contra la meta',
-    puntos_revisados: 'Puntos con aviso marcados «Está bien» en Jornadas (D112)'
+    puntos_revisados: 'Puntos con aviso marcados «Está bien» en Jornadas (D112)',
+    reporte_en: 'Cuándo se generó (o regeneró) el reporte de la jornada (D134); nulo si no se ha generado'
   },
 
 

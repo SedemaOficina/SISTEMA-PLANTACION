@@ -1017,3 +1017,13 @@
   hoy; el árbol quedará con esa fecha; cancele y toque Cambiar de jornada para iniciar la de
   hoy»). El aviso flotante deja bajar su acción a un renglón propio cuando el texto es largo.
   Propuesto en el análisis del 23-09-2026 (P3–P6) y aprobado por Liber, 24-09-2026.
+- **D134. Reportes por jornada cerrada; la tarjeta dice su jornada.** Reportes deja de pedir «día →
+  jornada → generar»: lista las jornadas cerradas al alcance, la más reciente arriba, con nombre,
+  «Hoy/Ayer» y fecha, «Jornada n de m», árboles y especies, el cabo (coordinación) y, si ya tiene
+  reporte, cuándo se generó; cada ficha lleva «Generar reporte» (pizarra) o «Volver a generar»
+  (ámbar); una jornada sin árboles lo dice y no genera. Atajos Todas · Hoy · Un día y filtro por
+  cabo para quien ve a varios; la nota cuenta las abiertas que aún no se pueden reportar. «Reporte
+  de la jornada» desde Jornadas llega directo al cierre de esa jornada. La jornada guarda
+  `reporte_en` al aceptar el cierre. En Registros cada tarjeta dice el nombre de la jornada antes
+  de la alcaldía, para que la duda «¿en qué jornada quedó?» se resuelva sin abrir nada. Propuesto en
+  el análisis del 23-09-2026 (P7, P8) y aprobado por Liber, 24-09-2026.
