@@ -798,6 +798,9 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .pestana[aria-current="page"] { color: var(--acento); border-bottom-color: var(--acento); }
 
 .chip-sub { display: block; font-size: var(--t-xs); font-weight: 400; color: var(--gris); }
+/* La fecha del atajo «Hoy» va en un renglón (D147): en la fila de cuatro, el chip cede relleno a los lados */
+.chip .chip-sub { white-space: nowrap; }
+.chips-cuatro .chip { padding-left: 6px; padding-right: 6px; }
 .chip[aria-pressed="true"] .chip-sub { color: var(--fondo); opacity: .9; }
 /* Activo: guinda suave con borde guinda (propuesta A de la maqueta, D95) */
 .chip[aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: var(--fondo); }

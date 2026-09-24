@@ -1182,3 +1182,17 @@
   círculos miden 22 px y en la ficha 26 px; la tira no pasa de 30rem para que en computadora no se
   estire. El modo sol engruesa círculos y tramos. Se descartó dejar sólo texto («Paso 2 de 4:
   Cerrar»): pierde de un vistazo qué ya se hizo. Pedido por Liber, 24-09-2026.
+- **D147. «Hoy» con el año en dos cifras.** En el teléfono el atajo «Hoy» mide un tercio de la
+  pantalla y su fecha, «24-SEP-2026», se partía en dos renglones («24-SEP-» y «2026»). A pedido de
+  Liber, el atajo dice «24-SEP-26». Sólo cambia ese atajo, en las cuatro vistas que lo tienen
+  (Registros, Jornadas, Reportes y Fotografías), que ahora lo pintan desde un solo lugar
+  (`SRP.util.pintarChipHoy`); la fecha no se parte y, en la fila de cuatro atajos de Registros y
+  Jornadas, el chip cede relleno a los lados (6 px) para que quepa desde 320 px. Las demás fechas conservan el año completo: en la lista, el reporte
+  y las fichas de filtro no falta espacio y el año completo evita dudas en documentos que se
+  guardan. Pedido por Liber, 24-09-2026.
+- **D148. «Regenerar reporte».** En Reportes, una jornada con reporte ofrecía «Volver a generar», que
+  no dice qué se vuelve a generar, y en la ficha el mismo botón decía «Regenerar PDF»: dos nombres
+  para una acción. A pedido de Liber, en Reportes dice «Regenerar reporte». En la barra de la ficha
+  se queda «Regenerar PDF», que cabe junto a «Registrar árbol» desde 360 px (D141). Los dos dejan el
+  lápiz, que desde D144 es sólo para editar, y llevan un icono nuevo de flecha en círculo
+  (`regenerar`); siguen en ámbar porque rehacen algo ya hecho. Pedido por Liber, 24-09-2026.

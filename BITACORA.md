@@ -1607,3 +1607,20 @@ lector de pantalla no oye los números.
 
 **Verificación:** 583 comprobaciones sin errores de consola; 85 de auditoría;
 presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.68.
+
+## Bloque 88 — «Hoy» con el año en dos cifras y «Regenerar reporte» (24-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.69.
+
+**Qué cambió (D147, D148).** `util.js`: `pintarChipHoy(el)` pinta el atajo con la fecha corta
+(«24-SEP-26») y la coma oculta para el lector de pantalla. `registros.js`, `jornadas.js`,
+`reportes.js` y `galeria.js` lo usan en lugar de repetir el mismo HTML cuatro veces. `estilos.css`:
+la fecha del atajo no se parte y la fila de cuatro atajos lleva menos relleno lateral.
+`reportes.js`: «Volver a generar» pasa a «Regenerar reporte». `iconos.js`: icono `regenerar` (flecha
+en círculo), que reemplaza al lápiz en Reportes y en «Regenerar PDF» de la ficha (`jornadas.js`).
+Pruebas: el atajo de Registros dice «Hoy, 24-SEP-26»; en Registros, Jornadas y Reportes la fecha
+cabe en un renglón a 390 px; `formatearFecha` sigue dando el año completo. «Regenerar reporte» en
+ámbar, con la flecha y sin lápiz; «Regenerar PDF» de la ficha con la flecha.
+
+**Verificación:** 586 comprobaciones sin fallas; en consola, sólo una tesela de Esri que la red de la
+sesión de pruebas bloqueó (ajeno al código); 85 de auditoría; presentación sin desbordes en ocho
+combinaciones. Marca de versión 0.6.69.

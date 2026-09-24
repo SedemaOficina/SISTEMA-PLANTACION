@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.68 (Bloque 87)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.69 (Bloque 88)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -165,6 +165,8 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M154 | Hallazgo del bloque | En el mapa de la ficha ningún punto queda bajo los botones de acercar (también en teléfono) | Media | 0.6.67 (B86) | Jornada con puntos separados › mapa | Mapa |
 | M155 | Petición de Liber | Fuera la pista «Atajo: Ctrl + Enter guarda…» y los números de las especies recientes (y el atajo 1-2-3); Ctrl+Enter sigue guardando sin anunciarse | Baja | 0.6.67 (B86) | Computadora: Nuevo registro con especies recientes | — |
 | M156 | Revisión de Liber | Los pasos Registrar · Cerrar · Revisar · Reporte dejan de parecer fichas de filtro: círculos numerados unidos por una línea, con el nombre debajo (hecho en verde con palomita, actual relleno) | Media | 0.6.68 (B87) | Nuevo registro con jornada abierta; Jornadas › una jornada | Panel y ficha |
+| M157 | Petición de Liber | El atajo «Hoy» muestra la fecha con el año en dos cifras (24-SEP-26); ya no se parte en dos renglones en el teléfono | Baja | 0.6.69 (B88) | Registros, Jornadas, Reportes o Fotografías en el teléfono | Filtros |
+| M158 | Petición de Liber | «Volver a generar» pasa a «Regenerar reporte»; en Reportes y en la ficha el botón lleva una flecha en círculo en lugar del lápiz | Baja | 0.6.69 (B88) | Reportes › jornada con reporte; Jornadas › jornada completa | Botón |
 
 ## 2. Por hacer
 

@@ -29,6 +29,15 @@ SRP.util = {
     return mes ? d + '-' + mes + '-' + a : d + '-' + m + '-' + a;
   },
 
+  /* El atajo «Hoy» lleva la fecha con el año en dos cifras: 24-SEP-26 (D147). En el teléfono el
+     chip mide un tercio de la pantalla y «24-SEP-2026» se partía en dos renglones. Un solo lugar
+     para las cuatro vistas que lo usan (Registros, Jornadas, Reportes y Fotografías). */
+  pintarChipHoy(el) {
+    const [a, m, d] = this.fechaHoy().split('-');
+    const corta = d + '-' + (this.MESES_CORTOS[Number(m) - 1] || m) + '-' + a.slice(2);
+    el.innerHTML = 'Hoy<span class="oculto-visual">, </span><span class="chip-sub">' + this.escapar(corta) + '</span>';
+  },
+
   formatearFechaHora(iso) {
     if (!iso) return '';
     const d = new Date(iso);

@@ -133,9 +133,8 @@ SRP.registros = {
       sel.value = this.filtro.cabo;
     }
     // El atajo lleva la fecha para que nadie dude de qué día habla; va en un segundo renglón
-    // para que quepa en un tercio del teléfono. La coma oculta hace que se lea «Hoy, 22-SEP-2026» (D95)
-    const hoy = SRP.util.formatearFecha(SRP.util.fechaHoy());
-    this.el('chip-hoy').innerHTML = 'Hoy<span class="oculto-visual">, </span><span class="chip-sub">' + SRP.util.escapar(hoy) + '</span>';
+    // para que quepa en un tercio del teléfono. La coma oculta hace que se lea «Hoy, 22-SEP-26» (D95, D147)
+    SRP.util.pintarChipHoy(this.el('chip-hoy'));
     // Al entrar se ven todos los registros (D104): «Hoy» queda como atajo, no como filtro de inicio
     if (this.primeraVez) { this.primeraVez = false; }
     this.llenarAnios();

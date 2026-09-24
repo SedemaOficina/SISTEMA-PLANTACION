@@ -8,6 +8,7 @@ import datetime
 HOY=datetime.date.today().isoformat()
 MESES=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC']
 HOY_TXT=HOY[8:10]+'-'+MESES[int(HOY[5:7])-1]+'-'+HOY[0:4]   # como lo pinta SRP.util.formatearFecha
+HOY_CHIP=HOY[8:10]+'-'+MESES[int(HOY[5:7])-1]+'-'+HOY[2:4]  # el atajo «Hoy», con el año en dos cifras (D147)
 SRP_GPS='GPS del dispositivo'
 errores=[]; res=[]
 def ok(c,m): res.append(('OK ' if c else 'FALLA ')+m)
@@ -570,7 +571,7 @@ with sync_playwright() as p:
     abrir_filtros(pg)
     pg.click('.chip[data-atajo=hoy]'); pg.wait_for_timeout(300)
     hoy_txt=pg.text_content('#chip-hoy')
-    ok(hoy_txt=='Hoy, '+HOY_TXT,'el chip de hoy lleva la fecha con el mes en letras (se lee con la coma oculta): '+hoy_txt)
+    ok(hoy_txt=='Hoy, '+HOY_CHIP,'el chip de hoy lleva la fecha con el mes en letras y el año en dos cifras (se lee con la coma oculta): '+hoy_txt)
     ok(pg.evaluate("getComputedStyle(document.querySelector('#chip-hoy .chip-sub')).display")=='block','y la fecha va en un segundo renglón para caber en un tercio del teléfono (D95)')
     ok(pg.locator('#filtro-atajos .chip[aria-pressed=true]').count()==1 and pg.locator('#filtro-atajos .chip[data-atajo=hoy][aria-pressed=true]').count()==1,'«Hoy» queda como único atajo marcado')
     ok('Total: 2 ' in pg.inner_text('#registros-total'),'sólo los de hoy: '+pg.inner_text('#registros-total'))
@@ -980,7 +981,7 @@ with sync_playwright() as p:
     pg.click('#pdf-atajos [data-atajo=dia]'); pg.fill('#pdf-dia', M['f']); pg.dispatch_event('#pdf-dia','change'); pg.wait_for_timeout(400)
     fichas=pg.eval_on_selector_all('#pdf-lista .jornada','l=>l.map(x=>x.textContent)')
     f2=[f for f in fichas if 'Parque Hundido' in f]
-    ok(len(fichas)==3 and len(f2)==1 and 'Jornada 2 de 3' in f2[0] and 'Volver a generar' not in f2[0],'las tres jornadas cerradas de ese día tienen ficha; la 2 dice «Jornada 2 de 3» y aún no tiene reporte (D134)')
+    ok(len(fichas)==3 and len(f2)==1 and 'Jornada 2 de 3' in f2[0] and 'Regenerar reporte' not in f2[0],'las tres jornadas cerradas de ese día tienen ficha; la 2 dice «Jornada 2 de 3» y aún no tiene reporte (D134)')
     pg.locator('#pdf-lista .jornada', has_text='Parque Hundido').locator('button[data-id]').click(); pg.wait_for_timeout(400)
     ok('Parque Hundido' in pg.inner_text('#dlg-cierre-dia') and 'Jornada 2 de 3' in pg.inner_text('#dlg-cierre-dia') and '1 ejemplar' in pg.inner_text('#dlg-cierre-cuenta'),'el cierre es de la jornada 2: '+pg.inner_text('#dlg-cierre-dia'))
     pg.click('#btn-cierre-generar'); pg.wait_for_timeout(600)
@@ -1084,7 +1085,12 @@ with sync_playwright() as p:
     ctx2.close()
     # Lo escrito no se vuelve a pedir al regenerar el reporte de la misma jornada
     reporte_de(pg)
-    ok('Volver a generar' in pg.inner_text('#pdf-lista .jornada >> nth=0') and 'reporte generado' in pg.inner_text('#pdf-lista .jornada >> nth=0').lower(),'una jornada con reporte dice cuándo se generó y ofrece «Volver a generar» en ámbar (D134)')
+    ok('Regenerar reporte' in pg.inner_text('#pdf-lista .jornada >> nth=0') and 'reporte generado' in pg.inner_text('#pdf-lista .jornada >> nth=0').lower(),'una jornada con reporte dice cuándo se generó y ofrece «Volver a generar» en ámbar (D134)')
+    # «Regenerar reporte» (D148): dice qué se vuelve a generar y usa la flecha en círculo, no el lápiz
+    reg=pg.evaluate("""() => { const b=[...document.querySelectorAll('#pdf-lista button[data-id]')].find(x => x.textContent.includes('Regenerar'));
+        return b ? { texto: b.textContent.trim(), flecha: b.innerHTML.includes('M17.65 6.35'), lapiz: b.innerHTML.includes('M3 17.25'), ambar: b.classList.contains('btn-editar') } : null; }""")
+    ok(reg is not None and reg['texto']=='Regenerar reporte' and reg['flecha'] and not reg['lapiz'] and reg['ambar'],
+       'una jornada con reporte ofrece «Regenerar reporte», en ámbar y con la flecha en círculo en lugar del lápiz (D148): %s' % reg)
     ok(pg.input_value('#cie-chofer')=='Fulano de Tal','al regenerar, el cierre ya viene escrito')
     ok(pg.input_value('#cie-hora')=='14:30' and pg.input_value('#cie-vehiculo_placa')=='ABC-123','con todos sus campos')
     ok(pg.evaluate("document.getElementById('cie-apoyo').tagName")=='TEXTAREA','personal de apoyo admite varias líneas')
@@ -1525,7 +1531,7 @@ with sync_playwright() as p:
     pg.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg.wait_for_timeout(400)
     pg.locator('#lista-jornadas .jornada', has_text='Jornada de los pasos').first.locator('.jornada-boton').click(); pg.wait_for_timeout(700)
     ok(est('#jornada-pasos')==['hecho']*4 and 'Jornada completa' in pg.inner_text('#jornada-siguiente'),'en la ficha, los cuatro pasos hechos y «Jornada completa: reporte generado hoy…»')
-    ok('Regenerar PDF' in pg.inner_text('#btn-jornada-reporte') and 'btn-editar' in pg.get_attribute('#btn-jornada-reporte','class'),'y el reporte se ofrece como «Volver a generar», en ámbar, como en Reportes')
+    ok('Regenerar PDF' in pg.inner_text('#btn-jornada-reporte') and 'btn-editar' in pg.get_attribute('#btn-jornada-reporte','class') and 'M17.65 6.35' in pg.inner_html('#btn-jornada-reporte'),'y el reporte se ofrece como «Regenerar PDF», en ámbar y con la flecha en círculo (D148), como en Reportes')
     pg.set_viewport_size({'width':390,'height':844})
     tapa=pg.evaluate("""() => { const b = document.querySelector('.barra-jornada').getBoundingClientRect();
       const x = b.left + 20, y = b.bottom - 20; const e = document.elementFromPoint(x, y); return e ? !!e.closest('.barra-jornada') : true; }""")
@@ -1846,6 +1852,18 @@ with sync_playwright() as p:
        'el tramo que sale de un paso hecho va en verde; después del actual, en gris (D146): %s' % pas['tramos'])
     ok(not any(c.isdigit() for c in pas['lector']) and 'Revisar (paso actual)' in pas['lector'],
        'el lector de pantalla oye los nombres y su estado, sin los números de los círculos: «%s»' % pas['lector'])
+
+    # ---------- BLOQUE 88: «HOY» CON EL AÑO EN DOS CIFRAS (D147) ----------
+    pg.set_viewport_size({'width':390,'height':844}); pg.wait_for_timeout(300)
+    chips={}
+    for v, c in (('registros','chip-hoy'),('jornadas','jornada-chip-hoy'),('reportes','pdf-chip-hoy')):
+        pg.evaluate("SRP.app.mostrarVista('%s')" % v); pg.wait_for_timeout(400)
+        if v == 'jornadas' and pg.is_visible('#jornada-detalle'): pg.click('#btn-jornada-volver'); pg.wait_for_timeout(300)
+        abrir_filtros(pg)
+        chips[v]=pg.evaluate("""(() => { const s=document.querySelector('#%s .chip-sub'); const lh=parseFloat(getComputedStyle(s).lineHeight) || 16;
+            return [s.textContent, s.getBoundingClientRect().height <= lh * 1.5]; })()""" % c)
+    ok(all(t==HOY_CHIP and un for t, un in chips.values()),'en Registros, Jornadas y Reportes «Hoy» dice %s en un solo renglón, sin partir el año (D147): %s' % (HOY_CHIP, chips))
+    ok(pg.evaluate("SRP.util.formatearFecha('2026-09-24')")=='24-SEP-2026','el resto de las fechas conserva el año completo')
 
     b.close()
 print('\n'.join(res)); print('ERRORES CONSOLA:',errores or 'ninguno')

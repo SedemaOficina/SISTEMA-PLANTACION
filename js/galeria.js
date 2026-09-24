@@ -64,8 +64,7 @@ SRP.galeria = {
   },
 
   async preparar() {
-    const hoy = SRP.util.formatearFecha(SRP.util.fechaHoy());
-    this.el('galeria-chip-hoy').innerHTML = 'Hoy<span class="oculto-visual">, </span><span class="chip-sub">' + SRP.util.escapar(hoy) + '</span>';
+    SRP.util.pintarChipHoy(this.el('galeria-chip-hoy'));
     const todas = await this.conFoto();
     const ids = [...new Set(todas.map(r => r.cabo_id))];
     const sel = this.el('galeria-cabo');

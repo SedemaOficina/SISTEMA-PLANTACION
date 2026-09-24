@@ -84,7 +84,7 @@ SRP.reportes = {
     const u = SRP.sesion.usuario;
     const alcance = SRP.permisos.de(u).alcance;
     this.el('pdf-dia').max = SRP.util.fechaHoy();
-    this.el('pdf-chip-hoy').innerHTML = 'Hoy<span class="oculto-visual">, </span><span class="chip-sub">' + SRP.util.escapar(SRP.util.formatearFecha(SRP.util.fechaHoy())) + '</span>';
+    SRP.util.pintarChipHoy(this.el('pdf-chip-hoy'));
     const caja = this.el('caja-pdf-cabo');
     caja.hidden = alcance === 'propios';
     if (!caja.hidden) {
@@ -149,7 +149,8 @@ SRP.reportes = {
         '<span class="jornada-cifras">' + cifra(n, n === 1 ? 'árbol' : 'árboles') + cifra(especies, especies === 1 ? 'especie' : 'especies') + '</span>' +
         (variosAutores ? '<span class="jornada-cabo">' + SRP.ICONOS.svg('usuario', 'chico') + '<span>' + esc(SRP.ref.nombreUsuario(j.cabo_id)) + '</span></span>' : '') +
         '<button type="button" class="btn ' + (generado ? 'btn-editar' : 'btn-primario') + ' btn-chico" data-id="' + j.id + '"' + (n ? '' : ' disabled') + '>' +
-        SRP.ICONOS.svg(generado ? 'lapiz' : 'reportes', 'medio') + '<span>' + (generado ? 'Volver a generar' : 'Generar reporte') + '</span></button>' +
+        // Ya generado dice qué se vuelve a hacer y con qué icono (D148): «Regenerar reporte», no «Volver a generar»
+        SRP.ICONOS.svg(generado ? 'regenerar' : 'reportes', 'medio') + '<span>' + (generado ? 'Regenerar reporte' : 'Generar reporte') + '</span></button>' +
         (n ? '' : '<span class="nota reporte-sin">Sin árboles: no hay qué reportar.</span>') + '</div></li>';
     }).join('');
     const nota = this.el('pdf-nota');

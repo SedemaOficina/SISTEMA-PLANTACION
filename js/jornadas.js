@@ -347,8 +347,7 @@ SRP.jornadas = {
   async preparar() {
     const u = SRP.sesion.usuario;
     const alcance = SRP.permisos.de(u).alcance;
-    const hoy = SRP.util.formatearFecha(SRP.util.fechaHoy());
-    this.el('jornada-chip-hoy').innerHTML = 'Hoy<span class="oculto-visual">, </span><span class="chip-sub">' + SRP.util.escapar(hoy) + '</span>';
+    SRP.util.pintarChipHoy(this.el('jornada-chip-hoy'));
     const caja = this.el('caja-jornada-cabo');
     caja.hidden = alcance === 'propios';
     if (!caja.hidden) {
@@ -651,12 +650,13 @@ SRP.jornadas = {
     // Etiquetas cortas (D141): la barra lleva dos botones y no debe partirlos en dos renglones desde 360 px
     falt.innerHTML = I('mas') + '<span>Registrar árbol</span>';
     // El reporte es de una jornada cerrada con árboles (D131); mientras haya puntos por revisar, cede
-    // su lugar a «Revisar puntos». Ya generado, «Volver a generar» en ámbar, como en Reportes (D134)
+    // su lugar a «Revisar puntos». Ya generado, «Regenerar PDF» en ámbar con la flecha en círculo, como
+    // «Regenerar reporte» en Reportes (D134, D148); aquí dice PDF porque la barra lleva dos botones (D141)
     const rep = this.el('btn-jornada-reporte');
     rep.hidden = p.abierta || !p.n || p.actual === 'revisar';
     const completa = p.actual === 'completa';
     rep.className = 'btn ' + (completa ? 'btn-editar' : 'btn-primario');
-    rep.innerHTML = I(completa ? 'lapiz' : 'reportes') + '<span>' + (completa ? 'Regenerar PDF' : 'Generar PDF') + '</span>';
+    rep.innerHTML = I(completa ? 'regenerar' : 'reportes') + '<span>' + (completa ? 'Regenerar PDF' : 'Generar PDF') + '</span>';
     const sig = this.el('btn-jornada-siguiente');
     const cerrar = p.actual === 'cerrar' && puedeJornada;
     sig.hidden = !(cerrar || p.actual === 'revisar');
