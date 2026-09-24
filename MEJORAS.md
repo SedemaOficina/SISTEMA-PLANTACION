@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.48 (Bloque 67)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.49 (Bloque 68)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -94,6 +94,7 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M83 | Auditoría de botones | Sistema de botones sin el manual gráfico: acento pizarra para avanzar, verde para comprometer, rojo para quitar, ámbar para corregir, gris para apoyo; tres pesos; filtros en píldora; radio 8; icono en todo botón con color; menús con color por opción | Alta | 0.6.47 (B66) | Recorrer las pantallas: ningún botón guinda; «Cerrar jornada» pizarra; «Editar» ámbar claro; filtros redondos con el activo relleno | Nuevo registro, Registros, Jornadas, confirmación |
 | M84 | Petición de Liber | «Cerrar jornada» desde la franja siempre llega a la ficha de esa jornada en Jornadas, aunque el filtro esté en otro día o cabo (se ajusta solo) | Alta | 0.6.47 (B66) | Iniciar una jornada de ayer, cerrarla desde la franja: abre su ficha con el filtro «Un día» en esa fecha | Ficha de jornada |
 | M85 | Petición de Liber | Ficha «Revise antes de guardar»: termina Fotografía, Folio, Cabo; con datos de prueba el Folio enseña el que tocará (p. ej. COY-049-00002 (simulado)) sin gastar la secuencia; desaparecen «Datos del sistema» y el identificador | Media | 0.6.48 (B67) | Nuevo registro › Revisar: bajar al final de la ficha | Final de la ficha |
+| M86 | Petición de Liber | «Registro guardado» dice, en orden: especie (común y científico), Folio, Jornada · fecha, Lugar (alcaldía · colonia), Cómo se obtuvo con la insignia de precisión, y al final el envío con su hora; sin identificador | Media | 0.6.49 (B68) | Guardar un árbol | Aviso de guardado |
 
 ## 2. Por hacer
 

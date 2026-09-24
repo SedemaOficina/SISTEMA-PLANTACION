@@ -891,3 +891,13 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 
 /* Tipo de distribución en la fila de Especie de la ficha de revisión (D123) */
 .revision-distribucion { display: block; font-size: var(--t-xs); color: var(--gris); margin-top: 2px; }
+
+/* «Registro guardado» (D127): especie grande, datos en dos columnas, envío al final con icono */
+.guardado-especie { font-size: var(--t-l); margin: 0 0 var(--e-3); }
+.guardado-datos { margin: 0 0 var(--e-3); display: grid; gap: var(--e-2); }
+.guardado-datos > div { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); gap: var(--e-2); align-items: start; font-size: var(--t-s); }
+.guardado-datos dt { color: var(--gris); font-weight: 500; }
+.guardado-datos dd { margin: 0; overflow-wrap: anywhere; }
+.guardado-envio { display: flex; align-items: flex-start; gap: var(--e-2); margin: 0 0 var(--e-4); font-size: var(--t-s); color: var(--gris); }
+.guardado-envio svg { flex: none; margin-top: 2px; }
+@media (max-width: 400px) { .guardado-datos > div { grid-template-columns: 1fr; gap: 0; } }

@@ -531,10 +531,12 @@ SRP.formulario = {
   // explícitamente en vez de dejar el formulario a medio limpiar sin decir nada.
   mostrarGuardado(registro) {
     const esp = SRP.ref.especieDe(registro);
+    const esc = SRP.util.escapar;
     this.el('dlg-guardado-titulo').innerHTML = SRP.ICONOS.svg('palomita', 22) + '<span>Registro guardado</span>';
-    this.el('dlg-guardado-detalle').textContent = esp.comun + ', ' +
-      SRP.ref.alcaldia(registro.alcaldia) + ', ' + SRP.util.formatearFecha(registro.fecha_plantacion) + '.';
-    this.el('dlg-guardado-id').textContent = 'Identificador: ' + registro.id;
+    // Orden (D127): la especie que reconoce, el folio que citará, la jornada a la que quedó pegado,
+    // dónde cayó el punto y cómo se obtuvo; al final, el envío. Sin identificador ni fecha suelta.
+    this.el('dlg-guardado-detalle').innerHTML = '<strong>' + esc(esp.comun) + '</strong>' + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : '');
+    this.pintarDatosGuardado(registro);
     this.el('dlg-guardado').showModal();
     this.el('btn-registro-nuevo').focus();
     // Quedó en este dispositivo y cuántos van (D83); la pastilla del encabezado se pone al día.
@@ -549,6 +551,18 @@ SRP.formulario = {
     });
   },
 
+  pintarDatosGuardado(registro) {
+    const esc = SRP.util.escapar;
+    const lugar = [registro.alcaldia ? 'Alcaldía ' + registro.alcaldia : SRP.ref.alcaldia(null), registro.colonia ? 'Col. ' + registro.colonia : ''].filter(Boolean).join(' · ');
+    const filas = [
+      ['Folio', '<span class="folio-provisional" id="dlg-guardado-folio">' + esc(SRP.folio.textoLargo(registro)) + '</span>'],
+      ['Jornada', esc(this.nombreJornada()) + ' · ' + esc(SRP.util.formatearFecha(registro.fecha_plantacion))],
+      ['Lugar', esc(lugar)],
+      ['Cómo se obtuvo', this.textoOrigenRevision(registro, false)]
+    ];
+    this.el('dlg-guardado-datos').innerHTML = filas.map(([k, v]) => '<div><dt>' + k + '</dt><dd>' + v + '</dd></div>').join('');
+  },
+
   /* Lo que dice «Registro guardado» con el envío simulado (D111): «Enviando…» mientras sale, y
      luego enviado con su hora de recepción, o guardado en el teléfono y cuántos esperan. */
   async enviarTrasGuardar(id) {
@@ -560,15 +574,15 @@ SRP.formulario = {
     if (!r) return;
     const e = envio.leer();
     if (envio.estado(r, e) === 'recibido') {
-      this.el('dlg-guardado-id').textContent = 'Folio: ' + SRP.folio.textoLargo(r) + ' · Identificador: ' + r.id;
+      this.el('dlg-guardado-folio').textContent = SRP.folio.textoLargo(r);
       caja.dataset.envio = 'recibido';
-      caja.textContent = 'Enviado al servidor (simulado). Recepción confirmada ' + envio.cuando(e.recibidos[r.id]) + '.';
+      caja.innerHTML = SRP.ICONOS.svg('palomita', 18) + '<span>Enviado al servidor (simulado). Recepción confirmada ' + SRP.util.escapar(envio.cuando(e.recibidos[r.id])) + '.</span>';
     } else {
       const pend = await envio.pendientesPropios();
       const n = pend ? pend.length : 1;
       caja.dataset.envio = 'por_enviar';
-      caja.textContent = 'Sin conexión: quedó guardado en el teléfono y se enviará solo cuando haya señal. ' +
-        (n === 1 ? 'Es el único por enviar.' : 'Registros por enviar: ' + n + '.') + ' Puede seguir registrando.';
+      caja.innerHTML = SRP.ICONOS.svg('sinSenal', 18) + '<span>Sin conexión: quedó guardado en el teléfono y se enviará solo cuando haya señal. ' +
+        (n === 1 ? 'Es el único por enviar.' : 'Registros por enviar: ' + n + '.') + ' Puede seguir registrando.</span>';
     }
   },
 

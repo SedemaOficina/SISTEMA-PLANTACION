@@ -450,13 +450,15 @@ with sync_playwright() as p:
     pg.click('#btn-resumen-guardar'); pg.wait_for_timeout(700)
     ok(pg.is_hidden('#dlg-resumen') and pg.is_visible('#dlg-guardado'),'al guardar se cierra la ficha y se abre el aviso')
     ok('Fresno' in pg.inner_text('#dlg-guardado-detalle'),'el aviso dice qué se guardó')
-    ok(id1 in pg.inner_text('#dlg-guardado-id'),'se guardó con el identificador que mostró la ficha')
+    ok(pg.evaluate("SRP.formulario.estado.idPrevisto")==id1 and pg.evaluate("(async () => !!(await SRP.almacen.uno('plantaciones', '%s')))()" % id1),'se guardó con el identificador que fijó la ficha, y el aviso ya no lo enseña (D127)')
+    gua=pg.evaluate("[...document.querySelectorAll('#dlg-guardado-datos dt')].map(d => d.textContent)")
+    ok(gua==['Folio','Jornada','Lugar','Cómo se obtuvo'] and 'Identificador' not in pg.inner_text('#dlg-guardado') and pg.locator('#dlg-guardado-datos .precision').count()==1 and 'Alcaldía' in pg.inner_text('#dlg-guardado-datos'),'el aviso dice especie, folio, jornada, lugar y cómo se obtuvo, con la insignia de precisión (D127): %s' % gua)
     ok('Enviando al servidor' in pg.inner_text('#dlg-guardado-dispositivo') and pg.text_content('#conexion').strip()=='Enviando 1…' and pg.get_attribute('#conexion','data-estado')=='enviando',
        'con señal el registro sale en seguida: el aviso y la pastilla dicen «Enviando…» (D111): '+pg.text_content('#conexion').strip())
     pg.wait_for_timeout(1600)
     ok('Enviado al servidor (simulado)' in pg.inner_text('#dlg-guardado-dispositivo') and 'Recepción confirmada hoy a las' in pg.inner_text('#dlg-guardado-dispositivo'),
        'y luego que el servidor confirmó la recepción, con la hora (D111): '+pg.inner_text('#dlg-guardado-dispositivo'))
-    ok(re.search(r'Folio: [A-Z]{3}-\d{3}-\d{5} \(simulado\)', pg.inner_text('#dlg-guardado-id')) is not None,'con su folio (D110): '+pg.inner_text('#dlg-guardado-id'))
+    ok(re.search(r'^[A-Z]{3}-\d{3}-\d{5} \(simulado\)$', pg.inner_text('#dlg-guardado-folio')) is not None,'con su folio (D110): '+pg.inner_text('#dlg-guardado-folio'))
     ok(pg.text_content('#conexion').strip()=='Con conexión · Al día' and pg.get_attribute('#conexion','data-estado')=='con','la pastilla queda «Al día» (D111)')
     pg.click('#btn-registro-nuevo'); pg.wait_for_timeout(500)
     ok(pg.is_hidden('#dlg-guardado'),'«Agregar registro nuevo» cierra el aviso')

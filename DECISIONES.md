@@ -944,3 +944,9 @@
   porque el folio real lo da el servidor. El bloque «Datos del sistema» con el identificador UUID
   y su nota se quitan de la ficha: es dato interno, no de quien registra; sigue en el detalle del
   registro y en el espejo. Pedido por Liber, 23-09-2026.
+- **D127. «Registro guardado» responde qué quedó registrado.** El aviso va de lo que la persona
+  reconoce a lo que el sistema confirma: especie (común en negritas, científico en cursiva), Folio
+  (PROVISIONAL hasta que el envío simulado lo confirma; entonces se sustituye), Jornada · fecha,
+  Lugar (alcaldía · colonia), Cómo se obtuvo con la misma insignia de precisión que la ficha, y al
+  final el envío con su hora (verde con palomita) o la espera de señal (ámbar). Fuera el
+  identificador UUID y la fecha suelta. Criterio propuesto y aprobado por Liber, 23-09-2026.

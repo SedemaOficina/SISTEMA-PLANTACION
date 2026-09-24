@@ -1284,3 +1284,14 @@ el identificador se lee del estado, folio previsto con patrón y sin gastar secu
 
 **Verificación:** 411 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.48.
+
+## Bloque 68 — Aviso «Registro guardado» (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.49.
+
+**Qué cambió (D127).** `index.html`: el aviso lleva especie, lista de datos y línea de envío.
+`formulario.js`: `pintarDatosGuardado()`; `enviarTrasGuardar` actualiza `#dlg-guardado-folio` y
+pinta el envío con icono. `estilos.css`: `.guardado-especie`, `.guardado-datos`,
+`.guardado-envio`. Pruebas: orden de datos, sin identificador, insignia de precisión, folio.
+
+**Verificación:** 412 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.49.
