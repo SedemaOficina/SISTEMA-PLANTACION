@@ -60,6 +60,7 @@ SRP.reportes = {
       zona.setAttribute('aria-busy', 'true');
       SRP.util.anunciar('Generando reporte…', 'aviso');
       try { await this.generar(v.registros, v.cierre, v.fecha, v.jornada); }
+      catch (err) { SRP.util.avisarError(err, 'generar el reporte'); }   // antes se quedaba «Generando reporte…» (D149)
       finally { zona.removeAttribute('aria-busy'); }
     });
     // Corregir vuelve al formulario de cierre con lo ya escrito (se guardó al pedir la vista previa)
@@ -679,3 +680,6 @@ SRP.reportes = {
     return 'descarga';
   }
 };
+
+// Acciones que escriben en el teléfono: si fallan, se dice qué no se pudo hacer (D149)
+SRP.util.proteger(SRP.reportes, { aceptar: 'guardar los datos del cierre' });

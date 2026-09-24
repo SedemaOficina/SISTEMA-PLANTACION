@@ -1196,3 +1196,30 @@
   se queda «Regenerar PDF», que cabe junto a «Registrar árbol» desde 360 px (D141). Los dos dejan el
   lápiz, que desde D144 es sólo para editar, y llevan un icono nuevo de flecha en círculo
   (`regenerar`); siguen en ámbar porque rehacen algo ya hecho. Pedido por Liber, 24-09-2026.
+- **D149. Lo capturado en el teléfono no se borra solo; ningún fallo se queda mudo.** Primer bloque
+  del plan de la auditoría 360 del 24-09-2026 (hallazgos A1, A2, A8 y B3), condición para capturar
+  árboles reales. 1) Antes, un `SELLO_DATOS` nuevo, un sello perdido (se guarda en localStorage) o
+  una base de otra versión vaciaban los cinco almacenes sin preguntar; en la Etapa 1 el teléfono es
+  la única copia. Ahora el sello sólo vuelve a cargar cuentas y catálogos de ejemplo cuando no hay
+  nada capturado (árboles, jornadas o bitácora); si lo hay, se conserva todo. Una base a la que le
+  falta un almacén, o de una versión posterior, se rehace conservando: se lee entera, se recrea y
+  cada renglón vuelve a su almacén, con aviso («se conservó todo lo guardado: N árboles y M
+  jornadas»). Un cambio en la forma de los datos viaja como migración numerada que traslada antes
+  de retirar (la 2 retiró «cierres» sin trasladarlo). Se atienden `onblocked` y `onversionchange`
+  (otra pestaña con otra versión). Con datos reales, una base de versión posterior pide recargar.
+  2) Al guardar un árbol o iniciar una jornada se pide `navigator.storage.persist()`, para que el
+  navegador no desaloje lo guardado por falta de espacio, y se avisa al 80 % de la cuota. La guía
+  «¿Qué hacer sin internet?» dice ahora el estado del teléfono: si lo guardado está protegido, el
+  espacio usado, si esta versión abre sin señal y el último respaldo; en iPhone desde Safari, pide
+  agregar el SRP a la pantalla de inicio (Safari borra lo de los sitios no abiertos en 7 días) y lo
+  sugiere una vez por sesión al guardar el primer árbol. Al cerrar una jornada, la confirmación
+  recuerda el respaldo si el último no es de hoy. Cancelar «Compartir» ya no dice «Respaldo
+  guardado»; la fecha del último respaldo se guarda en `srp_ultimo_respaldo`. 3) Las 19 acciones
+  que escriben en el teléfono se declaran protegidas (`SRP.util.proteger`): si fallan, se dice qué
+  no se pudo hacer y, si fue el espacio, qué hacer; el error sigue su camino para que quien llamó
+  no continúe como si hubiera salido bien. «Guardar» decía «No se pudo guardar: .» con el espacio
+  lleno. El PDF que falla ya no deja «Generando reporte…». Una red de seguridad avisa lo que falle
+  fuera de esas acciones, sin silenciar la consola. 4) El service worker ya no muestra un 404 o un
+  error del servidor en lugar de la app guardada, y la × de la franja «Guardado» dejó de lanzar un
+  error. Quedan para bloques siguientes: guardar las fotos como Blob (ocupan un tercio más como
+  texto) y el sello dentro de la base. Aprobado por Liber, 24-09-2026.

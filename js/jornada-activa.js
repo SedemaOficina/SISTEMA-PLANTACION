@@ -308,6 +308,7 @@ SRP.activa = {
       meta_arboles, puntos_revisados: [], reporte_en: null, encargado_id: u.id
     }, Object.fromEntries(SRP.reportes.CAMPOS.map(k => [k, ''])));
     await SRP.almacen.guardarConBitacora('jornadas', j, SRP.bitacora.entrada('CREADO', 'jornada', j.id, 'Jornada «' + nombre + '» del ' + SRP.util.formatearFecha(fecha)));
+    SRP.almacen.cuidarAlmacenamiento();   // ya hay algo que perder: se pide al navegador que no lo borre (D149)
     this.jornada = j;
     this.mostrarInicio(false);
     await this.preparar();
@@ -330,7 +331,15 @@ SRP.activa = {
     if (meta !== null && n > meta) avisos.push((n - meta) + (n - meta === 1 ? ' árbol' : ' árboles') + ' por encima de la meta (' + n + ' de ' + meta + ')');
     return { titulo: 'Cerrar jornada', pregunta: '¿Cerrar la jornada «' + j.nombre + '» con ' + n + (n === 1 ? ' árbol' : ' árboles') + '?',
       puntosTitulo: 'Queda pendiente:', puntos: avisos.map(a => a.charAt(0).toUpperCase() + a.slice(1) + '.'),
-      nota: avisos.length ? 'Se puede cerrar de todos modos y reabrir después.' : 'Se puede reabrir después.', boton: 'Cerrar jornada', icono: 'candado' };
+      nota: (avisos.length ? 'Se puede cerrar de todos modos y reabrir después.' : 'Se puede reabrir después.') + this.recordatorioRespaldo(), boton: 'Cerrar jornada', icono: 'candado' };
+  },
+
+  // Al cerrar una jornada se recuerda el respaldo si el último no es de hoy (D149): en la Etapa 1
+  // lo capturado sólo vive en el teléfono
+  recordatorioRespaldo() {
+    const u = SRP.conexion.textoUltimoRespaldo();
+    if (!u.atrasado) return '';
+    return ' Último respaldo de este teléfono: ' + u.texto.charAt(0).toLowerCase() + u.texto.slice(1) + ' Guárdelo al terminar, desde el menú de la cuenta.';
   },
 
   async cerrarJornada() {
@@ -387,3 +396,6 @@ SRP.activa = {
   /* La pregunta por distancia de D119 pasó a ser un aviso de la ficha de revisión (D130): ver
      SRP.formulario.avisos(). */
 };
+
+// Acciones que escriben en el teléfono: si fallan, se dice qué no se pudo hacer (D149)
+SRP.util.proteger(SRP.activa, { iniciarJornada: 'iniciar la jornada', cambiarEstatus: 'cambiar el estado de la jornada' });

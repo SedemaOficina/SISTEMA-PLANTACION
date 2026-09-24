@@ -937,3 +937,7 @@ SRP.jornadas = {
     SRP.app.mostrarVista('reportes');
   }
 };
+
+// Acciones que escriben en el teléfono: si fallan, se dice qué no se pudo hacer (D149)
+SRP.util.proteger(SRP.jornadas, { mover: 'mover el árbol de jornada', guardarEnCierre: 'guardar la jornada', guardarEdicion: 'guardar los cambios de la jornada',
+  eliminarJornada: 'eliminar la jornada', marcarRevisado: 'marcar el punto como revisado' });

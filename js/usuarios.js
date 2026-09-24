@@ -227,3 +227,6 @@ SRP.usuarios = {
     this.preparar();
   }
 };
+
+// Acciones que escriben en el teléfono: si fallan, se dice qué no se pudo hacer (D149)
+SRP.util.proteger(SRP.usuarios, { guardar: 'guardar la cuenta', cambiarEstado: 'cambiar el estado de la cuenta', eliminar: 'eliminar la cuenta' });

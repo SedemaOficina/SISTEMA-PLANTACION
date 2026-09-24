@@ -32,7 +32,7 @@ SRP.conexion = {
       SRP.envio.enviar();
     });
     window.addEventListener('offline', async () => { await this.refrescar(); await SRP.envio.pintarFranja(); });
-    this.el('conexion').addEventListener('click', () => this.el('dlg-senal').showModal());
+    this.el('conexion').addEventListener('click', async () => { await this.pintarEstado(); this.el('dlg-senal').showModal(); });
     this.el('btn-respaldo').addEventListener('click', () => { SRP.app.menuCuenta(false); this.respaldar(); });
     const restaurar = this.el('archivo-restaurar');
     if (restaurar) restaurar.addEventListener('change', (e) => this.restaurar(e.target));
@@ -40,10 +40,65 @@ SRP.conexion = {
   },
 
   /* El worker se registra con la misma marca de versión de index.html: una versión nueva es un
-     worker nuevo. Con file:// (doble clic) no hay worker y no pasa nada: la app abre igual. */
+     worker nuevo. Con file:// (doble clic) no hay worker y no pasa nada: la app abre igual. Si el
+     navegador no lo permite, ya no se calla: la guía dice que no abrirá sin señal (D149). */
+  worker: 'no aplica',
   registrarWorker() {
     if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-    navigator.serviceWorker.register('sw.js?v=' + encodeURIComponent(SRP.CONFIG.VERSION)).catch(() => {});
+    this.worker = 'registrando';
+    navigator.serviceWorker.register('sw.js?v=' + encodeURIComponent(SRP.CONFIG.VERSION))
+      .then(() => { this.worker = 'registrado'; }, () => { this.worker = 'error'; });
+  },
+
+  // ¿Quedó esta versión guardada en el teléfono para abrir sin señal?
+  async listaSinSenal() {
+    if (this.worker === 'no aplica') return null;
+    if (this.worker === 'error') return false;
+    try { return 'caches' in window && await caches.has('srp-' + SRP.CONFIG.VERSION); } catch (e) { return false; }
+  },
+
+  /* ESTADO DEL TELÉFONO EN LA GUÍA (D149): lo que decide si lo capturado sobrevive. En la Etapa 1
+     esa es la única copia, así que se dice con palabras si el navegador lo protege, cuánto ocupa,
+     si la app abre sin señal y cuándo fue el último respaldo. */
+  esIphoneEnNavegador() {
+    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const instalada = navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+    return ios && !instalada;
+  },
+
+  // Una vez por sesión, al guardar el primer árbol en un iPhone desde Safari (D149)
+  sugerirInstalar() {
+    if (this._sugerido || !this.esIphoneEnNavegador()) return;
+    this._sugerido = true;
+    setTimeout(() => SRP.util.anunciar('En iPhone, agregue el SRP a la pantalla de inicio (Compartir › Agregar a inicio) para que Safari no borre lo capturado.', 'aviso'), 600);
+  },
+
+  async pintarEstado() {
+    const caja = this.el('senal-estado'); if (!caja) return;
+    const a = await SRP.almacen.estadoAlmacenamiento();
+    const lista = await this.listaSinSenal();
+    const renglones = [];
+    const r = (etq, texto, aviso) => renglones.push('<dt>' + etq + '</dt><dd' + (aviso ? ' data-tono="aviso"' : '') + '>' + SRP.util.escapar(texto) + '</dd>');
+    r('Lo guardado aquí', a.protegido === true ? 'Protegido: el navegador no lo borrará para liberar espacio.'
+      : a.protegido === false ? 'Sin protección: el navegador podría borrarlo si le falta espacio. Guarde un respaldo al cerrar cada jornada.'
+      : 'Este navegador no dice si lo protege. Guarde un respaldo al cerrar cada jornada.', a.protegido !== true);
+    if (this.esIphoneEnNavegador()) r('En iPhone', 'Agregue el SRP a la pantalla de inicio (Compartir › Agregar a inicio): Safari borra lo guardado de los sitios que no se abren en 7 días.', true);
+    if (a.usado !== null && a.cuota) r('Espacio usado', SRP.foto.formatearPeso(a.usado) + ' de ' + SRP.foto.formatearPeso(a.cuota) + ' (' + Math.round(100 * a.usado / a.cuota) + ' %).', a.usado / a.cuota >= 0.8);
+    if (lista !== null) r('Abre sin señal', lista ? 'Sí: esta versión quedó guardada en el teléfono.' : this.worker === 'error' ? 'No: el navegador no lo permitió.' : 'Todavía no: ábrala una vez con señal.', !lista);
+    const ult = this.textoUltimoRespaldo();
+    r('Último respaldo', ult.texto, ult.atrasado);
+    caja.innerHTML = renglones.join('');
+  },
+
+  // «nunca», «hoy», «ayer», «hace N días»; atrasado si nunca o de otro día
+  textoUltimoRespaldo() {
+    let iso = null;
+    try { iso = localStorage.getItem(SRP.CONFIG.CLAVE_ULTIMO_RESPALDO); } catch (e) { /* sin dato */ }
+    if (!iso) return { texto: 'Nunca.', atrasado: true, dias: null };
+    const dia = (d) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+    const dias = Math.round((dia(Date.now()) - dia(iso)) / 86400000);
+    const texto = dias <= 0 ? 'Hoy.' : dias === 1 ? 'Ayer.' : 'Hace ' + dias + ' días.';
+    return { texto, atrasado: dias >= 1, dias };
   },
 
   // «Simular sin señal» (pruebas, D111) manda sobre lo que diga el teléfono
@@ -140,7 +195,10 @@ SRP.conexion = {
     datos.resumen = this.resumenFotos(datos.plantaciones);
     const nombre = 'SRP_respaldo_' + SRP.util.fechaHoy() + (u ? '_' + u.id : '') + '.json';
     const blob = new Blob([JSON.stringify(datos)], { type: 'application/json' });
-    await SRP.reportes.entregarArchivo(blob, nombre, 'Respaldo del Sistema de Registro de Plantaciones');
+    const entrega = await SRP.reportes.entregarArchivo(blob, nombre, 'Respaldo del Sistema de Registro de Plantaciones');
+    // Cancelar «Compartir» no es guardar: antes decía «Respaldo guardado» igual (D149)
+    if (entrega === 'cancelado') { SRP.util.anunciar('No se guardó el respaldo: se canceló.', 'aviso'); return; }
+    try { localStorage.setItem(SRP.CONFIG.CLAVE_ULTIMO_RESPALDO, SRP.util.ahoraISO()); } catch (e) { /* la guía dirá «nunca» */ }
     const n = datos.plantaciones.length;
     SRP.util.anunciar('Respaldo guardado: ' + n + (n === 1 ? ' registro.' : ' registros.'));
   },
@@ -167,3 +225,6 @@ SRP.conexion = {
     SRP.util.anunciar('Respaldo restaurado: ' + nuevos + (nuevos === 1 ? ' elemento nuevo.' : ' elementos nuevos.'));
   }
 };
+
+// Acciones que escriben en el teléfono: si fallan, se dice qué no se pudo hacer (D149)
+SRP.util.proteger(SRP.conexion, { respaldar: 'guardar el respaldo', restaurar: 'restaurar el respaldo' });

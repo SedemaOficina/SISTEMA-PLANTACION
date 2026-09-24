@@ -283,3 +283,6 @@ SRP.catalogos = {
     this.preparar();
   }
 };
+
+// Acciones que escriben en el teléfono: si fallan, se dice qué no se pudo hacer (D149)
+SRP.util.proteger(SRP.catalogos, { guardar: 'guardar el catálogo', cambiarEstado: 'cambiar el estado del catálogo', eliminar: 'eliminar del catálogo' });

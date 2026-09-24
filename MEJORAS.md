@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.69 (Bloque 88)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.70 (Bloque 89)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -167,12 +167,25 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M156 | Revisión de Liber | Los pasos Registrar · Cerrar · Revisar · Reporte dejan de parecer fichas de filtro: círculos numerados unidos por una línea, con el nombre debajo (hecho en verde con palomita, actual relleno) | Media | 0.6.68 (B87) | Nuevo registro con jornada abierta; Jornadas › una jornada | Panel y ficha |
 | M157 | Petición de Liber | El atajo «Hoy» muestra la fecha con el año en dos cifras (24-SEP-26); ya no se parte en dos renglones en el teléfono | Baja | 0.6.69 (B88) | Registros, Jornadas, Reportes o Fotografías en el teléfono | Filtros |
 | M158 | Petición de Liber | «Volver a generar» pasa a «Regenerar reporte»; en Reportes y en la ficha el botón lleva una flecha en círculo en lugar del lápiz | Baja | 0.6.69 (B88) | Reportes › jornada con reporte; Jornadas › jornada completa | Botón |
+| M159 | Auditoría 360 (A1) | Una versión nueva, un sello perdido o una base de otra versión ya no borran lo capturado: se conserva todo y, si hubo que rehacer la base, se avisa cuántos árboles y jornadas se conservaron | Alta | 0.6.70 (B89) | Registrar árboles, esperar la siguiente versión y abrir: siguen ahí | — |
+| M160 | Auditoría 360 (A2) | Se pide al navegador que no borre lo guardado al guardar el primer árbol o iniciar una jornada; en iPhone desde Safari se sugiere agregar el SRP a la pantalla de inicio | Alta | 0.6.70 (B89) | Guardar un árbol en iPhone desde Safari | Aviso |
+| M161 | Auditoría 360 (A2) | La guía «¿Qué hacer sin internet?» dice el estado del teléfono: si lo guardado está protegido, espacio usado, si abre sin señal y cuándo fue el último respaldo | Media | 0.6.70 (B89) | Tocar la pastilla de conexión | Guía |
+| M162 | Auditoría 360 (A2) | Al cerrar una jornada, la confirmación recuerda guardar el respaldo si el último no es de hoy; cancelar «Compartir» ya no dice «Respaldo guardado» | Media | 0.6.70 (B89) | Cerrar una jornada; Guardar respaldo › Cancelar | Confirmación |
+| M163 | Auditoría 360 (A8) | Si algo no se puede guardar, se dice qué y por qué; con el espacio lleno, «el teléfono se quedó sin espacio… guarde un respaldo». Antes 17 de 18 acciones fallaban en silencio | Alta | 0.6.70 (B89) | (No se provoca a mano; lo cubren las pruebas) | — |
+| M164 | Auditoría 360 (M12, B3) | La × de la franja «Guardado» ya no lanza un error; un error del servidor ya no tapa la app guardada | Baja | 0.6.70 (B89) | Guardar un árbol y cerrar la franja con × | — |
 
 ## 2. Por hacer
 
 | # | Origen | Mejora | Prioridad | Estado | Nota |
 |---|---|---|---|---|---|
 | M46 | Android | Revisión corta en Android: versión, botón «atrás» con ventanas abiertas, calendario y hora, especies con teclado, precisión, foto, compartir PDF, aviso | Alta | Pendiente | Espera capturas |
+| M165 | Auditoría 360 | Bloque 90 «Respaldo seguro»: escapar ids y fotos, política de seguridad (CSP), restauración validada y sólo del alcance, respaldo sólo del alcance, apagar bien el modo de prueba (A3, A4, M1, M10) | Alta | Pendiente | Condición para datos reales |
+| M166 | Auditoría 360 | Bloque 91 «Integridad»: contar el uso en todas las tablas antes de eliminar, propagar cambios de la jornada, permisos exigidos en cada acción (A5, M8, M9) | Alta | Pendiente | Condición para datos reales; decisiones D1 y D2 |
+| M167 | Auditoría 360 | Bloque 92 «Territorio confiable»: ámbito por la unión de alcaldías, capas exigidas al arrancar, rótulos veraces, lectura GPS, créditos del mapa (A6, A7, M3, M5, M6, M7) | Alta | Pendiente | |
+| M168 | Auditoría 360 | Bloque 93 «Publicación ligera»: fuentes fuera del sitio, capas con su propia versión y aligeradas, licencia, jsPDF al día (M2, M4) | Media | Pendiente | Decisiones D5 a D7 |
+| M169 | Auditoría 360 | Bloque 94 «Orden del código y los textos»: hoja de estilos a su norma, duplicación, etiquetas, README y comentarios (M11, M13–M16, M20) | Media | Pendiente | |
+| M170 | Auditoría 360 | Bloque 95 «Pruebas en iPhone»: GitHub Actions con Chromium y WebKit, pruebas de migración e integridad (M17, M18) | Media | Pendiente | |
+| M171 | Auditoría 360 | Fotografías como Blob (hoy ocupan un tercio más como texto) y sello de datos dentro de la base | Media | Pendiente | Resto de A1 y A2 |
 
 ## 3. Verificadas sin falla
 
@@ -188,4 +201,4 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 54 hechas · 2 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 158 hechas · 8 por hacer · 2 revisadas · 2 descartadas.

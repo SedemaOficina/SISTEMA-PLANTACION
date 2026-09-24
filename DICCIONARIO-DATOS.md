@@ -6,13 +6,18 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 
 ## 1. Dónde viven los datos
 
-- **Motor:** IndexedDB del navegador, base `srp_db` (SRP.CONFIG.DB_NOMBRE), versión 1.
+- **Motor:** IndexedDB del navegador, base `srp_db` (SRP.CONFIG.DB_NOMBRE), versión 2 (SRP.CONFIG.DB_VERSION).
 - **Tablas (almacenes):** `plantaciones`, `usuarios`, `catalogos`, `bitacora`, `jornadas`.
 
 | Dónde | Qué guarda | En Fase 2 |
 |---|---|---|
 | localStorage `srp_sesion_usuario_id` | id de la cuenta con sesión abierta; el dispositivo queda fijo a esa cuenta (D06) | Lo sustituye el proveedor de identidad institucional; sólo cambia `autenticar()` en js/sesion.js |
-| localStorage `srp_sello_datos` | sello con el que se sembró (SRP.CONFIG.SELLO_DATOS); si no coincide, se vuelve a sembrar | Desaparece con ES_FICTICIO |
+| localStorage `srp_sello_datos` | sello de las cuentas y catálogos de ejemplo cargados en este teléfono (SRP.CONFIG.SELLO_DATOS); si no coincide y no hay nada capturado, se vuelven a cargar; si hay capturas, se conserva todo (D149) | Desaparece con ES_FICTICIO |
+| localStorage `srp_ultimo_respaldo` | fecha y hora (ISO) del último respaldo guardado en este teléfono; la guía y el cierre de jornada la recuerdan (D149) | Se conserva mientras exista el respaldo del dispositivo |
+| localStorage `srp_contraste` | preferencia del modo sol (contraste alto) de este teléfono (D106) | Se conserva |
+| localStorage `srp_secuencias_folio_prueba` | consecutivos del servidor simulado de folios, por celda (D110); por dispositivo, fuera del respaldo | Desaparece: el consecutivo vive en el servidor |
+| localStorage `srp_envios_prueba` | estado del envío simulado: ids de registros recibidos con su hora (D111) | Desaparece: lo sustituye la cola de envío real |
+| localStorage `srp_sin_senal_prueba` | «Simular sin señal» de las herramientas de prueba (D111) | Desaparece con ES_FICTICIO |
 | Caché del service worker (sw.js) | copia de la aplicación para abrir sin señal; no guarda datos | Se conserva |
 | Respaldo `SRP_respaldo_AAAA-MM-DD_<usuario>.json` | {sistema, version, generado, usuario_id, es_ficticio, resumen{registros, con_foto, foto_bytes}, plantaciones[], usuarios[], catalogos[], bitacora[], jornadas[]}: las cinco tablas con el mismo esquema (D87) | El mismo archivo es lo que el servidor recibiría |
 
@@ -321,7 +326,7 @@ Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras
 | R-R01 | jornadas | El reporte es de una jornada declarada: reúne las plantaciones activas con ese jornada_id; regenerar la misma jornada reabre sus datos de cierre (D119) | js/reportes.js refrescarVista(), abrir(), cierreDeJornada() |
 | R-R02 | jornadas | Todos los campos del cierre son opcionales y ninguno se prellena; el encargado sale de la sesión o se elige entre los cabos con registros ese día | js/reportes.js prepararEncargado() |
 | R-F01 | plantaciones | Filtros de Registros: Hoy / Todos / Un periodo (Desde ≤ Hasta, entra con Aplicar), Año y Mes sólo con registros, Cabo según alcance; ningún control mueve el foco solo (D82) | js/registros.js |
-| R-D01 | todas | Siembra: al abrir con sello distinto de CONFIG.SELLO_DATOS se restablecen las cinco tablas con los datos de arranque (sólo con ES_FICTICIO) | js/almacen.js sembrarSiVacio(); js/config.js |
+| R-D01 | todas | Siembra: al abrir con sello distinto de CONFIG.SELLO_DATOS se vuelven a cargar cuentas y catálogos de ejemplo sólo si no hay nada capturado (árboles, jornadas o bitácora); si lo hay, se conserva todo. Una base a la que le falta un almacén, o de una versión posterior, se rehace conservando lo que tenía (D149; sólo con ES_FICTICIO) | js/almacen.js sembrarSiVacio(); js/config.js |
 | R-D02 | plantaciones, jornadas, bitacora | Respaldo: archivo JSON con las cinco tablas y un resumen de fotografías; restaurar sólo agrega lo que no existe (por id), nunca sobreescribe | js/conexion.js respaldar(), restaurar() |
 
 ## 11. Reglas que esperan al servidor (Fase 2)

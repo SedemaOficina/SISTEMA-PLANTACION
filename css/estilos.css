@@ -628,6 +628,12 @@ fieldset.campo { margin-inline: 0; }
 .aviso-envio { margin-top: var(--e-4); padding: var(--e-3) var(--e-4); background: var(--fondo-suave); border-left: 4px solid var(--dorado); font-size: var(--t-s); line-height: 1.5; }
 .aviso-envio:empty { display: none; }
 .lista-ayuda { padding-left: 1.2em; line-height: 1.5; }
+/* Estado del teléfono en la guía (D149): etiqueta y valor por renglón; lo que requiere atención, en ámbar */
+.senal-estado { display: grid; grid-template-columns: minmax(0, 9.5rem) minmax(0, 1fr); gap: var(--e-1) var(--e-3); margin: var(--e-3) 0; padding: var(--e-3);
+  border-radius: var(--radio-filtro); background: var(--fondo-suave); font-size: var(--t-s); }
+.senal-estado dt { color: var(--gris); }
+.senal-estado dd { margin: 0; font-weight: 500; }
+.senal-estado dd[data-tono="aviso"] { color: var(--editar); }
 .lista-ayuda li { margin-bottom: var(--e-2); }
 .registro-lugar, .registro-autor { display: block; font-size: var(--t-s); overflow-wrap: anywhere; }
 .registro-autor { color: var(--gris); }
@@ -878,6 +884,9 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 }
 @media (max-width: 480px) {
   .encabezado-logo { max-height: 38px; }
+  /* Estado del teléfono en la guía: etiqueta sobre el valor (D149) */
+  .senal-estado { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .senal-estado dd { margin-bottom: var(--e-2); }
   /* En teléfono logotipo, conexión y cuenta caben en una sola fila (D93) */
   .encabezado-interior { padding: var(--e-2) var(--e-3); gap: var(--e-2); }
   .conexion { padding: 0 var(--e-2); font-size: 0.75rem; }

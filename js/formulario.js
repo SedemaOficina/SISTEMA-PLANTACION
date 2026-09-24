@@ -641,10 +641,16 @@ SRP.formulario = {
         // Con datos de prueba, el registro sale en seguida si hay señal (D111) y recibe folio (D110)
         // El envío corre aparte (D142): el árbol ya quedó en el teléfono y la franja dice «enviando…»;
         // esperarlo dejaba «Guardar» en «Guardando…» hasta que el servidor contestara, frenando el siguiente
-        if (SRP.envio.simulado()) this.enviarTrasGuardar(nuevo.id).catch(() => {});
+        if (SRP.envio.simulado()) this.enviarTrasGuardar(nuevo.id).catch(() => this.pintarEnvio(nuevo.id, 'por_enviar', 'no se pudo enviar: se reintentará solo'));
+        // Lo capturado vive sólo en el teléfono: se pide al navegador que no lo borre y se vigila el espacio (D149)
+        SRP.almacen.cuidarAlmacenamiento();
+        SRP.conexion.sugerirInstalar();
       }
     } catch (err) {
-      SRP.util.anunciar('No se pudo guardar: ' + err.message + '. Sus datos siguen en pantalla; intente de nuevo.', 'alerta');
+      // Lo capturado sigue en pantalla; se dice qué pasó y, si fue el espacio, qué hacer (D149)
+      const e = err || new Error('');
+      try { e.srpAvisado = true; } catch (x) { /* se avisa igual */ }
+      SRP.util.anunciar(SRP.util.mensajeError(e, 'guardar el árbol') + ' Sus datos siguen en pantalla.', 'alerta');
     } finally {
       boton.disabled = false;
       boton.removeAttribute('aria-busy');
@@ -678,9 +684,8 @@ SRP.formulario = {
   /* Lo que dice «Registro guardado» con el envío simulado (D111): «Enviando…» mientras sale, y
      luego enviado con su hora de recepción, o guardado en el teléfono y cuántos esperan. */
   async enviarTrasGuardar(id) {
-    const franja = this.el('franja-guardado');
     const envio = SRP.envio;
-    const pinta = (estado, texto) => { if (this.estado.ultimoGuardado !== id) return; franja.dataset.envio = estado; const e = this.el('franja-guardado-envio'); if (e) e.textContent = texto; };
+    const pinta = (estado, texto) => this.pintarEnvio(id, estado, texto);
     if (SRP.conexion.enLinea()) pinta('enviando', 'enviando…');
     await envio.enviar({ silencioso: true });
     const r = await SRP.almacen.uno('plantaciones', id);
@@ -694,6 +699,13 @@ SRP.formulario = {
       const n = pend ? pend.length : 1;
       pinta('por_enviar', 'sin señal: se enviará solo' + (n > 1 ? ' (' + n + ' por enviar)' : ''));
     }
+  },
+
+  // Estado del envío en la franja «Guardado», sólo si sigue siendo el último árbol guardado
+  pintarEnvio(id, estado, texto) {
+    if (this.estado.ultimoGuardado !== id) return;
+    this.el('franja-guardado').dataset.envio = estado;
+    const e = this.el('franja-guardado-envio'); if (e) e.textContent = texto;
   },
 
   /* El formulario arranca en blanco en cada registro. Antes conservaba programa, fecha y

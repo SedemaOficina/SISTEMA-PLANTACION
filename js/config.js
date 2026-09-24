@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 88',
+  ETAPA: 'Bloque 89',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -30,6 +30,7 @@ SRP.CONFIG = {
   DB_VERSION: 2,   // 2: tabla jornadas, sin cierres (D119)
   CLAVE_SESION: 'srp_sesion_usuario_id',
   CLAVE_CONTRASTE: 'srp_contraste',
+  CLAVE_ULTIMO_RESPALDO: 'srp_ultimo_respaldo',   // fecha del último respaldo de este teléfono (D149)
   CLAVE_SECUENCIAS_PRUEBA: 'srp_secuencias_folio_prueba',   // secuencias del servidor simulado (D110)
   // Envío simulado (D111): lo «recibido» por el servidor de prueba y el interruptor «Simular sin señal»
   CLAVE_ENVIOS_PRUEBA: 'srp_envios_prueba',

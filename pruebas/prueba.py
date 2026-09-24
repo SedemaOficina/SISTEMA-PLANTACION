@@ -1865,6 +1865,92 @@ with sync_playwright() as p:
     ok(all(t==HOY_CHIP and un for t, un in chips.values()),'en Registros, Jornadas y Reportes «Hoy» dice %s en un solo renglón, sin partir el año (D147): %s' % (HOY_CHIP, chips))
     ok(pg.evaluate("SRP.util.formatearFecha('2026-09-24')")=='24-SEP-2026','el resto de las fechas conserva el año completo')
 
+    # ---------- BLOQUE 89: BLINDAJE DE LOS DATOS EN EL TELÉFONO (D149) ----------
+    pg.set_viewport_size({'width':390,'height':844}); pg.wait_for_timeout(200)
+    cuenta=lambda: pg.evaluate("async () => { const n = async a => (await SRP.almacen.todos(a)).length; return [await n('plantaciones'), await n('jornadas'), await n('usuarios')]; }")
+    antes=cuenta()
+    # Un sello de datos nuevo (versión nueva) o perdido ya no vacía el teléfono si hay capturas
+    pg.evaluate("() => { localStorage.setItem(SRP.CONFIG.CLAVE_SELLO, 'sello-viejo'); }"); pg.reload(); pg.wait_for_timeout(1500)
+    d1=cuenta(); a1=pg.evaluate("SRP.almacen.arranque")
+    pg.evaluate("() => { localStorage.removeItem(SRP.CONFIG.CLAVE_SELLO); }"); pg.reload(); pg.wait_for_timeout(1500)
+    d2=cuenta(); a2=pg.evaluate("SRP.almacen.arranque")
+    ok(antes[0]>0 and d1==antes and d2==antes and a1=='conservado' and a2=='conservado',
+       'un sello de datos nuevo o perdido ya no borra lo capturado: árboles, jornadas y cuentas se conservan (D149): %s → %s → %s' % (antes,d1,d2))
+    # Una base de una versión posterior se rehace conservando lo que tenía
+    pg.evaluate("""async () => { SRP.almacen.db.close(); await new Promise((ok, no) => { const r = indexedDB.open(SRP.CONFIG.DB_NOMBRE, SRP.CONFIG.DB_VERSION + 1);
+        r.onupgradeneeded = () => {}; r.onsuccess = () => { r.result.close(); ok(); }; r.onerror = () => no(r.error); }); }""")
+    pg.reload(); pg.wait_for_timeout(1800)
+    d3=cuenta(); c3=pg.evaluate("SRP.almacen.conservados")
+    ok(d3==antes and pg.evaluate("SRP.almacen.db.version")==pg.evaluate("SRP.CONFIG.DB_VERSION") and c3 and c3['arboles']==antes[0],
+       'una base de versión posterior se rehace conservando todo y lo avisa: %s, %s' % (d3, c3))
+    # Sin nada capturado, el sello nuevo sí vuelve a cargar los datos de ejemplo (teléfono nuevo)
+    ctx9=b.new_context(viewport={'width':390,'height':844}); pg9=ctx9.new_page(); pg9.goto(BASE); pg9.wait_for_timeout(1200)
+    a9=pg9.evaluate("SRP.almacen.arranque")
+    pg9.evaluate("() => { localStorage.setItem(SRP.CONFIG.CLAVE_SELLO, 'sello-viejo'); }"); pg9.reload(); pg9.wait_for_timeout(1500)
+    ok(a9=='sembrado' and pg9.evaluate("SRP.almacen.arranque")=='resembrado' and 'cuentas y los catálogos' in pg9.inner_text('#aviso'),
+       'en un teléfono sin capturas, el sello nuevo recarga cuentas y catálogos y lo dice')
+    ctx9.close()
+    # Almacenamiento protegido: se pide al guardar un árbol, y la guía dice el estado
+    pg.evaluate("() => { window.__persist = 0; navigator.storage.persist = async () => { window.__persist++; return true; }; navigator.storage.persisted = async () => window.__persist > 0; }")
+    registrar(pg,'aile','ESP-0002')
+    ok(pg.evaluate("window.__persist")>=1,'al guardar un árbol se pide al navegador que no borre lo guardado (storage.persist, D149)')
+    pg.evaluate("() => { localStorage.setItem(SRP.CONFIG.CLAVE_ULTIMO_RESPALDO, new Date(Date.now() - 3 * 86400000).toISOString()); }")
+    pg.click('#conexion'); pg.wait_for_timeout(400)
+    est=pg.inner_text('#senal-estado')
+    ok('Protegido' in est and 'Abre sin señal' in est and 'Hace 3 días.' in est and 'Espacio usado' in est,
+       'la guía «¿Qué hacer sin internet?» dice si lo guardado está protegido, el espacio, si abre sin señal y el último respaldo (D149): '+est.replace('\n',' | '))
+    ok(pg.get_attribute('#senal-estado dd:last-of-type','data-tono')=='aviso','un respaldo de otro día se marca en ámbar')
+    pg.click('#btn-senal-cerrar'); pg.wait_for_timeout(200)
+    # Al cerrar la jornada se recuerda el respaldo
+    pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(300)
+    pg.click('#btn-jornada-cerrar'); pg.wait_for_timeout(400)
+    nota=pg.inner_text('#dlg-confirmar-nota')
+    ok('Último respaldo de este teléfono: hace 3 días.' in nota,'al cerrar la jornada, la confirmación recuerda el respaldo si el último no es de hoy: '+nota)
+    pg.click('#btn-confirmar-no'); pg.wait_for_timeout(200)
+    # Cancelar el respaldo no dice «guardado» ni cambia la fecha
+    pg.evaluate("() => { window.__entregar = SRP.reportes.entregarArchivo; SRP.reportes.entregarArchivo = async () => 'cancelado'; }")
+    antes_r=pg.evaluate("localStorage.getItem(SRP.CONFIG.CLAVE_ULTIMO_RESPALDO)")
+    pg.evaluate("SRP.conexion.respaldar()"); pg.wait_for_timeout(300)
+    ok('No se guardó el respaldo' in pg.inner_text('#aviso') and pg.evaluate("localStorage.getItem(SRP.CONFIG.CLAVE_ULTIMO_RESPALDO)")==antes_r,
+       'cancelar el respaldo avisa que no se guardó y no cambia la fecha del último (antes decía «Respaldo guardado»)')
+    pg.evaluate("() => { SRP.reportes.entregarArchivo = window.__entregar; }")
+    with pg.expect_download(): pg.evaluate("SRP.conexion.respaldar()")
+    pg.wait_for_timeout(300)
+    ok(pg.evaluate("SRP.conexion.textoUltimoRespaldo().texto")=='Hoy.','un respaldo guardado deja la fecha de hoy')
+    # Espacio lleno: las acciones que escriben lo dicen con palabras
+    pg.evaluate("() => { window.__guardar = SRP.almacen.guardarConBitacora; SRP.almacen.guardarConBitacora = () => Promise.reject(new DOMException('lleno', 'QuotaExceededError')); }")
+    pg.evaluate("() => { SRP.catalogos.cambiarEstado({ id: 'p-centro', tipo: 'programa', nombre: 'Centro Histórico', activo: true }).catch(() => {}); }"); pg.wait_for_timeout(300)
+    ok('No se pudo cambiar el estado del catálogo: el teléfono se quedó sin espacio' in pg.inner_text('#aviso'),'una acción que falla por espacio lo dice: '+pg.inner_text('#aviso'))
+    pg.click('#btn-ubicacion'); pg.wait_for_timeout(700); pg.fill('#campo-especie','aile'); pg.wait_for_timeout(200)
+    pg.dispatch_event('.combo-opcion[data-id="ESP-0002"]','mousedown'); pg.wait_for_timeout(150)
+    pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(700)
+    if pg.is_visible('#dlg-resumen'): pg.click('#btn-resumen-guardar'); pg.wait_for_timeout(500)
+    av=pg.inner_text('#aviso')
+    ok('No se pudo guardar el árbol: el teléfono se quedó sin espacio' in av and 'Sus datos siguen en pantalla' in av and ': .' not in av and pg.evaluate("SRP.formulario.estado.especieId")=='ESP-0002',
+       'guardar un árbol con el espacio lleno lo dice y conserva lo capturado (antes: «No se pudo guardar: .»): '+av)
+    pg.evaluate("() => { SRP.almacen.guardarConBitacora = window.__guardar; }")
+    if pg.is_visible('#dlg-resumen'): pg.click('#btn-resumen-cerrar'); pg.wait_for_timeout(200)
+    pg.evaluate("SRP.formulario.limpiar()")
+    prot=pg.evaluate("""() => [['catalogos','guardar'],['catalogos','cambiarEstado'],['catalogos','eliminar'],['usuarios','guardar'],['usuarios','cambiarEstado'],['usuarios','eliminar'],
+        ['activa','iniciarJornada'],['activa','cambiarEstatus'],['jornadas','mover'],['jornadas','guardarEnCierre'],['jornadas','guardarEdicion'],['jornadas','eliminarJornada'],
+        ['jornadas','marcarRevisado'],['registros','eliminar'],['registros','restaurar'],['reportes','aceptar'],['conexion','respaldar'],['conexion','restaurar'],['folio','emitirPendientes']]
+        .filter(([m, f]) => !(SRP[m][f] && SRP[m][f].protegido)).map(x => x.join('.'))""")
+    ok(prot==[],'las 19 acciones que escriben en el teléfono avisan si fallan: sin protección %s' % prot)
+    # El PDF que falla ya no se queda en «Generando reporte…»
+    pg.evaluate("() => { window.__generar = SRP.reportes.generar; SRP.reportes.generar = async () => { throw new Error('falla simulada del PDF'); }; SRP.reportes.vistaPrevia = { registros: [], cierre: {}, fecha: '', jornada: {} }; document.getElementById('btn-previa-generar').click(); }")
+    pg.wait_for_timeout(400)
+    ok('No se pudo generar el reporte' in pg.inner_text('#aviso') and pg.get_attribute('#principal','aria-busy') is None,'si el PDF falla, se dice y la pantalla deja de estar ocupada: '+pg.inner_text('#aviso'))
+    pg.evaluate("() => { SRP.reportes.generar = window.__generar; SRP.reportes.vistaPrevia = null; }")
+    # Red de seguridad: un fallo fuera de las acciones también se dice
+    pg.evaluate("() => { setTimeout(() => Promise.reject(new Error('red de seguridad (prueba)')), 0); }"); pg.wait_for_timeout(400)
+    ok('No se pudo completar la última acción' in pg.inner_text('#aviso'),'un fallo inesperado se avisa en pantalla y sigue en la consola para diagnosticarlo')
+    errores[:]=[e for e in errores if 'red de seguridad (prueba)' not in e and 'falla simulada del PDF' not in e and 'lleno' not in e]
+    # La × de la franja «Guardado» ya no lanza un error
+    registrar(pg,'aile','ESP-0002')
+    n0=len(errores)
+    pg.click('#btn-guardado-cerrar'); pg.wait_for_timeout(300)
+    ok(pg.is_hidden('#franja-guardado') and len(errores)==n0,'la × de la franja «Guardado» la oculta sin lanzar un error (antes: TypeError en cada toque)')
+
     b.close()
 print('\n'.join(res)); print('ERRORES CONSOLA:',errores or 'ninguno')
 print('fallas:',sum(r.startswith('FALLA') for r in res),'de',len(res))

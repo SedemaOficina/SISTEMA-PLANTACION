@@ -55,6 +55,8 @@ self.addEventListener('fetch', (e) => {
         const t = setTimeout(() => ctrl.abort(), 3000);
         const red = await fetch(e.request, { signal: ctrl.signal });
         clearTimeout(t);
+        // Un error del servidor (404, 500) no tapa la app guardada: se sirve la copia si la hay (D149)
+        if (!red.ok) return (await cache.match(PAGINA + '?v=' + VERSION)) || (await cache.match(PAGINA)) || red;
         return red;
       } catch (err) {
         return (await cache.match(PAGINA + '?v=' + VERSION)) || (await cache.match(PAGINA)) || Response.error();

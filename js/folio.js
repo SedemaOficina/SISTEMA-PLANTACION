@@ -115,3 +115,6 @@ SRP.folio = {
             SRP.util.formatearFecha(registro.fecha_plantacion)].join(' · ');
   }
 };
+
+// Acciones que escriben en el teléfono: si fallan, se dice qué no se pudo hacer (D149)
+SRP.util.proteger(SRP.folio, { emitirPendientes: 'asignar los folios' });

@@ -521,3 +521,6 @@ SRP.registros = {
     SRP.conexion.refrescar();
   }
 };
+
+// Acciones que escriben en el teléfono: si fallan, se dice qué no se pudo hacer (D149)
+SRP.util.proteger(SRP.registros, { eliminar: 'eliminar el registro', restaurar: 'restaurar el registro' });

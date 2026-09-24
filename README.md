@@ -103,10 +103,11 @@ sistema no guardan lo mismo o si el diccionario no está regenerado (D86).
 ## Si cambian los datos de arranque
 
 `SELLO_DATOS`, en `js/config.js`, se cambia cada vez que cambian las cuentas o los catálogos de
-arranque. El dispositivo guarda el sello con el que sembró; si no coincide, vuelve a sembrar y lo
-avisa en pantalla. Sin ese sello, un teléfono que ya había abierto el sistema se queda con los
-datos anteriores: así fue como, al renombrar los perfiles, todas las cuentas aparecieron con un
-perfil que ya no existía.
+arranque. El dispositivo guarda el sello con el que cargó los datos de ejemplo; si no coincide y
+**no hay nada capturado** (árboles, jornadas o bitácora), los vuelve a cargar y lo avisa. Si hay
+capturas, **no se borra nada** (D149): en la Etapa 1 el teléfono es la única copia. Por eso un
+cambio en la forma de los datos ya no se resuelve con el sello, sino con una migración numerada
+en `js/almacen.js` que traslada lo guardado antes de retirar nada.
 
 ## El reporte del día
 

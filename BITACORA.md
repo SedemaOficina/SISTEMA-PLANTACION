@@ -1624,3 +1624,32 @@ cabe en un renglón a 390 px; `formatearFecha` sigue dando el año completo. «R
 **Verificación:** 586 comprobaciones sin fallas; en consola, sólo una tesela de Esri que la red de la
 sesión de pruebas bloqueó (ajeno al código); 85 de auditoría; presentación sin desbordes en ocho
 combinaciones. Marca de versión 0.6.69.
+
+## Bloque 89 — Blindaje de los datos en el teléfono (24-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.70.
+
+**Qué cambió (D149).** `almacen.js`: `sembrarSiVacio()` devuelve qué hizo (`sembrado`, `igual`,
+`resembrado`, `conservado`) y nunca vacía la base si hay capturas; `rehacerConservando()` y
+`leerTodo()` rehacen la base sin perder renglones; `vigilarVersion()` y `onblocked`;
+`cuidarAlmacenamiento()` (persistencia y aviso de espacio) y `estadoAlmacenamiento()`; comentarios
+del encabezado al día (nombraban `ESTRUCTURA_VERSION`, que no existe). `util.js`: `mensajeError`,
+`avisarError`, `proteger` y `redDeSeguridad`. Las acciones que escriben en `catalogos`, `usuarios`,
+`jornada-activa`, `jornadas`, `registros`, `reportes`, `conexion` y `folio` se declaran protegidas al
+final de cada módulo. `formulario.js`: mensaje de error veraz al guardar, `pintarEnvio()` y
+persistencia tras guardar. `conexion.js`: estado del teléfono en la guía, fecha y resultado real
+del respaldo, sugerencia de instalar en iPhone, registro del service worker que ya no se calla.
+`jornada-activa.js`: recordatorio del respaldo al cerrar. `reportes.js`: el PDF que falla se avisa.
+`app.js`: red de seguridad, avisos de arranque y la × de «Guardado» sin error. `sw.js`: la copia
+guardada gana a un error del servidor. `foto.js`: pesos en GB. `index.html` y `estilos.css`: el
+bloque de estado de la guía. `config.js`: `CLAVE_ULTIMO_RESPALDO`. `esquema.json`: versión 2 de la
+base, regla de arranque nueva y las cinco claves de localStorage que faltaban declarar;
+`DICCIONARIO-DATOS.md` regenerado. `README.md`: la sección del sello describe la regla nueva.
+Pruebas: sello nuevo y sello perdido con capturas conservan árboles, jornadas y cuentas; una base
+de versión posterior se rehace conservando y lo avisa; un teléfono sin capturas sí recarga los
+datos de ejemplo; `persist()` se pide al guardar; la guía dice protección, espacio, arranque sin
+señal y «Hace 3 días»; la confirmación de cierre recuerda el respaldo; cancelar el respaldo no
+dice «guardado»; espacio lleno en una acción y al guardar un árbol; las 19 acciones protegidas; el
+PDF que falla; la red de seguridad; la × de «Guardado».
+
+**Verificación:** 601 comprobaciones sin errores de consola; 85 de auditoría;
+presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.70.

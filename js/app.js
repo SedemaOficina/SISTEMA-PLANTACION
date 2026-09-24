@@ -29,14 +29,22 @@ SRP.app = {
 
   async iniciar() {
     if (!this.comprobarVersionCompleta()) return;
+    SRP.util.redDeSeguridad();     // ningún fallo se queda mudo (D149)
     this.el('version').textContent = SRP.CONFIG.VERSION + ' (' + SRP.CONFIG.ETAPA + ')';
     this.el('banda-ficticio').hidden = !SRP.CONFIG.ES_FICTICIO;
     try {
       await SRP.almacen.abrir();
-      let resembrado = false;
-      if (SRP.CONFIG.ES_FICTICIO) resembrado = await SRP.almacen.sembrarSiVacio();
+      let arranque = null;
+      if (SRP.CONFIG.ES_FICTICIO) arranque = await SRP.almacen.sembrarSiVacio();
+      SRP.almacen.arranque = arranque;   // queda a la vista para diagnosticar y para las pruebas
       await SRP.ref.recargar();
-      if (resembrado) setTimeout(() => SRP.util.anunciar('Los datos de prueba se actualizaron a la versión nueva.', 'aviso'), 400);
+      // Sólo se rehacen los datos de ejemplo cuando no hay nada capturado; si lo hay, se conserva (D149)
+      if (arranque === 'resembrado') setTimeout(() => SRP.util.anunciar('Se actualizaron las cuentas y los catálogos de prueba a la versión nueva.', 'aviso'), 400);
+      const c = SRP.almacen.conservados;
+      if (c && (c.arboles || c.jornadas)) {
+        const txt = (c.arboles === 1 ? '1 árbol' : c.arboles + ' árboles') + ' y ' + (c.jornadas === 1 ? '1 jornada' : c.jornadas + ' jornadas');
+        setTimeout(() => SRP.util.anunciar('La base del teléfono se actualizó y se conservó todo lo guardado: ' + txt + '.', 'aviso'), 600);
+      }
     } catch (err) {
       this.el('principal').innerHTML = '<div class="errores"><h2>No se pudo abrir el almacenamiento del dispositivo</h2>' +
         '<p>' + SRP.util.escapar(err.message) + '. Revise que el navegador no esté en modo privado.</p></div>';
@@ -392,7 +400,8 @@ SRP.app = {
     // Toda × de cabecera cierra su propio diálogo (D91); cada módulo reacciona al evento «close» si lo necesita
     document.querySelectorAll('.dialogo-cerrar').forEach(b => {
       b.innerHTML = SRP.ICONOS.svg('cerrar', 'grande');
-      b.addEventListener('click', () => b.closest('dialog').close());
+      // La × de la franja «Guardado» usa esta clase sin estar en un diálogo (D149): no hay nada que cerrar aquí
+      b.addEventListener('click', () => { const d = b.closest('dialog'); if (d) d.close(); });
     });
     this.el('btn-confirmar-si').addEventListener('click', () => this.el('dlg-confirmar').close('si'));
     this.el('btn-confirmar-no').addEventListener('click', () => this.el('dlg-confirmar').close('no'));
