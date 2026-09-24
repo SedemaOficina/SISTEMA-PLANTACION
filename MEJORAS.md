@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.67 (Bloque 86)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.68 (Bloque 87)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -164,6 +164,7 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M153 | Revisión de Liber | La entrada muestra sus dos tarjetas lado a lado en computadora; «Guardar» ocupa su columna; «Más filtros» no se estira de orilla a orilla | Baja | 0.6.67 (B86) | Computadora: salir y entrar; Nuevo registro; Registros | — |
 | M154 | Hallazgo del bloque | En el mapa de la ficha ningún punto queda bajo los botones de acercar (también en teléfono) | Media | 0.6.67 (B86) | Jornada con puntos separados › mapa | Mapa |
 | M155 | Petición de Liber | Fuera la pista «Atajo: Ctrl + Enter guarda…» y los números de las especies recientes (y el atajo 1-2-3); Ctrl+Enter sigue guardando sin anunciarse | Baja | 0.6.67 (B86) | Computadora: Nuevo registro con especies recientes | — |
+| M156 | Revisión de Liber | Los pasos Registrar · Cerrar · Revisar · Reporte dejan de parecer fichas de filtro: círculos numerados unidos por una línea, con el nombre debajo (hecho en verde con palomita, actual relleno) | Media | 0.6.68 (B87) | Nuevo registro con jornada abierta; Jornadas › una jornada | Panel y ficha |
 
 ## 2. Por hacer
 

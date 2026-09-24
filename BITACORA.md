@@ -1592,3 +1592,18 @@ Reportes centrado (D109) pasa a comprobar que arranca en el borde, como las dem�
 
 **Verificación:** 579 comprobaciones sin errores de consola; 85 de auditoría;
 presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.67.
+
+## Bloque 87 — Los pasos de la jornada, como indicador de avance (24-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.68.
+
+**Qué cambió (D146).** `jornadas.js`: `htmlPasos()` arma cada paso con su círculo (`.paso-marca`,
+con palomita si está hecho) y su nombre (`.paso-texto`); el número sale de un contador de la hoja
+de estilos. `estilos.css`: fuera las píldoras; círculos, tramos entre pasos, nombre debajo, estados
+hecho/actual/pendiente, tamaños del panel y de la ficha, tope de 30rem y modo sol.
+Pruebas: con un estado fijo (dos hechos, «Revisar» actual) se comprueba que son círculos en un
+renglón con el nombre debajo y sin borde de píldora; el actual en acento, los hechos con palomita,
+el pendiente con su número; tramos verdes después de un paso hecho y gris después del actual; el
+lector de pantalla no oye los números.
+
+**Verificación:** 583 comprobaciones sin errores de consola; 85 de auditoría;
+presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.68.

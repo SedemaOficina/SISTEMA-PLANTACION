@@ -296,12 +296,17 @@ SRP.jornadas = {
     return { hecho, actual, n, meta, pend, abierta, reporte_en: c.reporte_en || null };
   },
 
-  // La tira: el paso actual en acento, los hechos con palomita (el color no va solo, Norma 8.4)
+  /* El indicador de avance (D146): un círculo por paso unido al anterior por un tramo, y el nombre
+     debajo. El actual va relleno en acento y su nombre en negritas; el hecho, en verde con palomita;
+     el que falta, en blanco con su número. El número lo pone la hoja de estilos (contador), así el
+     lector de pantalla oye sólo «Registrar (hecho)» y no «1 Registrar». El color no va solo
+     (Norma 8.4): palomita, relleno y peso distinguen los tres estados. */
   htmlPasos(p) {
     return this.PASOS.map(([k, t]) => {
       const est = p.hecho[k] ? 'hecho' : k === p.actual ? 'actual' : 'pendiente';
       return '<li class="paso" data-estado="' + est + '"' + (est === 'actual' ? ' aria-current="step"' : '') + '>' +
-        (est === 'hecho' ? SRP.ICONOS.svg('palomita', 'chico') : '') + '<span>' + t + '</span>' +
+        '<span class="paso-marca" aria-hidden="true">' + (est === 'hecho' ? SRP.ICONOS.svg('palomita', 'chico') : '') + '</span>' +
+        '<span class="paso-texto">' + t + '</span>' +
         (est === 'hecho' ? '<span class="oculto-visual"> (hecho)</span>' : est === 'actual' ? '<span class="oculto-visual"> (paso actual)</span>' : '') + '</li>';
     }).join('');
   },

@@ -1170,3 +1170,15 @@
   los números de las especies recientes, y con ellos el atajo 1-2-3 (sin pista era una tecla que
   elegía especie sin avisar); Ctrl+Enter sigue guardando y queda declarado sólo en
   `aria-keyshortcuts`. Pedido por Liber, 24-09-2026.
+- **D146. Los pasos de la jornada, como indicador de avance.** Liber notó que «Registrar · Cerrar ·
+  Revisar · Reporte» parecían fichas (chips): tenían la misma forma de píldora con borde que los
+  filtros «Todas · Hoy · Un día», y el paso actual, relleno en acento, se veía igual que un filtro
+  elegido; invitaban a tocarlos y no hacen nada. Se cambian por un indicador de avance como el de
+  los formularios por pasos que él envió de referencia: un círculo por paso, unido al anterior por
+  un tramo, con el nombre debajo. El actual va relleno en acento con su número y el nombre en
+  negritas; el hecho, en verde con palomita, y el tramo que sale de él también en verde; el que
+  falta, en blanco con borde gris y su número. El número lo pone la hoja de estilos, así el lector
+  de pantalla oye «Registrar (hecho)» y no «1 Registrar». En el panel de la jornada activa los
+  círculos miden 22 px y en la ficha 26 px; la tira no pasa de 30rem para que en computadora no se
+  estire. El modo sol engruesa círculos y tramos. Se descartó dejar sólo texto («Paso 2 de 4:
+  Cerrar»): pierde de un vistazo qué ya se hizo. Pedido por Liber, 24-09-2026.

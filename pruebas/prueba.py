@@ -1825,6 +1825,28 @@ with sync_playwright() as p:
         return [...document.querySelectorAll('#jornada-mapa .leaflet-marker-icon')].filter(m => { const r=m.getBoundingClientRect(); return r.left < z.right && r.top < z.bottom && r.right > z.left && r.bottom > z.top; }).length; }""")
     ok(tapa==0,'en la ficha ningún punto queda bajo los botones de acercar: el encuadre deja margen arriba a la izquierda (D145)')
 
+    # ---------- BLOQUE 87: LOS PASOS COMO INDICADOR DE AVANCE (D146) ----------
+    # Se arma una tira aparte con un estado fijo (dos hechos, «Revisar» actual) para medirla
+    pas=pg.evaluate("""() => { const ol=document.createElement('ol'); ol.className='pasos'; document.getElementById('jornada-detalle').prepend(ol);
+        ol.innerHTML=SRP.jornadas.htmlPasos({ hecho: { registrar: true, cerrar: true, revisar: false, reporte: false }, actual: 'revisar' });
+        const li=[...ol.children], m=li.map(l => l.querySelector('.paso-marca')), g=(x, q) => getComputedStyle(x, q);
+        const r=li.map(l => l.getBoundingClientRect()), mr=m.map(x => x.getBoundingClientRect()), t=li.map(l => l.querySelector('.paso-texto').getBoundingClientRect());
+        const out={ circulos: m.every(x => g(x).borderRadius === '50%' && Math.abs(x.offsetWidth - x.offsetHeight) < 1),
+          sin_pildora: li.every(l => g(l).borderTopStyle === 'none' && g(l).backgroundColor === 'rgba(0, 0, 0, 0)'),
+          un_renglon: r.every(x => Math.abs(x.top - r[0].top) < 1), nombre_abajo: t.every((x, i) => x.top >= mr[i].bottom - 1),
+          actual: g(m[2]).backgroundColor, palomita: !!m[0].querySelector('svg') && !!m[1].querySelector('svg') && !m[2].querySelector('svg'),
+          numero: g(m[3], '::before').content, tramos: [1, 2, 3].map(i => g(li[i], '::before').backgroundColor),
+          lector: ol.innerText.replace(/\s+/g, ' ').trim() };
+        ol.remove(); return out; }""")
+    ok(pas['circulos'] and pas['sin_pildora'] and pas['un_renglon'] and pas['nombre_abajo'],
+       'los pasos ya no parecen fichas de filtro: un círculo por paso en un renglón y el nombre debajo, sin borde de píldora (D146): %s' % {k: pas[k] for k in ('circulos','sin_pildora','un_renglon','nombre_abajo')})
+    ok(pas['actual']=='rgb(47, 72, 88)' and pas['palomita'] and 'counter(paso)' in pas['numero'],
+       'el actual va relleno en acento, los hechos con palomita y el que falta con su número (D146): %s, %s' % (pas['actual'], pas['numero']))
+    ok(pas['tramos'][0]=='rgb(30, 122, 70)' and pas['tramos'][1]=='rgb(30, 122, 70)' and pas['tramos'][2]!='rgb(30, 122, 70)',
+       'el tramo que sale de un paso hecho va en verde; después del actual, en gris (D146): %s' % pas['tramos'])
+    ok(not any(c.isdigit() for c in pas['lector']) and 'Revisar (paso actual)' in pas['lector'],
+       'el lector de pantalla oye los nombres y su estado, sin los números de los círculos: «%s»' % pas['lector'])
+
     b.close()
 print('\n'.join(res)); print('ERRORES CONSOLA:',errores or 'ninguno')
 print('fallas:',sum(r.startswith('FALLA') for r in res),'de',len(res))
