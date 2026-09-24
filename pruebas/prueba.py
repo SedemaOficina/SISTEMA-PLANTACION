@@ -25,12 +25,13 @@ def abrir_filtros(pg):
     if pg.is_visible('#btn-filtros') and pg.get_attribute('#btn-filtros','aria-expanded')!='true':
         pg.click('#btn-filtros'); pg.wait_for_timeout(150)
 
-def iniciar_jornada(pg, nombre, fecha=None, comentarios=''):
+def iniciar_jornada(pg, nombre, fecha=None, comentarios='', programa='p-refor'):
     """Declara una jornada desde Nuevo registro (D119). Si ya hay una activa, abre otra con «Cambiar de jornada»."""
     if not pg.is_visible('#vista-registrar'): pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(400)
     if pg.is_hidden('#panel-iniciar-jornada'):
         pg.click('#btn-jornada-cambiar'); pg.wait_for_timeout(200); pg.click('#btn-cambiar-nueva'); pg.wait_for_timeout(300)
     pg.fill('#ini-nombre', nombre); pg.fill('#ini-fecha', fecha or HOY)
+    pg.select_option('#ini-programa', programa)   # el programa es de la jornada (D130)
     if comentarios: pg.fill('#ini-comentarios', comentarios)
     pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(500)
     return pg.evaluate("SRP.activa.jornada && SRP.activa.jornada.id")
@@ -48,9 +49,10 @@ def registrar(pg, busqueda, especie_id, programa='p-refor', fecha=None, foto=Non
     pg.select_option('#campo-programa', programa); pg.wait_for_timeout(150)
     if foto: pg.set_input_files('#foto-archivo', foto); pg.wait_for_timeout(800)
     pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(800)
-    ident = pg.evaluate("SRP.formulario.estado.editando ? SRP.formulario.estado.editando.id : SRP.formulario.estado.idPrevisto")
-    pg.click('#btn-resumen-guardar'); pg.wait_for_timeout(600)
-    pg.click('#btn-registro-nuevo'); pg.wait_for_timeout(400)
+    ident = pg.evaluate("SRP.formulario.estado.editando ? SRP.formulario.estado.editando.id : (SRP.formulario.estado.idPrevisto || SRP.formulario.estado.ultimoGuardado)")
+    # Con precisión buena y sin avisos se guarda de una vez (D130); si algo hay que revisar, la ficha pide confirmar
+    if pg.is_visible('#dlg-resumen'): pg.click('#btn-resumen-guardar'); pg.wait_for_timeout(600)
+    pg.wait_for_timeout(300)
     return ident
 
 with sync_playwright() as p:
@@ -120,8 +122,11 @@ with sync_playwright() as p:
     pg.click('#btn-ini-detectar'); pg.wait_for_timeout(700)
     det=[pg.inner_text('#ini-alcaldia'), pg.inner_text('#ini-colonia'), pg.inner_text('#ini-detectado'), pg.get_attribute('#btn-ini-detectar','class'), pg.input_value('#ini-ubicacion')]
     ok(det[0]=='Cuauhtémoc' and det[1] and det[1]!='—' and 'detectada' in det[2] and 'btn-editar' in det[3] and det[4]=='Av. Insurgentes Sur 1500, Benito Juárez','al tocarlo se llenan alcaldía y colonia, el botón pasa a dorado y lo escrito en Ubicación se conserva: %s' % det)
-    pg.fill('#ini-comentarios','Jornada de prueba con la comunidad'); pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(600)
+    pg.fill('#ini-comentarios','Jornada de prueba con la comunidad'); pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(400)
+    ok('programa' in pg.inner_text('#ini-errores').lower(),'sin programa no se inicia la jornada (D130)')
+    pg.select_option('#ini-programa','p-refor'); pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(600)
     ok(pg.is_hidden('#panel-iniciar-jornada') and pg.is_visible('#registrar-columnas') and pg.is_visible('#franja-jornada'),'con la jornada iniciada aparece el formulario con su franja')
+    ok(pg.input_value('#campo-programa')=='p-refor' and pg.evaluate("SRP.activa.jornada.programa_id")=='p-refor' and 'Reforestación' in pg.inner_text('#franja-jornada'),'el programa de la jornada queda guardado, se hereda en el formulario y se lee en la franja (D130)')
     ok('Parque Hundido' in pg.inner_text('#franja-jornada') and HOY_TXT in pg.inner_text('#franja-jornada') and '0 árboles' in pg.inner_text('#franja-jornada'),'la franja dice la jornada, su fecha y cuántos árboles lleva: '+pg.inner_text('#franja-jornada').replace('\n',' '))
     jor=pg.evaluate("async () => { const j = (await SRP.almacen.todos('jornadas'))[0]; return [j.nombre, j.ubicacion, j.fecha, j.comentarios, j.estatus, j.cabo_id]; }")
     ok(jor==['Parque Hundido', 'Av. Insurgentes Sur 1500, Benito Juárez', HOY, 'Jornada de prueba con la comunidad', 'abierta', 'u-cabo-1'],'la jornada queda guardada con su ubicación, abierta y a nombre del cabo: %s' % jor)
@@ -130,7 +135,7 @@ with sync_playwright() as p:
     ok(geo[0]=='Cuauhtémoc' and geo[1] and geo[2] and geo[3] and geo[4]=='number' and geo[5]=='number','la jornada guarda punto, precisión, alcaldía y colonia con sus claves (D122): %s' % geo)
     # Sin tocar el botón, la jornada se guarda sin punto: nada se inventa
     sin=pg.evaluate("""async () => { SRP.activa.mostrarInicio(true); const antes = [document.getElementById('ini-alcaldia').textContent, document.getElementById('btn-ini-detectar').className.includes('btn-primario')];
-      document.getElementById('ini-nombre').value = 'Sin detectar'; document.getElementById('btn-ini-hoy').click(); await SRP.activa.iniciarJornada();
+      document.getElementById('ini-nombre').value = 'Sin detectar'; document.getElementById('ini-programa').value = 'p-refor'; document.getElementById('btn-ini-hoy').click(); await SRP.activa.iniciarJornada();
       const j = SRP.activa.jornada; return [antes, j.lat, j.alcaldia, j.colonia_cve]; }""")
     ok(sin==[['—',True],None,None,None],'al abrir otra vez el panel vuelve a los guiones, y sin detectar la jornada queda con punto y alcaldía nulos: %s' % sin)
     # La jornada de prueba se retira para no alterar el resto de las pruebas; la primera vuelve a ser la activa
@@ -159,7 +164,7 @@ with sync_playwright() as p:
     ok(orden[0]<orden[1]<orden[2],'orden: botón de ubicación, captura a mano y luego el mapa')
     rev=pg.evaluate("(() => { const b=document.getElementById('btn-revisar'); const r=b.getBoundingClientRect(); const m=document.getElementById('form-plantacion').getBoundingClientRect(); return { verde: getComputedStyle(b).backgroundColor, icono: !!b.querySelector('svg'), alto: Math.round(r.height), ancho: Math.round(r.width), formulario: Math.round(m.width) }; })()")
     ok(rev['verde']=='rgb(30, 122, 70)' and rev['icono'] and rev['alto']>=56 and rev['ancho']>=rev['formulario']-2,
-       'Revisar y guardar es verde, con disco, alto y de margen a margen en teléfono: %s' % rev)
+       '«Guardar» es verde, con disco, alto y de margen a margen en teléfono (D130): %s' % rev)
     ok(pg.locator('.leaflet-marker-icon').count()==0,'la ubicación no se pide sola')
     # Aquí las teselas no cargan (la red de la sesión bloquea al proveedor) y ese aviso pisa al
     # inicial. Lo que se comprueba es lo que importa: el mapa nunca queda mudo sobre qué hacer.
@@ -363,7 +368,7 @@ with sync_playwright() as p:
     # Programa en lista desplegable (D120): los programas crecen; sin preselección (D29)
     prog=pg.evaluate('''() => ({ botones: document.getElementById('programa-botones').hidden, lista_visible: !document.getElementById('campo-programa').classList.contains('oculto-visual'),
       opciones: [...document.getElementById('campo-programa').options].filter(o => o.value).length, valor: document.getElementById('campo-programa').value })''')
-    ok(prog=={'botones':True,'lista_visible':True,'opciones':2,'valor':''},'el programa se elige en una lista desplegable, sin botones y sin preselección (D120): %s' % prog)
+    ok(prog=={'botones':True,'lista_visible':True,'opciones':2,'valor':'p-refor'},'el programa se elige en una lista desplegable, sin botones, con el de la jornada ya puesto (D120, D130): %s' % prog)
     pg.select_option('#campo-programa','p-refor'); pg.wait_for_timeout(200)
     ok(pg.input_value('#campo-programa')=='p-refor','elegir en la lista deja el dato en el formulario')
     # El texto guía de los campos de fecha vacíos (D104) se comprueba en la fecha de la jornada
@@ -391,9 +396,10 @@ with sync_playwright() as p:
     ok(pg.is_hidden('#ficha-foto'),'la papelera quita la foto')
     pg.set_input_files('#foto-archivo','/tmp/arbol.jpg'); pg.wait_for_timeout(900)
 
-    # Ficha de revisión
+    # Ficha de revisión: sólo se abre cuando hay algo que revisar (D130). Con ±40 m la precisión es aceptable, no buena
+    ctx.set_geolocation({'latitude':19.432,'longitude':-99.133,'accuracy':40}); pg.click('#btn-ubicacion'); pg.wait_for_timeout(700)
     pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(900)
-    ok(pg.is_visible('#dlg-resumen'),'la ficha de revisión aparece antes de guardar')
+    ok(pg.is_visible('#dlg-resumen') and pg.is_visible('#revision-avisos') and pg.locator('#revision-avisos li[data-tipo=precision]').count()==1,'con precisión aceptable la ficha de revisión se abre y dice por qué (D130): '+pg.inner_text('#revision-avisos').replace('\n',' '))
     ok(pg.locator('#revision-mapa .leaflet-marker-icon').count()==1,'la ficha muestra el mapa con el punto')
     ok(pg.locator('.revision-fila', has_text='Fotografía').locator('img.revision-foto').count()==1,
        'y la fotografía, en su propio renglón al final')
@@ -448,21 +454,19 @@ with sync_playwright() as p:
 
     pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(900)
     pg.click('#btn-resumen-guardar'); pg.wait_for_timeout(700)
-    ok(pg.is_hidden('#dlg-resumen') and pg.is_visible('#dlg-guardado'),'al guardar se cierra la ficha y se abre el aviso')
-    ok('Fresno' in pg.inner_text('#dlg-guardado-detalle'),'el aviso dice qué se guardó')
-    ok(pg.evaluate("SRP.formulario.estado.idPrevisto")==id1 and pg.evaluate("(async () => !!(await SRP.almacen.uno('plantaciones', '%s')))()" % id1),'se guardó con el identificador que fijó la ficha, y el aviso ya no lo enseña (D127)')
-    gua=pg.evaluate("[...document.querySelectorAll('#dlg-guardado-datos dt')].map(d => d.textContent)")
-    ok(gua==['Folio','Jornada','Lugar','Cómo se obtuvo'] and 'Identificador' not in pg.inner_text('#dlg-guardado') and pg.locator('#dlg-guardado-datos .precision').count()==1 and 'Alcaldía' in pg.inner_text('#dlg-guardado-datos'),'el aviso dice especie, folio, jornada, lugar y cómo se obtuvo, con la insignia de precisión (D127): %s' % gua)
-    ok('Enviando al servidor' in pg.inner_text('#dlg-guardado-dispositivo') and pg.text_content('#conexion').strip()=='Enviando 1…' and pg.get_attribute('#conexion','data-estado')=='enviando',
-       'con señal el registro sale en seguida: el aviso y la pastilla dicen «Enviando…» (D111): '+pg.text_content('#conexion').strip())
+    ok(pg.is_hidden('#dlg-resumen') and pg.is_visible('#franja-guardado') and pg.locator('#dlg-guardado').count()==0,'al guardar se cierra la ficha y aparece la franja «Guardado», sin modal (D130)')
+    ok('Guardado: Fresno' in pg.inner_text('#franja-guardado') and 'Cuauhtémoc' in pg.inner_text('#franja-guardado'),'la franja dice qué se guardó y dónde: '+pg.inner_text('#franja-guardado').replace('\n',' '))
+    ok(pg.evaluate("SRP.formulario.estado.ultimoGuardado")==id1 and pg.evaluate("(async () => !!(await SRP.almacen.uno('plantaciones', '%s')))()" % id1),'se guardó con el identificador que fijó la ficha, y no se enseña (D127)')
+    ok('enviando' in pg.inner_text('#franja-guardado-envio') and pg.text_content('#conexion').strip()=='Enviando 1…' and pg.get_attribute('#conexion','data-estado')=='enviando',
+       'con señal el registro sale en seguida: la franja y la pastilla dicen «Enviando…» (D111): '+pg.text_content('#conexion').strip())
     pg.wait_for_timeout(1600)
-    ok('Enviado al servidor (simulado)' in pg.inner_text('#dlg-guardado-dispositivo') and 'Recepción confirmada hoy a las' in pg.inner_text('#dlg-guardado-dispositivo'),
-       'y luego que el servidor confirmó la recepción, con la hora (D111): '+pg.inner_text('#dlg-guardado-dispositivo'))
-    ok(re.search(r'^[A-Z]{3}-\d{3}-\d{5} \(simulado\)$', pg.inner_text('#dlg-guardado-folio')) is not None,'con su folio (D110): '+pg.inner_text('#dlg-guardado-folio'))
+    ok('enviado hoy a las' in pg.inner_text('#franja-guardado-envio') and pg.get_attribute('#franja-guardado','data-envio')=='recibido',
+       'y luego que el servidor confirmó la recepción, con la hora (D111): '+pg.inner_text('#franja-guardado-envio'))
+    ok(re.search(r'^[A-Z]{3}-\d{3}-\d{5} \(simulado\)$', pg.inner_text('#franja-guardado-folio')) is not None,'con su folio (D110): '+pg.inner_text('#franja-guardado-folio'))
     ok(pg.text_content('#conexion').strip()=='Con conexión · Al día' and pg.get_attribute('#conexion','data-estado')=='con','la pastilla queda «Al día» (D111)')
-    pg.click('#btn-registro-nuevo'); pg.wait_for_timeout(500)
-    ok(pg.is_hidden('#dlg-guardado'),'«Agregar registro nuevo» cierra el aviso')
-    ok(pg.evaluate("document.activeElement.id")=='btn-ubicacion','y deja el foco en el botón de ubicación')
+    ok(pg.evaluate("document.activeElement.id")=='btn-ubicacion' and pg.is_visible('#btn-guardado-corregir') and pg.is_visible('#btn-guardado-ver'),'el formulario queda listo con el foco en ubicación, y la franja ofrece «Corregir» y «Ver»')
+    ok(pg.locator('#especies-recientes .chip').count()==1 and 'Fresno' in pg.inner_text('#especies-recientes'),'la especie recién usada aparece como atajo encima del buscador (D130)')
+    ctx.set_geolocation({'latitude':19.432,'longitude':-99.133,'accuracy':0})
     # Nada del árbol anterior sobrevive: un dato heredado se guarda sin que nadie lo note,
     # y la coordenada del árbol de antes se ve bien estando mal.
     restos=pg.evaluate("""() => ({
@@ -481,11 +485,12 @@ with sync_playwright() as p:
       punto: SRP.mapa.lat, territorio: SRP.formulario.estado.territorio,
       identificador: SRP.formulario.estado.idPrevisto
     })""")
+    heredados={k: restos.pop(k) for k in ('programa','fecha')}
     sucios=[k for k,v in restos.items() if v not in ('', 0, None, '—')]
-    ok(sucios==[],'el registro nuevo arranca en blanco; con resto en: '+str(sucios))
+    ok(sucios==[] and heredados=={'programa':'p-refor','fecha':HOY},'el registro nuevo arranca en blanco salvo lo que hereda de la jornada (programa y fecha, D130); con resto en: %s %s' % (sucios, heredados))
 
     # Validación
-    pg.evaluate("document.getElementById('campo-fecha').value=''"); pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(300)
+    pg.evaluate("document.getElementById('campo-fecha').value=''; document.getElementById('campo-programa').value=''"); pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(300)
     ok(pg.locator('#resumen-errores li').count()==4 and 'jornada' in pg.inner_text('#resumen-errores').lower(),'valida ubicación, especie, programa y que haya jornada activa')
     pg.evaluate("document.getElementById('campo-fecha').value=SRP.activa.jornada.fecha")
 
@@ -679,8 +684,8 @@ with sync_playwright() as p:
     pg.click('#btn-pdf'); pg.wait_for_timeout(400)
     ok(pg.is_visible('#dlg-cierre'),'el botón abre el cierre del reporte antes de generar')
     espejoC=pg.evaluate("[...document.querySelectorAll('#espejo-cierre-cuerpo .espejo-campo')].map(e=>e.textContent)")
-    ok(espejoC==['id','es_ficticio','nombre','ubicacion','fecha','comentarios','cabo_id','estatus','lat','lng','gps_precision_m','alcaldia_cve','alcaldia','colonia_cve','colonia','fecha_inicio','fecha_cierre','creado_por_id','fecha_creacion','editado_por_id','fecha_ultima_edicion','arboles_plantados','puntos_revisados'],
-       'el cierre lleva su espejo con los veintitrés campos de la jornada que no se capturan aquí (D112, D119, D120, D122): '+', '.join(espejoC))
+    ok(espejoC==['id','es_ficticio','nombre','ubicacion','fecha','comentarios','programa_id','cabo_id','estatus','lat','lng','gps_precision_m','alcaldia_cve','alcaldia','colonia_cve','colonia','fecha_inicio','fecha_cierre','creado_por_id','fecha_creacion','editado_por_id','fecha_ultima_edicion','arboles_plantados','puntos_revisados'],
+       'el cierre lleva su espejo con los veinticuatro campos de la jornada que no se capturan aquí (D112, D119, D120, D122, D130): '+', '.join(espejoC))
     pg.fill('#cie-chofer','Mengano'); pg.wait_for_timeout(200)
     ok(pg.evaluate("SRP.reportes.cierrePrevisto().chofer")=='Mengano','y lo que se escribe entra al mismo objeto que se guarda')
     ok(pg.is_visible('#cie-encargado-lectura') and pg.is_hidden('#cie-encargado-caja'),

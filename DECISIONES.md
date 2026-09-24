@@ -968,3 +968,18 @@
   elegido; se esconde si dentro no queda nada que elegir (con «Un día» o «Un periodo» abiertos y
   sin filtro por cabo). Se conserva la regla de D100: año/mes y Desde/Hasta nunca se ven a la
   vez. Fotografías no cambia: sus filtros son pocos. Decidido por Liber, 23-09-2026.
+- **D130. Guardar en un toque.** Por árbol había nueve toques, tres de ellos de ceremonia (Revisar
+  y guardar → Guardar → Agregar registro nuevo): en una jornada de cien árboles, trescientos toques
+  y una ficha que ya nadie lee. Queda: un solo «Guardar»; la ficha «Revise antes de guardar» se
+  abre sólo cuando hay algo que revisar —precisión que no es buena, especie fuera del catálogo,
+  posible duplicado (< JORNADA.DUPLICADO_M de otro árbol de la jornada) o árbol lejos de la jornada
+  (> JORNADA.SEPARAR_M, que sustituye la pregunta de D119)— o al editar, y lo dice arriba en un
+  recuadro ámbar. La fotografía es opcional y nunca avisa (Liber). Al guardar desaparece el modal:
+  el formulario queda en blanco y listo, con el foco en «Registrar ubicación», y arriba una franja
+  verde dice «Guardado: especie · folio · lugar · envío» con «Corregir» (abre ese registro en
+  edición) y «Ver»; el envío simulado actualiza la franja (D111). El programa pasa a la jornada:
+  se elige al iniciarla (`jornadas.programa_id`, obligatorio), va en la franja y se hereda en el
+  formulario, donde sigue pudiéndose cambiar por árbol; el dato del árbol sigue siendo
+  `plantaciones.programa_id`. Encima del buscador de especies van las últimas tres de la jornada
+  como atajos. Resultado: cinco toques por árbol (ubicación, especie, foto ×2, Guardar). Propuesto
+  con números y aprobado por Liber, 23-09-2026.

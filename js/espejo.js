@@ -71,6 +71,7 @@ SRP.espejo = {
     es_ficticio: 'Verdadero mientras CONFIG.ES_FICTICIO lo esté (D87)',
     nombre: 'Se escribió al iniciar la jornada; aquí no se cambia',
     ubicacion: 'Dirección, parque o referencia, escrita al iniciar (D120); va al reporte',
+    programa_id: 'Programa elegido al iniciar la jornada (D130); los árboles lo heredan en el formulario',
     lat: 'Latitud de donde se detectó la jornada (D122); nula si no se tocó «Detectar ubicación»',
     lng: 'Longitud de donde se detectó la jornada (D122)',
     gps_precision_m: 'Margen del GPS al detectar, en metros enteros (D122)',

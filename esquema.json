@@ -942,6 +942,15 @@
           "regla": "Dirección, parque o referencia (D120). Va al reporte bajo el nombre de la jornada"
         },
         {
+          "campo": "programa_id",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "id de catálogo tipo programa",
+          "pantalla": "Programa (Iniciar jornada)",
+          "regla": "Obligatorio al iniciar (D130). Cada árbol lo hereda en el formulario y puede cambiarlo; el dato del árbol sigue siendo plantaciones.programa_id"
+        },
+        {
           "campo": "lat",
           "tipo": "real",
           "nulo": true,

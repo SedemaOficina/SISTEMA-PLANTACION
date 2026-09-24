@@ -1319,3 +1319,21 @@ esconde cuando no aplica. Pruebas: orden de atajos, acordeón, cabo dentro del a
 
 **Verificación:** 421 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.51.
+
+## Bloque 71 — Guardar en un toque (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.52.
+
+**Qué cambió (D130).** `index.html`: Programa en «Iniciar jornada», franja `#franja-guardado`,
+`#especies-recientes`, `#revision-avisos`; sin `dlg-guardado`. `formulario.js`:
+`enviarFormulario()`, `avisos()`, `revisar(avisos)`, `mostrarGuardado` como franja,
+`enviarTrasGuardar` sobre la franja, `pintarEspeciesRecientes()`, `heredarPrograma()`;
+`guardar` sin la pregunta de distancia. `jornada-activa.js`: `llenarProgramas()`, programa en la
+jornada y en la franja; `preparar` hereda programa y pinta especies; `confirmarDistancia`
+retirado. `app.js`: comprobación de `franja-guardado`. `estilos.css`: franja, avisos, chips
+recientes. `esquema.json`, `espejo.js`, `auditoria.py`, `MAPEO-CAMPOS.md`, diccionario:
+`jornadas.programa_id`. Pruebas: programa obligatorio en la jornada y heredado; ficha sólo con
+aviso (precisión ±40 m); franja de guardado con envío y folio; especies recientes; ayudantes
+`iniciar_jornada` y `registrar` al flujo nuevo.
+
+**Verificación:** 422 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.52.

@@ -171,7 +171,7 @@ Quién, cuándo y qué, en cada alta, edición, eliminación, activación y desa
 Una jornada de plantación: se declara antes de registrar el primer árbol (D119). Agrupa los registros, lleva la conciliación y la revisión, y guarda los datos de cierre del reporte (antes en la tabla cierres, retirada en el bloque 62).
 
 - **Llave:** `id`. **Índices:** `cabo_id`, `fecha`, `estatus`. **Pantalla:** Nuevo registro → «Iniciar jornada»; Jornadas; Reportes → «Datos de cierre».
-- **Campos:** 31.
+- **Campos:** 32.
 
 | Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
 |---|---|---|---|---|---|---|
@@ -179,6 +179,7 @@ Una jornada de plantación: se declara antes de registrar el primer árbol (D119
 | `es_ficticio` | boolean | No | Sistema | true/false | No | Copia de CONFIG.ES_FICTICIO (D87) |
 | `nombre` | text | No | Persona | Texto libre, hasta 120 | Nombre de la jornada | Obligatorio al iniciar: el parque, la calle o el sitio. Es el nombre de la tarjeta en Jornadas y el «Jornada:» del reporte (D119) |
 | `ubicacion` | text | No | Persona | Texto libre, hasta 200; '' si no se escribe | Ubicación de la jornada | Dirección, parque o referencia (D120). Va al reporte bajo el nombre de la jornada |
+| `programa_id` | text | No | Persona | id de catálogo tipo programa | Programa (Iniciar jornada) | Obligatorio al iniciar (D130). Cada árbol lo hereda en el formulario y puede cambiarlo; el dato del árbol sigue siendo plantaciones.programa_id |
 | `lat` | real | Sí | Dispositivo | Grados decimales; nulo sin detección | Detectar ubicación de la jornada | Latitud de donde se tocó «Detectar ubicación» al iniciar (D122). No es la de ningún árbol |
 | `lng` | real | Sí | Dispositivo | Grados decimales; nulo sin detección | Detectar ubicación de la jornada | Longitud de la detección (D122) |
 | `gps_precision_m` | integer | Sí | Dispositivo | Metros enteros; nulo sin detección | (nota bajo el botón) | Margen del GPS al detectar (D122) |
@@ -455,6 +456,7 @@ CREATE TABLE jornadas (
   es_ficticio              boolean        NOT NULL,
   nombre                   text           NOT NULL,
   ubicacion                text           NOT NULL,
+  programa_id              text           NOT NULL,
   lat                      real           NULL,
   lng                      real           NULL,
   gps_precision_m          integer        NULL,

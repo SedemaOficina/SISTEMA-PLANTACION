@@ -80,7 +80,7 @@ SRP.app = {
       ['form-acceso', 'la pantalla de acceso'],
       ['vista-usuarios', 'la pantalla de usuarios'],
       ['vista-reportes', 'la pantalla de reportes'],
-      ['dlg-guardado', 'el aviso de registro guardado'],
+      ['franja-guardado', 'la franja de registro guardado'],
       ['revision-lista', 'la ficha de revisión'],
       ['espejo-campos', 'el espejo de campos de prueba']
     ].filter(([id]) => !document.getElementById(id)).map(([, que]) => que);
@@ -361,8 +361,6 @@ SRP.app = {
     this.el('btn-cat-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar</span>';
     this.el('btn-usr-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar</span>';
     const I = (id, icono, texto, tam) => { const b = this.el(id); if (b) b.innerHTML = SRP.ICONOS.svg(icono, tam || 18) + '<span>' + texto + '</span>'; };
-    I('btn-registro-nuevo', 'mas', 'Agregar registro nuevo');
-    I('btn-ir-registros', 'registros', 'Ver mis registros');
     I('btn-pdf', 'reportes', 'Generar reporte');
     I('btn-cierre-generar', 'ver', 'Ver vista previa', 20);
     I('btn-previa-corregir', 'lapiz', 'Corregir datos de cierre');

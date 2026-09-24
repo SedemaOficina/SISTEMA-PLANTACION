@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#9D2148">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.51">
-<link rel="preload" as="image" href="assets/encabezado-ru-movil.png?v=0.6.51">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.52">
+<link rel="preload" as="image" href="assets/encabezado-ru-movil.png?v=0.6.52">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.51">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.51">
-<link rel="stylesheet" href="css/estilos.css?v=0.6.51">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.52">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.52">
+<link rel="stylesheet" href="css/estilos.css?v=0.6.52">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -21,8 +21,8 @@
   <div class="encabezado-interior">
     <!-- Logotipo del Programa de Reforestación Urbana (D90): completo en pantalla ancha; en teléfono, el emblema y el nombre del programa -->
     <picture>
-      <source media="(max-width: 480px)" srcset="assets/encabezado-ru-movil.png?v=0.6.51">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru.png?v=0.6.51" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Reforestación Urbana">
+      <source media="(max-width: 480px)" srcset="assets/encabezado-ru-movil.png?v=0.6.52">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru.png?v=0.6.52" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» (D80) -->
@@ -128,6 +128,9 @@
         </div>
         <div class="campo"><label for="ini-ubicacion">Ubicación de la jornada</label>
           <input id="ini-ubicacion" maxlength="200" placeholder="Dirección, parque o referencia; p. ej. Av. Insurgentes Sur 1500, Benito Juárez" autocomplete="off"></div>
+        <!-- El programa es de la jornada (D130): los árboles lo heredan; se puede cambiar por árbol -->
+        <div class="campo"><label for="ini-programa">Programa <span class="obligatorio" aria-hidden="true">*</span></label>
+          <select id="ini-programa" required></select></div>
         <div class="campo"><label for="ini-fecha">Fecha de la jornada de plantación <span class="obligatorio" aria-hidden="true">*</span></label>
           <!-- Arranca vacía y «Hoy» la pone de un toque, como en el resto del sistema (D29, D98) -->
           <div class="fecha-con-hoy"><input type="date" id="ini-fecha" required data-vacio="Seleccione la fecha"><button type="button" id="btn-ini-hoy" class="btn btn-secundario btn-chico">Hoy</button></div></div>
@@ -149,6 +152,15 @@
       </div>
     </div>
 
+    <!-- El último árbol guardado (D130): sustituye al aviso modal; el formulario ya está listo para el siguiente -->
+    <div id="franja-guardado" class="franja-guardado" role="status" aria-live="polite" hidden>
+      <p id="franja-guardado-texto"></p>
+      <div class="franja-guardado-acciones">
+        <button type="button" id="btn-guardado-corregir" class="btn btn-editar btn-chico"></button>
+        <button type="button" id="btn-guardado-ver" class="btn btn-secundario btn-chico"></button>
+        <button type="button" id="btn-guardado-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Ocultar"></button>
+      </div>
+    </div>
     <!-- En computadora, ubicación a la izquierda y datos a la derecha; en teléfono, uno bajo otro (D109) -->
     <div class="registrar-columnas" id="registrar-columnas">
     <div class="registrar-ubicacion">
@@ -197,6 +209,8 @@
 
       <div class="campo combo">
         <label for="campo-especie" id="etq-especie">Especie <span class="obligatorio" aria-hidden="true">*</span></label>
+        <!-- Las últimas especies de la jornada, a un toque (D130) -->
+        <div id="especies-recientes" class="chips chips-recientes" role="group" aria-label="Últimas especies de la jornada" hidden></div>
         <input id="campo-especie" role="combobox" required aria-autocomplete="list" aria-expanded="false"
                aria-controls="lista-especies" autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off" placeholder="Toque para ver la lista o escriba para buscar">
         <ul id="lista-especies" class="combo-lista" role="listbox" aria-labelledby="etq-especie" hidden></ul>
@@ -515,6 +529,8 @@
       <button type="button" id="btn-resumen-cerrar" class="btn btn-icono-solo btn-texto" aria-label="Cerrar sin guardar"></button>
     </div>
   </div>
+  <!-- La ficha sólo se abre cuando hay algo que revisar (D130): aquí se dice qué -->
+  <div id="revision-avisos" class="revision-avisos" hidden></div>
   <div id="revision-mapa" class="revision-mapa" role="img" aria-label="Mapa con la ubicación del árbol"></div>
   <dl id="revision-lista" class="revision-lista"></dl>
   <!-- Guardar al pie, fijo y a todo el ancho: al alcance del pulgar y siempre a la vista (D99, sustituye D74 en esta ficha) -->
@@ -523,17 +539,7 @@
   </div>
 </dialog>
 
-<dialog id="dlg-guardado" aria-labelledby="dlg-guardado-titulo">
-  <h2 id="dlg-guardado-titulo" class="titulo-exito"></h2>
-  <!-- Lo que acaba de quedar registrado, de lo que la persona reconoce a lo que el sistema confirma (D127) -->
-  <p id="dlg-guardado-detalle" class="guardado-especie"></p>
-  <dl class="guardado-datos" id="dlg-guardado-datos"></dl>
-  <p id="dlg-guardado-dispositivo" class="guardado-envio" aria-live="polite"></p>
-  <div class="acciones">
-    <button type="button" id="btn-registro-nuevo" class="btn btn-primario">Agregar registro nuevo</button>
-    <button type="button" id="btn-ir-registros" class="btn btn-secundario">Ver mis registros</button>
-  </div>
-</dialog>
+<!-- El aviso «Registro guardado» dejó de ser modal (D130): es la franja #franja-guardado -->
 
 <!-- Cambiar de jornada activa (D119): las abiertas de quien entró, o iniciar otra -->
 <dialog id="dlg-cambiar-jornada" aria-labelledby="dlg-cambiar-titulo">
@@ -769,42 +775,42 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.6.51"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.51"></script>
-<script src="vendor/turf-pip.min.js?v=0.6.51"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.6.51"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.51"></script>
+<script src="vendor/leaflet.js?v=0.6.52"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.52"></script>
+<script src="vendor/turf-pip.min.js?v=0.6.52"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.6.52"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.52"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.6.51"></script>
-<script src="js/util.js?v=0.6.51"></script>
-<script src="js/iconos.js?v=0.6.51"></script>
+<script src="js/config.js?v=0.6.52"></script>
+<script src="js/util.js?v=0.6.52"></script>
+<script src="js/iconos.js?v=0.6.52"></script>
 <!-- Capas territoriales del SIA, compactadas por pruebas/generar_capas.py desde assets/fuentes/ -->
-<script src="assets/capa-alcaldias.js?v=0.6.51"></script>
-<script src="assets/capa-uga.js?v=0.6.51"></script>
-<script src="assets/capa-colonias.js?v=0.6.51"></script>
-<script src="assets/catalogo-especies.js?v=0.6.51"></script>
-<script src="js/datos-ficticios.js?v=0.6.51"></script>
-<script src="js/permisos.js?v=0.6.51"></script>
-<script src="js/derivacion.js?v=0.6.51"></script>
-<script src="js/almacen.js?v=0.6.51"></script>
-<script src="js/sesion.js?v=0.6.51"></script>
-<script src="js/referencias.js?v=0.6.51"></script>
-<script src="js/folio.js?v=0.6.51"></script>
-<script src="js/conexion.js?v=0.6.51"></script>
-<script src="js/envio.js?v=0.6.51"></script>
-<script src="js/mapa.js?v=0.6.51"></script>
-<script src="js/foto.js?v=0.6.51"></script>
-<script src="js/jornada-activa.js?v=0.6.51"></script>
-<script src="js/formulario.js?v=0.6.51"></script>
+<script src="assets/capa-alcaldias.js?v=0.6.52"></script>
+<script src="assets/capa-uga.js?v=0.6.52"></script>
+<script src="assets/capa-colonias.js?v=0.6.52"></script>
+<script src="assets/catalogo-especies.js?v=0.6.52"></script>
+<script src="js/datos-ficticios.js?v=0.6.52"></script>
+<script src="js/permisos.js?v=0.6.52"></script>
+<script src="js/derivacion.js?v=0.6.52"></script>
+<script src="js/almacen.js?v=0.6.52"></script>
+<script src="js/sesion.js?v=0.6.52"></script>
+<script src="js/referencias.js?v=0.6.52"></script>
+<script src="js/folio.js?v=0.6.52"></script>
+<script src="js/conexion.js?v=0.6.52"></script>
+<script src="js/envio.js?v=0.6.52"></script>
+<script src="js/mapa.js?v=0.6.52"></script>
+<script src="js/foto.js?v=0.6.52"></script>
+<script src="js/jornada-activa.js?v=0.6.52"></script>
+<script src="js/formulario.js?v=0.6.52"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.6.51"></script>
-<script src="js/registros.js?v=0.6.51"></script>
-<script src="js/galeria.js?v=0.6.51"></script>
-<script src="js/jornadas.js?v=0.6.51"></script>
-<script src="js/croquis.js?v=0.6.51"></script>
-<script src="js/reportes.js?v=0.6.51"></script>
-<script src="js/catalogos.js?v=0.6.51"></script>
-<script src="js/usuarios.js?v=0.6.51"></script>
-<script src="js/app.js?v=0.6.51"></script>
+<script src="js/espejo.js?v=0.6.52"></script>
+<script src="js/registros.js?v=0.6.52"></script>
+<script src="js/galeria.js?v=0.6.52"></script>
+<script src="js/jornadas.js?v=0.6.52"></script>
+<script src="js/croquis.js?v=0.6.52"></script>
+<script src="js/reportes.js?v=0.6.52"></script>
+<script src="js/catalogos.js?v=0.6.52"></script>
+<script src="js/usuarios.js?v=0.6.52"></script>
+<script src="js/app.js?v=0.6.52"></script>
 </body>
 </html>

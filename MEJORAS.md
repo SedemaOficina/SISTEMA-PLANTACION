@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.51 (Bloque 70)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.52 (Bloque 71)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -98,6 +98,10 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M87 | Petición de Liber | Fichas de Jornadas en orden: nombre → «Hoy»/«Ayer» + fecha + «Jornada n de n» → estado muy visible (Abierta verde / Cerrada pizarra con candado + resultado de revisión con color) → alcaldía · colonia · ubicación → cuatro cifras (árboles, especies, por revisar, bien) → cabo (coordinador/admin). Miniatura con puntos ámbar/rojo según aviso | Alta | 0.6.50 (B69) | Jornadas: mirar las fichas | Lista de jornadas |
 | M88 | Petición de Liber | Filtros de Jornadas: Todas · Hoy · Un día · Un periodo (Desde/Hasta + Aplicar); Año, Mes y Cabo plegados en «Más filtros» | Alta | 0.6.50 (B69) | Jornadas: probar cada atajo y abrir «Más filtros» | Filtros |
 | M89 | Petición de Liber | Registros: mismos atajos que Jornadas (Todos · Hoy · Un día · Un periodo) y Año, Mes y Cabo plegados en «Más filtros»; Fotografías se queda como está | Media | 0.6.51 (B70) | Registros: abrir «Más filtros» | Filtros |
+| M90 | Opinión aceptada | Guardar en un toque: un solo «Guardar»; la ficha «Revise antes de guardar» solo se abre cuando hay algo que revisar (precisión no buena, especie fuera de catálogo, posible duplicado, árbol lejos de la jornada) o al editar, y dice arriba qué revisar. La foto es opcional sin aviso | Alta | 0.6.52 (B71) | Registrar un árbol con GPS bueno: se guarda directo; con ±40 m se abre la ficha | Ficha con avisos |
+| M91 | Opinión aceptada | Sin modal «Registro guardado»: franja verde arriba del formulario limpio («Guardado: especie · folio · lugar · envío») con «Corregir» y «Ver»; el foco queda en «Registrar ubicación» | Alta | 0.6.52 (B71) | Guardar un árbol | Franja de guardado |
+| M92 | Opinión aceptada | Programa a nivel jornada: se elige en «Iniciar jornada», va en la franja y se hereda en cada árbol (cambiable) | Alta | 0.6.52 (B71) | Iniciar jornada: campo Programa; el formulario ya lo trae | Iniciar jornada |
+| M93 | Opinión aceptada | Últimas tres especies de la jornada como atajos encima del buscador | Media | 0.6.52 (B71) | Registrar dos árboles: aparecen los chips | Chips de especies |
 
 ## 2. Por hacer
 

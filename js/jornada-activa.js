@@ -89,6 +89,7 @@ SRP.activa = {
     if (ver) {
       this.el('ini-nombre').value = ''; this.el('ini-ubicacion').value = ''; this.el('ini-comentarios').value = '';
       this.punto = null; this.pintarDetectar();
+      this.llenarProgramas();
       // La fecha se elige a propósito (D29): vacía, con «Hoy» a un toque
       this.el('ini-fecha').value = '';
       this.el('ini-fecha').dispatchEvent(new Event('change', { bubbles: true }));
@@ -107,6 +108,7 @@ SRP.activa = {
       this.el('registrar-columnas').hidden = false;
       this.pintarFranja(j, await (j ? this.registrosDe(j) : []), true);
       SRP.formulario.el('campo-fecha').value = editando.fecha_plantacion;
+      await SRP.formulario.pintarEspeciesRecientes();
       return;
     }
     if (!this.jornada || this.jornada.estatus !== 'abierta') this.jornada = (await this.abiertas())[0] || null;
@@ -114,8 +116,10 @@ SRP.activa = {
     this.el('panel-iniciar-jornada').hidden = true;
     this.el('registrar-columnas').hidden = false;
     this.pintarFranja(this.jornada, await this.registrosDe(this.jornada), false);
-    // La fecha de plantación se hereda (D119)
+    // La fecha de plantación se hereda (D119); el programa y las especies recientes también (D130)
     SRP.formulario.el('campo-fecha').value = this.jornada.fecha;
+    SRP.formulario.heredarPrograma();
+    await SRP.formulario.pintarEspeciesRecientes();
   },
 
   pintarFranja(j, registros, editando) {
@@ -128,9 +132,18 @@ SRP.activa = {
     f.dataset.tono = atrasada ? 'alerta' : '';
     this.el('franja-jornada-texto').innerHTML =
       '<span class="franja-jornada-titulo">' + (editando ? 'Registro de la jornada ' : 'Jornada: ') + '<strong>' + esc(j.nombre) + '</strong></span>' +
-      '<span class="franja-jornada-datos">' + esc(SRP.util.formatearFecha(j.fecha)) + (j.ubicacion ? ' · ' + esc(j.ubicacion) : '') + (this.lugarDe(j) ? ' · ' + esc(this.lugarDe(j)) : '') + ' · ' + n + (n === 1 ? ' árbol' : ' árboles') +
+      '<span class="franja-jornada-datos">' + esc(SRP.util.formatearFecha(j.fecha)) + (j.ubicacion ? ' · ' + esc(j.ubicacion) : '') + (this.lugarDe(j) ? ' · ' + esc(this.lugarDe(j)) : '') + (j.programa_id ? ' · ' + esc(SRP.ref.nombreCatalogo(j.programa_id)) : '') + ' · ' + n + (n === 1 ? ' árbol' : ' árboles') +
       (j.estatus === 'cerrada' ? ' · cerrada' : '') + (atrasada ? ' · <b>no es de hoy</b>' : '') + '</span>';
     this.el('franja-jornada-acciones').hidden = !!editando;
+  },
+
+  /* El programa se elige al iniciar la jornada (D130): mismas opciones que el formulario, sin preselección */
+  llenarProgramas() {
+    const sel = this.el('ini-programa');
+    const opciones = SRP.ref.deTipo('programa', true).sort((a, b) => (b.clave === 'REFOR_URBANA') - (a.clave === 'REFOR_URBANA'));
+    sel.innerHTML = '<option value="">Seleccione un programa</option>' + opciones.map(o => '<option value="' + o.id + '">' + SRP.util.escapar(o.nombre) + '</option>').join('');
+    sel.value = '';
+    sel.removeAttribute('aria-invalid');
   },
 
   /* ---------- Ubicación de la jornada (D122) ---------- */
@@ -194,12 +207,14 @@ SRP.activa = {
     const ubicacion = this.el('ini-ubicacion').value.trim();
     const fecha = this.el('ini-fecha').value;
     const comentarios = this.el('ini-comentarios').value.trim();
+    const programa_id = this.el('ini-programa').value;
     const errores = [];
     if (!nombre) errores.push(['ini-nombre', 'Escriba el nombre de la jornada: el parque, la calle o el sitio.']);
+    if (!programa_id) errores.push(['ini-programa', 'Elija el programa de la jornada.']);
     if (!fecha) errores.push(['ini-fecha', 'Indique la fecha de la jornada.']);
     else if (fecha > SRP.util.fechaHoy()) errores.push(['ini-fecha', 'La fecha no puede ser posterior a hoy.']);
     const caja = this.el('ini-errores');
-    ['ini-nombre', 'ini-fecha'].forEach(id => this.el(id).removeAttribute('aria-invalid'));
+    ['ini-nombre', 'ini-programa', 'ini-fecha'].forEach(id => this.el(id).removeAttribute('aria-invalid'));
     if (errores.length) {
       caja.hidden = false;
       caja.innerHTML = '<ul>' + errores.map(([id, t]) => '<li><a href="#' + id + '">' + SRP.util.escapar(t) + '</a></li>').join('') + '</ul>';
@@ -213,7 +228,7 @@ SRP.activa = {
     const p = this.punto, t = p ? p.t : {};
     const j = Object.assign({
       id: SRP.util.generarId(), es_ficticio: SRP.CONFIG.ES_FICTICIO,
-      nombre, ubicacion, fecha, comentarios, cabo_id: u.id, estatus: 'abierta',
+      nombre, ubicacion, fecha, comentarios, programa_id, cabo_id: u.id, estatus: 'abierta',
       // Ubicación detectada (D122): nula si no se tocó el botón
       lat: p ? p.lat : null, lng: p ? p.lng : null, gps_precision_m: p && p.precision != null ? Math.round(p.precision) : null,
       alcaldia_cve: t.alcaldia_cve || null, alcaldia: t.alcaldia || null, colonia_cve: t.colonia_cve || null, colonia: t.colonia || null,
@@ -278,16 +293,6 @@ SRP.activa = {
     return false;
   },
 
-  /* Antes de guardar: si el punto queda lejos de los demás de la jornada, se pregunta (D119).
-     Devuelve true si se puede guardar. */
-  async confirmarDistancia(lat, lng) {
-    const j = this.jornada; if (!j) return true;
-    const regs = await this.registrosDe(j);
-    if (!regs.length) return true;
-    const d = Math.min(...regs.map(r => SRP.jornadas.distancia({ lat, lng }, r)));
-    if (d <= SRP.CONFIG.JORNADA.SEPARAR_M) return true;
-    const km = d >= 1000 ? (d / 1000).toFixed(1) + ' km' : Math.round(d) + ' m';
-    return SRP.app.confirmar('Este árbol queda a ' + km + ' de los demás de la jornada «' + j.nombre + '». ¿Es de esta jornada? ' +
-      'Si es de otro sitio, cancele, toque «Cambiar de jornada» arriba e inicie otra jornada.', 'Sí, es de esta jornada', 'palomita');
-  }
+  /* La pregunta por distancia de D119 pasó a ser un aviso de la ficha de revisión (D130): ver
+     SRP.formulario.avisos(). */
 };

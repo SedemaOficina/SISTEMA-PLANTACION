@@ -4,7 +4,7 @@ window.SRP = window.SRP || {};
 SRP.formulario = {
   OTRA: '__otra__',
   estado: { especieId: null, foto: null, fotoId: null, fotoNombre: '', fotoBytes: 0,
-            territorio: null, editando: null, idPrevisto: null },
+            territorio: null, editando: null, idPrevisto: null, ultimoGuardado: null },
 
   el(id) { return document.getElementById(id); },
 
@@ -49,8 +49,28 @@ SRP.formulario = {
       this.el('etq-foto').focus();
     });
     this.el('form-plantacion').addEventListener('submit', (e) => {
-      if (!SRP.activa.exigir()) { e.preventDefault(); return; } e.preventDefault(); this.revisar(); });
-    this.el('btn-revisar').innerHTML = SRP.ICONOS.svg('disco', 22) + '<span>Revisar y guardar</span>';
+      if (!SRP.activa.exigir()) { e.preventDefault(); return; } e.preventDefault(); this.enviarFormulario(); });
+    // Un solo «Guardar» (D130): la ficha de revisión sólo se abre cuando hay algo que revisar
+    this.el('btn-revisar').innerHTML = SRP.ICONOS.svg('disco', 22) + '<span>Guardar</span>';
+    this.el('btn-guardado-corregir').innerHTML = SRP.ICONOS.svg('lapiz', 16) + '<span>Corregir</span>';
+    this.el('btn-guardado-ver').innerHTML = SRP.ICONOS.svg('ver', 16) + '<span>Ver</span>';
+    this.el('btn-guardado-cerrar').innerHTML = SRP.ICONOS.svg('cerrar', 18);
+    this.el('btn-guardado-cerrar').addEventListener('click', () => { this.el('franja-guardado').hidden = true; });
+    this.el('btn-guardado-corregir').addEventListener('click', async () => {
+      const r = this.estado.ultimoGuardado && await SRP.almacen.uno('plantaciones', this.estado.ultimoGuardado);
+      if (r) { this.el('franja-guardado').hidden = true; this.editar(r); }
+    });
+    this.el('btn-guardado-ver').addEventListener('click', async () => {
+      const r = this.estado.ultimoGuardado && await SRP.almacen.uno('plantaciones', this.estado.ultimoGuardado);
+      if (r) SRP.registros.verDetalle(r);
+    });
+    this.el('especies-recientes').addEventListener('click', (e) => {
+      const b = e.target.closest('.chip'); if (!b) return;
+      this.elegirEspecie(b.dataset.id);
+      this.el('campo-especie').removeAttribute('aria-invalid');
+      this.pintarEspeciesRecientes();
+      if (SRP.espejo) SRP.espejo.refrescar();
+    });
     this.el('btn-resumen-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar</span>';
     this.el('btn-resumen-cerrar').innerHTML = SRP.ICONOS.svg('cerrar', 22);
     this.el('btn-resumen-cerrar').addEventListener('click', () => this.el('dlg-resumen').close());
@@ -66,12 +86,6 @@ SRP.formulario = {
     });
     this.el('btn-resumen-guardar').addEventListener('click', () => this.guardar());
     this.el('btn-cancelar-edicion').addEventListener('click', () => { this.limpiar(); SRP.app.mostrarVista(SRP.jornadas.volverAlDetalle ? 'jornadas' : 'registros'); });
-    this.el('btn-registro-nuevo').addEventListener('click', () => this.nuevoRegistro());
-    this.el('btn-ir-registros').addEventListener('click', () => {
-      this.el('dlg-guardado').close();
-      this.estado.idPrevisto = null;
-      SRP.app.mostrarVista('registros');
-    });
   },
 
   // Se llama cada vez que se entra a la vista Registrar
@@ -85,6 +99,25 @@ SRP.formulario = {
     SRP.activa.preparar().then(() => { if (SRP.espejo) SRP.espejo.refrescar(); });
     SRP.mapa.refrescar();
     if (SRP.espejo) SRP.espejo.refrescar();
+  },
+
+  /* Las últimas especies de la jornada activa, a un toque (D130): hasta tres, la más reciente
+     primero; «Otra especie» no se ofrece porque cada una es distinta. */
+  async pintarEspeciesRecientes() {
+    const caja = this.el('especies-recientes');
+    const j = this.estado.editando ? null : SRP.activa.jornada;
+    const regs = j ? (await SRP.activa.registrosDe(j)).filter(r => r.especie_id).sort((a, b) => String(b.fecha_registro).localeCompare(String(a.fecha_registro))) : [];
+    const ids = [...new Set(regs.map(r => r.especie_id))].slice(0, 3);
+    caja.hidden = !ids.length;
+    caja.innerHTML = ids.map(id => '<button type="button" class="chip" data-id="' + id + '" aria-pressed="' + (this.estado.especieId === id) + '">' +
+      SRP.util.escapar((SRP.ref.catalogoPorId[id] || {}).nombre || id) + '</button>').join('');
+  },
+
+  // El programa de la jornada se hereda en el formulario (D130); se puede cambiar por árbol
+  heredarPrograma() {
+    const j = this.estado.editando ? null : SRP.activa.jornada;
+    const sel = this.el('campo-programa');
+    if (j && j.programa_id && !sel.value) { sel.value = j.programa_id; if (sel.value !== j.programa_id) sel.value = ''; this.pintarProgramas(); }
   },
 
   llenarProgramas(actualId) {
@@ -355,10 +388,51 @@ SRP.formulario = {
     };
   },
 
-  async revisar() {
+  /* Al tocar «Guardar» (D130): con errores se señalan; con algo que revisar (precisión que no es
+     buena, especie fuera del catálogo, posible duplicado, árbol lejos de la jornada) o en edición,
+     se abre la ficha con esos avisos arriba; si no, se guarda de una vez. */
+  async enviarFormulario() {
     const errores = this.validar();
     this.mostrarErrores(errores);
     if (errores.length) return;
+    // El identificador se fija aquí y es el que se guarda, pase o no por la ficha
+    if (!this.estado.editando && !this.estado.idPrevisto) this.estado.idPrevisto = SRP.util.generarId();
+    const avisos = await this.avisos(this.valores());
+    if (avisos.length || this.estado.editando) { await this.revisar(avisos); return; }
+    await this.guardar();
+  },
+
+  /* Lo que amerita mirar la ficha antes de guardar. Devuelve [{ tipo, texto }]. La fotografía es
+     opcional y nunca avisa (decisión de Liber, D130). */
+  async avisos(v) {
+    const salida = [];
+    if (v.punto_origen === 'gps' && v.gps_precision_m != null) {
+      const n = SRP.mapa.nivelPrecision(v.gps_precision_m);
+      if (n.nivel !== 'buena') salida.push({ tipo: 'precision', texto: n.texto + ' (±' + Math.round(v.gps_precision_m) + ' m): revise en el mapa que el punto esté en el árbol.' });
+    }
+    if (this.estado.especieId === this.OTRA) salida.push({ tipo: 'especie', texto: 'Especie fuera del catálogo: «' + v.especie_otra + '». Confirme que no esté en la lista con otro nombre.' });
+    const j = this.estado.editando ? (this.estado.jornadaEditando || null) : SRP.activa.jornada;
+    if (j) {
+      const id = this.estado.editando ? this.estado.editando.id : null;
+      const regs = (await SRP.activa.registrosDe(j)).filter(r => r.id !== id);
+      if (regs.length) {
+        const cfg = SRP.CONFIG.JORNADA;
+        const dist = regs.map(r => ({ r, d: SRP.jornadas.distancia({ lat: v.lat, lng: v.lng }, r) }));
+        const cerca = dist.filter(x => x.d < cfg.DUPLICADO_M).sort((a, b) => a.d - b.d)[0];
+        if (cerca) salida.push({ tipo: 'duplicado', texto: 'Posible duplicado: a ' + cerca.d.toFixed(1) + ' m de ' + SRP.ref.especieDe(cerca.r).comun + ' (' + SRP.folio.texto(cerca.r) + '). Si es otro árbol, guarde; si es el mismo, cancele.' });
+        const min = Math.min(...dist.map(x => x.d));
+        if (min > cfg.SEPARAR_M) salida.push({ tipo: 'lejos', texto: 'Queda a ' + (min >= 1000 ? (min / 1000).toFixed(1) + ' km' : Math.round(min) + ' m') + ' de los demás árboles de la jornada «' + j.nombre + '». Si es de otro sitio, cancele y cambie de jornada.' });
+      }
+    }
+    return salida;
+  },
+
+  async revisar(avisos) {
+    avisos = avisos || [];
+    const cajaAvisos = this.el('revision-avisos');
+    cajaAvisos.hidden = !avisos.length;
+    cajaAvisos.innerHTML = avisos.length ? '<p class="revision-avisos-titulo">' + (avisos.length === 1 ? 'Hay algo que revisar' : 'Hay ' + avisos.length + ' cosas que revisar') + '</p><ul>' +
+      avisos.map(a => '<li data-tipo="' + a.tipo + '">' + SRP.util.escapar(a.texto) + '</li>').join('') + '</ul>' : '';
 
     // El identificador se fija aquí y es el que se guarda: así la ficha muestra el real.
     if (!this.estado.idPrevisto) this.estado.idPrevisto = SRP.util.generarId();
@@ -509,12 +583,11 @@ SRP.formulario = {
       } else {
         const nuevo = this.registroPrevisto(ahora);
         if (!nuevo.jornada_id) { SRP.util.anunciar('No hay jornada activa. Inicie una antes de guardar.', 'alerta'); return; }
-        // Un árbol lejos de los demás de la jornada se pregunta antes de guardar (D119)
-        if (!(await SRP.activa.confirmarDistancia(nuevo.lat, nuevo.lng))) { this.el('dlg-resumen').close(); return; }
+        // La distancia a los demás de la jornada ya se avisó en la ficha (D130, supera la pregunta de D119)
         await SRP.almacen.guardarConBitacora('plantaciones', nuevo, SRP.bitacora.entrada('CREADO', 'plantacion', nuevo.id));
-        this.el('dlg-resumen').close();
+        if (this.el('dlg-resumen').open) this.el('dlg-resumen').close();
         this.mostrarGuardado(nuevo);
-        SRP.activa.preparar();   // la franja cuenta el árbol nuevo (D119)
+        await SRP.activa.preparar();   // la franja cuenta el árbol nuevo (D119) y repinta programa y especies recientes
         // Con datos de prueba, el registro sale en seguida si hay señal (D111) y recibe folio (D110)
         if (SRP.envio.simulado()) await this.enviarTrasGuardar(nuevo.id);
       }
@@ -527,62 +600,45 @@ SRP.formulario = {
 
   /* ---------- Después de guardar ---------- */
 
-  // En campo se registran varios árboles seguidos, así que el paso siguiente se ofrece
-  // explícitamente en vez de dejar el formulario a medio limpiar sin decir nada.
+  /* En campo se registran muchos árboles seguidos (D130): al guardar, el formulario queda en
+     blanco y listo, y arriba una franja dice qué acaba de quedar registrado —especie, folio,
+     lugar y envío— con «Corregir» (abre ese registro en edición) y «Ver». Sin modal. */
   mostrarGuardado(registro) {
     const esp = SRP.ref.especieDe(registro);
     const esc = SRP.util.escapar;
-    this.el('dlg-guardado-titulo').innerHTML = SRP.ICONOS.svg('palomita', 22) + '<span>Registro guardado</span>';
-    // Orden (D127): la especie que reconoce, el folio que citará, la jornada a la que quedó pegado,
-    // dónde cayó el punto y cómo se obtuvo; al final, el envío. Sin identificador ni fecha suelta.
-    this.el('dlg-guardado-detalle').innerHTML = '<strong>' + esc(esp.comun) + '</strong>' + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : '');
-    this.pintarDatosGuardado(registro);
-    this.el('dlg-guardado').showModal();
-    this.el('btn-registro-nuevo').focus();
-    // Quedó en este dispositivo y cuántos van (D83); la pastilla del encabezado se pone al día.
-    // Con el envío simulado lo dice enviarTrasGuardar (D111)
-    this.el('dlg-guardado-dispositivo').textContent = '';
-    if (SRP.envio.simulado()) return;
-    SRP.conexion.refrescar().then(async () => {
-      const n = await SRP.conexion.contarGuardados();
-      if (n === null) return;
-      this.el('dlg-guardado-dispositivo').textContent = 'Quedó guardado en este dispositivo. ' +
-        (n === 1 ? 'Es el primero.' : 'Ya son ' + n + '.') + (SRP.conexion.enLinea() ? '' : ' No hace falta internet para seguir.');
-    });
-  },
-
-  pintarDatosGuardado(registro) {
-    const esc = SRP.util.escapar;
-    const lugar = [registro.alcaldia ? 'Alcaldía ' + registro.alcaldia : SRP.ref.alcaldia(null), registro.colonia ? 'Col. ' + registro.colonia : ''].filter(Boolean).join(' · ');
-    const filas = [
-      ['Folio', '<span class="folio-provisional" id="dlg-guardado-folio">' + esc(SRP.folio.textoLargo(registro)) + '</span>'],
-      ['Jornada', esc(this.nombreJornada()) + ' · ' + esc(SRP.util.formatearFecha(registro.fecha_plantacion))],
-      ['Lugar', esc(lugar)],
-      ['Cómo se obtuvo', this.textoOrigenRevision(registro, false)]
-    ];
-    this.el('dlg-guardado-datos').innerHTML = filas.map(([k, v]) => '<div><dt>' + k + '</dt><dd>' + v + '</dd></div>').join('');
+    this.estado.ultimoGuardado = registro.id;
+    const lugar = [registro.alcaldia || '', registro.colonia ? 'Col. ' + registro.colonia : ''].filter(Boolean).join(' · ');
+    this.el('franja-guardado-texto').innerHTML = SRP.ICONOS.svg('palomita', 18) +
+      '<span class="franja-guardado-cuerpo"><strong>Guardado: ' + esc(esp.comun) + '</strong>' +
+      '<span class="franja-guardado-datos"><span id="franja-guardado-folio" class="folio-provisional">' + esc(SRP.folio.textoLargo(registro)) + '</span>' +
+      (lugar ? ' · ' + esc(lugar) : '') + ' · <span id="franja-guardado-envio">' + (SRP.envio.simulado() ? 'guardado en el teléfono' : 'guardado en este dispositivo') + '</span></span></span>';
+    const f = this.el('franja-guardado');
+    f.dataset.envio = ''; f.hidden = false;
+    this.limpiar();
+    SRP.mapa.refrescar();
+    this.el('btn-ubicacion').scrollIntoView({ block: 'center' });
+    this.el('btn-ubicacion').focus({ preventScroll: true });
+    SRP.util.anunciarSilencioso('Guardado: ' + esp.comun + '. Listo para el siguiente árbol.');
   },
 
   /* Lo que dice «Registro guardado» con el envío simulado (D111): «Enviando…» mientras sale, y
      luego enviado con su hora de recepción, o guardado en el teléfono y cuántos esperan. */
   async enviarTrasGuardar(id) {
-    const caja = this.el('dlg-guardado-dispositivo');
+    const franja = this.el('franja-guardado');
     const envio = SRP.envio;
-    if (SRP.conexion.enLinea()) { caja.dataset.envio = 'enviando'; caja.textContent = 'Enviando al servidor…'; }
+    const pinta = (estado, texto) => { if (this.estado.ultimoGuardado !== id) return; franja.dataset.envio = estado; const e = this.el('franja-guardado-envio'); if (e) e.textContent = texto; };
+    if (SRP.conexion.enLinea()) pinta('enviando', 'enviando…');
     await envio.enviar({ silencioso: true });
     const r = await SRP.almacen.uno('plantaciones', id);
     if (!r) return;
     const e = envio.leer();
     if (envio.estado(r, e) === 'recibido') {
-      this.el('dlg-guardado-folio').textContent = SRP.folio.textoLargo(r);
-      caja.dataset.envio = 'recibido';
-      caja.innerHTML = SRP.ICONOS.svg('palomita', 18) + '<span>Enviado al servidor (simulado). Recepción confirmada ' + SRP.util.escapar(envio.cuando(e.recibidos[r.id])) + '.</span>';
+      if (this.estado.ultimoGuardado === id) { const f = this.el('franja-guardado-folio'); if (f) f.textContent = SRP.folio.textoLargo(r); }
+      pinta('recibido', 'enviado ' + envio.cuando(e.recibidos[r.id]));
     } else {
       const pend = await envio.pendientesPropios();
       const n = pend ? pend.length : 1;
-      caja.dataset.envio = 'por_enviar';
-      caja.innerHTML = SRP.ICONOS.svg('sinSenal', 18) + '<span>Sin conexión: quedó guardado en el teléfono y se enviará solo cuando haya señal. ' +
-        (n === 1 ? 'Es el único por enviar.' : 'Registros por enviar: ' + n + '.') + ' Puede seguir registrando.</span>';
+      pinta('por_enviar', 'sin señal: se enviará solo' + (n > 1 ? ' (' + n + ' por enviar)' : ''));
     }
   },
 
@@ -590,14 +646,6 @@ SRP.formulario = {
      ubicación porque los árboles de una jornada suelen compartirlos; en campo eso se convierte
      en el dato del árbol anterior guardado sin que nadie lo note, y la coordenada heredada es
      el peor de los casos: se ve bien y está mal. Se prefiere volver a capturar. */
-  nuevoRegistro() {
-    this.el('dlg-guardado').close();
-    this.limpiar();
-    SRP.mapa.refrescar();
-    this.el('btn-ubicacion').scrollIntoView({ block: 'center' });
-    this.el('btn-ubicacion').focus();
-  },
-
   /* ---------- Edición ---------- */
   editar(registro) {
     this.limpiar();
