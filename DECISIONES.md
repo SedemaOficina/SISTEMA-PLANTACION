@@ -963,3 +963,8 @@
   Hoy · Un día · Un periodo** (Desde/Hasta con «Aplicar», como en Registros, D82) y **Año, Mes y
   Cabo** plegados en un acordeón «Más filtros» cuyo resumen dice lo elegido dentro; un día gana
   sobre año/mes y el rango limpia a los tres. Mockup aprobado por Liber, 23-09-2026.
+- **D129. Registros con los mismos filtros que Jornadas.** Atajos en el orden Todos · Hoy · Un día
+  · Un periodo, y Año, Mes y Cabo plegados en el acordeón «Más filtros», cuyo resumen dice lo
+  elegido; se esconde si dentro no queda nada que elegir (con «Un día» o «Un periodo» abiertos y
+  sin filtro por cabo). Se conserva la regla de D100: año/mes y Desde/Hasta nunca se ven a la
+  vez. Fotografías no cambia: sus filtros son pocos. Decidido por Liber, 23-09-2026.

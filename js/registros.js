@@ -268,6 +268,12 @@ SRP.registros = {
     this.el('filtro-un-dia').hidden = !pideDia;
     this.el('caja-filtro-anio').hidden = abierto || pideDia;
     this.el('caja-filtro-mes').hidden = abierto || pideDia;
+    // El acordeón «Más filtros» (D129): su resumen dice lo elegido dentro; si nada de lo suyo aplica, no se ve
+    const conCabo = !this.el('caja-filtro-cabo').hidden;
+    const dentro = [f.anio ? (f.mes ? SRP.util.nombreMes(f.anio + '-' + f.mes, true) + ' ' + f.anio : f.anio) : '', f.cabo ? SRP.ref.nombreUsuario(f.cabo) : ''].filter(Boolean);
+    const disponibles = [(abierto || pideDia) ? '' : 'año, mes', conCabo ? 'cabo' : ''].filter(Boolean);
+    this.el('filtro-mas-filtros').hidden = !disponibles.length;
+    this.el('filtro-mas-filtros-texto').textContent = dentro.length ? 'Más filtros: ' + dentro.join(' · ') : 'Más filtros: ' + disponibles.join(' y ');
     this.el('filtro-atajos').querySelector('[data-atajo="periodo"]').setAttribute('aria-expanded', String(abierto));
     this.el('filtro-atajos').querySelector('[data-atajo="dia"]').setAttribute('aria-expanded', String(pideDia));
   },

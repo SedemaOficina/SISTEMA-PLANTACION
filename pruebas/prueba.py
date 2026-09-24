@@ -590,6 +590,7 @@ with sync_playwright() as p:
     ok('Total: 4 ' in pg.inner_text('#registros-total') and pg.is_hidden('#registros-vacio'),'«Quitar filtros» devuelve los cuatro')
     ok(pg.is_hidden('#caja-filtro-cabo'),'el cabo no tiene filtro por cabo')
     ok(pg.locator('#filtro-anio option').count()==2,'el año lista Todos y 2026')
+    pg.evaluate("document.getElementById('filtro-mas-filtros').open = true")   # año y mes viven plegados (D129)
     pg.select_option('#filtro-anio','2026'); pg.wait_for_timeout(300)
     ok(pg.locator('#filtro-mes option').count()==4,'el mes lista sólo los tres con registros')
     pg.select_option('#filtro-mes','07'); pg.wait_for_timeout(300)
@@ -599,6 +600,7 @@ with sync_playwright() as p:
     pg.click('.chip[data-atajo=periodo]'); pg.wait_for_timeout(200)
     ok(pg.is_visible('#filtro-desde') and pg.get_attribute('.chip[data-atajo=periodo]','aria-expanded')=='true','«Un periodo» abre Desde/Hasta (D64)')
     ok(pg.is_hidden('#filtro-anio') and pg.is_hidden('#filtro-mes'),'con «Un periodo» abierto no se ven Año y Mes: nunca dos maneras del periodo a la vez (D100)')
+    ok(pg.is_visible('#filtro-mas-filtros') if not pg.evaluate("document.getElementById('caja-filtro-cabo').hidden") else pg.is_hidden('#filtro-mas-filtros'),'y el acordeón «Más filtros» se esconde si dentro no queda nada que elegir (D129)')
     ok(pg.evaluate("document.activeElement.id")!='filtro-desde','y no mueve el foco a Desde (D82)')
     pg.fill('#filtro-desde','2026-07-01'); pg.wait_for_timeout(200)
     ok(pg.evaluate("document.activeElement.id")!='filtro-hasta','al elegir Desde, el foco no pasa a Hasta (D82)')
@@ -620,7 +622,7 @@ with sync_playwright() as p:
        'Reiniciar filtros vuelve a Todos y limpia el rango (D104)')
     ok('Total: 4 ' in pg.inner_text('#registros-total'),'y lista todos: '+pg.inner_text('#registros-total'))
     ok(pg.is_hidden('#filtro-desde'),'y Reiniciar pliega Desde/Hasta')
-    ok([c for c in pg.eval_on_selector_all('#filtro-atajos .chip','b=>b.map(x=>x.dataset.atajo)')]==['hoy','dia','todos','periodo'],'los atajos son Hoy, Un día, Todos y Un periodo, en ese orden (D64, D113)')
+    ok([c for c in pg.eval_on_selector_all('#filtro-atajos .chip','b=>b.map(x=>x.dataset.atajo)')]==['todos','hoy','dia','periodo'],'los atajos son Todos, Hoy, Un día y Un periodo, en ese orden, como en Jornadas (D64, D113, D129)')
     # «Un día» (D113): una sola fecha, sin repetirla en Desde y Hasta
     abrir_filtros(pg)
     pg.click('#filtro-atajos [data-atajo=dia]'); pg.wait_for_timeout(300)
@@ -1059,7 +1061,7 @@ with sync_playwright() as p:
     ok('Fulana' in pg.inner_text('#lista-registros'),'con el nombre del cabo')
     ok(pg.locator('button[data-accion=editar]').count()>0 and pg.locator('button[data-accion=eliminar]').count()==0,'edita pero no elimina')
     ok(pg.is_hidden('.pestana[data-vista=catalogos]') and pg.is_hidden('.pestana[data-vista=usuarios]'),'no ve Catálogos ni Usuarios')
-    ok(pg.is_visible('#caja-filtro-cabo'),'sí tiene filtro por cabo')
+    ok(not pg.evaluate("document.getElementById('caja-filtro-cabo').hidden") and 'cabo' in pg.inner_text('#filtro-mas-filtros summary'),'sí tiene filtro por cabo, dentro de «Más filtros» (D129): '+pg.inner_text('#filtro-mas-filtros summary'))
     # Galería de fotografías (D118): coordinación y administración la ven; el cabo no
     ok(pg.is_visible('.pestana[data-vista=galeria]'),'el coordinador ve la sección Fotografías (D118)')
     pg.click('.pestana[data-vista=galeria]'); pg.wait_for_timeout(600)

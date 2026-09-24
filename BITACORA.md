@@ -1309,3 +1309,13 @@ contenido de la ficha, colores de estado, rango, año y mes.
 
 **Verificación:** 420 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.50.
+
+## Bloque 70 — «Más filtros» en Registros (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.51.
+
+**Qué cambió (D129).** `index.html`: atajos Todos/Hoy/Un día/Un periodo y acordeón con año, mes y
+cabo en Registros. `registros.js`: `sincronizarControles` pinta el resumen del acordeón y lo
+esconde cuando no aplica. Pruebas: orden de atajos, acordeón, cabo dentro del acordeón.
+
+**Verificación:** 421 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.51.

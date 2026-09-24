@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.50 (Bloque 69)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.51 (Bloque 70)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -97,6 +97,7 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M86 | Petición de Liber | «Registro guardado» dice, en orden: especie (común y científico), Folio, Jornada · fecha, Lugar (alcaldía · colonia), Cómo se obtuvo con la insignia de precisión, y al final el envío con su hora; sin identificador | Media | 0.6.49 (B68) | Guardar un árbol | Aviso de guardado |
 | M87 | Petición de Liber | Fichas de Jornadas en orden: nombre → «Hoy»/«Ayer» + fecha + «Jornada n de n» → estado muy visible (Abierta verde / Cerrada pizarra con candado + resultado de revisión con color) → alcaldía · colonia · ubicación → cuatro cifras (árboles, especies, por revisar, bien) → cabo (coordinador/admin). Miniatura con puntos ámbar/rojo según aviso | Alta | 0.6.50 (B69) | Jornadas: mirar las fichas | Lista de jornadas |
 | M88 | Petición de Liber | Filtros de Jornadas: Todas · Hoy · Un día · Un periodo (Desde/Hasta + Aplicar); Año, Mes y Cabo plegados en «Más filtros» | Alta | 0.6.50 (B69) | Jornadas: probar cada atajo y abrir «Más filtros» | Filtros |
+| M89 | Petición de Liber | Registros: mismos atajos que Jornadas (Todos · Hoy · Un día · Un periodo) y Año, Mes y Cabo plegados en «Más filtros»; Fotografías se queda como está | Media | 0.6.51 (B70) | Registros: abrir «Más filtros» | Filtros |
 
 ## 2. Por hacer
 
