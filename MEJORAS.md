@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.63 (Bloque 82)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.64 (Bloque 83)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -144,6 +144,11 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M133 | Auditoría UX (I3) | Las etiquetas de resultado llevan el icono de su tono: por revisar, completa, falta/sobra, en curso | Media | 0.6.63 (B82) | Jornadas › tarjetas | Etiquetas |
 | M134 | Hallazgo del bloque | Botones de dos en dos en un renglón desde 360 px: «Registrar árbol», «Generar PDF», «Regenerar PDF», «Cambiar» | Media | 0.6.63 (B82) | Ficha de jornada en un teléfono chico | Barra del pie |
 | M135 | Hallazgo del bloque | Con ratón, el botón principal ya no se vuelve guinda al pasar el puntero (resto de antes de D124); tampoco la zona de fotografía ni la opción del combo | Baja | 0.6.63 (B82) | En computadora, pasar el puntero por un botón principal | — |
+| M136 | Auditoría UX (Tb2) | La columna por la que está ordenada una tabla se distingue: fondo de acento y flecha en negritas | Baja | 0.6.64 (B83) | Catálogos › tocar «Nombre» | Tabla ordenada |
+| M137 | Auditoría UX (Tb3) | La cuenta sobre la tabla dice cuántos están inactivos: «76 especies · 3 inactivas», «3 usuarios · 1 inactivo» | Baja | 0.6.64 (B83) | Catálogos › Especies; Usuarios | — |
+| M138 | Auditoría UX (A2) | Modo sol en etiquetas de estado, cifras, pasos y avisos: borde de 2 px y negritas | Baja | 0.6.64 (B83) | Menú de la cuenta › Modo sol, en Jornadas | Tarjetas en modo sol |
+| M139 | Auditoría UX (A3) | Atajos en computadora: Ctrl+Enter guarda (o confirma la ficha de revisión) y 1–3 eligen las especies recientes; pista visible sólo con ratón | Baja | 0.6.64 (B83) | Nuevo registro en computadora | Pista de atajos |
+| M140 | Hallazgo del bloque | «Guardar» vuelve en cuanto el árbol queda en el teléfono; ya no espera al envío al servidor (antes se quedaba en «Guardando…» mientras duraba) | Alta | 0.6.64 (B83) | Guardar varios árboles seguidos con señal | — |
 
 ## 2. Por hacer
 

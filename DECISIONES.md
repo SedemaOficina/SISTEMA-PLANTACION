@@ -1114,3 +1114,16 @@
   D124: al pasar el puntero, el botón principal, la zona de la fotografía y la opción del combo se
   pintaban de guinda; ahora, del acento. Auditoría UX/UI del 24-09-2026, bloque 82, aprobada por
   Liber.
+- **D142. Tablas que se leen solas, modo sol completo y atajos de teclado.** El encabezado fijo de
+  las tablas en computadora ya existía (la tabla se desplaza dentro de su caja); se verificó y
+  queda con prueba. La columna por la que está ordenada una tabla se distingue con fondo de acento
+  y flecha en negritas (el lector de pantalla ya oía «Ordenado por…»). La cuenta sobre la tabla
+  dice también cuántos están inactivos: «76 especies · 3 inactivas», «3 usuarios · 1 inactivo». El
+  modo sol (D106) alcanza lo que llegó después: etiquetas de estado, cifras, pasos, avisos bajo el
+  campo y la línea «Siguiente» llevan borde de 2 px y negritas. Atajos para capturar en
+  computadora: Ctrl+Enter (⌘+Enter) guarda el árbol o confirma la ficha de revisión; con el
+  buscador de especie vacío, 1, 2 y 3 eligen las recientes; Enter solo sigue sin guardar. La pista
+  de los atajos sólo aparece con ratón y teclado. Hallazgo del bloque: «Guardar» esperaba al envío
+  al servidor antes de volver (se quedaba en «Guardando…» mientras duraba, D136); ahora vuelve en
+  cuanto el árbol queda en el teléfono y el envío corre aparte, como ya lo dice la franja. Con
+  este bloque se cierra el plan de la auditoría UX/UI del 24-09-2026 (bloques 77 a 83).

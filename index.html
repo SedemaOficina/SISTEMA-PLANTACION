@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#9D2148">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.63">
-<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.6.63">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.64">
+<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.6.64">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.63">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.63">
-<link rel="stylesheet" href="css/estilos.css?v=0.6.63">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.64">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.64">
+<link rel="stylesheet" href="css/estilos.css?v=0.6.64">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -21,8 +21,8 @@
   <div class="encabezado-interior">
     <!-- Logotipo (D90, D137): Gobierno CDMX · SEDEMA · SIA · Reforestación Urbana en pantalla ancha; en teléfono, SIA y Reforestación Urbana -->
     <picture>
-      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.6.63">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.6.63" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
+      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.6.64">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.6.64" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» (D80) -->
@@ -271,7 +271,9 @@
       <!-- Barra fija al pie mientras el formulario está a la vista: guardar sin bajar hasta el final (D96) -->
       <div class="acciones barra-guardar">
         <!-- La acción de cierre del formulario: verde (guardar), ancho completo en teléfono y más alto, para que se vea desde lejos (D73) -->
-        <button type="submit" id="btn-revisar" class="btn btn-exito btn-ancho btn-destacado"></button>
+        <button type="submit" id="btn-revisar" class="btn btn-exito btn-ancho btn-destacado" aria-keyshortcuts="Control+Enter Meta+Enter"></button>
+        <!-- Pista del atajo (D142): sólo con ratón y teclado; en teléfono no aparece -->
+        <p class="atajo-pista" aria-hidden="true">Atajo: <kbd>Ctrl</kbd> + <kbd>Enter</kbd> guarda · con el buscador vacío, <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> eligen las recientes</p>
         <button type="button" id="btn-cancelar-edicion" class="btn btn-cancelar" hidden>Cancelar edición</button>
       </div>
     </form>
@@ -855,42 +857,42 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.6.63"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.63"></script>
-<script src="vendor/turf-pip.min.js?v=0.6.63"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.6.63"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.63"></script>
+<script src="vendor/leaflet.js?v=0.6.64"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.64"></script>
+<script src="vendor/turf-pip.min.js?v=0.6.64"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.6.64"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.64"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.6.63"></script>
-<script src="js/util.js?v=0.6.63"></script>
-<script src="js/iconos.js?v=0.6.63"></script>
+<script src="js/config.js?v=0.6.64"></script>
+<script src="js/util.js?v=0.6.64"></script>
+<script src="js/iconos.js?v=0.6.64"></script>
 <!-- Capas territoriales del SIA, compactadas por pruebas/generar_capas.py desde assets/fuentes/ -->
-<script src="assets/capa-alcaldias.js?v=0.6.63"></script>
-<script src="assets/capa-uga.js?v=0.6.63"></script>
-<script src="assets/capa-colonias.js?v=0.6.63"></script>
-<script src="assets/catalogo-especies.js?v=0.6.63"></script>
-<script src="js/datos-ficticios.js?v=0.6.63"></script>
-<script src="js/permisos.js?v=0.6.63"></script>
-<script src="js/derivacion.js?v=0.6.63"></script>
-<script src="js/almacen.js?v=0.6.63"></script>
-<script src="js/sesion.js?v=0.6.63"></script>
-<script src="js/referencias.js?v=0.6.63"></script>
-<script src="js/folio.js?v=0.6.63"></script>
-<script src="js/conexion.js?v=0.6.63"></script>
-<script src="js/envio.js?v=0.6.63"></script>
-<script src="js/mapa.js?v=0.6.63"></script>
-<script src="js/foto.js?v=0.6.63"></script>
-<script src="js/jornada-activa.js?v=0.6.63"></script>
-<script src="js/formulario.js?v=0.6.63"></script>
+<script src="assets/capa-alcaldias.js?v=0.6.64"></script>
+<script src="assets/capa-uga.js?v=0.6.64"></script>
+<script src="assets/capa-colonias.js?v=0.6.64"></script>
+<script src="assets/catalogo-especies.js?v=0.6.64"></script>
+<script src="js/datos-ficticios.js?v=0.6.64"></script>
+<script src="js/permisos.js?v=0.6.64"></script>
+<script src="js/derivacion.js?v=0.6.64"></script>
+<script src="js/almacen.js?v=0.6.64"></script>
+<script src="js/sesion.js?v=0.6.64"></script>
+<script src="js/referencias.js?v=0.6.64"></script>
+<script src="js/folio.js?v=0.6.64"></script>
+<script src="js/conexion.js?v=0.6.64"></script>
+<script src="js/envio.js?v=0.6.64"></script>
+<script src="js/mapa.js?v=0.6.64"></script>
+<script src="js/foto.js?v=0.6.64"></script>
+<script src="js/jornada-activa.js?v=0.6.64"></script>
+<script src="js/formulario.js?v=0.6.64"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.6.63"></script>
-<script src="js/registros.js?v=0.6.63"></script>
-<script src="js/galeria.js?v=0.6.63"></script>
-<script src="js/jornadas.js?v=0.6.63"></script>
-<script src="js/croquis.js?v=0.6.63"></script>
-<script src="js/reportes.js?v=0.6.63"></script>
-<script src="js/catalogos.js?v=0.6.63"></script>
-<script src="js/usuarios.js?v=0.6.63"></script>
-<script src="js/app.js?v=0.6.63"></script>
+<script src="js/espejo.js?v=0.6.64"></script>
+<script src="js/registros.js?v=0.6.64"></script>
+<script src="js/galeria.js?v=0.6.64"></script>
+<script src="js/jornadas.js?v=0.6.64"></script>
+<script src="js/croquis.js?v=0.6.64"></script>
+<script src="js/reportes.js?v=0.6.64"></script>
+<script src="js/catalogos.js?v=0.6.64"></script>
+<script src="js/usuarios.js?v=0.6.64"></script>
+<script src="js/app.js?v=0.6.64"></script>
 </body>
 </html>

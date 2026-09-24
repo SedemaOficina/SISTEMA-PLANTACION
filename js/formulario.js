@@ -64,6 +64,23 @@ SRP.formulario = {
       const r = this.estado.ultimoGuardado && await SRP.almacen.uno('plantaciones', this.estado.ultimoGuardado);
       if (r) SRP.registros.verDetalle(r);
     });
+    /* ATAJOS DE TECLADO (D142), para capturar muchos árboles en computadora: Ctrl+Enter (⌘+Enter en
+       Mac) guarda, o confirma la ficha de revisión si está abierta; con el buscador de especie vacío,
+       1, 2 y 3 eligen las especies recientes. Enter solo no guarda: se evitó a propósito en la ficha. */
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' || !(e.ctrlKey || e.metaKey) || SRP.app.vista !== 'registrar') return;
+      if (this.el('dlg-resumen').open) { e.preventDefault(); this.el('btn-resumen-guardar').click(); return; }
+      if (document.querySelector('dialog[open]') || this.el('registrar-columnas').hidden) return;
+      e.preventDefault();
+      this.el('form-plantacion').requestSubmit();
+    });
+    this.el('campo-especie').addEventListener('keydown', (e) => {
+      if (!/^[1-3]$/.test(e.key) || e.target.value || e.ctrlKey || e.metaKey || e.altKey || this.el('especies-recientes').hidden) return;
+      const chip = this.el('especies-recientes').querySelectorAll('.chip')[Number(e.key) - 1];
+      if (!chip) return;
+      e.preventDefault();
+      chip.click();
+    });
     this.el('especies-recientes').addEventListener('click', (e) => {
       const b = e.target.closest('.chip'); if (!b) return;
       this.elegirEspecie(b.dataset.id);
@@ -109,7 +126,8 @@ SRP.formulario = {
     const regs = j ? (await SRP.activa.registrosDe(j)).filter(r => r.especie_id).sort((a, b) => String(b.fecha_registro).localeCompare(String(a.fecha_registro))) : [];
     const ids = [...new Set(regs.map(r => r.especie_id))].slice(0, 3);
     caja.hidden = !ids.length;
-    caja.innerHTML = ids.map(id => '<button type="button" class="chip" data-id="' + id + '" aria-pressed="' + (this.estado.especieId === id) + '">' +
+    // data-n: el número del atajo, que en computadora se ve como pista (D142)
+    caja.innerHTML = ids.map((id, i) => '<button type="button" class="chip" data-id="' + id + '" data-n="' + (i + 1) + '" aria-pressed="' + (this.estado.especieId === id) + '">' +
       SRP.util.escapar((SRP.ref.catalogoPorId[id] || {}).nombre || id) + '</button>').join('');
   },
 
@@ -629,7 +647,9 @@ SRP.formulario = {
         this.mostrarGuardado(nuevo);
         await SRP.activa.preparar();   // la franja cuenta el árbol nuevo (D119) y repinta programa y especies recientes
         // Con datos de prueba, el registro sale en seguida si hay señal (D111) y recibe folio (D110)
-        if (SRP.envio.simulado()) await this.enviarTrasGuardar(nuevo.id);
+        // El envío corre aparte (D142): el árbol ya quedó en el teléfono y la franja dice «enviando…»;
+        // esperarlo dejaba «Guardar» en «Guardando…» hasta que el servidor contestara, frenando el siguiente
+        if (SRP.envio.simulado()) this.enviarTrasGuardar(nuevo.id).catch(() => {});
       }
     } catch (err) {
       SRP.util.anunciar('No se pudo guardar: ' + err.message + '. Sus datos siguen en pantalla; intente de nuevo.', 'alerta');

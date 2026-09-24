@@ -1655,6 +1655,54 @@ with sync_playwright() as p:
     pg.click('#galeria-vacio button[data-vacio]'); pg.wait_for_timeout(600)
     ok(pg.is_hidden('#galeria-vacio'),'y la acción lo resuelve')
 
+    # ---------- BLOQUE 83: TABLAS Y ACCESIBILIDAD (D142) ----------
+    # Atajos de teclado en la captura
+    iniciar_jornada(pg,'Jornada de los atajos',HOY)
+    registrar(pg,'aile','ESP-0002')
+    ok(pg.get_attribute('#especies-recientes .chip','data-n')=='1' and pg.is_visible('.atajo-pista') and 'Control+Enter' in pg.get_attribute('#btn-revisar','aria-keyshortcuts'),
+       'con ratón y teclado se ve la pista de los atajos y las recientes llevan su número (D142)')
+    n0=pg.evaluate("async () => (await SRP.almacen.todos('plantaciones')).length")
+    pg.click('#btn-ubicacion'); pg.wait_for_timeout(700)
+    pg.focus('#campo-especie'); pg.keyboard.press('1'); pg.wait_for_timeout(200)
+    ok(pg.evaluate("SRP.formulario.estado.especieId")=='ESP-0002' and pg.input_value('#campo-especie')!='1','con el buscador vacío, «1» elige la especie reciente y no se escribe en el campo')
+    pg.keyboard.press('Control+Enter'); pg.wait_for_timeout(900)
+    ok(pg.is_visible('#dlg-resumen'),'Ctrl+Enter guarda; aquí el árbol cae en el mismo punto y abre la ficha de revisión por posible duplicado')
+    pg.keyboard.press('Control+Enter'); pg.wait_for_timeout(900)
+    n1=pg.evaluate("async () => (await SRP.almacen.todos('plantaciones')).length")
+    ok(pg.is_hidden('#dlg-resumen') and n1==n0+1,'y con la ficha abierta, Ctrl+Enter la confirma: un árbol más (%d → %d)' % (n0,n1))
+    # Guardar no espera al envío: en cuanto el árbol queda en el teléfono, el botón vuelve (D142)
+    ctx.set_geolocation({'latitude':19.4335,'longitude':-99.1345})
+    pg.click('#btn-ubicacion'); pg.wait_for_timeout(700); pg.focus('#campo-especie'); pg.keyboard.press('1'); pg.wait_for_timeout(150)
+    pg.keyboard.press('Control+Enter'); pg.wait_for_timeout(500)
+    if pg.is_visible('#dlg-resumen'): pg.keyboard.press('Control+Enter'); pg.wait_for_timeout(400)
+    ok(pg.get_attribute('#btn-revisar','disabled') is None and pg.inner_text('#btn-revisar').strip()=='Guardar' and pg.get_attribute('#franja-guardado','data-envio')=='enviando',
+       'al guardar, «Guardar» vuelve en seguida aunque el envío siga en curso: la franja dice «enviando…» (D142): '+str(pg.get_attribute('#franja-guardado','data-envio')))
+    pg.wait_for_timeout(1500); ctx.set_geolocation({'latitude':19.432,'longitude':-99.133})
+    pg.fill('#campo-especie','a1'); pg.wait_for_timeout(100)
+    ok(pg.input_value('#campo-especie')=='a1','con texto en el buscador, los números se escriben normal')
+    pg.evaluate("SRP.formulario.limpiar()")
+    # Tablas: encabezado fijo en computadora, columna ordenada visible, cuenta con inactivos
+    pg.click('#btn-cuenta'); pg.click('#btn-cambiar-perfil'); pg.select_option('#sel-usuario-prueba','u-admin-1'); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(700)
+    pg.set_viewport_size({'width':1280,'height':800}); pg.wait_for_timeout(200)
+    pg.evaluate("SRP.app.mostrarVista('catalogos')"); pg.wait_for_timeout(600); pg.click('[data-tipo=especie]'); pg.wait_for_timeout(600)
+    fijo=pg.evaluate("""() => { const c = document.querySelector('#tabla-catalogo').closest('.tabla-caja'); const th = document.querySelector('#tabla-catalogo thead th');
+      c.scrollTop = 600; return Math.abs(th.getBoundingClientRect().top - c.getBoundingClientRect().top) < 2 && c.scrollTop > 0; }""")
+    ok(fijo,'en computadora el encabezado de la tabla se queda arriba al desplazarse (D142)')
+    pg.click('#tabla-catalogo thead th .th-orden >> nth=0'); pg.wait_for_timeout(300)
+    th=pg.evaluate("(() => { const t = document.querySelector('#tabla-catalogo thead th'); return [t.getAttribute('aria-sort'), getComputedStyle(t).backgroundColor, getComputedStyle(document.querySelector('#tabla-catalogo thead th:nth-child(2)')).backgroundColor]; })()")
+    ok(th[0]=='ascending' and th[1]=='rgb(47, 72, 88)' and th[2]!=th[1],'la columna ordenada se distingue: fondo de acento, las demás no (D142): %s' % th)
+    ok(re.search(r'^\d+ especies · \d+ inactivas?$', pg.inner_text('#cat-cuenta').strip()) is not None,'la cuenta dice cuántas hay y cuántas están inactivas: '+pg.inner_text('#cat-cuenta'))
+    pg.evaluate("SRP.app.mostrarVista('usuarios')"); pg.wait_for_timeout(500)
+    ok(re.search(r'usuarios · \d+ inactivos?$', pg.inner_text('#usr-cuenta').strip()) is not None,'y en Usuarios también: '+pg.inner_text('#usr-cuenta'))
+    pg.set_viewport_size({'width':390,'height':844}); pg.wait_for_timeout(200)
+    # Modo sol en etiquetas y cifras
+    pg.evaluate("SRP.app.mostrarVista('jornadas')"); pg.wait_for_timeout(500); pg.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg.wait_for_timeout(400)
+    pg.click('#btn-cuenta'); pg.click('#btn-contraste'); pg.wait_for_timeout(300)
+    sol=pg.evaluate("(() => { const i = document.querySelector('#lista-jornadas .insignia-jornada'), c = document.querySelector('#lista-jornadas .jornada-cifra'); const gi = getComputedStyle(i), gc = getComputedStyle(c); return [gi.borderTopWidth, gi.fontWeight, gc.borderTopWidth]; })()")
+    ok(sol==['2px','700','2px'],'el modo sol también marca etiquetas y cifras: borde de 2 px y negritas (D142): %s' % sol)
+    if pg.is_hidden('#btn-contraste'): pg.click('#btn-cuenta')   # el menú sigue abierto tras el interruptor
+    pg.click('#btn-contraste'); pg.wait_for_timeout(300); pg.keyboard.press('Escape')
+
     b.close()
 print('\n'.join(res)); print('ERRORES CONSOLA:',errores or 'ninguno')
 print('fallas:',sum(r.startswith('FALLA') for r in res),'de',len(res))

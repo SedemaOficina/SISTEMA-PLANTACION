@@ -1516,3 +1516,20 @@ Reportes y Fotografías.
 
 **Verificación:** 542 comprobaciones sin errores de consola; 85 de auditoría;
 presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.63.
+
+## Bloque 83 — Tablas y accesibilidad (24-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.64.
+
+**Qué cambió (D142).** `formulario.js`: Ctrl/⌘+Enter guarda o confirma la ficha; 1–3 eligen las
+especies recientes con el buscador vacío; `data-n` en las recientes. `index.html`: pista de atajos
+y `aria-keyshortcuts` en Guardar. `catalogos.js` y `usuarios.js`: cuenta de inactivos.
+`estilos.css`: columna ordenada en acento, pista de atajos sólo con puntero fino, modo sol en
+etiquetas, cifras, pasos y avisos.
+Pruebas: encabezado fijo al desplazar la tabla de especies, columna ordenada en acento, cuentas
+con inactivos, modo sol en etiquetas y cifras, «1» elige la reciente sin escribirse, Ctrl+Enter
+guarda y confirma la ficha de revisión, números normales con texto en el buscador, «Guardar»
+vuelve en seguida con el envío en curso (`formulario.js`: el envío tras guardar ya no se espera).
+Cierra el plan de la auditoría UX/UI (bloques 77–83).
+
+**Verificación:** 553 comprobaciones sin errores de consola; 85 de auditoría;
+presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.64.

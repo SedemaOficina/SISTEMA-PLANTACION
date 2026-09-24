@@ -86,7 +86,9 @@ SRP.usuarios = {
     SRP.util.ordenable(this.el('tabla-usuarios'));
     const total = SRP.ref.usuarios.length;
     const filtrado = q || this.estado !== 'todos';
-    this.el('usr-cuenta').textContent = (filtrado ? lista.length + ' de ' : '') + total + (total === 1 ? ' usuario' : ' usuarios');
+    const inactivos = SRP.ref.usuarios.filter(x => !x.activo).length;   // «3 usuarios · 1 inactivo» (D142)
+    this.el('usr-cuenta').textContent = (filtrado ? lista.length + ' de ' : '') + total + (total === 1 ? ' usuario' : ' usuarios') +
+      (inactivos ? ' · ' + inactivos + (inactivos === 1 ? ' inactivo' : ' inactivos') : '');
   },
 
   llenarListas(usuario) {

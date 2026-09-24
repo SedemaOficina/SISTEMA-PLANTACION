@@ -105,7 +105,11 @@ SRP.catalogos = {
     const nombres = { programa: ['programa', 'programas'], area: ['área', 'áreas'], especie: ['especie', 'especies'] }[this.tipo];
     const total = SRP.ref.deTipo(this.tipo, false).length;
     const pal = (n) => n === 1 ? nombres[0] : nombres[1];
-    this.el('cat-cuenta').textContent = q ? items.length + ' de ' + total + ' ' + pal(total) : total + ' ' + pal(total);
+    // Y cuántos están inactivos (D142): «76 especies · 3 inactivas»
+    const inactivos = SRP.ref.deTipo(this.tipo, false).filter(c => !c.activo).length;
+    const femenino = this.tipo !== 'programa';
+    this.el('cat-cuenta').textContent = (q ? items.length + ' de ' + total + ' ' + pal(total) : total + ' ' + pal(total)) +
+      (inactivos ? ' · ' + inactivos + ' ' + (femenino ? (inactivos === 1 ? 'inactiva' : 'inactivas') : (inactivos === 1 ? 'inactivo' : 'inactivos')) : '');
   },
 
   /* FORMA DE CRECIMIENTO CON BOTONES (D107). Una especie puede tener varias (Árbol, Arbusto), así
