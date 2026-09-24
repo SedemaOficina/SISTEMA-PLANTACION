@@ -90,6 +90,10 @@ SRP.jornadas = {
     this.el('btn-ej-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar cambios</span>';
     this.el('form-editar-jornada').addEventListener('submit', (e) => { e.preventDefault(); this.guardarEdicion(); });
     this.el('ej-fecha').addEventListener('change', () => { this.el('ej-nota-fecha').hidden = this.el('ej-fecha').value === (this.cierre && this.cierre.fecha); });
+    this.el('btn-ej-hoy').addEventListener('click', () => {
+      this.el('ej-fecha').value = SRP.util.fechaHoy();
+      this.el('ej-fecha').dispatchEvent(new Event('change', { bubbles: true }));
+    });
     this.el('btn-jornada-reporte').addEventListener('click', () => this.irAlReporte());
     this.el('btn-jornada-faltante').innerHTML = SRP.ICONOS.svg('mas', 20) + '<span>Registrar faltante</span>';
     this.el('btn-jornada-reporte').innerHTML = SRP.ICONOS.svg('reportes', 20) + '<span>Reporte de la jornada</span>';
@@ -778,7 +782,8 @@ SRP.jornadas = {
     this.el('ej-comentarios').value = c.comentarios || '';
     this.el('ej-nota-fecha').hidden = true;
     this.el('ej-errores').hidden = true;
-    ['ej-nombre', 'ej-programa', 'ej-meta', 'ej-fecha'].forEach(id => this.el(id).removeAttribute('aria-invalid'));
+    SRP.util.erroresEnCampos([], ['ej-nombre', 'ej-programa', 'ej-meta', 'ej-fecha']);
+    SRP.util.refrescarContadores(this.el('dlg-editar-jornada'));
     this.el('dlg-editar-jornada').showModal();
   },
 
@@ -798,11 +803,10 @@ SRP.jornadas = {
     if (!fecha) errores.push(['ej-fecha', 'Indique la fecha.']);
     else if (fecha > SRP.util.fechaHoy()) errores.push(['ej-fecha', 'La fecha no puede ser posterior a hoy.']);
     const caja = this.el('ej-errores');
-    ['ej-nombre', 'ej-programa', 'ej-meta', 'ej-fecha'].forEach(id => this.el(id).removeAttribute('aria-invalid'));
+    SRP.util.erroresEnCampos(errores, ['ej-nombre', 'ej-programa', 'ej-meta', 'ej-fecha']);   // cada campo dice su error (D140)
     if (errores.length) {
       caja.hidden = false;
       caja.innerHTML = '<ul>' + errores.map(([id, t]) => '<li><a href="#' + id + '">' + SRP.util.escapar(t) + '</a></li>').join('') + '</ul>';
-      errores.forEach(([id]) => this.el(id).setAttribute('aria-invalid', 'true'));
       this.el(errores[0][0]).focus();
       return;
     }

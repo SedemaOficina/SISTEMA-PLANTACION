@@ -105,6 +105,69 @@ SRP.util = {
     zona.onmouseleave = () => { marca = Date.now(); programar(Math.max(restante, 1500)); };
   },
 
+  /* ERRORES AL PIE DEL CAMPO (D140). El resumen de arriba se queda (con enlaces, sirve al lector de
+     pantalla y en formularios largos), pero al llegar al campo, el campo mismo dice qué corregir:
+     el mensaje va debajo, en rojo con su icono, y el control lo anuncia con aria-describedby.
+     `errores`: [[id, texto]]; `ids`: los campos que el formulario valida, para limpiar los que ya
+     quedaron bien. Un botón (la ubicación) recibe el mensaje pero no aria-invalid. */
+  erroresEnCampos(errores, ids) {
+    ids.concat(errores.map(e => e[0])).forEach(id => this.quitarErrorCampo(document.getElementById(id)));
+    errores.forEach(([id, texto]) => {
+      const c = document.getElementById(id); if (!c) return;
+      let m = document.getElementById(id + '-error');
+      if (m) { m.querySelector('span').textContent += ' ' + texto; return; }
+      if (c.tagName !== 'BUTTON') c.setAttribute('aria-invalid', 'true');
+      m = document.createElement('p');
+      m.id = id + '-error'; m.className = 'campo-error';
+      m.innerHTML = SRP.ICONOS.svg('info', 16) + '<span></span>';
+      m.querySelector('span').textContent = texto;
+      // Al final de su caja de campo (debajo de «Hoy», de la lista de especies, del contador);
+      // un control suelto, como el botón de ubicación, lo lleva justo debajo
+      const caja = c.closest('.campo');
+      if (caja) caja.appendChild(m); else c.insertAdjacentElement('afterend', m);
+      c.setAttribute('aria-describedby', ((c.getAttribute('aria-describedby') || '') + ' ' + m.id).trim());
+    });
+  },
+
+  quitarErrorCampo(c) {
+    if (!c) return;
+    c.removeAttribute('aria-invalid');
+    const m = document.getElementById(c.id + '-error'); if (m) m.remove();
+    const resto = (c.getAttribute('aria-describedby') || '').split(' ').filter(x => x && x !== c.id + '-error');
+    if (resto.length) c.setAttribute('aria-describedby', resto.join(' ')); else c.removeAttribute('aria-describedby');
+  },
+
+  /* CONTADOR DE CARACTERES (D140). Los campos con límite (nombre 120, ubicación 200, comentarios
+     500) se cortaban en silencio al llegar al tope. El contador aparece al pasar del 80 % y, al
+     llegar al límite, lo dice en letras y al lector de pantalla, una vez. */
+  iniciarContadores() {
+    document.querySelectorAll('input[maxlength], textarea[maxlength]').forEach(c => {
+      if (!c.id || document.getElementById(c.id + '-contador')) return;
+      const s = document.createElement('span');
+      s.id = c.id + '-contador'; s.className = 'contador'; s.hidden = true; s.setAttribute('aria-hidden', 'true');
+      c.insertAdjacentElement('afterend', s);
+      const pintar = () => this.pintarContador(c);
+      c.addEventListener('input', pintar);
+      c.addEventListener('focus', pintar);
+    });
+  },
+
+  pintarContador(c) {
+    const s = document.getElementById(c.id + '-contador'); if (!s) return;
+    const max = Number(c.getAttribute('maxlength')), n = c.value.length;
+    s.hidden = n < max * 0.8;
+    const lleno = n >= max;
+    s.dataset.lleno = String(lleno);
+    s.textContent = n + ' / ' + max + (lleno ? ' · llegó al límite' : '');
+    if (lleno && !c.dataset.avisoLimite) { c.dataset.avisoLimite = '1'; this.anunciarSilencioso('Llegó al límite de ' + max + ' caracteres.'); }
+    if (!lleno) delete c.dataset.avisoLimite;
+  },
+
+  // Tras llenar o limpiar campos por código (abrir un diálogo, limpiar el formulario)
+  refrescarContadores(raiz) {
+    (raiz || document).querySelectorAll('input[maxlength], textarea[maxlength]').forEach(c => this.pintarContador(c));
+  },
+
   /* Sólo para el lector de pantalla, sin letrero. Para cambios que en pantalla ya se ven solos
      —la fotografía aparece o desaparece— y donde el letrero encima estorbaba (bloque 21). */
   anunciarSilencioso(mensaje) {

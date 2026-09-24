@@ -228,6 +228,7 @@ with sync_playwright() as p:
     # del mismo objeto que escribe Guardar, y entre lo visible y el espejo no puede faltar
     # ningún campo del registro. Si alguien agrega uno nuevo y lo olvida, esto falla.
     ok(pg.is_visible('#espejo-campos'),'el espejo de campos aparece con datos de prueba')
+    ok(pg.evaluate("!document.querySelector('#espejo-campos details').open && !document.getElementById('espejo-cierre').open"),'y sale plegado: «Campos que viajan a la base…» se abre sólo cuando se quiere revisar')
     cobertura=pg.evaluate("""() => {
       const registro = SRP.formulario.registroPrevisto();
       const enEspejo = [...document.querySelectorAll('#espejo-cuerpo .espejo-campo')].map(e=>e.textContent);
@@ -240,13 +241,13 @@ with sync_playwright() as p:
        'ningun campo del registro queda sin enseñarse: faltan %s, sobran %s' % (cobertura['faltan'], cobertura['sobran']))
     ok(cobertura['cuantos']>=12,'el espejo lista los campos ocultos (%d)' % cobertura['cuantos'])
     ok(pg.locator('#espejo-bitacora tr').count()>=8,'y los de la bitácora, que se escribe sola al guardar')
-    filaCabo=pg.locator('#espejo-cuerpo tr', has_text='cabo_id').inner_text()
+    filaCabo=pg.locator('#espejo-cuerpo tr', has_text='cabo_id').text_content()   # plegado: se lee el contenido, no lo pintado
     ok('u-cabo-1' in filaCabo,'enseña el valor de verdad, no un ejemplo: '+filaCabo.replace(chr(9),' ')[:60])
-    antes=pg.locator('#espejo-cuerpo tr', has_text='lat_original').inner_text()
+    antes=pg.locator('#espejo-cuerpo tr', has_text='lat_original').text_content()   # plegado: se lee el contenido, no lo pintado
     ok('—' in antes,'sin punto, lat_original está vacío')
 
     pg.click('#btn-ubicacion'); pg.wait_for_timeout(800)
-    despues=pg.locator('#espejo-cuerpo tr', has_text='lat_original').inner_text()
+    despues=pg.locator('#espejo-cuerpo tr', has_text='lat_original').text_content()   # plegado: se lee el contenido, no lo pintado
     ok('19.' in despues,'y se llena en cuanto hay punto, sin recargar: '+despues.replace(chr(9),' ')[:50])
     ok(pg.inner_text('#dato-alcaldia')=='Cuauhtémoc','el botón ubica y deriva la alcaldía real: '+pg.inner_text('#dato-alcaldia'))
     fic=pg.evaluate("(() => { const c=document.querySelector('.campo-punto .campo-triple .campo'); const r=document.querySelector('.campo-punto .campo-triple').getBoundingClientRect(); return { filas: getComputedStyle(c).display, sin_caja: getComputedStyle(document.getElementById('dato-alcaldia')).borderTopStyle, alto: Math.round(r.height) }; })()")
@@ -1547,6 +1548,59 @@ with sync_playwright() as p:
       const c = await fetch('js/catalogos.js?x=' + Date.now()).then(x => x.text()); const u = await fetch('js/usuarios.js?x=' + Date.now()).then(x => x.text());
       return [(r.match(/confirmar\\(/g) || []).length, (c.match(/confirmar\\(/g) || []).length, (u.match(/confirmar\\(/g) || []).length]; }""")
     ok(usos==[0,1,1],'lo reversible ya no confirma: registros 0; catálogo y cuentas sólo al eliminar (D139): %s' % usos)
+
+    # ---------- BLOQUE 81: CAMPOS (D140) ----------
+    pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(500)
+    if pg.is_hidden('#panel-iniciar-jornada'):
+        pg.click('#btn-jornada-cambiar'); pg.wait_for_timeout(200); pg.click('#btn-cambiar-nueva'); pg.wait_for_timeout(300)
+    pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(300)
+    err=pg.evaluate("""() => ['ini-nombre','ini-programa','ini-meta','ini-fecha'].map(id => { const c = document.getElementById(id), m = document.getElementById(id + '-error');
+      return [!!m && !m.hidden && !!m.querySelector('svg'), (c.getAttribute('aria-describedby') || '').split(' ').includes(id + '-error'), c.getAttribute('aria-invalid')]; })""")
+    ok(all(e==[True,True,'true'] for e in err) and pg.locator('#ini-errores li').count()==4,'cada campo con error lo dice debajo, con icono, enlazado con aria-describedby; el resumen de arriba se queda (D140): %s' % err)
+    ok(pg.inner_text('#ini-meta-error')==pg.locator('#ini-errores li').nth(2).inner_text(),'el mensaje del campo es el mismo del resumen')
+    pg.fill('#ini-nombre','J'); pg.wait_for_timeout(100)
+    ok(pg.locator('#ini-nombre-error').count()==0 and pg.get_attribute('#ini-nombre','aria-invalid') is None and 'ini-nombre-error' not in (pg.get_attribute('#ini-nombre','aria-describedby') or ''),
+       'al corregir el campo, su error se va en seguida, sin esperar a volver a enviar')
+    pg.click('#btn-ini-hoy'); pg.wait_for_timeout(100)
+    ok(pg.locator('#ini-fecha-error').count()==0,'«Hoy» también quita el error de la fecha')
+    ok(pg.get_attribute('#ini-meta','aria-describedby').split()[0]=='ini-meta-ayuda' and 'Cuántos árboles' in pg.inner_text('#ini-meta-ayuda')
+       and 'Detectar ubicación' in pg.inner_text('#ini-ubicacion-ayuda') and pg.get_attribute('#ini-ubicacion','aria-describedby')=='ini-ubicacion-ayuda',
+       'la meta y la ubicación llevan una línea de ayuda debajo, enlazada al campo (D140)')
+    # Contador: aparece al pasar del 80 %, dice el límite al llegar
+    pg.fill('#ini-comentarios','x'*390); pg.wait_for_timeout(100)
+    c1=pg.is_hidden('#ini-comentarios-contador')
+    pg.fill('#ini-comentarios','x'*420); pg.wait_for_timeout(100)
+    c2=pg.inner_text('#ini-comentarios-contador') if pg.is_visible('#ini-comentarios-contador') else ''
+    pg.fill('#ini-comentarios','x'*600); pg.wait_for_timeout(100)
+    c3=pg.inner_text('#ini-comentarios-contador'); lleno=pg.get_attribute('#ini-comentarios-contador','data-lleno')
+    ok(c1 and c2=='420 / 500' and c3=='500 / 500 · llegó al límite' and lleno=='true','el contador aparece al pasar del 80 por ciento («420 / 500») y avisa al llegar al límite (D140): '+str([c1,c2,c3]))
+    ok(pg.locator('input[maxlength], textarea[maxlength]').count()==pg.locator('.contador').count(),'todos los campos con límite tienen su contador')
+    # Formulario del árbol: el error de ubicación va bajo el botón y se va al tomarla
+    pg.fill('#ini-comentarios',''); pg.fill('#ini-nombre','Jornada de los campos'); pg.select_option('#ini-programa','p-refor'); pg.fill('#ini-meta','5')
+    pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(700)
+    ok(pg.is_hidden('#ini-errores') and pg.locator('#panel-iniciar-jornada .campo-error').count()==0,'al iniciar bien, no queda ningún error pintado en el panel')
+    pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(300)
+    ok(pg.is_visible('#btn-ubicacion-error') and pg.evaluate("document.getElementById('btn-ubicacion').nextElementSibling.id")=='btn-ubicacion-error'
+       and pg.get_attribute('#btn-ubicacion','aria-invalid') is None and pg.is_visible('#campo-especie-error'),'sin ubicación ni especie, cada error va bajo su control; el botón no se marca como campo inválido')
+    pg.click('#btn-ubicacion'); pg.wait_for_timeout(700)
+    ok(pg.locator('#btn-ubicacion-error').count()==0 and pg.is_visible('#campo-especie-error'),'al tomar la ubicación su error se va; el de la especie sigue')
+    pg.fill('#campo-especie','aile'); pg.wait_for_timeout(200); pg.dispatch_event('.combo-opcion[data-id="ESP-0002"]','mousedown'); pg.wait_for_timeout(200)
+    ok(pg.locator('#campo-especie-error').count()==0,'y al elegir la especie se va el suyo')
+    pg.evaluate("SRP.formulario.limpiar()"); pg.wait_for_timeout(200)
+    # «Hoy» en Editar jornada
+    iniciar_jornada(pg,'Jornada de fecha equivocada',(datetime.date.today()-datetime.timedelta(days=1)).isoformat())
+    pg.evaluate("SRP.app.mostrarVista('jornadas')"); pg.wait_for_timeout(500); pg.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg.wait_for_timeout(400)
+    pg.locator('#lista-jornadas .jornada', has_text='Jornada de fecha equivocada').first.locator('.jornada-boton').click(); pg.wait_for_timeout(700)
+    pg.click('#btn-jornada-editar'); pg.wait_for_timeout(300)
+    ok(pg.is_visible('#btn-ej-hoy') and pg.is_hidden('#ej-nota-fecha'),'«Editar jornada» trae «Hoy» junto a la fecha (D140)')
+    pg.click('#btn-ej-hoy'); pg.wait_for_timeout(150)
+    ok(pg.input_value('#ej-fecha')==HOY and pg.is_visible('#ej-nota-fecha'),'«Hoy» corrige la fecha de un toque y avisa que los árboles la toman')
+    pg.fill('#ej-nombre',''); pg.fill('#ej-meta',''); pg.click('#btn-ej-guardar'); pg.wait_for_timeout(300)
+    ok(pg.is_visible('#ej-nombre-error') and pg.is_visible('#ej-meta-error') and 'ej-meta-ayuda' in pg.get_attribute('#ej-meta','aria-describedby'),'en Editar jornada también: error bajo el campo, sin perder la ayuda')
+    pg.keyboard.press('Escape'); pg.wait_for_timeout(200)
+    pg.click('#btn-jornada-editar'); pg.wait_for_timeout(300)
+    ok(pg.locator('#dlg-editar-jornada .campo-error').count()==0,'al volver a abrir el diálogo, los errores de antes ya no están')
+    pg.keyboard.press('Escape'); pg.wait_for_timeout(200)
 
     b.close()
 print('\n'.join(res)); print('ERRORES CONSOLA:',errores or 'ninguno')

@@ -133,7 +133,7 @@ SRP.usuarios = {
     this.ajustarPorPerfil();
     this.el('usr-coordinador').value = usuario && usuario.coordinador_id ? usuario.coordinador_id : '';
     this.el('usr-errores').hidden = true;
-    ['usr-nombre', 'usr-ap', 'usr-correo', 'usr-area', 'usr-cargo', 'usr-perfil'].forEach(id => this.el(id).removeAttribute('aria-invalid'));
+    SRP.util.erroresEnCampos([], ['usr-nombre', 'usr-ap', 'usr-correo', 'usr-area', 'usr-cargo', 'usr-perfil']);
     this.el('dlg-usuario').showModal();
   },
 
@@ -166,9 +166,8 @@ SRP.usuarios = {
     };
     const errores = this.validar(d);
     const caja = this.el('usr-errores');
-    ['usr-nombre', 'usr-ap', 'usr-correo', 'usr-area', 'usr-cargo', 'usr-perfil'].forEach(id => this.el(id).removeAttribute('aria-invalid'));
+    SRP.util.erroresEnCampos(errores, ['usr-nombre', 'usr-ap', 'usr-correo', 'usr-area', 'usr-cargo', 'usr-perfil']);   // D140
     if (errores.length) {
-      errores.forEach(([id]) => this.el(id).setAttribute('aria-invalid', 'true'));
       caja.innerHTML = '<ul>' + errores.map(([id, t]) => '<li><a href="#' + id + '">' + t + '</a></li>').join('') + '</ul>';
       caja.hidden = false; caja.focus();
       return;

@@ -170,7 +170,7 @@ SRP.catalogos = {
     this.el('cat-snib').value = item ? item.id_snib || '' : '';
     this.el('cat-enciclovida').value = item && item.id_enciclovida !== null && item.id_enciclovida !== undefined ? String(item.id_enciclovida) : '';
     this.el('cat-errores').hidden = true;
-    ['cat-nombre', 'cat-clave'].concat(this.CAMPOS_ESPECIE).forEach(id => this.el(id).removeAttribute('aria-invalid'));
+    SRP.util.erroresEnCampos([], ['cat-nombre', 'cat-clave'].concat(this.CAMPOS_ESPECIE));
     this.el('dlg-catalogo').showModal();
   },
 
@@ -210,9 +210,8 @@ SRP.catalogos = {
     };
     const errores = this.validar(datos);
     const caja = this.el('cat-errores');
-    ['cat-nombre', 'cat-clave'].concat(this.CAMPOS_ESPECIE).forEach(id => this.el(id).removeAttribute('aria-invalid'));
+    SRP.util.erroresEnCampos(errores, ['cat-nombre', 'cat-clave'].concat(this.CAMPOS_ESPECIE));   // D140
     if (errores.length) {
-      errores.forEach(([id]) => this.el(id).setAttribute('aria-invalid', 'true'));
       caja.innerHTML = '<ul>' + errores.map(([id, t]) => '<li><a href="#' + id + '">' + t + '</a></li>').join('') + '</ul>';
       caja.hidden = false; caja.focus();
       return;

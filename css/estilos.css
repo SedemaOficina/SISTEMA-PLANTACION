@@ -1015,3 +1015,12 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .confirmar-nota svg { flex-shrink: 0; margin-top: 1px; }
 .confirmar-nota[data-tono="alerta"] { color: var(--error); font-weight: 600; }
 .dlg-confirmar .acciones { margin-top: var(--e-4); }
+
+/* CAMPOS (D140). El error va debajo de su campo, en rojo con icono (el resumen de arriba se queda);
+   la ayuda es una línea gris bajo el control; el contador aparece al pasar del 80 % del límite. */
+.campo-error { display: flex; align-items: flex-start; gap: var(--e-1); margin: var(--e-1) 0 0; color: var(--error); font-size: var(--t-s); font-weight: 600; }
+.campo-error svg { flex-shrink: 0; margin-top: 2px; }
+#btn-ubicacion + .campo-error { margin-bottom: var(--e-2); }
+.ayuda-campo { margin: var(--e-1) 0 0; font-size: var(--t-xs); line-height: 1.4; }
+.contador { display: block; margin-top: 2px; text-align: right; font-size: var(--t-xs); color: var(--gris); font-variant-numeric: tabular-nums; }
+.contador[data-lleno="true"] { color: var(--editar); font-weight: 600; }

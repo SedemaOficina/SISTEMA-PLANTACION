@@ -1085,3 +1085,15 @@
   recuerda la salida reversible (desactivar). El foco empieza en «Cancelar». La forma corta
   `confirmar(texto, boton, icono)` sigue sirviendo. Auditoría UX/UI del 24-09-2026, bloque 80,
   aprobada por Liber.
+- **D140. Cada campo dice su error; ayuda, contador y «Hoy» donde hacen falta.** El resumen de
+  errores de arriba se queda (con enlaces: sirve al lector de pantalla y en formularios largos),
+  pero al llegar al campo, el campo mismo dice qué corregir: el mensaje va debajo, en rojo con
+  icono, enlazado con aria-describedby, y se va en cuanto se corrige (al escribir, elegir, tocar
+  «Hoy» o tomar la ubicación), sin esperar a volver a enviar. Una sola función para los seis
+  formularios que validan (árbol, iniciar y editar jornada, cuentas, catálogo y acceso). Una línea
+  de ayuda gris bajo «Árboles que se van a plantar» («Cuántos árboles trae la cuadrilla…») y bajo
+  «Ubicación de la jornada» («Dirección, parque o referencia. La alcaldía y la colonia las da
+  “Detectar ubicación”»), los dos campos que se prestaban a duda. Los campos con límite (nombre,
+  ubicación, comentarios) muestran «420 / 500» al pasar del 80 % y avisan al llegar al tope, que
+  antes cortaba en silencio. «Editar jornada» trae «Hoy» junto a la fecha y pone meta y fecha una
+  bajo otra, como «Iniciar jornada». Auditoría UX/UI del 24-09-2026, bloque 81, aprobada por Liber.

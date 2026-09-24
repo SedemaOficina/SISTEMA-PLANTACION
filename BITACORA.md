@@ -1477,3 +1477,22 @@ con «Deshacer», y que registros, catálogo y cuentas sólo confirmen al elimin
 
 **Verificación:** 510 comprobaciones sin errores de consola; 85 de auditoría;
 presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.61.
+
+## Bloque 81 — Campos (24-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.62.
+
+**Qué cambió (D140).** `util.js`: `erroresEnCampos()`, `quitarErrorCampo()`,
+`iniciarContadores()`, `pintarContador()`, `refrescarContadores()`. `app.js`: contadores al iniciar
+y el error de un campo se quita al corregirlo; el acceso usa la función común. `formulario.js`,
+`jornada-activa.js`, `jornadas.js`, `usuarios.js`, `catalogos.js`: la usan en su validación y al
+limpiar; «Hoy» y la especie quitan su error. `mapa.js`: tomar la ubicación quita el suyo.
+`index.html`: ayudas de meta y ubicación, «Hoy» en Editar jornada y meta y fecha en renglones
+propios. `estilos.css`: `.campo-error`, `.ayuda-campo`, `.contador`. A pedido de Liber, el espejo
+«Campos que viajan a la base y no se ven en pantalla» de Nuevo registro sale plegado, como los del
+detalle y el cierre.
+Pruebas: error bajo cada campo con icono y aria-describedby, igual al resumen; se quita al
+corregir; ayudas enlazadas; contador oculto, visible y lleno; errores del árbol bajo el botón de
+ubicación y la especie; «Hoy» en Editar jornada; errores limpios al reabrir el diálogo.
+
+**Verificación:** 526 comprobaciones sin errores de consola; 85 de auditoría;
+presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.62.

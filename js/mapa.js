@@ -150,6 +150,7 @@ SRP.mapa = {
     this.lat = Number(lat.toFixed(6));
     this.lng = Number(lng.toFixed(6));
     this.origen = op.origen || null;
+    SRP.util.quitarErrorCampo(document.getElementById('btn-ubicacion'));   // «Registre la ubicación» ya se cumplió (D140)
     // Sólo el GPS tiene precisión. Al mover el punto a mano, el margen del aparato deja de
     // describirlo, así que se borra en vez de quedarse mintiendo sobre la coordenada nueva.
     this.precision = op.origen === 'gps' && op.precision != null ? Math.round(op.precision) : null;

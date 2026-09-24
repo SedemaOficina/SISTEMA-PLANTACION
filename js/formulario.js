@@ -28,7 +28,7 @@ SRP.formulario = {
     // «Hoy» pone la fecha de un toque; sigue siendo una elección de quien captura (D29, D98)
     this.el('btn-fecha-hoy').addEventListener('click', () => {
       this.el('campo-fecha').value = SRP.util.fechaHoy();
-      this.el('campo-fecha').removeAttribute('aria-invalid');
+      SRP.util.quitarErrorCampo(this.el('campo-fecha'));
       this.el('campo-fecha').dispatchEvent(new Event('change', { bubbles: true }));
       if (SRP.espejo) SRP.espejo.refrescar();
     });
@@ -67,7 +67,7 @@ SRP.formulario = {
     this.el('especies-recientes').addEventListener('click', (e) => {
       const b = e.target.closest('.chip'); if (!b) return;
       this.elegirEspecie(b.dataset.id);
-      this.el('campo-especie').removeAttribute('aria-invalid');
+      SRP.util.quitarErrorCampo(this.el('campo-especie'));
       this.pintarEspeciesRecientes();
       if (SRP.espejo) SRP.espejo.refrescar();
     });
@@ -147,7 +147,7 @@ SRP.formulario = {
       const b = e.target.closest('.chip'); if (!b) return;
       const sel = this.el('campo-programa');
       sel.value = b.dataset.id;
-      sel.removeAttribute('aria-invalid');
+      SRP.util.quitarErrorCampo(sel);
       sel.dispatchEvent(new Event('change', { bubbles: true }));
     });
     this.el('campo-programa').addEventListener('change', () => { this.pintarProgramas(); if (SRP.espejo) SRP.espejo.refrescar(); });
@@ -356,10 +356,10 @@ SRP.formulario = {
   },
 
   mostrarErrores(errores) {
-    ['campo-especie', 'campo-otra-especie', 'campo-programa', 'campo-fecha'].forEach(id => this.el(id).removeAttribute('aria-invalid'));
+    // Cada campo dice su error debajo (D140); el resumen de arriba se conserva
+    SRP.util.erroresEnCampos(errores, ['btn-ubicacion', 'campo-especie', 'campo-otra-especie', 'campo-programa', 'campo-fecha']);
     const caja = this.el('resumen-errores');
     if (!errores.length) { caja.hidden = true; this.pintarProgramas(); return; }
-    errores.forEach(([id]) => { if (id !== 'btn-ubicacion') this.el(id).setAttribute('aria-invalid', 'true'); });
     this.pintarProgramas();
     caja.innerHTML = '<h2>Falta corregir ' + errores.length + (errores.length === 1 ? ' dato' : ' datos') + '</h2><ul>' +
       errores.map(([id, t]) => '<li><a href="#' + id + '">' + t + '</a></li>').join('') + '</ul>';
@@ -704,6 +704,7 @@ SRP.formulario = {
     this.el('btn-cancelar-edicion').hidden = false;
     this.el('campo-fecha').value = registro.fecha_plantacion;
     this.el('campo-comentarios').value = registro.comentarios || '';
+    SRP.util.pintarContador(this.el('campo-comentarios'));
     this.llenarProgramas(registro.programa_id);
     if (registro.especie_id) this.elegirEspecie(registro.especie_id);
     else this.elegirEspecie(this.OTRA, registro.especie_otra);
@@ -737,6 +738,7 @@ SRP.formulario = {
     this.el('coord-lng').value = '';
     this.ponerFoto(null, null);
     this.mostrarErrores([]);
+    SRP.util.refrescarContadores(this.el('form-plantacion'));
     SRP.mapa.limpiar();
     this.mostrarPunto(null, null, null);
     SRP.mapa.estado('Use el botón de ubicación para tomar su posición, o toque el mapa para colocar el punto.');

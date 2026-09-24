@@ -41,7 +41,7 @@ SRP.activa = {
     this.el('ini-fecha').max = SRP.util.fechaHoy();
     this.el('btn-ini-hoy').addEventListener('click', () => {
       this.el('ini-fecha').value = SRP.util.fechaHoy();
-      this.el('ini-fecha').removeAttribute('aria-invalid');
+      SRP.util.quitarErrorCampo(this.el('ini-fecha'));
       this.el('ini-fecha').dispatchEvent(new Event('change', { bubbles: true }));
     });
     this.el('btn-ini-detectar').addEventListener('click', () => this.detectarUbicacion());
@@ -122,6 +122,8 @@ SRP.activa = {
       this.el('ini-fecha').value = '';
       this.el('ini-fecha').dispatchEvent(new Event('change', { bubbles: true }));
       this.el('ini-errores').hidden = true;
+      SRP.util.erroresEnCampos([], ['ini-nombre', 'ini-programa', 'ini-meta', 'ini-fecha']);
+      SRP.util.refrescarContadores(this.el('panel-iniciar-jornada'));
       this.el('ini-nombre').focus({ preventScroll: true });
     }
   },
@@ -188,7 +190,7 @@ SRP.activa = {
     const opciones = SRP.ref.deTipo('programa', true).sort((a, b) => (b.clave === 'REFOR_URBANA') - (a.clave === 'REFOR_URBANA'));
     sel.innerHTML = '<option value="">Seleccione un programa</option>' + opciones.map(o => '<option value="' + o.id + '">' + SRP.util.escapar(o.nombre) + '</option>').join('');
     sel.value = '';
-    sel.removeAttribute('aria-invalid');
+    SRP.util.quitarErrorCampo(sel);
   },
 
   /* ---------- Ubicación de la jornada (D122) ---------- */
@@ -262,11 +264,10 @@ SRP.activa = {
     if (!fecha) errores.push(['ini-fecha', 'Indique la fecha de la jornada.']);
     else if (fecha > SRP.util.fechaHoy()) errores.push(['ini-fecha', 'La fecha no puede ser posterior a hoy.']);
     const caja = this.el('ini-errores');
-    ['ini-nombre', 'ini-programa', 'ini-meta', 'ini-fecha'].forEach(id => this.el(id).removeAttribute('aria-invalid'));
+    SRP.util.erroresEnCampos(errores, ['ini-nombre', 'ini-programa', 'ini-meta', 'ini-fecha']);   // cada campo dice su error (D140)
     if (errores.length) {
       caja.hidden = false;
       caja.innerHTML = '<ul>' + errores.map(([id, t]) => '<li><a href="#' + id + '">' + SRP.util.escapar(t) + '</a></li>').join('') + '</ul>';
-      errores.forEach(([id]) => this.el(id).setAttribute('aria-invalid', 'true'));
       this.el(errores[0][0]).focus();
       return;
     }

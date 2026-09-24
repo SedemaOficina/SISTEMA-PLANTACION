@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.61 (Bloque 80)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.62 (Bloque 81)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -131,6 +131,11 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M120 | Auditoría UX (C2) | Lo reversible ya no pide confirmar: eliminar un registro, desactivar un valor o una cuenta se hace de una vez y el aviso dice qué se hizo, con «Deshacer» | Media | 0.6.61 (B80) | Eliminar un registro desde Registros | Aviso con Deshacer |
 | M121 | Auditoría UX (C2) | Restablecer los datos dice cuánto se borra (registros, jornadas, los no enviados); descartar un árbol a medias dice qué se pierde | Media | 0.6.61 (B80) | Menú del pie › Restablecer datos de prueba | Diálogo |
 | M122 | Auditoría UX (C2) | Eliminar una cuenta o un valor recuerda la salida que sí se deshace: desactivar | Baja | 0.6.61 (B80) | Usuarios › Eliminar una cuenta sin registros | — |
+| M123 | Auditoría UX (F1) | Cada campo con error lo dice debajo, en rojo con icono (el resumen de arriba se queda), y el mensaje se va en cuanto se corrige | Alta | 0.6.62 (B81) | Tocar «Iniciar jornada» con todo vacío y luego escribir el nombre | Campos con error |
+| M124 | Auditoría UX (F4) | Ayuda bajo «Árboles que se van a plantar» y «Ubicación de la jornada» | Media | 0.6.62 (B81) | Iniciar jornada | Ayuda gris |
+| M125 | Auditoría UX (F2) | Contador «420 / 500» al pasar del 80 % en nombre, ubicación y comentarios; avisa al llegar al límite | Baja | 0.6.62 (B81) | Escribir comentarios largos | Contador |
+| M126 | Auditoría UX (F3) | «Hoy» en Editar jornada, para corregir una jornada iniciada con la fecha equivocada | Baja | 0.6.62 (B81) | Jornadas › ficha › Editar jornada | — |
+| M127 | Petición de Liber | El espejo «Campos que viajan a la base y no se ven en pantalla» sale plegado en Nuevo registro (como en el detalle y el cierre) | Baja | 0.6.62 (B81) | Nuevo registro, al pie del formulario | — |
 
 ## 2. Por hacer
 

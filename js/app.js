@@ -52,6 +52,11 @@ SRP.app = {
     SRP.jornadas.iniciar();
     SRP.galeria.iniciar();
     SRP.activa.iniciar();          // la jornada se declara antes de registrar (D119)
+    // Contadores de caracteres, y el error de un campo se va en cuanto se corrige (D140)
+    SRP.util.iniciarContadores();
+    const alCorregir = (e) => { const c = e.target; if (c && c.id && document.getElementById(c.id + '-error')) SRP.util.quitarErrorCampo(c); };
+    document.addEventListener('input', alCorregir);
+    document.addEventListener('change', alCorregir);
     SRP.envio.iniciar();           // envío simulado: sólo con datos de prueba (D111)
     this.iniciarAcceso();
     this.iniciarDialogos();
@@ -111,16 +116,15 @@ SRP.app = {
       const correo = this.el('acceso-correo').value.trim();
       const clave = this.el('acceso-clave').value;
       const errores = [];
-      if (!correo) errores.push('<li><a href="#acceso-correo">Escriba su correo.</a></li>');
-      if (!clave) errores.push('<li><a href="#acceso-clave">Escriba su contraseña.</a></li>');
-      this.el('acceso-correo').toggleAttribute('aria-invalid', !correo);
-      this.el('acceso-clave').toggleAttribute('aria-invalid', !clave);
+      if (!correo) errores.push(['acceso-correo', 'Escriba su correo.']);
+      if (!clave) errores.push(['acceso-clave', 'Escriba su contraseña.']);
+      SRP.util.erroresEnCampos(errores, ['acceso-correo', 'acceso-clave']);   // D140
       const caja = this.el('acceso-errores');
-      if (errores.length) { caja.innerHTML = '<ul>' + errores.join('') + '</ul>'; caja.hidden = false; caja.focus(); return; }
+      if (errores.length) { caja.innerHTML = '<ul>' + errores.map(([id, t]) => '<li><a href="#' + id + '">' + t + '</a></li>').join('') + '</ul>'; caja.hidden = false; caja.focus(); return; }
 
       const r = SRP.sesion.autenticar(correo);
       if (!r.ok) {
-        this.el('acceso-correo').setAttribute('aria-invalid', 'true');
+        SRP.util.erroresEnCampos([['acceso-correo', r.motivo]], ['acceso-correo', 'acceso-clave']);
         caja.innerHTML = '<ul><li>' + SRP.util.escapar(r.motivo) + '</li></ul>';
         caja.hidden = false; caja.focus();
         return;
@@ -232,7 +236,7 @@ SRP.app = {
     this.el('franja-envio').hidden = true;
     this.el('form-acceso').reset();
     this.el('acceso-errores').hidden = true;
-    ['acceso-correo', 'acceso-clave'].forEach(id => this.el(id).removeAttribute('aria-invalid'));
+    SRP.util.erroresEnCampos([], ['acceso-correo', 'acceso-clave']);
     const prueba = this.el('acceso-prueba');
     prueba.hidden = !SRP.CONFIG.ES_FICTICIO;
     if (!prueba.hidden) {
