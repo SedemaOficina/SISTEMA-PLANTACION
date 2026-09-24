@@ -141,7 +141,8 @@ SRP.conexion = {
     const nombre = 'SRP_respaldo_' + SRP.util.fechaHoy() + (u ? '_' + u.id : '') + '.json';
     const blob = new Blob([JSON.stringify(datos)], { type: 'application/json' });
     await SRP.reportes.entregarArchivo(blob, nombre, 'Respaldo del Sistema de Registro de Plantaciones');
-    SRP.util.anunciar('Respaldo guardado: ' + datos.plantaciones.length + ' registros.');
+    const n = datos.plantaciones.length;
+    SRP.util.anunciar('Respaldo guardado: ' + n + (n === 1 ? ' registro.' : ' registros.'));
   },
 
   /* Restaurar: sólo agrega lo que no existe, nunca sobreescribe. Está en las herramientas de

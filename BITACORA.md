@@ -1549,3 +1549,18 @@ el desplegable; espejo del cierre con veintiséis campos.
 
 **Verificación:** 563 comprobaciones sin errores de consola; 85 de auditoría;
 presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.65.
+
+## Bloque 85 — Revisión de la ficha de la jornada (24-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.66.
+
+**Qué cambió (D144).** `jornadas.js`: concordancia de la conciliación y candado abierto en
+«Reabrir jornada». `conexion.js`, `usuarios.js`, `reportes.js`: singulares en el respaldo, el aviso
+de cuenta con registros, el croquis y la meta del reporte. `estilos.css`: sin el margen de
+`#btn-jornada-estado`.
+Pruebas: jornada cerrada con un punto de precisión baja (la de la captura): conciliación en
+singular, botones a la misma altura, candado en «Reabrir», meta de 1 árbol en el reporte. La
+prueba de «Guardar» deshabilitado al enviar lee el estado en el mismo instante (era intermitente
+desde que el guardado ya no espera al envío).
+
+**Verificación:** 567 comprobaciones sin errores de consola; 85 de auditoría;
+presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.66.

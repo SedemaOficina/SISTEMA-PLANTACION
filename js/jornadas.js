@@ -585,7 +585,8 @@ SRP.jornadas = {
     this.el('btn-jornada-eliminar').hidden = !(puedeJornada && regs.length === 0);
     // Cerrar no es aprobar: guinda con candado; reabrir es corregir: dorado con lápiz (D121)
     btnEstado.className = 'btn btn-chico ' + (cierre.estatus === 'abierta' ? 'btn-primario' : 'btn-editar');
-    btnEstado.innerHTML = SRP.ICONOS.svg(cierre.estatus === 'abierta' ? 'candado' : 'lapiz', 'medio') + '<span>' + (cierre.estatus === 'abierta' ? 'Cerrar jornada' : 'Reabrir jornada') + '</span>';
+    // Reabrir lleva el candado abierto: con el lápiz se confundía con «Editar jornada», al lado y del mismo color (D144)
+    btnEstado.innerHTML = SRP.ICONOS.svg(cierre.estatus === 'abierta' ? 'candado' : 'candadoAbierto', 'medio') + '<span>' + (cierre.estatus === 'abierta' ? 'Cerrar jornada' : 'Reabrir jornada') + '</span>';
 
     // Conciliación: se compara con todo lo del día del cabo, aunque se haya partido en sitios
     const meta = this.metaDe(cierre);
@@ -687,7 +688,9 @@ SRP.jornadas = {
     const pend = this.pendientes(j, this.avisosActuales || {}, this.cierre).length;
     const caja = this.el('jornada-conciliacion');
     const res = this.el('jornada-resultado');
-    const cola = pend ? ' Quedan ' + (pend === 1 ? '1 punto' : pend + ' puntos') + ' por revisar.' : '';
+    // Concordancia en número (D144): «Queda 1 punto», «hay 1 punto»; antes decía «Quedan 1 punto» y «hay 1 puntos»
+    const cola = pend ? (pend === 1 ? ' Queda 1 punto por revisar.' : ' Quedan ' + pend + ' puntos por revisar.') : '';
+    const puntos = n => n + (n === 1 ? ' punto' : ' puntos');
     let tono, texto;
     if (plantados === null || !Number.isInteger(plantados)) {
       tono = 'neutro'; texto = 'La jornada no tiene meta de árboles (se escribe al iniciarla).' + cola;
@@ -698,10 +701,10 @@ SRP.jornadas = {
       // Con la jornada abierta, faltar no es error: se sigue registrando (D131)
       const abierta = (this.cierre || j).estatus === 'abierta';
       tono = abierta ? 'neutro' : 'err';
-      texto = (abierta ? 'En curso: ' + reg + ' de ' + plantados + ' (faltan ' + n + ').' : (n === 1 ? 'Falta 1 registro' : 'Faltan ' + n + ' registros') + ': la meta es ' + plantados + ' y hay ' + reg + ' puntos.') + cola;
+      texto = (abierta ? 'En curso: ' + reg + ' de ' + plantados + ' (faltan ' + n + ').' : (n === 1 ? 'Falta 1 registro' : 'Faltan ' + n + ' registros') + ': la meta es ' + plantados + ' y hay ' + puntos(reg) + '.') + cola;
     } else {
       const n = reg - plantados;
-      tono = 'err'; texto = (n === 1 ? 'Sobra 1 registro' : 'Sobran ' + n + ' registros') + ': la meta es ' + plantados + ' y hay ' + reg + ' puntos. Busque duplicados en el mapa.' + cola;
+      tono = 'err'; texto = (n === 1 ? 'Sobra 1 registro' : 'Sobran ' + n + ' registros') + ': la meta es ' + plantados + ' y hay ' + puntos(reg) + '. Busque duplicados en el mapa.' + cola;
     }
     caja.dataset.tono = tono;
     // El resultado lleva el icono de su tono (D141)

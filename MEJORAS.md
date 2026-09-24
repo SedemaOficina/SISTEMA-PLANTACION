@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.65 (Bloque 84)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.66 (Bloque 85)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -153,6 +153,9 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M142 | Petición de Liber | El nombre de la jornada lleva ayuda con ejemplos: Parque Los Pericos, Intervención en Calzada de Tlalpan | Baja | 0.6.65 (B84) | Registrar jornada | — |
 | M143 | Petición de Liber | «Capturar coordenadas a mano» en Registrar jornada, como en Registrar árbol, para cuando no se registra en el sitio o no hay señal; se abre solo si el GPS falla | Alta | 0.6.65 (B84) | Registrar jornada › Capturar coordenadas a mano › 19.4326, -99.1332 | Alcaldía detectada |
 | M144 | Petición de Liber | «Ubicación de la jornada» pasa a «Dirección de la jornada» (también al editarla) | Baja | 0.6.65 (B84) | Registrar jornada; Editar jornada | — |
+| M145 | Revisión de Liber | La conciliación concuerda en número: «hay 1 punto», «Queda 1 punto por revisar» (también el respaldo, el croquis y «Meta de la jornada: 1 árbol») | Media | 0.6.66 (B85) | Jornada cerrada con un solo árbol | Conciliación |
+| M146 | Revisión de Liber | «Reabrir jornada» y «Editar jornada» a la misma altura | Baja | 0.6.66 (B85) | Ficha de una jornada cerrada | — |
+| M147 | Revisión de Liber | «Reabrir jornada» con candado abierto; el lápiz queda sólo para «Editar jornada» | Media | 0.6.66 (B85) | Ficha de una jornada cerrada | Botones |
 
 ## 2. Por hacer
 

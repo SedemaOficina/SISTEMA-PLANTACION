@@ -212,7 +212,8 @@ SRP.usuarios = {
   async eliminar(u) {
     await this.preparar();                 // recuenta justo antes de decidir
     if (this.uso[u.id]) {
-      SRP.util.anunciar('No se puede eliminar: tiene ' + this.uso[u.id] + ' registros a su nombre. Desactive la cuenta.', 'alerta');
+      const n = this.uso[u.id];
+      SRP.util.anunciar('No se puede eliminar: tiene ' + n + (n === 1 ? ' registro' : ' registros') + ' a su nombre. Desactive la cuenta.', 'alerta');
       return;
     }
     const ok = await SRP.app.confirmar({ titulo: 'Eliminar cuenta', pregunta: '¿Eliminar la cuenta de ' + SRP.util.nombreCompleto(u) + '?',

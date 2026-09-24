@@ -331,7 +331,7 @@ fieldset.campo { margin-inline: 0; }
 .volver { padding-left: 0; margin-bottom: var(--e-1); }
 .jornada-titulo { margin-bottom: var(--e-1); }
 .jornada-comentarios { margin: 0 0 var(--e-2); padding: var(--e-2) var(--e-3); border-left: 3px solid var(--dorado); background: var(--fondo-suave); font-size: var(--t-s); white-space: pre-line; }
-#btn-jornada-estado { margin-bottom: var(--e-3); }
+/* (D144) Sin margen propio: en la fila de acciones estiraba al vecino a 52 px; la fila ya trae su margen */
 .mapa-jornada { height: clamp(240px, 40vh, 420px); border-radius: var(--radio); margin-top: var(--e-3); }
 .leyenda-jornada { display: flex; gap: var(--e-3); flex-wrap: wrap; margin: var(--e-2) 0 var(--e-3); font-size: var(--t-xs); color: var(--gris); }
 .leyenda-jornada i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: -1px; background: var(--guinda); }

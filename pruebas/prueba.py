@@ -1402,8 +1402,9 @@ with sync_playwright() as p:
     pg.dispatch_event('.combo-opcion[data-id="ESP-0002"]','mousedown'); pg.wait_for_timeout(150)
     n0 = pg.evaluate("async () => (await SRP.almacen.todos('plantaciones')).length")
     ok(pg.get_attribute('#btn-revisar','disabled') is None,'el botón Guardar empieza habilitado')
-    pg.evaluate("document.getElementById('form-plantacion').requestSubmit ? document.getElementById('form-plantacion').requestSubmit() : document.querySelector('#form-plantacion button[type=submit]').click()")
-    ok(pg.get_attribute('#btn-revisar','disabled') is not None,'al enviar, el botón Guardar queda deshabilitado de inmediato')
+    # Se lee en el mismo instante del envío: el guardado local es tan rápido que un segundo paso ya lo ve de vuelta
+    desh=pg.evaluate("() => { document.getElementById('form-plantacion').requestSubmit(); const b = document.getElementById('btn-revisar'); return [b.disabled, b.getAttribute('aria-busy')]; }")
+    ok(desh==[True,'true'],'al enviar, el botón Guardar queda deshabilitado de inmediato y con aria-busy: %s' % desh)
     pg.click('#form-plantacion button[type=submit]', force=True)   # segundo toque «a la fuerza» mientras el primero sigue en curso
     pg.wait_for_timeout(900)
     if pg.is_visible('#dlg-resumen'): pg.click('#btn-resumen-guardar'); pg.wait_for_timeout(600)
@@ -1735,6 +1736,24 @@ with sync_playwright() as p:
     ok(pg.evaluate("document.getElementById('ini-detalles-coord').open") and 'coordenadas a mano' in pg.inner_text('#ini-detectado'),'sin permiso o sin señal, «Capturar coordenadas a mano» se abre solo y el aviso lo sugiere')
     ctx.grant_permissions(['geolocation'])
     pg.click('#btn-iniciar-cancelar'); pg.wait_for_timeout(300)
+
+    # ---------- BLOQUE 85: REVISIÓN DE LA FICHA (D144) ----------
+    # Jornada cerrada con un solo punto, de precisión baja: la captura que mandó Liber
+    iniciar_jornada(pg,'Jornada de un punto',HOY)
+    ctx.set_geolocation({'latitude':19.4331,'longitude':-99.1341,'accuracy':139})
+    pg.click('#btn-ubicacion'); pg.wait_for_timeout(800); pg.fill('#campo-especie','ahuehu'); pg.wait_for_timeout(200)
+    pg.dispatch_event('.combo-opcion[data-id="ESP-0070"]','mousedown'); pg.wait_for_timeout(150)
+    pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(900)
+    if pg.is_visible('#dlg-resumen'): pg.click('#btn-resumen-guardar'); pg.wait_for_timeout(800)
+    ctx.set_geolocation({'latitude':19.432,'longitude':-99.133})
+    pg.click('#btn-jornada-cerrar'); pg.wait_for_timeout(300); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(1500)
+    txt=pg.inner_text('#jornada-resultado')
+    ok('hay 1 punto.' in txt and 'Queda 1 punto por revisar.' in txt and '1 puntos' not in txt and 'Quedan 1' not in txt,'la conciliación concuerda en número: «hay 1 punto», «Queda 1 punto por revisar» (D144): '+txt)
+    alt=pg.evaluate("['btn-jornada-estado','btn-jornada-editar'].map(id => Math.round(document.getElementById(id).getBoundingClientRect().height))")
+    ok(alt[0]==alt[1]==40,'«Reabrir jornada» y «Editar jornada» tienen la misma altura (antes 40 y 52 px) (D144): %s' % alt)
+    ok('L 15 8 L 15 6' in pg.inner_html('#btn-jornada-estado') and 'M3 17.25' not in pg.inner_html('#btn-jornada-estado'),
+       '«Reabrir jornada» lleva el candado abierto; el lápiz queda sólo para «Editar jornada»')
+    ok(pg.evaluate("SRP.reportes.textoConteo({ meta_arboles: 1 }, [{}])")=='Meta de la jornada: 1 árbol · registrados: 1 (cuadra)','en el reporte, «Meta de la jornada: 1 árbol», no «1 árboles»')
 
     b.close()
 print('\n'.join(res)); print('ERRORES CONSOLA:',errores or 'ninguno')

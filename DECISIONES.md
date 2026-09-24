@@ -1139,3 +1139,11 @@
   abre solo. La jornada guarda `punto_origen` (`gps` o `manual`); con punto a mano no hay precisión.
   «Ubicación de la jornada» pasa a «Dirección de la jornada», también en Editar jornada; el campo
   sigue siendo `ubicacion`. Esquema 2026-09-24. Pedido por Liber, 24-09-2026.
+- **D144. Revisión de la ficha de la jornada en computadora.** Sobre una captura de Liber: la
+  conciliación decía «hay 1 puntos» y «Quedan 1 punto por revisar»; ahora concuerda en número
+  («hay 1 punto», «Queda 1 punto»). El mismo descuido se corrigió en el respaldo («1 registro»), en
+  el aviso de una cuenta con registros, en el texto alternativo del croquis y en «Meta de la
+  jornada: 1 árbol» del reporte. «Reabrir jornada» y «Editar jornada» salían de distinta altura
+  (40 y 52 px) por un margen que «Reabrir» traía de cuando iba solo; se quitó. Y los dos llevaban el
+  mismo lápiz ámbar, uno al lado del otro: «Reabrir» pasa al candado abierto, que es lo que hace, y
+  el lápiz queda sólo para editar. Revisión pedida por Liber, 24-09-2026.

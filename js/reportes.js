@@ -271,7 +271,7 @@ SRP.reportes = {
     const c = await SRP.croquis.generar(registros);
     if (!caja.isConnected) return;   // la vista previa ya se cerró o se repintó
     if (!c) { caja.innerHTML = '<p class="previa-nota">No se pudo armar el croquis en este dispositivo.</p>'; return; }
-    caja.innerHTML = '<img src="' + c.datos + '" alt="Croquis de la jornada con los ' + registros.length + ' puntos numerados">' +
+    caja.innerHTML = '<img src="' + c.datos + '" alt="' + (registros.length === 1 ? 'Croquis de la jornada con su punto' : 'Croquis de la jornada con los ' + registros.length + ' puntos numerados') + '">' +
       '<p class="previa-nota">' + SRP.util.escapar(c.nota) + '</p>';
   },
 
@@ -280,7 +280,7 @@ SRP.reportes = {
     const s = SRP.jornadas.metaDe(cierre);
     if (s === null) return '';
     const n = registros.length;
-    return 'Meta de la jornada: ' + s + ' árboles · registrados: ' + n + (s === n ? ' (cuadra)' : ' (no cuadra)');
+    return 'Meta de la jornada: ' + s + (s === 1 ? ' árbol' : ' árboles') + ' · registrados: ' + n + (s === n ? ' (cuadra)' : ' (no cuadra)');
   },
 
   // «Jornada 2 de 3» bajo la fecha, sólo cuando el día tuvo más de una (D117)
