@@ -306,7 +306,7 @@ SRP.registros = {
     if (f.cabo) fichas.push(['cabo', 'Cabo: ' + SRP.ref.nombreUsuario(f.cabo)]);
     this.el('filtros-activos').innerHTML = fichas.map(([q, t]) =>
       '<li class="ficha-filtro"><span>' + esc(t) + '</span><button type="button" data-quitar="' + q + '" aria-label="Quitar filtro ' + esc(t) + '">' +
-      SRP.ICONOS.svg('cerrar', 16) + '</button></li>').join('');
+      SRP.ICONOS.svg('cerrar', 'chico') + '</button></li>').join('');
     const cuenta = this.el('filtros-cuenta');
     cuenta.hidden = !fichas.length;
     cuenta.textContent = fichas.length;
@@ -328,10 +328,8 @@ SRP.registros = {
     const esc = SRP.util.escapar;
     // Envío simulado (D111): la tarjeta dice si el registro espera envío; enviado no lleva marca
     const envio = SRP.envio.simulado() ? SRP.envio.leer() : null;
-    const MARCAS = { por_enviar: 'Por enviar', cambios: 'Cambios por enviar' };
     this.el('lista-registros').innerHTML = pagina.map(r => {
       const est = envio && r.es_ficticio ? SRP.envio.estado(r, envio) : null;
-      const marca = MARCAS[est] ? '<span class="marca-envio">' + SRP.ICONOS.svg('sinSenal', 14) + MARCAS[est] + '</span>' : '';
       const esp = SRP.ref.especieDe(r);
       // Acciones en el menú de la tuerca (D94): sólo las que el perfil permite
       const items = [{ accion: 'ver', texto: 'Ver detalle', icono: 'ver' }];
@@ -343,12 +341,19 @@ SRP.registros = {
       // el folio sólo aparece cuando exista
       const mini = r.foto_base64
         ? '<img class="registro-miniatura" src="' + r.foto_base64 + '" alt="" loading="lazy">'
-        : '<span class="registro-miniatura registro-sin-foto" aria-hidden="true">' + SRP.ICONOS.svg('registros', 24) + '</span>';
+        : '<span class="registro-miniatura registro-sin-foto" aria-hidden="true">' + SRP.ICONOS.svg('registros', 'grande') + '</span>';
+      /* Anatomía común de tarjeta (D141), la misma de Jornadas y Reportes: 1) qué —la especie—,
+         2) cuándo y quién, 3) fila de estado —folio y envío—, 4) dónde —jornada y lugar—; la
+         tuerca, arriba a la derecha (D100) */
+      const estado = this.htmlEstado(r, est);
       return '<li class="registro" data-id="' + r.id + '">' + mini + '<div class="registro-datos">' +
         '<span class="registro-especie">' + esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : '') + '</span>' +
-        '<span class="registro-lugar">' + (r.jornada_id && this.jornadasPorId && this.jornadasPorId[r.jornada_id] ? '<b class="registro-jornada">' + esc(this.jornadasPorId[r.jornada_id]) + '</b> · ' : '') +
-        esc(SRP.ref.alcaldia(r.alcaldia)) + (r.colonia ? ', ' + esc(r.colonia) : '') + '</span>' +
-        '<span class="registro-fecha">' + this.htmlFecha(r, variosAutores) + '</span>' + marca +
+        // Cuándo y estado en un mismo renglón: la tarjeta sigue compacta (D100) en una lista larga
+        '<span class="registro-meta"><span class="registro-fecha">' + this.htmlFecha(r, variosAutores) + '</span>' +
+        '<span class="registro-estado"' + (estado ? '' : ' hidden') + '>' + estado + '</span></span>' +
+        '<span class="registro-lugar">' + SRP.ICONOS.svg('ubicacion', 'chico') + '<span>' +
+        (r.jornada_id && this.jornadasPorId && this.jornadasPorId[r.jornada_id] ? '<b class="registro-jornada">' + esc(this.jornadasPorId[r.jornada_id]) + '</b> · ' : '') +
+        esc(SRP.ref.alcaldia(r.alcaldia)) + (r.colonia ? ', ' + esc(r.colonia) : '') + '</span></span>' +
         '</div><div class="registro-acciones">' + menu + '</div></li>';
     }).join('');
     const n = this.filtrados.length;
@@ -361,8 +366,16 @@ SRP.registros = {
 
   htmlFecha(r, variosAutores) {
     const esc = SRP.util.escapar;
-    return SRP.util.formatearFecha(r.fecha_plantacion) + (r.folio ? ' · ' + esc(r.folio) : '') +
-      (variosAutores ? ' · ' + esc(SRP.ref.nombreUsuario(r.cabo_id)) : '');
+    return SRP.util.formatearFecha(r.fecha_plantacion) + (variosAutores ? ' · ' + esc(SRP.ref.nombreUsuario(r.cabo_id)) : '');
+  },
+
+  /* Fila de estado (D141): el folio cuando existe y, si espera envío, la marca (D111). Enviado y
+     sin folio todavía no dice nada: «PROVISIONAL» no se repite en cada tarjeta (R1). */
+  MARCAS: { por_enviar: 'Por enviar', cambios: 'Cambios por enviar' },
+  htmlEstado(r, est) {
+    const esc = SRP.util.escapar;
+    return (SRP.folio.valido(r.folio) ? '<span class="etiqueta registro-folio">' + esc(r.folio) + '</span>' : '') +
+      (this.MARCAS[est] ? '<span class="etiqueta marca-envio">' + SRP.ICONOS.svg('sinSenal', 'chico') + '<span>' + this.MARCAS[est] + '</span></span>' : '');
   },
 
   /* Después de un envío en segundo plano (D111) la lista se corrige en su lugar: folio nuevo y
@@ -381,8 +394,9 @@ SRP.registros = {
       const r = frescos[li.dataset.id];
       if (!r) return;
       li.querySelector('.registro-fecha').innerHTML = this.htmlFecha(r, variosAutores);
-      const marca = li.querySelector('.marca-envio');
-      if (marca && r.es_ficticio && SRP.envio.estado(r, e) === 'recibido') marca.remove();
+      const fila = li.querySelector('.registro-estado');
+      const html = this.htmlEstado(r, r.es_ficticio ? SRP.envio.estado(r, e) : null);
+      fila.innerHTML = html; fila.hidden = !html;
     });
   },
 
@@ -420,11 +434,7 @@ SRP.registros = {
       texto = 'Pruebe con otro periodo' + (this.filtro.cabo ? ' u otro cabo' : '') + ', o quite los filtros.';
       botones = [{ accion: 'quitar', texto: 'Quitar filtros', clase: 'btn-secundario' }];
     }
-    caja.innerHTML = '<span class="vacio-icono" aria-hidden="true">' + SRP.ICONOS.svg(icono, 32) + '</span>' +
-      '<p class="vacio-titulo">' + titulo + '</p><p class="vacio-texto">' + texto + '</p>' +
-      '<div class="vacio-acciones">' + botones.filter(Boolean).map(b =>
-        '<button type="button" class="btn ' + b.clase + '" data-vacio="' + b.accion + '">' +
-        (b.icono ? SRP.ICONOS.svg(b.icono, 20) : '') + '<span>' + b.texto + '</span></button>').join('') + '</div>';
+    caja.innerHTML = SRP.util.htmlVacio(icono, titulo, texto, botones);   // patrón común de los cuatro listados (D141)
   },
 
   // Quita todo filtro, cabo incluido: lo que pide el estado vacío cuando el filtro no encuentra nada

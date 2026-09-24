@@ -50,16 +50,18 @@ SRP.activa = {
     // Con una fecha que no es hoy, el botón lo dice: «Iniciar jornada del 22-SEP» (D138)
     this.el('ini-fecha').addEventListener('change', () => this.pintarBotonIniciar());
     this.el('ini-fecha').addEventListener('input', () => this.pintarBotonIniciar());
-    this.el('btn-iniciar-cancelar').innerHTML = SRP.ICONOS.svg('cerrar', 18) + '<span>Cancelar</span>';
-    this.el('btn-jornada-cerrar').innerHTML = SRP.ICONOS.svg('candado', 18) + '<span>Cerrar jornada</span>';
-    this.el('btn-jornada-cambiar').innerHTML = SRP.ICONOS.svg('jornadas', 18) + '<span>Cambiar de jornada</span>';
+    this.el('btn-iniciar-cancelar').innerHTML = SRP.ICONOS.svg('cerrar', 'medio') + '<span>Cancelar</span>';
+    this.el('btn-jornada-cerrar').innerHTML = SRP.ICONOS.svg('candado', 'medio') + '<span>Cerrar jornada</span>';
+    // «Cambiar», con su icono de intercambio: «Cambiar de jornada» se partía en dos renglones (D141)
+    this.el('btn-jornada-cambiar').innerHTML = SRP.ICONOS.svg('intercambio', 'medio') + '<span>Cambiar</span>';
+    this.el('btn-jornada-cambiar').setAttribute('aria-label', 'Cambiar de jornada');
   },
 
   pintarBotonIniciar() {
     const f = this.el('ini-fecha').value;
     const otroDia = f && f !== SRP.util.fechaHoy();
     const corta = otroDia ? f.slice(8, 10) + '-' + SRP.util.MESES_CORTOS[Number(f.slice(5, 7)) - 1] : '';
-    this.el('btn-iniciar-jornada').innerHTML = SRP.ICONOS.svg('palomita', 20) + '<span>' + (otroDia ? 'Iniciar jornada del ' + corta : 'Iniciar jornada') + '</span>';
+    this.el('btn-iniciar-jornada').innerHTML = SRP.ICONOS.svg('palomita', 'medio') + '<span>' + (otroDia ? 'Iniciar jornada del ' + corta : 'Iniciar jornada') + '</span>';
   },
 
   /* ---------- Datos ---------- */
@@ -100,7 +102,7 @@ SRP.activa = {
     const f = SRP.util.formatearFecha(j.fecha);
     const ok = await SRP.app.confirmar({ titulo: 'Jornada de otro día', pregunta: '¿Guardar el árbol en «' + j.nombre + '», del ' + f + '?',
       puntos: ['La jornada activa no es de hoy: el árbol quedará con fecha ' + f + '.',
-        'Si el árbol es de hoy, cancele y toque «Cambiar de jornada» para iniciar la de hoy.'],
+        'Si el árbol es de hoy, cancele y toque «Cambiar» para iniciar la de hoy.'],
       nota: 'Se pregunta una vez por sesión.', boton: 'Sí, es de esa jornada', icono: 'palomita' });
     if (ok) this.confirmadaOtroDia = j.id;
     return ok;
@@ -205,7 +207,7 @@ SRP.activa = {
     b.setAttribute('aria-busy', String(!!buscando));
     const p = this.punto;
     b.className = 'btn btn-ancho ' + (p ? 'btn-editar' : 'btn-primario');
-    b.innerHTML = SRP.ICONOS.svg('ubicacion', 20) + '<span>' +
+    b.innerHTML = SRP.ICONOS.svg('ubicacion', 'medio') + '<span>' +
       (buscando ? 'Buscando señal…' : p ? 'Detectar de nuevo la ubicación' : 'Detectar ubicación de la jornada') + '</span>';
     this.el('ini-alcaldia').textContent = p ? SRP.ref.alcaldia(p.t.alcaldia) : '—';
     this.el('ini-colonia').textContent = p ? SRP.ref.colonia(p.t.colonia) : '—';

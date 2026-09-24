@@ -35,6 +35,10 @@ SRP.reportes = {
     this.el('pdf-atajos').addEventListener('click', (e) => { const b = e.target.closest('.chip'); if (b) this.aplicarAtajo(b.dataset.atajo); });
     this.el('pdf-dia').addEventListener('change', () => { this.filtro.dia = this.el('pdf-dia').value; this.diaAbierto = true; this.pintarLista(); });
     this.el('pdf-cabo').addEventListener('change', () => { this.filtro.cabo = this.el('pdf-cabo').value; this.pintarLista(); });
+    this.el('pdf-vacio').addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-vacio]'); if (!b) return;
+      if (b.dataset.vacio === 'jornadas') SRP.app.mostrarVista('jornadas'); else this.aplicarAtajo('todas');
+    });
     this.el('pdf-lista').addEventListener('click', (e) => {
       const b = e.target.closest('button[data-id]'); if (!b) return;
       const j = this.lista.find(x => x.id === b.dataset.id);
@@ -132,19 +136,31 @@ SRP.reportes = {
       const cuando = SRP.jornadas.cuando(j.fecha);
       const fecha = SRP.envio.diaEnLetra(j.fecha).split(' ')[0].slice(0, 3) + ' ' + SRP.util.formatearFecha(j.fecha);
       const generado = j.dato && j.dato.reporte_en;
+      const lugar = SRP.jornadas.lugarDe(j), ubic = (j.dato && j.dato.ubicacion) || '';
+      const cifra = (v, t) => '<span class="jornada-cifra" data-cero="' + (v === 0) + '"><b>' + v + '</b> ' + t + '</span>';
+      // Anatomía común de tarjeta (D141): qué → cuándo → estado → dónde → cuánto → quién → acción
       return '<li class="jornada"><div class="jornada-boton reporte-ficha">' +
         '<span class="jornada-titulo-caja"><span class="jornada-sitio">' + esc(j.nombre) + '</span>' +
         '<span class="jornada-dia">' + (cuando ? '<b>' + cuando + '</b> · ' : '') + '<span class="jornada-fecha">' + esc(fecha) + '</span>' +
-        (j.total > 1 ? ' <span class="jornada-ndn">Jornada ' + j.n + ' de ' + j.total + '</span>' : '') + '</span>' +
-        '<span class="jornada-fecha">' + n + (n === 1 ? ' árbol' : ' árboles') + ' · ' + especies + (especies === 1 ? ' especie' : ' especies') +
-        (variosAutores ? ' · ' + esc(SRP.ref.nombreUsuario(j.cabo_id)) : '') + (generado ? ' · reporte generado ' + esc(SRP.envio.cuando(generado)) : '') + '</span></span>' +
+        (j.total > 1 ? ' <span class="jornada-ndn">Jornada ' + j.n + ' de ' + j.total + '</span>' : '') + '</span></span>' +
+        '<span class="jornada-estado"><span class="insignia-jornada" data-tono="' + (generado ? 'ok' : 'neutro') + '">' +
+        SRP.ICONOS.svg(generado ? 'palomita' : 'reportes', 'chico') + '<span>' + (generado ? 'Reporte generado ' + esc(SRP.envio.cuando(generado)) : 'Sin reporte todavía') + '</span></span></span>' +
+        (lugar || ubic ? '<span class="jornada-lugar">' + SRP.ICONOS.svg('ubicacion', 'chico') + '<span>' + esc(lugar) + (ubic ? (lugar ? ' · ' : '') + '<span class="jornada-ubic">' + esc(ubic) + '</span>' : '') + '</span></span>' : '') +
+        '<span class="jornada-cifras">' + cifra(n, n === 1 ? 'árbol' : 'árboles') + cifra(especies, especies === 1 ? 'especie' : 'especies') + '</span>' +
+        (variosAutores ? '<span class="jornada-cabo">' + SRP.ICONOS.svg('usuario', 'chico') + '<span>' + esc(SRP.ref.nombreUsuario(j.cabo_id)) + '</span></span>' : '') +
         '<button type="button" class="btn ' + (generado ? 'btn-editar' : 'btn-primario') + ' btn-chico" data-id="' + j.id + '"' + (n ? '' : ' disabled') + '>' +
-        SRP.ICONOS.svg(generado ? 'lapiz' : 'reportes', 18) + '<span>' + (generado ? 'Volver a generar' : 'Generar reporte') + '</span></button>' +
+        SRP.ICONOS.svg(generado ? 'lapiz' : 'reportes', 'medio') + '<span>' + (generado ? 'Volver a generar' : 'Generar reporte') + '</span></button>' +
         (n ? '' : '<span class="nota reporte-sin">Sin árboles: no hay qué reportar.</span>') + '</div></li>';
     }).join('');
     const nota = this.el('pdf-nota');
-    if (this.lista.length) nota.textContent = this.lista.length + (this.lista.length === 1 ? ' jornada cerrada' : ' jornadas cerradas') + (abiertas ? ' · ' + abiertas + (abiertas === 1 ? ' abierta que aún no se puede reportar' : ' abiertas que aún no se pueden reportar') : '') + '.';
-    else nota.textContent = (f.dia ? 'No hay jornadas cerradas del ' + SRP.util.formatearFecha(f.dia) + '.' : 'Todavía no hay jornadas cerradas.') + (abiertas ? ' Hay ' + abiertas + (abiertas === 1 ? ' abierta' : ' abiertas') + ': ciérrela en Jornadas para generar su reporte.' : '');
+    nota.textContent = this.lista.length ? this.lista.length + (this.lista.length === 1 ? ' jornada cerrada' : ' jornadas cerradas') + (abiertas ? ' · ' + abiertas + (abiertas === 1 ? ' abierta que aún no se puede reportar' : ' abiertas que aún no se pueden reportar') : '') + '.' : '';
+    // Estado vacío con salida (D141): la acción lleva a donde se cierran las jornadas
+    const vacio = this.el('pdf-vacio');
+    vacio.hidden = this.lista.length > 0;
+    if (!this.lista.length) vacio.innerHTML = SRP.util.htmlVacio('reportes',
+      f.dia ? 'No hay jornadas cerradas del ' + SRP.util.formatearFecha(f.dia) + '.' : 'Todavía no hay jornadas cerradas.',
+      abiertas ? 'Hay ' + abiertas + (abiertas === 1 ? ' abierta' : ' abiertas') + ': ciérrela en Jornadas para generar su reporte.' : 'El reporte se genera al cerrar una jornada.',
+      [f.dia ? { accion: 'todas', texto: 'Ver todas' } : null, { accion: 'jornadas', texto: 'Ir a Jornadas', clase: 'btn-primario', icono: 'jornadas' }]);
   },
 
   // El cierre del reporte vive en la jornada (D119): es el mismo registro

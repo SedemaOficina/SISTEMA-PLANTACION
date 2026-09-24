@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.62 (Bloque 81)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.63 (Bloque 82)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -136,6 +136,14 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M125 | Auditoría UX (F2) | Contador «420 / 500» al pasar del 80 % en nombre, ubicación y comentarios; avisa al llegar al límite | Baja | 0.6.62 (B81) | Escribir comentarios largos | Contador |
 | M126 | Auditoría UX (F3) | «Hoy» en Editar jornada, para corregir una jornada iniciada con la fecha equivocada | Baja | 0.6.62 (B81) | Jornadas › ficha › Editar jornada | — |
 | M127 | Petición de Liber | El espejo «Campos que viajan a la base y no se ven en pantalla» sale plegado en Nuevo registro (como en el detalle y el cierre) | Baja | 0.6.62 (B81) | Nuevo registro, al pie del formulario | — |
+| M128 | Auditoría UX (T1) | Una anatomía de tarjeta en Jornadas, Registros y Reportes: qué → cuándo → estado → dónde → cuánto → acción; Registros lleva folio y envío como etiquetas y Reportes su estado y lugar | Media | 0.6.63 (B82) | Recorrer Registros y Reportes | Tarjetas |
+| M129 | Auditoría UX (T2) | Ficha de jornada con subtítulos (Mapa, Conciliación, Puntos (N)) y, en teléfono, barra fija de saltos | Media | 0.6.63 (B82) | Abrir una jornada con varios puntos y bajar | Barra de saltos |
+| M130 | Auditoría UX (T3) | Estado vacío igual en los cuatro listados: icono, frase y la acción que saca de él (en Reportes, «Ir a Jornadas») | Baja | 0.6.63 (B82) | Reportes › Un día sin jornadas | Vacío |
+| M131 | Auditoría UX (I1) | Iconos en tres tamaños: 16, 20 y 24 | Baja | 0.6.63 (B82) | — | — |
+| M132 | Auditoría UX (I2) | «Cambiar» con icono de intercambio; el mapa queda para la sección Jornadas | Baja | 0.6.63 (B82) | Nuevo registro › panel | — |
+| M133 | Auditoría UX (I3) | Las etiquetas de resultado llevan el icono de su tono: por revisar, completa, falta/sobra, en curso | Media | 0.6.63 (B82) | Jornadas › tarjetas | Etiquetas |
+| M134 | Hallazgo del bloque | Botones de dos en dos en un renglón desde 360 px: «Registrar árbol», «Generar PDF», «Regenerar PDF», «Cambiar» | Media | 0.6.63 (B82) | Ficha de jornada en un teléfono chico | Barra del pie |
+| M135 | Hallazgo del bloque | Con ratón, el botón principal ya no se vuelve guinda al pasar el puntero (resto de antes de D124); tampoco la zona de fotografía ni la opción del combo | Baja | 0.6.63 (B82) | En computadora, pasar el puntero por un botón principal | — |
 
 ## 2. Por hacer
 

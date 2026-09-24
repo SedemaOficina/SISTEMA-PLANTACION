@@ -56,7 +56,7 @@ SRP.conexion = {
     const n = await this.contarGuardados();
     // En teléfono chico la palabra «guardados» se oculta por CSS (queda «Con conexión · 4»); la etiqueta accesible la dice completa (D93)
     const cuenta = n === null ? '' : ' · ' + n + '<span class="cx-palabra"> ' + (n === 1 ? 'guardado' : 'guardados') + '</span>';
-    ind.innerHTML = SRP.ICONOS.svg(con ? 'senal' : 'sinSenal', 18) +
+    ind.innerHTML = SRP.ICONOS.svg(con ? 'senal' : 'sinSenal', 'medio') +
       '<span>' + (con ? 'Con conexión' : 'Sin conexión') + cuenta + '</span>';
     ind.dataset.estado = con ? 'con' : 'sin';
     ind.setAttribute('aria-label', (con ? 'Con conexión' : 'Sin conexión, puede seguir registrando') +
@@ -83,7 +83,7 @@ SRP.conexion = {
         (n === null ? '' : n === 0 ? ', todo enviado' : ', ' + n + (n === 1 ? ' registro por enviar' : ' registros por enviar')) +
         (atraso ? ', con atraso' : '');
     }
-    ind.innerHTML = SRP.ICONOS.svg(con ? 'senal' : 'sinSenal', 18) + '<span>' + texto + '</span>';
+    ind.innerHTML = SRP.ICONOS.svg(con ? 'senal' : 'sinSenal', 'medio') + '<span>' + texto + '</span>';
     ind.dataset.estado = enviando ? 'enviando' : atraso ? 'atraso' : con ? 'con' : 'sin';
     ind.setAttribute('aria-label', etiqueta + '. Abrir la guía de qué hacer sin internet');
   },
@@ -115,7 +115,7 @@ SRP.conexion = {
     // Cuántos llevan fotografía y cuánto pesan: la cifra para pedir disco a ADIP (D87)
     const fotos = n ? ' ' + (f.con_foto === 1 ? '1 lleva fotografía' : f.con_foto + ' llevan fotografía') +
       (f.con_foto ? ' (' + SRP.foto.formatearPeso(f.foto_bytes) + ')' : '') + '.' : '';
-    caja.innerHTML = SRP.ICONOS.svg('info', 18) + '<strong>' + cuenta + '.</strong>' + fotos + ' ' + (this.enLinea()
+    caja.innerHTML = SRP.ICONOS.svg('info', 'medio') + '<strong>' + cuenta + '.</strong>' + fotos + ' ' + (this.enLinea()
       ? 'Por ahora no hay envío al servidor: los registros se quedan aquí. Genere el reporte de la jornada y compártalo con su coordinador, o guarde un respaldo. <strong>No borre los datos del navegador.</strong>'
       : 'Siga registrando: no hace falta internet. Cuando tenga señal, genere el reporte de la jornada y compártalo.');
   },

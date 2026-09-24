@@ -79,10 +79,10 @@ SRP.util = {
     const zona = document.getElementById('aviso');
     const tonos = { alerta: { icono: 'info', color: 'alerta' }, aviso: { icono: 'info', color: 'aviso' } };
     const t = tonos[tipo] || { icono: 'palomita', color: 'exito' };
-    zona.innerHTML = '<span class="aviso-icono" aria-hidden="true">' + SRP.ICONOS.svg(t.icono, 20) + '</span>' +
+    zona.innerHTML = '<span class="aviso-icono" aria-hidden="true">' + SRP.ICONOS.svg(t.icono, 'medio') + '</span>' +
       '<span class="aviso-texto"></span>' +
       (op.deshacer ? '<button type="button" class="aviso-accion"></button>' : '') +
-      '<button type="button" class="aviso-cerrar" aria-label="Cerrar aviso">' + SRP.ICONOS.svg('cerrar', 18) + '</button>';
+      '<button type="button" class="aviso-cerrar" aria-label="Cerrar aviso">' + SRP.ICONOS.svg('cerrar', 'medio') + '</button>';
     zona.querySelector('.aviso-texto').textContent = mensaje;
     zona.dataset.tipo = t.color;
     zona.hidden = false;
@@ -119,7 +119,7 @@ SRP.util = {
       if (c.tagName !== 'BUTTON') c.setAttribute('aria-invalid', 'true');
       m = document.createElement('p');
       m.id = id + '-error'; m.className = 'campo-error';
-      m.innerHTML = SRP.ICONOS.svg('info', 16) + '<span></span>';
+      m.innerHTML = SRP.ICONOS.svg('info', 'chico') + '<span></span>';
       m.querySelector('span').textContent = texto;
       // Al final de su caja de campo (debajo de «Hoy», de la lista de especies, del contador);
       // un control suelto, como el botón de ubicación, lo lleva justo debajo
@@ -166,6 +166,19 @@ SRP.util = {
   // Tras llenar o limpiar campos por código (abrir un diálogo, limpiar el formulario)
   refrescarContadores(raiz) {
     (raiz || document).querySelectorAll('input[maxlength], textarea[maxlength]').forEach(c => this.pintarContador(c));
+  },
+
+  /* ESTADO VACÍO (D141). El mismo patrón en los cuatro listados (Registros, Jornadas, Reportes,
+     Fotografías): icono, una frase en negritas, una explicación y la acción que saca del vacío.
+     Un vacío sin icono ni acción parece error. Los botones llevan data-vacio con su acción; cada
+     vista atiende el clic. `botones`: [{ accion, texto, clase, icono }] */
+  htmlVacio(icono, titulo, texto, botones) {
+    const esc = this.escapar;
+    return '<span class="vacio-icono" aria-hidden="true">' + SRP.ICONOS.svg(icono, 'grande') + '</span>' +
+      '<p class="vacio-titulo">' + esc(titulo) + '</p>' + (texto ? '<p class="vacio-texto">' + esc(texto) + '</p>' : '') +
+      ((botones || []).filter(Boolean).length ? '<div class="vacio-acciones">' + botones.filter(Boolean).map(b =>
+        '<button type="button" class="btn ' + (b.clase || 'btn-secundario') + '" data-vacio="' + b.accion + '">' +
+        (b.icono ? SRP.ICONOS.svg(b.icono, 'medio') : '') + '<span>' + esc(b.texto) + '</span></button>').join('') + '</div>' : '');
   },
 
   /* Sólo para el lector de pantalla, sin letrero. Para cambios que en pantalla ya se ven solos

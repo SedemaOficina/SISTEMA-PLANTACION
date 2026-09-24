@@ -31,6 +31,12 @@ SRP.galeria = {
     this.el('galeria-dia').addEventListener('change', () => { this.filtro.dia = this.el('galeria-dia').value; this.diaAbierto = true; this.pintar(); });
     this.el('galeria-cabo').addEventListener('change', () => { this.filtro.cabo = this.el('galeria-cabo').value; this.filtro.jornada = ''; this.pintar(); });
     this.el('galeria-jornada').addEventListener('change', () => { this.filtro.jornada = this.el('galeria-jornada').value; this.pintar(); });
+    this.el('galeria-vacio').addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-vacio]'); if (!b) return;
+      if (b.dataset.vacio === 'registrar') { SRP.app.mostrarVista('registrar'); return; }
+      this.filtro.cabo = ''; this.filtro.jornada = ''; if (this.el('galeria-cabo')) this.el('galeria-cabo').value = '';
+      this.aplicarAtajo('todas');
+    });
     this.el('galeria-rejilla').addEventListener('click', (e) => {
       const b = e.target.closest('button[data-id]'); if (!b) return;
       const r = this.fotos.find(x => x.id === b.dataset.id); if (r) this.abrir(r);
@@ -43,9 +49,9 @@ SRP.galeria = {
       SRP.registros.verDetalle(this.actual);
     });
     this.el('btn-foto-cerrar').addEventListener('click', () => this.el('dlg-foto').close());
-    this.el('btn-galeria-zip').innerHTML = SRP.ICONOS.svg('descargar', 20) + '<span>Descargar todas</span>';
-    this.el('btn-foto-descargar').innerHTML = SRP.ICONOS.svg('descargar', 20) + '<span>Descargar</span>';
-    this.el('btn-foto-registro').innerHTML = SRP.ICONOS.svg('ver', 20) + '<span>Ver registro</span>';
+    this.el('btn-galeria-zip').innerHTML = SRP.ICONOS.svg('descargar', 'medio') + '<span>Descargar todas</span>';
+    this.el('btn-foto-descargar').innerHTML = SRP.ICONOS.svg('descargar', 'medio') + '<span>Descargar</span>';
+    this.el('btn-foto-registro').innerHTML = SRP.ICONOS.svg('ver', 'medio') + '<span>Ver registro</span>';
   },
 
   /* ---------- Datos ---------- */
@@ -120,9 +126,12 @@ SRP.galeria = {
     this.el('btn-galeria-zip').disabled = !n;
     const vacio = this.el('galeria-vacio');
     vacio.hidden = n > 0;
-    if (!n) vacio.innerHTML = '<span class="vacio-icono" aria-hidden="true">' + SRP.ICONOS.svg('camara', 32) + '</span>' +
-      '<p class="vacio-titulo">' + (f.dia || f.cabo || f.jornada ? 'No hay fotografías con estos filtros.' : 'Todavía no hay fotografías.') + '</p>' +
-      '<p class="nota">' + (f.dia || f.cabo || f.jornada ? 'Pruebe con «Todas», con otra jornada o con otro cabo.' : 'Aparecerán aquí las fotografías que los cabos agreguen a sus registros.') + '</p>';
+    // Estado vacío con salida (D141): con filtros, quitarlos; sin fotografías, ir a registrar
+    const filtrado = f.dia || f.cabo || f.jornada;
+    if (!n) vacio.innerHTML = filtrado
+      ? SRP.util.htmlVacio('camara', 'No hay fotografías con estos filtros.', 'Pruebe con otra jornada, otro día u otro cabo.', [{ accion: 'todas', texto: 'Ver todas' }])
+      : SRP.util.htmlVacio('camara', 'Todavía no hay fotografías.', 'Aparecen aquí las que se agregan a los registros; la fotografía es opcional.',
+          [SRP.permisos.de(SRP.sesion.usuario).registrar ? { accion: 'registrar', texto: 'Registrar un árbol', clase: 'btn-primario', icono: 'mas' } : null]);
   },
 
   /* ---------- Una fotografía ---------- */
@@ -176,7 +185,7 @@ SRP.galeria = {
     const html0 = b.innerHTML;
     b.disabled = true;
     b.setAttribute('aria-busy', 'true');
-    b.innerHTML = SRP.ICONOS.svg('info', 20) + '<span>Armando…</span>';
+    b.innerHTML = SRP.ICONOS.svg('info', 'medio') + '<span>Armando…</span>';
     try {
       // El armado es síncrono y ocupa el hilo: se cede un cuadro para que «Armando…» se pinte antes
       await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));

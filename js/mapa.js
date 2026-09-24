@@ -81,7 +81,7 @@ SRP.mapa = {
     if (!b) return;
     b.disabled = buscando;
     b.setAttribute('aria-busy', String(buscando));
-    if (buscando) b.innerHTML = SRP.ICONOS.svg('ubicacion', 20) + '<span>Buscando señal…</span>';
+    if (buscando) b.innerHTML = SRP.ICONOS.svg('ubicacion', 'medio') + '<span>Buscando señal…</span>';
     else this.refrescarBotonUbicacion();
   },
 
@@ -102,7 +102,7 @@ SRP.mapa = {
     if (!b || b.disabled) return;
     const a = this.aparienciaBotonUbicacion();
     b.className = a.clase;
-    b.innerHTML = SRP.ICONOS.svg(a.icono, 20) + '<span>' + a.texto + '</span>';
+    b.innerHTML = SRP.ICONOS.svg(a.icono, 'medio') + '<span>' + a.texto + '</span>';
   },
 
   estado(texto, tipo) {

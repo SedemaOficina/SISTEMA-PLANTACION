@@ -1496,3 +1496,23 @@ ubicación y la especie; «Hoy» en Editar jornada; errores limpios al reabrir e
 
 **Verificación:** 526 comprobaciones sin errores de consola; 85 de auditoría;
 presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.62.
+
+## Bloque 82 — Tarjetas, secciones e iconos (24-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.63.
+
+**Qué cambió (D141).** `iconos.js`: `TAMANOS`, `tamano()`, iconos `intercambio` y `reloj`; 56
+llamadas pasan de números a chico/medio/grande. `util.js`: `htmlVacio()`. `registros.js`: tarjeta
+con `.registro-meta` (fecha y estado) y lugar con icono; `htmlEstado()`; el vacío usa el patrón
+común. `reportes.js`: tarjeta con estado, lugar y cifras; `#pdf-vacio` con «Ir a Jornadas».
+`jornadas.js`: `iconoTono()`, icono en la etiqueta y en la conciliación, saltos de sección, cuenta
+de puntos, vacío con salida y etiquetas cortas de la barra. `galeria.js`: vacío con salida.
+`jornada-activa.js`: «Cambiar» con intercambio. `index.html`: subtítulos y `#jornada-saltos`,
+`#pdf-vacio`. `estilos.css`: `.etiqueta`, `.registro-meta`, `.saltos`, `.titulo-seccion`, tarjeta
+de Reportes en columna, menos aire en botones de barra y hover en acento.
+Pruebas: tres tamaños de icono en cinco vistas, subtítulos, barra de saltos (teléfono sí,
+computadora no) y su foco, iconos de resultado, botones de la barra en un renglón a 360 px,
+anatomía de Registros y Reportes, «Cambiar» con intercambio, vacíos con salida en Jornadas,
+Reportes y Fotografías.
+
+**Verificación:** 542 comprobaciones sin errores de consola; 85 de auditoría;
+presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.63.

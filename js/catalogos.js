@@ -63,7 +63,7 @@ SRP.catalogos = {
     plantaciones.forEach(p => { sumar(p.programa_id); sumar(p.especie_id); });   // incluye eliminados: siguen en el historial
     SRP.ref.usuarios.forEach(u => sumar(u.area_id));
     this.el('caja-cat-buscar').hidden = this.tipo !== 'especie';
-    this.el('btn-cat-agregar').innerHTML = SRP.ICONOS.svg('mas', 20) + '<span>Agregar ' + this.ETIQUETA[this.tipo] + '</span>';
+    this.el('btn-cat-agregar').innerHTML = SRP.ICONOS.svg('mas', 'medio') + '<span>Agregar ' + this.ETIQUETA[this.tipo] + '</span>';
     this.pintar();
   },
 

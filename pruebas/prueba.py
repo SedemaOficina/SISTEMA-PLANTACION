@@ -680,8 +680,8 @@ with sync_playwright() as p:
     # ---------- REPORTES (B19, B31, D134) ----------
     # El reporte es de una jornada cerrada (D131): Reportes lista las cerradas; con todo abierto lo dice
     pg.click('.pestana[data-vista=reportes]'); pg.wait_for_timeout(600)
-    ok(pg.locator('#pdf-lista .jornada').count()==0 and 'Todavía no hay jornadas cerradas' in pg.inner_text('#pdf-nota') and 'ciérrela en Jornadas' in pg.inner_text('#pdf-nota'),
-       'sin jornadas cerradas no hay fichas y la nota pide cerrar (D131, D134): '+pg.inner_text('#pdf-nota'))
+    ok(pg.locator('#pdf-lista .jornada').count()==0 and 'Todavía no hay jornadas cerradas' in pg.inner_text('#pdf-vacio') and 'ciérrela en Jornadas' in pg.inner_text('#pdf-vacio') and pg.locator('#pdf-vacio .vacio-icono svg').count()==1 and pg.locator('#pdf-vacio button[data-vacio=jornadas]').count()==1,
+       'sin jornadas cerradas, el estado vacío lo dice con icono y botón «Ir a Jornadas» (D131, D134, D141): '+pg.inner_text('#pdf-vacio').replace(chr(10),' '))
     pg.evaluate("async () => { for (const j of await SRP.activa.abiertas()) await SRP.activa.cambiarEstatus(j, 'cerrada'); SRP.activa.jornada = null; }"); pg.wait_for_timeout(300)
     pg.evaluate("SRP.app.mostrarVista('registros')"); pg.wait_for_timeout(300)
     ok(pg.locator('#vista-registros #btn-pdf').count()==0 and pg.locator('#vista-registros #aviso-envio').count()==0,'Registros ya no lleva el reporte ni el bloque del dispositivo (D81)')
@@ -703,7 +703,7 @@ with sync_playwright() as p:
     ok('10-AGO-2026' in pg.inner_text('#dlg-cierre-dia'),'su botón abre el cierre de esa jornada: '+pg.inner_text('#dlg-cierre-dia'))
     pg.click('#btn-cierre-cerrar'); pg.wait_for_timeout(200)
     pg.fill('#pdf-dia','2026-01-05'); pg.dispatch_event('#pdf-dia','change'); pg.wait_for_timeout(400)
-    ok(pg.locator('#pdf-lista .jornada').count()==0 and 'No hay jornadas cerradas del 05-ENE-2026' in pg.inner_text('#pdf-nota'),'un día sin jornadas lo dice: '+pg.inner_text('#pdf-nota'))
+    ok(pg.locator('#pdf-lista .jornada').count()==0 and 'No hay jornadas cerradas del 05-ENE-2026' in pg.inner_text('#pdf-vacio') and pg.locator('#pdf-vacio button[data-vacio=todas]').count()==1,'un día sin jornadas lo dice y ofrece «Ver todas»: '+pg.inner_text('#pdf-vacio').replace(chr(10),' '))
     pg.click('#pdf-atajos [data-atajo=hoy]'); pg.wait_for_timeout(400)
     ok(pg.locator('#pdf-lista .jornada').count()>=1 and all('Hoy' in t for t in pg.eval_on_selector_all('#pdf-lista .jornada','l=>l.map(x=>x.textContent)')),'«Hoy» deja las cerradas de hoy')
 
@@ -833,8 +833,10 @@ with sync_playwright() as p:
     ok(pg.is_visible('#vista-reportes') and pg.is_visible('#dlg-cierre') and 'Jardín de prueba' in pg.inner_text('#dlg-cierre-dia'),'«Reporte de la jornada» abre Reportes ya en el cierre de esa jornada (D134)')
     pg.click('#btn-cierre-generar'); pg.wait_for_timeout(500)
     ok('Meta de la jornada: 4 árboles · registrados: 4 (cuadra)' in pg.inner_text('#previa-hoja') and 'Jornada: Jardín de prueba' in pg.inner_text('#previa-hoja'),'y el reporte lleva la conciliación y el nombre de la jornada')
-    # Croquis de la jornada (D115): en la vista previa y en el PDF, con los mismos números que la tabla
-    pg.wait_for_timeout(1500)
+    # Croquis de la jornada (D115): en la vista previa y en el PDF, con los mismos números que la tabla.
+    # Espera a que aparezca: con mosaicos lentos el croquis tarda hasta ESPERA_MS (8 s) antes de ir sin imagen
+    try: pg.wait_for_function("!!document.querySelector('#previa-croquis img')", timeout=10000)
+    except Exception: pass
     cro=pg.evaluate("(() => { const i=document.querySelector('#previa-croquis img'); return i ? { src: i.src.slice(0,22), alt: i.alt, nota: document.querySelector('#previa-croquis .previa-nota').textContent } : null; })()")
     ok(cro and cro['src'].startswith('data:image/') and '4 puntos' in cro['alt'] and 'orden de la tabla' in cro['nota'],'la vista previa trae el croquis de la jornada con los puntos numerados (D115): %s' % (cro and cro['nota'][:80]))
     ok(cro and ('sin conexión' in cro['nota'] or 'Esri' in cro['nota']),'y el pie dice si lleva imagen de satélite o si se generó sin conexión')
@@ -950,7 +952,7 @@ with sync_playwright() as p:
     iniciar_jornada(pg, 'Jornada de anteayer', '2026-09-21')
     pg.click('#btn-ubicacion'); pg.wait_for_timeout(700); pg.fill('#campo-especie','ahuehu'); pg.wait_for_timeout(200); pg.dispatch_event('.combo-opcion[data-id="ESP-0070"]','mousedown'); pg.wait_for_timeout(150)
     pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(500)
-    ok(pg.is_visible('#dlg-confirmar') and pg.inner_text('#dlg-confirmar-titulo')=='Jornada de otro día' and 'no es de hoy' in pg.inner_text('#dlg-confirmar-puntos') and 'Cambiar de jornada' in pg.inner_text('#dlg-confirmar-puntos'),'guardar en una jornada de otro día pide confirmar y dice cómo iniciar la de hoy (D133)')
+    ok(pg.is_visible('#dlg-confirmar') and pg.inner_text('#dlg-confirmar-titulo')=='Jornada de otro día' and 'no es de hoy' in pg.inner_text('#dlg-confirmar-puntos') and '«Cambiar»' in pg.inner_text('#dlg-confirmar-puntos'),'guardar en una jornada de otro día pide confirmar y dice cómo iniciar la de hoy (D133)')
     pg.click('#btn-confirmar-no'); pg.wait_for_timeout(300)
     ok(pg.evaluate("SRP.formulario.aMedias()") and pg.evaluate("(async () => (await SRP.almacen.porIndice('plantaciones','estatus','activo')).filter(r => r.jornada_id === SRP.activa.jornada.id).length)()")==0,'cancelar no guarda y el árbol sigue a medias en pantalla')
     pg.click('.pestana[data-vista=jornadas]'); pg.wait_for_timeout(300)
@@ -1036,7 +1038,7 @@ with sync_playwright() as p:
     ok(pg.text_content('#conexion').strip()=='Con conexión · Al día' and pg.is_hidden('#franja-envio'),'y la pastilla queda «Al día» y la franja se va (D111)')
     ok('1 registro enviado al servidor (simulado)' in pg.inner_text('#aviso'),'con aviso de recepción: '+pg.inner_text('#aviso'))
     li='#lista-registros li[data-id="%s"]' % rid
-    ok(pg.locator(li+' .marca-envio').count()==0 and re.search(r'[A-Z]{3}-\d{3}-\d{5}', pg.inner_text(li+' .registro-fecha')) is not None,'la tarjeta pierde la marca y muestra su folio, sin repintar la lista (D111)')
+    ok(pg.locator(li+' .marca-envio').count()==0 and re.search(r'[A-Z]{3}-\d{3}-\d{5}', pg.inner_text(li+' .registro-estado .registro-folio')) is not None,'la tarjeta pierde la marca y muestra su folio, sin repintar la lista (D111)')
     pg.click(li); pg.wait_for_timeout(500)
     ok('Recibido por el servidor hoy a las' in pg.inner_text('#dlg-detalle-cuerpo'),'el detalle dice cuándo lo recibió el servidor (D111)')
     pg.keyboard.press('Escape'); pg.wait_for_timeout(300)
@@ -1082,7 +1084,7 @@ with sync_playwright() as p:
     ctx2.close()
     # Lo escrito no se vuelve a pedir al regenerar el reporte de la misma jornada
     reporte_de(pg)
-    ok('Volver a generar' in pg.inner_text('#pdf-lista .jornada >> nth=0') and 'reporte generado' in pg.inner_text('#pdf-lista .jornada >> nth=0'),'una jornada con reporte dice cuándo se generó y ofrece «Volver a generar» en ámbar (D134)')
+    ok('Volver a generar' in pg.inner_text('#pdf-lista .jornada >> nth=0') and 'reporte generado' in pg.inner_text('#pdf-lista .jornada >> nth=0').lower(),'una jornada con reporte dice cuándo se generó y ofrece «Volver a generar» en ámbar (D134)')
     ok(pg.input_value('#cie-chofer')=='Fulano de Tal','al regenerar, el cierre ya viene escrito')
     ok(pg.input_value('#cie-hora')=='14:30' and pg.input_value('#cie-vehiculo_placa')=='ABC-123','con todos sus campos')
     ok(pg.evaluate("document.getElementById('cie-apoyo').tagName")=='TEXTAREA','personal de apoyo admite varias líneas')
@@ -1429,7 +1431,7 @@ with sync_playwright() as p:
     ok(pg.evaluate("document.getElementById('principal').hasAttribute('aria-busy')") is False,'y aria-busy se quita al terminar')
     # Cierre del ciclo (D138): con puntos sin revisar, el aviso no dice «completa» sino qué falta
     ok('Reporte generado' in pg.inner_text('#aviso') and ('quedó completa' in pg.inner_text('#aviso') or 'Siguiente: revisar' in pg.inner_text('#aviso')),'al terminar el PDF el aviso cierra el ciclo: dice si la jornada quedó completa o qué falta (D138): '+pg.inner_text('#aviso'))
-    ok('reporte generado hoy' in pg.inner_text('#pdf-lista'),'y la ficha de Reportes pasa a «reporte generado hoy» sin salir y volver (D138)')
+    ok('reporte generado hoy' in pg.inner_text('#pdf-lista').lower(),'y la ficha de Reportes pasa a «reporte generado hoy» sin salir y volver (D138)')
 
     pg.evaluate("SRP.app.mostrarVista('galeria')"); pg.wait_for_timeout(500)
     if pg.locator('#galeria-rejilla li').count() > 0:
@@ -1471,16 +1473,16 @@ with sync_playwright() as p:
     ok(pg.is_visible('#jornada-detalle') and 'cerrada' in pg.inner_text('#aviso') and 'Siguiente: generar el reporte' in pg.inner_text('#aviso'),
        'al cerrar, la ficha abre y el aviso dice qué sigue (D138): '+pg.inner_text('#aviso'))
     ok(est('#jornada-pasos')==['hecho','hecho','hecho','actual'],'en la ficha, sin puntos por revisar, «Revisar» queda hecho y el actual es «Reporte»: '+str(est('#jornada-pasos')))
-    ok('Siguiente: generar el reporte' in pg.inner_text('#jornada-siguiente') and pg.is_visible('#btn-jornada-reporte') and 'Generar reporte' in pg.inner_text('#btn-jornada-reporte')
-       and 'btn-primario' in pg.get_attribute('#btn-jornada-reporte','class'),'la barra del pie dice lo que sigue y su botón principal lo hace: «Generar reporte»')
+    ok('Siguiente: generar el reporte' in pg.inner_text('#jornada-siguiente') and pg.is_visible('#btn-jornada-reporte') and 'Generar PDF' in pg.inner_text('#btn-jornada-reporte')
+       and 'btn-primario' in pg.get_attribute('#btn-jornada-reporte','class'),'la barra del pie dice lo que sigue y su botón principal lo hace: «Generar PDF»')
     ok(pg.evaluate("document.activeElement.id")=='btn-jornada-reporte','y el foco queda en ese botón, listo para el siguiente paso')
-    ok(pg.is_hidden('#btn-jornada-siguiente') and 'Registrar faltante' in pg.inner_text('#btn-jornada-faltante') and 'btn-secundario' in pg.get_attribute('#btn-jornada-faltante','class'),
+    ok(pg.is_hidden('#btn-jornada-siguiente') and 'Registrar árbol' in pg.inner_text('#btn-jornada-faltante') and 'btn-secundario' in pg.get_attribute('#btn-jornada-faltante','class'),
        'cerrada, «Registrar faltante» queda como secundario')
     # Reabierta con la meta cumplida: «Cerrar jornada» pasa a la barra y el encabezado no la repite
     pg.click('#btn-jornada-estado'); pg.wait_for_timeout(700)
     ok(est('#jornada-pasos')==['hecho','actual','pendiente','pendiente'] and pg.is_visible('#btn-jornada-siguiente') and 'Cerrar jornada' in pg.inner_text('#btn-jornada-siguiente')
        and pg.is_hidden('#btn-jornada-estado'),'reabierta con la meta cumplida, «Cerrar jornada» es el botón principal del pie y no se repite arriba (D138)')
-    ok(pg.is_hidden('#btn-jornada-reporte') and 'Registrar árboles' in pg.inner_text('#btn-jornada-faltante'),'abierta no hay reporte, y registrar dice «Registrar árboles»')
+    ok(pg.is_hidden('#btn-jornada-reporte') and 'Registrar árbol' in pg.inner_text('#btn-jornada-faltante'),'abierta no hay reporte, y registrar dice «Registrar árboles»')
     pg.click('#btn-jornada-siguiente'); pg.wait_for_timeout(300)
     ok(pg.is_visible('#dlg-confirmar') and '¿Cerrar la jornada' in pg.inner_text('#dlg-confirmar-texto'),'el botón del pie pide la misma confirmación que el del encabezado')
     pg.click('#btn-confirmar-si'); pg.wait_for_timeout(1000)
@@ -1522,7 +1524,7 @@ with sync_playwright() as p:
     pg.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg.wait_for_timeout(400)
     pg.locator('#lista-jornadas .jornada', has_text='Jornada de los pasos').first.locator('.jornada-boton').click(); pg.wait_for_timeout(700)
     ok(est('#jornada-pasos')==['hecho']*4 and 'Jornada completa' in pg.inner_text('#jornada-siguiente'),'en la ficha, los cuatro pasos hechos y «Jornada completa: reporte generado hoy…»')
-    ok('Volver a generar' in pg.inner_text('#btn-jornada-reporte') and 'btn-editar' in pg.get_attribute('#btn-jornada-reporte','class'),'y el reporte se ofrece como «Volver a generar», en ámbar, como en Reportes')
+    ok('Regenerar PDF' in pg.inner_text('#btn-jornada-reporte') and 'btn-editar' in pg.get_attribute('#btn-jornada-reporte','class'),'y el reporte se ofrece como «Volver a generar», en ámbar, como en Reportes')
     pg.set_viewport_size({'width':390,'height':844})
     tapa=pg.evaluate("""() => { const b = document.querySelector('.barra-jornada').getBoundingClientRect();
       const x = b.left + 20, y = b.bottom - 20; const e = document.elementFromPoint(x, y); return e ? !!e.closest('.barra-jornada') : true; }""")
@@ -1601,6 +1603,57 @@ with sync_playwright() as p:
     pg.click('#btn-jornada-editar'); pg.wait_for_timeout(300)
     ok(pg.locator('#dlg-editar-jornada .campo-error').count()==0,'al volver a abrir el diálogo, los errores de antes ya no están')
     pg.keyboard.press('Escape'); pg.wait_for_timeout(200)
+
+    # ---------- BLOQUE 82: TARJETAS, SECCIONES E ICONOS (D141) ----------
+    tam=lambda: set(pg.evaluate("[...document.querySelectorAll('svg[width]')].filter(s => !s.closest('.leaflet-container')).map(s => s.getAttribute('width'))"))
+    vistos=set()
+    for v in ('registrar','jornadas','registros','reportes','galeria'):
+        pg.evaluate("SRP.app.mostrarVista('%s')" % v); pg.wait_for_timeout(500); vistos|=tam()
+    ok(vistos<={'16','20','24'},'los iconos usan sólo tres tamaños —16, 20 y 24— en todas las vistas (D141): %s' % sorted(vistos))
+    ok(pg.evaluate("SRP.ICONOS.tamano(18)")==20 and pg.evaluate("SRP.ICONOS.tamano(34)")==24 and pg.evaluate("SRP.ICONOS.tamano('chico')")==16,'un número suelto se lleva al escalón más cercano')
+    # Ficha de jornada: subtítulos, cuenta de puntos y la barra de saltos en teléfono
+    pg.evaluate("SRP.app.mostrarVista('jornadas')"); pg.wait_for_timeout(500); pg.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg.wait_for_timeout(400)
+    tarjeta=pg.locator('#lista-jornadas .jornada', has_text='Jornada de los pasos').first
+    ok(tarjeta.locator('.insignia-jornada svg').count()==1,'la etiqueta de resultado de la tarjeta lleva su icono: el color no va solo (D141)')
+    tarjeta.locator('.jornada-boton').click(); pg.wait_for_timeout(700)
+    n_pts=pg.locator('#jornada-lista .punto-jornada').count()
+    ok([pg.inner_text(h) for h in ('#sec-jornada-mapa','#sec-jornada-conciliacion')]==['Mapa','Conciliación'] and pg.inner_text('#sec-jornada-puntos')=='Puntos (%d)' % n_pts,
+       'la ficha tiene subtítulos: Mapa, Conciliación y Puntos (%d) (D141)' % n_pts)
+    ok(pg.is_visible('#jornada-saltos') and pg.evaluate("getComputedStyle(document.getElementById('jornada-saltos')).position")=='sticky','en teléfono, una barra fija arriba salta a cada sección')
+    pg.click('#jornada-saltos [data-salto=sec-jornada-puntos]'); pg.wait_for_timeout(700)
+    ok(pg.evaluate("document.activeElement.id")=='sec-jornada-puntos' and pg.evaluate("document.getElementById('sec-jornada-puntos').getBoundingClientRect().top < 200"),'«Puntos» lleva a la lista y deja el foco en su subtítulo')
+    ok(pg.locator('#jornada-resultado svg').count()==1,'el resultado de la conciliación también lleva el icono de su tono')
+    pg.set_viewport_size({'width':1280,'height':900}); pg.wait_for_timeout(200)
+    ok(pg.is_hidden('#jornada-saltos'),'en computadora la barra de saltos no hace falta y no aparece')
+    pg.set_viewport_size({'width':360,'height':740}); pg.wait_for_timeout(300)
+    altos=pg.evaluate("[...document.querySelectorAll('.barra-jornada .btn')].filter(b => !b.hidden).map(b => [b.textContent.trim(), Math.round(b.getBoundingClientRect().height)])")
+    ok(altos and all(h<=48 for _,h in altos),'a 360 px los botones de la barra del pie caben en un renglón (D141): %s' % altos)
+    pg.set_viewport_size({'width':390,'height':844}); pg.wait_for_timeout(200)
+    # Registros: anatomía común —qué, cuándo, estado, dónde—
+    pg.evaluate("SRP.app.mostrarVista('registros')"); pg.wait_for_timeout(600)
+    orden=pg.evaluate("(() => { const d = document.querySelector('#lista-registros .registro .registro-datos'); return [...d.children].filter(x => !x.hidden).map(x => x.className.split(' ')[0]); })()")
+    ok(orden==['registro-especie','registro-meta','registro-lugar'] and pg.locator('#lista-registros .registro-lugar svg').count()>=1,
+       'la tarjeta de Registros sigue la anatomía común: especie, cuándo, estado (folio y envío), dónde con su icono (D141): %s' % orden)
+    # Reportes: estado y dónde en la tarjeta
+    pg.evaluate("SRP.app.mostrarVista('reportes')"); pg.wait_for_timeout(600); pg.evaluate("SRP.reportes.aplicarAtajo('todas')"); pg.wait_for_timeout(400)
+    f0=pg.locator('#pdf-lista .jornada').first
+    ok(f0.locator('.insignia-jornada svg').count()==1 and f0.locator('.jornada-cifras .jornada-cifra').count()==2,'la tarjeta de Reportes suma su fila de estado con icono y las cifras en el formato de Jornadas (D141)')
+    # Cambiar de jornada: icono de intercambio, no el mapa
+    pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(500)
+    if pg.is_visible('#btn-jornada-cambiar'):
+        ok(pg.inner_text('#btn-jornada-cambiar').strip()=='Cambiar' and pg.get_attribute('#btn-jornada-cambiar','aria-label')=='Cambiar de jornada'
+           and 'M6.99 11L3 15' in pg.inner_html('#btn-jornada-cambiar'),'«Cambiar» lleva el icono de intercambio; el mapa se queda para la sección Jornadas (D141)')
+    # Estados vacíos: icono, frase y acción en los cuatro listados
+    pg.evaluate("SRP.app.mostrarVista('jornadas')"); pg.wait_for_timeout(400)
+    pg.evaluate("SRP.jornadas.filtro.dia='2020-01-01'; SRP.jornadas.diaAbierto=true; SRP.jornadas.pintarLista()"); pg.wait_for_timeout(400)
+    ok(pg.locator('#jornadas-vacio .vacio-icono svg').count()==1 and pg.locator('#jornadas-vacio button[data-vacio=todas]').count()==1,'Jornadas vacío: icono, frase y «Ver todas»')
+    pg.click('#jornadas-vacio button[data-vacio=todas]'); pg.wait_for_timeout(500)
+    ok(pg.is_hidden('#jornadas-vacio') and pg.locator('#lista-jornadas .jornada').count()>=1,'y «Ver todas» saca del vacío')
+    pg.evaluate("SRP.app.mostrarVista('galeria')"); pg.wait_for_timeout(500)
+    pg.evaluate("SRP.galeria.filtro.dia='2020-01-01'; SRP.galeria.diaAbierto=true; SRP.galeria.pintar()"); pg.wait_for_timeout(500)
+    ok(pg.locator('#galeria-vacio .vacio-icono svg').count()==1 and pg.locator('#galeria-vacio button[data-vacio]').count()==1,'Fotografías vacío: el mismo patrón, con su acción')
+    pg.click('#galeria-vacio button[data-vacio]'); pg.wait_for_timeout(600)
+    ok(pg.is_hidden('#galeria-vacio'),'y la acción lo resuelve')
 
     b.close()
 print('\n'.join(res)); print('ERRORES CONSOLA:',errores or 'ninguno')

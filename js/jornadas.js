@@ -76,6 +76,12 @@ SRP.jornadas = {
       this.filtro.cabo = this.el('jornada-cabo').value;
       this.pintarLista();
     });
+    this.el('jornadas-vacio').addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-vacio]'); if (!b) return;
+      if (b.dataset.vacio === 'iniciar') { SRP.app.mostrarVista('registrar'); return; }
+      this.filtro.cabo = ''; if (this.el('jornada-cabo')) this.el('jornada-cabo').value = '';
+      this.aplicarAtajo('todas');
+    });
     this.el('lista-jornadas').addEventListener('click', (e) => {
       const li = e.target.closest('[data-clave]'); if (li) this.abrir(li.dataset.clave);
     });
@@ -83,8 +89,8 @@ SRP.jornadas = {
     this.el('jornada-lista').addEventListener('click', (e) => this.alTocarLista(e));
     this.el('btn-jornada-faltante').addEventListener('click', () => this.registrarFaltante());
     // Editar y eliminar la jornada (D132)
-    this.el('btn-jornada-editar').innerHTML = SRP.ICONOS.svg('lapiz', 18) + '<span>Editar jornada</span>';
-    this.el('btn-jornada-eliminar').innerHTML = SRP.ICONOS.svg('basura', 18) + '<span>Eliminar jornada</span>';
+    this.el('btn-jornada-editar').innerHTML = SRP.ICONOS.svg('lapiz', 'medio') + '<span>Editar jornada</span>';
+    this.el('btn-jornada-eliminar').innerHTML = SRP.ICONOS.svg('basura', 'medio') + '<span>Eliminar jornada</span>';
     this.el('btn-jornada-editar').addEventListener('click', () => this.abrirEditar());
     this.el('btn-jornada-eliminar').addEventListener('click', () => this.eliminarJornada());
     this.el('btn-ej-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar cambios</span>';
@@ -95,8 +101,8 @@ SRP.jornadas = {
       this.el('ej-fecha').dispatchEvent(new Event('change', { bubbles: true }));
     });
     this.el('btn-jornada-reporte').addEventListener('click', () => this.irAlReporte());
-    this.el('btn-jornada-faltante').innerHTML = SRP.ICONOS.svg('mas', 20) + '<span>Registrar faltante</span>';
-    this.el('btn-jornada-reporte').innerHTML = SRP.ICONOS.svg('reportes', 20) + '<span>Reporte de la jornada</span>';
+    this.el('btn-jornada-faltante').innerHTML = SRP.ICONOS.svg('mas', 'medio') + '<span>Registrar árbol</span>';
+    this.el('btn-jornada-reporte').innerHTML = SRP.ICONOS.svg('reportes', 'medio') + '<span>Generar PDF</span>';
     this.el('btn-mover-cerrar').addEventListener('click', () => this.el('dlg-mover-jornada').close());
     this.el('lista-mover-jornadas').addEventListener('click', async (e) => {
       const b = e.target.closest('button[data-id]'); if (!b || !this.moviendo) return;
@@ -105,6 +111,13 @@ SRP.jornadas = {
       if (destino) await this.mover(this.moviendo, destino);
     });
     this.el('btn-jornada-estado').addEventListener('click', () => this.cambiarEstado());
+    // Saltos a las secciones de la ficha (D141): desplaza y deja el foco en el subtítulo
+    this.el('jornada-saltos').addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-salto]'); if (!b) return;
+      const h = this.el(b.dataset.salto);
+      h.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      h.focus({ preventScroll: true });
+    });
     // El botón de «Siguiente» (D138): cerrar la jornada o ir al primer punto por revisar
     this.el('btn-jornada-siguiente').addEventListener('click', () =>
       this.el('btn-jornada-siguiente').dataset.accion === 'revisar' ? this.irAPendiente() : this.cambiarEstado());
@@ -231,6 +244,18 @@ SRP.jornadas = {
 
   /* El estado de la jornada en una frase y un tono: lo que se ve en la tarjeta y en la revisión */
   estado(j, avisos, cierre) {
+    const e = this.estadoTexto(j, avisos, cierre);
+    e.icono = this.iconoTono(e.tono, j.estatus === 'abierta');
+    return e;
+  },
+
+  /* Cada tono lleva su icono (D141), para que el color no vaya solo (Norma 8.4): por revisar, «i»;
+     completa o cuadra, palomita; falta o sobra, tache; en curso (abierta), reloj. */
+  iconoTono(tono, abierta) {
+    return { rev: 'info', ok: 'palomita', err: 'cerrar' }[tono] || (abierta ? 'reloj' : 'info');
+  },
+
+  estadoTexto(j, avisos, cierre) {
     const pend = this.pendientes(j, avisos, cierre).length;
     const meta = this.metaDe(cierre || j);
     const reg = j.registros.length;
@@ -276,7 +301,7 @@ SRP.jornadas = {
     return this.PASOS.map(([k, t]) => {
       const est = p.hecho[k] ? 'hecho' : k === p.actual ? 'actual' : 'pendiente';
       return '<li class="paso" data-estado="' + est + '"' + (est === 'actual' ? ' aria-current="step"' : '') + '>' +
-        (est === 'hecho' ? SRP.ICONOS.svg('palomita', 14) : '') + '<span>' + t + '</span>' +
+        (est === 'hecho' ? SRP.ICONOS.svg('palomita', 'chico') : '') + '<span>' + t + '</span>' +
         (est === 'hecho' ? '<span class="oculto-visual"> (hecho)</span>' : est === 'actual' ? '<span class="oculto-visual"> (paso actual)</span>' : '') + '</li>';
     }).join('');
   },
@@ -298,7 +323,7 @@ SRP.jornadas = {
     else if (p.actual === 'reporte') que = 'generar el reporte';
     else {
       const t = 'Jornada completa: reporte generado ' + SRP.envio.cuando(p.reporte_en) + '.';
-      return { html: SRP.ICONOS.svg('palomita', 16) + '<span>' + SRP.util.escapar(t) + '</span>', texto: t, tono: 'ok' };
+      return { html: SRP.ICONOS.svg('palomita', 'chico') + '<span>' + SRP.util.escapar(t) + '</span>', texto: t, tono: 'ok' };
     }
     const texto = 'Siguiente: ' + que + cola + '.';
     return { html: '<span>Siguiente: <b>' + SRP.util.escapar(que) + '</b>' + SRP.util.escapar(cola) + '.</span>', texto, tono };
@@ -465,12 +490,12 @@ SRP.jornadas = {
         '<span class="jornada-cab"><span class="jornada-titulo-caja"><span class="jornada-sitio">' + esc(this.nombreSitio(j)) + '</span>' +
         '<span class="jornada-dia">' + (cuando ? '<b>' + cuando + '</b> · ' : '') + '<span class="jornada-fecha">' + esc(fecha) + '</span>' +
         (j.total > 1 ? ' <span class="jornada-ndn">Jornada ' + j.n + ' de ' + j.total + '</span>' : '') + '</span></span>' + this.miniatura(j, avisos) + '</span>' +
-        '<span class="jornada-estado"><span class="jornada-estatus" data-estatus="' + (abierta ? 'abierta' : 'cerrada') + '">' + SRP.ICONOS.svg(abierta ? 'candadoAbierto' : 'candado', 14) +
+        '<span class="jornada-estado"><span class="jornada-estatus" data-estatus="' + (abierta ? 'abierta' : 'cerrada') + '">' + SRP.ICONOS.svg(abierta ? 'candadoAbierto' : 'candado', 'chico') +
         '<span>' + (abierta ? 'Abierta' : 'Cerrada') + '</span></span>' +
-        '<span class="insignia-jornada" data-tono="' + est.tono + '">' + esc(est.texto) + '</span></span>' +
-        (lugar || ubic ? '<span class="jornada-lugar">' + SRP.ICONOS.svg('ubicacion', 16) + '<span>' + esc(lugar) + (ubic ? (lugar ? ' · ' : '') + '<span class="jornada-ubic">' + esc(ubic) + '</span>' : '') + '</span></span>' : '') +
+        '<span class="insignia-jornada" data-tono="' + est.tono + '">' + SRP.ICONOS.svg(est.icono, 'chico') + '<span>' + esc(est.texto) + '</span></span></span>' +
+        (lugar || ubic ? '<span class="jornada-lugar">' + SRP.ICONOS.svg('ubicacion', 'chico') + '<span>' + esc(lugar) + (ubic ? (lugar ? ' · ' : '') + '<span class="jornada-ubic">' + esc(ubic) + '</span>' : '') + '</span></span>' : '') +
         '<span class="jornada-cifras">' + cifra(meta === null ? '—' : meta, 'meta') + cifra(n, 'registrados') + cifra(porRevisar, 'por revisar') + cifra(bien, 'bien') + cifra(especies, especies === 1 ? 'especie' : 'especies') + '</span>' +
-        (variosAutores ? '<span class="jornada-cabo">' + SRP.ICONOS.svg('usuario', 14) + '<span>' + esc(SRP.ref.nombreUsuario(j.cabo_id)) + '</span></span>' : '') +
+        (variosAutores ? '<span class="jornada-cabo">' + SRP.ICONOS.svg('usuario', 'chico') + '<span>' + esc(SRP.ref.nombreUsuario(j.cabo_id)) + '</span></span>' : '') +
         '</button></li>');
     }
     this.el('lista-jornadas').innerHTML = html.join('');
@@ -478,8 +503,13 @@ SRP.jornadas = {
     this.el('jornadas-total').textContent = n ? n + (n === 1 ? ' jornada' : ' jornadas') + ' · ' + arbolesTotal + (arbolesTotal === 1 ? ' árbol' : ' árboles') : '';
     const vacio = this.el('jornadas-vacio');
     vacio.hidden = n > 0;
-    if (!n) vacio.innerHTML = '<p><strong>' + (f.dia ? 'No hay jornadas del ' + esc(SRP.util.formatearFecha(f.dia)) + '.' : 'Todavía no hay jornadas.') + '</strong></p>' +
-      '<p class="nota">Cada jornada que se inicie en Nuevo registro aparece aquí con su mapa.</p>';
+    // Estado vacío con salida (D141)
+    const filtrado = f.dia || f.desde || f.hasta || f.anio || f.cabo;
+    const puedeRegistrar = SRP.permisos.de(u).registrar;
+    if (!n) vacio.innerHTML = filtrado
+      ? SRP.util.htmlVacio('jornadas', f.dia ? 'No hay jornadas del ' + SRP.util.formatearFecha(f.dia) + '.' : 'No hay jornadas con este filtro.', 'Pruebe con otro periodo o vea todas.', [{ accion: 'todas', texto: 'Ver todas' }])
+      : SRP.util.htmlVacio('jornadas', 'Todavía no hay jornadas.', 'Cada jornada que se inicie en Nuevo registro aparece aquí con su mapa.',
+          [puedeRegistrar ? { accion: 'iniciar', texto: 'Iniciar una jornada', clase: 'btn-primario', icono: 'mas' } : null]);
   },
 
   // Miniatura: los puntos de la jornada en un cuadro, sin mapa de fondo (no pide nada a la red)
@@ -555,7 +585,7 @@ SRP.jornadas = {
     this.el('btn-jornada-eliminar').hidden = !(puedeJornada && regs.length === 0);
     // Cerrar no es aprobar: guinda con candado; reabrir es corregir: dorado con lápiz (D121)
     btnEstado.className = 'btn btn-chico ' + (cierre.estatus === 'abierta' ? 'btn-primario' : 'btn-editar');
-    btnEstado.innerHTML = SRP.ICONOS.svg(cierre.estatus === 'abierta' ? 'candado' : 'lapiz', 18) + '<span>' + (cierre.estatus === 'abierta' ? 'Cerrar jornada' : 'Reabrir jornada') + '</span>';
+    btnEstado.innerHTML = SRP.ICONOS.svg(cierre.estatus === 'abierta' ? 'candado' : 'lapiz', 'medio') + '<span>' + (cierre.estatus === 'abierta' ? 'Cerrar jornada' : 'Reabrir jornada') + '</span>';
 
     // Conciliación: se compara con todo lo del día del cabo, aunque se haya partido en sitios
     const meta = this.metaDe(cierre);
@@ -576,13 +606,13 @@ SRP.jornadas = {
         : (r.punto_origen === 'gps' && r.gps_precision_m ? 'GPS ±' + Math.round(r.gps_precision_m) + ' m' : SRP.mapa.textoOrigen(r.punto_origen, r.gps_precision_m)));
       // Color por significado con icono (Norma 8.4, D116): ver neutro, confirmar verde, eliminar rojo
       const I = (n, t) => SRP.ICONOS.svg(n, t);   // no se pasa suelto: svg() usa this
-      const acciones = ['<button type="button" class="btn btn-texto" data-accion="ver" data-id="' + r.id + '">' + I('ver', 18) + '<span>Ver</span></button>'];
+      const acciones = ['<button type="button" class="btn btn-texto" data-accion="ver" data-id="' + r.id + '">' + I('ver', 'medio') + '<span>Ver</span></button>'];
       // Corregir el reparto en jornadas (D117): desde la tuerca, para no cargar la fila
       const items = [];
       if (puedeEditar(r)) items.push({ accion: 'mover', texto: 'Mover a otra jornada', icono: 'jornadas' });
       const tuerca = items.length ? SRP.ICONOS.menuAcciones(r.id, 'punto ' + (i + 1), items) : '';
-      if (av.length && !revisado && puedeEditar(r)) acciones.push('<button type="button" class="btn btn-exito-linea" data-accion="bien" data-id="' + r.id + '">' + I('palomita', 16) + '<span>Está bien</span></button>');
-      if (av.some(a => a.tipo === 'duplicado') && !revisado && puedeEliminar(r)) acciones.push('<button type="button" class="btn btn-peligro-linea" data-accion="eliminar" data-id="' + r.id + '">' + I('basura', 16) + '<span>Eliminar</span></button>');
+      if (av.length && !revisado && puedeEditar(r)) acciones.push('<button type="button" class="btn btn-exito-linea" data-accion="bien" data-id="' + r.id + '">' + I('palomita', 'chico') + '<span>Está bien</span></button>');
+      if (av.some(a => a.tipo === 'duplicado') && !revisado && puedeEliminar(r)) acciones.push('<button type="button" class="btn btn-peligro-linea" data-accion="eliminar" data-id="' + r.id + '">' + I('basura', 'chico') + '<span>Eliminar</span></button>');
       return '<li class="punto-jornada" data-id="' + r.id + '"><span class="punto-num" data-tono="' + tono + '" aria-hidden="true">' + (i + 1) + '</span>' +
         '<div class="punto-datos"><span class="punto-especie"><span class="oculto-visual">Punto ' + (i + 1) + ': </span>' + esc(esp.comun) + '</span>' +
         '<span class="punto-detalle">' + esc(h(r)) + ' · ' + detalle + '</span></div>' +
@@ -590,6 +620,8 @@ SRP.jornadas = {
     }).join('');
 
     this.pintarPasos(j, cierre, propia, puedeJornada);
+    this.el('jornada-puntos-n').textContent = regs.length;
+    this.el('jornada-saltos-n').textContent = regs.length;
     this.pintarMapa(avisos, revisados, encuadrar);
   },
 
@@ -604,20 +636,21 @@ SRP.jornadas = {
     const linea = this.el('jornada-siguiente');
     linea.innerHTML = s.html;
     linea.dataset.tono = s.tono;
-    const I = n => SRP.ICONOS.svg(n, 20);
+    const I = n => SRP.ICONOS.svg(n, 'medio');
     // Registrar sólo en la jornada propia (el árbol queda a nombre de quien entra): abierta, «Registrar
     // árboles»; cerrada, «Registrar faltante», que la reabre
     const falt = this.el('btn-jornada-faltante');
     falt.hidden = !(SRP.permisos.de(SRP.sesion.usuario).registrar && propia);
     falt.className = 'btn ' + (p.actual === 'registrar' ? 'btn-primario' : 'btn-secundario');
-    falt.innerHTML = I('mas') + '<span>' + (p.abierta ? 'Registrar árboles' : 'Registrar faltante') + '</span>';
+    // Etiquetas cortas (D141): la barra lleva dos botones y no debe partirlos en dos renglones desde 360 px
+    falt.innerHTML = I('mas') + '<span>Registrar árbol</span>';
     // El reporte es de una jornada cerrada con árboles (D131); mientras haya puntos por revisar, cede
     // su lugar a «Revisar puntos». Ya generado, «Volver a generar» en ámbar, como en Reportes (D134)
     const rep = this.el('btn-jornada-reporte');
     rep.hidden = p.abierta || !p.n || p.actual === 'revisar';
     const completa = p.actual === 'completa';
     rep.className = 'btn ' + (completa ? 'btn-editar' : 'btn-primario');
-    rep.innerHTML = I(completa ? 'lapiz' : 'reportes') + '<span>' + (completa ? 'Volver a generar' : 'Generar reporte') + '</span>';
+    rep.innerHTML = I(completa ? 'lapiz' : 'reportes') + '<span>' + (completa ? 'Regenerar PDF' : 'Generar PDF') + '</span>';
     const sig = this.el('btn-jornada-siguiente');
     const cerrar = p.actual === 'cerrar' && puedeJornada;
     sig.hidden = !(cerrar || p.actual === 'revisar');
@@ -671,7 +704,8 @@ SRP.jornadas = {
       tono = 'err'; texto = (n === 1 ? 'Sobra 1 registro' : 'Sobran ' + n + ' registros') + ': la meta es ' + plantados + ' y hay ' + reg + ' puntos. Busque duplicados en el mapa.' + cola;
     }
     caja.dataset.tono = tono;
-    res.textContent = texto;
+    // El resultado lleva el icono de su tono (D141)
+    res.innerHTML = SRP.ICONOS.svg(this.iconoTono(tono, (this.cierre || j).estatus === 'abierta'), 'medio') + '<span>' + SRP.util.escapar(texto) + '</span>';
   },
 
   /* Mapa de la jornada: Leaflet con los puntos numerados. Se crea una vez y se reutiliza. Sin

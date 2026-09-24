@@ -32,10 +32,11 @@
   --total-fondo: #FFFAE9;      /* renglón de total, igual que en el PDF */
   /* ESCALA DE ÉNFASIS. Un control se ve según lo que pesa, no según quién lo escribió.
      Hay tres niveles y sólo tres, en toda la aplicación:
-       1. Acción principal de la pantalla  → .btn-primario   (guinda relleno; una por bloque)
-       2. Alterna del mismo rango          → .btn-secundario (guinda de contorno)
+       1. Acción principal de la pantalla  → .btn-primario   (acento relleno; una por bloque)
+       2. Alterna del mismo rango          → .btn-secundario (contorno gris)
        3. Apoyo: desplegar, salir, ampliar → .enlace / .btn-texto / summary (gris subrayado)
-     El guinda queda reservado a los niveles 1 y 2. Si una acción de apoyo se pinta de guinda
+     Desde D124 el acento es pizarra y la guinda queda para encabezado, títulos, tablas y el mapa;
+     el comentario original hablaba de guinda (D141 lo corrige). Si una acción de apoyo se pinta igual
      —como estaba «Capturar coordenadas a mano» bajo el botón de ubicación— las dos parecen
      lo mismo y la persona no sabe cuál es el camino normal.
 
@@ -790,7 +791,7 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 
 .campo .zona-foto.con-foto { flex-direction: row; gap: var(--e-2); min-height: var(--toque); padding: var(--e-2) var(--e-3); }
 .zona-foto.con-foto .zona-foto-ayuda { display: none; }
-.zona-foto.con-foto #icono-foto svg { width: 22px; height: 22px; }
+.zona-foto.con-foto #icono-foto svg { width: 20px; height: 20px; }   /* escala de tres tamaños (D141) */
 .zona-foto:focus-within { outline: 3px solid var(--foco); outline-offset: 2px; }
 .btn:disabled { opacity: 0.55; cursor: not-allowed; }
 .pestana[aria-current="page"] { color: var(--acento); border-bottom-color: var(--acento); }
@@ -799,7 +800,7 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .chip[aria-pressed="true"] .chip-sub { color: var(--fondo); opacity: .9; }
 /* Activo: guinda suave con borde guinda (propuesta A de la maqueta, D95) */
 .chip[aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: var(--fondo); }
-.combo-opcion[aria-selected="true"] { background: var(--fondo-suave); outline: 2px solid var(--guinda); outline-offset: -2px; }
+.combo-opcion[aria-selected="true"] { background: var(--fondo-suave); outline: 2px solid var(--acento); outline-offset: -2px; }
 .campo input[aria-invalid="true"], .campo select[aria-invalid="true"] { border: 2px solid var(--error); }
 .aviso[data-tipo="alerta"] { border-left-color: var(--aviso-alerta); }
 .aviso[data-tipo="alerta"] .aviso-icono { color: var(--aviso-alerta); }
@@ -863,15 +864,16 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
   .campos-grises .campo textarea:hover { background-color: var(--fondo-campo-hover); border-color: var(--fondo-campo-hover); }
   .btn.btn-tuerca:hover { background: var(--acento-suave); color: var(--acento); border-color: var(--acento); }
   .menu-opcion:hover { background: var(--fondo-suave); outline: none; }
-  .btn-primario:hover { background: var(--guinda-oscuro); }
+  /* El acento, no la guinda (D124): al pasar el puntero, el botón principal seguía volviéndose guinda (D141) */
+  .btn-primario:hover { background: var(--acento-oscuro); }
   /* El nivel 3 se pinta de guinda sólo al señalarlo: ahí ya no hay confusión posible,
      porque el puntero está encima y nada más cambia de color al mismo tiempo. */
   .enlace:hover, .btn-texto:hover, .desplegable summary:hover { color: var(--acento); }
-  .zona-foto:hover { border-color: var(--guinda); background: var(--fondo-suave); }
+  .zona-foto:hover { border-color: var(--acento); background: var(--fondo-suave); }
   .chip:hover { background: var(--fondo-campo); }
   .chip[aria-pressed="true"]:hover { background: var(--acento-oscuro); }
   /* Con ratón la opción bajo el cursor se marca igual que la elegida con teclado */
-  .combo-opcion:hover { background: var(--fondo-suave); outline: 2px solid var(--guinda); outline-offset: -2px; }
+  .combo-opcion:hover { background: var(--fondo-suave); outline: 2px solid var(--acento); outline-offset: -2px; }
 }
 @media (max-width: 480px) {
   .encabezado-logo { max-height: 38px; }
@@ -1001,6 +1003,8 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .pasos-siguiente[data-tono="rev"] b { color: var(--editar); }
 .pasos-siguiente[data-tono="ok"] { color: var(--exito); font-weight: 600; }
 .barra-jornada .btn { order: 1; }
+/* Menos aire a los lados en las barras de dos botones, para que cada etiqueta quepa en un renglón (D141) */
+.barra-jornada .btn, .franja-jornada-acciones .btn { padding-left: 10px; padding-right: 10px; gap: 6px; }
 .barra-jornada .btn-primario, .barra-jornada .btn-editar { order: 2; }
 
 /* CONFIRMACIÓN ESTRUCTURADA (D139): título con la acción, pregunta, lo que implica en viñetas y una
@@ -1024,3 +1028,34 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .ayuda-campo { margin: var(--e-1) 0 0; font-size: var(--t-xs); line-height: 1.4; }
 .contador { display: block; margin-top: 2px; text-align: right; font-size: var(--t-xs); color: var(--gris); font-variant-numeric: tabular-nums; }
 .contador[data-lleno="true"] { color: var(--editar); font-weight: 600; }
+
+/* TARJETAS, SECCIONES E ICONOS (D141) */
+/* Etiqueta: la misma píldora para el estado en las tres tarjetas (folio, envío, reporte) */
+.etiqueta { display: inline-flex; align-items: center; gap: 4px; padding: 1px var(--e-2); border-radius: var(--radio-pildora);
+  background: var(--neutro-fondo); color: var(--texto); font-size: var(--t-xs); font-weight: 500; }
+.registro-folio { font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+.registro-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px var(--e-2); margin-top: 2px; }
+.registro-meta .registro-fecha { margin-top: 0; }
+.registro-estado { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.registro-estado .marca-envio { margin-top: 0; }
+.registro .registro-lugar { display: flex; gap: 6px; align-items: flex-start; margin-top: var(--e-1); }
+.registro .registro-lugar svg { flex: none; margin-top: 3px; color: var(--gris); }
+.insignia-jornada { display: inline-flex; align-items: center; gap: 4px; }
+.insignia-jornada svg { flex: none; }
+.conciliacion-resultado { display: flex; align-items: flex-start; gap: var(--e-2); }
+.conciliacion-resultado svg { flex: none; margin-top: 1px; }
+.reporte-ficha .jornada-estado { margin: var(--e-1) 0; }
+/* Tarjeta de Reportes en columna, como la de Jornadas: cada pieza en su renglón y el botón al final, a la derecha */
+.reporte-ficha > * { flex: 1 1 100%; }
+.reporte-ficha > .btn { flex: 0 0 auto; margin-left: auto; }
+.reporte-ficha .jornada-cifras { display: grid; grid-template-columns: repeat(2, minmax(0, 8rem)); gap: 6px; }
+/* Ficha de la jornada: subtítulos de sección y, en teléfono, barra fija de saltos */
+.titulo-seccion { margin: var(--e-4) 0 var(--e-2); scroll-margin-top: 64px; }
+.titulo-seccion:focus { outline: none; }
+.saltos { display: none; }
+@media (max-width: 767px) {
+  .saltos { position: sticky; top: 0; z-index: 6; display: flex; gap: var(--e-1); margin: 0 calc(-1 * var(--e-4)); padding: var(--e-2) var(--e-4);
+    background: var(--fondo); border-bottom: 1px solid var(--borde-suave); box-shadow: 0 6px 10px -8px rgba(0, 0, 0, .2); }
+  .saltos button { flex: 1 1 0; min-height: 40px; padding: 0 var(--e-2); border: 1px solid var(--borde-filtro); border-radius: var(--radio-pildora);
+    background: var(--fondo); color: var(--texto); font: inherit; font-size: var(--t-s); font-weight: 500; cursor: pointer; white-space: nowrap; }
+}

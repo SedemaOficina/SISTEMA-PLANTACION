@@ -24,7 +24,7 @@ SRP.app = {
       .forEach(([id, icono]) => I.poner(this.el(id), icono, 20));
     // Los buscadores llevan la lupa dentro del campo, desde la hoja de estilos (D95)
     // Avisos informativos: el icono va al frente del texto
-    document.querySelectorAll('.aviso-simulado').forEach(a => a.insertAdjacentHTML('afterbegin', I.svg('info', 18)));
+    document.querySelectorAll('.aviso-simulado').forEach(a => a.insertAdjacentHTML('afterbegin', I.svg('info', 'medio')));
   },
 
   async iniciar() {
@@ -150,7 +150,7 @@ SRP.app = {
     this.el('btn-cerrar-sesion').addEventListener('click', () => { this.menuCuenta(false); salir(); });
     this.el('btn-cambiar-perfil').addEventListener('click', () => { this.menuCuenta(false); salir(); });
     // Menú de la cuenta (D93): abre y cierra con el botón; se cierra al tocar fuera o con Escape
-    this.el('btn-cuenta').innerHTML = SRP.ICONOS.svg('usuario', 22);
+    this.el('btn-cuenta').innerHTML = SRP.ICONOS.svg('usuario', 'grande');
     this.el('btn-cuenta').addEventListener('click', () => this.menuCuenta(this.el('menu-cuenta').hidden));
     document.addEventListener('click', (e) => { if (!e.target.closest('.cuenta')) this.menuCuenta(false); });
     document.addEventListener('keydown', (e) => {
@@ -391,7 +391,7 @@ SRP.app = {
     I('btn-cambiar-nueva', 'mas', 'Iniciar otra jornada');
     // Toda × de cabecera cierra su propio diálogo (D91); cada módulo reacciona al evento «close» si lo necesita
     document.querySelectorAll('.dialogo-cerrar').forEach(b => {
-      b.innerHTML = SRP.ICONOS.svg('cerrar', 22);
+      b.innerHTML = SRP.ICONOS.svg('cerrar', 'grande');
       b.addEventListener('click', () => b.closest('dialog').close());
     });
     this.el('btn-confirmar-si').addEventListener('click', () => this.el('dlg-confirmar').close('si'));
@@ -424,7 +424,7 @@ SRP.app = {
       const textoNota = o.nota || (o.irreversible ? 'No se puede deshacer.' : '');
       nota.hidden = !textoNota;
       nota.dataset.tono = o.irreversible ? 'alerta' : '';
-      nota.innerHTML = textoNota ? (o.irreversible ? SRP.ICONOS.svg('info', 18) : '') + '<span>' + SRP.util.escapar(textoNota) + '</span>' : '';
+      nota.innerHTML = textoNota ? (o.irreversible ? SRP.ICONOS.svg('info', 'medio') : '') + '<span>' + SRP.util.escapar(textoNota) + '</span>' : '';
       const b = this.el('btn-confirmar-si');
       b.innerHTML = SRP.ICONOS.svg(o.icono || 'basura') + '<span>' + SRP.util.escapar(o.boton) + '</span>';
       // Color por significado (Norma 8.4): confirmar verde, cerrar en acento, eliminar rojo

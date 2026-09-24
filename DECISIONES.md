@@ -1097,3 +1097,20 @@
   ubicación, comentarios) muestran «420 / 500» al pasar del 80 % y avisan al llegar al tope, que
   antes cortaba en silencio. «Editar jornada» trae «Hoy» junto a la fecha y pone meta y fecha una
   bajo otra, como «Iniciar jornada». Auditoría UX/UI del 24-09-2026, bloque 81, aprobada por Liber.
+- **D141. Una anatomía de tarjeta, secciones en la ficha, vacíos con salida y tres tamaños de
+  icono.** Las tres tarjetas siguen el orden de Jornadas (D128): qué → cuándo y quién → fila de
+  estado → dónde → cuánto → acción. Registros pone el folio y la marca de envío como etiquetas en
+  el renglón de la fecha (compacta, D100) y el lugar con su icono; Reportes suma la etiqueta
+  «Reporte generado…»/«Sin reporte todavía», el lugar y las cifras en el formato de Jornadas. La
+  ficha de la jornada tiene subtítulos —Mapa, Conciliación, Puntos (N)— y, en teléfono, una barra
+  fija arriba que salta a cada uno. Los cuatro listados muestran el vacío igual: icono, frase y la
+  acción que saca de él (Ver todas, Iniciar una jornada, Ir a Jornadas, Registrar un árbol). Los
+  iconos usan tres tamaños con nombre —chico 16, medio 20, grande 24— y cualquier número se lleva
+  al escalón más cercano. «Cambiar de jornada» usa el icono de intercambio (el mapa queda para la
+  sección) y las etiquetas de resultado llevan el icono de su tono (por revisar, completa,
+  falta/sobra, en curso). Para que los botones de dos en dos no se partan en dos renglones desde
+  360 px: «Registrar árbol», «Generar PDF», «Regenerar PDF» y «Cambiar» (con su nombre completo
+  para el lector de pantalla), con menos aire a los lados. De paso se corrigió un resto de antes de
+  D124: al pasar el puntero, el botón principal, la zona de la fotografía y la opción del combo se
+  pintaban de guinda; ahora, del acento. Auditoría UX/UI del 24-09-2026, bloque 82, aprobada por
+  Liber.

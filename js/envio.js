@@ -225,7 +225,7 @@ SRP.envio = {
     const html0 = b.innerHTML;
     b.disabled = true;
     b.setAttribute('aria-busy', 'true');
-    b.innerHTML = SRP.ICONOS.svg('info', 18) + '<span>Enviando…</span>';
+    b.innerHTML = SRP.ICONOS.svg('info', 'medio') + '<span>Enviando…</span>';
     try { await fn(); }
     finally { b.disabled = false; b.removeAttribute('aria-busy'); b.innerHTML = html0; }
   },

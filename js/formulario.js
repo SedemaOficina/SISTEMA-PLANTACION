@@ -39,8 +39,8 @@ SRP.formulario = {
       this.enfocar(a.getAttribute('href').slice(1));
     });
     this.el('foto-archivo').addEventListener('change', (e) => this.cargarFoto(e.target));
-    this.el('btn-foto-quitar').innerHTML = SRP.ICONOS.svg('basura', 20);
-    this.el('icono-foto').innerHTML = SRP.ICONOS.svg('camara', 34);
+    this.el('btn-foto-quitar').innerHTML = SRP.ICONOS.svg('basura', 'medio');
+    this.el('icono-foto').innerHTML = SRP.ICONOS.svg('camara', 'grande');
     this.el('btn-foto-quitar').addEventListener('click', () => {
       const f = { datos: this.estado.foto, id: this.estado.fotoId, nombre: this.estado.fotoNombre, bytes: this.estado.fotoBytes };
       this.ponerFoto(null, null);
@@ -51,10 +51,10 @@ SRP.formulario = {
     this.el('form-plantacion').addEventListener('submit', (e) => {
       if (!SRP.activa.exigir()) { e.preventDefault(); return; } e.preventDefault(); this.enviarFormulario(); });
     // Un solo «Guardar» (D130): la ficha de revisión sólo se abre cuando hay algo que revisar
-    this.el('btn-revisar').innerHTML = SRP.ICONOS.svg('disco', 22) + '<span>Guardar</span>';
-    this.el('btn-guardado-corregir').innerHTML = SRP.ICONOS.svg('lapiz', 16) + '<span>Corregir</span>';
-    this.el('btn-guardado-ver').innerHTML = SRP.ICONOS.svg('ver', 16) + '<span>Ver</span>';
-    this.el('btn-guardado-cerrar').innerHTML = SRP.ICONOS.svg('cerrar', 18);
+    this.el('btn-revisar').innerHTML = SRP.ICONOS.svg('disco', 'grande') + '<span>Guardar</span>';
+    this.el('btn-guardado-corregir').innerHTML = SRP.ICONOS.svg('lapiz', 'chico') + '<span>Corregir</span>';
+    this.el('btn-guardado-ver').innerHTML = SRP.ICONOS.svg('ver', 'chico') + '<span>Ver</span>';
+    this.el('btn-guardado-cerrar').innerHTML = SRP.ICONOS.svg('cerrar', 'medio');
     this.el('btn-guardado-cerrar').addEventListener('click', () => { this.el('franja-guardado').hidden = true; });
     this.el('btn-guardado-corregir').addEventListener('click', async () => {
       const r = this.estado.ultimoGuardado && await SRP.almacen.uno('plantaciones', this.estado.ultimoGuardado);
@@ -72,7 +72,7 @@ SRP.formulario = {
       if (SRP.espejo) SRP.espejo.refrescar();
     });
     this.el('btn-resumen-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar</span>';
-    this.el('btn-resumen-cerrar').innerHTML = SRP.ICONOS.svg('cerrar', 22);
+    this.el('btn-resumen-cerrar').innerHTML = SRP.ICONOS.svg('cerrar', 'grande');
     this.el('btn-resumen-cerrar').addEventListener('click', () => this.el('dlg-resumen').close());
     // Al cerrar la ficha se destruye su mapa: si no, queda un mapa vivo en un diálogo oculto
     // y su marcador se confunde con el del mapa principal.
@@ -417,7 +417,7 @@ SRP.formulario = {
     const html0 = boton.innerHTML;
     boton.disabled = true;
     boton.setAttribute('aria-busy', 'true');
-    boton.innerHTML = SRP.ICONOS.svg('disco', 22) + '<span>Guardando…</span>';
+    boton.innerHTML = SRP.ICONOS.svg('disco', 'grande') + '<span>Guardando…</span>';
     try {
       // Una jornada que no es de hoy se confirma antes de guardar en ella (D133)
       if (!this.estado.editando && !(await SRP.activa.confirmarOtroDia())) return;
@@ -507,7 +507,7 @@ SRP.formulario = {
     this.el('revision-lista').innerHTML = filas.map(([etiqueta, valor, campo]) => {
       const boton = campo
         ? '<button type="button" class="btn btn-texto-editar btn-chico" data-campo="' + campo + '" ' +
-          'aria-label="Editar ' + etiqueta.toLowerCase() + '">' + SRP.ICONOS.svg('lapiz', 16) + '<span>Editar</span></button>'
+          'aria-label="Editar ' + etiqueta.toLowerCase() + '">' + SRP.ICONOS.svg('lapiz', 'chico') + '<span>Editar</span></button>'
         : '<span></span>';
       return '<div class="revision-fila"><dt>' + etiqueta + '</dt><dd>' + valor + '</dd>' + boton + '</div>';
     }).join('');
@@ -650,7 +650,7 @@ SRP.formulario = {
     const esc = SRP.util.escapar;
     this.estado.ultimoGuardado = registro.id;
     const lugar = [registro.alcaldia || '', registro.colonia ? 'Col. ' + registro.colonia : ''].filter(Boolean).join(' · ');
-    this.el('franja-guardado-texto').innerHTML = SRP.ICONOS.svg('palomita', 18) +
+    this.el('franja-guardado-texto').innerHTML = SRP.ICONOS.svg('palomita', 'medio') +
       '<span class="franja-guardado-cuerpo"><strong>Guardado: ' + esc(esp.comun) + '</strong>' +
       '<span class="franja-guardado-datos"><span id="franja-guardado-folio" class="folio-provisional">' + esc(SRP.folio.textoLargo(registro)) + '</span>' +
       (lugar ? ' · ' + esc(lugar) : '') + ' · <span id="franja-guardado-envio">' + (SRP.envio.simulado() ? 'guardado en el teléfono' : 'guardado en este dispositivo') + '</span></span></span>';
