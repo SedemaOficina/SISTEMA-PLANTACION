@@ -403,13 +403,33 @@ SRP.formulario = {
     const errores = this.validar();
     this.mostrarErrores(errores);
     if (errores.length) return;
-    // Una jornada que no es de hoy se confirma antes de guardar en ella (D133)
-    if (!this.estado.editando && !(await SRP.activa.confirmarOtroDia())) return;
-    // El identificador se fija aquí y es el que se guarda, pase o no por la ficha
-    if (!this.estado.editando && !this.estado.idPrevisto) this.estado.idPrevisto = SRP.util.generarId();
-    const avisos = await this.avisos(this.valores());
-    if (avisos.length || this.estado.editando) { await this.revisar(avisos); return; }
-    await this.guardar();
+    // Doble toque en Guardar (D136): un guardado con GPS de por medio tarda un instante, y un
+    // segundo toque antes de que el primero termine no debe crear dos árboles ni dos avisos.
+    const boton = this.el('btn-revisar');
+    if (boton.disabled) return;
+    const html0 = boton.innerHTML;
+    boton.disabled = true;
+    boton.setAttribute('aria-busy', 'true');
+    boton.innerHTML = SRP.ICONOS.svg('disco', 22) + '<span>Guardando…</span>';
+    try {
+      // Una jornada que no es de hoy se confirma antes de guardar en ella (D133)
+      if (!this.estado.editando && !(await SRP.activa.confirmarOtroDia())) return;
+      // El identificador se fija aquí y es el que se guarda, pase o no por la ficha
+      if (!this.estado.editando && !this.estado.idPrevisto) this.estado.idPrevisto = SRP.util.generarId();
+      const avisos = await this.avisos(this.valores());
+      // Con avisos (o al editar) se abre la ficha de revisión: ahí manda su propio botón
+      // «btn-resumen-guardar», así que éste vuelve a su estado normal antes de esperar la ficha.
+      if (avisos.length || this.estado.editando) {
+        boton.disabled = false; boton.removeAttribute('aria-busy'); boton.innerHTML = html0;
+        await this.revisar(avisos);
+        return;
+      }
+      await this.guardar();
+    } finally {
+      boton.disabled = false;
+      boton.removeAttribute('aria-busy');
+      boton.innerHTML = html0;
+    }
   },
 
   /* Lo que amerita mirar la ficha antes de guardar. Devuelve [{ tipo, texto }]. La fotografía es
@@ -568,7 +588,10 @@ SRP.formulario = {
     const u = SRP.sesion.usuario;
     const ahora = SRP.util.ahoraISO();
     const boton = this.el('btn-resumen-guardar');
+    const html0 = boton.innerHTML;
     boton.disabled = true;
+    boton.setAttribute('aria-busy', 'true');
+    boton.innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardando…</span>';
     try {
       if (this.estado.editando) {
         const previo = this.estado.editando;
@@ -605,6 +628,8 @@ SRP.formulario = {
       SRP.util.anunciar('No se pudo guardar: ' + err.message + '. Sus datos siguen en pantalla; intente de nuevo.', 'alerta');
     } finally {
       boton.disabled = false;
+      boton.removeAttribute('aria-busy');
+      boton.innerHTML = html0;
     }
   },
 

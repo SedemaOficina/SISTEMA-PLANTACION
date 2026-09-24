@@ -171,8 +171,15 @@ SRP.galeria = {
   async descargarTodas() {
     if (!this.fotos.length) return;
     const b = this.el('btn-galeria-zip');
+    // Armar el ZIP puede tardar con muchas fotografías: el botón cambia de texto y queda con
+    // aria-busy mientras dura, para que no parezca colgado (D136).
+    const html0 = b.innerHTML;
     b.disabled = true;
+    b.setAttribute('aria-busy', 'true');
+    b.innerHTML = SRP.ICONOS.svg('info', 20) + '<span>Armando…</span>';
     try {
+      // El armado es síncrono y ocupa el hilo: se cede un cuadro para que «Armando…» se pinte antes
+      await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
       const nombres = new Set();
       const entradas = this.fotos.map(r => {
         let n = this.nombreFoto(r);
@@ -192,6 +199,8 @@ SRP.galeria = {
       SRP.util.anunciar('No se pudo armar el archivo: ' + err.message, 'alerta');
     } finally {
       b.disabled = false;
+      b.removeAttribute('aria-busy');
+      b.innerHTML = html0;
     }
   }
 };

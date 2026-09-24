@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.57 (Bloque 76)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.58 (Bloque 77)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -117,6 +117,10 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M106 | Análisis (P8) | Reportes lista las jornadas cerradas (la más reciente arriba), cada una con «Generar reporte»; con reporte, «Volver a generar» en ámbar y cuándo se generó. Atajos Todas · Hoy · Un día y cabo para coordinación. «Reporte de la jornada» desde Jornadas llega directo al cierre | Media | 0.6.56 (B75) | Reportes | Lista |
 | M107 | Análisis (P9) | Fotografías por jornada: lista «Jornada» con las que tienen fotos (según día y cabo); cada pie dice la jornada; el ZIP de una jornada lleva su nombre y fecha. Atajos Todas · Hoy · Un día | Media | 0.6.57 (B76) | Fotografías › Jornada | Galería filtrada |
 | M108 | Análisis (P12) | PDF: un apartado corto ya no salta de página cuando cabe (el pie va en alto − 16; se reservaban 24 mm más el aire del bloque) | Baja | 0.6.57 (B76) | Generar un reporte con muchos ejemplares | PDF |
+| M109 | Auditoría UX (N1) | Avisos en tres tonos: éxito (verde, palomita), aviso (azul claro, «i») y alerta (rojo claro, «i»); cada mensaje en el que le corresponde | Media | 0.6.58 (B77) | Cambiar de jornada; «Enviar ahora» sin pendientes | Aviso azul |
+| M110 | Auditoría UX (N2) | El aviso dura según su largo (+1 s cada 40 caracteres) y no se cierra mientras el puntero está encima | Baja | 0.6.58 (B77) | Un aviso largo | — |
+| M111 | Auditoría UX (N3) | Lo que tarda se dice: «Guardando…», «Enviando…», «Armando…», «Generando reporte…», con aria-busy | Media | 0.6.58 (B77) | Guardar un árbol; Descargar todas | Botón en espera |
+| M112 | Auditoría UX (N4) | Doble toque en «Guardar»: el segundo toque ya no crea otro árbol | Alta | 0.6.58 (B77) | Tocar Guardar dos veces rápido | — |
 
 ## 2. Por hacer
 

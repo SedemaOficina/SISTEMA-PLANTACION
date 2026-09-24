@@ -47,10 +47,16 @@ SRP.reportes = {
       this.el('cie-hora').dispatchEvent(new Event('input', { bubbles: true }));
     });
     this.el('btn-previa-generar').innerHTML = SRP.ICONOS.svg('palomita') + '<span>Generar PDF</span>';
-    this.el('btn-previa-generar').addEventListener('click', () => {
+    this.el('btn-previa-generar').addEventListener('click', async () => {
       const v = this.vistaPrevia; if (!v) return;
       this.el('dlg-previa').close();
-      this.generar(v.registros, v.cierre, v.fecha, v.jornada);
+      // El armado del PDF (croquis con mosaicos incluido) puede tardar unos segundos: se avisa
+      // con aria-busy y un aviso flotante «Generando…» para que no parezca que no pasó nada (D136).
+      const zona = this.el('principal');
+      zona.setAttribute('aria-busy', 'true');
+      SRP.util.anunciar('Generando reporte…', 'aviso');
+      try { await this.generar(v.registros, v.cierre, v.fecha, v.jornada); }
+      finally { zona.removeAttribute('aria-busy'); }
     });
     // Corregir vuelve al formulario de cierre con lo ya escrito (se guardó al pedir la vista previa)
     this.el('btn-previa-corregir').addEventListener('click', () => {

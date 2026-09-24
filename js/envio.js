@@ -106,7 +106,7 @@ SRP.envio = {
     const cola = await this.cola();
     const n = cola.length;
     if (!n) {
-      if (op.manual) SRP.util.anunciar('No hay registros por enviar: todo está en el servidor.');
+      if (op.manual) SRP.util.anunciar('No hay registros por enviar: todo está en el servidor.', 'aviso');
       return { enviados: 0, pendientes: 0 };
     }
     if (!SRP.conexion.enLinea()) {
@@ -216,6 +216,20 @@ SRP.envio = {
 
   /* ---------- Arranque ---------- */
 
+  /* Botón con estado de espera (D136): texto a «Enviando…», aria-busy y deshabilitado mientras
+     dura la operación, para que un envío con demora (o sin señal, que tarda en confirmar que no
+     salió) no parezca un botón que no respondió. Vuelve a su texto e icono originales al terminar,
+     pase lo que pase. */
+  async conBoton(b, fn) {
+    if (!b || b.disabled) return;
+    const html0 = b.innerHTML;
+    b.disabled = true;
+    b.setAttribute('aria-busy', 'true');
+    b.innerHTML = SRP.ICONOS.svg('info', 18) + '<span>Enviando…</span>';
+    try { await fn(); }
+    finally { b.disabled = false; b.removeAttribute('aria-busy'); b.innerHTML = html0; }
+  },
+
   iniciar() {
     if (!this.simulado()) return;
     const b = this.el('btn-sin-senal');
@@ -223,10 +237,12 @@ SRP.envio = {
     b.setAttribute('aria-checked', String(this.sinSenalForzada()));
     b.addEventListener('click', () => { SRP.app.menuCuenta(false); this.forzarSinSenal(!this.sinSenalForzada()); });
     this.el('btn-enviar-ahora').addEventListener('click', async () => {
-      await this.enviar({ manual: true });
-      await this.pintarGuia();
+      await this.conBoton(this.el('btn-enviar-ahora'), async () => {
+        await this.enviar({ manual: true });
+        await this.pintarGuia();
+      });
     });
-    this.el('btn-franja-enviar').addEventListener('click', () => this.enviar({ manual: true }));
+    this.el('btn-franja-enviar').addEventListener('click', () => this.conBoton(this.el('btn-franja-enviar'), () => this.enviar({ manual: true })));
     this.el('conexion').addEventListener('click', () => this.pintarGuia());
     // Al volver a la app (del fondo o de otra) y cada minuto: reintento y franja al día
     document.addEventListener('visibilitychange', () => { if (!document.hidden) this.enviar(); });

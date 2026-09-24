@@ -1013,7 +1013,10 @@ with sync_playwright() as p:
        'sin señal la pastilla cuenta lo que espera envío y se pone en rojo si hay atraso (D111): '+pg.text_content('#conexion').strip())
     fr=pg.inner_text('#franja-envio-texto')
     ok(pg.is_visible('#franja-envio') and fr.startswith('Hoy es ') and 'Tiene 1 registro sin enviar desde el ' in fr and 'Busque señal' in fr,'y la franja dice qué día es y desde cuándo no se envía (D111): '+fr)
-    pg.click('#btn-franja-enviar'); pg.wait_for_timeout(300)
+    est=pg.evaluate("() => { const b = document.getElementById('btn-franja-enviar'); b.click(); return [b.getAttribute('aria-busy'), b.textContent, b.disabled]; }")
+    ok(est[0]=='true' and 'Enviando' in est[1] and est[2],'«Enviar ahora» dice «Enviando…», queda aria-busy y no admite otro toque mientras intenta (D136): '+str(est))
+    pg.wait_for_timeout(300)
+    ok(pg.get_attribute('#btn-franja-enviar','aria-busy') is None and pg.inner_text('#btn-franja-enviar')=='Enviar ahora','y vuelve a su texto al terminar')
     ok('Sin conexión' in pg.inner_text('#aviso') and pg.get_attribute('#aviso','data-tipo')=='alerta','«Enviar ahora» sin señal explica que se enviará solo (D111): '+pg.inner_text('#aviso'))
     pg.evaluate("SRP.app.mostrarVista('registros')"); pg.wait_for_timeout(500)
     ok(pg.locator('#lista-registros li[data-id="%s"] .marca-envio' % rid).count()==1,'la tarjeta lleva la marca «Por enviar» (D111)')
@@ -1346,6 +1349,74 @@ with sync_playwright() as p:
     pg.fill('#acceso-correo','cabo@ejemplo.local'); pg.fill('#acceso-clave','x')
     pg.click('#form-acceso button[type=submit]'); pg.wait_for_timeout(400)
     ok('desactivada' in pg.inner_text('#acceso-errores'),'y la cuenta desactivada ya no entra')
+
+    # ---------- BLOQUE 77: NOTIFICACIONES Y ESPERA (D136) ----------
+    # La pantalla de acceso quedó rechazando una cuenta desactivada (la del cabo), sin sesión: se
+    # entra con la del coordinador, que también registra y cierra jornadas.
+    pg.select_option('#sel-usuario-prueba','u-coord-1'); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(500)
+    iniciar_jornada(pg,'Jornada del tono aviso',HOY)
+    ok(pg.get_attribute('#aviso','data-tipo')=='exito','iniciar una jornada es una confirmación: tono de éxito (D136)')
+    pg.evaluate("SRP.util.anunciar('Jornada activa: prueba.','aviso')"); pg.wait_for_timeout(50)
+    ok(pg.get_attribute('#aviso','data-tipo')=='aviso' and pg.locator('#aviso .aviso-icono svg').count()==1,'hay un tercer tono neutro «aviso», con su icono, distinto de éxito y alerta (D136)')
+    borde=pg.evaluate("[getComputedStyle(document.getElementById('aviso')).borderLeftColor]")[0]
+    pg.evaluate("SRP.util.anunciar('x')"); pg.wait_for_timeout(50)
+    ok(borde!=pg.evaluate("getComputedStyle(document.getElementById('aviso')).borderLeftColor"),'y su filete es de otro color que el de éxito: '+borde)
+    # La duración crece con el largo del mensaje (D136): 'Ok.' dura 4.5 s; uno de ~150 caracteres, 7.5 s
+    largo = 'Este es un mensaje de aviso bastante más largo para comprobar que la duración crece con el número de caracteres del texto mostrado, como pide D136.'
+    pg.mouse.move(5,800)
+    pg.evaluate("SRP.util.anunciar('Ok.','aviso')"); pg.wait_for_timeout(4800)
+    ok(pg.is_hidden('#aviso'),'un aviso corto se cierra solo a los 4.5 s')
+    pg.evaluate("SRP.util.anunciar('%s','aviso')" % largo); pg.wait_for_timeout(4800)
+    ok(pg.is_visible('#aviso'),'uno largo sigue en pantalla a los 4.8 s: dura más porque tarda más en leerse')
+    pg.wait_for_timeout(3000)
+    ok(pg.is_hidden('#aviso'),'y se cierra solo poco después')
+    # Con el puntero encima el tiempo se detiene; al quitarlo, corre lo que faltaba
+    pg.evaluate("SRP.util.anunciar('Ok.','aviso')"); pg.wait_for_timeout(100)
+    pg.hover('#aviso .aviso-texto'); pg.wait_for_timeout(5500)
+    ok(pg.is_visible('#aviso'),'con el puntero encima no se cierra aunque pase su tiempo (D136)')
+    pg.mouse.move(5,800); pg.wait_for_timeout(4800)
+    ok(pg.is_hidden('#aviso'),'y al quitar el puntero se cierra cuando corre lo que le faltaba')
+
+    # Doble toque en Guardar: dos toques seguidos, antes de que el primero termine, no deben
+    # crear dos árboles (D136). Se dispara el submit dos veces sin esperar entre uno y otro.
+    pg.click('#btn-ubicacion'); pg.wait_for_timeout(700)
+    pg.fill('#campo-especie','aile'); pg.wait_for_timeout(200)
+    pg.dispatch_event('.combo-opcion[data-id="ESP-0002"]','mousedown'); pg.wait_for_timeout(150)
+    n0 = pg.evaluate("async () => (await SRP.almacen.todos('plantaciones')).length")
+    ok(pg.get_attribute('#btn-revisar','disabled') is None,'el botón Guardar empieza habilitado')
+    pg.evaluate("document.getElementById('form-plantacion').requestSubmit ? document.getElementById('form-plantacion').requestSubmit() : document.querySelector('#form-plantacion button[type=submit]').click()")
+    ok(pg.get_attribute('#btn-revisar','disabled') is not None,'al enviar, el botón Guardar queda deshabilitado de inmediato')
+    pg.click('#form-plantacion button[type=submit]', force=True)   # segundo toque «a la fuerza» mientras el primero sigue en curso
+    pg.wait_for_timeout(900)
+    if pg.is_visible('#dlg-resumen'): pg.click('#btn-resumen-guardar'); pg.wait_for_timeout(600)
+    n1 = pg.evaluate("async () => (await SRP.almacen.todos('plantaciones')).length")
+    ok(n1==n0+1,'el doble toque crea un solo árbol, no dos: '+str(n0)+' -> '+str(n1))
+
+    # aria-busy en la generación de reportes y el ZIP de fotografías (D136)
+    pg.evaluate("SRP.app.mostrarVista('jornadas')"); pg.wait_for_timeout(400)
+    j = pg.locator('#lista-jornadas .jornada', has_text='Jornada del tono aviso')
+    (j if j.count() else pg.locator('#lista-jornadas .jornada').first).locator('.jornada-boton').click()
+    pg.wait_for_timeout(400)
+    if pg.is_visible('#btn-jornada-estado') and pg.get_attribute('#btn-jornada-estado','hidden') is None:
+        pg.click('#btn-jornada-estado'); pg.wait_for_timeout(300)
+        if pg.is_visible('#dlg-confirmar'): pg.click('#btn-confirmar-si')
+        pg.wait_for_timeout(500)   # cerrar la jornada para poder generar su reporte
+    reporte_de(pg,'Jornada del tono aviso') if pg.locator('#pdf-lista .jornada', has_text='Jornada del tono aviso').count() else reporte_de(pg)
+    pg.wait_for_timeout(400)
+    if pg.is_visible('#dlg-cierre'):
+        pg.fill('#cie-personal','Prueba'); pg.click('#form-cierre button[type=submit]'); pg.wait_for_timeout(600)
+    ok(pg.is_visible('#dlg-previa'),'la vista previa del reporte se abre antes de generar el PDF')
+    pg.click('#btn-previa-generar')
+    ok(pg.evaluate("document.getElementById('principal').getAttribute('aria-busy')")=='true','#principal queda aria-busy mientras se arma el PDF (D136)')
+    pg.wait_for_timeout(1500)
+    ok(pg.evaluate("document.getElementById('principal').hasAttribute('aria-busy')") is False,'y aria-busy se quita al terminar')
+
+    pg.evaluate("SRP.app.mostrarVista('galeria')"); pg.wait_for_timeout(500)
+    if pg.locator('#galeria-rejilla li').count() > 0:
+        estado=pg.evaluate("() => { const b = document.getElementById('btn-galeria-zip'); b.click(); return [b.getAttribute('aria-busy'), b.textContent, b.disabled]; }")
+        ok(estado[0]=='true' and 'Armando' in estado[1] and estado[2],'el botón de ZIP dice «Armando…» y queda aria-busy mientras arma el archivo (D136)')
+        pg.wait_for_timeout(1500)
+        ok(pg.get_attribute('#btn-galeria-zip','aria-busy') is None and 'Descargar todas' in pg.inner_text('#btn-galeria-zip'),'y vuelve a su texto normal al terminar')
 
     b.close()
 print('\n'.join(res)); print('ERRORES CONSOLA:',errores or 'ninguno')

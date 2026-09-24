@@ -65,31 +65,44 @@ SRP.util = {
     return [u.nombre, u.apellido_paterno, u.apellido_materno].filter(Boolean).join(' ');
   },
 
-  /* AVISO FLOTANTE (D101). Uno solo para toda la plataforma: icono, texto, × para cerrarlo y,
-     cuando la acción se puede revertir, «Deshacer». Va arriba de la pantalla para no tapar las
-     barras fijas del pie (Revisar y guardar, Guardar, Editar). Dura más si trae «Deshacer» o es
-     una alerta, porque ahí la persona necesita tiempo para leer y decidir.
+  /* AVISO FLOTANTE (D101, tres tonos desde D136). Uno solo para toda la plataforma: icono, texto,
+     × para cerrarlo y, cuando la acción se puede revertir, «Deshacer». Va arriba de la pantalla
+     para no tapar las barras fijas del pie (Revisar y guardar, Guardar, Editar).
+     Tonos: 'exito' (por omisión) confirma que algo se guardó o completó; 'aviso' informa un estado
+     que no es error ni confirmación («Jornada activa: X», «reabierta para...»); 'alerta' señala un
+     bloqueo o que algo salió mal. El color nunca va solo: también cambian el icono y el texto.
+     La duración crece con el largo del mensaje (D136): mínimo 4s + 1s por cada ~40 caracteres, y
+     el temporizador se pausa mientras el puntero está encima para no cerrarlo a medio leer.
      `op`: { deshacer: función, textoAccion: 'Deshacer' } */
   anunciar(mensaje, tipo, op) {
     op = op || {};
     const zona = document.getElementById('aviso');
-    const alerta = tipo === 'alerta';
-    zona.innerHTML = '<span class="aviso-icono" aria-hidden="true">' + SRP.ICONOS.svg(alerta ? 'info' : 'palomita', 20) + '</span>' +
+    const tonos = { alerta: { icono: 'info', color: 'alerta' }, aviso: { icono: 'info', color: 'aviso' } };
+    const t = tonos[tipo] || { icono: 'palomita', color: 'exito' };
+    zona.innerHTML = '<span class="aviso-icono" aria-hidden="true">' + SRP.ICONOS.svg(t.icono, 20) + '</span>' +
       '<span class="aviso-texto"></span>' +
       (op.deshacer ? '<button type="button" class="aviso-accion"></button>' : '') +
       '<button type="button" class="aviso-cerrar" aria-label="Cerrar aviso">' + SRP.ICONOS.svg('cerrar', 18) + '</button>';
     zona.querySelector('.aviso-texto').textContent = mensaje;
-    zona.dataset.tipo = alerta ? 'alerta' : 'exito';
+    zona.dataset.tipo = t.color;
     zona.hidden = false;
-    const cerrar = () => { zona.hidden = true; clearTimeout(SRP.util._temporizadorAviso); };
+    const cerrar = () => { zona.hidden = true; clearTimeout(SRP.util._temporizadorAviso); zona.onmouseenter = zona.onmouseleave = null; };
     zona.querySelector('.aviso-cerrar').onclick = cerrar;
     if (op.deshacer) {
       const b = zona.querySelector('.aviso-accion');
       b.textContent = op.textoAccion || 'Deshacer';
       b.onclick = () => { cerrar(); op.deshacer(); };
     }
+    // Duración: base según el tono (con «Deshacer» o alerta, más tiempo para decidir) más 1s por
+    // cada ~40 caracteres del mensaje, para que un texto largo no se cierre antes de terminar de leerlo.
+    const base = op.deshacer ? 8000 : (t.color === 'alerta' ? 7000 : 4500);
+    const duracion = base + Math.floor(mensaje.length / 40) * 1000;
+    let restante = duracion, marca = Date.now();
     clearTimeout(SRP.util._temporizadorAviso);
-    SRP.util._temporizadorAviso = setTimeout(() => { zona.hidden = true; }, op.deshacer ? 8000 : (alerta ? 7000 : 4500));
+    const programar = (ms) => { SRP.util._temporizadorAviso = setTimeout(() => { zona.hidden = true; }, ms); };
+    programar(duracion);
+    zona.onmouseenter = () => { clearTimeout(SRP.util._temporizadorAviso); restante -= (Date.now() - marca); };
+    zona.onmouseleave = () => { marca = Date.now(); programar(Math.max(restante, 1500)); };
   },
 
   /* Sólo para el lector de pantalla, sin letrero. Para cambios que en pantalla ya se ven solos

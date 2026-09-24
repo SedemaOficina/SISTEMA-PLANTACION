@@ -742,7 +742,7 @@ SRP.jornadas = {
     if (j.estatus !== 'abierta') await SRP.activa.reabrir(j); else SRP.activa.jornada = j;
     SRP.formulario.limpiar();
     SRP.app.mostrarVista('registrar');
-    SRP.util.anunciar('Registre el árbol que falta en la jornada «' + j.nombre + '».');
+    SRP.util.anunciar('Registre el árbol que falta en la jornada «' + j.nombre + '».', 'aviso');
   },
 
   irAlReporte() {

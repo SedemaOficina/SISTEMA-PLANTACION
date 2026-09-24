@@ -27,6 +27,7 @@
   --fondo-campo-hover: #EAEAED;
   --aviso-exito: #7CD39A;      /* sobre el fondo oscuro del aviso flotante (D101) */
   --aviso-alerta: #F28B82;
+  --aviso-aviso: #9FC6E0;      /* tono neutro/informativo (D136), ni éxito ni error */
   --aviso-accion: #F0D9B5;     /* «Deshacer»: dorado claro, 10:1 sobre el oscuro */
   --total-fondo: #FFFAE9;      /* renglón de total, igual que en el PDF */
   /* ESCALA DE ÉNFASIS. Un control se ve según lo que pesa, no según quién lo escribió.
@@ -799,6 +800,8 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .campo input[aria-invalid="true"], .campo select[aria-invalid="true"] { border: 2px solid var(--error); }
 .aviso[data-tipo="alerta"] { border-left-color: var(--aviso-alerta); }
 .aviso[data-tipo="alerta"] .aviso-icono { color: var(--aviso-alerta); }
+.aviso[data-tipo="aviso"] { border-left-color: var(--aviso-aviso); }
+.aviso[data-tipo="aviso"] .aviso-icono { color: var(--aviso-aviso); }
 .estado-texto[data-activo="false"] { color: var(--error); }
 .ficha-estado[data-tipo="alerta"] { color: var(--error); font-weight: 500; }
 

@@ -35,7 +35,7 @@ SRP.activa = {
     this.el('lista-jornadas-abiertas').addEventListener('click', async (e) => {
       const b = e.target.closest('button[data-id]'); if (!b) return;
       const j = await SRP.almacen.uno('jornadas', b.dataset.id);
-      if (j) { this.jornada = j; this.el('dlg-cambiar-jornada').close(); await this.preparar(); SRP.util.anunciar('Jornada activa: ' + j.nombre + '.'); }
+      if (j) { this.jornada = j; this.el('dlg-cambiar-jornada').close(); await this.preparar(); SRP.util.anunciar('Jornada activa: ' + j.nombre + '.', 'aviso'); }
     });
     this.el('btn-iniciar-cancelar').addEventListener('click', () => { this.mostrarInicio(false); this.preparar(); });
     this.el('ini-fecha').max = SRP.util.fechaHoy();
@@ -300,7 +300,7 @@ SRP.activa = {
     if (j.cabo_id === SRP.sesion.usuario.id) {
       this.jornada = await SRP.almacen.uno('jornadas', j.id);
       SRP.util.anunciar('Jornada «' + j.nombre + '» reabierta. Es la activa en Nuevo registro.');
-    } else SRP.util.anunciar('Jornada «' + j.nombre + '» reabierta para ' + SRP.ref.nombreUsuario(j.cabo_id) + '.');
+    } else SRP.util.anunciar('Jornada «' + j.nombre + '» reabierta para ' + SRP.ref.nombreUsuario(j.cabo_id) + '.', 'aviso');
   },
 
   async cambiarEstatus(j, estatus) {

@@ -1035,3 +1035,15 @@
   si termina antes de alto − 19 (el pie va en alto − 16); antes se reservaban 24 mm más el aire
   del propio bloque y un apartado corto saltaba de página cuando sí cabía (M44). Propuesto en el
   análisis del 23-09-2026 (P9, P12) y aprobado por Liber, 24-09-2026.
+- **D136. Notificaciones en tres tonos y espera visible.** El aviso flotante suma un tercer tono,
+  «aviso» (filete azul claro, icono de información), para lo que informa sin ser confirmación ni
+  error: «Jornada activa: X», reabierta para otro cabo, «Registre el árbol que falta», «No hay
+  registros por enviar», datos de prueba actualizados. «Éxito» queda para lo que se guardó o se
+  completó y «alerta» para bloqueos y fallas. La duración crece con el largo del texto (base 4.5 s,
+  7 s en alerta, 8 s con «Deshacer», más 1 s por cada 40 caracteres) y se detiene mientras el
+  puntero está encima. Lo que tarda se dice: «Guardar» pasa a «Guardando…» y se deshabilita desde
+  el primer toque (un segundo toque ya no crea otro árbol); «Enviar ahora» dice «Enviando…»;
+  «Descargar todas» dice «Armando…» y cede un cuadro antes de armar el ZIP para que el texto
+  alcance a pintarse; al generar el PDF, un aviso «Generando reporte…» y la vista principal con
+  aria-busy. Los botones vuelven a su texto e icono al terminar, pase lo que pase. Auditoría UX/UI
+  del 24-09-2026, bloque 77, aprobada por Liber.

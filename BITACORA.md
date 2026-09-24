@@ -1406,3 +1406,18 @@ Pruebas: orden de atajos, lista de jornadas, filtro y ZIP por jornada, limpieza 
 
 **Verificación:** 453 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.57.
+
+## Bloque 77 — Notificaciones y espera (24-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.58.
+
+**Qué cambió (D136).** `util.js`: `anunciar()` con tono «aviso», duración por largo del texto y
+pausa con el puntero encima. `estilos.css`: `--aviso-aviso` y su filete e icono. Tono «aviso» en
+`app.js`, `envio.js`, `jornada-activa.js` y `jornadas.js` (cinco mensajes informativos).
+`formulario.js`: «Guardando…», aria-busy y candado contra doble toque en `enviarFormulario()` y
+`guardar()`. `envio.js`: `conBoton()` para «Enviando…». `galeria.js`: «Armando…» y un cuadro
+cedido antes del ZIP. `reportes.js`: «Generando reporte…» con aria-busy en la vista principal.
+Pruebas: tonos, duración corta y larga, pausa con el puntero, doble toque (un solo árbol),
+aria-busy del PDF, del ZIP y de «Enviar ahora».
+
+**Verificación:** 471 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.58.
