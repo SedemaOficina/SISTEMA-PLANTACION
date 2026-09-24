@@ -357,8 +357,21 @@ SRP.app = {
 
   iniciarDialogos() {
     // Los botones fijos del HTML reciben aquí su icono, para no repetir el SVG en la página
-    this.el('btn-cat-guardar').innerHTML = SRP.ICONOS.svg('palomita') + '<span>Guardar</span>';
-    this.el('btn-usr-guardar').innerHTML = SRP.ICONOS.svg('palomita') + '<span>Guardar</span>';
+    // Iconos fijos por significado (D124): disco = guardar, palomita = confirmar/aprobar
+    this.el('btn-cat-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar</span>';
+    this.el('btn-usr-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar</span>';
+    const I = (id, icono, texto, tam) => { const b = this.el(id); if (b) b.innerHTML = SRP.ICONOS.svg(icono, tam || 18) + '<span>' + texto + '</span>'; };
+    I('btn-registro-nuevo', 'mas', 'Agregar registro nuevo');
+    I('btn-ir-registros', 'registros', 'Ver mis registros');
+    I('btn-pdf', 'reportes', 'Generar reporte');
+    I('btn-cierre-generar', 'ver', 'Ver vista previa', 20);
+    I('btn-previa-corregir', 'lapiz', 'Corregir datos de cierre');
+    I('btn-enviar-ahora', 'senal', 'Enviar ahora');
+    I('btn-franja-enviar', 'senal', 'Enviar ahora');
+    I('btn-filtrar', 'buscar', 'Aplicar');
+    I('btn-reiniciar-filtros', 'cerrar', 'Reiniciar filtros', 16);
+    I('btn-coord-aplicar', 'ubicacion', 'Colocar punto');
+    I('btn-cambiar-nueva', 'mas', 'Iniciar otra jornada');
     // Toda × de cabecera cierra su propio diálogo (D91); cada módulo reacciona al evento «close» si lo necesita
     document.querySelectorAll('.dialogo-cerrar').forEach(b => {
       b.innerHTML = SRP.ICONOS.svg('cerrar', 22);

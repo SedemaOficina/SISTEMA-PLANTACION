@@ -63,7 +63,7 @@ SRP.usuarios = {
       // dejaría el sistema sin quien administre
       const items = [{ accion: 'editar', texto: 'Editar', icono: 'lapiz' }];
       if (!soyYo) {
-        items.push({ accion: 'estado', texto: u.activo ? 'Desactivar' : 'Activar' });
+        items.push({ accion: 'estado', texto: u.activo ? 'Desactivar' : 'Activar', icono: u.activo ? 'cerrar' : 'palomita' });
         if (n === 0) items.push({ accion: 'eliminar', texto: 'Eliminar', icono: 'basura', peligro: true });
       }
       const estado = '<span class="estado-texto" data-activo="' + u.activo + '">' + (u.activo ? 'Activo' : 'Inactivo') + '</span>';

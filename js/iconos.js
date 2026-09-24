@@ -76,7 +76,7 @@ SRP.ICONOS = {
       '<button type="button" class="btn btn-icono-solo btn-tuerca" aria-haspopup="true" aria-expanded="false" ' +
       'aria-label="Acciones de ' + esc(etiqueta) + '">' + this.svg('tuerca', 22) + '</button>' +
       '<div class="menu-acciones" role="menu" hidden>' + items.map(it =>
-        '<button type="button" role="menuitem" class="menu-opcion' + (it.peligro ? ' menu-peligro' : '') + '" data-accion="' + it.accion + '" data-id="' + esc(id) + '">' +
+        '<button type="button" role="menuitem" class="menu-opcion' + (it.peligro ? ' menu-peligro' : it.accion === 'editar' ? ' menu-editar' : '') + '" data-accion="' + it.accion + '" data-id="' + esc(id) + '">' +
         (it.icono ? this.svg(it.icono, 18) : '<span class="menu-sin-icono"></span>') + '<span>' + esc(it.texto) + '</span></button>').join('') +
       '</div></div>';
   },

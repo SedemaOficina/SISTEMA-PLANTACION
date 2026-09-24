@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.46 (Bloque 65)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.47 (Bloque 66)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -91,6 +91,8 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M80 | Petición de Liber | «Detectar ubicación de la jornada» en el panel de inicio, antes del campo de ubicación: llena alcaldía y colonia de la jornada (sólo la jornada; el campo de texto sigue) | Alta | 0.6.46 (B65) | Nuevo registro › Iniciar jornada: tocar el botón; ver alcaldía y colonia; la franja y el reporte las muestran | Panel «Iniciar jornada» con alcaldía y colonia |
 | M81 | Petición de Liber | «Cambiar» pasa a «Cambiar de jornada» en la franja | Media | 0.6.46 (B65) | Nuevo registro › franja de la jornada | Franja |
 | M82 | Petición de Liber | En «Revise antes de guardar»: el Folio va debajo de la Fotografía y la fila Especie dice también el tipo de distribución (Nativa, Endémica, Exótica…) | Media | 0.6.46 (B65) | Nuevo registro › Revisar: mirar la fila Especie y el final de la ficha | Ficha de revisión |
+| M83 | Auditoría de botones | Sistema de botones sin el manual gráfico: acento pizarra para avanzar, verde para comprometer, rojo para quitar, ámbar para corregir, gris para apoyo; tres pesos; filtros en píldora; radio 8; icono en todo botón con color; menús con color por opción | Alta | 0.6.47 (B66) | Recorrer las pantallas: ningún botón guinda; «Cerrar jornada» pizarra; «Editar» ámbar claro; filtros redondos con el activo relleno | Nuevo registro, Registros, Jornadas, confirmación |
+| M84 | Petición de Liber | «Cerrar jornada» desde la franja siempre llega a la ficha de esa jornada en Jornadas, aunque el filtro esté en otro día o cabo (se ajusta solo) | Alta | 0.6.47 (B66) | Iniciar una jornada de ayer, cerrarla desde la franja: abre su ficha con el filtro «Un día» en esa fecha | Ficha de jornada |
 
 ## 2. Por hacer
 

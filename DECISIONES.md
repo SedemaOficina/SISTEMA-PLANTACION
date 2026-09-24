@@ -908,3 +908,30 @@
   la Fotografía, porque es lo que la persona citará; en «Datos del sistema» queda sólo el
   identificador. La fila Especie añade el tipo de distribución del catálogo (Nativa, Endémica,
   Exótica, Exótica-Invasora) bajo el nombre común y el científico. Pedido por Liber, 23-09-2026.
+- **D124. Sistema de botones sin el manual gráfico.** La auditoría de los 115 controles (23-09-2026)
+  encontró 17 formas de botón y el origen de la confusión: el guinda (#9D2148) y el rojo (#B3261E)
+  tienen 1.1:1 de contraste, así que mientras el guinda fuera el color de acción el rojo no podía
+  significar nada, y cada parche (dorado oscurecido a café, contornos, subrayados) sumó formas.
+  Liber pidió dejar el manual a un lado. Queda: cinco intenciones y tres pesos. Acento **pizarra**
+  #2F4858 para avanzar (entrar, generar, descargar, cerrar jornada, agregar, aplicar); verde #1E7A46
+  para comprometer (guardar con disco; iniciar jornada, confirmar y aprobar con palomita); rojo
+  #C62828 para quitar (relleno sólo en la confirmación definitiva; contorno con tache para cancelar,
+  con bote para eliminar en lista); ámbar (fondo #FFF4E0, borde #D98A1E, texto #8A4B00) para
+  corregir (editar, reabrir, actualizar la ubicación, corregir el cierre); gris de contorno o texto
+  para apoyo (Hoy, Ahora, Colocar punto, Ver, Cambiar de jornada, Ver mis registros, Mostrar más,
+  volver con chevron). Pesos: 56 px cierra la pantalla, 48 normal, 40 en fila o franja. Un radio
+  (8 px); los filtros son píldoras con el activo relleno del acento; la tuerca lleva borde; el
+  tache de los diálogos va en círculo suave; los menús pintan Editar en ámbar y Eliminar y Cerrar
+  sesión en rojo, y Desactivar/Activar llevan tache/palomita. Todo botón con color lleva icono
+  («Agregar registro nuevo», «Generar reporte», «Ver vista previa», «Aplicar», «Colocar punto»,
+  «Enviar ahora», «Corregir datos de cierre» lo recibieron). «Enviar ahora» pesa igual en la
+  franja y en el diálogo. El guinda se conserva en encabezado, pie, títulos, tablas del reporte y
+  marcadores del mapa: la app sigue siendo SEDEMA, pero el guinda deja de ser el color de los
+  botones. Se conservan los nombres de clase (`btn-primario`, `btn-secundario`…) con su nuevo
+  significado, para no tocar cada llamada; `--radio-pildora` es nuevo. Elegido por Liber entre
+  pizarra, petróleo, verde bosque y guinda, 23-09-2026.
+- **D125. «Cerrar jornada» siempre llega a la ficha.** Al cerrar desde la franja de Nuevo registro se
+  va a Jornadas y se abre la ficha de esa jornada; si el filtro la dejaba fuera (estaba en «Hoy» y
+  la jornada es de otro día, o en otro cabo), el filtro se ajusta a ella («Un día» con su fecha;
+  cabo en «Todos»). Antes, en ese caso, se llegaba a la lista sin la jornada. Pedido por Liber,
+  23-09-2026.

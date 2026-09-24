@@ -158,7 +158,7 @@ with sync_playwright() as p:
         return [t.indexOf('btn-ubicacion'), t.indexOf('coord-manual'), t.indexOf('id="mapa"')];}""")
     ok(orden[0]<orden[1]<orden[2],'orden: botón de ubicación, captura a mano y luego el mapa')
     rev=pg.evaluate("(() => { const b=document.getElementById('btn-revisar'); const r=b.getBoundingClientRect(); const m=document.getElementById('form-plantacion').getBoundingClientRect(); return { verde: getComputedStyle(b).backgroundColor, icono: !!b.querySelector('svg'), alto: Math.round(r.height), ancho: Math.round(r.width), formulario: Math.round(m.width) }; })()")
-    ok(rev['verde']=='rgb(31, 107, 62)' and rev['icono'] and rev['alto']>=56 and rev['ancho']>=rev['formulario']-2,
+    ok(rev['verde']=='rgb(30, 122, 70)' and rev['icono'] and rev['alto']>=56 and rev['ancho']>=rev['formulario']-2,
        'Revisar y guardar es verde, con disco, alto y de margen a margen en teléfono: %s' % rev)
     ok(pg.locator('.leaflet-marker-icon').count()==0,'la ubicación no se pide sola')
     # Aquí las teselas no cargan (la red de la sesión bloquea al proveedor) y ese aviso pisa al
@@ -188,7 +188,7 @@ with sync_playwright() as p:
         cerrar_subrayado: getComputedStyle(document.getElementById('btn-cerrar-sesion')).textDecorationLine
       };
     }""")
-    ok(enfasis['principal_relleno']=='rgb(157, 33, 72)','la acción principal es el guinda relleno: '+enfasis['principal_relleno'])
+    ok(enfasis['principal_relleno']=='rgb(47, 72, 88)','la acción principal es el acento pizarra relleno (D124): '+enfasis['principal_relleno'])
     ok(enfasis['apoyo']==enfasis['gris'],'y la de apoyo va en gris, no en guinda: '+enfasis['apoyo'])
     ok(enfasis['cerrar_borde']=='0px' and enfasis['cerrar_caja'] in ('rgba(0, 0, 0, 0)','transparent') and 'underline' not in enfasis['cerrar_subrayado'],
        'cerrar sesión es un renglón de texto del menú de la cuenta, sin caja ni subrayado (D97): %s' % enfasis)
@@ -281,8 +281,8 @@ with sync_playwright() as p:
                icono: b.innerHTML.includes(SRP.ICONOS.ubicacion.match(/d="([^"]+)"/)[1]),
                texto: b.textContent.trim() };
     }""")
-    ok('btn-editar' in corr['clase'] and corr['color']=='rgb(126, 95, 48)' and corr['editar'].upper()=='#7E5F30',
-       'y toma el dorado de corregir: '+corr['color'])
+    ok('btn-editar' in corr['clase'] and corr['color']=='rgb(138, 75, 0)' and corr['editar'].upper()=='#8A4B00',
+       'y toma el ámbar de corregir (D124): '+corr['color'])
     ok(corr['icono'] and corr['texto'].startswith('Actualizar'),
        'conserva el icono de ubicación y cambia el texto, porque el color nunca va solo (D48)')
 
@@ -577,7 +577,7 @@ with sync_playwright() as p:
     ok(pg.is_visible('#btn-detalle-editar'),'el detalle ofrece Editar en la cabecera a quien puede editar')
     pg.click('#btn-detalle-cerrar'); pg.wait_for_timeout(200)
     col=pg.evaluate("getComputedStyle(document.querySelector('#lista-registros button[data-accion=eliminar]')).color")
-    ok(col=='rgb(179, 38, 30)','la opción Eliminar va en rojo')
+    ok(col=='rgb(198, 40, 40)','la opción Eliminar va en rojo')
     pg.click('.chip[data-atajo=todos]'); pg.wait_for_timeout(300)
     ok('Total: 4 ' in pg.inner_text('#registros-total'),'«Todos» muestra los cuatro: '+pg.inner_text('#registros-total'))
     ok(pg.is_hidden('#registros-vacio'),'con registros no hay aviso de vacío')
@@ -633,14 +633,14 @@ with sync_playwright() as p:
     abrir_filtros(pg)
     pg.click('#filtro-atajos [data-atajo=todos]'); pg.wait_for_timeout(300)
     ok(pg.is_hidden('#filtro-un-dia') and pg.input_value('#filtro-dia')=='','«Todos» cierra «Un día» y lo limpia')
-    pg.mouse.move(1,1); pg.wait_for_timeout(100)
+    pg.mouse.move(1,1); pg.wait_for_timeout(300)   # el fondo del atajo tiene transición de .15 s
     est=pg.evaluate('''() => {
       const g = e => getComputedStyle(e);
       const act = document.querySelector('#filtro-atajos .chip[aria-pressed=true]');
       const chips = [...document.querySelectorAll('#filtro-atajos .chip')].map(c => Math.round(c.getBoundingClientRect().width));
       const sel = document.getElementById('filtro-anio'), fec = document.getElementById('filtro-desde');
       return {
-        suave: g(act).backgroundColor === 'rgb(247, 241, 243)' && g(act).color === 'rgb(157, 33, 72)',
+        suave: g(act).backgroundColor === 'rgb(47, 72, 88)' && g(act).color === 'rgb(255, 255, 255)',
         iguales: Math.max(...chips) - Math.min(...chips) <= 1,
         lista: g(sel).appearance === 'none' && g(sel).backgroundImage.includes('svg'),
         fecha: g(fec).backgroundImage.includes('svg'),
@@ -648,7 +648,7 @@ with sync_playwright() as p:
         aplicar: document.getElementById('btn-filtrar').classList.contains('btn-primario')
       };
     }''')
-    ok(all(est.values()),'estilo de filtros (D95): atajo activo en guinda suave, atajos de ancho igual, lista y fecha con su cuadrito, «Reiniciar» en el encabezado y «Aplicar» como acción principal: '+str(est))
+    ok(all(est.values()),'estilo de filtros (D95, D124): atajo activo relleno con el acento, atajos de ancho igual, lista y fecha con su cuadrito, «Reiniciar» en el encabezado y «Aplicar» como acción principal: '+str(est))
     pg.click('.chip[data-atajo=periodo]'); pg.wait_for_timeout(200)
     pg.fill('#filtro-desde','2026-08-01'); pg.fill('#filtro-hasta','2026-08-31'); pg.click('#btn-filtrar'); pg.wait_for_timeout(300)
     pg.click('.chip[data-atajo=todos]'); pg.wait_for_timeout(300)
@@ -850,6 +850,21 @@ with sync_playwright() as p:
     ok('Cerrar jornada' in pg.inner_text('#btn-jornada-estado') and 'btn-primario' in pg.get_attribute('#btn-jornada-estado','class') and pg.locator('#btn-jornada-estado svg').count()==1 and 'abierta' in pg.inner_text('#jornada-sub') and pg.evaluate("SRP.activa.jornada && SRP.activa.jornada.id")==M['jids'][1],'reabrir la deja abierta y activa; «Cerrar jornada» va en guinda con candado, no en verde (D121)')
     pg.click('#btn-jornada-estado'); pg.wait_for_timeout(300); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(600)
     ok('Reabrir' in pg.inner_text('#btn-jornada-estado') and pg.evaluate("SRP.activa.jornada")is None,'y cerrarla la quita de activa')
+    # D125: «Cerrar jornada» desde la franja siempre llega a la ficha de esa jornada en Jornadas, aunque sea de otro día y el filtro esté en «Hoy»
+    pg.evaluate("SRP.jornadas.aplicarAtajo('hoy')"); pg.wait_for_timeout(200)
+    iniciar_jornada(pg, 'Jornada de ayer', '2026-09-22')
+    pg.click('#btn-jornada-cerrar'); pg.wait_for_timeout(300); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(800)
+    d125=[pg.is_visible('#vista-jornadas'), pg.is_visible('#jornada-detalle'), pg.inner_text('#jornada-titulo'), pg.get_attribute('#jornada-atajos [data-atajo=dia]','aria-pressed'), pg.input_value('#jornada-dia')]
+    ok(d125==[True, True, 'Jornada de ayer', 'true', '2026-09-22'],'cerrar una jornada de otro día desde la franja abre su ficha en Jornadas y ajusta el filtro a ese día (D125): %s' % d125)
+    pg.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg.wait_for_timeout(300)
+    pg.evaluate("SRP.jornadas.abrir('%s')" % M['jids'][1]); pg.wait_for_timeout(400)   # se vuelve a la jornada 2 para lo que sigue
+    # D124: sistema de botones. El acento es pizarra; verde, rojo y ámbar significan; los filtros son píldoras
+    d124=pg.evaluate('''() => { const g = e => getComputedStyle(e); const r = document.documentElement.style; const v = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim().toUpperCase();
+      return { acento: v('--acento'), radio: g(document.getElementById('btn-jornada-reporte')).borderRadius, chip: g(document.querySelector('#jornada-atajos .chip')).borderRadius,
+        apoyo: g(document.getElementById('btn-jornada-faltante')).borderColor, texto_sub: g(document.getElementById('btn-jornada-volver')).textDecorationLine,
+        volver: getComputedStyle(document.getElementById('btn-jornada-volver'), '::before').borderLeftWidth }; }''')
+    ok(d124['acento']=='#2F4858' and d124['radio']=='8px' and d124['chip']=='999px' and d124['apoyo']=='rgb(154, 163, 171)' and d124['texto_sub']=='none' and d124['volver']=='2px',
+       'sistema de botones (D124): acento pizarra, radio 8, filtros en píldora, apoyo con contorno gris, volver con chevron y sin subrayado: %s' % d124)
     # Reportes: selector de jornada y un PDF por jornada
     pg.click('#btn-jornada-reporte'); pg.wait_for_timeout(600)
     ok(pg.is_visible('#caja-pdf-jornada') and pg.locator('#pdf-jornada option').count()==3 and pg.input_value('#pdf-jornada')==M['jids'][1] and 'Parque Hundido' in pg.inner_text('#pdf-nota'),

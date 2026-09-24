@@ -1256,3 +1256,21 @@ detección con alcaldía y colonia, campo de texto intacto, campos nulos sin det
 
 **Verificación:** 411 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.46.
+
+## Bloque 66 — Sistema de botones (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.47.
+
+**Qué cambió (D124, D125).** `estilos.css`: tokens `--acento`, `--acento-oscuro`, `--acento-suave`,
+`--editar-borde`, `--neutro-borde`, `--neutro-fondo`, `--radio-pildora`; nuevos valores de verde,
+rojo y ámbar; `btn-primario` pizarra, `btn-secundario` gris, `btn-editar` ámbar claro,
+`btn-texto` sin subrayado, `.volver` con chevron, `.dialogo-cerrar` en círculo, tuerca con borde,
+chips píldora con activo relleno, pestaña activa en acento, `.menu-editar`; franja de jornada con
+acciones a todo lo ancho en teléfono. `index.html`: clases de «Enviar ahora», «Quitar foto»,
+«Aplicar», «Mostrar más», «Corregir datos de cierre», «Hoy»/«Ahora» compactos, «Cerrar sesión»
+en rojo. `app.js`: iconos de once botones fijos; Guardar con disco. `formulario.js`: «Editar» de
+la ficha con lápiz. `iconos.js`: `menu-editar`. `catalogos.js`, `usuarios.js`: icono en
+Desactivar/Activar. `jornadas.js`: el filtro se ajusta a la jornada que se cierra. Pruebas:
+colores nuevos, D124 (acento, radio, píldoras, apoyo, volver) y D125.
+
+**Verificación:** 413 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.47.

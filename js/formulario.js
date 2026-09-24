@@ -51,7 +51,7 @@ SRP.formulario = {
     this.el('form-plantacion').addEventListener('submit', (e) => {
       if (!SRP.activa.exigir()) { e.preventDefault(); return; } e.preventDefault(); this.revisar(); });
     this.el('btn-revisar').innerHTML = SRP.ICONOS.svg('disco', 22) + '<span>Revisar y guardar</span>';
-    this.el('btn-resumen-guardar').innerHTML = SRP.ICONOS.svg('palomita') + '<span>Guardar</span>';
+    this.el('btn-resumen-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar</span>';
     this.el('btn-resumen-cerrar').innerHTML = SRP.ICONOS.svg('cerrar', 22);
     this.el('btn-resumen-cerrar').addEventListener('click', () => this.el('dlg-resumen').close());
     // Al cerrar la ficha se destruye su mapa: si no, queda un mapa vivo en un diálogo oculto
@@ -395,7 +395,7 @@ SRP.formulario = {
     this.el('revision-lista').innerHTML = filas.map(([etiqueta, valor, campo]) => {
       const boton = campo
         ? '<button type="button" class="btn btn-texto-editar btn-chico" data-campo="' + campo + '" ' +
-          'aria-label="Editar ' + etiqueta.toLowerCase() + '">Editar</button>'
+          'aria-label="Editar ' + etiqueta.toLowerCase() + '">' + SRP.ICONOS.svg('lapiz', 16) + '<span>Editar</span></button>'
         : '<span></span>';
       return '<div class="revision-fila"><dt>' + etiqueta + '</dt><dd>' + valor + '</dd>' + boton + '</div>';
     }).join('') +

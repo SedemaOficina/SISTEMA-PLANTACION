@@ -205,6 +205,17 @@ SRP.jornadas = {
     if (this.volverAlDetalle && this.actual) {
       this.volverAlDetalle = false;
       await this.pintarLista(true);
+      // Si el filtro la deja fuera (es de otro día o de otro cabo), el filtro se ajusta a ella:
+      // «Cerrar jornada» siempre debe llegar a la ficha de esa jornada (D125)
+      if (!this.lista.some(j => j.clave === this.actual)) {
+        const j = await SRP.almacen.uno('jornadas', this.actual);
+        if (j) {
+          if (j.fecha === SRP.util.fechaHoy()) { this.filtro.dia = j.fecha; this.diaAbierto = false; this.el('jornada-dia').value = ''; }
+          else { this.filtro.dia = j.fecha; this.diaAbierto = true; this.el('jornada-dia').value = j.fecha; }
+          if (this.filtro.cabo && this.filtro.cabo !== j.cabo_id) { this.filtro.cabo = ''; if (this.el('jornada-cabo')) this.el('jornada-cabo').value = ''; }
+          await this.pintarLista(true);
+        }
+      }
       if (this.lista.some(j => j.clave === this.actual)) { await this.abrir(this.actual); return; }
     }
     this.actual = null;

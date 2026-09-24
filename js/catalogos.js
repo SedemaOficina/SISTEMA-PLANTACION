@@ -83,7 +83,7 @@ SRP.catalogos = {
       const uso = this.uso[c.id] || 0;
       // Acciones en el menú de la tuerca (D94); Eliminar sólo si no tiene uso
       const items = [{ accion: 'editar', texto: 'Editar', icono: 'lapiz' },
-                     { accion: 'estado', texto: c.activo ? 'Desactivar' : 'Activar' }];
+                     { accion: 'estado', texto: c.activo ? 'Desactivar' : 'Activar', icono: c.activo ? 'cerrar' : 'palomita' }];
       if (uso === 0) items.push({ accion: 'eliminar', texto: 'Eliminar', icono: 'basura', peligro: true });
       // data-etiqueta: en teléfono cada renglón se muestra como ficha con su etiqueta
       const estado = '<span class="estado-texto" data-activo="' + c.activo + '">' + (c.activo ? 'Activo' : 'Inactivo') + '</span>';

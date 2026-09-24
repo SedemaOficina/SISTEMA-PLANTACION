@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#9D2148">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.46">
-<link rel="preload" as="image" href="assets/encabezado-ru-movil.png?v=0.6.46">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.47">
+<link rel="preload" as="image" href="assets/encabezado-ru-movil.png?v=0.6.47">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.46">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.46">
-<link rel="stylesheet" href="css/estilos.css?v=0.6.46">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.47">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.47">
+<link rel="stylesheet" href="css/estilos.css?v=0.6.47">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -21,8 +21,8 @@
   <div class="encabezado-interior">
     <!-- Logotipo del Programa de Reforestación Urbana (D90): completo en pantalla ancha; en teléfono, el emblema y el nombre del programa -->
     <picture>
-      <source media="(max-width: 480px)" srcset="assets/encabezado-ru-movil.png?v=0.6.46">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru.png?v=0.6.46" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Reforestación Urbana">
+      <source media="(max-width: 480px)" srcset="assets/encabezado-ru-movil.png?v=0.6.47">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru.png?v=0.6.47" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» (D80) -->
@@ -45,7 +45,7 @@
             <button type="button" id="btn-sin-senal" class="menu-opcion" role="switch" aria-checked="false" hidden>
               <span>Simular sin señal (pruebas)</span><span class="interruptor" aria-hidden="true"></span></button>
             <button type="button" id="btn-cambiar-perfil" class="menu-opcion" hidden>Cambiar usuario (pruebas)</button>
-            <button type="button" id="btn-cerrar-sesion" class="menu-opcion">Cerrar sesión</button>
+            <button type="button" id="btn-cerrar-sesion" class="menu-opcion menu-peligro">Cerrar sesión</button>
           </div>
         </div>
       </div>
@@ -56,7 +56,7 @@
 <!-- Atraso en el envío (D111): días anteriores sin enviar, o pasada la hora de cierre de la jornada -->
 <div id="franja-envio" class="franja-envio" role="status" hidden>
   <p id="franja-envio-texto"></p>
-  <button type="button" id="btn-franja-enviar" class="btn btn-secundario">Enviar ahora</button>
+  <button type="button" id="btn-franja-enviar" class="btn btn-primario btn-chico">Enviar ahora</button>
 </div>
 
 <nav id="navegacion" class="pestanas" aria-label="Secciones" hidden>
@@ -130,7 +130,7 @@
           <input id="ini-ubicacion" maxlength="200" placeholder="Dirección, parque o referencia; p. ej. Av. Insurgentes Sur 1500, Benito Juárez" autocomplete="off"></div>
         <div class="campo"><label for="ini-fecha">Fecha de la jornada de plantación <span class="obligatorio" aria-hidden="true">*</span></label>
           <!-- Arranca vacía y «Hoy» la pone de un toque, como en el resto del sistema (D29, D98) -->
-          <div class="fecha-con-hoy"><input type="date" id="ini-fecha" required data-vacio="Seleccione la fecha"><button type="button" id="btn-ini-hoy" class="btn btn-secundario">Hoy</button></div></div>
+          <div class="fecha-con-hoy"><input type="date" id="ini-fecha" required data-vacio="Seleccione la fecha"><button type="button" id="btn-ini-hoy" class="btn btn-secundario btn-chico">Hoy</button></div></div>
         <div class="campo"><label for="ini-comentarios">Comentarios <span class="opcional">(opcional)</span></label>
           <textarea id="ini-comentarios" rows="3" maxlength="500" placeholder="Condiciones del sitio, acuerdos con la comunidad, incidencias…"></textarea></div>
         <div class="fila-botones">
@@ -214,7 +214,7 @@
       <!-- La fecha de plantación se hereda de la jornada (D119): el campo sigue existiendo para el
            registro y el espejo, pero no se pide; la pone SRP.activa -->
       <div class="campo" hidden><label for="campo-fecha">Fecha de plantación</label>
-        <div class="fecha-con-hoy"><input type="date" id="campo-fecha" tabindex="-1"><button type="button" id="btn-fecha-hoy" class="btn btn-secundario" tabindex="-1">Hoy</button></div></div>
+        <div class="fecha-con-hoy"><input type="date" id="campo-fecha" tabindex="-1"><button type="button" id="btn-fecha-hoy" class="btn btn-secundario btn-chico" tabindex="-1">Hoy</button></div></div>
       <div class="campo">
         <label for="campo-comentarios">Comentarios <span class="opcional">(opcional)</span></label>
         <textarea id="campo-comentarios" rows="3" maxlength="500" placeholder="Observaciones del sitio, condición del ejemplar, incidencias…"></textarea>
@@ -238,7 +238,7 @@
             <span id="foto-nombre" class="ficha-foto-nombre"></span>
             <span id="foto-peso" class="ficha-foto-peso"></span>
           </span>
-          <button type="button" id="btn-foto-quitar" class="btn btn-peligro btn-icono-solo"
+          <button type="button" id="btn-foto-quitar" class="btn btn-peligro-linea btn-icono-solo"
                   aria-label="Quitar la fotografía" title="Quitar la fotografía"></button>
         </div>
       </fieldset>
@@ -320,7 +320,7 @@
       <div id="filtro-periodo" class="filtros-periodo" hidden>
         <div class="campo campo-corto"><label for="filtro-desde">Desde</label><input type="date" id="filtro-desde" data-vacio="Elija la fecha"></div>
         <div class="campo campo-corto"><label for="filtro-hasta">Hasta</label><input type="date" id="filtro-hasta" data-vacio="Elija la fecha"></div>
-        <button type="button" id="btn-filtrar" class="btn btn-primario">Aplicar</button>
+        <button type="button" id="btn-filtrar" class="btn btn-primario btn-chico">Aplicar</button>
       </div>
     </div>
     </section>
@@ -330,7 +330,7 @@
     <ul id="lista-registros" class="lista-registros"></ul>
     <!-- Estado vacío con el botón que resuelve (D96) -->
     <div id="registros-vacio" class="vacio" aria-live="polite" hidden></div>
-    <button type="button" id="btn-mas" class="btn btn-texto" hidden>Mostrar más</button>
+    <button type="button" id="btn-mas" class="btn btn-secundario" hidden>Mostrar más</button>
     </section>
 
   </section>
@@ -366,7 +366,7 @@
     </div>
 
     <div id="jornada-detalle" hidden>
-      <button type="button" id="btn-jornada-volver" class="btn btn-texto volver">‹ Jornadas</button>
+      <button type="button" id="btn-jornada-volver" class="btn btn-texto volver">Jornadas</button>
       <h1 id="jornada-titulo" class="jornada-titulo" tabindex="-1"></h1>
       <p id="jornada-sub" class="nota"></p>
       <p id="jornada-comentarios" class="jornada-comentarios" hidden></p>
@@ -653,7 +653,7 @@
       <div class="campo"><label for="cie-vehiculo_placa">Placa</label><input id="cie-vehiculo_placa" autocapitalize="characters"></div>
     </div>
     <div class="campo"><label for="cie-hora">Hora de finalización</label>
-      <div class="fecha-con-hoy"><input type="time" id="cie-hora" data-vacio="Elija la hora"><button type="button" id="btn-hora-ahora" class="btn btn-secundario">Ahora</button></div></div>
+      <div class="fecha-con-hoy"><input type="time" id="cie-hora" data-vacio="Elija la hora"><button type="button" id="btn-hora-ahora" class="btn btn-secundario btn-chico">Ahora</button></div></div>
 
     <!-- ESPEJO DEL CIERRE — se elimina al cerrar la Etapa 1 (ver js/espejo.js) -->
     <details id="espejo-cierre" class="desplegable espejo espejo-en-dialogo" hidden>
@@ -690,7 +690,7 @@
   <div id="previa-hoja" class="previa-hoja"></div>
   <div class="dialogo-pie">
     <button type="button" id="btn-previa-generar" class="btn btn-primario btn-ancho btn-destacado">Generar PDF</button>
-    <button type="button" id="btn-previa-corregir" class="btn btn-texto btn-ancho">Corregir datos de cierre</button>
+    <button type="button" id="btn-previa-corregir" class="btn btn-texto-editar btn-ancho">Corregir datos de cierre</button>
   </div>
 </dialog>
 
@@ -756,42 +756,42 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.6.46"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.46"></script>
-<script src="vendor/turf-pip.min.js?v=0.6.46"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.6.46"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.46"></script>
+<script src="vendor/leaflet.js?v=0.6.47"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.47"></script>
+<script src="vendor/turf-pip.min.js?v=0.6.47"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.6.47"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.47"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.6.46"></script>
-<script src="js/util.js?v=0.6.46"></script>
-<script src="js/iconos.js?v=0.6.46"></script>
+<script src="js/config.js?v=0.6.47"></script>
+<script src="js/util.js?v=0.6.47"></script>
+<script src="js/iconos.js?v=0.6.47"></script>
 <!-- Capas territoriales del SIA, compactadas por pruebas/generar_capas.py desde assets/fuentes/ -->
-<script src="assets/capa-alcaldias.js?v=0.6.46"></script>
-<script src="assets/capa-uga.js?v=0.6.46"></script>
-<script src="assets/capa-colonias.js?v=0.6.46"></script>
-<script src="assets/catalogo-especies.js?v=0.6.46"></script>
-<script src="js/datos-ficticios.js?v=0.6.46"></script>
-<script src="js/permisos.js?v=0.6.46"></script>
-<script src="js/derivacion.js?v=0.6.46"></script>
-<script src="js/almacen.js?v=0.6.46"></script>
-<script src="js/sesion.js?v=0.6.46"></script>
-<script src="js/referencias.js?v=0.6.46"></script>
-<script src="js/folio.js?v=0.6.46"></script>
-<script src="js/conexion.js?v=0.6.46"></script>
-<script src="js/envio.js?v=0.6.46"></script>
-<script src="js/mapa.js?v=0.6.46"></script>
-<script src="js/foto.js?v=0.6.46"></script>
-<script src="js/jornada-activa.js?v=0.6.46"></script>
-<script src="js/formulario.js?v=0.6.46"></script>
+<script src="assets/capa-alcaldias.js?v=0.6.47"></script>
+<script src="assets/capa-uga.js?v=0.6.47"></script>
+<script src="assets/capa-colonias.js?v=0.6.47"></script>
+<script src="assets/catalogo-especies.js?v=0.6.47"></script>
+<script src="js/datos-ficticios.js?v=0.6.47"></script>
+<script src="js/permisos.js?v=0.6.47"></script>
+<script src="js/derivacion.js?v=0.6.47"></script>
+<script src="js/almacen.js?v=0.6.47"></script>
+<script src="js/sesion.js?v=0.6.47"></script>
+<script src="js/referencias.js?v=0.6.47"></script>
+<script src="js/folio.js?v=0.6.47"></script>
+<script src="js/conexion.js?v=0.6.47"></script>
+<script src="js/envio.js?v=0.6.47"></script>
+<script src="js/mapa.js?v=0.6.47"></script>
+<script src="js/foto.js?v=0.6.47"></script>
+<script src="js/jornada-activa.js?v=0.6.47"></script>
+<script src="js/formulario.js?v=0.6.47"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.6.46"></script>
-<script src="js/registros.js?v=0.6.46"></script>
-<script src="js/galeria.js?v=0.6.46"></script>
-<script src="js/jornadas.js?v=0.6.46"></script>
-<script src="js/croquis.js?v=0.6.46"></script>
-<script src="js/reportes.js?v=0.6.46"></script>
-<script src="js/catalogos.js?v=0.6.46"></script>
-<script src="js/usuarios.js?v=0.6.46"></script>
-<script src="js/app.js?v=0.6.46"></script>
+<script src="js/espejo.js?v=0.6.47"></script>
+<script src="js/registros.js?v=0.6.47"></script>
+<script src="js/galeria.js?v=0.6.47"></script>
+<script src="js/jornadas.js?v=0.6.47"></script>
+<script src="js/croquis.js?v=0.6.47"></script>
+<script src="js/reportes.js?v=0.6.47"></script>
+<script src="js/catalogos.js?v=0.6.47"></script>
+<script src="js/usuarios.js?v=0.6.47"></script>
+<script src="js/app.js?v=0.6.47"></script>
 </body>
 </html>

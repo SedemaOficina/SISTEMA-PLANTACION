@@ -42,12 +42,21 @@
      nunca va solo: cada acción lleva su icono y su palabra.
      Guinda: acción de la casa, sin carga (entrar, dar de alta, generar).
      Verde: guardar y confirmar.  Rojo: eliminar y error.  Dorado oscuro: corregir y editar. */
-  --error: #B3261E;
+  /* SISTEMA DE BOTONES (D124): cinco intenciones y tres pesos. El acento es «la casa» y por eso
+     es neutro (pizarra): no significa nada por sí mismo y deja que verde, rojo y ámbar sí
+     signifiquen. El guinda sigue en encabezado, pie y títulos; deja de ser el color de los botones. */
+  --acento: #2F4858;           /* avanzar: entrar, generar, descargar, cerrar jornada, agregar */
+  --acento-oscuro: #1F3340;
+  --acento-suave: #E9EEF2;
+  --error: #C62828;            /* quitar: eliminar (relleno sólo al confirmar), cancelar (contorno) */
   --error-fondo: #FDECEA;
-  --exito: #1F6B3E;
-  --exito-fondo: #EEF7F1;
-  --editar: #7E5F30;           /* el dorado institucional oscurecido hasta cumplir contraste */
-  --editar-fondo: #F7F2EA;
+  --exito: #1E7A46;            /* comprometer: guardar, iniciar jornada, confirmar, aprobar */
+  --exito-fondo: #E6F4EA;
+  --editar: #8A4B00;           /* corregir: texto ámbar oscuro, 6.8:1 sobre su fondo claro */
+  --editar-borde: #D98A1E;
+  --editar-fondo: #FFF4E0;
+  --neutro-borde: #9AA3AB;     /* apoyo: contorno gris */
+  --neutro-fondo: #F1F3F5;
   --foco: #1A5FB4;
 
   --fuente-titulo: 'Cabin', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
@@ -55,7 +64,7 @@
 
   --t-xs: 0.8125rem; --t-s: 0.9375rem; --t-m: 1rem; --t-l: 1.25rem; --t-xl: 1.625rem;
   --e-1: 0.25rem; --e-2: 0.5rem; --e-3: 0.75rem; --e-4: 1rem; --e-5: 1.5rem; --e-6: 2rem;
-  --radio: 6px; --radio-control: 4px; --radio-filtro: 10px;
+  --radio: 8px; --radio-control: 8px; --radio-filtro: 10px; --radio-pildora: 999px;
   --ancho-max: 44rem;          /* formularios y lectura: línea corta, fácil de leer */
   --ancho-max-tabla: 78rem;    /* pantallas de tabla: aprovechan el monitor sin cortar columnas */
   --toque: 48px;
@@ -75,6 +84,8 @@
   --fondo-campo-hover: #F2F2F4;
   --fondo-suave: #F3E7EB;
   --dorado: #7E5F30;
+  --neutro-borde: #3A3B3D;
+  --editar-borde: #8A4B00;
   --texto-guia: #4A4C4E;       /* textos guía: oscuros pero distinguibles de lo escrito */
 }
 
@@ -175,12 +186,13 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
   min-height: var(--toque); padding: 0 var(--e-4); border-radius: var(--radio-control);
   border: 1px solid transparent; font-weight: 500; cursor: pointer; text-decoration: none; text-align: center;
 }
-.btn-primario { background: var(--guinda); color: var(--fondo); }
-.btn-secundario { background: var(--fondo); color: var(--guinda); border-color: var(--guinda); }
+.btn-primario { background: var(--acento); color: var(--fondo); }
+/* Apoyo (D124): atajos, navegar, alternas. Contorno gris: nunca compite con el principal */
+.btn-secundario { background: var(--fondo); color: var(--texto); border-color: var(--neutro-borde); }
 /* Nivel 3 de la escala de énfasis: texto clicable, gris y subrayado, sin caja.
    .btn-texto va dentro de main, donde conserva los 48 px de .btn; .enlace es la misma idea
    en el encabezado, donde no hay que llenar un renglón de formulario. */
-.btn-texto { background: none; color: var(--gris); text-decoration: underline; text-underline-offset: 3px; padding: 0 var(--e-2); }
+.btn-texto { background: none; color: var(--gris); padding: 0 var(--e-2); }
 .enlace {
   background: none; border: 0; padding: 0; min-height: 32px;
   font: inherit; font-size: var(--t-s); color: var(--gris);
@@ -198,7 +210,7 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 
 .btn-peligro { background: var(--error); color: var(--fondo); }
 .btn-exito { background: var(--exito); color: var(--fondo); }
-.btn-editar { background: var(--fondo); color: var(--editar); border-color: var(--editar); }
+.btn-editar { background: var(--editar-fondo); color: var(--editar); border-color: var(--editar-borde); }
 /* Cancelar: rojo de contorno con tache (D116); el rojo relleno queda para eliminar */
 .btn-cancelar { background: var(--fondo); color: var(--error); border-color: var(--error); }
 .btn-texto-exito { color: var(--exito); }
@@ -207,9 +219,13 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 .btn-exito-linea { background: var(--fondo); color: var(--exito); border-color: var(--exito); }
 .btn-peligro-linea { background: var(--fondo); color: var(--error); border-color: var(--error); }
 /* Botón sólo de icono: la etiqueta la lleva aria-label, y el título dice a qué campo se refiere */
-.btn-texto-editar { background: none; color: var(--editar); text-decoration: underline; padding: 0 var(--e-2); }
+.btn-texto-editar { background: none; color: var(--editar); padding: 0 var(--e-2); }
 /* Botón sin palabra: sólo donde lo que representa ya está escrito al lado, y con aria-label */
-.btn-icono-solo { min-width: var(--toque); padding: 0; flex-shrink: 0; }
+.btn-icono-solo { min-width: var(--toque); padding: 0; flex-shrink: 0; border-radius: 50%; }
+/* El tache que cierra un diálogo: círculo suave, igual en todos (D124) */
+.dialogo-cerrar { background: var(--neutro-fondo); color: var(--gris); min-height: 40px; min-width: 40px; }
+/* Volver: chevron dibujado, sin subrayado (D124) */
+.volver::before { content: ''; width: 9px; height: 9px; border-left: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); margin-right: 2px; flex: none; }
 .btn-chico { min-height: 40px; padding: 0 var(--e-3); font-size: var(--t-s); }
 .btn-ancho { width: 100%; max-width: 22rem; }
 /* La acción que cierra el formulario: más alta y con letra mayor; en teléfono, de margen a margen */
@@ -360,9 +376,12 @@ fieldset.campo { margin-inline: 0; }
 .franja-jornada p { margin: 0; flex: 1 1 14rem; min-width: 0; }
 .franja-jornada-titulo { display: block; overflow-wrap: anywhere; }
 .franja-jornada-datos { display: block; font-size: var(--t-xs); color: var(--gris); }
+.franja-jornada-acciones .btn { flex: 1 1 0; min-width: 0; }
 .franja-jornada-acciones { display: flex; gap: var(--e-2); }
+/* En teléfono los dos botones ocupan el renglón completo; en pantallas muy angostas se apilan (D124) */
+@media (max-width: 600px) { .franja-jornada-acciones { flex: 1 1 100%; flex-wrap: wrap; } .franja-jornada-acciones .btn { flex: 1 1 9rem; } }
 .btn-chico { min-height: 40px; padding: 0 var(--e-3); font-size: var(--t-s); }
-#lista-jornadas-abiertas .jornada-boton[aria-pressed="true"], #lista-mover-jornadas .jornada-boton[aria-pressed="true"] { border-color: var(--guinda); background: var(--fondo-suave); }
+#lista-jornadas-abiertas .jornada-boton[aria-pressed="true"], #lista-mover-jornadas .jornada-boton[aria-pressed="true"] { border-color: var(--acento); background: var(--acento-suave); }
 #lista-jornadas-abiertas .jornada-boton, #lista-mover-jornadas .jornada-boton { grid-template-columns: minmax(0, 1fr); }
 
 /* Estado vacío con salida (D96) */
@@ -456,7 +475,7 @@ fieldset.campo { margin-inline: 0; }
 .campo .zona-foto {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--e-1);
   padding: var(--e-5) var(--e-4); border: 2px dashed var(--borde-control); border-radius: var(--radio);
-  color: var(--guinda); cursor: pointer; text-align: center; margin-bottom: 0;
+  color: var(--acento); cursor: pointer; text-align: center; margin-bottom: 0;
 }
 .zona-foto-titulo { font-family: var(--fuente-titulo); font-weight: 600; }
 .zona-foto-ayuda { color: var(--gris); font-size: var(--t-s); }
@@ -475,7 +494,7 @@ fieldset.campo { margin-inline: 0; }
    relleno guinda de la vista sea la acción principal («Aplicar», «Agregar», «Generar»). */
 .chips { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: var(--e-2); margin-bottom: var(--e-4); max-width: 30rem; }
 .chip {
-  min-height: 44px; padding: var(--e-1) var(--e-2); border: 1px solid var(--borde-filtro); border-radius: var(--radio-filtro);
+  min-height: 44px; padding: var(--e-1) var(--e-3); border: 1px solid var(--borde-filtro); border-radius: var(--radio-pildora);
   position: relative; background: var(--fondo); color: var(--texto); font-weight: 500; font-size: var(--t-s); line-height: 1.2; cursor: pointer;
   transition: background .15s, border-color .15s;
 }
@@ -483,7 +502,7 @@ fieldset.campo { margin-inline: 0; }
 /* Encabezado de grupo: título a la izquierda, «Reiniciar» en guinda a la derecha */
 .grupo-cab { display: flex; justify-content: space-between; align-items: center; gap: var(--e-3); margin-bottom: var(--e-2); }
 .grupo-cab .titulo-bloque { margin-bottom: 0; }
-.btn-reiniciar { background: none; color: var(--guinda); font-weight: 500; font-size: var(--t-s); padding: 0 var(--e-1); min-height: 40px; }
+.btn-reiniciar { background: none; color: var(--gris); font-weight: 500; font-size: var(--t-s); padding: 0 var(--e-1); min-height: 40px; }
 
 .filtros { border-bottom: 1px solid var(--borde-suave); padding-bottom: var(--e-3); }
 /* Atajos y listas en una fila que se parte sola en teléfono; alineados por la base */
@@ -599,8 +618,8 @@ th[aria-sort="descending"] .th-flecha::after { content: '▼'; opacity: 1; }
 .tabla-acciones { display: flex; flex-wrap: wrap; gap: var(--e-1); }
 /* Tuerca de acciones y su menú (D94) */
 .acciones-menu { display: inline-block; }
-.btn.btn-tuerca { width: var(--toque); padding: 0; border-radius: 50%; background: none; color: var(--gris); border: 1px solid transparent; }
-.btn.btn-tuerca[aria-expanded="true"] { background: var(--fondo-suave); color: var(--guinda); border-color: var(--borde-suave); }
+.btn.btn-tuerca { width: var(--toque); padding: 0; border-radius: 50%; background: var(--fondo); color: var(--gris); border: 1px solid var(--borde-filtro); }
+.btn.btn-tuerca[aria-expanded="true"] { background: var(--acento-suave); color: var(--acento); border-color: var(--acento); }
 .menu-acciones { position: fixed; z-index: 1300; min-width: 11rem; padding: var(--e-1) 0; background: var(--fondo);
   border: 1px solid var(--borde-suave); border-radius: var(--radio); box-shadow: 0 6px 18px rgba(35, 37, 38, 0.18); }
 .menu-opcion { display: flex; align-items: center; gap: var(--e-2); width: 100%; min-height: var(--toque); padding: 0 var(--e-4);
@@ -609,13 +628,15 @@ th[aria-sort="descending"] .th-flecha::after { content: '▼'; opacity: 1; }
 .menu-opcion svg { color: var(--gris); }
 .menu-sin-icono { width: 18px; }
 .menu-peligro, .menu-peligro svg { color: var(--error); }
+/* Cada opción del menú con el color de su intención (D124) */
+.menu-editar, .menu-editar svg { color: var(--editar); }
 .tabla td:last-child { white-space: nowrap; }
 .tabla td:last-child .tabla-acciones { flex-wrap: nowrap; }
 
 /* Interruptor del modo sol en el menú de la cuenta (D106) */
 .menu-opcion .interruptor { position: relative; flex-shrink: 0; width: 38px; height: 22px; margin-left: auto; border-radius: 11px; background: var(--borde-control); transition: background .15s; }
 .menu-opcion .interruptor::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--fondo); transition: left .15s; }
-.menu-opcion[aria-checked="true"] .interruptor { background: var(--guinda); }
+.menu-opcion[aria-checked="true"] .interruptor { background: var(--acento); }
 .menu-opcion[aria-checked="true"] .interruptor::after { left: 19px; }
 
 /* Ajustes del modo sol que no son sólo color: trazo más grueso y texto un punto más pesado */
@@ -626,7 +647,7 @@ th[aria-sort="descending"] .th-flecha::after { content: '▼'; opacity: 1; }
 [data-contraste="alto"] .campos-grises .campo input,
 [data-contraste="alto"] .campos-grises .campo textarea { border: 2px solid var(--borde-control); }
 [data-contraste="alto"] .chip { border-width: 2px; }
-[data-contraste="alto"] .chip[aria-pressed="true"] { background: var(--guinda); color: var(--fondo); }
+[data-contraste="alto"] .chip[aria-pressed="true"] { background: var(--acento); color: var(--fondo); }
 [data-contraste="alto"] .chip[aria-pressed="true"] .chip-sub { color: var(--fondo); }
 [data-contraste="alto"] .registro, [data-contraste="alto"] .tabla tr { border-width: 2px; }
 /* El texto guía no debe confundirse con lo escrito: más claro que el texto, sin negrita y en cursiva */
@@ -729,12 +750,12 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .zona-foto.con-foto #icono-foto svg { width: 22px; height: 22px; }
 .zona-foto:focus-within { outline: 3px solid var(--foco); outline-offset: 2px; }
 .btn:disabled { opacity: 0.55; cursor: not-allowed; }
-.pestana[aria-current="page"] { color: var(--guinda); border-bottom-color: var(--guinda); }
+.pestana[aria-current="page"] { color: var(--acento); border-bottom-color: var(--acento); }
 
 .chip-sub { display: block; font-size: var(--t-xs); font-weight: 400; color: var(--gris); }
-.chip[aria-pressed="true"] .chip-sub { color: var(--guinda); }
+.chip[aria-pressed="true"] .chip-sub { color: var(--fondo); opacity: .9; }
 /* Activo: guinda suave con borde guinda (propuesta A de la maqueta, D95) */
-.chip[aria-pressed="true"] { background: var(--fondo-suave); border-color: var(--guinda); color: var(--guinda); }
+.chip[aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: var(--fondo); }
 .combo-opcion[aria-selected="true"] { background: var(--fondo-suave); outline: 2px solid var(--guinda); outline-offset: -2px; }
 .campo input[aria-invalid="true"], .campo select[aria-invalid="true"] { border: 2px solid var(--error); }
 .aviso[data-tipo="alerta"] { border-left-color: var(--aviso-alerta); }
@@ -779,7 +800,7 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
   .pestanas { position: fixed; left: 0; right: 0; bottom: 0; z-index: 900; max-width: none; margin: 0; padding: 0 0 env(safe-area-inset-bottom, 0px);
     background: var(--fondo); border-top: 1px solid var(--borde-suave); border-bottom: 0; box-shadow: 0 -2px 10px rgba(0, 0, 0, .06); }
   .pestana { min-height: 64px; font-size: var(--t-xs); border-bottom: 0; border-top: 3px solid transparent; padding: var(--e-1) 2px; }
-  .pestana[aria-current="page"] { border-top-color: var(--guinda); }
+  .pestana[aria-current="page"] { border-top-color: var(--acento); }
   body { padding-bottom: var(--alto-nav); }
   /* Crédito del mapa en un renglón; al tocarlo se despliega (D108) */
   .leaflet-control-attribution { max-width: calc(100vw - 4rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
@@ -795,12 +816,12 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
   .campos-grises .campo select:hover,
   .campos-grises .campo input:hover,
   .campos-grises .campo textarea:hover { background-color: var(--fondo-campo-hover); border-color: var(--fondo-campo-hover); }
-  .btn.btn-tuerca:hover { background: var(--fondo-suave); color: var(--guinda); border-color: var(--borde-suave); }
+  .btn.btn-tuerca:hover { background: var(--acento-suave); color: var(--acento); border-color: var(--acento); }
   .menu-opcion:hover { background: var(--fondo-suave); outline: none; }
   .btn-primario:hover { background: var(--guinda-oscuro); }
   /* El nivel 3 se pinta de guinda sólo al señalarlo: ahí ya no hay confusión posible,
      porque el puntero está encima y nada más cambia de color al mismo tiempo. */
-  .enlace:hover, .btn-texto:hover, .desplegable summary:hover { color: var(--guinda); }
+  .enlace:hover, .btn-texto:hover, .desplegable summary:hover { color: var(--acento); }
   .zona-foto:hover { border-color: var(--guinda); background: var(--fondo-suave); }
   .chip:hover { background: var(--fondo-campo); }
   /* Con ratón la opción bajo el cursor se marca igual que la elegida con teclado */
