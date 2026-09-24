@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.66 (Bloque 85)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.67 (Bloque 86)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -156,6 +156,14 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M145 | Revisión de Liber | La conciliación concuerda en número: «hay 1 punto», «Queda 1 punto por revisar» (también el respaldo, el croquis y «Meta de la jornada: 1 árbol») | Media | 0.6.66 (B85) | Jornada cerrada con un solo árbol | Conciliación |
 | M146 | Revisión de Liber | «Reabrir jornada» y «Editar jornada» a la misma altura | Baja | 0.6.66 (B85) | Ficha de una jornada cerrada | — |
 | M147 | Revisión de Liber | «Reabrir jornada» con candado abierto; el lápiz queda sólo para «Editar jornada» | Media | 0.6.66 (B85) | Ficha de una jornada cerrada | Botones |
+| M148 | Revisión de Liber | En computadora y tableta todas las vistas arrancan en el mismo borde: nada se centra por su cuenta (Reportes, panel de jornada y «Nuevo árbol» ya no) | Media | 0.6.67 (B86) | Computadora: pasar por Nuevo registro, Jornadas, Registros y Reportes | Las cuatro |
+| M149 | Revisión de Liber | Panel de la jornada activa ordenado: «Jornada activa» solo arriba, datos a la izquierda, «Cambiar» y «Cerrar jornada» a la derecha en una línea | Media | 0.6.67 (B86) | Computadora o tableta: Nuevo registro con jornada abierta | Panel |
+| M150 | Revisión de Liber | «Registrar jornada» en dos columnas en computadora: el lugar a la izquierda; programa, meta, fecha, comentarios y botón a la derecha | Media | 0.6.67 (B86) | Computadora: Nuevo registro sin jornada activa | Panel |
+| M151 | Revisión de Liber | Ficha de la jornada en dos columnas en computadora: mapa fijo a la izquierda, conciliación y puntos a la derecha; pasos y botones en un renglón | Alta | 0.6.67 (B86) | Computadora: Jornadas › una jornada › bajar por la lista | Ficha |
+| M152 | Revisión de Liber | Jornadas, Registros y Reportes en tarjetas de dos en dos a todo lo ancho en computadora (antes una columna con media pantalla vacía) | Media | 0.6.67 (B86) | Computadora: Jornadas; Registros; Reportes | Lista |
+| M153 | Revisión de Liber | La entrada muestra sus dos tarjetas lado a lado en computadora; «Guardar» ocupa su columna; «Más filtros» no se estira de orilla a orilla | Baja | 0.6.67 (B86) | Computadora: salir y entrar; Nuevo registro; Registros | — |
+| M154 | Hallazgo del bloque | En el mapa de la ficha ningún punto queda bajo los botones de acercar (también en teléfono) | Media | 0.6.67 (B86) | Jornada con puntos separados › mapa | Mapa |
+| M155 | Petición de Liber | Fuera la pista «Atajo: Ctrl + Enter guarda…» y los números de las especies recientes (y el atajo 1-2-3); Ctrl+Enter sigue guardando sin anunciarse | Baja | 0.6.67 (B86) | Computadora: Nuevo registro con especies recientes | — |
 
 ## 2. Por hacer
 

@@ -64,22 +64,15 @@ SRP.formulario = {
       const r = this.estado.ultimoGuardado && await SRP.almacen.uno('plantaciones', this.estado.ultimoGuardado);
       if (r) SRP.registros.verDetalle(r);
     });
-    /* ATAJOS DE TECLADO (D142), para capturar muchos árboles en computadora: Ctrl+Enter (⌘+Enter en
-       Mac) guarda, o confirma la ficha de revisión si está abierta; con el buscador de especie vacío,
-       1, 2 y 3 eligen las especies recientes. Enter solo no guarda: se evitó a propósito en la ficha. */
+    /* ATAJO DE TECLADO (D142): Ctrl+Enter (⌘+Enter en Mac) guarda, o confirma la ficha de revisión si
+       está abierta. No se anuncia en pantalla ni hay atajos numéricos (D145, pedido por Liber): queda
+       sólo en aria-keyshortcuts del botón. Enter solo no guarda: se evitó a propósito en la ficha. */
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Enter' || !(e.ctrlKey || e.metaKey) || SRP.app.vista !== 'registrar') return;
       if (this.el('dlg-resumen').open) { e.preventDefault(); this.el('btn-resumen-guardar').click(); return; }
       if (document.querySelector('dialog[open]') || this.el('registrar-columnas').hidden) return;
       e.preventDefault();
       this.el('form-plantacion').requestSubmit();
-    });
-    this.el('campo-especie').addEventListener('keydown', (e) => {
-      if (!/^[1-3]$/.test(e.key) || e.target.value || e.ctrlKey || e.metaKey || e.altKey || this.el('especies-recientes').hidden) return;
-      const chip = this.el('especies-recientes').querySelectorAll('.chip')[Number(e.key) - 1];
-      if (!chip) return;
-      e.preventDefault();
-      chip.click();
     });
     this.el('especies-recientes').addEventListener('click', (e) => {
       const b = e.target.closest('.chip'); if (!b) return;
@@ -126,8 +119,7 @@ SRP.formulario = {
     const regs = j ? (await SRP.activa.registrosDe(j)).filter(r => r.especie_id).sort((a, b) => String(b.fecha_registro).localeCompare(String(a.fecha_registro))) : [];
     const ids = [...new Set(regs.map(r => r.especie_id))].slice(0, 3);
     caja.hidden = !ids.length;
-    // data-n: el número del atajo, que en computadora se ve como pista (D142)
-    caja.innerHTML = ids.map((id, i) => '<button type="button" class="chip" data-id="' + id + '" data-n="' + (i + 1) + '" aria-pressed="' + (this.estado.especieId === id) + '">' +
+    caja.innerHTML = ids.map(id => '<button type="button" class="chip" data-id="' + id + '" aria-pressed="' + (this.estado.especieId === id) + '">' +
       SRP.util.escapar((SRP.ref.catalogoPorId[id] || {}).nombre || id) + '</button>').join('');
   },
 

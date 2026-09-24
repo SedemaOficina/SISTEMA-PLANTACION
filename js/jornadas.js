@@ -741,7 +741,8 @@ SRP.jornadas = {
       this.mapa.invalidateSize();
       if (encuadrar && regs.length) {
         if (regs.length === 1) this.mapa.setView([regs[0].lat, regs[0].lng], c.ZOOM_PUNTO);
-        else this.mapa.fitBounds(L.latLngBounds(regs.map(r => [r.lat, r.lng])), { padding: [28, 28], maxZoom: c.ZOOM_JORNADA - 1 });
+        // Más margen arriba a la izquierda: ahí van los botones de acercar y tapaban el punto de la orilla (D145)
+        else this.mapa.fitBounds(L.latLngBounds(regs.map(r => [r.lat, r.lng])), { paddingTopLeft: [56, 44], paddingBottomRight: [32, 32], maxZoom: c.ZOOM_JORNADA - 1 });
       }
     }, 60);
   },

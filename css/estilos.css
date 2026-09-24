@@ -400,10 +400,10 @@ fieldset.campo { margin-inline: 0; }
 @media (max-width: 480px) { .galeria-rejilla { grid-template-columns: repeat(3, minmax(0, 1fr)); } .galeria-pie { font-size: 0.7rem; } }
 
 /* Jornada activa (D119): panel de inicio y franja sobre el formulario */
-.panel-iniciar { max-width: var(--ancho-max); margin: 0 auto var(--e-4); }
+.panel-iniciar { max-width: var(--ancho-max); margin: 0 0 var(--e-4); }
 .panel-iniciar .fila-botones { display: flex; gap: var(--e-2); margin-top: var(--e-3); }
 .panel-iniciar .fila-botones .btn { flex: 1 1 0; }
-.franja-jornada { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); flex-wrap: wrap; max-width: var(--ancho-max-tabla); margin: 0 auto var(--e-4);
+.franja-jornada { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); flex-wrap: wrap; max-width: var(--ancho-max-tabla); margin: 0 0 var(--e-4);
   padding: var(--e-3) var(--e-4); border-radius: var(--radio-filtro); background: var(--acento-suave); border: 1px solid #D3DBE1; border-left: 4px solid var(--acento); }
 .franja-jornada[data-tono="alerta"] { background: var(--editar-fondo); border-left-color: var(--editar-borde); }
 .franja-jornada-rotulo { flex: 1 1 100%; margin: 0 0 -4px; font-family: var(--fuente-titulo); font-size: var(--t-xs); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--acento); }
@@ -411,8 +411,9 @@ fieldset.campo { margin-inline: 0; }
 /* Dentro del panel, el último guardado (D131): tarjeta blanca con su verde */
 .franja-jornada .franja-guardado { flex: 1 1 100%; margin: var(--e-1) 0 0; background: var(--fondo); border: 1px solid var(--borde-suave); border-left: 4px solid var(--exito); }
 /* Título del formulario: separa el panel de jornada de los campos (D131) */
-.titulo-arbol { max-width: var(--ancho-max-tabla); margin: var(--e-5) auto var(--e-3); padding-top: var(--e-4); border-top: 2px solid var(--borde-suave); color: var(--texto); font-size: var(--t-l); }
+.titulo-arbol { max-width: var(--ancho-max-tabla); margin: var(--e-5) 0 var(--e-3); padding-top: var(--e-4); border-top: 2px solid var(--borde-suave); color: var(--texto); font-size: var(--t-l); }
 .franja-jornada p { margin: 0; flex: 1 1 14rem; min-width: 0; }
+.franja-jornada .franja-jornada-rotulo { flex-basis: 100%; }
 .franja-jornada-titulo { display: block; overflow-wrap: anywhere; }
 .franja-jornada-datos { display: block; font-size: var(--t-xs); color: var(--gris); }
 .franja-jornada-acciones .btn { flex: 1 1 0; min-width: 0; }
@@ -822,15 +823,12 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 /* ========== 7. @MEDIA ========== */
 /* EQUILIBRIO EN COMPUTADORA (D109). Nuevo registro en dos columnas: ubicación y mapa a la
    izquierda, datos del árbol a la derecha, así el mapa gana tamaño y no queda media pantalla vacía.
-   Reportes centrado, con su bloque como tarjeta. En teléfono y tableta no cambia nada. */
+   El resto de las vistas, en el sistema de ancho de D145 (al final de la hoja). */
 @media (min-width: 1024px) {
   #vista-registrar { max-width: var(--ancho-max-tabla); }
   #vista-registrar > .registrar-columnas { max-width: none; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: var(--e-6); align-items: start; }
   .registrar-ubicacion .mapa { height: clamp(320px, 52vh, 520px); }
   #form-plantacion .combo { margin-top: 0; }
-  #vista-reportes > * { margin-inline: auto; }
-  #vista-reportes > h1 { text-align: center; }
-  #vista-reportes .bloque:first-of-type { border: 1px solid var(--borde-suave); border-radius: var(--radio-filtro); padding: var(--e-5); }
 }
 @media (max-width: 700px) {
   /* Filtros plegados en teléfono (D100): quedan a la vista las fichas y el botón «Filtros» */
@@ -1064,15 +1062,6 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 /* La columna por la que está ordenada la tabla se distingue: fondo de acento y flecha en negritas */
 .tabla th[aria-sort="ascending"], .tabla th[aria-sort="descending"] { background: var(--acento); }
 th[aria-sort="ascending"] .th-flecha::after, th[aria-sort="descending"] .th-flecha::after { font-weight: 800; }
-/* Atajos de teclado: la pista sólo se ve con ratón y teclado, nunca en un teléfono */
-.atajo-pista { display: none; }
-@media (hover: hover) and (pointer: fine) {
-  .atajo-pista { display: block; margin: var(--e-1) 0 0; text-align: center; font-size: var(--t-xs); color: var(--gris); }
-  .atajo-pista kbd { display: inline-block; min-width: 1.4em; padding: 0 4px; border: 1px solid var(--borde-control); border-bottom-width: 2px; border-radius: 4px;
-    background: var(--fondo); font: inherit; font-size: .95em; text-align: center; }
-  .chips-recientes .chip[data-n]::before { content: attr(data-n); display: inline-grid; place-items: center; width: 1.3em; height: 1.3em; margin-right: 6px;
-    border: 1px solid currentColor; border-radius: 4px; font-size: .85em; opacity: .7; }
-}
 /* Modo sol (D106) también en lo que llegó después: etiquetas de estado, cifras y pasos llevan
    borde de 2 px y texto en negritas, para que un relleno claro no se lave a pleno sol */
 [data-contraste="alto"] .insignia-jornada, [data-contraste="alto"] .jornada-estatus, [data-contraste="alto"] .etiqueta,
@@ -1081,3 +1070,62 @@ th[aria-sort="ascending"] .th-flecha::after, th[aria-sort="descending"] .th-flec
 [data-contraste="alto"] .jornada-cifra b { font-weight: 800; }
 [data-contraste="alto"] .paso { font-weight: 700; }
 [data-contraste="alto"] .pasos-siguiente, [data-contraste="alto"] .campo-error, [data-contraste="alto"] .ayuda-campo { font-weight: 700; }
+
+/* SISTEMA DE ANCHO EN TABLETA Y COMPUTADORA (D145). El teléfono es el uso principal y no cambia:
+   todo lo de aquí vive en media queries de 601 px o más. Reglas:
+   1. Todas las vistas arrancan en el mismo borde izquierdo y ninguna se centra por su cuenta.
+   2. En computadora (1024 px o más) cada vista usa el ancho completo (78rem) y lo reparte en
+      columnas: lugar | datos en los formularios, mapa | lista en la ficha, tarjetas en rejilla
+      de dos en las listas. Los textos de ayuda conservan su línea corta (62 caracteres).
+   3. Los filtros plegados no se estiran de orilla a orilla: miden lo que un formulario. */
+@media (min-width: 601px) {
+  /* Panel de la jornada activa: rótulo arriba, nombre y datos a la izquierda, botones a la derecha
+     sin partirse en dos renglones; los pasos debajo del nombre y el último guardado a todo lo ancho */
+  .franja-jornada { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--e-5); row-gap: var(--e-2); align-items: center; }
+  .franja-jornada > * { grid-column: 1; }
+  .franja-jornada > .franja-jornada-rotulo, .franja-jornada > .franja-guardado { grid-column: 1 / -1; }
+  .franja-jornada > .franja-jornada-acciones { grid-column: 2; grid-row: 2 / span 2; align-self: center; }
+  .franja-jornada-acciones .btn { flex: 0 0 auto; white-space: nowrap; }
+  /* Regla 2: ninguna vista se queda en una columna corta pegada a la izquierda; las de formulario y
+     lectura usan el ancho completo como las de tabla. Los textos de ayuda, línea corta. */
+  #vista-registrar > *, #vista-jornadas > *, #vista-reportes > * { max-width: none; }
+  .vista > .nota, #jornadas-lista-caja > .nota, .panel-iniciar > .nota, .vista .bloque > .nota { max-width: 62ch; }
+}
+@media (min-width: 1024px) {
+  .acordeon-filtros { max-width: var(--ancho-max); }
+
+  /* Registrar jornada: el lugar a la izquierda y el plan a la derecha, como en «Nuevo árbol» */
+  #form-iniciar-jornada { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 var(--e-6); align-items: start; }
+  #form-iniciar-jornada > .errores { grid-column: 1 / -1; }
+  .panel-iniciar { padding: var(--e-5) var(--e-6); }
+  .panel-iniciar .fila-botones { margin-top: var(--e-4); }
+
+  /* Nuevo árbol: «Guardar» ocupa su columna de orilla a orilla */
+  #form-plantacion .barra-guardar .btn-destacado { max-width: none; }
+
+  /* Listas de jornadas, registros y reportes: tarjetas de dos en dos */
+  #lista-jornadas, #lista-registros, #pdf-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+
+  /* Ficha de la jornada: los pasos y sus botones en un mismo renglón, para que el mapa suba */
+  #jornada-detalle { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--e-4); align-items: center; }
+  #jornada-detalle > * { grid-column: 1 / -1; }
+  #jornada-detalle > #jornada-pasos { grid-column: 1; margin: 0; }
+  #jornada-detalle > .jornada-acciones-cab { grid-column: 2; margin: 0; }
+  #jornada-detalle > .volver { justify-self: start; }
+  /* Mapa a la izquierda, fijo al desplazarse; conciliación y puntos a la derecha */
+  .ficha-cuerpo { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 0 var(--e-6); align-items: start; }
+  .ficha-col-mapa { position: sticky; top: var(--e-3); }
+  .ficha-col-mapa .mapa-jornada { height: clamp(360px, 62vh, 620px); }
+  /* Su barra del pie: lo que sigue a la izquierda y los botones a la derecha, en un renglón */
+  .barra-jornada { flex-wrap: nowrap; align-items: center; }
+  .barra-jornada .pasos-siguiente { flex: 1 1 auto; }
+  .barra-jornada .btn { flex: 0 0 auto; min-width: 13rem; padding-left: var(--e-4); padding-right: var(--e-4); }
+
+  /* Entrada: con la tarjeta de usuarios de prueba, las dos lado a lado; sin ella, la de siempre */
+  #vista-acceso { display: flex; flex-wrap: wrap; gap: 0 var(--e-6); align-items: flex-start; }
+  #vista-acceso > h1 { flex: 1 1 100%; max-width: none; }
+  #vista-acceso > .tarjeta { flex: 1 1 0; min-width: 0; }
+
+  /* Fotografías: miniaturas algo mayores para llenar el renglón */
+  .galeria-rejilla { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+}

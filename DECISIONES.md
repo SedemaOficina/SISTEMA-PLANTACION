@@ -1147,3 +1147,26 @@
   (40 y 52 px) por un margen que «Reabrir» traía de cuando iba solo; se quitó. Y los dos llevaban el
   mismo lápiz ámbar, uno al lado del otro: «Reabrir» pasa al candado abierto, que es lo que hace, y
   el lápiz queda sólo para editar. Revisión pedida por Liber, 24-09-2026.
+- **D145. Sistema de ancho en tableta y computadora; sin pista de atajos.** Liber notó que en
+  computadora las pantallas se veían desordenadas después de quitar preguntas del formulario. Se
+  revisaron las nueve vistas a 390, 820, 1366 y 1440 px. Causas: unas vistas se centraban y otras
+  no (el panel de la jornada y «Nuevo árbol» centrados, el formulario pegado a la izquierda,
+  Reportes centrado por D109); Jornadas, la ficha y Reportes ocupaban una columna de 44rem con media
+  pantalla vacía; en el panel de la jornada activa «Jornada activa» quedaba a la izquierda de los
+  datos (la regla de los párrafos le ganaba a la del rótulo) y «Cerrar jornada» se partía en dos
+  renglones. Regla nueva, sólo de 601 px en adelante (el teléfono no cambia): 1) todas las vistas
+  arrancan en el mismo borde izquierdo y nada se centra por su cuenta; 2) en computadora cada vista
+  usa el ancho completo (78rem) y lo reparte: «Registrar jornada» en dos columnas (el lugar a la
+  izquierda; programa, meta, fecha, comentarios y el botón a la derecha, como en «Nuevo árbol»), la
+  ficha de la jornada con el mapa fijo a la izquierda y conciliación y puntos a la derecha, pasos y
+  botones en un renglón y la barra del pie en un renglón; jornadas, registros y reportes en
+  tarjetas de dos en dos; la entrada con sus dos tarjetas lado a lado; 3) los textos de ayuda
+  conservan su línea corta (62 caracteres) y «Más filtros» mide lo que un formulario. El panel de
+  la jornada activa usa rejilla desde 601 px: rótulo arriba, nombre y datos a la izquierda, botones
+  a la derecha sin partirse, último guardado a todo lo ancho. «Guardar» ocupa su columna en
+  computadora. Reemplaza el centrado de Reportes de D109. En el mapa de la ficha el encuadre deja
+  más margen arriba a la izquierda: los botones de acercar tapaban el punto de la orilla (también
+  en teléfono). A pedido de Liber se quita de la pantalla la pista «Atajo: Ctrl + Enter guarda…» y
+  los números de las especies recientes, y con ellos el atajo 1-2-3 (sin pista era una tecla que
+  elegía especie sin avisar); Ctrl+Enter sigue guardando y queda declarado sólo en
+  `aria-keyshortcuts`. Pedido por Liber, 24-09-2026.

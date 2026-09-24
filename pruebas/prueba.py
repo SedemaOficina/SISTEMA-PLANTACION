@@ -1269,8 +1269,8 @@ with sync_playwright() as p:
     ok(pg.evaluate("getComputedStyle(document.getElementById('vista-reportes')).maxWidth===getComputedStyle(document.getElementById('vista-catalogos')).maxWidth"),'todas las vistas miden lo mismo (D100)')
     pg.set_viewport_size({'width':1280,'height':900}); pg.wait_for_timeout(300)
     pg.evaluate("SRP.app.mostrarVista('reportes')"); pg.wait_for_timeout(300)
-    rep=pg.evaluate("(() => { const b=document.querySelector('#vista-reportes .bloque').getBoundingClientRect(); return Math.abs((b.left + b.right)/2 - innerWidth/2) < 40; })()")
-    ok(rep,'en computadora el reporte del día va centrado (D109)')
+    rep=pg.evaluate("(() => { const b=document.querySelector('#vista-reportes .bloque').getBoundingClientRect(), h=document.getElementById('titulo-reportes').getBoundingClientRect(), v=document.getElementById('vista-reportes').getBoundingClientRect(); return Math.abs(b.left - v.left) < 2 && Math.abs(h.left - v.left) < 2 && getComputedStyle(document.getElementById('titulo-reportes')).textAlign !== 'center'; })()")
+    ok(rep,'en computadora Reportes ya no se centra: título y bloque arrancan en el borde de la vista, como las demás (D145, antes D109)')
     pg.set_viewport_size({'width':390,'height':844}); pg.wait_for_timeout(300)
     pg.evaluate("SRP.app.mostrarVista('catalogos')"); pg.wait_for_timeout(300)
     pg.fill('#cat-buscar','quercus'); pg.wait_for_timeout(200)
@@ -1660,12 +1660,13 @@ with sync_playwright() as p:
     # Atajos de teclado en la captura
     iniciar_jornada(pg,'Jornada de los atajos',HOY)
     registrar(pg,'aile','ESP-0002')
-    ok(pg.get_attribute('#especies-recientes .chip','data-n')=='1' and pg.is_visible('.atajo-pista') and 'Control+Enter' in pg.get_attribute('#btn-revisar','aria-keyshortcuts'),
-       'con ratón y teclado se ve la pista de los atajos y las recientes llevan su número (D142)')
+    ok(pg.locator('.atajo-pista').count()==0 and pg.get_attribute('#especies-recientes .chip','data-n') is None and 'Control+Enter' in pg.get_attribute('#btn-revisar','aria-keyshortcuts'),
+       'sin pista de atajos en pantalla ni números en las recientes; Ctrl+Enter sólo queda en aria-keyshortcuts (D145, pedido por Liber)')
     n0=pg.evaluate("async () => (await SRP.almacen.todos('plantaciones')).length")
     pg.click('#btn-ubicacion'); pg.wait_for_timeout(700)
     pg.focus('#campo-especie'); pg.keyboard.press('1'); pg.wait_for_timeout(200)
-    ok(pg.evaluate("SRP.formulario.estado.especieId")=='ESP-0002' and pg.input_value('#campo-especie')!='1','con el buscador vacío, «1» elige la especie reciente y no se escribe en el campo')
+    ok(pg.evaluate("SRP.formulario.estado.especieId")!='ESP-0002' or pg.input_value('#campo-especie')=='1','ya no hay atajos numéricos: «1» con el buscador vacío no elige especie (D145)')
+    pg.fill('#campo-especie',''); pg.click('#especies-recientes .chip'); pg.wait_for_timeout(200)
     pg.keyboard.press('Control+Enter'); pg.wait_for_timeout(900)
     ok(pg.is_visible('#dlg-resumen'),'Ctrl+Enter guarda; aquí el árbol cae en el mismo punto y abre la ficha de revisión por posible duplicado')
     pg.keyboard.press('Control+Enter'); pg.wait_for_timeout(900)
@@ -1673,8 +1674,8 @@ with sync_playwright() as p:
     ok(pg.is_hidden('#dlg-resumen') and n1==n0+1,'y con la ficha abierta, Ctrl+Enter la confirma: un árbol más (%d → %d)' % (n0,n1))
     # Guardar no espera al envío: en cuanto el árbol queda en el teléfono, el botón vuelve (D142)
     ctx.set_geolocation({'latitude':19.4335,'longitude':-99.1345})
-    pg.click('#btn-ubicacion'); pg.wait_for_timeout(700); pg.focus('#campo-especie'); pg.keyboard.press('1'); pg.wait_for_timeout(150)
-    pg.keyboard.press('Control+Enter'); pg.wait_for_timeout(500)
+    pg.click('#btn-ubicacion'); pg.wait_for_timeout(700); pg.click('#especies-recientes .chip'); pg.wait_for_timeout(150)
+    pg.focus('#campo-comentarios'); pg.keyboard.press('Control+Enter'); pg.wait_for_timeout(500)
     if pg.is_visible('#dlg-resumen'): pg.keyboard.press('Control+Enter'); pg.wait_for_timeout(400)
     ok(pg.get_attribute('#btn-revisar','disabled') is None and pg.inner_text('#btn-revisar').strip()=='Guardar' and pg.get_attribute('#franja-guardado','data-envio')=='enviando',
        'al guardar, «Guardar» vuelve en seguida aunque el envío siga en curso: la franja dice «enviando…» (D142): '+str(pg.get_attribute('#franja-guardado','data-envio')))
@@ -1754,6 +1755,75 @@ with sync_playwright() as p:
     ok('L 15 8 L 15 6' in pg.inner_html('#btn-jornada-estado') and 'M3 17.25' not in pg.inner_html('#btn-jornada-estado'),
        '«Reabrir jornada» lleva el candado abierto; el lápiz queda sólo para «Editar jornada»')
     ok(pg.evaluate("SRP.reportes.textoConteo({ meta_arboles: 1 }, [{}])")=='Meta de la jornada: 1 árbol · registrados: 1 (cuadra)','en el reporte, «Meta de la jornada: 1 árbol», no «1 árboles»')
+
+    # ---------- BLOQUE 86: SISTEMA DE ANCHO EN TABLETA Y COMPUTADORA (D145) ----------
+    # Teléfono: la ficha sigue en una columna (el uso principal no cambia)
+    pg.set_viewport_size({'width':390,'height':844}); pg.wait_for_timeout(300)
+    tel=pg.evaluate("""() => ({ cuerpo: getComputedStyle(document.getElementById('ficha-cuerpo')).display, fija: getComputedStyle(document.getElementById('ficha-col-mapa')).position,
+        detalle: getComputedStyle(document.getElementById('jornada-detalle')).display })""")
+    ok(tel=={'cuerpo':'block','fija':'static','detalle':'block'},'en teléfono la ficha sigue en una columna: mapa, conciliación y puntos uno bajo otro (D145): %s' % tel)
+    # Computadora: ficha en dos columnas, mapa fijo, pasos y botones en un renglón, barra en un renglón
+    pg.set_viewport_size({'width':1280,'height':800}); pg.wait_for_timeout(500)
+    fic=pg.evaluate("""() => { const m=document.getElementById('jornada-mapa').getBoundingClientRect(), l=document.getElementById('ficha-col-lista').getBoundingClientRect(),
+        c=document.getElementById('ficha-col-mapa').getBoundingClientRect(), p=document.getElementById('jornada-pasos').getBoundingClientRect(), a=document.querySelector('.jornada-acciones-cab').getBoundingClientRect();
+        return { lado: l.left >= m.right, arriba: Math.abs(l.top - c.top) < 4, fija: getComputedStyle(document.getElementById('ficha-col-mapa')).position,
+                 renglon: Math.abs((p.top + p.bottom) / 2 - (a.top + a.bottom) / 2) < 14 && a.left > p.left }; }""")
+    ok(fic=={'lado':True,'arriba':True,'fija':'sticky','renglon':True},'en computadora la ficha va en dos columnas: mapa fijo a la izquierda, conciliación y puntos a la derecha; pasos y botones en un renglón (D145): %s' % fic)
+    bar=pg.evaluate("""() => { const bs=[...document.querySelectorAll('.barra-jornada .btn')].filter(b => !b.hidden && b.offsetParent).map(b => b.getBoundingClientRect());
+        const s=document.getElementById('jornada-siguiente').getBoundingClientRect();
+        return { un_renglon: bs.every(b => Math.abs(b.top - bs[0].top) < 2) && Math.abs(s.top + s.height / 2 - (bs[0].top + bs[0].height / 2)) < 16, texto_izq: s.right <= bs[0].left + 1, n: bs.length }; }""")
+    ok(bar['un_renglon'] and bar['texto_izq'] and bar['n']>=1,'la barra del pie de la ficha: qué sigue a la izquierda y los botones a la derecha, en un renglón (D145): %s' % bar)
+    # Todas las vistas arrancan en el mismo borde y ninguna se centra
+    bordes={}
+    for v, h in (('jornadas','titulo-jornadas'),('registros','titulo-registros'),('reportes','titulo-reportes')):
+        pg.evaluate("SRP.app.mostrarVista('%s')" % v); pg.wait_for_timeout(400)
+        if v == 'jornadas' and pg.is_visible('#jornada-detalle'): pg.click('#btn-jornada-volver'); pg.wait_for_timeout(400)
+        bordes[v]=pg.evaluate("Math.round(document.getElementById('%s').getBoundingClientRect().left)" % h)
+    ok(len(set(bordes.values()))==1,'Jornadas, Registros y Reportes arrancan en el mismo borde izquierdo (D145): %s' % bordes)
+    # Listas en rejilla de dos columnas en computadora, una en teléfono
+    pg.evaluate("SRP.app.mostrarVista('jornadas')"); pg.wait_for_timeout(300); pg.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg.wait_for_timeout(500)
+    col=lambda sel: pg.evaluate("getComputedStyle(document.querySelector('%s')).gridTemplateColumns.split(' ').length" % sel)
+    cj=col('#lista-jornadas'); ancho_lista=pg.evaluate("Math.round(document.getElementById('lista-jornadas').getBoundingClientRect().width)")
+    pg.evaluate("SRP.app.mostrarVista('registros')"); pg.wait_for_timeout(400); cr=col('#lista-registros')
+    pg.evaluate("SRP.app.mostrarVista('reportes')"); pg.wait_for_timeout(400); cp=col('#pdf-lista')
+    ok((cj,cr,cp)==(2,2,2) and ancho_lista > 1000,'en computadora jornadas, registros y reportes van en tarjetas de dos en dos, a todo lo ancho (D145): %s, %d px' % ((cj,cr,cp),ancho_lista))
+    pg.set_viewport_size({'width':390,'height':844}); pg.wait_for_timeout(300)
+    ok(col('#pdf-lista')==1,'en teléfono, una tarjeta por renglón')
+    # Nuevo registro: panel de la jornada activa ordenado en tableta y computadora
+    for ancho in (820, 1280):
+        pg.set_viewport_size({'width':ancho,'height':900}); pg.wait_for_timeout(300)
+        if ancho == 820: iniciar_jornada(pg,'Jornada de escritorio',HOY)
+        else: pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(400)
+        fr=pg.evaluate("""() => { const r=id => document.getElementById(id).getBoundingClientRect();
+            const rot=r('franja-jornada-rotulo'), tx=r('franja-jornada-texto'), ce=r('btn-jornada-cerrar'), fr=r('franja-jornada'), ti=r('titulo-arbol'), co=r('registrar-columnas');
+            return { rotulo_solo: rot.bottom <= tx.top + 1, cerrar_un_renglon: ce.height <= 44, botones_der: ce.right > fr.right - 40,
+                     mismo_borde: Math.abs(fr.left - ti.left) < 2 && Math.abs(fr.left - co.left) < 2 }; }""")
+        ok(fr=={'rotulo_solo':True,'cerrar_un_renglon':True,'botones_der':True,'mismo_borde':True},
+           'a %d px el panel de la jornada lleva «Jornada activa» solo en su renglón, «Cerrar jornada» en una línea a la derecha, y panel, título y formulario en el mismo borde (D145): %s' % (ancho, fr))
+    gu=pg.evaluate("(() => { const b=document.getElementById('btn-revisar').getBoundingClientRect(), f=document.getElementById('form-plantacion').getBoundingClientRect(); return b.width >= f.width - 2; })()")
+    ok(gu,'en computadora «Guardar» ocupa su columna de orilla a orilla')
+    # Registrar jornada: el lugar a la izquierda y el plan a la derecha
+    pg.click('#btn-jornada-cambiar'); pg.wait_for_timeout(200); pg.click('#btn-cambiar-nueva'); pg.wait_for_timeout(300)
+    ini=pg.evaluate("""() => { const a=document.querySelector('.ini-col-lugar').getBoundingClientRect(), b=document.querySelector('.ini-col-plan').getBoundingClientRect(), p=document.getElementById('panel-iniciar-jornada').getBoundingClientRect();
+        return { dos: b.left >= a.right && Math.abs(a.top - b.top) < 4, ancho: Math.round(p.width), boton_der: document.getElementById('btn-iniciar-jornada').getBoundingClientRect().left >= b.left - 1 }; }""")
+    ok(ini['dos'] and ini['ancho'] > 1000 and ini['boton_der'],'en computadora «Registrar jornada» va en dos columnas: lugar a la izquierda, programa, meta, fecha y botón a la derecha (D145): %s' % ini)
+    pg.set_viewport_size({'width':390,'height':844}); pg.wait_for_timeout(300)
+    ini=pg.evaluate("""() => { const a=document.querySelector('.ini-col-lugar').getBoundingClientRect(), b=document.querySelector('.ini-col-plan').getBoundingClientRect(); return b.top >= a.bottom - 1; }""")
+    ok(ini,'en teléfono los mismos campos siguen uno bajo otro')
+    pg.click('#btn-iniciar-cancelar'); pg.wait_for_timeout(300)
+    # El mapa de la ficha no esconde puntos bajo los botones de acercar
+    pg.click('#btn-ubicacion'); pg.wait_for_timeout(700); pg.fill('#campo-especie','aile'); pg.wait_for_timeout(200)
+    pg.dispatch_event('.combo-opcion[data-id="ESP-0002"]','mousedown'); pg.wait_for_timeout(150); pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(900)
+    if pg.is_visible('#dlg-resumen'): pg.click('#btn-resumen-guardar'); pg.wait_for_timeout(700)
+    ctx.set_geolocation({'latitude':19.4345,'longitude':-99.1362}); pg.click('#btn-ubicacion'); pg.wait_for_timeout(700); pg.fill('#campo-especie','ahuehu'); pg.wait_for_timeout(200)
+    pg.dispatch_event('.combo-opcion[data-id="ESP-0070"]','mousedown'); pg.wait_for_timeout(150); pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(900)
+    if pg.is_visible('#dlg-resumen'): pg.click('#btn-resumen-guardar'); pg.wait_for_timeout(700)
+    ctx.set_geolocation({'latitude':19.432,'longitude':-99.133})
+    pg.evaluate("SRP.app.mostrarVista('jornadas')"); pg.wait_for_timeout(400); pg.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg.wait_for_timeout(400)
+    pg.locator('#lista-jornadas .jornada', has_text='Jornada de escritorio').locator('.jornada-boton').click(); pg.wait_for_timeout(1200)
+    tapa=pg.evaluate("""() => { const z=document.querySelector('#jornada-mapa .leaflet-control-zoom').getBoundingClientRect();
+        return [...document.querySelectorAll('#jornada-mapa .leaflet-marker-icon')].filter(m => { const r=m.getBoundingClientRect(); return r.left < z.right && r.top < z.bottom && r.right > z.left && r.bottom > z.top; }).length; }""")
+    ok(tapa==0,'en la ficha ningún punto queda bajo los botones de acercar: el encuadre deja margen arriba a la izquierda (D145)')
 
     b.close()
 print('\n'.join(res)); print('ERRORES CONSOLA:',errores or 'ninguno')

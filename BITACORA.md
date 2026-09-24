@@ -1564,3 +1564,31 @@ desde que el guardado ya no espera al envío).
 
 **Verificación:** 567 comprobaciones sin errores de consola; 85 de auditoría;
 presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.66.
+
+## Bloque 86 — Sistema de ancho en tableta y computadora (24-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.67.
+
+**Qué cambió (D145).** Revisión de las nueve vistas a 390, 820, 1366 y 1440 px, con capturas de
+antes y después. `estilos.css`: nada se centra por su cuenta (panel de jornada, franja y «Nuevo
+árbol» arrancan en el borde de la vista); el rótulo «Jornada activa» va solo en su renglón; bloque
+nuevo «Sistema de ancho» (601 px en adelante): franja de la jornada en rejilla con botones a la
+derecha sin partirse; vistas de formulario y lectura a todo lo ancho con ayudas de 62 caracteres;
+en computadora «Registrar jornada» en dos columnas, ficha de la jornada con mapa fijo a la
+izquierda y lista a la derecha, pasos y botones en un renglón, barra del pie en un renglón,
+tarjetas de dos en dos en Jornadas, Registros y Reportes, entrada con tarjetas lado a lado,
+miniaturas de Fotografías algo mayores y «Guardar» a lo ancho de su columna. Se quita el centrado
+de Reportes (D109) y la pista de atajos con los números de las recientes. `index.html`: columnas
+`ini-col-lugar`/`ini-col-plan` en el formulario de la jornada y `ficha-cuerpo` con
+`ficha-col-mapa`/`ficha-col-lista` en la ficha (en teléfono no se notan); sin `.atajo-pista`.
+`formulario.js`: sin el atajo 1-2-3 ni `data-n`; Ctrl+Enter se queda. `jornadas.js`: el encuadre del
+mapa de la ficha deja margen bajo los botones de acercar.
+Pruebas: ficha en una columna en teléfono y en dos en computadora (mapa fijo, pasos y botones en un
+renglón, barra en un renglón); mismo borde izquierdo en Jornadas, Registros y Reportes; listas de
+dos columnas a todo lo ancho en computadora y de una en teléfono; panel de la jornada activa a 820
+y 1280 px (rótulo solo, «Cerrar jornada» en una línea a la derecha, panel, título y formulario en
+el mismo borde); «Guardar» a lo ancho; «Registrar jornada» en dos columnas en computadora y en una
+en teléfono; ningún punto bajo los botones de acercar; sin pista ni atajo numérico. La prueba de
+Reportes centrado (D109) pasa a comprobar que arranca en el borde, como las demás.
+
+**Verificación:** 579 comprobaciones sin errores de consola; 85 de auditoría;
+presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.67.
