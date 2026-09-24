@@ -67,7 +67,8 @@ SRP.app = {
       if (b.dataset.vista === this.vista) return;
       // Un árbol a medias no se pierde en silencio (D133)
       if (this.vista === 'registrar' && b.dataset.vista !== 'registrar' && SRP.formulario.aMedias()) {
-        const ok = await this.confirmar('Está capturando un árbol que no se ha guardado. ¿Descartarlo y salir?', 'Descartar el árbol', 'basura');
+        const ok = await this.confirmar({ titulo: 'Descartar el árbol', pregunta: 'El árbol que está capturando no se ha guardado. ¿Descartarlo y salir?',
+          puntosTitulo: 'Se pierde lo capturado:', puntos: SRP.formulario.resumenAMedias(), irreversible: true, boton: 'Descartar el árbol', icono: 'basura' });
         if (!ok) return;
         SRP.formulario.limpiar();
       }
@@ -152,7 +153,15 @@ SRP.app = {
       if (e.key === 'Escape' && !this.el('menu-cuenta').hidden) { this.menuCuenta(false); this.el('btn-cuenta').focus(); }
     });
     this.el('btn-restablecer').addEventListener('click', async () => {
-      const ok = await this.confirmar('¿Restablecer los datos de prueba? Se pierde todo lo capturado en este dispositivo.', 'Restablecer');
+      // Lo que se pierde, con números: «todo lo capturado» no dice cuánto (D139)
+      const regs = (await SRP.almacen.todos('plantaciones')).filter(r => r.estatus !== 'eliminado').length;
+      const jors = (await SRP.almacen.todos('jornadas')).length;
+      const cola = SRP.envio.simulado() && SRP.sesion.usuario ? (await SRP.envio.cola()).length : 0;
+      const ok = await this.confirmar({ titulo: 'Restablecer los datos de prueba', pregunta: '¿Borrar lo capturado en este dispositivo y volver a los datos de ejemplo?',
+        puntosTitulo: 'Qué pasa:', puntos: [
+          'Se borran ' + regs + (regs === 1 ? ' registro' : ' registros') + ' y ' + jors + (jors === 1 ? ' jornada' : ' jornadas') + '.',
+          cola ? (cola === 1 ? '1 registro no se ha enviado y se perderá.' : cola + ' registros no se han enviado y se perderán.') : '',
+          'Se cierra la sesión.'], irreversible: true, boton: 'Restablecer', icono: 'basura' });
       if (!ok) return;
       await SRP.almacen.restablecer();
       await SRP.ref.recargar();
@@ -385,15 +394,37 @@ SRP.app = {
     this.el('btn-confirmar-no').addEventListener('click', () => this.el('dlg-confirmar').close('no'));
   },
 
-  // icono: 'basura' para lo que se elimina, 'palomita' para lo que sólo se confirma
+  /* CONFIRMAR (D139). La confirmación queda para lo que no se deshace —eliminar una jornada, una
+     cuenta o un valor del catálogo, restablecer los datos, descartar un árbol sin guardar— y para
+     decisiones con consecuencias que conviene ver antes (cerrar con pendientes, guardar en una
+     jornada de otro día). Lo reversible se hace de una vez y ofrece «Deshacer» (D101): así, que
+     aparezca este diálogo vuelve a significar algo.
+     Forma estructurada: { titulo, pregunta, puntosTitulo, puntos: [], nota, irreversible, boton,
+     icono }. La corta (texto, textoBoton, icono) sirve para una pregunta simple.
+     icono: 'basura' elimina (rojo), 'palomita' confirma (verde), 'candado' cierra (acento). */
   confirmar(texto, textoBoton, icono) {
+    const o = typeof texto === 'object' ? texto : { pregunta: texto, boton: textoBoton, icono };
+    const poner = (id, t) => { const e = this.el(id); e.textContent = t || ''; e.hidden = !t; };
     return new Promise((resolver) => {
       const dlg = this.el('dlg-confirmar');
-      this.el('dlg-confirmar-texto').textContent = texto;
+      poner('dlg-confirmar-titulo', o.titulo);
+      dlg.setAttribute('aria-labelledby', o.titulo ? 'dlg-confirmar-titulo dlg-confirmar-texto' : 'dlg-confirmar-texto');
+      this.el('dlg-confirmar-texto').textContent = o.pregunta || '';
+      const puntos = (o.puntos || []).filter(Boolean);
+      const ul = this.el('dlg-confirmar-puntos');
+      ul.hidden = !puntos.length;
+      ul.innerHTML = puntos.map(t => '<li>' + SRP.util.escapar(t) + '</li>').join('');
+      poner('dlg-confirmar-puntos-titulo', puntos.length ? o.puntosTitulo : '');
+      // Lo irreversible lo dice al final, en rojo y con su icono; si no, la nota va en gris
+      const nota = this.el('dlg-confirmar-nota');
+      const textoNota = o.nota || (o.irreversible ? 'No se puede deshacer.' : '');
+      nota.hidden = !textoNota;
+      nota.dataset.tono = o.irreversible ? 'alerta' : '';
+      nota.innerHTML = textoNota ? (o.irreversible ? SRP.ICONOS.svg('info', 18) : '') + '<span>' + SRP.util.escapar(textoNota) + '</span>' : '';
       const b = this.el('btn-confirmar-si');
-      b.innerHTML = SRP.ICONOS.svg(icono || 'basura') + '<span>' + SRP.util.escapar(textoBoton) + '</span>';
-      // Color por significado (Norma 8.4): confirmar verde, cerrar/candado guinda, eliminar rojo
-      b.className = 'btn ' + (icono === 'palomita' ? 'btn-exito' : icono === 'candado' ? 'btn-primario' : 'btn-peligro');
+      b.innerHTML = SRP.ICONOS.svg(o.icono || 'basura') + '<span>' + SRP.util.escapar(o.boton) + '</span>';
+      // Color por significado (Norma 8.4): confirmar verde, cerrar en acento, eliminar rojo
+      b.className = 'btn ' + (o.icono === 'palomita' ? 'btn-exito' : o.icono === 'candado' ? 'btn-primario' : 'btn-peligro');
       dlg.returnValue = '';
       dlg.addEventListener('close', () => resolver(dlg.returnValue === 'si'), { once: true });
       dlg.showModal();

@@ -391,6 +391,13 @@ SRP.formulario = {
   },
 
   // Hay un árbol a medias si ya hay punto, especie, foto o comentario y no es una edición (D133)
+  // Lo que se perdería al descartar un árbol a medias, en palabras (D139)
+  resumenAMedias() {
+    const especie = this.el('campo-especie').value.trim();
+    return [SRP.mapa.lat !== null ? 'La ubicación registrada.' : '', this.estado.especieId && especie ? 'La especie: ' + especie + '.' : '',
+      this.estado.foto ? 'La fotografía.' : '', this.el('campo-comentarios').value.trim() ? 'Los comentarios.' : ''].filter(Boolean);
+  },
+
   aMedias() {
     if (this.estado.editando) return false;
     return SRP.mapa.lat !== null || !!this.estado.especieId || !!this.estado.foto || !!this.el('campo-comentarios').value.trim();

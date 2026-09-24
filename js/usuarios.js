@@ -195,18 +195,16 @@ SRP.usuarios = {
     this.preparar();
   },
 
-  // `deshaciendo`: viene de «Deshacer» del aviso; no se vuelve a preguntar ni a ofrecer deshacer (D101)
+  /* Desactivar se deshace: no pregunta, lo dice el aviso y ofrece «Deshacer» (D139).
+     `deshaciendo`: viene de «Deshacer» del aviso; no se vuelve a ofrecer deshacer (D101) */
   async cambiarEstado(u, deshaciendo) {
     const activar = !u.activo;
-    if (!activar && !deshaciendo) {
-      const ok = await SRP.app.confirmar('¿Desactivar la cuenta de ' + SRP.util.nombreCompleto(u) +
-        '? Dejará de poder entrar; sus registros se conservan y siguen a su nombre.', 'Desactivar', 'palomita');
-      if (!ok) return;
-    }
     const nuevo = Object.assign({}, u, { activo: activar, editado_por_id: SRP.sesion.usuario.id, fecha_ultima_edicion: SRP.util.ahoraISO() });
     await SRP.almacen.guardarConBitacora('usuarios', nuevo, SRP.bitacora.entrada(activar ? 'ACTIVADO' : 'DESACTIVADO', 'usuario', u.id));
     await SRP.ref.recargar();
-    SRP.util.anunciar(activar ? 'Cuenta activada.' : 'Cuenta desactivada.', 'exito', deshaciendo ? null : { deshacer: () => this.cambiarEstado(nuevo, true) });
+    const nombre = SRP.util.nombreCompleto(u);
+    SRP.util.anunciar(activar ? 'Cuenta de ' + nombre + ' activada.' : 'Cuenta de ' + nombre + ' desactivada: ya no puede entrar; sus registros siguen a su nombre.',
+      'exito', deshaciendo ? null : { deshacer: () => this.cambiarEstado(nuevo, true) });
     this.preparar();
   },
 
@@ -216,8 +214,9 @@ SRP.usuarios = {
       SRP.util.anunciar('No se puede eliminar: tiene ' + this.uso[u.id] + ' registros a su nombre. Desactive la cuenta.', 'alerta');
       return;
     }
-    const ok = await SRP.app.confirmar('¿Eliminar la cuenta de ' + SRP.util.nombreCompleto(u) +
-      '? No tiene registros a su nombre. La bitácora conserva la constancia.', 'Eliminar');
+    const ok = await SRP.app.confirmar({ titulo: 'Eliminar cuenta', pregunta: '¿Eliminar la cuenta de ' + SRP.util.nombreCompleto(u) + '?',
+      puntos: ['No tiene registros a su nombre.', 'La bitácora conserva la constancia.', 'Si sólo no debe entrar, desactívela: eso sí se deshace.'],
+      irreversible: true, boton: 'Eliminar cuenta', icono: 'basura' });
     if (!ok) return;
     await SRP.almacen.borrarConBitacora('usuarios', u.id,
       SRP.bitacora.entrada('ELIMINADO', 'usuario', u.id, u.correo));

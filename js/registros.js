@@ -491,15 +491,15 @@ SRP.registros = {
     this.mapaDetalle = SRP.mapa.estatico('detalle-mapa', r.lat, r.lng);
   },
 
+  /* Eliminar un registro se deshace (se marca, no se borra): no pregunta; el aviso dice cuál se
+     eliminó y ofrece «Deshacer» (D139). La confirmación queda para lo que no tiene vuelta. */
   async eliminar(r) {
-    const ok = await SRP.app.confirmar('¿Eliminar el registro de ' + SRP.ref.especieDe(r).comun + ' del ' +
-      SRP.util.formatearFecha(r.fecha_plantacion) + '? Dejará de aparecer en listados y reportes; el historial lo conserva.', 'Eliminar');
-    if (!ok) return;
     // Retiro con constancia: se marca, no se borra (Norma 7.4)
     const nuevo = Object.assign({}, r, { estatus: 'eliminado', fecha_ultima_edicion: SRP.util.ahoraISO(), editado_por_id: SRP.sesion.usuario.id });
     await SRP.almacen.guardarConBitacora('plantaciones', nuevo, SRP.bitacora.entrada('ELIMINADO', 'plantacion', r.id));
     // «Deshacer» devuelve el registro tal como estaba y deja constancia (D101)
-    SRP.util.anunciar('Registro eliminado.', 'exito', { deshacer: () => this.restaurar(r) });
+    const cual = SRP.folio.valido(r.folio) ? '(' + r.folio + ')' : 'del ' + SRP.util.formatearFecha(r.fecha_plantacion);
+    SRP.util.anunciar('Registro de ' + SRP.ref.especieDe(r).comun + ' ' + cual + ' eliminado: ya no aparece en listados ni reportes.', 'exito', { deshacer: () => this.restaurar(r) });
     if (SRP.app.vista === 'jornadas') { SRP.jornadas.volverAlDetalle = false; SRP.jornadas.refrescar(); } else this.preparar();
     SRP.conexion.refrescar();   // la cuenta de la pastilla baja
   },

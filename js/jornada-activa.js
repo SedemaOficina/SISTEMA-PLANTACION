@@ -97,8 +97,11 @@ SRP.activa = {
   async confirmarOtroDia() {
     const j = this.jornada;
     if (!j || j.fecha === SRP.util.fechaHoy() || this.confirmadaOtroDia === j.id) return true;
-    const ok = await SRP.app.confirmar('La jornada activa «' + j.nombre + '» es del ' + SRP.util.formatearFecha(j.fecha) + ', no de hoy. El árbol quedará con esa fecha. ' +
-      'Si es de hoy, cancele y toque «Cambiar de jornada» para iniciar la de hoy.', 'Sí, es de esa jornada', 'palomita');
+    const f = SRP.util.formatearFecha(j.fecha);
+    const ok = await SRP.app.confirmar({ titulo: 'Jornada de otro día', pregunta: '¿Guardar el árbol en «' + j.nombre + '», del ' + f + '?',
+      puntos: ['La jornada activa no es de hoy: el árbol quedará con fecha ' + f + '.',
+        'Si el árbol es de hoy, cancele y toque «Cambiar de jornada» para iniciar la de hoy.'],
+      nota: 'Se pregunta una vez por sesión.', boton: 'Sí, es de esa jornada', icono: 'palomita' });
     if (ok) this.confirmadaOtroDia = j.id;
     return ok;
   },
@@ -290,8 +293,9 @@ SRP.activa = {
   },
 
   /* Lo que queda pendiente al cerrar (D133): puntos por revisar y distancia a la meta. Es aviso, no
-     impedimento: la jornada se puede cerrar así y reabrir después. */
-  async textoCierre(j) {
+     impedimento: la jornada se puede cerrar así y reabrir después. Devuelve la confirmación
+     estructurada (D139): lo pendiente en viñetas, para que no se pierda en un párrafo. */
+  async confirmacionCierre(j) {
     const regs = await this.registrosDe(j);
     const vista = SRP.jornadas.jornadasAlcance ? (await SRP.jornadas.jornadasAlcance()).find(x => x.id === j.id) : null;
     const pend = vista ? SRP.jornadas.pendientes(vista, SRP.jornadas.avisos(vista), j).length : 0;
@@ -301,13 +305,14 @@ SRP.activa = {
     if (pend) avisos.push(pend === 1 ? '1 punto por revisar' : pend + ' puntos por revisar');
     if (meta !== null && n < meta) avisos.push((meta - n) + (meta - n === 1 ? ' árbol' : ' árboles') + ' por debajo de la meta (' + n + ' de ' + meta + ')');
     if (meta !== null && n > meta) avisos.push((n - meta) + (n - meta === 1 ? ' árbol' : ' árboles') + ' por encima de la meta (' + n + ' de ' + meta + ')');
-    const base = '¿Cerrar la jornada «' + j.nombre + '» con ' + n + (n === 1 ? ' árbol' : ' árboles') + '?';
-    return avisos.length ? base + ' Queda pendiente: ' + avisos.join(' · ') + '. Se puede cerrar de todos modos y reabrir después.' : base + ' Se puede reabrir después.';
+    return { titulo: 'Cerrar jornada', pregunta: '¿Cerrar la jornada «' + j.nombre + '» con ' + n + (n === 1 ? ' árbol' : ' árboles') + '?',
+      puntosTitulo: 'Queda pendiente:', puntos: avisos.map(a => a.charAt(0).toUpperCase() + a.slice(1) + '.'),
+      nota: avisos.length ? 'Se puede cerrar de todos modos y reabrir después.' : 'Se puede reabrir después.', boton: 'Cerrar jornada', icono: 'candado' };
   },
 
   async cerrarJornada() {
     const j = this.jornada; if (!j) return;
-    const ok = await SRP.app.confirmar(await this.textoCierre(j), 'Cerrar jornada', 'candado');
+    const ok = await SRP.app.confirmar(await this.confirmacionCierre(j));
     if (!ok) return;
     await this.cambiarEstatus(j, 'cerrada');
     this.jornada = null;

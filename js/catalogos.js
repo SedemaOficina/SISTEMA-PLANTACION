@@ -250,17 +250,15 @@ SRP.catalogos = {
     this.preparar();
   },
 
-  // `deshaciendo`: viene de «Deshacer» del aviso; no se vuelve a preguntar ni a ofrecer deshacer (D101)
+  /* Desactivar se deshace: no pregunta, lo dice el aviso y ofrece «Deshacer» (D139).
+     `deshaciendo`: viene de «Deshacer» del aviso; no se vuelve a ofrecer deshacer (D101) */
   async cambiarEstado(item, deshaciendo) {
     const activar = !item.activo;
-    if (!activar && !deshaciendo) {
-      const ok = await SRP.app.confirmar('¿Desactivar «' + item.nombre + '»? Dejará de ofrecerse en los formularios; los registros que ya lo usan no cambian.', 'Desactivar', 'palomita');
-      if (!ok) return;
-    }
     const nuevo = Object.assign({}, item, { activo: activar, editado_por_id: SRP.sesion.usuario.id, fecha_ultima_edicion: SRP.util.ahoraISO() });
     await SRP.almacen.guardarConBitacora('catalogos', nuevo, SRP.bitacora.entrada(activar ? 'ACTIVADO' : 'DESACTIVADO', 'catalogo', item.id));
     await SRP.ref.recargar();
-    SRP.util.anunciar(activar ? 'Valor activado.' : 'Valor desactivado.', 'exito', deshaciendo ? null : { deshacer: () => this.cambiarEstado(nuevo, true) });
+    SRP.util.anunciar(activar ? '«' + item.nombre + '» activado.' : '«' + item.nombre + '» desactivado: ya no se ofrece en los formularios; los registros que lo usan no cambian.',
+      'exito', deshaciendo ? null : { deshacer: () => this.cambiarEstado(nuevo, true) });
     this.preparar();
   },
 
@@ -271,7 +269,9 @@ SRP.catalogos = {
       SRP.util.anunciar('No se puede eliminar: tiene ' + n + (n === 1 ? ' registro asignado' : ' registros asignados') + '. Desactívelo.', 'alerta');
       return;
     }
-    const ok = await SRP.app.confirmar('¿Eliminar «' + item.nombre + '»? No tiene registros asignados. La bitácora conserva la constancia.', 'Eliminar');
+    const ok = await SRP.app.confirmar({ titulo: 'Eliminar del catálogo', pregunta: '¿Eliminar «' + item.nombre + '»?',
+      puntos: ['No tiene registros asignados.', 'La bitácora conserva la constancia.', 'Si sólo debe dejar de ofrecerse, desactívelo: eso sí se deshace.'],
+      irreversible: true, boton: 'Eliminar', icono: 'basura' });
     if (!ok) return;
     await SRP.almacen.borrarConBitacora('catalogos', item.id,
       SRP.bitacora.entrada('ELIMINADO', 'catalogo', item.id, item.tipo + ' ' + item.clave + ': ' + item.nombre));

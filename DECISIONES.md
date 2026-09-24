@@ -1070,3 +1070,18 @@
   bajo la tira (como en la maqueta) porque queda siempre a la mano y evita repetir botones. De paso,
   los mapas quedan aislados (Leaflet dibujaba su atribución encima de la barra fija). Auditoría
   UX/UI del 24-09-2026, bloque 79 (plan: 78), aprobada por Liber.
+- **D139. Confirmar sólo lo que no se deshace, y confirmar en viñetas.** La confirmación queda para
+  lo irreversible —eliminar una jornada, una cuenta o un valor del catálogo, restablecer los datos
+  de prueba, descartar un árbol sin guardar— y para decisiones cuyas consecuencias conviene ver
+  antes: cerrar una jornada con pendientes y guardar en una jornada de otro día. Lo reversible se
+  hace de una vez y el aviso dice qué se hizo y ofrece «Deshacer» (D101): eliminar un registro
+  («Registro de Aile (folio) eliminado…», también desde la ficha de la jornada), desactivar un valor
+  del catálogo y desactivar una cuenta. Antes pedían confirmar *y además* ofrecían deshacer: doble
+  protección que gastaba la atención y restaba peso a las confirmaciones que sí importan. El
+  diálogo pasa a ser estructurado: título con la acción, una pregunta, lo que implica en viñetas
+  («Queda pendiente:», «Se pierde lo capturado:», «Qué pasa:») y una nota final; «No se puede
+  deshacer» va en rojo con su icono sólo cuando es cierto. Restablecer dice cuánto se borra
+  (registros, jornadas y, si los hay, los que no se han enviado); eliminar una cuenta o un valor
+  recuerda la salida reversible (desactivar). El foco empieza en «Cancelar». La forma corta
+  `confirmar(texto, boton, icono)` sigue sirviendo. Auditoría UX/UI del 24-09-2026, bloque 80,
+  aprobada por Liber.

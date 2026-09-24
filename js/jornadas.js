@@ -109,7 +109,7 @@ SRP.jornadas = {
   async cambiarEstado() {
     const j = await this.cierreDe(this.jornada); if (!j) return;
     if (j.estatus === 'abierta') {
-      const ok = await SRP.app.confirmar(await SRP.activa.textoCierre(j), 'Cerrar jornada', 'candado');
+      const ok = await SRP.app.confirmar(await SRP.activa.confirmacionCierre(j));
       if (!ok) return;
       await SRP.activa.cambiarEstatus(j, 'cerrada');
       if (SRP.activa.jornada && SRP.activa.jornada.id === j.id) SRP.activa.jornada = null;
@@ -834,7 +834,8 @@ SRP.jornadas = {
   // Sólo una jornada sin árboles se elimina; con árboles, primero se mueven o se eliminan ellos
   async eliminarJornada() {
     const c = this.cierre; if (!c || this.jornada.registros.length) return;
-    const ok = await SRP.app.confirmar('¿Eliminar la jornada «' + c.nombre + '» del ' + SRP.util.formatearFecha(c.fecha) + '? No tiene árboles; no se puede deshacer.', 'Eliminar jornada', 'basura');
+    const ok = await SRP.app.confirmar({ titulo: 'Eliminar jornada', pregunta: '¿Eliminar la jornada «' + c.nombre + '» del ' + SRP.util.formatearFecha(c.fecha) + '?',
+      puntos: ['No tiene árboles registrados.', 'La bitácora conserva la constancia.'], irreversible: true, boton: 'Eliminar jornada', icono: 'basura' });
     if (!ok) return;
     await SRP.almacen.borrarConBitacora('jornadas', c.id, SRP.bitacora.entrada('ELIMINADO', 'jornada', c.id, 'Jornada «' + c.nombre + '» eliminada (sin árboles)'));
     if (SRP.activa.jornada && SRP.activa.jornada.id === c.id) SRP.activa.jornada = null;

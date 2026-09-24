@@ -1461,3 +1461,19 @@ renumeró a 79 / D138 / 0.6.60, fusionado a tres vías sobre el 78 sin tocar sus
 
 **Verificación:** 500 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.60.
+
+## Bloque 80 — Confirmaciones (24-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.61.
+
+**Qué cambió (D139).** `index.html`: `#dlg-confirmar` con título, pregunta, encabezado y lista de
+viñetas, y nota. `app.js`: `confirmar()` acepta la forma estructurada; restablecer y descartar el
+árbol la usan. `formulario.js`: `resumenAMedias()`. `jornada-activa.js`: `confirmacionCierre()`
+(antes `textoCierre`) y la de otro día. `jornadas.js`: cerrar y eliminar jornada. `registros.js`:
+eliminar sin confirmar, con el aviso que nombra el registro. `catalogos.js` y `usuarios.js`:
+desactivar sin confirmar; eliminar, estructurado. `estilos.css`: `.confirmar-*`.
+Pruebas: estructura y foco del diálogo, pendientes en viñetas, lo que se pierde al descartar,
+restablecer con números y «Cancelar» sin efecto, forma corta, eliminar y desactivar sin diálogo
+con «Deshacer», y que registros, catálogo y cuentas sólo confirmen al eliminar.
+
+**Verificación:** 510 comprobaciones sin errores de consola; 85 de auditoría;
+presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.61.

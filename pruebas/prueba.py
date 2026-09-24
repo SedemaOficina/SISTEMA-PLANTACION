@@ -811,9 +811,9 @@ with sync_playwright() as p:
     pg.click('#jornada-lista .punto-jornada[data-id="%s"] .punto-datos' % J['ids'][1]); pg.wait_for_timeout(300)
     ok(pg.locator('#jornada-lista .punto-jornada.elegido').count()==1 and pg.locator('#jornada-mapa .pin-num.elegido').count()==1 and pg.inner_text('#jornada-mapa .pin-num.elegido')=='2','tocar el punto 2 en la lista lo marca en la lista y en el mapa')
     # Eliminar el duplicado desde la jornada
-    pg.click('#jornada-lista .punto-jornada[data-id="%s"] [data-accion=eliminar]' % J['ids'][3]); pg.wait_for_timeout(300)
-    ok(pg.get_attribute('#btn-confirmar-no','class').split().count('btn-cancelar')==1 and pg.locator('#btn-confirmar-no svg').count()==1,'«Cancelar» va en rojo de contorno con tache (D116)')
-    pg.click('#btn-confirmar-si'); pg.wait_for_timeout(700)
+    pg.click('#jornada-lista .punto-jornada[data-id="%s"] [data-accion=eliminar]' % J['ids'][3]); pg.wait_for_timeout(700)
+    ok(pg.is_hidden('#dlg-confirmar') and 'eliminado' in pg.inner_text('#aviso') and pg.locator('#aviso .aviso-accion').count()==1,
+       'eliminar un registro no pide confirmar: se deshace, así que el aviso dice cuál se eliminó y ofrece «Deshacer» (D139): '+pg.inner_text('#aviso'))
     ok(pg.is_visible('#jornada-detalle') and pg.locator('#jornada-lista .punto-jornada').count()==4 and pg.locator('#jornada-mapa .pin-num').count()==4,'eliminar el duplicado deja la jornada en 4 puntos y sigue en la misma pantalla')
     ok(pg.get_attribute('#jornada-conciliacion','data-tono')=='rev' and pg.inner_text('#jornada-resultado').startswith('Cuadra: meta de 4 y 4 registrados'),'y ahora cuadra: '+pg.inner_text('#jornada-resultado'))
     ok('Posible duplicado' not in pg.inner_text('#jornada-lista'),'ya no hay aviso de duplicado')
@@ -910,6 +910,13 @@ with sync_playwright() as p:
     ok(pg.is_visible('#btn-jornada-eliminar') and 'btn-peligro-linea' in pg.get_attribute('#btn-jornada-eliminar','class'),'una jornada sin árboles ofrece «Eliminar jornada» en rojo de contorno (D132)')
     pg.click('#btn-jornada-eliminar'); pg.wait_for_timeout(300)
     ok(pg.is_visible('#dlg-confirmar') and 'Eliminar jornada' in pg.inner_text('#btn-confirmar-si') and 'btn-peligro' in pg.get_attribute('#btn-confirmar-si','class'),'pide confirmar en rojo')
+    ok(pg.get_attribute('#btn-confirmar-no','class').split().count('btn-cancelar')==1 and pg.locator('#btn-confirmar-no svg').count()==1,'«Cancelar» va en rojo de contorno con tache (D116)')
+    conf=pg.evaluate("""() => ({ titulo: document.getElementById('dlg-confirmar-titulo').hidden ? null : document.getElementById('dlg-confirmar-titulo').textContent,
+      puntos: document.querySelectorAll('#dlg-confirmar-puntos li').length, nota: document.getElementById('dlg-confirmar-nota').textContent,
+      tono: document.getElementById('dlg-confirmar-nota').dataset.tono, icono: !!document.querySelector('#dlg-confirmar-nota svg'),
+      etiqueta: document.getElementById('dlg-confirmar').getAttribute('aria-labelledby'), foco: document.activeElement.id })""")
+    ok(conf=={'titulo':'Eliminar jornada','puntos':2,'nota':'No se puede deshacer.','tono':'alerta','icono':True,'etiqueta':'dlg-confirmar-titulo dlg-confirmar-texto','foco':'btn-confirmar-no'},
+       'la confirmación es estructurada: título, pregunta, viñetas y «No se puede deshacer» en rojo con icono; el foco empieza en «Cancelar» (D139): %s' % conf)
     pg.click('#btn-confirmar-si'); pg.wait_for_timeout(700)
     ok(pg.is_hidden('#jornada-detalle') and pg.evaluate("async () => !(await SRP.almacen.uno('jornadas', '%s'))" % vacia) and pg.evaluate("SRP.activa.jornada === null || SRP.activa.jornada.id !== '%s'" % vacia),'la jornada desaparece, vuelve a la lista y deja de ser la activa')
     pg.click('#jornada-atajos [data-atajo=dia]'); pg.fill('#jornada-dia', M['f']); pg.dispatch_event('#jornada-dia','change'); pg.wait_for_timeout(500)
@@ -929,7 +936,7 @@ with sync_playwright() as p:
     pg.click('#btn-jornada-estado'); pg.wait_for_timeout(600)
     ok('Cerrar jornada' in pg.inner_text('#btn-jornada-estado') and 'btn-primario' in pg.get_attribute('#btn-jornada-estado','class') and pg.locator('#btn-jornada-estado svg').count()==1 and 'abierta' in pg.inner_text('#jornada-sub') and pg.evaluate("SRP.activa.jornada && SRP.activa.jornada.id")==M['jids'][1],'reabrir la deja abierta y activa; «Cerrar jornada» va en guinda con candado, no en verde (D121)')
     pg.click('#btn-jornada-estado'); pg.wait_for_timeout(300)
-    ok('Queda pendiente' in pg.inner_text('#dlg-confirmar-texto') and 'por debajo de la meta' in pg.inner_text('#dlg-confirmar-texto'),'al cerrar, el diálogo dice lo que queda pendiente frente a la meta (D133): '+pg.inner_text('#dlg-confirmar-texto'))
+    ok('Queda pendiente' in pg.inner_text('#dlg-confirmar') and pg.locator('#dlg-confirmar-puntos li', has_text='por debajo de la meta').count()==1 and 'reabrir después' in pg.inner_text('#dlg-confirmar-nota'),'al cerrar, el diálogo dice lo que queda pendiente frente a la meta (D133): '+pg.inner_text('#dlg-confirmar-texto'))
     pg.click('#btn-confirmar-si'); pg.wait_for_timeout(600)
     ok('Reabrir' in pg.inner_text('#btn-jornada-estado') and pg.evaluate("SRP.activa.jornada")is None,'y cerrarla la quita de activa')
     # D125: «Cerrar jornada» desde la franja siempre llega a la ficha de esa jornada en Jornadas, aunque sea de otro día y el filtro esté en «Hoy»
@@ -942,11 +949,13 @@ with sync_playwright() as p:
     iniciar_jornada(pg, 'Jornada de anteayer', '2026-09-21')
     pg.click('#btn-ubicacion'); pg.wait_for_timeout(700); pg.fill('#campo-especie','ahuehu'); pg.wait_for_timeout(200); pg.dispatch_event('.combo-opcion[data-id="ESP-0070"]','mousedown'); pg.wait_for_timeout(150)
     pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(500)
-    ok(pg.is_visible('#dlg-confirmar') and 'no de hoy' in pg.inner_text('#dlg-confirmar-texto') and 'Cambiar de jornada' in pg.inner_text('#dlg-confirmar-texto'),'guardar en una jornada de otro día pide confirmar y dice cómo iniciar la de hoy (D133)')
+    ok(pg.is_visible('#dlg-confirmar') and pg.inner_text('#dlg-confirmar-titulo')=='Jornada de otro día' and 'no es de hoy' in pg.inner_text('#dlg-confirmar-puntos') and 'Cambiar de jornada' in pg.inner_text('#dlg-confirmar-puntos'),'guardar en una jornada de otro día pide confirmar y dice cómo iniciar la de hoy (D133)')
     pg.click('#btn-confirmar-no'); pg.wait_for_timeout(300)
     ok(pg.evaluate("SRP.formulario.aMedias()") and pg.evaluate("(async () => (await SRP.almacen.porIndice('plantaciones','estatus','activo')).filter(r => r.jornada_id === SRP.activa.jornada.id).length)()")==0,'cancelar no guarda y el árbol sigue a medias en pantalla')
     pg.click('.pestana[data-vista=jornadas]'); pg.wait_for_timeout(300)
     ok(pg.is_visible('#dlg-confirmar') and 'no se ha guardado' in pg.inner_text('#dlg-confirmar-texto') and 'btn-peligro' in pg.get_attribute('#btn-confirmar-si','class'),'salir con un árbol a medias pide confirmar en rojo (D133)')
+    ok('La ubicación registrada.' in pg.inner_text('#dlg-confirmar-puntos') and 'La especie: ' in pg.inner_text('#dlg-confirmar-puntos') and pg.inner_text('#dlg-confirmar-nota')=='No se puede deshacer.',
+       'y enumera lo que se perdería —ubicación, especie— y que no se deshace (D139): '+pg.inner_text('#dlg-confirmar-puntos').replace(chr(10),' | '))
     pg.click('#btn-confirmar-no'); pg.wait_for_timeout(300)
     ok(pg.is_visible('#vista-registrar') and pg.input_value('#campo-especie')!='','«Cancelar» se queda en el formulario con lo capturado')
     pg.click('.pestana[data-vista=jornadas]'); pg.wait_for_timeout(300); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
@@ -1122,15 +1131,16 @@ with sync_playwright() as p:
     ok('editado' in pg.inner_text('#dlg-detalle'),'el historial registra la edición')
     pg.click('#btn-detalle-cerrar'); pg.wait_for_timeout(200)
     # Se elimina un registro sin fotografía, para que la galería de más adelante conserve la suya
-    accion(pg,pg.locator('#lista-registros .registro:has(.registro-sin-foto)'),'eliminar'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
+    accion(pg,pg.locator('#lista-registros .registro:has(.registro-sin-foto)'),'eliminar'); pg.wait_for_timeout(500)
     ok('Total: 3 ' in pg.inner_text('#registros-total'),'eliminar retira del listado: '+pg.inner_text('#registros-total'))
     av=pg.evaluate("(() => { const a=document.getElementById('aviso'); const r=a.getBoundingClientRect(); return { texto: a.querySelector('.aviso-texto').textContent, deshacer: !!a.querySelector('.aviso-accion'), cerrar: !!a.querySelector('.aviso-cerrar'), arriba: r.top < innerHeight/3 }; })()")
-    ok(av=={'texto':'Registro eliminado.','deshacer':True,'cerrar':True,'arriba':True},'el aviso flotante va arriba, con × y «Deshacer» (D101): %s' % av)
+    ok(av['texto'].startswith('Registro de ') and 'eliminado' in av['texto'] and av['deshacer'] and av['cerrar'] and av['arriba'] and pg.is_hidden('#dlg-confirmar'),
+       'sin confirmación, el aviso flotante dice qué registro se eliminó, va arriba, con × y «Deshacer» (D101, D139): %s' % av)
     pg.click('#aviso .aviso-accion'); pg.wait_for_timeout(500)
     ok('Total: 4 ' in pg.inner_text('#registros-total') and 'restaurado' in pg.inner_text('#aviso'),'«Deshacer» devuelve el registro eliminado: '+pg.inner_text('#registros-total'))
     ok(pg.evaluate("(async () => (await SRP.bitacora.deEntidad(SRP.registros.filtrados[0].id)).length >= 0)()") is True and
        pg.evaluate("(async () => { const b = await SRP.almacen.todos('bitacora'); return b.some(x => x.accion === 'RESTAURADO'); })()"),'y la bitácora deja constancia con RESTAURADO')
-    accion(pg,pg.locator('#lista-registros .registro:has(.registro-sin-foto)'),'eliminar'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
+    accion(pg,pg.locator('#lista-registros .registro:has(.registro-sin-foto)'),'eliminar'); pg.wait_for_timeout(500)
     ok('Total: 3 ' in pg.inner_text('#registros-total'),'se vuelve a eliminar para seguir la prueba')
     abrir_filtros(pg); pg.click('#btn-reiniciar-filtros'); pg.wait_for_timeout(300)
     pg.click('#aviso .aviso-accion'); pg.wait_for_timeout(300)
@@ -1285,7 +1295,8 @@ with sync_playwright() as p:
        and nueva['otros_nombres_comunes']=='Nombre uno, Nombre dos' and nueva['id_snib']=='99999ANGIO' and nueva['id_enciclovida']==123456 and nueva['formadecrecimiento']=='Árbol, Arbusto',
        'la especie nueva se guarda con id = clave, género y epíteto derivados y los campos del SNIB limpios: %s' % (nueva and {k:nueva[k] for k in ('id','genero','especie','id_snib','id_enciclovida','otros_nombres_comunes')}))
     pg.fill('#cat-buscar','prueba'); pg.wait_for_timeout(200)
-    accion(pg,'#tabla-catalogo','estado'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(400)
+    accion(pg,'#tabla-catalogo','estado'); pg.wait_for_timeout(400)
+    ok(pg.is_hidden('#dlg-confirmar') and 'desactivado' in pg.inner_text('#aviso') and pg.locator('#aviso .aviso-accion').count()==1,'desactivar un valor no pide confirmar: el aviso lo explica y ofrece «Deshacer» (D139)')
     ok(pg.locator('.estado-texto[data-activo=false]').count()>=1,'una especie se puede desactivar')
     ok(pg.evaluate("(() => { const f=SRP.formulario; f.el('campo-especie').value='Genus prueba'; f.estado.especieId=null; f.filtrarEspecies(); const t=f.el('lista-especies').innerText; f.cerrarCombo(); f.el('campo-especie').value=''; return !t.includes('Genus prueba'); })()"),'y una especie inactiva no se ofrece en el formulario')
     pg.fill('#cat-buscar',''); pg.wait_for_timeout(200)
@@ -1338,10 +1349,14 @@ with sync_playwright() as p:
     pg.click('#btn-cuenta'); pg.click('#btn-cambiar-perfil'); pg.select_option('#sel-usuario-prueba','u-admin-1'); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(500)
     pg.click('.pestana[data-vista=usuarios]'); pg.wait_for_timeout(500)
     f=pg.locator('#tabla-usuarios tbody tr', has_text='Sutana')
-    accion(pg,f,'eliminar'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
+    accion(pg,f,'eliminar'); pg.wait_for_timeout(300)
+    ok(pg.inner_text('#dlg-confirmar-titulo')=='Eliminar cuenta' and 'desactívela' in pg.inner_text('#dlg-confirmar-puntos') and pg.get_attribute('#dlg-confirmar-nota','data-tono')=='alerta',
+       'eliminar una cuenta confirma, y ofrece la salida reversible: desactivarla (D139)')
+    pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
     ok('Sutana' not in pg.inner_text('#tabla-usuarios'),'se elimina una cuenta sin registros')
     f2=pg.locator('#tabla-usuarios tbody tr', has_text='Fulana')
-    accion(pg,f2,'estado'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
+    accion(pg,f2,'estado'); pg.wait_for_timeout(500)
+    ok(pg.is_hidden('#dlg-confirmar') and 'ya no puede entrar' in pg.inner_text('#aviso') and pg.locator('#aviso .aviso-accion').count()==1,'desactivar una cuenta no pide confirmar: el aviso dice qué implica y ofrece «Deshacer» (D139)')
     ok('Inactivo' in pg.locator('#tabla-usuarios tbody tr', has_text='Fulana').inner_text(),'se desactiva una cuenta')
     pg.click('#btn-cuenta'); pg.click('#btn-cerrar-sesion'); pg.wait_for_timeout(400)
     ok(pg.is_visible('#vista-acceso') and pg.is_hidden('#encabezado-usuario'),'cerrar sesión devuelve al acceso')
@@ -1511,6 +1526,27 @@ with sync_playwright() as p:
     tapa=pg.evaluate("""() => { const b = document.querySelector('.barra-jornada').getBoundingClientRect();
       const x = b.left + 20, y = b.bottom - 20; const e = document.elementFromPoint(x, y); return e ? !!e.closest('.barra-jornada') : true; }""")
     ok(tapa,'el mapa no se dibuja encima de la barra del pie (Leaflet aislado, D138)')
+
+    # ---------- BLOQUE 80: CONFIRMACIONES (D139) ----------
+    # Restablecer dice cuánto se pierde, con números; «Cancelar» no toca nada
+    n_regs=pg.evaluate("(async () => (await SRP.almacen.todos('plantaciones')).filter(r => r.estatus !== 'eliminado').length)()")
+    n_jor=pg.evaluate("(async () => (await SRP.almacen.todos('jornadas')).length)()")
+    pg.evaluate("document.getElementById('btn-restablecer').click()"); pg.wait_for_timeout(500)
+    pts=pg.inner_text('#dlg-confirmar-puntos') if pg.is_visible('#dlg-confirmar') else ''
+    ok(pg.inner_text('#dlg-confirmar-titulo')=='Restablecer los datos de prueba' and ('Se borran %d registros y %d jornadas.' % (n_regs, n_jor)) in pts and 'Se cierra la sesión.' in pts
+       and pg.get_attribute('#dlg-confirmar-nota','data-tono')=='alerta','restablecer confirma con números: cuántos registros y jornadas se borran (D139): '+pts.replace(chr(10),' | '))
+    pg.click('#btn-confirmar-no'); pg.wait_for_timeout(300)
+    ok(pg.evaluate("(async () => (await SRP.almacen.todos('jornadas')).length)()")==n_jor and pg.is_visible('#encabezado-usuario'),'y «Cancelar» no borra nada ni cierra la sesión')
+    # Un diálogo de pregunta simple (forma corta) no enseña título, viñetas ni nota
+    pg.evaluate("() => { SRP.app.confirmar('¿Seguir?', 'Seguir', 'palomita'); }"); pg.wait_for_timeout(200)   # sin esperar la promesa: se resuelve al cerrar
+    ok(pg.is_hidden('#dlg-confirmar-titulo') and pg.is_hidden('#dlg-confirmar-puntos') and pg.is_hidden('#dlg-confirmar-nota') and pg.get_attribute('#dlg-confirmar','aria-labelledby')=='dlg-confirmar-texto'
+       and 'btn-exito' in pg.get_attribute('#btn-confirmar-si','class'),'la forma corta sigue sirviendo: sólo la pregunta y el botón (D139)')
+    pg.click('#btn-confirmar-no'); pg.wait_for_timeout(200)
+    # Quedan cinco tipos de confirmación que no se deshacen, más cerrar y otro día; ninguna para lo reversible
+    usos=pg.evaluate("""async () => { const r = await fetch('js/registros.js?x=' + Date.now()).then(x => x.text());
+      const c = await fetch('js/catalogos.js?x=' + Date.now()).then(x => x.text()); const u = await fetch('js/usuarios.js?x=' + Date.now()).then(x => x.text());
+      return [(r.match(/confirmar\\(/g) || []).length, (c.match(/confirmar\\(/g) || []).length, (u.match(/confirmar\\(/g) || []).length]; }""")
+    ok(usos==[0,1,1],'lo reversible ya no confirma: registros 0; catálogo y cuentas sólo al eliminar (D139): %s' % usos)
 
     b.close()
 print('\n'.join(res)); print('ERRORES CONSOLA:',errores or 'ninguno')

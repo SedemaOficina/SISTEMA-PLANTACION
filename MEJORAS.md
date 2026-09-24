@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.60 (Bloque 79)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.61 (Bloque 80)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -127,6 +127,10 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M116 | Auditoría UX (F3) | Terminar un paso anuncia el siguiente: al cerrar, al revisar el último punto y al generar el PDF («quedó completa»), con el foco en el botón de lo que sigue | Media | 0.6.60 (B79) | Cerrar una jornada con un duplicado | Aviso «Siguiente: revisar…» |
 | M117 | Auditoría UX (F2) | «Iniciar jornada del 22-SEP» cuando la fecha elegida no es hoy | Baja | 0.6.60 (B79) | Iniciar jornada con fecha de ayer | Botón |
 | M118 | Hallazgo del bloque | El mapa ya no se dibuja encima de la barra fija del pie (la atribución de Leaflet tapaba los botones) | Media | 0.6.60 (B79) | Ficha de jornada, desplazar hasta el mapa | — |
+| M119 | Auditoría UX (C1) | Confirmación estructurada: título con la acción, pregunta, lo que implica en viñetas y nota final; «No se puede deshacer» en rojo sólo cuando es cierto | Media | 0.6.61 (B80) | Cerrar una jornada con pendientes | Diálogo |
+| M120 | Auditoría UX (C2) | Lo reversible ya no pide confirmar: eliminar un registro, desactivar un valor o una cuenta se hace de una vez y el aviso dice qué se hizo, con «Deshacer» | Media | 0.6.61 (B80) | Eliminar un registro desde Registros | Aviso con Deshacer |
+| M121 | Auditoría UX (C2) | Restablecer los datos dice cuánto se borra (registros, jornadas, los no enviados); descartar un árbol a medias dice qué se pierde | Media | 0.6.61 (B80) | Menú del pie › Restablecer datos de prueba | Diálogo |
+| M122 | Auditoría UX (C2) | Eliminar una cuenta o un valor recuerda la salida que sí se deshace: desactivar | Baja | 0.6.61 (B80) | Usuarios › Eliminar una cuenta sin registros | — |
 
 ## 2. Por hacer
 
