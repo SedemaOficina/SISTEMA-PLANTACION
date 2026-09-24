@@ -250,7 +250,7 @@ SRP.jornadas = {
         this.miniatura(j) +
         '<span class="jornada-datos"><span class="jornada-dia">' + esc(dia) + '</span>' +
         '<span class="jornada-sitio">' + esc(this.nombreSitio(j)) + '</span>' +
-        '<span class="jornada-cifras">' + esc(this.alcaldiasDe(j).join(', ')) + ' · ' + n + (n === 1 ? ' árbol' : ' árboles') + ' · ' +
+        '<span class="jornada-cifras">' + esc(this.alcaldiasDe(j).length ? this.alcaldiasDe(j).join(', ') : (j.dato && j.dato.alcaldia) || '') + ' · ' + n + (n === 1 ? ' árbol' : ' árboles') + ' · ' +
         especies + (especies === 1 ? ' especie' : ' especies') + (variosAutores ? ' · ' + esc(SRP.ref.nombreUsuario(j.cabo_id)) : '') + '</span>' +
         '<span class="insignia-jornada" data-tono="' + est.tono + '">' + esc(est.texto) + '</span></span></button></li>');
     }
@@ -320,7 +320,8 @@ SRP.jornadas = {
     this.el('jornada-sub').textContent = SRP.envio.diaEnLetra(j.fecha).split(' ')[0] + ' ' + SRP.util.formatearFecha(j.fecha) +
       (j.total > 1 ? ' · Jornada ' + j.n + ' de ' + j.total : '') + ' · ' +
       SRP.ref.nombreUsuario(j.cabo_id) + (regs.length ? ' · ' + h(regs[0]) + (regs.length > 1 ? '–' + h(regs[regs.length - 1]) : '') : '') +
-      (this.alcaldiasDe(j).length ? ' · ' + this.alcaldiasDe(j).join(', ') : '') + ' · ' + (cierre.estatus === 'abierta' ? 'abierta' : 'cerrada');
+      (this.alcaldiasDe(j).length ? ' · ' + this.alcaldiasDe(j).join(', ') : SRP.activa.lugarDe(cierre) ? ' · ' + SRP.activa.lugarDe(cierre) : '') +
+      ' · ' + (cierre.estatus === 'abierta' ? 'abierta' : 'cerrada');
     this.el('jornada-comentarios').hidden = !cierre.comentarios;
     this.el('jornada-comentarios').textContent = cierre.comentarios || '';
     // Cerrar o reabrir la jornada desde su revisión (D119): quien registra en ella

@@ -4,7 +4,7 @@
    coordinador que registra) declara la jornada una sola vez: nombre, fecha y comentarios. Sin
    una jornada abierta, «Nuevo registro» enseña la pantalla «Iniciar jornada» en lugar del
    formulario; con una, el formulario lleva arriba la franja de la jornada (nombre, fecha, cuántos
-   árboles) con «Cambiar» y «Cerrar jornada». Cada árbol nace con `jornada_id` y hereda la fecha
+   árboles) con «Cambiar de jornada» y «Cerrar jornada». Cada árbol nace con `jornada_id` y hereda la fecha
    de plantación de su jornada: la fecha deja de pedirse por árbol.
 
    SALVAGUARDA. Un árbol a más de CONFIG.JORNADA.SEPARAR_M de los demás de la jornada abierta se
@@ -13,7 +13,7 @@
    un aviso).
 
    VARIAS ABIERTAS. Se puede tener más de una jornada abierta (un cabo vuelve a la mañana al
-   parque de la tarde); «Cambiar» elige entre las abiertas o inicia otra. Al entrar con una
+   parque de la tarde); «Cambiar de jornada» elige entre las abiertas o inicia otra. Al entrar con una
    jornada abierta de un día anterior se avisa. Cerrar una jornada lleva a su revisión; una
    cerrada se puede reabrir para agregar un faltante.
 
@@ -44,10 +44,12 @@ SRP.activa = {
       this.el('ini-fecha').removeAttribute('aria-invalid');
       this.el('ini-fecha').dispatchEvent(new Event('change', { bubbles: true }));
     });
+    this.el('btn-ini-detectar').addEventListener('click', () => this.detectarUbicacion());
+    this.pintarDetectar();
     this.el('btn-iniciar-jornada').innerHTML = SRP.ICONOS.svg('palomita', 20) + '<span>Iniciar jornada</span>';
     this.el('btn-iniciar-cancelar').innerHTML = SRP.ICONOS.svg('cerrar', 18) + '<span>Cancelar</span>';
     this.el('btn-jornada-cerrar').innerHTML = SRP.ICONOS.svg('candado', 18) + '<span>Cerrar jornada</span>';
-    this.el('btn-jornada-cambiar').innerHTML = SRP.ICONOS.svg('jornadas', 18) + '<span>Cambiar</span>';
+    this.el('btn-jornada-cambiar').innerHTML = SRP.ICONOS.svg('jornadas', 18) + '<span>Cambiar de jornada</span>';
   },
 
   /* ---------- Datos ---------- */
@@ -86,6 +88,7 @@ SRP.activa = {
     this.el('btn-iniciar-cancelar').hidden = !this.jornada;   // sin jornada no hay a dónde volver
     if (ver) {
       this.el('ini-nombre').value = ''; this.el('ini-ubicacion').value = ''; this.el('ini-comentarios').value = '';
+      this.punto = null; this.pintarDetectar();
       // La fecha se elige a propósito (D29): vacía, con «Hoy» a un toque
       this.el('ini-fecha').value = '';
       this.el('ini-fecha').dispatchEvent(new Event('change', { bubbles: true }));
@@ -125,9 +128,63 @@ SRP.activa = {
     f.dataset.tono = atrasada ? 'alerta' : '';
     this.el('franja-jornada-texto').innerHTML =
       '<span class="franja-jornada-titulo">' + (editando ? 'Registro de la jornada ' : 'Jornada: ') + '<strong>' + esc(j.nombre) + '</strong></span>' +
-      '<span class="franja-jornada-datos">' + esc(SRP.util.formatearFecha(j.fecha)) + (j.ubicacion ? ' · ' + esc(j.ubicacion) : '') + ' · ' + n + (n === 1 ? ' árbol' : ' árboles') +
+      '<span class="franja-jornada-datos">' + esc(SRP.util.formatearFecha(j.fecha)) + (j.ubicacion ? ' · ' + esc(j.ubicacion) : '') + (this.lugarDe(j) ? ' · ' + esc(this.lugarDe(j)) : '') + ' · ' + n + (n === 1 ? ' árbol' : ' árboles') +
       (j.estatus === 'cerrada' ? ' · cerrada' : '') + (atrasada ? ' · <b>no es de hoy</b>' : '') + '</span>';
     this.el('franja-jornada-acciones').hidden = !!editando;
+  },
+
+  /* ---------- Ubicación de la jornada (D122) ---------- */
+
+  punto: null,   // { lat, lng, precision, t } de la última detección en el panel; null si no se detectó
+
+  /* El botón y los dos datos de lectura reflejan lo detectado. Sin punto es la acción principal
+     (guinda); con punto es corregir (dorado, «Detectar de nuevo»), como el botón del árbol (D48). */
+  pintarDetectar(buscando) {
+    const b = this.el('btn-ini-detectar');
+    b.disabled = !!buscando;
+    b.setAttribute('aria-busy', String(!!buscando));
+    const p = this.punto;
+    b.className = 'btn btn-ancho ' + (p ? 'btn-editar' : 'btn-primario');
+    b.innerHTML = SRP.ICONOS.svg('ubicacion', 20) + '<span>' +
+      (buscando ? 'Buscando señal…' : p ? 'Detectar de nuevo la ubicación' : 'Detectar ubicación de la jornada') + '</span>';
+    this.el('ini-alcaldia').textContent = p ? SRP.ref.alcaldia(p.t.alcaldia) : '—';
+    this.el('ini-colonia').textContent = p ? SRP.ref.colonia(p.t.colonia) : '—';
+    if (!p && !buscando) this.el('ini-detectado').hidden = true;
+  },
+
+  avisoDetectar(texto, tono) {
+    const n = this.el('ini-detectado');
+    n.hidden = false; n.textContent = texto; n.dataset.tono = tono || '';
+  },
+
+  // Sólo la jornada: alcaldía y colonia de donde está quien la inicia. No toca el mapa del árbol.
+  detectarUbicacion() {
+    if (!navigator.geolocation) { this.avisoDetectar('Este dispositivo no ofrece ubicación. Escriba la ubicación abajo.', 'alerta'); return; }
+    this.pintarDetectar(true);
+    this.avisoDetectar('Obteniendo su ubicación…');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude, lng = pos.coords.longitude, precision = pos.coords.accuracy;
+        const t = SRP.derivacion.derivar(lat, lng);
+        this.punto = { lat, lng, precision, t };
+        this.pintarDetectar(false);
+        const m = precision != null ? Math.round(precision) : null;
+        if (!t.alcaldia) this.avisoDetectar('Ubicación obtenida' + (m != null ? ' (±' + m + ' m)' : '') + ', pero el punto no cae en ninguna alcaldía de la capa. Escriba la ubicación abajo.', 'alerta');
+        else this.avisoDetectar('Ubicación detectada' + (m != null ? ' (±' + m + ' m)' : '') + '. Complete abajo la dirección o referencia si hace falta.', m != null && m > SRP.CONFIG.MAPA.PRECISION_ACEPTABLE_M ? 'alerta' : 'bien');
+      },
+      (err) => {
+        this.pintarDetectar(false);
+        const motivo = err.code === 1 ? 'no se concedió el permiso de ubicación' : err.code === 3 ? 'la señal tardó demasiado' : 'no hay señal de ubicación';
+        this.avisoDetectar('No se obtuvo la ubicación: ' + motivo + '. Escriba la ubicación abajo.', 'alerta');
+      },
+      { enableHighAccuracy: true, timeout: SRP.CONFIG.MAPA.GPS_ESPERA_MS, maximumAge: 0 }
+    );
+  },
+
+  // «Colonia, Alcaldía» de una jornada, para la franja, Jornadas y el reporte; '' si no se detectó
+  lugarDe(j) {
+    if (!j || (!j.alcaldia && !j.colonia)) return '';
+    return [j.colonia, j.alcaldia ? 'Alcaldía ' + j.alcaldia : ''].filter(Boolean).join(', ');
   },
 
   /* ---------- Acciones ---------- */
@@ -153,9 +210,13 @@ SRP.activa = {
     caja.hidden = true;
     const u = SRP.sesion.usuario;
     const ahora = SRP.util.ahoraISO();
+    const p = this.punto, t = p ? p.t : {};
     const j = Object.assign({
       id: SRP.util.generarId(), es_ficticio: SRP.CONFIG.ES_FICTICIO,
       nombre, ubicacion, fecha, comentarios, cabo_id: u.id, estatus: 'abierta',
+      // Ubicación detectada (D122): nula si no se tocó el botón
+      lat: p ? p.lat : null, lng: p ? p.lng : null, gps_precision_m: p && p.precision != null ? Math.round(p.precision) : null,
+      alcaldia_cve: t.alcaldia_cve || null, alcaldia: t.alcaldia || null, colonia_cve: t.colonia_cve || null, colonia: t.colonia || null,
       fecha_inicio: ahora, fecha_cierre: null,
       creado_por_id: u.id, fecha_creacion: ahora, editado_por_id: u.id, fecha_ultima_edicion: ahora,
       arboles_plantados: null, puntos_revisados: [], encargado_id: u.id
@@ -227,6 +288,6 @@ SRP.activa = {
     if (d <= SRP.CONFIG.JORNADA.SEPARAR_M) return true;
     const km = d >= 1000 ? (d / 1000).toFixed(1) + ' km' : Math.round(d) + ' m';
     return SRP.app.confirmar('Este árbol queda a ' + km + ' de los demás de la jornada «' + j.nombre + '». ¿Es de esta jornada? ' +
-      'Si es de otro sitio, cancele, toque «Cambiar» arriba e inicie otra jornada.', 'Sí, es de esta jornada', 'palomita');
+      'Si es de otro sitio, cancele, toque «Cambiar de jornada» arriba e inicie otra jornada.', 'Sí, es de esta jornada', 'palomita');
   }
 };

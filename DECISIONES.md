@@ -892,3 +892,19 @@
   de la conciliación ya no muestra un guion como texto guía, sino «Cantidad». De paso se corrigió
   que los iconos de la fila no se pintaban (la función de iconos se pasaba suelta y perdía `this`).
   Pedido por Liber, 23-09-2026.
+- **D122. La jornada también se ubica.** En «Iniciar jornada», antes del campo de ubicación, un
+  botón «Detectar ubicación de la jornada» toma la posición del teléfono y deriva alcaldía y
+  colonia con las mismas capas que cada árbol (D47, D62); se muestran como datos de lectura y se
+  guardan en la jornada (`lat`, `lng`, `gps_precision_m`, `alcaldia_cve`, `alcaldia`,
+  `colonia_cve`, `colonia`). Es sólo de la jornada: no toca el mapa ni el punto de ningún árbol,
+  y el campo «Ubicación de la jornada» (dirección o referencia escrita) se conserva y no se
+  rellena solo. Sin tocar el botón, los siete campos quedan nulos. Alcaldía y colonia de la
+  jornada van a la franja de Nuevo registro, a Jornadas (cuando aún no hay árboles) y al reporte,
+  junto a la ubicación escrita. El botón sigue la regla del punto (D48): guinda sin detección,
+  dorado «Detectar de nuevo» con ella. «Cambiar» pasa a «Cambiar de jornada». Pedido por Liber,
+  23-09-2026.
+- **D123. La ficha de revisión dice folio y distribución.** En «Revise antes de guardar» el Folio
+  (PROVISIONAL hasta que el servidor lo asigne) sube de «Datos del sistema» a la lista, debajo de
+  la Fotografía, porque es lo que la persona citará; en «Datos del sistema» queda sólo el
+  identificador. La fila Especie añade el tipo de distribución del catálogo (Nativa, Endémica,
+  Exótica, Exótica-Invasora) bajo el nombre común y el científico. Pedido por Liber, 23-09-2026.

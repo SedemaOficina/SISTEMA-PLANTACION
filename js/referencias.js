@@ -43,9 +43,9 @@ SRP.ref = {
   especieDe(registro) {
     if (registro.especie_id) {
       const e = this.catalogoPorId[registro.especie_id];
-      return { comun: e ? e.nombre : '', cientifico: e ? e.nombre_cientifico : '' };
+      return { comun: e ? e.nombre : '', cientifico: e ? e.nombre_cientifico : '', distribucion: e ? e.tipo_distribucion || '' : '' };
     }
-    return { comun: registro.especie_otra || '', cientifico: 'Otra especie, fuera del catálogo' };
+    return { comun: registro.especie_otra || '', cientifico: 'Otra especie, fuera del catálogo', distribucion: '' };
   },
 
   /* Dos ausencias que no son la misma. Sin alcaldía, el punto cayó en un hueco entre los

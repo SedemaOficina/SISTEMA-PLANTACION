@@ -942,6 +942,69 @@
           "regla": "Dirección, parque o referencia (D120). Va al reporte bajo el nombre de la jornada"
         },
         {
+          "campo": "lat",
+          "tipo": "real",
+          "nulo": true,
+          "origen": "Dispositivo",
+          "dominio": "Grados decimales; nulo sin detección",
+          "pantalla": "Detectar ubicación de la jornada",
+          "regla": "Latitud de donde se tocó «Detectar ubicación» al iniciar (D122). No es la de ningún árbol"
+        },
+        {
+          "campo": "lng",
+          "tipo": "real",
+          "nulo": true,
+          "origen": "Dispositivo",
+          "dominio": "Grados decimales; nulo sin detección",
+          "pantalla": "Detectar ubicación de la jornada",
+          "regla": "Longitud de la detección (D122)"
+        },
+        {
+          "campo": "gps_precision_m",
+          "tipo": "integer",
+          "nulo": true,
+          "origen": "Dispositivo",
+          "dominio": "Metros enteros; nulo sin detección",
+          "pantalla": "(nota bajo el botón)",
+          "regla": "Margen del GPS al detectar (D122)"
+        },
+        {
+          "campo": "alcaldia_cve",
+          "tipo": "text",
+          "nulo": true,
+          "origen": "Sistema",
+          "dominio": "cvegeo INEGI (09012); nulo sin detección o en hueco",
+          "pantalla": "—",
+          "regla": "Derivada de la capa de alcaldías con el punto detectado (D122)"
+        },
+        {
+          "campo": "alcaldia",
+          "tipo": "text",
+          "nulo": true,
+          "origen": "Sistema",
+          "dominio": "Nombre de la alcaldía; nulo sin detección",
+          "pantalla": "Alcaldía",
+          "regla": "Va a la franja de la jornada, a Jornadas y al reporte (D122). No sustituye a la alcaldía de cada árbol"
+        },
+        {
+          "campo": "colonia_cve",
+          "tipo": "text",
+          "nulo": true,
+          "origen": "Sistema",
+          "dominio": "CVEUT IECM; nulo sin detección o fuera de zona urbana",
+          "pantalla": "—",
+          "regla": "Derivada de la capa de colonias con el punto detectado (D122)"
+        },
+        {
+          "campo": "colonia",
+          "tipo": "text",
+          "nulo": true,
+          "origen": "Sistema",
+          "dominio": "Nombre de la colonia; nulo sin detección",
+          "pantalla": "Colonia",
+          "regla": "Va a la franja, a Jornadas y al reporte (D122)"
+        },
+        {
           "campo": "fecha",
           "tipo": "date",
           "nulo": false,

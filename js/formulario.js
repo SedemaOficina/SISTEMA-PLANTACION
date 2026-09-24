@@ -371,7 +371,9 @@ SRP.formulario = {
     // Orden del formulario: primero lo que el cabo revisa; los datos que pone el sistema, al final
     // y en chico (D99). La ubicación no se teclea: se corrige volviendo a colocar el punto.
     const filas = [
-      ['Especie', esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : ''), 'especie'],
+      // Nombre común, científico y tipo de distribución del catálogo (D123)
+      ['Especie', esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : '') +
+        (esp.distribucion ? '<span class="revision-distribucion">' + esc(esp.distribucion) + '</span>' : ''), 'especie'],
       ['Programa', esc(SRP.ref.nombreCatalogo(v.programa_id)), 'programa'],
       ['Jornada', esc(this.nombreJornada()) + ' · ' + esc(SRP.util.formatearFecha(v.fecha_plantacion)), null],
       ['Alcaldía', esc(SRP.ref.alcaldia(v.alcaldia)), null],
@@ -382,10 +384,11 @@ SRP.formulario = {
       ['Comentarios', v.comentarios ? esc(v.comentarios) : 'Sin comentarios', 'comentarios'],
       ['Fotografía', v.foto_base64
         ? '<img class="revision-foto" src="' + v.foto_base64 + '" alt="Fotografía del árbol que se va a registrar">'
-        : 'Sin fotografía', 'foto']
+        : 'Sin fotografía', 'foto'],
+      // El folio va a la vista, bajo la fotografía (D123): es lo que la persona citará
+      ['Folio', '<span class="folio-provisional">' + esc(SRP.folio.PROVISIONAL) + '</span>', null]
     ];
     const sistema = [
-      ['Folio', '<span class="folio-provisional">' + esc(SRP.folio.PROVISIONAL) + '</span>'],
       ['Identificador', '<span class="revision-id">' + esc(id) + '</span>']
     ];
 

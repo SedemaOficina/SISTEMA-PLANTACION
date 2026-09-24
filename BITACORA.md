@@ -1240,3 +1240,19 @@ acciones del punto en segundo renglón en teléfono. Pruebas: clases y colores d
 
 **Verificación:** 404 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.45.
+
+## Bloque 65 — Ubicación de la jornada y ficha de revisión (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.46.
+
+**Qué cambió (D122, D123).** `index.html`: botón «Detectar ubicación de la jornada», aviso y
+datos de lectura Alcaldía/Colonia antes del campo de ubicación. `jornada-activa.js`:
+`detectarUbicacion()`, `pintarDetectar()`, `lugarDe(j)`; la jornada guarda punto, precisión,
+alcaldía y colonia; «Cambiar de jornada». `jornadas.js`, `reportes.js`: alcaldía y colonia de la
+jornada en la lista, el detalle y el reporte. `referencias.js`: `especieDe` devuelve
+`distribucion`. `formulario.js`: Folio bajo la Fotografía; distribución en la fila Especie.
+`esquema.json`, `espejo.js`, `auditoria.py`: siete campos nuevos de jornadas; diccionario
+regenerado. `estilos.css`: aviso de detección y línea de distribución. Pruebas: orden del botón,
+detección con alcaldía y colonia, campo de texto intacto, campos nulos sin detección, ficha.
+
+**Verificación:** 411 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.46.

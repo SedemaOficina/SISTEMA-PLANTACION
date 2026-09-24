@@ -259,7 +259,7 @@ SRP.reportes = {
     const sitio = jornada ? jornada.nombre : '';
     if (sitio || alcaldias.length) {
       const terr = alcaldias.length ? (alcaldias.length === 1 ? 'Alcaldía ' + alcaldias[0] : 'Alcaldías: ' + alcaldias.join(', ')) : '';
-      h += '<div class="previa-sitio">' + (sitio ? '<p><strong>Jornada:</strong> ' + esc(sitio) + (jornada.ubicacion ? ' · ' + esc(jornada.ubicacion) : '') + '</p>' : '') +
+      h += '<div class="previa-sitio">' + (sitio ? '<p><strong>Jornada:</strong> ' + esc(sitio) + (jornada.ubicacion ? ' · ' + esc(jornada.ubicacion) : '') + (SRP.activa.lugarDe(jornada) ? ' · ' + esc(SRP.activa.lugarDe(jornada)) : '') + '</p>' : '') +
         (terr ? '<p class="previa-tenue">' + esc(terr) + '</p>' : '') +
         (this.textoConteo(cierre, registros) ? '<p><strong>' + esc(this.textoConteo(cierre, registros)) + '</strong></p>' : '') + '</div>';
     }
@@ -388,7 +388,7 @@ SRP.reportes = {
 
     // Sitio: tal como lo escribió quien cerró el reporte, con el territorio que el sistema derivó
     const alcaldias = this.alcaldiasDe(registros);
-    const sitio = jornada ? jornada.nombre + (jornada.ubicacion ? ' · ' + jornada.ubicacion : '') : '';
+    const sitio = jornada ? jornada.nombre + (jornada.ubicacion ? ' · ' + jornada.ubicacion : '') + (SRP.activa.lugarDe(jornada) ? ' · ' + SRP.activa.lugarDe(jornada) : '') : '';
     if (sitio || alcaldias.length) {
       const lineas = sitio ? doc.splitTextToSize(sitio, util - 22) : [];
       const territorio = alcaldias.length
