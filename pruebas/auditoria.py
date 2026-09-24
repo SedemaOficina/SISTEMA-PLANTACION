@@ -171,7 +171,7 @@ with sync_playwright() as p:
         catalogos: await campos('catalogos'),
         /* Igual que las plantaciones: los campos se leen del código, no de lo guardado. Un
            almacén vacío haría pasar por inventado todo lo que el mapeo documenta. */
-        jornadas: ['id','es_ficticio','nombre','ubicacion','programa_id','lat','lng','gps_precision_m','alcaldia_cve','alcaldia','colonia_cve','colonia','fecha','comentarios','cabo_id','estatus','fecha_inicio','fecha_cierre','encargado_id','creado_por_id','fecha_creacion',
+        jornadas: ['id','es_ficticio','nombre','ubicacion','programa_id','lat','lng','punto_origen','gps_precision_m','alcaldia_cve','alcaldia','colonia_cve','colonia','fecha','comentarios','cabo_id','estatus','fecha_inicio','fecha_cierre','encargado_id','creado_por_id','fecha_creacion',
                   'editado_por_id','fecha_ultima_edicion','meta_arboles','puntos_revisados','reporte_en'].concat(SRP.reportes.CAMPOS),
         bitacora: bitacora()
       };

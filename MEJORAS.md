@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.64 (Bloque 83)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.65 (Bloque 84)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -149,6 +149,10 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M138 | Auditoría UX (A2) | Modo sol en etiquetas de estado, cifras, pasos y avisos: borde de 2 px y negritas | Baja | 0.6.64 (B83) | Menú de la cuenta › Modo sol, en Jornadas | Tarjetas en modo sol |
 | M139 | Auditoría UX (A3) | Atajos en computadora: Ctrl+Enter guarda (o confirma la ficha de revisión) y 1–3 eligen las especies recientes; pista visible sólo con ratón | Baja | 0.6.64 (B83) | Nuevo registro en computadora | Pista de atajos |
 | M140 | Hallazgo del bloque | «Guardar» vuelve en cuanto el árbol queda en el teléfono; ya no espera al envío al servidor (antes se quedaba en «Guardando…» mientras duraba) | Alta | 0.6.64 (B83) | Guardar varios árboles seguidos con señal | — |
+| M141 | Petición de Liber | «Iniciar jornada» se llama «Registrar jornada», con introducción nueva (los árboles toman programa y fecha; anotar los programados) y sin «Los campos marcados con * son obligatorios» | Media | 0.6.65 (B84) | Nuevo registro sin jornada activa | Panel |
+| M142 | Petición de Liber | El nombre de la jornada lleva ayuda con ejemplos: Parque Los Pericos, Intervención en Calzada de Tlalpan | Baja | 0.6.65 (B84) | Registrar jornada | — |
+| M143 | Petición de Liber | «Capturar coordenadas a mano» en Registrar jornada, como en Registrar árbol, para cuando no se registra en el sitio o no hay señal; se abre solo si el GPS falla | Alta | 0.6.65 (B84) | Registrar jornada › Capturar coordenadas a mano › 19.4326, -99.1332 | Alcaldía detectada |
+| M144 | Petición de Liber | «Ubicación de la jornada» pasa a «Dirección de la jornada» (también al editarla) | Baja | 0.6.65 (B84) | Registrar jornada; Editar jornada | — |
 
 ## 2. Por hacer
 

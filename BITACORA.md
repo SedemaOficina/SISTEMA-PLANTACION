@@ -1533,3 +1533,19 @@ Cierra el plan de la auditoría UX/UI (bloques 77–83).
 
 **Verificación:** 553 comprobaciones sin errores de consola; 85 de auditoría;
 presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.64.
+
+## Bloque 84 — Registrar jornada (24-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.65.
+
+**Qué cambió (D143).** `index.html`: título «Registrar jornada», introducción nueva, sin la línea
+de obligatorios, ayuda del nombre, «Capturar coordenadas a mano» en el panel y «Dirección de la
+jornada» en el panel y en Editar jornada. `jornada-activa.js`: `aplicarCoordenadas()`, origen del
+punto, desplegable abierto si el GPS falla, limpieza al volver al panel y `punto_origen` al guardar.
+`esquema.json` (2026-09-24): `jornadas.punto_origen` y reglas de lat/lng/precisión y dirección;
+`DICCIONARIO-DATOS.md` regenerado; `MAPEO-CAMPOS.md`, `espejo.js` y `auditoria.py` al día.
+Pruebas: título, introducción, ayuda y etiqueta; coordenadas inválidas, fuera de la CDMX y válidas
+(con coma decimal); la jornada guarda `manual` sin precisión; GPS guarda `gps`; sin permiso se abre
+el desplegable; espejo del cierre con veintiséis campos.
+
+**Verificación:** 563 comprobaciones sin errores de consola; 85 de auditoría;
+presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.65.

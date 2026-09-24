@@ -1127,3 +1127,15 @@
   al servidor antes de volver (se quedaba en «Guardando…» mientras duraba, D136); ahora vuelve en
   cuanto el árbol queda en el teléfono y el envío corre aparte, como ya lo dice la franja. Con
   este bloque se cierra el plan de la auditoría UX/UI del 24-09-2026 (bloques 77 a 83).
+- **D143. «Registrar jornada», con coordenadas a mano y «Dirección de la jornada».** A pedido de
+  Liber, el panel que abre la jornada se llama «Registrar jornada» (el botón sigue diciendo
+  «Iniciar jornada»: es la acción que la abre); la introducción dice que los árboles capturados en
+  ella toman su programa y su fecha de plantación y pide anotar cuántos se programaron; se quita la
+  línea «Los campos marcados con * son obligatorios» (el asterisco se explica solo). El nombre lleva
+  una ayuda con ejemplos (Parque Los Pericos, Intervención en Calzada de Tlalpan). Bajo «Detectar
+  ubicación de la jornada» está «Capturar coordenadas a mano», igual que en «Registrar árbol», para
+  cuando el registro no se hace en el sitio o no hay señal: valida números y que el punto caiga en
+  la Ciudad de México, y deriva alcaldía y colonia como el GPS. Si el GPS falla, ese desplegable se
+  abre solo. La jornada guarda `punto_origen` (`gps` o `manual`); con punto a mano no hay precisión.
+  «Ubicación de la jornada» pasa a «Dirección de la jornada», también en Editar jornada; el campo
+  sigue siendo `ubicacion`. Esquema 2026-09-24. Pedido por Liber, 24-09-2026.

@@ -45,6 +45,7 @@ SRP.activa = {
       this.el('ini-fecha').dispatchEvent(new Event('change', { bubbles: true }));
     });
     this.el('btn-ini-detectar').addEventListener('click', () => this.detectarUbicacion());
+    this.el('btn-ini-coord-aplicar').addEventListener('click', () => this.aplicarCoordenadas());
     this.pintarDetectar();
     this.pintarBotonIniciar();
     // Con una fecha que no es hoy, el botón lo dice: «Iniciar jornada del 22-SEP» (D138)
@@ -119,6 +120,7 @@ SRP.activa = {
     if (ver) {
       this.el('ini-nombre').value = ''; this.el('ini-ubicacion').value = ''; this.el('ini-comentarios').value = ''; this.el('ini-meta').value = '';
       this.punto = null; this.pintarDetectar();
+      this.el('ini-coord-lat').value = ''; this.el('ini-coord-lng').value = ''; this.el('ini-detalles-coord').open = false;
       this.llenarProgramas();
       // La fecha se elige a propósito (D29): vacía, con «Hoy» a un toque
       this.el('ini-fecha').value = '';
@@ -221,26 +223,43 @@ SRP.activa = {
 
   // Sólo la jornada: alcaldía y colonia de donde está quien la inicia. No toca el mapa del árbol.
   detectarUbicacion() {
-    if (!navigator.geolocation) { this.avisoDetectar('Este dispositivo no ofrece ubicación. Escriba la ubicación abajo.', 'alerta'); return; }
+    if (!navigator.geolocation) { this.el('ini-detalles-coord').open = true; this.avisoDetectar('Este dispositivo no ofrece ubicación. Capture las coordenadas a mano o escriba la dirección abajo.', 'alerta'); return; }
     this.pintarDetectar(true);
     this.avisoDetectar('Obteniendo su ubicación…');
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const lat = pos.coords.latitude, lng = pos.coords.longitude, precision = pos.coords.accuracy;
         const t = SRP.derivacion.derivar(lat, lng);
-        this.punto = { lat, lng, precision, t };
+        this.punto = { lat, lng, precision, t, origen: 'gps' };
         this.pintarDetectar(false);
         const m = precision != null ? Math.round(precision) : null;
-        if (!t.alcaldia) this.avisoDetectar('Ubicación obtenida' + (m != null ? ' (±' + m + ' m)' : '') + ', pero el punto no cae en ninguna alcaldía de la capa. Escriba la ubicación abajo.', 'alerta');
+        if (!t.alcaldia) this.avisoDetectar('Ubicación obtenida' + (m != null ? ' (±' + m + ' m)' : '') + ', pero el punto no cae en ninguna alcaldía de la capa. Escriba la dirección abajo.', 'alerta');
         else this.avisoDetectar('Ubicación detectada' + (m != null ? ' (±' + m + ' m)' : '') + '. Complete abajo la dirección o referencia si hace falta.', m != null && m > SRP.CONFIG.MAPA.PRECISION_ACEPTABLE_M ? 'alerta' : 'bien');
       },
       (err) => {
         this.pintarDetectar(false);
         const motivo = err.code === 1 ? 'no se concedió el permiso de ubicación' : err.code === 3 ? 'la señal tardó demasiado' : 'no hay señal de ubicación';
-        this.avisoDetectar('No se obtuvo la ubicación: ' + motivo + '. Escriba la ubicación abajo.', 'alerta');
+        // Sin señal, la salida queda a la vista: las coordenadas a mano (D143)
+        this.el('ini-detalles-coord').open = true;
+        this.avisoDetectar('No se obtuvo la ubicación: ' + motivo + '. Capture las coordenadas a mano o escriba la dirección abajo.', 'alerta');
       },
       { enableHighAccuracy: true, timeout: SRP.CONFIG.MAPA.GPS_ESPERA_MS, maximumAge: 0 }
     );
+  },
+
+  /* COORDENADAS A MANO (D143). Cuando el registro de la jornada no se hace en el sitio o no hay
+     señal, quien la registra escribe latitud y longitud, como en «Registrar árbol». Se validan y se
+     derivan alcaldía y colonia igual que con el GPS; el punto queda con origen «manual» y sin
+     precisión, porque no la hay. */
+  aplicarCoordenadas() {
+    const lat = parseFloat(this.el('ini-coord-lat').value.replace(',', '.'));
+    const lng = parseFloat(this.el('ini-coord-lng').value.replace(',', '.'));
+    if (Number.isNaN(lat) || Number.isNaN(lng)) { this.avisoDetectar('Escriba latitud y longitud en grados decimales, por ejemplo 19.4326 y -99.1332.', 'alerta'); return; }
+    if (!SRP.derivacion.dentroDelAmbito(lat, lng)) { this.avisoDetectar('El punto está fuera de la Ciudad de México. Revise las coordenadas.', 'alerta'); return; }
+    const t = SRP.derivacion.derivar(lat, lng);
+    this.punto = { lat: Number(lat.toFixed(6)), lng: Number(lng.toFixed(6)), precision: null, t, origen: 'manual' };
+    this.pintarDetectar(false);
+    this.avisoDetectar(t.alcaldia ? 'Punto capturado a mano. Complete abajo la dirección si hace falta.' : 'Coordenadas capturadas, pero el punto no cae en ninguna alcaldía de la capa. Escriba la dirección abajo.', t.alcaldia ? 'bien' : 'alerta');
   },
 
   // «Colonia, Alcaldía» de una jornada, para la franja, Jornadas y el reporte; '' si no se detectó
@@ -281,7 +300,8 @@ SRP.activa = {
       id: SRP.util.generarId(), es_ficticio: SRP.CONFIG.ES_FICTICIO,
       nombre, ubicacion, fecha, comentarios, programa_id, cabo_id: u.id, estatus: 'abierta',
       // Ubicación detectada (D122): nula si no se tocó el botón
-      lat: p ? p.lat : null, lng: p ? p.lng : null, gps_precision_m: p && p.precision != null ? Math.round(p.precision) : null,
+      lat: p ? p.lat : null, lng: p ? p.lng : null, punto_origen: p ? (p.origen || 'gps') : null,   // cómo se obtuvo (D143)
+      gps_precision_m: p && p.precision != null ? Math.round(p.precision) : null,
       alcaldia_cve: t.alcaldia_cve || null, alcaldia: t.alcaldia || null, colonia_cve: t.colonia_cve || null, colonia: t.colonia || null,
       fecha_inicio: ahora, fecha_cierre: null,
       creado_por_id: u.id, fecha_creacion: ahora, editado_por_id: u.id, fecha_ultima_edicion: ahora,

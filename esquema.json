@@ -1,6 +1,6 @@
 {
   "_": "ESQUEMA DE DATOS DEL SRP: fuente única (D86). De aquí se genera DICCIONARIO-DATOS.md con pruebas/generar_diccionario.py, y pruebas/auditoria.py lo compara contra lo que el sistema guarda y contra los dominios del código. Si un campo cambia en el código y no aquí, la auditoría falla.",
-  "version_esquema": "2026-09-22b",
+  "version_esquema": "2026-09-24",
   "etapa": "Etapa 1 (Fase 1: dispositivo, sin servidor)",
   "almacenamiento": {
     "motor": "IndexedDB del navegador, base `srp_db` (SRP.CONFIG.DB_NOMBRE), versión 1",
@@ -938,8 +938,8 @@
           "nulo": false,
           "origen": "Persona",
           "dominio": "Texto libre, hasta 200; '' si no se escribe",
-          "pantalla": "Ubicación de la jornada",
-          "regla": "Dirección, parque o referencia (D120). Va al reporte bajo el nombre de la jornada"
+          "pantalla": "Dirección de la jornada",
+          "regla": "Dirección, parque o referencia (D120); la etiqueta pasó a «Dirección de la jornada» (D143). Va al reporte bajo el nombre de la jornada"
         },
         {
           "campo": "programa_id",
@@ -955,27 +955,36 @@
           "tipo": "real",
           "nulo": true,
           "origen": "Dispositivo",
-          "dominio": "Grados decimales; nulo sin detección",
-          "pantalla": "Detectar ubicación de la jornada",
-          "regla": "Latitud de donde se tocó «Detectar ubicación» al iniciar (D122). No es la de ningún árbol"
+          "dominio": "Grados decimales; nulo sin ubicación",
+          "pantalla": "Detectar ubicación de la jornada, o «Capturar coordenadas a mano»",
+          "regla": "Latitud del punto de la jornada: detectado con el GPS al iniciar (D122) o escrito a mano cuando no hubo señal (D143). No es la de ningún árbol"
         },
         {
           "campo": "lng",
           "tipo": "real",
           "nulo": true,
           "origen": "Dispositivo",
-          "dominio": "Grados decimales; nulo sin detección",
-          "pantalla": "Detectar ubicación de la jornada",
-          "regla": "Longitud de la detección (D122)"
+          "dominio": "Grados decimales; nulo sin ubicación",
+          "pantalla": "Detectar ubicación de la jornada, o «Capturar coordenadas a mano»",
+          "regla": "Longitud del punto de la jornada (D122, D143)"
+        },
+        {
+          "campo": "punto_origen",
+          "tipo": "text",
+          "nulo": true,
+          "origen": "Sistema",
+          "dominio": "'gps' o 'manual'; nulo sin ubicación",
+          "pantalla": "(nota bajo el botón)",
+          "regla": "Cómo se obtuvo el punto de la jornada: con «Detectar ubicación» (gps) o escribiendo las coordenadas cuando no hubo señal en el sitio (manual) (D143). Lo determina la acción, no una elección"
         },
         {
           "campo": "gps_precision_m",
           "tipo": "integer",
           "nulo": true,
           "origen": "Dispositivo",
-          "dominio": "Metros enteros; nulo sin detección",
+          "dominio": "Metros enteros; nulo sin detección o con el punto escrito a mano",
           "pantalla": "(nota bajo el botón)",
-          "regla": "Margen del GPS al detectar (D122)"
+          "regla": "Margen del GPS al detectar (D122). Existe sólo si punto_origen es gps"
         },
         {
           "campo": "alcaldia_cve",

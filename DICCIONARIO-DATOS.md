@@ -1,6 +1,6 @@
 # Diccionario de datos e inventario de tablas
 
-**Generado de `esquema.json` por `pruebas/generar_diccionario.py`: no se edita a mano.** Versión del esquema: 2026-09-22b. Etapa 1 (Fase 1: dispositivo, sin servidor).
+**Generado de `esquema.json` por `pruebas/generar_diccionario.py`: no se edita a mano.** Versión del esquema: 2026-09-24. Etapa 1 (Fase 1: dispositivo, sin servidor).
 
 Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo, de dónde sale, qué valores admite y qué regla lo gobierna; qué se deriva sin verse en pantalla; qué se calcula y no se guarda; qué vive sólo en memoria mientras se captura; cómo se relacionan las tablas; y qué reglas aplican hoy en el dispositivo y cuáles esperan al servidor. `pruebas/auditoria.py` compara este esquema contra lo que el sistema guarda de verdad y contra los dominios del código, y avisa si algo sobra, falta o no está regenerado. `MAPEO-CAMPOS.md` sigue siendo la vista por pantalla (etiqueta ↔ campo, con la explicación larga de cada decisión); este documento es la vista por tabla, pensada para construir la base y la API de la Fase 2 sin volver a leer el código.
 
@@ -171,18 +171,19 @@ Quién, cuándo y qué, en cada alta, edición, eliminación, activación y desa
 Una jornada de plantación: se declara antes de registrar el primer árbol (D119). Agrupa los registros, lleva la conciliación y la revisión, y guarda los datos de cierre del reporte (antes en la tabla cierres, retirada en el bloque 62).
 
 - **Llave:** `id`. **Índices:** `cabo_id`, `fecha`, `estatus`. **Pantalla:** Nuevo registro → «Iniciar jornada»; Jornadas; Reportes → «Datos de cierre».
-- **Campos:** 33.
+- **Campos:** 34.
 
 | Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
 |---|---|---|---|---|---|---|
 | `id` | uuid | No | Sistema | UUID | No | Se fija al iniciar la jornada |
 | `es_ficticio` | boolean | No | Sistema | true/false | No | Copia de CONFIG.ES_FICTICIO (D87) |
 | `nombre` | text | No | Persona | Texto libre, hasta 120 | Nombre de la jornada | Obligatorio al iniciar: el parque, la calle o el sitio. Es el nombre de la tarjeta en Jornadas y el «Jornada:» del reporte (D119) |
-| `ubicacion` | text | No | Persona | Texto libre, hasta 200; '' si no se escribe | Ubicación de la jornada | Dirección, parque o referencia (D120). Va al reporte bajo el nombre de la jornada |
+| `ubicacion` | text | No | Persona | Texto libre, hasta 200; '' si no se escribe | Dirección de la jornada | Dirección, parque o referencia (D120); la etiqueta pasó a «Dirección de la jornada» (D143). Va al reporte bajo el nombre de la jornada |
 | `programa_id` | text | No | Persona | id de catálogo tipo programa | Programa (Iniciar jornada) | Obligatorio al iniciar (D130). Cada árbol lo hereda en el formulario y puede cambiarlo; el dato del árbol sigue siendo plantaciones.programa_id |
-| `lat` | real | Sí | Dispositivo | Grados decimales; nulo sin detección | Detectar ubicación de la jornada | Latitud de donde se tocó «Detectar ubicación» al iniciar (D122). No es la de ningún árbol |
-| `lng` | real | Sí | Dispositivo | Grados decimales; nulo sin detección | Detectar ubicación de la jornada | Longitud de la detección (D122) |
-| `gps_precision_m` | integer | Sí | Dispositivo | Metros enteros; nulo sin detección | (nota bajo el botón) | Margen del GPS al detectar (D122) |
+| `lat` | real | Sí | Dispositivo | Grados decimales; nulo sin ubicación | Detectar ubicación de la jornada, o «Capturar coordenadas a mano» | Latitud del punto de la jornada: detectado con el GPS al iniciar (D122) o escrito a mano cuando no hubo señal (D143). No es la de ningún árbol |
+| `lng` | real | Sí | Dispositivo | Grados decimales; nulo sin ubicación | Detectar ubicación de la jornada, o «Capturar coordenadas a mano» | Longitud del punto de la jornada (D122, D143) |
+| `punto_origen` | text | Sí | Sistema | 'gps' o 'manual'; nulo sin ubicación | (nota bajo el botón) | Cómo se obtuvo el punto de la jornada: con «Detectar ubicación» (gps) o escribiendo las coordenadas cuando no hubo señal en el sitio (manual) (D143). Lo determina la acción, no una elección |
+| `gps_precision_m` | integer | Sí | Dispositivo | Metros enteros; nulo sin detección o con el punto escrito a mano | (nota bajo el botón) | Margen del GPS al detectar (D122). Existe sólo si punto_origen es gps |
 | `alcaldia_cve` | text | Sí | Sistema | cvegeo INEGI (09012); nulo sin detección o en hueco | — | Derivada de la capa de alcaldías con el punto detectado (D122) |
 | `alcaldia` | text | Sí | Sistema | Nombre de la alcaldía; nulo sin detección | Alcaldía | Va a la franja de la jornada, a Jornadas y al reporte (D122). No sustituye a la alcaldía de cada árbol |
 | `colonia_cve` | text | Sí | Sistema | CVEUT IECM; nulo sin detección o fuera de zona urbana | — | Derivada de la capa de colonias con el punto detectado (D122) |
@@ -460,6 +461,7 @@ CREATE TABLE jornadas (
   programa_id              text           NOT NULL,
   lat                      real           NULL,
   lng                      real           NULL,
+  punto_origen             text           NULL,
   gps_precision_m          integer        NULL,
   alcaldia_cve             text           NULL,
   alcaldia                 text           NULL,

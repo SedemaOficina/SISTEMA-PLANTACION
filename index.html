@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#9D2148">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.64">
-<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.6.64">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.65">
+<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.6.65">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.64">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.64">
-<link rel="stylesheet" href="css/estilos.css?v=0.6.64">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.65">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.65">
+<link rel="stylesheet" href="css/estilos.css?v=0.6.65">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -21,8 +21,8 @@
   <div class="encabezado-interior">
     <!-- Logotipo (D90, D137): Gobierno CDMX · SEDEMA · SIA · Reforestación Urbana en pantalla ancha; en teléfono, SIA y Reforestación Urbana -->
     <picture>
-      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.6.64">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.6.64" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
+      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.6.65">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.6.65" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» (D80) -->
@@ -109,17 +109,27 @@
 
     <!-- INICIAR JORNADA (D119): sin jornada abierta no se registra; se declara una sola vez -->
     <section id="panel-iniciar-jornada" class="tarjeta panel-iniciar" hidden aria-labelledby="titulo-iniciar-jornada">
-      <h2 id="titulo-iniciar-jornada">Iniciar jornada</h2>
-      <p class="nota">La gente trabaja por jornada de plantación. Antes de registrar el primer árbol, diga cuál es: los árboles heredan su fecha y quedan agrupados para la revisión y el reporte.</p>
+      <!-- Título e introducción pedidos por Liber (D143) -->
+      <h2 id="titulo-iniciar-jornada">Registrar jornada</h2>
+      <p class="nota">Registre la jornada del día. Todos los árboles que capture en ella toman su programa y su fecha de plantación, y quedan agrupados para la revisión y el reporte. Anote cuántos árboles se programaron para plantar.</p>
       <form id="form-iniciar-jornada" novalidate>
-        <p class="nota nota-obligatorio">Los campos marcados con <span class="obligatorio" aria-hidden="true">*</span> son obligatorios.</p>
         <div id="ini-errores" class="errores" role="alert" hidden></div>
         <div class="campo"><label for="ini-nombre">Nombre de la jornada <span class="obligatorio" aria-hidden="true">*</span></label>
-          <input id="ini-nombre" maxlength="120" placeholder="Parque Hundido, Calz. de Tlalpan frente al metro…" autocomplete="off" spellcheck="false"></div>
+          <input id="ini-nombre" maxlength="120" placeholder="p. ej. Parque Los Pericos" autocomplete="off" spellcheck="false" aria-describedby="ini-nombre-ayuda">
+          <p id="ini-nombre-ayuda" class="nota ayuda-campo">Un nombre que identifique la jornada; por ejemplo, Parque Los Pericos o Intervención en Calzada de Tlalpan.</p></div>
         <!-- Detectar la ubicación de la jornada (D122): sólo la jornada; alcaldía y colonia salen de las
              capas del dispositivo. La dirección o referencia se sigue escribiendo abajo. -->
         <div class="campo campo-ini-detectar">
           <button type="button" id="btn-ini-detectar" class="btn btn-primario btn-ancho"></button>
+          <!-- Sin señal en el sitio, las coordenadas se escriben, como en «Registrar árbol» (D143) -->
+          <details class="coord-manual desplegable" id="ini-detalles-coord">
+            <summary><span>Capturar coordenadas a mano</span></summary>
+            <div class="campo-doble">
+              <div class="campo"><label for="ini-coord-lat">Latitud</label><input id="ini-coord-lat" inputmode="decimal" placeholder="19.432600" autocomplete="off"></div>
+              <div class="campo"><label for="ini-coord-lng">Longitud</label><input id="ini-coord-lng" inputmode="decimal" placeholder="-99.133200" autocomplete="off"></div>
+            </div>
+            <button type="button" id="btn-ini-coord-aplicar" class="btn btn-secundario">Colocar punto</button>
+          </details>
           <p id="ini-detectado" class="nota ini-detectado" aria-live="polite" hidden></p>
           <div class="campo-doble">
             <div class="campo"><label for="ini-alcaldia">Alcaldía</label><output id="ini-alcaldia" class="campo-lectura" for="btn-ini-detectar">—</output></div>
@@ -127,9 +137,9 @@
           </div>
         </div>
         <!-- Ayuda bajo los campos que se prestan a duda (D140) -->
-        <div class="campo"><label for="ini-ubicacion">Ubicación de la jornada</label>
+        <div class="campo"><label for="ini-ubicacion">Dirección de la jornada</label>
           <input id="ini-ubicacion" maxlength="200" placeholder="p. ej. Av. Insurgentes Sur 1500" autocomplete="off" aria-describedby="ini-ubicacion-ayuda">
-          <p id="ini-ubicacion-ayuda" class="nota ayuda-campo">Dirección, parque o referencia. La alcaldía y la colonia las da «Detectar ubicación».</p></div>
+          <p id="ini-ubicacion-ayuda" class="nota ayuda-campo">Calle y número, parque o referencia. La alcaldía y la colonia salen del punto de arriba, detectado o escrito a mano.</p></div>
         <!-- El programa es de la jornada (D130): los árboles lo heredan; se puede cambiar por árbol -->
         <div class="campo"><label for="ini-programa">Programa <span class="obligatorio" aria-hidden="true">*</span></label>
           <select id="ini-programa" required></select></div>
@@ -610,7 +620,7 @@
     <div id="ej-errores" class="errores" role="alert" hidden></div>
     <div class="campo"><label for="ej-nombre">Nombre de la jornada <span class="obligatorio" aria-hidden="true">*</span></label>
       <input id="ej-nombre" maxlength="120" autocomplete="off" spellcheck="false"></div>
-    <div class="campo"><label for="ej-ubicacion">Ubicación de la jornada</label>
+    <div class="campo"><label for="ej-ubicacion">Dirección de la jornada</label>
       <input id="ej-ubicacion" maxlength="200" autocomplete="off" aria-describedby="ej-ubicacion-ayuda">
       <p id="ej-ubicacion-ayuda" class="nota ayuda-campo">Dirección, parque o referencia.</p></div>
     <div class="campo"><label for="ej-programa">Programa <span class="obligatorio" aria-hidden="true">*</span></label>
@@ -857,42 +867,42 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.6.64"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.64"></script>
-<script src="vendor/turf-pip.min.js?v=0.6.64"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.6.64"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.64"></script>
+<script src="vendor/leaflet.js?v=0.6.65"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.65"></script>
+<script src="vendor/turf-pip.min.js?v=0.6.65"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.6.65"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.65"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.6.64"></script>
-<script src="js/util.js?v=0.6.64"></script>
-<script src="js/iconos.js?v=0.6.64"></script>
+<script src="js/config.js?v=0.6.65"></script>
+<script src="js/util.js?v=0.6.65"></script>
+<script src="js/iconos.js?v=0.6.65"></script>
 <!-- Capas territoriales del SIA, compactadas por pruebas/generar_capas.py desde assets/fuentes/ -->
-<script src="assets/capa-alcaldias.js?v=0.6.64"></script>
-<script src="assets/capa-uga.js?v=0.6.64"></script>
-<script src="assets/capa-colonias.js?v=0.6.64"></script>
-<script src="assets/catalogo-especies.js?v=0.6.64"></script>
-<script src="js/datos-ficticios.js?v=0.6.64"></script>
-<script src="js/permisos.js?v=0.6.64"></script>
-<script src="js/derivacion.js?v=0.6.64"></script>
-<script src="js/almacen.js?v=0.6.64"></script>
-<script src="js/sesion.js?v=0.6.64"></script>
-<script src="js/referencias.js?v=0.6.64"></script>
-<script src="js/folio.js?v=0.6.64"></script>
-<script src="js/conexion.js?v=0.6.64"></script>
-<script src="js/envio.js?v=0.6.64"></script>
-<script src="js/mapa.js?v=0.6.64"></script>
-<script src="js/foto.js?v=0.6.64"></script>
-<script src="js/jornada-activa.js?v=0.6.64"></script>
-<script src="js/formulario.js?v=0.6.64"></script>
+<script src="assets/capa-alcaldias.js?v=0.6.65"></script>
+<script src="assets/capa-uga.js?v=0.6.65"></script>
+<script src="assets/capa-colonias.js?v=0.6.65"></script>
+<script src="assets/catalogo-especies.js?v=0.6.65"></script>
+<script src="js/datos-ficticios.js?v=0.6.65"></script>
+<script src="js/permisos.js?v=0.6.65"></script>
+<script src="js/derivacion.js?v=0.6.65"></script>
+<script src="js/almacen.js?v=0.6.65"></script>
+<script src="js/sesion.js?v=0.6.65"></script>
+<script src="js/referencias.js?v=0.6.65"></script>
+<script src="js/folio.js?v=0.6.65"></script>
+<script src="js/conexion.js?v=0.6.65"></script>
+<script src="js/envio.js?v=0.6.65"></script>
+<script src="js/mapa.js?v=0.6.65"></script>
+<script src="js/foto.js?v=0.6.65"></script>
+<script src="js/jornada-activa.js?v=0.6.65"></script>
+<script src="js/formulario.js?v=0.6.65"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.6.64"></script>
-<script src="js/registros.js?v=0.6.64"></script>
-<script src="js/galeria.js?v=0.6.64"></script>
-<script src="js/jornadas.js?v=0.6.64"></script>
-<script src="js/croquis.js?v=0.6.64"></script>
-<script src="js/reportes.js?v=0.6.64"></script>
-<script src="js/catalogos.js?v=0.6.64"></script>
-<script src="js/usuarios.js?v=0.6.64"></script>
-<script src="js/app.js?v=0.6.64"></script>
+<script src="js/espejo.js?v=0.6.65"></script>
+<script src="js/registros.js?v=0.6.65"></script>
+<script src="js/galeria.js?v=0.6.65"></script>
+<script src="js/jornadas.js?v=0.6.65"></script>
+<script src="js/croquis.js?v=0.6.65"></script>
+<script src="js/reportes.js?v=0.6.65"></script>
+<script src="js/catalogos.js?v=0.6.65"></script>
+<script src="js/usuarios.js?v=0.6.65"></script>
+<script src="js/app.js?v=0.6.65"></script>
 </body>
 </html>

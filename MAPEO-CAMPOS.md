@@ -175,9 +175,10 @@ Almacén `jornadas` (sustituye a `cierres` desde el bloque 62). Lo que ya vive e
 | `id` | Sí | Sistema | UUID; los árboles lo llevan en `plantaciones.jornada_id` |
 | `es_ficticio` | Sí | Sistema | Marca de dato de prueba (D87) |
 | `nombre` | Sí | Persona | Nombre de la jornada: el parque, la calle o el sitio. Es el nombre de la tarjeta en Jornadas y el «Jornada:» del reporte |
-| `ubicacion` | No | Persona | Dirección, parque o referencia (D120); va al reporte bajo el nombre |
+| `ubicacion` | No | Persona | «Dirección de la jornada» (D143): dirección, parque o referencia (D120); va al reporte bajo el nombre |
 | `programa_id` | Sí | Persona | Programa de la jornada (D130); cada árbol lo hereda en el formulario y puede cambiarlo |
-| `lat`, `lng`, `gps_precision_m` | No | Dispositivo | Posición del teléfono al tocar «Detectar ubicación de la jornada» (D122); nulos si no se tocó. No es el punto de ningún árbol |
+| `lat`, `lng`, `gps_precision_m` | No | Dispositivo | Punto de la jornada: la posición del teléfono al tocar «Detectar ubicación de la jornada» (D122) o las coordenadas escritas en «Capturar coordenadas a mano» cuando no hubo señal (D143); nulos si no se ubicó. `gps_precision_m` sólo existe con GPS. No es el punto de ningún árbol |
+| `punto_origen` | No | Sistema | Cómo se obtuvo el punto de la jornada: `gps` (Detectar ubicación) o `manual` (coordenadas escritas) (D143); nulo sin ubicación |
 | `alcaldia_cve`, `alcaldia`, `colonia_cve`, `colonia` | No | Sistema | Derivados del punto detectado con las capas de alcaldías y colonias (D122); van a la franja, a Jornadas y al reporte junto a la ubicación escrita |
 | `fecha` | Sí | Persona | Fecha de la jornada de plantación, `AAAA-MM-DD`, no posterior a hoy; los árboles la heredan |
 | `comentarios` | No | Persona | Se escriben al iniciar; van al reporte como «Comentarios de la jornada» |

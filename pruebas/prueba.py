@@ -147,8 +147,8 @@ with sync_playwright() as p:
     jor=pg.evaluate("async () => { const j = (await SRP.almacen.todos('jornadas'))[0]; return [j.nombre, j.ubicacion, j.fecha, j.comentarios, j.estatus, j.cabo_id]; }")
     ok(jor==['Parque Hundido', 'Av. Insurgentes Sur 1500, Benito Juárez', HOY, 'Jornada de prueba con la comunidad', 'abierta', 'u-cabo-1'],'la jornada queda guardada con su ubicación, abierta y a nombre del cabo: %s' % jor)
     ok('Insurgentes' in pg.inner_text('#franja-jornada') and 'Alcaldía Cuauhtémoc' in pg.inner_text('#franja-jornada'),'y la franja muestra la ubicación escrita y la colonia y alcaldía detectadas: '+pg.inner_text('#franja-jornada').replace('\n',' '))
-    geo=pg.evaluate("async () => { const j = (await SRP.almacen.todos('jornadas'))[0]; return [j.alcaldia, j.alcaldia_cve, !!j.colonia, !!j.colonia_cve, typeof j.lat, typeof j.gps_precision_m]; }")
-    ok(geo[0]=='Cuauhtémoc' and geo[1] and geo[2] and geo[3] and geo[4]=='number' and geo[5]=='number','la jornada guarda punto, precisión, alcaldía y colonia con sus claves (D122): %s' % geo)
+    geo=pg.evaluate("async () => { const j = (await SRP.almacen.todos('jornadas'))[0]; return [j.alcaldia, j.alcaldia_cve, !!j.colonia, !!j.colonia_cve, typeof j.lat, typeof j.gps_precision_m, j.punto_origen]; }")
+    ok(geo[0]=='Cuauhtémoc' and geo[1] and geo[2] and geo[3] and geo[4]=='number' and geo[5]=='number' and geo[6]=='gps','la jornada guarda punto, precisión, alcaldía y colonia con sus claves, y que el punto vino del GPS (D122, D143): %s' % geo)
     # Sin tocar el botón, la jornada se guarda sin punto: nada se inventa
     sin=pg.evaluate("""async () => { SRP.activa.mostrarInicio(true); const antes = [document.getElementById('ini-alcaldia').textContent, document.getElementById('btn-ini-detectar').className.includes('btn-primario')];
       document.getElementById('ini-nombre').value = 'Sin detectar'; document.getElementById('ini-programa').value = 'p-refor'; document.getElementById('ini-meta').value = '5'; document.getElementById('btn-ini-hoy').click(); await SRP.activa.iniciarJornada();
@@ -176,7 +176,7 @@ with sync_playwright() as p:
     ok(pg.evaluate("['campo-especie','campo-programa'].every(i=>document.getElementById(i).required)"),
        'lo obligatorio lo anuncia el atributo required, no sólo el asterisco')
     orden=pg.evaluate("""()=>{const t=document.getElementById('vista-registrar').innerHTML;
-        return [t.indexOf('btn-ubicacion'), t.indexOf('coord-manual'), t.indexOf('id="mapa"')];}""")
+        return [t.indexOf('btn-ubicacion'), t.indexOf('id="detalles-coord"'), t.indexOf('id="mapa"')];}""")
     ok(orden[0]<orden[1]<orden[2],'orden: botón de ubicación, captura a mano y luego el mapa')
     rev=pg.evaluate("(() => { const b=document.getElementById('btn-revisar'); const r=b.getBoundingClientRect(); const m=document.getElementById('form-plantacion').getBoundingClientRect(); return { verde: getComputedStyle(b).backgroundColor, icono: !!b.querySelector('svg'), alto: Math.round(r.height), ancho: Math.round(r.width), formulario: Math.round(m.width) }; })()")
     ok(rev['verde']=='rgb(30, 122, 70)' and rev['icono'] and rev['alto']>=56 and rev['ancho']>=rev['formulario']-2,
@@ -202,7 +202,7 @@ with sync_playwright() as p:
       const principal = document.getElementById('btn-ubicacion');
       return {
         principal_relleno: getComputedStyle(principal).backgroundColor,
-        apoyo: c(document.querySelector('.coord-manual summary')),
+        apoyo: c(document.querySelector('#detalles-coord summary')),
         gris: c(document.querySelector('.nota')),
         cerrar_caja: getComputedStyle(document.getElementById('btn-cerrar-sesion')).backgroundColor,
         cerrar_borde: getComputedStyle(document.getElementById('btn-cerrar-sesion')).borderTopWidth,
@@ -316,7 +316,7 @@ with sync_playwright() as p:
        'y la precisión queda en número, no sólo en el mensaje de pantalla')
 
     # Al capturar a mano, el margen del aparato deja de describir el punto y se borra
-    pg.click('.coord-manual summary'); pg.wait_for_timeout(200)
+    pg.click('#detalles-coord summary'); pg.wait_for_timeout(200)
     ok(pg.is_visible('#coord-lat'),'el desplegable de captura manual abre al pulsarlo')
     pg.fill('#coord-lat','19.4400'); pg.fill('#coord-lng','-99.1400')
     pg.click('#btn-coord-aplicar'); pg.wait_for_timeout(500)
@@ -363,7 +363,7 @@ with sync_playwright() as p:
     # Con la captura a mano desplegada no conviven dos formas de fijar el punto: el botón de
     # ubicación se oculta, y vuelve al cerrar el desplegable (D49)
     ok(not pg.is_visible('#btn-ubicacion'),'con la captura a mano abierta, el botón de ubicación se oculta')
-    pg.click('.coord-manual summary'); pg.wait_for_timeout(200)
+    pg.click('#detalles-coord summary'); pg.wait_for_timeout(200)
     ok(pg.is_visible('#btn-ubicacion'),'y reaparece al cerrar el desplegable')
     pg.click('#btn-ubicacion'); pg.wait_for_timeout(800)   # se deja en GPS para lo que sigue
 
@@ -710,8 +710,8 @@ with sync_playwright() as p:
     pg.click('#pdf-lista button[data-id]'); pg.wait_for_timeout(400)
     ok(pg.is_visible('#dlg-cierre'),'el botón abre el cierre del reporte antes de generar')
     espejoC=pg.evaluate("[...document.querySelectorAll('#espejo-cierre-cuerpo .espejo-campo')].map(e=>e.textContent)")
-    ok(espejoC==['id','es_ficticio','nombre','ubicacion','fecha','comentarios','programa_id','cabo_id','estatus','lat','lng','gps_precision_m','alcaldia_cve','alcaldia','colonia_cve','colonia','fecha_inicio','fecha_cierre','creado_por_id','fecha_creacion','editado_por_id','fecha_ultima_edicion','meta_arboles','puntos_revisados','reporte_en'],
-       'el cierre lleva su espejo con los veinticinco campos de la jornada que no se capturan aquí (D112, D119, D120, D122, D130, D131): '+', '.join(espejoC))
+    ok(espejoC==['id','es_ficticio','nombre','ubicacion','fecha','comentarios','programa_id','cabo_id','estatus','lat','lng','punto_origen','gps_precision_m','alcaldia_cve','alcaldia','colonia_cve','colonia','fecha_inicio','fecha_cierre','creado_por_id','fecha_creacion','editado_por_id','fecha_ultima_edicion','meta_arboles','puntos_revisados','reporte_en'],
+       'el cierre lleva su espejo con los veintiséis campos de la jornada que no se capturan aquí (D112, D119, D120, D122, D130, D131, D143): '+', '.join(espejoC))
     pg.fill('#cie-chofer','Mengano'); pg.wait_for_timeout(200)
     ok(pg.evaluate("SRP.reportes.cierrePrevisto().chofer")=='Mengano','y lo que se escribe entra al mismo objeto que se guarda')
     ok(pg.is_visible('#cie-encargado-lectura') and pg.is_hidden('#cie-encargado-caja'),
@@ -1566,7 +1566,7 @@ with sync_playwright() as p:
     pg.click('#btn-ini-hoy'); pg.wait_for_timeout(100)
     ok(pg.locator('#ini-fecha-error').count()==0,'«Hoy» también quita el error de la fecha')
     ok(pg.get_attribute('#ini-meta','aria-describedby').split()[0]=='ini-meta-ayuda' and 'Cuántos árboles' in pg.inner_text('#ini-meta-ayuda')
-       and 'Detectar ubicación' in pg.inner_text('#ini-ubicacion-ayuda') and pg.get_attribute('#ini-ubicacion','aria-describedby')=='ini-ubicacion-ayuda',
+       and 'escrito a mano' in pg.inner_text('#ini-ubicacion-ayuda') and pg.get_attribute('#ini-ubicacion','aria-describedby')=='ini-ubicacion-ayuda',
        'la meta y la ubicación llevan una línea de ayuda debajo, enlazada al campo (D140)')
     # Contador: aparece al pasar del 80 %, dice el límite al llegar
     pg.fill('#ini-comentarios','x'*390); pg.wait_for_timeout(100)
@@ -1702,6 +1702,39 @@ with sync_playwright() as p:
     ok(sol==['2px','700','2px'],'el modo sol también marca etiquetas y cifras: borde de 2 px y negritas (D142): %s' % sol)
     if pg.is_hidden('#btn-contraste'): pg.click('#btn-cuenta')   # el menú sigue abierto tras el interruptor
     pg.click('#btn-contraste'); pg.wait_for_timeout(300); pg.keyboard.press('Escape')
+
+    # ---------- BLOQUE 84: REGISTRAR JORNADA (D143) ----------
+    pg.click('#btn-cuenta'); pg.click('#btn-cambiar-perfil'); pg.select_option('#sel-usuario-prueba','u-coord-1'); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(700)
+    pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(500)
+    if pg.is_hidden('#panel-iniciar-jornada'):
+        pg.click('#btn-jornada-cambiar'); pg.wait_for_timeout(200); pg.click('#btn-cambiar-nueva'); pg.wait_for_timeout(300)
+    panel=pg.inner_text('#panel-iniciar-jornada')
+    ok(pg.inner_text('#titulo-iniciar-jornada')=='Registrar jornada' and 'Registre la jornada del día' in panel and 'son obligatorios' not in panel and 'La gente trabaja' not in panel,
+       'el panel se llama «Registrar jornada», con la introducción nueva y sin la línea de obligatorios (D143)')
+    ok('Parque Los Pericos' in pg.inner_text('#ini-nombre-ayuda') and 'Calzada de Tlalpan' in pg.inner_text('#ini-nombre-ayuda') and pg.get_attribute('#ini-nombre','aria-describedby')=='ini-nombre-ayuda',
+       'el nombre lleva su ayuda con ejemplos')
+    ok(pg.inner_text('label[for=ini-ubicacion]')=='Dirección de la jornada' and pg.inner_text('label[for=ej-ubicacion]')=='Dirección de la jornada','«Ubicación de la jornada» pasa a «Dirección de la jornada», también al editarla')
+    # Coordenadas a mano, como en «Registrar árbol»
+    ok(pg.locator('#ini-detalles-coord').count()==1 and not pg.evaluate("document.getElementById('ini-detalles-coord').open"),'bajo «Detectar ubicación» está «Capturar coordenadas a mano», plegado')
+    pg.click('#ini-detalles-coord summary'); pg.wait_for_timeout(150)
+    pg.fill('#ini-coord-lat','hola'); pg.fill('#ini-coord-lng','-99.13'); pg.click('#btn-ini-coord-aplicar'); pg.wait_for_timeout(150)
+    ok('grados decimales' in pg.inner_text('#ini-detectado') and pg.inner_text('#ini-alcaldia')=='—','sin números válidos lo dice y no coloca nada')
+    pg.fill('#ini-coord-lat','20.6'); pg.fill('#ini-coord-lng','-100.4'); pg.click('#btn-ini-coord-aplicar'); pg.wait_for_timeout(150)
+    ok('fuera de la Ciudad de México' in pg.inner_text('#ini-detectado') and pg.inner_text('#ini-alcaldia')=='—','fuera de la CDMX lo rechaza')
+    pg.fill('#ini-coord-lat','19,4326'); pg.fill('#ini-coord-lng','-99.1332'); pg.click('#btn-ini-coord-aplicar'); pg.wait_for_timeout(200)
+    ok(pg.inner_text('#ini-alcaldia')=='Cuauhtémoc' and 'a mano' in pg.inner_text('#ini-detectado') and 'Detectar de nuevo' in pg.inner_text('#btn-ini-detectar'),
+       'con coordenadas válidas (también con coma decimal) deriva alcaldía y colonia como el GPS')
+    pg.fill('#ini-nombre','Jornada sin señal'); pg.select_option('#ini-programa','p-refor'); pg.fill('#ini-meta','4'); pg.click('#btn-ini-hoy')
+    pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(700)
+    man=pg.evaluate("async () => { const j = (await SRP.almacen.todos('jornadas')).find(x => x.nombre === 'Jornada sin señal'); return j && [j.lat, j.lng, j.punto_origen, j.gps_precision_m, j.alcaldia]; }")
+    ok(man==[19.4326,-99.1332,'manual',None,'Cuauhtémoc'],'la jornada guarda el punto escrito con origen «manual» y sin precisión (D143): %s' % man)
+    # Sin señal, el desplegable de coordenadas se abre solo
+    pg.click('#btn-jornada-cambiar'); pg.wait_for_timeout(200); pg.click('#btn-cambiar-nueva'); pg.wait_for_timeout(300)
+    ok(not pg.evaluate("document.getElementById('ini-detalles-coord').open") and pg.input_value('#ini-coord-lat')=='','al volver al panel, las coordenadas escritas se limpian')
+    ctx.clear_permissions(); pg.click('#btn-ini-detectar'); pg.wait_for_timeout(700)
+    ok(pg.evaluate("document.getElementById('ini-detalles-coord').open") and 'coordenadas a mano' in pg.inner_text('#ini-detectado'),'sin permiso o sin señal, «Capturar coordenadas a mano» se abre solo y el aviso lo sugiere')
+    ctx.grant_permissions(['geolocation'])
+    pg.click('#btn-iniciar-cancelar'); pg.wait_for_timeout(300)
 
     b.close()
 print('\n'.join(res)); print('ERRORES CONSOLA:',errores or 'ninguno')
