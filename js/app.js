@@ -375,7 +375,8 @@ SRP.app = {
       this.el('dlg-confirmar-texto').textContent = texto;
       const b = this.el('btn-confirmar-si');
       b.innerHTML = SRP.ICONOS.svg(icono || 'basura') + '<span>' + SRP.util.escapar(textoBoton) + '</span>';
-      b.className = 'btn ' + (icono === 'palomita' ? 'btn-exito' : 'btn-peligro');
+      // Color por significado (Norma 8.4): confirmar verde, cerrar/candado guinda, eliminar rojo
+      b.className = 'btn ' + (icono === 'palomita' ? 'btn-exito' : icono === 'candado' ? 'btn-primario' : 'btn-peligro');
       dlg.returnValue = '';
       dlg.addEventListener('close', () => resolver(dlg.returnValue === 'si'), { once: true });
       dlg.showModal();

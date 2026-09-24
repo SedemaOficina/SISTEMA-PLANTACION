@@ -733,8 +733,8 @@ with sync_playwright() as p:
     ok(sorted(nums,key=int)==['1','2','3','4','5'] and pg.eval_on_selector_all('#jornada-lista .punto-num','s=>s.map(x=>x.textContent)')==['1','2','3','4','5'],'numerados en el orden en que se registraron')
     lista=pg.inner_text('#jornada-lista')
     ok('Posible duplicado del 4' in lista and 'Posible duplicado del 3' in lista,'los dos ahuehuetes encimados se avisan como posible duplicado, uno del otro')
-    ok(pg.locator('#jornada-lista [data-accion=bien] svg').count()==3 and pg.locator('#jornada-lista [data-accion=eliminar].btn-texto-peligro svg').count()==2 and pg.locator('#jornada-lista [data-accion=ver] svg').count()==5,
-       'cada acción del punto lleva icono y color por significado: palomita verde, bote rojo, ojo (D116)')
+    ok(pg.locator('#jornada-lista [data-accion=bien].btn-exito-linea svg').count()==3 and pg.locator('#jornada-lista [data-accion=eliminar].btn-peligro-linea svg').count()==2 and pg.locator('#jornada-lista [data-accion=ver] svg').count()==5,
+       'cada acción del punto lleva icono y color por significado: palomita verde, bote rojo, ojo (D116, D121)')
     ok('Lejos del resto' in lista and 'Precisión baja' in lista,'el punto lejano se avisa como lejos del resto y con precisión baja: '+lista.replace('\n',' | ')[:400])
     tonos=pg.eval_on_selector_all('#jornada-lista .punto-num','s=>s.map(x=>x.dataset.tono)')
     ok(tonos==['','','rev','rev','err'],'los números llevan el color del aviso: %s' % tonos)
@@ -824,9 +824,9 @@ with sync_playwright() as p:
     pg.click('#jornada-lista .punto-jornada[data-id="%s"] [data-accion=mover]' % M['ids'][4]); pg.wait_for_timeout(300)
     pg.click('#btn-mover-cerrar'); pg.wait_for_timeout(200)
     # Reabrir y cerrar desde la revisión
-    ok(pg.is_visible('#btn-jornada-estado') and 'Reabrir' in pg.inner_text('#btn-jornada-estado'),'una jornada cerrada ofrece «Reabrir jornada»')
+    ok(pg.is_visible('#btn-jornada-estado') and 'Reabrir' in pg.inner_text('#btn-jornada-estado') and 'btn-editar' in pg.get_attribute('#btn-jornada-estado','class'),'una jornada cerrada ofrece «Reabrir jornada» en dorado (D121)')
     pg.click('#btn-jornada-estado'); pg.wait_for_timeout(600)
-    ok('Cerrar jornada' in pg.inner_text('#btn-jornada-estado') and 'abierta' in pg.inner_text('#jornada-sub') and pg.evaluate("SRP.activa.jornada && SRP.activa.jornada.id")==M['jids'][1],'reabrir la deja abierta y activa en Nuevo registro')
+    ok('Cerrar jornada' in pg.inner_text('#btn-jornada-estado') and 'btn-primario' in pg.get_attribute('#btn-jornada-estado','class') and pg.locator('#btn-jornada-estado svg').count()==1 and 'abierta' in pg.inner_text('#jornada-sub') and pg.evaluate("SRP.activa.jornada && SRP.activa.jornada.id")==M['jids'][1],'reabrir la deja abierta y activa; «Cerrar jornada» va en guinda con candado, no en verde (D121)')
     pg.click('#btn-jornada-estado'); pg.wait_for_timeout(300); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(600)
     ok('Reabrir' in pg.inner_text('#btn-jornada-estado') and pg.evaluate("SRP.activa.jornada")is None,'y cerrarla la quita de activa')
     # Reportes: selector de jornada y un PDF por jornada

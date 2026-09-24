@@ -202,6 +202,10 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 /* Cancelar: rojo de contorno con tache (D116); el rojo relleno queda para eliminar */
 .btn-cancelar { background: var(--fondo); color: var(--error); border-color: var(--error); }
 .btn-texto-exito { color: var(--exito); }
+/* Contorno por significado (D121): confirmar en verde, eliminar en rojo, sin relleno para que
+   dos acciones en la misma fila no compitan */
+.btn-exito-linea { background: var(--fondo); color: var(--exito); border-color: var(--exito); }
+.btn-peligro-linea { background: var(--fondo); color: var(--error); border-color: var(--error); }
 /* Botón sólo de icono: la etiqueta la lleva aria-label, y el título dice a qué campo se refiere */
 .btn-texto-editar { background: none; color: var(--editar); text-decoration: underline; padding: 0 var(--e-2); }
 /* Botón sin palabra: sólo donde lo que representa ya está escrito al lado, y con aria-label */
@@ -298,7 +302,7 @@ fieldset.campo { margin-inline: 0; }
 .conciliacion-fila { display: flex; justify-content: space-between; align-items: center; gap: var(--e-3); margin-bottom: var(--e-2); }
 .conciliacion-fila label, .conciliacion-fila span { flex: 1 1 auto; }
 .conciliacion-fila strong { font-size: var(--t-l); }
-.conciliacion input { width: 5.5rem; text-align: center; font-size: var(--t-l); font-weight: 600; padding: var(--e-1) var(--e-2); border: 1px solid var(--borde-control); border-radius: var(--radio-control); background: var(--fondo); }
+.conciliacion input { width: 7rem; text-align: center; font-size: var(--t-l); font-weight: 600; padding: var(--e-1) var(--e-2); border: 1px solid var(--borde-control); border-radius: var(--radio-control); background: var(--fondo); }
 .conciliacion-resultado { margin: 0; font-size: var(--t-s); font-weight: 500; }
 .conciliacion[data-tono="ok"] .conciliacion-resultado { color: var(--exito); }
 .conciliacion[data-tono="rev"] .conciliacion-resultado { color: var(--editar); }
@@ -317,8 +321,15 @@ fieldset.campo { margin-inline: 0; }
 .aviso-punto[data-tono="err"] { color: var(--error); }
 .aviso-punto[data-tono="ok"] { color: var(--exito); }
 .punto-acciones { display: flex; gap: 0; flex-wrap: wrap; justify-content: flex-end; }
-.punto-acciones .btn-texto { padding: var(--e-1) var(--e-2); min-height: var(--toque); gap: 4px; }
-.punto-acciones .btn-texto svg { flex: none; }
+.punto-acciones .btn { padding: 0 var(--e-2); min-height: 36px; gap: 4px; font-size: var(--t-xs); }
+.punto-acciones .btn svg { flex: none; }
+.punto-acciones .btn-texto { padding: var(--e-1) var(--e-2); min-height: var(--toque); }
+.punto-acciones { gap: var(--e-1); align-items: center; }
+/* En teléfono las acciones bajan a un segundo renglón para no aplastar la especie y el aviso */
+@media (max-width: 600px) {
+  .punto-jornada { grid-template-columns: 28px minmax(0, 1fr); row-gap: var(--e-1); }
+  .punto-acciones { grid-column: 2; justify-content: flex-start; }
+}
 .btn-texto-peligro { color: var(--error); }
 .barra-jornada { display: flex; gap: var(--e-2); margin-top: var(--e-3); }
 .barra-jornada .btn { flex: 1 1 0; }

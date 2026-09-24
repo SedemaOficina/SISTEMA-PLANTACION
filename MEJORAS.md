@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.44 (Bloque 63)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.45 (Bloque 64)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -87,6 +87,7 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M76 | Petición de Liber | Fecha de la jornada con «Hoy» y texto guía «Seleccione la fecha» | Media | 0.6.44 (B63) | Iniciar jornada: la fecha arranca vacía; «Hoy» la pone | Panel de inicio |
 | M77 | Petición de Liber | Campo «Ubicación de la jornada» | Media | 0.6.44 (B63) | Escribir una dirección al iniciar: sale en la franja y en el reporte junto al nombre | Franja; PDF |
 | M78 | Petición de Liber | Programa en lista desplegable en lugar de botones | Media | 0.6.44 (B63) | Nuevo registro › Programa: lista | Formulario |
+| M79 | Revisión de Liber | «Cerrar jornada» en guinda con candado (no verde); «Reabrir» dorado; «Está bien»/«Eliminar» como botones de contorno con icono; iconos en el pie; «Cantidad» en el conteo | Alta | 0.6.45 (B64) | Jornadas › una jornada: mirar los botones; en la franja de Nuevo registro «Cerrar jornada» guinda con candado | Revisión de jornada; franja |
 
 ## 2. Por hacer
 

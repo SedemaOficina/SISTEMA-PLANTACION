@@ -1228,3 +1228,15 @@ jornada (incluida la regla de computadora), programa en lista.
 
 **Verificación:** 404 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
 desbordes en ocho combinaciones. Marca de versión 0.6.44.
+
+## Bloque 64 — Colores de la revisión de jornada (23-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.45.
+
+**Qué cambió (D121).** `jornadas.js`: botones de contorno por significado, iconos del pie,
+«Cerrar/Reabrir» en guinda/dorado, corrección de la llamada a iconos. `jornada-activa.js`:
+«Cerrar jornada» con candado en guinda. `app.js`: `confirmar()` pinta en guinda con candado.
+`index.html`: texto guía «Cantidad». `estilos.css`: `.btn-exito-linea`, `.btn-peligro-linea`,
+acciones del punto en segundo renglón en teléfono. Pruebas: clases y colores de los botones.
+
+**Verificación:** 404 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.45.

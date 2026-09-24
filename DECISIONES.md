@@ -880,3 +880,15 @@
   en la lista desplegable, ya no con botones (supera a D98 en ese punto): los programas crecen con
   el tiempo. De paso se retiró un bloque de estilos duplicado del envío (D111) que había quedado
   mal pegado. Pedido por Liber, 23-09-2026.
+
+## Bloque 64 — Colores de la revisión de jornada
+
+- **D121. Cerrar no es aprobar.** «Cerrar jornada» iba en verde y parecía una aprobación: pasa a
+  guinda (acción de la casa) con candado, en la franja de Nuevo registro, en la revisión y en el
+  diálogo de confirmación; «Reabrir jornada» va en dorado con lápiz (corregir). En cada punto,
+  «Está bien» y «Eliminar» dejan de ser texto subrayado: botones pequeños de contorno, verde con
+  palomita y rojo con bote (Norma 8.4), y en teléfono bajan a un segundo renglón para no aplastar
+  la especie y el aviso. «Registrar faltante» y «Reporte de la jornada» llevan icono. El conteo
+  de la conciliación ya no muestra un guion como texto guía, sino «Cantidad». De paso se corrigió
+  que los iconos de la fila no se pintaban (la función de iconos se pasaba suelta y perdía `this`).
+  Pedido por Liber, 23-09-2026.

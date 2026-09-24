@@ -56,6 +56,8 @@ SRP.jornadas = {
     this.el('jornada-lista').addEventListener('click', (e) => this.alTocarLista(e));
     this.el('btn-jornada-faltante').addEventListener('click', () => this.registrarFaltante());
     this.el('btn-jornada-reporte').addEventListener('click', () => this.irAlReporte());
+    this.el('btn-jornada-faltante').innerHTML = SRP.ICONOS.svg('mas', 20) + '<span>Registrar faltante</span>';
+    this.el('btn-jornada-reporte').innerHTML = SRP.ICONOS.svg('reportes', 20) + '<span>Reporte de la jornada</span>';
     this.el('btn-mover-cerrar').addEventListener('click', () => this.el('dlg-mover-jornada').close());
     this.el('lista-mover-jornadas').addEventListener('click', async (e) => {
       const b = e.target.closest('button[data-id]'); if (!b || !this.moviendo) return;
@@ -66,7 +68,7 @@ SRP.jornadas = {
     this.el('btn-jornada-estado').addEventListener('click', async () => {
       const j = await this.cierreDe(this.jornada); if (!j) return;
       if (j.estatus === 'abierta') {
-        const ok = await SRP.app.confirmar('¿Cerrar la jornada «' + j.nombre + '»? Se puede reabrir después.', 'Cerrar jornada', 'palomita');
+        const ok = await SRP.app.confirmar('¿Cerrar la jornada «' + j.nombre + '»? Se puede reabrir después.', 'Cerrar jornada', 'candado');
         if (!ok) return;
         await SRP.activa.cambiarEstatus(j, 'cerrada');
         if (SRP.activa.jornada && SRP.activa.jornada.id === j.id) SRP.activa.jornada = null;
@@ -325,8 +327,9 @@ SRP.jornadas = {
     const propia = cierre.cabo_id === u.id;
     const btnEstado = this.el('btn-jornada-estado');
     btnEstado.hidden = !propia;
-    btnEstado.className = 'btn ' + (cierre.estatus === 'abierta' ? 'btn-exito' : 'btn-editar');
-    btnEstado.innerHTML = SRP.ICONOS.svg(cierre.estatus === 'abierta' ? 'palomita' : 'lapiz', 18) + '<span>' + (cierre.estatus === 'abierta' ? 'Cerrar jornada' : 'Reabrir jornada') + '</span>';
+    // Cerrar no es aprobar: guinda con candado; reabrir es corregir: dorado con lápiz (D121)
+    btnEstado.className = 'btn btn-chico ' + (cierre.estatus === 'abierta' ? 'btn-primario' : 'btn-editar');
+    btnEstado.innerHTML = SRP.ICONOS.svg(cierre.estatus === 'abierta' ? 'candado' : 'lapiz', 18) + '<span>' + (cierre.estatus === 'abierta' ? 'Cerrar jornada' : 'Reabrir jornada') + '</span>';
 
     // Conciliación: se compara con todo lo del día del cabo, aunque se haya partido en sitios
     const inp = this.el('jornada-plantados');
@@ -347,14 +350,14 @@ SRP.jornadas = {
           (revisado ? '<span class="aviso-punto" data-tono="ok">Revisado</span>' : '')
         : (r.punto_origen === 'gps' && r.gps_precision_m ? 'GPS ±' + Math.round(r.gps_precision_m) + ' m' : SRP.mapa.textoOrigen(r.punto_origen, r.gps_precision_m)));
       // Color por significado con icono (Norma 8.4, D116): ver neutro, confirmar verde, eliminar rojo
-      const I = SRP.ICONOS.svg;
+      const I = (n, t) => SRP.ICONOS.svg(n, t);   // no se pasa suelto: svg() usa this
       const acciones = ['<button type="button" class="btn btn-texto" data-accion="ver" data-id="' + r.id + '">' + I('ver', 18) + '<span>Ver</span></button>'];
       // Corregir el reparto en jornadas (D117): desde la tuerca, para no cargar la fila
       const items = [];
       if (puedeEditar(r)) items.push({ accion: 'mover', texto: 'Mover a otra jornada', icono: 'jornadas' });
       const tuerca = items.length ? SRP.ICONOS.menuAcciones(r.id, 'punto ' + (i + 1), items) : '';
-      if (av.length && !revisado && puedeEditar(r)) acciones.push('<button type="button" class="btn btn-texto btn-texto-exito" data-accion="bien" data-id="' + r.id + '">' + I('palomita', 18) + '<span>Está bien</span></button>');
-      if (av.some(a => a.tipo === 'duplicado') && !revisado && puedeEliminar(r)) acciones.push('<button type="button" class="btn btn-texto btn-texto-peligro" data-accion="eliminar" data-id="' + r.id + '">' + I('basura', 18) + '<span>Eliminar</span></button>');
+      if (av.length && !revisado && puedeEditar(r)) acciones.push('<button type="button" class="btn btn-exito-linea" data-accion="bien" data-id="' + r.id + '">' + I('palomita', 16) + '<span>Está bien</span></button>');
+      if (av.some(a => a.tipo === 'duplicado') && !revisado && puedeEliminar(r)) acciones.push('<button type="button" class="btn btn-peligro-linea" data-accion="eliminar" data-id="' + r.id + '">' + I('basura', 16) + '<span>Eliminar</span></button>');
       return '<li class="punto-jornada" data-id="' + r.id + '"><span class="punto-num" data-tono="' + tono + '" aria-hidden="true">' + (i + 1) + '</span>' +
         '<div class="punto-datos"><span class="punto-especie"><span class="oculto-visual">Punto ' + (i + 1) + ': </span>' + esc(esp.comun) + '</span>' +
         '<span class="punto-detalle">' + esc(h(r)) + ' · ' + detalle + '</span></div>' +

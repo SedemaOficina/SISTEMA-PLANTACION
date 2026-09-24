@@ -46,7 +46,7 @@ SRP.activa = {
     });
     this.el('btn-iniciar-jornada').innerHTML = SRP.ICONOS.svg('palomita', 20) + '<span>Iniciar jornada</span>';
     this.el('btn-iniciar-cancelar').innerHTML = SRP.ICONOS.svg('cerrar', 18) + '<span>Cancelar</span>';
-    this.el('btn-jornada-cerrar').innerHTML = SRP.ICONOS.svg('palomita', 18) + '<span>Cerrar jornada</span>';
+    this.el('btn-jornada-cerrar').innerHTML = SRP.ICONOS.svg('candado', 18) + '<span>Cerrar jornada</span>';
     this.el('btn-jornada-cambiar').innerHTML = SRP.ICONOS.svg('jornadas', 18) + '<span>Cambiar</span>';
   },
 
@@ -172,7 +172,7 @@ SRP.activa = {
     const j = this.jornada; if (!j) return;
     const regs = await this.registrosDe(j);
     const ok = await SRP.app.confirmar('¿Cerrar la jornada «' + j.nombre + '» con ' + regs.length + (regs.length === 1 ? ' árbol' : ' árboles') +
-      '? Pasará a su revisión; se puede reabrir después.', 'Cerrar jornada', 'palomita');
+      '? Pasará a su revisión; se puede reabrir después.', 'Cerrar jornada', 'candado');
     if (!ok) return;
     await this.cambiarEstatus(j, 'cerrada');
     this.jornada = null;
