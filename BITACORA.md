@@ -1441,3 +1441,23 @@ se quita al terminar», que espera fija 1.5 s; falla igual con la 0.6.58 en el m
 tiempo, no de este bloque). 85 de auditoría; presentación sin desbordes en ocho
 combinaciones. Alto del logotipo medido: 24 px a 360, 30 px a 390, 40 px de 481 en adelante. PDF
 revisado a la vista. Marca de versión 0.6.59.
+
+## Bloque 79 — Pasos de la jornada (24-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.60.
+
+**Qué cambió (D138).** `jornadas.js`: `PASOS`, `pasos()`, `htmlPasos()`, `siguiente()`,
+`avisarCierre()`, `pintarPasos()`, `enfocarSiguiente()`, `irAPendiente()`, `cambiarEstado()`; el
+aviso de «Está bien» dice qué sigue. `jornada-activa.js`: tira en el panel, «Meta cumplida…
+Siguiente: cerrar», `pintarBotonIniciar()` y aviso al llegar a la ficha tras cerrar. `reportes.js`:
+cierre del ciclo en el aviso del PDF y repintado de la lista. `index.html`: `#franja-pasos`,
+`#franja-siguiente`, `#jornada-pasos`, `#jornada-siguiente`, `#btn-jornada-siguiente`.
+`estilos.css`: `.pasos`, `.paso`, `.pasos-siguiente`, orden de la barra y mapas aislados.
+Pruebas: botón con fecha de otro día, tira en cada paso, barra y foco tras cerrar, reabrir con
+meta cumplida, duplicado a propósito para «Revisar puntos», ciclo completo hasta «Jornada
+completa», mapa sin tapar la barra. La prueba de aria-busy del PDF ya no espera 1.5 s fijos: espera a
+que termine (hasta 8 s), lo que resuelve la falla intermitente anotada en el Bloque 78.
+Se trabajó en paralelo al Bloque 78 (logotipo con el SIA, otra sesión): nació como «78» y se
+renumeró a 79 / D138 / 0.6.60, fusionado a tres vías sobre el 78 sin tocar sus cambios.
+
+**Verificación:** 500 comprobaciones sin errores de consola; 85 de auditoría; presentación sin
+desbordes en ocho combinaciones. Marca de versión 0.6.60.

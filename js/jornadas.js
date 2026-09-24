@@ -100,16 +100,27 @@ SRP.jornadas = {
       this.el('dlg-mover-jornada').close();
       if (destino) await this.mover(this.moviendo, destino);
     });
-    this.el('btn-jornada-estado').addEventListener('click', async () => {
-      const j = await this.cierreDe(this.jornada); if (!j) return;
-      if (j.estatus === 'abierta') {
-        const ok = await SRP.app.confirmar(await SRP.activa.textoCierre(j), 'Cerrar jornada', 'candado');
-        if (!ok) return;
-        await SRP.activa.cambiarEstatus(j, 'cerrada');
-        if (SRP.activa.jornada && SRP.activa.jornada.id === j.id) SRP.activa.jornada = null;
-      } else await SRP.activa.reabrir(j);
+    this.el('btn-jornada-estado').addEventListener('click', () => this.cambiarEstado());
+    // El botón de «Siguiente» (D138): cerrar la jornada o ir al primer punto por revisar
+    this.el('btn-jornada-siguiente').addEventListener('click', () =>
+      this.el('btn-jornada-siguiente').dataset.accion === 'revisar' ? this.irAPendiente() : this.cambiarEstado());
+  },
+
+  async cambiarEstado() {
+    const j = await this.cierreDe(this.jornada); if (!j) return;
+    if (j.estatus === 'abierta') {
+      const ok = await SRP.app.confirmar(await SRP.activa.textoCierre(j), 'Cerrar jornada', 'candado');
+      if (!ok) return;
+      await SRP.activa.cambiarEstatus(j, 'cerrada');
+      if (SRP.activa.jornada && SRP.activa.jornada.id === j.id) SRP.activa.jornada = null;
       await this.refrescar();
-    });
+      // Terminar un paso anuncia el siguiente (D138)
+      await this.avisarCierre(j);
+      this.enfocarSiguiente();
+      return;
+    }
+    await SRP.activa.reabrir(j);
+    await this.refrescar();
   },
 
   /* ---------- Datos ---------- */
@@ -229,6 +240,74 @@ SRP.jornadas = {
     return { tono: 'err', texto: (reg < meta ? 'Faltan ' + (meta - reg) : 'Sobran ' + (reg - meta)) + ' · ' + reg + ' de ' + meta };
   },
 
+  /* PASOS DE LA JORNADA (D138). El flujo es lineal —registrar, cerrar, revisar, reporte— y aquí se
+     calcula en qué paso va una jornada y qué sigue. Lo usan la tira del panel de Nuevo registro y
+     la de la ficha, para que ambas digan lo mismo. `j` trae sus registros (la vista de la lista o
+     { registros }); `cierre` es la jornada guardada. Un paso está hecho cuando:
+       registrar: hay árboles y, abierta, ya se alcanzó la meta (cerrada, se dejó de registrar);
+       cerrar: la jornada está cerrada;
+       revisar: cerrada y sin puntos por revisar;
+       reporte: cerrada y con reporte generado.
+     El paso actual es el primero que falta; sin ninguno, la jornada está completa. */
+  PASOS: [['registrar', 'Registrar'], ['cerrar', 'Cerrar'], ['revisar', 'Revisar'], ['reporte', 'Reporte']],
+
+  pasos(j, cierre) {
+    const c = cierre || j.dato || j;
+    const n = j.registros.length;
+    const meta = this.metaDe(c);
+    const abierta = c.estatus === 'abierta';
+    const pend = this.pendientes(j, this.avisos(j), c).length;
+    const hecho = {
+      registrar: n > 0 && (!abierta || meta === null || n >= meta),
+      cerrar: !abierta,
+      revisar: !abierta && pend === 0,
+      reporte: !abierta && !!c.reporte_en
+    };
+    const actual = (this.PASOS.find(([k]) => !hecho[k]) || ['completa'])[0];
+    return { hecho, actual, n, meta, pend, abierta, reporte_en: c.reporte_en || null };
+  },
+
+  // La tira: el paso actual en acento, los hechos con palomita (el color no va solo, Norma 8.4)
+  htmlPasos(p) {
+    return this.PASOS.map(([k, t]) => {
+      const est = p.hecho[k] ? 'hecho' : k === p.actual ? 'actual' : 'pendiente';
+      return '<li class="paso" data-estado="' + est + '"' + (est === 'actual' ? ' aria-current="step"' : '') + '>' +
+        (est === 'hecho' ? SRP.ICONOS.svg('palomita', 14) : '') + '<span>' + t + '</span>' +
+        (est === 'hecho' ? '<span class="oculto-visual"> (hecho)</span>' : est === 'actual' ? '<span class="oculto-visual"> (paso actual)</span>' : '') + '</li>';
+    }).join('');
+  },
+
+  /* «Siguiente:» en una frase. `propia`: quien mira es quien registra en ella (si no, lo que sigue
+     lo hace el cabo). Devuelve { html, texto, tono } — texto plano para el aviso flotante. */
+  siguiente(p, propia) {
+    const arboles = n => n + (n === 1 ? ' árbol' : ' árboles');
+    const cuenta = p.meta !== null ? ' (' + p.n + ' de ' + p.meta + ')' : '';
+    let que, cola = '', tono = 'neutro';
+    if (p.actual === 'registrar') {
+      if (!p.abierta) { que = 'reabrirla para registrar árboles, o eliminarla'; cola = ' (está cerrada y sin árboles)'; }
+      else {
+        que = (p.n ? 'registrar los árboles que faltan' : 'registrar el primer árbol') + (propia ? '' : ' (lo hace el cabo)');
+        cola = cuenta;
+      }
+    } else if (p.actual === 'cerrar') { que = 'cerrar la jornada'; cola = ' (' + (p.meta !== null ? p.n + ' de ' + p.meta + ' árboles' : arboles(p.n)) + ')'; }
+    else if (p.actual === 'revisar') { que = 'revisar ' + (p.pend === 1 ? '1 punto marcado' : p.pend + ' puntos marcados'); tono = 'rev'; }
+    else if (p.actual === 'reporte') que = 'generar el reporte';
+    else {
+      const t = 'Jornada completa: reporte generado ' + SRP.envio.cuando(p.reporte_en) + '.';
+      return { html: SRP.ICONOS.svg('palomita', 16) + '<span>' + SRP.util.escapar(t) + '</span>', texto: t, tono: 'ok' };
+    }
+    const texto = 'Siguiente: ' + que + cola + '.';
+    return { html: '<span>Siguiente: <b>' + SRP.util.escapar(que) + '</b>' + SRP.util.escapar(cola) + '.</span>', texto, tono };
+  },
+
+  // Tras cerrar (desde el panel o desde la ficha), el aviso dice qué sigue (D138)
+  async avisarCierre(j) {
+    const vista = (await this.jornadasAlcance()).find(x => x.id === j.id);
+    const cierre = await SRP.almacen.uno('jornadas', j.id);
+    const s = vista && cierre ? this.siguiente(this.pasos(vista, cierre), cierre.cabo_id === SRP.sesion.usuario.id) : null;
+    SRP.util.anunciar('Jornada «' + j.nombre + '» cerrada.' + (s ? ' ' + s.texto : ''), 'exito');
+  },
+
   /* ---------- Lista de jornadas ---------- */
 
   async preparar() {
@@ -263,7 +342,11 @@ SRP.jornadas = {
           await this.pintarLista(true);
         }
       }
-      if (this.lista.some(j => j.clave === this.actual)) { await this.abrir(this.actual); return; }
+      if (this.lista.some(j => j.clave === this.actual)) {
+        await this.abrir(this.actual);
+        if (this.trasCierre) { const j = this.trasCierre; this.trasCierre = null; await this.avisarCierre(j); this.enfocarSiguiente(); }
+        return;
+      }
     }
     this.actual = null;
     this.mostrarDetalle(false);
@@ -475,8 +558,6 @@ SRP.jornadas = {
     this.el('jornada-meta').textContent = meta === null ? '—' : meta;
     this.el('jornada-registrados').textContent = j.registros.length;
     this.pintarConciliacion();
-    // El reporte es de una jornada cerrada (D131): mientras siga abierta, el botón no se ofrece
-    this.el('btn-jornada-reporte').hidden = cierre.estatus === 'abierta';
 
     const puedeEditar = r => SRP.permisos.puedeEditar(u, r, SRP.ref.usuarioPorId);
     const puedeEliminar = r => SRP.permisos.puedeEliminar(u, r, SRP.ref.usuarioPorId);
@@ -504,10 +585,62 @@ SRP.jornadas = {
         '<div class="punto-acciones">' + acciones.join('') + tuerca + '</div></li>';
     }).join('');
 
-    const p = SRP.permisos.de(u);
-    // Registrar faltante sólo en la jornada propia: el registro nuevo queda a nombre de quien entra
-    this.el('btn-jornada-faltante').hidden = !(p.registrar && cierre.cabo_id === u.id);
+    this.pintarPasos(j, cierre, propia, puedeJornada);
     this.pintarMapa(avisos, revisados, encuadrar);
+  },
+
+  /* LA TIRA Y LA BARRA DEL PIE (D138). La barra dice qué sigue y trae el botón para hacerlo. Una
+     acción aparece una sola vez: si es el siguiente paso, es el botón principal de la barra, y
+     «Cerrar jornada» deja el encabezado cuando ya es lo que sigue. */
+  pintarPasos(j, cierre, propia, puedeJornada) {
+    const p = this.pasos(j, cierre);
+    this.pasosActuales = p;
+    this.el('jornada-pasos').innerHTML = this.htmlPasos(p);
+    const s = this.siguiente(p, propia);
+    const linea = this.el('jornada-siguiente');
+    linea.innerHTML = s.html;
+    linea.dataset.tono = s.tono;
+    const I = n => SRP.ICONOS.svg(n, 20);
+    // Registrar sólo en la jornada propia (el árbol queda a nombre de quien entra): abierta, «Registrar
+    // árboles»; cerrada, «Registrar faltante», que la reabre
+    const falt = this.el('btn-jornada-faltante');
+    falt.hidden = !(SRP.permisos.de(SRP.sesion.usuario).registrar && propia);
+    falt.className = 'btn ' + (p.actual === 'registrar' ? 'btn-primario' : 'btn-secundario');
+    falt.innerHTML = I('mas') + '<span>' + (p.abierta ? 'Registrar árboles' : 'Registrar faltante') + '</span>';
+    // El reporte es de una jornada cerrada con árboles (D131); mientras haya puntos por revisar, cede
+    // su lugar a «Revisar puntos». Ya generado, «Volver a generar» en ámbar, como en Reportes (D134)
+    const rep = this.el('btn-jornada-reporte');
+    rep.hidden = p.abierta || !p.n || p.actual === 'revisar';
+    const completa = p.actual === 'completa';
+    rep.className = 'btn ' + (completa ? 'btn-editar' : 'btn-primario');
+    rep.innerHTML = I(completa ? 'lapiz' : 'reportes') + '<span>' + (completa ? 'Volver a generar' : 'Generar reporte') + '</span>';
+    const sig = this.el('btn-jornada-siguiente');
+    const cerrar = p.actual === 'cerrar' && puedeJornada;
+    sig.hidden = !(cerrar || p.actual === 'revisar');
+    sig.dataset.accion = p.actual;
+    sig.innerHTML = p.actual === 'revisar' ? I('ver') + '<span>Revisar puntos</span>' : I('candado') + '<span>Cerrar jornada</span>';
+    if (cerrar) this.el('btn-jornada-estado').hidden = true;
+  },
+
+  // El botón principal visible de la barra; sin botón, la línea de «Siguiente»
+  enfocarSiguiente() {
+    const b = [...document.querySelectorAll('.barra-jornada .btn-primario, .barra-jornada .btn-editar')].find(x => !x.hidden);
+    const destino = b || this.el('jornada-siguiente');
+    if (!b) destino.setAttribute('tabindex', '-1');
+    destino.focus({ preventScroll: true });
+  },
+
+  // «Revisar puntos»: al primer punto pendiente, en la lista y en el mapa, con el foco en «Está bien»
+  irAPendiente() {
+    const pend = this.pendientes(this.jornada, this.avisosActuales || {}, this.cierre);
+    if (!pend.length) return;
+    const id = pend[0].id;
+    this.seleccionar(id, 'lista');
+    const li = this.el('jornada-lista').querySelector('[data-id="' + id + '"]');
+    if (!li) return;
+    li.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    const b = li.querySelector('button[data-accion="bien"]') || li.querySelector('button[data-accion="ver"]');
+    if (b) b.focus({ preventScroll: true });
   },
 
   pintarConciliacion() {
@@ -716,11 +849,16 @@ SRP.jornadas = {
     const prev = (this.cierre && this.cierre.puntos_revisados) || [];
     const num = this.jornada.registros.indexOf(r) + 1;
     await this.guardarEnCierre({ puntos_revisados: prev.concat(r.id) }, 'Punto ' + num + ' revisado: está bien');
-    SRP.util.anunciar('Punto ' + num + ' marcado como revisado.', 'exito', { deshacer: async () => {
+    await this.pintarDetalle(false);
+    // El botón tocado desaparece al repintar: el foco pasa a lo que sigue (D138), y si ya no quedan
+    // puntos por revisar el aviso lo dice
+    const p = this.pasosActuales;
+    const cola = p && p.actual !== 'revisar' ? ' ' + this.siguiente(p, this.cierre.cabo_id === SRP.sesion.usuario.id).texto : '';
+    SRP.util.anunciar('Punto ' + num + ' marcado como revisado.' + cola, 'exito', { deshacer: async () => {
       await this.guardarEnCierre({ puntos_revisados: prev }, 'Se deshizo la revisión del punto ' + num);
       await this.refrescar();
     } });
-    await this.pintarDetalle(false);
+    this.enfocarSiguiente();
   },
 
   // Después de eliminar, restaurar o editar desde esta vista

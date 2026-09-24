@@ -46,10 +46,20 @@ SRP.activa = {
     });
     this.el('btn-ini-detectar').addEventListener('click', () => this.detectarUbicacion());
     this.pintarDetectar();
-    this.el('btn-iniciar-jornada').innerHTML = SRP.ICONOS.svg('palomita', 20) + '<span>Iniciar jornada</span>';
+    this.pintarBotonIniciar();
+    // Con una fecha que no es hoy, el botón lo dice: «Iniciar jornada del 22-SEP» (D138)
+    this.el('ini-fecha').addEventListener('change', () => this.pintarBotonIniciar());
+    this.el('ini-fecha').addEventListener('input', () => this.pintarBotonIniciar());
     this.el('btn-iniciar-cancelar').innerHTML = SRP.ICONOS.svg('cerrar', 18) + '<span>Cancelar</span>';
     this.el('btn-jornada-cerrar').innerHTML = SRP.ICONOS.svg('candado', 18) + '<span>Cerrar jornada</span>';
     this.el('btn-jornada-cambiar').innerHTML = SRP.ICONOS.svg('jornadas', 18) + '<span>Cambiar de jornada</span>';
+  },
+
+  pintarBotonIniciar() {
+    const f = this.el('ini-fecha').value;
+    const otroDia = f && f !== SRP.util.fechaHoy();
+    const corta = otroDia ? f.slice(8, 10) + '-' + SRP.util.MESES_CORTOS[Number(f.slice(5, 7)) - 1] : '';
+    this.el('btn-iniciar-jornada').innerHTML = SRP.ICONOS.svg('palomita', 20) + '<span>' + (otroDia ? 'Iniciar jornada del ' + corta : 'Iniciar jornada') + '</span>';
   },
 
   /* ---------- Datos ---------- */
@@ -155,6 +165,18 @@ SRP.activa = {
       '<span class="franja-jornada-datos">' + esc(SRP.util.formatearFecha(j.fecha)) + (j.ubicacion ? ' · ' + esc(j.ubicacion) : '') + (this.lugarDe(j) ? ' · ' + esc(this.lugarDe(j)) : '') + (j.programa_id ? ' · ' + esc(SRP.ref.nombreCatalogo(j.programa_id)) : '') + ' · <b>' + n + (meta !== null ? ' de ' + meta : '') + (n === 1 && meta === null ? ' árbol' : ' árboles') + '</b>' +
       (j.estatus === 'cerrada' ? ' · cerrada' : '') + (atrasada ? ' · <b>no es de hoy</b>' : '') + '</span>';
     this.el('franja-jornada-acciones').hidden = !!editando;
+    // En qué paso va (D138). Al editar un registro se enseña la jornada del registro, no el flujo.
+    const pasos = this.el('franja-pasos'), sig = this.el('franja-siguiente');
+    pasos.hidden = !!editando;
+    sig.hidden = true;
+    if (editando) return;
+    const p = SRP.jornadas.pasos({ registros }, j);
+    pasos.innerHTML = SRP.jornadas.htmlPasos(p);
+    // Con la meta alcanzada, lo que sigue es cerrar: el botón ya está al lado, aquí sólo se dice
+    if (p.actual === 'cerrar') {
+      sig.hidden = false;
+      sig.textContent = (p.meta !== null ? 'Meta cumplida: ' + n + ' de ' + p.meta + '. ' : '') + 'Siguiente: cerrar la jornada cuando termine.';
+    }
   },
 
   /* El programa se elige al iniciar la jornada (D130): mismas opciones que el formulario, sin preselección */
@@ -291,6 +313,7 @@ SRP.activa = {
     this.jornada = null;
     SRP.jornadas.actual = j.id;
     SRP.jornadas.volverAlDetalle = true;
+    SRP.jornadas.trasCierre = j;   // la ficha abre diciendo qué sigue (D138)
     SRP.app.mostrarVista('jornadas');
   },
 

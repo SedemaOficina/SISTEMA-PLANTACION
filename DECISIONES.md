@@ -1054,3 +1054,19 @@
   (hasta 767 px) va SIA · Reforestación Urbana, porque el completo quedaría ilegible. En el PDF el
   logotipo se fija por su alto (9.3 mm) para que sumar el SIA no encoja el resto. Complementa D90.
   Pedido por Liber, 24-09-2026.
+- **D138. Pasos de la jornada y «Siguiente».** El flujo de una jornada se enseña como pasos:
+  una tira de cuatro píldoras —Registrar · Cerrar · Revisar · Reporte— en el panel «Jornada
+  activa» y en la ficha de la jornada, con el paso actual en acento y los hechos en verde con
+  palomita. Registrar está hecho cuando hay árboles y, abierta, se alcanzó la meta; Cerrar, cuando
+  está cerrada; Revisar, cerrada y sin puntos marcados; Reporte, con reporte generado. En la ficha,
+  la barra fija del pie dice «Siguiente: …» y su botón principal lo hace (Registrar árboles, Cerrar
+  jornada, Revisar puntos, Generar reporte); una acción aparece una sola vez: «Cerrar jornada» deja
+  el encabezado cuando ya es lo que sigue y el reporte cede su lugar a «Revisar puntos» mientras
+  haya marcados. Con todo hecho: «Jornada completa: reporte generado …» y «Volver a generar» en
+  ámbar. Terminar un paso anuncia el siguiente: al cerrar (desde el panel o la ficha), al revisar el
+  último punto y al generar el PDF («La jornada «X» quedó completa»), con el foco en el botón de lo
+  que sigue; «Revisar puntos» lleva al primer pendiente con el foco en «Está bien». Con una fecha
+  que no es hoy, el botón dice «Iniciar jornada del 22-SEP». La barra del pie se prefirió a una línea
+  bajo la tira (como en la maqueta) porque queda siempre a la mano y evita repetir botones. De paso,
+  los mapas quedan aislados (Leaflet dibujaba su atribución encima de la barra fija). Auditoría
+  UX/UI del 24-09-2026, bloque 79 (plan: 78), aprobada por Liber.

@@ -1408,8 +1408,12 @@ with sync_playwright() as p:
     ok(pg.is_visible('#dlg-previa'),'la vista previa del reporte se abre antes de generar el PDF')
     pg.click('#btn-previa-generar')
     ok(pg.evaluate("document.getElementById('principal').getAttribute('aria-busy')")=='true','#principal queda aria-busy mientras se arma el PDF (D136)')
-    pg.wait_for_timeout(1500)
+    try: pg.wait_for_function("!document.getElementById('principal').hasAttribute('aria-busy')", timeout=8000)
+    except Exception: pass
     ok(pg.evaluate("document.getElementById('principal').hasAttribute('aria-busy')") is False,'y aria-busy se quita al terminar')
+    # Cierre del ciclo (D138): con puntos sin revisar, el aviso no dice «completa» sino qué falta
+    ok('Reporte generado' in pg.inner_text('#aviso') and ('quedó completa' in pg.inner_text('#aviso') or 'Siguiente: revisar' in pg.inner_text('#aviso')),'al terminar el PDF el aviso cierra el ciclo: dice si la jornada quedó completa o qué falta (D138): '+pg.inner_text('#aviso'))
+    ok('reporte generado hoy' in pg.inner_text('#pdf-lista'),'y la ficha de Reportes pasa a «reporte generado hoy» sin salir y volver (D138)')
 
     pg.evaluate("SRP.app.mostrarVista('galeria')"); pg.wait_for_timeout(500)
     if pg.locator('#galeria-rejilla li').count() > 0:
@@ -1417,6 +1421,96 @@ with sync_playwright() as p:
         ok(estado[0]=='true' and 'Armando' in estado[1] and estado[2],'el botón de ZIP dice «Armando…» y queda aria-busy mientras arma el archivo (D136)')
         pg.wait_for_timeout(1500)
         ok(pg.get_attribute('#btn-galeria-zip','aria-busy') is None and 'Descargar todas' in pg.inner_text('#btn-galeria-zip'),'y vuelve a su texto normal al terminar')
+
+    # ---------- BLOQUE 78: PASOS DE LA JORNADA (D138) ----------
+    pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(500)
+    if pg.is_hidden('#panel-iniciar-jornada'):
+        pg.click('#btn-jornada-cambiar'); pg.wait_for_timeout(200); pg.click('#btn-cambiar-nueva'); pg.wait_for_timeout(300)
+    AYER=(datetime.date.today()-datetime.timedelta(days=1)).isoformat()
+    pg.fill('#ini-fecha',AYER); pg.dispatch_event('#ini-fecha','change'); pg.wait_for_timeout(100)
+    corta=AYER[8:10]+'-'+['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'][int(AYER[5:7])-1]
+    ok(pg.inner_text('#btn-iniciar-jornada').strip()=='Iniciar jornada del '+corta,'con una fecha que no es hoy, el botón lo dice: '+pg.inner_text('#btn-iniciar-jornada').strip())
+    pg.click('#btn-ini-hoy'); pg.wait_for_timeout(100)
+    ok(pg.inner_text('#btn-iniciar-jornada').strip()=='Iniciar jornada','y con hoy vuelve a «Iniciar jornada»')
+    pg.fill('#ini-nombre','Jornada de los pasos'); pg.select_option('#ini-programa','p-refor'); pg.fill('#ini-meta','2')
+    pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(700)
+    est=lambda sel: pg.evaluate("[...document.querySelectorAll('%s .paso')].map(p => p.dataset.estado)" % sel)
+    ok(est('#franja-pasos')==['actual','pendiente','pendiente','pendiente'] and pg.locator('#franja-pasos [aria-current=step]').inner_text().startswith('Registrar'),
+       'el panel de la jornada activa enseña los cuatro pasos, con «Registrar» como actual (D138): '+str(est('#franja-pasos')))
+    ok(pg.is_hidden('#franja-siguiente'),'mientras se registra no hay línea de «Siguiente»: el formulario está debajo')
+    # Dos árboles en sitios distintos: ninguno queda marcado para revisar
+    for k,(la,ln) in enumerate([(19.4321,-99.1331),(19.4324,-99.1335)]):
+        ctx.set_geolocation({'latitude':la,'longitude':ln})
+        pg.click('#btn-ubicacion'); pg.wait_for_timeout(700)
+        pg.fill('#campo-especie',['aile','ahuehu'][k]); pg.wait_for_timeout(200)
+        pg.dispatch_event('.combo-opcion[data-id="%s"]' % ['ESP-0002','ESP-0070'][k],'mousedown'); pg.wait_for_timeout(150)
+        pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(900)
+        if pg.is_visible('#dlg-resumen'): pg.click('#btn-resumen-guardar'); pg.wait_for_timeout(700)
+    ctx.set_geolocation({'latitude':19.432,'longitude':-99.133})
+    ok(est('#franja-pasos')==['hecho','actual','pendiente','pendiente'] and pg.locator('#franja-pasos .paso[data-estado=hecho] svg').count()==1,
+       'con la meta alcanzada «Registrar» queda hecho, con palomita, y el actual es «Cerrar»: '+str(est('#franja-pasos')))
+    ok(pg.is_visible('#franja-siguiente') and 'Meta cumplida: 2 de 2' in pg.inner_text('#franja-siguiente') and 'cerrar la jornada' in pg.inner_text('#franja-siguiente'),
+       'y el panel dice «Meta cumplida… Siguiente: cerrar la jornada»: '+pg.inner_text('#franja-siguiente'))
+    pg.click('#btn-jornada-cerrar'); pg.wait_for_timeout(300); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(1500)
+    ok(pg.is_visible('#jornada-detalle') and 'cerrada' in pg.inner_text('#aviso') and 'Siguiente: generar el reporte' in pg.inner_text('#aviso'),
+       'al cerrar, la ficha abre y el aviso dice qué sigue (D138): '+pg.inner_text('#aviso'))
+    ok(est('#jornada-pasos')==['hecho','hecho','hecho','actual'],'en la ficha, sin puntos por revisar, «Revisar» queda hecho y el actual es «Reporte»: '+str(est('#jornada-pasos')))
+    ok('Siguiente: generar el reporte' in pg.inner_text('#jornada-siguiente') and pg.is_visible('#btn-jornada-reporte') and 'Generar reporte' in pg.inner_text('#btn-jornada-reporte')
+       and 'btn-primario' in pg.get_attribute('#btn-jornada-reporte','class'),'la barra del pie dice lo que sigue y su botón principal lo hace: «Generar reporte»')
+    ok(pg.evaluate("document.activeElement.id")=='btn-jornada-reporte','y el foco queda en ese botón, listo para el siguiente paso')
+    ok(pg.is_hidden('#btn-jornada-siguiente') and 'Registrar faltante' in pg.inner_text('#btn-jornada-faltante') and 'btn-secundario' in pg.get_attribute('#btn-jornada-faltante','class'),
+       'cerrada, «Registrar faltante» queda como secundario')
+    # Reabierta con la meta cumplida: «Cerrar jornada» pasa a la barra y el encabezado no la repite
+    pg.click('#btn-jornada-estado'); pg.wait_for_timeout(700)
+    ok(est('#jornada-pasos')==['hecho','actual','pendiente','pendiente'] and pg.is_visible('#btn-jornada-siguiente') and 'Cerrar jornada' in pg.inner_text('#btn-jornada-siguiente')
+       and pg.is_hidden('#btn-jornada-estado'),'reabierta con la meta cumplida, «Cerrar jornada» es el botón principal del pie y no se repite arriba (D138)')
+    ok(pg.is_hidden('#btn-jornada-reporte') and 'Registrar árboles' in pg.inner_text('#btn-jornada-faltante'),'abierta no hay reporte, y registrar dice «Registrar árboles»')
+    pg.click('#btn-jornada-siguiente'); pg.wait_for_timeout(300)
+    ok(pg.is_visible('#dlg-confirmar') and '¿Cerrar la jornada' in pg.inner_text('#dlg-confirmar-texto'),'el botón del pie pide la misma confirmación que el del encabezado')
+    pg.click('#btn-confirmar-si'); pg.wait_for_timeout(1000)
+    ok(est('#jornada-pasos')==['hecho','hecho','hecho','actual'],'y la cierra')
+    # «Revisar»: se reabre con «Registrar faltante» y se registra un duplicado a propósito (misma
+    # especie en el mismo punto que el segundo árbol)
+    pg.click('#btn-jornada-faltante'); pg.wait_for_timeout(700)
+    ok(pg.is_visible('#vista-registrar') and 'Jornada de los pasos' in pg.inner_text('#franja-jornada-texto'),'«Registrar faltante» reabre la jornada y lleva a Nuevo registro')
+    ctx.set_geolocation({'latitude':19.4324,'longitude':-99.1335})
+    pg.click('#btn-ubicacion'); pg.wait_for_timeout(700)
+    pg.fill('#campo-especie','ahuehu'); pg.wait_for_timeout(200)
+    pg.dispatch_event('.combo-opcion[data-id="ESP-0070"]','mousedown'); pg.wait_for_timeout(150)
+    pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(900)
+    if pg.is_visible('#dlg-resumen'): pg.click('#btn-resumen-guardar'); pg.wait_for_timeout(700)
+    ctx.set_geolocation({'latitude':19.432,'longitude':-99.133})
+    pg.click('#btn-jornada-cerrar'); pg.wait_for_timeout(300); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(1500)
+    ok(est('#jornada-pasos')==['hecho','hecho','actual','pendiente'] and 'Siguiente: revisar 2 puntos marcados' in pg.inner_text('#aviso'),
+       'cerrada con un posible duplicado, el actual es «Revisar» y el aviso lo dice: '+pg.inner_text('#aviso'))
+    ok('Siguiente: revisar' in pg.inner_text('#jornada-siguiente') and pg.is_visible('#btn-jornada-siguiente') and 'Revisar puntos' in pg.inner_text('#btn-jornada-siguiente')
+       and pg.is_hidden('#btn-jornada-reporte'),'con puntos marcados el botón del pie es «Revisar puntos» y el reporte espera (D138)')
+    ok(pg.evaluate("document.activeElement.id")=='btn-jornada-siguiente','al llegar desde «Cerrar jornada», el foco está en «Revisar puntos»')
+    pg.click('#btn-jornada-siguiente'); pg.wait_for_timeout(700)
+    ok(pg.evaluate("document.activeElement.dataset.accion")=='bien' and pg.locator('#jornada-lista .punto-jornada.elegido').count()==1,
+       '«Revisar puntos» lleva al primer punto pendiente, lo marca en el mapa y deja el foco en «Está bien»')
+    pg.keyboard.press('Enter'); pg.wait_for_timeout(800)
+    ok(est('#jornada-pasos')[2]=='actual' and pg.evaluate("document.activeElement.id")=='btn-jornada-siguiente','tras el primero sigue en «Revisar» y el foco vuelve a «Revisar puntos»')
+    pg.click('#btn-jornada-siguiente'); pg.wait_for_timeout(600); pg.keyboard.press('Enter'); pg.wait_for_timeout(800)
+    ok(est('#jornada-pasos')==['hecho','hecho','hecho','actual'] and 'Siguiente: generar el reporte' in pg.inner_text('#aviso'),
+       'al revisar el último, «Revisar» queda hecho y el aviso dice qué sigue: '+pg.inner_text('#aviso'))
+    ok(pg.evaluate("document.activeElement.id")=='btn-jornada-reporte','y el foco pasa a «Generar reporte», no se pierde')
+    # El reporte cierra el ciclo
+    pg.click('#btn-jornada-reporte'); pg.wait_for_timeout(900)
+    if pg.is_visible('#dlg-cierre'): pg.fill('#cie-personal','Cuadrilla de prueba'); pg.click('#form-cierre button[type=submit]'); pg.wait_for_timeout(700)
+    pg.click('#btn-previa-generar')
+    try: pg.wait_for_function("!document.getElementById('principal').hasAttribute('aria-busy')", timeout=8000)
+    except Exception: pass
+    ok('quedó completa' in pg.inner_text('#aviso'),'al generar el PDF el aviso cierra el ciclo: «La jornada … quedó completa» (D138): '+pg.inner_text('#aviso'))
+    pg.evaluate("SRP.app.mostrarVista('jornadas')"); pg.wait_for_timeout(500)
+    pg.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg.wait_for_timeout(400)
+    pg.locator('#lista-jornadas .jornada', has_text='Jornada de los pasos').first.locator('.jornada-boton').click(); pg.wait_for_timeout(700)
+    ok(est('#jornada-pasos')==['hecho']*4 and 'Jornada completa' in pg.inner_text('#jornada-siguiente'),'en la ficha, los cuatro pasos hechos y «Jornada completa: reporte generado hoy…»')
+    ok('Volver a generar' in pg.inner_text('#btn-jornada-reporte') and 'btn-editar' in pg.get_attribute('#btn-jornada-reporte','class'),'y el reporte se ofrece como «Volver a generar», en ámbar, como en Reportes')
+    pg.set_viewport_size({'width':390,'height':844})
+    tapa=pg.evaluate("""() => { const b = document.querySelector('.barra-jornada').getBoundingClientRect();
+      const x = b.left + 20, y = b.bottom - 20; const e = document.elementFromPoint(x, y); return e ? !!e.closest('.barra-jornada') : true; }""")
+    ok(tapa,'el mapa no se dibuja encima de la barra del pie (Leaflet aislado, D138)')
 
     b.close()
 print('\n'.join(res)); print('ERRORES CONSOLA:',errores or 'ninguno')

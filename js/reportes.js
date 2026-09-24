@@ -603,7 +603,7 @@ SRP.reportes = {
       doc.text('Página ' + p + ' de ' + paginas, ancho / 2, alto - 6, { align: 'center' });
     }
 
-    this.entregar(doc, this.nombreArchivo(cierre, fecha, jornada));
+    await this.entregar(doc, this.nombreArchivo(cierre, fecha, jornada), cierre, jornada);
   },
 
   /* Nombre del PDF (D102): «Reporte», quién responde del reporte y la fecha del reporte, p. ej.
@@ -627,9 +627,20 @@ SRP.reportes = {
     return window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
   },
 
-  async entregar(doc, nombre) {
+  async entregar(doc, nombre, cierre, jornada) {
     const entregado = await this.entregarArchivo(doc.output('blob'), nombre, 'Reporte diario de plantación');
-    if (entregado === 'descarga') SRP.util.anunciar('Reporte descargado: ' + nombre);
+    if (entregado === 'cancelado') return;
+    /* Cierre del ciclo (D138): el reporte es el último paso de la jornada, así que el aviso dice si
+       quedó completa o, si todavía hay puntos por revisar, qué falta. */
+    let cola = '', completa = true;
+    if (jornada && jornada.registros && cierre) {
+      const p = SRP.jornadas.pasos(jornada, cierre);
+      completa = p.actual === 'completa';
+      cola = completa ? ' La jornada «' + jornada.nombre + '» quedó completa.' : ' ' + SRP.jornadas.siguiente(p, true).texto;
+    }
+    SRP.util.anunciar((entregado === 'descarga' ? 'Reporte generado y descargado: ' + nombre + '.' : 'Reporte generado y compartido.') + cola, completa ? 'exito' : 'aviso');
+    // La ficha de la lista pasa a «reporte generado hoy a las …» sin salir y volver
+    if (SRP.app.vista === 'reportes') await this.pintarLista();
   },
 
   /* Cualquier archivo —el PDF del reporte o el respaldo— se entrega igual: compartir en táctil,

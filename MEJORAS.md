@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.59 (Bloque 78)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.60 (Bloque 79)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -122,6 +122,11 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M111 | Auditoría UX (N3) | Lo que tarda se dice: «Guardando…», «Enviando…», «Armando…», «Generando reporte…», con aria-busy | Media | 0.6.58 (B77) | Guardar un árbol; Descargar todas | Botón en espera |
 | M112 | Auditoría UX (N4) | Doble toque en «Guardar»: el segundo toque ya no crea otro árbol | Alta | 0.6.58 (B77) | Tocar Guardar dos veces rápido | — |
 | M113 | Petición de Liber | Logotipo con el SIA entre la Secretaría y Reforestación Urbana, en encabezado y PDF; en teléfono, SIA · Reforestación Urbana | Baja | 0.6.59 (B78) | Abrir en computadora y en el teléfono; generar un reporte | Encabezado en ambos; parte superior del PDF |
+| M114 | Auditoría UX (F1) | Tira de cuatro pasos —Registrar · Cerrar · Revisar · Reporte— en el panel «Jornada activa» y en la ficha: actual en acento, hechos en verde con palomita | Alta | 0.6.60 (B79) | Iniciar una jornada y registrar hasta la meta | Tira en el panel |
+| M115 | Auditoría UX (F1) | La barra del pie de la ficha dice «Siguiente: …» y su botón lo hace (Registrar árboles, Cerrar jornada, Revisar puntos, Generar reporte); ningún botón se repite | Alta | 0.6.60 (B79) | Abrir una jornada en cada paso | Barra del pie |
+| M116 | Auditoría UX (F3) | Terminar un paso anuncia el siguiente: al cerrar, al revisar el último punto y al generar el PDF («quedó completa»), con el foco en el botón de lo que sigue | Media | 0.6.60 (B79) | Cerrar una jornada con un duplicado | Aviso «Siguiente: revisar…» |
+| M117 | Auditoría UX (F2) | «Iniciar jornada del 22-SEP» cuando la fecha elegida no es hoy | Baja | 0.6.60 (B79) | Iniciar jornada con fecha de ayer | Botón |
+| M118 | Hallazgo del bloque | El mapa ya no se dibuja encima de la barra fija del pie (la atribución de Leaflet tapaba los botones) | Media | 0.6.60 (B79) | Ficha de jornada, desplazar hasta el mapa | — |
 
 ## 2. Por hacer
 
