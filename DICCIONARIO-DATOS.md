@@ -32,6 +32,8 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 | Sesión | Se toma de la cuenta con sesión abierta |
 | Servidor | Lo asignará el servidor en Fase 2; en Fase 1 nace nulo |
 | SIA | Viene del archivo fuente del SIA (catálogo de especies, capas) |
+| Jornada | Se toma de la jornada en que está el árbol y cambia con ella (D119, D151) |
+| Dispositivo | Lo toma el teléfono al detectar la ubicación, o se captura a mano |
 
 ## 3. Dominios (valores válidos y de dónde salen)
 
@@ -86,9 +88,9 @@ Un renglón por ejemplar plantado. Es el registro individual de campo; todo lo d
 | `colonia` | text | Sí | Capa | Nombre como viene en la capa, mayúsculas y tipo entre paréntesis | Colonia (sólo lectura): «Sin colonia (fuera de zona urbana)» si es nula | Capa de prueba (IECM 2022): se sustituye antes de liberar la etapa |
 | `uga` | char(7) | Sí | Capa | dominio `uga` | No | Celda vigente del punto. El prefijo NO es la alcaldía del punto (difieren en la frontera); la alcaldía sale de su propia capa. Cambia si el punto se corrige; folio_uga no |
 | `capa_version` | text | Sí | Capa | `alcaldias=v;uga=v;colonias=v` | No | Con qué versión de cada capa se derivó; permite rehacer alcaldia/colonia/uga cuando el SIA entregue las capas definitivas |
-| `programa_id` | text | No | Catálogo | → catalogos.id con tipo = programa | Programa (lista; Reforestación Urbana primero) | Obligatorio; sin preselección |
-| `fecha_plantacion` | date | No | Jornada | AAAA-MM-DD, ≤ hoy | Fecha de plantación (se muestra 21-SEP-2026) | Se hereda de la jornada activa al registrar (D119); «Mover a otra jornada» la ajusta. No posterior a hoy |
-| `jornada_id` | uuid | No | Sistema | → jornadas.id | Jornada (ficha de revisión y detalle) | La jornada activa al registrar (D119). Cambia sólo con «Mover a otra jornada» en Jornadas, que también ajusta fecha_plantacion |
+| `programa_id` | text | No | Jornada | → catalogos.id con tipo = programa | Ficha de revisión y detalle («Programa», el de la jornada); no se edita por árbol | Es el de su jornada (D151): se toma al registrar, cambia cuando cambia el de la jornada —también en los eliminados, en la misma transacción— y al mover el árbol toma el de su jornada nueva |
+| `fecha_plantacion` | date | No | Jornada | AAAA-MM-DD, ≤ hoy | Fecha de plantación (se muestra 21-SEP-2026) | Es la fecha de su jornada (D119): se toma al registrar, cambia cuando cambia la de la jornada —también en los eliminados, en la misma transacción (D151)— y al mover el árbol toma la de su jornada nueva. No posterior a hoy |
+| `jornada_id` | uuid | No | Sistema | → jornadas.id | Jornada (ficha de revisión y detalle) | La jornada activa al registrar (D119). Cambia sólo con «Mover a otra jornada» en Jornadas, que también ajusta fecha_plantacion y programa_id (D151) |
 | `comentarios` | varchar(500) | No | Persona | Texto libre ≤ 500; '' si no se escribe | Comentarios (opcional) | Reincorporado en D50. Todavía no entra al parte PDF (pendiente de validación de reportes). Registros anteriores a D50 no traen la llave y se leen como «Sin comentarios» |
 | `foto_base64` | text | Sí | Persona | data:image/jpeg;base64,… ya comprimida (≤ 800×600, calidad 0.7) | Fotografía (opcional) | Incrustada en el registro en Fase 1. En Fase 2 sale a archivo, como en los otros módulos del SIA (pendiente «Dónde viven las fotografías») |
 | `foto_id` | uuid | Sí | Sistema | UUID v4; null sin foto | No | Identificador de la imagen, para cuando viva como archivo |
@@ -185,7 +187,7 @@ Una jornada de plantación: se declara antes de registrar el primer árbol (D119
 | `es_ficticio` | boolean | No | Sistema | true/false | No | Copia de CONFIG.ES_FICTICIO (D87) |
 | `nombre` | text | No | Persona | Texto libre, hasta 120 | Nombre de la jornada | Obligatorio al iniciar: el parque, la calle o el sitio. Es el nombre de la tarjeta en Jornadas y el «Jornada:» del reporte (D119) |
 | `ubicacion` | text | No | Persona | Texto libre, hasta 200; '' si no se escribe | Dirección de la jornada | Dirección, parque o referencia (D120); la etiqueta pasó a «Dirección de la jornada» (D143). Va al reporte bajo el nombre de la jornada |
-| `programa_id` | text | No | Persona | → catalogos.id con tipo = programa | Programa (Iniciar jornada) | Obligatorio al iniciar (D130). Cada árbol lo hereda en el formulario y puede cambiarlo; el dato del árbol sigue siendo plantaciones.programa_id |
+| `programa_id` | text | No | Persona | → catalogos.id con tipo = programa | Programa (Iniciar jornada) | Obligatorio al iniciar (D130). Sus árboles lo toman siempre (D151): al registrar, al cambiarlo aquí y al moverlos a esta jornada |
 | `lat` | real | Sí | Dispositivo | Grados decimales; nulo sin ubicación | Detectar ubicación de la jornada, o «Capturar coordenadas a mano» | Latitud del punto de la jornada: detectado con el GPS al iniciar (D122) o escrito a mano cuando no hubo señal (D143). No es la de ningún árbol |
 | `lng` | real | Sí | Dispositivo | Grados decimales; nulo sin ubicación | Detectar ubicación de la jornada, o «Capturar coordenadas a mano» | Longitud del punto de la jornada (D122, D143) |
 | `punto_origen` | text | Sí | Sistema | 'gps' o 'manual'; nulo sin ubicación | (nota bajo el botón) | Cómo se obtuvo el punto de la jornada: con «Detectar ubicación» (gps) o escribiendo las coordenadas cuando no hubo señal en el sitio (manual) (D143). Lo determina la acción, no una elección |
@@ -206,7 +208,7 @@ Una jornada de plantación: se declara antes de registrar el primer árbol (D119
 | `editado_por_id` | uuid | No | Sesión | → usuarios.id | No | — |
 | `fecha_ultima_edicion` | timestamptz | No | Sistema | ISO 8601 | No | — |
 | `meta_arboles` | integer | No | Persona | Entero 1–9999 | Árboles que se van a plantar (Iniciar jornada) | Obligatoria al iniciar (D131). Jornadas compara registrados contra la meta (falta/sobra) y el reporte la imprime. Sustituye al conteo de la cuadrilla de D112 |
-| `puntos_revisados` | uuid[] | No | Persona | → plantaciones.id; [] si nadie ha revisado | Jornadas → «Está bien» en un punto con aviso | Puntos con aviso (duplicado, lejos, precisión) que alguien confirmó como correctos (D112); el aviso deja de contarse, no se borra |
+| `puntos_revisados` | uuid[] | No | Persona | → plantaciones.id; [] si nadie ha revisado | Jornadas → «Está bien» en un punto con aviso | Puntos con aviso (duplicado, lejos, precisión) que alguien confirmó como correctos (D112); el aviso deja de contarse, no se borra. Al mover un árbol a otra jornada su marca sale de ésta (D151) |
 | `reporte_en` | datetime | Sí | Sistema | ISO 8601; nulo si no se ha generado | Reportes: «reporte generado …» | Se fija al aceptar el cierre del reporte (D134); Reportes ofrece «Volver a generar» |
 | `personal` | text | No | Persona | Texto libre | Personal de SEDEMA participante | — |
 | `apoyo` | text | No | Persona | Texto libre, varias líneas | Personal de apoyo | — |
@@ -223,14 +225,16 @@ Una jornada de plantación: se declara antes de registrar el primer árbol (D119
 | plantaciones.cabo_id | usuarios.id | N:1 | Obligatoria. Define el alcance: un cabo ve los suyos; un coordinador, los de los cabos con coordinador_id = él |
 | plantaciones.editado_por_id | usuarios.id | N:1 | Opcional |
 | plantaciones.especie_id | catalogos.id (tipo especie) | N:1 | Nula sólo con «Otra especie» (entonces especie_otra obligatoria y especie_estatus = PENDIENTE_VALIDACION) |
-| plantaciones.programa_id | catalogos.id (tipo programa) | N:1 | Obligatoria |
+| plantaciones.programa_id | catalogos.id (tipo programa) | N:1 | Obligatoria; siempre la de su jornada (D151) |
 | plantaciones.alcaldia_cve / colonia_cve / uga | capas del SIA (alcaldías, colonias, UGA) | N:1 | No son llaves foráneas en la base del dispositivo: son derivaciones del punto, con capa_version para rehacerlas |
 | usuarios.coordinador_id | usuarios.id | N:1 | Sólo con perfil CABO; apunta a una cuenta COORDINADOR |
 | usuarios.area_id | catalogos.id (tipo area) | N:1 | Obligatoria |
 | usuarios.alta_por_id / editado_por_id | usuarios.id | N:1 | — |
 | catalogos.creado_por_id / editado_por_id | usuarios.id | N:1 | Nulo en las especies que vienen del SIA |
 | jornadas.cabo_id / encargado_id / creado_por_id / editado_por_id | usuarios.id | N:1 | cabo_id es quien inició la jornada (D119) |
-| plantaciones.jornada_id | jornadas.id | N:1 | Cada árbol nace en la jornada activa y hereda su fecha (D119); «Mover a otra jornada» la cambia |
+| plantaciones.jornada_id | jornadas.id | N:1 | Cada árbol nace en la jornada activa y toma su fecha y su programa (D119, D151); «Mover a otra jornada» la cambia. Una jornada que tiene árboles, aun eliminados, no se borra |
+| jornadas.programa_id | catalogos.id (tipo programa) | N:1 | Obligatoria; sus árboles la toman (D151) |
+| jornadas.puntos_revisados | plantaciones.id | N:M | Lista de ids; sólo árboles de la misma jornada |
 | bitacora.entidad_id | plantaciones.id / usuarios.id / catalogos.id / jornadas.id según entidad | N:1 | Sin restricción de integridad: la bitácora sobrevive a la eliminación de la entidad |
 | bitacora.usuario_id | usuarios.id | N:1 | Sin restricción: conserva usuario_nombre por si la cuenta desaparece |
 
@@ -304,7 +308,7 @@ Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras
 |---|---|---|---|
 | R-P01 | plantaciones | Ubicación obligatoria (botón GPS, toque en el mapa o captura a mano) y dentro del ámbito de la CDMX (CONFIG.MAPA.LIMITES) | js/formulario.js validar(); js/mapa.js colocar() |
 | R-P02 | plantaciones | Especie obligatoria: de la lista de activas, o «Otra especie» con texto | js/formulario.js validar() |
-| R-P03 | plantaciones | Programa obligatorio, sin preselección; sólo programas activos (más el del registro que se edita, aunque esté inactivo) | js/formulario.js llenarProgramas(), validar() |
+| R-P03 | plantaciones | El programa es el de la jornada (D151): no se elige por árbol. Al iniciar la jornada se elige entre los programas activos | js/formulario.js programaDeJornada(); js/jornada-activa.js iniciarJornada() |
 | R-P04 | plantaciones | Fecha de plantación obligatoria y no posterior a hoy; arranca vacía en cada registro | js/formulario.js validar(); campo-fecha.max |
 | R-P05 | plantaciones | Comentarios hasta 500 caracteres | index.html maxlength |
 | R-P06 | plantaciones | La foto se comprime a ≤ 800×600 JPEG 0.7 antes de guardarse; foto_bytes es el peso comprimido | js/foto.js comprimir(); CONFIG.FOTO |
@@ -314,16 +318,18 @@ Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras
 | R-P10 | plantaciones | Al editar se conservan id, cabo_id, lat_original/lng_original, fecha_registro y los folio*; se actualizan fecha_ultima_edicion y editado_por_id, y la bitácora lista los campos cambiados | js/formulario.js registroPrevisto(), guardar() |
 | R-P11 | plantaciones | Eliminar marca estatus = eliminado (con bitácora); nunca se borra el renglón | js/registros.js eliminar() |
 | R-P12 | plantaciones | Folio y campos folio_* nacen nulos y no se tocan en el dispositivo; la pantalla y el PDF dicen PROVISIONAL | js/folio.js; js/formulario.js registroPrevisto() |
-| R-A01 | todas | Alcance por perfil: CABO ve/edita/elimina los suyos; COORDINADOR registra, ve y edita los de sus cabos, no elimina; ADMIN todo, no captura. Un perfil desconocido no alcanza nada | js/permisos.js (fuente única); la interfaz sólo lo refleja |
+| R-A01 | todas | Alcance por perfil: CABO ve/edita/elimina los suyos; COORDINADOR registra, ve y edita los de sus cabos, no elimina registros y sí jornadas vacías (D151); ADMIN todo, no captura. Un perfil desconocido no alcanza nada. Cada acción que escribe lo exige al empezar, no sólo esconde el botón (D151) | js/permisos.js PERFILES, ACCIONES, exigir() (fuente única); la interfaz sólo lo refleja |
 | R-A02 | todas | Toda alta, edición, eliminación, activación y desactivación escribe bitácora en la misma transacción | js/almacen.js guardarConBitacora(), borrarConBitacora() |
 | R-U01 | usuarios | Nombre, apellido paterno, correo válido y único (insensible a mayúsculas/acentos), área, cargo y perfil válido obligatorios; el correo no cambia después | js/usuarios.js validar() |
 | R-U02 | usuarios | coordinador_id sólo con perfil CABO; con otro perfil se pone nulo | js/usuarios.js guardar() |
 | R-U03 | usuarios | Una cuenta de administración no puede quitarse a sí misma el perfil ADMIN | js/usuarios.js validar() |
-| R-U04 | usuarios | Con registros a su nombre no se elimina: se desactiva. Inactiva no puede entrar; sus registros siguen a su nombre | js/usuarios.js eliminar(), cambiarEstado(); js/sesion.js autenticar() |
+| R-U04 | usuarios | Si otro renglón la nombra no se elimina: se desactiva (D151). Cuenta en todas las tablas: árboles (también eliminados), jornadas como cabo, encargado o quien la creó o editó, cabos que coordina y cuentas o catálogos que dio de alta o editó. Inactiva no puede entrar; sus registros siguen a su nombre | js/referencias.js usosDe(); js/usuarios.js eliminar(), cambiarEstado(); js/sesion.js autenticar() |
 | R-C01 | catalogos | Nombre obligatorio y único por tipo; clave `[A-Z0-9_]{2,30}` única por tipo (programas y áreas), fija después de guardar | js/catalogos.js validar() |
 | R-C02 | catalogos | Especies: científico obligatorio con formato «Genus epíteto» y único; clave ESP-0000 consecutiva que asigna el sistema; id = clave; género y epíteto derivados; id_snib `número+ANGIO\|GIMNO`; id_enciclovida entero | js/catalogos.js validar(), guardar(), siguienteClaveEspecie() |
-| R-C03 | catalogos | Con uso (registros o cuentas) no se elimina: se desactiva. Inactivo deja de ofrecerse; lo ya guardado no cambia | js/catalogos.js eliminar(), cambiarEstado() |
+| R-C03 | catalogos | Con uso en cualquier tabla —árboles, también eliminados; jornadas; cuentas— no se elimina: se desactiva (D151). Inactivo deja de ofrecerse; lo ya guardado no cambia | js/referencias.js usosDe(); js/catalogos.js eliminar(), cambiarEstado() |
 | R-C04 | catalogos | Las 76 especies del SIA se siembran desde assets/catalogo-especies.js (generado del Excel); para cambiarlas se corrige el Excel y se regenera | pruebas/generar_especies.py; js/datos-ficticios.js |
+| R-J01 | jornadas | Sólo se elimina sin ningún árbol, ni eliminado: los eliminados se conservan como constancia y siguen apuntando a ella. La eliminan quien la inició, su coordinador o administración (D132, D151) | js/jornadas.js eliminarJornada(), pintarDetalle() |
+| R-J02 | jornadas | Al cambiar su fecha o su programa, todos sus árboles —también los eliminados— los toman en la misma transacción que la jornada. Un árbol movido toma los de su jornada nueva y su marca de revisado sale de la de origen; uno restaurado vuelve con los de su jornada, y sin jornada no se restaura (D151) | js/jornadas.js guardarEdicion(), mover(); js/registros.js restaurar(); js/almacen.js guardarJuntos() |
 | R-R01 | jornadas | El reporte es de una jornada declarada: reúne las plantaciones activas con ese jornada_id; regenerar la misma jornada reabre sus datos de cierre (D119) | js/reportes.js refrescarVista(), abrir(), cierreDeJornada() |
 | R-R02 | jornadas | Todos los campos del cierre son opcionales y ninguno se prellena; el encargado sale de la sesión o se elige entre los cabos con registros ese día | js/reportes.js prepararEncargado() |
 | R-F01 | plantaciones | Filtros de Registros: Hoy / Todos / Un periodo (Desde ≤ Hasta, entra con Aplicar), Año y Mes sólo con registros, Cabo según alcance; ningún control mueve el foco solo (D82) | js/registros.js |
@@ -336,8 +342,8 @@ Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras
 |---|---|---|---|
 | S-01 | Cola de envío | Cada registro guardado queda en cola (guardado → enviado → con error); envío automático en segundo plano con señal, «Enviar ahora», y nada se borra del dispositivo hasta que el servidor confirme. Requiere dos campos nuevos en plantaciones: identificador del servidor y marca de envío (retirados en D17 por no tener uso todavía) | DECISIONES, pendiente «Cola de envío al servidor»; D83 |
 | S-02 | Emisión del folio | Tabla de secuencias por celda UGA, perpetua y monotónica (sin reinicio por ejercicio, administración ni versión); lectura e incremento atómicos, nunca MAX(folio)+1 ni COUNT+1; asignación en transacción con plantaciones.id como clave de idempotencia (R3–R6); se congelan folio_uga, folio_capa_version, folio_lat, folio_lng (R8). Sólo con la malla UGA corregida, versionada y congelada | D67; js/folio.js; pendiente «Emisión del folio» |
-| S-03 | Integridad referencial y unicidad en la base | FK de todas las relaciones de arriba; UNIQUE en plantaciones.folio, usuarios.correo, catalogos (tipo, clave), catalogos (tipo, nombre), catalogos.nombre_cientifico; CHECK de los dominios; la bitácora sin FK a propósito | Esta tabla de relaciones |
-| S-04 | Permisos en el servidor | Las reglas de js/permisos.js se imponen en la API (Norma 7.1); la pantalla sólo las refleja. Autenticación con el proveedor institucional: sólo cambia autenticar() en js/sesion.js | js/permisos.js; D05 |
+| S-03 | Integridad referencial y unicidad en la base | FK de todas las relaciones de arriba, que son las mismas con que el dispositivo cuenta el uso antes de eliminar (D151); UNIQUE en plantaciones.folio, usuarios.correo, catalogos (tipo, clave), catalogos (tipo, nombre), catalogos.nombre_cientifico; CHECK de los dominios; la bitácora sin FK a propósito | Esta tabla de relaciones |
+| S-04 | Permisos en el servidor | Las reglas de js/permisos.js (PERFILES y ACCIONES, D151) se imponen en la API en cada operación (Norma 7.1); la pantalla sólo las refleja. Autenticación con el proveedor institucional: sólo cambia autenticar() en js/sesion.js | js/permisos.js; D05 |
 | S-05 | Posible duplicado | Aviso al sincronizar cuando otro registro cae a menos de la incertidumbre combinada de ambos puntos (suma de gps_precision_m, piso 5 m), en el servidor; nunca con 5 m fijos | D69 |
 | S-06 | Bandeja de especies fuera de catálogo | Donde el SIA resuelve cada PENDIENTE_VALIDACION: alta en el catálogo (siguiente ESP-0000) o reasignación a una existente; al resolverse cambia especie_id y especie_estatus, nunca el folio | D68 |
 | S-07 | Fotografías a archivo | foto_base64 sale del renglón y se guarda como archivo referido por foto_id, como en los otros módulos del SIA | Pendiente «Dónde viven las fotografías» |

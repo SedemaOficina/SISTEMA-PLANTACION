@@ -1688,3 +1688,46 @@ eval y la política la bloquea, lo que dejaba sin esperar al croquis y al PDF.
 
 **Verificación:** 609 comprobaciones sin errores de consola; 87 de auditoría;
 presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.71.
+
+## Bloque 91 — Integridad de los datos (24-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.72.
+
+**Qué cambió (D151).** `referencias.js`: `usosDe()`, `totalUsos()` y `textoUsos()`, leídos de las
+relaciones del esquema. `permisos.js`: `eliminarJornadaVacia` en los tres perfiles (la coordinación
+elimina jornadas vacías, decisión D1), `ACCIONES`, `puede()` y `exigir()`. `almacen.js`:
+`guardarJuntos()`, varios cambios en una transacción. `catalogos.js` y `usuarios.js`: el uso se
+cuenta en todas las tablas y se dice en palabras; permiso exigido al guardar, cambiar el estado y
+eliminar; nadie se desactiva ni se elimina a sí mismo. `jornadas.js`: la edición propaga fecha y
+programa a todos los árboles, también los eliminados, en la misma transacción (decisión D2);
+`mover()` da fecha y programa de la jornada nueva, quita la marca de revisado de la de origen y
+sólo acepta jornadas del mismo cabo; «Eliminar jornada» sólo sin ningún árbol, ni eliminado;
+permisos exigidos al cerrar, reabrir, editar, revisar y eliminar. `registros.js`: permisos al
+eliminar y restaurar; restaurar parte del renglón actual y lo devuelve con los datos de su
+jornada. `jornada-activa.js`: permisos al iniciar, cerrar y reabrir; `cambiarEstatus()` y
+`reabrir()` dicen si se hizo. `formulario.js` e `index.html`: sin campo de programa en el árbol
+(`programaDeJornada()`); la ficha de revisión dice «El de la jornada»; permiso al guardar.
+`reportes.js` y `galeria.js`: permiso al guardar el cierre y al armar el ZIP. `util.js` y `envio.js`:
+el aviso del envío automático ya no tapa uno con «Deshacer». `usuarios.js`: la tarjeta del cabo dice «coordinador: …» (decía
+«coordina …») y la del coordinador, «coordina a N cabos». `index.html`: notas de Catálogos y
+Usuarios con la regla de uso nueva. `conexion.js`: el árbol
+que entra por respaldo toma fecha y programa de su jornada. `index.html`: aviso de que el programa
+se propaga al editar la jornada. `estilos.css`: `.revision-sub`. `esquema.json`: relaciones de
+`jornadas.programa_id` y `jornadas.puntos_revisados`, reglas R-J01 y R-J02, R-P03, R-A01, R-U04,
+R-C03, S-03 y S-04 al día, orígenes declarados; `DICCIONARIO-DATOS.md` regenerado. `MAPEO-CAMPOS.md`
+y `README.md` al día.
+Pruebas: revisión de integridad sobre todo lo capturado en la prueba principal (referencias,
+fecha y programa iguales a los de la jornada, marcas de revisado); en una base nueva, cambiar el
+programa y la fecha de una jornada los cambia en sus tres árboles, también el eliminado, con su
+historial; restaurar devuelve el árbol con los datos actuales de su jornada; mover le da los de la
+jornada nueva, quita su marca de revisado y no acepta la jornada de otro cabo; una jornada con un
+árbol eliminado no se borra ni llamando la función; un cabo no desactiva un programa ni la cuenta
+de administración, y un coordinador no elimina un registro, llamando las funciones; la
+coordinación elimina una jornada vacía de su cuadrilla; un programa usado sólo por una jornada y
+un coordinador con un cabo no se eliminan y el aviso dice por qué. Se ajustaron las pruebas del
+programa en el formulario (ya no existe el campo) y el ayudante `registrar()` inicia otra jornada
+cuando el árbol es de otro programa. La prueba del espacio lleno usa una acción que la cuenta de
+coordinación sí tiene (cambiar el estado de su jornada): la de catálogos ahora se detiene antes
+por falta de permiso.
+
+**Verificación:** 632 comprobaciones sin errores de consola; 89 de auditoría;
+presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.72.

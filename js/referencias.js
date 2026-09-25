@@ -20,6 +20,38 @@ SRP.ref = {
 
   nombreCatalogo(id) { const c = this.catalogoPorId[id]; return c ? c.nombre : ''; },
 
+  /* QUIÉN USA CADA VALOR (D151). Por id de la tabla pedida, cuántos renglones de cada tabla lo
+     nombran, leído de las relaciones del esquema (SRP.ESQUEMA): cuentas, catálogos y jornadas se
+     cuentan igual en todas las pantallas. Entran los árboles eliminados, que siguen en el historial
+     y se pueden restaurar. La bitácora no cuenta: es la constancia, y guarda el nombre de quien
+     actuó. Antes cada pantalla contaba sólo árboles, y se eliminaron un programa que usaban tres
+     jornadas y un coordinador con cabos asignados. Devuelve { id: { tabla: n } }. */
+  async usosDe(tabla) {
+    const usos = {};
+    for (const [origen, campos] of Object.entries(SRP.ESQUEMA.tablas)) {
+      if (origen === 'bitacora') continue;
+      const refs = campos.filter(c => c[4] === tabla).map(c => c[0]);
+      if (!refs.length) continue;
+      for (const fila of await SRP.almacen.todos(origen)) {
+        const ids = new Set();
+        refs.forEach(k => [].concat(fila[k] == null ? [] : fila[k]).forEach(v => ids.add(v)));
+        if (origen === tabla) ids.delete(fila.id);   // quien se nombra a sí mismo (editó su cuenta) no se usa
+        ids.forEach(v => { const u = usos[v] = usos[v] || {}; u[origen] = (u[origen] || 0) + 1; });
+      }
+    }
+    return usos;
+  },
+
+  NOMBRES_TABLA: { plantaciones: ['árbol', 'árboles'], jornadas: ['jornada', 'jornadas'], usuarios: ['cuenta', 'cuentas'], catalogos: ['catálogo', 'catálogos'] },
+
+  totalUsos(u) { return u ? Object.values(u).reduce((a, b) => a + b, 0) : 0; },
+
+  // «12 árboles, 3 jornadas y 1 cuenta»; '' si nada lo usa
+  textoUsos(u) {
+    const partes = Object.keys(this.NOMBRES_TABLA).filter(t => u && u[t]).map(t => u[t] + ' ' + this.NOMBRES_TABLA[t][u[t] === 1 ? 0 : 1]);
+    return partes.length > 1 ? partes.slice(0, -1).join(', ') + ' y ' + partes[partes.length - 1] : (partes[0] || '');
+  },
+
   /* Búsqueda de especie con un solo criterio en toda la app: nombre común, científico, género y
      otros nombres comunes del catálogo (D84). `q` ya viene normalizado. Devuelve el otro nombre
      por el que coincidió, para decirlo en la lista, o '' si coincidió por nombre o científico. */

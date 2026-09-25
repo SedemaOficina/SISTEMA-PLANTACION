@@ -24,7 +24,6 @@ SRP.formulario = {
     });
     this.el('btn-coord-aplicar').addEventListener('click', () => this.aplicarCoordenadasManuales());
     this.iniciarCombo();
-    this.iniciarProgramas();
     // «Hoy» pone la fecha de un toque; sigue siendo una elección de quien captura (D29, D98)
     this.el('btn-fecha-hoy').addEventListener('click', () => {
       this.el('campo-fecha').value = SRP.util.fechaHoy();
@@ -100,7 +99,6 @@ SRP.formulario = {
 
   // Se llama cada vez que se entra a la vista Registrar
   preparar() {
-    this.llenarProgramas();
     if (!this.estado.editando && SRP.mapa.lat === null) {
       SRP.mapa.estado('Use el botón de ubicación para tomar su posición, o toque el mapa para colocar el punto.');
     }
@@ -123,68 +121,18 @@ SRP.formulario = {
       SRP.util.escapar((SRP.ref.catalogoPorId[id] || {}).nombre || id) + '</button>').join('');
   },
 
-  // El programa de la jornada se hereda en el formulario (D130); se puede cambiar por árbol
-  heredarPrograma() {
-    const j = this.estado.editando ? null : SRP.activa.jornada;
-    const sel = this.el('campo-programa');
-    if (j && j.programa_id && !sel.value) { sel.value = j.programa_id; if (sel.value !== j.programa_id) sel.value = ''; this.pintarProgramas(); }
-    // Con el programa heredado, el campo no se pregunta otra vez (D132): se ve en el panel de la jornada
-    this.el('caja-programa').hidden = !!(j && j.programa_id && sel.value === j.programa_id);
-  },
-
-  llenarProgramas(actualId) {
-    const sel = this.el('campo-programa');
-    const previo = actualId || sel.value;
-    // Reforestación Urbana encabeza la lista: es el programa de casi toda la captura en campo
-    const opciones = SRP.ref.deTipo('programa', true)
-      .sort((a, b) => (b.clave === 'REFOR_URBANA') - (a.clave === 'REFOR_URBANA'));
-    if (previo && !opciones.find(o => o.id === previo) && SRP.ref.catalogoPorId[previo]) opciones.push(SRP.ref.catalogoPorId[previo]);
-    sel.innerHTML = '<option value="">Seleccione un programa</option>' + opciones.map(o =>
-      '<option value="' + SRP.util.escapar(o.id) + '">' + SRP.util.escapar(o.nombre) + (o.activo ? '' : ' (inactivo)') + '</option>').join('');
-    // Sin preselección: el formulario arranca en blanco aunque el catálogo tenga un solo
-    // programa, para que la elección siempre sea de quien captura.
-    sel.value = previo || '';
-    this.pintarProgramas();
-  },
-
-  /* PROGRAMA EN LISTA DESPLEGABLE (D120, supera a D98). Los programas crecen con el tiempo, y
-     Liber pidió la lista siempre, no botones. El código de los botones se conserva por si algún día
-     se quiere volver a ellos: con MAX_BOTONES_PROGRAMA en 0 nunca se pintan. */
-  MAX_BOTONES_PROGRAMA: 0,
-
-  iniciarProgramas() {
-    this.el('programa-botones').addEventListener('click', (e) => {
-      const b = e.target.closest('.chip'); if (!b) return;
-      const sel = this.el('campo-programa');
-      sel.value = b.dataset.id;
-      SRP.util.quitarErrorCampo(sel);
-      sel.dispatchEvent(new Event('change', { bubbles: true }));
-    });
-    this.el('campo-programa').addEventListener('change', () => { this.pintarProgramas(); if (SRP.espejo) SRP.espejo.refrescar(); });
-  },
-
-  pintarProgramas() {
-    const sel = this.el('campo-programa');
-    const ops = [...sel.options].filter(o => o.value);
-    const caja = this.el('programa-botones');
-    const botones = ops.length > 0 && ops.length <= this.MAX_BOTONES_PROGRAMA;
-    caja.hidden = !botones;
-    sel.classList.toggle('oculto-visual', botones);
-    if (botones) { sel.setAttribute('tabindex', '-1'); sel.setAttribute('aria-hidden', 'true'); }
-    else { sel.removeAttribute('tabindex'); sel.removeAttribute('aria-hidden'); }
-    caja.dataset.invalido = sel.getAttribute('aria-invalid') === 'true' ? 'true' : 'false';
-    // Si el foco estaba en un botón, se conserva en el mismo programa tras repintar
-    const enfocado = caja.contains(document.activeElement) ? document.activeElement.dataset.id : null;
-    caja.innerHTML = botones ? ops.map(o =>
-      '<button type="button" class="chip" data-id="' + SRP.util.escapar(o.value) + '" aria-pressed="' + (o.value === sel.value) + '">' +
-      SRP.util.escapar(o.textContent) + '</button>').join('') : '';
-    if (enfocado) { const b = caja.querySelector('[data-id="' + enfocado + '"]'); if (b) b.focus(); }
+  /* EL PROGRAMA ES DE LA JORNADA (D151, supera a D130 y D132). Se elige al iniciarla y sus árboles lo
+     toman siempre, como la fecha: si cambia el de la jornada, cambia el de todos, y un árbol movido
+     toma el de su jornada nueva. Un árbol de otro programa va en otra jornada. Por eso el formulario
+     ya no tiene campo de programa. */
+  programaDeJornada() {
+    const j = this.estado.editando ? this.estado.jornadaEditando : SRP.activa.jornada;
+    return (j && j.programa_id) || (this.estado.editando ? this.estado.editando.programa_id : '') || '';
   },
 
   // Lleva el foco al control que la persona ve para ese dato
   enfocar(id) {
     let el = this.el(id); if (!el) return;
-    if (id === 'campo-programa' && !this.el('programa-botones').hidden) el = this.el('programa-botones').querySelector('.chip') || el;
     el.scrollIntoView({ block: 'center' });
     el.focus();
   },
@@ -357,7 +305,7 @@ SRP.formulario = {
     if (!this.estado.especieId) errores.push(['campo-especie', 'Elija una especie de la lista o la opción «Otra especie».']);
     if (this.estado.especieId === this.OTRA && !this.el('campo-otra-especie').value.trim())
       errores.push(['campo-otra-especie', 'Escriba qué especie es.']);
-    if (!this.el('campo-programa').value) errores.push(['campo-programa', 'Elija el programa.']);
+    if (this.el('campo-fecha').value && !this.programaDeJornada()) errores.push(['campo-fecha', 'La jornada no tiene programa: elíjalo en Jornadas › Editar jornada.']);
     // La fecha viene de la jornada (D119); sólo se comprueba que exista
     const f = this.el('campo-fecha').value;
     if (!f) errores.push(['campo-fecha', 'No hay jornada activa: inicie una antes de registrar.']);
@@ -367,10 +315,9 @@ SRP.formulario = {
 
   mostrarErrores(errores) {
     // Cada campo dice su error debajo (D140); el resumen de arriba se conserva
-    SRP.util.erroresEnCampos(errores, ['btn-ubicacion', 'campo-especie', 'campo-otra-especie', 'campo-programa', 'campo-fecha']);
+    SRP.util.erroresEnCampos(errores, ['btn-ubicacion', 'campo-especie', 'campo-otra-especie', 'campo-fecha']);
     const caja = this.el('resumen-errores');
-    if (!errores.length) { caja.hidden = true; this.pintarProgramas(); return; }
-    this.pintarProgramas();
+    if (!errores.length) { caja.hidden = true; return; }
     caja.innerHTML = '<h2>Falta corregir ' + errores.length + (errores.length === 1 ? ' dato' : ' datos') + '</h2><ul>' +
       errores.map(([id, t]) => '<li><a href="#' + id + '">' + t + '</a></li>').join('') + '</ul>';
     caja.hidden = false;
@@ -392,7 +339,7 @@ SRP.formulario = {
       especie_otra: otra ? this.el('campo-otra-especie').value.trim() : '',
       // «Otra especie» ya no es un problema del identificador: es un pendiente de catálogo (D68)
       especie_estatus: otra ? 'PENDIENTE_VALIDACION' : 'VALIDADA',
-      programa_id: this.el('campo-programa').value,
+      programa_id: this.programaDeJornada(),   // el de la jornada (D151)
       fecha_plantacion: this.el('campo-fecha').value,
       comentarios: this.el('campo-comentarios').value.trim(),
       foto_base64: this.estado.foto, foto_id: this.estado.fotoId,
@@ -498,7 +445,7 @@ SRP.formulario = {
       // Nombre común, científico y tipo de distribución del catálogo (D123)
       ['Especie', esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : '') +
         (esp.distribucion ? '<span class="revision-distribucion">' + esc(esp.distribucion) + '</span>' : ''), 'especie'],
-      ['Programa', esc(SRP.ref.nombreCatalogo(v.programa_id)), 'programa'],
+      ['Programa', esc(SRP.ref.nombreCatalogo(v.programa_id)) + '<span class="revision-sub">El de la jornada</span>', null],
       ['Jornada', esc(this.nombreJornada()) + ' · ' + esc(SRP.util.formatearFecha(v.fecha_plantacion)), null],
       ['Alcaldía', esc(SRP.ref.alcaldia(v.alcaldia)), null],
       ['Colonia', esc(SRP.ref.colonia(v.colonia)), null],
@@ -561,7 +508,7 @@ SRP.formulario = {
       return;
     }
     if (campo === 'foto') { this.el('etq-foto').scrollIntoView({ block: 'center' }); this.el('foto-archivo').click(); return; }
-    const destino = { especie: 'campo-especie', programa: 'campo-programa', fecha: 'campo-fecha', comentarios: 'campo-comentarios' }[campo];
+    const destino = { especie: 'campo-especie', fecha: 'campo-fecha', comentarios: 'campo-comentarios' }[campo];
     if (!destino) return;
     this.enfocar(destino);
     if (destino === 'campo-especie') this.el(destino).select();
@@ -601,6 +548,8 @@ SRP.formulario = {
   },
 
   async guardar() {
+    // Lo mismo que esconde los botones, exigido aquí (D151)
+    if (!(this.estado.editando ? SRP.permisos.exigir('registro.editar', this.estado.editando) : SRP.permisos.exigir('registro.crear'))) return;
     const v = this.valores();
     const u = SRP.sesion.usuario;
     const ahora = SRP.util.ahoraISO();
@@ -720,7 +669,6 @@ SRP.formulario = {
     if (registro.jornada_id) SRP.almacen.uno('jornadas', registro.jornada_id).then(j => { this.estado.jornadaEditando = j || null; });
     this.el('titulo-registrar').textContent = 'Editar registro';
     this.el('titulo-registrar').hidden = false;
-    this.el('caja-programa').hidden = false;   // al editar, el programa es dato del árbol y se ve
     const aviso = this.el('edicion-aviso');
     aviso.textContent = 'Está editando el registro del ' + SRP.util.formatearFecha(registro.fecha_plantacion) +
       ' capturado por ' + SRP.ref.nombreUsuario(registro.cabo_id) + '. Los cambios quedan en el historial.';
@@ -729,7 +677,6 @@ SRP.formulario = {
     this.el('campo-fecha').value = registro.fecha_plantacion;
     this.el('campo-comentarios').value = registro.comentarios || '';
     SRP.util.pintarContador(this.el('campo-comentarios'));
-    this.llenarProgramas(registro.programa_id);
     if (registro.especie_id) this.elegirEspecie(registro.especie_id);
     else this.elegirEspecie(this.OTRA, registro.especie_otra);
     this.ponerFoto(SRP.util.fotoSegura(registro.foto_base64) || null, registro.foto_id, registro.foto_nombre, registro.foto_bytes);
@@ -754,8 +701,6 @@ SRP.formulario = {
     this.el('edicion-aviso').hidden = true;
     this.el('btn-cancelar-edicion').hidden = true;
     this.el('campo-especie').value = ''; this.estado.especieId = null; this.mostrarOtra(false);
-    this.el('campo-programa').value = '';
-    this.pintarProgramas();
     this.el('campo-fecha').value = '';
     this.el('campo-comentarios').value = '';
     this.el('coord-lat').value = '';

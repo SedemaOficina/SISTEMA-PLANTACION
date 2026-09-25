@@ -25,7 +25,7 @@ El sistema arranca con tres cuentas y **ninguna plantación**: se llena con lo q
 | Correo | Perfil | Qué puede hacer |
 |---|---|---|
 | administracion@ejemplo.local | Administración global | Ve, edita y elimina todo, y lleva Catálogos y Usuarios. **No captura registros** |
-| coordinador@ejemplo.local | Coordinador | Registra, y ve y edita los registros de su cuadrilla; no elimina |
+| coordinador@ejemplo.local | Coordinador | Registra, y ve y edita los registros de su cuadrilla; no elimina registros, sí jornadas vacías |
 | cabo@ejemplo.local | Cabo | Registra, y ve, edita y elimina sólo los suyos |
 
 Quien captura en campo es un **cabo**; quien lo dirige, un **coordinador**. En el código son
@@ -52,7 +52,7 @@ desaparece al poner `ES_FICTICIO: false`.
 index.html            Pantallas y marca de versión de los archivos
 css/estilos.css       Estilos (orden fijo por bloques; ver el encabezado del archivo)
 js/config.js          ÚNICO lugar con valores configurables
-js/permisos.js        ÚNICO lugar con las reglas de cada perfil
+js/permisos.js        ÚNICO lugar con las reglas de cada perfil y lo que exige cada acción (D151)
 js/almacen.js         Base del dispositivo (IndexedDB) y bitácora
 js/sesion.js          Acceso; se sustituye al conectar el proveedor institucional
 js/datos-ficticios.js Cuentas y catálogos de arranque
@@ -68,7 +68,7 @@ js/galeria.js         Sección Fotografías (coordinación y administración): r
 js/jornadas.js        Sección Jornadas: mapa y lista numerados de un día de trabajo, avisos y conciliación con el cierre (D112)
 sw.js                 Service worker: la app abre sin señal; versión = marca ?v= de index.html
 manifest.webmanifest  Instalación en pantalla de inicio; iconos definitivos en assets/ (D90)
-js/referencias.js     Catálogos y cuentas en memoria
+js/referencias.js     Catálogos y cuentas en memoria; quién usa cada valor, en todas las tablas (D151)
 js/iconos.js          Iconos por significado; los del set de iconografía CDMX se extraen con pruebas/extraer_iconos.py (D88)
 js/reportes.js       Cierre del parte del día y reporte PDF de la jornada
 js/mapa.js, foto.js, formulario.js, registros.js, catalogos.js,
@@ -256,7 +256,9 @@ Nada de esto se hace en la Etapa 1; se deja escrito para no descubrirlo tarde (D
    `autenticar()` en `js/sesion.js`). Mientras siga «simulado», con `ES_FICTICIO: false` **el acceso
    queda cerrado**: nadie entra con cualquier contraseña.
 3. Servidor de la Fase 2 con las reglas que hoy viven sólo en el teléfono: permisos en cada
-   operación, validación del esquema (`js/validar.js` es la referencia), bitácora propia, folio.
+   operación (`ACCIONES` en `js/permisos.js` es la lista), validación del esquema (`js/validar.js`
+   es la referencia), llaves foráneas con las mismas relaciones con que el teléfono cuenta el uso
+   antes de eliminar (`usosDe()` en `js/referencias.js`), bitácora propia, folio.
 4. Capas definitivas de alcaldías, UGA y colonias (`pruebas/generar_capas.py`).
 5. Mapa base con licencia confirmada; si cambia el dominio, también en la política de seguridad
    de `index.html`.

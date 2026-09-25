@@ -92,6 +92,9 @@ SRP.util = {
   anunciar(mensaje, tipo, op) {
     op = op || {};
     const zona = document.getElementById('aviso');
+    // Un aviso de fondo (el envío automático) no tapa uno que ofrece «Deshacer»: se perdería la
+    // única salida de lo que se acaba de hacer (D151). Lo de fondo también se lee en la pastilla.
+    if (op.secundario && !zona.hidden && zona.querySelector('.aviso-accion')) return;
     const tonos = { alerta: { icono: 'info', color: 'alerta' }, aviso: { icono: 'info', color: 'aviso' } };
     const t = tonos[tipo] || { icono: 'palomita', color: 'exito' };
     zona.innerHTML = '<span class="aviso-icono" aria-hidden="true">' + SRP.ICONOS.svg(t.icono, 'medio') + '</span>' +

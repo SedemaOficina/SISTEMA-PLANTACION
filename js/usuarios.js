@@ -4,7 +4,7 @@
 window.SRP = window.SRP || {};
 
 SRP.usuarios = {
-  editando: null, uso: {}, estado: 'todos',
+  editando: null, uso: {}, usos: {}, estado: 'todos',
 
   el(id) { return document.getElementById(id); },
 
@@ -37,8 +37,9 @@ SRP.usuarios = {
 
   async preparar() {
     const plantaciones = await SRP.almacen.todos('plantaciones');
-    this.uso = {};
+    this.uso = {};   // árboles a nombre de cada cuenta: la columna «Registros»
     plantaciones.forEach(p => { this.uso[p.cabo_id] = (this.uso[p.cabo_id] || 0) + 1; });
+    this.usos = await SRP.ref.usosDe('usuarios');   // todo lo que la nombra: decide si se puede eliminar (D151)
     this.pintar();
   },
 
@@ -56,6 +57,8 @@ SRP.usuarios = {
       '<th scope="col">Cargo y rol</th><th scope="col">Perfil</th><th scope="col">Coordinador</th>' +
       '<th scope="col">Estado</th><th scope="col">Registros</th><th scope="col">Acciones</th></tr></thead>';
 
+    const cabos = {};
+    SRP.ref.usuarios.forEach(x => { if (x.coordinador_id) cabos[x.coordinador_id] = (cabos[x.coordinador_id] || 0) + 1; });
     const filas = lista.map(u => {
       const n = this.uso[u.id] || 0;
       const soyYo = u.id === yo;
@@ -64,7 +67,7 @@ SRP.usuarios = {
       const items = [{ accion: 'editar', texto: 'Editar', icono: 'lapiz' }];
       if (!soyYo) {
         items.push({ accion: 'estado', texto: u.activo ? 'Desactivar' : 'Activar', icono: u.activo ? 'cerrar' : 'palomita' });
-        if (n === 0) items.push({ accion: 'eliminar', texto: 'Eliminar', icono: 'basura', peligro: true });
+        if (!SRP.ref.totalUsos(this.usos[u.id])) items.push({ accion: 'eliminar', texto: 'Eliminar', icono: 'basura', peligro: true });
       }
       const estado = '<span class="estado-texto" data-activo="' + u.activo + '">' + (u.activo ? 'Activo' : 'Inactivo') + '</span>';
       // En teléfono, tarjeta compacta (D105): nombre, correo, un renglón de resumen y la tuerca
@@ -78,7 +81,9 @@ SRP.usuarios = {
         '<td class="c-movil-oculta" data-etiqueta="Registros">' + n + '</td>' +
         '<td class="c-acciones" data-etiqueta="Acciones">' + SRP.ICONOS.menuAcciones(u.id, SRP.util.nombreCompleto(u), items) + '</td>' +
         '<td class="c-resumen">' + estado + '<span>' + [esc(SRP.permisos.de(u).etiqueta), esc(SRP.ref.nombreCatalogo(u.area_id)),
-          u.coordinador_id ? 'coordina ' + esc(SRP.ref.nombreUsuario(u.coordinador_id)) : '',
+          // «coordinador: …» en el cabo; «coordina a 2 cabos» en quien coordina (antes el cabo decía «coordina» a su coordinador)
+          u.coordinador_id ? 'coordinador: ' + esc(SRP.ref.nombreUsuario(u.coordinador_id)) : '',
+          cabos[u.id] ? 'coordina a ' + cabos[u.id] + (cabos[u.id] === 1 ? ' cabo' : ' cabos') : '',
           n + (n === 1 ? ' registro' : ' registros')].filter(Boolean).join(' · ') + '</span></td></tr>';
     }).join('');
 
@@ -159,6 +164,7 @@ SRP.usuarios = {
   },
 
   async guardar() {
+    if (!SRP.permisos.exigir('usuario.administrar')) return;
     const limpio = (id) => this.el(id).value.trim().replace(/\s+/g, ' ');
     const d = {
       nombre: limpio('usr-nombre'), apellido_paterno: limpio('usr-ap'), apellido_materno: limpio('usr-am'),
@@ -199,6 +205,8 @@ SRP.usuarios = {
   /* Desactivar se deshace: no pregunta, lo dice el aviso y ofrece «Deshacer» (D139).
      `deshaciendo`: viene de «Deshacer» del aviso; no se vuelve a ofrecer deshacer (D101) */
   async cambiarEstado(u, deshaciendo) {
+    if (!SRP.permisos.exigir('usuario.administrar')) return;
+    if (u.id === SRP.sesion.usuario.id) { SRP.util.anunciar('No puede desactivar su propia cuenta: el sistema se quedaría sin quien lo administre.', 'alerta'); return; }
     const activar = !u.activo;
     const nuevo = Object.assign({}, u, { activo: activar, editado_por_id: SRP.sesion.usuario.id, fecha_ultima_edicion: SRP.util.ahoraISO() });
     await SRP.almacen.guardarConBitacora('usuarios', nuevo, SRP.bitacora.entrada(activar ? 'ACTIVADO' : 'DESACTIVADO', 'usuario', u.id));
@@ -210,14 +218,23 @@ SRP.usuarios = {
   },
 
   async eliminar(u) {
+    if (!SRP.permisos.exigir('usuario.administrar')) return;
+    if (u.id === SRP.sesion.usuario.id) { SRP.util.anunciar('No puede eliminar su propia cuenta.', 'alerta'); return; }
     await this.preparar();                 // recuenta justo antes de decidir
-    if (this.uso[u.id]) {
-      const n = this.uso[u.id];
-      SRP.util.anunciar('No se puede eliminar: tiene ' + n + (n === 1 ? ' registro' : ' registros') + ' a su nombre. Desactive la cuenta.', 'alerta');
+    // Cuenta en todas las tablas (D151): árboles, jornadas de las que es cabo o encargado, cabos
+    // que coordina, cuentas y catálogos que dio de alta o editó
+    const usos = this.usos[u.id];
+    if (SRP.ref.totalUsos(usos)) {
+      // Los cabos que coordina se dicen por su nombre: «aparece en 1 cuenta» no explicaba nada
+      const cabos = SRP.ref.usuarios.filter(x => x.coordinador_id === u.id).length;
+      const resto = Object.assign({}, usos, { usuarios: (usos.usuarios || 0) - cabos });
+      const motivo = [cabos ? 'coordina a ' + cabos + (cabos === 1 ? ' cabo' : ' cabos') : '',
+        SRP.ref.totalUsos(resto) ? 'aparece en ' + SRP.ref.textoUsos(resto) : ''].filter(Boolean).join(' y ');
+      SRP.util.anunciar('No se puede eliminar: ' + motivo + '. Desactive la cuenta: eso sí se deshace.', 'alerta');
       return;
     }
     const ok = await SRP.app.confirmar({ titulo: 'Eliminar cuenta', pregunta: '¿Eliminar la cuenta de ' + SRP.util.nombreCompleto(u) + '?',
-      puntos: ['No tiene registros a su nombre.', 'La bitácora conserva la constancia.', 'Si sólo no debe entrar, desactívela: eso sí se deshace.'],
+      puntos: ['No aparece en ningún árbol, jornada, cuenta ni catálogo.', 'La bitácora conserva la constancia.', 'Si sólo no debe entrar, desactívela: eso sí se deshace.'],
       irreversible: true, boton: 'Eliminar cuenta', icono: 'basura' });
     if (!ok) return;
     await SRP.almacen.borrarConBitacora('usuarios', u.id,

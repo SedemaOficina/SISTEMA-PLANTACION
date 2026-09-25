@@ -152,9 +152,8 @@ SRP.activa = {
     this.el('registrar-columnas').hidden = false;
     this.el('titulo-arbol').hidden = false; this.el('titulo-arbol').textContent = 'Nuevo árbol';
     this.pintarFranja(this.jornada, await this.registrosDe(this.jornada), false);
-    // La fecha de plantación se hereda (D119); el programa y las especies recientes también (D130)
+    // La fecha de plantación y el programa son los de la jornada (D119, D151); las especies recientes, a un toque (D130)
     SRP.formulario.el('campo-fecha').value = this.jornada.fecha;
-    SRP.formulario.heredarPrograma();
     await SRP.formulario.pintarEspeciesRecientes();
   },
 
@@ -271,6 +270,7 @@ SRP.activa = {
   /* ---------- Acciones ---------- */
 
   async iniciarJornada() {
+    if (!SRP.permisos.exigir('jornada.crear')) return;
     const nombre = this.el('ini-nombre').value.trim();
     const ubicacion = this.el('ini-ubicacion').value.trim();
     const fecha = this.el('ini-fecha').value;
@@ -344,9 +344,10 @@ SRP.activa = {
 
   async cerrarJornada() {
     const j = this.jornada; if (!j) return;
+    if (!SRP.permisos.exigir('jornada.editar', j)) return;
     const ok = await SRP.app.confirmar(await this.confirmacionCierre(j));
     if (!ok) return;
-    await this.cambiarEstatus(j, 'cerrada');
+    if (!await this.cambiarEstatus(j, 'cerrada')) return;
     this.jornada = null;
     SRP.jornadas.actual = j.id;
     SRP.jornadas.volverAlDetalle = true;
@@ -355,20 +356,24 @@ SRP.activa = {
   },
 
   async reabrir(j) {
-    await this.cambiarEstatus(j, 'abierta');
+    if (!await this.cambiarEstatus(j, 'abierta')) return false;
     // Sólo pasa a ser la activa de quien la reabre si es suya (D133): un coordinador la reabre para su cabo
     if (j.cabo_id === SRP.sesion.usuario.id) {
       this.jornada = await SRP.almacen.uno('jornadas', j.id);
       SRP.util.anunciar('Jornada «' + j.nombre + '» reabierta. Es la activa en Nuevo registro.');
     } else SRP.util.anunciar('Jornada «' + j.nombre + '» reabierta para ' + SRP.ref.nombreUsuario(j.cabo_id) + '.', 'aviso');
+    return true;
   },
 
+  // Devuelve si se hizo: sin permiso se detiene con aviso (D151)
   async cambiarEstatus(j, estatus) {
+    if (!SRP.permisos.exigir('jornada.editar', j)) return false;
     const u = SRP.sesion.usuario;
     const ahora = SRP.util.ahoraISO();
     const nuevo = Object.assign({}, j, { estatus, fecha_cierre: estatus === 'cerrada' ? ahora : null, editado_por_id: u.id, fecha_ultima_edicion: ahora });
     await SRP.almacen.guardarConBitacora('jornadas', nuevo, SRP.bitacora.entrada('EDITADO', 'jornada', j.id, estatus === 'cerrada' ? 'Jornada cerrada' : 'Jornada reabierta'));
     if (SRP.envio.simulado()) SRP.envio.enviar({ silencioso: true });
+    return true;
   },
 
   async abrirCambiar() {

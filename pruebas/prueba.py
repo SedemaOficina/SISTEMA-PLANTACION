@@ -60,14 +60,13 @@ def registrar(pg, busqueda, especie_id, programa='p-refor', fecha=None, foto=Non
     """Captura un árbol de principio a fin y devuelve el identificador con que se guardó.
     `busqueda` es lo que se teclea para que la especie salga en la lista. Con `fecha` distinta de
     la jornada activa, inicia una jornada de ese día (la fecha se hereda de la jornada, D119)."""
-    activa=pg.evaluate("SRP.activa.jornada && SRP.activa.jornada.fecha")
-    if activa != (fecha or HOY) or pg.is_visible('#panel-iniciar-jornada'):
-        iniciar_jornada(pg, 'Jornada de prueba ' + (fecha or HOY), fecha or HOY)
+    activa=pg.evaluate("SRP.activa.jornada && [SRP.activa.jornada.fecha, SRP.activa.jornada.programa_id]")
+    if activa != [fecha or HOY, programa] or pg.is_visible('#panel-iniciar-jornada'):
+        iniciar_jornada(pg, 'Jornada de prueba ' + (fecha or HOY), fecha or HOY, programa=programa)
     pg.click('#btn-ubicacion'); pg.wait_for_timeout(700)
     pg.fill('#campo-especie', busqueda); pg.wait_for_timeout(200)
     pg.dispatch_event('.combo-opcion[data-id="%s"]' % especie_id, 'mousedown'); pg.wait_for_timeout(150)
-    # El programa se hereda de la jornada y el campo va oculto (D132); la prueba lo fija en el dato para poder variarlo
-    pg.evaluate("document.getElementById('campo-programa').value = '%s'" % programa); pg.wait_for_timeout(100)
+    # El programa es el de la jornada (D151): para otro programa, otra jornada
     if foto: pg.set_input_files('#foto-archivo', foto); pg.wait_for_timeout(800)
     editando = pg.evaluate("SRP.formulario.estado.editando ? SRP.formulario.estado.editando.id : null")
     pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(800)
@@ -149,7 +148,7 @@ with sync_playwright() as p:
     ok('programa' in pg.inner_text('#ini-errores').lower() and 'plantar' in pg.inner_text('#ini-errores').lower(),'sin programa ni meta no se inicia la jornada (D130, D131)')
     pg.select_option('#ini-programa','p-refor'); pg.fill('#ini-meta','25'); pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(600)
     ok(pg.is_hidden('#panel-iniciar-jornada') and pg.is_visible('#registrar-columnas') and pg.is_visible('#franja-jornada'),'con la jornada iniciada aparece el formulario con su franja')
-    ok(pg.input_value('#campo-programa')=='p-refor' and pg.evaluate("SRP.activa.jornada.programa_id")=='p-refor' and 'Reforestación' in pg.inner_text('#franja-jornada'),'el programa de la jornada queda guardado, se hereda en el formulario y se lee en la franja (D130)')
+    ok(pg.evaluate("SRP.formulario.programaDeJornada()")=='p-refor' and pg.evaluate("SRP.activa.jornada.programa_id")=='p-refor' and 'Reforestación' in pg.inner_text('#franja-jornada'),'el programa de la jornada queda guardado, es el de sus árboles y se lee en la franja (D130, D151)')
     ok(pg.evaluate("SRP.activa.jornada.meta_arboles")==25 and '0 de 25' in pg.inner_text('#franja-jornada') and 'JORNADA ACTIVA' in pg.inner_text('#franja-jornada').upper() and pg.is_visible('#titulo-arbol') and pg.inner_text('#titulo-arbol')=='Nuevo árbol',
        'la meta queda en la jornada; el panel dice «Jornada activa» y «0 de 25», y el formulario empieza con su título «Nuevo árbol» (D131): '+pg.inner_text('#franja-jornada').replace('\n',' '))
     ok('Parque Hundido' in pg.inner_text('#franja-jornada') and HOY_TXT in pg.inner_text('#franja-jornada') and '0 de 25 árboles' in pg.inner_text('#franja-jornada'),'la franja dice la jornada, su fecha y cuántos árboles lleva: '+pg.inner_text('#franja-jornada').replace('\n',' '))
@@ -181,7 +180,7 @@ with sync_playwright() as p:
     ok(pg.locator('#form-plantacion .nota-obligatorio').count()==0,'ni la nota del asterisco en el formulario del árbol')
     ok(pg.evaluate("['campo-especie','campo-otra-especie'].every(i=>{const e=document.getElementById(i); return e.spellcheck===false && e.getAttribute('autocorrect')==='off' && e.getAttribute('autocapitalize')==='off';})"),
        'los nombres de especie no pasan por corrector ni mayúsculas automáticas (D99)')
-    ok(pg.evaluate("['campo-especie','campo-programa'].every(i=>document.getElementById(i).required)"),
+    ok(pg.evaluate("document.getElementById('campo-especie').required"),
        'lo obligatorio lo anuncia el atributo required, no sólo el asterisco')
     orden=pg.evaluate("""()=>{const t=document.getElementById('vista-registrar').innerHTML;
         return [t.indexOf('btn-ubicacion'), t.indexOf('id="detalles-coord"'), t.indexOf('id="mapa"')];}""")
@@ -389,11 +388,10 @@ with sync_playwright() as p:
     pg.fill('#campo-especie','fres'); pg.wait_for_timeout(120)
     pg.dispatch_event('.combo-opcion[data-id="ESP-0029"]','mousedown'); pg.wait_for_timeout(200)
     ok(pg.input_value('#campo-especie')=='Fresno (Fraxinus uhdei)','al elegir, el campo queda como en el catálogo')
-    ok(pg.evaluate("document.activeElement.id")!='campo-programa','elegir especie no mueve el foco al programa (D82)')
-    # Programa en lista desplegable (D120): los programas crecen; sin preselección (D29)
-    prog=pg.evaluate('''() => ({ botones: document.getElementById('programa-botones').hidden, lista_visible: !document.getElementById('campo-programa').classList.contains('oculto-visual'),
-      opciones: [...document.getElementById('campo-programa').options].filter(o => o.value).length, valor: document.getElementById('campo-programa').value })''')
-    ok(prog=={'botones':True,'lista_visible':True,'opciones':2,'valor':'p-refor'} and pg.is_hidden('#caja-programa'),'el programa viene de la jornada y ya no se pregunta por árbol: el campo queda oculto con el valor puesto (D120, D130, D132): %s' % prog)
+    ok(pg.evaluate("document.activeElement.id")=='campo-especie','elegir especie deja el foco en la especie: no salta a otro campo (D82)')
+    # El programa es el de la jornada (D151): el formulario del árbol ya no lo tiene
+    prog=pg.evaluate("({ campo: document.querySelectorAll('#campo-programa, #caja-programa, #programa-botones').length, valor: SRP.formulario.valores().programa_id })")
+    ok(prog=={'campo':0,'valor':'p-refor'},'el programa es el de la jornada y el formulario del árbol ya no lo pregunta (D151): %s' % prog)
     # El texto guía de los campos de fecha vacíos (D104) se comprueba en la fecha de la jornada
     vac=pg.evaluate("(() => { const e=document.getElementById('ini-fecha').closest('.envoltura-vacio'); return e ? e.querySelector('.texto-vacio').textContent : null; })()")
     ok(vac=='Seleccione la fecha','la fecha de la jornada lleva el texto guía «Seleccione la fecha» (D104, D120): %s' % vac)
@@ -495,7 +493,7 @@ with sync_playwright() as p:
     restos=pg.evaluate("""() => ({
       especie: document.getElementById('campo-especie').value,
       otra: document.getElementById('caja-otra-especie').hidden ? '' : 'visible',
-      programa: document.getElementById('campo-programa').value,
+      programa: SRP.formulario.programaDeJornada(),
       fecha: document.getElementById('campo-fecha').value,
       lat_mano: document.getElementById('coord-lat').value,
       lng_mano: document.getElementById('coord-lng').value,
@@ -513,8 +511,8 @@ with sync_playwright() as p:
     ok(sucios==[] and heredados=={'programa':'p-refor','fecha':HOY},'el registro nuevo arranca en blanco salvo lo que hereda de la jornada (programa y fecha, D130); con resto en: %s %s' % (sucios, heredados))
 
     # Validación
-    pg.evaluate("document.getElementById('campo-fecha').value=''; document.getElementById('campo-programa').value=''"); pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(300)
-    ok(pg.locator('#resumen-errores li').count()==4 and 'jornada' in pg.inner_text('#resumen-errores').lower(),'valida ubicación, especie, programa y que haya jornada activa')
+    pg.evaluate("document.getElementById('campo-fecha').value=''"); pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(300)
+    ok(pg.locator('#resumen-errores li').count()==3 and 'jornada' in pg.inner_text('#resumen-errores').lower(),'valida ubicación, especie y que haya jornada activa; el programa lo pone la jornada (D151)')
     pg.evaluate("document.getElementById('campo-fecha').value=SRP.activa.jornada.fecha")
 
     # Se capturan más árboles para poder probar listados y filtros
@@ -1139,7 +1137,7 @@ with sync_playwright() as p:
       accion: [...document.querySelectorAll('#espejo-bitacora tr')].find(t=>t.textContent.includes('accion')).children[1].textContent,
       edicion: [...document.querySelectorAll('#espejo-cuerpo tr')].find(t=>t.textContent.includes('fecha_ultima_edicion')).children[1].textContent
     })""")
-    ok(pg.is_visible('#caja-programa'),'al editar un registro el programa sí se ve: es dato del árbol (D132)')
+    ok(pg.locator('#caja-programa').count()==0 and pg.evaluate("SRP.formulario.valores().programa_id")==pg.evaluate("SRP.formulario.estado.editando.programa_id"),'al editar tampoco se pide el programa: es el de su jornada (D151)')
     ok(espejoEd['accion']=='EDITADO' and 'al guardar' in espejoEd['edicion'],
        'en edición el espejo anuncia EDITADO, con la marca pendiente de fijar')
     pg.fill('#campo-especie','ahuehu'); pg.wait_for_timeout(150)
@@ -1928,8 +1926,9 @@ with sync_playwright() as p:
     ok(pg.evaluate("SRP.conexion.textoUltimoRespaldo().texto")=='Hoy.','un respaldo guardado deja la fecha de hoy')
     # Espacio lleno: las acciones que escriben lo dicen con palabras
     pg.evaluate("() => { window.__guardar = SRP.almacen.guardarConBitacora; SRP.almacen.guardarConBitacora = () => Promise.reject(new DOMException('lleno', 'QuotaExceededError')); }")
-    pg.evaluate("() => { SRP.catalogos.cambiarEstado({ id: 'p-centro', tipo: 'programa', nombre: 'Centro Histórico', activo: true }).catch(() => {}); }"); pg.wait_for_timeout(300)
-    ok('No se pudo cambiar el estado del catálogo: el teléfono se quedó sin espacio' in pg.inner_text('#aviso'),'una acción que falla por espacio lo dice: '+pg.inner_text('#aviso'))
+    # (con la cuenta de coordinación: una acción que le está permitida, D151)
+    pg.evaluate("() => { SRP.activa.cambiarEstatus(SRP.activa.jornada, SRP.activa.jornada.estatus).catch(() => {}); }"); pg.wait_for_timeout(300)
+    ok('No se pudo cambiar el estado de la jornada: el teléfono se quedó sin espacio' in pg.inner_text('#aviso'),'una acción que falla por espacio lo dice: '+pg.inner_text('#aviso'))
     pg.click('#btn-ubicacion'); pg.wait_for_timeout(700); pg.fill('#campo-especie','aile'); pg.wait_for_timeout(200)
     pg.dispatch_event('.combo-opcion[data-id="ESP-0002"]','mousedown'); pg.wait_for_timeout(150)
     pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(700)
@@ -2010,6 +2009,112 @@ with sync_playwright() as p:
     # Modo de prueba apagado: el acceso simulado no abre con cualquier contraseña
     fuera=pg.evaluate("() => { SRP.CONFIG.ES_FICTICIO = false; const r = SRP.sesion.autenticar('cabo@ejemplo.local'); SRP.CONFIG.ES_FICTICIO = true; return r; }")
     ok(fuera['ok'] is False and 'acceso institucional todavía no está conectado' in fuera['motivo'],'con ES_FICTICIO apagado y el proveedor aún simulado, el acceso queda cerrado (D150): '+fuera['motivo'])
+
+    # ---------- BLOQUE 91: INTEGRIDAD (D151) ----------
+    # Revisión de integridad sobre lo capturado en toda la prueba, no sobre la base recién sembrada:
+    # toda referencia existe, cada árbol tiene la fecha y el programa de su jornada y cada marca de
+    # revisado es de un árbol de esa jornada
+    INTEGRIDAD="""async () => {
+      const T = {}; for (const t of ['plantaciones', 'jornadas', 'usuarios', 'catalogos']) T[t] = await SRP.almacen.todos(t);
+      const existentes = Object.fromEntries(Object.entries(T).map(([t, f]) => [t, new Set(f.map(x => x.id))]));
+      const fallas = [];
+      for (const [t, filas] of Object.entries(T)) for (const f of filas) {
+        const rotas = SRP.validar.referenciasRotas(t, f, existentes); if (rotas.length) fallas.push(t + ':' + f.id + ':' + rotas.join(','));
+      }
+      const jor = Object.fromEntries(T.jornadas.map(j => [j.id, j]));
+      for (const r of T.plantaciones) { const j = jor[r.jornada_id]; if (j && (r.programa_id !== j.programa_id || r.fecha_plantacion !== j.fecha)) fallas.push('hereda:' + r.id); }
+      for (const j of T.jornadas) for (const id of (j.puntos_revisados || [])) { const r = T.plantaciones.find(x => x.id === id); if (!r || r.jornada_id !== j.id) fallas.push('revisado:' + j.nombre + ':' + id); }
+      return { fallas, arboles: T.plantaciones.length, jornadas: T.jornadas.length };
+    }"""
+    integ=pg.evaluate(INTEGRIDAD)
+    ok(not integ['fallas'],'lo capturado en toda la prueba está íntegro: referencias, fecha y programa de la jornada, marcas de revisado (D151): %s' % integ)
+
+    ctx11=b.new_context(viewport={'width':390,'height':844},geolocation={'latitude':19.432,'longitude':-99.133},permissions=['geolocation'])
+    pg11=ctx11.new_page(); err11=[]
+    pg11.on('pageerror', lambda e: err11.append(str(e))); pg11.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err11.append(m.text))
+    pg11.goto(BASE); pg11.wait_for_timeout(1200)
+    def entrar11(uid):
+        if not pg11.is_visible('#sel-usuario-prueba'):
+            pg11.click('#btn-cuenta'); pg11.click('#btn-cambiar-perfil'); pg11.wait_for_timeout(200)
+        pg11.select_option('#sel-usuario-prueba', uid); pg11.click('#btn-entrar-prueba'); pg11.wait_for_timeout(700)
+    def uno11(tabla, i): return pg11.evaluate("async () => await SRP.almacen.uno('%s', '%s')" % (tabla, i))
+    def aviso11(): return pg11.inner_text('#aviso')
+    entrar11('u-cabo-1')
+    AYER=(datetime.date.fromisoformat(HOY)-datetime.timedelta(days=1)).isoformat()
+    jA=iniciar_jornada(pg11,'Jornada B91 A',HOY)
+    a1=registrar(pg11,'aile','ESP-0002'); a2=registrar(pg11,'aile','ESP-0002'); a3=registrar(pg11,'aile','ESP-0002')
+    jB=iniciar_jornada(pg11,'Jornada B91 B',AYER)
+    jC=iniciar_jornada(pg11,'Jornada B91 C',HOY); c1=registrar(pg11,'aile','ESP-0002')
+    jD=iniciar_jornada(pg11,'Jornada B91 D',HOY)
+    jE=iniciar_jornada(pg11,'Jornada B91 E',HOY)
+    a3_viejo=uno11('plantaciones',a3)
+    pg11.evaluate("async () => { for (const id of ['%s', '%s']) await SRP.registros.eliminar(await SRP.almacen.uno('plantaciones', id)); }" % (a3, c1)); pg11.wait_for_timeout(300)
+    pg11.evaluate("SRP.util.anunciar('3 registros enviados al servidor (simulado). Recepción confirmada.', undefined, { secundario: true })")
+    ok('eliminado' in aviso11() and pg11.locator('#aviso .aviso-accion').count()==1,'el aviso de un envío automático no tapa el «Deshacer» de lo que se acaba de eliminar (D151)')
+    pg11.evaluate("async () => { const j = await SRP.almacen.uno('jornadas', '%s'); j.puntos_revisados = ['%s']; await SRP.almacen.guardarConBitacora('jornadas', j, null); }" % (jA, a1))
+    # D2: cambiar el programa y la fecha de la jornada los cambia en todos sus árboles, también el eliminado
+    pg11.evaluate("SRP.app.mostrarVista('jornadas')"); pg11.wait_for_timeout(500)
+    pg11.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg11.wait_for_timeout(300); pg11.evaluate("SRP.jornadas.abrir('%s')" % jA); pg11.wait_for_timeout(600)
+    pg11.click('#btn-jornada-editar'); pg11.wait_for_timeout(300)
+    pg11.select_option('#ej-programa','p-centro'); pg11.wait_for_timeout(100)
+    ok(pg11.is_visible('#ej-nota-programa'),'al cambiar el programa de la jornada avisa que sus árboles lo toman (D151)')
+    pg11.fill('#ej-fecha',AYER); pg11.dispatch_event('#ej-fecha','change'); pg11.click('#btn-ej-guardar'); pg11.wait_for_timeout(900)
+    prop=pg11.evaluate("""async () => (await SRP.almacen.todos('plantaciones')).filter(r => r.jornada_id === '%s').map(r => [r.id, r.estatus, r.programa_id, r.fecha_plantacion])""" % jA)
+    ok(len(prop)==3 and all(x[2]=='p-centro' and x[3]==AYER for x in prop) and any(x[1]=='eliminado' for x in prop),
+       'cambiar programa y fecha de la jornada los cambia en todos sus árboles, también en el eliminado (D151, decisión D2): %s' % prop)
+    hist=pg11.evaluate("async () => (await SRP.bitacora.deEntidad('%s')).map(h => h.detalle || '')" % a3)
+    ok(any('Por cambio de la jornada' in h and 'Centro Histórico' in h for h in hist),'y queda en el historial de cada árbol')
+    # Restaurar vuelve con los datos de su jornada, no con la copia de cuando se eliminó
+    pg11.evaluate("async (r) => { await SRP.registros.restaurar(r); }", a3_viejo); pg11.wait_for_timeout(300)
+    r3=uno11('plantaciones',a3)
+    ok(r3['estatus']=='activo' and r3['programa_id']=='p-centro' and r3['fecha_plantacion']==AYER,'un árbol restaurado vuelve con la fecha y el programa actuales de su jornada (M8): %s' % [r3['programa_id'], r3['fecha_plantacion']])
+    # Mover: toma fecha y programa de la jornada nueva y su marca de revisado sale de la de origen
+    pg11.evaluate("async () => { await SRP.jornadas.mover(await SRP.almacen.uno('plantaciones', '%s'), await SRP.almacen.uno('jornadas', '%s')); }" % (a1, jB)); pg11.wait_for_timeout(400)
+    r1=uno11('plantaciones',a1); jA_d=uno11('jornadas',jA)
+    ok(r1['jornada_id']==jB and r1['programa_id']=='p-refor' and r1['fecha_plantacion']==AYER and a1 not in jA_d['puntos_revisados'] and 'toma su fecha y su programa' in aviso11(),
+       'mover un árbol le da la fecha y el programa de su jornada nueva y quita su marca de revisado de la de origen (M8): %s' % aviso11())
+    pg11.evaluate("async () => { await SRP.jornadas.mover(await SRP.almacen.uno('plantaciones', '%s'), { id: 'jr-ajena', cabo_id: 'u-coord-1', nombre: 'Ajena', fecha: '%s', programa_id: 'p-refor' }); }" % (a2, HOY)); pg11.wait_for_timeout(200)
+    ok(uno11('plantaciones',a2)['jornada_id']==jA and 'mismo cabo' in aviso11(),'y no se mueve a la jornada de otro cabo')
+    # Una jornada con un árbol eliminado no se elimina: el árbol sigue apuntando a ella (A5)
+    pg11.evaluate("SRP.jornadas.abrir('%s')" % jC); pg11.wait_for_timeout(600)
+    ok(pg11.locator('#jornada-lista .punto-jornada').count()==0 and pg11.is_hidden('#btn-jornada-eliminar'),'una jornada sin árboles a la vista pero con uno eliminado no ofrece «Eliminar jornada» (A5)')
+    pg11.evaluate("SRP.jornadas.eliminarJornada()"); pg11.wait_for_timeout(300)
+    ok(uno11('jornadas',jC) is not None and 'guarda 1 árbol eliminado' in aviso11() and pg11.is_hidden('#dlg-confirmar'),'y aunque se llame a la función, no se borra y dice por qué: '+aviso11())
+    # Los permisos se exigen en la función, no sólo en el botón (M9)
+    pg11.evaluate("async () => { await SRP.catalogos.cambiarEstado(SRP.ref.catalogoPorId['p-centro']); }"); pg11.wait_for_timeout(200)
+    ok(uno11('catalogos','p-centro')['activo'] is True and 'No tiene permiso para administrar los catálogos' in aviso11(),'un cabo no desactiva un programa llamando la función (M9): '+aviso11())
+    pg11.evaluate("async () => { await SRP.usuarios.cambiarEstado(SRP.ref.usuarioPorId['u-admin-1']); }"); pg11.wait_for_timeout(200)
+    ok(uno11('usuarios','u-admin-1')['activo'] is True and 'No tiene permiso para administrar las cuentas' in aviso11(),'ni la cuenta de administración')
+    entrar11('u-coord-1')
+    pg11.evaluate("async () => { await SRP.registros.eliminar(await SRP.almacen.uno('plantaciones', '%s')); }" % a2); pg11.wait_for_timeout(200)
+    ok(uno11('plantaciones',a2)['estatus']=='activo' and 'No tiene permiso para eliminar este registro' in aviso11(),'un coordinador no elimina un registro llamando la función (M9): '+aviso11())
+    # D1: la coordinación elimina las jornadas vacías de su cuadrilla
+    pg11.evaluate("SRP.app.mostrarVista('jornadas')"); pg11.wait_for_timeout(500)
+    pg11.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg11.wait_for_timeout(300); pg11.evaluate("SRP.jornadas.abrir('%s')" % jD); pg11.wait_for_timeout(600)
+    ok(pg11.is_visible('#btn-jornada-eliminar'),'la coordinación ve «Eliminar jornada» en una jornada vacía de su cuadrilla (D151, decisión D1)')
+    pg11.click('#btn-jornada-eliminar'); pg11.wait_for_timeout(300); pg11.click('#btn-confirmar-si'); pg11.wait_for_timeout(600)
+    ok(uno11('jornadas',jD) is None,'y la elimina')
+    # A5: el uso se cuenta en todas las tablas
+    entrar11('u-admin-1')
+    pg11.evaluate("SRP.app.mostrarVista('catalogos')"); pg11.wait_for_timeout(500)
+    pg11.click('#btn-cat-agregar'); pg11.wait_for_timeout(300); pg11.fill('#cat-nombre','Programa B91'); pg11.click('#form-catalogo button[type=submit]'); pg11.wait_for_timeout(500)
+    pid=pg11.evaluate("SRP.ref.deTipo('programa').find(c => c.nombre === 'Programa B91').id")
+    pg11.evaluate("async () => { const j = await SRP.almacen.uno('jornadas', '%s'); j.programa_id = '%s'; await SRP.almacen.guardarConBitacora('jornadas', j, null); await SRP.catalogos.preparar(); }" % (jE, pid)); pg11.wait_for_timeout(300)
+    fila=pg11.locator('#tabla-catalogo tbody tr', has_text='Programa B91')
+    ok('1 jornada' in fila.inner_text() and fila.locator('button[data-accion=eliminar]').count()==0,'un programa que sólo usa una jornada dice «1 jornada» y no ofrece Eliminar (A5): '+fila.inner_text().replace('\n',' | '))
+    ok('2 árboles y 1 jornada' in pg11.locator('#tabla-catalogo tbody tr', has_text='Centro Histórico').inner_text(),'el uso cuenta árboles y jornadas: «2 árboles y 1 jornada»')
+    pg11.evaluate("async () => { await SRP.catalogos.eliminar(SRP.ref.catalogoPorId['%s']); }" % pid); pg11.wait_for_timeout(300)
+    ok(uno11('catalogos',pid) is not None and 'aparece en 1 jornada' in aviso11(),'y aunque se llame a la función, no se borra: '+aviso11())
+    pg11.evaluate("SRP.app.mostrarVista('usuarios')"); pg11.wait_for_timeout(500)
+    ok(pg11.locator('#tabla-usuarios tbody tr', has_text='Perengano').locator('button[data-accion=eliminar]').count()==0,'un coordinador con cabos asignados no ofrece Eliminar (A5)')
+    ok('coordina a 1 cabo' in pg11.locator('#tabla-usuarios tbody tr', has_text='coordinador@').inner_text() and 'coordinador: Perengano' in pg11.locator('#tabla-usuarios tbody tr', has_text='Fulana').inner_text(),
+       'la tarjeta del coordinador dice cuántos cabos coordina, y la del cabo quién es su coordinador (antes decía que el cabo «coordina» a su coordinador)')
+    pg11.evaluate("async () => { await SRP.usuarios.eliminar(SRP.ref.usuarioPorId['u-coord-1']); }"); pg11.wait_for_timeout(300)
+    ok(uno11('usuarios','u-coord-1') is not None and 'coordina a 1 cabo' in aviso11(),'y la función tampoco lo borra: '+aviso11())
+    integ11=pg11.evaluate(INTEGRIDAD)
+    ok(not integ11['fallas'],'tras mover, restaurar, cambiar la jornada y los intentos de borrar, todo sigue íntegro: %s' % integ11)
+    ok(not err11,'y sin errores en consola: %s' % err11[:2])
+    ctx11.close()
 
     b.close()
 print('\n'.join(res)); print('ERRORES CONSOLA:',errores or 'ninguno')

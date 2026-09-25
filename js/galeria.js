@@ -177,6 +177,7 @@ SRP.galeria = {
   },
 
   async descargarTodas() {
+    if (!SRP.permisos.exigir('galeria.descargar')) return;
     if (!this.fotos.length) return;
     const b = this.el('btn-galeria-zip');
     // Armar el ZIP puede tardar con muchas fotografías: el botón cambia de texto y queda con

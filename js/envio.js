@@ -132,8 +132,10 @@ SRP.envio = {
     let res;
     try { res = await this.enviando; } finally { this.enviando = null; this.enCurso = 0; }
     await this.alCambiar();
-    if (res.cortado) SRP.util.anunciar('Se perdió la señal durante el envío. ' + this.textoCuenta(n) + ' en el teléfono; ' + (n === 1 ? 'se enviará' : 'se enviarán') + ' cuando vuelva.', 'alerta');
-    else if (!op.silencioso) SRP.util.anunciar((n === 1 ? '1 registro enviado' : n + ' registros enviados') + ' al servidor (simulado). Recepción confirmada.');
+    // Si el envío fue automático, su aviso no tapa un «Deshacer» a la vista (D151)
+    const fondo = { secundario: !op.manual };
+    if (res.cortado) SRP.util.anunciar('Se perdió la señal durante el envío. ' + this.textoCuenta(n) + ' en el teléfono; ' + (n === 1 ? 'se enviará' : 'se enviarán') + ' cuando vuelva.', 'alerta', fondo);
+    else if (!op.silencioso) SRP.util.anunciar((n === 1 ? '1 registro enviado' : n + ' registros enviados') + ' al servidor (simulado). Recepción confirmada.', undefined, fondo);
     return res;
   },
 

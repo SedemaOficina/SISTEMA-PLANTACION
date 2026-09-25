@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.71 (Bloque 90)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.72 (Bloque 91)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -177,13 +177,18 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M173 | Auditoría 360 (A4) | Restaurar un respaldo revisa cada renglón, sólo acepta árboles y jornadas del alcance de quien restaura, enseña el resumen (cuántos entran, cuántos ya estaban y por qué no entra cada rechazado) y pide confirmación | Alta | 0.6.71 (B90) | Herramientas de prueba › Restaurar respaldo | Confirmación |
 | M174 | Auditoría 360 (M1) | El respaldo lleva sólo lo que alcanza quien lo guarda (sus árboles y jornadas) y avisa que contiene nombres, ubicaciones y fotos; ya no lleva el padrón con correos | Media | 0.6.71 (B90) | Menú de la cuenta › Guardar respaldo | Aviso |
 | M175 | Auditoría 360 (M10) | Apagar el modo de prueba ya apaga todo: sin el proveedor institucional el acceso queda cerrado; la pastilla dice «(simulado)» en pantallas anchas | Media | 0.6.71 (B90) | Computadora: pastilla de conexión | Pastilla |
+| M176 | Auditoría 360 (A5) | Un programa, un área o una cuenta que usa cualquier árbol (también eliminado), jornada o cuenta ya no se puede eliminar, y el aviso dice quién lo usa: «aparece en 2 árboles y 1 jornada», «coordina a 1 cabo» | Alta | 0.6.72 (B91) | Administración › Catálogos o Usuarios | Columna Uso |
+| M177 | Auditoría 360 (M8, decisión D2) | El programa es de la jornada: el formulario del árbol ya no lo pide, y al cambiar la fecha o el programa de la jornada cambian con ella todos sus árboles de una vez; al mover un árbol toma los de su jornada nueva | Alta | 0.6.72 (B91) | Jornadas › Editar jornada › Programa | Aviso del programa |
+| M178 | Auditoría 360 (M9, decisión D1) | La coordinación elimina las jornadas vacías de su cuadrilla; una jornada que guarda árboles eliminados ya no se borra | Media | 0.6.72 (B91) | Coordinador › Jornadas › una jornada vacía | Botón Eliminar |
+| M179 | Auditoría 360 (M9) | Cada acción revisa el permiso antes de escribir, no sólo esconde el botón: es la lista que impondrá el servidor | Media | 0.6.72 (B91) | (Lo cubren las pruebas) | — |
+| M180 | Pruebas del bloque 91 | El aviso del envío automático ya no tapa el «Deshacer» de lo que se acaba de eliminar | Media | 0.6.72 (B91) | Eliminar un árbol con registros por enviar | Aviso con Deshacer |
+| M181 | Pruebas del bloque 91 | En Usuarios, la tarjeta del cabo decía que «coordina» a su coordinador: ahora dice «coordinador: …», y la del coordinador, «coordina a N cabos» | Baja | 0.6.72 (B91) | Administración › Usuarios | Tarjetas |
 
 ## 2. Por hacer
 
 | # | Origen | Mejora | Prioridad | Estado | Nota |
 |---|---|---|---|---|---|
 | M46 | Android | Revisión corta en Android: versión, botón «atrás» con ventanas abiertas, calendario y hora, especies con teclado, precisión, foto, compartir PDF, aviso | Alta | Pendiente | Espera capturas |
-| M166 | Auditoría 360 | Bloque 91 «Integridad»: contar el uso en todas las tablas antes de eliminar, propagar cambios de la jornada, permisos exigidos en cada acción (A5, M8, M9) | Alta | Pendiente | Condición para datos reales; decisiones D1 y D2 |
 | M167 | Auditoría 360 | Bloque 92 «Territorio confiable»: ámbito por la unión de alcaldías, capas exigidas al arrancar, rótulos veraces, lectura GPS, créditos del mapa (A6, A7, M3, M5, M6, M7) | Alta | Pendiente | |
 | M168 | Auditoría 360 | Bloque 93 «Publicación ligera»: fuentes fuera del sitio, capas con su propia versión y aligeradas, licencia, jsPDF al día (M2, M4) | Media | Pendiente | Decisiones D5 a D7 |
 | M169 | Auditoría 360 | Bloque 94 «Orden del código y los textos»: hoja de estilos a su norma, duplicación, etiquetas, README y comentarios (M11, M13–M16, M20) | Media | Pendiente | |
@@ -204,4 +209,4 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 162 hechas · 7 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 168 hechas · 6 por hacer · 2 revisadas · 2 descartadas.

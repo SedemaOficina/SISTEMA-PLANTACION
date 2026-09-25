@@ -244,6 +244,7 @@ SRP.reportes = {
   async aceptar() {
     const c = this.contexto;
     const previo = c.previo;
+    if (!SRP.permisos.exigir('jornada.editar', previo || c.jornada.dato)) return;   // el cierre se guarda en la jornada (D151)
     const cierre = this.cierrePrevisto();
     cierre.reporte_en = SRP.util.ahoraISO();   // cuándo se generó (o regeneró) el reporte (D134)
 

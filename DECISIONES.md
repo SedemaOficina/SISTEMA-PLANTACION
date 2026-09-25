@@ -1256,3 +1256,41 @@
   pastilla dice «(simulado)» en pantallas anchas y en su etiqueta accesible, y la guía «servidor
   simulado». El README lleva la lista de verificación para salir a producción. Aprobado por Liber,
   24-09-2026.
+- **D151. Integridad de los datos.** Tercer bloque del plan de la auditoría 360 (hallazgos A5, M8,
+  M9 y las relaciones de M18), con las decisiones D1 y D2 de Liber. 1) El uso de un valor se cuenta
+  en todas las tablas: `SRP.ref.usosDe(tabla)` lee las relaciones del esquema (`SRP.ESQUEMA`) y
+  cuenta los renglones que nombran cada id, incluidos los árboles eliminados; la bitácora no cuenta,
+  porque es la constancia. Catálogos y Cuentas lo usan para ofrecer «Eliminar» y para negarlo con
+  el motivo en palabras («aparece en 2 árboles y 1 jornada»; «coordina a 1 cabo»); la columna Uso
+  de Catálogos lo dice igual. Antes sólo se contaban árboles: se eliminaron un programa que usaban
+  tres jornadas, un cabo con una jornada abierta y un coordinador con cabos asignados. 2) Una
+  jornada sólo se elimina sin ningún árbol, ni eliminado: los eliminados se conservan como
+  constancia y siguen apuntando a ella (antes, al deshacer la eliminación, el árbol quedaba en
+  Registros y en ninguna jornada). La ficha no ofrece «Eliminar jornada» en ese caso y la función,
+  si se llama, lo explica. 3) D2: el programa es de la jornada, como la fecha. Sus árboles lo toman
+  siempre: al registrar, cuando cambia el de la jornada y al moverlos a otra; el formulario del
+  árbol ya no tiene campo de programa (supera la parte de D130 y D132 que permitía cambiarlo por
+  árbol): un árbol de otro programa va en otra jornada. Al editar la jornada, la fecha y el
+  programa pasan a todos sus árboles —también a los eliminados— en la misma transacción que la
+  jornada (`SRP.almacen.guardarJuntos`), con renglón en el historial de cada uno; el diálogo avisa
+  que el programa se propaga, como ya avisaba con la fecha. Mover un árbol le da la fecha y el
+  programa de su jornada nueva y quita su marca de revisado de la de origen, todo en una
+  transacción, y sólo a jornadas del mismo cabo. Restaurar un árbol toma el renglón actual, no la
+  copia de cuando se eliminó, y lo devuelve con los datos de su jornada; sin jornada no se
+  restaura. Un árbol que entra por respaldo toma los de su jornada. 4) D1 y M9: la coordinación
+  elimina jornadas vacías de su cuadrilla (`eliminarJornadaVacia` en `PERFILES`). Cada acción que
+  escribe exige su permiso al empezar (`SRP.permisos.ACCIONES` y `exigir()`): registrar, editar,
+  eliminar, restaurar y mover árboles; iniciar, editar, cerrar, reabrir, revisar y eliminar
+  jornadas; el cierre del reporte; catálogos; cuentas; el ZIP de fotografías. Sin permiso, avisa
+  y se detiene: un coordinador ya no elimina un registro ni un cabo desactiva un programa o la
+  cuenta de administración llamando la función. Nadie se desactiva ni se elimina a sí mismo. Es
+  la lista que impondrá el servidor en la Fase 2 (S-04). 5) Esquema: relaciones de
+  `jornadas.programa_id` y `jornadas.puntos_revisados`; reglas R-J01 y R-J02; R-P03, R-A01, R-U04 y
+  R-C03 al día; orígenes «Jornada» y «Dispositivo» declarados. Las pruebas corren una revisión de
+  integridad sobre todo lo capturado (referencias, fecha y programa de la jornada, marcas de
+  revisado), no sobre la base recién sembrada. 6) Las pruebas destaparon que el envío automático
+  (cada minuto, al volver la señal) ponía su aviso encima del de «Deshacer» y se perdía la salida
+  de lo recién eliminado: un aviso de fondo ya no tapa uno con acción (`secundario` en
+  `SRP.util.anunciar`). En Usuarios, la tarjeta del cabo decía que «coordina» a su coordinador: ahora
+  dice «coordinador: …», y la del coordinador, «coordina a N cabos». Las notas de Catálogos y
+  Usuarios dicen la regla nueva. Aprobado por Liber, 24-09-2026.

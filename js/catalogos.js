@@ -9,7 +9,7 @@
 window.SRP = window.SRP || {};
 
 SRP.catalogos = {
-  tipo: 'programa', editando: null,
+  tipo: 'programa', editando: null, usos: {},
   claveTocada: false,   // deja de sugerir en cuanto la persona escribe su propia clave
   ETIQUETA: { programa: 'programa', area: 'área', especie: 'especie' },
   CAMPOS_ESPECIE: ['cat-cientifico', 'cat-distribucion', 'cat-otros-nombres', 'cat-forma', 'cat-snib', 'cat-enciclovida'],
@@ -57,11 +57,8 @@ SRP.catalogos = {
   },
 
   async preparar() {
-    const plantaciones = await SRP.almacen.todos('plantaciones');
-    this.uso = {};
-    const sumar = (id) => { if (id) this.uso[id] = (this.uso[id] || 0) + 1; };
-    plantaciones.forEach(p => { sumar(p.programa_id); sumar(p.especie_id); });   // incluye eliminados: siguen en el historial
-    SRP.ref.usuarios.forEach(u => sumar(u.area_id));
+    // Árboles (también los eliminados: siguen en el historial), jornadas y cuentas que lo usan (D151)
+    this.usos = await SRP.ref.usosDe('catalogos');
     this.el('caja-cat-buscar').hidden = this.tipo !== 'especie';
     this.el('btn-cat-agregar').innerHTML = SRP.ICONOS.svg('mas', 'medio') + '<span>Agregar ' + this.ETIQUETA[this.tipo] + '</span>';
     this.pintar();
@@ -71,16 +68,14 @@ SRP.catalogos = {
     const esc = SRP.util.escapar;
     const q = SRP.util.normalizar(this.el('cat-buscar').value);
     const esEspecie = this.tipo === 'especie';
-    // Singular y plural: «1 registro», no «1 registros»
-    const unidad = (n) => this.tipo === 'area'
-      ? (n === 1 ? 'usuario' : 'usuarios')
-      : (n === 1 ? 'registro' : 'registros');
+    // «12 árboles y 3 jornadas», «2 cuentas», «Sin uso» (D151)
+    const textoUso = (id) => SRP.ref.textoUsos(this.usos[id]) || 'Sin uso';
     const items = SRP.ref.deTipo(this.tipo, false).filter(c => !q || SRP.ref.especieCoincide(c, q));
     const cab = '<thead><tr><th scope="col">' + (esEspecie ? 'Nombre común' : 'Nombre') + '</th>' +
       (esEspecie ? '<th scope="col">Nombre científico</th><th scope="col">Distribución</th>' : '') +
       '<th scope="col">Clave</th><th scope="col">Estado</th><th scope="col">Uso</th><th scope="col">Acciones</th></tr></thead>';
     const filas = items.map(c => {
-      const uso = this.uso[c.id] || 0;
+      const uso = SRP.ref.totalUsos(this.usos[c.id]);
       // Acciones en el menú de la tuerca (D94); Eliminar sólo si no tiene uso
       const items = [{ accion: 'editar', texto: 'Editar', icono: 'lapiz' },
                      { accion: 'estado', texto: c.activo ? 'Desactivar' : 'Activar', icono: c.activo ? 'cerrar' : 'palomita' }];
@@ -95,9 +90,9 @@ SRP.catalogos = {
           '</td><td class="c-movil-oculta" data-etiqueta="Distribución">' + esc(c.tipo_distribucion || '') + '</td>' : '') +
         '<td class="c-movil-oculta" data-etiqueta="Clave">' + esc(c.clave) + '</td>' +
         '<td class="c-movil-oculta" data-etiqueta="Estado">' + estado + '</td>' +
-        '<td class="c-movil-oculta" data-etiqueta="Uso">' + uso + ' ' + unidad(uso) + '</td>' +
+        '<td class="c-movil-oculta" data-etiqueta="Uso">' + textoUso(c.id) + '</td>' +
         '<td class="c-acciones" data-etiqueta="Acciones">' + SRP.ICONOS.menuAcciones(c.id, c.nombre, items) + '</td>' +
-        '<td class="c-resumen">' + estado + '<span>' + [esc(c.clave), esEspecie ? esc(c.tipo_distribucion || '') : '', uso + ' ' + unidad(uso)].filter(Boolean).join(' · ') + '</span></td></tr>';
+        '<td class="c-resumen">' + estado + '<span>' + [esc(c.clave), esEspecie ? esc(c.tipo_distribucion || '') : '', textoUso(c.id)].filter(Boolean).join(' · ') + '</span></td></tr>';
     }).join('');
     this.el('tabla-catalogo').innerHTML = cab + '<tbody>' + (filas || '<tr><td colspan="7">Sin resultados.</td></tr>') + '</tbody>';
     SRP.util.ordenable(this.el('tabla-catalogo'));
@@ -200,6 +195,7 @@ SRP.catalogos = {
   },
 
   async guardar() {
+    if (!SRP.permisos.exigir('catalogo.administrar')) return;
     const limpio = (id) => this.el(id).value.trim().replace(/\s+/g, ' ');
     const enciclovida = limpio('cat-enciclovida');
     const datos = {
@@ -256,6 +252,7 @@ SRP.catalogos = {
   /* Desactivar se deshace: no pregunta, lo dice el aviso y ofrece «Deshacer» (D139).
      `deshaciendo`: viene de «Deshacer» del aviso; no se vuelve a ofrecer deshacer (D101) */
   async cambiarEstado(item, deshaciendo) {
+    if (!SRP.permisos.exigir('catalogo.administrar')) return;
     const activar = !item.activo;
     const nuevo = Object.assign({}, item, { activo: activar, editado_por_id: SRP.sesion.usuario.id, fecha_ultima_edicion: SRP.util.ahoraISO() });
     await SRP.almacen.guardarConBitacora('catalogos', nuevo, SRP.bitacora.entrada(activar ? 'ACTIVADO' : 'DESACTIVADO', 'catalogo', item.id));
@@ -266,14 +263,15 @@ SRP.catalogos = {
   },
 
   async eliminar(item) {
+    if (!SRP.permisos.exigir('catalogo.administrar')) return;
     await this.preparar();                        // recuenta el uso justo antes de decidir
-    if (this.uso[item.id]) {
-      const n = this.uso[item.id];
-      SRP.util.anunciar('No se puede eliminar: tiene ' + n + (n === 1 ? ' registro asignado' : ' registros asignados') + '. Desactívelo.', 'alerta');
+    const usos = this.usos[item.id];
+    if (SRP.ref.totalUsos(usos)) {
+      SRP.util.anunciar('No se puede eliminar: aparece en ' + SRP.ref.textoUsos(usos) + '. Desactívelo: eso sí se deshace.', 'alerta');
       return;
     }
     const ok = await SRP.app.confirmar({ titulo: 'Eliminar del catálogo', pregunta: '¿Eliminar «' + item.nombre + '»?',
-      puntos: ['No tiene registros asignados.', 'La bitácora conserva la constancia.', 'Si sólo debe dejar de ofrecerse, desactívelo: eso sí se deshace.'],
+      puntos: ['No aparece en ningún árbol, jornada ni cuenta.', 'La bitácora conserva la constancia.', 'Si sólo debe dejar de ofrecerse, desactívelo: eso sí se deshace.'],
       irreversible: true, boton: 'Eliminar', icono: 'basura' });
     if (!ok) return;
     await SRP.almacen.borrarConBitacora('catalogos', item.id,

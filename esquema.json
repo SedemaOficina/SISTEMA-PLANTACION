@@ -66,7 +66,9 @@
     "Sistema": "Lo pone el sistema: identificadores, fechas, marcas, cálculos",
     "Sesión": "Se toma de la cuenta con sesión abierta",
     "Servidor": "Lo asignará el servidor en Fase 2; en Fase 1 nace nulo",
-    "SIA": "Viene del archivo fuente del SIA (catálogo de especies, capas)"
+    "SIA": "Viene del archivo fuente del SIA (catálogo de especies, capas)",
+    "Jornada": "Se toma de la jornada en que está el árbol y cambia con ella (D119, D151)",
+    "Dispositivo": "Lo toma el teléfono al detectar la ubicación, o se captura a mano"
   },
   "dominios": {
     "estatus_plantacion": {
@@ -397,10 +399,10 @@
           "campo": "programa_id",
           "tipo": "text",
           "nulo": false,
-          "origen": "Catálogo",
+          "origen": "Jornada",
           "dominio": "→ catalogos.id con tipo = programa",
-          "pantalla": "Programa (lista; Reforestación Urbana primero)",
-          "regla": "Obligatorio; sin preselección"
+          "pantalla": "Ficha de revisión y detalle («Programa», el de la jornada); no se edita por árbol",
+          "regla": "Es el de su jornada (D151): se toma al registrar, cambia cuando cambia el de la jornada —también en los eliminados, en la misma transacción— y al mover el árbol toma el de su jornada nueva"
         },
         {
           "campo": "fecha_plantacion",
@@ -409,7 +411,7 @@
           "origen": "Jornada",
           "dominio": "AAAA-MM-DD, ≤ hoy",
           "pantalla": "Fecha de plantación (se muestra 21-SEP-2026)",
-          "regla": "Se hereda de la jornada activa al registrar (D119); «Mover a otra jornada» la ajusta. No posterior a hoy"
+          "regla": "Es la fecha de su jornada (D119): se toma al registrar, cambia cuando cambia la de la jornada —también en los eliminados, en la misma transacción (D151)— y al mover el árbol toma la de su jornada nueva. No posterior a hoy"
         },
         {
           "campo": "jornada_id",
@@ -418,7 +420,7 @@
           "origen": "Sistema",
           "dominio": "→ jornadas.id",
           "pantalla": "Jornada (ficha de revisión y detalle)",
-          "regla": "La jornada activa al registrar (D119). Cambia sólo con «Mover a otra jornada» en Jornadas, que también ajusta fecha_plantacion"
+          "regla": "La jornada activa al registrar (D119). Cambia sólo con «Mover a otra jornada» en Jornadas, que también ajusta fecha_plantacion y programa_id (D151)"
         },
         {
           "campo": "comentarios",
@@ -980,7 +982,7 @@
           "origen": "Persona",
           "dominio": "→ catalogos.id con tipo = programa",
           "pantalla": "Programa (Iniciar jornada)",
-          "regla": "Obligatorio al iniciar (D130). Cada árbol lo hereda en el formulario y puede cambiarlo; el dato del árbol sigue siendo plantaciones.programa_id"
+          "regla": "Obligatorio al iniciar (D130). Sus árboles lo toman siempre (D151): al registrar, al cambiarlo aquí y al moverlos a esta jornada"
         },
         {
           "campo": "lat",
@@ -1169,7 +1171,7 @@
           "origen": "Persona",
           "dominio": "→ plantaciones.id; [] si nadie ha revisado",
           "pantalla": "Jornadas → «Está bien» en un punto con aviso",
-          "regla": "Puntos con aviso (duplicado, lejos, precisión) que alguien confirmó como correctos (D112); el aviso deja de contarse, no se borra"
+          "regla": "Puntos con aviso (duplicado, lejos, precisión) que alguien confirmó como correctos (D112); el aviso deja de contarse, no se borra. Al mover un árbol a otra jornada su marca sale de ésta (D151)"
         },
         {
           "campo": "reporte_en",
@@ -1269,7 +1271,7 @@
       "de": "plantaciones.programa_id",
       "a": "catalogos.id (tipo programa)",
       "cardinalidad": "N:1",
-      "regla": "Obligatoria"
+      "regla": "Obligatoria; siempre la de su jornada (D151)"
     },
     {
       "de": "plantaciones.alcaldia_cve / colonia_cve / uga",
@@ -1311,7 +1313,19 @@
       "de": "plantaciones.jornada_id",
       "a": "jornadas.id",
       "cardinalidad": "N:1",
-      "regla": "Cada árbol nace en la jornada activa y hereda su fecha (D119); «Mover a otra jornada» la cambia"
+      "regla": "Cada árbol nace en la jornada activa y toma su fecha y su programa (D119, D151); «Mover a otra jornada» la cambia. Una jornada que tiene árboles, aun eliminados, no se borra"
+    },
+    {
+      "de": "jornadas.programa_id",
+      "a": "catalogos.id (tipo programa)",
+      "cardinalidad": "N:1",
+      "regla": "Obligatoria; sus árboles la toman (D151)"
+    },
+    {
+      "de": "jornadas.puntos_revisados",
+      "a": "plantaciones.id",
+      "cardinalidad": "N:M",
+      "regla": "Lista de ids; sólo árboles de la misma jornada"
     },
     {
       "de": "bitacora.entidad_id",
@@ -1563,8 +1577,8 @@
     {
       "id": "R-P03",
       "tabla": "plantaciones",
-      "regla": "Programa obligatorio, sin preselección; sólo programas activos (más el del registro que se edita, aunque esté inactivo)",
-      "donde": "js/formulario.js llenarProgramas(), validar()"
+      "regla": "El programa es el de la jornada (D151): no se elige por árbol. Al iniciar la jornada se elige entre los programas activos",
+      "donde": "js/formulario.js programaDeJornada(); js/jornada-activa.js iniciarJornada()"
     },
     {
       "id": "R-P04",
@@ -1623,8 +1637,8 @@
     {
       "id": "R-A01",
       "tabla": "todas",
-      "regla": "Alcance por perfil: CABO ve/edita/elimina los suyos; COORDINADOR registra, ve y edita los de sus cabos, no elimina; ADMIN todo, no captura. Un perfil desconocido no alcanza nada",
-      "donde": "js/permisos.js (fuente única); la interfaz sólo lo refleja"
+      "regla": "Alcance por perfil: CABO ve/edita/elimina los suyos; COORDINADOR registra, ve y edita los de sus cabos, no elimina registros y sí jornadas vacías (D151); ADMIN todo, no captura. Un perfil desconocido no alcanza nada. Cada acción que escribe lo exige al empezar, no sólo esconde el botón (D151)",
+      "donde": "js/permisos.js PERFILES, ACCIONES, exigir() (fuente única); la interfaz sólo lo refleja"
     },
     {
       "id": "R-A02",
@@ -1653,8 +1667,8 @@
     {
       "id": "R-U04",
       "tabla": "usuarios",
-      "regla": "Con registros a su nombre no se elimina: se desactiva. Inactiva no puede entrar; sus registros siguen a su nombre",
-      "donde": "js/usuarios.js eliminar(), cambiarEstado(); js/sesion.js autenticar()"
+      "regla": "Si otro renglón la nombra no se elimina: se desactiva (D151). Cuenta en todas las tablas: árboles (también eliminados), jornadas como cabo, encargado o quien la creó o editó, cabos que coordina y cuentas o catálogos que dio de alta o editó. Inactiva no puede entrar; sus registros siguen a su nombre",
+      "donde": "js/referencias.js usosDe(); js/usuarios.js eliminar(), cambiarEstado(); js/sesion.js autenticar()"
     },
     {
       "id": "R-C01",
@@ -1671,14 +1685,26 @@
     {
       "id": "R-C03",
       "tabla": "catalogos",
-      "regla": "Con uso (registros o cuentas) no se elimina: se desactiva. Inactivo deja de ofrecerse; lo ya guardado no cambia",
-      "donde": "js/catalogos.js eliminar(), cambiarEstado()"
+      "regla": "Con uso en cualquier tabla —árboles, también eliminados; jornadas; cuentas— no se elimina: se desactiva (D151). Inactivo deja de ofrecerse; lo ya guardado no cambia",
+      "donde": "js/referencias.js usosDe(); js/catalogos.js eliminar(), cambiarEstado()"
     },
     {
       "id": "R-C04",
       "tabla": "catalogos",
       "regla": "Las 76 especies del SIA se siembran desde assets/catalogo-especies.js (generado del Excel); para cambiarlas se corrige el Excel y se regenera",
       "donde": "pruebas/generar_especies.py; js/datos-ficticios.js"
+    },
+    {
+      "id": "R-J01",
+      "tabla": "jornadas",
+      "regla": "Sólo se elimina sin ningún árbol, ni eliminado: los eliminados se conservan como constancia y siguen apuntando a ella. La eliminan quien la inició, su coordinador o administración (D132, D151)",
+      "donde": "js/jornadas.js eliminarJornada(), pintarDetalle()"
+    },
+    {
+      "id": "R-J02",
+      "tabla": "jornadas",
+      "regla": "Al cambiar su fecha o su programa, todos sus árboles —también los eliminados— los toman en la misma transacción que la jornada. Un árbol movido toma los de su jornada nueva y su marca de revisado sale de la de origen; uno restaurado vuelve con los de su jornada, y sin jornada no se restaura (D151)",
+      "donde": "js/jornadas.js guardarEdicion(), mover(); js/registros.js restaurar(); js/almacen.js guardarJuntos()"
     },
     {
       "id": "R-R01",
@@ -1727,13 +1753,13 @@
     {
       "id": "S-03",
       "que": "Integridad referencial y unicidad en la base",
-      "detalle": "FK de todas las relaciones de arriba; UNIQUE en plantaciones.folio, usuarios.correo, catalogos (tipo, clave), catalogos (tipo, nombre), catalogos.nombre_cientifico; CHECK de los dominios; la bitácora sin FK a propósito",
+      "detalle": "FK de todas las relaciones de arriba, que son las mismas con que el dispositivo cuenta el uso antes de eliminar (D151); UNIQUE en plantaciones.folio, usuarios.correo, catalogos (tipo, clave), catalogos (tipo, nombre), catalogos.nombre_cientifico; CHECK de los dominios; la bitácora sin FK a propósito",
       "referencia": "Esta tabla de relaciones"
     },
     {
       "id": "S-04",
       "que": "Permisos en el servidor",
-      "detalle": "Las reglas de js/permisos.js se imponen en la API (Norma 7.1); la pantalla sólo las refleja. Autenticación con el proveedor institucional: sólo cambia autenticar() en js/sesion.js",
+      "detalle": "Las reglas de js/permisos.js (PERFILES y ACCIONES, D151) se imponen en la API en cada operación (Norma 7.1); la pantalla sólo las refleja. Autenticación con el proveedor institucional: sólo cambia autenticar() en js/sesion.js",
       "referencia": "js/permisos.js; D05"
     },
     {

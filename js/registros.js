@@ -504,6 +504,7 @@ SRP.registros = {
   /* Eliminar un registro se deshace (se marca, no se borra): no pregunta; el aviso dice cuál se
      eliminó y ofrece «Deshacer» (D139). La confirmación queda para lo que no tiene vuelta. */
   async eliminar(r) {
+    if (!SRP.permisos.exigir('registro.eliminar', r)) return;
     // Retiro con constancia: se marca, no se borra (Norma 7.4)
     const nuevo = Object.assign({}, r, { estatus: 'eliminado', fecha_ultima_edicion: SRP.util.ahoraISO(), editado_por_id: SRP.sesion.usuario.id });
     await SRP.almacen.guardarConBitacora('plantaciones', nuevo, SRP.bitacora.entrada('ELIMINADO', 'plantacion', r.id));
@@ -514,8 +515,16 @@ SRP.registros = {
     SRP.conexion.refrescar();   // la cuenta de la pastilla baja
   },
 
+  /* Vuelve a activo el registro como está ahora en la base, no la copia de cuando se eliminó: si
+     mientras tanto cambió la fecha o el programa de su jornada, vuelve con los de la jornada (D151).
+     Sin su jornada no se restaura: quedaría en Registros y en ninguna jornada ni reporte. */
   async restaurar(r) {
-    const vuelto = Object.assign({}, r, { fecha_ultima_edicion: SRP.util.ahoraISO(), editado_por_id: SRP.sesion.usuario.id });
+    if (!SRP.permisos.exigir('registro.restaurar', r)) return;
+    const actual = (await SRP.almacen.uno('plantaciones', r.id)) || r;
+    const jornada = actual.jornada_id ? await SRP.almacen.uno('jornadas', actual.jornada_id) : null;
+    if (!jornada) { SRP.util.anunciar('No se puede restaurar: su jornada ya no existe.', 'alerta'); return; }
+    const vuelto = Object.assign({}, actual, { estatus: 'activo', fecha_plantacion: jornada.fecha, programa_id: jornada.programa_id,
+      fecha_ultima_edicion: SRP.util.ahoraISO(), editado_por_id: SRP.sesion.usuario.id });
     await SRP.almacen.guardarConBitacora('plantaciones', vuelto, SRP.bitacora.entrada('RESTAURADO', 'plantacion', r.id, 'Se deshizo la eliminación'));
     SRP.util.anunciar('Registro restaurado.');
     if (SRP.app.vista === 'jornadas') SRP.jornadas.refrescar(); else this.preparar();

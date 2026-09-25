@@ -182,6 +182,17 @@ SRP.almacen = {
     });
   },
 
+  /* Varios cambios que van juntos, en una sola transacción: entran todos o ninguno (D151). Así una
+     jornada y sus árboles no pueden quedar a medias si el teléfono se queda sin espacio o se cierra
+     la página a la mitad. `cambios`: [{ almacen, objeto, bitacora }]. */
+  guardarJuntos(cambios) {
+    const almacenes = [...new Set(cambios.map(c => c.almacen).concat('bitacora'))];
+    return this._tx(almacenes, 'readwrite', (tx) => cambios.forEach(c => {
+      tx.objectStore(c.almacen).put(c.objeto);
+      if (c.bitacora) tx.objectStore('bitacora').put(c.bitacora);
+    }));
+  },
+
   borrarConBitacora(almacen, id, entradaBitacora) {
     return this._tx([almacen, 'bitacora'], 'readwrite', (tx) => {
       tx.objectStore(almacen).delete(id);

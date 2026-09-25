@@ -14,12 +14,12 @@
 <!-- Las peticiones al mapa no dicen desde qué sitio se hacen -->
 <meta name="referrer" content="no-referrer">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.71">
-<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.6.71">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.72">
+<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.6.72">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.71">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.71">
-<link rel="stylesheet" href="css/estilos.css?v=0.6.71">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.72">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.72">
+<link rel="stylesheet" href="css/estilos.css?v=0.6.72">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -30,8 +30,8 @@
   <div class="encabezado-interior">
     <!-- Logotipo (D90, D137): Gobierno CDMX · SEDEMA · SIA · Reforestación Urbana en pantalla ancha; en teléfono, SIA y Reforestación Urbana -->
     <picture>
-      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.6.71">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.6.71" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
+      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.6.72">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.6.72" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» (D80) -->
@@ -256,11 +256,7 @@
         <input id="campo-otra-especie" spellcheck="false" autocorrect="off" autocapitalize="off">
       </div>
 
-      <!-- Con pocos programas se eligen con botones de ancho igual (D98); la lista sigue siendo el
-           dato del formulario y vuelve a verse si el catálogo pasa de cuatro programas -->
-      <div class="campo" id="caja-programa"><label for="campo-programa" id="etq-programa">Programa <span class="obligatorio" aria-hidden="true">*</span></label>
-        <div id="programa-botones" class="chips chips-campo" role="group" aria-labelledby="etq-programa" hidden></div>
-        <select id="campo-programa" required></select></div>
+      <!-- El programa no se pide por árbol: es el de la jornada (D151) -->
       <!-- La fecha de plantación se hereda de la jornada (D119): el campo sigue existiendo para el
            registro y el espejo, pero no se pide; la pone SRP.activa -->
       <div class="campo" hidden><label for="campo-fecha">Fecha de plantación</label>
@@ -554,7 +550,7 @@
     </div>
     <!-- Cuántos hay y cuántos coinciden con la búsqueda (D105) -->
     <p id="cat-cuenta" class="conteo-lista" aria-live="polite"></p>
-    <p class="nota">Lo que tiene registros no se elimina: se desactiva.</p>
+    <p class="nota">Lo que usa algún árbol, jornada o cuenta no se elimina: se desactiva.</p>
     <div class="tabla-caja"><table id="tabla-catalogo" class="tabla tabla-tarjetas"></table></div>
   </section>
 
@@ -574,7 +570,7 @@
       <button type="button" class="chip" data-estado="todos" aria-pressed="true">Todos</button>
     </div>
     <p id="usr-cuenta" class="conteo-lista" aria-live="polite"></p>
-    <p class="nota">Quien tiene registros no se elimina: se desactiva.</p>
+    <p class="nota">Una cuenta con árboles, jornadas o cabos a su cargo no se elimina: se desactiva.</p>
     <div class="tabla-caja"><table id="tabla-usuarios" class="tabla tabla-tarjetas"></table></div>
   </section>
 </main>
@@ -646,6 +642,7 @@
       <p id="ej-ubicacion-ayuda" class="nota ayuda-campo">Dirección, parque o referencia.</p></div>
     <div class="campo"><label for="ej-programa">Programa <span class="obligatorio" aria-hidden="true">*</span></label>
       <select id="ej-programa"></select></div>
+    <p class="nota" id="ej-nota-programa" hidden>Al cambiar el programa, los árboles de la jornada toman el programa nuevo.</p>
     <div class="campo"><label for="ej-meta">Árboles que se van a plantar <span class="obligatorio" aria-hidden="true">*</span></label>
       <input type="number" id="ej-meta" inputmode="numeric" min="1" max="9999" step="1" autocomplete="off" aria-describedby="ej-meta-ayuda">
       <p id="ej-meta-ayuda" class="nota ayuda-campo">Cuántos árboles trae la cuadrilla para esta jornada.</p></div>
@@ -890,45 +887,45 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.6.71"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.71"></script>
-<script src="vendor/turf-pip.min.js?v=0.6.71"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.6.71"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.71"></script>
+<script src="vendor/leaflet.js?v=0.6.72"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.72"></script>
+<script src="vendor/turf-pip.min.js?v=0.6.72"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.6.72"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.72"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.6.71"></script>
-<script src="js/util.js?v=0.6.71"></script>
-<script src="js/iconos.js?v=0.6.71"></script>
+<script src="js/config.js?v=0.6.72"></script>
+<script src="js/util.js?v=0.6.72"></script>
+<script src="js/iconos.js?v=0.6.72"></script>
 <!-- Capas territoriales del SIA, compactadas por pruebas/generar_capas.py desde assets/fuentes/ -->
-<script src="assets/capa-alcaldias.js?v=0.6.71"></script>
-<script src="assets/capa-uga.js?v=0.6.71"></script>
-<script src="assets/capa-colonias.js?v=0.6.71"></script>
-<script src="assets/catalogo-especies.js?v=0.6.71"></script>
-<script src="js/datos-ficticios.js?v=0.6.71"></script>
-<script src="js/permisos.js?v=0.6.71"></script>
-<script src="js/derivacion.js?v=0.6.71"></script>
-<script src="js/almacen.js?v=0.6.71"></script>
-<script src="js/sesion.js?v=0.6.71"></script>
-<script src="js/referencias.js?v=0.6.71"></script>
-<script src="js/folio.js?v=0.6.71"></script>
+<script src="assets/capa-alcaldias.js?v=0.6.72"></script>
+<script src="assets/capa-uga.js?v=0.6.72"></script>
+<script src="assets/capa-colonias.js?v=0.6.72"></script>
+<script src="assets/catalogo-especies.js?v=0.6.72"></script>
+<script src="js/datos-ficticios.js?v=0.6.72"></script>
+<script src="js/permisos.js?v=0.6.72"></script>
+<script src="js/derivacion.js?v=0.6.72"></script>
+<script src="js/almacen.js?v=0.6.72"></script>
+<script src="js/sesion.js?v=0.6.72"></script>
+<script src="js/referencias.js?v=0.6.72"></script>
+<script src="js/folio.js?v=0.6.72"></script>
 <!-- Esquema generado de esquema.json y la validación de lo que entra por un respaldo (D150) -->
-<script src="js/esquema.js?v=0.6.71"></script>
-<script src="js/validar.js?v=0.6.71"></script>
-<script src="js/conexion.js?v=0.6.71"></script>
-<script src="js/envio.js?v=0.6.71"></script>
-<script src="js/mapa.js?v=0.6.71"></script>
-<script src="js/foto.js?v=0.6.71"></script>
-<script src="js/jornada-activa.js?v=0.6.71"></script>
-<script src="js/formulario.js?v=0.6.71"></script>
+<script src="js/esquema.js?v=0.6.72"></script>
+<script src="js/validar.js?v=0.6.72"></script>
+<script src="js/conexion.js?v=0.6.72"></script>
+<script src="js/envio.js?v=0.6.72"></script>
+<script src="js/mapa.js?v=0.6.72"></script>
+<script src="js/foto.js?v=0.6.72"></script>
+<script src="js/jornada-activa.js?v=0.6.72"></script>
+<script src="js/formulario.js?v=0.6.72"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.6.71"></script>
-<script src="js/registros.js?v=0.6.71"></script>
-<script src="js/galeria.js?v=0.6.71"></script>
-<script src="js/jornadas.js?v=0.6.71"></script>
-<script src="js/croquis.js?v=0.6.71"></script>
-<script src="js/reportes.js?v=0.6.71"></script>
-<script src="js/catalogos.js?v=0.6.71"></script>
-<script src="js/usuarios.js?v=0.6.71"></script>
-<script src="js/app.js?v=0.6.71"></script>
+<script src="js/espejo.js?v=0.6.72"></script>
+<script src="js/registros.js?v=0.6.72"></script>
+<script src="js/galeria.js?v=0.6.72"></script>
+<script src="js/jornadas.js?v=0.6.72"></script>
+<script src="js/croquis.js?v=0.6.72"></script>
+<script src="js/reportes.js?v=0.6.72"></script>
+<script src="js/catalogos.js?v=0.6.72"></script>
+<script src="js/usuarios.js?v=0.6.72"></script>
+<script src="js/app.js?v=0.6.72"></script>
 </body>
 </html>

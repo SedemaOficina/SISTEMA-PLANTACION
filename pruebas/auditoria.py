@@ -163,7 +163,7 @@ with sync_playwright() as p:
         SRP.formulario.valores.call({
           estado: { especieId: 'x', foto: null, fotoId: null, fotoNombre: '', fotoBytes: 0,
                     territorio: { alcaldia:'a', colonia:'c', uga:'u', capa_version:'v' } },
-          OTRA: '__otra__', el: (i) => document.getElementById(i)
+          OTRA: '__otra__', el: (i) => document.getElementById(i), programaDeJornada: () => 'p'
         })));
       return {
         plantaciones: plant,

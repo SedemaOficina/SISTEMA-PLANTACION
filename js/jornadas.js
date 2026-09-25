@@ -96,6 +96,8 @@ SRP.jornadas = {
     this.el('btn-ej-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar cambios</span>';
     this.el('form-editar-jornada').addEventListener('submit', (e) => { e.preventDefault(); this.guardarEdicion(); });
     this.el('ej-fecha').addEventListener('change', () => { this.el('ej-nota-fecha').hidden = this.el('ej-fecha').value === (this.cierre && this.cierre.fecha); });
+    // El programa también es de la jornada (D151): sus árboles lo toman
+    this.el('ej-programa').addEventListener('change', () => { this.el('ej-nota-programa').hidden = this.el('ej-programa').value === (this.cierre && this.cierre.programa_id); });
     this.el('btn-ej-hoy').addEventListener('click', () => {
       this.el('ej-fecha').value = SRP.util.fechaHoy();
       this.el('ej-fecha').dispatchEvent(new Event('change', { bubbles: true }));
@@ -125,6 +127,7 @@ SRP.jornadas = {
 
   async cambiarEstado() {
     const j = await this.cierreDe(this.jornada); if (!j) return;
+    if (!SRP.permisos.exigir('jornada.editar', j)) return;
     if (j.estatus === 'abierta') {
       const ok = await SRP.app.confirmar(await SRP.activa.confirmacionCierre(j));
       if (!ok) return;
@@ -581,12 +584,14 @@ SRP.jornadas = {
     this.el('jornada-comentarios').textContent = cierre.comentarios || '';
     // Cerrar o reabrir la jornada desde su revisión (D119): quien registra en ella
     const propia = cierre.cabo_id === u.id;
-    // Cerrar/reabrir, editar: quien registra en ella o quien la alcanza (coordinador de ese cabo, administrador) (D132, D133); eliminar sólo vacía
-    const puedeJornada = propia || SRP.permisos.puedeEditar(u, cierre, SRP.ref.usuarioPorId);
+    // Cerrar/reabrir, editar: quien registra en ella o quien la alcanza (coordinador de ese cabo, administrador) (D132, D133).
+    // Eliminar, sólo vacía —sin árboles, ni eliminados— y también para el coordinador (D151)
+    const puedeJornada = SRP.permisos.puede('jornada.editar', cierre);
     const btnEstado = this.el('btn-jornada-estado');
     btnEstado.hidden = !puedeJornada;
     this.el('btn-jornada-editar').hidden = !puedeJornada;
-    this.el('btn-jornada-eliminar').hidden = !(puedeJornada && regs.length === 0);
+    const vacia = regs.length === 0 && !(await SRP.almacen.todos('plantaciones')).some(r => r.jornada_id === j.id);
+    this.el('btn-jornada-eliminar').hidden = !(SRP.permisos.puede('jornada.eliminar', cierre) && vacia);
     // Cerrar no es aprobar: guinda con candado; reabrir es corregir: dorado con lápiz (D121)
     btnEstado.className = 'btn btn-chico ' + (cierre.estatus === 'abierta' ? 'btn-primario' : 'btn-editar');
     // Reabrir lleva el candado abierto: con el lápiz se confundía con «Editar jornada», al lado y del mismo color (D144)
@@ -773,8 +778,8 @@ SRP.jornadas = {
     if (b.dataset.accion === 'mover') await this.abrirMover(r);
   },
 
-  /* Mover un registro a otra jornada del mismo cabo (D119): el árbol hereda la fecha de la
-     jornada destino y el cambio queda en su historial. */
+  /* Mover un registro a otra jornada del mismo cabo (D119): el árbol toma la fecha y el programa de
+     la jornada destino (D151) y el cambio queda en su historial. */
   async abrirMover(r) {
     const jornadas = (await SRP.almacen.porIndice('jornadas', 'cabo_id', r.cabo_id))
       .filter(j => j.id !== r.jornada_id)
@@ -789,12 +794,26 @@ SRP.jornadas = {
     this.el('dlg-mover-jornada').showModal();
   },
 
+  /* Todo en una transacción (D151): el árbol con la fecha y el programa de su jornada nueva, y la
+     jornada de origen sin su marca de «revisado», que era de ese punto en ese sitio. */
   async mover(r, destino) {
+    if (!SRP.permisos.exigir('registro.mover', r)) return;
+    if (destino.cabo_id !== r.cabo_id) { SRP.util.anunciar('Sólo se mueve a otra jornada del mismo cabo.', 'alerta'); return; }
     const u = SRP.sesion.usuario;
-    const nuevo = Object.assign({}, r, { jornada_id: destino.id, fecha_plantacion: destino.fecha, fecha_ultima_edicion: SRP.util.ahoraISO(), editado_por_id: u.id });
-    await SRP.almacen.guardarConBitacora('plantaciones', nuevo, SRP.bitacora.entrada('EDITADO', 'plantacion', r.id, 'Movido a la jornada «' + destino.nombre + '»'));
+    const ahora = SRP.util.ahoraISO();
+    const actual = (await SRP.almacen.uno('plantaciones', r.id)) || r;
+    const origen = actual.jornada_id ? await SRP.almacen.uno('jornadas', actual.jornada_id) : null;
+    const cambiaPrograma = actual.programa_id !== destino.programa_id;
+    const nuevo = Object.assign({}, actual, { jornada_id: destino.id, fecha_plantacion: destino.fecha, programa_id: destino.programa_id, fecha_ultima_edicion: ahora, editado_por_id: u.id });
+    const cambios = [{ almacen: 'plantaciones', objeto: nuevo, bitacora: SRP.bitacora.entrada('EDITADO', 'plantacion', r.id,
+      'Movido a la jornada «' + destino.nombre + '»; toma su fecha' + (cambiaPrograma ? ' y su programa' : '')) }];
+    if (origen && (origen.puntos_revisados || []).includes(r.id)) {
+      cambios.push({ almacen: 'jornadas', objeto: Object.assign({}, origen, { puntos_revisados: origen.puntos_revisados.filter(x => x !== r.id), editado_por_id: u.id, fecha_ultima_edicion: ahora }),
+        bitacora: SRP.bitacora.entrada('EDITADO', 'jornada', origen.id, 'Sale un punto revisado: se movió a «' + destino.nombre + '»') });
+    }
+    await SRP.almacen.guardarJuntos(cambios);
     if (SRP.envio.simulado()) { SRP.envio.marcarCambios(r.id); SRP.envio.enviar({ silencioso: true }); }
-    SRP.util.anunciar('Movido a la jornada «' + destino.nombre + '».');
+    SRP.util.anunciar('Movido a la jornada «' + destino.nombre + '»: toma su fecha' + (cambiaPrograma ? ' y su programa, ' + SRP.ref.nombreCatalogo(destino.programa_id) : '') + '.');
     await this.refrescar();
   },
 
@@ -802,6 +821,7 @@ SRP.jornadas = {
     const j = this.jornada;
     const u = SRP.sesion.usuario;
     const previo = await this.cierreDe(j);
+    if (!SRP.permisos.exigir('jornada.editar', previo)) return null;
     const ahora = SRP.util.ahoraISO();
     const dato = Object.assign({}, previo, cambios, { editado_por_id: u.id, fecha_ultima_edicion: ahora });
     await SRP.almacen.guardarConBitacora('jornadas', dato, SRP.bitacora.entrada('EDITADO', 'jornada', dato.id, detalle));
@@ -824,6 +844,7 @@ SRP.jornadas = {
     this.el('ej-fecha').value = c.fecha; this.el('ej-fecha').max = SRP.util.fechaHoy();
     this.el('ej-comentarios').value = c.comentarios || '';
     this.el('ej-nota-fecha').hidden = true;
+    this.el('ej-nota-programa').hidden = true;
     this.el('ej-errores').hidden = true;
     SRP.util.erroresEnCampos([], ['ej-nombre', 'ej-programa', 'ej-meta', 'ej-fecha']);
     SRP.util.refrescarContadores(this.el('dlg-editar-jornada'));
@@ -832,6 +853,7 @@ SRP.jornadas = {
 
   async guardarEdicion() {
     const c = this.cierre; if (!c) return;
+    if (!SRP.permisos.exigir('jornada.editar', c)) return;
     const nombre = this.el('ej-nombre').value.trim();
     const ubicacion = this.el('ej-ubicacion').value.trim();
     const programa_id = this.el('ej-programa').value;
@@ -861,15 +883,19 @@ SRP.jornadas = {
     const ahora = SRP.util.ahoraISO();
     const dato = Object.assign({}, c, cambios, { editado_por_id: u.id, fecha_ultima_edicion: ahora });
     delete dato.arboles_plantados;
-    await SRP.almacen.guardarConBitacora('jornadas', dato, SRP.bitacora.entrada('EDITADO', 'jornada', c.id, 'Campos: ' + campos.join(', ')));
-    // Los árboles heredan la fecha de su jornada (D119): si cambia, cambian con ella
-    if (campos.includes('fecha')) {
-      for (const r of this.jornada.registros) {
-        const nuevo = Object.assign({}, r, { fecha_plantacion: fecha, editado_por_id: u.id, fecha_ultima_edicion: ahora });
-        await SRP.almacen.guardarConBitacora('plantaciones', nuevo, SRP.bitacora.entrada('EDITADO', 'plantacion', r.id, 'Fecha de plantación por cambio de la jornada: ' + fecha));
-        if (SRP.envio.simulado()) SRP.envio.marcarCambios(r.id);
-      }
+    const escrituras = [{ almacen: 'jornadas', objeto: dato, bitacora: SRP.bitacora.entrada('EDITADO', 'jornada', c.id, 'Campos: ' + campos.join(', ')) }];
+    /* Los árboles toman la fecha (D119) y el programa (D151) de su jornada: si cambian, cambian con
+       ella. Todos, también los eliminados —si se restauran, vuelven con los datos de su jornada—, y
+       en la misma transacción que la jornada: o cambian todos o ninguno. */
+    const propagar = campos.includes('fecha') || campos.includes('programa_id');
+    const arboles = propagar ? (await SRP.almacen.todos('plantaciones')).filter(r => r.jornada_id === c.id) : [];
+    const detalle = [campos.includes('fecha') ? 'fecha ' + SRP.util.formatearFecha(fecha) : '', campos.includes('programa_id') ? 'programa ' + SRP.ref.nombreCatalogo(programa_id) : ''].filter(Boolean).join(' y ');
+    for (const r of arboles) {
+      escrituras.push({ almacen: 'plantaciones', objeto: Object.assign({}, r, { fecha_plantacion: fecha, programa_id, editado_por_id: u.id, fecha_ultima_edicion: ahora }),
+        bitacora: SRP.bitacora.entrada('EDITADO', 'plantacion', r.id, 'Por cambio de la jornada: ' + detalle) });
     }
+    await SRP.almacen.guardarJuntos(escrituras);
+    if (SRP.envio.simulado()) arboles.forEach(r => SRP.envio.marcarCambios(r.id));
     if (SRP.activa.jornada && SRP.activa.jornada.id === c.id) SRP.activa.jornada = dato;
     if (SRP.envio.simulado()) SRP.envio.enviar({ silencioso: true });
     this.el('dlg-editar-jornada').close();
@@ -878,9 +904,21 @@ SRP.jornadas = {
     SRP.util.anunciar('Jornada actualizada: ' + campos.map(k => ({ nombre: 'nombre', ubicacion: 'ubicación', programa_id: 'programa', meta_arboles: 'meta', fecha: 'fecha', comentarios: 'comentarios' })[k]).join(', ') + '.', 'exito');
   },
 
-  // Sólo una jornada sin árboles se elimina; con árboles, primero se mueven o se eliminan ellos
+  /* Sólo una jornada sin árboles se elimina; con árboles, primero se mueven o se eliminan ellos. Los
+     eliminados también cuentan (D151): se conservan como constancia y siguen apuntando a su jornada.
+     Antes se borraba, y al deshacer la eliminación de un árbol éste quedaba visible en Registros y
+     en ninguna jornada ni reporte. */
   async eliminarJornada() {
-    const c = this.cierre; if (!c || this.jornada.registros.length) return;
+    const c = this.cierre; if (!c) return;
+    if (!SRP.permisos.exigir('jornada.eliminar', c)) return;
+    const usos = (await SRP.ref.usosDe('jornadas'))[c.id];
+    const activos = this.jornada.registros.length;
+    if (SRP.ref.totalUsos(usos)) {
+      const n = SRP.ref.totalUsos(usos) - activos;
+      SRP.util.anunciar(activos ? 'No se puede eliminar: tiene árboles registrados. Muévalos o elimínelos primero.'
+        : 'No se puede eliminar: guarda ' + (n === 1 ? '1 árbol eliminado, que se conserva' : n + ' árboles eliminados, que se conservan') + ' como constancia. Si ya no se usará, ciérrela.', 'alerta');
+      return;
+    }
     const ok = await SRP.app.confirmar({ titulo: 'Eliminar jornada', pregunta: '¿Eliminar la jornada «' + c.nombre + '» del ' + SRP.util.formatearFecha(c.fecha) + '?',
       puntos: ['No tiene árboles registrados.', 'La bitácora conserva la constancia.'], irreversible: true, boton: 'Eliminar jornada', icono: 'basura' });
     if (!ok) return;
@@ -894,6 +932,7 @@ SRP.jornadas = {
      jornada (D131) y esta pantalla sólo la compara con lo registrado. */
 
   async marcarRevisado(r) {
+    if (!SRP.permisos.exigir('jornada.editar', this.cierre)) return;
     const prev = (this.cierre && this.cierre.puntos_revisados) || [];
     const num = this.jornada.registros.indexOf(r) + 1;
     await this.guardarEnCierre({ puntos_revisados: prev.concat(r.id) }, 'Punto ' + num + ' revisado: está bien');
@@ -925,7 +964,7 @@ SRP.jornadas = {
   async registrarFaltante() {
     const j = await this.cierreDe(this.jornada); if (!j) return;
     this.volverAlDetalle = false;
-    if (j.estatus !== 'abierta') await SRP.activa.reabrir(j); else SRP.activa.jornada = j;
+    if (j.estatus !== 'abierta') { if (!await SRP.activa.reabrir(j)) return; } else SRP.activa.jornada = j;
     SRP.formulario.limpiar();
     SRP.app.mostrarVista('registrar');
     SRP.util.anunciar('Registre el árbol que falta en la jornada «' + j.nombre + '».', 'aviso');

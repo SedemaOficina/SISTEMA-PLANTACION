@@ -257,6 +257,11 @@ SRP.conexion = {
         if (extra) { rechazados.push(nombre + ': ' + extra + '.'); continue; }
         const rotas = SRP.validar.referenciasRotas(tabla, r, existentes);
         if (rotas.length) { rechazados.push(nombre + ': ' + SRP.validar.textoReferencias(rotas) + '.'); continue; }
+        // Un árbol entra con la fecha y el programa de su jornada, como todos (D151)
+        if (tabla === 'plantaciones') {
+          const j = nuevos.jornadas.find(x => x.id === r.jornada_id) || await SRP.almacen.uno('jornadas', r.jornada_id);
+          if (j) { r.fecha_plantacion = j.fecha; r.programa_id = j.programa_id; }
+        }
         nuevos[tabla].push(r);
         existentes[tabla].add(r.id);
       }

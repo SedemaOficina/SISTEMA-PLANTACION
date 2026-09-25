@@ -55,8 +55,8 @@ Pantalla **Nuevo registro**. Almacén `plantaciones`.
 | — | `capa_version` | No | Sistema | Versión de cada capa con la que se derivó, p. ej. `alcaldias=sia-2026-01-01;uga=sia-2026-09-22;colonias=iecm-2022-prueba`. Permite rehacer el dato cuando una capa cambie |
 | Especie | `especie_id` | Sí | Catálogo | Remite a `catalogos.id` con `tipo = especie`: la clave `ESP-0000` del catálogo del SIA (D84). Vacío cuando se eligió «Otra especie». En pantalla se elige por nombre común, científico o cualquiera de los otros nombres comunes; sólo viaja la clave |
 | Especifique la especie | `especie_otra` | Sólo con «Otra especie» | Persona | Texto libre, para lo que no está en el catálogo |
-| Programa | `programa_id` | Sí | Catálogo | Remite a `catalogos.id` con `tipo = programa` |
-| Fecha de plantación | `fecha_plantacion` | Sí | Jornada | `AAAA-MM-DD`. Desde el bloque 62 se hereda de la jornada activa (D119): ya no se pide por árbol. Se muestra como 21-SEP-2026 |
+| Programa | `programa_id` | Sí | Jornada | Remite a `catalogos.id` con `tipo = programa`. Es el de su jornada (D151): no se pide por árbol, cambia cuando cambia el de la jornada y al mover el árbol toma el de la nueva. Se lee en la ficha de revisión y en el detalle |
+| Fecha de plantación | `fecha_plantacion` | Sí | Jornada | `AAAA-MM-DD`. Desde el bloque 62 se hereda de la jornada activa (D119): ya no se pide por árbol; cambia con la de la jornada (D151). Se muestra como 21-SEP-2026 |
 | Comentarios | `comentarios` | No | Persona | Texto libre, hasta 500 caracteres: observaciones del sitio o del ejemplar. Cadena vacía si no se escribe nada; los registros anteriores a su reincorporación (D50) no traen la llave y se leen como «Sin comentarios» |
 | Fotografía | `foto_base64` | No | Persona | La imagen ya comprimida, incrustada. [pendiente] En Fase 2 sale del registro y se guarda como archivo, siguiendo la práctica que el SIA ya usa en sus otros módulos |
 | — | `foto_id` | No | Sistema | UUID de la fotografía |
@@ -138,8 +138,9 @@ contra EncicloVida/CONABIO el 22-09-2026; se genera con `pruebas/generar_especie
 | Id EncicloVida | `id_enciclovida` | No | Persona | No | Entero. Llave para reconsultar la ficha por API y enlazarla; más completa que el IdCAT |
 | — | `nota_discrepancia` | No | SIA | No | Rastro de auditoría del catálogo (CORREGIDO · SIN CAMBIO · SIN REGISTRO). Viene del Excel; no se edita en pantalla |
 
-**Uso:** el catálogo de **especies** y el de **programas** alimentan el formulario de registro; el
-de **áreas** alimenta el alta de cuentas. Ninguno se elimina si tiene uso: se desactiva.
+**Uso:** el catálogo de **especies** alimenta el formulario de registro; el de **programas**, el
+inicio de la jornada; el de **áreas**, el alta de cuentas. Ninguno se elimina si algún árbol
+(también eliminado), jornada o cuenta lo usa: se desactiva (D151).
 
 ---
 
@@ -176,7 +177,7 @@ Almacén `jornadas` (sustituye a `cierres` desde el bloque 62). Lo que ya vive e
 | `es_ficticio` | Sí | Sistema | Marca de dato de prueba (D87) |
 | `nombre` | Sí | Persona | Nombre de la jornada: el parque, la calle o el sitio. Es el nombre de la tarjeta en Jornadas y el «Jornada:» del reporte |
 | `ubicacion` | No | Persona | «Dirección de la jornada» (D143): dirección, parque o referencia (D120); va al reporte bajo el nombre |
-| `programa_id` | Sí | Persona | Programa de la jornada (D130); cada árbol lo hereda en el formulario y puede cambiarlo |
+| `programa_id` | Sí | Persona | Programa de la jornada (D130). Sus árboles lo toman siempre y cambian con él (D151) |
 | `lat`, `lng`, `gps_precision_m` | No | Dispositivo | Punto de la jornada: la posición del teléfono al tocar «Detectar ubicación de la jornada» (D122) o las coordenadas escritas en «Capturar coordenadas a mano» cuando no hubo señal (D143); nulos si no se ubicó. `gps_precision_m` sólo existe con GPS. No es el punto de ningún árbol |
 | `punto_origen` | No | Sistema | Cómo se obtuvo el punto de la jornada: `gps` (Detectar ubicación) o `manual` (coordenadas escritas) (D143); nulo sin ubicación |
 | `alcaldia_cve`, `alcaldia`, `colonia_cve`, `colonia` | No | Sistema | Derivados del punto detectado con las capas de alcaldías y colonias (D122); van a la franja, a Jornadas y al reporte junto a la ubicación escrita |
@@ -208,9 +209,10 @@ Almacén `jornadas` (sustituye a `cierres` desde el bloque 62). Lo que ya vive e
 
 | Campo | Se origina en | Se reutiliza en |
 |---|---|---|
-| `usuarios.id` | Cuentas | `plantaciones.cabo_id`, `plantaciones.editado_por_id`, `usuarios.coordinador_id`, `usuarios.alta_por_id`, `catalogos.creado_por_id`, `bitacora.usuario_id`, `jornadas.encargado_id`, `jornadas.cabo_id` |
+| `usuarios.id` | Cuentas | `plantaciones.cabo_id`, `plantaciones.editado_por_id`, `usuarios.coordinador_id`, `usuarios.alta_por_id`, `usuarios.editado_por_id`, `catalogos.creado_por_id`, `catalogos.editado_por_id`, `bitacora.usuario_id`, `jornadas.cabo_id`, `jornadas.encargado_id`, `jornadas.creado_por_id`, `jornadas.editado_por_id` |
 | `catalogos.id` (especie, = clave `ESP-0000`) | Catálogo del SIA | `plantaciones.especie_id` |
-| `catalogos.id` (programa) | Catálogos | `plantaciones.programa_id` |
+| `catalogos.id` (programa) | Catálogos | `jornadas.programa_id`, y de ahí `plantaciones.programa_id` (D151) |
+| `jornadas.id` | Jornadas | `plantaciones.jornada_id` |
 | `catalogos.id` (área) | Catálogos | `usuarios.area_id` |
 | `activo` | Cuentas y Catálogos | Mismo significado en los dos: deja de ofrecerse o de poder entrar, sin borrar nada |
 | `es_ficticio` | Todos | Marca de dato de prueba, en las cinco tablas (jornadas y bitácora desde D87) |
