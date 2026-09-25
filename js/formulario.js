@@ -306,14 +306,8 @@ SRP.formulario = {
   },
 
   mostrarErrores(errores) {
-    // Cada campo dice su error debajo (D140); el resumen de arriba se conserva
-    SRP.util.erroresEnCampos(errores, ['btn-ubicacion', 'campo-especie', 'campo-otra-especie', 'campo-fecha']);
-    const caja = this.el('resumen-errores');
-    if (!errores.length) { caja.hidden = true; return; }
-    caja.innerHTML = '<h2>Falta corregir ' + errores.length + (errores.length === 1 ? ' dato' : ' datos') + '</h2><ul>' +
-      errores.map(([id, t]) => '<li><a href="#' + id + '">' + t + '</a></li>').join('') + '</ul>';
-    caja.hidden = false;
-    caja.focus();
+    // Cada campo dice su error debajo (D140); el resumen de arriba se conserva (M15)
+    SRP.util.resumenErrores(this.el('resumen-errores'), errores, ['btn-ubicacion', 'campo-especie', 'campo-otra-especie', 'campo-fecha']);
   },
 
   valores() {
@@ -364,10 +358,7 @@ SRP.formulario = {
     // segundo toque antes de que el primero termine no debe crear dos árboles ni dos avisos.
     const boton = this.el('btn-revisar');
     if (boton.disabled) return;
-    const html0 = boton.innerHTML;
-    boton.disabled = true;
-    boton.setAttribute('aria-busy', 'true');
-    boton.innerHTML = SRP.ICONOS.svg('disco', 'grande') + '<span>Guardando…</span>';
+    const libre = SRP.util.ocupado(boton, 'Guardando…', 'disco', 'grande');   // M15
     try {
       // Una jornada que no es de hoy se confirma antes de guardar en ella (D133)
       if (!this.estado.editando && !(await SRP.activa.confirmarOtroDia())) return;
@@ -377,15 +368,13 @@ SRP.formulario = {
       // Con avisos (o al editar) se abre la ficha de revisión: ahí manda su propio botón
       // «btn-resumen-guardar», así que éste vuelve a su estado normal antes de esperar la ficha.
       if (avisos.length || this.estado.editando) {
-        boton.disabled = false; boton.removeAttribute('aria-busy'); boton.innerHTML = html0;
+        libre();
         await this.revisar(avisos);
         return;
       }
       await this.guardar();
     } finally {
-      boton.disabled = false;
-      boton.removeAttribute('aria-busy');
-      boton.innerHTML = html0;
+      libre();
     }
   },
 
@@ -547,11 +536,7 @@ SRP.formulario = {
     const v = this.valores();
     const u = SRP.sesion.usuario;
     const ahora = SRP.util.ahoraISO();
-    const boton = this.el('btn-resumen-guardar');
-    const html0 = boton.innerHTML;
-    boton.disabled = true;
-    boton.setAttribute('aria-busy', 'true');
-    boton.innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardando…</span>';
+    const libre = SRP.util.ocupado(this.el('btn-resumen-guardar'), 'Guardando…', 'disco');   // M15
     try {
       if (this.estado.editando) {
         const previo = this.estado.editando;
@@ -601,9 +586,7 @@ SRP.formulario = {
       try { e.srpAvisado = true; } catch (x) { /* se avisa igual */ }
       SRP.util.anunciar(SRP.util.mensajeError(e, 'guardar el árbol') + ' Sus datos siguen en pantalla.', 'alerta');
     } finally {
-      boton.disabled = false;
-      boton.removeAttribute('aria-busy');
-      boton.innerHTML = html0;
+      libre();
     }
   },
 
@@ -616,11 +599,11 @@ SRP.formulario = {
     const esp = SRP.ref.especieDe(registro);
     const esc = SRP.util.escapar;
     this.estado.ultimoGuardado = registro.id;
-    const lugar = [registro.alcaldia || '', registro.colonia ? 'Col. ' + registro.colonia : ''].filter(Boolean).join(' · ');
+    const lugar = SRP.ref.lugar(registro.alcaldia, registro.colonia);   // M15
     this.el('franja-guardado-texto').innerHTML = SRP.ICONOS.svg('palomita', 'medio') +
       '<span class="franja-guardado-cuerpo"><strong>Guardado: ' + esc(esp.comun) + '</strong>' +
       '<span class="franja-guardado-datos"><span id="franja-guardado-folio" class="folio-provisional">' + esc(SRP.folio.textoLargo(registro)) + '</span>' +
-      (lugar ? ' · ' + esc(lugar) : '') + ' · <span id="franja-guardado-envio">' + (SRP.envio.simulado() ? 'guardado en el teléfono' : 'guardado en este dispositivo') + '</span></span></span>';
+      (lugar ? ' · ' + esc(lugar) : '') + ' · <span id="franja-guardado-envio" class="franja-guardado-envio">' + (SRP.envio.simulado() ? 'guardado en el teléfono' : 'guardado en este dispositivo') + '</span></span></span>';
     const f = this.el('franja-guardado');
     f.dataset.envio = ''; f.hidden = false;
     this.limpiar();

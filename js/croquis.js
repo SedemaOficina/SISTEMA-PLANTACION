@@ -86,23 +86,25 @@ SRP.croquis = {
 
   /* ---------- Dibujo ---------- */
   fondoLiso(ctx) {
-    ctx.fillStyle = '#F3EFE9';
+    const C = n => SRP.util.colorBase(n);   // los colores, de la hoja (M13)
+    ctx.fillStyle = C('croquis-fondo');
     ctx.fillRect(0, 0, this.ANCHO, this.ALTO);
-    ctx.strokeStyle = '#E4DED5'; ctx.lineWidth = 1;
+    ctx.strokeStyle = C('croquis-reticula'); ctx.lineWidth = 1;
     for (let x = 0; x < this.ANCHO; x += 100) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, this.ALTO); ctx.stroke(); }
     for (let y = 0; y < this.ALTO; y += 100) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(this.ANCHO, y); ctx.stroke(); }
   },
 
   puntos(ctx, registros, enc) {
+    const C = n => SRP.util.colorBase(n);
     ctx.font = 'bold 17px Roboto, Arial, sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     registros.forEach((r, i) => {
       const p = this.aPixel(r.lat, r.lng, enc.z);
       const x = p.x - enc.origenX, y = p.y - enc.origenY;
       ctx.beginPath(); ctx.arc(x, y, 17, 0, Math.PI * 2);
-      ctx.fillStyle = '#9D2148'; ctx.fill();
-      ctx.lineWidth = 2.5; ctx.strokeStyle = '#FFFFFF'; ctx.stroke();
-      ctx.fillStyle = '#FFFFFF'; ctx.fillText(String(i + 1), x, y + 1);
+      ctx.fillStyle = C('guinda'); ctx.fill();
+      ctx.lineWidth = 2.5; ctx.strokeStyle = C('fondo'); ctx.stroke();
+      ctx.fillStyle = C('fondo'); ctx.fillText(String(i + 1), x, y + 1);
     });
   },
 
@@ -112,7 +114,8 @@ SRP.croquis = {
     const metros = opciones.reduce((m, o) => (Math.abs(o / mpp - 140) < Math.abs(m / mpp - 140) ? o : m), opciones[0]);
     const largo = metros / mpp;
     const x = 24, y = this.ALTO - 26;
-    ctx.lineWidth = 3; ctx.strokeStyle = '#232526';
+    const C = n => SRP.util.colorBase(n);
+    ctx.lineWidth = 3; ctx.strokeStyle = C('texto');
     ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + largo, y); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(x, y - 7); ctx.lineTo(x, y + 7); ctx.moveTo(x + largo, y - 7); ctx.lineTo(x + largo, y + 7); ctx.stroke();
     ctx.font = 'bold 14px Roboto, Arial, sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
@@ -120,15 +123,15 @@ SRP.croquis = {
     // Norte: flecha y letra arriba a la derecha
     const nx = this.ANCHO - 34, ny = 30;
     ctx.beginPath(); ctx.moveTo(nx, ny); ctx.lineTo(nx - 9, ny + 26); ctx.lineTo(nx, ny + 19); ctx.lineTo(nx + 9, ny + 26); ctx.closePath();
-    ctx.fillStyle = '#232526'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#FFFFFF'; ctx.stroke();
+    ctx.fillStyle = C('texto'); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = C('fondo'); ctx.stroke();
     ctx.font = 'bold 15px Roboto, Arial, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
     this.textoConHalo(ctx, 'N', nx, ny - 2, conImagen);
   },
 
   // Sobre la imagen de satélite el texto lleva halo blanco para leerse
   textoConHalo(ctx, texto, x, y, halo) {
-    if (halo) { ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineJoin = 'round'; ctx.strokeText(texto, x, y); }
-    ctx.fillStyle = '#232526'; ctx.fillText(texto, x, y);
+    if (halo) { ctx.lineWidth = 4; ctx.strokeStyle = SRP.util.colorBase('velo-halo'); ctx.lineJoin = 'round'; ctx.strokeText(texto, x, y); }
+    ctx.fillStyle = SRP.util.colorBase('texto'); ctx.fillText(texto, x, y);
   },
 
   // El crédito completo ya no cabe en un renglón (D152): se parte por « · » en los renglones que hagan falta
@@ -142,8 +145,8 @@ SRP.croquis = {
     });
     renglones.reverse().forEach((r, i) => {
       const base = this.ALTO - 4 - i * 16;
-      if (conImagen) { ctx.fillStyle = 'rgba(255,255,255,.75)'; const w = ctx.measureText(r).width + 12; ctx.fillRect(this.ANCHO - w, base - 16, w, 18); }
-      ctx.fillStyle = '#232526'; ctx.fillText(r, this.ANCHO - 6, base);
+      if (conImagen) { ctx.fillStyle = SRP.util.colorBase('velo-pie'); const w = ctx.measureText(r).width + 12; ctx.fillRect(this.ANCHO - w, base - 16, w, 18); }
+      ctx.fillStyle = SRP.util.colorBase('texto'); ctx.fillText(r, this.ANCHO - 6, base);
     });
   },
 

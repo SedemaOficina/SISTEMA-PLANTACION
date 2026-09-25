@@ -1,6 +1,8 @@
 /* HOJA DE ESTILOS SRP
    Orden fijo (Norma 8.3): variables → base → estructura → componentes → estados → utilidades → @media.
-   Una regla nueva va en su bloque, nunca al final. Sólo clases; sin !important salvo reduced-motion. */
+   Una regla nueva va en su bloque, nunca al final; un selector se declara una sola vez por consulta.
+   Sólo clases, nunca #id. Colores, sombras y velos, sólo como variables de :root (el JS los lee de
+   ahí). Sin !important salvo reduced-motion y [hidden]. Tres cortes de ancho, en la sección 7. */
 
 /* ========== 1. VARIABLES ========== */
 /* TIPOGRAFÍAS LOCALES (D87). Cabin (variable, 400–700) y Roboto (400, 500, 700) viven en
@@ -11,7 +13,6 @@
 @font-face { font-family: 'Roboto'; src: url('../vendor/fuentes/roboto-regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
 @font-face { font-family: 'Roboto'; src: url('../vendor/fuentes/roboto-medium.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
 @font-face { font-family: 'Roboto'; src: url('../vendor/fuentes/roboto-bold.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
-
 :root {
   --guinda: #9D2148;
   --guinda-oscuro: #7A1838;
@@ -34,7 +35,7 @@
      Hay tres niveles y sólo tres, en toda la aplicación:
        1. Acción principal de la pantalla  → .btn-primario   (acento relleno; una por bloque)
        2. Alterna del mismo rango          → .btn-secundario (contorno gris)
-       3. Apoyo: desplegar, salir, ampliar → .enlace / .btn-texto / summary (gris subrayado)
+       3. Apoyo: desplegar, salir, ampliar → .btn-texto / summary (gris subrayado)
      Desde D124 el acento es pizarra y la guinda queda para encabezado, títulos, tablas y el mapa;
      el comentario original hablaba de guinda (D141 lo corrige). Si una acción de apoyo se pinta igual
      —como estaba «Capturar coordenadas a mano» bajo el botón de ubicación— las dos parecen
@@ -60,6 +61,25 @@
   --neutro-borde: #9AA3AB;     /* apoyo: contorno gris */
   --neutro-fondo: #F1F3F5;
   --foco: #1A5FB4;
+  --acento-borde-suave: #D3DBE1;   /* contorno del panel de la jornada activa */
+  /* SOMBRAS Y VELOS (M13): una por uso, para que ninguna se escriba suelta en la hoja */
+  --sombra-menu: 0 6px 18px rgba(35, 37, 38, 0.18);       /* menús que se despliegan */
+  --sombra-lista: 0 4px 12px rgba(35, 37, 38, 0.15);      /* lista de especies bajo el campo */
+  --sombra-flotante: 0 4px 12px rgba(35, 37, 38, .22);    /* botón «Subir al inicio» */
+  --sombra-pie: 0 -6px 12px -8px rgba(0, 0, 0, .18);      /* barras fijas al pie */
+  --sombra-nav: 0 -2px 10px rgba(0, 0, 0, .06);           /* navegación inferior del teléfono */
+  --sombra-saltos: 0 6px 10px -8px rgba(0, 0, 0, .2);     /* barra de saltos de la ficha */
+  --sombra-aviso: 0 8px 24px rgba(0, 0, 0, .25);          /* aviso flotante */
+  --sombra-hoja: 0 2px 10px rgba(0, 0, 0, .06);           /* hoja de la vista previa */
+  --sombra-pin: 0 1px 3px rgba(0, 0, 0, .35);             /* número de punto en el mapa */
+  --velo-oscuro: rgba(35, 37, 38, 0.55);                  /* detrás de un diálogo */
+  --velo-claro: rgba(255, 255, 255, .92);                 /* crédito del mapa sobre la imagen */
+  /* CROQUIS Y PDF (M13): el código los lee de aquí con SRP.util.colorBase() */
+  --croquis-fondo: #F3EFE9;                               /* croquis sin imagen: papel */
+  --croquis-reticula: #E4DED5;                            /* y su retícula de 100 px */
+  --velo-halo: rgba(255, 255, 255, .9);                   /* halo del texto sobre la imagen */
+  --velo-pie: rgba(255, 255, 255, .75);                   /* fondo del crédito en el croquis */
+  --aviso-ficticio: #A33A00;                              /* «Documento de prueba» en el PDF */
 
   --fuente-titulo: 'Cabin', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   --fuente-cuerpo: 'Roboto', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
@@ -72,7 +92,6 @@
   --toque: 48px;
   --texto-guia: #6B6E70;       /* placeholder y textos guía de campos vacíos */
 }
-
 /* MODO SOL (D106): mismos colores de la casa, más oscuros los que leen. El guinda ya da 8:1 y no
    cambia; los grises pasan a casi negro, los bordes suaves a contornos visibles y los campos
    grises de filtro a blanco con borde, que a pleno sol se distinguen mejor. */
@@ -117,17 +136,15 @@ h1[tabindex="-1"]:focus { outline: none; }
 /* El logotipo cede espacio antes que la pastilla o el botón de cuenta: se encoge con su proporción */
 .encabezado-interior > picture { flex: 0 1 auto; min-width: 0; }
 .encabezado-logo { height: auto; max-height: 40px; width: auto; max-width: 100%; display: block; }
-.encabezado-usuario { flex: none; }
-.encabezado-usuario { display: flex; align-items: center; gap: var(--e-2); min-width: 0; }
+.encabezado-usuario { flex: none; display: flex; align-items: center; gap: var(--e-2); min-width: 0; }
 /* Menú de la cuenta (D93): un botón con el icono de usuario; al tocarlo aparecen nombre, perfil
    y las salidas. Ocupa el ancho de un icono en vez de cuatro renglones. */
 .cuenta { position: relative; }
-.conexion { white-space: nowrap; }
 .btn.btn-cuenta { border-radius: 50%; width: var(--toque); padding: 0; background: var(--fondo-suave); color: var(--guinda); border: 1px solid var(--borde-suave); }
 .btn-cuenta[aria-expanded="true"] { background: var(--guinda); color: var(--fondo); }
 .menu-cuenta { position: absolute; right: 0; top: calc(100% + var(--e-2)); z-index: 1200; min-width: 15rem; max-width: calc(100vw - 2rem);
   padding: var(--e-3) var(--e-4); background: var(--fondo); border: 1px solid var(--borde-suave); border-top: 3px solid var(--guinda);
-  border-radius: var(--radio); box-shadow: 0 6px 18px rgba(35, 37, 38, 0.18); }
+  border-radius: var(--radio); box-shadow: var(--sombra-menu); }
 .menu-cuenta p { margin: 0 0 var(--e-2); }
 /* Las salidas de la cuenta son renglones de texto separados por un filete, de orilla a orilla del menú (D97) */
 .menu-cuenta-acciones { display: flex; flex-direction: column; margin: var(--e-3) calc(-1 * var(--e-4)) calc(-1 * var(--e-3)); border-top: 1px solid var(--borde-suave); padding: var(--e-1) 0; }
@@ -146,16 +163,13 @@ main:focus { outline: none; }
 /* ========== 4. COMPONENTES ========== */
 .saltar { position: absolute; left: -999px; top: 0; background: var(--guinda); color: var(--fondo); padding: var(--e-2) var(--e-4); z-index: 2000; }
 .saltar:focus { left: 0; }
-
 .banda-ficticio { margin: 0; padding: var(--e-2) var(--e-4); background: var(--gris); color: var(--fondo); font-size: var(--t-xs); text-align: center; }
 /* Crédito del mapa legible sobre cualquier imagen: el azul de Leaflet daba 2.55:1 (D153) */
-.leaflet-container .leaflet-control-attribution { background: rgba(255, 255, 255, .92); color: var(--texto); }
+.leaflet-container .leaflet-control-attribution { background: var(--velo-claro); color: var(--texto); }
 .leaflet-container .leaflet-control-attribution a { color: var(--texto); text-decoration: underline; }
-
 /* El perfil es una etiqueta, no un control: con contorno guinda se leía igual que un botón
    secundario y la gente intentaba pulsarlo. Fondo suave y gris, que es lo que es. */
 .insignia { display: inline-block; padding: 0 var(--e-2); border-radius: var(--radio-control); background: var(--fondo-suave); color: var(--gris); font-size: var(--t-xs); font-weight: 500; }
-
 .pestanas { display: flex; border-bottom: 1px solid var(--borde-suave); max-width: var(--ancho-max-tabla); margin: 0 auto; padding: 0 var(--e-4); }
 .pestana {
   flex: 1; min-height: var(--toque); background: none; border: 0; border-bottom: 3px solid transparent;
@@ -166,7 +180,6 @@ main:focus { outline: none; }
 /* Etiquetas y avisos con icono del set (D89): el icono va pegado al texto, alineado a la primera línea */
 label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--e-1); }
 .aviso-envio svg, .aviso-simulado svg { float: left; margin: 0.15em var(--e-2) 0 0; }
-
 .entrada { color: var(--gris); }
 .nota { color: var(--gris); font-size: var(--t-s); }
 .opcional { font-weight: 400; color: var(--gris); }
@@ -182,10 +195,8 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 .bloque .filtros { border-bottom: 0; padding-bottom: 0; }
 .bloque .acciones { margin-top: var(--e-3); }
 .bloque .aviso-envio { margin-top: 0; }
-
 .tarjeta { border: 1px solid var(--borde-suave); border-radius: var(--radio); padding: var(--e-4); margin-bottom: var(--e-5); }
 .tarjeta-prueba { background: var(--fondo-suave); }
-
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--e-2);
   min-height: var(--toque); padding: 0 var(--e-4); border-radius: var(--radio-control);
@@ -195,14 +206,8 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 /* Apoyo (D124): atajos, navegar, alternas. Contorno gris: nunca compite con el principal */
 .btn-secundario { background: var(--fondo); color: var(--texto); border-color: var(--neutro-borde); }
 /* Nivel 3 de la escala de énfasis: texto clicable, gris y subrayado, sin caja.
-   .btn-texto va dentro de main, donde conserva los 48 px de .btn; .enlace es la misma idea
-   en el encabezado, donde no hay que llenar un renglón de formulario. */
+   .btn-texto conserva los 48 px de .btn para que se toque bien con el dedo. */
 .btn-texto { background: none; color: var(--gris); padding: 0 var(--e-2); }
-.enlace {
-  background: none; border: 0; padding: 0; min-height: 32px;
-  font: inherit; font-size: var(--t-s); color: var(--gris);
-  text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
-}
 /* Un desplegable es nivel 3: guarda lo que se usa de vez en cuando. Mismo gris subrayado que
    el resto del nivel, más su triángulo, para que no compita con el botón que tiene encima. */
 .desplegable summary { display: flex; align-items: center; gap: var(--e-2); min-height: var(--toque); color: var(--gris); font-size: var(--t-s); cursor: pointer; list-style: none; }
@@ -212,13 +217,11 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
   border-left: 6px solid currentColor; border-top: 5px solid transparent; border-bottom: 5px solid transparent;
 }
 .desplegable summary span { text-decoration: underline; text-underline-offset: 3px; }
-
 .btn-peligro { background: var(--error); color: var(--fondo); }
 .btn-exito { background: var(--exito); color: var(--fondo); }
 .btn-editar { background: var(--editar-fondo); color: var(--editar); border-color: var(--editar-borde); }
 /* Cancelar: rojo de contorno con tache (D116); el rojo relleno queda para eliminar */
 .btn-cancelar { background: var(--fondo); color: var(--error); border-color: var(--error); }
-.btn-texto-exito { color: var(--exito); }
 /* Contorno por significado (D121): confirmar en verde, eliminar en rojo, sin relleno para que
    dos acciones en la misma fila no compitan */
 .btn-exito-linea { background: var(--fondo); color: var(--exito); border-color: var(--exito); }
@@ -236,7 +239,6 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 .btn-ancho { width: 100%; max-width: 22rem; }
 /* La acción que cierra el formulario: más alta y con letra mayor; en teléfono, de margen a margen */
 .btn-destacado { min-height: 56px; font-size: var(--t-m); font-weight: 600; }
-
 .campo { margin-bottom: var(--e-4); border: 0; padding: 0; min-width: 0; }
 .campo label, .campo legend { display: block; font-weight: 500; margin-bottom: var(--e-1); }
 /* La leyenda de un fieldset trae relleno propio del navegador y quedaba corrida (D107) */
@@ -275,7 +277,6 @@ fieldset.campo { margin-inline: 0; }
 /* Excepción deliberada: Año y Mes son cortos y caben en dos columnas hasta en teléfono */
 .campo-triple { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--e-3); }
 .campo-crece { flex: 1; margin-bottom: 0; }
-
 .fila-botones { display: flex; flex-wrap: wrap; gap: var(--e-2); align-items: flex-end; margin-bottom: var(--e-3); }
 .acciones { display: flex; flex-wrap: wrap; gap: var(--e-3); margin-top: var(--e-5); }
 /* Guardar siempre a la mano (D96): la barra se queda al pie de la pantalla mientras se llena el
@@ -283,9 +284,8 @@ fieldset.campo { margin-inline: 0; }
 .barra-guardar {
   position: sticky; bottom: 0; z-index: 5; background: var(--fondo);
   padding: var(--e-3) 0 calc(var(--e-3) + env(safe-area-inset-bottom, 0px));
-  border-top: 1px solid var(--borde-suave); box-shadow: 0 -6px 12px -8px rgba(0, 0, 0, .18);
+  border-top: 1px solid var(--borde-suave); box-shadow: var(--sombra-pie);
 }
-
 /* JORNADAS (D112): tarjetas de jornada, revisión con mapa numerado, conciliación y lista de puntos */
 .lista-jornadas { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e-3); }
 /* Ficha de jornada (D128): nombre → cuándo → estado → dónde → cuánto → quién */
@@ -306,20 +306,21 @@ fieldset.campo { margin-inline: 0; }
 .jornada-estatus { display: inline-flex; align-items: center; gap: 5px; padding: 4px var(--e-3); border-radius: var(--radio-control); font-size: var(--t-xs); font-weight: 700; letter-spacing: .02em; }
 .jornada-estatus[data-estatus="abierta"] { background: var(--exito); color: var(--fondo); }
 .jornada-estatus[data-estatus="cerrada"] { background: var(--acento); color: var(--fondo); }
-.insignia-jornada { display: inline-block; padding: 4px var(--e-3); border-radius: var(--radio-control); font-size: var(--t-xs); font-weight: 500; background: var(--neutro-fondo); color: var(--gris); }
+.insignia-jornada { display: inline-flex; align-items: center; gap: 4px; padding: 4px var(--e-3); border-radius: var(--radio-control); font-size: var(--t-xs); font-weight: 500; background: var(--neutro-fondo); color: var(--gris); }
 .insignia-jornada[data-tono="ok"] { background: var(--exito-fondo); color: var(--exito); }
 .insignia-jornada[data-tono="rev"] { background: var(--editar-fondo); color: var(--editar); }
 .insignia-jornada[data-tono="err"] { background: var(--error-fondo); color: var(--error); }
 .jornada-lugar { display: flex; gap: 6px; align-items: flex-start; font-size: var(--t-s); overflow-wrap: anywhere; }
 .jornada-lugar svg { flex: none; margin-top: 3px; color: var(--gris); }
 .jornada-ubic { color: var(--gris); }
-.jornada-datos { min-width: 0; display: grid; gap: 2px; }   /* listas de los diálogos Cambiar/Mover */
+.jornada-datos { min-width: 0; display: grid; gap: 2px; }
+/* listas de los diálogos Cambiar/Mover */
 .jornada-datos .jornada-dia { font-family: var(--fuente-titulo); font-weight: 600; }
 .jornada-datos .jornada-cifras { font-size: var(--t-xs); color: var(--gris); overflow-wrap: anywhere; }
-#lista-jornadas .jornada-cifras { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
-#lista-jornadas .jornada-cifra:nth-child(1), #lista-jornadas .jornada-cifra:nth-child(2) { grid-column: span 3; }
-#lista-jornadas .jornada-cifra:nth-child(n+3) { grid-column: span 2; }
-#lista-jornadas .jornada-cifra:nth-child(1) b, #lista-jornadas .jornada-cifra:nth-child(2) b { font-size: var(--t-l); }
+.jornadas-tarjetas .jornada-cifras { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.jornadas-tarjetas .jornada-cifra:nth-child(1), .jornadas-tarjetas .jornada-cifra:nth-child(2) { grid-column: span 3; }
+.jornadas-tarjetas .jornada-cifra:nth-child(n+3) { grid-column: span 2; }
+.jornadas-tarjetas .jornada-cifra:nth-child(1) b, .jornadas-tarjetas .jornada-cifra:nth-child(2) b { font-size: var(--t-l); }
 .jornada-cifra { display: flex; flex-direction: column; align-items: center; padding: 6px 4px; border-radius: 8px; background: var(--neutro-fondo); font-size: var(--t-xs); color: var(--gris); line-height: 1.15; text-align: center; }
 .jornada-cifra b { font-size: var(--t-m); color: var(--texto); font-weight: 700; }
 .jornada-cifra[data-cero="true"] b { color: var(--neutro-borde); }
@@ -344,7 +345,7 @@ fieldset.campo { margin-inline: 0; }
 /* Pin numerado del mapa: círculo con el número, en el color del aviso; el elegido crece */
 .pin-num { background: none; border: 0; }
 .pin-num span { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--guinda); color: var(--fondo);
-  font: 700 12px/1 var(--fuente-cuerpo); border: 2px solid var(--fondo); box-shadow: 0 1px 3px rgba(0, 0, 0, .35); transition: transform .12s; }
+  font: 700 12px/1 var(--fuente-cuerpo); border: 2px solid var(--fondo); box-shadow: var(--sombra-pin); transition: transform .12s; }
 .pin-num span[data-tono="rev"] { background: var(--dorado); color: var(--texto); }
 .pin-num span[data-tono="err"] { background: var(--error); }
 .pin-num.elegido span { transform: scale(1.35); outline: 3px solid var(--guinda); outline-offset: 1px; }
@@ -352,11 +353,8 @@ fieldset.campo { margin-inline: 0; }
 .conciliacion[data-tono="ok"] { border-color: var(--exito); background: var(--exito-fondo); }
 .conciliacion[data-tono="rev"] { border-color: var(--dorado); background: var(--editar-fondo); }
 .conciliacion[data-tono="err"] { border-color: var(--error); background: var(--error-fondo); }
-.conciliacion-fila { display: flex; justify-content: space-between; align-items: center; gap: var(--e-3); margin-bottom: var(--e-2); }
-.conciliacion-fila label, .conciliacion-fila span { flex: 1 1 auto; }
-.conciliacion-fila strong { font-size: var(--t-l); }
 .conciliacion input { width: 7rem; text-align: center; font-size: var(--t-l); font-weight: 600; padding: var(--e-1) var(--e-2); border: 1px solid var(--borde-control); border-radius: var(--radio-control); background: var(--fondo); }
-.conciliacion-resultado { margin: 0; font-size: var(--t-s); font-weight: 500; }
+.conciliacion-resultado { display: flex; align-items: flex-start; gap: var(--e-2); margin: 0; font-size: var(--t-s); font-weight: 500; }
 .conciliacion[data-tono="ok"] .conciliacion-resultado { color: var(--exito); }
 .conciliacion[data-tono="rev"] .conciliacion-resultado { color: var(--editar); }
 .conciliacion[data-tono="err"] .conciliacion-resultado { color: var(--error); }
@@ -373,27 +371,16 @@ fieldset.campo { margin-inline: 0; }
 .aviso-punto[data-tono="rev"] { color: var(--editar); }
 .aviso-punto[data-tono="err"] { color: var(--error); }
 .aviso-punto[data-tono="ok"] { color: var(--exito); }
-.punto-acciones { display: flex; gap: 0; flex-wrap: wrap; justify-content: flex-end; }
+.punto-acciones { display: flex; gap: var(--e-1); flex-wrap: wrap; justify-content: flex-end; align-items: center; }
 .punto-acciones .btn { padding: 0 var(--e-2); min-height: 36px; gap: 4px; font-size: var(--t-xs); }
 .punto-acciones .btn svg { flex: none; }
 .punto-acciones .btn-texto { padding: var(--e-1) var(--e-2); min-height: var(--toque); }
-.punto-acciones { gap: var(--e-1); align-items: center; }
-/* En teléfono las acciones bajan a un segundo renglón para no aplastar la especie y el aviso */
-@media (max-width: 600px) {
-  .punto-jornada { grid-template-columns: 28px minmax(0, 1fr); row-gap: var(--e-1); }
-  .punto-acciones { grid-column: 2; justify-content: flex-start; }
-  /* La tuerca a la orilla derecha, a la misma altura en todos los puntos (D154) */
-  .punto-acciones .acciones-menu { margin-left: auto; }
-}
-.btn-texto-peligro { color: var(--error); }
-.barra-jornada { display: flex; gap: var(--e-2); margin-top: var(--e-3); }
-.barra-jornada .btn { flex: 1 1 0; }
+.barra-jornada { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-top: var(--e-3); }
+.barra-jornada .btn { flex: 1 1 0; order: 1; }
 .filtros-un-dia { grid-template-columns: minmax(0, 12rem); }
-
 /* Croquis de la jornada en la vista previa (D115) */
 .previa-croquis img { display: block; width: 100%; height: auto; border: 1px solid var(--borde-suave); border-radius: 6px; }
 .previa-croquis .previa-nota { margin-top: var(--e-1); }
-
 /* Galería de fotografías (D118): rejilla de miniaturas cuadradas con pie, y la foto grande en su diálogo */
 .galeria-barra { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); flex-wrap: wrap; margin-bottom: var(--e-3); }
 .galeria-rejilla { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--e-2); }
@@ -401,16 +388,14 @@ fieldset.campo { margin-inline: 0; }
 .galeria-foto img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
 .galeria-pie { display: block; padding: var(--e-1) var(--e-2); font-size: var(--t-xs); line-height: 1.3; }
 .foto-grande { display: block; width: 100%; max-height: 60vh; object-fit: contain; background: var(--fondo-suave); border-radius: var(--radio); margin-bottom: var(--e-3); }
-#dlg-foto .fila-botones { display: flex; gap: var(--e-2); }
-#dlg-foto .fila-botones .btn { flex: 1 1 0; }
-@media (max-width: 480px) { .galeria-rejilla { grid-template-columns: repeat(3, minmax(0, 1fr)); } .galeria-pie { font-size: 0.7rem; } }
-
+.dlg-foto .fila-botones { display: flex; gap: var(--e-2); }
+.dlg-foto .fila-botones .btn { flex: 1 1 0; }
 /* Jornada activa (D119): panel de inicio y franja sobre el formulario */
 .panel-iniciar { max-width: var(--ancho-max); margin: 0 0 var(--e-4); }
 .panel-iniciar .fila-botones { display: flex; gap: var(--e-2); margin-top: var(--e-3); }
 .panel-iniciar .fila-botones .btn { flex: 1 1 0; }
 .franja-jornada { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); flex-wrap: wrap; max-width: var(--ancho-max-tabla); margin: 0 0 var(--e-4);
-  padding: var(--e-3) var(--e-4); border-radius: var(--radio-filtro); background: var(--acento-suave); border: 1px solid #D3DBE1; border-left: 4px solid var(--acento); }
+  padding: var(--e-3) var(--e-4); border-radius: var(--radio-filtro); background: var(--acento-suave); border: 1px solid var(--acento-borde-suave); border-left: 4px solid var(--acento); }
 .franja-jornada[data-tono="alerta"] { background: var(--editar-fondo); border-left-color: var(--editar-borde); }
 .franja-jornada-rotulo { flex: 1 1 100%; margin: 0 0 -4px; font-family: var(--fuente-titulo); font-size: var(--t-xs); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--acento); }
 .franja-jornada .franja-jornada-titulo strong { font-size: var(--t-l); font-family: var(--fuente-titulo); }
@@ -424,19 +409,14 @@ fieldset.campo { margin-inline: 0; }
 .franja-jornada-datos { display: block; font-size: var(--t-xs); color: var(--gris); }
 .franja-jornada-acciones .btn { flex: 1 1 0; min-width: 0; }
 .franja-jornada-acciones { display: flex; gap: var(--e-2); }
-/* En teléfono los dos botones ocupan el renglón completo; en pantallas muy angostas se apilan (D124) */
-@media (max-width: 600px) { .franja-jornada-acciones { flex: 1 1 100%; flex-wrap: wrap; } .franja-jornada-acciones .btn { flex: 1 1 9rem; } }
-.btn-chico { min-height: 40px; padding: 0 var(--e-3); font-size: var(--t-s); }
-#lista-jornadas-abiertas .jornada-boton[aria-pressed="true"], #lista-mover-jornadas .jornada-boton[aria-pressed="true"] { border-color: var(--acento); background: var(--acento-suave); }
-#lista-jornadas-abiertas .jornada-boton, #lista-mover-jornadas .jornada-boton { grid-template-columns: minmax(0, 1fr); }
-
+.lista-elegir .jornada-boton[aria-pressed="true"] { border-color: var(--acento); background: var(--acento-suave); }
+.lista-elegir .jornada-boton { grid-template-columns: minmax(0, 1fr); }
 /* Estado vacío con salida (D96) */
 .vacio { text-align: center; padding: var(--e-5) var(--e-4); border: 1px dashed var(--borde-filtro); border-radius: var(--radio-filtro); background: var(--fondo); }
 .vacio-icono { display: inline-grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: var(--fondo-suave); color: var(--guinda); margin-bottom: var(--e-2); }
 .vacio-titulo { font-family: var(--fuente-titulo); font-weight: 600; font-size: var(--t-m); margin-bottom: var(--e-1); }
 .vacio-texto { color: var(--gris); font-size: var(--t-s); }
 .vacio-acciones { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--e-2); margin-top: var(--e-3); }
-
 /* Precisión del GPS bajo el mapa (D96): punto de color más la palabra; nunca sólo el color */
 .precision { display: inline-flex; align-items: center; gap: var(--e-2); font-weight: 600; padding: 2px var(--e-2); border-radius: 999px; }
 .precision-punto { width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
@@ -444,14 +424,10 @@ fieldset.campo { margin-inline: 0; }
 .precision[data-nivel="aceptable"] { color: var(--editar); background: var(--editar-fondo); }
 .precision[data-nivel="baja"] { color: var(--error); background: var(--error-fondo); }
 .precision-consejo { display: block; margin-top: var(--e-1); color: var(--texto); }
-.acciones-reporte { align-items: center; }
-.acciones-reporte .nota { flex-basis: 100%; margin: 0; }
-
 .errores { border-left: 4px solid var(--error); background: var(--error-fondo); padding: var(--e-3) var(--e-4); margin-bottom: var(--e-4); }
 .errores h2 { color: var(--error); font-size: var(--t-m); }
 .errores ul { margin: 0; padding-left: var(--e-5); }
 .errores a { color: var(--error); }
-
 .mapa-bloque { margin-bottom: var(--e-5); }
 .mapa { height: clamp(260px, 45vh, 420px); border: 1px solid var(--borde-control); border-radius: var(--radio) var(--radio) 0 0; background: var(--fondo-suave);
   /* Leaflet trae capas con z-index de 400 a 1000: aislado, el mapa no se dibuja encima de las barras
@@ -476,12 +452,12 @@ fieldset.campo { margin-inline: 0; }
   background: var(--fondo-suave); color: var(--gris); overflow-wrap: anywhere;
 }
 .pin { background: none; border: 0; }
+.pin-gota { fill: var(--guinda); stroke: var(--fondo); }
+.pin-centro { fill: var(--fondo); stroke: var(--dorado); }
 .coord-manual { margin-bottom: var(--e-3); }
 /* Con la captura a mano desplegada, el botón de ubicación se oculta: no conviven dos formas de fijar el punto */
-#btn-ubicacion[hidden], #btn-ubicacion:has(+ #detalles-coord[open]) { display: none; }
-
+.btn-ubicacion[hidden], .btn-ubicacion:has(+ .coord-manual[open]) { display: none; }
 .franja-edicion { background: var(--fondo-suave); border-left: 4px solid var(--guinda); padding: var(--e-3) var(--e-4); }
-
 /* ESPEJO DE CAMPOS — SE ELIMINA AL CERRAR LA ETAPA 1 (bloque completo, de aquí al cierre).
    Es una herramienta de trabajo, no parte del sistema: gris, sin guinda y separado por una
    línea, para que nadie lo confunda con un dato que el personal de campo deba leer. */
@@ -500,23 +476,15 @@ fieldset.campo { margin-inline: 0; }
 .espejo-valor { font-family: ui-monospace, 'Courier New', monospace; color: var(--texto); }
 .espejo-nota { width: 45%; font-style: italic; }
 /* FIN DEL ESPEJO DE CAMPOS */
-
-/* El aviso de guardado es un modal: aparece sobre el formulario y obliga a decidir qué sigue,
-   registrar otro árbol o ir al listado, que es lo que se hace en campo. */
-#dlg-guardado { border-top-color: var(--exito); }
-.titulo-exito { color: var(--exito); display: flex; align-items: center; gap: var(--e-2); }
-
 .aviso-simulado { margin: var(--e-3) 0 0; padding: var(--e-2) var(--e-3); border-left: 4px solid var(--error); background: var(--error-fondo); color: var(--error); font-size: var(--t-s); }
-
 .combo { position: relative; }
 .combo-lista {
   position: absolute; z-index: 1100; left: 0; right: 0; margin: 2px 0 0; padding: 0; list-style: none;
   background: var(--fondo); border: 1px solid var(--borde-control); border-radius: var(--radio-control);
-  max-height: 18rem; overflow-y: auto; box-shadow: 0 4px 12px rgba(35, 37, 38, 0.15);
+  max-height: 18rem; overflow-y: auto; box-shadow: var(--sombra-lista);
 }
 .combo-opcion { padding: var(--e-2) var(--e-3); min-height: var(--toque); cursor: pointer; border-bottom: 1px solid var(--borde-suave); }
 .combo-opcion small { display: block; color: var(--gris); font-style: italic; }
-
 /* Zona de carga y ficha del archivo: se ve qué se subió y se puede quitar de un toque */
 /* Doble selector a propósito: `.campo label { display: block }` tiene la misma especificidad
    y ganaba por orden, así que la zona no apilaba su icono y sus textos. */
@@ -528,7 +496,6 @@ fieldset.campo { margin-inline: 0; }
 }
 .zona-foto-titulo { font-family: var(--fuente-titulo); font-weight: 600; }
 .zona-foto-ayuda { color: var(--gris); font-size: var(--t-s); }
-
 .ficha-foto {
   display: flex; align-items: center; gap: var(--e-3); margin-top: var(--e-3);
   padding: var(--e-2); border: 1px solid var(--borde-suave); border-radius: var(--radio); background: var(--fondo-suave);
@@ -537,7 +504,6 @@ fieldset.campo { margin-inline: 0; }
 .ficha-foto-datos { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .ficha-foto-nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ficha-foto-peso { color: var(--gris); font-size: var(--t-s); }
-
 /* ---------- Atajos y filtros (D95) ----------
    Botones de ancho igual con borde suave; el activo en guinda suave, para que el único
    relleno guinda de la vista sea la acción principal («Aplicar», «Agregar», «Generar»). */
@@ -547,12 +513,10 @@ fieldset.campo { margin-inline: 0; }
   position: relative; background: var(--fondo); color: var(--texto); font-weight: 500; font-size: var(--t-s); line-height: 1.2; cursor: pointer;
   transition: background .15s, border-color .15s;
 }
-
 /* Encabezado de grupo: título a la izquierda, «Reiniciar» en guinda a la derecha */
 .grupo-cab { display: flex; justify-content: space-between; align-items: center; gap: var(--e-3); margin-bottom: var(--e-2); }
 .grupo-cab .titulo-bloque { margin-bottom: 0; }
 .btn-reiniciar { background: none; color: var(--gris); font-weight: 500; font-size: var(--t-s); padding: 0 var(--e-1); min-height: 40px; }
-
 .filtros { border-bottom: 1px solid var(--borde-suave); padding-bottom: var(--e-3); }
 /* Atajos y listas en una fila que se parte sola en teléfono; alineados por la base */
 .filtros-fila { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--e-3) var(--e-4); }
@@ -562,7 +526,6 @@ fieldset.campo { margin-inline: 0; }
 .campo-corto { margin-bottom: 0; min-width: 9rem; }
 .filtros-fila > .campo-corto { flex: 1 1 11rem; max-width: 18rem; }
 .filtros-periodo { display: grid; grid-template-columns: repeat(2, minmax(0, 12rem)) max-content; justify-content: start; align-items: end; gap: var(--e-3); margin-top: var(--e-3); }
-
 /* Campos de filtro: caja gris clara sin contorno fuerte, esquinas de 10 px y, a la derecha,
    un cuadrito gris con la flecha (listas) o el calendario (fechas). Siguen siendo controles
    nativos: el teléfono abre su propio selector y el lector de pantalla los reconoce. */
@@ -575,7 +538,6 @@ fieldset.campo { margin-inline: 0; }
   background-color: var(--fondo-campo); border: 1px solid var(--fondo-campo); border-radius: var(--radio-filtro);
   -webkit-appearance: none; appearance: none; background-repeat: no-repeat; transition: background-color .15s, border-color .15s;
 }
-
 .zona-filtros .campo select:focus, .zona-filtros .campo input:focus,
 .campos-grises .campo select:focus, .campos-grises .campo input:focus, .campos-grises .campo textarea:focus { background-color: var(--fondo); border-color: var(--guinda); }
 .campos-grises .campo textarea { -webkit-appearance: none; appearance: none; }
@@ -599,7 +561,6 @@ fieldset.campo { margin-inline: 0; }
   background-position: left 13px center; background-size: 18px 18px;
 }
 .zona-filtros .campo input::placeholder { color: var(--gris); opacity: .8; }
-
 .lista-registros { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e-2); }
 /* Tarjeta de registro (D100): miniatura, datos y la tuerca arriba a la derecha, en un solo bloque.
    Antes la tuerca iba en un renglón propio y cada registro gastaba 40 px de hueco. */
@@ -613,7 +574,7 @@ fieldset.campo { margin-inline: 0; }
 .registro-especie i { font-weight: 400; color: var(--gris); }
 /* Estado de la conexión: pastilla con icono, color y palabras (Norma 8.4: el color no va solo).
    Es un botón: abre la guía de qué hacer sin internet. Verde = todo en orden; dorado = atención, no error */
-.conexion { display: inline-flex; align-items: center; gap: var(--e-1); min-height: 32px; padding: 0 var(--e-3); border-radius: 16px; border: 1px solid transparent; background: var(--fondo-suave); color: var(--gris); font: inherit; font-size: var(--t-xs); font-weight: 500; cursor: pointer; }
+.conexion { white-space: nowrap; display: inline-flex; align-items: center; gap: var(--e-1); min-height: 32px; padding: 0 var(--e-3); border-radius: 16px; border: 1px solid transparent; background: var(--fondo-suave); color: var(--gris); font: inherit; font-size: var(--t-xs); font-weight: 500; cursor: pointer; }
 .conexion[data-estado="con"] { background: var(--exito-fondo); color: var(--exito); border-color: var(--exito); }
 .conexion[data-estado="sin"] { background: var(--editar-fondo); color: var(--editar); border-color: var(--editar); }
 /* Envío simulado (D111): «Enviando…» neutro; atraso en rojo, con palabras (el color no va solo) */
@@ -629,8 +590,6 @@ fieldset.campo { margin-inline: 0; }
 .senal-cola { display: flex; align-items: center; gap: var(--e-3); flex-wrap: wrap; margin: var(--e-3) 0; padding: var(--e-3); border-radius: var(--radio-filtro); background: var(--fondo-suave); }
 .senal-cola[hidden] { display: none; }
 .senal-cola p { flex: 1 1 12rem; margin: 0; font-weight: 500; }
-#dlg-guardado-dispositivo[data-envio="recibido"] { color: var(--exito); }
-#dlg-guardado-dispositivo[data-envio="por_enviar"] { color: var(--editar); }
 .aviso-envio { margin-top: var(--e-4); padding: var(--e-3) var(--e-4); background: var(--fondo-suave); border-left: 4px solid var(--dorado); font-size: var(--t-s); line-height: 1.5; }
 .aviso-envio:empty { display: none; }
 .lista-ayuda { padding-left: 1.2em; line-height: 1.5; }
@@ -641,11 +600,9 @@ fieldset.campo { margin-inline: 0; }
 .senal-estado dd { margin: 0; font-weight: 500; }
 .senal-estado dd[data-tono="aviso"] { color: var(--editar); }
 .lista-ayuda li { margin-bottom: var(--e-2); }
-.registro-lugar, .registro-autor { display: block; font-size: var(--t-s); overflow-wrap: anywhere; }
-.registro-autor { color: var(--gris); }
+.registro-lugar { display: block; font-size: var(--t-s); overflow-wrap: anywhere; }
 /* Las tres acciones en fila en todo ancho: apiladas, cada registro medía tres botones de alto y la lista crece (bloque 21) */
 .registro-acciones { display: flex; justify-content: flex-end; margin: calc(-1 * var(--e-2)) calc(-1 * var(--e-2)) 0 0; cursor: default; }
-
 /* Filtros activos (D100): fichas con ×; «Filtros» con su número pliega el panel en teléfono */
 .filtros-activos { list-style: none; margin: 0 0 var(--e-2); padding: 0; display: flex; flex-wrap: wrap; gap: var(--e-2); }
 .filtros-activos:empty { display: none; }
@@ -657,20 +614,18 @@ fieldset.campo { margin-inline: 0; }
 .btn.btn-filtros { display: none; min-height: 40px; padding: 0 var(--e-3); gap: var(--e-2); margin-left: auto; }
 .filtros-cuenta { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: var(--guinda); color: var(--fondo); font-size: var(--t-xs); font-weight: 700; }
 .filtros-cuenta[hidden] { display: none; }
-
 /* En escritorio la tabla se desplaza dentro de su caja para que el encabezado quede fijo (D100) */
 .tabla-caja { overflow: auto; max-height: calc(100vh - 15rem); min-height: 12rem; }
-.tabla th { position: sticky; top: 0; z-index: 1; }
 .th-orden { display: inline-flex; align-items: center; gap: var(--e-1); width: 100%; min-height: 32px; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .th-flecha::after { content: '↕'; opacity: .55; font-size: .85em; }
-th[aria-sort="ascending"] .th-flecha::after { content: '▲'; opacity: 1; }
-th[aria-sort="descending"] .th-flecha::after { content: '▼'; opacity: 1; }
+/* La columna ordenada lleva su flecha en negritas (D142) */
+th[aria-sort="ascending"] .th-flecha::after { content: '▲'; opacity: 1; font-weight: 800; }
+th[aria-sort="descending"] .th-flecha::after { content: '▼'; opacity: 1; font-weight: 800; }
 .tabla { width: 100%; border-collapse: collapse; font-size: var(--t-s); }
-.tabla th { background: var(--guinda); color: var(--fondo); text-align: left; padding: var(--e-2); font-weight: 500; }
+.tabla th { position: sticky; top: 0; z-index: 1; background: var(--guinda); color: var(--fondo); text-align: left; padding: var(--e-2); font-weight: 500; }
 .tabla td { padding: var(--e-2); border-bottom: 1px solid var(--borde-suave); vertical-align: top; }
 .tabla tr:nth-child(even) td { background: var(--fondo-suave); }
 .tabla-detalle { display: block; font-size: var(--t-xs); color: var(--gris); font-style: normal; }
-.tabla-acciones { display: flex; flex-wrap: wrap; gap: var(--e-1); }
 /* Tuerca de acciones y su menú (D94) */
 .acciones-menu { display: inline-block; }
 /* Círculo exacto en cualquier renglón (D154): el alto también es fijo, porque las filas de puntos
@@ -678,7 +633,7 @@ th[aria-sort="descending"] .th-flecha::after { content: '▼'; opacity: 1; }
 .btn.btn-tuerca { width: var(--toque); height: var(--toque); min-width: var(--toque); min-height: var(--toque); flex: none; padding: 0; border-radius: 50%; background: var(--fondo); color: var(--gris); border: 1px solid var(--borde-filtro); }
 .btn.btn-tuerca[aria-expanded="true"] { background: var(--acento-suave); color: var(--acento); border-color: var(--acento); }
 .menu-acciones { position: fixed; z-index: 1300; min-width: 11rem; padding: var(--e-1) 0; background: var(--fondo);
-  border: 1px solid var(--borde-suave); border-radius: var(--radio); box-shadow: 0 6px 18px rgba(35, 37, 38, 0.18); }
+  border: 1px solid var(--borde-suave); border-radius: var(--radio); box-shadow: var(--sombra-menu); }
 .menu-opcion { display: flex; align-items: center; gap: var(--e-2); width: 100%; min-height: var(--toque); padding: 0 var(--e-4);
   background: none; border: 0; font: inherit; color: var(--texto); text-align: left; cursor: pointer; }
 .menu-opcion:focus-visible { background: var(--fondo-suave); outline: none; }
@@ -688,30 +643,11 @@ th[aria-sort="descending"] .th-flecha::after { content: '▼'; opacity: 1; }
 /* Cada opción del menú con el color de su intención (D124) */
 .menu-editar, .menu-editar svg { color: var(--editar); }
 .tabla td:last-child { white-space: nowrap; }
-.tabla td:last-child .tabla-acciones { flex-wrap: nowrap; }
-
 /* Interruptor del modo sol en el menú de la cuenta (D106) */
 .menu-opcion .interruptor { position: relative; flex-shrink: 0; width: 38px; height: 22px; margin-left: auto; border-radius: 11px; background: var(--borde-control); transition: background .15s; }
 .menu-opcion .interruptor::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--fondo); transition: left .15s; }
 .menu-opcion[aria-checked="true"] .interruptor { background: var(--acento); }
 .menu-opcion[aria-checked="true"] .interruptor::after { left: 19px; }
-
-/* Ajustes del modo sol que no son sólo color: trazo más grueso y texto un punto más pesado */
-[data-contraste="alto"] body { font-weight: 500; }
-[data-contraste="alto"] .zona-filtros .campo select,
-[data-contraste="alto"] .zona-filtros .campo input,
-[data-contraste="alto"] .campos-grises .campo select,
-[data-contraste="alto"] .campos-grises .campo input,
-[data-contraste="alto"] .campos-grises .campo textarea { border: 2px solid var(--borde-control); }
-[data-contraste="alto"] .chip { border-width: 2px; }
-[data-contraste="alto"] .chip[aria-pressed="true"] { background: var(--acento); color: var(--fondo); }
-[data-contraste="alto"] .chip[aria-pressed="true"] .chip-sub { color: var(--fondo); }
-[data-contraste="alto"] .registro, [data-contraste="alto"] .tabla tr { border-width: 2px; }
-[data-contraste="alto"] .btn.btn-subir { border: 2px solid var(--borde-control); }
-/* El texto guía no debe confundirse con lo escrito: más claro que el texto, sin negrita y en cursiva */
-[data-contraste="alto"] .campo input::placeholder, [data-contraste="alto"] .campo textarea::placeholder,
-[data-contraste="alto"] .texto-vacio { color: var(--texto-guia); opacity: 1; font-weight: 400; font-style: italic; }
-
 /* Resumen de la tarjeta de teléfono (D105): sólo existe en teléfono */
 .tabla .c-resumen { display: none; }
 .tabla-tarjetas tbody tr[data-id] { cursor: pointer; }
@@ -720,7 +656,6 @@ th[aria-sort="descending"] .th-flecha::after { content: '▼'; opacity: 1; }
 /* Punto de estado, como «● Paid» de la referencia: el color acompaña a la palabra (D100) */
 .estado-texto::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--exito); }
 .estado-texto[data-activo="false"]::before { background: var(--error); }
-
 /* Ficha de revisión previa: cada dato con su botón de corregir */
 /* El mapa va aislado en su propio contexto de apilamiento: los z-index de Leaflet (200–600) no salen de su caja
    y no pueden pintarse sobre la cabecera fija del diálogo, como pasaba en Safari (D78) */
@@ -739,26 +674,21 @@ th[aria-sort="descending"] .th-flecha::after { content: '▼'; opacity: 1; }
 .revision-sistema { margin-top: var(--e-4); }
 .revision-sistema-titulo { font-size: var(--t-xs); font-weight: 700; color: var(--gris); text-transform: uppercase; letter-spacing: .04em; margin: 0; }
 .revision-sistema .revision-fila dt, .revision-sistema .revision-fila dd { font-size: var(--t-xs); color: var(--gris); }
-.revision-nota { color: var(--gris); font-size: var(--t-xs); margin: var(--e-4) 0 0; line-height: 1.6; }
-
 .historial { padding-left: var(--e-5); font-size: var(--t-s); }
-
 dialog { width: min(40rem, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); border: 0; border-top: 4px solid var(--guinda); border-radius: var(--radio); padding: var(--e-5); overscroll-behavior: contain; }
 /* En iOS la barra del navegador hace que 100vh sea más alto que la pantalla y el pie del diálogo quede oculto */
 @supports (height: 100dvh) { dialog { max-height: calc(100dvh - 2rem); } }
-dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
+dialog::backdrop { background: var(--velo-oscuro); }
 /* Cabecera fija del diálogo: se queda arriba mientras el cuerpo se desplaza; el fondo tapa lo que pasa debajo */
 .dialogo-cabecera { position: sticky; top: calc(-1 * var(--e-5)); z-index: 2; margin: calc(-1 * var(--e-5)) calc(-1 * var(--e-5)) var(--e-3); padding: var(--e-4) var(--e-5) var(--e-3); background: var(--fondo); border-bottom: 1px solid var(--borde-suave); }
 .dialogo-cabecera h2 { margin-top: 0; }
-.acciones-cabecera { margin-top: var(--e-2); }
 /* Barra fija al pie de una ventana: la acción principal a todo el ancho y al alcance del pulgar (D99) */
 .dialogo-pie { position: sticky; bottom: calc(-1 * var(--e-5)); z-index: 2; margin: var(--e-3) calc(-1 * var(--e-5)) calc(-1 * var(--e-5));
   padding: var(--e-3) var(--e-5) calc(var(--e-3) + env(safe-area-inset-bottom, 0px)); background: var(--fondo);
-  border-top: 1px solid var(--borde-suave); box-shadow: 0 -6px 12px -8px rgba(0, 0, 0, .18); }
+  border-top: 1px solid var(--borde-suave); box-shadow: var(--sombra-pie); }
 .dialogo-titulo { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); }
 .dialogo-titulo h2 { margin: 0; }
 .dialogo-titulo h2:focus { outline: none; }
-
 /* Aviso flotante único (D101): arriba, para no tapar las barras fijas del pie; fondo oscuro
    neutro con un filete de color e icono que dicen si es éxito o alerta (el color no va solo:
    también cambian el icono y el texto). «Deshacer» en dorado claro, que contrasta sobre el oscuro. */
@@ -766,17 +696,15 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
   position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + var(--e-3)); transform: translateX(-50%); z-index: 3000;
   width: max-content; max-width: min(34rem, calc(100vw - 2rem)); display: flex; align-items: center; gap: var(--e-2);
   padding: var(--e-2) var(--e-2) var(--e-2) var(--e-3); border-radius: var(--radio-filtro); border-left: 4px solid var(--exito);
-  background: var(--texto); color: var(--fondo); font-weight: 500; font-size: var(--t-s); box-shadow: 0 8px 24px rgba(0, 0, 0, .25);
+  background: var(--texto); color: var(--fondo); font-weight: 500; font-size: var(--t-s); box-shadow: var(--sombra-aviso);
+  flex-wrap: wrap;   /* con un texto largo, la acción baja a su propio renglón en vez de aplastar el texto (D133) */
 }
 .aviso-icono { display: grid; color: var(--aviso-exito); flex-shrink: 0; }
 .aviso-texto { flex: 1 1 12rem; min-width: 0; }
-/* Con un texto largo, la acción baja a su propio renglón en vez de aplastar el texto (D133) */
-.aviso { flex-wrap: wrap; }
 .aviso-accion { min-height: 40px; padding: 0 var(--e-3); border: 0; border-radius: 8px; background: none; color: var(--aviso-accion); font: inherit; font-weight: 700; cursor: pointer; margin-left: auto; white-space: nowrap; }
 .aviso-cerrar { display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: none; color: var(--fondo); opacity: .8; cursor: pointer; flex-shrink: 0; }
-
 /* Vista previa del parte (D101): una hoja blanca con el contenido del PDF */
-.previa-hoja { border: 1px solid var(--borde-suave); border-radius: var(--radio); padding: var(--e-4); background: var(--fondo); box-shadow: 0 2px 10px rgba(0, 0, 0, .06); font-size: var(--t-s); }
+.previa-hoja { border: 1px solid var(--borde-suave); border-radius: var(--radio); padding: var(--e-4); background: var(--fondo); box-shadow: var(--sombra-hoja); font-size: var(--t-s); }
 .previa-titulo { text-align: center; text-transform: uppercase; font-family: var(--fuente-titulo); font-weight: 700; color: var(--guinda); margin: 0; }
 .previa-fecha { text-align: center; color: var(--gris); margin: 0 0 var(--e-3); }
 .previa-sitio { border: 1px solid var(--texto); padding: var(--e-2) var(--e-3); margin-bottom: var(--e-3); }
@@ -800,179 +728,13 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .previa-lista { margin: 0; padding-left: 1.25em; }
 .dialogo-pie .btn-texto { margin-top: var(--e-1); }
 
-/* ========== 5. ESTADOS ========== */
-
-
-.desplegable[open] summary::before { transform: rotate(90deg); }
-
-.campo .zona-foto.con-foto { flex-direction: row; gap: var(--e-2); min-height: var(--toque); padding: var(--e-2) var(--e-3); }
-.zona-foto.con-foto .zona-foto-ayuda { display: none; }
-.zona-foto.con-foto #icono-foto svg { width: 20px; height: 20px; }   /* escala de tres tamaños (D141) */
-.zona-foto:focus-within { outline: 3px solid var(--foco); outline-offset: 2px; }
-.btn:disabled { opacity: 0.55; cursor: not-allowed; }
-.pestana[aria-current="page"] { color: var(--acento); border-bottom-color: var(--acento); }
-
-.chip-sub { display: block; font-size: var(--t-xs); font-weight: 400; color: var(--gris); }
-/* La fecha del atajo «Hoy» va en un renglón (D147): en la fila de cuatro, el chip cede relleno a los lados */
-.chip .chip-sub { white-space: nowrap; }
-.chips-cuatro .chip { padding-left: 6px; padding-right: 6px; }
-.chip[aria-pressed="true"] .chip-sub { color: var(--fondo); opacity: .9; }
-/* Activo: guinda suave con borde guinda (propuesta A de la maqueta, D95) */
-.chip[aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: var(--fondo); }
-.combo-opcion[aria-selected="true"] { background: var(--fondo-suave); outline: 2px solid var(--acento); outline-offset: -2px; }
-.campo input[aria-invalid="true"], .campo select[aria-invalid="true"] { border: 2px solid var(--error); }
-.aviso[data-tipo="alerta"] { border-left-color: var(--aviso-alerta); }
-.aviso[data-tipo="alerta"] .aviso-icono { color: var(--aviso-alerta); }
-.aviso[data-tipo="aviso"] { border-left-color: var(--aviso-aviso); }
-.aviso[data-tipo="aviso"] .aviso-icono { color: var(--aviso-aviso); }
-.estado-texto[data-activo="false"] { color: var(--error); }
-.ficha-estado[data-tipo="alerta"] { color: var(--error); font-weight: 500; }
-/* El renglón de avisos bajo la precisión (D152): continúa la misma ficha, sin tapar la insignia */
-.ficha-estado-extra { border-top: 0; margin-top: -1px; }
-.ficha-estado:has(+ .ficha-estado-extra:not([hidden])) { border-radius: 0; }
-
-/* ========== 6. UTILIDADES ========== */
-/* El doble selector no es adorno: `.campo input { width:100% }` tiene la misma especificidad
-   que `.oculto-visual` y estiraba el selector de archivo a todo el ancho; invisible, pero
-   arrastraba la página de lado. `.campo .oculto-visual` gana por especificidad, no por orden. */
-.oculto-visual,
-.campo .oculto-visual { position: absolute; width: 1px; height: 1px; min-height: 0; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-/* Lo oculto se oculta aunque otra regla le ponga display (D120): sin esto, en computadora el
-   formulario de registro asomaba bajo «Iniciar jornada» por la regla de dos columnas */
-[hidden] { display: none !important; }
-
-/* ========== 7. @MEDIA ========== */
-/* EQUILIBRIO EN COMPUTADORA (D109). Nuevo registro en dos columnas: ubicación y mapa a la
-   izquierda, datos del árbol a la derecha, así el mapa gana tamaño y no queda media pantalla vacía.
-   El resto de las vistas, en el sistema de ancho de D145 (al final de la hoja). */
-@media (min-width: 1024px) {
-  #vista-registrar { max-width: var(--ancho-max-tabla); }
-  #vista-registrar > .registrar-columnas { max-width: none; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: var(--e-6); align-items: start; }
-  .registrar-ubicacion .mapa { height: clamp(320px, 52vh, 520px); }
-  #form-plantacion .combo { margin-top: 0; }
-}
-@media (max-width: 700px) {
-  /* Filtros plegados en teléfono (D100): quedan a la vista las fichas y el botón «Filtros» */
-  .btn.btn-filtros { display: inline-flex; margin-left: 0; }
-  .filtros[data-abierto="false"] { display: none; }
-  /* El botón ya dice «Filtros»: el título se queda sólo para el lector de pantalla */
-  #titulo-filtros { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-}
-/* NAVEGACIÓN INFERIOR EN TELÉFONO (D107): las secciones van abajo, al alcance del pulgar, como
-   en las apps del teléfono. La barra fija de guardar sube para quedar encima de ella. */
-@media (max-width: 700px) {
-  :root { --alto-nav: calc(64px + env(safe-area-inset-bottom, 0px)); }
-  .pestanas { position: fixed; left: 0; right: 0; bottom: 0; z-index: 900; max-width: none; margin: 0; padding: 0 0 env(safe-area-inset-bottom, 0px);
-    background: var(--fondo); border-top: 1px solid var(--borde-suave); border-bottom: 0; box-shadow: 0 -2px 10px rgba(0, 0, 0, .06); }
-  .pestana { min-height: 64px; font-size: var(--t-xs); border-bottom: 0; border-top: 3px solid transparent; padding: var(--e-1) 2px; }
-  .pestana[aria-current="page"] { border-top-color: var(--acento); }
-  body { padding-bottom: var(--alto-nav); }
-  /* Crédito del mapa en un renglón; al tocarlo se despliega (D108) */
-  .leaflet-control-attribution { max-width: calc(100vw - 4rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
-  .leaflet-control-attribution.credito-abierto { white-space: normal; }
-  .barra-guardar { bottom: var(--alto-nav); }
-}
-@media (hover: hover) {
-  /* Los estados de «señalar» sólo existen con ratón (D98). En iPhone y Android un toque dejaba
-     pegado el hover: la zona de foto quedaba rosa y la primera especie parecía elegida. */
-  .btn-reiniciar:hover { text-decoration: underline; text-underline-offset: 3px; }
-  .zona-filtros .campo select:hover,
-  .zona-filtros .campo input:hover,
-  .campos-grises .campo select:hover,
-  .campos-grises .campo input:hover,
-  .campos-grises .campo textarea:hover { background-color: var(--fondo-campo-hover); border-color: var(--fondo-campo-hover); }
-  .btn.btn-tuerca:hover { background: var(--acento-suave); color: var(--acento); border-color: var(--acento); }
-  .btn.btn-subir:hover { background: var(--acento-suave); border-color: var(--acento); }
-  .menu-opcion:hover { background: var(--fondo-suave); outline: none; }
-  /* El acento, no la guinda (D124): al pasar el puntero, el botón principal seguía volviéndose guinda (D141) */
-  .btn-primario:hover { background: var(--acento-oscuro); }
-  /* El nivel 3 se pinta de guinda sólo al señalarlo: ahí ya no hay confusión posible,
-     porque el puntero está encima y nada más cambia de color al mismo tiempo. */
-  .enlace:hover, .btn-texto:hover, .desplegable summary:hover { color: var(--acento); }
-  .zona-foto:hover { border-color: var(--acento); background: var(--fondo-suave); }
-  .chip:hover { background: var(--fondo-campo); }
-  .chip[aria-pressed="true"]:hover { background: var(--acento-oscuro); }
-  /* Con ratón la opción bajo el cursor se marca igual que la elegida con teclado */
-  .combo-opcion:hover { background: var(--fondo-suave); outline: 2px solid var(--acento); outline-offset: -2px; }
-}
-@media (max-width: 480px) {
-  .encabezado-logo { max-height: 38px; }
-  /* Estado del teléfono en la guía: etiqueta sobre el valor (D149) */
-  .senal-estado { grid-template-columns: minmax(0, 1fr); gap: 0; }
-  .senal-estado dd { margin-bottom: var(--e-2); }
-  /* En teléfono logotipo, conexión y cuenta caben en una sola fila (D93) */
-  .encabezado-interior { padding: var(--e-2) var(--e-3); gap: var(--e-2); }
-  .conexion { padding: 0 var(--e-2); font-size: 0.75rem; }
-  .cx-palabra { display: none; }
-  .campo-doble { grid-template-columns: 1fr; }
-  .campo-doble.campo-doble-fijo { grid-template-columns: 1fr 1fr; }
-  /* Reportes: el cabo a todo el ancho para que su nombre no se corte (D103) */
-  .filtros-fila > .campo-corto { flex-basis: 100%; }
-  .campo-triple { grid-template-columns: 1fr; }
-  .campo-punto .campo-triple .campo { display: grid; grid-template-columns: 6.5rem 1fr; align-items: baseline; gap: var(--e-2); }
-  .campo-punto .campo-triple .campo + .campo { border-left: 0; border-top: 1px solid var(--borde-suave); }
-  .btn-destacado { max-width: none; }
-  .revision-fila { grid-template-columns: 1fr auto; }
-  .revision-fila-sola { grid-template-columns: 1fr; }
-  .revision-fila dt { grid-column: 1 / -1; }
-  /* En teléfono los botones van en fila bajo los datos: apilados a la derecha triplicaban
-     el alto de cada registro y obligaban a desplazarse para ver tres árboles. */
-  .tabla-caja { max-height: none; min-height: 0; overflow: visible; }
-  .tabla thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-  .tabla tr { display: block; border: 1px solid var(--borde-suave); border-radius: var(--radio); margin-bottom: var(--e-3); }
-  .tabla td { display: grid; grid-template-columns: 6.5rem 1fr; gap: var(--e-2); }
-  .tabla td::before { content: attr(data-etiqueta); color: var(--gris); font-size: var(--t-xs); }
-  .tabla tr:nth-child(even) td { background: none; }
-  .tabla td:last-child { white-space: normal; }
-  .tabla td:last-child .tabla-acciones { flex-wrap: wrap; }
-  /* Tarjeta compacta de Catálogos y Usuarios (D105): título y tuerca arriba, científico o correo,
-     y un renglón de resumen con el estado; las demás celdas se quedan en la tabla de escritorio */
-  .tabla-tarjetas tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--e-2); padding: var(--e-2) var(--e-3); border-radius: var(--radio-filtro); }
-  .tabla-tarjetas td { display: block; grid-column: 1; padding: 0; border: 0; }
-  .tabla-tarjetas td::before { content: none; }
-  .tabla-tarjetas .c-movil-oculta { display: none; }
-  .tabla-tarjetas .c-titulo { font-family: var(--fuente-titulo); font-weight: 600; font-size: var(--t-m); }
-  .tabla-tarjetas .c-sub { color: var(--gris); overflow-wrap: anywhere; }
-  .tabla-tarjetas .c-acciones { grid-column: 2; grid-row: 1 / span 3; align-self: start; margin: calc(-1 * var(--e-1)) calc(-1 * var(--e-2)) 0 0; }
-  .tabla-tarjetas .c-resumen { display: flex; flex-wrap: wrap; align-items: center; gap: 4px var(--e-2); margin-top: var(--e-1); font-size: var(--t-xs); color: var(--gris); }
-  /* ESPEJO DE CAMPOS — se elimina al cerrar la Etapa 1 */
-  .espejo-tabla, .espejo-tabla caption, .espejo-tabla tbody, .espejo-tabla tr { display: block; }
-  .espejo-tabla thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-  .espejo-tabla tr { border-bottom: 1px solid var(--borde-suave); padding: var(--e-2) 0; }
-  .espejo-tabla td { display: block; border: 0; padding: 0; }
-  .espejo-campo, .espejo-nota { width: auto; }
-  /* Filtros en teléfono: atajos a todo el ancho, listas de dos en dos, Desde/Hasta en par y «Aplicar» debajo */
-  .filtros-fila .chips { flex-basis: 100%; max-width: none; }
-  .filtros-listas { grid-template-columns: 1fr 1fr; flex-basis: 100%; }
-  .filtros-listas > .campo:nth-child(3) { grid-column: 1 / -1; }
-  .filtros-periodo { grid-template-columns: 1fr 1fr; }
-  .filtros-periodo .btn { grid-column: 1 / -1; }
-  .filtros-fila > .campo-corto { max-width: none; }
-  .zona-filtros.fila-botones .campo-crece { flex-basis: 100%; }
-}
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
-}
-
 /* Detectar ubicación de la jornada (D122): el botón, su aviso y los dos datos de lectura */
 .campo-ini-detectar .ini-detectado { margin: var(--e-1) 0 0; }
 .campo-ini-detectar .ini-detectado[data-tono="alerta"] { color: var(--editar); font-weight: 500; }
 .campo-ini-detectar .ini-detectado[data-tono="bien"] { color: var(--exito); }
 .campo-ini-detectar .campo-doble { margin-top: var(--e-2); }
-
 /* Tipo de distribución en la fila de Especie de la ficha de revisión (D123) */
 .revision-distribucion, .revision-sub { display: block; font-size: var(--t-xs); color: var(--gris); margin-top: 2px; }
-
-/* «Registro guardado» (D127): especie grande, datos en dos columnas, envío al final con icono */
-.guardado-especie { font-size: var(--t-l); margin: 0 0 var(--e-3); }
-.guardado-datos { margin: 0 0 var(--e-3); display: grid; gap: var(--e-2); }
-.guardado-datos > div { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); gap: var(--e-2); align-items: start; font-size: var(--t-s); }
-.guardado-datos dt { color: var(--gris); font-weight: 500; }
-.guardado-datos dd { margin: 0; overflow-wrap: anywhere; }
-.guardado-envio { display: flex; align-items: flex-start; gap: var(--e-2); margin: 0 0 var(--e-4); font-size: var(--t-s); color: var(--gris); }
-.guardado-envio svg { flex: none; margin-top: 2px; }
-@media (max-width: 400px) { .guardado-datos > div { grid-template-columns: 1fr; gap: 0; } }
-
 /* Guardar en un toque (D130): franja del último guardado, avisos de la ficha, especies recientes */
 .franja-guardado { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-2) var(--e-3); max-width: var(--ancho-max-tabla); margin: 0 auto var(--e-4);
   padding: var(--e-3) var(--e-4); border-radius: var(--radio-filtro); background: var(--exito-fondo); border-left: 4px solid var(--exito); }
@@ -981,8 +743,8 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .franja-guardado-cuerpo { display: grid; gap: 2px; min-width: 0; }
 .franja-guardado-cuerpo strong { color: var(--exito); }
 .franja-guardado-datos { font-size: var(--t-xs); color: var(--gris); overflow-wrap: anywhere; }
-.franja-guardado[data-envio="recibido"] #franja-guardado-envio { color: var(--exito); font-weight: 500; }
-.franja-guardado[data-envio="por_enviar"] #franja-guardado-envio { color: var(--editar); font-weight: 500; }
+.franja-guardado[data-envio="recibido"] .franja-guardado-envio { color: var(--exito); font-weight: 500; }
+.franja-guardado[data-envio="por_enviar"] .franja-guardado-envio { color: var(--editar); font-weight: 500; }
 .franja-guardado-acciones { display: flex; gap: var(--e-2); align-items: center; }
 .revision-avisos { margin: 0 0 var(--e-3); padding: var(--e-3) var(--e-4); border-radius: var(--radio-filtro); background: var(--editar-fondo); border-left: 4px solid var(--editar-borde); }
 .revision-avisos-titulo { margin: 0 0 var(--e-1); font-weight: 700; color: var(--editar); }
@@ -990,14 +752,11 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .revision-avisos li + li { margin-top: var(--e-1); }
 .chips-recientes { grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: none; margin-bottom: var(--e-2); }
 .chips-recientes .chip { min-height: 40px; font-size: var(--t-xs); overflow-wrap: anywhere; }
-
 /* Conciliación con la meta (D131): dos cifras, sin campo */
 .conciliacion-cifras { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: var(--e-2); }
 .conciliacion-cifras .jornada-cifra b { font-size: var(--t-l); }
-
 /* Acciones de la ficha de jornada (D132) */
 .jornada-acciones-cab { display: flex; flex-wrap: wrap; gap: var(--e-2); margin: 0 0 var(--e-3); }
-
 /* Reportes por jornada cerrada (D134): la ficha no es botón; el botón va a la derecha */
 .reporte-ficha { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2) var(--e-3); cursor: default; }
 .reporte-ficha .jornada-titulo-caja { flex: 1 1 14rem; }
@@ -1005,7 +764,6 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .reporte-sin { flex: 1 1 100%; margin: 0; }
 .registro-jornada { font-weight: 600; color: var(--texto); }
 .galeria-jornada { font-weight: 600; }
-
 /* PASOS DE LA JORNADA (D138, D146). Indicador de avance —Registrar · Cerrar · Revisar · Reporte—:
    un círculo por paso, unido al anterior por un tramo, con el nombre debajo. Antes eran píldoras y
    se leían como filtros que se pueden tocar (iguales a «Todas · Hoy · Un día»); esto no se toca, se
@@ -1025,23 +783,18 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .paso[data-estado="hecho"] .paso-marca { background: var(--exito); border-color: var(--exito); color: var(--fondo); }
 .paso[data-estado="actual"] { color: var(--texto); font-weight: 700; }
 .paso[data-estado="actual"] .paso-marca { background: var(--acento); border-color: var(--acento); color: var(--fondo); }
-[data-contraste="alto"] .paso-marca { border-width: 3px; }
-[data-contraste="alto"] .paso + .paso::before { height: 3px; }
 .franja-jornada .pasos { --paso-d: 22px; flex: 1 1 100%; margin: var(--e-1) 0 0; }
 .franja-jornada .franja-siguiente { flex: 1 1 100%; font-size: var(--t-xs); font-weight: 600; color: var(--exito); }
 /* La barra del pie de la ficha: «Siguiente:» a todo lo ancho y, debajo, los botones; el principal
    (lo que sigue) siempre al final, más cerca del pulgar */
-.barra-jornada { flex-wrap: wrap; }
 .pasos-siguiente { flex: 1 1 100%; display: flex; align-items: center; gap: var(--e-2); margin: 0; font-size: var(--t-s); }
 .pasos-siguiente:empty { display: none; }
 .pasos-siguiente:focus { outline: none; }
 .pasos-siguiente[data-tono="rev"] b { color: var(--editar); }
 .pasos-siguiente[data-tono="ok"] { color: var(--exito); font-weight: 600; }
-.barra-jornada .btn { order: 1; }
 /* Menos aire a los lados en las barras de dos botones, para que cada etiqueta quepa en un renglón (D141) */
 .barra-jornada .btn, .franja-jornada-acciones .btn { padding-left: 10px; padding-right: 10px; gap: 6px; }
 .barra-jornada .btn-primario, .barra-jornada .btn-editar { order: 2; }
-
 /* CONFIRMACIÓN ESTRUCTURADA (D139): título con la acción, pregunta, lo que implica en viñetas y una
    nota final; «No se puede deshacer» en rojo con su icono, porque es lo que distingue a este diálogo */
 .dlg-confirmar { max-width: min(30rem, calc(100vw - 2rem)); }
@@ -1054,16 +807,14 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .confirmar-nota svg { flex-shrink: 0; margin-top: 1px; }
 .confirmar-nota[data-tono="alerta"] { color: var(--error); font-weight: 600; }
 .dlg-confirmar .acciones { margin-top: var(--e-4); }
-
 /* CAMPOS (D140). El error va debajo de su campo, en rojo con icono (el resumen de arriba se queda);
    la ayuda es una línea gris bajo el control; el contador aparece al pasar del 80 % del límite. */
 .campo-error { display: flex; align-items: flex-start; gap: var(--e-1); margin: var(--e-1) 0 0; color: var(--error); font-size: var(--t-s); font-weight: 600; }
 .campo-error svg { flex-shrink: 0; margin-top: 2px; }
-#btn-ubicacion + .campo-error { margin-bottom: var(--e-2); }
+.btn-ubicacion + .campo-error { margin-bottom: var(--e-2); }
 .ayuda-campo { margin: var(--e-1) 0 0; font-size: var(--t-xs); line-height: 1.4; }
 .contador { display: block; margin-top: 2px; text-align: right; font-size: var(--t-xs); color: var(--gris); font-variant-numeric: tabular-nums; }
 .contador[data-lleno="true"] { color: var(--editar); font-weight: 600; }
-
 /* TARJETAS, SECCIONES E ICONOS (D141) */
 /* Etiqueta: la misma píldora para el estado en las tres tarjetas (folio, envío, reporte) */
 .etiqueta { display: inline-flex; align-items: center; gap: 4px; padding: 1px var(--e-2); border-radius: var(--radio-pildora);
@@ -1075,9 +826,7 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .registro-estado .marca-envio { margin-top: 0; }
 .registro .registro-lugar { display: flex; gap: 6px; align-items: flex-start; margin-top: var(--e-1); }
 .registro .registro-lugar svg { flex: none; margin-top: 3px; color: var(--gris); }
-.insignia-jornada { display: inline-flex; align-items: center; gap: 4px; }
 .insignia-jornada svg { flex: none; }
-.conciliacion-resultado { display: flex; align-items: flex-start; gap: var(--e-2); }
 .conciliacion-resultado svg { flex: none; margin-top: 1px; }
 .reporte-ficha .jornada-estado { margin: var(--e-1) 0; }
 /* Tarjeta de Reportes en columna, como la de Jornadas: cada pieza en su renglón y el botón al final, a la derecha */
@@ -1088,17 +837,63 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
 .titulo-seccion { margin: var(--e-4) 0 var(--e-2); scroll-margin-top: 64px; }
 .titulo-seccion:focus { outline: none; }
 .saltos { display: none; }
-@media (max-width: 767px) {
-  .saltos { position: sticky; top: 0; z-index: 6; display: flex; gap: var(--e-1); margin: 0 calc(-1 * var(--e-4)); padding: var(--e-2) var(--e-4);
-    background: var(--fondo); border-bottom: 1px solid var(--borde-suave); box-shadow: 0 6px 10px -8px rgba(0, 0, 0, .2); }
-  .saltos button { flex: 1 1 0; min-height: 40px; padding: 0 var(--e-2); border: 1px solid var(--borde-filtro); border-radius: var(--radio-pildora);
-    background: var(--fondo); color: var(--texto); font: inherit; font-size: var(--t-s); font-weight: 500; cursor: pointer; white-space: nowrap; }
-}
-
 /* TABLAS Y ACCESIBILIDAD (D142) */
-/* La columna por la que está ordenada la tabla se distingue: fondo de acento y flecha en negritas */
+/* La columna por la que está ordenada la tabla se distingue: fondo de acento (la flecha, arriba) */
 .tabla th[aria-sort="ascending"], .tabla th[aria-sort="descending"] { background: var(--acento); }
-th[aria-sort="ascending"] .th-flecha::after, th[aria-sort="descending"] .th-flecha::after { font-weight: 800; }
+/* SUBIR AL INICIO (D154). Círculo flotante en la esquina inferior derecha; --subir-sobre lo pone
+   app.js con lo que ya ocupa el pie de la pantalla (navegación del teléfono y barra de la sección) */
+.btn.btn-subir { position: fixed; z-index: 850; right: calc(var(--e-4) + env(safe-area-inset-right, 0px)); bottom: calc(var(--subir-sobre, 0px) + var(--e-4));
+  width: var(--toque); height: var(--toque); min-height: var(--toque); padding: 0; border-radius: 50%;
+  background: var(--fondo); color: var(--acento); border: 1px solid var(--borde-filtro); box-shadow: var(--sombra-flotante);
+  transition: opacity .2s, visibility .2s; }
+.btn.btn-subir[data-visible="no"] { opacity: 0; visibility: hidden; pointer-events: none; }
+
+/* ========== 5. ESTADOS ========== */
+.desplegable[open] summary::before { transform: rotate(90deg); }
+.campo .zona-foto.con-foto { flex-direction: row; gap: var(--e-2); min-height: var(--toque); padding: var(--e-2) var(--e-3); }
+.zona-foto.con-foto .zona-foto-ayuda { display: none; }
+.zona-foto.con-foto .icono-foto svg { width: 20px; height: 20px; }
+/* escala de tres tamaños (D141) */
+.zona-foto:focus-within { outline: 3px solid var(--foco); outline-offset: 2px; }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.pestana[aria-current="page"] { color: var(--acento); border-bottom-color: var(--acento); }
+.chip-sub { display: block; font-size: var(--t-xs); font-weight: 400; color: var(--gris); }
+/* La fecha del atajo «Hoy» va en un renglón (D147): en la fila de cuatro, el chip cede relleno a los lados */
+.chip .chip-sub { white-space: nowrap; }
+.chips-cuatro .chip { padding-left: 6px; padding-right: 6px; }
+.chip[aria-pressed="true"] .chip-sub { color: var(--fondo); opacity: .9; }
+/* Activo: guinda suave con borde guinda (propuesta A de la maqueta, D95) */
+.chip[aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: var(--fondo); }
+.combo-opcion[aria-selected="true"] { background: var(--fondo-suave); outline: 2px solid var(--acento); outline-offset: -2px; }
+.campo input[aria-invalid="true"], .campo select[aria-invalid="true"] { border: 2px solid var(--error); }
+.aviso[data-tipo="alerta"] { border-left-color: var(--aviso-alerta); }
+.aviso[data-tipo="alerta"] .aviso-icono { color: var(--aviso-alerta); }
+.aviso[data-tipo="aviso"] { border-left-color: var(--aviso-aviso); }
+.aviso[data-tipo="aviso"] .aviso-icono { color: var(--aviso-aviso); }
+.estado-texto[data-activo="false"] { color: var(--error); }
+.ficha-estado[data-tipo="alerta"] { color: var(--error); font-weight: 500; }
+/* El renglón de avisos bajo la precisión (D152): continúa la misma ficha, sin tapar la insignia */
+.ficha-estado-extra { border-top: 0; margin-top: -1px; }
+.ficha-estado:has(+ .ficha-estado-extra:not([hidden])) { border-radius: 0; }
+
+/* MODO SOL (D106) en todo lo que tiene relleno claro o texto gris: bordes de 2 px y negritas */
+/* Ajustes del modo sol que no son sólo color: trazo más grueso y texto un punto más pesado */
+[data-contraste="alto"] body { font-weight: 500; }
+[data-contraste="alto"] .zona-filtros .campo select,
+[data-contraste="alto"] .zona-filtros .campo input,
+[data-contraste="alto"] .campos-grises .campo select,
+[data-contraste="alto"] .campos-grises .campo input,
+[data-contraste="alto"] .campos-grises .campo textarea { border: 2px solid var(--borde-control); }
+[data-contraste="alto"] .chip { border-width: 2px; }
+[data-contraste="alto"] .chip[aria-pressed="true"] { background: var(--acento); color: var(--fondo); }
+[data-contraste="alto"] .chip[aria-pressed="true"] .chip-sub { color: var(--fondo); }
+[data-contraste="alto"] .registro, [data-contraste="alto"] .tabla tr { border-width: 2px; }
+[data-contraste="alto"] .btn.btn-subir { border: 2px solid var(--borde-control); }
+/* El texto guía no debe confundirse con lo escrito: más claro que el texto, sin negrita y en cursiva */
+[data-contraste="alto"] .campo input::placeholder, [data-contraste="alto"] .campo textarea::placeholder,
+[data-contraste="alto"] .texto-vacio { color: var(--texto-guia); opacity: 1; font-weight: 400; font-style: italic; }
+[data-contraste="alto"] .paso-marca { border-width: 3px; }
+[data-contraste="alto"] .paso + .paso::before { height: 3px; }
 /* Modo sol (D106) también en lo que llegó después: etiquetas de estado, cifras y pasos llevan
    borde de 2 px y texto en negritas, para que un relleno claro no se lave a pleno sol */
 [data-contraste="alto"] .insignia-jornada, [data-contraste="alto"] .jornada-estatus, [data-contraste="alto"] .etiqueta,
@@ -1108,14 +903,30 @@ th[aria-sort="ascending"] .th-flecha::after, th[aria-sort="descending"] .th-flec
 [data-contraste="alto"] .paso-texto { font-weight: 700; }
 [data-contraste="alto"] .pasos-siguiente, [data-contraste="alto"] .campo-error, [data-contraste="alto"] .ayuda-campo { font-weight: 700; }
 
-/* SISTEMA DE ANCHO EN TABLETA Y COMPUTADORA (D145). El teléfono es el uso principal y no cambia:
-   todo lo de aquí vive en media queries de 601 px o más. Reglas:
+/* ========== 6. UTILIDADES ========== */
+/* El doble selector no es adorno: `.campo input { width:100% }` tiene la misma especificidad
+   que `.oculto-visual` y estiraba el selector de archivo a todo el ancho; invisible, pero
+   arrastraba la página de lado. `.campo .oculto-visual` gana por especificidad, no por orden. */
+.oculto-visual,
+.campo .oculto-visual { position: absolute; width: 1px; height: 1px; min-height: 0; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* Lo oculto se oculta aunque otra regla le ponga display (D120): sin esto, en computadora el
+   formulario de registro asomaba bajo «Iniciar jornada» por la regla de dos columnas */
+[hidden] { display: none !important; }
+
+/* ========== 7. @MEDIA ========== */
+/* TRES CORTES (M13): 480 px (teléfono chico), 700 px (teléfono: navegación abajo, filtros plegados,
+   puntos apilados) y 1024 px (computadora: columnas). Una sola consulta por corte: primero las de
+   «desde» de menor a mayor, luego las de «hasta» de mayor a menor, y al final las de capacidad
+   del dispositivo (ratón, pantalla táctil, menos movimiento). Antes había siete cortes (400, 480,
+   600, 601, 700, 767 y 1024): los de 600 y 767 se unieron al de 700 y el de 601 al de 701. */
+@media (min-width: 701px) {
+  /* SISTEMA DE ANCHO EN TABLETA Y COMPUTADORA (D145). El teléfono es el uso principal y no cambia:
+   todo lo de aquí vive en consultas de 701 px o más. Reglas:
    1. Todas las vistas arrancan en el mismo borde izquierdo y ninguna se centra por su cuenta.
    2. En computadora (1024 px o más) cada vista usa el ancho completo (78rem) y lo reparte en
       columnas: lugar | datos en los formularios, mapa | lista en la ficha, tarjetas en rejilla
       de dos en las listas. Los textos de ayuda conservan su línea corta (62 caracteres).
    3. Los filtros plegados no se estiran de orilla a orilla: miden lo que un formulario. */
-@media (min-width: 601px) {
   /* Panel de la jornada activa: rótulo arriba, nombre y datos a la izquierda, botones a la derecha
      sin partirse en dos renglones; los pasos debajo del nombre y el último guardado a todo lo ancho */
   .franja-jornada { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--e-5); row-gap: var(--e-2); align-items: center; }
@@ -1123,32 +934,35 @@ th[aria-sort="ascending"] .th-flecha::after, th[aria-sort="descending"] .th-flec
   .franja-jornada > .franja-jornada-rotulo, .franja-jornada > .franja-guardado { grid-column: 1 / -1; }
   .franja-jornada > .franja-jornada-acciones { grid-column: 2; grid-row: 2 / span 2; align-self: center; }
   .franja-jornada-acciones .btn { flex: 0 0 auto; white-space: nowrap; }
-  /* Regla 2: ninguna vista se queda en una columna corta pegada a la izquierda; las de formulario y
-     lectura usan el ancho completo como las de tabla. Los textos de ayuda, línea corta. */
-  #vista-registrar > *, #vista-jornadas > *, #vista-reportes > * { max-width: none; }
-  .vista > .nota, #jornadas-lista-caja > .nota, .panel-iniciar > .nota, .vista .bloque > .nota { max-width: 62ch; }
+  /* Regla 2: ninguna vista se queda en una columna corta pegada a la izquierda: Nuevo registro,
+     Jornadas y Reportes son «vista-ancha» como las de tabla. Los textos de ayuda, línea corta. */
+  .vista > .nota, .jornadas-lista-caja > .nota, .panel-iniciar > .nota, .vista .bloque > .nota { max-width: 62ch; }
+  /* Sus hijos directos no se quedan en la línea de un formulario: ni el panel de iniciar ni la franja */
+  .vista.vista-registrar > *, .vista.vista-jornadas > *, .vista.vista-reportes > * { max-width: none; }
 }
 @media (min-width: 1024px) {
+  /* EQUILIBRIO EN COMPUTADORA (D109). Nuevo registro en dos columnas: ubicación y mapa a la
+   izquierda, datos del árbol a la derecha, así el mapa gana tamaño y no queda media pantalla vacía.
+   El resto de las vistas, en el sistema de ancho de D145 (en la consulta de 701 px). */
+  .vista-registrar > .registrar-columnas { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: var(--e-6); align-items: start; }
+  .registrar-ubicacion .mapa { height: clamp(320px, 52vh, 520px); }
+  .form-plantacion .combo { margin-top: 0; }
   .acordeon-filtros { max-width: var(--ancho-max); }
-
   /* Registrar jornada: el lugar a la izquierda y el plan a la derecha, como en «Nuevo árbol» */
-  #form-iniciar-jornada { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 var(--e-6); align-items: start; }
-  #form-iniciar-jornada > .errores { grid-column: 1 / -1; }
+  .form-iniciar-jornada { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 var(--e-6); align-items: start; }
+  .form-iniciar-jornada > .errores { grid-column: 1 / -1; }
   .panel-iniciar { padding: var(--e-5) var(--e-6); }
   .panel-iniciar .fila-botones { margin-top: var(--e-4); }
-
   /* Nuevo árbol: «Guardar» ocupa su columna de orilla a orilla */
-  #form-plantacion .barra-guardar .btn-destacado { max-width: none; }
-
+  .form-plantacion .barra-guardar .btn-destacado { max-width: none; }
   /* Listas de jornadas, registros y reportes: tarjetas de dos en dos */
-  #lista-jornadas, #lista-registros, #pdf-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
-
+  .rejilla-tarjetas { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
   /* Ficha de la jornada: los pasos y sus botones en un mismo renglón, para que el mapa suba */
-  #jornada-detalle { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--e-4); align-items: center; }
-  #jornada-detalle > * { grid-column: 1 / -1; }
-  #jornada-detalle > #jornada-pasos { grid-column: 1; margin: var(--e-2) 0 var(--e-1); }
-  #jornada-detalle > .jornada-acciones-cab { grid-column: 2; margin: 0; }
-  #jornada-detalle > .volver { justify-self: start; }
+  .jornada-detalle { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--e-4); align-items: center; }
+  .jornada-detalle > * { grid-column: 1 / -1; }
+  .jornada-detalle > .pasos { grid-column: 1; margin: var(--e-2) 0 var(--e-1); }
+  .jornada-detalle > .jornada-acciones-cab { grid-column: 2; margin: 0; }
+  .jornada-detalle > .volver { justify-self: start; }
   /* Mapa a la izquierda, fijo al desplazarse; conciliación y puntos a la derecha */
   .ficha-cuerpo { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 0 var(--e-6); align-items: start; }
   .ficha-col-mapa { position: sticky; top: var(--e-3); }
@@ -1157,23 +971,127 @@ th[aria-sort="ascending"] .th-flecha::after, th[aria-sort="descending"] .th-flec
   .barra-jornada { flex-wrap: nowrap; align-items: center; }
   .barra-jornada .pasos-siguiente { flex: 1 1 auto; }
   .barra-jornada .btn { flex: 0 0 auto; min-width: 13rem; padding-left: var(--e-4); padding-right: var(--e-4); }
-
   /* Entrada: con la tarjeta de usuarios de prueba, las dos lado a lado; sin ella, la de siempre */
-  #vista-acceso { display: flex; flex-wrap: wrap; gap: 0 var(--e-6); align-items: flex-start; }
-  #vista-acceso > h1 { flex: 1 1 100%; max-width: none; }
-  #vista-acceso > .tarjeta { flex: 1 1 0; min-width: 0; }
-
+  .vista-acceso { display: flex; flex-wrap: wrap; gap: 0 var(--e-6); align-items: flex-start; }
+  .vista.vista-acceso > h1 { flex: 1 1 100%; max-width: none; }
+  .vista.vista-acceso > .tarjeta { flex: 1 1 0; min-width: 0; }
   /* Fotografías: miniaturas algo mayores para llenar el renglón */
   .galeria-rejilla { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
 }
-
-/* SUBIR AL INICIO (D154). Círculo flotante en la esquina inferior derecha; --subir-sobre lo pone
-   app.js con lo que ya ocupa el pie de la pantalla (navegación del teléfono y barra de la sección) */
-.btn.btn-subir { position: fixed; z-index: 850; right: calc(var(--e-4) + env(safe-area-inset-right, 0px)); bottom: calc(var(--subir-sobre, 0px) + var(--e-4));
-  width: var(--toque); height: var(--toque); min-height: var(--toque); padding: 0; border-radius: 50%;
-  background: var(--fondo); color: var(--acento); border: 1px solid var(--borde-filtro); box-shadow: 0 4px 12px rgba(35, 37, 38, .22);
-  transition: opacity .2s, visibility .2s; }
-.btn.btn-subir[data-visible="no"] { opacity: 0; visibility: hidden; pointer-events: none; }
-/* Corta por un cuadro la inercia del dedo al cambiar de página (D154): en iPhone, un salto a la
+@media (max-width: 700px) {
+  /* En teléfono las acciones bajan a un segundo renglón para no aplastar la especie y el aviso */
+  .punto-jornada { grid-template-columns: 28px minmax(0, 1fr); row-gap: var(--e-1); }
+  .punto-acciones { grid-column: 2; justify-content: flex-start; }
+  /* La tuerca a la orilla derecha, a la misma altura en todos los puntos (D154) */
+  .punto-acciones .acciones-menu { margin-left: auto; }
+  /* En teléfono los dos botones ocupan el renglón completo; en pantallas muy angostas se apilan (D124) */
+  .franja-jornada-acciones { flex: 1 1 100%; flex-wrap: wrap; }
+  .franja-jornada-acciones .btn { flex: 1 1 9rem; }
+  /* Filtros plegados en teléfono (D100): quedan a la vista las fichas y el botón «Filtros» */
+  .btn.btn-filtros { display: inline-flex; margin-left: 0; }
+  .filtros[data-abierto="false"] { display: none; }
+  /* El botón ya dice «Filtros»: el título se queda sólo para el lector de pantalla */
+  .titulo-filtros { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  /* NAVEGACIÓN INFERIOR EN TELÉFONO (D107): las secciones van abajo, al alcance del pulgar, como
+   en las apps del teléfono. La barra fija de guardar sube para quedar encima de ella. */
+  :root { --alto-nav: calc(64px + env(safe-area-inset-bottom, 0px)); }
+  .pestanas { position: fixed; left: 0; right: 0; bottom: 0; z-index: 900; max-width: none; margin: 0; padding: 0 0 env(safe-area-inset-bottom, 0px);
+    background: var(--fondo); border-top: 1px solid var(--borde-suave); border-bottom: 0; box-shadow: var(--sombra-nav); }
+  .pestana { min-height: 64px; font-size: var(--t-xs); border-bottom: 0; border-top: 3px solid transparent; padding: var(--e-1) 2px; }
+  .pestana[aria-current="page"] { border-top-color: var(--acento); }
+  body { padding-bottom: var(--alto-nav); }
+  /* Crédito del mapa en un renglón; al tocarlo se despliega (D108) */
+  .leaflet-control-attribution { max-width: calc(100vw - 4rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+  .leaflet-control-attribution.credito-abierto { white-space: normal; }
+  .barra-guardar { bottom: var(--alto-nav); }
+  .saltos { position: sticky; top: 0; z-index: 6; display: flex; gap: var(--e-1); margin: 0 calc(-1 * var(--e-4)); padding: var(--e-2) var(--e-4);
+    background: var(--fondo); border-bottom: 1px solid var(--borde-suave); box-shadow: var(--sombra-saltos); }
+  .saltos button { flex: 1 1 0; min-height: 40px; padding: 0 var(--e-2); border: 1px solid var(--borde-filtro); border-radius: var(--radio-pildora);
+    background: var(--fondo); color: var(--texto); font: inherit; font-size: var(--t-s); font-weight: 500; cursor: pointer; white-space: nowrap; }
+}
+@media (max-width: 480px) {
+  .galeria-rejilla { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .galeria-pie { font-size: 0.7rem; }
+  .encabezado-logo { max-height: 38px; }
+  /* Estado del teléfono en la guía: etiqueta sobre el valor (D149) */
+  .senal-estado { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .senal-estado dd { margin-bottom: var(--e-2); }
+  /* En teléfono logotipo, conexión y cuenta caben en una sola fila (D93) */
+  .encabezado-interior { padding: var(--e-2) var(--e-3); gap: var(--e-2); }
+  .conexion { padding: 0 var(--e-2); font-size: 0.75rem; }
+  .cx-palabra { display: none; }
+  .campo-doble { grid-template-columns: 1fr; }
+  .campo-doble.campo-doble-fijo { grid-template-columns: 1fr 1fr; }
+  /* Reportes: el cabo a todo el ancho para que su nombre no se corte (D103) */
+  .filtros-fila > .campo-corto { flex-basis: 100%; max-width: none; }
+  .campo-triple { grid-template-columns: 1fr; }
+  .campo-punto .campo-triple .campo { display: grid; grid-template-columns: 6.5rem 1fr; align-items: baseline; gap: var(--e-2); }
+  .campo-punto .campo-triple .campo + .campo { border-left: 0; border-top: 1px solid var(--borde-suave); }
+  .btn-destacado { max-width: none; }
+  .revision-fila { grid-template-columns: 1fr auto; }
+  .revision-fila-sola { grid-template-columns: 1fr; }
+  .revision-fila dt { grid-column: 1 / -1; }
+  /* En teléfono los botones van en fila bajo los datos: apilados a la derecha triplicaban
+     el alto de cada registro y obligaban a desplazarse para ver tres árboles. */
+  .tabla-caja { max-height: none; min-height: 0; overflow: visible; }
+  .tabla thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .tabla tr { display: block; border: 1px solid var(--borde-suave); border-radius: var(--radio); margin-bottom: var(--e-3); }
+  .tabla td { display: grid; grid-template-columns: 6.5rem 1fr; gap: var(--e-2); }
+  .tabla td::before { content: attr(data-etiqueta); color: var(--gris); font-size: var(--t-xs); }
+  .tabla tr:nth-child(even) td { background: none; }
+  .tabla td:last-child { white-space: normal; }
+  /* Tarjeta compacta de Catálogos y Usuarios (D105): título y tuerca arriba, científico o correo,
+     y un renglón de resumen con el estado; las demás celdas se quedan en la tabla de escritorio */
+  .tabla-tarjetas tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--e-2); padding: var(--e-2) var(--e-3); border-radius: var(--radio-filtro); }
+  .tabla-tarjetas td { display: block; grid-column: 1; padding: 0; border: 0; }
+  .tabla-tarjetas td::before { content: none; }
+  .tabla-tarjetas .c-movil-oculta { display: none; }
+  .tabla-tarjetas .c-titulo { font-family: var(--fuente-titulo); font-weight: 600; font-size: var(--t-m); }
+  .tabla-tarjetas .c-sub { color: var(--gris); overflow-wrap: anywhere; }
+  .tabla-tarjetas .c-acciones { grid-column: 2; grid-row: 1 / span 3; align-self: start; margin: calc(-1 * var(--e-1)) calc(-1 * var(--e-2)) 0 0; }
+  .tabla-tarjetas .c-resumen { display: flex; flex-wrap: wrap; align-items: center; gap: 4px var(--e-2); margin-top: var(--e-1); font-size: var(--t-xs); color: var(--gris); }
+  /* ESPEJO DE CAMPOS — se elimina al cerrar la Etapa 1 */
+  .espejo-tabla, .espejo-tabla caption, .espejo-tabla tbody, .espejo-tabla tr { display: block; }
+  .espejo-tabla tr { border-bottom: 1px solid var(--borde-suave); padding: var(--e-2) 0; }
+  .espejo-tabla thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .espejo-tabla td { display: block; border: 0; padding: 0; }
+  .espejo-campo, .espejo-nota { width: auto; }
+  /* Filtros en teléfono: atajos a todo el ancho, listas de dos en dos, Desde/Hasta en par y «Aplicar» debajo */
+  .filtros-fila .chips { flex-basis: 100%; max-width: none; }
+  .filtros-listas { grid-template-columns: 1fr 1fr; flex-basis: 100%; }
+  .filtros-listas > .campo:nth-child(3) { grid-column: 1 / -1; }
+  .filtros-periodo { grid-template-columns: 1fr 1fr; }
+  .filtros-periodo .btn { grid-column: 1 / -1; }
+  .zona-filtros.fila-botones .campo-crece { flex-basis: 100%; }
+}
+@media (hover: hover) {
+  /* Los estados de «señalar» sólo existen con ratón (D98). En iPhone y Android un toque dejaba
+     pegado el hover: la zona de foto quedaba rosa y la primera especie parecía elegida. */
+  .btn-reiniciar:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .zona-filtros .campo select:hover,
+  .zona-filtros .campo input:hover,
+  .campos-grises .campo select:hover,
+  .campos-grises .campo input:hover,
+  .campos-grises .campo textarea:hover { background-color: var(--fondo-campo-hover); border-color: var(--fondo-campo-hover); }
+  .btn.btn-tuerca:hover { background: var(--acento-suave); color: var(--acento); border-color: var(--acento); }
+  .btn.btn-subir:hover { background: var(--acento-suave); border-color: var(--acento); }
+  .menu-opcion:hover { background: var(--fondo-suave); outline: none; }
+  /* El acento, no la guinda (D124): al pasar el puntero, el botón principal seguía volviéndose guinda (D141) */
+  .btn-primario:hover { background: var(--acento-oscuro); }
+  /* El nivel 3 se pinta de guinda sólo al señalarlo: ahí ya no hay confusión posible,
+     porque el puntero está encima y nada más cambia de color al mismo tiempo. */
+  .btn-texto:hover, .desplegable summary:hover { color: var(--acento); }
+  .zona-foto:hover { border-color: var(--acento); background: var(--fondo-suave); }
+  .chip:hover { background: var(--fondo-campo); }
+  .chip[aria-pressed="true"]:hover { background: var(--acento-oscuro); }
+  /* Con ratón la opción bajo el cursor se marca igual que la elegida con teclado */
+  .combo-opcion:hover { background: var(--fondo-suave); outline: 2px solid var(--acento); outline-offset: -2px; }
+}
+@media (pointer: coarse) {
+  /* Corta por un cuadro la inercia del dedo al cambiar de página (D154): en iPhone, un salto a la
    cima mientras la página sigue deslizándose se perdía */
-@media (pointer: coarse) { html.sin-inercia { overflow: hidden; } }
+  html.sin-inercia { overflow: hidden; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

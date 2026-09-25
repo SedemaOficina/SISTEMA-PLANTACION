@@ -97,22 +97,18 @@ SRP.usuarios = {
   },
 
   llenarListas(usuario) {
-    const esc = SRP.util.escapar;
     const areaActual = usuario ? usuario.area_id : '';
     const areas = SRP.ref.deTipo('area', true).slice();
     if (areaActual && !areas.find(a => a.id === areaActual) && SRP.ref.catalogoPorId[areaActual]) areas.push(SRP.ref.catalogoPorId[areaActual]);
-    this.el('usr-area').innerHTML = '<option value="">Seleccione el área</option>' +
-      areas.map(a => '<option value="' + SRP.util.escapar(a.id) + '">' + esc(a.nombre) + (a.activo ? '' : ' (inactiva)') + '</option>').join('');
+    this.el('usr-area').innerHTML = SRP.util.opciones('Seleccione el área', areas.map(a => [a.id, a.nombre + (a.activo ? '' : ' (inactiva)')]));   // M15
 
-    this.el('usr-perfil').innerHTML = '<option value="">Seleccione el perfil</option>' +
-      Object.keys(SRP.PERFILES).map(k => '<option value="' + k + '">' + esc(SRP.PERFILES[k].etiqueta) + '</option>').join('');
+    this.el('usr-perfil').innerHTML = SRP.util.opciones('Seleccione el perfil', Object.keys(SRP.PERFILES).map(k => [k, SRP.PERFILES[k].etiqueta]));
 
     // Coordinador posible: cuentas activas de coordinación o administración, nunca la persona misma
     const coordinadores = SRP.ref.usuarios
       .filter(u => u.activo && (u.perfil === 'COORDINADOR' || u.perfil === 'ADMIN') && (!usuario || u.id !== usuario.id))
       .sort((a, b) => SRP.util.nombreCompleto(a).localeCompare(SRP.util.nombreCompleto(b), 'es'));
-    this.el('usr-coordinador').innerHTML = '<option value="">Sin coordinador asignado</option>' +
-      coordinadores.map(u => '<option value="' + SRP.util.escapar(u.id) + '">' + esc(SRP.util.nombreCompleto(u)) + '</option>').join('');
+    this.el('usr-coordinador').innerHTML = SRP.util.opciones('Sin coordinador asignado', coordinadores.map(u => [u.id, SRP.util.nombreCompleto(u)]));
   },
 
   ajustarPorPerfil() {
@@ -173,13 +169,7 @@ SRP.usuarios = {
       coordinador_id: this.el('usr-perfil').value === 'CABO' ? (this.el('usr-coordinador').value || null) : null
     };
     const errores = this.validar(d);
-    const caja = this.el('usr-errores');
-    SRP.util.erroresEnCampos(errores, ['usr-nombre', 'usr-ap', 'usr-correo', 'usr-area', 'usr-cargo', 'usr-perfil']);   // D140
-    if (errores.length) {
-      caja.innerHTML = '<ul>' + errores.map(([id, t]) => '<li><a href="#' + id + '">' + t + '</a></li>').join('') + '</ul>';
-      caja.hidden = false; caja.focus();
-      return;
-    }
+    if (SRP.util.resumenErrores(this.el('usr-errores'), errores, ['usr-nombre', 'usr-ap', 'usr-correo', 'usr-area', 'usr-cargo', 'usr-perfil'])) return;   // D140, M15
 
     const yo = SRP.sesion.usuario;
     const ahora = SRP.util.ahoraISO();

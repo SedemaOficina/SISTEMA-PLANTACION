@@ -209,13 +209,7 @@ SRP.catalogos = {
       id_enciclovida: enciclovida === '' ? null : (/^\d+$/.test(enciclovida) ? parseInt(enciclovida, 10) : NaN)
     };
     const errores = this.validar(datos);
-    const caja = this.el('cat-errores');
-    SRP.util.erroresEnCampos(errores, ['cat-nombre', 'cat-clave'].concat(this.CAMPOS_ESPECIE));   // D140
-    if (errores.length) {
-      caja.innerHTML = '<ul>' + errores.map(([id, t]) => '<li><a href="#' + id + '">' + t + '</a></li>').join('') + '</ul>';
-      caja.hidden = false; caja.focus();
-      return;
-    }
+    if (SRP.util.resumenErrores(this.el('cat-errores'), errores, ['cat-nombre', 'cat-clave'].concat(this.CAMPOS_ESPECIE))) return;   // D140, M15
     const u = SRP.sesion.usuario;
     const ahora = SRP.util.ahoraISO();
     // Género y epíteto salen del nombre científico: una sola fuente, sin pedirlos aparte

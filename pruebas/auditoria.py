@@ -22,6 +22,40 @@ for termino in ['Jefe de registradores', 'registrador', '`grupo`', 'cuatro almac
     donde = [os.path.basename(f) for f in docs if os.path.exists(f) and termino in open(f, encoding='utf-8').read()]
     mirar(not donde, 'sin rastro de «%s» en la documentación vigente' % termino, ', '.join(donde))
 
+# --- 1b. La hoja de estilos cumple su norma (M13, bloque 94b) ---
+css = open(APP + '/css/estilos.css', encoding='utf-8').read()
+sin_com = re.sub(r'/\*.*?\*/', '', css, flags=re.S)
+i7 = sin_com.index('@media')   # la primera consulta abre la sección 7
+secc7 = css.index('/* ========== 7. @MEDIA')
+antes7 = re.sub(r'/\*.*?\*/', '', css[:secc7], flags=re.S)
+mirar('@media' not in antes7, 'ninguna consulta @media fuera de la sección 7 de la hoja')
+# Tras la sección 7 sólo hay consultas: se quitan sus bloques y no debe quedar ninguna regla
+resto = re.sub(r'/\*.*?\*/', '', css[secc7:], flags=re.S)
+prof = 0; suelto = ''
+for ch in resto:
+    if ch == '{': prof += 1
+    elif ch == '}': prof -= 1
+    elif prof == 0: suelto += ch
+suelto = re.sub(r'@media[^{]*', '', suelto).strip()
+mirar(not suelto, 'ninguna regla escrita después de la sección 7 (cada regla en su bloque)', suelto[:80])
+consultas = re.findall(r'@media\s*([^{]+?)\s*\{', sin_com)
+mirar(len(consultas) == len(set(consultas)), 'una sola consulta por corte en la hoja', ', '.join(sorted(q for q in set(consultas) if consultas.count(q) > 1)))
+cortes = sorted(set(int(x) for q in consultas for x in re.findall(r'width:\s*(\d+)px', q)))
+mirar(cortes == [480, 700, 701, 1024], 'tres cortes de ancho: 480, 700 y 1024 px (701 es el complemento de 700)', str(cortes))
+sin_root = re.sub(r':root(\[[^\]]*\])?\s*\{.*?\n\}', '', sin_com, flags=re.S)
+selectores = ' '.join(re.findall(r'([^{}]+)\{', re.sub(r'url\([^)]*\)', '', sin_root)))
+ids = sorted(set(re.findall(r'#[a-zA-Z][\w-]*', re.sub(r'#[0-9A-Fa-f]{3,8}\b', '', selectores))))
+mirar(not ids, 'la hoja no usa selectores #id: una clase por caso', ', '.join(ids[:8]))
+literales = re.findall(r'#[0-9A-Fa-f]{3,8}\b|rgba?\([^)]*\)', re.sub(r'url\([^)]*\)', '', sin_root))
+mirar(not literales, 'colores, sombras y velos sólo como variables de :root', ', '.join(literales[:6]))
+js_colores = []
+for f in glob.glob(APP + '/js/*.js'):
+    if f.endswith(('esquema.js', 'iconos.js')): continue
+    t = re.sub(r'/\*.*?\*/|//[^\n]*', '', open(f, encoding='utf-8').read(), flags=re.S)
+    for m in re.finditer(r"""['"]#[0-9A-Fa-f]{3,8}['"]|rgba?\(\s*\d|\[\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\]|setTextColor\(\s*\d""", t):
+        js_colores.append(os.path.basename(f) + ': ' + m.group(0))
+mirar(not js_colores, 'el código no escribe colores: los lee de :root (SRP.util.color, colorBase, rgb)', ', '.join(js_colores[:6]))
+
 with sync_playwright() as p:
     b = p.chromium.launch(); pg = b.new_page(); errores = []
     pg.on('pageerror', lambda e: errores.append(str(e)))

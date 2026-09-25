@@ -64,6 +64,30 @@ SRP.util = {
     return typeof dato === 'string' && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/.test(dato) ? dato : '';
   },
 
+  /* COLORES DESDE LA HOJA (M13). El mapa, el croquis y el PDF no escriben colores: los toman de
+     :root. `color()` lee el valor vigente, con el modo sol si está puesto: para lo que se ve en
+     pantalla. `colorBase()` lee la regla :root de la hoja, sin el modo sol: el croquis y el PDF
+     salen iguales con el modo sol encendido o apagado. `rgb()` lo da como [r, g, b] para jsPDF. */
+  color(nombre) { return getComputedStyle(document.documentElement).getPropertyValue('--' + nombre).trim(); },
+  colorBase(nombre) {
+    if (!this._paleta) {
+      const p = {};
+      for (const hoja of document.styleSheets) {
+        let reglas; try { reglas = hoja.cssRules; } catch (e) { continue; }   // hoja de otro origen
+        for (const r of reglas) {
+          if (r.selectorText !== ':root') continue;
+          for (let i = 0; i < r.style.length; i++) { const k = r.style[i]; if (k.startsWith('--')) p[k.slice(2)] = r.style.getPropertyValue(k).trim(); }
+        }
+      }
+      if (Object.keys(p).length) this._paleta = p; else return '';
+    }
+    return this._paleta[nombre] || '';
+  },
+  rgb(nombre) {
+    const h = this.colorBase(nombre).replace('#', '');
+    return /^[0-9a-f]{6}$/i.test(h) ? h.match(/../g).map(x => parseInt(x, 16)) : Array(3).fill(0);   // sin hoja, negro
+  },
+
   escapar(texto) {
     return String(texto == null ? '' : texto)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -180,6 +204,67 @@ SRP.util = {
     window.addEventListener('unhandledrejection', (e) => avisar(e.reason));
     // Sólo errores de código (los de un recurso que no cargó no traen e.error)
     window.addEventListener('error', (e) => { if (e.error) avisar(e.error); });
+  },
+
+  /* RESUMEN DE ERRORES DE UN FORMULARIO (M15). Uno solo para los seis formularios: cada campo dice
+     su error debajo (D140) y arriba queda la lista con el mismo texto, escapado y con un enlace a
+     su campo; el foco va a la caja, para que el lector de pantalla la lea completa. Devuelve si
+     hubo errores. `ids`: los campos del formulario, para limpiar los errores de la vez anterior. */
+  resumenErrores(caja, errores, ids) {
+    this.erroresEnCampos(errores, ids);
+    if (!errores.length) { caja.hidden = true; caja.innerHTML = ''; return false; }
+    const esc = t => this.escapar(t);
+    caja.innerHTML = '<h2>Falta corregir ' + errores.length + (errores.length === 1 ? ' dato' : ' datos') + '</h2><ul>' +
+      errores.map(([id, t]) => '<li><a href="#' + esc(id) + '">' + esc(t) + '</a></li>').join('') + '</ul>';
+    caja.hidden = false;
+    if (!caja.hasAttribute('tabindex')) caja.setAttribute('tabindex', '-1');
+    caja.focus();
+    return true;
+  },
+
+  /* BOTÓN OCUPADO (M15, D136). Mientras dura una operación el botón dice qué está haciendo, queda
+     deshabilitado y con aria-busy, para que no parezca que no respondió ni se toque dos veces.
+     Devuelve la función que lo deja como estaba; llamarla dos veces no hace daño. */
+  ocupado(boton, texto, icono, tam) {
+    const html0 = boton.innerHTML;
+    boton.disabled = true;
+    boton.setAttribute('aria-busy', 'true');
+    boton.innerHTML = SRP.ICONOS.svg(icono || 'info', tam || 'medio') + '<span>' + this.escapar(texto) + '</span>';
+    let libre = false;
+    return () => {
+      if (libre) return; libre = true;
+      boton.disabled = false; boton.removeAttribute('aria-busy'); boton.innerHTML = html0;
+    };
+  },
+
+  /* OPCIONES DE UNA LISTA (M15). `pares`: [[valor, texto], …], escapados; `vacio`: el texto de la
+     opción sin valor («Todos», «Seleccione…»), o nada si no la lleva. */
+  opciones(vacio, pares) {
+    const esc = t => this.escapar(t);
+    return (vacio == null ? '' : '<option value="">' + esc(vacio) + '</option>') +
+      pares.map(([v, t]) => '<option value="' + esc(v) + '">' + esc(t) + '</option>').join('');
+  },
+  // Las personas de una lista, por nombre: el filtro de cabo de Registros, Jornadas, Reportes y Fotografías
+  paresPersonas(ids) {
+    return [...new Set(ids)].map(id => [id, SRP.ref.nombreUsuario(id)]).sort((a, b) => a[1].localeCompare(b[1], 'es'));
+  },
+
+  /* ATAJOS DE FECHA (M15). La misma barra —Todos · Hoy · Un día · Un periodo— en Registros,
+     Jornadas, Reportes y Fotografías. Cada vista decide qué filtra; aquí se atiende el toque, se
+     marca un solo atajo y se abren o cierran los paneles de «Un día» y «Un periodo» con su
+     aria-expanded. `paneles`: { dia: [elemento, abierto], periodo: [elemento, abierto] }. */
+  atajos: {
+    iniciar(caja, alTocar) {
+      caja.addEventListener('click', (e) => { const b = e.target.closest('.chip[data-atajo]'); if (b) alTocar(b.dataset.atajo); });
+    },
+    marcar(caja, activo, paneles) {
+      caja.querySelectorAll('.chip[data-atajo]').forEach(c => c.setAttribute('aria-pressed', String(!!activo[c.dataset.atajo])));
+      Object.entries(paneles || {}).forEach(([atajo, [panel, abierto]]) => {
+        if (panel) panel.hidden = !abierto;
+        const c = caja.querySelector('[data-atajo="' + atajo + '"]');
+        if (c) c.setAttribute('aria-expanded', String(!!abierto));
+      });
+    }
   },
 
   erroresEnCampos(errores, ids) {

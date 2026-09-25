@@ -41,7 +41,7 @@ El sistema arranca con tres cuentas y **ninguna plantación**: se llena con lo q
 | Correo | Perfil | Qué puede hacer |
 |---|---|---|
 | administracion@ejemplo.local | Administración global | Ve, edita y elimina todo, y lleva Catálogos y Usuarios. **No captura registros** |
-| coordinador@ejemplo.local | Coordinador | Registra, y ve y edita los registros de su cuadrilla; elimina sólo los que capturó él, y las jornadas vacías |
+| coordinador@ejemplo.local | Coordinador | Registra, y ve, edita y elimina los registros de su cuadrilla; elimina también las jornadas vacías |
 | cabo@ejemplo.local | Cabo | Registra, y ve, edita y elimina sólo los suyos |
 
 Quien captura en campo es un **cabo**; quien lo dirige, un **coordinador**. En el código son

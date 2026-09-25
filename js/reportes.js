@@ -18,7 +18,11 @@
 window.SRP = window.SRP || {};
 
 SRP.reportes = {
-  COLOR: { guinda: [157, 33, 72], dorado: [178, 142, 92], gris: [85, 88, 90], fila: [247, 241, 243], tinta: [35, 37, 38] },
+  // Los colores del PDF son los de la hoja, sin el modo sol (M13)
+  colores() {
+    const c = n => SRP.util.rgb(n);
+    return { guinda: c('guinda'), dorado: c('dorado'), gris: c('gris'), fila: c('fondo-suave'), tinta: c('texto'), total: c('total-fondo'), ficticio: c('aviso-ficticio') };
+  },
 
   /* Campos del cierre. Todos opcionales y de texto libre: los reportes varían de una cuadrilla a
      otra y de un día a otro, y encajonarlos obligaría a escribir de una forma que no es la suya.
@@ -32,7 +36,7 @@ SRP.reportes = {
   iniciar() {
     this.el('form-cierre').addEventListener('submit', (e) => { e.preventDefault(); this.aceptar(); });
     // Lista de jornadas cerradas con su reporte (D134)
-    this.el('pdf-atajos').addEventListener('click', (e) => { const b = e.target.closest('.chip'); if (b) this.aplicarAtajo(b.dataset.atajo); });
+    SRP.util.atajos.iniciar(this.el('pdf-atajos'), a => this.aplicarAtajo(a));   // M15
     this.el('pdf-dia').addEventListener('change', () => { this.filtro.dia = this.el('pdf-dia').value; this.diaAbierto = true; this.pintarLista(); });
     this.el('pdf-cabo').addEventListener('change', () => { this.filtro.cabo = this.el('pdf-cabo').value; this.pintarLista(); });
     this.el('pdf-vacio').addEventListener('click', (e) => {
@@ -91,8 +95,7 @@ SRP.reportes = {
     if (!caja.hidden) {
       const previo = (this.pedido && this.pedido.cabo_id) || this.filtro.cabo;
       const ids = [...new Set((await SRP.jornadas.jornadasAlcance()).map(j => j.cabo_id))];
-      const lista = ids.map(id => [id, SRP.ref.nombreUsuario(id)]).sort((a, b) => a[1].localeCompare(b[1], 'es'));
-      this.el('pdf-cabo').innerHTML = '<option value="">Todos</option>' + lista.map(([id, n]) => '<option value="' + SRP.util.escapar(id) + '">' + SRP.util.escapar(n) + '</option>').join('');
+      this.el('pdf-cabo').innerHTML = SRP.util.opciones('Todos', SRP.util.paresPersonas(ids));   // M15
       this.el('pdf-cabo').value = ids.includes(previo) ? previo : '';
       this.filtro.cabo = this.el('pdf-cabo').value;
     }
@@ -121,9 +124,7 @@ SRP.reportes = {
   async pintarLista() {
     const f = this.filtro;
     const activo = { hoy: !this.diaAbierto && f.dia === SRP.util.fechaHoy(), dia: this.diaAbierto, todas: !this.diaAbierto && !f.dia };
-    this.el('pdf-atajos').querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', String(!!activo[c.dataset.atajo])));
-    this.el('pdf-un-dia').hidden = !this.diaAbierto;
-    this.el('pdf-atajos').querySelector('[data-atajo="dia"]').setAttribute('aria-expanded', String(this.diaAbierto));
+    SRP.util.atajos.marcar(this.el('pdf-atajos'), activo, { dia: [this.el('pdf-un-dia'), this.diaAbierto] });   // M15
     const todas = await SRP.jornadas.jornadasAlcance();
     const abiertas = todas.filter(j => j.estatus === 'abierta' && (!f.dia || j.fecha === f.dia) && (!f.cabo || j.cabo_id === f.cabo)).length;
     this.lista = todas.filter(j => j.estatus === 'cerrada' && (!f.dia || j.fecha === f.dia) && (!f.cabo || j.cabo_id === f.cabo))
@@ -209,12 +210,9 @@ SRP.reportes = {
       return;
     }
 
-    const ids = [...new Set(registros.map(r => r.cabo_id))]
-      .map(id => [id, SRP.ref.nombreUsuario(id)])
-      .sort((a, b) => a[1].localeCompare(b[1], 'es'));
+    const ids = SRP.util.paresPersonas(registros.map(r => r.cabo_id));
     const sel = this.el('cie-encargado');
-    sel.innerHTML = '<option value="">Sin especificar</option>' +
-      ids.map(([id, n]) => '<option value="' + SRP.util.escapar(id) + '">' + SRP.util.escapar(n) + '</option>').join('');
+    sel.innerHTML = SRP.util.opciones('Sin especificar', ids);
     // Con un solo cabo en el día no hay nada que elegir: se propone y se puede cambiar
     sel.value = (previo && previo.encargado_id) || (ids.length === 1 ? ids[0][0] : '');
   },
@@ -298,66 +296,95 @@ SRP.reportes = {
 
   textoJornada(jornada) { return jornada && jornada.total > 1 ? 'Jornada ' + jornada.n + ' de ' + jornada.total : ''; },
 
-  htmlPrevia(registros, cierre, fecha, jornada) {
-    const esc = t => SRP.util.escapar(t);
+  /* UN SOLO MODELO DEL REPORTE (M15). Lo que dice el reporte se decide aquí una vez; la vista
+     previa y el PDF sólo lo pintan, cada uno a su manera. Antes cada uno lo calculaba por su lado y
+     podían llegar a diferir (la vista previa no traía las advertencias del pie del PDF). */
+  modelo(registros, cierre, fecha, jornada) {
     const u = SRP.sesion.usuario;
     const variosAutores = SRP.permisos.de(u).alcance !== 'propios';
-    const hay = (k) => !!(cierre[k] && cierre[k].trim());
-    const parrafo = t => esc(t).replace(/\n/g, '<br>');
-    const apartado = (titulo, cuerpo) => '<section class="previa-apartado"><h3>' + titulo + '</h3>' + cuerpo + '</section>';
-    let h = '<p class="previa-titulo">Reporte diario de plantación</p><p class="previa-fecha">' + esc(SRP.util.formatearFecha(fecha)) +
-      (this.textoJornada(jornada) ? ' · ' + esc(this.textoJornada(jornada)) : '') + '</p>';
-
+    const hay = (k) => !!(cierre[k] && String(cierre[k]).trim());
     const alcaldias = this.alcaldiasDe(registros);
-    const sitio = jornada ? jornada.nombre : '';
-    if (sitio || alcaldias.length) {
-      const terr = alcaldias.length ? (alcaldias.length === 1 ? 'Alcaldía ' + alcaldias[0] : 'Alcaldías: ' + alcaldias.join(', ')) : '';
-      h += '<div class="previa-sitio">' + (sitio ? '<p><strong>Jornada:</strong> ' + esc(sitio) + (jornada.ubicacion ? ' · ' + esc(jornada.ubicacion) : '') + (SRP.activa.lugarDe(jornada) ? ' · ' + esc(SRP.activa.lugarDe(jornada)) : '') + '</p>' : '') +
-        (terr ? '<p class="previa-tenue">' + esc(terr) + '</p>' : '') +
-        (this.textoConteo(cierre, registros) ? '<p><strong>' + esc(this.textoConteo(cierre, registros)) + '</strong></p>' : '') + '</div>';
-    }
-    // Comentarios de la jornada (D119): lo que se escribió al iniciarla
-    if (hay('comentarios')) h += apartado('Comentarios de la jornada', '<p>' + parrafo(cierre.comentarios) + '</p>');
-    // Personal (D103): el encargado primero y cada grupo con su subtítulo y sus nombres sangrados
-    const grupos = this.gruposPersonal(cierre);
-    if (grupos.encargado || grupos.listas.length) {
-      h += apartado('Personal participante',
-        (grupos.encargado ? '<p><strong>Encargado:</strong> ' + esc(grupos.encargado) + '</p>' : '') +
-        grupos.listas.map(([t, nombres]) => '<p class="previa-subtitulo">' + t + '</p><ul class="previa-lista">' +
-          nombres.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul>').join(''));
-    }
-
-    h += apartado('Ejemplares registrados', '<div class="previa-tabla-caja"><table class="previa-tabla"><thead><tr><th>N.º</th><th>Folio</th><th>Especie</th><th>Nombre científico</th>' +
-      (variosAutores ? '<th>Cabo</th>' : '') + '</tr></thead><tbody>' + registros.map((r, i) => {
-        const e = SRP.ref.especieDe(r);
-        return '<tr><td>' + (i + 1) + '</td><td>' + esc(SRP.folio.textoLargo(r)) + '</td><td>' + esc(e.comun) + '</td><td><i>' + esc(e.cientifico) + '</i></td>' +
-          (variosAutores ? '<td>' + esc(SRP.ref.nombreUsuario(r.cabo_id)) + '</td>' : '') + '</tr>';
-      }).join('') + '</tbody></table></div>' +
-      (registros.some(r => !SRP.folio.valido(r.folio)) ? '<p class="previa-nota">Registros PROVISIONALES: el folio se asigna al sincronizar con el servidor. Este reporte no sustituye al definitivo.</p>' : '') +
-      (registros.some(r => SRP.folio.valido(r.folio) && r.es_ficticio) ? '<p class="previa-nota">Folios SIMULADOS con datos de prueba: no valen para placas, rótulos ni oficios.</p>' : '') +
-      '<p class="previa-nota">' + esc(this.textoCapas(registros)) + '</p>');
-
-    // Croquis de la jornada (D115): mismo orden que la tabla; se llena cuando la imagen está lista
-    h += apartado('Croquis de la jornada', '<div id="previa-croquis" class="previa-croquis" aria-live="polite"><p class="previa-nota">Preparando el croquis…</p></div>');
-
-    h += apartado('Totales por especie', '<div class="previa-tabla-caja"><table class="previa-tabla"><thead><tr><th>Especie</th><th>Nombre científico</th><th class="cifra">Ejemplares</th></tr></thead><tbody>' +
-      this.totalesPorEspecie(registros).map(t => '<tr><td>' + esc(t.comun) + '</td><td><i>' + esc(t.cientifico) + '</i></td><td class="cifra">' + t.n + '</td></tr>').join('') +
-      '</tbody><tfoot><tr><td>Total</td><td></td><td class="cifra">' + registros.length + '</td></tr></tfoot></table></div>');
-
     const porPrograma = {};
     registros.forEach(r => { const n = SRP.ref.nombreCatalogo(r.programa_id) || 'Sin programa'; porPrograma[n] = (porPrograma[n] || 0) + 1; });
-    h += apartado('Por programa', '<p>' + Object.keys(porPrograma).sort().map(n => esc(n) + ': ' + porPrograma[n]).join('<br>') + '</p>');
-
-    if (hay('observaciones')) h += apartado('Observaciones', '<p>' + parrafo(cierre.observaciones) + '</p>');
-    const log = [];
-    if (hay('chofer')) log.push('Chófer: ' + esc(cierre.chofer));
-    if (hay('vehiculo_modelo') || hay('vehiculo_placa')) log.push('Vehículo: ' + esc([cierre.vehiculo_modelo, hay('vehiculo_placa') ? 'placa ' + cierre.vehiculo_placa : ''].filter(Boolean).join(', ')));
-    if (hay('hora')) log.push('Hora de finalización: ' + esc(cierre.hora) + ' h');
-    if (log.length) h += apartado('Logística', '<p>' + log.join('<br>') + '</p>');
-
+    const logistica = [];
+    if (hay('chofer')) logistica.push('Chófer: ' + cierre.chofer);
+    if (hay('vehiculo_modelo') || hay('vehiculo_placa')) logistica.push('Vehículo: ' + [cierre.vehiculo_modelo, hay('vehiculo_placa') ? 'placa ' + cierre.vehiculo_placa : ''].filter(Boolean).join(', '));
+    if (hay('hora')) logistica.push('Hora de finalización: ' + cierre.hora + ' h');
+    const notas = [];
+    // R2: un reporte con registros provisionales no es un documento definitivo, y lo dice
+    if (registros.some(r => !SRP.folio.valido(r.folio))) notas.push('Registros PROVISIONALES: el folio se asigna al sincronizar con el servidor. Este reporte no sustituye al definitivo.');
+    // D110: un folio simulado se ve igual que uno real; el reporte lo dice
+    if (registros.some(r => SRP.folio.valido(r.folio) && r.es_ficticio)) notas.push('Folios SIMULADOS con datos de prueba: no valen para placas, rótulos ni oficios.');
+    // Con qué capas se derivaron alcaldía, colonia y celda (D152)
+    if (this.textoCapas(registros)) notas.push(this.textoCapas(registros));
     const conGps = registros.filter(r => r.punto_origen === 'gps').length;
-    h += '<p class="previa-pie">Ubicados con GPS del dispositivo: ' + conGps + ' de ' + registros.length + ' (' + Math.round(conGps * 100 / registros.length) + '%)<br>' +
-      'Generado por ' + esc(SRP.util.nombreCompleto(u)) + ' (' + esc(SRP.permisos.de(u).etiqueta) + ').</p>';
+    return {
+      titulo: 'Reporte diario de plantación',
+      fecha: SRP.util.formatearFecha(fecha) + (this.textoJornada(jornada) ? ' · ' + this.textoJornada(jornada) : ''),
+      // Sitio: tal como se escribió al iniciar la jornada, con el territorio que el sistema derivó
+      sitio: jornada ? [jornada.nombre, jornada.ubicacion, SRP.activa.lugarDe(jornada)].filter(Boolean).join(' · ') : '',
+      territorio: alcaldias.length ? (alcaldias.length === 1 ? 'Alcaldía ' + alcaldias[0] : 'Alcaldías: ' + alcaldias.join(', ')) : '',
+      conteo: this.textoConteo(cierre, registros),
+      comentarios: hay('comentarios') ? cierre.comentarios : '',   // lo que se escribió al iniciarla (D119)
+      personal: this.gruposPersonal(cierre),                       // encargado primero y cada grupo (D103)
+      ejemplares: {
+        cabecera: ['N.º', 'Folio', 'Especie', 'Nombre científico'].concat(variosAutores ? ['Cabo'] : []),
+        // Uno por renglón, en el orden en que se capturaron; «(simulado)» en cada folio de prueba (D152)
+        filas: registros.map((r, i) => { const e = SRP.ref.especieDe(r); return [String(i + 1), SRP.folio.textoLargo(r), e.comun, e.cientifico].concat(variosAutores ? [SRP.ref.nombreUsuario(r.cabo_id)] : []); }),
+        notas
+      },
+      totales: this.totalesPorEspecie(registros),
+      total: registros.length,
+      notaTotales: 'El conteo se calcula a partir de los registros del sistema; no se captura a mano.',
+      programas: Object.keys(porPrograma).sort().map(n => [n, porPrograma[n]]),   // qué programa pagó cada árbol
+      observaciones: hay('observaciones') ? cierre.observaciones : '',
+      logistica,
+      /* CALIDAD DE LA UBICACIÓN. Con la fotografía opcional, la coordenada es la prueba: quien lea el
+         reporte merece saber de qué clase de coordenada se trata. Una cifra al pie dice lo mismo que
+         una columna y se compara de un año a otro. */
+      gps: 'Ubicados con GPS del dispositivo: ' + conGps + ' de ' + registros.length + ' (' + Math.round(conGps * 100 / registros.length) + '%)',
+      generado: 'Generado por ' + SRP.util.nombreCompleto(u) + ' (' + SRP.permisos.de(u).etiqueta + ').',
+      /* La cifra del sistema no es la cifra del programa: se registra lo que alcanza a registrarse.
+         Decirlo en el documento protege a quien lo firma. */
+      advertencia: 'Cifra de ejemplares registrados en el sistema para esta jornada. No equivale necesariamente al total plantado en ella.',
+      ficticio: SRP.CONFIG.ES_FICTICIO ? 'Documento de prueba con datos ficticios. Sin validez oficial.' : ''
+    };
+  },
+
+  // La vista previa pinta el modelo en HTML, en el mismo orden que el PDF
+  htmlPrevia(registros, cierre, fecha, jornada) {
+    const m = this.modelo(registros, cierre, fecha, jornada);
+    const esc = t => SRP.util.escapar(t);
+    const parrafo = t => esc(t).replace(/\n/g, '<br>');
+    const apartado = (titulo, cuerpo) => '<section class="previa-apartado"><h3>' + titulo + '</h3>' + cuerpo + '</section>';
+    const nota = t => '<p class="previa-nota">' + esc(t) + '</p>';
+    let h = '<p class="previa-titulo">' + esc(m.titulo) + '</p><p class="previa-fecha">' + esc(m.fecha) + '</p>';
+    if (m.sitio || m.territorio) {
+      h += '<div class="previa-sitio">' + (m.sitio ? '<p><strong>Jornada:</strong> ' + esc(m.sitio) + '</p>' : '') +
+        (m.territorio ? '<p class="previa-tenue">' + esc(m.territorio) + '</p>' : '') +
+        (m.conteo ? '<p><strong>' + esc(m.conteo) + '</strong></p>' : '') + '</div>';
+    }
+    if (m.comentarios) h += apartado('Comentarios de la jornada', '<p>' + parrafo(m.comentarios) + '</p>');
+    const g = m.personal;
+    if (g.encargado || g.listas.length) {
+      h += apartado('Personal participante',
+        (g.encargado ? '<p><strong>Encargado:</strong> ' + esc(g.encargado) + '</p>' : '') +
+        g.listas.map(([t, nombres]) => '<p class="previa-subtitulo">' + t + '</p><ul class="previa-lista">' +
+          nombres.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul>').join(''));
+    }
+    const ej = m.ejemplares;
+    h += apartado('Ejemplares registrados', '<div class="previa-tabla-caja"><table class="previa-tabla"><thead><tr>' + ej.cabecera.map(c => '<th>' + esc(c) + '</th>').join('') + '</tr></thead><tbody>' +
+      ej.filas.map(f => '<tr>' + f.map((c, k) => '<td>' + (k === 3 ? '<i>' + esc(c) + '</i>' : esc(c)) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>' +
+      ej.notas.map(nota).join(''));
+    // Croquis de la jornada (D115): mismo orden que la tabla; se llena cuando la imagen está lista
+    h += apartado('Croquis de la jornada', '<div id="previa-croquis" class="previa-croquis" aria-live="polite"><p class="previa-nota">Preparando el croquis…</p></div>');
+    h += apartado('Totales por especie', '<div class="previa-tabla-caja"><table class="previa-tabla"><thead><tr><th>Especie</th><th>Nombre científico</th><th class="cifra">Ejemplares</th></tr></thead><tbody>' +
+      m.totales.map(t => '<tr><td>' + esc(t.comun) + '</td><td><i>' + esc(t.cientifico) + '</i></td><td class="cifra">' + t.n + '</td></tr>').join('') +
+      '</tbody><tfoot><tr><td>Total</td><td></td><td class="cifra">' + m.total + '</td></tr></tfoot></table></div>' + nota(m.notaTotales));
+    h += apartado('Por programa', '<p>' + m.programas.map(([n, c]) => esc(n) + ': ' + c).join('<br>') + '</p>');
+    if (m.observaciones) h += apartado('Observaciones', '<p>' + parrafo(m.observaciones) + '</p>');
+    if (m.logistica.length) h += apartado('Logística', '<p>' + m.logistica.map(esc).join('<br>') + '</p>');
+    h += '<p class="previa-pie">' + esc(m.gps) + '<br>' + esc(m.generado) + '<br>' + esc(m.advertencia) + (m.ficticio ? '<br>' + esc(m.ficticio) : '') + '</p>';
     return h;
   },
 
@@ -398,7 +425,7 @@ SRP.reportes = {
     const c = document.createElement('canvas');
     c.width = img.naturalWidth; c.height = img.naturalHeight;
     const g = c.getContext('2d');
-    g.fillStyle = '#FFFFFF'; g.fillRect(0, 0, c.width, c.height);
+    g.fillStyle = SRP.util.colorBase('fondo'); g.fillRect(0, 0, c.width, c.height);
     g.drawImage(img, 0, 0);
     return c.toDataURL('image/jpeg', 0.9);
   },
@@ -413,21 +440,19 @@ SRP.reportes = {
   async generar(registros, cierre, fecha, jornada) {
     if (!window.jspdf) { SRP.util.anunciar('No se pudo cargar el generador de PDF.', 'alerta'); return; }
     const logo = await this.cargarLogo();
-    const u = SRP.sesion.usuario;
-    const variosAutores = SRP.permisos.de(u).alcance !== 'propios';
+    const m = this.modelo(registros, cierre, fecha, jornada);   // lo mismo que la vista previa (M15)
     // compress: los flujos del PDF van comprimidos; con el logotipo en JPEG el archivo baja de
     // ~800 KB a menos de 100 KB y se comparte sin problema por mensajería (D103)
     const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'letter', compress: true });
     const ancho = doc.internal.pageSize.getWidth();
     const alto = doc.internal.pageSize.getHeight();
-    const C = this.COLOR;
+    const C = this.colores();
     const M = 20;                       // margen izquierdo y derecho
     const util = ancho - M * 2;
     const hoy = new Date();
 
     /* Cada apartado se dibuja sólo si tiene qué decir. Un documento con renglones en blanco
        —«Chófer: ______»— parece una plantilla a medio llenar, y lo firma alguien. */
-    const hay = (k) => !!(cierre[k] && cierre[k].trim());
 
     // El logotipo se fija por su alto (D137): al sumar el SIA crece a lo ancho, y fijarlo por el
     // ancho lo habría encogido. 9.3 mm es el alto que tenía con 90 mm de ancho sin el SIA.
@@ -435,23 +460,19 @@ SRP.reportes = {
     doc.setDrawColor(...C.guinda); doc.setLineWidth(0.4); doc.line(M, 30, ancho - M, 30);
 
     doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(...C.guinda);
-    doc.text('REPORTE DIARIO DE PLANTACIÓN', ancho / 2, 40, { align: 'center' });
+    doc.text(m.titulo.toUpperCase(), ancho / 2, 40, { align: 'center' });
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(...C.gris);
-    doc.text(SRP.util.formatearFecha(fecha) + (this.textoJornada(jornada) ? ' · ' + this.textoJornada(jornada) : ''), ancho / 2, 46, { align: 'center' });
+    doc.text(m.fecha, ancho / 2, 46, { align: 'center' });
 
     let y = 56;
     // El pie va en alto − 16: un bloque cabe si termina antes de alto − 19 (M44: antes se reservaban
     // 24 mm más el aire del propio bloque, y un apartado corto saltaba de página cuando sí cabía)
     const salto = (necesario) => { if (y + necesario > alto - 19) { doc.addPage(); y = 25; } };
 
-    // Sitio: tal como lo escribió quien cerró el reporte, con el territorio que el sistema derivó
-    const alcaldias = this.alcaldiasDe(registros);
-    const sitio = jornada ? jornada.nombre + (jornada.ubicacion ? ' · ' + jornada.ubicacion : '') + (SRP.activa.lugarDe(jornada) ? ' · ' + SRP.activa.lugarDe(jornada) : '') : '';
-    if (sitio || alcaldias.length) {
-      const lineas = sitio ? doc.splitTextToSize(sitio, util - 22) : [];
-      const territorio = alcaldias.length
-        ? (alcaldias.length === 1 ? 'Alcaldía ' + alcaldias[0] : 'Alcaldías: ' + alcaldias.join(', ')) : '';
-      const conteo = this.textoConteo(cierre, registros);
+    // Sitio: tal como se escribió al iniciar la jornada, con el territorio que el sistema derivó
+    if (m.sitio || m.territorio) {
+      const lineas = m.sitio ? doc.splitTextToSize(m.sitio, util - 22) : [];
+      const territorio = m.territorio, conteo = m.conteo;
       const altoCaja = 6 + lineas.length * 4.6 + (territorio ? 5 : 0) + (conteo ? 5 : 0);
       salto(altoCaja + 4);
       doc.setDrawColor(...C.tinta); doc.setLineWidth(0.2);
@@ -490,11 +511,11 @@ SRP.reportes = {
     };
 
 
-    if (hay('comentarios')) apartado('Comentarios de la jornada', cierre.comentarios);
+    if (m.comentarios) apartado('Comentarios de la jornada', m.comentarios);
 
     // Personal (D103): Encargado primero; cada grupo con su subtítulo y los nombres sangrados con
     // viñeta, para que los de apoyo no se lean como participantes
-    const grupos = this.gruposPersonal(cierre);
+    const grupos = m.personal;
     if (grupos.encargado || grupos.listas.length) {
       const lineas = [];
       if (grupos.encargado) lineas.push('Encargado: ' + grupos.encargado);
@@ -503,42 +524,21 @@ SRP.reportes = {
     }
 
     // Ejemplares: uno por renglón, en el orden en que se capturaron
-    const cabecera = ['N.º', 'Folio', 'Especie', 'Nombre científico'].concat(variosAutores ? ['Cabo'] : []);
-    const cuerpo = registros.map((r, i) => {
-      const e = SRP.ref.especieDe(r);
-      return [String(i + 1), SRP.folio.textoLargo(r), e.comun, e.cientifico]   // «(simulado)» en cada renglón (D152).concat(variosAutores ? [SRP.ref.nombreUsuario(r.cabo_id)] : []);
-    });
     salto(30);
     doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...C.guinda);
     doc.text('EJEMPLARES REGISTRADOS', M, y);
     doc.autoTable({
-      head: [cabecera], body: cuerpo, startY: y + 3, margin: { left: M, right: M, bottom: 22 },
+      head: [m.ejemplares.cabecera], body: m.ejemplares.filas, startY: y + 3, margin: { left: M, right: M, bottom: 22 },
       styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 1.6, textColor: C.tinta },
       headStyles: { fillColor: C.guinda, textColor: 255, fontStyle: 'bold' },
       alternateRowStyles: { fillColor: C.fila },
       columnStyles: { 0: { cellWidth: 12, halign: 'right' }, 1: { cellWidth: 30 }, 3: { fontStyle: 'italic' } }
     });
     y = doc.lastAutoTable.finalY + 4;
-    // R2: un reporte con registros provisionales no es un documento definitivo, y lo dice
-    if (registros.some(r => !SRP.folio.valido(r.folio))) {
-      doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor(...C.gris);
-      doc.text('Registros PROVISIONALES: el folio se asigna al sincronizar con el servidor. Este reporte no sustituye al definitivo.', M, y);
-      doc.setFont('helvetica', 'normal');
-      y += 4;
-    }
-    // D110: un folio simulado se ve igual que uno real; el reporte lo dice
-    if (registros.some(r => SRP.folio.valido(r.folio) && r.es_ficticio)) {
-      doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor(...C.gris);
-      doc.text('Folios SIMULADOS con datos de prueba: no valen para placas, rótulos ni oficios.', M, y);
-      doc.setFont('helvetica', 'normal');
-      y += 4;
-    }
-    // Con qué capas se derivaron alcaldía, colonia y celda (D152)
+    // Las notas de la tabla: provisionales, simulados y con qué capas se derivó el territorio
     doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor(...C.gris);
-    const capas = doc.splitTextToSize(this.textoCapas(registros), ancho - 2 * M);
-    doc.text(capas, M, y);
+    m.ejemplares.notas.forEach(t => { const l = doc.splitTextToSize(t, ancho - 2 * M); doc.text(l, M, y); y += 4 * l.length; });
     doc.setFont('helvetica', 'normal');
-    y += 4 * capas.length;
     y += 4;
 
     // Croquis de la jornada (D115): a todo el ancho útil, con su pie; si no cabe en la página, pasa a la siguiente
@@ -559,7 +559,7 @@ SRP.reportes = {
     }
 
     // Totales por especie: calculados
-    const totales = this.totalesPorEspecie(registros);
+    const totales = m.totales;
     salto(30);
     doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...C.guinda);
     doc.text('TOTALES POR ESPECIE', M, y);
@@ -567,64 +567,44 @@ SRP.reportes = {
       head: [['Especie', 'Nombre científico', { content: 'Ejemplares', styles: { halign: 'right' } }]],
       body: totales.map(t => [t.comun, t.cientifico, String(t.n)]),
       // La cifra del total se alinea como las de arriba (D103): el pie no hereda columnStyles
-      foot: [['Total', '', { content: String(registros.length), styles: { halign: 'right' } }]],
+      foot: [['Total', '', { content: String(m.total), styles: { halign: 'right' } }]],
       startY: y + 3, margin: { left: M, right: M, bottom: 22 },
       styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 1.6, textColor: C.tinta },
       headStyles: { fillColor: C.guinda, textColor: 255, fontStyle: 'bold' },
-      footStyles: { fillColor: [255, 250, 233], textColor: C.tinta, fontStyle: 'bold' },
+      footStyles: { fillColor: C.total, textColor: C.tinta, fontStyle: 'bold' },
       alternateRowStyles: { fillColor: C.fila },
       columnStyles: { 1: { fontStyle: 'italic' }, 2: { halign: 'right', cellWidth: 26 } }
     });
     y = doc.lastAutoTable.finalY + 4;
     doc.setFont('helvetica', 'italic'); doc.setFontSize(7.5); doc.setTextColor(...C.gris);
-    doc.text('El conteo se calcula a partir de los registros del sistema; no se captura a mano.', M, y);
+    doc.text(m.notaTotales, M, y);
     doc.setFont('helvetica', 'normal');
     y += 8;
 
     // Resumen por programa: qué programa pagó cada árbol de la jornada
-    const porPrograma = {};
-    registros.forEach(r => {
-      const n = SRP.ref.nombreCatalogo(r.programa_id) || 'Sin programa';
-      porPrograma[n] = (porPrograma[n] || 0) + 1;
-    });
-    const programas = Object.keys(porPrograma).sort();
+    const programas = m.programas;
     salto(6 + programas.length * 5);
     doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...C.guinda);
     doc.text('POR PROGRAMA', M, y);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(...C.tinta);
-    programas.forEach((n, i) => doc.text(n + ': ' + porPrograma[n], M, y + 6 + i * 5));
+    programas.forEach(([n, c], i) => doc.text(n + ': ' + c, M, y + 6 + i * 5));
     y += 6 + programas.length * 5 + 4;
 
-    if (hay('observaciones')) apartado('Observaciones', cierre.observaciones);
-
+    if (m.observaciones) apartado('Observaciones', m.observaciones);
     // Logística: sólo los datos que se capturaron
-    const log = [];
-    if (hay('chofer')) log.push('Chófer: ' + cierre.chofer);
-    if (hay('vehiculo_modelo') || hay('vehiculo_placa')) {
-      log.push('Vehículo: ' + [cierre.vehiculo_modelo, hay('vehiculo_placa') ? 'placa ' + cierre.vehiculo_placa : ''].filter(Boolean).join(', '));
-    }
-    if (hay('hora')) log.push('Hora de finalización: ' + cierre.hora + ' h');
-    if (log.length) apartado('Logística', log.join('\n'));
+    if (m.logistica.length) apartado('Logística', m.logistica.join('\n'));
 
-    /* CALIDAD DE LA UBICACIÓN. Cuando la fotografía es opcional, la coordenada es la prueba, y
-       quien lea el reporte merece saber de qué clase de coordenada se trata. Una fila por punto
-       abultaría la tabla; una cifra al pie dice lo mismo y se compara de un año a otro. */
-    const conGps = registros.filter(r => r.punto_origen === 'gps').length;
+    // Calidad de la ubicación, quién lo generó y lo que la cifra no dice (el modelo explica por qué)
     salto(24);
     doc.setFontSize(9.5); doc.setTextColor(...C.tinta);
-    doc.text('Ubicados con GPS del dispositivo: ' + conGps + ' de ' + registros.length +
-             ' (' + Math.round(conGps * 100 / registros.length) + '%)', M, y);
+    doc.text(m.gps, M, y);
     y += 7;
-
     doc.setFontSize(8); doc.setTextColor(...C.gris);
-    doc.text('Generado por ' + SRP.util.nombreCompleto(u) + ' (' + SRP.permisos.de(u).etiqueta + ').', M, y);
-    /* La cifra del sistema no es la cifra del programa: se registra lo que alcanza a
-       registrarse. Decirlo en el documento protege a quien lo firma. */
-    doc.text('Cifra de ejemplares registrados en el sistema para esta jornada. No equivale', M, y + 4);
-    doc.text('necesariamente al total plantado en ella.', M, y + 8);
-    if (SRP.CONFIG.ES_FICTICIO) {
-      doc.setTextColor(163, 58, 0);
-      doc.text('Documento de prueba con datos ficticios. Sin validez oficial.', M, y + 14);
+    doc.text(m.generado, M, y);
+    doc.text(doc.splitTextToSize(m.advertencia, util), M, y + 4);
+    if (m.ficticio) {
+      doc.setTextColor(...C.ficticio);
+      doc.text(m.ficticio, M, y + 14);
     }
 
     // Pie en todas las páginas

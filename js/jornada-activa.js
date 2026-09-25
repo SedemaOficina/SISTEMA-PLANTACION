@@ -191,7 +191,7 @@ SRP.activa = {
   llenarProgramas() {
     const sel = this.el('ini-programa');
     const opciones = SRP.ref.deTipo('programa', true).sort((a, b) => (b.clave === 'REFOR_URBANA') - (a.clave === 'REFOR_URBANA'));
-    sel.innerHTML = '<option value="">Seleccione un programa</option>' + opciones.map(o => '<option value="' + SRP.util.escapar(o.id) + '">' + SRP.util.escapar(o.nombre) + '</option>').join('');
+    sel.innerHTML = SRP.util.opciones('Seleccione un programa', opciones.map(o => [o.id, o.nombre]));
     sel.value = '';
     SRP.util.quitarErrorCampo(sel);
   },
@@ -271,10 +271,7 @@ SRP.activa = {
   },
 
   // «Colonia, Alcaldía» de una jornada, para la franja, Jornadas y el reporte; '' si no se detectó
-  lugarDe(j) {
-    if (!j || (!j.alcaldia && !j.colonia)) return '';
-    return [j.colonia, j.alcaldia ? 'Alcaldía ' + j.alcaldia : ''].filter(Boolean).join(', ');
-  },
+  lugarDe(j) { return j ? SRP.ref.lugar(j.alcaldia, j.colonia) : ''; },   // M15
 
   /* ---------- Acciones ---------- */
 
@@ -293,15 +290,8 @@ SRP.activa = {
     if (meta_arboles === null || !Number.isInteger(meta_arboles) || meta_arboles < 1 || meta_arboles > 9999) errores.push(['ini-meta', 'Escriba cuántos árboles se van a plantar: un número entero mayor que cero.']);
     if (!fecha) errores.push(['ini-fecha', 'Indique la fecha de la jornada.']);
     else if (fecha > SRP.util.fechaHoy()) errores.push(['ini-fecha', 'La fecha no puede ser posterior a hoy.']);
-    const caja = this.el('ini-errores');
-    SRP.util.erroresEnCampos(errores, ['ini-nombre', 'ini-programa', 'ini-meta', 'ini-fecha']);   // cada campo dice su error (D140)
-    if (errores.length) {
-      caja.hidden = false;
-      caja.innerHTML = '<ul>' + errores.map(([id, t]) => '<li><a href="#' + id + '">' + SRP.util.escapar(t) + '</a></li>').join('') + '</ul>';
-      this.el(errores[0][0]).focus();
-      return;
-    }
-    caja.hidden = true;
+    // Cada campo dice su error (D140) y arriba el resumen, igual que en todos los formularios (M15)
+    if (SRP.util.resumenErrores(this.el('ini-errores'), errores, ['ini-nombre', 'ini-programa', 'ini-meta', 'ini-fecha'])) return;
     const u = SRP.sesion.usuario;
     const ahora = SRP.util.ahoraISO();
     const p = this.punto, t = p ? p.t : {};

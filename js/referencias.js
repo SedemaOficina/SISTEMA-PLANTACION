@@ -86,6 +86,12 @@ SRP.ref = {
      punto cae donde la capa de colonias no tiene polígono: casi siempre suelo de conservación, pero
      también 31 km² urbanos, así que no se afirma que sea zona no urbana. */
   alcaldia(valor) { return valor || 'Sin alcaldía (territorio pendiente)'; },
+  /* DÓNDE, EN UN SOLO FORMATO (M15): «Alcaldía Coyoacán · Col. Del Carmen». Antes la franja decía
+     «colonia, Alcaldía X» y la lista de jornadas «X · Col. colonia». `alcaldias`: una o varias. */
+  lugar(alcaldias, colonia) {
+    const a = [].concat(alcaldias || []).filter(Boolean);
+    return [a.length ? (a.length === 1 ? 'Alcaldía ' : 'Alcaldías ') + a.join(', ') : '', colonia ? 'Col. ' + colonia : ''].filter(Boolean).join(' · ');
+  },
   colonia(valor) { return valor || 'Sin colonia en la capa'; },
 
   /* Con qué capas se derivó el territorio, para el detalle y el PDF (D152): «Alcaldías

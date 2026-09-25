@@ -1380,4 +1380,30 @@
   siendo marcar con constancia, con «Deshacer» (D139). 5) La coordinación elimina los árboles que
   capturó ella —para corregir su propio error— y sigue sin eliminar los de sus cabos (D87 queda así
   acotado); la regla vive en `puedeEliminar()` y en las acciones `registro.eliminar` y
-  `registro.restaurar`. Pendiente de su visto bueno: el punto 5. Propuesto 25-09-2026.
+  `registro.restaurar`. El punto 5 lo amplió Liber en D155: la coordinación elimina cualquier árbol de su cuadrilla. Aprobado 25-09-2026.
+- **D155. La coordinación elimina los árboles de su cuadrilla.** Decidido por Liber el 25-09-2026:
+  «la coordinación puede eliminar cualquier árbol». Sustituye el «no elimina» de D87 y el punto 5
+  de D154 (sólo lo que capturó ella). El perfil Coordinador tiene `eliminar: true` con su alcance de
+  siempre: los árboles suyos y los de los cabos que tiene asignados; no los de otra cuadrilla, aunque
+  se llame a la función. Eliminar sigue siendo marcar con constancia y con «Deshacer» (D139).
+- **D156. Hoja de estilos conforme a su norma y código repetido (bloque 94b).** Sexto bloque del plan
+  de la auditoría 360 (M13 y M15), con la huella visual de 22 estados en siete anchos (360, 390, 440,
+  640, 720, 768 y 1280 px) antes y después. 1) Cada regla en su sección: las 104 que estaban después
+  de las consultas pasaron a componentes o estados; el modo sol, junto, en estados. 2) Tres cortes de
+  ancho documentados —480, 700 y 1024 px— y una sola consulta por corte: los de 600 y 767 se unieron
+  al de 700 y el de 601 al de 701. Cambia sólo entre 601 y 767 px (tabletas chicas y teléfonos
+  acostados): ahí se usa el diseño de teléfono (puntos apilados, franja en columna) y la barra de
+  saltos de la ficha se deja para 700 px o menos. 3) Una clase por caso en lugar de #id (34
+  selectores); Nuevo registro, Jornadas y Reportes son vistas anchas. 4) Fuera 29 selectores sin
+  elemento (el diálogo «Registro guardado», la conciliación con campo, `.enlace`…) y el corte de
+  400 px, que sólo los usaba. 5) Un selector, una regla: 11 duplicados unidos. 6) Sombras y velos
+  como variables de :root; el código ya no escribe colores: el mapa, el croquis y el PDF los leen de
+  la hoja (`SRP.util.color`, `colorBase`, `rgb`), y el PDF y el croquis no cambian con el modo sol.
+  El círculo de precisión del GPS usa los mismos verde, ámbar y rojo que su insignia (antes eran
+  otros). 7) Un solo resumen de errores para los seis formularios (título, texto escapado, enlaces y
+  el foco en la caja), un solo botón «ocupado», una sola manera de armar listas de opciones y de
+  personas, una sola barra de atajos de fecha para Registros, Jornadas, Reportes y Fotografías, y un
+  solo modelo del reporte que pintan la vista previa y el PDF (la vista previa trae ahora las
+  advertencias del pie). 8) El lugar se dice igual en todas partes: «Alcaldía Coyoacán · Col. Del
+  Carmen». La auditoría revisa desde ahora la norma de la hoja y que el código no escriba colores.
+  Propuesto por Claude, aprobado por Liber («continúa con 94b»), 25-09-2026.

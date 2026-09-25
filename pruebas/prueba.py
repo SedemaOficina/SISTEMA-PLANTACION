@@ -1176,7 +1176,7 @@ with sync_playwright() as p:
     pg.click('.chip[data-atajo=todos]'); pg.wait_for_timeout(300)
     ok('Total: 3 ' in pg.inner_text('#registros-total'),'el coordinador ve los de su cuadrilla: '+pg.inner_text('#registros-total'))
     ok('Fulana' in pg.inner_text('#lista-registros'),'con el nombre del cabo')
-    ok(pg.locator('button[data-accion=editar]').count()>0 and pg.locator('button[data-accion=eliminar]').count()==0,'edita pero no elimina')
+    ok(pg.locator('button[data-accion=editar]').count()>0 and pg.locator('button[data-accion=eliminar]').count()>0,'edita y elimina los de su cuadrilla (D155)')
     ok(pg.is_hidden('.pestana[data-vista=catalogos]') and pg.is_hidden('.pestana[data-vista=usuarios]'),'no ve Catálogos ni Usuarios')
     ok(not pg.evaluate("document.getElementById('caja-filtro-cabo').hidden") and 'cabo' in pg.inner_text('#filtro-mas-filtros summary'),'sí tiene filtro por cabo, dentro de «Más filtros» (D129): '+pg.inner_text('#filtro-mas-filtros summary'))
     # Galería de fotografías (D118): coordinación y administración la ven; el cabo no
@@ -2091,8 +2091,9 @@ with sync_playwright() as p:
     pg11.evaluate("async () => { await SRP.usuarios.cambiarEstado(SRP.ref.usuarioPorId['u-admin-1']); }"); pg11.wait_for_timeout(200)
     ok(uno11('usuarios','u-admin-1')['activo'] is True and 'No tiene permiso para administrar las cuentas' in aviso11(),'ni la cuenta de administración')
     entrar11('u-coord-1')
-    pg11.evaluate("async () => { await SRP.registros.eliminar(await SRP.almacen.uno('plantaciones', '%s')); }" % a2); pg11.wait_for_timeout(200)
-    ok(uno11('plantaciones',a2)['estatus']=='activo' and 'No tiene permiso para eliminar este registro' in aviso11(),'un coordinador no elimina un registro llamando la función (M9): '+aviso11())
+    # La coordinación elimina lo de su cuadrilla (D155), pero no lo de un cabo ajeno aunque llame a la función
+    pg11.evaluate("async () => { await SRP.registros.eliminar({ id: 'pl-ajeno', cabo_id: 'u-fuera', especie_id: 'ESP-0002', fecha_plantacion: '2026-09-01' }); }"); pg11.wait_for_timeout(200)
+    ok(uno11('plantaciones','pl-ajeno') is None and 'No tiene permiso para eliminar este registro' in aviso11(),'un coordinador no elimina un registro fuera de su cuadrilla llamando la función (M9): '+aviso11())
     # D1: la coordinación elimina las jornadas vacías de su cuadrilla
     pg11.evaluate("SRP.app.mostrarVista('jornadas')"); pg11.wait_for_timeout(500)
     pg11.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg11.wait_for_timeout(300); pg11.evaluate("SRP.jornadas.abrir('%s')" % jD); pg11.wait_for_timeout(600)
@@ -2364,18 +2365,71 @@ with sync_playwright() as p:
     ok(s16['vis']=='si' and s16['barras'] and all(s16['abajo']<=t for t in s16['barras']) and s16['abajo']<=s16['nav'],'en la ficha el botón queda encima de la barra «Siguiente»: %s' % s16)
     pg16.click('#btn-jornada-volver'); pg16.wait_for_timeout(900)
     ok(pg16.evaluate("scrollY")==0,'y al volver a la lista de jornadas, también empieza arriba')
-    # D154: la coordinación elimina lo que capturó ella, no lo de sus cabos
+    # D155: la coordinación elimina lo suyo y lo de sus cabos, no lo de fuera de su cuadrilla
     pg16.evaluate("SRP.app.menuCuenta(false)"); pg16.click('#btn-cuenta'); pg16.click('#btn-cambiar-perfil'); pg16.wait_for_timeout(200)
     pg16.select_option('#sel-usuario-prueba','u-coord-1'); pg16.click('#btn-entrar-prueba'); pg16.wait_for_timeout(700)
     iniciar_jornada(pg16,'Jornada de la coordinación',HOY)
     rc16=registrar(pg16,'aile','ESP-0002')
     pc16=pg16.evaluate("""async id => { const u = SRP.sesion.usuario; const todos = await SRP.almacen.todos('plantaciones');
-      return { propio: SRP.permisos.puede('registro.eliminar', todos.find(r => r.id === id)), ajeno: SRP.permisos.puede('registro.eliminar', todos.find(r => r.cabo_id === 'u-cabo-1')) }; }""", rc16)
-    ok(pc16=={'propio':True,'ajeno':False},'la coordinación puede eliminar el árbol que capturó ella y no el de su cabo (D154): %s' % pc16)
+      return { propio: SRP.permisos.puede('registro.eliminar', todos.find(r => r.id === id)), cabo: SRP.permisos.puede('registro.eliminar', todos.find(r => r.cabo_id === 'u-cabo-1')),
+        fuera: SRP.permisos.puede('registro.eliminar', { cabo_id: 'u-fuera' }) }; }""", rc16)
+    ok(pc16=={'propio':True,'cabo':True,'fuera':False},'la coordinación puede eliminar su árbol y el de su cabo, no uno de fuera de su cuadrilla (D155): %s' % pc16)
     pg16.evaluate("async id => SRP.registros.eliminar(await SRP.almacen.uno('plantaciones', id))", rc16); pg16.wait_for_timeout(500)
     ok(pg16.evaluate("async id => (await SRP.almacen.uno('plantaciones', id)).estatus", rc16)=='eliminado','y al pedirlo, lo elimina')
     ok(not err16,'todo sin errores en consola: %s' % err16[:2])
     ctx16.close()
+
+    # ---------- BLOQUE 94b: ESTILOS Y CÓDIGO REPETIDO (M13, M15, D156) ----------
+    ctx18=b.new_context(viewport={'width':390,'height':844},geolocation={'latitude':19.4326,'longitude':-99.1332,'accuracy':5},permissions=['geolocation'])
+    pg18=ctx18.new_page(); err18=[]
+    pg18.on('pageerror', lambda e: err18.append(str(e))); pg18.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err18.append(m.text))
+    pg18.goto(BASE); pg18.wait_for_timeout(1200)
+    pg18.select_option('#sel-usuario-prueba','u-cabo-1'); pg18.click('#btn-entrar-prueba'); pg18.wait_for_timeout(700)
+    pg18.evaluate("SRP.app.mostrarVista('registrar')"); pg18.wait_for_timeout(300)
+    # Resumen de errores común: título, lista escapada con enlaces y el foco en la caja, en todos los formularios
+    pg18.click('#btn-iniciar-jornada'); pg18.wait_for_timeout(300)
+    re18=pg18.evaluate("(() => { const c = document.getElementById('ini-errores'); return { titulo: c.querySelector('h2') && c.querySelector('h2').textContent, enlaces: c.querySelectorAll('li a[href^=\"#ini-\"]').length, foco: document.activeElement.id }; })()")
+    ok(re18['titulo']=='Falta corregir 4 datos' and re18['enlaces']==4 and re18['foco']=='ini-errores','el resumen de errores es el mismo en todos los formularios: título, enlaces a cada campo y el foco en la caja (M15): %s' % re18)
+    esc18=pg18.evaluate("""() => { const c = document.createElement('div'); document.body.appendChild(c);
+      SRP.util.resumenErrores(c, [['x', '<b>raro</b>']], ['x']); const h = c.innerHTML; c.remove();
+      return { escapado: h.includes('&lt;b&gt;raro&lt;/b&gt;'), opciones: SRP.util.opciones('Todos', [['a"b', '<x>']]) }; }""")
+    ok(esc18['escapado'] and esc18['opciones']=='<option value="">Todos</option><option value="a&quot;b">&lt;x&gt;</option>','el resumen y las listas de opciones escapan el texto (M15): %s' % esc18)
+    oc18=pg18.evaluate("""() => { const b = document.getElementById('btn-iniciar-jornada'); const antes = b.innerHTML; const libre = SRP.util.ocupado(b, 'Guardando…', 'disco');
+      const durante = [b.disabled, b.getAttribute('aria-busy'), b.textContent.trim()]; libre(); libre();
+      return { durante, despues: [b.disabled, b.hasAttribute('aria-busy'), b.innerHTML === antes] }; }""")
+    ok(oc18=={'durante':[True,'true','Guardando…'],'despues':[False,False,True]},'el botón ocupado es uno solo: dice qué hace, se deshabilita y vuelve como estaba (M15): %s' % oc18)
+    lu18=pg18.evaluate("[SRP.ref.lugar('Coyoacán', 'DEL CARMEN'), SRP.ref.lugar(['Coyoacán', 'Tlalpan'], ''), SRP.ref.lugar('', ''), SRP.activa.lugarDe({ alcaldia: 'Tlalpan', colonia: 'CENTRO' })]")
+    ok(lu18==['Alcaldía Coyoacán · Col. DEL CARMEN','Alcaldías Coyoacán, Tlalpan','','Alcaldía Tlalpan · Col. CENTRO'],'el lugar se dice igual en la franja, la lista de jornadas y el reporte (M15): %s' % lu18)
+    # Colores: el código los lee de la hoja; el PDF y el croquis no cambian con el modo sol
+    co18=pg18.evaluate("""() => { const antes = [SRP.util.rgb('guinda'), SRP.util.colorBase('gris'), SRP.util.color('gris')];
+      document.getElementById('btn-contraste').click();
+      const sol = [SRP.util.colorBase('gris'), SRP.util.color('gris')];
+      document.getElementById('btn-contraste').click();
+      return { antes, sol, pdf: SRP.reportes.colores().fila }; }""")
+    ok(co18['antes']==[[157,33,72],'#55585A','#55585A'] and co18['sol']==['#55585A','#2B2D2E'] and co18['pdf']==[247,241,243],
+       'los colores salen de :root; el del PDF no cambia con el modo sol y el de pantalla sí (M13): %s' % co18)
+    # Atajos de fecha: un solo componente; en Registros «Un día» abre su fecha y queda marcado solo
+    pg18.evaluate("SRP.app.mostrarVista('registros')"); pg18.wait_for_timeout(500)
+    abrir_filtros(pg18)
+    pg18.click('#filtro-atajos .chip[data-atajo=dia]'); pg18.wait_for_timeout(200)
+    at18=pg18.evaluate("(() => { const c = document.getElementById('filtro-atajos'); return { marcados: [...c.querySelectorAll('.chip[aria-pressed=\"true\"]')].map(x => x.dataset.atajo), expandido: c.querySelector('[data-atajo=dia]').getAttribute('aria-expanded'), panel: !document.getElementById('filtro-un-dia').hidden }; })()")
+    ok(at18=={'marcados':['dia'],'expandido':'true','panel':True},'la barra de atajos marca uno solo y abre el panel de «Un día» (M15): %s' % at18)
+    # El reporte tiene un solo modelo: la vista previa dice lo mismo que el PDF, advertencias incluidas
+    iniciar_jornada(pg18,'Jornada del modelo',HOY)
+    registrar(pg18,'aile','ESP-0002')
+    pg18.evaluate("SRP.app.mostrarVista('registrar')"); pg18.wait_for_timeout(300)
+    pg18.click('#btn-jornada-cerrar'); pg18.wait_for_timeout(300); pg18.click('#btn-confirmar-si'); pg18.wait_for_timeout(1200)
+    reporte_de(pg18,'Jornada del modelo'); pg18.wait_for_timeout(300)
+    pg18.click('#btn-cierre-generar'); pg18.wait_for_timeout(1000)
+    mo18=pg18.evaluate("""() => { const v = SRP.reportes.vistaPrevia; const m = SRP.reportes.modelo(v.registros, v.cierre, v.fecha, v.jornada);
+      const t = document.getElementById('previa-hoja').innerText;
+      return { claves: Object.keys(m).length, advertencia: t.includes(m.advertencia), gps: t.includes(m.gps), nota: t.includes(m.notaTotales), sitio: t.includes(m.sitio), filas: m.ejemplares.filas.length }; }""")
+    ok(mo18['advertencia'] and mo18['gps'] and mo18['nota'] and mo18['sitio'] and mo18['filas']==1,'la vista previa pinta el mismo modelo que el PDF, con las advertencias del pie (M15): %s' % mo18)
+    # La tuerca y el mapa: el número de punto sigue en guinda, ahora desde la hoja
+    pin18=pg18.evaluate("(() => { const d = document.createElement('div'); d.className = 'pin'; d.innerHTML = SRP.mapa.ICONO_SVG; document.body.appendChild(d); const g = getComputedStyle(d.querySelector('.pin-gota')).fill; d.remove(); return g; })()")
+    ok(pin18=='rgb(157, 33, 72)','el marcador del mapa toma su guinda de la hoja, no del código (M13): %s' % pin18)
+    ok(not err18,'sin errores en consola: %s' % err18[:2])
+    ctx18.close()
 
     b.close()
 print('\n'.join(res)); print('ERRORES CONSOLA:',errores or 'ninguno')

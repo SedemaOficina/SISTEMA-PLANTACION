@@ -1819,3 +1819,29 @@ barra «Siguiente»; la lista de jornadas empieza arriba al volver; la coordinac
 
 **Verificación:** 687 comprobaciones sin errores de consola; 92 de auditoría;
 presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.75.
+
+## Bloque 94b — Estilos y código repetido (25-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.76.
+
+**Qué cambió (D155, D156).** `permisos.js`: la coordinación elimina lo de su cuadrilla (D155).
+`estilos.css`: reordenada según su norma (cada regla en su sección, tres cortes, una consulta por
+corte, sin #id, sin 29 selectores muertos ni 11 duplicados, sombras y velos como variables, colores
+del croquis y del PDF en :root, marcador del mapa con clases); encabezado con la norma completa.
+`index.html`: clases en lugar de #id, tres vistas anchas, `tabindex` en los resúmenes de errores,
+marca 0.6.76. `util.js`: `color()`, `colorBase()`, `rgb()`, `resumenErrores()`, `ocupado()`,
+`opciones()`, `paresPersonas()`, `atajos`. `referencias.js`: `lugar()`. `reportes.js`: `modelo()`
+que pintan `htmlPrevia()` y `generar()`, `colores()`. `mapa.js` y `croquis.js`: colores de la hoja.
+`app.js`, `catalogos.js`, `formulario.js`, `jornada-activa.js`, `jornadas.js`, `usuarios.js`,
+`registros.js`, `galeria.js`, `envio.js`: usan los comunes. `esquema.json` (R-A01), `README.md` y
+`DICCIONARIO-DATOS.md` al día. `auditoria.py`: siete revisiones nuevas de la norma de la hoja y de
+colores en el código. `config.js`: Bloque 94b.
+Pruebas: la coordinación elimina lo de su cuadrilla y no lo de fuera; resumen de errores con título,
+enlaces y foco; texto escapado en resúmenes y listas; botón ocupado; lugar en un solo formato;
+colores desde :root, el del PDF igual con modo sol; barra de atajos; vista previa con el mismo modelo
+que el PDF; marcador del mapa con la guinda de la hoja.
+Huella visual (22 estados × 7 anchos, antes y después): iguales en 360, 390, 440, 768 y 1280 px salvo
+lo buscado —el lugar con «Alcaldía» y las advertencias en la vista previa—; en 640 y 720 px, el
+diseño de teléfono por la unión de cortes.
+
+**Verificación:** 696 comprobaciones sin errores de consola; 99 de auditoría;
+presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.76.

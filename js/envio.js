@@ -224,12 +224,9 @@ SRP.envio = {
      pase lo que pase. */
   async conBoton(b, fn) {
     if (!b || b.disabled) return;
-    const html0 = b.innerHTML;
-    b.disabled = true;
-    b.setAttribute('aria-busy', 'true');
-    b.innerHTML = SRP.ICONOS.svg('info', 'medio') + '<span>Enviando…</span>';
+    const libre = SRP.util.ocupado(b, 'Enviando…');   // M15
     try { await fn(); }
-    finally { b.disabled = false; b.removeAttribute('aria-busy'); b.innerHTML = html0; }
+    finally { libre(); }
   },
 
   iniciar() {

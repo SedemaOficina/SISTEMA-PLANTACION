@@ -13,10 +13,7 @@ SRP.registros = {
   el(id) { return document.getElementById(id); },
 
   iniciar() {
-    this.el('filtro-atajos').addEventListener('click', (e) => {
-      const b = e.target.closest('.chip'); if (!b) return;
-      this.aplicarAtajo(b.dataset.atajo);
-    });
+    SRP.util.atajos.iniciar(this.el('filtro-atajos'), a => this.aplicarAtajo(a));   // M15
     this.el('filtro-anio').addEventListener('change', () => {
       this.filtro.dia = '';
       this.filtro.anio = this.el('filtro-anio').value;
@@ -127,9 +124,7 @@ SRP.registros = {
     if (!caja.hidden) {
       const ids = [...new Set(this.visibles.map(r => r.cabo_id))];
       const sel = this.el('filtro-cabo');
-      sel.innerHTML = '<option value="">Todos</option>' + ids
-        .map(id => [id, SRP.ref.nombreUsuario(id)]).sort((a, b) => a[1].localeCompare(b[1], 'es'))
-        .map(([id, n]) => '<option value="' + SRP.util.escapar(id) + '">' + SRP.util.escapar(n) + '</option>').join('');
+      sel.innerHTML = SRP.util.opciones('Todos', SRP.util.paresPersonas(ids));   // M15
       sel.value = this.filtro.cabo;
     }
     // El atajo lleva la fecha para que nadie dude de qué día habla; va en un segundo renglón
@@ -183,8 +178,7 @@ SRP.registros = {
     const anios = this.aniosDisponibles();
     const actual = String(new Date().getFullYear());
     if (!anios.includes(actual)) anios.unshift(actual);   // el año en curso siempre se puede elegir
-    this.el('filtro-anio').innerHTML = '<option value="">Todos</option>' +
-      anios.map(a => '<option value="' + SRP.util.escapar(a) + '">' + SRP.util.escapar(a) + '</option>').join('');
+    this.el('filtro-anio').innerHTML = SRP.util.opciones('Todos', anios.map(a => [a, a]));
   },
 
   // Sólo los meses que tienen registros en el año elegido: evita elegir un mes vacío
@@ -194,8 +188,7 @@ SRP.registros = {
       ? [...new Set(this.visibles.filter(r => r.fecha_plantacion.startsWith(anio)).map(r => r.fecha_plantacion.slice(5, 7)))].sort()
       : [];
     const sel = this.el('filtro-mes');
-    sel.innerHTML = '<option value="">Todos</option>' +
-      meses.map(m => '<option value="' + SRP.util.escapar(m) + '">' + SRP.util.nombreMes('2000-' + m, true) + '</option>').join('');
+    sel.innerHTML = SRP.util.opciones('Todos', meses.map(m => [m, SRP.util.nombreMes('2000-' + m, true)]));
     sel.disabled = !anio;
     sel.value = meses.includes(this.filtro.mes) ? this.filtro.mes : '';
     if (sel.value !== this.filtro.mes) this.filtro.mes = sel.value;
@@ -260,13 +253,10 @@ SRP.registros = {
       todos: !pidePeriodo && !pideDia && !f.dia && periodo === '',
       periodo: pidePeriodo
     };
-    this.el('filtro-atajos').querySelectorAll('.chip').forEach(c =>
-      c.setAttribute('aria-pressed', String(!!activo[c.dataset.atajo])));
     // Desde/Hasta se ven mientras haya rango o se haya pedido «Un periodo»
     const abierto = !sinRango || !!this.periodoAbierto;
-    this.el('filtro-periodo').hidden = !abierto;
+    SRP.util.atajos.marcar(this.el('filtro-atajos'), activo, { periodo: [this.el('filtro-periodo'), abierto], dia: [this.el('filtro-un-dia'), pideDia] });   // M15
     // Año/Mes y Desde/Hasta son dos maneras de decir el periodo: nunca se ven a la vez (D100)
-    this.el('filtro-un-dia').hidden = !pideDia;
     this.el('caja-filtro-anio').hidden = abierto || pideDia;
     this.el('caja-filtro-mes').hidden = abierto || pideDia;
     // El acordeón «Más filtros» (D129): su resumen dice lo elegido dentro; si nada de lo suyo aplica, no se ve
@@ -275,8 +265,6 @@ SRP.registros = {
     const disponibles = [(abierto || pideDia) ? '' : 'año, mes', conCabo ? 'cabo' : ''].filter(Boolean);
     this.el('filtro-mas-filtros').hidden = !disponibles.length;
     this.el('filtro-mas-filtros-texto').textContent = dentro.length ? 'Más filtros: ' + dentro.join(' · ') : 'Más filtros: ' + disponibles.join(' y ');
-    this.el('filtro-atajos').querySelector('[data-atajo="periodo"]').setAttribute('aria-expanded', String(abierto));
-    this.el('filtro-atajos').querySelector('[data-atajo="dia"]').setAttribute('aria-expanded', String(pideDia));
   },
 
   aplicar() {

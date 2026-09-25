@@ -33,10 +33,11 @@ SRP.mapa = {
     return etiqueta + (origen === 'gps' && precision != null ? ' (±' + Math.round(precision) + ' m)' : '');
   },
 
-  // Icono propio e incrustado: el de Leaflet se descarga de un servidor externo
+  // Icono propio e incrustado: el de Leaflet se descarga de un servidor externo. Sus colores los
+  // pone la hoja (.pin-gota, .pin-centro), no el código (M13)
   ICONO_SVG: '<svg width="24" height="32" viewBox="0 0 36 48" aria-hidden="true">' +
-    '<path d="M18 2C9.2 2 2 9.1 2 17.9 2 30 18 46 18 46s16-16 16-28.1C34 9.1 26.8 2 18 2z" fill="#9D2148" stroke="#fff" stroke-width="2.5"/>' +
-    '<circle cx="18" cy="18" r="6.5" fill="#fff" stroke="#B28E5C" stroke-width="3"/></svg>',
+    '<path class="pin-gota" d="M18 2C9.2 2 2 9.1 2 17.9 2 30 18 46 18 46s16-16 16-28.1C34 9.1 26.8 2 18 2z" stroke-width="2.5"/>' +
+    '<circle class="pin-centro" cx="18" cy="18" r="6.5" stroke-width="3"/></svg>',
 
   iniciar(alCambiar) {
     this.alCambiar = alCambiar;
@@ -166,7 +167,9 @@ SRP.mapa = {
   dibujarMargen(m, nivel) {
     if (this.margen) { this.margen.remove(); this.margen = null; }
     if (!this.mapa || m == null || this.lat == null) return;
-    const color = { buena: '#1F6B3E', aceptable: '#7E5F30', baja: '#B3261E' }[nivel];
+    // Los mismos tres colores de la insignia de precisión, leídos de la hoja (M13): antes el círculo
+    // usaba otro verde, otro ámbar y otro rojo
+    const color = SRP.util.color({ buena: 'exito', aceptable: 'editar', baja: 'error' }[nivel]);
     this.margen = L.circle([this.lat, this.lng], { radius: m, color, weight: 1.5, fillColor: color, fillOpacity: 0.12, interactive: false }).addTo(this.mapa);
   },
 

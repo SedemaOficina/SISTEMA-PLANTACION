@@ -24,10 +24,7 @@ SRP.galeria = {
   el(id) { return document.getElementById(id); },
 
   iniciar() {
-    this.el('galeria-atajos').addEventListener('click', (e) => {
-      const b = e.target.closest('.chip'); if (!b) return;
-      this.aplicarAtajo(b.dataset.atajo);
-    });
+    SRP.util.atajos.iniciar(this.el('galeria-atajos'), a => this.aplicarAtajo(a));   // M15
     this.el('galeria-dia').addEventListener('change', () => { this.filtro.dia = this.el('galeria-dia').value; this.diaAbierto = true; this.pintar(); });
     this.el('galeria-cabo').addEventListener('change', () => { this.filtro.cabo = this.el('galeria-cabo').value; this.filtro.jornada = ''; this.pintar(); });
     this.el('galeria-jornada').addEventListener('change', () => { this.filtro.jornada = this.el('galeria-jornada').value; this.pintar(); });
@@ -68,9 +65,7 @@ SRP.galeria = {
     const todas = await this.conFoto();
     const ids = [...new Set(todas.map(r => r.cabo_id))];
     const sel = this.el('galeria-cabo');
-    sel.innerHTML = '<option value="">Todos</option>' + ids
-      .map(id => [id, SRP.ref.nombreUsuario(id)]).sort((a, b) => a[1].localeCompare(b[1], 'es'))
-      .map(([id, n]) => '<option value="' + SRP.util.escapar(id) + '">' + SRP.util.escapar(n) + '</option>').join('');
+    sel.innerHTML = SRP.util.opciones('Todos', SRP.util.paresPersonas(ids));   // M15
     sel.value = ids.includes(this.filtro.cabo) ? this.filtro.cabo : '';
     this.filtro.cabo = sel.value;
     await this.pintar();
@@ -88,9 +83,7 @@ SRP.galeria = {
   sincronizarAtajos() {
     const f = this.filtro;
     const activo = { hoy: !this.diaAbierto && f.dia === SRP.util.fechaHoy(), dia: this.diaAbierto, todas: !this.diaAbierto && !f.dia };
-    this.el('galeria-atajos').querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', String(!!activo[c.dataset.atajo])));
-    this.el('galeria-un-dia').hidden = !this.diaAbierto;
-    this.el('galeria-atajos').querySelector('[data-atajo="dia"]').setAttribute('aria-expanded', String(this.diaAbierto));
+    SRP.util.atajos.marcar(this.el('galeria-atajos'), activo, { dia: [this.el('galeria-un-dia'), this.diaAbierto] });   // M15
   },
 
   // Las jornadas con fotografías dentro del día y cabo elegidos, la más reciente arriba (D135)
@@ -98,7 +91,7 @@ SRP.galeria = {
     const ids = [...new Set(fotosDiaCabo.map(r => r.jornada_id).filter(Boolean))];
     const js = ids.map(id => this.jornadasPorId[id]).filter(Boolean).sort((a, b) => b.fecha.localeCompare(a.fecha) || b.fecha_inicio.localeCompare(a.fecha_inicio));
     const sel = this.el('galeria-jornada');
-    sel.innerHTML = '<option value="">Todas</option>' + js.map(j => '<option value="' + SRP.util.escapar(j.id) + '">' + SRP.util.escapar(j.nombre) + ' · ' + SRP.util.escapar(SRP.util.formatearFecha(j.fecha)) + '</option>').join('');
+    sel.innerHTML = SRP.util.opciones('Todas', js.map(j => [j.id, j.nombre + ' · ' + SRP.util.formatearFecha(j.fecha)]));
     if (!ids.includes(this.filtro.jornada)) this.filtro.jornada = '';
     sel.value = this.filtro.jornada;
     sel.disabled = !js.length;
@@ -182,10 +175,7 @@ SRP.galeria = {
     const b = this.el('btn-galeria-zip');
     // Armar el ZIP puede tardar con muchas fotografías: el botón cambia de texto y queda con
     // aria-busy mientras dura, para que no parezca colgado (D136).
-    const html0 = b.innerHTML;
-    b.disabled = true;
-    b.setAttribute('aria-busy', 'true');
-    b.innerHTML = SRP.ICONOS.svg('info', 'medio') + '<span>Armando…</span>';
+    const libre = SRP.util.ocupado(b, 'Armando…');   // M15
     try {
       // El armado es síncrono y ocupa el hilo: se cede un cuadro para que «Armando…» se pinte antes
       await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
@@ -207,9 +197,7 @@ SRP.galeria = {
     } catch (err) {
       SRP.util.anunciar('No se pudo armar el archivo: ' + err.message, 'alerta');
     } finally {
-      b.disabled = false;
-      b.removeAttribute('aria-busy');
-      b.innerHTML = html0;
+      libre();
     }
   }
 };

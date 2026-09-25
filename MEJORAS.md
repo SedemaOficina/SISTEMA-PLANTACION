@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.75 (Bloque 95)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.76 (Bloque 94b)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -199,6 +199,9 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M195 | iPhone (Liber) | Botón flotante «Subir al inicio», encima de la navegación y de la barra fija de la sección | Media | 0.6.75 (B95) | Bajar en cualquier sección | Flecha en la esquina |
 | M196 | iPhone (Liber) | Al cambiar de sección, o de la lista de jornadas a su ficha y de vuelta, la página empieza arriba; tocar la pestaña actual sube | Alta | 0.6.75 (B95) | Bajar hasta el final y tocar otra pestaña | — |
 | M197 | iPhone (Liber) | Un árbol capturado por error se elimina o se edita desde la tuerca de su punto, sin salir de la jornada y con «Deshacer»; la coordinación elimina lo que capturó ella | Alta | 0.6.75 (B95) | Jornadas › ficha › tuerca del punto | Menú de la tuerca |
+| M201 | Liber | La coordinación elimina los árboles de su cuadrilla (antes sólo editaba); no los de otra cuadrilla | Alta | 0.6.76 (B94b) | Coordinación › Registros o Jornadas › tuerca › Eliminar | Menú con «Eliminar» |
+| M202 | Auditoría 360 (M13) | Hoja de estilos conforme a su norma: cada regla en su sección, tres cortes de ancho, sin #id, sin reglas muertas ni duplicadas, colores y sombras sólo en :root; el código lee los colores de la hoja | Media | 0.6.76 (B94b) | (Lo cubren la auditoría y la huella visual) | — |
+| M203 | Auditoría 360 (M15) | Un solo resumen de errores, botón ocupado, listas de opciones, barra de atajos de fecha y modelo del reporte; el lugar se dice igual en todas partes | Media | 0.6.76 (B94b) | Registrar jornada sin datos; Reportes › Ver vista previa | Resumen «Falta corregir» |
 
 ## 2. Por hacer
 
@@ -206,7 +209,6 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 |---|---|---|---|---|---|
 | M46 | Android | Revisión corta en Android: versión, botón «atrás» con ventanas abiertas, calendario y hora, especies con teclado, precisión, foto, compartir PDF, aviso | Alta | Pendiente | Espera capturas |
 | M168 | Auditoría 360 | Bloque 93 «Publicación ligera»: fuentes fuera del sitio, capas con su propia versión y aligeradas, licencia, jsPDF al día (M2, M4) | Media | Pendiente | Decisiones D5 a D7 |
-| M169 | Auditoría 360 | Bloque 94b «Estilos y código repetido»: hoja de estilos conforme a su norma y colores de :root (M13); resumen de errores, botón ocupado, periodo y reporte con un solo modelo (M15) | Media | Pendiente | Con capturas de antes y después |
 | M170 | Auditoría 360 | Bloque «Pruebas en iPhone»: GitHub Actions con Chromium y WebKit, pruebas de migración e integridad (M17, M18) | Media | Pendiente | |
 | M171 | Auditoría 360 | Fotografías como Blob (hoy ocupan un tercio más como texto) y sello de datos dentro de la base | Media | Pendiente | Resto de A1 y A2 |
 | M198 | Área de plantación | Indicadores de supervisión con un solo cálculo para el panel y los informes, con sus definiciones en `esquema.json` para que el SIA use las mismas | Alta | Pendiente | Decisiones 3 y 4 de la propuesta |
@@ -227,4 +229,4 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 184 hechas · 8 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 187 hechas · 7 por hacer · 2 revisadas · 2 descartadas.

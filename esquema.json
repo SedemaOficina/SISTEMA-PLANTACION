@@ -1653,7 +1653,7 @@
     {
       "id": "R-A01",
       "tabla": "todas",
-      "regla": "Alcance por perfil: CABO ve/edita/elimina los suyos; COORDINADOR registra, ve y edita los de sus cabos, no elimina los registros de sus cabos, sí los que capturó él (D154), y sí jornadas vacías (D151); ADMIN todo, no captura. Un perfil desconocido no alcanza nada. Cada acción que escribe lo exige al empezar, no sólo esconde el botón (D151)",
+      "regla": "Alcance por perfil: CABO ve/edita/elimina los suyos; COORDINADOR registra, ve, edita y elimina los de sus cabos y los suyos (D155), y elimina jornadas vacías (D151); ADMIN todo, no captura. Un perfil desconocido no alcanza nada. Cada acción que escribe lo exige al empezar, no sólo esconde el botón (D151)",
       "donde": "js/permisos.js PERFILES, ACCIONES, exigir() (fuente única); la interfaz sólo lo refleja"
     },
     {

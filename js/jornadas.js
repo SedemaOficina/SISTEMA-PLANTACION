@@ -40,10 +40,7 @@ SRP.jornadas = {
   el(id) { return document.getElementById(id); },
 
   iniciar() {
-    this.el('jornada-atajos').addEventListener('click', (e) => {
-      const b = e.target.closest('.chip'); if (!b) return;
-      this.aplicarAtajo(b.dataset.atajo);
-    });
+    SRP.util.atajos.iniciar(this.el('jornada-atajos'), a => this.aplicarAtajo(a));   // M15
     this.el('jornada-dia').addEventListener('change', () => {
       const f = this.filtro;
       f.dia = this.el('jornada-dia').value; f.anio = ''; f.mes = ''; f.desde = ''; f.hasta = '';
@@ -353,9 +350,7 @@ SRP.jornadas = {
     if (!caja.hidden) {
       const ids = [...new Set((await this.registrosAlcance()).map(r => r.cabo_id))];
       const sel = this.el('jornada-cabo');
-      sel.innerHTML = '<option value="">Todos</option>' + ids
-        .map(id => [id, SRP.ref.nombreUsuario(id)]).sort((a, b) => a[1].localeCompare(b[1], 'es'))
-        .map(([id, n]) => '<option value="' + SRP.util.escapar(id) + '">' + SRP.util.escapar(n) + '</option>').join('');
+      sel.innerHTML = SRP.util.opciones('Todos', SRP.util.paresPersonas(ids));   // M15
       sel.value = ids.includes(this.filtro.cabo) ? this.filtro.cabo : '';
       this.filtro.cabo = sel.value;
     }
@@ -401,11 +396,7 @@ SRP.jornadas = {
     const f = this.filtro;
     const activo = { hoy: !this.diaAbierto && !this.periodoAbierto && f.dia === SRP.util.fechaHoy(), dia: this.diaAbierto, periodo: this.periodoAbierto,
       todas: !this.diaAbierto && !this.periodoAbierto && !f.dia && !f.desde && !f.hasta && !f.anio && !f.mes };
-    this.el('jornada-atajos').querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', String(!!activo[c.dataset.atajo])));
-    this.el('jornada-un-dia').hidden = !this.diaAbierto;
-    this.el('jornada-periodo').hidden = !this.periodoAbierto;
-    this.el('jornada-atajos').querySelector('[data-atajo="dia"]').setAttribute('aria-expanded', String(this.diaAbierto));
-    this.el('jornada-atajos').querySelector('[data-atajo="periodo"]').setAttribute('aria-expanded', String(this.periodoAbierto));
+    SRP.util.atajos.marcar(this.el('jornada-atajos'), activo, { dia: [this.el('jornada-un-dia'), this.diaAbierto], periodo: [this.el('jornada-periodo'), this.periodoAbierto] });   // M15
     this.el('jornada-anio').value = f.anio; this.el('jornada-mes').value = f.mes;
     // El resumen del acordeón dice qué hay elegido dentro, aunque esté plegado
     const dentro = [f.anio ? (f.mes ? SRP.util.nombreMes(f.anio + '-' + f.mes, true) + ' ' + f.anio : f.anio) : '', f.cabo ? SRP.ref.nombreUsuario(f.cabo) : ''].filter(Boolean);
@@ -418,7 +409,7 @@ SRP.jornadas = {
     const anios = this.aniosDisponibles();
     const actual = String(new Date().getFullYear());
     if (!anios.includes(actual)) anios.unshift(actual);
-    this.el('jornada-anio').innerHTML = '<option value="">Todos</option>' + anios.map(a => '<option value="' + SRP.util.escapar(a) + '">' + SRP.util.escapar(a) + '</option>').join('');
+    this.el('jornada-anio').innerHTML = SRP.util.opciones('Todos', anios.map(a => [a, a]));
     this.el('jornada-anio').value = this.filtro.anio;
   },
 
@@ -426,7 +417,7 @@ SRP.jornadas = {
     const anio = this.filtro.anio;
     const meses = anio ? [...new Set(this._todas.filter(j => j.fecha.startsWith(anio)).map(j => j.fecha.slice(5, 7)))].sort() : [];
     const sel = this.el('jornada-mes');
-    sel.innerHTML = '<option value="">Todos</option>' + meses.map(m => '<option value="' + SRP.util.escapar(m) + '">' + SRP.util.nombreMes('2000-' + m, true) + '</option>').join('');
+    sel.innerHTML = SRP.util.opciones('Todos', meses.map(m => [m, SRP.util.nombreMes('2000-' + m, true)]));
     sel.disabled = !anio;
     if (!meses.includes(this.filtro.mes)) this.filtro.mes = '';
     sel.value = this.filtro.mes;
@@ -453,12 +444,12 @@ SRP.jornadas = {
   },
 
   // Dónde: alcaldía y colonia de la jornada si se detectaron al iniciarla; si no, las de sus árboles
+  // La de la jornada, o la que dicen sus árboles; en el mismo formato que la franja (M15)
   lugarDe(j) {
     const d = j.dato || {};
-    if (d.alcaldia || d.colonia) return [d.alcaldia || '', d.colonia ? 'Col. ' + d.colonia : ''].filter(Boolean).join(' · ');
-    const alc = this.alcaldiasDe(j);
+    if (d.alcaldia || d.colonia) return SRP.ref.lugar(d.alcaldia, d.colonia);
     const cols = [...new Set(j.registros.map(r => r.colonia).filter(Boolean))];
-    return [alc.join(', '), cols.length === 1 ? 'Col. ' + cols[0] : ''].filter(Boolean).join(' · ');
+    return SRP.ref.lugar(this.alcaldiasDe(j), cols.length === 1 ? cols[0] : '');
   },
 
   async pintarLista(soloDatos) {
@@ -576,7 +567,7 @@ SRP.jornadas = {
     this.el('jornada-sub').textContent = SRP.envio.diaEnLetra(j.fecha).split(' ')[0] + ' ' + SRP.util.formatearFecha(j.fecha) +
       (j.total > 1 ? ' · Jornada ' + j.n + ' de ' + j.total : '') + ' · ' +
       SRP.ref.nombreUsuario(j.cabo_id) + (regs.length ? ' · ' + h(regs[0]) + (regs.length > 1 ? '–' + h(regs[regs.length - 1]) : '') : '') +
-      (this.alcaldiasDe(j).length ? ' · ' + this.alcaldiasDe(j).join(', ') : SRP.activa.lugarDe(guardada) ? ' · ' + SRP.activa.lugarDe(guardada) : '') +
+      (this.alcaldiasDe(j).length ? ' · ' + SRP.ref.lugar(this.alcaldiasDe(j)) : SRP.activa.lugarDe(guardada) ? ' · ' + SRP.activa.lugarDe(guardada) : '') +
       ' · ' + (guardada.estatus === 'abierta' ? 'abierta' : 'cerrada');
     this.el('jornada-comentarios').hidden = !guardada.comentarios;
     this.el('jornada-comentarios').textContent = guardada.comentarios || '';
@@ -840,7 +831,7 @@ SRP.jornadas = {
     const sel = this.el('ej-programa');
     const opciones = SRP.ref.deTipo('programa', true).sort((a, b) => (b.clave === 'REFOR_URBANA') - (a.clave === 'REFOR_URBANA'));
     if (c.programa_id && !opciones.find(o => o.id === c.programa_id) && SRP.ref.catalogoPorId[c.programa_id]) opciones.push(SRP.ref.catalogoPorId[c.programa_id]);
-    sel.innerHTML = '<option value="">Seleccione un programa</option>' + opciones.map(o => '<option value="' + SRP.util.escapar(o.id) + '">' + SRP.util.escapar(o.nombre) + '</option>').join('');
+    sel.innerHTML = SRP.util.opciones('Seleccione un programa', opciones.map(o => [o.id, o.nombre]));
     sel.value = c.programa_id || '';
     this.el('ej-nombre').value = c.nombre || '';
     this.el('ej-ubicacion').value = c.ubicacion || '';
@@ -871,14 +862,8 @@ SRP.jornadas = {
     if (meta_arboles === null || !Number.isInteger(meta_arboles) || meta_arboles < 1 || meta_arboles > 9999) errores.push(['ej-meta', 'Escriba cuántos árboles se van a plantar: un entero mayor que cero.']);
     if (!fecha) errores.push(['ej-fecha', 'Indique la fecha.']);
     else if (fecha > SRP.util.fechaHoy()) errores.push(['ej-fecha', 'La fecha no puede ser posterior a hoy.']);
-    const caja = this.el('ej-errores');
-    SRP.util.erroresEnCampos(errores, ['ej-nombre', 'ej-programa', 'ej-meta', 'ej-fecha']);   // cada campo dice su error (D140)
-    if (errores.length) {
-      caja.hidden = false;
-      caja.innerHTML = '<ul>' + errores.map(([id, t]) => '<li><a href="#' + id + '">' + SRP.util.escapar(t) + '</a></li>').join('') + '</ul>';
-      this.el(errores[0][0]).focus();
-      return;
-    }
+    // Cada campo dice su error (D140) y arriba el resumen, igual que en todos los formularios (M15)
+    if (SRP.util.resumenErrores(this.el('ej-errores'), errores, ['ej-nombre', 'ej-programa', 'ej-meta', 'ej-fecha'])) return;
     const cambios = { nombre, ubicacion, programa_id, meta_arboles, fecha, comentarios };
     const v = x => (x === undefined || x === null) ? '' : x;
     const campos = Object.keys(cambios).filter(k => v(c[k]) !== v(cambios[k]) && !(k === 'meta_arboles' && this.metaDe(c) === meta_arboles));

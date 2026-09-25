@@ -136,17 +136,10 @@ SRP.app = {
       const errores = [];
       if (!correo) errores.push(['acceso-correo', 'Escriba su correo.']);
       if (!clave) errores.push(['acceso-clave', 'Escriba su contraseña.']);
-      SRP.util.erroresEnCampos(errores, ['acceso-correo', 'acceso-clave']);   // D140
-      const caja = this.el('acceso-errores');
-      if (errores.length) { caja.innerHTML = '<ul>' + errores.map(([id, t]) => '<li><a href="#' + id + '">' + t + '</a></li>').join('') + '</ul>'; caja.hidden = false; caja.focus(); return; }
-
+      const caja = this.el('acceso-errores'), campos = ['acceso-correo', 'acceso-clave'];
+      if (SRP.util.resumenErrores(caja, errores, campos)) return;   // M15
       const r = SRP.sesion.autenticar(correo);
-      if (!r.ok) {
-        SRP.util.erroresEnCampos([['acceso-correo', r.motivo]], ['acceso-correo', 'acceso-clave']);
-        caja.innerHTML = '<ul><li>' + SRP.util.escapar(r.motivo) + '</li></ul>';
-        caja.hidden = false; caja.focus();
-        return;
-      }
+      if (!r.ok) { SRP.util.resumenErrores(caja, [['acceso-correo', r.motivo]], campos); return; }
       caja.hidden = true;
       this.el('acceso-clave').value = '';
       this.entrar();
@@ -259,8 +252,8 @@ SRP.app = {
     const prueba = this.el('acceso-prueba');
     prueba.hidden = !SRP.CONFIG.ES_FICTICIO;
     if (!prueba.hidden) {
-      this.el('sel-usuario-prueba').innerHTML = SRP.ref.usuarios.filter(u => u.activo).map(u =>
-        '<option value="' + SRP.util.escapar(u.id) + '">' + SRP.util.escapar(SRP.util.nombreCompleto(u)) + ' — ' + SRP.permisos.de(u).etiqueta + '</option>').join('');
+      this.el('sel-usuario-prueba').innerHTML = SRP.util.opciones(null, SRP.ref.usuarios.filter(u => u.activo)
+        .map(u => [u.id, SRP.util.nombreCompleto(u) + ' — ' + SRP.permisos.de(u).etiqueta]));   // M15
     }
     this.mostrarVista('acceso');
   },
