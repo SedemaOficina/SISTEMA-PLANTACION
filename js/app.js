@@ -108,7 +108,7 @@ SRP.app = {
       ['revision-lista', 'la ficha de revisión']
       // El espejo de campos no se exige: se retira al cerrar la Etapa 1 y la app debe abrir sin él (D153)
     ].filter(([id]) => !document.getElementById(id)).map(([, que]) => que);
-    const modulos = ['util', 'ICONOS', 'permisos', 'sesion', 'almacen', 'ref', 'formulario', 'registros', 'catalogos', 'usuarios', 'ESQUEMA', 'validar', 'derivacion']
+    const modulos = ['util', 'ICONOS', 'permisos', 'sesion', 'almacen', 'ref', 'formulario', 'registros', 'catalogos', 'usuarios', 'ESQUEMA', 'validar', 'derivacion', 'indicadores']
       .filter(m => !SRP[m]);
     /* Las tres capas y la biblioteca del cruce también se exigen (D152): sin ellas la app abría y
        los árboles se guardaban sin alcaldía ni colonia, y con folio EXT-000. La de colonias pesa

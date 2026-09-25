@@ -1471,6 +1471,73 @@
       "donde": "Reportes (D58, D70)"
     }
   ],
+  "indicadores": [
+    {
+      "indicador": "Periodo",
+      "calculo": "Semana de lunes a domingo; mes y año de calendario; un rango de fechas; o todo el registro. Se avanza y se retrocede de uno en uno",
+      "donde": "Supervisión, Mi avance, informes"
+    },
+    {
+      "indicador": "Jornadas cerradas",
+      "calculo": "Jornadas con estatus «cerrada» cuya fecha cae en el periodo, del alcance de quien consulta y con los filtros de alcaldía, programa y cabo",
+      "donde": "Cifras, por cabo, informes"
+    },
+    {
+      "indicador": "Jornadas en curso",
+      "calculo": "Jornadas abiertas cuya fecha cae en el periodo. Se dicen aparte y no se suman: una jornada abierta todavía cambia",
+      "donde": "Cifras, informes"
+    },
+    {
+      "indicador": "Árboles plantados",
+      "calculo": "Árboles activos (no eliminados) de las jornadas cerradas del periodo. Con alcaldía, sólo los de esa alcaldía",
+      "donde": "Cifras, gráfica, tablas, informes, CSV"
+    },
+    {
+      "indicador": "Avance contra la meta",
+      "calculo": "Árboles de las jornadas cerradas que tienen meta ÷ suma de sus metas, en por ciento",
+      "donde": "Cifras, por cabo, informes"
+    },
+    {
+      "indicador": "Árboles por jornada",
+      "calculo": "Árboles plantados ÷ jornadas cerradas, con un decimal",
+      "donde": "Cifras, informes"
+    },
+    {
+      "indicador": "Cabos que trabajaron",
+      "calculo": "Cabos distintos con al menos una jornada cerrada en el periodo, frente a los asignados: la cuadrilla de la coordinación, o los cabos activos para la administración",
+      "donde": "Cifras, por cabo, informes"
+    },
+    {
+      "indicador": "Especies y nativas",
+      "calculo": "Especies distintas entre los árboles plantados; nativa es la de distribución «Nativa» o «Endémica» en el catálogo (SNIB/CONABIO), en por ciento de los árboles",
+      "donde": "Cifras, por especie, informes"
+    },
+    {
+      "indicador": "Alcaldías y colonias",
+      "calculo": "Alcaldías y colonias distintas de los árboles plantados, tal como las derivó el sistema del punto",
+      "donde": "Cifras, por alcaldía, mapa, informes"
+    },
+    {
+      "indicador": "Calidad del dato",
+      "calculo": "Árboles con fotografía; ubicados con GPS, en el mapa o a mano; precisión mediana del GPS",
+      "donde": "Calidad del dato, informes"
+    },
+    {
+      "indicador": "Qué atender",
+      "calculo": "Jornadas abiertas de días anteriores (sin importar el periodo); jornadas cerradas del periodo con puntos marcados sin revisar; jornadas cerradas del periodo sin reporte",
+      "donde": "Qué atender, por cabo, informes"
+    },
+    {
+      "indicador": "Trazabilidad",
+      "calculo": "Árboles eliminados en el periodo (por la fecha de su eliminación) y ediciones de árboles que registra la bitácora en el periodo. Se cuentan aparte y no cambian la cifra de árboles",
+      "donde": "Calidad del dato, por cabo, informes"
+    },
+    {
+      "indicador": "Serie",
+      "calculo": "Árboles y jornadas cerradas por día en una semana, por semana en un mes, por mes en un año; en un rango, por día hasta 31 días, por semana hasta 26 semanas y después por mes",
+      "donde": "Gráfica de avance, informes"
+    }
+  ],
   "efimeros": [
     {
       "nombre": "SRP.formulario.estado.idPrevisto",

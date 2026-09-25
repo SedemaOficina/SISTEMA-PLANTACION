@@ -1845,3 +1845,21 @@ diseño de teléfono por la unión de cortes.
 
 **Verificación:** 696 comprobaciones sin errores de consola; 99 de auditoría;
 presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.76.
+
+## Bloque 96 — Indicadores de supervisión (25-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.77.
+
+**Qué cambió (D157).** `js/indicadores.js` (nuevo): periodos (semana de lunes a domingo, mes, año,
+rango, todo; avanzar y retroceder), carga de lo que alcanza quien entra (jornadas con sus árboles,
+eliminados y ediciones de la bitácora, cabos asignados) y el cálculo puro del modelo: cifras, calidad
+del dato, serie, por cabo, por alcaldía, por colonia, por especie, por programa, jornadas del
+periodo, en curso, qué atender, trazabilidad y el detalle por árbol para el CSV. `index.html`: carga
+el módulo; marca 0.6.77. `app.js`: la revisión de arranque lo exige. `esquema.json`: sección
+«indicadores»; `generar_diccionario.py` y `DICCIONARIO-DATOS.md`: su tabla. `config.js`: Bloque 96.
+Pruebas: periodos (lunes a domingo, febrero y bisiesto, año, avanzar y retroceder, rango); con datos
+conocidos, sólo cuentan las cerradas, la en curso aparte, avance contra la meta, por cabo y por
+alcaldía con colonias, calidad del dato, qué atender, filtros de alcaldía y cabo, serie por día,
+semana y mes, detalle por árbol; la coordinación supervisa a sus cabos asignados.
+
+**Verificación:** 708 comprobaciones sin errores de consola; 99 de auditoría;
+presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.77.

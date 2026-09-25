@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.76 (Bloque 94b)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.77 (Bloque 96)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -202,6 +202,7 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M201 | Liber | La coordinación elimina los árboles de su cuadrilla (antes sólo editaba); no los de otra cuadrilla | Alta | 0.6.76 (B94b) | Coordinación › Registros o Jornadas › tuerca › Eliminar | Menú con «Eliminar» |
 | M202 | Auditoría 360 (M13) | Hoja de estilos conforme a su norma: cada regla en su sección, tres cortes de ancho, sin #id, sin reglas muertas ni duplicadas, colores y sombras sólo en :root; el código lee los colores de la hoja | Media | 0.6.76 (B94b) | (Lo cubren la auditoría y la huella visual) | — |
 | M203 | Auditoría 360 (M15) | Un solo resumen de errores, botón ocupado, listas de opciones, barra de atajos de fecha y modelo del reporte; el lugar se dice igual en todas partes | Media | 0.6.76 (B94b) | Registrar jornada sin datos; Reportes › Ver vista previa | Resumen «Falta corregir» |
+| M204 | Área de plantación | Indicadores de supervisión con un solo cálculo para el panel y los informes: sólo jornadas cerradas, semana de lunes a domingo, mes, año y rango; definiciones en el esquema | Alta | 0.6.77 (B96) | (Lo cubren las pruebas; se ven en el bloque 97) | — |
 
 ## 2. Por hacer
 
@@ -211,7 +212,6 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M168 | Auditoría 360 | Bloque 93 «Publicación ligera»: fuentes fuera del sitio, capas con su propia versión y aligeradas, licencia, jsPDF al día (M2, M4) | Media | Pendiente | Decisiones D5 a D7 |
 | M170 | Auditoría 360 | Bloque «Pruebas en iPhone»: GitHub Actions con Chromium y WebKit, pruebas de migración e integridad (M17, M18) | Media | Pendiente | |
 | M171 | Auditoría 360 | Fotografías como Blob (hoy ocupan un tercio más como texto) y sello de datos dentro de la base | Media | Pendiente | Resto de A1 y A2 |
-| M198 | Área de plantación | Indicadores de supervisión con un solo cálculo para el panel y los informes, con sus definiciones en `esquema.json` para que el SIA use las mismas | Alta | Pendiente | Decisiones 3 y 4 de la propuesta |
 | M199 | Área de plantación | Pestaña «Supervisión» para coordinación y administración: cifras del periodo, «Qué atender», por cabo, por alcaldía con mapa, por especie y programa, calidad del dato | Alta | Pendiente | Decisiones 1, 2, 6 y 7 |
 | M200 | Área de plantación | Informes semanal, mensual y por alcaldía en PDF con membrete, y la tabla en CSV | Alta | Pendiente | Decisiones 5 y 8 |
 
@@ -229,4 +229,4 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 187 hechas · 7 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 188 hechas · 6 por hacer · 2 revisadas · 2 descartadas.

@@ -2431,6 +2431,68 @@ with sync_playwright() as p:
     ok(not err18,'sin errores en consola: %s' % err18[:2])
     ctx18.close()
 
+    # ---------- BLOQUE 96: INDICADORES CON UN SOLO CÁLCULO (D157) ----------
+    ctx17=b.new_context(viewport={'width':390,'height':844}); pg17=ctx17.new_page(); err17=[]
+    pg17.on('pageerror', lambda e: err17.append(str(e)))
+    pg17.goto(BASE); pg17.wait_for_timeout(1200)
+    pg17.select_option('#sel-usuario-prueba','u-coord-1'); pg17.click('#btn-entrar-prueba'); pg17.wait_for_timeout(700)
+    per=pg17.evaluate("""() => { const I = SRP.indicadores;
+      const s = I.periodo('semana', '2026-09-25'), s2 = I.periodo('semana', '2026-09-21'), s3 = I.periodo('semana', '2026-09-27');
+      return { semana: [s.desde, s.hasta], lunes: [s2.desde, s2.hasta], domingo: [s3.desde, s3.hasta], etiqueta: s.etiqueta,
+        feb: [I.periodo('mes', '2026-02-10').desde, I.periodo('mes', '2026-02-10').hasta], bisiesto: I.periodo('mes', '2028-02-03').hasta,
+        anio: [I.periodo('anio', '2026-07-01').desde, I.periodo('anio', '2026-07-01').hasta],
+        antes: [I.mover(s, -1).desde, I.mover(s, -1).hasta], enero: I.mover(I.periodo('mes', '2026-12-05'), 1).desde,
+        rango: [I.mover(I.periodo('rango', '2026-09-01', '2026-09-10'), 1).desde, I.mover(I.periodo('rango', '2026-09-01', '2026-09-10'), 1).hasta],
+        todo: [I.periodo('todo').desde, I.periodo('todo').hasta, I.periodo('todo').etiqueta] }; }""")
+    ok(per=={'semana':['2026-09-21','2026-09-27'],'lunes':['2026-09-21','2026-09-27'],'domingo':['2026-09-21','2026-09-27'],'etiqueta':'Semana del 21-SEP-2026 al 27-SEP-2026',
+             'feb':['2026-02-01','2026-02-28'],'bisiesto':'2028-02-29','anio':['2026-01-01','2026-12-31'],'antes':['2026-09-14','2026-09-20'],'enero':'2027-01-01',
+             'rango':['2026-09-11','2026-09-20'],'todo':['','','Todo el registro']},
+       'periodos: la semana va de lunes a domingo, el mes y el año son de calendario (con bisiesto), se avanza y retrocede de uno en uno (D157): %s' % per)
+    # Datos sintéticos: el cálculo es puro, no lee la base
+    ind=pg17.evaluate("""() => { const I = SRP.indicadores;
+      const arbol = (id, j, alc, col, extra) => Object.assign({ id, jornada_id: j, cabo_id: '', lat: 19.35 + id.length * 1e-4, lng: -99.16, alcaldia: alc, colonia: col,
+        especie_id: 'ESP-0002', programa_id: 'p-refor', punto_origen: 'gps', gps_precision_m: 6, fecha_registro: '2026-09-22T10:00:00Z' }, extra || {});
+      const jor = (id, fecha, cabo, estatus, meta, regs, dato) => ({ id, clave: id, fecha, cabo_id: cabo, estatus, nombre: 'J ' + id, registros: regs.map(r => Object.assign(r, { cabo_id: cabo })),
+        dato: Object.assign({ id, fecha, cabo_id: cabo, estatus, programa_id: 'p-refor', meta_arboles: meta, puntos_revisados: [] }, dato || {}) });
+      const hoy = SRP.util.fechaHoy();
+      const datos = { cabos: ['u-cabo-1', 'u-cabo-9'], eliminados: [], ediciones: [], jornadas: [
+        jor('J1', '2026-09-22', 'u-cabo-1', 'cerrada', 3, [arbol('a1', 'J1', 'Coyoacán', 'DEL CARMEN', { foto_id: 'f1' }), arbol('a2x', 'J1', 'Coyoacán', 'DEL CARMEN'), arbol('a3xx', 'J1', 'Tlalpan', 'CENTRO', { punto_origen: 'manual', gps_precision_m: null })], { reporte_en: '2026-09-22T20:00:00Z' }),
+        jor('J2', '2026-09-24', 'u-cabo-9', 'cerrada', 5, [arbol('b1', 'J2', 'Coyoacán', 'SANTA CATARINA'), arbol('b2x', 'J2', 'Coyoacán', 'SANTA CATARINA', { gps_precision_m: 10 })]),
+        jor('J3', '2026-09-25', 'u-cabo-1', 'abierta', 4, [arbol('c1', 'J3', 'Coyoacán', 'DEL CARMEN')]),
+        jor('J4', '2026-09-15', 'u-cabo-1', 'cerrada', 4, [arbol('d1', 'J4', 'Coyoacán', ''), arbol('d2x', 'J4', 'Coyoacán', ''), arbol('d3xx', 'J4', 'Coyoacán', ''), arbol('d4xxx', 'J4', 'Coyoacán', '')], { reporte_en: 'x' }),
+        jor('J5', '2020-01-01', 'u-cabo-9', 'abierta', 2, [])] };
+      const s = I.periodo('semana', '2026-09-25');
+      const H = '2026-09-25';   // «hoy» fijo: la prueba no depende del reloj
+      const m = I.calcular(datos, s, {}, H);
+      const tl = I.calcular(datos, s, { alcaldia: 'Tlalpan' }, H);
+      const b9 = I.calcular(datos, s, { cabo: 'u-cabo-9' }, H);
+      const r = I.calcular(datos, I.periodo('rango', '2026-09-14', '2026-09-27'), {}, H);
+      return { arboles: m.cifras.arboles, jornadas: m.cifras.jornadas, enCurso: m.cifras.enCurso, meta: m.cifras.meta, avance: m.cifras.avance, promedio: m.cifras.promedio,
+        cabos: [m.cifras.cabosActivos, m.cifras.cabosAsignados], alcaldias: m.porAlcaldia.map(a => [a.clave, a.arboles, a.jornadas, a.colonias]),
+        foto: [m.calidad.conFoto, m.calidad.conFotoPct], gps: [m.calidad.gps, m.calidad.aMano, m.calidad.precisionMediana],
+        atender: m.atender.map(a => [a.tipo, a.n]), tlalpan: [tl.cifras.arboles, tl.cifras.jornadas], cabo9: [b9.cifras.arboles, b9.porCabo.map(c => c.cabo_id)],
+        porCabo: m.porCabo.map(c => [c.cabo_id, c.jornadas, c.arboles, c.avance, c.sinReporte, c.abiertasViejas]),
+        serie: [m.serie.unidad, m.serie.casillas.length, m.serie.casillas.reduce((x, c) => x + c.arboles, 0), m.serie.casillas[1].arboles, m.serie.casillas[3].arboles],
+        rango: [r.cifras.arboles, r.cifras.jornadas, r.serie.unidad, r.serie.casillas.length],
+        mesSerie: [I.calcular(datos, I.periodo('mes', '2026-09-25'), {}, H).serie.unidad, I.calcular(datos, I.periodo('mes', '2026-09-25'), {}, H).serie.casillas.length],
+        anioSerie: I.calcular(datos, I.periodo('anio', '2026-09-25'), {}, H).serie.casillas.length,
+        detalle: [m.detalle.length, m.detalle[0].folio, m.detalle.filter(d => d.foto === 'Sí').length, m.detalle.map(d => d.alcaldia).sort().join()] }; }""")
+    ok(ind['arboles']==5 and ind['jornadas']==2 and ind['enCurso']==1 and ind['meta']==8 and ind['avance']==63 and ind['promedio']==2.5,
+       'en la semana cuentan sólo las jornadas cerradas: 5 árboles en 2 jornadas, 1 en curso aparte, 63 %% de la meta de 8 (D157): %s' % {k: ind[k] for k in ('arboles','jornadas','enCurso','meta','avance','promedio')})
+    ok(ind['cabos']==[2,2] and ind['alcaldias']==[['Coyoacán',4,2,2],['Tlalpan',1,1,1]],'por cabo y por alcaldía, con sus colonias: %s %s' % (ind['cabos'], ind['alcaldias']))
+    ok(ind['foto']==[1,20] and ind['gps']==[4,1,6],'calidad del dato: 1 de 5 con foto (20 %%), 4 con GPS, 1 a mano, precisión mediana 6 m: %s %s' % (ind['foto'], ind['gps']))
+    ok(ind['atender']==[['abiertas',1],['reporte',1]],'«Qué atender»: la jornada abierta de un día anterior y la cerrada sin reporte: %s' % ind['atender'])
+    ok(ind['tlalpan']==[1,1] and ind['cabo9'][0]==2 and ind['cabo9'][1]==['u-cabo-9'],'con alcaldía o cabo, sólo lo suyo: %s %s' % (ind['tlalpan'], ind['cabo9']))
+    ok(ind['porCabo']==[['u-cabo-1',1,3,100,0,0],['u-cabo-9',1,2,40,1,1]],'por cabo: jornadas, árboles, avance contra su meta, sin reporte y abiertas de días anteriores: %s' % ind['porCabo'])
+    ok(ind['serie']==['dia',7,5,3,2],'la semana se grafica por día, de lunes a domingo: %s' % ind['serie'])
+    ok(ind['detalle']==[5,'PROVISIONAL',1,'Coyoacán,Coyoacán,Coyoacán,Coyoacán,Tlalpan'],'el detalle para la tabla trae un renglón por árbol contado: %s' % ind['detalle'])
+    ok(ind['rango']==[9,3,'dia',14] and ind['mesSerie'][0]=='semana' and ind['mesSerie'][1] in (5,6) and ind['anioSerie']==12,'un rango de dos semanas suma las dos; el mes va por semanas y el año por meses: %s %s %s' % (ind['rango'], ind['mesSerie'], ind['anioSerie']))
+    # Con la base real: lo que alcanza cada perfil
+    alc=pg17.evaluate("async () => { const d = await SRP.indicadores.cargar(); return { cabos: d.cabos, jornadas: d.jornadas.length >= 0, ed: Array.isArray(d.ediciones) }; }")
+    ok(alc['cabos']==['u-cabo-1'] and alc['ed'],'la coordinación supervisa a los cabos que tiene asignados: %s' % alc['cabos'])
+    ok(not err17,'sin errores: %s' % err17[:2])
+    ctx17.close()
+
     b.close()
 print('\n'.join(res)); print('ERRORES CONSOLA:',errores or 'ninguno')
 print('fallas:',sum(r.startswith('FALLA') for r in res),'de',len(res))

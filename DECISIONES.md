@@ -1407,3 +1407,21 @@
   advertencias del pie). 8) El lugar se dice igual en todas partes: «Alcaldía Coyoacán · Col. Del
   Carmen». La auditoría revisa desde ahora la norma de la hoja y que el código no escriba colores.
   Propuesto por Claude, aprobado por Liber («continúa con 94b»), 25-09-2026.
+- **D157. Indicadores de supervisión con un solo cálculo (bloque 96).** Primer bloque de lo que pidió
+  el área de plantación (informes por alcaldía, semanales y mensuales, y un panel de supervisión).
+  `js/indicadores.js` calcula, a partir de las jornadas y los árboles del alcance de quien consulta,
+  todo lo que verán la pestaña Supervisión («Mi avance» del cabo) y los informes en PDF y CSV, para
+  que lo que se ve y lo que se imprime no puedan diferir. Reglas decididas por Liber el 25-09-2026:
+  1) sólo cuentan las jornadas cerradas; las abiertas del periodo se dicen aparte, «en curso», y las
+  de días anteriores van a «Qué atender»; 2) la semana va de lunes a domingo, el mes y el año son de
+  calendario, y también hay rango y «todo»; 3) cada perfil ve su alcance; 4) la coordinación ve los
+  árboles eliminados y editados por cabo, como trazabilidad que no cambia la cifra; 5) el cabo
+  consulta su propio avance por alcaldía, semana, mes y año. Indicadores: árboles plantados, jornadas
+  cerradas y en curso, avance contra la meta, árboles por jornada, cabos que trabajaron de los
+  asignados, especies y porcentaje de nativas (Nativa o Endémica en el catálogo), alcaldías y
+  colonias, calidad del dato (foto, GPS, mapa, a mano, precisión mediana), qué atender (abiertas de
+  días anteriores, puntos sin revisar, sin reporte), trazabilidad y la serie para la gráfica (por
+  día en una semana, por semana en un mes, por mes en un año). Las definiciones quedan en
+  `esquema.json` («indicadores») y en el diccionario, para que el SIA calcule igual en la Fase 2.
+  En la Etapa 1 cada teléfono ve lo que tiene guardado; con el servidor se verá lo de toda la
+  cuadrilla. Aprobado por Liber, 25-09-2026.

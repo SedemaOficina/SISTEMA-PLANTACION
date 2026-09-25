@@ -273,6 +273,26 @@ Se guardan en la tabla, pero nadie los teclea: salen de otro dato o de la sesió
 | Registros con fotografía y peso acumulado (para la solicitud de disco a ADIP) | plantaciones activas con foto_base64; suma de foto_bytes | Reportes → «Registros en este dispositivo», y resumen del respaldo (D87) |
 | El PDF del parte del día | jornada + sus plantaciones; no se guarda el archivo, se regenera | Reportes (D58, D70) |
 
+### Indicadores de supervisión (D157)
+
+Un solo cálculo (`js/indicadores.js`) para la pestaña Supervisión o Mi avance y para los informes por periodo en PDF y CSV. Se calculan cada vez; no se guardan. El SIA debe calcularlos igual en la Fase 2.
+
+| Indicador | Cómo se calcula | Dónde se usa |
+|---|---|---|
+| Periodo | Semana de lunes a domingo; mes y año de calendario; un rango de fechas; o todo el registro. Se avanza y se retrocede de uno en uno | Supervisión, Mi avance, informes |
+| Jornadas cerradas | Jornadas con estatus «cerrada» cuya fecha cae en el periodo, del alcance de quien consulta y con los filtros de alcaldía, programa y cabo | Cifras, por cabo, informes |
+| Jornadas en curso | Jornadas abiertas cuya fecha cae en el periodo. Se dicen aparte y no se suman: una jornada abierta todavía cambia | Cifras, informes |
+| Árboles plantados | Árboles activos (no eliminados) de las jornadas cerradas del periodo. Con alcaldía, sólo los de esa alcaldía | Cifras, gráfica, tablas, informes, CSV |
+| Avance contra la meta | Árboles de las jornadas cerradas que tienen meta ÷ suma de sus metas, en por ciento | Cifras, por cabo, informes |
+| Árboles por jornada | Árboles plantados ÷ jornadas cerradas, con un decimal | Cifras, informes |
+| Cabos que trabajaron | Cabos distintos con al menos una jornada cerrada en el periodo, frente a los asignados: la cuadrilla de la coordinación, o los cabos activos para la administración | Cifras, por cabo, informes |
+| Especies y nativas | Especies distintas entre los árboles plantados; nativa es la de distribución «Nativa» o «Endémica» en el catálogo (SNIB/CONABIO), en por ciento de los árboles | Cifras, por especie, informes |
+| Alcaldías y colonias | Alcaldías y colonias distintas de los árboles plantados, tal como las derivó el sistema del punto | Cifras, por alcaldía, mapa, informes |
+| Calidad del dato | Árboles con fotografía; ubicados con GPS, en el mapa o a mano; precisión mediana del GPS | Calidad del dato, informes |
+| Qué atender | Jornadas abiertas de días anteriores (sin importar el periodo); jornadas cerradas del periodo con puntos marcados sin revisar; jornadas cerradas del periodo sin reporte | Qué atender, por cabo, informes |
+| Trazabilidad | Árboles eliminados en el periodo (por la fecha de su eliminación) y ediciones de árboles que registra la bitácora en el periodo. Se cuentan aparte y no cambian la cifra de árboles | Calidad del dato, por cabo, informes |
+| Serie | Árboles y jornadas cerradas por día en una semana, por semana en un mes, por mes en un año; en un rango, por día hasta 31 días, por semana hasta 26 semanas y después por mes | Gráfica de avance, informes |
+
 ## 8. Estado efímero (vive sólo en memoria mientras se usa la pantalla)
 
 Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras se captura y desaparece con la acción que se indica.
