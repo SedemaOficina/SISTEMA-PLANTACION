@@ -1653,3 +1653,38 @@ PDF que falla; la red de seguridad; la × de «Guardado».
 
 **Verificación:** 601 comprobaciones sin errores de consola; 85 de auditoría;
 presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.70.
+
+## Bloque 90 — Respaldo seguro (24-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.71.
+
+**Qué cambió (D150).** `index.html`: política de seguridad (CSP) y `referrer`; carga de
+`js/esquema.js` y `js/validar.js`. `util.js`: `fotoSegura()`. Ids escapados en los atributos de
+`app.js`, `catalogos.js`, `formulario.js`, `galeria.js`, `jornada-activa.js`, `jornadas.js`
+(también `CSS.escape` en dos selectores), `registros.js`, `reportes.js` y `usuarios.js`; años y
+meses de los filtros escapados; fotos validadas en Registros, Fotografías, la ficha de revisión y
+la edición. `validar.js` (nuevo): tipos, obligatorios, dominios, referencias y reglas del ámbito,
+la foto y datos reales contra de prueba; el resumen nombra el árbol por su folio y la referencia rota
+en palabras. `esquema.js` (nuevo, generado). `generar_diccionario.py`:
+`generar_js()`; `auditoria.py`: comprueba que `js/esquema.js` esté regenerado. `conexion.js`:
+respaldo del alcance con aviso de datos personales; restauración validada, del alcance, con
+confirmación, en una transacción y con renglón RESTAURADO; restaurar sólo se conecta en modo de
+prueba; «(simulado)» en la pastilla. `envio.js`: «servidor simulado» en la guía. `sesion.js`: el
+acceso simulado se cierra sin `ES_FICTICIO`; comentarios al día. `app.js`: restablecer sólo en
+modo de prueba; `ESQUEMA` y `validar` en la revisión de arranque. `config.js`: `RESPALDO_MAX_MB`
+y la advertencia del dominio del mapa. `esquema.json`: dominio `estatus_jornada`, relación de
+`jornadas.programa_id`, respaldo y regla R-D02 nuevos; `DICCIONARIO-DATOS.md` regenerado.
+`README.md`: estructura, base del dispositivo, sin señal, cómo correr las pruebas (quita dos
+archivos de prueba que no existían) y lista de salida a producción.
+Pruebas: la política de seguridad está declarada; un respaldo alterado con seis renglones malos
+(fuera de la CDMX, otra cuadrilla, especie inexistente, foto que no es imagen, id con código,
+estatus inventado) y una cuenta de administración intrusa sólo deja entrar el árbol y la jornada
+válidos, con su RESTAURADO y sin ejecutar nada; un id y una foto con código ya guardados se pintan
+como texto; un respaldo real no se mezcla con los de prueba; con `ES_FICTICIO` apagado el acceso
+simulado no abre. Se ajustaron la prueba del respaldo (sólo el alcance, sin cuentas ni catálogos)
+y la de restaurar (confirmación y alcance de quien restaura). `auditoria.py` revisa además que ni
+la página ni el HTML que arma el código traigan estilos o manejadores en línea. Las esperas de
+`prueba.py` preguntan desde fuera (`esperar()`): `wait_for_function` de Playwright se compila con
+eval y la política la bloquea, lo que dejaba sin esperar al croquis y al PDF.
+
+**Verificación:** 609 comprobaciones sin errores de consola; 87 de auditoría;
+presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.71.

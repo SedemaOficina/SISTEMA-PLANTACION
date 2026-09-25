@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.70 (Bloque 89)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.71 (Bloque 90)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -173,13 +173,16 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M162 | Auditoría 360 (A2) | Al cerrar una jornada, la confirmación recuerda guardar el respaldo si el último no es de hoy; cancelar «Compartir» ya no dice «Respaldo guardado» | Media | 0.6.70 (B89) | Cerrar una jornada; Guardar respaldo › Cancelar | Confirmación |
 | M163 | Auditoría 360 (A8) | Si algo no se puede guardar, se dice qué y por qué; con el espacio lleno, «el teléfono se quedó sin espacio… guarde un respaldo». Antes 17 de 18 acciones fallaban en silencio | Alta | 0.6.70 (B89) | (No se provoca a mano; lo cubren las pruebas) | — |
 | M164 | Auditoría 360 (M12, B3) | La × de la franja «Guardado» ya no lanza un error; un error del servidor ya no tapa la app guardada | Baja | 0.6.70 (B89) | Guardar un árbol y cerrar la franja con × | — |
+| M172 | Auditoría 360 (A3) | Un respaldo alterado ya no puede ejecutar código: ids y fotos se escapan y validan al pintarse, y la página declara una política de seguridad que sólo deja correr el código propio | Alta | 0.6.71 (B90) | (Lo cubren las pruebas con un respaldo alterado) | — |
+| M173 | Auditoría 360 (A4) | Restaurar un respaldo revisa cada renglón, sólo acepta árboles y jornadas del alcance de quien restaura, enseña el resumen (cuántos entran, cuántos ya estaban y por qué no entra cada rechazado) y pide confirmación | Alta | 0.6.71 (B90) | Herramientas de prueba › Restaurar respaldo | Confirmación |
+| M174 | Auditoría 360 (M1) | El respaldo lleva sólo lo que alcanza quien lo guarda (sus árboles y jornadas) y avisa que contiene nombres, ubicaciones y fotos; ya no lleva el padrón con correos | Media | 0.6.71 (B90) | Menú de la cuenta › Guardar respaldo | Aviso |
+| M175 | Auditoría 360 (M10) | Apagar el modo de prueba ya apaga todo: sin el proveedor institucional el acceso queda cerrado; la pastilla dice «(simulado)» en pantallas anchas | Media | 0.6.71 (B90) | Computadora: pastilla de conexión | Pastilla |
 
 ## 2. Por hacer
 
 | # | Origen | Mejora | Prioridad | Estado | Nota |
 |---|---|---|---|---|---|
 | M46 | Android | Revisión corta en Android: versión, botón «atrás» con ventanas abiertas, calendario y hora, especies con teclado, precisión, foto, compartir PDF, aviso | Alta | Pendiente | Espera capturas |
-| M165 | Auditoría 360 | Bloque 90 «Respaldo seguro»: escapar ids y fotos, política de seguridad (CSP), restauración validada y sólo del alcance, respaldo sólo del alcance, apagar bien el modo de prueba (A3, A4, M1, M10) | Alta | Pendiente | Condición para datos reales |
 | M166 | Auditoría 360 | Bloque 91 «Integridad»: contar el uso en todas las tablas antes de eliminar, propagar cambios de la jornada, permisos exigidos en cada acción (A5, M8, M9) | Alta | Pendiente | Condición para datos reales; decisiones D1 y D2 |
 | M167 | Auditoría 360 | Bloque 92 «Territorio confiable»: ámbito por la unión de alcaldías, capas exigidas al arrancar, rótulos veraces, lectura GPS, créditos del mapa (A6, A7, M3, M5, M6, M7) | Alta | Pendiente | |
 | M168 | Auditoría 360 | Bloque 93 «Publicación ligera»: fuentes fuera del sitio, capas con su propia versión y aligeradas, licencia, jsPDF al día (M2, M4) | Media | Pendiente | Decisiones D5 a D7 |
@@ -201,4 +204,4 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 158 hechas · 8 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 162 hechas · 7 por hacer · 2 revisadas · 2 descartadas.

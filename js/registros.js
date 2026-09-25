@@ -129,7 +129,7 @@ SRP.registros = {
       const sel = this.el('filtro-cabo');
       sel.innerHTML = '<option value="">Todos</option>' + ids
         .map(id => [id, SRP.ref.nombreUsuario(id)]).sort((a, b) => a[1].localeCompare(b[1], 'es'))
-        .map(([id, n]) => '<option value="' + id + '">' + SRP.util.escapar(n) + '</option>').join('');
+        .map(([id, n]) => '<option value="' + SRP.util.escapar(id) + '">' + SRP.util.escapar(n) + '</option>').join('');
       sel.value = this.filtro.cabo;
     }
     // El atajo lleva la fecha para que nadie dude de qué día habla; va en un segundo renglón
@@ -184,7 +184,7 @@ SRP.registros = {
     const actual = String(new Date().getFullYear());
     if (!anios.includes(actual)) anios.unshift(actual);   // el año en curso siempre se puede elegir
     this.el('filtro-anio').innerHTML = '<option value="">Todos</option>' +
-      anios.map(a => '<option value="' + a + '">' + a + '</option>').join('');
+      anios.map(a => '<option value="' + SRP.util.escapar(a) + '">' + SRP.util.escapar(a) + '</option>').join('');
   },
 
   // Sólo los meses que tienen registros en el año elegido: evita elegir un mes vacío
@@ -195,7 +195,7 @@ SRP.registros = {
       : [];
     const sel = this.el('filtro-mes');
     sel.innerHTML = '<option value="">Todos</option>' +
-      meses.map(m => '<option value="' + m + '">' + SRP.util.nombreMes('2000-' + m, true) + '</option>').join('');
+      meses.map(m => '<option value="' + SRP.util.escapar(m) + '">' + SRP.util.nombreMes('2000-' + m, true) + '</option>').join('');
     sel.disabled = !anio;
     sel.value = meses.includes(this.filtro.mes) ? this.filtro.mes : '';
     if (sel.value !== this.filtro.mes) this.filtro.mes = sel.value;
@@ -338,14 +338,15 @@ SRP.registros = {
       // Tarjeta (D100): miniatura, especie, lugar y fecha, con la tuerca arriba a la derecha.
       // «PROVISIONAL» ya no se repite en cada tarjeta: lo dicen el detalle, la ficha y el PDF (R1);
       // el folio sólo aparece cuando exista
-      const mini = r.foto_base64
-        ? '<img class="registro-miniatura" src="' + r.foto_base64 + '" alt="" loading="lazy">'
+      const foto = SRP.util.fotoSegura(r.foto_base64);
+      const mini = foto
+        ? '<img class="registro-miniatura" src="' + foto + '" alt="" loading="lazy">'
         : '<span class="registro-miniatura registro-sin-foto" aria-hidden="true">' + SRP.ICONOS.svg('registros', 'grande') + '</span>';
       /* Anatomía común de tarjeta (D141), la misma de Jornadas y Reportes: 1) qué —la especie—,
          2) cuándo y quién, 3) fila de estado —folio y envío—, 4) dónde —jornada y lugar—; la
          tuerca, arriba a la derecha (D100) */
       const estado = this.htmlEstado(r, est);
-      return '<li class="registro" data-id="' + r.id + '">' + mini + '<div class="registro-datos">' +
+      return '<li class="registro" data-id="' + SRP.util.escapar(r.id) + '">' + mini + '<div class="registro-datos">' +
         '<span class="registro-especie">' + esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : '') + '</span>' +
         // Cuándo y estado en un mismo renglón: la tarjeta sigue compacta (D100) en una lista larga
         '<span class="registro-meta"><span class="registro-fecha">' + this.htmlFecha(r, variosAutores) + '</span>' +
@@ -470,8 +471,8 @@ SRP.registros = {
       ['Cómo se obtuvo', SRP.formulario.textoOrigenRevision(r, false)],
       ['Cabo', esc(SRP.ref.nombreUsuario(r.cabo_id))],
       ['Comentarios', r.comentarios ? esc(r.comentarios) : 'Sin comentarios'],
-      ['Fotografía', r.foto_base64
-        ? '<img class="revision-foto" src="' + r.foto_base64 + '" alt="Fotografía del árbol registrado">'
+      ['Fotografía', SRP.util.fotoSegura(r.foto_base64)
+        ? '<img class="revision-foto" src="' + SRP.util.fotoSegura(r.foto_base64) + '" alt="Fotografía del árbol registrado">'
         : 'Sin fotografía']
     ];
     const sistema = [

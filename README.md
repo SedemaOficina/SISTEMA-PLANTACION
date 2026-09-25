@@ -58,7 +58,9 @@ js/sesion.js          Acceso; se sustituye al conectar el proveedor instituciona
 js/datos-ficticios.js Cuentas y catálogos de arranque
 js/derivacion.js      Cruce punto-en-polígono (alcaldía, UGA, colonia)
 js/folio.js           Patrón, validación y etiqueta del folio; sólo lo emite el servidor simulado de prueba (D110)
-js/conexion.js        Estado de la conexión, aviso de qué hacer con los registros, respaldo y restauración
+js/conexion.js        Estado de la conexión y del teléfono (guía), respaldo del alcance y restauración validada
+js/esquema.js         Generado de esquema.json por pruebas/generar_diccionario.py: no se edita a mano (D150)
+js/validar.js         Revisa cada renglón que entra por un respaldo contra el esquema; la misma revisión que hará el servidor
 js/envio.js           Envío al servidor simulado con datos de prueba: cola, avisos de atraso, «Simular sin señal» (D111)
 js/croquis.js         Croquis de la jornada para el reporte: puntos numerados sobre imagen de satélite o fondo liso (D115)
 js/jornada-activa.js  La jornada se declara antes de registrar: inicio, franja, cambiar, cerrar, salvaguarda de distancia (D119)
@@ -126,20 +128,18 @@ Los totales por especie, el total de ejemplares, el resumen por programa y la al
 Lo capturado se guarda en la propia jornada (almacén `jornadas`, D119): volver a generar el
 reporte de una jornada no obliga a escribirlo otra vez.
 
-## La base del dispositivo, mientras sea prototipo
+## La base del dispositivo
 
-Toda la estructura vive en `MIGRACIONES[1]`, dentro de `js/almacen.js`, y los almacenes que el
-código espera se declaran en `ALMACENES`, en el mismo archivo. Al abrir, el sistema comprueba que
-estén todos; si falta alguno —porque el dispositivo ya había abierto una estructura anterior— la
-base se rehace y se vuelve a sembrar. Sin esa comprobación, un almacén nuevo no aparecería nunca
-en un teléfono que ya había entrado, y la pantalla fallaría sin decir por qué.
+La estructura vive en migraciones numeradas (`MIGRACIONES` en `js/almacen.js`; hoy van dos) y los
+almacenes que el código espera se declaran en `ALMACENES`. **Lo capturado no se borra solo** (D149):
+un cambio de estructura es una migración nueva que traslada lo guardado antes de retirar nada; una
+base a la que le falta un almacén, o de una versión posterior, se rehace conservando cada renglón;
+y el sello de datos sólo vuelve a cargar las cuentas y catálogos de ejemplo cuando no hay nada
+capturado. Al guardar el primer árbol se pide al navegador que no desaloje lo guardado.
 
-Mientras los datos sean ficticios, un cambio de estructura se hace ahí mismo y la base se rehace
-sola; no se acumulan migraciones. **Esto deja de valer con el primer dato real**: a partir de ahí,
-cada cambio es una migración numerada que conserva lo guardado, y la anterior no se toca.
-
-Todo vive en el navegador de cada dispositivo. Borrar los datos del navegador borra los registros.
-No hay respaldo ni envío a ningún servidor.
+En la Etapa 1 todo vive en el navegador de cada teléfono: borrar los datos del navegador borra los
+registros. Por eso la guía «¿Qué hacer sin internet?» dice si lo guardado está protegido y cuándo
+fue el último respaldo, y el cierre de cada jornada lo recuerda.
 
 ## Mapa
 
@@ -156,9 +156,11 @@ vuelva a abrir sin red; se registra con la misma marca `?v=` de `index.html`, as
 marca al cerrar un bloque sigue siendo lo único que hay que hacer** para que los teléfonos
 actualicen (el worker nuevo reemplaza al viejo al abrir con señal). `manifest.webmanifest` permite
 instalarla en la pantalla de inicio. En la Etapa 1 no hay servidor: los registros se quedan en el
-dispositivo; la pastilla del encabezado dice el estado de la conexión y cuántos registros guarda
-el dispositivo, Reportes dice qué hacer con ellos, y «Guardar respaldo» produce un archivo con
-todo (se restaura desde las herramientas de prueba). Ver D71, D72, D81 y D83.
+dispositivo; la pastilla del encabezado dice el estado de la conexión y del envío simulado, y al
+tocarla abre la guía con el estado del teléfono. «Guardar respaldo» (menú de la cuenta) produce un
+archivo con lo que alcanza quien respalda —sus árboles y jornadas con su bitácora— y avisa que
+contiene datos personales; se restaura desde las herramientas de prueba, que validan cada renglón,
+sólo aceptan lo del alcance de quien restaura y piden confirmación (D150). Ver D71, D72, D149 y D150.
 
 ## Folio del ejemplar
 
@@ -227,15 +229,40 @@ capa se sube `meta.version` en `generar_capas.py`.
 
 ## Pruebas
 
-Con el servidor local levantado (`python3 -m http.server 8099`):
+Requieren Python 3 con Playwright y Chromium (`pip install playwright` y `python3 -m playwright
+install chromium`). Desde la carpeta del proyecto, con el servidor local levantado:
+
+```
+python3 -m http.server 8099 --bind 127.0.0.1      (en otra terminal)
+python3 pruebas/prueba.py        # unos 10 minutos; al final dice «fallas: 0 de N»
+python3 pruebas/auditoria.py
+python3 pruebas/revisar.py
+```
 
 | Archivo | Qué comprueba |
 |---|---|
-| `prueba.py` | Recorrido completo: acceso, captura, listados, filtros, PDF, catálogos y cuentas, en los tres perfiles |
-| `auditoria.py` | Consistencia de lo guardado: perfiles válidos, autores existentes, referencias que apuntan a algo |
+| `prueba.py` | Recorrido completo: acceso, captura, listados, filtros, PDF, catálogos y cuentas, en los tres perfiles; también el ciclo de la base (sello, versión) y el respaldo alterado |
+| `auditoria.py` | Consistencia de lo guardado y del modelo: esquema contra lo que se guarda, diccionario y `js/esquema.js` regenerados, dominios, vocabulario |
 | `revisar.py` | Presentación en ocho combinaciones de ancho y zoom: desbordamiento, alto del mapa, tamaño de los controles y reglas anuladas |
-| `prueba_datos_viejos.py` | Que un dispositivo con datos de prueba anteriores se corrija solo |
-| `prueba_base_vieja.py` | Que un dispositivo con una estructura anterior arranque |
+
+## Salida a producción: lista de verificación
+
+Nada de esto se hace en la Etapa 1; se deja escrito para no descubrirlo tarde (D150).
+
+1. `ES_FICTICIO: false` en `js/config.js`. Apaga la banda de datos ficticios, la entrada de
+   prueba, el cambio de perfil, las herramientas del pie (restaurar y restablecer ni siquiera se
+   conectan), el envío y el folio simulados y el espejo de campos.
+2. Conectar el proveedor institucional de identidad (`AUTENTICACION.PROVEEDOR` y
+   `autenticar()` en `js/sesion.js`). Mientras siga «simulado», con `ES_FICTICIO: false` **el acceso
+   queda cerrado**: nadie entra con cualquier contraseña.
+3. Servidor de la Fase 2 con las reglas que hoy viven sólo en el teléfono: permisos en cada
+   operación, validación del esquema (`js/validar.js` es la referencia), bitácora propia, folio.
+4. Capas definitivas de alcaldías, UGA y colonias (`pruebas/generar_capas.py`).
+5. Mapa base con licencia confirmada; si cambia el dominio, también en la política de seguridad
+   de `index.html`.
+6. Aviso de privacidad publicado y reglas de conservación de fotos y datos del personal.
+7. Retirar el espejo de campos (ver `js/espejo.js`) y correr las pruebas. Hoy sus instrucciones no
+   bastan: `js/app.js` lo exige al arrancar (hallazgo M11 de la auditoría 360, pendiente).
 
 `DECISIONES.md` y `BITACORA.md` son la memoria formal del proyecto: qué se decidió y por qué, y
 qué se hizo en cada bloque.

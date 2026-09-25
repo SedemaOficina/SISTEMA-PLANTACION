@@ -54,8 +54,8 @@
       },
       {
         "donde": "Respaldo `SRP_respaldo_AAAA-MM-DD_<usuario>.json`",
-        "que": "{sistema, version, generado, usuario_id, es_ficticio, resumen{registros, con_foto, foto_bytes}, plantaciones[], usuarios[], catalogos[], bitacora[], jornadas[]}: las cinco tablas con el mismo esquema (D87)",
-        "fase2": "El mismo archivo es lo que el servidor recibiría"
+        "que": "{sistema, version, generado, usuario_id, es_ficticio, alcance, resumen{registros, con_foto, foto_bytes}, plantaciones[], jornadas[], bitacora[], cuentas[{id, nombre}]}: sólo lo que alcanza quien respalda —sus árboles y jornadas, con su bitácora— y de las cuentas sólo id y nombre (D150). Contiene nombres, ubicaciones y fotos: es un archivo con datos personales",
+        "fase2": "El mismo archivo es lo que el servidor recibiría; lo valida con las mismas reglas de js/validar.js"
       }
     ]
   },
@@ -75,6 +75,13 @@
         "eliminado"
       ],
       "fuente": "js/formulario.js registroPrevisto(); js/registros.js eliminar()"
+    },
+    "estatus_jornada": {
+      "valores": [
+        "abierta",
+        "cerrada"
+      ],
+      "fuente": "js/jornada-activa.js iniciarJornada() y cambiarEstatus()"
     },
     "punto_origen": {
       "valores": [
@@ -971,7 +978,7 @@
           "tipo": "text",
           "nulo": false,
           "origen": "Persona",
-          "dominio": "id de catálogo tipo programa",
+          "dominio": "→ catalogos.id con tipo = programa",
           "pantalla": "Programa (Iniciar jornada)",
           "regla": "Obligatorio al iniciar (D130). Cada árbol lo hereda en el formulario y puede cambiarlo; el dato del árbol sigue siendo plantaciones.programa_id"
         },
@@ -1079,7 +1086,7 @@
           "tipo": "text",
           "nulo": false,
           "origen": "Sistema",
-          "dominio": "abierta | cerrada",
+          "dominio": "estatus_jornada",
           "pantalla": "Franja de la jornada; Jornadas",
           "regla": "Se cierra desde la franja o la revisión; se reabre desde la revisión o con «Registrar faltante» (D119)"
         },
@@ -1700,8 +1707,8 @@
     {
       "id": "R-D02",
       "tabla": "plantaciones, jornadas, bitacora",
-      "regla": "Respaldo: archivo JSON con las cinco tablas y un resumen de fotografías; restaurar sólo agrega lo que no existe (por id), nunca sobreescribe",
-      "donde": "js/conexion.js respaldar(), restaurar()"
+      "regla": "Respaldo: archivo JSON con los árboles y jornadas del alcance de quien respalda, la bitácora de esos registros y un resumen de fotografías. Restaurar valida cada renglón contra este esquema (js/esquema.js, generado de aquí), sólo acepta árboles y jornadas del alcance de quien restaura y con referencias que existan, nunca sobreescribe, no importa cuentas, catálogos ni bitácora, pide confirmación con el resumen y deja un renglón RESTAURADO por registro, todo en una sola transacción (D150)",
+      "donde": "js/conexion.js respaldar(), restaurar(); js/validar.js"
     }
   ],
   "reglas_fase2": [

@@ -355,7 +355,7 @@ SRP.jornadas = {
       const sel = this.el('jornada-cabo');
       sel.innerHTML = '<option value="">Todos</option>' + ids
         .map(id => [id, SRP.ref.nombreUsuario(id)]).sort((a, b) => a[1].localeCompare(b[1], 'es'))
-        .map(([id, n]) => '<option value="' + id + '">' + SRP.util.escapar(n) + '</option>').join('');
+        .map(([id, n]) => '<option value="' + SRP.util.escapar(id) + '">' + SRP.util.escapar(n) + '</option>').join('');
       sel.value = ids.includes(this.filtro.cabo) ? this.filtro.cabo : '';
       this.filtro.cabo = sel.value;
     }
@@ -418,7 +418,7 @@ SRP.jornadas = {
     const anios = this.aniosDisponibles();
     const actual = String(new Date().getFullYear());
     if (!anios.includes(actual)) anios.unshift(actual);
-    this.el('jornada-anio').innerHTML = '<option value="">Todos</option>' + anios.map(a => '<option value="' + a + '">' + a + '</option>').join('');
+    this.el('jornada-anio').innerHTML = '<option value="">Todos</option>' + anios.map(a => '<option value="' + SRP.util.escapar(a) + '">' + SRP.util.escapar(a) + '</option>').join('');
     this.el('jornada-anio').value = this.filtro.anio;
   },
 
@@ -426,7 +426,7 @@ SRP.jornadas = {
     const anio = this.filtro.anio;
     const meses = anio ? [...new Set(this._todas.filter(j => j.fecha.startsWith(anio)).map(j => j.fecha.slice(5, 7)))].sort() : [];
     const sel = this.el('jornada-mes');
-    sel.innerHTML = '<option value="">Todos</option>' + meses.map(m => '<option value="' + m + '">' + SRP.util.nombreMes('2000-' + m, true) + '</option>').join('');
+    sel.innerHTML = '<option value="">Todos</option>' + meses.map(m => '<option value="' + SRP.util.escapar(m) + '">' + SRP.util.nombreMes('2000-' + m, true) + '</option>').join('');
     sel.disabled = !anio;
     if (!meses.includes(this.filtro.mes)) this.filtro.mes = '';
     sel.value = this.filtro.mes;
@@ -611,14 +611,14 @@ SRP.jornadas = {
         : (r.punto_origen === 'gps' && r.gps_precision_m ? 'GPS ±' + Math.round(r.gps_precision_m) + ' m' : SRP.mapa.textoOrigen(r.punto_origen, r.gps_precision_m)));
       // Color por significado con icono (Norma 8.4, D116): ver neutro, confirmar verde, eliminar rojo
       const I = (n, t) => SRP.ICONOS.svg(n, t);   // no se pasa suelto: svg() usa this
-      const acciones = ['<button type="button" class="btn btn-texto" data-accion="ver" data-id="' + r.id + '">' + I('ver', 'medio') + '<span>Ver</span></button>'];
+      const acciones = ['<button type="button" class="btn btn-texto" data-accion="ver" data-id="' + SRP.util.escapar(r.id) + '">' + I('ver', 'medio') + '<span>Ver</span></button>'];
       // Corregir el reparto en jornadas (D117): desde la tuerca, para no cargar la fila
       const items = [];
       if (puedeEditar(r)) items.push({ accion: 'mover', texto: 'Mover a otra jornada', icono: 'jornadas' });
       const tuerca = items.length ? SRP.ICONOS.menuAcciones(r.id, 'punto ' + (i + 1), items) : '';
-      if (av.length && !revisado && puedeEditar(r)) acciones.push('<button type="button" class="btn btn-exito-linea" data-accion="bien" data-id="' + r.id + '">' + I('palomita', 'chico') + '<span>Está bien</span></button>');
-      if (av.some(a => a.tipo === 'duplicado') && !revisado && puedeEliminar(r)) acciones.push('<button type="button" class="btn btn-peligro-linea" data-accion="eliminar" data-id="' + r.id + '">' + I('basura', 'chico') + '<span>Eliminar</span></button>');
-      return '<li class="punto-jornada" data-id="' + r.id + '"><span class="punto-num" data-tono="' + tono + '" aria-hidden="true">' + (i + 1) + '</span>' +
+      if (av.length && !revisado && puedeEditar(r)) acciones.push('<button type="button" class="btn btn-exito-linea" data-accion="bien" data-id="' + SRP.util.escapar(r.id) + '">' + I('palomita', 'chico') + '<span>Está bien</span></button>');
+      if (av.some(a => a.tipo === 'duplicado') && !revisado && puedeEliminar(r)) acciones.push('<button type="button" class="btn btn-peligro-linea" data-accion="eliminar" data-id="' + SRP.util.escapar(r.id) + '">' + I('basura', 'chico') + '<span>Eliminar</span></button>');
+      return '<li class="punto-jornada" data-id="' + SRP.util.escapar(r.id) + '"><span class="punto-num" data-tono="' + tono + '" aria-hidden="true">' + (i + 1) + '</span>' +
         '<div class="punto-datos"><span class="punto-especie"><span class="oculto-visual">Punto ' + (i + 1) + ': </span>' + esc(esp.comun) + '</span>' +
         '<span class="punto-detalle">' + esc(h(r)) + ' · ' + detalle + '</span></div>' +
         '<div class="punto-acciones">' + acciones.join('') + tuerca + '</div></li>';
@@ -679,7 +679,7 @@ SRP.jornadas = {
     if (!pend.length) return;
     const id = pend[0].id;
     this.seleccionar(id, 'lista');
-    const li = this.el('jornada-lista').querySelector('[data-id="' + id + '"]');
+    const li = this.el('jornada-lista').querySelector('[data-id="' + CSS.escape(id) + '"]');
     if (!li) return;
     li.scrollIntoView({ block: 'center', behavior: 'smooth' });
     const b = li.querySelector('button[data-accion="bien"]') || li.querySelector('button[data-accion="ver"]');
@@ -756,7 +756,7 @@ SRP.jornadas = {
   seleccionar(id, desde) {
     this.el('jornada-lista').querySelectorAll('.punto-jornada').forEach(li => li.classList.toggle('elegido', li.dataset.id === id));
     Object.entries(this.marcadores).forEach(([k, m]) => { const e = m.getElement(); if (e) e.classList.toggle('elegido', k === id); });
-    const li = this.el('jornada-lista').querySelector('[data-id="' + id + '"]');
+    const li = this.el('jornada-lista').querySelector('[data-id="' + CSS.escape(id) + '"]');
     if (desde === 'mapa' && li) li.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     if (desde === 'lista' && this.marcadores[id]) this.mapa.panTo(this.marcadores[id].getLatLng());
   },
@@ -783,7 +783,7 @@ SRP.jornadas = {
     this.moviendo = r;
     this.el('dlg-mover-texto').textContent = 'Elija la jornada a la que pertenece el ' + SRP.ref.especieDe(r).comun + ' (punto ' + (this.jornada.registros.indexOf(r) + 1) + ').';
     this.el('lista-mover-jornadas').innerHTML = jornadas.length ? jornadas.map(j =>
-      '<li><button type="button" class="jornada-boton" data-id="' + j.id + '"><span class="jornada-datos"><span class="jornada-dia">' + esc(j.nombre) + '</span>' +
+      '<li><button type="button" class="jornada-boton" data-id="' + SRP.util.escapar(j.id) + '"><span class="jornada-datos"><span class="jornada-dia">' + esc(j.nombre) + '</span>' +
       '<span class="jornada-cifras">' + esc(SRP.util.formatearFecha(j.fecha)) + ' · ' + (j.estatus === 'abierta' ? 'abierta' : 'cerrada') + '</span></span></button></li>').join('')
       : '<li class="nota">No hay otra jornada de este cabo. Inicie una en Nuevo registro.</li>';
     this.el('dlg-mover-jornada').showModal();
@@ -816,7 +816,7 @@ SRP.jornadas = {
     const sel = this.el('ej-programa');
     const opciones = SRP.ref.deTipo('programa', true).sort((a, b) => (b.clave === 'REFOR_URBANA') - (a.clave === 'REFOR_URBANA'));
     if (c.programa_id && !opciones.find(o => o.id === c.programa_id) && SRP.ref.catalogoPorId[c.programa_id]) opciones.push(SRP.ref.catalogoPorId[c.programa_id]);
-    sel.innerHTML = '<option value="">Seleccione un programa</option>' + opciones.map(o => '<option value="' + o.id + '">' + SRP.util.escapar(o.nombre) + '</option>').join('');
+    sel.innerHTML = '<option value="">Seleccione un programa</option>' + opciones.map(o => '<option value="' + SRP.util.escapar(o.id) + '">' + SRP.util.escapar(o.nombre) + '</option>').join('');
     sel.value = c.programa_id || '';
     this.el('ej-nombre').value = c.nombre || '';
     this.el('ej-ubicacion').value = c.ubicacion || '';

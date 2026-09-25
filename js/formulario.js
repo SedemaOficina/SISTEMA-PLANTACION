@@ -119,7 +119,7 @@ SRP.formulario = {
     const regs = j ? (await SRP.activa.registrosDe(j)).filter(r => r.especie_id).sort((a, b) => String(b.fecha_registro).localeCompare(String(a.fecha_registro))) : [];
     const ids = [...new Set(regs.map(r => r.especie_id))].slice(0, 3);
     caja.hidden = !ids.length;
-    caja.innerHTML = ids.map(id => '<button type="button" class="chip" data-id="' + id + '" aria-pressed="' + (this.estado.especieId === id) + '">' +
+    caja.innerHTML = ids.map(id => '<button type="button" class="chip" data-id="' + SRP.util.escapar(id) + '" aria-pressed="' + (this.estado.especieId === id) + '">' +
       SRP.util.escapar((SRP.ref.catalogoPorId[id] || {}).nombre || id) + '</button>').join('');
   },
 
@@ -140,7 +140,7 @@ SRP.formulario = {
       .sort((a, b) => (b.clave === 'REFOR_URBANA') - (a.clave === 'REFOR_URBANA'));
     if (previo && !opciones.find(o => o.id === previo) && SRP.ref.catalogoPorId[previo]) opciones.push(SRP.ref.catalogoPorId[previo]);
     sel.innerHTML = '<option value="">Seleccione un programa</option>' + opciones.map(o =>
-      '<option value="' + o.id + '">' + SRP.util.escapar(o.nombre) + (o.activo ? '' : ' (inactivo)') + '</option>').join('');
+      '<option value="' + SRP.util.escapar(o.id) + '">' + SRP.util.escapar(o.nombre) + (o.activo ? '' : ' (inactivo)') + '</option>').join('');
     // Sin preselección: el formulario arranca en blanco aunque el catálogo tenga un solo
     // programa, para que la elección siempre sea de quien captura.
     sel.value = previo || '';
@@ -176,7 +176,7 @@ SRP.formulario = {
     // Si el foco estaba en un botón, se conserva en el mismo programa tras repintar
     const enfocado = caja.contains(document.activeElement) ? document.activeElement.dataset.id : null;
     caja.innerHTML = botones ? ops.map(o =>
-      '<button type="button" class="chip" data-id="' + o.value + '" aria-pressed="' + (o.value === sel.value) + '">' +
+      '<button type="button" class="chip" data-id="' + SRP.util.escapar(o.value) + '" aria-pressed="' + (o.value === sel.value) + '">' +
       SRP.util.escapar(o.textContent) + '</button>').join('') : '';
     if (enfocado) { const b = caja.querySelector('[data-id="' + enfocado + '"]'); if (b) b.focus(); }
   },
@@ -275,7 +275,7 @@ SRP.formulario = {
       .filter(x => x.por);
     const lista = this.el('lista-especies');
     lista.innerHTML = coinciden.map(({ e, por }) =>
-      '<li class="combo-opcion" role="option" id="op-' + e.id + '" data-id="' + e.id + '" aria-selected="false">' +
+      '<li class="combo-opcion" role="option" id="op-' + e.id + '" data-id="' + SRP.util.escapar(e.id) + '" aria-selected="false">' +
       SRP.util.escapar(e.nombre) + '<small>' + SRP.util.escapar(e.nombre_cientifico) +
       (typeof por === 'string' ? ' · también: ' + SRP.util.escapar(por) : '') + '</small></li>').join('') +
       '<li class="combo-opcion" role="option" id="op-otra" data-id="' + this.OTRA + '" aria-selected="false">Otra especie<small>No está en el catálogo</small></li>';
@@ -505,8 +505,8 @@ SRP.formulario = {
       ['Coordenadas', v.lat.toFixed(6) + ', ' + v.lng.toFixed(6), 'punto'],
       ['Cómo se obtuvo', this.textoOrigenRevision(v), null],
       ['Comentarios', v.comentarios ? esc(v.comentarios) : 'Sin comentarios', 'comentarios'],
-      ['Fotografía', v.foto_base64
-        ? '<img class="revision-foto" src="' + v.foto_base64 + '" alt="Fotografía del árbol que se va a registrar">'
+      ['Fotografía', SRP.util.fotoSegura(v.foto_base64)
+        ? '<img class="revision-foto" src="' + SRP.util.fotoSegura(v.foto_base64) + '" alt="Fotografía del árbol que se va a registrar">'
         : 'Sin fotografía', 'foto'],
       // El folio va a la vista, bajo la fotografía (D123), y con datos de prueba se enseña el que
       // tocará (D126); el identificador interno ya no se muestra
@@ -732,7 +732,7 @@ SRP.formulario = {
     this.llenarProgramas(registro.programa_id);
     if (registro.especie_id) this.elegirEspecie(registro.especie_id);
     else this.elegirEspecie(this.OTRA, registro.especie_otra);
-    this.ponerFoto(registro.foto_base64, registro.foto_id, registro.foto_nombre, registro.foto_bytes);
+    this.ponerFoto(SRP.util.fotoSegura(registro.foto_base64) || null, registro.foto_id, registro.foto_nombre, registro.foto_bytes);
     SRP.app.mostrarVista('registrar');
     // Al editar se restituye el origen que quedó guardado: abrir un registro no lo convierte
     // en un punto señalado a mano.

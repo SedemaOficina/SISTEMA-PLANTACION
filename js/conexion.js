@@ -34,8 +34,9 @@ SRP.conexion = {
     window.addEventListener('offline', async () => { await this.refrescar(); await SRP.envio.pintarFranja(); });
     this.el('conexion').addEventListener('click', async () => { await this.pintarEstado(); this.el('dlg-senal').showModal(); });
     this.el('btn-respaldo').addEventListener('click', () => { SRP.app.menuCuenta(false); this.respaldar(); });
+    // Restaurar es herramienta de prueba (D150): con datos reales ni siquiera se conecta
     const restaurar = this.el('archivo-restaurar');
-    if (restaurar) restaurar.addEventListener('change', (e) => this.restaurar(e.target));
+    if (restaurar && SRP.CONFIG.ES_FICTICIO) restaurar.addEventListener('change', (e) => this.restaurar(e.target));
     this.refrescar();
   },
 
@@ -132,10 +133,12 @@ SRP.conexion = {
       texto = 'Enviando ' + enviando + '…';
       etiqueta = 'Enviando ' + enviando + (enviando === 1 ? ' registro' : ' registros') + ' al servidor';
     } else {
-      const cuenta = n === null ? '' : n === 0 ? ' · Al día' : ' · ' + n + '<span class="cx-palabra"> por enviar</span>';
+      // «Al día» con un servidor simulado no es «enviado» (D150): en pantallas anchas lo dice; en el
+      // teléfono lo dicen la banda de datos ficticios, la etiqueta accesible y la guía
+      const cuenta = n === null ? '' : n === 0 ? ' · Al día<span class="cx-palabra"> (simulado)</span>' : ' · ' + n + '<span class="cx-palabra"> por enviar</span>';
       texto = (con ? 'Con conexión' : 'Sin conexión') + cuenta;
       etiqueta = (con ? 'Con conexión' : 'Sin conexión, puede seguir registrando') +
-        (n === null ? '' : n === 0 ? ', todo enviado' : ', ' + n + (n === 1 ? ' registro por enviar' : ' registros por enviar')) +
+        (n === null ? '' : n === 0 ? ', todo enviado al servidor simulado' : ', ' + n + (n === 1 ? ' registro por enviar' : ' registros por enviar')) +
         (atraso ? ', con atraso' : '');
     }
     ind.innerHTML = SRP.ICONOS.svg(con ? 'senal' : 'sinSenal', 'medio') + '<span>' + texto + '</span>';
@@ -186,43 +189,102 @@ SRP.conexion = {
 
   /* ---------- Respaldo ---------- */
 
+  /* Sólo lo que alcanza quien respalda (D150): sus árboles y jornadas —también los eliminados, que
+     son historia—, la bitácora de esos registros y, de las cuentas, id y nombre. Antes llevaba el
+     padrón completo con correos, toda la bitácora y los registros de otras cuadrillas. */
   async respaldar() {
     const u = SRP.sesion.usuario;
+    const alcanza = (x) => !!u && SRP.permisos.alcanza(u, x, SRP.ref.usuarioPorId);
+    const plantaciones = (await SRP.almacen.todos('plantaciones')).filter(alcanza);
+    const jornadas = (await SRP.almacen.todos('jornadas')).filter(alcanza);
+    const ids = new Set(plantaciones.concat(jornadas).map(x => x.id));
+    const bitacora = (await SRP.almacen.todos('bitacora')).filter(b => ids.has(b.entidad_id));
+    const idsCuentas = new Set(plantaciones.concat(jornadas).flatMap(x => [x.cabo_id, x.encargado_id, x.creado_por_id, x.editado_por_id]).filter(Boolean));
     const datos = { sistema: 'SRP', version: SRP.CONFIG.VERSION, generado: SRP.util.ahoraISO(),
-                    usuario_id: u ? u.id : null, es_ficticio: SRP.CONFIG.ES_FICTICIO };
-    // Las cinco tablas (D87): restaurar en otro dispositivo debe dejar el sistema igual
-    for (const a of SRP.almacen.ALMACENES) datos[a] = await SRP.almacen.todos(a);
-    datos.resumen = this.resumenFotos(datos.plantaciones);
+                    usuario_id: u ? u.id : null, es_ficticio: SRP.CONFIG.ES_FICTICIO, alcance: u ? SRP.permisos.de(u).alcance : null,
+                    resumen: this.resumenFotos(plantaciones), plantaciones, jornadas, bitacora,
+                    cuentas: [...idsCuentas].map(id => ({ id, nombre: SRP.ref.nombreUsuario(id) })) };
     const nombre = 'SRP_respaldo_' + SRP.util.fechaHoy() + (u ? '_' + u.id : '') + '.json';
     const blob = new Blob([JSON.stringify(datos)], { type: 'application/json' });
     const entrega = await SRP.reportes.entregarArchivo(blob, nombre, 'Respaldo del Sistema de Registro de Plantaciones');
     // Cancelar «Compartir» no es guardar: antes decía «Respaldo guardado» igual (D149)
     if (entrega === 'cancelado') { SRP.util.anunciar('No se guardó el respaldo: se canceló.', 'aviso'); return; }
     try { localStorage.setItem(SRP.CONFIG.CLAVE_ULTIMO_RESPALDO, SRP.util.ahoraISO()); } catch (e) { /* la guía dirá «nunca» */ }
-    const n = datos.plantaciones.length;
-    SRP.util.anunciar('Respaldo guardado: ' + n + (n === 1 ? ' registro.' : ' registros.'));
+    const n = datos.plantaciones.length, nj = datos.jornadas.length;
+    SRP.util.anunciar('Respaldo guardado: ' + n + (n === 1 ? ' registro' : ' registros') + ' y ' + nj + (nj === 1 ? ' jornada' : ' jornadas') +
+      '. Contiene nombres, ubicaciones y fotos: entréguelo sólo a su coordinación.');
   },
 
-  /* Restaurar: sólo agrega lo que no existe, nunca sobreescribe. Está en las herramientas de
-     prueba porque en Fase 2 la restauración la hace el servidor a partir del mismo archivo. */
+  /* RESTAURAR (D150). Un respaldo pasó por otras manos, así que nada entra sin revisarse:
+       · Sólo árboles y jornadas; nunca cuentas, catálogos ni bitácora (la historia no se importa:
+         cada registro restaurado deja su propio renglón RESTAURADO).
+       · Cada renglón se valida contra el esquema (js/validar.js), debe estar en el alcance de quien
+         restaura y sus referencias deben existir; lo que ya existe no se toca.
+       · Antes de escribir se enseña el resumen y se pide confirmación; luego todo entra en una
+         sola transacción, o nada.
+     Está en las herramientas de prueba porque en Fase 2 lo hace el servidor con las mismas reglas. */
   async restaurar(entrada) {
     const archivo = entrada.files[0]; entrada.value = '';
     if (!archivo) return;
+    const alerta = (t) => SRP.util.anunciar(t, 'alerta');
+    if (!SRP.CONFIG.ES_FICTICIO) { alerta('Restaurar respaldos es de la versión de prueba; en producción lo hace el servidor.'); return; }
+    if (archivo.size > SRP.CONFIG.RESPALDO_MAX_MB * 1024 * 1024) { alerta('El archivo es demasiado grande para ser un respaldo del SRP (más de ' + SRP.CONFIG.RESPALDO_MAX_MB + ' MB).'); return; }
     let datos;
-    try { datos = JSON.parse(await archivo.text()); } catch (e) { SRP.util.anunciar('El archivo no es un respaldo válido.', 'alerta'); return; }
-    if (!datos || datos.sistema !== 'SRP') { SRP.util.anunciar('El archivo no es un respaldo del SRP.', 'alerta'); return; }
-    let nuevos = 0;
-    for (const a of SRP.almacen.ALMACENES) {
-      for (const obj of (datos[a] || [])) {
-        if (await SRP.almacen.uno(a, obj.id)) continue;
-        await SRP.almacen.guardarConBitacora(a, obj, null);
-        nuevos += 1;
+    try { datos = JSON.parse(await archivo.text()); } catch (e) { alerta('El archivo no es un respaldo válido.'); return; }
+    if (!datos || typeof datos !== 'object' || datos.sistema !== 'SRP') { alerta('El archivo no es un respaldo del SRP.'); return; }
+    if (datos.es_ficticio !== SRP.CONFIG.ES_FICTICIO) {
+      alerta(SRP.CONFIG.ES_FICTICIO ? 'El respaldo es de datos reales y este sistema es de prueba: no se mezclan.' : 'El respaldo es de datos de prueba: no se mezcla con datos reales.');
+      return;
+    }
+    const u = SRP.sesion.usuario;
+    const ids = async (a) => new Set((await SRP.almacen.todos(a)).map(x => x.id));
+    const existentes = { usuarios: await ids('usuarios'), catalogos: await ids('catalogos'), jornadas: await ids('jornadas'), plantaciones: await ids('plantaciones') };
+    const nuevos = { jornadas: [], plantaciones: [] };
+    const rechazados = [];
+    let yaEstaban = 0;
+    // Primero las jornadas: los árboles apuntan a ellas
+    for (const tabla of ['jornadas', 'plantaciones']) {
+      for (const obj of (Array.isArray(datos[tabla]) ? datos[tabla] : [])) {
+        const nombre = tabla === 'jornadas'
+          ? 'Jornada «' + String((obj && obj.nombre) || 'sin nombre').slice(0, 40) + '»'
+          : (obj && typeof obj.folio === 'string' && obj.folio ? 'Árbol ' + obj.folio.slice(0, 20) : 'Árbol sin folio');
+        const v = SRP.validar.registro(tabla, obj);
+        if (!v.ok) { rechazados.push(nombre + ': ' + v.motivo + '.'); continue; }
+        const r = v.limpio;
+        if (existentes[tabla].has(r.id)) { yaEstaban += 1; continue; }
+        if (!u || !SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId)) { rechazados.push(nombre + ': es de otra cuadrilla.'); continue; }
+        const extra = SRP.validar.reglasExtra(tabla, r);
+        if (extra) { rechazados.push(nombre + ': ' + extra + '.'); continue; }
+        const rotas = SRP.validar.referenciasRotas(tabla, r, existentes);
+        if (rotas.length) { rechazados.push(nombre + ': ' + SRP.validar.textoReferencias(rotas) + '.'); continue; }
+        nuevos[tabla].push(r);
+        existentes[tabla].add(r.id);
       }
     }
+    const nA = nuevos.plantaciones.length, nJ = nuevos.jornadas.length;
+    const cuantos = (nA === 1 ? '1 árbol' : nA + ' árboles') + ' y ' + (nJ === 1 ? '1 jornada' : nJ + ' jornadas');
+    if (!nA && !nJ) {
+      SRP.util.anunciar('No hay nada nuevo que restaurar' + (yaEstaban ? ': ' + yaEstaban + ' ya estaban en este teléfono' : '') +
+        (rechazados.length ? '. ' + rechazados.length + ' no se pueden restaurar: ' + rechazados[0] : '.'), rechazados.length ? 'alerta' : 'aviso');
+      return;
+    }
+    const ok = await SRP.app.confirmar({ titulo: 'Restaurar respaldo', pregunta: '¿Agregar ' + cuantos + ' de este respaldo?',
+      puntosTitulo: 'No se restauran (' + rechazados.length + '):', puntos: rechazados.slice(0, 6).concat(rechazados.length > 6 ? ['Y ' + (rechazados.length - 6) + ' más.'] : []),
+      nota: (yaEstaban ? yaEstaban + ' ya estaban en este teléfono y no se tocan. ' : '') + 'Nada de lo que ya existe se sobreescribe.',
+      boton: 'Restaurar', icono: 'palomita' });
+    if (!ok) return;
+    const origen = typeof datos.usuario_id === 'string' && SRP.validar.ID.test(datos.usuario_id) ? datos.usuario_id : 'cuenta desconocida';
+    const fecha = typeof datos.generado === 'string' && !isNaN(Date.parse(datos.generado)) ? SRP.util.formatearFecha(datos.generado) : 'fecha desconocida';
+    const detalle = 'Desde el respaldo del ' + fecha + ' (' + origen + ')';
+    await SRP.almacen._tx(['jornadas', 'plantaciones', 'bitacora'], 'readwrite', (tx) => {
+      nuevos.jornadas.forEach(j => { tx.objectStore('jornadas').put(j); tx.objectStore('bitacora').put(SRP.bitacora.entrada('RESTAURADO', 'jornada', j.id, detalle)); });
+      nuevos.plantaciones.forEach(p => { tx.objectStore('plantaciones').put(p); tx.objectStore('bitacora').put(SRP.bitacora.entrada('RESTAURADO', 'plantacion', p.id, detalle)); });
+    });
     await SRP.ref.recargar();
     if (SRP.registros.preparar && SRP.app.vista === 'registros') await SRP.registros.preparar();
-    await this.refrescarAvisoEnvio();
-    SRP.util.anunciar('Respaldo restaurado: ' + nuevos + (nuevos === 1 ? ' elemento nuevo.' : ' elementos nuevos.'));
+    await this.refrescar();
+    SRP.util.anunciar('Respaldo restaurado: ' + cuantos + (nA + nJ === 1 ? ' nuevo.' : ' nuevos.') +
+      (rechazados.length ? ' ' + rechazados.length + (rechazados.length === 1 ? ' no se restauró.' : ' no se restauraron.') : ''));
   }
 };
 

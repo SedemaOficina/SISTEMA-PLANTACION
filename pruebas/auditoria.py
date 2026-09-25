@@ -228,6 +228,19 @@ with sync_playwright() as p:
     generado = generar_diccionario.generar(esquema)
     actual = open(os.path.join(APP, 'DICCIONARIO-DATOS.md'), encoding='utf-8').read()
     mirar(generado == actual, 'DICCIONARIO-DATOS.md está regenerado a partir de esquema.json', 'corra pruebas/generar_diccionario.py')
+    # Y el esquema con que el navegador valida los respaldos (D150)
+    js_actual = open(os.path.join(APP, 'js', 'esquema.js'), encoding='utf-8').read()
+    mirar(generar_diccionario.generar_js(esquema) == js_actual, 'js/esquema.js está regenerado a partir de esquema.json (lo usa la validación de respaldos)', 'corra pruebas/generar_diccionario.py')
+    # Política de seguridad (D150): nada en línea que la política vaya a bloquear en el teléfono
+    en_linea = []
+    html = re.sub(r'<!--.*?-->', '', open(os.path.join(APP, 'index.html'), encoding='utf-8').read(), flags=re.S)
+    if re.search(r'<script(?![^>]*\bsrc=)[^>]*>', html): en_linea.append('index.html: <script> sin src')
+    for f in ['index.html'] + sorted(os.path.relpath(x, APP) for x in glob.glob(APP + '/js/*.js')):
+        txt = html if f == 'index.html' else open(os.path.join(APP, f), encoding='utf-8').read()
+        if f != 'index.html': txt = re.sub(r'/\*.*?\*/', '', txt, flags=re.S)
+        for m in re.finditer(r'''\s(style|on[a-z]+)=["'\\]''', txt):
+            en_linea.append('%s: %s=' % (f, m.group(1)))
+    mirar(not en_linea, 'ningún estilo ni manejador en línea en la página ni en el HTML que arma el código (la política de seguridad los bloquearía)', ', '.join(en_linea[:6]))
     # Folio (D67, 23-09-2026): 13 caracteres, sin prefijo de sistema ni año. No debe quedar rastro
     # del formato de 22 caracteres fuera de la historia (BITACORA y la nota de sustitución de D67)
     campo_folio = next(c for c in esquema['tablas']['plantaciones']['campos'] if c['campo'] == 'folio')

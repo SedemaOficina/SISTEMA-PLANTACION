@@ -68,7 +68,7 @@ SRP.usuarios = {
       }
       const estado = '<span class="estado-texto" data-activo="' + u.activo + '">' + (u.activo ? 'Activo' : 'Inactivo') + '</span>';
       // En teléfono, tarjeta compacta (D105): nombre, correo, un renglón de resumen y la tuerca
-      return '<tr data-id="' + u.id + '"><td class="c-titulo" data-etiqueta="Nombre">' + esc(SRP.util.nombreCompleto(u)) + (soyYo ? ' <span class="insignia">usted</span>' : '') + '</td>' +
+      return '<tr data-id="' + SRP.util.escapar(u.id) + '"><td class="c-titulo" data-etiqueta="Nombre">' + esc(SRP.util.nombreCompleto(u)) + (soyYo ? ' <span class="insignia">usted</span>' : '') + '</td>' +
         '<td class="c-sub" data-etiqueta="Correo">' + esc(u.correo) + '</td>' +
         '<td class="c-movil-oculta" data-etiqueta="Área">' + esc(SRP.ref.nombreCatalogo(u.area_id)) + '</td>' +
         '<td class="c-movil-oculta" data-etiqueta="Cargo y rol">' + esc(u.cargo_rol) + '</td>' +
@@ -97,7 +97,7 @@ SRP.usuarios = {
     const areas = SRP.ref.deTipo('area', true).slice();
     if (areaActual && !areas.find(a => a.id === areaActual) && SRP.ref.catalogoPorId[areaActual]) areas.push(SRP.ref.catalogoPorId[areaActual]);
     this.el('usr-area').innerHTML = '<option value="">Seleccione el área</option>' +
-      areas.map(a => '<option value="' + a.id + '">' + esc(a.nombre) + (a.activo ? '' : ' (inactiva)') + '</option>').join('');
+      areas.map(a => '<option value="' + SRP.util.escapar(a.id) + '">' + esc(a.nombre) + (a.activo ? '' : ' (inactiva)') + '</option>').join('');
 
     this.el('usr-perfil').innerHTML = '<option value="">Seleccione el perfil</option>' +
       Object.keys(SRP.PERFILES).map(k => '<option value="' + k + '">' + esc(SRP.PERFILES[k].etiqueta) + '</option>').join('');
@@ -107,7 +107,7 @@ SRP.usuarios = {
       .filter(u => u.activo && (u.perfil === 'COORDINADOR' || u.perfil === 'ADMIN') && (!usuario || u.id !== usuario.id))
       .sort((a, b) => SRP.util.nombreCompleto(a).localeCompare(SRP.util.nombreCompleto(b), 'es'));
     this.el('usr-coordinador').innerHTML = '<option value="">Sin coordinador asignado</option>' +
-      coordinadores.map(u => '<option value="' + u.id + '">' + esc(SRP.util.nombreCompleto(u)) + '</option>').join('');
+      coordinadores.map(u => '<option value="' + SRP.util.escapar(u.id) + '">' + esc(SRP.util.nombreCompleto(u)) + '</option>').join('');
   },
 
   ajustarPorPerfil() {

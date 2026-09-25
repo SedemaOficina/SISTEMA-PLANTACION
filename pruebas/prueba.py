@@ -13,6 +13,14 @@ SRP_GPS='GPS del dispositivo'
 errores=[]; res=[]
 def ok(c,m): res.append(('OK ' if c else 'FALLA ')+m)
 
+def esperar(pg, expr, ms):
+    """Espera a que la expresión sea verdadera, preguntando desde aquí. No se usa wait_for_function:
+    Playwright la compila con eval dentro de la página, y la política de seguridad (D150) lo impide."""
+    for _ in range(max(1, ms // 200)):
+        if pg.evaluate(expr): return True
+        pg.wait_for_timeout(200)
+    return bool(pg.evaluate(expr))
+
 def accion(pg, cont, cual, n=0):
     """Elige una acción de renglón: abre la tuerca del renglón y pulsa la opción (D94).
     `cont` es un selector o un locator que contiene el renglón."""
@@ -165,7 +173,6 @@ with sync_playwright() as p:
       document.getElementById('btn-ubicacion').click(); const sigue = !document.getElementById('panel-iniciar-jornada').hidden;
       SRP.activa.jornada = j; await SRP.activa.preparar(); return [oculto, sigue]; }""")
     ok(bloqueo==[True,True],'sin jornada el formulario no se muestra ni responde: %s' % bloqueo)
-    esc=pg.evaluate("(() => { const s = document.createElement('style'); s.textContent='#registrar-columnas{display:grid}'; document.head.appendChild(s); const r = getComputedStyle(document.getElementById('registrar-columnas')).display; s.remove(); return r; })()")
     ok(pg.is_hidden('#campo-fecha'),'la fecha de plantación ya no se pide por árbol: se hereda de la jornada')
 
     # ---------- REGISTRAR ----------
@@ -479,7 +486,7 @@ with sync_playwright() as p:
     ok('enviado hoy a las' in pg.inner_text('#franja-guardado-envio') and pg.get_attribute('#franja-guardado','data-envio')=='recibido',
        'y luego que el servidor confirmó la recepción, con la hora (D111): '+pg.inner_text('#franja-guardado-envio'))
     ok(re.search(r'^[A-Z]{3}-\d{3}-\d{5} \(simulado\)$', pg.inner_text('#franja-guardado-folio')) is not None,'con su folio (D110): '+pg.inner_text('#franja-guardado-folio'))
-    ok(pg.text_content('#conexion').strip()=='Con conexión · Al día' and pg.get_attribute('#conexion','data-estado')=='con','la pastilla queda «Al día» (D111)')
+    ok(pg.text_content('#conexion').strip()=='Con conexión · Al día (simulado)' and pg.get_attribute('#conexion','data-estado')=='con','la pastilla queda «Al día» y dice que el servidor es simulado (D111, D150)')
     ok(pg.evaluate("document.activeElement.id")=='btn-ubicacion' and pg.is_visible('#btn-guardado-corregir') and pg.is_visible('#btn-guardado-ver'),'el formulario queda listo con el foco en ubicación, y la franja ofrece «Corregir» y «Ver»')
     ok(pg.locator('#especies-recientes .chip').count()==1 and 'Fresno' in pg.inner_text('#especies-recientes'),'la especie recién usada aparece como atajo encima del buscador (D130)')
     ctx.set_geolocation({'latitude':19.432,'longitude':-99.133,'accuracy':0})
@@ -836,8 +843,7 @@ with sync_playwright() as p:
     ok('Meta de la jornada: 4 árboles · registrados: 4 (cuadra)' in pg.inner_text('#previa-hoja') and 'Jornada: Jardín de prueba' in pg.inner_text('#previa-hoja'),'y el reporte lleva la conciliación y el nombre de la jornada')
     # Croquis de la jornada (D115): en la vista previa y en el PDF, con los mismos números que la tabla.
     # Espera a que aparezca: con mosaicos lentos el croquis tarda hasta ESPERA_MS (8 s) antes de ir sin imagen
-    try: pg.wait_for_function("!!document.querySelector('#previa-croquis img')", timeout=10000)
-    except Exception: pass
+    esperar(pg, "!!document.querySelector('#previa-croquis img')", 10000)
     cro=pg.evaluate("(() => { const i=document.querySelector('#previa-croquis img'); return i ? { src: i.src.slice(0,22), alt: i.alt, nota: document.querySelector('#previa-croquis .previa-nota').textContent } : null; })()")
     ok(cro and cro['src'].startswith('data:image/') and '4 puntos' in cro['alt'] and 'orden de la tabla' in cro['nota'],'la vista previa trae el croquis de la jornada con los puntos numerados (D115): %s' % (cro and cro['nota'][:80]))
     ok(cro and ('sin conexión' in cro['nota'] or 'Esri' in cro['nota']),'y el pie dice si lleva imagen de satélite o si se generó sin conexión')
@@ -1036,7 +1042,7 @@ with sync_playwright() as p:
     ctx.set_offline(False); pg.wait_for_timeout(300)
     ok(pg.text_content('#conexion').strip()=='Enviando 1…','al volver la señal sale solo, sin que nadie toque nada (D111)')
     pg.wait_for_timeout(1700)
-    ok(pg.text_content('#conexion').strip()=='Con conexión · Al día' and pg.is_hidden('#franja-envio'),'y la pastilla queda «Al día» y la franja se va (D111)')
+    ok(pg.text_content('#conexion').strip()=='Con conexión · Al día (simulado)' and pg.is_hidden('#franja-envio'),'y la pastilla queda «Al día» y la franja se va (D111)')
     ok('1 registro enviado al servidor (simulado)' in pg.inner_text('#aviso'),'con aviso de recepción: '+pg.inner_text('#aviso'))
     li='#lista-registros li[data-id="%s"]' % rid
     ok(pg.locator(li+' .marca-envio').count()==0 and re.search(r'[A-Z]{3}-\d{3}-\d{5}', pg.inner_text(li+' .registro-estado .registro-folio')) is not None,'la tarjeta pierde la marca y muestra su folio, sin repintar la lista (D111)')
@@ -1070,18 +1076,23 @@ with sync_playwright() as p:
     ruta='/home/claude/srp/respaldo_prueba.json'; d2.value.save_as(ruta)
     import json
     resp=json.load(open(ruta,encoding='utf-8'))
-    ok(resp['sistema']=='SRP' and len(resp['plantaciones'])>=4 and all(k in resp for k in ('jornadas','bitacora','usuarios','catalogos')) and len(resp['catalogos'])>=76,
-       'el respaldo lleva las cinco tablas (D87): %d registros, %d catálogos' % (len(resp['plantaciones']), len(resp['catalogos'])))
+    idsR=set(p_['id'] for p_ in resp['plantaciones']+resp['jornadas'])
+    ok(resp['sistema']=='SRP' and len(resp['plantaciones'])>=4 and all(k in resp for k in ('jornadas','bitacora','cuentas')) and 'usuarios' not in resp and 'catalogos' not in resp
+       and all(b_['entidad_id'] in idsR for b_ in resp['bitacora']) and all(set(c_.keys())=={'id','nombre'} for c_ in resp['cuentas']),
+       'el respaldo lleva sólo el alcance de quien respalda: árboles, jornadas, su bitácora y de las cuentas sólo id y nombre (D150): %d registros, %d jornadas, %d cuentas' % (len(resp['plantaciones']), len(resp['jornadas']), len(resp['cuentas'])))
     ok(resp['resumen']['con_foto']>=1 and resp['resumen']['foto_bytes']>0,'y el resumen de fotografías: %s' % resp['resumen'])
     ok(all('es_ficticio' in c for c in resp['jornadas']) and all('es_ficticio' in b for b in resp['bitacora']),'jornadas y bitácora llevan es_ficticio (D87)')
     ctx2=b.new_context(viewport={'width':390,'height':844}); pg2=ctx2.new_page(); pg2.goto(BASE); pg2.wait_for_timeout(1200)
     pg2.select_option('#sel-usuario-prueba','u-cabo-1'); pg2.click('#btn-entrar-prueba'); pg2.wait_for_timeout(500)
     antes=pg2.evaluate("SRP.almacen.todos('plantaciones').then(r=>r.length)")
     pg2.set_input_files('#archivo-restaurar', ruta); pg2.wait_for_timeout(1200)
+    ok(pg2.is_visible('#dlg-confirmar') and 'Restaurar respaldo' in pg2.inner_text('#dlg-confirmar'),'restaurar enseña primero el resumen y pide confirmación (D150)')
+    pg2.click('#btn-confirmar-si'); pg2.wait_for_timeout(1000)
     despues=pg2.evaluate("SRP.almacen.todos('plantaciones').then(r=>r.length)")
-    ok(antes==0 and despues==len(resp['plantaciones']),'y se restaura en un dispositivo limpio: %d → %d registros' % (antes, despues))
+    propios=len([p_ for p_ in resp['plantaciones'] if p_['cabo_id']=='u-cabo-1'])
+    ok(antes==0 and despues==propios and propios>0,'y se restaura en un dispositivo limpio lo que alcanza quien restaura: %d → %d registros (de %d en el archivo)' % (antes, despues, len(resp['plantaciones'])))
     pg2.set_input_files('#archivo-restaurar', ruta); pg2.wait_for_timeout(800)
-    ok(pg2.evaluate("SRP.almacen.todos('plantaciones').then(r=>r.length)")==despues,'restaurar dos veces no duplica nada')
+    ok(pg2.evaluate("SRP.almacen.todos('plantaciones').then(r=>r.length)")==despues and pg2.is_hidden('#dlg-confirmar'),'restaurar dos veces no duplica nada: dice que no hay nada nuevo')
     ctx2.close()
     # Lo escrito no se vuelve a pedir al regenerar el reporte de la misma jornada
     reporte_de(pg)
@@ -1433,8 +1444,7 @@ with sync_playwright() as p:
     ok(pg.is_visible('#dlg-previa'),'la vista previa del reporte se abre antes de generar el PDF')
     pg.click('#btn-previa-generar')
     ok(pg.evaluate("document.getElementById('principal').getAttribute('aria-busy')")=='true','#principal queda aria-busy mientras se arma el PDF (D136)')
-    try: pg.wait_for_function("!document.getElementById('principal').hasAttribute('aria-busy')", timeout=8000)
-    except Exception: pass
+    esperar(pg, "!document.getElementById('principal').hasAttribute('aria-busy')", 8000)
     ok(pg.evaluate("document.getElementById('principal').hasAttribute('aria-busy')") is False,'y aria-busy se quita al terminar')
     # Cierre del ciclo (D138): con puntos sin revisar, el aviso no dice «completa» sino qué falta
     ok('Reporte generado' in pg.inner_text('#aviso') and ('quedó completa' in pg.inner_text('#aviso') or 'Siguiente: revisar' in pg.inner_text('#aviso')),'al terminar el PDF el aviso cierra el ciclo: dice si la jornada quedó completa o qué falta (D138): '+pg.inner_text('#aviso'))
@@ -1524,8 +1534,7 @@ with sync_playwright() as p:
     pg.click('#btn-jornada-reporte'); pg.wait_for_timeout(900)
     if pg.is_visible('#dlg-cierre'): pg.fill('#cie-personal','Cuadrilla de prueba'); pg.click('#form-cierre button[type=submit]'); pg.wait_for_timeout(700)
     pg.click('#btn-previa-generar')
-    try: pg.wait_for_function("!document.getElementById('principal').hasAttribute('aria-busy')", timeout=8000)
-    except Exception: pass
+    esperar(pg, "!document.getElementById('principal').hasAttribute('aria-busy')", 8000)
     ok('quedó completa' in pg.inner_text('#aviso'),'al generar el PDF el aviso cierra el ciclo: «La jornada … quedó completa» (D138): '+pg.inner_text('#aviso'))
     pg.evaluate("SRP.app.mostrarVista('jornadas')"); pg.wait_for_timeout(500)
     pg.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg.wait_for_timeout(400)
@@ -1950,6 +1959,57 @@ with sync_playwright() as p:
     n0=len(errores)
     pg.click('#btn-guardado-cerrar'); pg.wait_for_timeout(300)
     ok(pg.is_hidden('#franja-guardado') and len(errores)==n0,'la × de la franja «Guardado» la oculta sin lanzar un error (antes: TypeError en cada toque)')
+
+    # ---------- BLOQUE 90: RESPALDO SEGURO (D150) ----------
+    csp=pg.evaluate("(document.querySelector('meta[http-equiv=\"Content-Security-Policy\"]') || {}).content || ''")
+    ok("script-src 'self'" in csp and 'unsafe-inline' not in csp and "object-src 'none'" in csp and pg.evaluate("(document.querySelector('meta[name=referrer]') || {}).content")=='no-referrer',
+       'la página declara su política de seguridad: sólo código propio, sin scripts en línea, y no dice desde dónde pide el mapa (D150)')
+    # Un respaldo alterado: se arma con un árbol y una jornada reales y se le meten variantes
+    base_p, base_j = pg.evaluate("async () => { const p = (await SRP.almacen.todos('plantaciones')).find(x => x.estatus === 'activo' && x.especie_id); return [p, await SRP.almacen.uno('jornadas', p.jornada_id)]; }")
+    import copy
+    def arbol_b90(i, **k):
+        o=copy.deepcopy(base_p); o.update({'id':i,'cabo_id':'u-cabo-1','editado_por_id':None,'jornada_id':'jr-b90','foto_base64':None,'foto_id':None,'foto_nombre':'','foto_bytes':0,
+                  'especie_id':'ESP-0002','especie_otra':'','especie_estatus':'VALIDADA','programa_id':'p-refor','folio':'RESP%09d' % (len(i) * 7 + ord(i[-1]))}); o.update(k); return o
+    jor=copy.deepcopy(base_j); jor.update({'id':'jr-b90','cabo_id':'u-cabo-1','creado_por_id':'u-cabo-1','editado_por_id':'u-cabo-1','encargado_id':None,'puntos_revisados':[],'nombre':'Jornada del respaldo','programa_id':'p-refor'})
+    rara=copy.deepcopy(jor); rara.update({'id':'jr-b90-rara','estatus':'rara','nombre':'Jornada rara'})
+    malo={'sistema':'SRP','version':'x','generado':'2026-09-24T12:00:00Z','usuario_id':'u-cabo-1','es_ficticio':True,
+          'jornadas':[jor, rara],
+          'plantaciones':[arbol_b90('pl-b90-ok'), arbol_b90('pl-b90-fuera', lat=25.0, lng=-80.0), arbol_b90('pl-b90-especie', especie_id='ESP-9999'),
+                          arbol_b90('pl-b90-otra', cabo_id='u-coord-1'), arbol_b90('x"><img src=x onerror=window.__xss=1>'),
+                          arbol_b90('pl-b90-foto', foto_base64='data:image/jpeg;base64,AAAA" onerror="window.__xss=2', foto_id='f1', foto_bytes=3)],
+          'usuarios':[{'id':'u-intruso','nombre':'Intruso','perfil':'ADMIN','activo':True,'correo':'intruso@ejemplo.local'}],
+          'bitacora':[{'id':'b-falsa','accion':'CREADO','entidad':'plantacion','entidad_id':'pl-b90-ok','usuario_nombre':'Nadie'}]}
+    ruta_mala='/home/claude/srp/respaldo_alterado.json'; json.dump(malo, open(ruta_mala,'w',encoding='utf-8'))
+    ctx10=b.new_context(viewport={'width':390,'height':844}); pg10=ctx10.new_page(); err10=[]
+    pg10.on('pageerror', lambda e: err10.append(str(e))); pg10.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err10.append(m.text))
+    pg10.goto(BASE); pg10.wait_for_timeout(1200)
+    pg10.select_option('#sel-usuario-prueba','u-cabo-1'); pg10.click('#btn-entrar-prueba'); pg10.wait_for_timeout(600)
+    pg10.set_input_files('#archivo-restaurar', ruta_mala); pg10.wait_for_timeout(900)
+    txt=pg10.inner_text('#dlg-confirmar') if pg10.is_visible('#dlg-confirmar') else ''
+    ok('¿Agregar 1 árbol y 1 jornada de este respaldo?' in txt and 'No se restauran (6)' in txt and 'fuera de la Ciudad de México' in txt and 'es de otra cuadrilla' in txt
+       and 'la especie no existe en este teléfono' in txt and 'Árbol RESP' in txt and 'la fotografía no es una imagen válida' in txt and 'no tiene el formato esperado' in txt and 'trae un valor que no existe' in txt,
+       'un respaldo alterado se revisa renglón por renglón: fuera de la CDMX, otra cuadrilla, especie inexistente, foto que no es imagen, id con código y estatus inventado (D150): '+txt.replace('\n',' | ')[:400])
+    pg10.click('#btn-confirmar-si'); pg10.wait_for_timeout(900)
+    r10=pg10.evaluate("""async () => ({ p: (await SRP.almacen.todos('plantaciones')).map(x => x.id), j: (await SRP.almacen.todos('jornadas')).map(x => x.id),
+        u: (await SRP.almacen.todos('usuarios')).length, b: (await SRP.almacen.todos('bitacora')).map(x => x.accion + ':' + x.entidad_id), xss: window.__xss === undefined ? null : window.__xss })""")
+    ok(r10['p']==['pl-b90-ok'] and r10['j']==['jr-b90'] and r10['u']==3 and sorted(r10['b'])==['RESTAURADO:jr-b90','RESTAURADO:pl-b90-ok'] and r10['xss'] is None,
+       'sólo entra lo válido, en una transacción y con su renglón RESTAURADO; no entran cuentas (la de administración intrusa) ni la bitácora del archivo, y no se ejecutó nada: %s' % r10)
+    # Defensa en profundidad: aunque un registro con id y foto maliciosos llegara a la base (p. ej. por sincronización en Fase 2), no se ejecuta
+    pg10.evaluate("""async () => { const p = Object.assign({}, (await SRP.almacen.todos('plantaciones'))[0], { id: 'x"><img src=x onerror=window.__xss=3>', foto_base64: 'data:image/jpeg;base64,AAAA" onerror="window.__xss=4' });
+        const tx = SRP.almacen.db.transaction('plantaciones', 'readwrite'); tx.objectStore('plantaciones').put(p); await new Promise(r => tx.oncomplete = r); }""")
+    pg10.evaluate("SRP.app.mostrarVista('registros')"); pg10.wait_for_timeout(700)
+    dx=pg10.evaluate("""() => ({ xss: window.__xss === undefined ? null : window.__xss, ids: [...document.querySelectorAll('#lista-registros .registro')].map(li => li.dataset.id),
+        imgs: document.querySelectorAll('#lista-registros img[onerror]').length })""")
+    ok(dx['xss'] is None and 'x"><img src=x onerror=window.__xss=3>' in dx['ids'] and dx['imgs']==0,'un id o una foto con código ya guardados se pintan como texto: el id queda entero en su atributo y la foto no se usa (D150): %s' % dx)
+    ok(not [e for e in err10 if 'Content Security Policy' in e or 'Refused' in e],'y la política de seguridad no tuvo nada que bloquear: el escapado ya lo resolvió')
+    # Datos reales y de prueba no se mezclan
+    malo2=dict(malo); malo2['es_ficticio']=False; json.dump(malo2, open(ruta_mala,'w',encoding='utf-8'))
+    pg10.set_input_files('#archivo-restaurar', ruta_mala); pg10.wait_for_timeout(600)
+    ok('es de datos reales y este sistema es de prueba' in pg10.inner_text('#aviso') and pg10.is_hidden('#dlg-confirmar'),'un respaldo de datos reales no se mezcla con los de prueba')
+    ctx10.close()
+    # Modo de prueba apagado: el acceso simulado no abre con cualquier contraseña
+    fuera=pg.evaluate("() => { SRP.CONFIG.ES_FICTICIO = false; const r = SRP.sesion.autenticar('cabo@ejemplo.local'); SRP.CONFIG.ES_FICTICIO = true; return r; }")
+    ok(fuera['ok'] is False and 'acceso institucional todavía no está conectado' in fuera['motivo'],'con ES_FICTICIO apagado y el proveedor aún simulado, el acceso queda cerrado (D150): '+fuera['motivo'])
 
     b.close()
 print('\n'.join(res)); print('ERRORES CONSOLA:',errores or 'ninguno')

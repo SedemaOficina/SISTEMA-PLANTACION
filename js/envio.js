@@ -209,7 +209,7 @@ SRP.envio = {
     caja.hidden = false;
     this.el('senal-cola-texto').textContent = (pend && pend.length
       ? (pend.length === 1 ? '1 registro por enviar' : pend.length + ' registros por enviar')
-      : 'Todo enviado al servidor') + (e.ultimo ? '. Último envío: ' + this.cuando(e.ultimo) + '.' : '.');
+      : 'Todo enviado al servidor simulado') + (e.ultimo ? '. Último envío: ' + this.cuando(e.ultimo) + '.' : '.');
     this.el('senal-destino').innerHTML = '<strong>Sus registros se guardan primero en este teléfono</strong> y se envían solos al servidor en cuanto hay señal; ' +
       'no tiene que hacer nada. En pruebas el servidor es simulado: nada sale del teléfono.';
   },

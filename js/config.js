@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 89',
+  ETAPA: 'Bloque 90',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -31,6 +31,7 @@ SRP.CONFIG = {
   CLAVE_SESION: 'srp_sesion_usuario_id',
   CLAVE_CONTRASTE: 'srp_contraste',
   CLAVE_ULTIMO_RESPALDO: 'srp_ultimo_respaldo',   // fecha del último respaldo de este teléfono (D149)
+  RESPALDO_MAX_MB: 60,   // un respaldo más grande no se lee: protege la memoria del teléfono (D150)
   CLAVE_SECUENCIAS_PRUEBA: 'srp_secuencias_folio_prueba',   // secuencias del servidor simulado (D110)
   // Envío simulado (D111): lo «recibido» por el servidor de prueba y el interruptor «Simular sin señal»
   CLAVE_ENVIOS_PRUEBA: 'srp_envios_prueba',
@@ -41,7 +42,8 @@ SRP.CONFIG = {
   // Revisión de jornadas (D112): umbrales de los avisos y de la partición por sitio, en metros
   JORNADA: { DUPLICADO_M: 3, FUERA_M: 150, SEPARAR_M: 500 },
 
-  // [pendiente] Fase 2: proveedor institucional de identidad. Hoy el acceso es simulado.
+  // [pendiente] Fase 2: proveedor institucional de identidad. Hoy el acceso es simulado, y con
+  // ES_FICTICIO: false el acceso simulado queda cerrado hasta conectar el proveedor (D150).
   AUTENTICACION: { PROVEEDOR: 'simulado' },
 
   MAPA: {
@@ -59,7 +61,9 @@ SRP.CONFIG = {
        nombres nadie sabe dónde está parado.
        [pendiente] Proveedor para producción (Norma 6.8): el servicio de Esri se usa aquí con su
        atribución, pero su uso gratuito tiene límites que hay que revisar antes de operar con
-       cientos de personas en campo. */
+       cientos de personas en campo.
+       Si cambia el dominio del proveedor, se cambia también en la política de seguridad de
+       index.html (img-src), o el mapa dejará de verse (D150). */
     CAPAS: [
       { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
         atribucion: 'Imagen: Esri, Maxar, Earthstar Geographics y la comunidad de usuarios de Esri',

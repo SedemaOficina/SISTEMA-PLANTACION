@@ -5,14 +5,40 @@ derivaciones, campos efímeros y reglas. Este script sólo lo pone en prosa y ta
 no se edita el .md a mano. pruebas/auditoria.py comprueba que el esquema coincide con lo que el
 sistema guarda y que el .md está regenerado.
 
-Uso:  python3 pruebas/generar_diccionario.py           escribe DICCIONARIO-DATOS.md
-      python3 pruebas/generar_diccionario.py --texto   imprime el resultado sin escribir
+Escribe además js/esquema.js (D150): los campos, tipos, nulos, dominios y referencias en la forma
+que usa js/validar.js para revisar lo que entra por un respaldo. Tampoco se edita a mano.
+
+Uso:  python3 pruebas/generar_diccionario.py           escribe DICCIONARIO-DATOS.md y js/esquema.js
+      python3 pruebas/generar_diccionario.py --texto   imprime el diccionario sin escribir
 """
 import json, os, sys
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ESQUEMA = os.path.join(RAIZ, 'esquema.json')
 SALIDA = os.path.join(RAIZ, 'DICCIONARIO-DATOS.md')
+SALIDA_JS = os.path.join(RAIZ, 'js', 'esquema.js')
+
+def generar_js(d):
+    """El esquema para validar en el navegador: por tabla, [campo, tipo, nulo, dominio, referencia].
+    dominio: nombre de un dominio con lista de valores (o null); referencia: la tabla a la que apunta
+    un campo «→ tabla.id» (o null)."""
+    dominios = {k: v['valores'] for k, v in d['dominios'].items() if isinstance(v.get('valores'), list)}
+    tablas = {}
+    for t, info in d['tablas'].items():
+        filas = []
+        for c in info['campos']:
+            dom = c.get('dominio') or ''
+            ref = None
+            if dom.startswith('→ '):
+                ref = dom[2:].split('.')[0].strip()
+            filas.append([c['campo'], c['tipo'], bool(c['nulo']), dom if dom in dominios else None, ref])
+        tablas[t] = filas
+    datos = {'version_esquema': d['version_esquema'], 'dominios': dominios, 'tablas': tablas}
+    return ('/* ESQUEMA PARA VALIDAR (D150). Generado de esquema.json por pruebas/generar_diccionario.py:\n'
+            '   no se edita a mano. Lo usa js/validar.js para revisar lo que entra por un respaldo.\n'
+            '   Por tabla: [campo, tipo, nulo, dominio, referencia]. */\n'
+            'window.SRP = window.SRP || {};\n\n'
+            'SRP.ESQUEMA = ' + json.dumps(datos, ensure_ascii=False, indent=1) + ';\n')
 
 def celda(t):
     return str(t).replace('|', '\\|').replace('\n', ' ') if t not in (None, '') else '—'
@@ -151,6 +177,7 @@ def main():
     if '--texto' in sys.argv:
         sys.stdout.write(texto); return
     with open(SALIDA, 'w', encoding='utf-8') as s: s.write(texto)
+    with open(SALIDA_JS, 'w', encoding='utf-8') as s: s.write(generar_js(d))
     n = sum(len(t['campos']) for t in d['tablas'].values())
     print('%s: %d tablas, %d campos, %d reglas de Fase 1, %d de Fase 2' % (
         os.path.relpath(SALIDA, RAIZ), len(d['tablas']), n, len(d['reglas_fase1']), len(d['reglas_fase2'])))

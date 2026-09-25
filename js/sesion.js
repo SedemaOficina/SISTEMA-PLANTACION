@@ -1,6 +1,6 @@
 /* SESIÓN (capa de autenticación aparte, Norma 1.5).
    Fase 1: acceso simulado; el usuario queda fijo en el dispositivo (localStorage).
-   Fase 2: sustituir iniciar()/leer() por el proveedor institucional sin tocar el resto. */
+   Fase 2: se sustituye sólo autenticar() por el proveedor institucional, sin tocar el resto. */
 window.SRP = window.SRP || {};
 
 SRP.sesion = {
@@ -20,7 +20,7 @@ SRP.sesion = {
     try { localStorage.setItem(SRP.CONFIG.CLAVE_SESION, usuario.id); } catch (e) { /* sin persistencia */ }
   },
 
-  // Sólo disponible mientras CONFIG.ES_FICTICIO sea true (herramienta de pruebas)
+  // «Cerrar sesión» para todos; «Cambiar de perfil» (sólo pruebas) también pasa por aquí
   cerrar() {
     this.usuario = null;
     try { localStorage.removeItem(SRP.CONFIG.CLAVE_SESION); } catch (e) { /* nada que borrar */ }
@@ -33,6 +33,11 @@ SRP.sesion = {
      perfiles. La verificación real la hace el proveedor institucional en Fase 2, y entonces se
      sustituye sólo esta función. Ver AUTENTICACION en config.js. */
   autenticar(correo) {
+    // Con datos reales el acceso simulado no abre (D150): hasta conectar el proveedor institucional,
+    // cualquier contraseña serviría. Apagar ES_FICTICIO sin cambiar el proveedor deja el acceso cerrado.
+    if (SRP.CONFIG.AUTENTICACION.PROVEEDOR === 'simulado' && !SRP.CONFIG.ES_FICTICIO) {
+      return { ok: false, motivo: 'El acceso institucional todavía no está conectado: esta versión no se puede usar con datos reales.' };
+    }
     const buscado = SRP.util.normalizar(correo);
     const u = SRP.ref.usuarios.find(x => SRP.util.normalizar(x.correo) === buscado);
     if (!u) return { ok: false, motivo: 'Ese correo no está dado de alta. Solicite su cuenta a la Administración del sistema.' };

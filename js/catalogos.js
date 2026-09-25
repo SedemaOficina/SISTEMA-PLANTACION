@@ -89,7 +89,7 @@ SRP.catalogos = {
       const estado = '<span class="estado-texto" data-activo="' + c.activo + '">' + (c.activo ? 'Activo' : 'Inactivo') + '</span>';
       // Clases c-*: en teléfono la fila es una tarjeta compacta (D105): título, científico, un
       // renglón de resumen y la tuerca arriba a la derecha; el resto de celdas se oculta ahí
-      return '<tr data-id="' + c.id + '"><td class="c-titulo" data-etiqueta="Nombre">' + esc(c.nombre) + '</td>' +
+      return '<tr data-id="' + SRP.util.escapar(c.id) + '"><td class="c-titulo" data-etiqueta="Nombre">' + esc(c.nombre) + '</td>' +
         (esEspecie ? '<td class="c-sub" data-etiqueta="Científico"><i>' + esc(c.nombre_cientifico) + '</i>' +
           (c.otros_nombres_comunes ? '<small class="tabla-detalle">También: ' + esc(c.otros_nombres_comunes) + '</small>' : '') +
           '</td><td class="c-movil-oculta" data-etiqueta="Distribución">' + esc(c.tipo_distribucion || '') + '</td>' : '') +

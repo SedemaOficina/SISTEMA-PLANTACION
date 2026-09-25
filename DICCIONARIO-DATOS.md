@@ -19,7 +19,7 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 | localStorage `srp_envios_prueba` | estado del envío simulado: ids de registros recibidos con su hora (D111) | Desaparece: lo sustituye la cola de envío real |
 | localStorage `srp_sin_senal_prueba` | «Simular sin señal» de las herramientas de prueba (D111) | Desaparece con ES_FICTICIO |
 | Caché del service worker (sw.js) | copia de la aplicación para abrir sin señal; no guarda datos | Se conserva |
-| Respaldo `SRP_respaldo_AAAA-MM-DD_<usuario>.json` | {sistema, version, generado, usuario_id, es_ficticio, resumen{registros, con_foto, foto_bytes}, plantaciones[], usuarios[], catalogos[], bitacora[], jornadas[]}: las cinco tablas con el mismo esquema (D87) | El mismo archivo es lo que el servidor recibiría |
+| Respaldo `SRP_respaldo_AAAA-MM-DD_<usuario>.json` | {sistema, version, generado, usuario_id, es_ficticio, alcance, resumen{registros, con_foto, foto_bytes}, plantaciones[], jornadas[], bitacora[], cuentas[{id, nombre}]}: sólo lo que alcanza quien respalda —sus árboles y jornadas, con su bitácora— y de las cuentas sólo id y nombre (D150). Contiene nombres, ubicaciones y fotos: es un archivo con datos personales | El mismo archivo es lo que el servidor recibiría; lo valida con las mismas reglas de js/validar.js |
 
 ## 2. Cómo leer la columna «Origen»
 
@@ -38,6 +38,7 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 | Dominio | Valores | Fuente |
 |---|---|---|
 | `estatus_plantacion` | `activo` · `eliminado` | js/formulario.js registroPrevisto(); js/registros.js eliminar() |
+| `estatus_jornada` | `abierta` · `cerrada` | js/jornada-activa.js iniciarJornada() y cambiarEstatus() |
 | `punto_origen` | `gps` · `mapa` · `manual` · `ajustado` | js/mapa.js ORIGENES |
 | `especie_estatus` | `VALIDADA` · `PENDIENTE_VALIDACION` | js/formulario.js valores() (D68) |
 | `perfil` | `CABO` · `COORDINADOR` · `ADMIN` | js/permisos.js SRP.PERFILES (Consulta/VIEWER retirado en D87) |
@@ -184,7 +185,7 @@ Una jornada de plantación: se declara antes de registrar el primer árbol (D119
 | `es_ficticio` | boolean | No | Sistema | true/false | No | Copia de CONFIG.ES_FICTICIO (D87) |
 | `nombre` | text | No | Persona | Texto libre, hasta 120 | Nombre de la jornada | Obligatorio al iniciar: el parque, la calle o el sitio. Es el nombre de la tarjeta en Jornadas y el «Jornada:» del reporte (D119) |
 | `ubicacion` | text | No | Persona | Texto libre, hasta 200; '' si no se escribe | Dirección de la jornada | Dirección, parque o referencia (D120); la etiqueta pasó a «Dirección de la jornada» (D143). Va al reporte bajo el nombre de la jornada |
-| `programa_id` | text | No | Persona | id de catálogo tipo programa | Programa (Iniciar jornada) | Obligatorio al iniciar (D130). Cada árbol lo hereda en el formulario y puede cambiarlo; el dato del árbol sigue siendo plantaciones.programa_id |
+| `programa_id` | text | No | Persona | → catalogos.id con tipo = programa | Programa (Iniciar jornada) | Obligatorio al iniciar (D130). Cada árbol lo hereda en el formulario y puede cambiarlo; el dato del árbol sigue siendo plantaciones.programa_id |
 | `lat` | real | Sí | Dispositivo | Grados decimales; nulo sin ubicación | Detectar ubicación de la jornada, o «Capturar coordenadas a mano» | Latitud del punto de la jornada: detectado con el GPS al iniciar (D122) o escrito a mano cuando no hubo señal (D143). No es la de ningún árbol |
 | `lng` | real | Sí | Dispositivo | Grados decimales; nulo sin ubicación | Detectar ubicación de la jornada, o «Capturar coordenadas a mano» | Longitud del punto de la jornada (D122, D143) |
 | `punto_origen` | text | Sí | Sistema | 'gps' o 'manual'; nulo sin ubicación | (nota bajo el botón) | Cómo se obtuvo el punto de la jornada: con «Detectar ubicación» (gps) o escribiendo las coordenadas cuando no hubo señal en el sitio (manual) (D143). Lo determina la acción, no una elección |
@@ -196,7 +197,7 @@ Una jornada de plantación: se declara antes de registrar el primer árbol (D119
 | `fecha` | date | No | Persona | AAAA-MM-DD, no posterior a hoy | Fecha de la jornada de plantación | Los árboles la heredan como fecha_plantacion (D119) |
 | `comentarios` | text | No | Persona | Texto libre, hasta 500; '' si no se escribe | Comentarios | Van al reporte como «Comentarios de la jornada» (D119) |
 | `cabo_id` | uuid | No | Sesión | → usuarios.id | No | Quien inició la jornada; sus árboles quedan a su nombre |
-| `estatus` | text | No | Sistema | abierta \| cerrada | Franja de la jornada; Jornadas | Se cierra desde la franja o la revisión; se reabre desde la revisión o con «Registrar faltante» (D119) |
+| `estatus` | text | No | Sistema | dominio `estatus_jornada` | Franja de la jornada; Jornadas | Se cierra desde la franja o la revisión; se reabre desde la revisión o con «Registrar faltante» (D119) |
 | `fecha_inicio` | timestamptz | No | Sistema | ISO 8601 | No | Ordena las jornadas del día: «Jornada 2 de 3» |
 | `fecha_cierre` | timestamptz | Sí | Sistema | ISO 8601 | No | Nulo mientras está abierta |
 | `encargado_id` | uuid | Sí | Sesión | → usuarios.id | Encargado | Para un cabo es él mismo (no se pregunta); quien ve a varias personas lo elige sólo entre los cabos con registros ese día (D57) |
@@ -327,7 +328,7 @@ Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras
 | R-R02 | jornadas | Todos los campos del cierre son opcionales y ninguno se prellena; el encargado sale de la sesión o se elige entre los cabos con registros ese día | js/reportes.js prepararEncargado() |
 | R-F01 | plantaciones | Filtros de Registros: Hoy / Todos / Un periodo (Desde ≤ Hasta, entra con Aplicar), Año y Mes sólo con registros, Cabo según alcance; ningún control mueve el foco solo (D82) | js/registros.js |
 | R-D01 | todas | Siembra: al abrir con sello distinto de CONFIG.SELLO_DATOS se vuelven a cargar cuentas y catálogos de ejemplo sólo si no hay nada capturado (árboles, jornadas o bitácora); si lo hay, se conserva todo. Una base a la que le falta un almacén, o de una versión posterior, se rehace conservando lo que tenía (D149; sólo con ES_FICTICIO) | js/almacen.js sembrarSiVacio(); js/config.js |
-| R-D02 | plantaciones, jornadas, bitacora | Respaldo: archivo JSON con las cinco tablas y un resumen de fotografías; restaurar sólo agrega lo que no existe (por id), nunca sobreescribe | js/conexion.js respaldar(), restaurar() |
+| R-D02 | plantaciones, jornadas, bitacora | Respaldo: archivo JSON con los árboles y jornadas del alcance de quien respalda, la bitácora de esos registros y un resumen de fotografías. Restaurar valida cada renglón contra este esquema (js/esquema.js, generado de aquí), sólo acepta árboles y jornadas del alcance de quien restaura y con referencias que existan, nunca sobreescribe, no importa cuentas, catálogos ni bitácora, pide confirmación con el resumen y deja un renglón RESTAURADO por registro, todo en una sola transacción (D150) | js/conexion.js respaldar(), restaurar(); js/validar.js |
 
 ## 11. Reglas que esperan al servidor (Fase 2)
 

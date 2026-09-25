@@ -1223,3 +1223,36 @@
   error del servidor en lugar de la app guardada, y la × de la franja «Guardado» dejó de lanzar un
   error. Quedan para bloques siguientes: guardar las fotos como Blob (ocupan un tercio más como
   texto) y el sello dentro de la base. Aprobado por Liber, 24-09-2026.
+- **D150. Respaldo seguro.** Segundo bloque del plan de la auditoría 360 (hallazgos A3, A4, M1 y
+  M10), condición para capturar árboles reales. 1) Lo tecleado ya se escapaba, pero los
+  identificadores y la foto se pegaban sin escapar dentro de atributos HTML en unos 30 lugares: un
+  respaldo alterado ejecutaba código en el teléfono de quien lo restauraba (comprobado en cuatro
+  vectores). Ahora todo id que va en un atributo se escapa, los selectores usan `CSS.escape`, y una
+  foto sólo se pinta si es una imagen en base64 (`SRP.util.fotoSegura`); la galería omite las que
+  no lo son. La página declara una política de seguridad (CSP): sólo corre código del propio
+  sitio, sin scripts ni manejadores en línea, con imágenes del sitio, de datos incrustados y del
+  mapa base; y `referrer: no-referrer` para que el mapa no sepa desde qué sitio se pide. Si cambia
+  el proveedor del mapa, su dominio se cambia también ahí. Los estilos sólo vienen de las hojas
+  del sitio: el código los pone con `element.style`, que la política permite, y nunca escribe
+  `style="…"` dentro de HTML. Mapa, croquis y PDF se comprobaron con la política puesta; las
+  pruebas dejaron de usar `wait_for_function` de Playwright, que se compila con eval dentro de la
+  página y la política lo bloquea. 2) Restaurar valida cada renglón contra
+  el esquema: `pruebas/generar_diccionario.py` genera ahora también `js/esquema.js` (campos, tipos,
+  nulos, dominios y referencias; la auditoría falla si no está regenerado) y `js/validar.js` revisa
+  obligatorios, tipos, dominios, referencias, el ámbito del punto, la foto y que no se mezclen
+  datos reales con de prueba; los campos no declarados se descartan y los identificadores sólo
+  admiten letras, números, guion y guion bajo. Sólo entran árboles y jornadas del alcance de quien
+  restaura; nunca cuentas, catálogos ni bitácora (la historia no se importa: cada registro
+  restaurado deja su renglón RESTAURADO). Antes de escribir se enseña el resumen —cuántos entran,
+  cuántos ya estaban y por qué no entra cada rechazado, nombrando el árbol por su folio y la
+  referencia rota en palabras: «la especie no existe en este teléfono»— y se pide confirmación; todo entra en una
+  sola transacción. Tope de 60 MB. Se agregó el dominio `estatus_jornada` y la relación
+  `jornadas.programa_id` al esquema. 3) El respaldo lleva sólo el alcance de quien respalda: sus
+  árboles y jornadas (también los eliminados), la bitácora de esos registros y de las cuentas sólo
+  id y nombre; antes llevaba el padrón completo con correos, toda la bitácora y los registros de
+  otras cuadrillas. Al guardarlo se avisa que contiene nombres, ubicaciones y fotos. 4) Apagar
+  `ES_FICTICIO` ya apaga todo: mientras el proveedor de identidad siga «simulado», el acceso queda
+  cerrado (antes cualquier contraseña servía); restaurar y restablecer ni siquiera se conectan. La
+  pastilla dice «(simulado)» en pantallas anchas y en su etiqueta accesible, y la guía «servidor
+  simulado». El README lleva la lista de verificación para salir a producción. Aprobado por Liber,
+  24-09-2026.

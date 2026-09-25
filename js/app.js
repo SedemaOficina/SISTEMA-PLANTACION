@@ -105,7 +105,7 @@ SRP.app = {
       ['revision-lista', 'la ficha de revisión'],
       ['espejo-campos', 'el espejo de campos de prueba']
     ].filter(([id]) => !document.getElementById(id)).map(([, que]) => que);
-    const modulos = ['util', 'ICONOS', 'permisos', 'sesion', 'almacen', 'ref', 'formulario', 'espejo', 'registros', 'catalogos', 'usuarios']
+    const modulos = ['util', 'ICONOS', 'permisos', 'sesion', 'almacen', 'ref', 'formulario', 'espejo', 'registros', 'catalogos', 'usuarios', 'ESQUEMA', 'validar']
       .filter(m => !SRP[m]);
     if (!faltan.length && !modulos.length) return true;
     document.body.innerHTML =
@@ -164,7 +164,8 @@ SRP.app = {
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !this.el('menu-cuenta').hidden) { this.menuCuenta(false); this.el('btn-cuenta').focus(); }
     });
-    this.el('btn-restablecer').addEventListener('click', async () => {
+    // Restablecer es herramienta de prueba (D150): con datos reales no se conecta
+    if (SRP.CONFIG.ES_FICTICIO) this.el('btn-restablecer').addEventListener('click', async () => {
       // Lo que se pierde, con números: «todo lo capturado» no dice cuánto (D139)
       const regs = (await SRP.almacen.todos('plantaciones')).filter(r => r.estatus !== 'eliminado').length;
       const jors = (await SRP.almacen.todos('jornadas')).length;
@@ -249,7 +250,7 @@ SRP.app = {
     prueba.hidden = !SRP.CONFIG.ES_FICTICIO;
     if (!prueba.hidden) {
       this.el('sel-usuario-prueba').innerHTML = SRP.ref.usuarios.filter(u => u.activo).map(u =>
-        '<option value="' + u.id + '">' + SRP.util.escapar(SRP.util.nombreCompleto(u)) + ' — ' + SRP.permisos.de(u).etiqueta + '</option>').join('');
+        '<option value="' + SRP.util.escapar(u.id) + '">' + SRP.util.escapar(SRP.util.nombreCompleto(u)) + ' — ' + SRP.permisos.de(u).etiqueta + '</option>').join('');
     }
     this.mostrarVista('acceso');
   },

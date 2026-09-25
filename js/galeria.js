@@ -59,7 +59,7 @@ SRP.galeria = {
   async conFoto() {
     const u = SRP.sesion.usuario;
     return (await SRP.almacen.porIndice('plantaciones', 'estatus', 'activo'))
-      .filter(r => r.foto_base64 && SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId))
+      .filter(r => SRP.util.fotoSegura(r.foto_base64) && SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId))   // sólo imágenes válidas (D150)
       .sort((a, b) => b.fecha_plantacion.localeCompare(a.fecha_plantacion) || b.fecha_registro.localeCompare(a.fecha_registro));
   },
 
@@ -70,7 +70,7 @@ SRP.galeria = {
     const sel = this.el('galeria-cabo');
     sel.innerHTML = '<option value="">Todos</option>' + ids
       .map(id => [id, SRP.ref.nombreUsuario(id)]).sort((a, b) => a[1].localeCompare(b[1], 'es'))
-      .map(([id, n]) => '<option value="' + id + '">' + SRP.util.escapar(n) + '</option>').join('');
+      .map(([id, n]) => '<option value="' + SRP.util.escapar(id) + '">' + SRP.util.escapar(n) + '</option>').join('');
     sel.value = ids.includes(this.filtro.cabo) ? this.filtro.cabo : '';
     this.filtro.cabo = sel.value;
     await this.pintar();
@@ -98,7 +98,7 @@ SRP.galeria = {
     const ids = [...new Set(fotosDiaCabo.map(r => r.jornada_id).filter(Boolean))];
     const js = ids.map(id => this.jornadasPorId[id]).filter(Boolean).sort((a, b) => b.fecha.localeCompare(a.fecha) || b.fecha_inicio.localeCompare(a.fecha_inicio));
     const sel = this.el('galeria-jornada');
-    sel.innerHTML = '<option value="">Todas</option>' + js.map(j => '<option value="' + j.id + '">' + SRP.util.escapar(j.nombre) + ' · ' + SRP.util.escapar(SRP.util.formatearFecha(j.fecha)) + '</option>').join('');
+    sel.innerHTML = '<option value="">Todas</option>' + js.map(j => '<option value="' + SRP.util.escapar(j.id) + '">' + SRP.util.escapar(j.nombre) + ' · ' + SRP.util.escapar(SRP.util.formatearFecha(j.fecha)) + '</option>').join('');
     if (!ids.includes(this.filtro.jornada)) this.filtro.jornada = '';
     sel.value = this.filtro.jornada;
     sel.disabled = !js.length;
@@ -115,8 +115,8 @@ SRP.galeria = {
     this.el('galeria-rejilla').innerHTML = this.fotos.map(r => {
       const e = SRP.ref.especieDe(r);
       const j = r.jornada_id && this.jornadasPorId[r.jornada_id];
-      return '<li><button type="button" class="galeria-foto" data-id="' + r.id + '" aria-label="' + esc(e.comun) + ', ' + esc(SRP.util.formatearFecha(r.fecha_plantacion)) + (j ? ', ' + esc(j.nombre) : '') + ', ' + esc(SRP.ref.nombreUsuario(r.cabo_id)) + '">' +
-        '<img src="' + r.foto_base64 + '" alt="" loading="lazy">' +
+      return '<li><button type="button" class="galeria-foto" data-id="' + SRP.util.escapar(r.id) + '" aria-label="' + esc(e.comun) + ', ' + esc(SRP.util.formatearFecha(r.fecha_plantacion)) + (j ? ', ' + esc(j.nombre) : '') + ', ' + esc(SRP.ref.nombreUsuario(r.cabo_id)) + '">' +
+        '<img src="' + SRP.util.fotoSegura(r.foto_base64) + '" alt="" loading="lazy">' +
         '<span class="galeria-pie">' + esc(e.comun) + '<br>' + (j ? '<span class="galeria-jornada">' + esc(j.nombre) + '</span> · ' : '') + esc(SRP.util.formatearFecha(r.fecha_plantacion)) + '</span></button></li>';
     }).join('');
     const n = this.fotos.length;

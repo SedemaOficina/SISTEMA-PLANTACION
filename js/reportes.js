@@ -92,7 +92,7 @@ SRP.reportes = {
       const previo = (this.pedido && this.pedido.cabo_id) || this.filtro.cabo;
       const ids = [...new Set((await SRP.jornadas.jornadasAlcance()).map(j => j.cabo_id))];
       const lista = ids.map(id => [id, SRP.ref.nombreUsuario(id)]).sort((a, b) => a[1].localeCompare(b[1], 'es'));
-      this.el('pdf-cabo').innerHTML = '<option value="">Todos</option>' + lista.map(([id, n]) => '<option value="' + id + '">' + SRP.util.escapar(n) + '</option>').join('');
+      this.el('pdf-cabo').innerHTML = '<option value="">Todos</option>' + lista.map(([id, n]) => '<option value="' + SRP.util.escapar(id) + '">' + SRP.util.escapar(n) + '</option>').join('');
       this.el('pdf-cabo').value = ids.includes(previo) ? previo : '';
       this.filtro.cabo = this.el('pdf-cabo').value;
     }
@@ -149,7 +149,7 @@ SRP.reportes = {
         (lugar || ubic ? '<span class="jornada-lugar">' + SRP.ICONOS.svg('ubicacion', 'chico') + '<span>' + esc(lugar) + (ubic ? (lugar ? ' · ' : '') + '<span class="jornada-ubic">' + esc(ubic) + '</span>' : '') + '</span></span>' : '') +
         '<span class="jornada-cifras">' + cifra(n, n === 1 ? 'árbol' : 'árboles') + cifra(especies, especies === 1 ? 'especie' : 'especies') + '</span>' +
         (variosAutores ? '<span class="jornada-cabo">' + SRP.ICONOS.svg('usuario', 'chico') + '<span>' + esc(SRP.ref.nombreUsuario(j.cabo_id)) + '</span></span>' : '') +
-        '<button type="button" class="btn ' + (generado ? 'btn-editar' : 'btn-primario') + ' btn-chico" data-id="' + j.id + '"' + (n ? '' : ' disabled') + '>' +
+        '<button type="button" class="btn ' + (generado ? 'btn-editar' : 'btn-primario') + ' btn-chico" data-id="' + SRP.util.escapar(j.id) + '"' + (n ? '' : ' disabled') + '>' +
         // Ya generado dice qué se vuelve a hacer y con qué icono (D148): «Regenerar reporte», no «Volver a generar»
         SRP.ICONOS.svg(generado ? 'regenerar' : 'reportes', 'medio') + '<span>' + (generado ? 'Regenerar reporte' : 'Generar reporte') + '</span></button>' +
         (n ? '' : '<span class="nota reporte-sin">Sin árboles: no hay qué reportar.</span>') + '</div></li>';
@@ -214,7 +214,7 @@ SRP.reportes = {
       .sort((a, b) => a[1].localeCompare(b[1], 'es'));
     const sel = this.el('cie-encargado');
     sel.innerHTML = '<option value="">Sin especificar</option>' +
-      ids.map(([id, n]) => '<option value="' + id + '">' + SRP.util.escapar(n) + '</option>').join('');
+      ids.map(([id, n]) => '<option value="' + SRP.util.escapar(id) + '">' + SRP.util.escapar(n) + '</option>').join('');
     // Con un solo cabo en el día no hay nada que elegir: se propone y se puede cambiar
     sel.value = (previo && previo.encargado_id) || (ids.length === 1 ? ids[0][0] : '');
   },

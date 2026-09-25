@@ -192,7 +192,7 @@ SRP.activa = {
   llenarProgramas() {
     const sel = this.el('ini-programa');
     const opciones = SRP.ref.deTipo('programa', true).sort((a, b) => (b.clave === 'REFOR_URBANA') - (a.clave === 'REFOR_URBANA'));
-    sel.innerHTML = '<option value="">Seleccione un programa</option>' + opciones.map(o => '<option value="' + o.id + '">' + SRP.util.escapar(o.nombre) + '</option>').join('');
+    sel.innerHTML = '<option value="">Seleccione un programa</option>' + opciones.map(o => '<option value="' + SRP.util.escapar(o.id) + '">' + SRP.util.escapar(o.nombre) + '</option>').join('');
     sel.value = '';
     SRP.util.quitarErrorCampo(sel);
   },
@@ -376,7 +376,7 @@ SRP.activa = {
     const esc = SRP.util.escapar;
     const conteos = await Promise.all(ab.map(j => this.registrosDe(j)));
     this.el('lista-jornadas-abiertas').innerHTML = ab.length ? ab.map((j, i) =>
-      '<li><button type="button" class="jornada-boton" data-id="' + j.id + '" aria-pressed="' + String(this.jornada && this.jornada.id === j.id) + '">' +
+      '<li><button type="button" class="jornada-boton" data-id="' + SRP.util.escapar(j.id) + '" aria-pressed="' + String(this.jornada && this.jornada.id === j.id) + '">' +
       '<span class="jornada-datos"><span class="jornada-dia">' + esc(j.nombre) + '</span>' +
       '<span class="jornada-cifras">' + esc(SRP.util.formatearFecha(j.fecha)) + ' · ' + conteos[i].length + (conteos[i].length === 1 ? ' árbol' : ' árboles') +
       (this.jornada && this.jornada.id === j.id ? ' · activa' : '') + '</span></span></button></li>').join('')

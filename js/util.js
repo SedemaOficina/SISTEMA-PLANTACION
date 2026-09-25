@@ -58,6 +58,12 @@ SRP.util = {
       .replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 30).replace(/_+$/, '');
   },
 
+  /* Una foto sólo se pinta si es una imagen en base64 (D150): un respaldo alterado no puede meter
+     código por el atributo src. Lo que no pase, se trata como registro sin foto. */
+  fotoSegura(dato) {
+    return typeof dato === 'string' && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/.test(dato) ? dato : '';
+  },
+
   escapar(texto) {
     return String(texto == null ? '' : texto)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
