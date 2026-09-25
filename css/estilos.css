@@ -148,6 +148,9 @@ main:focus { outline: none; }
 .saltar:focus { left: 0; }
 
 .banda-ficticio { margin: 0; padding: var(--e-2) var(--e-4); background: var(--gris); color: var(--fondo); font-size: var(--t-xs); text-align: center; }
+/* Crédito del mapa legible sobre cualquier imagen: el azul de Leaflet daba 2.55:1 (D153) */
+.leaflet-container .leaflet-control-attribution { background: rgba(255, 255, 255, .92); color: var(--texto); }
+.leaflet-container .leaflet-control-attribution a { color: var(--texto); text-decoration: underline; }
 
 /* El perfil es una etiqueta, no un control: con contorno guinda se leía igual que un botón
    secundario y la gente intentaba pulsarlo. Fondo suave y gris, que es lo que es. */
@@ -225,7 +228,8 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 /* Botón sin palabra: sólo donde lo que representa ya está escrito al lado, y con aria-label */
 .btn-icono-solo { min-width: var(--toque); padding: 0; flex-shrink: 0; border-radius: 50%; }
 /* El tache que cierra un diálogo: círculo suave, igual en todos (D124) */
-.dialogo-cerrar { background: var(--neutro-fondo); color: var(--gris); min-height: 40px; min-width: 40px; }
+/* La × de la franja «Guardado» se ve igual que la de los diálogos, pero no es de un diálogo (D153) */
+.dialogo-cerrar, .franja-cerrar { background: var(--neutro-fondo); color: var(--gris); min-height: 40px; min-width: 40px; }
 /* Volver: chevron dibujado, sin subrayado (D124) */
 .volver::before { content: ''; width: 9px; height: 9px; border-left: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); margin-right: 2px; flex: none; }
 .btn-chico { min-height: 40px; padding: 0 var(--e-3); font-size: var(--t-s); }

@@ -77,7 +77,7 @@ SRP.activa = {
   },
 
   async registrosDe(j) {
-    return (await SRP.almacen.porIndice('plantaciones', 'estatus', 'activo')).filter(r => r.jornada_id === j.id);
+    return (await SRP.almacen.porIndice('plantaciones', 'jornada_id', j.id)).filter(r => r.estatus === 'activo');   // por su índice (D153)
   },
 
   // Al entrar: la jornada abierta más reciente queda activa; si es de otro día, se avisa

@@ -1323,3 +1323,29 @@
   en su propio renglón y ya no tapa la insignia de precisión. Pendiente para las capas
   definitivas: colonias recortadas a las alcaldías (en el 1.25 % del territorio la colonia es de
   otra demarcación). Aprobado por Liber, 24-09-2026.
+- **D153. Orden del código y los textos, primera parte.** Quinto bloque del plan de la auditoría
+  360 (M11, M12, M14, M16, M20, B1, B2 y B5). La segunda parte —hoja de estilos conforme a su norma
+  (M13) y código repetido (M15)— queda como bloque aparte, con capturas de antes y después.
+  1) El espejo de campos ya no es condición para arrancar: la llamada de `app.js` va protegida, la
+  revisión de arranque no lo exige y sus instrucciones de retiro dicen lo cierto (dos bloques en
+  el HTML, el archivo, sus estilos y nueve llamadas, todas protegidas). Las pruebas abren la app
+  sin él, registran un árbol, ven su detalle y llegan a la vista previa del reporte. 2) La × de la
+  franja «Guardado» tiene clase propia (`franja-cerrar`), con el mismo aspecto que la de los
+  diálogos. 3) Un nombre por acción: «Registrar árbol» (antes también «Registrar un árbol» y
+  «Registrar faltante»), «Ver detalle» (antes también «Ver registro»), «Quitar filtros» (antes
+  también «Reiniciar filtros») y «Datos de cierre de la jornada»; el PDF habla de «esta jornada»,
+  no de «esta fecha». Se conservan «Ver» en las filas de puntos y la franja, y «Generar PDF» y
+  «Regenerar PDF» en la barra de la jornada, por espacio (D141, D148). La auditoría revisa que las
+  etiquetas retiradas no vuelvan. 4) En el código la jornada guardada deja de llamarse «cierre»
+  (`guardada`, `jornadaGuardada()`, `guardarEnJornada()`); el aviso dice «dirección» y no
+  «ubicación»; los iconos se piden por nombre (chico, medio, grande). 5) Accesibilidad: Nuevo
+  registro tiene su título de primer nivel, oculto a la vista y legible por el lector de pantalla;
+  la banda de datos ficticios va dentro del encabezado; el crédito del mapa pasa a texto oscuro
+  subrayado sobre fondo casi opaco (el azul de Leaflet daba 2.55:1). 6) Base del teléfono en la
+  versión 3: índice de árboles por jornada, que ahora usan la jornada activa, la ficha y la edición
+  de la jornada, y fuera los cinco índices que nada consultaba; subir de la 2 a la 3 conserva todo.
+  7) Código sin uso fuera: `jornadasDe()`, el icono «ayuda», el botón «Hoy» de la fecha oculta del
+  árbol. 8) README con el flujo vigente (Registrar jornada → Nuevo árbol → Jornadas → Reportes y
+  Fotografías), el reporte por jornada y el mapa al día; comentarios corregidos (la franja
+  «Guardado» en lugar del diálogo, la meta al iniciar, el respaldo del alcance, la fecha y el
+  programa de la jornada). Aprobado por Liber, 25-09-2026.

@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 92',
+  ETAPA: 'Bloque 94',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -27,7 +27,7 @@ SRP.CONFIG = {
      aparecían con un perfil que ya no existía. */
   SELLO_DATOS: '2026-09-23-jornadas',   // bloque 62: los registros de prueba anteriores no llevan jornada y se descartan (D119)
   CLAVE_SELLO: 'srp_sello_datos',
-  DB_VERSION: 2,   // 2: tabla jornadas, sin cierres (D119)
+  DB_VERSION: 3,   // 2: tabla jornadas, sin cierres (D119); 3: índice de árboles por jornada (D153)
   CLAVE_SESION: 'srp_sesion_usuario_id',
   CLAVE_CONTRASTE: 'srp_contraste',
   CLAVE_ULTIMO_RESPALDO: 'srp_ultimo_respaldo',   // fecha del último respaldo de este teléfono (D149)

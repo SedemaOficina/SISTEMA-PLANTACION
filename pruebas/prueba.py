@@ -645,7 +645,7 @@ with sync_playwright() as p:
     # Reiniciar vuelve al estado de entrada: Hoy, sin rango (D53)
     pg.click('#btn-reiniciar-filtros'); pg.wait_for_timeout(300)
     ok(pg.locator('#filtro-atajos .chip[data-atajo=todos][aria-pressed=true]').count()==1 and pg.input_value('#filtro-desde')=='',
-       'Reiniciar filtros vuelve a Todos y limpia el rango (D104)')
+       '«Quitar filtros» vuelve a Todos y limpia el rango (D104, D153)')
     ok('Total: 4 ' in pg.inner_text('#registros-total'),'y lista todos: '+pg.inner_text('#registros-total'))
     ok(pg.is_hidden('#filtro-desde'),'y Reiniciar pliega Desde/Hasta')
     ok([c for c in pg.eval_on_selector_all('#filtro-atajos .chip','b=>b.map(x=>x.dataset.atajo)')]==['todos','hoy','dia','periodo'],'los atajos son Todos, Hoy, Un día y Un periodo, en ese orden, como en Jornadas (D64, D113, D129)')
@@ -1167,7 +1167,7 @@ with sync_playwright() as p:
     ok('Total: 3 ' in pg.inner_text('#registros-total'),'se vuelve a eliminar para seguir la prueba')
     abrir_filtros(pg); pg.click('#btn-reiniciar-filtros'); pg.wait_for_timeout(300)
     pg.click('#aviso .aviso-accion'); pg.wait_for_timeout(300)
-    ok('Total: 3 ' in pg.inner_text('#registros-total') and pg.get_attribute('.chip[data-atajo=todos]','aria-pressed')=='true','«Deshacer» de Reiniciar filtros devuelve el filtro anterior (D101)')
+    ok('Total: 3 ' in pg.inner_text('#registros-total') and pg.get_attribute('.chip[data-atajo=todos]','aria-pressed')=='true','«Deshacer» de «Quitar filtros» devuelve el filtro anterior (D101)')
 
     # ---------- COORDINADOR ----------
     pg.click('#btn-cuenta'); pg.click('#btn-cambiar-perfil'); pg.select_option('#sel-usuario-prueba','u-coord-1'); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(600)
@@ -1202,7 +1202,7 @@ with sync_playwright() as p:
     with pg.expect_download() as df: pg.click('#btn-foto-descargar')
     ok(re.fullmatch(r'Foto_[A-Za-z0-9-]+_\d{4}-\d{2}-\d{2}_[A-Za-z0-9_]+\.jpg', df.value.suggested_filename) is not None,'«Descargar» entrega la foto con nombre legible: '+df.value.suggested_filename)
     pg.click('#btn-foto-registro'); pg.wait_for_timeout(400)
-    ok(pg.is_hidden('#dlg-foto') and pg.is_visible('#dlg-detalle'),'«Ver registro» abre el detalle')
+    ok(pg.is_hidden('#dlg-foto') and pg.is_visible('#dlg-detalle'),'«Ver detalle» abre el detalle (D153)')
     pg.click('#btn-detalle-cerrar'); pg.wait_for_timeout(300)
     with pg.expect_download() as dz: pg.click('#btn-galeria-zip')
     dz.value.save_as('/home/claude/srp/fotos_prueba.zip')
@@ -1497,7 +1497,7 @@ with sync_playwright() as p:
        and 'btn-primario' in pg.get_attribute('#btn-jornada-reporte','class'),'la barra del pie dice lo que sigue y su botón principal lo hace: «Generar PDF»')
     ok(pg.evaluate("document.activeElement.id")=='btn-jornada-reporte','y el foco queda en ese botón, listo para el siguiente paso')
     ok(pg.is_hidden('#btn-jornada-siguiente') and 'Registrar árbol' in pg.inner_text('#btn-jornada-faltante') and 'btn-secundario' in pg.get_attribute('#btn-jornada-faltante','class'),
-       'cerrada, «Registrar faltante» queda como secundario')
+       'cerrada, «Registrar árbol» queda como secundario')
     # Reabierta con la meta cumplida: «Cerrar jornada» pasa a la barra y el encabezado no la repite
     pg.click('#btn-jornada-estado'); pg.wait_for_timeout(700)
     ok(est('#jornada-pasos')==['hecho','actual','pendiente','pendiente'] and pg.is_visible('#btn-jornada-siguiente') and 'Cerrar jornada' in pg.inner_text('#btn-jornada-siguiente')
@@ -1507,10 +1507,10 @@ with sync_playwright() as p:
     ok(pg.is_visible('#dlg-confirmar') and '¿Cerrar la jornada' in pg.inner_text('#dlg-confirmar-texto'),'el botón del pie pide la misma confirmación que el del encabezado')
     pg.click('#btn-confirmar-si'); pg.wait_for_timeout(1000)
     ok(est('#jornada-pasos')==['hecho','hecho','hecho','actual'],'y la cierra')
-    # «Revisar»: se reabre con «Registrar faltante» y se registra un duplicado a propósito (misma
+    # «Revisar»: se reabre con «Registrar árbol» y se registra un duplicado a propósito (misma
     # especie en el mismo punto que el segundo árbol)
     pg.click('#btn-jornada-faltante'); pg.wait_for_timeout(700)
-    ok(pg.is_visible('#vista-registrar') and 'Jornada de los pasos' in pg.inner_text('#franja-jornada-texto'),'«Registrar faltante» reabre la jornada y lleva a Nuevo registro')
+    ok(pg.is_visible('#vista-registrar') and 'Jornada de los pasos' in pg.inner_text('#franja-jornada-texto'),'«Registrar árbol» en una jornada cerrada la reabre y lleva a Nuevo registro')
     ctx.set_geolocation({'latitude':19.4324,'longitude':-99.1335})
     pg.click('#btn-ubicacion'); pg.wait_for_timeout(700)
     pg.fill('#campo-especie','ahuehu'); pg.wait_for_timeout(200)
@@ -1945,7 +1945,7 @@ with sync_playwright() as p:
     if pg.is_visible('#dlg-resumen'): pg.click('#btn-resumen-cerrar'); pg.wait_for_timeout(200)
     pg.evaluate("SRP.formulario.limpiar()")
     prot=pg.evaluate("""() => [['catalogos','guardar'],['catalogos','cambiarEstado'],['catalogos','eliminar'],['usuarios','guardar'],['usuarios','cambiarEstado'],['usuarios','eliminar'],
-        ['activa','iniciarJornada'],['activa','cambiarEstatus'],['jornadas','mover'],['jornadas','guardarEnCierre'],['jornadas','guardarEdicion'],['jornadas','eliminarJornada'],
+        ['activa','iniciarJornada'],['activa','cambiarEstatus'],['jornadas','mover'],['jornadas','guardarEnJornada'],['jornadas','guardarEdicion'],['jornadas','eliminarJornada'],
         ['jornadas','marcarRevisado'],['registros','eliminar'],['registros','restaurar'],['reportes','aceptar'],['conexion','respaldar'],['conexion','restaurar'],['folio','emitirPendientes']]
         .filter(([m, f]) => !(SRP[m][f] && SRP[m][f].protegido)).map(x => x.join('.'))""")
     ok(prot==[],'las 19 acciones que escriben en el teléfono avisan si fallan: sin protección %s' % prot)
@@ -2229,6 +2229,67 @@ with sync_playwright() as p:
     ok('No se cargaron las capas del territorio' in txt13 and 'borre los datos' not in txt13 and 'antes de borrar nada' in txt13 and pg13.locator('#form-acceso').count()==0,
        'sin una capa la aplicación no abre, lo dice y no sugiere borrar los datos del sitio, donde viven los árboles (A7): '+txt13[:120])
     ctx13.close()
+
+    # ---------- BLOQUE 94: ORDEN DEL CÓDIGO Y LOS TEXTOS (D153) ----------
+    # M11: la app abre y funciona sin el espejo de campos, retirado como dicen sus instrucciones
+    import re as _re
+    ctx14=b.new_context(viewport={'width':390,'height':844},geolocation={'latitude':19.4326,'longitude':-99.1332},permissions=['geolocation'])
+    pg14=ctx14.new_page(); err14=[]
+    pg14.on('pageerror', lambda e: err14.append(str(e))); pg14.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err14.append(m.text))
+    def sin_espejo(route):
+        r = route.fetch(); html = r.text()
+        html = _re.sub(r'<section id="espejo-campos".*?</section>', '', html, flags=_re.S)
+        html = _re.sub(r'<details id="espejo-cierre".*?</details>', '', html, flags=_re.S)
+        html = _re.sub(r'<script src="js/espejo\.js[^"]*"></script>', '', html)
+        route.fulfill(response=r, body=html)
+    pg14.route(_re.compile(r'.*/(index\.html)?(\?.*)?$'), sin_espejo)
+    pg14.route('**/js/espejo.js*', lambda r: r.abort())
+    pg14.goto(BASE); pg14.wait_for_timeout(1500)
+    ok(pg14.evaluate("!window.SRP.espejo && !document.getElementById('espejo-campos') && !document.getElementById('espejo-cierre')") and pg14.locator('#form-acceso').count()==1,
+       'sin el espejo de campos (archivo, bloques y script) la app abre (M11)')
+    pg14.select_option('#sel-usuario-prueba','u-cabo-1'); pg14.click('#btn-entrar-prueba'); pg14.wait_for_timeout(700)
+    iniciar_jornada(pg14,'Jornada sin espejo',HOY)
+    r14=registrar(pg14,'aile','ESP-0002')
+    pg14.click('#btn-guardado-cerrar'); pg14.wait_for_timeout(200)
+    ok(pg14.is_hidden('#franja-guardado'),'la × de la franja «Guardado» la oculta, sin error (M12)')
+    pg14.evaluate("async () => SRP.registros.verDetalle(await SRP.almacen.uno('plantaciones', '%s'))" % r14); pg14.wait_for_timeout(500)
+    ok(pg14.is_visible('#dlg-detalle') and 'Especie' in pg14.inner_text('#dlg-detalle-cuerpo'),'y registra un árbol y abre su detalle sin el espejo')
+    pg14.click('#btn-detalle-cerrar'); pg14.wait_for_timeout(200)
+    pg14.evaluate("SRP.app.mostrarVista('registrar')"); pg14.wait_for_timeout(300)
+    pg14.click('#btn-jornada-cerrar'); pg14.wait_for_timeout(300); pg14.click('#btn-confirmar-si'); pg14.wait_for_timeout(1200)
+    reporte_de(pg14,'Jornada sin espejo'); pg14.wait_for_timeout(300)
+    ok(pg14.is_visible('#dlg-cierre') and pg14.inner_text('#dlg-cierre-titulo')=='Datos de cierre de la jornada','y abre los datos de cierre, que ahora son «de la jornada» (M16)')
+    pg14.click('#btn-cierre-generar'); pg14.wait_for_timeout(800)
+    ok(pg14.is_visible('#dlg-previa'),'y la vista previa del reporte')
+    ok(not err14,'todo sin errores en consola: %s' % err14[:2])
+    # B5 y M16: título legible en Nuevo registro, banda dentro del encabezado, etiquetas únicas
+    acc=pg14.evaluate("""() => ({ h1: (() => { const h = document.getElementById('titulo-registrar'); return !h.hidden && h.classList.contains('oculto-visual') && h.textContent; })(),
+      banda: !!document.querySelector('header #banda-ficticio'), quitar: document.getElementById('btn-reiniciar-filtros').textContent.trim(),
+      faltante: document.getElementById('btn-jornada-faltante').textContent.trim() })""")
+    ok(acc=={'h1':'Nuevo registro','banda':True,'quitar':'Quitar filtros','faltante':'Registrar árbol'},
+       'Nuevo registro tiene título de primer nivel legible, la banda de prueba va dentro del encabezado y cada acción tiene un solo nombre (B5, M16): %s' % acc)
+    ctx14.close()
+    # B2: la base sube a la versión 3 con el índice de árboles por jornada, sin perder nada
+    ind=pg.evaluate("""() => { const r = {}; for (const n of SRP.almacen.db.objectStoreNames) r[n] = [...SRP.almacen.db.transaction(n).objectStore(n).indexNames].sort(); return { v: SRP.almacen.db.version, r }; }""")
+    ok(ind['v']==3 and ind['r']['plantaciones']==['estatus','jornada_id'] and ind['r']['jornadas']==['cabo_id'] and ind['r']['catalogos']==[],
+       'la base está en la versión 3: índice de árboles por jornada y sin los cinco que nadie consultaba (B2): %s' % ind)
+    # Y un teléfono con la base en la versión 2 sube a la 3 sin perder lo capturado
+    ctx15=b.new_context(viewport={'width':390,'height':844}); pg15=ctx15.new_page()
+    pg15.route('**/*.js*', lambda r: r.abort())
+    pg15.goto(BASE); pg15.wait_for_timeout(500)
+    pg15.evaluate("""() => new Promise((ok, no) => { const r = indexedDB.open('srp_db', 2);
+      r.onupgradeneeded = () => { const db = r.result;
+        const pl = db.createObjectStore('plantaciones', { keyPath: 'id' }); ['cabo_id', 'fecha_plantacion', 'estatus'].forEach(i => pl.createIndex(i, i));
+        db.createObjectStore('usuarios', { keyPath: 'id' }); db.createObjectStore('catalogos', { keyPath: 'id' }).createIndex('tipo', 'tipo');
+        db.createObjectStore('bitacora', { keyPath: 'id' }).createIndex('entidad_id', 'entidad_id');
+        const jo = db.createObjectStore('jornadas', { keyPath: 'id' }); ['cabo_id', 'fecha', 'estatus'].forEach(i => jo.createIndex(i, i));
+        pl.put({ id: 'pl-v2', jornada_id: 'jr-v2', estatus: 'activo', cabo_id: 'u-cabo-1', es_ficticio: true });
+        jo.put({ id: 'jr-v2', cabo_id: 'u-cabo-1', fecha: '2026-09-20', estatus: 'cerrada', es_ficticio: true }); };
+      r.onsuccess = () => { r.result.close(); ok(true); }; r.onerror = () => no(r.error); })""")
+    pg15.unroute('**/*.js*'); pg15.reload(); pg15.wait_for_timeout(1500)
+    v2=pg15.evaluate("async () => ({ v: SRP.almacen.db.version, arboles: (await SRP.almacen.porIndice('plantaciones', 'jornada_id', 'jr-v2')).map(r => r.id), jornadas: (await SRP.almacen.todos('jornadas')).map(j => j.id) })")
+    ok(v2=={'v':3,'arboles':['pl-v2'],'jornadas':['jr-v2']},'una base en la versión 2 sube a la 3 conservando árboles y jornadas, y el índice nuevo los encuentra (B2): %s' % v2)
+    ctx15.close()
 
     b.close()
 print('\n'.join(res)); print('ERRORES CONSOLA:',errores or 'ninguno')

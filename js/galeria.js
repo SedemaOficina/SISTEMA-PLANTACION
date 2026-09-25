@@ -51,7 +51,7 @@ SRP.galeria = {
     this.el('btn-foto-cerrar').addEventListener('click', () => this.el('dlg-foto').close());
     this.el('btn-galeria-zip').innerHTML = SRP.ICONOS.svg('descargar', 'medio') + '<span>Descargar todas</span>';
     this.el('btn-foto-descargar').innerHTML = SRP.ICONOS.svg('descargar', 'medio') + '<span>Descargar</span>';
-    this.el('btn-foto-registro').innerHTML = SRP.ICONOS.svg('ver', 'medio') + '<span>Ver registro</span>';
+    this.el('btn-foto-registro').innerHTML = SRP.ICONOS.svg('ver', 'medio') + '<span>Ver detalle</span>';
   },
 
   /* ---------- Datos ---------- */
@@ -130,7 +130,7 @@ SRP.galeria = {
     if (!n) vacio.innerHTML = filtrado
       ? SRP.util.htmlVacio('camara', 'No hay fotografías con estos filtros.', 'Pruebe con otra jornada, otro día u otro cabo.', [{ accion: 'todas', texto: 'Ver todas' }])
       : SRP.util.htmlVacio('camara', 'Todavía no hay fotografías.', 'Aparecen aquí las que se agregan a los registros; la fotografía es opcional.',
-          [SRP.permisos.de(SRP.sesion.usuario).registrar ? { accion: 'registrar', texto: 'Registrar un árbol', clase: 'btn-primario', icono: 'mas' } : null]);
+          [SRP.permisos.de(SRP.sesion.usuario).registrar ? { accion: 'registrar', texto: 'Registrar árbol', clase: 'btn-primario', icono: 'mas' } : null]);
   },
 
   /* ---------- Una fotografía ---------- */

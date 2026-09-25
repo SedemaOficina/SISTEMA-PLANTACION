@@ -14,24 +14,24 @@
 <!-- Las peticiones al mapa no dicen desde qué sitio se hacen -->
 <meta name="referrer" content="no-referrer">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.73">
-<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.6.73">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.74">
+<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.6.74">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.73">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.73">
-<link rel="stylesheet" href="css/estilos.css?v=0.6.73">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.74">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.74">
+<link rel="stylesheet" href="css/estilos.css?v=0.6.74">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
 
-<p id="banda-ficticio" class="banda-ficticio" hidden>Datos ficticios de prueba. No usar para reportes oficiales.</p>
-
 <header class="encabezado">
+  <!-- Dentro del encabezado, para que quede en una región con nombre (D153) -->
+  <p id="banda-ficticio" class="banda-ficticio" hidden>Datos ficticios de prueba. No usar para reportes oficiales.</p>
   <div class="encabezado-interior">
     <!-- Logotipo (D90, D137): Gobierno CDMX · SEDEMA · SIA · Reforestación Urbana en pantalla ancha; en teléfono, SIA y Reforestación Urbana -->
     <picture>
-      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.6.73">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.6.73" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
+      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.6.74">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.6.74" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» (D80) -->
@@ -113,7 +113,8 @@
   <!-- REGISTRAR -->
   <section id="vista-registrar" class="vista" hidden aria-labelledby="titulo-registrar">
     <!-- La pestaña ya dice «Nuevo registro»; el título sólo se muestra en edición, donde sí cambia el contexto -->
-    <h1 id="titulo-registrar" hidden>Nuevo registro</h1>
+    <!-- Oculto a la vista pero legible por el lector de pantalla: la vista tiene su título (D153) -->
+    <h1 id="titulo-registrar" class="oculto-visual">Nuevo registro</h1>
     <p id="edicion-aviso" class="franja-edicion" hidden></p>
 
     <!-- INICIAR JORNADA (D119): sin jornada abierta no se registra; se declara una sola vez -->
@@ -191,7 +192,7 @@
         <div class="franja-guardado-acciones">
           <button type="button" id="btn-guardado-corregir" class="btn btn-editar btn-chico"></button>
           <button type="button" id="btn-guardado-ver" class="btn btn-secundario btn-chico"></button>
-          <button type="button" id="btn-guardado-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Ocultar"></button>
+          <button type="button" id="btn-guardado-cerrar" class="btn btn-icono-solo btn-texto franja-cerrar" aria-label="Ocultar"></button>
         </div>
       </div>
     </section>
@@ -262,7 +263,7 @@
       <!-- La fecha de plantación se hereda de la jornada (D119): el campo sigue existiendo para el
            registro y el espejo, pero no se pide; la pone SRP.activa -->
       <div class="campo" hidden><label for="campo-fecha">Fecha de plantación</label>
-        <div class="fecha-con-hoy"><input type="date" id="campo-fecha" tabindex="-1"><button type="button" id="btn-fecha-hoy" class="btn btn-secundario btn-chico" tabindex="-1">Hoy</button></div></div>
+        <input type="date" id="campo-fecha" tabindex="-1"></div>
       <div class="campo">
         <label for="campo-comentarios">Comentarios <span class="opcional">(opcional)</span></label>
         <textarea id="campo-comentarios" rows="3" maxlength="500" placeholder="Observaciones del sitio, condición del ejemplar, incidencias…"></textarea>
@@ -303,8 +304,9 @@
     <!-- ESPEJO DE CAMPOS — SE ELIMINA AL CERRAR LA ETAPA 1.
          Enseña los campos que llegan a la base sin tener lugar en la pantalla, para llevar
          control visual mientras se afina la interfaz. Sólo aparece con datos de prueba.
-         Para quitarlo: borrar esta sección, borrar js/espejo.js y su <script>, y borrar el
-         bloque `.espejo` de la hoja de estilos. Nada más depende de él. -->
+         Para quitarlo, ver el encabezado de js/espejo.js: este bloque y el del cierre del reporte,
+         el archivo y su <script>, y los estilos `.espejo`. Las pruebas comprueban que la app abre
+         sin él (D153). -->
     <section id="espejo-campos" class="espejo" aria-labelledby="espejo-titulo" hidden>
       <!-- Plegado de inicio (pedido por Liber, 24-09-2026): se abre sólo cuando se quiere revisar -->
       <details class="desplegable">
@@ -343,7 +345,7 @@
       <button type="button" id="btn-filtros" class="btn btn-secundario btn-filtros" aria-expanded="true" aria-controls="panel-filtros">
         <span>Filtros</span><span id="filtros-cuenta" class="filtros-cuenta" hidden></span></button>
       <!-- Vuelve al estado con que se abre la vista (Hoy, sin rango, todos los cabos). «Todos» sólo quita el periodo -->
-      <button type="button" id="btn-reiniciar-filtros" class="btn btn-reiniciar">Reiniciar filtros</button>
+      <button type="button" id="btn-reiniciar-filtros" class="btn btn-reiniciar">Quitar filtros</button>
     </div>
     <!-- Lo que está filtrando ahora, como fichas que se quitan con × (D100) -->
     <ul id="filtros-activos" class="filtros-activos" aria-label="Filtros activos"></ul>
@@ -470,7 +472,7 @@
       <!-- La barra del pie dice qué sigue y lleva el botón para hacerlo, siempre a la mano (D138) -->
       <div class="barra-guardar barra-jornada">
         <p id="jornada-siguiente" class="pasos-siguiente" aria-live="polite"></p>
-        <button type="button" id="btn-jornada-faltante" class="btn btn-secundario">Registrar faltante</button>
+        <button type="button" id="btn-jornada-faltante" class="btn btn-secundario">Registrar árbol</button>
         <button type="button" id="btn-jornada-reporte" class="btn btn-primario">Reporte de la jornada</button>
         <button type="button" id="btn-jornada-siguiente" class="btn btn-primario" hidden></button>
       </div>
@@ -744,7 +746,7 @@
   <!-- Cabecera fija como la de «Revise antes de guardar»: título, × y acción siempre a la vista (D91) -->
   <div class="dialogo-cabecera">
     <div class="dialogo-titulo">
-      <h2 id="dlg-cierre-titulo" tabindex="-1" autofocus>Datos de cierre del día</h2>
+      <h2 id="dlg-cierre-titulo" tabindex="-1" autofocus>Datos de cierre de la jornada</h2>
       <button type="button" id="btn-cierre-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar sin generar"></button>
     </div>
   </div>
@@ -889,45 +891,45 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.6.73"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.73"></script>
-<script src="vendor/turf-pip.min.js?v=0.6.73"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.6.73"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.73"></script>
+<script src="vendor/leaflet.js?v=0.6.74"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.74"></script>
+<script src="vendor/turf-pip.min.js?v=0.6.74"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.6.74"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.74"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.6.73"></script>
-<script src="js/util.js?v=0.6.73"></script>
-<script src="js/iconos.js?v=0.6.73"></script>
+<script src="js/config.js?v=0.6.74"></script>
+<script src="js/util.js?v=0.6.74"></script>
+<script src="js/iconos.js?v=0.6.74"></script>
 <!-- Capas territoriales del SIA, compactadas por pruebas/generar_capas.py desde assets/fuentes/ -->
-<script src="assets/capa-alcaldias.js?v=0.6.73"></script>
-<script src="assets/capa-uga.js?v=0.6.73"></script>
-<script src="assets/capa-colonias.js?v=0.6.73"></script>
-<script src="assets/catalogo-especies.js?v=0.6.73"></script>
-<script src="js/datos-ficticios.js?v=0.6.73"></script>
-<script src="js/permisos.js?v=0.6.73"></script>
-<script src="js/derivacion.js?v=0.6.73"></script>
-<script src="js/almacen.js?v=0.6.73"></script>
-<script src="js/sesion.js?v=0.6.73"></script>
-<script src="js/referencias.js?v=0.6.73"></script>
-<script src="js/folio.js?v=0.6.73"></script>
+<script src="assets/capa-alcaldias.js?v=0.6.74"></script>
+<script src="assets/capa-uga.js?v=0.6.74"></script>
+<script src="assets/capa-colonias.js?v=0.6.74"></script>
+<script src="assets/catalogo-especies.js?v=0.6.74"></script>
+<script src="js/datos-ficticios.js?v=0.6.74"></script>
+<script src="js/permisos.js?v=0.6.74"></script>
+<script src="js/derivacion.js?v=0.6.74"></script>
+<script src="js/almacen.js?v=0.6.74"></script>
+<script src="js/sesion.js?v=0.6.74"></script>
+<script src="js/referencias.js?v=0.6.74"></script>
+<script src="js/folio.js?v=0.6.74"></script>
 <!-- Esquema generado de esquema.json y la validación de lo que entra por un respaldo (D150) -->
-<script src="js/esquema.js?v=0.6.73"></script>
-<script src="js/validar.js?v=0.6.73"></script>
-<script src="js/conexion.js?v=0.6.73"></script>
-<script src="js/envio.js?v=0.6.73"></script>
-<script src="js/mapa.js?v=0.6.73"></script>
-<script src="js/foto.js?v=0.6.73"></script>
-<script src="js/jornada-activa.js?v=0.6.73"></script>
-<script src="js/formulario.js?v=0.6.73"></script>
+<script src="js/esquema.js?v=0.6.74"></script>
+<script src="js/validar.js?v=0.6.74"></script>
+<script src="js/conexion.js?v=0.6.74"></script>
+<script src="js/envio.js?v=0.6.74"></script>
+<script src="js/mapa.js?v=0.6.74"></script>
+<script src="js/foto.js?v=0.6.74"></script>
+<script src="js/jornada-activa.js?v=0.6.74"></script>
+<script src="js/formulario.js?v=0.6.74"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.6.73"></script>
-<script src="js/registros.js?v=0.6.73"></script>
-<script src="js/galeria.js?v=0.6.73"></script>
-<script src="js/jornadas.js?v=0.6.73"></script>
-<script src="js/croquis.js?v=0.6.73"></script>
-<script src="js/reportes.js?v=0.6.73"></script>
-<script src="js/catalogos.js?v=0.6.73"></script>
-<script src="js/usuarios.js?v=0.6.73"></script>
-<script src="js/app.js?v=0.6.73"></script>
+<script src="js/espejo.js?v=0.6.74"></script>
+<script src="js/registros.js?v=0.6.74"></script>
+<script src="js/galeria.js?v=0.6.74"></script>
+<script src="js/jornadas.js?v=0.6.74"></script>
+<script src="js/croquis.js?v=0.6.74"></script>
+<script src="js/reportes.js?v=0.6.74"></script>
+<script src="js/catalogos.js?v=0.6.74"></script>
+<script src="js/usuarios.js?v=0.6.74"></script>
+<script src="js/app.js?v=0.6.74"></script>
 </body>
 </html>

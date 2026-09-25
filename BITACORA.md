@@ -1767,3 +1767,29 @@ ahora `capa_version`, como un registro real.
 
 **Verificación:** 659 comprobaciones sin errores de consola; 91 de auditoría;
 presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.73.
+
+## Bloque 94 — Orden del código y los textos, primera parte (25-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.74.
+
+**Qué cambió (D153).** `app.js`: espejo opcional al arrancar y fuera de la revisión de arranque;
+«Quitar filtros»; iconos por nombre. `espejo.js`: instrucciones de retiro corregidas.
+`index.html`: clase `franja-cerrar` en la × de la franja «Guardado»; «Registrar árbol»; «Quitar
+filtros»; «Datos de cierre de la jornada»; título de primer nivel legible en Nuevo registro; banda
+de datos ficticios dentro del encabezado; fecha oculta del árbol sin su botón «Hoy»; marca 0.6.74.
+`estilos.css`: `.franja-cerrar` y crédito del mapa legible. `formulario.js`: título legible, sin el
+botón «Hoy», comentarios al día. `jornadas.js`: `guardada`, `jornadaGuardada()`,
+`guardarEnJornada()`, «dirección» en el aviso, índice por jornada, sin `jornadasDe()`.
+`jornada-activa.js`: árboles de la jornada por su índice. `registros.js` y `galeria.js`: «Registrar
+árbol», «Ver detalle», «Filtros quitados». `reportes.js`: pie del PDF por jornada. `almacen.js`:
+migración 3. `config.js`: `DB_VERSION` 3. `iconos.js` y `extraer_iconos.py`: sin «ayuda».
+`conexion.js` y `envio.js`: comentarios al día. `esquema.json`: versión 3 e índices;
+`DICCIONARIO-DATOS.md` regenerado. `README.md`: cómo se usa, reporte de la jornada, mapa, base,
+lista de salida a producción. `auditoria.py`: etiquetas retiradas.
+Pruebas: sin el espejo (archivo, bloques y script) la app abre, registra un árbol, abre su detalle,
+los datos de cierre y la vista previa, sin errores; la × de la franja la oculta sin error; título
+legible, banda en el encabezado y etiquetas únicas; la base en la versión 3 con sus índices; una
+base en la versión 2 sube a la 3 conservando árboles y jornadas. Se ajustaron los textos de las
+pruebas que nombraban las etiquetas retiradas.
+
+**Verificación:** 668 comprobaciones sin errores de consola; 92 de auditoría;
+presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.74.

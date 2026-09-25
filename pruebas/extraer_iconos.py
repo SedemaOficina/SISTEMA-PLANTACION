@@ -20,7 +20,7 @@ SELECCION = {
     'basura': 1, 'cerrar': 31, 'ubicacion': 12, 'camara': 62, 'ver': 21,
     # bloque 36 (D89): acceso, cuenta, pestañas y acciones
     'correo': 53, 'candado': 63, 'entrar': 11, 'usuario': 261, 'mas': 32, 'registros': 214,
-    'reportes': 50, 'catalogos': 48, 'usuarios': 270, 'ayuda': 24, 'buscar': 4, 'usuarioMas': 264, 'info': 22,
+    'reportes': 50, 'catalogos': 48, 'usuarios': 270, 'buscar': 4, 'usuarioMas': 264, 'info': 22,
 }
 
 def trazados_del_set():

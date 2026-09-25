@@ -24,13 +24,6 @@ SRP.formulario = {
     });
     this.el('btn-coord-aplicar').addEventListener('click', () => this.aplicarCoordenadasManuales());
     this.iniciarCombo();
-    // «Hoy» pone la fecha de un toque; sigue siendo una elección de quien captura (D29, D98)
-    this.el('btn-fecha-hoy').addEventListener('click', () => {
-      this.el('campo-fecha').value = SRP.util.fechaHoy();
-      SRP.util.quitarErrorCampo(this.el('campo-fecha'));
-      this.el('campo-fecha').dispatchEvent(new Event('change', { bubbles: true }));
-      if (SRP.espejo) SRP.espejo.refrescar();
-    });
     // Los enlaces del resumen de errores llevan al control que se ve, aunque el dato viva en otro
     this.el('resumen-errores').addEventListener('click', (e) => {
       const a = e.target.closest('a[href^="#"]'); if (!a) return;
@@ -637,7 +630,7 @@ SRP.formulario = {
     SRP.util.anunciarSilencioso('Guardado: ' + esp.comun + '. Listo para el siguiente árbol.');
   },
 
-  /* Lo que dice «Registro guardado» con el envío simulado (D111): «Enviando…» mientras sale, y
+  /* Lo que dice la franja «Guardado» con el envío simulado (D111): «Enviando…» mientras sale, y
      luego enviado con su hora de recepción, o guardado en el teléfono y cuántos esperan. */
   async enviarTrasGuardar(id) {
     const envio = SRP.envio;
@@ -675,7 +668,7 @@ SRP.formulario = {
     this.estado.jornadaEditando = null;
     if (registro.jornada_id) SRP.almacen.uno('jornadas', registro.jornada_id).then(j => { this.estado.jornadaEditando = j || null; });
     this.el('titulo-registrar').textContent = 'Editar registro';
-    this.el('titulo-registrar').hidden = false;
+    this.el('titulo-registrar').classList.remove('oculto-visual');
     const aviso = this.el('edicion-aviso');
     aviso.textContent = 'Está editando el registro del ' + SRP.util.formatearFecha(registro.fecha_plantacion) +
       ' capturado por ' + SRP.ref.nombreUsuario(registro.cabo_id) + '. Los cambios quedan en el historial.';
@@ -694,16 +687,16 @@ SRP.formulario = {
       { origen: registro.punto_origen, precision: registro.gps_precision_m, centrar: true });
   },
 
-  /* Deja la pantalla como recién abierta. Ni un campo conserva el valor anterior: ni la fecha
-     —que se elige a propósito, no se hereda—, ni el programa, ni las coordenadas escritas a
-     mano, ni la derivación territorial. Lo único que sobrevive es el encuadre del mapa, que
+  /* Deja la pantalla como recién abierta. Ni un campo del árbol conserva el valor anterior: ni la
+     especie, ni las coordenadas escritas a mano, ni la derivación territorial. La fecha y el
+     programa no son del árbol sino de la jornada, y los vuelve a poner SRP.activa (D119, D151). Lo único que sobrevive es el encuadre del mapa, que
      no es un dato: ayuda a situarse y no se guarda en ningún lado. */
   limpiar() {
     this.estado.editando = null;
     this.estado.idPrevisto = null;
     this.estado.territorio = null;
     this.el('titulo-registrar').textContent = 'Nuevo registro';
-    this.el('titulo-registrar').hidden = true;
+    this.el('titulo-registrar').classList.add('oculto-visual');   // se lee, no se ve (D153)
     const ta = this.el('titulo-arbol'); if (ta) ta.textContent = 'Nuevo árbol';
     this.el('edicion-aviso').hidden = true;
     this.el('btn-cancelar-edicion').hidden = true;

@@ -18,7 +18,7 @@
    CÓMO SE AVISA:
      · la pastilla del encabezado: «Con conexión · Al día», «Sin conexión · 3 por enviar»,
        «Enviando 3…»; se pone en rojo si hay atraso
-     · el diálogo «Registro guardado»: enviado con su hora de recepción, o por enviar
+     · la franja «Guardado» del formulario: enviado con su hora de recepción, o por enviar
      · la franja de atraso: «Hoy es miércoles 23 de septiembre. Tiene 5 registros sin enviar
        desde el lunes 21…», o al final de la jornada, los de hoy sin enviar
      · la tarjeta («Por enviar») y el detalle (fila «Envío»)

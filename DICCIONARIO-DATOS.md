@@ -6,7 +6,7 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 
 ## 1. Dónde viven los datos
 
-- **Motor:** IndexedDB del navegador, base `srp_db` (SRP.CONFIG.DB_NOMBRE), versión 2 (SRP.CONFIG.DB_VERSION).
+- **Motor:** IndexedDB del navegador, base `srp_db` (SRP.CONFIG.DB_NOMBRE), versión 3 (SRP.CONFIG.DB_VERSION).
 - **Tablas (almacenes):** `plantaciones`, `usuarios`, `catalogos`, `bitacora`, `jornadas`.
 
 | Dónde | Qué guarda | En Fase 2 |
@@ -59,7 +59,7 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 
 Un renglón por ejemplar plantado. Es el registro individual de campo; todo lo demás (partes, tableros, cifra pública) se construye encima (D38).
 
-- **Llave:** `id`. **Índices:** `cabo_id`, `fecha_plantacion`, `estatus`. **Pantalla:** Nuevo registro (alta y edición), Registros (lista, detalle), Reportes (parte del día).
+- **Llave:** `id`. **Índices:** `estatus`, `jornada_id`. **Pantalla:** Nuevo registro (alta y edición), Registros (lista, detalle), Reportes (parte del día).
 - **Campos:** 36.
 
 | Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
@@ -130,7 +130,7 @@ Cuentas del sistema. Una por persona; el perfil decide qué puede hacer (js/perm
 
 Los tres catálogos administrables en una sola tabla, distinguidos por `tipo`: programas, áreas y especies. Las especies son el catálogo real del SIA (D84) y llevan campos adicionales.
 
-- **Llave:** `id`. **Índices:** `tipo`. **Pantalla:** Catálogos (sólo Administración global); alimentan Nuevo registro (especie, programa) y Usuarios (área).
+- **Llave:** `id`. **Índices:** ninguno. **Pantalla:** Catálogos (sólo Administración global); alimentan Nuevo registro (especie, programa) y Usuarios (área).
 - **Campos:** 19.
 
 | Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
@@ -179,7 +179,7 @@ Quién, cuándo y qué, en cada alta, edición, eliminación, activación y desa
 
 Una jornada de plantación: se declara antes de registrar el primer árbol (D119). Agrupa los registros, lleva la conciliación y la revisión, y guarda los datos de cierre del reporte (antes en la tabla cierres, retirada en el bloque 62).
 
-- **Llave:** `id`. **Índices:** `cabo_id`, `fecha`, `estatus`. **Pantalla:** Nuevo registro → «Iniciar jornada»; Jornadas; Reportes → «Datos de cierre».
+- **Llave:** `id`. **Índices:** `cabo_id`. **Pantalla:** Nuevo registro → «Iniciar jornada»; Jornadas; Reportes → «Datos de cierre».
 - **Campos:** 34.
 
 | Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
@@ -407,9 +407,8 @@ CREATE TABLE plantaciones (
   editado_por_id           uuid           NULL,
   PRIMARY KEY (id)
 );
-CREATE INDEX plantaciones_cabo_id ON plantaciones (cabo_id);
-CREATE INDEX plantaciones_fecha_plantacion ON plantaciones (fecha_plantacion);
 CREATE INDEX plantaciones_estatus ON plantaciones (estatus);
+CREATE INDEX plantaciones_jornada_id ON plantaciones (jornada_id);
 
 CREATE TABLE usuarios (
   id                       uuid           NOT NULL,
@@ -452,7 +451,6 @@ CREATE TABLE catalogos (
   nota_discrepancia        varchar(700)   NOT NULL,
   PRIMARY KEY (id)
 );
-CREATE INDEX catalogos_tipo ON catalogos (tipo);
 
 CREATE TABLE bitacora (
   id                       uuid           NOT NULL,
@@ -507,8 +505,6 @@ CREATE TABLE jornadas (
   PRIMARY KEY (id)
 );
 CREATE INDEX jornadas_cabo_id ON jornadas (cabo_id);
-CREATE INDEX jornadas_fecha ON jornadas (fecha);
-CREATE INDEX jornadas_estatus ON jornadas (estatus);
 
 ```
 

@@ -46,6 +46,15 @@ SRP.almacen = {
       jo.createIndex('fecha', 'fecha');
       jo.createIndex('estatus', 'estatus');
       if (db.objectStoreNames.contains('cierres')) db.deleteObjectStore('cierres');
+    },
+    /* ÍNDICES AL USO (D153). Cada jornada recorría todos los árboles para encontrar los suyos: se
+       agrega `jornada_id`. Se retiran cinco índices que nada consulta —cabo y fecha de los árboles,
+       tipo de catálogo, fecha y estatus de las jornadas—. Crear o quitar un índice no toca los datos. */
+    3(db, tx) {
+      const pl = tx.objectStore('plantaciones');
+      if (!pl.indexNames.contains('jornada_id')) pl.createIndex('jornada_id', 'jornada_id');
+      [['plantaciones', 'cabo_id'], ['plantaciones', 'fecha_plantacion'], ['catalogos', 'tipo'], ['jornadas', 'fecha'], ['jornadas', 'estatus']]
+        .forEach(([almacen, indice]) => { const s = tx.objectStore(almacen); if (s.indexNames.contains(indice)) s.deleteIndex(indice); });
     }
   },
 

@@ -246,6 +246,11 @@ with sync_playwright() as p:
     # Créditos del mapa (D152): ningún mapa sin crédito
     sin_credito = [os.path.basename(f) for f in glob.glob(APP + '/js/*.js') if 'attributionControl: false' in open(f, encoding='utf-8').read()]
     mirar(not sin_credito, 'todos los mapas muestran el crédito del proveedor (ninguno con attributionControl: false)', ', '.join(sin_credito))
+    # Un nombre por acción (D153): las etiquetas retiradas no vuelven a aparecer en pantalla
+    retiradas = ['Reiniciar filtros', 'Registrar un árbol', 'Ver registro', 'Registrar faltante', 'Datos de cierre del día']
+    visibles = [open(os.path.join(APP, 'index.html'), encoding='utf-8').read()] + [re.sub(r'/\*.*?\*/|//[^\n]*', '', open(x, encoding='utf-8').read(), flags=re.S) for x in glob.glob(APP + '/js/*.js')]
+    quedan = [t for t in retiradas if any(t in v for v in visibles)]
+    mirar(not quedan, 'una etiqueta por acción: no quedan «Reiniciar filtros», «Ver registro», «Registrar faltante» ni «Datos de cierre del día»', ', '.join(quedan))
     # Política de seguridad (D150): nada en línea que la política vaya a bloquear en el teléfono
     en_linea = []
     html = re.sub(r'<!--.*?-->', '', open(os.path.join(APP, 'index.html'), encoding='utf-8').read(), flags=re.S)

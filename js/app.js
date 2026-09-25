@@ -9,19 +9,19 @@ SRP.app = {
      el HTML no cargue con trazados y el icono viva en un solo lugar (js/iconos.js). */
   ponerIconos() {
     const I = SRP.ICONOS;
-    I.poner(document.querySelector('label[for="acceso-correo"]'), 'correo', 18);
-    I.poner(document.querySelector('label[for="acceso-clave"]'), 'candado', 18);
-    I.poner(this.el('form-acceso').querySelector('button[type="submit"]'), 'entrar', 20);
-    I.poner(this.el('btn-entrar-prueba'), 'entrar', 20);
+    I.poner(document.querySelector('label[for="acceso-correo"]'), 'correo', 'medio');
+    I.poner(document.querySelector('label[for="acceso-clave"]'), 'candado', 'medio');
+    I.poner(this.el('form-acceso').querySelector('button[type="submit"]'), 'entrar', 'medio');
+    I.poner(this.el('btn-entrar-prueba'), 'entrar', 'medio');
     const pestana = { registrar: 'mas', registros: 'registros', jornadas: 'jornadas', reportes: 'reportes', galeria: 'camara', catalogos: 'catalogos', usuarios: 'usuarios' };
-    this.el('navegacion').querySelectorAll('.pestana').forEach(b => I.poner(b, pestana[b.dataset.vista], 22));
-    I.poner(this.el('btn-usr-agregar'), 'usuarioMas', 20);
+    this.el('navegacion').querySelectorAll('.pestana').forEach(b => I.poner(b, pestana[b.dataset.vista], 'grande'));
+    I.poner(this.el('btn-usr-agregar'), 'usuarioMas', 'medio');
     // Menú de la cuenta con icono en cada opción (D114): el sol y la puerta pedidos por Liber, y el resto por consistencia
     // Cancelar lleva tache y va en rojo de contorno (D116)
-    I.poner(this.el('btn-cancelar-edicion'), 'cerrar', 18);
-    I.poner(this.el('btn-confirmar-no'), 'cerrar', 18);
+    I.poner(this.el('btn-cancelar-edicion'), 'cerrar', 'medio');
+    I.poner(this.el('btn-confirmar-no'), 'cerrar', 'medio');
     [['btn-contraste', 'sol'], ['btn-respaldo', 'disco'], ['btn-sin-senal', 'sinSenal'], ['btn-cambiar-perfil', 'usuario'], ['btn-cerrar-sesion', 'salir']]
-      .forEach(([id, icono]) => I.poner(this.el(id), icono, 20));
+      .forEach(([id, icono]) => I.poner(this.el(id), icono, 'medio'));
     // Los buscadores llevan la lupa dentro del campo, desde la hoja de estilos (D95)
     // Avisos informativos: el icono va al frente del texto
     document.querySelectorAll('.aviso-simulado').forEach(a => a.insertAdjacentHTML('afterbegin', I.svg('info', 'medio')));
@@ -51,7 +51,7 @@ SRP.app = {
       return;
     }
     SRP.formulario.iniciar();
-    SRP.espejo.iniciar();          // sólo en la versión de prueba; se elimina al cerrar la Etapa 1
+    if (SRP.espejo) SRP.espejo.iniciar();   // sólo en la versión de prueba; se retira al cerrar la Etapa 1 (D153)
     SRP.registros.iniciar();
     SRP.reportes.iniciar();
     SRP.catalogos.iniciar();
@@ -102,10 +102,10 @@ SRP.app = {
       ['vista-usuarios', 'la pantalla de usuarios'],
       ['vista-reportes', 'la pantalla de reportes'],
       ['franja-guardado', 'la franja de registro guardado'],
-      ['revision-lista', 'la ficha de revisión'],
-      ['espejo-campos', 'el espejo de campos de prueba']
+      ['revision-lista', 'la ficha de revisión']
+      // El espejo de campos no se exige: se retira al cerrar la Etapa 1 y la app debe abrir sin él (D153)
     ].filter(([id]) => !document.getElementById(id)).map(([, que]) => que);
-    const modulos = ['util', 'ICONOS', 'permisos', 'sesion', 'almacen', 'ref', 'formulario', 'espejo', 'registros', 'catalogos', 'usuarios', 'ESQUEMA', 'validar', 'derivacion']
+    const modulos = ['util', 'ICONOS', 'permisos', 'sesion', 'almacen', 'ref', 'formulario', 'registros', 'catalogos', 'usuarios', 'ESQUEMA', 'validar', 'derivacion']
       .filter(m => !SRP[m]);
     /* Las tres capas y la biblioteca del cruce también se exigen (D152): sin ellas la app abría y
        los árboles se guardaban sin alcaldía ni colonia, y con folio EXT-000. La de colonias pesa
@@ -396,19 +396,18 @@ SRP.app = {
     // Iconos fijos por significado (D124): disco = guardar, palomita = confirmar/aprobar
     this.el('btn-cat-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar</span>';
     this.el('btn-usr-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar</span>';
-    const I = (id, icono, texto, tam) => { const b = this.el(id); if (b) b.innerHTML = SRP.ICONOS.svg(icono, tam || 18) + '<span>' + texto + '</span>'; };
-    I('btn-cierre-generar', 'ver', 'Ver vista previa', 20);
+    const I = (id, icono, texto, tam) => { const b = this.el(id); if (b) b.innerHTML = SRP.ICONOS.svg(icono, tam || 'medio') + '<span>' + texto + '</span>'; };
+    I('btn-cierre-generar', 'ver', 'Ver vista previa', 'medio');
     I('btn-previa-corregir', 'lapiz', 'Corregir datos de cierre');
     I('btn-enviar-ahora', 'senal', 'Enviar ahora');
     I('btn-franja-enviar', 'senal', 'Enviar ahora');
     I('btn-filtrar', 'buscar', 'Aplicar');
-    I('btn-reiniciar-filtros', 'cerrar', 'Reiniciar filtros', 16);
+    I('btn-reiniciar-filtros', 'cerrar', 'Quitar filtros', 'chico');   // un nombre por acción (D153)
     I('btn-coord-aplicar', 'ubicacion', 'Colocar punto');
     I('btn-cambiar-nueva', 'mas', 'Iniciar otra jornada');
     // Toda × de cabecera cierra su propio diálogo (D91); cada módulo reacciona al evento «close» si lo necesita
     document.querySelectorAll('.dialogo-cerrar').forEach(b => {
       b.innerHTML = SRP.ICONOS.svg('cerrar', 'grande');
-      // La × de la franja «Guardado» usa esta clase sin estar en un diálogo (D149): no hay nada que cerrar aquí
       b.addEventListener('click', () => { const d = b.closest('dialog'); if (d) d.close(); });
     });
     this.el('btn-confirmar-si').addEventListener('click', () => this.el('dlg-confirmar').close('si'));

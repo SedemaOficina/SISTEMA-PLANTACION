@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.73 (Bloque 92)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.74 (Bloque 94)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -190,6 +190,11 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M186 | Auditoría 360 (M5, M6) | El detalle dice la celda UGA, a cuánto del borde cayó el árbol y con qué capas se derivó; «celda incierta» cuando el GPS no alcanza; «Sin colonia en la capa» | Media | 0.6.73 (B92) | Registros › Ver detalle › Datos del sistema | Detalle |
 | M187 | Auditoría 360 (M7) | El reporte marca «(simulado)» en cada folio de prueba y dice con qué capas se derivó el territorio | Baja | 0.6.73 (B92) | Reportes › Ver vista previa | Tabla de ejemplares |
 | M188 | Auditoría 360 (B8) | El aviso de que la imagen del mapa no cargó ya no tapa la insignia de precisión | Baja | 0.6.73 (B92) | Sin señal, registrar ubicación | Dos renglones bajo el mapa |
+| M189 | Auditoría 360 (M16) | Un solo nombre por acción: «Registrar árbol», «Ver detalle», «Quitar filtros», «Datos de cierre de la jornada» | Media | 0.6.74 (B94) | Registros › Filtros; Reportes › Generar reporte | Botón «Quitar filtros» |
+| M190 | Auditoría 360 (M11, M12) | Retirar el espejo de campos al cerrar la Etapa 1 ya no deja la app sin abrir; la × de la franja «Guardado» ya no produce un error | Media | 0.6.74 (B94) | (Lo cubren las pruebas) | — |
+| M191 | Auditoría 360 (B5) | Nuevo registro tiene título para el lector de pantalla; la banda de datos ficticios va dentro del encabezado; el crédito del mapa se lee mejor | Baja | 0.6.74 (B94) | Tocar el crédito del mapa | Crédito |
+| M192 | Auditoría 360 (B2) | La base del teléfono sube a la versión 3 con un índice de árboles por jornada: las jornadas cargan sus árboles sin recorrer todos; se conserva lo capturado | Baja | 0.6.74 (B94) | (Lo cubren las pruebas) | — |
+| M193 | Auditoría 360 (M14, M20, B1) | README con el flujo vigente, comentarios al día, nombres internos que ya no mienten y código sin uso fuera | Baja | 0.6.74 (B94) | README | — |
 
 ## 2. Por hacer
 
@@ -197,7 +202,7 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 |---|---|---|---|---|---|
 | M46 | Android | Revisión corta en Android: versión, botón «atrás» con ventanas abiertas, calendario y hora, especies con teclado, precisión, foto, compartir PDF, aviso | Alta | Pendiente | Espera capturas |
 | M168 | Auditoría 360 | Bloque 93 «Publicación ligera»: fuentes fuera del sitio, capas con su propia versión y aligeradas, licencia, jsPDF al día (M2, M4) | Media | Pendiente | Decisiones D5 a D7 |
-| M169 | Auditoría 360 | Bloque 94 «Orden del código y los textos»: hoja de estilos a su norma, duplicación, etiquetas, README y comentarios (M11, M13–M16, M20) | Media | Pendiente | |
+| M169 | Auditoría 360 | Bloque 94b «Estilos y código repetido»: hoja de estilos conforme a su norma y colores de :root (M13); resumen de errores, botón ocupado, periodo y reporte con un solo modelo (M15) | Media | Pendiente | Con capturas de antes y después |
 | M170 | Auditoría 360 | Bloque 95 «Pruebas en iPhone»: GitHub Actions con Chromium y WebKit, pruebas de migración e integridad (M17, M18) | Media | Pendiente | |
 | M171 | Auditoría 360 | Fotografías como Blob (hoy ocupan un tercio más como texto) y sello de datos dentro de la base | Media | Pendiente | Resto de A1 y A2 |
 
@@ -215,4 +220,4 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 175 hechas · 5 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 180 hechas · 5 por hacer · 2 revisadas · 2 descartadas.

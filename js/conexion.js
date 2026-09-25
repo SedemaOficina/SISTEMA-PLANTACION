@@ -11,11 +11,12 @@
    LA CUENTA VA EN LA PASTILLA (D83). El bloque «Registros en este dispositivo» vive en Reportes,
    a donde el cabo no va en campo; la pastilla del encabezado se ve en todas las pantallas, así
    que lleva la cuenta («Con conexión · 4 guardados») y al tocarla abre la guía. Es lo que hace
-   la cola de envío de KoboToolbox, sin su barra lateral. El aviso de «Registro guardado» dice
-   además que quedó en este dispositivo y cuántos van, sin pedir otro clic.
+   la cola de envío de KoboToolbox, sin su barra lateral. La franja «Guardado» del formulario dice
+   además si el árbol ya salió o cuántos esperan, sin pedir otro clic.
 
-   RESPALDO. Un archivo con todo lo que guarda el dispositivo —plantaciones, jornadas y bitácora,
-   con el mismo esquema de la base— que se comparte igual que el PDF. Un respaldo que nunca se ha
+   RESPALDO. Un archivo con lo que alcanza quien lo guarda —sus árboles y jornadas con su
+   bitácora, y de las cuentas sólo id y nombre, D150— con el mismo esquema de la base, que se
+   comparte igual que el PDF. Un respaldo que nunca se ha
    restaurado es una suposición (Norma 4.9): por eso «Restaurar respaldo» existe, en las
    herramientas de prueba, y la prueba automatizada hace el viaje completo. */
 window.SRP = window.SRP || {};

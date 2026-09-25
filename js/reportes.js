@@ -376,7 +376,7 @@ SRP.reportes = {
       .sort((a, b) => b.n - a.n || a.comun.localeCompare(b.comun, 'es'));
   },
 
-  // Alcaldías de los registros del día: el sistema ya las derivó del punto, no se preguntan
+  // Alcaldías de los árboles de la jornada: el sistema ya las derivó del punto, no se preguntan
   alcaldiasDe(registros) {
     return [...new Set(registros.map(r => r.alcaldia).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'));
   },
@@ -620,8 +620,8 @@ SRP.reportes = {
     doc.text('Generado por ' + SRP.util.nombreCompleto(u) + ' (' + SRP.permisos.de(u).etiqueta + ').', M, y);
     /* La cifra del sistema no es la cifra del programa: se registra lo que alcanza a
        registrarse. Decirlo en el documento protege a quien lo firma. */
-    doc.text('Cifra de ejemplares registrados en el sistema para esta fecha. No equivale', M, y + 4);
-    doc.text('necesariamente al total plantado ese día.', M, y + 8);
+    doc.text('Cifra de ejemplares registrados en el sistema para esta jornada. No equivale', M, y + 4);
+    doc.text('necesariamente al total plantado en ella.', M, y + 8);
     if (SRP.CONFIG.ES_FICTICIO) {
       doc.setTextColor(163, 58, 0);
       doc.text('Documento de prueba con datos ficticios. Sin validez oficial.', M, y + 14);

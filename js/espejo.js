@@ -1,14 +1,17 @@
 /* ESPEJO DE CAMPOS — SÓLO EN LA VERSIÓN DE PRUEBA.
    =================================================================================
-   ESTE ARCHIVO SE ELIMINA AL CERRAR LA ETAPA 1. Para quitarlo bastan cuatro cosas:
-     1. borrar este archivo,
-     2. borrar su <script> y los tres bloques con clase `espejo` de index.html
-        (formulario, detalle del registro y cierre del reporte),
-     3. borrar el bloque `.espejo` de css/estilos.css,
-     4. borrar las tres llamadas a SRP.espejo (formulario.js, registros.js, reportes.js),
-        que ya están protegidas con `if (SRP.espejo)`.
-   Nada más depende de él: no escribe en ningún almacén, no altera el registro y
-   no participa en la validación. Es una ventana, no una pieza.
+   ESTE ARCHIVO SE ELIMINA AL CERRAR LA ETAPA 1. Para quitarlo (revisado en D153):
+     1. borrar este archivo y su <script> en index.html;
+     2. borrar los dos bloques con clase `espejo` de index.html: la sección #espejo-campos del
+        formulario y el desplegable #espejo-cierre del cierre del reporte (el del detalle del
+        registro no está en el HTML: lo arma htmlDetalle());
+     3. borrar los estilos `.espejo*` de css/estilos.css (el bloque general y el de teléfono);
+     4. si se quiere, borrar las nueve llamadas a SRP.espejo (una en app.js, seis en
+        formulario.js, una en registros.js y una en reportes.js): todas van protegidas con
+        `if (SRP.espejo)`, así que la app funciona igual con ellas o sin ellas.
+   La revisión de arranque ya no lo exige, y las pruebas abren la app sin este archivo ni sus
+   bloques, registran un árbol, ven su detalle y abren el cierre del reporte. No escribe en ningún
+   almacén, no altera el registro y no participa en la validación. Es una ventana, no una pieza.
 
    TRES ESPEJOS, UN MOTOR (bloque 22). El del formulario enseña el registro previsto; el
    del detalle, el registro tal como quedó guardado; el del cierre del reporte, el cierre

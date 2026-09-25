@@ -6,6 +6,21 @@ decida pasar a ellas.
 
 La versión que corre se lee al pie de cada pantalla.
 
+## Cómo se usa
+
+1. **Registrar jornada** (pestaña Nuevo registro). Antes de registrar árboles se declara la jornada:
+   nombre del sitio, programa, fecha, meta de árboles y, si se quiere, la ubicación y la dirección.
+   El programa y la fecha son de la jornada: todos sus árboles los toman (D119, D151).
+2. **Nuevo árbol.** Con la jornada activa: ubicación (GPS, toque en el mapa o coordenadas a mano),
+   especie, comentarios y fotografía opcional. «Guardar» registra de una vez; sólo si hay algo que
+   revisar (precisión baja, punto lejano, posible duplicado) abre la ficha de revisión.
+3. **Jornadas.** Cada jornada con su mapa y lista numerados, sus avisos y la conciliación con la
+   meta. Ahí se revisan los puntos, se cierra la jornada y se mueve o elimina un árbol.
+4. **Reportes.** De cada jornada cerrada: datos de cierre, vista previa y PDF con croquis.
+5. **Fotografías** (coordinación y administración): las fotos de los registros, con descarga en ZIP.
+6. **Registros**: la lista de árboles con filtros, detalle, edición y eliminación que se deshace.
+   **Catálogos** y **Usuarios**, sólo para la Administración global.
+
 ## Cómo abrirlo
 
 **En la computadora.** Doble clic en `index.html` sirve para mirar, pero para probar de verdad
@@ -111,16 +126,15 @@ capturas, **no se borra nada** (D149): en la Etapa 1 el teléfono es la única c
 cambio en la forma de los datos ya no se resuelve con el sello, sino con una migración numerada
 en `js/almacen.js` que traslada lo guardado antes de retirar nada.
 
-## El reporte del día
+## El reporte de la jornada
 
-El reporte es el **parte de una jornada**, no de un periodo: el botón sólo genera con un día
-elegido —el atajo «Hoy», o la misma fecha en «Desde» y «Hasta»—. Con mes o año queda apagado y la
-nota de al lado dice qué falta.
-
-Al pulsarlo se abre el **cierre del parte**: sitio, actividades, personal, apoyo, encargado,
-observaciones, chófer, vehículo y hora de finalización. Todos opcionales y de escritura libre, y
-los que quedan vacíos no se imprimen. El encargado no se escribe: para un cabo es él; para quien
-ve a varias personas es una lista de los cabos que registraron ese día.
+El reporte es el **parte de una jornada** (D119, D134), no de un día ni de un periodo: un día puede
+tener varias jornadas. Se genera desde Reportes, que lista las jornadas cerradas con árboles, o
+desde la ficha de la jornada. Primero se piden los **datos de cierre de la jornada**: personal,
+apoyo, encargado, observaciones, chófer, vehículo y hora de finalización. Todos opcionales y de
+escritura libre, y los que quedan vacíos no se imprimen. El encargado no se escribe: para un cabo
+es él; para quien ve a varias personas se elige entre los cabos con registros ese día. Luego se
+abre la **vista previa**, con el mismo contenido que tendrá el PDF, y desde ahí se genera el PDF.
 
 Los totales por especie, el total de ejemplares, el resumen por programa y la alcaldía del sitio
 **se calculan** a partir de los registros. Un total tecleado es un total que se puede equivocar.
@@ -130,7 +144,7 @@ reporte de una jornada no obliga a escribirlo otra vez.
 
 ## La base del dispositivo
 
-La estructura vive en migraciones numeradas (`MIGRACIONES` en `js/almacen.js`; hoy van dos) y los
+La estructura vive en migraciones numeradas (`MIGRACIONES` en `js/almacen.js`; hoy van tres) y los
 almacenes que el código espera se declaran en `ALMACENES`. **Lo capturado no se borra solo** (D149):
 un cambio de estructura es una migración nueva que traslada lo guardado antes de retirar nada; una
 base a la que le falta un almacén, o de una versión posterior, se rehace conservando cada renglón;
@@ -144,8 +158,11 @@ fue el último respaldo, y el cierre de cada jornada lo recuerda.
 ## Mapa
 
 La capa base es imagen de satélite de Esri, con los nombres de vías y lugares encima. Las tres
-capas se declaran en `CAPAS`, dentro de `js/config.js`; cambiar de proveedor es cambiar esa lista.
-La atribución se muestra porque la licencia lo exige.
+capas se declaran en `CAPAS`, dentro de `js/config.js`; cambiar de proveedor es cambiar esa lista
+y el dominio en la política de seguridad de `index.html`. Cada mapa —captura, jornada, ficha de
+revisión y detalle— muestra el crédito de cada capa tal como lo declara su servicio y «Powered by
+Esri»; el croquis del PDF lo lleva al pie (D152). La licencia y el token de Esri están pendientes
+de confirmar antes de operar (D5 de la auditoría).
 
 ## Sin señal
 
@@ -274,8 +291,8 @@ Nada de esto se hace en la Etapa 1; se deja escrito para no descubrirlo tarde (D
 5. Mapa base con licencia confirmada; si cambia el dominio, también en la política de seguridad
    de `index.html`.
 6. Aviso de privacidad publicado y reglas de conservación de fotos y datos del personal.
-7. Retirar el espejo de campos (ver `js/espejo.js`) y correr las pruebas. Hoy sus instrucciones no
-   bastan: `js/app.js` lo exige al arrancar (hallazgo M11 de la auditoría 360, pendiente).
+7. Retirar el espejo de campos siguiendo el encabezado de `js/espejo.js` y correr las pruebas: la
+   app ya no lo exige al arrancar, y las pruebas comprueban que abre y funciona sin él (D153).
 
 `DECISIONES.md` y `BITACORA.md` son la memoria formal del proyecto: qué se decidió y por qué, y
 qué se hizo en cada bloque.

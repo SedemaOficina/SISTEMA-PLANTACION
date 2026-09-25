@@ -156,10 +156,10 @@ SRP.registros = {
     this.llenarMeses();
     this.sincronizarControles();
     this.aplicar();
-    SRP.util.anunciar('Filtros reiniciados: todos los registros.', 'exito', { deshacer: () => this.volverAFiltro(antes) });
+    SRP.util.anunciar('Filtros quitados: todos los registros.', 'exito', { deshacer: () => this.volverAFiltro(antes) });
   },
 
-  // Devuelve los filtros a como estaban antes de «Reiniciar filtros» (D101)
+  // Devuelve los filtros a como estaban antes de «Quitar filtros» (D101)
   volverAFiltro(f) {
     this.filtro = Object.assign({}, f);
     this.el('filtro-cabo').value = f.cabo || '';
@@ -412,13 +412,13 @@ SRP.registros = {
 
   /* Estado vacío con salida (D96): en lugar de pedir «Toque Todos», el aviso trae el botón que
      resuelve. Tres casos: no hay ningún registro, no hay de hoy, o el filtro no encuentra nada.
-     «Registrar un árbol» sólo aparece a quien captura. */
+     «Registrar árbol» sólo aparece a quien captura. */
   pintarVacio(vacio, propios, u) {
     const caja = this.el('registros-vacio');
     caja.hidden = !vacio;
     if (!vacio) { caja.innerHTML = ''; return; }
     const puedeRegistrar = !!SRP.permisos.de(u).registrar;
-    const btnRegistrar = puedeRegistrar ? { accion: 'registrar', texto: 'Registrar un árbol', clase: 'btn-primario', icono: 'mas' } : null;
+    const btnRegistrar = puedeRegistrar ? { accion: 'registrar', texto: 'Registrar árbol', clase: 'btn-primario', icono: 'mas' } : null;
     let icono = 'registros', titulo, texto, botones;
     if (this.visibles.length === 0) {
       titulo = propios ? 'Todavía no ha registrado ningún árbol.' : 'Todavía no hay registros.';

@@ -13,14 +13,16 @@
    La conciliación, los puntos revisados y los datos de cierre del reporte viven en la jornada.
 
    CONCILIACIÓN. Se escribe cuántos árboles plantó la cuadrilla; el sistema lo compara con los
-   registros y dice si cuadra, si faltan o si sobran. El número se guarda en el cierre del día
+   registros y dice si cuadra, si faltan o si sobran. La meta se escribe al iniciar la jornada (D131)
    (`arboles_plantados`) y sale en el reporte.
 
    AVISOS (sin inventar errores: son para revisar, no se corrigen solos):
      duplicado   misma especie a menos de DUPLICADO_M de otro punto de la jornada
      lejos       a más de FUERA_M de la mediana de los demás puntos (con 3 o más puntos)
      precisión   GPS peor que PRECISION_ACEPTABLE_M al registrar
-   «Está bien» marca el punto como revisado (`puntos_revisados` del cierre) y deja de contarse. */
+   «Está bien» marca el punto como revisado (`puntos_revisados` de la jornada) y deja de contarse.
+   Hasta D119 estos datos vivían en una tabla «cierres»; ya no existe, y en el código la jornada tal
+   como está guardada se llama `guardada` (D153). */
 window.SRP = window.SRP || {};
 
 SRP.jornadas = {
@@ -95,9 +97,9 @@ SRP.jornadas = {
     this.el('btn-jornada-eliminar').addEventListener('click', () => this.eliminarJornada());
     this.el('btn-ej-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar cambios</span>';
     this.el('form-editar-jornada').addEventListener('submit', (e) => { e.preventDefault(); this.guardarEdicion(); });
-    this.el('ej-fecha').addEventListener('change', () => { this.el('ej-nota-fecha').hidden = this.el('ej-fecha').value === (this.cierre && this.cierre.fecha); });
+    this.el('ej-fecha').addEventListener('change', () => { this.el('ej-nota-fecha').hidden = this.el('ej-fecha').value === (this.guardada && this.guardada.fecha); });
     // El programa también es de la jornada (D151): sus árboles lo toman
-    this.el('ej-programa').addEventListener('change', () => { this.el('ej-nota-programa').hidden = this.el('ej-programa').value === (this.cierre && this.cierre.programa_id); });
+    this.el('ej-programa').addEventListener('change', () => { this.el('ej-nota-programa').hidden = this.el('ej-programa').value === (this.guardada && this.guardada.programa_id); });
     this.el('btn-ej-hoy').addEventListener('click', () => {
       this.el('ej-fecha').value = SRP.util.fechaHoy();
       this.el('ej-fecha').dispatchEvent(new Event('change', { bubbles: true }));
@@ -126,7 +128,7 @@ SRP.jornadas = {
   },
 
   async cambiarEstado() {
-    const j = await this.cierreDe(this.jornada); if (!j) return;
+    const j = await this.jornadaGuardada(this.jornada); if (!j) return;
     if (!SRP.permisos.exigir('jornada.editar', j)) return;
     if (j.estatus === 'abierta') {
       const ok = await SRP.app.confirmar(await SRP.activa.confirmacionCierre(j));
@@ -188,13 +190,8 @@ SRP.jornadas = {
       SRP.ref.nombreUsuario(a.cabo_id).localeCompare(SRP.ref.nombreUsuario(b.cabo_id), 'es') || a.n - b.n);
   },
 
-  // Las jornadas de un día y un cabo, en orden (para Reportes)
-  async jornadasDe(fecha, caboId) {
-    return (await this.jornadasAlcance()).filter(j => j.fecha === fecha && j.cabo_id === caboId).sort((a, b) => a.n - b.n);
-  },
-
-  // El registro de la jornada, fresco (guarda conteo, revisados y cierre)
-  async cierreDe(j) { return (await SRP.almacen.uno('jornadas', j.id)) || j.dato || null; },
+  // La jornada tal como está guardada, fresca: meta, puntos revisados y datos de cierre del reporte
+  async jornadaGuardada(j) { return (await SRP.almacen.uno('jornadas', j.id)) || j.dato || null; },
 
   nombreSitio(j) { return j.nombre || 'Sin nombre'; },
 
@@ -240,14 +237,14 @@ SRP.jornadas = {
   },
 
   // Lo que queda por revisar: puntos con aviso que nadie marcó como «Está bien»
-  pendientes(j, avisos, cierre) {
-    const revisados = (cierre && cierre.puntos_revisados) || [];
+  pendientes(j, avisos, guardada) {
+    const revisados = (guardada && guardada.puntos_revisados) || [];
     return j.registros.filter(r => avisos[r.id] && !revisados.includes(r.id));
   },
 
   /* El estado de la jornada en una frase y un tono: lo que se ve en la tarjeta y en la revisión */
-  estado(j, avisos, cierre) {
-    const e = this.estadoTexto(j, avisos, cierre);
+  estado(j, avisos, guardada) {
+    const e = this.estadoTexto(j, avisos, guardada);
     e.icono = this.iconoTono(e.tono, j.estatus === 'abierta');
     return e;
   },
@@ -258,9 +255,9 @@ SRP.jornadas = {
     return { rev: 'info', ok: 'palomita', err: 'cerrar' }[tono] || (abierta ? 'reloj' : 'info');
   },
 
-  estadoTexto(j, avisos, cierre) {
-    const pend = this.pendientes(j, avisos, cierre).length;
-    const meta = this.metaDe(cierre || j);
+  estadoTexto(j, avisos, guardada) {
+    const pend = this.pendientes(j, avisos, guardada).length;
+    const meta = this.metaDe(guardada || j);
     const reg = j.registros.length;
     if (pend) return { tono: 'rev', texto: pend === 1 ? '1 punto por revisar' : pend + ' puntos por revisar' };
     if (j.estatus === 'abierta') {
@@ -275,7 +272,7 @@ SRP.jornadas = {
   /* PASOS DE LA JORNADA (D138). El flujo es lineal —registrar, cerrar, revisar, reporte— y aquí se
      calcula en qué paso va una jornada y qué sigue. Lo usan la tira del panel de Nuevo registro y
      la de la ficha, para que ambas digan lo mismo. `j` trae sus registros (la vista de la lista o
-     { registros }); `cierre` es la jornada guardada. Un paso está hecho cuando:
+     { registros }); `guardada` es la jornada tal como está en la base. Un paso está hecho cuando:
        registrar: hay árboles y, abierta, ya se alcanzó la meta (cerrada, se dejó de registrar);
        cerrar: la jornada está cerrada;
        revisar: cerrada y sin puntos por revisar;
@@ -283,8 +280,8 @@ SRP.jornadas = {
      El paso actual es el primero que falta; sin ninguno, la jornada está completa. */
   PASOS: [['registrar', 'Registrar'], ['cerrar', 'Cerrar'], ['revisar', 'Revisar'], ['reporte', 'Reporte']],
 
-  pasos(j, cierre) {
-    const c = cierre || j.dato || j;
+  pasos(j, guardada) {
+    const c = guardada || j.dato || j;
     const n = j.registros.length;
     const meta = this.metaDe(c);
     const abierta = c.estatus === 'abierta';
@@ -340,8 +337,8 @@ SRP.jornadas = {
   // Tras cerrar (desde el panel o desde la ficha), el aviso dice qué sigue (D138)
   async avisarCierre(j) {
     const vista = (await this.jornadasAlcance()).find(x => x.id === j.id);
-    const cierre = await SRP.almacen.uno('jornadas', j.id);
-    const s = vista && cierre ? this.siguiente(this.pasos(vista, cierre), cierre.cabo_id === SRP.sesion.usuario.id) : null;
+    const guardada = await SRP.almacen.uno('jornadas', j.id);
+    const s = vista && guardada ? this.siguiente(this.pasos(vista, guardada), guardada.cabo_id === SRP.sesion.usuario.id) : null;
     SRP.util.anunciar('Jornada «' + j.nombre + '» cerrada.' + (s ? ' ' + s.texto : ''), 'exito');
   },
 
@@ -477,15 +474,15 @@ SRP.jornadas = {
     const html = [];
     let arbolesTotal = 0;
     for (const j of this.lista) {
-      const cierre = await this.cierreDe(j);
+      const guardada = await this.jornadaGuardada(j);
       const avisos = this.avisos(j);
-      const est = this.estado(j, avisos, cierre);
+      const est = this.estado(j, avisos, guardada);
       const n = j.registros.length; arbolesTotal += n;
       const especies = new Set(j.registros.map(r => this.claveEspecie(r))).size;
-      const porRevisar = this.pendientes(j, avisos, cierre).length;
+      const porRevisar = this.pendientes(j, avisos, guardada).length;
       const bien = n - porRevisar;
       const cuando = this.cuando(j.fecha);
-      const meta = this.metaDe(cierre || j);
+      const meta = this.metaDe(guardada || j);
       const fecha = SRP.envio.diaEnLetra(j.fecha).split(' ')[0].slice(0, 3) + ' ' + SRP.util.formatearFecha(j.fecha);
       const abierta = j.estatus === 'abierta';
       const lugar = this.lugarDe(j);
@@ -566,11 +563,11 @@ SRP.jornadas = {
     const j = this.jornada;
     const esc = SRP.util.escapar;
     const u = SRP.sesion.usuario;
-    const cierre = await this.cierreDe(j);
-    this.cierre = cierre;
+    const guardada = await this.jornadaGuardada(j);
+    this.guardada = guardada;
     const avisos = this.avisos(j);
     this.avisosActuales = avisos;
-    const revisados = (cierre && cierre.puntos_revisados) || [];
+    const revisados = (guardada && guardada.puntos_revisados) || [];
     const regs = j.registros;
     const h = r => SRP.envio.hora(r.fecha_registro);
 
@@ -578,27 +575,27 @@ SRP.jornadas = {
     this.el('jornada-sub').textContent = SRP.envio.diaEnLetra(j.fecha).split(' ')[0] + ' ' + SRP.util.formatearFecha(j.fecha) +
       (j.total > 1 ? ' · Jornada ' + j.n + ' de ' + j.total : '') + ' · ' +
       SRP.ref.nombreUsuario(j.cabo_id) + (regs.length ? ' · ' + h(regs[0]) + (regs.length > 1 ? '–' + h(regs[regs.length - 1]) : '') : '') +
-      (this.alcaldiasDe(j).length ? ' · ' + this.alcaldiasDe(j).join(', ') : SRP.activa.lugarDe(cierre) ? ' · ' + SRP.activa.lugarDe(cierre) : '') +
-      ' · ' + (cierre.estatus === 'abierta' ? 'abierta' : 'cerrada');
-    this.el('jornada-comentarios').hidden = !cierre.comentarios;
-    this.el('jornada-comentarios').textContent = cierre.comentarios || '';
+      (this.alcaldiasDe(j).length ? ' · ' + this.alcaldiasDe(j).join(', ') : SRP.activa.lugarDe(guardada) ? ' · ' + SRP.activa.lugarDe(guardada) : '') +
+      ' · ' + (guardada.estatus === 'abierta' ? 'abierta' : 'cerrada');
+    this.el('jornada-comentarios').hidden = !guardada.comentarios;
+    this.el('jornada-comentarios').textContent = guardada.comentarios || '';
     // Cerrar o reabrir la jornada desde su revisión (D119): quien registra en ella
-    const propia = cierre.cabo_id === u.id;
+    const propia = guardada.cabo_id === u.id;
     // Cerrar/reabrir, editar: quien registra en ella o quien la alcanza (coordinador de ese cabo, administrador) (D132, D133).
     // Eliminar, sólo vacía —sin árboles, ni eliminados— y también para el coordinador (D151)
-    const puedeJornada = SRP.permisos.puede('jornada.editar', cierre);
+    const puedeJornada = SRP.permisos.puede('jornada.editar', guardada);
     const btnEstado = this.el('btn-jornada-estado');
     btnEstado.hidden = !puedeJornada;
     this.el('btn-jornada-editar').hidden = !puedeJornada;
-    const vacia = regs.length === 0 && !(await SRP.almacen.todos('plantaciones')).some(r => r.jornada_id === j.id);
-    this.el('btn-jornada-eliminar').hidden = !(SRP.permisos.puede('jornada.eliminar', cierre) && vacia);
+    const vacia = regs.length === 0 && !(await SRP.almacen.porIndice('plantaciones', 'jornada_id', j.id)).length;
+    this.el('btn-jornada-eliminar').hidden = !(SRP.permisos.puede('jornada.eliminar', guardada) && vacia);
     // Cerrar no es aprobar: guinda con candado; reabrir es corregir: dorado con lápiz (D121)
-    btnEstado.className = 'btn btn-chico ' + (cierre.estatus === 'abierta' ? 'btn-primario' : 'btn-editar');
+    btnEstado.className = 'btn btn-chico ' + (guardada.estatus === 'abierta' ? 'btn-primario' : 'btn-editar');
     // Reabrir lleva el candado abierto: con el lápiz se confundía con «Editar jornada», al lado y del mismo color (D144)
-    btnEstado.innerHTML = SRP.ICONOS.svg(cierre.estatus === 'abierta' ? 'candado' : 'candadoAbierto', 'medio') + '<span>' + (cierre.estatus === 'abierta' ? 'Cerrar jornada' : 'Reabrir jornada') + '</span>';
+    btnEstado.innerHTML = SRP.ICONOS.svg(guardada.estatus === 'abierta' ? 'candado' : 'candadoAbierto', 'medio') + '<span>' + (guardada.estatus === 'abierta' ? 'Cerrar jornada' : 'Reabrir jornada') + '</span>';
 
-    // Conciliación: se compara con todo lo del día del cabo, aunque se haya partido en sitios
-    const meta = this.metaDe(cierre);
+    // Conciliación: la meta de la jornada contra sus árboles registrados (D131)
+    const meta = this.metaDe(guardada);
     this.el('jornada-meta').textContent = meta === null ? '—' : meta;
     this.el('jornada-registrados').textContent = j.registros.length;
     this.pintarConciliacion();
@@ -629,7 +626,7 @@ SRP.jornadas = {
         '<div class="punto-acciones">' + acciones.join('') + tuerca + '</div></li>';
     }).join('');
 
-    this.pintarPasos(j, cierre, propia, puedeJornada);
+    this.pintarPasos(j, guardada, propia, puedeJornada);
     this.el('jornada-puntos-n').textContent = regs.length;
     this.el('jornada-saltos-n').textContent = regs.length;
     this.pintarMapa(avisos, revisados, encuadrar);
@@ -638,8 +635,8 @@ SRP.jornadas = {
   /* LA TIRA Y LA BARRA DEL PIE (D138). La barra dice qué sigue y trae el botón para hacerlo. Una
      acción aparece una sola vez: si es el siguiente paso, es el botón principal de la barra, y
      «Cerrar jornada» deja el encabezado cuando ya es lo que sigue. */
-  pintarPasos(j, cierre, propia, puedeJornada) {
-    const p = this.pasos(j, cierre);
+  pintarPasos(j, guardada, propia, puedeJornada) {
+    const p = this.pasos(j, guardada);
     this.pasosActuales = p;
     this.el('jornada-pasos').innerHTML = this.htmlPasos(p);
     const s = this.siguiente(p, propia);
@@ -647,8 +644,8 @@ SRP.jornadas = {
     linea.innerHTML = s.html;
     linea.dataset.tono = s.tono;
     const I = n => SRP.ICONOS.svg(n, 'medio');
-    // Registrar sólo en la jornada propia (el árbol queda a nombre de quien entra): abierta, «Registrar
-    // árboles»; cerrada, «Registrar faltante», que la reabre
+    // Registrar sólo en la jornada propia (el árbol queda a nombre de quien entra). «Registrar árbol»
+    // abierta o cerrada: cerrada, la reabre (un nombre por acción, D153)
     const falt = this.el('btn-jornada-faltante');
     falt.hidden = !(SRP.permisos.de(SRP.sesion.usuario).registrar && propia);
     falt.className = 'btn ' + (p.actual === 'registrar' ? 'btn-primario' : 'btn-secundario');
@@ -680,7 +677,7 @@ SRP.jornadas = {
 
   // «Revisar puntos»: al primer punto pendiente, en la lista y en el mapa, con el foco en «Está bien»
   irAPendiente() {
-    const pend = this.pendientes(this.jornada, this.avisosActuales || {}, this.cierre);
+    const pend = this.pendientes(this.jornada, this.avisosActuales || {}, this.guardada);
     if (!pend.length) return;
     const id = pend[0].id;
     this.seleccionar(id, 'lista');
@@ -693,9 +690,9 @@ SRP.jornadas = {
 
   pintarConciliacion() {
     const j = this.jornada;
-    const plantados = this.metaDe(this.cierre || j);
+    const plantados = this.metaDe(this.guardada || j);
     const reg = j.registros.length;
-    const pend = this.pendientes(j, this.avisosActuales || {}, this.cierre).length;
+    const pend = this.pendientes(j, this.avisosActuales || {}, this.guardada).length;
     const caja = this.el('jornada-conciliacion');
     const res = this.el('jornada-resultado');
     // Concordancia en número (D144): «Queda 1 punto», «hay 1 punto»; antes decía «Quedan 1 punto» y «hay 1 puntos»
@@ -709,7 +706,7 @@ SRP.jornadas = {
     } else if (plantados > reg) {
       const n = plantados - reg;
       // Con la jornada abierta, faltar no es error: se sigue registrando (D131)
-      const abierta = (this.cierre || j).estatus === 'abierta';
+      const abierta = (this.guardada || j).estatus === 'abierta';
       tono = abierta ? 'neutro' : 'err';
       texto = (abierta ? 'En curso: ' + reg + ' de ' + plantados + ' (faltan ' + n + ').' : (n === 1 ? 'Falta 1 registro' : 'Faltan ' + n + ' registros') + ': la meta es ' + plantados + ' y hay ' + puntos(reg) + '.') + cola;
     } else {
@@ -718,7 +715,7 @@ SRP.jornadas = {
     }
     caja.dataset.tono = tono;
     // El resultado lleva el icono de su tono (D141)
-    res.innerHTML = SRP.ICONOS.svg(this.iconoTono(tono, (this.cierre || j).estatus === 'abierta'), 'medio') + '<span>' + SRP.util.escapar(texto) + '</span>';
+    res.innerHTML = SRP.ICONOS.svg(this.iconoTono(tono, (this.guardada || j).estatus === 'abierta'), 'medio') + '<span>' + SRP.util.escapar(texto) + '</span>';
   },
 
   /* Mapa de la jornada: Leaflet con los puntos numerados. Se crea una vez y se reutiliza. Sin
@@ -817,10 +814,10 @@ SRP.jornadas = {
     await this.refrescar();
   },
 
-  async guardarEnCierre(cambios, detalle) {
+  async guardarEnJornada(cambios, detalle) {
     const j = this.jornada;
     const u = SRP.sesion.usuario;
-    const previo = await this.cierreDe(j);
+    const previo = await this.jornadaGuardada(j);
     if (!SRP.permisos.exigir('jornada.editar', previo)) return null;
     const ahora = SRP.util.ahoraISO();
     const dato = Object.assign({}, previo, cambios, { editado_por_id: u.id, fecha_ultima_edicion: ahora });
@@ -832,7 +829,7 @@ SRP.jornadas = {
   /* ---------- Editar y eliminar la jornada (D132) ---------- */
 
   abrirEditar() {
-    const c = this.cierre; if (!c) return;
+    const c = this.guardada; if (!c) return;
     const sel = this.el('ej-programa');
     const opciones = SRP.ref.deTipo('programa', true).sort((a, b) => (b.clave === 'REFOR_URBANA') - (a.clave === 'REFOR_URBANA'));
     if (c.programa_id && !opciones.find(o => o.id === c.programa_id) && SRP.ref.catalogoPorId[c.programa_id]) opciones.push(SRP.ref.catalogoPorId[c.programa_id]);
@@ -852,7 +849,7 @@ SRP.jornadas = {
   },
 
   async guardarEdicion() {
-    const c = this.cierre; if (!c) return;
+    const c = this.guardada; if (!c) return;
     if (!SRP.permisos.exigir('jornada.editar', c)) return;
     const nombre = this.el('ej-nombre').value.trim();
     const ubicacion = this.el('ej-ubicacion').value.trim();
@@ -888,7 +885,7 @@ SRP.jornadas = {
        ella. Todos, también los eliminados —si se restauran, vuelven con los datos de su jornada—, y
        en la misma transacción que la jornada: o cambian todos o ninguno. */
     const propagar = campos.includes('fecha') || campos.includes('programa_id');
-    const arboles = propagar ? (await SRP.almacen.todos('plantaciones')).filter(r => r.jornada_id === c.id) : [];
+    const arboles = propagar ? await SRP.almacen.porIndice('plantaciones', 'jornada_id', c.id) : [];
     const detalle = [campos.includes('fecha') ? 'fecha ' + SRP.util.formatearFecha(fecha) : '', campos.includes('programa_id') ? 'programa ' + SRP.ref.nombreCatalogo(programa_id) : ''].filter(Boolean).join(' y ');
     for (const r of arboles) {
       escrituras.push({ almacen: 'plantaciones', objeto: Object.assign({}, r, { fecha_plantacion: fecha, programa_id, editado_por_id: u.id, fecha_ultima_edicion: ahora }),
@@ -901,7 +898,7 @@ SRP.jornadas = {
     this.el('dlg-editar-jornada').close();
     this.volverAlDetalle = true; this.actual = c.id;
     await this.preparar();
-    SRP.util.anunciar('Jornada actualizada: ' + campos.map(k => ({ nombre: 'nombre', ubicacion: 'ubicación', programa_id: 'programa', meta_arboles: 'meta', fecha: 'fecha', comentarios: 'comentarios' })[k]).join(', ') + '.', 'exito');
+    SRP.util.anunciar('Jornada actualizada: ' + campos.map(k => ({ nombre: 'nombre', ubicacion: 'dirección', programa_id: 'programa', meta_arboles: 'meta', fecha: 'fecha', comentarios: 'comentarios' })[k]).join(', ') + '.', 'exito');
   },
 
   /* Sólo una jornada sin árboles se elimina; con árboles, primero se mueven o se eliminan ellos. Los
@@ -909,7 +906,7 @@ SRP.jornadas = {
      Antes se borraba, y al deshacer la eliminación de un árbol éste quedaba visible en Registros y
      en ninguna jornada ni reporte. */
   async eliminarJornada() {
-    const c = this.cierre; if (!c) return;
+    const c = this.guardada; if (!c) return;
     if (!SRP.permisos.exigir('jornada.eliminar', c)) return;
     const usos = (await SRP.ref.usosDe('jornadas'))[c.id];
     const activos = this.jornada.registros.length;
@@ -932,17 +929,17 @@ SRP.jornadas = {
      jornada (D131) y esta pantalla sólo la compara con lo registrado. */
 
   async marcarRevisado(r) {
-    if (!SRP.permisos.exigir('jornada.editar', this.cierre)) return;
-    const prev = (this.cierre && this.cierre.puntos_revisados) || [];
+    if (!SRP.permisos.exigir('jornada.editar', this.guardada)) return;
+    const prev = (this.guardada && this.guardada.puntos_revisados) || [];
     const num = this.jornada.registros.indexOf(r) + 1;
-    await this.guardarEnCierre({ puntos_revisados: prev.concat(r.id) }, 'Punto ' + num + ' revisado: está bien');
+    await this.guardarEnJornada({ puntos_revisados: prev.concat(r.id) }, 'Punto ' + num + ' revisado: está bien');
     await this.pintarDetalle(false);
     // El botón tocado desaparece al repintar: el foco pasa a lo que sigue (D138), y si ya no quedan
     // puntos por revisar el aviso lo dice
     const p = this.pasosActuales;
-    const cola = p && p.actual !== 'revisar' ? ' ' + this.siguiente(p, this.cierre.cabo_id === SRP.sesion.usuario.id).texto : '';
+    const cola = p && p.actual !== 'revisar' ? ' ' + this.siguiente(p, this.guardada.cabo_id === SRP.sesion.usuario.id).texto : '';
     SRP.util.anunciar('Punto ' + num + ' marcado como revisado.' + cola, 'exito', { deshacer: async () => {
-      await this.guardarEnCierre({ puntos_revisados: prev }, 'Se deshizo la revisión del punto ' + num);
+      await this.guardarEnJornada({ puntos_revisados: prev }, 'Se deshizo la revisión del punto ' + num);
       await this.refrescar();
     } });
     this.enfocarSiguiente();
@@ -962,7 +959,7 @@ SRP.jornadas = {
   /* ---------- Salidas ---------- */
 
   async registrarFaltante() {
-    const j = await this.cierreDe(this.jornada); if (!j) return;
+    const j = await this.jornadaGuardada(this.jornada); if (!j) return;
     this.volverAlDetalle = false;
     if (j.estatus !== 'abierta') { if (!await SRP.activa.reabrir(j)) return; } else SRP.activa.jornada = j;
     SRP.formulario.limpiar();
@@ -978,5 +975,5 @@ SRP.jornadas = {
 };
 
 // Acciones que escriben en el teléfono: si fallan, se dice qué no se pudo hacer (D149)
-SRP.util.proteger(SRP.jornadas, { mover: 'mover el árbol de jornada', guardarEnCierre: 'guardar la jornada', guardarEdicion: 'guardar los cambios de la jornada',
+SRP.util.proteger(SRP.jornadas, { mover: 'mover el árbol de jornada', guardarEnJornada: 'guardar la jornada', guardarEdicion: 'guardar los cambios de la jornada',
   eliminarJornada: 'eliminar la jornada', marcarRevisado: 'marcar el punto como revisado' });
