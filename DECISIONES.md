@@ -88,6 +88,19 @@
 - [pendiente] **Antes de liberar esta etapa: sustituir la capa de colonias** (hoy IECM 2022, de prueba) por la definitiva del SIA, con fuente, llave y fecha de corte, y volver a correr `pruebas/generar_capas.py`. Anotado por Liber, 22-09-2026
 - [pendiente] **Las ocho claves UGA con prefijo distinto a su alcaldía siguen en la malla definitiva** (TLP-040, TLP-085, IZP-005, IZP-011, COY-054, MIH-001, MIH-002, IZC-021). No afectan al registro (la alcaldía sale de su capa), pero sí al folio: una de esas celdas daría `TLP-040-…` a un árbol de Milpa Alta. Confirmar con el SIA si se quedan así antes de emitir folios (condición 2 y 5 de la emisión)
 
+- [pendiente] **Supervisión e informes por periodo (propuesta del 25-09-2026, pedido del área de
+  plantación).** Pestaña «Supervisión» para coordinación y administración (cifras del periodo, «Qué
+  atender», por cabo, por alcaldía con mapa, por especie y programa, calidad del dato) e informes
+  semanal, mensual y por alcaldía en PDF, más la tabla en CSV. Límites: en la Etapa 1 cada teléfono
+  ve sólo lo suyo (lo de otros cabos llega con el servidor) y el tablero institucional y la cifra
+  pública siguen siendo del SIA (D38). Plan: bloque de indicadores (un solo cálculo), bloque de la
+  pestaña y bloque de informes. Decisiones que faltan: 1) pestaña propia o dentro de Reportes;
+  2) Fotografías dentro de Supervisión y, para administración, Catálogos y Usuarios al menú de la
+  cuenta; 3) semana de lunes a domingo y mes calendario; 4) qué cuenta como plantado en el periodo
+  (todos los activos, con las jornadas abiertas «en curso», o sólo las cerradas); 5) PDF y CSV o
+  sólo PDF; 6) si el cabo ve su avance (una línea en Jornadas); 7) si la coordinación ve eliminados
+  y editados por cabo; 8) formato que el área ya use para sus informes.
+
 ### Para resolver antes de montar en los servidores del SIA
 
 - [pendiente] **El módulo `plantacion` que ya existe.** El backend del SIA tiene un módulo Plantación y `bd_csia` un esquema `plantacion`. Liber confirma que es un antecesor mal construido que el SRP sustituye. Antes de descartarlo hay que revisar **si su catálogo de especies ya tiene claves en uso**, para no estrenar claves distintas para las mismas especies (ver D22–D24)
@@ -1349,3 +1362,22 @@
   Fotografías), el reporte por jornada y el mapa al día; comentarios corregidos (la franja
   «Guardado» en lugar del diálogo, la meta al iniciar, el respaldo del alcance, la fecha y el
   programa de la jornada). Aprobado por Liber, 25-09-2026.
+- **D154. La tuerca, subir al inicio y un árbol capturado por error dentro de la jornada.** Pedido
+  por Liber desde el iPhone, con capturas de la lista de puntos. 1) La tuerca salía ovalada en las
+  filas de puntos (48 × 36 px): las filas bajan el alto mínimo de sus botones y la tuerca sólo fijaba
+  el ancho. Ahora fija ancho y alto (48 px, círculo exacto en cualquier renglón) y en el teléfono va a
+  la orilla derecha de la fila, a la misma altura en todos los puntos. 2) Botón flotante «Subir al
+  inicio» con la flecha: aparece al bajar más de tres cuartos de pantalla, en la esquina inferior
+  derecha, por encima de la navegación del teléfono y de la barra fija de la sección (Guardar en
+  Nuevo registro, «Siguiente» en la jornada), y sigue a la barra cuando la página cambia de alto.
+  Al subir, el foco va al título de la sección. 3) Cada página empieza arriba: al cambiar de sección,
+  al abrir la ficha de una jornada y al volver a la lista. En iPhone el salto se perdía si la página
+  seguía deslizándose por inercia al tocar la pestaña; ahora se corta la inercia un cuadro y el salto
+  se repite ya pintada la sección. Tocar la pestaña de la sección en que se está sube a su inicio,
+  como en las apps del teléfono. 4) Un árbol capturado por error se elimina desde la jornada: la
+  tuerca del punto ofrece Editar, Mover a otra jornada y Eliminar, las mismas opciones que la tarjeta
+  en Registros; si la fila ya trae «Eliminar» (duplicado), la tuerca no lo repite. Eliminar sigue
+  siendo marcar con constancia, con «Deshacer» (D139). 5) La coordinación elimina los árboles que
+  capturó ella —para corregir su propio error— y sigue sin eliminar los de sus cabos (D87 queda así
+  acotado); la regla vive en `puedeEliminar()` y en las acciones `registro.eliminar` y
+  `registro.restaurar`. Pendiente de su visto bueno: el punto 5. Propuesto 25-09-2026.

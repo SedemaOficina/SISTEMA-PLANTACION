@@ -16,6 +16,7 @@ SRP.app = {
     const pestana = { registrar: 'mas', registros: 'registros', jornadas: 'jornadas', reportes: 'reportes', galeria: 'camara', catalogos: 'catalogos', usuarios: 'usuarios' };
     this.el('navegacion').querySelectorAll('.pestana').forEach(b => I.poner(b, pestana[b.dataset.vista], 'grande'));
     I.poner(this.el('btn-usr-agregar'), 'usuarioMas', 'medio');
+    I.poner(this.el('btn-subir'), 'subir', 'grande');
     // Menú de la cuenta con icono en cada opción (D114): el sol y la puerta pedidos por Liber, y el resto por consistencia
     // Cancelar lleva tache y va en rojo de contorno (D116)
     I.poner(this.el('btn-cancelar-edicion'), 'cerrar', 'medio');
@@ -73,11 +74,13 @@ SRP.app = {
     this.iniciarContraste();
     this.sinAutollenado();
     this.iniciarMenusAcciones();
+    this.iniciarSubir();
     this.ponerIconos();
 
     this.el('navegacion').addEventListener('click', async (e) => {
       const b = e.target.closest('.pestana'); if (!b) return;
-      if (b.dataset.vista === this.vista) return;
+      // Tocar la pestaña de la sección en que se está sube a su inicio, como en las apps del teléfono (D154)
+      if (b.dataset.vista === this.vista) { this.alInicio(true); return; }
       // Un árbol a medias no se pierde en silencio (D133)
       if (this.vista === 'registrar' && b.dataset.vista !== 'registrar' && SRP.formulario.aMedias()) {
         const ok = await this.confirmar({ titulo: 'Descartar el árbol', pregunta: 'El árbol que está capturando no se ha guardado. ¿Descartarlo y salir?',
@@ -335,7 +338,61 @@ SRP.app = {
     if (nombre === 'usuarios') SRP.usuarios.preparar();
     const titulo = this.el('vista-' + nombre).querySelector('h1');
     if (titulo) { titulo.setAttribute('tabindex', '-1'); titulo.focus({ preventScroll: true }); }
-    window.scrollTo(0, 0);
+    this.alInicio();
+  },
+
+  /* CADA PÁGINA EMPIEZA ARRIBA (D154). Al cambiar de sección, o de la lista de jornadas a una ficha
+     y de vuelta, la página nueva se ve desde su inicio. En iPhone, si la anterior seguía
+     deslizándose por inercia cuando se tocó la pestaña, el salto se perdía y la sección nueva
+     aparecía abajo: se corta la inercia un cuadro y el salto se repite cuando ya pintó.
+     `suave`: para el botón «Subir al inicio» y la pestaña actual, que suben a la vista. */
+  alInicio(suave) {
+    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (suave) { window.scrollTo({ top: 0, left: 0, behavior: quieto ? 'auto' : 'smooth' }); return; }
+    const ir = () => window.scrollTo(0, 0);
+    const raiz = document.documentElement;
+    raiz.classList.add('sin-inercia');
+    ir();
+    requestAnimationFrame(() => { raiz.classList.remove('sin-inercia'); ir(); setTimeout(ir, 120); });
+  },
+
+  /* BOTÓN «SUBIR AL INICIO» (D154). Aparece al bajar más de tres cuartos de pantalla y se queda en
+     la esquina, por encima de la navegación inferior del teléfono y de la barra fija de la sección
+     (Guardar en Nuevo registro, «Siguiente» en la jornada), para no tapar sus botones. Al subir, el
+     foco va al título de la sección: quien usa teclado o lector queda también al inicio. */
+  iniciarSubir() {
+    const b = this.el('btn-subir');
+    let pendiente = false;
+    const colocar = () => {
+      pendiente = false;
+      const alto = window.innerHeight;
+      b.dataset.visible = this.vista && window.scrollY > alto * 0.75 ? 'si' : 'no';
+      if (b.dataset.visible === 'no') return;
+      // Lo que ya ocupa el pie de la pantalla: la navegación fija del teléfono y, encima, la barra de la sección
+      const nav = this.el('navegacion');
+      const limite = nav && !nav.hidden && getComputedStyle(nav).position === 'fixed' ? nav.getBoundingClientRect().top : alto;
+      let tope = limite;
+      document.querySelectorAll('.vista:not([hidden]) .barra-guardar').forEach(barra => {
+        if (!barra.offsetParent) return;
+        const r = barra.getBoundingClientRect();
+        // Toca la franja donde iría el botón (su alto y su margen sobre el límite): el botón sube encima
+        if (r.top < tope && r.bottom > limite - 72) tope = r.top;
+      });
+      b.style.setProperty('--subir-sobre', Math.max(0, alto - tope) + 'px');
+    };
+    const pedir = () => { if (!pendiente) { pendiente = true; requestAnimationFrame(colocar); } };
+    window.addEventListener('scroll', pedir, { passive: true });
+    window.addEventListener('resize', pedir);
+    // La página también cambia de alto sin desplazarse (un punto eliminado, una lista que se pinta):
+    // la barra de la sección se mueve y el botón la sigue
+    if ('ResizeObserver' in window) new ResizeObserver(pedir).observe(document.body);
+    b.addEventListener('click', () => {
+      this.alInicio(true);
+      // El primer título visible: en Jornadas puede ser el de la lista o el de la ficha abierta
+      const vista = this.vista && this.el('vista-' + this.vista);
+      const titulo = vista && [...vista.querySelectorAll('h1, h2')].find(h => h.offsetParent);
+      if (titulo) { if (!titulo.hasAttribute('tabindex')) titulo.setAttribute('tabindex', '-1'); titulo.focus({ preventScroll: true }); }
+    });
   },
 
   /* ---------- Diálogos ---------- */

@@ -2291,6 +2291,92 @@ with sync_playwright() as p:
     ok(v2=={'v':3,'arboles':['pl-v2'],'jornadas':['jr-v2']},'una base en la versión 2 sube a la 3 conservando árboles y jornadas, y el índice nuevo los encuentra (B2): %s' % v2)
     ctx15.close()
 
+    # ---------- BLOQUE 95: TUERCA, SUBIR AL INICIO Y ERRORES EN LA JORNADA (D154) ----------
+    ctx16=b.new_context(viewport={'width':390,'height':844},geolocation={'latitude':19.4326,'longitude':-99.1332,'accuracy':5},permissions=['geolocation'])
+    pg16=ctx16.new_page(); err16=[]
+    pg16.on('pageerror', lambda e: err16.append(str(e))); pg16.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err16.append(m.text))
+    pg16.goto(BASE); pg16.wait_for_timeout(1200)
+    pg16.select_option('#sel-usuario-prueba','u-cabo-1'); pg16.click('#btn-entrar-prueba'); pg16.wait_for_timeout(700)
+    iniciar_jornada(pg16,'Parque Los Pericos',HOY)
+    # El 2 lejos del resto (como en la captura de Liber) y el 6 encima del 1: un duplicado
+    for la,lo in [(19.4326,-99.1332),(19.4376,-99.1332),(19.43265,-99.13325),(19.4327,-99.1331),(19.43275,-99.13305),(19.4326,-99.1332)]:
+        pg16.evaluate("([la, lo]) => SRP.mapa.colocar(la, lo, 'x', { origen: 'gps', precision: 5 })", [la,lo]); pg16.wait_for_timeout(150)
+        pg16.fill('#campo-especie','aile'); pg16.wait_for_timeout(150); pg16.dispatch_event('.combo-opcion[data-id="ESP-0002"]','mousedown'); pg16.wait_for_timeout(120)
+        pg16.click('#form-plantacion button[type=submit]'); pg16.wait_for_timeout(700)
+        if pg16.is_visible('#dlg-resumen'): pg16.click('#btn-resumen-guardar'); pg16.wait_for_timeout(600)
+    pg16.wait_for_timeout(800)
+    # El botón «Subir al inicio» sólo aparece abajo, y encima de la barra Guardar y de la navegación
+    def subir16():
+        return pg16.evaluate("""() => { const b = document.getElementById('btn-subir'), r = b.getBoundingClientRect();
+          const barras = [...document.querySelectorAll('.vista:not([hidden]) .barra-guardar')].filter(x => x.offsetParent).map(x => x.getBoundingClientRect())
+            .filter(x => x.bottom > innerHeight - 160).map(x => x.top);
+          return { vis: b.dataset.visible, abajo: r.bottom, nav: document.getElementById('navegacion').getBoundingClientRect().top, barras, ancho: r.width, alto: r.height }; }""")
+    pg16.evaluate("window.scrollTo(0, 0)"); pg16.wait_for_timeout(300)
+    ok(subir16()['vis']=='no','arriba no se ve el botón «Subir al inicio» (D154)')
+    pg16.evaluate("window.scrollTo(0, 1000)"); pg16.wait_for_timeout(400)
+    s16=subir16()
+    ok(s16['vis']=='si' and s16['ancho']==48 and s16['alto']==48 and s16['abajo']<=s16['nav'] and all(s16['abajo']<=t for t in s16['barras']),
+       'al bajar aparece, redondo, encima de la navegación y de la barra Guardar sin tapar sus botones: %s' % s16)
+    pg16.click('#btn-subir'); pg16.wait_for_timeout(1000)
+    ok(pg16.evaluate("scrollY")==0 and pg16.evaluate("document.activeElement.id")=='titulo-registrar','y lo lleva al inicio con el foco en el título de la sección')
+    # Cambiar de sección desde abajo deja la sección nueva en su inicio; la pestaña actual sube
+    pg16.evaluate("window.scrollTo(0, 5000)"); pg16.wait_for_timeout(300)
+    pg16.click('.pestana[data-vista=registros]'); pg16.wait_for_timeout(700)
+    y16=pg16.evaluate("scrollY")
+    pg16.evaluate("window.scrollTo(0, 5000)"); pg16.wait_for_timeout(300)
+    y16b=pg16.evaluate("scrollY")
+    pg16.click('.pestana[data-vista=registros]'); pg16.wait_for_timeout(900)
+    ok(y16==0 and y16b>0 and pg16.evaluate("scrollY")==0,'al cambiar de sección estando abajo, la nueva empieza arriba; tocar la pestaña actual también sube (%s, %s)' % (y16, y16b))
+    t16=pg16.evaluate("[...document.querySelectorAll('#lista-registros .btn-tuerca')].map(b => { const r = b.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; })")
+    ok(t16 and all(w==h==48 for w,h in t16),'la tuerca es un círculo en las tarjetas de Registros: %s' % t16[:2])
+    # La ficha de la jornada: tuerca redonda y a la derecha, y el punto puesto por error se elimina desde ahí
+    pg16.click('.pestana[data-vista=jornadas]'); pg16.wait_for_timeout(700)
+    pg16.evaluate("window.scrollTo(0, 5000)"); pg16.wait_for_timeout(200)
+    pg16.locator('#lista-jornadas .jornada-boton').first.click(); pg16.wait_for_timeout(1200)
+    ok(pg16.evaluate("scrollY")==0,'la ficha de la jornada abre desde su inicio')
+    t16=pg16.evaluate("[...document.querySelectorAll('#jornada-lista .btn-tuerca')].map(b => { const r = b.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height), Math.round(innerWidth - r.right)]; })")
+    ok(len(t16)==6 and all(w==h==48 for w,h,_ in t16) and len(set(d for *_,d in t16))==1,
+       'en la lista de puntos la tuerca es un círculo de 48 px, alineada a la derecha en todos (D154): %s' % t16[:2])
+    li16=pg16.locator('#jornada-lista .punto-jornada').nth(1)
+    ok('Lejos del resto' in li16.inner_text(),'el punto 2 quedó lejos del resto')
+    li16.locator('.btn-tuerca').click(); pg16.wait_for_timeout(250)
+    ok(li16.locator('.menu-opcion').all_inner_texts()==['Editar','Mover a otra jornada','Eliminar'],
+       'su tuerca ofrece Editar, Mover a otra jornada y Eliminar, como en Registros: %s' % li16.locator('.menu-opcion').all_inner_texts())
+    id16=li16.get_attribute('data-id')
+    li16.locator('.menu-opcion[data-accion=eliminar]').click(); pg16.wait_for_timeout(900)
+    est16=pg16.evaluate("async id => (await SRP.almacen.uno('plantaciones', id)).estatus", id16)
+    ok(est16=='eliminado' and pg16.locator('#jornada-lista .punto-jornada').count()==5 and pg16.is_visible('#vista-jornadas') and 'Lejos' not in pg16.inner_text('#jornada-lista'),
+       'y al eliminarlo sale de la jornada sin salir de la ficha, con su constancia (estatus %s)' % est16)
+    pg16.click('#aviso .aviso-accion'); pg16.wait_for_timeout(900)
+    ok(pg16.locator('#jornada-lista .punto-jornada').count()==6,'«Deshacer» lo devuelve a la jornada')
+    # Un duplicado ya ofrece «Eliminar» en la fila: la tuerca no lo repite
+    dup16=pg16.evaluate("""() => [...document.querySelectorAll('#jornada-lista .punto-jornada')].filter(li => li.querySelector('.punto-acciones > [data-accion=eliminar]'))
+      .map(li => li.querySelectorAll('[data-accion=eliminar]').length)""")
+    ok(dup16 and all(n==1 for n in dup16),'donde la fila ya trae «Eliminar» (duplicado), la tuerca no lo repite: %s' % dup16)
+    # «Editar» desde la tuerca abre el árbol en el formulario y al cancelar vuelve a la jornada
+    li16=pg16.locator('#jornada-lista .punto-jornada').nth(0); id16=li16.get_attribute('data-id')
+    li16.locator('.btn-tuerca').click(); pg16.wait_for_timeout(250); li16.locator('.menu-opcion[data-accion=editar]').click(); pg16.wait_for_timeout(700)
+    ok(pg16.is_visible('#vista-registrar') and pg16.evaluate("SRP.formulario.estado.editando && SRP.formulario.estado.editando.id")==id16,'«Editar» de la tuerca abre ese árbol en el formulario')
+    pg16.click('#btn-cancelar-edicion'); pg16.wait_for_timeout(900)
+    ok(pg16.is_visible('#jornada-detalle') and pg16.locator('#jornada-lista .punto-jornada').count()==6,'y al cancelar vuelve a la ficha de la jornada')
+    pg16.evaluate("window.scrollTo(0, 800)"); pg16.wait_for_timeout(400)
+    s16=subir16()
+    ok(s16['vis']=='si' and s16['barras'] and all(s16['abajo']<=t for t in s16['barras']) and s16['abajo']<=s16['nav'],'en la ficha el botón queda encima de la barra «Siguiente»: %s' % s16)
+    pg16.click('#btn-jornada-volver'); pg16.wait_for_timeout(900)
+    ok(pg16.evaluate("scrollY")==0,'y al volver a la lista de jornadas, también empieza arriba')
+    # D154: la coordinación elimina lo que capturó ella, no lo de sus cabos
+    pg16.evaluate("SRP.app.menuCuenta(false)"); pg16.click('#btn-cuenta'); pg16.click('#btn-cambiar-perfil'); pg16.wait_for_timeout(200)
+    pg16.select_option('#sel-usuario-prueba','u-coord-1'); pg16.click('#btn-entrar-prueba'); pg16.wait_for_timeout(700)
+    iniciar_jornada(pg16,'Jornada de la coordinación',HOY)
+    rc16=registrar(pg16,'aile','ESP-0002')
+    pc16=pg16.evaluate("""async id => { const u = SRP.sesion.usuario; const todos = await SRP.almacen.todos('plantaciones');
+      return { propio: SRP.permisos.puede('registro.eliminar', todos.find(r => r.id === id)), ajeno: SRP.permisos.puede('registro.eliminar', todos.find(r => r.cabo_id === 'u-cabo-1')) }; }""", rc16)
+    ok(pc16=={'propio':True,'ajeno':False},'la coordinación puede eliminar el árbol que capturó ella y no el de su cabo (D154): %s' % pc16)
+    pg16.evaluate("async id => SRP.registros.eliminar(await SRP.almacen.uno('plantaciones', id))", rc16); pg16.wait_for_timeout(500)
+    ok(pg16.evaluate("async id => (await SRP.almacen.uno('plantaciones', id)).estatus", rc16)=='eliminado','y al pedirlo, lo elimina')
+    ok(not err16,'todo sin errores en consola: %s' % err16[:2])
+    ctx16.close()
+
     b.close()
 print('\n'.join(res)); print('ERRORES CONSOLA:',errores or 'ninguno')
 print('fallas:',sum(r.startswith('FALLA') for r in res),'de',len(res))

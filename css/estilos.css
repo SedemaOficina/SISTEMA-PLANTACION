@@ -382,6 +382,8 @@ fieldset.campo { margin-inline: 0; }
 @media (max-width: 600px) {
   .punto-jornada { grid-template-columns: 28px minmax(0, 1fr); row-gap: var(--e-1); }
   .punto-acciones { grid-column: 2; justify-content: flex-start; }
+  /* La tuerca a la orilla derecha, a la misma altura en todos los puntos (D154) */
+  .punto-acciones .acciones-menu { margin-left: auto; }
 }
 .btn-texto-peligro { color: var(--error); }
 .barra-jornada { display: flex; gap: var(--e-2); margin-top: var(--e-3); }
@@ -671,7 +673,9 @@ th[aria-sort="descending"] .th-flecha::after { content: '▼'; opacity: 1; }
 .tabla-acciones { display: flex; flex-wrap: wrap; gap: var(--e-1); }
 /* Tuerca de acciones y su menú (D94) */
 .acciones-menu { display: inline-block; }
-.btn.btn-tuerca { width: var(--toque); padding: 0; border-radius: 50%; background: var(--fondo); color: var(--gris); border: 1px solid var(--borde-filtro); }
+/* Círculo exacto en cualquier renglón (D154): el alto también es fijo, porque las filas de puntos
+   bajan el alto mínimo de sus botones y la tuerca salía ovalada */
+.btn.btn-tuerca { width: var(--toque); height: var(--toque); min-width: var(--toque); min-height: var(--toque); flex: none; padding: 0; border-radius: 50%; background: var(--fondo); color: var(--gris); border: 1px solid var(--borde-filtro); }
 .btn.btn-tuerca[aria-expanded="true"] { background: var(--acento-suave); color: var(--acento); border-color: var(--acento); }
 .menu-acciones { position: fixed; z-index: 1300; min-width: 11rem; padding: var(--e-1) 0; background: var(--fondo);
   border: 1px solid var(--borde-suave); border-radius: var(--radio); box-shadow: 0 6px 18px rgba(35, 37, 38, 0.18); }
@@ -703,6 +707,7 @@ th[aria-sort="descending"] .th-flecha::after { content: '▼'; opacity: 1; }
 [data-contraste="alto"] .chip[aria-pressed="true"] { background: var(--acento); color: var(--fondo); }
 [data-contraste="alto"] .chip[aria-pressed="true"] .chip-sub { color: var(--fondo); }
 [data-contraste="alto"] .registro, [data-contraste="alto"] .tabla tr { border-width: 2px; }
+[data-contraste="alto"] .btn.btn-subir { border: 2px solid var(--borde-control); }
 /* El texto guía no debe confundirse con lo escrito: más claro que el texto, sin negrita y en cursiva */
 [data-contraste="alto"] .campo input::placeholder, [data-contraste="alto"] .campo textarea::placeholder,
 [data-contraste="alto"] .texto-vacio { color: var(--texto-guia); opacity: 1; font-weight: 400; font-style: italic; }
@@ -877,6 +882,7 @@ dialog::backdrop { background: rgba(35, 37, 38, 0.55); }
   .campos-grises .campo input:hover,
   .campos-grises .campo textarea:hover { background-color: var(--fondo-campo-hover); border-color: var(--fondo-campo-hover); }
   .btn.btn-tuerca:hover { background: var(--acento-suave); color: var(--acento); border-color: var(--acento); }
+  .btn.btn-subir:hover { background: var(--acento-suave); border-color: var(--acento); }
   .menu-opcion:hover { background: var(--fondo-suave); outline: none; }
   /* El acento, no la guinda (D124): al pasar el puntero, el botón principal seguía volviéndose guinda (D141) */
   .btn-primario:hover { background: var(--acento-oscuro); }
@@ -1160,3 +1166,14 @@ th[aria-sort="ascending"] .th-flecha::after, th[aria-sort="descending"] .th-flec
   /* Fotografías: miniaturas algo mayores para llenar el renglón */
   .galeria-rejilla { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
 }
+
+/* SUBIR AL INICIO (D154). Círculo flotante en la esquina inferior derecha; --subir-sobre lo pone
+   app.js con lo que ya ocupa el pie de la pantalla (navegación del teléfono y barra de la sección) */
+.btn.btn-subir { position: fixed; z-index: 850; right: calc(var(--e-4) + env(safe-area-inset-right, 0px)); bottom: calc(var(--subir-sobre, 0px) + var(--e-4));
+  width: var(--toque); height: var(--toque); min-height: var(--toque); padding: 0; border-radius: 50%;
+  background: var(--fondo); color: var(--acento); border: 1px solid var(--borde-filtro); box-shadow: 0 4px 12px rgba(35, 37, 38, .22);
+  transition: opacity .2s, visibility .2s; }
+.btn.btn-subir[data-visible="no"] { opacity: 0; visibility: hidden; pointer-events: none; }
+/* Corta por un cuadro la inercia del dedo al cambiar de página (D154): en iPhone, un salto a la
+   cima mientras la página sigue deslizándose se perdía */
+@media (pointer: coarse) { html.sin-inercia { overflow: hidden; } }

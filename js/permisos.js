@@ -7,9 +7,10 @@ SRP.PERFILES = {
   // eliminarJornadaVacia: una jornada sin ningún árbol, ni eliminado, se puede borrar (D132, D151)
   CABO:        { etiqueta: 'Cabo',                   alcance: 'propios', registrar: true,  editar: true,  eliminar: true,  eliminarJornadaVacia: true, catalogos: false, usuarios: false, galeria: false,
                  descripcion: 'Registra plantaciones y ve, edita y elimina únicamente las suyas.' },
-  // Registra sí, elimina registros no (D87); ve la galería (D118); elimina jornadas vacías de su cuadrilla (D151)
-  COORDINADOR: { etiqueta: 'Coordinador',            alcance: 'equipo',  registrar: true,  editar: true,  eliminar: false, eliminarJornadaVacia: true, catalogos: false, usuarios: false, galeria: true,
-                 descripcion: 'Registra, y ve y edita los registros de los cabos que tiene asignados. No elimina registros; sí las jornadas vacías.' },
+  // Registra sí; no elimina los registros de sus cabos (D87), pero sí los que capturó él, para
+  // corregir un error propio (D154); ve la galería (D118); elimina jornadas vacías de su cuadrilla (D151)
+  COORDINADOR: { etiqueta: 'Coordinador',            alcance: 'equipo',  registrar: true,  editar: true,  eliminar: false, eliminarPropios: true, eliminarJornadaVacia: true, catalogos: false, usuarios: false, galeria: true,
+                 descripcion: 'Registra, y ve y edita los registros de los cabos que tiene asignados. Elimina sólo los registros que capturó él, y las jornadas vacías.' },
   // No captura: administra. Quien registra en campo es el cabo, y el registro debe quedar
   // a nombre de quien plantó el árbol, no de quien administra el sistema.
   ADMIN:       { etiqueta: 'Administración global',  alcance: 'todos',   registrar: false, editar: true,  eliminar: true,  eliminarJornadaVacia: true, catalogos: true,  usuarios: true,  galeria: true,
@@ -52,8 +53,10 @@ SRP.permisos = {
     return this.de(usuario).editar && this.alcanza(usuario, registro, usuariosPorId);
   },
 
+  // Con `eliminar`, todo lo de su alcance; con `eliminarPropios`, sólo lo que capturó quien entra (D154)
   puedeEliminar(usuario, registro, usuariosPorId) {
-    return this.de(usuario).eliminar && this.alcanza(usuario, registro, usuariosPorId);
+    const p = this.de(usuario);
+    return (p.eliminar && this.alcanza(usuario, registro, usuariosPorId)) || (!!p.eliminarPropios && !!registro.cabo_id && registro.cabo_id === usuario.id);
   },
 
   /* LO QUE EXIGE CADA ACCIÓN (D151), en un solo lugar. Las funciones que escriben lo consultan al
@@ -64,8 +67,8 @@ SRP.permisos = {
   ACCIONES: {
     'registro.crear':       { texto: 'registrar árboles',                 regla: (p) => p.registrar },
     'registro.editar':      { texto: 'editar este registro',              regla: (p, u, r) => p.editar && SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId) },
-    'registro.eliminar':    { texto: 'eliminar este registro',            regla: (p, u, r) => p.eliminar && SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId) },
-    'registro.restaurar':   { texto: 'restaurar este registro',           regla: (p, u, r) => p.eliminar && SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId) },
+    'registro.eliminar':    { texto: 'eliminar este registro',            regla: (p, u, r) => SRP.permisos.puedeEliminar(u, r, SRP.ref.usuarioPorId) },
+    'registro.restaurar':   { texto: 'restaurar este registro',           regla: (p, u, r) => SRP.permisos.puedeEliminar(u, r, SRP.ref.usuarioPorId) },
     'registro.mover':       { texto: 'mover este registro de jornada',    regla: (p, u, r) => p.editar && SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId) },
     'jornada.crear':        { texto: 'iniciar jornadas',                  regla: (p) => p.registrar },
     // Editar, cerrar, reabrir, revisar sus puntos y llenar el cierre del reporte (D132, D133)

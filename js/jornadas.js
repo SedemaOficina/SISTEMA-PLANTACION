@@ -548,7 +548,7 @@ SRP.jornadas = {
     this.mostrarDetalle(true);
     await this.pintarDetalle(true);
     this.el('jornada-titulo').focus({ preventScroll: true });
-    window.scrollTo(0, 0);
+    SRP.app.alInicio();   // la ficha empieza arriba (D154)
   },
 
   async cerrar() {
@@ -557,6 +557,7 @@ SRP.jornadas = {
     this.mostrarDetalle(false);
     await this.pintarLista();
     this.el('titulo-jornadas').focus({ preventScroll: true });
+    SRP.app.alInicio();   // y la lista también (D154)
   },
 
   async pintarDetalle(encuadrar) {
@@ -614,12 +615,17 @@ SRP.jornadas = {
       // Color por significado con icono (Norma 8.4, D116): ver neutro, confirmar verde, eliminar rojo
       const I = (n, t) => SRP.ICONOS.svg(n, t);   // no se pasa suelto: svg() usa this
       const acciones = ['<button type="button" class="btn btn-texto" data-accion="ver" data-id="' + SRP.util.escapar(r.id) + '">' + I('ver', 'medio') + '<span>Ver</span></button>'];
-      // Corregir el reparto en jornadas (D117): desde la tuerca, para no cargar la fila
-      const items = [];
-      if (puedeEditar(r)) items.push({ accion: 'mover', texto: 'Mover a otra jornada', icono: 'jornadas' });
-      const tuerca = items.length ? SRP.ICONOS.menuAcciones(r.id, 'punto ' + (i + 1), items) : '';
       if (av.length && !revisado && puedeEditar(r)) acciones.push('<button type="button" class="btn btn-exito-linea" data-accion="bien" data-id="' + SRP.util.escapar(r.id) + '">' + I('palomita', 'chico') + '<span>Está bien</span></button>');
-      if (av.some(a => a.tipo === 'duplicado') && !revisado && puedeEliminar(r)) acciones.push('<button type="button" class="btn btn-peligro-linea" data-accion="eliminar" data-id="' + SRP.util.escapar(r.id) + '">' + I('basura', 'chico') + '<span>Eliminar</span></button>');
+      // Un duplicado se ofrece eliminar en la fila; el resto, desde la tuerca
+      const eliminarEnFila = av.some(a => a.tipo === 'duplicado') && !revisado && puedeEliminar(r);
+      if (eliminarEnFila) acciones.push('<button type="button" class="btn btn-peligro-linea" data-accion="eliminar" data-id="' + SRP.util.escapar(r.id) + '">' + I('basura', 'chico') + '<span>Eliminar</span></button>');
+      /* La tuerca del punto (D117, D154), con las mismas opciones que la tarjeta en Registros: un
+         punto capturado por error se corrige o se elimina desde aquí, sin salir de la jornada. Cada
+         acción aparece una sola vez: si «Eliminar» ya está en la fila, no se repite. */
+      const items = [];
+      if (puedeEditar(r)) items.push({ accion: 'editar', texto: 'Editar', icono: 'lapiz' }, { accion: 'mover', texto: 'Mover a otra jornada', icono: 'jornadas' });
+      if (puedeEliminar(r) && !eliminarEnFila) items.push({ accion: 'eliminar', texto: 'Eliminar', icono: 'basura', peligro: true });
+      const tuerca = items.length ? SRP.ICONOS.menuAcciones(r.id, 'punto ' + (i + 1), items) : '';
       return '<li class="punto-jornada" data-id="' + SRP.util.escapar(r.id) + '"><span class="punto-num" data-tono="' + tono + '" aria-hidden="true">' + (i + 1) + '</span>' +
         '<div class="punto-datos"><span class="punto-especie"><span class="oculto-visual">Punto ' + (i + 1) + ': </span>' + esc(esp.comun) + '</span>' +
         '<span class="punto-detalle">' + esc(h(r)) + ' · ' + detalle + '</span></div>' +
@@ -770,6 +776,7 @@ SRP.jornadas = {
     const r = this.jornada.registros.find(x => x.id === li.dataset.id);
     if (!b) { this.seleccionar(li.dataset.id, 'lista'); return; }
     if (b.dataset.accion === 'ver') { this.volverAlDetalle = true; SRP.registros.verDetalle(r); }
+    if (b.dataset.accion === 'editar') { this.volverAlDetalle = true; SRP.formulario.editar(r); }
     if (b.dataset.accion === 'bien') await this.marcarRevisado(r);
     if (b.dataset.accion === 'eliminar') { this.volverAlDetalle = true; await SRP.registros.eliminar(r); }
     if (b.dataset.accion === 'mover') await this.abrirMover(r);

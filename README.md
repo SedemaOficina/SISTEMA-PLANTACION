@@ -15,7 +15,8 @@ La versión que corre se lee al pie de cada pantalla.
    especie, comentarios y fotografía opcional. «Guardar» registra de una vez; sólo si hay algo que
    revisar (precisión baja, punto lejano, posible duplicado) abre la ficha de revisión.
 3. **Jornadas.** Cada jornada con su mapa y lista numerados, sus avisos y la conciliación con la
-   meta. Ahí se revisan los puntos, se cierra la jornada y se mueve o elimina un árbol.
+   meta. Ahí se revisan los puntos y se cierra la jornada; la tuerca de cada punto edita, mueve a
+   otra jornada o elimina el árbol (un error de captura se corrige sin salir de la jornada).
 4. **Reportes.** De cada jornada cerrada: datos de cierre, vista previa y PDF con croquis.
 5. **Fotografías** (coordinación y administración): las fotos de los registros, con descarga en ZIP.
 6. **Registros**: la lista de árboles con filtros, detalle, edición y eliminación que se deshace.
@@ -40,7 +41,7 @@ El sistema arranca con tres cuentas y **ninguna plantación**: se llena con lo q
 | Correo | Perfil | Qué puede hacer |
 |---|---|---|
 | administracion@ejemplo.local | Administración global | Ve, edita y elimina todo, y lleva Catálogos y Usuarios. **No captura registros** |
-| coordinador@ejemplo.local | Coordinador | Registra, y ve y edita los registros de su cuadrilla; no elimina registros, sí jornadas vacías |
+| coordinador@ejemplo.local | Coordinador | Registra, y ve y edita los registros de su cuadrilla; elimina sólo los que capturó él, y las jornadas vacías |
 | cabo@ejemplo.local | Cabo | Registra, y ve, edita y elimina sólo los suyos |
 
 Quien captura en campo es un **cabo**; quien lo dirige, un **coordinador**. En el código son

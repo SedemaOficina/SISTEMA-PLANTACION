@@ -1793,3 +1793,29 @@ pruebas que nombraban las etiquetas retiradas.
 
 **Verificación:** 668 comprobaciones sin errores de consola; 92 de auditoría;
 presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.74.
+
+## Bloque 95 — La tuerca, subir al inicio y errores en la jornada (25-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.75.
+
+**Qué cambió (D154).** `estilos.css`: la tuerca fija ancho y alto (círculo de 48 px) y en el
+teléfono va a la orilla derecha de la fila de puntos; botón `btn-subir` flotante, con su borde en
+modo sol y su estado al señalar; `html.sin-inercia` para cortar la inercia en pantallas táctiles.
+`index.html`: botón «Subir al inicio»; marca 0.6.75. `app.js`: `alInicio()` (salto a la cima que
+sobrevive a la inercia del iPhone) en cada cambio de sección; la pestaña actual sube a su inicio;
+`iniciarSubir()` (aparece al bajar, se coloca encima de la navegación y de la barra fija, sigue los
+cambios de alto de la página y al subir enfoca el título). `jornadas.js`: la ficha y la lista
+empiezan arriba; la tuerca del punto ofrece Editar, Mover a otra jornada y Eliminar sin repetir
+«Eliminar» de un duplicado. `iconos.js`: flecha «subir». `permisos.js`: la coordinación elimina lo
+que capturó ella (`eliminarPropios`), no lo de sus cabos. `esquema.json` (R-A01), `README.md` y
+`DICCIONARIO-DATOS.md` al día. `config.js`: Bloque 95.
+Pruebas: el botón no se ve arriba; al bajar aparece redondo, encima de la navegación y de la barra
+Guardar; al tocarlo sube y enfoca el título; al cambiar de sección desde abajo la nueva empieza
+arriba y la pestaña actual sube; la tuerca es un círculo en Registros y en los puntos, alineada a la
+derecha; la tuerca del punto lejano ofrece Editar, Mover y Eliminar; eliminarlo lo saca de la
+jornada sin salir de la ficha y «Deshacer» lo devuelve; en un duplicado «Eliminar» no se repite;
+«Editar» abre el árbol y al cancelar vuelve a la ficha; en la ficha el botón queda encima de la
+barra «Siguiente»; la lista de jornadas empieza arriba al volver; la coordinación elimina su propio
+árbol y no el del cabo.
+
+**Verificación:** 687 comprobaciones sin errores de consola; 92 de auditoría;
+presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.75.
