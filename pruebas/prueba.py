@@ -769,7 +769,7 @@ with sync_playwright() as p:
         encargado_id: u.id, creado_por_id: u.id, fecha_creacion: ahora, editado_por_id: u.id, fecha_ultima_edicion: ahora, meta_arboles: null, puntos_revisados: [] }, Object.fromEntries(SRP.reportes.CAMPOS.map(k => [k, '']))), null);
       for (let i=0;i<pts.length;i++) { const id = SRP.util.generarId(); ids.push(id);
         const r = { id, jornada_id: jid, es_ficticio: true, estatus: 'activo', cabo_id: u.id, lat: pts[i][0], lng: pts[i][1], lat_original: pts[i][0], lng_original: pts[i][1], punto_origen: 'gps', gps_precision_m: i===4 ? 45 : 6,
-          alcaldia: 'Cuauhtémoc', alcaldia_cve: '09015', colonia: null, colonia_cve: null, uga: 'CUH-021', capa_version: null, especie_id: pts[i][2], especie_otra: '', especie_estatus: 'VALIDADA', programa_id: 'p-refor', fecha_plantacion: f, comentarios: '', foto_id: null, foto_base64: null,
+          alcaldia: 'Cuauhtémoc', alcaldia_cve: '09015', colonia: null, colonia_cve: null, uga: 'CUH-021', capa_version: SRP.derivacion.derivar(19.4326, -99.1332).capa_version, especie_id: pts[i][2], especie_otra: '', especie_estatus: 'VALIDADA', programa_id: 'p-refor', fecha_plantacion: f, comentarios: '', foto_id: null, foto_base64: null,
           fecha_registro: new Date(dia.getTime()+ (9*60+i*15)*60000).toISOString(), fecha_ultima_edicion: null, editado_por_id: null, folio: null, folio_uga: null, folio_capa_version: null, folio_lat: null, folio_lng: null };
         await SRP.almacen.guardarConBitacora('plantaciones', r, SRP.bitacora.entrada('CREADO','plantacion',id)); }
       return { f, ids, jid }; }""")
@@ -845,6 +845,11 @@ with sync_playwright() as p:
     cro=pg.evaluate("(() => { const i=document.querySelector('#previa-croquis img'); return i ? { src: i.src.slice(0,22), alt: i.alt, nota: document.querySelector('#previa-croquis .previa-nota').textContent } : null; })()")
     ok(cro and cro['src'].startswith('data:image/') and '4 puntos' in cro['alt'] and 'orden de la tabla' in cro['nota'],'la vista previa trae el croquis de la jornada con los puntos numerados (D115): %s' % (cro and cro['nota'][:80]))
     ok(cro and ('sin conexión' in cro['nota'] or 'Esri' in cro['nota']),'y el pie dice si lleva imagen de satélite o si se generó sin conexión')
+    hoja=pg.inner_text('#previa-hoja')
+    ok('Territorio derivado con las capas: Alcaldías sia-2026-01-01 · UGA sia-2026-09-22 · Colonias iecm-2022-prueba (capa de prueba).' in hoja,
+       'el reporte dice con qué capas se derivó el territorio, y que la de colonias es de prueba (D152)')
+    fols=pg.evaluate("[...document.querySelector('#previa-hoja table').querySelectorAll('tbody tr td:nth-child(2)')].map(x => x.textContent)")
+    ok(fols and all(('(simulado)' in t) or t=='PROVISIONAL' for t in fols),'y cada folio simulado lo dice en su renglón (D152): %s' % fols[:2])
     enc=pg.evaluate("(() => { const e = SRP.croquis.encuadre([{lat:19.4326,lng:-99.1332},{lat:19.4336,lng:-99.1322}]); const p = SRP.croquis.aPixel(19.4326,-99.1332,e.z); return { z: e.z, dentro: p.x-e.origenX > 0 && p.x-e.origenX < 1000 && p.y-e.origenY > 0 && p.y-e.origenY < 620 }; })()")
     ok(enc['dentro'] and 15 <= enc['z'] <= 19,'el encuadre deja todos los puntos dentro del lienzo: %s' % enc)
     with pg.expect_download() as dj: pg.click('#btn-previa-generar')
@@ -869,7 +874,7 @@ with sync_playwright() as p:
           encargado_id: u.id, creado_por_id: u.id, fecha_creacion: ahora, editado_por_id: u.id, fecha_ultima_edicion: ahora, meta_arboles: null, puntos_revisados: [] }, Object.fromEntries(SRP.reportes.CAMPOS.map(x => [x, '']))), null);
         for (const [la, ln] of sitios[s][1]) { const id = SRP.util.generarId(); ids.push(id); k++;
           const r = { id, jornada_id: jid, es_ficticio: true, estatus: 'activo', cabo_id: u.id, lat: la, lng: ln, lat_original: la, lng_original: ln, punto_origen: 'gps', gps_precision_m: 6,
-            alcaldia: 'Benito Juárez', alcaldia_cve: '09014', colonia: null, colonia_cve: null, uga: 'BJU-011', capa_version: null, especie_id: 'ESP-0070', especie_otra: '', especie_estatus: 'VALIDADA', programa_id: 'p-refor', fecha_plantacion: f, comentarios: '', foto_id: null, foto_base64: null,
+            alcaldia: 'Benito Juárez', alcaldia_cve: '09014', colonia: null, colonia_cve: null, uga: 'BJU-011', capa_version: SRP.derivacion.derivar(19.4326, -99.1332).capa_version, especie_id: 'ESP-0070', especie_otra: '', especie_estatus: 'VALIDADA', programa_id: 'p-refor', fecha_plantacion: f, comentarios: '', foto_id: null, foto_base64: null,
             fecha_registro: new Date(dia.getTime()+(9*60+k*40)*60000).toISOString(), fecha_ultima_edicion: null, editado_por_id: null, folio: null, folio_uga: null, folio_capa_version: null, folio_lat: null, folio_lng: null };
           await SRP.almacen.guardarConBitacora('plantaciones', r, SRP.bitacora.entrada('CREADO','plantacion',id)); } }
       return { f, ids, jids }; }""")
@@ -2115,6 +2120,115 @@ with sync_playwright() as p:
     ok(not integ11['fallas'],'tras mover, restaurar, cambiar la jornada y los intentos de borrar, todo sigue íntegro: %s' % integ11)
     ok(not err11,'y sin errores en consola: %s' % err11[:2])
     ctx11.close()
+
+    # ---------- BLOQUE 92: TERRITORIO CONFIABLE (D152) ----------
+    ctx12=b.new_context(viewport={'width':390,'height':844},geolocation={'latitude':19.4326,'longitude':-99.1332,'accuracy':60},permissions=['geolocation'])
+    pg12=ctx12.new_page(); err12=[]
+    pg12.on('pageerror', lambda e: err12.append(str(e))); pg12.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err12.append(m.text))
+    pg12.goto(BASE); pg12.wait_for_timeout(1200)
+    pg12.select_option('#sel-usuario-prueba','u-cabo-1'); pg12.click('#btn-entrar-prueba'); pg12.wait_for_timeout(700)
+    # A6: el ámbito es la unión de las alcaldías con 100 m de margen, no la caja
+    amb=pg12.evaluate("""() => { const d = SRP.derivacion; const a = (la, lo) => d.dentroDelAmbito(la, lo);
+      const borde = d.derivar(19.095827, -99.22707);
+      return { neza: a(19.40, -99.015), huixquilucan: a(19.37, -99.30), naucalpan: a(19.478, -99.239), ecatepec: a(19.585, -99.060),
+        zocalo: a(19.4326, -99.1332), margen: a(19.095827, -99.22707), lejos: a(19.094328, -99.228309), borde: [borde.alcaldia, borde.fuera_m],
+        colocar: SRP.mapa.colocar(19.40, -99.015, 'x', { origen: 'manual' }), estado: document.getElementById('mapa-estado').textContent,
+        completas: d.capasCompletas(), colonia: SRP.ref.colonia(d.derivar(19.502765, -99.157045).colonia), alcaldia: SRP.ref.alcaldia(null) }; }""")
+    ok(not amb['neza'] and not amb['huixquilucan'] and not amb['naucalpan'] and not amb['ecatepec'] and amb['zocalo'],
+       'Nezahualcóyotl, Huixquilucan, Naucalpan y Ecatepec ya no se aceptan; el Zócalo sí (A6): %s' % {k: amb[k] for k in ('neza','huixquilucan','naucalpan','ecatepec','zocalo')})
+    ok(amb['margen'] and not amb['lejos'] and amb['borde'][0]=='Tlalpan' and 30 <= amb['borde'][1] <= 45,
+       'a 39 m fuera del límite se acepta con la alcaldía más cercana; a 250 m ya no (A6): %s' % amb['borde'])
+    ok(amb['colocar'] is False and 'fuera de la Ciudad de México' in amb['estado'],'colocar un punto en Nezahualcóyotl lo rechaza y lo dice')
+    ok(amb['colonia']=='Sin colonia en la capa' and amb['alcaldia']=='Sin alcaldía (territorio pendiente)','los rótulos ya no afirman «fuera de zona urbana» ni «hueco entre polígonos» (M5)')
+    ok(amb['completas'],'las tres capas y la biblioteca del cruce están cargadas (A7)')
+    # Jornada y árbol junto al límite: el aviso va en su renglón, sin tapar la precisión (A6, B8)
+    pg12.evaluate("SRP.app.mostrarVista('registrar')"); pg12.wait_for_timeout(300)
+    pg12.click('#btn-ini-hoy'); pg12.fill('#ini-nombre','Jornada B92'); pg12.select_option('#ini-programa','p-refor'); pg12.fill('#ini-meta','5')
+    pg12.click('#ini-detalles-coord summary'); pg12.fill('#ini-coord-lat','19.095827'); pg12.fill('#ini-coord-lng','-99.22707'); pg12.click('#btn-ini-coord-aplicar'); pg12.wait_for_timeout(200)
+    ok('fuera del límite' in pg12.inner_text('#ini-detectado') and pg12.inner_text('#ini-alcaldia')=='Tlalpan','la jornada junto al límite toma la alcaldía más cercana y lo dice')
+    pg12.click('#btn-iniciar-jornada'); pg12.wait_for_timeout(600)
+    # M6: el GPS se sigue escuchando y se queda con la mejor lectura
+    pg12.click('#btn-ubicacion'); pg12.wait_for_timeout(700)
+    g1=pg12.evaluate("[SRP.mapa.precision, SRP.mapa.vigilancia != null, document.getElementById('mapa-estado').textContent]")
+    ok(g1[0]==60 and g1[1] and 'Afinando' in g1[2],'con ±60 m el punto aparece y el GPS se sigue escuchando unos segundos (M6): %s' % g1[2])
+    ctx12.set_geolocation({'latitude':19.4330,'longitude':-99.1336,'accuracy':8}); pg12.wait_for_timeout(800)
+    g2=pg12.evaluate("[SRP.mapa.lat, SRP.mapa.precision, SRP.mapa.vigilancia != null]")
+    ok(g2==[19.433,8,False],'una lectura mejor mueve el punto y, al llegar a precisión buena, deja de escuchar: %s' % g2)
+    ctx12.set_geolocation({'latitude':19.4340,'longitude':-99.1346,'accuracy':3}); pg12.wait_for_timeout(600)
+    ok(pg12.evaluate("SRP.mapa.lat")==19.433,'y una lectura posterior ya no lo mueve')
+    ok(pg12.inner_text('#dato-coordenadas')=='19.43300, -99.13360','la coordenada se lee con cinco decimales (~1 m) (M6): '+pg12.inner_text('#dato-coordenadas'))
+    ctx12.set_geolocation({'latitude':19.4326,'longitude':-99.1332,'accuracy':60})
+    pg12.click('#btn-ubicacion'); pg12.wait_for_timeout(600)
+    pg12.evaluate("SRP.mapa.colocar(19.4328, -99.1334, 'Punto colocado en el mapa.', { origen: 'mapa' })")
+    ctx12.set_geolocation({'latitude':19.4330,'longitude':-99.1336,'accuracy':5}); pg12.wait_for_timeout(800)
+    ok(pg12.evaluate("[SRP.mapa.lat, SRP.mapa.origen, SRP.mapa.vigilancia]")==[19.4328,'mapa',None],'si la persona coloca el punto a mano, el GPS ya no lo mueve (M6)')
+    # M6: tocar el mapa lejos acerca primero; con acercamiento suficiente coloca
+    toque=pg12.evaluate("""() => { SRP.mapa.limpiar(); SRP.mapa.mapa.setZoom(12, { animate: false });
+      SRP.mapa.alTocar({ lat: 19.4331, lng: -99.1337 }); const primero = [SRP.mapa.lat, SRP.mapa.mapa.getZoom(), document.getElementById('mapa-estado').textContent];
+      SRP.mapa.alTocar({ lat: 19.4331, lng: -99.1337 }); return [primero, SRP.mapa.lat, SRP.mapa.origen]; }""")
+    ok(toque[0][0] is None and toque[0][1]==17 and 'toque otra vez' in toque[0][2] and toque[1]==19.4331 and toque[2]=='mapa',
+       'a zoom 12 el primer toque acerca el mapa y el segundo coloca el punto (M6): %s' % toque)
+    # B8: el aviso de imagen caída ya no tapa la insignia de precisión
+    pg12.evaluate("SRP.mapa.colocar(19.4326, -99.1332, 'x', { origen: 'gps', precision: 40 }); SRP.mapa.aviso('imagen', 'La imagen del mapa no cargó. Puede acercar el mapa y tocar donde está el árbol, o capturar coordenadas a mano.')")
+    ok(pg12.locator('#mapa-estado .precision').count()==1 and pg12.is_visible('#mapa-aviso') and 'no cargó' in pg12.inner_text('#mapa-aviso'),'el aviso de la imagen y la precisión conviven, cada uno en su renglón (B8)')
+    pg12.evaluate("SRP.mapa.aviso('imagen', null)")
+    pg12.evaluate("SRP.mapa.colocar(19.095827, -99.22707, 'Punto capturado a mano.', { origen: 'manual' })"); pg12.wait_for_timeout(200)
+    ok('fuera del límite' in pg12.inner_text('#mapa-aviso') and 'Tlalpan' in pg12.inner_text('#mapa-aviso') and pg12.inner_text('#dato-alcaldia')=='Tlalpan','un árbol junto al límite dice que toma la alcaldía más cercana')
+    pg12.evaluate("SRP.mapa.colocar(19.4326, -99.1332, 'x', { origen: 'gps', precision: 6 })"); pg12.wait_for_timeout(150)
+    ok('fuera del límite' not in pg12.inner_text('#mapa-aviso'),'y el aviso se va cuando el punto vuelve a la ciudad (el de la imagen, si la hay, se queda)')
+    # M3: créditos completos en todos los mapas
+    cred=pg12.inner_text('#mapa .leaflet-control-attribution')
+    ok('Powered by Esri' in cred and 'Vantor' in cred and 'OpenStreetMap' in cred and 'Maxar' not in cred,'el mapa de captura acredita a Esri («Powered by Esri»), Vantor y OpenStreetMap (M3): '+cred)
+    # Se guarda un árbol y se revisa su detalle: celda, capas y cinco decimales
+    pg12.fill('#campo-especie','aile'); pg12.wait_for_timeout(200); pg12.dispatch_event('.combo-opcion[data-id="ESP-0002"]','mousedown'); pg12.wait_for_timeout(150)
+    pg12.click('#form-plantacion button[type=submit]'); pg12.wait_for_timeout(900)
+    if pg12.is_visible('#dlg-resumen'):
+        ok('Powered by Esri' in pg12.inner_text('#revision-mapa .leaflet-control-attribution'),'la ficha de revisión también muestra el crédito (M3)')
+        pg12.click('#btn-resumen-guardar'); pg12.wait_for_timeout(700)
+    rid12=pg12.evaluate("SRP.formulario.estado.ultimoGuardado")
+    r12=pg12.evaluate("async () => await SRP.almacen.uno('plantaciones', '%s')" % rid12)
+    ok(r12['uga'] and isinstance(r12['uga_borde_m'], int) and r12['uga_borde_m'] >= 0,'el registro guarda a cuántos metros del borde de su celda cayó (M6): %s m' % r12['uga_borde_m'])
+    pg12.evaluate("SRP.app.mostrarVista('registros')"); pg12.wait_for_timeout(600)
+    pg12.evaluate("async () => SRP.registros.verDetalle(await SRP.almacen.uno('plantaciones', '%s'))" % rid12); pg12.wait_for_timeout(600)
+    det=pg12.inner_text('#dlg-detalle-cuerpo')
+    ok('Capas' in det and 'Alcaldías sia-2026-01-01 · UGA sia-2026-09-22 · Colonias iecm-2022-prueba (capa de prueba)' in det and 'Celda UGA' in det and 'del borde de la celda' in det,
+       'el detalle dice la celda, a cuánto del borde quedó y con qué capas se derivó (M5)')
+    ok('Powered by Esri' in pg12.inner_text('#detalle-mapa .leaflet-control-attribution'),'y su mapa lleva el crédito (M3)')
+    pg12.click('#btn-detalle-cerrar'); pg12.wait_for_timeout(200)
+    # Celda incierta (M6) y folio sólo con territorio (A6, A7)
+    fol=pg12.evaluate("""async () => { const f = SRP.folio;
+      const incierta = f.celdaIncierta({ uga_borde_m: 4, punto_origen: 'gps', gps_precision_m: 12 });
+      const segura = f.celdaIncierta({ uga_borde_m: 40, punto_origen: 'gps', gps_precision_m: 12 });
+      const base = await SRP.almacen.uno('plantaciones', '%s');
+      const sinAlc = Object.assign({}, base, { id: 'pl-b92-sin', alcaldia: null, alcaldia_cve: null, folio: null, folio_uga: null });
+      const sinCapa = Object.assign({}, base, { id: 'pl-b92-capa', capa_version: 'alcaldias=sia-2026-01-01', uga: null, folio: null, folio_uga: null });
+      for (const r of [sinAlc, sinCapa]) await SRP.almacen.guardarConBitacora('plantaciones', r, null);
+      await f.emitirPendientes();
+      const a = await SRP.almacen.uno('plantaciones', 'pl-b92-sin'), c = await SRP.almacen.uno('plantaciones', 'pl-b92-capa');
+      const ext = (await SRP.almacen.todos('plantaciones')).filter(r => r.folio_uga === 'EXT-000').length;
+      for (const id of ['pl-b92-sin', 'pl-b92-capa']) { const tx = SRP.almacen.db.transaction('plantaciones', 'readwrite'); tx.objectStore('plantaciones').delete(id); await new Promise(r => tx.oncomplete = r); }
+      return { incierta, segura, sinAlc: a.folio, sinCapa: c.folio, previsto: await f.previsto(sinAlc), ext, conFolio: f.valido((await SRP.almacen.uno('plantaciones', base.id)).folio) }; }""" % rid12)
+    ok('Celda incierta' in fol['incierta'] and fol['segura']=='','si el punto está más cerca del borde de su celda que la precisión del GPS, se marca «celda incierta» (M6)')
+    ok(fol['sinAlc'] is None and fol['sinCapa'] is None and fol['previsto'] is None and fol['ext']==0 and fol['conFolio'],
+       'sin alcaldía o con capas incompletas no se emite folio, y nunca EXT-000 por una capa ausente; el registro completo sí lo tiene (A6, A7): %s' % fol)
+    # M5: si al editar cambia el territorio, queda en el historial
+    pg12.evaluate("async () => SRP.formulario.editar(await SRP.almacen.uno('plantaciones', '%s'))" % rid12); pg12.wait_for_timeout(700)
+    pg12.evaluate("SRP.mapa.colocar(19.3600, -99.1600, 'Punto capturado a mano.', { origen: 'manual' })"); pg12.wait_for_timeout(200)
+    pg12.click('#form-plantacion button[type=submit]'); pg12.wait_for_timeout(900)
+    if pg12.is_visible('#dlg-resumen'): pg12.click('#btn-resumen-guardar'); pg12.wait_for_timeout(700)
+    hist12=pg12.evaluate("async () => (await SRP.bitacora.deEntidad('%s')).map(h => h.detalle || '').join(' | ')" % rid12)
+    ok('Territorio rederivado' in hist12 and 'alcaldia' in hist12,'al editar, si el territorio cambia, el historial lo registra (M5): '+hist12[-160:])
+    ok(pg12.evaluate("SRP.CONFIG.JORNADA.DUPLICADO_M")==5,'el aviso de posible duplicado usa 5 m, no 3: por debajo del ruido del GPS no significa nada (M6)')
+    ok(not err12,'y sin errores en consola: %s' % err12[:2])
+    ctx12.close()
+    # A7: sin la capa de colonias la aplicación no abre, y no sugiere borrar los datos
+    ctx13=b.new_context(viewport={'width':390,'height':844}); pg13=ctx13.new_page()
+    pg13.route('**/capa-colonias.js*', lambda r: r.abort())
+    pg13.goto(BASE); pg13.wait_for_timeout(1500)
+    txt13=pg13.inner_text('body')
+    ok('No se cargaron las capas del territorio' in txt13 and 'borre los datos' not in txt13 and 'antes de borrar nada' in txt13 and pg13.locator('#form-acceso').count()==0,
+       'sin una capa la aplicación no abre, lo dice y no sugiere borrar los datos del sitio, donde viven los árboles (A7): '+txt13[:120])
+    ctx13.close()
 
     b.close()
 print('\n'.join(res)); print('ERRORES CONSOLA:',errores or 'ninguno')

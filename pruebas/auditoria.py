@@ -231,6 +231,21 @@ with sync_playwright() as p:
     # Y el esquema con que el navegador valida los respaldos (D150)
     js_actual = open(os.path.join(APP, 'js', 'esquema.js'), encoding='utf-8').read()
     mirar(generar_diccionario.generar_js(esquema) == js_actual, 'js/esquema.js está regenerado a partir de esquema.json (lo usa la validación de respaldos)', 'corra pruebas/generar_diccionario.py')
+    # Capas (D152): toda geometría válida después de redondear, o el cruce falla sin avisar
+    try:
+        from shapely.geometry import shape as _forma
+        invalidas = []
+        for nombre in ('alcaldias', 'uga', 'colonias'):
+            txt = open(os.path.join(APP, 'assets', 'capa-%s.js' % nombre), encoding='utf-8').read()
+            ini = txt.index('SRP.CAPAS.%s = ' % nombre) + len('SRP.CAPAS.%s = ' % nombre)
+            capa = json.loads(txt[ini:txt.rindex(';')])
+            invalidas += ['%s %s' % (nombre, f['properties'].get('clave')) for f in capa['geojson']['features'] if not _forma(f['geometry']).is_valid]
+        mirar(not invalidas, 'las tres capas tienen todas sus geometrías válidas tras el redondeo', ', '.join(invalidas[:6]))
+    except ImportError:
+        mirar(False, 'shapely instalado para revisar las geometrías de las capas', 'pip install shapely')
+    # Créditos del mapa (D152): ningún mapa sin crédito
+    sin_credito = [os.path.basename(f) for f in glob.glob(APP + '/js/*.js') if 'attributionControl: false' in open(f, encoding='utf-8').read()]
+    mirar(not sin_credito, 'todos los mapas muestran el crédito del proveedor (ninguno con attributionControl: false)', ', '.join(sin_credito))
     # Política de seguridad (D150): nada en línea que la política vaya a bloquear en el teléfono
     en_linea = []
     html = re.sub(r'<!--.*?-->', '', open(os.path.join(APP, 'index.html'), encoding='utf-8').read(), flags=re.S)

@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.72 (Bloque 91)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.73 (Bloque 92)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -183,13 +183,19 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M179 | Auditoría 360 (M9) | Cada acción revisa el permiso antes de escribir, no sólo esconde el botón: es la lista que impondrá el servidor | Media | 0.6.72 (B91) | (Lo cubren las pruebas) | — |
 | M180 | Pruebas del bloque 91 | El aviso del envío automático ya no tapa el «Deshacer» de lo que se acaba de eliminar | Media | 0.6.72 (B91) | Eliminar un árbol con registros por enviar | Aviso con Deshacer |
 | M181 | Pruebas del bloque 91 | En Usuarios, la tarjeta del cabo decía que «coordina» a su coordinador: ahora dice «coordinador: …», y la del coordinador, «coordina a N cabos» | Baja | 0.6.72 (B91) | Administración › Usuarios | Tarjetas |
+| M182 | Auditoría 360 (A6) | Sólo se aceptan puntos dentro de la Ciudad de México (las alcaldías con 100 m de margen); junto al límite el árbol toma la alcaldía más cercana y se avisa | Alta | 0.6.73 (B92) | Coordenadas a mano 19.095827, -99.22707 | Aviso bajo el mapa |
+| M183 | Auditoría 360 (A7) | Sin las capas del territorio la aplicación no abre, y el aviso ya no sugiere borrar los datos; sin alcaldía no hay folio | Alta | 0.6.73 (B92) | (Lo cubren las pruebas) | — |
+| M184 | Auditoría 360 (M6) | El GPS se escucha unos segundos y se queda con la mejor lectura; tocar el mapa desde lejos primero acerca; duplicado a 5 m; coordenadas con cinco decimales | Media | 0.6.73 (B92) | Registrar ubicación con señal débil | Precisión «afinando» |
+| M185 | Auditoría 360 (M3) | Créditos del mapa completos («Powered by Esri», Vantor, OpenStreetMap) en todos los mapas y en el croquis | Media | 0.6.73 (B92) | Tocar el crédito del mapa | Crédito abierto |
+| M186 | Auditoría 360 (M5, M6) | El detalle dice la celda UGA, a cuánto del borde cayó el árbol y con qué capas se derivó; «celda incierta» cuando el GPS no alcanza; «Sin colonia en la capa» | Media | 0.6.73 (B92) | Registros › Ver detalle › Datos del sistema | Detalle |
+| M187 | Auditoría 360 (M7) | El reporte marca «(simulado)» en cada folio de prueba y dice con qué capas se derivó el territorio | Baja | 0.6.73 (B92) | Reportes › Ver vista previa | Tabla de ejemplares |
+| M188 | Auditoría 360 (B8) | El aviso de que la imagen del mapa no cargó ya no tapa la insignia de precisión | Baja | 0.6.73 (B92) | Sin señal, registrar ubicación | Dos renglones bajo el mapa |
 
 ## 2. Por hacer
 
 | # | Origen | Mejora | Prioridad | Estado | Nota |
 |---|---|---|---|---|---|
 | M46 | Android | Revisión corta en Android: versión, botón «atrás» con ventanas abiertas, calendario y hora, especies con teclado, precisión, foto, compartir PDF, aviso | Alta | Pendiente | Espera capturas |
-| M167 | Auditoría 360 | Bloque 92 «Territorio confiable»: ámbito por la unión de alcaldías, capas exigidas al arrancar, rótulos veraces, lectura GPS, créditos del mapa (A6, A7, M3, M5, M6, M7) | Alta | Pendiente | |
 | M168 | Auditoría 360 | Bloque 93 «Publicación ligera»: fuentes fuera del sitio, capas con su propia versión y aligeradas, licencia, jsPDF al día (M2, M4) | Media | Pendiente | Decisiones D5 a D7 |
 | M169 | Auditoría 360 | Bloque 94 «Orden del código y los textos»: hoja de estilos a su norma, duplicación, etiquetas, README y comentarios (M11, M13–M16, M20) | Media | Pendiente | |
 | M170 | Auditoría 360 | Bloque 95 «Pruebas en iPhone»: GitHub Actions con Chromium y WebKit, pruebas de migración e integridad (M17, M18) | Media | Pendiente | |
@@ -209,4 +215,4 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 168 hechas · 6 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 175 hechas · 5 por hacer · 2 revisadas · 2 descartadas.

@@ -60,7 +60,7 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 Un renglón por ejemplar plantado. Es el registro individual de campo; todo lo demás (partes, tableros, cifra pública) se construye encima (D38).
 
 - **Llave:** `id`. **Índices:** `cabo_id`, `fecha_plantacion`, `estatus`. **Pantalla:** Nuevo registro (alta y edición), Registros (lista, detalle), Reportes (parte del día).
-- **Campos:** 35.
+- **Campos:** 36.
 
 | Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
 |---|---|---|---|---|---|---|
@@ -74,8 +74,8 @@ Un renglón por ejemplar plantado. Es el registro individual de campo; todo lo d
 | `gps_precision_m` | integer | Sí | Sistema | Metros, entero; null salvo con GPS | «Cómo se obtuvo» (±N m) | Existe si y sólo si punto_origen = gps: al mover el punto a mano se borra. La auditoría lo comprueba. En Fase 2 alimenta la regla de duplicados (D69) |
 | `lat_original` | numeric(9,6) | No | Sistema | Como lat | No | Dónde quedó el punto la primera vez; no cambia al editar ni al arrastrar |
 | `lng_original` | numeric(9,6) | No | Sistema | Como lng | No | Ídem |
-| `folio` | char(13) | Sí | Servidor | `AAA-000-00000` (SRP.folio.PATRON): celda UGA y consecutivo de la celda; UNIQUE | «Folio»: PROVISIONAL mientras sea nulo (R1) | Nulo en toda la Fase 1. Lo asigna el servidor una sola vez al sincronizar (R3), es inmutable (R7) y no lleva la especie ni el año (D67). El consecutivo sale de una secuencia perpetua por celda, nunca de MAX+1 (R5–R6). Condiciones para emitirlo en DECISIONES, pendientes |
-| `folio_uga` | char(7) | Sí | Servidor | uga o `EXT-000` | No | La celda que quedó dentro del folio, congelada al asignarlo (R8). Distinta de `uga`, que es la vigente |
+| `folio` | char(13) | Sí | Servidor | `AAA-000-00000` (SRP.folio.PATRON): clave de la celda UGA y consecutivo de la celda; UNIQUE. AAA es el prefijo de la celda, no la alcaldía del árbol (difieren en el 4.3 % del territorio, D152) | «Folio»: PROVISIONAL mientras sea nulo (R1) | Con datos reales, nulo en toda la Fase 1: lo asigna el servidor una sola vez al sincronizar (R3), es inmutable (R7) y no lleva la especie ni el año (D67). El consecutivo sale de una secuencia perpetua por celda, nunca de MAX+1 (R5–R6). Con datos de prueba lo llena el servidor simulado (D110), marcado «(simulado)» en pantalla y en cada renglón del PDF; su secuencia vive en cada teléfono y dos teléfonos pueden repetir números. Sin alcaldía o con capas incompletas no se emite (D152) |
+| `folio_uga` | char(7) | Sí | Servidor | uga, o `EXT-000` si el punto cayó fuera de la malla dentro del margen del límite (nunca por una capa ausente, D152) | No | La celda que quedó dentro del folio, congelada al asignarlo (R8). Distinta de `uga`, que es la vigente |
 | `folio_capa_version` | text | Sí | Servidor | Como capa_version | No | Versión de las capas con que se derivó el folio; congelada (R8) |
 | `folio_lat` | numeric(9,6) | Sí | Servidor | Como lat | No | Coordenada empleada al asignar el folio; congelada (R8) |
 | `folio_lng` | numeric(9,6) | Sí | Servidor | Como lng | No | Ídem |
@@ -83,11 +83,12 @@ Un renglón por ejemplar plantado. Es el registro individual de campo; todo lo d
 | `especie_otra` | text | No | Persona | Texto libre; '' salvo con «Otra especie» | Especifique la especie (aparece sólo al elegir «Otra especie») | Obligatoria cuando especie_id es nula. Se vacía al elegir una especie del catálogo |
 | `especie_estatus` | text | No | Sistema | dominio `especie_estatus` | No | VALIDADA con especie del catálogo; PENDIENTE_VALIDACION con «Otra especie» hasta que el SIA la resuelva desde la bandeja (Fase 2). Al resolverse cambia este atributo, nunca el folio (D68) |
 | `alcaldia_cve` | char(5) | Sí | Capa | dominio `alcaldia_cve` | No | Derivada del punto contra la capa de alcaldías. Llave para unir con el esquema territorio del SIA. Nula si el punto cae en un hueco de la capa (se avisa, no se impide guardar) |
-| `alcaldia` | text | Sí | Capa | Nombre de la alcaldía según la capa | Alcaldía (sólo lectura) | Copia del nombre para leerse sin cargar la capa. Se rederiva cada vez que el punto se mueve; se puede rederivar en lote si la capa cambia (capa_version) |
+| `alcaldia` | text | Sí | Capa | Nombre de la alcaldía según la capa | Alcaldía (sólo lectura); «Sin alcaldía (territorio pendiente)» si es nula | Copia del nombre para leerse sin cargar la capa. Se rederiva cada vez que el punto se mueve; se puede rederivar en lote si la capa cambia (capa_version). Un punto dentro del margen del límite toma la alcaldía más cercana (D152) |
 | `colonia_cve` | text | Sí | Capa | dominio `colonia_cve` | No | Nula fuera de la zona urbana (suelo de conservación): no es defecto (D62). En solape gana la colonia más pequeña |
-| `colonia` | text | Sí | Capa | Nombre como viene en la capa, mayúsculas y tipo entre paréntesis | Colonia (sólo lectura): «Sin colonia (fuera de zona urbana)» si es nula | Capa de prueba (IECM 2022): se sustituye antes de liberar la etapa |
-| `uga` | char(7) | Sí | Capa | dominio `uga` | No | Celda vigente del punto. El prefijo NO es la alcaldía del punto (difieren en la frontera); la alcaldía sale de su propia capa. Cambia si el punto se corrige; folio_uga no |
-| `capa_version` | text | Sí | Capa | `alcaldias=v;uga=v;colonias=v` | No | Con qué versión de cada capa se derivó; permite rehacer alcaldia/colonia/uga cuando el SIA entregue las capas definitivas |
+| `colonia` | text | Sí | Capa | Nombre como viene en la capa, mayúsculas y tipo entre paréntesis | Colonia (sólo lectura): «Sin colonia en la capa» si es nula (D152) | Capa de prueba (IECM 2022): se sustituye antes de liberar la etapa |
+| `uga` | char(7) | Sí | Capa | dominio `uga` | No | Celda vigente del punto. Su prefijo es el de la celda y NO la alcaldía del punto (difieren en el 4.3 % del territorio); la alcaldía sale de su propia capa. Cambia si el punto se corrige; folio_uga no |
+| `uga_borde_m` | integer | Sí | Capa | Metros enteros ≥ 0; nulo sin celda | Detalle › Datos del sistema («A N m del borde de la celda»); «Celda incierta» junto al folio si es menor que la precisión del GPS | Distancia del punto al borde de su celda UGA, al derivar (D152). Si es menor que gps_precision_m, la celda del folio podría ser la vecina: la pantalla lo dice y el servidor la confirma en la Fase 2 |
+| `capa_version` | text | Sí | Capa | `alcaldias=v;uga=v;colonias=v` | Detalle › Datos del sistema («Capas») y pie del PDF (D152) | Con qué versión de cada capa se derivó; permite rehacer alcaldia/colonia/uga cuando el SIA entregue las capas definitivas |
 | `programa_id` | text | No | Jornada | → catalogos.id con tipo = programa | Ficha de revisión y detalle («Programa», el de la jornada); no se edita por árbol | Es el de su jornada (D151): se toma al registrar, cambia cuando cambia el de la jornada —también en los eliminados, en la misma transacción— y al mover el árbol toma el de su jornada nueva |
 | `fecha_plantacion` | date | No | Jornada | AAAA-MM-DD, ≤ hoy | Fecha de plantación (se muestra 21-SEP-2026) | Es la fecha de su jornada (D119): se toma al registrar, cambia cuando cambia la de la jornada —también en los eliminados, en la misma transacción (D151)— y al mover el árbol toma la de su jornada nueva. No posterior a hoy |
 | `jornada_id` | uuid | No | Sistema | → jornadas.id | Jornada (ficha de revisión y detalle) | La jornada activa al registrar (D119). Cambia sólo con «Mover a otra jornada» en Jornadas, que también ajusta fecha_plantacion y programa_id (D151) |
@@ -194,7 +195,7 @@ Una jornada de plantación: se declara antes de registrar el primer árbol (D119
 | `gps_precision_m` | integer | Sí | Dispositivo | Metros enteros; nulo sin detección o con el punto escrito a mano | (nota bajo el botón) | Margen del GPS al detectar (D122). Existe sólo si punto_origen es gps |
 | `alcaldia_cve` | text | Sí | Sistema | cvegeo INEGI (09012); nulo sin detección o en hueco | — | Derivada de la capa de alcaldías con el punto detectado (D122) |
 | `alcaldia` | text | Sí | Sistema | Nombre de la alcaldía; nulo sin detección | Alcaldía | Va a la franja de la jornada, a Jornadas y al reporte (D122). No sustituye a la alcaldía de cada árbol |
-| `colonia_cve` | text | Sí | Sistema | CVEUT IECM; nulo sin detección o fuera de zona urbana | — | Derivada de la capa de colonias con el punto detectado (D122) |
+| `colonia_cve` | text | Sí | Sistema | CVEUT IECM; nulo sin detección o donde la capa no tiene colonia | — | Derivada de la capa de colonias con el punto detectado (D122) |
 | `colonia` | text | Sí | Sistema | Nombre de la colonia; nulo sin detección | Colonia | Va a la franja, a Jornadas y al reporte (D122) |
 | `fecha` | date | No | Persona | AAAA-MM-DD, no posterior a hoy | Fecha de la jornada de plantación | Los árboles la heredan como fecha_plantacion (D119) |
 | `comentarios` | text | No | Persona | Texto libre, hasta 500; '' si no se escribe | Comentarios | Van al reporte como «Comentarios de la jornada» (D119) |
@@ -306,18 +307,20 @@ Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras
 
 | Id | Tabla | Regla | Dónde vive |
 |---|---|---|---|
-| R-P01 | plantaciones | Ubicación obligatoria (botón GPS, toque en el mapa o captura a mano) y dentro del ámbito de la CDMX (CONFIG.MAPA.LIMITES) | js/formulario.js validar(); js/mapa.js colocar() |
+| R-P01 | plantaciones | Ubicación obligatoria (GPS, toque en el mapa o captura a mano) y dentro de la Ciudad de México: la unión de las alcaldías más MARGEN_AMBITO_M (100 m), no la caja de CONFIG.MAPA.LIMITES, que sólo es el primer filtro (D152). Al tocar el mapa se pide acercamiento ZOOM_TOQUE (17) o más | js/derivacion.js dentroDelAmbito(); js/mapa.js colocar(), alTocar(); js/formulario.js validar() |
 | R-P02 | plantaciones | Especie obligatoria: de la lista de activas, o «Otra especie» con texto | js/formulario.js validar() |
 | R-P03 | plantaciones | El programa es el de la jornada (D151): no se elige por árbol. Al iniciar la jornada se elige entre los programas activos | js/formulario.js programaDeJornada(); js/jornada-activa.js iniciarJornada() |
 | R-P04 | plantaciones | Fecha de plantación obligatoria y no posterior a hoy; arranca vacía en cada registro | js/formulario.js validar(); campo-fecha.max |
 | R-P05 | plantaciones | Comentarios hasta 500 caracteres | index.html maxlength |
 | R-P06 | plantaciones | La foto se comprime a ≤ 800×600 JPEG 0.7 antes de guardarse; foto_bytes es el peso comprimido | js/foto.js comprimir(); CONFIG.FOTO |
-| R-P07 | plantaciones | Territorio (alcaldía, colonia, UGA, capa_version) se rederiva con cada movimiento del punto; nunca se teclea. Sin alcaldía se guarda y se avisa; sin colonia es normal fuera de zona urbana | js/formulario.js alMoverPunto(); js/derivacion.js |
+| R-P07 | plantaciones | Territorio (alcaldía, colonia, UGA, uga_borde_m, capa_version) se rederiva con cada movimiento del punto; nunca se teclea. Junto al límite, la alcaldía más cercana y un aviso; sin colonia se dice «Sin colonia en la capa». Si al editar el territorio cambia, la bitácora lo registra (D152) | js/formulario.js alMoverPunto(), guardar(); js/derivacion.js |
 | R-P08 | plantaciones | gps_precision_m existe si y sólo si punto_origen = gps | js/mapa.js colocar(); pruebas/auditoria.py |
 | R-P09 | plantaciones | El formulario arranca en blanco en cada registro: nada se hereda del anterior (ni programa, ni fecha, ni punto) | js/formulario.js limpiar(), nuevoRegistro() |
 | R-P10 | plantaciones | Al editar se conservan id, cabo_id, lat_original/lng_original, fecha_registro y los folio*; se actualizan fecha_ultima_edicion y editado_por_id, y la bitácora lista los campos cambiados | js/formulario.js registroPrevisto(), guardar() |
 | R-P11 | plantaciones | Eliminar marca estatus = eliminado (con bitácora); nunca se borra el renglón | js/registros.js eliminar() |
-| R-P12 | plantaciones | Folio y campos folio_* nacen nulos y no se tocan en el dispositivo; la pantalla y el PDF dicen PROVISIONAL | js/folio.js; js/formulario.js registroPrevisto() |
+| R-P12 | plantaciones | Folio y campos folio_* nacen nulos; con datos reales no se tocan en el dispositivo y la pantalla y el PDF dicen PROVISIONAL. Con datos de prueba los llena el servidor simulado (D110), sólo si el registro tiene alcaldía y las tres capas (D152) | js/folio.js puedeEmitir(), emitirPendientes(); js/formulario.js registroPrevisto() |
+| R-P13 | plantaciones | El GPS se escucha hasta GPS_AFINAR_MS (8 s) y el punto queda con la lectura más precisa; se detiene al llegar a precisión buena, al revisar o guardar, o si la persona coloca el punto a mano (D152) | js/mapa.js ubicar(), detenerAfinado() |
+| R-P14 | plantaciones | La aplicación no abre sin las capas de alcaldías, UGA y colonias y la biblioteca del cruce (D152) | js/app.js comprobarVersionCompleta(); js/derivacion.js capasCompletas() |
 | R-A01 | todas | Alcance por perfil: CABO ve/edita/elimina los suyos; COORDINADOR registra, ve y edita los de sus cabos, no elimina registros y sí jornadas vacías (D151); ADMIN todo, no captura. Un perfil desconocido no alcanza nada. Cada acción que escribe lo exige al empezar, no sólo esconde el botón (D151) | js/permisos.js PERFILES, ACCIONES, exigir() (fuente única); la interfaz sólo lo refleja |
 | R-A02 | todas | Toda alta, edición, eliminación, activación y desactivación escribe bitácora en la misma transacción | js/almacen.js guardarConBitacora(), borrarConBitacora() |
 | R-U01 | usuarios | Nombre, apellido paterno, correo válido y único (insensible a mayúsculas/acentos), área, cargo y perfil válido obligatorios; el correo no cambia después | js/usuarios.js validar() |
@@ -341,7 +344,7 @@ Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras
 | Id | Qué | Detalle | Referencia |
 |---|---|---|---|
 | S-01 | Cola de envío | Cada registro guardado queda en cola (guardado → enviado → con error); envío automático en segundo plano con señal, «Enviar ahora», y nada se borra del dispositivo hasta que el servidor confirme. Requiere dos campos nuevos en plantaciones: identificador del servidor y marca de envío (retirados en D17 por no tener uso todavía) | DECISIONES, pendiente «Cola de envío al servidor»; D83 |
-| S-02 | Emisión del folio | Tabla de secuencias por celda UGA, perpetua y monotónica (sin reinicio por ejercicio, administración ni versión); lectura e incremento atómicos, nunca MAX(folio)+1 ni COUNT+1; asignación en transacción con plantaciones.id como clave de idempotencia (R3–R6); se congelan folio_uga, folio_capa_version, folio_lat, folio_lng (R8). Sólo con la malla UGA corregida, versionada y congelada | D67; js/folio.js; pendiente «Emisión del folio» |
+| S-02 | Emisión del folio | Tabla de secuencias por celda UGA, perpetua y monotónica (sin reinicio por ejercicio, administración ni versión); lectura e incremento atómicos, nunca MAX(folio)+1 ni COUNT+1; asignación en transacción con plantaciones.id como clave de idempotencia (R3–R6); se congelan folio_uga, folio_capa_version, folio_lat, folio_lng (R8). Sólo con la malla UGA corregida, versionada y congelada. El servidor vuelve a derivar la celda con la coordenada recibida y no confía en la del teléfono; si el punto está más cerca del borde que su precisión (uga_borde_m), decide la celda con la regla que fije el SIA (D152) | D67; js/folio.js; pendiente «Emisión del folio» |
 | S-03 | Integridad referencial y unicidad en la base | FK de todas las relaciones de arriba, que son las mismas con que el dispositivo cuenta el uso antes de eliminar (D151); UNIQUE en plantaciones.folio, usuarios.correo, catalogos (tipo, clave), catalogos (tipo, nombre), catalogos.nombre_cientifico; CHECK de los dominios; la bitácora sin FK a propósito | Esta tabla de relaciones |
 | S-04 | Permisos en el servidor | Las reglas de js/permisos.js (PERFILES y ACCIONES, D151) se imponen en la API en cada operación (Norma 7.1); la pantalla sólo las refleja. Autenticación con el proveedor institucional: sólo cambia autenticar() en js/sesion.js | js/permisos.js; D05 |
 | S-05 | Posible duplicado | Aviso al sincronizar cuando otro registro cae a menos de la incertidumbre combinada de ambos puntos (suma de gps_precision_m, piso 5 m), en el servidor; nunca con 5 m fijos | D69 |
@@ -357,7 +360,7 @@ Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras
 |---|---|---|---|---|
 | alcaldías | assets/capa-alcaldias.js (fuente assets/fuentes/alcaldias_cdmx.json, con metadato en assets/fuentes/documentacion/) | sia-2026-01-01 | alcaldia_cve, alcaldia | Definitiva: 16 polígonos, sin solapes ni huecos (bloque 38) |
 | malla UGA | assets/capa-uga.js (fuente assets/fuentes/UGA_CDMX.geojson) | sia-2026-09-22 | uga (y folio_uga en Fase 2) | Definitiva según el SIA; misma geometría que la anterior. Siguen 8 celdas cuyo prefijo no es la alcaldía de su centro (TLP-040, TLP-085, IZP-005, IZP-011, COY-054, MIH-001, MIH-002, IZC-021): no afecta la alcaldía del registro, que sale de su propia capa |
-| colonias | assets/capa-colonias.js (fuente assets/fuentes/colonias_iecm2022.geojson) | iecm-2022-prueba | colonia_cve, colonia | De prueba: cartografía electoral del IECM 2022, no un catálogo del SIA |
+| colonias | assets/capa-colonias.js (fuente assets/fuentes/colonias_iecm2022.geojson) | iecm-2022-prueba | colonia_cve, colonia | De prueba: cartografía electoral del IECM 2022, no un catálogo del SIA. Nueve geometrías se ajustan a la rejilla de seis decimales para que sigan válidas (D152). En el 1.25 % del territorio la colonia es de otra demarcación: la definitiva debe venir recortada a las alcaldías |
 | catálogo de especies | assets/catalogo-especies.js (fuente assets/fuentes/CGO_ESPECIES_REFORESTACION_URBANA_2026-09-22.xlsx) | 2026-09-22 | catalogos (tipo especie) | Definitivo (D84) |
 
 ## 13. Borrador de tablas para la Fase 2 (PostgreSQL)
@@ -389,6 +392,7 @@ CREATE TABLE plantaciones (
   colonia_cve              text           NULL,
   colonia                  text           NULL,
   uga                      char(7)        NULL,
+  uga_borde_m              integer        NULL,
   capa_version             text           NULL,
   programa_id              text           NOT NULL,
   fecha_plantacion         date           NOT NULL,

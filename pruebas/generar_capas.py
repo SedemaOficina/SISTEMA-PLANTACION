@@ -10,6 +10,8 @@
 # Si algo del original no cuadra —un feature de más, una clave repetida, una geometría rota—
 # se detiene y lo dice; no genera capas a medias.
 import json, os, sys, math, re
+import shapely
+from shapely.geometry import shape, mapping
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 RAIZ = AQUI if os.path.exists(os.path.join(AQUI, 'assets')) else os.path.join(AQUI, '..')
@@ -58,6 +60,27 @@ def redondear(o):
 
 def anillo_cerrado(r): return len(r) >= 4 and r[0] == r[-1]
 
+def listas(o):
+    return [listas(x) for x in o] if isinstance(o, (list, tuple)) else o
+
+def geometria_final(coords, clave, archivo):
+    """Redondea a seis decimales y comprueba que la geometría siga siendo válida (D152). El redondeo
+    simple puede dejar anillos que se tocan o se cruzan: pasó en nueve colonias, y una geometría
+    inválida hace que el cruce punto-en-polígono falle sin avisar. Si el redondeo la rompe, se
+    ajusta a la misma rejilla con shapely.set_precision, que la conserva válida; si aun así no lo
+    es, se detiene."""
+    r = redondear(coords)
+    if shape({'type': 'MultiPolygon', 'coordinates': r}).is_valid: return r, False
+    g = shape({'type': 'MultiPolygon', 'coordinates': coords})
+    if not g.is_valid: g = shapely.make_valid(g)
+    g = shapely.set_precision(g, 10 ** -DECIMALES)
+    partes = [p for p in getattr(g, 'geoms', [g]) if p.geom_type in ('Polygon', 'MultiPolygon')]
+    polis = [q for p in partes for q in getattr(p, 'geoms', [p])]
+    r = redondear(listas([mapping(p)['coordinates'] for p in polis]))
+    if not polis or not shape({'type': 'MultiPolygon', 'coordinates': r}).is_valid:
+        fallar(f'{archivo}: la geometría de {clave} queda inválida al redondear y no se pudo ajustar')
+    return r, True
+
 # Prefijo de tres letras de cada alcaldía, por clave INEGI. La capa definitiva ya no lo trae
 # (sí la anterior, como clv_mun); es el mismo que usa la malla UGA en sus claves.
 PREFIJO = {'09002': 'AZC', '09003': 'COY', '09004': 'CUJ', '09005': 'GAM', '09006': 'IZC', '09007': 'IZP',
@@ -100,14 +123,19 @@ def escribir(nombre, features, props):
     }
     salida['meta']['features'] = len(features)
     salida['meta']['generado_por'] = 'generar_capas.py a partir de assets/fuentes/' + m['archivo']
+    ajustadas = []
     for f in features:
+        clave = f['properties'].get(m['clave'])
+        coords, ajustada = geometria_final(f['geometry']['coordinates'], clave, m['archivo'])
+        if ajustada: ajustadas.append(clave)
         salida['geojson']['features'].append({
             'type': 'Feature',
             'properties': props(f['properties']),
             # Sin caja incrustada: la derivación la calcula al cargar, en un milisegundo,
             # y así no viajan 80 KB de números que se deducen de los que ya viajan.
-            'geometry': {'type': 'MultiPolygon', 'coordinates': redondear(f['geometry']['coordinates'])}
+            'geometry': {'type': 'MultiPolygon', 'coordinates': coords}
         })
+    if ajustadas: print(f'{nombre}: {len(ajustadas)} geometrías ajustadas a la rejilla para que sigan válidas: {", ".join(ajustadas)}')
     texto = json.dumps(salida, separators=(',', ':'), ensure_ascii=False)
     ruta = os.path.join(DESTINO, f'capa-{nombre}.js')
     with open(ruta, 'w', encoding='utf-8') as w:

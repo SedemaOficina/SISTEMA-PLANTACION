@@ -467,7 +467,7 @@ SRP.registros = {
       ['Fecha de plantación', esc(SRP.util.formatearFecha(r.fecha_plantacion))],
       ['Alcaldía', esc(SRP.ref.alcaldia(r.alcaldia))],
       ['Colonia', esc(SRP.ref.colonia(r.colonia))],
-      ['Coordenadas', r.lat.toFixed(6) + ', ' + r.lng.toFixed(6)],
+      ['Coordenadas', r.lat.toFixed(5) + ', ' + r.lng.toFixed(5)],
       ['Cómo se obtuvo', SRP.formulario.textoOrigenRevision(r, false)],
       ['Cabo', esc(SRP.ref.nombreUsuario(r.cabo_id))],
       ['Comentarios', r.comentarios ? esc(r.comentarios) : 'Sin comentarios'],
@@ -475,8 +475,13 @@ SRP.registros = {
         ? '<img class="revision-foto" src="' + SRP.util.fotoSegura(r.foto_base64) + '" alt="Fotografía del árbol registrado">'
         : 'Sin fotografía']
     ];
+    const incierta = SRP.folio.celdaIncierta(r);
     const sistema = [
-      ['Folio', '<span class="folio-provisional">' + esc(SRP.folio.textoLargo(r)) + '</span>'],
+      ['Folio', '<span class="folio-provisional">' + esc(SRP.folio.textoLargo(r)) + '</span>' +
+        (incierta ? '<span class="revision-sub">' + esc(incierta) + '</span>' : '')],
+      // La celda (su prefijo no es la alcaldía) y las capas con que se derivó el territorio (D152)
+      ['Celda UGA', esc(r.uga || '—') + (r.uga_borde_m != null ? '<span class="revision-sub">A ' + r.uga_borde_m + ' m del borde de la celda</span>' : '')],
+      ['Capas', esc(SRP.ref.textoCapas(r.capa_version))],
       ['Identificador', '<span class="revision-id">' + esc(r.id) + '</span>']
     ];
     if (SRP.envio.simulado() && r.es_ficticio) sistema.push(['Envío', esc(this.textoEnvio(r))]);

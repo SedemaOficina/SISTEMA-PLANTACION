@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 91',
+  ETAPA: 'Bloque 92',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -40,7 +40,8 @@ SRP.CONFIG = {
   REINTENTO_ENVIO_MS: 60000,        // reintento mientras haya pendientes
   HORA_CIERRE_JORNADA: 17,          // desde esta hora, lo de hoy sin enviar ya es atraso
   // Revisión de jornadas (D112): umbrales de los avisos y de la partición por sitio, en metros
-  JORNADA: { DUPLICADO_M: 3, FUERA_M: 150, SEPARAR_M: 500 },
+  // DUPLICADO_M: 5, no 3 (D152): con 3 m el aviso quedaba por debajo del ruido del GPS
+  JORNADA: { DUPLICADO_M: 5, FUERA_M: 150, SEPARAR_M: 500 },
 
   // [pendiente] Fase 2: proveedor institucional de identidad. Hoy el acceso es simulado, y con
   // ES_FICTICIO: false el acceso simulado queda cerrado hasta conectar el proveedor (D150).
@@ -53,7 +54,10 @@ SRP.CONFIG = {
     ZOOM_MAX: 19,
     ZOOM_PUNTO: 17,
     ZOOM_JORNADA: 22,      // hasta dónde se acerca el mapa de la jornada, escalando la imagen (D116)
-    LIMITES: [[19.04, -99.37], [19.60, -98.94]],   // ámbito CDMX; fuera de aquí el punto no es válido
+    LIMITES: [[19.04, -99.37], [19.60, -98.94]],   // caja de la ciudad: límite del mapa y primer filtro del ámbito
+    // El ámbito es la unión de las alcaldías más este margen (D152): el GPS de un árbol plantado junto
+    // al límite puede caer unos metros afuera; ese punto toma la alcaldía más cercana y se avisa
+    MARGEN_AMBITO_M: 100,
 
     /* CAPAS DEL MAPA BASE, en orden de dibujo: la imagen de satélite abajo y, encima, una capa
        transparente con los nombres de calles y lugares. En campo se ubica el árbol por lo que se
@@ -65,15 +69,23 @@ SRP.CONFIG = {
        Si cambia el dominio del proveedor, se cambia también en la política de seguridad de
        index.html (img-src), o el mapa dejará de verse (D150). */
     CAPAS: [
+      /* Créditos tal como los declara cada servicio en su copyrightText (consultado el 24-09-2026),
+         con «y» en lugar de «and». Se muestran en todos los mapas, con «Powered by Esri», y en el pie
+         del croquis del PDF (D152). */
       { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-        atribucion: 'Imagen: Esri, Maxar, Earthstar Geographics y la comunidad de usuarios de Esri',
+        atribucion: 'Imagen: Esri, Vantor, Earthstar Geographics y GIS User Community',
         base: true },
       { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',
-        atribucion: 'Vías: Esri', base: false },
+        atribucion: 'Vías: Esri, HERE, Garmin, © OpenStreetMap contributors', base: false },
       { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
-        atribucion: '', base: false }
+        atribucion: 'Lugares: Esri, HERE, Garmin, © OpenStreetMap contributors y GIS User Community', base: false }
     ],
+    CREDITO_PROVEEDOR: 'Powered by Esri',
     GPS_ESPERA_MS: 15000,
+    // El GPS se escucha hasta este tiempo y se queda con la mejor lectura (D152); para antes si llega a «buena»
+    GPS_AFINAR_MS: 8000,
+    // Colocar el punto tocando el mapa pide este acercamiento o más (D152): a zoom 12 un toque abarca ~36 m
+    ZOOM_TOQUE: 17,
     /* Niveles de la precisión del GPS que se muestran junto al mapa (D96). Con ±10 m el punto cae
        en la misma banqueta; hasta ±30 m sirve si se revisa en el mapa; más allá conviene esperar o
        ajustar a mano. Son una guía para el cabo: no impiden guardar. */

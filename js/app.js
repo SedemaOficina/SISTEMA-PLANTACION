@@ -105,15 +105,22 @@ SRP.app = {
       ['revision-lista', 'la ficha de revisión'],
       ['espejo-campos', 'el espejo de campos de prueba']
     ].filter(([id]) => !document.getElementById(id)).map(([, que]) => que);
-    const modulos = ['util', 'ICONOS', 'permisos', 'sesion', 'almacen', 'ref', 'formulario', 'espejo', 'registros', 'catalogos', 'usuarios', 'ESQUEMA', 'validar']
+    const modulos = ['util', 'ICONOS', 'permisos', 'sesion', 'almacen', 'ref', 'formulario', 'espejo', 'registros', 'catalogos', 'usuarios', 'ESQUEMA', 'validar', 'derivacion']
       .filter(m => !SRP[m]);
-    if (!faltan.length && !modulos.length) return true;
+    /* Las tres capas y la biblioteca del cruce también se exigen (D152): sin ellas la app abría y
+       los árboles se guardaban sin alcaldía ni colonia, y con folio EXT-000. La de colonias pesa
+       3 MB y es la que más se corta en una primera carga con mala señal. */
+    const sinCapas = !modulos.length && !SRP.derivacion.capasCompletas();
+    if (!faltan.length && !modulos.length && !sinCapas) return true;
+    const mezcla = faltan.length || modulos.length;
+    // Nunca se sugiere borrar los datos del sitio: ahí viven los árboles capturados (D149, D152)
     document.body.innerHTML =
-      '<main><div class="errores"><h2>El navegador guardó una versión incompleta</h2>' +
-      '<p>Quedaron mezclados archivos de una versión anterior con los de la actual, y así el sistema no puede abrir.</p>' +
+      '<main><div class="errores"><h2>' + (mezcla ? 'El navegador guardó una versión incompleta' : 'No se cargaron las capas del territorio') + '</h2>' +
+      (mezcla ? '<p>Quedaron mezclados archivos de una versión anterior con los de la actual, y así el sistema no puede abrir.</p>'
+        : '<p>Faltan las capas de alcaldías, UGA o colonias. Sin ellas los árboles se guardarían sin alcaldía ni colonia, así que el sistema no abre. Suele pasar cuando la primera descarga se corta por mala señal.</p>') +
       '<p><strong>En la computadora:</strong> mantenga <kbd>Ctrl</kbd> y pulse <kbd>F5</kbd>.<br>' +
-      '<strong>En el teléfono:</strong> cierre por completo la pestaña y vuelva a abrir la dirección; ' +
-      'si sigue igual, borre los datos de este sitio en los ajustes del navegador.</p></div></main>';
+      '<strong>En el teléfono:</strong> cierre por completo la pestaña y vuelva a abrir la dirección con buena señal. ' +
+      'Si sigue igual, avise a su coordinación antes de borrar nada: los árboles capturados se guardan en este teléfono.</p></div></main>';
     return false;
   },
 

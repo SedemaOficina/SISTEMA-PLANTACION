@@ -80,10 +80,23 @@ SRP.ref = {
     return { comun: registro.especie_otra || '', cientifico: 'Otra especie, fuera del catálogo', distribucion: '' };
   },
 
-  /* Dos ausencias que no son la misma. Sin alcaldía, el punto cayó en un hueco entre los
-     polígonos de la capa (la definitiva no tiene; la regla queda por si una entrega los trae) y se dice. Sin colonia, el punto está
-     fuera de la zona urbana que la capa cubre —suelo de conservación, casi siempre—: no es un
-     defecto del punto ni de la capa, y no debe leerse como tal (D62). */
-  alcaldia(valor) { return valor || 'Sin alcaldía: el punto cae entre los polígonos de la capa'; },
-  colonia(valor) { return valor || 'Sin colonia (fuera de zona urbana)'; },
+  /* Dos ausencias que no son la misma (D62, D152). Sin alcaldía, el territorio no se pudo derivar
+     —con las capas completas no pasa: el arranque las exige y un punto junto al límite toma la
+     alcaldía más cercana—; queda pendiente de volver a derivar y no recibe folio. Sin colonia, el
+     punto cae donde la capa de colonias no tiene polígono: casi siempre suelo de conservación, pero
+     también 31 km² urbanos, así que no se afirma que sea zona no urbana. */
+  alcaldia(valor) { return valor || 'Sin alcaldía (territorio pendiente)'; },
+  colonia(valor) { return valor || 'Sin colonia en la capa'; },
+
+  /* Con qué capas se derivó el territorio, para el detalle y el PDF (D152): «Alcaldías
+     sia-2026-01-01 · UGA sia-2026-09-22 · Colonias iecm-2022-prueba (capa de prueba)». La versión
+     lleva la fecha de corte; la capa de prueba se dice. */
+  textoCapas(capaVersion) {
+    if (!capaVersion) return 'Sin derivar (territorio pendiente)';
+    const nombres = { alcaldias: 'Alcaldías', uga: 'UGA', colonias: 'Colonias' };
+    return capaVersion.split(';').map(par => {
+      const [k, v] = par.split('=');
+      return (nombres[k] || k) + ' ' + (v || '') + (/prueba/.test(v || '') ? ' (capa de prueba)' : '');
+    }).join(' · ');
+  },
 };

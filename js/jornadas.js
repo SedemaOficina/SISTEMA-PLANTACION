@@ -731,7 +731,7 @@ SRP.jornadas = {
          pines se enciman. El mapa deja acercar hasta ZOOM_JORNADA escalando la imagen (D116). */
       this.mapa = L.map('jornada-mapa', { center: c.CENTRO, zoom: c.ZOOM_INICIAL, minZoom: c.ZOOM_MIN, maxZoom: c.ZOOM_JORNADA,
         maxBounds: c.LIMITES, maxBoundsViscosity: 1, gestureHandling: true });
-      this.mapa.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>');
+      SRP.mapa.ponerCredito(this.mapa);   // el mismo crédito en todos los mapas (D152)
       c.CAPAS.forEach(capa => L.tileLayer(capa.url, { attribution: capa.atribucion, maxZoom: c.ZOOM_JORNADA, maxNativeZoom: c.ZOOM_MAX }).addTo(this.mapa));
       this.capaPuntos = L.layerGroup().addTo(this.mapa);
     }

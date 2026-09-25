@@ -227,13 +227,21 @@ SRP.activa = {
     this.avisoDetectar('Obteniendo su ubicación…');
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const lat = pos.coords.latitude, lng = pos.coords.longitude, precision = pos.coords.accuracy;
+        // Seis decimales, como el árbol: la coordenada del GPS llegaba con quince (D152)
+        const lat = Number(pos.coords.latitude.toFixed(6)), lng = Number(pos.coords.longitude.toFixed(6)), precision = pos.coords.accuracy;
+        const m = precision != null ? Math.round(precision) : null;
+        if (!SRP.derivacion.dentroDelAmbito(lat, lng)) {
+          this.punto = null;
+          this.pintarDetectar(false);
+          this.avisoDetectar('Ubicación obtenida' + (m != null ? ' (±' + m + ' m)' : '') + ', pero cae fuera de la Ciudad de México. Escriba la dirección abajo.', 'alerta');
+          return;
+        }
         const t = SRP.derivacion.derivar(lat, lng);
         this.punto = { lat, lng, precision, t, origen: 'gps' };
         this.pintarDetectar(false);
-        const m = precision != null ? Math.round(precision) : null;
-        if (!t.alcaldia) this.avisoDetectar('Ubicación obtenida' + (m != null ? ' (±' + m + ' m)' : '') + ', pero el punto no cae en ninguna alcaldía de la capa. Escriba la dirección abajo.', 'alerta');
-        else this.avisoDetectar('Ubicación detectada' + (m != null ? ' (±' + m + ' m)' : '') + '. Complete abajo la dirección o referencia si hace falta.', m != null && m > SRP.CONFIG.MAPA.PRECISION_ACEPTABLE_M ? 'alerta' : 'bien');
+        const borde = t.fuera_m ? ' El punto cae a ' + t.fuera_m + ' m fuera del límite: se toma ' + t.alcaldia + ', la alcaldía más cercana.' : '';
+        this.avisoDetectar('Ubicación detectada' + (m != null ? ' (±' + m + ' m)' : '') + '.' + borde + ' Complete abajo la dirección o referencia si hace falta.',
+          (m != null && m > SRP.CONFIG.MAPA.PRECISION_ACEPTABLE_M) || t.fuera_m ? 'alerta' : 'bien');
       },
       (err) => {
         this.pintarDetectar(false);
@@ -258,7 +266,8 @@ SRP.activa = {
     const t = SRP.derivacion.derivar(lat, lng);
     this.punto = { lat: Number(lat.toFixed(6)), lng: Number(lng.toFixed(6)), precision: null, t, origen: 'manual' };
     this.pintarDetectar(false);
-    this.avisoDetectar(t.alcaldia ? 'Punto capturado a mano. Complete abajo la dirección si hace falta.' : 'Coordenadas capturadas, pero el punto no cae en ninguna alcaldía de la capa. Escriba la dirección abajo.', t.alcaldia ? 'bien' : 'alerta');
+    this.avisoDetectar(t.fuera_m ? 'Punto capturado a mano, a ' + t.fuera_m + ' m fuera del límite: se toma ' + t.alcaldia + ', la alcaldía más cercana. Revise las coordenadas.'
+      : 'Punto capturado a mano. Complete abajo la dirección si hace falta.', t.fuera_m ? 'alerta' : 'bien');
   },
 
   // «Colonia, Alcaldía» de una jornada, para la franja, Jornadas y el reporte; '' si no se detectó

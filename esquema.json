@@ -274,16 +274,16 @@
           "tipo": "char(13)",
           "nulo": true,
           "origen": "Servidor",
-          "dominio": "`AAA-000-00000` (SRP.folio.PATRON): celda UGA y consecutivo de la celda; UNIQUE",
+          "dominio": "`AAA-000-00000` (SRP.folio.PATRON): clave de la celda UGA y consecutivo de la celda; UNIQUE. AAA es el prefijo de la celda, no la alcaldía del árbol (difieren en el 4.3 % del territorio, D152)",
           "pantalla": "«Folio»: PROVISIONAL mientras sea nulo (R1)",
-          "regla": "Nulo en toda la Fase 1. Lo asigna el servidor una sola vez al sincronizar (R3), es inmutable (R7) y no lleva la especie ni el año (D67). El consecutivo sale de una secuencia perpetua por celda, nunca de MAX+1 (R5–R6). Condiciones para emitirlo en DECISIONES, pendientes"
+          "regla": "Con datos reales, nulo en toda la Fase 1: lo asigna el servidor una sola vez al sincronizar (R3), es inmutable (R7) y no lleva la especie ni el año (D67). El consecutivo sale de una secuencia perpetua por celda, nunca de MAX+1 (R5–R6). Con datos de prueba lo llena el servidor simulado (D110), marcado «(simulado)» en pantalla y en cada renglón del PDF; su secuencia vive en cada teléfono y dos teléfonos pueden repetir números. Sin alcaldía o con capas incompletas no se emite (D152)"
         },
         {
           "campo": "folio_uga",
           "tipo": "char(7)",
           "nulo": true,
           "origen": "Servidor",
-          "dominio": "uga o `EXT-000`",
+          "dominio": "uga, o `EXT-000` si el punto cayó fuera de la malla dentro del margen del límite (nunca por una capa ausente, D152)",
           "pantalla": "No",
           "regla": "La celda que quedó dentro del folio, congelada al asignarlo (R8). Distinta de `uga`, que es la vigente"
         },
@@ -356,8 +356,8 @@
           "nulo": true,
           "origen": "Capa",
           "dominio": "Nombre de la alcaldía según la capa",
-          "pantalla": "Alcaldía (sólo lectura)",
-          "regla": "Copia del nombre para leerse sin cargar la capa. Se rederiva cada vez que el punto se mueve; se puede rederivar en lote si la capa cambia (capa_version)"
+          "pantalla": "Alcaldía (sólo lectura); «Sin alcaldía (territorio pendiente)» si es nula",
+          "regla": "Copia del nombre para leerse sin cargar la capa. Se rederiva cada vez que el punto se mueve; se puede rederivar en lote si la capa cambia (capa_version). Un punto dentro del margen del límite toma la alcaldía más cercana (D152)"
         },
         {
           "campo": "colonia_cve",
@@ -374,7 +374,7 @@
           "nulo": true,
           "origen": "Capa",
           "dominio": "Nombre como viene en la capa, mayúsculas y tipo entre paréntesis",
-          "pantalla": "Colonia (sólo lectura): «Sin colonia (fuera de zona urbana)» si es nula",
+          "pantalla": "Colonia (sólo lectura): «Sin colonia en la capa» si es nula (D152)",
           "regla": "Capa de prueba (IECM 2022): se sustituye antes de liberar la etapa"
         },
         {
@@ -384,7 +384,16 @@
           "origen": "Capa",
           "dominio": "uga",
           "pantalla": "No",
-          "regla": "Celda vigente del punto. El prefijo NO es la alcaldía del punto (difieren en la frontera); la alcaldía sale de su propia capa. Cambia si el punto se corrige; folio_uga no"
+          "regla": "Celda vigente del punto. Su prefijo es el de la celda y NO la alcaldía del punto (difieren en el 4.3 % del territorio); la alcaldía sale de su propia capa. Cambia si el punto se corrige; folio_uga no"
+        },
+        {
+          "campo": "uga_borde_m",
+          "tipo": "integer",
+          "nulo": true,
+          "origen": "Capa",
+          "dominio": "Metros enteros ≥ 0; nulo sin celda",
+          "pantalla": "Detalle › Datos del sistema («A N m del borde de la celda»); «Celda incierta» junto al folio si es menor que la precisión del GPS",
+          "regla": "Distancia del punto al borde de su celda UGA, al derivar (D152). Si es menor que gps_precision_m, la celda del folio podría ser la vecina: la pantalla lo dice y el servidor la confirma en la Fase 2"
         },
         {
           "campo": "capa_version",
@@ -392,7 +401,7 @@
           "nulo": true,
           "origen": "Capa",
           "dominio": "`alcaldias=v;uga=v;colonias=v`",
-          "pantalla": "No",
+          "pantalla": "Detalle › Datos del sistema («Capas») y pie del PDF (D152)",
           "regla": "Con qué versión de cada capa se derivó; permite rehacer alcaldia/colonia/uga cuando el SIA entregue las capas definitivas"
         },
         {
@@ -1043,7 +1052,7 @@
           "tipo": "text",
           "nulo": true,
           "origen": "Sistema",
-          "dominio": "CVEUT IECM; nulo sin detección o fuera de zona urbana",
+          "dominio": "CVEUT IECM; nulo sin detección o donde la capa no tiene colonia",
           "pantalla": "—",
           "regla": "Derivada de la capa de colonias con el punto detectado (D122)"
         },
@@ -1565,8 +1574,8 @@
     {
       "id": "R-P01",
       "tabla": "plantaciones",
-      "regla": "Ubicación obligatoria (botón GPS, toque en el mapa o captura a mano) y dentro del ámbito de la CDMX (CONFIG.MAPA.LIMITES)",
-      "donde": "js/formulario.js validar(); js/mapa.js colocar()"
+      "regla": "Ubicación obligatoria (GPS, toque en el mapa o captura a mano) y dentro de la Ciudad de México: la unión de las alcaldías más MARGEN_AMBITO_M (100 m), no la caja de CONFIG.MAPA.LIMITES, que sólo es el primer filtro (D152). Al tocar el mapa se pide acercamiento ZOOM_TOQUE (17) o más",
+      "donde": "js/derivacion.js dentroDelAmbito(); js/mapa.js colocar(), alTocar(); js/formulario.js validar()"
     },
     {
       "id": "R-P02",
@@ -1601,8 +1610,8 @@
     {
       "id": "R-P07",
       "tabla": "plantaciones",
-      "regla": "Territorio (alcaldía, colonia, UGA, capa_version) se rederiva con cada movimiento del punto; nunca se teclea. Sin alcaldía se guarda y se avisa; sin colonia es normal fuera de zona urbana",
-      "donde": "js/formulario.js alMoverPunto(); js/derivacion.js"
+      "regla": "Territorio (alcaldía, colonia, UGA, uga_borde_m, capa_version) se rederiva con cada movimiento del punto; nunca se teclea. Junto al límite, la alcaldía más cercana y un aviso; sin colonia se dice «Sin colonia en la capa». Si al editar el territorio cambia, la bitácora lo registra (D152)",
+      "donde": "js/formulario.js alMoverPunto(), guardar(); js/derivacion.js"
     },
     {
       "id": "R-P08",
@@ -1631,8 +1640,20 @@
     {
       "id": "R-P12",
       "tabla": "plantaciones",
-      "regla": "Folio y campos folio_* nacen nulos y no se tocan en el dispositivo; la pantalla y el PDF dicen PROVISIONAL",
-      "donde": "js/folio.js; js/formulario.js registroPrevisto()"
+      "regla": "Folio y campos folio_* nacen nulos; con datos reales no se tocan en el dispositivo y la pantalla y el PDF dicen PROVISIONAL. Con datos de prueba los llena el servidor simulado (D110), sólo si el registro tiene alcaldía y las tres capas (D152)",
+      "donde": "js/folio.js puedeEmitir(), emitirPendientes(); js/formulario.js registroPrevisto()"
+    },
+    {
+      "id": "R-P13",
+      "tabla": "plantaciones",
+      "regla": "El GPS se escucha hasta GPS_AFINAR_MS (8 s) y el punto queda con la lectura más precisa; se detiene al llegar a precisión buena, al revisar o guardar, o si la persona coloca el punto a mano (D152)",
+      "donde": "js/mapa.js ubicar(), detenerAfinado()"
+    },
+    {
+      "id": "R-P14",
+      "tabla": "plantaciones",
+      "regla": "La aplicación no abre sin las capas de alcaldías, UGA y colonias y la biblioteca del cruce (D152)",
+      "donde": "js/app.js comprobarVersionCompleta(); js/derivacion.js capasCompletas()"
     },
     {
       "id": "R-A01",
@@ -1747,7 +1768,7 @@
     {
       "id": "S-02",
       "que": "Emisión del folio",
-      "detalle": "Tabla de secuencias por celda UGA, perpetua y monotónica (sin reinicio por ejercicio, administración ni versión); lectura e incremento atómicos, nunca MAX(folio)+1 ni COUNT+1; asignación en transacción con plantaciones.id como clave de idempotencia (R3–R6); se congelan folio_uga, folio_capa_version, folio_lat, folio_lng (R8). Sólo con la malla UGA corregida, versionada y congelada",
+      "detalle": "Tabla de secuencias por celda UGA, perpetua y monotónica (sin reinicio por ejercicio, administración ni versión); lectura e incremento atómicos, nunca MAX(folio)+1 ni COUNT+1; asignación en transacción con plantaciones.id como clave de idempotencia (R3–R6); se congelan folio_uga, folio_capa_version, folio_lat, folio_lng (R8). Sólo con la malla UGA corregida, versionada y congelada. El servidor vuelve a derivar la celda con la coordenada recibida y no confía en la del teléfono; si el punto está más cerca del borde que su precisión (uga_borde_m), decide la celda con la regla que fije el SIA (D152)",
       "referencia": "D67; js/folio.js; pendiente «Emisión del folio»"
     },
     {
@@ -1819,7 +1840,7 @@
       "archivo": "assets/capa-colonias.js (fuente assets/fuentes/colonias_iecm2022.geojson)",
       "version": "iecm-2022-prueba",
       "alimenta": "colonia_cve, colonia",
-      "estado": "De prueba: cartografía electoral del IECM 2022, no un catálogo del SIA"
+      "estado": "De prueba: cartografía electoral del IECM 2022, no un catálogo del SIA. Nueve geometrías se ajustan a la rejilla de seis decimales para que sigan válidas (D152). En el 1.25 % del territorio la colonia es de otra demarcación: la definitiva debe venir recortada a las alcaldías"
     },
     {
       "capa": "catálogo de especies",

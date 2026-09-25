@@ -2,7 +2,9 @@
 
    FORMA: AAA-000-00000, 13 caracteres fijos, dos segmentos congelados al asignar (D67):
      AAA-000    celda UGA del punto, por cruce contra la malla vigente al alta (EXT-000 si el
-                punto queda fuera de la malla por deriva del receptor)
+                punto queda fuera de la malla, dentro del margen del límite). AAA es el PREFIJO
+                DE LA CELDA, no la alcaldía del árbol: difieren en el 4.3 % del territorio (un
+                árbol en Milpa Alta puede llevar TLP-040). La alcaldía es su propio campo (D152)
      00000      consecutivo de la celda, de una tabla de secuencias PERPETUA y MONOTÓNICA:
                 no se reinicia por ejercicio, administración ni versión del sistema (R5–R6)
    El origen del registro y el ejercicio no van en el folio: son campos de la base.
@@ -29,6 +31,22 @@ SRP.folio = {
   CAMPOS: ['folio', 'folio_uga', 'folio_capa_version', 'folio_lat', 'folio_lng'],
 
   valido(f) { return typeof f === 'string' && this.PATRON.test(f); },
+
+  /* ¿Se le puede emitir folio? (D152) Con alcaldía y con las tres capas en su capa_version. Sin
+     ellas el territorio está pendiente: antes recibía EXT-000 como si el punto estuviera fuera de
+     la malla, cuando lo que faltaba era la capa. */
+  puedeEmitir(r) {
+    return !!(r && r.alcaldia && typeof r.capa_version === 'string' && ['alcaldias=', 'uga=', 'colonias='].every(k => r.capa_version.includes(k)));
+  },
+
+  /* Celda incierta (D152): el punto está más cerca del borde de su celda UGA que la precisión con
+     que se tomó, así que la celda del folio podría ser la vecina. Se dice; el servidor la confirma. */
+  celdaIncierta(r) {
+    if (!r || r.uga_borde_m == null || r.punto_origen !== 'gps' || r.gps_precision_m == null) return '';
+    if (r.uga_borde_m >= r.gps_precision_m) return '';
+    return 'Celda incierta: el punto está a ' + r.uga_borde_m + ' m del borde de su celda UGA, menos que la precisión del GPS (±' +
+      Math.round(r.gps_precision_m) + ' m). El servidor confirmará la celda.';
+  },
 
   /* Arma un folio a partir de sus partes. Sólo valida y compone: el consecutivo lo da la tabla
      de secuencias del servidor (R5), nunca MAX(folio)+1 ni un conteo de registros. La celda
@@ -75,7 +93,7 @@ SRP.folio = {
   async emitirPendientes() {
     if (!this.simulado() || !SRP.conexion.enLinea() || !SRP.sesion.usuario || !SRP.almacen.db) return 0;
     const pendientes = (await SRP.almacen.todos('plantaciones'))
-      .filter(r => r.es_ficticio && !this.valido(r.folio))
+      .filter(r => r.es_ficticio && !this.valido(r.folio) && this.puedeEmitir(r))
       .sort((a, b) => String(a.fecha_registro).localeCompare(String(b.fecha_registro)));
     for (const r of pendientes) {
       const celda = r.uga && /^[A-Z]{3}-\d{3}$/.test(r.uga) ? r.uga : 'EXT-000';
@@ -92,10 +110,10 @@ SRP.folio = {
      que aún esperan folio. No incrementa la secuencia: la emisión sigue siendo una sola, al guardar
      y sincronizar (R3). Sin simulación devuelve null. */
   async previsto(registro) {
-    if (!this.simulado() || !SRP.almacen.db) return null;
+    if (!this.simulado() || !SRP.almacen.db || !this.puedeEmitir(registro)) return null;
     const celda = registro.uga && /^[A-Z]{3}-\d{3}$/.test(registro.uga) ? registro.uga : 'EXT-000';
     const n = (this.leerSecuencias()[celda] || 0) + 1;
-    const enEspera = (await SRP.almacen.todos('plantaciones')).filter(r => r.es_ficticio && !this.valido(r.folio) && r.id !== registro.id &&
+    const enEspera = (await SRP.almacen.todos('plantaciones')).filter(r => r.es_ficticio && !this.valido(r.folio) && r.id !== registro.id && this.puedeEmitir(r) &&
       ((r.uga && /^[A-Z]{3}-\d{3}$/.test(r.uga) ? r.uga : 'EXT-000') === celda)).length;
     if (n + enEspera > this.TECHO) return null;
     return this.armar(celda, n + enEspera);

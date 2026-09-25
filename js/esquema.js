@@ -220,6 +220,13 @@ SRP.ESQUEMA = {
     null
    ],
    [
+    "uga_borde_m",
+    "integer",
+    true,
+    null,
+    null
+   ],
+   [
     "capa_version",
     "text",
     true,

@@ -7,6 +7,8 @@ window.SRP = window.SRP || {};
 SRP.mapa = {
   mapa: null, marcador: null, lat: null, lng: null, alCambiar: null,
   origen: null, precision: null, margen: null,
+  vigilancia: null, finAfinado: null,   // lectura continua del GPS mientras se afina (D152)
+  avisos: {},                           // avisos que conviven bajo el mapa: imagen, territorio (D152)
 
   /* DE DÓNDE SALIÓ EL PUNTO.
      Cuando la fotografía es opcional —y en campo la mayoría de los registros no va a
@@ -47,32 +49,60 @@ SRP.mapa = {
       center: c.CENTRO, zoom: c.ZOOM_INICIAL, minZoom: c.ZOOM_MIN, maxZoom: c.ZOOM_MAX,
       maxBounds: c.LIMITES, maxBoundsViscosity: 1, gestureHandling: true
     });
-    /* CRÉDITO DEL MAPA (D108). Esri exige su atribución, pero en teléfono ocupaba dos renglones
-       sobre la imagen. Queda en un renglón que termina en «…»; al tocarlo se ve completo. Sin la
-       bandera del prefijo de Leaflet, que no aporta y resta espacio. */
-    this.mapa.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>');
-    const credito = this.mapa.attributionControl.getContainer();
-    credito.setAttribute('title', 'Toque para ver el crédito completo');
-    credito.addEventListener('click', (e) => {
-      if (e.target.closest('a')) return;
-      credito.classList.toggle('credito-abierto');
-    });
+    this.ponerCredito(this.mapa);
     // Sólo la capa de imagen avisa si no carga: las de nombres son complemento, y su ausencia
-    // no impide colocar el punto.
+    // no impide colocar el punto. El aviso va en su propio renglón: ya no tapa la precisión (D152)
     let fallas = 0;
     c.CAPAS.forEach(capa => {
       const capaLeaflet = L.tileLayer(capa.url, { attribution: capa.atribucion, maxZoom: c.ZOOM_MAX });
       if (capa.base) {
         capaLeaflet.on('tileerror', () => {
           fallas += 1;
-          if (fallas === 3) this.estado('La imagen del mapa no cargó. Puede tocar el mapa para colocar el punto o capturar coordenadas a mano.', 'alerta');
+          if (fallas === 3) this.aviso('imagen', 'La imagen del mapa no cargó. Puede acercar el mapa y tocar donde está el árbol, o capturar coordenadas a mano.');
         });
+        capaLeaflet.on('tileload', () => { if (fallas >= 3) { fallas = 0; this.aviso('imagen', null); } });
       }
       capaLeaflet.addTo(this.mapa);
     });
     // La punta del pin marca la coordenada exacta: el anclaje va en ella, no en el centro
     this.icono = L.divIcon({ className: 'pin', html: this.ICONO_SVG, iconSize: [24, 32], iconAnchor: [12, 31] });
-    this.mapa.on('click', (e) => this.colocar(e.latlng.lat, e.latlng.lng, 'Punto colocado en el mapa.', { origen: 'mapa' }));
+    this.mapa.on('click', (e) => this.alTocar(e.latlng));
+  },
+
+  /* CRÉDITO DEL MAPA (D108, D152), en todos los mapas: Leaflet, «Powered by Esri» —que Esri pide
+     no ocultar— y el crédito de cada capa tal como lo declara su servicio. En teléfono va en un
+     renglón que termina en «…»; al tocarlo se ve completo. */
+  ponerCredito(m) {
+    m.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a> | ' + SRP.CONFIG.MAPA.CREDITO_PROVEEDOR);
+    const credito = m.attributionControl.getContainer();
+    credito.setAttribute('title', 'Toque para ver el crédito completo');
+    credito.addEventListener('click', (e) => {
+      if (e.target.closest('a')) return;
+      credito.classList.toggle('credito-abierto');
+    });
+  },
+
+  /* TOCAR EL MAPA (D152). A zoom 12 cada toque abarca unos 36 m: el árbol quedaba donde cayó el
+     dedo, no donde está. Por debajo de ZOOM_TOQUE el primer toque acerca el mapa ahí mismo, y el
+     punto se coloca con el siguiente. */
+  alTocar(latlng) {
+    const z = SRP.CONFIG.MAPA.ZOOM_TOQUE;
+    if (this.mapa.getZoom() < z) {
+      this.mapa.setView(latlng, z);
+      this.estado('Se acercó el mapa: toque otra vez justo donde está el árbol.');
+      return;
+    }
+    this.colocar(latlng.lat, latlng.lng, 'Punto colocado en el mapa.', { origen: 'mapa' });
+  },
+
+  // Renglón de avisos bajo la precisión: cada tipo se pone o se quita sin borrar los demás
+  aviso(tipo, texto) {
+    this.avisos[tipo] = texto || null;
+    const p = document.getElementById('mapa-aviso');
+    if (!p) return;
+    const t = Object.values(this.avisos).filter(Boolean);
+    p.textContent = t.join(' ');
+    p.hidden = !t.length;
   },
 
   // Mientras se busca la señal, el botón avisa que está trabajando
@@ -120,13 +150,15 @@ SRP.mapa = {
     return { nivel: 'baja', texto: 'Precisión baja', consejo: 'Espere unos segundos al aire libre y vuelva a ubicar o arrastre el punto hasta el árbol.' };
   },
 
-  // La franja bajo el mapa con la insignia de precisión y el círculo del margen sobre el mapa
+  // La franja bajo el mapa con la insignia de precisión y el círculo del margen sobre el mapa.
+  // Mientras el GPS se sigue escuchando, lo dice en lugar del consejo (D152)
   mostrarPrecision(m) {
     const n = this.nivelPrecision(m);
     const p = document.getElementById('mapa-estado');
     p.dataset.tipo = 'normal';
+    const consejo = this.vigilancia != null ? 'Afinando la lectura del GPS unos segundos…' : n.consejo;
     p.innerHTML = '<span class="precision" data-nivel="' + n.nivel + '"><span class="precision-punto" aria-hidden="true"></span>' +
-      n.texto + ' · ±' + Math.round(m) + ' m</span>' + (n.consejo ? ' <span class="precision-consejo">' + n.consejo + '</span>' : '');
+      n.texto + ' · ±' + Math.round(m) + ' m</span>' + (consejo ? ' <span class="precision-consejo">' + consejo + '</span>' : '');
     this.dibujarMargen(m, n.nivel);
   },
 
@@ -147,6 +179,8 @@ SRP.mapa = {
       this.estado('El punto está fuera de la Ciudad de México. Ubíquelo dentro del territorio.', 'alerta');
       return false;
     }
+    // Un punto puesto a mano (tocar, arrastrar, teclear) manda: el GPS deja de moverlo (D152)
+    if (op.origen !== 'gps') this.detenerAfinado();
     this.lat = Number(lat.toFixed(6));
     this.lng = Number(lng.toFixed(6));
     this.origen = op.origen || null;
@@ -175,31 +209,55 @@ SRP.mapa = {
     return true;
   },
 
+  /* EL GPS SE AFINA (D152). Antes se tomaba una sola lectura, a veces de ±80 m. Ahora el punto
+     aparece con la primera y el GPS se sigue escuchando hasta GPS_AFINAR_MS: cada lectura más
+     precisa mueve el punto; una peor no. Se detiene al llegar a «buena», al vencer el tiempo, al
+     revisar o guardar, o en cuanto la persona coloca el punto a mano. */
   ubicar() {
     if (!navigator.geolocation) {
       this.estado('Este dispositivo no ofrece ubicación. Toque el mapa o capture coordenadas.', 'alerta');
       return;
     }
+    this.detenerAfinado();
     this.estado('Obteniendo su ubicación…');
     this.marcarBuscando(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        this.marcarBuscando(false);
-        this.colocar(pos.coords.latitude, pos.coords.longitude,
-          'Ubicación obtenida.',
-          { origen: 'gps', precision: pos.coords.accuracy, centrar: true });
-      },
-      (err) => {
-        this.marcarBuscando(false);
-        const motivo = err.code === 1 ? 'no se concedió el permiso de ubicación'
-          : err.code === 3 ? 'la señal tardó demasiado' : 'no hay señal de ubicación';
-        this.estado('No se obtuvo la ubicación: ' + motivo + '. Toque el mapa o capture coordenadas.', 'alerta');
-      },
-      { enableHighAccuracy: true, timeout: SRP.CONFIG.MAPA.GPS_ESPERA_MS, maximumAge: 0 }
-    );
+    const c = SRP.CONFIG.MAPA;
+    let mejor = null;
+    const lectura = (pos) => {
+      const acc = pos.coords.accuracy;
+      if (mejor !== null && !(acc < mejor)) return;
+      const primera = mejor === null;
+      mejor = acc;
+      if (primera) this.marcarBuscando(false);
+      this.colocar(pos.coords.latitude, pos.coords.longitude, 'Ubicación obtenida.', { origen: 'gps', precision: acc, centrar: primera });
+      if (acc <= c.PRECISION_BUENA_M) this.detenerAfinado();
+    };
+    const error = (err) => {
+      // Con punto ya puesto, una falla pasajera (sin señal un momento, tiempo agotado) no detiene la
+      // escucha: el GPS la reporta y sigue; sólo quitar el permiso la termina
+      if (mejor !== null) { if (err.code === 1) this.detenerAfinado(); return; }
+      this.detenerAfinado();
+      this.marcarBuscando(false);
+      const motivo = err.code === 1 ? 'no se concedió el permiso de ubicación'
+        : err.code === 3 ? 'la señal tardó demasiado' : 'no hay señal de ubicación';
+      this.estado('No se obtuvo la ubicación: ' + motivo + '. Toque el mapa o capture coordenadas.', 'alerta');
+    };
+    this.vigilancia = navigator.geolocation.watchPosition(lectura, error, { enableHighAccuracy: true, timeout: c.GPS_ESPERA_MS, maximumAge: 0 });
+    // Si no llega ninguna lectura, el tiempo de espera de la primera decide; si ya llegó, se afina hasta aquí
+    this.finAfinado = setTimeout(() => { if (mejor !== null) this.detenerAfinado(); }, c.GPS_AFINAR_MS);
+  },
+
+  detenerAfinado() {
+    const estaba = this.vigilancia != null;
+    if (estaba && navigator.geolocation) navigator.geolocation.clearWatch(this.vigilancia);
+    this.vigilancia = null;
+    clearTimeout(this.finAfinado); this.finAfinado = null;
+    if (estaba && this.origen === 'gps' && this.precision != null) this.mostrarPrecision(this.precision);
   },
 
   limpiar() {
+    this.detenerAfinado();
+    this.aviso('territorio', null);
     if (this.marcador) { this.marcador.remove(); this.marcador = null; }
     this.dibujarMargen(null);
     this.lat = null; this.lng = null;
@@ -217,10 +275,11 @@ SRP.mapa = {
     if (typeof L === 'undefined') return null;
     const c = SRP.CONFIG.MAPA;
     const m = L.map(idContenedor, {
-      center: [lat, lng], zoom: c.ZOOM_PUNTO, zoomControl: false, attributionControl: false,
+      center: [lat, lng], zoom: c.ZOOM_PUNTO, zoomControl: false,
       dragging: false, scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false, keyboard: false
     });
-    c.CAPAS.forEach(capa => L.tileLayer(capa.url, { maxZoom: c.ZOOM_MAX }).addTo(m));
+    this.ponerCredito(m);   // también en las fichas: la imagen es la misma (D152)
+    c.CAPAS.forEach(capa => L.tileLayer(capa.url, { attribution: capa.atribucion, maxZoom: c.ZOOM_MAX }).addTo(m));
     L.marker([lat, lng], { icon: this.icono, interactive: false }).addTo(m);
     setTimeout(() => m.invalidateSize(), 60);
     return m;

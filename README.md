@@ -214,8 +214,10 @@ claves únicas, anillos cerrados y sistema de referencia antes de escribir nada.
 y se sustituye antes de liberar la etapa (ver DECISIONES, pendientes). La de colonias pesa 3 MB compactada —125 mil vértices— y es la que más
 conviene revisar en peso al llegar la definitiva.
 
-La capa de colonias no cubre el suelo de conservación (532 km² al sur sin colonia): un punto ahí
-se guarda con `colonia` nula y la pantalla dice «Sin colonia (fuera de zona urbana)». Trae 215
+La capa de colonias no cubre el suelo de conservación (532 km² al sur sin colonia) ni 31 km²
+urbanos: un punto ahí se guarda con `colonia` nula y la pantalla dice «Sin colonia en la capa»
+(D152). `generar_capas.py` ajusta cada geometría a la rejilla de seis decimales sin romperla y se
+detiene si alguna queda inválida (el redondeo simple dejaba nueve colonias inválidas). Trae 215
 solapes, casi siempre una unidad habitacional encima del pueblo que la rodea: gana el polígono más
 pequeño. Doce colonias tienen el interior en otra alcaldía que la que declaran: la alcaldía sale de
 su propia capa, nunca de la colonia (D62).
@@ -226,6 +228,15 @@ hueco el registro se guarda sin alcaldía, con la versión de la capa, para rede
 definitiva tiene la misma geometría que la anterior y conserva ocho celdas cuyo prefijo no es la
 alcaldía de su centro; no afecta al registro, cuya alcaldía sale de su propia capa. Al actualizar una
 capa se sube `meta.version` en `generar_capas.py`.
+
+**Dónde se acepta un punto (D152).** En la unión de las 16 alcaldías, con 100 m de margen
+(`MAPA.MARGEN_AMBITO_M`): un árbol junto al límite cuyo GPS cae unos metros afuera toma la alcaldía
+más cercana y la pantalla lo dice. La caja de `MAPA.LIMITES` sólo es el límite del mapa y el primer
+filtro. La aplicación no abre si falta alguna de las tres capas; un registro sin alcaldía o sin las
+tres capas en su `capa_version` no recibe folio (nunca `EXT-000` por una capa ausente). El folio
+empieza con el **prefijo de la celda UGA, que no es la alcaldía del árbol** en el 4.3 % del
+territorio. El detalle y el PDF dicen con qué capas se derivó cada registro, y si el punto quedó más
+cerca del borde de su celda que la precisión del GPS, lo marca como «celda incierta».
 
 ## Pruebas
 

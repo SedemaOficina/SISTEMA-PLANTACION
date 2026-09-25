@@ -141,11 +141,10 @@ SRP.formulario = {
     const t = SRP.derivacion.derivar(lat, lng);
     this.estado.territorio = t;
     this.mostrarPunto(lat, lng, t);
-    // Un punto dentro de la ciudad sin alcaldía cayó en un hueco de la capa: se avisa, pero no
-    // se impide guardar, porque el árbol es real y el defecto es de la capa.
-    if (!t.alcaldia && SRP.derivacion.dentroDelAmbito(lat, lng)) {
-      SRP.mapa.estado('El punto cae entre los polígonos de la capa de alcaldías; se guarda sin alcaldía y se podrá rederivar.', 'alerta');
-    }
+    // Junto al límite de la ciudad (D152): el punto cayó fuera, dentro del margen, y toma la
+    // alcaldía más cercana. Se dice en su renglón, sin tapar la precisión
+    SRP.mapa.aviso('territorio', t.fuera_m ? 'El punto cae a ' + t.fuera_m + ' m fuera del límite de la Ciudad de México; se registra en ' +
+      t.alcaldia + ', la alcaldía más cercana. Revise que el árbol esté dentro de la ciudad.' : null);
     // La captura a mano refleja el punto vigente: quien la abra corrige sobre lo que ya hay
     this.el('coord-lat').value = lat.toFixed(6);
     this.el('coord-lng').value = lng.toFixed(6);
@@ -154,7 +153,7 @@ SRP.formulario = {
   /* Los tres campos de sólo lectura del punto, en un solo lugar: sin territorio, los tres
      vuelven al guion, porque un dato viejo junto a un punto nuevo es peor que ninguno. */
   mostrarPunto(lat, lng, t) {
-    this.el('dato-coordenadas').textContent = (t && lat !== null) ? lat.toFixed(6) + ', ' + lng.toFixed(6) : '—';
+    this.el('dato-coordenadas').textContent = (t && lat !== null) ? lat.toFixed(5) + ', ' + lng.toFixed(5) : '—';   // cinco decimales (~1 m) se leen; se guardan seis (D152)
     this.el('dato-origen').textContent = t ? SRP.mapa.textoOrigen(SRP.mapa.origen, SRP.mapa.precision) : '—';
     this.el('dato-alcaldia').textContent = t ? SRP.ref.alcaldia(t.alcaldia) : '—';
     this.el('dato-colonia').textContent = t ? SRP.ref.colonia(t.colonia) : '—';
@@ -334,7 +333,7 @@ SRP.formulario = {
       punto_origen: SRP.mapa.origen, gps_precision_m: SRP.mapa.precision,
       alcaldia_cve: t.alcaldia_cve || null, alcaldia: t.alcaldia || null,
       colonia_cve: t.colonia_cve || null, colonia: t.colonia || null,
-      uga: t.uga || null, capa_version: t.capa_version || null,
+      uga: t.uga || null, uga_borde_m: t.uga_borde_m == null ? null : t.uga_borde_m, capa_version: t.capa_version || null,
       especie_id: otra ? null : this.estado.especieId,
       especie_otra: otra ? this.el('campo-otra-especie').value.trim() : '',
       // «Otra especie» ya no es un problema del identificador: es un pendiente de catálogo (D68)
@@ -364,6 +363,7 @@ SRP.formulario = {
      buena, especie fuera del catálogo, posible duplicado, árbol lejos de la jornada) o en edición,
      se abre la ficha con esos avisos arriba; si no, se guarda de una vez. */
   async enviarFormulario() {
+    SRP.mapa.detenerAfinado();   // lo que se revisa y se guarda es el punto de este momento (D152)
     const errores = this.validar();
     this.mostrarErrores(errores);
     if (errores.length) return;
@@ -449,7 +449,7 @@ SRP.formulario = {
       ['Jornada', esc(this.nombreJornada()) + ' · ' + esc(SRP.util.formatearFecha(v.fecha_plantacion)), null],
       ['Alcaldía', esc(SRP.ref.alcaldia(v.alcaldia)), null],
       ['Colonia', esc(SRP.ref.colonia(v.colonia)), null],
-      ['Coordenadas', v.lat.toFixed(6) + ', ' + v.lng.toFixed(6), 'punto'],
+      ['Coordenadas', v.lat.toFixed(5) + ', ' + v.lng.toFixed(5), 'punto'],
       ['Cómo se obtuvo', this.textoOrigenRevision(v), null],
       ['Comentarios', v.comentarios ? esc(v.comentarios) : 'Sin comentarios', 'comentarios'],
       ['Fotografía', SRP.util.fotoSegura(v.foto_base64)
@@ -457,7 +457,8 @@ SRP.formulario = {
         : 'Sin fotografía', 'foto'],
       // El folio va a la vista, bajo la fotografía (D123), y con datos de prueba se enseña el que
       // tocará (D126); el identificador interno ya no se muestra
-      ['Folio', '<span class="folio-provisional">' + esc(folio) + '</span>', null],
+      ['Folio', '<span class="folio-provisional">' + esc(folio) + '</span>' +
+        (SRP.folio.celdaIncierta(v) ? '<span class="revision-sub">' + esc(SRP.folio.celdaIncierta(v)) + '</span>' : ''), null],
       ['Cabo', esc(this.nombreCabo()), null]
     ];
 
@@ -563,9 +564,15 @@ SRP.formulario = {
         const previo = this.estado.editando;
         const cambiados = ['lat', 'lng', 'punto_origen', 'especie_id', 'especie_otra', 'programa_id', 'fecha_plantacion', 'comentarios', 'foto_id']
           .filter(k => (previo[k] || null) !== (v[k] || null));
+        // Al editar se vuelve a derivar el territorio con las capas vigentes: si cambió —porque el
+        // punto se movió o porque la capa es otra—, queda en el historial (D152)
+        const territorio = ['alcaldia', 'colonia', 'uga', 'capa_version'].filter(k => (previo[k] || null) !== (v[k] || null));
+        const detalle = [cambiados.length ? 'Campos: ' + cambiados.join(', ') : '',
+          territorio.length ? 'Territorio rederivado: ' + territorio.map(k => k === 'capa_version' ? 'capas ' + (v[k] || '—')
+            : k + ' ' + (previo[k] || '—') + ' → ' + (v[k] || '—')).join('; ') : ''].filter(Boolean).join('. ');
         const nuevo = this.registroPrevisto(ahora);
         await SRP.almacen.guardarConBitacora('plantaciones', nuevo,
-          SRP.bitacora.entrada('EDITADO', 'plantacion', nuevo.id, cambiados.length ? 'Campos: ' + cambiados.join(', ') : 'Sin cambios en los datos'));
+          SRP.bitacora.entrada('EDITADO', 'plantacion', nuevo.id, detalle || 'Sin cambios en los datos'));
         this.el('dlg-resumen').close();
         this.limpiar();
         // Si se llegó desde la revisión de una jornada, se vuelve a ella (D112)

@@ -1731,3 +1731,39 @@ por falta de permiso.
 
 **Verificación:** 632 comprobaciones sin errores de consola; 89 de auditoría;
 presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.72.
+
+## Bloque 92 — Territorio confiable (24-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.73.
+
+**Qué cambió (D152).** `derivacion.js`: ámbito por la unión de las alcaldías con margen
+(`dentroDelAmbito()`, `cercana()`, `distanciaBorde()`), `capasCompletas()`, y `derivar()` devuelve
+`fuera_m` y `uga_borde_m`. `config.js`: `MARGEN_AMBITO_M`, `GPS_AFINAR_MS`, `ZOOM_TOQUE`,
+`DUPLICADO_M` en 5, créditos de las tres capas y `CREDITO_PROVEEDOR`. `mapa.js`: `ponerCredito()` en
+todos los mapas, GPS afinado (`ubicar()` con `watchPosition`, `detenerAfinado()`), `alTocar()` con
+zoom mínimo y renglón de avisos `aviso()` separado de la precisión. `jornadas.js`: crédito común.
+`formulario.js`: aviso junto al límite, `uga_borde_m`, cinco decimales, «celda incierta» en la
+ficha, bitácora del territorio rederivado al editar y fin del afinado al revisar. `jornada-activa.js`:
+coordenada redondeada, rechazo fuera de la ciudad y aviso junto al límite. `folio.js`:
+`puedeEmitir()` y `celdaIncierta()`; prefijo de celda documentado. `referencias.js`: rótulos «Sin
+colonia en la capa» y «Sin alcaldía (territorio pendiente)», `textoCapas()`. `registros.js`: celda
+UGA y capas en el detalle, cinco decimales. `reportes.js`: «(simulado)» por renglón y nota de capas
+en la vista previa y el PDF. `croquis.js`: crédito completo en renglones. `app.js`: capas exigidas
+al arrancar y aviso sin «borre los datos». `index.html` y `estilos.css`: renglón `#mapa-aviso`.
+`generar_capas.py`: geometrías válidas tras redondear; `capa-colonias.js` regenerada (nueve
+colonias ajustadas; alcaldías y UGA idénticas). `auditoria.py`: geometrías válidas y créditos en
+todos los mapas. `esquema.json`: campo `uga_borde_m`, folio, alcaldía, colonia, UGA, reglas R-P01,
+R-P07, R-P12, R-P13, R-P14 y S-02, estado de la capa de colonias, orígenes; `DICCIONARIO-DATOS.md`
+regenerado. `MAPEO-CAMPOS.md` y `README.md` al día.
+Pruebas: Nezahualcóyotl, Huixquilucan, Naucalpan y Ecatepec se rechazan y el Zócalo no; a 39 m del
+límite se acepta con la alcaldía más cercana y a 250 m no; los rótulos nuevos; la jornada y el árbol
+junto al límite lo dicen; el GPS con ±60 m sigue escuchando, una lectura de ±8 m mueve el punto y
+detiene la escucha, y una posterior ya no; un punto puesto a mano no lo mueve el GPS; a zoom 12 el
+primer toque acerca y el segundo coloca; el aviso de imagen y la precisión conviven; créditos en el
+mapa de captura y en el del detalle; el registro guarda `uga_borde_m`; el detalle dice celda y
+capas; «celda incierta»; sin alcaldía o sin capas no hay folio ni `EXT-000`; editar con cambio de
+territorio queda en el historial; sin la capa de colonias la app no abre y no sugiere borrar datos;
+el reporte dice sus capas y marca cada folio simulado. Los datos de prueba insertados a mano llevan
+ahora `capa_version`, como un registro real.
+
+**Verificación:** 659 comprobaciones sin errores de consola; 91 de auditoría;
+presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.73.

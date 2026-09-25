@@ -287,6 +287,15 @@ SRP.reportes = {
   },
 
   // «Jornada 2 de 3» bajo la fecha, sólo cuando el día tuvo más de una (D117)
+  // «Territorio derivado con las capas: Alcaldías … · UGA … · Colonias … (capa de prueba).», y los
+  // registros que aún no lo tienen (D152)
+  textoCapas(registros) {
+    const versiones = [...new Set(registros.map(r => r.capa_version).filter(Boolean))];
+    const sin = registros.filter(r => !r.capa_version).length;
+    return [versiones.length ? 'Territorio derivado con las capas: ' + versiones.map(v => SRP.ref.textoCapas(v)).join(' / ') + '.' : '',
+      sin ? (sin === 1 ? '1 registro' : sin + ' registros') + ' con el territorio pendiente de derivar.' : ''].filter(Boolean).join(' ');
+  },
+
   textoJornada(jornada) { return jornada && jornada.total > 1 ? 'Jornada ' + jornada.n + ' de ' + jornada.total : ''; },
 
   htmlPrevia(registros, cierre, fecha, jornada) {
@@ -321,11 +330,12 @@ SRP.reportes = {
     h += apartado('Ejemplares registrados', '<div class="previa-tabla-caja"><table class="previa-tabla"><thead><tr><th>N.º</th><th>Folio</th><th>Especie</th><th>Nombre científico</th>' +
       (variosAutores ? '<th>Cabo</th>' : '') + '</tr></thead><tbody>' + registros.map((r, i) => {
         const e = SRP.ref.especieDe(r);
-        return '<tr><td>' + (i + 1) + '</td><td>' + esc(SRP.folio.texto(r)) + '</td><td>' + esc(e.comun) + '</td><td><i>' + esc(e.cientifico) + '</i></td>' +
+        return '<tr><td>' + (i + 1) + '</td><td>' + esc(SRP.folio.textoLargo(r)) + '</td><td>' + esc(e.comun) + '</td><td><i>' + esc(e.cientifico) + '</i></td>' +
           (variosAutores ? '<td>' + esc(SRP.ref.nombreUsuario(r.cabo_id)) + '</td>' : '') + '</tr>';
       }).join('') + '</tbody></table></div>' +
       (registros.some(r => !SRP.folio.valido(r.folio)) ? '<p class="previa-nota">Registros PROVISIONALES: el folio se asigna al sincronizar con el servidor. Este reporte no sustituye al definitivo.</p>' : '') +
-      (registros.some(r => SRP.folio.valido(r.folio) && r.es_ficticio) ? '<p class="previa-nota">Folios SIMULADOS con datos de prueba: no valen para placas, rótulos ni oficios.</p>' : ''));
+      (registros.some(r => SRP.folio.valido(r.folio) && r.es_ficticio) ? '<p class="previa-nota">Folios SIMULADOS con datos de prueba: no valen para placas, rótulos ni oficios.</p>' : '') +
+      '<p class="previa-nota">' + esc(this.textoCapas(registros)) + '</p>');
 
     // Croquis de la jornada (D115): mismo orden que la tabla; se llena cuando la imagen está lista
     h += apartado('Croquis de la jornada', '<div id="previa-croquis" class="previa-croquis" aria-live="polite"><p class="previa-nota">Preparando el croquis…</p></div>');
@@ -496,7 +506,7 @@ SRP.reportes = {
     const cabecera = ['N.º', 'Folio', 'Especie', 'Nombre científico'].concat(variosAutores ? ['Cabo'] : []);
     const cuerpo = registros.map((r, i) => {
       const e = SRP.ref.especieDe(r);
-      return [String(i + 1), SRP.folio.texto(r), e.comun, e.cientifico].concat(variosAutores ? [SRP.ref.nombreUsuario(r.cabo_id)] : []);
+      return [String(i + 1), SRP.folio.textoLargo(r), e.comun, e.cientifico]   // «(simulado)» en cada renglón (D152).concat(variosAutores ? [SRP.ref.nombreUsuario(r.cabo_id)] : []);
     });
     salto(30);
     doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...C.guinda);
@@ -523,6 +533,12 @@ SRP.reportes = {
       doc.setFont('helvetica', 'normal');
       y += 4;
     }
+    // Con qué capas se derivaron alcaldía, colonia y celda (D152)
+    doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor(...C.gris);
+    const capas = doc.splitTextToSize(this.textoCapas(registros), ancho - 2 * M);
+    doc.text(capas, M, y);
+    doc.setFont('helvetica', 'normal');
+    y += 4 * capas.length;
     y += 4;
 
     // Croquis de la jornada (D115): a todo el ancho útil, con su pie; si no cabe en la página, pasa a la siguiente

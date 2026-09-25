@@ -131,10 +131,20 @@ SRP.croquis = {
     ctx.fillStyle = '#232526'; ctx.fillText(texto, x, y);
   },
 
+  // El crédito completo ya no cabe en un renglón (D152): se parte por « · » en los renglones que hagan falta
   pieDeImagen(ctx, texto, conImagen) {
     ctx.font = '12px Roboto, Arial, sans-serif'; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
-    if (conImagen) { ctx.fillStyle = 'rgba(255,255,255,.75)'; const w = ctx.measureText(texto).width + 12; ctx.fillRect(this.ANCHO - w, this.ALTO - 20, w, 20); }
-    ctx.fillStyle = '#232526'; ctx.fillText(texto, this.ANCHO - 6, this.ALTO - 4);
+    const max = this.ANCHO * 0.6, renglones = [];   // a la derecha: la escala y el norte van a la izquierda
+    texto.split(' · ').forEach(parte => {
+      const ultimo = renglones[renglones.length - 1];
+      if (ultimo && ctx.measureText(ultimo + ' · ' + parte).width <= max) renglones[renglones.length - 1] = ultimo + ' · ' + parte;
+      else renglones.push(parte);
+    });
+    renglones.reverse().forEach((r, i) => {
+      const base = this.ALTO - 4 - i * 16;
+      if (conImagen) { ctx.fillStyle = 'rgba(255,255,255,.75)'; const w = ctx.measureText(r).width + 12; ctx.fillRect(this.ANCHO - w, base - 16, w, 18); }
+      ctx.fillStyle = '#232526'; ctx.fillText(r, this.ANCHO - 6, base);
+    });
   },
 
   /* ---------- Entrada ---------- */
@@ -161,7 +171,7 @@ SRP.croquis = {
     if (!conImagen) this.fondoLiso(ctx);
     this.puntos(ctx, registros, enc);
     this.escalaYNorte(ctx, enc, conImagen);
-    const credito = SRP.CONFIG.MAPA.CAPAS.filter(c => c.atribucion).map(c => c.atribucion).join(' · ');
+    const credito = SRP.CONFIG.MAPA.CAPAS.filter(c => c.atribucion).map(c => c.atribucion).concat(SRP.CONFIG.MAPA.CREDITO_PROVEEDOR).join(' · ');
     this.pieDeImagen(ctx, conImagen ? credito : 'Sin imagen de fondo: se generó sin conexión', conImagen);
     let valor;
     try {

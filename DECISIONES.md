@@ -1294,3 +1294,32 @@
   `SRP.util.anunciar`). En Usuarios, la tarjeta del cabo decía que «coordina» a su coordinador: ahora
   dice «coordinador: …», y la del coordinador, «coordina a N cabos». Las notas de Catálogos y
   Usuarios dicen la regla nueva. Aprobado por Liber, 24-09-2026.
+- **D152. Territorio confiable.** Cuarto bloque del plan de la auditoría 360 (A6, A7, M3, M5, M6,
+  M7 y B8). 1) El ámbito deja de ser la caja de la ciudad, que aceptaba Nezahualcóyotl, Naucalpan,
+  Ecatepec o Huixquilucan (47 % de su superficie queda fuera) y hasta les daba celda UGA: ahora es
+  la unión de las alcaldías con 100 m de margen (`MAPA.MARGEN_AMBITO_M`). Un punto dentro del
+  margen toma la alcaldía más cercana y se avisa, en el árbol y en la jornada; más lejos se
+  rechaza. La coordenada de la jornada por GPS también se revisa y se redondea a seis decimales.
+  2) La aplicación no abre sin las tres capas y la biblioteca del cruce (`capasCompletas()`); el
+  aviso ya no sugiere borrar los datos del sitio, donde viven los árboles, sino avisar a la
+  coordinación. Sin alcaldía o sin las tres capas en `capa_version` no se emite folio: `EXT-000`
+  queda sólo para un punto fuera de la malla dentro del margen. 3) Créditos del mapa tal como los
+  declara cada servicio de Esri (Vantor en lugar de Maxar; HERE, Garmin y OpenStreetMap en vías y
+  lugares), con «Powered by Esri», en todos los mapas —también la ficha de revisión y el detalle,
+  que no tenían— y en el pie del croquis, partido en renglones. La licencia y el token de Esri
+  siguen pendientes (D5). 4) `generar_capas.py` comprueba que cada geometría siga válida después
+  de redondear y, si no, la ajusta a la misma rejilla con `shapely.set_precision` (nueve colonias
+  inválidas); la auditoría lo revisa. «Sin colonia en la capa» sustituye a «Sin colonia (fuera de
+  zona urbana)», que no era cierto en 31 km² urbanos, y «Sin alcaldía (territorio pendiente)» al
+  rótulo del hueco. El detalle muestra la celda UGA y las capas con que se derivó el registro; el
+  PDF, las capas. Si al editar cambia el territorio, la bitácora lo registra. 5) El GPS se escucha
+  hasta 8 s y se queda con la mejor lectura; se detiene al llegar a precisión buena, al revisar o
+  guardar, o si la persona pone el punto a mano; una falla pasajera no lo detiene. Tocar el mapa
+  por debajo de zoom 17 primero acerca y luego coloca. El aviso de posible duplicado pasa de 3 a
+  5 m. Las coordenadas se leen con cinco decimales (se guardan seis). Nuevo campo
+  `plantaciones.uga_borde_m`, la distancia al borde de la celda: si es menor que la precisión del
+  GPS, la ficha y el detalle dicen «celda incierta». 6) El folio se documenta con prefijo de celda,
+  no de alcaldía, y el reporte marca «(simulado)» en cada renglón. 7) El aviso de imagen caída va
+  en su propio renglón y ya no tapa la insignia de precisión. Pendiente para las capas
+  definitivas: colonias recortadas a las alcaldías (en el 1.25 % del territorio la colonia es de
+  otra demarcación). Aprobado por Liber, 24-09-2026.
