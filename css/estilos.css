@@ -848,6 +848,57 @@ dialog::backdrop { background: var(--velo-oscuro); }
   transition: opacity .2s, visibility .2s; }
 .btn.btn-subir[data-visible="no"] { opacity: 0; visibility: hidden; pointer-events: none; }
 
+/* SUPERVISIÓN Y MI AVANCE (D158): periodo, cifras, qué atender, gráfica, tablas y mapa por alcaldía */
+.chips-cinco .chip { padding-left: 6px; padding-right: 6px; }
+.sup-navegar { display: flex; align-items: center; gap: var(--e-2); margin: var(--e-3) 0 var(--e-2); }
+.sup-etiqueta { flex: 1 1 auto; margin: 0; text-align: center; font-family: var(--fuente-titulo); font-weight: 600; font-size: var(--t-m); }
+.sup-cifras { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e-2); margin: var(--e-3) 0; }
+.sup-cifra { display: grid; align-content: start; gap: 2px; padding: var(--e-3); border: 1px solid var(--borde-suave); border-radius: var(--radio-filtro); background: var(--fondo); }
+.sup-cifra b { font-family: var(--fuente-titulo); font-size: var(--t-xl); line-height: 1.1; color: var(--guinda); font-variant-numeric: tabular-nums; }
+.sup-cifra span { font-size: var(--t-s); font-weight: 500; }
+.sup-cifra small { font-size: var(--t-xs); color: var(--gris); }
+.sup-apartado { margin-top: var(--e-4); }
+.sup-apartado .tabla-caja { max-height: none; min-height: 0; }
+.sup-atender { margin-top: var(--e-3); padding: var(--e-3) var(--e-4); border-radius: var(--radio-filtro); background: var(--editar-fondo); border-left: 4px solid var(--editar-borde); }
+.sup-atender .titulo-bloque { display: flex; align-items: center; gap: var(--e-2); color: var(--editar); }
+.sup-atender > ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e-1); }
+.sup-atender summary { font-weight: 500; color: var(--texto); }
+.sup-jornadas { list-style: none; margin: var(--e-2) 0 0; padding: 0; display: grid; gap: var(--e-1); }
+.enlace-fila { display: grid; gap: 2px; width: 100%; min-height: var(--toque); padding: var(--e-2) var(--e-3); border: 1px solid var(--borde-suave); border-radius: var(--radio-control);
+  background: var(--fondo); color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.sup-tabla .enlace-fila { min-height: 40px; padding: var(--e-1) var(--e-2); font-weight: 600; }
+.sup-j-nombre { font-weight: 600; overflow-wrap: anywhere; }
+.sup-j-datos { font-size: var(--t-xs); color: var(--gris); overflow-wrap: anywhere; }
+.sup-grafica { margin: 0; }
+.sup-grafica-lienzo { height: 150px; border-bottom: 1px solid var(--borde-control); }
+.sup-grafica-lienzo svg { display: block; width: 100%; height: 100%; }
+.sup-barra { fill: var(--acento); }
+.sup-grafica-cifras, .sup-grafica-ejes { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); text-align: center; font-size: var(--t-xs); font-variant-numeric: tabular-nums; }
+.sup-grafica-cifras { margin-top: 2px; font-weight: 600; }
+.sup-grafica-ejes { color: var(--gris); white-space: nowrap; }
+.sup-mapa { height: 280px; border: 1px solid var(--borde-control); border-radius: var(--radio); background: var(--fondo-suave); position: relative; z-index: 0; isolation: isolate; overflow: hidden; }
+.sup-alcaldia { fill: var(--guinda); fill-opacity: .05; stroke: var(--fondo); stroke-width: 1; }
+.sup-nivel-1 { fill-opacity: .2; }
+.sup-nivel-2 { fill-opacity: .4; }
+.sup-nivel-3 { fill-opacity: .6; }
+.sup-nivel-4 { fill-opacity: .8; }
+.sup-elegida { stroke: var(--texto); stroke-width: 2.5; }
+.sup-leyenda { margin-top: var(--e-1); }
+.sup-calidad { display: grid; gap: var(--e-2); margin: 0 0 var(--e-2); }
+.sup-calidad > div { display: grid; grid-template-columns: 12rem minmax(0, 1fr); gap: var(--e-2); font-size: var(--t-s); }
+.sup-calidad dt { color: var(--gris); }
+.sup-calidad dd { margin: 0; }
+.sup-acciones { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-top: var(--e-5); }
+.sup-tabla-caja { overflow-x: auto; }
+.sup-tabla { width: 100%; border-collapse: collapse; font-size: var(--t-s); }
+.sup-tabla th { background: var(--guinda); color: var(--fondo); text-align: left; padding: var(--e-2); font-weight: 500; }
+.sup-tabla td { padding: var(--e-2); border-bottom: 1px solid var(--borde-suave); vertical-align: top; overflow-wrap: anywhere; }
+.sup-tabla tbody tr:nth-child(even) td { background: var(--fondo-suave); }
+.sup-tabla .cifra { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sup-tabla small { display: block; color: var(--gris); font-size: var(--t-xs); }
+.sup-tabla-cabos .enlace-fila { display: inline; width: auto; min-height: 0; padding: 0; border: 0; background: none; color: var(--acento); font-weight: 600;
+  text-decoration: underline; text-underline-offset: 3px; }
+
 /* ========== 5. ESTADOS ========== */
 .desplegable[open] summary::before { transform: rotate(90deg); }
 .campo .zona-foto.con-foto { flex-direction: row; gap: var(--e-2); min-height: var(--toque); padding: var(--e-2) var(--e-3); }
@@ -939,6 +990,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
   .vista > .nota, .jornadas-lista-caja > .nota, .panel-iniciar > .nota, .vista .bloque > .nota { max-width: 62ch; }
   /* Sus hijos directos no se quedan en la línea de un formulario: ni el panel de iniciar ni la franja */
   .vista.vista-registrar > *, .vista.vista-jornadas > *, .vista.vista-reportes > * { max-width: none; }
+  .sup-cifras { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (min-width: 1024px) {
   /* EQUILIBRIO EN COMPUTADORA (D109). Nuevo registro en dos columnas: ubicación y mapa a la
@@ -977,6 +1029,9 @@ dialog::backdrop { background: var(--velo-oscuro); }
   .vista.vista-acceso > .tarjeta { flex: 1 1 0; min-width: 0; }
   /* Fotografías: miniaturas algo mayores para llenar el renglón */
   .galeria-rejilla { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+  .sup-cifras { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .sup-mapa { height: 380px; }
+  .sup-dos, .sup-columnas { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 var(--e-6); align-items: start; }
 }
 @media (max-width: 700px) {
   /* En teléfono las acciones bajan a un segundo renglón para no aplastar la especie y el aviso */
@@ -1063,6 +1118,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
   .filtros-periodo { grid-template-columns: 1fr 1fr; }
   .filtros-periodo .btn { grid-column: 1 / -1; }
   .zona-filtros.fila-botones .campo-crece { flex-basis: 100%; }
+  .sup-calidad > div { grid-template-columns: 1fr; gap: 0; }
 }
 @media (hover: hover) {
   /* Los estados de «señalar» sólo existen con ratón (D98). En iPhone y Android un toque dejaba

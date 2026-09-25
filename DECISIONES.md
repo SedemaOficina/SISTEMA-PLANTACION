@@ -1425,3 +1425,35 @@
   `esquema.json` («indicadores») y en el diccionario, para que el SIA calcule igual en la Fase 2.
   En la Etapa 1 cada teléfono ve lo que tiene guardado; con el servidor se verá lo de toda la
   cuadrilla. Aprobado por Liber, 25-09-2026.
+- **D158. Pestaña Supervisión y «Mi avance» (bloque 97).** Lo que pidió el área de plantación y
+  decidió Liber el 25-09-2026: 1) pestaña propia, «Supervisión», primera en la barra y primera
+  pantalla al entrar para la coordinación y la administración; para el cabo se llama «Mi avance»
+  y va al final de su barra (él sigue entrando a Nuevo registro); 2) Fotografías pasa a estar dentro
+  de Supervisión (con «Supervisión» para volver) y Catálogos y Usuarios salen de la barra al menú de
+  la cuenta, para que la barra del teléfono no pase de cinco secciones; 3) periodo: Semana (de lunes
+  a domingo), Mes, Año, Rango y Todo, con anterior y siguiente, sin avanzar al futuro; filtros de
+  alcaldía, programa y, para quien supervisa, cabo. Qué se ve: seis cifras (árboles plantados,
+  avance contra la meta, cabos que trabajaron o árboles por jornada, especies y porcentaje de
+  nativas, alcaldías y colonias, jornadas en curso), «Qué atender» con las jornadas a las que lleva,
+  la gráfica de avance (barras sin librería, con su tabla para el lector de pantalla), la tabla por
+  cabo con sus pendientes, eliminados y editados (tocar un cabo abre sus jornadas), el mapa de las 16
+  alcaldías coloreado según los árboles (sin mosaicos: se ve igual sin señal) con su tabla —o las
+  colonias, con una alcaldía elegida—, especies, programas, calidad del dato y las jornadas cerradas
+  del periodo. En computadora las cifras van en un renglón y el resto en dos columnas. Todo sale de
+  `SRP.indicadores` (D157). Aprobado por Liber, 25-09-2026.
+- **D159. Informes por periodo en PDF y CSV (bloque 98).** Lo que pidió el área de plantación:
+  informes por alcaldía, semanales y mensuales; Liber decidió PDF y CSV, y que el área no entrega
+  un formato propio (el diseño es nuestro). El informe es lo que se ve en Supervisión o Mi avance, en
+  papel: su título lo dicen el periodo y la alcaldía («Informe semanal / mensual / anual de
+  plantación», «· Alcaldía X»); lleva el membrete del reporte de la jornada, el periodo, de quién es
+  (el cabo, la cuadrilla de la coordinación o toda la Ciudad) y los filtros; luego el resumen de
+  indicadores, qué atender, el avance, por cabo (no en el del cabo), por alcaldía o —con una
+  alcaldía— por colonia, todas las especies con su total, programas, jornadas cerradas del periodo y
+  trazabilidad, con las notas de qué cuenta y qué no, y el aviso de datos de prueba. El CSV trae un
+  renglón por árbol contado (folio, fecha, jornada, cabo, programa, especie, distribución, alcaldía,
+  colonia, celda, coordenadas, origen y precisión, fotografía y reporte), con BOM para que Excel lea
+  los acentos. Los nombres de archivo dicen qué son («Informe_mensual_2026-09_Cuauhtemoc.pdf»,
+  «Arboles_semanal_…csv»). Sin jornadas cerradas en el periodo no se ofrece informe; sin árboles, no
+  se ofrece tabla. En Reportes, un apartado dice dónde están los informes y lleva ahí. El reporte de
+  cada jornada sigue igual: ése es el documento de campo; éste, el de seguimiento. Aprobado por
+  Liber, 25-09-2026.

@@ -1863,3 +1863,48 @@ semana y mes, detalle por árbol; la coordinación supervisa a sus cabos asignad
 
 **Verificación:** 708 comprobaciones sin errores de consola; 99 de auditoría;
 presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.77.
+
+## Bloque 97 — Supervisión y Mi avance (25-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.78.
+
+**Qué cambió (D158).** `js/supervision.js` (nuevo): periodo (semana, mes, año, rango, todo; anterior
+y siguiente), filtros, cifras, qué atender, gráfica SVG con su tabla oculta, por cabo, mapa por
+alcaldía sin mosaicos, colonias con una alcaldía, especies, programas, calidad del dato y jornadas
+del periodo; de ahí se va a la ficha de una jornada o a las jornadas de un cabo. `index.html`: la
+vista, la pestaña (Supervisión o Mi avance), sin pestañas de Fotografías, Catálogos y Usuarios,
+Catálogos y Usuarios en el menú de la cuenta, «Supervisión» para volver desde Fotografías; marca
+0.6.78. `app.js`: orden y nombre de la pestaña por perfil, entrada a Supervisión para quien
+supervisa, Fotografías marca Supervisión, menú de administración, revisión de arranque.
+`galeria.js`: botón para volver. `iconos.js`: «avance», «anterior» y «siguiente». `estilos.css`:
+componentes de Supervisión, tabla corta que no se vuelve tarjeta, dos columnas en computadora.
+`README.md`: cómo se usa. Pruebas del bloque que abrían Fotografías, Catálogos y Usuarios por su
+pestaña, ahora por Supervisión y el menú; `registrar()` se asegura de estar en Nuevo registro.
+Pruebas: barras por perfil (cabo, coordinación, administración) y a qué sección entra cada uno; Mi
+avance cuenta la jornada cerrada y no la abierta; qué atender; periodos; filtro sin datos y quitar
+filtros; mapa de 16 alcaldías con la que tiene árboles resaltada; sin desplazamiento lateral en el
+teléfono; de «Qué atender» a la ficha; tabla por cabo y sus jornadas; Fotografías ida y vuelta;
+cifras en un renglón en computadora.
+
+**Verificación:** 734 comprobaciones sin errores de consola; 99 de auditoría;
+presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.78.
+
+## Bloque 98 — Informes por periodo en PDF y CSV (25-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.79.
+
+**Qué cambió (D159).** `js/informes.js` (nuevo): el informe en PDF (membrete, título por periodo y
+alcaldía, resumen, qué atender, avance, por cabo, por alcaldía o colonia, especies con total,
+programas, jornadas, trazabilidad, notas, pie con página X de Y) y la tabla en CSV (un renglón por
+árbol, BOM, comillas escapadas), con nombres de archivo que dicen qué son. `supervision.js`: botones
+«Informe en PDF» y «Tabla en CSV», apagados si no hay qué informar. `reportes.js` e `index.html`:
+apartado «Informes por periodo» en Reportes que lleva a Supervisión o Mi avance; marca 0.6.79.
+`iconos.js`: «tabla». `app.js`: la revisión de arranque exige el módulo. `supervision.js`: el mapa
+dice el crédito de la capa de alcaldías (la auditoría pide crédito en todos los mapas).
+`auditoria.py`: la revisión de colores en el código mira colores de jsPDF, no cualquier arreglo de
+tres números. `README.md`: los informes.
+Pruebas: Reportes dice dónde están los informes y lleva ahí; el cabo descarga su informe semanal
+(nombre, título, su nombre, sin tabla por cabo, peso); la coordinación, el mensual de una alcaldía
+con colonias y tabla por cabo, y la tabla en CSV con un renglón por árbol y acentos; el CSV escapa
+comillas y comas; sin jornadas cerradas no se ofrece informe ni tabla.
+
+**Verificación:** 734 comprobaciones sin errores de consola; 99 de auditoría;
+presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.79.

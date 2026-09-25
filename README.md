@@ -18,9 +18,14 @@ La versión que corre se lee al pie de cada pantalla.
    meta. Ahí se revisan los puntos y se cierra la jornada; la tuerca de cada punto edita, mueve a
    otra jornada o elimina el árbol (un error de captura se corrige sin salir de la jornada).
 4. **Reportes.** De cada jornada cerrada: datos de cierre, vista previa y PDF con croquis.
-5. **Fotografías** (coordinación y administración): las fotos de los registros, con descarga en ZIP.
+5. **Supervisión** (coordinación y administración, primera sección al entrar) o **Mi avance** (el
+   cabo, al final de su barra): lo plantado por semana, mes, año o rango, con filtros de alcaldía,
+   programa y cabo; cuentan sólo las jornadas cerradas. Cifras, «Qué atender», gráfica, por cabo,
+   por alcaldía con mapa, por especie y programa, y calidad del dato (D157, D158). De ahí salen los
+   **informes** semanal, mensual, anual o por alcaldía en PDF con membrete, y la tabla de árboles en
+   CSV para Excel (D159). Dentro están las **Fotografías** de los registros, con descarga en ZIP.
 6. **Registros**: la lista de árboles con filtros, detalle, edición y eliminación que se deshace.
-   **Catálogos** y **Usuarios**, sólo para la Administración global.
+   **Catálogos** y **Usuarios**, sólo para la Administración global, desde el menú de la cuenta.
 
 ## Cómo abrirlo
 

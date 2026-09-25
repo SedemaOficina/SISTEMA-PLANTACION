@@ -52,7 +52,8 @@ js_colores = []
 for f in glob.glob(APP + '/js/*.js'):
     if f.endswith(('esquema.js', 'iconos.js')): continue
     t = re.sub(r'/\*.*?\*/|//[^\n]*', '', open(f, encoding='utf-8').read(), flags=re.S)
-    for m in re.finditer(r"""['"]#[0-9A-Fa-f]{3,8}['"]|rgba?\(\s*\d|\[\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\]|setTextColor\(\s*\d""", t):
+    # Hex entre comillas, rgb()/rgba() y los colores de jsPDF: arreglos de color o set…Color con números
+    for m in re.finditer(r"""['"]#[0-9A-Fa-f]{3,8}['"]|rgba?\(\s*\d|(?:fill|text|line|draw)Color\s*:\s*\[\s*\d|set(?:Text|Draw|Fill)Color\(\s*\d""", t):
         js_colores.append(os.path.basename(f) + ': ' + m.group(0))
 mirar(not js_colores, 'el código no escribe colores: los lee de :root (SRP.util.color, colorBase, rgb)', ', '.join(js_colores[:6]))
 

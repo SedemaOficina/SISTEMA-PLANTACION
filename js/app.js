@@ -13,7 +13,7 @@ SRP.app = {
     I.poner(document.querySelector('label[for="acceso-clave"]'), 'candado', 'medio');
     I.poner(this.el('form-acceso').querySelector('button[type="submit"]'), 'entrar', 'medio');
     I.poner(this.el('btn-entrar-prueba'), 'entrar', 'medio');
-    const pestana = { registrar: 'mas', registros: 'registros', jornadas: 'jornadas', reportes: 'reportes', galeria: 'camara', catalogos: 'catalogos', usuarios: 'usuarios' };
+    const pestana = { supervision: 'avance', registrar: 'mas', registros: 'registros', jornadas: 'jornadas', reportes: 'reportes' };
     this.el('navegacion').querySelectorAll('.pestana').forEach(b => I.poner(b, pestana[b.dataset.vista], 'grande'));
     I.poner(this.el('btn-usr-agregar'), 'usuarioMas', 'medio');
     I.poner(this.el('btn-subir'), 'subir', 'grande');
@@ -21,7 +21,7 @@ SRP.app = {
     // Cancelar lleva tache y va en rojo de contorno (D116)
     I.poner(this.el('btn-cancelar-edicion'), 'cerrar', 'medio');
     I.poner(this.el('btn-confirmar-no'), 'cerrar', 'medio');
-    [['btn-contraste', 'sol'], ['btn-respaldo', 'disco'], ['btn-sin-senal', 'sinSenal'], ['btn-cambiar-perfil', 'usuario'], ['btn-cerrar-sesion', 'salir']]
+    [['btn-ir-catalogos', 'catalogos'], ['btn-ir-usuarios', 'usuarios'], ['btn-contraste', 'sol'], ['btn-respaldo', 'disco'], ['btn-sin-senal', 'sinSenal'], ['btn-cambiar-perfil', 'usuario'], ['btn-cerrar-sesion', 'salir']]
       .forEach(([id, icono]) => I.poner(this.el(id), icono, 'medio'));
     // Los buscadores llevan la lupa dentro del campo, desde la hoja de estilos (D95)
     // Avisos informativos: el icono va al frente del texto
@@ -60,6 +60,7 @@ SRP.app = {
     SRP.conexion.iniciar();
     SRP.jornadas.iniciar();
     SRP.galeria.iniciar();
+    SRP.supervision.iniciar();   // Supervisión y Mi avance (D158)
     SRP.activa.iniciar();          // la jornada se declara antes de registrar (D119)
     // Contadores de caracteres, y el error de un campo se va en cuanto se corrige (D140)
     SRP.util.iniciarContadores();
@@ -108,7 +109,7 @@ SRP.app = {
       ['revision-lista', 'la ficha de revisión']
       // El espejo de campos no se exige: se retira al cerrar la Etapa 1 y la app debe abrir sin él (D153)
     ].filter(([id]) => !document.getElementById(id)).map(([, que]) => que);
-    const modulos = ['util', 'ICONOS', 'permisos', 'sesion', 'almacen', 'ref', 'formulario', 'registros', 'catalogos', 'usuarios', 'ESQUEMA', 'validar', 'derivacion', 'indicadores']
+    const modulos = ['util', 'ICONOS', 'permisos', 'sesion', 'almacen', 'ref', 'formulario', 'registros', 'catalogos', 'usuarios', 'ESQUEMA', 'validar', 'derivacion', 'indicadores', 'supervision', 'informes']
       .filter(m => !SRP[m]);
     /* Las tres capas y la biblioteca del cruce también se exigen (D152): sin ellas la app abría y
        los árboles se guardaban sin alcaldía ni colonia, y con folio EXT-000. La de colonias pesa
@@ -160,6 +161,8 @@ SRP.app = {
     };
     this.el('btn-cerrar-sesion').addEventListener('click', () => { this.menuCuenta(false); salir(); });
     this.el('btn-cambiar-perfil').addEventListener('click', () => { this.menuCuenta(false); salir(); });
+    this.el('btn-ir-catalogos').addEventListener('click', () => { this.menuCuenta(false); this.mostrarVista('catalogos'); });
+    this.el('btn-ir-usuarios').addEventListener('click', () => { this.menuCuenta(false); this.mostrarVista('usuarios'); });
     // Menú de la cuenta (D93): abre y cierra con el botón; se cierra al tocar fuera o con Escape
     this.el('btn-cuenta').innerHTML = SRP.ICONOS.svg('usuario', 'grande');
     this.el('btn-cuenta').addEventListener('click', () => this.menuCuenta(this.el('menu-cuenta').hidden));
@@ -268,15 +271,22 @@ SRP.app = {
     this.el('btn-cambiar-perfil').hidden = !SRP.CONFIG.ES_FICTICIO;
     this.el('navegacion').hidden = false;
     this.el('herramientas-prueba').hidden = !SRP.CONFIG.ES_FICTICIO;
-    this.el('navegacion').querySelector('[data-vista="registrar"]').hidden = !p.registrar;
-    this.el('navegacion').querySelector('[data-vista="galeria"]').hidden = !p.galeria;
-    this.el('navegacion').querySelector('[data-vista="catalogos"]').hidden = !p.catalogos;
-    this.el('navegacion').querySelector('[data-vista="usuarios"]').hidden = !p.usuarios;
+    const nav = this.el('navegacion');
+    nav.querySelector('[data-vista="registrar"]').hidden = !p.registrar;
+    /* Supervisión (D158): primera para quien supervisa; para el cabo, «Mi avance», al final de su
+       barra. Catálogos y Usuarios salen de la barra al menú de la cuenta */
+    const sup = nav.querySelector('[data-vista="supervision"]'), cabo = p.alcance === 'propios';
+    sup.hidden = p.alcance === 'ninguno';
+    this.el('pestana-supervision-texto').textContent = cabo ? 'Mi avance' : 'Supervisión';
+    if (cabo) nav.appendChild(sup); else nav.insertBefore(sup, nav.firstElementChild);
+    this.el('btn-ir-catalogos').hidden = !p.catalogos;
+    this.el('btn-ir-usuarios').hidden = !p.usuarios;
     SRP.formulario.limpiar();
     this.campoClave(false);
     // La jornada abierta de quien entra queda activa; se avisa si es de otro día (D119)
     SRP.activa.alEntrar().then(() => { if (this.vista === 'registrar') SRP.activa.preparar(); });
-    this.mostrarVista(p.registrar ? 'registrar' : 'registros');
+    // Quien supervisa entra a Supervisión; el cabo, a registrar (D158)
+    this.mostrarVista(p.alcance === 'equipo' || p.alcance === 'todos' ? 'supervision' : p.registrar ? 'registrar' : 'registros');
     SRP.conexion.refrescar();
     // Datos de prueba: al entrar se envía lo pendiente y, si no sale, lo dice la franja (D110, D111)
     SRP.envio.alEntrar();   // la pastilla cuenta los registros del alcance de quien entró (D83)
@@ -312,13 +322,14 @@ SRP.app = {
     const u = SRP.sesion.usuario;
     if (u) {
       const p = SRP.permisos.de(u);
-      if ((nombre === 'registrar' && !p.registrar) || (nombre === 'catalogos' && !p.catalogos) || (nombre === 'galeria' && !p.galeria) ||
+      if ((nombre === 'registrar' && !p.registrar) || (nombre === 'catalogos' && !p.catalogos) || (nombre === 'galeria' && !p.galeria) || (nombre === 'supervision' && p.alcance === 'ninguno') ||
           (nombre === 'usuarios' && !p.usuarios)) nombre = 'registros';
     }
     this.vista = nombre;
     document.querySelectorAll('.vista').forEach(v => { v.hidden = v.id !== 'vista-' + nombre; });
     // Al editar se está dentro de Registros, de donde se llegó: «Nuevo registro» no se marca (D100)
-    const marcada = nombre === 'registrar' && SRP.formulario.estado.editando ? (SRP.jornadas.volverAlDetalle ? 'jornadas' : 'registros') : nombre;
+    // Fotografías vive dentro de Supervisión: su pestaña es la que queda marcada (D158)
+    const marcada = nombre === 'registrar' && SRP.formulario.estado.editando ? (SRP.jornadas.volverAlDetalle ? 'jornadas' : 'registros') : nombre === 'galeria' ? 'supervision' : nombre;
     this.el('navegacion').querySelectorAll('.pestana').forEach(b => {
       if (b.dataset.vista === marcada) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
     });
@@ -326,6 +337,7 @@ SRP.app = {
     if (nombre === 'registros') SRP.registros.preparar();
     if (nombre === 'jornadas') SRP.jornadas.preparar();
     if (nombre === 'galeria') SRP.galeria.preparar();
+    if (nombre === 'supervision') SRP.supervision.preparar();
     if (nombre === 'reportes') SRP.reportes.preparar();
     if (nombre === 'catalogos') SRP.catalogos.preparar();
     if (nombre === 'usuarios') SRP.usuarios.preparar();

@@ -37,6 +37,8 @@ SRP.reportes = {
     this.el('form-cierre').addEventListener('submit', (e) => { e.preventDefault(); this.aceptar(); });
     // Lista de jornadas cerradas con su reporte (D134)
     SRP.util.atajos.iniciar(this.el('pdf-atajos'), a => this.aplicarAtajo(a));   // M15
+    // Los informes por periodo se generan en Supervisión o Mi avance (D159)
+    this.el('btn-ir-informes').addEventListener('click', () => SRP.app.mostrarVista('supervision'));
     this.el('pdf-dia').addEventListener('change', () => { this.filtro.dia = this.el('pdf-dia').value; this.diaAbierto = true; this.pintarLista(); });
     this.el('pdf-cabo').addEventListener('change', () => { this.filtro.cabo = this.el('pdf-cabo').value; this.pintarLista(); });
     this.el('pdf-vacio').addEventListener('click', (e) => {
@@ -87,6 +89,7 @@ SRP.reportes = {
 
   async preparar() {
     const u = SRP.sesion.usuario;
+    this.el('reportes-informes-donde').textContent = SRP.permisos.de(u).alcance === 'propios' ? 'Mi avance' : 'Supervisión';
     const alcance = SRP.permisos.de(u).alcance;
     this.el('pdf-dia').max = SRP.util.fechaHoy();
     SRP.util.pintarChipHoy(this.el('pdf-chip-hoy'));

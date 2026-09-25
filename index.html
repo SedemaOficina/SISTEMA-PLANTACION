@@ -14,12 +14,12 @@
 <!-- Las peticiones al mapa no dicen desde qué sitio se hacen -->
 <meta name="referrer" content="no-referrer">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.77">
-<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.6.77">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.6.79">
+<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.6.79">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.77">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.77">
-<link rel="stylesheet" href="css/estilos.css?v=0.6.77">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.6.79">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.6.79">
+<link rel="stylesheet" href="css/estilos.css?v=0.6.79">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -30,8 +30,8 @@
   <div class="encabezado-interior">
     <!-- Logotipo (D90, D137): Gobierno CDMX · SEDEMA · SIA · Reforestación Urbana en pantalla ancha; en teléfono, SIA y Reforestación Urbana -->
     <picture>
-      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.6.77">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.6.77" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
+      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.6.79">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.6.79" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» (D80) -->
@@ -44,6 +44,9 @@
           <p><span id="usuario-perfil" class="insignia"></span></p>
           <div class="menu-cuenta-acciones">
             <!-- Opciones de texto, como en cualquier menú de cuenta; no botones (D97) -->
+            <!-- Administración (D158): Catálogos y Usuarios dejan la barra de secciones -->
+            <button type="button" id="btn-ir-catalogos" class="menu-opcion" hidden>Catálogos</button>
+            <button type="button" id="btn-ir-usuarios" class="menu-opcion" hidden>Usuarios</button>
             <!-- Modo sol: más contraste para leer a pleno sol; se recuerda en este teléfono (D106) -->
             <button type="button" id="btn-contraste" class="menu-opcion" role="switch" aria-checked="false">
               <span>Modo sol (alto contraste)</span><span class="interruptor" aria-hidden="true"></span></button>
@@ -69,14 +72,14 @@
 </div>
 
 <nav id="navegacion" class="pestanas" aria-label="Secciones" hidden>
+  <!-- Supervisión va primero para coordinación y administración, y al final como «Mi avance» para el cabo (D158) -->
+  <button type="button" class="pestana" data-vista="supervision"><span id="pestana-supervision-texto">Supervisión</span></button>
   <button type="button" class="pestana" data-vista="registrar">Nuevo registro</button>
   <!-- Orden pedido por Liber (D114): Nuevo registro, Jornadas, Registros, Reportes -->
   <button type="button" class="pestana" data-vista="jornadas">Jornadas</button>
   <button type="button" class="pestana" data-vista="registros">Registros</button>
   <button type="button" class="pestana" data-vista="reportes">Reportes</button>
-  <button type="button" class="pestana" data-vista="galeria">Fotografías</button>
-  <button type="button" class="pestana" data-vista="catalogos">Catálogos</button>
-  <button type="button" class="pestana" data-vista="usuarios">Usuarios</button>
+  <!-- Fotografías vive dentro de Supervisión; Catálogos y Usuarios, en el menú de la cuenta (D158) -->
 </nav>
 
 <main id="principal" tabindex="-1">
@@ -107,6 +110,49 @@
       <div class="campo"><label for="sel-usuario-prueba">Usuario ficticio</label><select id="sel-usuario-prueba"></select></div>
       <button type="button" id="btn-entrar-prueba" class="btn btn-secundario">Entrar con este usuario</button>
       <p class="aviso-simulado">La contraseña todavía no se verifica: basta un correo dado de alta. La verificación real corresponde al proveedor institucional en la siguiente fase.</p>
+    </div>
+  </section>
+
+  <!-- SUPERVISIÓN / MI AVANCE (D158): lo plantado en un periodo, con los indicadores de D157 -->
+  <section id="vista-supervision" class="vista vista-ancha vista-supervision" hidden aria-labelledby="titulo-supervision">
+    <h1 id="titulo-supervision">Supervisión</h1>
+    <p id="sup-nota" class="nota"></p>
+    <section class="bloque sup-periodo" aria-label="Periodo y filtros">
+      <div class="filtros zona-filtros">
+        <div id="sup-tipos" class="chips chips-cinco" role="group" aria-label="Periodo">
+          <button type="button" class="chip" data-tipo="semana">Semana</button>
+          <button type="button" class="chip" data-tipo="mes">Mes</button>
+          <button type="button" class="chip" data-tipo="anio">Año</button>
+          <button type="button" class="chip" data-tipo="rango">Rango</button>
+          <button type="button" class="chip" data-tipo="todo">Todo</button>
+        </div>
+        <div class="sup-navegar">
+          <button type="button" id="sup-anterior" class="btn btn-icono-solo btn-secundario" aria-label="Periodo anterior"></button>
+          <p id="sup-etiqueta" class="sup-etiqueta" aria-live="polite"></p>
+          <button type="button" id="sup-siguiente" class="btn btn-icono-solo btn-secundario" aria-label="Periodo siguiente"></button>
+        </div>
+        <form id="form-sup-rango" class="filtros-periodo" novalidate hidden>
+          <div class="campo campo-corto"><label for="sup-desde">Desde</label><input type="date" id="sup-desde" data-vacio="Elija la fecha"></div>
+          <div class="campo campo-corto"><label for="sup-hasta">Hasta</label><input type="date" id="sup-hasta" data-vacio="Elija la fecha"></div>
+          <button type="submit" id="btn-sup-rango" class="btn btn-primario btn-chico">Ver el rango</button>
+        </form>
+        <details id="sup-filtros" class="acordeon-filtros">
+          <summary><span id="sup-filtros-texto">Filtros: alcaldía, programa y cabo</span></summary>
+          <div class="filtros-listas acordeon-cuerpo">
+            <div class="campo campo-corto"><label for="sup-alcaldia">Alcaldía</label><select id="sup-alcaldia"></select></div>
+            <div class="campo campo-corto"><label for="sup-programa">Programa</label><select id="sup-programa"></select></div>
+            <div id="caja-sup-cabo" class="campo campo-corto"><label for="sup-cabo">Cabo</label><select id="sup-cabo"></select></div>
+          </div>
+          <button type="button" id="btn-sup-quitar" class="btn btn-texto" hidden>Quitar filtros</button>
+        </details>
+      </div>
+    </section>
+    <div id="sup-cuerpo" class="sup-cuerpo" aria-live="polite"></div>
+    <!-- Informes por periodo (D159): lo que se ve, en PDF con membrete y en CSV para Excel -->
+    <div class="sup-acciones">
+      <button type="button" id="btn-sup-pdf" class="btn btn-primario"><span>Informe en PDF</span></button>
+      <button type="button" id="btn-sup-csv" class="btn btn-secundario"><span>Tabla en CSV</span></button>
+      <button type="button" id="btn-sup-fotos" class="btn btn-secundario"><span>Fotografías</span></button>
     </div>
   </section>
 
@@ -482,6 +528,12 @@
   <!-- REPORTES: el reporte del día (D81). El bloque «Registros en este dispositivo» se retiró (D104); el respaldo pasó al menú de la cuenta -->
   <section id="vista-reportes" class="vista vista-ancha vista-reportes" hidden aria-labelledby="titulo-reportes">
     <h1 id="titulo-reportes">Reportes</h1>
+    <!-- Los informes semanal, mensual, anual y por alcaldía salen de Supervisión o Mi avance (D159) -->
+    <section class="bloque aviso-informes" aria-labelledby="titulo-informes">
+      <h2 id="titulo-informes" class="titulo-bloque">Informes por periodo</h2>
+      <p class="nota">El informe semanal, mensual, anual o por alcaldía se genera desde <span id="reportes-informes-donde">Supervisión</span>: elija ahí el periodo y la alcaldía, y descárguelo en PDF o en CSV.</p>
+      <button type="button" id="btn-ir-informes" class="btn btn-secundario"><span>Ir a los informes</span></button>
+    </section>
 
     <!-- El reporte es de una jornada cerrada (D131, D134): aquí se listan y cada una genera el suyo -->
     <section class="bloque" aria-labelledby="titulo-reporte">
@@ -507,6 +559,7 @@
 
   <!-- FOTOGRAFÍAS (D118): galería para coordinación y administración, con descarga -->
   <section id="vista-galeria" class="vista vista-ancha" hidden aria-labelledby="titulo-galeria">
+    <button type="button" id="btn-galeria-volver" class="btn btn-texto volver">Supervisión</button>
     <h1 id="titulo-galeria">Fotografías</h1>
     <p class="nota">Las fotografías de los árboles registrados. Toque una para verla grande y descargarla, o descargue todas las filtradas en un archivo ZIP.</p>
     <section class="bloque" aria-label="Filtros de fotografías">
@@ -894,46 +947,48 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.6.77"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.77"></script>
-<script src="vendor/turf-pip.min.js?v=0.6.77"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.6.77"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.77"></script>
+<script src="vendor/leaflet.js?v=0.6.79"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.6.79"></script>
+<script src="vendor/turf-pip.min.js?v=0.6.79"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.6.79"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.6.79"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.6.77"></script>
-<script src="js/util.js?v=0.6.77"></script>
-<script src="js/iconos.js?v=0.6.77"></script>
+<script src="js/config.js?v=0.6.79"></script>
+<script src="js/util.js?v=0.6.79"></script>
+<script src="js/iconos.js?v=0.6.79"></script>
 <!-- Capas territoriales del SIA, compactadas por pruebas/generar_capas.py desde assets/fuentes/ -->
-<script src="assets/capa-alcaldias.js?v=0.6.77"></script>
-<script src="assets/capa-uga.js?v=0.6.77"></script>
-<script src="assets/capa-colonias.js?v=0.6.77"></script>
-<script src="assets/catalogo-especies.js?v=0.6.77"></script>
-<script src="js/datos-ficticios.js?v=0.6.77"></script>
-<script src="js/permisos.js?v=0.6.77"></script>
-<script src="js/derivacion.js?v=0.6.77"></script>
-<script src="js/almacen.js?v=0.6.77"></script>
-<script src="js/sesion.js?v=0.6.77"></script>
-<script src="js/referencias.js?v=0.6.77"></script>
-<script src="js/folio.js?v=0.6.77"></script>
+<script src="assets/capa-alcaldias.js?v=0.6.79"></script>
+<script src="assets/capa-uga.js?v=0.6.79"></script>
+<script src="assets/capa-colonias.js?v=0.6.79"></script>
+<script src="assets/catalogo-especies.js?v=0.6.79"></script>
+<script src="js/datos-ficticios.js?v=0.6.79"></script>
+<script src="js/permisos.js?v=0.6.79"></script>
+<script src="js/derivacion.js?v=0.6.79"></script>
+<script src="js/almacen.js?v=0.6.79"></script>
+<script src="js/sesion.js?v=0.6.79"></script>
+<script src="js/referencias.js?v=0.6.79"></script>
+<script src="js/folio.js?v=0.6.79"></script>
 <!-- Esquema generado de esquema.json y la validación de lo que entra por un respaldo (D150) -->
-<script src="js/esquema.js?v=0.6.77"></script>
-<script src="js/validar.js?v=0.6.77"></script>
-<script src="js/conexion.js?v=0.6.77"></script>
-<script src="js/envio.js?v=0.6.77"></script>
-<script src="js/mapa.js?v=0.6.77"></script>
-<script src="js/foto.js?v=0.6.77"></script>
-<script src="js/jornada-activa.js?v=0.6.77"></script>
-<script src="js/formulario.js?v=0.6.77"></script>
+<script src="js/esquema.js?v=0.6.79"></script>
+<script src="js/validar.js?v=0.6.79"></script>
+<script src="js/conexion.js?v=0.6.79"></script>
+<script src="js/envio.js?v=0.6.79"></script>
+<script src="js/mapa.js?v=0.6.79"></script>
+<script src="js/foto.js?v=0.6.79"></script>
+<script src="js/jornada-activa.js?v=0.6.79"></script>
+<script src="js/formulario.js?v=0.6.79"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.6.77"></script>
-<script src="js/registros.js?v=0.6.77"></script>
-<script src="js/galeria.js?v=0.6.77"></script>
-<script src="js/jornadas.js?v=0.6.77"></script>
-<script src="js/indicadores.js?v=0.6.77"></script>
-<script src="js/croquis.js?v=0.6.77"></script>
-<script src="js/reportes.js?v=0.6.77"></script>
-<script src="js/catalogos.js?v=0.6.77"></script>
-<script src="js/usuarios.js?v=0.6.77"></script>
-<script src="js/app.js?v=0.6.77"></script>
+<script src="js/espejo.js?v=0.6.79"></script>
+<script src="js/registros.js?v=0.6.79"></script>
+<script src="js/galeria.js?v=0.6.79"></script>
+<script src="js/jornadas.js?v=0.6.79"></script>
+<script src="js/informes.js?v=0.6.79"></script>
+<script src="js/supervision.js?v=0.6.79"></script>
+<script src="js/indicadores.js?v=0.6.79"></script>
+<script src="js/croquis.js?v=0.6.79"></script>
+<script src="js/reportes.js?v=0.6.79"></script>
+<script src="js/catalogos.js?v=0.6.79"></script>
+<script src="js/usuarios.js?v=0.6.79"></script>
+<script src="js/app.js?v=0.6.79"></script>
 </body>
 </html>

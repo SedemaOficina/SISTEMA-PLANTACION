@@ -25,6 +25,8 @@ SRP.galeria = {
 
   iniciar() {
     SRP.util.atajos.iniciar(this.el('galeria-atajos'), a => this.aplicarAtajo(a));   // M15
+    // Fotografías vive dentro de Supervisión (D158): se vuelve a ella
+    this.el('btn-galeria-volver').addEventListener('click', () => SRP.app.mostrarVista('supervision'));
     this.el('galeria-dia').addEventListener('change', () => { this.filtro.dia = this.el('galeria-dia').value; this.diaAbierto = true; this.pintar(); });
     this.el('galeria-cabo').addEventListener('change', () => { this.filtro.cabo = this.el('galeria-cabo').value; this.filtro.jornada = ''; this.pintar(); });
     this.el('galeria-jornada').addEventListener('change', () => { this.filtro.jornada = this.el('galeria-jornada').value; this.pintar(); });

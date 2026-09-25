@@ -60,6 +60,7 @@ def registrar(pg, busqueda, especie_id, programa='p-refor', fecha=None, foto=Non
     """Captura un árbol de principio a fin y devuelve el identificador con que se guardó.
     `busqueda` es lo que se teclea para que la especie salga en la lista. Con `fecha` distinta de
     la jornada activa, inicia una jornada de ese día (la fecha se hereda de la jornada, D119)."""
+    if not pg.is_visible('#vista-registrar'): pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(400)
     activa=pg.evaluate("SRP.activa.jornada && [SRP.activa.jornada.fecha, SRP.activa.jornada.programa_id]")
     if activa != [fecha or HOY, programa] or pg.is_visible('#panel-iniciar-jornada'):
         iniciar_jornada(pg, 'Jornada de prueba ' + (fecha or HOY), fecha or HOY, programa=programa)
@@ -693,7 +694,7 @@ with sync_playwright() as p:
     ok(pg.locator('#vista-registros #btn-pdf').count()==0 and pg.locator('#vista-registros #aviso-envio').count()==0,'Registros ya no lleva el reporte ni el bloque del dispositivo (D81)')
     ok(pg.locator('#lista-registros .registro-jornada').count()==pg.locator('#lista-registros .registro').count() and any('Jornada de prueba' in t for t in pg.eval_on_selector_all('#lista-registros .registro-jornada','l=>l.map(x=>x.textContent)')),'cada tarjeta de Registros dice a qué jornada pertenece el árbol (D134)')
     pg.click('.pestana[data-vista=reportes]'); pg.wait_for_timeout(600)
-    ok(pg.is_visible('#vista-reportes') and pg.locator('#vista-reportes .bloque .titulo-bloque').count()==1 and pg.locator('#aviso-envio').count()==0,'la pestaña Reportes abre con la lista y ya no lleva el bloque del dispositivo (D104)')
+    ok(pg.is_visible('#vista-reportes') and pg.locator('#vista-reportes .bloque .titulo-bloque').all_inner_texts()==['Informes por periodo','Reporte de la jornada'] and pg.locator('#aviso-envio').count()==0,'la pestaña Reportes abre con el camino a los informes y la lista de jornadas, sin el bloque del dispositivo (D104, D159)')
     ok([c for c in pg.eval_on_selector_all('#pdf-atajos .chip','b=>b.map(x=>x.dataset.atajo)')]==['todas','hoy','dia'] and pg.get_attribute('#pdf-atajos [data-atajo=todas]','aria-pressed')=='true','los atajos son Todas, Hoy y Un día, y arranca en Todas (D134)')
     n_cerradas=pg.locator('#pdf-lista .jornada').count()
     ok(n_cerradas>=3 and 'jornadas cerradas' in pg.inner_text('#pdf-nota') and pg.locator('#pdf-lista button[data-id]').count()==n_cerradas,'lista las jornadas cerradas, cada una con su botón «Generar reporte»: %d' % n_cerradas)
@@ -774,9 +775,9 @@ with sync_playwright() as p:
         await SRP.almacen.guardarConBitacora('plantaciones', r, SRP.bitacora.entrada('CREADO','plantacion',id)); }
       return { f, ids, jid }; }""")
     pg.click('#navegacion [data-vista=jornadas]'); pg.wait_for_timeout(700)
-    ok(pg.is_visible('#vista-jornadas') and pg.get_attribute('#navegacion [data-vista=jornadas]','aria-current')=='page' and pg.locator('#navegacion .pestana:visible').count()==4,
+    ok(pg.is_visible('#vista-jornadas') and pg.get_attribute('#navegacion [data-vista=jornadas]','aria-current')=='page' and pg.locator('#navegacion .pestana:visible').count()==5,
        '«Jornadas» es una sección del menú y abre su vista (D112)')
-    ok(pg.eval_on_selector_all('#navegacion .pestana','b=>b.filter(x=>!x.hidden).map(x=>x.dataset.vista)')==['registrar','jornadas','registros','reportes'],'el orden es Nuevo registro, Jornadas, Registros, Reportes (D114)')
+    ok(pg.eval_on_selector_all('#navegacion .pestana','b=>b.filter(x=>!x.hidden).map(x=>x.dataset.vista)')==['registrar','jornadas','registros','reportes','supervision'],'el orden es Nuevo registro, Jornadas, Registros, Reportes, y «Mi avance» al final (D114, D158)')
     pg.click('#btn-cuenta'); pg.wait_for_timeout(150)
     ok(pg.locator('#btn-contraste svg').count()==1 and pg.locator('#btn-cerrar-sesion svg').count()==1 and pg.locator('#menu-cuenta .menu-opcion:visible').count()==pg.locator('#menu-cuenta .menu-opcion:visible svg').count(),
        'cada opción del menú de la cuenta lleva icono: sol en Modo sol y puerta en Cerrar sesión (D114)')
@@ -1193,8 +1194,11 @@ with sync_playwright() as p:
     if pg.is_visible('#dlg-confirmar'): pg.click('#btn-confirmar-si')
     pg.wait_for_timeout(700)
     ok(pg.inner_text('#btn-jornada-estado')==era,'y la deja como estaba')
-    ok(pg.is_visible('.pestana[data-vista=galeria]'),'el coordinador ve la sección Fotografías (D118)')
-    pg.click('.pestana[data-vista=galeria]'); pg.wait_for_timeout(600)
+    # Fotografías vive dentro de Supervisión (D158)
+    pg.click('.pestana[data-vista=supervision]'); pg.wait_for_timeout(700)
+    ok(pg.is_visible('#btn-sup-fotos'),'el coordinador ve las Fotografías, dentro de Supervisión (D118, D158)')
+    pg.click('#btn-sup-fotos'); pg.wait_for_timeout(600)
+    ok(pg.get_attribute('.pestana[data-vista=supervision]','aria-current')=='page','y Supervisión queda marcada mientras las ve')
     ok(pg.is_visible('#vista-galeria') and pg.locator('#galeria-rejilla .galeria-foto').count()>=1,'la galería muestra las fotografías de su cuadrilla: %d' % pg.locator('#galeria-rejilla .galeria-foto').count())
     ok(pg.inner_text('#galeria-cuenta').startswith('1 fotograf') or pg.inner_text('#galeria-cuenta')[0].isdigit(),'con la cuenta y el peso: '+pg.inner_text('#galeria-cuenta'))
     pg.click('#galeria-rejilla .galeria-foto >> nth=0'); pg.wait_for_timeout(400)
@@ -1249,10 +1253,10 @@ with sync_playwright() as p:
     # ---------- ADMINISTRACIÓN: catálogos ----------
     pg.click('#btn-cuenta'); pg.click('#btn-cambiar-perfil'); pg.select_option('#sel-usuario-prueba','u-admin-1'); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(600)
     ok(pg.is_hidden('.pestana[data-vista=registrar]'),'la administración no tiene pestaña Registrar')
-    ok(pg.is_visible('#vista-registros'),'y entra directamente a Registros')
+    ok(pg.is_visible('#vista-supervision'),'y entra directamente a Supervisión (D158)')
     pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(300)
     ok(pg.is_visible('#vista-registros'),'ni la abre llamándola directamente')
-    pg.click('.pestana[data-vista=catalogos]'); pg.wait_for_timeout(500)
+    pg.click('#btn-cuenta'); pg.click('#btn-ir-catalogos'); pg.wait_for_timeout(500)   # Catálogos, desde el menú de la cuenta (D158)
     ok(pg.locator('#tabla-catalogo button[data-accion=eliminar]').count()==0,'un programa en uso no ofrece Eliminar')
     pg.click('#btn-cat-agregar'); pg.wait_for_timeout(300)
     pg.fill('#cat-nombre','Restauración Ecológica'); pg.wait_for_timeout(150)
@@ -1325,7 +1329,7 @@ with sync_playwright() as p:
     pg.fill('#cat-buscar',''); pg.wait_for_timeout(200)
 
     # ---------- ADMINISTRACIÓN: usuarios ----------
-    pg.click('.pestana[data-vista=usuarios]'); pg.wait_for_timeout(500)
+    pg.click('#btn-cuenta'); pg.click('#btn-ir-usuarios'); pg.wait_for_timeout(500)   # desde el menú de la cuenta (D158)
     ok(pg.locator('#tabla-usuarios tbody tr').count()==3,'la lista trae las tres cuentas')
     fila_yo=pg.locator('#tabla-usuarios tbody tr', has_text='Administración SIA')
     ok('usted' in fila_yo.inner_text(),'marca cuál es la cuenta propia')
@@ -1370,7 +1374,7 @@ with sync_playwright() as p:
     pg.evaluate("SRP.app.mostrarVista('usuarios')"); pg.wait_for_timeout(300)
     ok(pg.is_visible('#vista-registros'),'ni la abre llamándola directamente')
     pg.click('#btn-cuenta'); pg.click('#btn-cambiar-perfil'); pg.select_option('#sel-usuario-prueba','u-admin-1'); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(500)
-    pg.click('.pestana[data-vista=usuarios]'); pg.wait_for_timeout(500)
+    pg.click('#btn-cuenta'); pg.click('#btn-ir-usuarios'); pg.wait_for_timeout(500)
     f=pg.locator('#tabla-usuarios tbody tr', has_text='Sutana')
     accion(pg,f,'eliminar'); pg.wait_for_timeout(300)
     ok(pg.inner_text('#dlg-confirmar-titulo')=='Eliminar cuenta' and 'desactívela' in pg.inner_text('#dlg-confirmar-puntos') and pg.get_attribute('#dlg-confirmar-nota','data-tono')=='alerta',
@@ -2492,6 +2496,154 @@ with sync_playwright() as p:
     ok(alc['cabos']==['u-cabo-1'] and alc['ed'],'la coordinación supervisa a los cabos que tiene asignados: %s' % alc['cabos'])
     ok(not err17,'sin errores: %s' % err17[:2])
     ctx17.close()
+
+    # ---------- BLOQUE 97: SUPERVISIÓN Y MI AVANCE (D158) ----------
+    import datetime as _dt
+    AYER=(_dt.date.fromisoformat(HOY)-_dt.timedelta(days=1)).isoformat()
+    ctx19=b.new_context(viewport={'width':390,'height':844},geolocation={'latitude':19.4326,'longitude':-99.1332,'accuracy':5},permissions=['geolocation'])
+    pg19=ctx19.new_page(); err19=[]
+    pg19.on('pageerror', lambda e: err19.append(str(e))); pg19.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err19.append(m.text))
+    pg19.goto(BASE); pg19.wait_for_timeout(1200)
+    def entrar19(uid):
+        if not pg19.is_visible('#sel-usuario-prueba'):
+            pg19.evaluate("SRP.app.menuCuenta(false)"); pg19.click('#btn-cuenta'); pg19.click('#btn-cambiar-perfil'); pg19.wait_for_timeout(200)
+        pg19.select_option('#sel-usuario-prueba', uid); pg19.click('#btn-entrar-prueba'); pg19.wait_for_timeout(900)
+    entrar19('u-cabo-1')
+    nav19=pg19.evaluate("[...document.querySelectorAll('#navegacion .pestana')].filter(b => !b.hidden).map(b => b.textContent.trim())")
+    ok(nav19==['Nuevo registro','Jornadas','Registros','Reportes','Mi avance'] and pg19.evaluate("SRP.app.vista")=='registrar',
+       'el cabo entra a Nuevo registro y encuentra «Mi avance» al final de su barra (D158): %s' % nav19)
+    # Una jornada de hoy con dos árboles, cerrada; otra de ayer con uno, abierta
+    iniciar_jornada(pg19,'Parque de hoy',HOY)
+    registrar(pg19,'aile','ESP-0002'); pg19.evaluate("SRP.mapa.colocar(19.43275, -99.13305, 'x', { origen: 'gps', precision: 5 })")
+    pg19.fill('#campo-especie','aile'); pg19.wait_for_timeout(150); pg19.dispatch_event('.combo-opcion[data-id="ESP-0002"]','mousedown'); pg19.wait_for_timeout(120)
+    pg19.click('#form-plantacion button[type=submit]'); pg19.wait_for_timeout(800)
+    if pg19.is_visible('#dlg-resumen'): pg19.click('#btn-resumen-guardar'); pg19.wait_for_timeout(600)
+    pg19.click('#btn-jornada-cerrar'); pg19.wait_for_timeout(300); pg19.click('#btn-confirmar-si'); pg19.wait_for_timeout(1200)
+    iniciar_jornada(pg19,'Camellón de ayer',AYER)
+    registrar(pg19,'aile','ESP-0002',fecha=AYER)
+    pg19.click('.pestana[data-vista=supervision]'); pg19.wait_for_timeout(900)
+    s19=pg19.evaluate("""() => ({ titulo: document.getElementById('titulo-supervision').textContent, semana: document.querySelector('#sup-tipos [aria-pressed=true]').dataset.tipo,
+      etiqueta: document.getElementById('sup-etiqueta').textContent, cifras: [...document.querySelectorAll('.sup-cifra')].map(c => c.querySelector('b').textContent + ' ' + c.querySelector('span').textContent),
+      siguiente: document.getElementById('sup-siguiente').disabled, atender: document.querySelector('.sup-atender') ? document.querySelector('.sup-atender').innerText : '',
+      cabo: !document.getElementById('caja-sup-cabo').hidden, fotos: !document.getElementById('btn-sup-fotos').hidden, porCabo: !!document.querySelector('.sup-tabla-cabos') })""")
+    ok(s19['titulo']=='Mi avance' and s19['semana']=='semana' and s19['etiqueta'].startswith('Semana del ') and s19['siguiente'],
+       'Mi avance abre en la semana en curso, sin poder avanzar al futuro: %s' % {k: s19[k] for k in ('titulo','etiqueta','siguiente')})
+    ok('2 árboles plantados' in s19['cifras'] and '100 % de la meta' not in s19['cifras'],'cuenta los 2 árboles de la jornada cerrada, no el de la abierta: %s' % s19['cifras'])
+    ok('de días anteriores siguen abiertas' in s19['atender'] or '1 jornada de un día anterior sigue abierta' in s19['atender'],'«Qué atender» dice que la de ayer sigue abierta: %s' % s19['atender'][:120])
+    ok(not s19['cabo'] and not s19['fotos'] and not s19['porCabo'],'el cabo no filtra por cabo, no ve la tabla por cabo ni las fotografías')
+    # Periodos: anterior, mes, año, rango y todo
+    pg19.click('#sup-anterior'); pg19.wait_for_timeout(300)
+    ant=pg19.inner_text('#sup-etiqueta'); sig=pg19.is_disabled('#sup-siguiente')
+    pg19.click('#sup-tipos .chip[data-tipo=mes]'); pg19.wait_for_timeout(300)
+    mes=pg19.inner_text('#sup-etiqueta')
+    pg19.click('#sup-tipos .chip[data-tipo=anio]'); pg19.wait_for_timeout(300)
+    anio=pg19.inner_text('#sup-etiqueta'); barras=pg19.locator('.sup-grafica svg rect').count()
+    pg19.click('#sup-tipos .chip[data-tipo=rango]'); pg19.wait_for_timeout(300)
+    rango_visible=pg19.is_visible('#form-sup-rango')
+    pg19.fill('#sup-desde', AYER); pg19.fill('#sup-hasta', HOY); pg19.click('#btn-sup-rango'); pg19.wait_for_timeout(300)
+    rango=pg19.inner_text('#sup-etiqueta')
+    pg19.click('#sup-tipos .chip[data-tipo=todo]'); pg19.wait_for_timeout(300)
+    todo=[pg19.inner_text('#sup-etiqueta'), pg19.is_hidden('#sup-anterior')]
+    ok(ant!=s19['etiqueta'] and not sig and mes.split()[0] in ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+       and anio=='Año '+HOY[:4] and barras==12 and rango_visible and rango.startswith('Del ') and todo==['Todo el registro',True],
+       'se cambia de semana, mes (%s), año (12 barras), rango y todo: %s' % (mes, [ant, anio, barras, rango, todo]))
+    # Filtro por alcaldía: la de los árboles y otra sin nada
+    pg19.click('#sup-filtros summary'); pg19.wait_for_timeout(150)
+    pg19.select_option('#sup-alcaldia','Tlalpan'); pg19.wait_for_timeout(300)
+    vacio=pg19.inner_text('#sup-cuerpo'); filtros=pg19.inner_text('#sup-filtros-texto')
+    pg19.click('#btn-sup-quitar'); pg19.wait_for_timeout(300)
+    ok('Sin jornadas cerradas' in vacio and filtros=='Filtros: Tlalpan' and pg19.inner_text('#sup-filtros-texto').startswith('Filtros: alcaldía') and pg19.inner_text('.sup-cifra b >> nth=0')=='2',
+       'con una alcaldía sin árboles lo dice; «Quitar filtros» vuelve a todo: %s' % filtros)
+    mapa19=pg19.evaluate("[...document.querySelectorAll('#sup-mapa path.sup-alcaldia')].map(p => [...p.classList].find(c => c.startsWith('sup-nivel-'))).filter(c => c !== 'sup-nivel-0').length")
+    ok(mapa19==1 and pg19.locator('#sup-mapa path.sup-alcaldia').count()==16,'el mapa pinta las 16 alcaldías y resalta la única con árboles: %d' % mapa19)
+    ancho19=pg19.evaluate("[document.documentElement.scrollWidth, innerWidth]")
+    ok(ancho19[0]<=ancho19[1],'Mi avance cabe en el teléfono sin desplazarse de lado: %s' % ancho19)
+    # Desde «Qué atender» se llega a la jornada
+    pg19.click('#sup-tipos .chip[data-tipo=semana]'); pg19.wait_for_timeout(300)
+    pg19.click('.sup-atender summary'); pg19.wait_for_timeout(200)
+    pg19.locator('.sup-atender button[data-jornada]').first.click(); pg19.wait_for_timeout(1200)
+    ok(pg19.is_visible('#jornada-detalle') and 'Camellón de ayer' in pg19.inner_text('#jornada-titulo'),'desde «Qué atender» se abre la ficha de esa jornada: %s' % pg19.inner_text('#jornada-titulo'))
+    # La coordinación entra a Supervisión, primera en su barra, con su cuadrilla
+    entrar19('u-coord-1')
+    nav19=pg19.evaluate("[...document.querySelectorAll('#navegacion .pestana')].filter(b => !b.hidden).map(b => b.textContent.trim())")
+    ok(nav19[0]=='Supervisión' and 'Fotografías' not in nav19 and pg19.evaluate("SRP.app.vista")=='supervision' and pg19.is_visible('#btn-sup-fotos'),
+       'la coordinación entra a Supervisión, primera en su barra; Fotografías va dentro (D158): %s' % nav19)
+    c19=pg19.evaluate("[...document.querySelectorAll('.sup-tabla-cabos tbody tr')].map(t => t.innerText.replace(/\\s+/g, ' '))")
+    ok(any('Fulana' in x for x in c19),'la tabla por cabo trae a su cabo: %s' % c19[:2])
+    pg19.locator('.sup-tabla-cabos button[data-cabo]').first.click(); pg19.wait_for_timeout(900)
+    ok(pg19.is_visible('#vista-jornadas') and pg19.evaluate("document.getElementById('jornada-cabo').value")=='u-cabo-1','tocar un cabo lleva a sus jornadas')
+    pg19.click('.pestana[data-vista=supervision]'); pg19.wait_for_timeout(700)
+    pg19.click('#btn-sup-fotos'); pg19.wait_for_timeout(600)
+    pg19.click('#btn-galeria-volver'); pg19.wait_for_timeout(600)
+    ok(pg19.is_visible('#vista-supervision'),'de Fotografías se vuelve a Supervisión')
+    # Administración: Catálogos y Usuarios, en el menú de la cuenta
+    entrar19('u-admin-1')
+    nav19=pg19.evaluate("[...document.querySelectorAll('#navegacion .pestana')].filter(b => !b.hidden).map(b => b.textContent.trim())")
+    pg19.click('#btn-cuenta'); pg19.wait_for_timeout(200)
+    menu19=[pg19.is_visible('#btn-ir-catalogos'), pg19.is_visible('#btn-ir-usuarios')]
+    pg19.click('#btn-ir-usuarios'); pg19.wait_for_timeout(500)
+    ok(nav19==['Supervisión','Jornadas','Registros','Reportes'] and menu19==[True,True] and pg19.is_visible('#vista-usuarios'),
+       'la administración tiene cuatro secciones abajo y Catálogos y Usuarios en el menú de la cuenta: %s' % nav19)
+    pg19.set_viewport_size({'width':1280,'height':900}); pg19.click('.pestana[data-vista=supervision]'); pg19.wait_for_timeout(800)
+    cols=pg19.evaluate("getComputedStyle(document.querySelector('.sup-cifras')).gridTemplateColumns.split(' ').length")
+    ok(cols==6,'en computadora las cifras van en un renglón de seis: %s' % cols)
+    ok(not err19,'sin errores en consola: %s' % err19[:2])
+    ctx19.close()
+
+    # ---------- BLOQUE 98: INFORMES POR PERIODO EN PDF Y CSV (D159) ----------
+    import warnings as _w; _w.filterwarnings('ignore')
+    from pypdf import PdfReader as _Pdf
+    ctx20=b.new_context(viewport={'width':1280,'height':900},geolocation={'latitude':19.4326,'longitude':-99.1332,'accuracy':5},permissions=['geolocation'],accept_downloads=True)
+    pg20=ctx20.new_page(); err20=[]
+    pg20.on('pageerror', lambda e: err20.append(str(e))); pg20.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err20.append(m.text))
+    pg20.goto(BASE); pg20.wait_for_timeout(1200)
+    def entrar20(uid):
+        if not pg20.is_visible('#sel-usuario-prueba'):
+            pg20.evaluate("SRP.app.menuCuenta(false)"); pg20.click('#btn-cuenta'); pg20.click('#btn-cambiar-perfil'); pg20.wait_for_timeout(200)
+        pg20.select_option('#sel-usuario-prueba', uid); pg20.click('#btn-entrar-prueba'); pg20.wait_for_timeout(900)
+    entrar20('u-cabo-1')
+    iniciar_jornada(pg20,'Jardín del informe',HOY)
+    registrar(pg20,'aile','ESP-0002'); pg20.evaluate("SRP.mapa.colocar(19.43275, -99.13305, 'x', { origen: 'gps', precision: 5 })")
+    pg20.fill('#campo-especie','aile'); pg20.wait_for_timeout(150); pg20.dispatch_event('.combo-opcion[data-id="ESP-0002"]','mousedown'); pg20.wait_for_timeout(120)
+    pg20.click('#form-plantacion button[type=submit]'); pg20.wait_for_timeout(800)
+    if pg20.is_visible('#dlg-resumen'): pg20.click('#btn-resumen-guardar'); pg20.wait_for_timeout(600)
+    pg20.click('#btn-jornada-cerrar'); pg20.wait_for_timeout(300); pg20.click('#btn-confirmar-si'); pg20.wait_for_timeout(1200)
+    # En Reportes se dice dónde están los informes y se llega de un toque
+    pg20.click('.pestana[data-vista=reportes]'); pg20.wait_for_timeout(600)
+    ok(pg20.is_visible('#titulo-informes') and 'Mi avance' in pg20.inner_text('.aviso-informes'),'Reportes dice que los informes por periodo están en Mi avance (D159)')
+    pg20.click('#btn-ir-informes'); pg20.wait_for_timeout(900)
+    ok(pg20.is_visible('#vista-supervision'),'y lleva ahí')
+    def pdf20():
+        with pg20.expect_download() as d: pg20.click('#btn-sup-pdf')
+        ruta='/home/claude/srp/informe_prueba.pdf'; d.value.save_as(ruta)
+        t=' '.join((p.extract_text() or '') for p in _Pdf(ruta).pages)
+        return d.value.suggested_filename, ' '.join(t.split()), os.path.getsize(ruta)
+    n1,t1,peso1=pdf20()
+    ok(re.fullmatch(r'Informe_semanal_\d{4}-\d{2}-\d{2}_al_\d{4}-\d{2}-\d{2}\.pdf', n1) is not None and 'INFORME SEMANAL DE PLANTACIÓN' in t1 and 'Cabo: Fulana' in t1
+       and 'POR CABO' not in t1 and 'Árboles plantados' in t1 and peso1 < 200000,
+       'el cabo descarga su informe semanal en PDF, con membrete y sin la tabla por cabo: %s (%d KB)' % (n1, peso1//1024))
+    # La coordinación: informe mensual de una alcaldía, con sus colonias, y la tabla en CSV
+    entrar20('u-coord-1')
+    pg20.click('#sup-tipos .chip[data-tipo=mes]'); pg20.wait_for_timeout(300)
+    pg20.click('#sup-filtros summary'); pg20.wait_for_timeout(150)
+    pg20.select_option('#sup-alcaldia','Cuauhtémoc'); pg20.wait_for_timeout(400)
+    n2,t2,_=pdf20()
+    ok(n2=='Informe_mensual_'+HOY[:7]+'_Cuauhtemoc.pdf' and 'ALCALDÍA CUAUHTÉMOC' in t2 and 'POR COLONIA' in t2 and 'POR CABO' in t2 and 'Fulana' in t2
+       and 'Cuadrilla de' in t2 and 'Documento de prueba' in t2,
+       'la coordinación descarga el informe mensual de una alcaldía, con sus colonias y la tabla por cabo: %s' % n2)
+    with pg20.expect_download() as dc: pg20.click('#btn-sup-csv')
+    dc.value.save_as('/home/claude/srp/arboles_prueba.csv')
+    csv20=open('/home/claude/srp/arboles_prueba.csv', encoding='utf-8', newline='').read()
+    lineas=csv20.lstrip('﻿').strip().split('\r\n')
+    ok(dc.value.suggested_filename=='Arboles_mensual_'+HOY[:7]+'_Cuauhtemoc.csv' and csv20.startswith('﻿"Folio","Fecha de plantación"') and len(lineas)==3
+       and all('"Cuauhtémoc"' in l and '"Jardín del informe"' in l for l in lineas[1:]),
+       'y la tabla en CSV, un renglón por árbol, con acentos para Excel: %s, %d renglones' % (dc.value.suggested_filename, len(lineas)))
+    esc20=pg20.evaluate("SRP.informes.texto({ detalle: [{ folio: 'a\"b', jornada: 'x, y' }] }).split('\\r\\n')[1]")
+    ok(esc20.startswith('"a""b"') and '"x, y"' in esc20,'el CSV escapa comillas y comas: %s' % esc20[:30])
+    pg20.select_option('#sup-alcaldia','Tlalpan'); pg20.wait_for_timeout(400)
+    ok(pg20.is_disabled('#btn-sup-pdf') and pg20.is_disabled('#btn-sup-csv'),'sin jornadas cerradas no se ofrece informe ni tabla')
+    ok(not err20,'sin errores en consola: %s' % err20[:2])
+    ctx20.close()
 
     b.close()
 print('\n'.join(res)); print('ERRORES CONSOLA:',errores or 'ninguno')
