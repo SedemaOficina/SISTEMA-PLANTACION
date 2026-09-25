@@ -1457,3 +1457,27 @@
   se ofrece tabla. En Reportes, un apartado dice dónde están los informes y lleva ahí. El reporte de
   cada jornada sigue igual: ése es el documento de campo; éste, el de seguimiento. Aprobado por
   Liber, 25-09-2026.
+- **D160. Datos de demostración (bloque 99).** Liber pidió datos de varios meses, cabos y años para
+  probar cómo funciona todo, con un botón para borrarlos y otro para recuperarlos, al final de la
+  página. Sólo con datos de prueba (`ES_FICTICIO`): al pie, bajo «Restablecer» y «Restaurar
+  respaldo», el apartado «Datos de demostración» con «Cargar datos de demostración» y «Quitar datos
+  de demostración»; después de quitarlos, el primero dice «Recuperar datos de demostración». Qué se
+  carga (`js/demostracion.js`): una segunda coordinación con tres cabos, tres cabos más para la
+  coordinación de prueba y jornadas también para la cabo de prueba, de enero de 2024 a hoy (unas 550
+  jornadas y 7,000 árboles), más en lluvias que en secas y un poco más cada año, cada una en una
+  colonia real de las alcaldías de su cabo, con meta, cierre y casi siempre reporte; el territorio de
+  cada árbol se deriva con las capas; lo anterior a hoy ya tiene folio y está enviado. Trae lo que la
+  supervisión debe encontrar: dos jornadas abiertas de días anteriores, dos de hoy, puntos sin
+  revisar, jornadas sin reporte, eliminados, editados, precisión baja y algunas fotografías. El
+  generador usa una semilla fija: recuperar da las mismas cuentas, jornadas y árboles; los folios no
+  se repiten porque la secuencia simulada nunca retrocede. Todo lleva identificador «demo-» (las
+  cuentas, «u-demo-»), así que se quita sin agregar un campo al esquema y sin tocar lo capturado; si
+  alguien registró algo propio dentro de lo de demostración (un árbol en una jornada de demostración,
+  o entró con una cuenta de demostración), esa jornada, esa cuenta y su coordinación se conservan. Si
+  quien está dentro usa una cuenta que se quitó, vuelve al acceso. Con volumen real salieron tres
+  cosas que se corrigen en el mismo bloque: 1) en Supervisión, las jornadas del periodo y las
+  colonias de una alcaldía se cortan en las primeras 15 con un botón para ver las demás (un año
+  medía 18,000 px en computadora); 2) quien entra con otra cuenta empieza en la semana en curso y sin
+  filtros, en vez de heredar el periodo de la cuenta anterior; 3) el envío simulado se detiene si la
+  sesión se cierra a medio envío (antes fallaba al anotar la bitácora sin usuario). Se retira al
+  cerrar la Etapa 1, con el resto de las herramientas de prueba. Pedido por Liber, 25-09-2026.

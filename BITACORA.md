@@ -1908,3 +1908,31 @@ comillas y comas; sin jornadas cerradas no se ofrece informe ni tabla.
 
 **Verificación:** 734 comprobaciones sin errores de consola; 99 de auditoría;
 presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.79.
+
+## Bloque 99 — Datos de demostración (25-09-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.6.80.
+
+**Qué cambió (D160).** `js/demostracion.js` (nuevo): generador con semilla fija (siete cuentas, unas
+550 jornadas y 7,000 árboles de enero de 2024 a hoy, temporada de lluvias y crecimiento anual,
+colonias reales, territorio derivado, folios de la secuencia simulada, envíos, bitácora, eliminados,
+editados y fotografías chicas dibujadas), carga en una sola transacción, retiro por rango de clave
+«demo-» y «u-demo-» que conserva lo que tenga algo propio y limpia la bitácora y los envíos, y los
+botones del pie con su confirmación, avance en porcentaje y aviso. `index.html`: apartado «Datos de
+demostración» al pie; marca 0.6.80. `app.js`: iconos, arranque del módulo, se muestra con sesión y
+se oculta en el acceso; la revisión de arranque exige el módulo. `supervision.js`: jornadas del
+periodo y colonias cortadas en 15 con «Ver las N…» / «Ver sólo las 15…»; el periodo y los filtros se
+reinician al entrar con otra cuenta. `folio.js`: la emisión simulada se detiene si la sesión se
+cierra a medio envío. `estilos.css`: el apartado del pie y el botón de las listas largas.
+`README.md`: cómo se usan.
+Pruebas: el apartado no aparece en el acceso; con sesión, «Cargar» y «Quitar» apagado; la
+confirmación dice cuánto se agrega; mientras carga no se puede quitar; lo cargado (jornadas,
+árboles, años, cabos, cuentas, abiertas de antes y de hoy, sin reporte, eliminados, fotografías,
+territorio, folios, bitácora) y que lo propio sigue ahí; Supervisión del año 2025 con siete cabos;
+corte en 15 jornadas y en colonias, abrir y cerrar; informe anual de una alcaldía; al cambiar de
+cuenta, semana en curso sin filtros; cuadrilla de cada coordinación; Mi avance de una cabo de
+demostración; quitar deja lo propio, conserva la jornada con un árbol propio, su cabo y su
+coordinación, y saca al acceso a quien usaba una cuenta quitada; «Recuperar» devuelve los mismos
+datos; con datos reales no se carga nada.
+
+**Verificación:** 760 comprobaciones sin errores de consola; 99 de auditoría;
+presentación sin desbordes en ocho combinaciones. Marca de versión 0.6.80.

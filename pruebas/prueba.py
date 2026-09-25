@@ -2645,6 +2645,114 @@ with sync_playwright() as p:
     ok(not err20,'sin errores en consola: %s' % err20[:2])
     ctx20.close()
 
+    # ---------- Bloque 99: datos de demostración (D160) ----------
+    import time as _t
+    ctx21=b.new_context(viewport={'width':390,'height':844},accept_downloads=True)
+    pg21=ctx21.new_page(); err21=[]
+    pg21.on('pageerror', lambda e: err21.append(str(e))); pg21.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err21.append(m.text))
+    pg21.goto(BASE); pg21.wait_for_timeout(1200)
+    def entrar21(uid):
+        if not pg21.is_visible('#sel-usuario-prueba'):
+            pg21.evaluate("SRP.app.menuCuenta(false)"); pg21.click('#btn-cuenta'); pg21.click('#btn-cambiar-perfil'); pg21.wait_for_timeout(200)
+        pg21.select_option('#sel-usuario-prueba', uid); pg21.click('#btn-entrar-prueba'); pg21.wait_for_timeout(900)
+    def estado21(): return pg21.inner_text('#demo-estado')
+    ok(not pg21.is_visible('#caja-demo'),'en el acceso no se ofrecen los datos de demostración')
+    entrar21('u-admin-1')
+    # Algo propio antes de cargar: una jornada con un árbol, que la carga y el retiro no tocan
+    pg21.evaluate("""async () => { const j = { id: 'propia-j1', es_ficticio: true, nombre: 'Jornada propia', ubicacion: '', programa_id: 'p-refor', lat: 19.4326, lng: -99.1332, punto_origen: 'gps', gps_precision_m: 5,
+      alcaldia_cve: '09015', alcaldia: 'Cuauhtémoc', colonia_cve: null, colonia: null, fecha: '%s', comentarios: '', cabo_id: 'u-cabo-1', estatus: 'abierta', fecha_inicio: new Date().toISOString(), fecha_cierre: null,
+      encargado_id: 'u-cabo-1', creado_por_id: 'u-cabo-1', fecha_creacion: new Date().toISOString(), editado_por_id: null, fecha_ultima_edicion: null, meta_arboles: null, puntos_revisados: [], reporte_en: null,
+      personal: '', apoyo: '', observaciones: '', chofer: '', vehiculo_modelo: '', vehiculo_placa: '', hora: '' };
+      await SRP.almacen._tx(['jornadas'], 'readwrite', tx => tx.objectStore('jornadas').put(j)); }""" % HOY)
+    pg21.locator('#caja-demo').scroll_into_view_if_needed()
+    ok(pg21.is_visible('#caja-demo') and 'Casi tres años' in estado21() and pg21.inner_text('#btn-demo-cargar')=='Cargar datos de demostración' and pg21.is_disabled('#btn-demo-quitar'),
+       'al pie, con sesión: «Datos de demostración», con «Cargar» y «Quitar» (apagado, no hay nada que quitar)')
+    pg21.click('#btn-demo-cargar'); pg21.wait_for_timeout(300)
+    dlg21=pg21.inner_text('#dlg-confirmar')
+    ok('7,000 árboles' in dlg21 and 'no se toca' in dlg21,'antes de cargar se dice cuánto se agrega y que lo capturado no se toca')
+    t0=_t.time(); pg21.click('#btn-confirmar-si'); pg21.wait_for_timeout(300)
+    ok(pg21.get_attribute('#btn-demo-cargar','aria-busy')=='true' and pg21.is_disabled('#btn-demo-quitar'),'mientras carga, el botón dice «Cargando…» y no se puede quitar')
+    esperar(pg21,"document.getElementById('demo-estado').textContent.startsWith('Cargados')",90000)
+    seg21=_t.time()-t0
+    c21=pg21.evaluate("""async () => { const j=await SRP.almacen.todos('jornadas'), a=await SRP.almacen.todos('plantaciones'), u=await SRP.almacen.todos('usuarios'), bi=await SRP.almacen.todos('bitacora');
+      const hoy=SRP.util.fechaHoy(), dj=j.filter(x=>SRP.demo.es(x.id)), da=a.filter(x=>SRP.demo.es(x.id)), anios={}, cabos={};
+      da.forEach(x=>{anios[x.fecha_plantacion.slice(0,4)]=1}); dj.forEach(x=>{cabos[x.cabo_id]=1});
+      return { j: dj.length, a: da.filter(x=>x.estatus==='activo').length, u: u.filter(x=>SRP.demo.es(x.id)).length, anios: Object.keys(anios).sort(), cabos: Object.keys(cabos).length,
+        viejas: dj.filter(x=>x.estatus==='abierta' && x.fecha<hoy).length, deHoy: dj.filter(x=>x.estatus==='abierta' && x.fecha===hoy).length,
+        sinAlcaldia: da.filter(x=>!x.alcaldia).length, sinFolio: da.filter(x=>x.fecha_plantacion<hoy && x.estatus==='activo' && !SRP.folio.valido(x.folio)).length,
+        conFolioHoy: da.filter(x=>x.fecha_plantacion===hoy && x.folio).length, fotos: da.filter(x=>x.foto_base64).length, elim: da.filter(x=>x.estatus==='eliminado').length,
+        bit: bi.filter(x=>SRP.demo.es(x.id)).length, sinReporte: dj.filter(x=>x.estatus==='cerrada' && !x.reporte_en).length,
+        propia: !!j.find(x=>x.id==='propia-j1'), sembr: JSON.stringify(dj).search(/sembr|siembr/i) }; }""")
+    ok(c21['j']>=450 and c21['a']>=6000 and c21['u']==7 and c21['anios']==['2024','2025','2026'] and c21['cabos']==7,
+       'se cargan %d jornadas y %d árboles de 2024, 2025 y 2026, de 7 cabos, con 7 cuentas de demostración, en %.1f s' % (c21['j'],c21['a'],seg21))
+    ok(c21['viejas']==2 and c21['deHoy']==2 and c21['sinReporte']>0 and c21['elim']>0 and c21['fotos']>0,
+       'con lo que la supervisión debe encontrar: 2 jornadas abiertas de días anteriores, 2 de hoy, %d sin reporte, %d eliminados, %d fotografías' % (c21['sinReporte'],c21['elim'],c21['fotos']))
+    ok(c21['sinAlcaldia']==0 and c21['sinFolio']==0 and c21['bit']>c21['a'] and c21['propia'] and c21['sembr']==-1,
+       'cada árbol con su territorio derivado, folio en lo anterior a hoy y su renglón de bitácora; lo propio sigue ahí')
+    ok('Cargados: ' in estado21() and pg21.inner_text('#btn-demo-cargar')=='Volver a cargar' and not pg21.is_disabled('#btn-demo-quitar') and 'Cambiar de perfil' in pg21.inner_text('#aviso'),
+       'al terminar, el pie dice cuánto hay y ofrece «Volver a cargar» y «Quitar»: %s' % estado21()[:60])
+    # Supervisión con volumen: la coordinación de prueba ve su cuadrilla; la de demostración, la suya
+    pg21.evaluate("SRP.app.mostrarVista('supervision')"); pg21.wait_for_timeout(600)
+    pg21.click('#sup-tipos .chip[data-tipo=anio]'); pg21.wait_for_timeout(300); pg21.click('#sup-anterior'); pg21.wait_for_timeout(900)
+    ok(pg21.inner_text('#sup-etiqueta')=='Año 2025' and pg21.locator('.sup-tabla-cabos tbody tr').count()==7,'la administración ve el año 2025 completo, con los 7 cabos')
+    LIS21="document.querySelectorAll('section[aria-labelledby=sup-t-jornadas] .sup-jornadas > li:not([hidden])').length"
+    vis21=pg21.evaluate(LIS21)
+    mas21=pg21.locator('button[data-mas=jornadas]')
+    ok(vis21==15 and mas21.count()==1 and re.fullmatch(r'Ver las [\d,]+ jornadas', mas21.inner_text()) is not None,'de cientos de jornadas se ven las 15 más recientes y «%s»' % (mas21.inner_text() if mas21.count() else '—'))
+    mas21.click(); pg21.wait_for_timeout(200)
+    todas21=pg21.evaluate(LIS21)
+    ok(todas21>150 and mas21.get_attribute('aria-expanded')=='true' and mas21.inner_text()=='Ver sólo las 15 más recientes','el botón muestra las %d y se vuelve «Ver sólo las 15 más recientes»' % todas21)
+    mas21.click(); pg21.wait_for_timeout(200)
+    ok(pg21.evaluate(LIS21)==15,'y las vuelve a ocultar')
+    pg21.click('#sup-filtros summary'); pg21.wait_for_timeout(150); pg21.select_option('#sup-alcaldia','Gustavo A. Madero'); pg21.wait_for_timeout(700)
+    col21=pg21.locator('button[data-mas=colonias]')
+    ok(col21.count()==1 and pg21.evaluate("document.querySelectorAll('#sup-cuerpo .sup-tabla tbody tr[data-extra=colonias]').length")>5,'las colonias de una alcaldía también se cortan en 15: «%s»' % (col21.inner_text() if col21.count() else '—'))
+    with pg21.expect_download() as d21: pg21.click('#btn-sup-pdf')
+    d21.value.save_as('/home/claude/srp/demo_prueba.pdf')
+    from pypdf import PdfReader as _Pdf21
+    txt21=' '.join(' '.join((p.extract_text() or '') for p in _Pdf21('/home/claude/srp/demo_prueba.pdf').pages).split())
+    ok(d21.value.suggested_filename=='Informe_anual_2025_Gustavo_A_Madero.pdf' and 'POR COLONIA' in txt21 and 'Marisol' in txt21,'el informe anual de una alcaldía sale con los datos de demostración: %s' % d21.value.suggested_filename)
+    entrar21('u-coord-1')
+    cab21=pg21.evaluate("SRP.supervision.datos.cabos.slice().sort()")
+    ok(pg21.inner_text('#sup-etiqueta').startswith('Semana') and pg21.inner_text('#sup-filtros-texto')=='Filtros: alcaldía, programa y cabo',
+       'quien entra con otra cuenta empieza en la semana en curso y sin filtros: no hereda el año ni la alcaldía de la cuenta anterior')
+    ok(cab21==['u-cabo-1','u-demo-c1','u-demo-c2','u-demo-c3'],'la coordinación de prueba tiene su cuadrilla de demostración: %s' % cab21)
+    entrar21('u-demo-k1')
+    cab21=pg21.evaluate("SRP.supervision.datos.cabos.slice().sort()")
+    ok(cab21==['u-demo-c4','u-demo-c5','u-demo-c6'] and pg21.is_visible('#vista-supervision'),'la coordinación de demostración entra a Supervisión con sus tres cabos')
+    entrar21('u-demo-c5')
+    pg21.click('.pestana[data-vista=supervision]'); pg21.wait_for_timeout(500); pg21.click('#sup-tipos .chip[data-tipo=todo]'); pg21.wait_for_timeout(700)
+    ok(pg21.inner_text('#titulo-supervision')=='Mi avance' and int(pg21.inner_text('.sup-cifra b').replace(',',''))>500 and 'jornada de un día anterior sigue abierta' in pg21.inner_text('#sup-cuerpo'),
+       'una cabo de demostración ve Mi avance de casi tres años y su jornada abierta de antes')
+    # Quitar: lo de demostración se va; lo propio se queda, y también la jornada donde se registró un árbol propio
+    pg21.evaluate("""async () => { const a = await SRP.almacen.uno('plantaciones','demo-a-000010'); await SRP.almacen._tx(['plantaciones'],'readwrite', tx => tx.objectStore('plantaciones').put(Object.assign({}, a, { id: 'propio-a1', folio: null }))); }""")
+    ref21=pg21.evaluate("(async () => { const a=await SRP.almacen.uno('plantaciones','demo-a-000123'); return [a.lat,a.lng,a.especie_id,a.jornada_id,a.fecha_plantacion] })()")
+    jc21=pg21.evaluate("(async () => (await SRP.almacen.uno('plantaciones','propio-a1')).jornada_id)()")
+    pg21.locator('#caja-demo').scroll_into_view_if_needed(); pg21.click('#btn-demo-quitar'); pg21.wait_for_timeout(300)
+    ok('Lo que usted capturó se queda.' in pg21.inner_text('#dlg-confirmar') and 'cuentas de demostración' in pg21.inner_text('#dlg-confirmar'),'antes de quitar se dice qué se va y que lo capturado se queda')
+    pg21.click('#btn-confirmar-si'); pg21.wait_for_timeout(300)
+    esperar(pg21,"!document.getElementById('btn-demo-quitar').hasAttribute('aria-busy') && SRP.app.vista !== 'supervision'",20000)
+    ok(pg21.is_visible('#vista-acceso') and not pg21.is_visible('#caja-demo'),'quien estaba dentro con una cuenta de demostración que se quitó vuelve al acceso')
+    q21=pg21.evaluate("""async () => { const j=await SRP.almacen.todos('jornadas'), a=await SRP.almacen.todos('plantaciones'), u=await SRP.almacen.todos('usuarios'), bi=await SRP.almacen.todos('bitacora');
+      return { j: j.filter(x=>SRP.demo.es(x.id)).map(x=>x.id), a: a.filter(x=>SRP.demo.es(x.id)).length, propio: !!a.find(x=>x.id==='propio-a1'), propia: !!j.find(x=>x.id==='propia-j1'),
+        u: u.filter(x=>SRP.demo.es(x.id)).map(x=>x.id).sort(), bit: bi.filter(x=>SRP.demo.es(x.id) || SRP.demo.es(x.entidad_id)).length,
+        rec: Object.keys(SRP.envio.leer().recibidos).filter(id=>SRP.demo.es(id)).length, sel: [...document.querySelectorAll('#sel-usuario-prueba option')].map(o=>o.value).filter(v=>SRP.demo.es(v)).sort() } }""")
+    ok(q21['a']==0 and q21['bit']==0 and q21['rec']==0 and q21['propio'] and q21['propia'],'se quitan los árboles, la bitácora y los envíos de demostración; la jornada y el árbol propios siguen')
+    ok(q21['j']==[jc21] and q21['u']==['u-demo-c6','u-demo-k1'] and q21['sel']==q21['u'],
+       'se conserva la jornada de demostración donde se registró un árbol propio, con su cabo y su coordinación: %s, %s' % (q21['j'], q21['u']))
+    entrar21('u-admin-1'); pg21.locator('#caja-demo').scroll_into_view_if_needed()
+    ok(pg21.inner_text('#btn-demo-cargar')=='Recuperar datos de demostración' and pg21.is_disabled('#btn-demo-quitar') and 'Casi tres años' in estado21(),
+       'después de quitarlos, el pie ofrece «Recuperar datos de demostración»')
+    pg21.click('#btn-demo-cargar'); pg21.wait_for_timeout(300); pg21.click('#btn-confirmar-si'); pg21.wait_for_timeout(500)
+    esperar(pg21,"document.getElementById('demo-estado').textContent.startsWith('Cargados')",90000)
+    ref21b=pg21.evaluate("(async () => { const a=await SRP.almacen.uno('plantaciones','demo-a-000123'); return [a.lat,a.lng,a.especie_id,a.jornada_id,a.fecha_plantacion] })()")
+    n21=pg21.evaluate("SRP.demo.contar()")
+    ok(ref21b==ref21 and n21['jornadas']==c21['j'] and n21['arboles']==c21['a'] and n21['cuentas']==7,'al recuperarlos vuelven iguales: mismas jornadas, mismos árboles en el mismo lugar (%d y %d)' % (n21['jornadas'],n21['arboles']))
+    # Con datos reales no se carga nada
+    ok(pg21.evaluate("(async () => { SRP.CONFIG.ES_FICTICIO = false; const r = await SRP.demo.cargar(); SRP.CONFIG.ES_FICTICIO = true; return r === null })()"),'con datos reales (ES_FICTICIO apagado) no se carga nada')
+    ok(not err21,'sin errores en consola: %s' % err21[:2])
+    ctx21.close()
+
     b.close()
 print('\n'.join(res)); print('ERRORES CONSOLA:',errores or 'ninguno')
 print('fallas:',sum(r.startswith('FALLA') for r in res),'de',len(res))

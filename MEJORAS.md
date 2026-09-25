@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.6.79 (Bloque 98)»**.
+Al pie de cualquier pantalla: **«Versión 0.6.80 (Bloque 99)»**.
 Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la página dos veces
 (la primera descarga la versión nueva, la segunda la muestra).
 
@@ -206,6 +206,8 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M205 | Área de plantación | Pestaña «Supervisión» (coordinación y administración, primera al entrar) y «Mi avance» (cabo): semana, mes, año, rango y todo; filtros de alcaldía, programa y cabo; cifras, qué atender, gráfica, por cabo, mapa por alcaldía, especies, programas y calidad del dato | Alta | 0.6.78 (B97) | Entrar como coordinación; como cabo, «Mi avance» | Supervisión en teléfono y computadora |
 | M206 | Área de plantación | Fotografías dentro de Supervisión; Catálogos y Usuarios en el menú de la cuenta: la barra del teléfono no pasa de cinco secciones | Media | 0.6.78 (B97) | Administración › menú de la cuenta | Menú con Catálogos y Usuarios |
 | M207 | Área de plantación | Informes semanal, mensual, anual o por alcaldía en PDF con membrete, y la tabla de árboles en CSV para Excel, desde Supervisión o Mi avance; en Reportes, el camino a ellos | Alta | 0.6.79 (B98) | Supervisión › Mes › alcaldía › Informe en PDF / Tabla en CSV | Primera página del informe |
+| M208 | Liber | Datos de demostración al pie (sólo pruebas): casi tres años de jornadas de siete cabos y dos coordinaciones; «Quitar» los borra sin tocar lo capturado y «Recuperar» los vuelve a cargar iguales | Alta | 0.6.80 (B99) | Pie de página › Cargar datos de demostración; luego Supervisión › Año o Todo | Pie con los dos botones |
+| M209 | Datos de demostración | En Supervisión, las jornadas del periodo y las colonias de una alcaldía se cortan en 15, con botón para ver las demás; al entrar con otra cuenta, semana en curso y sin filtros | Media | 0.6.80 (B99) | Supervisión › Año › «Ver las N jornadas» | Lista cortada con su botón |
 
 ## 2. Por hacer
 
@@ -230,4 +232,4 @@ Si aparece una anterior, el teléfono sigue con la copia guardada: recargar la p
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 191 hechas · 4 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 193 hechas · 4 por hacer · 2 revisadas · 2 descartadas.

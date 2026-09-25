@@ -11,6 +11,7 @@ SRP.supervision = {
   datos: null,
   modelo: null,
   mapa: null,
+  usuarioId: null,
 
   el(id) { return document.getElementById(id); },
   esCabo() { return SRP.permisos.de(SRP.sesion.usuario).alcance === 'propios'; },
@@ -69,6 +70,9 @@ SRP.supervision = {
       : 'Lo que se ha plantado en su ' + (SRP.permisos.de(u).alcance === 'todos' ? 'ciudad' : 'cuadrilla') + ', por semana, mes o año. Cuentan sólo las jornadas cerradas; las abiertas se dicen aparte.';
     this.el('btn-sup-fotos').hidden = !SRP.permisos.de(u).galeria;
     this.el('caja-sup-cabo').hidden = cabo;
+    // Quien entra con otra cuenta empieza en la semana en curso y sin filtros: no hereda el año
+    // ni la alcaldía que dejó la cuenta anterior en este mismo dispositivo (D160)
+    if (this.usuarioId !== u.id) { this.usuarioId = u.id; this.periodo = null; this.filtros = { alcaldia: '', programa: '', cabo: '' }; }
     if (!this.periodo) this.periodo = SRP.indicadores.periodo('semana');
     this.datos = await SRP.indicadores.cargar();
     this.llenarFiltros();
@@ -147,7 +151,7 @@ SRP.supervision = {
       '<div class="sup-dos"><div><div id="sup-mapa" class="sup-mapa" role="img" aria-label="Mapa de la Ciudad de México con las alcaldías según los árboles plantados"></div>' +
       '<p class="nota sup-leyenda">Más intenso, más árboles. Toque una alcaldía para ver su cifra.</p></div><div>' +
       (m.filtros.alcaldia
-        ? this.tabla(['Colonia', 'Árboles', 'Jornadas'], m.porColonia.map(x => [x.colonia, num(x.arboles), num(x.jornadas)]), [1, 2])
+        ? this.tabla(['Colonia', 'Árboles', 'Jornadas'], m.porColonia.map(x => [x.colonia, num(x.arboles), num(x.jornadas)]), [1, 2], 'colonias')
         : this.tabla(['Alcaldía', 'Árboles', 'Jornadas', 'Colonias'], m.porAlcaldia.map(x => [x.clave, num(x.arboles), num(x.jornadas), num(x.colonias)]), [1, 2, 3])) + '</div></div>');
     // En computadora, en dos columnas (D158)
     h += '<div class="sup-columnas">';
@@ -163,10 +167,11 @@ SRP.supervision = {
       '<div><dt>Eliminados en el periodo</dt><dd>' + num(m.trazabilidad.eliminados) + '</dd></div>' +
       '<div><dt>Ediciones en el periodo</dt><dd>' + num(m.trazabilidad.editados) + '</dd></div></dl>' +
       '<p class="nota">Eliminados y editados no cambian la cifra de árboles: se cuentan aparte, como constancia.</p>');
-    h += apartado('sup-t-jornadas', 'Jornadas cerradas del periodo', '<ul class="sup-jornadas">' + m.jornadas.map(j =>
-      '<li><button type="button" class="enlace-fila" data-jornada="' + esc(j.id) + '"><span class="sup-j-nombre">' + esc(j.nombre) + '</span>' +
+    h += apartado('sup-t-jornadas', 'Jornadas cerradas del periodo', '<ul class="sup-jornadas">' + m.jornadas.map((j, i) =>
+      '<li' + this.extra('jornadas', i, m.jornadas.length) + '><button type="button" class="enlace-fila" data-jornada="' + esc(j.id) + '"><span class="sup-j-nombre">' + esc(j.nombre) + '</span>' +
       '<span class="sup-j-datos">' + esc(SRP.util.formatearFecha(j.fecha)) + (cabo ? '' : ' · ' + esc(j.cabo)) + ' · ' + num(j.arboles) + (j.meta ? ' de ' + num(j.meta) : '') + (j.arboles === 1 ? ' árbol' : ' árboles') +
-      (j.reporte ? '' : ' · sin reporte') + (j.pendientes ? ' · ' + j.pendientes + ' por revisar' : '') + '</span></button></li>').join('') + '</ul>');
+      (j.reporte ? '' : ' · sin reporte') + (j.pendientes ? ' · ' + j.pendientes + ' por revisar' : '') + '</span></button></li>').join('') + '</ul>' +
+      this.botonMas('jornadas', m.jornadas.length));
     h += '</div>';
     return h;
   },
@@ -185,13 +190,36 @@ SRP.supervision = {
 
   /* Tabla corta, la misma en teléfono y computadora (no se vuelve tarjetas: caben tres o cuatro
      columnas). `cifras`: columnas alineadas a la derecha. Una celda { html } ya viene escapada. */
-  tabla(cab, filas, cifras) {
+  tabla(cab, filas, cifras, clave) {
     const esc = SRP.util.escapar;
     if (!filas.length) return '<p class="nota">Sin datos en este periodo.</p>';
     const cl = k => (cifras || []).includes(k) ? ' class="cifra"' : '';
     return '<div class="sup-tabla-caja"><table class="sup-tabla"><thead><tr>' + cab.map((t, k) => '<th' + cl(k) + ' scope="col">' + esc(t) + '</th>').join('') + '</tr></thead><tbody>' +
-      filas.map(f => '<tr>' + f.map((v, k) => '<td' + cl(k) + '>' + (v && v.html !== undefined ? v.html : esc(v)) + '</td>').join('') + '</tr>').join('') +
-      '</tbody></table></div>';
+      filas.map((f, i) => '<tr' + (clave ? this.extra(clave, i, filas.length) : '') + '>' + f.map((v, k) => '<td' + cl(k) + '>' + (v && v.html !== undefined ? v.html : esc(v)) + '</td>').join('') + '</tr>').join('') +
+      '</tbody></table></div>' + (clave ? this.botonMas(clave, filas.length) : '');
+  },
+
+  /* LISTAS LARGAS (D160). Con un año de trabajo, las jornadas del periodo son cientos y las colonias
+     de una alcaldía, decenas: la página medía 18,000 px. Se ven las primeras 15 (las jornadas más
+     recientes, las colonias con más árboles) y un botón muestra las demás sin recalcular. Menos de
+     21 se ven todas: esconder cinco no ahorra nada. */
+  CORTE: 15,
+  corta(n) { return n > this.CORTE + 5; },
+  extra(clave, i, n) { return this.corta(n) && i >= this.CORTE ? ' data-extra="' + clave + '" hidden' : ''; },
+  botonMas(clave, n) {
+    if (!this.corta(n)) return '';
+    return '<button type="button" class="btn btn-texto sup-mas" data-mas="' + clave + '" data-total="' + n + '" aria-expanded="false">' + this.textoMas(clave, n, false) + '</button>';
+  },
+  textoMas(clave, n, abierto) {
+    const cuantas = Number(n).toLocaleString('es-MX');
+    if (clave === 'jornadas') return abierto ? 'Ver sólo las ' + this.CORTE + ' más recientes' : 'Ver las ' + cuantas + ' jornadas';
+    return abierto ? 'Ver sólo las ' + this.CORTE + ' con más árboles' : 'Ver las ' + cuantas + ' colonias';
+  },
+  alternarMas(b) {
+    const abrir = b.getAttribute('aria-expanded') !== 'true';
+    this.el('sup-cuerpo').querySelectorAll('[data-extra="' + b.dataset.mas + '"]').forEach(x => { x.hidden = !abrir; });
+    b.setAttribute('aria-expanded', String(abrir));
+    b.textContent = this.textoMas(b.dataset.mas, b.dataset.total, abrir);
   },
 
   /* La gráfica de barras: dibujo SVG con sus colores en la hoja (.sup-barra) y, para el lector de
@@ -237,6 +265,8 @@ SRP.supervision = {
   },
 
   alTocar(e) {
+    const mas = e.target.closest('button[data-mas]');
+    if (mas) { this.alternarMas(mas); return; }
     const b = e.target.closest('button[data-jornada], button[data-cabo]'); if (!b) return;
     if (b.dataset.jornada) {
       // Jornadas abre esa ficha al prepararse, y ajusta su filtro si la dejaba fuera (D125)

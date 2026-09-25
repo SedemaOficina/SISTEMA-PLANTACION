@@ -67,6 +67,13 @@ Mientras `ES_FICTICIO` sea `true` (en `js/config.js`), la pantalla de acceso ofr
 como cuenta de prueba, y el pie de página deja cambiar de cuenta y restablecer los datos. Todo eso
 desaparece al poner `ES_FICTICIO: false`.
 
+**Datos de demostración (D160).** Hasta abajo, en el pie, «Cargar datos de demostración» agrega casi
+tres años de trabajo inventado (enero de 2024 a hoy): unas 550 jornadas y 7,000 árboles de siete
+cabos y dos coordinaciones, para probar Supervisión, Mi avance y los informes con volumen. Con
+«Cambiar de perfil» se entra como cualquiera de sus cuentas (apellido «Demo»). «Quitar datos de
+demostración» los borra sin tocar lo capturado; después, «Recuperar datos de demostración» los
+vuelve a cargar iguales. Todo lo cargado lleva identificador «demo-» (`js/demostracion.js`).
+
 ## Estructura
 
 ```
@@ -100,6 +107,7 @@ assets/catalogo-especies.js  Catálogo real de especies (76), generado por prueb
 assets/encabezado-ru-sia.png, encabezado-ru-sia-movil.png  Logotipo Gobierno CDMX · SEDEMA · SIA · Reforestación Urbana (encabezado y PDF; versión SIA · Reforestación Urbana hasta 767 px)
 assets/icono-192.png, icono-512.png, icono-512-maskable.png, apple-touch-icon.png  Icono de la app: emblema del programa sobre guinda (D90)
 js/espejo.js          Espejo de campos, sólo en la versión de prueba (se elimina al cerrar la Etapa 1)
+js/demostracion.js    Datos de demostración del pie, sólo con datos de prueba (se elimina al cerrar la Etapa 1)
 esquema.json          Fuente única del modelo de datos (D86)
 DICCIONARIO-DATOS.md  Inventario de tablas y diccionario de datos, generado de esquema.json
 MAPEO-CAMPOS.md       Campos vistos por pantalla: etiqueta ↔ campo, obligatorio, origen
@@ -284,8 +292,8 @@ python3 pruebas/revisar.py
 Nada de esto se hace en la Etapa 1; se deja escrito para no descubrirlo tarde (D150).
 
 1. `ES_FICTICIO: false` en `js/config.js`. Apaga la banda de datos ficticios, la entrada de
-   prueba, el cambio de perfil, las herramientas del pie (restaurar y restablecer ni siquiera se
-   conectan), el envío y el folio simulados y el espejo de campos.
+   prueba, el cambio de perfil, las herramientas del pie (restaurar, restablecer y los datos de
+   demostración ni siquiera se conectan), el envío y el folio simulados y el espejo de campos.
 2. Conectar el proveedor institucional de identidad (`AUTENTICACION.PROVEEDOR` y
    `autenticar()` en `js/sesion.js`). Mientras siga «simulado», con `ES_FICTICIO: false` **el acceso
    queda cerrado**: nadie entra con cualquier contraseña.

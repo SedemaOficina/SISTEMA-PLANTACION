@@ -96,6 +96,9 @@ SRP.folio = {
       .filter(r => r.es_ficticio && !this.valido(r.folio) && this.puedeEmitir(r))
       .sort((a, b) => String(a.fecha_registro).localeCompare(String(b.fecha_registro)));
     for (const r of pendientes) {
+      // Si la sesión se cierra a medio envío (salir, cambiar de perfil, quitar la cuenta de
+      // demostración con que se entró), se para aquí: lo que falta sale en el próximo envío (D160)
+      if (!SRP.sesion.usuario) break;
       const celda = r.uga && /^[A-Z]{3}-\d{3}$/.test(r.uga) ? r.uga : 'EXT-000';
       const folio = this.armar(celda, this.siguiente(celda));
       const nuevo = Object.assign({}, r, { folio, folio_uga: celda, folio_capa_version: r.capa_version || null, folio_lat: r.lat, folio_lng: r.lng });

@@ -890,6 +890,8 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .sup-calidad dd { margin: 0; }
 .sup-acciones { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-top: var(--e-5); }
 .sup-tabla-caja { overflow-x: auto; }
+/* Listas largas: las primeras 15 y un botón para las demás (D160) */
+.sup-mas { margin-top: var(--e-2); }
 .sup-tabla { width: 100%; border-collapse: collapse; font-size: var(--t-s); }
 .sup-tabla th { background: var(--guinda); color: var(--fondo); text-align: left; padding: var(--e-2); font-weight: 500; }
 .sup-tabla td { padding: var(--e-2); border-bottom: 1px solid var(--borde-suave); vertical-align: top; overflow-wrap: anywhere; }
@@ -898,6 +900,11 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .sup-tabla small { display: block; color: var(--gris); font-size: var(--t-xs); }
 .sup-tabla-cabos .enlace-fila { display: inline; width: auto; min-height: 0; padding: 0; border: 0; background: none; color: var(--acento); font-weight: 600;
   text-decoration: underline; text-underline-offset: 3px; }
+/* Datos de demostración, al pie (D160): herramienta de prueba, en el gris del pie */
+.demo-caja { margin-top: var(--e-3); padding-top: var(--e-3); border-top: 1px dashed var(--borde-suave); }
+.demo-titulo { margin: 0 0 var(--e-1); font-size: var(--t-s); font-weight: 600; color: var(--texto); }
+.demo-estado { margin: 0 0 var(--e-2); max-width: var(--ancho-max); }
+.demo-caja .btn { font-size: var(--t-s); }
 
 /* ========== 5. ESTADOS ========== */
 .desplegable[open] summary::before { transform: rotate(90deg); }

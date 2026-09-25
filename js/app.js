@@ -17,6 +17,8 @@ SRP.app = {
     this.el('navegacion').querySelectorAll('.pestana').forEach(b => I.poner(b, pestana[b.dataset.vista], 'grande'));
     I.poner(this.el('btn-usr-agregar'), 'usuarioMas', 'medio');
     I.poner(this.el('btn-subir'), 'subir', 'grande');
+    I.poner(this.el('btn-demo-cargar'), 'regenerar', 'medio');
+    I.poner(this.el('btn-demo-quitar'), 'basura', 'medio');
     // Menú de la cuenta con icono en cada opción (D114): el sol y la puerta pedidos por Liber, y el resto por consistencia
     // Cancelar lleva tache y va en rojo de contorno (D116)
     I.poner(this.el('btn-cancelar-edicion'), 'cerrar', 'medio');
@@ -61,6 +63,7 @@ SRP.app = {
     SRP.jornadas.iniciar();
     SRP.galeria.iniciar();
     SRP.supervision.iniciar();   // Supervisión y Mi avance (D158)
+    SRP.demo.iniciar();          // datos de demostración, al pie: sólo con datos de prueba (D160)
     SRP.activa.iniciar();          // la jornada se declara antes de registrar (D119)
     // Contadores de caracteres, y el error de un campo se va en cuanto se corrige (D140)
     SRP.util.iniciarContadores();
@@ -109,7 +112,7 @@ SRP.app = {
       ['revision-lista', 'la ficha de revisión']
       // El espejo de campos no se exige: se retira al cerrar la Etapa 1 y la app debe abrir sin él (D153)
     ].filter(([id]) => !document.getElementById(id)).map(([, que]) => que);
-    const modulos = ['util', 'ICONOS', 'permisos', 'sesion', 'almacen', 'ref', 'formulario', 'registros', 'catalogos', 'usuarios', 'ESQUEMA', 'validar', 'derivacion', 'indicadores', 'supervision', 'informes']
+    const modulos = ['util', 'ICONOS', 'permisos', 'sesion', 'almacen', 'ref', 'formulario', 'registros', 'catalogos', 'usuarios', 'ESQUEMA', 'validar', 'derivacion', 'indicadores', 'supervision', 'informes', 'demo']
       .filter(m => !SRP[m]);
     /* Las tres capas y la biblioteca del cruce también se exigen (D152): sin ellas la app abría y
        los árboles se guardaban sin alcaldía ni colonia, y con folio EXT-000. La de colonias pesa
@@ -248,6 +251,7 @@ SRP.app = {
     this.el('navegacion').hidden = true;
     this.el('encabezado-usuario').hidden = true;
     this.el('herramientas-prueba').hidden = true;
+    this.el('caja-demo').hidden = true;
     this.el('franja-envio').hidden = true;
     this.el('form-acceso').reset();
     this.el('acceso-errores').hidden = true;
@@ -271,6 +275,7 @@ SRP.app = {
     this.el('btn-cambiar-perfil').hidden = !SRP.CONFIG.ES_FICTICIO;
     this.el('navegacion').hidden = false;
     this.el('herramientas-prueba').hidden = !SRP.CONFIG.ES_FICTICIO;
+    SRP.demo.pintar();
     const nav = this.el('navegacion');
     nav.querySelector('[data-vista="registrar"]').hidden = !p.registrar;
     /* Supervisión (D158): primera para quien supervisa; para el cabo, «Mi avance», al final de su
