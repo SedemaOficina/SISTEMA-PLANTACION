@@ -1,0 +1,1181 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FFFFFF">
+<!-- POLÍTICA DE SEGURIDAD (D150). Sólo corre código de este mismo sitio: ni scripts en línea ni
+     manejadores «onerror=» que un dato alterado pudiera meter. Las imágenes pueden venir del
+     sitio, de datos incrustados (fotos, croquis) y del mapa base. Los estilos, sólo de las hojas
+     del sitio: desde JS se ponen con element.style, nunca con style="…" dentro de HTML. Si cambia
+     el proveedor del mapa (js/config.js, MAPA.CAPAS), su dominio se cambia también aquí. En Fase 2
+     va como cabecera del servidor, con frame-ancestors y la dirección de la API en connect-src. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob: https://server.arcgisonline.com; font-src 'self'; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<!-- Las peticiones al mapa no dicen desde qué sitio se hacen -->
+<meta name="referrer" content="no-referrer">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.9.15">
+<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.9.15">
+<title>Registro de Plantaciones | SEDEMA</title>
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.9.15">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.9.15">
+<link rel="stylesheet" href="css/estilos.css?v=0.9.15">
+</head>
+<body>
+<a class="saltar" href="#principal">Saltar al contenido</a>
+
+<header class="encabezado">
+  <!-- Dentro del encabezado, para que quede en una región con nombre (D153) -->
+  <p id="banda-ficticio" class="banda-ficticio" hidden>Datos ficticios de prueba. No usar para reportes oficiales.</p>
+  <div class="encabezado-interior">
+    <!-- Logotipo (D90, D137): Gobierno CDMX · SEDEMA · SIA · Reforestación Urbana en pantalla ancha; en teléfono, SIA y Reforestación Urbana -->
+    <picture>
+      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.9.15">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.9.15" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
+    </picture>
+    <div id="encabezado-usuario" class="encabezado-usuario" hidden>
+      <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» (D80) -->
+      <button type="button" id="conexion" class="conexion" aria-live="polite" aria-haspopup="dialog" aria-controls="dlg-senal"></button>
+      <!-- La cuenta se resume en un botón con el icono de usuario; el nombre, el perfil y las salidas van en su menú (D93) -->
+      <div class="cuenta">
+        <button type="button" id="btn-cuenta" class="btn btn-icono-solo btn-cuenta" aria-haspopup="true" aria-expanded="false" aria-controls="menu-cuenta"></button>
+        <div id="menu-cuenta" class="menu-cuenta" hidden>
+          <p id="usuario-nombre" class="encabezado-nombre"></p>
+          <p><span id="usuario-perfil" class="insignia"></span></p>
+          <div class="menu-cuenta-acciones">
+            <!-- Opciones de texto, como en cualquier menú de cuenta; no botones (D97) -->
+            <!-- Administración (D158): Catálogos y Usuarios dejan la barra de secciones -->
+            <button type="button" id="btn-ir-configuracion" class="menu-opcion" hidden>Configuración</button>
+            <!-- Modo sol: más contraste para leer a pleno sol; se recuerda en este teléfono (D106) -->
+            <button type="button" id="btn-contraste" class="menu-opcion" role="switch" aria-checked="false">
+              <span>Modo sol (alto contraste)</span><span class="interruptor" aria-hidden="true"></span></button>
+            <!-- Sólo con datos de prueba; desaparece con ES_FICTICIO: false -->
+            <!-- Envío simulado (D111): se comporta como sin conexión sin poner el teléfono en modo avión -->
+            <button type="button" id="btn-sin-senal" class="menu-opcion" role="switch" aria-checked="false" hidden>
+              <span>Simular sin señal (pruebas)</span><span class="interruptor" aria-hidden="true"></span></button>
+            <button type="button" id="btn-cambiar-perfil" class="menu-opcion" hidden>Cambiar usuario (pruebas)</button>
+            <button type="button" id="btn-cerrar-sesion" class="menu-opcion menu-peligro">Cerrar sesión</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Atraso en el envío (D111): días anteriores sin enviar, o pasada la hora de cierre de la jornada -->
+<div id="franja-envio" class="franja-envio" role="status" hidden>
+  <p id="franja-envio-texto"></p>
+  <button type="button" id="btn-franja-enviar" class="btn btn-primario btn-chico">Enviar ahora</button>
+</div>
+
+<nav id="navegacion" class="pestanas" aria-label="Secciones" hidden>
+  <!-- Supervisión va primero para coordinación y administración, y al final como «Mi avance» para el cabo (D158) -->
+  <button type="button" class="pestana" data-vista="supervision"><span id="pestana-supervision-texto">Supervisión</span></button>
+  <button type="button" class="pestana" data-vista="registrar">Nuevo registro</button>
+  <!-- Orden pedido por Liber (D114): Nuevo registro, Jornadas, Registros, Reportes -->
+  <button type="button" class="pestana" data-vista="jornadas">Jornadas</button>
+  <button type="button" class="pestana" data-vista="registros">Registros</button>
+  <button type="button" class="pestana" data-vista="reportes">Reportes</button>
+  <!-- Fotografías vive dentro de Supervisión; Catálogos y Usuarios, en el menú de la cuenta (D158) -->
+</nav>
+
+<main id="principal" tabindex="-1">
+
+  <!-- ACCESO -->
+  <section id="vista-acceso" class="vista vista-acceso" hidden aria-labelledby="titulo-acceso">
+    <h1 id="titulo-acceso">Registro de plantaciones</h1>
+
+    <form id="form-acceso" class="tarjeta" novalidate>
+      <h2>Iniciar sesión</h2>
+      <div id="acceso-errores" class="errores" tabindex="-1" hidden></div>
+      <div class="campo">
+        <label for="acceso-correo">Correo <span class="obligatorio" aria-hidden="true">*</span></label>
+        <input type="email" id="acceso-correo" autocomplete="username" inputmode="email" autocapitalize="off" spellcheck="false" required>
+      </div>
+      <div class="campo">
+        <label for="acceso-clave">Contraseña <span class="obligatorio" aria-hidden="true">*</span></label>
+        <input type="password" id="acceso-clave" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn btn-primario">Entrar</button>
+      <p class="nota">¿No puede entrar? Su cuenta la da de alta la Administración del sistema.</p>
+    </form>
+
+    <div id="acceso-prueba" class="tarjeta tarjeta-prueba" hidden>
+      <h2>Entrar como usuario de prueba</h2>
+      <p class="nota">Sólo en desarrollo: permite revisar cómo ve el sistema cada perfil, sin escribir credenciales.</p>
+      <div class="campo"><label for="sel-usuario-prueba">Usuario ficticio</label><select id="sel-usuario-prueba"></select></div>
+      <button type="button" id="btn-entrar-prueba" class="btn btn-secundario">Entrar con este usuario</button>
+      <p class="aviso-simulado">La contraseña todavía no se verifica: basta un correo dado de alta. La verificación real corresponde al proveedor institucional en la siguiente fase.</p>
+    </div>
+  </section>
+
+  <!-- SUPERVISIÓN / MI AVANCE (D158): lo plantado en un periodo, con los indicadores de D157 -->
+  <section id="vista-supervision" class="vista vista-ancha vista-supervision" hidden aria-labelledby="titulo-supervision">
+    <h1 id="titulo-supervision">Supervisión</h1>
+    <p id="sup-nota" class="nota"></p>
+    <section class="bloque sup-periodo" aria-labelledby="sup-titulo-filtros">
+      <!-- Misma cabecera que en las demás vistas: título, «Quitar filtros» y fichas de lo elegido en las listas -->
+      <div class="grupo-cab"><h2 id="sup-titulo-filtros" class="titulo-bloque">Filtrar</h2>
+        <button type="button" id="btn-sup-quitar" class="btn btn-reiniciar" hidden>Quitar filtros</button></div>
+      <ul id="sup-fichas" class="filtros-activos" data-visible="true" aria-label="Filtros activos"></ul>
+      <div class="filtros zona-filtros">
+        <div id="sup-tipos" class="chips chips-cinco" role="group" aria-label="Periodo">
+          <button type="button" class="chip" data-tipo="semana">Semana</button>
+          <button type="button" class="chip" data-tipo="mes">Mes</button>
+          <button type="button" class="chip" data-tipo="anio">Año</button>
+          <button type="button" class="chip" data-tipo="rango">Un periodo</button>
+          <button type="button" class="chip" data-tipo="todo">Todo</button>
+        </div>
+        <div class="sup-navegar">
+          <button type="button" id="sup-anterior" class="btn btn-icono-solo btn-secundario" aria-label="Periodo anterior"></button>
+          <p id="sup-etiqueta" class="sup-etiqueta" aria-live="polite"></p>
+          <button type="button" id="sup-siguiente" class="btn btn-icono-solo btn-secundario" aria-label="Periodo siguiente"></button>
+        </div>
+        <form id="form-sup-rango" class="filtros-periodo" novalidate hidden>
+          <div class="campo campo-corto"><label for="sup-desde">Desde</label><input type="date" id="sup-desde" data-vacio="Elija la fecha"></div>
+          <div class="campo campo-corto"><label for="sup-hasta">Hasta</label><input type="date" id="sup-hasta" data-vacio="Elija la fecha"></div>
+          <button type="submit" id="btn-sup-rango" class="btn btn-primario btn-chico">Aplicar</button>
+        </form>
+        <details id="sup-filtros" class="acordeon-filtros">
+          <summary><span id="sup-filtros-texto">Más filtros</span></summary>
+          <div class="filtros-listas acordeon-cuerpo">
+            <div class="campo campo-corto"><label for="sup-alcaldia">Alcaldía</label><select id="sup-alcaldia"></select></div>
+            <div class="campo campo-corto"><label for="sup-programa">Programa</label><select id="sup-programa"></select></div>
+            <div class="campo campo-corto"><label for="sup-origen">Origen</label><select id="sup-origen"></select></div>
+            <div id="caja-sup-cabo" class="campo campo-corto"><label for="sup-cabo">Quién registró</label><select id="sup-cabo"></select></div>
+            <!-- Sólo para la Administración: las demás cuentas ya ven sólo lo de su institución -->
+            <div id="caja-sup-tipo" class="campo campo-corto" hidden><label for="sup-tipo">Tipo de institución</label><select id="sup-tipo"></select></div>
+            <div id="caja-sup-organizacion" class="campo campo-corto" hidden><label for="sup-organizacion">Institución</label><select id="sup-organizacion"></select></div>
+          </div>
+        </details>
+      </div>
+    </section>
+    <div id="sup-cuerpo" class="sup-cuerpo" aria-live="polite"></div>
+    <!-- Informes por periodo (D159): lo que se ve, en PDF con membrete y en CSV para Excel -->
+    <div class="sup-acciones">
+      <button type="button" id="btn-sup-pdf" class="btn btn-primario"><span>Informe en PDF</span></button>
+      <button type="button" id="btn-sup-csv" class="btn btn-secundario"><span>Tabla en CSV</span></button>
+      <button type="button" id="btn-sup-fotos" class="btn btn-secundario"><span>Fotografías</span></button>
+    </div>
+  </section>
+
+  <!-- REGISTRAR -->
+  <section id="vista-registrar" class="vista vista-ancha vista-registrar" hidden aria-labelledby="titulo-registrar">
+    <!-- La pestaña ya dice «Nuevo registro»; el título sólo se muestra en edición, donde sí cambia el contexto -->
+    <!-- Oculto a la vista pero legible por el lector de pantalla: la vista tiene su título (D153) -->
+    <h1 id="titulo-registrar" class="oculto-visual">Nuevo registro</h1>
+    <p id="edicion-aviso" class="franja-edicion" hidden></p>
+
+    <!-- INICIAR JORNADA (D119): sin jornada abierta no se registra; se declara una sola vez -->
+    <section id="panel-iniciar-jornada" class="tarjeta panel-iniciar" hidden aria-labelledby="titulo-iniciar-jornada">
+      <!-- Título e introducción pedidos por Liber (D143) -->
+      <h2 id="titulo-iniciar-jornada">Registrar jornada</h2>
+      <p class="nota">Registre los datos de la jornada (proyecto) del día.</p>
+      <form id="form-iniciar-jornada" class="form-iniciar-jornada" novalidate>
+        <div id="ini-errores" class="errores" role="alert" tabindex="-1" hidden></div>
+        <!-- En computadora, dos columnas (D145): el lugar a la izquierda y el plan a la derecha, como en
+             «Nuevo árbol». En teléfono las dos cajas no se notan: los campos siguen uno bajo otro. -->
+        <div class="ini-col ini-col-lugar">
+        <div class="campo"><label for="ini-nombre">Nombre de la jornada <span class="obligatorio" aria-hidden="true">*</span></label>
+          <input id="ini-nombre" maxlength="120" placeholder="p. ej. Parque Los Pericos" autocomplete="off" spellcheck="false" aria-describedby="ini-nombre-ayuda">
+          <p id="ini-nombre-ayuda" class="nota ayuda-campo">Un nombre que identifique la jornada; por ejemplo, Parque Los Pericos o Intervención en Calzada de Tlalpan.</p></div>
+        <!-- Detectar la ubicación de la jornada (D122): sólo la jornada; alcaldía y colonia salen de las
+             capas del dispositivo. La dirección o referencia se sigue escribiendo abajo. -->
+        <div class="campo campo-ini-detectar">
+          <button type="button" id="btn-ini-detectar" class="btn btn-primario btn-ancho"></button>
+          <!-- Sin señal en el sitio, las coordenadas se escriben, como en «Registrar árbol» (D143); la longitud con «−» fijo y el par se puede pegar (D170) -->
+          <details class="coord-manual desplegable" id="ini-detalles-coord">
+            <summary><span>Capturar coordenadas a mano</span></summary>
+            <div class="campo-doble">
+              <div class="campo"><label for="ini-coord-lat">Latitud</label><input id="ini-coord-lat" inputmode="decimal" placeholder="19.432600" autocomplete="off" aria-describedby="ini-coord-ayuda"></div>
+              <div class="campo"><label for="ini-coord-lng">Longitud <span class="oculto-visual">(al oeste, negativa: escriba sólo el número)</span></label><span class="campo-signo"><span class="signo-fijo" aria-hidden="true">−</span><input id="ini-coord-lng" inputmode="decimal" placeholder="99.133200" autocomplete="off" aria-describedby="ini-coord-ayuda"></span></div>
+            </div>
+            <p id="ini-coord-ayuda" class="nota ayuda-campo">También puede pegar las dos coordenadas juntas, por ejemplo: 19.423212, -99.141426. En Google Maps se copian así: mantenga presionado el sitio y toque las coordenadas.</p>
+            <button type="button" id="btn-ini-coord-aplicar" class="btn btn-secundario">Colocar punto</button>
+          </details>
+          <p id="ini-detectado" class="nota ini-detectado" aria-live="polite" hidden></p>
+          <div class="campo-doble">
+            <div class="campo"><label for="ini-alcaldia">Alcaldía</label><output id="ini-alcaldia" class="campo-lectura" for="btn-ini-detectar">—</output></div>
+            <div class="campo"><label for="ini-colonia">Colonia</label><output id="ini-colonia" class="campo-lectura" for="btn-ini-detectar">—</output></div>
+          </div>
+          <!-- La prioridad de reforestación de la colonia donde se ubica la jornada (modelo de priorización) -->
+          <div class="campo" id="caja-ini-prioridad"><label for="ini-prioridad">Prioridad de reforestación de la colonia</label><output id="ini-prioridad" class="campo-lectura" for="btn-ini-detectar">—</output></div>
+        </div>
+        <!-- Ayuda bajo los campos que se prestan a duda (D140) -->
+        <div class="campo"><label for="ini-ubicacion">Dirección de la jornada</label>
+          <input id="ini-ubicacion" maxlength="200" placeholder="p. ej. Av. Insurgentes Sur 1500" autocomplete="off" aria-describedby="ini-ubicacion-ayuda">
+          <p id="ini-ubicacion-ayuda" class="nota ayuda-campo">Calle y número, entre calles o tramo.</p></div>
+        </div>
+        <div class="ini-col ini-col-plan">
+        <!-- El programa es de la jornada (D130): los árboles lo heredan; se puede cambiar por árbol -->
+        <div class="campo"><label for="ini-programa">Programa <span class="obligatorio" aria-hidden="true">*</span></label>
+          <select id="ini-programa" required></select></div>
+        <!-- Origen: programada o pedido especial de otra instancia; el bloque lo arma js/pedido.js -->
+        <div id="ini-caja-pedido" class="caja-pedido"></div>
+        <!-- Meta de la jornada (D131): cuántos árboles se van a plantar; la revisión compara contra ella -->
+        <div class="campo"><label for="ini-meta">Árboles que se van a plantar <span class="obligatorio" aria-hidden="true">*</span></label>
+          <input type="number" id="ini-meta" inputmode="numeric" min="1" max="9999" step="1" placeholder="Cantidad" autocomplete="off" required></div>
+        <div class="campo"><label for="ini-fecha">Fecha de la jornada de plantación <span class="obligatorio" aria-hidden="true">*</span></label>
+          <!-- Arranca vacía y «Hoy» la pone de un toque, como en el resto del sistema (D29, D98) -->
+          <div class="fecha-con-hoy"><input type="date" id="ini-fecha" required data-vacio="Seleccione la fecha"><button type="button" id="btn-ini-hoy" class="btn btn-secundario btn-chico">Hoy</button></div></div>
+        <div class="campo"><label for="ini-comentarios">Comentarios <span class="opcional">(opcional)</span></label>
+          <textarea id="ini-comentarios" rows="3" maxlength="500" placeholder="Condiciones del sitio, acuerdos con la comunidad, incidencias…"></textarea></div>
+        <div class="fila-botones">
+          <button type="submit" id="btn-iniciar-jornada" class="btn btn-exito btn-destacado"></button>
+          <button type="button" id="btn-iniciar-cancelar" class="btn btn-cancelar" hidden></button>
+        </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- Panel de la jornada activa (D119, D131): siempre a la vista mientras se registra, con el
+         último árbol guardado dentro (D130), para que nadie registre en la jornada equivocada -->
+    <section id="franja-jornada" class="franja-jornada" aria-labelledby="franja-jornada-rotulo" hidden>
+      <p id="franja-jornada-rotulo" class="franja-jornada-rotulo">Jornada activa</p>
+      <p id="franja-jornada-texto"></p>
+      <!-- En qué paso va la jornada (D138) -->
+      <ol id="franja-pasos" class="pasos" aria-label="Pasos de la jornada"></ol>
+      <p id="franja-siguiente" class="franja-siguiente" hidden></p>
+      <div id="franja-jornada-acciones" class="franja-jornada-acciones">
+        <button type="button" id="btn-jornada-cambiar" class="btn btn-secundario btn-chico"></button>
+        <button type="button" id="btn-jornada-cerrar" class="btn btn-primario btn-chico"></button>
+      </div>
+      <div id="franja-guardado" class="franja-guardado" role="status" aria-live="polite" hidden>
+        <p id="franja-guardado-texto"></p>
+        <div class="franja-guardado-acciones">
+          <button type="button" id="btn-guardado-corregir" class="btn btn-editar btn-chico"></button>
+          <button type="button" id="btn-guardado-ver" class="btn btn-secundario btn-chico"></button>
+          <button type="button" id="btn-guardado-cerrar" class="btn btn-icono-solo btn-texto franja-cerrar" aria-label="Ocultar"></button>
+        </div>
+      </div>
+    </section>
+    <!-- Aquí empieza el formulario: título propio para que el panel de arriba no parezca parte de él (D131) -->
+    <h2 id="titulo-arbol" class="titulo-arbol" hidden>Nuevo árbol</h2>
+    <!-- En computadora, ubicación a la izquierda y datos a la derecha; en teléfono, uno bajo otro (D109) -->
+    <div class="registrar-columnas" id="registrar-columnas">
+    <div class="registrar-ubicacion">
+    <h2 class="titulo-bloque">Ubicación <span class="obligatorio" aria-hidden="true">*</span></h2>
+    <button type="button" id="btn-ubicacion" class="btn btn-primario btn-ancho btn-ubicacion"></button>
+    <details class="coord-manual desplegable" id="detalles-coord">
+      <summary><span>Capturar coordenadas a mano</span></summary>
+      <div class="campo-doble">
+        <div class="campo"><label for="coord-lat">Latitud</label><input id="coord-lat" inputmode="decimal" placeholder="19.432600" aria-describedby="coord-ayuda"></div>
+        <div class="campo"><label for="coord-lng">Longitud <span class="oculto-visual">(al oeste, negativa: escriba sólo el número)</span></label><span class="campo-signo"><span class="signo-fijo" aria-hidden="true">−</span><input id="coord-lng" inputmode="decimal" placeholder="99.133200" aria-describedby="coord-ayuda"></span></div>
+      </div>
+      <p id="coord-ayuda" class="nota ayuda-campo">También puede pegar las dos coordenadas juntas, por ejemplo: 19.423212, -99.141426. En Google Maps se copian así: mantenga presionado el sitio y toque las coordenadas.</p>
+      <button type="button" id="btn-coord-aplicar" class="btn btn-secundario">Colocar punto</button>
+    </details>
+
+    <div class="mapa-bloque">
+      <div id="mapa" class="mapa" aria-label="Mapa para ubicar el árbol. Toque el mapa o arrastre el marcador."></div>
+      <!-- Colonias prioritarias: la leyenda de los niveles que se ven; el control va sobre el mapa -->
+      <div id="mapa-prioritarias" class="pri-control"></div>
+      <!-- Bajo el mapa queda sólo el aviso de lo que pasó: si hubo señal, con qué precisión,
+           qué hacer si falló. Los datos del punto son campos del formulario, más abajo. -->
+      <p id="mapa-estado" class="ficha-estado" aria-live="polite">Obteniendo su ubicación…</p>
+      <!-- Avisos que no deben tapar la precisión: la imagen que no cargó, el punto junto al límite (D152) -->
+      <p id="mapa-aviso" class="ficha-estado ficha-estado-extra" data-tipo="alerta" aria-live="polite" hidden></p>
+      <!-- Guía con el punto puesto (D173): se puede arrastrar y las coordenadas se actualizan solas; sin punto, la guía es la línea de arriba -->
+      <p id="mapa-guia" class="nota mapa-guia" hidden>Arrastre el marcador o toque otro sitio; las coordenadas se actualizan solas.</p>
+    </div>
+
+    <!-- Lo que sale del punto se presenta como cualquier otro dato del registro, en campos de
+         sólo lectura: se lee igual que el resto y queda claro que no se teclea. Son <output>
+         y no <input readonly> porque su contenido es texto: así el lector de pantalla anuncia
+         el cambio en cuanto el punto se mueve. -->
+    <div class="campo-punto">
+      <!-- Los tres datos en una ficha compacta: en fila en escritorio, en renglones etiqueta-valor en teléfono (D54, D98) -->
+      <div class="campo-triple">
+        <div class="campo"><label for="dato-coordenadas">Coordenadas<span class="oculto-visual"> (latitud, longitud)</span></label>
+          <output id="dato-coordenadas" class="campo-lectura" for="mapa">—</output></div>
+        <div class="campo"><label for="dato-alcaldia">Alcaldía</label>
+          <output id="dato-alcaldia" class="campo-lectura" for="mapa">—</output></div>
+        <div class="campo"><label for="dato-colonia">Colonia</label>
+          <output id="dato-colonia" class="campo-lectura" for="mapa">—</output></div>
+      </div>
+      <!-- La prioridad de la colonia donde cae el punto, según el modelo de priorización: es referencia, no se guarda -->
+      <div class="campo campo-prioridad" id="caja-dato-prioridad"><label for="dato-prioridad">Prioridad de reforestación de la colonia</label>
+        <output id="dato-prioridad" class="campo-lectura" for="mapa">—</output></div>
+      <!-- Fuera de la rejilla: oculto a la vista pero anunciado al lector de pantalla y guardado en el registro -->
+      <div class="campo oculto-visual"><label for="dato-origen">Cómo se obtuvo el punto</label>
+        <output id="dato-origen" class="campo-lectura" for="mapa">—</output>
+      </div>
+    </div>
+
+    </div>
+    <form id="form-plantacion" class="form-plantacion" novalidate>
+      <div id="resumen-errores" class="errores" tabindex="-1" hidden></div>
+
+      <div class="campo combo">
+        <label for="campo-especie" id="etq-especie">Especie <span class="obligatorio" aria-hidden="true">*</span></label>
+        <!-- Las últimas especies de la jornada, a un toque (D130) -->
+        <div id="especies-recientes" class="chips chips-recientes" role="group" aria-label="Últimas especies de la jornada" hidden></div>
+        <input id="campo-especie" role="combobox" required aria-autocomplete="list" aria-expanded="false"
+               aria-controls="lista-especies" autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off" placeholder="Toque para ver la lista o escriba para buscar">
+        <ul id="lista-especies" class="combo-lista" role="listbox" aria-labelledby="etq-especie" hidden></ul>
+      </div>
+      <div class="campo" id="caja-otra-especie" hidden>
+        <label for="campo-otra-especie">Especifique la especie</label>
+        <input id="campo-otra-especie" spellcheck="false" autocorrect="off" autocapitalize="off">
+      </div>
+
+      <!-- El programa no se pide por árbol: es el de la jornada (D151) -->
+      <!-- Fecha de plantación del árbol: la pone SRP.activa. Se enseña sólo si la jornada empezó antes
+           de hoy, para elegir el día en que se plantó; si es de hoy, no hay de dónde elegir -->
+      <div class="campo" id="caja-fecha-arbol" hidden><label for="campo-fecha">Fecha de plantación <span class="obligatorio" aria-hidden="true">*</span></label>
+        <div class="fecha-con-hoy"><input type="date" id="campo-fecha" tabindex="-1" aria-describedby="fecha-arbol-ayuda"><button type="button" id="btn-fecha-hoy" class="btn btn-secundario btn-chico">Hoy</button></div>
+        <p id="fecha-arbol-ayuda" class="nota ayuda-campo"></p></div>
+      <div class="campo">
+        <label for="campo-comentarios">Comentarios <span class="opcional">(opcional)</span></label>
+        <textarea id="campo-comentarios" rows="3" maxlength="500" placeholder="Observaciones del sitio, condición del ejemplar, incidencias…"></textarea>
+      </div>
+
+      <fieldset class="campo">
+        <legend>Fotografía <span class="opcional">(opcional)</span></legend>
+
+        <!-- Zona de carga: un solo selector sin «capture», para que el teléfono ofrezca su menú -->
+        <label class="zona-foto" for="foto-archivo" id="etq-foto">
+          <span id="icono-foto" class="icono-foto" aria-hidden="true"></span>
+          <span class="zona-foto-titulo" id="texto-foto">Agregar fotografía</span>
+          <span class="zona-foto-ayuda">Tomar una foto o elegirla del teléfono</span>
+        </label>
+        <input type="file" id="foto-archivo" accept="image/*" class="oculto-visual">
+
+        <!-- Ficha del archivo cargado: se ve qué se subió y se puede quitar -->
+        <div id="ficha-foto" class="ficha-foto" hidden>
+          <img id="foto-vista" class="ficha-foto-miniatura" alt="Vista previa de la fotografía del árbol">
+          <span class="ficha-foto-datos">
+            <span id="foto-nombre" class="ficha-foto-nombre"></span>
+            <span id="foto-peso" class="ficha-foto-peso"></span>
+          </span>
+          <button type="button" id="btn-foto-quitar" class="btn btn-peligro-linea btn-icono-solo"
+                  aria-label="Quitar la fotografía" title="Quitar la fotografía"></button>
+        </div>
+      </fieldset>
+
+      <!-- Barra fija al pie mientras el formulario está a la vista: guardar sin bajar hasta el final (D96) -->
+      <div class="acciones barra-guardar">
+        <!-- La acción de cierre del formulario: verde (guardar), ancho completo en teléfono y más alto, para que se vea desde lejos (D73) -->
+        <button type="submit" id="btn-revisar" class="btn btn-exito btn-ancho btn-destacado" aria-keyshortcuts="Control+Enter Meta+Enter"></button>
+        <button type="button" id="btn-cancelar-edicion" class="btn btn-cancelar" hidden>Cancelar edición</button>
+      </div>
+    </form>
+    </div>
+
+    <!-- ESPEJO DE CAMPOS — SE ELIMINA AL CERRAR LA ETAPA 1.
+         Enseña los campos que llegan a la base sin tener lugar en la pantalla, para llevar
+         control visual mientras se afina la interfaz. Sólo aparece con datos de prueba.
+         Para quitarlo, ver el encabezado de js/espejo.js: este bloque y el del cierre del reporte,
+         el archivo y su <script>, y los estilos `.espejo`. Las pruebas comprueban que la app abre
+         sin él (D153). -->
+    <section id="espejo-campos" class="espejo" aria-labelledby="espejo-titulo" hidden>
+      <!-- Plegado de inicio (pedido por Liber, 24-09-2026): se abre sólo cuando se quiere revisar -->
+      <details class="desplegable">
+        <summary><span>Campos que viajan a la base y no se ven en pantalla</span></summary>
+        <h2 id="espejo-titulo" class="espejo-encabezado">Espejo de campos
+          <span class="espejo-marca">sólo en la versión de prueba</span></h2>
+        <p class="espejo-ayuda">Es el registro tal como quedaría guardado en este momento. No es
+          una copia: sale del mismo objeto que escribe el botón Guardar. Desaparece al cerrar la
+          Etapa 1; después estos campos viven sólo en el código y en las capas.</p>
+        <table class="espejo-tabla">
+          <caption>Almacén <code>plantaciones</code></caption>
+          <thead><tr><th>Campo</th><th>Valor ahora</th><th>De dónde sale</th></tr></thead>
+          <tbody id="espejo-cuerpo"></tbody>
+        </table>
+        <table class="espejo-tabla">
+          <caption>Almacén <code>bitacora</code>, que se escribe solo al guardar</caption>
+          <thead><tr><th>Campo</th><th>Valor ahora</th></tr></thead>
+          <tbody id="espejo-bitacora"></tbody>
+        </table>
+        <p id="espejo-conteo" class="espejo-ayuda"></p>
+      </details>
+    </section>
+
+  </section>
+
+  <!-- REGISTROS -->
+  <section id="vista-registros" class="vista vista-ancha" hidden aria-labelledby="titulo-registros">
+    <h1 id="titulo-registros">Mis registros</h1>
+
+    <!-- Cuatro bloques con título, en el orden en que se usan: filtrar, ver, sacar el reporte, cuidar los datos (D79) -->
+    <section class="bloque" aria-labelledby="titulo-filtros">
+    <!-- Encabezado del grupo con su «Reiniciar» a la derecha (D95) -->
+    <div class="grupo-cab">
+      <h2 id="titulo-filtros" class="titulo-bloque titulo-filtros">Filtrar</h2>
+      <!-- En teléfono los filtros arrancan abiertos y este botón los pliega (D104, antes D100); en escritorio siempre abiertos -->
+      <button type="button" id="btn-filtros" class="btn btn-secundario btn-filtros" aria-expanded="true" aria-controls="panel-filtros">
+        <span>Filtros</span><span id="filtros-cuenta" class="filtros-cuenta" hidden></span></button>
+      <!-- Vuelve al estado con que se abre la vista (Hoy, sin rango, todos los cabos). «Todos» sólo quita el periodo -->
+      <button type="button" id="btn-reiniciar-filtros" class="btn btn-reiniciar">Quitar filtros</button>
+    </div>
+    <!-- Lo que está filtrando ahora, como fichas que se quitan con × (D100) -->
+    <ul id="filtros-activos" class="filtros-activos" aria-label="Filtros activos"></ul>
+    <div id="panel-filtros" class="filtros zona-filtros" data-abierto="true">
+      <!-- Una sola fila: atajos y listas. Desde/Hasta sólo al pedir «Un periodo» (D64) -->
+      <!-- Mismo orden que Jornadas (D128, D129): Todos · Hoy · Un día · Un periodo; año, mes y cabo plegados -->
+      <div id="filtro-atajos" class="chips chips-cuatro" role="group" aria-label="Periodo">
+        <button type="button" class="chip" data-atajo="todos">Todos</button>
+        <button type="button" class="chip" data-atajo="hoy" id="chip-hoy">Hoy</button>
+        <!-- «Un día»: una sola fecha, sin repetirla en Desde y Hasta (D113) -->
+        <button type="button" class="chip" data-atajo="dia" aria-controls="filtro-un-dia" aria-expanded="false">Un día</button>
+        <button type="button" class="chip" data-atajo="periodo" aria-controls="filtro-periodo" aria-expanded="false">Un periodo</button>
+      </div>
+      <div id="filtro-un-dia" class="filtros-periodo filtros-un-dia" hidden>
+        <div class="campo campo-corto"><label for="filtro-dia">Día</label><input type="date" id="filtro-dia" data-vacio="Elija la fecha"></div>
+      </div>
+      <div id="filtro-periodo" class="filtros-periodo" hidden>
+        <div class="campo campo-corto"><label for="filtro-desde">Desde</label><input type="date" id="filtro-desde" data-vacio="Elija la fecha"></div>
+        <div class="campo campo-corto"><label for="filtro-hasta">Hasta</label><input type="date" id="filtro-hasta" data-vacio="Elija la fecha"></div>
+        <button type="button" id="btn-filtrar" class="btn btn-primario btn-chico">Aplicar</button>
+      </div>
+      <details id="filtro-mas-filtros" class="acordeon-filtros">
+        <summary><span id="filtro-mas-filtros-texto">Más filtros</span></summary>
+        <div class="filtros-listas acordeon-cuerpo">
+          <div id="caja-filtro-anio" class="campo campo-corto"><label for="filtro-anio">Año</label><select id="filtro-anio"></select></div>
+          <div id="caja-filtro-mes" class="campo campo-corto"><label for="filtro-mes">Mes</label><select id="filtro-mes"></select></div>
+          <div id="caja-filtro-cabo" class="campo campo-corto" hidden><label for="filtro-cabo">Quién registró</label><select id="filtro-cabo"></select></div>
+          <div class="campo campo-corto"><label for="filtro-especie">Especie</label><select id="filtro-especie"></select></div>
+          <div class="campo campo-corto"><label for="filtro-programa">Programa</label><select id="filtro-programa"></select></div>
+          <div class="campo campo-corto"><label for="filtro-alcaldia">Alcaldía</label><select id="filtro-alcaldia"></select></div>
+          <div id="caja-filtro-tipo-org" class="campo campo-corto" hidden><label for="filtro-tipo-org">Tipo de institución</label><select id="filtro-tipo-org"></select></div>
+          <div id="caja-filtro-org" class="campo campo-corto" hidden><label for="filtro-org">Institución</label><select id="filtro-org"></select></div>
+        </div>
+      </details>
+    </div>
+    </section>
+
+    <section class="bloque" aria-labelledby="registros-total">
+    <p id="registros-total" class="total" aria-live="polite"></p>
+    <ul id="lista-registros" class="lista-registros rejilla-tarjetas"></ul>
+    <!-- Estado vacío con el botón que resuelve (D96) -->
+    <div id="registros-vacio" class="vacio" aria-live="polite" hidden></div>
+    <nav id="registros-paginas" class="paginador" aria-label="Páginas de registros" hidden></nav>
+    </section>
+
+  </section>
+
+  <!-- JORNADAS (D112): cada día de trabajo de un cabo, con su mapa de puntos numerados, la lista
+       en el mismo orden y la conciliación con lo que la cuadrilla contó -->
+  <section id="vista-jornadas" class="vista vista-ancha vista-jornadas" hidden aria-labelledby="titulo-jornadas">
+    <div id="jornadas-lista-caja" class="jornadas-lista-caja">
+      <h1 id="titulo-jornadas">Jornadas</h1>
+      <p class="nota">Cada día de trabajo con su mapa, para comprobar al cierre que cada árbol plantado tenga su punto.</p>
+      <!-- Filtros (D128): Todas · Hoy · Un día · Un periodo; año, mes y cabo plegados en «Más filtros» -->
+      <section class="bloque" aria-labelledby="jornada-titulo-filtros">
+        <!-- Misma cabecera que en Registros, Reportes y Fotografías: título, «Quitar filtros» y fichas de lo elegido -->
+        <div class="grupo-cab"><h2 id="jornada-titulo-filtros" class="titulo-bloque">Filtrar</h2>
+          <button type="button" id="jornada-quitar" class="btn btn-reiniciar" hidden>Quitar filtros</button></div>
+        <ul id="jornada-fichas" class="filtros-activos" data-visible="true" aria-label="Filtros activos"></ul>
+        <div class="filtros zona-filtros">
+          <div class="campo-doble">
+            <div class="campo"><label for="jornada-buscar">Buscar por nombre</label><input id="jornada-buscar" type="search" placeholder="Nombre de la jornada" autocomplete="off"></div>
+            <!-- Revisión: lo que tiene pendiente cada jornada, para ir directo a lo que falta validar -->
+            <div class="campo"><label for="jornada-revision">Revisión</label><select id="jornada-revision">
+              <option value="">Todas</option><option value="pendiente">Con algo por atender</option><option value="revisar">Con puntos por revisar</option>
+              <option value="cuadra">No cuadran con lo previsto</option><option value="lista">Sin pendientes</option></select></div>
+          </div>
+          <div id="jornada-atajos" class="chips chips-cuatro" role="group" aria-label="Periodo">
+            <button type="button" class="chip" data-atajo="todas">Todas</button>
+            <button type="button" class="chip" data-atajo="hoy" id="jornada-chip-hoy">Hoy</button>
+            <button type="button" class="chip" data-atajo="dia" aria-controls="jornada-un-dia" aria-expanded="false">Un día</button>
+            <button type="button" class="chip" data-atajo="periodo" aria-controls="jornada-periodo" aria-expanded="false">Un periodo</button>
+          </div>
+          <div id="jornada-un-dia" class="filtros-periodo filtros-un-dia" hidden>
+            <div class="campo campo-corto"><label for="jornada-dia">Día</label><input type="date" id="jornada-dia" data-vacio="Elija la fecha"></div>
+          </div>
+          <div id="jornada-periodo" class="filtros-periodo" hidden>
+            <div class="campo campo-corto"><label for="jornada-desde">Desde</label><input type="date" id="jornada-desde" data-vacio="Elija la fecha"></div>
+            <div class="campo campo-corto"><label for="jornada-hasta">Hasta</label><input type="date" id="jornada-hasta" data-vacio="Elija la fecha"></div>
+            <button type="button" id="btn-jornada-filtrar" class="btn btn-primario btn-chico"></button>
+          </div>
+          <details id="jornada-mas-filtros" class="acordeon-filtros">
+            <summary><span id="jornada-mas-filtros-texto">Más filtros</span></summary>
+            <div class="filtros-listas acordeon-cuerpo">
+              <div id="caja-jornada-anio" class="campo campo-corto"><label for="jornada-anio">Año</label><select id="jornada-anio"></select></div>
+              <div id="caja-jornada-mes" class="campo campo-corto"><label for="jornada-mes">Mes</label><select id="jornada-mes"></select></div>
+              <div id="caja-jornada-cabo" class="campo campo-corto" hidden><label for="jornada-cabo">Quién registró</label><select id="jornada-cabo"></select></div>
+              <div class="campo campo-corto"><label for="jornada-programa">Programa</label><select id="jornada-programa"></select></div>
+              <div class="campo campo-corto"><label for="jornada-origen">Origen</label><select id="jornada-origen"></select></div>
+              <div class="campo campo-corto" id="caja-jornada-filtro-prioridad"><label for="jornada-filtro-prioridad">Prioridad de la colonia</label><select id="jornada-filtro-prioridad"></select></div>
+              <div class="campo campo-corto"><label for="jornada-alcaldia">Alcaldía</label><select id="jornada-alcaldia"></select></div>
+              <div id="caja-jornada-tipo-org" class="campo campo-corto" hidden><label for="jornada-tipo-org">Tipo de institución</label><select id="jornada-tipo-org"></select></div>
+              <div id="caja-jornada-org" class="campo campo-corto" hidden><label for="jornada-org">Institución</label><select id="jornada-org"></select></div>
+            </div>
+          </details>
+        </div>
+      </section>
+      <section class="bloque" aria-labelledby="jornadas-total">
+        <p id="jornadas-total" class="total" aria-live="polite"></p>
+        <ul id="lista-jornadas" class="lista-jornadas jornadas-tarjetas rejilla-tarjetas"></ul>
+        <div id="jornadas-vacio" class="vacio" aria-live="polite" hidden></div>
+        <nav id="jornadas-paginas" class="paginador" aria-label="Páginas de jornadas" hidden></nav>
+      </section>
+    </div>
+
+    <div id="jornada-detalle" class="jornada-detalle" hidden>
+      <button type="button" id="btn-jornada-volver" class="btn btn-texto volver">Jornadas</button>
+      <h1 id="jornada-titulo" class="jornada-titulo" tabindex="-1"></h1>
+      <p id="jornada-sub" class="nota"></p>
+      <p id="jornada-comentarios" class="jornada-comentarios" hidden></p>
+      <!-- Pasos de la jornada (D138): en qué paso va; lo que sigue está en la barra del pie -->
+      <ol id="jornada-pasos" class="pasos" aria-label="Pasos de la jornada"></ol>
+      <!-- Acciones de la jornada (D132): cerrar/reabrir, editar sus datos, eliminarla si está vacía -->
+      <div class="jornada-acciones-cab">
+        <button type="button" id="btn-jornada-estado" class="btn btn-primario btn-chico" hidden></button>
+        <button type="button" id="btn-jornada-editar" class="btn btn-editar btn-chico" hidden></button>
+        <button type="button" id="btn-jornada-relevo" class="btn btn-secundario btn-chico" hidden></button>
+        <button type="button" id="btn-jornada-eliminar" class="btn btn-peligro-linea btn-chico" hidden></button>
+      </div>
+      <!-- Secciones de la ficha (D141): subtítulos y, en teléfono, una barra fija que salta a cada una -->
+      <nav id="jornada-saltos" class="saltos" aria-label="Secciones de la jornada">
+        <button type="button" data-salto="sec-jornada-mapa">Mapa</button>
+        <button type="button" data-salto="sec-jornada-conciliacion">Conciliación</button>
+        <button type="button" data-salto="sec-jornada-puntos">Puntos (<span id="jornada-saltos-n">0</span>)</button>
+      </nav>
+      <!-- En computadora, dos columnas (D145): el mapa a la izquierda, fijo al desplazarse, y la
+           conciliación con la lista de puntos a la derecha. En teléfono, uno bajo otro. -->
+      <div id="ficha-cuerpo" class="ficha-cuerpo">
+      <div id="ficha-col-mapa" class="ficha-col-mapa">
+      <h2 id="sec-jornada-mapa" class="titulo-bloque titulo-seccion" tabindex="-1">Mapa</h2>
+      <div id="jornada-mapa" class="mapa mapa-jornada" role="region" aria-label="Mapa de la jornada con los puntos numerados"></div>
+      <p class="leyenda-jornada" aria-hidden="true"><span><i data-tono=""></i>Correcto</span><span><i data-tono="rev"></i>Por revisar</span><span><i data-tono="err"></i>Lejos del resto</span><span><i data-tono="ok"></i>Revisado</span><span><i data-tono="sust"></i>Sustituto</span></p>
+      <div id="jornada-prioritarias" class="pri-control"></div>
+      <p id="jornada-prioridad" class="nota" hidden></p>
+      </div>
+      <div id="ficha-col-lista" class="ficha-col-lista">
+      <!-- La meta se escribió al iniciar la jornada (D131); aquí sólo se compara -->
+      <h2 id="sec-jornada-conciliacion" class="titulo-bloque titulo-seccion" tabindex="-1">Conciliación</h2>
+      <div id="jornada-conciliacion" class="conciliacion" data-tono="neutro">
+        <div class="conciliacion-cifras">
+          <span class="jornada-cifra"><b id="jornada-meta">—</b> previstos</span>
+          <span class="jornada-cifra"><b id="jornada-registrados">0</b> <span id="jornada-registrados-etiqueta">registrados</span></span>
+        </div>
+        <p id="jornada-resultado" class="conciliacion-resultado" aria-live="polite"></p>
+        <button type="button" id="btn-jornada-todos-bien" class="btn btn-exito-linea" hidden><span>Marcar todos como revisados</span></button>
+      </div>
+      <h2 id="sec-jornada-puntos" class="titulo-bloque titulo-seccion" tabindex="-1">Puntos (<span id="jornada-puntos-n">0</span>)</h2>
+      <ol id="jornada-lista" class="lista-puntos" aria-label="Puntos de la jornada en el orden en que se registraron"></ol>
+      </div>
+      </div>
+      <!-- La barra del pie dice qué sigue y lleva el botón para hacerlo, siempre a la mano (D138) -->
+      <div class="barra-guardar barra-jornada">
+        <p id="jornada-siguiente" class="pasos-siguiente" aria-live="polite"></p>
+        <button type="button" id="btn-jornada-faltante" class="btn btn-secundario">Registrar árbol</button>
+        <button type="button" id="btn-jornada-reporte" class="btn btn-primario">Reporte de la jornada</button>
+        <button type="button" id="btn-jornada-siguiente" class="btn btn-primario" hidden></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- REPORTES: el reporte del día (D81). El bloque «Registros en este dispositivo» se retiró (D104) -->
+  <section id="vista-reportes" class="vista vista-ancha vista-reportes" hidden aria-labelledby="titulo-reportes">
+    <h1 id="titulo-reportes">Reportes de jornada</h1>
+
+    <!-- El reporte es de una jornada cerrada (D131, D134): aquí se listan y cada una genera el suyo -->
+    <section class="bloque" aria-labelledby="titulo-reportes">
+    <p class="nota">Cada jornada cerrada tiene su reporte. Una jornada abierta se cierra en Jornadas.</p>
+    <!-- La zona de filtros la arma SRP.zonaFiltros (js/filtros.js), la misma que en Fotografías -->
+    <div id="pdf-filtros"></div>
+    <p id="pdf-nota" class="nota" aria-live="polite"></p>
+    <div id="pdf-vacio" class="vacio" aria-live="polite" hidden></div>
+    <ul id="pdf-lista" class="lista-jornadas lista-reportes rejilla-tarjetas"></ul>
+    <nav id="pdf-paginas" class="paginador" aria-label="Páginas de reportes" hidden></nav>
+    </section>
+
+  </section>
+
+  <!-- FOTOGRAFÍAS (D118): galería para coordinación y administración, con descarga -->
+  <section id="vista-galeria" class="vista vista-ancha" hidden aria-labelledby="titulo-galeria">
+    <button type="button" id="btn-galeria-volver" class="btn btn-texto volver">Supervisión</button>
+    <h1 id="titulo-galeria">Fotografías</h1>
+    <p class="nota">Las fotografías de los árboles registrados. Toque una para verla grande y descargarla, o descargue todas las filtradas en un archivo ZIP.</p>
+    <section class="bloque" aria-label="Filtros de fotografías">
+      <!-- La zona de filtros la arma SRP.zonaFiltros (js/filtros.js) -->
+      <div id="galeria-filtros"></div>
+    </section>
+    <section class="bloque" aria-labelledby="galeria-cuenta">
+      <div class="galeria-barra">
+        <p id="galeria-cuenta" class="conteo-lista" aria-live="polite"></p>
+        <button type="button" id="btn-galeria-zip" class="btn btn-primario" disabled></button>
+      </div>
+      <ul id="galeria-rejilla" class="galeria-rejilla"></ul>
+      <div id="galeria-vacio" class="vacio" aria-live="polite" hidden></div>
+    </section>
+  </section>
+
+  <!-- CATÁLOGOS -->
+  <section id="vista-catalogos" class="vista vista-ancha" hidden aria-labelledby="titulo-catalogos">
+    <button type="button" class="btn btn-texto volver" data-volver-configuracion>Configuración</button>
+    <h1 id="titulo-catalogos">Catálogos</h1>
+    <div id="cat-tipos" class="chips chips-envuelve" role="group" aria-label="Catálogo">
+      <button type="button" class="chip" data-tipo="programa" aria-pressed="true">Programas</button>
+      <button type="button" class="chip" data-tipo="area" aria-pressed="false">Áreas</button>
+      <button type="button" class="chip" data-tipo="especie" aria-pressed="false">Especies</button>
+      <button type="button" class="chip" data-tipo="vehiculo" aria-pressed="false">Vehículos</button>
+      <button type="button" class="chip" data-tipo="organizacion" aria-pressed="false">Instituciones</button>
+    </div>
+    <div class="fila-botones zona-filtros">
+      <button type="button" id="btn-cat-excel" class="btn btn-secundario" hidden><span>Descargar en Excel</span></button>
+      <div id="caja-cat-buscar" class="campo campo-crece" hidden>
+        <label for="cat-buscar" id="cat-buscar-etiqueta">Buscar especie</label><input id="cat-buscar" type="search" placeholder="Nombre o clave ESP">
+      </div>
+      <div id="caja-cat-filtro-tipo" class="campo" hidden><label for="cat-filtro-tipo">Tipo de institución</label><select id="cat-filtro-tipo"></select></div>
+      <button type="button" id="btn-cat-agregar" class="btn btn-primario">Agregar</button>
+    </div>
+    <!-- Cuántos hay y cuántos coinciden con la búsqueda (D105) -->
+    <p id="cat-cuenta" class="conteo-lista" aria-live="polite"></p>
+    <p class="nota">Lo que usa algún árbol, jornada o cuenta no se elimina: se desactiva.</p>
+    <p id="cat-nota-org" class="nota" hidden>Aquí se agregan, a solicitud, las dependencias de gobierno, empresas y organizaciones civiles; después se eligen al dar de alta una cuenta. Desactivar una institución corta el acceso de todas sus cuentas. Las alcaldías son fijas.</p>
+    <div class="tabla-caja"><table id="tabla-catalogo" class="tabla tabla-tarjetas"></table></div>
+  </section>
+
+  <!-- USUARIOS -->
+  <section id="vista-usuarios" class="vista vista-ancha" hidden aria-labelledby="titulo-usuarios">
+    <button type="button" class="btn btn-texto volver" data-volver-configuracion>Configuración</button>
+    <h1 id="titulo-usuarios">Usuarios</h1>
+    <div class="fila-botones zona-filtros filtros-usuarios">
+      <div class="campo campo-crece">
+        <label for="usr-buscar">Buscar</label><input id="usr-buscar" type="search" placeholder="Nombre, correo, área o institución">
+      </div>
+      <div class="campo"><label for="usr-filtro-perfil">Perfil</label><select id="usr-filtro-perfil"></select></div>
+      <!-- Tipo de institución e institución, dependientes, como en Registros y Jornadas -->
+      <div class="campo"><label for="usr-filtro-tipo">Tipo de institución</label><select id="usr-filtro-tipo"></select></div>
+      <div class="campo"><label for="usr-filtro-org">Institución</label><select id="usr-filtro-org"></select></div>
+      <button type="button" id="btn-usr-agregar" class="btn btn-primario">Dar de alta</button>
+    </div>
+    <!-- Estado de la cuenta con atajos, como los de Registros (D107) -->
+    <div id="usr-estado" class="chips" role="group" aria-label="Estado de la cuenta">
+      <button type="button" class="chip" data-estado="activos" aria-pressed="false">Activos</button>
+      <button type="button" class="chip" data-estado="inactivos" aria-pressed="false">Inactivos</button>
+      <button type="button" class="chip" data-estado="todos" aria-pressed="true">Todos</button>
+    </div>
+    <p id="usr-cuenta" class="conteo-lista" aria-live="polite"></p>
+    <p class="nota">Una cuenta con árboles, jornadas o cabos a su cargo no se elimina: se desactiva.</p>
+    <div class="tabla-caja"><table id="tabla-usuarios" class="tabla tabla-tarjetas"></table></div>
+  </section>
+
+  <!-- CONFIGURACIÓN: sólo la Administración global. Una tarjeta por apartado; Usuarios y Catálogos
+       son sus propias vistas y vuelven aquí -->
+  <section id="vista-configuracion" class="vista vista-ancha" hidden aria-labelledby="titulo-configuracion">
+    <h1 id="titulo-configuracion">Configuración</h1>
+    <p class="nota">Lo que administra la Administración global: cuentas, catálogos, los valores con que el sistema revisa y la trazabilidad de los cambios.</p>
+    <div id="cfg-tarjetas" class="cfg-tarjetas">
+      <button type="button" class="cfg-tarjeta" data-ir="usuarios"><span class="cfg-icono" data-icono="usuarios"></span><span class="cfg-texto"><span class="cfg-titulo">Usuarios</span><span class="cfg-descripcion">Dar de alta, editar y desactivar cuentas de todas las instituciones</span><span class="cfg-resumen" data-resumen="usuarios"></span></span></button>
+      <button type="button" class="cfg-tarjeta" data-ir="catalogos"><span class="cfg-icono" data-icono="catalogos"></span><span class="cfg-texto"><span class="cfg-titulo">Catálogos</span><span class="cfg-descripcion">Programas y quién los usa, instituciones, áreas, especies y vehículos</span><span class="cfg-resumen" data-resumen="catalogos"></span></span></button>
+      <button type="button" class="cfg-tarjeta" data-ir="parametros"><span class="cfg-icono" data-icono="tabla"></span><span class="cfg-texto"><span class="cfg-titulo">Parámetros</span><span class="cfg-descripcion">Distancias y valores con que el sistema revisa puntos, GPS y envíos</span><span class="cfg-resumen" data-resumen="parametros"></span></span></button>
+      <button type="button" class="cfg-tarjeta" data-ir="cambios"><span class="cfg-icono" data-icono="reloj"></span><span class="cfg-texto"><span class="cfg-titulo">Registro de cambios</span><span class="cfg-descripcion">Quién dio de alta, editó o desactivó cuentas y catálogos, y cuándo</span><span class="cfg-resumen" data-resumen="cambios"></span></span></button>
+      <button type="button" class="cfg-tarjeta" data-ir="carga"><span class="cfg-icono" data-icono="subir"></span><span class="cfg-texto"><span class="cfg-titulo">Carga masiva</span><span class="cfg-descripcion">Subir de una vez, desde Excel, los árboles plantados antes de usar el sistema</span><span class="cfg-resumen" data-resumen="carga"></span></span></button>
+      <button type="button" class="cfg-tarjeta" data-ir="acerca"><span class="cfg-icono" data-icono="info"></span><span class="cfg-texto"><span class="cfg-titulo">Acerca del sistema</span><span class="cfg-descripcion">Versión, base de datos, capas geográficas y envíos de este dispositivo</span><span class="cfg-resumen" data-resumen="acerca"></span></span></button>
+    </div>
+  </section>
+
+  <!-- PARÁMETROS: sólo para consulta. En la Fase 2 se cambian en el servidor, para todos los teléfonos a la vez -->
+  <section id="vista-parametros" class="vista vista-ancha" hidden aria-labelledby="titulo-parametros">
+    <button type="button" class="btn btn-texto volver" data-volver-configuracion>Configuración</button>
+    <h1 id="titulo-parametros">Parámetros</h1>
+    <p class="nota">Valores con que el sistema revisa y avisa. Se consultan aquí; en la Fase 2 se cambiarán desde el servidor, para todos los teléfonos a la vez. Cambiarlos en un solo teléfono haría que cada cuadrilla se revisara con reglas distintas.</p>
+    <div id="cfg-parametros"></div>
+  </section>
+
+  <!-- REGISTRO DE CAMBIOS: lo que la bitácora dice de cuentas y catálogos, lo más reciente primero -->
+  <section id="vista-cambios" class="vista vista-ancha" hidden aria-labelledby="titulo-cambios">
+    <button type="button" class="btn btn-texto volver" data-volver-configuracion>Configuración</button>
+    <h1 id="titulo-cambios">Registro de cambios</h1>
+    <p class="nota">Altas, ediciones, desactivaciones y eliminaciones de cuentas y catálogos, y cargas masivas, con quién las hizo y cuándo. No se puede modificar.</p>
+    <div class="fila-botones zona-filtros">
+      <div class="campo"><label for="cmb-sobre">Sobre</label><select id="cmb-sobre"><option value="">Todo</option><option value="usuario">Cuentas</option><option value="catalogo">Catálogos</option><option value="carga">Cargas masivas</option></select></div>
+      <div class="campo"><label for="cmb-quien">Quién</label><select id="cmb-quien"></select></div>
+    </div>
+    <p id="cmb-cuenta" class="conteo-lista" aria-live="polite"></p>
+    <ol id="cmb-lista" class="cmb-lista"></ol>
+    <div id="cmb-vacio" class="vacio" hidden></div>
+    <nav id="cmb-paginas" class="paginador" aria-label="Páginas del registro de cambios" hidden></nav>
+  </section>
+
+  <!-- CARGA MASIVA: árboles plantados antes del sistema, desde Excel o CSV. Se revisa antes de guardar nada -->
+  <section id="vista-carga" class="vista vista-ancha" hidden aria-labelledby="titulo-carga">
+    <button type="button" class="btn btn-texto volver" data-volver-configuracion>Configuración</button>
+    <h1 id="titulo-carga">Carga masiva</h1>
+    <p class="nota">Para subir de una vez los árboles plantados antes de usar el sistema. Cada renglón es un árbol con latitud, longitud, nombre científico, fecha de plantación, programa, tipo de institución e institución. Los árboles quedan a su nombre, en jornadas cerradas marcadas como carga histórica.</p>
+    <p id="carga-hecha" class="aviso-simulado" hidden></p>
+    <section class="bloque" aria-labelledby="titulo-carga-plantilla">
+      <h2 id="titulo-carga-plantilla">1. Plantilla</h2>
+      <p class="nota">Un Excel con las columnas, las instrucciones y las listas válidas de especies, programas e instituciones.</p>
+      <button type="button" id="btn-carga-plantilla" class="btn btn-secundario"><span>Descargar plantilla</span></button>
+    </section>
+    <section class="bloque" aria-labelledby="titulo-carga-archivo">
+      <h2 id="titulo-carga-archivo">2. Archivo</h2>
+      <div class="campo"><label for="carga-archivo">Archivo de Excel (.xlsx) o CSV</label><input type="file" id="carga-archivo" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"></div>
+      <p class="nota">Se revisa aquí, renglón por renglón. Nada se guarda hasta que usted confirme.</p>
+      <div id="carga-error-archivo" class="errores" tabindex="-1" role="alert" hidden></div>
+    </section>
+    <section id="carga-revision" class="bloque" aria-labelledby="titulo-carga-revision" hidden>
+      <h2 id="titulo-carga-revision" tabindex="-1">3. Revisión</h2>
+      <div id="carga-resumen"></div>
+      <div id="carga-problemas"></div>
+      <div class="fila-botones">
+        <button type="button" id="btn-carga-errores" class="btn btn-secundario"><span>Descargar renglones con problemas</span></button>
+        <button type="button" id="btn-carga-cargar" class="btn btn-primario"><span>Cargar</span></button>
+      </div>
+    </section>
+    <section class="bloque" aria-labelledby="titulo-carga-lotes">
+      <h2 id="titulo-carga-lotes">Cargas hechas</h2>
+      <p class="nota">Si se cargó el archivo equivocado, deshaga la carga completa y vuelva a cargar el correcto.</p>
+      <ol id="carga-lotes" class="cmb-lista carga-lotes"></ol>
+      <p id="carga-lotes-vacio" class="nota" hidden>Todavía no hay cargas.</p>
+    </section>
+  </section>
+
+  <!-- ACERCA DEL SISTEMA: lo que hace falta saber para dar soporte o reportar una falla -->
+  <section id="vista-acerca" class="vista vista-ancha" hidden aria-labelledby="titulo-acerca">
+    <button type="button" class="btn btn-texto volver" data-volver-configuracion>Configuración</button>
+    <h1 id="titulo-acerca">Acerca del sistema</h1>
+    <p class="nota">Datos de esta instalación y de este dispositivo, para dar soporte o reportar una falla.</p>
+    <div id="cfg-acerca"></div>
+  </section>
+</main>
+
+<footer class="pie">
+  <p>Sistema de Registro de Plantaciones. Versión <span id="version"></span></p>
+  <div id="herramientas-prueba" class="fila-botones" hidden>
+    <button type="button" id="btn-restablecer" class="btn btn-texto">Restablecer datos de prueba</button>
+  </div>
+  <!-- Datos de demostración (D160): sólo con datos de prueba; se retira al cerrar la Etapa 1 -->
+  <section id="caja-demo" class="demo-caja" aria-labelledby="titulo-demo" hidden>
+    <h2 id="titulo-demo" class="demo-titulo">Datos de demostración</h2>
+    <p id="demo-estado" class="demo-estado" aria-live="polite"></p>
+    <div class="fila-botones">
+      <button type="button" id="btn-demo-cargar" class="btn btn-secundario"><span>Cargar datos de demostración</span></button>
+      <button type="button" id="btn-demo-quitar" class="btn btn-peligro-linea"><span>Quitar datos de demostración</span></button>
+    </div>
+  </section>
+</footer>
+
+<!-- Subir al inicio (D154): aparece al bajar más de una pantalla, arriba de la barra inferior -->
+<button type="button" id="btn-subir" class="btn btn-subir" aria-label="Subir al inicio" title="Subir al inicio" data-visible="no"></button>
+
+<div id="aviso" class="aviso" role="status" aria-live="polite" hidden></div>
+<!-- Confirmación al guardar un árbol (D171): al centro, se cierra sola y no pide ningún toque; el lector de pantalla la oye por la franja «Guardado» -->
+<div id="confirmacion-guardado" class="confirmacion-guardado" aria-hidden="true" hidden><div class="confirmacion-caja"><span id="confirmacion-icono" class="confirmacion-icono"></span><strong class="confirmacion-titulo">Registro exitoso</strong><span id="confirmacion-especie" class="confirmacion-especie"></span></div></div>
+<!-- Región viva sin letrero: cambios que ya se ven en pantalla pero el lector debe oír -->
+<div id="aviso-lector" class="oculto-visual" role="status" aria-live="polite"></div>
+
+<dialog id="dlg-resumen" aria-labelledby="dlg-resumen-titulo">
+  <!-- Título y × fijos arriba; Guardar va en la barra fija del pie (D99) -->
+  <div class="dialogo-cabecera">
+    <div class="dialogo-titulo">
+      <!-- El foco inicial va al título, no a la × ni a Guardar: Enter no debe cerrar ni guardar por accidente -->
+      <h2 id="dlg-resumen-titulo" tabindex="-1" autofocus>Revise antes de guardar</h2>
+      <!-- Salir sin guardar: cada dato ya tiene su Editar, así que «Corregir» sobraba (D77) -->
+      <button type="button" id="btn-resumen-cerrar" class="btn btn-icono-solo btn-texto" aria-label="Cerrar sin guardar"></button>
+    </div>
+  </div>
+  <!-- La ficha sólo se abre cuando hay algo que revisar (D130): aquí se dice qué -->
+  <div id="revision-avisos" class="revision-avisos" hidden></div>
+  <div id="revision-mapa" class="revision-mapa" role="img" aria-label="Mapa con la ubicación del árbol"></div>
+  <dl id="revision-lista" class="revision-lista"></dl>
+  <!-- Guardar al pie, fijo y a todo el ancho: al alcance del pulgar y siempre a la vista (D99, sustituye D74 en esta ficha) -->
+  <div class="dialogo-pie">
+    <button type="button" id="btn-resumen-guardar" class="btn btn-exito btn-ancho btn-destacado"></button>
+  </div>
+</dialog>
+
+<!-- El aviso «Registro guardado» dejó de ser modal (D130): es la franja #franja-guardado -->
+
+<!-- Cambiar de jornada activa (D119): las abiertas de quien entró, o iniciar otra -->
+<dialog id="dlg-cambiar-jornada" aria-labelledby="dlg-cambiar-titulo">
+  <div class="dialogo-cabecera">
+    <div class="dialogo-titulo">
+      <h2 id="dlg-cambiar-titulo" tabindex="-1" autofocus>Cambiar de jornada</h2>
+      <button type="button" id="btn-cambiar-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar"></button>
+    </div>
+  </div>
+  <p class="nota">Elija una jornada abierta o inicie otra.</p>
+  <ul id="lista-jornadas-abiertas" class="lista-jornadas lista-elegir"></ul>
+  <div class="dialogo-pie">
+    <button type="button" id="btn-cambiar-nueva" class="btn btn-primario btn-ancho">Iniciar otra jornada</button>
+  </div>
+</dialog>
+
+<!-- Editar los datos de una jornada (D132) -->
+<dialog id="dlg-editar-jornada" aria-labelledby="dlg-editar-jornada-titulo">
+  <div class="dialogo-cabecera">
+    <div class="dialogo-titulo">
+      <h2 id="dlg-editar-jornada-titulo" tabindex="-1" autofocus>Editar jornada</h2>
+      <button type="button" id="btn-ej-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar sin guardar"></button>
+    </div>
+  </div>
+  <form id="form-editar-jornada" novalidate>
+    <div id="ej-errores" class="errores" role="alert" tabindex="-1" hidden></div>
+    <div class="campo"><label for="ej-nombre">Nombre de la jornada <span class="obligatorio" aria-hidden="true">*</span></label>
+      <input id="ej-nombre" maxlength="120" autocomplete="off" spellcheck="false"></div>
+    <div class="campo"><label for="ej-ubicacion">Dirección de la jornada</label>
+      <input id="ej-ubicacion" maxlength="200" autocomplete="off" aria-describedby="ej-ubicacion-ayuda">
+      <p id="ej-ubicacion-ayuda" class="nota ayuda-campo">Dirección, parque o referencia.</p></div>
+    <div class="campo"><label for="ej-programa">Programa <span class="obligatorio" aria-hidden="true">*</span></label>
+      <select id="ej-programa"></select></div>
+    <p class="nota" id="ej-nota-programa" hidden>Al cambiar el programa, los árboles de la jornada toman el programa nuevo.</p>
+    <div id="ej-caja-pedido" class="caja-pedido"></div>
+    <div class="campo"><label for="ej-meta">Árboles que se van a plantar <span class="obligatorio" aria-hidden="true">*</span></label>
+      <input type="number" id="ej-meta" inputmode="numeric" min="1" max="9999" step="1" autocomplete="off"></div>
+    <!-- «Hoy» también aquí (D140): corrige una jornada iniciada con la fecha equivocada -->
+    <div class="campo"><label for="ej-fecha">Fecha <span class="obligatorio" aria-hidden="true">*</span></label>
+      <div class="fecha-con-hoy"><input type="date" id="ej-fecha"><button type="button" id="btn-ej-hoy" class="btn btn-secundario btn-chico">Hoy</button></div></div>
+    <p class="nota" id="ej-nota-fecha" hidden>Al cambiar la fecha, los árboles plantados el día de inicio toman la fecha nueva; los de otros días conservan la suya.</p>
+    <div class="campo"><label for="ej-comentarios">Comentarios <span class="opcional">(opcional)</span></label>
+      <textarea id="ej-comentarios" rows="3" maxlength="500"></textarea></div>
+    <div class="dialogo-pie">
+      <button type="submit" id="btn-ej-guardar" class="btn btn-exito btn-ancho btn-destacado"></button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Mover un registro a otra jornada (D119): las del mismo cabo -->
+<dialog id="dlg-mover-jornada" aria-labelledby="dlg-mover-titulo">
+  <div class="dialogo-cabecera">
+    <div class="dialogo-titulo">
+      <h2 id="dlg-mover-titulo" tabindex="-1" autofocus>Mover a otra jornada</h2>
+      <button type="button" id="btn-mover-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar"></button>
+    </div>
+  </div>
+  <p id="dlg-mover-texto" class="nota"></p>
+  <ul id="lista-mover-jornadas" class="lista-jornadas lista-elegir"></ul>
+</dialog>
+
+<!-- Sustituir un árbol perdido: por qué se perdió, y luego se registra el nuevo en su jornada -->
+<dialog id="dlg-sustituir" aria-labelledby="dlg-sustituir-titulo">
+  <div class="dialogo-cabecera">
+    <div class="dialogo-titulo">
+      <h2 id="dlg-sustituir-titulo" tabindex="-1" autofocus>Sustituir árbol</h2>
+      <button type="button" id="btn-sustituir-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar"></button>
+    </div>
+  </div>
+  <p id="dlg-sustituir-texto" class="nota"></p>
+  <fieldset class="campo">
+    <legend>¿Por qué se sustituye? <span class="obligatorio" aria-hidden="true">*</span></legend>
+    <div id="sustituir-motivos" class="chips chips-envuelve motivos-sustitucion" role="group" aria-label="Motivo"></div>
+  </fieldset>
+  <div id="caja-sustituir-otro" class="campo" hidden><label for="sustituir-otro">Escriba el motivo <span class="obligatorio" aria-hidden="true">*</span></label><input id="sustituir-otro" type="text" maxlength="120" autocomplete="off"></div>
+  <!-- El día en que se planta el sustituto: es su fecha de plantación y cuenta en ese periodo -->
+  <div class="campo"><label for="sustituir-fecha">Fecha de la sustitución <span class="obligatorio" aria-hidden="true">*</span></label>
+    <div class="fecha-con-hoy"><input type="date" id="sustituir-fecha" aria-describedby="sustituir-fecha-ayuda"><button type="button" id="btn-sustituir-hoy" class="btn btn-secundario btn-chico">Hoy</button></div>
+    <p id="sustituir-fecha-ayuda" class="nota ayuda-campo"></p></div>
+  <div id="sustituir-error" class="errores" role="alert" hidden></div>
+  <div class="fila-botones">
+    <button type="button" id="btn-sustituir-seguir" class="btn btn-primario"><span>Registrar el sustituto</span></button>
+  </div>
+</dialog>
+
+<!-- Relevo de cabo: la coordinación pasa una jornada abierta a otro cabo de su cuadrilla. El titular
+     no cambia; cada árbol queda a nombre de quien lo capturó y el relevo, en el historial -->
+<dialog id="dlg-relevo" aria-labelledby="dlg-relevo-titulo">
+  <div class="dialogo-cabecera">
+    <div class="dialogo-titulo">
+      <h2 id="dlg-relevo-titulo" tabindex="-1" autofocus>Relevo de cabo</h2>
+      <button type="button" id="btn-relevo-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar"></button>
+    </div>
+  </div>
+  <p id="dlg-relevo-texto" class="nota"></p>
+  <div class="campo"><label for="relevo-quien">Cabo que sigue registrando <span class="obligatorio" aria-hidden="true">*</span></label>
+    <select id="relevo-quien"></select></div>
+  <ul class="nota lista-nota">
+    <li>La jornada sigue a nombre de su titular.</li>
+    <li>Cada árbol queda a nombre de quien lo capture.</li>
+    <li>El relevo queda en el historial de la jornada.</li>
+  </ul>
+  <div id="relevo-error" class="errores" role="alert" hidden></div>
+  <div class="fila-botones">
+    <button type="button" id="btn-relevo-hacer" class="btn btn-primario"></button>
+  </div>
+</dialog>
+
+<!-- Una fotografía grande, con los datos del árbol y su descarga (D118) -->
+<dialog id="dlg-foto" class="dlg-foto" aria-labelledby="dlg-foto-titulo">
+  <div class="dialogo-cabecera">
+    <div class="dialogo-titulo">
+      <h2 id="dlg-foto-titulo" tabindex="-1" autofocus></h2>
+      <button type="button" id="btn-foto-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar"></button>
+    </div>
+  </div>
+  <img id="dlg-foto-img" class="foto-grande" src="" alt="">
+  <dl id="dlg-foto-datos" class="revision-lista"></dl>
+  <div class="dialogo-pie fila-botones">
+    <button type="button" id="btn-foto-descargar" class="btn btn-primario"></button>
+    <button type="button" id="btn-foto-registro" class="btn btn-secundario"></button>
+  </div>
+</dialog>
+
+<dialog id="dlg-detalle" aria-labelledby="dlg-detalle-titulo">
+  <!-- Cabecera fija como la de «Revise antes de guardar»: título, × y acción siempre a la vista (D91) -->
+  <div class="dialogo-cabecera">
+    <div class="dialogo-titulo">
+      <h2 id="dlg-detalle-titulo" tabindex="-1" autofocus>Detalle del registro</h2>
+      <button type="button" id="btn-detalle-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar"></button>
+    </div>
+  </div>
+  <div id="detalle-mapa" class="revision-mapa" role="img" aria-label="Mapa con la ubicación del árbol"></div>
+  <div id="dlg-detalle-cuerpo"></div>
+  <!-- «Editar» al pie, fijo, como «Guardar» en la ficha de revisión (D100) -->
+  <div id="detalle-pie" class="dialogo-pie" hidden>
+    <button type="button" id="btn-detalle-editar" class="btn btn-editar btn-ancho"></button>
+    <button type="button" id="btn-detalle-sustituir" class="btn btn-secundario btn-ancho" hidden></button>
+  </div>
+</dialog>
+
+<dialog id="dlg-catalogo" aria-labelledby="dlg-catalogo-titulo">
+  <form id="form-catalogo" novalidate>
+  <!-- Cabecera fija con título y ×; Guardar va al pie (D91, D105) -->
+  <div class="dialogo-cabecera">
+    <div class="dialogo-titulo">
+      <h2 id="dlg-catalogo-titulo" tabindex="-1" autofocus>Agregar</h2>
+      <button type="button" id="btn-cat-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar sin guardar"></button>
+    </div>
+  </div>
+    <div id="cat-errores" class="errores" tabindex="-1" hidden></div>
+    <div class="campo"><label for="cat-nombre"><span id="etq-cat-nombre-texto">Nombre</span> <span class="obligatorio" aria-hidden="true">*</span></label><input id="cat-nombre" required></div>
+    <div class="campo no-vehiculo"><label for="cat-clave">Clave <span class="obligatorio" aria-hidden="true">*</span></label><input id="cat-clave" required aria-describedby="cat-clave-ayuda"><p id="cat-clave-ayuda" class="nota"></p></div>
+    <!-- Vehículos (D162): la placa va en «Nombre»; modelo y tipo son suyos, y la clave sale de la placa -->
+    <div class="campo solo-vehiculo"><label for="cat-modelo">Modelo <span class="obligatorio" aria-hidden="true">*</span></label><input id="cat-modelo" maxlength="40" aria-describedby="cat-modelo-ayuda"><p id="cat-modelo-ayuda" class="nota">La marca, como se conoce en la cuadrilla: «Dodge», «Internacional».</p></div>
+    <div class="campo solo-vehiculo"><label for="cat-tipo-vehiculo">Tipo <span class="obligatorio" aria-hidden="true">*</span></label><input id="cat-tipo-vehiculo" maxlength="30" list="cat-tipos-vehiculo" aria-describedby="cat-tipo-ayuda"><datalist id="cat-tipos-vehiculo"></datalist><p id="cat-tipo-ayuda" class="nota">Pipa, Estacas, Redilas, Pick up… Se proponen los que ya hay.</p></div>
+    <div class="campo solo-especie"><label for="cat-cientifico">Nombre científico <span class="obligatorio" aria-hidden="true">*</span></label><input id="cat-cientifico" aria-describedby="cat-cientifico-ayuda"><p id="cat-cientifico-ayuda" class="nota">Género y epíteto, sin autoría: «Quercus rugosa».</p></div>
+    <div class="campo solo-especie"><label for="cat-distribucion">Tipo de distribución <span class="obligatorio" aria-hidden="true">*</span></label>
+      <select id="cat-distribucion"><option value="Nativa">Nativa</option><option value="Endémica">Endémica</option><option value="Exótica">Exótica</option><option value="Exótica-Invasora">Exótica-Invasora</option></select></div>
+    <div class="campo solo-especie"><label for="cat-otros-nombres">Otros nombres comunes</label><input id="cat-otros-nombres" aria-describedby="cat-otros-ayuda"><p id="cat-otros-ayuda" class="nota">Separados por coma. Se buscan en el formulario de registro.</p></div>
+    <!-- Forma de crecimiento con botones, se pueden marcar varias (D107); el campo oculto guarda el texto -->
+    <div class="campo solo-especie"><label for="cat-forma" id="etq-cat-forma">Forma de crecimiento</label>
+      <div id="cat-forma-botones" class="chips chips-campo chips-multi" role="group" aria-labelledby="etq-cat-forma"></div>
+      <input id="cat-forma" class="oculto-visual" tabindex="-1" aria-hidden="true"></div>
+    <div class="campo-doble solo-especie">
+      <div class="campo"><label for="cat-snib">Id SNIB (IdCAT)</label><input id="cat-snib"></div>
+      <div class="campo"><label for="cat-enciclovida">Id EncicloVida</label><input id="cat-enciclovida" inputmode="numeric"></div>
+    </div>
+    <!-- Instituciones: el tipo se elige al agregarla (nunca Alcaldía: son fijas) y después no cambia -->
+    <div class="campo solo-organizacion"><label for="cat-tipo-org">Tipo de institución <span class="obligatorio" aria-hidden="true">*</span></label>
+      <select id="cat-tipo-org"><option value="">Seleccione el tipo</option><option value="Gobierno de la CDMX">Gobierno de la CDMX</option><option value="Empresa privada">Empresa privada</option><option value="Organización civil">Organización civil</option><option value="Alcaldía">Alcaldía</option></select></div>
+    <!-- Programas: qué tipos de institución, además de la Secretaría, pueden elegirlo al iniciar una jornada -->
+    <div class="campo solo-programa"><label for="cat-tipos-org" id="etq-cat-tipos-org">Quién puede usarlo</label>
+      <div id="cat-tipos-org-botones" class="chips chips-campo chips-envuelve" role="group" aria-labelledby="etq-cat-tipos-org" aria-describedby="cat-tipos-org-ayuda"></div>
+      <input id="cat-tipos-org" class="oculto-visual" tabindex="-1" aria-hidden="true">
+      <p id="cat-tipos-org-ayuda" class="nota">SEDEMA puede usar todos los programas. Marque los tipos de institución que también pueden elegirlo; sin ninguno, sólo SEDEMA.</p></div>
+    <!-- Guardar al pie, fijo y a todo el ancho, como en la ficha de revisión (D105) -->
+  <div class="dialogo-pie">
+    <button type="submit" class="btn btn-exito btn-ancho btn-destacado" id="btn-cat-guardar">Guardar</button>
+  </div>
+  </form>
+</dialog>
+
+<!-- CIERRE DEL REPORTE DEL DÍA. Todos los campos son opcionales y de escritura libre: los reportes
+     varían de una cuadrilla a otra. Lo que ya está en los registros —especies, conteos,
+     territorio— no se pregunta aquí, se calcula (ver js/reportes.js). -->
+<dialog id="dlg-cierre" aria-labelledby="dlg-cierre-titulo">
+  <form id="form-cierre" class="form-cierre" novalidate>
+  <!-- Cabecera fija como la de «Revise antes de guardar»: título, × y acción siempre a la vista (D91) -->
+  <div class="dialogo-cabecera">
+    <div class="dialogo-titulo">
+      <h2 id="dlg-cierre-titulo" tabindex="-1" autofocus>Datos de cierre de la jornada</h2>
+      <button type="button" id="btn-cierre-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar sin generar"></button>
+    </div>
+  </div>
+    <p class="nota">Reporte del <strong id="dlg-cierre-dia"></strong>. <span id="dlg-cierre-cuenta"></span>. Todos los campos son opcionales; los que queden vacíos no aparecen en el reporte.</p>
+
+    <!-- El encargado abre el reporte: es el primer dato que se lee en el papel (D60). Un cabo es el
+         encargado de su propio reporte y no lo elige; quien ve a varias personas sí -->
+    <div class="campo">
+      <label for="cie-encargado">Encargado</label>
+      <p id="cie-encargado-lectura" class="campo-lectura" hidden></p>
+      <span id="cie-encargado-caja" hidden><select id="cie-encargado"></select></span>
+    </div>
+
+
+    <!-- Personal participante y de apoyo: sólo en jornadas de la Secretaría; de otras instituciones no se piden -->
+    <div class="campo" id="caja-cie-personal"><label for="cie-personal">Personal participante</label>
+      <textarea id="cie-personal" rows="2"></textarea></div>
+
+    <div class="campo" id="caja-cie-apoyo"><label for="cie-apoyo">Personal de apoyo</label>
+      <textarea id="cie-apoyo" rows="2"></textarea></div>
+
+    <div class="campo"><label for="cie-observaciones">Observaciones</label>
+      <textarea id="cie-observaciones" rows="2"></textarea></div>
+
+    <!-- Logística (D103): Modelo y Placa en una fila también en teléfono; la hora con «Ahora» de un toque -->
+    <!-- Chófer y vehículo: sólo en jornadas de la Secretaría; de otras instituciones no se piden -->
+    <div class="campo" id="caja-cie-chofer"><label for="cie-chofer">Chófer</label><input id="cie-chofer"></div>
+    <!-- Vehículo del catálogo (D162): se elige la placa y el modelo y el tipo se ponen solos. Arriba,
+         los que más usa el encargado, a un toque. Sólo del catálogo: sin «Otro vehículo» (D174) -->
+    <div class="campo campo-vehiculo" id="caja-cie-vehiculo">
+      <label for="cie-vehiculo">Vehículo</label>
+      <div id="cie-vehiculo-frecuentes" class="chips chips-recientes" role="group" aria-label="Vehículos que más usa el encargado" hidden></div>
+      <select id="cie-vehiculo" aria-describedby="cie-vehiculo-ficha"></select>
+      <p id="cie-vehiculo-ficha" class="nota" aria-live="polite"></p>
+    </div>
+    <div class="campo"><label for="cie-hora">Hora de finalización</label>
+      <div class="fecha-con-hoy"><input type="time" id="cie-hora" data-vacio="Elija la hora"><button type="button" id="btn-hora-ahora" class="btn btn-secundario btn-chico">Ahora</button></div></div>
+
+    <!-- ESPEJO DEL CIERRE — se elimina al cerrar la Etapa 1 (ver js/espejo.js) -->
+    <details id="espejo-cierre" class="desplegable espejo espejo-en-dialogo" hidden>
+      <summary><span>Campos que viajan a la base y no se ven en pantalla</span></summary>
+      <p class="espejo-ayuda">Es el cierre tal como quedaría guardado al pulsar Generar. Sale del mismo objeto que se escribe. <span class="espejo-marca">sólo en la versión de prueba</span></p>
+      <table class="espejo-tabla">
+        <caption>Almacén <code>cierres</code></caption>
+        <thead><tr><th>Campo</th><th>Valor ahora</th><th>De dónde sale</th></tr></thead>
+        <tbody id="espejo-cierre-cuerpo"></tbody>
+      </table>
+      <table class="espejo-tabla">
+        <caption>Almacén <code>bitacora</code>, que se escribe solo al generar</caption>
+        <thead><tr><th>Campo</th><th>Valor ahora</th></tr></thead>
+        <tbody id="espejo-cierre-bitacora"></tbody>
+      </table>
+      <p id="espejo-cierre-conteo" class="espejo-ayuda"></p>
+    </details>
+
+    <!-- La acción va al pie y lleva a la vista previa antes del PDF (D101) -->
+  <div class="dialogo-pie">
+    <button type="submit" class="btn btn-primario btn-ancho btn-destacado" id="btn-cierre-generar">Ver vista previa</button>
+  </div>
+  </form>
+</dialog>
+
+<!-- VISTA PREVIA DEL REPORTE (D101): lo mismo que dirá el PDF, en pantalla, antes de generarlo -->
+<dialog id="dlg-previa" aria-labelledby="dlg-previa-titulo" class="dialogo-previa">
+  <div class="dialogo-cabecera">
+    <div class="dialogo-titulo">
+      <h2 id="dlg-previa-titulo" tabindex="-1" autofocus>Vista previa del reporte</h2>
+      <button type="button" id="btn-previa-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar sin generar"></button>
+    </div>
+  </div>
+  <div id="previa-hoja" class="previa-hoja"></div>
+  <div class="dialogo-pie">
+    <button type="button" id="btn-previa-generar" class="btn btn-primario btn-ancho btn-destacado">Generar PDF</button>
+    <button type="button" id="btn-previa-corregir" class="btn btn-texto-editar btn-ancho">Corregir datos de cierre</button>
+  </div>
+</dialog>
+
+<dialog id="dlg-senal" aria-labelledby="dlg-senal-titulo">
+  <!-- Cabecera fija como la de «Revise antes de guardar»: título, × y acción siempre a la vista (D91) -->
+  <div class="dialogo-cabecera">
+    <div class="dialogo-titulo">
+      <h2 id="dlg-senal-titulo" tabindex="-1" autofocus>¿Qué hacer sin internet?</h2>
+      <button type="button" id="btn-senal-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar"></button>
+    </div>
+  </div>
+  <!-- Sólo en un iPhone desde Safari: agregar el SRP a la pantalla de inicio para no perder lo guardado -->
+  <dl id="senal-estado" class="senal-estado" hidden></dl>
+  <!-- Sólo cuando hay registros en cola: cuántos y de qué días -->
+  <div id="senal-cola" class="senal-cola" hidden>
+    <p id="senal-cola-texto" aria-live="polite"></p>
+    <button type="button" id="btn-enviar-ahora" class="btn btn-primario">Enviar ahora</button>
+  </div>
+  <ol class="lista-ayuda">
+    <li><strong>Siga registrando.</strong> El GPS, la captura y el reporte funcionan sin señal. Sólo la imagen del mapa deja de verse; puede tocar el mapa o capturar la coordenada a mano.</li>
+    <li><strong>Abra la app al menos una vez con señal</strong> después de instalarla o de que haya versión nueva: así queda guardada en el teléfono y abre aunque no haya red.</li>
+    <li id="senal-destino"><strong>Sus registros viven en este teléfono.</strong> Por ahora no se envían a ningún servidor. Cuando tenga señal, genere el reporte del día y compártalo con su coordinador.</li>
+    <li><strong>No borre los datos del navegador</strong> ni use el modo privado: se perderían los registros.</li>
+    <li><strong>Si va a cambiar de teléfono</strong>, cierre antes sus jornadas y genere sus reportes: lo guardado no pasa solo al teléfono nuevo.</li>
+  </ol>
+</dialog>
+
+<!-- Confirmación estructurada (D139): la acción como título, una pregunta, lo que implica en viñetas
+     y una nota final. Sólo para lo que no se deshace; lo reversible ofrece «Deshacer» (D101). -->
+<dialog id="dlg-confirmar" class="dlg-confirmar" aria-labelledby="dlg-confirmar-texto" aria-describedby="dlg-confirmar-cuerpo">
+  <h2 id="dlg-confirmar-titulo" class="confirmar-titulo" hidden></h2>
+  <p id="dlg-confirmar-texto" class="confirmar-pregunta"></p>
+  <div id="dlg-confirmar-cuerpo">
+    <p id="dlg-confirmar-puntos-titulo" class="confirmar-puntos-titulo" hidden></p>
+    <ul id="dlg-confirmar-puntos" class="confirmar-puntos" hidden></ul>
+    <p id="dlg-confirmar-nota" class="confirmar-nota" hidden></p>
+  </div>
+  <div class="acciones">
+    <button type="button" id="btn-confirmar-si" class="btn btn-peligro"></button>
+    <button type="button" id="btn-confirmar-no" class="btn btn-cancelar">Cancelar</button>
+  </div>
+</dialog>
+
+
+<dialog id="dlg-usuario" aria-labelledby="dlg-usuario-titulo">
+  <form id="form-usuario" novalidate>
+  <!-- Cabecera fija con título y ×; Guardar va al pie (D91, D105) -->
+  <div class="dialogo-cabecera">
+    <div class="dialogo-titulo">
+      <h2 id="dlg-usuario-titulo" tabindex="-1" autofocus>Dar de alta</h2>
+      <button type="button" id="btn-usr-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar sin guardar"></button>
+    </div>
+  </div>
+    <div id="usr-errores" class="errores" tabindex="-1" hidden></div>
+    <!-- Primero de dónde es la persona: el tipo decide la lista de instituciones, y la institución,
+         si lleva área (sólo SEDEMA) y qué perfiles puede tener -->
+    <div class="campo"><label for="usr-tipo-org">Tipo de institución <span class="obligatorio" aria-hidden="true">*</span></label>
+      <select id="usr-tipo-org" required><option value="">Seleccione el tipo</option><option value="Alcaldía">Alcaldía</option><option value="Gobierno de la CDMX">Gobierno de la CDMX</option><option value="Empresa privada">Empresa privada</option><option value="Organización civil">Organización civil</option></select></div>
+    <div class="campo" id="caja-usr-organizacion"><label for="usr-organizacion" id="etq-usr-organizacion">Institución <span class="obligatorio" aria-hidden="true">*</span></label><select id="usr-organizacion" required aria-describedby="usr-organizacion-ayuda"></select><p id="usr-organizacion-ayuda" class="nota">¿No está en la lista? Una institución nueva se agrega en Catálogos › Instituciones.</p></div>
+    <!-- Área: sólo para cuentas de la Secretaría -->
+    <div class="campo" id="caja-usr-area" hidden><label for="usr-area">Área <span class="obligatorio" aria-hidden="true">*</span></label><select id="usr-area"></select></div>
+    <div class="campo"><label for="usr-nombre-completo">Nombre completo <span class="obligatorio" aria-hidden="true">*</span></label><input id="usr-nombre-completo" required maxlength="160" autocomplete="off" aria-describedby="usr-nombre-ayuda"><p id="usr-nombre-ayuda" class="nota">Nombre y apellidos, como aparecerán en los registros y reportes.</p></div>
+    <div class="campo"><label for="usr-correo">Correo <span class="obligatorio" aria-hidden="true">*</span></label><input type="email" id="usr-correo" inputmode="email" autocapitalize="off" spellcheck="false" required aria-describedby="usr-correo-ayuda"><p id="usr-correo-ayuda" class="nota">Con él inicia sesión. No se puede cambiar después.</p></div>
+    <div class="campo"><label for="usr-cargo">Cargo y rol <span class="obligatorio" aria-hidden="true">*</span></label><input id="usr-cargo" required placeholder="p. ej. Técnico de campo"></div>
+    <div class="campo"><label for="usr-perfil">Perfil <span class="obligatorio" aria-hidden="true">*</span></label><select id="usr-perfil" required></select><p id="usr-perfil-ayuda" class="nota"></p></div>
+    <div class="campo" id="caja-usr-coordinador"><label for="usr-coordinador">Coordinador</label><select id="usr-coordinador"></select></div>
+    <!-- Guardar al pie, fijo y a todo el ancho, como en la ficha de revisión (D105) -->
+  <div class="dialogo-pie">
+    <button type="submit" class="btn btn-exito btn-ancho btn-destacado" id="btn-usr-guardar">Guardar</button>
+  </div>
+  </form>
+</dialog>
+
+<!-- MARCA DE VERSIÓN: el ?v= de cada archivo propio es lo único que obliga al navegador a
+     descargar la versión nueva. Al cerrar un bloque se actualiza aquí, en todas las etiquetas
+     a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
+     Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
+<!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
+<script src="vendor/leaflet.js?v=0.9.15"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.9.15"></script>
+<script src="vendor/turf-pip.min.js?v=0.9.15"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.9.15"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.9.15"></script>
+<!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
+<script src="js/config.js?v=0.9.15"></script>
+<script src="js/util.js?v=0.9.15"></script>
+<script src="js/filtros.js?v=0.9.15"></script>
+<script src="js/iconos.js?v=0.9.15"></script>
+<!-- Capas territoriales del SIA, compactadas por herramientas/generar_capas.py desde originales/ -->
+<script src="assets/capas/capa-alcaldias.js?v=0.9.15"></script>
+<script src="assets/capas/capa-uga.js?v=0.9.15"></script>
+<script src="assets/capas/capa-colonias.js?v=0.9.15"></script>
+<!-- Colonias prioritarias para reforestar: capa de referencia del modelo de priorización -->
+<script src="assets/capas/capa-prioritarias.js?v=0.9.15"></script>
+<script src="assets/catalogos/catalogo-especies.js?v=0.9.15"></script>
+<script src="assets/catalogos/catalogo-vehiculos.js?v=0.9.15"></script>
+<script src="js/datos-ficticios.js?v=0.9.15"></script>
+<script src="js/permisos.js?v=0.9.15"></script>
+<script src="js/derivacion.js?v=0.9.15"></script>
+<script src="js/prioritarias.js?v=0.9.15"></script>
+<script src="js/pedido.js?v=0.9.15"></script>
+<script src="js/almacen.js?v=0.9.15"></script>
+<script src="js/sesion.js?v=0.9.15"></script>
+<script src="js/referencias.js?v=0.9.15"></script>
+<script src="js/folio.js?v=0.9.15"></script>
+<!-- Esquema generado de datos/esquema.json: relaciones entre tablas (D150) -->
+<script src="js/esquema.js?v=0.9.15"></script>
+<script src="js/conexion.js?v=0.9.15"></script>
+<script src="js/envio.js?v=0.9.15"></script>
+<script src="js/mapa.js?v=0.9.15"></script>
+<script src="js/foto.js?v=0.9.15"></script>
+<script src="js/jornada-activa.js?v=0.9.15"></script>
+<script src="js/formulario.js?v=0.9.15"></script>
+<!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
+<script src="js/espejo.js?v=0.9.15"></script>
+<script src="js/registros.js?v=0.9.15"></script>
+<script src="js/galeria.js?v=0.9.15"></script>
+<script src="js/jornadas.js?v=0.9.15"></script>
+<script src="js/informes.js?v=0.9.15"></script>
+<script src="js/supervision.js?v=0.9.15"></script>
+<script src="js/indicadores.js?v=0.9.15"></script>
+<script src="js/demostracion.js?v=0.9.15"></script>
+<script src="js/croquis.js?v=0.9.15"></script>
+<script src="js/reportes.js?v=0.9.15"></script>
+<script src="js/catalogos.js?v=0.9.15"></script>
+<script src="js/usuarios.js?v=0.9.15"></script>
+<script src="js/excel.js?v=0.9.15"></script>
+<script src="js/carga.js?v=0.9.15"></script>
+<script src="js/configuracion.js?v=0.9.15"></script>
+<script src="js/app.js?v=0.9.15"></script>
+</body>
+</html>

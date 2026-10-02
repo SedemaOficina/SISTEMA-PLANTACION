@@ -1,0 +1,303 @@
+/* MAPA: ubicación del árbol.
+   Pan con dos dedos (gestureHandling) para no pelear con el desplazamiento de la página;
+   acercar y alejar con los botones +/−. Si el mapa base no carga, el punto se puede
+   colocar igual o capturarse a mano (Norma 6.8 y 6.10). */
+window.SRP = window.SRP || {};
+
+SRP.mapa = {
+  mapa: null, marcador: null, lat: null, lng: null, alCambiar: null,
+  origen: null, precision: null, margen: null,
+  vigilancia: null, finAfinado: null,   // lectura continua del GPS mientras se afina (D152)
+  avisos: {},                           // avisos que conviven bajo el mapa: imagen, territorio (D152)
+
+  /* DE DÓNDE SALIÓ EL PUNTO.
+     Cuando la fotografía es opcional —y en campo la mayoría de los registros no va a
+     llevarla—, la coordenada carga con el peso de la prueba. Y no todas las coordenadas
+     valen lo mismo: una tomada con el aparato en la mano junto al árbol no es lo mismo que
+     una señalada en el mapa desde una oficina tres días después. El sistema ya sabe cuál de
+     las cuatro fue; lo que faltaba era guardarlo. Es un dato que sólo existe en el instante
+     de la captura: si no se escribe entonces, no se reconstruye nunca. */
+  ORIGENES: {
+    gps:      'GPS del dispositivo',
+    mapa:     'Señalado en el mapa',
+    manual:   'Capturado a mano',
+    ajustado: 'Ajustado arrastrando el pin'
+  },
+
+  /* La precisión acompaña al origen y sólo tiene sentido con él: se guarda únicamente
+     cuando el punto viene del GPS, así que nunca puede leerse como el margen de error de un
+     punto que en realidad se señaló con el dedo. La auditoría comprueba esa regla. */
+  textoOrigen(origen, precision) {
+    const etiqueta = SRP.mapa.ORIGENES[origen];
+    if (!etiqueta) return 'No registrado';
+    return etiqueta + (origen === 'gps' && precision != null ? ' (±' + Math.round(precision) + ' m)' : '');
+  },
+
+  // Icono propio e incrustado: el de Leaflet se descarga de un servidor externo. Sus colores los
+  // pone la hoja (.pin-gota, .pin-centro), no el código (M13)
+  ICONO_SVG: '<svg width="24" height="32" viewBox="0 0 36 48" aria-hidden="true">' +
+    '<path class="pin-gota" d="M18 2C9.2 2 2 9.1 2 17.9 2 30 18 46 18 46s16-16 16-28.1C34 9.1 26.8 2 18 2z" stroke-width="2.5"/>' +
+    '<circle class="pin-centro" cx="18" cy="18" r="6.5" stroke-width="3"/></svg>',
+
+  iniciar(alCambiar) {
+    this.alCambiar = alCambiar;
+    if (typeof L === 'undefined') {
+      this.estado('No se pudo cargar el mapa. Capture las coordenadas a mano.', 'alerta');
+      return;
+    }
+    const c = SRP.CONFIG.MAPA;
+    this.mapa = L.map('mapa', {
+      center: c.CENTRO, zoom: c.ZOOM_INICIAL, minZoom: c.ZOOM_MIN, maxZoom: c.ZOOM_MAX,
+      maxBounds: c.LIMITES, maxBoundsViscosity: 1, gestureHandling: true
+    });
+    this.ponerCredito(this.mapa);
+    // Sólo la capa de imagen avisa si no carga: las de nombres son complemento, y su ausencia
+    // no impide colocar el punto. El aviso va en su propio renglón: ya no tapa la precisión (D152)
+    let fallas = 0;
+    c.CAPAS.forEach(capa => {
+      const capaLeaflet = L.tileLayer(capa.url, { attribution: capa.atribucion, maxZoom: c.ZOOM_MAX });
+      if (capa.base) {
+        capaLeaflet.on('tileerror', () => {
+          fallas += 1;
+          if (fallas === 3) this.aviso('imagen', 'La imagen del mapa no cargó. Puede acercar el mapa y tocar donde está el árbol, o capturar coordenadas a mano.');
+        });
+        capaLeaflet.on('tileload', () => { if (fallas >= 3) { fallas = 0; this.aviso('imagen', null); } });
+      }
+      capaLeaflet.addTo(this.mapa);
+    });
+    // La punta del pin marca la coordenada exacta: el anclaje va en ella, no en el centro
+    this.icono = L.divIcon({ className: 'pin', html: this.ICONO_SVG, iconSize: [24, 32], iconAnchor: [12, 31] });
+    this.mapa.on('click', (e) => this.alTocar(e.latlng));
+    // Colonias prioritarias: capa de referencia; su control (encender, niveles y opacidad) va sobre el mapa
+    SRP.prioritarias.control(() => this.mapa, { grupo: 'campo', leyenda: document.getElementById('mapa-prioritarias') });
+  },
+
+  /* CRÉDITO DEL MAPA (D108, D152), en todos los mapas: Leaflet, «Powered by Esri» —que Esri pide
+     no ocultar— y el crédito de cada capa tal como lo declara su servicio. En teléfono va en un
+     renglón que termina en «…»; al tocarlo se ve completo. */
+  ponerCredito(m) {
+    m.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a> | ' + SRP.CONFIG.MAPA.CREDITO_PROVEEDOR);
+    const credito = m.attributionControl.getContainer();
+    credito.setAttribute('title', 'Toque para ver el crédito completo');
+    credito.addEventListener('click', (e) => {
+      if (e.target.closest('a')) return;
+      credito.classList.toggle('credito-abierto');
+    });
+  },
+
+  /* TOCAR EL MAPA (D152). A zoom 12 cada toque abarca unos 36 m: el árbol quedaba donde cayó el
+     dedo, no donde está. Por debajo de ZOOM_TOQUE el primer toque acerca el mapa ahí mismo, y el
+     punto se coloca con el siguiente. */
+  alTocar(latlng) {
+    const z = SRP.CONFIG.MAPA.ZOOM_TOQUE;
+    if (this.mapa.getZoom() < z) {
+      this.mapa.setView(latlng, z);
+      this.estado('Se acercó el mapa: toque otra vez justo donde está el árbol.');
+      return;
+    }
+    this.colocar(latlng.lat, latlng.lng, 'Punto colocado en el mapa.', { origen: 'mapa' });
+  },
+
+  // Renglón de avisos bajo la precisión: cada tipo se pone o se quita sin borrar los demás
+  aviso(tipo, texto) {
+    this.avisos[tipo] = texto || null;
+    const p = document.getElementById('mapa-aviso');
+    if (!p) return;
+    const t = Object.values(this.avisos).filter(Boolean);
+    p.textContent = t.join(' ');
+    p.hidden = !t.length;
+  },
+
+  // Mientras se busca la señal, el botón avisa que está trabajando
+  marcarBuscando(buscando) {
+    const b = document.getElementById('btn-ubicacion');
+    if (!b) return;
+    b.disabled = buscando;
+    b.setAttribute('aria-busy', String(buscando));
+    if (buscando) b.innerHTML = SRP.ICONOS.svg('ubicacion', 'medio') + '<span>Buscando señal…</span>';
+    else this.refrescarBotonUbicacion();
+  },
+
+  /* EL BOTÓN CAMBIA CON EL ESTADO DEL PUNTO.
+     Sin punto es la acción principal de la pantalla: azul relleno, icono de ubicación, y
+     dice que va a registrarlo. Con punto puesto ya no se está capturando sino corrigiendo:
+     neutro (D166) y la palabra «Actualizar». El icono es el mismo de ubicación en los dos estados
+     (D48): el color no va solo porque el texto cambia (Norma 8.4). Así nadie vuelve a pulsarlo
+     creyendo que aún no hay punto. */
+  aparienciaBotonUbicacion() {
+    return this.lat === null
+      ? { clase: 'btn btn-primario btn-ancho', icono: 'ubicacion', texto: 'Registrar ubicación del punto' }
+      : { clase: 'btn btn-editar btn-ancho',   icono: 'ubicacion', texto: 'Actualizar ubicación con mi posición' };
+  },
+
+  refrescarBotonUbicacion() {
+    const b = document.getElementById('btn-ubicacion');
+    if (!b || b.disabled) return;
+    const a = this.aparienciaBotonUbicacion();
+    b.className = a.clase;
+    b.innerHTML = SRP.ICONOS.svg(a.icono, 'medio') + '<span>' + a.texto + '</span>';
+  },
+
+  /* GUÍA DEL MAPA (D173). La prueba de campo notó que nadie sabía que el marcador se arrastra ni que las
+     coordenadas se actualizan solas. Sin punto, la línea bajo el mapa dice cómo ponerlo; con punto, una
+     segunda línea dice cómo ajustarlo. Una sola línea a la vez de ayuda, la que sirve en ese momento. */
+  GUIA_SIN_PUNTO: 'Toque el mapa donde está el árbol o use «Registrar ubicación del punto».',
+  pintarGuia() {
+    const g = document.getElementById('mapa-guia');
+    if (g) g.hidden = this.lat === null;
+  },
+
+  estado(texto, tipo) {
+    const p = document.getElementById('mapa-estado');
+    p.textContent = texto;
+    p.dataset.tipo = tipo || 'normal';
+  },
+
+  /* Nivel de la precisión del GPS (D96): buena, aceptable o baja, con su consejo. El color
+     acompaña a la palabra; nunca la sustituye. */
+  nivelPrecision(m) {
+    const c = SRP.CONFIG.MAPA;
+    if (m <= c.PRECISION_BUENA_M) return { nivel: 'buena', texto: 'Precisión buena', consejo: '' };
+    if (m <= c.PRECISION_ACEPTABLE_M) return { nivel: 'aceptable', texto: 'Precisión aceptable', consejo: 'Revise en el mapa que el punto esté en el árbol.' };
+    return { nivel: 'baja', texto: 'Precisión baja', consejo: 'Espere unos segundos al aire libre y vuelva a ubicar o arrastre el punto hasta el árbol.' };
+  },
+
+  // La franja bajo el mapa con la insignia de precisión y el círculo del margen sobre el mapa.
+  // Mientras el GPS se sigue escuchando, lo dice en lugar del consejo (D152)
+  mostrarPrecision(m) {
+    const n = this.nivelPrecision(m);
+    const p = document.getElementById('mapa-estado');
+    p.dataset.tipo = 'normal';
+    const consejo = this.vigilancia != null ? 'Afinando la lectura del GPS unos segundos…' : n.consejo;
+    p.innerHTML = '<span class="precision" data-nivel="' + n.nivel + '"><span class="precision-punto" aria-hidden="true"></span>' +
+      n.texto + ' · ±' + Math.round(m) + ' m</span>' + (consejo ? ' <span class="precision-consejo">' + consejo + '</span>' : '');
+    this.dibujarMargen(m, n.nivel);
+  },
+
+  // Círculo con el margen del GPS: se ve cuánto terreno cabe en «±m». Sólo existe para puntos del GPS
+  dibujarMargen(m, nivel) {
+    if (this.margen) { this.margen.remove(); this.margen = null; }
+    if (!this.mapa || m == null || this.lat == null) return;
+    // Los mismos tres colores de la insignia de precisión, leídos de la hoja (M13): antes el círculo
+    // usaba otro verde, otro ámbar y otro rojo
+    const color = SRP.util.color({ buena: 'exito', aceptable: 'editar', baja: 'error' }[nivel]);
+    this.margen = L.circle([this.lat, this.lng], { radius: m, color, weight: 1.5, fillColor: color, fillOpacity: 0.12, interactive: false }).addTo(this.mapa);
+  },
+
+  /* Coloca el punto y deja constancia de cómo llegó ahí.
+     `op`: { origen, precision, centrar }. El origen es obligatorio en la práctica: sin él el
+     registro no puede decir de dónde salió su coordenada. Devuelve false si cae fuera del ámbito. */
+  colocar(lat, lng, mensaje, op) {
+    op = op || {};
+    if (!SRP.derivacion.dentroDelAmbito(lat, lng)) {
+      this.estado('El punto está fuera de la Ciudad de México. Ubíquelo dentro del territorio.', 'alerta');
+      return false;
+    }
+    // Un punto puesto a mano (tocar, arrastrar, teclear) manda: el GPS deja de moverlo (D152)
+    if (op.origen !== 'gps') this.detenerAfinado();
+    this.lat = Number(lat.toFixed(6));
+    this.lng = Number(lng.toFixed(6));
+    this.origen = op.origen || null;
+    SRP.util.quitarErrorCampo(document.getElementById('btn-ubicacion'));   // «Registre la ubicación» ya se cumplió (D140)
+    // Sólo el GPS tiene precisión. Al mover el punto a mano, el margen del aparato deja de
+    // describirlo, así que se borra en vez de quedarse mintiendo sobre la coordenada nueva.
+    this.precision = op.origen === 'gps' && op.precision != null ? Math.round(op.precision) : null;
+    if (this.mapa) {
+      if (!this.marcador) {
+        this.marcador = L.marker([this.lat, this.lng], { icon: this.icono, draggable: true, keyboard: true, title: 'Ubicación del árbol' }).addTo(this.mapa);
+        this.marcador.on('dragend', () => {
+          const p = this.marcador.getLatLng();
+          this.colocar(p.lat, p.lng, 'Punto ajustado.', { origen: 'ajustado' });
+        });
+      } else {
+        this.marcador.setLatLng([this.lat, this.lng]);
+      }
+      if (op.centrar) this.mapa.setView([this.lat, this.lng], Math.max(this.mapa.getZoom(), SRP.CONFIG.MAPA.ZOOM_PUNTO));
+    }
+    // Sin la coordenada: la franja dice qué pasó, y el dato vive en su campo del formulario.
+    // Con GPS la franja es la insignia de precisión; en cualquier otro caso el margen se borra
+    if (this.precision != null) this.mostrarPrecision(this.precision);
+    else { this.estado(mensaje); this.dibujarMargen(null); }
+    this.refrescarBotonUbicacion();
+    this.pintarGuia();
+    if (this.alCambiar) this.alCambiar(this.lat, this.lng);
+    return true;
+  },
+
+  /* EL GPS SE AFINA (D152). Antes se tomaba una sola lectura, a veces de ±80 m. Ahora el punto
+     aparece con la primera y el GPS se sigue escuchando hasta GPS_AFINAR_MS: cada lectura más
+     precisa mueve el punto; una peor no. Se detiene al llegar a «buena», al vencer el tiempo, al
+     revisar o guardar, o en cuanto la persona coloca el punto a mano. */
+  ubicar() {
+    if (!navigator.geolocation) {
+      this.estado('Este dispositivo no ofrece ubicación. Toque el mapa o capture coordenadas.', 'alerta');
+      return;
+    }
+    this.detenerAfinado();
+    this.estado('Obteniendo su ubicación…');
+    this.marcarBuscando(true);
+    const c = SRP.CONFIG.MAPA;
+    let mejor = null;
+    const lectura = (pos) => {
+      const acc = pos.coords.accuracy;
+      if (mejor !== null && !(acc < mejor)) return;
+      const primera = mejor === null;
+      mejor = acc;
+      if (primera) this.marcarBuscando(false);
+      this.colocar(pos.coords.latitude, pos.coords.longitude, 'Ubicación obtenida.', { origen: 'gps', precision: acc, centrar: primera });
+      if (acc <= c.PRECISION_BUENA_M) this.detenerAfinado();
+    };
+    const error = (err) => {
+      // Con punto ya puesto, una falla pasajera (sin señal un momento, tiempo agotado) no detiene la
+      // escucha: el GPS la reporta y sigue; sólo quitar el permiso la termina
+      if (mejor !== null) { if (err.code === 1) this.detenerAfinado(); return; }
+      this.detenerAfinado();
+      this.marcarBuscando(false);
+      const motivo = err.code === 1 ? 'no se concedió el permiso de ubicación'
+        : err.code === 3 ? 'la señal tardó demasiado' : 'no hay señal de ubicación';
+      this.estado('No se obtuvo la ubicación: ' + motivo + '. Toque el mapa o capture coordenadas.', 'alerta');
+    };
+    this.vigilancia = navigator.geolocation.watchPosition(lectura, error, { enableHighAccuracy: true, timeout: c.GPS_ESPERA_MS, maximumAge: 0 });
+    // Si no llega ninguna lectura, el tiempo de espera de la primera decide; si ya llegó, se afina hasta aquí
+    this.finAfinado = setTimeout(() => { if (mejor !== null) this.detenerAfinado(); }, c.GPS_AFINAR_MS);
+  },
+
+  detenerAfinado() {
+    const estaba = this.vigilancia != null;
+    if (estaba && navigator.geolocation) navigator.geolocation.clearWatch(this.vigilancia);
+    this.vigilancia = null;
+    clearTimeout(this.finAfinado); this.finAfinado = null;
+    if (estaba && this.origen === 'gps' && this.precision != null) this.mostrarPrecision(this.precision);
+  },
+
+  limpiar() {
+    this.detenerAfinado();
+    this.aviso('territorio', null);
+    if (this.marcador) { this.marcador.remove(); this.marcador = null; }
+    this.dibujarMargen(null);
+    this.lat = null; this.lng = null;
+    this.origen = null; this.precision = null;
+    this.refrescarBotonUbicacion();
+    this.pintarGuia();
+  },
+
+  // Leaflet necesita recalcular su tamaño cuando su contenedor pasa de oculto a visible
+  refrescar() { if (this.mapa) setTimeout(() => this.mapa.invalidateSize(), 50); },
+
+  /* Mapa de sólo lectura con un punto, para las fichas: confirma de un vistazo que el árbol
+     está donde debe. Devuelve la instancia; quien la abre se encarga de destruirla al cerrar,
+     porque un mapa vivo dentro de un diálogo oculto sigue contando como mapa. */
+  estatico(idContenedor, lat, lng) {
+    if (typeof L === 'undefined') return null;
+    const c = SRP.CONFIG.MAPA;
+    const m = L.map(idContenedor, {
+      center: [lat, lng], zoom: c.ZOOM_PUNTO, zoomControl: false,
+      dragging: false, scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false, keyboard: false
+    });
+    this.ponerCredito(m);   // también en las fichas: la imagen es la misma (D152)
+    c.CAPAS.forEach(capa => L.tileLayer(capa.url, { attribution: capa.atribucion, maxZoom: c.ZOOM_MAX }).addTo(m));
+    L.marker([lat, lng], { icon: this.icono, interactive: false }).addTo(m);
+    setTimeout(() => m.invalidateSize(), 60);
+    return m;
+  }
+};

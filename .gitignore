@@ -1,0 +1,6 @@
+_to_delete/
+historial/
+# Archivos originales del SIA (capas, Excel de especies, iconografía): no se publican (D164)
+originales/
+# Temporales de Python
+__pycache__/
