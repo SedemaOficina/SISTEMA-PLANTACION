@@ -10,7 +10,7 @@ aquí, además de en `DECISIONES.md`. El detalle técnico de cada campo está en
 `datos/DICCIONARIO-DATOS.md`, que se genera de él); las reglas de la Fase 2 del esquema son las `S-nn`
 que se citan abajo.
 
-Estado al 02-10-2026: versión 0.9.17 (Bloque 150). Base del teléfono versión 7: `srp_db` en pruebas, `srp_sia` en la real.
+Estado al 02-10-2026: versión 0.9.18 (Bloque 151). Base del teléfono versión 7: `srp_db` en pruebas, `srp_sia` en la real.
 
 ---
 
@@ -42,6 +42,7 @@ Estado al 02-10-2026: versión 0.9.17 (Bloque 150). Base del teléfono versión 
 | 22 | Escrituras parciales y folio inmutable (S-16) | Aplicar sólo los campos que cambia cada operación sobre el registro vigente; rechazar la escritura hecha sobre una versión anterior y devolver la vigente. El folio se asigna una vez y ninguna operación lo cambia ni lo anula. | Decidido | En el teléfono, cerrar la jornada desde la franja, eliminar desde una lista y guardar una edición escriben la copia que estaba en memoria (`js/jornada-activa.js`, `js/registros.js`, `js/formulario.js`). |
 | 23 | Eliminados y registro de cambios (S-17) | Consulta de árboles y jornadas eliminados con su historial y «Restaurar»; registro de cambios con árboles y jornadas, valor anterior y nuevo, cuenta, fecha y hora e identificador del dispositivo; motivo de la eliminación. | Decidido | En el teléfono lo eliminado sólo se restaura desde el aviso «Deshacer»; el Registro de cambios muestra cuentas, catálogos y cargas, y la bitácora guarda los nombres de los campos, no sus valores. |
 | 24 | Cola de envío por operación (S-18) | Enviar cada operación: altas, ediciones, eliminaciones, restauraciones, sustituciones, jornadas, cierres, reaperturas y relevos. | Decidido | La cola simulada de `js/envio.js` sólo considera árboles activos: sirve de referencia para estados y avisos, no para el alcance. |
+| 25 | Vigencia del reporte (D215) | Fijar `reporte_en` cuando se recibe el reporte entregado y anularlo en la misma transacción que reabra la jornada o que elimine, restaure, edite, mueva o sustituya uno de sus árboles, con su renglón de bitácora. Dos altas idénticas de jornada en el mismo instante se tratan como una sola (clave de la operación). | Decidido | `js/reportes.js` (`marcarGenerado`, `caducar`) y `js/jornada-activa.js` (`cambiarEstatus`, `volverACerrar`). |
 
 ## 2. Qué guarda el teléfono (S-11)
 

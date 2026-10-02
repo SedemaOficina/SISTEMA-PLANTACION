@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.9.17 (Bloque 150)»**.
+Al pie de cualquier pantalla: **«Versión 0.9.18 (Bloque 151)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -351,6 +351,9 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M351 | Auditoría integral | Los PDF se escriben con Roboto incrustada; una letra con macrón o de otro alfabeto latino ya no deforma el texto | Baja | 0.9.17 (B150) | Generar un informe o un reporte de una jornada con «ā» en el nombre | Informe y reporte en PDF |
 | M352 | Auditoría integral | Un solo formato en lo que se imprime: sello «02-OCT-2026, 12:07 h» y punto decimal en «Árboles por jornada» | Baja | 0.9.17 (B150) | Pie de cualquier PDF; resumen del informe | Pie del PDF |
 | M353 | Auditoría integral | La tabla por periodo del informe suma su total con jornadas de varios días, y los árboles eliminados de noche cuentan en su día | Media | 0.9.17 (B150) | Jornada iniciada el mes pasado con un árbol de hoy: informe del mes, columna «Jornadas cerradas» | Tabla «Árboles plantados por semana» |
+| M354 | Auditoría integral | Dos toques seguidos en «Iniciar jornada» ya no crean dos jornadas iguales | Media | 0.9.18 (B151) | Llenar «Iniciar jornada» y tocar dos veces el botón: queda una sola en Jornadas | — |
+| M355 | Auditoría integral | El reporte cuenta como generado cuando el PDF se entrega, no al abrir la vista previa; si la jornada cambia después (se reabre, o se elimina, edita, mueve o sustituye un árbol), deja de estar vigente y se pide generarlo de nuevo | Media | 0.9.18 (B151) | Cerrar una jornada, abrir la vista previa y salir: en Reportes sigue «Sin generar». Generar el PDF, eliminar un árbol: vuelve a «Sin generar» | Lista de Reportes |
+| M356 | Auditoría integral | Sustituir un árbol de una jornada cerrada pregunta antes de reabrirla, y la jornada vuelve a cerrarse al guardar el sustituto o al cancelar | Media | 0.9.18 (B151) | Registros › árbol de una jornada cerrada › Sustituir: aparece «¿Reabrir … para registrar el sustituto?»; cancelar la sustitución y ver la jornada cerrada | Ventana de confirmación |
 
 ## 2. Por hacer
 
@@ -376,4 +379,4 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 336 hechas · 5 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 339 hechas · 5 por hacer · 2 revisadas · 2 descartadas.

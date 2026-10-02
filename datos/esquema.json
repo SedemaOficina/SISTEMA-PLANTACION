@@ -1164,9 +1164,9 @@
           "tipo": "timestamptz",
           "nulo": true,
           "origen": "Sistema",
-          "dominio": "ISO 8601; nulo si no se ha generado",
+          "dominio": "ISO 8601; nulo si no se ha generado o si dejó de estar vigente",
           "pantalla": "Reportes: «reporte generado …»",
-          "regla": "Se fija al aceptar el cierre del reporte; Reportes lo muestra como «reporte generado …» y el botón sigue diciendo «Generar reporte»"
+          "regla": "Se fija cuando el PDF se entrega (se descarga o se comparte), no al abrir la vista previa. Vuelve a nulo, con constancia en la bitácora, si la jornada se reabre o si uno de sus árboles se elimina, restaura, edita, mueve o sustituye: el reporte se genera de nuevo"
         },
         {
           "campo": "carga_id",

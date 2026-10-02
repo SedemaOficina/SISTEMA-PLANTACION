@@ -353,8 +353,8 @@ SRP.reportes = {
     const c = this.contexto;
     const previo = c.previo;
     if (!SRP.permisos.exigir('jornada.editar', previo || c.jornada.dato)) return;   // el cierre se guarda en la jornada (D151)
+    // Aquí se guardan los datos del cierre; el reporte cuenta como generado al entregar el PDF
     const cierre = this.cierrePrevisto();
-    cierre.reporte_en = SRP.util.ahoraISO();   // cuándo se generó (o regeneró) el reporte (D134)
 
     await SRP.almacen.guardarConBitacora('jornadas', cierre,
       SRP.bitacora.entrada('EDITADO', 'jornada', cierre.id, 'Datos de cierre del reporte'));
@@ -924,9 +924,35 @@ SRP.reportes = {
     return window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
   },
 
+  /* El reporte cuenta como generado cuando el PDF se entregó (se descargó o se compartió), no al
+     abrir la vista previa: así Supervisión no da por reportada una jornada sin documento. */
+  async marcarGenerado(cierre, jornada) {
+    const guardada = cierre && cierre.id ? await SRP.almacen.uno('jornadas', cierre.id) : null;
+    if (!guardada) return;
+    const ahora = SRP.util.ahoraISO();
+    await SRP.almacen.guardarConBitacora('jornadas', Object.assign({}, guardada, { reporte_en: ahora }),
+      SRP.bitacora.entrada('EDITADO', 'jornada', guardada.id, guardada.reporte_en ? 'Reporte generado de nuevo' : 'Reporte generado'));
+    cierre.reporte_en = ahora;
+    if (jornada && jornada.dato) jornada.dato.reporte_en = ahora;
+  },
+
+  /* El reporte vale para lo que la jornada tenía al generarlo. Si después se elimina, restaura,
+     edita, mueve o sustituye uno de sus árboles, deja de contar como generado y hay que generarlo
+     de nuevo. Devuelve las escrituras, para guardarlas junto con el cambio que lo causa. */
+  async caducar(ids, motivo) {
+    const u = SRP.sesion.usuario, ahora = SRP.util.ahoraISO(), cambios = [];
+    for (const id of [...new Set((ids || []).filter(Boolean))]) {
+      const j = await SRP.almacen.uno('jornadas', id);
+      if (j && j.reporte_en) cambios.push({ almacen: 'jornadas', objeto: Object.assign({}, j, { reporte_en: null, editado_por_id: u.id, fecha_ultima_edicion: ahora }),
+        bitacora: SRP.bitacora.entrada('EDITADO', 'jornada', id, 'Su reporte deja de estar vigente: ' + motivo) });
+    }
+    return cambios;
+  },
+
   async entregar(doc, nombre, cierre, jornada) {
     const entregado = await this.entregarArchivo(doc.output('blob'), nombre, 'Reporte diario de plantación');
     if (entregado === 'cancelado') return;
+    await this.marcarGenerado(cierre, jornada);
     /* Cierre del ciclo (D138): el reporte es el último paso de la jornada, así que el aviso dice si
        quedó completa o, si todavía hay puntos por revisar, qué falta. */
     let cola = '', completa = true;

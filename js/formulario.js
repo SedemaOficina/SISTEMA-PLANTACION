@@ -97,7 +97,12 @@ SRP.formulario = {
       this.corregirCampo(b.dataset.campo);
     });
     this.el('btn-resumen-guardar').addEventListener('click', () => this.guardar());
-    this.el('btn-cancelar-edicion').addEventListener('click', () => { this.limpiar(); SRP.app.mostrarVista(SRP.jornadas.volverAlDetalle ? 'jornadas' : 'registros'); });
+    this.el('btn-cancelar-edicion').addEventListener('click', async () => {
+      const cerrada = await this.cerrarReabierta();
+      this.limpiar();
+      SRP.app.mostrarVista(SRP.jornadas.volverAlDetalle ? 'jornadas' : 'registros');
+      if (cerrada) SRP.util.anunciar('Sustitución cancelada. La jornada volvió a cerrarse.', 'aviso');
+    });
     // Lo que se escribe en el árbol a medias se guarda como borrador
     ['campo-comentarios', 'campo-otra-especie', 'campo-fecha'].forEach(id => {
       this.el(id).addEventListener('input', () => this.guardarBorrador());
@@ -640,8 +645,8 @@ SRP.formulario = {
           territorio.length ? 'Territorio rederivado: ' + territorio.map(k => k === 'capa_version' ? 'capas ' + (v[k] || '—')
             : k + ' ' + (previo[k] || '—') + ' → ' + (v[k] || '—')).join('; ') : ''].filter(Boolean).join('. ');
         const nuevo = this.registroPrevisto(ahora);
-        await SRP.almacen.guardarConBitacora('plantaciones', nuevo,
-          SRP.bitacora.entrada('EDITADO', 'plantacion', nuevo.id, detalle || 'Sin cambios en los datos'));
+        await SRP.almacen.guardarJuntos([{ almacen: 'plantaciones', objeto: nuevo, bitacora: SRP.bitacora.entrada('EDITADO', 'plantacion', nuevo.id, detalle || 'Sin cambios en los datos') }]
+          .concat(detalle ? await SRP.reportes.caducar([nuevo.jornada_id], 'se editó un árbol') : []));
         this.el('dlg-resumen').close();
         this.limpiar();
         // Si se llegó desde la revisión de una jornada, se vuelve a ella (D112)
@@ -697,9 +702,10 @@ SRP.formulario = {
   /* ---------- Sustitución ---------- */
 
   // El formulario listo para el árbol que reemplaza a `original`: misma especie de inicio, la fecha elegida, aviso arriba
-  sustituir(original, motivo, otro, fecha) {
+  // `reabierta`: la jornada cerrada que se reabrió para este sustituto; vuelve a cerrarse al terminar
+  sustituir(original, motivo, otro, fecha, reabierta) {
     this.limpiar();
-    this.estado.sustitucion = { original, motivo, otro, fecha: fecha || SRP.util.fechaHoy() };
+    this.estado.sustitucion = { original, motivo, otro, fecha: fecha || SRP.util.fechaHoy(), reabierta: reabierta || null };
     this.el('titulo-registrar').textContent = 'Sustituir árbol';
     this.el('titulo-registrar').classList.remove('oculto-visual');
     const aviso = this.el('edicion-aviso');
@@ -711,6 +717,14 @@ SRP.formulario = {
     if (original.especie_id) this.elegirEspecie(original.especie_id);
     else this.elegirEspecie(this.OTRA, original.especie_otra);
     SRP.app.mostrarVista('registrar');
+  },
+
+  // Cierra de nuevo la jornada que se reabrió para la sustitución en curso. Devuelve si la cerró
+  async cerrarReabierta() {
+    const s = this.estado.sustitucion;
+    if (!s || !s.reabierta) return false;
+    const id = s.reabierta; s.reabierta = null;
+    return SRP.activa.volverACerrar(id);
   },
 
   /* El sustituto y su original en una sola operación: entra el nuevo y el original pasa a
@@ -733,8 +747,10 @@ SRP.formulario = {
     ]);
     if (this.el('dlg-resumen').open) this.el('dlg-resumen').close();
     if (SRP.envio.simulado()) SRP.envio.marcarCambios(original.id);
+    const cerrada = await this.cerrarReabierta();
     this.limpiar();
-    SRP.util.anunciar('Sustituto registrado (' + motivo + '). El ' + SRP.ref.especieDe(original).comun + ' anterior ya no cuenta como plantado.', 'exito');
+    SRP.util.anunciar('Sustituto registrado (' + motivo + '). El ' + SRP.ref.especieDe(original).comun + ' anterior ya no cuenta como plantado.' +
+      (cerrada ? ' La jornada volvió a cerrarse; genere de nuevo su reporte.' : ''), 'exito');
     SRP.app.mostrarVista(SRP.jornadas.volverAlDetalle ? 'jornadas' : 'registros');
     if (SRP.envio.simulado()) SRP.envio.enviar({ silencioso: true }).catch(() => {});
     SRP.almacen.cuidarAlmacenamiento();
@@ -842,6 +858,8 @@ SRP.formulario = {
      no es un dato: ayuda a situarse y no se guarda en ningún lado. */
   // `conservarBorrador`: al entrar o salir de la cuenta el borrador del árbol a medias se queda
   limpiar(conservarBorrador) {
+    // Si se sale de una sustitución por otro camino, la jornada que se reabrió para ella se cierra igual
+    this.cerrarReabierta().catch(() => {});
     this.estado.pausaBorrador = true;
     this.estado.editando = null;
     this.estado.sustitucion = null;

@@ -2312,3 +2312,19 @@
     eliminó, con la misma conversión que las ediciones.
   · **Títulos del informe:** un título de sección no se queda solo al pie de la página; pasa a la
     siguiente junto con su tabla.
+- **D215. Jornadas y reporte: un solo inicio, reporte vigente y sustitución que no deja la jornada abierta (bloque 151).** 02-10-2026.
+  Resultado de la auditoría integral del 02-10-2026 (hallazgos M-18, M-14 y M-15). Son reglas del
+  teléfono que el servidor deberá respetar igual.
+  · **Un solo inicio:** dos toques seguidos en «Iniciar jornada» inician una sola jornada; el botón dice
+    «Iniciando…» mientras se guarda.
+  · **El reporte cuenta al entregarse:** `reporte_en` se fija cuando el PDF se descarga o se comparte. Abrir
+    la vista previa guarda los datos del cierre, pero no da el reporte por generado. Si se cancela la hoja
+    de compartir, tampoco.
+  · **El reporte vale para lo que la jornada tenía:** si la jornada se reabre, o si uno de sus árboles se
+    elimina, se restaura, se edita, se mueve a otra jornada (cambian las dos) o se sustituye, `reporte_en`
+    vuelve a nulo en la misma operación y la bitácora lo dice («Su reporte deja de estar vigente: …»).
+    Reportes y Supervisión la muestran sin reporte hasta que se genere de nuevo. No se agrega un campo:
+    la constancia de que hubo un reporte anterior está en la bitácora.
+  · **Sustituir en una jornada cerrada:** antes de reabrirla se pregunta, y se avisa si tiene reporte. Al
+    guardar el sustituto o al cancelar, la jornada vuelve a cerrarse; ya no queda abierta fuera de las
+    cifras de Supervisión.

@@ -1020,10 +1020,14 @@ SRP.jornadas = {
     const que = [tomaFecha ? 'su fecha' : '', cambiaPrograma ? 'su programa' : ''].filter(Boolean).join(' y ');
     const cambios = [{ almacen: 'plantaciones', objeto: nuevo, bitacora: SRP.bitacora.entrada('EDITADO', 'plantacion', r.id,
       'Movido a la jornada «' + destino.nombre + '»' + (que ? '; toma ' + que : '; conserva su fecha, ' + SRP.util.formatearFecha(fecha))) }];
-    if (origen && (origen.puntos_revisados || []).includes(r.id)) {
-      cambios.push({ almacen: 'jornadas', objeto: Object.assign({}, origen, { puntos_revisados: origen.puntos_revisados.filter(x => x !== r.id), editado_por_id: u.id, fecha_ultima_edicion: ahora }),
-        bitacora: SRP.bitacora.entrada('EDITADO', 'jornada', origen.id, 'Sale un punto revisado: se movió a «' + destino.nombre + '»') });
+    // Las dos jornadas cambian de contenido: el reporte de cada una deja de estar vigente
+    const revisado = origen && (origen.puntos_revisados || []).includes(r.id);
+    if (origen && (revisado || origen.reporte_en)) {
+      cambios.push({ almacen: 'jornadas', objeto: Object.assign({}, origen, { puntos_revisados: (origen.puntos_revisados || []).filter(x => x !== r.id), reporte_en: null, editado_por_id: u.id, fecha_ultima_edicion: ahora }),
+        bitacora: SRP.bitacora.entrada('EDITADO', 'jornada', origen.id, [revisado ? 'Sale un punto revisado: se movió a «' + destino.nombre + '»' : 'Sale un árbol: se movió a «' + destino.nombre + '»',
+          origen.reporte_en ? 'su reporte deja de estar vigente' : ''].filter(Boolean).join('; ')) });
     }
+    if (!origen || destino.id !== origen.id) (await SRP.reportes.caducar([destino.id], 'recibió un árbol de otra jornada')).forEach(c => cambios.push(c));
     await SRP.almacen.guardarJuntos(cambios);
     if (SRP.envio.simulado()) { SRP.envio.marcarCambios(r.id); SRP.envio.enviar({ silencioso: true }); }
     SRP.util.anunciar('Movido a la jornada «' + destino.nombre + '»: ' + (tomaFecha ? 'toma su fecha' : 'conserva su fecha, ' + SRP.util.formatearFecha(fecha)) +

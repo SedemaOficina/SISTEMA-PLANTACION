@@ -4599,6 +4599,7 @@ with sync_playwright() as p:
     e2=pg57.inner_text('#sustituir-error')
     ok(e1=='Elija por qué se sustituye.' and vis_otro and e2=='Escriba el motivo.','el motivo es obligatorio y «Otro» pide escribirlo')
     pg57.fill('#sustituir-otro','Lo atropelló una grúa'); pg57.click('#btn-sustituir-seguir'); pg57.wait_for_timeout(400)
+    if pg57.is_visible('#dlg-confirmar'): pg57.click('#btn-confirmar-si'); pg57.wait_for_timeout(600)   # la jornada estaba cerrada: se pregunta antes de reabrirla
     if pg57.is_visible('#dlg-confirmar'): pg57.click('#btn-confirmar-si'); pg57.wait_for_timeout(800)
     reabre57=pg57.evaluate("async (id) => (await SRP.almacen.uno('jornadas', id)).estatus", jor57)=='abierta'
     f57=pg57.evaluate("[SRP.app.vista, document.getElementById('titulo-registrar').textContent, document.getElementById('edicion-aviso').textContent, SRP.formulario.estado.especieId, SRP.activa.jornada && SRP.activa.jornada.id]")
@@ -4742,6 +4743,7 @@ with sync_playwright() as p:
     es58=pg58.inner_text('#sustituir-error')
     ok('anterior a la plantación del árbol perdido (' + TXT(D(4)) + ')' in es58,'la sustitución no puede ser de antes de que se plantara el perdido: %s' % es58)
     pg58.fill('#sustituir-fecha', D(2)); pg58.click('#btn-sustituir-seguir'); pg58.wait_for_timeout(1200)
+    if pg58.is_visible('#dlg-confirmar'): pg58.click('#btn-confirmar-si'); pg58.wait_for_timeout(900)   # la jornada estaba cerrada: se pregunta antes de reabrirla
     f58=pg58.evaluate("[document.getElementById('campo-fecha').value, !document.getElementById('caja-fecha-arbol').hidden, document.getElementById('edicion-aviso').textContent]")
     ok(f58[0]==D(2) and f58[1] and 'plantado el ' + TXT(D(2)) in f58[2],'el formulario del sustituto llega con esa fecha, a la vista: %s' % f58)
     pg58.click('#btn-ubicacion'); pg58.wait_for_timeout(700)
@@ -5300,6 +5302,75 @@ with sync_playwright() as p:
     ok(d64 == [True, 1, 0], 'un árbol eliminado de noche cuenta en su día local, igual que las ediciones: %s' % d64)
     ok(not err64, 'sin errores en consola: %s' % err64[:2])
     ctx64.close()
+
+    # ---------- ctx65: una sola jornada con dos toques, el reporte cuenta al entregarse y caduca si la jornada cambia, sustituir pregunta antes de reabrir ----------
+    ctx65 = b.new_context(viewport={'width':1280,'height':900}, timezone_id='America/Mexico_City', geolocation={'latitude':19.4326,'longitude':-99.1332,'accuracy':5}, permissions=['geolocation'], accept_downloads=True)
+    pg65 = ctx65.new_page(); err65 = []
+    pg65.on('pageerror', lambda e: err65.append(str(e))); pg65.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err65.append(m.text))
+    pg65.goto(BASE); pg65.wait_for_timeout(1200)
+    pg65.select_option('#sel-usuario-prueba', 'u-cabo-1'); pg65.click('#btn-entrar-prueba'); pg65.wait_for_timeout(900)
+    J65 = "(async () => (await SRP.almacen.todos('jornadas')).map(j => [j.nombre, j.estatus, !!j.reporte_en]))()"
+    pg65.fill('#ini-nombre', 'Doble toque B151'); pg65.fill('#ini-fecha', HOY); pg65.select_option('#ini-programa', 'p-refor'); pg65.fill('#ini-meta', '10')
+    pg65.evaluate("(() => { const f = document.getElementById('form-iniciar-jornada'); f.requestSubmit(); f.requestSubmit(); })()")
+    esperar(pg65, "!!SRP.activa.jornada && !document.getElementById('btn-ubicacion').disabled", 5000); pg65.wait_for_timeout(500)
+    ok(pg65.evaluate(J65) == [['Doble toque B151', 'abierta', False]], 'dos toques seguidos en «Iniciar jornada» inician una sola jornada: %s' % pg65.evaluate(J65))
+    def arbol65(lat):
+        ctx65.set_geolocation({'latitude': lat, 'longitude': -99.1332, 'accuracy': 5})
+        previo = pg65.evaluate("SRP.formulario.estado.ultimoGuardado")
+        pg65.click('#btn-ubicacion'); pg65.wait_for_timeout(900)
+        if not pg65.evaluate("!!SRP.formulario.estado.especieId"):
+            pg65.fill('#campo-especie', 'fres'); pg65.wait_for_timeout(200); pg65.dispatch_event('.combo-opcion[data-id="ESP-0029"]', 'mousedown'); pg65.wait_for_timeout(150)
+        pg65.click('#form-plantacion button[type=submit]')
+        for _ in range(60):
+            pg65.wait_for_timeout(150)
+            if pg65.is_visible('#dlg-resumen'): pg65.click('#btn-resumen-guardar'); esperar(pg65, "!document.getElementById('dlg-resumen').open", 6000); continue
+            if pg65.evaluate("p => SRP.formulario.estado.ultimoGuardado !== p && !document.querySelector('dialog[open]')", previo): break
+        pg65.wait_for_timeout(300)
+        return pg65.evaluate("SRP.formulario.estado.ultimoGuardado")
+    a65 = arbol65(19.4326); b65 = arbol65(19.4329)
+    pg65.click('#btn-jornada-cerrar'); pg65.wait_for_timeout(300); pg65.click('#btn-confirmar-si'); pg65.wait_for_timeout(1200)
+    # La vista previa no es el reporte: cuenta cuando el PDF se entrega
+    reporte_de(pg65, 'Doble toque B151')
+    pg65.click('#btn-cierre-previa') if pg65.locator('#btn-cierre-previa').count() else pg65.click('#form-cierre button[type=submit]')
+    esperar(pg65, "document.getElementById('dlg-previa').open", 6000); pg65.wait_for_timeout(600)
+    ok(pg65.evaluate(J65) == [['Doble toque B151', 'cerrada', False]], 'abrir la vista previa no da el reporte por generado')
+    with pg65.expect_download() as d65: pg65.click('#btn-previa-generar')
+    esperar(pg65, "(async () => !!(await SRP.almacen.todos('jornadas'))[0].reporte_en)()", 6000); pg65.wait_for_timeout(500)
+    ok(pg65.evaluate(J65) == [['Doble toque B151', 'cerrada', True]], 'al entregar el PDF el reporte queda generado')
+    # Si la jornada cambia después, el reporte deja de estar vigente
+    pg65.evaluate("async id => { await SRP.registros.eliminar(await SRP.almacen.uno('plantaciones', id)); }", b65); pg65.wait_for_timeout(600)
+    bit65 = pg65.evaluate("(async () => (await SRP.almacen.todos('bitacora')).map(x => x.detalle || '').filter(t => /reporte/i.test(t)))()")
+    ok(pg65.evaluate(J65) == [['Doble toque B151', 'cerrada', False]] and 'Reporte generado' in bit65 and any('deja de estar vigente: se eliminó un árbol' in t for t in bit65),
+       'eliminar un árbol de una jornada con reporte lo deja sin vigencia, con constancia en la bitácora: %s' % bit65)
+    pg65.evaluate("async () => { const j = (await SRP.almacen.todos('jornadas'))[0]; j.reporte_en = new Date().toISOString(); await SRP.almacen.guardarConBitacora('jornadas', j, null); }"); pg65.wait_for_timeout(200)
+    # Sustituir un árbol de una jornada cerrada: se pregunta antes de reabrirla y vuelve a cerrarse
+    def sustituir65():
+        pg65.evaluate("async id => { await SRP.registros.sustituir(await SRP.almacen.uno('plantaciones', id)); }", a65); pg65.wait_for_timeout(500)
+        pg65.locator('#sustituir-motivos .chip').first.click(); pg65.wait_for_timeout(150)
+        pg65.evaluate("(() => { SRP.registros.seguirSustitucion(); })()"); esperar(pg65, "document.getElementById('dlg-confirmar').open", 5000); pg65.wait_for_timeout(200)
+    sustituir65()
+    t65 = pg65.inner_text('#dlg-confirmar')
+    ok('Jornada cerrada' in t65 and '¿Reabrir «Doble toque B151» para registrar el sustituto?' in t65 and 'reporte deja de estar vigente' in t65 and pg65.evaluate(J65) == [['Doble toque B151', 'cerrada', True]],
+       'sustituir un árbol de una jornada cerrada pregunta antes de reabrirla y avisa del reporte')
+    pg65.click('#btn-confirmar-no'); pg65.wait_for_timeout(500)
+    ok(pg65.evaluate(J65) == [['Doble toque B151', 'cerrada', True]] and pg65.evaluate("SRP.app.vista") != 'registrar', 'si se cancela la pregunta, la jornada sigue cerrada y con su reporte')
+    sustituir65(); pg65.click('#btn-confirmar-si'); esperar(pg65, "SRP.app.vista === 'registrar'", 5000); pg65.wait_for_timeout(500)
+    ok(pg65.evaluate(J65) == [['Doble toque B151', 'abierta', False]], 'al aceptar se reabre para registrar el sustituto y el reporte deja de contar')
+    pg65.click('#btn-cancelar-edicion'); pg65.wait_for_timeout(900)
+    ok(pg65.evaluate(J65) == [['Doble toque B151', 'cerrada', False]] and 'volvió a cerrarse' in pg65.inner_text('#aviso'), 'al cancelar la sustitución la jornada vuelve a cerrarse: %s' % pg65.inner_text('#aviso')[:60])
+    sustituir65(); pg65.click('#btn-confirmar-si'); esperar(pg65, "SRP.app.vista === 'registrar'", 5000); pg65.wait_for_timeout(500)
+    ctx65.set_geolocation({'latitude': 19.4321, 'longitude': -99.1331, 'accuracy': 5})
+    pg65.click('#btn-ubicacion'); pg65.wait_for_timeout(1000); pg65.click('#form-plantacion button[type=submit]')
+    for _ in range(40):
+        pg65.wait_for_timeout(150)
+        if pg65.is_visible('#dlg-resumen'): pg65.click('#btn-resumen-guardar'); esperar(pg65, "!document.getElementById('dlg-resumen').open", 6000); continue
+        if pg65.evaluate("SRP.app.vista") != 'registrar': break
+    pg65.wait_for_timeout(600)
+    e65 = pg65.evaluate("(async () => (await SRP.almacen.todos('plantaciones')).map(r => r.estatus).sort())()")
+    ok(pg65.evaluate(J65) == [['Doble toque B151', 'cerrada', False]] and e65 == ['activo', 'eliminado', 'sustituido'] and 'volvió a cerrarse' in pg65.inner_text('#aviso'),
+       'al guardar el sustituto la jornada vuelve a cerrarse y pide generar de nuevo el reporte: %s' % e65)
+    ok(not err65, 'sin errores en consola: %s' % err65[:2])
+    ctx65.close()
 
 
 

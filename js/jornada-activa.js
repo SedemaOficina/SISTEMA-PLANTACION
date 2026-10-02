@@ -375,6 +375,15 @@ SRP.activa = {
     else if (fecha > SRP.util.fechaHoy()) errores.push(['ini-fecha', 'La fecha no puede ser posterior a hoy.']);
     // Cada campo dice su error (D140) y arriba el resumen, igual que en todos los formularios (M15)
     if (SRP.util.resumenErrores(this.el('ini-errores'), errores, ['ini-nombre', 'ini-programa', 'ini-meta', 'ini-fecha'].concat(SRP.pedido.ids('ini')))) return;
+    // Un segundo toque mientras se guarda no inicia otra jornada igual
+    if (this._iniciando) return;
+    this._iniciando = true;
+    const libre = SRP.util.ocupado(this.el('btn-iniciar-jornada'), 'Iniciando…', 'disco');
+    try { await this.guardarJornadaNueva({ nombre, ubicacion, fecha, comentarios, programa_id, previstos }); }
+    finally { this._iniciando = false; libre(); }
+  },
+
+  async guardarJornadaNueva({ nombre, ubicacion, fecha, comentarios, programa_id, previstos }) {
     const u = SRP.sesion.usuario;
     const ahora = SRP.util.ahoraISO();
     const p = this.punto, t = p ? p.t : {};
@@ -448,13 +457,37 @@ SRP.activa = {
     return true;
   },
 
+  /* Sustituir un árbol de una jornada cerrada la reabre y deja sin vigencia su reporte: eso no se
+     deshace solo, así que se pregunta antes. Devuelve si se reabrió. */
+  async reabrirParaSustituto(j) {
+    const ok = await SRP.app.confirmar({ titulo: 'Jornada cerrada', pregunta: '¿Reabrir «' + j.nombre + '» para registrar el sustituto?',
+      puntos: ['La jornada se reabre mientras registra el sustituto y vuelve a cerrarse al guardarlo o al cancelar.']
+        .concat(j.reporte_en ? ['Su reporte deja de estar vigente: habrá que generarlo de nuevo, ya con el sustituto.'] : []),
+      boton: 'Sí, registrar el sustituto', icono: 'palomita' });
+    return ok ? this.reabrir(j) : false;
+  },
+
+  /* Una jornada cerrada que se reabrió sólo para registrar un sustituto vuelve a cerrarse al
+     guardarlo o al cancelar: no se queda abierta fuera de las cifras. */
+  async volverACerrar(id) {
+    const j = await SRP.almacen.uno('jornadas', id);
+    if (!j || j.estatus !== 'abierta') return false;
+    if (!await this.cambiarEstatus(j, 'cerrada')) return false;
+    if (this.jornada && this.jornada.id === id) this.jornada = null;
+    return true;
+  },
+
   // Devuelve si se hizo: sin permiso se detiene con aviso (D151)
   async cambiarEstatus(j, estatus) {
     if (!SRP.permisos.exigir('jornada.editar', j)) return false;
     const u = SRP.sesion.usuario;
     const ahora = SRP.util.ahoraISO();
     const nuevo = Object.assign({}, j, { estatus, fecha_cierre: estatus === 'cerrada' ? ahora : null, editado_por_id: u.id, fecha_ultima_edicion: ahora });
-    await SRP.almacen.guardarConBitacora('jornadas', nuevo, SRP.bitacora.entrada('EDITADO', 'jornada', j.id, estatus === 'cerrada' ? 'Jornada cerrada' : 'Jornada reabierta'));
+    // Una jornada reabierta va a cambiar: su reporte deja de contar como generado
+    const caduca = estatus !== 'cerrada' && !!j.reporte_en;
+    if (caduca) nuevo.reporte_en = null;
+    await SRP.almacen.guardarConBitacora('jornadas', nuevo, SRP.bitacora.entrada('EDITADO', 'jornada', j.id,
+      estatus === 'cerrada' ? 'Jornada cerrada' : 'Jornada reabierta' + (caduca ? '; su reporte deja de estar vigente' : '')));
     if (SRP.envio.simulado()) SRP.envio.enviar({ silencioso: true });
     return true;
   },

@@ -2853,3 +2853,23 @@ fórmulas, Roboto incrustada en informe y reporte, sello, eliminados por día lo
 orden de dos árboles guardados en el mismo instante y fallaban de forma intermitente en un equipo más
 lento, también con la versión 0.9.16: ahora esperan el resultado (guardado del árbol y relevo en los
 bloques 140 y 141, tabla de Usuarios) o comparan sin depender del orden (prioridad por punto).
+
+## Bloque 151 — Jornadas y reporte: un solo inicio, reporte vigente y sustitución que cierra (02-10-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.9.18.
+
+**Qué cambió (D215).** `js/jornada-activa.js`: `iniciarJornada()` no guarda dos veces (`guardarJornadaNueva()`
+hace el alta); `cambiarEstatus()` anula `reporte_en` al reabrir; `reabrirParaSustituto()` pregunta antes de
+reabrir y `volverACerrar()` cierra de nuevo. `js/reportes.js`: `aceptar()` ya no fija `reporte_en`;
+`marcarGenerado()` lo fija al entregar el PDF; `caducar()` devuelve las escrituras que lo anulan.
+`js/registros.js`: eliminar y restaurar anulan el reporte de la jornada; la sustitución en jornada cerrada
+pasa por la pregunta. `js/formulario.js`: editar un árbol anula el reporte de su jornada; `sustituir()`
+recuerda la jornada reabierta y `cerrarReabierta()` la cierra al guardar, al cancelar o al salir.
+`js/jornadas.js`: mover un árbol anula el reporte de las dos jornadas. `datos/esquema.json` y
+`js/espejo.js`: regla de `reporte_en`; diccionario y `js/esquema.js` regenerados.
+`docs/FASE2-Y-TRASPASO.md`: fila 25. `pruebas/prueba.py`: ctx65. Marca 0.9.18.
+
+**Verificación:** prueba.py 1200 comprobaciones, 0 fallas (ctx65, 10 nuevas: un solo inicio con dos toques,
+vista previa que no marca, reporte generado al entregar, reporte sin vigencia al eliminar un árbol,
+pregunta antes de reabrir, cierre al cancelar y al guardar el sustituto); auditoria.py 117, 0 hallazgos;
+revisar.py sin problemas. La pregunta de la sustitución vive en el módulo de la jornada: en
+`js/registros.js` sigue sin haber confirmaciones (D139).

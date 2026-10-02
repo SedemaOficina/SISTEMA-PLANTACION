@@ -640,10 +640,15 @@ SRP.registros = {
     const j = r.jornada_id ? await SRP.almacen.uno('jornadas', r.jornada_id) : null;
     if (!j) { SRP.util.anunciar('No se puede sustituir: la jornada de ese árbol ya no existe.', 'alerta'); return; }
     this.el('dlg-sustituir').close();
-    // Como «Registrar árbol» en una jornada: cerrada se reabre (pide confirmar); abierta se vuelve la activa
-    if (j.estatus !== 'abierta') { if (!await SRP.activa.reabrir(j)) return; }
+    // El sustituto se guarda en la jornada del árbol perdido. Si está cerrada se pregunta antes de
+    // reabrirla, y vuelve a cerrarse al guardar el sustituto o al cancelar
+    let reabierta = null;
+    if (j.estatus !== 'abierta') {
+      if (!await SRP.activa.reabrirParaSustituto(j)) return;
+      reabierta = j.id;
+    }
     SRP.activa.jornada = await SRP.almacen.uno('jornadas', j.id);
-    SRP.formulario.sustituir(r, this.motivo, this.motivo === 'OTRO' ? otro : '', fecha);
+    SRP.formulario.sustituir(r, this.motivo, this.motivo === 'OTRO' ? otro : '', fecha, reabierta);
   },
 
   /* Eliminar un registro se deshace (se marca, no se borra): no pregunta; el aviso dice cuál se
@@ -659,6 +664,7 @@ SRP.registros = {
     if (original && original.estatus === 'sustituido' && original.sustituido_por_id === r.id) cambios.push({ almacen: 'plantaciones',
       objeto: Object.assign({}, original, { estatus: 'activo', sustituido_por_id: null, fecha_ultima_edicion: ahora, editado_por_id: quien }),
       bitacora: SRP.bitacora.entrada('RESTAURADO', 'plantacion', original.id, 'Se eliminó su sustituto: vuelve a contar como plantado') });
+    (await SRP.reportes.caducar([r.jornada_id], 'se eliminó un árbol')).forEach(c => cambios.push(c));
     await SRP.almacen.guardarJuntos(cambios);
     // «Deshacer» devuelve el registro tal como estaba y deja constancia (D101)
     const cual = SRP.folio.valido(r.folio) ? '(' + r.folio + ')' : 'del ' + SRP.util.formatearFecha(r.fecha_plantacion);
@@ -684,6 +690,7 @@ SRP.registros = {
     if (original && original.estatus === 'activo' && !original.sustituido_por_id) cambios.push({ almacen: 'plantaciones',
       objeto: Object.assign({}, original, { estatus: 'sustituido', sustituido_por_id: actual.id, fecha_ultima_edicion: vuelto.fecha_ultima_edicion, editado_por_id: vuelto.editado_por_id }),
       bitacora: SRP.bitacora.entrada('SUSTITUIDO', 'plantacion', original.id, 'Vuelve su sustituto: ' + SRP.ref.motivoSustitucion(actual)) });
+    (await SRP.reportes.caducar([actual.jornada_id], 'se restauró un árbol')).forEach(c => cambios.push(c));
     await SRP.almacen.guardarJuntos(cambios);
     SRP.util.anunciar('Registro restaurado.');
     if (SRP.app.vista === 'jornadas') SRP.jornadas.refrescar(); else this.preparar();

@@ -93,7 +93,7 @@ SRP.espejo = {
     fecha_ultima_edicion: 'Se fija en cada cambio',
     arboles_previstos: 'Cuántos árboles se van a plantar, escrito al iniciar la jornada; Jornadas y el reporte comparan contra lo registrado',
     puntos_revisados: 'Puntos con aviso marcados «Está bien» en Jornadas (D112)',
-    reporte_en: 'Cuándo se generó (o regeneró) el reporte de la jornada (D134); nulo si no se ha generado',
+    reporte_en: 'Cuándo se entregó el PDF del reporte de la jornada; nulo si no se ha generado o si la jornada cambió después',
     carga_id: 'Clave del lote de carga masiva que creó la jornada; nula en las que se inician en campo',
     vehiculo_id: 'El vehículo elegido del catálogo (catalogos.id); placa, modelo y tipo se copian de él al guardar. Nulo sin vehículo (D162, D174)'
   },
