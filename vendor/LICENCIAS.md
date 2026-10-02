@@ -11,7 +11,7 @@ Al actualizar una biblioteca, se cambia aquí su versión.
 | `jspdf.umd.min.js` | jsPDF: generación del PDF | 4.2.1 | MIT |
 | `jspdf.plugin.autotable.min.js` | jsPDF-AutoTable: tablas del PDF | 5.0.8 | MIT |
 | `fuentes/cabin.woff2` | Cabin (títulos), subconjunto latino | — | SIL Open Font License 1.1 (`fuentes/Cabin-OFL.txt`) |
-| `fuentes/roboto-*.woff2` | Roboto (texto), subconjunto latino | — | SIL Open Font License 1.1 según Google Fonts; falta agregar su archivo de licencia |
+| `fuentes/roboto-*.woff2` | Roboto (texto en pantalla), subconjunto latino | — | SIL Open Font License 1.1 (`fuentes/Roboto-OFL.txt`) |
+| `fuentes/roboto-regular.ttf`, `roboto-bold.ttf`, `roboto-italic.ttf` | Roboto para incrustar en los PDF: instancias fijas (peso 400 y 700) de la fuente variable de `google/fonts` (`ofl/roboto`), reducidas a latino básico y extendido (U+0020–017F) y puntuación | 3 (fuente variable) | SIL Open Font License 1.1 (`fuentes/Roboto-OFL.txt`) |
 
-Pendiente para el paquete de traspaso: confirmar las dos versiones que faltan y agregar el archivo
-de licencia de Roboto.
+Pendiente para el paquete de traspaso: confirmar las dos versiones que faltan.

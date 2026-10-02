@@ -159,7 +159,8 @@ assets/
   icono-192.png, icono-512.png, icono-512-maskable.png, apple-touch-icon.png   Icono de la app (D90)
 
 vendor/                 Bibliotecas incluidas localmente; versiones y licencias en vendor/LICENCIAS.md
-  fuentes/              Cabin y Roboto en woff2 (subconjunto latino, ~110 KB)
+  fuentes/              Cabin y Roboto en woff2 para la pantalla (subconjunto latino, ~110 KB) y Roboto en TTF
+                        (normal, negrita y cursiva; latino extendido, ~100 KB) para incrustarla en los PDF
 
 datos/                  El modelo de datos
   esquema.json          Fuente única del modelo de datos (D86)

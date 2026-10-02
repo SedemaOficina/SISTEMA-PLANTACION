@@ -41,14 +41,16 @@ SRP.informes = {
     const R = SRP.reportes, C = R.colores();
     const logo = await R.cargarLogo();
     const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'letter', compress: true });
+    const F = await R.ponerFuentes(doc);
     const ancho = doc.internal.pageSize.getWidth(), alto = doc.internal.pageSize.getHeight(), M = 20, util = ancho - 2 * M;
     const num = n => n == null ? '—' : Number(n).toLocaleString('es-MX');
     const cabo = SRP.permisos.de(SRP.sesion.usuario).alcance === 'propios';
     let y;
     const salto = (necesario) => { if (y + necesario > alto - 19) { doc.addPage(); y = 25; } };
     const titulo = (t) => {
-      salto(14);
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...C.guinda);
+      // Un título no se queda solo al pie de la página: va con el encabezado y el primer renglón de su tabla
+      salto(28);
+      doc.setFont(F, 'bold'); doc.setFontSize(9); doc.setTextColor(...C.guinda);
       doc.text(t.toUpperCase(), M, y);
       doc.setDrawColor(...C.dorado); doc.setLineWidth(0.2); doc.line(M, y + 1.5, ancho - M, y + 1.5);
       y += 3;
@@ -63,7 +65,7 @@ SRP.informes = {
       doc.autoTable({
         head: [cab.map(celda)], body: filas.map(f => f.map(celda)), foot: op.pie ? [op.pie.map(celda)] : undefined,
         startY: y, margin: { left: M, right: M, bottom: 22 }, showFoot: 'lastPage',
-        styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 1.6, textColor: C.tinta },
+        styles: { font: F, fontSize: 8.5, cellPadding: 1.6, textColor: C.tinta },
         headStyles: { fillColor: C.guinda, textColor: 255, fontStyle: 'bold' },
         alternateRowStyles: { fillColor: C.fila },
         footStyles: { fillColor: C.total, textColor: C.tinta, fontStyle: 'bold' },
@@ -72,17 +74,17 @@ SRP.informes = {
       y = doc.lastAutoTable.finalY + 7;
     };
     const nota = (t) => {
-      doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor(...C.gris);
+      doc.setFont(F, 'italic'); doc.setFontSize(8); doc.setTextColor(...C.gris);
       const l = doc.splitTextToSize(t, util); salto(l.length * 3.6 + 2); doc.text(l, M, y); y += l.length * 3.6 + 2;
-      doc.setFont('helvetica', 'normal');
+      doc.setFont(F, 'normal');
     };
 
     // Membrete, como el reporte de la jornada (D90, D137)
     if (logo) { const h = 9.3; doc.addImage(R.logoJPEG(logo), 'JPEG', M, 14, h * logo.naturalWidth / logo.naturalHeight, h); }
     doc.setDrawColor(...C.guinda); doc.setLineWidth(0.4); doc.line(M, 30, ancho - M, 30);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(...C.guinda);
+    doc.setFont(F, 'bold'); doc.setFontSize(14); doc.setTextColor(...C.guinda);
     doc.text(doc.splitTextToSize(this.titulo(m).toUpperCase(), util), ancho / 2, 40, { align: 'center' });
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(...C.gris);
+    doc.setFont(F, 'normal'); doc.setFontSize(10); doc.setTextColor(...C.gris);
     const lineas = [m.periodo.etiqueta, this.alcance(),
       [m.filtros.programa ? 'Programa: ' + SRP.ref.nombreCatalogo(m.filtros.programa) : '', m.filtros.origen ? 'Origen: ' + SRP.pedido.textoFiltro(m.filtros.origen).replace(' (todos)', '') : '', m.filtros.cabo ? 'Registró: ' + SRP.ref.nombreUsuario(m.filtros.cabo) : ''].filter(Boolean).join(' · ')].filter(Boolean);
     lineas.forEach((t, i) => doc.text(t, ancho / 2, 47 + i * 5, { align: 'center' }));
@@ -96,7 +98,7 @@ SRP.informes = {
       ['Jornadas en curso (no se cuentan hasta cerrarse)', num(c.enCurso)],
       ['Avance contra lo previsto en las jornadas', c.avance == null ? 'Sin cantidad prevista' : c.avance + ' % (' + num(c.arbolesConMeta) + ' de ' + num(c.meta) + ')'],
       cabo ? null : ['Cabos que trabajaron', num(c.cabosActivos) + ' de ' + num(c.cabosAsignados)],
-      ['Árboles por jornada', c.promedio == null ? '—' : String(c.promedio).replace('.', ',')],
+      ['Árboles por jornada', c.promedio == null ? '—' : String(c.promedio)],
       q.sustitutos ? ['Sustitutos plantados (incluidos arriba)', num(q.sustitutos) + ': ' + q.sustitutosMotivo.map(([t, n]) => t + ' ' + num(n)).join(', ')] : null,
       ['Especies distintas', num(c.especies) + (c.nativasPct == null ? '' : ' (' + c.nativasPct + ' % de los árboles son nativos)')],
       ['Alcaldías y colonias', num(c.alcaldias) + (c.alcaldias === 1 ? ' alcaldía · ' : ' alcaldías · ') + num(c.colonias) + (c.colonias === 1 ? ' colonia' : ' colonias')],
@@ -180,14 +182,20 @@ SRP.informes = {
 
   /* Un renglón por árbol de las jornadas cerradas del periodo, con los filtros puestos: lo que
      cuenta el informe, para abrirlo en Excel. Separado por comas, con BOM para que Excel lea los
-     acentos, y cada campo entre comillas. */
+     acentos, y cada campo entre comillas. Un texto que empieza como fórmula («=», «+», «-», «@»,
+     tabulador o retorno) lleva un apóstrofo delante: Excel lo muestra como texto y no lo calcula.
+     Las cifras —la longitud es negativa— quedan como están. */
   COLUMNAS: [['folio', 'Folio'], ['fecha', 'Fecha de plantación'], ['jornada', 'Jornada'], ['organizacion', 'Institución que ejecuta'], ['cabo', 'Cabo'], ['programa', 'Programa'], ['especie', 'Especie'],
     ['cientifico', 'Nombre científico'], ['distribucion', 'Distribución'], ['alcaldia', 'Alcaldía'], ['colonia', 'Colonia'], ['uga', 'Celda UGA'],
     ['lat', 'Latitud'], ['lng', 'Longitud'], ['origen', 'Origen del punto'], ['precision', 'Precisión GPS (m)'], ['foto', 'Con fotografía'], ['reporte', 'Reporte de la jornada'], ['sustituto', 'Sustituto'], ['motivo', 'Motivo de la sustitución'],
     ['prioridad', 'Prioridad de reforestación de la colonia'], ['origenJornada', 'Origen de la jornada'], ['solicitante', 'Solicitante del pedido especial'], ['pedidoDescripcion', 'Descripción del pedido']],
 
   texto(m) {
-    const campo = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    const campo = v => {
+      let t = String(v == null ? '' : v);
+      if (/^[=+\-@\t\r]/.test(t) && !/^-?\d+(\.\d+)?$/.test(t)) t = "'" + t;
+      return '"' + t.replace(/"/g, '""') + '"';
+    };
     return '﻿' + [this.COLUMNAS.map(c => campo(c[1])).join(',')].concat(m.detalle.map(d => this.COLUMNAS.map(c => campo(d[c[0]])).join(','))).join('\r\n') + '\r\n';
   },
 

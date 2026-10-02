@@ -66,7 +66,10 @@ SRP.util = {
   formatearFechaHora(iso) {
     if (!iso) return '';
     const d = new Date(iso);
-    return d.toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
+    if (isNaN(d)) return '';
+    const dos = n => String(n).padStart(2, '0');
+    // La fecha como en todo el sistema (02-OCT-2026) y la hora local de 24 horas
+    return this.formatearFecha(d.getFullYear() + '-' + dos(d.getMonth() + 1) + '-' + dos(d.getDate())) + ', ' + dos(d.getHours()) + ':' + dos(d.getMinutes()) + ' h';
   },
 
   // 'AAAA-MM' -> 'Septiembre de 2026'; con soloMes, -> 'Septiembre'

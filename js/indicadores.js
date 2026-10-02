@@ -190,7 +190,7 @@ SRP.indicadores = {
     // Trazabilidad del periodo: árboles eliminados y ediciones, del alcance y con los filtros
     const pasaArbol = r => (!filtros.organizacion || orgArbol(r) === filtros.organizacion) && (!filtros.tipo || SRP.util.tipoDe(orgArbol(r)) === filtros.tipo) &&
       delCabo(r) && (!filtros.programa || r.programa_id === filtros.programa) && SRP.pedido.cumpleFiltro(datoPorJornada[r.jornada_id], filtros.origen) && esDeAlcaldia(r);
-    const eliminados = datos.eliminados.filter(r => this.contiene(periodo, String(r.fecha_ultima_edicion || '').slice(0, 10)) && pasaArbol(r));
+    const eliminados = datos.eliminados.filter(r => this.contiene(periodo, this.dia(r.fecha_ultima_edicion)) && pasaArbol(r));
     const ediciones = datos.ediciones.filter(e => this.contiene(periodo, this.dia(e.fecha)) && pasaArbol(e.arbol));
 
     // Una jornada de carga masiva no tiene reporte de campo que generar: no se pide
@@ -298,7 +298,15 @@ SRP.indicadores = {
     } else for (let a = Number(desde.slice(0, 4)); a <= Number(hasta.slice(0, 4)); a++) poner(String(a));
     const pos = new Map(casillas.map((c, i) => [c.clave, i]));
     arboles.forEach(a => { const i = pos.get(clave(a.r.fecha_plantacion)); if (i !== undefined) casillas[i].arboles++; });
-    cerradas.forEach(j => { const i = pos.get(clave(j.fecha)); if (i !== undefined) casillas[i].jornadas++; });
+    /* Cada jornada cuenta una vez, en la casilla de su primer árbol del periodo: una jornada de
+       varios días que empezó antes cae donde plantó, y la columna suma lo mismo que el total. */
+    const primero = new Map();
+    arboles.forEach(a => { const f = a.r.fecha_plantacion; if (!primero.has(a.j) || f < primero.get(a.j)) primero.set(a.j, f); });
+    cerradas.forEach(j => {
+      const k = clave(primero.get(j) || j.fecha);
+      const i = pos.has(k) ? pos.get(k) : casillas.length ? (k < casillas[0].clave ? 0 : casillas.length - 1) : undefined;
+      if (i !== undefined) casillas[i].jornadas++;
+    });
     return { unidad, casillas };
   },
 

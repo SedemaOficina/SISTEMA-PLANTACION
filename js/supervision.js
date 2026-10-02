@@ -172,8 +172,8 @@ SRP.supervision = {
       cifra(num(c.arboles), c.arboles === 1 ? 'árbol plantado' : 'árboles plantados', 'en ' + num(c.jornadas) + (c.jornadas === 1 ? ' jornada cerrada' : ' jornadas cerradas')) +
       // «Previstos» (D168): lo que se dijo al iniciar cada jornada; no es la meta del programa
       cifra(c.avance == null ? '—' : c.avance + ' %', 'de lo previsto', c.meta ? num(c.arbolesConMeta) + ' de ' + num(c.meta) + ' previstos en las jornadas' : 'sin cantidad prevista') +
-      (cabo ? cifra(c.promedio == null ? '—' : String(c.promedio).replace('.', ','), 'árboles por jornada', '')
-        : cifra(num(c.cabosActivos) + ' de ' + num(c.cabosAsignados), 'cabos trabajaron', c.promedio == null ? '' : String(c.promedio).replace('.', ',') + ' árboles por jornada')) +
+      (cabo ? cifra(c.promedio == null ? '—' : String(c.promedio), 'árboles por jornada', '')
+        : cifra(num(c.cabosActivos) + ' de ' + num(c.cabosAsignados), 'cabos trabajaron', c.promedio == null ? '' : String(c.promedio) + ' árboles por jornada')) +
       cifra(num(c.especies), c.especies === 1 ? 'especie' : 'especies', c.nativasPct == null ? '' : c.nativasPct + ' % nativas') +
       cifra(num(c.alcaldias), c.alcaldias === 1 ? 'alcaldía' : 'alcaldías', num(c.colonias) + (c.colonias === 1 ? ' colonia' : ' colonias')) +
       (c.enCurso ? cifra(num(c.enCurso), c.enCurso === 1 ? 'jornada en curso' : 'jornadas en curso', 'no se cuentan hasta cerrarse') : '') +

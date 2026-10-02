@@ -30,7 +30,9 @@ async function archivosDeLaPagina() {
   const propios = [...html.matchAll(/(?:src|href)="((?!https?:)[^"]+\?v=[^"]+)"/g)].map(m => m[1]);
   // Las tipografías se piden desde el CSS sin marca, así que van en lista explícita (D87);
   // cambian con la versión del worker igual que todo lo demás
-  const fuentes = ['cabin', 'roboto-regular', 'roboto-medium', 'roboto-bold'].map(f => './vendor/fuentes/' + f + '.woff2');
+  const fuentes = ['cabin', 'roboto-regular', 'roboto-medium', 'roboto-bold'].map(f => './vendor/fuentes/' + f + '.woff2')
+    // Las del PDF van en TTF, que es lo que el generador sabe incrustar
+    .concat(['roboto-regular', 'roboto-bold', 'roboto-italic'].map(f => './vendor/fuentes/' + f + '.ttf'));
   // Los iconos de instalación los pide el manifiesto, sin marca: también se guardan
   const iconos = ['icono-192', 'icono-512', 'icono-512-maskable'].map(f => './assets/' + f + '.png');
   return [PAGINA + '?v=' + VERSION, './manifest.webmanifest'].concat(propios, fuentes, iconos);

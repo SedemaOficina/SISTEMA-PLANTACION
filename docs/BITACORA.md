@@ -2833,3 +2833,23 @@ atiende «atrás». `datos/esquema.json`: clave `srp_borrador_arbol` y reglas S-
 `js/esquema.js` regenerados. `docs/FASE2-Y-TRASPASO.md`: filas 21 a 24. `pruebas/prueba.py`: ctx63. Marca 0.9.16.
 
 **Verificación:** prueba.py 1182 comprobaciones, 0 fallas (ctx63, 14 nuevas: versión nueva incompleta y completa, indicador sin señal, borrador, «atrás», folio único al volver la señal, iconos en caché); auditoria.py 117, 0 hallazgos; revisar.py sin problemas. La prueba del doble toque en «Guardar» da el segundo toque en el mismo instante que el primero, sin depender de la posición del botón.
+
+## Bloque 150 — Lo que se descarga: tabla sin fórmulas, Roboto en el PDF y totales que suman (02-10-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.9.17.
+
+**Qué cambió (D214).** `js/informes.js`: la tabla CSV antepone un apóstrofo a los textos que empiezan como
+fórmula; el informe se escribe con Roboto; «Árboles por jornada» con punto decimal; un título de sección
+no se queda solo al pie de la página. `js/reportes.js`: `leerFuentes()` y `ponerFuentes(doc)` incrustan
+Roboto (normal, negrita y cursiva) en el informe y en el reporte de la jornada; sin los archivos, sale con
+Helvetica. `js/util.js`: `formatearFechaHora()` da «02-OCT-2026, 12:07 h». `js/indicadores.js`: los
+eliminados se asignan al periodo por día local; en la serie, cada jornada cuenta en la casilla de su
+primer árbol del periodo. `js/supervision.js`: punto decimal en el promedio. `sw.js`: guarda las tres
+tipografías TTF. `vendor/fuentes/`: `roboto-regular.ttf`, `roboto-bold.ttf`, `roboto-italic.ttf` y
+`Roboto-OFL.txt`; `vendor/LICENCIAS.md` al día. `pruebas/prueba.py`: ctx64. Marca 0.9.17.
+
+**Verificación:** prueba.py 1190 comprobaciones, 0 fallas (ctx64, 8 nuevas: serie que suma, CSV sin
+fórmulas, Roboto incrustada en informe y reporte, sello, eliminados por día local); auditoria.py 117,
+0 hallazgos; revisar.py sin problemas. Tres comprobaciones anteriores dependían de esperas fijas o del
+orden de dos árboles guardados en el mismo instante y fallaban de forma intermitente en un equipo más
+lento, también con la versión 0.9.16: ahora esperan el resultado (guardado del árbol y relevo en los
+bloques 140 y 141, tabla de Usuarios) o comparan sin depender del orden (prioridad por punto).

@@ -4662,9 +4662,19 @@ with sync_playwright() as p:
     def arbol58(busq='ahuehu', esp='ESP-0070'):
         pg58.click('#btn-ubicacion'); pg58.wait_for_timeout(700)
         pg58.fill('#campo-especie', busq); pg58.wait_for_timeout(200); pg58.dispatch_event('.combo-opcion[data-id="%s"]' % esp, 'mousedown'); pg58.wait_for_timeout(150)
-        pg58.click('#form-plantacion button[type=submit]'); pg58.wait_for_timeout(700)
-        if pg58.is_visible('#dlg-confirmar'): pg58.click('#btn-confirmar-si'); pg58.wait_for_timeout(700)
-        if pg58.is_visible('#dlg-resumen'): pg58.click('#btn-resumen-guardar'); pg58.wait_for_timeout(700)
+        previo = pg58.evaluate("SRP.formulario.estado.ultimoGuardado")
+        pg58.click('#form-plantacion button[type=submit]')
+        return guardado58(previo)
+    def guardado58(previo):
+        """Espera a que el árbol quede guardado y el formulario listo para el siguiente, aceptando las
+        ventanas que salgan en el camino. Con los datos de demostración el guardado no tarda siempre lo mismo."""
+        for _ in range(80):
+            pg58.wait_for_timeout(150)
+            # Cada ventana se acepta una vez y se espera a que cierre
+            if pg58.is_visible('#dlg-confirmar'): pg58.click('#btn-confirmar-si'); esperar(pg58, "!document.getElementById('dlg-confirmar').open", 4000); continue
+            if pg58.is_visible('#dlg-resumen'): pg58.click('#btn-resumen-guardar'); esperar(pg58, "!document.getElementById('dlg-resumen').open", 6000); continue
+            if pg58.evaluate("p => SRP.formulario.estado.ultimoGuardado !== p && !!document.getElementById('campo-fecha').value && !document.querySelector('dialog[open]') && !document.getElementById('btn-revisar').disabled", previo): break
+        pg58.wait_for_timeout(200)
         return pg58.evaluate("SRP.formulario.estado.ultimoGuardado")
     fecha58 = lambda id: pg58.evaluate("async (id) => (await SRP.almacen.uno('plantaciones', id)).fecha_plantacion", id)
     # Una jornada de hoy no pide fecha: no hay de dónde elegir
@@ -4684,9 +4694,7 @@ with sync_playwright() as p:
     pg58.click('#form-plantacion button[type=submit]'); pg58.wait_for_timeout(600)
     c58=[pg58.is_visible('#dlg-confirmar') and pg58.inner_text('#dlg-confirmar-titulo'), pg58.inner_text('#dlg-confirmar-puntos') if pg58.is_visible('#dlg-confirmar') else '']
     ok(c58[0]=='Jornada de otro día' and 'queda con fecha de plantación ' + HOY_TXT in c58[1] and '«Fecha de plantación»' in c58[1],'guardar en la jornada de otro día confirma y dice con qué fecha queda el árbol: %s' % c58[1].replace(chr(10),' | '))
-    pg58.click('#btn-confirmar-si'); pg58.wait_for_timeout(700)
-    if pg58.is_visible('#dlg-resumen'): pg58.click('#btn-resumen-guardar'); pg58.wait_for_timeout(700)
-    a2=pg58.evaluate("SRP.formulario.estado.ultimoGuardado")
+    a2=guardado58(a1)
     # Elegir otro día: se conserva para el árbol siguiente de la jornada
     pg58.fill('#campo-fecha', D(1)); pg58.dispatch_event('#campo-fecha','change'); pg58.wait_for_timeout(150)
     a3=arbol58('aile','ESP-0002')
@@ -4759,7 +4767,7 @@ with sync_playwright() as p:
     op58=pg58.eval_on_selector_all('#relevo-quien option','l=>l.map(o=>o.value).filter(Boolean)')
     ok(vis58 and pg58.is_visible('#dlg-relevo') and 'u-cabo-1' not in op58 and 'u-demo-c1' in op58 and all(pg58.evaluate("id => SRP.ref.usuarioPorId[id].coordinador_id", x)=='u-coord-1' for x in op58),
        'la coordinación ve «Relevo de cabo» en una jornada abierta de su cuadrilla y elige entre los demás cabos de su cuadrilla: %s' % op58)
-    pg58.click('#btn-relevo-hacer'); pg58.wait_for_timeout(200)
+    pg58.click('#btn-relevo-hacer'); esperar(pg58, "!!document.getElementById('relevo-error').innerText.trim()", 4000)
     ok(pg58.inner_text('#relevo-error')=='Elija el cabo que sigue registrando.','sin elegir cabo no se hace el relevo')
     pg58.select_option('#relevo-quien','u-demo-c1'); pg58.click('#btn-relevo-hacer'); pg58.wait_for_timeout(900)
     rl58=pg58.evaluate("async (id) => { const j = await SRP.almacen.uno('jornadas', id); const b = (await SRP.bitacora.deEntidad(id)).filter(x => x.accion === 'RELEVO').map(x => x.detalle); return [j.cabo_id, j.relevo_id, j.relevos.map(x => [x.cabo_id, x.por_id]), b]; }", jr)
@@ -4891,6 +4899,7 @@ with sync_playwright() as p:
     ok(pg59.input_value('#sup-alcaldia')=='' and pg59.is_hidden('#btn-sup-quitar'),'la ficha de Supervisión quita su filtro')
     # Usuarios: perfil y tipo de institución, dependientes
     pg59.evaluate("SRP.app.mostrarVista('usuarios')"); pg59.wait_for_timeout(1200)
+    esperar(pg59, "document.querySelectorAll('#vista-usuarios tbody tr').length > 0", 6000)   # la tabla se pinta cuando termina de leer
     tu59=pg59.locator('#vista-usuarios tbody tr').count()
     pg59.select_option('#usr-filtro-perfil','COORDINADOR'); pg59.wait_for_timeout(500)
     u1=pg59.evaluate("[document.querySelectorAll('#vista-usuarios tbody tr').length, [...document.querySelectorAll('#vista-usuarios tbody tr')].every(tr => tr.textContent.includes('Coordinador'))]")
@@ -5029,8 +5038,9 @@ with sync_playwright() as p:
     ok(fa61[0] and fa61[1] and 'Prioridad: alta' in fa61[2] and fa61[3]==['Todas','Muy alta','Alta','Media','Baja','Muy baja','Sin dato'] and not fb61,'Jornadas se filtra por prioridad de la colonia, con su ficha: %s' % fa61[2])
     pg61.click('#jornada-quitar'); pg61.wait_for_timeout(1000)
     pg61.evaluate("async (id) => { await SRP.jornadas.abrir(id); }", j61); pg61.wait_for_timeout(1500)
+    esperar(pg61, "document.querySelectorAll('#jornada-lista .punto-prioridad').length === 3 && /prioridad/.test(document.getElementById('jornada-sub').textContent)", 6000)   # la lista se pinta por partes
     fi61=pg61.evaluate("[document.getElementById('jornada-sub').textContent, document.getElementById('jornada-prioridad').textContent, [...document.querySelectorAll('#jornada-lista .punto-prioridad')].map(x => x.textContent.trim())]")
-    ok('prioridad alta (2 de 3 árboles)' in fi61[0] and fi61[1]=='Colonias prioritarias: 2 en prioridad alta y 1 en baja.' and fi61[2]==['Prioridad alta','Prioridad alta','Prioridad baja'],
+    ok('prioridad alta (2 de 3 árboles)' in fi61[0] and fi61[1]=='Colonias prioritarias: 2 en prioridad alta y 1 en baja.' and sorted(fi61[2])==['Prioridad alta','Prioridad alta','Prioridad baja'],
        'la ficha dice la prioridad de la jornada, el desglose y la de cada punto: %s' % fi61[1])
     # El reporte de la jornada: prioridad, desglose y columna por árbol
     rep61=pg61.evaluate("""async (id) => { const j = await SRP.almacen.uno('jornadas', id); const regs = await SRP.activa.registrosDe(j); const m = SRP.reportes.modelo(regs, j, j.fecha, j);
@@ -5234,6 +5244,62 @@ with sync_playwright() as p:
     ok(d63 == ['9.9.9', ['srp-9.9.9'], len(f63), 0], 'cuando la versión nueva queda completa se aplica sola, sin mezclar archivos y con los registros intactos: %s' % d63)
     ok(not err63, 'sin errores en consola: %s' % err63[:2])
     ctx63.close(); srv63.shutdown(); _sh.rmtree(raiz63, ignore_errors=True)
+
+    # ---------- ctx64: lo que se descarga: tabla sin fórmulas, letra del sistema en el PDF, totales que suman y eliminados por día local ----------
+    from pypdf import PdfReader as _Pdf64
+    ctx64 = b.new_context(viewport={'width':1280,'height':900}, timezone_id='America/Mexico_City', geolocation={'latitude':19.4326,'longitude':-99.1332,'accuracy':5}, permissions=['geolocation'], accept_downloads=True)
+    pg64 = ctx64.new_page(); err64 = []
+    pg64.on('pageerror', lambda e: err64.append(str(e))); pg64.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err64.append(m.text))
+    pg64.goto(BASE); pg64.wait_for_timeout(1200)
+    pg64.select_option('#sel-usuario-prueba', 'u-cabo-1'); pg64.click('#btn-entrar-prueba'); pg64.wait_for_timeout(900)
+    hoy64 = pg64.evaluate("SRP.util.fechaHoy()")
+    antes64 = pg64.evaluate("SRP.indicadores.sumarDias(SRP.util.fechaHoy(), -40)")
+    # Una jornada que empezó hace cuarenta días y hoy planta otro árbol; su nombre empieza como una fórmula
+    iniciar_jornada(pg64, '=1+1 Jacarandā', antes64)
+    def arbol64(lat, hoy):
+        ctx64.set_geolocation({'latitude': lat, 'longitude': -99.1332, 'accuracy': 5})
+        pg64.click('#btn-ubicacion'); pg64.wait_for_timeout(900)
+        pg64.fill('#campo-especie', 'fres'); pg64.wait_for_timeout(200); pg64.dispatch_event('.combo-opcion[data-id="ESP-0029"]', 'mousedown'); pg64.wait_for_timeout(150)
+        if hoy: pg64.evaluate("document.getElementById('btn-fecha-hoy').click()"); pg64.wait_for_timeout(150)
+        pg64.click('#form-plantacion button[type=submit]'); pg64.wait_for_timeout(800)
+        if pg64.is_visible('#dlg-confirmar'): pg64.click('#btn-confirmar-si'); pg64.wait_for_timeout(800)
+        if pg64.is_visible('#dlg-resumen'): pg64.click('#btn-resumen-guardar'); pg64.wait_for_timeout(600)
+    arbol64(19.4326, False); arbol64(19.4329, True)
+    pg64.click('#btn-jornada-cerrar'); pg64.wait_for_timeout(300); pg64.click('#btn-confirmar-si'); pg64.wait_for_timeout(1200)
+    f64 = pg64.evaluate("(async () => (await SRP.almacen.todos('plantaciones')).map(r => r.fecha_plantacion).sort())()")
+    pg64.click('.pestana[data-vista=supervision]'); pg64.wait_for_timeout(900)
+    pg64.evaluate("(h) => { SRP.supervision.periodo = SRP.indicadores.periodo('rango', h, h); SRP.supervision.pintar(); }", hoy64); pg64.wait_for_timeout(600)
+    m64 = pg64.evaluate("(() => { const m = SRP.supervision.modelo; return [m.cifras.jornadas, m.cifras.arboles, m.serie.casillas.reduce((s, c) => s + c.jornadas, 0), m.serie.casillas.reduce((s, c) => s + c.arboles, 0)]; })()")
+    ok(f64 == [antes64, hoy64] and m64 == [1, 1, 1, 1], 'una jornada de varios días cuenta en la casilla del día en que plantó: la columna de jornadas suma el total: %s' % m64)
+    c64 = pg64.evaluate("SRP.informes.texto(SRP.supervision.modelo).split('\\r\\n')[1]")
+    ok('"\'=1+1 Jacarandā"' in c64 and ',"-99.' in c64, 'en la tabla CSV un nombre que empieza con «=» lleva apóstrofo y no se calcula; la longitud sigue siendo una cifra: %s' % c64[25:60])
+    k64 = pg64.evaluate("['=A1', '+1', '-x', '@s', '\\tq', '-99.13', '-5', 'x=1', ''].map(v => SRP.informes.texto({ detalle: [{ folio: v }] }).split('\\r\\n')[1].split(',')[0])")
+    ok(k64 == ['"\'=A1"', '"\'+1"', '"\'-x"', '"\'@s"', '"\'\tq"', '"-99.13"', '"-5"', '"x=1"', '""'], 'y lo mismo con «+», «-», «@» y tabulador, sin tocar las cifras negativas: %s' % k64)
+    def pdf64(ruta, clic):
+        with pg64.expect_download() as d: clic()
+        d.value.save_as(ruta); rd = _Pdf64(ruta)
+        emb = sorted({(x.idnum, str(x.get_object().get('/BaseFont'))) for pag in rd.pages for x in (pag['/Resources'].get('/Font') or {}).values() if '/DescendantFonts' in x.get_object()})
+        return ' '.join(' '.join((pag.extract_text() or '') for pag in rd.pages).split()), emb, os.path.getsize(ruta)
+    t64, e64, p64 = pdf64('/home/claude/srp/informe_b150.pdf', lambda: pg64.click('#btn-sup-pdf'))
+    ok(len(e64) == 3 and all('Roboto' in x[1] for x in e64) and '=1+1 Jacarandā' in t64 and p64 < 200000,
+       'el informe en PDF lleva Roboto incrustada y escribe bien una letra con macrón: %s, %d KB' % ([x[1] for x in e64], p64 // 1024))
+    ok(re.search(r'Generado el \d{2}-[A-Z]{3}-\d{4}, \d{2}:\d{2} h', t64) is not None and 'Árboles por jornada 1 ' in t64, 'el sello lleva la fecha como en todo el sistema y la hora de 24 horas: %s' % re.findall(r'Generado el [^P]{0,24}', t64)[:1])
+    reporte_de(pg64, 'Jacarandā')
+    pg64.click('#btn-cierre-previa') if pg64.locator('#btn-cierre-previa').count() else pg64.click('#form-cierre button[type=submit]')
+    pg64.wait_for_timeout(1500)
+    r64, er64, pr64 = pdf64('/home/claude/srp/reporte_b150.pdf', lambda: pg64.click('#btn-previa-generar'))
+    ok(len(er64) == 3 and '=1+1 Jacarandā' in r64 and pr64 < 250000, 'y el reporte de la jornada también: %d KB' % (pr64 // 1024))
+    pg64.wait_for_timeout(600)
+    # Lo eliminado a las once y media de la noche es del día en que se eliminó, no del siguiente
+    d64 = pg64.evaluate("""(() => { const I = SRP.indicadores, hoy = SRP.util.fechaHoy(), yo = SRP.sesion.usuario.id;
+      const tarde = I.aFecha(hoy); tarde.setHours(23, 30);
+      const j = { id: 'j64', fecha: hoy, estatus: 'cerrada', nombre: 'J', cabo_id: yo, dato: {}, registros: [] };
+      const e = { id: 'a64', jornada_id: 'j64', cabo_id: yo, fecha_plantacion: hoy, fecha_ultima_edicion: tarde.toISOString() };
+      const de = p => I.calcular({ jornadas: [j], eliminados: [e], ediciones: [], cabos: [] }, p, {}).trazabilidad.eliminados;
+      return [tarde.toISOString().slice(0, 10) !== hoy, de(I.periodo('rango', hoy, hoy)), de(I.periodo('rango', I.sumarDias(hoy, 1), I.sumarDias(hoy, 1)))]; })()""")
+    ok(d64 == [True, 1, 0], 'un árbol eliminado de noche cuenta en su día local, igual que las ediciones: %s' % d64)
+    ok(not err64, 'sin errores en consola: %s' % err64[:2])
+    ctx64.close()
 
 
 

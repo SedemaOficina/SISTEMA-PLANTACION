@@ -649,6 +649,33 @@ SRP.reportes = {
     });
   },
 
+  /* La letra del PDF es Roboto, la misma de la pantalla, incrustada en el archivo: así una letra
+     fuera del alfabeto básico (una «ā» en un nombre científico) se escribe bien y el documento se
+     ve igual en cualquier lector. Los tres archivos se leen una vez y el service worker los
+     tiene, así que también hay sin señal. Si no se pudieran leer, el PDF sale con Helvetica. */
+  FUENTES_PDF: [['normal', 'roboto-regular'], ['bold', 'roboto-bold'], ['italic', 'roboto-italic']],
+  leerFuentes() {
+    if (!this._fuentes) {
+      this._fuentes = Promise.all(this.FUENTES_PDF.map(async ([estilo, archivo]) => {
+        const r = await fetch('vendor/fuentes/' + archivo + '.ttf');
+        if (!r.ok) throw new Error('sin tipografía');
+        const b = new Uint8Array(await r.arrayBuffer());
+        let t = '';
+        for (let i = 0; i < b.length; i += 8192) t += String.fromCharCode.apply(null, b.subarray(i, i + 8192));
+        return { estilo, archivo: archivo + '.ttf', datos: btoa(t) };
+      })).catch(() => { this._fuentes = null; return null; });
+    }
+    return this._fuentes;
+  },
+  // Deja Roboto puesta en el documento y devuelve el nombre de la letra con que se escribe
+  async ponerFuentes(doc) {
+    const fuentes = await this.leerFuentes();
+    if (!fuentes) return 'helvetica';
+    fuentes.forEach(f => { doc.addFileToVFS(f.archivo, f.datos); doc.addFont(f.archivo, 'Roboto', f.estilo); });
+    doc.setFont('Roboto', 'normal');
+    return 'Roboto';
+  },
+
   /* El PNG con transparencia se incrustaba sin comprimir y era casi todo el peso del PDF. Se pasa
      a JPEG sobre blanco (el fondo del papel), a la misma resolución: no se nota la diferencia. */
   logoJPEG(img) {
@@ -672,7 +699,8 @@ SRP.reportes = {
     const M = 18;                       // margen izquierdo y derecho
     const util = ancho - M * 2;
     const hoy = new Date();
-    const letra = (estilo, tam, color) => { doc.setFont('helvetica', estilo); doc.setFontSize(tam); doc.setTextColor(...color); };
+    const F = await this.ponerFuentes(doc);
+    const letra = (estilo, tam, color) => { doc.setFont(F, estilo); doc.setFontSize(tam); doc.setTextColor(...color); };
     let y = 0;
     // El pie va en alto − 16: un bloque cabe si termina antes de alto − 20 (M44)
     const salto = (necesario) => { if (y + necesario > alto - 20) { doc.addPage(); y = 20; } };
@@ -739,7 +767,7 @@ SRP.reportes = {
     const tabla = (opciones) => {
       doc.autoTable(Object.assign({
         startY: y, margin: { left: M, right: M, bottom: 22, top: 20 },
-        styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 1.6, textColor: C.tinta, lineColor: C.linea },
+        styles: { font: F, fontSize: 8.5, cellPadding: 1.6, textColor: C.tinta, lineColor: C.linea },
         headStyles: { fillColor: C.guinda, textColor: 255, fontStyle: 'bold' },
         footStyles: { fillColor: C.total, textColor: C.tinta, fontStyle: 'bold' },
         alternateRowStyles: { fillColor: C.fila }

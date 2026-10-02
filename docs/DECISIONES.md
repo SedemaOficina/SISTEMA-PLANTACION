@@ -2291,3 +2291,24 @@
     institución de una cuenta, folio inmutable ante escrituras con copia anterior, consulta de eliminados
     y registro de cambios de árboles y jornadas. Quedan como reglas S-15 a S-18 del esquema y filas 21 a 24
     de `FASE2-Y-TRASPASO.md`. Las herramientas de prueba no se restringen: desaparecen con la versión real.
+- **D214. Lo que se descarga: tabla sin fórmulas, letra del sistema en el PDF y totales que suman (bloque 150).** 02-10-2026.
+  Resultado de la auditoría integral del 02-10-2026 (hallazgos M-13, M-20, B-32 y B-35). Son correcciones
+  del teléfono que no cambian con el servidor: los informes y la tabla se arman aquí.
+  · **Tabla CSV sin fórmulas:** un texto que empieza con «=», «+», «-», «@», tabulador o retorno sale con un
+    apóstrofo delante. Excel lo muestra como texto y no lo calcula ni lo abre como enlace. Las cifras
+    (la longitud es negativa) quedan como cifras.
+  · **Roboto incrustada en los PDF:** el informe por periodo y el reporte de la jornada se escriben con la
+    letra de la pantalla, en normal, negrita y cursiva. Una letra fuera del alfabeto básico (una «ā» en un
+    nombre) ya no deforma el renglón. Los tres archivos TTF (latino básico y extendido, unos 32 KB cada
+    uno) se leen al generar el primer PDF y quedan guardados para trabajar sin señal. Si no pudieran
+    leerse, el PDF sale con Helvetica, como antes. El informe pesa unos 95 KB y el reporte unos 120 KB.
+  · **Un solo formato de fecha y de cifra:** el sello del pie y el historial de un registro dicen
+    «02-OCT-2026, 12:07 h», la fecha de todo el sistema con hora de 24 horas. «Árboles por jornada» usa
+    punto decimal, igual que las demás cifras (coma de millares, punto decimal).
+  · **La serie suma su total:** cada jornada cerrada cuenta una vez, en la casilla de su primer árbol del
+    periodo. Una jornada de varios días que empezó antes del periodo ya no deja la columna en cero con
+    el pie en uno.
+  · **Eliminados por día local:** un árbol eliminado después de las 18:00 cuenta en el día en que se
+    eliminó, con la misma conversión que las ediciones.
+  · **Títulos del informe:** un título de sección no se queda solo al pie de la página; pasa a la
+    siguiente junto con su tabla.
