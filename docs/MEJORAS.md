@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.9.18 (Bloque 151)»**.
+Al pie de cualquier pantalla: **«Versión 0.9.19 (Bloque 152)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -354,6 +354,10 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M354 | Auditoría integral | Dos toques seguidos en «Iniciar jornada» ya no crean dos jornadas iguales | Media | 0.9.18 (B151) | Llenar «Iniciar jornada» y tocar dos veces el botón: queda una sola en Jornadas | — |
 | M355 | Auditoría integral | El reporte cuenta como generado cuando el PDF se entrega, no al abrir la vista previa; si la jornada cambia después (se reabre, o se elimina, edita, mueve o sustituye un árbol), deja de estar vigente y se pide generarlo de nuevo | Media | 0.9.18 (B151) | Cerrar una jornada, abrir la vista previa y salir: en Reportes sigue «Sin generar». Generar el PDF, eliminar un árbol: vuelve a «Sin generar» | Lista de Reportes |
 | M356 | Auditoría integral | Sustituir un árbol de una jornada cerrada pregunta antes de reabrirla, y la jornada vuelve a cerrarse al guardar el sustituto o al cancelar | Media | 0.9.18 (B151) | Registros › árbol de una jornada cerrada › Sustituir: aparece «¿Reabrir … para registrar el sustituto?»; cancelar la sustitución y ver la jornada cerrada | Ventana de confirmación |
+| M357 | Auditoría integral | Las pruebas corren en cualquier equipo: sin rutas fijas, con lista de bibliotecas y el tiempo real en el README | Media | 0.9.19 (B152) | Copiar el proyecto a otra carpeta y seguir «Pruebas» del README | — |
+| M358 | Auditoría integral | El calendario de «Iniciar jornada» deja elegir hoy aunque la aplicación lleve abierta desde ayer | Baja | 0.9.19 (B152) | Dejar la aplicación abierta de un día para otro y abrir «Iniciar jornada» | Campo de fecha |
+| M359 | Auditoría integral | Los mapas de Supervisión dejan de declararse imagen (sus controles se alcanzan con lector de pantalla) y el indicador de conexión se toca en 44 px o más | Baja | 0.9.19 (B152) | Supervisión con lector de pantalla: los botones del mapa se anuncian; tocar el indicador por su borde | — |
+| M360 | Auditoría integral | Textos al día: aviso de los datos de demostración, diccionario (cinco catálogos), README con los nombres de pantalla y comentarios sin nombres propios | Baja | 0.9.19 (B152) | Menú de la cuenta › Datos de demostración › Cargar: el aviso dice más de 1,300 jornadas y 17,000 árboles | Aviso de carga |
 
 ## 2. Por hacer
 
@@ -379,4 +383,4 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 339 hechas · 5 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 343 hechas · 5 por hacer · 2 revisadas · 2 descartadas.

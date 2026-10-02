@@ -200,7 +200,7 @@ SRP.supervision = {
         }).join('') + '</tbody></table></div>');
     }
     h += apartado('sup-t-alcaldias', m.filtros.alcaldia ? 'Colonias de ' + esc(m.filtros.alcaldia) : 'Por alcaldía',
-      '<div class="sup-dos"><div><div id="sup-mapa" class="sup-mapa" role="img" aria-label="Mapa de la Ciudad de México con las alcaldías según los árboles plantados"></div>' +
+      '<div class="sup-dos"><div><div id="sup-mapa" class="sup-mapa" role="group" aria-label="Mapa de la Ciudad de México con las alcaldías según los árboles plantados. Las mismas cifras están en la tabla de al lado"></div>' +
       '<p class="nota sup-leyenda">Más intenso, más árboles. Toque una alcaldía para ver su cifra.</p></div><div>' +
       (m.filtros.alcaldia
         ? this.tabla(['Colonia', 'Árboles', '% del total', 'Jornadas'], this.conPct(m.porColonia, c.arboles).map(x => [x.colonia, num(x.arboles), x.pct + ' %', num(x.jornadas)]), [1, 2, 3], 'colonias')
@@ -212,7 +212,7 @@ SRP.supervision = {
       const filas = p.niveles.map(x => [x.texto, num(x.n), (P(x.n, p.total) || 0) + ' %']).concat(p.sin ? [['Sin dato en la capa', num(p.sin), (P(p.sin, p.total) || 0) + ' %']] : []);
       h += apartado('sup-t-prioridad', 'Por prioridad de la colonia',
         '<p class="sup-prioridad-lema">' + (p.total ? '<b>' + num(p.altas) + ' de ' + num(p.total) + '</b> árboles (' + (P(p.altas, p.total) || 0) + ' %) en colonias de prioridad alta o muy alta.' : 'Sin árboles en el periodo.') + '</p>' +
-        '<div class="sup-dos"><div><div id="sup-mapa-prioridad" class="sup-mapa" role="img" aria-label="Mapa de las colonias de la Ciudad de México según su prioridad de reforestación"></div>' +
+        '<div class="sup-dos"><div><div id="sup-mapa-prioridad" class="sup-mapa" role="group" aria-label="Mapa de las colonias de la Ciudad de México según su prioridad de reforestación. Las cifras por nivel están en la tabla de al lado"></div>' +
         '<p class="nota pri-leyenda">' + SRP.prioritarias.htmlLeyenda() + '</p></div><div>' +
         this.tabla(['Prioridad', 'Árboles', '% del total'], filas, [1, 2]) +
         '<p class="nota">Según el modelo de priorización de colonias (capa ' + esc(SRP.prioritarias.version()) + '). Se calcula del punto de cada árbol; los límites de la capa son aproximados.</p></div></div>');

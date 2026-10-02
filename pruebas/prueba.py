@@ -1,7 +1,12 @@
 # RECORRIDO COMPLETO. El sistema arranca vacío: lo que hace falta para probar se captura aquí.
 from playwright.sync_api import sync_playwright
-import re, os, json
-BASE='http://127.0.0.1:8099/'
+import re, os, json, tempfile
+# Dónde está la aplicación y dónde se dejan los archivos que la prueba descarga o fabrica. Se
+# cambian con las variables SRP_BASE y SRP_SALIDA; sin ellas, el servidor local y una carpeta temporal
+BASE=os.environ.get('SRP_BASE','http://127.0.0.1:8099/')
+SALIDA=os.environ.get('SRP_SALIDA') or os.path.join(tempfile.gettempdir(),'srp_pruebas')
+os.makedirs(SALIDA, exist_ok=True)
+def sal(nombre): return os.path.join(SALIDA, nombre)
 # La fecha de hoy se calcula: escrita a mano, la prueba caducaba al día siguiente (los
 # registros «de hoy» dejaban de serlo y el filtro Hoy quedaba vacío)
 import datetime
@@ -399,7 +404,7 @@ with sync_playwright() as p:
     foco=pg.evaluate("(() => { const e=document.getElementById('campo-comentarios'); e.focus(); const c=getComputedStyle(e); const r=[c.outlineStyle, c.borderTopColor]; e.blur(); return r; })()")
     ok(foco==['none','rgb(27, 95, 170)'],'el foco de un campo de texto es borde azul, el mismo color de foco de toda la app (D98, D166): %s' % foco)
 
-    from PIL import Image; Image.new('RGB',(2400,1800),(70,110,60)).save('/tmp/arbol.jpg',quality=90)
+    from PIL import Image; Image.new('RGB',(2400,1800),(70,110,60)).save(sal('arbol.jpg'),quality=90)
     ok(pg.locator('input[type=file][accept^=image]').count()==1,'hay un solo selector de fotografía')
     alin=pg.evaluate("(() => { const l=document.querySelector('fieldset.campo legend').getBoundingClientRect().left, e=document.querySelector('label[for=campo-especie]').getBoundingClientRect().left; return Math.round(l-e); })()")
     ok(alin==0,'la etiqueta «Fotografía» se alinea con las demás (D107): %s px' % alin)
@@ -407,7 +412,7 @@ with sync_playwright() as p:
     ok(nav=={'fija':'fixed','abajo':True,'barra_encima':True},'en teléfono las secciones van abajo y la barra de guardar queda encima (D107): %s' % nav)
     ok(pg.get_attribute('#foto-archivo','capture') is None,'sin «capture»: el teléfono ofrece su propio menú')
     ok(pg.is_hidden('#ficha-foto'),'sin foto no hay ficha de archivo')
-    pg.set_input_files('#foto-archivo','/tmp/arbol.jpg'); pg.wait_for_timeout(900)
+    pg.set_input_files('#foto-archivo',sal('arbol.jpg')); pg.wait_for_timeout(900)
     ok(pg.is_visible('#ficha-foto') and pg.inner_text('#foto-nombre')=='arbol.jpg','la ficha dice el nombre del archivo')
     ok(pg.evaluate("(() => { const z=document.getElementById('etq-foto'); return z.classList.contains('con-foto') && getComputedStyle(z).flexDirection==='row' && z.getBoundingClientRect().height < 70; })()"),
        'con foto cargada la zona de carga se reduce a un renglón «Cambiar fotografía» (D98)')
@@ -416,7 +421,7 @@ with sync_playwright() as p:
     ok(dims[0]<=800 and dims[1]<=800,'la foto se comprime a %sx%s'%tuple(dims))
     pg.click('#btn-foto-quitar'); pg.wait_for_timeout(300)
     ok(pg.is_hidden('#ficha-foto'),'la papelera quita la foto')
-    pg.set_input_files('#foto-archivo','/tmp/arbol.jpg'); pg.wait_for_timeout(900)
+    pg.set_input_files('#foto-archivo',sal('arbol.jpg')); pg.wait_for_timeout(900)
 
     # Ficha de revisión: sólo se abre cuando hay algo que revisar (D130). Con ±40 m la precisión es aceptable, no buena
     ctx.set_geolocation({'latitude':19.432,'longitude':-99.133,'accuracy':40}); pg.click('#btn-ubicacion'); pg.wait_for_timeout(700)
@@ -761,8 +766,8 @@ with sync_playwright() as p:
        'el personal va en su sección: participantes, apoyo y chófer, cada etiqueta en negritas y una persona por renglón (D103, D163): %s' % pers)
     ok(pg.evaluate("[...document.querySelectorAll('#previa-hoja tfoot td')].pop().classList.contains('cifra')"),'el Total se alinea a la derecha como las cifras (D103)')
     with pg.expect_download() as d: pg.click('#btn-previa-generar')
-    d.value.save_as('/home/claude/srp/reporte_prueba.pdf')
-    peso=os.path.getsize('/home/claude/srp/reporte_prueba.pdf')
+    d.value.save_as(sal('reporte_prueba.pdf'))
+    peso=os.path.getsize(sal('reporte_prueba.pdf'))
     ok(peso>20000,'el reporte PDF se genera: '+d.value.suggested_filename)
     ok(peso<150000,'y pesa poco para compartirlo por mensajería (D103): %d KB' % (peso//1024))
     ok(re.fullmatch(r'Reporte_[A-Za-z0-9_]+_'+HOY+r'\.pdf', d.value.suggested_filename) is not None and '_Ejemplo_' in d.value.suggested_filename,
@@ -869,8 +874,8 @@ with sync_playwright() as p:
     enc=pg.evaluate("(() => { const e = SRP.croquis.encuadre([{lat:19.4326,lng:-99.1332},{lat:19.4336,lng:-99.1322}]); const p = SRP.croquis.aPixel(19.4326,-99.1332,e.z); return { z: e.z, dentro: p.x-e.origenX > 0 && p.x-e.origenX < 1000 && p.y-e.origenY > 0 && p.y-e.origenY < 620 }; })()")
     ok(enc['dentro'] and 15 <= enc['z'] <= 20,'el encuadre deja todos los puntos dentro del lienzo: %s' % enc)
     with pg.expect_download() as dj: pg.click('#btn-previa-generar')
-    dj.value.save_as('/home/claude/srp/reporte_jornada.pdf')
-    pj=os.path.getsize('/home/claude/srp/reporte_jornada.pdf')
+    dj.value.save_as(sal('reporte_jornada.pdf'))
+    pj=os.path.getsize(sal('reporte_jornada.pdf'))
     ok(20000 < pj < 400000,'el PDF con croquis se genera y pesa poco: %d KB' % (pj//1024))
     reporte_de(pg, 'Jardín de prueba'); pg.click('#btn-cierre-generar'); pg.wait_for_timeout(500)
     pg.click('#btn-previa-cerrar') if pg.locator('#btn-previa-cerrar').count() else pg.keyboard.press('Escape'); pg.wait_for_timeout(300)
@@ -1219,9 +1224,9 @@ with sync_playwright() as p:
     ok(pg.is_hidden('#dlg-foto') and pg.is_visible('#dlg-detalle'),'«Ver detalle» abre el detalle (D153)')
     pg.click('#btn-detalle-cerrar'); pg.wait_for_timeout(300)
     with pg.expect_download() as dz: pg.click('#btn-galeria-zip')
-    dz.value.save_as('/home/claude/srp/fotos_prueba.zip')
+    dz.value.save_as(sal('fotos_prueba.zip'))
     import zipfile
-    with zipfile.ZipFile('/home/claude/srp/fotos_prueba.zip') as z:
+    with zipfile.ZipFile(sal('fotos_prueba.zip')) as z:
         nombres=z.namelist(); okzip=z.testzip() is None; primero=z.read(nombres[0])[:3]
     ok(dz.value.suggested_filename.startswith('Fotografias_SRP') and okzip and len(nombres)>=1 and primero==b'\xff\xd8\xff','«Descargar todas» arma un ZIP válido con las fotos en JPEG: %s' % nombres)
     # Por jornada (D135): la lista trae las jornadas con fotos; elegir una filtra y nombra el ZIP con ella
@@ -2593,7 +2598,7 @@ with sync_playwright() as p:
     ok(pg20.is_visible('#vista-supervision') and 'Mi avance' in pg20.inner_text('.pestana[data-vista=supervision]'),'los informes por periodo se generan en la pestaña Mi avance')
     def pdf20():
         with pg20.expect_download() as d: pg20.click('#btn-sup-pdf')
-        ruta='/home/claude/srp/informe_prueba.pdf'; d.value.save_as(ruta)
+        ruta=sal('informe_prueba.pdf'); d.value.save_as(ruta)
         t=' '.join((p.extract_text() or '') for p in _Pdf(ruta).pages)
         return d.value.suggested_filename, ' '.join(t.split()), os.path.getsize(ruta)
     n1,t1,peso1=pdf20()
@@ -2610,8 +2615,8 @@ with sync_playwright() as p:
        and 'Cuadrilla de' in t2 and 'Documento de prueba' in t2,
        'la coordinación descarga el informe mensual de una alcaldía, con sus colonias y la tabla por cabo: %s' % n2)
     with pg20.expect_download() as dc: pg20.click('#btn-sup-csv')
-    dc.value.save_as('/home/claude/srp/arboles_prueba.csv')
-    csv20=open('/home/claude/srp/arboles_prueba.csv', encoding='utf-8', newline='').read()
+    dc.value.save_as(sal('arboles_prueba.csv'))
+    csv20=open(sal('arboles_prueba.csv'), encoding='utf-8', newline='').read()
     lineas=csv20.lstrip('﻿').strip().split('\r\n')
     ok(dc.value.suggested_filename=='Arboles_mensual_'+HOY[:7]+'_Cuauhtemoc.csv' and csv20.startswith('﻿"Folio","Fecha de plantación"') and len(lineas)==3
        and all('"Cuauhtémoc"' in l and '"Jardín del informe"' in l for l in lineas[1:]),
@@ -2647,7 +2652,7 @@ with sync_playwright() as p:
        'al pie, con sesión: «Datos de demostración», con «Cargar» y «Quitar» (apagado, no hay nada que quitar)')
     pg21.click('#btn-demo-cargar'); pg21.wait_for_timeout(300)
     dlg21=pg21.inner_text('#dlg-confirmar')
-    ok('9,000 árboles' in dlg21 and 'Alcaldía Iztapalapa' in dlg21 and 'no se toca' in dlg21,'antes de cargar se dice cuánto se agrega y que lo capturado no se toca')
+    ok('17,000 árboles' in dlg21 and 'otras instituciones' in dlg21 and 'no se toca' in dlg21,'antes de cargar se dice cuánto se agrega y que lo capturado no se toca')
     t0=_t.time(); pg21.click('#btn-confirmar-si'); pg21.wait_for_timeout(300)
     ok(pg21.get_attribute('#btn-demo-cargar','aria-busy')=='true' and pg21.is_disabled('#btn-demo-quitar'),'mientras carga, el botón dice «Cargando…» y no se puede quitar')
     esperar(pg21,"document.getElementById('demo-estado').textContent.startsWith('Cargados')",90000)
@@ -2689,9 +2694,9 @@ with sync_playwright() as p:
     col21=pg21.locator('button[data-mas=colonias]')
     ok(col21.count()==1 and pg21.evaluate("document.querySelectorAll('#sup-cuerpo .sup-tabla tbody tr[data-extra=colonias]').length")>5,'las colonias de una alcaldía también se cortan en 10: «%s»' % (col21.inner_text() if col21.count() else '—'))
     with pg21.expect_download() as d21: pg21.click('#btn-sup-pdf')
-    d21.value.save_as('/home/claude/srp/demo_prueba.pdf')
+    d21.value.save_as(sal('demo_prueba.pdf'))
     from pypdf import PdfReader as _Pdf21
-    txt21=' '.join(' '.join((p.extract_text() or '') for p in _Pdf21('/home/claude/srp/demo_prueba.pdf').pages).split())
+    txt21=' '.join(' '.join((p.extract_text() or '') for p in _Pdf21(sal('demo_prueba.pdf')).pages).split())
     ok(d21.value.suggested_filename=='Informe_anual_2025_Gustavo_A_Madero.pdf' and 'POR COLONIA' in txt21 and 'Marisol' in txt21,'el informe anual de una alcaldía sale con los datos de demostración: %s' % d21.value.suggested_filename)
     entrar21('u-coord-1'); esperar(pg21,"SRP.supervision.datos && SRP.sesion.usuario && SRP.supervision.datos.usuario.id === SRP.sesion.usuario.id",30000); pg21.wait_for_timeout(300)
     cab21=pg21.evaluate("SRP.supervision.datos.cabos.slice().sort()")
@@ -2843,8 +2848,8 @@ with sync_playwright() as p:
     pg23.click('#btn-cierre-generar'); pg23.wait_for_timeout(600)
     ok(all(t in pg23.inner_text('#previa-hoja') for t in ['Tipo: Estacas','Modelo: Dodge','Placas: PRU 005']),'la vista previa trae los datos del vehículo: tipo, modelo y placas (D163)')
     with pg23.expect_download() as d23: pg23.click('#btn-previa-generar')
-    d23.value.save_as('/home/claude/srp/reporte_vehiculo.pdf')
-    t23=' '.join(' '.join((p.extract_text() or '') for p in _Pdf23('/home/claude/srp/reporte_vehiculo.pdf').pages).split())
+    d23.value.save_as(sal('reporte_vehiculo.pdf'))
+    t23=' '.join(' '.join((p.extract_text() or '') for p in _Pdf23(sal('reporte_vehiculo.pdf')).pages).split())
     ok(all(t in t23 for t in ['Tipo:','Modelo:','Placas:','Estacas','Dodge','PRU 005']),'y el PDF también')
     g23=pg23.evaluate("(async () => { const j = (await SRP.almacen.todos('jornadas')).find(x => x.nombre === 'Jornada con camioneta'); return [j.vehiculo_id, j.vehiculo_placa, j.vehiculo_modelo, j.vehiculo_tipo]; })()")
     ok(g23==['v-PRU005','PRU 005','Dodge','Estacas'],'guardado en la jornada: %s' % g23)
@@ -2924,12 +2929,12 @@ with sync_playwright() as p:
     ok(pg24.evaluate("getComputedStyle(document.querySelector('#previa-hoja .previa-dato b')).fontWeight")=='700','cada dato dice su nombre en negritas')
     ok(pg24.evaluate("document.querySelector('#previa-hoja').scrollWidth <= document.querySelector('#previa-hoja').clientWidth + 1"),'la vista previa no se sale de lado en el teléfono')
     with pg24.expect_download() as d24: pg24.click('#btn-previa-generar')
-    d24.value.save_as('/home/claude/srp/reporte_secciones.pdf')
-    t24=' '.join(' '.join((p.extract_text() or '') for p in _Pdf24('/home/claude/srp/reporte_secciones.pdf').pages).split())
+    d24.value.save_as(sal('reporte_secciones.pdf'))
+    t24=' '.join(' '.join((p.extract_text() or '') for p in _Pdf24(sal('reporte_secciones.pdf')).pages).split())
     ok(all(x in t24 for x in ['REPORTE DE LA JORNADA DE PLANTACIÓN','Nombre del cabo:','Nombre de la jornada:','1. PERSONAL','2. DATOS DEL VEHÍCULO','3. CROQUIS DE LA JORNADA',
        '4. EJEMPLARES PLANTADOS','5. TOTALES POR ESPECIE','6. GRÁFICAS','Día de la jornada:','Placas:','Distribución de las especies']) and 'Avance contra lo previsto' not in t24 and 'Folio' not in t24,
        'el PDF trae la franja del cabo con los datos de la jornada, las seis secciones y las gráficas, sin folios (D169)')
-    ok(os.path.getsize('/home/claude/srp/reporte_secciones.pdf') < 250000,'y sigue pesando poco: %d KB' % (os.path.getsize('/home/claude/srp/reporte_secciones.pdf')//1024))
+    ok(os.path.getsize(sal('reporte_secciones.pdf')) < 250000,'y sigue pesando poco: %d KB' % (os.path.getsize(sal('reporte_secciones.pdf'))//1024))
     # El croquis encuadra todos los puntos llenando el lienzo, y aparta los que se enciman
     cr24=pg24.evaluate("""(() => { const C = SRP.croquis; const pts = [[19.4326,-99.1332],[19.43262,-99.13318],[19.43265,-99.13316],[19.43261,-99.13321],[19.4326,-99.1332]].map(([lat,lng]) => ({ lat, lng }));
       const e = C.encuadre(pts); const reales = pts.map(p => { const q = C.aPixel(p.lat, p.lng, e.z); return { x: q.x - e.origenX, y: q.y - e.origenY }; });
@@ -2977,8 +2982,8 @@ with sync_playwright() as p:
        'cada árbol con su comentario en su renglón y el texto limpio: %s' % [f[-1] for f in con25['filas'][:5]])
     ok(con25['ancho'],'y la vista previa no se sale de lado en el teléfono')
     with pg25.expect_download() as d25: pg25.click('#btn-previa-generar')
-    d25.value.save_as('/home/claude/srp/reporte_comentarios.pdf')
-    t25=' '.join(' '.join((p.extract_text() or '') for p in _Pdf24('/home/claude/srp/reporte_comentarios.pdf').pages).split())
+    d25.value.save_as(sal('reporte_comentarios.pdf'))
+    t25=' '.join(' '.join((p.extract_text() or '') for p in _Pdf24(sal('reporte_comentarios.pdf')).pages).split())
     ok('COMENTARIOS POR EJEMPLAR' not in t25 and 'Tutor colocado.' in t25 and 'Cepa profunda.' in t25 and t25.index('Tutor colocado.') < t25.index('TOTALES POR ESPECIE'),
        'el PDF, hecho con jsPDF 4.2.1, trae los comentarios en la tabla de ejemplares (D169)')
     pg25.evaluate("SRP.demo.quitar()")
@@ -3846,9 +3851,9 @@ with sync_playwright() as p:
     ok(ti44=='Alcaldía','al quitar la institución queda su tipo elegido, para ver todas las de ese tipo: %s' % ti44)
     pg44.click('#sup-tipos .chip[data-tipo=anio]'); pg44.wait_for_timeout(900)
     with pg44.expect_download() as dp44: pg44.click('#btn-sup-pdf')
-    dp44.value.save_as('/home/claude/srp/informe_org.pdf')
+    dp44.value.save_as(sal('informe_org.pdf'))
     from pypdf import PdfReader as _Pdf44
-    txt44=' '.join(' '.join((p.extract_text() or '') for p in _Pdf44('/home/claude/srp/informe_org.pdf').pages).split())
+    txt44=' '.join(' '.join((p.extract_text() or '') for p in _Pdf44(sal('informe_org.pdf')).pages).split())
     ok('POR INSTITUCIÓN' in txt44 and 'Viveros y Paisaje Ejemplo' in txt44 and 'Alcaldía Iztapalapa' in txt44,'el informe anual de la Ciudad trae el desglose por institución')
     # Un cabo de la alcaldía ve sólo lo suyo, sin filtro ni desglose de institución
     entrar44('u-demo-z2'); pg44.evaluate("SRP.app.mostrarVista('supervision')"); pg44.wait_for_timeout(700)
@@ -4179,7 +4184,7 @@ with sync_playwright() as p:
 
     # ---------- BLOQUE 133: CATÁLOGO DE ESPECIES EN EXCEL Y CARGA MASIVA ----------
     import openpyxl as _xl51, datetime as _dt51
-    CAR51='/home/claude/srp/carga_prueba.xlsx'
+    CAR51=sal('carga_prueba.xlsx')
     _wb=_xl51.Workbook(); _ws=_wb.active; _ws.title='Árboles'
     _ws.append(['Latitud','Longitud','Nombre científico','Fecha de plantación','Programa','Tipo de institución','Institución'])
     for _r in [[19.3571,-99.0601,'Fraxinus uhdei',_dt51.datetime(2025,3,10),'Reforestación Urbana','Alcaldía','Iztapalapa'],
@@ -4208,7 +4213,7 @@ with sync_playwright() as p:
     ex51=pg51.is_hidden('#btn-cat-excel')
     pg51.click('#cat-tipos .chip[data-tipo=especie]'); pg51.wait_for_timeout(500)
     with pg51.expect_download() as d51: pg51.click('#btn-cat-excel')
-    d51.value.save_as('/home/claude/srp/especies51.xlsx'); w51=_xl51.load_workbook('/home/claude/srp/especies51.xlsx'); h51=w51.active
+    d51.value.save_as(sal('especies51.xlsx')); w51=_xl51.load_workbook(sal('especies51.xlsx')); h51=w51.active
     ok(ex51 and d51.value.suggested_filename.startswith('Catalogo_especies_SRP_') and w51.sheetnames==['Especies'] and h51.max_row==77
        and [c.value for c in h51[1]]==['Clave','Nombre común','Nombre científico','Distribución','Otros nombres comunes','Forma de crecimiento','Id SNIB','Id EncicloVida','Estado','Usos']
        and [c.value for c in h51[2]][:4]==['ESP-0001','Negundo','Acer negundo','Nativa'],
@@ -4216,7 +4221,7 @@ with sync_playwright() as p:
     # Plantilla
     pg51.evaluate("SRP.app.mostrarVista('configuracion')"); pg51.wait_for_timeout(400); pg51.click('.cfg-tarjeta[data-ir=carga]'); pg51.wait_for_timeout(500)
     with pg51.expect_download() as d51: pg51.click('#btn-carga-plantilla')
-    d51.value.save_as('/home/claude/srp/plantilla51.xlsx'); w51=_xl51.load_workbook('/home/claude/srp/plantilla51.xlsx')
+    d51.value.save_as(sal('plantilla51.xlsx')); w51=_xl51.load_workbook(sal('plantilla51.xlsx'))
     ok(w51.sheetnames==['Árboles','Instrucciones','Especies','Programas','Instituciones'] and [c.value for c in w51['Árboles'][1]]==['Latitud','Longitud','Nombre científico','Fecha de plantación','Programa','Tipo de institución','Institución']
        and w51['Árboles'].max_row==1 and w51['Especies'].max_row==77 and w51['Programas'].max_row==5 and w51['Instituciones'].max_row==22,
        'la plantilla trae la hoja para llenar, las instrucciones y las listas válidas de especies, programas e instituciones: %s' % w51.sheetnames)
@@ -4231,7 +4236,7 @@ with sync_playwright() as p:
        'cada problema dice su renglón, su columna y qué corregir; la especie que no está en el catálogo, el punto fuera, la fecha futura, lo que no existe y el renglón repetido no entran; el programa no marcado entra con aviso: %s' % [x[1][:40] for x in pr51])
     ok(pg51.evaluate("SRP.carga.revision.listos.length")==4 and pg51.evaluate("(async () => (await SRP.almacen.todos('jornadas')).filter(j => j.carga_id).length)()")==0,'revisar no guarda nada')
     with pg51.expect_download() as d51: pg51.click('#btn-carga-errores')
-    d51.value.save_as('/home/claude/srp/problemas51.xlsx'); w51=_xl51.load_workbook('/home/claude/srp/problemas51.xlsx').active
+    d51.value.save_as(sal('problemas51.xlsx')); w51=_xl51.load_workbook(sal('problemas51.xlsx')).active
     ok(d51.value.suggested_filename=='Problemas_carga_prueba.xlsx' and w51.max_row==8 and [c.value for c in w51[1]][:5]==['Renglón','Tipo','Columna','Problema','Latitud'] and w51.cell(3,7).value=='Arbolus inventadus',
        'los renglones con problemas se descargan en Excel, con sus datos y el problema, para corregirlos')
     # Carga
@@ -4253,12 +4258,12 @@ with sync_playwright() as p:
     pg51.evaluate("SRP.app.mostrarVista('cambios')"); pg51.wait_for_timeout(600)
     ok(pg51.inner_text('#cmb-lista .cmb-item >> nth=0').split('\n')[1]=='Carga masiva','el Registro de cambios muestra la carga masiva')
     # CSV con punto y coma, y un archivo sin las columnas
-    open('/home/claude/srp/carga51.csv','w',encoding='utf-8-sig').write('Latitud;Longitud;Nombre científico;Fecha de plantación;Programa;Tipo de institución;Institución\n19.3,-99.2;Fraxinus uhdei;2025-05-05;Reforestación Urbana;Organización civil;Reforestamos México, A.C.\n'.replace('19.3,-99.2','19.3;-99.2'))
+    open(sal('carga51.csv'),'w',encoding='utf-8-sig').write('Latitud;Longitud;Nombre científico;Fecha de plantación;Programa;Tipo de institución;Institución\n19.3,-99.2;Fraxinus uhdei;2025-05-05;Reforestación Urbana;Organización civil;Reforestamos México, A.C.\n'.replace('19.3,-99.2','19.3;-99.2'))
     pg51.evaluate("SRP.app.mostrarVista('carga')"); pg51.wait_for_timeout(400)
-    pg51.set_input_files('#carga-archivo','/home/claude/srp/carga51.csv'); pg51.wait_for_timeout(1000)
+    pg51.set_input_files('#carga-archivo',sal('carga51.csv')); pg51.wait_for_timeout(1000)
     csv51=pg51.inner_text('#carga-resumen')
-    open('/home/claude/srp/mala51.csv','w').write('lat,lon,especie\n19.3,-99.2,Fraxinus uhdei\n')
-    pg51.set_input_files('#carga-archivo','/home/claude/srp/mala51.csv'); pg51.wait_for_timeout(800)
+    open(sal('mala51.csv'),'w').write('lat,lon,especie\n19.3,-99.2,Fraxinus uhdei\n')
+    pg51.set_input_files('#carga-archivo',sal('mala51.csv')); pg51.wait_for_timeout(800)
     ok('1 árbol listo para cargar' in csv51 and pg51.is_visible('#carga-error-archivo') and 'faltan columnas: Fecha de plantación, Programa, Tipo de institución, Institución' in pg51.inner_text('#carga-error-archivo') and pg51.is_hidden('#carga-revision'),
        'también se acepta CSV separado por punto y coma; un archivo sin las columnas se rechaza diciendo cuáles faltan')
     ok(pg51.evaluate("document.documentElement.scrollWidth")<=390,'la carga masiva no se sale de lado en el teléfono')
@@ -4347,7 +4352,7 @@ with sync_playwright() as p:
     ctx53.close()
 
     # ---------- BLOQUE 136: LA CARGA MASIVA RECONOCE LO YA CARGADO Y SE PUEDE DESHACER ----------
-    CAR54='/home/claude/srp/carga54.csv'
+    CAR54=sal('carga54.csv')
     ENC54='Latitud,Longitud,Nombre científico,Fecha de plantación,Programa,Tipo de institución,Institución\n'
     REN54=['19.3571,-99.0601,Fraxinus uhdei,2025-03-10,Reforestación Urbana,Alcaldía,Iztapalapa',
            '19.3573,-99.0603,Fraxinus uhdei,2025-03-10,Reforestación Urbana,Alcaldía,Iztapalapa',
@@ -5000,9 +5005,9 @@ with sync_playwright() as p:
     ok(s60['csv'] and s60['det'],'la tabla para Excel trae la prioridad de la colonia de cada árbol')
     ok(s60['ctl']==[True, True, 5, '0.9'],'el mapa de Supervisión lleva el control de niveles y opacidad, sin interruptor (ahí la capa es el mapa) y con su propia opacidad: %s' % s60['ctl'])
     with pg60.expect_download() as d60: pg60.click('#btn-sup-pdf')
-    d60.value.save_as('/home/claude/srp/informe_prioridad.pdf')
+    d60.value.save_as(sal('informe_prioridad.pdf'))
     from pypdf import PdfReader as _Pdf60
-    t60=' '.join(' '.join((p.extract_text() or '') for p in _Pdf60('/home/claude/srp/informe_prioridad.pdf').pages).split())
+    t60=' '.join(' '.join((p.extract_text() or '') for p in _Pdf60(sal('informe_prioridad.pdf')).pages).split())
     ok('POR PRIORIDAD DE LA COLONIA' in t60 and 'Alta y muy alta' in t60,'el informe en PDF trae el apartado «Por prioridad de la colonia»')
     ok(not err60,'sin errores en consola: %s' % err60[:2])
     ctx60.close()
@@ -5057,9 +5062,9 @@ with sync_playwright() as p:
     ok('Prioridad de reforestación' in pv61 and 'Alta (2 de 3 árboles)' in pv61 and 'Árboles por prioridad de la colonia' in pv61,'la vista previa del reporte lo muestra')
     if pg61.is_visible('#dlg-previa'):
         with pg61.expect_download() as d61: pg61.click('#btn-previa-generar')
-        d61.value.save_as('/home/claude/srp/reporte_prioridad.pdf')
+        d61.value.save_as(sal('reporte_prioridad.pdf'))
         from pypdf import PdfReader as _Pdf61
-        tx61=' '.join(' '.join((p.extract_text() or '') for p in _Pdf61('/home/claude/srp/reporte_prioridad.pdf').pages).split())
+        tx61=' '.join(' '.join((p.extract_text() or '') for p in _Pdf61(sal('reporte_prioridad.pdf')).pages).split())
         ok('Prioridad de reforestación' in tx61 and 'Alta (2 de 3 árboles)' in tx61 and 'Prioridad' in tx61.split('Ejemplares plantados'.upper())[-1],'y el PDF del reporte también: prioridad de la jornada y columna «Prioridad»')
     pg61.wait_for_timeout(800)
     pg61.evaluate("SRP.app.mostrarVista('reportes')"); pg61.wait_for_timeout(1500)
@@ -5204,7 +5209,7 @@ with sync_playwright() as p:
     ctx63.set_geolocation({'latitude': 19.4326, 'longitude': -99.1334, 'accuracy': 5})
     pg63.click('#btn-ubicacion'); pg63.wait_for_timeout(900)
     pg63.fill('#campo-especie', 'fres'); pg63.wait_for_timeout(200); pg63.dispatch_event('.combo-opcion[data-id="ESP-0029"]', 'mousedown'); pg63.wait_for_timeout(150)
-    pg63.fill('#campo-comentarios', 'árbol a medias'); pg63.set_input_files('#foto-archivo', '/tmp/arbol.jpg'); pg63.wait_for_timeout(900)
+    pg63.fill('#campo-comentarios', 'árbol a medias'); pg63.set_input_files('#foto-archivo', sal('arbol.jpg')); pg63.wait_for_timeout(900)
     pg63.reload(); pg63.wait_for_timeout(2500)
     m63 = pg63.evaluate("[SRP.mapa.lat, SRP.formulario.estado.especieId, document.getElementById('campo-comentarios').value, !!SRP.formulario.estado.foto, document.getElementById('aviso').innerText.slice(0, 40)]")
     ok(m63[:4] == [19.4326, 'ESP-0029', 'árbol a medias', True] and 'recuperó' in m63[4], 'tras recargar sin señal, el árbol a medias vuelve con punto, especie, comentario y fotografía, y se avisa: %s' % m63)
@@ -5282,14 +5287,14 @@ with sync_playwright() as p:
         d.value.save_as(ruta); rd = _Pdf64(ruta)
         emb = sorted({(x.idnum, str(x.get_object().get('/BaseFont'))) for pag in rd.pages for x in (pag['/Resources'].get('/Font') or {}).values() if '/DescendantFonts' in x.get_object()})
         return ' '.join(' '.join((pag.extract_text() or '') for pag in rd.pages).split()), emb, os.path.getsize(ruta)
-    t64, e64, p64 = pdf64('/home/claude/srp/informe_b150.pdf', lambda: pg64.click('#btn-sup-pdf'))
+    t64, e64, p64 = pdf64(sal('informe_b150.pdf'), lambda: pg64.click('#btn-sup-pdf'))
     ok(len(e64) == 3 and all('Roboto' in x[1] for x in e64) and '=1+1 Jacarandā' in t64 and p64 < 200000,
        'el informe en PDF lleva Roboto incrustada y escribe bien una letra con macrón: %s, %d KB' % ([x[1] for x in e64], p64 // 1024))
     ok(re.search(r'Generado el \d{2}-[A-Z]{3}-\d{4}, \d{2}:\d{2} h', t64) is not None and 'Árboles por jornada 1 ' in t64, 'el sello lleva la fecha como en todo el sistema y la hora de 24 horas: %s' % re.findall(r'Generado el [^P]{0,24}', t64)[:1])
     reporte_de(pg64, 'Jacarandā')
     pg64.click('#btn-cierre-previa') if pg64.locator('#btn-cierre-previa').count() else pg64.click('#form-cierre button[type=submit]')
     pg64.wait_for_timeout(1500)
-    r64, er64, pr64 = pdf64('/home/claude/srp/reporte_b150.pdf', lambda: pg64.click('#btn-previa-generar'))
+    r64, er64, pr64 = pdf64(sal('reporte_b150.pdf'), lambda: pg64.click('#btn-previa-generar'))
     ok(len(er64) == 3 and '=1+1 Jacarandā' in r64 and pr64 < 250000, 'y el reporte de la jornada también: %d KB' % (pr64 // 1024))
     pg64.wait_for_timeout(600)
     # Lo eliminado a las once y media de la noche es del día en que se eliminó, no del siguiente
@@ -5371,6 +5376,25 @@ with sync_playwright() as p:
        'al guardar el sustituto la jornada vuelve a cerrarse y pide generar de nuevo el reporte: %s' % e65)
     ok(not err65, 'sin errores en consola: %s' % err65[:2])
     ctx65.close()
+
+    # ---------- ctx66: fecha máxima al día, mapas de Supervisión con sus controles al alcance, indicador fácil de tocar ----------
+    ctx66 = b.new_context(viewport={'width':390,'height':844}, timezone_id='America/Mexico_City', geolocation={'latitude':19.4326,'longitude':-99.1332,'accuracy':5}, permissions=['geolocation'])
+    pg66 = ctx66.new_page(); err66 = []
+    pg66.on('pageerror', lambda e: err66.append(str(e))); pg66.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err66.append(m.text))
+    pg66.goto(BASE); pg66.wait_for_timeout(1200)
+    pg66.select_option('#sel-usuario-prueba', 'u-cabo-1'); pg66.click('#btn-entrar-prueba'); pg66.wait_for_timeout(900)
+    # La aplicación quedó abierta desde ayer: el calendario de la jornada deja elegir hoy
+    m66 = pg66.evaluate("(() => { const c = document.getElementById('ini-fecha'); c.max = SRP.indicadores.sumarDias(SRP.util.fechaHoy(), -1); SRP.activa.mostrarInicio(true); return [c.max, SRP.util.fechaHoy()]; })()")
+    ok(m66[0] == m66[1], 'al mostrar «Iniciar jornada» la fecha máxima es la de hoy, aunque la aplicación lleve abierta desde ayer: %s' % m66)
+    t66 = pg66.evaluate("(() => { const c = document.getElementById('conexion'), r = c.getBoundingClientRect(), d = getComputedStyle(c, '::after'); return [Math.round(r.height), Math.round(parseFloat(d.height)), d.position]; })()")
+    ok(t66[0] <= 36 and t66[1] >= 44 and t66[2] == 'absolute', 'el indicador de conexión se ve igual y se toca en 44 px o más de alto: %s' % t66)
+    iniciar_jornada(pg66, 'Mapas B152'); registrar(pg66, 'fres', 'ESP-0029')
+    pg66.click('#btn-jornada-cerrar'); pg66.wait_for_timeout(300); pg66.click('#btn-confirmar-si'); pg66.wait_for_timeout(1200)
+    pg66.click('.pestana[data-vista=supervision]'); esperar(pg66, "!!document.querySelector('#sup-mapa .leaflet-container, #sup-mapa.leaflet-container')", 8000); pg66.wait_for_timeout(600)
+    a66 = pg66.evaluate("[...document.querySelectorAll('.sup-mapa')].map(m => [m.getAttribute('role'), /tabla de al lado/.test(m.getAttribute('aria-label') || ''), m.querySelectorAll('a[href], button, [tabindex]').length > 0])")
+    ok(len(a66) >= 1 and all(x == ['group', True, True] for x in a66), 'los mapas de Supervisión ya no se declaran imagen: sus controles se alcanzan y la etiqueta remite a la tabla: %s' % a66)
+    ok(not err66, 'sin errores en consola: %s' % err66[:2])
+    ctx66.close()
 
 
 

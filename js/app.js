@@ -19,7 +19,7 @@ SRP.app = {
     I.poner(this.el('btn-subir'), 'subir', 'grande');
     I.poner(this.el('btn-demo-cargar'), 'regenerar', 'medio');
     I.poner(this.el('btn-demo-quitar'), 'basura', 'medio');
-    // Menú de la cuenta con icono en cada opción (D114): el sol y la puerta pedidos por Liber, y el resto por consistencia
+    // Menú de la cuenta con icono en cada opción (D114): el sol y la puerta por petición del área, y el resto por consistencia
     // Cancelar lleva tache y va en rojo de contorno (D116)
     I.poner(this.el('btn-cancelar-edicion'), 'cerrar', 'medio');
     I.poner(this.el('btn-confirmar-no'), 'cerrar', 'medio');

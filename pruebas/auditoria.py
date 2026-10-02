@@ -3,14 +3,14 @@
 # existentes, referencias que apuntan a algo, y que no quede rastro de la nomenclatura anterior.
 from playwright.sync_api import sync_playwright
 import glob, re, os
-BASE = 'http://127.0.0.1:8099/'
+BASE = os.environ.get('SRP_BASE', 'http://127.0.0.1:8099/')
 hallazgos = []
 
 def mirar(cond, descripcion, detalle=''):
     hallazgos.append((bool(cond), descripcion, detalle))
 
 # --- 1. Lo que hay en el código y en los textos ---
-APP = '/home/claude/srp/app'
+APP = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))   # la carpeta del proyecto, esté donde esté
 archivos = glob.glob(APP+'/js/*.js') + [APP+'/index.html', APP+'/css/estilos.css']
 viejos = ['registrador', 'Registrador', 'REGISTRADOR', 'jefe_id', "'JEFE'", 'Jefe de registradores']
 for termino in viejos:

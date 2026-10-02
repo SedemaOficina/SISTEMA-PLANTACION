@@ -648,7 +648,9 @@ fieldset.campo { margin-inline: 0; }
 .registro-especie i { font-weight: 400; color: var(--gris); }
 /* Estado de la conexión: pastilla con icono, color y palabras (Norma 8.4: el color no va solo).
    Es un botón: abre la guía de qué hacer sin internet. Verde = todo en orden; dorado = atención, no error */
-.conexion { white-space: nowrap; display: inline-flex; align-items: center; gap: var(--e-1); min-height: 32px; padding: 0 var(--e-3); border-radius: var(--radio-pildora); border: 1px solid transparent; background: var(--fondo-suave); color: var(--gris); font: inherit; font-size: var(--t-xs); font-weight: 500; cursor: pointer; }
+.conexion { position: relative; white-space: nowrap; display: inline-flex; align-items: center; gap: var(--e-1); min-height: 32px; padding: 0 var(--e-3); border-radius: var(--radio-pildora); border: 1px solid transparent; background: var(--fondo-suave); color: var(--gris); font: inherit; font-size: var(--t-xs); font-weight: 500; cursor: pointer; }
+/* Se ve de 32 px, pero se toca en 48: el área sensible sobresale arriba y abajo */
+.conexion::after { content: ''; position: absolute; inset: calc(-1 * var(--e-2)) 0; }
 .conexion[data-estado="con"] { background: var(--exito-fondo); color: var(--exito); border-color: var(--exito); }
 .conexion[data-estado="sin"] { background: var(--editar-fondo); color: var(--editar); border-color: var(--editar); }
 /* Envío simulado (D111): «Enviando…» neutro; atraso en rojo, con palabras (el color no va solo) */

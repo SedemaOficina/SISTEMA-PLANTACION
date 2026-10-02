@@ -10,7 +10,7 @@ aquí, además de en `DECISIONES.md`. El detalle técnico de cada campo está en
 `datos/DICCIONARIO-DATOS.md`, que se genera de él); las reglas de la Fase 2 del esquema son las `S-nn`
 que se citan abajo.
 
-Estado al 02-10-2026: versión 0.9.18 (Bloque 151). Base del teléfono versión 7: `srp_db` en pruebas, `srp_sia` en la real.
+Estado al 02-10-2026: versión 0.9.19 (Bloque 152). Base del teléfono versión 7: `srp_db` en pruebas, `srp_sia` en la real.
 
 ---
 

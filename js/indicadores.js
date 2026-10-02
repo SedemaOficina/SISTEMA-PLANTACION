@@ -1,6 +1,6 @@
 /* INDICADORES DE SUPERVISIÓN (D157). Un solo cálculo para la pestaña Supervisión («Mi avance» del
    cabo) y para los informes por periodo en PDF y CSV: lo que se ve en pantalla es lo mismo que se
-   imprime y se descarga. Reglas decididas por Liber (25-09-2026):
+   imprime y se descarga. Reglas decididas el 25-09-2026:
    - Sólo cuentan las jornadas CERRADAS: una abierta todavía cambia. Las abiertas del periodo se
      dicen aparte («en curso») y las de días anteriores aparecen en «Qué atender».
    - Cada árbol cuenta en el periodo de su fecha de plantación, no en el de su jornada: una jornada

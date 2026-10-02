@@ -2873,3 +2873,20 @@ vista previa que no marca, reporte generado al entregar, reporte sin vigencia al
 pregunta antes de reabrir, cierre al cancelar y al guardar el sustituto); auditoria.py 117, 0 hallazgos;
 revisar.py sin problemas. La pregunta de la sustitución vive en el módulo de la jornada: en
 `js/registros.js` sigue sin haber confirmaciones (D139).
+
+## Bloque 152 — Pruebas en cualquier equipo, textos al día y accesibilidad de los mapas (02-10-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.9.19.
+
+**Qué cambió (D216).** `pruebas/prueba.py`, `auditoria.py` y `revisar.py`: sin rutas fijas; `SRP_BASE` y
+`SRP_SALIDA`; `pruebas/requisitos.txt`. `README.md`: sección «Pruebas» con bibliotecas y tiempos reales, y
+nombres de pantalla. `js/jornada-activa.js`: la fecha máxima se pone cada vez que se muestra «Iniciar
+jornada». `js/supervision.js`: los dos mapas pasan de imagen a grupo con etiqueta. `css/estilos.css`: área
+sensible del indicador de conexión. `js/demostracion.js`: aviso de carga al día. `datos/esquema.json`:
+cinco catálogos; diccionario y `js/esquema.js` regenerados. Comentarios sin nombres propios en
+`js/app.js`, `config.js`, `formulario.js`, `iconos.js`, `indicadores.js`, `reportes.js` e `index.html`.
+`pruebas/prueba.py`: ctx66. Marca 0.9.19.
+
+**Verificación:** las tres pruebas se corrieron desde una copia del proyecto en otra carpeta (con un
+espacio en la ruta) y otro puerto: prueba.py 1204 comprobaciones, 0 fallas (ctx66, 4 nuevas: fecha
+máxima, área de toque del indicador, mapas como grupo); auditoria.py 117, 0 hallazgos; revisar.py sin
+problemas.

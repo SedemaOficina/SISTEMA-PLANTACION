@@ -9,7 +9,7 @@ La versión que corre se lee al pie de cada pantalla.
 ## Cómo se usa
 
 1. **Registrar jornada** (pestaña Nuevo registro). Antes de registrar árboles se declara la jornada:
-   nombre del sitio, programa, fecha, meta de árboles y, si se quiere, la ubicación y la dirección.
+   nombre del sitio, programa, fecha, árboles que se van a plantar y, si se quiere, la ubicación y la dirección.
    Se marca también su **origen**: programada o pedido especial de otra instancia (SOBSE, una
    alcaldía), con quién lo solicita (D210).
    El programa es de la jornada: todos sus árboles lo toman (D151). La fecha es el día en que
@@ -19,8 +19,8 @@ La versión que corre se lee al pie de cada pantalla.
    especie, comentarios y fotografía opcional; si la jornada empezó otro día, también la fecha de
    plantación. «Guardar» registra de una vez; sólo si hay algo que
    revisar (precisión baja, punto lejano, posible duplicado) abre la ficha de revisión.
-3. **Jornadas.** Cada jornada con su mapa y lista numerados, sus avisos y la conciliación con la
-   meta. Ahí se revisan los puntos y se cierra la jornada; la tuerca de cada punto edita, mueve a
+3. **Jornadas.** Cada jornada con su mapa y lista numerados, sus avisos y la conciliación con los
+   árboles previstos. Ahí se revisan los puntos y se cierra la jornada; la tuerca de cada punto edita, mueve a
    otra jornada, sustituye o elimina el árbol (un error de captura se corrige sin salir de la
    jornada). La coordinación hace ahí el **relevo de cabo**: pasa la jornada abierta a otro cabo de
    su cuadrilla, que sigue registrando en ella; el titular no cambia (D204).
@@ -91,7 +91,7 @@ cuentas.
 ## Cómo se entra
 
 Con **correo y contraseña**. Nadie se da de alta solo: las cuentas las crea la Administración
-global desde la pestaña Usuarios.
+global desde Usuarios, en el menú de la cuenta.
 
 **La contraseña todavía no se verifica.** Comprobarla en el navegador sería seguridad aparente,
 porque cualquiera puede leer el código de la página; lo único que se comprueba es que el correo
@@ -179,7 +179,7 @@ herramientas/           Generan archivos del sitio a partir de originales/ y de 
   generar_diccionario.py  datos/esquema.json → datos/DICCIONARIO-DATOS.md y js/esquema.js
   extraer_iconos.py     Set de iconografía CDMX (.ai) → trazados para js/iconos.js
 
-pruebas/                prueba.py (recorrido completo), auditoria.py (auditoría), auditoria_css.py (hoja de estilos) y revisar.py (presentación)
+pruebas/                prueba.py (recorrido completo), auditoria.py (auditoría), auditoria_css.py (hoja de estilos), revisar.py (presentación) y requisitos.txt (bibliotecas)
 
 originales/             Capas, catálogos e iconografía tal como llegaron; no se editan ni se publican
                         (.gitignore, D164); ver originales/LEEME.md
@@ -225,9 +225,9 @@ es él; para quien ve a varias personas se elige entre los cabos con registros e
 abre la **vista previa**, con el mismo contenido que tendrá el PDF, y desde ahí se genera el PDF.
 
 **El PDF va por secciones (D163):** arriba el nombre del cabo y cinco cifras (árboles plantados,
-meta, avance, especies y porcentaje de nativas); luego 1) datos de identificación de la jornada
+previstos, avance, especies y porcentaje de nativas); luego 1) datos de identificación de la jornada
 (nombre, día completo —«Jueves 25 de septiembre de 2026»—, alcaldía, colonia, dirección, programa,
-árboles meta, hora de finalización, comentarios y observaciones), 2) personal (participantes, apoyo
+árboles previstos, hora de finalización, comentarios y observaciones), 2) personal (participantes, apoyo
 y chófer), 3) datos del vehículo (tipo, modelo y placas), 4) croquis, que encuadra todos los puntos
 y aparta los números que se enciman, 5) ejemplares plantados (número, especie, nombre científico,
 coordenada y precisión; sin folio), 6) totales por especie con su distribución y porcentaje, 7)
@@ -355,15 +355,24 @@ cerca del borde de su celda que la precisión del GPS, lo marca como «celda inc
 
 ## Pruebas
 
-Requieren Python 3 con Playwright y Chromium (`pip install playwright` y `python3 -m playwright
-install chromium`). Desde la carpeta del proyecto, con el servidor local levantado:
+Requieren Python 3 con Playwright, Chromium y cuatro bibliotecas más (pypdf, Pillow, openpyxl y
+shapely), listadas en `pruebas/requisitos.txt`. Se corren desde la carpeta del proyecto, esté donde
+esté, con el servidor local levantado:
 
 ```
+pip install -r pruebas/requisitos.txt
+python3 -m playwright install chromium
 python3 -m http.server 8099 --bind 127.0.0.1      (en otra terminal)
-python3 pruebas/prueba.py        # unos 10 minutos; al final dice «fallas: 0 de N»
-python3 pruebas/auditoria.py
-python3 pruebas/revisar.py
+python3 pruebas/prueba.py        # de 25 a 35 minutos; al final dice «fallas: 0 de N»
+python3 pruebas/auditoria.py     # unos 2 minutos
+python3 pruebas/revisar.py       # unos 2 minutos
 ```
+
+Los archivos que `prueba.py` descarga o fabrica (PDF, CSV, hojas de cálculo) quedan en una carpeta
+temporal del equipo (`srp_pruebas`). Dos variables de entorno cambian lo que viene de fábrica:
+`SRP_BASE`, la dirección de la aplicación (`http://127.0.0.1:8099/`), y `SRP_SALIDA`, la carpeta de
+esos archivos. El servidor debe servir la carpeta del proyecto: `prueba.py` levanta además un
+segundo servidor propio en el puerto 8094 para probar el cambio de versión.
 
 | Archivo | Qué comprueba |
 |---|---|

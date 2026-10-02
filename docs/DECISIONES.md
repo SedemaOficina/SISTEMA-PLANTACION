@@ -2328,3 +2328,20 @@
   · **Sustituir en una jornada cerrada:** antes de reabrirla se pregunta, y se avisa si tiene reporte. Al
     guardar el sustituto o al cancelar, la jornada vuelve a cerrarse; ya no queda abierta fuera de las
     cifras de Supervisión.
+- **D216. Pruebas que corren en cualquier equipo, textos al día y accesibilidad de los mapas (bloque 152).** 02-10-2026.
+  Resultado de la auditoría integral del 02-10-2026 (hallazgos M-22, B-29, B-31 y B-36). Cierra las
+  correcciones del teléfono que no dependen del servidor.
+  · **Pruebas sin rutas fijas:** `prueba.py`, `auditoria.py` y `revisar.py` ubican el proyecto a partir de
+    su propia carpeta y dejan lo que descargan en una carpeta temporal. `SRP_BASE` y `SRP_SALIDA` cambian
+    la dirección de la aplicación y esa carpeta. `pruebas/requisitos.txt` lista las cinco bibliotecas. El
+    README dice el tiempo real: de 25 a 35 minutos el recorrido completo.
+  · **Fecha máxima al día:** el calendario de «Iniciar jornada» toma el máximo cada vez que se muestra;
+    con la aplicación abierta de un día para otro ya deja elegir hoy.
+  · **Mapas de Supervisión:** dejan de declararse imagen y pasan a ser un grupo con etiqueta, de modo
+    que un lector de pantalla alcanza sus controles; la etiqueta remite a la tabla de al lado, que trae
+    las mismas cifras.
+  · **Indicador de conexión:** se ve igual (32 px) y su área sensible mide 44 px o más de alto.
+  · **Textos al día:** el aviso de los datos de demostración dice lo que carga (más de 1,300 jornadas y
+    17,000 árboles, de la Secretaría y de otras instituciones); el diccionario dice cinco catálogos; el
+    README usa los nombres de pantalla («árboles que se van a plantar», Usuarios en el menú de la
+    cuenta). Los comentarios del código ya no nombran a personas.

@@ -415,7 +415,7 @@ SRP.demo = {
     const c = await this.contar();
     const hay = c.jornadas > 0;
     this.el('demo-estado').textContent = hay
-      ? 'Cargados: ' + c.jornadas.toLocaleString('es-MX') + ' jornadas y ' + c.arboles.toLocaleString('es-MX') + ' árboles de diez cabos —de la Secretaría, la Alcaldía Iztapalapa y una empresa— y dos coordinaciones, desde enero de 2024 hasta hoy.'
+      ? 'Cargados: ' + c.jornadas.toLocaleString('es-MX') + ' jornadas y ' + c.arboles.toLocaleString('es-MX') + ' árboles de cabos y coordinaciones de la Secretaría y de otras instituciones, desde enero de 2024 hasta hoy.'
       : 'Casi tres años de jornadas inventadas (2024 a hoy), de la Secretaría y de una institución de cada tipo —alcaldías, Gobierno de la CDMX, empresas y organizaciones civiles—, con cabos y coordinaciones de todas y los cuatro programas, para probar Supervisión, Mi avance y los informes. No tocan lo que usted capture.';
     const cargar = this.el('btn-demo-cargar');
     cargar.querySelector('span').textContent = hay ? 'Volver a cargar' : this.huboAntes() ? 'Recuperar datos de demostración' : 'Cargar datos de demostración';
@@ -426,7 +426,7 @@ SRP.demo = {
 
   async alCargar() {
     const ok = await SRP.app.confirmar({ titulo: 'Datos de demostración', pregunta: '¿Cargar casi tres años de datos inventados en este dispositivo?',
-      puntosTitulo: 'Qué pasa:', puntos: ['Se agregan unas 700 jornadas y unos 9,000 árboles, de enero de 2024 a hoy, de diez cabos —de la Secretaría, la Alcaldía Iztapalapa y una empresa— y dos coordinaciones.',
+      puntosTitulo: 'Qué pasa:', puntos: ['Se agregan más de 1,300 jornadas y más de 17,000 árboles, de enero de 2024 a hoy, de cabos y coordinaciones de la Secretaría y de otras instituciones: alcaldías, Gobierno de la CDMX, empresas y organizaciones civiles.',
         'Lo que usted haya capturado no se toca. Si ya había datos de demostración, se vuelven a cargar iguales.',
         'Tarda unos segundos. Se quitan con «Quitar datos de demostración».'], boton: 'Cargar', icono: 'descargar' });
     if (!ok) return;

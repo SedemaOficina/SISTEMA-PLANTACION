@@ -604,7 +604,7 @@
       ]
     },
     "catalogos": {
-      "que_es": "Los cuatro catálogos administrables en una sola tabla, distinguidos por `tipo`: programas, áreas, especies y vehículos. Las especies son el catálogo real del SIA (D84) y los vehículos, el de las cuadrillas (D162); los dos llevan campos adicionales.",
+      "que_es": "Los cinco catálogos administrables en una sola tabla, distinguidos por `tipo`: programas, áreas, especies, vehículos e instituciones. Las especies son el catálogo real del SIA (D84) y los vehículos, el de las cuadrillas (D162); los dos llevan campos adicionales.",
       "llave": "id",
       "indices": [],
       "pantalla": "Catálogos (sólo Administración global); alimentan Nuevo registro (especie, programa) y Usuarios (área)",

@@ -58,7 +58,7 @@ SRP.formulario = {
       if (r) SRP.registros.verDetalle(r);
     });
     /* ATAJO DE TECLADO (D142): Ctrl+Enter (⌘+Enter en Mac) guarda, o confirma la ficha de revisión si
-       está abierta. No se anuncia en pantalla ni hay atajos numéricos (D145, pedido por Liber): queda
+       está abierta. No se anuncia en pantalla ni hay atajos numéricos (D145): queda
        sólo en aria-keyshortcuts del botón. Enter solo no guarda: se evitó a propósito en la ficha. */
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Enter' || !(e.ctrlKey || e.metaKey) || SRP.app.vista !== 'registrar') return;
@@ -467,7 +467,7 @@ SRP.formulario = {
   },
 
   /* Lo que amerita mirar la ficha antes de guardar. Devuelve [{ tipo, texto }]. La fotografía es
-     opcional y nunca avisa (decisión de Liber, D130). */
+     opcional y nunca avisa (D130). */
   async avisos(v) {
     const salida = [];
     if (v.punto_origen === 'gps' && v.gps_precision_m != null) {

@@ -180,6 +180,8 @@ SRP.activa = {
     this.el('franja-jornada').hidden = ver;
     this.el('btn-iniciar-cancelar').hidden = !this.jornada;   // sin jornada no hay a dónde volver
     if (ver) {
+      // El máximo de la fecha se pone cada vez: con la aplicación abierta de un día para otro, hoy ya es otro día
+      this.el('ini-fecha').max = SRP.util.fechaHoy();
       this.el('ini-nombre').value = ''; this.el('ini-ubicacion').value = ''; this.el('ini-comentarios').value = ''; this.el('ini-meta').value = '';
       this.punto = null; this.pintarDetectar();
       this.el('ini-coord-lat').value = ''; this.el('ini-coord-lng').value = ''; this.el('ini-detalles-coord').open = false;

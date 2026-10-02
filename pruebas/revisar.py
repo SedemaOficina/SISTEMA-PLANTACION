@@ -1,5 +1,6 @@
 from playwright.sync_api import sync_playwright
-URL='http://127.0.0.1:8099/'
+import os
+URL=os.environ.get('SRP_BASE','http://127.0.0.1:8099/')
 # ancho, escala (zoom del navegador: escala<1 = alejado), nombre
 CASOS=[(360,1,'telefono-chico'),(390,1,'telefono'),(768,1,'tableta'),(1280,1,'escritorio'),(1920,1,'pantalla-grande'),
        (1280,0.5,'escritorio-zoom-50'),(1280,0.67,'escritorio-zoom-67'),(1280,2,'escritorio-zoom-200')]

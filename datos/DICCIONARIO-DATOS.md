@@ -122,7 +122,7 @@ Cuentas del sistema. Una por persona; el perfil decide qué puede hacer (js/perm
 
 ### 4.3 `catalogos`
 
-Los cuatro catálogos administrables en una sola tabla, distinguidos por `tipo`: programas, áreas, especies y vehículos. Las especies son el catálogo real del SIA (D84) y los vehículos, el de las cuadrillas (D162); los dos llevan campos adicionales.
+Los cinco catálogos administrables en una sola tabla, distinguidos por `tipo`: programas, áreas, especies, vehículos e instituciones. Las especies son el catálogo real del SIA (D84) y los vehículos, el de las cuadrillas (D162); los dos llevan campos adicionales.
 
 - **Llave:** `id`. **Índices:** ninguno. **Pantalla:** Catálogos (sólo Administración global); alimentan Nuevo registro (especie, programa) y Usuarios (área).
 - **Campos:** 19.

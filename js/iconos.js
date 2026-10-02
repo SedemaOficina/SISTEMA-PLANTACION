@@ -4,7 +4,7 @@
 
    IDENTIDAD (D88). Los que existen en el set de iconografía del Manual de Identidad Gráfica
    CDMX 2024-2030 se toman de ahí (basura, cerrar, ubicación, cámara, ver), extraídos del
-   ICONOS SET.ai que entregó Liber y normalizados a una caja de 24×24 con
+   ICONOS SET.ai que entregó el área y normalizados a una caja de 24×24 con
    herramientas/extraer_iconos.py; el número es su posición en la hoja índice. Palomita, lápiz, disco
    y señal no existen en el set y se conservan. En el bloque 36 (D89) entraron los del acceso, la
    cuenta, las pestañas y varias acciones; conexión con y sin señal siguen con las ondas. */

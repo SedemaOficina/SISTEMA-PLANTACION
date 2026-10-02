@@ -1,0 +1,7 @@
+# Lo que necesitan las pruebas: pip install -r pruebas/requisitos.txt
+# y después: python3 -m playwright install chromium
+playwright
+pypdf
+Pillow
+openpyxl
+shapely

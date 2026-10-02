@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 151',
+  ETAPA: 'Bloque 152',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -31,7 +31,7 @@ SRP.CONFIG = {
      aparecían con un perfil que ya no existía. */
   SELLO_DATOS: '2026-09-30c-programas',   // quién usa cada programa, en el catálogo; coordinador y cabo por tipo de institución; sin «Jornadas de voluntariado»; áreas de la Secretaría; instituciones de arranque
   /* REINICIO DE LOS DATOS DE PRUEBA. Un teléfono con un sello anterior a éste vuelve a empezar aunque
-     tenga capturas: todo lo que hay en los teléfonos es de prueba (Liber, 30-09-2026). Con sellos
+     tenga capturas: todo lo que hay en los teléfonos es de prueba (30-09-2026). Con sellos
      posteriores se vuelve a conservar lo capturado. Se comparan como texto: uno nuevo debe ordenar
      después del anterior («2026-09-30b-…» va después de «2026-09-30-…»). */
   SELLO_REINICIO: '2026-09-30b-coordinacion',
@@ -47,7 +47,7 @@ SRP.CONFIG = {
   REINTENTO_ENVIO_MS: 60000,        // reintento mientras haya pendientes
   HORA_CIERRE_JORNADA: 17,          // desde esta hora, lo de hoy sin enviar ya es atraso
   // Revisión de jornadas (D112): umbrales de los avisos y de la partición por sitio, en metros
-  // DUPLICADO_M: 4 m (Liber): por debajo, el aviso quedaría dentro del ruido del GPS
+  // DUPLICADO_M: 4 m: por debajo, el aviso quedaría dentro del ruido del GPS
   JORNADA: { DUPLICADO_M: 4, FUERA_M: 150, SEPARAR_M: 500 },
 
   /* La Secretaría en el catálogo de instituciones. Sólo sus cuentas tienen área y Administración

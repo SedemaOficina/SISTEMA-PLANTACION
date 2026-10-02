@@ -8,7 +8,7 @@
    documento. Los filtros de mes, año y rango siguen sirviendo para mirar la lista; para generar
    el reporte hay que estar parado en un día.
 
-   POR QUÉ UN FORMULARIO APARTE Y NO UN ENCABEZADO DE JORNADA. Lo pidió Liber así: el chófer, la
+   POR QUÉ UN FORMULARIO APARTE Y NO UN ENCABEZADO DE JORNADA. Así lo pidió el área: el chófer, la
    hora de finalización y las observaciones se saben al cerrar el día, no al llegar al frente.
    Pedirlos antes obliga a volver a abrirlos después. Se capturan al generar el reporte, que es
    cuando la persona ya tiene esos datos enfrente.
@@ -108,7 +108,7 @@ SRP.reportes = {
 
   /* ---------- La vista Reportes (D81) ---------- */
 
-  /* EL REPORTE ES DE UNA JORNADA. Lo decidió Liber: los datos que lo acompañan —chófer, hora de
+  /* EL REPORTE ES DE UNA JORNADA. Los datos que lo acompañan —chófer, hora de
      finalización, observaciones— no valen para un mes. Aquí se listan las jornadas cerradas y se
      filtran con la zona compartida. La vista no depende de cómo esté filtrada la lista de
      Registros: hace su propia consulta. */
