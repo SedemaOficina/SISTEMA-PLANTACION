@@ -99,10 +99,20 @@ SRP.envio = {
   /* Envía la cola completa. `op.manual`: lo pidió la persona («Enviar ahora») y se le contesta
      aunque no haya nada que enviar. `op.silencioso`: quien llama dice el resultado en su pantalla
      (el diálogo de guardado), así que aquí no se pone aviso flotante. */
-  async enviar(op) {
+  enviar(op) {
     op = op || {};
-    if (!this.simulado() || !SRP.sesion.usuario || !SRP.almacen.db) return null;
+    if (!this.simulado() || !SRP.sesion.usuario || !SRP.almacen.db) return Promise.resolve(null);
+    // Un envío a la vez: quien llega mientras hay uno en curso recibe el mismo resultado. La marca se
+    // pone antes de cualquier espera, para que dos avisos seguidos de «volvió la señal» no envíen dos veces
     if (this.enviando) return this.enviando;
+    const p = this._enviar(op);
+    this.enviando = p;
+    const soltar = () => { if (this.enviando === p) this.enviando = null; };
+    p.then(soltar, soltar);
+    return p;
+  },
+
+  async _enviar(op) {
     const cola = await this.cola();
     const n = cola.length;
     if (!n) {
@@ -110,10 +120,11 @@ SRP.envio = {
       return { enviados: 0, pendientes: 0 };
     }
     if (!SRP.conexion.enLinea()) {
+      await SRP.conexion.refrescar();   // el indicador dice cuántos esperan, también sin señal
       if (op.manual) SRP.util.anunciar('Sin conexión. ' + this.textoCuenta(n) + ' en el teléfono y ' + (n === 1 ? 'se enviará solo' : 'se enviarán solos') + ' cuando haya señal.', 'alerta');
       return { enviados: 0, pendientes: n };
     }
-    this.enviando = (async () => {
+    const envio = (async () => {
       this.enCurso = n;
       await SRP.conexion.refrescar();
       await this.esperar(SRP.CONFIG.DEMORA_ENVIO_PRUEBA_MS);
@@ -130,7 +141,7 @@ SRP.envio = {
       return { enviados: n, pendientes: 0, hora: ahora };
     })();
     let res;
-    try { res = await this.enviando; } finally { this.enviando = null; this.enCurso = 0; }
+    try { res = await envio; } finally { this.enCurso = 0; }
     await this.alCambiar();
     // Si el envío fue automático, su aviso no tapa un «Deshacer» a la vista (D151)
     const fondo = { secundario: !op.manual };

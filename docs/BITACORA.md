@@ -2818,3 +2818,18 @@ más caso propio, em relativos, bloques idénticos sólo del mismo componente) y
 `pruebas/auditoria.py` la corre. `README.md`. Marca 0.9.15.
 
 **Verificación:** estilos calculados de todos los elementos comparados antes y después en 114 pantallas (164,226 elementos): sólo cambian los ajustes previstos, de 1 px o menos, y radios de píldora equivalentes; ningún cambio por orden de reglas. prueba.py 1168 comprobaciones, 0 fallas; auditoria.py 117, 0 hallazgos (incluye auditoria_css.py: norma de la hoja, 0 hallazgos); revisar.py sin problemas.
+
+## Bloque 149 — Sin conexión: versión completa, pendientes y árbol a medias (02-10-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.9.16.
+
+**Qué cambió (D213).** `sw.js`: si la red trae una versión distinta de la del worker, sirve la página
+guardada; guarda los tres iconos del manifiesto. `js/conexion.js`: `buscarVersionNueva()` (pregunta la
+versión publicada y registra su worker), `aplicarVersionNueva()` (recarga cuando no interrumpe).
+`js/envio.js`: `enviar()` marca el envío en curso antes de cualquier espera (`_enviar()` hace el trabajo)
+y refresca el indicador también sin señal. `js/formulario.js`: `guardarBorrador()`, `recuperarBorrador()`,
+`quitarBorrador()`; `limpiar(conservarBorrador)`. `js/jornada-activa.js`: recupera el borrador al preparar
+«Nuevo registro». `js/app.js`: `mostrarVista(nombre, desdeHistorial)` anota la sección en el historial y
+atiende «atrás». `datos/esquema.json`: clave `srp_borrador_arbol` y reglas S-15 a S-18; diccionario y
+`js/esquema.js` regenerados. `docs/FASE2-Y-TRASPASO.md`: filas 21 a 24. `pruebas/prueba.py`: ctx63. Marca 0.9.16.
+
+**Verificación:** prueba.py 1182 comprobaciones, 0 fallas (ctx63, 14 nuevas: versión nueva incompleta y completa, indicador sin señal, borrador, «atrás», folio único al volver la señal, iconos en caché); auditoria.py 117, 0 hallazgos; revisar.py sin problemas. La prueba del doble toque en «Guardar» da el segundo toque en el mismo instante que el primero, sin depender de la posición del botón.

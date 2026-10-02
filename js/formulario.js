@@ -98,6 +98,67 @@ SRP.formulario = {
     });
     this.el('btn-resumen-guardar').addEventListener('click', () => this.guardar());
     this.el('btn-cancelar-edicion').addEventListener('click', () => { this.limpiar(); SRP.app.mostrarVista(SRP.jornadas.volverAlDetalle ? 'jornadas' : 'registros'); });
+    // Lo que se escribe en el árbol a medias se guarda como borrador
+    ['campo-comentarios', 'campo-otra-especie', 'campo-fecha'].forEach(id => {
+      this.el(id).addEventListener('input', () => this.guardarBorrador());
+      this.el(id).addEventListener('change', () => this.guardarBorrador());
+    });
+  },
+
+  /* ---------- Borrador del árbol a medias ---------- */
+
+  /* EL ÁRBOL A MEDIAS NO SE PIERDE. Lo capturado y aún no guardado —punto, especie, comentarios,
+     fecha y fotografía— se copia en este teléfono cada vez que cambia. Si la página se recarga, se
+     cierra o el teléfono la descarga de la memoria al abrir la cámara, al volver a «Nuevo registro»
+     con la misma cuenta y la misma jornada el árbol reaparece como estaba. Se borra al guardar el
+     árbol o al descartarlo. No aplica a ediciones ni a sustituciones. */
+  CLAVE_BORRADOR: 'srp_borrador_arbol',
+
+  guardarBorrador() {
+    const u = SRP.sesion.usuario, j = SRP.activa && SRP.activa.jornada;
+    if (this.estado.pausaBorrador || this.estado.editando || this.estado.sustitucion || !u || !j) return;
+    try {
+      if (!this.aMedias()) { localStorage.removeItem(this.CLAVE_BORRADOR); return; }
+      const otra = this.estado.especieId === this.OTRA;
+      const b = { usuario: u.id, jornada: j.id, cuando: SRP.util.ahoraISO(),
+        lat: SRP.mapa.lat, lng: SRP.mapa.lng, origen: SRP.mapa.origen, precision: SRP.mapa.precision,
+        especie: this.estado.especieId, otra: otra ? this.el('campo-otra-especie').value : '',
+        comentarios: this.el('campo-comentarios').value, fecha: this.el('campo-fecha').value,
+        foto: this.estado.foto, fotoId: this.estado.fotoId, fotoNombre: this.estado.fotoNombre };
+      try { localStorage.setItem(this.CLAVE_BORRADOR, JSON.stringify(b)); }
+      catch (e) {
+        // Sin espacio para la fotografía: se guarda lo demás
+        localStorage.setItem(this.CLAVE_BORRADOR, JSON.stringify(Object.assign(b, { foto: null, fotoId: null, fotoNombre: '' })));
+      }
+    } catch (e) { /* almacenamiento bloqueado: se sigue sin borrador */ }
+  },
+
+  quitarBorrador() {
+    try { localStorage.removeItem(this.CLAVE_BORRADOR); } catch (e) { /* nada que borrar */ }
+  },
+
+  // Devuelve si se recuperó algo. Sólo con el formulario en blanco, la misma cuenta y la misma jornada
+  recuperarBorrador() {
+    const u = SRP.sesion.usuario, j = SRP.activa && SRP.activa.jornada;
+    if (this.estado.editando || this.estado.sustitucion || !u || !j || this.aMedias()) return false;
+    let b = null;
+    try { b = JSON.parse(localStorage.getItem(this.CLAVE_BORRADOR) || 'null'); } catch (e) { b = null; }
+    if (!b || b.usuario !== u.id || b.jornada !== j.id) return false;
+    this.estado.pausaBorrador = true;
+    try {
+      if (typeof b.lat === 'number' && typeof b.lng === 'number') SRP.mapa.colocar(b.lat, b.lng, 'Punto recuperado.', { origen: b.origen || 'manual', precision: b.precision, centrar: true });
+      const esOtra = b.especie === this.OTRA;
+      if (b.especie && (esOtra || SRP.ref.catalogoPorId[b.especie])) this.elegirEspecie(b.especie, esOtra ? (b.otra || ' ') : undefined);
+      if (esOtra) this.el('campo-otra-especie').value = b.otra || '';
+      this.el('campo-comentarios').value = b.comentarios || '';
+      const campo = this.el('campo-fecha');
+      if (b.fecha && !this.el('caja-fecha-arbol').hidden && (!campo.min || b.fecha >= campo.min) && b.fecha <= SRP.util.fechaHoy()) campo.value = b.fecha;
+      if (b.foto && SRP.util.fotoSegura(b.foto)) this.ponerFoto(b.foto, b.fotoId || SRP.util.generarId(), b.fotoNombre);
+      SRP.util.refrescarContadores(this.el('form-plantacion'));
+    } finally { this.estado.pausaBorrador = false; }
+    if (!this.aMedias()) { this.quitarBorrador(); return false; }
+    SRP.util.anunciar('Se recuperó el árbol que estaba a medias. Revíselo y guárdelo, o descártelo al cambiar de sección.', 'aviso');
+    return true;
   },
 
   // Se llama cada vez que se entra a la vista Registrar
@@ -151,6 +212,7 @@ SRP.formulario = {
     // La captura a mano refleja el punto vigente: quien la abra corrige sobre lo que ya hay
     this.el('coord-lat').value = lat.toFixed(6);
     this.el('coord-lng').value = SRP.util.coordenadas.mostrarLongitud(lng);   // el «−» ya está a la vista (D170)
+    this.guardarBorrador();
   },
 
   /* Los tres campos de sólo lectura del punto, en un solo lugar: sin territorio, los tres
@@ -263,6 +325,7 @@ SRP.formulario = {
       this.mostrarOtra(false);
     }
     this.cerrarCombo();
+    this.guardarBorrador();
   },
 
   mostrarOtra(ver, texto) {
@@ -304,6 +367,7 @@ SRP.formulario = {
     this.el('texto-foto').textContent = datos ? 'Cambiar fotografía' : 'Agregar fotografía';
     this.el('etq-foto').classList.toggle('con-foto', !!datos);
     if (SRP.espejo) SRP.espejo.refrescar();
+    this.guardarBorrador();
   },
 
   /* ---------- Validación y resumen ---------- */
@@ -776,7 +840,9 @@ SRP.formulario = {
      especie, ni las coordenadas escritas a mano, ni la derivación territorial. La fecha de plantación
      y el programa los vuelve a poner SRP.activa según la jornada. Lo único que sobrevive es el encuadre del mapa, que
      no es un dato: ayuda a situarse y no se guarda en ningún lado. */
-  limpiar() {
+  // `conservarBorrador`: al entrar o salir de la cuenta el borrador del árbol a medias se queda
+  limpiar(conservarBorrador) {
+    this.estado.pausaBorrador = true;
     this.estado.editando = null;
     this.estado.sustitucion = null;
     this.estado.idPrevisto = null;
@@ -798,5 +864,7 @@ SRP.formulario = {
     SRP.mapa.limpiar();
     this.mostrarPunto(null, null, null);
     SRP.mapa.estado(SRP.mapa.GUIA_SIN_PUNTO);
+    this.estado.pausaBorrador = false;
+    if (!conservarBorrador) this.quitarBorrador();
   }
 };

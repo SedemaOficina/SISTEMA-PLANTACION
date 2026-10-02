@@ -40,8 +40,48 @@ SRP.conexion = {
   registrarWorker() {
     if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
     this.worker = 'registrando';
+    const habia = !!navigator.serviceWorker.controller;
     navigator.serviceWorker.register('sw.js?v=' + encodeURIComponent(SRP.CONFIG.VERSION))
-      .then(() => { this.worker = 'registrado'; }, () => { this.worker = 'error'; });
+      .then(() => { this.worker = 'registrado'; this.buscarVersionNueva(); }, () => { this.worker = 'error'; });
+    // Otro worker tomó el control: la versión nueva ya está completa en el teléfono
+    navigator.serviceWorker.addEventListener('controllerchange', () => { if (habia && this.versionNueva) this.aplicarVersionNueva(); });
+    // Al volver a la app o recuperar la señal se vuelve a mirar si hay versión nueva
+    window.addEventListener('online', () => this.buscarVersionNueva());
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) this.buscarVersionNueva(); });
+  },
+
+  /* VERSIÓN NUEVA SIN QUEDARSE A MEDIAS. Mientras el teléfono trabaja con su versión guardada, se
+     pregunta a la red qué versión está publicada. Si es otra, se pide instalar su worker: éste baja
+     todos los archivos y sólo entonces toma el control. Si la descarga se corta, no cambia nada y se
+     reintenta la próxima vez. */
+  versionNueva: null,
+  async buscarVersionNueva() {
+    if (this._buscando || this.versionNueva || navigator.onLine === false) return;
+    this._buscando = true;
+    try {
+      const r = await fetch('index.html?comprobar=' + Date.now(), { cache: 'no-store' });
+      if (!r.ok) return;
+      const m = (await r.text()).match(/js\/config\.js\?v=([^"&]+)/);
+      const publicada = m ? decodeURIComponent(m[1]) : null;
+      if (!publicada || publicada === SRP.CONFIG.VERSION) return;
+      this.versionNueva = publicada;
+      try { await navigator.serviceWorker.register('sw.js?v=' + encodeURIComponent(publicada)); }
+      catch (e) { this.versionNueva = null; }   // no se pudo instalar: se reintenta después
+    } catch (e) { /* sin señal: se reintenta después */ }
+    finally { this._buscando = false; }
+  },
+
+  /* La versión nueva se aplica recargando, cuando no interrumpe nada. */
+  aplicarVersionNueva() {
+    if (this._aplicando) return;
+    this._aplicando = true;
+    const recargar = () => {
+      const f = SRP.formulario;
+      // Con una ventana abierta, un árbol a medias o una edición en curso se espera a que termine
+      if (document.querySelector('dialog[open]') || (f && (f.aMedias() || f.estado.editando || f.estado.sustitucion))) { setTimeout(recargar, 1500); return; }
+      location.reload();
+    };
+    recargar();
   },
 
   esIphoneEnNavegador() {

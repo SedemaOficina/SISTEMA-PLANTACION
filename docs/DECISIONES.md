@@ -2266,3 +2266,28 @@
     sólo cambian seis ajustes de 1 px o menos al entrar a la escala (un relleno de 7 a 8 px, una
     separación de 5 a 4 px, una letra de 12.8 a 13 px, una sangría de lista) y radios que se ven igual.
   · **No se tocó:** los seis selectores de cuatro niveles (tablas rayadas y contraste alto: son así por estructura).
+
+- **D213. Sin conexión: versión nueva completa, pendientes a la vista y árbol a medias (bloque 149).** 02-10-2026.
+  Resultado de la auditoría integral del 02-10-2026 (hallazgos A-07, M-19, M-23 y B-39). Se corrige en el
+  teléfono lo que seguirá igual cuando exista el servidor; el alcance por cuenta, los permisos, el folio
+  y la bitácora se dejan escritos como reglas del servidor (S-15 a S-18), porque ahí se impondrán.
+  · **Versión nueva sin quedarse a medias:** el teléfono sigue con su versión guardada mientras la nueva
+    no esté completa. La página guardada pregunta a la red qué versión está publicada y, si es otra, pide
+    instalar su worker; éste baja todos los archivos y sólo entonces toma el control. Si la descarga se
+    corta, no cambia nada y se reintenta al volver a la app o al recuperar la señal. La versión nueva se
+    aplica sola con una recarga cuando no interrumpe: sin ventana abierta, sin árbol a medias y sin edición.
+  · **Pendientes a la vista sin señal:** al guardar sin señal el indicador dice cuántos registros esperan
+    envío; antes seguía en «Al día».
+  · **Un envío a la vez:** dos avisos seguidos de «volvió la señal» ya no envían dos veces ni gastan dos
+    folios por árbol (la marca del envío en curso se ponía después de una espera).
+  · **El árbol a medias no se pierde:** punto, especie, comentarios, fecha y fotografía se copian en el
+    teléfono cada vez que cambian (`srp_borrador_arbol`). Tras recargar, cerrar o volver de la cámara, el
+    árbol reaparece al entrar a «Nuevo registro» con la misma cuenta y la misma jornada, y se avisa. Se
+    borra al guardar o al descartar. No aplica a ediciones ni a sustituciones.
+  · **Botón «atrás» del navegador:** cada sección queda en el historial. «Atrás» cierra la ventana abierta
+    o vuelve a la sección anterior; con un árbol a medias no sale de «Nuevo registro» y lo dice.
+  · **Iconos de instalación:** los tres iconos del manifiesto se guardan para abrir sin señal.
+  · **No se hace en el teléfono:** jornada íntegra tras un relevo, permisos del relevo devuelto, cambio de
+    institución de una cuenta, folio inmutable ante escrituras con copia anterior, consulta de eliminados
+    y registro de cambios de árboles y jornadas. Quedan como reglas S-15 a S-18 del esquema y filas 21 a 24
+    de `FASE2-Y-TRASPASO.md`. Las herramientas de prueba no se restringen: desaparecen con la versión real.

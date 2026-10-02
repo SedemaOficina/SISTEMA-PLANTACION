@@ -1,6 +1,6 @@
 {
   "_": "ESQUEMA DE DATOS DEL SRP: fuente única (D86). De aquí se genera DICCIONARIO-DATOS.md con herramientas/generar_diccionario.py, y pruebas/auditoria.py lo compara contra lo que el sistema guarda y contra los dominios del código. Si un campo cambia en el código y no aquí, la auditoría falla.",
-  "version_esquema": "2026-10-01",
+  "version_esquema": "2026-10-02",
   "etapa": "Etapa 1 (Fase 1: dispositivo, sin servidor)",
   "almacenamiento": {
     "motor": "IndexedDB del navegador: base `srp_db` en la versión de prueba y `srp_sia` en la real (SRP.CONFIG.DB_NOMBRE, según ES_FICTICIO), versión 7 (SRP.CONFIG.DB_VERSION). Nunca comparten datos",
@@ -50,6 +50,11 @@
       {
         "donde": "Caché del service worker (sw.js)",
         "que": "copia de la aplicación para abrir sin señal; no guarda datos",
+        "fase2": "Se conserva"
+      },
+      {
+        "donde": "localStorage `srp_borrador_arbol`",
+        "que": "borrador del árbol a medio capturar (punto, especie, comentarios, fecha y fotografía), con la cuenta y la jornada a que pertenece; se borra al guardar o descartar el árbol",
         "fase2": "Se conserva"
       }
     ]
@@ -1982,6 +1987,30 @@
       "que": "Pedido especial",
       "detalle": "El servidor guarda el origen de la jornada (PROGRAMADA o PEDIDO) y valida lo mismo que el teléfono: un pedido lleva solicitante, del catálogo de instituciones (solicitante_id) o escrito (solicitante_otro), y una programada lleva los tres datos del pedido vacíos. El solicitante no da acceso a la jornada: la ve quien la ejecuta y quien la supervisa",
       "referencia": "D210"
+    },
+    {
+      "id": "S-15",
+      "que": "Jornada íntegra y alcance por institución",
+      "detalle": "El servidor entrega a quien tiene una jornada a su cargo (titular, cabo en relevo y coordinación) todos sus árboles activos, los haya capturado quien los haya capturado: el reporte, la conciliación y el avance de la jornada se calculan con todos. Los permisos de edición y eliminación siguen siendo por árbol. El alcance se decide por la institución de la jornada (jornadas.organizacion_id), no por la institución o la coordinación actual de quien capturó: al cambiar una cuenta de institución o de coordinación, lo que plantó para la anterior no pasa a la nueva. Un cabo que recibió un relevo y ya devolvió la jornada conserva la lectura, no la edición: editar, cerrar, reabrir y generar el reporte corresponden al titular, al cabo con el relevo vigente y a la coordinación",
+      "referencia": "Auditoría integral del 02-10-2026; FASE2-Y-TRASPASO"
+    },
+    {
+      "id": "S-16",
+      "que": "Escrituras parciales y folio inmutable",
+      "detalle": "Cada operación modifica sólo los campos que le corresponden sobre el registro vigente en el servidor, nunca sobrescribe el registro completo con la copia que tenía el teléfono: cerrar una jornada no borra las marcas de revisión hechas entre tanto y editar o eliminar un árbol no toca su folio. El folio se asigna una sola vez; ninguna operación posterior lo cambia ni lo anula. El servidor rechaza una escritura hecha sobre una versión anterior del registro y devuelve la vigente",
+      "referencia": "Auditoría integral del 02-10-2026; FASE2-Y-TRASPASO"
+    },
+    {
+      "id": "S-17",
+      "que": "Árboles eliminados y registro de cambios",
+      "detalle": "El servidor ofrece la consulta de árboles y jornadas eliminados dentro del alcance de la cuenta, con su historial, y permite restaurarlos a quien puede eliminarlos. El registro de cambios incluye árboles y jornadas además de cuentas, catálogos y cargas, y guarda de cada cambio el valor anterior y el nuevo, la cuenta, la fecha y hora y el identificador del dispositivo. La eliminación pide un motivo",
+      "referencia": "Auditoría integral del 02-10-2026; FASE2-Y-TRASPASO"
+    },
+    {
+      "id": "S-18",
+      "que": "Cola de envío por operación",
+      "detalle": "La cola del teléfono envía cada operación, no sólo los árboles activos: altas, ediciones, eliminaciones, restauraciones, sustituciones, jornadas, cierres, reaperturas y relevos. El indicador de pendientes cuenta todas. La cola simulada de la Etapa 1 (js/envio.js) sólo considera árboles activos y sirve de referencia para los estados y avisos, no para el alcance",
+      "referencia": "Auditoría integral del 02-10-2026; FASE2-Y-TRASPASO"
     }
   ],
   "capas": [

@@ -1439,9 +1439,9 @@ with sync_playwright() as p:
     n0 = pg.evaluate("async () => (await SRP.almacen.todos('plantaciones')).length")
     ok(pg.get_attribute('#btn-revisar','disabled') is None,'el botón Guardar empieza habilitado')
     # Se lee en el mismo instante del envío: el guardado local es tan rápido que un segundo paso ya lo ve de vuelta
-    desh=pg.evaluate("() => { document.getElementById('form-plantacion').requestSubmit(); const b = document.getElementById('btn-revisar'); return [b.disabled, b.getAttribute('aria-busy')]; }")
+    # El segundo toque va en el mismo instante, mientras el primero sigue en curso: después el formulario ya se movió de lugar
+    desh=pg.evaluate("() => { const f = document.getElementById('form-plantacion'); f.requestSubmit(); const b = document.getElementById('btn-revisar'); const e = [b.disabled, b.getAttribute('aria-busy')]; b.click(); f.requestSubmit(); return e; }")
     ok(desh==[True,'true'],'al enviar, el botón Guardar queda deshabilitado de inmediato y con aria-busy: %s' % desh)
-    pg.click('#form-plantacion button[type=submit]', force=True)   # segundo toque «a la fuerza» mientras el primero sigue en curso
     pg.wait_for_timeout(900)
     if pg.is_visible('#dlg-resumen'): pg.click('#btn-resumen-guardar'); pg.wait_for_timeout(600)
     n1 = pg.evaluate("async () => (await SRP.almacen.todos('plantaciones')).length")
@@ -5152,6 +5152,89 @@ with sync_playwright() as p:
     ok(y62==1 and z62==['PROGRAMADA', None, '', ''],'la institución que solicita una jornada cuenta como usada (no se elimina del catálogo) y al volver a «Programada» los datos del pedido se vacían: %s' % z62)
     ok(not err62,'sin errores en consola: %s' % err62[:2])
     ctx62.close()
+
+    # ---------- ctx63: sin conexión: versión nueva sin quedarse a medias, indicador de pendientes, borrador del árbol y botón «atrás» ----------
+    raiz63 = _tf.mkdtemp()
+    for _n in ['index.html', 'sw.js', 'manifest.webmanifest']: _sh.copy(os.path.join(_app, _n), raiz63)
+    for _d in ['js', 'css', 'vendor', 'assets']: os.symlink(os.path.join(_app, _d), os.path.join(raiz63, _d))
+    estado63 = {'cortar': False}
+    class _H63(_hs.SimpleHTTPRequestHandler):
+        def do_GET(self):
+            # La versión nueva «no termina de bajar»: su capa de colonias responde con error
+            if estado63['cortar'] and 'capa-colonias.js' in self.path and 'v=9.9.9' in self.path: self.send_error(503); return
+            super().do_GET()
+        def log_message(self, *a): pass
+    srv63 = _hs.ThreadingHTTPServer(('127.0.0.1', 8094), _ft.partial(_H63, directory=raiz63))
+    _th.Thread(target=srv63.serve_forever, daemon=True).start()
+    B63 = 'http://127.0.0.1:8094/'
+    ctx63 = b.new_context(viewport={'width':390,'height':844}, geolocation={'latitude':19.432,'longitude':-99.133,'accuracy':5}, permissions=['geolocation'])
+    pg63 = ctx63.new_page(); err63 = []
+    pg63.on('pageerror', lambda e: err63.append(str(e))); pg63.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and '503' not in m.text and err63.append(m.text))
+    pg63.goto(B63); pg63.wait_for_timeout(1500)
+    ok(esperar(pg63, "!!(navigator.serviceWorker && navigator.serviceWorker.controller)", 20000), 'la copia queda con su service worker')
+    c63 = pg63.evaluate("(async () => { const ks = await caches.keys(); const c = await (await caches.open(ks[0])).keys(); return c.map(x => x.url); })()")
+    ok(all(any(i in u for u in c63) for i in ['icono-192.png', 'icono-512.png', 'icono-512-maskable.png']), 'los iconos de instalación quedan guardados para abrir sin señal')
+    pg63.fill('#acceso-correo', 'cabo@ejemplo.local'); pg63.fill('#acceso-clave', 'x'); pg63.click('#form-acceso button[type=submit]'); pg63.wait_for_timeout(900)
+    iniciar_jornada(pg63, 'Jornada sin señal 63')
+    def arbol63(lat):
+        ctx63.set_geolocation({'latitude': lat, 'longitude': -99.133, 'accuracy': 5})
+        pg63.click('#btn-ubicacion'); pg63.wait_for_timeout(900)
+        pg63.fill('#campo-especie', 'fres'); pg63.wait_for_timeout(200); pg63.dispatch_event('.combo-opcion[data-id="ESP-0029"]', 'mousedown'); pg63.wait_for_timeout(150)
+        pg63.click('#form-plantacion button[type=submit]'); pg63.wait_for_timeout(1200)
+        if pg63.is_visible('#dlg-resumen'): pg63.click('#btn-resumen-guardar'); pg63.wait_for_timeout(700)
+    # El indicador cuenta lo pendiente también sin señal
+    ctx63.set_offline(True); pg63.wait_for_timeout(400)
+    arbol63(19.4320); arbol63(19.4323)
+    ind63 = pg63.inner_text('#conexion').replace('\n', ' ')
+    ok('Sin conexión' in ind63 and '2' in ind63 and 'Al día' not in ind63 and '2 registros por enviar' in pg63.get_attribute('#conexion', 'aria-label'),
+       'sin señal, el indicador dice cuántos registros esperan envío: «%s»' % ind63)
+    # El árbol a medias vuelve tras recargar
+    ctx63.set_geolocation({'latitude': 19.4326, 'longitude': -99.1334, 'accuracy': 5})
+    pg63.click('#btn-ubicacion'); pg63.wait_for_timeout(900)
+    pg63.fill('#campo-especie', 'fres'); pg63.wait_for_timeout(200); pg63.dispatch_event('.combo-opcion[data-id="ESP-0029"]', 'mousedown'); pg63.wait_for_timeout(150)
+    pg63.fill('#campo-comentarios', 'árbol a medias'); pg63.set_input_files('#foto-archivo', '/tmp/arbol.jpg'); pg63.wait_for_timeout(900)
+    pg63.reload(); pg63.wait_for_timeout(2500)
+    m63 = pg63.evaluate("[SRP.mapa.lat, SRP.formulario.estado.especieId, document.getElementById('campo-comentarios').value, !!SRP.formulario.estado.foto, document.getElementById('aviso').innerText.slice(0, 40)]")
+    ok(m63[:4] == [19.4326, 'ESP-0029', 'árbol a medias', True] and 'recuperó' in m63[4], 'tras recargar sin señal, el árbol a medias vuelve con punto, especie, comentario y fotografía, y se avisa: %s' % m63)
+    n63 = pg63.evaluate("(async () => (await SRP.almacen.todos('plantaciones')).length)()")
+    pg63.click('#form-plantacion button[type=submit]'); pg63.wait_for_timeout(1200)
+    if pg63.is_visible('#dlg-resumen'): pg63.click('#btn-resumen-guardar'); pg63.wait_for_timeout(700)
+    ok(pg63.evaluate("(async () => (await SRP.almacen.todos('plantaciones')).length)()") == n63 + 1 and pg63.evaluate("localStorage.getItem(SRP.formulario.CLAVE_BORRADOR)") is None, 'al guardarlo se borra el borrador')
+    pg63.click('#btn-ubicacion'); pg63.wait_for_timeout(900); pg63.fill('#campo-comentarios', 'se descarta')
+    pg63.click('.pestana[data-vista=jornadas]'); pg63.wait_for_timeout(300); pg63.click('#btn-confirmar-si'); pg63.wait_for_timeout(400)
+    ok(pg63.evaluate("localStorage.getItem(SRP.formulario.CLAVE_BORRADOR)") is None, 'descartar el árbol al cambiar de sección borra el borrador')
+    # El botón «atrás» del navegador
+    pg63.evaluate("SRP.app.mostrarVista('registros')"); pg63.wait_for_timeout(400)
+    pg63.go_back(); pg63.wait_for_timeout(500); v63a = pg63.evaluate("SRP.app.vista")
+    pg63.go_forward(); pg63.wait_for_timeout(500); v63b = pg63.evaluate("SRP.app.vista")
+    ok([v63a, v63b] == ['jornadas', 'registros'] and pg63.url.startswith(B63), '«atrás» y «adelante» del navegador cambian de sección sin salir de la aplicación: %s' % [v63a, v63b])
+    pg63.evaluate("SRP.app.mostrarVista('registrar')"); pg63.wait_for_timeout(500); pg63.click('#btn-ubicacion'); pg63.wait_for_timeout(900)
+    pg63.go_back(); pg63.wait_for_timeout(500)
+    ok(pg63.evaluate("SRP.app.vista") == 'registrar' and pg63.evaluate("SRP.mapa.lat") is not None and 'Guarde el árbol' in pg63.inner_text('#aviso'), 'con un árbol a medias, «atrás» no saca de «Nuevo registro» y lo dice')
+    pg63.evaluate("SRP.formulario.limpiar()")
+    pg63.click('#conexion'); pg63.wait_for_timeout(300); pg63.go_back(); pg63.wait_for_timeout(400)
+    ok(pg63.evaluate("!document.querySelector('dialog[open]')") and pg63.evaluate("SRP.app.vista") == 'registrar', 'con una ventana abierta, «atrás» la cierra')
+    # Dos avisos seguidos de que volvió la señal no envían dos veces
+    ctx63.set_offline(False); pg63.evaluate("window.dispatchEvent(new Event('online'))"); pg63.wait_for_timeout(3500)
+    f63 = pg63.evaluate("(async () => (await SRP.almacen.todos('plantaciones')).map(r => r.folio))()")
+    ok(all(f63) and sorted(int(x[-5:]) for x in f63) == list(range(1, len(f63) + 1)), 'al volver la señal cada árbol recibe un solo folio, consecutivo: %s' % sorted(f63))
+    # Una versión nueva que no termina de bajar no deja el teléfono sin aplicación
+    v63 = pg63.evaluate("SRP.CONFIG.VERSION")
+    _i63 = os.path.join(raiz63, 'index.html'); _t63 = open(_i63, encoding='utf-8').read()
+    open(_i63, 'w', encoding='utf-8').write(_t63.replace('?v=' + v63, '?v=9.9.9'))
+    estado63['cortar'] = True
+    pg63.reload(); pg63.wait_for_timeout(5000)
+    a63 = pg63.evaluate("[typeof SRP !== 'undefined' && SRP.CONFIG.VERSION, typeof SRP !== 'undefined' && !!SRP.almacen.db]")
+    ok(a63 == [v63, True], 'si la versión nueva no termina de bajar, se sigue abriendo la anterior completa: %s' % a63)
+    pg63.reload(); pg63.wait_for_timeout(4000)
+    ok(pg63.evaluate("SRP.CONFIG.VERSION") == v63 and pg63.is_visible('#vista-registrar'), 'y así en cada recarga')
+    estado63['cortar'] = False
+    pg63.reload(); pg63.wait_for_timeout(9000)
+    d63 = pg63.evaluate("(async () => [SRP.CONFIG.VERSION, await caches.keys(), (await SRP.almacen.todos('plantaciones')).length, [...document.querySelectorAll('script[src]')].filter(e => !e.src.includes('v=9.9.9')).length])()")
+    ok(d63 == ['9.9.9', ['srp-9.9.9'], len(f63), 0], 'cuando la versión nueva queda completa se aplica sola, sin mezclar archivos y con los registros intactos: %s' % d63)
+    ok(not err63, 'sin errores en consola: %s' % err63[:2])
+    ctx63.close(); srv63.shutdown(); _sh.rmtree(raiz63, ignore_errors=True)
+
 
 
     b.close()

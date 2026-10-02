@@ -61,6 +61,9 @@ hay que abrir el sitio publicado: https://sedemaoficina.github.io/SISTEMA-PLANTA
 
 **Publicar un cambio.** Abrir GitHub Desktop, revisar que el commit esté hecho y pulsar
 «Push origin». El sitio se actualiza solo en uno o dos minutos.
+Un teléfono que ya tiene la aplicación sigue con su versión guardada hasta que la nueva termina de
+bajar completa; entonces cambia sola al abrirla con señal. Si la descarga se corta, no cambia nada y
+se reintenta la próxima vez. Un árbol a medio capturar se guarda como borrador y vuelve al abrir.
 
 ## Cuentas de arranque
 

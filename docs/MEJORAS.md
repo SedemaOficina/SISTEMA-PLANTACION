@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.9.2 (Bloque 135)»**.
+Al pie de cualquier pantalla: **«Versión 0.9.16 (Bloque 149)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -343,6 +343,10 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M342 | Liber | Origen de la jornada: programada o pedido especial de otra instancia (SOBSE, alcaldía, otra), con quién lo solicita y descripción; marca en tarjetas, filtro «Origen», reporte, apartado en Supervisión e informe, y columnas en el CSV | Alta | 0.9.13 (B146) | Nuevo registro, Jornadas, Reportes, Supervisión | — |
 | M344 | Liber | El panel de la capa de prioridades cabe entero en el mapa del teléfono: al lado del botón, niveles en dos columnas y opacidad en un renglón | Alta | 0.9.14 (B147) | Mapas de Nuevo registro, ficha de la jornada y Supervisión | — |
 | M345 | Auditoría de CSS | Limpieza de la hoja de estilos: medidas con token (espacios, letra, radios, capas y duraciones), tres clases sin uso fuera, lo propio de cada selector junto a su grupo, bloques idénticos del mismo componente unidos; la auditoría de CSS corre con la general | Media | 0.9.15 (B148) | Hoja de estilos; sin cambio perceptible | — |
+| M346 | Auditoría integral | Una versión nueva que no termina de bajar ya no deja el teléfono sin aplicación: se sigue con la guardada hasta que la nueva esté completa, y entonces se aplica sola | Alta | 0.9.16 (B149) | Con la app abierta, publicar una versión y recargar con mala señal: abre la anterior; con buena señal, cambia sola en unos segundos | — |
+| M347 | Auditoría integral | Sin señal, el indicador de conexión dice cuántos registros esperan envío | Alta | 0.9.16 (B149) | Menú de la cuenta › «Simular sin señal»; guardar dos árboles: el indicador dice «Sin conexión · 2» | Indicador con pendientes |
+| M348 | Auditoría integral | El árbol a medias vuelve después de recargar, cerrar o regresar de la cámara | Alta | 0.9.16 (B149) | Nuevo registro: ubicar, elegir especie y escribir un comentario; recargar la página: el árbol reaparece con el aviso «Se recuperó el árbol que estaba a medias» | Formulario recuperado con su aviso |
+| M349 | Auditoría integral | El botón «atrás» del navegador vuelve a la sección anterior o cierra la ventana abierta; con un árbol a medias no sale de «Nuevo registro» | Media | 0.9.16 (B149) | Ir de Jornadas a Registros y pulsar «atrás»: vuelve a Jornadas. Abrir la guía de conexión y pulsar «atrás»: se cierra | — |
 
 ## 2. Por hacer
 
@@ -368,4 +372,4 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 328 hechas · 5 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 332 hechas · 5 por hacer · 2 revisadas · 2 descartadas.

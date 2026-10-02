@@ -99,6 +99,24 @@ SRP.app = {
       this.mostrarVista(b.dataset.vista);
     });
 
+    /* EL BOTÓN «ATRÁS» DEL NAVEGADOR. Con una ventana abierta, la cierra. Si no, vuelve a la sección
+       anterior. Con un árbol a medias no sale de «Nuevo registro»: pide guardarlo o descartarlo. */
+    window.addEventListener('popstate', (e) => {
+      if (!SRP.sesion.usuario) return;
+      const quedarse = () => { try { history.pushState({ vista: this.vista }, ''); } catch (err) { /* sin historial */ } };
+      const abierta = document.querySelector('dialog[open]');
+      if (abierta) { abierta.close(); quedarse(); return; }
+      const destino = e.state && e.state.vista;
+      if (!destino || destino === this.vista) return;
+      const f = SRP.formulario;
+      if (this.vista === 'registrar' && (f.aMedias() || f.estado.editando || f.estado.sustitucion)) {
+        quedarse();
+        SRP.util.anunciar(f.aMedias() ? 'Guarde el árbol o descártelo antes de salir de «Nuevo registro».' : 'Guarde los cambios o cancele antes de salir.', 'aviso');
+        return;
+      }
+      this.mostrarVista(destino, true);
+    });
+
     const u = await SRP.sesion.leer();
     if (u) this.entrar(); else this.mostrarAcceso();
   },
@@ -161,7 +179,7 @@ SRP.app = {
     // Cerrar sesión y cambiar de usuario hacen lo mismo por dentro; se separan porque una es
     // del sistema y la otra sólo existe mientras haya datos de prueba.
     const salir = () => {
-      SRP.formulario.limpiar();
+      SRP.formulario.limpiar(true);
       SRP.sesion.cerrar();
       this.mostrarAcceso();
     };
@@ -299,7 +317,7 @@ SRP.app = {
     this.el('pestana-supervision-texto').textContent = cabo ? 'Mi avance' : 'Supervisión';
     if (cabo) nav.appendChild(sup); else nav.insertBefore(sup, nav.firstElementChild);
     this.el('btn-ir-configuracion').hidden = !(p.catalogos && p.usuarios);
-    SRP.formulario.limpiar();
+    SRP.formulario.limpiar(true);
     this.campoClave(false);
     // La jornada abierta de quien entra queda activa; se avisa si es de otro día (D119)
     SRP.activa.alEntrar().then(() => { if (this.vista === 'registrar') SRP.activa.preparar(); }).then(() => SRP.activa.avisarRelevos());
@@ -335,7 +353,9 @@ SRP.app = {
   },
 
   /* ---------- Vistas ---------- */
-  mostrarVista(nombre) {
+  /* `desdeHistorial`: la vista se abre porque se pulsó «atrás» o «adelante» en el navegador; en ese
+     caso no se anota otra vez en el historial. */
+  mostrarVista(nombre, desdeHistorial) {
     // Doble candado: una vista sin permiso no se abre aunque se llame directamente
     const u = SRP.sesion.usuario;
     if (u) {
@@ -345,6 +365,10 @@ SRP.app = {
           (nombre === 'usuarios' && !p.usuarios) || (['configuracion', 'parametros', 'cambios', 'acerca', 'carga'].includes(nombre) && !admin)) nombre = 'registros';
     }
     this.vista = nombre;
+    // Cada sección queda en el historial del navegador: «atrás» vuelve a la sección anterior
+    if (u && !desdeHistorial) {
+      try { if (!history.state || history.state.vista !== nombre) history.pushState({ vista: nombre }, ''); } catch (e) { /* sin historial */ }
+    }
     document.querySelectorAll('.vista').forEach(v => { v.hidden = v.id !== 'vista-' + nombre; });
     // Al editar se está dentro de Registros, de donde se llegó: «Nuevo registro» no se marca (D100)
     // Fotografías vive dentro de Supervisión: su pestaña es la que queda marcada (D158)

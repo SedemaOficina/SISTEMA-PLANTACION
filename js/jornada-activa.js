@@ -224,6 +224,8 @@ SRP.activa = {
     // El mapa estaba escondido tras «Iniciar jornada»: vuelve a medir su caja, o se queda sin tamaño
     SRP.mapa.refrescar();
     await SRP.formulario.pintarEspeciesRecientes();
+    // El árbol que quedó a medias antes de recargar o cerrar vuelve al formulario
+    if (!sust) SRP.formulario.recuperarBorrador();
   },
 
   pintarFranja(j, registros, editando) {
