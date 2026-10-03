@@ -65,7 +65,7 @@ SRP.reportes = {
       // con aria-busy y un aviso flotante «Generando…» para que no parezca que no pasó nada (D136).
       const zona = this.el('principal');
       zona.setAttribute('aria-busy', 'true');
-      SRP.util.anunciar('Generando reporte…', 'aviso');
+      SRP.util.anunciar(v.soloLectura ? 'Preparando el reporte…' : 'Generando reporte…', 'aviso');
       try { await this.generar(v.registros, v.cierre, v.fecha, v.jornada); }
       catch (err) { SRP.util.avisarError(err, 'generar el reporte'); }   // antes se quedaba «Generando reporte…» (D149)
       finally { zona.removeAttribute('aria-busy'); }
@@ -261,8 +261,19 @@ SRP.reportes = {
      reglas (un apartado vacío no aparece), en pantalla y antes de generarlo: así se corrige un
      dato de cierre sin haber compartido todavía un documento equivocado. No es una imagen del
      PDF —en iPhone un PDF incrustado sólo enseña la primera página—, sino el mismo contenido. */
-  mostrarPrevia(registros, cierre, fecha, caboId, jornada) {
-    this.vistaPrevia = { registros, cierre, fecha, cabo_id: caboId || '', jornada };
+  /* DESCARGA SIN ESCRIBIR. Quien no puede modificar la jornada (el perfil Directivo) no llena el cierre
+     ni genera el reporte: ve y descarga el que ya se generó, tal como quedó, y nada cambia en la jornada. */
+  async descargar(registros, fecha, caboId, jornada) {
+    if (!registros.length || !jornada) return;
+    const cierre = await this.cierreDeJornada(jornada);
+    if (!cierre || !cierre.reporte_en) { SRP.util.anunciar('Esta jornada todavía no tiene reporte generado.', 'aviso'); return; }
+    this.mostrarPrevia(registros, cierre, fecha, caboId, jornada, true);
+  },
+
+  mostrarPrevia(registros, cierre, fecha, caboId, jornada, soloLectura) {
+    this.vistaPrevia = { registros, cierre, fecha, cabo_id: caboId || '', jornada, soloLectura: !!soloLectura };
+    this.el('btn-previa-corregir').hidden = !!soloLectura;
+    this.el('btn-previa-generar').innerHTML = SRP.ICONOS.svg(soloLectura ? 'descargar' : 'palomita') + '<span>' + (soloLectura ? 'Descargar PDF' : 'Generar PDF') + '</span>';
     this.el('previa-hoja').innerHTML = this.htmlPrevia(registros, cierre, fecha, jornada);
     this.el('dlg-previa').showModal();
     // El croquis (D115) se arma aparte para no detener la vista previa mientras llegan los mosaicos
@@ -820,6 +831,8 @@ SRP.reportes = {
   async entregar(doc, nombre, cierre, jornada) {
     const entregado = await this.entregarArchivo(doc.output('blob'), nombre, 'Reporte diario de plantación');
     if (entregado === 'cancelado') return;
+    // Una descarga de sólo lectura entrega el documento y no toca la jornada
+    if (this.vistaPrevia && this.vistaPrevia.soloLectura) { SRP.util.anunciar(entregado === 'descarga' ? 'Reporte descargado: ' + nombre + '.' : 'Reporte compartido.', 'exito'); return; }
     await this.marcarGenerado(cierre, jornada);
     /* Cierre del ciclo (D138): el reporte es el último paso de la jornada, así que el aviso dice si
        quedó completa o, si todavía hay puntos por revisar, qué falta. */

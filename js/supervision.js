@@ -84,7 +84,7 @@ SRP.supervision = {
     this.el('titulo-supervision').textContent = this.titulo();
     this.el('sup-nota').textContent = cabo
       ? 'Lo que usted ha plantado, por semana, mes o año. Cuentan sólo las jornadas cerradas; las abiertas se dicen aparte.'
-      : 'Lo que se ha plantado en su ' + (SRP.permisos.de(u).alcance === 'todos' ? 'ciudad' : 'cuadrilla') + ', por semana, mes o año. Cuentan sólo las jornadas cerradas; las abiertas se dicen aparte.';
+      : 'Lo que se ha plantado en su ' + ({ todos: 'ciudad', institucion: 'institución' }[SRP.permisos.de(u).alcance] || 'cuadrilla') + ', por semana, mes o año. Cuentan sólo las jornadas cerradas; las abiertas se dicen aparte.';
     this.el('btn-sup-fotos').hidden = !SRP.permisos.de(u).galeria;
     this.el('caja-sup-cabo').hidden = cabo;
     this.el('caja-sup-organizacion').hidden = !this.veOrganizaciones();

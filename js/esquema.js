@@ -31,6 +31,7 @@ SRP.ESQUEMA = {
   "perfil": [
    "CABO",
    "COORDINADOR",
+   "DIRECTIVO",
    "ADMIN"
   ],
   "tipo_catalogo": [

@@ -90,12 +90,13 @@ SRP.indicadores = {
     return { jornadas, eliminados, ediciones, usuario: u, cabos: this.cabosAsignados(u), soloDe: SRP.permisos.de(u).alcance === 'propios' ? u.id : null };
   },
 
-  // Los cabos de quien entra: el propio cabo; los de la cuadrilla; todos los activos para administración
+  // Los cabos de quien entra: el propio cabo; los de la cuadrilla; los de su institución; todos los activos para quien ve la Ciudad
   cabosAsignados(u) {
     const alcance = SRP.permisos.de(u).alcance;
     if (alcance === 'propios') return [u.id];
     const cabos = SRP.ref.usuarios.filter(x => x.activo && x.perfil === 'CABO');
-    return (alcance === 'equipo' ? cabos.filter(x => (x.coordinadores_ids || []).includes(u.id)) : cabos).map(x => x.id);
+    return (alcance === 'equipo' ? cabos.filter(x => (x.coordinadores_ids || []).includes(u.id))
+      : alcance === 'institucion' ? cabos.filter(x => x.organizacion_id === u.organizacion_id) : cabos).map(x => x.id);
   },
 
   /* ---------- Cálculo ---------- */

@@ -2467,3 +2467,19 @@
     pasa del primer guardado a la entrada.
   · **Por qué:** la pantalla se recorre por cada árbol; lo que no cambia entre un árbol y otro no debe
     ocupar la primera pantalla. Modifica D119, D138 y D149 en lo que toca a la presentación.
+
+- **D224. Cuarto perfil: Directivo, que ve y no modifica (bloque 158).** 03-10-2026. Decisión de Liber.
+  · **Los cuatro perfiles:** el cabo registra y lleva su cuadrilla en campo; el coordinador tiene varios
+    cabos, registra y supervisa; el directivo —subdirecciones, direcciones de área y direcciones
+    generales, un solo perfil; el cargo los distingue— ve y no registra ni crea jornadas; la
+    Administración global (el SIA) configura, lleva catálogos y cuentas, y ve, edita y elimina todo, sin
+    capturar.
+  · **Alcance del directivo:** en la Secretaría, toda la Ciudad; en otra institución, sólo lo de la suya
+    (alcance `institucion`: la jornada por su `organizacion_id`; el árbol, por la institución de quien lo
+    capturó).
+  · **Qué hace:** Supervisión, Jornadas, Registros y Fotografías en lectura; descarga tablas, fotografías y
+    los reportes ya generados. No genera reportes: generar deja marca en la jornada y es de quien la
+    lleva. «Descargar reporte» abre la vista previa del reporte tal como quedó y entrega el PDF sin
+    escribir nada.
+  · **Por qué:** quien dirige necesita ver jornadas, árboles y fotografías reales, no sólo un tablero.
+    Modifica D87, que había retirado el perfil de consulta, y D192.

@@ -94,7 +94,7 @@ Pantalla **Usuarios**, sólo Administración global. Almacén `usuarios`.
 | Nombre completo | `nombre_completo` | Sí | Persona | Nombre y apellidos en un solo campo (antes eran tres; al abrir se unen) |
 | Correo | `correo` | Sí | Persona | Identifica la cuenta y sirve para entrar. Único. No se puede cambiar después |
 | Cargo | `cargo_rol` | Sí | Persona | Texto libre; descriptivo, no gobierna permisos |
-| Perfil de captura | `perfil` | Sí | Persona | `CABO`, `COORDINADOR` o `ADMIN`. Es lo que decide qué puede hacer. Consulta (`VIEWER`) se retiró en D87 |
+| Perfil de captura | `perfil` | Sí | Persona | `CABO`, `COORDINADOR`, `DIRECTIVO` o `ADMIN`. Es lo que decide qué puede hacer. `DIRECTIVO` sólo ve y descarga: en la Secretaría, todo; en otra institución, lo de la suya (D224). Consulta (`VIEWER`) se retiró en D87 |
 | Coordinadores | `coordinadores_ids` | Sólo para cabos | Persona | Lista de `usuarios.id`, uno o varios, de la misma institución. Cada coordinador asignado ve y edita sus registros; sin ninguno, la lista va vacía |
 | Estado | `activo` | Sí | Persona | Una cuenta inactiva no puede entrar; sus registros se conservan |
 | — | `fecha_creacion`, `creado_por_id` | Sí | Sistema | Cuándo y quién dio de alta la cuenta (los mismos nombres que en catálogos) |

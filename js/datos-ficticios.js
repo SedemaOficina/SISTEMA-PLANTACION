@@ -83,8 +83,10 @@ window.SRP = window.SRP || {};
 
   const usuarios = [
     usuario('u-admin-1', 'administracion@ejemplo.local', 'Administración SIA Ejemplo', 'a-sia', 'Administración global', 'ADMIN'),
+    usuario('u-dir-1', 'direccion@ejemplo.local', 'Zutana Ríos Ejemplo', 'a-dgsanpava', 'Directora de área', 'DIRECTIVO'),
     usuario('u-coord-1', 'coordinador@ejemplo.local', 'Perengano Gómez Ejemplo', 'a-dgsanpava', 'Coordinador de cuadrilla', 'COORDINADOR'),
     usuario('u-cabo-1', 'cabo@ejemplo.local', 'Fulana de Tal Ejemplo', 'a-dgsanpava', 'Cabo de cuadrilla', 'CABO', 'u-coord-1'),
+    usuario('u-dir-alc', 'direccion.alcaldia@ejemplo.local', 'Mengano Paz Ejemplo', null, 'Director de área', 'DIRECTIVO', null, 'o-alc-09007'),
     usuario('u-coord-alc', 'coordinador.alcaldia@ejemplo.local', 'Sergio Navarro Ejemplo', null, 'Coordinador de cuadrilla', 'COORDINADOR', null, 'o-alc-09007'),
     usuario('u-cabo-alc', 'cabo.alcaldia@ejemplo.local', 'Ramiro Torres Ejemplo', null, 'Cabo de cuadrilla', 'CABO', 'u-coord-alc', 'o-alc-09007'),
     usuario('u-coord-gob', 'coordinador.gobierno@ejemplo.local', 'Mariana Vega Ejemplo', null, 'Coordinador de cuadrilla', 'COORDINADOR', null, 'o-paot'),

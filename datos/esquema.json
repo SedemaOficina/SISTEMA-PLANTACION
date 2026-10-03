@@ -111,9 +111,10 @@
       "valores": [
         "CABO",
         "COORDINADOR",
+        "DIRECTIVO",
         "ADMIN"
       ],
-      "fuente": "js/permisos.js SRP.PERFILES (Consulta/VIEWER retirado en D87)",
+      "fuente": "js/permisos.js SRP.PERFILES (Consulta/VIEWER retirado en D87; DIRECTIVO, de sólo lectura, desde D224)",
       "codigo": "Object.keys(SRP.PERFILES)"
     },
     "tipo_catalogo": {
@@ -559,7 +560,7 @@
           "origen": "Persona",
           "dominio": "perfil",
           "pantalla": "Perfil de captura",
-          "regla": "Decide alcance y acciones. Una cuenta de administración no puede quitarse a sí misma el perfil ADMIN. Un perfil desconocido queda sin permisos y se avisa (D87). ADMIN sólo en SEDEMA; fuera, CABO o COORDINADOR (D192)"
+          "regla": "Decide alcance y acciones. Una cuenta de administración no puede quitarse a sí misma el perfil ADMIN. Un perfil desconocido queda sin permisos y se avisa (D87). ADMIN sólo en SEDEMA; fuera, CABO, COORDINADOR o DIRECTIVO (D192, D224)"
         },
         {
           "campo": "coordinadores_ids",
@@ -1820,7 +1821,7 @@
     {
       "id": "R-A01",
       "tabla": "todas",
-      "regla": "Alcance por perfil: CABO ve/edita/elimina los suyos; COORDINADOR registra, ve, edita y elimina los de sus cabos y los suyos (D155), y elimina jornadas vacías (D151); ADMIN todo, no captura. Un perfil desconocido no alcanza nada. Cada acción que escribe lo exige al empezar, no sólo esconde el botón (D151)",
+      "regla": "Alcance por perfil: CABO ve/edita/elimina los suyos; COORDINADOR registra, ve, edita y elimina los de sus cabos y los suyos (D155), y elimina jornadas vacías (D151); DIRECTIVO sólo ve y descarga (reportes ya generados, tablas y fotografías): en SEDEMA, todo; en otra institución, lo de la suya, por jornadas.organizacion_id y por la institución de quien capturó el árbol (D224); ADMIN todo, no captura. Un perfil desconocido no alcanza nada. Cada acción que escribe lo exige al empezar, no sólo esconde el botón (D151)",
       "donde": "js/permisos.js PERFILES, ACCIONES, exigir() (fuente única); la interfaz sólo lo refleja"
     },
     {

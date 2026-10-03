@@ -74,8 +74,10 @@ llena con lo que se capture.
 | Correo | Institución | Perfil | Qué puede hacer |
 |---|---|---|---|
 | administracion@ejemplo.local | SEDEMA (Sistema de Información Ambiental) | Administración global | Ve, edita y elimina todo, y lleva Catálogos y Usuarios. **No captura registros** |
+| direccion@ejemplo.local | SEDEMA (DGSANPAVA) | Directivo | Ve jornadas, registros, fotografías y avance de toda la Ciudad y descarga los reportes ya generados. **No registra ni modifica** |
 | coordinador@ejemplo.local | SEDEMA (DGSANPAVA) | Coordinador | Registra, y ve, edita y elimina los registros de su cuadrilla; elimina también las jornadas vacías y hace el relevo de cabo en una jornada abierta |
 | cabo@ejemplo.local | SEDEMA (DGSANPAVA) | Cabo | Registra, y ve, edita y elimina sólo los suyos; descarga sus fotografías desde «Mi avance» |
+| direccion.alcaldia@ejemplo.local | Alcaldía Iztapalapa | Directivo | Igual que un directivo, sólo con lo de su institución |
 | coordinador.alcaldia@ejemplo.local | Alcaldía Iztapalapa | Coordinador | Igual que un coordinador, sólo con los cabos de su institución; sin área |
 | cabo.alcaldia@ejemplo.local | Alcaldía Iztapalapa | Cabo | Igual que un cabo; sin área; en el cierre, sin personal, chófer ni vehículo. Programa: Reforestación Urbana |
 | coordinador.gobierno@ejemplo.local | PAOT (Gobierno de la CDMX) | Coordinador | Ídem coordinador de fuera |
@@ -85,7 +87,8 @@ llena con lo que se capture.
 | coordinador.civil@ejemplo.local | Reforestamos México, A.C. (Organización civil) | Coordinador | Ídem coordinador de fuera |
 | cabo.civil@ejemplo.local | Reforestamos México, A.C. (Organización civil) | Cabo | Ídem cabo de fuera. Programa: Reforestación Urbana |
 
-Quien captura en campo es un **cabo**; quien lo dirige, un **coordinador**. En el código son
+Quien captura en campo es un **cabo**; quien lo dirige, un **coordinador**; quien sólo ve —subdirecciones,
+direcciones de área y generales—, un **directivo** (`DIRECTIVO`); el SIA es la **Administración global**. En el código son
 `CABO` y `COORDINADOR`, y los campos son `cabo_id` en las plantaciones y `coordinadores_ids` (una lista) en las
 cuentas.
 

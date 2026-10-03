@@ -268,7 +268,7 @@ SRP.usuarios = {
     }
     if (!d.cargo_rol) errores.push(['usr-cargo', 'Escriba el cargo.']);
     if (!SRP.PERFILES[d.perfil]) errores.push(['usr-perfil', 'Elija el perfil de captura.']);
-    else if (d.perfil === 'ADMIN' && d.organizacion_id && !sedema) errores.push(['usr-perfil', 'La Administración global es sólo de la Secretaría: fuera de ella, la cuenta es de cabo o de coordinación.']);
+    else if (d.perfil === 'ADMIN' && d.organizacion_id && !sedema) errores.push(['usr-perfil', 'La Administración global es sólo de la Secretaría: fuera de ella, la cuenta es de cabo, de coordinación o directiva.']);
     if ((d.coordinadores_ids || []).some(id => { const c = SRP.ref.usuarioPorId[id]; return !c || c.organizacion_id !== d.organizacion_id; }))
       errores.push(['usr-coordinadores', 'Los coordinadores del cabo son de su misma institución.']);
     // Quien coordina no cambia de institución con cabos asignados: la cuadrilla quedaría sin coordinación

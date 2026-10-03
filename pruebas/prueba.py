@@ -109,7 +109,7 @@ with sync_playwright() as p:
         .filter(e=>{const l=document.querySelector('label[for='+CSS.escape(e.id)+']'); return !l||!l.querySelector('.obligatorio');})
         .map(e=>e.id)""")
     ok(faltan==[],'todo campo obligatorio lleva asterisco: faltan '+str(faltan))
-    ok(pg.locator('#sel-usuario-prueba option').count()==11,'hay once cuentas de arranque: una por perfil en la Secretaría y un coordinador y un cabo por tipo de institución')
+    ok(pg.locator('#sel-usuario-prueba option').count()==13,'hay trece cuentas de arranque: una por perfil en la Secretaría, un coordinador y un cabo por tipo de institución y un directivo de alcaldía')
 
     pg.click('#form-acceso button[type=submit]'); pg.wait_for_timeout(150)
     ok(pg.locator('#acceso-errores li').count()==2,'el acceso vacío pide correo y contraseña')
@@ -1346,7 +1346,7 @@ with sync_playwright() as p:
 
     # ---------- ADMINISTRACIÓN: usuarios ----------
     pg.click('#btn-cuenta'); pg.click('#btn-ir-configuracion'); pg.wait_for_timeout(300); pg.click('.cfg-tarjeta[data-ir=usuarios]'); pg.wait_for_timeout(500)   # desde el menú de la cuenta (D158)
-    ok(pg.locator('#tabla-usuarios tbody tr').count()==11,'la lista trae las once cuentas')
+    ok(pg.locator('#tabla-usuarios tbody tr').count()==13,'la lista trae las trece cuentas')
     fila_yo=pg.locator('#tabla-usuarios tbody tr', has_text='Administración SIA')
     ok('usted' in fila_yo.inner_text(),'marca cuál es la cuenta propia')
     ok(fila_yo.locator('button[data-accion=estado]').count()==0,'que no puede desactivarse a sí misma')
@@ -1372,7 +1372,7 @@ with sync_playwright() as p:
     ok(pg.is_visible('#caja-usr-coordinador') and pg.is_visible('#caja-usr-area'),'en la Secretaría aparecen el área y, para perfil Cabo, el coordinador')
     pg.select_option('#usr-perfil','ADMIN'); pg.wait_for_timeout(200)
     ok(pg.is_hidden('#caja-usr-coordinador'),'y desaparece para Administración')
-    ok(pg.locator('#usr-perfil option').count()==4 and pg.locator('#usr-perfil option[value=VIEWER]').count()==0,'el perfil ofrece tres opciones: ya no existe Consulta (D87)')
+    ok(pg.locator('#usr-perfil option').count()==5 and pg.locator('#usr-perfil option[value=VIEWER]').count()==0 and pg.locator('#usr-perfil option[value=DIRECTIVO]').count()==1,'el perfil ofrece cuatro opciones, con Directivo (D224); ya no existe Consulta (D87)')
     ok('No captura' in pg.inner_text('#usr-perfil-ayuda'),'se explica qué puede hacer cada perfil')
     pg.select_option('#usr-perfil','CABO'); pg.wait_for_timeout(200)
     pg.fill('#usr-nombre-completo','Sutana Nueva Ejemplo')
@@ -3693,10 +3693,10 @@ with sync_playwright() as p:
     pg43.select_option('#sel-usuario-prueba','u-admin-1'); pg43.click('#btn-entrar-prueba'); pg43.wait_for_timeout(700)
     o43=pg43.evaluate("""(() => { const o = SRP.ref.deTipo('organizacion', false), por = {}; o.forEach(x => { por[x.tipo_organizacion] = (por[x.tipo_organizacion] || 0) + 1; });
       return { n: o.length, por, green: SRP.ref.catalogoPorId['o-green-cover'].nombre, refo: SRP.ref.catalogoPorId['o-reforestamos'].nombre,
-        izp: [SRP.ref.catalogoPorId['o-alc-09007'].nombre, SRP.ref.nombreOrganizacion('o-alc-09007')], cuentas: SRP.ref.usuarios.length === 11 && SRP.ref.usuarios.every(u => u.nombre_completo && !('apellido_paterno' in u)),
+        izp: [SRP.ref.catalogoPorId['o-alc-09007'].nombre, SRP.ref.nombreOrganizacion('o-alc-09007')], cuentas: SRP.ref.usuarios.length === 13 && SRP.ref.usuarios.every(u => u.nombre_completo && !('apellido_paterno' in u)),
         sobra: o.some(x => 'instrumento' in x || 'vigente_hasta' in x) }; })()""")
     ok(o43=={'n':21,'por':{'Gobierno de la CDMX':3,'Empresa privada':1,'Organización civil':1,'Alcaldía':16},'green':'Green Cover','refo':'Reforestamos México, A.C.','izp':['Iztapalapa','Alcaldía Iztapalapa'],'cuentas':True,'sobra':False},
-       'de arranque vienen 21 instituciones en cuatro tipos —SEDEMA, PAOT, SOBSE, Green Cover, Reforestamos México y las 16 alcaldías, guardadas sin la palabra «Alcaldía»—; las once cuentas con nombre completo: %s' % o43)
+       'de arranque vienen 21 instituciones en cuatro tipos —SEDEMA, PAOT, SOBSE, Green Cover, Reforestamos México y las 16 alcaldías, guardadas sin la palabra «Alcaldía»—; las trece cuentas con nombre completo: %s' % o43)
     # Catálogos › Instituciones: sólo renombrar y desactivar; alcaldías fijas; SEDEMA no se desactiva
     pg43.evaluate("SRP.app.mostrarVista('catalogos')"); pg43.wait_for_timeout(400)
     pg43.click('#cat-tipos .chip[data-tipo=organizacion]'); pg43.wait_for_timeout(500)
@@ -3737,7 +3737,7 @@ with sync_playwright() as p:
        'con «Alcaldía» salen las 16 sin repetir la palabra: %s…' % al43[:4])
     pg43.select_option('#usr-organizacion','o-alc-09007'); pg43.wait_for_timeout(200)
     b43=[pg43.is_hidden('#caja-usr-area'), pg43.eval_on_selector_all('#usr-perfil option','l=>l.map(o=>o.value).filter(Boolean)'), pg43.is_hidden('#caja-usr-coordinador')]
-    ok(b43==[True,['CABO','COORDINADOR'],False],'una cuenta de alcaldía es de cabo o de coordinación, sin área; el cabo lleva coordinador: %s' % b43)
+    ok(b43==[True,['CABO','COORDINADOR','DIRECTIVO'],False],'una cuenta de alcaldía es de cabo, de coordinación o directiva, sin área; el cabo lleva coordinador: %s' % b43)
     pg43.fill('#usr-nombre-completo','Ramiro Iztapalapa Ejemplo'); pg43.fill('#usr-correo','cabo.izp@ejemplo.local'); pg43.fill('#usr-cargo','Cabo de cuadrilla')
     pg43.click('#form-usuario button[type=submit]'); pg43.wait_for_timeout(600)
     cizp=pg43.evaluate("SRP.ref.usuarios.find(u => u.correo === 'cabo.izp@ejemplo.local')")
@@ -3760,11 +3760,11 @@ with sync_playwright() as p:
                coord: v({ tipo_organizacion: 'Gobierno de la CDMX', organizacion_id: 'o-paot', perfil: 'CABO', coordinadores_ids: ['u-coord-1'] }),
                area: v({ tipo_organizacion: 'Gobierno de la CDMX', organizacion_id: 'o-sedema', perfil: 'CABO' }), sinTipo: v({ tipo_organizacion: '', organizacion_id: '', perfil: 'CABO' }),
                sinAlc: v({ tipo_organizacion: 'Alcaldía', organizacion_id: '', perfil: 'CABO' }), unNombre: v({ tipo_organizacion: 'Alcaldía', organizacion_id: 'o-alc-09003', perfil: 'CABO', nombre_completo: 'Ana' }) }; })()""")
-    FUERA='La Administración global es sólo de la Secretaría: fuera de ella, la cuenta es de cabo o de coordinación.'
+    FUERA='La Administración global es sólo de la Secretaría: fuera de ella, la cuenta es de cabo, de coordinación o directiva.'
     ok(r43=={'admin':[FUERA],'coordP':[],'coord':['Los coordinadores del cabo son de su misma institución.'],'area':['Elija el área.'],'sinTipo':['Elija el tipo de institución.'],
              'sinAlc':['Elija la alcaldía.'],'unNombre':['Escriba nombre y al menos un apellido.']},'las reglas de la cuenta: Administración sólo en SEDEMA, coordinación también fuera, el coordinador del cabo de su misma institución, área sólo en SEDEMA, tipo e institución obligatorios, nombre con apellido: %s' % r43)
     pg43.select_option('#usr-filtro-org','o-alc-09007'); pg43.wait_for_timeout(300)
-    ok(pg43.inner_text('#usr-cuenta').startswith('3 de 13') and 'Alcaldía Iztapalapa' in pg43.inner_text('#tabla-usuarios tbody'),'Usuarios filtra por institución: %s' % pg43.inner_text('#usr-cuenta'))
+    ok(pg43.inner_text('#usr-cuenta').startswith('4 de 15') and 'Alcaldía Iztapalapa' in pg43.inner_text('#tabla-usuarios tbody'),'Usuarios filtra por institución: %s' % pg43.inner_text('#usr-cuenta'))
     # El cabo de la alcaldía inicia una jornada: queda a nombre de la alcaldía, sin chófer ni vehículo
     pg43.click('#btn-cuenta'); pg43.click('#btn-cambiar-perfil'); pg43.wait_for_timeout(300)
     ok('Alcaldía Iztapalapa' in pg43.inner_text('#sel-usuario-prueba'),'la lista de prueba dice la institución de las cuentas de fuera')
@@ -3879,14 +3879,14 @@ with sync_playwright() as p:
     pg45.goto(BASE); pg45.wait_for_timeout(1300)
     op45=pg45.eval_on_selector_all('#sel-usuario-prueba option','l=>l.map(o=>o.textContent)')
     PAOT='Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)'
-    ok(op45==['Administración SIA Ejemplo — Administración global','Perengano Gómez Ejemplo — Coordinador','Fulana de Tal Ejemplo — Cabo',
-              'Sergio Navarro Ejemplo — Coordinador, Alcaldía Iztapalapa','Ramiro Torres Ejemplo — Cabo, Alcaldía Iztapalapa',
+    ok(op45==['Administración SIA Ejemplo — Administración global','Zutana Ríos Ejemplo — Directivo','Perengano Gómez Ejemplo — Coordinador','Fulana de Tal Ejemplo — Cabo',
+              'Mengano Paz Ejemplo — Directivo, Alcaldía Iztapalapa','Sergio Navarro Ejemplo — Coordinador, Alcaldía Iztapalapa','Ramiro Torres Ejemplo — Cabo, Alcaldía Iztapalapa',
               'Mariana Vega Ejemplo — Coordinador, '+PAOT,'Lucía Méndez Ejemplo — Cabo, '+PAOT,
               'Héctor Salinas Ejemplo — Coordinador, Green Cover','Óscar Rivas Ejemplo — Cabo, Green Cover',
               'Carmen Ibarra Ejemplo — Coordinador, Reforestamos México, A.C.','Andrea Solís Ejemplo — Cabo, Reforestamos México, A.C.'],
-       'la entrada de prueba ofrece en SEDEMA una cuenta por perfil y, por tipo de institución, su coordinador y su cabo: %s' % op45)
+       'la entrada de prueba ofrece en SEDEMA una cuenta por perfil y, por tipo de institución, su coordinador y su cabo (y el directivo de la alcaldía): %s' % op45)
     c45=pg45.evaluate("SRP.ref.usuarios.filter(u => !SRP.ref.esSedema(u.organizacion_id)).map(u => [u.perfil, u.area_id, (u.coordinadores_ids || []).length ? u.coordinadores_ids.every(c => SRP.ref.usuarioPorId[c].organizacion_id === u.organizacion_id) : null])")
-    ok(sorted(map(str,c45))==sorted(map(str,[['COORDINADOR',None,None]]*4+[['CABO',None,True]]*4)),'las cuentas de fuera no llevan área; cada cabo tiene un coordinador de su misma institución: %s' % c45)
+    ok(sorted(map(str,c45))==sorted(map(str,[['COORDINADOR',None,None]]*4+[['CABO',None,True]]*4+[['DIRECTIVO',None,None]])),'las cuentas de fuera no llevan área; cada cabo tiene un coordinador de su misma institución: %s' % c45)
     # Con demostración, sus cuentas van aparte, en su grupo
     pg45.select_option('#sel-usuario-prueba','u-admin-1'); pg45.click('#btn-entrar-prueba'); pg45.wait_for_timeout(700)
     pg45.evaluate("SRP.demo.cargar()"); pg45.wait_for_timeout(200)
@@ -3894,7 +3894,7 @@ with sync_playwright() as p:
     pg45.evaluate("SRP.sesion.cerrar(); SRP.app.mostrarAcceso()"); pg45.wait_for_timeout(400)
     g45=pg45.evaluate("""(() => { const s = document.getElementById('sel-usuario-prueba'); const g = s.querySelector('optgroup');
       return { fuera: [...s.children].filter(x => x.tagName === 'OPTION').length, grupo: g ? g.label : null, demo: g ? g.children.length : 0 }; })()""")
-    ok(g45=={'fuera':11,'grupo':'Datos de demostración','demo':16},'con los datos de demostración, sus 16 cuentas van aparte en «Datos de demostración»: %s' % g45)
+    ok(g45=={'fuera':13,'grupo':'Datos de demostración','demo':16},'con los datos de demostración, sus 16 cuentas van aparte en «Datos de demostración»: %s' % g45)
     # Un teléfono con un sello anterior al de reinicio vuelve a empezar aunque tenga capturas
     pg45.evaluate("""async () => { await SRP.almacen.guardarConBitacora('plantaciones', { id: 'pl-45', jornada_id: null, estatus: 'activo', cabo_id: 'u-cabo-1', lat: 19.43, lng: -99.13, especie_id: 'ESP-0002', fecha_plantacion: '2026-09-20' }, null);
       localStorage.setItem(SRP.CONFIG.CLAVE_SELLO, '2026-09-29-instituciones'); }""")
@@ -3904,8 +3904,8 @@ with sync_playwright() as p:
     r45=pg45.evaluate("""async () => ({ arr: SRP.almacen.arranque, arbol: !!(await SRP.almacen.uno('plantaciones', 'pl-45')), demo: (await SRP.almacen.todos('jornadas')).filter(j => SRP.demo.es(j.id)).length,
       cuentas: (await SRP.almacen.todos('usuarios')).length, sello: localStorage.getItem(SRP.CONFIG.CLAVE_SELLO) === SRP.CONFIG.SELLO_DATOS })""")
     aviso45=pg45.inner_text('#aviso') if pg45.is_visible('#aviso') else ''
-    ok(r45=={'arr':'reiniciado','arbol':False,'demo':0,'cuentas':11,'sello':True} and 'Se reiniciaron los datos de prueba' in aviso45,
-       'un teléfono con un sello anterior al de reinicio vuelve a empezar —sin capturas ni demostración, con las 11 cuentas— y lo avisa: %s' % r45)
+    ok(r45=={'arr':'reiniciado','arbol':False,'demo':0,'cuentas':13,'sello':True} and 'Se reiniciaron los datos de prueba' in aviso45,
+       'un teléfono con un sello anterior al de reinicio vuelve a empezar —sin capturas ni demostración, con las 13 cuentas— y lo avisa: %s' % r45)
     ok(not err45,'sin errores en consola: %s' % err45[:2])
     ctx45.close()
 
@@ -3974,8 +3974,8 @@ with sync_playwright() as p:
     ca47=pg47.eval_on_selector_all('#usr-coordinadores .chip','l=>l.map(o=>o.textContent)')
     pg47.select_option('#usr-perfil','COORDINADOR'); pg47.wait_for_timeout(150)
     cc47=pg47.is_hidden('#caja-usr-coordinador')
-    ok(pf47==['Cabo','Coordinador'] and co47==[True,['Héctor Salinas Ejemplo']] and ca47==['Sergio Navarro Ejemplo'] and cc47,
-       'en el alta de una institución de fuera se elige cabo o coordinador; el cabo, un coordinador de su misma institución; el coordinador no depende de nadie: %s %s %s' % (pf47, co47, ca47))
+    ok(pf47==['Cabo','Coordinador','Directivo'] and co47==[True,['Héctor Salinas Ejemplo']] and ca47==['Sergio Navarro Ejemplo'] and cc47,
+       'en el alta de una institución de fuera se elige cabo, coordinador o directivo; el cabo, un coordinador de su misma institución; el coordinador no depende de nadie: %s %s %s' % (pf47, co47, ca47))
     pg47.select_option('#usr-tipo-org','Empresa privada'); pg47.wait_for_timeout(150); pg47.select_option('#usr-organizacion','o-green-cover'); pg47.wait_for_timeout(150)
     pg47.select_option('#usr-perfil','CABO'); pg47.wait_for_timeout(150); pg47.click('#usr-coordinadores .chip[data-id="u-coord-emp"]')
     pg47.fill('#usr-nombre-completo','Irma Palmera Ejemplo'); pg47.fill('#usr-correo','irma.palmera@ejemplo.local'); pg47.fill('#usr-cargo','Cabo de cuadrilla')
@@ -4095,7 +4095,7 @@ with sync_playwright() as p:
     pg49.wait_for_timeout(500)
     d49=pg49.evaluate("""async () => { const j = (await SRP.almacen.todos('jornadas')).filter(x => SRP.demo.es(x.id)), P = SRP.ref.usuarioPorId;
       const org = new Set(j.map(x => x.organizacion_id)), prog = new Set(j.map(x => x.programa_id)), quien = new Set(j.map(x => x.cabo_id));
-      const prueba = SRP.ref.usuarios.filter(u => !SRP.demo.es(u.id) && u.perfil !== 'ADMIN').map(u => u.id);
+      const prueba = SRP.ref.usuarios.filter(u => !SRP.demo.es(u.id) && SRP.permisos.de(u).registrar).map(u => u.id);
       const cuentas = SRP.ref.usuarios.filter(u => SRP.demo.es(u.id));
       return { orgs: [...org].sort(), progs: [...prog].sort(), sinDatos: prueba.filter(id => !quien.has(id)),
         perfiles: [...new Set([...quien].map(id => P[id].perfil))].sort(),
@@ -4146,7 +4146,7 @@ with sync_playwright() as p:
     t50=pg50.eval_on_selector_all('.cfg-tarjeta','l=>l.map(t=>[t.dataset.ir, t.querySelector(".cfg-titulo").textContent, t.querySelector(".cfg-resumen").textContent])')
     ok(m50[0]=='Configuración' and 'Catálogos' not in m50 and 'Usuarios' not in m50,'el menú de la cuenta tiene «Configuración» en lugar de Catálogos y Usuarios: %s' % m50)
     ok([x[:2] for x in t50]==[['usuarios','Usuarios'],['catalogos','Catálogos'],['parametros','Parámetros'],['cambios','Registro de cambios'],['carga','Carga masiva'],['acerca','Acerca del sistema']]
-       and t50[0][2]=='11 cuentas' and t50[1][2]=='4 programas · 21 instituciones · 76 especies' and t50[2][2]=='11 valores · sólo consulta' and t50[3][2]=='Sin cambios todavía' and t50[4][2]=='Plantilla, revisión y carga' and t50[5][2].startswith('Versión '),
+       and t50[0][2]=='13 cuentas' and t50[1][2]=='4 programas · 21 instituciones · 76 especies' and t50[2][2]=='11 valores · sólo consulta' and t50[3][2]=='Sin cambios todavía' and t50[4][2]=='Plantilla, revisión y carga' and t50[5][2].startswith('Versión '),
        'Configuración muestra seis tarjetas con su resumen al día: %s' % t50)
     # Cada tarjeta lleva a su apartado y éste vuelve a Configuración
     ida50=[]
@@ -5756,6 +5756,58 @@ with sync_playwright() as p:
     ok(pg71.is_visible('#dlg-resumen') and pg71.inner_text('#btn-resumen-guardar').strip() == 'Guardar' and pg71.is_hidden('#btn-resumen-cambiar'), 'al corregir un árbol la revisión dice «Guardar» y no ofrece cambiar de jornada')
     pg71.click('#btn-resumen-cerrar'); pg71.wait_for_timeout(200)
     ctx71.close()
+
+    # ---------- ctx72: perfil Directivo: ve y descarga, no registra ni modifica; fuera de la Secretaría, sólo su institución ----------
+    ctx72 = b.new_context(viewport={'width':1280,'height':900}, geolocation={'latitude':19.357,'longitude':-99.06,'accuracy':5}, permissions=['geolocation'], timezone_id='America/Mexico_City', accept_downloads=True)
+    pg72 = ctx72.new_page(); pg72.on('pageerror', lambda e: errores.append('ctx72: ' + str(e)))
+    pg72.goto(BASE); pg72.wait_for_timeout(1200)
+    def entrar72(uid):
+        if pg72.is_visible('#btn-cuenta'): pg72.click('#btn-cuenta'); pg72.click('#btn-cambiar-perfil'); pg72.wait_for_timeout(300)
+        pg72.select_option('#sel-usuario-prueba', uid); pg72.click('#btn-entrar-prueba'); pg72.wait_for_timeout(700)
+    def jornada72(uid, nombre):
+        entrar72(uid); iniciar_jornada(pg72, nombre); registrar(pg72, 'ahuehu', 'ESP-0070')
+        return pg72.evaluate("async () => { const j = SRP.activa.jornada; await SRP.activa.cambiarEstatus(j, 'cerrada'); SRP.activa.jornada = null; return j.id; }")
+    js72 = jornada72('u-cabo-1', 'Directivo Secretaría B158'); ja72 = jornada72('u-cabo-alc', 'Directivo alcaldía B158')
+    # La jornada de la Secretaría ya tiene reporte; la de la alcaldía, no
+    pg72.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); await SRP.almacen.guardarConBitacora('jornadas', Object.assign({}, j, { reporte_en: '2026-10-01T18:00:00.000Z' }), SRP.bitacora.entrada('EDITADO', 'jornada', id, 'Reporte generado')); }", js72)
+    entrar72('u-dir-1')
+    d72 = pg72.evaluate("""(() => { const p = SRP.permisos, u = SRP.sesion.usuario, nav = document.getElementById('navegacion');
+      return { etiqueta: p.de(u).etiqueta, alcance: p.de(u).alcance, vista: SRP.app.vista, registrar: nav.querySelector('[data-vista=registrar]').hidden,
+        puede: ['registro.crear', 'jornada.crear', 'catalogo.administrar', 'usuario.administrar', 'carga.masiva'].map(a => p.puede(a)), fotos: p.puede('galeria.descargar'), config: document.getElementById('btn-ir-configuracion').hidden }; })()""")
+    ok(d72 == {'etiqueta':'Directivo','alcance':'todos','vista':'supervision','registrar':True,'puede':[False]*5,'fotos':True,'config':True},
+       'el directivo de la Secretaría entra a Supervisión, ve toda la Ciudad, no tiene «Nuevo registro» ni Configuración y sí Fotografías: %s' % d72)
+    pg72.evaluate("SRP.app.mostrarVista('jornadas')"); pg72.wait_for_timeout(700); pg72.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg72.wait_for_timeout(500)
+    n72 = pg72.evaluate("[SRP.jornadas._todas.map(j => j.nombre).sort(), SRP.jornadas._todas.every(j => !SRP.permisos.puede('jornada.editar', j.dato) && !SRP.permisos.puede('jornada.eliminar', j.dato)), !document.getElementById('caja-jornada-org') || true]")
+    ok(n72[0] == ['Directivo Secretaría B158', 'Directivo alcaldía B158'] and n72[1], 've las jornadas de todas las instituciones y no puede modificar ninguna: %s' % n72[0])
+    pg72.click('#lista-jornadas .jornada:has-text("Directivo alcaldía B158") button'); pg72.wait_for_timeout(900)
+    s72 = pg72.evaluate("['btn-jornada-reporte', 'btn-jornada-editar', 'btn-jornada-estado', 'btn-jornada-faltante', 'btn-jornada-siguiente'].map(id => { const e = document.getElementById(id); return !e || e.hidden || !e.offsetParent; })")
+    ok(all(s72), 'en una jornada sin reporte el directivo no tiene nada que generar, editar, cerrar ni registrar: %s' % s72)
+    pg72.evaluate("SRP.app.mostrarVista('jornadas')"); pg72.wait_for_timeout(600)
+    pg72.click('#lista-jornadas .jornada:has-text("Directivo Secretaría B158") button'); pg72.wait_for_timeout(900)
+    ok(pg72.is_visible('#btn-jornada-reporte') and pg72.inner_text('#btn-jornada-reporte').strip() == 'Descargar reporte' and pg72.is_hidden('#btn-jornada-editar'), 'en una jornada con reporte el botón dice «Descargar reporte»')
+    pg72.click('#btn-jornada-reporte'); pg72.wait_for_timeout(900)
+    ok(pg72.is_visible('#dlg-previa') and pg72.is_hidden('#dlg-cierre') and pg72.is_hidden('#btn-previa-corregir') and pg72.inner_text('#btn-previa-generar').strip() == 'Descargar PDF', 'abre la vista previa sin pasar por el cierre, sin «Corregir datos de cierre» y con «Descargar PDF»')
+    antes72 = pg72.evaluate("async id => [(await SRP.almacen.uno('jornadas', id)).reporte_en, (await SRP.almacen.todos('bitacora')).length]", js72)
+    with pg72.expect_download(timeout=60000) as dl72: pg72.click('#btn-previa-generar')
+    pg72.wait_for_timeout(800)
+    despues72 = pg72.evaluate("async id => [(await SRP.almacen.uno('jornadas', id)).reporte_en, (await SRP.almacen.todos('bitacora')).length]", js72)
+    ok(dl72.value.suggested_filename.endswith('.pdf') and antes72 == despues72 and 'Reporte descargado' in pg72.inner_text('#aviso'), 'descarga el PDF y la jornada no cambia: ni la fecha del reporte ni el historial: %s' % despues72)
+    # Registros: ve todo, sin editar ni eliminar
+    pg72.evaluate("SRP.app.mostrarVista('registros')"); pg72.wait_for_timeout(800)
+    r72 = pg72.evaluate("[document.getElementById('titulo-registros') ? document.getElementById('titulo-registros').textContent : '', SRP.registros.visibles.length, SRP.registros.visibles.some(r => SRP.permisos.puede('registro.editar', r) || SRP.permisos.puede('registro.eliminar', r) || SRP.permisos.puede('registro.sustituir', r))]")
+    ok(r72[1] == 2 and r72[2] is False, 've los dos árboles y no puede editar, eliminar ni sustituir ninguno: %s' % r72)
+    # El directivo de una alcaldía: sólo lo de su institución
+    entrar72('u-dir-alc')
+    pg72.evaluate("SRP.app.mostrarVista('jornadas')"); pg72.wait_for_timeout(700); pg72.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg72.wait_for_timeout(500)
+    a72 = pg72.evaluate("[SRP.permisos.de(SRP.sesion.usuario).alcance, SRP.jornadas._todas.map(j => j.nombre), SRP.indicadores.cabosAsignados(SRP.sesion.usuario)]")
+    pg72.evaluate("SRP.app.mostrarVista('registros')"); pg72.wait_for_timeout(800)
+    ra72 = pg72.evaluate("[SRP.registros.visibles.length, SRP.registros.visibles.every(r => SRP.ref.usuarioPorId[r.cabo_id].organizacion_id === 'o-alc-09007')]")
+    ok(a72 == ['institucion', ['Directivo alcaldía B158'], ['u-cabo-alc']] and ra72 == [1, True], 'el directivo de una alcaldía ve sólo las jornadas, los árboles y los cabos de su institución: %s %s' % (a72, ra72))
+    # En Usuarios, el perfil se ofrece dentro y fuera de la Secretaría
+    entrar72('u-admin-1'); pg72.evaluate("SRP.app.mostrarVista('usuarios')"); pg72.wait_for_timeout(700)
+    u72 = pg72.evaluate("[Object.keys(SRP.PERFILES), SRP.PERFILES.DIRECTIVO.etiqueta, SRP.ref.usuarios.filter(u => u.perfil === 'DIRECTIVO').map(u => u.id).sort()]")
+    ok(u72 == [['CABO','COORDINADOR','DIRECTIVO','ADMIN'], 'Directivo', ['u-dir-1','u-dir-alc']], 'el catálogo de perfiles tiene cuatro, con «Directivo», y hay una cuenta de prueba en la Secretaría y otra en una alcaldía: %s' % u72)
+    ctx72.close()
 
 
 

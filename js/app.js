@@ -282,10 +282,10 @@ SRP.app = {
       /* Sólo las que pueden entrar: primero la Secretaría por perfil, luego cada tipo de institución
          con su coordinador y su cabo, que dicen cuál («Cabo, Alcaldía Iztapalapa»). Las cuentas de
          los datos de demostración van aparte, en su grupo. */
-      const esc = SRP.util.escapar, rango = { ADMIN: 0, COORDINADOR: 1, CABO: 2 };
+      const esc = SRP.util.escapar, rango = { ADMIN: 0, DIRECTIVO: 1, COORDINADOR: 2, CABO: 3 };
       const tipos = SRP.ref.TIPOS_INSTITUCION;
       const orden = u => [SRP.ref.esSedema(u.organizacion_id) ? 0 : 1, tipos.indexOf((SRP.ref.organizacionDe(u) || {}).tipo_organizacion),
-        rango[u.perfil] ?? 3, SRP.util.nombreCompleto(u)];
+        rango[u.perfil] ?? 4, SRP.util.nombreCompleto(u)];
       const comparar = (a, b) => { const x = orden(a), y = orden(b); for (let i = 0; i < x.length; i++) { if (x[i] < y[i]) return -1; if (x[i] > y[i]) return 1; } return 0; };
       const opcion = u => '<option value="' + esc(u.id) + '">' + esc(SRP.util.nombreCompleto(u) + ' — ' + SRP.permisos.de(u).etiqueta +
         (SRP.ref.esSedema(u.organizacion_id) ? '' : ', ' + SRP.ref.nombreOrganizacion(u.organizacion_id))) + '</option>';
@@ -322,7 +322,7 @@ SRP.app = {
     // La jornada abierta de quien entra queda activa; se avisa si es de otro día (D119)
     SRP.activa.alEntrar().then(() => { if (this.vista === 'registrar') SRP.activa.preparar(); }).then(() => SRP.activa.avisarRelevos());
     // Quien supervisa entra a Supervisión; el cabo, a registrar (D158)
-    this.mostrarVista(p.alcance === 'equipo' || p.alcance === 'todos' ? 'supervision' : p.registrar ? 'registrar' : 'registros');
+    this.mostrarVista(['equipo', 'institucion', 'todos'].includes(p.alcance) ? 'supervision' : p.registrar ? 'registrar' : 'registros');
     SRP.conexion.refrescar();
     // Datos de prueba: al entrar se envía lo pendiente y, si no sale, lo dice la franja (D110, D111)
     SRP.conexion.sugerirInstalar();   // en iPhone desde Safari, una vez por sesión y antes de capturar

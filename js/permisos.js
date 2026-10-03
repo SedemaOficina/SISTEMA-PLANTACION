@@ -11,6 +11,11 @@ SRP.PERFILES = {
   // esperar a Administración (D155, sustituye el «no elimina» de D87); ve la galería (D118)
   COORDINADOR: { etiqueta: 'Coordinador',            alcance: 'equipo',  registrar: true,  editar: true,  eliminar: true,  eliminarJornadaVacia: true, relevar: true,  catalogos: false, usuarios: false, galeria: true,
                  descripcion: 'Registra, y ve, edita y elimina los registros de los cabos que tiene asignados y los suyos. Elimina también las jornadas vacías y pasa una jornada abierta a otro cabo de su cuadrilla (relevo).' },
+  /* Sólo ve: subdirecciones, direcciones de área y direcciones generales. El de la Secretaría ve toda
+     la Ciudad; el de otra institución, sólo la suya (alcance «institucion», lo pone `de()`). No
+     registra, no corrige y no genera reportes: descarga los que ya se generaron. */
+  DIRECTIVO:   { etiqueta: 'Directivo',              alcance: 'todos',   registrar: false, editar: false, eliminar: false, eliminarJornadaVacia: false, relevar: false, catalogos: false, usuarios: false, galeria: true,
+                 descripcion: 'Ve las jornadas, los registros, las fotografías y el avance, y descarga los reportes ya generados. No registra ni modifica. En la Secretaría ve toda la Ciudad; en otra institución, sólo la suya.' },
   // No captura: administra. Quien registra en campo es el cabo, y el registro debe quedar
   // a nombre de quien plantó el árbol, no de quien administra el sistema.
   ADMIN:       { etiqueta: 'Administración global',  alcance: 'todos',   registrar: false, editar: true,  eliminar: true,  eliminarJornadaVacia: true, relevar: false, catalogos: true,  usuarios: true,  galeria: true,
@@ -29,6 +34,10 @@ SRP.permisos = {
      cuenta con un perfil viejo caía en «Consulta» sin que nada lo dijera, y costó ver por qué. */
   de(usuario) {
     const p = SRP.PERFILES[usuario.perfil];
+    // El directivo de una institución que no es la Secretaría ve sólo lo de la suya
+    if (p && usuario.perfil === 'DIRECTIVO' && !SRP.ref.esSedema(usuario.organizacion_id)) {
+      return SRP.permisos._directivoExterno || (SRP.permisos._directivoExterno = Object.assign({}, p, { alcance: 'institucion' }));
+    }
     if (p) return p;
     SRP.permisos.perfilesDesconocidos.add(usuario.perfil);
     return SRP.SIN_PERMISOS;
@@ -42,6 +51,11 @@ SRP.permisos = {
     if (alcance === 'ninguno') return false;
     if (alcance === 'todos') return true;
     const personas = this.personasDe(registro);
+    /* De la institución: la jornada dice la suya; el árbol, la de quien lo capturó */
+    if (alcance === 'institucion') {
+      if (registro.organizacion_id) return registro.organizacion_id === usuario.organizacion_id;
+      return personas.some(id => { const autor = usuariosPorId[id]; return !!autor && autor.organizacion_id === usuario.organizacion_id; });
+    }
     if (personas.includes(usuario.id)) return true;
     if (alcance === 'equipo') return personas.some(id => { const autor = usuariosPorId[id]; return !!autor && (autor.coordinadores_ids || []).includes(usuario.id); });
     return false;

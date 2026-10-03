@@ -880,12 +880,15 @@ SRP.jornadas = {
     // su lugar a «Revisar puntos». Un solo estado (D172): siempre «Generar reporte», aunque ya se haya
     // generado antes; si ya hay reporte, lo dice el paso «Reporte» con su palomita (antes «Regenerar PDF», D148)
     const rep = this.el('btn-jornada-reporte');
-    rep.hidden = p.abierta || !p.n || p.actual === 'revisar';
+    // Quien no puede modificar la jornada no genera el reporte: descarga el que ya existe
+    const generado = !!(guardada || j.dato || {}).reporte_en;
+    rep.hidden = p.abierta || !p.n || (puedeJornada ? p.actual === 'revisar' : !generado);
     rep.className = 'btn btn-primario';
-    rep.innerHTML = I('reportes') + '<span>Generar reporte</span>';
+    rep.innerHTML = puedeJornada ? I('reportes') + '<span>Generar reporte</span>' : I('descargar') + '<span>Descargar reporte</span>';
     const sig = this.el('btn-jornada-siguiente');
     const cerrar = p.actual === 'cerrar' && puedeJornada;
-    sig.hidden = !(cerrar || p.actual === 'revisar');
+    // Revisar los puntos es de quien puede modificar la jornada
+    sig.hidden = !(cerrar || (p.actual === 'revisar' && puedeJornada));
     sig.dataset.accion = p.actual;
     sig.innerHTML = p.actual === 'revisar' ? I('ver') + '<span>Revisar puntos</span>' : I('candado') + '<span>Cerrar jornada</span>';
     if (cerrar) this.el('btn-jornada-estado').hidden = true;
@@ -1321,7 +1324,9 @@ SRP.jornadas = {
   // El reporte se genera desde la ficha de su jornada: datos del cierre, vista previa y PDF, sin salir de Jornadas
   irAlReporte() {
     const j = this.jornada;
-    if (j && j.estatus === 'cerrada') SRP.reportes.abrir(j.registros, j.fecha, j.cabo_id, j);
+    if (!j || j.estatus !== 'cerrada') return;
+    if (SRP.permisos.puede('jornada.editar', j.dato || j)) SRP.reportes.abrir(j.registros, j.fecha, j.cabo_id, j);
+    else SRP.reportes.descargar(j.registros, j.fecha, j.cabo_id, j);
   }
 };
 

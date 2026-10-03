@@ -73,7 +73,7 @@ with sync_playwright() as p:
 
     # --- 2. Perfiles ---
     perfiles = pg.evaluate("Object.keys(SRP.PERFILES)")
-    mirar(sorted(perfiles) == ['ADMIN','CABO','COORDINADOR'],
+    mirar(sorted(perfiles) == ['ADMIN','CABO','COORDINADOR','DIRECTIVO'],
           'el catálogo de perfiles es el acordado', str(perfiles))
     etiquetas = pg.evaluate("Object.values(SRP.PERFILES).map(p=>p.etiqueta)")
     mirar('Cabo' in etiquetas and 'Coordinador' in etiquetas,
@@ -102,11 +102,11 @@ with sync_playwright() as p:
         campoViejoUsuarios: us.filter(u=>'jefe_id' in u || 'coordinador_id' in u).map(u=>u.correo)
       };
     }""")
-    mirar(d['total'] == 11, 'hay exactamente las once cuentas de arranque: tres de la Secretaría y un coordinador y un cabo por tipo de institución (%d)' % d['total'])
-    mirar(sorted(d['perfilesUsados']) == ['ADMIN','CABO','COORDINADOR'],
+    mirar(d['total'] == 13, 'hay exactamente las trece cuentas de arranque: cuatro de la Secretaría, un coordinador y un cabo por tipo de institución y un directivo de alcaldía (%d)' % d['total'])
+    mirar(sorted(d['perfilesUsados']) == ['ADMIN','CABO','COORDINADOR','DIRECTIVO'],
           'una cuenta por perfil operativo', str(d['perfilesUsados']))
     mirar(not d['perfilDesconocido'], 'toda cuenta tiene un perfil del catálogo', str(d['perfilDesconocido']))
-    mirar(set(d['perfilesUsados']) <= {'CABO','COORDINADOR','ADMIN'},
+    mirar(set(d['perfilesUsados']) <= {'CABO','COORDINADOR','DIRECTIVO','ADMIN'},
           'los perfiles guardados son los de ahora', str(d['perfilesUsados']))
     mirar(not d['sinCorreo'], 'toda cuenta tiene correo', str(d['sinCorreo']))
     mirar(not d['correosRepetidos'], 'ningún correo repetido', str(d['correosRepetidos']))
@@ -189,7 +189,7 @@ with sync_playwright() as p:
 
     # --- 4. Lo que ve la persona ---
     opciones = pg.eval_on_selector_all('#sel-usuario-prueba option', 'os=>os.map(o=>o.textContent)')
-    mirar(len(opciones) == 11, 'el selector ofrece las once cuentas de arranque', str(opciones))
+    mirar(len(opciones) == 13, 'el selector ofrece las trece cuentas de arranque', str(opciones))
     mirar(not [o for o in opciones if 'no reconocido' in o or o.endswith('— Consulta')],
           'ninguna cuenta aparece con perfil no reconocido', str(opciones))
     mirar(any('— Cabo' in o for o in opciones), 'aparecen cuentas de Cabo', str(opciones))

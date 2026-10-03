@@ -30,7 +30,8 @@ SRP.informes = {
     const u = SRP.sesion.usuario, a = SRP.permisos.de(u).alcance;
     if (a === 'propios') return 'Cabo: ' + SRP.util.nombreCompleto(u);
     if (a === 'equipo') return 'Cuadrilla de ' + SRP.util.nombreCompleto(u) + ' (coordinación)';
-    return 'Toda la Ciudad (administración)';
+    if (a === 'institucion') return ((SRP.ref.organizacionDe(u) || {}).nombre || 'Su institución') + ' (dirección)';
+    return 'Toda la Ciudad (' + (u.perfil === 'DIRECTIVO' ? 'dirección' : 'administración') + ')';
   },
 
   /* ---------- PDF ---------- */

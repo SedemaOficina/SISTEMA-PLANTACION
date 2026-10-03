@@ -3009,3 +3009,22 @@ ficha del punto, guardado directo, revisión de un árbol lejos, revisión al co
 elegir; y las pruebas de la tarjeta, la franja y la leyenda, adaptadas). Las fallas se imprimen ahora en
 cuanto ocurren, y dos esperas fijas pasaron a esperar su condición. auditoria.py 118, 0 hallazgos;
 auditoria_css.py 0; revisar.py sin problemas. No probado en iPhone real.
+
+## Bloque 158 — Perfil Directivo, de sólo lectura (03-10-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.9.25.
+
+**Qué cambió (D224).** `js/permisos.js`: `SRP.PERFILES.DIRECTIVO` (sin registrar, editar, eliminar, relevar,
+catálogos ni cuentas; con fotografías); `de()` da alcance `institucion` al directivo de fuera de la
+Secretaría y `alcanza()` lo resuelve por la institución de la jornada o de quien capturó.
+`js/reportes.js`: `descargar()` y vista previa de sólo lectura («Descargar PDF», sin «Corregir datos de
+cierre»); `entregar()` no marca el reporte ni escribe historial en ese caso. `js/jornadas.js`: sin permiso
+sobre la jornada, el botón es «Descargar reporte» y sólo aparece si ya hay reporte; «Revisar puntos» es
+de quien puede modificarla. `js/indicadores.js`, `js/informes.js`, `js/registros.js`, `js/supervision.js`,
+`js/app.js`: textos y cuadrillas del alcance por institución; el directivo entra a Supervisión.
+`js/datos-ficticios.js`: cuentas `u-dir-1` (Secretaría) y `u-dir-alc` (alcaldía); `SELLO_DATOS`
+`2026-10-03-directivo`.
+
+**Verificación:** prueba.py 1274 comprobaciones, 0 fallas (ctx72, 9 nuevas: lo que el directivo ve y lo que
+no puede, la descarga del reporte sin escribir, el alcance por institución y el catálogo de perfiles; y las
+pruebas que contaban cuentas y perfiles, al día con las trece cuentas y los cuatro perfiles).
+auditoria.py 118, 0 hallazgos; auditoria_css.py 0; revisar.py sin problemas. No probado en iPhone real.

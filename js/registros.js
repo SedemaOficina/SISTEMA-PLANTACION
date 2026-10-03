@@ -128,7 +128,7 @@ SRP.registros = {
     const u = SRP.sesion.usuario;
     const alcance = SRP.permisos.de(u).alcance;
     this.el('titulo-registros').textContent =
-      alcance === 'propios' ? 'Mis registros' : alcance === 'equipo' ? 'Registros de mi cuadrilla' : 'Todos los registros';
+      alcance === 'propios' ? 'Mis registros' : alcance === 'equipo' ? 'Registros de mi cuadrilla' : alcance === 'institucion' ? 'Registros de mi institución' : 'Todos los registros';
     // Nombre de la jornada de cada registro, para la tarjeta (D134)
     const jornadas = await SRP.almacen.todos('jornadas');
     this.jornadasPorId = Object.fromEntries(jornadas.map(j => [j.id, j.nombre]));

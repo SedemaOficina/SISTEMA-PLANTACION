@@ -387,6 +387,8 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M387 | Liber | Un árbol lejos del resto: la revisión pinta los demás árboles en el mapa, ofrece «Cambiar jornada» y el botón dice «Guardar de todos modos» | Alta | 0.9.24 (B157) | Registrar un árbol a kilómetros de los demás de la jornada: se ve la distancia y se puede cambiar de jornada sin perder lo capturado | — |
 | M388 | Liber | El aviso de agregar el SRP a la pantalla de inicio en iPhone sale al entrar, no encima del primer guardado | Media | 0.9.24 (B157) | Entrar desde Safari en iPhone: el aviso aparece una vez, antes de capturar | — |
 | M389 | Liber | Fotografía y comentarios ocupan menos: zona de foto del alto de un botón, sin nombre de archivo, y comentarios de un renglón que crece al escribir | Media | 0.9.24 (B157) | Nuevo registro en teléfono: comentarios mide un renglón hasta que se toca; la foto cargada enseña miniatura y peso | — |
+| M390 | Liber | Perfil «Directivo», de sólo lectura, para subdirecciones, direcciones de área y generales: ve jornadas, registros, fotografías y avance; en la Secretaría, de toda la Ciudad; en otra institución, sólo de la suya | Alta | 0.9.25 (B158) | Entrar con direccion@ejemplo.local: abre Supervisión, sin «Nuevo registro» ni Configuración; con direccion.alcaldia@ejemplo.local sólo aparece lo de la alcaldía | — |
+| M391 | Liber | Quien no puede modificar una jornada descarga su reporte ya generado, sin llenar el cierre y sin que la jornada cambie | Media | 0.9.25 (B158) | Como directivo, abrir una jornada con reporte: «Descargar reporte» lleva a la vista previa y al PDF; una jornada sin reporte no ofrece el botón | — |
 
 ## 2. Por hacer
 
@@ -412,4 +414,4 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 372 hechas · 5 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 374 hechas · 5 por hacer · 2 revisadas · 2 descartadas.
