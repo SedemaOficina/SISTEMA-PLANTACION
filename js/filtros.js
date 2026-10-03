@@ -1,4 +1,4 @@
-/* ZONA DE FILTROS COMPARTIDA. La misma zona en las vistas que listan cosas con fecha (Reportes y
+/* ZONA DE FILTROS COMPARTIDA. La zona de las vistas que listan cosas con fecha (hoy,
    Fotografías), con el orden y las palabras de Registros y Jornadas:
 
      Filtrar                                             Quitar filtros

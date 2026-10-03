@@ -5,8 +5,8 @@ window.SRP = window.SRP || {};
 
 SRP.PERFILES = {
   // eliminarJornadaVacia: una jornada sin ningún árbol, ni eliminado, se puede borrar (D132, D151)
-  CABO:        { etiqueta: 'Cabo',                   alcance: 'propios', registrar: true,  editar: true,  eliminar: true,  eliminarJornadaVacia: true, relevar: false, catalogos: false, usuarios: false, galeria: false,
-                 descripcion: 'Registra plantaciones y ve, edita y elimina únicamente las suyas.' },
+  CABO:        { etiqueta: 'Cabo',                   alcance: 'propios', registrar: true,  editar: true,  eliminar: true,  eliminarJornadaVacia: true, relevar: false, catalogos: false, usuarios: false, galeria: true,
+                 descripcion: 'Registra plantaciones y ve, edita y elimina únicamente las suyas; descarga sus fotografías.' },
   // Registra, edita y elimina lo de su cuadrilla: un árbol capturado por error se corrige sin
   // esperar a Administración (D155, sustituye el «no elimina» de D87); ve la galería (D118)
   COORDINADOR: { etiqueta: 'Coordinador',            alcance: 'equipo',  registrar: true,  editar: true,  eliminar: true,  eliminarJornadaVacia: true, relevar: true,  catalogos: false, usuarios: false, galeria: true,

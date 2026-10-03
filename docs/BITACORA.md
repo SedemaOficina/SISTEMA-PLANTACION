@@ -2961,3 +2961,24 @@ cifra de sustituciones, etiquetas de Usuarios, cabo con dos coordinadores y su a
 anterior a la lista, mapa con sólo la colonia intervenida; más la descripción obligatoria del pedido en
 ctx62); auditoria.py 118, 0 hallazgos; revisar.py sin problemas.
 
+## Bloque 156 — El reporte en la ficha de la jornada, fotografías del cabo y capa de prioridad apagada en campo (02-10-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.9.23.
+
+**Qué cambió (D220).** `index.html`: fuera la pestaña «Reportes» y `#vista-reportes`; `#jornada-reporte` en
+«Más filtros» de Jornadas; `#galeria-nota`. `js/reportes.js`: sin lista ni zona de filtros; conserva el
+cierre, la vista previa y el PDF, y al entregar refresca Jornadas. `js/jornadas.js`: `irAlReporte()` abre
+el cierre en el sitio; filtro `reporte` (`claveReporte()`, ficha, resumen de «Más filtros»); insignia
+`insignia-reporte` en la tarjeta. `js/app.js`: una sección que no existe lleva a Jornadas.
+`js/permisos.js`: el cabo tiene `galeria`; `js/galeria.js`: nota y regreso según el alcance.
+`js/prioritarias.js`: en campo la capa arranca apagada (clave `srp_capa_prioritarias_2`),
+`coloniasDe()`, y `pintar()` rehace la capa cuando cambian las colonias; `js/mapa.js` y `js/jornadas.js`
+le dan las colonias de la jornada. `js/mapa.js`: el encuadre de los árboles espera a que el mapa esté a
+la vista. `css/estilos.css`: fuera las reglas de la tarjeta de Reportes.
+
+**Verificación:** prueba.py 1256 comprobaciones (ctx70, 13 nuevas: reporte desde la ficha, tarjeta y filtro
+«Reporte», fotografías del cabo; y las pruebas que dependían de la lista de Reportes, reescritas sobre
+Jornadas). La corrida completa dio 1 falla, de una prueba que contaba cinco listas «Quién registró» (ahora
+son cuatro); se ajustó y pasó corrida aparte. revisar.py pedía la vista Reportes: ahora revisa las
+fotografías del cabo, y pasa sin problemas. auditoria.py 118, 0 hallazgos. No se repitió la corrida completa
+después de esos dos ajustes de prueba.
+

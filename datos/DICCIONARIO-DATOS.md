@@ -62,7 +62,7 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 
 Un renglón por ejemplar plantado. Es el registro individual de campo; todo lo demás (partes, tableros, cifra pública) se construye encima (D38).
 
-- **Llave:** `id`. **Índices:** `estatus`, `jornada_id`. **Pantalla:** Nuevo registro (alta y edición), Registros (lista, detalle), Reportes (parte del día).
+- **Llave:** `id`. **Índices:** `estatus`, `jornada_id`. **Pantalla:** Nuevo registro (alta y edición), Registros (lista, detalle), reporte de la jornada.
 - **Campos:** 30.
 
 | Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
@@ -174,7 +174,7 @@ Quién, cuándo y qué, en cada alta, edición, eliminación, activación y desa
 
 Una jornada de plantación: se declara antes de registrar el primer árbol (D119). Agrupa los registros, lleva la conciliación y la revisión, y guarda los datos de cierre del reporte (antes en la tabla cierres, retirada en el bloque 62).
 
-- **Llave:** `id`. **Índices:** `cabo_id`. **Pantalla:** Nuevo registro → «Iniciar jornada»; Jornadas; Reportes → «Datos de cierre».
+- **Llave:** `id`. **Índices:** `cabo_id`. **Pantalla:** Nuevo registro → «Iniciar jornada»; Jornadas; ficha de la jornada → «Generar reporte» → «Datos de cierre».
 - **Campos:** 41.
 
 | Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
@@ -209,7 +209,7 @@ Una jornada de plantación: se declara antes de registrar el primer árbol (D119
 | `fecha_ultima_edicion` | timestamptz | Sí | Sistema | ISO 8601; nulo sin ediciones | No | Nulo hasta la primera edición, como en las demás tablas |
 | `arboles_previstos` | integer | No | Persona | Entero 1–9999 | Árboles que se van a plantar (Iniciar jornada) | Obligatorio al iniciar: cuántos árboles se van a plantar. Jornadas compara los registrados contra los previstos (faltan o sobran) y el reporte los imprime |
 | `puntos_revisados` | uuid[] | No | Persona | → plantaciones.id; [] si nadie ha revisado | Jornadas → «Está bien» en un punto con aviso | Puntos con aviso (duplicado, lejos, precisión) que alguien confirmó como correctos (D112); el aviso deja de contarse, no se borra. Al mover un árbol a otra jornada su marca sale de ésta (D151) |
-| `reporte_en` | timestamptz | Sí | Sistema | ISO 8601; nulo si no se ha generado o si dejó de estar vigente | Reportes: «reporte generado …» | Se fija cuando el PDF se entrega (se descarga o se comparte), no al abrir la vista previa. Vuelve a nulo, con constancia en la bitácora, si la jornada se reabre o si uno de sus árboles se elimina, restaura, edita, mueve o sustituye: el reporte se genera de nuevo |
+| `reporte_en` | timestamptz | Sí | Sistema | ISO 8601; nulo si no se ha generado o si dejó de estar vigente | Jornadas: tarjeta «Reporte generado …» y filtro «Reporte» | Se fija cuando el PDF se entrega (se descarga o se comparte), no al abrir la vista previa. Vuelve a nulo, con constancia en la bitácora, si la jornada se reabre o si uno de sus árboles se elimina, restaura, edita, mueve o sustituye: el reporte se genera de nuevo |
 | `carga_id` | uuid | Sí | Sistema | UUID v4 del lote de carga masiva; nulo en las jornadas iniciadas en campo | No se muestra; el nombre de la jornada dice «Carga histórica» | Lo pone la carga masiva de Configuración (D196): todas las jornadas de un mismo archivo llevan la misma clave, que también es el entidad_id del renglón «carga» de la bitácora. Una jornada con carga_id no se cuenta como «sin reporte» en Supervisión |
 | `personal` | text | No | Persona | Texto libre | Personal de SEDEMA participante | Sólo en jornadas de SEDEMA; en las de otras instituciones no se pide y queda vacío (D192) |
 | `apoyo` | text | No | Persona | Texto libre, varias líneas | Personal de apoyo | Sólo en jornadas de SEDEMA; en las de otras instituciones no se pide y queda vacío (D192) |
@@ -271,11 +271,11 @@ Se guardan en la tabla, pero nadie los teclea: salen de otro dato o de la sesió
 | Folio en pantalla y PDF (PROVISIONAL mientras folio sea nulo) y etiqueta de campo folio · especie · alcaldía · fecha | SRP.folio.texto / etiqueta | Ficha, lista, PDF |
 | Totales del parte: ejemplares, conteo por especie, resumen por programa, alcaldía del sitio | Las plantaciones del día | PDF (Norma 10.2: nunca se capturan) |
 | Uso de cada valor de catálogo y de cada cuenta (N registros) | Conteo de plantaciones (incluidos eliminados) | Catálogos y Usuarios; decide si se puede eliminar |
-| Cuenta de registros guardados en el dispositivo (alcance de la sesión) | plantaciones activas que alcanza el perfil | Pastilla de conexión, aviso de guardado, Reportes (D83) |
+| Cuenta de registros guardados en el dispositivo (alcance de la sesión) | plantaciones activas que alcanza el perfil | Pastilla de conexión y aviso de guardado |
 | Alcance y acciones permitidas | perfil contra SRP.PERFILES | Toda la interfaz; en Fase 2 se impone en el servidor |
 | `dentro` (el punto cae en alguna alcaldía) | derivar() | Sólo para avisar de un hueco de capa; no se guarda |
-| El PDF del parte del día | jornada + sus plantaciones; no se guarda el archivo, se regenera | Reportes (D58, D70) |
-| Prioridad de reforestación de la colonia donde cae el árbol (Muy alta a Muy baja, o sin dato) y prioridad de la jornada (el nivel donde cayó la mayoría de sus árboles; en empate, el más alto; sin árboles, la de su punto) | El punto del árbol contra la capa de colonias prioritarias (SRP.prioritarias.de); en un solape, el polígono más pequeño. La de la jornada, SRP.prioritarias.deJornada | Iniciar jornada, Nuevo registro, lista y ficha de Jornadas (con filtro), Reportes (lista, filtro, vista previa y PDF), Supervisión, informe PDF y CSV |
+| El PDF del parte del día | jornada + sus plantaciones; no se guarda el archivo, se regenera | Reporte de la jornada (D58, D70) |
+| Prioridad de reforestación de la colonia donde cae el árbol (Muy alta a Muy baja, o sin dato) y prioridad de la jornada (el nivel donde cayó la mayoría de sus árboles; en empate, el más alto; sin árboles, la de su punto) | El punto del árbol contra la capa de colonias prioritarias (SRP.prioritarias.de); en un solape, el polígono más pequeño. La de la jornada, SRP.prioritarias.deJornada | Iniciar jornada, Nuevo registro, lista y ficha de Jornadas (con filtro), reporte de la jornada (vista previa y PDF), Supervisión, informe PDF y CSV |
 
 ### Indicadores de supervisión (D157)
 

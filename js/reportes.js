@@ -41,34 +41,6 @@ SRP.reportes = {
   iniciar() {
     this.el('form-cierre').addEventListener('submit', (e) => { e.preventDefault(); this.aceptar(); });
     this.el('form-cierre').addEventListener('input', (e) => { if (e.target.tagName === 'TEXTAREA') this.ajustarAlto(e.target); });
-    // Lista de jornadas cerradas con su reporte (D134)
-    /* La zona de filtros compartida: buscar por nombre, periodo y, en «Más filtros», si el reporte ya
-       se generó, quién registró, programa, alcaldía e institución */
-    const J = SRP.jornadas;
-    this.zona = SRP.zonaFiltros.crear({
-      raiz: 'pdf-filtros', p: 'pdf', todas: 'Todas',
-      buscar: { etiqueta: 'Buscar por nombre', marcador: 'Nombre de la jornada', texto: j => j.nombre },
-      fecha: j => j.fecha,
-      listas: [
-        { clave: 'reporte', etiqueta: 'Reporte', vacio: 'Todos', opciones: [['generado', 'Generado'], ['pendiente', 'Sin generar']], valor: j => j.dato && j.dato.reporte_en ? 'generado' : 'pendiente' },
-        { clave: 'cabo', etiqueta: 'Quién registró', ficha: 'Registró', vacio: 'Todos', personas: true, valor: j => j.personas || [j.cabo_id], ver: () => SRP.permisos.de(SRP.sesion.usuario).alcance !== 'propios' },
-        { clave: 'programa', etiqueta: 'Programa', vacio: 'Todos', valor: j => j.dato && j.dato.programa_id, nombre: id => SRP.ref.nombreCatalogo(id) },
-        { clave: 'origen', etiqueta: 'Origen', vacio: 'Todos', valor: j => SRP.pedido.clavesFiltro(j.dato), nombre: v => SRP.pedido.textoFiltro(v), orden: SRP.pedido.ordenFiltro },
-        { clave: 'prioridad', etiqueta: 'Prioridad de la colonia', ficha: 'Prioridad', vacio: 'Todas', opciones: SRP.prioritarias.opcionesFiltro(), valor: j => SRP.prioritarias.claveFiltro(j.prioridad), ver: () => SRP.prioritarias.hay() },
-        { clave: 'alcaldia', etiqueta: 'Alcaldía', vacio: 'Todas', valor: j => J.alcaldiasFiltro(j) }
-      ],
-      org: j => J.orgDe(j),
-      alCambiar: () => this.pintarLista()
-    });
-    this.el('pdf-vacio').addEventListener('click', (e) => {
-      const b = e.target.closest('button[data-vacio]'); if (!b) return;
-      if (b.dataset.vacio === 'jornadas') SRP.app.mostrarVista('jornadas'); else this.zona.reiniciar(false);
-    });
-    this.el('pdf-lista').addEventListener('click', (e) => {
-      const b = e.target.closest('button[data-id]'); if (!b) return;
-      const j = this.lista.find(x => x.id === b.dataset.id);
-      if (j) this.abrir(j.registros, j.fecha, j.cabo_id, j);
-    });
     // Vehículo del catálogo (D162): la placa elige; modelo y tipo se ponen solos
     this.el('cie-vehiculo').addEventListener('change', () => this.elegirVehiculo(this.el('cie-vehiculo').value, true));
     this.el('cie-vehiculo-frecuentes').addEventListener('click', (e) => {
@@ -106,89 +78,9 @@ SRP.reportes = {
     });
   },
 
-  /* ---------- La vista Reportes (D81) ---------- */
-
-  /* EL REPORTE ES DE UNA JORNADA. Los datos que lo acompañan —chófer, hora de
-     finalización, observaciones— no valen para un mes. Aquí se listan las jornadas cerradas y se
-     filtran con la zona compartida. La vista no depende de cómo esté filtrada la lista de
-     Registros: hace su propia consulta. */
-  zona: null,
-  get filtro() { return this.zona.filtro; },
-  lista: [],
-
-  async preparar() {
-    const u = SRP.sesion.usuario;
-    const alcance = SRP.permisos.de(u).alcance;
-    // Quien llega desde una jornada ve las de ese cabo
-    if (alcance !== 'propios' && this.pedido && this.pedido.cabo_id) this.filtro.cabo = this.pedido.cabo_id;
-    // Desde «Reporte de la jornada» (Jornadas) se llega directo al cierre de esa jornada
-    if (this.pedido && this.pedido.id) {
-      const id = this.pedido.id; this.pedido = null;
-      const j = (await SRP.jornadas.jornadasAlcance()).find(x => x.id === id);
-      await this.pintarLista();
-      if (j && j.estatus === 'cerrada') this.abrir(j.registros, j.fecha, j.cabo_id, j);
-      return;
-    }
-    this.pedido = null;
-    await this.pintarLista();
-  },
-
-  aplicarAtajo(atajo) { this.zona.aplicarAtajo(atajo); },
-
-  /* Las jornadas cerradas al alcance, la más reciente arriba, con su botón de reporte (D134) */
-  async pintarLista() {
-    const f = this.filtro, z = this.zona;
-    const todas = await SRP.jornadas.jornadasAlcance();
-    this.lista = SRP.util.ordenar(z.usar(todas.filter(j => j.estatus === 'cerrada'))
-      .sort((a, b) => b.fecha.localeCompare(a.fecha) || b.fecha_inicio.localeCompare(a.fecha_inicio)), 'reportes');
-    SRP.util.pintarOrden(this.el('pdf-orden'), 'reportes', async () => { this.pagina = 1; await this.pintarLista(); });
-    // Las abiertas que pasarían los mismos filtros (menos el del reporte, que no tienen): se dicen aparte
-    const abiertas = todas.filter(j => j.estatus === 'abierta' && z.cumpleTexto(j) && z.cumplePeriodo(j) && z.cumpleListas(j, new Set(['reporte']))).length;
-    const esc = SRP.util.escapar;
-    const u = SRP.sesion.usuario;
-    const variosAutores = SRP.permisos.de(u).alcance !== 'propios';
-    const clave = JSON.stringify(f);
-    if (clave !== this._claveFiltro) { this._claveFiltro = clave; this.pagina = 1; }
-    const info = SRP.util.paginar(this.lista, this.pagina, 'pdf-paginas');
-    this.pagina = info.pagina;
-    this.el('pdf-lista').innerHTML = info.items.map(j => {
-      const n = j.registros.length;
-      const especies = new Set(j.registros.map(r => SRP.jornadas.claveEspecie(r))).size;
-      const cuando = SRP.jornadas.cuando(j.fecha);
-      const fecha = SRP.envio.diaEnLetra(j.fecha).split(' ')[0].slice(0, 3) + ' ' + SRP.util.formatearFecha(j.fecha);
-      const generado = j.dato && j.dato.reporte_en;
-      const lugar = SRP.jornadas.lugarDe(j), ubic = (j.dato && j.dato.ubicacion) || '';
-      const cifra = (v, t) => '<span class="jornada-cifra" data-cero="' + (v === 0) + '"><b>' + v + '</b> ' + t + '</span>';
-      // Anatomía común de tarjeta (D141): qué → cuándo → estado → dónde → cuánto → quién → acción
-      return '<li class="jornada"><div class="jornada-boton reporte-ficha">' +
-        '<span class="jornada-titulo-caja"><span class="jornada-sitio">' + esc(j.nombre) + '</span>' +
-        '<span class="jornada-dia">' + (cuando ? '<b>' + cuando + '</b> · ' : '') + '<span class="jornada-fecha">' + esc(fecha) + '</span>' +
-        (j.total > 1 ? ' <span class="jornada-ndn">Jornada ' + j.n + ' de ' + j.total + '</span>' : '') + '</span></span>' +
-        '<span class="jornada-estado"><span class="insignia-jornada" data-tono="' + (generado ? 'ok' : 'neutro') + '">' +
-        SRP.ICONOS.svg(generado ? 'palomita' : 'reportes', 'chico') + '<span>' + (generado ? 'Reporte generado ' + esc(SRP.envio.cuando(generado)) : 'Sin reporte todavía') + '</span></span></span>' +
-        (lugar || ubic ? '<span class="jornada-lugar">' + SRP.ICONOS.svg('ubicacion', 'chico') + '<span>' + esc(lugar) + (ubic ? (lugar ? ' · ' : '') + '<span class="jornada-ubic">' + esc(ubic) + '</span>' : '') + '</span></span>' : '') +
-        (SRP.prioritarias.hay() ? '<span class="jornada-prioridad">' + SRP.prioritarias.insignia(j.prioridad) + '</span>' : '') +
-        (SRP.pedido.esPedido(j.dato) ? '<span class="jornada-pedido">' + SRP.pedido.insignia(j.dato) + '</span>' : '') +
-        '<span class="jornada-cifras">' + cifra(n, n === 1 ? 'árbol' : 'árboles') + cifra(especies, especies === 1 ? 'especie' : 'especies') + '</span>' +
-        (variosAutores ? '<span class="jornada-cabo">' + SRP.ICONOS.svg('usuario', 'chico') + '<span>' + esc(SRP.ref.nombreUsuario(j.cabo_id)) + '</span></span>' : '') +
-        // Un solo estado (D172): siempre «Generar reporte»; que ya se generó lo dice la insignia de arriba
-        '<button type="button" class="btn btn-primario btn-chico" data-id="' + SRP.util.escapar(j.id) + '"' + (n ? '' : ' disabled') + '>' +
-        SRP.ICONOS.svg('reportes', 'medio') + '<span>Generar reporte</span></button>' +
-        (n ? '' : '<span class="nota reporte-sin">Sin árboles: no hay qué reportar.</span>') + '</div></li>';
-    }).join('');
-    SRP.util.pintarPaginador(this.el('pdf-paginas'), info, 'jornada', 'jornadas', async (p) => {
-      this.pagina = p; await this.pintarLista(); SRP.util.subirA(this.el('pdf-nota'));
-    });
-    const nota = this.el('pdf-nota');
-    nota.textContent = this.lista.length ? this.lista.length + (this.lista.length === 1 ? ' jornada cerrada' : ' jornadas cerradas') + (abiertas ? ' · ' + abiertas + (abiertas === 1 ? ' abierta que aún no se puede reportar' : ' abiertas que aún no se pueden reportar') : '') + '.' : '';
-    // Estado vacío con salida (D141): la acción lleva a donde se cierran las jornadas
-    const vacio = this.el('pdf-vacio');
-    vacio.hidden = this.lista.length > 0;
-    if (!this.lista.length) vacio.innerHTML = SRP.util.htmlVacio('reportes',
-      z.fichas().length === 1 && f.dia ? 'No hay jornadas cerradas del ' + SRP.util.formatearFecha(f.dia) + '.' : z.activo() ? 'Ninguna jornada cerrada coincide con estos filtros.' : 'Todavía no hay jornadas cerradas.',
-      abiertas ? 'Hay ' + abiertas + (abiertas === 1 ? ' abierta' : ' abiertas') + ': ciérrela en Jornadas para generar su reporte.' : 'El reporte se genera al cerrar una jornada.',
-      [z.activo() ? { accion: 'todas', texto: 'Ver todas' } : null, { accion: 'jornadas', texto: 'Ir a Jornadas', clase: 'btn-primario', icono: 'jornadas' }]);
-  },
+  /* EL REPORTE ES DE UNA JORNADA, y se genera desde su ficha en Jornadas: datos del cierre, vista
+     previa y PDF. Las jornadas cerradas se buscan y se filtran en Jornadas («Reporte»: generado o sin
+     generar). */
 
   // Las cajas de texto del cierre crecen con lo escrito: el diálogo se desplaza solo, sin una
   // segunda barra dentro de cada caja
@@ -881,7 +773,7 @@ SRP.reportes = {
 
   /* Nombre del PDF (D102): «Reporte», quién responde del reporte y la fecha del reporte, p. ej.
      Reporte_Perengano_Gomez_Ejemplo_2026-09-22.pdf. La persona es el encargado del cierre; si no
-     lo hay, el cabo elegido en Reportes; si tampoco, quien genera (el coordinador que saca el de
+     lo hay, el cabo de la jornada; si tampoco, quien genera (el coordinador que saca el de
      toda su cuadrilla). Sin acentos ni espacios, para que ningún sistema de archivos lo altere. */
   nombreArchivo(cierre, fecha, jornada) {
     const cabo = this.contexto ? this.contexto.cabo_id : '';
@@ -939,7 +831,8 @@ SRP.reportes = {
     }
     SRP.util.anunciar((entregado === 'descarga' ? 'Reporte generado y descargado: ' + nombre + '.' : 'Reporte generado y compartido.') + cola, completa ? 'exito' : 'aviso');
     // La ficha de la lista pasa a «reporte generado hoy a las …» sin salir y volver
-    if (SRP.app.vista === 'reportes') await this.pintarLista();
+    // La ficha y la lista de Jornadas dicen en seguida que el reporte ya se generó
+    if (SRP.app.vista === 'jornadas') await SRP.jornadas.refrescar();
   },
 
   /* Cualquier archivo —el PDF del reporte o un informe— se entrega igual: compartir en táctil,

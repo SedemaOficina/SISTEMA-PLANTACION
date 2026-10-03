@@ -2413,3 +2413,20 @@
     va primera en «Quién lo solicita»; el grupo «Dependencia de gobierno» va antes que «Alcaldía». La
     descripción del pedido es obligatoria. Un teléfono con capturas recibe el solicitante nuevo con el
     sello de datos `2026-10-02b-oficina`, sin reiniciar. Modifica D210 y D217 en esos puntos.
+- **D220. El reporte se genera en la ficha de la jornada, el cabo descarga sus fotografías y la capa de prioridad se apaga en campo (bloque 156).** 02-10-2026. Decisión de Liber.
+  · **Sin sección Reportes:** se quitan la pestaña y la lista de «Reportes de jornada». El reporte se
+    genera desde la ficha de la jornada cerrada, con «Generar reporte»: datos del cierre, vista previa y
+    PDF, sin salir de Jornadas. Pedir la sección anterior (un «atrás» de una versión vieja) lleva a
+    Jornadas. Modifica D134 y D205.
+  · **Filtro «Reporte» en Jornadas:** «Generado» o «Sin generar», sobre las jornadas cerradas; va en
+    «Más filtros», con su ficha. La tarjeta de una jornada cerrada con árboles dice «Reporte generado …»
+    o «Sin reporte todavía».
+  · **Fotografías del cabo:** el cabo abre «Fotografías» desde «Mi avance», ve sólo las de los árboles
+    que registró y las descarga una por una o todas en ZIP. Cumple M369 y modifica D118.
+  · **Capa de prioridad en campo (Nuevo registro y ficha de la jornada):** arranca apagada. Encendida,
+    pinta sólo las colonias de la jornada: las de sus árboles y la del punto que se ubica o, sin árboles,
+    la de la ubicación de la jornada. La leyenda aparece sólo con la capa encendida. La prioridad del
+    punto y de la jornada se siguen diciendo en texto. La preferencia se guarda con otra clave, así que
+    todos los dispositivos arrancan con la capa apagada. Modifica D206 y D209.
+  · **Encuadre del mapa de registro:** si el mapa no estaba a la vista al entrar, encuadra los árboles de
+    la jornada la primera vez que se pinta visible.

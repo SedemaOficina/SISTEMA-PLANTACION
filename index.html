@@ -14,12 +14,12 @@
 <!-- Las peticiones al mapa no dicen desde qué sitio se hacen -->
 <meta name="referrer" content="no-referrer">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.9.22">
-<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.9.22">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.9.23">
+<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.9.23">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.9.22">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.9.22">
-<link rel="stylesheet" href="css/estilos.css?v=0.9.22">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.9.23">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.9.23">
+<link rel="stylesheet" href="css/estilos.css?v=0.9.23">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -30,8 +30,8 @@
   <div class="encabezado-interior">
     <!-- Logotipo (D90, D137): Gobierno CDMX · SEDEMA · SIA · Reforestación Urbana en pantalla ancha; en teléfono, SIA y Reforestación Urbana -->
     <picture>
-      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.9.22">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.9.22" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
+      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.9.23">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.9.23" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» (D80) -->
@@ -72,10 +72,9 @@
   <!-- Supervisión va primero para coordinación y administración, y al final como «Mi avance» para el cabo (D158) -->
   <button type="button" class="pestana" data-vista="supervision"><span id="pestana-supervision-texto">Supervisión</span></button>
   <button type="button" class="pestana" data-vista="registrar">Nuevo registro</button>
-  <!-- Orden de las secciones (D114): Nuevo registro, Jornadas, Registros, Reportes -->
+  <!-- Orden de las secciones: Nuevo registro, Jornadas, Registros. El reporte de cada jornada se genera en su ficha -->
   <button type="button" class="pestana" data-vista="jornadas">Jornadas</button>
   <button type="button" class="pestana" data-vista="registros">Registros</button>
-  <button type="button" class="pestana" data-vista="reportes">Reportes</button>
   <!-- Fotografías vive dentro de Supervisión; Catálogos y Usuarios, en el menú de la cuenta (D158) -->
 </nav>
 
@@ -468,7 +467,7 @@
       <p class="nota">Cada día de trabajo con su mapa, para comprobar al cierre que cada árbol plantado tenga su punto.</p>
       <!-- Filtros (D128): Todas · Hoy · Un día · Un periodo; año, mes y cabo plegados en «Más filtros» -->
       <section class="bloque" aria-labelledby="jornada-titulo-filtros">
-        <!-- Misma cabecera que en Registros, Reportes y Fotografías: título, «Quitar filtros» y fichas de lo elegido -->
+        <!-- Misma cabecera que en Registros y Fotografías: título, «Quitar filtros» y fichas de lo elegido -->
         <div class="grupo-cab"><h2 id="jornada-titulo-filtros" class="titulo-bloque">Filtrar</h2>
           <button type="button" id="jornada-quitar" class="btn btn-reiniciar" hidden>Quitar filtros</button></div>
         <ul id="jornada-fichas" class="filtros-activos" data-visible="true" aria-label="Filtros activos"></ul>
@@ -501,6 +500,8 @@
               <div id="caja-jornada-mes" class="campo campo-corto"><label for="jornada-mes">Mes</label><select id="jornada-mes"></select></div>
               <div id="caja-jornada-cabo" class="campo campo-corto" hidden><label for="jornada-cabo">Quién registró</label><select id="jornada-cabo"></select></div>
               <div class="campo campo-corto"><label for="jornada-programa">Programa</label><select id="jornada-programa"></select></div>
+              <!-- Reporte: si la jornada cerrada ya tiene su reporte generado -->
+              <div class="campo campo-corto"><label for="jornada-reporte">Reporte</label><select id="jornada-reporte"></select></div>
               <div class="campo campo-corto"><label for="jornada-origen">Origen</label><select id="jornada-origen"></select></div>
               <div class="campo campo-corto" id="caja-jornada-filtro-prioridad"><label for="jornada-filtro-prioridad">Prioridad de la colonia</label><select id="jornada-filtro-prioridad"></select></div>
               <div class="campo campo-corto"><label for="jornada-alcaldia">Alcaldía</label><select id="jornada-alcaldia"></select></div>
@@ -573,28 +574,11 @@
     </div>
   </section>
 
-  <!-- REPORTES: el reporte del día (D81). El bloque «Registros en este dispositivo» se retiró (D104) -->
-  <section id="vista-reportes" class="vista vista-ancha vista-reportes" hidden aria-labelledby="titulo-reportes">
-    <h1 id="titulo-reportes">Reportes de jornada</h1>
-
-    <!-- El reporte es de una jornada cerrada (D131, D134): aquí se listan y cada una genera el suyo -->
-    <section class="bloque" aria-labelledby="titulo-reportes">
-    <p class="nota">Cada jornada cerrada tiene su reporte. Una jornada abierta se cierra en Jornadas.</p>
-    <!-- La zona de filtros la arma SRP.zonaFiltros (js/filtros.js), la misma que en Fotografías -->
-    <div id="pdf-filtros"></div>
-    <div class="lista-barra"><p id="pdf-nota" class="nota" aria-live="polite"></p><div id="pdf-orden" class="lista-orden"></div></div>
-    <div id="pdf-vacio" class="vacio" aria-live="polite" hidden></div>
-    <ul id="pdf-lista" class="lista-jornadas lista-reportes rejilla-tarjetas"></ul>
-    <nav id="pdf-paginas" class="paginador" aria-label="Páginas de reportes" hidden></nav>
-    </section>
-
-  </section>
-
   <!-- FOTOGRAFÍAS (D118): galería para coordinación y administración, con descarga -->
   <section id="vista-galeria" class="vista vista-ancha" hidden aria-labelledby="titulo-galeria">
     <button type="button" id="btn-galeria-volver" class="btn btn-texto volver">Supervisión</button>
     <h1 id="titulo-galeria">Fotografías</h1>
-    <p class="nota">Las fotografías de los árboles registrados. Toque una para verla grande y descargarla, o descargue todas las filtradas en un archivo ZIP.</p>
+    <p id="galeria-nota" class="nota">Las fotografías de los árboles registrados. Toque una para verla grande y descargarla, o descargue todas las filtradas en un archivo ZIP.</p>
     <section class="bloque" aria-label="Filtros de fotografías">
       <!-- La zona de filtros la arma SRP.zonaFiltros (js/filtros.js) -->
       <div id="galeria-filtros"></div>
@@ -1140,57 +1124,57 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.9.22"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.9.22"></script>
-<script src="vendor/turf-pip.min.js?v=0.9.22"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.9.22"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.9.22"></script>
+<script src="vendor/leaflet.js?v=0.9.23"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.9.23"></script>
+<script src="vendor/turf-pip.min.js?v=0.9.23"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.9.23"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.9.23"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.9.22"></script>
-<script src="js/util.js?v=0.9.22"></script>
-<script src="js/filtros.js?v=0.9.22"></script>
-<script src="js/iconos.js?v=0.9.22"></script>
+<script src="js/config.js?v=0.9.23"></script>
+<script src="js/util.js?v=0.9.23"></script>
+<script src="js/filtros.js?v=0.9.23"></script>
+<script src="js/iconos.js?v=0.9.23"></script>
 <!-- Capas territoriales del SIA, compactadas por herramientas/generar_capas.py desde originales/ -->
-<script src="assets/capas/capa-alcaldias.js?v=0.9.22"></script>
-<script src="assets/capas/capa-uga.js?v=0.9.22"></script>
-<script src="assets/capas/capa-colonias.js?v=0.9.22"></script>
+<script src="assets/capas/capa-alcaldias.js?v=0.9.23"></script>
+<script src="assets/capas/capa-uga.js?v=0.9.23"></script>
+<script src="assets/capas/capa-colonias.js?v=0.9.23"></script>
 <!-- Colonias prioritarias para reforestar: capa de referencia del modelo de priorización -->
-<script src="assets/capas/capa-prioritarias.js?v=0.9.22"></script>
-<script src="assets/catalogos/catalogo-especies.js?v=0.9.22"></script>
-<script src="assets/catalogos/catalogo-vehiculos.js?v=0.9.22"></script>
-<script src="js/datos-ficticios.js?v=0.9.22"></script>
-<script src="js/permisos.js?v=0.9.22"></script>
-<script src="js/derivacion.js?v=0.9.22"></script>
-<script src="js/prioritarias.js?v=0.9.22"></script>
-<script src="js/pedido.js?v=0.9.22"></script>
-<script src="js/almacen.js?v=0.9.22"></script>
-<script src="js/sesion.js?v=0.9.22"></script>
-<script src="js/referencias.js?v=0.9.22"></script>
-<script src="js/folio.js?v=0.9.22"></script>
+<script src="assets/capas/capa-prioritarias.js?v=0.9.23"></script>
+<script src="assets/catalogos/catalogo-especies.js?v=0.9.23"></script>
+<script src="assets/catalogos/catalogo-vehiculos.js?v=0.9.23"></script>
+<script src="js/datos-ficticios.js?v=0.9.23"></script>
+<script src="js/permisos.js?v=0.9.23"></script>
+<script src="js/derivacion.js?v=0.9.23"></script>
+<script src="js/prioritarias.js?v=0.9.23"></script>
+<script src="js/pedido.js?v=0.9.23"></script>
+<script src="js/almacen.js?v=0.9.23"></script>
+<script src="js/sesion.js?v=0.9.23"></script>
+<script src="js/referencias.js?v=0.9.23"></script>
+<script src="js/folio.js?v=0.9.23"></script>
 <!-- Esquema generado de datos/esquema.json: relaciones entre tablas (D150) -->
-<script src="js/esquema.js?v=0.9.22"></script>
-<script src="js/conexion.js?v=0.9.22"></script>
-<script src="js/envio.js?v=0.9.22"></script>
-<script src="js/mapa.js?v=0.9.22"></script>
-<script src="js/foto.js?v=0.9.22"></script>
-<script src="js/jornada-activa.js?v=0.9.22"></script>
-<script src="js/formulario.js?v=0.9.22"></script>
+<script src="js/esquema.js?v=0.9.23"></script>
+<script src="js/conexion.js?v=0.9.23"></script>
+<script src="js/envio.js?v=0.9.23"></script>
+<script src="js/mapa.js?v=0.9.23"></script>
+<script src="js/foto.js?v=0.9.23"></script>
+<script src="js/jornada-activa.js?v=0.9.23"></script>
+<script src="js/formulario.js?v=0.9.23"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.9.22"></script>
-<script src="js/registros.js?v=0.9.22"></script>
-<script src="js/galeria.js?v=0.9.22"></script>
-<script src="js/jornadas.js?v=0.9.22"></script>
-<script src="js/informes.js?v=0.9.22"></script>
-<script src="js/supervision.js?v=0.9.22"></script>
-<script src="js/indicadores.js?v=0.9.22"></script>
-<script src="js/demostracion.js?v=0.9.22"></script>
-<script src="js/croquis.js?v=0.9.22"></script>
-<script src="js/reportes.js?v=0.9.22"></script>
-<script src="js/catalogos.js?v=0.9.22"></script>
-<script src="js/usuarios.js?v=0.9.22"></script>
-<script src="js/excel.js?v=0.9.22"></script>
-<script src="js/carga.js?v=0.9.22"></script>
-<script src="js/configuracion.js?v=0.9.22"></script>
-<script src="js/app.js?v=0.9.22"></script>
+<script src="js/espejo.js?v=0.9.23"></script>
+<script src="js/registros.js?v=0.9.23"></script>
+<script src="js/galeria.js?v=0.9.23"></script>
+<script src="js/jornadas.js?v=0.9.23"></script>
+<script src="js/informes.js?v=0.9.23"></script>
+<script src="js/supervision.js?v=0.9.23"></script>
+<script src="js/indicadores.js?v=0.9.23"></script>
+<script src="js/demostracion.js?v=0.9.23"></script>
+<script src="js/croquis.js?v=0.9.23"></script>
+<script src="js/reportes.js?v=0.9.23"></script>
+<script src="js/catalogos.js?v=0.9.23"></script>
+<script src="js/usuarios.js?v=0.9.23"></script>
+<script src="js/excel.js?v=0.9.23"></script>
+<script src="js/carga.js?v=0.9.23"></script>
+<script src="js/configuracion.js?v=0.9.23"></script>
+<script src="js/app.js?v=0.9.23"></script>
 </body>
 </html>

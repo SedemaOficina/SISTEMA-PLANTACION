@@ -13,7 +13,7 @@ SRP.app = {
     I.poner(document.querySelector('label[for="acceso-clave"]'), 'candado', 'medio');
     I.poner(this.el('form-acceso').querySelector('button[type="submit"]'), 'entrar', 'medio');
     I.poner(this.el('btn-entrar-prueba'), 'entrar', 'medio');
-    const pestana = { supervision: 'avance', registrar: 'mas', registros: 'registros', jornadas: 'jornadas', reportes: 'reportes' };
+    const pestana = { supervision: 'avance', registrar: 'mas', registros: 'registros', jornadas: 'jornadas' };
     this.el('navegacion').querySelectorAll('.pestana').forEach(b => I.poner(b, pestana[b.dataset.vista], 'grande'));
     I.poner(this.el('btn-usr-agregar'), 'usuarioMas', 'medio');
     I.poner(this.el('btn-subir'), 'subir', 'grande');
@@ -128,7 +128,7 @@ SRP.app = {
     const faltan = [
       ['form-acceso', 'la pantalla de acceso'],
       ['vista-usuarios', 'la pantalla de usuarios'],
-      ['vista-reportes', 'la pantalla de reportes'],
+      ['dlg-cierre', 'el formulario del reporte'],
       ['franja-guardado', 'la franja de registro guardado'],
       ['revision-lista', 'la ficha de revisión']
       // El espejo de campos no se exige: se retira al cerrar la Etapa 1 y la app debe abrir sin él (D153)
@@ -364,6 +364,8 @@ SRP.app = {
       if ((nombre === 'registrar' && !p.registrar) || (nombre === 'catalogos' && !p.catalogos) || (nombre === 'galeria' && !p.galeria) || (nombre === 'supervision' && p.alcance === 'ninguno') ||
           (nombre === 'usuarios' && !p.usuarios) || (['configuracion', 'parametros', 'cambios', 'acerca', 'carga'].includes(nombre) && !admin)) nombre = 'registros';
     }
+    // Una sección que ya no existe (un «atrás» hacia Reportes, de una versión anterior) lleva a Jornadas
+    if (!document.getElementById('vista-' + nombre)) nombre = 'jornadas';
     this.vista = nombre;
     // Cada sección queda en el historial del navegador: «atrás» vuelve a la sección anterior
     if (u && !desdeHistorial) {
@@ -381,7 +383,6 @@ SRP.app = {
     if (nombre === 'jornadas') SRP.jornadas.preparar();
     if (nombre === 'galeria') SRP.galeria.preparar();
     if (nombre === 'supervision') SRP.supervision.preparar();
-    if (nombre === 'reportes') SRP.reportes.preparar();
     if (nombre === 'catalogos') SRP.catalogos.preparar();
     if (nombre === 'usuarios') SRP.usuarios.preparar();
     if (nombre === 'configuracion') SRP.configuracion.preparar();

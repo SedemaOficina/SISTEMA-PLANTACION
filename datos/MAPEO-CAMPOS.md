@@ -179,7 +179,7 @@ Almacén `bitacora`. No se edita desde el sistema.
 ## Módulo: Jornada (inicio, revisión y cierre del reporte)
 
 La jornada se declara en **Nuevo registro → «Iniciar jornada»** antes del primer árbol (D119);
-se revisa en **Jornadas** y sus datos de cierre se capturan en **Reportes → «Datos de cierre»**.
+se revisa en **Jornadas** y sus datos de cierre se capturan en **su ficha → «Generar reporte» → «Datos de cierre»**.
 Almacén `jornadas` (sustituye a `cierres` desde el bloque 62). Lo que ya vive en los registros
 —especies, conteos, alcaldía— no se pregunta, se calcula (D58).
 

@@ -17,7 +17,7 @@ window.SRP = window.SRP || {};
 SRP.prioritarias = {
   // De mayor a menor: así se leen en la leyenda y en las tablas
   NIVELES: [[4, 'Muy alta'], [3, 'Alta'], [2, 'Media'], [1, 'Baja'], [0, 'Muy baja']],
-  CLAVE: 'srp_capa_prioritarias',
+  CLAVE: 'srp_capa_prioritarias_2',
   memoria: new Map(),
   capas: new Map(),   // mapa de Leaflet → su capa
 
@@ -46,6 +46,13 @@ SRP.prioritarias = {
   textoPunto(lat, lng) {
     const p = this.de(lat, lng);
     return p ? p.texto + ' · ' + p.colonia : 'Sin dato en la capa de prioridad';
+  },
+
+  // Las colonias de la capa donde caen unos puntos: { id de colonia: cuántos }
+  coloniasDe(puntos) {
+    const c = {};
+    (puntos || []).forEach(r => { const p = r && this.de(r.lat, r.lng); if (p && p.id != null) c[p.id] = (c[p.id] || 0) + 1; });
+    return c;
   },
 
   // Cuántos puntos caen en cada nivel: [{ prioridad, texto, n }] de mayor a menor, y los que quedan sin dato
@@ -98,14 +105,14 @@ SRP.prioritarias = {
      «supervision»: el mapa de colonias de Supervisión—: si la capa está encendida, qué niveles se
      ven y con cuánta opacidad. Se recuerda en el dispositivo. */
   estados: null,
-  inicial(grupo) { return { ver: true, niveles: { 0: true, 1: true, 2: true, 3: true, 4: true }, opacidad: grupo === 'supervision' ? 0.9 : 0.45 }; },
+  // En campo la capa arranca apagada: quien la quiere la enciende con el botón de capas
+  inicial(grupo) { return { ver: grupo === 'supervision', niveles: { 0: true, 1: true, 2: true, 3: true, 4: true }, opacidad: grupo === 'supervision' ? 0.9 : 0.45 }; },
   estado(grupo) {
     if (!this.estados) {
       this.estados = {};
       let g = null;
       try { g = localStorage.getItem(this.CLAVE); } catch (e) { /* sin almacenamiento: vale para esta sesión */ }
-      if (g === 'no') this.estados.campo = Object.assign(this.inicial('campo'), { ver: false });   // lo que se guardaba antes: sólo encendida o no
-      else if (g && g !== 'si') { try { this.estados = JSON.parse(g) || {}; } catch (e) { this.estados = {}; } }
+      if (g) { try { this.estados = JSON.parse(g) || {}; } catch (e) { this.estados = {}; } }
     }
     const e = this.estados[grupo] = Object.assign(this.inicial(grupo), this.estados[grupo] || {});
     e.niveles = Object.assign(this.inicial(grupo).niveles, e.niveles || {});
@@ -116,11 +123,15 @@ SRP.prioritarias = {
   encendida() { return this.estado('campo').ver; },
 
   /* Pone o quita la capa de un mapa. Va debajo de los puntos y no atiende toques: no estorba al colocar el árbol.
-     `intervenidas` ({ id de colonia: árboles }): se dibujan sólo esas colonias, con el color de su
-     prioridad; el color dice dónde se plantó y con qué prioridad, y la etiqueta, cuántos árboles. */
+     `intervenidas` ({ id de colonia: árboles }, o una función que lo devuelve): se dibujan sólo esas
+     colonias, con el color de su prioridad; el color dice dónde se plantó y con qué prioridad, y la
+     etiqueta, cuántos árboles. Si las colonias cambian, la capa se vuelve a armar. */
   pintar(mapa, ver, interactiva, intervenidas) {
     if (!mapa || !window.L || !this.hay()) return;
+    if (typeof intervenidas === 'function') intervenidas = intervenidas() || {};
+    const clave = intervenidas ? Object.keys(intervenidas).sort().join() : '';
     let capa = this.capas.get(mapa);
+    if (capa && capa.claveColonias !== clave) { if (mapa.hasLayer(capa)) mapa.removeLayer(capa); this.capas.delete(mapa); capa = null; }
     if (ver && !capa) {
       if (!mapa.getPane('prioritarias')) { mapa.createPane('prioritarias'); mapa.getPane('prioritarias').classList.add('pane-prioritarias'); }
       capa = L.geoJSON(SRP.CAPAS.prioritarias.geojson, {
@@ -132,6 +143,7 @@ SRP.prioritarias = {
           l.bindTooltip(f.properties.colonia + ': prioridad ' + this.texto(f.properties.prioridad).toLowerCase() + (n ? ' · ' + n + (n === 1 ? ' árbol' : ' árboles') : ''), { sticky: true });
         } : undefined
       });
+      capa.claveColonias = clave;
       this.capas.set(mapa, capa);
     }
     if (!capa) return;

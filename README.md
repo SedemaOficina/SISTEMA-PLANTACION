@@ -23,10 +23,11 @@ La versión que corre se lee al pie de cada pantalla.
    árboles previstos. Ahí se revisan los puntos y se cierra la jornada; la tuerca de cada punto edita, mueve a
    otra jornada, sustituye o elimina el árbol (un error de captura se corrige sin salir de la
    jornada). La coordinación hace ahí el **relevo de cabo**: pasa la jornada abierta a otro cabo de
-   su cuadrilla, que sigue registrando en ella; el titular no cambia (D204).
-4. **Reportes.** De cada jornada cerrada: datos de cierre, vista previa y PDF con croquis. El
-   vehículo se elige por su placa y el modelo y el tipo se ponen solos (D162).
-5. **Supervisión** (coordinación y administración, primera sección al entrar) o **Mi avance** (el
+   su cuadrilla, que sigue registrando en ella; el titular no cambia (D204). La ficha de cada
+   jornada cerrada trae **«Generar reporte»**: datos de cierre, vista previa y PDF con croquis, sin
+   salir de Jornadas; el vehículo se elige por su placa y el modelo y el tipo se ponen solos. El
+   filtro «Reporte» deja las jornadas con reporte generado o sin generar. No hay sección Reportes.
+4. **Supervisión** (coordinación y administración, primera sección al entrar) o **Mi avance** (el
    cabo, al final de su barra): lo plantado por semana, mes, año o rango, con filtros de alcaldía,
    programa y cabo; cuentan sólo las jornadas cerradas. Cifras, «Qué atender», gráfica, por cabo,
    por alcaldía con mapa, por especie y programa, y calidad del dato (D157, D158). De ahí salen los
@@ -74,7 +75,7 @@ llena con lo que se capture.
 |---|---|---|---|
 | administracion@ejemplo.local | SEDEMA (Sistema de Información Ambiental) | Administración global | Ve, edita y elimina todo, y lleva Catálogos y Usuarios. **No captura registros** |
 | coordinador@ejemplo.local | SEDEMA (DGSANPAVA) | Coordinador | Registra, y ve, edita y elimina los registros de su cuadrilla; elimina también las jornadas vacías y hace el relevo de cabo en una jornada abierta |
-| cabo@ejemplo.local | SEDEMA (DGSANPAVA) | Cabo | Registra, y ve, edita y elimina sólo los suyos |
+| cabo@ejemplo.local | SEDEMA (DGSANPAVA) | Cabo | Registra, y ve, edita y elimina sólo los suyos; descarga sus fotografías desde «Mi avance» |
 | coordinador.alcaldia@ejemplo.local | Alcaldía Iztapalapa | Coordinador | Igual que un coordinador, sólo con los cabos de su institución; sin área |
 | cabo.alcaldia@ejemplo.local | Alcaldía Iztapalapa | Cabo | Igual que un cabo; sin área; en el cierre, sin personal, chófer ni vehículo. Programa: Reforestación Urbana |
 | coordinador.gobierno@ejemplo.local | PAOT (Gobierno de la CDMX) | Coordinador | Ídem coordinador de fuera |
@@ -144,7 +145,7 @@ js/                     La aplicación, un archivo por tema
   reportes.js           Datos de cierre y reporte PDF de la jornada
   croquis.js            Croquis del reporte: puntos numerados sobre imagen de satélite o fondo liso (D115)
   supervision.js, indicadores.js, informes.js   Supervisión, sus cifras y los informes PDF y CSV
-  filtros.js            Zona de filtros compartida (Reportes y Fotografías): buscar, periodo, listas dependientes, fichas (D205)
+  filtros.js            Zona de filtros de Fotografías: buscar, periodo, listas dependientes, fichas (D205)
   galeria.js            Sección Fotografías: rejilla, foto grande, descarga y ZIP (D118)
   catalogos.js, usuarios.js                     Administración de catálogos y cuentas
   mapa.js, foto.js, iconos.js, util.js, app.js  Mapa, fotografía, iconos, utilidades y arranque
@@ -213,8 +214,7 @@ en `js/almacen.js` que traslada lo guardado antes de retirar nada.
 ## El reporte de la jornada
 
 El reporte es el **parte de una jornada** (D119, D134), no de un día ni de un periodo: un día puede
-tener varias jornadas. Se genera desde Reportes, que lista las jornadas cerradas con árboles, o
-desde la ficha de la jornada. Primero se piden los **datos de cierre de la jornada**: personal,
+tener varias jornadas. Se genera desde la ficha de la jornada, en Jornadas. Primero se piden los **datos de cierre de la jornada**: personal,
 apoyo, encargado, observaciones, chófer, vehículo y hora de finalización. Todos opcionales, y
 los que quedan vacíos no se imprimen. El **vehículo** sale del catálogo (D162): se elige la placa,
 agrupada por tipo, y el modelo y el tipo se ponen solos; arriba aparecen, a un toque, los tres que

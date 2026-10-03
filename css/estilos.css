@@ -902,10 +902,6 @@ dialog::backdrop { background: var(--velo-oscuro); }
 /* Acciones de la ficha de jornada (D132) */
 .jornada-acciones-cab { display: flex; flex-wrap: wrap; gap: var(--e-2); margin: 0 0 var(--e-3); }
 /* Reportes por jornada cerrada (D134): la ficha no es botón; el botón va a la derecha */
-.reporte-ficha { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2) var(--e-3); cursor: default; }
-.reporte-ficha .jornada-titulo-caja { flex: 1 1 14rem; }
-.reporte-ficha .jornada-sitio { font-size: var(--t-m); }
-.reporte-sin { flex: 1 1 100%; margin: 0; }
 .registro-jornada { font-weight: 600; color: var(--texto); }
 .galeria-jornada { font-weight: 600; }
 /* PASOS DE LA JORNADA (D138, D146). Indicador de avance —Registrar · Cerrar · Revisar · Reporte—:
@@ -973,11 +969,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .registro .registro-lugar svg { flex: none; margin-top: 3px; color: var(--gris); }
 .insignia-jornada svg { flex: none; }
 .conciliacion-resultado svg { flex: none; margin-top: 1px; }
-.reporte-ficha .jornada-estado { margin: var(--e-1) 0; }
 /* Tarjeta de Reportes en columna, como la de Jornadas: cada pieza en su renglón y el botón al final, a la derecha */
-.reporte-ficha > * { flex: 1 1 100%; }
-.reporte-ficha > .btn { flex: 0 0 auto; margin-left: auto; }
-.reporte-ficha .jornada-cifras { display: grid; grid-template-columns: repeat(2, minmax(0, 8rem)); gap: var(--e-15); }
 /* Ficha de la jornada: subtítulos de sección y, en teléfono, barra fija de saltos */
 .titulo-seccion { margin: var(--e-4) 0 var(--e-2); scroll-margin-top: 64px; }
 .titulo-seccion:focus { outline: none; }
@@ -1142,7 +1134,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
      Jornadas y Reportes son «vista-ancha» como las de tabla. Los textos de ayuda, línea corta. */
   .vista > .nota, .jornadas-lista-caja > .nota, .panel-iniciar > .nota, .vista .bloque > .nota { max-width: 62ch; }
   /* Sus hijos directos no se quedan en la línea de un formulario: ni el panel de iniciar ni la franja */
-  .vista.vista-registrar > *, .vista.vista-jornadas > *, .vista.vista-reportes > * { max-width: none; }
+  .vista.vista-registrar > *, .vista.vista-jornadas > * { max-width: none; }
   .sup-cifras { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (min-width: 1024px) {

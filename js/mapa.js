@@ -74,7 +74,9 @@ SRP.mapa = {
     ver.setAttribute('aria-label', 'Ver el registro de este árbol');
     ver.addEventListener('click', () => { const r = this.plantados[this.elegido]; if (r) SRP.registros.verDetalle(r.registro); });
     // Colonias prioritarias: capa de referencia; su control (encender, niveles y opacidad) va sobre el mapa
-    SRP.prioritarias.control(() => this.mapa, { grupo: 'campo', leyenda: document.getElementById('mapa-prioritarias') });
+    // Encendida, la capa pinta sólo las colonias de la jornada: las de sus árboles y la del punto que se está ubicando
+    SRP.prioritarias.control(() => this.mapa, { grupo: 'campo', leyenda: document.getElementById('mapa-prioritarias'),
+      intervenidas: () => SRP.prioritarias.coloniasDe(Object.values(this.plantados).map(p => p.registro).concat(this.lat !== null ? [{ lat: this.lat, lng: this.lng }] : [])) });
   },
 
   /* CRÉDITO DEL MAPA (D108, D152), en todos los mapas: Leaflet, «Powered by Esri» —que Esri pide
@@ -131,19 +133,22 @@ SRP.mapa = {
       this.plantados[r.id] = { marcador: m, registro: r };
     });
     // El punto elegido sigue elegido si aún está; su etiqueta se vuelve a abrir al tocarlo
+    SRP.prioritarias.refrescar();
     if (!this.plantados[this.elegido]) this.elegido = null;
     else { const e = this.plantados[this.elegido].marcador.getElement(); if (e) e.classList.add('elegido'); }
     this.pintarRenglonPlantados();
     // La primera vez que se ve la jornada, el mapa encuadra lo ya plantado; después no se mueve solo
     const puntos = Object.values(this.plantados).map(p => p.marcador.getLatLng());
-    if (jornadaId !== this.jornadaVista && puntos.length && this.lat === null) {
+    if (!puntos.length) this.jornadaVista = null;
+    else if (jornadaId !== this.jornadaVista && this.lat === null) {
       setTimeout(() => {
+        // Con el mapa escondido no hay qué encuadrar: se hará la próxima vez que se pinte a la vista
         if (this.lat !== null || document.getElementById('mapa').offsetParent === null) return;
         this.mapa.invalidateSize();
         this.mapa.fitBounds(L.latLngBounds(puntos), { padding: [40, 40], maxZoom: SRP.CONFIG.MAPA.ZOOM_MAX, animate: false });
+        this.jornadaVista = jornadaId || null;
       }, 80);
     }
-    this.jornadaVista = jornadaId || null;
   },
 
   elegirPlantado(id) {
@@ -292,6 +297,7 @@ SRP.mapa = {
     else { this.estado(mensaje); this.dibujarMargen(null); }
     this.refrescarBotonUbicacion();
     this.pintarGuia();
+    SRP.prioritarias.refrescar();
     if (this.alCambiar) this.alCambiar(this.lat, this.lng);
     return true;
   },

@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.9.22 (Bloque 155)»**.
+Al pie de cualquier pantalla: **«Versión 0.9.23 (Bloque 156)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -373,6 +373,11 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M374 | Liber | El mapa «Por prioridad de la colonia» pinta sólo las colonias donde se plantó, con el color de su prioridad | Alta | 0.9.22 (B155) | Mi avance o Supervisión › «Por prioridad de la colonia»: sólo las colonias intervenidas; al pasar el cursor, cuántos árboles | Mapa de prioridad |
 | M375 | Liber | «Oficina de la Secretaría» es la primera opción de «Quién lo solicita», y las dependencias de gobierno van antes que las alcaldías | Media | 0.9.22 (B155) | Iniciar jornada › Origen «Pedido especial»: el desplegable empieza por «Dependencia de gobierno» y «Oficina de la Secretaría» | Desplegable del solicitante |
 | M376 | Liber | La descripción del pedido especial es obligatoria | Media | 0.9.22 (B155) | Iniciar un pedido especial sin descripción: no deja y lo dice en el campo | Bloque del pedido |
+| M369 | Liber | Los cabos descargan sus propias fotografías: «Fotografías» en «Mi avance», una por una o todas en ZIP | Media | 0.9.23 (B156) | Entrar como cabo › Mi avance › Fotografías: sólo las suyas, con «Descargar todas» | Fotografías del cabo |
+| M377 | Liber | El reporte se genera en la ficha de la jornada; se quita la sección Reportes | Alta | 0.9.23 (B156) | Jornadas › una jornada cerrada › «Generar reporte»: datos del cierre, vista previa y PDF sin salir | Ficha de la jornada |
+| M378 | Liber | Jornadas se filtra por «Reporte» (generado o sin generar) y cada tarjeta cerrada dice el estado de su reporte | Alta | 0.9.23 (B156) | Jornadas › Más filtros › Reporte › «Sin generar» | Filtro y tarjeta |
+| M379 | Liber | En Nuevo registro y en la ficha de la jornada la capa de prioridad arranca apagada; encendida, pinta sólo las colonias de la jornada, y la leyenda sale sólo con la capa | Alta | 0.9.23 (B156) | Nuevo registro: el mapa sin colonias; botón de capas › «Colonias prioritarias»: sólo la colonia de la jornada | Mapa de registro |
+| M380 | Corrección | El mapa de registro encuadra los árboles de la jornada aunque al entrar no estuviera a la vista | Media | 0.9.23 (B156) | Entrar con una jornada con árboles y abrir Nuevo registro: el mapa llega acercado a ellos | — |
 
 ## 2. Por hacer
 
@@ -383,7 +388,6 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M170 | Auditoría 360 | Bloque «Pruebas en iPhone»: GitHub Actions con Chromium y WebKit, pruebas de migración e integridad (M17, M18) | Media | Pendiente | |
 | M171 | Auditoría 360 | Fotografías como Blob (hoy ocupan un tercio más como texto) y sello de datos dentro de la base | Media | Pendiente | Resto de A1 y A2 |
 | M343 | Liber | Catálogo de especies: marcar cuáles son frutales, para filtrar y contar los árboles frutales plantados | Media | Pendiente | Pedido el 01-10-2026. Falta decidir de dónde sale la marca (el catálogo del SIA no la trae) y dónde se muestra |
-| M369 | Liber | Los cabos pueden descargar sus propias fotografías (hoy la galería y su descarga son sólo de coordinación y administración) | Media | Pendiente | Pedido el 02-10-2026. Falta definir dónde: en «Registros», en la ficha del árbol o en una galería propia del cabo, y si la descarga es por fotografía, en ZIP o ambas |
 
 ## 3. Verificadas sin falla
 
@@ -399,4 +403,4 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 358 hechas · 6 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 363 hechas · 5 por hacer · 2 revisadas · 2 descartadas.

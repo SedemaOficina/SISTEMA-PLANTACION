@@ -28,7 +28,9 @@ window.SRP = window.SRP || {};
 SRP.jornadas = {
   /* Filtros (D128): «Un día» gana sobre año/mes; el rango Desde/Hasta limpia a los tres.
      Año, mes y cabo viven plegados en «Más filtros». Al entrar se ven todas. */
-  filtro: { texto: '', revision: '', dia: '', desde: '', hasta: '', anio: '', mes: '', cabo: '', programa: '', origen: '', prioridad: '', alcaldia: '', tipo: '', organizacion: '' },
+  filtro: { texto: '', revision: '', dia: '', desde: '', hasta: '', anio: '', mes: '', cabo: '', programa: '', reporte: '', origen: '', prioridad: '', alcaldia: '', tipo: '', organizacion: '' },
+  // El reporte es de una jornada cerrada: «sin generar» son las cerradas que aún no lo tienen
+  REPORTE: { generado: 'Generado', pendiente: 'Sin generar' },
   REVISION: { pendiente: 'Con algo por atender', revisar: 'Con puntos por revisar', cuadra: 'No cuadran con lo previsto', lista: 'Sin pendientes' },
   diaAbierto: false,
   periodoAbierto: false,
@@ -86,6 +88,8 @@ SRP.jornadas = {
     this.el('jornada-alcaldia').addEventListener('change', (e) => { this.filtro.alcaldia = e.target.value; this.pintarLista(); });
     this.el('jornada-programa').addEventListener('change', (e) => { this.filtro.programa = e.target.value; this.pintarLista(); });
     this.el('jornada-origen').addEventListener('change', (e) => { this.filtro.origen = e.target.value; this.pintarLista(); });
+    this.el('jornada-reporte').innerHTML = SRP.util.opciones('Todos', Object.entries(this.REPORTE));
+    this.el('jornada-reporte').addEventListener('change', (e) => { this.filtro.reporte = e.target.value; this.pintarLista(); });
     this.el('jornada-filtro-prioridad').addEventListener('change', (e) => { this.filtro.prioridad = e.target.value; this.pintarLista(); });
     // «Quitar filtros» deja la lista como al entrar; cada ficha quita lo suyo
     this.el('jornada-quitar').addEventListener('click', () => this.quitarFiltros(true));
@@ -448,7 +452,7 @@ SRP.jornadas = {
   /* Deja la lista como al entrar: todas, sin búsqueda, sin revisión y sin listas. Con `avisar`, lo dice y ofrece deshacer. */
   quitarFiltros(avisar) {
     const antes = Object.assign({}, this.filtro), dia = this.diaAbierto, per = this.periodoAbierto;
-    Object.assign(this.filtro, { texto: '', revision: '', cabo: '', programa: '', origen: '', prioridad: '', alcaldia: '', tipo: '', organizacion: '' });
+    Object.assign(this.filtro, { texto: '', revision: '', cabo: '', programa: '', reporte: '', origen: '', prioridad: '', alcaldia: '', tipo: '', organizacion: '' });
     this.el('jornada-buscar').value = ''; this.el('jornada-revision').value = '';
     this.aplicarAtajo('todas');
     if (avisar) SRP.util.anunciar('Filtros quitados: todas las jornadas.', 'exito', { deshacer: () => {
@@ -471,6 +475,7 @@ SRP.jornadas = {
     if (periodo) salida.push(['periodo', periodo]);
     if (f.cabo) salida.push(['cabo', 'Registró: ' + SRP.ref.nombreUsuario(f.cabo)]);
     if (f.programa) salida.push(['programa', 'Programa: ' + SRP.ref.nombreCatalogo(f.programa)]);
+    if (f.reporte) salida.push(['reporte', 'Reporte: ' + this.REPORTE[f.reporte].toLowerCase()]);
     if (f.origen) salida.push(['origen', 'Origen: ' + SRP.pedido.textoFiltro(f.origen).replace(' (todos)', '')]);
     if (f.prioridad) salida.push(['prioridad', 'Prioridad: ' + SRP.prioritarias.textoFiltro(f.prioridad).toLowerCase()]);
     if (f.alcaldia) salida.push(['alcaldia', 'Alcaldía: ' + f.alcaldia]);
@@ -492,8 +497,8 @@ SRP.jornadas = {
     this.el('caja-jornada-anio').hidden = sinAnioMes; this.el('caja-jornada-mes').hidden = sinAnioMes;
     this.el('jornada-mas-filtros').hidden = false;
     const dentro = [f.anio ? (f.mes ? SRP.util.nombreMes(f.anio + '-' + f.mes, true) + ' ' + f.anio : f.anio) : '', f.cabo ? SRP.ref.nombreUsuario(f.cabo) : '',
-      f.programa ? SRP.ref.nombreCatalogo(f.programa) : '', f.origen ? SRP.pedido.textoFiltro(f.origen).replace(' (todos)', '') : '', f.prioridad ? 'prioridad ' + SRP.prioritarias.textoFiltro(f.prioridad).toLowerCase() : '', f.alcaldia, f.organizacion ? SRP.ref.nombreOrganizacion(f.organizacion) : f.tipo].filter(Boolean);
-    const disponibles = [sinAnioMes ? '' : 'año', sinAnioMes ? '' : 'mes', conCabo ? 'quién registró' : '', 'programa', 'origen', SRP.prioritarias.hay() ? 'prioridad' : '', 'alcaldía', conOrg ? 'institución' : ''].filter(Boolean);
+      f.programa ? SRP.ref.nombreCatalogo(f.programa) : '', f.reporte ? 'reporte ' + this.REPORTE[f.reporte].toLowerCase() : '', f.origen ? SRP.pedido.textoFiltro(f.origen).replace(' (todos)', '') : '', f.prioridad ? 'prioridad ' + SRP.prioritarias.textoFiltro(f.prioridad).toLowerCase() : '', f.alcaldia, f.organizacion ? SRP.ref.nombreOrganizacion(f.organizacion) : f.tipo].filter(Boolean);
+    const disponibles = [sinAnioMes ? '' : 'año', sinAnioMes ? '' : 'mes', conCabo ? 'quién registró' : '', 'programa', 'reporte', 'origen', SRP.prioritarias.hay() ? 'prioridad' : '', 'alcaldía', conOrg ? 'institución' : ''].filter(Boolean);
     this.el('jornada-mas-filtros-texto').textContent = 'Más filtros: ' + (dentro.length ? dentro.join(' · ') : SRP.util.enumerar(disponibles));
     const fichas = this.fichas();
     SRP.util.pintarFichas(this.el('jornada-fichas'), fichas);
@@ -564,6 +569,7 @@ SRP.jornadas = {
     this.el('caja-jornada-filtro-prioridad').hidden = !SRP.prioritarias.hay();
     this.el('jornada-filtro-prioridad').innerHTML = SRP.util.opciones('Todas', SRP.prioritarias.opcionesFiltro());
     this.el('jornada-filtro-prioridad').value = f.prioridad;
+    this.el('jornada-reporte').value = f.reporte;
     this.el('caja-jornada-tipo-org').hidden = !ver; this.el('caja-jornada-org').hidden = !ver;
     if (ver) SRP.util.llenarInstituciones(this.el('jornada-tipo-org'), this.el('jornada-org'), fac.organizacion, f, fac.tipo);
   },
@@ -573,12 +579,16 @@ SRP.jornadas = {
     const f = this.filtro, x = k => !excluir || !excluir.has(k);
     return (!f.cabo || !x('cabo') || (j.personas || [j.cabo_id]).includes(f.cabo)) &&
       (!f.programa || !x('programa') || (j.dato && j.dato.programa_id) === f.programa) &&
+      (!f.reporte || !x('reporte') || this.claveReporte(j) === f.reporte) &&
       (!f.origen || !x('origen') || SRP.pedido.cumpleFiltro(j.dato, f.origen)) &&
       (!f.prioridad || !x('prioridad') || SRP.prioritarias.claveFiltro(j.prioridad) === f.prioridad) &&
       (!f.alcaldia || !x('alcaldia') || this.alcaldiasFiltro(j).includes(f.alcaldia)) &&
       (!f.organizacion || !x('organizacion') || this.orgDe(j) === f.organizacion) &&
       (!f.tipo || !x('tipo') || SRP.util.tipoDe(this.orgDe(j)) === f.tipo);
   },
+
+  // 'generado' o 'pendiente' en una jornada cerrada; una abierta todavía no tiene reporte que generar
+  claveReporte(j) { return j.estatus !== 'cerrada' ? '' : (j.dato && j.dato.reporte_en ? 'generado' : 'pendiente'); },
 
   cumpleFiltro(j) {
     const f = this.filtro;
@@ -647,6 +657,7 @@ SRP.jornadas = {
       const meta = this.previstosDe(guardada || j);
       const fecha = SRP.envio.diaEnLetra(j.fecha).split(' ')[0].slice(0, 3) + ' ' + SRP.util.textoDias(SRP.util.diasJornada(j, j.registros));
       const abierta = j.estatus === 'abierta';
+      const generado = (guardada || j.dato || {}).reporte_en;
       const relevo = guardada && guardada.relevo_id && guardada.relevo_id !== j.cabo_id ? guardada.relevo_id : '';
       const lugar = this.lugarDe(j);
       const ubic = (j.dato && j.dato.ubicacion) || '';
@@ -659,7 +670,10 @@ SRP.jornadas = {
         (j.total > 1 ? ' <span class="jornada-ndn">Jornada ' + j.n + ' de ' + j.total + '</span>' : '') + '</span></span>' + this.miniatura(j, avisos, (guardada && guardada.puntos_revisados) || []) + '</span>' +
         '<span class="jornada-estado"><span class="jornada-estatus" data-estatus="' + (abierta ? 'abierta' : 'cerrada') + '">' + SRP.ICONOS.svg(abierta ? 'candadoAbierto' : 'candado', 'chico') +
         '<span>' + (abierta ? 'Abierta' : esc(this.textoCierre(guardada))) + '</span></span>' +
-        '<span class="insignia-jornada" data-tono="' + est.tono + '">' + SRP.ICONOS.svg(est.icono, 'chico') + '<span>' + esc(est.texto) + '</span></span></span>' +
+        '<span class="insignia-jornada" data-tono="' + est.tono + '">' + SRP.ICONOS.svg(est.icono, 'chico') + '<span>' + esc(est.texto) + '</span></span>' +
+        // En una jornada cerrada con árboles, si su reporte ya se generó
+        (!abierta && n ? '<span class="insignia-jornada insignia-reporte" data-tono="' + (generado ? 'ok' : 'neutro') + '">' + SRP.ICONOS.svg(generado ? 'palomita' : 'reportes', 'chico') +
+          '<span>' + (generado ? 'Reporte generado ' + esc(SRP.envio.cuando(generado)) : 'Sin reporte todavía') + '</span></span>' : '') + '</span>' +
         (lugar || ubic ? '<span class="jornada-lugar">' + SRP.ICONOS.svg('ubicacion', 'chico') + '<span>' + esc(lugar) + (ubic ? (lugar ? ' · ' : '') + '<span class="jornada-ubic">' + esc(ubic) + '</span>' : '') + '</span></span>' : '') +
         (SRP.prioritarias.hay() ? '<span class="jornada-prioridad">' + SRP.prioritarias.insignia(j.prioridad) + '</span>' : '') +
         (SRP.pedido.esPedido(guardada) ? '<span class="jornada-pedido">' + SRP.pedido.insignia(guardada) + '</span>' : '') +
@@ -677,7 +691,7 @@ SRP.jornadas = {
     const vacio = this.el('jornadas-vacio');
     vacio.hidden = n > 0;
     // Estado vacío con salida (D141)
-    const filtrado = f.texto || f.revision || f.dia || f.desde || f.hasta || f.anio || f.cabo || f.programa || f.origen || f.prioridad || f.alcaldia || f.tipo || f.organizacion;
+    const filtrado = f.texto || f.revision || f.dia || f.desde || f.hasta || f.anio || f.cabo || f.programa || f.reporte || f.origen || f.prioridad || f.alcaldia || f.tipo || f.organizacion;
     const REVISION = { pendiente: 'con algo por atender', revisar: 'con puntos por revisar', cuadra: 'que no cuadren con lo previsto', lista: 'sin pendientes' };
     const puedeRegistrar = SRP.permisos.de(u).registrar;
     if (!n) vacio.innerHTML = filtrado
@@ -927,8 +941,11 @@ SRP.jornadas = {
       SRP.mapa.ponerCredito(this.mapa);   // el mismo crédito en todos los mapas (D152)
       c.CAPAS.forEach(capa => L.tileLayer(capa.url, { attribution: capa.atribucion, maxZoom: c.ZOOM_JORNADA, maxNativeZoom: c.ZOOM_MAX }).addTo(this.mapa));
       this.capaPuntos = L.layerGroup().addTo(this.mapa);
-      SRP.prioritarias.control(() => this.mapa, { grupo: 'campo', leyenda: this.el('jornada-prioritarias') });
+      // Encendida, la capa pinta sólo las colonias de la jornada: las de sus árboles o, sin árboles, la de su ubicación
+      SRP.prioritarias.control(() => this.mapa, { grupo: 'campo', leyenda: this.el('jornada-prioritarias'),
+        intervenidas: () => { const j = this.jornada || {}, regs = j.registros || []; return SRP.prioritarias.coloniasDe(regs.length ? regs : [j.dato || {}]); } });
     }
+    SRP.prioritarias.refrescar();
     this.capaPuntos.clearLayers();
     this.marcadores = {};
     const regs = this.jornada.registros;
@@ -1283,10 +1300,10 @@ SRP.jornadas = {
       : 'Relevo hecho: ' + SRP.ref.nombreUsuario(caboId) + ' registra ahora en «' + c.nombre + '». La jornada sigue a nombre de ' + SRP.ref.nombreUsuario(c.cabo_id) + '.', 'exito');
   },
 
+  // El reporte se genera desde la ficha de su jornada: datos del cierre, vista previa y PDF, sin salir de Jornadas
   irAlReporte() {
     const j = this.jornada;
-    SRP.reportes.pedido = { cabo_id: j.cabo_id, id: j.id };
-    SRP.app.mostrarVista('reportes');
+    if (j && j.estatus === 'cerrada') SRP.reportes.abrir(j.registros, j.fecha, j.cabo_id, j);
   }
 };
 

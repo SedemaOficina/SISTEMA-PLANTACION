@@ -218,7 +218,7 @@
         "estatus",
         "jornada_id"
       ],
-      "pantalla": "Nuevo registro (alta y edición), Registros (lista, detalle), Reportes (parte del día)",
+      "pantalla": "Nuevo registro (alta y edición), Registros (lista, detalle), reporte de la jornada",
       "campos": [
         {
           "campo": "id",
@@ -911,7 +911,7 @@
       "indices": [
         "cabo_id"
       ],
-      "pantalla": "Nuevo registro → «Iniciar jornada»; Jornadas; Reportes → «Datos de cierre»",
+      "pantalla": "Nuevo registro → «Iniciar jornada»; Jornadas; ficha de la jornada → «Generar reporte» → «Datos de cierre»",
       "campos": [
         {
           "campo": "id",
@@ -1189,7 +1189,7 @@
           "nulo": true,
           "origen": "Sistema",
           "dominio": "ISO 8601; nulo si no se ha generado o si dejó de estar vigente",
-          "pantalla": "Reportes: «reporte generado …»",
+          "pantalla": "Jornadas: tarjeta «Reporte generado …» y filtro «Reporte»",
           "regla": "Se fija cuando el PDF se entrega (se descarga o se comparte), no al abrir la vista previa. Vuelve a nulo, con constancia en la bitácora, si la jornada se reabre o si uno de sus árboles se elimina, restaura, edita, mueve o sustituye: el reporte se genera de nuevo"
         },
         {
@@ -1493,7 +1493,7 @@
     {
       "que": "Cuenta de registros guardados en el dispositivo (alcance de la sesión)",
       "de": "plantaciones activas que alcanza el perfil",
-      "donde": "Pastilla de conexión, aviso de guardado, Reportes (D83)"
+      "donde": "Pastilla de conexión y aviso de guardado"
     },
     {
       "que": "Alcance y acciones permitidas",
@@ -1508,12 +1508,12 @@
     {
       "que": "El PDF del parte del día",
       "de": "jornada + sus plantaciones; no se guarda el archivo, se regenera",
-      "donde": "Reportes (D58, D70)"
+      "donde": "Reporte de la jornada (D58, D70)"
     },
     {
       "que": "Prioridad de reforestación de la colonia donde cae el árbol (Muy alta a Muy baja, o sin dato) y prioridad de la jornada (el nivel donde cayó la mayoría de sus árboles; en empate, el más alto; sin árboles, la de su punto)",
       "de": "El punto del árbol contra la capa de colonias prioritarias (SRP.prioritarias.de); en un solape, el polígono más pequeño. La de la jornada, SRP.prioritarias.deJornada",
-      "donde": "Iniciar jornada, Nuevo registro, lista y ficha de Jornadas (con filtro), Reportes (lista, filtro, vista previa y PDF), Supervisión, informe PDF y CSV"
+      "donde": "Iniciar jornada, Nuevo registro, lista y ficha de Jornadas (con filtro), reporte de la jornada (vista previa y PDF), Supervisión, informe PDF y CSV"
     }
   ],
   "indicadores": [

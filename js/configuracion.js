@@ -63,7 +63,7 @@ SRP.configuracion = {
       ] },
       { titulo: 'Fotografías y listas', filas: [
         ['Tamaño de la fotografía', C.FOTO.ANCHO_MAX + ' × ' + C.FOTO.ALTO_MAX + ' px', 'Las fotografías se reducen a este tamaño máximo al guardarse, para no llenar el teléfono.'],
-        ['Renglones por página', String(C.LISTA_PAGINA), 'Jornadas, Registros, Reportes y el registro de cambios empiezan con este número; cada lista ofrece ' + SRP.util.enumerar(C.TAMANOS_PAGINA.map(String)) + ' en «Resultados por página», y el teléfono recuerda lo elegido.']
+        ['Renglones por página', String(C.LISTA_PAGINA), 'Jornadas, Registros y el registro de cambios empiezan con este número; cada lista ofrece ' + SRP.util.enumerar(C.TAMANOS_PAGINA.map(String)) + ' en «Resultados por página», y el teléfono recuerda lo elegido.']
       ] }
     ];
   },

@@ -56,7 +56,7 @@ SRP.util = {
 
   /* El atajo «Hoy» lleva la fecha con el año en dos cifras: 24-SEP-26 (D147). En el teléfono el
      chip mide un tercio de la pantalla y «24-SEP-2026» se partía en dos renglones. Un solo lugar
-     para las cuatro vistas que lo usan (Registros, Jornadas, Reportes y Fotografías). */
+     para las tres vistas que lo usan (Registros, Jornadas y Fotografías). */
   pintarChipHoy(el) {
     const [a, m, d] = this.fechaHoy().split('-');
     const corta = d + '-' + (this.MESES_CORTOS[Number(m) - 1] || m) + '-' + a.slice(2);
@@ -346,7 +346,7 @@ SRP.util = {
       SRP.ICONOS.svg('cerrar', 'chico') + '</button></li>').join('');
   },
 
-  // Las personas de una lista, por nombre: el filtro de cabo de Registros, Jornadas, Reportes y Fotografías
+  // Las personas de una lista, por nombre: el filtro de cabo de Registros, Jornadas y Fotografías
   // Las personas de una lista «Quién registró»: la coordinación y la Administración dicen su perfil
   paresPersonas(ids) {
     const perfil = id => ({ COORDINADOR: ' (coordinación)', ADMIN: ' (Administración)' })[(SRP.ref.usuarioPorId[id] || {}).perfil] || '';
@@ -354,7 +354,7 @@ SRP.util = {
   },
 
   /* ATAJOS DE FECHA (M15). La misma barra —Todos · Hoy · Un día · Un periodo— en Registros,
-     Jornadas, Reportes y Fotografías. Cada vista decide qué filtra; aquí se atiende el toque, se
+     Jornadas y Fotografías. Cada vista decide qué filtra; aquí se atiende el toque, se
      marca un solo atajo y se abren o cierran los paneles de «Un día» y «Un periodo» con su
      aria-expanded. `paneles`: { dia: [elemento, abierto], periodo: [elemento, abierto] }. */
   atajos: {
@@ -472,7 +472,7 @@ SRP.util = {
     (raiz || document).querySelectorAll('input[maxlength], textarea[maxlength]').forEach(c => this.pintarContador(c));
   },
 
-  /* ESTADO VACÍO (D141). El mismo patrón en los cuatro listados (Registros, Jornadas, Reportes,
+  /* ESTADO VACÍO (D141). El mismo patrón en los listados (Registros, Jornadas,
      Fotografías): icono, una frase en negritas, una explicación y la acción que saca del vacío.
      Un vacío sin icono ni acción parece error. Los botones llevan data-vacio con su acción; cada
      vista atiende el clic. `botones`: [{ accion, texto, clase, icono }] */
@@ -485,7 +485,7 @@ SRP.util = {
         (b.icono ? SRP.ICONOS.svg(b.icono, 'medio') : '') + '<span>' + esc(b.texto) + '</span></button>').join('') + '</div>' : '');
   },
 
-  /* PAGINACIÓN. Jornadas, Registros y Reportes se muestran de LISTA_PAGINA en LISTA_PAGINA, con
+  /* PAGINACIÓN. Jornadas y Registros se muestran de LISTA_PAGINA en LISTA_PAGINA, con
      «Anterior» y «Siguiente» bajo la lista. `paginar` devuelve la rebanada de la página pedida,
      ajustada si la lista se acortó; `pintarPaginador` dibuja «Mostrando 11–20 de 85 jornadas» y
      los botones con la lista de páginas, y se oculta cuando todo cabe en una página. */
@@ -508,7 +508,7 @@ SRP.util = {
     return [1, '…'].concat(rango(actual - vecinas, actual + vecinas), '…', total);
   },
 
-  /* ORDEN DE LAS LISTAS. Jornadas, Registros, Reportes y Fotografías llegan con lo más reciente
+  /* ORDEN DE LAS LISTAS. Jornadas, Registros y Fotografías llegan con lo más reciente
      primero; cada una puede verse al revés. Lo elegido se recuerda por lista en el dispositivo. */
   ORDENES: [['reciente', 'Lo más reciente primero'], ['antiguo', 'Lo más antiguo primero']],
   ordenLista(clave) {
