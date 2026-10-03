@@ -1,10 +1,11 @@
 /* ORIGEN DE LA JORNADA: PROGRAMADA O PEDIDO ESPECIAL. Una jornada puede venir del programa de
    trabajo o de un pedido especial de otra instancia (SOBSE, una alcaldía, otra dependencia). Es un
    dato de la jornada, no del árbol, y no es la institución que ejecuta: quien pide no es quien planta.
+   Por eso quien solicita sale de su propio catálogo (Catálogos › Solicitantes), no del de instituciones.
 
    Se captura al iniciar la jornada y se corrige en «Editar jornada»:
      origen                PROGRAMADA (por omisión) o PEDIDO
-     solicitante_id        quién lo pide, del catálogo de instituciones; nulo si es otra o si es programada
+     solicitante_id        quién lo pide, del catálogo de solicitantes; nulo si es otra o si es programada
      solicitante_otro      el nombre, cuando la instancia no está en el catálogo
      pedido_descripcion    de qué se trata, opcional
 
@@ -35,12 +36,20 @@ SRP.pedido = {
     this.el(p, 'solicitante').addEventListener('change', () => this.ajustar(p));
   },
 
-  // Las instituciones activas del catálogo, por nombre, y «Otra instancia» al final; `incluir`: la que ya tiene la jornada
+  /* Las opciones de «Quién lo solicita»: los solicitantes activos del catálogo, agrupados por tipo y
+     por nombre dentro de cada uno, y «Otra instancia» al final. `incluir`: el que ya tiene la
+     jornada, aunque esté inactivo, para no perderlo al editar. */
   opciones(incluir) {
-    const N = id => SRP.ref.nombreOrganizacion(id);
-    const lista = SRP.ref.deTipo('organizacion', true).map(o => o.id);
-    if (incluir && incluir !== this.OTRA && !lista.includes(incluir) && SRP.ref.catalogoPorId[incluir]) lista.push(incluir);
-    return lista.map(id => [id, N(id)]).sort((a, b) => a[1].localeCompare(b[1], 'es')).concat([[this.OTRA, 'Otra instancia']]);
+    const esc = SRP.util.escapar;
+    const lista = SRP.ref.deTipo('solicitante', true);
+    const ya = incluir && incluir !== this.OTRA ? SRP.ref.catalogoPorId[incluir] : null;
+    if (ya && ya.tipo === 'solicitante' && !lista.includes(ya)) lista.push(ya);
+    lista.sort(SRP.ref.ordenSolicitantes);
+    const op = (v, t) => '<option value="' + esc(v) + '">' + esc(t) + '</option>';
+    const tipos = [...new Set(lista.map(s => s.tipo_solicitante || ''))];
+    return op('', 'Seleccione quién lo solicita') +
+      tipos.map(t => '<optgroup label="' + esc(t || 'Sin tipo') + '">' + lista.filter(s => (s.tipo_solicitante || '') === t).map(s => op(s.id, s.nombre)).join('') + '</optgroup>').join('') +
+      op(this.OTRA, 'Otra instancia');
   },
 
   // Deja el bloque mostrando lo de la jornada `j` (o lo de una jornada nueva)
@@ -48,7 +57,7 @@ SRP.pedido = {
     const d = Object.assign(this.vacio(), j ? { origen: j.origen || 'PROGRAMADA', solicitante_id: j.solicitante_id || null, solicitante_otro: j.solicitante_otro || '', pedido_descripcion: j.pedido_descripcion || '' } : {});
     const sel = d.solicitante_id || (d.origen === 'PEDIDO' && d.solicitante_otro ? this.OTRA : '');
     this.el(p, 'origen').value = d.origen;
-    this.el(p, 'solicitante').innerHTML = SRP.util.opciones('Seleccione quién lo solicita', this.opciones(d.solicitante_id));
+    this.el(p, 'solicitante').innerHTML = this.opciones(d.solicitante_id);
     this.el(p, 'solicitante').value = sel;
     this.el(p, 'solicitante-otro').value = d.solicitante_otro;
     this.el(p, 'pedido-descripcion').value = d.pedido_descripcion;
@@ -82,10 +91,10 @@ SRP.pedido = {
   /* ---------- Leerlo ---------- */
 
   esPedido(j) { return !!j && j.origen === 'PEDIDO'; },
-  solicitante(j) { return !this.esPedido(j) ? '' : j.solicitante_id ? SRP.ref.nombreOrganizacion(j.solicitante_id) : (j.solicitante_otro || 'Sin dato'); },
+  solicitante(j) { return !this.esPedido(j) ? '' : j.solicitante_id ? SRP.ref.nombreSolicitante(j.solicitante_id) : (j.solicitante_otro || 'Sin dato'); },
   // La clave del solicitante para filtrar y contar: su id del catálogo o «otra:Nombre»
   clave(j) { return !this.esPedido(j) ? '' : j.solicitante_id || 'otra:' + (j.solicitante_otro || ''); },
-  nombreClave(k) { return k.startsWith('otra:') ? (k.slice(5) || 'Sin dato') : SRP.ref.nombreOrganizacion(k); },
+  nombreClave(k) { return k.startsWith('otra:') ? (k.slice(5) || 'Sin dato') : SRP.ref.nombreSolicitante(k); },
   // «Pedido especial · SOBSE», o vacío si es programada
   texto(j) { return this.esPedido(j) ? 'Pedido especial · ' + this.solicitante(j) : ''; },
   textoOrigen(j) { return this.esPedido(j) ? 'Pedido especial' : 'Programada'; },

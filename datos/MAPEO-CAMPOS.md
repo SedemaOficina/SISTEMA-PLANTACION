@@ -104,14 +104,14 @@ Pantalla **Usuarios**, sólo Administración global. Almacén `usuarios`.
 
 ## Módulo: Catálogos
 
-Pantalla **Catálogos**, sólo Administración global. Almacén `catalogos`. Los cinco catálogos
+Pantalla **Catálogos**, sólo Administración global. Almacén `catalogos`. Los seis catálogos
 comparten estructura; las especies añaden los campos del catálogo del SIA; los vehículos, su
-modelo y su tipo (D162), y las instituciones, su tipo.
+modelo y su tipo (D162); las instituciones y los solicitantes, su tipo.
 
 | Etiqueta en pantalla | Campo | Obligatorio | Origen | Notas |
 |---|---|---|---|---|
 | — | `id` | Sí | Sistema | UUID en programas y áreas. **En especies es la propia clave `ESP-0000`** (D84) |
-| — | `tipo` | Sí | Sistema | `programa`, `area`, `especie`, `vehiculo` u `organizacion`. Lo fija la pestaña en la que se está |
+| — | `tipo` | Sí | Sistema | `programa`, `area`, `especie`, `vehiculo`, `organizacion` o `solicitante`. Lo fija la pestaña en la que se está |
 | Clave | `clave` | Sí | Persona / Sistema | Programas y áreas: se sugiere a partir del nombre, en mayúsculas y sin acentos; editable antes de guardar, fija después. **Especies: consecutivo `ESP-0000` que asigna el sistema** (siguiente al mayor en uso, sin importar el orden alfabético); nunca se escribe ni se reutiliza. Es la llave con la que se unen los datos |
 | Nombre / Nombre común | `nombre` | Sí | Persona | Único dentro de su tipo. En especies corresponde al *nombre_comun* del catálogo del SIA: la etiqueta que reconoce el personal en campo |
 | Estado | `activo` | Sí | Persona | Un valor inactivo deja de ofrecerse; los registros que ya lo usan no cambian |
@@ -148,10 +148,11 @@ el alta de cuentas sólo se eligen. La clave la pone el sistema y no se muestra.
 | Etiqueta en pantalla | Campo | Obligatorio | Origen | Notas |
 |---|---|---|---|---|
 | Tipo de institución | `tipo_organizacion` | Sí | Persona | Alcaldía · Gobierno de la CDMX · Empresa privada · Organización civil. Se elige al agregarla (nunca Alcaldía) y no cambia |
+| Tipo de solicitante | `tipo_solicitante` | Sí | Persona | Sólo solicitantes (pestaña «Solicitantes»). Alcaldía · Dependencia de gobierno · Congreso · Empresa · Organización civil · Escuela · Vecinos. Agrupa la lista «Quién lo solicita»; se puede corregir después (D217) |
 | Quién puede usarlo (programas) | `tipos_organizacion` | Sí | Persona | Sólo programas. Tipos de institución que, además de SEDEMA, pueden elegirlo al iniciar una jornada; vacío = sólo SEDEMA (D193) |
 
 **Uso:** el catálogo de **especies** alimenta el formulario de registro; el de **programas**, el
-inicio de la jornada; el de **áreas**, el alta de cuentas; el de **vehículos**, el cierre del reporte; el de **instituciones**, el alta de cuentas. Ninguno se elimina si algún árbol
+inicio de la jornada; el de **áreas**, el alta de cuentas; el de **vehículos**, el cierre del reporte; el de **instituciones**, el alta de cuentas; el de **solicitantes**, «Quién lo solicita» de un pedido especial. Ninguno se elimina si algún árbol
 (también eliminado), jornada o cuenta lo usa: se desactiva (D151).
 
 ---
@@ -197,7 +198,7 @@ Almacén `jornadas` (sustituye a `cierres` desde el bloque 62). Lo que ya vive e
 | `relevo_id` | No | Persona | Remite a `usuarios.id`: el cabo que registra en lugar del titular tras un relevo de la coordinación (D204); nulo, registra el titular |
 | `relevos` | Sí | Sistema | Lista de los relevos hechos: a qué cabo se pasó, cuándo y quién lo hizo; `[]` sin relevos (D204) |
 | `origen` | Sí | Persona | `PROGRAMADA` (por omisión) o `PEDIDO`: pedido especial de otra instancia (D210). Lo marca quien inicia la jornada; se corrige en «Editar jornada» |
-| `solicitante_id` | No | Persona | Remite a `catalogos.id` (institución): quién solicita el pedido especial; no es quien ejecuta. Nulo en una jornada programada o si la instancia no está en el catálogo (D210) |
+| `solicitante_id` | No | Persona | Remite a `catalogos.id` (solicitante): quién solicita el pedido especial; no es quien ejecuta ni es una institución con cuentas. Nulo en una jornada programada o si la instancia no está en el catálogo (D210, D217) |
 | `solicitante_otro` | Sí | Persona | Nombre de la instancia que solicita cuando no está en el catálogo; `''` si no aplica (D210) |
 | `pedido_descripcion` | Sí | Persona | De qué se trata el pedido especial, opcional; `''` si no aplica. No se pide oficio ni folio (D210) |
 | `organizacion_id` | Sí | Sesión | La institución que ejecuta: la de quien inicia la jornada. No cambia después. En jornadas de otras instituciones el cierre no pide chófer ni vehículo, y el reporte dice «Institución que ejecuta» |
@@ -232,7 +233,8 @@ Almacén `jornadas` (sustituye a `cierres` desde el bloque 62). Lo que ya vive e
 | `catalogos.id` (programa) | Catálogos | `jornadas.programa_id`, y de ahí `plantaciones.programa_id` (D151) |
 | `jornadas.id` | Jornadas | `plantaciones.jornada_id` |
 | `catalogos.id` (área) | Catálogos | `usuarios.area_id` |
-| `catalogos.id` (institución) | Catálogos | `usuarios.organizacion_id`, `jornadas.organizacion_id`, `jornadas.solicitante_id` |
+| `catalogos.id` (institución) | Catálogos | `usuarios.organizacion_id`, `jornadas.organizacion_id` |
+| `catalogos.id` (solicitante) | Catálogos | `jornadas.solicitante_id` |
 | `activo` | Cuentas y Catálogos | Mismo significado en los dos: deja de ofrecerse o de poder entrar, sin borrar nada |
 | `fecha_ultima_edicion` + `editado_por_id` | Todos | Mismo par en plantaciones, cuentas, catálogos y jornadas |
 

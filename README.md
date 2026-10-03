@@ -11,7 +11,7 @@ La versión que corre se lee al pie de cada pantalla.
 1. **Registrar jornada** (pestaña Nuevo registro). Antes de registrar árboles se declara la jornada:
    nombre del sitio, programa, fecha, árboles que se van a plantar y, si se quiere, la ubicación y la dirección.
    Se marca también su **origen**: programada o pedido especial de otra instancia (SOBSE, una
-   alcaldía), con quién lo solicita (D210).
+   alcaldía), con quién lo solicita, del catálogo de solicitantes (D210, D217).
    El programa es de la jornada: todos sus árboles lo toman (D151). La fecha es el día en que
    empieza: la jornada puede seguir abierta varios días y cada árbol lleva la fecha en que se plantó
    (D204).
@@ -34,7 +34,7 @@ La versión que corre se lee al pie de cada pantalla.
    CSV para Excel (D159). Dentro están las **Fotografías** de los registros, con descarga en ZIP.
 6. **Registros**: la lista de árboles con filtros, detalle, edición y eliminación que se deshace.
    **Configuración** (D195), sólo para la Administración global, desde el menú de la cuenta:
-   **Usuarios**, **Catálogos** (programas, áreas, especies, vehículos e instituciones),
+   **Usuarios**, **Catálogos** (programas, áreas, especies, vehículos, instituciones y solicitantes),
    **Parámetros** (sólo consulta), **Registro de cambios**, **Carga masiva** del histórico desde
    Excel o CSV (D196), que no vuelve a cargar lo que ya está y se deshace por lote (D199), y **Acerca del sistema**. El catálogo de especies se descarga en Excel.
 7. **Instituciones** (D186–D193). Además de la Secretaría registran las alcaldías, otras

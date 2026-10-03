@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 152',
+  ETAPA: 'Bloque 153',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -29,7 +29,7 @@ SRP.CONFIG = {
      no coincide con este, vuelve a sembrar. Sin esto, un teléfono que ya había abierto el
      sistema se queda con los datos anteriores: al renombrar los perfiles, todas las cuentas
      aparecían con un perfil que ya no existía. */
-  SELLO_DATOS: '2026-09-30c-programas',   // quién usa cada programa, en el catálogo; coordinador y cabo por tipo de institución; sin «Jornadas de voluntariado»; áreas de la Secretaría; instituciones de arranque
+  SELLO_DATOS: '2026-10-02-solicitantes',   // catálogo de solicitantes de pedidos especiales; quién usa cada programa, en el catálogo; coordinador y cabo por tipo de institución; sin «Jornadas de voluntariado»; áreas de la Secretaría; instituciones de arranque
   /* REINICIO DE LOS DATOS DE PRUEBA. Un teléfono con un sello anterior a éste vuelve a empezar aunque
      tenga capturas: todo lo que hay en los teléfonos es de prueba (30-09-2026). Con sellos
      posteriores se vuelve a conservar lo capturado. Se comparan como texto: uno nuevo debe ordenar

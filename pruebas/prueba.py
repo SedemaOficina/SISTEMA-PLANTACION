@@ -5096,8 +5096,8 @@ with sync_playwright() as p:
     pg62.evaluate("SRP.app.mostrarVista('registrar')"); pg62.wait_for_timeout(500)
     pg62.fill('#ini-nombre','Pedido B146'); pg62.fill('#ini-fecha', HOY); pg62.select_option('#ini-programa','p-refor'); pg62.fill('#ini-meta','10')
     pg62.select_option('#ini-origen','PEDIDO'); pg62.wait_for_timeout(150)
-    b62=pg62.evaluate("[document.getElementById('ini-pedido').hidden, document.getElementById('caja-ini-solicitante-otro').hidden, [...document.getElementById('ini-solicitante').options].some(o => o.value === 'o-sobse'), [...document.getElementById('ini-solicitante').options].pop().textContent, !!document.getElementById('ini-oficio')]")
-    ok(b62==[False, True, True, 'Otra instancia', False],'con «Pedido especial» aparecen quién lo solicita (las instituciones del catálogo y «Otra instancia») y la descripción; no se pide oficio ni folio: %s' % b62)
+    b62=pg62.evaluate("[document.getElementById('ini-pedido').hidden, document.getElementById('caja-ini-solicitante-otro').hidden, [...document.getElementById('ini-solicitante').options].some(o => o.value === 's-sobse'), [...document.getElementById('ini-solicitante').options].pop().textContent, !!document.getElementById('ini-oficio'), [...document.querySelectorAll('#ini-solicitante optgroup')].map(g => g.label), [...document.getElementById('ini-solicitante').options].some(o => /^o-/.test(o.value))]")
+    ok(b62==[False, True, True, 'Otra instancia', False, ['Alcaldía','Dependencia de gobierno','Congreso'], False],'con «Pedido especial» aparecen quién lo solicita (los solicitantes del catálogo, agrupados por tipo, y «Otra instancia») y la descripción; no se pide oficio ni folio: %s' % b62)
     pg62.click('#btn-iniciar-jornada'); pg62.wait_for_timeout(400)
     e62=pg62.inner_text('#ini-errores') if pg62.is_visible('#ini-errores') else ''
     ok('Elija quién solicita el pedido especial' in e62 and pg62.is_visible('#panel-iniciar-jornada'),'sin solicitante el pedido especial no se inicia: %s' % e62.replace(chr(10),' · '))
@@ -5105,11 +5105,11 @@ with sync_playwright() as p:
     pg62.click('#btn-iniciar-jornada'); pg62.wait_for_timeout(400)
     e62b=pg62.inner_text('#ini-errores') if pg62.is_visible('#ini-errores') else ''
     ok('Escriba el nombre de la instancia' in e62b and pg62.is_visible('#caja-ini-solicitante-otro'),'«Otra instancia» pide su nombre: %s' % e62b.replace(chr(10),' · '))
-    pg62.select_option('#ini-solicitante','o-sobse'); pg62.fill('#ini-pedido-descripcion','Compensación por obra'); pg62.click('#btn-iniciar-jornada'); pg62.wait_for_timeout(700)
+    pg62.select_option('#ini-solicitante','s-sobse'); pg62.fill('#ini-pedido-descripcion','Compensación por obra'); pg62.click('#btn-iniciar-jornada'); pg62.wait_for_timeout(700)
     j62=pg62.evaluate("SRP.activa.jornada && SRP.activa.jornada.id")
     h62=pg62.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); return [j.origen, j.solicitante_id, j.solicitante_otro, j.pedido_descripcion, j.organizacion_id]; }", j62)
     fr62=pg62.inner_text('#franja-jornada-texto')
-    ok(h62==['PEDIDO','o-sobse','','Compensación por obra','o-sedema'] and 'Pedido especial · Secretaría de Obras y Servicios (SOBSE)' in fr62,'el pedido especial se guarda con su solicitante, que no es quien ejecuta, y la franja lo dice: %s' % h62)
+    ok(h62==['PEDIDO','s-sobse','','Compensación por obra','o-sedema'] and 'Pedido especial · Secretaría de Obras y Servicios (SOBSE)' in fr62,'el pedido especial se guarda con su solicitante, que no es quien ejecuta, y la franja lo dice: %s' % h62)
     registrar(pg62,'ahuehu','ESP-0070'); registrar(pg62,'aile','ESP-0002')
     pg62.evaluate("async () => { await SRP.activa.cambiarEstatus(SRP.activa.jornada, 'cerrada'); SRP.activa.jornada = null; }"); pg62.wait_for_timeout(400)
     # Jornadas: la marca en la tarjeta y el filtro «Origen»
@@ -5119,7 +5119,7 @@ with sync_playwright() as p:
     ok(c62[0]=='Pedido especial · Secretaría de Obras y Servicios (SOBSE)' and c62[1]=='' and c62[2]==['Todos','Programada','Pedido especial (todos)','Pedido especial · Secretaría de Obras y Servicios (SOBSE)'],
        'la tarjeta de la jornada marca el pedido especial y la lista «Origen» trae programada, todos los pedidos y cada solicitante: %s' % c62[2])
     pg62.evaluate("document.getElementById('jornada-mas-filtros').open = true")
-    pg62.select_option('#jornada-origen','PEDIDO:o-sobse'); pg62.wait_for_timeout(900)
+    pg62.select_option('#jornada-origen','PEDIDO:s-sobse'); pg62.wait_for_timeout(900)
     d62=pg62.evaluate("([p, n]) => [SRP.jornadas.lista.some(j => j.id === p), SRP.jornadas.lista.some(j => j.id === n), document.getElementById('jornada-fichas').textContent]", [j62, jp62])
     pg62.select_option('#jornada-origen','PROGRAMADA'); pg62.wait_for_timeout(900)
     d62b=pg62.evaluate("([p, n]) => [SRP.jornadas.lista.some(j => j.id === p), SRP.jornadas.lista.some(j => j.id === n)]", [j62, jp62])
@@ -5134,7 +5134,7 @@ with sync_playwright() as p:
     pg62.select_option('#ej-solicitante','__otra'); pg62.fill('#ej-solicitante-otro','Metro'); pg62.click('#btn-ej-guardar'); pg62.wait_for_timeout(900)
     k62=pg62.evaluate("""async id => { const j = await SRP.almacen.uno('jornadas', id); const b = (await SRP.almacen.todos('bitacora')).filter(x => x.entidad_id === id && x.accion === 'EDITADO' && /^Campos/.test(x.detalle || '')).pop();
       return [j.origen, j.solicitante_id, j.solicitante_otro, b && b.detalle, SRP.pedido.texto(j)]; }""", j62)
-    ok(f62==['PEDIDO','o-sobse','Compensación por obra'] and k62[:3]==['PEDIDO', None, 'Metro'] and 'solicitante_id' in (k62[3] or '') and k62[4]=='Pedido especial · Metro','«Editar jornada» trae el pedido y lo corrige a una instancia fuera del catálogo; queda en la bitácora: %s' % k62[3])
+    ok(f62==['PEDIDO','s-sobse','Compensación por obra'] and k62[:3]==['PEDIDO', None, 'Metro'] and 'solicitante_id' in (k62[3] or '') and k62[4]=='Pedido especial · Metro','«Editar jornada» trae el pedido y lo corrige a una instancia fuera del catálogo; queda en la bitácora: %s' % k62[3])
     # El reporte de la jornada
     r62=pg62.evaluate("""async ([p, n]) => { const de = async id => { const j = await SRP.almacen.uno('jornadas', id); const regs = await SRP.activa.registrosDe(j); const m = SRP.reportes.modelo(regs, j, j.fecha, j);
       const v = k => (m.identificacion.find(x => x[0] === k) || [])[1]; return [v('Pedido especial solicitado por'), v('Descripción del pedido')]; }; return [await de(p), await de(n)]; }""", [j62, jp62])
@@ -5158,15 +5158,15 @@ with sync_playwright() as p:
     pg62.evaluate("SRP.reportes.aplicarAtajo('todas')"); pg62.wait_for_timeout(500)
     x62=pg62.evaluate("[[...document.querySelectorAll('#pdf-lista .jornada-pedido')].map(x => x.textContent.trim()), [...(document.getElementById('pdf-origen') || { options: [] }).options].map(o => o.textContent)]")
     ok(x62[0]==['Pedido especial · Metro'] and x62[1]==['Todos','Programada','Pedido especial (todos)','Pedido especial · Metro'],'Reportes marca el pedido especial y se filtra por origen: %s' % x62)
-    # Una institución que solicita una jornada cuenta como usada; volver a «Programada» vacía los datos del pedido
-    y62=pg62.evaluate("""async id => { const j = await SRP.almacen.uno('jornadas', id); await SRP.almacen.guardarConBitacora('jornadas', Object.assign({}, j, { solicitante_id: 'o-sobse', solicitante_otro: '' }), null);
-      const u = (await SRP.ref.usosDe('catalogos'))['o-sobse']; return u && u.jornadas; }""", j62)
+    # Un solicitante que aparece en una jornada cuenta como usado; volver a «Programada» vacía los datos del pedido
+    y62=pg62.evaluate("""async id => { const j = await SRP.almacen.uno('jornadas', id); await SRP.almacen.guardarConBitacora('jornadas', Object.assign({}, j, { solicitante_id: 's-sobse', solicitante_otro: '' }), null);
+      const u = (await SRP.ref.usosDe('catalogos'))['s-sobse']; return u && u.jornadas; }""", j62)
     pg62.evaluate("SRP.app.mostrarVista('jornadas')"); pg62.wait_for_timeout(1200)
     pg62.evaluate("async (id) => { await SRP.jornadas.abrir(id); }", j62); pg62.wait_for_timeout(1200)
     pg62.click('#btn-jornada-editar'); pg62.wait_for_timeout(400)
     pg62.select_option('#ej-origen','PROGRAMADA'); pg62.click('#btn-ej-guardar'); pg62.wait_for_timeout(900)
     z62=pg62.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); return [j.origen, j.solicitante_id, j.solicitante_otro, j.pedido_descripcion]; }", j62)
-    ok(y62==1 and z62==['PROGRAMADA', None, '', ''],'la institución que solicita una jornada cuenta como usada (no se elimina del catálogo) y al volver a «Programada» los datos del pedido se vacían: %s' % z62)
+    ok(y62==1 and z62==['PROGRAMADA', None, '', ''],'el solicitante de una jornada cuenta como usado (no se elimina del catálogo) y al volver a «Programada» los datos del pedido se vacían: %s' % z62)
     ok(not err62,'sin errores en consola: %s' % err62[:2])
     ctx62.close()
 
@@ -5395,6 +5395,100 @@ with sync_playwright() as p:
     ok(len(a66) >= 1 and all(x == ['group', True, True] for x in a66), 'los mapas de Supervisión ya no se declaran imagen: sus controles se alcanzan y la etiqueta remite a la tabla: %s' % a66)
     ok(not err66, 'sin errores en consola: %s' % err66[:2])
     ctx66.close()
+
+    # ---------- ctx67: catálogo de solicitantes de pedidos especiales, aparte del de instituciones ----------
+    ctx67 = b.new_context(viewport={'width':390,'height':844}, timezone_id='America/Mexico_City', geolocation={'latitude':19.357,'longitude':-99.06,'accuracy':5}, permissions=['geolocation'])
+    pg67 = ctx67.new_page(); err67 = []
+    pg67.on('pageerror', lambda e: err67.append(str(e))); pg67.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err67.append(m.text))
+    pg67.goto(BASE); pg67.wait_for_timeout(1300)
+    pg67.select_option('#sel-usuario-prueba','u-admin-1'); pg67.click('#btn-entrar-prueba'); pg67.wait_for_timeout(800)
+    # De arranque: las 16 alcaldías sin la palabra, tres dependencias y diputadas y diputados
+    s67 = pg67.evaluate("""() => { const l = SRP.ref.deTipo('solicitante', false), de = t => l.filter(s => s.tipo_solicitante === t).map(s => s.nombre);
+      return { n: l.length, alc: de('Alcaldía').length, sinPalabra: l.every(s => !/^Alcald/i.test(s.nombre)), dep: de('Dependencia de gobierno'), con: de('Congreso'),
+        ids: ['s-alc-09003', 's-sobse', 's-segiagua', 's-jefatura', 's-diputados'].every(id => (SRP.ref.catalogoPorId[id] || {}).tipo === 'solicitante'), orgs: SRP.ref.deTipo('organizacion', false).length,
+        dominio: SRP.ESQUEMA.dominios.tipo_solicitante.join('|') === SRP.ref.TIPOS_SOLICITANTE.join('|') }; }""")
+    ok(s67 == {'n':20,'alc':16,'sinPalabra':True,'dep':['Jefatura de Gobierno','Secretaría de Gestión Integral del Agua (SEGIAGUA)','Secretaría de Obras y Servicios (SOBSE)'],'con':['Diputadas y diputados'],'ids':True,'orgs':21,'dominio':True},
+       'los solicitantes de arranque son las 16 alcaldías sin la palabra «Alcaldía», SOBSE, SEGIAGUA, Jefatura de Gobierno y Diputadas y diputados; las instituciones no cambian: %s' % s67)
+    # Catálogos › Solicitantes: su pestaña, buscador, tipo y lista agrupada
+    pg67.evaluate("SRP.app.mostrarVista('catalogos')"); pg67.wait_for_timeout(500)
+    pg67.click('#cat-tipos .chip[data-tipo=solicitante]'); pg67.wait_for_timeout(500)
+    t67 = pg67.evaluate("""() => { const T = SRP.ref.TIPOS_SOLICITANTE, filas = [...document.querySelectorAll('#tabla-catalogo tbody tr')], idx = filas.map(tr => T.indexOf(SRP.ref.catalogoPorId[tr.dataset.id].tipo_solicitante));
+      const t = id => document.getElementById(id).textContent.trim();
+      return [t('cat-cuenta'), t('btn-cat-agregar'), !document.getElementById('cat-nota-sol').hidden, document.getElementById('cat-nota-org').hidden, t('cat-buscar-etiqueta'), t('cat-filtro-tipo-etiqueta'),
+        idx.join() === idx.slice().sort((a, b) => a - b).join(), filas[0].querySelector('.c-titulo').textContent, [...document.querySelectorAll('#tabla-catalogo thead th')].map(th => th.textContent).includes('Clave'),
+        [...document.getElementById('cat-filtro-tipo').options].map(o => o.value).filter(Boolean).join('|') === T.join('|')]; }""")
+    ok(t67 == ['20 solicitantes','Agregar solicitante',True,True,'Buscar solicitante','Tipo de solicitante',True,'Álvaro Obregón',False,True],
+       'Catálogos › Solicitantes trae su nota, buscador y tipo, la lista agrupada por tipo y en orden alfabético, sin clave a la vista: %s' % t67)
+    pg67.fill('#cat-buscar','izta'); pg67.wait_for_timeout(300)
+    b67 = pg67.eval_on_selector_all('#tabla-catalogo tbody tr .c-titulo','l=>l.map(x=>x.innerText)')
+    pg67.fill('#cat-buscar',''); pg67.select_option('#cat-filtro-tipo','Congreso'); pg67.wait_for_timeout(300)
+    f67 = [pg67.eval_on_selector_all('#tabla-catalogo tbody tr .c-titulo','l=>l.map(x=>x.innerText)'), pg67.inner_text('#cat-cuenta')]
+    pg67.select_option('#cat-filtro-tipo',''); pg67.wait_for_timeout(300)
+    ok(b67 == ['Iztacalco','Iztapalapa'] and f67 == [['Diputadas y diputados'],'1 de 20 solicitantes'],'los solicitantes se buscan por nombre y se filtran por tipo: %s · %s' % (b67, f67))
+    # Agregar: tipo de la lista y nombre único; la clave la pone el sistema
+    pg67.click('#btn-cat-agregar'); pg67.wait_for_timeout(400)
+    g67 = [pg67.inner_text('#dlg-catalogo-titulo'), pg67.is_hidden('#cat-clave'), pg67.is_hidden('#cat-tipo-org'), pg67.is_visible('#cat-tipo-sol'),
+           pg67.eval_on_selector_all('#cat-tipo-sol option','l=>l.map(o=>o.value).filter(Boolean)')]
+    pg67.fill('#cat-nombre','jefatura de gobierno'); pg67.click('#form-catalogo button[type=submit]'); pg67.wait_for_timeout(400)
+    e67 = pg67.inner_text('#cat-errores') if pg67.is_visible('#cat-errores') else ''
+    ok(g67 == ['Agregar solicitante', True, True, True, ['Alcaldía','Dependencia de gobierno','Congreso','Empresa','Organización civil','Escuela','Vecinos']] and 'Ya existe un solicitante con ese nombre' in e67 and 'Elija el tipo de solicitante' in e67 and pg67.is_visible('#dlg-catalogo'),
+       'al agregar un solicitante se piden nombre único y tipo, de siete; la clave no se muestra: %s' % e67.replace(chr(10),' · '))
+    pg67.fill('#cat-nombre','Escuela Primaria Ejemplo'); pg67.select_option('#cat-tipo-sol','Escuela'); pg67.click('#form-catalogo button[type=submit]'); pg67.wait_for_timeout(600)
+    n67 = pg67.evaluate("""async () => { const s = SRP.ref.deTipo('solicitante', false).find(x => x.nombre === 'Escuela Primaria Ejemplo'); if (!s) return null;
+      const bt = (await SRP.almacen.todos('bitacora')).filter(x => x.entidad_id === s.id).map(x => x.accion + ' ' + x.entidad + ' ' + (x.detalle || ''));
+      return { id: s.id, d: [s.tipo, s.clave, s.tipo_solicitante, s.activo, s.creado_por_id], bt, cuenta: document.getElementById('cat-cuenta').textContent }; }""")
+    ok(pg67.is_hidden('#dlg-catalogo') and n67 and n67['d'] == ['solicitante','ESCUELA_PRIMARIA_EJEMPLO','Escuela',True,'u-admin-1'] and n67['bt'] == ['CREADO catalogo solicitante ESCUELA_PRIMARIA_EJEMPLO'] and n67['cuenta'] == '21 solicitantes',
+       'el solicitante nuevo se guarda con su tipo, la clave que pone el sistema y su renglón de bitácora: %s' % (n67 and n67['d']))
+    id67 = n67['id']
+    # «Quién lo solicita» lo ofrece en su grupo; las instituciones ya no salen ahí
+    q67 = pg67.evaluate("""id => { const s = document.createElement('select'); s.innerHTML = SRP.pedido.opciones(null); const g = [...s.querySelectorAll('optgroup')];
+      const alc = [...g[0].children].map(o => o.textContent);
+      return [g.map(x => x.label), alc.length, alc.join() === alc.slice().sort((a, b) => a.localeCompare(b, 'es')).join(), alc[0], [...s.options].some(o => o.value === id), [...s.options].some(o => /^o-/.test(o.value)), s.options[0].value, [...s.options].pop().textContent]; }""", id67)
+    ok(q67 == [['Alcaldía','Dependencia de gobierno','Congreso','Escuela'], 16, True, 'Álvaro Obregón', True, False, '', 'Otra instancia'],
+       '«Quién lo solicita» agrupa por tipo, con las alcaldías en orden alfabético y sin la palabra, trae el solicitante nuevo y termina en «Otra instancia»; ninguna institución: %s' % q67[0])
+    # Editar: se corrigen nombre y tipo
+    pg67.locator('#tabla-catalogo tbody tr', has_text='Escuela Primaria Ejemplo').locator('.c-titulo').click(); pg67.wait_for_timeout(400)
+    h67 = [pg67.inner_text('#dlg-catalogo-titulo'), pg67.input_value('#cat-tipo-sol'), pg67.is_enabled('#cat-tipo-sol')]
+    pg67.fill('#cat-nombre','Comité vecinal Ejemplo'); pg67.select_option('#cat-tipo-sol','Vecinos'); pg67.click('#form-catalogo button[type=submit]'); pg67.wait_for_timeout(600)
+    k67 = pg67.evaluate("""async id => { const s = SRP.ref.catalogoPorId[id]; const b = (await SRP.almacen.todos('bitacora')).filter(x => x.entidad_id === id && x.accion === 'EDITADO').pop();
+      return [s.nombre, s.tipo_solicitante, s.clave, b && b.detalle]; }""", id67)
+    ok(h67 == ['Editar solicitante','Escuela',True] and k67 == ['Comité vecinal Ejemplo','Vecinos','ESCUELA_PRIMARIA_EJEMPLO','Campos: nombre, tipo_solicitante'],
+       'un solicitante se edita: cambian nombre y tipo, la clave no, y la bitácora dice qué campos: %s' % k67)
+    # Con uso no se elimina; desactivado deja de ofrecerse, pero la jornada que lo tiene lo conserva
+    u67 = pg67.evaluate("""async id => { await SRP.almacen._tx(['jornadas'], 'readwrite', tx => tx.objectStore('jornadas').put({ id: 'j-sol-67', nombre: 'Pedido de vecinos', cabo_id: 'u-cabo-1', organizacion_id: 'o-sedema',
+        programa_id: 'p-refor', fecha: '2026-09-01', estatus: 'cerrada', origen: 'PEDIDO', solicitante_id: id, solicitante_otro: '', pedido_descripcion: '' }));
+      const j = await SRP.almacen.uno('jornadas', 'j-sol-67'); return [SRP.pedido.texto(j), SRP.pedido.clavesFiltro(j)[1] === 'PEDIDO:' + id]; }""", id67)
+    pg67.click('#cat-tipos .chip[data-tipo=solicitante]'); pg67.wait_for_timeout(500)
+    fila67 = pg67.locator('#tabla-catalogo tbody tr', has_text='Comité vecinal Ejemplo')
+    ac67 = fila67.locator('button[data-accion]').evaluate_all('l=>l.map(b=>b.dataset.accion)')
+    accion(pg67, fila67, 'estado'); pg67.wait_for_timeout(600)
+    d67 = pg67.evaluate("""id => { const s = document.createElement('select'); s.innerHTML = SRP.pedido.opciones(null); const t = document.createElement('select'); t.innerHTML = SRP.pedido.opciones(id);
+      return [SRP.ref.catalogoPorId[id].activo, [...s.options].some(o => o.value === id), [...t.options].some(o => o.value === id), document.getElementById('cat-cuenta').textContent]; }""", id67)
+    ok(u67 == ['Pedido especial · Comité vecinal Ejemplo', True] and ac67 == ['editar','estado'] and '1 jornada' in fila67.inner_text() and d67 == [False, False, True, '21 solicitantes · 1 inactivo'],
+       'un solicitante con jornadas no ofrece «Eliminar»; desactivado ya no sale en «Quién lo solicita», salvo en la jornada que ya lo tiene: %s' % d67)
+    # Sin uso sí se elimina
+    pg67.evaluate("SRP.almacen._tx(['jornadas'], 'readwrite', tx => tx.objectStore('jornadas').delete('j-sol-67'))"); pg67.wait_for_timeout(200)
+    pg67.click('#cat-tipos .chip[data-tipo=solicitante]'); pg67.wait_for_timeout(500)
+    accion(pg67, pg67.locator('#tabla-catalogo tbody tr', has_text='Comité vecinal Ejemplo'), 'eliminar'); pg67.wait_for_timeout(500)
+    pg67.click('#btn-confirmar-si'); pg67.wait_for_timeout(700)
+    ok(pg67.evaluate("id => !SRP.ref.catalogoPorId[id]", id67) and pg67.inner_text('#cat-cuenta') == '20 solicitantes','un solicitante sin uso se elimina del catálogo')
+    # Al abrir: una jornada cuyo solicitante era una institución pasa a su solicitante o queda escrita
+    pg67.evaluate("""() => SRP.almacen._tx(['jornadas'], 'readwrite', tx => { const j = (id, s) => tx.objectStore('jornadas').put({ id, nombre: 'Pedido de antes', cabo_id: 'u-cabo-1', organizacion_id: 'o-sedema', programa_id: 'p-refor',
+        fecha: '2026-09-01', estatus: 'cerrada', origen: 'PEDIDO', solicitante_id: s, solicitante_otro: '', pedido_descripcion: 'x' });
+      j('j-a67', 'o-sobse'); j('j-b67', 'o-alc-09007'); j('j-c67', 'o-paot'); j('j-d67', 's-jefatura'); })""")
+    pg67.reload(); pg67.wait_for_timeout(1600)
+    m67 = pg67.evaluate("""async () => { await SRP.ref.recargar(); const r = []; for (const id of ['j-a67', 'j-b67', 'j-c67', 'j-d67']) { const j = await SRP.almacen.uno('jornadas', id); r.push([j.solicitante_id, j.solicitante_otro, SRP.pedido.solicitante(j), j.pedido_descripcion]); } return r; }""")
+    ok(m67 == [['s-sobse','','Secretaría de Obras y Servicios (SOBSE)','x'],['s-alc-09007','','Iztapalapa','x'],[None,'Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)','Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)','x'],['s-jefatura','','Jefatura de Gobierno','x']],
+       'al abrir, la jornada que tenía una institución como solicitante pasa al solicitante que le corresponde o queda escrita como otra instancia: %s' % m67)
+    # Un teléfono con capturas y el sello anterior recibe el catálogo de solicitantes sin perder nada
+    pg67.evaluate("""async () => { const sol = SRP.ref.deTipo('solicitante', false).map(s => s.id);
+      await SRP.almacen._tx(['catalogos'], 'readwrite', tx => sol.forEach(id => tx.objectStore('catalogos').delete(id))); localStorage.setItem(SRP.CONFIG.CLAVE_SELLO, '2026-09-30c-programas'); }""")
+    pg67.reload(); pg67.wait_for_timeout(1800)
+    c67 = pg67.evaluate("""async () => { await SRP.ref.recargar(); return [SRP.ref.deTipo('solicitante', true).length, (await SRP.almacen.todos('jornadas')).filter(j => /67$/.test(j.id)).length, localStorage.getItem(SRP.CONFIG.CLAVE_SELLO) === SRP.CONFIG.SELLO_DATOS]; }""")
+    ok(c67 == [20, 4, True],'un teléfono con capturas y el sello anterior recibe los solicitantes de arranque y conserva sus jornadas: %s' % c67)
+    ok(not err67, 'sin errores en consola: %s' % err67[:2])
+    ctx67.close()
+
 
 
 

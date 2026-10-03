@@ -52,6 +52,17 @@ window.SRP = window.SRP || {};
     org('o-reforestamos', 'REFORESTAMOS_MEXICO', 'Reforestamos México, A.C.', 'Organización civil')
   ].concat(ALCALDIAS.map(([cve, clave, nombre]) => org('o-alc-' + cve, 'ALC_' + clave, nombre, 'Alcaldía')));
 
+  /* SOLICITANTES: quién pide un pedido especial. Catálogo aparte del de instituciones: quien pide no
+     es quien planta ni necesita cuenta. Las alcaldías van sin la palabra «Alcaldía» (su tipo ya lo
+     dice) y su id lleva el cvegeo INEGI. Los demás se agregan en Catálogos › Solicitantes. */
+  const sol = (id, clave, nombre, tipo) => cat('solicitante', id, clave, nombre, { tipo_solicitante: tipo });
+  const solicitantes = ALCALDIAS.map(([cve, clave, nombre]) => sol('s-alc-' + cve, 'ALC_' + clave, nombre, 'Alcaldía')).concat([
+    sol('s-sobse', 'SOBSE', 'Secretaría de Obras y Servicios (SOBSE)', 'Dependencia de gobierno'),
+    sol('s-segiagua', 'SEGIAGUA', 'Secretaría de Gestión Integral del Agua (SEGIAGUA)', 'Dependencia de gobierno'),
+    sol('s-jefatura', 'JEFATURA_DE_GOBIERNO', 'Jefatura de Gobierno', 'Dependencia de gobierno'),
+    sol('s-diputados', 'DIPUTADAS_Y_DIPUTADOS', 'Diputadas y diputados', 'Congreso')
+  ]);
+
   /* ESPECIES: catálogo real del SIA (assets/catalogos/catalogo-especies.js, D84). No son ficticias:
      se siembran tal cual, con su id ESP-0000 como llave. */
   const especies = SRP.CATALOGO_ESPECIES.especies.map(e => Object.assign({}, e));
@@ -86,5 +97,5 @@ window.SRP = window.SRP || {};
   // Sin plantaciones: el sistema arranca vacío y se llena con lo que se capture.
   const plantaciones = [];
 
-  SRP.DATOS_FICTICIOS = { catalogos: programas.concat(areas, organizaciones, especies, vehiculos), usuarios, plantaciones, areasRetiradas, programasRetirados };
+  SRP.DATOS_FICTICIOS = { catalogos: programas.concat(areas, organizaciones, solicitantes, especies, vehiculos), usuarios, plantaciones, areasRetiradas, programasRetirados };
 })();

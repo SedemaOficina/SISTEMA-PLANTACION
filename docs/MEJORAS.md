@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.9.19 (Bloque 152)»**.
+Al pie de cualquier pantalla: **«Versión 0.9.20 (Bloque 153)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -358,6 +358,8 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M358 | Auditoría integral | El calendario de «Iniciar jornada» deja elegir hoy aunque la aplicación lleve abierta desde ayer | Baja | 0.9.19 (B152) | Dejar la aplicación abierta de un día para otro y abrir «Iniciar jornada» | Campo de fecha |
 | M359 | Auditoría integral | Los mapas de Supervisión dejan de declararse imagen (sus controles se alcanzan con lector de pantalla) y el indicador de conexión se toca en 44 px o más | Baja | 0.9.19 (B152) | Supervisión con lector de pantalla: los botones del mapa se anuncian; tocar el indicador por su borde | — |
 | M360 | Auditoría integral | Textos al día: aviso de los datos de demostración, diccionario (cinco catálogos), README con los nombres de pantalla y comentarios sin nombres propios | Baja | 0.9.19 (B152) | Menú de la cuenta › Datos de demostración › Cargar: el aviso dice más de 1,300 jornadas y 17,000 árboles | Aviso de carga |
+| M361 | Liber | «Quién lo solicita» de un pedido especial tiene catálogo propio, aparte del de instituciones: las 16 alcaldías sin la palabra «Alcaldía» y en orden alfabético, SOBSE, SEGIAGUA, Jefatura de Gobierno y Diputadas y diputados, agrupados por tipo; «Otra instancia» sigue al final | Media | 0.9.20 (B153) | Nuevo registro › Iniciar jornada › Origen «Pedido especial» › Quién lo solicita | Lista «Quién lo solicita» abierta |
+| M362 | Liber | Catálogos › Solicitantes: la Administración agrega, edita, desactiva y elimina solicitantes, con su tipo (Alcaldía, Dependencia de gobierno, Congreso, Empresa, Organización civil, Escuela, Vecinos), buscador y filtro por tipo | Media | 0.9.20 (B153) | Menú de la cuenta › Configuración › Catálogos › Solicitantes › Agregar solicitante; después verlo en «Quién lo solicita» | Pestaña «Solicitantes» |
 
 ## 2. Por hacer
 
@@ -383,4 +385,4 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 343 hechas · 5 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 345 hechas · 5 por hacer · 2 revisadas · 2 descartadas.

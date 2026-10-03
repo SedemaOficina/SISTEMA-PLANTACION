@@ -2345,3 +2345,26 @@
     17,000 árboles, de la Secretaría y de otras instituciones); el diccionario dice cinco catálogos; el
     README usa los nombres de pantalla («árboles que se van a plantar», Usuarios en el menú de la
     cuenta). Los comentarios del código ya no nombran a personas.
+- **D217. Catálogo propio de solicitantes de pedidos especiales (bloque 153).** 02-10-2026. Decisión de Liber.
+  «Quién lo solicita» tomaba el catálogo de instituciones, que es el de quienes ejecutan y tienen
+  cuentas; quien pide un pedido especial no planta ni entra al sistema, y la lista no se podía ajustar
+  sin tocar cuentas, filtros e informes.
+  · **Catálogo `solicitante`**, sexto de la tabla `catalogos`, con `tipo_solicitante`. Se administra en
+    Catálogos › Solicitantes: agregar, editar (nombre y tipo), desactivar y, sin uso, eliminar. La clave
+    la pone el sistema y no se muestra.
+  · **Tipos propios**, lista fija de siete (`SRP.ref.TIPOS_SOLICITANTE`): Alcaldía, Dependencia de
+    gobierno, Congreso, Empresa, Organización civil, Escuela y Vecinos. Agrupan la lista y la tabla.
+  · **De arranque**, los que dio Liber: las 16 alcaldías sin la palabra «Alcaldía» y en orden
+    alfabético, Secretaría de Obras y Servicios (SOBSE), Secretaría de Gestión Integral del Agua
+    (SEGIAGUA), Jefatura de Gobierno y Diputadas y diputados. PAOT, Green Cover, Reforestamos y la
+    propia Secretaría ya no aparecen como solicitantes.
+  · **«Otra instancia» se conserva**: el cabo escribe el nombre si el solicitante no está en el
+    catálogo; la Administración lo da de alta después.
+  · **El nombre se lee como se guarda**: «Pedido especial · Iztapalapa». En la lista, el grupo
+    «Alcaldía» dice de qué se trata.
+  · **Lo ya capturado**: al abrir, una jornada cuyo solicitante era una institución pasa al
+    solicitante que le corresponde (una alcaldía, SOBSE) o queda escrita con su nombre como «Otra
+    instancia». Un teléfono con capturas recibe el catálogo nuevo sin perder nada (sello
+    `2026-10-02-solicitantes`).
+  · **Sin cambio**: la institución que ejecuta, los filtros «Origen», el apartado «Pedidos
+    especiales» de Supervisión, el reporte y el CSV; sólo cambia de dónde sale el nombre.

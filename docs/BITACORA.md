@@ -2890,3 +2890,24 @@ cinco catálogos; diccionario y `js/esquema.js` regenerados. Comentarios sin nom
 espacio en la ruta) y otro puerto: prueba.py 1204 comprobaciones, 0 fallas (ctx66, 4 nuevas: fecha
 máxima, área de toque del indicador, mapas como grupo); auditoria.py 117, 0 hallazgos; revisar.py sin
 problemas.
+
+## Bloque 153 — Catálogo propio de solicitantes de pedidos especiales (02-10-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.9.20.
+
+**Qué cambió (D217).** `js/datos-ficticios.js`: 20 solicitantes de arranque (16 alcaldías sin la palabra,
+SOBSE, SEGIAGUA, Jefatura de Gobierno, Diputadas y diputados). `js/referencias.js`: `TIPOS_SOLICITANTE`,
+`nombreSolicitante()`, `ordenSolicitantes()`. `js/pedido.js`: «Quién lo solicita» sale del catálogo de
+solicitantes, agrupado por tipo. `js/catalogos.js` e `index.html`: pestaña «Solicitantes» con buscador,
+filtro por tipo, alta, edición, desactivación y eliminación sin uso; campo «Tipo de solicitante».
+`js/almacen.js` `normalizar()`: la jornada cuyo solicitante era una institución pasa a su solicitante o
+queda como «Otra instancia». `js/config.js`: sello `2026-10-02-solicitantes`. `js/configuracion.js`,
+`js/espejo.js`, `js/demostracion.js`: textos e ids al día. `datos/esquema.json`: seis catálogos, dominio
+`tipo_solicitante`, campo `catalogos.tipo_solicitante`, relación de `jornadas.solicitante_id`, R-C06, R-J06
+y S-14; diccionario y `js/esquema.js` regenerados; `datos/MAPEO-CAMPOS.md`. `README.md` y
+`docs/FASE2-Y-TRASPASO.md` (fila 20). `pruebas/prueba.py`: ctx62 al día y ctx67. Marca 0.9.20.
+
+**Verificación:** prueba.py 1216 comprobaciones, 0 fallas (ctx67, 12 nuevas: solicitantes de arranque,
+pestaña, búsqueda y filtro, alta con validación, lista agrupada, edición, uso y desactivación,
+eliminación, paso de las jornadas de antes y llegada del catálogo a un teléfono con capturas);
+auditoria.py 115, 0 hallazgos (sin las dos comparaciones de capas contra `originales/`, que la copia de
+prueba no trae); auditoria_css.py 0 hallazgos; revisar.py sin problemas.

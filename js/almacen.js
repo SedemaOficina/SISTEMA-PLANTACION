@@ -158,6 +158,9 @@ SRP.almacen = {
   /* CUENTAS, JORNADAS, INSTITUCIONES Y PROGRAMAS AL DÍA. Corre al abrir, ya con la base al día; sólo escribe lo
      que falte o sobre, así que repetirla no cambia nada. No borra ningún registro.
      - Cuenta o jornada sin institución: antes de las instituciones todo era de la Secretaría.
+     - Jornada cuyo solicitante es una institución: quien solicita un pedido especial sale del
+       catálogo de solicitantes. Pasa al solicitante que corresponde a esa institución (una
+       alcaldía, SOBSE) o, si no lo hay, queda escrito con su nombre como «Otra instancia».
      - Nombre de la cuenta en tres campos: se une en `nombre_completo`.
      - Institución con un tipo que ya no existe, contrato o vigencia, o alcaldía con la palabra
        «Alcaldía» en el nombre: se ajusta a los cuatro tipos fijos y se quita lo que ya no se usa.
@@ -179,7 +182,20 @@ SRP.almacen = {
       delete n.nombre; delete n.apellido_paterno; delete n.apellido_materno;
       cambios.push(['usuarios', n]);
     });
-    jornadas.filter(j => !j.organizacion_id).forEach(j => cambios.push(['jornadas', Object.assign({}, j, { organizacion_id: sedema })]));
+    const porId = Object.fromEntries(catalogos.map(c => [c.id, c]));
+    const deArranque = new Set(SRP.DATOS_FICTICIOS.catalogos.filter(c => c.tipo === 'solicitante').map(c => c.id));
+    jornadas.forEach(j => {
+      const n = Object.assign({}, j);
+      if (!j.organizacion_id) n.organizacion_id = sedema;
+      const o = j.solicitante_id ? porId[j.solicitante_id] : null;
+      if (o && o.tipo === 'organizacion') {
+        const s = 's-' + String(o.id).replace(/^o-/, '');
+        const hay = porId[s] ? porId[s].tipo === 'solicitante' : deArranque.has(s);
+        n.solicitante_id = hay ? s : null;
+        n.solicitante_otro = hay ? '' : (o.tipo_organizacion === 'Alcaldía' ? 'Alcaldía ' : '') + o.nombre.replace(/^Alcald[ií]a\s+/i, '');
+      }
+      if (n.organizacion_id !== j.organizacion_id || n.solicitante_id !== j.solicitante_id) cambios.push(['jornadas', n]);
+    });
     catalogos.filter(c => c.tipo === 'organizacion').forEach(c => {
       const tipo = this.TIPOS_ANTERIORES[c.tipo_organizacion] || c.tipo_organizacion;
       const nombre = tipo === 'Alcaldía' ? c.nombre.replace(/^Alcald[ií]a\s+/i, '') : c.nombre;

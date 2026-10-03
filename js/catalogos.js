@@ -15,15 +15,25 @@
    Aquí, y sólo aquí, la Administración agrega a solicitud dependencias de gobierno, empresas y
    organizaciones civiles, las renombra y las desactiva (desactivar corta el acceso de sus cuentas);
    no se eliminan. El tipo se elige al agregarla y no cambia; la clave la pone el sistema. Las 16
-   alcaldías son fijas y la Secretaría no se desactiva. */
+   alcaldías son fijas y la Secretaría no se desactiva.
+
+   SOLICITANTES (tipo `solicitante`). Quién pide un pedido especial; se eligen al iniciar o editar
+   una jornada. Llevan nombre y tipo (los de SRP.ref.TIPOS_SOLICITANTE), que agrupa la lista; la
+   clave la pone el sistema. Se agregan, se editan y se desactivan; sin uso, se eliminan. No son
+   instituciones: no tienen cuentas ni ejecutan jornadas. */
 window.SRP = window.SRP || {};
 
 SRP.catalogos = {
   tipo: 'programa', editando: null, usos: {},
   claveTocada: false,   // deja de sugerir en cuanto la persona escribe su propia clave
-  ETIQUETA: { programa: 'programa', area: 'área', especie: 'especie', vehiculo: 'vehículo', organizacion: 'institución' },
+  ETIQUETA: { programa: 'programa', area: 'área', especie: 'especie', vehiculo: 'vehículo', organizacion: 'institución', solicitante: 'solicitante' },
   CAMPOS_ESPECIE: ['cat-cientifico', 'cat-distribucion', 'cat-otros-nombres', 'cat-forma', 'cat-snib', 'cat-enciclovida'],
   CAMPOS_VEHICULO: ['cat-modelo', 'cat-tipo-vehiculo'],
+  CAMPOS_TIPO: ['cat-tipo-org', 'cat-tipo-sol'],
+  // El tipo de una institución o de un solicitante, y el orden de sus tipos
+  tipoDe(c) { return c.tipo === 'solicitante' ? c.tipo_solicitante || '' : c.tipo_organizacion || ''; },
+  tiposDe(tipo) { return tipo === 'solicitante' ? SRP.ref.TIPOS_SOLICITANTE : SRP.ref.TIPOS_INSTITUCION; },
+  nombreDe(c) { return c.tipo === 'organizacion' ? SRP.ref.nombreOrganizacion(c.id) : c.nombre; },
   // Una alcaldía no se renombra ni se desactiva: son las 16 de la Ciudad
   esFija(c) { return c.tipo === 'organizacion' && c.tipo_organizacion === 'Alcaldía'; },
   // La placa sin espacios ni guiones: así se comparan «1234AB» y «1234 AB»
@@ -83,16 +93,18 @@ SRP.catalogos = {
   async preparar() {
     // Árboles (también los eliminados: siguen en el historial), jornadas y cuentas que lo usan (D151)
     this.usos = await SRP.ref.usosDe('catalogos');
-    // Buscar en especies e instituciones; las instituciones también por tipo
-    const esOrg = this.tipo === 'organizacion';
-    this.el('caja-cat-buscar').hidden = this.tipo !== 'especie' && !esOrg;
-    this.el('cat-buscar-etiqueta').textContent = esOrg ? 'Buscar institución' : 'Buscar especie';
-    this.el('cat-buscar').placeholder = esOrg ? 'Nombre o clave' : 'Nombre o clave ESP';
-    this.el('caja-cat-filtro-tipo').hidden = !esOrg;
-    if (esOrg) { const sel = this.el('cat-filtro-tipo'), antes = sel.value; sel.innerHTML = SRP.util.opciones('Todos', SRP.ref.TIPOS_INSTITUCION.map(t => [t, t])); sel.value = antes; }
+    // Buscar en especies, instituciones y solicitantes; estos dos también por tipo
+    const esOrg = this.tipo === 'organizacion', esSol = this.tipo === 'solicitante', conTipo = esOrg || esSol;
+    this.el('caja-cat-buscar').hidden = this.tipo !== 'especie' && !conTipo;
+    this.el('cat-buscar-etiqueta').textContent = esOrg ? 'Buscar institución' : esSol ? 'Buscar solicitante' : 'Buscar especie';
+    this.el('cat-buscar').placeholder = esOrg ? 'Nombre o clave' : esSol ? 'Nombre' : 'Nombre o clave ESP';
+    this.el('caja-cat-filtro-tipo').hidden = !conTipo;
+    this.el('cat-filtro-tipo-etiqueta').textContent = esSol ? 'Tipo de solicitante' : 'Tipo de institución';
+    if (conTipo) { const sel = this.el('cat-filtro-tipo'), antes = sel.value; sel.innerHTML = SRP.util.opciones('Todos', this.tiposDe(this.tipo).map(t => [t, t])); sel.value = antes; }
     this.el('btn-cat-excel').hidden = this.tipo !== 'especie';
     this.el('btn-cat-agregar').innerHTML = SRP.ICONOS.svg('mas', 'medio') + '<span>Agregar ' + this.ETIQUETA[this.tipo] + '</span>';
     this.el('cat-nota-org').hidden = this.tipo !== 'organizacion';
+    this.el('cat-nota-sol').hidden = !esSol;
     this.pintar();
   },
 
@@ -100,19 +112,21 @@ SRP.catalogos = {
     const esc = SRP.util.escapar;
     const q = SRP.util.normalizar(this.el('cat-buscar').value);
     const esEspecie = this.tipo === 'especie', esVehiculo = this.tipo === 'vehiculo', esOrg = this.tipo === 'organizacion', esPrograma = this.tipo === 'programa';
-    const textoOrg = (c) => c.tipo_organizacion || '';
+    // Instituciones y solicitantes llevan tipo y no muestran clave
+    const esSol = this.tipo === 'solicitante', conTipo = esOrg || esSol, tipos = this.tiposDe(this.tipo);
+    const textoOrg = (c) => this.tipoDe(c);
     // «12 árboles y 3 jornadas», «2 cuentas», «Sin uso» (D151)
     const textoUso = (id) => SRP.ref.textoUsos(this.usos[id]) || 'Sin uso';
-    const tipoOrg = esOrg ? this.el('cat-filtro-tipo').value : '';
-    const coincide = c => !q || (esOrg ? [SRP.ref.nombreOrganizacion(c.id), c.clave].some(t => SRP.util.normalizar(t).includes(q)) : SRP.ref.especieCoincide(c, q));
-    // Las instituciones, agrupadas por tipo (en el orden de los tipos) y por nombre dentro de cada uno
-    const items = SRP.ref.deTipo(this.tipo, false).filter(c => coincide(c) && (!tipoOrg || c.tipo_organizacion === tipoOrg));
-    if (esOrg) items.sort((a, b) => SRP.ref.TIPOS_INSTITUCION.indexOf(a.tipo_organizacion) - SRP.ref.TIPOS_INSTITUCION.indexOf(b.tipo_organizacion) ||
-      SRP.ref.nombreOrganizacion(a.id).localeCompare(SRP.ref.nombreOrganizacion(b.id), 'es'));
+    const tipoOrg = conTipo ? this.el('cat-filtro-tipo').value : '';
+    const coincide = c => !q || (conTipo ? [this.nombreDe(c), c.clave].some(t => SRP.util.normalizar(t).includes(q)) : SRP.ref.especieCoincide(c, q));
+    // Instituciones y solicitantes, agrupados por tipo (en el orden de los tipos) y por nombre dentro de cada uno
+    const items = SRP.ref.deTipo(this.tipo, false).filter(c => coincide(c) && (!tipoOrg || this.tipoDe(c) === tipoOrg));
+    if (conTipo) items.sort((a, b) => tipos.indexOf(this.tipoDe(a)) - tipos.indexOf(this.tipoDe(b)) ||
+      this.nombreDe(a).localeCompare(this.nombreDe(b), 'es'));
     const cab = '<thead><tr><th scope="col">' + (esEspecie ? 'Nombre común' : esVehiculo ? 'Placa' : 'Nombre') + '</th>' +
       (esEspecie ? '<th scope="col">Nombre científico</th><th scope="col">Distribución</th>' : '') +
-      (esOrg ? '<th scope="col">Tipo</th>' : '') +
-      (esVehiculo ? '<th scope="col">Modelo</th><th scope="col">Tipo</th>' : esOrg ? '' : '<th scope="col">Clave</th>') +
+      (conTipo ? '<th scope="col">Tipo</th>' : '') +
+      (esVehiculo ? '<th scope="col">Modelo</th><th scope="col">Tipo</th>' : conTipo ? '' : '<th scope="col">Clave</th>') +
       (esPrograma ? '<th scope="col">Quién lo usa</th>' : '') +
       '<th scope="col">Estado</th><th scope="col">Uso</th><th scope="col">Acciones</th></tr></thead>';
     const filas = items.map(c => {
@@ -128,24 +142,24 @@ SRP.catalogos = {
       const estado = '<span class="estado-texto" data-activo="' + c.activo + '">' + (c.activo ? 'Activo' : 'Inactivo') + '</span>';
       // Clases c-*: en teléfono la fila es una tarjeta compacta (D105): título, científico, un
       // renglón de resumen y la tuerca arriba a la derecha; el resto de celdas se oculta ahí
-      return '<tr data-id="' + SRP.util.escapar(c.id) + '"' + (fija ? ' data-fija="true"' : '') + '><td class="c-titulo" data-etiqueta="Nombre">' + esc(esOrg ? SRP.ref.nombreOrganizacion(c.id) : c.nombre) + '</td>' +
+      return '<tr data-id="' + SRP.util.escapar(c.id) + '"' + (fija ? ' data-fija="true"' : '') + '><td class="c-titulo" data-etiqueta="Nombre">' + esc(this.nombreDe(c)) + '</td>' +
         (esEspecie ? '<td class="c-sub" data-etiqueta="Científico"><i>' + esc(c.nombre_cientifico) + '</i>' +
           (c.otros_nombres_comunes ? '<small class="tabla-detalle">También: ' + esc(c.otros_nombres_comunes) + '</small>' : '') +
           '</td><td class="c-movil-oculta" data-etiqueta="Distribución">' + esc(c.tipo_distribucion || '') + '</td>' : '') +
-        (esOrg ? '<td class="c-movil-oculta" data-etiqueta="Tipo">' + esc(textoOrg(c)) + '</td>' : '') +
+        (conTipo ? '<td class="c-movil-oculta" data-etiqueta="Tipo">' + esc(textoOrg(c)) + '</td>' : '') +
         (esVehiculo ? '<td class="c-movil-oculta" data-etiqueta="Modelo">' + esc(c.modelo || '') + '</td><td class="c-movil-oculta" data-etiqueta="Tipo">' + esc(c.tipo_vehiculo || '') + '</td>'
-          : esOrg ? '' : '<td class="c-movil-oculta" data-etiqueta="Clave">' + esc(c.clave) + '</td>') +
+          : conTipo ? '' : '<td class="c-movil-oculta" data-etiqueta="Clave">' + esc(c.clave) + '</td>') +
         (esPrograma ? '<td class="c-movil-oculta" data-etiqueta="Quién lo usa">' + esc(SRP.ref.textoUsoPrograma(c)) + '</td>' : '') +
         '<td class="c-movil-oculta" data-etiqueta="Estado">' + estado + '</td>' +
         '<td class="c-movil-oculta" data-etiqueta="Uso">' + textoUso(c.id) + '</td>' +
         '<td class="c-acciones" data-etiqueta="Acciones">' + (items.length ? SRP.ICONOS.menuAcciones(c.id, c.nombre, items) : '<span class="nota">Fija</span>') + '</td>' +
         '<td class="c-resumen">' + estado + '<span>' + (esVehiculo ? [esc(c.modelo || ''), esc(c.tipo_vehiculo || ''), textoUso(c.id)]
-          : [esOrg ? '' : esc(c.clave), esEspecie ? esc(c.tipo_distribucion || '') : '', esOrg ? esc(textoOrg(c)) : '', esPrograma ? esc(SRP.ref.textoUsoPrograma(c)) : '', textoUso(c.id)]).filter(Boolean).join(' · ') + '</span></td></tr>';
+          : [conTipo ? '' : esc(c.clave), esEspecie ? esc(c.tipo_distribucion || '') : '', conTipo ? esc(textoOrg(c)) : '', esPrograma ? esc(SRP.ref.textoUsoPrograma(c)) : '', textoUso(c.id)]).filter(Boolean).join(' · ') + '</span></td></tr>';
     }).join('');
     this.el('tabla-catalogo').innerHTML = cab + '<tbody>' + (filas || '<tr><td colspan="8">Sin resultados.</td></tr>') + '</tbody>';
     SRP.util.ordenable(this.el('tabla-catalogo'));
     // Cuántos hay y cuántos coinciden (D105)
-    const nombres = { programa: ['programa', 'programas'], area: ['área', 'áreas'], especie: ['especie', 'especies'], vehiculo: ['vehículo', 'vehículos'], organizacion: ['institución', 'instituciones'] }[this.tipo];
+    const nombres = { programa: ['programa', 'programas'], area: ['área', 'áreas'], especie: ['especie', 'especies'], vehiculo: ['vehículo', 'vehículos'], organizacion: ['institución', 'instituciones'], solicitante: ['solicitante', 'solicitantes'] }[this.tipo];
     const total = SRP.ref.deTipo(this.tipo, false).length;
     const pal = (n) => n === 1 ? nombres[0] : nombres[1];
     // Y cuántos están inactivos (D142): «76 especies · 3 inactivas»
@@ -224,6 +238,10 @@ SRP.catalogos = {
     document.querySelectorAll('.solo-especie').forEach(n => { n.hidden = !esEspecie; });
     document.querySelectorAll('.solo-vehiculo').forEach(n => { n.hidden = !esVehiculo; });
     document.querySelectorAll('.solo-organizacion').forEach(n => { n.hidden = this.tipo !== 'organizacion'; });
+    document.querySelectorAll('.solo-solicitante').forEach(n => { n.hidden = this.tipo !== 'solicitante'; });
+    // Solicitantes: el tipo se elige de la lista y se puede corregir después
+    this.el('cat-tipo-sol').innerHTML = SRP.util.opciones('Seleccione el tipo', SRP.ref.TIPOS_SOLICITANTE.map(t => [t, t]));
+    this.el('cat-tipo-sol').value = item ? item.tipo_solicitante || '' : '';
     document.querySelectorAll('.solo-programa').forEach(n => { n.hidden = this.tipo !== 'programa'; });
     // Un programa nuevo empieza sólo para la Secretaría; la Administración marca quién más lo usa
     const tiposPrograma = item ? item.tipos_organizacion || [] : [];
@@ -233,8 +251,8 @@ SRP.catalogos = {
     this.el('cat-tipo-org').value = item ? item.tipo_organizacion || '' : '';
     this.el('cat-tipo-org').disabled = !!item;
     this.el('cat-tipo-org').querySelector('option[value="Alcaldía"]').hidden = !item;
-    // La clave de vehículos e instituciones la pone el sistema y no se muestra
-    document.querySelectorAll('.no-vehiculo').forEach(n => { n.hidden = esVehiculo || this.tipo === 'organizacion'; });
+    // La clave de vehículos, instituciones y solicitantes la pone el sistema y no se muestra
+    document.querySelectorAll('.no-vehiculo').forEach(n => { n.hidden = esVehiculo || this.tipo === 'organizacion' || this.tipo === 'solicitante'; });
     this.el('cat-nombre').setAttribute('autocapitalize', esVehiculo ? 'characters' : 'sentences');
     this.el('cat-modelo').value = item ? item.modelo || '' : '';
     this.el('cat-tipo-vehiculo').value = item ? item.tipo_vehiculo || '' : '';
@@ -256,7 +274,7 @@ SRP.catalogos = {
     this.el('cat-snib').value = item ? item.id_snib || '' : '';
     this.el('cat-enciclovida').value = item && item.id_enciclovida !== null && item.id_enciclovida !== undefined ? String(item.id_enciclovida) : '';
     this.el('cat-errores').hidden = true;
-    SRP.util.erroresEnCampos([], ['cat-nombre', 'cat-clave', 'cat-tipo-org'].concat(this.CAMPOS_ESPECIE, this.CAMPOS_VEHICULO));
+    SRP.util.erroresEnCampos([], ['cat-nombre', 'cat-clave'].concat(this.CAMPOS_TIPO, this.CAMPOS_ESPECIE, this.CAMPOS_VEHICULO));
     this.el('dlg-catalogo').showModal();
   },
 
@@ -280,6 +298,13 @@ SRP.catalogos = {
       if (!datos.nombre) errores.push(['cat-nombre', 'Escriba el nombre.']);
       else if (mismos.some(c => norm(c.nombre) === norm(datos.nombre))) errores.push(['cat-nombre', 'Ya existe una institución con ese nombre.']);
       if (this.editando && this.esFija(this.editando)) errores.push(['cat-nombre', 'Las alcaldías no se renombran.']);
+      return errores;
+    }
+    // Solicitante: nombre único y tipo de la lista; la clave la pone el sistema
+    if (this.tipo === 'solicitante') {
+      if (!datos.nombre) errores.push(['cat-nombre', 'Escriba el nombre.']);
+      else if (mismos.some(c => norm(c.nombre) === norm(datos.nombre))) errores.push(['cat-nombre', 'Ya existe un solicitante con ese nombre.']);
+      if (!SRP.ref.TIPOS_SOLICITANTE.includes(datos.tipo_solicitante)) errores.push(['cat-tipo-sol', 'Elija el tipo de solicitante.']);
       return errores;
     }
     if (!datos.nombre) errores.push(['cat-nombre', 'Escriba el nombre.']);
@@ -315,13 +340,15 @@ SRP.catalogos = {
       // Vehículos: la placa en mayúsculas; el tipo con inicial mayúscula, como los demás
       modelo: limpio('cat-modelo'),
       tipo_vehiculo: (t => t ? t.charAt(0).toUpperCase() + t.slice(1) : '')(limpio('cat-tipo-vehiculo')),
-      tipo_organizacion: this.el('cat-tipo-org').value
+      tipo_organizacion: this.el('cat-tipo-org').value,
+      tipo_solicitante: this.el('cat-tipo-sol').value
     };
     // La clave de una institución nueva la pone el sistema a partir del nombre; no se muestra
     if (this.tipo === 'organizacion') datos.clave = this.editando ? this.editando.clave : this.claveLibre(SRP.util.claveDesdeNombre(datos.nombre) || 'INSTITUCION');
+    if (this.tipo === 'solicitante') datos.clave = this.editando ? this.editando.clave : this.claveLibre(SRP.util.claveDesdeNombre(datos.nombre) || 'SOLICITANTE');
     if (this.tipo === 'vehiculo') { datos.nombre = datos.nombre.toUpperCase(); datos.clave = this.editando ? this.editando.clave : this.clavePlaca(datos.nombre); }
     const errores = this.validar(datos);
-    if (SRP.util.resumenErrores(this.el('cat-errores'), errores, ['cat-nombre', 'cat-clave', 'cat-tipo-org'].concat(this.CAMPOS_ESPECIE, this.CAMPOS_VEHICULO))) return;   // D140, M15
+    if (SRP.util.resumenErrores(this.el('cat-errores'), errores, ['cat-nombre', 'cat-clave'].concat(this.CAMPOS_TIPO, this.CAMPOS_ESPECIE, this.CAMPOS_VEHICULO))) return;   // D140, M15
     const u = SRP.sesion.usuario;
     const ahora = SRP.util.ahoraISO();
     const extra = this.tipo === 'especie' ? {
@@ -330,6 +357,7 @@ SRP.catalogos = {
       formadecrecimiento: datos.formadecrecimiento, id_snib: datos.id_snib, id_enciclovida: datos.id_enciclovida
     } : this.tipo === 'vehiculo' ? { modelo: datos.modelo, tipo_vehiculo: datos.tipo_vehiculo }
       : this.tipo === 'organizacion' ? { tipo_organizacion: this.editando ? this.editando.tipo_organizacion : datos.tipo_organizacion }
+      : this.tipo === 'solicitante' ? { tipo_solicitante: datos.tipo_solicitante }
       : this.tipo === 'programa' ? { tipos_organizacion: this.tiposMarcados() } : {};
     let item, entrada;
     if (this.editando) {

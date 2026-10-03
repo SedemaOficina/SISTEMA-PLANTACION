@@ -82,7 +82,7 @@ SRP.espejo = {
     relevo_id: 'El cabo que registra en lugar del titular, si la coordinación hizo un relevo; nulo: registra el titular',
     relevos: 'Los relevos hechos: a quién se pasó, cuándo y quién lo hizo',
     origen: 'De dónde viene la jornada: PROGRAMADA (del programa de trabajo) o PEDIDO (pedido especial de otra instancia)',
-    solicitante_id: 'Quién solicita el pedido especial, del catálogo de instituciones; nulo si es otra instancia o si la jornada es programada',
+    solicitante_id: 'Quién solicita el pedido especial, del catálogo de solicitantes; nulo si es otra instancia o si la jornada es programada',
     solicitante_otro: 'El nombre de la instancia que solicita, cuando no está en el catálogo',
     pedido_descripcion: 'De qué se trata el pedido especial; opcional',
     organizacion_id: 'La institución que ejecuta: la de quien inició la jornada; no cambia después. En las de otras instituciones no se piden chófer ni vehículo',

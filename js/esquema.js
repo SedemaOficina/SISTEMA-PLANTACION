@@ -38,7 +38,8 @@ SRP.ESQUEMA = {
    "area",
    "especie",
    "vehiculo",
-   "organizacion"
+   "organizacion",
+   "solicitante"
   ],
   "tipo_distribucion": [
    "Nativa",
@@ -51,6 +52,15 @@ SRP.ESQUEMA = {
    "Gobierno de la CDMX",
    "Empresa privada",
    "Organización civil"
+  ],
+  "tipo_solicitante": [
+   "Alcaldía",
+   "Dependencia de gobierno",
+   "Congreso",
+   "Empresa",
+   "Organización civil",
+   "Escuela",
+   "Vecinos"
   ],
   "accion_bitacora": [
    "CREADO",
@@ -506,6 +516,13 @@ SRP.ESQUEMA = {
     "varchar(30)",
     true,
     "tipo_organizacion",
+    null
+   ],
+   [
+    "tipo_solicitante",
+    "varchar(30)",
+    true,
+    "tipo_solicitante",
     null
    ],
    [

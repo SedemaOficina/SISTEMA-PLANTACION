@@ -122,7 +122,8 @@
         "area",
         "especie",
         "vehiculo",
-        "organizacion"
+        "organizacion",
+        "solicitante"
       ],
       "fuente": "js/catalogos.js ETIQUETA",
       "codigo": "Object.keys(SRP.catalogos.ETIQUETA)"
@@ -146,6 +147,19 @@
       ],
       "fuente": "Lista fija en index.html #usr-tipo-org y #cat-tipo-org; js/referencias.js TIPOS_INSTITUCION",
       "codigo": "SRP.ref.TIPOS_INSTITUCION"
+    },
+    "tipo_solicitante": {
+      "valores": [
+        "Alcaldía",
+        "Dependencia de gobierno",
+        "Congreso",
+        "Empresa",
+        "Organización civil",
+        "Escuela",
+        "Vecinos"
+      ],
+      "fuente": "js/referencias.js TIPOS_SOLICITANTE; la lista de Catálogos › Solicitantes (#cat-tipo-sol) se llena de ahí",
+      "codigo": "SRP.ref.TIPOS_SOLICITANTE"
     },
     "accion_bitacora": {
       "valores": [
@@ -604,19 +618,19 @@
       ]
     },
     "catalogos": {
-      "que_es": "Los cinco catálogos administrables en una sola tabla, distinguidos por `tipo`: programas, áreas, especies, vehículos e instituciones. Las especies son el catálogo real del SIA (D84) y los vehículos, el de las cuadrillas (D162); los dos llevan campos adicionales.",
+      "que_es": "Los seis catálogos administrables en una sola tabla, distinguidos por `tipo`: programas, áreas, especies, vehículos, instituciones y solicitantes de pedidos especiales. Las especies son el catálogo real del SIA (D84) y los vehículos, el de las cuadrillas (D162); los dos llevan campos adicionales.",
       "llave": "id",
       "indices": [],
-      "pantalla": "Catálogos (sólo Administración global); alimentan Nuevo registro (especie, programa) y Usuarios (área)",
+      "pantalla": "Catálogos (sólo Administración global); alimentan Nuevo registro (especie, programa) y Usuarios (área, institución) e Iniciar jornada (programa, quién solicita)",
       "campos": [
         {
           "campo": "id",
           "tipo": "text",
           "nulo": false,
           "origen": "Sistema",
-          "dominio": "UUID v4 en programas, áreas y organizaciones (los de arranque: p-refor, p-centro, p-palmeras, p-compensaciones, a-dgsanpava, a-oficina, a-sia, a-dgeira, o-sedema, o-paot, o-sobse, o-green-cover, o-reforestamos, o-alc-09002…o-alc-09017); en especies es la propia clave ESP-0000; en vehículos, «v-» más la placa sin espacios en los de arranque y UUID v4 en los que se agreguen",
+          "dominio": "UUID v4 en programas, áreas y organizaciones (los de arranque: p-refor, p-centro, p-palmeras, p-compensaciones, a-dgsanpava, a-oficina, a-sia, a-dgeira, o-sedema, o-paot, o-sobse, o-green-cover, o-reforestamos, o-alc-09002…o-alc-09017); en solicitantes, UUID v4 (los de arranque: s-alc-09002…s-alc-09017, s-sobse, s-segiagua, s-jefatura, s-diputados); en especies es la propia clave ESP-0000; en vehículos, «v-» más la placa sin espacios en los de arranque y UUID v4 en los que se agreguen",
           "pantalla": "No",
-          "regla": "Es lo que guardan plantaciones.especie_id, plantaciones.programa_id, usuarios.area_id, usuarios.organizacion_id, jornadas.organizacion_id y jornadas.vehiculo_id"
+          "regla": "Es lo que guardan plantaciones.especie_id, plantaciones.programa_id, usuarios.area_id, usuarios.organizacion_id, jornadas.organizacion_id, jornadas.solicitante_id y jornadas.vehiculo_id"
         },
         {
           "campo": "tipo",
@@ -634,7 +648,7 @@
           "origen": "Persona",
           "dominio": "Programas, áreas y organizaciones: `[A-Z0-9_]{2,30}`, única por tipo. Especies: id_especie. Vehículos: la placa sin espacios ni guiones",
           "pantalla": "Clave",
-          "regla": "Programas y áreas: se sugiere del nombre, editable antes de guardar, fija después. Especies: consecutivo ESP-0000 que asigna el sistema; nunca se escribe ni se reutiliza. Vehículos: sale de la placa al darlo de alta y no se muestra; dos placas que sólo difieren en espacios son la misma (D162). Instituciones: la pone el sistema a partir del nombre y no se muestra"
+          "regla": "Programas y áreas: se sugiere del nombre, editable antes de guardar, fija después. Especies: consecutivo ESP-0000 que asigna el sistema; nunca se escribe ni se reutiliza. Vehículos: sale de la placa al darlo de alta y no se muestra; dos placas que sólo difieren en espacios son la misma (D162). Instituciones y solicitantes: la pone el sistema a partir del nombre y no se muestra"
         },
         {
           "campo": "nombre",
@@ -643,7 +657,7 @@
           "origen": "Persona",
           "dominio": "Texto, único por tipo",
           "pantalla": "Nombre / Nombre común",
-          "regla": "En especies es el nombre_comun del catálogo del SIA: la etiqueta de campo. En vehículos es la placa, en mayúsculas: «PRU 005» (D162). En instituciones: único entre todas; las alcaldías sin la palabra «Alcaldía» (la pone la pantalla)"
+          "regla": "En especies es el nombre_comun del catálogo del SIA: la etiqueta de campo. En vehículos es la placa, en mayúsculas: «PRU 005» (D162). En instituciones: único entre todas; las alcaldías sin la palabra «Alcaldía» (la pone la pantalla). En solicitantes: único entre todos; las alcaldías también sin la palabra, y así se leen: su tipo las agrupa en la lista"
         },
         {
           "campo": "activo",
@@ -777,6 +791,16 @@
           "pantalla": "Tipo de institución (Usuarios, al dar de alta; Catálogos › Instituciones, al agregarla)",
           "regla": "Sólo instituciones; obligatorio: se elige al agregarla en Catálogos (nunca Alcaldía: las 16 son fijas) y no cambia. Las alcaldías se guardan sin la palabra «Alcaldía» en el nombre",
           "solo_tipo": "organizacion"
+        },
+        {
+          "campo": "tipo_solicitante",
+          "tipo": "varchar(30)",
+          "nulo": true,
+          "origen": "Persona",
+          "dominio": "tipo_solicitante",
+          "pantalla": "Tipo de solicitante (Catálogos › Solicitantes)",
+          "regla": "Sólo solicitantes; obligatorio. Agrupa la lista «Quién lo solicita» y la tabla del catálogo. Se elige al agregarlo y se puede corregir después",
+          "solo_tipo": "solicitante"
         },
         {
           "campo": "tipos_organizacion",
@@ -1101,9 +1125,9 @@
           "tipo": "text",
           "nulo": true,
           "origen": "Persona",
-          "dominio": "→ catalogos.id con tipo = organizacion",
+          "dominio": "→ catalogos.id con tipo = solicitante",
           "pantalla": "Iniciar jornada › Quién lo solicita; Editar jornada",
-          "regla": "Quién solicita el pedido especial, del catálogo de instituciones. No es quien ejecuta (organizacion_id): quien pide no es quien planta. Nulo si la jornada es programada o si la instancia no está en el catálogo. Obligatorio, este o solicitante_otro, cuando origen = PEDIDO"
+          "regla": "Quién solicita el pedido especial, del catálogo de solicitantes (Catálogos › Solicitantes), que es aparte del de instituciones. No es quien ejecuta (organizacion_id): quien pide no es quien planta. Nulo si la jornada es programada o si la instancia no está en el catálogo. Obligatorio, este o solicitante_otro, cuando origen = PEDIDO"
         },
         {
           "campo": "solicitante_otro",
@@ -1372,9 +1396,9 @@
     },
     {
       "de": "jornadas.solicitante_id",
-      "a": "catalogos.id (tipo organizacion: institución)",
+      "a": "catalogos.id (tipo solicitante)",
       "cardinalidad": "N:1",
-      "regla": "Opcional: sólo en un pedido especial cuya instancia está en el catálogo. Una institución que solicita alguna jornada no se elimina del catálogo; se desactiva"
+      "regla": "Opcional: sólo en un pedido especial cuya instancia está en el catálogo. Un solicitante que aparece en alguna jornada no se elimina del catálogo; se desactiva"
     },
     {
       "de": "plantaciones.sustituye_id / sustituido_por_id",
@@ -1683,6 +1707,11 @@
       "se_vacia": "No existe en los demás catálogos"
     },
     {
+      "campo": "catalogos.tipo_solicitante",
+      "aparece": "Sólo en tipo = solicitante",
+      "se_vacia": "No existe en los demás catálogos"
+    },
+    {
       "campo": "catalogos.tipos_organizacion",
       "aparece": "Sólo en tipo = programa",
       "se_vacia": "No existe en los demás catálogos; [] en un programa = sólo SEDEMA"
@@ -1861,6 +1890,12 @@
       "donde": "js/catalogos.js esFija(), validar(), guardar(), cambiarEstado(); js/datos-ficticios.js; js/almacen.js completarCatalogos()"
     },
     {
+      "id": "R-C06",
+      "tabla": "catalogos",
+      "regla": "Solicitantes: quién pide un pedido especial. Catálogo aparte del de instituciones: un solicitante no tiene cuentas ni ejecuta jornadas. Sólo la Administración los agrega, edita y desactiva (Catálogos › Solicitantes): nombre único, tipo de la lista fija de siete (Alcaldía, Dependencia de gobierno, Congreso, Empresa, Organización civil, Escuela, Vecinos) y clave que pone el sistema; sin uso se eliminan. De arranque: las 16 alcaldías (id s-alc-<cvegeo>, sin la palabra «Alcaldía»), Secretaría de Obras y Servicios (SOBSE), Secretaría de Gestión Integral del Agua (SEGIAGUA), Jefatura de Gobierno (Dependencia de gobierno) y Diputadas y diputados (Congreso). «Quién lo solicita» los ofrece agrupados por tipo y, al final, «Otra instancia»",
+      "donde": "js/catalogos.js validar(), guardar(); js/referencias.js TIPOS_SOLICITANTE, nombreSolicitante(), ordenSolicitantes(); js/pedido.js opciones(); js/datos-ficticios.js"
+    },
+    {
       "id": "R-J01",
       "tabla": "jornadas",
       "regla": "Sólo se elimina sin ningún árbol, ni eliminado: los eliminados se conservan como constancia y siguen apuntando a ella. La eliminan quien la inició, su coordinador o administración (D132, D151)",
@@ -1881,8 +1916,8 @@
     {
       "id": "R-J06",
       "tabla": "jornadas",
-      "regla": "Pedido especial: una jornada con origen PEDIDO lleva quién lo solicita, del catálogo de instituciones (solicitante_id) o escrito (solicitante_otro); una programada lleva los tres datos del pedido vacíos. El origen no cambia quién ejecuta ni el programa",
-      "donde": "js/pedido.js leer() y errores(); js/jornada-activa.js iniciarJornada(); js/jornadas.js guardarEdicion()"
+      "regla": "Pedido especial: una jornada con origen PEDIDO lleva quién lo solicita, del catálogo de solicitantes (solicitante_id) o escrito (solicitante_otro); una programada lleva los tres datos del pedido vacíos. El origen no cambia quién ejecuta ni el programa. Una jornada que traía una institución como solicitante pasa, al abrir el sistema, al solicitante que le corresponde o queda escrita como «Otra instancia»",
+      "donde": "js/pedido.js leer() y errores(); js/jornada-activa.js iniciarJornada(); js/jornadas.js guardarEdicion(); js/almacen.js normalizar()"
     },
     {
       "id": "R-R01",
@@ -1985,8 +2020,8 @@
     {
       "id": "S-14",
       "que": "Pedido especial",
-      "detalle": "El servidor guarda el origen de la jornada (PROGRAMADA o PEDIDO) y valida lo mismo que el teléfono: un pedido lleva solicitante, del catálogo de instituciones (solicitante_id) o escrito (solicitante_otro), y una programada lleva los tres datos del pedido vacíos. El solicitante no da acceso a la jornada: la ve quien la ejecuta y quien la supervisa",
-      "referencia": "D210"
+      "detalle": "El servidor guarda el origen de la jornada (PROGRAMADA o PEDIDO) y valida lo mismo que el teléfono: un pedido lleva solicitante, del catálogo de solicitantes (solicitante_id) o escrito (solicitante_otro), y una programada lleva los tres datos del pedido vacíos. La base real carga los solicitantes de arranque (16 alcaldías, SOBSE, SEGIAGUA, Jefatura de Gobierno, Diputadas y diputados) con sus tipos. El solicitante no da acceso a la jornada: la ve quien la ejecuta y quien la supervisa",
+      "referencia": "D210, D217"
     },
     {
       "id": "S-15",

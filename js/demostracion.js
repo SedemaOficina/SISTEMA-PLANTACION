@@ -40,9 +40,9 @@ SRP.demo = {
 
   // Los pedidos especiales de la demostración: de SOBSE, de una alcaldía y de una instancia fuera del catálogo
   PEDIDOS: [
-    { origen: 'PEDIDO', solicitante_id: 'o-sobse', solicitante_otro: '', pedido_descripcion: 'Compensación por obra vial.' },
-    { origen: 'PEDIDO', solicitante_id: 'o-alc-09007', solicitante_otro: '', pedido_descripcion: '' },
-    { origen: 'PEDIDO', solicitante_id: 'o-sobse', solicitante_otro: '', pedido_descripcion: 'Camellón rehabilitado.' },
+    { origen: 'PEDIDO', solicitante_id: 's-sobse', solicitante_otro: '', pedido_descripcion: 'Compensación por obra vial.' },
+    { origen: 'PEDIDO', solicitante_id: 's-alc-09007', solicitante_otro: '', pedido_descripcion: '' },
+    { origen: 'PEDIDO', solicitante_id: 's-sobse', solicitante_otro: '', pedido_descripcion: 'Camellón rehabilitado.' },
     { origen: 'PEDIDO', solicitante_id: null, solicitante_otro: 'Sistema de Transporte Colectivo Metro', pedido_descripcion: 'Entorno de estación.' }],
 
   // La empresa de demostración: sólo existe mientras estén cargados los datos
