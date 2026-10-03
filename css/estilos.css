@@ -318,6 +318,9 @@ fieldset.campo { margin-inline: 0; }
 .envoltura-vacio[data-vacio="true"] input:focus ~ .texto-vacio { display: none; }
 .envoltura-vacio[data-vacio="true"] input:not(:focus) { color: transparent; }
 .fecha-con-hoy .btn { min-width: 5rem; }
+/* Fecha con «Hoy» al lado: el campo no lleva el botón de calendario del navegador; tocar el campo lo abre */
+.fecha-con-hoy input[type="date"] { cursor: pointer; }
+.fecha-con-hoy input[type="date"]::-webkit-calendar-picker-indicator { display: none; }
 /* Programas como botones: dentro del formulario van a todo el ancho y a la altura de un campo */
 .chips-campo { max-width: none; margin-bottom: 0; }
 .chips-campo .chip { min-height: var(--toque); }
@@ -525,6 +528,18 @@ fieldset.campo { margin-inline: 0; }
 .pin { background: none; border: 0; }
 .pin-gota { fill: var(--acento); stroke: var(--fondo); }
 .pin-centro { fill: var(--fondo); stroke: var(--acento-oscuro); }
+/* Árboles ya registrados en la jornada, sobre el mapa de registro: puntos, no marcadores. El área de
+   toque es mayor que el punto que se ve */
+.punto-plantado { display: grid; place-items: center; background: none; border: 0; cursor: pointer; }
+.punto-plantado span { display: block; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--fondo); background: var(--exito); box-shadow: var(--sombra-pin); }
+.punto-plantado span[data-tono="sust"] { background: var(--sustituto); }
+.punto-plantado.elegido span { transform: scale(1.35); outline: 3px solid var(--acento); outline-offset: 1px; }
+.punto-plantado:focus-visible { outline: 3px solid var(--acento); outline-offset: 1px; border-radius: 50%; }
+.etiqueta-plantado { font-family: inherit; font-size: var(--t-xs); font-weight: 600; color: var(--texto); }
+.mapa-plantados { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); flex-wrap: wrap; margin: var(--e-2) 0 0; }
+.mapa-plantados .nota { display: flex; align-items: center; gap: var(--e-2); margin: 0; flex: 1 1 14rem; overflow-wrap: anywhere; }
+.punto-muestra { flex: 0 0 auto; width: 12px; height: 12px; border-radius: 50%; background: var(--exito); }
+.punto-muestra[data-tono="sust"] { background: var(--sustituto); }
 .coord-manual { margin-bottom: var(--e-3); }
 .coord-manual > .btn { margin-top: var(--e-4); }   /* «Colocar punto» separado de la ayuda (D174) */
 /* Con la captura a mano desplegada, el botón de ubicación se oculta: no conviven dos formas de fijar el punto */
@@ -761,6 +776,10 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .dialogo-pie { position: sticky; bottom: calc(-1 * var(--e-5)); z-index: var(--z-dialogo-barra); margin: var(--e-3) calc(-1 * var(--e-5)) calc(-1 * var(--e-5));
   padding: var(--e-3) var(--e-5) calc(var(--e-3) + env(safe-area-inset-bottom, 0px)); background: var(--fondo);
   border-top: 1px solid var(--borde-suave); box-shadow: var(--sombra-pie); }
+/* Pie con dos acciones: una junto a la otra y, si no caben, una bajo la otra con su separación */
+.dialogo-pie-doble { display: flex; flex-wrap: wrap; gap: var(--e-2); }
+.dialogo-pie-doble[hidden] { display: none; }
+.dialogo-pie-doble .btn { flex: 1 1 9rem; width: auto; }
 .dialogo-titulo { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); }
 .dialogo-titulo h2 { margin: 0; }
 .dialogo-titulo h2:focus { outline: none; }
@@ -771,6 +790,8 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .confirmacion-icono { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: var(--exito); color: var(--fondo); }
 .confirmacion-titulo { font-family: var(--fuente-titulo); font-size: var(--t-xl); color: var(--exito); line-height: 1.2; }
 .confirmacion-especie { font-size: var(--t-l); font-weight: 500; color: var(--texto); }
+/* Segundo renglón de la confirmación: con este árbol se llegó a lo previsto para la jornada */
+.confirmacion-completa { margin-top: var(--e-2); padding: var(--e-2) var(--e-3); border-radius: var(--radio); background: var(--exito-fondo); color: var(--exito); font-weight: 600; text-align: center; max-width: 20rem; }
 /* Aviso flotante único (D101): arriba, para no tapar las barras fijas del pie; fondo oscuro
    neutro con un filete de color e icono que dicen si es éxito o alerta (el color no va solo:
    también cambian el icono y el texto). «Deshacer» en dorado claro, que contrasta sobre el oscuro. */
@@ -825,19 +846,10 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .previa-tabla .previa-precision[data-nivel="buena"] { color: var(--exito); font-weight: 700; }
 .previa-tabla .previa-precision[data-nivel="aceptable"] { color: var(--editar); font-weight: 700; }
 .previa-tabla .previa-precision[data-nivel="baja"] { color: var(--error); font-weight: 700; }
-.previa-subtitulo { font-weight: 700; margin-top: var(--e-1); }
 .previa-lista { margin: 0; padding-left: 1.25em; }
-/* Gráficas del reporte (D163): barras en SVG, sus colores de la hoja */
+/* Gráfica del reporte: la distribución en una barra apilada en SVG, con sus colores de la hoja */
 .previa-grafica { margin-bottom: var(--e-3); }
-.previa-barras { display: grid; gap: 3px; margin-top: var(--e-1); font-size: var(--t-xs); }
-.previa-barra-fila { display: grid; grid-template-columns: minmax(0, 9rem) minmax(0, 1fr) 4.5rem; gap: var(--e-2); align-items: center; }
-.previa-barra-etq { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.previa-barra-cifra { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
-.previa-barra, .previa-apilada { display: block; width: 100%; }
-.previa-barra { height: 12px; }
-.previa-apilada { height: 18px; margin-top: var(--e-1); }
-.previa-barra-fondo { fill: var(--pdf-fila); }
-.previa-barra .previa-barra-valor { fill: var(--pdf-guinda); }
+.previa-apilada { display: block; width: 100%; height: 18px; margin-top: var(--e-1); }
 .previa-leyenda { display: flex; flex-wrap: wrap; gap: 2px var(--e-3); margin: var(--e-1) 0 0; padding: 0; list-style: none; font-size: var(--t-xs); }
 .previa-leyenda li { display: flex; align-items: center; gap: var(--e-1); }
 .previa-muestra { display: inline-block; width: 10px; height: 10px; border-radius: var(--radio-min); }
@@ -910,7 +922,9 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .paso[data-estado="actual"] { color: var(--texto); font-weight: 700; }
 .paso[data-estado="actual"] .paso-marca { background: var(--acento); border-color: var(--acento); color: var(--fondo); }
 .franja-jornada .pasos { --paso-d: 22px; flex: 1 1 100%; margin: var(--e-1) 0 0; }
-.franja-jornada .franja-siguiente { flex: 1 1 100%; font-size: var(--t-xs); font-weight: 600; color: var(--exito); }
+.franja-jornada .franja-siguiente { flex: 1 1 100%; display: flex; align-items: flex-start; gap: var(--e-2); padding: var(--e-2) var(--e-3); border-radius: var(--radio); background: var(--exito-fondo); font-size: var(--t-s); font-weight: 600; color: var(--exito); }
+.franja-jornada .franja-siguiente[hidden] { display: none; }
+.franja-siguiente > svg { flex: none; }
 /* La barra del pie de la ficha: «Siguiente:» a todo lo ancho y, debajo, los botones; el principal
    (lo que sigue) siempre al final, más cerca del pulgar */
 .pasos-siguiente { flex: 1 1 100%; display: flex; align-items: center; gap: var(--e-2); margin: 0; font-size: var(--t-s); }
@@ -1175,6 +1189,8 @@ dialog::backdrop { background: var(--velo-oscuro); }
   /* En teléfono los dos botones ocupan el renglón completo; en pantallas muy angostas se apilan (D124) */
   .franja-jornada-acciones { flex: 1 1 100%; flex-wrap: wrap; }
   .franja-jornada-acciones .btn { flex: 1 1 9rem; }
+  .franja-jornada-acciones .btn:not(.btn-primario) { flex: 1 1 0; white-space: nowrap; font-size: var(--t-s); }
+  .franja-jornada-acciones .btn-primario { flex: 1 1 100%; }
   /* Filtros plegados en teléfono (D100): quedan a la vista las fichas y el botón «Filtros» */
   .btn.btn-filtros { display: inline-flex; margin-left: 0; }
   .filtros[data-abierto="false"] { display: none; }
@@ -1212,7 +1228,6 @@ dialog::backdrop { background: var(--velo-oscuro); }
   /* El reporte en teléfono chico (D163): cifras en tres columnas y los datos uno por renglón */
   .previa-cifras { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .previa-datos, .previa-datos-tres { grid-template-columns: minmax(0, 1fr); }
-  .previa-barra-fila { grid-template-columns: minmax(0, 6.5rem) minmax(0, 1fr) 4.5rem; }
   .galeria-rejilla { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .galeria-pie { font-size: var(--t-xxs); }
   .encabezado-logo { max-height: 38px; }

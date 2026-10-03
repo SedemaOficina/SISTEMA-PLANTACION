@@ -2911,3 +2911,29 @@ pestaña, búsqueda y filtro, alta con validación, lista agrupada, edición, us
 eliminación, paso de las jornadas de antes y llegada del catálogo a un teléfono con capturas);
 auditoria.py 115, 0 hallazgos (sin las dos comparaciones de capas contra `originales/`, que la copia de
 prueba no trae); auditoria_css.py 0 hallazgos; revisar.py sin problemas.
+
+## Bloque 154 — Registrar viendo la jornada: editarla desde la franja, sus árboles en el mapa y aviso al llegar a lo previsto (02-10-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.9.21.
+
+**Qué cambió (D218).** `index.html`: `#btn-franja-editar` en la franja de la jornada activa, `#mapa-plantados`
+bajo el mapa de registro, `#confirmacion-completa` en la confirmación de guardado y `dialogo-pie-doble` en el
+pie de la ficha del registro. `js/jornadas.js`: `abrirEditar(jornada, desdeRegistro)` y `guardarEdicion()`
+trabajan sobre `enEdicion`; desde «Nuevo registro» repintan la franja en lugar de abrir la ficha.
+`js/mapa.js`: `pintarPlantados()`, `elegirPlantado()` y `pintarRenglonPlantados()` dibujan los árboles de la
+jornada como puntos con etiqueta y acceso a su ficha; el marcador de gota va siempre encima.
+`js/jornada-activa.js`: `preparar()` pinta los puntos (al corregir, los demás de la jornada) y la franja
+resalta lo previsto cumplido o cuántos van de más. `js/formulario.js`: `confirmarGuardado()` recibe lo previsto
+cuando el árbol guardado lo completa. `js/registros.js`: eliminar o restaurar desde «Nuevo registro» pone al
+día franja y mapa; la fecha de la sustitución ya no se bloquea. `js/app.js`: tocar un campo de fecha con
+«Hoy» abre el calendario. `js/reportes.js`: sin la gráfica «Ejemplares por especie»; la sección 6 es
+«Distribución de las especies». `css/estilos.css`: puntos y renglón del mapa, aviso de jornada completa,
+pie doble, fecha sin botón de calendario y botones de la franja en teléfono; fuera las reglas de las barras.
+
+**Verificación:** prueba.py 1240 comprobaciones (ctx68, 24 nuevas: botón de la franja, puntos y su
+etiqueta, «Ver», edición sin salir, aviso de jornada completa, pie de la ficha, fecha de la sustitución).
+La corrida completa dio 1 falla, ajena al bloque: la prueba del buscador de Catálogos leía la etiqueta a
+un tiempo fijo; ahora espera a verla, igual que la del reinicio por sello, y cada una pasó varias veces
+seguidas corrida aparte. No se repitió la corrida completa después de ese ajuste. auditoria.py 118, 0
+hallazgos; revisar.py sin problemas. El bloque se montó sobre los Bloques 152 y 153, cerrados el mismo
+día en otra sesión: los cambios se fusionaron archivo por archivo y la corrida se hizo sobre el resultado.
+Queda anotado M369 (los cabos descargan sus fotografías), pendiente.

@@ -39,6 +39,9 @@ SRP.activa = {
     this.el('form-iniciar-jornada').addEventListener('submit', (e) => { e.preventDefault(); this.iniciarJornada(); });
     this.el('btn-jornada-cambiar').addEventListener('click', () => this.abrirCambiar());
     this.el('btn-jornada-cerrar').addEventListener('click', () => this.cerrarJornada());
+    // La jornada se corrige sin salir de «Nuevo registro»: el mismo formulario de su ficha
+    this.el('btn-franja-editar').innerHTML = SRP.ICONOS.svg('lapiz', 'medio') + '<span>Editar jornada</span>';
+    this.el('btn-franja-editar').addEventListener('click', () => { if (this.jornada) SRP.jornadas.abrirEditar(this.jornada, true); });
     this.el('btn-cambiar-nueva').addEventListener('click', () => { this.el('dlg-cambiar-jornada').close(); this.mostrarInicio(true); });
     this.el('btn-cambiar-cerrar').addEventListener('click', () => this.el('dlg-cambiar-jornada').close());
     this.el('lista-jornadas-abiertas').addEventListener('click', async (e) => {
@@ -206,7 +209,10 @@ SRP.activa = {
       this.el('panel-iniciar-jornada').hidden = true;
       this.el('registrar-columnas').hidden = false;
       this.el('titulo-arbol').hidden = false; this.el('titulo-arbol').textContent = 'Editar árbol';
-      this.pintarFranja(j, await (j ? this.registrosDe(j) : []), true);
+      const deLaJornada = await (j ? this.registrosDe(j) : []);
+      this.pintarFranja(j, deLaJornada, true);
+      // En el mapa, los demás árboles de la jornada; el que se edita lleva el marcador
+      SRP.mapa.pintarPlantados(deLaJornada.filter(r => r.id !== editando.id), j ? j.id : null);
       SRP.formulario.el('campo-fecha').value = editando.fecha_plantacion;
       this.pintarCampoFecha(j);
       await SRP.formulario.pintarEspeciesRecientes();
@@ -215,16 +221,19 @@ SRP.activa = {
     // La sustitución registra en la jornada del árbol perdido aunque la tenga otro; lo demás, sólo en las propias
     const sust = SRP.formulario.estado.sustitucion;
     if (!this.jornada || this.jornada.estatus !== 'abierta' || (!sust && this.capturista(this.jornada) !== (SRP.sesion.usuario || {}).id)) this.jornada = (await this.abiertas())[0] || null;
-    if (!this.jornada) { this.mostrarInicio(true); return; }
+    if (!this.jornada) { SRP.mapa.pintarPlantados([], null); this.mostrarInicio(true); return; }
     this.el('panel-iniciar-jornada').hidden = true;
     this.el('registrar-columnas').hidden = false;
     this.el('titulo-arbol').hidden = false; this.el('titulo-arbol').textContent = 'Nuevo árbol';
-    this.pintarFranja(this.jornada, await this.registrosDe(this.jornada), false);
+    const deLaJornada = await this.registrosDe(this.jornada);
+    this.pintarFranja(this.jornada, deLaJornada, false);
     // La fecha de plantación arranca como corresponde (la de la sustitución, si es una); el programa es el de la jornada; las especies recientes, a un toque
     SRP.formulario.el('campo-fecha').value = sust && sust.fecha ? sust.fecha : this.fechaInicial(this.jornada);
     this.pintarCampoFecha(this.jornada);
     // El mapa estaba escondido tras «Iniciar jornada»: vuelve a medir su caja, o se queda sin tamaño
     SRP.mapa.refrescar();
+    // Lo ya registrado en la jornada, a la vista mientras se ubica el siguiente árbol
+    SRP.mapa.pintarPlantados(deLaJornada, this.jornada.id);
     await SRP.formulario.pintarEspeciesRecientes();
     // El árbol que quedó a medias antes de recargar o cerrar vuelve al formulario
     if (!sust) SRP.formulario.recuperarBorrador();
@@ -250,6 +259,7 @@ SRP.activa = {
       // La prioridad de reforestación de la jornada: la de la mayoría de sus árboles o, sin árboles, la de su ubicación
       (SRP.prioritarias.hay() ? '<span class="franja-jornada-prioridad">' + SRP.prioritarias.insignia(SRP.prioritarias.deJornada(registros, j)) + '</span>' : '');
     this.el('franja-jornada-acciones').hidden = !!editando;
+    this.el('btn-franja-editar').hidden = !!editando || !SRP.permisos.puede('jornada.editar', j);
     // En qué paso va (D138). Al editar un registro se enseña la jornada del registro, no el flujo.
     const pasos = this.el('franja-pasos'), sig = this.el('franja-siguiente');
     pasos.hidden = !!editando;
@@ -260,7 +270,8 @@ SRP.activa = {
     // Con la meta alcanzada, lo que sigue es cerrar: el botón ya está al lado, aquí sólo se dice
     if (p.actual === 'cerrar') {
       sig.hidden = false;
-      sig.textContent = (p.meta !== null ? 'Se plantó lo previsto: ' + n + ' de ' + p.meta + '. ' : '') + 'Siguiente: cerrar la jornada cuando termine.';
+      const avance = p.meta === null ? '' : n > p.meta ? 'Van ' + n + ' árboles: ' + (n - p.meta) + ' más de los ' + p.meta + ' previstos. ' : 'Se plantó lo previsto: ' + n + ' de ' + p.meta + '. ';
+      sig.innerHTML = SRP.ICONOS.svg('palomita', 'medio') + '<span>' + esc(avance + 'Siguiente: cerrar la jornada cuando termine.') + '</span>';
     }
   },
 

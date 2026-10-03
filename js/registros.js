@@ -610,10 +610,8 @@ SRP.registros = {
     // La fecha: hoy de inicio; entre la plantación del árbol perdido y hoy
     const fecha = this.el('sustituir-fecha');
     fecha.min = r.fecha_plantacion; fecha.max = SRP.util.fechaHoy(); fecha.value = SRP.util.fechaHoy();
-    // Si el perdido se plantó hoy no hay de dónde elegir: se dice, en lugar de un calendario con todo apagado
+    // La fecha se elige en el calendario del campo o con «Hoy». Si el perdido se plantó hoy, el calendario sólo ofrece hoy, y se dice
     const soloHoy = r.fecha_plantacion >= SRP.util.fechaHoy();
-    fecha.disabled = soloHoy;
-    this.el('btn-sustituir-hoy').hidden = soloHoy;
     this.el('sustituir-fecha-ayuda').textContent = soloHoy ? 'El árbol perdido se plantó hoy: la sustitución sólo puede ser de hoy.'
       : 'El día en que se planta el árbol nuevo: desde el ' + SRP.util.formatearFecha(r.fecha_plantacion) + ', cuando se plantó el perdido, hasta hoy.';
     this.el('sustituir-error').hidden = true;
@@ -669,7 +667,7 @@ SRP.registros = {
     // «Deshacer» devuelve el registro tal como estaba y deja constancia (D101)
     const cual = SRP.folio.valido(r.folio) ? '(' + r.folio + ')' : 'del ' + SRP.util.formatearFecha(r.fecha_plantacion);
     SRP.util.anunciar('Registro de ' + SRP.ref.especieDe(r).comun + ' ' + cual + ' eliminado: ya no aparece en listados ni reportes.', 'exito', { deshacer: () => this.restaurar(r) });
-    if (SRP.app.vista === 'jornadas') { SRP.jornadas.volverAlDetalle = false; SRP.jornadas.refrescar(); } else this.preparar();
+    if (SRP.app.vista === 'jornadas') { SRP.jornadas.volverAlDetalle = false; SRP.jornadas.refrescar(); } else if (SRP.app.vista === 'registrar') await SRP.activa.preparar(); else this.preparar();
     SRP.conexion.refrescar();   // la cuenta de la pastilla baja
   },
 
@@ -693,7 +691,7 @@ SRP.registros = {
     (await SRP.reportes.caducar([actual.jornada_id], 'se restauró un árbol')).forEach(c => cambios.push(c));
     await SRP.almacen.guardarJuntos(cambios);
     SRP.util.anunciar('Registro restaurado.');
-    if (SRP.app.vista === 'jornadas') SRP.jornadas.refrescar(); else this.preparar();
+    if (SRP.app.vista === 'jornadas') SRP.jornadas.refrescar(); else if (SRP.app.vista === 'registrar') await SRP.activa.preparar(); else this.preparar();
     SRP.conexion.refrescar();
   }
 };

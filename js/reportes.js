@@ -404,7 +404,7 @@ SRP.reportes = {
      ORDEN DEL REPORTE (D163, D169): el nombre del cabo y, en la misma franja, los datos que
      distinguen a la jornada (nombre, día, lugar, programa, hora, comentarios); cinco cifras;
      1 personal; 2 vehículo; 3 croquis; 4 ejemplares plantados, con el comentario de cada árbol si
-     alguno lo tiene; 5 totales por especie; 6 gráficas; y al pie las notas. Cada dato dice su nombre en
+     alguno lo tiene; 5 totales por especie; 6 distribución de las especies; y al pie las notas. Cada dato dice su nombre en
      negritas («Chófer: …») y lo que está vacío no se imprime. El folio ya no va en el reporte. */
   modelo(registros, cierre, fecha, jornada) {
     const u = SRP.sesion.usuario;
@@ -430,9 +430,6 @@ SRP.reportes = {
     const externa = !SRP.ref.esSedema(orgId);
     // Las diez especies con más ejemplares; si hay más, el resto junto
     // Hasta 11 especies se ven todas: agrupar una sola en «Otras» no ahorra nada
-    const especies = totales.slice(0, totales.length > 11 ? 10 : 11).map(t => ({ etiqueta: t.comun, n: t.n, pct: t.pct }));
-    // «Otras N especies» (D168): su porcentaje sale de su propia cantidad, como el de las demás
-    if (totales.length > 11) { const resto = totales.slice(10), nr = resto.reduce((s, t) => s + t.n, 0); especies.push({ etiqueta: 'Otras ' + resto.length + ' especies', n: nr, pct: pct(nr, n), otras: true }); }
     const conGps = registros.filter(r => r.punto_origen === 'gps').length;
     /* COMENTARIOS (D169, antes una sección al final, D164): van en la tabla de ejemplares, en su
        propia columna, sólo si algún árbol tiene comentario */
@@ -502,10 +499,9 @@ SRP.reportes = {
         (hayPri ? ' Prioridad: la de reforestación de la colonia donde cae el árbol, según el modelo de priorización de colonias (capa ' + SRP.prioritarias.version() + '); cerca de un límite es aproximada.' : ''),
       totales,
       total: n,
-      graficas: { especies, distribucion },
+      graficas: { distribucion },
       notaTotales: 'El conteo se calcula a partir de los registros del sistema; no se captura a mano.' +
         (totales.reduce((x, t) => x + t.pct, 0) === 100 ? '' : ' Los porcentajes están redondeados: especies con la misma cantidad llevan el mismo porcentaje.'),
-      notaEspecies: 'La barra completa equivale al total de la jornada (' + n + (n === 1 ? ' árbol' : ' árboles') + ').',
       /* CALIDAD DE LA UBICACIÓN. Con la fotografía opcional, la coordenada es la prueba: quien lea el
          reporte merece saber de qué clase de coordenada se trata. */
       gps: 'Ubicados con GPS del dispositivo: ' + conGps + ' de ' + n + ' (' + pct(conGps, n) + ' %).',
@@ -561,8 +557,6 @@ SRP.reportes = {
     };
     const datos = (lista, clase) => '<div class="previa-datos' + (clase ? ' ' + clase : '') + '">' + lista.map(dato).join('') + '</div>';
     const nota = t => '<p class="previa-nota">' + esc(t) + '</p>';
-    const barra = (ancho, clase) => '<svg class="' + clase + '" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true" focusable="false"><rect class="previa-barra-fondo" width="100" height="10"></rect>' +
-      '<rect class="previa-barra-valor" width="' + Math.max(0, Math.min(100, ancho)).toFixed(2) + '" height="10"></rect></svg>';
     let h = '<p class="previa-titulo">' + esc(m.titulo) + '</p>';
     // El cabo y, en la misma franja, los datos que distinguen a la jornada (D169)
     h += '<div class="previa-responsable">' + (m.cabo ? '<p class="previa-cabo"><b>Nombre del cabo:</b> ' + esc(m.cabo) + '</p>' : '') + datos(m.identificacion) + '</div>';
@@ -581,20 +575,15 @@ SRP.reportes = {
     h += apartado('Totales por especie', '<div class="previa-tabla-caja"><table class="previa-tabla"><thead><tr><th>Especie</th><th>Distribución</th><th class="cifra">Ejemplares</th><th class="cifra">% del total</th></tr></thead><tbody>' +
       m.totales.map(t => '<tr><td>' + esc(t.comun) + (t.cientifico ? ' (<i>' + esc(t.cientifico) + '</i>)' : '') + '</td><td>' + esc(t.distribucion || '—') + '</td><td class="cifra">' + t.n + '</td><td class="cifra">' + t.pct + ' %</td></tr>').join('') +
       '</tbody><tfoot><tr><td>Total</td><td></td><td class="cifra">' + m.total + '</td><td class="cifra">100 %</td></tr></tfoot></table></div>' + nota(m.notaTotales));
-    /* Gráficas: barras por especie y la distribución apilada. El avance contra lo previsto no va
-       aquí: ya lo dice la franja de cifras del inicio. La barra completa es el total de la jornada (D168): medida contra la especie más plantada,
-       3 árboles de 19 se veían como barra llena. */
+    /* La distribución de las especies, en una barra apilada. El conteo por especie ya lo da la tabla
+       de totales, y el avance contra lo previsto, la franja de cifras del inicio: no se repiten. */
     const g = m.graficas;
-    let gr = '<div class="previa-grafica"><p class="previa-subtitulo">Ejemplares por especie</p><div class="previa-barras">' +
-      g.especies.map(e => '<div class="previa-barra-fila"><span class="previa-barra-etq">' + esc(e.etiqueta) + '</span>' + barra(e.n * 100 / m.total, 'previa-barra') +
-        '<span class="previa-barra-cifra">' + e.n + ' (' + e.pct + ' %)</span></div>').join('') + '</div>' +
-      '<p class="previa-nota">' + esc(m.notaEspecies) + '</p></div>';
     let x = 0;
-    gr += '<div class="previa-grafica"><p class="previa-subtitulo">Distribución de las especies</p>' +
+    const gr = '<div class="previa-grafica">' +
       '<svg class="previa-apilada" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true" focusable="false">' +
       g.distribucion.map(d => { const w = d.n * 100 / m.total; const r = '<rect class="dist-' + d.clave + '" x="' + x.toFixed(2) + '" width="' + w.toFixed(2) + '" height="10"></rect>'; x += w; return r; }).join('') + '</svg>' +
       '<ul class="previa-leyenda">' + g.distribucion.map(d => '<li><span class="previa-muestra dist-' + d.clave + '"></span>' + esc(d.etiqueta) + ': <b>' + d.pct + ' %</b> (' + d.n + ')</li>').join('') + '</ul></div>';
-    h += apartado('Gráficas', gr);
+    h += apartado('Distribución de las especies', gr);
     h += '<div class="previa-pie"><p>' + [m.gps, m.capas, m.advertencia, m.generado].filter(Boolean).map(esc).join('</p><p>') + '</p>' +
       (m.ficticio ? '<p class="previa-ficticio">' + esc(m.ficticio) + '</p>' : '') + '</div>';
     return h;
@@ -774,7 +763,6 @@ SRP.reportes = {
       }, opciones));
       y = doc.lastAutoTable.finalY + 4;
     };
-    const subtitulo = (t) => { salto(12); letra('bold', 9, C.tinta); doc.text(t, M, y + 3); y += 6; };
 
     /* LA FRANJA DEL CABO (D169): el nombre del cabo y, en el mismo estilo, los datos que distinguen a
        la jornada (antes la sección 1). Primero se mide para pintar el fondo, luego se escribe. */
@@ -839,22 +827,9 @@ SRP.reportes = {
       columnStyles: { 1: { cellWidth: 34 }, 2: { halign: 'right', cellWidth: 22 }, 3: { halign: 'right', cellWidth: 22 } } });
     letra('italic', 7.5, C.gris); doc.text(m.notaTotales, M, y); y += 7;
 
-    /* GRÁFICAS (D163), dibujadas con trazos: pesan casi nada y se leen igual impresas en gris */
+    /* La distribución de las especies, dibujada con trazos: pesa casi nada y se lee igual impresa en gris */
     const g = m.graficas;
-    seccion('Gráficas', 10 + Math.min(g.especies.length, 4) * 6.4);
-    subtitulo('Ejemplares por especie');
-    const etW = 56, cifraW = 20, barW = util - etW - cifraW;   // la barra completa es el total (D168)
-    g.especies.forEach(e => {
-      salto(6.4);
-      letra('normal', 8.5, C.tinta); doc.text(doc.splitTextToSize(e.etiqueta, etW - 3)[0], M, y + 3.9);
-      doc.setFillColor(...C.suave); doc.rect(M + etW, y + 1, barW, 4, 'F');
-      doc.setFillColor(...C.guinda); doc.rect(M + etW, y + 1, Math.max(0.6, barW * e.n / m.total), 4, 'F');
-      letra('bold', 8.5, C.tinta); doc.text(e.n + ' (' + e.pct + ' %)', M + util, y + 3.9, { align: 'right' });
-      y += 6.4;
-    });
-    letra('italic', 7.5, C.gris); salto(5); doc.text(m.notaEspecies, M, y + 3); y += 6;
-    y += 3;
-    subtitulo('Distribución de las especies');
+    seccion('Distribución de las especies', 22);
     salto(18);
     let x = M;
     g.distribucion.forEach(d => {

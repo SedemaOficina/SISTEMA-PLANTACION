@@ -68,6 +68,11 @@ SRP.mapa = {
     // La punta del pin marca la coordenada exacta: el anclaje va en ella, no en el centro
     this.icono = L.divIcon({ className: 'pin', html: this.ICONO_SVG, iconSize: [24, 32], iconAnchor: [12, 31] });
     this.mapa.on('click', (e) => this.alTocar(e.latlng));
+    this.capaPlantados = L.layerGroup().addTo(this.mapa);
+    const ver = document.getElementById('btn-plantado-ver');
+    ver.innerHTML = SRP.ICONOS.svg('ver', 'chico') + '<span>Ver</span>';
+    ver.setAttribute('aria-label', 'Ver el registro de este árbol');
+    ver.addEventListener('click', () => { const r = this.plantados[this.elegido]; if (r) SRP.registros.verDetalle(r.registro); });
     // Colonias prioritarias: capa de referencia; su control (encender, niveles y opacidad) va sobre el mapa
     SRP.prioritarias.control(() => this.mapa, { grupo: 'campo', leyenda: document.getElementById('mapa-prioritarias') });
   },
@@ -96,6 +101,72 @@ SRP.mapa = {
       return;
     }
     this.colocar(latlng.lat, latlng.lng, 'Punto colocado en el mapa.', { origen: 'mapa' });
+  },
+
+  /* LOS ÁRBOLES YA REGISTRADOS EN LA JORNADA. Mientras se registra, cada árbol de la jornada se ve
+     en el mapa como un punto: verde, o morado si es un sustituto. El marcador de gota queda sólo
+     para el árbol que se está ubicando. Al pasar el cursor, o al tocarlo en el teléfono, el punto
+     dice qué árbol es; elegirlo deja bajo el mapa su renglón con «Ver». Tocar un punto no
+     mueve el marcador: el toque es del punto, no del mapa. */
+  capaPlantados: null, plantados: {}, elegido: null, jornadaVista: null,
+
+  textoPlantado(r) {
+    return SRP.ref.especieDe(r).comun + ' · ' + SRP.folio.texto(r);
+  },
+
+  pintarPlantados(registros, jornadaId) {
+    if (!this.mapa || !this.capaPlantados) return;
+    Object.values(this.plantados).forEach(p => p.marcador.unbindTooltip());
+    this.capaPlantados.clearLayers();
+    this.plantados = {};
+    registros.filter(r => r.lat != null && r.lng != null).forEach(r => {
+      const tono = r.sustituye_id ? 'sust' : 'ok';
+      const icono = L.divIcon({ className: 'punto-plantado', html: '<span data-tono="' + tono + '"></span>', iconSize: [22, 22], iconAnchor: [11, 11] });
+      const m = L.marker([r.lat, r.lng], { icon: icono, keyboard: true, riseOnHover: true })
+        .bindTooltip(SRP.util.escapar(this.textoPlantado(r)), { direction: 'top', offset: [0, -8], className: 'etiqueta-plantado' })
+        .on('click', () => this.elegirPlantado(r.id));
+      m.addTo(this.capaPlantados);
+      const e = m.getElement();
+      if (e) e.setAttribute('aria-label', 'Árbol ya registrado: ' + this.textoPlantado(r) + '. Pulse para elegirlo.');
+      this.plantados[r.id] = { marcador: m, registro: r };
+    });
+    // El punto elegido sigue elegido si aún está; su etiqueta se vuelve a abrir al tocarlo
+    if (!this.plantados[this.elegido]) this.elegido = null;
+    else { const e = this.plantados[this.elegido].marcador.getElement(); if (e) e.classList.add('elegido'); }
+    this.pintarRenglonPlantados();
+    // La primera vez que se ve la jornada, el mapa encuadra lo ya plantado; después no se mueve solo
+    const puntos = Object.values(this.plantados).map(p => p.marcador.getLatLng());
+    if (jornadaId !== this.jornadaVista && puntos.length && this.lat === null) {
+      setTimeout(() => {
+        if (this.lat !== null || document.getElementById('mapa').offsetParent === null) return;
+        this.mapa.invalidateSize();
+        this.mapa.fitBounds(L.latLngBounds(puntos), { padding: [40, 40], maxZoom: SRP.CONFIG.MAPA.ZOOM_MAX, animate: false });
+      }, 80);
+    }
+    this.jornadaVista = jornadaId || null;
+  },
+
+  elegirPlantado(id) {
+    this.elegido = this.plantados[id] ? id : null;
+    Object.entries(this.plantados).forEach(([k, p]) => {
+      const e = p.marcador.getElement(); if (e) e.classList.toggle('elegido', k === this.elegido);
+      if (k === this.elegido) p.marcador.openTooltip(); else p.marcador.closeTooltip();
+    });
+    this.pintarRenglonPlantados();
+  },
+
+  // Bajo el mapa: sin punto elegido, cuántos hay y cómo consultarlos; con uno elegido, cuál es y su acceso
+  pintarRenglonPlantados() {
+    const caja = document.getElementById('mapa-plantados');
+    if (!caja) return;
+    const n = Object.keys(this.plantados).length;
+    caja.hidden = !n;
+    const p = this.plantados[this.elegido], esc = SRP.util.escapar;
+    document.getElementById('btn-plantado-ver').hidden = !p;
+    document.getElementById('mapa-plantados-texto').innerHTML = p
+      ? '<i class="punto-muestra" data-tono="' + (p.registro.sustituye_id ? 'sust' : 'ok') + '" aria-hidden="true"></i><span><strong>' + esc(SRP.ref.especieDe(p.registro).comun) + '</strong> · ' + esc(SRP.folio.texto(p.registro)) +
+        ' · plantado el ' + esc(SRP.util.formatearFecha(p.registro.fecha_plantacion)) + (p.registro.sustituye_id ? ' · sustituto' : '') + '</span>'
+      : '<i class="punto-muestra" data-tono="ok" aria-hidden="true"></i><span>' + (n === 1 ? '1 árbol ya registrado en esta jornada' : n + ' árboles ya registrados en esta jornada') + '. Toque un punto para ver cuál es.</span>';
   },
 
   // Renglón de avisos bajo la precisión: cada tipo se pone o se quita sin borrar los demás
@@ -204,7 +275,8 @@ SRP.mapa = {
     this.precision = op.origen === 'gps' && op.precision != null ? Math.round(op.precision) : null;
     if (this.mapa) {
       if (!this.marcador) {
-        this.marcador = L.marker([this.lat, this.lng], { icon: this.icono, draggable: true, keyboard: true, title: 'Ubicación del árbol' }).addTo(this.mapa);
+        // Siempre por encima de los puntos de los árboles ya registrados
+        this.marcador = L.marker([this.lat, this.lng], { icon: this.icono, draggable: true, keyboard: true, title: 'Ubicación del árbol', zIndexOffset: 1000 }).addTo(this.mapa);
         this.marcador.on('dragend', () => {
           const p = this.marcador.getLatLng();
           this.colocar(p.lat, p.lng, 'Punto ajustado.', { origen: 'ajustado' });

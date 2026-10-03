@@ -231,7 +231,7 @@ previstos, avance, especies y porcentaje de nativas); luego 1) datos de identifi
 y chófer), 3) datos del vehículo (tipo, modelo y placas), 4) croquis, que encuadra todos los puntos
 y aparta los números que se enciman, 5) ejemplares plantados (número, especie, nombre científico,
 coordenada y precisión; sin folio), 6) totales por especie con su distribución y porcentaje, 7)
-gráficas (por especie y distribución; el avance contra lo previsto ya lo dice la franja de cifras) y 8) comentarios por ejemplar: sólo
+distribución de las especies en una barra (el conteo por especie ya lo da la tabla de totales y el avance contra lo previsto, la franja de cifras) y 8) comentarios por ejemplar: sólo
 los árboles que tienen comentario, con su número y especie; si ninguno tiene, no sale (D164). Cada
 dato dice su nombre en negritas.
 

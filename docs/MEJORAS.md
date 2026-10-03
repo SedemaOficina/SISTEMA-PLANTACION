@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.9.20 (Bloque 153)»**.
+Al pie de cualquier pantalla: **«Versión 0.9.21 (Bloque 154)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -360,6 +360,12 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M360 | Auditoría integral | Textos al día: aviso de los datos de demostración, diccionario (cinco catálogos), README con los nombres de pantalla y comentarios sin nombres propios | Baja | 0.9.19 (B152) | Menú de la cuenta › Datos de demostración › Cargar: el aviso dice más de 1,300 jornadas y 17,000 árboles | Aviso de carga |
 | M361 | Liber | «Quién lo solicita» de un pedido especial tiene catálogo propio, aparte del de instituciones: las 16 alcaldías sin la palabra «Alcaldía» y en orden alfabético, SOBSE, SEGIAGUA, Jefatura de Gobierno y Diputadas y diputados, agrupados por tipo; «Otra instancia» sigue al final | Media | 0.9.20 (B153) | Nuevo registro › Iniciar jornada › Origen «Pedido especial» › Quién lo solicita | Lista «Quién lo solicita» abierta |
 | M362 | Liber | Catálogos › Solicitantes: la Administración agrega, edita, desactiva y elimina solicitantes, con su tipo (Alcaldía, Dependencia de gobierno, Congreso, Empresa, Organización civil, Escuela, Vecinos), buscador y filtro por tipo | Media | 0.9.20 (B153) | Menú de la cuenta › Configuración › Catálogos › Solicitantes › Agregar solicitante; después verlo en «Quién lo solicita» | Pestaña «Solicitantes» |
+| M363 | Liber | «Editar jornada» en la franja de la jornada activa de «Nuevo registro»; al guardar se sigue registrando | Alta | 0.9.21 (B154) | Nuevo registro › «Editar jornada»: cambiar el nombre y guardar; la franja lo muestra sin salir | Franja de la jornada |
+| M364 | Liber | Mientras se registra, el mapa enseña como puntos los árboles ya registrados en la jornada; al pasar el cursor o tocarlos dicen especie y folio, y «Ver» abre su ficha | Alta | 0.9.21 (B154) | Registrar dos árboles: quedan como puntos verdes. Tocar uno: etiqueta sobre el punto y renglón bajo el mapa con «Ver» | Mapa de registro con puntos |
+| M365 | Liber | Al registrar el último árbol previsto, la confirmación «Registro exitoso» avisa que se completó lo previsto y la franja lo deja resaltado | Alta | 0.9.21 (B154) | Jornada con 3 árboles previstos: al guardar el tercero, la confirmación trae un segundo renglón y dura más | Confirmación de guardado |
+| M366 | Liber | En la ficha del registro, «Editar» y «Sustituir árbol» ya no se enciman: van uno junto al otro | Media | 0.9.21 (B154) | En computadora, «Ver» un árbol: los dos botones al pie, lado a lado | Pie de la ficha |
+| M367 | Liber | Las fechas con «Hoy» abren el calendario al tocar el campo, sin botón de calendario; en la sustitución siempre están el campo y «Hoy» | Media | 0.9.21 (B154) | Sustituir árbol: tocar la fecha abre el calendario; «Hoy» pone la fecha de hoy | Ventana «Sustituir árbol» |
+| M368 | Liber | El reporte de jornada ya no trae la gráfica «Ejemplares por especie»; la tabla de totales da el dato | Media | 0.9.21 (B154) | Generar un reporte: la sección 6 es «Distribución de las especies», con una sola barra | Vista previa del reporte |
 
 ## 2. Por hacer
 
@@ -370,6 +376,7 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M170 | Auditoría 360 | Bloque «Pruebas en iPhone»: GitHub Actions con Chromium y WebKit, pruebas de migración e integridad (M17, M18) | Media | Pendiente | |
 | M171 | Auditoría 360 | Fotografías como Blob (hoy ocupan un tercio más como texto) y sello de datos dentro de la base | Media | Pendiente | Resto de A1 y A2 |
 | M343 | Liber | Catálogo de especies: marcar cuáles son frutales, para filtrar y contar los árboles frutales plantados | Media | Pendiente | Pedido el 01-10-2026. Falta decidir de dónde sale la marca (el catálogo del SIA no la trae) y dónde se muestra |
+| M369 | Liber | Los cabos pueden descargar sus propias fotografías (hoy la galería y su descarga son sólo de coordinación y administración) | Media | Pendiente | Pedido el 02-10-2026. Falta definir dónde: en «Registros», en la ficha del árbol o en una galería propia del cabo, y si la descarga es por fotografía, en ZIP o ambas |
 
 ## 3. Verificadas sin falla
 
@@ -385,4 +392,4 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 345 hechas · 5 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 351 hechas · 6 por hacer · 2 revisadas · 2 descartadas.

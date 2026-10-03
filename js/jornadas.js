@@ -117,7 +117,7 @@ SRP.jornadas = {
     // Editar y eliminar la jornada (D132)
     this.el('btn-jornada-editar').innerHTML = SRP.ICONOS.svg('lapiz', 'medio') + '<span>Editar jornada</span>';
     this.el('btn-jornada-eliminar').innerHTML = SRP.ICONOS.svg('basura', 'medio') + '<span>Eliminar jornada</span>';
-    this.el('btn-jornada-editar').addEventListener('click', () => this.abrirEditar());
+    this.el('btn-jornada-editar').addEventListener('click', () => this.abrirEditar(this.guardada));
     this.el('btn-jornada-eliminar').addEventListener('click', () => this.eliminarJornada());
     // Relevo de cabo: la coordinación pasa la jornada abierta a otro cabo de su cuadrilla
     this.el('btn-jornada-relevo').innerHTML = SRP.ICONOS.svg('usuarios', 'medio') + '<span>Relevo de cabo</span>';
@@ -130,9 +130,9 @@ SRP.jornadas = {
     this.el('btn-ej-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar cambios</span>';
     SRP.pedido.montar(this.el('ej-caja-pedido'), 'ej');
     this.el('form-editar-jornada').addEventListener('submit', (e) => { e.preventDefault(); this.guardarEdicion(); });
-    this.el('ej-fecha').addEventListener('change', () => { this.el('ej-nota-fecha').hidden = this.el('ej-fecha').value === (this.guardada && this.guardada.fecha); });
+    this.el('ej-fecha').addEventListener('change', () => { this.el('ej-nota-fecha').hidden = this.el('ej-fecha').value === (this.enEdicion && this.enEdicion.fecha); });
     // El programa también es de la jornada (D151): sus árboles lo toman
-    this.el('ej-programa').addEventListener('change', () => { this.el('ej-nota-programa').hidden = this.el('ej-programa').value === (this.guardada && this.guardada.programa_id); });
+    this.el('ej-programa').addEventListener('change', () => { this.el('ej-nota-programa').hidden = this.el('ej-programa').value === (this.enEdicion && this.enEdicion.programa_id); });
     this.el('btn-ej-hoy').addEventListener('click', () => {
       this.el('ej-fecha').value = SRP.util.fechaHoy();
       this.el('ej-fecha').dispatchEvent(new Event('change', { bubbles: true }));
@@ -1049,8 +1049,12 @@ SRP.jornadas = {
 
   /* ---------- Editar y eliminar la jornada (D132) ---------- */
 
-  abrirEditar() {
-    const c = this.guardada; if (!c) return;
+  /* La jornada se edita desde su ficha o desde la franja de «Nuevo registro». `desdeRegistro` deja a
+     quien registra donde estaba: al guardar se repinta la franja, sin salir del formulario. */
+  enEdicion: null, editaDesdeRegistro: false,
+  abrirEditar(jornada, desdeRegistro) {
+    const c = jornada; if (!c) return;
+    this.enEdicion = c; this.editaDesdeRegistro = !!desdeRegistro;
     const sel = this.el('ej-programa');
     // Los programas de la institución que ejecuta la jornada, más el que ya tiene
     const opciones = SRP.ref.programasPara(c.organizacion_id, c.programa_id);
@@ -1071,7 +1075,7 @@ SRP.jornadas = {
   },
 
   async guardarEdicion() {
-    const c = this.guardada; if (!c) return;
+    const c = this.enEdicion; if (!c) return;
     if (!SRP.permisos.exigir('jornada.editar', c)) return;
     const nombre = this.el('ej-nombre').value.trim();
     const ubicacion = this.el('ej-ubicacion').value.trim();
@@ -1122,8 +1126,9 @@ SRP.jornadas = {
     if (SRP.activa.jornada && SRP.activa.jornada.id === c.id) SRP.activa.jornada = dato;
     if (SRP.envio.simulado()) SRP.envio.enviar({ silencioso: true });
     this.el('dlg-editar-jornada').close();
-    this.volverAlDetalle = true; this.actual = c.id;
-    await this.preparar();
+    this.enEdicion = null;
+    if (this.editaDesdeRegistro && SRP.app.vista === 'registrar') await SRP.activa.preparar();
+    else { this.volverAlDetalle = true; this.actual = c.id; await this.preparar(); }
     SRP.util.anunciar('Jornada actualizada: ' + campos.map(k => ({ nombre: 'nombre', ubicacion: 'dirección', programa_id: 'programa', arboles_previstos: 'árboles previstos', fecha: 'fecha', comentarios: 'comentarios', origen: 'origen', solicitante_id: 'solicitante', solicitante_otro: 'solicitante', pedido_descripcion: 'descripción del pedido' })[k]).filter((t, i, a) => a.indexOf(t) === i).join(', ') + '.', 'exito');
   },
 

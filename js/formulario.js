@@ -670,7 +670,10 @@ SRP.formulario = {
         // La distancia a los demás de la jornada ya se avisó en la ficha (D130, supera la pregunta de D119)
         await SRP.almacen.guardarConBitacora('plantaciones', nuevo, SRP.bitacora.entrada('CREADO', 'plantacion', nuevo.id));
         if (this.el('dlg-resumen').open) this.el('dlg-resumen').close();
-        this.mostrarGuardado(nuevo);
+        // Con este árbol se llega a lo previsto: lo dice la misma confirmación de guardado, no un aviso aparte
+        const jornada = SRP.activa.jornada, previstos = jornada ? SRP.jornadas.previstosDe(jornada) : null;
+        const llevados = jornada && previstos !== null ? (await SRP.activa.registrosDe(jornada)).length : 0;
+        this.mostrarGuardado(nuevo, previstos !== null && llevados === previstos ? previstos : null);
         await SRP.activa.preparar();   // la franja cuenta el árbol nuevo (D119) y repinta programa y especies recientes
         // La franja «Guardado» a la vista, arriba, y el formulario nuevo debajo (D171): antes se centraba
         // el botón de ubicación y en un teléfono chico la franja quedaba fuera. Va después de repintar
@@ -761,7 +764,7 @@ SRP.formulario = {
   /* En campo se registran muchos árboles seguidos (D130): al guardar, el formulario queda en
      blanco y listo, y arriba una franja dice qué acaba de quedar registrado —especie, folio,
      lugar y envío— con «Corregir» (abre ese registro en edición) y «Ver». Sin modal. */
-  mostrarGuardado(registro) {
+  mostrarGuardado(registro, previstosCompletos) {
     const esp = SRP.ref.especieDe(registro);
     const esc = SRP.util.escapar;
     this.estado.ultimoGuardado = registro.id;
@@ -775,24 +778,33 @@ SRP.formulario = {
     this.limpiar();
     SRP.mapa.refrescar();
     this.el('btn-ubicacion').focus({ preventScroll: true });
-    this.confirmarGuardado(esp.comun);
-    SRP.util.anunciarSilencioso('Registro exitoso: ' + esp.comun + '. Listo para el siguiente árbol.');
+    this.confirmarGuardado(esp.comun, previstosCompletos);
+    SRP.util.anunciarSilencioso('Registro exitoso: ' + esp.comun + '. ' + (previstosCompletos ? this.textoCompleta(previstosCompletos) + ' Puede cerrar la jornada o seguir registrando.' : 'Listo para el siguiente árbol.'));
   },
 
   /* CONFIRMACIÓN AL GUARDAR (D171). La prueba de campo pidió certeza inmediata de que el árbol quedó
      guardado, sin desplazarse. Una ventana que hubiera que cerrar sumaría un toque por árbol (D130
      los quitó): ésta aparece al centro, dice «Registro exitoso» y la especie, vibra un instante y se
      cierra sola; no tapa los toques (pointer-events: none). */
-  DURACION_CONFIRMACION: 1500,
-  confirmarGuardado(especie) {
+  /* JORNADA COMPLETA. Cuando el árbol guardado es el último de los previstos, la misma confirmación lo
+     dice en un segundo renglón, dura más y vibra dos veces: un solo aviso, no dos que se encimen. La
+     franja de la jornada lo deja escrito después, junto a «Cerrar jornada». */
+  DURACION_CONFIRMACION: 1500, DURACION_COMPLETA: 4000,
+  textoCompleta(previstos) {
+    return previstos === 1 ? 'Se registró el árbol previsto para la jornada.' : 'Se registraron los ' + previstos + ' árboles previstos para la jornada.';
+  },
+  confirmarGuardado(especie, previstosCompletos) {
     const c = this.el('confirmacion-guardado');
     const ic = this.el('confirmacion-icono');
     if (!ic.firstChild) ic.innerHTML = SRP.ICONOS.svg('palomita', 'grande');
     this.el('confirmacion-especie').textContent = especie;
+    const completa = this.el('confirmacion-completa');
+    completa.hidden = !previstosCompletos;
+    completa.textContent = previstosCompletos ? this.textoCompleta(previstosCompletos) : '';
     c.hidden = false;
     clearTimeout(this._tConfirmacion);
-    this._tConfirmacion = setTimeout(() => { c.hidden = true; }, this.DURACION_CONFIRMACION);
-    try { if (navigator.vibrate) navigator.vibrate(60); } catch (e) { /* sin vibración: basta lo visible */ }
+    this._tConfirmacion = setTimeout(() => { c.hidden = true; }, previstosCompletos ? this.DURACION_COMPLETA : this.DURACION_CONFIRMACION);
+    try { if (navigator.vibrate) navigator.vibrate(previstosCompletos ? [60, 90, 60] : 60); } catch (e) { /* sin vibración: basta lo visible */ }
   },
 
   /* Lo que dice la franja «Guardado» con el envío simulado (D111): «Enviando…» mientras sale, y

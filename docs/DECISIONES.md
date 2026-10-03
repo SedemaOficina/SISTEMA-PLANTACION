@@ -2368,3 +2368,27 @@
     `2026-10-02-solicitantes`).
   · **Sin cambio**: la institución que ejecuta, los filtros «Origen», el apartado «Pedidos
     especiales» de Supervisión, el reporte y el CSV; sólo cambia de dónde sale el nombre.
+- **D218. Registrar viendo la jornada: editarla desde la franja, sus árboles en el mapa y aviso al llegar a lo previsto (bloque 154).** 02-10-2026.
+  Pedido por Liber al probar el registro en campo.
+  · **«Editar jornada» en la franja de «Nuevo registro»:** junto a «Cambiar jornada» y «Cerrar jornada»,
+    con el mismo formulario de la ficha de Jornadas y el mismo permiso (`jornada.editar`). Al guardar se
+    sigue en «Nuevo registro»; la franja, la fecha y el mapa se ponen al día.
+  · **Los árboles de la jornada, a la vista mientras se registra:** el mapa de registro dibuja como punto
+    cada árbol activo de la jornada (verde; morado si es sustituto). El marcador de gota queda sólo para el
+    árbol que se está ubicando. Al pasar el cursor o al tocar un punto se lee la especie y el folio, y bajo
+    el mapa aparece su renglón con «Ver», que abre la ficha del árbol sin salir del formulario.
+    Tocar un punto no mueve el marcador. Sólo se dibuja la jornada con que se registra; al corregir un
+    árbol, los demás de su jornada. La primera vez que se ve una jornada, el mapa encuadra lo ya plantado.
+  · **Aviso al llegar a lo previsto:** cuando el árbol guardado es el último de los previstos, la misma
+    confirmación «Registro exitoso» lo dice en un segundo renglón, dura 4 s en lugar de 1.5 y vibra dos
+    veces. Es un solo aviso, no dos que se encimen. Después queda escrito en la franja, resaltado, junto a
+    «Cerrar jornada»; pasado lo previsto, la franja dice cuántos van de más y el aviso no se repite.
+  · **Ficha del registro:** «Editar» y «Sustituir árbol» van uno junto al otro; si no caben, uno bajo el
+    otro con su separación.
+  · **Fechas con «Hoy»:** los campos de fecha que llevan «Hoy» al lado (inicio de jornada, fecha de
+    plantación, editar jornada y sustitución) no enseñan el botón de calendario del navegador: tocar el
+    campo abre el calendario. En la sustitución el campo y «Hoy» están siempre disponibles; si el árbol
+    perdido se plantó hoy, el calendario sólo ofrece hoy y la ayuda lo dice.
+  · **Reporte de jornada sin la gráfica «Ejemplares por especie»:** la tabla «Totales por especie» ya da
+    ese dato, con todas las especies. La sección 6 pasa a llamarse «Distribución de las especies» y conserva
+    su barra. Modifica D163 y D168 en lo que toca a esa gráfica.

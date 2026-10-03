@@ -496,7 +496,7 @@ SRP.app = {
 
   iniciarCamposFecha() {
     document.addEventListener('click', (e) => {
-      const f = e.target.closest('.zona-filtros input[type="date"]');
+      const f = e.target.closest('.zona-filtros input[type="date"], .fecha-con-hoy input[type="date"]');
       if (f && typeof f.showPicker === 'function') { try { f.showPicker(); } catch (_) { /* sin gesto válido: se queda con el foco */ } }
     });
   },
