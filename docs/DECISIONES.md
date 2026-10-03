@@ -2430,3 +2430,40 @@
     todos los dispositivos arrancan con la capa apagada. Modifica D206 y D209.
   · **Encuadre del mapa de registro:** si el mapa no estaba a la vista al entrar, encuadra los árboles de
     la jornada la primera vez que se pinta visible.
+
+- **D221. El origen de la jornada se elige a propósito (bloque 157).** 03-10-2026. Decisión de Liber.
+  · **Qué:** «Origen de la jornada» es obligatorio al iniciar una jornada. La lista abre en «Seleccione el
+    origen» y la jornada no inicia hasta elegir «Programada» o «Pedido especial».
+  · **Por qué:** con «Programada» puesta de antemano, un pedido especial podía quedar registrado como
+    programado sin que nadie lo decidiera. Modifica D210.
+  · **Lo que no cambia:** al editar, la jornada muestra el origen que ya tiene; las de carga masiva y las
+    anteriores sin el dato se leen como programadas.
+
+- **D222. La tarjeta de jornada resume lo normal y marca la excepción (bloque 157).** 03-10-2026. Decisión de Liber, sobre un ejemplo con tres diseños.
+  · **Qué:** la tarjeta de la lista de Jornadas deja las seis cajas de cifras. Dice «n de m árboles» con
+    una barra de avance (azul en curso, verde completa, ámbar si cerró sin cuadrar), las especies, el
+    estado con la hora de cierre, «Reporte: fecha y hora» cuando ya se generó, el lugar, el programa y,
+    para coordinación y administración, quién la tiene a su cargo. Lo que pide atención va en marcas que
+    sólo aparecen cuando existe: por revisar, faltaron o sobran frente a lo previsto, sustituciones y
+    «Sin reporte todavía».
+  · **Por qué:** una tarjeta ocupaba la pantalla del teléfono y repetía datos (previstos y registrados ya
+    los decía «Completa»; «bien» era el complemento de «por revisar»); los ceros pesaban igual que un
+    dato. Las cifras completas siguen en la ficha de la jornada.
+  · **Textos:** «Pedido especial · Solicita: …», con «Alcaldía» delante cuando quien pide es una alcaldía,
+    y «Colonia de prioridad…»: la prioridad es de la colonia. Modifica D128, D131 y D219 en lo que toca a
+    la tarjeta.
+
+- **D223. «Nuevo registro» enseña lo que cambia y pliega lo que no (bloque 157).** 03-10-2026. Decisión de Liber, sobre un ejemplo del flujo.
+  · **Qué:** en teléfono la jornada activa deja a la vista su nombre, cuántos árboles van (con barra frente
+    a lo previsto) y sus acciones; fecha, lugar, programa, pedido, prioridad y pasos van en «Ver detalle».
+    La ficha del punto no aparece hasta que hay punto. La simbología de prioridad dice sólo los niveles
+    que el mapa pinta. Comentarios mide un renglón hasta que se usa; la zona de fotografía, lo que un
+    botón, y la foto cargada no enseña el nombre del archivo.
+  · **Revisión con avisos:** en un árbol nuevo el botón dice «Guardar de todos modos». Si el árbol quedó
+    lejos de los demás, el mapa los pinta y se ofrece «Cambiar jornada»; lo capturado sigue en el
+    formulario. Al corregir un árbol la revisión no cambia.
+  · **Lo que se conserva:** sin avisos el árbol se guarda de una vez (D130), «Registro exitoso» aparece al
+    centro sin tapar los toques (D171) y «Guardar» sigue fijo al pie (D96). El aviso de iPhone (D149)
+    pasa del primer guardado a la entrada.
+  · **Por qué:** la pantalla se recorre por cada árbol; lo que no cambia entre un árbol y otro no debe
+    ocupar la primera pantalla. Modifica D119, D138 y D149 en lo que toca a la presentación.

@@ -240,6 +240,13 @@ SRP.jornadas = {
 
   nombreSitio(j) { return j.nombre || 'Sin nombre'; },
 
+  // Cuándo, en corto, para la tarjeta: «hoy 11:36» o «28-SEP 11:36» (con el año si es otro)
+  cuandoCorto(iso) {
+    const dia = SRP.envio.diaLocal(iso), hoy = SRP.util.fechaHoy();
+    const f = SRP.util.formatearFecha(dia);
+    return (dia === hoy ? 'hoy' : dia.slice(0, 4) === hoy.slice(0, 4) ? f.slice(0, f.lastIndexOf('-')) : f) + ' ' + SRP.envio.hora(iso);
+  },
+
   // Cuándo se cerró. En la ficha, corto: «Cerrada a las 15:40» si fue el mismo día de la jornada y
   // «Cerrada el 23/09 a las 10:05» si fue otro; en el detalle, con el día en letra. Sin fecha
   // guardada (o abierta) sólo dice el estado.
@@ -652,7 +659,6 @@ SRP.jornadas = {
       // Cuántos de sus árboles reemplazan a uno que se perdió
       const sustituciones = j.registros.filter(r => r.sustituye_id).length;
       const porRevisar = this.pendientes(j, avisos, guardada).length;
-      const bien = n - porRevisar;
       const cuando = this.cuando(j.fecha);
       const meta = this.previstosDe(guardada || j);
       const fecha = SRP.envio.diaEnLetra(j.fecha).split(' ')[0].slice(0, 3) + ' ' + SRP.util.textoDias(SRP.util.diasJornada(j, j.registros));
@@ -661,25 +667,37 @@ SRP.jornadas = {
       const relevo = guardada && guardada.relevo_id && guardada.relevo_id !== j.cabo_id ? guardada.relevo_id : '';
       const lugar = this.lugarDe(j);
       const ubic = (j.dato && j.dato.ubicacion) || '';
-      const cifra = (v, t) => '<span class="jornada-cifra" data-cero="' + (v === 0) + '"><b>' + v + '</b> ' + t + '</span>';
-      // Orden de la ficha (D128): nombre → cuándo → estado → dónde → cuánto → quién
+      const programa = (guardada || j.dato || {}).programa_id;
+      // Lo previsto se compara con lo registrado: cumplido, a medias o, ya cerrada, sin cuadrar
+      const completa = meta !== null && (abierta ? n >= meta : n === meta);
+      const tonoAvance = abierta ? 'curso' : completa ? 'ok' : 'falta';
+      const ancho = meta ? Math.min(100, Math.round(n / meta * 100)) : 0;
+      // Lo normal se resume en una línea; sólo lo que pide atención lleva su marca
+      const marca = (tono, icono, texto, clase) => '<span class="insignia-jornada' + (clase ? ' ' + clase : '') + '" data-tono="' + tono + '">' + SRP.ICONOS.svg(icono, 'chico') + '<span>' + esc(texto) + '</span></span>';
+      const marcas = [];
+      if (porRevisar) marcas.push(marca('rev', 'info', porRevisar + ' por revisar'));
+      if (!abierta && meta !== null && n !== meta) marcas.push(marca('err', 'cerrar', n < meta ? (meta - n === 1 ? 'Faltó 1' : 'Faltaron ' + (meta - n)) + ' de lo previsto' : (n - meta) + ' más de lo previsto'));
+      if (sustituciones) marcas.push(marca('sust', 'intercambio', sustituciones + (sustituciones === 1 ? ' sustitución' : ' sustituciones')));
+      if (!abierta && n && !generado) marcas.push(marca('rev', 'reportes', 'Sin reporte todavía', 'insignia-reporte'));
+      // Orden de la tarjeta: nombre → cuándo → cuánto → estado → dónde → programa y quién → lo que falta atender
       html.push('<li class="jornada" data-clave="' + esc(j.clave) + '"><button type="button" class="jornada-boton" aria-label="Revisar la jornada ' +
         esc(this.nombreSitio(j)) + ' del ' + esc(SRP.util.formatearFecha(j.fecha)) + ', ' + (abierta ? 'abierta' : esc(this.textoCierre(guardada, true))) + ', ' + n + (n === 1 ? ' árbol' : ' árboles') + (sustituciones ? ', ' + sustituciones + (sustituciones === 1 ? ' sustitución' : ' sustituciones') : '') + ', ' + esc(est.texto) + '">' +
         '<span class="jornada-cab"><span class="jornada-titulo-caja"><span class="jornada-sitio">' + esc(this.nombreSitio(j)) + '</span>' +
         '<span class="jornada-dia">' + (cuando ? '<b>' + cuando + '</b> · ' : '') + '<span class="jornada-fecha">' + esc(fecha) + '</span>' +
         (j.total > 1 ? ' <span class="jornada-ndn">Jornada ' + j.n + ' de ' + j.total + '</span>' : '') + '</span></span>' + this.miniatura(j, avisos, (guardada && guardada.puntos_revisados) || []) + '</span>' +
+        '<span class="jornada-avance"><span class="jornada-avance-cifra"><b>' + n + '</b>' + (meta === null ? (n === 1 ? ' árbol' : ' árboles') + ' · sin cantidad prevista' : ' de ' + meta + (meta === 1 ? ' árbol' : ' árboles')) +
+          (completa ? ' · <span class="jornada-completa">' + SRP.ICONOS.svg('palomita', 'chico') + 'completa</span>' : '') + '</span>' +
+          '<span class="jornada-avance-especies">' + especies + (especies === 1 ? ' especie' : ' especies') + '</span></span>' +
+        (meta ? '<svg class="jornada-barra" data-tono="' + tonoAvance + '" viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true"><rect width="' + ancho + '" height="8"/></svg>' : '') +
         '<span class="jornada-estado"><span class="jornada-estatus" data-estatus="' + (abierta ? 'abierta' : 'cerrada') + '">' + SRP.ICONOS.svg(abierta ? 'candadoAbierto' : 'candado', 'chico') +
         '<span>' + (abierta ? 'Abierta' : esc(this.textoCierre(guardada))) + '</span></span>' +
-        '<span class="insignia-jornada" data-tono="' + est.tono + '">' + SRP.ICONOS.svg(est.icono, 'chico') + '<span>' + esc(est.texto) + '</span></span>' +
-        // En una jornada cerrada con árboles, si su reporte ya se generó
-        (!abierta && n ? '<span class="insignia-jornada insignia-reporte" data-tono="' + (generado ? 'ok' : 'neutro') + '">' + SRP.ICONOS.svg(generado ? 'palomita' : 'reportes', 'chico') +
-          '<span>' + (generado ? 'Reporte generado ' + esc(SRP.envio.cuando(generado)) : 'Sin reporte todavía') + '</span></span>' : '') + '</span>' +
+        (!abierta && n && generado ? '<span class="jornada-reporte insignia-reporte">' + SRP.ICONOS.svg('reportes', 'chico') + '<span>Reporte: ' + esc(this.cuandoCorto(generado)) + '</span></span>' : '') + '</span>' +
         (lugar || ubic ? '<span class="jornada-lugar">' + SRP.ICONOS.svg('ubicacion', 'chico') + '<span>' + esc(lugar) + (ubic ? (lugar ? ' · ' : '') + '<span class="jornada-ubic">' + esc(ubic) + '</span>' : '') + '</span></span>' : '') +
         (SRP.prioritarias.hay() ? '<span class="jornada-prioridad">' + SRP.prioritarias.insignia(j.prioridad) + '</span>' : '') +
+        (programa || variosAutores || relevo ? '<span class="jornada-cabo">' + (programa ? '<span class="jornada-programa">' + esc(SRP.ref.nombreCatalogo(programa)) + '</span>' : '') +
+          (variosAutores || relevo ? (programa ? ' · ' : '') + '<b>' + esc(SRP.ref.nombreUsuario(j.cabo_id)) + '</b>' + (relevo ? ' · relevo: ' + esc(SRP.ref.nombreUsuario(relevo)) : '') : '') + '</span>' : '') +
         (SRP.pedido.esPedido(guardada) ? '<span class="jornada-pedido">' + SRP.pedido.insignia(guardada) + '</span>' : '') +
-        '<span class="jornada-cifras">' + cifra(meta === null ? '—' : meta, 'previstos') + cifra(n, 'registrados') + cifra(porRevisar, 'por revisar') + cifra(bien, 'bien') + cifra(especies, especies === 1 ? 'especie' : 'especies') + cifra(sustituciones, sustituciones === 1 ? 'sustitución' : 'sustituciones') + '</span>' +
-        (variosAutores || relevo ? '<span class="jornada-cabo">' + SRP.ICONOS.svg('usuario', 'chico') + '<span>' + esc(SRP.ref.nombreUsuario(j.cabo_id)) +
-          (relevo ? ' · relevo: ' + esc(SRP.ref.nombreUsuario(relevo)) : '') + '</span></span>' : '') +
+        (marcas.length ? '<span class="jornada-marcas">' + marcas.join('') + '</span>' : '') +
         '</button></li>');
     }
     this.el('lista-jornadas').innerHTML = html.join('');

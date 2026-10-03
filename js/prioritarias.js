@@ -88,10 +88,11 @@ SRP.prioritarias = {
     return 'Prioridad ' + p.texto.toLowerCase() + (p.total && p.n < p.total ? ' (' + p.n + ' de ' + p.total + ' árboles)' : '');
   },
 
-  // La marca de prioridad de una tarjeta: muestra del color y texto
+  /* La marca de prioridad de una tarjeta: muestra del color y texto. La prioridad es de la colonia,
+     no de la jornada, y así se dice. */
   insignia(p) {
     if (!this.hay()) return '';
-    return '<span class="pri-insignia">' + (p ? '<i class="pri-muestra pri-nivel-' + p.prioridad + '"></i>' : '') + SRP.util.escapar(this.textoJornada(p)) + '</span>';
+    return '<span class="pri-insignia">' + (p ? '<i class="pri-muestra pri-nivel-' + p.prioridad + '"></i>' : '') + SRP.util.escapar(this.textoJornada(p).replace(/^Prioridad /, 'Colonia de prioridad ')) + '</span>';
   },
 
   // Las opciones del filtro por prioridad, de mayor a menor, y «Sin dato»
@@ -144,6 +145,8 @@ SRP.prioritarias = {
         } : undefined
       });
       capa.claveColonias = clave;
+      // Los niveles que de verdad se pintan: con colonias elegidas, sólo los suyos
+      capa.nivelesPintados = intervenidas ? new Set(SRP.CAPAS.prioritarias.geojson.features.filter(f => intervenidas[f.properties.id]).map(f => String(f.properties.prioridad))) : null;
       this.capas.set(mapa, capa);
     }
     if (!capa) return;
@@ -225,7 +228,10 @@ SRP.prioritarias = {
       if (o.leyenda) {
         // Bajo el mapa, la leyenda de los niveles que se ven: explica los colores con el panel cerrado
         o.leyenda.hidden = !ver;
-        o.leyenda.innerHTML = '<p class="pri-leyenda"><span class="pri-leyenda-titulo">Prioridad:</span>' + this.NIVELES.filter(([n]) => e.niveles[n]).map(([n, t]) => '<span><i class="pri-muestra pri-nivel-' + n + '"></i>' + SRP.util.escapar(t) + '</span>').join('') + '</p>';
+        const capaM = this.capas.get(m), pintados = capaM ? capaM.nivelesPintados : null;
+        o.leyenda.innerHTML = '<p class="pri-leyenda"><span class="pri-leyenda-titulo">Prioridad:</span>' + this.NIVELES.filter(([n]) => e.niveles[n] && (!pintados || pintados.has(String(n)))).map(([n, t]) => '<span><i class="pri-muestra pri-nivel-' + n + '"></i>' + SRP.util.escapar(t) + '</span>').join('') + '</p>';
+        // Sin colonia que pintar no hay colores que explicar
+        if (pintados && !pintados.size) o.leyenda.hidden = true;
       }
     });
   }

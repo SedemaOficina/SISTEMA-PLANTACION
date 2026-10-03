@@ -1118,7 +1118,7 @@
           "origen": "Persona",
           "dominio": "origen_jornada",
           "pantalla": "Iniciar jornada › Origen de la jornada; Editar jornada",
-          "regla": "De dónde viene la jornada: PROGRAMADA (del programa de trabajo; por omisión) o PEDIDO (pedido especial de otra instancia). Lo marca quien inicia la jornada y se corrige en «Editar jornada». Es de la jornada, no del árbol: los árboles lo toman de ella al leerse. Una jornada sin el dato se lee como PROGRAMADA. Las de carga masiva nacen PROGRAMADA"
+          "regla": "De dónde viene la jornada: PROGRAMADA (del programa de trabajo) o PEDIDO (pedido especial de otra instancia). Es obligatorio y no trae valor por omisión: quien inicia la jornada lo elige, y se corrige en «Editar jornada». Es de la jornada, no del árbol: los árboles lo toman de ella al leerse. Una jornada sin el dato se lee como PROGRAMADA. Las de carga masiva nacen PROGRAMADA"
         },
         {
           "campo": "solicitante_id",

@@ -97,6 +97,9 @@ SRP.formulario = {
       this.corregirCampo(b.dataset.campo);
     });
     this.el('btn-resumen-guardar').addEventListener('click', () => this.guardar());
+    // El árbol queda en el formulario: tras cambiar de jornada se guarda en la que corresponde
+    this.el('btn-resumen-cambiar').innerHTML = SRP.ICONOS.svg('intercambio', 'medio') + '<span>Cambiar jornada</span>';
+    this.el('btn-resumen-cambiar').addEventListener('click', () => { this.el('dlg-resumen').close(); this.el('btn-jornada-cambiar').click(); });
     this.el('btn-cancelar-edicion').addEventListener('click', async () => {
       const cerrada = await this.cerrarReabierta();
       this.limpiar();
@@ -223,6 +226,8 @@ SRP.formulario = {
   /* Los tres campos de sólo lectura del punto, en un solo lugar: sin territorio, los tres
      vuelven al guion, porque un dato viejo junto a un punto nuevo es peor que ninguno. */
   mostrarPunto(lat, lng, t) {
+    // Sin punto no hay datos que enseñar: la ficha aparece cuando el punto existe
+    this.el('campo-punto').hidden = !(t && lat !== null);
     this.el('dato-coordenadas').textContent = (t && lat !== null) ? lat.toFixed(5) + ', ' + lng.toFixed(5) : '—';   // cinco decimales (~1 m) se leen; se guardan seis (D152)
     this.el('dato-origen').textContent = t ? SRP.mapa.textoOrigen(SRP.mapa.origen, SRP.mapa.precision) : '—';
     this.el('dato-alcaldia').textContent = t ? SRP.ref.alcaldia(t.alcaldia) : '—';
@@ -485,7 +490,7 @@ SRP.formulario = {
         const cerca = dist.filter(x => x.d < cfg.DUPLICADO_M).sort((a, b) => a.d - b.d)[0];
         if (cerca) salida.push({ tipo: 'duplicado', texto: 'Posible duplicado: a ' + cerca.d.toFixed(1) + ' m de ' + SRP.ref.especieDe(cerca.r).comun + ' (' + SRP.folio.texto(cerca.r) + '). Si es otro árbol, guarde; si es el mismo, cancele.' });
         const min = Math.min(...dist.map(x => x.d));
-        if (min > cfg.SEPARAR_M) salida.push({ tipo: 'lejos', texto: 'Queda a ' + (min >= 1000 ? (min / 1000).toFixed(1) + ' km' : Math.round(min) + ' m') + ' de los demás árboles de la jornada «' + j.nombre + '». Si es de otro sitio, cancele y cambie de jornada.' });
+        if (min > cfg.SEPARAR_M) salida.push({ tipo: 'lejos', texto: 'Queda a ' + (min >= 1000 ? (min / 1000).toFixed(1) + ' km' : Math.round(min) + ' m') + ' de los demás árboles de la jornada «' + j.nombre + '». Si es de otro sitio, cambie de jornada.', otros: regs.filter(r => r.lat != null && r.lng != null).map(r => [r.lat, r.lng]) });
       }
     }
     return salida;
@@ -495,6 +500,8 @@ SRP.formulario = {
     avisos = avisos || [];
     const cajaAvisos = this.el('revision-avisos');
     cajaAvisos.hidden = !avisos.length;
+    // Con avisos en un árbol nuevo, guardar es una decisión: el botón lo dice
+    this.el('btn-resumen-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>' + (avisos.length && !this.estado.editando ? 'Guardar de todos modos' : 'Guardar') + '</span>';
     cajaAvisos.innerHTML = avisos.length ? '<p class="revision-avisos-titulo">' + (avisos.length === 1 ? 'Hay algo que revisar' : 'Hay ' + avisos.length + ' cosas que revisar') + '</p><ul>' +
       avisos.map(a => '<li data-tipo="' + a.tipo + '">' + SRP.util.escapar(a.texto) + '</li>').join('') + '</ul>' : '';
 
@@ -544,6 +551,13 @@ SRP.formulario = {
 
     this.el('dlg-resumen').showModal();
     this.dibujarMapaRevision(v.lat, v.lng);
+    // Un árbol lejos del resto: el mapa enseña también los demás, para ver la distancia, y se ofrece cambiar de jornada
+    const lejos = !this.estado.editando ? avisos.find(a => a.tipo === 'lejos') : null;
+    this.el('btn-resumen-cambiar').hidden = !lejos;
+    if (lejos && this.mapaRevision && lejos.otros.length) {
+      lejos.otros.forEach(p => L.circleMarker(p, { radius: 6, className: 'revision-otro', interactive: false }).addTo(this.mapaRevision));
+      setTimeout(() => { if (this.mapaRevision) this.mapaRevision.fitBounds(L.latLngBounds(lejos.otros.concat([[v.lat, v.lng]])), { padding: [28, 28], animate: false, maxZoom: SRP.CONFIG.MAPA.ZOOM_PUNTO }); }, 90);
+    }
   },
 
   /* «Cómo se obtuvo» con la misma insignia de precisión que bajo el mapa (D99): la ficha es el
@@ -690,7 +704,6 @@ SRP.formulario = {
         if (SRP.envio.simulado()) this.enviarTrasGuardar(nuevo.id).catch(() => this.pintarEnvio(nuevo.id, 'por_enviar', 'no se pudo enviar: se reintentará solo'));
         // Lo capturado vive sólo en el teléfono: se pide al navegador que no lo borre y se vigila el espacio (D149)
         SRP.almacen.cuidarAlmacenamiento();
-        SRP.conexion.sugerirInstalar();
       }
     } catch (err) {
       // Lo capturado sigue en pantalla; se dice qué pasó y, si fue el espacio, qué hacer (D149)

@@ -42,6 +42,9 @@ SRP.activa = {
     // La jornada se corrige sin salir de «Nuevo registro»: el mismo formulario de su ficha
     this.el('btn-franja-editar').innerHTML = SRP.ICONOS.svg('lapiz', 'medio') + '<span>Editar jornada</span>';
     this.el('btn-franja-editar').addEventListener('click', () => { if (this.jornada) SRP.jornadas.abrirEditar(this.jornada, true); });
+    // En teléfono el detalle de la jornada (fecha, lugar, programa, pedido, prioridad y pasos) se despliega a pedido
+    this.el('btn-franja-detalle').addEventListener('click', () => { this.detalleAbierto = !this.detalleAbierto; this.pintarDetalle(); });
+    this.pintarDetalle();
     this.el('btn-cambiar-nueva').addEventListener('click', () => { this.el('dlg-cambiar-jornada').close(); this.mostrarInicio(true); });
     this.el('btn-cambiar-cerrar').addEventListener('click', () => this.el('dlg-cambiar-jornada').close());
     this.el('lista-jornadas-abiertas').addEventListener('click', async (e) => {
@@ -239,6 +242,14 @@ SRP.activa = {
     if (!sust) SRP.formulario.recuperarBorrador();
   },
 
+  detalleAbierto: false,
+  pintarDetalle() {
+    const b = this.el('btn-franja-detalle');
+    this.el('franja-jornada').dataset.detalle = this.detalleAbierto ? 'abierto' : 'cerrado';
+    b.setAttribute('aria-expanded', String(this.detalleAbierto));
+    b.textContent = this.detalleAbierto ? 'Ocultar detalle' : 'Ver detalle';
+  },
+
   pintarFranja(j, registros, editando) {
     const f = this.el('franja-jornada');
     f.hidden = !j;
@@ -252,7 +263,10 @@ SRP.activa = {
     const meta = SRP.jornadas.previstosDe(j);
     this.el('franja-jornada-texto').innerHTML =
       '<span class="franja-jornada-titulo"><strong>' + esc(j.nombre) + '</strong></span>' +
-      '<span class="franja-jornada-datos">' + esc(SRP.util.textoDias(SRP.util.diasJornada(j, registros))) + (j.ubicacion ? ' · ' + esc(j.ubicacion) : '') + (this.lugarDe(j) ? ' · ' + esc(this.lugarDe(j)) : '') + (j.programa_id ? ' · ' + esc(SRP.ref.nombreCatalogo(j.programa_id)) : '') + ' · <b>' + n + (meta !== null ? ' de ' + meta : '') + (n === 1 && meta === null ? ' árbol' : ' árboles') + '</b>' +
+      // Lo que cambia con cada árbol va siempre a la vista: cuántos van, y su barra frente a lo previsto
+      '<span class="franja-jornada-avance"><b>' + n + (meta !== null ? ' de ' + meta : '') + (n === 1 && meta === null ? ' árbol' : ' árboles') + '</b>' +
+        (meta ? '<svg class="jornada-barra" data-tono="' + (n >= meta ? 'ok' : 'curso') + '" viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true"><rect width="' + Math.min(100, Math.round(n / meta * 100)) + '" height="8"/></svg>' : '') + '</span>' +
+      '<span class="franja-jornada-datos">' + esc(SRP.util.textoDias(SRP.util.diasJornada(j, registros))) + (j.ubicacion ? ' · ' + esc(j.ubicacion) : '') + (this.lugarDe(j) ? ' · ' + esc(this.lugarDe(j)) : '') + (j.programa_id ? ' · ' + esc(SRP.ref.nombreCatalogo(j.programa_id)) : '') + '' +
       (j.estatus === 'cerrada' ? ' · cerrada' : '') + (atrasada ? ' · <b>no es de hoy</b>' : '') +
       (j.relevo_id && j.relevo_id !== j.cabo_id ? ' · relevo de ' + esc(SRP.ref.nombreUsuario(j.cabo_id)) : '') + '</span>' +
       (SRP.pedido.esPedido(j) ? '<span class="franja-jornada-pedido">' + SRP.pedido.insignia(j) + '</span>' : '') +

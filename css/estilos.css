@@ -385,14 +385,25 @@ fieldset.campo { margin-inline: 0; }
 /* listas de los diálogos Cambiar/Mover */
 .jornada-datos .jornada-dia { font-family: var(--fuente-titulo); font-weight: 600; }
 .jornada-datos .jornada-cifras { font-size: var(--t-xs); color: var(--gris); overflow-wrap: anywhere; }
-.jornadas-tarjetas .jornada-cifras { display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--e-15); }
-.jornadas-tarjetas .jornada-cifra:nth-child(1), .jornadas-tarjetas .jornada-cifra:nth-child(2) { grid-column: span 6; }
-.jornadas-tarjetas .jornada-cifra:nth-child(n+3) { grid-column: span 3; }
-.jornadas-tarjetas .jornada-cifra:nth-child(1) b, .jornadas-tarjetas .jornada-cifra:nth-child(2) b { font-size: var(--t-l); }
+/* La tarjeta resume lo normal en una línea y una barra: registrados frente a previstos. Lo que
+   pide atención (por revisar, lo que no cuadra, sin reporte) va aparte, en sus marcas. */
+.jornada-avance { display: flex; justify-content: space-between; align-items: baseline; gap: var(--e-2); font-size: var(--t-s); }
+.jornada-avance-cifra b { font-family: var(--fuente-titulo); font-size: var(--t-l); font-weight: 700; }
+.jornada-avance-especies { flex: none; font-size: var(--t-xs); color: var(--gris); }
+.jornada-completa { display: inline-flex; align-items: center; gap: var(--e-1); color: var(--exito); font-weight: 500; }
+.jornada-barra { display: block; width: 100%; height: 8px; border-radius: var(--radio); background: var(--neutro-fondo); overflow: hidden; }
+.jornada-barra rect { fill: var(--exito); }
+.jornada-barra[data-tono="curso"] rect { fill: var(--acento); }
+.jornada-barra[data-tono="falta"] rect { fill: var(--editar-borde); }
+.jornada-reporte { display: inline-flex; align-items: center; gap: var(--e-1); font-size: var(--t-xs); font-weight: 500; color: var(--exito); }
+.jornada-reporte svg { flex: none; }
+.jornada-marcas { display: flex; flex-wrap: wrap; gap: var(--e-15); }
+.insignia-jornada[data-tono="sust"] { background: var(--sustituto-fondo); color: var(--sustituto); }
 .jornada-cifra { display: flex; flex-direction: column; align-items: center; padding: var(--e-15) var(--e-1); border-radius: var(--radio); background: var(--neutro-fondo); font-size: var(--t-xs); color: var(--gris); line-height: 1.15; text-align: center; }
 .jornada-cifra b { font-size: var(--t-m); color: var(--texto); font-weight: 700; }
 .jornada-cifra[data-cero="true"] b { color: var(--neutro-borde); }
-.jornada-cabo { display: flex; gap: var(--e-1); align-items: center; font-size: var(--t-xs); color: var(--gris); }
+.jornada-cabo { display: block; font-size: var(--t-xs); color: var(--gris); overflow-wrap: anywhere; }
+.jornada-cabo b { color: var(--texto); font-weight: 500; }
 /* Filtros de Jornadas (D128): cuatro atajos y el acordeón «Más filtros» */
 .chips-cuatro { grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: none; }
 .acordeon-filtros { border: 1px solid var(--borde-filtro); border-radius: var(--radio-filtro); margin-top: var(--e-2); }
@@ -489,6 +500,13 @@ fieldset.campo { margin-inline: 0; }
 .franja-jornada-datos { display: block; font-size: var(--t-xs); color: var(--gris); }
 .franja-jornada-acciones .btn { flex: 1 1 0; min-width: 0; padding-left: var(--e-25); padding-right: var(--e-25); gap: var(--e-15); }
 .franja-jornada-acciones { display: flex; gap: var(--e-2); }
+/* Cuántos árboles van y su barra: lo que cambia con cada registro, siempre a la vista */
+.franja-jornada-avance { display: block; margin-top: var(--e-1); font-size: var(--t-s); }
+.franja-jornada-avance .jornada-barra { margin-top: var(--e-1); background: var(--fondo); max-width: 30rem; }
+.franja-detalle-boton { display: none; flex: none; text-decoration: underline; min-height: 40px; }
+/* Comentarios: un renglón que crece al escribir o al tener texto */
+.texto-crece { min-height: var(--toque); height: var(--toque); resize: vertical; }
+.texto-crece:focus, .texto-crece:not(:placeholder-shown) { height: auto; min-height: 5.5rem; }
 .lista-elegir .jornada-boton[aria-pressed="true"] { border-color: var(--acento); background: var(--acento-suave); }
 .lista-elegir .jornada-boton { grid-template-columns: minmax(0, 1fr); }
 /* Estado vacío con salida (D96) */
@@ -865,6 +883,9 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .dist-invasora { fill: var(--error); background: var(--error); }
 .dist-otra { fill: var(--dist-sin-dato); background: var(--dist-sin-dato); }
 .dialogo-pie .btn-texto { margin-top: var(--e-1); }
+.dialogo-pie .btn-secundario.btn-ancho { margin-bottom: var(--e-2); }
+/* Los demás árboles de la jornada, en el mapa de la revisión de un punto que quedó lejos */
+.revision-otro { fill: var(--exito); fill-opacity: 1; stroke: var(--fondo); stroke-width: 2; }
 
 /* Detectar ubicación de la jornada (D122): el botón, su aviso y los dos datos de lectura */
 .campo-ini-detectar .ini-detectado { margin: var(--e-1) 0 0; }
@@ -1179,6 +1200,29 @@ dialog::backdrop { background: var(--velo-oscuro); }
   .sup-dos, .sup-columnas { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 var(--e-6); align-items: start; }
 }
 @media (max-width: 700px) {
+  /* Jornada activa compacta: nombre, avance y acciones a la vista; lo demás, en «Ver detalle» */
+  .franja-detalle-boton { display: inline-flex; }
+  .franja-jornada[data-detalle="cerrado"] .franja-jornada-datos, .franja-jornada[data-detalle="cerrado"] .franja-jornada-pedido,
+  .franja-jornada[data-detalle="cerrado"] .franja-jornada-prioridad, .franja-jornada[data-detalle="cerrado"] .pasos { display: none; }
+  .franja-jornada .franja-jornada-rotulo { flex: 1 1 auto; }
+  /* Los datos del punto, en un renglón: alcaldía, colonia y coordenadas; las etiquetas quedan para el lector de pantalla */
+  .campo-punto { margin-top: var(--e-2); margin-bottom: var(--e-3); }
+  .campo-punto .campo-triple { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--e-2); padding: var(--e-2) var(--e-3); }
+  .campo-punto .campo-triple .campo { display: block; flex: 0 1 auto; min-width: 0; padding: 0; }
+  .campo-punto .campo-triple .campo-lectura { display: inline; overflow-wrap: anywhere; }
+  .campo-punto .campo-triple .campo + .campo { border: 0; }
+  .campo-punto .campo-triple label, .campo-punto .campo-prioridad label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .campo-punto .campo-triple .campo:nth-child(1) { order: 3; flex: 1 1 100%; }
+  .campo-punto .campo-triple .campo:nth-child(3) { flex: 0 1 auto; }
+  .campo-punto .campo-triple .campo:nth-child(1) .campo-lectura { font-weight: 400; font-size: var(--t-xs); color: var(--gris); }
+  .campo-punto .campo-triple .campo:nth-child(3) .campo-lectura::before { content: "· "; color: var(--gris); }
+  .campo-punto .campo-prioridad { margin: var(--e-1) 0 0; }
+  .campo-punto .campo-prioridad .campo-lectura { min-height: 0; padding: 0 var(--e-3); border: 0; background: none; font-size: var(--t-xs); color: var(--gris); }
+  .campo-punto .campo-prioridad .campo-lectura::before { content: "Prioridad de la colonia:\00a0"; }
+  /* La fotografía: una zona del alto de un botón; con foto, la miniatura y sus acciones, sin nombre de archivo */
+  .campo .zona-foto { flex-direction: row; gap: var(--e-2); min-height: var(--toque); padding: var(--e-2) var(--e-3); }
+  .zona-foto .zona-foto-ayuda, .ficha-foto-nombre { display: none; }
+  .zona-foto .icono-foto svg { width: 20px; height: 20px; }
   /* En teléfono las acciones bajan a un segundo renglón para no aplastar la especie y el aviso */
   .punto-jornada { grid-template-columns: 28px minmax(0, 1fr); row-gap: var(--e-1); }
   .punto-acciones { grid-column: 2; justify-content: flex-start; }
@@ -1212,8 +1256,6 @@ dialog::backdrop { background: var(--velo-oscuro); }
     background: var(--fondo); color: var(--texto); font: inherit; font-size: var(--t-s); font-weight: 500; cursor: pointer; white-space: nowrap; }
 }
 @media (max-width: 480px) {
-  /* En teléfono las cuatro cifras chicas de la tarjeta de jornada van de dos en dos */
-  .jornadas-tarjetas .jornada-cifra:nth-child(n+3) { grid-column: span 6; }
   /* Paginador en teléfono chico: Anterior y Siguiente sólo con su flecha, a todo el ancho */
   .paginador-botones { width: 100%; justify-content: space-between; gap: var(--e-1); }
   .paginador-botones .btn { min-width: 40px; padding-left: var(--e-2); padding-right: var(--e-2); }
@@ -1241,8 +1283,6 @@ dialog::backdrop { background: var(--velo-oscuro); }
   .campo-doble { grid-template-columns: 1fr; }
   /* Reportes: el cabo a todo el ancho para que su nombre no se corte (D103) */
   .campo-triple { grid-template-columns: 1fr; }
-  .campo-punto .campo-triple .campo { display: grid; grid-template-columns: 6.5rem 1fr; align-items: baseline; gap: var(--e-2); }
-  .campo-punto .campo-triple .campo + .campo { border-left: 0; border-top: 1px solid var(--borde-suave); }
   .btn-destacado { max-width: none; }
   .revision-fila { grid-template-columns: 1fr auto; }
   .revision-fila-sola { grid-template-columns: 1fr; }

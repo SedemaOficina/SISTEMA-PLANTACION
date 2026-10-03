@@ -197,7 +197,7 @@ Almacén `jornadas` (sustituye a `cierres` desde el bloque 62). Lo que ya vive e
 | `cabo_id` | Sí | Sesión | Titular: quien inició la jornada; no cambia con un relevo |
 | `relevo_id` | No | Persona | Remite a `usuarios.id`: el cabo que registra en lugar del titular tras un relevo de la coordinación (D204); nulo, registra el titular |
 | `relevos` | Sí | Sistema | Lista de los relevos hechos: a qué cabo se pasó, cuándo y quién lo hizo; `[]` sin relevos (D204) |
-| `origen` | Sí | Persona | `PROGRAMADA` (por omisión) o `PEDIDO`: pedido especial de otra instancia (D210). Lo marca quien inicia la jornada; se corrige en «Editar jornada» |
+| `origen` | Sí | Persona | `PROGRAMADA` o `PEDIDO`: pedido especial de otra instancia (D210). Obligatorio y sin valor por omisión: quien inicia la jornada lo elige (D221); se corrige en «Editar jornada» |
 | `solicitante_id` | No | Persona | Remite a `catalogos.id` (solicitante): quién solicita el pedido especial; no es quien ejecuta ni es una institución con cuentas. Nulo en una jornada programada o si la instancia no está en el catálogo (D210, D217) |
 | `solicitante_otro` | Sí | Persona | Nombre de la instancia que solicita cuando no está en el catálogo; `''` si no aplica (D210) |
 | `pedido_descripcion` | Sí | Persona | De qué se trata el pedido especial, obligatoria en un pedido; `''` si no aplica. No se pide oficio ni folio (D210) |

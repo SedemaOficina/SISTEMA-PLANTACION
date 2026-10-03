@@ -90,7 +90,7 @@ SRP.conexion = {
     return ios && !instalada;
   },
 
-  // Una vez por sesión, al guardar el primer árbol en un iPhone desde Safari (D149)
+  // Una vez por sesión, al entrar en un iPhone desde Safari: antes de capturar, no encima de la captura
   sugerirInstalar() {
     if (this._sugerido || !this.esIphoneEnNavegador()) return;
     this._sugerido = true;

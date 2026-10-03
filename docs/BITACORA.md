@@ -2982,3 +2982,30 @@ son cuatro); se ajustó y pasó corrida aparte. revisar.py pedía la vista Repor
 fotografías del cabo, y pasa sin problemas. auditoria.py 118, 0 hallazgos. No se repitió la corrida completa
 después de esos dos ajustes de prueba.
 
+
+## Bloque 157 — Origen de la jornada obligatorio, tarjeta de jornada con avance y «Nuevo registro» compacto (03-10-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.9.24.
+
+**Qué cambió (D221, D222, D223).** `js/jornada-activa.js`: la franja lleva `franja-jornada-avance` (cuántos van y su
+barra) y, en teléfono, «Ver detalle» (`pintarDetalle()`) para fecha, lugar, programa, pedido, prioridad y
+pasos. `js/formulario.js`: la ficha del punto (`#campo-punto`) aparece sólo con punto; en la revisión de un
+árbol nuevo con avisos el botón dice «Guardar de todos modos»; si quedó lejos, el mapa pinta los demás
+árboles (`revision-otro`) y se ofrece «Cambiar jornada» (`#btn-resumen-cambiar`). `js/app.js` y
+`js/conexion.js`: el aviso de iPhone sale al entrar, no al primer guardado. `js/prioritarias.js`: la leyenda
+dice sólo los niveles que el mapa pinta. `css/estilos.css`: ficha del punto en un renglón, zona de
+fotografía del alto de un botón y sin nombre de archivo, comentarios de un renglón que crece. `js/jornadas.js`: la tarjeta de la lista lleva una línea de avance
+(`jornada-avance`: registrados de previstos, «completa», especies), su barra (`jornada-barra`, un SVG: la
+política de seguridad no admite estilos en línea), el estado con la hora de cierre y «Reporte: fecha y
+hora» (`cuandoCorto()`), programa y, para quien ve jornadas de otros, el responsable; las marcas
+(`jornada-marcas`) salen sólo cuando hay algo: por revisar, lo que no cuadra con lo previsto,
+sustituciones y «Sin reporte todavía». Fuera las seis cajas de cifras. `js/prioritarias.js`: la tarjeta dice
+«Colonia de prioridad…». `js/pedido.js`: «Pedido especial · Solicita: …», y una alcaldía se nombra con su
+tipo. `css/estilos.css`: estilos de la tarjeta; fuera la rejilla de cifras. `js/pedido.js`: la lista de origen abre sin elegir («Seleccione el origen») al
+iniciar una jornada, lleva asterisco y `errores()` la exige; al editar conserva el origen de la jornada.
+`docs/FASE2-Y-TRASPASO.md`: el alcance de la coordinación nombra `coordinadores_ids`.
+
+**Verificación:** prueba.py 1265 comprobaciones, 0 fallas (ctx71, 8 nuevas: franja compacta y su detalle,
+ficha del punto, guardado directo, revisión de un árbol lejos, revisión al corregir; ctx62, el origen sin
+elegir; y las pruebas de la tarjeta, la franja y la leyenda, adaptadas). Las fallas se imprimen ahora en
+cuanto ocurren, y dos esperas fijas pasaron a esperar su condición. auditoria.py 118, 0 hallazgos;
+auditoria_css.py 0; revisar.py sin problemas. No probado en iPhone real.

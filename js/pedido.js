@@ -4,7 +4,7 @@
    Por eso quien solicita sale de su propio catálogo (Catálogos › Solicitantes), no del de instituciones.
 
    Se captura al iniciar la jornada y se corrige en «Editar jornada»:
-     origen                PROGRAMADA (por omisión) o PEDIDO
+     origen                PROGRAMADA o PEDIDO; se elige a propósito, sin valor por omisión
      solicitante_id        quién lo pide, del catálogo de solicitantes; nulo si es otra o si es programada
      solicitante_otro      el nombre, cuando la instancia no está en el catálogo
      pedido_descripcion    de qué se trata, obligatoria en un pedido especial
@@ -23,8 +23,8 @@ SRP.pedido = {
   montar(caja, p) {
     const esc = SRP.util.escapar;
     caja.innerHTML =
-      '<div class="campo"><label for="' + p + '-origen">Origen de la jornada</label><select id="' + p + '-origen">' +
-      this.ORIGENES.map(([v, t]) => '<option value="' + v + '">' + esc(t) + '</option>').join('') + '</select>' +
+      '<div class="campo"><label for="' + p + '-origen">Origen de la jornada <span class="obligatorio" aria-hidden="true">*</span></label><select id="' + p + '-origen" aria-required="true">' +
+      '<option value="">Seleccione el origen</option>' + this.ORIGENES.map(([v, t]) => '<option value="' + v + '">' + esc(t) + '</option>').join('') + '</select>' +
       '<p class="nota ayuda-campo">«Pedido especial» si la jornada la pidió otra instancia (SOBSE, una alcaldía, otra dependencia).</p></div>' +
       '<div class="pedido-datos" id="' + p + '-pedido" hidden>' +
       '<div class="campo"><label for="' + p + '-solicitante">Quién lo solicita <span class="obligatorio" aria-hidden="true">*</span></label><select id="' + p + '-solicitante"></select></div>' +
@@ -52,11 +52,12 @@ SRP.pedido = {
       op(this.OTRA, 'Otra instancia');
   },
 
-  // Deja el bloque mostrando lo de la jornada `j` (o lo de una jornada nueva)
+  /* Deja el bloque mostrando lo de la jornada `j`. En una jornada nueva el origen queda sin
+     elegir: quien la inicia lo marca a propósito. */
   poner(p, j) {
     const d = Object.assign(this.vacio(), j ? { origen: j.origen || 'PROGRAMADA', solicitante_id: j.solicitante_id || null, solicitante_otro: j.solicitante_otro || '', pedido_descripcion: j.pedido_descripcion || '' } : {});
     const sel = d.solicitante_id || (d.origen === 'PEDIDO' && d.solicitante_otro ? this.OTRA : '');
-    this.el(p, 'origen').value = d.origen;
+    this.el(p, 'origen').value = j ? d.origen : '';
     this.el(p, 'solicitante').innerHTML = this.opciones(d.solicitante_id);
     this.el(p, 'solicitante').value = sel;
     this.el(p, 'solicitante-otro').value = d.solicitante_otro;
@@ -80,14 +81,16 @@ SRP.pedido = {
 
   // Los errores del bloque: [id del campo, mensaje]
   errores(p) {
-    if (this.el(p, 'origen').value !== 'PEDIDO') return [];
+    const origen = this.el(p, 'origen').value;
+    if (!origen) return [[p + '-origen', 'Elija el origen de la jornada: programada o pedido especial.']];
+    if (origen !== 'PEDIDO') return [];
     const s = this.el(p, 'solicitante').value;
     if (!s) return [[p + '-solicitante', 'Elija quién solicita el pedido especial.']];
     if (s === this.OTRA && !this.el(p, 'solicitante-otro').value.trim()) return [[p + '-solicitante-otro', 'Escriba el nombre de la instancia que lo solicita.']];
     if (!this.el(p, 'pedido-descripcion').value.trim()) return [[p + '-pedido-descripcion', 'Escriba de qué se trata el pedido especial.']];
     return [];
   },
-  ids(p) { return [p + '-solicitante', p + '-solicitante-otro', p + '-pedido-descripcion']; },
+  ids(p) { return [p + '-origen', p + '-solicitante', p + '-solicitante-otro', p + '-pedido-descripcion']; },
 
   /* ---------- Leerlo ---------- */
 
@@ -96,8 +99,13 @@ SRP.pedido = {
   // La clave del solicitante para filtrar y contar: su id del catálogo o «otra:Nombre»
   clave(j) { return !this.esPedido(j) ? '' : j.solicitante_id || 'otra:' + (j.solicitante_otro || ''); },
   nombreClave(k) { return k.startsWith('otra:') ? (k.slice(5) || 'Sin dato') : SRP.ref.nombreSolicitante(k); },
-  // «Pedido especial · SOBSE», o vacío si es programada
-  texto(j) { return this.esPedido(j) ? 'Pedido especial · ' + this.solicitante(j) : ''; },
+  // Una alcaldía se nombra con su tipo: «Iztapalapa» sola se lee como el lugar de la jornada
+  solicitanteCompleto(j) {
+    const s = j && j.solicitante_id ? SRP.ref.catalogoPorId[j.solicitante_id] : null;
+    return (s && s.tipo_solicitante === 'Alcaldía' ? 'Alcaldía ' : '') + this.solicitante(j);
+  },
+  // «Pedido especial · Solicita: SOBSE», o vacío si es programada
+  texto(j) { return this.esPedido(j) ? 'Pedido especial · Solicita: ' + this.solicitanteCompleto(j) : ''; },
   textoOrigen(j) { return this.esPedido(j) ? 'Pedido especial' : 'Programada'; },
   /* El filtro «Origen»: una sola lista con «Programada», «Pedido especial (todos)» y cada solicitante.
      Una jornada de pedido responde a dos valores: el de todos los pedidos y el de su solicitante. */

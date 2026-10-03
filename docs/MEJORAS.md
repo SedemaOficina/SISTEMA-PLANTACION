@@ -378,6 +378,15 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M378 | Liber | Jornadas se filtra por «Reporte» (generado o sin generar) y cada tarjeta cerrada dice el estado de su reporte | Alta | 0.9.23 (B156) | Jornadas › Más filtros › Reporte › «Sin generar» | Filtro y tarjeta |
 | M379 | Liber | En Nuevo registro y en la ficha de la jornada la capa de prioridad arranca apagada; encendida, pinta sólo las colonias de la jornada, y la leyenda sale sólo con la capa | Alta | 0.9.23 (B156) | Nuevo registro: el mapa sin colonias; botón de capas › «Colonias prioritarias»: sólo la colonia de la jornada | Mapa de registro |
 | M380 | Corrección | El mapa de registro encuadra los árboles de la jornada aunque al entrar no estuviera a la vista | Media | 0.9.23 (B156) | Entrar con una jornada con árboles y abrir Nuevo registro: el mapa llega acercado a ellos | — |
+| M381 | Liber | El origen de la jornada es obligatorio: se elige entre «Programada» y «Pedido especial», sin valor puesto de antemano | Media | 0.9.24 (B157) | Iniciar una jornada sin elegir el origen: no inicia y el campo lo dice. Al editar, la jornada conserva el suyo | — |
+| M382 | Liber | La tarjeta de jornada resume el avance en una línea con su barra (registrados de previstos) y marca sólo lo que pide atención: por revisar, lo que no cuadra, sustituciones, sin reporte | Alta | 0.9.24 (B157) | Abrir Jornadas en teléfono: caben dos o tres tarjetas por pantalla; una jornada sin pendientes no lleva marcas | — |
+| M383 | Liber | La tarjeta de jornada dice el programa y, para coordinación y administración, quién la tiene a su cargo | Media | 0.9.24 (B157) | Entrar como administración y abrir Jornadas: cada tarjeta dice programa y responsable; como cabo, sólo el programa | — |
+| M384 | Corrección | Textos de la tarjeta que se prestaban a confusión: «Pedido especial · Solicita: Alcaldía Iztapalapa» y «Colonia de prioridad media» | Media | 0.9.24 (B157) | Ver una jornada de pedido especial de una alcaldía en otra alcaldía: se lee quién la solicita, no un segundo lugar | — |
+| M385 | Liber | En teléfono la jornada activa de «Nuevo registro» queda compacta: nombre, avance con barra y acciones; el resto, en «Ver detalle» | Alta | 0.9.24 (B157) | Abrir Nuevo registro con jornada activa en teléfono: el mapa queda en la primera pantalla; «Ver detalle» despliega fecha, lugar y pasos | — |
+| M386 | Liber | Los datos del punto aparecen sólo cuando hay punto y, en teléfono, en una ficha de un renglón | Media | 0.9.24 (B157) | Sin punto no hay guiones bajo el mapa; al colocarlo salen alcaldía, colonia y coordenadas | — |
+| M387 | Liber | Un árbol lejos del resto: la revisión pinta los demás árboles en el mapa, ofrece «Cambiar jornada» y el botón dice «Guardar de todos modos» | Alta | 0.9.24 (B157) | Registrar un árbol a kilómetros de los demás de la jornada: se ve la distancia y se puede cambiar de jornada sin perder lo capturado | — |
+| M388 | Liber | El aviso de agregar el SRP a la pantalla de inicio en iPhone sale al entrar, no encima del primer guardado | Media | 0.9.24 (B157) | Entrar desde Safari en iPhone: el aviso aparece una vez, antes de capturar | — |
+| M389 | Liber | Fotografía y comentarios ocupan menos: zona de foto del alto de un botón, sin nombre de archivo, y comentarios de un renglón que crece al escribir | Media | 0.9.24 (B157) | Nuevo registro en teléfono: comentarios mide un renglón hasta que se toca; la foto cargada enseña miniatura y peso | — |
 
 ## 2. Por hacer
 
@@ -403,4 +412,4 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 363 hechas · 5 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 372 hechas · 5 por hacer · 2 revisadas · 2 descartadas.

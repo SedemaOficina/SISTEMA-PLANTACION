@@ -325,6 +325,7 @@ SRP.app = {
     this.mostrarVista(p.alcance === 'equipo' || p.alcance === 'todos' ? 'supervision' : p.registrar ? 'registrar' : 'registros');
     SRP.conexion.refrescar();
     // Datos de prueba: al entrar se envía lo pendiente y, si no sale, lo dice la franja (D110, D111)
+    SRP.conexion.sugerirInstalar();   // en iPhone desde Safari, una vez por sesión y antes de capturar
     SRP.envio.alEntrar();   // la pastilla cuenta los registros del alcance de quien entró (D83)
   },
 
