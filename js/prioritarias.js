@@ -25,7 +25,7 @@ SRP.prioritarias = {
   version() { return this.hay() ? SRP.CAPAS.prioritarias.meta.version : ''; },
   texto(n) { const x = this.NIVELES.find(v => v[0] === n); return x ? x[1] : 'Sin dato'; },
 
-  /* La colonia de la capa donde cae el punto: { prioridad, texto, colonia, alcaldia }, o null si no
+  /* La colonia de la capa donde cae el punto: { id, prioridad, texto, colonia, alcaldia }, o null si no
      cae en ninguna. Se recuerda por coordenada: Supervisión cruza miles de árboles. */
   de(lat, lng) {
     if (!this.hay() || typeof lat !== 'number' || typeof lng !== 'number') return null;
@@ -36,7 +36,7 @@ SRP.prioritarias = {
     let r = null;
     if (fs.length) {
       const f = fs.reduce((m, x) => SRP.derivacion.areaDe(x) < SRP.derivacion.areaDe(m) ? x : m, fs[0]);
-      r = { prioridad: f.properties.prioridad, texto: this.texto(f.properties.prioridad), colonia: f.properties.colonia, alcaldia: f.properties.alcaldia };
+      r = { id: f.properties.id, prioridad: f.properties.prioridad, texto: this.texto(f.properties.prioridad), colonia: f.properties.colonia, alcaldia: f.properties.alcaldia };
     }
     this.memoria.set(k, r);
     return r;
@@ -115,16 +115,22 @@ SRP.prioritarias = {
   guardar() { try { localStorage.setItem(this.CLAVE, JSON.stringify(this.estados)); } catch (e) { /* vale para esta sesión */ } },
   encendida() { return this.estado('campo').ver; },
 
-  // Pone o quita la capa de un mapa. Va debajo de los puntos y no atiende toques: no estorba al colocar el árbol
-  pintar(mapa, ver, interactiva) {
+  /* Pone o quita la capa de un mapa. Va debajo de los puntos y no atiende toques: no estorba al colocar el árbol.
+     `intervenidas` ({ id de colonia: árboles }): se dibujan sólo esas colonias, con el color de su
+     prioridad; el color dice dónde se plantó y con qué prioridad, y la etiqueta, cuántos árboles. */
+  pintar(mapa, ver, interactiva, intervenidas) {
     if (!mapa || !window.L || !this.hay()) return;
     let capa = this.capas.get(mapa);
     if (ver && !capa) {
       if (!mapa.getPane('prioritarias')) { mapa.createPane('prioritarias'); mapa.getPane('prioritarias').classList.add('pane-prioritarias'); }
       capa = L.geoJSON(SRP.CAPAS.prioritarias.geojson, {
         pane: 'prioritarias', interactive: !!interactiva, attribution: 'Colonias prioritarias: modelo de priorización, SIA/SEDEMA',
+        filter: intervenidas ? (f => !!intervenidas[f.properties.id]) : undefined,
         style: f => ({ className: 'pri-colonia pri-nivel-' + f.properties.prioridad, weight: 1 }),
-        onEachFeature: interactiva ? (f, l) => l.bindTooltip(f.properties.colonia + ': prioridad ' + this.texto(f.properties.prioridad).toLowerCase(), { sticky: true }) : undefined
+        onEachFeature: interactiva ? (f, l) => {
+          const n = intervenidas ? intervenidas[f.properties.id] : null;
+          l.bindTooltip(f.properties.colonia + ': prioridad ' + this.texto(f.properties.prioridad).toLowerCase() + (n ? ' · ' + n + (n === 1 ? ' árbol' : ' árboles') : ''), { sticky: true });
+        } : undefined
       });
       this.capas.set(mapa, capa);
     }
@@ -140,7 +146,7 @@ SRP.prioritarias = {
   /* EL CONTROL SOBRE EL MAPA. Un botón en la esquina del mapa abre el panel de la capa: encenderla o
      apagarla, elegir qué niveles se ven (cada uno con su muestra de color, que hace de leyenda) y su
      opacidad. `mapa()` devuelve el mapa de Leaflet; `o`: { grupo, leyenda (elemento bajo el mapa, opcional),
-     interruptor (false donde la capa es el mapa mismo), interactiva }. Lo elegido vale para los mapas
+     interruptor (false donde la capa es el mapa mismo), interactiva, intervenidas (sólo esas colonias) }. Lo elegido vale para los mapas
      del mismo grupo. */
   controles: [],
   control(mapa, o) {
@@ -191,7 +197,7 @@ SRP.prioritarias = {
     this.controles = this.controles.filter(c => c.m._container && document.body.contains(c.m._container));
     this.controles.forEach(({ m, caja, o }) => {
       const e = this.estado(o.grupo), ver = e.ver || !o.interruptor;
-      this.pintar(m, ver, o.interactiva);
+      this.pintar(m, ver, o.interactiva, o.intervenidas);
       const pane = m.getPane('prioritarias');
       if (pane) {
         pane.style.opacity = String(e.opacidad);

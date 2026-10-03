@@ -54,8 +54,8 @@ SRP.ESQUEMA = {
    "Organización civil"
   ],
   "tipo_solicitante": [
-   "Alcaldía",
    "Dependencia de gobierno",
+   "Alcaldía",
    "Congreso",
    "Empresa",
    "Organización civil",
@@ -349,9 +349,9 @@ SRP.ESQUEMA = {
     null
    ],
    [
-    "coordinador_id",
-    "uuid",
-    true,
+    "coordinadores_ids",
+    "uuid[]",
+    false,
     null,
     "usuarios"
    ],

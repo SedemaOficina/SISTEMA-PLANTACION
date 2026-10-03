@@ -2392,3 +2392,24 @@
   · **Reporte de jornada sin la gráfica «Ejemplares por especie»:** la tabla «Totales por especie» ya da
     ese dato, con todas las especies. La sección 6 pasa a llamarse «Distribución de las especies» y conserva
     su barra. Modifica D163 y D168 en lo que toca a esa gráfica.
+- **D219. Listas que se ordenan, sustituciones a la vista, varios coordinadores por cabo y mapa de colonias intervenidas (bloque 155).** 02-10-2026. Decisión de Liber.
+  · **Orden de las listas:** Jornadas, Registros, Reportes y Fotografías traen sobre la lista «Ordenar»,
+    con «Lo más reciente primero» (como llegaban) y «Lo más antiguo primero». Se recuerda por lista en el
+    dispositivo. No es un filtro: no aparece entre los filtros activos ni lo quita «Quitar filtros».
+  · **Sustituciones en la tarjeta de la jornada:** una sexta cifra dice cuántos de sus árboles reemplazan
+    a uno que se perdió. Se calcula de los árboles con `sustituye_id`; no se guarda.
+  · **Usuarios, etiquetas:** «Cargo» (antes «Cargo y rol») y «Perfil de captura» (antes «Perfil»). Los
+    campos siguen llamándose `cargo_rol` y `perfil`.
+  · **Un cabo puede tener más de un coordinador:** `usuarios.coordinador_id` se sustituye por la lista
+    `usuarios.coordinadores_ids` (vacía si no tiene; todos de su misma institución). Cada coordinador de
+    la lista ve, edita y releva al cabo como antes el único. En el alta se marcan en una lista de botones.
+    Las cuentas guardadas con el campo anterior pasan a la lista al abrir la base (`normalizar()`); no
+    cambia la estructura de la base, así que no hay migración numerada. Modifica D192 en ese punto.
+  · **Mapa «Por prioridad de la colonia» (Supervisión y Mi avance):** se pintan sólo las colonias donde
+    se plantó en lo filtrado, con el color de su prioridad. Es una sola rampa de color —la de prioridad—;
+    la cantidad de árboles no se pinta: va en la etiqueta de cada colonia y en la tabla. Modifica D206
+    en lo que toca a ese mapa; en Nuevo registro y en la ficha de la jornada la capa sigue completa.
+  · **Pedidos especiales:** el catálogo de solicitantes de arranque suma «Oficina de la Secretaría», que
+    va primera en «Quién lo solicita»; el grupo «Dependencia de gobierno» va antes que «Alcaldía». La
+    descripción del pedido es obligatoria. Un teléfono con capturas recibe el solicitante nuevo con el
+    sello de datos `2026-10-02b-oficina`, sin reiniciar. Modifica D210 y D217 en esos puntos.

@@ -86,12 +86,14 @@ SRP.ref = {
   /* SOLICITANTES (catálogo `solicitante`). Quién pide un pedido especial: alcaldías, dependencias,
      diputadas y diputados, empresas, vecinos. No es la institución que ejecuta ni da acceso a nada:
      sólo se elige al iniciar o editar una jornada. Los tipos agrupan la lista y los informes. */
-  TIPOS_SOLICITANTE: ['Alcaldía', 'Dependencia de gobierno', 'Congreso', 'Empresa', 'Organización civil', 'Escuela', 'Vecinos'],
+  TIPOS_SOLICITANTE: ['Dependencia de gobierno', 'Alcaldía', 'Congreso', 'Empresa', 'Organización civil', 'Escuela', 'Vecinos'],
   nombreSolicitante(id) { const s = this.catalogoPorId[id]; return s ? s.nombre : 'Sin dato'; },
-  // Por tipo, en el orden de los tipos, y por nombre dentro de cada uno
+  // Por tipo, en el orden de los tipos, y por nombre dentro de cada uno; la Oficina de la Secretaría, la primera
+  SOLICITANTE_PRIMERO: 's-oficina-secretaria',
   ordenSolicitantes(a, b) {
     const n = s => { const i = SRP.ref.TIPOS_SOLICITANTE.indexOf(s.tipo_solicitante); return i < 0 ? 99 : i; };
-    return n(a) - n(b) || a.nombre.localeCompare(b.nombre, 'es');
+    const primero = s => s.id === SRP.ref.SOLICITANTE_PRIMERO ? 0 : 1;
+    return n(a) - n(b) || primero(a) - primero(b) || a.nombre.localeCompare(b.nombre, 'es');
   },
 
   /* Los programas activos que puede elegir una institución al iniciar o editar una jornada, Reforestación

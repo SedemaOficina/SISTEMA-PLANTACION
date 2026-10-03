@@ -150,8 +150,8 @@
     },
     "tipo_solicitante": {
       "valores": [
-        "Alcaldía",
         "Dependencia de gobierno",
+        "Alcaldía",
         "Congreso",
         "Empresa",
         "Organización civil",
@@ -549,7 +549,7 @@
           "nulo": false,
           "origen": "Persona",
           "dominio": "Texto libre",
-          "pantalla": "Cargo y rol",
+          "pantalla": "Cargo",
           "regla": "Descriptivo; no gobierna permisos"
         },
         {
@@ -558,17 +558,17 @@
           "nulo": false,
           "origen": "Persona",
           "dominio": "perfil",
-          "pantalla": "Perfil",
+          "pantalla": "Perfil de captura",
           "regla": "Decide alcance y acciones. Una cuenta de administración no puede quitarse a sí misma el perfil ADMIN. Un perfil desconocido queda sin permisos y se avisa (D87). ADMIN sólo en SEDEMA; fuera, CABO o COORDINADOR (D192)"
         },
         {
-          "campo": "coordinador_id",
-          "tipo": "uuid",
-          "nulo": true,
+          "campo": "coordinadores_ids",
+          "tipo": "uuid[]",
+          "nulo": false,
           "origen": "Persona",
-          "dominio": "→ usuarios.id con perfil COORDINADOR",
-          "pantalla": "Coordinador (sólo cabos)",
-          "regla": "Sólo en cabos, y el coordinador es de la misma institución (D192); nulo en los demás perfiles. Es lo que define la cuadrilla: el coordinador ve y edita los registros de los cabos que lo tienen asignado, nunca los de otra institución"
+          "dominio": "→ usuarios.id con perfil COORDINADOR; [] si no tiene",
+          "pantalla": "Coordinadores (sólo cabos)",
+          "regla": "Sólo en cabos; puede tener más de uno, todos de su misma institución; [] en los demás perfiles. Es lo que define la cuadrilla: cada coordinador ve y edita los registros de los cabos que lo tienen asignado, nunca los de otra institución"
         },
         {
           "campo": "activo",
@@ -1145,7 +1145,7 @@
           "origen": "Persona",
           "dominio": "Texto ≤ 200; '' si no aplica",
           "pantalla": "Iniciar jornada › Descripción del pedido; Editar jornada",
-          "regla": "De qué se trata el pedido especial; opcional. Vacío en una jornada programada. No se pide oficio ni folio de la solicitud"
+          "regla": "De qué se trata el pedido especial; obligatoria con origen «Pedido especial». Vacío en una jornada programada. No se pide oficio ni folio de la solicitud"
         },
         {
           "campo": "editado_por_id",
@@ -1290,7 +1290,7 @@
       "de": "plantaciones.cabo_id",
       "a": "usuarios.id",
       "cardinalidad": "N:1",
-      "regla": "Obligatoria. Define el alcance: un cabo ve los suyos; un coordinador, los de los cabos con coordinador_id = él"
+      "regla": "Obligatoria. Define el alcance: un cabo ve los suyos; un coordinador, los de los cabos que lo tienen en coordinadores_ids"
     },
     {
       "de": "plantaciones.editado_por_id",
@@ -1317,10 +1317,10 @@
       "regla": "No son llaves foráneas en la base del dispositivo: son derivaciones del punto, con capa_version para rehacerlas"
     },
     {
-      "de": "usuarios.coordinador_id",
+      "de": "usuarios.coordinadores_ids",
       "a": "usuarios.id",
-      "cardinalidad": "N:1",
-      "regla": "Sólo con perfil CABO; apunta a una cuenta COORDINADOR"
+      "cardinalidad": "N:M",
+      "regla": "Sólo con perfil CABO; cada elemento apunta a una cuenta COORDINADOR de su institución"
     },
     {
       "de": "usuarios.area_id",
@@ -1677,9 +1677,9 @@
       "se_vacia": "Al quitarla (null, null)"
     },
     {
-      "campo": "usuarios.coordinador_id",
-      "aparece": "Sólo con perfil CABO en cuentas de SEDEMA",
-      "se_vacia": "Al cambiar a otro perfil o a otra institución (null)"
+      "campo": "usuarios.coordinadores_ids",
+      "aparece": "Sólo con perfil CABO",
+      "se_vacia": "Al cambiar a otro perfil; al cambiar de institución quedan sólo los de la nueva ([] si ninguno)"
     },
     {
       "campo": "catalogos.nombre_cientifico … id_enciclovida",
@@ -1838,7 +1838,7 @@
     {
       "id": "R-U02",
       "tabla": "usuarios",
-      "regla": "coordinador_id sólo con perfil CABO, y el coordinador es de su misma institución; con otro perfil se pone nulo (D192)",
+      "regla": "coordinadores_ids sólo con perfil CABO, uno o varios, todos de su misma institución; con otro perfil queda vacío",
       "donde": "js/usuarios.js guardar()"
     },
     {
@@ -2020,8 +2020,8 @@
     {
       "id": "S-14",
       "que": "Pedido especial",
-      "detalle": "El servidor guarda el origen de la jornada (PROGRAMADA o PEDIDO) y valida lo mismo que el teléfono: un pedido lleva solicitante, del catálogo de solicitantes (solicitante_id) o escrito (solicitante_otro), y una programada lleva los tres datos del pedido vacíos. La base real carga los solicitantes de arranque (16 alcaldías, SOBSE, SEGIAGUA, Jefatura de Gobierno, Diputadas y diputados) con sus tipos. El solicitante no da acceso a la jornada: la ve quien la ejecuta y quien la supervisa",
-      "referencia": "D210, D217"
+      "detalle": "El servidor guarda el origen de la jornada (PROGRAMADA o PEDIDO) y valida lo mismo que el teléfono: un pedido lleva solicitante, del catálogo de solicitantes (solicitante_id) o escrito (solicitante_otro), y su descripción (pedido_descripcion), obligatoria; y una programada lleva los tres datos del pedido vacíos. La base real carga los solicitantes de arranque (Oficina de la Secretaría, SOBSE, SEGIAGUA, Jefatura de Gobierno, 16 alcaldías, Diputadas y diputados) con sus tipos. El solicitante no da acceso a la jornada: la ve quien la ejecuta y quien la supervisa",
+      "referencia": "D210, D217, D219"
     },
     {
       "id": "S-15",

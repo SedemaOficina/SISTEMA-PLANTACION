@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.9.21 (Bloque 154)»**.
+Al pie de cualquier pantalla: **«Versión 0.9.22 (Bloque 155)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -366,6 +366,13 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M366 | Liber | En la ficha del registro, «Editar» y «Sustituir árbol» ya no se enciman: van uno junto al otro | Media | 0.9.21 (B154) | En computadora, «Ver» un árbol: los dos botones al pie, lado a lado | Pie de la ficha |
 | M367 | Liber | Las fechas con «Hoy» abren el calendario al tocar el campo, sin botón de calendario; en la sustitución siempre están el campo y «Hoy» | Media | 0.9.21 (B154) | Sustituir árbol: tocar la fecha abre el calendario; «Hoy» pone la fecha de hoy | Ventana «Sustituir árbol» |
 | M368 | Liber | El reporte de jornada ya no trae la gráfica «Ejemplares por especie»; la tabla de totales da el dato | Media | 0.9.21 (B154) | Generar un reporte: la sección 6 es «Distribución de las especies», con una sola barra | Vista previa del reporte |
+| M370 | Liber | Jornadas, Registros, Reportes y Fotografías se ordenan de lo más reciente a lo más antiguo y a la inversa | Alta | 0.9.22 (B155) | Sobre la lista, «Ordenar» › «Lo más antiguo primero»: la lista se invierte y se conserva al volver | Barra sobre la lista |
+| M371 | Liber | La tarjeta de la jornada dice cuántas sustituciones de árboles hubo | Media | 0.9.22 (B155) | Sustituir un árbol de una jornada: su tarjeta pasa de «0 sustituciones» a «1 sustitución» | Tarjeta de jornada |
+| M372 | Liber | Usuarios: «Cargo» en lugar de «Cargo y rol» y «Perfil de captura» en lugar de «Perfil» | Media | 0.9.22 (B155) | Configuración › Usuarios › Dar de alta: las dos etiquetas nuevas, también en la tabla y el filtro | Alta de cuenta |
+| M373 | Liber | Un cabo puede tener más de un coordinador; cada uno ve y edita sus registros | Alta | 0.9.22 (B155) | Dar de alta un cabo y marcar dos coordinadores; entrar con cada uno y ver los registros del cabo | Lista «Coordinadores» del alta |
+| M374 | Liber | El mapa «Por prioridad de la colonia» pinta sólo las colonias donde se plantó, con el color de su prioridad | Alta | 0.9.22 (B155) | Mi avance o Supervisión › «Por prioridad de la colonia»: sólo las colonias intervenidas; al pasar el cursor, cuántos árboles | Mapa de prioridad |
+| M375 | Liber | «Oficina de la Secretaría» es la primera opción de «Quién lo solicita», y las dependencias de gobierno van antes que las alcaldías | Media | 0.9.22 (B155) | Iniciar jornada › Origen «Pedido especial»: el desplegable empieza por «Dependencia de gobierno» y «Oficina de la Secretaría» | Desplegable del solicitante |
+| M376 | Liber | La descripción del pedido especial es obligatoria | Media | 0.9.22 (B155) | Iniciar un pedido especial sin descripción: no deja y lo dice en el campo | Bloque del pedido |
 
 ## 2. Por hacer
 
@@ -392,4 +399,4 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 351 hechas · 6 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 358 hechas · 6 por hacer · 2 revisadas · 2 descartadas.

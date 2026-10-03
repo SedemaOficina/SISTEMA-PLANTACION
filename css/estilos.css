@@ -212,6 +212,12 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 .bloque { margin-top: var(--e-5); padding-top: var(--e-4); border-top: 1px solid var(--borde-suave); }
 .bloque:first-of-type { margin-top: var(--e-3); padding-top: 0; border-top: 0; }
 .bloque .total { margin-top: 0; }
+/* Sobre cada lista: a la izquierda cuánto hay, a la derecha en qué orden se ve */
+.lista-barra { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-2) var(--e-4); margin-bottom: var(--e-3); }
+.lista-barra > p { margin: 0; flex: 1 1 12rem; }
+.lista-orden { display: flex; align-items: center; gap: var(--e-2); font-size: var(--t-s); }
+.lista-orden label { color: var(--gris); white-space: nowrap; }
+.lista-orden select { min-height: var(--toque); padding: var(--e-1) var(--e-3); border: 1px solid var(--borde-control); border-radius: var(--radio-control); background: var(--fondo); color: var(--texto); font: inherit; }
 .bloque .filtros { border-bottom: 0; padding-bottom: 0; }
 .bloque .acciones { margin-top: var(--e-3); }
 .tarjeta { border: 1px solid var(--borde-suave); border-radius: var(--radio); padding: var(--e-4); margin-bottom: var(--e-5); }
@@ -379,9 +385,9 @@ fieldset.campo { margin-inline: 0; }
 /* listas de los diálogos Cambiar/Mover */
 .jornada-datos .jornada-dia { font-family: var(--fuente-titulo); font-weight: 600; }
 .jornada-datos .jornada-cifras { font-size: var(--t-xs); color: var(--gris); overflow-wrap: anywhere; }
-.jornadas-tarjetas .jornada-cifras { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--e-15); }
-.jornadas-tarjetas .jornada-cifra:nth-child(1), .jornadas-tarjetas .jornada-cifra:nth-child(2) { grid-column: span 3; }
-.jornadas-tarjetas .jornada-cifra:nth-child(n+3) { grid-column: span 2; }
+.jornadas-tarjetas .jornada-cifras { display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--e-15); }
+.jornadas-tarjetas .jornada-cifra:nth-child(1), .jornadas-tarjetas .jornada-cifra:nth-child(2) { grid-column: span 6; }
+.jornadas-tarjetas .jornada-cifra:nth-child(n+3) { grid-column: span 3; }
 .jornadas-tarjetas .jornada-cifra:nth-child(1) b, .jornadas-tarjetas .jornada-cifra:nth-child(2) b { font-size: var(--t-l); }
 .jornada-cifra { display: flex; flex-direction: column; align-items: center; padding: var(--e-15) var(--e-1); border-radius: var(--radio); background: var(--neutro-fondo); font-size: var(--t-xs); color: var(--gris); line-height: 1.15; text-align: center; }
 .jornada-cifra b { font-size: var(--t-m); color: var(--texto); font-weight: 700; }
@@ -1214,6 +1220,8 @@ dialog::backdrop { background: var(--velo-oscuro); }
     background: var(--fondo); color: var(--texto); font: inherit; font-size: var(--t-s); font-weight: 500; cursor: pointer; white-space: nowrap; }
 }
 @media (max-width: 480px) {
+  /* En teléfono las cuatro cifras chicas de la tarjeta de jornada van de dos en dos */
+  .jornadas-tarjetas .jornada-cifra:nth-child(n+3) { grid-column: span 6; }
   /* Paginador en teléfono chico: Anterior y Siguiente sólo con su flecha, a todo el ancho */
   .paginador-botones { width: 100%; justify-content: space-between; gap: var(--e-1); }
   .paginador-botones .btn { min-width: 40px; padding-left: var(--e-2); padding-right: var(--e-2); }

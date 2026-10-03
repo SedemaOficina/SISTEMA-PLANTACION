@@ -7,7 +7,7 @@
      origen                PROGRAMADA (por omisión) o PEDIDO
      solicitante_id        quién lo pide, del catálogo de solicitantes; nulo si es otra o si es programada
      solicitante_otro      el nombre, cuando la instancia no está en el catálogo
-     pedido_descripcion    de qué se trata, opcional
+     pedido_descripcion    de qué se trata, obligatoria en un pedido especial
 
    El mismo bloque de campos sirve en las dos pantallas: `montar(caja, p)` lo arma con el prefijo `p`. */
 window.SRP = window.SRP || {};
@@ -30,7 +30,7 @@ SRP.pedido = {
       '<div class="campo"><label for="' + p + '-solicitante">Quién lo solicita <span class="obligatorio" aria-hidden="true">*</span></label><select id="' + p + '-solicitante"></select></div>' +
       '<div class="campo" id="caja-' + p + '-solicitante-otro" hidden><label for="' + p + '-solicitante-otro">Nombre de la instancia <span class="obligatorio" aria-hidden="true">*</span></label>' +
       '<input id="' + p + '-solicitante-otro" maxlength="120" autocomplete="off"></div>' +
-      '<div class="campo"><label for="' + p + '-pedido-descripcion">Descripción del pedido <span class="opcional">(opcional)</span></label>' +
+      '<div class="campo"><label for="' + p + '-pedido-descripcion">Descripción del pedido <span class="obligatorio" aria-hidden="true">*</span></label>' +
       '<input id="' + p + '-pedido-descripcion" maxlength="200" autocomplete="off" placeholder="p. ej. compensación por obra"></div></div>';
     this.el(p, 'origen').addEventListener('change', () => this.ajustar(p));
     this.el(p, 'solicitante').addEventListener('change', () => this.ajustar(p));
@@ -84,9 +84,10 @@ SRP.pedido = {
     const s = this.el(p, 'solicitante').value;
     if (!s) return [[p + '-solicitante', 'Elija quién solicita el pedido especial.']];
     if (s === this.OTRA && !this.el(p, 'solicitante-otro').value.trim()) return [[p + '-solicitante-otro', 'Escriba el nombre de la instancia que lo solicita.']];
+    if (!this.el(p, 'pedido-descripcion').value.trim()) return [[p + '-pedido-descripcion', 'Escriba de qué se trata el pedido especial.']];
     return [];
   },
-  ids(p) { return [p + '-solicitante', p + '-solicitante-otro']; },
+  ids(p) { return [p + '-solicitante', p + '-solicitante-otro', p + '-pedido-descripcion']; },
 
   /* ---------- Leerlo ---------- */
 

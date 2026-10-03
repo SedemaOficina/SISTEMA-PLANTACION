@@ -208,12 +208,13 @@ SRP.supervision = {
     /* Por prioridad de la colonia: cuántos árboles cayeron en cada nivel del modelo de priorización,
        con el mapa de las colonias (más intenso, más prioridad) */
     if (m.prioridad) {
-      const p = m.prioridad, P = SRP.indicadores.pct;
+      const p = m.prioridad, P = SRP.indicadores.pct, nCol = Object.keys(p.colonias || {}).length;
       const filas = p.niveles.map(x => [x.texto, num(x.n), (P(x.n, p.total) || 0) + ' %']).concat(p.sin ? [['Sin dato en la capa', num(p.sin), (P(p.sin, p.total) || 0) + ' %']] : []);
       h += apartado('sup-t-prioridad', 'Por prioridad de la colonia',
         '<p class="sup-prioridad-lema">' + (p.total ? '<b>' + num(p.altas) + ' de ' + num(p.total) + '</b> árboles (' + (P(p.altas, p.total) || 0) + ' %) en colonias de prioridad alta o muy alta.' : 'Sin árboles en el periodo.') + '</p>' +
-        '<div class="sup-dos"><div><div id="sup-mapa-prioridad" class="sup-mapa" role="group" aria-label="Mapa de las colonias de la Ciudad de México según su prioridad de reforestación. Las cifras por nivel están en la tabla de al lado"></div>' +
-        '<p class="nota pri-leyenda">' + SRP.prioritarias.htmlLeyenda() + '</p></div><div>' +
+        '<div class="sup-dos"><div><div id="sup-mapa-prioridad" class="sup-mapa" role="group" aria-label="Mapa de las colonias donde se plantó, con el color de su prioridad de reforestación. Las cifras por nivel están en la tabla de al lado"></div>' +
+        '<p class="nota pri-leyenda">' + SRP.prioritarias.htmlLeyenda() + '</p>' +
+        '<p id="sup-prioridad-colonias" class="nota">' + (nCol ? (nCol === 1 ? 'Se pinta la colonia' : 'Se pintan las ' + num(nCol) + ' colonias') + ' donde se plantó, con el color de su prioridad; pase el cursor sobre una colonia, o tóquela, para ver cuántos árboles.' : 'Ninguna colonia con árboles en lo filtrado.') + '</p></div><div>' +
         this.tabla(['Prioridad', 'Árboles', '% del total'], filas, [1, 2]) +
         '<p class="nota">Según el modelo de priorización de colonias (capa ' + esc(SRP.prioritarias.version()) + '). Se calcula del punto de cada árbol; los límites de la capa son aproximados.</p></div></div>');
     }
@@ -349,14 +350,16 @@ SRP.supervision = {
   },
 
   /* El mapa de colonias por prioridad: sin mosaicos, como el de alcaldías, con el contorno de las
-     alcaldías encima. Con una alcaldía elegida, se acerca a ella. */
+     alcaldías encima. Se pintan sólo las colonias donde se plantó en lo filtrado, con el color de su
+     prioridad: una sola rampa de color; cuántos árboles, en la etiqueta de cada colonia y en la tabla. Con una alcaldía elegida, se acerca a ella. */
   pintarMapaPrioridad() {
     const caja = this.el('sup-mapa-prioridad');
     if (this.mapaPrioridad) { this.mapaPrioridad.remove(); this.mapaPrioridad = null; }
     if (!caja || !window.L || !SRP.prioritarias.hay()) return;
     this.mapaPrioridad = L.map(caja, { zoomControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false, boxZoom: false, keyboard: false, zoomSnap: 0.1 });
     // Aquí la capa es el mapa mismo: no se apaga entera, pero sí cada nivel, y se regula su opacidad
-    SRP.prioritarias.control(() => this.mapaPrioridad, { grupo: 'supervision', interruptor: false, interactiva: true });
+    SRP.prioritarias.control(() => this.mapaPrioridad, { grupo: 'supervision', interruptor: false, interactiva: true,
+      intervenidas: (this.modelo && this.modelo.prioridad && this.modelo.prioridad.colonias) || {} });
     const elegida = this.filtros.alcaldia;
     const alc = L.geoJSON(SRP.CAPAS.alcaldias.geojson, { interactive: false, style: () => ({ className: 'pri-contorno', weight: 1 }) }).addTo(this.mapaPrioridad);
     let caja2 = alc.getBounds();

@@ -184,7 +184,7 @@ SRP.demo = {
     const cuentas = this.CUENTAS.map(([id, nombre, ap, perfil, coord, org]) => ({
       id, correo: id.replace('u-demo-', 'demo.') + '@ejemplo.local', nombre_completo: nombre + ' ' + ap + ' Demo',
       organizacion_id: org || SRP.CONFIG.ORGANIZACION_SEDEMA, area_id: org ? null : 'a-dgsanpava',
-      cargo_rol: perfil === 'CABO' ? 'Cabo de cuadrilla' : 'Coordinación de cuadrilla', perfil, coordinador_id: coord,
+      cargo_rol: perfil === 'CABO' ? 'Cabo de cuadrilla' : 'Coordinación de cuadrilla', perfil, coordinadores_ids: coord ? [coord] : [],
       activo: true, fecha_creacion: F0, creado_por_id: 'u-admin-1', fecha_ultima_edicion: null, editado_por_id: null }));
     cuentas.forEach(u => { usuarios[u.id] = u; });
     const nombre = id => usuarios[id] ? SRP.util.nombreCompleto(usuarios[id]) : id;
@@ -242,7 +242,7 @@ SRP.demo = {
         const n = forzada && d === hoy ? 3 + Math.floor(r() * 5) : 5 + Math.floor(r() * 18);
         const inicio = hora(d, 8, Math.floor(r() * 50));
         // Quien corrige: su coordinación; si no tiene (fuera, o quien coordina), la propia persona (sin consumir azar de más)
-        const coord = (usuarios[cabo] || {}).coordinador_id || (externa || (usuarios[cabo] || {}).perfil === 'COORDINADOR' ? cabo : 'u-coord-1');
+        const coord = ((usuarios[cabo] || {}).coordinadores_ids || [])[0] || (externa || (usuarios[cabo] || {}).perfil === 'COORDINADOR' ? cabo : 'u-coord-1');
         const regs = [];
         let minuto = 0;
         for (let i = 0; i < n; i++) {
@@ -372,9 +372,9 @@ SRP.demo = {
     const guardar = (...ids) => ids.forEach(id => { if (this.es(id)) conservar.add(id); });
     d.plantaciones.filter(a => !this.es(a.id)).forEach(a => guardar(a.jornada_id, a.cabo_id));
     d.jornadas.filter(j => !this.es(j.id)).forEach(j => guardar(j.cabo_id, j.encargado_id));
-    d.usuarios.filter(u => !this.es(u.id)).forEach(u => guardar(u.coordinador_id));
+    d.usuarios.filter(u => !this.es(u.id)).forEach(u => guardar(...(u.coordinadores_ids || [])));
     d.jornadas.filter(j => conservar.has(j.id)).forEach(j => guardar(j.cabo_id));
-    d.usuarios.filter(u => conservar.has(u.id)).forEach(u => guardar(u.coordinador_id));
+    d.usuarios.filter(u => conservar.has(u.id)).forEach(u => guardar(...(u.coordinadores_ids || [])));
     // La empresa de demostración se queda si una cuenta o jornada que se conserva es suya
     d.usuarios.filter(u => !this.es(u.id) || conservar.has(u.id)).forEach(u => guardar(u.organizacion_id));
     d.jornadas.filter(j => !this.es(j.id) || conservar.has(j.id)).forEach(j => guardar(j.organizacion_id));

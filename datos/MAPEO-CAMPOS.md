@@ -93,9 +93,9 @@ Pantalla **Usuarios**, sólo Administración global. Almacén `usuarios`.
 | Área | `area_id` | Sólo en SEDEMA | Catálogo | Remite a `catalogos.id` con `tipo = area`: DGSANPAVA, Oficina de la Secretaría, Sistema de Información Ambiental, DGEIRA; nula en cuentas de otras instituciones |
 | Nombre completo | `nombre_completo` | Sí | Persona | Nombre y apellidos en un solo campo (antes eran tres; al abrir se unen) |
 | Correo | `correo` | Sí | Persona | Identifica la cuenta y sirve para entrar. Único. No se puede cambiar después |
-| Cargo y rol | `cargo_rol` | Sí | Persona | Texto libre; descriptivo, no gobierna permisos |
-| Perfil | `perfil` | Sí | Persona | `CABO`, `COORDINADOR` o `ADMIN`. Es lo que decide qué puede hacer. Consulta (`VIEWER`) se retiró en D87 |
-| Coordinador | `coordinador_id` | Sólo para cabos | Persona | Remite a `usuarios.id`, de la misma institución (D192). Quien lo tiene asignado ve sus registros |
+| Cargo | `cargo_rol` | Sí | Persona | Texto libre; descriptivo, no gobierna permisos |
+| Perfil de captura | `perfil` | Sí | Persona | `CABO`, `COORDINADOR` o `ADMIN`. Es lo que decide qué puede hacer. Consulta (`VIEWER`) se retiró en D87 |
+| Coordinadores | `coordinadores_ids` | Sólo para cabos | Persona | Lista de `usuarios.id`, uno o varios, de la misma institución. Cada coordinador asignado ve y edita sus registros; sin ninguno, la lista va vacía |
 | Estado | `activo` | Sí | Persona | Una cuenta inactiva no puede entrar; sus registros se conservan |
 | — | `fecha_creacion`, `creado_por_id` | Sí | Sistema | Cuándo y quién dio de alta la cuenta (los mismos nombres que en catálogos) |
 | — | `fecha_ultima_edicion`, `editado_por_id` | No | Sistema | |
@@ -200,7 +200,7 @@ Almacén `jornadas` (sustituye a `cierres` desde el bloque 62). Lo que ya vive e
 | `origen` | Sí | Persona | `PROGRAMADA` (por omisión) o `PEDIDO`: pedido especial de otra instancia (D210). Lo marca quien inicia la jornada; se corrige en «Editar jornada» |
 | `solicitante_id` | No | Persona | Remite a `catalogos.id` (solicitante): quién solicita el pedido especial; no es quien ejecuta ni es una institución con cuentas. Nulo en una jornada programada o si la instancia no está en el catálogo (D210, D217) |
 | `solicitante_otro` | Sí | Persona | Nombre de la instancia que solicita cuando no está en el catálogo; `''` si no aplica (D210) |
-| `pedido_descripcion` | Sí | Persona | De qué se trata el pedido especial, opcional; `''` si no aplica. No se pide oficio ni folio (D210) |
+| `pedido_descripcion` | Sí | Persona | De qué se trata el pedido especial, obligatoria en un pedido; `''` si no aplica. No se pide oficio ni folio (D210) |
 | `organizacion_id` | Sí | Sesión | La institución que ejecuta: la de quien inicia la jornada. No cambia después. En jornadas de otras instituciones el cierre no pide chófer ni vehículo, y el reporte dice «Institución que ejecuta» |
 | `estatus` | Sí | Sistema | `abierta` o `cerrada`; se cierra desde la franja o la revisión, se reabre desde la revisión o con «Registrar faltante» |
 | `fecha_inicio` | Sí | Sistema | Ordena las jornadas del día: «Jornada 2 de 3» |
@@ -228,7 +228,7 @@ Almacén `jornadas` (sustituye a `cierres` desde el bloque 62). Lo que ya vive e
 
 | Campo | Se origina en | Se reutiliza en |
 |---|---|---|
-| `usuarios.id` | Cuentas | `plantaciones.cabo_id`, `plantaciones.editado_por_id`, `usuarios.coordinador_id`, `usuarios.creado_por_id`, `usuarios.editado_por_id`, `catalogos.creado_por_id`, `catalogos.editado_por_id`, `bitacora.usuario_id`, `jornadas.cabo_id`, `jornadas.encargado_id`, `jornadas.relevo_id`, `jornadas.editado_por_id` |
+| `usuarios.id` | Cuentas | `plantaciones.cabo_id`, `plantaciones.editado_por_id`, `usuarios.coordinadores_ids`, `usuarios.creado_por_id`, `usuarios.editado_por_id`, `catalogos.creado_por_id`, `catalogos.editado_por_id`, `bitacora.usuario_id`, `jornadas.cabo_id`, `jornadas.encargado_id`, `jornadas.relevo_id`, `jornadas.editado_por_id` |
 | `catalogos.id` (especie, = clave `ESP-0000`) | Catálogo del SIA | `plantaciones.especie_id` |
 | `catalogos.id` (programa) | Catálogos | `jornadas.programa_id`, y de ahí `plantaciones.programa_id` (D151) |
 | `jornadas.id` | Jornadas | `plantaciones.jornada_id` |

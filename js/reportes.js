@@ -139,8 +139,9 @@ SRP.reportes = {
   async pintarLista() {
     const f = this.filtro, z = this.zona;
     const todas = await SRP.jornadas.jornadasAlcance();
-    this.lista = z.usar(todas.filter(j => j.estatus === 'cerrada'))
-      .sort((a, b) => b.fecha.localeCompare(a.fecha) || b.fecha_inicio.localeCompare(a.fecha_inicio));
+    this.lista = SRP.util.ordenar(z.usar(todas.filter(j => j.estatus === 'cerrada'))
+      .sort((a, b) => b.fecha.localeCompare(a.fecha) || b.fecha_inicio.localeCompare(a.fecha_inicio)), 'reportes');
+    SRP.util.pintarOrden(this.el('pdf-orden'), 'reportes', async () => { this.pagina = 1; await this.pintarLista(); });
     // Las abiertas que pasarían los mismos filtros (menos el del reporte, que no tienen): se dicen aparte
     const abiertas = todas.filter(j => j.estatus === 'abierta' && z.cumpleTexto(j) && z.cumplePeriodo(j) && z.cumpleListas(j, new Set(['reporte']))).length;
     const esc = SRP.util.escapar;

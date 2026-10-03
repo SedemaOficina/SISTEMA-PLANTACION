@@ -43,7 +43,7 @@ SRP.permisos = {
     if (alcance === 'todos') return true;
     const personas = this.personasDe(registro);
     if (personas.includes(usuario.id)) return true;
-    if (alcance === 'equipo') return personas.some(id => { const autor = usuariosPorId[id]; return !!autor && autor.coordinador_id === usuario.id; });
+    if (alcance === 'equipo') return personas.some(id => { const autor = usuariosPorId[id]; return !!autor && (autor.coordinadores_ids || []).includes(usuario.id); });
     return false;
   },
 

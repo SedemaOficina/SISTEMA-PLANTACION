@@ -86,7 +86,8 @@ SRP.galeria = {
   async pintar() {
     const f = this.filtro;
     this.jornadasPorId = Object.fromEntries((await SRP.almacen.todos('jornadas')).map(j => [j.id, j]));
-    this.fotos = this.zona.usar(await this.conFoto());
+    this.fotos = SRP.util.ordenar(this.zona.usar(await this.conFoto()), 'fotografias');
+    SRP.util.pintarOrden(this.el('galeria-orden'), 'fotografias', () => this.pintar());
     const esc = SRP.util.escapar;
     this.el('galeria-rejilla').innerHTML = this.fotos.map(r => {
       const e = SRP.ref.especieDe(r);

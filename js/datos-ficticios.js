@@ -57,6 +57,7 @@ window.SRP = window.SRP || {};
      dice) y su id lleva el cvegeo INEGI. Los demás se agregan en Catálogos › Solicitantes. */
   const sol = (id, clave, nombre, tipo) => cat('solicitante', id, clave, nombre, { tipo_solicitante: tipo });
   const solicitantes = ALCALDIAS.map(([cve, clave, nombre]) => sol('s-alc-' + cve, 'ALC_' + clave, nombre, 'Alcaldía')).concat([
+    sol('s-oficina-secretaria', 'OFICINA_DE_LA_SECRETARIA', 'Oficina de la Secretaría', 'Dependencia de gobierno'),
     sol('s-sobse', 'SOBSE', 'Secretaría de Obras y Servicios (SOBSE)', 'Dependencia de gobierno'),
     sol('s-segiagua', 'SEGIAGUA', 'Secretaría de Gestión Integral del Agua (SEGIAGUA)', 'Dependencia de gobierno'),
     sol('s-jefatura', 'JEFATURA_DE_GOBIERNO', 'Jefatura de Gobierno', 'Dependencia de gobierno'),
@@ -76,7 +77,7 @@ window.SRP = window.SRP || {};
      «Ejemplo»; correos en @ejemplo.local: dominio reservado, nunca entregable (Norma 3). */
   const usuario = (id, correo, nombre_completo, area_id, cargo_rol, perfil, coordinador_id, organizacion_id) => ({
     id, correo, nombre_completo, organizacion_id: organizacion_id || 'o-sedema', area_id, cargo_rol, perfil,
-    coordinador_id: coordinador_id || null, activo: true,
+    coordinadores_ids: coordinador_id ? [coordinador_id] : [], activo: true,
     fecha_creacion: F, creado_por_id: 'u-admin-1', fecha_ultima_edicion: null, editado_por_id: null
   });
 

@@ -386,7 +386,8 @@ SRP.registros = {
     // Un filtro nuevo vuelve a la primera página; guardar o eliminar conserva la página en que se está
     const clave = JSON.stringify(this.filtro);
     if (clave !== this._claveFiltro) { this._claveFiltro = clave; this.pagina = 1; }
-    const info = SRP.util.paginar(this.filtrados, this.pagina, 'registros-paginas');
+    SRP.util.pintarOrden(this.el('registros-orden'), 'registros', () => { this.pagina = 1; this.pintar(); });
+    const info = SRP.util.paginar(SRP.util.ordenar(this.filtrados, 'registros'), this.pagina, 'registros-paginas');
     this.pagina = info.pagina;
     const pagina = info.items;
     const esc = SRP.util.escapar;

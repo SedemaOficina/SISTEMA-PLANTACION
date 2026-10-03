@@ -39,6 +39,12 @@ SRP.usuarios = {
     this.el('form-usuario').addEventListener('submit', (e) => { e.preventDefault(); this.guardar(); });
     // El campo Coordinador sólo tiene sentido para un cabo. Sin saltos de foco automáticos (D82)
     this.el('usr-perfil').addEventListener('change', () => this.ajustarPorPerfil());
+    this.el('usr-coordinadores').addEventListener('click', (e) => {
+      const b = e.target.closest('.chip'); if (!b) return;
+      b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'));
+      SRP.util.quitarErrorCampo(this.el('usr-coordinadores'));
+      this.pintarNotaCoordinadores();
+    });
     this.el('tabla-usuarios').addEventListener('click', (e) => {
       // Tocar la tarjeta (fuera de la tuerca) abre la edición (D105)
       if (!e.target.closest('.c-acciones, thead')) {
@@ -95,11 +101,12 @@ SRP.usuarios = {
       .sort((a, b) => SRP.util.nombreCompleto(a).localeCompare(SRP.util.nombreCompleto(b), 'es'));
 
     const cab = '<thead><tr><th scope="col">Nombre</th><th scope="col">Correo</th><th scope="col">Institución</th><th scope="col">Área</th>' +
-      '<th scope="col">Cargo y rol</th><th scope="col">Perfil</th><th scope="col">Coordinador</th>' +
+      '<th scope="col">Cargo</th><th scope="col">Perfil de captura</th><th scope="col">Coordinadores</th>' +
       '<th scope="col">Estado</th><th scope="col">Registros</th><th scope="col">Acciones</th></tr></thead>';
 
     const cabos = {};
-    SRP.ref.usuarios.forEach(x => { if (x.coordinador_id) cabos[x.coordinador_id] = (cabos[x.coordinador_id] || 0) + 1; });
+    SRP.ref.usuarios.forEach(x => (x.coordinadores_ids || []).forEach(c => { cabos[c] = (cabos[c] || 0) + 1; }));
+    const coordinadoresDe = (x) => (x.coordinadores_ids || []).map(c => SRP.ref.nombreUsuario(c)).join(', ');
     const filas = lista.map(u => {
       const n = this.uso[u.id] || 0;
       const soyYo = u.id === yo;
@@ -116,9 +123,9 @@ SRP.usuarios = {
         '<td class="c-sub" data-etiqueta="Correo">' + esc(u.correo) + '</td>' +
         '<td class="c-movil-oculta" data-etiqueta="Institución">' + esc(SRP.ref.nombreOrganizacion(u.organizacion_id)) + '</td>' +
         '<td class="c-movil-oculta" data-etiqueta="Área">' + esc(SRP.ref.nombreCatalogo(u.area_id) || '—') + '</td>' +
-        '<td class="c-movil-oculta" data-etiqueta="Cargo y rol">' + esc(u.cargo_rol) + '</td>' +
-        '<td class="c-movil-oculta" data-etiqueta="Perfil">' + esc(SRP.permisos.de(u).etiqueta) + '</td>' +
-        '<td class="c-movil-oculta" data-etiqueta="Coordinador">' + esc(u.coordinador_id ? SRP.ref.nombreUsuario(u.coordinador_id) : '—') + '</td>' +
+        '<td class="c-movil-oculta" data-etiqueta="Cargo">' + esc(u.cargo_rol) + '</td>' +
+        '<td class="c-movil-oculta" data-etiqueta="Perfil de captura">' + esc(SRP.permisos.de(u).etiqueta) + '</td>' +
+        '<td class="c-movil-oculta" data-etiqueta="Coordinadores">' + esc(coordinadoresDe(u) || '—') + '</td>' +
         '<td class="c-movil-oculta" data-etiqueta="Estado">' + estado + '</td>' +
         '<td class="c-movil-oculta" data-etiqueta="Registros">' + n + '</td>' +
         '<td class="c-acciones" data-etiqueta="Acciones">' + SRP.ICONOS.menuAcciones(u.id, SRP.util.nombreCompleto(u), items) + '</td>' +
@@ -126,7 +133,7 @@ SRP.usuarios = {
           // De la Secretaría se dice el área; de fuera, la institución
           esc(SRP.ref.esSedema(u.organizacion_id) ? SRP.ref.nombreCatalogo(u.area_id) : SRP.ref.nombreOrganizacion(u.organizacion_id)),
           // «coordinador: …» en el cabo; «coordina a 2 cabos» en quien coordina (antes el cabo decía «coordina» a su coordinador)
-          u.coordinador_id ? 'coordinador: ' + esc(SRP.ref.nombreUsuario(u.coordinador_id)) : '',
+          (u.coordinadores_ids || []).length ? ((u.coordinadores_ids.length === 1 ? 'coordinador: ' : 'coordinadores: ') + esc(coordinadoresDe(u))) : '',
           cabos[u.id] ? 'coordina a ' + cabos[u.id] + (cabos[u.id] === 1 ? ' cabo' : ' cabos') : '',
           n + (n === 1 ? ' registro' : ' registros')].filter(Boolean).join(' · ') + '</span></td></tr>';
     }).join('');
@@ -179,13 +186,12 @@ SRP.usuarios = {
     this.el('usr-perfil').innerHTML = SRP.util.opciones('Seleccione el perfil', perfiles.map(k => [k, SRP.PERFILES[k].etiqueta]));
     this.el('usr-perfil').value = perfiles.includes(perfil) ? perfil : '';
 
-    const coordinador = this.el('usr-coordinador').value;
+    const elegidos = this.coordinadoresElegidos();
     const yo = this.editando;
     const coordinadores = !orgId ? [] : SRP.ref.usuarios
       .filter(u => u.activo && u.organizacion_id === orgId && (u.perfil === 'COORDINADOR' || u.perfil === 'ADMIN') && (!yo || u.id !== yo.id))
       .sort((a, b) => SRP.util.nombreCompleto(a).localeCompare(SRP.util.nombreCompleto(b), 'es'));
-    this.el('usr-coordinador').innerHTML = SRP.util.opciones('Sin coordinador asignado', coordinadores.map(u => [u.id, SRP.util.nombreCompleto(u)]));
-    this.el('usr-coordinador').value = coordinadores.some(u => u.id === coordinador) ? coordinador : '';
+    this.pintarCoordinadores(coordinadores, elegidos);
     this.ajustarPorPerfil();
   },
 
@@ -196,7 +202,27 @@ SRP.usuarios = {
     // Sólo el cabo tiene coordinador, de su misma institución: los demás perfiles no dependen de nadie
     const conCoordinador = perfil === 'CABO' && !!this.el('usr-organizacion').value;
     this.el('caja-usr-coordinador').hidden = !conCoordinador;
-    if (!conCoordinador) this.el('usr-coordinador').value = '';
+    if (!conCoordinador) this.el('usr-coordinadores').querySelectorAll('.chip').forEach(b => b.setAttribute('aria-pressed', 'false'));
+    this.pintarNotaCoordinadores();
+  },
+
+  /* LOS COORDINADORES DEL CABO. Un cabo puede tener más de uno: se marcan en una lista de botones con
+     las cuentas de coordinación de su institución; sin ninguno marcado, queda sin coordinador. */
+  coordinadoresElegidos() {
+    return [...this.el('usr-coordinadores').querySelectorAll('.chip[aria-pressed="true"]')].map(b => b.dataset.id);
+  },
+  pintarCoordinadores(coordinadores, elegidos) {
+    const esc = SRP.util.escapar;
+    this.el('usr-coordinadores').innerHTML = coordinadores.map(u =>
+      '<button type="button" class="chip" data-id="' + esc(u.id) + '" aria-pressed="' + elegidos.includes(u.id) + '">' + esc(SRP.util.nombreCompleto(u)) + '</button>').join('');
+    this.el('usr-coordinadores').dataset.vacio = String(!coordinadores.length);
+    this.pintarNotaCoordinadores();
+  },
+  pintarNotaCoordinadores() {
+    const hay = this.el('usr-coordinadores').querySelectorAll('.chip').length, n = this.coordinadoresElegidos().length;
+    this.el('usr-coordinadores-nota').textContent = !hay ? 'Esta institución no tiene cuentas de coordinación activas: el cabo queda sin coordinador.'
+      : n === 0 ? 'Sin coordinador asignado. Puede marcar uno o varios: cada uno verá y editará los registros de este cabo.'
+      : n === 1 ? '1 coordinador asignado. Puede marcar más de uno.' : n + ' coordinadores asignados.';
   },
 
   abrirFormulario(usuario) {
@@ -215,15 +241,16 @@ SRP.usuarios = {
     this.el('usr-cargo').value = usuario ? usuario.cargo_rol : '';
     this.el('usr-perfil').innerHTML = SRP.util.opciones('Seleccione el perfil', Object.keys(SRP.PERFILES).map(k => [k, SRP.PERFILES[k].etiqueta]));
     this.el('usr-perfil').value = usuario ? usuario.perfil : 'CABO';
-    this.el('usr-coordinador').innerHTML = '';
+    // Los que ya tiene se marcan al armar la lista de su institución
+    this.el('usr-coordinadores').innerHTML = (usuario ? usuario.coordinadores_ids || [] : []).map(id =>
+      '<button type="button" class="chip" data-id="' + SRP.util.escapar(id) + '" aria-pressed="true"></button>').join('');
     this.ajustarPorOrganizacion();
-    if (usuario && usuario.coordinador_id) this.el('usr-coordinador').value = usuario.coordinador_id;
     this.el('usr-errores').hidden = true;
     SRP.util.erroresEnCampos([], this.CAMPOS);
     this.el('dlg-usuario').showModal();
   },
 
-  CAMPOS: ['usr-tipo-org', 'usr-organizacion', 'usr-area', 'usr-nombre-completo', 'usr-correo', 'usr-cargo', 'usr-perfil', 'usr-coordinador'],
+  CAMPOS: ['usr-tipo-org', 'usr-organizacion', 'usr-area', 'usr-nombre-completo', 'usr-correo', 'usr-cargo', 'usr-perfil', 'usr-coordinadores'],
 
   validar(d) {
     const errores = [];
@@ -239,14 +266,14 @@ SRP.usuarios = {
       else if (SRP.ref.usuarios.some(u => SRP.util.normalizar(u.correo) === SRP.util.normalizar(d.correo)))
         errores.push(['usr-correo', 'Ese correo ya tiene cuenta.']);
     }
-    if (!d.cargo_rol) errores.push(['usr-cargo', 'Escriba el cargo y rol.']);
-    if (!SRP.PERFILES[d.perfil]) errores.push(['usr-perfil', 'Elija el perfil.']);
+    if (!d.cargo_rol) errores.push(['usr-cargo', 'Escriba el cargo.']);
+    if (!SRP.PERFILES[d.perfil]) errores.push(['usr-perfil', 'Elija el perfil de captura.']);
     else if (d.perfil === 'ADMIN' && d.organizacion_id && !sedema) errores.push(['usr-perfil', 'La Administración global es sólo de la Secretaría: fuera de ella, la cuenta es de cabo o de coordinación.']);
-    const coord = d.coordinador_id && SRP.ref.usuarioPorId[d.coordinador_id];
-    if (coord && coord.organizacion_id !== d.organizacion_id) errores.push(['usr-coordinador', 'El coordinador del cabo es de su misma institución.']);
+    if ((d.coordinadores_ids || []).some(id => { const c = SRP.ref.usuarioPorId[id]; return !c || c.organizacion_id !== d.organizacion_id; }))
+      errores.push(['usr-coordinadores', 'Los coordinadores del cabo son de su misma institución.']);
     // Quien coordina no cambia de institución con cabos asignados: la cuadrilla quedaría sin coordinación
     if (this.editando && d.organizacion_id && this.editando.organizacion_id !== d.organizacion_id) {
-      const cabos = SRP.ref.usuarios.filter(x => x.coordinador_id === this.editando.id).length;
+      const cabos = SRP.ref.usuarios.filter(x => (x.coordinadores_ids || []).includes(this.editando.id)).length;
       if (cabos) errores.push(['usr-organizacion', 'Coordina a ' + cabos + (cabos === 1 ? ' cabo' : ' cabos') + ': asígnelos a otra persona antes de cambiarla de institución.']);
     }
     // Quien administra no puede quitarse a sí mismo ese perfil: dejaría el sistema sin administración
@@ -267,7 +294,7 @@ SRP.usuarios = {
       // Sin área fuera de la Secretaría; coordinador, sólo el cabo
       area_id: sedema ? this.el('usr-area').value : null,
       cargo_rol: limpio('usr-cargo'), perfil: this.el('usr-perfil').value,
-      coordinador_id: this.el('usr-perfil').value === 'CABO' ? (this.el('usr-coordinador').value || null) : null
+      coordinadores_ids: this.el('usr-perfil').value === 'CABO' ? this.coordinadoresElegidos() : []
     };
     const errores = this.validar(d);
     if (SRP.util.resumenErrores(this.el('usr-errores'), errores, this.CAMPOS)) return;   // D140, M15
@@ -275,12 +302,13 @@ SRP.usuarios = {
     const yo = SRP.sesion.usuario;
     const ahora = SRP.util.ahoraISO();
     const datos = { nombre_completo: d.nombre_completo, correo: d.correo, organizacion_id: d.organizacion_id, area_id: d.area_id,
-      cargo_rol: d.cargo_rol, perfil: d.perfil, coordinador_id: d.coordinador_id };
+      cargo_rol: d.cargo_rol, perfil: d.perfil, coordinadores_ids: d.coordinadores_ids };
     let u, entrada;
     if (this.editando) {
       const previo = this.editando;
-      const campos = ['nombre_completo', 'organizacion_id', 'area_id', 'cargo_rol', 'perfil', 'coordinador_id'];
-      const cambiados = campos.filter(k => (k === 'nombre_completo' ? SRP.util.nombreCompleto(previo) : previo[k] || '') !== (datos[k] || ''));
+      const campos = ['nombre_completo', 'organizacion_id', 'area_id', 'cargo_rol', 'perfil', 'coordinadores_ids'];
+      const valor = (o, k) => k === 'coordinadores_ids' ? (o[k] || []).slice().sort().join(',') : (o[k] || '');
+      const cambiados = campos.filter(k => (k === 'nombre_completo' ? SRP.util.nombreCompleto(previo) : valor(previo, k)) !== valor(datos, k));
       u = Object.assign({}, previo, datos, { correo: previo.correo, editado_por_id: yo.id, fecha_ultima_edicion: ahora });
       delete u.nombre; delete u.apellido_paterno; delete u.apellido_materno;
       entrada = SRP.bitacora.entrada('EDITADO', 'usuario', u.id, 'Campos: ' + (cambiados.join(', ') || 'ninguno'));
@@ -320,7 +348,7 @@ SRP.usuarios = {
     const usos = this.usos[u.id];
     if (SRP.ref.totalUsos(usos)) {
       // Los cabos que coordina se dicen por su nombre: «aparece en 1 cuenta» no explicaba nada
-      const cabos = SRP.ref.usuarios.filter(x => x.coordinador_id === u.id).length;
+      const cabos = SRP.ref.usuarios.filter(x => (x.coordinadores_ids || []).includes(u.id)).length;
       const resto = Object.assign({}, usos, { usuarios: (usos.usuarios || 0) - cabos });
       const motivo = [cabos ? 'coordina a ' + cabos + (cabos === 1 ? ' cabo' : ' cabos') : '',
         SRP.ref.totalUsos(resto) ? 'aparece en ' + SRP.ref.textoUsos(resto) : ''].filter(Boolean).join(' y ');

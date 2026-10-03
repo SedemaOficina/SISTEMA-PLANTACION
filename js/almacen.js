@@ -162,6 +162,8 @@ SRP.almacen = {
        catálogo de solicitantes. Pasa al solicitante que corresponde a esa institución (una
        alcaldía, SOBSE) o, si no lo hay, queda escrito con su nombre como «Otra instancia».
      - Nombre de la cuenta en tres campos: se une en `nombre_completo`.
+     - Cuenta con un solo coordinador (`coordinador_id`): pasa a la lista `coordinadores_ids`, con ese
+       coordinador o vacía.
      - Institución con un tipo que ya no existe, contrato o vigencia, o alcaldía con la palabra
        «Alcaldía» en el nombre: se ajusta a los cuatro tipos fijos y se quita lo que ya no se usa.
      - Programa sin `tipos_organizacion`: el de arranque toma los suyos; el que agregó la
@@ -176,8 +178,13 @@ SRP.almacen = {
     const cambios = [];
     cuentas.forEach(u => {
       const tres = ['nombre', 'apellido_paterno', 'apellido_materno'].some(k => k in u);
-      if (u.organizacion_id && u.nombre_completo && !tres) return;
+      const unCoordinador = 'coordinador_id' in u || !Array.isArray(u.coordinadores_ids);
+      if (u.organizacion_id && u.nombre_completo && !tres && !unCoordinador) return;
       const n = Object.assign({}, u, { organizacion_id: u.organizacion_id || sedema });
+      if (unCoordinador) {
+        n.coordinadores_ids = Array.isArray(u.coordinadores_ids) ? u.coordinadores_ids : (u.coordinador_id ? [u.coordinador_id] : []);
+        delete n.coordinador_id;
+      }
       if (!n.nombre_completo) n.nombre_completo = [u.nombre, u.apellido_paterno, u.apellido_materno].filter(Boolean).join(' ');
       delete n.nombre; delete n.apellido_paterno; delete n.apellido_materno;
       cambios.push(['usuarios', n]);

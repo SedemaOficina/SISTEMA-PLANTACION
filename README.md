@@ -41,7 +41,7 @@ La versión que corre se lee al pie de cada pantalla.
    dependencias del Gobierno de la CDMX (PAOT, SOBSE), empresas (Green Cover) y organizaciones
    civiles (Reforestamos México), con cuentas de cabo y de coordinación que da de alta la
    Secretaría: primero el tipo de institución, luego la institución, y el nombre completo en un solo
-   campo. El cabo depende de un coordinador de su misma institución. Las instituciones nuevas las
+   campo. El cabo depende de uno o varios coordinadores de su misma institución. Las instituciones nuevas las
    agrega la Administración en Catálogos (D189). Cada cuenta y cada jornada llevan su institución;
    ninguna ve lo de otra. Programas: SEDEMA, todos; las demás, los que la Administración marca en
    Catálogos › Programas (de arranque: alcaldías, Gobierno de la CDMX y organizaciones civiles,
@@ -85,7 +85,7 @@ llena con lo que se capture.
 | cabo.civil@ejemplo.local | Reforestamos México, A.C. (Organización civil) | Cabo | Ídem cabo de fuera. Programa: Reforestación Urbana |
 
 Quien captura en campo es un **cabo**; quien lo dirige, un **coordinador**. En el código son
-`CABO` y `COORDINADOR`, y los campos son `cabo_id` en las plantaciones y `coordinador_id` en las
+`CABO` y `COORDINADOR`, y los campos son `cabo_id` en las plantaciones y `coordinadores_ids` (una lista) en las
 cuentas.
 
 ## Cómo se entra

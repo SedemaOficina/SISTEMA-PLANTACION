@@ -95,7 +95,7 @@ SRP.indicadores = {
     const alcance = SRP.permisos.de(u).alcance;
     if (alcance === 'propios') return [u.id];
     const cabos = SRP.ref.usuarios.filter(x => x.activo && x.perfil === 'CABO');
-    return (alcance === 'equipo' ? cabos.filter(x => x.coordinador_id === u.id) : cabos).map(x => x.id);
+    return (alcance === 'equipo' ? cabos.filter(x => (x.coordinadores_ids || []).includes(u.id)) : cabos).map(x => x.id);
   },
 
   /* ---------- Cálculo ---------- */
@@ -185,7 +185,12 @@ SRP.indicadores = {
         .sort((a, b) => b.arboles - a.arboles || a.solicitante.localeCompare(b.solicitante, 'es')) };
     // Por prioridad de la colonia donde cayó cada árbol (modelo de priorización); se cruza con el punto, no se guarda
     const prioridad = SRP.prioritarias.hay() ? SRP.prioritarias.contar(arboles.map(a => a.r)) : null;
-    if (prioridad) prioridad.altas = prioridad.niveles.filter(x => x.prioridad >= 3).reduce((s, x) => s + x.n, 0);
+    if (prioridad) {
+      prioridad.altas = prioridad.niveles.filter(x => x.prioridad >= 3).reduce((s, x) => s + x.n, 0);
+      // Las colonias donde se plantó, con sus árboles: son las que pinta el mapa
+      prioridad.colonias = {};
+      arboles.forEach(a => { const c = SRP.prioritarias.de(a.r.lat, a.r.lng); if (c && c.id != null) prioridad.colonias[c.id] = (prioridad.colonias[c.id] || 0) + 1; });
+    }
 
     // Trazabilidad del periodo: árboles eliminados y ediciones, del alcance y con los filtros
     const pasaArbol = r => (!filtros.organizacion || orgArbol(r) === filtros.organizacion) && (!filtros.tipo || SRP.util.tipoDe(orgArbol(r)) === filtros.tipo) &&

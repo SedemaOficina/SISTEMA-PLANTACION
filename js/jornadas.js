@@ -620,8 +620,9 @@ SRP.jornadas = {
     this._todas = await this.jornadasAlcance();
     this.llenarAnios(); this.llenarMeses(); this.llenarListas();
     this.sincronizarAtajos();
-    this.lista = this._todas.filter(j => this.cumpleFiltro(j));
+    this.lista = SRP.util.ordenar(this._todas.filter(j => this.cumpleFiltro(j)), 'jornadas');
     if (soloDatos) return;
+    SRP.util.pintarOrden(this.el('jornadas-orden'), 'jornadas', async () => { this.pagina = 1; await this.pintarLista(); });
     const u = SRP.sesion.usuario;
     const variosAutores = SRP.permisos.de(u).alcance !== 'propios';
     const esc = SRP.util.escapar;
@@ -638,6 +639,8 @@ SRP.jornadas = {
       const est = this.estado(j, avisos, guardada);
       const n = j.registros.length;
       const especies = new Set(j.registros.map(r => this.claveEspecie(r))).size;
+      // Cuántos de sus árboles reemplazan a uno que se perdió
+      const sustituciones = j.registros.filter(r => r.sustituye_id).length;
       const porRevisar = this.pendientes(j, avisos, guardada).length;
       const bien = n - porRevisar;
       const cuando = this.cuando(j.fecha);
@@ -650,7 +653,7 @@ SRP.jornadas = {
       const cifra = (v, t) => '<span class="jornada-cifra" data-cero="' + (v === 0) + '"><b>' + v + '</b> ' + t + '</span>';
       // Orden de la ficha (D128): nombre → cuándo → estado → dónde → cuánto → quién
       html.push('<li class="jornada" data-clave="' + esc(j.clave) + '"><button type="button" class="jornada-boton" aria-label="Revisar la jornada ' +
-        esc(this.nombreSitio(j)) + ' del ' + esc(SRP.util.formatearFecha(j.fecha)) + ', ' + (abierta ? 'abierta' : esc(this.textoCierre(guardada, true))) + ', ' + n + (n === 1 ? ' árbol' : ' árboles') + ', ' + esc(est.texto) + '">' +
+        esc(this.nombreSitio(j)) + ' del ' + esc(SRP.util.formatearFecha(j.fecha)) + ', ' + (abierta ? 'abierta' : esc(this.textoCierre(guardada, true))) + ', ' + n + (n === 1 ? ' árbol' : ' árboles') + (sustituciones ? ', ' + sustituciones + (sustituciones === 1 ? ' sustitución' : ' sustituciones') : '') + ', ' + esc(est.texto) + '">' +
         '<span class="jornada-cab"><span class="jornada-titulo-caja"><span class="jornada-sitio">' + esc(this.nombreSitio(j)) + '</span>' +
         '<span class="jornada-dia">' + (cuando ? '<b>' + cuando + '</b> · ' : '') + '<span class="jornada-fecha">' + esc(fecha) + '</span>' +
         (j.total > 1 ? ' <span class="jornada-ndn">Jornada ' + j.n + ' de ' + j.total + '</span>' : '') + '</span></span>' + this.miniatura(j, avisos, (guardada && guardada.puntos_revisados) || []) + '</span>' +
@@ -660,7 +663,7 @@ SRP.jornadas = {
         (lugar || ubic ? '<span class="jornada-lugar">' + SRP.ICONOS.svg('ubicacion', 'chico') + '<span>' + esc(lugar) + (ubic ? (lugar ? ' · ' : '') + '<span class="jornada-ubic">' + esc(ubic) + '</span>' : '') + '</span></span>' : '') +
         (SRP.prioritarias.hay() ? '<span class="jornada-prioridad">' + SRP.prioritarias.insignia(j.prioridad) + '</span>' : '') +
         (SRP.pedido.esPedido(guardada) ? '<span class="jornada-pedido">' + SRP.pedido.insignia(guardada) + '</span>' : '') +
-        '<span class="jornada-cifras">' + cifra(meta === null ? '—' : meta, 'previstos') + cifra(n, 'registrados') + cifra(porRevisar, 'por revisar') + cifra(bien, 'bien') + cifra(especies, especies === 1 ? 'especie' : 'especies') + '</span>' +
+        '<span class="jornada-cifras">' + cifra(meta === null ? '—' : meta, 'previstos') + cifra(n, 'registrados') + cifra(porRevisar, 'por revisar') + cifra(bien, 'bien') + cifra(especies, especies === 1 ? 'especie' : 'especies') + cifra(sustituciones, sustituciones === 1 ? 'sustitución' : 'sustituciones') + '</span>' +
         (variosAutores || relevo ? '<span class="jornada-cabo">' + SRP.ICONOS.svg('usuario', 'chico') + '<span>' + esc(SRP.ref.nombreUsuario(j.cabo_id)) +
           (relevo ? ' · relevo: ' + esc(SRP.ref.nombreUsuario(relevo)) : '') + '</span></span>' : '') +
         '</button></li>');
@@ -1236,7 +1239,7 @@ SRP.jornadas = {
   candidatosRelevo(c) {
     const u = SRP.sesion.usuario, actual = SRP.activa.capturista(c);
     const org = c.organizacion_id || SRP.CONFIG.ORGANIZACION_SEDEMA;
-    const cabos = SRP.ref.usuarios.filter(x => x.activo && x.perfil === 'CABO' && x.coordinador_id === u.id && x.id !== actual && x.id !== c.cabo_id &&
+    const cabos = SRP.ref.usuarios.filter(x => x.activo && x.perfil === 'CABO' && (x.coordinadores_ids || []).includes(u.id) && x.id !== actual && x.id !== c.cabo_id &&
       (x.organizacion_id || SRP.CONFIG.ORGANIZACION_SEDEMA) === org)
       .sort((a, b) => SRP.util.nombreCompleto(a).localeCompare(SRP.util.nombreCompleto(b), 'es'));
     const titular = actual !== c.cabo_id && SRP.ref.usuarioPorId[c.cabo_id] ? [[c.cabo_id, SRP.ref.nombreUsuario(c.cabo_id) + ' (titular: se la devuelve)']] : [];

@@ -14,12 +14,12 @@
 <!-- Las peticiones al mapa no dicen desde qué sitio se hacen -->
 <meta name="referrer" content="no-referrer">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.9.21">
-<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.9.21">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.9.22">
+<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.9.22">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.9.21">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.9.21">
-<link rel="stylesheet" href="css/estilos.css?v=0.9.21">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.9.22">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.9.22">
+<link rel="stylesheet" href="css/estilos.css?v=0.9.22">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -30,8 +30,8 @@
   <div class="encabezado-interior">
     <!-- Logotipo (D90, D137): Gobierno CDMX · SEDEMA · SIA · Reforestación Urbana en pantalla ancha; en teléfono, SIA y Reforestación Urbana -->
     <picture>
-      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.9.21">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.9.21" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
+      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.9.22">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.9.22" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» (D80) -->
@@ -451,7 +451,7 @@
     </section>
 
     <section class="bloque" aria-labelledby="registros-total">
-    <p id="registros-total" class="total" aria-live="polite"></p>
+    <div class="lista-barra"><p id="registros-total" class="total" aria-live="polite"></p><div id="registros-orden" class="lista-orden"></div></div>
     <ul id="lista-registros" class="lista-registros rejilla-tarjetas"></ul>
     <!-- Estado vacío con el botón que resuelve (D96) -->
     <div id="registros-vacio" class="vacio" aria-live="polite" hidden></div>
@@ -511,7 +511,7 @@
         </div>
       </section>
       <section class="bloque" aria-labelledby="jornadas-total">
-        <p id="jornadas-total" class="total" aria-live="polite"></p>
+        <div class="lista-barra"><p id="jornadas-total" class="total" aria-live="polite"></p><div id="jornadas-orden" class="lista-orden"></div></div>
         <ul id="lista-jornadas" class="lista-jornadas jornadas-tarjetas rejilla-tarjetas"></ul>
         <div id="jornadas-vacio" class="vacio" aria-live="polite" hidden></div>
         <nav id="jornadas-paginas" class="paginador" aria-label="Páginas de jornadas" hidden></nav>
@@ -582,7 +582,7 @@
     <p class="nota">Cada jornada cerrada tiene su reporte. Una jornada abierta se cierra en Jornadas.</p>
     <!-- La zona de filtros la arma SRP.zonaFiltros (js/filtros.js), la misma que en Fotografías -->
     <div id="pdf-filtros"></div>
-    <p id="pdf-nota" class="nota" aria-live="polite"></p>
+    <div class="lista-barra"><p id="pdf-nota" class="nota" aria-live="polite"></p><div id="pdf-orden" class="lista-orden"></div></div>
     <div id="pdf-vacio" class="vacio" aria-live="polite" hidden></div>
     <ul id="pdf-lista" class="lista-jornadas lista-reportes rejilla-tarjetas"></ul>
     <nav id="pdf-paginas" class="paginador" aria-label="Páginas de reportes" hidden></nav>
@@ -602,6 +602,7 @@
     <section class="bloque" aria-labelledby="galeria-cuenta">
       <div class="galeria-barra">
         <p id="galeria-cuenta" class="conteo-lista" aria-live="polite"></p>
+        <div id="galeria-orden" class="lista-orden"></div>
         <button type="button" id="btn-galeria-zip" class="btn btn-primario" disabled></button>
       </div>
       <ul id="galeria-rejilla" class="galeria-rejilla"></ul>
@@ -645,7 +646,7 @@
       <div class="campo campo-crece">
         <label for="usr-buscar">Buscar</label><input id="usr-buscar" type="search" placeholder="Nombre, correo, área o institución">
       </div>
-      <div class="campo"><label for="usr-filtro-perfil">Perfil</label><select id="usr-filtro-perfil"></select></div>
+      <div class="campo"><label for="usr-filtro-perfil">Perfil de captura</label><select id="usr-filtro-perfil"></select></div>
       <!-- Tipo de institución e institución, dependientes, como en Registros y Jornadas -->
       <div class="campo"><label for="usr-filtro-tipo">Tipo de institución</label><select id="usr-filtro-tipo"></select></div>
       <div class="campo"><label for="usr-filtro-org">Institución</label><select id="usr-filtro-org"></select></div>
@@ -1121,9 +1122,12 @@
     <div class="campo" id="caja-usr-area" hidden><label for="usr-area">Área <span class="obligatorio" aria-hidden="true">*</span></label><select id="usr-area"></select></div>
     <div class="campo"><label for="usr-nombre-completo">Nombre completo <span class="obligatorio" aria-hidden="true">*</span></label><input id="usr-nombre-completo" required maxlength="160" autocomplete="off" aria-describedby="usr-nombre-ayuda"><p id="usr-nombre-ayuda" class="nota">Nombre y apellidos, como aparecerán en los registros y reportes.</p></div>
     <div class="campo"><label for="usr-correo">Correo <span class="obligatorio" aria-hidden="true">*</span></label><input type="email" id="usr-correo" inputmode="email" autocapitalize="off" spellcheck="false" required aria-describedby="usr-correo-ayuda"><p id="usr-correo-ayuda" class="nota">Con él inicia sesión. No se puede cambiar después.</p></div>
-    <div class="campo"><label for="usr-cargo">Cargo y rol <span class="obligatorio" aria-hidden="true">*</span></label><input id="usr-cargo" required placeholder="p. ej. Técnico de campo"></div>
-    <div class="campo"><label for="usr-perfil">Perfil <span class="obligatorio" aria-hidden="true">*</span></label><select id="usr-perfil" required></select><p id="usr-perfil-ayuda" class="nota"></p></div>
-    <div class="campo" id="caja-usr-coordinador"><label for="usr-coordinador">Coordinador</label><select id="usr-coordinador"></select></div>
+    <div class="campo"><label for="usr-cargo">Cargo <span class="obligatorio" aria-hidden="true">*</span></label><input id="usr-cargo" required placeholder="p. ej. Técnico de campo"></div>
+    <div class="campo"><label for="usr-perfil">Perfil de captura <span class="obligatorio" aria-hidden="true">*</span></label><select id="usr-perfil" required></select><p id="usr-perfil-ayuda" class="nota"></p></div>
+    <!-- Un cabo puede tener más de un coordinador: se marcan los que correspondan -->
+    <div class="campo" id="caja-usr-coordinador"><label for="usr-coordinadores" id="usr-coordinadores-etq">Coordinadores</label>
+      <div id="usr-coordinadores" class="chips chips-campo chips-envuelve" role="group" aria-labelledby="usr-coordinadores-etq" aria-describedby="usr-coordinadores-nota"></div>
+      <p id="usr-coordinadores-nota" class="nota"></p></div>
     <!-- Guardar al pie, fijo y a todo el ancho, como en la ficha de revisión (D105) -->
   <div class="dialogo-pie">
     <button type="submit" class="btn btn-exito btn-ancho btn-destacado" id="btn-usr-guardar">Guardar</button>
@@ -1136,57 +1140,57 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.9.21"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.9.21"></script>
-<script src="vendor/turf-pip.min.js?v=0.9.21"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.9.21"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.9.21"></script>
+<script src="vendor/leaflet.js?v=0.9.22"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.9.22"></script>
+<script src="vendor/turf-pip.min.js?v=0.9.22"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.9.22"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.9.22"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.9.21"></script>
-<script src="js/util.js?v=0.9.21"></script>
-<script src="js/filtros.js?v=0.9.21"></script>
-<script src="js/iconos.js?v=0.9.21"></script>
+<script src="js/config.js?v=0.9.22"></script>
+<script src="js/util.js?v=0.9.22"></script>
+<script src="js/filtros.js?v=0.9.22"></script>
+<script src="js/iconos.js?v=0.9.22"></script>
 <!-- Capas territoriales del SIA, compactadas por herramientas/generar_capas.py desde originales/ -->
-<script src="assets/capas/capa-alcaldias.js?v=0.9.21"></script>
-<script src="assets/capas/capa-uga.js?v=0.9.21"></script>
-<script src="assets/capas/capa-colonias.js?v=0.9.21"></script>
+<script src="assets/capas/capa-alcaldias.js?v=0.9.22"></script>
+<script src="assets/capas/capa-uga.js?v=0.9.22"></script>
+<script src="assets/capas/capa-colonias.js?v=0.9.22"></script>
 <!-- Colonias prioritarias para reforestar: capa de referencia del modelo de priorización -->
-<script src="assets/capas/capa-prioritarias.js?v=0.9.21"></script>
-<script src="assets/catalogos/catalogo-especies.js?v=0.9.21"></script>
-<script src="assets/catalogos/catalogo-vehiculos.js?v=0.9.21"></script>
-<script src="js/datos-ficticios.js?v=0.9.21"></script>
-<script src="js/permisos.js?v=0.9.21"></script>
-<script src="js/derivacion.js?v=0.9.21"></script>
-<script src="js/prioritarias.js?v=0.9.21"></script>
-<script src="js/pedido.js?v=0.9.21"></script>
-<script src="js/almacen.js?v=0.9.21"></script>
-<script src="js/sesion.js?v=0.9.21"></script>
-<script src="js/referencias.js?v=0.9.21"></script>
-<script src="js/folio.js?v=0.9.21"></script>
+<script src="assets/capas/capa-prioritarias.js?v=0.9.22"></script>
+<script src="assets/catalogos/catalogo-especies.js?v=0.9.22"></script>
+<script src="assets/catalogos/catalogo-vehiculos.js?v=0.9.22"></script>
+<script src="js/datos-ficticios.js?v=0.9.22"></script>
+<script src="js/permisos.js?v=0.9.22"></script>
+<script src="js/derivacion.js?v=0.9.22"></script>
+<script src="js/prioritarias.js?v=0.9.22"></script>
+<script src="js/pedido.js?v=0.9.22"></script>
+<script src="js/almacen.js?v=0.9.22"></script>
+<script src="js/sesion.js?v=0.9.22"></script>
+<script src="js/referencias.js?v=0.9.22"></script>
+<script src="js/folio.js?v=0.9.22"></script>
 <!-- Esquema generado de datos/esquema.json: relaciones entre tablas (D150) -->
-<script src="js/esquema.js?v=0.9.21"></script>
-<script src="js/conexion.js?v=0.9.21"></script>
-<script src="js/envio.js?v=0.9.21"></script>
-<script src="js/mapa.js?v=0.9.21"></script>
-<script src="js/foto.js?v=0.9.21"></script>
-<script src="js/jornada-activa.js?v=0.9.21"></script>
-<script src="js/formulario.js?v=0.9.21"></script>
+<script src="js/esquema.js?v=0.9.22"></script>
+<script src="js/conexion.js?v=0.9.22"></script>
+<script src="js/envio.js?v=0.9.22"></script>
+<script src="js/mapa.js?v=0.9.22"></script>
+<script src="js/foto.js?v=0.9.22"></script>
+<script src="js/jornada-activa.js?v=0.9.22"></script>
+<script src="js/formulario.js?v=0.9.22"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.9.21"></script>
-<script src="js/registros.js?v=0.9.21"></script>
-<script src="js/galeria.js?v=0.9.21"></script>
-<script src="js/jornadas.js?v=0.9.21"></script>
-<script src="js/informes.js?v=0.9.21"></script>
-<script src="js/supervision.js?v=0.9.21"></script>
-<script src="js/indicadores.js?v=0.9.21"></script>
-<script src="js/demostracion.js?v=0.9.21"></script>
-<script src="js/croquis.js?v=0.9.21"></script>
-<script src="js/reportes.js?v=0.9.21"></script>
-<script src="js/catalogos.js?v=0.9.21"></script>
-<script src="js/usuarios.js?v=0.9.21"></script>
-<script src="js/excel.js?v=0.9.21"></script>
-<script src="js/carga.js?v=0.9.21"></script>
-<script src="js/configuracion.js?v=0.9.21"></script>
-<script src="js/app.js?v=0.9.21"></script>
+<script src="js/espejo.js?v=0.9.22"></script>
+<script src="js/registros.js?v=0.9.22"></script>
+<script src="js/galeria.js?v=0.9.22"></script>
+<script src="js/jornadas.js?v=0.9.22"></script>
+<script src="js/informes.js?v=0.9.22"></script>
+<script src="js/supervision.js?v=0.9.22"></script>
+<script src="js/indicadores.js?v=0.9.22"></script>
+<script src="js/demostracion.js?v=0.9.22"></script>
+<script src="js/croquis.js?v=0.9.22"></script>
+<script src="js/reportes.js?v=0.9.22"></script>
+<script src="js/catalogos.js?v=0.9.22"></script>
+<script src="js/usuarios.js?v=0.9.22"></script>
+<script src="js/excel.js?v=0.9.22"></script>
+<script src="js/carga.js?v=0.9.22"></script>
+<script src="js/configuracion.js?v=0.9.22"></script>
+<script src="js/app.js?v=0.9.22"></script>
 </body>
 </html>

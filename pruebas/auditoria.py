@@ -93,13 +93,13 @@ with sync_playwright() as p:
         areaInexistente: us.filter(u=>u.organizacion_id === SRP.CONFIG.ORGANIZACION_SEDEMA && !cat[u.area_id]).map(u=>u.correo),
         areaFuera: us.filter(u=>u.organizacion_id !== SRP.CONFIG.ORGANIZACION_SEDEMA && u.area_id).map(u=>u.correo),
         institucionInexistente: us.filter(u=>!cat[u.organizacion_id]).map(u=>u.correo),
-        coordinadorInexistente: us.filter(u=>u.coordinador_id && !porId[u.coordinador_id]).map(u=>u.correo),
+        coordinadorInexistente: us.filter(u=>(u.coordinadores_ids||[]).some(c=>!porId[c])).map(u=>u.correo),
         // El coordinador del cabo es de su misma institución: así nadie ve lo de otra
-        coordinadorOtraInstitucion: us.filter(u=>u.coordinador_id && porId[u.coordinador_id] && porId[u.coordinador_id].organizacion_id !== u.organizacion_id).map(u=>u.correo),
+        coordinadorOtraInstitucion: us.filter(u=>(u.coordinadores_ids||[]).some(c=>porId[c] && porId[c].organizacion_id !== u.organizacion_id)).map(u=>u.correo),
         adminFuera: us.filter(u=>u.perfil === 'ADMIN' && u.organizacion_id !== SRP.CONFIG.ORGANIZACION_SEDEMA).map(u=>u.correo),
-        coordinadorSinPerfil: us.filter(u=>u.coordinador_id && porId[u.coordinador_id] &&
-            !['COORDINADOR','ADMIN'].includes(porId[u.coordinador_id].perfil)).map(u=>u.correo),
-        campoViejoUsuarios: us.filter(u=>'jefe_id' in u).map(u=>u.correo)
+        coordinadorSinPerfil: us.filter(u=>(u.coordinadores_ids||[]).some(c=>porId[c] && !['COORDINADOR','ADMIN'].includes(porId[c].perfil))).map(u=>u.correo),
+        coordinadoresSinLista: us.filter(u=>!Array.isArray(u.coordinadores_ids)).map(u=>u.correo),
+        campoViejoUsuarios: us.filter(u=>'jefe_id' in u || 'coordinador_id' in u).map(u=>u.correo)
       };
     }""")
     mirar(d['total'] == 11, 'hay exactamente las once cuentas de arranque: tres de la Secretaría y un coordinador y un cabo por tipo de institución (%d)' % d['total'])

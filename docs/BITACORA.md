@@ -2937,3 +2937,27 @@ seguidas corrida aparte. No se repitió la corrida completa después de ese ajus
 hallazgos; revisar.py sin problemas. El bloque se montó sobre los Bloques 152 y 153, cerrados el mismo
 día en otra sesión: los cambios se fusionaron archivo por archivo y la corrida se hizo sobre el resultado.
 Queda anotado M369 (los cabos descargan sus fotografías), pendiente.
+
+## Bloque 155 — Listas que se ordenan, sustituciones a la vista, varios coordinadores por cabo y mapa de colonias intervenidas (02-10-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.9.22.
+
+**Qué cambió (D219).** `js/util.js`: `ordenLista()`, `ordenar()` y `pintarOrden()`; `index.html`: barra
+`lista-barra` con `#jornadas-orden`, `#registros-orden`, `#pdf-orden` y `#galeria-orden`. `js/jornadas.js`,
+`js/registros.js`, `js/reportes.js` y `js/galeria.js` ordenan su lista con ellas; la tarjeta de la jornada
+suma la cifra de sustituciones. `datos/esquema.json`: `usuarios.coordinadores_ids` (uuid[]) en lugar de
+`coordinador_id`, con sus reglas y relación; `js/esquema.js` y `DICCIONARIO-DATOS.md` regenerados.
+`js/almacen.js`: `normalizar()` pasa el campo anterior a la lista. `js/usuarios.js`: lista de botones
+`#usr-coordinadores`, validación, bitácora y etiquetas «Cargo» y «Perfil de captura». `js/permisos.js`,
+`js/indicadores.js`, `js/jornadas.js` (relevo), `js/demostracion.js` y `js/datos-ficticios.js` leen la
+lista. `js/prioritarias.js`: `de()` devuelve el id de la colonia y `pintar()` acepta `intervenidas`;
+`js/indicadores.js` cuenta los árboles por colonia y `js/supervision.js` pinta sólo esas colonias.
+`css/estilos.css`: barra de orden y rejilla de seis cifras (cuatro chicas por renglón; de dos en dos en
+teléfono). `js/datos-ficticios.js`: solicitante «Oficina de la Secretaría»; `js/referencias.js`: las
+dependencias antes que las alcaldías y ese solicitante primero; `js/pedido.js`: descripción obligatoria;
+`js/config.js`: sello de datos `2026-10-02b-oficina`.
+
+**Verificación:** prueba.py 1257 comprobaciones, 0 fallas (ctx69, 16 nuevas: orden en Jornadas y Registros,
+cifra de sustituciones, etiquetas de Usuarios, cabo con dos coordinadores y su alcance, paso del campo
+anterior a la lista, mapa con sólo la colonia intervenida; más la descripción obligatoria del pedido en
+ctx62); auditoria.py 118, 0 hallazgos; revisar.py sin problemas.
+

@@ -508,6 +508,31 @@ SRP.util = {
     return [1, '…'].concat(rango(actual - vecinas, actual + vecinas), '…', total);
   },
 
+  /* ORDEN DE LAS LISTAS. Jornadas, Registros, Reportes y Fotografías llegan con lo más reciente
+     primero; cada una puede verse al revés. Lo elegido se recuerda por lista en el dispositivo. */
+  ORDENES: [['reciente', 'Lo más reciente primero'], ['antiguo', 'Lo más antiguo primero']],
+  ordenLista(clave) {
+    let v = '';
+    try { v = localStorage.getItem('srp_orden_' + clave) || ''; } catch (e) { /* sin almacenamiento */ }
+    return v === 'antiguo' ? 'antiguo' : 'reciente';
+  },
+  // `lista` viene de lo más reciente a lo más antiguo; devuelve otra en el orden elegido
+  ordenar(lista, clave) { return this.ordenLista(clave) === 'antiguo' ? lista.slice().reverse() : lista; },
+  // El desplegable «Ordenar» de una lista; `alCambiar` la repinta desde su primera página
+  pintarOrden(caja, clave, alCambiar) {
+    if (!caja) return;
+    if (!caja.firstChild) {
+      const id = caja.id + '-lista';
+      caja.innerHTML = '<label for="' + id + '">Ordenar</label><select id="' + id + '">' +
+        this.ORDENES.map(([v, t]) => '<option value="' + v + '">' + t + '</option>').join('') + '</select>';
+      caja.querySelector('select').addEventListener('change', (e) => {
+        try { localStorage.setItem('srp_orden_' + clave, e.target.value); } catch (err) { /* sólo por esta vez */ }
+        alCambiar();
+      });
+    }
+    caja.querySelector('select').value = this.ordenLista(clave);
+  },
+
   paginar(lista, pagina, clave) {
     const tam = clave ? this.tamPagina(clave) : SRP.CONFIG.LISTA_PAGINA;
     const paginas = Math.max(1, Math.ceil(lista.length / tam));
