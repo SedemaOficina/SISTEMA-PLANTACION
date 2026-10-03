@@ -1,6 +1,6 @@
 {
   "_": "ESQUEMA DE DATOS DEL SRP: fuente única (D86). De aquí se genera DICCIONARIO-DATOS.md con herramientas/generar_diccionario.py, y pruebas/auditoria.py lo compara contra lo que el sistema guarda y contra los dominios del código. Si un campo cambia en el código y no aquí, la auditoría falla.",
-  "version_esquema": "2026-10-02",
+  "version_esquema": "2026-10-03",
   "etapa": "Etapa 1 (Fase 1: dispositivo, sin servidor)",
   "almacenamiento": {
     "motor": "IndexedDB del navegador: base `srp_db` en la versión de prueba y `srp_sia` en la real (SRP.CONFIG.DB_NOMBRE, según ES_FICTICIO), versión 7 (SRP.CONFIG.DB_VERSION). Nunca comparten datos",
@@ -1065,7 +1065,7 @@
           "origen": "Sistema",
           "dominio": "estatus_jornada",
           "pantalla": "Franja de la jornada; Jornadas",
-          "regla": "Se cierra desde la franja o la revisión; se reabre desde la revisión o con «Registrar faltante» (D119)"
+          "regla": "Se cierra desde la franja o la revisión; se reabre desde la revisión o con «Registrar árbol» (D119, D153)"
         },
         {
           "campo": "fecha_inicio",
@@ -1190,7 +1190,7 @@
           "nulo": true,
           "origen": "Sistema",
           "dominio": "ISO 8601; nulo si no se ha generado o si dejó de estar vigente",
-          "pantalla": "Jornadas: tarjeta «Reporte generado …» y filtro «Reporte»",
+          "pantalla": "Jornadas: tarjeta «Reporte: fecha y hora» o «Sin reporte todavía», y filtro «Reporte»",
           "regla": "Se fija cuando el PDF se entrega (se descarga o se comparte), no al abrir la vista previa. Vuelve a nulo, con constancia en la bitácora, si la jornada se reabre o si uno de sus árboles se elimina, restaura, edita, mueve o sustituye: el reporte se genera de nuevo"
         },
         {
@@ -1208,7 +1208,7 @@
           "nulo": false,
           "origen": "Persona",
           "dominio": "Texto libre",
-          "pantalla": "Personal de SEDEMA participante",
+          "pantalla": "Personal participante",
           "regla": "Sólo en jornadas de SEDEMA; en las de otras instituciones no se pide y queda vacío (D192)"
         },
         {

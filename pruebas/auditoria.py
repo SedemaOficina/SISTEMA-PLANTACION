@@ -296,6 +296,31 @@ with sync_playwright() as p:
     mirar(acciones == set(esquema['dominios']['accion_bitacora']['valores']), 'las acciones de bitácora del código son las del esquema', str(sorted(acciones)))
     entidades = set(re.findall(r"bitacora\.entrada\([^,]+, '([a-z]+)'", ''.join(open(f, encoding='utf-8').read() for f in glob.glob(APP+'/js/*.js'))))
     mirar(entidades == set(esquema['dominios']['entidad_bitacora']['valores']), 'las entidades de bitácora del código son las del esquema', str(sorted(entidades)))
+    # El mapeo de campos (datos/MAPEO-CAMPOS.md) nombra todos los campos de cada tabla, y la etiqueta que
+    # da a cada uno es la que la pantalla dice: un cambio de etiqueta que no llegó al mapeo se detecta aquí
+    import html as _html
+    mapeo = open(os.path.join(APP, 'datos', 'MAPEO-CAMPOS.md'), encoding='utf-8').read()
+    en_mapeo = set(re.findall(r'`([a-z_0-9]+)`', mapeo))
+    for tabla, def_ in esquema['tablas'].items():
+        sin_fila = sorted(c['campo'] for c in def_['campos'] if c['campo'] not in en_mapeo)
+        mirar(not sin_fila, 'el mapeo de campos nombra todos los campos de `%s`' % tabla, str(sin_fila))
+    fuente = open(os.path.join(APP, 'index.html'), encoding='utf-8').read() + ''.join(open(x, encoding='utf-8').read() for x in glob.glob(APP+'/js/*.js') if not x.endswith('esquema.js'))
+    pantalla = re.sub(r'\s+', ' ', _html.unescape(re.sub(r'<[^>]+>', ' ', fuente)))
+    dice = lambda t: t in pantalla or t in fuente
+    desfasadas, con_etiqueta, en_tabla = [], 0, False
+    for linea in mapeo.split('\n'):
+        if linea.startswith('| Etiqueta en pantalla'): en_tabla = True; continue
+        if not linea.startswith('|'): en_tabla = False; continue
+        celdas = [x.strip() for x in linea.strip('|').split('|')]
+        if not en_tabla or linea.startswith('|---') or len(celdas) < 2 or not celdas[1].startswith('`'): continue
+        etq = celdas[0]
+        if etq == '' or etq.startswith(('No ', '—')): continue
+        con_etiqueta += 1
+        frases = re.findall(r'«([^»]+)»', etq)
+        resto = re.sub(r'\(.*?\)', '', re.sub(r'«[^»]+»', '', etq))
+        frases += [x.strip(' .:') for x in re.split(r';| y | e | o | / |,', resto) if len(x.strip(' .:')) > 2 and (x.strip()[0].isupper() or x.strip()[0] in '¿¡')]
+        if not frases or not all(dice(x) for x in frases): desfasadas.append('%s → %s' % (etq, celdas[1]))
+    mirar(con_etiqueta >= 60 and not desfasadas, 'cada etiqueta del mapeo de campos es la que dice la pantalla (%d etiquetas)' % con_etiqueta, '; '.join(desfasadas))
     # Toda relación apunta a una tabla que existe y todo campo «→» tiene su relación
     for r in esquema['relaciones']:
         destino = r['a'].split('.')[0].split(' ')[0]

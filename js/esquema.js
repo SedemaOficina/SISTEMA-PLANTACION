@@ -4,7 +4,7 @@
 window.SRP = window.SRP || {};
 
 SRP.ESQUEMA = {
- "version_esquema": "2026-10-02",
+ "version_esquema": "2026-10-03",
  "dominios": {
   "estatus_plantacion": [
    "activo",

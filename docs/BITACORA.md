@@ -3028,3 +3028,20 @@ de quien puede modificarla. `js/indicadores.js`, `js/informes.js`, `js/registros
 no puede, la descarga del reporte sin escribir, el alcance por institución y el catálogo de perfiles; y las
 pruebas que contaban cuentas y perfiles, al día con las trece cuentas y los cuatro perfiles).
 auditoria.py 118, 0 hallazgos; auditoria_css.py 0; revisar.py sin problemas. No probado en iPhone real.
+
+## Bloque 159 — Revisión del modelo de datos: campos, etiquetas y diccionario (03-10-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.9.26. Sólo documentación y auditoría: la aplicación no cambia.
+
+**Qué se revisó.** Una base de datos con cinco tablas (`plantaciones` 30 campos, `usuarios` 13, `catalogos`
+20, `bitacora` 9, `jornadas` 41: 113 campos) y 16 dominios. Lo que el sistema guarda coincide con
+`datos/esquema.json` campo por campo, con sus llaves e índices; el diccionario está regenerado.
+
+**Qué se corrigió.** `datos/esquema.json`: «Personal participante» (decía «Personal de SEDEMA
+participante»), «Registrar árbol» (decía «Registrar faltante») y la tarjeta del reporte; versión del esquema
+2026-10-03. `datos/MAPEO-CAMPOS.md`: la tabla de la jornada lleva la columna «Etiqueta en pantalla» (no la
+tenía) y la de la bitácora dice las nueve acciones y las cinco entidades (decía cinco y cuatro).
+`pruebas/auditoria.py`: seis comprobaciones nuevas —el mapeo nombra todos los campos de cada tabla, y
+cada etiqueta del mapeo es la que la pantalla dice—.
+
+**Verificación:** auditoria.py 124 comprobaciones, 0 hallazgos; auditoria_css.py 0. La corrida completa de
+prueba.py no se repitió: no cambió código de la aplicación (la última, del bloque 158, 1274 y 0 fallas).

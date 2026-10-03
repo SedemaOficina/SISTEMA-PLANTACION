@@ -169,8 +169,8 @@ Almacén `bitacora`. No se edita desde el sistema.
 | `usuario_id` | Sí | Sesión | Remite a `usuarios.id` |
 | `usuario_nombre` | Sí | Sesión | Copia del nombre **a propósito**: si la cuenta se elimina, el historial debe seguir diciendo quién actuó |
 | `perfil` | Sí | Sesión | Con qué perfil actuó en ese momento |
-| `accion` | Sí | Sistema | `CREADO`, `EDITADO`, `ELIMINADO`, `ACTIVADO` o `DESACTIVADO` |
-| `entidad` | Sí | Sistema | `plantacion`, `usuario`, `catalogo` o `jornada` |
+| `accion` | Sí | Sistema | `CREADO`, `EDITADO`, `ELIMINADO`, `RESTAURADO`, `SUSTITUIDO`, `RELEVO`, `ACTIVADO`, `DESACTIVADO`, `FOLIO_ASIGNADO` |
+| `entidad` | Sí | Sistema | `plantacion`, `usuario`, `catalogo`, `jornada`, `carga` |
 | `entidad_id` | Sí | Sistema | A qué registro se refiere |
 | `detalle` | No | Sistema | Qué cambió; en una edición, la lista de campos |
 
@@ -183,44 +183,44 @@ se revisa en **Jornadas** y sus datos de cierre se capturan en **su ficha → «
 Almacén `jornadas` (sustituye a `cierres` desde el bloque 62). Lo que ya vive en los registros
 —especies, conteos, alcaldía— no se pregunta, se calcula (D58).
 
-| Campo | Obligatorio | Origen | Notas |
-|---|---|---|---|
-| `id` | Sí | Sistema | UUID; los árboles lo llevan en `plantaciones.jornada_id` |
-| `nombre` | Sí | Persona | Nombre de la jornada: el parque, la calle o el sitio. Es el nombre de la tarjeta en Jornadas y el «Jornada:» del reporte |
-| `ubicacion` | No | Persona | «Dirección de la jornada» (D143): dirección, parque o referencia (D120); va al reporte bajo el nombre |
-| `programa_id` | Sí | Persona | Programa de la jornada (D130). Sus árboles lo toman siempre y cambian con él (D151). SEDEMA elige todos; las demás instituciones, los que tienen marcado su tipo en el catálogo (`tipos_organizacion`, D193). Con uno solo posible viene ya elegido |
-| `lat`, `lng`, `gps_precision_m` | No | Dispositivo | Punto de la jornada: la posición del teléfono al tocar «Detectar ubicación de la jornada» (D122) o las coordenadas escritas en «Capturar coordenadas a mano» cuando no hubo señal (D143); nulos si no se ubicó. `gps_precision_m` sólo existe con GPS. No es el punto de ningún árbol |
-| `punto_origen` | No | Sistema | Cómo se obtuvo el punto de la jornada: `gps` (Detectar ubicación) o `manual` (coordenadas escritas) (D143); nulo sin ubicación |
-| `alcaldia_cve`, `alcaldia`, `colonia_cve`, `colonia` | No | Sistema | Derivados del punto detectado con las capas de alcaldías y colonias (D122); van a la franja, a Jornadas y al reporte junto a la ubicación escrita |
-| `fecha` | Sí | Persona | Día en que empieza la jornada, `AAAA-MM-DD`, no posterior a hoy. Cada árbol lleva su propia fecha de plantación, desde este día (D204) |
-| `comentarios` | No | Persona | Se escriben al iniciar; van al reporte como «Comentarios de la jornada» |
-| `cabo_id` | Sí | Sesión | Titular: quien inició la jornada; no cambia con un relevo |
-| `relevo_id` | No | Persona | Remite a `usuarios.id`: el cabo que registra en lugar del titular tras un relevo de la coordinación (D204); nulo, registra el titular |
-| `relevos` | Sí | Sistema | Lista de los relevos hechos: a qué cabo se pasó, cuándo y quién lo hizo; `[]` sin relevos (D204) |
-| `origen` | Sí | Persona | `PROGRAMADA` o `PEDIDO`: pedido especial de otra instancia (D210). Obligatorio y sin valor por omisión: quien inicia la jornada lo elige (D221); se corrige en «Editar jornada» |
-| `solicitante_id` | No | Persona | Remite a `catalogos.id` (solicitante): quién solicita el pedido especial; no es quien ejecuta ni es una institución con cuentas. Nulo en una jornada programada o si la instancia no está en el catálogo (D210, D217) |
-| `solicitante_otro` | Sí | Persona | Nombre de la instancia que solicita cuando no está en el catálogo; `''` si no aplica (D210) |
-| `pedido_descripcion` | Sí | Persona | De qué se trata el pedido especial, obligatoria en un pedido; `''` si no aplica. No se pide oficio ni folio (D210) |
-| `organizacion_id` | Sí | Sesión | La institución que ejecuta: la de quien inicia la jornada. No cambia después. En jornadas de otras instituciones el cierre no pide chófer ni vehículo, y el reporte dice «Institución que ejecuta» |
-| `estatus` | Sí | Sistema | `abierta` o `cerrada`; se cierra desde la franja o la revisión, se reabre desde la revisión o con «Registrar faltante» |
-| `fecha_inicio` | Sí | Sistema | Ordena las jornadas del día: «Jornada 2 de 3» |
-| `fecha_cierre` | No | Sistema | Nulo mientras está abierta. Se muestra en Jornadas: «Cerrada a las 15:40» en la ficha (con el día si se cerró otro) y el día en letra en el detalle |
-| `encargado_id` | No | Sesión o Persona | Remite a `usuarios.id`. Para un cabo es él mismo; quien ve a varias personas lo elige entre los cabos con registros en la jornada (D57) |
-| `personal` | No | Persona | Nombres, como se acostumbra escribirlos. Sólo en jornadas de SEDEMA (D192) |
-| `apoyo` | No | Persona | Personal de otra institución; varias líneas. Sólo en jornadas de SEDEMA (D192) |
-| `observaciones` | No | Persona | Una por renglón |
-| `chofer` | No | Persona | Sólo en jornadas de SEDEMA |
-| `vehiculo_modelo` | No | Catálogo | Se copia del catálogo al guardar el cierre (D162); ya no se escribe a mano (D174). Sustituye a `vehiculo` (bloque 20) |
-| `vehiculo_placa` | No | Catálogo | La placa del vehículo elegido en la lista (D162, D174) |
-| `vehiculo_tipo` | No | Catálogo | El tipo del vehículo elegido (Estacas, Pipa…), copiado del catálogo (D174) |
-| `vehiculo_id` | No | Persona | Remite a `catalogos.id` del vehículo elegido; nulo sin vehículo (sólo del catálogo, D174). Con él se cuentan los que más usa cada encargado, que se ofrecen a un toque |
-| `hora` | No | Persona | Hora de finalización, `HH:MM` del selector de hora; el PDF le agrega «h» |
-| `arboles_previstos` | Sí | Persona | Árboles que se van a plantar, escrito al iniciar la jornada; Jornadas y el reporte comparan los registrados contra los previstos |
-| `puntos_revisados` | Sí | Persona | Puntos con aviso que alguien marcó «Está bien» en **Jornadas**; lista de `plantaciones.id` (D112) |
-| `reporte_en` | No | Sistema | Cuándo se generó el reporte de la jornada (D134); nulo si no se ha generado |
-| `carga_id` | No | Sistema | Lote de carga masiva que creó la jornada (D196); nulo en las jornadas iniciadas en campo |
-| `editado_por_id` | No | Sesión | Quién la cambió por última vez; vacío hasta la primera edición |
-| `fecha_ultima_edicion` | No | Sistema | Vacío hasta la primera edición |
+| Etiqueta en pantalla | Campo | Obligatorio | Origen | Notas |
+|---|---|---|---|---|
+| No se muestra | `id` | Sí | Sistema | UUID; los árboles lo llevan en `plantaciones.jornada_id` |
+| Nombre de la jornada | `nombre` | Sí | Persona | Nombre de la jornada: el parque, la calle o el sitio. Es el nombre de la tarjeta en Jornadas y el «Jornada:» del reporte |
+| Dirección de la jornada | `ubicacion` | No | Persona | «Dirección de la jornada» (D143): dirección, parque o referencia (D120); va al reporte bajo el nombre |
+| Programa | `programa_id` | Sí | Persona | Programa de la jornada (D130). Sus árboles lo toman siempre y cambian con él (D151). SEDEMA elige todos; las demás instituciones, los que tienen marcado su tipo en el catálogo (`tipos_organizacion`, D193). Con uno solo posible viene ya elegido |
+| «Detectar ubicación de la jornada» o «Capturar coordenadas a mano» | `lat`, `lng`, `gps_precision_m` | No | Dispositivo | Punto de la jornada: la posición del teléfono al tocar «Detectar ubicación de la jornada» (D122) o las coordenadas escritas en «Capturar coordenadas a mano» cuando no hubo señal (D143); nulos si no se ubicó. `gps_precision_m` sólo existe con GPS. No es el punto de ningún árbol |
+| No como campo: nota bajo el botón de ubicación | `punto_origen` | No | Sistema | Cómo se obtuvo el punto de la jornada: `gps` (Detectar ubicación) o `manual` (coordenadas escritas) (D143); nulo sin ubicación |
+| Alcaldía y Colonia | `alcaldia_cve`, `alcaldia`, `colonia_cve`, `colonia` | No | Sistema | Derivados del punto detectado con las capas de alcaldías y colonias (D122); van a la franja, a Jornadas y al reporte junto a la ubicación escrita |
+| Fecha de la jornada de plantación (al iniciar); Fecha (al editar) | `fecha` | Sí | Persona | Día en que empieza la jornada, `AAAA-MM-DD`, no posterior a hoy. Cada árbol lleva su propia fecha de plantación, desde este día (D204) |
+| Comentarios | `comentarios` | No | Persona | Se escriben al iniciar; van al reporte como «Comentarios de la jornada» |
+| No como campo: «Quién registró» en filtros y tarjeta | `cabo_id` | Sí | Sesión | Titular: quien inició la jornada; no cambia con un relevo |
+| Relevo de cabo (ficha de la jornada) | `relevo_id` | No | Persona | Remite a `usuarios.id`: el cabo que registra en lugar del titular tras un relevo de la coordinación (D204); nulo, registra el titular |
+| No como campo: la ficha y el reporte dicen el relevo | `relevos` | Sí | Sistema | Lista de los relevos hechos: a qué cabo se pasó, cuándo y quién lo hizo; `[]` sin relevos (D204) |
+| Origen de la jornada | `origen` | Sí | Persona | `PROGRAMADA` o `PEDIDO`: pedido especial de otra instancia (D210). Obligatorio y sin valor por omisión: quien inicia la jornada lo elige (D221); se corrige en «Editar jornada» |
+| Quién lo solicita | `solicitante_id` | No | Persona | Remite a `catalogos.id` (solicitante): quién solicita el pedido especial; no es quien ejecuta ni es una institución con cuentas. Nulo en una jornada programada o si la instancia no está en el catálogo (D210, D217) |
+| Nombre de la instancia | `solicitante_otro` | Sí | Persona | Nombre de la instancia que solicita cuando no está en el catálogo; `''` si no aplica (D210) |
+| Descripción del pedido | `pedido_descripcion` | Sí | Persona | De qué se trata el pedido especial, obligatoria en un pedido; `''` si no aplica. No se pide oficio ni folio (D210) |
+| No como campo: «Institución» en filtros; el reporte la dice si no es la Secretaría | `organizacion_id` | Sí | Sesión | La institución que ejecuta: la de quien inicia la jornada. No cambia después. En jornadas de otras instituciones el cierre no pide chófer ni vehículo, y el reporte dice «Institución que ejecuta» |
+| «Abierta» o «Cerrada» (franja y tarjeta) | `estatus` | Sí | Sistema | `abierta` o `cerrada`; se cierra desde la franja o la revisión, se reabre desde la revisión o con «Registrar árbol» |
+| No se muestra: ordena «Jornada 2 de 3» | `fecha_inicio` | Sí | Sistema | Ordena las jornadas del día: «Jornada 2 de 3» |
+| «Cerrada a las 15:40» (tarjeta y ficha) | `fecha_cierre` | No | Sistema | Nulo mientras está abierta. Se muestra en Jornadas: «Cerrada a las 15:40» en la ficha (con el día si se cerró otro) y el día en letra en el detalle |
+| Encargado | `encargado_id` | No | Sesión o Persona | Remite a `usuarios.id`. Para un cabo es él mismo; quien ve a varias personas lo elige entre los cabos con registros en la jornada (D57) |
+| Personal participante | `personal` | No | Persona | Nombres, como se acostumbra escribirlos. Sólo en jornadas de SEDEMA (D192) |
+| Personal de apoyo | `apoyo` | No | Persona | Personal de otra institución; varias líneas. Sólo en jornadas de SEDEMA (D192) |
+| Observaciones | `observaciones` | No | Persona | Una por renglón |
+| Chófer | `chofer` | No | Persona | Sólo en jornadas de SEDEMA |
+| No como campo: se ve bajo la lista de vehículos | `vehiculo_modelo` | No | Catálogo | Se copia del catálogo al guardar el cierre (D162); ya no se escribe a mano (D174). Sustituye a `vehiculo` (bloque 20) |
+| Vehículo | `vehiculo_placa` | No | Catálogo | La placa del vehículo elegido en la lista (D162, D174) |
+| No como campo: se ve bajo la lista de vehículos | `vehiculo_tipo` | No | Catálogo | El tipo del vehículo elegido (Estacas, Pipa…), copiado del catálogo (D174) |
+| Vehículo | `vehiculo_id` | No | Persona | Remite a `catalogos.id` del vehículo elegido; nulo sin vehículo (sólo del catálogo, D174). Con él se cuentan los que más usa cada encargado, que se ofrecen a un toque |
+| Hora de finalización | `hora` | No | Persona | Hora de finalización, `HH:MM` del selector de hora; el PDF le agrega «h» |
+| Árboles que se van a plantar | `arboles_previstos` | Sí | Persona | Árboles que se van a plantar, escrito al iniciar la jornada; Jornadas y el reporte comparan los registrados contra los previstos |
+| «Está bien» en un punto con aviso (ficha de la jornada) | `puntos_revisados` | Sí | Persona | Puntos con aviso que alguien marcó «Está bien» en **Jornadas**; lista de `plantaciones.id` (D112) |
+| «Sin reporte todavía» o «Reporte:» con su fecha y hora (tarjeta); filtro «Reporte» | `reporte_en` | No | Sistema | Cuándo se generó el reporte de la jornada (D134); nulo si no se ha generado |
+| No se muestra | `carga_id` | No | Sistema | Lote de carga masiva que creó la jornada (D196); nulo en las jornadas iniciadas en campo |
+| No se muestra | `editado_por_id` | No | Sesión | Quién la cambió por última vez; vacío hasta la primera edición |
+| No se muestra | `fecha_ultima_edicion` | No | Sistema | Vacío hasta la primera edición |
 
 ---
 
