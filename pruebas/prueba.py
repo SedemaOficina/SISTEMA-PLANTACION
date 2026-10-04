@@ -4426,7 +4426,9 @@ with sync_playwright() as p:
        'deshacer pide confirmar, dice cuántos árboles y jornadas quita, de qué archivo, y avisa lo editado después: %s' % cf54.replace('\n',' | ')[:200])
     pg54.click('#btn-confirmar-no'); pg54.wait_for_timeout(400)
     ok(pg54.evaluate("(async () => (await SRP.almacen.todos('jornadas')).filter(j => j.carga_id).length)()")==2,'si no se confirma, no se quita nada')
-    pg54.click('#carga-lotes button[data-lote]'); pg54.wait_for_timeout(500); pg54.click('#btn-confirmar-si'); pg54.wait_for_timeout(1200)
+    pg54.click('#carga-lotes button[data-lote]'); pg54.wait_for_timeout(500)
+    ok(pg54.is_disabled('#btn-confirmar-si') and pg54.inner_text('#confirmar-palabra-etiqueta')=='Para confirmar, escriba DESHACER','deshacer una carga pide escribir DESHACER: el botón espera')
+    confirmar_escribiendo(pg54, 'DESHACER'); pg54.wait_for_timeout(1200)
     d54=pg54.evaluate("""async () => { const j = await SRP.almacen.todos('jornadas'), a = await SRP.almacen.todos('plantaciones'), b = await SRP.almacen.todos('bitacora');
       return { lote: j.filter(x => x.carga_id).length, j: j.map(x => x.id), a: a.map(x => x.id),
         bit: b.filter(x => x.entidad === 'carga').map(x => [x.accion, x.detalle]).sort() }; }""")
@@ -5933,6 +5935,13 @@ with sync_playwright() as p:
       const r = [...t.querySelectorAll('tbody tr')].map(x => x.getBoundingClientRect()); const td = t.querySelector('tbody td').getBoundingClientRect();
       return [c.width > 200 && c.height > 200, !!document.querySelector('#sup-mapa path.sup-alcaldia'), r.every(x => x.right <= 390), td.width > 150, document.documentElement.scrollWidth]; }""")
     ok(m75[:4] == [True, True, True, True] and m75[4] <= 390, 'al abrir «Por alcaldía» se dibuja su mapa y la tabla se lee en renglones, sin partir nombres ni salirse de lado: %s' % m75)
+    # Cerrar y volver a abrir una sección con mapa lo dibuja de nuevo, sin errores
+    for sec75 in ('prioridad', 'alcaldias'):
+        for _ in range(3 if sec75 == 'prioridad' else 2):
+            pg75.click('details[data-seccion=%s] > summary' % sec75); pg75.wait_for_timeout(500)
+    r75 = pg75.evaluate("[!!document.querySelector('#sup-mapa-prioridad path.pri-colonia'), !!document.querySelector('#sup-mapa path.sup-alcaldia'), SRP.prioritarias.controles.length]")
+    ok(r75[0] and r75[1] and r75[2] <= 2 and err75 == [], 'cerrar y reabrir «Por prioridad» y «Por alcaldía» vuelve a dibujar sus mapas, sin errores: %s %s' % (r75, err75[:1]))
+    pg75.click('details[data-seccion=prioridad] > summary'); pg75.wait_for_timeout(400)
     pg75.click('#sup-tipos .chip[data-tipo=mes]'); pg75.wait_for_timeout(1500)
     ok(sorted(pg75.evaluate("[...document.querySelectorAll('details[data-seccion][open]')].map(d => d.dataset.seccion)")) == ['alcaldias', 'cabos'], 'lo que se abrió sigue abierto al cambiar de periodo')
     p75 = pg75.evaluate("[SRP.supervision.periodo.desde, SRP.supervision.periodo.hasta]")

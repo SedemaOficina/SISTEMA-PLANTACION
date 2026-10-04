@@ -441,7 +441,7 @@ SRP.carga = {
         editados ? pl(editados, 'árbol o jornada se editó', 'árboles o jornadas se editaron') + ' después de cargarlos; también se quitan.' : '',
         agregados ? pl(agregados, 'árbol se agregó', 'árboles se agregaron') + ' después a esas jornadas; también se quitan.' : '',
         'El Registro de cambios conserva la carga y que se deshizo.'],
-      irreversible: true, boton: 'Deshacer carga', icono: 'basura' });
+      irreversible: true, boton: 'Deshacer carga', icono: 'basura', escribir: 'DESHACER' });
     if (!ok) return;
     const ids = new Set(arboles.map(a => a.id));
     const detalle = 'Carga deshecha' + (archivo ? ' del archivo «' + archivo + '»' : '') + ': ' + pl(arboles.length, 'árbol', 'árboles') + ' y ' + pl(jornadas.length, 'jornada', 'jornadas') + ' quitados';

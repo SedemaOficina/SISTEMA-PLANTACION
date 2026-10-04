@@ -3154,3 +3154,22 @@ botón espera, otro correo no lo activa e Intro no elimina; ctx76, lo mismo para
 campo vuelve vacío y las demás confirmaciones no piden escribir). auditoria.py 141 comprobaciones, 0
 hallazgos; auditoria_css.py 0; revisar.py sin problemas. No probado en iPhone real.
 
+## Bloque 165 — Deshacer una carga masiva pide escribirlo (04-10-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.9.31.
+
+**Qué cambió (D228).** `js/carga.js`: la confirmación de «Deshacer carga» pide escribir «DESHACER».
+Siguen sin palabra, por decisión, eliminar una jornada vacía y restablecer los datos de prueba.
+
+**Corrección de un error del bloque 163.** En Supervisión, cerrar y volver a abrir «Por prioridad de la
+colonia» o «Por alcaldía» producía un error de Leaflet: el mapa nuevo se creaba sobre el mismo contenedor
+y la capa de colonias prioritarias seguía apuntando al mapa retirado. `js/prioritarias.js`: `soltar(mapa)`.
+`js/supervision.js`: `quitarMapas()` suelta y retira; al plegar una sección se retira su mapa; el ajuste
+diferido del encuadre actúa sólo sobre el mapa que lo pidió.
+
+**Pantalla: qué se agregó y qué se quitó.** El campo, en esa confirmación. Nada se quitó.
+
+**Verificación:** prueba.py 1301 comprobaciones, 0 fallas (2 nuevas: la carga pide «DESHACER»; cerrar y
+reabrir las secciones con mapa no da error). Una corrida anterior del bloque falló por ese error y por
+haber corrido otras pruebas al mismo tiempo; la definitiva corrió sola. auditoria.py 141 comprobaciones, 0
+hallazgos; auditoria_css.py 0; revisar.py sin problemas. No probado en iPhone real.
+

@@ -208,6 +208,14 @@ SRP.prioritarias = {
   alternar() { const e = this.estado('campo'); e.ver = !e.ver; this.guardar(); this.refrescar(); },
 
   // Deja cada mapa y cada panel como dice su estado
+  /* Antes de retirar un mapa hay que soltarlo: si no, la próxima vez se intentaría pintar la capa
+     en un mapa que ya no existe */
+  soltar(m) {
+    if (!m) return;
+    this.controles = this.controles.filter(c => c.m !== m);
+    this.capas.delete(m);
+  },
+
   refrescar() {
     this.controles = this.controles.filter(c => c.m._container && document.body.contains(c.m._container));
     this.controles.forEach(({ m, caja, o }) => {

@@ -2537,6 +2537,7 @@
     coincide (sin distinguir mayúsculas ni espacios de los lados); Intro confirma sólo entonces.
   · **Por qué:** un toque de más en el teléfono no debe borrar algo que no vuelve. Escribir obliga a una
     pausa y, en la cuenta, a mirar de quién es.
-  · **Alcance:** sólo esas dos eliminaciones. Las demás confirmaciones siguen igual; lo que tiene uso
-    sigue sin poder eliminarse y se desactiva.
+  · **Alcance:** esas dos eliminaciones y, desde el bloque 165, deshacer una carga masiva, que pide
+    escribir «DESHACER»: quita de una vez todos los árboles y jornadas de un archivo. Las demás
+    confirmaciones siguen igual; lo que tiene uso sigue sin poder eliminarse y se desactiva.
 

@@ -395,6 +395,8 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M399 | Liber | Plan de traspaso al SIA: arquitectura de destino, siete fases con responsable y criterio de salida, decisiones de arranque, capacidad y riesgos. Sin direcciones ni nombres de equipo: el repositorio es público | Alta | 0.9.28 (B162) | `docs/PLAN-TRASPASO-SIA.md` | — |
 | M394 | Liber | Supervisión y «Mi avance» en resumen: cifras, pendientes, descargas y gráfica arriba; cada desglose plegado con su dato principal; tablas en renglones en el teléfono; cabos sin jornadas juntos; enlace a Jornadas en lugar de la lista. El cabo deja de ver pedidos, eliminados, ediciones y CSV, y conserva sus mapas. De 15 pantallas a 3 en el teléfono | Alta | 0.9.29 (B163) | Supervisión; Mi avance | D227 |
 | M395 | Liber | Al eliminar una cuenta o un valor de catálogo hay que escribir para confirmar: «ELIMINAR» en catálogos, el correo en cuentas. El botón no se activa hasta que coincide | Alta | 0.9.30 (B164) | Catálogos › Eliminar; Usuarios › Eliminar | D228 |
+| M400 | Liber | Deshacer una carga masiva también pide escribir para confirmar: «DESHACER» | Media | 0.9.31 (B165) | Configuración › Carga masiva › Deshacer carga | D228 |
+| M401 | Corrida de pruebas | Supervisión: cerrar y reabrir una sección con mapa ya no produce error (venía del bloque 163) | Alta | 0.9.31 (B165) | Supervisión › Por prioridad de la colonia; Por alcaldía | — |
 
 ## 2. Por hacer
 
@@ -422,4 +424,4 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 380 hechas · 7 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 382 hechas · 7 por hacer · 2 revisadas · 2 descartadas.

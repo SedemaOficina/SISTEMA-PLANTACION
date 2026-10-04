@@ -155,8 +155,7 @@ SRP.supervision = {
     const cuerpo = this.el('sup-cuerpo'), acciones = this.el('sup-acciones');
     cuerpo.after(acciones);
     // Los mapas se retiran antes de repintar: una sección plegada no vuelve a dibujar el suyo
-    if (this.mapa) { this.mapa.remove(); this.mapa = null; }
-    if (this.mapaPrioridad) { this.mapaPrioridad.remove(); this.mapaPrioridad = null; }
+    this.quitarMapas();
     cuerpo.innerHTML = this.html(this.modelo);
     const ancla = this.el('sup-ancla-acciones');
     if (ancla) ancla.replaceWith(acciones);
@@ -296,8 +295,15 @@ SRP.supervision = {
     this.abierta(d.dataset.seccion);
     if (d.open) this.abiertas.add(d.dataset.seccion); else this.abiertas.delete(d.dataset.seccion);
     // Un mapa no se dibuja mientras su sección está plegada: no tiene tamaño
-    if (d.open && d.dataset.seccion === 'alcaldias') this.pintarMapa();
-    if (d.open && d.dataset.seccion === 'prioridad') this.pintarMapaPrioridad();
+    if (d.dataset.seccion === 'alcaldias') { if (d.open) this.pintarMapa(); else this.quitarMapas('mapa'); }
+    if (d.dataset.seccion === 'prioridad') { if (d.open) this.pintarMapaPrioridad(); else this.quitarMapas('mapaPrioridad'); }
+  },
+  // Retira un mapa (o los dos) y lo suelta de la capa de colonias prioritarias
+  quitarMapas(cual) {
+    (cual ? [cual] : ['mapa', 'mapaPrioridad']).forEach(k => {
+      if (!this[k]) return;
+      SRP.prioritarias.soltar(this[k]); this[k].remove(); this[k] = null;
+    });
   },
   abrirTodo() { this.abiertas = new Set(this.SECCIONES); this.pintar(); },
 
@@ -376,7 +382,7 @@ SRP.supervision = {
      mosaicos: se ve igual sin señal. El color lo pone la hoja según el nivel (.sup-nivel-0 a 4). */
   pintarMapa() {
     const caja = this.el('sup-mapa');
-    if (this.mapa) { this.mapa.remove(); this.mapa = null; }
+    this.quitarMapas('mapa');
     if (!caja || !window.L || !SRP.CAPAS || !SRP.CAPAS.alcaldias) return;
     const cuenta = {}; this.modelo.porAlcaldia.forEach(a => { cuenta[a.clave] = a.arboles; });
     const max = Math.max(0, ...Object.values(cuenta));
@@ -392,7 +398,8 @@ SRP.supervision = {
         l.bindTooltip(f.properties.nombre + ': ' + n + (n === 1 ? ' árbol' : ' árboles'), { sticky: false, direction: 'center' });
       }
     }).addTo(this.mapa);
-    setTimeout(() => { if (this.mapa) { this.mapa.invalidateSize(); this.mapa.fitBounds(capa.getBounds(), { padding: [6, 6] }); } }, 30);
+    const m = this.mapa;
+    setTimeout(() => { if (this.mapa === m) { m.invalidateSize(); m.fitBounds(capa.getBounds(), { padding: [6, 6] }); } }, 30);
   },
 
   /* El mapa de colonias por prioridad: sin mosaicos, como el de alcaldías, con el contorno de las
@@ -400,7 +407,7 @@ SRP.supervision = {
      prioridad: una sola rampa de color; cuántos árboles, en la etiqueta de cada colonia y en la tabla. Con una alcaldía elegida, se acerca a ella. */
   pintarMapaPrioridad() {
     const caja = this.el('sup-mapa-prioridad');
-    if (this.mapaPrioridad) { this.mapaPrioridad.remove(); this.mapaPrioridad = null; }
+    this.quitarMapas('mapaPrioridad');
     if (!caja || !window.L || !SRP.prioritarias.hay()) return;
     this.mapaPrioridad = L.map(caja, { zoomControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false, boxZoom: false, keyboard: false, zoomSnap: 0.1 });
     // Aquí la capa es el mapa mismo: no se apaga entera, pero sí cada nivel, y se regula su opacidad
@@ -410,7 +417,8 @@ SRP.supervision = {
     const alc = L.geoJSON(SRP.CAPAS.alcaldias.geojson, { interactive: false, style: () => ({ className: 'pri-contorno', weight: 1 }) }).addTo(this.mapaPrioridad);
     let caja2 = alc.getBounds();
     if (elegida) alc.eachLayer(l => { if (l.feature.properties.nombre === elegida) caja2 = l.getBounds(); });
-    setTimeout(() => { if (this.mapaPrioridad) { this.mapaPrioridad.invalidateSize(); this.mapaPrioridad.fitBounds(caja2, { padding: [6, 6] }); } }, 30);
+    const m = this.mapaPrioridad;
+    setTimeout(() => { if (this.mapaPrioridad === m) { m.invalidateSize(); m.fitBounds(caja2, { padding: [6, 6] }); } }, 30);
   },
 
   alTocar(e) {
