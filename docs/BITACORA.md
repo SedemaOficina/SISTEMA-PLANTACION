@@ -3127,6 +3127,12 @@ ni CSV. `index.html`: `#sup-acciones`. `css/estilos.css`: `.sup-seccion`, `.sup-
 y, hasta 700 px, las tablas de Supervisión como renglones. Sin cambio en `js/indicadores.js`, en el
 informe en PDF ni en la tabla CSV.
 
+**Qué cambió (D231).** `index.html` y `js/app.js`: «Configuración» es una pestaña de la barra de
+secciones para la Administración global y deja el menú de la cuenta; queda marcada también dentro de
+sus apartados. Supervisión va al final de la barra para quien registra (`p.registrar`).
+`js/catalogos.js` y `js/util.js`: las alcaldías, sólo con su nombre en el catálogo y en las listas
+de institución.
+
 **Pantalla: qué se agregó y qué se quitó.** Se agregó el renglón-resumen de cada desglose y el enlace a
 Jornadas. Se quitaron dos cifras (especies y alcaldías, que pasaron al resumen de su sección), la lista de
 jornadas cerradas y, para el cabo, pedidos especiales, eliminados, ediciones y la tabla CSV. En el
@@ -3172,4 +3178,29 @@ diferido del encuadre actúa sólo sobre el mapa que lo pidió.
 reabrir las secciones con mapa no da error). Una corrida anterior del bloque falló por ese error y por
 haber corrido otras pruebas al mismo tiempo; la definitiva corrió sola. auditoria.py 141 comprobaciones, 0
 hallazgos; auditoria_css.py 0; revisar.py sin problemas. No probado en iPhone real.
+
+## Bloque 166 — La solicitud es un programa; espejos en cada pantalla que escribe (04-10-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.9.32. Base del teléfono, versión 9.
+
+**Qué cambió (D229).** `js/solicitud.js` sustituye a `js/pedido.js`: el bloque de «Quién lo solicita» y
+«Descripción de la solicitud» (área de texto) se muestra con el programa «Solicitud»
+(`SRP.CONFIG.PROGRAMA_SOLICITUD`). `js/almacen.js`: migración 9. `js/datos-ficticios.js`: el programa
+`p-solicitud`; `SELLO_DATOS` nuevo, para que un teléfono con capturas lo reciba. `js/jornada-activa.js`,
+`js/jornadas.js`, `js/supervision.js`, `js/indicadores.js`, `js/informes.js`, `js/reportes.js`,
+`js/carga.js`, `js/referencias.js`, `js/demostracion.js`: sin origen; `modelo.solicitudes` en lugar de
+`modelo.pedidos`; el CSV lleva «Quién lo solicita» y «Descripción de la solicitud». `index.html`: sin los
+filtros «Origen». `datos/esquema.json` (151 campos), diccionario, `datos/MAPEO-CAMPOS.md`, `README.md` y
+`docs/FASE2-Y-TRASPASO.md` (fila 20).
+
+**Qué cambió (D230).** `js/espejo.js`: `htmlGuardado()`, `colocar()`, `refrescarIniciar()`, `enFicha()` y
+`enFormulario()`; notas de los campos que faltaban. `js/jornada-activa.js`: `armarJornada()` y
+`jornadaPrevista()`, para que el espejo enseñe el mismo objeto que se guarda. `css/estilos.css`: la
+página no se desplaza con un diálogo abierto; los botones del pie del detalle no se parten.
+
+**Pantalla: qué se agregó y qué se quitó.** Se quitó una pregunta al iniciar la jornada (Origen) y un
+filtro en Jornadas y en Supervisión: Jornadas queda en 7 y Supervisión en 5. Se agregó la opción
+«Solicitud» en Programa. Los espejos sólo existen en la versión de prueba. La Administración gana una pestaña y pierde una
+opción del menú de la cuenta.
+
+**Verificación:** corrida completa sola, 1,314 comprobaciones: 1,313 correctas y 1 expectativa de prueba por ajustar (el solicitante de una jornada que no es solicitud se suelta en la migración), corregida y repetida sola su sección (ctx73) sin fallas; sin errores de consola. `auditoria.py`: 140 comprobaciones, 0 hallazgos. `auditoria_css.py`: 0 hallazgos. `revisar.py`: sin problemas. No probado en iPhone por Claude.
 

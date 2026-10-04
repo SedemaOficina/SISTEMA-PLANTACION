@@ -1,5 +1,5 @@
 /* INFORMES POR PERIODO (D159): semanal, mensual, anual o de un rango, de toda la cuadrilla o de una
-   alcaldía, en PDF con membrete y en CSV para Excel. Pedidos por el área de plantación. Salen del
+   alcaldía, en PDF con membrete y en CSV para Excel. Los pidió el área de plantación. Salen del
    mismo modelo que la pestaña Supervisión (SRP.indicadores, D157): lo que se imprime es lo que se
    ve. El reporte de cada jornada (reportes.js) sigue igual: ése es el documento de campo; éste, el
    de seguimiento. */
@@ -87,7 +87,7 @@ SRP.informes = {
     doc.text(doc.splitTextToSize(this.titulo(m).toUpperCase(), util), ancho / 2, 40, { align: 'center' });
     doc.setFont(F, 'normal'); doc.setFontSize(10); doc.setTextColor(...C.gris);
     const lineas = [m.periodo.etiqueta, this.alcance(),
-      [m.filtros.programa ? 'Programa: ' + SRP.ref.nombreCatalogo(m.filtros.programa) : '', m.filtros.origen ? 'Origen: ' + SRP.pedido.textoFiltro(m.filtros.origen).replace(' (todos)', '') : '', m.filtros.cabo ? 'Registró: ' + SRP.ref.nombreUsuario(m.filtros.cabo) : ''].filter(Boolean).join(' · ')].filter(Boolean);
+      [m.filtros.programa ? 'Programa: ' + SRP.ref.nombreCatalogo(m.filtros.programa) : '', m.filtros.cabo ? 'Registró: ' + SRP.ref.nombreUsuario(m.filtros.cabo) : ''].filter(Boolean).join(' · ')].filter(Boolean);
     lineas.forEach((t, i) => doc.text(t, ancho / 2, 47 + i * 5, { align: 'center' }));
     y = 47 + lineas.length * 5 + 5;
 
@@ -145,15 +145,15 @@ SRP.informes = {
       { derecha: [3, 4], pie: ['Total', '', '', num(c.arboles), '100 %'], columnas: { 1: { fontStyle: 'italic' } } });
     titulo('Por programa');
     tabla(['Programa', 'Árboles', '% del total', 'Jornadas'], SRP.supervision.conPct(m.porPrograma, c.arboles).map(x => [x.clave, num(x.arboles), x.pct + ' %', num(x.jornadas)]), { derecha: [1, 2, 3] });
-    if (m.pedidos.jornadas) {
-      const pe = m.pedidos, P = SRP.indicadores.pct;
-      titulo('Pedidos especiales');
+    if (m.solicitudes.jornadas) {
+      const pe = m.solicitudes, P = SRP.indicadores.pct;
+      titulo('Solicitudes');
       tabla(['Quién lo solicitó', 'Jornadas', 'Árboles', '% del total'], pe.solicitantes.map(x => [x.solicitante, num(x.jornadas), num(x.arboles), (P(x.arboles, c.arboles) || 0) + ' %']),
         { derecha: [1, 2, 3], pie: ['Total a solicitud de otra instancia', num(pe.jornadas), num(pe.arboles), (P(pe.arboles, c.arboles) || 0) + ' %'] });
     }
     titulo('Jornadas cerradas del periodo');
     const conPri = SRP.prioritarias.hay();
-    tabla(['Fecha', 'Jornada', cabo ? 'Lugar' : 'Cabo'].concat(conPri ? ['Prioridad'] : [], ['Árboles', 'Reporte']), m.jornadas.map(j => [SRP.util.formatearFecha(j.fecha), j.nombre + (j.solicitante ? ' (pedido de ' + j.solicitante + ')' : ''), cabo ? j.lugar : j.cabo]
+    tabla(['Fecha', 'Jornada', cabo ? 'Lugar' : 'Cabo'].concat(conPri ? ['Prioridad'] : [], ['Árboles', 'Reporte']), m.jornadas.map(j => [SRP.util.formatearFecha(j.fecha), j.nombre + (j.solicitante ? ' (solicita ' + j.solicitante + ')' : ''), cabo ? j.lugar : j.cabo]
       .concat(conPri ? [j.prioridad] : [], [num(j.arboles) + (j.meta ? ' de ' + num(j.meta) : ''), j.reporte ? 'Generado' : 'Pendiente'])), { derecha: [conPri ? 4 : 3] });
     titulo('Trazabilidad');
     tabla(['Movimiento en el periodo', 'Árboles'], [['Eliminados', num(m.trazabilidad.eliminados)], ['Ediciones', num(m.trazabilidad.editados)]], { derecha: [1] });
@@ -189,7 +189,7 @@ SRP.informes = {
   COLUMNAS: [['folio', 'Folio'], ['fecha', 'Fecha de plantación'], ['jornada', 'Jornada'], ['organizacion', 'Institución que ejecuta'], ['cabo', 'Cabo'], ['programa', 'Programa'], ['especie', 'Especie'],
     ['cientifico', 'Nombre científico'], ['distribucion', 'Distribución'], ['alcaldia', 'Alcaldía'], ['colonia', 'Colonia'], ['uga', 'Celda UGA'],
     ['lat', 'Latitud'], ['lng', 'Longitud'], ['origen', 'Origen del punto'], ['precision', 'Precisión GPS (m)'], ['foto', 'Con fotografía'], ['reporte', 'Reporte de la jornada'], ['sustituto', 'Sustituto'], ['motivo', 'Motivo de la sustitución'],
-    ['prioridad', 'Prioridad de reforestación de la colonia'], ['origenJornada', 'Origen de la jornada'], ['solicitante', 'Solicitante del pedido especial'], ['pedidoDescripcion', 'Descripción del pedido']],
+    ['prioridad', 'Prioridad de reforestación de la colonia'], ['solicitante', 'Quién lo solicita'], ['solicitudDescripcion', 'Descripción de la solicitud']],
 
   texto(m) {
     const campo = v => {

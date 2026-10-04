@@ -86,7 +86,7 @@ SRP.ref = {
     return o.tipo_organizacion === 'Alcaldía' ? 'Alcaldía ' + o.nombre : o.nombre;
   },
 
-  /* SOLICITANTES (catálogo `solicitante`). Quién pide un pedido especial: alcaldías, dependencias,
+  /* SOLICITANTES (catálogo `solicitante`). Quién solicita una jornada: alcaldías, dependencias,
      diputadas y diputados, empresas, vecinos. No es la institución que ejecuta ni da acceso a nada:
      sólo se elige al iniciar o editar una jornada. Los tipos agrupan la lista y los informes. */
   TIPOS_SOLICITANTE: ['Dependencia de gobierno', 'Alcaldía', 'Congreso', 'Empresa', 'Organización civil', 'Escuela', 'Vecinos'],
@@ -107,7 +107,8 @@ SRP.ref = {
     const o = this.catalogoPorId[organizacionId || SRP.CONFIG.ORGANIZACION_SEDEMA];
     const tipo = o && !this.esSedema(o.id) ? o.tipo_organizacion : null;
     const lista = this.deTipo('programa', true).filter(p => !tipo || (p.tipos_organizacion || []).includes(tipo))
-      .sort((a, b) => (b.clave === 'REFOR_URBANA') - (a.clave === 'REFOR_URBANA'));
+      // Reforestación Urbana primero, por ser el más usado; «Solicitud» al final, por ser la excepción
+      .sort((a, b) => (b.clave === 'REFOR_URBANA') - (a.clave === 'REFOR_URBANA') || (a.id === SRP.CONFIG.PROGRAMA_SOLICITUD) - (b.id === SRP.CONFIG.PROGRAMA_SOLICITUD));
     if (incluir && !lista.find(p => p.id === incluir) && this.catalogoPorId[incluir]) lista.push(this.catalogoPorId[incluir]);
     return lista;
   },

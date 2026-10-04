@@ -63,7 +63,7 @@ SRP.carga = {
 
   plantilla() {
     const especies = SRP.ref.deTipo('especie', true).slice().sort((a, b) => String(a.nombre_cientifico).localeCompare(String(b.nombre_cientifico), 'es'));
-    const programas = SRP.ref.deTipo('programa', true);
+    const programas = SRP.ref.deTipo('programa', true).filter(p => p.id !== SRP.CONFIG.PROGRAMA_SOLICITUD);
     const orgs = SRP.ref.deTipo('organizacion', true).slice()
       .sort((a, b) => SRP.ref.TIPOS_INSTITUCION.indexOf(a.tipo_organizacion) - SRP.ref.TIPOS_INSTITUCION.indexOf(b.tipo_organizacion) || a.nombre.localeCompare(b.nombre, 'es'));
     const hoy = SRP.util.fechaHoy();
@@ -204,6 +204,8 @@ SRP.carga = {
       else if (fecha > hoy) errores.push(['Fecha de plantación', 'La fecha ' + SRP.util.formatearFecha(fecha) + ' es posterior a hoy.']);
       const prog = ix.programas[n(val('programa'))];
       if (!prog) errores.push(['Programa', '«' + String(val('programa')).trim() + '» no está en el catálogo de programas.']);
+      // Una solicitud lleva quién lo solicita y su descripción, que el archivo no trae
+      else if (prog.id === SRP.CONFIG.PROGRAMA_SOLICITUD) errores.push(['Programa', '«' + prog.nombre + '» no se carga por archivo: pide quién lo solicita y la descripción. Capture esa jornada en el sistema.']);
       const tipo = ix.tipos[n(val('tipo'))];
       let org = null;
       if (!tipo) errores.push(['Tipo de institución', '«' + String(val('tipo')).trim() + '» no es un tipo de institución: Alcaldía, Gobierno de la CDMX, Empresa privada u Organización civil.']);
@@ -351,7 +353,7 @@ SRP.carga = {
         lat, lng, punto_origen: 'manual', gps_precision_m: null,
         alcaldia_cve: t.alcaldia_cve, alcaldia: t.alcaldia, colonia_cve: t.colonia_cve, colonia: t.colonia,
         fecha: a0.fecha, comentarios: 'Carga masiva del archivo «' + archivo + '».', cabo_id: u.id, organizacion_id: a0.org.id,
-        estatus: 'cerrada', fecha_inicio: ahora, fecha_cierre: ahora, encargado_id: u.id, relevo_id: null, relevos: [], ...SRP.pedido.vacio(), editado_por_id: null, fecha_ultima_edicion: null,
+        estatus: 'cerrada', fecha_inicio: ahora, fecha_cierre: ahora, encargado_id: u.id, relevo_id: null, relevos: [], ...SRP.solicitud.vacio(), editado_por_id: null, fecha_ultima_edicion: null,
         arboles_previstos: regs.length, puntos_revisados: revisados, reporte_en: null, carga_id: lote,
         vehiculo_id: null, vehiculo_placa: '', vehiculo_modelo: '', vehiculo_tipo: ''
       }, Object.fromEntries(SRP.reportes.CAMPOS.map(k => [k, '']))));

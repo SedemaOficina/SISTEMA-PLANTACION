@@ -38,12 +38,12 @@ SRP.demo = {
   el(id) { return document.getElementById(id); },
   es(id) { return /^(demo-|u-demo-)/.test(String(id || '')); },
 
-  // Los pedidos especiales de la demostración: de SOBSE, de una alcaldía y de una instancia fuera del catálogo
-  PEDIDOS: [
-    { origen: 'PEDIDO', solicitante_id: 's-sobse', solicitante_otro: '', pedido_descripcion: 'Compensación por obra vial.' },
-    { origen: 'PEDIDO', solicitante_id: 's-alc-09007', solicitante_otro: '', pedido_descripcion: '' },
-    { origen: 'PEDIDO', solicitante_id: 's-sobse', solicitante_otro: '', pedido_descripcion: 'Camellón rehabilitado.' },
-    { origen: 'PEDIDO', solicitante_id: null, solicitante_otro: 'Sistema de Transporte Colectivo Metro', pedido_descripcion: 'Entorno de estación.' }],
+  // Las solicitudes de la demostración: de SOBSE, de una alcaldía y de una instancia fuera del catálogo
+  SOLICITUDES: [
+    { solicitante_id: 's-sobse', solicitante_otro: '', solicitud_descripcion: 'Compensación por obra vial.' },
+    { solicitante_id: 's-alc-09007', solicitante_otro: '', solicitud_descripcion: 'Arbolado para el parque de la colonia.\nPetición vecinal turnada por la alcaldía.' },
+    { solicitante_id: 's-sobse', solicitante_otro: '', solicitud_descripcion: 'Camellón rehabilitado.' },
+    { solicitante_id: null, solicitante_otro: 'Sistema de Transporte Colectivo Metro', solicitud_descripcion: 'Entorno de estación.' }],
 
   // La empresa de demostración: sólo existe mientras estén cargados los datos
   EMPRESA: { id: 'demo-org-empresa', tipo: 'organizacion', clave: 'DEMO_EMPRESA', nombre: 'Viveros y Paisaje Ejemplo, S.A. de C.V.', activo: true,
@@ -237,8 +237,11 @@ SRP.demo = {
         const idj = 'demo-j-' + String(++nj).padStart(5, '0');
         const abierta = forzada;
         // Los programas sin consumir azar de más, para que la demostración salga siempre igual
-        const programa = programaFijo || (t.alcaldia === 'Cuauhtémoc' && r() < 0.5 ? 'p-centro'
+        const deCatalogo = programaFijo || (t.alcaldia === 'Cuauhtémoc' && r() < 0.5 ? 'p-centro'
           : nj % 10 === 3 ? 'p-palmeras' : nj % 10 === 7 ? 'p-compensaciones' : 'p-refor');
+        // Una de cada siete jornadas de la Secretaría atiende una solicitud; sin sortear, para no mover el resto de la demostración
+        const solicitud = !externa && nj % 7 === 0;
+        const programa = solicitud ? SRP.CONFIG.PROGRAMA_SOLICITUD : deCatalogo;
         const n = forzada && d === hoy ? 3 + Math.floor(r() * 5) : 5 + Math.floor(r() * 18);
         const inicio = hora(d, 8, Math.floor(r() * 50));
         // Quien corrige: su coordinación; si no tiene (fuera, o quien coordina), la propia persona (sin consumir azar de más)
@@ -284,8 +287,7 @@ SRP.demo = {
           cabo_id: cabo, organizacion_id: (usuarios[cabo] && usuarios[cabo].organizacion_id) || SRP.CONFIG.ORGANIZACION_SEDEMA,
           estatus: abierta ? 'abierta' : 'cerrada', fecha_inicio: inicio, fecha_cierre: abierta ? null : new Date(new Date(fin).getTime() + 25 * 60000).toISOString(),
           encargado_id: cabo, relevo_id: null, relevos: [], editado_por_id: null, fecha_ultima_edicion: null,
-          // Una de cada siete jornadas de la Secretaría es un pedido especial; sin sortear, para no mover el resto de la demostración
-          ...(externa || nj % 7 ? SRP.pedido.vacio() : this.PEDIDOS[(nj / 7) % this.PEDIDOS.length]),
+          ...(solicitud ? this.SOLICITUDES[(nj / 7) % this.SOLICITUDES.length] : SRP.solicitud.vacio()),
           arboles_previstos: Math.max(1, n + (r() < 0.6 ? 0 : r() < 0.75 ? 1 + Math.floor(r() * 4) : -1 - Math.floor(r() * 2))),
           puntos_revisados: !abierta && r() < 0.85 ? revisar : [], reporte_en: conReporte ? new Date(new Date(fin).getTime() + 90 * 60000).toISOString() : null, carga_id: null,
           personal: soloSedema(conReporte ? Array.from({ length: 3 + Math.floor(r() * 4) }, () => pick(this.PERSONAL)).filter((x, i, l) => l.indexOf(x) === i).join('\n') : ''),

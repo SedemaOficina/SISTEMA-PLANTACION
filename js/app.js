@@ -13,7 +13,7 @@ SRP.app = {
     I.poner(document.querySelector('label[for="acceso-clave"]'), 'candado', 'medio');
     I.poner(this.el('form-acceso').querySelector('button[type="submit"]'), 'entrar', 'medio');
     I.poner(this.el('btn-entrar-prueba'), 'entrar', 'medio');
-    const pestana = { supervision: 'avance', registrar: 'mas', registros: 'registros', jornadas: 'jornadas' };
+    const pestana = { supervision: 'avance', registrar: 'mas', registros: 'registros', jornadas: 'jornadas', configuracion: 'tuerca' };
     this.el('navegacion').querySelectorAll('.pestana').forEach(b => I.poner(b, pestana[b.dataset.vista], 'grande'));
     I.poner(this.el('btn-usr-agregar'), 'usuarioMas', 'medio');
     I.poner(this.el('btn-subir'), 'subir', 'grande');
@@ -23,7 +23,7 @@ SRP.app = {
     // Cancelar lleva tache y va en rojo de contorno (D116)
     I.poner(this.el('btn-cancelar-edicion'), 'cerrar', 'medio');
     I.poner(this.el('btn-confirmar-no'), 'cerrar', 'medio');
-    [['btn-ir-configuracion', 'tuerca'], ['btn-contraste', 'sol'], ['btn-sin-senal', 'sinSenal'], ['btn-cambiar-perfil', 'usuario'], ['btn-cerrar-sesion', 'salir']]
+    [['btn-contraste', 'sol'], ['btn-sin-senal', 'sinSenal'], ['btn-cambiar-perfil', 'usuario'], ['btn-cerrar-sesion', 'salir']]
       .forEach(([id, icono]) => I.poner(this.el(id), icono, 'medio'));
     // Los buscadores llevan la lupa dentro del campo, desde la hoja de estilos (D95)
     // Avisos informativos: el icono va al frente del texto
@@ -185,7 +185,6 @@ SRP.app = {
     };
     this.el('btn-cerrar-sesion').addEventListener('click', () => { this.menuCuenta(false); salir(); });
     this.el('btn-cambiar-perfil').addEventListener('click', () => { this.menuCuenta(false); salir(); });
-    this.el('btn-ir-configuracion').addEventListener('click', () => { this.menuCuenta(false); this.mostrarVista('configuracion'); });
     // Menú de la cuenta (D93): abre y cierra con el botón; se cierra al tocar fuera o con Escape
     this.el('btn-cuenta').innerHTML = SRP.ICONOS.svg('usuario', 'grande');
     this.el('btn-cuenta').addEventListener('click', () => this.menuCuenta(this.el('menu-cuenta').hidden));
@@ -310,13 +309,15 @@ SRP.app = {
     SRP.demo.pintar();
     const nav = this.el('navegacion');
     nav.querySelector('[data-vista="registrar"]').hidden = !p.registrar;
-    /* Supervisión (D158): primera para quien supervisa; para el cabo, «Mi avance», al final de su
-       barra. Usuarios, Catálogos y lo demás que administra la Administración global, en Configuración, desde el menú de la cuenta */
+    /* Supervisión (D158): primera para quien sólo consulta; para quien registra —cabo y coordinación—
+       va al final de su barra, después de Registros, y el cabo la lee «Mi avance». Usuarios, Catálogos y lo demás que administra la Administración global, en Configuración, la última pestaña de su barra */
     const sup = nav.querySelector('[data-vista="supervision"]'), cabo = p.alcance === 'propios';
     sup.hidden = p.alcance === 'ninguno';
     this.el('pestana-supervision-texto').textContent = cabo ? 'Mi avance' : 'Supervisión';
-    if (cabo) nav.appendChild(sup); else nav.insertBefore(sup, nav.firstElementChild);
-    this.el('btn-ir-configuracion').hidden = !(p.catalogos && p.usuarios);
+    if (p.registrar) nav.appendChild(sup); else nav.insertBefore(sup, nav.firstElementChild);
+    const cfg = nav.querySelector('[data-vista="configuracion"]');
+    cfg.hidden = !(p.catalogos && p.usuarios);
+    nav.appendChild(cfg);
     SRP.formulario.limpiar(true);
     this.campoClave(false);
     // La jornada abierta de quien entra queda activa; se avisa si es de otro día (D119)
@@ -375,7 +376,9 @@ SRP.app = {
     document.querySelectorAll('.vista').forEach(v => { v.hidden = v.id !== 'vista-' + nombre; });
     // Al editar se está dentro de Registros, de donde se llegó: «Nuevo registro» no se marca (D100)
     // Fotografías vive dentro de Supervisión: su pestaña es la que queda marcada (D158)
-    const marcada = nombre === 'registrar' && (SRP.formulario.estado.editando || SRP.formulario.estado.sustitucion) ? (SRP.jornadas.volverAlDetalle ? 'jornadas' : 'registros') : nombre === 'galeria' ? 'supervision' : nombre;
+    // Lo que se abre desde Configuración deja marcada su pestaña
+    const deConfiguracion = ['usuarios', 'catalogos', 'parametros', 'cambios', 'acerca', 'carga'];
+    const marcada = nombre === 'registrar' && (SRP.formulario.estado.editando || SRP.formulario.estado.sustitucion) ? (SRP.jornadas.volverAlDetalle ? 'jornadas' : 'registros') : nombre === 'galeria' ? 'supervision' : deConfiguracion.includes(nombre) ? 'configuracion' : nombre;
     this.el('navegacion').querySelectorAll('.pestana').forEach(b => {
       if (b.dataset.vista === marcada) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
     });

@@ -18,7 +18,11 @@ window.SRP = window.SRP || {};
     cat('programa', 'p-refor', 'REFOR_URBANA', 'Reforestación Urbana', { tipos_organizacion: ['Alcaldía', 'Gobierno de la CDMX', 'Organización civil'] }),
     cat('programa', 'p-centro', 'CENTRO_HISTORICO', 'Centro Histórico', { tipos_organizacion: [] }),
     cat('programa', 'p-palmeras', 'PALMERAS', 'Palmeras', { tipos_organizacion: ['Empresa privada'] }),
-    cat('programa', 'p-compensaciones', 'COMPENSACIONES', 'Compensaciones', { tipos_organizacion: [] })
+    cat('programa', 'p-compensaciones', 'COMPENSACIONES', 'Compensaciones', { tipos_organizacion: [] }),
+    /* La jornada que atiende una solicitud de otra instancia: al elegirlo se piden quién lo solicita y la
+       descripción. De arranque es de la Secretaría; la Administración lo abre a otros tipos de institución
+       en Catálogos › Programas */
+    cat('programa', 'p-solicitud', 'SOLICITUD', 'Solicitud', { tipos_organizacion: [] })
   ];
   // Programas de arranque que ya no vienen: en un teléfono con capturas se quitan o, si se usaron, se desactivan
   const programasRetirados = ['p-voluntariado'];
@@ -52,7 +56,7 @@ window.SRP = window.SRP || {};
     org('o-reforestamos', 'REFORESTAMOS_MEXICO', 'Reforestamos México, A.C.', 'Organización civil')
   ].concat(ALCALDIAS.map(([cve, clave, nombre]) => org('o-alc-' + cve, 'ALC_' + clave, nombre, 'Alcaldía')));
 
-  /* SOLICITANTES: quién pide un pedido especial. Catálogo aparte del de instituciones: quien pide no
+  /* SOLICITANTES: quién solicita una jornada. Catálogo aparte del de instituciones: quien pide no
      es quien planta ni necesita cuenta. Las alcaldías van sin la palabra «Alcaldía» (su tipo ya lo
      dice) y su id lleva el cvegeo INEGI. Los demás se agregan en Catálogos › Solicitantes. */
   const sol = (id, clave, nombre, tipo) => cat('solicitante', id, clave, nombre, { tipo_solicitante: tipo });

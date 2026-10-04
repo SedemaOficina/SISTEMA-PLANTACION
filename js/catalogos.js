@@ -17,7 +17,7 @@
    no se eliminan. El tipo se elige al agregarla y no cambia; la clave la pone el sistema. Las 16
    alcaldías son fijas y la Secretaría no se desactiva.
 
-   SOLICITANTES (tipo `solicitante`). Quién pide un pedido especial; se eligen al iniciar o editar
+   SOLICITANTES (tipo `solicitante`). Quién solicita una jornada; se eligen al iniciar o editar
    una jornada. Llevan nombre y tipo (los de SRP.ref.TIPOS_SOLICITANTE), que agrupa la lista; la
    clave la pone el sistema. Se agregan, se editan y se desactivan; sin uso, se eliminan. No son
    instituciones: no tienen cuentas ni ejecutan jornadas. */
@@ -33,7 +33,8 @@ SRP.catalogos = {
   // El tipo de una institución o de un solicitante, y el orden de sus tipos
   tipoDe(c) { return c.tipo === 'solicitante' ? c.tipo_solicitante || '' : c.tipo_organizacion || ''; },
   tiposDe(tipo) { return tipo === 'solicitante' ? SRP.ref.TIPOS_SOLICITANTE : SRP.ref.TIPOS_INSTITUCION; },
-  nombreDe(c) { return c.tipo === 'organizacion' ? SRP.ref.nombreOrganizacion(c.id) : c.nombre; },
+  // En el catálogo una alcaldía va sólo con su nombre: que es alcaldía lo dice su tipo
+  nombreDe(c) { return c.nombre; },
   // Una alcaldía no se renombra ni se desactiva: son las 16 de la Ciudad
   esFija(c) { return c.tipo === 'organizacion' && c.tipo_organizacion === 'Alcaldía'; },
   // La placa sin espacios ni guiones: así se comparan «1234AB» y «1234 AB»
@@ -275,6 +276,7 @@ SRP.catalogos = {
     this.el('cat-enciclovida').value = item && item.id_enciclovida !== null && item.id_enciclovida !== undefined ? String(item.id_enciclovida) : '';
     this.el('cat-errores').hidden = true;
     SRP.util.erroresEnCampos([], ['cat-nombre', 'cat-clave'].concat(this.CAMPOS_TIPO, this.CAMPOS_ESPECIE, this.CAMPOS_VEHICULO));
+    if (SRP.espejo) SRP.espejo.enFormulario(this.el('form-catalogo'), SRP.almacen.TABLA_DE_TIPO[this.tipo], item || null);
     this.el('dlg-catalogo').showModal();
   },
 

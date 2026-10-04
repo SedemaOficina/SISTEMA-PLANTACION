@@ -369,9 +369,9 @@ SRP.reportes = {
         ['Colonia', cierre.colonia || ''],
         ['Dirección de la jornada', cierre.ubicacion || ''],
         ['Programa', programa],
-        // Sólo en un pedido especial: quién lo solicitó y de qué se trata
-        ['Pedido especial solicitado por', SRP.pedido.solicitante(cierre)],
-        ['Descripción del pedido', SRP.pedido.esPedido(cierre) ? cierre.pedido_descripcion || '' : ''],
+        // Sólo en una solicitud: quién lo solicitó y de qué se trata
+        ['Solicitado por', SRP.solicitud.solicitante(cierre)],
+        ['Descripción de la solicitud', SRP.solicitud.es(cierre) ? cierre.solicitud_descripcion || '' : ''],
         ['Prioridad de reforestación', hayPri ? SRP.prioritarias.textoJornada(priJornada).replace(/^Prioridad /, '').replace(/^./, c => c.toUpperCase()) : ''],
         ['Árboles por prioridad de la colonia', hayPri && n ? SRP.prioritarias.resumen(registros).replace(/^./, c => c.toUpperCase()) : ''],
         // La institución que ejecutó, también la Secretaría

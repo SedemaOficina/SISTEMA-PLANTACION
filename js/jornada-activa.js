@@ -35,14 +35,14 @@ SRP.activa = {
   el(id) { return document.getElementById(id); },
 
   iniciar() {
-    SRP.pedido.montar(this.el('ini-caja-pedido'), 'ini');
+    SRP.solicitud.montar(this.el('ini-caja-solicitud'), 'ini');
     this.el('form-iniciar-jornada').addEventListener('submit', (e) => { e.preventDefault(); this.iniciarJornada(); });
     this.el('btn-jornada-cambiar').addEventListener('click', () => this.abrirCambiar());
     this.el('btn-jornada-cerrar').addEventListener('click', () => this.cerrarJornada());
     // La jornada se corrige sin salir de «Nuevo registro»: el mismo formulario de su ficha
     this.el('btn-franja-editar').innerHTML = SRP.ICONOS.svg('lapiz', 'medio') + '<span>Editar jornada</span>';
     this.el('btn-franja-editar').addEventListener('click', () => { if (this.jornada) SRP.jornadas.abrirEditar(this.jornada, true); });
-    // En teléfono el detalle de la jornada (fecha, lugar, programa, pedido, prioridad y pasos) se despliega a pedido
+    // En teléfono el detalle de la jornada (fecha, lugar, programa, solicitante, prioridad y pasos) se despliega al pedirlo
     this.el('btn-franja-detalle').addEventListener('click', () => { this.detalleAbierto = !this.detalleAbierto; this.pintarDetalle(); });
     this.pintarDetalle();
     this.el('btn-cambiar-nueva').addEventListener('click', () => { this.el('dlg-cambiar-jornada').close(); this.mostrarInicio(true); });
@@ -192,13 +192,14 @@ SRP.activa = {
       this.punto = null; this.pintarDetectar();
       this.el('ini-coord-lat').value = ''; this.el('ini-coord-lng').value = ''; this.el('ini-detalles-coord').open = false;
       this.llenarProgramas();
-      SRP.pedido.poner('ini', null);
+      SRP.solicitud.poner('ini', null);
       // La fecha se elige a propósito (D29): vacía, con «Hoy» a un toque
       this.el('ini-fecha').value = '';
       this.el('ini-fecha').dispatchEvent(new Event('change', { bubbles: true }));
       this.el('ini-errores').hidden = true;
-      SRP.util.erroresEnCampos([], ['ini-nombre', 'ini-programa', 'ini-meta', 'ini-fecha'].concat(SRP.pedido.ids('ini')));
+      SRP.util.erroresEnCampos([], ['ini-nombre', 'ini-programa', 'ini-meta', 'ini-fecha'].concat(SRP.solicitud.ids('ini')));
       SRP.util.refrescarContadores(this.el('panel-iniciar-jornada'));
+      if (SRP.espejo) SRP.espejo.refrescarIniciar();
       this.el('ini-nombre').focus({ preventScroll: true });
     }
   },
@@ -269,7 +270,7 @@ SRP.activa = {
       '<span class="franja-jornada-datos">' + esc(SRP.util.textoDias(SRP.util.diasJornada(j, registros))) + (j.ubicacion ? ' · ' + esc(j.ubicacion) : '') + (this.lugarDe(j) ? ' · ' + esc(this.lugarDe(j)) : '') + (j.programa_id ? ' · ' + esc(SRP.ref.nombreCatalogo(j.programa_id)) : '') + '' +
       (j.estatus === 'cerrada' ? ' · cerrada' : '') + (atrasada ? ' · <b>no es de hoy</b>' : '') +
       (j.relevo_id && j.relevo_id !== j.cabo_id ? ' · relevo de ' + esc(SRP.ref.nombreUsuario(j.cabo_id)) : '') + '</span>' +
-      (SRP.pedido.esPedido(j) ? '<span class="franja-jornada-pedido">' + SRP.pedido.insignia(j) + '</span>' : '') +
+      (SRP.solicitud.es(j) ? '<span class="franja-jornada-solicitud">' + SRP.solicitud.insignia(j) + '</span>' : '') +
       // La prioridad de reforestación de la jornada: la de la mayoría de sus árboles o, sin árboles, la de su ubicación
       (SRP.prioritarias.hay() ? '<span class="franja-jornada-prioridad">' + SRP.prioritarias.insignia(SRP.prioritarias.deJornada(registros, j)) + '</span>' : '');
     this.el('franja-jornada-acciones').hidden = !!editando;
@@ -396,12 +397,12 @@ SRP.activa = {
     if (!nombre) errores.push(['ini-nombre', 'Escriba el nombre de la jornada: el parque, la calle o el sitio.']);
     if (!programa_id) errores.push(['ini-programa', 'Elija el programa de la jornada.']);
     else if (!SRP.ref.programasPara(SRP.sesion.usuario.organizacion_id).some(p => p.id === programa_id)) errores.push(['ini-programa', 'Ese programa no está disponible para su institución.']);
-    SRP.pedido.errores('ini').forEach(e => errores.push(e));
+    SRP.solicitud.errores('ini').forEach(e => errores.push(e));
     if (previstos === null || !Number.isInteger(previstos) || previstos < 1 || previstos > 9999) errores.push(['ini-meta', 'Escriba cuántos árboles se van a plantar: un número entero mayor que cero.']);
     if (!fecha) errores.push(['ini-fecha', 'Indique la fecha de la jornada.']);
     else if (fecha > SRP.util.fechaHoy()) errores.push(['ini-fecha', 'La fecha no puede ser posterior a hoy.']);
     // Cada campo dice su error (D140) y arriba el resumen, igual que en todos los formularios (M15)
-    if (SRP.util.resumenErrores(this.el('ini-errores'), errores, ['ini-nombre', 'ini-programa', 'ini-meta', 'ini-fecha'].concat(SRP.pedido.ids('ini')))) return;
+    if (SRP.util.resumenErrores(this.el('ini-errores'), errores, ['ini-nombre', 'ini-programa', 'ini-meta', 'ini-fecha'].concat(SRP.solicitud.ids('ini')))) return;
     // Un segundo toque mientras se guarda no inicia otra jornada igual
     if (this._iniciando) return;
     this._iniciando = true;
@@ -410,11 +411,13 @@ SRP.activa = {
     finally { this._iniciando = false; libre(); }
   },
 
-  async guardarJornadaNueva({ nombre, ubicacion, fecha, comentarios, programa_id, previstos }) {
+  /* La jornada nueva, completa: lo escrito en «Iniciar jornada» más lo que pone el sistema. La usa
+     «Iniciar jornada» para guardar y el espejo de campos para enseñar lo que no se ve. */
+  armarJornada({ nombre, ubicacion, fecha, comentarios, programa_id, previstos }) {
     const u = SRP.sesion.usuario;
     const ahora = SRP.util.ahoraISO();
     const p = this.punto, t = p ? p.t : {};
-    const j = Object.assign({
+    return Object.assign({
       id: SRP.util.generarId(),
       nombre, ubicacion, fecha, comentarios, programa_id, cabo_id: u.id, estatus: 'abierta',
       // Quién ejecuta: la institución de quien inicia; se fija aquí y no cambia aunque la cuenta cambie después
@@ -428,12 +431,23 @@ SRP.activa = {
       arboles_previstos: previstos, puntos_revisados: [], reporte_en: null, encargado_id: u.id,
       // Relevo: el cabo que registra en lugar del titular (nulo: el titular) y la lista de los relevos hechos
       relevo_id: null, relevos: [],
-      // De dónde viene: programada o pedido especial de otra instancia, con quién lo solicita
-      ...SRP.pedido.leer('ini'),
+      // Con el programa «Solicitud»: quién lo solicita y de qué se trata
+      ...SRP.solicitud.leer('ini'),
       carga_id: null,   // sólo las jornadas de una carga masiva llevan la clave de su lote
       // El vehículo se elige al cerrar, del catálogo; sus tres datos se copian entonces (D162, D174)
       vehiculo_id: null, vehiculo_placa: '', vehiculo_modelo: '', vehiculo_tipo: ''
     }, Object.fromEntries(SRP.reportes.CAMPOS.map(k => [k, ''])));
+  },
+
+  // La jornada tal como se guardaría con lo escrito hasta ahora en «Iniciar jornada»
+  jornadaPrevista() {
+    const texto = id => this.el(id).value.trim(), meta = texto('ini-meta');
+    return this.armarJornada({ nombre: texto('ini-nombre'), ubicacion: texto('ini-ubicacion'), fecha: this.el('ini-fecha').value, comentarios: texto('ini-comentarios'),
+      programa_id: this.el('ini-programa').value, previstos: meta === '' ? null : Number(meta) });
+  },
+
+  async guardarJornadaNueva({ nombre, ubicacion, fecha, comentarios, programa_id, previstos }) {
+    const j = this.armarJornada({ nombre, ubicacion, fecha, comentarios, programa_id, previstos });
     await SRP.almacen.guardarConBitacora('jornadas', j, SRP.bitacora.entrada('CREADO', 'jornada', j.id, 'Jornada «' + nombre + '» del ' + SRP.util.formatearFecha(fecha)));
     SRP.almacen.cuidarAlmacenamiento();   // ya hay algo que perder: se pide al navegador que no lo borre (D149)
     this.jornada = j;

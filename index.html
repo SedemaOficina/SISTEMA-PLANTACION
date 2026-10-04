@@ -14,12 +14,12 @@
 <!-- Las peticiones al mapa no dicen desde qué sitio se hacen -->
 <meta name="referrer" content="no-referrer">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.9.31">
-<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.9.31">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.9.32">
+<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.9.32">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.9.31">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.9.31">
-<link rel="stylesheet" href="css/estilos.css?v=0.9.31">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.9.32">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.9.32">
+<link rel="stylesheet" href="css/estilos.css?v=0.9.32">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -30,8 +30,8 @@
   <div class="encabezado-interior">
     <!-- Logotipo (D90, D137): Gobierno CDMX · SEDEMA · SIA · Reforestación Urbana en pantalla ancha; en teléfono, SIA y Reforestación Urbana -->
     <picture>
-      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.9.31">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.9.31" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
+      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.9.32">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.9.32" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» (D80) -->
@@ -44,8 +44,6 @@
           <p><span id="usuario-perfil" class="insignia"></span></p>
           <div class="menu-cuenta-acciones">
             <!-- Opciones de texto, como en cualquier menú de cuenta; no botones (D97) -->
-            <!-- Administración (D158): Catálogos y Usuarios dejan la barra de secciones -->
-            <button type="button" id="btn-ir-configuracion" class="menu-opcion" hidden>Configuración</button>
             <!-- Modo sol: más contraste para leer a pleno sol; se recuerda en este teléfono (D106) -->
             <button type="button" id="btn-contraste" class="menu-opcion" role="switch" aria-checked="false">
               <span>Modo sol (alto contraste)</span><span class="interruptor" aria-hidden="true"></span></button>
@@ -69,13 +67,15 @@
 </div>
 
 <nav id="navegacion" class="pestanas" aria-label="Secciones" hidden>
-  <!-- Supervisión va primero para coordinación y administración, y al final como «Mi avance» para el cabo (D158) -->
+  <!-- Supervisión va primero para quien sólo consulta, y al final para quien registra: cabo («Mi avance») y coordinación (D158) -->
   <button type="button" class="pestana" data-vista="supervision"><span id="pestana-supervision-texto">Supervisión</span></button>
   <button type="button" class="pestana" data-vista="registrar">Nuevo registro</button>
   <!-- Orden de las secciones: Nuevo registro, Jornadas, Registros. El reporte de cada jornada se genera en su ficha -->
   <button type="button" class="pestana" data-vista="jornadas">Jornadas</button>
   <button type="button" class="pestana" data-vista="registros">Registros</button>
-  <!-- Fotografías vive dentro de Supervisión; Catálogos y Usuarios, en el menú de la cuenta (D158) -->
+  <!-- Configuración, sólo para la Administración global: va en la barra, al alcance del pulgar, y reúne Usuarios, Catálogos y lo demás que administra -->
+  <button type="button" class="pestana" data-vista="configuracion" hidden>Configuración</button>
+  <!-- Fotografías vive dentro de Supervisión (D158) -->
 </nav>
 
 <main id="principal" tabindex="-1">
@@ -140,7 +140,6 @@
           <div class="filtros-listas acordeon-cuerpo">
             <div class="campo campo-corto"><label for="sup-alcaldia">Alcaldía</label><select id="sup-alcaldia"></select></div>
             <div class="campo campo-corto"><label for="sup-programa">Programa</label><select id="sup-programa"></select></div>
-            <div class="campo campo-corto"><label for="sup-origen">Origen</label><select id="sup-origen"></select></div>
             <div id="caja-sup-cabo" class="campo campo-corto"><label for="sup-cabo">Quién registró</label><select id="sup-cabo"></select></div>
             <!-- Sólo para la Administración: las demás cuentas ya ven sólo lo de su institución -->
             <div id="caja-sup-organizacion" class="campo campo-corto" hidden><label for="sup-organizacion">Institución</label><select id="sup-organizacion"></select></div>
@@ -208,8 +207,8 @@
         <!-- El programa es de la jornada (D130): los árboles lo heredan; se puede cambiar por árbol -->
         <div class="campo"><label for="ini-programa">Programa <span class="obligatorio" aria-hidden="true">*</span></label>
           <select id="ini-programa" required></select></div>
-        <!-- Origen: programada o pedido especial de otra instancia; el bloque lo arma js/pedido.js -->
-        <div id="ini-caja-pedido" class="caja-pedido"></div>
+        <!-- Con el programa «Solicitud»: quién lo solicita y de qué se trata; el bloque lo arma js/solicitud.js -->
+        <div id="ini-caja-solicitud" class="caja-solicitud"></div>
         <!-- Meta de la jornada (D131): cuántos árboles se van a plantar; la revisión compara contra ella -->
         <div class="campo"><label for="ini-meta">Árboles que se van a plantar <span class="obligatorio" aria-hidden="true">*</span></label>
           <input type="number" id="ini-meta" inputmode="numeric" min="1" max="9999" step="1" placeholder="Cantidad" autocomplete="off" required></div>
@@ -230,7 +229,7 @@
          último árbol guardado dentro (D130), para que nadie registre en la jornada equivocada -->
     <section id="franja-jornada" class="franja-jornada" aria-labelledby="franja-jornada-rotulo" hidden>
       <p id="franja-jornada-rotulo" class="franja-jornada-rotulo">Jornada activa</p>
-      <!-- Sólo en teléfono: despliega fecha, lugar, programa, pedido, prioridad y pasos -->
+      <!-- Sólo en teléfono: despliega fecha, lugar, programa, solicitante, prioridad y pasos -->
       <button type="button" id="btn-franja-detalle" class="btn btn-texto btn-chico franja-detalle-boton" aria-expanded="false" aria-controls="franja-jornada-texto franja-pasos"></button>
       <p id="franja-jornada-texto"></p>
       <!-- En qué paso va la jornada (D138) -->
@@ -500,7 +499,6 @@
             <div class="filtros-listas acordeon-cuerpo">
               <div id="caja-jornada-cabo" class="campo campo-corto" hidden><label for="jornada-cabo">Quién registró</label><select id="jornada-cabo"></select></div>
               <div class="campo campo-corto"><label for="jornada-programa">Programa</label><select id="jornada-programa"></select></div>
-              <div class="campo campo-corto"><label for="jornada-origen">Origen</label><select id="jornada-origen"></select></div>
               <div class="campo campo-corto"><label for="jornada-alcaldia">Alcaldía</label><select id="jornada-alcaldia"></select></div>
               <div id="caja-jornada-org" class="campo campo-corto" hidden><label for="jornada-org">Institución</label><select id="jornada-org"></select></div>
             </div>
@@ -541,7 +539,7 @@
       <div id="ficha-col-mapa" class="ficha-col-mapa">
       <h2 id="sec-jornada-mapa" class="titulo-bloque titulo-seccion" tabindex="-1">Mapa</h2>
       <div id="jornada-mapa" class="mapa mapa-jornada" role="region" aria-label="Mapa de la jornada con los puntos numerados"></div>
-      <p class="leyenda-jornada" aria-hidden="true"><span><i data-tono=""></i>Correcto</span><span><i data-tono="rev"></i>Por revisar</span><span><i data-tono="err"></i>Lejos del resto</span><span><i data-tono="ok"></i>Revisado</span><span><i data-tono="sust"></i>Sustituto</span></p>
+      <p id="jornada-leyenda" class="leyenda-jornada" aria-hidden="true"><span><i data-tono=""></i>Correcto</span><span><i data-tono="rev"></i>Por revisar</span><span><i data-tono="err"></i>Lejos del resto</span><span><i data-tono="ok"></i>Revisado</span><span><i data-tono="sust"></i>Sustituto</span></p>
       <div id="jornada-prioritarias" class="pri-control"></div>
       <p id="jornada-prioridad" class="nota" hidden></p>
       </div>
@@ -614,7 +612,7 @@
     <p id="cat-cuenta" class="conteo-lista" aria-live="polite"></p>
     <p class="nota">Lo que usa algún árbol, jornada o cuenta no se elimina: se desactiva.</p>
     <p id="cat-nota-org" class="nota" hidden>Aquí se agregan, a solicitud, las dependencias de gobierno, empresas y organizaciones civiles; después se eligen al dar de alta una cuenta. Desactivar una institución corta el acceso de todas sus cuentas. Las alcaldías son fijas.</p>
-    <p id="cat-nota-sol" class="nota" hidden>Quién puede pedir un pedido especial. Se eligen en «Quién lo solicita» al iniciar o editar una jornada, agrupados por tipo. No son instituciones: no tienen cuentas ni ejecutan jornadas.</p>
+    <p id="cat-nota-sol" class="nota" hidden>Quién puede solicitar una jornada. Se eligen en «Quién lo solicita» al iniciar o editar una jornada, agrupados por tipo. No son instituciones: no tienen cuentas ni ejecutan jornadas.</p>
     <div class="tabla-caja"><table id="tabla-catalogo" class="tabla tabla-tarjetas"></table></div>
   </section>
 
@@ -803,7 +801,7 @@
     <div class="campo"><label for="ej-programa">Programa <span class="obligatorio" aria-hidden="true">*</span></label>
       <select id="ej-programa"></select></div>
     <p class="nota" id="ej-nota-programa" hidden>Al cambiar el programa, los árboles de la jornada toman el programa nuevo.</p>
-    <div id="ej-caja-pedido" class="caja-pedido"></div>
+    <div id="ej-caja-solicitud" class="caja-solicitud"></div>
     <div class="campo"><label for="ej-meta">Árboles que se van a plantar <span class="obligatorio" aria-hidden="true">*</span></label>
       <input type="number" id="ej-meta" inputmode="numeric" min="1" max="9999" step="1" autocomplete="off"></div>
     <!-- «Hoy» también aquí (D140): corrige una jornada iniciada con la fecha equivocada -->
@@ -940,7 +938,7 @@
     <!-- Instituciones: el tipo se elige al agregarla (nunca Alcaldía: son fijas) y después no cambia -->
     <div class="campo solo-organizacion"><label for="cat-tipo-org">Tipo de institución <span class="obligatorio" aria-hidden="true">*</span></label>
       <select id="cat-tipo-org"><option value="">Seleccione el tipo</option><option value="Gobierno de la CDMX">Gobierno de la CDMX</option><option value="Empresa privada">Empresa privada</option><option value="Organización civil">Organización civil</option><option value="Alcaldía">Alcaldía</option></select></div>
-    <!-- Solicitantes de pedidos especiales: el tipo agrupa la lista «Quién lo solicita» -->
+    <!-- Solicitantes: el tipo agrupa la lista «Quién lo solicita» -->
     <div class="campo solo-solicitante"><label for="cat-tipo-sol">Tipo de solicitante <span class="obligatorio" aria-hidden="true">*</span></label>
       <select id="cat-tipo-sol"></select></div>
     <!-- Programas: qué tipos de institución, además de la Secretaría, pueden elegirlo al iniciar una jornada -->
@@ -1124,57 +1122,57 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.9.31"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.9.31"></script>
-<script src="vendor/turf-pip.min.js?v=0.9.31"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.9.31"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.9.31"></script>
+<script src="vendor/leaflet.js?v=0.9.32"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.9.32"></script>
+<script src="vendor/turf-pip.min.js?v=0.9.32"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.9.32"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.9.32"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.9.31"></script>
-<script src="js/util.js?v=0.9.31"></script>
-<script src="js/filtros.js?v=0.9.31"></script>
-<script src="js/iconos.js?v=0.9.31"></script>
+<script src="js/config.js?v=0.9.32"></script>
+<script src="js/util.js?v=0.9.32"></script>
+<script src="js/filtros.js?v=0.9.32"></script>
+<script src="js/iconos.js?v=0.9.32"></script>
 <!-- Capas territoriales del SIA, compactadas por herramientas/generar_capas.py desde originales/ -->
-<script src="assets/capas/capa-alcaldias.js?v=0.9.31"></script>
-<script src="assets/capas/capa-uga.js?v=0.9.31"></script>
-<script src="assets/capas/capa-colonias.js?v=0.9.31"></script>
+<script src="assets/capas/capa-alcaldias.js?v=0.9.32"></script>
+<script src="assets/capas/capa-uga.js?v=0.9.32"></script>
+<script src="assets/capas/capa-colonias.js?v=0.9.32"></script>
 <!-- Colonias prioritarias para reforestar: capa de referencia del modelo de priorización -->
-<script src="assets/capas/capa-prioritarias.js?v=0.9.31"></script>
-<script src="assets/catalogos/catalogo-especies.js?v=0.9.31"></script>
-<script src="assets/catalogos/catalogo-vehiculos.js?v=0.9.31"></script>
-<script src="js/datos-ficticios.js?v=0.9.31"></script>
-<script src="js/permisos.js?v=0.9.31"></script>
-<script src="js/derivacion.js?v=0.9.31"></script>
-<script src="js/prioritarias.js?v=0.9.31"></script>
-<script src="js/pedido.js?v=0.9.31"></script>
-<script src="js/almacen.js?v=0.9.31"></script>
-<script src="js/sesion.js?v=0.9.31"></script>
-<script src="js/referencias.js?v=0.9.31"></script>
-<script src="js/folio.js?v=0.9.31"></script>
+<script src="assets/capas/capa-prioritarias.js?v=0.9.32"></script>
+<script src="assets/catalogos/catalogo-especies.js?v=0.9.32"></script>
+<script src="assets/catalogos/catalogo-vehiculos.js?v=0.9.32"></script>
+<script src="js/datos-ficticios.js?v=0.9.32"></script>
+<script src="js/permisos.js?v=0.9.32"></script>
+<script src="js/derivacion.js?v=0.9.32"></script>
+<script src="js/prioritarias.js?v=0.9.32"></script>
+<script src="js/solicitud.js?v=0.9.32"></script>
+<script src="js/almacen.js?v=0.9.32"></script>
+<script src="js/sesion.js?v=0.9.32"></script>
+<script src="js/referencias.js?v=0.9.32"></script>
+<script src="js/folio.js?v=0.9.32"></script>
 <!-- Esquema generado de datos/esquema.json: relaciones entre tablas (D150) -->
-<script src="js/esquema.js?v=0.9.31"></script>
-<script src="js/conexion.js?v=0.9.31"></script>
-<script src="js/envio.js?v=0.9.31"></script>
-<script src="js/mapa.js?v=0.9.31"></script>
-<script src="js/foto.js?v=0.9.31"></script>
-<script src="js/jornada-activa.js?v=0.9.31"></script>
-<script src="js/formulario.js?v=0.9.31"></script>
+<script src="js/esquema.js?v=0.9.32"></script>
+<script src="js/conexion.js?v=0.9.32"></script>
+<script src="js/envio.js?v=0.9.32"></script>
+<script src="js/mapa.js?v=0.9.32"></script>
+<script src="js/foto.js?v=0.9.32"></script>
+<script src="js/jornada-activa.js?v=0.9.32"></script>
+<script src="js/formulario.js?v=0.9.32"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.9.31"></script>
-<script src="js/registros.js?v=0.9.31"></script>
-<script src="js/galeria.js?v=0.9.31"></script>
-<script src="js/jornadas.js?v=0.9.31"></script>
-<script src="js/informes.js?v=0.9.31"></script>
-<script src="js/supervision.js?v=0.9.31"></script>
-<script src="js/indicadores.js?v=0.9.31"></script>
-<script src="js/demostracion.js?v=0.9.31"></script>
-<script src="js/croquis.js?v=0.9.31"></script>
-<script src="js/reportes.js?v=0.9.31"></script>
-<script src="js/catalogos.js?v=0.9.31"></script>
-<script src="js/usuarios.js?v=0.9.31"></script>
-<script src="js/excel.js?v=0.9.31"></script>
-<script src="js/carga.js?v=0.9.31"></script>
-<script src="js/configuracion.js?v=0.9.31"></script>
-<script src="js/app.js?v=0.9.31"></script>
+<script src="js/espejo.js?v=0.9.32"></script>
+<script src="js/registros.js?v=0.9.32"></script>
+<script src="js/galeria.js?v=0.9.32"></script>
+<script src="js/jornadas.js?v=0.9.32"></script>
+<script src="js/informes.js?v=0.9.32"></script>
+<script src="js/supervision.js?v=0.9.32"></script>
+<script src="js/indicadores.js?v=0.9.32"></script>
+<script src="js/demostracion.js?v=0.9.32"></script>
+<script src="js/croquis.js?v=0.9.32"></script>
+<script src="js/reportes.js?v=0.9.32"></script>
+<script src="js/catalogos.js?v=0.9.32"></script>
+<script src="js/usuarios.js?v=0.9.32"></script>
+<script src="js/excel.js?v=0.9.32"></script>
+<script src="js/carga.js?v=0.9.32"></script>
+<script src="js/configuracion.js?v=0.9.32"></script>
+<script src="js/app.js?v=0.9.32"></script>
 </body>
 </html>

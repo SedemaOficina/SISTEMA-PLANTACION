@@ -4,7 +4,7 @@
 window.SRP = window.SRP || {};
 
 SRP.ESQUEMA = {
- "version_esquema": "2026-10-03",
+ "version_esquema": "2026-10-04",
  "dominios": {
   "estatus_plantacion": [
    "activo",
@@ -80,10 +80,6 @@ SRP.ESQUEMA = {
    "catalogo",
    "jornada",
    "carga"
-  ],
-  "origen_jornada": [
-   "PROGRAMADA",
-   "PEDIDO"
   ]
  },
  "tablas": {
@@ -1038,13 +1034,6 @@ SRP.ESQUEMA = {
     null
    ],
    [
-    "origen",
-    "text",
-    false,
-    "origen_jornada",
-    null
-   ],
-   [
     "solicitante_id",
     "text",
     true,
@@ -1059,7 +1048,7 @@ SRP.ESQUEMA = {
     null
    ],
    [
-    "pedido_descripcion",
+    "solicitud_descripcion",
     "text",
     false,
     null,

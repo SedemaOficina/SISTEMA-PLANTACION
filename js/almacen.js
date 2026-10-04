@@ -197,6 +197,37 @@ SRP.almacen = {
         (pet.result || []).forEach(c => { if (A.TABLA_DE_TIPO[c.tipo]) A.ponerCatalogo(tx, c); });
         db.deleteObjectStore('catalogos');
       };
+    },
+    /* 9. LA SOLICITUD ES UN PROGRAMA. Se retira el origen de la jornada: la que venía de otra instancia
+       pasa al programa «Solicitud», y sus árboles con ella; conserva quién lo solicitó y la descripción,
+       que cambia de nombre. No se borra ningún registro. */
+    9(db, tx) {
+      const A = SRP.almacen, P = SRP.CONFIG.PROGRAMA_SOLICITUD, solicitudes = new Set();
+      tx.objectStore('jornadas').openCursor().onsuccess = (e) => {
+        const cur = e.target.result;
+        if (!cur) {
+          if (!solicitudes.size) return;
+          const fila = ((SRP.DATOS_FICTICIOS || {}).catalogos || []).find(c => c.id === P);
+          const programas = tx.objectStore('programas');
+          programas.get(P).onsuccess = (g) => { if (!g.target.result && fila) A.ponerCatalogo(tx, fila); };
+          tx.objectStore('plantaciones').openCursor().onsuccess = (ev) => {
+            const c = ev.target.result; if (!c) return;
+            if (solicitudes.has(c.value.jornada_id) && c.value.programa_id !== P) c.update(Object.assign(c.value, { programa_id: P }));
+            c.continue();
+          };
+          return;
+        }
+        const j = cur.value;
+        if ('origen' in j || 'pedido_descripcion' in j || !('solicitud_descripcion' in j)) {
+          const era = j.origen === 'PEDIDO';
+          if (era) { j.programa_id = P; solicitudes.add(j.id); }
+          j.solicitud_descripcion = era ? (j.pedido_descripcion || '') : '';
+          if (!era) { j.solicitante_id = null; j.solicitante_otro = ''; }
+          delete j.origen; delete j.pedido_descripcion;
+          cur.update(j);
+        }
+        cur.continue();
+      };
     }
   },
 
@@ -206,7 +237,7 @@ SRP.almacen = {
   /* CUENTAS, JORNADAS, INSTITUCIONES Y PROGRAMAS AL DÍA. Corre al abrir, ya con la base al día; sólo escribe lo
      que falte o sobre, así que repetirla no cambia nada. No borra ningún registro.
      - Cuenta o jornada sin institución: antes de las instituciones todo era de la Secretaría.
-     - Jornada cuyo solicitante es una institución: quien solicita un pedido especial sale del
+     - Jornada cuyo solicitante es una institución: quien solicita una jornada sale del
        catálogo de solicitantes. Pasa al solicitante que corresponde a esa institución (una
        alcaldía, SOBSE) o, si no lo hay, queda escrito con su nombre como «Otra instancia».
      - Nombre de la cuenta en tres campos: se une en `nombre_completo`.

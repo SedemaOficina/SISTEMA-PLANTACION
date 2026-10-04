@@ -58,7 +58,6 @@ def iniciar_jornada(pg, nombre, fecha=None, comentarios='', programa='p-refor'):
         pg.click('#btn-jornada-cambiar'); pg.wait_for_timeout(200); pg.click('#btn-cambiar-nueva'); pg.wait_for_timeout(300)
     pg.fill('#ini-nombre', nombre); pg.fill('#ini-fecha', fecha or HOY)
     pg.select_option('#ini-programa', programa)   # el programa es de la jornada (D130)
-    pg.select_option('#ini-origen', 'PROGRAMADA')   # y el origen se elige a propósito
     pg.fill('#ini-meta', '10')                      # y la meta de árboles también (D131)
     if comentarios: pg.fill('#ini-comentarios', comentarios)
     pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(500)
@@ -165,7 +164,7 @@ with sync_playwright() as p:
     ok(det[0]=='Cuauhtémoc' and det[1] and det[1]!='—' and 'detectada' in det[2] and 'btn-editar' in det[3] and det[4]=='Av. Insurgentes Sur 1500, Benito Juárez','al tocarlo se llenan alcaldía y colonia, el botón pasa a neutro con lápiz y lo escrito en Ubicación se conserva: %s' % det)
     pg.fill('#ini-comentarios','Jornada de prueba con la comunidad'); pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(400)
     ok('programa' in pg.inner_text('#ini-errores').lower() and 'plantar' in pg.inner_text('#ini-errores').lower(),'sin programa ni meta no se inicia la jornada (D130, D131)')
-    pg.select_option('#ini-programa','p-refor'); pg.select_option('#ini-origen','PROGRAMADA'); pg.fill('#ini-meta','25'); pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(600)
+    pg.select_option('#ini-programa','p-refor'); pg.fill('#ini-meta','25'); pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(600)
     ok(pg.is_hidden('#panel-iniciar-jornada') and pg.is_visible('#registrar-columnas') and pg.is_visible('#franja-jornada'),'con la jornada iniciada aparece el formulario con su franja')
     ok(pg.evaluate("SRP.formulario.programaDeJornada()")=='p-refor' and pg.evaluate("SRP.activa.jornada.programa_id")=='p-refor' and 'Reforestación' in pg.text_content('#franja-jornada'),'el programa de la jornada queda guardado, es el de sus árboles y se lee en la franja (D130, D151)')
     ok(pg.evaluate("SRP.activa.jornada.arboles_previstos")==25 and '0 de 25' in pg.text_content('#franja-jornada') and 'JORNADA ACTIVA' in pg.text_content('#franja-jornada').upper() and pg.is_visible('#titulo-arbol') and pg.inner_text('#titulo-arbol')=='Nuevo árbol',
@@ -178,7 +177,7 @@ with sync_playwright() as p:
     ok(geo[0]=='Cuauhtémoc' and geo[1] and geo[2] and geo[3] and geo[4]=='number' and geo[5]=='number' and geo[6]=='gps','la jornada guarda punto, precisión, alcaldía y colonia con sus claves, y que el punto vino del GPS (D122, D143): %s' % geo)
     # Sin tocar el botón, la jornada se guarda sin punto: nada se inventa
     sin=pg.evaluate("""async () => { SRP.activa.mostrarInicio(true); const antes = [document.getElementById('ini-alcaldia').textContent, document.getElementById('btn-ini-detectar').className.includes('btn-primario')];
-      document.getElementById('ini-nombre').value = 'Sin detectar'; document.getElementById('ini-programa').value = 'p-refor'; document.getElementById('ini-origen').value = 'PROGRAMADA'; document.getElementById('ini-meta').value = '5'; document.getElementById('btn-ini-hoy').click(); await SRP.activa.iniciarJornada();
+      document.getElementById('ini-nombre').value = 'Sin detectar'; document.getElementById('ini-programa').value = 'p-refor'; document.getElementById('ini-meta').value = '5'; document.getElementById('btn-ini-hoy').click(); await SRP.activa.iniciarJornada();
       const j = SRP.activa.jornada; return [antes, j.lat, j.alcaldia, j.colonia_cve]; }""")
     ok(sin==[['—',True],None,None,None],'al abrir otra vez el panel vuelve a los guiones, y sin detectar la jornada queda con punto y alcaldía nulos: %s' % sin)
     # La jornada de prueba se retira para no alterar el resto de las pruebas; la primera vuelve a ser la activa
@@ -616,8 +615,8 @@ with sync_playwright() as p:
     # Espejo en el detalle (B22): los campos guardados que la ficha no enseña
     accion(pg,'#lista-registros','ver'); pg.wait_for_timeout(500)
     campos=pg.evaluate("[...document.querySelectorAll('#dlg-detalle .espejo .espejo-campo')].map(e=>e.textContent)")
-    ok('colonia_cve' in campos and 'capa_version' in campos and 'uga' in campos and 'id' not in campos,
-       'el detalle lleva su espejo con lo que no se ve (%d campos)' % len(campos))
+    ok('colonia_cve' in campos and 'jornada_id' in campos and 'capa_version' not in campos and 'uga' not in campos and 'id' not in campos,
+       'el detalle lleva su espejo con lo que no se ve; la celda UGA y las capas ya van en «Datos del sistema» (%d campos)' % len(campos))
     # Todas las ventanas con cabecera fija: título, × y acción arriba (D91)
     cab=pg.evaluate("""() => ['dlg-detalle','dlg-cierre','dlg-catalogo','dlg-usuario','dlg-senal'].map(id => {
       const d=document.getElementById(id); const c=d.querySelector('.dialogo-cabecera');
@@ -733,8 +732,8 @@ with sync_playwright() as p:
     reporte_de(pg)
     ok(pg.is_visible('#dlg-cierre'),'«Generar reporte» abre el cierre del reporte antes de generar')
     espejoC=pg.evaluate("[...document.querySelectorAll('#espejo-cierre-cuerpo .espejo-campo')].map(e=>e.textContent)")
-    ok(espejoC==['id','nombre','ubicacion','fecha','comentarios','programa_id','cabo_id','estatus','organizacion_id','lat','lng','punto_origen','gps_precision_m','alcaldia_cve','alcaldia','colonia_cve','colonia','fecha_inicio','fecha_cierre','editado_por_id','fecha_ultima_edicion','arboles_previstos','puntos_revisados','reporte_en','relevo_id','relevos','origen','solicitante_id','solicitante_otro','pedido_descripcion','carga_id','vehiculo_id','vehiculo_placa','vehiculo_modelo','vehiculo_tipo'],
-       'el cierre lleva su espejo con los treinta y cinco campos de la jornada, con la institución que ejecuta, el relevo, el origen y la clave de carga masiva, que no se capturan aquí, con el vehículo y sus tres datos copiados del catálogo (D112, D119, D120, D122, D130, D131, D143, D162, D174): '+', '.join(espejoC))
+    ok(espejoC==['id','nombre','ubicacion','fecha','comentarios','programa_id','cabo_id','estatus','organizacion_id','lat','lng','punto_origen','gps_precision_m','alcaldia_cve','alcaldia','colonia_cve','colonia','fecha_inicio','fecha_cierre','editado_por_id','fecha_ultima_edicion','arboles_previstos','puntos_revisados','reporte_en','relevo_id','relevos','solicitante_id','solicitante_otro','solicitud_descripcion','carga_id','vehiculo_id','vehiculo_placa','vehiculo_modelo','vehiculo_tipo'],
+       'el cierre lleva su espejo con los treinta y cuatro campos de la jornada, con la institución que ejecuta, el relevo, los datos de la solicitud y la clave de carga masiva, que no se capturan aquí, con el vehículo y sus tres datos copiados del catálogo (D112, D119, D120, D122, D130, D131, D143, D162, D174): '+', '.join(espejoC))
     pg.fill('#cie-chofer','Mengano'); pg.wait_for_timeout(200)
     ok(pg.evaluate("SRP.reportes.cierrePrevisto().chofer")=='Mengano','y lo que se escribe entra al mismo objeto que se guarda')
     ok(pg.is_visible('#cie-encargado-lectura') and pg.is_hidden('#cie-encargado-caja'),
@@ -805,7 +804,7 @@ with sync_playwright() as p:
     pg.keyboard.press('Escape'); pg.evaluate("SRP.app.menuCuenta(false)"); pg.wait_for_timeout(150)
     ok(pg.evaluate("(() => { const b=document.querySelector('#navegacion [data-vista=jornadas]'); const r=b.getBoundingClientRect(); return r.top > 700 && r.bottom <= 844; })()"),'y en teléfono va en la barra de abajo')
     ok([c for c in pg.eval_on_selector_all('#jornada-atajos .chip','b=>b.map(x=>x.dataset.atajo)')]==['todas','hoy','mes','anio','dia','periodo'],'con los atajos Todas, Hoy, Este mes, Este año, Un día y Un periodo')
-    ok(pg.is_visible('#jornada-mas-filtros') and not pg.evaluate("document.getElementById('jornada-mas-filtros').open") and pg.locator('#jornada-mas-filtros select').count()==5 and 'Más filtros' in pg.inner_text('#jornada-mas-filtros summary'),'quién registró, programa, origen, alcaldía e institución van plegados en «Más filtros»')
+    ok(pg.is_visible('#jornada-mas-filtros') and not pg.evaluate("document.getElementById('jornada-mas-filtros').open") and pg.locator('#jornada-mas-filtros select').count()==4 and 'Más filtros' in pg.inner_text('#jornada-mas-filtros summary'),'quién registró, programa, alcaldía e institución van plegados en «Más filtros»')
     tarj=pg.locator('#lista-jornadas .jornada')
     ok(tarj.count()>=2 and re.match(r'^\d+ jornadas · \d+ árboles$', pg.inner_text('#jornadas-total')) is not None,'cada jornada es una ficha y el total dice jornadas y árboles: '+pg.inner_text('#jornadas-total'))
     t=[x for x in pg.eval_on_selector_all('#lista-jornadas .jornada','l=>l.map(x=>x.textContent)') if 'Jardín de prueba' in x]
@@ -1277,7 +1276,7 @@ with sync_playwright() as p:
     ok(pg.is_visible('#vista-supervision'),'y entra directamente a Supervisión (D158)')
     pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(300)
     ok(pg.is_visible('#vista-registros'),'ni la abre llamándola directamente')
-    pg.click('#btn-cuenta'); pg.click('#btn-ir-configuracion'); pg.wait_for_timeout(300); pg.click('.cfg-tarjeta[data-ir=catalogos]'); pg.wait_for_timeout(500)   # Catálogos, desde el menú de la cuenta (D158)
+    pg.click('.pestana[data-vista=configuracion]'); pg.wait_for_timeout(300); pg.click('.cfg-tarjeta[data-ir=catalogos]'); pg.wait_for_timeout(500)   # Catálogos, desde el menú de la cuenta (D158)
     ok(all(pg.locator('#tabla-catalogo tbody tr', has_text=n).locator('button[data-accion=eliminar]').count()==0 for n in ('Reforestación Urbana','Centro Histórico')),'un programa en uso no ofrece Eliminar')
     pg.click('#btn-cat-agregar'); pg.wait_for_timeout(300)
     pg.fill('#cat-nombre','Restauración Ecológica'); pg.wait_for_timeout(150)
@@ -1347,7 +1346,7 @@ with sync_playwright() as p:
     pg.fill('#cat-buscar',''); pg.wait_for_timeout(200)
 
     # ---------- ADMINISTRACIÓN: usuarios ----------
-    pg.click('#btn-cuenta'); pg.click('#btn-ir-configuracion'); pg.wait_for_timeout(300); pg.click('.cfg-tarjeta[data-ir=usuarios]'); pg.wait_for_timeout(500)   # desde el menú de la cuenta (D158)
+    pg.click('.pestana[data-vista=configuracion]'); pg.wait_for_timeout(300); pg.click('.cfg-tarjeta[data-ir=usuarios]'); pg.wait_for_timeout(500)   # desde el menú de la cuenta (D158)
     ok(pg.locator('#tabla-usuarios tbody tr').count()==13,'la lista trae las trece cuentas')
     fila_yo=pg.locator('#tabla-usuarios tbody tr', has_text='Administración SIA')
     ok('usted' in fila_yo.inner_text(),'marca cuál es la cuenta propia')
@@ -1393,7 +1392,7 @@ with sync_playwright() as p:
     pg.evaluate("SRP.app.mostrarVista('usuarios')"); pg.wait_for_timeout(300)
     ok(pg.is_visible('#vista-registros'),'ni la abre llamándola directamente')
     pg.click('#btn-cuenta'); pg.click('#btn-cambiar-perfil'); pg.select_option('#sel-usuario-prueba','u-admin-1'); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(500)
-    pg.click('#btn-cuenta'); pg.click('#btn-ir-configuracion'); pg.wait_for_timeout(300); pg.click('.cfg-tarjeta[data-ir=usuarios]'); pg.wait_for_timeout(500)
+    pg.click('.pestana[data-vista=configuracion]'); pg.wait_for_timeout(300); pg.click('.cfg-tarjeta[data-ir=usuarios]'); pg.wait_for_timeout(500)
     f=pg.locator('#tabla-usuarios tbody tr', has_text='Sutana')
     accion(pg,f,'eliminar'); pg.wait_for_timeout(300)
     ok(pg.inner_text('#dlg-confirmar-titulo')=='Eliminar cuenta' and 'desactívela' in pg.inner_text('#dlg-confirmar-puntos') and pg.get_attribute('#dlg-confirmar-nota','data-tono')=='alerta',
@@ -1502,7 +1501,7 @@ with sync_playwright() as p:
     ok(pg.inner_text('#btn-iniciar-jornada').strip()=='Iniciar jornada del '+corta,'con una fecha que no es hoy, el botón lo dice: '+pg.inner_text('#btn-iniciar-jornada').strip())
     pg.click('#btn-ini-hoy'); pg.wait_for_timeout(100)
     ok(pg.inner_text('#btn-iniciar-jornada').strip()=='Iniciar jornada','y con hoy vuelve a «Iniciar jornada»')
-    pg.fill('#ini-nombre','Jornada de los pasos'); pg.select_option('#ini-programa','p-refor'); pg.select_option('#ini-origen','PROGRAMADA'); pg.fill('#ini-meta','2')
+    pg.fill('#ini-nombre','Jornada de los pasos'); pg.select_option('#ini-programa','p-refor'); pg.fill('#ini-meta','2')
     pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(700)
     est=lambda sel: pg.evaluate("[...document.querySelectorAll('%s .paso')].map(p => p.dataset.estado)" % sel)
     ok(est('#franja-pasos')==['actual','pendiente','pendiente','pendiente'] and pg.locator('#franja-pasos [aria-current=step]').inner_text().startswith('Registrar'),
@@ -1607,10 +1606,10 @@ with sync_playwright() as p:
     if pg.is_hidden('#panel-iniciar-jornada'):
         pg.click('#btn-jornada-cambiar'); pg.wait_for_timeout(200); pg.click('#btn-cambiar-nueva'); pg.wait_for_timeout(300)
     pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(300)
-    err=pg.evaluate("""() => ['ini-nombre','ini-programa','ini-origen','ini-meta','ini-fecha'].map(id => { const c = document.getElementById(id), m = document.getElementById(id + '-error');
+    err=pg.evaluate("""() => ['ini-nombre','ini-programa','ini-meta','ini-fecha'].map(id => { const c = document.getElementById(id), m = document.getElementById(id + '-error');
       return [!!m && !m.hidden && !!m.querySelector('svg'), (c.getAttribute('aria-describedby') || '').split(' ').includes(id + '-error'), c.getAttribute('aria-invalid')]; })""")
-    ok(all(e==[True,True,'true'] for e in err) and pg.locator('#ini-errores li').count()==5,'cada campo con error lo dice debajo, con icono, enlazado con aria-describedby; el resumen de arriba se queda (D140): %s' % err)
-    ok(pg.inner_text('#ini-meta-error')==pg.locator('#ini-errores li').nth(3).inner_text(),'el mensaje del campo es el mismo del resumen')
+    ok(all(e==[True,True,'true'] for e in err) and pg.locator('#ini-errores li').count()==4,'cada campo con error lo dice debajo, con icono, enlazado con aria-describedby; el resumen de arriba se queda (D140): %s' % err)
+    ok(pg.inner_text('#ini-meta-error')==pg.locator('#ini-errores li').nth(2).inner_text(),'el mensaje del campo es el mismo del resumen')
     pg.fill('#ini-nombre','J'); pg.wait_for_timeout(100)
     ok(pg.locator('#ini-nombre-error').count()==0 and pg.get_attribute('#ini-nombre','aria-invalid') is None and 'ini-nombre-error' not in (pg.get_attribute('#ini-nombre','aria-describedby') or ''),
        'al corregir el campo, su error se va en seguida, sin esperar a volver a enviar')
@@ -1629,7 +1628,7 @@ with sync_playwright() as p:
     ok(c1 and c2=='420 / 500' and c3=='500 / 500 · llegó al límite' and lleno=='true','el contador aparece al pasar del 80 por ciento («420 / 500») y avisa al llegar al límite (D140): '+str([c1,c2,c3]))
     ok(pg.locator('input[maxlength], textarea[maxlength]').count()==pg.locator('.contador').count(),'todos los campos con límite tienen su contador')
     # Formulario del árbol: el error de ubicación va bajo el botón y se va al tomarla
-    pg.fill('#ini-comentarios',''); pg.fill('#ini-nombre','Jornada de los campos'); pg.select_option('#ini-programa','p-refor'); pg.select_option('#ini-origen','PROGRAMADA'); pg.fill('#ini-meta','5')
+    pg.fill('#ini-comentarios',''); pg.fill('#ini-nombre','Jornada de los campos'); pg.select_option('#ini-programa','p-refor'); pg.fill('#ini-meta','5')
     pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(700)
     ok(pg.is_hidden('#ini-errores') and pg.locator('#panel-iniciar-jornada .campo-error').count()==0,'al iniciar bien, no queda ningún error pintado en el panel')
     pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(300)
@@ -1776,7 +1775,7 @@ with sync_playwright() as p:
     pg.fill('#ini-coord-lat','19,4326'); pg.fill('#ini-coord-lng','-99.1332'); pg.click('#btn-ini-coord-aplicar'); pg.wait_for_timeout(200)
     ok(pg.inner_text('#ini-alcaldia')=='Cuauhtémoc' and 'a mano' in pg.inner_text('#ini-detectado') and 'Detectar de nuevo' in pg.inner_text('#btn-ini-detectar'),
        'con coordenadas válidas (también con coma decimal) deriva alcaldía y colonia como el GPS')
-    pg.fill('#ini-nombre','Jornada sin señal'); pg.select_option('#ini-programa','p-refor'); pg.select_option('#ini-origen','PROGRAMADA'); pg.fill('#ini-meta','4'); pg.click('#btn-ini-hoy')
+    pg.fill('#ini-nombre','Jornada sin señal'); pg.select_option('#ini-programa','p-refor'); pg.fill('#ini-meta','4'); pg.click('#btn-ini-hoy')
     pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(700)
     man=pg.evaluate("async () => { const j = (await SRP.almacen.todos('jornadas')).find(x => x.nombre === 'Jornada sin señal'); return j && [j.lat, j.lng, j.punto_origen, j.gps_precision_m, j.alcaldia]; }")
     ok(man==[19.4326,-99.1332,'manual',None,'Cuauhtémoc'],'la jornada guarda el punto escrito con origen «manual» y sin precisión (D143): %s' % man)
@@ -2139,7 +2138,7 @@ with sync_playwright() as p:
     ok(amb['completas'],'las tres capas y la biblioteca del cruce están cargadas (A7)')
     # Jornada y árbol junto al límite: el aviso va en su renglón, sin tapar la precisión (A6, B8)
     pg12.evaluate("SRP.app.mostrarVista('registrar')"); pg12.wait_for_timeout(300)
-    pg12.click('#btn-ini-hoy'); pg12.fill('#ini-nombre','Jornada B92'); pg12.select_option('#ini-programa','p-refor'); pg12.select_option('#ini-origen','PROGRAMADA'); pg12.fill('#ini-meta','5')
+    pg12.click('#btn-ini-hoy'); pg12.fill('#ini-nombre','Jornada B92'); pg12.select_option('#ini-programa','p-refor'); pg12.fill('#ini-meta','5')
     pg12.click('#ini-detalles-coord summary'); pg12.fill('#ini-coord-lat','19.095827'); pg12.fill('#ini-coord-lng','-99.22707'); pg12.click('#btn-ini-coord-aplicar'); pg12.wait_for_timeout(200)
     ok('fuera del límite' in pg12.inner_text('#ini-detectado') and pg12.inner_text('#ini-alcaldia')=='Tlalpan','la jornada junto al límite toma la alcaldía más cercana y lo dice')
     pg12.click('#btn-iniciar-jornada'); pg12.wait_for_timeout(600)
@@ -2267,8 +2266,8 @@ with sync_playwright() as p:
     ctx14.close()
     # B2: la base sube a la versión 3 con el índice de árboles por jornada, sin perder nada
     ind=pg.evaluate("""() => { const r = {}; for (const n of SRP.almacen.db.objectStoreNames) r[n] = [...SRP.almacen.db.transaction(n).objectStore(n).indexNames].sort(); return { v: SRP.almacen.db.version, r }; }""")
-    ok(ind['v']==8 and ind['r']['plantaciones']==['estatus','jornada_id'] and ind['r']['jornadas']==['cabo_id'] and 'catalogos' not in ind['r'] and all(ind['r'][t]==[] for t in ['programas','areas','especies','vehiculos','instituciones','solicitantes']),
-       'la base está en la versión 8, con cada catálogo en su tabla, con el índice de árboles por jornada y sin los cinco que nadie consultaba (B2): %s' % ind)
+    ok(ind['v']==9 and ind['r']['plantaciones']==['estatus','jornada_id'] and ind['r']['jornadas']==['cabo_id'] and 'catalogos' not in ind['r'] and all(ind['r'][t]==[] for t in ['programas','areas','especies','vehiculos','instituciones','solicitantes']),
+       'la base está en la versión 9, con cada catálogo en su tabla, con el índice de árboles por jornada y sin los cinco que nadie consultaba (B2): %s' % ind)
     # Y un teléfono con la base en la versión 2 sube a la 3 sin perder lo capturado
     ctx15=b.new_context(viewport={'width':390,'height':844}); pg15=ctx15.new_page()
     pg15.route('**/*.js*', lambda r: r.abort())
@@ -2284,7 +2283,7 @@ with sync_playwright() as p:
       r.onsuccess = () => { r.result.close(); ok(true); }; r.onerror = () => no(r.error); })""")
     pg15.unroute('**/*.js*'); pg15.reload(); pg15.wait_for_timeout(1500)
     v2=pg15.evaluate("async () => ({ v: SRP.almacen.db.version, arboles: (await SRP.almacen.porIndice('plantaciones', 'jornada_id', 'jr-v2')).map(r => r.id), jornadas: (await SRP.almacen.todos('jornadas')).map(j => j.id) })")
-    ok(v2=={'v':8,'arboles':['pl-v2'],'jornadas':['jr-v2']},'una base en la versión 2 sube a la 8 conservando árboles y jornadas, y el índice nuevo los encuentra (B2): %s' % v2)
+    ok(v2=={'v':9,'arboles':['pl-v2'],'jornadas':['jr-v2']},'una base en la versión 2 sube a la 9 conservando árboles y jornadas, y el índice nuevo los encuentra (B2): %s' % v2)
     ctx15.close()
 
     # ---------- BLOQUE 95: TUERCA, SUBIR AL INICIO Y ERRORES EN LA JORNADA (D154) ----------
@@ -2384,7 +2383,7 @@ with sync_playwright() as p:
     # Resumen de errores común: título, lista escapada con enlaces y el foco en la caja, en todos los formularios
     pg18.click('#btn-iniciar-jornada'); pg18.wait_for_timeout(300)
     re18=pg18.evaluate("(() => { const c = document.getElementById('ini-errores'); return { titulo: c.querySelector('h2') && c.querySelector('h2').textContent, enlaces: c.querySelectorAll('li a[href^=\"#ini-\"]').length, foco: document.activeElement.id }; })()")
-    ok(re18['titulo']=='Falta corregir 5 datos' and re18['enlaces']==5 and re18['foco']=='ini-errores','el resumen de errores es el mismo en todos los formularios: título, enlaces a cada campo y el foco en la caja (M15): %s' % re18)
+    ok(re18['titulo']=='Falta corregir 4 datos' and re18['enlaces']==4 and re18['foco']=='ini-errores','el resumen de errores es el mismo en todos los formularios: título, enlaces a cada campo y el foco en la caja (M15): %s' % re18)
     esc18=pg18.evaluate("""() => { const c = document.createElement('div'); document.body.appendChild(c);
       SRP.util.resumenErrores(c, [['x', '<b>raro</b>']], ['x']); const h = c.innerHTML; c.remove();
       return { escapado: h.includes('&lt;b&gt;raro&lt;/b&gt;'), opciones: SRP.util.opciones('Todos', [['a"b', '<x>']]) }; }""")
@@ -2562,8 +2561,8 @@ with sync_playwright() as p:
     # La coordinación entra a Supervisión, primera en su barra, con su cuadrilla
     entrar19('u-coord-1')
     nav19=pg19.evaluate("[...document.querySelectorAll('#navegacion .pestana')].filter(b => !b.hidden).map(b => b.textContent.trim())")
-    ok(nav19[0]=='Supervisión' and 'Fotografías' not in nav19 and pg19.evaluate("SRP.app.vista")=='supervision' and pg19.is_visible('#btn-sup-fotos'),
-       'la coordinación entra a Supervisión, primera en su barra; Fotografías va dentro (D158): %s' % nav19)
+    ok(nav19==['Nuevo registro','Jornadas','Registros','Supervisión'] and pg19.evaluate("SRP.app.vista")=='supervision' and pg19.is_visible('#btn-sup-fotos'),
+       'la coordinación entra a Supervisión, que va al final de su barra, después de Registros; Fotografías va dentro (D158): %s' % nav19)
     c19=pg19.evaluate("[...document.querySelectorAll('.sup-tabla-cabos tbody tr')].map(t => t.innerText.replace(/\\s+/g, ' '))")
     ok(any('Fulana' in x for x in c19),'la tabla por cabo trae a su cabo: %s' % c19[:2])
     pg19.locator('.sup-tabla-cabos button[data-cabo]').first.click(); pg19.wait_for_timeout(900)
@@ -2577,10 +2576,13 @@ with sync_playwright() as p:
     entrar19('u-admin-1')
     nav19=pg19.evaluate("[...document.querySelectorAll('#navegacion .pestana')].filter(b => !b.hidden).map(b => b.textContent.trim())")
     pg19.click('#btn-cuenta'); pg19.wait_for_timeout(200)
-    menu19=[pg19.is_visible('#btn-ir-configuracion'), pg19.locator('#menu-cuenta [id^=btn-ir-]:visible').count()]
-    pg19.click('#btn-ir-configuracion'); pg19.wait_for_timeout(500); pg19.click('.cfg-tarjeta[data-ir=usuarios]'); pg19.wait_for_timeout(500)
-    ok(nav19==['Supervisión','Jornadas','Registros'] and menu19==[True,1] and pg19.is_visible('#vista-usuarios'),
-       'la administración tiene cuatro secciones abajo y, en el menú de la cuenta, una sola entrada «Configuración» que lleva a Usuarios: %s %s' % (nav19, menu19))
+    menu19=[pg19.locator('#menu-cuenta [id^=btn-ir-]').count(), 'Configuración' in pg19.inner_text('#menu-cuenta')]
+    pg19.evaluate("SRP.app.menuCuenta(false)")
+    pg19.click('.pestana[data-vista=configuracion]'); pg19.wait_for_timeout(500); pg19.click('.cfg-tarjeta[data-ir=usuarios]'); pg19.wait_for_timeout(500)
+    marca19=pg19.evaluate("[...document.querySelectorAll('#navegacion .pestana[aria-current]')].map(b => b.dataset.vista)")
+    ancho19=pg19.evaluate("[...document.querySelectorAll('#navegacion .pestana')].filter(b => !b.hidden).every(b => b.scrollWidth <= b.clientWidth + 1) && document.documentElement.scrollWidth <= window.innerWidth")
+    ok(nav19==['Supervisión','Jornadas','Registros','Configuración'] and menu19==[0,False] and pg19.is_visible('#vista-usuarios') and marca19==['configuracion'] and ancho19,
+       'la administración tiene «Configuración» en la barra, junto a Registros, y ya no en el menú de la cuenta; dentro de Usuarios su pestaña sigue marcada y la barra cabe: %s %s %s %s' % (nav19, menu19, marca19, ancho19))
     pg19.set_viewport_size({'width':1280,'height':900}); pg19.click('.pestana[data-vista=supervision]'); pg19.wait_for_timeout(800)
     abrir_sup(pg19)
     cols=pg19.evaluate("getComputedStyle(document.querySelector('.sup-cifras')).gridTemplateColumns.split(' ').length")
@@ -2715,7 +2717,7 @@ with sync_playwright() as p:
     ok(d21.value.suggested_filename=='Informe_anual_2025_Gustavo_A_Madero.pdf' and 'POR COLONIA' in txt21 and 'Marisol' in txt21,'el informe anual de una alcaldía sale con los datos de demostración: %s' % d21.value.suggested_filename)
     entrar21('u-coord-1'); esperar(pg21,"SRP.supervision.datos && SRP.sesion.usuario && SRP.supervision.datos.usuario.id === SRP.sesion.usuario.id",30000); pg21.wait_for_timeout(300)
     cab21=pg21.evaluate("SRP.supervision.datos.cabos.slice().sort()")
-    ok(pg21.inner_text('#sup-etiqueta').startswith('Semana') and pg21.inner_text('#sup-filtros-texto')=='Más filtros: alcaldía, programa, origen y quién registró',
+    ok(pg21.inner_text('#sup-etiqueta').startswith('Semana') and pg21.inner_text('#sup-filtros-texto')=='Más filtros: alcaldía, programa y quién registró',
        'quien entra con otra cuenta empieza en la semana en curso y sin filtros: no hereda el año ni la alcaldía de la cuenta anterior')
     ok(cab21==['u-cabo-1','u-demo-c1','u-demo-c2','u-demo-c3'],'la coordinación de prueba tiene su cuadrilla de demostración: %s' % cab21)
     entrar21('u-demo-k1'); esperar(pg21,"SRP.supervision.datos && SRP.sesion.usuario && SRP.supervision.datos.usuario.id === SRP.sesion.usuario.id",30000); pg21.wait_for_timeout(300)
@@ -2807,7 +2809,7 @@ with sync_playwright() as p:
         pg23.select_option('#sel-usuario-prueba', uid); pg23.click('#btn-entrar-prueba'); pg23.wait_for_timeout(900)
     def catalogo23(tipo):
         pg23.evaluate("document.getElementById('aviso').hidden = true")
-        pg23.evaluate("SRP.app.menuCuenta(false)"); pg23.click('#btn-cuenta'); pg23.click('#btn-ir-configuracion'); pg23.wait_for_timeout(300); pg23.click('.cfg-tarjeta[data-ir=catalogos]'); pg23.wait_for_timeout(400)
+        pg23.evaluate("SRP.app.menuCuenta(false)"); pg23.click('.pestana[data-vista=configuracion]'); pg23.wait_for_timeout(300); pg23.click('.cfg-tarjeta[data-ir=catalogos]'); pg23.wait_for_timeout(400)
         pg23.click('#cat-tipos .chip[data-tipo=%s]' % tipo); pg23.wait_for_timeout(400)
     entrar23('u-admin-1')
     catalogo23('vehiculo')
@@ -3323,7 +3325,7 @@ with sync_playwright() as p:
     pg34.unroute('**/*.js*'); pg34.reload(); pg34.wait_for_timeout(1500)
     m34=pg34.evaluate("""async () => { const j = {}; (await SRP.almacen.todos('jornadas')).forEach(x => { j[x.id] = [x.vehiculo_id || null, x.vehiculo_placa || '', x.vehiculo_modelo || '', x.vehiculo_tipo || '', 'vehiculo' in x]; });
       return { v: SRP.almacen.db.version, j, chofer: (await SRP.almacen.uno('jornadas', 'jr-d')).chofer }; }""")
-    ok(m34['v']==8 and m34['j']['jr-a']==['v-PRU009','PRU 009','Internacional','Redilas',False],'la migración 4 enlaza con el catálogo la placa escrita a mano que sí está en él: %s' % m34['j']['jr-a'])
+    ok(m34['v']==9 and m34['j']['jr-a']==['v-PRU009','PRU 009','Internacional','Redilas',False],'la migración 4 enlaza con el catálogo la placa escrita a mano que sí está en él: %s' % m34['j']['jr-a'])
     ok(m34['j']['jr-b']==[None,'','','',False] and m34['j']['jr-c'][4]==False,'y quita lo escrito a mano que no está en el catálogo, y el `vehiculo` de antes del bloque 20: %s · %s' % (m34['j']['jr-b'], m34['j']['jr-c']))
     ok(m34['j']['jr-d']==['v-PRU009','PRU 009','Internacional','Redilas',False] and m34['chofer']=='Fulano' and len(m34['j'])==4,'sin tocar las jornadas que ya tenían su vehículo del catálogo ni ningún otro dato')
     ok(not err34,'sin errores en consola: %s' % err34[:2])
@@ -3372,7 +3374,7 @@ with sync_playwright() as p:
         a: [a.arboles_previstos, 'meta_arboles' in a, 'creado_por_id' in a, 'fecha_creacion' in a, a.editado_por_id, a.fecha_ultima_edicion, a.vehiculo_tipo, a.lat, a.lng, a.chofer],
         b: [b.arboles_previstos, 'arboles_plantados' in b, b.editado_por_id, b.fecha_ultima_edicion],
         u: [u.fecha_creacion, u.creado_por_id, 'fecha_alta' in u, 'alta_por_id' in u] }; }""")
-    ok(m36['v']==8 and m36['esp']==[] and m36['cientifico']=='Acer negundo','la migración 5 quita género, epíteto y nota de discrepancia de las especies y deja el nombre científico: %s' % m36)
+    ok(m36['v']==9 and m36['esp']==[] and m36['cientifico']=='Acer negundo','la migración 5 quita género, epíteto y nota de discrepancia de las especies y deja el nombre científico: %s' % m36)
     ok(m36['a']==[7,False,False,False,None,None,'',19.432679,-99.133212,'Fulano'],
        'en la jornada: la meta pasa a arboles_previstos, se quitan quién la creó y cuándo, una jornada sin editar queda sin datos de edición, el vehículo sin nulos y el punto con seis decimales: %s' % m36['a'])
     ok(m36['b']==[3,False,'u-cabo-1','2026-09-21T12:00:00-06:00'],'una jornada editada conserva quién y cuándo, y el conteo viejo pasa a arboles_previstos: %s' % m36['b'])
@@ -3495,7 +3497,7 @@ with sync_playwright() as p:
         p: [p.lat, p.lng, p.especie_id, p.foto_id, p.foto_base64 ? 'foto' : ''], j: [j.nombre, j.reporte_en], u: u.nombre_completo, c: c.nombre_cientifico, b: b.accion,
         nombre: SRP.CONFIG.DB_NOMBRE, prueba: SRP.CONFIG.DB_NOMBRE_PRUEBA, real: SRP.CONFIG.DB_NOMBRE_REAL, ficticio: SRP.CONFIG.ES_FICTICIO,
         bases: indexedDB.databases ? (await indexedDB.databases()).map(d => d.name) : null }; }""")
-    ok(m38['v']==8 and m38['quedan']==[],'la migración 6 quita la marca de prueba de todas las tablas y del árbol el punto original, los folio_*, el nombre y peso de la foto y el estatus de especie: %s' % m38['quedan'])
+    ok(m38['v']==9 and m38['quedan']==[],'la migración 6 quita la marca de prueba de todas las tablas y del árbol el punto original, los folio_*, el nombre y peso de la foto y el estatus de especie: %s' % m38['quedan'])
     ok(m38['p']==[19.4326,-99.1332,'ESP-0002','f-6','foto'] and m38['j']==['Seis','2026-09-22T15:00:00-06:00'] and m38['u']=='Cabo' and m38['c']=='Fraxinus uhdei' and m38['b']=='CREADO',
        'sin perder nada más: el árbol conserva punto, especie y foto; la jornada su reporte_en; la cuenta (con su nombre ya en un solo campo), la especie y la bitácora sus datos: %s' % {k: m38[k] for k in 'pjucb'})
     ok(m38['nombre']=='srp_db' and m38['prueba']=='srp_db' and m38['real']=='srp_sia' and m38['ficticio'] is True and (m38['bases'] is None or 'srp_sia' not in m38['bases']),
@@ -3553,7 +3555,7 @@ with sync_playwright() as p:
     m39=pg39.evaluate("""async () => { const a = await SRP.almacen.uno('plantaciones', 'pl-7a'), b = await SRP.almacen.uno('plantaciones', 'pl-7b');
       return { v: SRP.almacen.db.version, a: a.capa_version, colonia: a.colonia, b: b.capa_version, capa: SRP.CAPAS.colonias.meta.version,
         vigente: SRP.derivacion.derivar(19.4326, -99.1332).capa_version, texto: SRP.ref.textoCapas(a.capa_version) }; }""")
-    ok(m39['v']==8 and m39['a']=='alcaldias=sia-2026-01-01;uga=sia-2026-09-22;colonias=iecm-2022' and m39['colonia']=='CENTRO I' and m39['b'] is None,
+    ok(m39['v']==9 and m39['a']=='alcaldias=sia-2026-01-01;uga=sia-2026-09-22;colonias=iecm-2022' and m39['colonia']=='CENTRO I' and m39['b'] is None,
        'la migración 7 cambia sólo el nombre de la versión de colonias en lo ya derivado, sin tocar la colonia ni lo que no tenía capas: %s' % m39)
     ok(m39['capa']=='iecm-2022' and m39['vigente'].endswith('colonias=iecm-2022') and m39['texto']=='Alcaldías sia-2026-01-01 · UGA sia-2026-09-22 · Colonias iecm-2022',
        'la capa de colonias del IECM es la definitiva: su versión ya no dice «prueba» ni el detalle «capa de prueba»: %s' % m39['texto'])
@@ -3637,7 +3639,7 @@ with sync_playwright() as p:
     pg41.select_option('#sel-usuario-prueba','u-cabo-1'); pg41.click('#btn-entrar-prueba'); pg41.wait_for_timeout(700)
     pg41.evaluate("SRP.app.mostrarVista('registrar')"); pg41.wait_for_timeout(500)
     ok(pg41.inner_text('#panel-iniciar-jornada .nota').strip()=='Registre los datos de la jornada (proyecto) del día.','Registrar jornada dice «Registre los datos de la jornada (proyecto) del día.»')
-    pg41.fill('#ini-nombre','Jardín de revisión'); o41=pg41.eval_on_selector_all('#ini-programa option','l=>l.map(o=>o.value).filter(Boolean)'); pg41.select_option('#ini-programa',o41[0]); pg41.select_option('#ini-origen','PROGRAMADA'); pg41.fill('#ini-meta','3')
+    pg41.fill('#ini-nombre','Jardín de revisión'); o41=pg41.eval_on_selector_all('#ini-programa option','l=>l.map(o=>o.value).filter(Boolean)'); pg41.select_option('#ini-programa',o41[0]); pg41.fill('#ini-meta','3')
     pg41.evaluate("(f) => { const e = document.getElementById('ini-fecha'); e.value = f; e.dispatchEvent(new Event('input', {bubbles: true})); e.dispatchEvent(new Event('change', {bubbles: true})); }", HOY)
     pg41.click('#btn-iniciar-jornada'); pg41.wait_for_timeout(1200)
     ok(pg41.inner_text('#btn-jornada-cambiar').strip()=='Cambiar jornada','el botón de la franja dice «Cambiar jornada»')
@@ -3687,7 +3689,7 @@ with sync_playwright() as p:
     pg42.select_option('#sel-usuario-prueba','u-cabo-1'); pg42.click('#btn-entrar-prueba'); pg42.wait_for_timeout(700)
     pg42.evaluate("SRP.app.mostrarVista('registrar')"); pg42.wait_for_timeout(500)
     p42=pg42.eval_on_selector_all('#ini-programa option','l=>l.map(o=>o.textContent.trim()).filter(t => t && !t.startsWith("Seleccione"))')
-    ok(p42==['Reforestación Urbana','Centro Histórico','Compensaciones','Palmeras'],'Iniciar jornada ofrece a SEDEMA los cuatro programas, con «Palmeras» y «Compensaciones» por separado y sin «Jornadas de voluntariado»: %s' % p42)
+    ok(p42==['Reforestación Urbana','Centro Histórico','Compensaciones','Palmeras','Solicitud'],'Iniciar jornada ofrece a SEDEMA los cuatro programas y «Solicitud» al final, con «Palmeras» y «Compensaciones» por separado y sin «Jornadas de voluntariado»: %s' % p42)
     # Un teléfono con capturas y el sello anterior los recibe sin perder lo capturado
     pg42.evaluate("""async () => { await SRP.almacen._tx(['programas'], 'readwrite', tx => { tx.objectStore('programas').delete('p-palmeras'); tx.objectStore('programas').delete('p-compensaciones'); });
       const u = SRP.sesion.usuario;
@@ -3717,10 +3719,10 @@ with sync_playwright() as p:
     pg43.click('#cat-tipos .chip[data-tipo=organizacion]'); pg43.wait_for_timeout(500)
     fila=lambda t: pg43.locator('#tabla-catalogo tbody tr', has_text=t)
     t43=[pg43.inner_text('#cat-cuenta'), pg43.inner_text('#btn-cat-agregar').strip(), pg43.is_visible('#cat-nota-org'), pg43.inner_text('#cat-tipos .chip[data-tipo=organizacion]'),
-         fila('Secretaría del Medio Ambiente').locator('button[data-accion=estado]').count(), fila('Alcaldía Iztapalapa').locator('button[data-accion]').count(),
+         fila('Secretaría del Medio Ambiente').locator('button[data-accion=estado]').count(), fila('Iztapalapa').locator('button[data-accion]').count(),
          fila('Green Cover').locator('button[data-accion=editar]').count(), fila('Green Cover').locator('button[data-accion=estado]').count(), fila('Green Cover').locator('button[data-accion=eliminar]').count()]
     ok(t43==['21 instituciones','Agregar institución',True,'Instituciones',0,0,1,1,0],'la pestaña Instituciones agrega, renombra y desactiva; las alcaldías son fijas, SEDEMA no se desactiva y ninguna se elimina: %s' % t43)
-    fila('Alcaldía Iztapalapa').click(); pg43.wait_for_timeout(300)
+    fila('Iztapalapa').click(); pg43.wait_for_timeout(300)
     ok(pg43.is_hidden('#dlg-catalogo'),'tocar una alcaldía no abre la edición')
     fila('Green Cover').click(); pg43.wait_for_timeout(300)
     r43=[pg43.inner_text('#dlg-catalogo-titulo'), pg43.is_hidden('#cat-clave'), pg43.is_disabled('#cat-tipo-org'), pg43.input_value('#cat-tipo-org')]
@@ -3936,7 +3938,7 @@ with sync_playwright() as p:
     pr46={u: programas46(u) for u in ['u-cabo-alc','u-cabo-gob','u-cabo-osc','u-cabo-emp']}
     RU=['Reforestación Urbana']
     ok(pr46=={'u-cabo-alc':RU,'u-cabo-gob':RU,'u-cabo-osc':RU,'u-cabo-emp':['Palmeras']},'una empresa privada sólo puede elegir «Palmeras»; alcaldías, Gobierno de la CDMX y organizaciones civiles, sólo «Reforestación Urbana»: %s' % pr46)
-    v46=pg46.evaluate("(() => { document.getElementById('ini-programa').innerHTML += '<option value=\"p-refor\">x</option>'; document.getElementById('ini-programa').value = 'p-refor'; document.getElementById('ini-origen').value = 'PROGRAMADA'; document.getElementById('ini-nombre').value = 'Prueba'; document.getElementById('ini-meta').value = '3'; SRP.activa.iniciarJornada(); return document.getElementById('ini-errores').textContent; })()")
+    v46=pg46.evaluate("(() => { document.getElementById('ini-programa').innerHTML += '<option value=\"p-refor\">x</option>'; document.getElementById('ini-programa').value = 'p-refor'; document.getElementById('ini-nombre').value = 'Prueba'; document.getElementById('ini-meta').value = '3'; SRP.activa.iniciarJornada(); return document.getElementById('ini-errores').textContent; })()")
     ok('no está disponible para su institución' in v46,'aunque se fuerce otro programa, una empresa no puede iniciar la jornada con él')
     jz46=iniciar_jornada(pg46,'Palmeras del camellón', programa='p-palmeras')
     registrar(pg46,'aile','ESP-0002', programa='p-palmeras'); pg46.wait_for_timeout(300)
@@ -3974,7 +3976,7 @@ with sync_playwright() as p:
         entrar47(uid); pg47.evaluate("SRP.app.mostrarVista('registrar')"); pg47.wait_for_timeout(500)
         return [pg47.eval_on_selector_all('#ini-programa option','l=>l.map(o=>o.textContent.trim()).filter(t => t && !t.startsWith("Seleccione"))'), pg47.input_value('#ini-programa')]
     pr47={u: programas47(u) for u in ['u-cabo-1','u-coord-alc','u-coord-gob','u-coord-emp','u-coord-osc']}
-    ok(pr47=={'u-cabo-1':[['Reforestación Urbana','Centro Histórico','Compensaciones','Palmeras'],''],'u-coord-alc':[['Reforestación Urbana'],'p-refor'],'u-coord-gob':[['Reforestación Urbana'],'p-refor'],
+    ok(pr47=={'u-cabo-1':[['Reforestación Urbana','Centro Histórico','Compensaciones','Palmeras','Solicitud'],''],'u-coord-alc':[['Reforestación Urbana'],'p-refor'],'u-coord-gob':[['Reforestación Urbana'],'p-refor'],
               'u-coord-emp':[['Palmeras'],'p-palmeras'],'u-coord-osc':[['Reforestación Urbana'],'p-refor']},
        'SEDEMA elige entre todos los programas, sin preselección; alcaldías, Gobierno de la CDMX y organizaciones civiles tienen sólo «Reforestación Urbana», y las empresas sólo «Palmeras», ya puesto: %s' % pr47)
     # Alta: fuera de la Secretaría hay cabo y coordinador; el cabo elige coordinador de su institución
@@ -4068,9 +4070,9 @@ with sync_playwright() as p:
         return [pg48.eval_on_selector_all('#ini-programa option','l=>l.map(o=>o.textContent.trim()).filter(t => t && !t.startsWith("Seleccione"))'), pg48.input_value('#ini-programa')]
     ok(pg48.evaluate("typeof SRP.CONFIG.PROGRAMAS_POR_TIPO_INSTITUCION")=='undefined','la regla de programas por institución ya no vive en la configuración')
     entrar48('u-admin-1')
-    pg48.click('#btn-cuenta'); pg48.click('#btn-ir-configuracion'); pg48.wait_for_timeout(300); pg48.click('.cfg-tarjeta[data-ir=catalogos]'); pg48.wait_for_timeout(500)
+    pg48.click('.pestana[data-vista=configuracion]'); pg48.wait_for_timeout(300); pg48.click('.cfg-tarjeta[data-ir=catalogos]'); pg48.wait_for_timeout(500)
     q48=pg48.evaluate("""(() => { const r = {}; document.querySelectorAll('#tabla-catalogo tbody tr').forEach(tr => { const c = tr.querySelector('[data-etiqueta="Quién lo usa"]'); r[tr.querySelector('.c-titulo').textContent] = c ? c.textContent : null; }); return r; })()""")
-    ok(q48=={'Reforestación Urbana':'SEDEMA · Alcaldía · Gobierno de la CDMX · Organización civil','Centro Histórico':'Sólo SEDEMA','Palmeras':'SEDEMA · Empresa privada','Compensaciones':'Sólo SEDEMA'},
+    ok(q48=={'Reforestación Urbana':'SEDEMA · Alcaldía · Gobierno de la CDMX · Organización civil','Centro Histórico':'Sólo SEDEMA','Palmeras':'SEDEMA · Empresa privada','Compensaciones':'Sólo SEDEMA','Solicitud':'Sólo SEDEMA'},
        'Catálogos › Programas dice quién usa cada programa: %s' % q48)
     pg48.click('#btn-cat-agregar'); pg48.wait_for_timeout(300)
     t48=[pg48.is_visible('#cat-tipos-org-botones'), pg48.eval_on_selector_all('#cat-tipos-org-botones .chip','l=>l.map(b=>[b.textContent, b.getAttribute("aria-pressed")])')]
@@ -4087,14 +4089,14 @@ with sync_playwright() as p:
     ok(e48==['Empresa privada'] and p48[0]==['Empresa privada','Organización civil'] and 'tipos_organizacion' in (p48[1] or ''),'al editar «Palmeras» se ve lo marcado; se suma Organización civil y queda en la bitácora: %s %s' % (e48, p48))
     ok(pg48.locator('#tabla-catalogo tbody tr', has_text='Palmeras').locator('[data-etiqueta="Quién lo usa"]').inner_text()=='SEDEMA · Empresa privada · Organización civil','y la lista lo refleja')
     pr48={u: programas48(u) for u in ['u-cabo-1','u-cabo-alc','u-cabo-gob','u-cabo-emp','u-cabo-osc']}
-    ok(pr48=={'u-cabo-1':[['Reforestación Urbana','Arbolado escolar','Centro Histórico','Compensaciones','Palmeras'],''],'u-cabo-alc':[['Reforestación Urbana','Arbolado escolar'],''],
+    ok(pr48=={'u-cabo-1':[['Reforestación Urbana','Arbolado escolar','Centro Histórico','Compensaciones','Palmeras','Solicitud'],''],'u-cabo-alc':[['Reforestación Urbana','Arbolado escolar'],''],
               'u-cabo-gob':[['Reforestación Urbana'],'p-refor'],'u-cabo-emp':[['Palmeras'],'p-palmeras'],'u-cabo-osc':[['Reforestación Urbana','Palmeras'],'']},
        'Iniciar jornada ofrece a cada institución lo marcado en el catálogo, sin tocar la configuración; SEDEMA, todos: %s' % pr48)
     # Un teléfono con programas sin el dato: los de arranque toman los suyos; los agregados, sólo SEDEMA
     pg48.evaluate("""async () => { const c = await SRP.almacen.catalogos(); await SRP.almacen._tx(['programas'], 'readwrite', tx => c.filter(x => x.tipo === 'programa').forEach(x => { const n = Object.assign({}, x); delete n.tipos_organizacion; SRP.almacen.ponerCatalogo(tx, n); })); }""")
     pg48.reload(); pg48.wait_for_timeout(1800)
     z48=pg48.evaluate("""async () => { const c = (await SRP.almacen.catalogos()).filter(x => x.tipo === 'programa'), r = {}; c.forEach(x => { r[x.nombre] = x.tipos_organizacion; }); return r; }""")
-    ok(z48=={'Reforestación Urbana':['Alcaldía','Gobierno de la CDMX','Organización civil'],'Centro Histórico':[],'Palmeras':['Empresa privada'],'Compensaciones':[],'Arbolado escolar':[]},
+    ok(z48=={'Reforestación Urbana':['Alcaldía','Gobierno de la CDMX','Organización civil'],'Centro Histórico':[],'Palmeras':['Empresa privada'],'Compensaciones':[],'Arbolado escolar':[],'Solicitud':[]},
        'al abrir, un programa sin el dato lo recibe: el de arranque, el suyo; el agregado, sólo SEDEMA: %s' % z48)
     ok(not err48,'sin errores en consola: %s' % err48[:2])
     ctx48.close()
@@ -4121,7 +4123,7 @@ with sync_playwright() as p:
         emp: SRP.indicadores.cabosAsignados(P['u-coord-emp']).sort() }; }""")
     ok(d49['orgs']==sorted(['o-sedema','o-alc-09007','o-alc-09003','o-paot','o-sobse','o-green-cover','o-reforestamos','demo-org-empresa']),
        'la demostración trae jornadas de la Secretaría y de una institución de cada tipo (dos alcaldías, PAOT, SOBSE, Green Cover, Reforestamos México y la empresa de demostración): %s' % d49['orgs'])
-    ok(d49['progs']==['p-centro','p-compensaciones','p-palmeras','p-refor'],'con los cuatro programas: %s' % d49['progs'])
+    ok(d49['progs']==['p-centro','p-compensaciones','p-palmeras','p-refor','p-solicitud'],'con los cuatro programas y las solicitudes: %s' % d49['progs'])
     ok(d49['sinDatos']==[] and d49['perfiles']==['CABO','COORDINADOR'],'cada cuenta de prueba que registra —cabos y coordinadores, de SEDEMA y de fuera— tiene jornadas: faltan %s' % d49['sinDatos'])
     ok(d49['fueraDePrograma']==0 and d49['fueraConPersonal']==0 and d49['orgDeLaCuenta']==0,
        'cada jornada usa un programa de su institución, va a nombre de la institución de quien la registró y, fuera de SEDEMA, sin personal, chófer ni vehículo: %s' % [d49['fueraDePrograma'], d49['fueraConPersonal'], d49['orgDeLaCuenta']])
@@ -4153,16 +4155,16 @@ with sync_playwright() as p:
     sin50=[]
     for uid in ['u-coord-1','u-cabo-1','u-coord-alc']:
         entrar50(uid); pg50.evaluate("SRP.app.mostrarVista('configuracion')"); pg50.wait_for_timeout(300)
-        sin50.append([pg50.get_attribute('#btn-ir-configuracion','hidden') is not None, pg50.is_hidden('#vista-configuracion')])
-    ok(sin50==[[True,True]]*3,'coordinación y cabos no tienen «Configuración» en el menú ni la abren llamándola directamente: %s' % sin50)
+        sin50.append([pg50.get_attribute('.pestana[data-vista=configuracion]','hidden') is not None, pg50.is_hidden('#vista-configuracion')])
+    ok(sin50==[[True,True]]*3,'coordinación y cabos no tienen «Configuración» en la barra ni la abren llamándola directamente: %s' % sin50)
     entrar50('u-admin-1')
     pg50.click('#btn-cuenta'); pg50.wait_for_timeout(200)
     m50=pg50.eval_on_selector_all('#menu-cuenta .menu-opcion:not([hidden])','l=>l.map(b=>b.textContent.trim())')
-    pg50.click('#btn-ir-configuracion'); pg50.wait_for_timeout(600)
+    pg50.evaluate("SRP.app.menuCuenta(false)"); pg50.click('.pestana[data-vista=configuracion]'); pg50.wait_for_timeout(600)
     t50=pg50.eval_on_selector_all('.cfg-tarjeta','l=>l.map(t=>[t.dataset.ir, t.querySelector(".cfg-titulo").textContent, t.querySelector(".cfg-resumen").textContent])')
-    ok(m50[0]=='Configuración' and 'Catálogos' not in m50 and 'Usuarios' not in m50,'el menú de la cuenta tiene «Configuración» en lugar de Catálogos y Usuarios: %s' % m50)
+    ok('Configuración' not in m50 and 'Catálogos' not in m50 and 'Usuarios' not in m50,'el menú de la cuenta no trae Configuración, Catálogos ni Usuarios: se entra por la barra: %s' % m50)
     ok([x[:2] for x in t50]==[['usuarios','Usuarios'],['catalogos','Catálogos'],['parametros','Parámetros'],['cambios','Registro de cambios'],['carga','Carga masiva'],['acerca','Acerca del sistema']]
-       and t50[0][2]=='13 cuentas' and t50[1][2]=='4 programas · 21 instituciones · 76 especies' and t50[2][2]=='11 valores · sólo consulta' and t50[3][2]=='Sin cambios todavía' and t50[4][2]=='Plantilla, revisión y carga' and t50[5][2].startswith('Versión '),
+       and t50[0][2]=='13 cuentas' and t50[1][2]=='5 programas · 21 instituciones · 76 especies' and t50[2][2]=='11 valores · sólo consulta' and t50[3][2]=='Sin cambios todavía' and t50[4][2]=='Plantilla, revisión y carga' and t50[5][2].startswith('Versión '),
        'Configuración muestra seis tarjetas con su resumen al día: %s' % t50)
     # Cada tarjeta lleva a su apartado y éste vuelve a Configuración
     ida50=[]
@@ -4194,7 +4196,7 @@ with sync_playwright() as p:
     # Acerca del sistema
     pg50.evaluate("SRP.app.mostrarVista('acerca')"); pg50.wait_for_timeout(800)
     a50=pg50.inner_text('#cfg-acerca')
-    ok(pg50.evaluate("SRP.CONFIG.VERSION + ' (' + SRP.CONFIG.ETAPA + ')'") in a50 and 'srp_db, versión 8' in a50 and 'sia-2026-09-22' in a50 and 'iecm-2022' in a50 and 'Pendientes de envío' in a50,
+    ok(pg50.evaluate("SRP.CONFIG.VERSION + ' (' + SRP.CONFIG.ETAPA + ')'") in a50 and 'srp_db, versión 9' in a50 and 'sia-2026-09-22' in a50 and 'iecm-2022' in a50 and 'Pendientes de envío' in a50,
        'Acerca del sistema dice versión, base, capas y pendientes de este dispositivo')
     anchos50=[]
     for v in ['configuracion','parametros','cambios','acerca']:
@@ -4518,7 +4520,7 @@ with sync_playwright() as p:
     b55=pg55.eval_on_selector_all('#tabla-catalogo tbody tr .c-titulo','l=>l.map(x=>x.innerText)')
     pg55.fill('#cat-buscar',''); pg55.select_option('#cat-filtro-tipo','Empresa privada'); pg55.wait_for_timeout(300)
     e55=pg55.evaluate("[...document.querySelectorAll('#tabla-catalogo tbody tr')].map(tr => SRP.ref.catalogoPorId[tr.dataset.id].tipo_organizacion)")
-    ok(b55==['Alcaldía Iztacalco','Alcaldía Iztapalapa'] and e55 and set(e55)=={'Empresa privada'} and pg55.inner_text('#cat-cuenta').startswith(str(len(e55))+' de '+str(len(idx55))),
+    ok(b55==['Iztacalco','Iztapalapa'] and e55 and set(e55)=={'Empresa privada'} and pg55.inner_text('#cat-cuenta').startswith(str(len(e55))+' de '+str(len(idx55))),
        'se busca por nombre sin acentos y se filtra por tipo: %s · %s' % (b55, pg55.inner_text('#cat-cuenta')))
     pg55.click('#cat-tipos .chip[data-tipo=especie]'); pg55.wait_for_timeout(400)
     # El catálogo de especies tarda en pintarse: se espera a verlo, no un tiempo fijo
@@ -4595,8 +4597,8 @@ with sync_playwright() as p:
     pg56.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-cabo-alc'])"); pg56.reload(); pg56.wait_for_timeout(1800)
     pg56.evaluate("SRP.app.mostrarVista('supervision')"); pg56.wait_for_timeout(2500)
     abrir_sup(pg56)
-    ok(pg56.inner_text('#sup-filtros-texto')=='Más filtros: alcaldía, programa y origen' and pg56.evaluate("document.querySelectorAll('#sup-programa option').length")<=2,
-       'el cabo ve en «Mi avance» sólo sus programas y el resumen dice «alcaldía, programa y origen»: %s' % pg56.inner_text('#sup-filtros-texto'))
+    ok(pg56.inner_text('#sup-filtros-texto')=='Más filtros: alcaldía y programa' and pg56.evaluate("document.querySelectorAll('#sup-programa option').length")<=2,
+       'el cabo ve en «Mi avance» sólo sus programas y el resumen dice «alcaldía y programa»: %s' % pg56.inner_text('#sup-filtros-texto'))
     ok(not err56,'sin errores en consola: %s' % err56[:2])
     ctx56.close()
 
@@ -4863,7 +4865,7 @@ with sync_playwright() as p:
     pg59.evaluate("document.getElementById('jornada-mas-filtros').open = true")
     z59=pg59.evaluate("""() => ({ listas: [...document.querySelectorAll('#jornada-mas-filtros select')].filter(s => !s.closest('[hidden]')).map(s => document.querySelector('label[for=' + s.id + ']').textContent),
       resumen: document.getElementById('jornada-mas-filtros-texto').textContent, total: SRP.jornadas.lista.length, cerradas: SRP.jornadas.lista.filter(j => j.estatus === 'cerrada').length })""")
-    ok('Reporte' not in z59['listas'] and 'Origen' in z59['listas'] and 'reporte' not in z59['resumen'] and len(z59['listas'])<=5,'«Más filtros» de Jornadas lleva sólo listas: quién registró, programa, origen, alcaldía e institución: %s' % z59['listas'])
+    ok('Reporte' not in z59['listas'] and 'Origen' not in z59['listas'] and 'reporte' not in z59['resumen'] and len(z59['listas'])<=5,'«Más filtros» de Jornadas lleva sólo listas: quién registró, programa, alcaldía e institución: %s' % z59['listas'])
     pg59.select_option('#jornada-revision','sinreporte'); pg59.wait_for_timeout(2000)
     r59=pg59.evaluate("[SRP.jornadas.lista.length, SRP.jornadas.lista.every(j => j.estatus === 'cerrada' && !j.dato.reporte_en), document.getElementById('jornada-fichas').textContent, document.getElementById('jornada-quitar').hidden]")
     ok(0<r59[0]<z59['cerradas'] and r59[1] and 'sin reporte' in r59[2].lower() and not r59[3],'«Pendientes: sin reporte todavía» deja las jornadas cerradas que aún no tienen reporte, con su ficha y «Quitar filtros»: %s de %s' % (r59[0], z59['cerradas']))
@@ -4993,7 +4995,7 @@ with sync_playwright() as p:
     j60=pg60.evaluate("SRP.activa.jornada.id")
     pg60.evaluate("async (id) => { SRP.app.mostrarVista('jornadas'); await SRP.jornadas.abrir(id); }", j60); pg60.wait_for_timeout(1800)
     jf60=pg60.evaluate("[document.getElementById('jornada-prioridad').textContent, !!document.querySelector('#jornada-mapa .pri-capas-boton') && getComputedStyle(document.querySelector('#jornada-mapa .pane-prioritarias')).opacity === '0.8', document.querySelectorAll('#jornada-mapa path.pri-colonia').length]")
-    ok(jf60[0]=='Colonias prioritarias: 1 en prioridad alta.' and jf60[1] and jf60[2]==1,'la ficha de la jornada dice en qué prioridad cayeron sus árboles y su mapa pinta sólo su colonia, con el mismo control y la opacidad elegida: %s' % jf60[0])
+    ok(jf60[0]=='Árboles por prioridad de la colonia: 1 en prioridad alta.' and jf60[1] and jf60[2]==1,'la ficha de la jornada dice en qué prioridad cayeron sus árboles y su mapa pinta sólo su colonia, con el mismo control y la opacidad elegida: %s' % jf60[0])
     # Supervisión: árboles por nivel de prioridad, en pantalla, en el informe y en la tabla
     pg60.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-admin-1'])"); pg60.reload(); pg60.wait_for_timeout(1500)
     pg60.evaluate("async () => { await SRP.demo.cargar(); }"); pg60.wait_for_timeout(500)
@@ -5029,7 +5031,7 @@ with sync_playwright() as p:
     pg61.click('#btn-ini-detectar'); pg61.wait_for_timeout(1200)
     i1=pg61.inner_text('#ini-prioridad')
     ok(i0=='—' and i1=='Alta · Vicente Guerrero','al iniciar la jornada, detectar la ubicación dice la prioridad de reforestación de la colonia: %s' % i1)
-    pg61.fill('#ini-nombre','Prioridad B143'); pg61.fill('#ini-fecha', HOY); pg61.select_option('#ini-programa','p-refor'); pg61.select_option('#ini-origen','PROGRAMADA'); pg61.fill('#ini-meta','10'); pg61.click('#btn-iniciar-jornada'); pg61.wait_for_timeout(700)
+    pg61.fill('#ini-nombre','Prioridad B143'); pg61.fill('#ini-fecha', HOY); pg61.select_option('#ini-programa','p-refor'); pg61.fill('#ini-meta','10'); pg61.click('#btn-iniciar-jornada'); pg61.wait_for_timeout(700)
     j61=pg61.evaluate("SRP.activa.jornada.id")
     fr0=pg61.text_content('#franja-jornada-texto')
     ok('prioridad alta' in fr0,'la franja de la jornada activa dice su prioridad desde antes del primer árbol (la de su ubicación): %s' % fr0.replace(chr(10),' · '))
@@ -5046,7 +5048,7 @@ with sync_playwright() as p:
     pg61.evaluate("async (id) => { await SRP.jornadas.abrir(id); }", j61); pg61.wait_for_timeout(1500)
     esperar(pg61, "document.querySelectorAll('#jornada-lista .punto-prioridad').length === 3 && /prioridad/.test(document.getElementById('jornada-sub').textContent)", 6000)   # la lista se pinta por partes
     fi61=pg61.evaluate("[document.getElementById('jornada-sub').textContent, document.getElementById('jornada-prioridad').textContent, [...document.querySelectorAll('#jornada-lista .punto-prioridad')].map(x => x.textContent.trim())]")
-    ok('prioridad alta (2 de 3 árboles)' in fi61[0] and fi61[1]=='Colonias prioritarias: 2 en prioridad alta y 1 en baja.' and sorted(fi61[2])==['Colonia de prioridad alta','Colonia de prioridad alta','Colonia de prioridad baja'],
+    ok('prioridad alta (2 de 3 árboles)' in fi61[0] and fi61[1]=='Árboles por prioridad de la colonia: 2 en prioridad alta y 1 en baja.' and sorted(fi61[2])==['Colonia de prioridad alta','Colonia de prioridad alta','Colonia de prioridad baja'],
        'la ficha dice la prioridad de la jornada, el desglose y la de cada punto: %s' % fi61[1])
     # El reporte de la jornada: prioridad, desglose y columna por árbol
     rep61=pg61.evaluate("""async (id) => { const j = await SRP.almacen.uno('jornadas', id); const regs = await SRP.activa.registrosDe(j); const m = SRP.reportes.modelo(regs, j, j.fecha, j);
@@ -5073,86 +5075,88 @@ with sync_playwright() as p:
     ok(not err61,'sin errores en consola: %s' % err61[:2])
     ctx61.close()
 
-    # ---------- ctx62: origen de la jornada: programada o pedido especial de otra instancia ----------
+    # ---------- ctx62: la solicitud es un programa: pide quién lo solicita y su descripción ----------
     ctx62=b.new_context(viewport={'width':390,'height':844}, geolocation={'latitude':19.357,'longitude':-99.06,'accuracy':5}, permissions=['geolocation'], timezone_id='America/Mexico_City', accept_downloads=True)
     pg62=ctx62.new_page(); err62=[]
     pg62.on('pageerror', lambda e: err62.append(str(e))); pg62.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err62.append(m.text))
     pg62.goto(BASE); pg62.wait_for_timeout(1300)
     pg62.select_option('#sel-usuario-prueba','u-cabo-1'); pg62.click('#btn-entrar-prueba'); pg62.wait_for_timeout(800)
-    # El origen se elige a propósito: sin él la jornada no inicia
+    # Ya no se pregunta el origen: «Solicitud» es una opción de Programa, la última
     pg62.evaluate("SRP.app.mostrarVista('registrar')"); pg62.wait_for_timeout(500)
-    a62=pg62.evaluate("[document.getElementById('ini-origen').value, document.getElementById('ini-pedido').hidden, [...document.getElementById('ini-origen').options].map(o => o.textContent)]")
-    ok(a62==['', True, ['Seleccione el origen','Programada','Pedido especial']],'al iniciar una jornada el origen está sin elegir y los datos del pedido no se piden: %s' % a62)
-    pg62.fill('#ini-nombre','Sin origen B157'); pg62.fill('#ini-fecha', HOY); pg62.fill('#ini-meta','10')
-    pg62.evaluate("document.getElementById('ini-programa').value = 'p-refor'"); pg62.click('#btn-iniciar-jornada'); pg62.wait_for_timeout(400)
-    so62=pg62.evaluate("[!!SRP.activa.jornada, document.getElementById('ini-errores').textContent, (document.getElementById('ini-origen-error') || {}).textContent || '', document.getElementById('ini-origen').getAttribute('aria-invalid'), !!document.querySelector('label[for=ini-origen] .obligatorio')]")
-    ok(so62[0] is False and 'Falta corregir 1 dato' in so62[1] and 'Elija el origen de la jornada' in so62[2] and so62[3]=='true' and so62[4],'sin origen la jornada no inicia: el campo lo dice, con asterisco de obligatorio: %s' % so62)
-    jp62=iniciar_jornada(pg62,'Programada B146')
-    g62=pg62.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); return [j.origen, j.solicitante_id, j.solicitante_otro, j.pedido_descripcion]; }", jp62)
-    ok(g62==['PROGRAMADA', None, '', ''] and 'Pedido' not in pg62.text_content('#franja-jornada-texto'),'la jornada programada se guarda con origen PROGRAMADA y sin datos de pedido: %s' % g62)
+    a62=pg62.evaluate("[!!document.getElementById('ini-origen'), document.getElementById('ini-solicitud').hidden, [...document.getElementById('ini-programa').options].map(o => o.textContent)]")
+    ok(a62[0] is False and a62[1] is True and a62[2][0]=='Seleccione un programa' and a62[2][1]=='Reforestación Urbana' and a62[2][-1]=='Solicitud','al iniciar una jornada no se pregunta el origen; «Solicitud» es la última opción de Programa y sus datos no se piden todavía: %s' % a62[2])
+    jp62=iniciar_jornada(pg62,'De programa B166')
+    g62=pg62.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); return ['origen' in j, j.programa_id, j.solicitante_id, j.solicitante_otro, j.solicitud_descripcion]; }", jp62)
+    ok(g62==[False, 'p-refor', None, '', ''] and 'Solicita' not in pg62.text_content('#franja-jornada-texto'),'una jornada de otro programa se guarda sin campo de origen y con los datos de la solicitud vacíos: %s' % g62)
     registrar(pg62,'ahuehu','ESP-0070')
     pg62.evaluate("async () => { await SRP.activa.cambiarEstatus(SRP.activa.jornada, 'cerrada'); SRP.activa.jornada = null; await SRP.activa.preparar(); }"); pg62.wait_for_timeout(500)
-    # Un pedido especial: pide quién lo solicita
+    # Una solicitud: pide quién lo solicita y de qué se trata
     pg62.evaluate("SRP.app.mostrarVista('registrar')"); pg62.wait_for_timeout(500)
-    pg62.fill('#ini-nombre','Pedido B146'); pg62.fill('#ini-fecha', HOY); pg62.select_option('#ini-programa','p-refor'); pg62.select_option('#ini-origen','PROGRAMADA'); pg62.fill('#ini-meta','10')
-    pg62.select_option('#ini-origen','PEDIDO'); pg62.wait_for_timeout(150)
-    b62=pg62.evaluate("[document.getElementById('ini-pedido').hidden, document.getElementById('caja-ini-solicitante-otro').hidden, [...document.getElementById('ini-solicitante').options].some(o => o.value === 's-sobse'), [...document.getElementById('ini-solicitante').options].pop().textContent, !!document.getElementById('ini-oficio'), [...document.querySelectorAll('#ini-solicitante optgroup')].map(g => g.label), [...document.getElementById('ini-solicitante').options].some(o => /^o-/.test(o.value))]")
-    ok(b62==[False, True, True, 'Otra instancia', False, ['Dependencia de gobierno','Alcaldía','Congreso'], False] and pg62.evaluate("document.querySelector('#ini-solicitante optgroup option').textContent") == 'Oficina de la Secretaría','con «Pedido especial» aparecen quién lo solicita (los solicitantes del catálogo, agrupados por tipo, y «Otra instancia») y la descripción; no se pide oficio ni folio: %s' % b62)
+    pg62.fill('#ini-nombre','Solicitud B166'); pg62.fill('#ini-fecha', HOY); pg62.fill('#ini-meta','10')
+    pg62.select_option('#ini-programa','p-solicitud'); pg62.wait_for_timeout(150)
+    b62=pg62.evaluate("[document.getElementById('ini-solicitud').hidden, document.getElementById('caja-ini-solicitante-otro').hidden, [...document.getElementById('ini-solicitante').options].some(o => o.value === 's-sobse'), [...document.getElementById('ini-solicitante').options].pop().textContent, document.getElementById('ini-solicitud-descripcion').tagName, [...document.querySelectorAll('#ini-solicitante optgroup')].map(g => g.label), [...document.getElementById('ini-solicitante').options].some(o => /^o-/.test(o.value)), document.querySelector('label[for=ini-solicitud-descripcion]').textContent.replace('*','').trim()]")
+    ok(b62==[False, True, True, 'Otra instancia', 'TEXTAREA', ['Dependencia de gobierno','Alcaldía','Congreso'], False, 'Descripción de la solicitud'] and pg62.evaluate("document.querySelector('#ini-solicitante optgroup option').textContent") == 'Oficina de la Secretaría','con el programa «Solicitud» aparecen quién lo solicita (del catálogo, agrupados por tipo, y «Otra instancia») y la descripción, en varios renglones: %s' % b62)
     pg62.click('#btn-iniciar-jornada'); pg62.wait_for_timeout(400)
     e62=pg62.inner_text('#ini-errores') if pg62.is_visible('#ini-errores') else ''
-    ok('Elija quién solicita el pedido especial' in e62 and pg62.is_visible('#panel-iniciar-jornada'),'sin solicitante el pedido especial no se inicia: %s' % e62.replace(chr(10),' · '))
+    ok('Elija quién lo solicita' in e62 and pg62.is_visible('#panel-iniciar-jornada'),'sin solicitante la solicitud no se inicia: %s' % e62.replace(chr(10),' · '))
     pg62.select_option('#ini-solicitante','__otra'); pg62.wait_for_timeout(150)
     pg62.click('#btn-iniciar-jornada'); pg62.wait_for_timeout(400)
     e62b=pg62.inner_text('#ini-errores') if pg62.is_visible('#ini-errores') else ''
     ok('Escriba el nombre de la instancia' in e62b and pg62.is_visible('#caja-ini-solicitante-otro'),'«Otra instancia» pide su nombre: %s' % e62b.replace(chr(10),' · '))
     pg62.select_option('#ini-solicitante','s-sobse'); pg62.click('#btn-iniciar-jornada'); pg62.wait_for_timeout(400)
     e62c=pg62.inner_text('#ini-errores') if pg62.is_visible('#ini-errores') else ''
-    ok('Escriba de qué se trata el pedido especial' in e62c and pg62.is_visible('#panel-iniciar-jornada') and 'opcional' not in pg62.inner_text('label[for=ini-pedido-descripcion]'),'la descripción del pedido especial es obligatoria: %s' % e62c.replace(chr(10),' · '))
-    pg62.fill('#ini-pedido-descripcion','Compensación por obra'); pg62.click('#btn-iniciar-jornada'); pg62.wait_for_timeout(700)
+    ok('Escriba de qué se trata la solicitud' in e62c and pg62.is_visible('#panel-iniciar-jornada'),'la descripción de la solicitud es obligatoria: %s' % e62c.replace(chr(10),' · '))
+    # Otro programa esconde el bloque y no exige nada; volver a «Solicitud» conserva lo escrito
+    pg62.select_option('#ini-programa','p-refor'); pg62.wait_for_timeout(150); oc62=pg62.is_hidden('#ini-solicitud')
+    pg62.select_option('#ini-programa','p-solicitud'); pg62.wait_for_timeout(150)
+    ok(oc62 and pg62.is_visible('#ini-solicitud') and pg62.input_value('#ini-solicitante')=='s-sobse','con otro programa el bloque se esconde; al volver a «Solicitud», sigue lo elegido')
+    pg62.fill('#ini-solicitud-descripcion','Compensación por obra.\nOficio de la dependencia.'); pg62.click('#btn-iniciar-jornada'); pg62.wait_for_timeout(700)
     j62=pg62.evaluate("SRP.activa.jornada && SRP.activa.jornada.id")
-    h62=pg62.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); return [j.origen, j.solicitante_id, j.solicitante_otro, j.pedido_descripcion, j.organizacion_id]; }", j62)
+    h62=pg62.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); return [j.programa_id, j.solicitante_id, j.solicitante_otro, j.solicitud_descripcion, j.organizacion_id]; }", j62)
     fr62=pg62.text_content('#franja-jornada-texto')
-    ok(h62==['PEDIDO','s-sobse','','Compensación por obra','o-sedema'] and 'Pedido especial · Solicita: Secretaría de Obras y Servicios (SOBSE)' in fr62,'el pedido especial se guarda con su solicitante, que no es quien ejecuta, y la franja lo dice: %s' % h62)
-    registrar(pg62,'ahuehu','ESP-0070'); registrar(pg62,'aile','ESP-0002')
+    ok(h62==['p-solicitud','s-sobse','','Compensación por obra.\nOficio de la dependencia.','o-sedema'] and 'Solicita: Secretaría de Obras y Servicios (SOBSE)' in fr62,'la solicitud se guarda con su solicitante, que no es quien ejecuta, y su descripción en dos renglones; la franja lo dice: %s' % h62)
+    registrar(pg62,'ahuehu','ESP-0070', programa='p-solicitud'); registrar(pg62,'aile','ESP-0002', programa='p-solicitud')
+    pa62=pg62.evaluate("async id => (await SRP.almacen.todos('plantaciones')).filter(r => r.jornada_id === id).map(r => r.programa_id)", j62)
+    ok(pa62==['p-solicitud','p-solicitud'],'los árboles de una solicitud toman el programa «Solicitud»')
     pg62.evaluate("async () => { await SRP.activa.cambiarEstatus(SRP.activa.jornada, 'cerrada'); SRP.activa.jornada = null; }"); pg62.wait_for_timeout(400)
-    # Jornadas: la marca en la tarjeta y el filtro «Origen»
+    # Jornadas: la marca en la tarjeta; se filtra con Programa, ya no hay filtro «Origen»
     pg62.evaluate("SRP.app.mostrarVista('jornadas')"); pg62.wait_for_timeout(1500)
-    c62=pg62.evaluate("""([p, n]) => { const t = id => { const m = document.querySelector('#lista-jornadas li[data-clave="' + id + '"] .jornada-pedido'); return m ? m.textContent.trim() : ''; };
-      return [t(p), t(n), [...document.getElementById('jornada-origen').options].map(o => o.textContent)]; }""", [j62, jp62])
-    ok(c62[0]=='Pedido especial · Solicita: Secretaría de Obras y Servicios (SOBSE)' and c62[1]=='' and c62[2]==['Todos','Programada','Pedido especial (todos)','Pedido especial · Secretaría de Obras y Servicios (SOBSE)'],
-       'la tarjeta de la jornada marca el pedido especial y la lista «Origen» trae programada, todos los pedidos y cada solicitante: %s' % c62[2])
+    c62=pg62.evaluate("""([p, n]) => { const t = id => { const m = document.querySelector('#lista-jornadas li[data-clave="' + id + '"] .jornada-solicitud'); return m ? m.textContent.trim() : ''; };
+      return [t(p), t(n), !!document.getElementById('jornada-origen'), [...document.getElementById('jornada-programa').options].map(o => o.textContent)]; }""", [j62, jp62])
+    ok(c62[0]=='Solicita: Secretaría de Obras y Servicios (SOBSE)' and c62[1]=='' and c62[2] is False and 'Solicitud' in c62[3],
+       'la tarjeta de la jornada dice quién lo solicita; el filtro «Origen» ya no existe y «Solicitud» está en el de Programa: %s' % c62[3])
     pg62.evaluate("document.getElementById('jornada-mas-filtros').open = true")
-    pg62.select_option('#jornada-origen','PEDIDO:s-sobse'); pg62.wait_for_timeout(900)
+    pg62.select_option('#jornada-programa','p-solicitud'); pg62.wait_for_timeout(900)
     d62=pg62.evaluate("([p, n]) => [SRP.jornadas.lista.some(j => j.id === p), SRP.jornadas.lista.some(j => j.id === n), document.getElementById('jornada-fichas').textContent]", [j62, jp62])
-    pg62.select_option('#jornada-origen','PROGRAMADA'); pg62.wait_for_timeout(900)
-    d62b=pg62.evaluate("([p, n]) => [SRP.jornadas.lista.some(j => j.id === p), SRP.jornadas.lista.some(j => j.id === n)]", [j62, jp62])
-    ok(d62[0] and not d62[1] and 'Origen: Pedido especial · Secretaría de Obras' in d62[2] and d62b==[False, True],'Jornadas se filtra por origen y por solicitante, con su ficha: %s' % d62[2])
+    ok(d62[0] and not d62[1] and 'Programa: Solicitud' in d62[2],'las solicitudes se filtran con Programa, con su ficha: %s' % d62[2])
     pg62.click('#jornada-quitar'); pg62.wait_for_timeout(800)
     # La ficha lo dice y «Editar jornada» lo corrige
     pg62.evaluate("async (id) => { await SRP.jornadas.abrir(id); }", j62); pg62.wait_for_timeout(1200)
     s62=pg62.inner_text('#jornada-sub')
-    ok('pedido especial de Secretaría de Obras y Servicios (SOBSE) (Compensación por obra)' in s62,'la ficha de la jornada dice de quién es el pedido y de qué se trata')
+    ok('solicita Secretaría de Obras y Servicios (SOBSE)' in s62,'la ficha de la jornada dice quién lo solicita: %s' % s62)
     pg62.click('#btn-jornada-editar'); pg62.wait_for_timeout(400)
-    f62=pg62.evaluate("[document.getElementById('ej-origen').value, document.getElementById('ej-solicitante').value, document.getElementById('ej-pedido-descripcion').value]")
+    f62=pg62.evaluate("[!!document.getElementById('ej-origen'), document.getElementById('ej-programa').value, document.getElementById('ej-solicitud').hidden, document.getElementById('ej-solicitante').value, document.getElementById('ej-solicitud-descripcion').value]")
     pg62.select_option('#ej-solicitante','__otra'); pg62.fill('#ej-solicitante-otro','Metro'); pg62.click('#btn-ej-guardar'); pg62.wait_for_timeout(900)
     k62=pg62.evaluate("""async id => { const j = await SRP.almacen.uno('jornadas', id); const b = (await SRP.almacen.todos('bitacora')).filter(x => x.entidad_id === id && x.accion === 'EDITADO' && /^Campos/.test(x.detalle || '')).pop();
-      return [j.origen, j.solicitante_id, j.solicitante_otro, b && b.detalle, SRP.pedido.texto(j)]; }""", j62)
-    ok(f62==['PEDIDO','s-sobse','Compensación por obra'] and k62[:3]==['PEDIDO', None, 'Metro'] and 'solicitante_id' in (k62[3] or '') and k62[4]=='Pedido especial · Solicita: Metro','«Editar jornada» trae el pedido y lo corrige a una instancia fuera del catálogo; queda en la bitácora: %s' % k62[3])
+      return [j.programa_id, j.solicitante_id, j.solicitante_otro, b && b.detalle, SRP.solicitud.texto(j)]; }""", j62)
+    ok(f62==[False,'p-solicitud',False,'s-sobse','Compensación por obra.\nOficio de la dependencia.'] and k62[:3]==['p-solicitud', None, 'Metro'] and 'solicitante_id' in (k62[3] or '') and k62[4]=='Solicita: Metro','«Editar jornada» trae la solicitud y la corrige a una instancia fuera del catálogo; queda en la bitácora: %s' % k62[3])
     # El reporte de la jornada
     r62=pg62.evaluate("""async ([p, n]) => { const de = async id => { const j = await SRP.almacen.uno('jornadas', id); const regs = await SRP.activa.registrosDe(j); const m = SRP.reportes.modelo(regs, j, j.fecha, j);
-      const v = k => (m.identificacion.find(x => x[0] === k) || [])[1]; return [v('Pedido especial solicitado por'), v('Descripción del pedido')]; }; return [await de(p), await de(n)]; }""", [j62, jp62])
-    ok(r62==[['Metro','Compensación por obra'],[None,None]],'el reporte de la jornada dice quién solicitó el pedido y su descripción; en una programada no aparece: %s' % r62)
-    # Indicadores: pedidos especiales del periodo, filtro por origen y columnas del CSV
-    i62=pg62.evaluate("""async id => { const I = SRP.indicadores, d = await I.cargar(); const m = I.calcular(d, I.periodo('todo'), {}); const f = I.calcular(d, I.periodo('todo'), { origen: 'PEDIDO' }); const g = I.calcular(d, I.periodo('todo'), { origen: 'PROGRAMADA' });
+      const v = k => (m.identificacion.find(x => x[0] === k) || [])[1]; return [v('Programa'), v('Solicitado por'), v('Descripción de la solicitud')]; }; return [await de(p), await de(n)]; }""", [j62, jp62])
+    ok(r62[0]==['Solicitud','Metro','Compensación por obra.\nOficio de la dependencia.'] and r62[1][0]=='Reforestación Urbana' and not r62[1][1] and not r62[1][2],'el reporte de la jornada dice el programa «Solicitud», quién lo solicitó y la descripción; con otro programa no aparecen: %s' % r62)
+    # Indicadores: solicitudes del periodo, filtro por programa y columnas del CSV
+    i62=pg62.evaluate("""async id => { const I = SRP.indicadores, d = await I.cargar(); const m = I.calcular(d, I.periodo('todo'), {}); const f = I.calcular(d, I.periodo('todo'), { programa: 'p-solicitud' }); const g = I.calcular(d, I.periodo('todo'), { programa: 'p-refor' });
       const csv = SRP.informes.texto(f).split('\\r\\n'); const j = m.jornadas.find(x => x.id === id);
-      return [m.cifras.jornadas, m.cifras.arboles, m.pedidos.jornadas, m.pedidos.arboles, m.pedidos.solicitantes.map(x => [x.solicitante, x.jornadas, x.arboles]), f.cifras.jornadas, f.cifras.arboles, g.cifras.jornadas, g.cifras.arboles, g.pedidos.jornadas,
-        csv[0].includes('"Origen de la jornada","Solicitante del pedido especial","Descripción del pedido"'), csv[1].endsWith('"Pedido especial","Metro","Compensación por obra"'), j && j.solicitante]; }""", j62)
-    ok(i62[:4]==[2,3,1,2] and i62[4]==[['Metro',1,2]] and i62[5:10]==[1,2,1,1,0] and i62[10] and i62[11] and i62[12]=='Metro','los indicadores cuentan los pedidos especiales por solicitante, se filtran por origen y el CSV lleva origen, solicitante y descripción: %s' % i62[:10])
+      return [m.cifras.jornadas, m.cifras.arboles, m.solicitudes.jornadas, m.solicitudes.arboles, m.solicitudes.solicitantes.map(x => [x.solicitante, x.jornadas, x.arboles]), f.cifras.jornadas, f.cifras.arboles, g.cifras.jornadas, g.cifras.arboles, g.solicitudes.jornadas,
+        csv[0].endsWith('"Quién lo solicita","Descripción de la solicitud"') && !csv[0].includes('Origen de la jornada'), csv[1].includes('"Solicitud"') && csv[1].includes('"Metro","Compensación por obra.'), j && j.solicitante,
+        m.porPrograma.map(x => [x.clave, x.arboles])]; }""", j62)
+    ok(i62[:4]==[2,3,1,2] and i62[4]==[['Metro',1,2]] and i62[5:10]==[1,2,1,1,0] and i62[10] and i62[11] and i62[12]=='Metro' and sorted(i62[13])==[['Reforestación Urbana',1],['Solicitud',2]],'los indicadores cuentan las solicitudes por solicitante y como programa; el CSV lleva quién lo solicita y la descripción, sin origen: %s' % i62[:10])
     pg62.evaluate("SRP.app.mostrarVista('supervision')"); pg62.wait_for_timeout(1500)
     abrir_sup(pg62)
     pg62.evaluate("() => { SRP.supervision.periodo = SRP.indicadores.periodo('todo'); SRP.supervision.pintar(); }"); pg62.wait_for_timeout(900)
-    u62=pg62.evaluate("[(document.getElementById('sup-t-pedidos') || {}).textContent || '', (document.querySelector('.sup-pedidos-lema') || {}).textContent || '', [...document.getElementById('sup-origen').options].map(o => o.value)]")
-    ok(u62[0]=='' and u62[2]==['','PROGRAMADA','PEDIDO','PEDIDO:otra:Metro'],'«Mi avance» del cabo no trae el apartado «Pedidos especiales», pero sí el filtro «Origen»: %s' % u62[2])
+    U62="[(document.getElementById('sup-t-solicitudes') || {}).textContent || '', (document.querySelector('.sup-solicitudes-lema') || {}).textContent || '', !!document.getElementById('sup-origen'), [...document.getElementById('sup-programa').options].map(o => o.value)]"
+    u62=pg62.evaluate(U62)
+    ok(u62[0]=='' and u62[2] is False and 'p-solicitud' in u62[3],'«Mi avance» del cabo no trae el apartado «Solicitudes» ni el filtro «Origen»; las filtra con Programa: %s' % u62[3])
     # Quien supervisa sí lo ve
     def como62(uid):
         pg62.evaluate("id => SRP.sesion.iniciar(SRP.ref.usuarioPorId[id])", uid); pg62.reload(); pg62.wait_for_timeout(1800)
@@ -5160,22 +5164,26 @@ with sync_playwright() as p:
         abrir_sup(pg62)
         pg62.evaluate("() => { SRP.supervision.periodo = SRP.indicadores.periodo('todo'); SRP.supervision.pintar(); }"); pg62.wait_for_timeout(900)
     como62('u-coord-1')
-    u62=pg62.evaluate("[(document.getElementById('sup-t-pedidos') || {}).textContent || '', (document.querySelector('.sup-pedidos-lema') || {}).textContent || '', [...document.getElementById('sup-origen').options].map(o => o.value)]")
-    ok('Pedidos especiales' in u62[0] and '1 de 2 jornadas y 2 de 3 árboles (67 %)' in u62[1],'Supervisión muestra el apartado «Pedidos especiales»: %s' % u62[1])
-    como62('u-cabo-1')
+    u62=pg62.evaluate(U62)
+    ok('Solicitudes' in u62[0] and '1 de 2 jornadas y 2 de 3 árboles (67 %)' in u62[1],'Supervisión muestra el apartado «Solicitudes»: %s' % u62[1])
     pg62.evaluate("document.getElementById('sup-filtros').open = true")
-    pg62.select_option('#sup-origen','PROGRAMADA'); pg62.wait_for_timeout(900)
-    w62=pg62.evaluate("[!!document.querySelector('.sup-pedidos-lema'), document.getElementById('sup-fichas').textContent, SRP.supervision.modelo.cifras.arboles]")
-    ok(w62[0]==False and 'Origen: Programada' in w62[1] and w62[2]==1,'con el filtro «Programada» sólo cuentan las programadas y el apartado de pedidos no aparece: %s' % w62)
-    # Un solicitante que aparece en una jornada cuenta como usado; volver a «Programada» vacía los datos del pedido
+    pg62.select_option('#sup-programa','p-refor'); pg62.wait_for_timeout(900)
+    w62=pg62.evaluate("[!!document.querySelector('.sup-solicitudes-lema'), document.getElementById('sup-fichas').textContent, SRP.supervision.modelo.cifras.arboles]")
+    ok(w62[0]==False and 'Programa: Reforestación Urbana' in w62[1] and w62[2]==1,'con otro programa en el filtro, el apartado de solicitudes no aparece: %s' % w62)
+    como62('u-cabo-1')
+    # Un solicitante que aparece en una jornada cuenta como usado; cambiar de programa vacía los datos de la solicitud
     y62=pg62.evaluate("""async id => { const j = await SRP.almacen.uno('jornadas', id); await SRP.almacen.guardarConBitacora('jornadas', Object.assign({}, j, { solicitante_id: 's-sobse', solicitante_otro: '' }), null);
       const u = (await SRP.ref.usosDe('catalogos'))['s-sobse']; return u && u.jornadas; }""", j62)
     pg62.evaluate("SRP.app.mostrarVista('jornadas')"); pg62.wait_for_timeout(1200)
     pg62.evaluate("async (id) => { await SRP.jornadas.abrir(id); }", j62); pg62.wait_for_timeout(1200)
     pg62.click('#btn-jornada-editar'); pg62.wait_for_timeout(400)
-    pg62.select_option('#ej-origen','PROGRAMADA'); pg62.click('#btn-ej-guardar'); pg62.wait_for_timeout(900)
-    z62=pg62.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); return [j.origen, j.solicitante_id, j.solicitante_otro, j.pedido_descripcion]; }", j62)
-    ok(y62==1 and z62==['PROGRAMADA', None, '', ''],'el solicitante de una jornada cuenta como usado (no se elimina del catálogo) y al volver a «Programada» los datos del pedido se vacían: %s' % z62)
+    pg62.select_option('#ej-programa','p-refor'); pg62.wait_for_timeout(150); oe62=pg62.is_hidden('#ej-solicitud')
+    pg62.click('#btn-ej-guardar'); pg62.wait_for_timeout(900)
+    z62=pg62.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); const a = (await SRP.almacen.todos('plantaciones')).filter(r => r.jornada_id === id).map(r => r.programa_id); return [j.programa_id, j.solicitante_id, j.solicitante_otro, j.solicitud_descripcion, a]; }", j62)
+    ok(y62==1 and oe62 and z62==['p-refor', None, '', '', ['p-refor','p-refor']],'el solicitante de una jornada cuenta como usado; al pasar la jornada a otro programa, los datos de la solicitud se vacían y sus árboles toman el programa nuevo: %s' % z62)
+    # «Solicitud» no se carga por archivo: no trae quién lo solicita
+    cg62=pg62.evaluate("SRP.CONFIG.PROGRAMA_SOLICITUD")
+    ok(cg62=='p-solicitud' and pg62.evaluate("SRP.ref.catalogoPorId['p-solicitud'].nombre")=='Solicitud','«Solicitud» es un valor del catálogo de programas, que el sistema reconoce por su identificador')
     ok(not err62,'sin errores en consola: %s' % err62[:2])
     ctx62.close()
 
@@ -5325,7 +5333,7 @@ with sync_playwright() as p:
     pg65.goto(BASE); pg65.wait_for_timeout(1200)
     pg65.select_option('#sel-usuario-prueba', 'u-cabo-1'); pg65.click('#btn-entrar-prueba'); pg65.wait_for_timeout(900)
     J65 = "(async () => (await SRP.almacen.todos('jornadas')).map(j => [j.nombre, j.estatus, !!j.reporte_en]))()"
-    pg65.fill('#ini-nombre', 'Doble toque B151'); pg65.fill('#ini-fecha', HOY); pg65.select_option('#ini-programa', 'p-refor'); pg65.select_option('#ini-origen','PROGRAMADA'); pg65.fill('#ini-meta', '10')
+    pg65.fill('#ini-nombre', 'Doble toque B151'); pg65.fill('#ini-fecha', HOY); pg65.select_option('#ini-programa', 'p-refor'); pg65.fill('#ini-meta', '10')
     pg65.evaluate("(() => { const f = document.getElementById('form-iniciar-jornada'); f.requestSubmit(); f.requestSubmit(); })()")
     esperar(pg65, "!!SRP.activa.jornada && !document.getElementById('btn-ubicacion').disabled", 5000); pg65.wait_for_timeout(500)
     ok(pg65.evaluate(J65) == [['Doble toque B151', 'abierta', False]], 'dos toques seguidos en «Iniciar jornada» inician una sola jornada: %s' % pg65.evaluate(J65))
@@ -5406,7 +5414,7 @@ with sync_playwright() as p:
     ok(not err66, 'sin errores en consola: %s' % err66[:2])
     ctx66.close()
 
-    # ---------- ctx67: catálogo de solicitantes de pedidos especiales, aparte del de instituciones ----------
+    # ---------- ctx67: catálogo de solicitantes, aparte del de instituciones ----------
     ctx67 = b.new_context(viewport={'width':390,'height':844}, timezone_id='America/Mexico_City', geolocation={'latitude':19.357,'longitude':-99.06,'accuracy':5}, permissions=['geolocation'])
     pg67 = ctx67.new_page(); err67 = []
     pg67.on('pageerror', lambda e: err67.append(str(e))); pg67.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err67.append(m.text))
@@ -5451,7 +5459,7 @@ with sync_playwright() as p:
        'el solicitante nuevo se guarda con su tipo, la clave que pone el sistema y su renglón de bitácora: %s' % (n67 and n67['d']))
     id67 = n67['id']
     # «Quién lo solicita» lo ofrece en su grupo; las instituciones ya no salen ahí
-    q67 = pg67.evaluate("""id => { const s = document.createElement('select'); s.innerHTML = SRP.pedido.opciones(null); const g = [...s.querySelectorAll('optgroup')];
+    q67 = pg67.evaluate("""id => { const s = document.createElement('select'); s.innerHTML = SRP.solicitud.opciones(null); const g = [...s.querySelectorAll('optgroup')];
       const alc = [...g[1].children].map(o => o.textContent);
       return [g.map(x => x.label), alc.length, alc.join() === alc.slice().sort((a, b) => a.localeCompare(b, 'es')).join(), alc[0], [...s.options].some(o => o.value === id), [...s.options].some(o => /^o-/.test(o.value)), s.options[0].value, [...s.options].pop().textContent]; }""", id67)
     ok(q67 == [['Dependencia de gobierno','Alcaldía','Congreso','Escuela'], 16, True, 'Álvaro Obregón', True, False, '', 'Otra instancia'],
@@ -5465,16 +5473,16 @@ with sync_playwright() as p:
     ok(h67 == ['Editar solicitante','Escuela',True] and k67 == ['Comité vecinal Ejemplo','Vecinos','ESCUELA_PRIMARIA_EJEMPLO','Campos: nombre, tipo_solicitante'],
        'un solicitante se edita: cambian nombre y tipo, la clave no, y la bitácora dice qué campos: %s' % k67)
     # Con uso no se elimina; desactivado deja de ofrecerse, pero la jornada que lo tiene lo conserva
-    u67 = pg67.evaluate("""async id => { await SRP.almacen._tx(['jornadas'], 'readwrite', tx => tx.objectStore('jornadas').put({ id: 'j-sol-67', nombre: 'Pedido de vecinos', cabo_id: 'u-cabo-1', organizacion_id: 'o-sedema',
-        programa_id: 'p-refor', fecha: '2026-09-01', estatus: 'cerrada', origen: 'PEDIDO', solicitante_id: id, solicitante_otro: '', pedido_descripcion: '' }));
-      const j = await SRP.almacen.uno('jornadas', 'j-sol-67'); return [SRP.pedido.texto(j), SRP.pedido.clavesFiltro(j)[1] === 'PEDIDO:' + id]; }""", id67)
+    u67 = pg67.evaluate("""async id => { await SRP.almacen._tx(['jornadas'], 'readwrite', tx => tx.objectStore('jornadas').put({ id: 'j-sol-67', nombre: 'Solicitud de vecinos', cabo_id: 'u-cabo-1', organizacion_id: 'o-sedema',
+        programa_id: 'p-solicitud', fecha: '2026-09-01', estatus: 'cerrada', solicitante_id: id, solicitante_otro: '', solicitud_descripcion: 'x' }));
+      const j = await SRP.almacen.uno('jornadas', 'j-sol-67'); return [SRP.solicitud.texto(j), SRP.solicitud.clave(j) === id]; }""", id67)
     pg67.click('#cat-tipos .chip[data-tipo=solicitante]'); pg67.wait_for_timeout(500)
     fila67 = pg67.locator('#tabla-catalogo tbody tr', has_text='Comité vecinal Ejemplo')
     ac67 = fila67.locator('button[data-accion]').evaluate_all('l=>l.map(b=>b.dataset.accion)')
     accion(pg67, fila67, 'estado'); pg67.wait_for_timeout(600)
-    d67 = pg67.evaluate("""id => { const s = document.createElement('select'); s.innerHTML = SRP.pedido.opciones(null); const t = document.createElement('select'); t.innerHTML = SRP.pedido.opciones(id);
+    d67 = pg67.evaluate("""id => { const s = document.createElement('select'); s.innerHTML = SRP.solicitud.opciones(null); const t = document.createElement('select'); t.innerHTML = SRP.solicitud.opciones(id);
       return [SRP.ref.catalogoPorId[id].activo, [...s.options].some(o => o.value === id), [...t.options].some(o => o.value === id), document.getElementById('cat-cuenta').textContent]; }""", id67)
-    ok(u67 == ['Pedido especial · Solicita: Comité vecinal Ejemplo', True] and ac67 == ['editar','estado'] and '1 jornada' in fila67.inner_text() and d67 == [False, False, True, '22 solicitantes · 1 inactivo'],
+    ok(u67 == ['Solicita: Comité vecinal Ejemplo', True] and ac67 == ['editar','estado'] and '1 jornada' in fila67.inner_text() and d67 == [False, False, True, '22 solicitantes · 1 inactivo'],
        'un solicitante con jornadas no ofrece «Eliminar»; desactivado ya no sale en «Quién lo solicita», salvo en la jornada que ya lo tiene: %s' % d67)
     # Sin uso sí se elimina
     pg67.evaluate("SRP.almacen._tx(['jornadas'], 'readwrite', tx => tx.objectStore('jornadas').delete('j-sol-67'))"); pg67.wait_for_timeout(200)
@@ -5483,11 +5491,11 @@ with sync_playwright() as p:
     confirmar_escribiendo(pg67, 'eliminar'); pg67.wait_for_timeout(700)
     ok(pg67.evaluate("id => !SRP.ref.catalogoPorId[id]", id67) and pg67.inner_text('#cat-cuenta') == '21 solicitantes','un solicitante sin uso se elimina del catálogo')
     # Al abrir: una jornada cuyo solicitante era una institución pasa a su solicitante o queda escrita
-    pg67.evaluate("""() => SRP.almacen._tx(['jornadas'], 'readwrite', tx => { const j = (id, s) => tx.objectStore('jornadas').put({ id, nombre: 'Pedido de antes', cabo_id: 'u-cabo-1', organizacion_id: 'o-sedema', programa_id: 'p-refor',
-        fecha: '2026-09-01', estatus: 'cerrada', origen: 'PEDIDO', solicitante_id: s, solicitante_otro: '', pedido_descripcion: 'x' });
+    pg67.evaluate("""() => SRP.almacen._tx(['jornadas'], 'readwrite', tx => { const j = (id, s) => tx.objectStore('jornadas').put({ id, nombre: 'Solicitud de antes', cabo_id: 'u-cabo-1', organizacion_id: 'o-sedema', programa_id: 'p-solicitud',
+        fecha: '2026-09-01', estatus: 'cerrada', solicitante_id: s, solicitante_otro: '', solicitud_descripcion: 'x' });
       j('j-a67', 'o-sobse'); j('j-b67', 'o-alc-09007'); j('j-c67', 'o-paot'); j('j-d67', 's-jefatura'); })""")
     pg67.reload(); pg67.wait_for_timeout(1600)
-    m67 = pg67.evaluate("""async () => { await SRP.ref.recargar(); const r = []; for (const id of ['j-a67', 'j-b67', 'j-c67', 'j-d67']) { const j = await SRP.almacen.uno('jornadas', id); r.push([j.solicitante_id, j.solicitante_otro, SRP.pedido.solicitante(j), j.pedido_descripcion]); } return r; }""")
+    m67 = pg67.evaluate("""async () => { await SRP.ref.recargar(); const r = []; for (const id of ['j-a67', 'j-b67', 'j-c67', 'j-d67']) { const j = await SRP.almacen.uno('jornadas', id); r.push([j.solicitante_id, j.solicitante_otro, SRP.solicitud.solicitante(j), j.solicitud_descripcion]); } return r; }""")
     ok(m67 == [['s-sobse','','Secretaría de Obras y Servicios (SOBSE)','x'],['s-alc-09007','','Iztapalapa','x'],[None,'Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)','Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)','x'],['s-jefatura','','Jefatura de Gobierno','x']],
        'al abrir, la jornada que tenía una institución como solicitante pasa al solicitante que le corresponde o queda escrita como otra instancia: %s' % m67)
     # Un teléfono con capturas y el sello anterior recibe el catálogo de solicitantes sin perder nada
@@ -5505,7 +5513,7 @@ with sync_playwright() as p:
     pg68.on('pageerror', lambda e: err68.append(str(e))); pg68.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err68.append(m.text))
     pg68.goto(BASE); pg68.wait_for_timeout(1200)
     pg68.select_option('#sel-usuario-prueba', 'u-cabo-1'); pg68.click('#btn-entrar-prueba'); pg68.wait_for_timeout(900)
-    pg68.fill('#ini-nombre', 'Mapa B154'); pg68.fill('#ini-fecha', HOY); pg68.select_option('#ini-programa', 'p-refor'); pg68.select_option('#ini-origen','PROGRAMADA'); pg68.fill('#ini-meta', '3')
+    pg68.fill('#ini-nombre', 'Mapa B154'); pg68.fill('#ini-fecha', HOY); pg68.select_option('#ini-programa', 'p-refor'); pg68.fill('#ini-meta', '3')
     pg68.evaluate("document.getElementById('form-iniciar-jornada').requestSubmit()")
     esperar(pg68, "!!SRP.activa.jornada && !document.getElementById('btn-ubicacion').disabled", 5000); pg68.wait_for_timeout(500)
     PUNTOS68 = "document.querySelectorAll('#mapa .punto-plantado').length"
@@ -5793,7 +5801,7 @@ with sync_playwright() as p:
     entrar72('u-dir-1')
     d72 = pg72.evaluate("""(() => { const p = SRP.permisos, u = SRP.sesion.usuario, nav = document.getElementById('navegacion');
       return { etiqueta: p.de(u).etiqueta, alcance: p.de(u).alcance, vista: SRP.app.vista, registrar: nav.querySelector('[data-vista=registrar]').hidden,
-        puede: ['registro.crear', 'jornada.crear', 'catalogo.administrar', 'usuario.administrar', 'carga.masiva'].map(a => p.puede(a)), fotos: p.puede('galeria.descargar'), config: document.getElementById('btn-ir-configuracion').hidden }; })()""")
+        puede: ['registro.crear', 'jornada.crear', 'catalogo.administrar', 'usuario.administrar', 'carga.masiva'].map(a => p.puede(a)), fotos: p.puede('galeria.descargar'), config: document.querySelector('.pestana[data-vista=configuracion]').hidden }; })()""")
     ok(d72 == {'etiqueta':'Directivo','alcance':'todos','vista':'supervision','registrar':True,'puede':[False]*5,'fotos':True,'config':True},
        'el directivo de la Secretaría entra a Supervisión, ve toda la Ciudad, no tiene «Nuevo registro» ni Configuración y sí Fotografías: %s' % d72)
     pg72.evaluate("SRP.app.mostrarVista('jornadas')"); pg72.wait_for_timeout(700); pg72.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg72.wait_for_timeout(500)
@@ -5849,7 +5857,7 @@ with sync_playwright() as p:
         ca.put(Object.assign({ id: 'v-B160', tipo: 'vehiculo', clave: 'B160', nombre: 'B 160', modelo: 'Dodge', tipo_vehiculo: 'Pipa' }, base));
         ca.put(Object.assign({ id: 'o-b160', tipo: 'organizacion', clave: 'ORG_B160', nombre: 'Institución B160', tipo_organizacion: 'Empresa privada' }, base));
         ca.put(Object.assign({ id: 's-b160', tipo: 'solicitante', clave: 'SOL_B160', nombre: 'Solicitante B160', tipo_solicitante: 'Vecinos' }, base));
-        jo.put({ id: 'jr-b160', nombre: 'Jornada B160', cabo_id: 'u-admin-1', fecha: '2026-09-20', estatus: 'cerrada', programa_id: 'p-b160', vehiculo_id: 'v-B160', organizacion_id: 'o-b160', solicitante_id: 's-b160', origen: 'PEDIDO' }); };
+        jo.put({ id: 'jr-b160', nombre: 'Jornada B160', cabo_id: 'u-admin-1', fecha: '2026-09-20', estatus: 'cerrada', programa_id: 'p-b160', vehiculo_id: 'v-B160', organizacion_id: 'o-b160', solicitante_id: 's-b160', origen: 'PROGRAMA' }); };
       r.onsuccess = () => { r.result.close(); ok(true); }; r.onerror = () => no(r.error); })""")
     pg73.unroute('**/*.js*'); pg73.reload(); pg73.wait_for_timeout(1800)
     m73 = pg73.evaluate("""async () => { const A = SRP.almacen, fila = async (t, id) => await A.uno(t, id);
@@ -5860,14 +5868,14 @@ with sync_playwright() as p:
         ajenos: ['modelo', 'nombre_cientifico', 'tipo_organizacion'].some(k => k in filas.areas),
         memoria: ['p-b160', 'a-b160', 'ESP-9001', 'v-B160', 'o-b160', 's-b160'].map(id => (SRP.ref.catalogoPorId[id] || {}).tipo),
         usos: ['p-b160', 'v-B160', 'o-b160', 's-b160', 'a-b160'].map(id => usos[id] || null), uno: (await A.catalogo('v-B160')).tipo }; }""")
-    ok(m73['v'] == 8 and 'catalogos' not in m73['tablas'] and m73['tablas'] == sorted(['plantaciones','usuarios','bitacora','jornadas','programas','areas','especies','vehiculos','instituciones','solicitantes']),
-       'la base queda en la versión 8, con diez tablas y sin la tabla única de catálogos: %s' % m73['tablas'])
+    ok(m73['v'] == 9 and 'catalogos' not in m73['tablas'] and m73['tablas'] == sorted(['plantaciones','usuarios','bitacora','jornadas','programas','areas','especies','vehiculos','instituciones','solicitantes']),
+       'la base queda en la versión 9, con diez tablas y sin la tabla única de catálogos: %s' % m73['tablas'])
     ok(m73['todas'] and m73['sinTipo'] and m73['propios'] == [['Alcaldía'], 'Dodge', 'Empresa privada', 'Vecinos', 'Arbor centum'] and m73['ajenos'] is False,
        'cada catálogo pasó a su tabla con sus campos, sin `tipo` y sin campos de otro catálogo: %s' % m73['propios'])
     ok(m73['memoria'] == ['programa', 'area', 'especie', 'vehiculo', 'organizacion', 'solicitante'] and m73['uno'] == 'vehiculo',
        'en memoria cada renglón sigue diciendo de qué catálogo es: %s' % m73['memoria'])
-    ok(m73['usos'] == [{'jornadas': 1}, {'jornadas': 1}, {'jornadas': 1}, {'jornadas': 1}, {'usuarios': 1}],
-       'el uso de cada valor se cuenta igual que antes, contra su tabla: %s' % m73['usos'])
+    ok(m73['usos'] == [{'jornadas': 1}, {'jornadas': 1}, {'jornadas': 1}, None, {'usuarios': 1}],
+       'el uso de cada valor se cuenta contra su tabla; el solicitante de una jornada que no es solicitud se suelta: %s' % m73['usos'])
     # La pantalla de Catálogos sigue igual: guardar, desactivar y eliminar escriben en la tabla del catálogo
     pg73.select_option('#sel-usuario-prueba', 'u-admin-1'); pg73.click('#btn-entrar-prueba'); pg73.wait_for_timeout(700)
     g73 = pg73.evaluate("""async () => { const A = SRP.almacen;
@@ -5957,7 +5965,7 @@ with sync_playwright() as p:
       return { titulo: document.getElementById('titulo-supervision').textContent, cifras: q('.sup-cifra').length, abiertas: q('details[data-seccion][open]').length,
         secciones: q('details[data-seccion]').map(d => d.dataset.seccion), csv: document.getElementById('btn-sup-csv').hidden,
         calidad: document.getElementById('sup-t-calidad').textContent, texto: v.querySelector('details[data-seccion=calidad]').textContent, alto: v.scrollHeight }; }""")
-    ok(c75['titulo'] == 'Mi avance' and c75['cifras'] == 3 and c75['abiertas'] == 0 and 'pedidos' not in c75['secciones'] and 'cabos' not in c75['secciones'] and c75['csv']
+    ok(c75['titulo'] == 'Mi avance' and c75['cifras'] == 3 and c75['abiertas'] == 0 and 'solicitudes' not in c75['secciones'] and 'cabos' not in c75['secciones'] and c75['csv']
        and c75['calidad'] == 'Mis registros' and 'Eliminados' not in c75['texto'] and 'Ediciones' not in c75['texto'] and c75['alto'] <= 3 * 844,
        '«Mi avance» del cabo: tres cifras, todo plegado, sin pedidos, eliminados, ediciones ni CSV: %s px, %s' % (c75['alto'], c75['secciones']))
     pg75.click('details[data-seccion=alcaldias] > summary'); pg75.click('details[data-seccion=prioridad] > summary'); pg75.wait_for_timeout(1200)
@@ -5994,6 +6002,81 @@ with sync_playwright() as p:
     pg76.click('#btn-confirmar-no')
     ok(err76 == [], 'sin errores de consola: %s' % err76[:2])
     ctx76.close()
+
+    # ---------- ctx77: la base pasa a la versión 9; espejos de campos en cada pantalla que escribe ----------
+    ctx77 = b.new_context(viewport={'width':390,'height':844}, timezone_id='America/Mexico_City')
+    pg77 = ctx77.new_page(); err77 = []
+    pg77.on('pageerror', lambda e: err77.append(str(e)))
+    pg77.goto(BASE); pg77.wait_for_timeout(1300)
+    # Una base en la versión 8, con una jornada de pedido especial, otra programada y sus árboles
+    pg77.evaluate("""async () => { SRP.almacen.db.close(); await new Promise(r => { const q = indexedDB.deleteDatabase(SRP.CONFIG.DB_NOMBRE); q.onsuccess = q.onerror = q.onblocked = () => r(); });
+      await new Promise((ok, no) => { const q = indexedDB.open(SRP.CONFIG.DB_NOMBRE, 8);
+        q.onupgradeneeded = () => { const db = q.result; db.createObjectStore('plantaciones', { keyPath: 'id' }).createIndex('jornada_id', 'jornada_id');
+          ['usuarios', 'bitacora', 'jornadas', 'programas', 'areas', 'especies', 'vehiculos', 'instituciones', 'solicitantes'].forEach(t => db.createObjectStore(t, { keyPath: 'id' }));
+          const tx = q.transaction; tx.objectStore('plantaciones').createIndex('estatus', 'estatus'); tx.objectStore('jornadas').createIndex('cabo_id', 'cabo_id'); tx.objectStore('bitacora').createIndex('entidad_id', 'entidad_id');
+          const j = (id, extra) => tx.objectStore('jornadas').put(Object.assign({ id, nombre: 'Jornada ' + id, cabo_id: 'u-cabo-1', organizacion_id: 'o-sedema', programa_id: 'p-refor', fecha: '2026-09-20', estatus: 'cerrada', fecha_inicio: '2026-09-20T09:00:00-06:00', fecha_cierre: '2026-09-20T13:00:00-06:00', arboles_previstos: 2, puntos_revisados: [], relevos: [] }, extra));
+          j('j-ped', { origen: 'PEDIDO', solicitante_id: 's-sobse', solicitante_otro: '', pedido_descripcion: 'Camellón' });
+          j('j-pro', { origen: 'PROGRAMADA', solicitante_id: null, solicitante_otro: '', pedido_descripcion: '' });
+          const a = (id, jor) => tx.objectStore('plantaciones').put({ id, jornada_id: jor, estatus: 'activo', cabo_id: 'u-cabo-1', programa_id: 'p-refor', lat: 19.4, lng: -99.1, fecha_plantacion: '2026-09-20', fecha_registro: '2026-09-20T10:00:00-06:00', especie_id: 'ESP-0002', especie_otra: '', comentarios: '', punto_origen: 'manual' });
+          a('a-ped-1', 'j-ped'); a('a-ped-2', 'j-ped'); a('a-pro-1', 'j-pro'); };
+        q.onsuccess = () => { q.result.close(); ok(); }; q.onerror = () => no(q.error); }); }""")
+    pg77.reload(); pg77.wait_for_timeout(1800)
+    m77 = pg77.evaluate("""async () => { const A = SRP.almacen, p = await A.uno('jornadas', 'j-ped'), q = await A.uno('jornadas', 'j-pro'), ar = await A.todos('plantaciones');
+      return { v: A.db.version, ped: [p.programa_id, 'origen' in p, 'pedido_descripcion' in p, p.solicitante_id, p.solicitud_descripcion], pro: [q.programa_id, 'origen' in q, q.solicitud_descripcion],
+        arboles: Object.fromEntries(ar.map(a => [a.id, a.programa_id])), programa: !!(await A.uno('programas', 'p-solicitud')) }; }""")
+    ok(m77['v'] == 9 and m77['ped'] == ['p-solicitud', False, False, 's-sobse', 'Camellón'] and m77['pro'] == ['p-refor', False, ''] and m77['arboles'] == {'a-ped-1': 'p-solicitud', 'a-ped-2': 'p-solicitud', 'a-pro-1': 'p-refor'} and m77['programa'],
+       'la migración 9 pasa el pedido especial al programa «Solicitud», con sus árboles, conserva solicitante y descripción y retira el origen: %s' % m77)
+    # Espejos: «Iniciar jornada», la ficha de la jornada, y el alta de una cuenta y de un valor de catálogo
+    pg77.select_option('#sel-usuario-prueba', 'u-cabo-1'); pg77.click('#btn-entrar-prueba'); pg77.wait_for_timeout(900)
+    pg77.evaluate("SRP.app.mostrarVista('registrar')"); pg77.wait_for_timeout(600)
+    if pg77.is_hidden('#panel-iniciar-jornada'):
+        pg77.click('#btn-jornada-cambiar'); pg77.wait_for_timeout(200); pg77.click('#btn-cambiar-nueva'); pg77.wait_for_timeout(300)
+    pg77.fill('#ini-nombre', 'Espejo B166'); pg77.wait_for_timeout(200)
+    ESP77 = """sel => { const d = document.querySelector(sel + ' [data-espejo] details'); if (!d) return null; const f = [...d.querySelectorAll('tbody tr')].map(tr => [tr.cells[0].textContent, tr.cells[1].textContent]);
+      return { titulo: d.querySelector('caption').textContent, campos: f.map(x => x[0]), valores: Object.fromEntries(f), sinNota: [...d.querySelectorAll('tbody tr')].filter(tr => !tr.cells[2].textContent.trim()).map(tr => tr.cells[0].textContent) }; }"""
+    e77 = pg77.evaluate(ESP77, '#panel-iniciar-jornada')
+    ok(e77 and e77['titulo'].startswith('Almacén jornadas') and e77['valores']['id'] == '(se fija al iniciar)' and e77['valores']['cabo_id'] == 'u-cabo-1' and 'nombre' not in e77['campos'] and 'origen' not in e77['campos'] and e77['sinNota'] == [],
+       '«Iniciar jornada» enseña los campos que se guardarían y no se ven, cada uno con su nota: %s campos' % len(e77['campos'] if e77 else []))
+    pg77.evaluate("SRP.app.mostrarVista('jornadas')"); pg77.wait_for_timeout(1000)
+    pg77.evaluate("async () => { SRP.jornadas.aplicarAtajo('todas'); await SRP.jornadas.abrir('j-ped'); }"); pg77.wait_for_timeout(1500)
+    f77 = pg77.evaluate(ESP77, '#ficha-col-lista')
+    ok(f77 and f77['valores']['id'] == 'j-ped' and f77['valores']['organizacion_id'] == 'o-sedema' and 'solicitante_id' not in f77['campos'] and f77['sinNota'] == [],
+       'la ficha de la jornada enseña los campos guardados que no se ven: %s' % (f77 and f77['campos'][:6]))
+    # La simbología del mapa dice sólo los tipos de punto que hay; con la capa de colonias apagada, sus niveles se ven apagados
+    l77 = pg77.evaluate("""() => { const p = document.getElementById('jornada-leyenda'); const vis = [...p.querySelectorAll('span')].filter(s => !s.hidden).map(s => s.textContent.trim());
+      const tonos = [...new Set([...document.querySelectorAll('#jornada-mapa .pin-num span')].map(s => s.dataset.tono))];
+      const caja = document.querySelector('#jornada-mapa .pri-capas'); const ver = caja.querySelector('[data-pri=ver]'); const niv = () => [...caja.querySelectorAll('[data-pri=nivel]')].map(x => [x.checked, x.disabled]);
+      if (ver.checked) ver.click(); const apagada = niv(); ver.click(); const encendida = niv(); ver.click();
+      return [vis, tonos, apagada.every(x => !x[0] && x[1]), encendida.every(x => x[0] && !x[1])]; }""")
+    ok(len(l77[0]) == len(l77[1]) >= 1 and 'Sustituto' not in l77[0] and 'Lejos del resto' not in l77[0], 'la simbología del mapa de la jornada dice sólo los tipos de punto que hay: %s' % l77[0])
+    ok(l77[2] and l77[3], 'con «Colonias prioritarias» apagada, sus niveles se ven apagados; al encenderla vuelven')
+    pg77.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-admin-1'])"); pg77.reload(); pg77.wait_for_timeout(1800)
+    pg77.evaluate("SRP.app.mostrarVista('usuarios')"); pg77.wait_for_timeout(1000)
+    pg77.evaluate("SRP.usuarios.abrirFormulario(null)"); pg77.wait_for_timeout(500)
+    u77 = pg77.evaluate(ESP77, '#form-usuario')
+    pg77.evaluate("document.getElementById('dlg-usuario').close(); SRP.usuarios.abrirFormulario(SRP.ref.usuarioPorId['u-cabo-1'])"); pg77.wait_for_timeout(500)
+    u77b = pg77.evaluate(ESP77, '#form-usuario')
+    pg77.evaluate("document.getElementById('dlg-usuario').close()")
+    ok(u77 and u77['campos'] == ['id', 'activo', 'creado_por_id', 'fecha_creacion', 'editado_por_id', 'fecha_ultima_edicion'] and u77['valores']['id'] == '(se fija al guardar)' and u77b['valores']['id'] == 'u-cabo-1' and u77['sinNota'] == [],
+       'el alta y la edición de una cuenta enseñan lo que pone el sistema: %s' % (u77 and u77['valores']))
+    pg77.evaluate("SRP.app.mostrarVista('catalogos')"); pg77.wait_for_timeout(1000)
+    pg77.evaluate("SRP.catalogos.abrirFormulario(SRP.ref.catalogoPorId['p-solicitud'])"); pg77.wait_for_timeout(500)
+    c77 = pg77.evaluate(ESP77, '#form-catalogo')
+    pg77.evaluate("document.getElementById('dlg-catalogo').close()")
+    ok(c77 and c77['titulo'].startswith('Almacén programas') and c77['valores']['id'] == 'p-solicitud' and 'nombre' not in c77['campos'], 'la edición de un valor de catálogo dice su tabla y lo que pone el sistema: %s' % (c77 and c77['titulo']))
+    # «Sustituir árbol» no se parte en dos renglones
+    pg77.evaluate("SRP.app.mostrarVista('registros')"); pg77.wait_for_timeout(1200)
+    pg77.evaluate("SRP.registros.aplicarAtajo('todos')"); pg77.wait_for_timeout(800)
+    pg77.locator('#lista-registros .registro').first.click(); pg77.wait_for_timeout(700)
+    b77 = pg77.evaluate("""() => { const p = document.getElementById('detalle-pie'); const bs = [...p.querySelectorAll('.btn')].filter(b => !b.hidden).map(b => { const r = b.getBoundingClientRect(); return [b.textContent.trim(), Math.round(r.height), Math.round(r.right)]; });
+      return [bs, document.documentElement.scrollWidth]; }""")
+    fondo77 = pg77.evaluate("[getComputedStyle(document.documentElement).overflowY, document.getElementById('dlg-detalle').open]")
+    ok(fondo77 == ['hidden', True], 'con un diálogo abierto, la página de atrás no se desplaza: %s' % fondo77)
+    ok(len(b77[0]) >= 1 and all(h <= 56 and d <= 390 for _, h, d in b77[0]) and b77[1] <= 390, 'los botones del detalle caben en un renglón cada uno, sin partirse: %s' % b77[0])
+    pg77.click('#dlg-detalle .dialogo-cerrar'); pg77.wait_for_timeout(300)
+    ok(pg77.evaluate("getComputedStyle(document.documentElement).overflowY") != 'hidden', 'y al cerrarlo vuelve a desplazarse')
+    ok(err77 == [], 'sin errores de consola: %s' % err77[:2])
+    ctx77.close()
 
 
 

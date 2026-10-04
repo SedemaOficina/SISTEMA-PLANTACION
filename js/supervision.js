@@ -7,8 +7,8 @@ window.SRP = window.SRP || {};
 
 SRP.supervision = {
   periodo: null,
-  filtros: { alcaldia: '', programa: '', origen: '', cabo: '', organizacion: '' },
-  FILTROS: ['alcaldia', 'programa', 'origen', 'cabo', 'organizacion'],
+  filtros: { alcaldia: '', programa: '', cabo: '', organizacion: '' },
+  FILTROS: ['alcaldia', 'programa', 'cabo', 'organizacion'],
   datos: null,
   modelo: null,
   mapa: null,
@@ -58,7 +58,7 @@ SRP.supervision = {
     // «Quitar filtros» deja las listas como al entrar (el periodo no es un filtro: siempre hay uno); cada ficha quita lo suyo
     this.el('btn-sup-quitar').addEventListener('click', () => {
       const antes = Object.assign({}, this.filtros);
-      this.filtros = { alcaldia: '', programa: '', origen: '', cabo: '', organizacion: '' };
+      this.filtros = { alcaldia: '', programa: '', cabo: '', organizacion: '' };
       this.FILTROS.forEach(k => { this.el('sup-' + k).value = ''; });
       this.pintar();
       SRP.util.anunciar('Filtros quitados.', 'exito', { deshacer: () => { this.filtros = antes; this.pintar(); } });
@@ -92,7 +92,7 @@ SRP.supervision = {
     this.el('caja-sup-organizacion').hidden = !this.veOrganizaciones();
     // Quien entra con otra cuenta empieza en la semana en curso y sin filtros: no hereda el año
     // ni la alcaldía que dejó la cuenta anterior en este mismo dispositivo (D160)
-    if (this.usuarioId !== u.id) { this.usuarioId = u.id; this.periodo = null; this.abiertas = null; this.filtros = { alcaldia: '', programa: '', origen: '', cabo: '', organizacion: '' }; }
+    if (this.usuarioId !== u.id) { this.usuarioId = u.id; this.periodo = null; this.abiertas = null; this.filtros = { alcaldia: '', programa: '', cabo: '', organizacion: '' }; }
     if (!this.periodo) this.periodo = SRP.indicadores.periodo('semana');
     const datos = await SRP.indicadores.cargar();
     /* Con mucho volumen la lectura tarda: si mientras tanto se salió o se cambió de cuenta, lo leído
@@ -110,7 +110,6 @@ SRP.supervision = {
     const f = this.filtros, x = k => !excluir || !excluir.has(k), org = SRP.indicadores.organizacionDe(j);
     return (!f.organizacion || !x('organizacion') || org === f.organizacion) &&
       (!f.cabo || !x('cabo') || (j.personas || [j.cabo_id]).includes(f.cabo)) && (!f.programa || !x('programa') || (j.dato && j.dato.programa_id) === f.programa) &&
-      (!f.origen || !x('origen') || SRP.pedido.cumpleFiltro(j.dato, f.origen)) &&
       (!f.alcaldia || !x('alcaldia') || this.alcaldiasDe(j).includes(f.alcaldia));
   },
 
@@ -118,12 +117,11 @@ SRP.supervision = {
      demás elegidas (SRP.util.facetas). Lo elegido se queda en su lista aunque deje de tener resultados. */
   llenarFiltros() {
     const f = this.filtros, d = this.datos, ver = this.veOrganizaciones(), org = j => SRP.indicadores.organizacionDe(j);
-    const valores = { alcaldia: j => this.alcaldiasDe(j), programa: j => j.dato && j.dato.programa_id, origen: j => SRP.pedido.clavesFiltro(j.dato), cabo: j => j.personas || [j.cabo_id], organizacion: org };
+    const valores = { alcaldia: j => this.alcaldiasDe(j), programa: j => j.dato && j.dato.programa_id, cabo: j => j.personas || [j.cabo_id], organizacion: org };
     if (!ver) { delete valores.organizacion; f.organizacion = ''; }
     const fac = SRP.util.facetas(d.jornadas, (j, ex) => this.cumple(j, ex), valores);
     SRP.util.llenarLista(this.el('sup-alcaldia'), 'Todas', [...fac.alcaldia].map(a => [a, a]), f, 'alcaldia');
     SRP.util.llenarLista(this.el('sup-programa'), 'Todos', [...fac.programa].map(id => [id, SRP.ref.nombreCatalogo(id)]), f, 'programa', id => SRP.ref.nombreCatalogo(id));
-    SRP.util.llenarLista(this.el('sup-origen'), 'Todos', SRP.pedido.paresFiltro(fac.origen), f, 'origen', v => SRP.pedido.textoFiltro(v), SRP.pedido.ordenFiltro);
     // También los cabos que no trabajaron, si son de la institución elegida: así se ve quién falta
     const delaOrg = id => { const o = (SRP.ref.usuarioPorId[id] || {}).organizacion_id || SRP.CONFIG.ORGANIZACION_SEDEMA; return !f.organizacion || o === f.organizacion; };
     this.el('sup-cabo').innerHTML = SRP.util.opciones('Todos', SRP.util.paresPersonas([...fac.cabo].concat(d.cabos.filter(delaOrg), f.cabo || [])));
@@ -142,12 +140,11 @@ SRP.supervision = {
     this.el('form-sup-rango').hidden = p.tipo !== 'rango';
     const f = this.filtros;
     this.llenarFiltros();
-    const dichos = [f.organizacion ? SRP.ref.nombreOrganizacion(f.organizacion) : '', f.alcaldia, f.programa ? SRP.ref.nombreCatalogo(f.programa) : '', f.origen ? SRP.pedido.textoFiltro(f.origen).replace(' (todos)', '') : '', f.cabo ? SRP.ref.nombreUsuario(f.cabo) : ''].filter(Boolean);
+    const dichos = [f.organizacion ? SRP.ref.nombreOrganizacion(f.organizacion) : '', f.alcaldia, f.programa ? SRP.ref.nombreCatalogo(f.programa) : '', f.cabo ? SRP.ref.nombreUsuario(f.cabo) : ''].filter(Boolean);
     this.el('sup-filtros-texto').textContent = 'Más filtros: ' + (dichos.length ? dichos.join(' · ')
-      : SRP.util.enumerar(['alcaldía', 'programa', 'origen'].concat(this.esCabo() ? [] : ['quién registró'], this.veOrganizaciones() ? ['institución'] : [])));
+      : SRP.util.enumerar(['alcaldía', 'programa'].concat(this.esCabo() ? [] : ['quién registró'], this.veOrganizaciones() ? ['institución'] : [])));
     this.el('btn-sup-quitar').hidden = !dichos.length;
     SRP.util.pintarFichas(this.el('sup-fichas'), [f.alcaldia ? ['alcaldia', 'Alcaldía: ' + f.alcaldia] : null, f.programa ? ['programa', 'Programa: ' + SRP.ref.nombreCatalogo(f.programa)] : null,
-      f.origen ? ['origen', 'Origen: ' + SRP.pedido.textoFiltro(f.origen).replace(' (todos)', '')] : null,
       f.cabo ? ['cabo', 'Registró: ' + SRP.ref.nombreUsuario(f.cabo)] : null,
       f.organizacion ? ['institucion', 'Institución: ' + SRP.ref.nombreOrganizacion(f.organizacion)] : null].filter(Boolean));
     this.modelo = I.calcular(this.datos, p, f);
@@ -255,12 +252,12 @@ SRP.supervision = {
     const progs = this.conPct(m.porPrograma, c.arboles);
     h += seccion('programas', 'sup-t-programas', 'Por programa', progs.length === 1 ? esc(progs[0].clave) + ' · ' + plural(progs[0].arboles, 'árbol', 'árboles') : plural(progs.length, 'programa', 'programas') + (progs.length ? ' · ' + primero(progs) : ''),
       this.tabla(['Programa', 'Árboles', '% del total', 'Jornadas'], progs.map(x => [x.clave, num(x.arboles), x.pct + ' %', num(x.jornadas)]), [1, 2, 3]));
-    /* Pedidos especiales: cuánto de lo plantado fue a solicitud de otra instancia y de quién. Es
+    /* Solicitudes: cuánto de lo plantado fue a solicitud de otra instancia y de quién. Es
        información de quien supervisa, y sólo aparece si hubo alguno en el periodo */
-    if (!cabo && m.pedidos.jornadas) {
-      const pe = m.pedidos;
-      h += seccion('pedidos', 'sup-t-pedidos', 'Pedidos especiales', plural(pe.jornadas, 'jornada', 'jornadas') + ' · ' + (P(pe.arboles, c.arboles) || 0) + ' % de los árboles',
-        '<p class="sup-pedidos-lema"><b>' + num(pe.jornadas) + ' de ' + num(c.jornadas) + '</b> ' + (c.jornadas === 1 ? 'jornada' : 'jornadas') + ' y <b>' + num(pe.arboles) + ' de ' + num(c.arboles) + '</b> árboles (' + (P(pe.arboles, c.arboles) || 0) + ' %) fueron a solicitud de otra instancia.</p>' +
+    if (!cabo && m.solicitudes.jornadas) {
+      const pe = m.solicitudes;
+      h += seccion('solicitudes', 'sup-t-solicitudes', 'Solicitudes', plural(pe.jornadas, 'jornada', 'jornadas') + ' · ' + (P(pe.arboles, c.arboles) || 0) + ' % de los árboles',
+        '<p class="sup-solicitudes-lema"><b>' + num(pe.jornadas) + ' de ' + num(c.jornadas) + '</b> ' + (c.jornadas === 1 ? 'jornada' : 'jornadas') + ' y <b>' + num(pe.arboles) + ' de ' + num(c.arboles) + '</b> árboles (' + (P(pe.arboles, c.arboles) || 0) + ' %) fueron a solicitud de otra instancia.</p>' +
         this.tabla(['Quién lo solicitó', 'Árboles', '% del total', 'Jornadas'], pe.solicitantes.map(x => [x.solicitante, num(x.arboles), (P(x.arboles, c.arboles) || 0) + ' %', num(x.jornadas)]), [1, 2, 3]));
     }
     /* Calidad del dato. Al cabo le sirve lo que depende de su captura —ubicación y fotografía—;
@@ -284,7 +281,7 @@ SRP.supervision = {
 
   /* Qué desgloses están abiertos. Con ancho se ven todos; en el teléfono, plegados, salvo «Por cabo»
      para quien supervisa. Lo que la persona abre o cierra se respeta mientras siga en la cuenta. */
-  SECCIONES: ['cabos', 'instituciones', 'alcaldias', 'prioridad', 'especies', 'programas', 'pedidos', 'calidad'],
+  SECCIONES: ['cabos', 'instituciones', 'alcaldias', 'prioridad', 'especies', 'programas', 'solicitudes', 'calidad'],
   abiertas: null,
   abierta(clave) {
     if (!this.abiertas) this.abiertas = new Set(window.matchMedia('(min-width: 701px)').matches ? this.SECCIONES : (this.esCabo() ? [] : ['cabos']));
@@ -442,7 +439,7 @@ SRP.supervision = {
   verJornadas() {
     const J = SRP.jornadas, p = this.periodo, f = this.filtros;
     Object.assign(J.filtro, { texto: '', revision: '', dia: '', anio: '', mes: '', desde: p.desde || '', hasta: p.hasta || '',
-      cabo: f.cabo, programa: f.programa, origen: f.origen, alcaldia: f.alcaldia, organizacion: f.organizacion });
+      cabo: f.cabo, programa: f.programa, alcaldia: f.alcaldia, organizacion: f.organizacion });
     J.diaAbierto = false; J.periodoAbierto = p.tipo !== 'todo';
     J.el('jornada-buscar').value = ''; J.el('jornada-revision').value = ''; J.el('jornada-dia').value = '';
     J.el('jornada-desde').value = p.desde || ''; J.el('jornada-hasta').value = p.hasta || '';

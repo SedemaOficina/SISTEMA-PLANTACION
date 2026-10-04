@@ -123,7 +123,8 @@ SRP.util = {
      resultados: nada cambia solo. */
   llenarInstituciones(selOrg, orgIds, f) {
     const orgs = [...new Set([...orgIds].concat(f.organizacion || []))].map(id => SRP.ref.catalogoPorId[id]).filter(Boolean);
-    const nombre = o => SRP.ref.nombreOrganizacion(o.id), esc = this.escapar;
+    // Dentro de su grupo, una alcaldía va sólo con su nombre: el grupo ya dice «Alcaldía»
+    const nombre = o => o.nombre, esc = this.escapar;
     const grupos = SRP.ref.TIPOS_INSTITUCION.map(t => [t, orgs.filter(o => o.tipo_organizacion === t).sort((a, b) => nombre(a).localeCompare(nombre(b), 'es'))]).filter(g => g[1].length);
     const sueltas = orgs.filter(o => !SRP.ref.TIPOS_INSTITUCION.includes(o.tipo_organizacion));
     const op = o => '<option value="' + esc(o.id) + '">' + esc(nombre(o)) + '</option>';

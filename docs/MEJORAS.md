@@ -397,6 +397,15 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M395 | Liber | Al eliminar una cuenta o un valor de catálogo hay que escribir para confirmar: «ELIMINAR» en catálogos, el correo en cuentas. El botón no se activa hasta que coincide | Alta | 0.9.30 (B164) | Catálogos › Eliminar; Usuarios › Eliminar | D228 |
 | M400 | Liber | Deshacer una carga masiva también pide escribir para confirmar: «DESHACER» | Media | 0.9.31 (B165) | Configuración › Carga masiva › Deshacer carga | D228 |
 | M401 | Corrida de pruebas | Supervisión: cerrar y reabrir una sección con mapa ya no produce error (venía del bloque 163) | Alta | 0.9.31 (B165) | Supervisión › Por prioridad de la colonia; Por alcaldía | — |
+| M402 | Liber | Se retira la pregunta «Origen de la jornada»: «Solicitud» es una opción de Programa y pide quién lo solicita y la descripción, en varios renglones. Sin filtro «Origen» en Jornadas ni en Supervisión | Alta | 0.9.32 (B166) | Nuevo registro › Iniciar jornada; Editar jornada; Jornadas; Supervisión | D229 |
+| M403 | Liber (iPhone) | Espejo de campos también en Iniciar jornada, la ficha de la jornada y el alta y edición de cuentas y catálogos | Media | 0.9.32 (B166) | Las pantallas dichas › «Campos que viajan a la base y no se ven en pantalla» | D230 |
+| M404 | Liber (iPhone) | Con un diálogo abierto, la página de atrás ya no se desplaza | Media | 0.9.32 (B166) | Cualquier diálogo | D230 |
+| M405 | Liber (iPhone) | «Sustituir árbol» ya no se parte en dos renglones en el detalle del registro | Baja | 0.9.32 (B166) | Registros › Detalle | D230 |
+| M406 | Liber (iPhone) | Mapa de la jornada: la simbología dice sólo los tipos de punto que hay; el texto de prioridad habla de árboles, no de colonias | Media | 0.9.32 (B166) | Jornadas › ficha › Mapa | D230 |
+| M407 | Liber (iPhone) | Control de capas: con «Colonias prioritarias» apagada, sus niveles se ven apagados | Baja | 0.9.32 (B166) | Mapas › botón de capas | D230 |
+| M408 | Liber (iPhone) | Administración global: «Configuración» pasa del menú de la cuenta a la barra de secciones, junto a Registros | Media | 0.9.32 (B166) | Barra de secciones › Configuración | D231 |
+| M409 | Liber (iPhone) | Coordinación: la barra queda Nuevo registro, Jornadas, Registros y Supervisión | Media | 0.9.32 (B166) | Barra de secciones | D231 |
+| M410 | Liber (iPhone) | En los catálogos y listas de institución, las alcaldías van sólo con su nombre, sin la palabra «Alcaldía» | Baja | 0.9.32 (B166) | Catálogos › Instituciones; filtros de institución | D231 |
 
 ## 2. Por hacer
 
@@ -424,4 +433,4 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 382 hechas · 7 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 391 hechas · 7 por hacer · 2 revisadas · 2 descartadas.

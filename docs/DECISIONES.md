@@ -2541,3 +2541,50 @@
     escribir «DESHACER»: quita de una vez todos los árboles y jornadas de un archivo. Las demás
     confirmaciones siguen igual; lo que tiene uso sigue sin poder eliminarse y se desactiva.
 
+- **D229. La solicitud es un programa; se retira el origen de la jornada (bloque 166).** 04-10-2026. Decisión de Liber.
+  · **Qué:** ya no se pregunta el origen (programada o pedido especial). «Solicitud» es una opción más de
+    la lista Programa, la última; al elegirla se piden quién lo solicita, del catálogo de solicitantes, y
+    la descripción de la solicitud, obligatoria y en varios renglones (hasta 500 caracteres).
+  · **Consecuencia aceptada:** la solicitud sustituye al programa. Sus árboles cuentan en «Solicitud» y
+    no en Reforestación Urbana, Palmeras u otro; no se guarda a qué programa habría correspondido.
+  · **Filtros:** desaparece «Origen» de Jornadas y de Supervisión; las solicitudes se filtran con
+    Programa. Quién solicitó se ve en el desglose «Solicitudes» de Supervisión y en el informe.
+  · **Catálogo:** «Solicitud» es un valor del catálogo de programas: la Administración puede renombrarlo
+    o desactivarlo. El sistema lo reconoce por su identificador (`p-solicitud`), no por su nombre.
+    De arranque lo usa sólo la Secretaría, para que las demás instituciones sigan con su único programa
+    ya elegido; la Administración lo abre a otros tipos en Catálogos › Programas › «Quién puede usarlo».
+  · **Datos:** `jornadas.origen` se retira y `pedido_descripcion` pasa a `solicitud_descripcion`. La base
+    del teléfono sube a la versión 9: la jornada que era pedido especial pasa al programa «Solicitud»,
+    con sus árboles, y conserva solicitante y descripción. El modelo queda en 151 campos.
+  · **No se carga por archivo:** la carga masiva rechaza el programa «Solicitud», porque el archivo no
+    trae quién lo solicita.
+  · Sustituye a D210 y D221, y ajusta D217 y D226.
+
+- **D230. Espejo de campos en cada pantalla que escribe; el fondo no se mueve con un diálogo abierto (bloque 166).**
+  04-10-2026. Observaciones de Liber en iPhone.
+  · **Espejo:** además del formulario del árbol, su detalle y el cierre del reporte, llevan «Campos que
+    viajan a la base y no se ven en pantalla» Iniciar jornada (la jornada prevista), la ficha de la
+    jornada (la guardada) y el alta y la edición de cuentas y de valores de catálogo (lo que pone el
+    sistema). Sólo en la versión de prueba; se retira con ella.
+  · **Diálogos:** con uno abierto, la página de atrás no se desplaza.
+  · **Mapa de la jornada:** la simbología dice sólo los tipos de punto que hay en esa jornada; el texto
+    bajo el mapa dice «Árboles por prioridad de la colonia», no «Colonias prioritarias», porque cuenta
+    árboles. En el control de capas, con «Colonias prioritarias» apagada sus niveles se ven apagados.
+  · **Botones del detalle:** «Sustituir árbol» ya no se parte en dos renglones; si no cabe junto a
+    «Editar», baja completo.
+
+- **D231. «Configuración» va en la barra de secciones, no en el menú de la cuenta (bloque 166).**
+  04-10-2026. Petición de Liber: en el teléfono, el acceso debe quedar al alcance del pulgar.
+  · La Administración global tiene «Configuración» como última pestaña de su barra, junto a Registros:
+    abajo en el teléfono y arriba en la computadora, igual que las demás secciones.
+  · Sale del menú de la cuenta, que queda con Modo sol, las opciones de prueba y Cerrar sesión.
+  · Dentro de Usuarios, Catálogos, Parámetros, Registro de cambios, Carga masiva y Acerca del sistema,
+    la pestaña «Configuración» sigue marcada; tocarla regresa a las tarjetas de Configuración.
+  · Los demás perfiles no la ven ni la abren. Ajusta D158 y D195.
+  · **Orden de la barra:** quien registra —cabo y coordinación— tiene Nuevo registro, Jornadas,
+    Registros y, al final, Supervisión («Mi avance» para el cabo). Quien sólo consulta —dirección y
+    Administración global— la conserva al principio. La coordinación sigue entrando a Supervisión.
+  · **Alcaldías sin la palabra en los catálogos:** en Catálogos › Instituciones y en las listas de
+    institución de los filtros, una alcaldía va sólo con su nombre («Iztapalapa»): que es alcaldía lo
+    dice su tipo o el grupo de la lista. En texto corrido (reporte, informes, cuentas) se sigue
+    leyendo «Alcaldía Iztapalapa», para que no se confunda con una colonia o una empresa.

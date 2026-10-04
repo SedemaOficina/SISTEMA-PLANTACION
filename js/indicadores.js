@@ -109,7 +109,7 @@ SRP.indicadores = {
   mediana(v) { if (!v.length) return null; const s = v.slice().sort((a, b) => a - b), k = s.length >> 1; return s.length % 2 ? s[k] : (s[k - 1] + s[k]) / 2; },
   pct(a, b) { return b ? Math.round(a * 100 / b) : null; },
 
-  /* El modelo de todo lo que se ve y se imprime. `filtros`: { alcaldia, programa, origen, cabo, organizacion },
+  /* El modelo de todo lo que se ve y se imprime. `filtros`: { alcaldia, programa, cabo, organizacion },
      cada uno vacío para «todos». Con alcaldía, cuentan los árboles de esa alcaldía y las jornadas que
      tienen alguno ahí (o que la declararon, si no tienen árboles). `hoy`, sólo para probar. */
   calcular(datos, periodo, filtros, hoy) {
@@ -125,7 +125,6 @@ SRP.indicadores = {
     const enPeriodo = r => this.contiene(periodo, r.fecha_plantacion);
     const pasa = j => (!filtros.organizacion || this.organizacionDe(j) === filtros.organizacion) &&
       (!filtros.cabo || j.cabo_id === filtros.cabo || j.registros.some(r => r.cabo_id === filtros.cabo)) && (!filtros.programa || (j.dato && j.dato.programa_id) === filtros.programa) &&
-      SRP.pedido.cumpleFiltro(j.dato, filtros.origen) &&
       (!filtros.alcaldia || j.registros.some(esDeAlcaldia) || (!j.registros.length && j.dato && j.dato.alcaldia === filtros.alcaldia));
     const delPeriodo = datos.jornadas.filter(j => pasa(j) && (this.contiene(periodo, j.fecha) || j.registros.some(r => enPeriodo(r) && cuentaArbol(r))));
     const cerradas = delPeriodo.filter(j => j.estatus !== 'abierta');
@@ -178,11 +177,11 @@ SRP.indicadores = {
       return { organizacion: SRP.ref.nombreOrganizacion(id), tipo: SRP.ref.esSedema(id) ? 'Secretaría' : o.tipo_organizacion || '', sedema: SRP.ref.esSedema(id) };
     });
     const nativas = arboles.filter(a => this.esNativa(especieDe(a.r).distribucion)).length;
-    // Pedidos especiales: las jornadas cerradas que pidió otra instancia, con sus árboles del periodo, por solicitante
-    const pedidas = cerradas.filter(j => SRP.pedido.esPedido(j.dato));
-    const pedidos = { jornadas: pedidas.length, arboles: arboles.filter(a => SRP.pedido.esPedido(a.j.dato)).length,
-      solicitantes: [...new Set(pedidas.map(j => SRP.pedido.clave(j.dato)))].map(k => ({ clave: k, solicitante: SRP.pedido.nombreClave(k),
-        jornadas: pedidas.filter(j => SRP.pedido.clave(j.dato) === k).length, arboles: arboles.filter(a => SRP.pedido.clave(a.j.dato) === k).length }))
+    // Solicitudes: las jornadas cerradas del programa «Solicitud», con sus árboles del periodo, por solicitante
+    const S = SRP.solicitud, pedidas = cerradas.filter(j => S.es(j.dato));
+    const solicitudes = { jornadas: pedidas.length, arboles: arboles.filter(a => S.es(a.j.dato)).length,
+      solicitantes: [...new Set(pedidas.map(j => S.clave(j.dato)))].map(k => ({ clave: k, solicitante: S.nombreClave(k),
+        jornadas: pedidas.filter(j => S.clave(j.dato) === k).length, arboles: arboles.filter(a => S.clave(a.j.dato) === k).length }))
         .sort((a, b) => b.arboles - a.arboles || a.solicitante.localeCompare(b.solicitante, 'es')) };
     // Por prioridad de la colonia donde cayó cada árbol (modelo de priorización); se cruza con el punto, no se guarda
     const prioridad = SRP.prioritarias.hay() ? SRP.prioritarias.contar(arboles.map(a => a.r)) : null;
@@ -195,7 +194,7 @@ SRP.indicadores = {
 
     // Trazabilidad del periodo: árboles eliminados y ediciones, del alcance y con los filtros
     const pasaArbol = r => (!filtros.organizacion || orgArbol(r) === filtros.organizacion) &&
-      delCabo(r) && (!filtros.programa || r.programa_id === filtros.programa) && SRP.pedido.cumpleFiltro(datoPorJornada[r.jornada_id], filtros.origen) && esDeAlcaldia(r);
+      delCabo(r) && (!filtros.programa || r.programa_id === filtros.programa) && esDeAlcaldia(r);
     const eliminados = datos.eliminados.filter(r => this.contiene(periodo, this.dia(r.fecha_ultima_edicion)) && pasaArbol(r));
     const ediciones = datos.ediciones.filter(e => this.contiene(periodo, this.dia(e.fecha)) && pasaArbol(e.arbol));
 
@@ -253,13 +252,13 @@ SRP.indicadores = {
       },
       calidad,
       serie: this.serie(periodo, arboles, cerradas),
-      porCabo, porAlcaldia, porColonia, porEspecie, porPrograma, porOrganizacion, prioridad, pedidos,
+      porCabo, porAlcaldia, porColonia, porEspecie, porPrograma, porOrganizacion, prioridad, solicitudes,
       jornadas: cerradas.slice().sort((a, b) => b.fecha.localeCompare(a.fecha)).map(j => ({
         id: j.id, fecha: j.fecha, nombre: j.nombre, cabo: SRP.ref.nombreUsuario(j.cabo_id), cabo_id: j.cabo_id,
         organizacion: SRP.ref.nombreOrganizacion(this.organizacionDe(j)), externa: !SRP.ref.esSedema(this.organizacionDe(j)),
         // Los árboles de la jornada que cuentan en el periodo: así la suma de la tabla es el total
         programa: SRP.ref.nombreCatalogo(j.dato && j.dato.programa_id) || '', arboles: arboles.filter(a => a.j === j).length, meta: SRP.jornadas.previstosDe(j),
-        lugar: SRP.jornadas.lugarDe(j), reporte: !!(j.dato && j.dato.reporte_en), pendientes: pendientes(j), solicitante: SRP.pedido.solicitante(j.dato),
+        lugar: SRP.jornadas.lugarDe(j), reporte: !!(j.dato && j.dato.reporte_en), pendientes: pendientes(j), solicitante: SRP.solicitud.solicitante(j.dato),
         prioridad: SRP.prioritarias.hay() ? ((j.prioridad || SRP.prioritarias.deJornada(j.registros, j.dato) || {}).texto || 'Sin dato') : ''
       })),
       enCurso: enCurso.map(j => ({ id: j.id, fecha: j.fecha, nombre: j.nombre, cabo: SRP.ref.nombreUsuario(j.cabo_id), arboles: j.registros.length })),
@@ -274,7 +273,7 @@ SRP.indicadores = {
           alcaldia: r.alcaldia || '', colonia: r.colonia || '', uga: r.uga || '', lat: r.lat, lng: r.lng, origen: SRP.mapa.textoOrigen(r.punto_origen),
           precision: r.punto_origen === 'gps' && r.gps_precision_m != null ? Math.round(r.gps_precision_m) : '', foto: r.foto_id || r.foto_base64 ? 'Sí' : 'No',
           reporte: j.dato && j.dato.reporte_en ? 'Generado' : 'Pendiente', sustituto: r.sustituye_id ? 'Sí' : 'No', motivo: SRP.ref.motivoSustitucion(r),
-          origenJornada: SRP.pedido.textoOrigen(j.dato), solicitante: SRP.pedido.solicitante(j.dato), pedidoDescripcion: SRP.pedido.esPedido(j.dato) ? j.dato.pedido_descripcion || '' : '',
+          solicitante: SRP.solicitud.solicitante(j.dato), solicitudDescripcion: SRP.solicitud.es(j.dato) ? j.dato.solicitud_descripcion || '' : '',
           prioridad: prioridad ? ((SRP.prioritarias.de(r.lat, r.lng) || {}).texto || 'Sin dato') : '' };
       })
     };

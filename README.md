@@ -10,8 +10,8 @@ La versión que corre se lee al pie de cada pantalla.
 
 1. **Registrar jornada** (pestaña Nuevo registro). Antes de registrar árboles se declara la jornada:
    nombre del sitio, programa, fecha, árboles que se van a plantar y, si se quiere, la ubicación y la dirección.
-   Se elige también su **origen**, obligatorio: programada o pedido especial de otra instancia (SOBSE, una
-   alcaldía), con quién lo solicita, del catálogo de solicitantes (D210, D217).
+   Si la jornada atiende una solicitud de otra instancia (SOBSE, una alcaldía), se elige el programa
+   **Solicitud** y se dicen quién lo solicita, del catálogo de solicitantes, y de qué se trata (D217, D229).
    El programa es de la jornada: todos sus árboles lo toman (D151). La fecha es el día en que
    empieza: la jornada puede seguir abierta varios días y cada árbol lleva la fecha en que se plantó
    (D204).
@@ -35,7 +35,7 @@ La versión que corre se lee al pie de cada pantalla.
    **informes** semanal, mensual, anual o por alcaldía en PDF con membrete, y la tabla de árboles en
    CSV para Excel (D159). Dentro están las **Fotografías** de los registros, con descarga en ZIP.
 6. **Registros**: la lista de árboles con filtros, detalle, edición y eliminación que se deshace.
-   **Configuración** (D195), sólo para la Administración global, desde el menú de la cuenta:
+   **Configuración** (D195), sólo para la Administración global, última pestaña de la barra de secciones (D231):
    **Usuarios**, **Catálogos** (programas, áreas, especies, vehículos, instituciones y solicitantes),
    **Parámetros** (sólo consulta), **Registro de cambios**, **Carga masiva** del histórico desde
    Excel o CSV (D196), que no vuelve a cargar lo que ya está y se deshace por lote (D199), y **Acerca del sistema**. El catálogo de especies se descarga en Excel.
@@ -96,7 +96,7 @@ cuentas.
 ## Cómo se entra
 
 Con **correo y contraseña**. Nadie se da de alta solo: las cuentas las crea la Administración
-global desde Usuarios, en el menú de la cuenta.
+global desde Usuarios, en Configuración.
 
 **La contraseña todavía no se verifica.** Comprobarla en el navegador sería seguridad aparente,
 porque cualquiera puede leer el código de la página; lo único que se comprueba es que el correo

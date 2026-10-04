@@ -1,6 +1,6 @@
 {
   "_": "ESQUEMA DE DATOS DEL SRP: fuente única (D86). De aquí se genera DICCIONARIO-DATOS.md con herramientas/generar_diccionario.py, y pruebas/auditoria.py lo compara contra lo que el sistema guarda y contra los dominios del código. Si un campo cambia en el código y no aquí, la auditoría falla.",
-  "version_esquema": "2026-10-03",
+  "version_esquema": "2026-10-04",
   "etapa": "Etapa 1 (Fase 1: dispositivo, sin servidor)",
   "almacenamiento": {
     "motor": "IndexedDB del navegador: base `srp_db` en la versión de prueba y `srp_sia` en la real (SRP.CONFIG.DB_NOMBRE, según ES_FICTICIO), versión 8 (SRP.CONFIG.DB_VERSION). Nunca comparten datos",
@@ -206,14 +206,6 @@
     "id_especie": {
       "valores": "`ESP-0000`, consecutivo del SIA; hoy ESP-0001…ESP-0076 y las altas continúan en ESP-0077",
       "fuente": "assets/catalogos/catalogo-especies.js (CGO_ESPECIES_REFORESTACION_URBANA, 22-09-2026)"
-    },
-    "origen_jornada": {
-      "valores": [
-        "PROGRAMADA",
-        "PEDIDO"
-      ],
-      "codigo": "SRP.pedido.ORIGENES.map(o => o[0])",
-      "fuente": "js/pedido.js ORIGENES"
     }
   },
   "tablas": {
@@ -1114,7 +1106,7 @@
       ]
     },
     "solicitantes": {
-      "que_es": "Quién pide un pedido especial (D217). No son quienes plantan ni tienen cuentas: por eso van aparte de las instituciones.",
+      "que_es": "Quién solicita una jornada (D217, D229). No son quienes plantan ni tienen cuentas: por eso van aparte de las instituciones.",
       "llave": "id",
       "indices": [],
       "pantalla": "Catálogos › Solicitantes (sólo Administración global); se elige en Iniciar jornada › Quién lo solicita",
@@ -1335,7 +1327,7 @@
           "origen": "Persona",
           "dominio": "→ programas.id",
           "pantalla": "Programa (Iniciar jornada)",
-          "regla": "Obligatorio al iniciar (D130). Sus árboles lo toman siempre (D151): al registrar, al cambiarlo aquí y al moverlos a esta jornada. SEDEMA elige todos; las demás instituciones, los que tienen marcado su tipo en programas.tipos_organizacion (D193). Con un solo programa posible viene ya elegido"
+          "regla": "Obligatorio al iniciar (D130). Sus árboles lo toman siempre (D151): al registrar, al cambiarlo aquí y al moverlos a esta jornada. SEDEMA elige todos; las demás instituciones, los que tienen marcado su tipo en programas.tipos_organizacion (D193). Con un solo programa posible viene ya elegido. El programa «Solicitud» (id p-solicitud) marca la jornada que atiende una solicitud de otra instancia: con él se piden quién lo solicita y la descripción (D229). Es un valor del catálogo: la Administración puede renombrarlo o desactivarlo; el sistema lo reconoce por su id"
         },
         {
           "campo": "lat",
@@ -1500,22 +1492,13 @@
           "regla": "Cada relevo hecho, también el que devuelve la jornada al titular: a quién se pasó, cuándo y quién lo hizo. Quien estuvo en un relevo sigue viendo la jornada y todos sus árboles, aunque sólo edita los suyos"
         },
         {
-          "campo": "origen",
-          "tipo": "text",
-          "nulo": false,
-          "origen": "Persona",
-          "dominio": "origen_jornada",
-          "pantalla": "Iniciar jornada › Origen de la jornada; Editar jornada",
-          "regla": "De dónde viene la jornada: PROGRAMADA (del programa de trabajo) o PEDIDO (pedido especial de otra instancia). Es obligatorio y no trae valor por omisión: quien inicia la jornada lo elige, y se corrige en «Editar jornada». Es de la jornada, no del árbol: los árboles lo toman de ella al leerse. Una jornada sin el dato se lee como PROGRAMADA. Las de carga masiva nacen PROGRAMADA"
-        },
-        {
           "campo": "solicitante_id",
           "tipo": "text",
           "nulo": true,
           "origen": "Persona",
           "dominio": "→ solicitantes.id",
-          "pantalla": "Iniciar jornada › Quién lo solicita; Editar jornada",
-          "regla": "Quién solicita el pedido especial, del catálogo de solicitantes (Catálogos › Solicitantes), que es aparte del de instituciones. No es quien ejecuta (organizacion_id): quien pide no es quien planta. Nulo si la jornada es programada o si la instancia no está en el catálogo. Obligatorio, este o solicitante_otro, cuando origen = PEDIDO"
+          "pantalla": "Iniciar jornada › Quién lo solicita (con el programa «Solicitud»); Editar jornada",
+          "regla": "Quién solicita la jornada, del catálogo de solicitantes (Catálogos › Solicitantes), que es aparte del de instituciones. No es quien ejecuta (organizacion_id): quien solicita no es quien planta. Nulo si la jornada es de otro programa o si la instancia no está en el catálogo. Obligatorio, este o solicitante_otro, con el programa «Solicitud»"
         },
         {
           "campo": "solicitante_otro",
@@ -1524,16 +1507,16 @@
           "origen": "Persona",
           "dominio": "Texto ≤ 120; '' si no aplica",
           "pantalla": "Iniciar jornada › Nombre de la instancia; Editar jornada",
-          "regla": "El nombre de la instancia que solicita cuando no está en el catálogo («Otra instancia»). Vacío con solicitante_id o en una jornada programada"
+          "regla": "El nombre de la instancia que solicita cuando no está en el catálogo («Otra instancia»). Vacío con solicitante_id o en una jornada de otro programa"
         },
         {
-          "campo": "pedido_descripcion",
+          "campo": "solicitud_descripcion",
           "tipo": "text",
           "nulo": false,
           "origen": "Persona",
-          "dominio": "Texto ≤ 200; '' si no aplica",
-          "pantalla": "Iniciar jornada › Descripción del pedido; Editar jornada",
-          "regla": "De qué se trata el pedido especial; obligatoria con origen «Pedido especial». Vacío en una jornada programada. No se pide oficio ni folio de la solicitud"
+          "dominio": "Texto ≤ 500, en varios renglones; '' si no aplica",
+          "pantalla": "Iniciar jornada › Descripción de la solicitud (con el programa «Solicitud»); Editar jornada",
+          "regla": "De qué se trata la solicitud; obligatoria con el programa «Solicitud». Vacía en una jornada de otro programa. Admite varios renglones: ahí cabe la referencia del oficio, si la hay"
         },
         {
           "campo": "editado_por_id",
@@ -1786,7 +1769,7 @@
       "de": "jornadas.solicitante_id",
       "a": "solicitantes.id",
       "cardinalidad": "N:1",
-      "regla": "Opcional: sólo en un pedido especial cuya instancia está en el catálogo. Un solicitante que aparece en alguna jornada no se elimina del catálogo; se desactiva"
+      "regla": "Opcional: sólo en una jornada del programa «Solicitud» cuya instancia está en el catálogo. Un solicitante que aparece en alguna jornada no se elimina del catálogo; se desactiva"
     },
     {
       "de": "plantaciones.sustituye_id / sustituido_por_id",
@@ -2115,8 +2098,8 @@
       "se_vacia": "Con cualquier otro motivo ('')"
     },
     {
-      "campo": "jornadas.solicitante_id / solicitante_otro / pedido_descripcion",
-      "aparece": "Sólo con origen «Pedido especial»; solicitante_otro, sólo con «Otra instancia»",
+      "campo": "jornadas.solicitante_id / solicitante_otro / solicitud_descripcion",
+      "aparece": "Sólo con el programa «Solicitud»; solicitante_otro, sólo con «Otra instancia»",
       "se_vacia": "Al volver a «Programada» (nulo y '')"
     }
   ],
@@ -2280,8 +2263,8 @@
     {
       "id": "R-C06",
       "tabla": "solicitantes",
-      "regla": "Solicitantes: quién pide un pedido especial. Catálogo aparte del de instituciones: un solicitante no tiene cuentas ni ejecuta jornadas. Sólo la Administración los agrega, edita y desactiva (Catálogos › Solicitantes): nombre único, tipo de la lista fija de siete (Alcaldía, Dependencia de gobierno, Congreso, Empresa, Organización civil, Escuela, Vecinos) y clave que pone el sistema; sin uso se eliminan. De arranque: las 16 alcaldías (id s-alc-<cvegeo>, sin la palabra «Alcaldía»), Secretaría de Obras y Servicios (SOBSE), Secretaría de Gestión Integral del Agua (SEGIAGUA), Jefatura de Gobierno (Dependencia de gobierno) y Diputadas y diputados (Congreso). «Quién lo solicita» los ofrece agrupados por tipo y, al final, «Otra instancia»",
-      "donde": "js/catalogos.js validar(), guardar(); js/referencias.js TIPOS_SOLICITANTE, nombreSolicitante(), ordenSolicitantes(); js/pedido.js opciones(); js/datos-ficticios.js"
+      "regla": "Solicitantes: quién solicita una jornada. Catálogo aparte del de instituciones: un solicitante no tiene cuentas ni ejecuta jornadas. Sólo la Administración los agrega, edita y desactiva (Catálogos › Solicitantes): nombre único, tipo de la lista fija de siete (Alcaldía, Dependencia de gobierno, Congreso, Empresa, Organización civil, Escuela, Vecinos) y clave que pone el sistema; sin uso se eliminan. De arranque: las 16 alcaldías (id s-alc-<cvegeo>, sin la palabra «Alcaldía»), Secretaría de Obras y Servicios (SOBSE), Secretaría de Gestión Integral del Agua (SEGIAGUA), Jefatura de Gobierno (Dependencia de gobierno) y Diputadas y diputados (Congreso). «Quién lo solicita» los ofrece agrupados por tipo y, al final, «Otra instancia»",
+      "donde": "js/catalogos.js validar(), guardar(); js/referencias.js TIPOS_SOLICITANTE, nombreSolicitante(), ordenSolicitantes(); js/solicitud.js opciones(); js/datos-ficticios.js"
     },
     {
       "id": "R-J01",
@@ -2304,8 +2287,8 @@
     {
       "id": "R-J06",
       "tabla": "jornadas",
-      "regla": "Pedido especial: una jornada con origen PEDIDO lleva quién lo solicita, del catálogo de solicitantes (solicitante_id) o escrito (solicitante_otro); una programada lleva los tres datos del pedido vacíos. El origen no cambia quién ejecuta ni el programa. Una jornada que traía una institución como solicitante pasa, al abrir el sistema, al solicitante que le corresponde o queda escrita como «Otra instancia»",
-      "donde": "js/pedido.js leer() y errores(); js/jornada-activa.js iniciarJornada(); js/jornadas.js guardarEdicion(); js/almacen.js normalizar()"
+      "regla": "Solicitud: una jornada del programa «Solicitud» lleva quién lo solicita, del catálogo de solicitantes (solicitante_id) o escrito (solicitante_otro), y su descripción (solicitud_descripcion), obligatoria; una jornada de otro programa lleva los tres vacíos. La solicitud sustituye al programa: sus árboles cuentan en «Solicitud». No cambia quién ejecuta. No se carga por archivo",
+      "donde": "js/solicitud.js leer() y errores(); js/jornada-activa.js iniciarJornada(); js/jornadas.js guardarEdicion(); js/carga.js; js/almacen.js migración 9"
     },
     {
       "id": "R-R01",
@@ -2407,8 +2390,8 @@
     },
     {
       "id": "S-14",
-      "que": "Pedido especial",
-      "detalle": "El servidor guarda el origen de la jornada (PROGRAMADA o PEDIDO) y valida lo mismo que el teléfono: un pedido lleva solicitante, del catálogo de solicitantes (solicitante_id) o escrito (solicitante_otro), y su descripción (pedido_descripcion), obligatoria; y una programada lleva los tres datos del pedido vacíos. La base real carga los solicitantes de arranque (Oficina de la Secretaría, SOBSE, SEGIAGUA, Jefatura de Gobierno, 16 alcaldías, Diputadas y diputados) con sus tipos. El solicitante no da acceso a la jornada: la ve quien la ejecuta y quien la supervisa",
+      "que": "Solicitud",
+      "detalle": "El servidor valida lo mismo que el teléfono: una jornada del programa «Solicitud» lleva solicitante, del catálogo de solicitantes (solicitante_id) o escrito (solicitante_otro), y su descripción (solicitud_descripcion), obligatoria; una jornada de otro programa lleva los tres vacíos. No hay campo de origen: lo dice el programa. El solicitante no da acceso a la jornada",
       "referencia": "D210, D217, D219"
     },
     {

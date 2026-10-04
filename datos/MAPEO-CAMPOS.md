@@ -162,7 +162,7 @@ el alta de cuentas sólo se eligen. La clave la pone el sistema y no se muestra.
 | Quién puede usarlo (programas) | `tipos_organizacion` | Sí | Persona | Sólo programas. Tipos de institución que, además de SEDEMA, pueden elegirlo al iniciar una jornada; vacío = sólo SEDEMA (D193) |
 
 **Uso:** el catálogo de **especies** alimenta el formulario de registro; el de **programas**, el
-inicio de la jornada; el de **áreas**, el alta de cuentas; el de **vehículos**, el cierre del reporte; el de **instituciones**, el alta de cuentas; el de **solicitantes**, «Quién lo solicita» de un pedido especial. Ninguno se elimina si algún árbol
+inicio de la jornada; el de **áreas**, el alta de cuentas; el de **vehículos**, el cierre del reporte; el de **instituciones**, el alta de cuentas; el de **solicitantes**, «Quién lo solicita» de una jornada del programa «Solicitud». Ninguno se elimina si algún árbol
 (también eliminado), jornada o cuenta lo usa: se desactiva (D151).
 
 ---
@@ -207,10 +207,9 @@ Almacén `jornadas` (sustituye a `cierres` desde el bloque 62). Lo que ya vive e
 | No como campo: «Quién registró» en filtros y tarjeta | `cabo_id` | Sí | Sesión | Titular: quien inició la jornada; no cambia con un relevo |
 | Relevo de cabo (ficha de la jornada) | `relevo_id` | No | Persona | Remite a `usuarios.id`: el cabo que registra en lugar del titular tras un relevo de la coordinación (D204); nulo, registra el titular |
 | No como campo: la ficha y el reporte dicen el relevo | `relevos` | Sí | Sistema | Lista de los relevos hechos: a qué cabo se pasó, cuándo y quién lo hizo; `[]` sin relevos (D204) |
-| Origen de la jornada | `origen` | Sí | Persona | `PROGRAMADA` o `PEDIDO`: pedido especial de otra instancia (D210). Obligatorio y sin valor por omisión: quien inicia la jornada lo elige (D221); se corrige en «Editar jornada» |
-| Quién lo solicita | `solicitante_id` | No | Persona | Remite a `solicitantes.id`: quién solicita el pedido especial; no es quien ejecuta ni es una institución con cuentas. Nulo en una jornada programada o si la instancia no está en el catálogo (D210, D217) |
-| Nombre de la instancia | `solicitante_otro` | Sí | Persona | Nombre de la instancia que solicita cuando no está en el catálogo; `''` si no aplica (D210) |
-| Descripción del pedido | `pedido_descripcion` | Sí | Persona | De qué se trata el pedido especial, obligatoria en un pedido; `''` si no aplica. No se pide oficio ni folio (D210) |
+| Quién lo solicita | `solicitante_id` | No | Persona | Remite a `solicitantes.id`: quién solicita la jornada; no es quien ejecuta ni es una institución con cuentas. Se pide con el programa «Solicitud»; nulo con otro programa o si la instancia no está en el catálogo (D217, D229) |
+| Nombre de la instancia | `solicitante_otro` | Sí | Persona | Nombre de la instancia que solicita cuando no está en el catálogo; `''` si no aplica (D229) |
+| Descripción de la solicitud | `solicitud_descripcion` | Sí | Persona | De qué se trata la solicitud, en varios renglones; obligatoria con el programa «Solicitud», `''` con otro (D229) |
 | No como campo: «Institución» en filtros; el reporte la dice si no es la Secretaría | `organizacion_id` | Sí | Sesión | La institución que ejecuta: la de quien inicia la jornada. No cambia después. En jornadas de otras instituciones el cierre no pide chófer ni vehículo, y el reporte dice «Institución que ejecuta» |
 | «Abierta» o «Cerrada» (franja y tarjeta) | `estatus` | Sí | Sistema | `abierta` o `cerrada`; se cierra desde la franja o la revisión, se reabre desde la revisión o con «Registrar árbol» |
 | No se muestra: ordena «Jornada 2 de 3» | `fecha_inicio` | Sí | Sistema | Ordena las jornadas del día: «Jornada 2 de 3» |

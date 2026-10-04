@@ -29,7 +29,7 @@ SRP.jornadas = {
   /* Filtros. La fecha se elige con los atajos (Todas, Hoy, Este mes, Este año, Un día, Un periodo); «Este
      mes» y «Este año» guardan `anio` y `mes`. Las listas viven plegadas en «Más filtros». Al entrar se
      ven todas. */
-  filtro: { texto: '', revision: '', dia: '', desde: '', hasta: '', anio: '', mes: '', cabo: '', programa: '', origen: '', alcaldia: '', organizacion: '' },
+  filtro: { texto: '', revision: '', dia: '', desde: '', hasta: '', anio: '', mes: '', cabo: '', programa: '', alcaldia: '', organizacion: '' },
   // «Pendientes»: lo que le falta a cada jornada. El reporte es de una jornada cerrada con árboles
   REVISION: { pendiente: 'Con algo por atender', revisar: 'Con puntos por revisar', cuadra: 'No cuadran con lo previsto', sinreporte: 'Sin reporte todavía', lista: 'Sin pendientes' },
   diaAbierto: false,
@@ -73,7 +73,6 @@ SRP.jornadas = {
     });
     this.el('jornada-alcaldia').addEventListener('change', (e) => { this.filtro.alcaldia = e.target.value; this.pintarLista(); });
     this.el('jornada-programa').addEventListener('change', (e) => { this.filtro.programa = e.target.value; this.pintarLista(); });
-    this.el('jornada-origen').addEventListener('change', (e) => { this.filtro.origen = e.target.value; this.pintarLista(); });
     // «Quitar filtros» deja la lista como al entrar; cada ficha quita lo suyo
     this.el('jornada-quitar').addEventListener('click', () => this.quitarFiltros(true));
     this.el('jornada-fichas').addEventListener('click', (e) => {
@@ -113,7 +112,7 @@ SRP.jornadas = {
     this.el('btn-relevo-hacer').addEventListener('click', () => this.relevar(this.el('relevo-quien').value));
     this.el('relevo-quien').addEventListener('change', () => { this.el('relevo-error').hidden = true; });
     this.el('btn-ej-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar cambios</span>';
-    SRP.pedido.montar(this.el('ej-caja-pedido'), 'ej');
+    SRP.solicitud.montar(this.el('ej-caja-solicitud'), 'ej');
     this.el('form-editar-jornada').addEventListener('submit', (e) => { e.preventDefault(); this.guardarEdicion(); });
     this.el('ej-fecha').addEventListener('change', () => { this.el('ej-nota-fecha').hidden = this.el('ej-fecha').value === (this.enEdicion && this.enEdicion.fecha); });
     // El programa también es de la jornada (D151): sus árboles lo toman
@@ -445,7 +444,7 @@ SRP.jornadas = {
   /* Deja la lista como al entrar: todas, sin búsqueda, sin revisión y sin listas. Con `avisar`, lo dice y ofrece deshacer. */
   quitarFiltros(avisar) {
     const antes = Object.assign({}, this.filtro), dia = this.diaAbierto, per = this.periodoAbierto;
-    Object.assign(this.filtro, { texto: '', revision: '', cabo: '', programa: '', origen: '', alcaldia: '', organizacion: '' });
+    Object.assign(this.filtro, { texto: '', revision: '', cabo: '', programa: '', alcaldia: '', organizacion: '' });
     this.el('jornada-buscar').value = ''; this.el('jornada-revision').value = '';
     this.aplicarAtajo('todas');
     if (avisar) SRP.util.anunciar('Filtros quitados: todas las jornadas.', 'exito', { deshacer: () => {
@@ -468,7 +467,6 @@ SRP.jornadas = {
     if (periodo) salida.push(['periodo', periodo]);
     if (f.cabo) salida.push(['cabo', 'Registró: ' + SRP.ref.nombreUsuario(f.cabo)]);
     if (f.programa) salida.push(['programa', 'Programa: ' + SRP.ref.nombreCatalogo(f.programa)]);
-    if (f.origen) salida.push(['origen', 'Origen: ' + SRP.pedido.textoFiltro(f.origen).replace(' (todos)', '')]);
     if (f.alcaldia) salida.push(['alcaldia', 'Alcaldía: ' + f.alcaldia]);
     if (f.organizacion) salida.push(['institucion', 'Institución: ' + SRP.ref.nombreOrganizacion(f.organizacion)]);
     return salida;
@@ -485,9 +483,9 @@ SRP.jornadas = {
     // El resumen del acordeón dice qué hay elegido dentro, aunque esté plegado
     const conCabo = !this.el('caja-jornada-cabo').hidden, conOrg = !this.el('caja-jornada-org').hidden;
     this.el('jornada-mas-filtros').hidden = false;
-    const dentro = [f.cabo ? SRP.ref.nombreUsuario(f.cabo) : '', f.programa ? SRP.ref.nombreCatalogo(f.programa) : '', f.origen ? SRP.pedido.textoFiltro(f.origen).replace(' (todos)', '') : '',
+    const dentro = [f.cabo ? SRP.ref.nombreUsuario(f.cabo) : '', f.programa ? SRP.ref.nombreCatalogo(f.programa) : '',
       f.alcaldia, f.organizacion ? SRP.ref.nombreOrganizacion(f.organizacion) : ''].filter(Boolean);
-    const disponibles = [conCabo ? 'quién registró' : '', 'programa', 'origen', 'alcaldía', conOrg ? 'institución' : ''].filter(Boolean);
+    const disponibles = [conCabo ? 'quién registró' : '', 'programa', 'alcaldía', conOrg ? 'institución' : ''].filter(Boolean);
     this.el('jornada-mas-filtros-texto').textContent = 'Más filtros: ' + (dentro.length ? dentro.join(' · ') : SRP.util.enumerar(disponibles));
     const fichas = this.fichas();
     SRP.util.pintarFichas(this.el('jornada-fichas'), fichas);
@@ -526,7 +524,7 @@ SRP.jornadas = {
   /* Alcaldía, para todos; institución, sólo para quien ve más de una. Las listas traen sólo lo que hay en las jornadas que se ven. */
   llenarListas() {
     const f = this.filtro, ver = SRP.permisos.de(SRP.sesion.usuario).alcance === 'todos';
-    const valores = { cabo: j => j.personas || [j.cabo_id], programa: j => j.dato && j.dato.programa_id, origen: j => SRP.pedido.clavesFiltro(j.dato), alcaldia: j => this.alcaldiasFiltro(j), organizacion: j => this.orgDe(j) };
+    const valores = { cabo: j => j.personas || [j.cabo_id], programa: j => j.dato && j.dato.programa_id, alcaldia: j => this.alcaldiasFiltro(j), organizacion: j => this.orgDe(j) };
     if (!ver) { delete valores.organizacion; f.organizacion = ''; }
     const fac = SRP.util.facetas(this._todas, (j, ex) => this.cumpleListas(j, ex), valores);
     if (!this.el('caja-jornada-cabo').hidden) {
@@ -535,18 +533,15 @@ SRP.jornadas = {
     }
     SRP.util.llenarLista(this.el('jornada-programa'), 'Todos', [...fac.programa].map(id => [id, SRP.ref.nombreCatalogo(id)]), f, 'programa', id => SRP.ref.nombreCatalogo(id));
     SRP.util.llenarLista(this.el('jornada-alcaldia'), 'Todas', [...fac.alcaldia].map(a => [a, a]), f, 'alcaldia');
-    // Origen: programada, pedido especial (todos) y cada instancia que ha solicitado alguno
-    SRP.util.llenarLista(this.el('jornada-origen'), 'Todos', SRP.pedido.paresFiltro(fac.origen), f, 'origen', v => SRP.pedido.textoFiltro(v), SRP.pedido.ordenFiltro);
     this.el('caja-jornada-org').hidden = !ver;
     if (ver) SRP.util.llenarInstituciones(this.el('jornada-org'), fac.organizacion, f);
   },
 
-  // ¿Pasa los filtros de lista (quién, programa, origen, alcaldía, institución), salvo los de `excluir`?
+  // ¿Pasa los filtros de lista (quién, programa, alcaldía, institución), salvo los de `excluir`?
   cumpleListas(j, excluir) {
     const f = this.filtro, x = k => !excluir || !excluir.has(k);
     return (!f.cabo || !x('cabo') || (j.personas || [j.cabo_id]).includes(f.cabo)) &&
       (!f.programa || !x('programa') || (j.dato && j.dato.programa_id) === f.programa) &&
-      (!f.origen || !x('origen') || SRP.pedido.cumpleFiltro(j.dato, f.origen)) &&
       (!f.alcaldia || !x('alcaldia') || this.alcaldiasFiltro(j).includes(f.alcaldia)) &&
       (!f.organizacion || !x('organizacion') || this.orgDe(j) === f.organizacion);
   },
@@ -650,7 +645,7 @@ SRP.jornadas = {
         (SRP.prioritarias.hay() ? '<span class="jornada-prioridad">' + SRP.prioritarias.insignia(j.prioridad) + '</span>' : '') +
         (programa || variosAutores || relevo ? '<span class="jornada-cabo">' + (programa ? '<span class="jornada-programa">' + esc(SRP.ref.nombreCatalogo(programa)) + '</span>' : '') +
           (variosAutores || relevo ? (programa ? ' · ' : '') + '<b>' + esc(SRP.ref.nombreUsuario(j.cabo_id)) + '</b>' + (relevo ? ' · relevo: ' + esc(SRP.ref.nombreUsuario(relevo)) : '') : '') + '</span>' : '') +
-        (SRP.pedido.esPedido(guardada) ? '<span class="jornada-pedido">' + SRP.pedido.insignia(guardada) + '</span>' : '') +
+        (SRP.solicitud.es(guardada) ? '<span class="jornada-solicitud">' + SRP.solicitud.insignia(guardada) + '</span>' : '') +
         (marcas.length ? '<span class="jornada-marcas">' + marcas.join('') + '</span>' : '') +
         '</button></li>');
     }
@@ -663,7 +658,7 @@ SRP.jornadas = {
     const vacio = this.el('jornadas-vacio');
     vacio.hidden = n > 0;
     // Estado vacío con salida (D141)
-    const filtrado = f.texto || f.revision || f.dia || f.desde || f.hasta || f.anio || f.cabo || f.programa || f.origen || f.alcaldia || f.organizacion;
+    const filtrado = f.texto || f.revision || f.dia || f.desde || f.hasta || f.anio || f.cabo || f.programa || f.alcaldia || f.organizacion;
     const REVISION = { pendiente: 'con algo por atender', revisar: 'con puntos por revisar', cuadra: 'que no cuadren con lo previsto', sinreporte: 'sin reporte', lista: 'sin pendientes' };
     const puedeRegistrar = SRP.permisos.de(u).registrar;
     if (!n) vacio.innerHTML = filtrado
@@ -725,6 +720,7 @@ SRP.jornadas = {
     const u = SRP.sesion.usuario;
     const guardada = await this.jornadaGuardada(j);
     this.guardada = guardada;
+    if (SRP.espejo) SRP.espejo.enFicha(this.el('ficha-col-lista'), guardada);
     const avisos = this.avisos(j);
     this.avisosActuales = avisos;
     const revisados = (guardada && guardada.puntos_revisados) || [];
@@ -742,7 +738,7 @@ SRP.jornadas = {
       (this.alcaldiasDe(j).length ? ' · ' + SRP.ref.lugar(this.alcaldiasDe(j)) : SRP.activa.lugarDe(guardada) ? ' · ' + SRP.activa.lugarDe(guardada) : '') +
       ' · ' + (guardada.estatus === 'abierta' ? 'abierta' : this.textoCierre(guardada, true)) +
       (SRP.prioritarias.hay() ? ' · ' + SRP.prioritarias.textoJornada(j.prioridad).toLowerCase() : '') +
-      (SRP.pedido.esPedido(guardada) ? ' · pedido especial de ' + SRP.pedido.solicitante(guardada) + (guardada.pedido_descripcion ? ' (' + guardada.pedido_descripcion + ')' : '') : '');
+      (SRP.solicitud.es(guardada) ? ' · solicita ' + SRP.solicitud.solicitanteCompleto(guardada) : '');
     this.el('jornada-comentarios').hidden = !guardada.comentarios;
     this.el('jornada-comentarios').textContent = guardada.comentarios || '';
     // Cerrar o reabrir la jornada desde su revisión (D119): quien registra en ella (el titular o el cabo del relevo)
@@ -805,7 +801,7 @@ SRP.jornadas = {
     // En qué prioridad de colonia cayeron los árboles de la jornada, según el modelo de priorización
     const pri = this.el('jornada-prioridad');
     pri.hidden = !(SRP.prioritarias.hay() && regs.length);
-    if (!pri.hidden) pri.textContent = 'Colonias prioritarias: ' + SRP.prioritarias.resumen(regs) + '.';
+    if (!pri.hidden) pri.textContent = 'Árboles por prioridad de la colonia: ' + SRP.prioritarias.resumen(regs) + '.';
     this.el('jornada-puntos-n').textContent = regs.length;
     this.el('jornada-saltos-n').textContent = regs.length;
     this.pintarMapa(avisos, revisados, encuadrar);
@@ -924,15 +920,21 @@ SRP.jornadas = {
     this.capaPuntos.clearLayers();
     this.marcadores = {};
     const regs = this.jornada.registros;
+    const tonos = new Set();
     regs.forEach((r, i) => {
       const av = avisos[r.id] || [];
       const tono = this.tonoPunto(r, av, revisados.includes(r.id));
+      tonos.add(tono);
       const icono = L.divIcon({ className: 'pin-num', html: '<span data-tono="' + tono + '">' + (i + 1) + '</span>', iconSize: [26, 26], iconAnchor: [13, 13] });
       const m = L.marker([r.lat, r.lng], { icon: icono, title: 'Punto ' + (i + 1) + ': ' + SRP.ref.especieDe(r).comun, riseOnHover: true })
         .on('click', () => this.seleccionar(r.id, 'mapa'));
       m.addTo(this.capaPuntos);
       this.marcadores[r.id] = m;
     });
+    // La simbología dice sólo los tipos de punto que hay en esta jornada
+    const leyenda = this.el('jornada-leyenda');
+    leyenda.hidden = !regs.length;
+    leyenda.querySelectorAll('i[data-tono]').forEach(i => { i.parentElement.hidden = !tonos.has(i.dataset.tono); });
     setTimeout(() => {
       this.mapa.invalidateSize();
       if (encuadrar && regs.length) {
@@ -1060,11 +1062,11 @@ SRP.jornadas = {
     this.el('ej-meta').value = this.previstosDe(c) === null ? '' : this.previstosDe(c);
     this.el('ej-fecha').value = c.fecha; this.el('ej-fecha').max = SRP.util.fechaHoy();
     this.el('ej-comentarios').value = c.comentarios || '';
-    SRP.pedido.poner('ej', c);
+    SRP.solicitud.poner('ej', c);
     this.el('ej-nota-fecha').hidden = true;
     this.el('ej-nota-programa').hidden = true;
     this.el('ej-errores').hidden = true;
-    SRP.util.erroresEnCampos([], ['ej-nombre', 'ej-programa', 'ej-meta', 'ej-fecha'].concat(SRP.pedido.ids('ej')));
+    SRP.util.erroresEnCampos([], ['ej-nombre', 'ej-programa', 'ej-meta', 'ej-fecha'].concat(SRP.solicitud.ids('ej')));
     SRP.util.refrescarContadores(this.el('dlg-editar-jornada'));
     this.el('dlg-editar-jornada').showModal();
   },
@@ -1082,13 +1084,13 @@ SRP.jornadas = {
     const errores = [];
     if (!nombre) errores.push(['ej-nombre', 'Escriba el nombre de la jornada.']);
     if (!programa_id) errores.push(['ej-programa', 'Elija el programa.']);
-    SRP.pedido.errores('ej').forEach(e => errores.push(e));
+    SRP.solicitud.errores('ej').forEach(e => errores.push(e));
     if (previstos === null || !Number.isInteger(previstos) || previstos < 1 || previstos > 9999) errores.push(['ej-meta', 'Escriba cuántos árboles se van a plantar: un entero mayor que cero.']);
     if (!fecha) errores.push(['ej-fecha', 'Indique la fecha.']);
     else if (fecha > SRP.util.fechaHoy()) errores.push(['ej-fecha', 'La fecha no puede ser posterior a hoy.']);
     // Cada campo dice su error (D140) y arriba el resumen, igual que en todos los formularios (M15)
-    if (SRP.util.resumenErrores(this.el('ej-errores'), errores, ['ej-nombre', 'ej-programa', 'ej-meta', 'ej-fecha'].concat(SRP.pedido.ids('ej')))) return;
-    const cambios = Object.assign({ nombre, ubicacion, programa_id, arboles_previstos: previstos, fecha, comentarios }, SRP.pedido.leer('ej'));
+    if (SRP.util.resumenErrores(this.el('ej-errores'), errores, ['ej-nombre', 'ej-programa', 'ej-meta', 'ej-fecha'].concat(SRP.solicitud.ids('ej')))) return;
+    const cambios = Object.assign({ nombre, ubicacion, programa_id, arboles_previstos: previstos, fecha, comentarios }, SRP.solicitud.leer('ej'));
     const v = x => (x === undefined || x === null) ? '' : x;
     const campos = Object.keys(cambios).filter(k => v(c[k]) !== v(cambios[k]) && !(k === 'arboles_previstos' && this.previstosDe(c) === previstos));
     if (!campos.length) { this.el('dlg-editar-jornada').close(); return; }
@@ -1104,7 +1106,7 @@ SRP.jornadas = {
     const arboles = cambiaFecha || cambiaPrograma ? await SRP.almacen.porIndice('plantaciones', 'jornada_id', c.id) : [];
     const antes = arboles.filter(r => r.fecha_plantacion !== c.fecha && r.fecha_plantacion < fecha).map(r => r.fecha_plantacion).sort();
     if (cambiaFecha && antes.length) {
-      SRP.util.resumenErrores(this.el('ej-errores'), [['ej-fecha', 'Hay árboles de esta jornada plantados el ' + SRP.util.formatearFecha(antes[0]) + ': la jornada no puede empezar después de ese día.']], ['ej-nombre', 'ej-programa', 'ej-meta', 'ej-fecha'].concat(SRP.pedido.ids('ej')));
+      SRP.util.resumenErrores(this.el('ej-errores'), [['ej-fecha', 'Hay árboles de esta jornada plantados el ' + SRP.util.formatearFecha(antes[0]) + ': la jornada no puede empezar después de ese día.']], ['ej-nombre', 'ej-programa', 'ej-meta', 'ej-fecha'].concat(SRP.solicitud.ids('ej')));
       return;
     }
     const tocados = [];
@@ -1124,7 +1126,7 @@ SRP.jornadas = {
     this.enEdicion = null;
     if (this.editaDesdeRegistro && SRP.app.vista === 'registrar') await SRP.activa.preparar();
     else { this.volverAlDetalle = true; this.actual = c.id; await this.preparar(); }
-    SRP.util.anunciar('Jornada actualizada: ' + campos.map(k => ({ nombre: 'nombre', ubicacion: 'dirección', programa_id: 'programa', arboles_previstos: 'árboles previstos', fecha: 'fecha', comentarios: 'comentarios', origen: 'origen', solicitante_id: 'solicitante', solicitante_otro: 'solicitante', pedido_descripcion: 'descripción del pedido' })[k]).filter((t, i, a) => a.indexOf(t) === i).join(', ') + '.', 'exito');
+    SRP.util.anunciar('Jornada actualizada: ' + campos.map(k => ({ nombre: 'nombre', ubicacion: 'dirección', programa_id: 'programa', arboles_previstos: 'árboles previstos', fecha: 'fecha', comentarios: 'comentarios', solicitante_id: 'quién lo solicita', solicitante_otro: 'quién lo solicita', solicitud_descripcion: 'descripción de la solicitud' })[k]).filter((t, i, a) => a.indexOf(t) === i).join(', ') + '.', 'exito');
   },
 
   /* Sólo una jornada sin árboles se elimina; con árboles, primero se mueven o se eliminan ellos. Los

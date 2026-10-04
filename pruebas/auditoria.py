@@ -241,7 +241,7 @@ with sync_playwright() as p:
           const previo = SRP.sesion.usuario, activa = SRP.activa.jornada, guardar = SRP.almacen.guardarConBitacora;
           SRP.sesion.usuario = SRP.ref.usuarios.find(u => u.perfil === 'CABO');
           const valor = (id, v) => { document.getElementById(id).value = v; };
-          valor('ini-nombre', 'Auditoría'); valor('ini-origen', 'PROGRAMADA'); valor('ini-meta', '1'); valor('ini-fecha', SRP.util.fechaHoy());
+          valor('ini-nombre', 'Auditoría'); valor('ini-meta', '1'); valor('ini-fecha', SRP.util.fechaHoy());
           const prog = document.getElementById('ini-programa');
           if (!prog.querySelector('option[value="p-refor"]')) prog.add(new Option('Programa', 'p-refor'));
           prog.value = 'p-refor';

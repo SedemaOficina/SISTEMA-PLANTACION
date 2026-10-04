@@ -239,6 +239,7 @@ SRP.usuarios = {
     this.ajustarPorOrganizacion();
     this.el('usr-errores').hidden = true;
     SRP.util.erroresEnCampos([], this.CAMPOS);
+    if (SRP.espejo) SRP.espejo.enFormulario(this.el('form-usuario'), 'usuarios', usuario || null);
     this.el('dlg-usuario').showModal();
   },
 

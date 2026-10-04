@@ -228,7 +228,8 @@ SRP.prioritarias = {
       }
       caja.querySelectorAll('[data-pri]').forEach(el => {
         if (el.dataset.pri === 'ver') el.checked = e.ver;
-        if (el.dataset.pri === 'nivel') { el.checked = !!e.niveles[el.value]; el.disabled = !ver; }
+        // Con la capa apagada, sus niveles se ven apagados; lo elegido vuelve al encenderla
+        if (el.dataset.pri === 'nivel') { el.checked = ver && !!e.niveles[el.value]; el.disabled = !ver; }
         if (el.dataset.pri === 'opacidad') { el.value = Math.round(e.opacidad * 100); el.disabled = !ver; }
       });
       caja.querySelector('output').textContent = Math.round(e.opacidad * 100) + ' %';

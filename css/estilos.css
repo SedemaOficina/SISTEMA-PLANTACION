@@ -791,6 +791,8 @@ th[aria-sort="descending"] .th-flecha::after { content: '▼'; opacity: 1; font-
 .revision-sistema-titulo { font-size: var(--t-xs); font-weight: 700; color: var(--gris); text-transform: uppercase; letter-spacing: .04em; margin: 0; }
 .revision-sistema .revision-fila dt, .revision-sistema .revision-fila dd { font-size: var(--t-xs); color: var(--gris); }
 .historial { padding-left: var(--e-5); font-size: var(--t-s); }
+/* Con un diálogo abierto, la página de atrás no se desplaza: el gesto se queda en el diálogo */
+html:has(dialog[open]) { overflow: hidden; }
 dialog { width: min(40rem, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); border: 0; border-top: 4px solid var(--borde-control); border-radius: var(--radio); padding: var(--e-5); overscroll-behavior: contain; }
 /* En iOS la barra del navegador hace que 100vh sea más alto que la pantalla y el pie del diálogo quede oculto */
 @supports (height: 100dvh) { dialog { max-height: calc(100dvh - 2rem); } }
@@ -805,7 +807,8 @@ dialog::backdrop { background: var(--velo-oscuro); }
 /* Pie con dos acciones: una junto a la otra y, si no caben, una bajo la otra con su separación */
 .dialogo-pie-doble { display: flex; flex-wrap: wrap; gap: var(--e-2); }
 .dialogo-pie-doble[hidden] { display: none; }
-.dialogo-pie-doble .btn { flex: 1 1 9rem; width: auto; }
+/* Cada botón en un renglón; si los dos no caben, el segundo baja completo en lugar de partirse */
+.dialogo-pie-doble .btn { flex: 1 1 9rem; width: auto; white-space: nowrap; }
 .dialogo-titulo { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); }
 .dialogo-titulo h2 { margin: 0; }
 .dialogo-titulo h2:focus { outline: none; }
@@ -1219,7 +1222,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
 @media (max-width: 700px) {
   /* Jornada activa compacta: nombre, avance y acciones a la vista; lo demás, en «Ver detalle» */
   .franja-detalle-boton { display: inline-flex; }
-  .franja-jornada[data-detalle="cerrado"] .franja-jornada-datos, .franja-jornada[data-detalle="cerrado"] .franja-jornada-pedido,
+  .franja-jornada[data-detalle="cerrado"] .franja-jornada-datos, .franja-jornada[data-detalle="cerrado"] .franja-jornada-solicitud,
   .franja-jornada[data-detalle="cerrado"] .franja-jornada-prioridad, .franja-jornada[data-detalle="cerrado"] .pasos { display: none; }
   .franja-jornada .franja-jornada-rotulo { flex: 1 1 auto; }
   /* Los datos del punto, en un renglón: alcaldía, colonia y coordenadas; las etiquetas quedan para el lector de pantalla */
@@ -1410,13 +1413,13 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .pri-insignia { display: inline-flex; align-items: center; font-size: var(--t-xs); color: var(--gris); }
 .jornada-prioridad, .punto-prioridad, .franja-jornada-prioridad { display: block; }
 
-/* Pedido especial: la marca en las tarjetas y la franja, y el bloque de sus datos en el formulario */
-.pedido-insignia { display: inline-flex; align-items: center; gap: var(--e-1); font-size: var(--t-xs); font-weight: 500; color: var(--texto); }
-.jornada-pedido, .franja-jornada-pedido { display: block; }
-.pedido-datos { padding-left: var(--e-3); margin-bottom: var(--e-4); border-left: 3px solid var(--borde-control); }
-.pedido-datos .campo:last-child { margin-bottom: 0; }
-.pedido-datos[hidden] { display: none; }
-.sup-pedidos-lema { margin: 0 0 var(--e-3); }
+/* Solicitud: quién lo solicita, en las tarjetas y la franja, y el bloque de sus datos en el formulario */
+.solicitud-insignia { display: inline-flex; align-items: center; gap: var(--e-1); font-size: var(--t-xs); font-weight: 500; color: var(--texto); }
+.jornada-solicitud, .franja-jornada-solicitud { display: block; }
+.solicitud-datos { padding-left: var(--e-3); margin-bottom: var(--e-4); border-left: 3px solid var(--borde-control); }
+.solicitud-datos .campo:last-child { margin-bottom: 0; }
+.solicitud-datos[hidden] { display: none; }
+.sup-solicitudes-lema { margin: 0 0 var(--e-3); }
 
 /* El control de la capa sobre el mapa: botón que abre el panel con el interruptor, los niveles y la opacidad.
    La opacidad se aplica a la capa entera (la pone el control en el panel de Leaflet) */
