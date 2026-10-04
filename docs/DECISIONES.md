@@ -2512,3 +2512,22 @@
     resto va plegado en «Más filtros». `pruebas/auditoria.py` lo cuenta y falla si se rebasa. Al cerrar
     cada bloque se dice qué se agregó a la pantalla y qué se pudo quitar. Ajusta D128, D129, D167 y D202.
 
+- **D227. Supervisión y «Mi avance» en resumen, con los desgloses plegados (bloque 163).** 03-10-2026. Decisión de
+  Liber, sobre un ejemplo con dos opciones; eligió la A.
+  · **Qué:** arriba van las cifras (cuatro para quien supervisa, tres para el cabo), «Qué atender», las
+    descargas y la gráfica. Cada desglose —por cabo, institución, alcaldía, prioridad de la colonia,
+    especie, programa, pedidos especiales y calidad del dato— es un renglón que dice su dato principal y
+    se abre al tocarlo. En el teléfono sólo «Por cabo» viene abierto; con ancho, todos. Lo que la persona
+    abre o cierra se conserva al cambiar de periodo o de filtro.
+  · **Por cabo:** lista a quienes tuvieron jornadas en el periodo; los demás van juntos en un renglón que
+    se abre («12 sin jornadas en el periodo»).
+  · **Tablas en el teléfono:** renglones con nombre, árboles y porcentaje arriba, y lo demás debajo con su
+    etiqueta. Ya no se parten palabras ni se sale una columna de lado.
+  · **Jornadas del periodo:** la lista se sustituye por un enlace a Jornadas con el mismo periodo y filtros.
+  · **Cabo:** no ve pedidos especiales, eliminados, ediciones ni la tabla CSV; «Calidad del dato» es para él
+    «Mis registros» (fotografía, GPS, sustitutos). Conserva los dos mapas, dentro de sus secciones.
+  · **Por qué:** la pantalla medía quince pantallas de teléfono para la Administración global y seis para el
+    cabo; la mitad eran fichas de cabos, doce de ellos sin jornadas. Todo tenía el mismo peso y las
+    descargas quedaban al final.
+  · **Lo que no cambia:** los cálculos (`js/indicadores.js`), el informe en PDF y la tabla CSV.
+

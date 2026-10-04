@@ -3115,3 +3115,27 @@ unidades territoriales en el esquema del SIA. Hay que conciliarlas antes de deri
 **Verificación:** la huella comparada contra sí misma da las tres capas iguales. Contra la base del SIA no
 se ha corrido: requiere acceso a su red.
 
+## Bloque 163 — Supervisión y «Mi avance» en resumen (03-10-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.9.29.
+
+**Qué cambió (D227).** `js/supervision.js`: `html()` arma cifras (cuatro o tres), «Qué atender», el ancla
+de las descargas, la gráfica y los desgloses como `details.sup-seccion` con su resumen; `abierta()`,
+`alPlegar()` y `abrirTodo()` llevan qué está abierto; los mapas se dibujan al abrir su sección;
+`tabla()` pone la etiqueta de cada celda; «Por cabo» separa a quienes no tuvieron jornadas;
+`verJornadas()` abre Jornadas con el periodo y los filtros; el cabo no ve pedidos, eliminados, ediciones
+ni CSV. `index.html`: `#sup-acciones`. `css/estilos.css`: `.sup-seccion`, `.sup-resumen`, `.sup-pendiente`
+y, hasta 700 px, las tablas de Supervisión como renglones. Sin cambio en `js/indicadores.js`, en el
+informe en PDF ni en la tabla CSV.
+
+**Pantalla: qué se agregó y qué se quitó.** Se agregó el renglón-resumen de cada desglose y el enlace a
+Jornadas. Se quitaron dos cifras (especies y alcaldías, que pasaron al resumen de su sección), la lista de
+jornadas cerradas y, para el cabo, pedidos especiales, eliminados, ediciones y la tabla CSV. En el
+teléfono, con los datos de demostración: Administración global, de 12,480 a 2,570 px; cabo, de 4,160 a 1,225.
+
+**Verificación:** prueba.py 1291 comprobaciones, 0 fallas (ctx75, 10 nuevas: largo de la pantalla, cifras,
+secciones plegadas con su resumen, descargas bajo las cifras, cabos sin jornadas aparte, mapa al abrir,
+tablas en renglones sin salirse de lado, lo abierto se conserva, enlace a Jornadas con el periodo, «Mi
+avance» del cabo con sus dos mapas, y todo abierto con ancho). Las comprobaciones anteriores del contenido
+abren antes los desgloses (`abrir_sup`). auditoria.py 141 comprobaciones, 0 hallazgos; auditoria_css.py 0;
+revisar.py sin problemas. No probado en iPhone real.
+

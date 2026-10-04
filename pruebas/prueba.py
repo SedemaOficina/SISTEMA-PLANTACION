@@ -37,6 +37,11 @@ def accion(pg, cont, cual, n=0):
     pg.wait_for_timeout(120)
     loc.click()
 
+def abrir_sup(pg):
+    # Los desgloses de Supervisión van plegados en el teléfono: las comprobaciones de su contenido los abren
+    esperar(pg, "!!SRP.supervision.modelo", 8000)
+    pg.evaluate("SRP.supervision.abrirTodo()"); pg.wait_for_timeout(400)
+
 def abrir_filtros(pg):
     """En teléfono los filtros de Registros van plegados (D100): se abren antes de usarlos."""
     if pg.is_visible('#btn-filtros') and pg.get_attribute('#btn-filtros','aria-expanded')!='true':
@@ -1206,6 +1211,7 @@ with sync_playwright() as p:
     ok(pg.inner_text('#btn-jornada-estado')==era,'y la deja como estaba')
     # Fotografías vive dentro de Supervisión (D158)
     pg.click('.pestana[data-vista=supervision]'); pg.wait_for_timeout(700)
+    abrir_sup(pg)
     ok(pg.is_visible('#btn-sup-fotos'),'el coordinador ve las Fotografías, dentro de Supervisión (D118, D158)')
     pg.click('#btn-sup-fotos'); pg.wait_for_timeout(600)
     ok(pg.get_attribute('.pestana[data-vista=supervision]','aria-current')=='page','y Supervisión queda marcada mientras las ve')
@@ -2497,6 +2503,7 @@ with sync_playwright() as p:
     iniciar_jornada(pg19,'Camellón de ayer',AYER)
     registrar(pg19,'aile','ESP-0002',fecha=AYER)
     pg19.click('.pestana[data-vista=supervision]'); pg19.wait_for_timeout(900)
+    abrir_sup(pg19)
     s19=pg19.evaluate("""() => ({ titulo: document.getElementById('titulo-supervision').textContent, semana: document.querySelector('#sup-tipos [aria-pressed=true]').dataset.tipo,
       etiqueta: document.getElementById('sup-etiqueta').textContent, cifras: [...document.querySelectorAll('.sup-cifra')].map(c => c.querySelector('b').textContent + ' ' + c.querySelector('span').textContent),
       siguiente: document.getElementById('sup-siguiente').disabled, atender: document.querySelector('.sup-atender') ? document.querySelector('.sup-atender').innerText : '',
@@ -2551,6 +2558,7 @@ with sync_playwright() as p:
     pg19.locator('.sup-tabla-cabos button[data-cabo]').first.click(); pg19.wait_for_timeout(900)
     ok(pg19.is_visible('#vista-jornadas') and pg19.evaluate("document.getElementById('jornada-cabo').value")=='u-cabo-1','tocar un cabo lleva a sus jornadas')
     pg19.click('.pestana[data-vista=supervision]'); pg19.wait_for_timeout(700)
+    abrir_sup(pg19)
     pg19.click('#btn-sup-fotos'); pg19.wait_for_timeout(600)
     pg19.click('#btn-galeria-volver'); pg19.wait_for_timeout(600)
     ok(pg19.is_visible('#vista-supervision'),'de Fotografías se vuelve a Supervisión')
@@ -2563,8 +2571,9 @@ with sync_playwright() as p:
     ok(nav19==['Supervisión','Jornadas','Registros'] and menu19==[True,1] and pg19.is_visible('#vista-usuarios'),
        'la administración tiene cuatro secciones abajo y, en el menú de la cuenta, una sola entrada «Configuración» que lleva a Usuarios: %s %s' % (nav19, menu19))
     pg19.set_viewport_size({'width':1280,'height':900}); pg19.click('.pestana[data-vista=supervision]'); pg19.wait_for_timeout(800)
+    abrir_sup(pg19)
     cols=pg19.evaluate("getComputedStyle(document.querySelector('.sup-cifras')).gridTemplateColumns.split(' ').length")
-    ok(cols==6,'en computadora las cifras van en un renglón de seis: %s' % cols)
+    ok(cols==4,'en computadora las cifras van en un renglón de cuatro: %s' % cols)
     ok(not err19,'sin errores en consola: %s' % err19[:2])
     ctx19.close()
 
@@ -2588,6 +2597,7 @@ with sync_playwright() as p:
     pg20.click('#btn-jornada-cerrar'); pg20.wait_for_timeout(300); pg20.click('#btn-confirmar-si'); pg20.wait_for_timeout(1200)
     # Los informes por periodo viven en su propia pestaña (Mi avance para el cabo)
     pg20.click('.pestana[data-vista=supervision]'); pg20.wait_for_timeout(900)
+    abrir_sup(pg20)
     ok(pg20.is_visible('#vista-supervision') and 'Mi avance' in pg20.inner_text('.pestana[data-vista=supervision]'),'los informes por periodo se generan en la pestaña Mi avance')
     def pdf20():
         with pg20.expect_download() as d: pg20.click('#btn-sup-pdf')
@@ -2669,18 +2679,19 @@ with sync_playwright() as p:
        'al terminar, el pie dice cuánto hay y ofrece «Volver a cargar» y «Quitar»: %s' % estado21()[:60])
     # Supervisión con volumen: la coordinación de prueba ve su cuadrilla; la de demostración, la suya
     pg21.evaluate("SRP.app.mostrarVista('supervision')"); pg21.wait_for_timeout(600)
+    abrir_sup(pg21)
     pg21.click('#sup-tipos .chip[data-tipo=anio]'); pg21.wait_for_timeout(300); pg21.click('#sup-anterior'); pg21.wait_for_timeout(900)
     ok(pg21.inner_text('#sup-etiqueta')=='Año 2025' and pg21.locator('.sup-tabla-cabos tbody tr').count()==26,'la administración ve el año 2025 completo: sus 20 cabos activos —también los que no trabajaron ese año, como el de la empresa, que empezó en 2026: así se ve quién falta— y las 6 coordinaciones que registraron')
-    LIS21="document.querySelectorAll('section[aria-labelledby=sup-t-jornadas] .sup-jornadas > li:not([hidden])').length"
+    LIS21="document.querySelectorAll('details[data-seccion=cabos] > .sup-seccion-cuerpo > .sup-tabla-caja tbody tr:not([hidden])').length"
     vis21=pg21.evaluate(LIS21)
-    mas21=pg21.locator('button[data-mas=jornadas]')
-    ok(vis21==10 and mas21.count()==1 and re.fullmatch(r'Mostrar 10 más \(10 de [\d,]+\)', mas21.inner_text()) is not None,'de cientos de jornadas se ven las 10 más recientes y «%s» (D168)' % (mas21.inner_text() if mas21.count() else '—'))
+    mas21=pg21.locator('button[data-mas=cabos]')
+    ok(vis21==10 and mas21.count()==1 and re.fullmatch(r'Mostrar 10 más \(10 de [\d,]+\)', mas21.inner_text()) is not None,'de una lista larga —quienes tuvieron jornadas en el año— se ven los 10 primeros y «%s» (D168)' % (mas21.inner_text() if mas21.count() else '—'))
     mas21.click(); pg21.wait_for_timeout(200)
-    ok(pg21.evaluate(LIS21)==20 and mas21.inner_text().startswith('Mostrar 10 más (20 de '),'«Mostrar 10 más» suma diez: %s' % mas21.inner_text())
+    ok(pg21.evaluate(LIS21)==20 and re.match(r'Mostrar \d+ más \(20 de ', mas21.inner_text()) is not None,'«Mostrar más» suma diez: %s' % mas21.inner_text())
     total21=int(mas21.get_attribute('data-total'))
-    pg21.evaluate("(() => { const b = document.querySelector('button[data-mas=jornadas]'); b.dataset.vistas = String(Number(b.dataset.total) - 1); b.click(); })()"); pg21.wait_for_timeout(200)
+    pg21.evaluate("(() => { const b = document.querySelector('button[data-mas=cabos]'); b.dataset.vistas = String(Number(b.dataset.total) - 1); b.click(); })()"); pg21.wait_for_timeout(200)
     todas21=pg21.evaluate(LIS21)
-    ok(todas21==total21 and todas21>150 and mas21.inner_text()=='Mostrar sólo las primeras 10','al llegar al final se ven las %d y el botón ofrece «Mostrar sólo las primeras 10»' % todas21)
+    ok(todas21==total21 and todas21>20 and mas21.inner_text()=='Mostrar sólo las primeras 10','al llegar al final se ven las %d y el botón ofrece «Mostrar sólo las primeras 10»' % todas21)
     mas21.click(); pg21.wait_for_timeout(200)
     ok(pg21.evaluate(LIS21)==10,'y las vuelve a ocultar')
     pg21.click('#sup-filtros summary'); pg21.wait_for_timeout(150); pg21.select_option('#sup-alcaldia','Gustavo A. Madero'); pg21.wait_for_timeout(700)
@@ -2701,6 +2712,7 @@ with sync_playwright() as p:
     ok(cab21==['u-demo-c4','u-demo-c5','u-demo-c6'] and pg21.is_visible('#vista-supervision'),'la coordinación de demostración entra a Supervisión con sus tres cabos')
     entrar21('u-demo-c5')
     pg21.click('.pestana[data-vista=supervision]'); pg21.wait_for_timeout(500); pg21.click('#sup-tipos .chip[data-tipo=todo]'); pg21.wait_for_timeout(700)
+    abrir_sup(pg21)
     ok(pg21.inner_text('#titulo-supervision')=='Mi avance' and int(pg21.inner_text('.sup-cifra b').replace(',',''))>500 and 'jornada de un día anterior sigue abierta' in pg21.inner_text('#sup-cuerpo'),
        'una cabo de demostración ve Mi avance de casi tres años y su jornada abierta de antes')
     # Quitar: lo de demostración se va; lo propio se queda, y también la jornada donde se registró un árbol propio
@@ -3098,11 +3110,12 @@ with sync_playwright() as p:
     # Supervisión: «de lo previsto», unidad en la gráfica, % en las tablas y especies de diez en diez
     pg28.keyboard.press('Escape'); pg28.wait_for_timeout(300)
     pg28.evaluate("SRP.app.mostrarVista('supervision')"); pg28.wait_for_timeout(700)
+    abrir_sup(pg28)
     pg28.click('#sup-tipos .chip[data-tipo=todo]'); pg28.wait_for_timeout(1200)
-    su28=pg28.evaluate("""(() => { const q = s => document.querySelector(s); const cab = id => [...document.querySelectorAll('section[aria-labelledby=' + id + '] thead th')].map(t => t.textContent);
+    su28=pg28.evaluate("""(() => { const q = s => document.querySelector(s); const cab = id => [...document.querySelectorAll('details[data-seccion=' + id.replace('sup-t-', '') + '] thead th')].map(t => t.textContent);
       return { cifras: q('.sup-cifras').textContent, avance: q('#sup-t-avance').textContent, alc: cab('sup-t-alcaldias'), esp: cab('sup-t-especies'), prog: cab('sup-t-programas'),
-        barras: document.querySelectorAll('section[aria-labelledby=sup-t-especies] tbody tr:not([hidden]) .sup-esp-barra').length,
-        filas: document.querySelectorAll('section[aria-labelledby=sup-t-especies] tbody tr:not([hidden])').length,
+        barras: document.querySelectorAll('details[data-seccion=especies] tbody tr:not([hidden]) .sup-esp-barra').length,
+        filas: document.querySelectorAll('details[data-seccion=especies] tbody tr:not([hidden])').length,
         mas: (q('button[data-mas=especies]') || {}).textContent || '', nesp: SRP.supervision.modelo.porEspecie.length }; })()""")
     ok('de lo previsto' in su28['cifras'] and 'previstos en las jornadas' in su28['cifras'] and 'meta' not in su28['cifras'],'la cifra de avance dice «de lo previsto», no «meta» (D168)')
     ok(su28['avance'].startswith('Árboles plantados por'),'la gráfica de avance dice su unidad: %s' % su28['avance'][:40])
@@ -3823,18 +3836,19 @@ with sync_playwright() as p:
     ok(d44['orgs']==sorted(['demo-org-empresa','o-alc-09003','o-alc-09007','o-green-cover','o-paot','o-reforestamos','o-sedema','o-sobse']) and d44['sinVeh'] and d44['emp']=='Empresa privada' and sorted(map(str,d44['cuentas']))==sorted(map(str,CU44)),
        'los datos de demostración traen instituciones de fuera: sus jornadas sin personal, chófer ni vehículo; sus cabos, sin área, con el coordinador de su institución o sin coordinación: %s' % d44)
     pg44.evaluate("SRP.app.mostrarVista('supervision')"); pg44.wait_for_timeout(600)
+    abrir_sup(pg44)
     pg44.click('#sup-tipos .chip[data-tipo=todo]'); pg44.wait_for_timeout(900)
-    t44=pg44.evaluate("""(() => { const s = document.querySelector('section[aria-labelledby=sup-t-instituciones]'); if (!s) return null;
+    t44=pg44.evaluate("""(() => { const s = document.querySelector('details[data-seccion=instituciones]'); if (!s) return null;
       const filas = [...s.querySelectorAll('tbody tr')].map(tr => [...tr.cells].map(td => td.textContent.trim()));
       return { titulo: s.querySelector('h2').textContent, filas, total: Number(document.querySelector('.sup-cifra b').textContent.replace(/,/g, '')) }; })()""")
-    suma44=sum(int(f[2].replace(',','')) for f in t44['filas']) if t44 else -1
+    suma44=sum(int(f[1].replace(',','')) for f in t44['filas']) if t44 else -1
     ok(t44 and t44['titulo']=='Por institución' and [f[0] for f in t44['filas']][0]=='Secretaría del Medio Ambiente (SEDEMA)' and len(t44['filas'])==8 and suma44==t44['total'] and pg44.get_attribute('#caja-sup-organizacion','hidden') is None,
-       'Supervisión de la Administración desglosa por institución —SEDEMA y las siete de fuera— y suman el total de la Ciudad: %s = %s' % (t44 and [(f[0],f[2]) for f in t44['filas']], t44 and t44['total']))
+       'Supervisión de la Administración desglosa por institución —SEDEMA y las siete de fuera— y suman el total de la Ciudad: %s = %s' % (t44 and [(f[0],f[1]) for f in t44['filas']], t44 and t44['total']))
     izp44=next(f for f in t44['filas'] if f[0]=='Alcaldía Iztapalapa')
     pg44.click('#sup-filtros summary'); pg44.wait_for_timeout(150); pg44.select_option('#sup-organizacion','o-alc-09007'); pg44.wait_for_timeout(900)
     f44=[pg44.inner_text('.sup-cifra b >> nth=0'), pg44.locator('.sup-tabla-cabos tbody tr').count(), pg44.inner_text('#sup-filtros-texto'),
-         pg44.locator('section[aria-labelledby=sup-t-instituciones]').count(), pg44.inner_text('.sup-cifra >> nth=2')]
-    ok(f44[0]==izp44[2] and f44[1]==4 and f44[2]=='Más filtros: Alcaldía Iztapalapa' and f44[3]==0 and '3 de 3' in f44[4],
+         pg44.locator('details[data-seccion=instituciones]').count(), pg44.inner_text('.sup-cifra >> nth=2')]
+    ok(f44[0]==izp44[1] and f44[1]==4 and f44[2]=='Más filtros: Alcaldía Iztapalapa' and f44[3]==0 and '3 de 3' in f44[4],
        'con la institución elegida quedan sólo sus árboles, sus 3 cabos (2 de demostración y el de arranque) y su coordinador, que también registra; «3 de 3 cabos» no cuenta al coordinador; y ya no se desglosa: %s' % f44)
     with pg44.expect_download() as dc44: pg44.click('#btn-sup-csv')
     csv44=open(dc44.value.path(), encoding='utf-8').read()
@@ -3849,10 +3863,11 @@ with sync_playwright() as p:
     ok('POR INSTITUCIÓN' in txt44 and 'Viveros y Paisaje Ejemplo' in txt44 and 'Alcaldía Iztapalapa' in txt44,'el informe anual de la Ciudad trae el desglose por institución')
     # Un cabo de la alcaldía ve sólo lo suyo, sin filtro ni desglose de institución
     entrar44('u-demo-z2'); pg44.evaluate("SRP.app.mostrarVista('supervision')"); pg44.wait_for_timeout(700)
+    abrir_sup(pg44)
     # Con la base de demostración el cálculo tarda: se espera a que los datos sean ya los de esta cuenta
     esperar(pg44, "!!(SRP.supervision.datos && SRP.supervision.datos.usuario && SRP.supervision.datos.usuario.id === 'u-demo-z2')", 6000); pg44.wait_for_timeout(300)
     z44=pg44.evaluate("""({ orgs: [...new Set(SRP.supervision.datos.jornadas.map(j => SRP.indicadores.organizacionDe(j)))], cabos: [...new Set(SRP.supervision.datos.jornadas.map(j => j.cabo_id))],
-      titulo: document.getElementById('titulo-supervision').textContent, filtro: !document.getElementById('caja-sup-organizacion').hidden, desglose: !!document.querySelector('section[aria-labelledby=sup-t-instituciones]') })""")
+      titulo: document.getElementById('titulo-supervision').textContent, filtro: !document.getElementById('caja-sup-organizacion').hidden, desglose: !!document.querySelector('details[data-seccion=instituciones]') })""")
     ok(z44=={'orgs':['o-alc-09007'],'cabos':['u-demo-z2'],'titulo':'Mi avance','filtro':False,'desglose':False},'un cabo de la alcaldía ve sólo lo suyo en «Mi avance», sin filtro ni desglose de instituciones: %s' % z44)
     entrar44('u-admin-1')
     q44=pg44.evaluate("async () => { await SRP.demo.quitar(); return [!!(await SRP.almacen.catalogo('demo-org-empresa')), !!(await SRP.almacen.catalogo('o-alc-09007'))]; }")
@@ -3990,6 +4005,7 @@ with sync_playwright() as p:
       return [m.identificacion.filter(x => x[0] === 'Institución que ejecuta').map(x => x[1]), m.personal.length, m.vehiculo.length]; }""" % jz47)
     ok(mz47==[['Alcaldía Iztapalapa'],0,0],'el reporte de fuera dice la institución y no imprime personal ni vehículo, aunque la jornada los traiga de antes: %s' % mz47)
     entrar47('u-coord-alc'); pg47.evaluate("SRP.app.mostrarVista('supervision')"); pg47.wait_for_timeout(800)
+    abrir_sup(pg47)
     s47=[pg47.inner_text('#titulo-supervision'), pg47.eval_on_selector_all('#sup-cabo option','l=>l.map(o=>o.textContent).filter(t=>!t.startsWith("Todos"))'), pg47.is_hidden('#caja-sup-organizacion')]
     ok(s47[0]=='Supervisión' and s47[1]==['Ramiro Torres Ejemplo'] and s47[2],'el coordinador de la alcaldía tiene Supervisión con sus cabos y sin filtro de institución: %s' % s47)
     # SEDEMA: cierre completo y la institución también en su reporte
@@ -4103,6 +4119,7 @@ with sync_playwright() as p:
     pg49.evaluate("SRP.sesion.cerrar(); SRP.app.mostrarAcceso()"); pg49.wait_for_timeout(300)
     pg49.select_option('#sel-usuario-prueba','u-coord-osc'); pg49.click('#btn-entrar-prueba'); pg49.wait_for_timeout(800)
     pg49.evaluate("SRP.app.mostrarVista('supervision')"); pg49.wait_for_timeout(800)
+    abrir_sup(pg49)
     pg49.click('#sup-tipos .chip[data-tipo=todo]'); pg49.wait_for_timeout(900)
     s49=pg49.eval_on_selector_all('#sup-cabo option','l=>l.map(o=>o.textContent).filter(t=>!t.startsWith("Todos"))')
     ok(sorted(s49)==sorted(['Andrea Solís Ejemplo','Carmen Ibarra Ejemplo (coordinación)','Olivia Reyes Demo','Omar Fuentes Demo']) and 'árboles' in pg49.inner_text('#sup-cuerpo'),
@@ -4541,6 +4558,7 @@ with sync_playwright() as p:
     pg56.click('#btn-reiniciar-filtros'); pg56.wait_for_timeout(500)
     # Supervisión de la Administración: tipo e institución dependientes, y quién registró según la institución
     pg56.evaluate("SRP.app.mostrarVista('supervision')"); pg56.wait_for_timeout(2500)
+    abrir_sup(pg56)
     pg56.evaluate("document.getElementById('sup-filtros').open = true")
     pg56.click('#sup-tipos .chip[data-tipo=todo]'); pg56.wait_for_timeout(1500)
     s56=pg56.evaluate("() => ({ grupos: [...document.querySelectorAll('#sup-organizacion optgroup')].map(g => g.label), tipo: document.getElementById('sup-tipo') === null })")
@@ -4558,10 +4576,12 @@ with sync_playwright() as p:
     pg56.evaluate("SRP.app.mostrarVista('registros')"); pg56.wait_for_timeout(1500)
     ra56=pg56.evaluate("[document.querySelectorAll('#filtro-alcaldia option').length, document.querySelectorAll('#filtro-programa option').length]")
     pg56.evaluate("SRP.app.mostrarVista('supervision')"); pg56.wait_for_timeout(2500)
+    abrir_sup(pg56)
     sa56=pg56.evaluate("[document.querySelectorAll('#sup-alcaldia option').length, document.querySelectorAll('#sup-programa option').length, !!document.getElementById('caja-sup-tipo')]")
     ok(sa56[0]<=ra56[0] and sa56[1]<=ra56[1] and sa56[0]<17 and not sa56[2],'la coordinación de una alcaldía ve en Supervisión sólo sus alcaldías y programas (%s), no las 16 ni los 4, y sin tipo de institución' % sa56)
     pg56.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-cabo-alc'])"); pg56.reload(); pg56.wait_for_timeout(1800)
     pg56.evaluate("SRP.app.mostrarVista('supervision')"); pg56.wait_for_timeout(2500)
+    abrir_sup(pg56)
     ok(pg56.inner_text('#sup-filtros-texto')=='Más filtros: alcaldía, programa y origen' and pg56.evaluate("document.querySelectorAll('#sup-programa option').length")<=2,
        'el cabo ve en «Mi avance» sólo sus programas y el resumen dice «alcaldía, programa y origen»: %s' % pg56.inner_text('#sup-filtros-texto'))
     ok(not err56,'sin errores en consola: %s' % err56[:2])
@@ -4624,6 +4644,7 @@ with sync_playwright() as p:
     # Supervisión: cuenta como plantado y se dice aparte, por motivo; el CSV lo trae
     pg57.evaluate("async (id) => { const j = await SRP.almacen.uno('jornadas', id); await SRP.activa.cambiarEstatus(j, 'cerrada'); }", jor57); pg57.wait_for_timeout(500)
     pg57.evaluate("SRP.app.mostrarVista('supervision')"); pg57.wait_for_timeout(1500)
+    abrir_sup(pg57)
     pg57.click('#sup-tipos .chip[data-tipo=todo]'); pg57.wait_for_timeout(1000)
     m57=pg57.evaluate("[SRP.supervision.modelo.cifras.arboles, SRP.supervision.modelo.calidad.sustitutos, JSON.stringify(SRP.supervision.modelo.calidad.sustitutosMotivo), document.getElementById('sup-cuerpo').innerText.includes('Sustitutos plantados'), SRP.informes.texto(SRP.supervision.modelo).split('\\r\\n')[0]]")
     ok(m57[0]==1 and m57[1]==1 and m57[2]=='[["Otro",1]]' and m57[3] and '"Sustituto","Motivo de la sustitución"' in m57[4],
@@ -4859,6 +4880,7 @@ with sync_playwright() as p:
     ok(pg59.evaluate("SRP.jornadas.lista.length")==tj59 and pg59.input_value('#jornada-programa')=='' and pg59.input_value('#jornada-revision')=='' and pg59.is_hidden('#jornada-quitar'),'«Quitar filtros» de Jornadas vuelve a todas')
     # Supervisión: «Un periodo», «Más filtros:» y fichas
     pg59.evaluate("SRP.app.mostrarVista('supervision')"); pg59.wait_for_timeout(2500)
+    abrir_sup(pg59)
     pg59.click('#sup-tipos .chip[data-tipo=todo]'); pg59.wait_for_timeout(1500)
     pg59.evaluate("document.getElementById('sup-filtros').open = true")
     al59=pg59.evaluate("[...document.querySelectorAll('#sup-alcaldia option')].map(o => o.value).filter(Boolean)[0]")
@@ -4963,8 +4985,9 @@ with sync_playwright() as p:
     pg60.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-admin-1'])"); pg60.reload(); pg60.wait_for_timeout(1500)
     pg60.evaluate("async () => { await SRP.demo.cargar(); }"); pg60.wait_for_timeout(500)
     pg60.evaluate("SRP.app.mostrarVista('supervision')"); pg60.wait_for_timeout(2500)
+    abrir_sup(pg60)
     pg60.click('#sup-tipos .chip[data-tipo=anio]'); pg60.wait_for_timeout(2500)
-    s60=pg60.evaluate("""() => { const m = SRP.supervision.modelo, p = m.prioridad; const sec = document.querySelector('section[aria-labelledby=sup-t-prioridad]');
+    s60=pg60.evaluate("""() => { const m = SRP.supervision.modelo, p = m.prioridad; const sec = document.querySelector('details[data-seccion=prioridad]');
       return { suma: p.niveles.reduce((s, x) => s + x.n, 0) + p.sin, arboles: m.cifras.arboles, altas: p.altas === p.niveles.filter(x => x.prioridad >= 3).reduce((s, x) => s + x.n, 0), filas: [...sec.querySelectorAll('tbody tr td:first-child')].map(td => td.textContent.trim()),
         lema: sec.querySelector('.sup-prioridad-lema').textContent, mapa: sec.querySelectorAll('#sup-mapa-prioridad path.pri-colonia').length, col: Object.keys(p.colonias).length, nota: sec.querySelector('#sup-prioridad-colonias').textContent,
         ctl: [!!sec.querySelector('#sup-mapa-prioridad .pri-capas-boton'), !sec.querySelector('#sup-mapa-prioridad [data-pri=ver]'), sec.querySelectorAll('#sup-mapa-prioridad [data-pri=nivel]').length, getComputedStyle(sec.querySelector('#sup-mapa-prioridad .pane-prioritarias')).opacity], csv: SRP.informes.texto(m).split('\\r\\n')[0].includes('"Prioridad de reforestación de la colonia"'),
@@ -5113,9 +5136,20 @@ with sync_playwright() as p:
         csv[0].includes('"Origen de la jornada","Solicitante del pedido especial","Descripción del pedido"'), csv[1].endsWith('"Pedido especial","Metro","Compensación por obra"'), j && j.solicitante]; }""", j62)
     ok(i62[:4]==[2,3,1,2] and i62[4]==[['Metro',1,2]] and i62[5:10]==[1,2,1,1,0] and i62[10] and i62[11] and i62[12]=='Metro','los indicadores cuentan los pedidos especiales por solicitante, se filtran por origen y el CSV lleva origen, solicitante y descripción: %s' % i62[:10])
     pg62.evaluate("SRP.app.mostrarVista('supervision')"); pg62.wait_for_timeout(1500)
+    abrir_sup(pg62)
     pg62.evaluate("() => { SRP.supervision.periodo = SRP.indicadores.periodo('todo'); SRP.supervision.pintar(); }"); pg62.wait_for_timeout(900)
     u62=pg62.evaluate("[(document.getElementById('sup-t-pedidos') || {}).textContent || '', (document.querySelector('.sup-pedidos-lema') || {}).textContent || '', [...document.getElementById('sup-origen').options].map(o => o.value)]")
-    ok('Pedidos especiales' in u62[0] and '1 de 2 jornadas y 2 de 3 árboles (67 %)' in u62[1] and u62[2]==['','PROGRAMADA','PEDIDO','PEDIDO:otra:Metro'],'«Mi avance» y Supervisión muestran el apartado «Pedidos especiales» y el filtro «Origen»: %s' % u62[1])
+    ok(u62[0]=='' and u62[2]==['','PROGRAMADA','PEDIDO','PEDIDO:otra:Metro'],'«Mi avance» del cabo no trae el apartado «Pedidos especiales», pero sí el filtro «Origen»: %s' % u62[2])
+    # Quien supervisa sí lo ve
+    def como62(uid):
+        pg62.evaluate("id => SRP.sesion.iniciar(SRP.ref.usuarioPorId[id])", uid); pg62.reload(); pg62.wait_for_timeout(1800)
+        pg62.evaluate("SRP.app.mostrarVista('supervision')"); pg62.wait_for_timeout(1500)
+        abrir_sup(pg62)
+        pg62.evaluate("() => { SRP.supervision.periodo = SRP.indicadores.periodo('todo'); SRP.supervision.pintar(); }"); pg62.wait_for_timeout(900)
+    como62('u-coord-1')
+    u62=pg62.evaluate("[(document.getElementById('sup-t-pedidos') || {}).textContent || '', (document.querySelector('.sup-pedidos-lema') || {}).textContent || '', [...document.getElementById('sup-origen').options].map(o => o.value)]")
+    ok('Pedidos especiales' in u62[0] and '1 de 2 jornadas y 2 de 3 árboles (67 %)' in u62[1],'Supervisión muestra el apartado «Pedidos especiales»: %s' % u62[1])
+    como62('u-cabo-1')
     pg62.evaluate("document.getElementById('sup-filtros').open = true")
     pg62.select_option('#sup-origen','PROGRAMADA'); pg62.wait_for_timeout(900)
     w62=pg62.evaluate("[!!document.querySelector('.sup-pedidos-lema'), document.getElementById('sup-fichas').textContent, SRP.supervision.modelo.cifras.arboles]")
@@ -5237,6 +5271,7 @@ with sync_playwright() as p:
     pg64.click('#btn-jornada-cerrar'); pg64.wait_for_timeout(300); pg64.click('#btn-confirmar-si'); pg64.wait_for_timeout(1200)
     f64 = pg64.evaluate("(async () => (await SRP.almacen.todos('plantaciones')).map(r => r.fecha_plantacion).sort())()")
     pg64.click('.pestana[data-vista=supervision]'); pg64.wait_for_timeout(900)
+    abrir_sup(pg64)
     pg64.evaluate("(h) => { SRP.supervision.periodo = SRP.indicadores.periodo('rango', h, h); SRP.supervision.pintar(); }", hoy64); pg64.wait_for_timeout(600)
     m64 = pg64.evaluate("(() => { const m = SRP.supervision.modelo; return [m.cifras.jornadas, m.cifras.arboles, m.serie.casillas.reduce((s, c) => s + c.jornadas, 0), m.serie.casillas.reduce((s, c) => s + c.arboles, 0)]; })()")
     ok(f64 == [antes64, hoy64] and m64 == [1, 1, 1, 1], 'una jornada de varios días cuenta en la casilla del día en que plantó: la columna de jornadas suma el total: %s' % m64)
@@ -5352,7 +5387,7 @@ with sync_playwright() as p:
     ok(t66[0] <= 36 and t66[1] >= 44 and t66[2] == 'absolute', 'el indicador de conexión se ve igual y se toca en 44 px o más de alto: %s' % t66)
     iniciar_jornada(pg66, 'Mapas B152'); registrar(pg66, 'fres', 'ESP-0029')
     pg66.click('#btn-jornada-cerrar'); pg66.wait_for_timeout(300); pg66.click('#btn-confirmar-si'); pg66.wait_for_timeout(1200)
-    pg66.click('.pestana[data-vista=supervision]'); esperar(pg66, "!!document.querySelector('#sup-mapa .leaflet-container, #sup-mapa.leaflet-container')", 8000); pg66.wait_for_timeout(600)
+    pg66.click('.pestana[data-vista=supervision]'); abrir_sup(pg66); esperar(pg66, "!!document.querySelector('#sup-mapa .leaflet-container, #sup-mapa.leaflet-container')", 8000); pg66.wait_for_timeout(600)
     a66 = pg66.evaluate("[...document.querySelectorAll('.sup-mapa')].map(m => [m.getAttribute('role'), /tabla de al lado/.test(m.getAttribute('aria-label') || ''), m.querySelectorAll('a[href], button, [tabindex]').length > 0])")
     ok(len(a66) >= 1 and all(x == ['group', True, True] for x in a66), 'los mapas de Supervisión ya no se declaran imagen: sus controles se alcanzan y la etiqueta remite a la tabla: %s' % a66)
     ok(not err66, 'sin errores en consola: %s' % err66[:2])
@@ -5626,6 +5661,7 @@ with sync_playwright() as p:
     pg69.evaluate("SRP.ref.recargar()"); pg69.wait_for_timeout(300)
     # Supervisión: el mapa de prioridad pinta sólo las colonias donde se plantó
     entrar69('u-coord-1'); pg69.evaluate("SRP.app.mostrarVista('supervision')"); pg69.wait_for_timeout(1500)
+    abrir_sup(pg69)
     pg69.click('#sup-tipos .chip[data-tipo=anio]'); pg69.wait_for_timeout(1500)
     m69 = pg69.evaluate("""() => { const p = SRP.supervision.modelo.prioridad; const tr = document.querySelectorAll('#sup-mapa-prioridad path.pri-colonia');
       const capa = SRP.prioritarias.capas.get(SRP.supervision.mapaPrioridad); const eti = []; capa.eachLayer(l => eti.push(l.getTooltip().getContent()));
@@ -5673,6 +5709,7 @@ with sync_playwright() as p:
     ok(sg70 == 0 and pg70.evaluate("SRP.jornadas.lista.map(j => j.id)") == ['j70-a'], 'con el reporte generado, la jornada sale de «Sin reporte todavía»')
     # Las fotografías del cabo: desde «Mi avance», sólo las suyas, con descarga
     pg70.evaluate("SRP.app.mostrarVista('supervision')"); pg70.wait_for_timeout(1200)
+    abrir_sup(pg70)
     ok(pg70.is_visible('#btn-sup-fotos') and pg70.evaluate("SRP.permisos.puede('galeria.descargar')"), '«Mi avance» del cabo trae «Fotografías»')
     pg70.click('#btn-sup-fotos'); pg70.wait_for_timeout(1200)
     g70 = pg70.evaluate("[SRP.app.vista, SRP.galeria.fotos.map(r => r.id), document.getElementById('btn-galeria-volver').textContent.trim(), document.getElementById('galeria-nota').textContent, document.getElementById('btn-galeria-zip').disabled, document.getElementById('galeria-cuenta').textContent]")
@@ -5857,6 +5894,62 @@ with sync_playwright() as p:
     ok(pg74.evaluate(medir74, 'jornada-atajos')['renglones'] == 1, 'con ancho, los seis atajos caben en un renglón')
     ok(err74 == [], 'sin errores de consola: %s' % err74[:2])
     ctx74.close()
+
+    # ---------- ctx75: Supervisión y «Mi avance» en resumen, con los desgloses plegados ----------
+    ctx75 = b.new_context(viewport={'width':390,'height':844}, timezone_id='America/Mexico_City')
+    pg75 = ctx75.new_page(); err75 = []
+    pg75.on('pageerror', lambda e: err75.append(str(e)))
+    pg75.goto(BASE); pg75.wait_for_timeout(1200)
+    pg75.select_option('#sel-usuario-prueba', 'u-admin-1'); pg75.click('#btn-entrar-prueba'); pg75.wait_for_timeout(900)
+    pg75.evaluate("async () => { await SRP.demo.cargar(); }"); pg75.wait_for_timeout(600)
+    pg75.evaluate("SRP.app.mostrarVista('supervision')"); esperar(pg75, "!!SRP.supervision.modelo && !!document.querySelector('.sup-seccion')", 8000)
+    pg75.click('#sup-tipos .chip[data-tipo=anio]'); pg75.wait_for_timeout(1500)
+    s75 = pg75.evaluate("""() => { const v = document.getElementById('vista-supervision'), q = x => [...v.querySelectorAll(x)];
+      const acc = document.getElementById('sup-acciones'), cif = v.querySelector('.sup-cifras'), ava = document.getElementById('sup-t-avance');
+      return { alto: v.scrollHeight, ancho: document.documentElement.scrollWidth, cifras: q('.sup-cifra').length,
+        secciones: q('details[data-seccion]').map(d => d.dataset.seccion), abiertas: q('details[data-seccion][open]').map(d => d.dataset.seccion),
+        resumenes: q('details[data-seccion] > summary .sup-resumen').every(x => x.textContent.trim().length > 3),
+        acciones: !!(cif.compareDocumentPosition(acc) & 4) && !!(acc.compareDocumentPosition(ava) & 4),
+        activos: q('.sup-seccion-cuerpo > .sup-tabla-caja .sup-tabla-cabos tbody tr').length, sin: q('.sup-sin-jornadas tbody tr').length, cabos: SRP.supervision.modelo.porCabo.length,
+        listaJornadas: !!document.getElementById('sup-t-jornadas'), enlace: !!v.querySelector('button[data-ver-jornadas]') }; }""")
+    ok(s75['alto'] <= 5 * 844 and s75['ancho'] <= 390 and s75['cifras'] == 4 and s75['abiertas'] == ['cabos'] and len(s75['secciones']) >= 6 and s75['resumenes'],
+       'en el teléfono, Supervisión cabe en pocas pantallas: cuatro cifras y los desgloses plegados, cada uno con su dato principal; sólo «Por cabo» abierto: %s px, %s' % (s75['alto'], s75['secciones']))
+    ok(s75['acciones'], 'las descargas van bajo las cifras, antes de la gráfica y de los desgloses')
+    ok(s75['activos'] + s75['sin'] == s75['cabos'] and s75['activos'] > 0 and not s75['listaJornadas'] and s75['enlace'],
+       '«Por cabo» lista a quienes tuvieron jornadas y junta aparte a los %s que no; la lista de jornadas da paso a un enlace' % s75['sin'])
+    pg75.click('details[data-seccion=alcaldias] > summary'); pg75.wait_for_timeout(900)
+    m75 = pg75.evaluate("""() => { const c = document.getElementById('sup-mapa').getBoundingClientRect(); const t = document.querySelector('details[data-seccion=alcaldias] .sup-tabla');
+      const r = [...t.querySelectorAll('tbody tr')].map(x => x.getBoundingClientRect()); const td = t.querySelector('tbody td').getBoundingClientRect();
+      return [c.width > 200 && c.height > 200, !!document.querySelector('#sup-mapa path.sup-alcaldia'), r.every(x => x.right <= 390), td.width > 150, document.documentElement.scrollWidth]; }""")
+    ok(m75[:4] == [True, True, True, True] and m75[4] <= 390, 'al abrir «Por alcaldía» se dibuja su mapa y la tabla se lee en renglones, sin partir nombres ni salirse de lado: %s' % m75)
+    pg75.click('#sup-tipos .chip[data-tipo=mes]'); pg75.wait_for_timeout(1500)
+    ok(sorted(pg75.evaluate("[...document.querySelectorAll('details[data-seccion][open]')].map(d => d.dataset.seccion)")) == ['alcaldias', 'cabos'], 'lo que se abrió sigue abierto al cambiar de periodo')
+    p75 = pg75.evaluate("[SRP.supervision.periodo.desde, SRP.supervision.periodo.hasta]")
+    pg75.click('button[data-ver-jornadas]'); pg75.wait_for_timeout(1500)
+    j75 = pg75.evaluate("[SRP.app.vista, SRP.jornadas.filtro.desde, SRP.jornadas.filtro.hasta, document.querySelector('#jornada-atajos [data-atajo=periodo]').getAttribute('aria-pressed'), SRP.jornadas.lista.every(j => j.fecha >= SRP.jornadas.filtro.desde && j.fecha <= SRP.jornadas.filtro.hasta)]")
+    ok(j75 == ['jornadas', p75[0], p75[1], 'true', True], '«Ver las jornadas del periodo» abre Jornadas con ese mismo periodo: %s' % j75)
+    pg75.evaluate("SRP.jornadas.quitarFiltros(false)")
+    # El cabo: tres cifras, sin pedidos ni constancia de cambios ni tabla CSV; conserva sus mapas
+    pg75.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-cabo-1'])"); pg75.reload(); pg75.wait_for_timeout(1800)
+    pg75.evaluate("SRP.app.mostrarVista('supervision')"); esperar(pg75, "!!SRP.supervision.modelo && !!document.querySelector('.sup-cifras')", 8000)
+    pg75.click('#sup-tipos .chip[data-tipo=todo]'); pg75.wait_for_timeout(1500)
+    c75 = pg75.evaluate("""() => { const v = document.getElementById('vista-supervision'), q = x => [...v.querySelectorAll(x)];
+      return { titulo: document.getElementById('titulo-supervision').textContent, cifras: q('.sup-cifra').length, abiertas: q('details[data-seccion][open]').length,
+        secciones: q('details[data-seccion]').map(d => d.dataset.seccion), csv: document.getElementById('btn-sup-csv').hidden,
+        calidad: document.getElementById('sup-t-calidad').textContent, texto: v.querySelector('details[data-seccion=calidad]').textContent, alto: v.scrollHeight }; }""")
+    ok(c75['titulo'] == 'Mi avance' and c75['cifras'] == 3 and c75['abiertas'] == 0 and 'pedidos' not in c75['secciones'] and 'cabos' not in c75['secciones'] and c75['csv']
+       and c75['calidad'] == 'Mis registros' and 'Eliminados' not in c75['texto'] and 'Ediciones' not in c75['texto'] and c75['alto'] <= 3 * 844,
+       '«Mi avance» del cabo: tres cifras, todo plegado, sin pedidos, eliminados, ediciones ni CSV: %s px, %s' % (c75['alto'], c75['secciones']))
+    pg75.click('details[data-seccion=alcaldias] > summary'); pg75.click('details[data-seccion=prioridad] > summary'); pg75.wait_for_timeout(1200)
+    ok(pg75.evaluate("!!document.querySelector('#sup-mapa .leaflet-pane, #sup-mapa.leaflet-container') && !!document.querySelector('#sup-mapa-prioridad .leaflet-pane, #sup-mapa-prioridad.leaflet-container')"),
+       'el cabo conserva los dos mapas, dentro de sus secciones')
+    pg75.set_viewport_size({'width': 1280, 'height': 900})
+    pg75.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-admin-1'])"); pg75.reload(); pg75.wait_for_timeout(1800)
+    pg75.evaluate("SRP.app.mostrarVista('supervision')"); esperar(pg75, "!!SRP.supervision.modelo && !!document.querySelector('.sup-seccion')", 8000); pg75.wait_for_timeout(600)
+    ok(pg75.evaluate("[...document.querySelectorAll('details[data-seccion]')].every(d => d.open) && getComputedStyle(document.querySelector('.sup-tabla thead')).position !== 'absolute'"),
+       'con ancho, los desgloses se muestran abiertos y las tablas conservan sus columnas')
+    ok(err75 == [], 'sin errores de consola: %s' % err75[:2])
+    ctx75.close()
 
 
 

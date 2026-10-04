@@ -393,6 +393,7 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M393 | Liber | Cada catálogo en su tabla —programas, áreas, especies, vehículos, instituciones y solicitantes—, iguales en el teléfono y en el servidor; la base pasa a la versión 8 y reparte la tabla única sin perder nada | Alta | 0.9.27 (B160) | Abrir la versión nueva en un teléfono con datos: Catálogos muestra lo mismo; el diccionario lista diez tablas | — |
 | M396 | Liber | Menos filtros: de 50 a 37 entre las siete vistas. Periodo con seis atajos (Todas, Hoy, Este mes, Este año, Un día, Un periodo), sin listas de Año ni de Mes; institución en una sola lista agrupada por tipo; en Jornadas, «Pendientes» reúne revisión y reporte, y la prioridad de la colonia deja de ser filtro. «Origen» se queda. La auditoría cuenta los filtros de cada vista y falla si pasan de ocho | Alta | 0.9.28 (B161) | Jornadas, Registros, Fotografías, Supervisión y Usuarios › Filtros | D226 |
 | M399 | Liber | Plan de traspaso al SIA: arquitectura de destino, siete fases con responsable y criterio de salida, decisiones de arranque, capacidad y riesgos. Sin direcciones ni nombres de equipo: el repositorio es público | Alta | 0.9.28 (B162) | `docs/PLAN-TRASPASO-SIA.md` | — |
+| M394 | Liber | Supervisión y «Mi avance» en resumen: cifras, pendientes, descargas y gráfica arriba; cada desglose plegado con su dato principal; tablas en renglones en el teléfono; cabos sin jornadas juntos; enlace a Jornadas en lugar de la lista. El cabo deja de ver pedidos, eliminados, ediciones y CSV, y conserva sus mapas. De 15 pantallas a 3 en el teléfono | Alta | 0.9.29 (B163) | Supervisión; Mi avance | D227 |
 
 ## 2. Por hacer
 
@@ -403,7 +404,6 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M170 | Auditoría 360 | Bloque «Pruebas en iPhone»: GitHub Actions con Chromium y WebKit, pruebas de migración e integridad (M17, M18) | Media | Pendiente | |
 | M171 | Auditoría 360 | Fotografías como Blob (hoy ocupan un tercio más como texto) y sello de datos dentro de la base | Media | Pendiente | Resto de A1 y A2 |
 | M343 | Liber | Catálogo de especies: marcar cuáles son frutales, para filtrar y contar los árboles frutales plantados | Media | Pendiente | Pedido el 01-10-2026. Falta decidir de dónde sale la marca (el catálogo del SIA no la trae) y dónde se muestra |
-| M394 | Liber | Supervisión y «Mi avance»: revisar qué información se muestra y cómo, y el diseño de la pantalla. No está claro que todo sea necesario ni que valga la pena, y el diseño se ve raro; decidir qué queda como definitivo | Alta | Pendiente | Pedido el 03-10-2026. Empezar por un inventario de lo que muestra cada bloque y una propuesta con ejemplo en HTML, antes de tocar código |
 | M395 | Liber | Al eliminar una cuenta o un valor de catálogo, pedir que se escriba una palabra para confirmar (como al borrar un repositorio en GitHub): un grado más de seguridad en lo que no se deshace | Alta | Pendiente | Pedido el 03-10-2026. Hoy basta un botón «Eliminar» en la ventana de confirmación. Decidir qué se escribe: el nombre de lo que se elimina o la palabra ELIMINAR |
 | M397 | Liber | En el SIA el SRP va como proyecto nuevo, con otro nombre: no reutiliza el módulo ni el esquema de plantación que ya existen ahí | Alta | Pendiente | Decidido el 03-10-2026. Falta el nombre del proyecto, de su esquema en la base y de su ruta de publicación |
 | M398 | Liber | Las capas (alcaldías, colonias, UGA) se van a consumir del esquema territorial del SIA: antes de cambiar, comprobar que son las mismas con que se trabajó aquí —mismos polígonos, claves y versión—, para que lo ya derivado no cambie de alcaldía, colonia ni celda | Alta | En curso | Lista la huella de las capas del SRP y la herramienta que compara (`herramientas/huella_capas.py`, `datos/HUELLA-CAPAS.md`). Falta que el SIA corra la consulta. Ya se sabe que las colonias difieren en número: 1,837 aquí, 1,817 allá |
@@ -422,4 +422,4 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 378 hechas · 9 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 379 hechas · 8 por hacer · 2 revisadas · 2 descartadas.

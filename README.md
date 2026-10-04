@@ -29,8 +29,9 @@ La versión que corre se lee al pie de cada pantalla.
    filtro «Reporte» deja las jornadas con reporte generado o sin generar. No hay sección Reportes.
 4. **Supervisión** (coordinación y administración, primera sección al entrar) o **Mi avance** (el
    cabo, al final de su barra): lo plantado por semana, mes, año o rango, con filtros de alcaldía,
-   programa y cabo; cuentan sólo las jornadas cerradas. Cifras, «Qué atender», gráfica, por cabo,
-   por alcaldía con mapa, por especie y programa, y calidad del dato (D157, D158). De ahí salen los
+   programa y cabo; cuentan sólo las jornadas cerradas. Arriba, cifras, «Qué atender», descargas y
+   gráfica; debajo, cada desglose plegado con su dato principal: por cabo, institución, alcaldía y
+   prioridad con mapa, especie, programa y calidad del dato (D157, D158, D227). De ahí salen los
    **informes** semanal, mensual, anual o por alcaldía en PDF con membrete, y la tabla de árboles en
    CSV para Excel (D159). Dentro están las **Fotografías** de los registros, con descarga en ZIP.
 6. **Registros**: la lista de árboles con filtros, detalle, edición y eliminación que se deshace.

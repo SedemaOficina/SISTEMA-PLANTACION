@@ -1048,7 +1048,19 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .sup-calidad > div { display: grid; grid-template-columns: 12rem minmax(0, 1fr); gap: var(--e-2); font-size: var(--t-s); }
 .sup-calidad dt { color: var(--gris); }
 .sup-calidad dd { margin: 0; }
-.sup-acciones { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-top: var(--e-5); }
+.sup-acciones { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-top: var(--e-3); }
+.sup-cifras[data-cifras="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+/* Cada desglose, plegado: el renglón dice su título y su dato principal; se abre el que interesa */
+.sup-seccion { margin-top: var(--e-2); padding: 0; border: 1px solid var(--borde-filtro); border-radius: var(--radio-filtro); }
+.sup-seccion > summary { position: relative; display: grid; gap: 2px; align-content: center; min-height: var(--toque); padding: var(--e-2) var(--e-6) var(--e-2) var(--e-3); list-style: none; cursor: pointer; }
+.sup-seccion > summary::-webkit-details-marker { display: none; }
+.sup-seccion > summary::after { content: ''; position: absolute; right: var(--e-4); top: 50%; width: 8px; height: 8px; border-right: 2px solid var(--gris); border-bottom: 2px solid var(--gris); transform: translateY(-75%) rotate(45deg); }
+.sup-seccion > summary .titulo-bloque { margin: 0; }
+.sup-resumen { font-size: var(--t-s); color: var(--gris); overflow-wrap: anywhere; }
+.sup-seccion-cuerpo { padding: 0 var(--e-3) var(--e-3); }
+.sup-pendiente { display: inline-block; padding: 0 var(--e-2); border-radius: var(--radio-control); background: var(--editar-fondo); color: var(--editar); font-size: var(--t-xs); font-weight: 600; }
+.sup-sin-jornadas { margin-top: var(--e-2); }
+.sup-ver-jornadas { margin-top: var(--e-3); color: var(--acento); font-weight: 600; }
 .sup-tabla-caja { overflow-x: auto; }
 /* Listas largas: las primeras 15 y un botón para las demás (D160) */
 .sup-mas { margin-top: var(--e-2); }
@@ -1071,6 +1083,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
 
 /* ========== 5. ESTADOS ========== */
 .desplegable[open] summary::before { transform: rotate(90deg); }
+.sup-seccion[open] > summary::after { transform: translateY(-25%) rotate(-135deg); }
 .campo .zona-foto.con-foto { flex-direction: row; gap: var(--e-2); min-height: var(--toque); padding: var(--e-2) var(--e-3); }
 .zona-foto.con-foto .zona-foto-ayuda { display: none; }
 .zona-foto.con-foto .icono-foto svg { width: 20px; height: 20px; }
@@ -1158,7 +1171,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
   .vista > .nota, .jornadas-lista-caja > .nota, .panel-iniciar > .nota, .vista .bloque > .nota { max-width: 62ch; }
   /* Sus hijos directos no se quedan en la línea de un formulario: ni el panel de iniciar ni la franja */
   .vista.vista-registrar > *, .vista.vista-jornadas > * { max-width: none; }
-  .sup-cifras { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .sup-cifras { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 @media (min-width: 1024px) {
   /* EQUILIBRIO EN COMPUTADORA (D109). Nuevo registro en dos columnas: ubicación y mapa a la
@@ -1197,7 +1210,6 @@ dialog::backdrop { background: var(--velo-oscuro); }
   .vista.vista-acceso > .tarjeta { flex: 1 1 0; min-width: 0; }
   /* Fotografías: miniaturas algo mayores para llenar el renglón */
   .galeria-rejilla { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
-  .sup-cifras { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .sup-mapa { height: 380px; }
   .sup-dos, .sup-columnas { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 var(--e-6); align-items: start; }
 }
@@ -1320,6 +1332,18 @@ dialog::backdrop { background: var(--velo-oscuro); }
   .filtros-periodo .btn { grid-column: 1 / -1; }
   .zona-filtros.fila-botones .campo-crece { flex-basis: 100%; }
   .sup-calidad > div { grid-template-columns: 1fr; gap: 0; }
+  /* Las tablas de Supervisión, en el teléfono, son renglones: nombre, árboles y porcentaje arriba;
+     lo demás, debajo, con su etiqueta. Nada se parte ni se sale de lado */
+  .sup-tabla, .sup-tabla tbody { display: block; }
+  .sup-tabla thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .sup-tabla tr:not([hidden]) { display: flex; flex-wrap: wrap; align-items: baseline; padding: var(--e-2) 0; border-bottom: 1px solid var(--borde-suave); }
+  .sup-tabla td, .sup-tabla tbody tr:nth-child(even) td { display: block; padding: 0; border: 0; background: none; }
+  .sup-tabla td:first-child { flex: 1 1 calc(100% - 8.5rem); min-width: calc(100% - 8.5rem); font-weight: 500; }
+  .sup-tabla td:nth-child(2) { flex: 0 0 3.5rem; text-align: right; font-weight: 600; }
+  .sup-tabla td:nth-child(3) { flex: 0 0 5rem; text-align: right; color: var(--gris); }
+  .sup-tabla td:nth-child(n+4) { flex: 0 0 auto; margin-right: var(--e-3); text-align: left; font-size: var(--t-xs); color: var(--gris); white-space: normal; }
+  .sup-tabla td:nth-child(n+4)::before { content: attr(data-etiqueta) ': '; }
+  .sup-tabla[data-columnas="2"] td:nth-child(2) { flex: 1 1 100%; text-align: left; font-weight: 400; font-size: var(--t-xs); }
 }
 @media (hover: hover) {
   .cfg-tarjeta:hover { border-color: var(--acento); background: var(--acento-suave); }

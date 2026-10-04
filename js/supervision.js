@@ -70,6 +70,8 @@ SRP.supervision = {
       SRP.util.anunciarSilencioso('Filtro quitado.');
     });
     this.el('sup-cuerpo').addEventListener('click', (e) => this.alTocar(e));
+    // «toggle» no burbujea: se escucha en la captura
+    this.el('sup-cuerpo').addEventListener('toggle', (e) => this.alPlegar(e), true);
     this.el('btn-sup-fotos').addEventListener('click', () => SRP.app.mostrarVista('galeria'));
     // Informes por periodo (D159): del mismo modelo que se ve
     this.el('btn-sup-pdf').addEventListener('click', () => SRP.informes.pdf(this.modelo));
@@ -84,11 +86,13 @@ SRP.supervision = {
       ? 'Lo que usted ha plantado, por semana, mes o año. Cuentan sólo las jornadas cerradas; las abiertas se dicen aparte.'
       : 'Lo que se ha plantado en su ' + ({ todos: 'ciudad', institucion: 'institución' }[SRP.permisos.de(u).alcance] || 'cuadrilla') + ', por semana, mes o año. Cuentan sólo las jornadas cerradas; las abiertas se dicen aparte.';
     this.el('btn-sup-fotos').hidden = !SRP.permisos.de(u).galeria;
+    // La tabla para Excel es de quien supervisa; el cabo se lleva su informe en PDF
+    this.el('btn-sup-csv').hidden = cabo;
     this.el('caja-sup-cabo').hidden = cabo;
     this.el('caja-sup-organizacion').hidden = !this.veOrganizaciones();
     // Quien entra con otra cuenta empieza en la semana en curso y sin filtros: no hereda el año
     // ni la alcaldía que dejó la cuenta anterior en este mismo dispositivo (D160)
-    if (this.usuarioId !== u.id) { this.usuarioId = u.id; this.periodo = null; this.filtros = { alcaldia: '', programa: '', origen: '', cabo: '', organizacion: '' }; }
+    if (this.usuarioId !== u.id) { this.usuarioId = u.id; this.periodo = null; this.abiertas = null; this.filtros = { alcaldia: '', programa: '', origen: '', cabo: '', organizacion: '' }; }
     if (!this.periodo) this.periodo = SRP.indicadores.periodo('semana');
     const datos = await SRP.indicadores.cargar();
     /* Con mucho volumen la lectura tarda: si mientras tanto se salió o se cambió de cuenta, lo leído
@@ -147,67 +151,92 @@ SRP.supervision = {
       f.cabo ? ['cabo', 'Registró: ' + SRP.ref.nombreUsuario(f.cabo)] : null,
       f.organizacion ? ['institucion', 'Institución: ' + SRP.ref.nombreOrganizacion(f.organizacion)] : null].filter(Boolean));
     this.modelo = I.calcular(this.datos, p, f);
-    this.el('sup-cuerpo').innerHTML = this.html(this.modelo);
+    // Las descargas salen del cuerpo antes de repintarlo y vuelven a su lugar, bajo las cifras
+    const cuerpo = this.el('sup-cuerpo'), acciones = this.el('sup-acciones');
+    cuerpo.after(acciones);
+    // Los mapas se retiran antes de repintar: una sección plegada no vuelve a dibujar el suyo
+    if (this.mapa) { this.mapa.remove(); this.mapa = null; }
+    if (this.mapaPrioridad) { this.mapaPrioridad.remove(); this.mapaPrioridad = null; }
+    cuerpo.innerHTML = this.html(this.modelo);
+    const ancla = this.el('sup-ancla-acciones');
+    if (ancla) ancla.replaceWith(acciones);
     // Sin jornadas cerradas no hay informe que dar; sin árboles, no hay tabla
     this.el('btn-sup-pdf').disabled = !this.modelo.cifras.jornadas;
     this.el('btn-sup-csv').disabled = !this.modelo.cifras.arboles;
-    this.pintarMapa(); this.pintarMapaPrioridad();
+    if (this.abierta('alcaldias')) this.pintarMapa();
+    if (this.abierta('prioridad')) this.pintarMapaPrioridad();
   },
 
   /* ---------- El cuerpo ---------- */
 
   html(m) {
-    const esc = SRP.util.escapar, c = m.cifras, cabo = this.esCabo();
+    const esc = SRP.util.escapar, c = m.cifras, cabo = this.esCabo(), P = SRP.indicadores.pct;
     const num = n => n == null ? '—' : Number(n).toLocaleString('es-MX');
     const cifra = (valor, texto, sub) => '<div class="sup-cifra"><b>' + valor + '</b><span>' + texto + '</span>' + (sub ? '<small>' + sub + '</small>' : '') + '</div>';
     const apartado = (id, titulo, cuerpo) => '<section class="bloque sup-apartado" aria-labelledby="' + id + '"><h2 id="' + id + '" class="titulo-bloque">' + titulo + '</h2>' + cuerpo + '</section>';
+    /* Cada desglose va plegado y dice su dato principal en el renglón: se abre el que interesa.
+       `clave` recuerda cuáles quedaron abiertos al cambiar de periodo o de filtro */
+    const seccion = (clave, id, titulo, resumen, cuerpo) => '<details class="bloque sup-apartado sup-seccion" data-seccion="' + clave + '"' + (this.abierta(clave) ? ' open' : '') + '>' +
+      '<summary><h2 id="' + id + '" class="titulo-bloque">' + titulo + '</h2><span class="sup-resumen">' + resumen + '</span></summary><div class="sup-seccion-cuerpo">' + cuerpo + '</div></details>';
+    const barra = (n, max) => '<svg class="sup-esp-barra" viewBox="0 0 100 6" preserveAspectRatio="none" aria-hidden="true" focusable="false"><rect width="' + Math.max(1, n * 100 / Math.max(1, max)).toFixed(1) + '" height="6"></rect></svg>';
+    const conBarra = (texto, n, lista) => ({ html: esc(texto) + barra(n, Math.max(1, ...lista.map(x => x.arboles))) });
+    const primero = lista => lista.length ? esc(lista[0].organizacion || lista[0].colonia || lista[0].clave) + ' ' + lista[0].pct + ' %' : '';
+    const plural = (n, uno, varios) => num(n) + ' ' + (n === 1 ? uno : varios);
     if (!c.arboles && !c.jornadas && !c.enCurso && !m.atender.length) {
       return '<div class="vacio">' + SRP.util.htmlVacio('avance', 'Sin jornadas cerradas en este periodo',
         cabo ? 'Cuando cierre una jornada, aquí verá cuántos árboles plantó.' : 'Cuando se cierren jornadas, aquí se verá cuánto se plantó.', []) + '</div>' + this.htmlAtender(m);
     }
-    let h = '<div class="sup-cifras">' +
-      cifra(num(c.arboles), c.arboles === 1 ? 'árbol plantado' : 'árboles plantados', 'en ' + num(c.jornadas) + (c.jornadas === 1 ? ' jornada cerrada' : ' jornadas cerradas')) +
-      // «Previstos» (D168): lo que se dijo al iniciar cada jornada; no es la meta del programa
-      cifra(c.avance == null ? '—' : c.avance + ' %', 'de lo previsto', c.meta ? num(c.arbolesConMeta) + ' de ' + num(c.meta) + ' previstos en las jornadas' : 'sin cantidad prevista') +
-      (cabo ? cifra(c.promedio == null ? '—' : String(c.promedio), 'árboles por jornada', '')
-        : cifra(num(c.cabosActivos) + ' de ' + num(c.cabosAsignados), 'cabos trabajaron', c.promedio == null ? '' : String(c.promedio) + ' árboles por jornada')) +
-      cifra(num(c.especies), c.especies === 1 ? 'especie' : 'especies', c.nativasPct == null ? '' : c.nativasPct + ' % nativas') +
-      cifra(num(c.alcaldias), c.alcaldias === 1 ? 'alcaldía' : 'alcaldías', num(c.colonias) + (c.colonias === 1 ? ' colonia' : ' colonias')) +
-      (c.enCurso ? cifra(num(c.enCurso), c.enCurso === 1 ? 'jornada en curso' : 'jornadas en curso', 'no se cuentan hasta cerrarse') : '') +
+    // «Previstos»: lo que se dijo al iniciar cada jornada; no es la meta del programa
+    const previsto = cifra(c.avance == null ? '—' : c.avance + ' %', 'de lo previsto', c.meta ? num(c.arbolesConMeta) + ' de ' + num(c.meta) + ' previstos en las jornadas' : 'sin cantidad prevista');
+    let h = '<div class="sup-cifras" data-cifras="' + (cabo ? 3 : 4) + '">' + (cabo
+      ? cifra(num(c.arboles), c.arboles === 1 ? 'árbol plantado' : 'árboles plantados', c.promedio == null ? '' : String(c.promedio) + ' por jornada') + previsto +
+        cifra(num(c.jornadas), c.jornadas === 1 ? 'jornada cerrada' : 'jornadas cerradas', c.enCurso ? num(c.enCurso) + ' en curso' : '')
+      : cifra(num(c.arboles), c.arboles === 1 ? 'árbol plantado' : 'árboles plantados', 'en ' + plural(c.jornadas, 'jornada cerrada', 'jornadas cerradas')) + previsto +
+        cifra(num(c.cabosActivos) + ' de ' + num(c.cabosAsignados), 'cabos trabajaron', c.promedio == null ? '' : String(c.promedio) + ' árboles por jornada') +
+        cifra(num(c.enCurso), c.enCurso === 1 ? 'jornada en curso' : 'jornadas en curso', c.enCurso ? 'no se cuentan hasta cerrarse' : '')) +
       '</div>';
     h += this.htmlAtender(m);
-    // La unidad va en el título (D168): son árboles plantados
+    // Aquí se colocan las descargas: a la mano, sin recorrer los desgloses
+    h += '<div id="sup-ancla-acciones"></div>';
+    // La unidad va en el título: son árboles plantados
+    h += apartado('sup-t-avance', 'Árboles plantados ' + { dia: 'por día', semana: 'por semana', mes: 'por mes', anio: 'por año' }[m.serie.unidad], this.htmlSerie(m.serie));
+    if (!cabo && !m.filtros.cabo) {
+      const pendientes = x => [x.abiertasViejas ? x.abiertasViejas + ' abierta' + (x.abiertasViejas === 1 ? '' : 's') + ' de antes' : '', x.sinRevisar ? x.sinRevisar + ' sin revisar' : '', x.sinReporte ? x.sinReporte + ' sin reporte' : '',
+        x.eliminados ? x.eliminados + ' eliminado' + (x.eliminados === 1 ? '' : 's') : '', x.editados ? x.editados + ' editado' + (x.editados === 1 ? '' : 's') : ''].filter(Boolean).join(' · ');
+      const enlace = x => ({ html: '<button type="button" class="enlace-fila" data-cabo="' + esc(x.cabo_id) + '">' + esc(x.nombre) + '</button>' });
+      const marca = x => { const t = pendientes(x); return t ? { html: '<span class="sup-pendiente">' + esc(t) + '</span>' } : 'Nada pendiente'; };
+      // Quien no tuvo jornadas en el periodo va aparte, en un renglón que se abre: así la lista dice quién trabajó
+      const activos = m.porCabo.filter(x => x.jornadas || x.arboles), sin = m.porCabo.filter(x => !x.jornadas && !x.arboles);
+      const conPend = m.porCabo.filter(x => pendientes(x)).length;
+      h += seccion('cabos', 'sup-t-cabos', 'Por cabo', num(activos.length) + ' con jornadas en el periodo' + (conPend ? ' · ' + num(conPend) + ' con pendientes' : ''),
+        (activos.length ? this.tabla(['Cabo', 'Árboles', 'De lo previsto', 'Jornadas', 'Última', 'Pendientes'],
+          activos.map(x => [enlace(x), num(x.arboles), x.avance == null ? '—' : x.avance + ' %', num(x.jornadas), x.ultima ? SRP.util.formatearFecha(x.ultima) : 'Sin jornadas', marca(x)]), [1, 2, 3], 'cabos', 'sup-tabla-cabos')
+          : '<p class="nota">Nadie cerró jornadas en este periodo.</p>') +
+        (sin.length ? '<details class="desplegable sup-sin-jornadas"><summary><span>' + num(sin.length) + ' sin jornadas en el periodo</span></summary>' +
+          this.tabla(['Cabo', 'Pendientes'], sin.map(x => [enlace(x), marca(x)]), [], null, 'sup-tabla-cabos') + '</details>' : ''));
+    }
     /* Por institución: lo de fuera suma al total de la Ciudad y aquí se ve quién lo plantó. Sólo
        para la Administración, sin institución elegida y cuando plantó más de una */
     if (this.veOrganizaciones() && !m.filtros.organizacion && m.porOrganizacion.length > 1) {
-      h += apartado('sup-t-instituciones', 'Por institución', this.tabla(['Institución', 'Tipo', 'Árboles', '% del total', 'Jornadas'],
-        this.conPct(m.porOrganizacion, c.arboles).map(x => [x.organizacion, x.tipo, num(x.arboles), x.pct + ' %', num(x.jornadas)]), [2, 3, 4]));
+      const orgs = this.conPct(m.porOrganizacion, c.arboles);
+      h += seccion('instituciones', 'sup-t-instituciones', 'Por institución', plural(orgs.length, 'institución', 'instituciones') + ' · ' + primero(orgs),
+        this.tabla(['Institución', 'Árboles', '% del total', 'Tipo', 'Jornadas'], orgs.map(x => [conBarra(x.organizacion, x.arboles, orgs), num(x.arboles), x.pct + ' %', x.tipo, num(x.jornadas)]), [1, 2, 4]));
     }
-    h += apartado('sup-t-avance', 'Árboles plantados ' + { dia: 'por día', semana: 'por semana', mes: 'por mes', anio: 'por año' }[m.serie.unidad], this.htmlSerie(m.serie));
-    if (!cabo && !m.filtros.cabo) {
-      h += apartado('sup-t-cabos', 'Por cabo', '<div class="tabla-caja"><table class="tabla sup-tabla-cabos"><thead><tr><th>Cabo</th><th class="cifra">Jornadas</th><th class="cifra">Árboles</th><th class="cifra">De lo previsto</th><th>Última</th><th>Pendientes</th></tr></thead><tbody>' +
-        m.porCabo.map(x => {
-          const pend = [x.abiertasViejas ? x.abiertasViejas + ' abierta' + (x.abiertasViejas === 1 ? '' : 's') + ' de antes' : '', x.sinRevisar ? x.sinRevisar + ' sin revisar' : '', x.sinReporte ? x.sinReporte + ' sin reporte' : '',
-            x.eliminados ? x.eliminados + ' eliminado' + (x.eliminados === 1 ? '' : 's') : '', x.editados ? x.editados + ' editado' + (x.editados === 1 ? '' : 's') : ''].filter(Boolean).join(' · ');
-          return '<tr><td data-etiqueta="Cabo"><button type="button" class="enlace-fila" data-cabo="' + esc(x.cabo_id) + '">' + esc(x.nombre) + '</button></td>' +
-            '<td class="cifra" data-etiqueta="Jornadas">' + num(x.jornadas) + '</td><td class="cifra" data-etiqueta="Árboles">' + num(x.arboles) + '</td>' +
-            '<td class="cifra" data-etiqueta="De lo previsto">' + (x.avance == null ? '—' : x.avance + ' %') + '</td>' +
-            '<td data-etiqueta="Última">' + (x.ultima ? esc(SRP.util.formatearFecha(x.ultima)) : 'Sin jornadas') + '</td>' +
-            '<td data-etiqueta="Pendientes">' + (pend ? esc(pend) : 'Nada pendiente') + '</td></tr>';
-        }).join('') + '</tbody></table></div>');
-    }
-    h += apartado('sup-t-alcaldias', m.filtros.alcaldia ? 'Colonias de ' + esc(m.filtros.alcaldia) : 'Por alcaldía',
+    const alcs = this.conPct(m.porAlcaldia, c.arboles), cols = this.conPct(m.porColonia, c.arboles);
+    h += seccion('alcaldias', 'sup-t-alcaldias', m.filtros.alcaldia ? 'Colonias de ' + esc(m.filtros.alcaldia) : 'Por alcaldía',
+      m.filtros.alcaldia ? plural(c.colonias, 'colonia', 'colonias') + (cols.length ? ' · ' + primero(cols) : '')
+        : (c.alcaldias === 1 && alcs.length ? esc(alcs[0].clave) : plural(c.alcaldias, 'alcaldía', 'alcaldías')) + ' · ' + plural(c.colonias, 'colonia', 'colonias') + (c.alcaldias > 1 ? ' · ' + primero(alcs) : ''),
       '<div class="sup-dos"><div><div id="sup-mapa" class="sup-mapa" role="group" aria-label="Mapa de la Ciudad de México con las alcaldías según los árboles plantados. Las mismas cifras están en la tabla de al lado"></div>' +
       '<p class="nota sup-leyenda">Más intenso, más árboles. Toque una alcaldía para ver su cifra.</p></div><div>' +
       (m.filtros.alcaldia
-        ? this.tabla(['Colonia', 'Árboles', '% del total', 'Jornadas'], this.conPct(m.porColonia, c.arboles).map(x => [x.colonia, num(x.arboles), x.pct + ' %', num(x.jornadas)]), [1, 2, 3], 'colonias')
-        : this.tabla(['Alcaldía', 'Árboles', '% del total', 'Jornadas', 'Colonias'], this.conPct(m.porAlcaldia, c.arboles).map(x => [x.clave, num(x.arboles), x.pct + ' %', num(x.jornadas), num(x.colonias)]), [1, 2, 3, 4])) + '</div></div>');
+        ? this.tabla(['Colonia', 'Árboles', '% del total', 'Jornadas'], cols.map(x => [conBarra(x.colonia, x.arboles, cols), num(x.arboles), x.pct + ' %', num(x.jornadas)]), [1, 2, 3], 'colonias')
+        : this.tabla(['Alcaldía', 'Árboles', '% del total', 'Jornadas', 'Colonias'], alcs.map(x => [conBarra(x.clave, x.arboles, alcs), num(x.arboles), x.pct + ' %', num(x.jornadas), num(x.colonias)]), [1, 2, 3, 4])) + '</div></div>');
     /* Por prioridad de la colonia: cuántos árboles cayeron en cada nivel del modelo de priorización,
        con el mapa de las colonias (más intenso, más prioridad) */
     if (m.prioridad) {
-      const p = m.prioridad, P = SRP.indicadores.pct, nCol = Object.keys(p.colonias || {}).length;
+      const p = m.prioridad, nCol = Object.keys(p.colonias || {}).length;
       const filas = p.niveles.map(x => [x.texto, num(x.n), (P(x.n, p.total) || 0) + ' %']).concat(p.sin ? [['Sin dato en la capa', num(p.sin), (P(p.sin, p.total) || 0) + ' %']] : []);
-      h += apartado('sup-t-prioridad', 'Por prioridad de la colonia',
+      h += seccion('prioridad', 'sup-t-prioridad', 'Por prioridad de la colonia', p.total ? (P(p.altas, p.total) || 0) + ' % en prioridad alta o muy alta' : 'Sin árboles en el periodo',
         '<p class="sup-prioridad-lema">' + (p.total ? '<b>' + num(p.altas) + ' de ' + num(p.total) + '</b> árboles (' + (P(p.altas, p.total) || 0) + ' %) en colonias de prioridad alta o muy alta.' : 'Sin árboles en el periodo.') + '</p>' +
         '<div class="sup-dos"><div><div id="sup-mapa-prioridad" class="sup-mapa" role="group" aria-label="Mapa de las colonias donde se plantó, con el color de su prioridad de reforestación. Las cifras por nivel están en la tabla de al lado"></div>' +
         '<p class="nota pri-leyenda">' + SRP.prioritarias.htmlLeyenda() + '</p>' +
@@ -215,42 +244,62 @@ SRP.supervision = {
         this.tabla(['Prioridad', 'Árboles', '% del total'], filas, [1, 2]) +
         '<p class="nota">Según el modelo de priorización de colonias (capa ' + esc(SRP.prioritarias.version()) + '). Se calcula del punto de cada árbol; los límites de la capa son aproximados.</p></div></div>');
     }
-    // En computadora, en dos columnas (D158)
+    // En computadora, en dos columnas
     h += '<div class="sup-columnas">';
-    /* Por especie (D168): tabla y gráfica juntas. La barra compara con la especie más plantada (sin
+    /* Por especie: tabla y gráfica juntas. La barra compara con la especie más plantada (sin
        carril de fondo, para que no se lea como «lleno»); la cantidad y el % del total van al lado. */
-    const maxEsp = Math.max(1, ...m.porEspecie.map(x => x.arboles));
-    h += apartado('sup-t-especies', 'Por especie', this.tabla(['Especie', 'Árboles', '% del total', 'Distribución'],
-      this.conPct(m.porEspecie, c.arboles).map(x => [{ html: esc(x.comun) + (x.cientifico ? '<small><i>' + esc(x.cientifico) + '</i></small>' : '') +
-        '<svg class="sup-esp-barra" viewBox="0 0 100 6" preserveAspectRatio="none" aria-hidden="true" focusable="false"><rect width="' + Math.max(1, x.arboles * 100 / maxEsp).toFixed(1) + '" height="6"></rect></svg>' },
-        num(x.arboles), x.pct + ' %', x.distribucion || '—']), [1, 2], 'especies'));
-    h += apartado('sup-t-programas', 'Por programa', this.tabla(['Programa', 'Árboles', '% del total', 'Jornadas'], this.conPct(m.porPrograma, c.arboles).map(x => [x.clave, num(x.arboles), x.pct + ' %', num(x.jornadas)]), [1, 2, 3]));
-    /* Pedidos especiales: cuánto de lo plantado fue a solicitud de otra instancia y de quién. Sólo
-       aparece si hubo alguno en el periodo */
-    if (m.pedidos.jornadas) {
-      const pe = m.pedidos, P = SRP.indicadores.pct;
-      h += apartado('sup-t-pedidos', 'Pedidos especiales',
+    const esps = this.conPct(m.porEspecie, c.arboles);
+    h += seccion('especies', 'sup-t-especies', 'Por especie', plural(c.especies, 'especie', 'especies') + (c.nativasPct == null ? '' : ' · ' + c.nativasPct + ' % nativas'),
+      this.tabla(['Especie', 'Árboles', '% del total', 'Distribución'],
+        esps.map(x => [{ html: esc(x.comun) + (x.cientifico ? '<small><i>' + esc(x.cientifico) + '</i></small>' : '') + barra(x.arboles, Math.max(1, ...esps.map(y => y.arboles))) },
+          num(x.arboles), x.pct + ' %', x.distribucion || '—']), [1, 2], 'especies'));
+    const progs = this.conPct(m.porPrograma, c.arboles);
+    h += seccion('programas', 'sup-t-programas', 'Por programa', progs.length === 1 ? esc(progs[0].clave) + ' · ' + plural(progs[0].arboles, 'árbol', 'árboles') : plural(progs.length, 'programa', 'programas') + (progs.length ? ' · ' + primero(progs) : ''),
+      this.tabla(['Programa', 'Árboles', '% del total', 'Jornadas'], progs.map(x => [x.clave, num(x.arboles), x.pct + ' %', num(x.jornadas)]), [1, 2, 3]));
+    /* Pedidos especiales: cuánto de lo plantado fue a solicitud de otra instancia y de quién. Es
+       información de quien supervisa, y sólo aparece si hubo alguno en el periodo */
+    if (!cabo && m.pedidos.jornadas) {
+      const pe = m.pedidos;
+      h += seccion('pedidos', 'sup-t-pedidos', 'Pedidos especiales', plural(pe.jornadas, 'jornada', 'jornadas') + ' · ' + (P(pe.arboles, c.arboles) || 0) + ' % de los árboles',
         '<p class="sup-pedidos-lema"><b>' + num(pe.jornadas) + ' de ' + num(c.jornadas) + '</b> ' + (c.jornadas === 1 ? 'jornada' : 'jornadas') + ' y <b>' + num(pe.arboles) + ' de ' + num(c.arboles) + '</b> árboles (' + (P(pe.arboles, c.arboles) || 0) + ' %) fueron a solicitud de otra instancia.</p>' +
-        this.tabla(['Quién lo solicitó', 'Jornadas', 'Árboles', '% del total'], pe.solicitantes.map(x => [x.solicitante, num(x.jornadas), num(x.arboles), (P(x.arboles, c.arboles) || 0) + ' %']), [1, 2, 3]));
+        this.tabla(['Quién lo solicitó', 'Árboles', '% del total', 'Jornadas'], pe.solicitantes.map(x => [x.solicitante, num(x.arboles), (P(x.arboles, c.arboles) || 0) + ' %', num(x.jornadas)]), [1, 2, 3]));
     }
+    /* Calidad del dato. Al cabo le sirve lo que depende de su captura —ubicación y fotografía—;
+       eliminados y ediciones son constancia para quien supervisa */
     const q = m.calidad;
-    h += apartado('sup-t-calidad', 'Calidad del dato', '<dl class="sup-calidad">' +
+    h += seccion('calidad', 'sup-t-calidad', cabo ? 'Mis registros' : 'Calidad del dato',
+      (q.gpsPct == null ? '' : q.gpsPct + ' % con GPS · ') + (q.conFotoPct == null ? 'Sin árboles' : q.conFotoPct + ' % con fotografía') + (!cabo && m.trazabilidad.eliminados ? ' · ' + plural(m.trazabilidad.eliminados, 'eliminado', 'eliminados') : ''),
+      '<dl class="sup-calidad">' +
       '<div><dt>Con fotografía</dt><dd>' + num(q.conFoto) + ' de ' + num(c.arboles) + (q.conFotoPct == null ? '' : ' (' + q.conFotoPct + ' %)') + '</dd></div>' +
       '<div><dt>Ubicados con GPS</dt><dd>' + num(q.gps) + ' de ' + num(c.arboles) + (q.gpsPct == null ? '' : ' (' + q.gpsPct + ' %)') + (q.precisionMediana == null ? '' : ' · precisión típica ±' + Math.round(q.precisionMediana) + ' m') + '</dd></div>' +
       '<div><dt>Señalados en el mapa o a mano</dt><dd>' + num(q.mapa) + ' en el mapa · ' + num(q.aMano) + ' a mano</dd></div>' +
       '<div><dt>Sustitutos plantados</dt><dd>' + (q.sustitutos ? num(q.sustitutos) + ' · ' + q.sustitutosMotivo.map(([t, n]) => esc(t) + ' ' + num(n)).join(' · ') : 'Ninguno') + '</dd></div>' +
-      '<div><dt>Eliminados en el periodo</dt><dd>' + num(m.trazabilidad.eliminados) + '</dd></div>' +
-      '<div><dt>Ediciones en el periodo</dt><dd>' + num(m.trazabilidad.editados) + '</dd></div></dl>' +
-      '<p class="nota">Eliminados y editados no cambian la cifra de árboles: se cuentan aparte, como constancia.</p>');
-    h += apartado('sup-t-jornadas', 'Jornadas cerradas del periodo', '<ul class="sup-jornadas">' + m.jornadas.map((j, i) =>
-      '<li' + this.extra('jornadas', i, m.jornadas.length) + '><button type="button" class="enlace-fila" data-jornada="' + esc(j.id) + '"><span class="sup-j-nombre">' + esc(j.nombre) + '</span>' +
-      '<span class="sup-j-datos">' + esc(SRP.util.formatearFecha(j.fecha)) + (cabo ? '' : ' · ' + esc(j.cabo)) + (j.externa && this.veOrganizaciones() ? ' · ' + esc(j.organizacion) : '') + ' · ' + num(j.arboles) + (j.meta ? ' de ' + num(j.meta) : '') + (j.arboles === 1 ? ' árbol' : ' árboles') +
-      (j.prioridad ? ' · prioridad ' + esc(j.prioridad.toLowerCase()) : '') + (j.solicitante ? ' · pedido de ' + esc(j.solicitante) : '') +
-      (j.reporte ? '' : ' · sin reporte') + (j.pendientes ? ' · ' + j.pendientes + ' por revisar' : '') + '</span></button></li>').join('') + '</ul>' +
-      this.botonMas('jornadas', m.jornadas.length));
+      (cabo ? '</dl>' : '<div><dt>Eliminados en el periodo</dt><dd>' + num(m.trazabilidad.eliminados) + '</dd></div>' +
+        '<div><dt>Ediciones en el periodo</dt><dd>' + num(m.trazabilidad.editados) + '</dd></div></dl>' +
+        '<p class="nota">Eliminados y editados no cambian la cifra de árboles: se cuentan aparte, como constancia.</p>'));
     h += '</div>';
+    // Las jornadas del periodo se revisan en su pestaña, con el mismo periodo y los mismos filtros
+    if (c.jornadas) h += '<button type="button" class="btn btn-texto sup-ver-jornadas" data-ver-jornadas>' + (cabo ? 'Ver mis jornadas del periodo' : 'Ver las jornadas del periodo') + ' en Jornadas</button>';
     return h;
   },
+
+  /* Qué desgloses están abiertos. Con ancho se ven todos; en el teléfono, plegados, salvo «Por cabo»
+     para quien supervisa. Lo que la persona abre o cierra se respeta mientras siga en la cuenta. */
+  SECCIONES: ['cabos', 'instituciones', 'alcaldias', 'prioridad', 'especies', 'programas', 'pedidos', 'calidad'],
+  abiertas: null,
+  abierta(clave) {
+    if (!this.abiertas) this.abiertas = new Set(window.matchMedia('(min-width: 701px)').matches ? this.SECCIONES : (this.esCabo() ? [] : ['cabos']));
+    return this.abiertas.has(clave);
+  },
+  alPlegar(e) {
+    const d = e.target; if (!d.matches || !d.matches('details[data-seccion]')) return;
+    this.abierta(d.dataset.seccion);
+    if (d.open) this.abiertas.add(d.dataset.seccion); else this.abiertas.delete(d.dataset.seccion);
+    // Un mapa no se dibuja mientras su sección está plegada: no tiene tamaño
+    if (d.open && d.dataset.seccion === 'alcaldias') this.pintarMapa();
+    if (d.open && d.dataset.seccion === 'prioridad') this.pintarMapaPrioridad();
+  },
+  abrirTodo() { this.abiertas = new Set(this.SECCIONES); this.pintar(); },
 
   // Lo que alguien tiene que hacer, con las jornadas a las que lleva
   htmlAtender(m) {
@@ -266,12 +315,12 @@ SRP.supervision = {
 
   /* Tabla corta, la misma en teléfono y computadora (no se vuelve tarjetas: caben tres o cuatro
      columnas). `cifras`: columnas alineadas a la derecha. Una celda { html } ya viene escapada. */
-  tabla(cab, filas, cifras, clave) {
+  tabla(cab, filas, cifras, clave, clase) {
     const esc = SRP.util.escapar;
     if (!filas.length) return '<p class="nota">Sin datos en este periodo.</p>';
     const cl = k => (cifras || []).includes(k) ? ' class="cifra"' : '';
-    return '<div class="sup-tabla-caja"><table class="sup-tabla"><thead><tr>' + cab.map((t, k) => '<th' + cl(k) + ' scope="col">' + esc(t) + '</th>').join('') + '</tr></thead><tbody>' +
-      filas.map((f, i) => '<tr' + (clave ? this.extra(clave, i, filas.length) : '') + '>' + f.map((v, k) => '<td' + cl(k) + '>' + (v && v.html !== undefined ? v.html : esc(v)) + '</td>').join('') + '</tr>').join('') +
+    return '<div class="sup-tabla-caja"><table class="sup-tabla' + (clase ? ' ' + clase : '') + '" data-columnas="' + cab.length + '"><thead><tr>' + cab.map((t, k) => '<th' + cl(k) + ' scope="col">' + esc(t) + '</th>').join('') + '</tr></thead><tbody>' +
+      filas.map((f, i) => '<tr' + (clave ? this.extra(clave, i, filas.length) : '') + '>' + f.map((v, k) => '<td' + cl(k) + ' data-etiqueta="' + esc(cab[k]) + '">' + (v && v.html !== undefined ? v.html : esc(v)) + '</td>').join('') + '</tr>').join('') +
       '</tbody></table></div>' + (clave ? this.botonMas(clave, filas.length) : '');
   },
 
@@ -367,6 +416,7 @@ SRP.supervision = {
   alTocar(e) {
     const mas = e.target.closest('button[data-mas]');
     if (mas) { this.alternarMas(mas); return; }
+    if (e.target.closest('button[data-ver-jornadas]')) { this.verJornadas(); return; }
     const b = e.target.closest('button[data-jornada], button[data-cabo]'); if (!b) return;
     if (b.dataset.jornada) {
       // Jornadas abre esa ficha al prepararse, y ajusta su filtro si la dejaba fuera (D125)
@@ -377,6 +427,17 @@ SRP.supervision = {
     }
     // Las jornadas de ese cabo, en Jornadas
     SRP.jornadas.filtro.cabo = b.dataset.cabo;
+    SRP.app.mostrarVista('jornadas');
+  },
+
+  // Jornadas, con el periodo y los filtros que se están viendo aquí
+  verJornadas() {
+    const J = SRP.jornadas, p = this.periodo, f = this.filtros;
+    Object.assign(J.filtro, { texto: '', revision: '', dia: '', anio: '', mes: '', desde: p.desde || '', hasta: p.hasta || '',
+      cabo: f.cabo, programa: f.programa, origen: f.origen, alcaldia: f.alcaldia, organizacion: f.organizacion });
+    J.diaAbierto = false; J.periodoAbierto = p.tipo !== 'todo';
+    J.el('jornada-buscar').value = ''; J.el('jornada-revision').value = ''; J.el('jornada-dia').value = '';
+    J.el('jornada-desde').value = p.desde || ''; J.el('jornada-hasta').value = p.hasta || '';
     SRP.app.mostrarVista('jornadas');
   }
 };
