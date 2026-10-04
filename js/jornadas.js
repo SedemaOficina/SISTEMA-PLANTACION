@@ -26,12 +26,12 @@
 window.SRP = window.SRP || {};
 
 SRP.jornadas = {
-  /* Filtros (D128): «Un día» gana sobre año/mes; el rango Desde/Hasta limpia a los tres.
-     Año, mes y cabo viven plegados en «Más filtros». Al entrar se ven todas. */
-  filtro: { texto: '', revision: '', dia: '', desde: '', hasta: '', anio: '', mes: '', cabo: '', programa: '', reporte: '', origen: '', prioridad: '', alcaldia: '', tipo: '', organizacion: '' },
-  // El reporte es de una jornada cerrada: «sin generar» son las cerradas que aún no lo tienen
-  REPORTE: { generado: 'Generado', pendiente: 'Sin generar' },
-  REVISION: { pendiente: 'Con algo por atender', revisar: 'Con puntos por revisar', cuadra: 'No cuadran con lo previsto', lista: 'Sin pendientes' },
+  /* Filtros. La fecha se elige con los atajos (Todas, Hoy, Este mes, Este año, Un día, Un periodo); «Este
+     mes» y «Este año» guardan `anio` y `mes`. Las listas viven plegadas en «Más filtros». Al entrar se
+     ven todas. */
+  filtro: { texto: '', revision: '', dia: '', desde: '', hasta: '', anio: '', mes: '', cabo: '', programa: '', origen: '', alcaldia: '', organizacion: '' },
+  // «Pendientes»: lo que le falta a cada jornada. El reporte es de una jornada cerrada con árboles
+  REVISION: { pendiente: 'Con algo por atender', revisar: 'Con puntos por revisar', cuadra: 'No cuadran con lo previsto', sinreporte: 'Sin reporte todavía', lista: 'Sin pendientes' },
   diaAbierto: false,
   periodoAbierto: false,
   lista: [],            // jornadas de lo filtrado
@@ -60,20 +60,6 @@ SRP.jornadas = {
       if (desde || hasta) { f.dia = ''; f.anio = ''; f.mes = ''; }
       this.pintarLista();
     });
-    this.el('jornada-anio').addEventListener('change', () => {
-      const f = this.filtro;
-      f.anio = this.el('jornada-anio').value; f.mes = ''; f.dia = ''; f.desde = ''; f.hasta = '';
-      this.diaAbierto = false; this.periodoAbierto = false;
-      this.llenarMeses();
-      this.pintarLista();
-    });
-    this.el('jornada-mes').addEventListener('change', () => {
-      const f = this.filtro;
-      f.mes = this.el('jornada-mes').value; f.dia = ''; f.desde = ''; f.hasta = '';
-      if (f.mes && !f.anio) { f.anio = this.aniosDisponibles()[0] || String(new Date().getFullYear()); this.el('jornada-anio').value = f.anio; }
-      this.diaAbierto = false; this.periodoAbierto = false;
-      this.pintarLista();
-    });
     // Buscar por nombre: se filtra mientras se escribe, sin distinguir acentos ni mayúsculas
     let espera = null;
     this.el('jornada-buscar').addEventListener('input', () => {
@@ -88,9 +74,6 @@ SRP.jornadas = {
     this.el('jornada-alcaldia').addEventListener('change', (e) => { this.filtro.alcaldia = e.target.value; this.pintarLista(); });
     this.el('jornada-programa').addEventListener('change', (e) => { this.filtro.programa = e.target.value; this.pintarLista(); });
     this.el('jornada-origen').addEventListener('change', (e) => { this.filtro.origen = e.target.value; this.pintarLista(); });
-    this.el('jornada-reporte').innerHTML = SRP.util.opciones('Todos', Object.entries(this.REPORTE));
-    this.el('jornada-reporte').addEventListener('change', (e) => { this.filtro.reporte = e.target.value; this.pintarLista(); });
-    this.el('jornada-filtro-prioridad').addEventListener('change', (e) => { this.filtro.prioridad = e.target.value; this.pintarLista(); });
     // «Quitar filtros» deja la lista como al entrar; cada ficha quita lo suyo
     this.el('jornada-quitar').addEventListener('click', () => this.quitarFiltros(true));
     this.el('jornada-fichas').addEventListener('click', (e) => {
@@ -99,14 +82,12 @@ SRP.jornadas = {
       if (q === 'periodo') { this.aplicarAtajo('todas'); return; }
       if (q === 'texto') { f.texto = ''; this.el('jornada-buscar').value = ''; }
       else if (q === 'revision') { f.revision = ''; this.el('jornada-revision').value = ''; }
-      else if (q === 'institucion') { f.tipo = ''; f.organizacion = ''; }
+      else if (q === 'institucion') f.organizacion = '';
       else f[q] = '';
       this.pintarLista();
       SRP.util.anunciarSilencioso('Filtro quitado.');
     });
-    [['jornada-tipo-org', 'tipo'], ['jornada-org', 'organizacion']].forEach(([id, cual]) => this.el(id).addEventListener('change', (e) => {
-      SRP.util.elegirInstitucion(cual, e.target.value, this.filtro); this.pintarLista();
-    }));
+    this.el('jornada-org').addEventListener('change', (e) => { this.filtro.organizacion = e.target.value; this.pintarLista(); });
     this.el('jornadas-vacio').addEventListener('click', (e) => {
       const b = e.target.closest('button[data-vacio]'); if (!b) return;
       if (b.dataset.vacio === 'iniciar') { SRP.app.mostrarVista('registrar'); return; }
@@ -450,6 +431,11 @@ SRP.jornadas = {
     const limpiarFechas = () => { f.dia = ''; f.desde = ''; f.hasta = ''; f.anio = ''; f.mes = ''; this.el('jornada-dia').value = ''; this.el('jornada-desde').value = ''; this.el('jornada-hasta').value = ''; };
     if (atajo === 'hoy') { limpiarFechas(); f.dia = SRP.util.fechaHoy(); this.diaAbierto = false; this.periodoAbierto = false; }
     if (atajo === 'todas') { limpiarFechas(); this.diaAbierto = false; this.periodoAbierto = false; }
+    // «Este mes» y «Este año»: el mes y el año en curso, sin abrir ningún campo
+    if (atajo === 'mes' || atajo === 'anio') {
+      limpiarFechas(); this.diaAbierto = false; this.periodoAbierto = false;
+      const hoy = SRP.util.fechaHoy(); f.anio = hoy.slice(0, 4); f.mes = atajo === 'mes' ? hoy.slice(5, 7) : '';
+    }
     // «Un día» y «Un periodo» sólo abren su fecha; filtran al elegirla (D113) o con «Aplicar» (D82)
     if (atajo === 'dia') { this.diaAbierto = true; this.periodoAbierto = false; f.desde = ''; f.hasta = ''; f.dia = this.el('jornada-dia').value; if (f.dia) { f.anio = ''; f.mes = ''; } }
     if (atajo === 'periodo') { this.periodoAbierto = true; this.diaAbierto = false; }
@@ -459,7 +445,7 @@ SRP.jornadas = {
   /* Deja la lista como al entrar: todas, sin búsqueda, sin revisión y sin listas. Con `avisar`, lo dice y ofrece deshacer. */
   quitarFiltros(avisar) {
     const antes = Object.assign({}, this.filtro), dia = this.diaAbierto, per = this.periodoAbierto;
-    Object.assign(this.filtro, { texto: '', revision: '', cabo: '', programa: '', reporte: '', origen: '', prioridad: '', alcaldia: '', tipo: '', organizacion: '' });
+    Object.assign(this.filtro, { texto: '', revision: '', cabo: '', programa: '', origen: '', alcaldia: '', organizacion: '' });
     this.el('jornada-buscar').value = ''; this.el('jornada-revision').value = '';
     this.aplicarAtajo('todas');
     if (avisar) SRP.util.anunciar('Filtros quitados: todas las jornadas.', 'exito', { deshacer: () => {
@@ -474,7 +460,7 @@ SRP.jornadas = {
   fichas() {
     const f = this.filtro, fmt = d => SRP.util.formatearFecha(d), salida = [];
     if (f.texto) salida.push(['texto', 'Buscar: ' + f.texto]);
-    if (f.revision) salida.push(['revision', 'Revisión: ' + this.REVISION[f.revision].toLowerCase()]);
+    if (f.revision) salida.push(['revision', f.revision === 'lista' ? this.REVISION.lista : 'Pendientes: ' + this.REVISION[f.revision].toLowerCase()]);
     let periodo = '';
     if (f.desde || f.hasta) periodo = f.desde && f.hasta ? fmt(f.desde) + ' al ' + fmt(f.hasta) : (f.desde ? 'Desde ' + fmt(f.desde) : 'Hasta ' + fmt(f.hasta));
     else if (f.dia) periodo = (f.dia === SRP.util.fechaHoy() ? 'Hoy, ' : '') + fmt(f.dia);
@@ -482,54 +468,30 @@ SRP.jornadas = {
     if (periodo) salida.push(['periodo', periodo]);
     if (f.cabo) salida.push(['cabo', 'Registró: ' + SRP.ref.nombreUsuario(f.cabo)]);
     if (f.programa) salida.push(['programa', 'Programa: ' + SRP.ref.nombreCatalogo(f.programa)]);
-    if (f.reporte) salida.push(['reporte', 'Reporte: ' + this.REPORTE[f.reporte].toLowerCase()]);
     if (f.origen) salida.push(['origen', 'Origen: ' + SRP.pedido.textoFiltro(f.origen).replace(' (todos)', '')]);
-    if (f.prioridad) salida.push(['prioridad', 'Prioridad: ' + SRP.prioritarias.textoFiltro(f.prioridad).toLowerCase()]);
     if (f.alcaldia) salida.push(['alcaldia', 'Alcaldía: ' + f.alcaldia]);
     if (f.organizacion) salida.push(['institucion', 'Institución: ' + SRP.ref.nombreOrganizacion(f.organizacion)]);
-    else if (f.tipo) salida.push(['institucion', 'Tipo: ' + f.tipo]);
     return salida;
   },
 
   sincronizarAtajos() {
-    const f = this.filtro;
-    const activo = { hoy: !this.diaAbierto && !this.periodoAbierto && f.dia === SRP.util.fechaHoy(), dia: this.diaAbierto, periodo: this.periodoAbierto,
-      todas: !this.diaAbierto && !this.periodoAbierto && !f.dia && !f.desde && !f.hasta && !f.anio && !f.mes };
+    const f = this.filtro, hoy = SRP.util.fechaHoy();
+    const libre = !this.diaAbierto && !this.periodoAbierto;
+    const esteAnio = libre && !f.dia && !f.desde && !f.hasta && f.anio === hoy.slice(0, 4);
+    const activo = { hoy: libre && f.dia === hoy, dia: this.diaAbierto, periodo: this.periodoAbierto,
+      mes: esteAnio && f.mes === hoy.slice(5, 7), anio: esteAnio && !f.mes,
+      todas: libre && !f.dia && !f.desde && !f.hasta && !f.anio && !f.mes };
     SRP.util.atajos.marcar(this.el('jornada-atajos'), activo, { dia: [this.el('jornada-un-dia'), this.diaAbierto], periodo: [this.el('jornada-periodo'), this.periodoAbierto] });   // M15
-    this.el('jornada-anio').value = f.anio; this.el('jornada-mes').value = f.mes;
     // El resumen del acordeón dice qué hay elegido dentro, aunque esté plegado
-    // Año y mes sólo acompañan a «Todas»: con «Hoy», «Un día» o «Un periodo» la fecha ya está dicha (D167)
-    const sinAnioMes = activo.hoy || !!this.diaAbierto || !!this.periodoAbierto;
     const conCabo = !this.el('caja-jornada-cabo').hidden, conOrg = !this.el('caja-jornada-org').hidden;
-    this.el('caja-jornada-anio').hidden = sinAnioMes; this.el('caja-jornada-mes').hidden = sinAnioMes;
     this.el('jornada-mas-filtros').hidden = false;
-    const dentro = [f.anio ? (f.mes ? SRP.util.nombreMes(f.anio + '-' + f.mes, true) + ' ' + f.anio : f.anio) : '', f.cabo ? SRP.ref.nombreUsuario(f.cabo) : '',
-      f.programa ? SRP.ref.nombreCatalogo(f.programa) : '', f.reporte ? 'reporte ' + this.REPORTE[f.reporte].toLowerCase() : '', f.origen ? SRP.pedido.textoFiltro(f.origen).replace(' (todos)', '') : '', f.prioridad ? 'prioridad ' + SRP.prioritarias.textoFiltro(f.prioridad).toLowerCase() : '', f.alcaldia, f.organizacion ? SRP.ref.nombreOrganizacion(f.organizacion) : f.tipo].filter(Boolean);
-    const disponibles = [sinAnioMes ? '' : 'año', sinAnioMes ? '' : 'mes', conCabo ? 'quién registró' : '', 'programa', 'reporte', 'origen', SRP.prioritarias.hay() ? 'prioridad' : '', 'alcaldía', conOrg ? 'institución' : ''].filter(Boolean);
+    const dentro = [f.cabo ? SRP.ref.nombreUsuario(f.cabo) : '', f.programa ? SRP.ref.nombreCatalogo(f.programa) : '', f.origen ? SRP.pedido.textoFiltro(f.origen).replace(' (todos)', '') : '',
+      f.alcaldia, f.organizacion ? SRP.ref.nombreOrganizacion(f.organizacion) : ''].filter(Boolean);
+    const disponibles = [conCabo ? 'quién registró' : '', 'programa', 'origen', 'alcaldía', conOrg ? 'institución' : ''].filter(Boolean);
     this.el('jornada-mas-filtros-texto').textContent = 'Más filtros: ' + (dentro.length ? dentro.join(' · ') : SRP.util.enumerar(disponibles));
     const fichas = this.fichas();
     SRP.util.pintarFichas(this.el('jornada-fichas'), fichas);
     this.el('jornada-quitar').hidden = !fichas.length;
-  },
-
-  aniosDisponibles() { return [...new Set(this._todas.map(j => j.fecha.slice(0, 4)))].sort().reverse(); },
-
-  llenarAnios() {
-    const anios = this.aniosDisponibles();
-    const actual = String(new Date().getFullYear());
-    if (!anios.includes(actual)) anios.unshift(actual);
-    this.el('jornada-anio').innerHTML = SRP.util.opciones('Todos', anios.map(a => [a, a]));
-    this.el('jornada-anio').value = this.filtro.anio;
-  },
-
-  llenarMeses() {
-    const anio = this.filtro.anio;
-    const meses = anio ? [...new Set(this._todas.filter(j => j.fecha.startsWith(anio)).map(j => j.fecha.slice(5, 7)))].sort() : [];
-    const sel = this.el('jornada-mes');
-    sel.innerHTML = SRP.util.opciones('Todos', meses.map(m => [m, SRP.util.nombreMes('2000-' + m, true)]));
-    sel.disabled = !anio;
-    if (!meses.includes(this.filtro.mes)) this.filtro.mes = '';
-    sel.value = this.filtro.mes;
   },
 
   /* REVISIÓN DE UNA JORNADA, para el filtro: qué tiene pendiente.
@@ -539,8 +501,11 @@ SRP.jornadas = {
     const g = j.dato || null;
     const revisar = this.pendientes(j, this.avisos(j), g).length > 0;
     const meta = this.previstosDe(g || j);
-    const cuadra = (g || j).estatus === 'cerrada' && meta !== null && Number.isInteger(meta) && j.registros.length !== meta;
-    return { revisar, cuadra };
+    const cerrada = (g || j).estatus === 'cerrada';
+    const cuadra = cerrada && meta !== null && Number.isInteger(meta) && j.registros.length !== meta;
+    // Sin reporte: cerrada, con árboles y sin su reporte generado
+    const sinreporte = cerrada && j.registros.length > 0 && !(g || {}).reporte_en;
+    return { revisar, cuadra, sinreporte };
   },
 
   cumpleRevision(j, r) {
@@ -548,8 +513,9 @@ SRP.jornadas = {
     const p = this.pendientesDe(j);
     if (r === 'revisar') return p.revisar;
     if (r === 'cuadra') return p.cuadra;
-    if (r === 'pendiente') return p.revisar || p.cuadra;
-    if (r === 'lista') return !p.revisar && !p.cuadra;
+    if (r === 'sinreporte') return p.sinreporte;
+    if (r === 'pendiente') return p.revisar || p.cuadra || p.sinreporte;
+    if (r === 'lista') return !p.revisar && !p.cuadra && !p.sinreporte;
     return true;
   },
 
@@ -557,12 +523,11 @@ SRP.jornadas = {
   orgDe(j) { return (j.dato && j.dato.organizacion_id) || (SRP.ref.usuarioPorId[j.cabo_id] || {}).organizacion_id || ''; },
   alcaldiasFiltro(j) { return [...new Set([j.dato && j.dato.alcaldia ? SRP.ref.alcaldia(j.dato.alcaldia) : ''].concat(this.alcaldiasDe(j)).filter(Boolean))]; },
 
-  /* Alcaldía, para todos; tipo de institución e institución, sólo para la Administración global, que
-     ve más de una institución. Las listas traen sólo lo que hay en las jornadas que se ven. */
+  /* Alcaldía, para todos; institución, sólo para quien ve más de una. Las listas traen sólo lo que hay en las jornadas que se ven. */
   llenarListas() {
     const f = this.filtro, ver = SRP.permisos.de(SRP.sesion.usuario).alcance === 'todos';
-    const valores = { cabo: j => j.personas || [j.cabo_id], programa: j => j.dato && j.dato.programa_id, origen: j => SRP.pedido.clavesFiltro(j.dato), alcaldia: j => this.alcaldiasFiltro(j), organizacion: j => this.orgDe(j), tipo: j => SRP.util.tipoDe(this.orgDe(j)) };
-    if (!ver) { delete valores.organizacion; delete valores.tipo; f.tipo = ''; f.organizacion = ''; }
+    const valores = { cabo: j => j.personas || [j.cabo_id], programa: j => j.dato && j.dato.programa_id, origen: j => SRP.pedido.clavesFiltro(j.dato), alcaldia: j => this.alcaldiasFiltro(j), organizacion: j => this.orgDe(j) };
+    if (!ver) { delete valores.organizacion; f.organizacion = ''; }
     const fac = SRP.util.facetas(this._todas, (j, ex) => this.cumpleListas(j, ex), valores);
     if (!this.el('caja-jornada-cabo').hidden) {
       this.el('jornada-cabo').innerHTML = SRP.util.opciones('Todos', SRP.util.paresPersonas([...fac.cabo].concat(f.cabo || [])));
@@ -572,30 +537,19 @@ SRP.jornadas = {
     SRP.util.llenarLista(this.el('jornada-alcaldia'), 'Todas', [...fac.alcaldia].map(a => [a, a]), f, 'alcaldia');
     // Origen: programada, pedido especial (todos) y cada instancia que ha solicitado alguno
     SRP.util.llenarLista(this.el('jornada-origen'), 'Todos', SRP.pedido.paresFiltro(fac.origen), f, 'origen', v => SRP.pedido.textoFiltro(v), SRP.pedido.ordenFiltro);
-    // Prioridad de la colonia: los cinco niveles, de mayor a menor, y «Sin dato»
-    this.el('caja-jornada-filtro-prioridad').hidden = !SRP.prioritarias.hay();
-    this.el('jornada-filtro-prioridad').innerHTML = SRP.util.opciones('Todas', SRP.prioritarias.opcionesFiltro());
-    this.el('jornada-filtro-prioridad').value = f.prioridad;
-    this.el('jornada-reporte').value = f.reporte;
-    this.el('caja-jornada-tipo-org').hidden = !ver; this.el('caja-jornada-org').hidden = !ver;
-    if (ver) SRP.util.llenarInstituciones(this.el('jornada-tipo-org'), this.el('jornada-org'), fac.organizacion, f, fac.tipo);
+    this.el('caja-jornada-org').hidden = !ver;
+    if (ver) SRP.util.llenarInstituciones(this.el('jornada-org'), fac.organizacion, f);
   },
 
-  // ¿Pasa los filtros de lista (quién, alcaldía, tipo, institución), salvo los de `excluir`?
+  // ¿Pasa los filtros de lista (quién, programa, origen, alcaldía, institución), salvo los de `excluir`?
   cumpleListas(j, excluir) {
     const f = this.filtro, x = k => !excluir || !excluir.has(k);
     return (!f.cabo || !x('cabo') || (j.personas || [j.cabo_id]).includes(f.cabo)) &&
       (!f.programa || !x('programa') || (j.dato && j.dato.programa_id) === f.programa) &&
-      (!f.reporte || !x('reporte') || this.claveReporte(j) === f.reporte) &&
       (!f.origen || !x('origen') || SRP.pedido.cumpleFiltro(j.dato, f.origen)) &&
-      (!f.prioridad || !x('prioridad') || SRP.prioritarias.claveFiltro(j.prioridad) === f.prioridad) &&
       (!f.alcaldia || !x('alcaldia') || this.alcaldiasFiltro(j).includes(f.alcaldia)) &&
-      (!f.organizacion || !x('organizacion') || this.orgDe(j) === f.organizacion) &&
-      (!f.tipo || !x('tipo') || SRP.util.tipoDe(this.orgDe(j)) === f.tipo);
+      (!f.organizacion || !x('organizacion') || this.orgDe(j) === f.organizacion);
   },
-
-  // 'generado' o 'pendiente' en una jornada cerrada; una abierta todavía no tiene reporte que generar
-  claveReporte(j) { return j.estatus !== 'cerrada' ? '' : (j.dato && j.dato.reporte_en ? 'generado' : 'pendiente'); },
 
   cumpleFiltro(j) {
     const f = this.filtro;
@@ -635,7 +589,7 @@ SRP.jornadas = {
   async pintarLista(soloDatos) {
     const f = this.filtro;
     this._todas = await this.jornadasAlcance();
-    this.llenarAnios(); this.llenarMeses(); this.llenarListas();
+    this.llenarListas();
     this.sincronizarAtajos();
     this.lista = SRP.util.ordenar(this._todas.filter(j => this.cumpleFiltro(j)), 'jornadas');
     if (soloDatos) return;
@@ -709,8 +663,8 @@ SRP.jornadas = {
     const vacio = this.el('jornadas-vacio');
     vacio.hidden = n > 0;
     // Estado vacío con salida (D141)
-    const filtrado = f.texto || f.revision || f.dia || f.desde || f.hasta || f.anio || f.cabo || f.programa || f.reporte || f.origen || f.prioridad || f.alcaldia || f.tipo || f.organizacion;
-    const REVISION = { pendiente: 'con algo por atender', revisar: 'con puntos por revisar', cuadra: 'que no cuadren con lo previsto', lista: 'sin pendientes' };
+    const filtrado = f.texto || f.revision || f.dia || f.desde || f.hasta || f.anio || f.cabo || f.programa || f.origen || f.alcaldia || f.organizacion;
+    const REVISION = { pendiente: 'con algo por atender', revisar: 'con puntos por revisar', cuadra: 'que no cuadren con lo previsto', sinreporte: 'sin reporte', lista: 'sin pendientes' };
     const puedeRegistrar = SRP.permisos.de(u).registrar;
     if (!n) vacio.innerHTML = filtrado
       ? SRP.util.htmlVacio('jornadas', f.texto ? 'Ninguna jornada coincide con «' + f.texto + '»' + (f.dia || f.desde || f.anio || f.cabo || f.revision ? ' con estos filtros.' : '.')

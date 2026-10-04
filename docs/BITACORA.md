@@ -3056,7 +3056,7 @@ base anterior; `normalizar()`, `completarCatalogos()` y `sembrar()` escriben en 
 `js/referencias.js`: lee los seis catálogos y `usosDe('catalogos')` cuenta contra las seis tablas.
 `js/catalogos.js` y `js/demostracion.js`: guardan y eliminan con las funciones nuevas.
 `datos/esquema.json`: seis tablas en lugar de una, relaciones y reglas al día; `datos/MAPEO-CAMPOS.md`,
-`README.md` y `docs/FASE2-Y-TRASPASO.md` (fila 22). `herramientas/generar_diccionario.py`: el borrador de
+`README.md` y `docs/FASE2-Y-TRASPASO.md` (fila 26). `herramientas/generar_diccionario.py`: el borrador de
 PostgreSQL dice que las tablas son las mismas en ambos lados.
 
 `js/almacen.js` abre además en dos pasos una base anterior a la versión 7 (`versionActual()`, `subirA()`):
@@ -3068,3 +3068,50 @@ con un renglón de cada catálogo, las diez tablas, los campos propios de cada u
 su tabla y la escritura desde la pantalla; las cuatro pruebas de migración desde versiones 2 a 6 llegan
 ahora a la 8). auditoria.py 139 comprobaciones, 0 hallazgos; auditoria_css.py 0; revisar.py sin problemas.
 No probado en iPhone real.
+
+## Bloque 161 — Menos filtros (03-10-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.9.28. Base del teléfono, versión 8 (sin cambio).
+
+**Qué cambió (D226).** `index.html`, `js/jornadas.js`, `js/registros.js` y `js/filtros.js`: seis atajos de
+periodo (Todas, Hoy, Este mes, Este año, Un día, Un periodo); sin listas de Año ni de Mes.
+`js/util.js`: `llenarInstituciones()` arma una sola lista agrupada por tipo; se retira la pareja
+dependiente tipo–institución, y `facetas()` deja de tratarla aparte. `js/jornadas.js`: «Pendientes»
+incluye «Sin reporte todavía»; se retiran los filtros Reporte y Prioridad de la colonia.
+`js/supervision.js`, `js/indicadores.js`, `js/informes.js` y `js/usuarios.js`: sin tipo de institución
+como filtro. `css/estilos.css`: `.chips-seis` (tres columnas en el teléfono, seis con ancho); se retira
+`.chips-cuatro`.
+
+**Simplicidad, fija.** `pruebas/auditoria.py` cuenta los filtros de cada vista —cada lista, cada
+búsqueda y el grupo de atajos— y falla si alguna pide más de ocho, o más de cuatro a la vista.
+`README.md`, «Al cerrar un bloque»: se dice qué se agregó a la pantalla y qué se pudo quitar.
+
+**Cuenta:** Supervisión 7 → 6, Registros 9 → 6, Jornadas 13 → 8, Fotografías 11 → 8, Usuarios 5 → 4;
+Catálogos 3 y Registro de cambios 2, sin cambio. Total, 50 → 37.
+
+**Verificación:** prueba.py 1280 comprobaciones; la corrida completa dio una falla, de una comprobación
+que aún esperaba las listas anteriores de Fotografías: se corrigió la comprobación y su sección (ctx59) se
+repitió sin fallas. ctx74, 6 nuevas: seis atajos en dos renglones de tres en el teléfono y en uno con
+ancho, tope de filtros por vista, y «Este año» con su ficha. auditoria.py 141 comprobaciones, 0 hallazgos;
+auditoria_css.py 0; revisar.py sin problemas. No probado en iPhone real.
+
+## Bloque 162 — Plan de traspaso al SIA y huella de capas (03-10-2026)
+Etapa 1. Estado: **cerrado**. Sin cambio en la aplicación ni en la versión (0.9.28).
+
+**Qué se decidió.** En el SIA el SRP entra como proyecto nuevo, con otro nombre: no reutiliza el módulo ni
+el esquema de plantación que ya existen ahí. Las capas se consumirán del esquema territorial del SIA,
+previa comprobación de que son las mismas.
+
+**Qué se agregó.** `docs/PLAN-TRASPASO-SIA.md`: punto de partida, arquitectura de destino, verificación de
+capas, siete fases con responsable y criterio de salida, decisiones de arranque, capacidad y riesgos. No
+lleva direcciones de red, nombres de equipo ni versiones exactas: el repositorio es público.
+`herramientas/huella_capas.py`: escribe `datos/HUELLA-CAPAS.md` y `datos/HUELLA-CAPAS.json` —por capa,
+polígonos, claves, superficie y envolvente; por polígono, superficie y centroide— y, con un archivo de
+otra fuente, dice qué claves faltan, cuáles sobran y qué polígonos cambiaron. Trae la consulta de PostGIS
+para obtener la huella del otro lado. `docs/FASE2-Y-TRASPASO.md`, apartado 4, y `README.md`.
+
+**Hallazgo.** Las colonias no coinciden en número: 1,837 polígonos del IECM 2022 en el SRP y 1,817
+unidades territoriales en el esquema del SIA. Hay que conciliarlas antes de derivar en el servidor.
+
+**Verificación:** la huella comparada contra sí misma da las tres capas iguales. Contra la base del SIA no
+se ha corrido: requiere acceso a su red.
+

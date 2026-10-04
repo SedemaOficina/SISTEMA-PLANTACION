@@ -116,32 +116,29 @@ SRP.util = {
     return /^[0-9a-f]{6}$/i.test(h) ? h.match(/../g).map(x => parseInt(x, 16)) : Array(3).fill(0);   // sin hoja, negro
   },
 
-  /* TIPO DE INSTITUCIÓN E INSTITUCIÓN, DEPENDIENTES. El tipo acota la lista de instituciones y elegir
-     una institución pone su tipo. Sólo se ofrecen las instituciones de `orgIds`, las que tienen algo
-     en la lista que se filtra. `f` lleva { tipo, organizacion } y se corrige si ya no aplica. */
-  llenarInstituciones(selTipo, selOrg, orgIds, f, tipoIds) {
-    // Lo elegido se queda en su lista aunque los demás filtros lo dejen sin resultados: nada cambia solo
+  /* INSTITUCIÓN, EN UNA SOLA LISTA. Las instituciones van agrupadas por su tipo (alcaldías, gobierno,
+     empresas, organizaciones), en el orden fijo de los tipos y por nombre dentro de cada uno: un
+     control en lugar de dos. Sólo se ofrecen las de `orgIds`, las que tienen algo en la lista que se
+     filtra. `f` lleva { organizacion }; lo elegido se queda aunque los demás filtros lo dejen sin
+     resultados: nada cambia solo. */
+  llenarInstituciones(selOrg, orgIds, f) {
     const orgs = [...new Set([...orgIds].concat(f.organizacion || []))].map(id => SRP.ref.catalogoPorId[id]).filter(Boolean);
-    const conTipo = new Set([...(tipoIds || orgs.map(o => o.tipo_organizacion))].concat(f.tipo || []));
-    const tipos = SRP.ref.TIPOS_INSTITUCION.filter(t => conTipo.has(t));
-    selTipo.innerHTML = this.opciones('Todos', tipos.map(t => [t, t]));
-    selTipo.value = f.tipo;
-    const nombre = o => SRP.ref.nombreOrganizacion(o.id);
-    const lista = orgs.filter(o => !f.tipo || o.tipo_organizacion === f.tipo).sort((a, b) => nombre(a).localeCompare(nombre(b), 'es'));
-    if (!lista.some(o => o.id === f.organizacion)) f.organizacion = '';
-    selOrg.innerHTML = this.opciones('Todas', lista.map(o => [o.id, nombre(o)]));
-    selOrg.value = f.organizacion;
+    const nombre = o => SRP.ref.nombreOrganizacion(o.id), esc = this.escapar;
+    const grupos = SRP.ref.TIPOS_INSTITUCION.map(t => [t, orgs.filter(o => o.tipo_organizacion === t).sort((a, b) => nombre(a).localeCompare(nombre(b), 'es'))]).filter(g => g[1].length);
+    const sueltas = orgs.filter(o => !SRP.ref.TIPOS_INSTITUCION.includes(o.tipo_organizacion));
+    const op = o => '<option value="' + esc(o.id) + '">' + esc(nombre(o)) + '</option>';
+    selOrg.innerHTML = '<option value="">Todas</option>' + grupos.map(([t, l]) => '<optgroup label="' + esc(t) + '">' + l.map(op).join('') + '</optgroup>').join('') + sueltas.map(op).join('');
+    selOrg.value = f.organizacion || '';
   },
 
   /* LISTAS QUE DEPENDEN DE LAS DEMÁS. Para cada filtro de lista, los valores que existen entre los
      elementos que pasan todos los otros filtros de lista (el periodo no cuenta: las listas no cambian
      al moverse de fecha). `cumple(elemento, excluir)` dice si el elemento pasa los filtros salvo los
-     de `excluir`; `valores[k](elemento)` da su valor (o valores) para el filtro k. Tipo de institución
-     e institución se excluyen juntos: la institución ya se acota por tipo al llenar su lista. */
+     de `excluir`; `valores[k](elemento)` da su valor (o valores) para el filtro k. */
   facetas(items, cumple, valores) {
     const salida = {};
     Object.keys(valores).forEach(k => {
-      const ex = new Set(k === 'tipo' || k === 'organizacion' ? ['tipo', 'organizacion'] : [k]), s = new Set();
+      const ex = new Set([k]), s = new Set();
       items.forEach(it => { if (cumple(it, ex)) [].concat(valores[k](it)).forEach(v => { if (v) s.add(v); }); });
       salida[k] = s;
     });
@@ -150,19 +147,6 @@ SRP.util = {
 
   // El tipo de institución de una institución, o vacío
   tipoDe(orgId) { return (SRP.ref.catalogoPorId[orgId] || {}).tipo_organizacion || ''; },
-
-  // Al cambiar el tipo, la institución elegida se quita si es de otro tipo; al elegir institución, su tipo queda puesto
-  elegirInstitucion(cual, valor, f) {
-    if (cual === 'tipo') {
-      f.tipo = valor;
-      const o = SRP.ref.catalogoPorId[f.organizacion];
-      if (o && valor && o.tipo_organizacion !== valor) f.organizacion = '';
-    } else {
-      f.organizacion = valor;
-      const o = SRP.ref.catalogoPorId[valor];
-      if (o) f.tipo = o.tipo_organizacion;
-    }
-  },
 
   /* Una lista de opciones a partir de valores, en orden alfabético o en el de `comparar` (sobre los
      valores). El valor elegido se queda aunque ya no tenga resultados con los demás filtros (`etiqueta`

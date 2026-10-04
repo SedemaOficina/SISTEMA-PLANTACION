@@ -404,8 +404,10 @@ fieldset.campo { margin-inline: 0; }
 .jornada-cifra[data-cero="true"] b { color: var(--neutro-borde); }
 .jornada-cabo { display: block; font-size: var(--t-xs); color: var(--gris); overflow-wrap: anywhere; }
 .jornada-cabo b { color: var(--texto); font-weight: 500; }
-/* Filtros de Jornadas (D128): cuatro atajos y el acordeón «Más filtros» */
-.chips-cuatro { grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: none; }
+/* Filtros de Jornadas y Registros: seis atajos de periodo y el acordeón «Más filtros» */
+/* Seis atajos de periodo: dos renglones de tres en el teléfono, uno solo cuando hay ancho */
+.chips.chips-seis { grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: none; }
+.chips-seis .chip { padding-left: var(--e-15); padding-right: var(--e-15); }
 .acordeon-filtros { border: 1px solid var(--borde-filtro); border-radius: var(--radio-filtro); margin-top: var(--e-2); }
 .acordeon-filtros summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); min-height: 44px; padding: 0 var(--e-3); font-size: var(--t-s); font-weight: 500; color: var(--gris); cursor: pointer; }
 .acordeon-filtros summary::-webkit-details-marker { display: none; }
@@ -1077,9 +1079,8 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .btn:disabled { opacity: 0.55; cursor: not-allowed; }
 .pestana[aria-current="page"] { color: var(--acento); border-bottom-color: var(--acento); }
 .chip-sub { display: block; font-size: var(--t-xs); font-weight: 400; color: var(--gris); }
-/* La fecha del atajo «Hoy» va en un renglón (D147): en la fila de cuatro, el chip cede relleno a los lados */
+/* La fecha del atajo «Hoy» va en un renglón (D147) */
 .chip .chip-sub { white-space: nowrap; }
-.chips-cuatro .chip { padding-left: var(--e-15); padding-right: var(--e-15); }
 .chip[aria-pressed="true"] .chip-sub { color: var(--fondo); opacity: .9; }
 /* Activo: guinda suave con borde guinda (propuesta A de la maqueta, D95) */
 .chip[aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: var(--fondo); }
@@ -1136,6 +1137,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
    del dispositivo (ratón, pantalla táctil, menos movimiento). Antes había siete cortes (400, 480,
    600, 601, 700, 767 y 1024): los de 600 y 767 se unieron al de 700 y el de 601 al de 701. */
 @media (min-width: 701px) {
+  .chips.chips-seis { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .cfg-tarjetas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   /* SISTEMA DE ANCHO EN TABLETA Y COMPUTADORA (D145). El teléfono es el uso principal y no cambia:
    todo lo de aquí vive en consultas de 701 px o más. Reglas:

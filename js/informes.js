@@ -10,7 +10,7 @@ SRP.informes = {
   titulo(m) {
     const t = { semana: 'Informe semanal de plantación', mes: 'Informe mensual de plantación', anio: 'Informe anual de plantación' }[m.periodo.tipo] || 'Informe de plantación';
     // Con institución elegida, también se dice: «Informe anual de plantación · Alcaldía Iztapalapa»
-    return t + (m.filtros.organizacion ? ' · ' + SRP.ref.nombreOrganizacion(m.filtros.organizacion) : m.filtros.tipo ? ' · ' + m.filtros.tipo : '') + (m.filtros.alcaldia ? ' · Alcaldía ' + m.filtros.alcaldia : '');
+    return t + (m.filtros.organizacion ? ' · ' + SRP.ref.nombreOrganizacion(m.filtros.organizacion) : '') + (m.filtros.alcaldia ? ' · Alcaldía ' + m.filtros.alcaldia : '');
   },
 
   // «Informe_semanal_2026-09-21_al_2026-09-27_Coyoacan.pdf»: sin acentos ni espacios

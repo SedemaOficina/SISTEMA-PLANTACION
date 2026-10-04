@@ -14,12 +14,12 @@
 <!-- Las peticiones al mapa no dicen desde qué sitio se hacen -->
 <meta name="referrer" content="no-referrer">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.9.27">
-<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.9.27">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.9.28">
+<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.9.28">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.9.27">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.9.27">
-<link rel="stylesheet" href="css/estilos.css?v=0.9.27">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.9.28">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.9.28">
+<link rel="stylesheet" href="css/estilos.css?v=0.9.28">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -30,8 +30,8 @@
   <div class="encabezado-interior">
     <!-- Logotipo (D90, D137): Gobierno CDMX · SEDEMA · SIA · Reforestación Urbana en pantalla ancha; en teléfono, SIA y Reforestación Urbana -->
     <picture>
-      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.9.27">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.9.27" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
+      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.9.28">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.9.28" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» (D80) -->
@@ -143,7 +143,6 @@
             <div class="campo campo-corto"><label for="sup-origen">Origen</label><select id="sup-origen"></select></div>
             <div id="caja-sup-cabo" class="campo campo-corto"><label for="sup-cabo">Quién registró</label><select id="sup-cabo"></select></div>
             <!-- Sólo para la Administración: las demás cuentas ya ven sólo lo de su institución -->
-            <div id="caja-sup-tipo" class="campo campo-corto" hidden><label for="sup-tipo">Tipo de institución</label><select id="sup-tipo"></select></div>
             <div id="caja-sup-organizacion" class="campo campo-corto" hidden><label for="sup-organizacion">Institución</label><select id="sup-organizacion"></select></div>
           </div>
         </details>
@@ -419,10 +418,12 @@
     <ul id="filtros-activos" class="filtros-activos" aria-label="Filtros activos"></ul>
     <div id="panel-filtros" class="filtros zona-filtros" data-abierto="true">
       <!-- Una sola fila: atajos y listas. Desde/Hasta sólo al pedir «Un periodo» (D64) -->
-      <!-- Mismo orden que Jornadas (D128, D129): Todos · Hoy · Un día · Un periodo; año, mes y cabo plegados -->
-      <div id="filtro-atajos" class="chips chips-cuatro" role="group" aria-label="Periodo">
+      <!-- Mismo orden que Jornadas: Todos · Hoy · Este mes · Este año · Un día · Un periodo; las listas, plegadas -->
+      <div id="filtro-atajos" class="chips chips-seis" role="group" aria-label="Periodo">
         <button type="button" class="chip" data-atajo="todos">Todos</button>
         <button type="button" class="chip" data-atajo="hoy" id="chip-hoy">Hoy</button>
+        <button type="button" class="chip" data-atajo="mes">Este mes</button>
+        <button type="button" class="chip" data-atajo="anio">Este año</button>
         <!-- «Un día»: una sola fecha, sin repetirla en Desde y Hasta (D113) -->
         <button type="button" class="chip" data-atajo="dia" aria-controls="filtro-un-dia" aria-expanded="false">Un día</button>
         <button type="button" class="chip" data-atajo="periodo" aria-controls="filtro-periodo" aria-expanded="false">Un periodo</button>
@@ -438,13 +439,10 @@
       <details id="filtro-mas-filtros" class="acordeon-filtros">
         <summary><span id="filtro-mas-filtros-texto">Más filtros</span></summary>
         <div class="filtros-listas acordeon-cuerpo">
-          <div id="caja-filtro-anio" class="campo campo-corto"><label for="filtro-anio">Año</label><select id="filtro-anio"></select></div>
-          <div id="caja-filtro-mes" class="campo campo-corto"><label for="filtro-mes">Mes</label><select id="filtro-mes"></select></div>
           <div id="caja-filtro-cabo" class="campo campo-corto" hidden><label for="filtro-cabo">Quién registró</label><select id="filtro-cabo"></select></div>
           <div class="campo campo-corto"><label for="filtro-especie">Especie</label><select id="filtro-especie"></select></div>
           <div class="campo campo-corto"><label for="filtro-programa">Programa</label><select id="filtro-programa"></select></div>
           <div class="campo campo-corto"><label for="filtro-alcaldia">Alcaldía</label><select id="filtro-alcaldia"></select></div>
-          <div id="caja-filtro-tipo-org" class="campo campo-corto" hidden><label for="filtro-tipo-org">Tipo de institución</label><select id="filtro-tipo-org"></select></div>
           <div id="caja-filtro-org" class="campo campo-corto" hidden><label for="filtro-org">Institución</label><select id="filtro-org"></select></div>
         </div>
       </details>
@@ -476,14 +474,16 @@
         <div class="filtros zona-filtros">
           <div class="campo-doble">
             <div class="campo"><label for="jornada-buscar">Buscar por nombre</label><input id="jornada-buscar" type="search" placeholder="Nombre de la jornada" autocomplete="off"></div>
-            <!-- Revisión: lo que tiene pendiente cada jornada, para ir directo a lo que falta validar -->
-            <div class="campo"><label for="jornada-revision">Revisión</label><select id="jornada-revision">
+            <!-- Pendientes: lo que le falta a cada jornada, para ir directo a lo que hay que atender -->
+            <div class="campo"><label for="jornada-revision">Pendientes</label><select id="jornada-revision">
               <option value="">Todas</option><option value="pendiente">Con algo por atender</option><option value="revisar">Con puntos por revisar</option>
-              <option value="cuadra">No cuadran con lo previsto</option><option value="lista">Sin pendientes</option></select></div>
+              <option value="cuadra">No cuadran con lo previsto</option><option value="sinreporte">Sin reporte todavía</option><option value="lista">Sin pendientes</option></select></div>
           </div>
-          <div id="jornada-atajos" class="chips chips-cuatro" role="group" aria-label="Periodo">
+          <div id="jornada-atajos" class="chips chips-seis" role="group" aria-label="Periodo">
             <button type="button" class="chip" data-atajo="todas">Todas</button>
             <button type="button" class="chip" data-atajo="hoy" id="jornada-chip-hoy">Hoy</button>
+            <button type="button" class="chip" data-atajo="mes">Este mes</button>
+            <button type="button" class="chip" data-atajo="anio">Este año</button>
             <button type="button" class="chip" data-atajo="dia" aria-controls="jornada-un-dia" aria-expanded="false">Un día</button>
             <button type="button" class="chip" data-atajo="periodo" aria-controls="jornada-periodo" aria-expanded="false">Un periodo</button>
           </div>
@@ -498,16 +498,10 @@
           <details id="jornada-mas-filtros" class="acordeon-filtros">
             <summary><span id="jornada-mas-filtros-texto">Más filtros</span></summary>
             <div class="filtros-listas acordeon-cuerpo">
-              <div id="caja-jornada-anio" class="campo campo-corto"><label for="jornada-anio">Año</label><select id="jornada-anio"></select></div>
-              <div id="caja-jornada-mes" class="campo campo-corto"><label for="jornada-mes">Mes</label><select id="jornada-mes"></select></div>
               <div id="caja-jornada-cabo" class="campo campo-corto" hidden><label for="jornada-cabo">Quién registró</label><select id="jornada-cabo"></select></div>
               <div class="campo campo-corto"><label for="jornada-programa">Programa</label><select id="jornada-programa"></select></div>
-              <!-- Reporte: si la jornada cerrada ya tiene su reporte generado -->
-              <div class="campo campo-corto"><label for="jornada-reporte">Reporte</label><select id="jornada-reporte"></select></div>
               <div class="campo campo-corto"><label for="jornada-origen">Origen</label><select id="jornada-origen"></select></div>
-              <div class="campo campo-corto" id="caja-jornada-filtro-prioridad"><label for="jornada-filtro-prioridad">Prioridad de la colonia</label><select id="jornada-filtro-prioridad"></select></div>
               <div class="campo campo-corto"><label for="jornada-alcaldia">Alcaldía</label><select id="jornada-alcaldia"></select></div>
-              <div id="caja-jornada-tipo-org" class="campo campo-corto" hidden><label for="jornada-tipo-org">Tipo de institución</label><select id="jornada-tipo-org"></select></div>
               <div id="caja-jornada-org" class="campo campo-corto" hidden><label for="jornada-org">Institución</label><select id="jornada-org"></select></div>
             </div>
           </details>
@@ -633,8 +627,6 @@
         <label for="usr-buscar">Buscar</label><input id="usr-buscar" type="search" placeholder="Nombre, correo, área o institución">
       </div>
       <div class="campo"><label for="usr-filtro-perfil">Perfil de captura</label><select id="usr-filtro-perfil"></select></div>
-      <!-- Tipo de institución e institución, dependientes, como en Registros y Jornadas -->
-      <div class="campo"><label for="usr-filtro-tipo">Tipo de institución</label><select id="usr-filtro-tipo"></select></div>
       <div class="campo"><label for="usr-filtro-org">Institución</label><select id="usr-filtro-org"></select></div>
       <button type="button" id="btn-usr-agregar" class="btn btn-primario">Dar de alta</button>
     </div>
@@ -1127,57 +1119,57 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.9.27"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.9.27"></script>
-<script src="vendor/turf-pip.min.js?v=0.9.27"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.9.27"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.9.27"></script>
+<script src="vendor/leaflet.js?v=0.9.28"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.9.28"></script>
+<script src="vendor/turf-pip.min.js?v=0.9.28"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.9.28"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.9.28"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.9.27"></script>
-<script src="js/util.js?v=0.9.27"></script>
-<script src="js/filtros.js?v=0.9.27"></script>
-<script src="js/iconos.js?v=0.9.27"></script>
+<script src="js/config.js?v=0.9.28"></script>
+<script src="js/util.js?v=0.9.28"></script>
+<script src="js/filtros.js?v=0.9.28"></script>
+<script src="js/iconos.js?v=0.9.28"></script>
 <!-- Capas territoriales del SIA, compactadas por herramientas/generar_capas.py desde originales/ -->
-<script src="assets/capas/capa-alcaldias.js?v=0.9.27"></script>
-<script src="assets/capas/capa-uga.js?v=0.9.27"></script>
-<script src="assets/capas/capa-colonias.js?v=0.9.27"></script>
+<script src="assets/capas/capa-alcaldias.js?v=0.9.28"></script>
+<script src="assets/capas/capa-uga.js?v=0.9.28"></script>
+<script src="assets/capas/capa-colonias.js?v=0.9.28"></script>
 <!-- Colonias prioritarias para reforestar: capa de referencia del modelo de priorización -->
-<script src="assets/capas/capa-prioritarias.js?v=0.9.27"></script>
-<script src="assets/catalogos/catalogo-especies.js?v=0.9.27"></script>
-<script src="assets/catalogos/catalogo-vehiculos.js?v=0.9.27"></script>
-<script src="js/datos-ficticios.js?v=0.9.27"></script>
-<script src="js/permisos.js?v=0.9.27"></script>
-<script src="js/derivacion.js?v=0.9.27"></script>
-<script src="js/prioritarias.js?v=0.9.27"></script>
-<script src="js/pedido.js?v=0.9.27"></script>
-<script src="js/almacen.js?v=0.9.27"></script>
-<script src="js/sesion.js?v=0.9.27"></script>
-<script src="js/referencias.js?v=0.9.27"></script>
-<script src="js/folio.js?v=0.9.27"></script>
+<script src="assets/capas/capa-prioritarias.js?v=0.9.28"></script>
+<script src="assets/catalogos/catalogo-especies.js?v=0.9.28"></script>
+<script src="assets/catalogos/catalogo-vehiculos.js?v=0.9.28"></script>
+<script src="js/datos-ficticios.js?v=0.9.28"></script>
+<script src="js/permisos.js?v=0.9.28"></script>
+<script src="js/derivacion.js?v=0.9.28"></script>
+<script src="js/prioritarias.js?v=0.9.28"></script>
+<script src="js/pedido.js?v=0.9.28"></script>
+<script src="js/almacen.js?v=0.9.28"></script>
+<script src="js/sesion.js?v=0.9.28"></script>
+<script src="js/referencias.js?v=0.9.28"></script>
+<script src="js/folio.js?v=0.9.28"></script>
 <!-- Esquema generado de datos/esquema.json: relaciones entre tablas (D150) -->
-<script src="js/esquema.js?v=0.9.27"></script>
-<script src="js/conexion.js?v=0.9.27"></script>
-<script src="js/envio.js?v=0.9.27"></script>
-<script src="js/mapa.js?v=0.9.27"></script>
-<script src="js/foto.js?v=0.9.27"></script>
-<script src="js/jornada-activa.js?v=0.9.27"></script>
-<script src="js/formulario.js?v=0.9.27"></script>
+<script src="js/esquema.js?v=0.9.28"></script>
+<script src="js/conexion.js?v=0.9.28"></script>
+<script src="js/envio.js?v=0.9.28"></script>
+<script src="js/mapa.js?v=0.9.28"></script>
+<script src="js/foto.js?v=0.9.28"></script>
+<script src="js/jornada-activa.js?v=0.9.28"></script>
+<script src="js/formulario.js?v=0.9.28"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.9.27"></script>
-<script src="js/registros.js?v=0.9.27"></script>
-<script src="js/galeria.js?v=0.9.27"></script>
-<script src="js/jornadas.js?v=0.9.27"></script>
-<script src="js/informes.js?v=0.9.27"></script>
-<script src="js/supervision.js?v=0.9.27"></script>
-<script src="js/indicadores.js?v=0.9.27"></script>
-<script src="js/demostracion.js?v=0.9.27"></script>
-<script src="js/croquis.js?v=0.9.27"></script>
-<script src="js/reportes.js?v=0.9.27"></script>
-<script src="js/catalogos.js?v=0.9.27"></script>
-<script src="js/usuarios.js?v=0.9.27"></script>
-<script src="js/excel.js?v=0.9.27"></script>
-<script src="js/carga.js?v=0.9.27"></script>
-<script src="js/configuracion.js?v=0.9.27"></script>
-<script src="js/app.js?v=0.9.27"></script>
+<script src="js/espejo.js?v=0.9.28"></script>
+<script src="js/registros.js?v=0.9.28"></script>
+<script src="js/galeria.js?v=0.9.28"></script>
+<script src="js/jornadas.js?v=0.9.28"></script>
+<script src="js/informes.js?v=0.9.28"></script>
+<script src="js/supervision.js?v=0.9.28"></script>
+<script src="js/indicadores.js?v=0.9.28"></script>
+<script src="js/demostracion.js?v=0.9.28"></script>
+<script src="js/croquis.js?v=0.9.28"></script>
+<script src="js/reportes.js?v=0.9.28"></script>
+<script src="js/catalogos.js?v=0.9.28"></script>
+<script src="js/usuarios.js?v=0.9.28"></script>
+<script src="js/excel.js?v=0.9.28"></script>
+<script src="js/carga.js?v=0.9.28"></script>
+<script src="js/configuracion.js?v=0.9.28"></script>
+<script src="js/app.js?v=0.9.28"></script>
 </body>
 </html>

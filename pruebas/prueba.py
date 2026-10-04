@@ -629,18 +629,15 @@ with sync_playwright() as p:
     pg.click('#registros-vacio button[data-vacio=quitar]'); pg.wait_for_timeout(300)
     ok('Total: 4 ' in pg.inner_text('#registros-total') and pg.is_hidden('#registros-vacio'),'«Quitar filtros» devuelve los cuatro')
     ok(pg.is_hidden('#caja-filtro-cabo'),'el cabo no tiene filtro por cabo')
-    ok(pg.locator('#filtro-anio option').count()==2,'el año lista Todos y 2026')
-    pg.evaluate("document.getElementById('filtro-mas-filtros').open = true")   # año y mes viven plegados (D129)
-    pg.select_option('#filtro-anio','2026'); pg.wait_for_timeout(300)
-    ok(pg.locator('#filtro-mes option').count()==4,'el mes lista sólo los tres con registros')
-    pg.select_option('#filtro-mes','07'); pg.wait_for_timeout(300)
-    ok('Total: 1 ' in pg.inner_text('#registros-total'),'julio tiene uno: '+pg.inner_text('#registros-total'))
-    ok(pg.locator('#filtro-atajos .chip[aria-pressed=true]').count()==0,'ningún atajo queda marcado al elegir mes suelto')
+    ok(pg.locator('#filtro-anio').count()==0 and pg.locator('#filtro-mes').count()==0,'ya no hay listas de año ni de mes: los atajos «Este mes» y «Este año» las sustituyen')
+    pg.click('#filtro-atajos [data-atajo=anio]'); pg.wait_for_timeout(300)
+    ok('Total: 4 ' in pg.inner_text('#registros-total') and pg.get_attribute('#filtro-atajos [data-atajo=anio]','aria-pressed')=='true' and pg.locator('#filtro-atajos .chip[aria-pressed=true]').count()==1,'«Este año» deja los cuatro de 2026: '+pg.inner_text('#registros-total'))
+    pg.click('#filtro-atajos [data-atajo=mes]'); pg.wait_for_timeout(300)
+    ok(pg.evaluate("SRP.registros.filtrados.every(r => r.fecha_plantacion.startsWith(SRP.util.fechaHoy().slice(0, 7)))") and pg.get_attribute('#filtro-atajos [data-atajo=mes]','aria-pressed')=='true','«Este mes» deja sólo los del mes en curso')
     ok(pg.is_hidden('#filtro-desde'),'el rango viene plegado')
     pg.click('.chip[data-atajo=periodo]'); pg.wait_for_timeout(200)
     ok(pg.is_visible('#filtro-desde') and pg.get_attribute('.chip[data-atajo=periodo]','aria-expanded')=='true','«Un periodo» abre Desde/Hasta (D64)')
-    ok(pg.is_hidden('#filtro-anio') and pg.is_hidden('#filtro-mes'),'con «Un periodo» abierto no se ven Año y Mes: nunca dos maneras del periodo a la vez (D100)')
-    ok(pg.is_visible('#filtro-mas-filtros') and pg.is_hidden('#caja-filtro-anio') and pg.locator('#filtro-especie').count()==1,'y el acordeón «Más filtros» sigue con especie, programa y alcaldía, sin año ni mes (D129, D200)')
+    ok(pg.is_visible('#filtro-mas-filtros') and pg.locator('#filtro-especie').count()==1,'y el acordeón «Más filtros» sigue con especie, programa y alcaldía (D129, D200)')
     ok(pg.evaluate("document.activeElement.id")!='filtro-desde','y no mueve el foco a Desde (D82)')
     pg.fill('#filtro-desde','2026-07-01'); pg.wait_for_timeout(200)
     ok(pg.evaluate("document.activeElement.id")!='filtro-hasta','al elegir Desde, el foco no pasa a Hasta (D82)')
@@ -654,7 +651,7 @@ with sync_playwright() as p:
     ok('posterior' in pg.inner_text('#aviso'),'un rango invertido se rechaza')
     pg.fill('#filtro-desde','2026-08-01'); pg.fill('#filtro-hasta','2026-08-31'); pg.click('#btn-filtrar'); pg.wait_for_timeout(300)
     ok('Total: 1 ' in pg.inner_text('#registros-total'),'el rango de agosto trae uno')
-    ok(pg.input_value('#filtro-anio')=='','el rango limpia Año y Mes')
+    ok(pg.evaluate("SRP.registros.filtro.anio + SRP.registros.filtro.mes")=='','el rango quita «Este mes» y «Este año»')
     ok(pg.get_attribute('.chip[data-atajo=periodo]','aria-pressed')=='true','y «Un periodo» queda marcado mientras haya rango')
     # Reiniciar vuelve al estado de entrada: Hoy, sin rango (D53)
     pg.click('#btn-reiniciar-filtros'); pg.wait_for_timeout(300)
@@ -662,12 +659,12 @@ with sync_playwright() as p:
        '«Quitar filtros» vuelve a Todos y limpia el rango (D104, D153)')
     ok('Total: 4 ' in pg.inner_text('#registros-total'),'y lista todos: '+pg.inner_text('#registros-total'))
     ok(pg.is_hidden('#filtro-desde'),'y Reiniciar pliega Desde/Hasta')
-    ok([c for c in pg.eval_on_selector_all('#filtro-atajos .chip','b=>b.map(x=>x.dataset.atajo)')]==['todos','hoy','dia','periodo'],'los atajos son Todos, Hoy, Un día y Un periodo, en ese orden, como en Jornadas (D64, D113, D129)')
+    ok([c for c in pg.eval_on_selector_all('#filtro-atajos .chip','b=>b.map(x=>x.dataset.atajo)')]==['todos','hoy','mes','anio','dia','periodo'],'los atajos son Todos, Hoy, Este mes, Este año, Un día y Un periodo, en ese orden, como en Jornadas (D64, D113, D129)')
     # «Un día» (D113): una sola fecha, sin repetirla en Desde y Hasta
     abrir_filtros(pg)
     pg.click('#filtro-atajos [data-atajo=dia]'); pg.wait_for_timeout(300)
-    ok(pg.is_visible('#filtro-un-dia') and pg.is_hidden('#filtro-periodo') and pg.is_hidden('#caja-filtro-anio') and pg.get_attribute('#filtro-atajos [data-atajo=dia]','aria-pressed')=='true',
-       '«Un día» muestra una sola fecha y esconde año, mes y el rango (D113)')
+    ok(pg.is_visible('#filtro-un-dia') and pg.is_hidden('#filtro-periodo') and pg.get_attribute('#filtro-atajos [data-atajo=dia]','aria-pressed')=='true',
+       '«Un día» muestra una sola fecha y esconde el rango (D113)')
     pg.fill('#filtro-dia','2026-08-10'); pg.dispatch_event('#filtro-dia','change'); pg.wait_for_timeout(400)
     ok(pg.inner_text('#registros-total').startswith('Total: 1 registro') and 'ago' in pg.inner_text('#lista-registros').lower() or '10-AGO-2026' in pg.inner_text('#lista-registros'),
        'al elegir la fecha se filtra en el acto, sin «Aplicar» (D113): '+pg.inner_text('#registros-total'))
@@ -681,7 +678,7 @@ with sync_playwright() as p:
       const g = e => getComputedStyle(e);
       const act = document.querySelector('#filtro-atajos .chip[aria-pressed=true]');
       const chips = [...document.querySelectorAll('#filtro-atajos .chip')].map(c => Math.round(c.getBoundingClientRect().width));
-      const sel = document.getElementById('filtro-anio'), fec = document.getElementById('filtro-desde');
+      const sel = document.getElementById('filtro-especie'), fec = document.getElementById('filtro-desde');
       return {
         suave: g(act).backgroundColor === 'rgb(27, 95, 170)' && g(act).color === 'rgb(255, 255, 255)',
         iguales: Math.max(...chips) - Math.min(...chips) <= 1,
@@ -706,16 +703,13 @@ with sync_playwright() as p:
     ok(pg.locator('#lista-registros .registro-jornada').count()==pg.locator('#lista-registros .registro').count() and any('Jornada de prueba' in t for t in pg.eval_on_selector_all('#lista-registros .registro-jornada','l=>l.map(x=>x.textContent)')),'cada tarjeta de Registros dice a qué jornada pertenece el árbol (D134)')
     pg.click('.pestana[data-vista=jornadas]'); pg.wait_for_timeout(800)
     pg.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg.wait_for_timeout(600)
-    pg.evaluate("document.getElementById('jornada-mas-filtros').open = true")
-    n_cerradas=pg.evaluate("SRP.jornadas.lista.filter(j => j.estatus === 'cerrada').length")
-    ok(n_cerradas>=3 and [o for o in pg.eval_on_selector_all('#jornada-reporte option','l=>l.map(o=>o.textContent)')]==['Todos','Generado','Sin generar'] and 'reporte' in pg.inner_text('#jornada-mas-filtros-texto'),
-       'Jornadas trae el filtro «Reporte»: Todos, Generado y Sin generar: %d cerradas' % n_cerradas)
-    pg.select_option('#jornada-reporte','pendiente'); pg.wait_for_timeout(700)
+    n_sin=pg.evaluate("SRP.jornadas.lista.filter(j => j.estatus === 'cerrada' && j.registros.length && !j.dato.reporte_en).length")
+    ok(n_sin>=1 and pg.locator('#jornada-reporte').count()==0 and 'Sin reporte todavía' in pg.eval_on_selector_all('#jornada-revision option','l=>l.map(o=>o.textContent)'),
+       '«Sin reporte todavía» es una opción de «Pendientes», no un filtro aparte: %d cerradas sin reporte' % n_sin)
+    pg.select_option('#jornada-revision','sinreporte'); pg.wait_for_timeout(700)
     fr=pg.evaluate("[SRP.jornadas.lista.length, SRP.jornadas.lista.every(j => j.estatus === 'cerrada' && !j.dato.reporte_en), document.getElementById('jornada-fichas').textContent, [...document.querySelectorAll('#lista-jornadas .insignia-reporte')].map(x => x.textContent.trim())]")
-    ok(fr[0]==n_cerradas and fr[1] and 'Reporte: sin generar' in fr[2] and fr[3] and set(fr[3])=={'Sin reporte todavía'},'«Sin generar» deja las cerradas que aún no tienen reporte, con su ficha, y cada tarjeta lo dice: %s' % fr[:3])
-    pg.select_option('#jornada-reporte','generado'); pg.wait_for_timeout(700)
-    ok(pg.evaluate("SRP.jornadas.lista.length")==0,'«Generado» no deja ninguna: todavía no se ha generado ningún reporte')
-    pg.select_option('#jornada-reporte',''); pg.wait_for_timeout(700)
+    ok(fr[0]==n_sin and fr[1] and 'sin reporte' in fr[2].lower() and fr[3] and set(fr[3])=={'Sin reporte todavía'},'deja las cerradas con árboles que aún no tienen reporte, con su ficha, y cada tarjeta lo dice: %s' % fr[:3])
+    pg.select_option('#jornada-revision',''); pg.wait_for_timeout(700)
     ok(pg.evaluate("(() => { SRP.app.mostrarVista('galeria'); return SRP.app.vista; })()")=='galeria','el cabo abre sus fotografías')
     pg.evaluate("SRP.app.mostrarVista('jornadas')"); pg.wait_for_timeout(500)
     # Cualquier día, no sólo hoy (D70): la jornada de ese día genera su reporte desde su ficha
@@ -801,8 +795,8 @@ with sync_playwright() as p:
        'cada opción del menú de la cuenta lleva icono: sol en Modo sol y puerta en Cerrar sesión (D114)')
     pg.keyboard.press('Escape'); pg.evaluate("SRP.app.menuCuenta(false)"); pg.wait_for_timeout(150)
     ok(pg.evaluate("(() => { const b=document.querySelector('#navegacion [data-vista=jornadas]'); const r=b.getBoundingClientRect(); return r.top > 700 && r.bottom <= 844; })()"),'y en teléfono va en la barra de abajo')
-    ok([c for c in pg.eval_on_selector_all('#jornada-atajos .chip','b=>b.map(x=>x.dataset.atajo)')]==['todas','hoy','dia','periodo'],'con los atajos Todas, Hoy, Un día y Un periodo (D128)')
-    ok(pg.is_visible('#jornada-mas-filtros') and not pg.evaluate("document.getElementById('jornada-mas-filtros').open") and pg.locator('#jornada-mas-filtros select').count()==10 and 'Más filtros' in pg.inner_text('#jornada-mas-filtros summary'),'año, mes, cabo, programa, reporte, origen, prioridad, alcaldía, tipo de institución e institución van plegados en «Más filtros» (D128, D200)')
+    ok([c for c in pg.eval_on_selector_all('#jornada-atajos .chip','b=>b.map(x=>x.dataset.atajo)')]==['todas','hoy','mes','anio','dia','periodo'],'con los atajos Todas, Hoy, Este mes, Este año, Un día y Un periodo')
+    ok(pg.is_visible('#jornada-mas-filtros') and not pg.evaluate("document.getElementById('jornada-mas-filtros').open") and pg.locator('#jornada-mas-filtros select').count()==5 and 'Más filtros' in pg.inner_text('#jornada-mas-filtros summary'),'quién registró, programa, origen, alcaldía e institución van plegados en «Más filtros»')
     tarj=pg.locator('#lista-jornadas .jornada')
     ok(tarj.count()>=2 and re.match(r'^\d+ jornadas · \d+ árboles$', pg.inner_text('#jornadas-total')) is not None,'cada jornada es una ficha y el total dice jornadas y árboles: '+pg.inner_text('#jornadas-total'))
     t=[x for x in pg.eval_on_selector_all('#lista-jornadas .jornada','l=>l.map(x=>x.textContent)') if 'Jardín de prueba' in x]
@@ -914,17 +908,15 @@ with sync_playwright() as p:
     ok(pg.is_visible('#jornada-periodo') and pg.is_hidden('#jornada-un-dia') and pg.get_attribute('#jornada-atajos [data-atajo=periodo]','aria-pressed')=='true','«Un periodo» abre Desde y Hasta y cierra «Un día»')
     pg.fill('#jornada-desde', M['f']); pg.fill('#jornada-hasta', M['f']); pg.click('#btn-jornada-filtrar'); pg.wait_for_timeout(400)
     ok(pg.locator('#lista-jornadas .jornada').count()==3 and pg.evaluate("SRP.jornadas.filtro.dia")=='' and pg.evaluate("SRP.jornadas.filtro.desde")==M['f'],'el rango Desde/Hasta deja las 3 jornadas de ese día y el filtro por día queda vacío: %d' % pg.locator('#lista-jornadas .jornada').count())
-    # Año y mes sólo acompañan a «Todas» (D167): con el rango abierto no se ofrecen
-    ok(pg.is_hidden('#caja-jornada-anio'),'con «Un periodo» no se ofrecen año ni mes (D167)')
+    # Año y mes ya no son listas: «Este año» y «Este mes» son atajos y cierran el rango
+    ok(pg.locator('#caja-jornada-anio').count()==0 and pg.locator('#jornada-mes').count()==0,'Jornadas ya no lleva listas de año ni de mes')
+    pg.click('#jornada-atajos [data-atajo=anio]'); pg.wait_for_timeout(300)
+    ok(pg.is_hidden('#jornada-periodo') and pg.get_attribute('#jornada-atajos [data-atajo=anio]','aria-pressed')=='true' and pg.locator('#jornada-atajos .chip[aria-pressed=true]').count()==1 and pg.locator('#lista-jornadas .jornada').count()>=3 and pg.evaluate("SRP.jornadas.filtro.desde")=='',
+       '«Este año» cierra el rango y deja las jornadas del año en curso: %d' % pg.locator('#lista-jornadas .jornada').count())
+    pg.click('#jornada-atajos [data-atajo=mes]'); pg.wait_for_timeout(300)
+    ok(pg.get_attribute('#jornada-atajos [data-atajo=mes]','aria-pressed')=='true' and pg.evaluate("SRP.jornadas.lista.every(j => j.fecha.startsWith(SRP.util.fechaHoy().slice(0, 7)))"),'«Este mes» deja sólo las jornadas del mes en curso')
     pg.click('#jornada-atajos [data-atajo=todas]'); pg.wait_for_timeout(300)
-    pg.evaluate("document.getElementById('jornada-mas-filtros').open = true")
-    pg.select_option('#jornada-anio', M['f'][:4]); pg.wait_for_timeout(300)
-    ok(pg.is_hidden('#jornada-periodo') and pg.get_attribute('#jornada-atajos [data-atajo=todas]','aria-pressed')=='false' and pg.locator('#jornada-mes option').count()>=2 and not pg.is_disabled('#jornada-mes') and M['f'][:4] in pg.inner_text('#jornada-mas-filtros summary'),
-       'elegir un año cierra el rango, habilita los meses con jornadas y el resumen del acordeón dice el año: '+pg.inner_text('#jornada-mas-filtros summary'))
-    pg.select_option('#jornada-mes', M['f'][5:7]); pg.wait_for_timeout(300)
-    ok(pg.locator('#lista-jornadas .jornada').count()>=3 and all(t.count(M['f'][:4]) for t in pg.eval_on_selector_all('#lista-jornadas .jornada-fecha','l=>l.map(x=>x.textContent)')),'el mes filtra las jornadas de ese mes')
-    pg.click('#jornada-atajos [data-atajo=todas]'); pg.wait_for_timeout(300)
-    ok(pg.input_value('#jornada-anio')=='' and pg.input_value('#jornada-mes')=='' and 'año, mes' in pg.inner_text('#jornada-mas-filtros summary'),'«Todas» limpia año y mes y el acordeón vuelve a su texto')
+    ok(pg.evaluate("SRP.jornadas.filtro.anio + SRP.jornadas.filtro.mes")=='' and 'año' not in pg.inner_text('#jornada-mas-filtros summary'),'«Todas» quita el periodo, y «Más filtros» ya no menciona año ni mes: '+pg.inner_text('#jornada-mas-filtros summary'))
     pg.click('#jornada-atajos [data-atajo=dia]'); pg.fill('#jornada-dia', M['f']); pg.dispatch_event('#jornada-dia','change'); pg.wait_for_timeout(500)
     pg.click('#lista-jornadas .jornada:nth-child(2) button'); pg.wait_for_timeout(800)
     ok(pg.inner_text('#jornada-titulo')=='Parque Hundido' and 'Jornada 2 de 3' in pg.inner_text('#jornada-sub') and pg.inner_text('#jornada-registrados')=='2','la jornada 2 se revisa sola con su nombre: 2 registrados en esta jornada')
@@ -1233,7 +1225,7 @@ with sync_playwright() as p:
         nombres=z.namelist(); okzip=z.testzip() is None; primero=z.read(nombres[0])[:3]
     ok(dz.value.suggested_filename.startswith('Fotografias_SRP') and okzip and len(nombres)>=1 and primero==b'\xff\xd8\xff','«Descargar todas» arma un ZIP válido con las fotos en JPEG: %s' % nombres)
     # Por jornada (D135): la lista trae las jornadas con fotos; elegir una filtra y nombra el ZIP con ella
-    ok([c for c in pg.eval_on_selector_all('#galeria-atajos .chip','b=>b.map(x=>x.dataset.atajo)')]==['todas','hoy','dia','periodo'],'los atajos de Fotografías van en el orden Todas, Hoy, Un día, Un periodo (D135)')
+    ok([c for c in pg.eval_on_selector_all('#galeria-atajos .chip','b=>b.map(x=>x.dataset.atajo)')]==['todas','hoy','mes','anio','dia','periodo'],'los atajos de Fotografías van en el orden Todas, Hoy, Este mes, Este año, Un día, Un periodo')
     pg.click('#galeria-atajos [data-atajo=todas]'); pg.wait_for_timeout(300)
     opciones=pg.eval_on_selector('#galeria-jornada',"s=>[...s.options].map(o=>o.value)")
     ok(len(opciones)>=2 and opciones[0]=='' and not pg.is_disabled('#galeria-jornada'),'la lista de jornadas ofrece «Todas» y las jornadas con fotografías: %d' % (len(opciones)-1))
@@ -3061,22 +3053,21 @@ with sync_playwright() as p:
     pg27.goto(BASE); pg27.wait_for_timeout(1200)
     pg27.select_option('#sel-usuario-prueba','u-admin-1'); pg27.click('#btn-entrar-prueba'); pg27.wait_for_timeout(900)
     pg27.evaluate("SRP.demo.cargar()"); pg27.wait_for_timeout(800)
-    # Registros: con «Hoy» no hay año ni mes; con «Todos» sí
+    # Año y mes ya no son listas: los atajos «Este mes» y «Este año» los sustituyen
     pg27.evaluate("SRP.app.mostrarVista('registros')"); pg27.wait_for_timeout(700)
-    pg27.evaluate("SRP.registros.aplicarAtajo('hoy')"); pg27.wait_for_timeout(400)
-    rh27=pg27.evaluate("[document.getElementById('caja-filtro-anio').hidden, document.getElementById('caja-filtro-mes').hidden, document.getElementById('filtro-mas-filtros-texto').textContent]")
+    pg27.evaluate("SRP.registros.aplicarAtajo('mes')"); pg27.wait_for_timeout(400)
+    rm27=pg27.evaluate("(() => { const h = SRP.util.fechaHoy().slice(0, 7); return [document.querySelector('#filtro-atajos [data-atajo=mes]').getAttribute('aria-pressed'), SRP.registros.filtrados.every(r => r.fecha_plantacion.startsWith(h)), document.getElementById('caja-filtro-anio') === null]; })()")
+    pg27.evaluate("SRP.registros.aplicarAtajo('anio')"); pg27.wait_for_timeout(400)
+    ra27=pg27.evaluate("(() => { const h = SRP.util.fechaHoy().slice(0, 4); return [document.querySelector('#filtro-atajos [data-atajo=anio]').getAttribute('aria-pressed'), SRP.registros.filtrados.length > 0 && SRP.registros.filtrados.every(r => r.fecha_plantacion.startsWith(h)), document.getElementById('filtro-mas-filtros-texto').textContent]; })()")
     pg27.evaluate("SRP.registros.aplicarAtajo('todos')"); pg27.wait_for_timeout(400)
-    rt27=pg27.evaluate("[document.getElementById('caja-filtro-anio').hidden, document.getElementById('filtro-mas-filtros-texto').textContent]")
-    ok(rh27[0] and rh27[1] and 'año' not in rh27[2] and not rt27[0] and 'año, mes' in rt27[1],'en Registros, «Hoy» no ofrece año ni mes; «Todos» sí: %s · %s' % (rh27, rt27))
-    # Jornadas: igual; y con «Un día» tampoco
+    ok(rm27==['true',True,True] and ra27[0]=='true' and ra27[1] and 'año' not in ra27[2],'en Registros, «Este mes» y «Este año» filtran el periodo en curso; «Más filtros» ya no lleva año ni mes: %s · %s' % (rm27, ra27))
     pg27.evaluate("SRP.app.mostrarVista('jornadas')"); pg27.wait_for_timeout(700)
-    pg27.evaluate("SRP.jornadas.aplicarAtajo('hoy')"); pg27.wait_for_timeout(500)
-    jh27=pg27.evaluate("[document.getElementById('caja-jornada-anio').hidden, document.getElementById('caja-jornada-mes').hidden, document.getElementById('jornada-mas-filtros-texto').textContent, document.getElementById('jornada-mas-filtros').hidden]")
-    pg27.evaluate("SRP.jornadas.aplicarAtajo('dia')"); pg27.wait_for_timeout(400)
-    jd27=pg27.evaluate("document.getElementById('caja-jornada-anio').hidden")
+    pg27.evaluate("SRP.jornadas.aplicarAtajo('mes')"); pg27.wait_for_timeout(500)
+    jm27=pg27.evaluate("(() => { const h = SRP.util.fechaHoy().slice(0, 7); return [document.querySelector('#jornada-atajos [data-atajo=mes]').getAttribute('aria-pressed'), SRP.jornadas.lista.every(j => j.fecha.startsWith(h)), document.getElementById('caja-jornada-anio') === null]; })()")
+    pg27.evaluate("SRP.jornadas.aplicarAtajo('anio')"); pg27.wait_for_timeout(500)
+    ja27=pg27.evaluate("(() => { const h = SRP.util.fechaHoy().slice(0, 4); return [document.querySelector('#jornada-atajos [data-atajo=anio]').getAttribute('aria-pressed'), SRP.jornadas.lista.length > 0 && SRP.jornadas.lista.every(j => j.fecha.startsWith(h)), document.getElementById('jornada-mas-filtros-texto').textContent]; })()")
     pg27.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg27.wait_for_timeout(500)
-    jt27=pg27.evaluate("[document.getElementById('caja-jornada-anio').hidden, document.getElementById('jornada-mas-filtros-texto').textContent]")
-    ok(jh27[0] and jh27[1] and 'año' not in jh27[2] and jd27 and not jt27[0] and 'año, mes' in jt27[1],'en Jornadas, «Hoy» y «Un día» no ofrecen año ni mes; «Todas» sí: %s · %s' % (jh27, jt27))
+    ok(jm27==['true',True,True] and ja27[0]=='true' and ja27[1] and 'año' not in ja27[2],'en Jornadas, igual: %s · %s' % (jm27, ja27))
     # La tuerca es sólo su icono: sin círculo ni contorno, con su área de toque
     pg27.locator('#lista-jornadas .jornada .jornada-boton').first.click(); pg27.wait_for_timeout(900)
     tu27=pg27.evaluate("(() => { const b = document.querySelector('#jornada-lista .btn-tuerca'); const c = getComputedStyle(b); const r = b.getBoundingClientRect(); return [c.borderRadius, c.backgroundColor, c.borderTopColor, Math.round(r.width), Math.round(r.height)]; })()")
@@ -3850,9 +3841,6 @@ with sync_playwright() as p:
     ok(dc44.value.suggested_filename=='Arboles_todo_ALC_IZP.csv' and csv44.split('\r\n')[0].startswith('﻿"Folio","Fecha de plantación","Jornada","Institución que ejecuta","Cabo"') and '"Alcaldía Iztapalapa"' in csv44 and 'SEDEMA' not in csv44,
        'la tabla para Excel dice la institución que ejecuta y se nombra por ella: %s' % dc44.value.suggested_filename)
     pg44.select_option('#sup-organizacion',''); pg44.wait_for_timeout(900)
-    ti44=pg44.input_value('#sup-tipo')   # quitar la institución deja su tipo: se sube un nivel (D202)
-    pg44.select_option('#sup-tipo',''); pg44.wait_for_timeout(900)
-    ok(ti44=='Alcaldía','al quitar la institución queda su tipo elegido, para ver todas las de ese tipo: %s' % ti44)
     pg44.click('#sup-tipos .chip[data-tipo=anio]'); pg44.wait_for_timeout(900)
     with pg44.expect_download() as dp44: pg44.click('#btn-sup-pdf')
     dp44.value.save_as(sal('informe_org.pdf'))
@@ -4345,9 +4333,10 @@ with sync_playwright() as p:
     def revision53(v):
         pg53.select_option('#jornada-revision', v); pg53.wait_for_timeout(500)
         return sorted(x.split('\n')[0] for x in pg53.eval_on_selector_all('#lista-jornadas .jornada','l=>l.map(x=>x.innerText)'))
-    r53={v: revision53(v) for v in ['revisar','cuadra','pendiente','lista']}
-    ok(r53=={'revisar':['Parque de los Venados'],'cuadra':['Camellón Insurgentes'],'pendiente':['Camellón Insurgentes','Parque de los Venados'],'lista':['Parque Hundido, sección norte']},
-       'el filtro de revisión deja las jornadas con puntos por revisar, las que no cuadran con lo previsto, cualquiera de las dos o las que no tienen pendientes: %s' % r53)
+    r53={v: revision53(v) for v in ['revisar','cuadra','sinreporte','pendiente','lista']}
+    ok(r53['revisar']==['Parque de los Venados'] and r53['cuadra']==['Camellón Insurgentes'] and 'Parque Hundido, sección norte' in r53['sinreporte']
+       and r53['pendiente']==sorted(set(r53['revisar']+r53['cuadra']+r53['sinreporte'])) and not set(r53['lista']) & set(r53['pendiente']) and len(r53['lista'])+len(r53['pendiente'])==3,
+       '«Pendientes» deja las jornadas con puntos por revisar, las que no cuadran, las cerradas sin reporte, cualquiera de las tres o las que no tienen pendientes: %s' % r53)
     pg53.fill('#jornada-buscar','camellón'); pg53.wait_for_timeout(500)
     vr53=pg53.inner_text('#jornadas-vacio')
     pg53.click('#jornadas-vacio button[data-vacio=todas]'); pg53.wait_for_timeout(500)
@@ -4441,9 +4430,9 @@ with sync_playwright() as p:
     # Registros
     pg55.evaluate("SRP.app.mostrarVista('registros')"); pg55.wait_for_timeout(1500)
     pg55.evaluate("document.getElementById('filtro-mas-filtros').open = true"); pg55.wait_for_timeout(150)
-    vis55=pg55.evaluate("['filtro-especie','filtro-programa','filtro-alcaldia','filtro-tipo-org','filtro-org'].map(id => !document.getElementById(id).closest('[hidden]'))")
-    ok(vis55==[True]*5 and 'especie, programa, alcaldía e institución' in pg55.inner_text('#filtro-mas-filtros summary'),
-       'en Registros la Administración global filtra por especie, programa, alcaldía, tipo de institución e institución: %s' % pg55.inner_text('#filtro-mas-filtros summary'))
+    vis55=pg55.evaluate("['filtro-especie','filtro-programa','filtro-alcaldia','filtro-org'].map(id => !document.getElementById(id).closest('[hidden]'))")
+    ok(vis55==[True]*4 and 'especie, programa, alcaldía e institución' in pg55.inner_text('#filtro-mas-filtros summary'),
+       'en Registros la Administración global filtra por especie, programa, alcaldía e institución: %s' % pg55.inner_text('#filtro-mas-filtros summary'))
     esp55=pg55.evaluate("document.querySelector('#filtro-especie option:nth-child(2)').value")
     pg55.select_option('#filtro-especie', esp55); pg55.wait_for_timeout(500)
     r55=pg55.evaluate("(e) => ({ n: SRP.registros.filtrados.length, todos: SRP.registros.filtrados.every(r => (r.especie_id || '__otra') === e), total: SRP.registros.visibles.length })", esp55)
@@ -4456,20 +4445,13 @@ with sync_playwright() as p:
     ok(r55 and pg55.locator('#filtros-activos .ficha-filtro').count()==2,'programa y alcaldía se combinan, cada uno con su ficha')
     pg55.click('#btn-reiniciar-filtros'); pg55.wait_for_timeout(500)
     pg55.evaluate("document.getElementById('filtro-mas-filtros').open = true"); pg55.wait_for_timeout(150)
-    # Tipo e institución dependientes
-    pg55.select_option('#filtro-tipo-org','Alcaldía'); pg55.wait_for_timeout(500)
-    d55=pg55.evaluate("""() => ({ orgs: [...document.querySelectorAll('#filtro-org option')].slice(1).map(o => SRP.ref.catalogoPorId[o.value].tipo_organizacion),
-      todos: SRP.registros.filtrados.every(r => SRP.ref.catalogoPorId[SRP.registros.orgDe(r)].tipo_organizacion === 'Alcaldía'), n: SRP.registros.filtrados.length })""")
-    ok(len(d55['orgs'])>=1 and set(d55['orgs'])=={'Alcaldía'} and d55['todos'] and d55['n']>0,'el tipo de institución acota la lista de instituciones y los árboles: %s instituciones, %s árboles' % (len(d55['orgs']), d55['n']))
-    pg55.select_option('#filtro-tipo-org',''); pg55.wait_for_timeout(400)
+    d55=pg55.evaluate("""() => ({ grupos: [...document.querySelectorAll('#filtro-org optgroup')].map(g => g.label), tipo: document.getElementById('filtro-tipo-org') === null, bien: [...document.querySelectorAll('#filtro-org optgroup')].every(g => [...g.children].every(o => SRP.ref.catalogoPorId[o.value].tipo_organizacion === g.label)) })""")
     pg55.select_option('#filtro-org','o-green-cover'); pg55.wait_for_timeout(500)
-    t55=pg55.input_value('#filtro-tipo-org')
-    pg55.select_option('#filtro-tipo-org','Alcaldía'); pg55.wait_for_timeout(500)
-    ok(t55=='Empresa privada' and pg55.input_value('#filtro-org')=='' ,'elegir una institución pone su tipo, y cambiar el tipo quita la institución que ya no es de ese tipo: %s' % t55)
-    pg55.select_option('#filtro-org', pg55.evaluate("document.querySelector('#filtro-org option:nth-child(2)').value")); pg55.wait_for_timeout(400)
+    g55=pg55.evaluate("[SRP.registros.filtrados.length, SRP.registros.filtrados.every(r => SRP.registros.orgDe(r) === 'o-green-cover')]")
+    ok(d55['tipo'] and len(d55['grupos'])>=2 and d55['bien'] and g55[0]>0 and g55[1],'la institución es una sola lista agrupada por tipo, y elegir una deja sólo sus árboles: %s, %s árboles' % (d55['grupos'], g55[0]))
     pg55.evaluate("SRP.registros.plegarFiltros(false)"); pg55.wait_for_timeout(200)
     pg55.click('#filtros-activos button[data-quitar=institucion]'); pg55.wait_for_timeout(500)
-    ok(pg55.input_value('#filtro-org')=='' and pg55.input_value('#filtro-tipo-org')=='' and pg55.evaluate("SRP.registros.filtrados.length==SRP.registros.visibles.length"),'la ficha de la institución quita tipo e institución a la vez')
+    ok(pg55.input_value('#filtro-org')=='' and pg55.evaluate("SRP.registros.filtrados.length==SRP.registros.visibles.length"),'la ficha de la institución la quita')
     # Paginador con muchas páginas en el teléfono: 1 2 3 … última, y la última lleva al final
     n55=pg55.eval_on_selector_all('#registros-paginas .paginador-botones > *','l=>l.map(x=>x.textContent.trim())')
     ult55=str(-(-pg55.evaluate("SRP.registros.visibles.length") // 10))
@@ -4486,16 +4468,14 @@ with sync_playwright() as p:
     j55=pg55.evaluate("(a) => ({ n: SRP.jornadas.lista.length, todos: SRP.jornadas.lista.every(j => SRP.jornadas.alcaldiasFiltro(j).includes(a)), total: SRP.jornadas._todas.length })", alc55)
     ok(j55['n']>0 and j55['todos'] and j55['n']<j55['total'] and alc55 in pg55.inner_text('#jornada-mas-filtros summary'),'en Jornadas se filtra por alcaldía y el acordeón lo dice: %s de %s' % (j55['n'], j55['total']))
     pg55.select_option('#jornada-alcaldia',''); pg55.wait_for_timeout(1200)
-    pg55.select_option('#jornada-tipo-org','Gobierno de la CDMX'); pg55.wait_for_timeout(1500)
-    j55=pg55.evaluate("""() => ({ orgs: [...document.querySelectorAll('#jornada-org option')].slice(1).map(o => o.value),
-      todos: SRP.jornadas.lista.every(j => SRP.ref.catalogoPorId[SRP.jornadas.orgDe(j)].tipo_organizacion === 'Gobierno de la CDMX'), n: SRP.jornadas.lista.length })""")
+    j55=pg55.evaluate("""() => ({ orgs: [...document.querySelectorAll('#jornada-org option')].slice(1).map(o => o.value), grupos: [...document.querySelectorAll('#jornada-org optgroup')].map(g => g.label), tipo: document.getElementById('jornada-tipo-org') === null })""")
     pg55.select_option('#jornada-org','o-paot'); pg55.wait_for_timeout(1500)
     jp55=pg55.evaluate("SRP.jornadas.lista.length>0 && SRP.jornadas.lista.every(j => SRP.jornadas.orgDe(j) === 'o-paot')")
-    ok('o-sedema' in j55['orgs'] and 'o-paot' in j55['orgs'] and j55['todos'] and j55['n']>0 and jp55,'en Jornadas, tipo de institución e institución dependientes: Gobierno de la CDMX ofrece SEDEMA y PAOT, y PAOT deja sólo sus jornadas')
+    ok(j55['tipo'] and 'o-sedema' in j55['orgs'] and 'o-paot' in j55['orgs'] and 'Gobierno de la CDMX' in j55['grupos'] and jp55,'en Jornadas la institución es una sola lista agrupada por tipo: Gobierno de la CDMX reúne SEDEMA y PAOT, y PAOT deja sólo sus jornadas')
     pg55.select_option('#jornada-org','o-green-cover') if pg55.locator('#jornada-org option[value=o-green-cover]').count() else None
     pg55.evaluate("Object.assign(SRP.jornadas.filtro, { texto: 'zzzz-no-existe' }); SRP.jornadas.pintarLista()"); pg55.wait_for_timeout(1200)
     pg55.click('#jornadas-vacio button[data-vacio]'); pg55.wait_for_timeout(1500)
-    ok(pg55.evaluate("['alcaldia','tipo','organizacion'].every(k => SRP.jornadas.filtro[k] === '')") and pg55.input_value('#jornada-org')=='','«Ver todas» también quita alcaldía e institución')
+    ok(pg55.evaluate("['alcaldia','organizacion'].every(k => SRP.jornadas.filtro[k] === '')") and pg55.input_value('#jornada-org')=='','«Ver todas» también quita alcaldía e institución')
     ok(pg55.evaluate("document.documentElement.scrollWidth")<=390,'los filtros nuevos no se salen de lado en el teléfono')
     # Catálogos › Instituciones: buscar y filtrar por tipo, agrupadas por tipo
     pg55.evaluate("SRP.app.mostrarVista('catalogos')"); pg55.wait_for_timeout(500)
@@ -4524,10 +4504,10 @@ with sync_playwright() as p:
     pg55.goto(BASE); pg55.wait_for_timeout(1300)
     pg55.select_option('#sel-usuario-prueba','u-cabo-1'); pg55.click('#btn-entrar-prueba'); pg55.wait_for_timeout(700)
     pg55.evaluate("SRP.app.mostrarVista('registros')"); pg55.wait_for_timeout(800)
-    c55=pg55.evaluate("['filtro-especie','filtro-programa','filtro-alcaldia','filtro-tipo-org','filtro-org'].map(id => !document.getElementById(id).closest('[hidden]'))")
+    c55=pg55.evaluate("['filtro-especie','filtro-programa','filtro-alcaldia','filtro-org'].map(id => !document.getElementById(id).closest('[hidden]'))")
     pg55.evaluate("SRP.app.mostrarVista('jornadas')"); pg55.wait_for_timeout(800)
-    cj55=pg55.evaluate("['jornada-alcaldia','jornada-tipo-org','jornada-org'].map(id => !document.getElementById(id).closest('[hidden]'))")
-    ok(c55==[True,True,True,False,False] and cj55==[True,False,False],'el cabo filtra por especie, programa y alcaldía; tipo e institución son de la Administración global: %s %s' % (c55, cj55))
+    cj55=pg55.evaluate("['jornada-alcaldia','jornada-org'].map(id => !document.getElementById(id).closest('[hidden]'))")
+    ok(c55==[True,True,True,False] and cj55==[True,False],'el cabo filtra por especie, programa y alcaldía; la institución es de la Administración global: %s %s' % (c55, cj55))
     ok(not err55,'sin errores en consola: %s' % err55[:2])
     ctx55.close()
 
@@ -4563,16 +4543,14 @@ with sync_playwright() as p:
     pg56.evaluate("SRP.app.mostrarVista('supervision')"); pg56.wait_for_timeout(2500)
     pg56.evaluate("document.getElementById('sup-filtros').open = true")
     pg56.click('#sup-tipos .chip[data-tipo=todo]'); pg56.wait_for_timeout(1500)
-    pg56.select_option('#sup-tipo','Alcaldía'); pg56.wait_for_timeout(1500)
-    s56=pg56.evaluate("() => ({ orgs: [...document.querySelectorAll('#sup-organizacion option')].slice(1).map(o => SRP.ref.catalogoPorId[o.value].tipo_organizacion), cabos: [...document.querySelectorAll('#sup-cabo option')].slice(1).map(o => (SRP.ref.usuarioPorId[o.value] || {}).organizacion_id), n: SRP.supervision.modelo.cifras.arboles, titulo: SRP.informes.titulo(SRP.supervision.modelo) })")
-    ok(pg56.is_visible('#sup-tipo') and set(s56['orgs'])=={'Alcaldía'} and all(SRP_o.startswith('o-alc') for SRP_o in s56['cabos']) and s56['n']>0 and s56['titulo'].endswith('· Alcaldía'),
-       'Supervisión tiene tipo de institución: acota instituciones, personas y cifras, y el informe lo dice: %s' % s56['titulo'])
-    pg56.select_option('#sup-organizacion','o-paot') if pg56.locator('#sup-organizacion option[value=o-paot]').count() else None
-    pg56.wait_for_timeout(300)
-    pg56.select_option('#sup-tipo',''); pg56.wait_for_timeout(800)
+    s56=pg56.evaluate("() => ({ grupos: [...document.querySelectorAll('#sup-organizacion optgroup')].map(g => g.label), tipo: document.getElementById('sup-tipo') === null })")
+    alc56=pg56.evaluate("document.querySelector('#sup-organizacion optgroup[label=Alcaldía] option').value")
+    pg56.select_option('#sup-organizacion', alc56); pg56.wait_for_timeout(1500)
+    c56=pg56.evaluate("() => ({ cabos: [...document.querySelectorAll('#sup-cabo option')].slice(1).map(o => (SRP.ref.usuarioPorId[o.value] || {}).organizacion_id), n: SRP.supervision.modelo.cifras.arboles })")
+    ok(s56['tipo'] and 'Alcaldía' in s56['grupos'] and len(s56['grupos'])>=2 and all(o==alc56 for o in c56['cabos']) and c56['n']>0,
+       'Supervisión filtra por institución en una sola lista agrupada por tipo, que acota personas y cifras: %s' % s56['grupos'])
     pg56.select_option('#sup-organizacion','o-paot'); pg56.wait_for_timeout(1500)
-    s56=pg56.evaluate("[document.getElementById('sup-tipo').value, document.getElementById('sup-filtros-texto').textContent]")
-    ok(s56[0]=='Gobierno de la CDMX','elegir institución en Supervisión pone su tipo: %s' % s56)
+    ok(pg56.input_value('#sup-organizacion')=='o-paot','y se cambia de institución sin pasar antes por el tipo')
     pg56.evaluate("SRP.app.mostrarVista('cambios')"); pg56.wait_for_timeout(500)
     ok(pg56.evaluate("document.querySelector('#cmb-sobre option').textContent")=='Todo','en el Registro de cambios la primera opción de «Sobre» es «Todo»')
     # Coordinación de alcaldía: Supervisión ofrece sólo lo suyo
@@ -4580,7 +4558,7 @@ with sync_playwright() as p:
     pg56.evaluate("SRP.app.mostrarVista('registros')"); pg56.wait_for_timeout(1500)
     ra56=pg56.evaluate("[document.querySelectorAll('#filtro-alcaldia option').length, document.querySelectorAll('#filtro-programa option').length]")
     pg56.evaluate("SRP.app.mostrarVista('supervision')"); pg56.wait_for_timeout(2500)
-    sa56=pg56.evaluate("[document.querySelectorAll('#sup-alcaldia option').length, document.querySelectorAll('#sup-programa option').length, !document.getElementById('caja-sup-tipo').closest('[hidden]')]")
+    sa56=pg56.evaluate("[document.querySelectorAll('#sup-alcaldia option').length, document.querySelectorAll('#sup-programa option').length, !!document.getElementById('caja-sup-tipo')]")
     ok(sa56[0]<=ra56[0] and sa56[1]<=ra56[1] and sa56[0]<17 and not sa56[2],'la coordinación de una alcaldía ve en Supervisión sólo sus alcaldías y programas (%s), no las 16 ni los 4, y sin tipo de institución' % sa56)
     pg56.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-cabo-alc'])"); pg56.reload(); pg56.wait_for_timeout(1800)
     pg56.evaluate("SRP.app.mostrarVista('supervision')"); pg56.wait_for_timeout(2500)
@@ -4851,15 +4829,12 @@ with sync_playwright() as p:
     pg59.evaluate("document.getElementById('jornada-mas-filtros').open = true")
     z59=pg59.evaluate("""() => ({ listas: [...document.querySelectorAll('#jornada-mas-filtros select')].filter(s => !s.closest('[hidden]')).map(s => document.querySelector('label[for=' + s.id + ']').textContent),
       resumen: document.getElementById('jornada-mas-filtros-texto').textContent, total: SRP.jornadas.lista.length, cerradas: SRP.jornadas.lista.filter(j => j.estatus === 'cerrada').length })""")
-    ok('Reporte' in z59['listas'] and z59['listas'].index('Reporte')==z59['listas'].index('Programa')+1 and 'reporte' in z59['resumen'],'Jornadas tiene «Reporte» entre sus filtros, junto a Programa: %s' % z59['listas'])
-    pg59.select_option('#jornada-reporte','pendiente'); pg59.wait_for_timeout(2000)
-    r59=pg59.evaluate("[SRP.jornadas.lista.length, SRP.jornadas.lista.every(j => j.estatus === 'cerrada' && !j.dato.reporte_en), document.getElementById('jornada-fichas').textContent, document.getElementById('jornada-mas-filtros-texto').textContent, document.getElementById('jornada-quitar').hidden]")
-    ok(0<r59[0]<z59['cerradas'] and r59[1] and 'Reporte: sin generar' in r59[2] and r59[3]=='Más filtros: reporte sin generar' and not r59[4],'«Reporte: sin generar» deja las jornadas cerradas que aún no tienen reporte, con su ficha y «Quitar filtros»: %s de %s' % (r59[0], z59['cerradas']))
-    pg59.select_option('#jornada-reporte','generado'); pg59.wait_for_timeout(2000)
-    g59r=pg59.evaluate("[SRP.jornadas.lista.length, SRP.jornadas.lista.every(j => !!j.dato.reporte_en)]")
-    ok(g59r[0]+r59[0]==z59['cerradas'] and g59r[1],'«Generado» deja las que ya lo tienen; entre las dos opciones suman las cerradas: %s + %s = %s' % (g59r[0], r59[0], z59['cerradas']))
-    pg59.click('#jornada-fichas button[data-quitar=reporte]'); pg59.wait_for_timeout(2000)
-    ok(pg59.input_value('#jornada-reporte')=='' and pg59.evaluate("SRP.jornadas.lista.length")==z59['total'],'la ficha quita el filtro con la ×')
+    ok('Reporte' not in z59['listas'] and 'Origen' in z59['listas'] and 'reporte' not in z59['resumen'] and len(z59['listas'])<=5,'«Más filtros» de Jornadas lleva sólo listas: quién registró, programa, origen, alcaldía e institución: %s' % z59['listas'])
+    pg59.select_option('#jornada-revision','sinreporte'); pg59.wait_for_timeout(2000)
+    r59=pg59.evaluate("[SRP.jornadas.lista.length, SRP.jornadas.lista.every(j => j.estatus === 'cerrada' && !j.dato.reporte_en), document.getElementById('jornada-fichas').textContent, document.getElementById('jornada-quitar').hidden]")
+    ok(0<r59[0]<z59['cerradas'] and r59[1] and 'sin reporte' in r59[2].lower() and not r59[3],'«Pendientes: sin reporte todavía» deja las jornadas cerradas que aún no tienen reporte, con su ficha y «Quitar filtros»: %s de %s' % (r59[0], z59['cerradas']))
+    pg59.click('#jornada-fichas button[data-quitar=revision]'); pg59.wait_for_timeout(2000)
+    ok(pg59.input_value('#jornada-revision')=='' and pg59.evaluate("SRP.jornadas.lista.length")==z59['total'],'la ficha quita el filtro con la ×')
     # Fotografías: la misma zona, con jornada, especie, programa y alcaldía
     pg59.evaluate("SRP.app.mostrarVista('galeria')"); pg59.wait_for_timeout(2500)
     pg59.evaluate("document.getElementById('galeria-mas').open = true")
@@ -4867,7 +4842,7 @@ with sync_playwright() as p:
       esp: [...document.querySelectorAll('#galeria-especie option')].map(o => o.value).filter(Boolean) })""")
     pg59.select_option('#galeria-especie', g59['esp'][0]); pg59.wait_for_timeout(2000)
     ge59=pg59.evaluate("[SRP.galeria.fotos.length, SRP.galeria.fotos.every(r => (r.especie_id || '__otra') === SRP.galeria.filtro.especie), document.getElementById('galeria-fichas').textContent, [...document.querySelectorAll('#galeria-jornada option')].length]")
-    ok(g59['listas']==['Año','Mes','Jornada','Quién registró','Especie','Programa','Alcaldía','Tipo de institución','Institución'] and 0<ge59[0]<g59['n'] and ge59[1] and ge59[2].startswith('Especie: '),
+    ok(g59['listas']==['Jornada','Quién registró','Especie','Programa','Alcaldía','Institución'] and 0<ge59[0]<g59['n'] and ge59[1] and ge59[2].startswith('Especie: '),
        'Fotografías tiene la misma zona, con jornada, especie, programa, alcaldía e institución; elegir una especie deja sus fotografías y su ficha: %s de %s' % (ge59[0], g59['n']))
     pg59.click('#galeria-quitar'); pg59.wait_for_timeout(1500)
     # Jornadas: programa, fichas y «Quitar filtros»
@@ -4879,7 +4854,7 @@ with sync_playwright() as p:
     j59=pg59.evaluate("[SRP.jornadas.lista.length, SRP.jornadas.lista.every(j => j.dato.programa_id === SRP.jornadas.filtro.programa), document.getElementById('jornada-fichas').textContent, document.getElementById('jornada-quitar').hidden]")
     ok(len(pr59)>=2 and 0<j59[0]<tj59 and j59[1] and j59[2].startswith('Programa: ') and not j59[3],'Jornadas filtra por programa, con su ficha y «Quitar filtros»: %s de %s' % (j59[0], tj59))
     pg59.select_option('#jornada-revision','lista'); pg59.wait_for_timeout(2500)
-    ok(pg59.locator('#jornada-fichas .ficha-filtro').count()==2 and 'Revisión: sin pendientes' in pg59.inner_text('#jornada-fichas'),'la revisión también tiene su ficha: %s' % pg59.inner_text('#jornada-fichas').replace(chr(10),' · '))
+    ok(pg59.locator('#jornada-fichas .ficha-filtro').count()==2 and 'Sin pendientes' in pg59.inner_text('#jornada-fichas'),'la revisión también tiene su ficha: %s' % pg59.inner_text('#jornada-fichas').replace(chr(10),' · '))
     pg59.click('#jornada-quitar'); pg59.wait_for_timeout(2500)
     ok(pg59.evaluate("SRP.jornadas.lista.length")==tj59 and pg59.input_value('#jornada-programa')=='' and pg59.input_value('#jornada-revision')=='' and pg59.is_hidden('#jornada-quitar'),'«Quitar filtros» de Jornadas vuelve a todas')
     # Supervisión: «Un periodo», «Más filtros:» y fichas
@@ -4898,10 +4873,12 @@ with sync_playwright() as p:
     tu59=pg59.locator('#vista-usuarios tbody tr').count()
     pg59.select_option('#usr-filtro-perfil','COORDINADOR'); pg59.wait_for_timeout(500)
     u1=pg59.evaluate("[document.querySelectorAll('#vista-usuarios tbody tr').length, [...document.querySelectorAll('#vista-usuarios tbody tr')].every(tr => tr.textContent.includes('Coordinador'))]")
-    pg59.select_option('#usr-filtro-tipo','Alcaldía'); pg59.wait_for_timeout(500)
-    u2=pg59.evaluate("[document.querySelectorAll('#vista-usuarios tbody tr').length, [...document.querySelectorAll('#usr-filtro-org option')].slice(1).every(o => SRP.ref.catalogoPorId[o.value].tipo_organizacion === 'Alcaldía')]")
-    ok(0<u1[0]<tu59 and u1[1] and 0<u2[0]<=u1[0] and u2[1],'Usuarios filtra por perfil y por tipo de institución, y la lista de instituciones se acota al tipo: %s de %s, %s' % (u1[0], tu59, u2[0]))
-    pg59.select_option('#usr-filtro-perfil',''); pg59.select_option('#usr-filtro-tipo',''); pg59.wait_for_timeout(300)
+    u2=pg59.evaluate("[[...document.querySelectorAll('#usr-filtro-org optgroup')].map(g => g.label), document.getElementById('usr-filtro-tipo') === null, [...document.querySelectorAll('#usr-filtro-org optgroup')].every(g => [...g.children].every(o => SRP.ref.catalogoPorId[o.value].tipo_organizacion === g.label))]")
+    alc59=pg59.evaluate("(document.querySelector('#usr-filtro-org optgroup[label=Alcaldía] option') || {}).value || ''")
+    pg59.select_option('#usr-filtro-org', alc59); pg59.wait_for_timeout(500)
+    u3=pg59.locator('#vista-usuarios tbody tr').count()
+    ok(0<u1[0]<tu59 and u1[1] and len(u2[0])>=2 and u2[1] and u2[2] and alc59 and u3<=u1[0],'Usuarios filtra por perfil y por institución; la lista de instituciones va agrupada por tipo, en un solo control: %s de %s, %s · %s' % (u1[0], tu59, u3, u2[0]))
+    pg59.select_option('#usr-filtro-perfil',''); pg59.select_option('#usr-filtro-org',''); pg59.wait_for_timeout(300)
     # Sustituir un árbol plantado hoy: no hay otro día que elegir, y se dice
     pg59.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-cabo-1'])"); pg59.reload(); pg59.wait_for_timeout(1800)
     if pg59.is_visible('#dlg-confirmar'): pg59.click('#btn-confirmar-si'); pg59.wait_for_timeout(300)
@@ -5029,13 +5006,7 @@ with sync_playwright() as p:
     pg61.evaluate("SRP.app.mostrarVista('jornadas')"); pg61.wait_for_timeout(1500)
     t61=pg61.evaluate("id => { const li = document.querySelector('#lista-jornadas li[data-clave=\"' + id + '\"]'); const p = li.querySelector('.jornada-prioridad'); return [p.textContent.trim(), !!p.querySelector('.pri-muestra.pri-nivel-3')]; }", j61)
     ok(otro61 and t61==['Colonia de prioridad alta (2 de 3 árboles)', True],'la tarjeta de la jornada marca su prioridad —la de la mayoría de sus árboles— con su muestra de color: %s' % t61[0])
-    pg61.evaluate("document.getElementById('jornada-mas-filtros').open = true")
-    pg61.select_option('#jornada-filtro-prioridad','3'); pg61.wait_for_timeout(1200)
-    fa61=pg61.evaluate("id => [SRP.jornadas.lista.some(j => j.id === id), SRP.jornadas.lista.every(j => j.prioridad && j.prioridad.prioridad === 3), document.getElementById('jornada-fichas').textContent, [...document.querySelectorAll('#jornada-filtro-prioridad option')].map(o => o.textContent)]", j61)
-    pg61.select_option('#jornada-filtro-prioridad','0'); pg61.wait_for_timeout(1200)
-    fb61=pg61.evaluate("id => SRP.jornadas.lista.some(j => j.id === id)", j61)
-    ok(fa61[0] and fa61[1] and 'Prioridad: alta' in fa61[2] and fa61[3]==['Todas','Muy alta','Alta','Media','Baja','Muy baja','Sin dato'] and not fb61,'Jornadas se filtra por prioridad de la colonia, con su ficha: %s' % fa61[2])
-    pg61.click('#jornada-quitar'); pg61.wait_for_timeout(1000)
+    ok(pg61.locator('#jornada-filtro-prioridad').count()==0,'la prioridad se lee en la tarjeta; ya no es un filtro de Jornadas')
     pg61.evaluate("async (id) => { await SRP.jornadas.abrir(id); }", j61); pg61.wait_for_timeout(1500)
     esperar(pg61, "document.querySelectorAll('#jornada-lista .punto-prioridad').length === 3 && /prioridad/.test(document.getElementById('jornada-sub').textContent)", 6000)   # la lista se pinta por partes
     fi61=pg61.evaluate("[document.getElementById('jornada-sub').textContent, document.getElementById('jornada-prioridad').textContent, [...document.querySelectorAll('#jornada-lista .punto-prioridad')].map(x => x.textContent.trim())]")
@@ -5697,10 +5668,9 @@ with sync_playwright() as p:
     ok(d70.value.suggested_filename.endswith('.pdf') and pg70.is_visible('#vista-jornadas') and pg70.is_visible('#jornada-detalle'), 'el PDF se entrega y se sigue en la ficha de la jornada: %s' % d70.value.suggested_filename)
     pg70.click('#btn-jornada-volver'); pg70.wait_for_timeout(900)
     ok('Reporte: hoy' in pg70.inner_text('#lista-jornadas .insignia-reporte'), 'al volver a la lista, la tarjeta dice «Reporte: hoy» y la hora: %s' % pg70.inner_text('#lista-jornadas .insignia-reporte'))
-    pg70.evaluate("document.getElementById('jornada-mas-filtros').open = true"); pg70.select_option('#jornada-reporte', 'pendiente'); pg70.wait_for_timeout(800)
-    sg70 = pg70.evaluate("SRP.jornadas.lista.length"); pg70.select_option('#jornada-reporte', 'generado'); pg70.wait_for_timeout(800)
-    ok(sg70 == 0 and pg70.evaluate("SRP.jornadas.lista.map(j => j.id)") == ['j70-a'], 'el filtro «Reporte» la pasa de «Sin generar» a «Generado»')
-    pg70.select_option('#jornada-reporte', ''); pg70.wait_for_timeout(500)
+    pg70.select_option('#jornada-revision', 'sinreporte'); pg70.wait_for_timeout(800)
+    sg70 = pg70.evaluate("SRP.jornadas.lista.length"); pg70.select_option('#jornada-revision', ''); pg70.wait_for_timeout(800)
+    ok(sg70 == 0 and pg70.evaluate("SRP.jornadas.lista.map(j => j.id)") == ['j70-a'], 'con el reporte generado, la jornada sale de «Sin reporte todavía»')
     # Las fotografías del cabo: desde «Mi avance», sólo las suyas, con descarga
     pg70.evaluate("SRP.app.mostrarVista('supervision')"); pg70.wait_for_timeout(1200)
     ok(pg70.is_visible('#btn-sup-fotos') and pg70.evaluate("SRP.permisos.puede('galeria.descargar')"), '«Mi avance» del cabo trae «Fotografías»')
@@ -5858,6 +5828,35 @@ with sync_playwright() as p:
     ok(g73 == [True, False, False, False, False, True], 'guardar y eliminar un valor escriben en su tabla, sin `tipo` ni campos ajenos: %s' % g73)
     ok(err73 == [], 'la migración y la pantalla corren sin errores de consola: %s' % err73[:2])
     ctx73.close()
+
+    # ---------- ctx74: menos filtros: seis atajos de periodo y una sola lista de instituciones ----------
+    ctx74 = b.new_context(viewport={'width':390,'height':844}, timezone_id='America/Mexico_City')
+    pg74 = ctx74.new_page(); err74 = []
+    pg74.on('pageerror', lambda e: err74.append(str(e)))
+    pg74.goto(BASE); pg74.wait_for_timeout(1200)
+    pg74.select_option('#sel-usuario-prueba', 'u-admin-1'); pg74.click('#btn-entrar-prueba'); pg74.wait_for_timeout(900)
+    pg74.evaluate("async () => { await SRP.demo.cargar(); }"); pg74.wait_for_timeout(600)
+    medir74 = """(id) => { const cs = [...document.querySelectorAll('#' + id + ' .chip')]; const r = cs.map(c => c.getBoundingClientRect());
+      return { textos: cs.map(c => c.firstChild.textContent.trim()), renglones: new Set(r.map(x => Math.round(x.top))).size, alto: Math.min(...r.map(x => Math.round(x.height))), ancho: document.documentElement.scrollWidth }; }"""
+    for vista, caja, primero in (('jornadas', 'jornada-atajos', 'Todas'), ('registros', 'filtro-atajos', 'Todos')):
+        pg74.evaluate("v => SRP.app.mostrarVista(v)", vista); pg74.wait_for_timeout(900)
+        if vista == 'registros': abrir_filtros(pg74)
+        t74 = pg74.evaluate(medir74, caja)
+        ok(t74['textos'] == [primero, 'Hoy', 'Este mes', 'Este año', 'Un día', 'Un periodo'] and t74['renglones'] == 2 and t74['alto'] >= 44 and t74['ancho'] <= 390,
+           'en el teléfono, %s lleva seis atajos en dos renglones de tres, con área de toque y sin salirse de lado: %s' % (vista, t74))
+    n74 = pg74.evaluate("""() => [...document.querySelectorAll('section[id^=vista-]')].map(s => [s.id.replace('vista-', ''), [...s.querySelectorAll('select, input[type=search], .chips[role=group]')].filter(e => !e.closest('form, dialog') && e.id && !e.id.endsWith('-orden-lista')).length]).filter(x => x[1] && x[0] !== 'acceso')""")
+    ok(all(n <= 8 for _, n in n74) and not pg74.evaluate("['jornada-anio', 'jornada-mes', 'jornada-reporte', 'jornada-filtro-prioridad', 'jornada-tipo-org', 'filtro-anio', 'filtro-mes', 'filtro-tipo-org', 'sup-tipo', 'usr-filtro-tipo'].some(id => document.getElementById(id))"),
+       'ninguna vista pasa de ocho filtros y los que se quitaron ya no existen: %s' % n74)
+    pg74.evaluate("SRP.app.mostrarVista('jornadas')"); pg74.wait_for_timeout(700)
+    pg74.click('#jornada-atajos [data-atajo=anio]'); pg74.wait_for_timeout(600)
+    f74 = pg74.evaluate("[document.getElementById('jornada-fichas').textContent, SRP.jornadas.lista.length]")
+    pg74.click('#jornada-fichas button[data-quitar=periodo]'); pg74.wait_for_timeout(600)
+    ok(pg74.evaluate("SRP.util.fechaHoy().slice(0, 4)") in f74[0] and f74[1] > 0 and pg74.get_attribute('#jornada-atajos [data-atajo=todas]', 'aria-pressed') == 'true',
+       '«Este año» deja su ficha con el año, y quitarla vuelve a «Todas»: %s' % f74[0])
+    pg74.set_viewport_size({'width': 1280, 'height': 900}); pg74.wait_for_timeout(400)
+    ok(pg74.evaluate(medir74, 'jornada-atajos')['renglones'] == 1, 'con ancho, los seis atajos caben en un renglón')
+    ok(err74 == [], 'sin errores de consola: %s' % err74[:2])
+    ctx74.close()
 
 
 

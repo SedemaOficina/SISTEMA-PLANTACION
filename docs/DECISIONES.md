@@ -2496,3 +2496,19 @@
   · **Lo que no cambia:** la sección Catálogos y sus pestañas. En memoria cada renglón lleva `tipo` para
     que la pantalla sepa de qué catálogo es; ese dato no se guarda. La bitácora sigue diciendo `catalogo`
     como entidad: los identificadores no se repiten entre tablas.
+
+- **D226. Menos filtros, y la simplicidad se revisa sola (bloque 161).** 03-10-2026. Decisión de Liber.
+  · **Qué:** los filtros bajan de 50 a 37 entre las siete vistas que filtran. El periodo se elige con seis
+    atajos —Todas, Hoy, Este mes, Este año, Un día, Un periodo—: las listas de Año y de Mes desaparecen
+    de Jornadas, Registros y Fotografías. La institución es una sola lista agrupada por tipo, en lugar de
+    dos listas dependientes (Jornadas, Registros, Fotografías, Supervisión y Usuarios). En Jornadas,
+    «Pendientes» reúne lo que hay por atender —puntos por revisar, cifras que no cuadran, reporte sin
+    generar— y sustituye a «Revisión» y «Reporte»; la prioridad de la colonia se lee en la tarjeta y deja
+    de ser filtro. «Origen» se conserva en Jornadas y en Supervisión.
+  · **Por qué:** cada filtro se agregó por una razón válida, pero la suma pedía hasta trece decisiones en
+    una pantalla de teléfono. Año y Mes repetían lo que ya resuelve «Un periodo»; el tipo de institución
+    sólo servía para llegar a la institución.
+  · **Regla que queda:** ninguna vista pide más de ocho filtros, y a la vista quedan a lo más cuatro; el
+    resto va plegado en «Más filtros». `pruebas/auditoria.py` lo cuenta y falla si se rebasa. Al cerrar
+    cada bloque se dice qué se agregó a la pantalla y qué se pudo quitar. Ajusta D128, D129, D167 y D202.
+

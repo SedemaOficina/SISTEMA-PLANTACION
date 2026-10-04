@@ -405,6 +405,18 @@ with sync_playwright() as p:
         mirar(len(reales) == 16 and not vistas, 'ninguna placa real aparece en lo que se publica (la lista real está sólo en originales/)', '; '.join(sorted(set(vistas))[:6]))
     else:
         mirar(True, 'placas reales: la copia no trae originales/, se omite la búsqueda', 'aviso')
+    # Simplicidad: cada vista ofrece pocos filtros. Se cuentan las decisiones que se le piden a la
+    # persona (cada lista, cada búsqueda y el grupo de atajos de periodo), fuera de formularios y diálogos;
+    # el orden de la lista y el tamaño de página no filtran y no cuentan.
+    TOPE_FILTROS, TOPE_A_LA_VISTA = 8, 4
+    conteo = pg.evaluate("""() => [...document.querySelectorAll('section[id^=vista-]')].filter(s => s.id !== 'vista-acceso').map(s => {
+      const c = [...s.querySelectorAll('select, input[type=search], .chips[role=group]')].filter(e => !e.closest('form, dialog') && e.id && !e.id.endsWith('-orden-lista'));
+      return [s.id.replace('vista-', ''), c.length, c.filter(e => !e.closest('details')).length];
+    })""")
+    pasados = ['%s: %d' % (v, n) for v, n, _ in conteo if n > TOPE_FILTROS]
+    a_la_vista = ['%s: %d' % (v, f) for v, n, f in conteo if f > TOPE_A_LA_VISTA]
+    mirar(not pasados, 'ninguna vista pide más de %d filtros (%s)' % (TOPE_FILTROS, ', '.join('%s %d' % (v, n) for v, n, _ in conteo if n)), ', '.join(pasados))
+    mirar(not a_la_vista, 'y a la vista quedan a lo más %d; el resto va plegado en «Más filtros»' % TOPE_A_LA_VISTA, ', '.join(a_la_vista))
     b.close()
 
 malos = [h for h in hallazgos if not h[0]]

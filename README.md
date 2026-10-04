@@ -169,16 +169,19 @@ vendor/                 Bibliotecas incluidas localmente; versiones y licencias 
 datos/                  El modelo de datos
   esquema.json          Fuente única del modelo de datos (D86)
   DICCIONARIO-DATOS.md  Inventario de tablas y diccionario de datos, generado de esquema.json
+  HUELLA-CAPAS.md       Cuenta, claves, superficie y centroides de las capas, para compararlas con las del SIA
   MAPEO-CAMPOS.md       Campos vistos por pantalla: etiqueta ↔ campo, obligatorio, origen
 
 docs/                   Memoria del proyecto
   FASE2-Y-TRASPASO.md   Lo que el programador del SIA debe construir, reemplazar y decidir
+  PLAN-TRASPASO-SIA.md  Cómo se llega a los servidores del SIA: fases, responsables, decisiones y riesgos
   DECISIONES.md         Decisiones numeradas (Dnn)
   BITACORA.md           Qué cambió en cada bloque y cómo se verificó
   MEJORAS.md            Tablero de mejoras (Mnn)
 
 herramientas/           Generan archivos del sitio a partir de originales/ y de datos/
   generar_capas.py      originales/*.geojson → assets/capas/
+  huella_capas.py       assets/capas/ → datos/HUELLA-CAPAS.md y .json; con un archivo, compara contra otra fuente
   generar_especies.py   Excel de especies del SIA → assets/catalogos/catalogo-especies.js
   generar_diccionario.py  datos/esquema.json → datos/DICCIONARIO-DATOS.md y js/esquema.js
   extraer_iconos.py     Set de iconografía CDMX (.ai) → trazados para js/iconos.js
@@ -204,6 +207,10 @@ recarga, en vez de quedarse en blanco.
 `datos/esquema.json`, se regenera el diccionario con `python3 herramientas/generar_diccionario.py` y se
 ajusta `datos/MAPEO-CAMPOS.md`. No es opcional: `pruebas/auditoria.py` falla si el esquema y el
 sistema no guardan lo mismo o si el diccionario no está regenerado (D86).
+
+**Si el bloque tocó una pantalla:** en el cierre se dice qué se agregó y qué se pudo quitar. Cada
+control nuevo tiene que ganarse su lugar: `pruebas/auditoria.py` cuenta los filtros de cada vista y
+falla si alguna pide más de ocho, o más de cuatro a la vista (D226).
 
 ## Si cambian los datos de arranque
 

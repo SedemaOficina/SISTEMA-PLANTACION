@@ -123,7 +123,7 @@ SRP.indicadores = {
     const delCabo = r => (!filtros.cabo || r.cabo_id === filtros.cabo) && (!datos.soloDe || r.cabo_id === datos.soloDe);
     const cuentaArbol = r => esDeAlcaldia(r) && delCabo(r);
     const enPeriodo = r => this.contiene(periodo, r.fecha_plantacion);
-    const pasa = j => (!filtros.organizacion || this.organizacionDe(j) === filtros.organizacion) && (!filtros.tipo || SRP.util.tipoDe(this.organizacionDe(j)) === filtros.tipo) &&
+    const pasa = j => (!filtros.organizacion || this.organizacionDe(j) === filtros.organizacion) &&
       (!filtros.cabo || j.cabo_id === filtros.cabo || j.registros.some(r => r.cabo_id === filtros.cabo)) && (!filtros.programa || (j.dato && j.dato.programa_id) === filtros.programa) &&
       SRP.pedido.cumpleFiltro(j.dato, filtros.origen) &&
       (!filtros.alcaldia || j.registros.some(esDeAlcaldia) || (!j.registros.length && j.dato && j.dato.alcaldia === filtros.alcaldia));
@@ -194,7 +194,7 @@ SRP.indicadores = {
     }
 
     // Trazabilidad del periodo: árboles eliminados y ediciones, del alcance y con los filtros
-    const pasaArbol = r => (!filtros.organizacion || orgArbol(r) === filtros.organizacion) && (!filtros.tipo || SRP.util.tipoDe(orgArbol(r)) === filtros.tipo) &&
+    const pasaArbol = r => (!filtros.organizacion || orgArbol(r) === filtros.organizacion) &&
       delCabo(r) && (!filtros.programa || r.programa_id === filtros.programa) && SRP.pedido.cumpleFiltro(datoPorJornada[r.jornada_id], filtros.origen) && esDeAlcaldia(r);
     const eliminados = datos.eliminados.filter(r => this.contiene(periodo, this.dia(r.fecha_ultima_edicion)) && pasaArbol(r));
     const ediciones = datos.ediciones.filter(e => this.contiene(periodo, this.dia(e.fecha)) && pasaArbol(e.arbol));
@@ -204,7 +204,7 @@ SRP.indicadores = {
     // Por cabo: todos los de su alcance, también los que no trabajaron (así se ve quién falta)
     // Con institución elegida, sólo sus cabos
     const orgCabo = id => (SRP.ref.usuarioPorId[id] || {}).organizacion_id || SRP.CONFIG.ORGANIZACION_SEDEMA;
-    const deLaOrg = id => (!filtros.organizacion || orgCabo(id) === filtros.organizacion) && (!filtros.tipo || SRP.util.tipoDe(orgCabo(id)) === filtros.tipo);
+    const deLaOrg = id => (!filtros.organizacion || orgCabo(id) === filtros.organizacion);
     const cabosOrg = datos.cabos.filter(deLaOrg);
     const idsCabos = [...new Set(cabosOrg.concat(delPeriodo.map(j => j.cabo_id)))].filter(id => !filtros.cabo || id === filtros.cabo);
     const abiertasViejas = datos.jornadas.filter(j => j.estatus === 'abierta' && j.fecha < hoy && pasa(j));

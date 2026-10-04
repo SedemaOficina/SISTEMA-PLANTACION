@@ -4,8 +4,8 @@
      Filtrar                                             Quitar filtros
      [fichas de lo que está filtrando, cada una con su ×]
      Buscar (si la vista lo pide)
-     Todas · Hoy · Un día · Un periodo
-     Más filtros: año, mes y las listas de la vista
+     Todas · Hoy · Este mes · Este año · Un día · Un periodo
+     Más filtros: las listas de la vista
 
    Cada vista dice qué busca, cuál es la fecha de cada elemento y qué listas ofrece; la zona arma los
    controles, guarda lo elegido en `filtro` y devuelve lo que pasa. Las listas dependen unas de otras
@@ -15,8 +15,8 @@
    `o`: { raiz, p, todas, plural, buscar: { etiqueta, marcador, texto(e) }, fecha(e),
           listas: [{ clave, etiqueta, vacio, valor(e), nombre(v), ficha, personas, opciones, ver(), conPeriodo, orden(a, b) }],
           org(e), alCambiar() }
-   Los controles llevan el prefijo `p`: `p-atajos`, `p-dia`, `p-desde`, `p-hasta`, `p-anio`, `p-mes`,
-   `p-<clave>`, `p-tipo-org`, `p-org`, `p-buscar`, `p-fichas`, `p-quitar`. */
+   Los controles llevan el prefijo `p`: `p-atajos`, `p-dia`, `p-desde`, `p-hasta`,
+   `p-<clave>`, `p-org`, `p-buscar`, `p-fichas`, `p-quitar`. */
 window.SRP = window.SRP || {};
 
 SRP.zonaFiltros = {
@@ -33,12 +33,12 @@ SRP.zonaFiltros = {
     caja(s) { return document.getElementById('caja-' + this.p + '-' + s); },
 
     vacio() {
-      const f = { texto: '', dia: '', desde: '', hasta: '', anio: '', mes: '', tipo: '', organizacion: '' };
+      const f = { texto: '', dia: '', desde: '', hasta: '', anio: '', mes: '', organizacion: '' };
       this.o.listas.forEach(l => { f[l.clave] = ''; });
       return f;
     },
 
-    // ¿Ve más de una institución quien entró? Sólo entonces hay tipo de institución e institución
+    // ¿Ve más de una institución quien entró? Sólo entonces hay filtro de institución
     conInstituciones() { return !!this.o.org && SRP.permisos.de(SRP.sesion.usuario).alcance === 'todos'; },
     visible(l) { return !l.ver || l.ver(); },
 
@@ -53,9 +53,10 @@ SRP.zonaFiltros = {
         '<ul id="' + p + '-fichas" class="filtros-activos" data-visible="true" aria-label="Filtros activos"></ul>' +
         '<div class="filtros zona-filtros">' +
         (o.buscar ? '<div class="campo"><label for="' + p + '-buscar">' + esc(o.buscar.etiqueta) + '</label><input id="' + p + '-buscar" type="search" placeholder="' + esc(o.buscar.marcador) + '" autocomplete="off"></div>' : '') +
-        '<div id="' + p + '-atajos" class="chips chips-cuatro" role="group" aria-label="Periodo">' +
+        '<div id="' + p + '-atajos" class="chips chips-seis" role="group" aria-label="Periodo">' +
         '<button type="button" class="chip" data-atajo="todas">' + esc(o.todas || 'Todas') + '</button>' +
         '<button type="button" class="chip" data-atajo="hoy" id="' + p + '-chip-hoy">Hoy</button>' +
+        '<button type="button" class="chip" data-atajo="mes">Este mes</button><button type="button" class="chip" data-atajo="anio">Este año</button>' +
         '<button type="button" class="chip" data-atajo="dia" aria-controls="' + p + '-un-dia" aria-expanded="false">Un día</button>' +
         '<button type="button" class="chip" data-atajo="periodo" aria-controls="' + p + '-periodo" aria-expanded="false">Un periodo</button></div>' +
         '<div id="' + p + '-un-dia" class="filtros-periodo filtros-un-dia" hidden><div class="campo campo-corto"><label for="' + p + '-dia">Día</label>' + fecha('dia') + '</div></div>' +
@@ -63,9 +64,9 @@ SRP.zonaFiltros = {
         '<div class="campo campo-corto"><label for="' + p + '-hasta">Hasta</label>' + fecha('hasta') + '</div>' +
         '<button type="button" id="' + p + '-aplicar" class="btn btn-primario btn-chico">Aplicar</button></div>' +
         '<details id="' + p + '-mas" class="acordeon-filtros"><summary><span id="' + p + '-mas-texto">Más filtros</span></summary>' +
-        '<div class="filtros-listas acordeon-cuerpo">' + campo('anio', 'Año', lista('anio')) + campo('mes', 'Mes', lista('mes')) +
+        '<div class="filtros-listas acordeon-cuerpo">' +
         o.listas.map(l => campo(l.clave, l.etiqueta, lista(l.clave))).join('') +
-        (o.org ? campo('tipo-org', 'Tipo de institución', lista('tipo-org')) + campo('org', 'Institución', lista('org')) : '') +
+        (o.org ? campo('org', 'Institución', lista('org')) : '') +
         '</div></details></div>';
 
       SRP.util.atajos.iniciar(this.el('atajos'), a => this.aplicarAtajo(a));
@@ -78,22 +79,8 @@ SRP.zonaFiltros = {
         if (desde || hasta) { f.dia = ''; f.anio = ''; f.mes = ''; }
         this.cambioDePeriodo();
       });
-      this.el('anio').addEventListener('change', () => {
-        const f = this.filtro;
-        f.dia = ''; f.anio = this.el('anio').value; f.mes = ''; this.limpiarRango();
-        this.cambioDePeriodo();
-      });
-      this.el('mes').addEventListener('change', () => {
-        const f = this.filtro;
-        f.dia = ''; f.mes = this.el('mes').value;
-        if (f.mes && !f.anio) f.anio = this.anios()[0] || String(new Date().getFullYear());   // un mes sin año no significa nada
-        this.limpiarRango();
-        this.cambioDePeriodo();
-      });
       o.listas.forEach(l => this.el(l.clave).addEventListener('change', (e) => { this.filtro[l.clave] = e.target.value; this.cambio(); }));
-      if (o.org) [['tipo-org', 'tipo'], ['org', 'organizacion']].forEach(([id, cual]) => this.el(id).addEventListener('change', (e) => {
-        SRP.util.elegirInstitucion(cual, e.target.value, this.filtro); this.cambio();
-      }));
+      if (o.org) this.el('org').addEventListener('change', (e) => { this.filtro.organizacion = e.target.value; this.cambio(); });
       if (o.buscar) {
         let espera = null;
         this.el('buscar').addEventListener('input', () => {
@@ -135,8 +122,10 @@ SRP.zonaFiltros = {
       }
       this.diaAbierto = false; this.periodoAbierto = false;
       this.el('dia').value = '';
-      f.dia = atajo === 'hoy' ? SRP.util.fechaHoy() : '';
-      f.anio = ''; f.mes = '';
+      const hoy = SRP.util.fechaHoy();
+      f.dia = atajo === 'hoy' ? hoy : '';
+      // «Este mes» y «Este año»: el mes y el año en curso
+      f.anio = atajo === 'mes' || atajo === 'anio' ? hoy.slice(0, 4) : ''; f.mes = atajo === 'mes' ? hoy.slice(5, 7) : '';
       this.limpiarRango();
       this.cambioDePeriodo();
     },
@@ -170,7 +159,7 @@ SRP.zonaFiltros = {
       const f = this.filtro;
       if (cual === 'periodo') { this.aplicarAtajo('todas'); return; }
       if (cual === 'texto') { f.texto = ''; this.el('buscar').value = ''; }
-      else if (cual === 'institucion') { f.tipo = ''; f.organizacion = ''; }
+      else if (cual === 'institucion') f.organizacion = '';
       else f[cual] = '';
       this.cambio();
     },
@@ -199,7 +188,6 @@ SRP.zonaFiltros = {
       if (this.conInstituciones()) {
         const org = this.o.org(e);
         if (f.organizacion && x('organizacion') && org !== f.organizacion) return false;
-        if (f.tipo && x('tipo') && SRP.util.tipoDe(org) !== f.tipo) return false;
       }
       return true;
     },
@@ -215,9 +203,8 @@ SRP.zonaFiltros = {
       const hoy = SRP.util.fechaHoy();
       ['dia', 'desde', 'hasta'].forEach(k => { this.el(k).max = hoy; });
       SRP.util.pintarChipHoy(this.el('chip-hoy'));
-      if (!this.conInstituciones()) { this.filtro.tipo = ''; this.filtro.organizacion = ''; }
+      if (!this.conInstituciones()) this.filtro.organizacion = '';
       this.o.listas.forEach(l => { if (!this.visible(l)) this.filtro[l.clave] = ''; });
-      this.llenarAnios();
       this.llenarListas();
       this.sincronizar();
       this.pintarFichas();
@@ -226,24 +213,11 @@ SRP.zonaFiltros = {
 
     /* ---------- Controles ---------- */
 
-    anios() { return [...new Set(this.items.map(e => String(this.o.fecha(e) || '').slice(0, 4)).filter(Boolean))].sort().reverse(); },
-
-    llenarAnios() {
-      const f = this.filtro, anios = this.anios(), actual = String(new Date().getFullYear());
-      if (!anios.includes(actual)) anios.unshift(actual);   // el año en curso siempre se puede elegir
-      if (f.anio && !anios.includes(f.anio)) anios.push(f.anio);
-      this.el('anio').innerHTML = SRP.util.opciones('Todos', anios.map(a => [a, a]));
-      // Sólo los meses con algo en el año elegido
-      const meses = f.anio ? [...new Set(this.items.map(e => this.o.fecha(e) || '').filter(d => d.startsWith(f.anio)).map(d => d.slice(5, 7)))].sort() : [];
-      if (f.mes && !meses.includes(f.mes)) meses.push(f.mes);
-      this.el('mes').innerHTML = SRP.util.opciones('Todos', meses.sort().map(m => [m, SRP.util.nombreMes('2000-' + m, true)]));
-    },
-
     llenarListas() {
       const f = this.filtro, o = this.o, ver = this.conInstituciones();
       const valores = {};
       o.listas.forEach(l => { if (!l.opciones) valores[l.clave] = l.valor; });
-      if (ver) { valores.organizacion = e => o.org(e); valores.tipo = e => SRP.util.tipoDe(o.org(e)); }
+      if (ver) valores.organizacion = e => o.org(e);
       const cumple = (e, ex) => this.cumpleListas(e, ex);
       const fac = SRP.util.facetas(this.items, cumple, valores);
       // Las listas que dependen del periodo se llenan con lo que hay en las fechas elegidas
@@ -266,32 +240,27 @@ SRP.zonaFiltros = {
         sel.disabled = sel.options.length < 2;
       });
       if (o.org) {
-        this.caja('tipo-org').hidden = !ver; this.caja('org').hidden = !ver;
-        if (ver) SRP.util.llenarInstituciones(this.el('tipo-org'), this.el('org'), fac.organizacion, f, fac.tipo);
+        this.caja('org').hidden = !ver;
+        if (ver) SRP.util.llenarInstituciones(this.el('org'), fac.organizacion, f);
       }
     },
 
     // Deja los controles mostrando exactamente lo que dice `filtro`
     sincronizar() {
-      const f = this.filtro, o = this.o;
-      this.el('anio').value = f.anio;
-      this.el('mes').value = f.mes;
-      this.el('mes').disabled = !f.anio;
+      const f = this.filtro, o = this.o, hoy = SRP.util.fechaHoy();
       if (o.buscar && this.el('buscar').value.trim() !== f.texto) this.el('buscar').value = f.texto;
       const periodo = f.anio ? f.anio + (f.mes ? '-' + f.mes : '') : '';
       const conRango = !!(f.desde || f.hasta);
       // Un solo atajo marcado a la vez
       const pidePeriodo = conRango || this.periodoAbierto;
       const pideDia = !pidePeriodo && this.diaAbierto;
-      const activo = { hoy: !pidePeriodo && !pideDia && f.dia === SRP.util.fechaHoy(), dia: pideDia, todas: !pidePeriodo && !pideDia && !f.dia && periodo === '', periodo: pidePeriodo };
+      const libre = !pidePeriodo && !pideDia && !f.dia, esteAnio = libre && f.anio === hoy.slice(0, 4);
+      const activo = { hoy: !pidePeriodo && !pideDia && f.dia === hoy, dia: pideDia, todas: libre && periodo === '', periodo: pidePeriodo,
+        mes: esteAnio && f.mes === hoy.slice(5, 7), anio: esteAnio && !f.mes };
       SRP.util.atajos.marcar(this.el('atajos'), activo, { periodo: [this.el('periodo'), pidePeriodo], dia: [this.el('un-dia'), pideDia] });
-      // Año y mes son otra manera de decir el periodo: sólo acompañan a «Todas»
-      const sinAnioMes = pidePeriodo || pideDia || activo.hoy;
-      this.caja('anio').hidden = sinAnioMes; this.caja('mes').hidden = sinAnioMes;
       // El resumen de «Más filtros» dice lo elegido dentro; si no hay nada, lo que ofrece
-      const dentro = [f.anio ? (f.mes ? SRP.util.nombreMes(f.anio + '-' + f.mes, true) + ' ' + f.anio : f.anio) : '']
-        .concat(this.fichas().filter(x => !['periodo', 'texto'].includes(x[0])).map(x => x[1].replace(/^[^:]+: /, ''))).filter(Boolean);
-      const disponibles = [sinAnioMes ? '' : 'año', sinAnioMes ? '' : 'mes'].concat(o.listas.filter(l => this.visible(l)).map(l => l.etiqueta.toLowerCase()), this.conInstituciones() ? ['institución'] : []).filter(Boolean);
+      const dentro = this.fichas().filter(x => !['periodo', 'texto'].includes(x[0])).map(x => x[1].replace(/^[^:]+: /, '')).filter(Boolean);
+      const disponibles = [].concat(o.listas.filter(l => this.visible(l)).map(l => l.etiqueta.toLowerCase()), this.conInstituciones() ? ['institución'] : []).filter(Boolean);
       this.el('mas-texto').textContent = 'Más filtros: ' + (dentro.length ? dentro.join(' · ') : SRP.util.enumerar(disponibles));
     },
 
@@ -311,7 +280,6 @@ SRP.zonaFiltros = {
       });
       if (this.conInstituciones()) {
         if (f.organizacion) salida.push(['institucion', 'Institución: ' + SRP.ref.nombreOrganizacion(f.organizacion)]);
-        else if (f.tipo) salida.push(['institucion', 'Tipo: ' + f.tipo]);
       }
       return salida;
     },

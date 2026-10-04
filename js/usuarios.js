@@ -11,19 +11,14 @@
 window.SRP = window.SRP || {};
 
 SRP.usuarios = {
-  editando: null, uso: {}, usos: {}, estado: 'todos', filtroOrg: '', filtroTipo: '', filtroPerfil: '',
+  editando: null, uso: {}, usos: {}, estado: 'todos', filtroOrg: '', filtroPerfil: '',
 
   el(id) { return document.getElementById(id); },
 
   iniciar() {
     this.el('usr-buscar').addEventListener('input', () => this.pintar());
-    // Tipo de institución e institución van encadenados; el perfil acota las dos listas
-    [['usr-filtro-tipo', 'tipo'], ['usr-filtro-org', 'organizacion']].forEach(([id, cual]) => this.el(id).addEventListener('change', (e) => {
-      const f = { tipo: this.filtroTipo, organizacion: this.filtroOrg };
-      SRP.util.elegirInstitucion(cual, e.target.value, f);
-      this.filtroTipo = f.tipo; this.filtroOrg = f.organizacion;
-      this.llenarFiltros(); this.pintar();
-    }));
+    // La institución, en una sola lista agrupada por tipo; el perfil la acota
+    this.el('usr-filtro-org').addEventListener('change', (e) => { this.filtroOrg = e.target.value; this.llenarFiltros(); this.pintar(); });
     this.el('usr-filtro-perfil').addEventListener('change', (e) => { this.filtroPerfil = e.target.value; this.llenarFiltros(); this.pintar(); });
     // El tipo decide la lista de instituciones; la institución, el área, los perfiles y los coordinadores
     this.el('usr-tipo-org').addEventListener('change', () => { this.llenarInstituciones(''); this.ajustarPorOrganizacion(); });
@@ -68,22 +63,19 @@ SRP.usuarios = {
     this.pintar();
   },
 
-  // ¿La cuenta pasa los filtros de lista (perfil, tipo de institución e institución), salvo los de `excluir`?
+  // ¿La cuenta pasa los filtros de lista (perfil e institución), salvo los de `excluir`?
   cumpleListas(u, excluir) {
     const x = k => !excluir || !excluir.has(k), org = u.organizacion_id || '';
     return (!this.filtroPerfil || !x('perfil') || u.perfil === this.filtroPerfil) &&
-      (!this.filtroOrg || !x('organizacion') || org === this.filtroOrg) &&
-      (!this.filtroTipo || !x('tipo') || SRP.util.tipoDe(org) === this.filtroTipo);
+      (!this.filtroOrg || !x('organizacion') || org === this.filtroOrg);
   },
 
   /* Cada lista ofrece sólo lo que hay entre las cuentas que pasan las otras: los perfiles de la
      institución elegida, las instituciones con cuentas de ese perfil. Lo elegido se queda. */
   llenarFiltros() {
     const fac = SRP.util.facetas(SRP.ref.usuarios, (u, ex) => this.cumpleListas(u, ex),
-      { perfil: u => u.perfil, organizacion: u => u.organizacion_id, tipo: u => SRP.util.tipoDe(u.organizacion_id) });
-    const f = { tipo: this.filtroTipo, organizacion: this.filtroOrg };
-    SRP.util.llenarInstituciones(this.el('usr-filtro-tipo'), this.el('usr-filtro-org'), fac.organizacion, f, fac.tipo);
-    this.filtroTipo = f.tipo; this.filtroOrg = f.organizacion;
+      { perfil: u => u.perfil, organizacion: u => u.organizacion_id });
+    SRP.util.llenarInstituciones(this.el('usr-filtro-org'), fac.organizacion, { organizacion: this.filtroOrg });
     const perfiles = Object.keys(SRP.PERFILES).filter(k => fac.perfil.has(k) || k === this.filtroPerfil);
     this.el('usr-filtro-perfil').innerHTML = SRP.util.opciones('Todos', perfiles.map(k => [k, SRP.PERFILES[k].etiqueta]));
     this.el('usr-filtro-perfil').value = this.filtroPerfil;
@@ -141,7 +133,7 @@ SRP.usuarios = {
     this.el('tabla-usuarios').innerHTML = cab + '<tbody>' + (filas || '<tr><td colspan="10">Sin resultados.</td></tr>') + '</tbody>';
     SRP.util.ordenable(this.el('tabla-usuarios'));
     const total = SRP.ref.usuarios.length;
-    const filtrado = q || this.estado !== 'todos' || this.filtroOrg || this.filtroTipo || this.filtroPerfil;
+    const filtrado = q || this.estado !== 'todos' || this.filtroOrg || this.filtroPerfil;
     const inactivos = SRP.ref.usuarios.filter(x => !x.activo).length;   // «3 usuarios · 1 inactivo» (D142)
     this.el('usr-cuenta').textContent = (filtrado ? lista.length + ' de ' : '') + total + (total === 1 ? ' usuario' : ' usuarios') +
       (inactivos ? ' · ' + inactivos + (inactivos === 1 ? ' inactivo' : ' inactivos') : '');

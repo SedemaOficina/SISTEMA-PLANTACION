@@ -6,8 +6,8 @@ SRP.registros = {
   // elegir uno limpia el otro, para que la pantalla nunca muestre dos criterios a la vez.
   // dia gana sobre anio/mes cuando está puesto; el rango los limpia a los tres.
   // Al entrar, el filtro es el día de hoy: en campo lo que interesa es la jornada en curso.
-  filtro: { dia: '', anio: '', mes: '', desde: '', hasta: '', cabo: '', especie: '', programa: '', alcaldia: '', tipo: '', organizacion: '' },
-  filtroVacio() { return { dia: '', anio: '', mes: '', desde: '', hasta: '', cabo: '', especie: '', programa: '', alcaldia: '', tipo: '', organizacion: '' }; },
+  filtro: { dia: '', anio: '', mes: '', desde: '', hasta: '', cabo: '', especie: '', programa: '', alcaldia: '', organizacion: '' },
+  filtroVacio() { return { dia: '', anio: '', mes: '', desde: '', hasta: '', cabo: '', especie: '', programa: '', alcaldia: '', organizacion: '' }; },
   OTRA: '__otra',   // valor del filtro para «Otra especie» (sin especie del catálogo)
   primeraVez: true,
   visibles: [], filtrados: [], pagina: 1,
@@ -16,26 +16,6 @@ SRP.registros = {
 
   iniciar() {
     SRP.util.atajos.iniciar(this.el('filtro-atajos'), a => this.aplicarAtajo(a));   // M15
-    this.el('filtro-anio').addEventListener('change', () => {
-      this.filtro.dia = '';
-      this.filtro.anio = this.el('filtro-anio').value;
-      this.filtro.mes = '';                 // al cambiar de año, el mes elegido puede no existir ahí
-      this.limpiarRango();
-      this.llenarMeses();
-      this.sincronizarControles();
-      this.aplicar();
-    });
-    this.el('filtro-mes').addEventListener('change', () => {
-      this.filtro.dia = '';
-      this.filtro.mes = this.el('filtro-mes').value;
-      if (this.filtro.mes && !this.filtro.anio) {   // un mes sin año no significa nada
-        this.filtro.anio = this.aniosDisponibles()[0] || String(new Date().getFullYear());
-        this.el('filtro-anio').value = this.filtro.anio;
-      }
-      this.limpiarRango();
-      this.sincronizarControles();
-      this.aplicar();
-    });
     // El cabo se aplica al elegirlo; ya no pasa por «Aplicar», que es sólo del rango
     this.el('filtro-cabo').addEventListener('change', () => {
       this.filtro.cabo = this.el('filtro-cabo').value;
@@ -63,11 +43,9 @@ SRP.registros = {
       this.aplicar();
     });
     this.el('btn-reiniciar-filtros').addEventListener('click', () => this.reiniciarFiltros());
-    // Especie, programa y alcaldía; tipo de institución e institución van encadenados
+    // Especie, programa, alcaldía e institución
     ['especie', 'programa', 'alcaldia'].forEach(k => this.el('filtro-' + k).addEventListener('change', (e) => { this.filtro[k] = e.target.value; this.sincronizarControles(); this.aplicar(); }));
-    [['filtro-tipo-org', 'tipo'], ['filtro-org', 'organizacion']].forEach(([id, cual]) => this.el(id).addEventListener('change', (e) => {
-      SRP.util.elegirInstitucion(cual, e.target.value, this.filtro); this.sincronizarControles(); this.aplicar();
-    }));
+    this.el('filtro-org').addEventListener('change', (e) => { this.filtro.organizacion = e.target.value; this.sincronizarControles(); this.aplicar(); });
     // En teléfono los filtros se pliegan tras «Filtros» (D100); en escritorio el botón no se ve
     this.el('btn-filtros').addEventListener('click', () => this.plegarFiltros(this.el('panel-filtros').dataset.abierto !== 'true'));
     // Cada ficha de filtro activo se quita con su × (D100)
@@ -76,7 +54,7 @@ SRP.registros = {
       if (b.dataset.quitar === 'periodo') this.aplicarAtajo('todos');
       if (b.dataset.quitar === 'cabo') { this.filtro.cabo = ''; this.el('filtro-cabo').value = ''; this.sincronizarControles(); this.aplicar(); }
       if (['especie', 'programa', 'alcaldia'].includes(b.dataset.quitar)) { this.filtro[b.dataset.quitar] = ''; this.el('filtro-' + b.dataset.quitar).value = ''; this.sincronizarControles(); this.aplicar(); }
-      if (b.dataset.quitar === 'institucion') { this.filtro.tipo = ''; this.filtro.organizacion = ''; this.llenarInstituciones(); this.sincronizarControles(); this.aplicar(); }
+      if (b.dataset.quitar === 'institucion') { this.filtro.organizacion = ''; this.llenarInstituciones(); this.sincronizarControles(); this.aplicar(); }
       SRP.util.anunciarSilencioso('Filtro quitado.');
     });
     this.el('registros-vacio').addEventListener('click', (e) => {
@@ -146,8 +124,6 @@ SRP.registros = {
     SRP.util.pintarChipHoy(this.el('chip-hoy'));
     // Al entrar se ven todos los registros (D104): «Hoy» queda como atajo, no como filtro de inicio
     if (this.primeraVez) { this.primeraVez = false; }
-    this.llenarAnios();
-    this.llenarMeses();
     this.sincronizarControles();
     this.aplicar();
   },
@@ -161,7 +137,7 @@ SRP.registros = {
      institución elegida, «Quién registró» trae sólo a su gente, y así con todas. */
   VALORES: {
     cabo: r => r.cabo_id, especie: r => SRP.registros.especieDe(r), programa: r => r.programa_id,
-    alcaldia: r => SRP.ref.alcaldia(r.alcaldia), organizacion: r => SRP.registros.orgDe(r), tipo: r => SRP.util.tipoDe(SRP.registros.orgDe(r))
+    alcaldia: r => SRP.ref.alcaldia(r.alcaldia), organizacion: r => SRP.registros.orgDe(r)
   },
 
   // ¿Pasa los filtros de lista, salvo los de `excluir`? El periodo va aparte
@@ -171,14 +147,13 @@ SRP.registros = {
       (!f.especie || !x('especie') || this.especieDe(r) === f.especie) &&
       (!f.programa || !x('programa') || r.programa_id === f.programa) &&
       (!f.alcaldia || !x('alcaldia') || SRP.ref.alcaldia(r.alcaldia) === f.alcaldia) &&
-      (!f.organizacion || !x('organizacion') || this.orgDe(r) === f.organizacion) &&
-      (!f.tipo || !x('tipo') || SRP.util.tipoDe(this.orgDe(r)) === f.tipo);
+      (!f.organizacion || !x('organizacion') || this.orgDe(r) === f.organizacion);
   },
 
   llenarListas() {
     const f = this.filtro, ver = SRP.permisos.de(SRP.sesion.usuario).alcance === 'todos';
     const valores = Object.assign({}, this.VALORES);
-    if (!ver) { delete valores.organizacion; delete valores.tipo; f.tipo = ''; f.organizacion = ''; }
+    if (!ver) { delete valores.organizacion; f.organizacion = ''; }
     const fac = SRP.util.facetas(this.visibles, (r, ex) => this.cumpleListas(r, ex), valores);
     const pares = (k, nombre) => [...fac[k]].map(v => [v, nombre(v)]);
     const especie = id => id === this.OTRA ? 'Otra especie' : SRP.ref.nombreCatalogo(id);
@@ -190,8 +165,8 @@ SRP.registros = {
     SRP.util.llenarLista(this.el('filtro-especie'), 'Todas', pares('especie', especie), f, 'especie', especie);
     SRP.util.llenarLista(this.el('filtro-programa'), 'Todos', pares('programa', id => SRP.ref.nombreCatalogo(id)), f, 'programa', id => SRP.ref.nombreCatalogo(id));
     SRP.util.llenarLista(this.el('filtro-alcaldia'), 'Todas', pares('alcaldia', a => a), f, 'alcaldia');
-    this.el('caja-filtro-tipo-org').hidden = !ver; this.el('caja-filtro-org').hidden = !ver;
-    if (ver) SRP.util.llenarInstituciones(this.el('filtro-tipo-org'), this.el('filtro-org'), fac.organizacion, f, fac.tipo);
+    this.el('caja-filtro-org').hidden = !ver;
+    if (ver) SRP.util.llenarInstituciones(this.el('filtro-org'), fac.organizacion, f);
   },
 
   llenarInstituciones() { this.llenarListas(); },
@@ -203,7 +178,7 @@ SRP.registros = {
       f.especie ? ['especie', 'Especie: ' + (f.especie === this.OTRA ? 'Otra especie' : SRP.ref.nombreCatalogo(f.especie))] : null,
       f.programa ? ['programa', 'Programa: ' + SRP.ref.nombreCatalogo(f.programa)] : null,
       f.alcaldia ? ['alcaldia', 'Alcaldía: ' + f.alcaldia] : null,
-      f.organizacion ? ['institucion', 'Institución: ' + SRP.ref.nombreOrganizacion(f.organizacion)] : f.tipo ? ['institucion', 'Tipo: ' + f.tipo] : null].filter(Boolean);
+      f.organizacion ? ['institucion', 'Institución: ' + SRP.ref.nombreOrganizacion(f.organizacion)] : null].filter(Boolean);
   },
 
   /* Deja los filtros como al abrir la vista por primera vez: todos los registros, sin año ni mes,
@@ -217,7 +192,6 @@ SRP.registros = {
     this.diaAbierto = false;
     this.el('filtro-dia').value = '';
     this.limpiarRango();
-    this.llenarMeses();
     this.sincronizarControles();
     this.aplicar();
     SRP.util.anunciar('Filtros quitados: todos los registros.', 'exito', { deshacer: () => this.volverAFiltro(antes) });
@@ -232,37 +206,11 @@ SRP.registros = {
     this.periodoAbierto = !!(f.desde || f.hasta);
     this.diaAbierto = !!f.dia && f.dia !== SRP.util.fechaHoy();
     this.el('filtro-dia').value = this.diaAbierto ? f.dia : '';
-    this.llenarMeses();
     this.sincronizarControles();
     this.aplicar();
   },
 
   /* ---------- Periodo ---------- */
-
-  // Años con registros, del más reciente al más antiguo
-  aniosDisponibles() {
-    return [...new Set(this.visibles.map(r => r.fecha_plantacion.slice(0, 4)))].sort().reverse();
-  },
-
-  llenarAnios() {
-    const anios = this.aniosDisponibles();
-    const actual = String(new Date().getFullYear());
-    if (!anios.includes(actual)) anios.unshift(actual);   // el año en curso siempre se puede elegir
-    this.el('filtro-anio').innerHTML = SRP.util.opciones('Todos', anios.map(a => [a, a]));
-  },
-
-  // Sólo los meses que tienen registros en el año elegido: evita elegir un mes vacío
-  llenarMeses() {
-    const anio = this.filtro.anio;
-    const meses = anio
-      ? [...new Set(this.visibles.filter(r => r.fecha_plantacion.startsWith(anio)).map(r => r.fecha_plantacion.slice(5, 7)))].sort()
-      : [];
-    const sel = this.el('filtro-mes');
-    sel.innerHTML = SRP.util.opciones('Todos', meses.map(m => [m, SRP.util.nombreMes('2000-' + m, true)]));
-    sel.disabled = !anio;
-    sel.value = meses.includes(this.filtro.mes) ? this.filtro.mes : '';
-    if (sel.value !== this.filtro.mes) this.filtro.mes = sel.value;
-  },
 
   aplicarAtajo(atajo) {
     const f = this.filtro;
@@ -282,19 +230,20 @@ SRP.registros = {
       f.anio = ''; f.mes = '';
       f.dia = this.el('filtro-dia').value;
       this.limpiarRango();
-      this.llenarMeses();
-      this.sincronizarControles();
+        this.sincronizarControles();
       this.aplicar();
       return;
     }
     this.diaAbierto = false;
     this.el('filtro-dia').value = '';
     f.dia = '';
-    if (atajo === 'hoy') { f.dia = SRP.util.fechaHoy(); f.anio = ''; f.mes = ''; }
+    const hoy = SRP.util.fechaHoy();
+    if (atajo === 'hoy') { f.dia = hoy; f.anio = ''; f.mes = ''; }
+    // «Este mes» y «Este año»: el mes y el año en curso, sin abrir ningún campo
+    else if (atajo === 'mes' || atajo === 'anio') { f.anio = hoy.slice(0, 4); f.mes = atajo === 'mes' ? hoy.slice(5, 7) : ''; }
     else { f.anio = ''; f.mes = ''; }   // 'todos'
     this.periodoAbierto = false;
     this.limpiarRango();
-    this.llenarMeses();            // ajusta el mes si ese año no tiene registros de ese mes
     this.sincronizarControles();
     this.aplicar();
   },
@@ -306,10 +255,7 @@ SRP.registros = {
 
   // Deja los controles mostrando exactamente lo que dice this.filtro
   sincronizarControles() {
-    const f = this.filtro;
-    this.el('filtro-anio').value = f.anio;
-    this.el('filtro-mes').value = f.mes;
-    this.el('filtro-mes').disabled = !f.anio;
+    const f = this.filtro, hoy = SRP.util.fechaHoy();
     const periodo = f.anio ? f.anio + (f.mes ? '-' + f.mes : '') : '';
     const sinRango = !f.desde && !f.hasta;
     // Un solo atajo marcado a la vez (D104): al abrir «Un periodo» se marca él y se desmarcan los
@@ -321,20 +267,17 @@ SRP.registros = {
       hoy: !pidePeriodo && !pideDia && f.dia === SRP.util.fechaHoy(),
       dia: pideDia,
       todos: !pidePeriodo && !pideDia && !f.dia && periodo === '',
+      mes: !pidePeriodo && !pideDia && !f.dia && f.anio === hoy.slice(0, 4) && f.mes === hoy.slice(5, 7),
+      anio: !pidePeriodo && !pideDia && !f.dia && f.anio === hoy.slice(0, 4) && !f.mes,
       periodo: pidePeriodo
     };
     // Desde/Hasta se ven mientras haya rango o se haya pedido «Un periodo»
     const abierto = !sinRango || !!this.periodoAbierto;
     SRP.util.atajos.marcar(this.el('filtro-atajos'), activo, { periodo: [this.el('filtro-periodo'), abierto], dia: [this.el('filtro-un-dia'), pideDia] });   // M15
-    // Año/Mes y Desde/Hasta son dos maneras de decir el periodo: nunca se ven a la vez (D100)
-    // …y con «Hoy» tampoco: hoy es hoy (D167). Año y mes sólo acompañan a «Todos»
-    const sinAnioMes = abierto || pideDia || activo.hoy;
-    this.el('caja-filtro-anio').hidden = sinAnioMes;
-    this.el('caja-filtro-mes').hidden = sinAnioMes;
     // El acordeón «Más filtros» (D129): su resumen dice lo elegido dentro; si nada de lo suyo aplica, no se ve
     const conCabo = !this.el('caja-filtro-cabo').hidden, conOrg = !this.el('caja-filtro-org').hidden;
-    const dentro = [f.anio ? (f.mes ? SRP.util.nombreMes(f.anio + '-' + f.mes, true) + ' ' + f.anio : f.anio) : ''].concat(this.elegidos().map(e => e[1].replace(/^[^:]+: /, ''))).filter(Boolean);
-    const disponibles = [sinAnioMes ? '' : 'año', sinAnioMes ? '' : 'mes', conCabo ? 'quién registró' : '', 'especie', 'programa', 'alcaldía', conOrg ? 'institución' : ''].filter(Boolean);
+    const dentro = this.elegidos().map(e => e[1].replace(/^[^:]+: /, '')).filter(Boolean);
+    const disponibles = [conCabo ? 'quién registró' : '', 'especie', 'programa', 'alcaldía', conOrg ? 'institución' : ''].filter(Boolean);
     this.el('filtro-mas-filtros').hidden = false;
     this.el('filtro-mas-filtros-texto').textContent = 'Más filtros: ' + (dentro.length ? dentro.join(' · ') : SRP.util.enumerar(disponibles));
   },
@@ -516,7 +459,6 @@ SRP.registros = {
     this.diaAbierto = false;
     this.el('filtro-dia').value = '';
     this.limpiarRango();
-    this.llenarMeses();
     this.sincronizarControles();
     this.aplicar();
   },
