@@ -246,6 +246,9 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 .cmb-fecha { font-size: var(--t-xs); color: var(--gris); font-variant-numeric: tabular-nums; }
 .cmb-que { overflow-wrap: anywhere; }
 .cmb-campos, .cmb-quien { font-size: var(--t-s); color: var(--gris); }
+/* Especies escritas: lo escrito va al frente */
+.rev-escrito { font-family: var(--fuente-titulo); font-weight: 600; font-size: var(--t-m); overflow-wrap: anywhere; }
+.rev-parecida { color: var(--texto); }
 /* Carga masiva: cifras de la revisión y renglones con problemas (el error en rojo, el aviso en ámbar) */
 .carga-cifras { margin: var(--e-2) 0 var(--e-3); padding-left: var(--e-5); }
 .carga-problemas .cmb-item { padding-left: var(--e-3); border-left: 3px solid var(--borde-suave); }

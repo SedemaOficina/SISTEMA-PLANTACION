@@ -62,6 +62,7 @@ SRP.app = {
     SRP.usuarios.iniciar();
     SRP.configuracion.iniciar();
     SRP.carga.iniciar();
+    SRP.especiesRevision.iniciar();
     SRP.conexion.iniciar();
     SRP.jornadas.iniciar();
     SRP.galeria.iniciar();
@@ -364,7 +365,7 @@ SRP.app = {
       const p = SRP.permisos.de(u);
       const admin = p.catalogos && p.usuarios;
       if ((nombre === 'registrar' && !p.registrar) || (nombre === 'catalogos' && !p.catalogos) || (nombre === 'galeria' && !p.galeria) || (nombre === 'supervision' && p.alcance === 'ninguno') ||
-          (nombre === 'usuarios' && !p.usuarios) || (['configuracion', 'parametros', 'cambios', 'acerca', 'carga'].includes(nombre) && !admin)) nombre = 'registros';
+          (nombre === 'usuarios' && !p.usuarios) || (['configuracion', 'parametros', 'cambios', 'acerca', 'carga', 'revision-especies'].includes(nombre) && !admin)) nombre = 'registros';
     }
     // Una sección que ya no existe (un «atrás» hacia Reportes, de una versión anterior) lleva a Jornadas
     if (!document.getElementById('vista-' + nombre)) nombre = 'jornadas';
@@ -377,7 +378,7 @@ SRP.app = {
     // Al editar se está dentro de Registros, de donde se llegó: «Nuevo registro» no se marca (D100)
     // Fotografías vive dentro de Supervisión: su pestaña es la que queda marcada (D158)
     // Lo que se abre desde Configuración deja marcada su pestaña
-    const deConfiguracion = ['usuarios', 'catalogos', 'parametros', 'cambios', 'acerca', 'carga'];
+    const deConfiguracion = ['usuarios', 'catalogos', 'parametros', 'cambios', 'acerca', 'carga', 'revision-especies'];
     const marcada = nombre === 'registrar' && (SRP.formulario.estado.editando || SRP.formulario.estado.sustitucion) ? (SRP.jornadas.volverAlDetalle ? 'jornadas' : 'registros') : nombre === 'galeria' ? 'supervision' : deConfiguracion.includes(nombre) ? 'configuracion' : nombre;
     this.el('navegacion').querySelectorAll('.pestana').forEach(b => {
       if (b.dataset.vista === marcada) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
@@ -394,6 +395,7 @@ SRP.app = {
     if (nombre === 'cambios') SRP.configuracion.prepararCambios();
     if (nombre === 'acerca') SRP.configuracion.prepararAcerca();
     if (nombre === 'carga') SRP.carga.preparar();
+    if (nombre === 'revision-especies') SRP.especiesRevision.preparar();
     const titulo = this.el('vista-' + nombre).querySelector('h1');
     if (titulo) { titulo.setAttribute('tabindex', '-1'); titulo.focus({ preventScroll: true }); }
     this.alInicio();

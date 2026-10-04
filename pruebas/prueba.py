@@ -4163,17 +4163,17 @@ with sync_playwright() as p:
     pg50.evaluate("SRP.app.menuCuenta(false)"); pg50.click('.pestana[data-vista=configuracion]'); pg50.wait_for_timeout(600)
     t50=pg50.eval_on_selector_all('.cfg-tarjeta','l=>l.map(t=>[t.dataset.ir, t.querySelector(".cfg-titulo").textContent, t.querySelector(".cfg-resumen").textContent])')
     ok('Configuración' not in m50 and 'Catálogos' not in m50 and 'Usuarios' not in m50,'el menú de la cuenta no trae Configuración, Catálogos ni Usuarios: se entra por la barra: %s' % m50)
-    ok([x[:2] for x in t50]==[['usuarios','Usuarios'],['catalogos','Catálogos'],['parametros','Parámetros'],['cambios','Registro de cambios'],['carga','Carga masiva'],['acerca','Acerca del sistema']]
-       and t50[0][2]=='13 cuentas' and t50[1][2]=='5 programas · 21 instituciones · 76 especies' and t50[2][2]=='11 valores · sólo consulta' and t50[3][2]=='Sin cambios todavía' and t50[4][2]=='Plantilla, revisión y carga' and t50[5][2].startswith('Versión '),
-       'Configuración muestra seis tarjetas con su resumen al día: %s' % t50)
+    ok([x[:2] for x in t50]==[['usuarios','Usuarios'],['catalogos','Catálogos'],['revision-especies','Especies escritas'],['parametros','Parámetros'],['cambios','Registro de cambios'],['carga','Carga masiva'],['acerca','Acerca del sistema']]
+       and t50[0][2]=='13 cuentas' and t50[1][2]=='5 programas · 21 instituciones · 76 especies' and t50[2][2]=='Ninguna especie escrita' and t50[3][2]=='11 valores · sólo consulta' and t50[4][2]=='Sin cambios todavía' and t50[5][2]=='Plantilla, revisión y carga' and t50[6][2].startswith('Versión '),
+       'Configuración muestra siete tarjetas con su resumen al día: %s' % t50)
     # Cada tarjeta lleva a su apartado y éste vuelve a Configuración
     ida50=[]
-    for dest in ['usuarios','catalogos','parametros','cambios','carga','acerca']:
+    for dest in ['usuarios','catalogos','revision-especies','parametros','cambios','carga','acerca']:
         pg50.click('.cfg-tarjeta[data-ir=%s]' % dest); pg50.wait_for_timeout(500)
         abierta=pg50.is_visible('#vista-%s' % dest)
         pg50.locator('#vista-%s [data-volver-configuracion]' % dest).click(); pg50.wait_for_timeout(400)
         ida50.append(abierta and pg50.is_visible('#vista-configuracion'))
-    ok(ida50==[True]*6,'cada tarjeta abre su apartado y «Configuración», arriba, regresa: %s' % ida50)
+    ok(ida50==[True]*7,'cada tarjeta abre su apartado y «Configuración», arriba, regresa: %s' % ida50)
     # Parámetros: los valores que usa el sistema, sólo para consulta
     pg50.click('.cfg-tarjeta[data-ir=parametros]'); pg50.wait_for_timeout(500)
     p50=pg50.eval_on_selector_all('#cfg-parametros .cfg-cifra','l=>l.map(d=>d.textContent)')
@@ -6080,6 +6080,53 @@ with sync_playwright() as p:
 
 
 
+
+    # ---------- ctx78: especies escritas: lo que se escribió en «Otra especie», en una lista de consulta ----------
+    ctx78 = b.new_context(viewport={'width':390,'height':844}, timezone_id='America/Mexico_City', accept_downloads=True)
+    pg78 = ctx78.new_page(); err78 = []
+    pg78.on('pageerror', lambda e: err78.append(str(e)))
+    pg78.goto(BASE); pg78.wait_for_timeout(1300)
+    def entrar78(uid):
+        if pg78.is_hidden('#vista-acceso'):
+            pg78.evaluate("document.getElementById('aviso').hidden = true; SRP.app.menuCuenta(false)"); pg78.click('#btn-cuenta'); pg78.click('#btn-cambiar-perfil'); pg78.wait_for_timeout(500)
+        pg78.select_option('#sel-usuario-prueba', uid); pg78.click('#btn-entrar-prueba'); pg78.wait_for_timeout(900)
+    entrar78('u-admin-1')
+    pg78.click('.pestana[data-vista=configuracion]'); pg78.wait_for_timeout(600); pg78.click('.cfg-tarjeta[data-ir=revision-especies]'); pg78.wait_for_timeout(600)
+    ok('Ninguna especie escrita' in pg78.inner_text('#rev-vacio') and pg78.is_hidden('#btn-rev-excel') and pg78.locator('#rev-lista li').count() == 0, 'sin «Otra especie» registrada, la lista lo dice y no ofrece descarga')
+    pg78.evaluate("""async () => { const A = SRP.almacen;
+      await A.guardarConBitacora('jornadas', { id: 'jr-78', nombre: 'Jornada 78', cabo_id: 'u-cabo-1', fecha: '2026-09-20', estatus: 'cerrada', programa_id: 'p-refor', organizacion_id: 'o-sedema', reporte_en: '2026-09-21T10:00:00Z' }, SRP.bitacora.entrada('CREADO', 'jornada', 'jr-78'));
+      const a = (id, t, extra) => A.guardarConBitacora('plantaciones', Object.assign({ id, jornada_id: 'jr-78', estatus: 'activo', cabo_id: 'u-cabo-1', lat: 19.4326, lng: -99.1332, especie_id: null, especie_otra: t,
+        programa_id: 'p-refor', fecha_plantacion: '2026-09-20', comentarios: '', fecha_registro: '2026-09-20T10:00:00Z' }, extra || {}), SRP.bitacora.entrada('CREADO', 'plantacion', id));
+      await a('r78-1', 'Fresno'); await a('r78-2', 'fresno '); await a('r78-3', 'FRESNO', { cabo_id: 'u-coord-1', fecha_plantacion: '2026-09-22' }); await a('r78-4', 'Guayabo fresa'); await a('r78-5', 'no sé');
+      await a('r78-6', 'Eliminado', { estatus: 'eliminado' }); await a('r78-7', '', { especie_id: 'ESP-0029' }); }""")
+    pg78.click('#vista-revision-especies [data-volver-configuracion]'); pg78.wait_for_timeout(500)
+    ok(pg78.inner_text('.cfg-tarjeta[data-ir=revision-especies] .cfg-resumen') == '3 especies escritas', 'la tarjeta de Configuración dice cuántas especies escritas hay: %s' % pg78.inner_text('.cfg-tarjeta[data-ir=revision-especies] .cfg-resumen'))
+    pg78.click('.cfg-tarjeta[data-ir=revision-especies]'); pg78.wait_for_timeout(600)
+    g78 = pg78.evaluate("[...document.querySelectorAll('#rev-lista li')].map(l => [l.dataset.clave, l.querySelector('.cmb-que').textContent.split(' · ')[0], !!l.querySelector('.rev-parecida'), l.querySelectorAll('button').length])")
+    ok(g78 == [['fresno', '3 árboles', True, 0], ['guayabo fresa', '1 árbol', False, 0], ['no se', '1 árbol', False, 0]]
+       and pg78.inner_text('#rev-cuenta') == '3 especies escritas · 5 árboles' and pg78.evaluate("document.querySelector('.pestana[aria-current]').dataset.vista") == 'configuracion',
+       'lo escrito se agrupa sin distinguir mayúsculas ni espacios, sin los eliminados ni los que ya tienen especie; es sólo consulta, sin botones por renglón: %s · %s' % (g78, pg78.inner_text('#rev-cuenta')))
+    t78 = pg78.inner_text('#rev-lista li >> nth=0')
+    ok('También escrita' in t78 and 'Fresno · Fraxinus uhdei' in pg78.inner_text('#rev-lista li >> nth=0 >> .rev-parecida') and '20-SEP-2026 al 22-SEP-2026' in t78 and 'Escrita por' in t78
+       and pg78.evaluate("document.documentElement.scrollWidth <= window.innerWidth"),
+       'cada renglón dice las otras formas en que se escribió, quién, entre qué fechas y la parecida del catálogo, y cabe en el teléfono: %s' % t78)
+    # La lista se descarga en Excel
+    with pg78.expect_download() as dl78: pg78.click('#btn-rev-excel')
+    import zipfile as zf78
+    ruta78 = dl78.value.path(); x78 = zf78.ZipFile(ruta78); hoja78 = x78.read('xl/worksheets/sheet1.xml').decode('utf-8') + (x78.read('xl/sharedStrings.xml').decode('utf-8') if 'xl/sharedStrings.xml' in x78.namelist() else '')
+    ok(dl78.value.suggested_filename.startswith('Especies_escritas_SRP_') and dl78.value.suggested_filename.endswith('.xlsx') and all(t in hoja78 for t in ['Especie escrita', 'Guayabo fresa', 'ESP-0029', 'Fraxinus uhdei']),
+       'la lista se descarga en Excel con lo escrito y la especie parecida: %s' % dl78.value.suggested_filename)
+    # Al editar el árbol y darle una especie del catálogo, deja de aparecer; nada se escribe desde esta pantalla
+    antes78 = pg78.evaluate("async () => (await SRP.almacen.todos('bitacora')).length")
+    pg78.evaluate("""async () => { const r = await SRP.almacen.uno('plantaciones', 'r78-5');
+      await SRP.almacen.guardarConBitacora('plantaciones', Object.assign({}, r, { especie_id: 'ESP-0029', especie_otra: '' }), SRP.bitacora.entrada('EDITADO', 'plantacion', r.id)); await SRP.especiesRevision.preparar(); }""")
+    q78 = pg78.evaluate("async () => [[...document.querySelectorAll('#rev-lista li')].map(l => l.dataset.clave), (await SRP.almacen.uno('plantaciones', 'r78-1')).especie_otra, (await SRP.almacen.todos('bitacora')).length]")
+    ok(q78 == [['fresno', 'guayabo fresa'], 'Fresno', antes78 + 1], 'un árbol que toma una especie del catálogo sale de la lista; la pantalla no cambia ningún registro: %s' % q78)
+    # Sólo la Administración global
+    entrar78('u-coord-1'); pg78.evaluate("SRP.app.mostrarVista('revision-especies')"); pg78.wait_for_timeout(400)
+    ok(pg78.is_hidden('#vista-revision-especies'), 'la coordinación no abre Especies escritas')
+    ok(err78 == [], 'sin errores de consola: %s' % err78[:2])
+    ctx78.close()
 
     b.close()
 

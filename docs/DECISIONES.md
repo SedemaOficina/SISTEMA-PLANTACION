@@ -2588,3 +2588,19 @@
     institución de los filtros, una alcaldía va sólo con su nombre («Iztapalapa»): que es alcaldía lo
     dice su tipo o el grupo de la lista. En texto corrido (reporte, informes, cuentas) se sigue
     leyendo «Alcaldía Iztapalapa», para que no se confunda con una colonia o una empresa.
+
+- **D232. Especies escritas: lo escrito en «Otra especie» se lista para la Administración global (bloque 167).**
+  04-10-2026. Petición de Liber: ver cuáles especies escriben los usuarios. La revisión se hace fuera
+  del sistema —primero si es un error de escritura, después contra EncicloVida (CONABIO)—, así que la
+  pantalla es sólo de consulta: no asigna, no da de alta y no cambia ningún registro.
+  · **Dónde:** Configuración › «Especies escritas». La tarjeta dice cuántas hay.
+  · **Qué se ve:** un renglón por cada cosa escrita, sin distinguir mayúsculas, acentos ni espacios
+    («Fresno», «fresno », «FRESNO» son una), con cuántos árboles y jornadas, quién la escribió, entre qué
+    fechas, las otras formas en que se escribió y, si la hay y es una sola, la especie parecida del
+    catálogo. No cuentan los árboles eliminados.
+  · **Descarga:** «Descargar en Excel», con las mismas columnas y la clave de la parecida, para
+    revisarla fuera.
+  · **Después de revisar:** la especie nueva se da de alta en Catálogos › Especies; el árbol toma la
+    especie al editarlo y entonces deja de aparecer en la lista. El modelo de datos no cambia (151 campos).
+  · **Alcance en la Etapa 1:** la lista sale de los árboles que hay en el dispositivo de quien
+    administra. Reunir lo de todas las instituciones es del servidor (fila 27 de `FASE2-Y-TRASPASO.md`).

@@ -406,6 +406,7 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M408 | Liber (iPhone) | Administración global: «Configuración» pasa del menú de la cuenta a la barra de secciones, junto a Registros | Media | 0.9.32 (B166) | Barra de secciones › Configuración | D231 |
 | M409 | Liber (iPhone) | Coordinación: la barra queda Nuevo registro, Jornadas, Registros y Supervisión | Media | 0.9.32 (B166) | Barra de secciones | D231 |
 | M410 | Liber (iPhone) | En los catálogos y listas de institución, las alcaldías van sólo con su nombre, sin la palabra «Alcaldía» | Baja | 0.9.32 (B166) | Catálogos › Instituciones; filtros de institución | D231 |
+| M411 | Liber | Especies escritas: la Administración global ve, agrupado, lo que se escribió en «Otra especie», y lo descarga en Excel para revisarlo fuera | Alta | 0.9.33 (B167) | Configuración › Especies escritas | D232 |
 
 ## 2. Por hacer
 
@@ -433,4 +434,4 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 391 hechas · 7 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 392 hechas · 7 por hacer · 2 revisadas · 2 descartadas.

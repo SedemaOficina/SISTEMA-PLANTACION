@@ -3204,3 +3204,20 @@ opción del menú de la cuenta.
 
 **Verificación:** corrida completa sola, 1,314 comprobaciones: 1,313 correctas y 1 expectativa de prueba por ajustar (el solicitante de una jornada que no es solicitud se suelta en la migración), corregida y repetida sola su sección (ctx73) sin fallas; sin errores de consola. `auditoria.py`: 140 comprobaciones, 0 hallazgos. `auditoria_css.py`: 0 hallazgos. `revisar.py`: sin problemas. No probado en iPhone por Claude.
 
+## Bloque 167 — Especies escritas (04-10-2026)
+
+Versión 0.9.33. Petición de Liber: ver, en la Administración global, las especies que los usuarios
+escriben en «Otra especie». Se construyó primero con acciones (asignar, dar de alta, dejar) y Liber
+lo acotó a consulta: la revisión la hace fuera, contra EncicloVida. Se retiraron las acciones y el
+campo que requerían.
+
+**Qué cambió (D232).** `js/especies-revision.js` (nuevo): `leer()` agrupa lo escrito, `parecida()`
+dice la especie del catálogo que se le parece, `descargar()` entrega la lista en Excel.
+`index.html`: tarjeta y vista `vista-revision-especies`. `js/app.js` y `js/configuracion.js`: la
+vista es de Configuración y su tarjeta dice cuántas hay. `README.md`, `datos/MAPEO-CAMPOS.md`,
+`docs/FASE2-Y-TRASPASO.md` (fila 27). El modelo de datos no cambia.
+
+**Pantalla: qué se agregó y qué se quitó.** Se agregó una tarjeta en Configuración (siete) y su
+pantalla de consulta. No se quitó nada. Para cabos, coordinación y dirección no cambia nada.
+
+**Verificación:** corrida completa sola, 1,322 comprobaciones, 0 fallas, sin errores de consola (última sección `ctx78`). `auditoria.py`: 140 comprobaciones, 0 hallazgos. `auditoria_css.py`: 0 hallazgos. No probado en iPhone por Claude.

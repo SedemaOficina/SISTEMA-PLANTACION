@@ -10,7 +10,7 @@ aquí, además de en `DECISIONES.md`. El detalle técnico de cada campo está en
 `datos/DICCIONARIO-DATOS.md`, que se genera de él); las reglas de la Fase 2 del esquema son las `S-nn`
 que se citan abajo.
 
-Estado al 03-10-2026: versión 0.9.32 (Bloque 166). Base del teléfono versión 9: `srp_db` en pruebas, `srp_sia` en la real.
+Estado al 04-10-2026: versión 0.9.33 (Bloque 167). Base del teléfono versión 9: `srp_db` en pruebas, `srp_sia` en la real.
 
 ---
 
@@ -44,6 +44,7 @@ Estado al 03-10-2026: versión 0.9.32 (Bloque 166). Base del teléfono versión 
 | 24 | Cola de envío por operación (S-18) | Enviar cada operación: altas, ediciones, eliminaciones, restauraciones, sustituciones, jornadas, cierres, reaperturas y relevos. | Decidido | La cola simulada de `js/envio.js` sólo considera árboles activos: sirve de referencia para estados y avisos, no para el alcance. |
 | 25 | Vigencia del reporte (D215) | Fijar `reporte_en` cuando se recibe el reporte entregado y anularlo en la misma transacción que reabra la jornada o que elimine, restaure, edite, mueva o sustituya uno de sus árboles, con su renglón de bitácora. Dos altas idénticas de jornada en el mismo instante se tratan como una sola (clave de la operación). | Decidido | `js/reportes.js` (`marcarGenerado`, `caducar`) y `js/jornada-activa.js` (`cambiarEstatus`, `volverACerrar`). |
 | 26 | Mismas tablas en el teléfono y en el servidor (D225) | Crear las diez tablas del esquema tal cual: `plantaciones`, `jornadas`, `usuarios`, `bitacora` y los seis catálogos, cada uno en la suya (`programas`, `areas`, `especies`, `vehiculos`, `instituciones`, `solicitantes`). Cada tabla se envía y se recibe con su mismo nombre y sus mismos campos: no hay capa de traducción. Las llaves foráneas apuntan a la tabla de cada catálogo. | Decidido | `SRP.almacen.TABLA_DE_TIPO` y la migración 8 en `js/almacen.js`; `datos/esquema.json`. En memoria cada renglón de catálogo lleva `tipo` para la pantalla; no se guarda ni se envía. |
+| 27 | Especies escritas (D232) | Dar a la Administración global la lista de lo escrito en `especie_otra` sobre los árboles de todas las instituciones, no sólo los del dispositivo, agrupada como en la pantalla y con su descarga. Es consulta: no cambia registros. | Decidido | `js/especies-revision.js` (`leer`, `descargar`). En la Etapa 1 la lista sale de los árboles que hay en el dispositivo de quien administra. |
 
 ## 2. Qué guarda el teléfono (S-11)
 
