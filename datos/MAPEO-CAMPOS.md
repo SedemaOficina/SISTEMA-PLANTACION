@@ -52,9 +52,9 @@ Pantalla **Nuevo registro**. Almacén `plantaciones`.
 | — | `uga` | No | Capa geográfica | Clave del hexágono de la malla UGA del SIA (~1 km², 1,624 celdas), p. ej. `TLP-318`. **El prefijo no es la alcaldía del punto**: es la alcaldía a la que se asignó la celda, y en la frontera difieren. La alcaldía sale de su propia capa |
 | — | `uga_borde_m` | No | Capa geográfica | Metros del punto al borde de su celda UGA (D152). Si es menor que la precisión del GPS, la ficha y el detalle dicen «Celda incierta»: el servidor confirmará la celda |
 | — | `capa_version` | No | Sistema | Versión de cada capa con la que se derivó, p. ej. `alcaldias=sia-2026-01-01;uga=sia-2026-09-22;colonias=iecm-2022`. Permite rehacer el dato cuando una capa cambie |
-| Especie | `especie_id` | Sí | Catálogo | Remite a `catalogos.id` con `tipo = especie`: la clave `ESP-0000` del catálogo del SIA (D84). Vacío cuando se eligió «Otra especie». En pantalla se elige por nombre común, científico o cualquiera de los otros nombres comunes; sólo viaja la clave |
+| Especie | `especie_id` | Sí | Catálogo | Remite a `especies.id`: la clave `ESP-0000` del catálogo del SIA (D84). Vacío cuando se eligió «Otra especie». En pantalla se elige por nombre común, científico o cualquiera de los otros nombres comunes; sólo viaja la clave |
 | Especifique la especie | `especie_otra` | Sólo con «Otra especie» | Persona | Texto libre, para lo que no está en el catálogo |
-| Programa | `programa_id` | Sí | Jornada | Remite a `catalogos.id` con `tipo = programa`. Es el de su jornada (D151): no se pide por árbol, cambia cuando cambia el de la jornada y al mover el árbol toma el de la nueva. Se lee en la ficha de revisión y en el detalle |
+| Programa | `programa_id` | Sí | Jornada | Remite a `programas.id`. Es el de su jornada (D151): no se pide por árbol, cambia cuando cambia el de la jornada y al mover el árbol toma el de la nueva. Se lee en la ficha de revisión y en el detalle |
 | Fecha de plantación | `fecha_plantacion` | Sí | Persona | `AAAA-MM-DD`, el día en que se plantó el árbol, entre la fecha de su jornada y hoy (D204). Se pide sólo si la jornada empezó antes de hoy; arranca con la fecha de la jornada el día que se inicia y con la de hoy los días siguientes. Un sustituto lleva la fecha de la sustitución. Si cambia la fecha de la jornada, la toman los árboles del día de inicio. Se muestra como 21-SEP-2026 |
 | Comentarios | `comentarios` | No | Persona | Texto libre, hasta 500 caracteres: observaciones del sitio o del ejemplar. Cadena vacía si no se escribe nada; los registros anteriores a su reincorporación (D50) no traen la llave y se leen como «Sin comentarios». En el reporte PDF, en «Comentarios por ejemplar» (D164) |
 | Fotografía | `foto_base64` | No | Persona | La imagen ya comprimida, incrustada. [pendiente] En Fase 2 sale del registro y se guarda como archivo, siguiendo la práctica que el SIA ya usa en sus otros módulos |
@@ -90,7 +90,7 @@ Pantalla **Usuarios**, sólo Administración global. Almacén `usuarios`.
 |---|---|---|---|---|
 | — | `id` | Sí | Sistema | UUID |
 | Tipo de institución e Institución | `organizacion_id` | Sí | Catálogo | Primero el tipo (Alcaldía · Gobierno de la CDMX · Empresa privada · Organización civil), luego la institución de ese tipo; remite a `catalogos.id` con `tipo = organizacion`. Sólo se elige de la lista: las nuevas las agrega la Administración en Catálogos › Instituciones. Fuera de SEDEMA la cuenta es de cabo o de coordinación, sin área; el cabo depende de un coordinador de su misma institución (D192) |
-| Área | `area_id` | Sólo en SEDEMA | Catálogo | Remite a `catalogos.id` con `tipo = area`: DGSANPAVA, Oficina de la Secretaría, Sistema de Información Ambiental, DGEIRA; nula en cuentas de otras instituciones |
+| Área | `area_id` | Sólo en SEDEMA | Catálogo | Remite a `areas.id`: DGSANPAVA, Oficina de la Secretaría, Sistema de Información Ambiental, DGEIRA; nula en cuentas de otras instituciones |
 | Nombre completo | `nombre_completo` | Sí | Persona | Nombre y apellidos en un solo campo (antes eran tres; al abrir se unen) |
 | Correo | `correo` | Sí | Persona | Identifica la cuenta y sirve para entrar. Único. No se puede cambiar después |
 | Cargo | `cargo_rol` | Sí | Persona | Texto libre; descriptivo, no gobierna permisos |
@@ -104,14 +104,24 @@ Pantalla **Usuarios**, sólo Administración global. Almacén `usuarios`.
 
 ## Módulo: Catálogos
 
-Pantalla **Catálogos**, sólo Administración global. Almacén `catalogos`. Los seis catálogos
-comparten estructura; las especies añaden los campos del catálogo del SIA; los vehículos, su
-modelo y su tipo (D162); las instituciones y los solicitantes, su tipo.
+Pantalla **Catálogos**, sólo Administración global, con una pestaña por catálogo. **Cada catálogo
+tiene su tabla** (D225): `programas`, `areas`, `especies`, `vehiculos`, `instituciones` y
+`solicitantes`, las mismas en el teléfono y en el servidor. Las seis comparten los campos de la
+primera tabla de abajo; las especies añaden los del catálogo del SIA; los vehículos, su modelo y su
+tipo (D162); las instituciones y los solicitantes, su tipo; los programas, quién puede usarlos.
+
+| Pestaña | Tabla | Campos propios |
+|---|---|---|
+| Programas | `programas` | `tipos_organizacion` |
+| Áreas | `areas` | — |
+| Especies | `especies` | `nombre_cientifico`, `otros_nombres_comunes`, `tipo_distribucion`, `formadecrecimiento`, `id_snib`, `id_enciclovida` |
+| Vehículos | `vehiculos` | `modelo`, `tipo_vehiculo` |
+| Instituciones | `instituciones` | `tipo_organizacion` |
+| Solicitantes | `solicitantes` | `tipo_solicitante` |
 
 | Etiqueta en pantalla | Campo | Obligatorio | Origen | Notas |
 |---|---|---|---|---|
 | — | `id` | Sí | Sistema | UUID en programas y áreas. **En especies es la propia clave `ESP-0000`** (D84) |
-| — | `tipo` | Sí | Sistema | `programa`, `area`, `especie`, `vehiculo`, `organizacion` o `solicitante`. Lo fija la pestaña en la que se está |
 | Clave | `clave` | Sí | Persona / Sistema | Programas y áreas: se sugiere a partir del nombre, en mayúsculas y sin acentos; editable antes de guardar, fija después. **Especies: consecutivo `ESP-0000` que asigna el sistema** (siguiente al mayor en uso, sin importar el orden alfabético); nunca se escribe ni se reutiliza. Es la llave con la que se unen los datos |
 | Nombre / Nombre común | `nombre` | Sí | Persona | Único dentro de su tipo. En especies corresponde al *nombre_comun* del catálogo del SIA: la etiqueta que reconoce el personal en campo |
 | Estado | `activo` | Sí | Persona | Un valor inactivo deja de ofrecerse; los registros que ya lo usan no cambian |
@@ -198,7 +208,7 @@ Almacén `jornadas` (sustituye a `cierres` desde el bloque 62). Lo que ya vive e
 | Relevo de cabo (ficha de la jornada) | `relevo_id` | No | Persona | Remite a `usuarios.id`: el cabo que registra en lugar del titular tras un relevo de la coordinación (D204); nulo, registra el titular |
 | No como campo: la ficha y el reporte dicen el relevo | `relevos` | Sí | Sistema | Lista de los relevos hechos: a qué cabo se pasó, cuándo y quién lo hizo; `[]` sin relevos (D204) |
 | Origen de la jornada | `origen` | Sí | Persona | `PROGRAMADA` o `PEDIDO`: pedido especial de otra instancia (D210). Obligatorio y sin valor por omisión: quien inicia la jornada lo elige (D221); se corrige en «Editar jornada» |
-| Quién lo solicita | `solicitante_id` | No | Persona | Remite a `catalogos.id` (solicitante): quién solicita el pedido especial; no es quien ejecuta ni es una institución con cuentas. Nulo en una jornada programada o si la instancia no está en el catálogo (D210, D217) |
+| Quién lo solicita | `solicitante_id` | No | Persona | Remite a `solicitantes.id`: quién solicita el pedido especial; no es quien ejecuta ni es una institución con cuentas. Nulo en una jornada programada o si la instancia no está en el catálogo (D210, D217) |
 | Nombre de la instancia | `solicitante_otro` | Sí | Persona | Nombre de la instancia que solicita cuando no está en el catálogo; `''` si no aplica (D210) |
 | Descripción del pedido | `pedido_descripcion` | Sí | Persona | De qué se trata el pedido especial, obligatoria en un pedido; `''` si no aplica. No se pide oficio ni folio (D210) |
 | No como campo: «Institución» en filtros; el reporte la dice si no es la Secretaría | `organizacion_id` | Sí | Sesión | La institución que ejecuta: la de quien inicia la jornada. No cambia después. En jornadas de otras instituciones el cierre no pide chófer ni vehículo, y el reporte dice «Institución que ejecuta» |
@@ -213,7 +223,7 @@ Almacén `jornadas` (sustituye a `cierres` desde el bloque 62). Lo que ya vive e
 | No como campo: se ve bajo la lista de vehículos | `vehiculo_modelo` | No | Catálogo | Se copia del catálogo al guardar el cierre (D162); ya no se escribe a mano (D174). Sustituye a `vehiculo` (bloque 20) |
 | Vehículo | `vehiculo_placa` | No | Catálogo | La placa del vehículo elegido en la lista (D162, D174) |
 | No como campo: se ve bajo la lista de vehículos | `vehiculo_tipo` | No | Catálogo | El tipo del vehículo elegido (Estacas, Pipa…), copiado del catálogo (D174) |
-| Vehículo | `vehiculo_id` | No | Persona | Remite a `catalogos.id` del vehículo elegido; nulo sin vehículo (sólo del catálogo, D174). Con él se cuentan los que más usa cada encargado, que se ofrecen a un toque |
+| Vehículo | `vehiculo_id` | No | Persona | Remite a `vehiculos.id` del vehículo elegido; nulo sin vehículo (sólo del catálogo, D174). Con él se cuentan los que más usa cada encargado, que se ofrecen a un toque |
 | Hora de finalización | `hora` | No | Persona | Hora de finalización, `HH:MM` del selector de hora; el PDF le agrega «h» |
 | Árboles que se van a plantar | `arboles_previstos` | Sí | Persona | Árboles que se van a plantar, escrito al iniciar la jornada; Jornadas y el reporte comparan los registrados contra los previstos |
 | «Está bien» en un punto con aviso (ficha de la jornada) | `puntos_revisados` | Sí | Persona | Puntos con aviso que alguien marcó «Está bien» en **Jornadas**; lista de `plantaciones.id` (D112) |
@@ -228,13 +238,13 @@ Almacén `jornadas` (sustituye a `cierres` desde el bloque 62). Lo que ya vive e
 
 | Campo | Se origina en | Se reutiliza en |
 |---|---|---|
-| `usuarios.id` | Cuentas | `plantaciones.cabo_id`, `plantaciones.editado_por_id`, `usuarios.coordinadores_ids`, `usuarios.creado_por_id`, `usuarios.editado_por_id`, `catalogos.creado_por_id`, `catalogos.editado_por_id`, `bitacora.usuario_id`, `jornadas.cabo_id`, `jornadas.encargado_id`, `jornadas.relevo_id`, `jornadas.editado_por_id` |
-| `catalogos.id` (especie, = clave `ESP-0000`) | Catálogo del SIA | `plantaciones.especie_id` |
-| `catalogos.id` (programa) | Catálogos | `jornadas.programa_id`, y de ahí `plantaciones.programa_id` (D151) |
+| `usuarios.id` | Cuentas | `plantaciones.cabo_id`, `plantaciones.editado_por_id`, `usuarios.coordinadores_ids`, `usuarios.creado_por_id`, `usuarios.editado_por_id`, `creado_por_id` de las seis tablas de catálogo, `catalogos.editado_por_id`, `bitacora.usuario_id`, `jornadas.cabo_id`, `jornadas.encargado_id`, `jornadas.relevo_id`, `jornadas.editado_por_id` |
+| `especies.id` (= clave `ESP-0000`) | Catálogo del SIA | `plantaciones.especie_id` |
+| `programas.id` | Catálogos | `jornadas.programa_id`, y de ahí `plantaciones.programa_id` (D151) |
 | `jornadas.id` | Jornadas | `plantaciones.jornada_id` |
-| `catalogos.id` (área) | Catálogos | `usuarios.area_id` |
-| `catalogos.id` (institución) | Catálogos | `usuarios.organizacion_id`, `jornadas.organizacion_id` |
-| `catalogos.id` (solicitante) | Catálogos | `jornadas.solicitante_id` |
+| `areas.id` | Catálogos | `usuarios.area_id` |
+| `instituciones.id` | Catálogos | `usuarios.organizacion_id`, `jornadas.organizacion_id` |
+| `solicitantes.id` | Catálogos | `jornadas.solicitante_id` |
 | `activo` | Cuentas y Catálogos | Mismo significado en los dos: deja de ofrecerse o de poder entrar, sin borrar nada |
 | `fecha_ultima_edicion` + `editado_por_id` | Todos | Mismo par en plantaciones, cuentas, catálogos y jornadas |
 

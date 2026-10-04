@@ -375,7 +375,7 @@ SRP.catalogos = {
       }, extra);
       entrada = SRP.bitacora.entrada('CREADO', 'catalogo', item.id, this.tipo + ' ' + item.clave);
     }
-    await SRP.almacen.guardarConBitacora('catalogos', item, entrada);
+    await SRP.almacen.guardarCatalogo(item, entrada);
     this.el('dlg-catalogo').close();
     await SRP.ref.recargar();
     SRP.util.anunciar('Catálogo actualizado.');
@@ -390,7 +390,7 @@ SRP.catalogos = {
     if (this.esFija(item)) { SRP.util.anunciar('Las alcaldías son fijas: no se desactivan. Para cortar el acceso, desactive sus cuentas.', 'alerta'); return; }
     const activar = !item.activo;
     const nuevo = Object.assign({}, item, { activo: activar, editado_por_id: SRP.sesion.usuario.id, fecha_ultima_edicion: SRP.util.ahoraISO() });
-    await SRP.almacen.guardarConBitacora('catalogos', nuevo, SRP.bitacora.entrada(activar ? 'ACTIVADO' : 'DESACTIVADO', 'catalogo', item.id));
+    await SRP.almacen.guardarCatalogo(nuevo, SRP.bitacora.entrada(activar ? 'ACTIVADO' : 'DESACTIVADO', 'catalogo', item.id));
     await SRP.ref.recargar();
     const org = item.tipo === 'organizacion';
     const nombre = org ? SRP.ref.nombreOrganizacion(item.id) : item.nombre;
@@ -412,7 +412,7 @@ SRP.catalogos = {
       puntos: ['No aparece en ningún árbol, jornada ni cuenta.', 'La bitácora conserva la constancia.', 'Si sólo debe dejar de ofrecerse, desactívelo: eso sí se deshace.'],
       irreversible: true, boton: 'Eliminar', icono: 'basura' });
     if (!ok) return;
-    await SRP.almacen.borrarConBitacora('catalogos', item.id,
+    await SRP.almacen.borrarCatalogo(item,
       SRP.bitacora.entrada('ELIMINADO', 'catalogo', item.id, item.tipo + ' ' + item.clave + ': ' + item.nombre));
     await SRP.ref.recargar();
     SRP.util.anunciar('Valor eliminado.');

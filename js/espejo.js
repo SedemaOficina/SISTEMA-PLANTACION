@@ -95,7 +95,7 @@ SRP.espejo = {
     puntos_revisados: 'Puntos con aviso marcados «Está bien» en Jornadas (D112)',
     reporte_en: 'Cuándo se entregó el PDF del reporte de la jornada; nulo si no se ha generado o si la jornada cambió después',
     carga_id: 'Clave del lote de carga masiva que creó la jornada; nula en las que se inician en campo',
-    vehiculo_id: 'El vehículo elegido del catálogo (catalogos.id); placa, modelo y tipo se copian de él al guardar. Nulo sin vehículo (D162, D174)'
+    vehiculo_id: 'El vehículo elegido del catálogo (vehiculos.id); placa, modelo y tipo se copian de él al guardar. Nulo sin vehículo (D162, D174)'
   },
 
 

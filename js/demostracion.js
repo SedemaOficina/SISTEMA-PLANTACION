@@ -33,7 +33,7 @@ window.SRP = window.SRP || {};
 SRP.demo = {
   cargando: false,
   DESDE: '2024-01-08',
-  ALMACENES: ['usuarios', 'jornadas', 'plantaciones', 'bitacora', 'catalogos'],
+  ALMACENES: ['usuarios', 'jornadas', 'plantaciones', 'bitacora', 'instituciones'],   // de los catálogos, sólo trae una institución
 
   el(id) { return document.getElementById(id); },
   es(id) { return /^(demo-|u-demo-)/.test(String(id || '')); },
@@ -352,7 +352,7 @@ SRP.demo = {
         d.jornadas.forEach(x => tx.objectStore('jornadas').put(x));
         d.arboles.forEach(x => tx.objectStore('plantaciones').put(x));
         d.bitacora.forEach(x => tx.objectStore('bitacora').put(x));
-        d.catalogos.forEach(x => tx.objectStore('catalogos').put(x));
+        d.catalogos.forEach(x => SRP.almacen.ponerCatalogo(tx, x));
       });
       try { localStorage.setItem(SRP.CONFIG.CLAVE_SECUENCIAS_PRUEBA, JSON.stringify(d.secuencias)); } catch (e) { /* sin persistencia */ }
       const e = SRP.envio.leer(); Object.assign(e.recibidos, d.recibidos); SRP.envio.escribir(e);

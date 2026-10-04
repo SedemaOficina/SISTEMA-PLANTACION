@@ -6,7 +6,7 @@ SRP.ref = {
   catalogos: [], usuarios: [], catalogoPorId: {}, usuarioPorId: {},
 
   async recargar() {
-    this.catalogos = await SRP.almacen.todos('catalogos');
+    this.catalogos = await SRP.almacen.catalogos();   // los seis, cada renglón con su `tipo`
     this.usuarios = await SRP.almacen.todos('usuarios');
     this.catalogoPorId = Object.fromEntries(this.catalogos.map(c => [c.id, c]));
     this.usuarioPorId = Object.fromEntries(this.usuarios.map(u => [u.id, u]));
@@ -28,14 +28,17 @@ SRP.ref = {
      jornadas y un coordinador con cabos asignados. Devuelve { id: { tabla: n } }. */
   async usosDe(tabla) {
     const usos = {};
-    for (const [origen, campos] of Object.entries(SRP.ESQUEMA.tablas)) {
-      if (origen === 'bitacora') continue;
-      const refs = campos.filter(c => c[4] === tabla).map(c => c[0]);
+    // «catalogos» son las seis tablas de catálogo: se cuentan como una familia, igual que en pantalla
+    const C = SRP.almacen.TABLAS_CATALOGO, destinos = tabla === 'catalogos' ? C : [tabla];
+    for (const [tablaOrigen, campos] of Object.entries(SRP.ESQUEMA.tablas)) {
+      if (tablaOrigen === 'bitacora') continue;
+      const origen = C.includes(tablaOrigen) ? 'catalogos' : tablaOrigen;
+      const refs = campos.filter(c => destinos.includes(c[4])).map(c => c[0]);
       if (!refs.length) continue;
-      for (const fila of await SRP.almacen.todos(origen)) {
+      for (const fila of await SRP.almacen.todos(tablaOrigen)) {
         const ids = new Set();
         refs.forEach(k => [].concat(fila[k] == null ? [] : fila[k]).forEach(v => ids.add(v)));
-        if (origen === tabla) ids.delete(fila.id);   // quien se nombra a sí mismo (editó su cuenta) no se usa
+        if (tablaOrigen === tabla) ids.delete(fila.id);   // quien se nombra a sí mismo (editó su cuenta) no se usa
         ids.forEach(v => { const u = usos[v] = usos[v] || {}; u[origen] = (u[origen] || 0) + 1; });
       }
     }

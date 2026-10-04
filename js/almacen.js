@@ -14,7 +14,42 @@ SRP.almacen = {
          conservando lo que tenía: se lee entera, se recrea y se devuelve cada renglón a su almacén.
        · Un cambio en la forma de los datos viaja como migración numerada, nunca como borrado. */
   // Los almacenes que este código da por existentes; se comprueban al abrir
-  ALMACENES: ['plantaciones', 'usuarios', 'catalogos', 'bitacora', 'jornadas'],
+  ALMACENES: ['plantaciones', 'usuarios', 'bitacora', 'jornadas', 'programas', 'areas', 'especies', 'vehiculos', 'instituciones', 'solicitantes'],
+
+  /* LOS SEIS CATÁLOGOS, CADA UNO EN SU TABLA. La pantalla los trata como una familia —la sección
+     Catálogos, con una pestaña por cada uno— y en memoria cada renglón lleva `tipo` para saber de cuál
+     es; en la base ese dato no existe: lo dice la tabla. Son las mismas seis tablas del servidor. */
+  TABLA_DE_TIPO: { programa: 'programas', area: 'areas', especie: 'especies', vehiculo: 'vehiculos', organizacion: 'instituciones', solicitante: 'solicitantes' },
+  TABLAS_CATALOGO: ['programas', 'areas', 'especies', 'vehiculos', 'instituciones', 'solicitantes'],
+  CAMPOS_CATALOGO: {
+    comunes: ['id', 'clave', 'nombre', 'activo', 'creado_por_id', 'fecha_creacion', 'editado_por_id', 'fecha_ultima_edicion'],
+    programas: ['tipos_organizacion'], areas: [],
+    especies: ['nombre_cientifico', 'otros_nombres_comunes', 'tipo_distribucion', 'formadecrecimiento', 'id_snib', 'id_enciclovida'],
+    vehiculos: ['modelo', 'tipo_vehiculo'], instituciones: ['tipo_organizacion'], solicitantes: ['tipo_solicitante']
+  },
+  tipoDeTabla(tabla) { return Object.keys(this.TABLA_DE_TIPO).find(t => this.TABLA_DE_TIPO[t] === tabla); },
+  // El renglón tal como se guarda: sin `tipo` y sólo con los campos de su tabla
+  filaCatalogo(item) {
+    const tabla = this.TABLA_DE_TIPO[item.tipo];
+    if (!tabla) throw new Error('Catálogo de tipo desconocido: ' + item.tipo);
+    const fila = {};
+    this.CAMPOS_CATALOGO.comunes.concat(this.CAMPOS_CATALOGO[tabla]).forEach(k => { if (k in item) fila[k] = item[k]; });
+    return { tabla, fila };
+  },
+  // Dentro de una transacción que ya incluye las tablas de catálogo
+  ponerCatalogo(tx, item) { const { tabla, fila } = this.filaCatalogo(item); tx.objectStore(tabla).put(fila); },
+  quitarCatalogo(tx, item) { tx.objectStore(this.TABLA_DE_TIPO[item.tipo]).delete(item.id); },
+  // Todos los catálogos, cada renglón con su `tipo`
+  async catalogos() {
+    const listas = await Promise.all(this.TABLAS_CATALOGO.map(t => this.todos(t)));
+    return [].concat(...listas.map((filas, i) => { const tipo = this.tipoDeTabla(this.TABLAS_CATALOGO[i]); return filas.map(f => Object.assign({ tipo }, f)); }));
+  },
+  async catalogo(id) {
+    for (const t of this.TABLAS_CATALOGO) { const f = await this.uno(t, id); if (f) return Object.assign({ tipo: this.tipoDeTabla(t) }, f); }
+    return undefined;
+  },
+  guardarCatalogo(item, entradaBitacora) { const { tabla, fila } = this.filaCatalogo(item); return this.guardarConBitacora(tabla, fila, entradaBitacora); },
+  borrarCatalogo(item, entradaBitacora) { return this.borrarConBitacora(this.TABLA_DE_TIPO[item.tipo], item.id, entradaBitacora); },
   conservados: null,   // lo que se devolvió al rehacer la base ({ arboles, jornadas }), para avisarlo
 
   /* MIGRACIONES NUMERADAS. Nunca se edita una ya publicada; se agrega la siguiente. Regla: lo que
@@ -149,6 +184,19 @@ SRP.almacen = {
         }
         cur.continue();
       };
+    },
+    /* 8. CADA CATÁLOGO EN SU TABLA. La tabla única `catalogos`, con `tipo`, se reparte en seis:
+       programas, áreas, especies, vehículos, instituciones y solicitantes, cada una sólo con sus
+       campos. Cada renglón pasa a la suya antes de retirar la tabla anterior; no se pierde ninguno. */
+    8(db, tx) {
+      const A = SRP.almacen;
+      A.TABLAS_CATALOGO.forEach(t => { if (!db.objectStoreNames.contains(t)) db.createObjectStore(t, { keyPath: 'id' }); });
+      if (!db.objectStoreNames.contains('catalogos')) return;
+      const pet = tx.objectStore('catalogos').getAll();
+      pet.onsuccess = () => {
+        (pet.result || []).forEach(c => { if (A.TABLA_DE_TIPO[c.tipo]) A.ponerCatalogo(tx, c); });
+        db.deleteObjectStore('catalogos');
+      };
     }
   },
 
@@ -173,7 +221,7 @@ SRP.almacen = {
      acababan de cambiar. */
   TIPOS_ANTERIORES: { 'Dependencia de gobierno': 'Gobierno de la CDMX', 'Organismo público': 'Gobierno de la CDMX' },
   async normalizar() {
-    const [cuentas, jornadas, catalogos] = await Promise.all(['usuarios', 'jornadas', 'catalogos'].map(a => this.todos(a)));
+    const [cuentas, jornadas, catalogos] = await Promise.all([this.todos('usuarios'), this.todos('jornadas'), this.catalogos()]);
     const sedema = SRP.CONFIG.ORGANIZACION_SEDEMA;
     const cambios = [];
     cuentas.forEach(u => {
@@ -215,10 +263,43 @@ SRP.almacen = {
     catalogos.filter(c => c.tipo === 'programa' && !Array.isArray(c.tipos_organizacion))
       .forEach(c => cambios.push(['catalogos', Object.assign({}, c, { tipos_organizacion: (arranque[c.id] || []).slice() })]));
     if (!cambios.length) return;
-    await this._tx(['usuarios', 'jornadas', 'catalogos'], 'readwrite', (tx) => cambios.forEach(([almacen, o]) => tx.objectStore(almacen).put(o)));
+    await this._tx(['usuarios', 'jornadas'].concat(this.TABLAS_CATALOGO), 'readwrite', (tx) => cambios.forEach(([almacen, o]) => { if (almacen === 'catalogos') this.ponerCatalogo(tx, o); else tx.objectStore(almacen).put(o); }));
   },
 
-  abrirBase() {
+  /* La versión en que está la base de este dispositivo, sin cambiarla; 0 si todavía no existe (se
+     cancela la creación para no dejar una base vacía). */
+  versionActual() {
+    return new Promise((resolver) => {
+      const pet = indexedDB.open(SRP.CONFIG.DB_NOMBRE);
+      let nueva = false;
+      pet.onupgradeneeded = () => { nueva = true; pet.transaction.abort(); };
+      pet.onsuccess = () => { const v = pet.result.version; pet.result.close(); resolver(nueva ? 0 : v); };
+      pet.onerror = (e) => { e.preventDefault(); resolver(0); };
+    });
+  },
+
+  // Lleva la base a una versión intermedia y la cierra
+  subirA(version) {
+    return new Promise((resolver, rechazar) => {
+      const pet = indexedDB.open(SRP.CONFIG.DB_NOMBRE, version);
+      pet.onupgradeneeded = (ev) => { for (let v = ev.oldVersion + 1; v <= version; v++) this.MIGRACIONES[v](pet.result, pet.transaction); };
+      pet.onsuccess = () => { pet.result.close(); resolver(); };
+      pet.onerror = () => rechazar(pet.error);
+      pet.onblocked = () => rechazar(new Error('Hay otra pestaña con el sistema abierto. Ciérrela y vuelva a cargar esta página.'));
+    });
+  },
+
+  /* La migración 8 retira una tabla que las anteriores recorren. En una misma actualización las
+     migraciones corren a la par, y retirar la tabla a media lectura de otra la interrumpe: una base
+     anterior a la 7 sube primero a la 7, sola, y después a la versión vigente. */
+  VERSION_ANTES_DE_REPARTIR: 7,
+  async abrirBase() {
+    const actual = await this.versionActual();
+    if (actual > 0 && actual < this.VERSION_ANTES_DE_REPARTIR) await this.subirA(this.VERSION_ANTES_DE_REPARTIR);
+    return this.abrirVigente();
+  },
+
+  abrirVigente() {
     return new Promise((resolver, rechazar) => {
       const pet = indexedDB.open(SRP.CONFIG.DB_NOMBRE, SRP.CONFIG.DB_VERSION);
       pet.onupgradeneeded = (ev) => {
@@ -286,6 +367,9 @@ SRP.almacen = {
     if (destinos.length) {
       await this._tx(destinos, 'readwrite', (tx) => destinos.forEach(n => copia[n].forEach(o => tx.objectStore(n).put(o))));
     }
+    // Una base de antes de separar los catálogos los traía en una sola tabla: cada uno va a la suya
+    const unicos = (copia.catalogos || []).filter(c => this.TABLA_DE_TIPO[c.tipo]);
+    if (unicos.length) await this._tx(this.TABLAS_CATALOGO, 'readwrite', (tx) => unicos.forEach(c => this.ponerCatalogo(tx, c)));
     this.conservados = { arboles: (copia.plantaciones || []).length, jornadas: (copia.jornadas || []).length };
   },
 
@@ -402,7 +486,7 @@ SRP.almacen = {
      capturas: se agrega lo que falte, por id, sin tocar lo que ya está ni lo que se editó. Corre una
      sola vez por sello; lo que la administración quite después no vuelve. */
   async completarCatalogos() {
-    const todos = await this.todos('catalogos');
+    const todos = await this.catalogos();
     const hay = new Set(todos.map(c => c.id));
     const faltan = SRP.DATOS_FICTICIOS.catalogos.filter(c => !hay.has(c.id));
     /* Los vehículos y los programas de arranque que ya no vienen en el catálogo se retiran: sin uso se
@@ -425,12 +509,11 @@ SRP.almacen = {
     const renombrar = todos.filter(c => (c.tipo === 'area' || c.tipo === 'programa') && !c.fecha_ultima_edicion && vigentes.has(c.id))
       .map(c => [c, SRP.DATOS_FICTICIOS.catalogos.find(x => x.id === c.id)]).filter(([c, n]) => n && (n.nombre !== c.nombre || n.clave !== c.clave));
     const quitar = todos.filter(c => c.tipo === 'area' && retiradas[c.id]);
-    if (faltan.length || viejos.length || cuentas.length || renombrar.length || quitar.length) await this._tx(['catalogos', 'usuarios'], 'readwrite', (tx) => {
-      const st = tx.objectStore('catalogos');
-      faltan.forEach(c => st.put(c));
-      viejos.forEach(c => { if (!usados.has(c.id)) st.delete(c.id); else if (c.activo) st.put(Object.assign({}, c, { activo: false })); });
-      renombrar.forEach(([c, n]) => st.put(Object.assign({}, c, { nombre: n.nombre, clave: n.clave })));
-      quitar.forEach(c => st.delete(c.id));
+    if (faltan.length || viejos.length || cuentas.length || renombrar.length || quitar.length) await this._tx(this.TABLAS_CATALOGO.concat('usuarios'), 'readwrite', (tx) => {
+      faltan.forEach(c => this.ponerCatalogo(tx, c));
+      viejos.forEach(c => { if (!usados.has(c.id)) this.quitarCatalogo(tx, c); else if (c.activo) this.ponerCatalogo(tx, Object.assign({}, c, { activo: false })); });
+      renombrar.forEach(([c, n]) => this.ponerCatalogo(tx, Object.assign({}, c, { nombre: n.nombre, clave: n.clave })));
+      quitar.forEach(c => this.quitarCatalogo(tx, c));
       cuentas.forEach(u => tx.objectStore('usuarios').put(Object.assign({}, u, { area_id: retiradas[u.area_id] })));
     });
     return faltan.length;
@@ -438,9 +521,9 @@ SRP.almacen = {
 
   async sembrar() {
     const d = SRP.DATOS_FICTICIOS;
-    await this._tx(['usuarios', 'catalogos', 'plantaciones'], 'readwrite', (tx) => {
+    await this._tx(['usuarios', 'plantaciones'].concat(this.TABLAS_CATALOGO), 'readwrite', (tx) => {
       d.usuarios.forEach(u => tx.objectStore('usuarios').put(u));
-      d.catalogos.forEach(c => tx.objectStore('catalogos').put(c));
+      d.catalogos.forEach(c => this.ponerCatalogo(tx, c));
       // Si alguna vez vuelven a cargarse plantaciones de prueba, su territorio se deriva aquí
       d.plantaciones.forEach(p => {
         const t = SRP.derivacion.derivar(p.lat, p.lng);

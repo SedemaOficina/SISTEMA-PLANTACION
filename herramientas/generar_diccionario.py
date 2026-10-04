@@ -161,7 +161,7 @@ def generar(d):
     p('## 13. Borrador de tablas para la Fase 2 (PostgreSQL)')
     p('')
     p('Traducción directa del esquema, para no rediseñarlo desde cero. Los tipos son los de la columna '
-      '«Tipo»; las llaves foráneas, las de la sección 5. Las cinco tablas se crean tal cual y se agregan '
+      '«Tipo»; las llaves foráneas, las de la sección 5. Las tablas se crean tal cual —son las mismas en el teléfono y en el servidor, cada catálogo en la suya— y se agregan '
       'las dos columnas de la cola de envío (S-01) y la tabla de secuencias del folio (S-02) cuando toque.')
     p('')
     p('```sql')

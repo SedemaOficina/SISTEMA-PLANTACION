@@ -2005,7 +2005,7 @@ with sync_playwright() as p:
     # toda referencia existe, cada árbol tiene la fecha y el programa de su jornada y cada marca de
     # revisado es de un árbol de esa jornada
     INTEGRIDAD="""async () => {
-      const T = {}; for (const t of ['plantaciones', 'jornadas', 'usuarios', 'catalogos']) T[t] = await SRP.almacen.todos(t);
+      const T = {}; for (const t of SRP.almacen.ALMACENES.filter(x => x !== 'bitacora')) T[t] = await SRP.almacen.todos(t);
       const existentes = Object.fromEntries(Object.entries(T).map(([t, f]) => [t, new Set(f.map(x => x.id))]));
       const fallas = [];
       for (const [t, filas] of Object.entries(T)) for (const f of filas) {
@@ -2073,7 +2073,7 @@ with sync_playwright() as p:
     ok(uno11('jornadas',jC) is not None and 'guarda 1 árbol eliminado' in aviso11() and pg11.is_hidden('#dlg-confirmar'),'y aunque se llame a la función, no se borra y dice por qué: '+aviso11())
     # Los permisos se exigen en la función, no sólo en el botón (M9)
     pg11.evaluate("async () => { await SRP.catalogos.cambiarEstado(SRP.ref.catalogoPorId['p-centro']); }"); pg11.wait_for_timeout(200)
-    ok(uno11('catalogos','p-centro')['activo'] is True and 'No tiene permiso para administrar los catálogos' in aviso11(),'un cabo no desactiva un programa llamando la función (M9): '+aviso11())
+    ok(uno11('programas','p-centro')['activo'] is True and 'No tiene permiso para administrar los catálogos' in aviso11(),'un cabo no desactiva un programa llamando la función (M9): '+aviso11())
     pg11.evaluate("async () => { await SRP.usuarios.cambiarEstado(SRP.ref.usuarioPorId['u-admin-1']); }"); pg11.wait_for_timeout(200)
     ok(uno11('usuarios','u-admin-1')['activo'] is True and 'No tiene permiso para administrar las cuentas' in aviso11(),'ni la cuenta de administración')
     entrar11('u-coord-1')
@@ -2096,7 +2096,7 @@ with sync_playwright() as p:
     ok('1 jornada' in fila.inner_text() and fila.locator('button[data-accion=eliminar]').count()==0,'un programa que sólo usa una jornada dice «1 jornada» y no ofrece Eliminar (A5): '+fila.inner_text().replace('\n',' | '))
     ok('2 árboles y 1 jornada' in pg11.locator('#tabla-catalogo tbody tr', has_text='Centro Histórico').inner_text(),'el uso cuenta árboles y jornadas: «2 árboles y 1 jornada»')
     pg11.evaluate("async () => { await SRP.catalogos.eliminar(SRP.ref.catalogoPorId['%s']); }" % pid); pg11.wait_for_timeout(300)
-    ok(uno11('catalogos',pid) is not None and 'aparece en 1 jornada' in aviso11(),'y aunque se llame a la función, no se borra: '+aviso11())
+    ok(uno11('programas',pid) is not None and 'aparece en 1 jornada' in aviso11(),'y aunque se llame a la función, no se borra: '+aviso11())
     pg11.evaluate("SRP.app.mostrarVista('usuarios')"); pg11.wait_for_timeout(500)
     ok(pg11.locator('#tabla-usuarios tbody tr', has_text='Perengano').locator('button[data-accion=eliminar]').count()==0,'un coordinador con cabos asignados no ofrece Eliminar (A5)')
     ok('coordina a 1 cabo' in pg11.locator('#tabla-usuarios tbody tr', has_text='coordinador@').inner_text() and 'coordinador: Perengano' in pg11.locator('#tabla-usuarios tbody tr', has_text='Fulana').inner_text(),
@@ -2258,8 +2258,8 @@ with sync_playwright() as p:
     ctx14.close()
     # B2: la base sube a la versión 3 con el índice de árboles por jornada, sin perder nada
     ind=pg.evaluate("""() => { const r = {}; for (const n of SRP.almacen.db.objectStoreNames) r[n] = [...SRP.almacen.db.transaction(n).objectStore(n).indexNames].sort(); return { v: SRP.almacen.db.version, r }; }""")
-    ok(ind['v']==7 and ind['r']['plantaciones']==['estatus','jornada_id'] and ind['r']['jornadas']==['cabo_id'] and ind['r']['catalogos']==[],
-       'la base está en la versión 6, con el índice de árboles por jornada y sin los cinco que nadie consultaba (B2): %s' % ind)
+    ok(ind['v']==8 and ind['r']['plantaciones']==['estatus','jornada_id'] and ind['r']['jornadas']==['cabo_id'] and 'catalogos' not in ind['r'] and all(ind['r'][t]==[] for t in ['programas','areas','especies','vehiculos','instituciones','solicitantes']),
+       'la base está en la versión 8, con cada catálogo en su tabla, con el índice de árboles por jornada y sin los cinco que nadie consultaba (B2): %s' % ind)
     # Y un teléfono con la base en la versión 2 sube a la 3 sin perder lo capturado
     ctx15=b.new_context(viewport={'width':390,'height':844}); pg15=ctx15.new_page()
     pg15.route('**/*.js*', lambda r: r.abort())
@@ -2275,7 +2275,7 @@ with sync_playwright() as p:
       r.onsuccess = () => { r.result.close(); ok(true); }; r.onerror = () => no(r.error); })""")
     pg15.unroute('**/*.js*'); pg15.reload(); pg15.wait_for_timeout(1500)
     v2=pg15.evaluate("async () => ({ v: SRP.almacen.db.version, arboles: (await SRP.almacen.porIndice('plantaciones', 'jornada_id', 'jr-v2')).map(r => r.id), jornadas: (await SRP.almacen.todos('jornadas')).map(j => j.id) })")
-    ok(v2=={'v':7,'arboles':['pl-v2'],'jornadas':['jr-v2']},'una base en la versión 2 sube a la 7 conservando árboles y jornadas, y el índice nuevo los encuentra (B2): %s' % v2)
+    ok(v2=={'v':8,'arboles':['pl-v2'],'jornadas':['jr-v2']},'una base en la versión 2 sube a la 8 conservando árboles y jornadas, y el índice nuevo los encuentra (B2): %s' % v2)
     ctx15.close()
 
     # ---------- BLOQUE 95: TUERCA, SUBIR AL INICIO Y ERRORES EN LA JORNADA (D154) ----------
@@ -2880,7 +2880,7 @@ with sync_playwright() as p:
     # Un teléfono con capturas de la versión anterior recibe los vehículos sin perder nada
     antes23=pg23.evaluate("(async () => (await SRP.almacen.todos('jornadas')).length)()")
     pg23.evaluate("""async () => { localStorage.setItem(SRP.CONFIG.CLAVE_SELLO, 'sello-viejo');
-      await SRP.almacen._tx(['catalogos'], 'readwrite', tx => SRP.ref.deTipo('vehiculo').forEach(v => tx.objectStore('catalogos').delete(v.id))); }""")
+      await SRP.almacen._tx(['vehiculos'], 'readwrite', tx => SRP.ref.deTipo('vehiculo').forEach(v => tx.objectStore('vehiculos').delete(v.id))); }""")
     pg23.reload(); pg23.wait_for_timeout(1800)
     m23=pg23.evaluate("(async () => ({ arranque: SRP.almacen.arranque, n: SRP.ref.deTipo('vehiculo').length, abc: !!SRP.ref.deTipo('vehiculo').find(v => v.nombre === 'ABC 1234'), jornadas: (await SRP.almacen.todos('jornadas')).length }))()")
     ok(m23['arranque']=='conservado' and m23['n']==16 and not m23['abc'] and m23['jornadas']==antes23,
@@ -3308,7 +3308,7 @@ with sync_playwright() as p:
     pg34.unroute('**/*.js*'); pg34.reload(); pg34.wait_for_timeout(1500)
     m34=pg34.evaluate("""async () => { const j = {}; (await SRP.almacen.todos('jornadas')).forEach(x => { j[x.id] = [x.vehiculo_id || null, x.vehiculo_placa || '', x.vehiculo_modelo || '', x.vehiculo_tipo || '', 'vehiculo' in x]; });
       return { v: SRP.almacen.db.version, j, chofer: (await SRP.almacen.uno('jornadas', 'jr-d')).chofer }; }""")
-    ok(m34['v']==7 and m34['j']['jr-a']==['v-PRU009','PRU 009','Internacional','Redilas',False],'la migración 4 enlaza con el catálogo la placa escrita a mano que sí está en él: %s' % m34['j']['jr-a'])
+    ok(m34['v']==8 and m34['j']['jr-a']==['v-PRU009','PRU 009','Internacional','Redilas',False],'la migración 4 enlaza con el catálogo la placa escrita a mano que sí está en él: %s' % m34['j']['jr-a'])
     ok(m34['j']['jr-b']==[None,'','','',False] and m34['j']['jr-c'][4]==False,'y quita lo escrito a mano que no está en el catálogo, y el `vehiculo` de antes del bloque 20: %s · %s' % (m34['j']['jr-b'], m34['j']['jr-c']))
     ok(m34['j']['jr-d']==['v-PRU009','PRU 009','Internacional','Redilas',False] and m34['chofer']=='Fulano' and len(m34['j'])==4,'sin tocar las jornadas que ya tenían su vehículo del catálogo ni ningún otro dato')
     ok(not err34,'sin errores en consola: %s' % err34[:2])
@@ -3351,13 +3351,13 @@ with sync_playwright() as p:
           fecha_inicio: '2026-09-21T09:00:00-06:00', editado_por_id: 'u-cabo-1', fecha_ultima_edicion: '2026-09-21T12:00:00-06:00' }); };
       r.onsuccess = () => { r.result.close(); ok(true); }; r.onerror = () => no(r.error); })""")
     pg36.unroute('**/*.js*'); pg36.reload(); pg36.wait_for_timeout(1500)
-    m36=pg36.evaluate("""async () => { const e = await SRP.almacen.uno('catalogos', 'ESP-0001'), a = await SRP.almacen.uno('jornadas', 'jr-5a'),
+    m36=pg36.evaluate("""async () => { const e = await SRP.almacen.catalogo('ESP-0001'), a = await SRP.almacen.uno('jornadas', 'jr-5a'),
         b = await SRP.almacen.uno('jornadas', 'jr-5b'), u = await SRP.almacen.uno('usuarios', 'u-cabo-1');
       return { v: SRP.almacen.db.version, esp: Object.keys(e).filter(k => ['genero', 'especie', 'nota_discrepancia'].includes(k)), cientifico: e.nombre_cientifico,
         a: [a.arboles_previstos, 'meta_arboles' in a, 'creado_por_id' in a, 'fecha_creacion' in a, a.editado_por_id, a.fecha_ultima_edicion, a.vehiculo_tipo, a.lat, a.lng, a.chofer],
         b: [b.arboles_previstos, 'arboles_plantados' in b, b.editado_por_id, b.fecha_ultima_edicion],
         u: [u.fecha_creacion, u.creado_por_id, 'fecha_alta' in u, 'alta_por_id' in u] }; }""")
-    ok(m36['v']==7 and m36['esp']==[] and m36['cientifico']=='Acer negundo','la migración 5 quita género, epíteto y nota de discrepancia de las especies y deja el nombre científico: %s' % m36)
+    ok(m36['v']==8 and m36['esp']==[] and m36['cientifico']=='Acer negundo','la migración 5 quita género, epíteto y nota de discrepancia de las especies y deja el nombre científico: %s' % m36)
     ok(m36['a']==[7,False,False,False,None,None,'',19.432679,-99.133212,'Fulano'],
        'en la jornada: la meta pasa a arboles_previstos, se quitan quién la creó y cuándo, una jornada sin editar queda sin datos de edición, el vehículo sin nulos y el punto con seis decimales: %s' % m36['a'])
     ok(m36['b']==[3,False,'u-cabo-1','2026-09-21T12:00:00-06:00'],'una jornada editada conserva quién y cuándo, y el conteo viejo pasa a arboles_previstos: %s' % m36['b'])
@@ -3475,12 +3475,12 @@ with sync_playwright() as p:
     pg38.unroute('**/*.js*'); pg38.reload(); pg38.wait_for_timeout(1500)
     m38=pg38.evaluate("""async () => { const fuera = ['es_ficticio','lat_original','lng_original','folio_uga','folio_capa_version','folio_lat','folio_lng','foto_nombre','foto_bytes','especie_estatus'];
       const p = await SRP.almacen.uno('plantaciones', 'pl-6'), j = await SRP.almacen.uno('jornadas', 'jr-6'), u = await SRP.almacen.uno('usuarios', 'u-cabo-1'),
-        c = await SRP.almacen.uno('catalogos', 'ESP-0002'), b = await SRP.almacen.uno('bitacora', 'b-6');
+        c = await SRP.almacen.catalogo('ESP-0002'), b = await SRP.almacen.uno('bitacora', 'b-6');
       return { v: SRP.almacen.db.version, quedan: [p, j, u, c, b].map(o => fuera.filter(k => k in o)).flat(),
         p: [p.lat, p.lng, p.especie_id, p.foto_id, p.foto_base64 ? 'foto' : ''], j: [j.nombre, j.reporte_en], u: u.nombre_completo, c: c.nombre_cientifico, b: b.accion,
         nombre: SRP.CONFIG.DB_NOMBRE, prueba: SRP.CONFIG.DB_NOMBRE_PRUEBA, real: SRP.CONFIG.DB_NOMBRE_REAL, ficticio: SRP.CONFIG.ES_FICTICIO,
         bases: indexedDB.databases ? (await indexedDB.databases()).map(d => d.name) : null }; }""")
-    ok(m38['v']==7 and m38['quedan']==[],'la migración 6 quita la marca de prueba de todas las tablas y del árbol el punto original, los folio_*, el nombre y peso de la foto y el estatus de especie: %s' % m38['quedan'])
+    ok(m38['v']==8 and m38['quedan']==[],'la migración 6 quita la marca de prueba de todas las tablas y del árbol el punto original, los folio_*, el nombre y peso de la foto y el estatus de especie: %s' % m38['quedan'])
     ok(m38['p']==[19.4326,-99.1332,'ESP-0002','f-6','foto'] and m38['j']==['Seis','2026-09-22T15:00:00-06:00'] and m38['u']=='Cabo' and m38['c']=='Fraxinus uhdei' and m38['b']=='CREADO',
        'sin perder nada más: el árbol conserva punto, especie y foto; la jornada su reporte_en; la cuenta (con su nombre ya en un solo campo), la especie y la bitácora sus datos: %s' % {k: m38[k] for k in 'pjucb'})
     ok(m38['nombre']=='srp_db' and m38['prueba']=='srp_db' and m38['real']=='srp_sia' and m38['ficticio'] is True and (m38['bases'] is None or 'srp_sia' not in m38['bases']),
@@ -3538,7 +3538,7 @@ with sync_playwright() as p:
     m39=pg39.evaluate("""async () => { const a = await SRP.almacen.uno('plantaciones', 'pl-7a'), b = await SRP.almacen.uno('plantaciones', 'pl-7b');
       return { v: SRP.almacen.db.version, a: a.capa_version, colonia: a.colonia, b: b.capa_version, capa: SRP.CAPAS.colonias.meta.version,
         vigente: SRP.derivacion.derivar(19.4326, -99.1332).capa_version, texto: SRP.ref.textoCapas(a.capa_version) }; }""")
-    ok(m39['v']==7 and m39['a']=='alcaldias=sia-2026-01-01;uga=sia-2026-09-22;colonias=iecm-2022' and m39['colonia']=='CENTRO I' and m39['b'] is None,
+    ok(m39['v']==8 and m39['a']=='alcaldias=sia-2026-01-01;uga=sia-2026-09-22;colonias=iecm-2022' and m39['colonia']=='CENTRO I' and m39['b'] is None,
        'la migración 7 cambia sólo el nombre de la versión de colonias en lo ya derivado, sin tocar la colonia ni lo que no tenía capas: %s' % m39)
     ok(m39['capa']=='iecm-2022' and m39['vigente'].endswith('colonias=iecm-2022') and m39['texto']=='Alcaldías sia-2026-01-01 · UGA sia-2026-09-22 · Colonias iecm-2022',
        'la capa de colonias del IECM es la definitiva: su versión ya no dice «prueba» ni el detalle «capa de prueba»: %s' % m39['texto'])
@@ -3584,7 +3584,7 @@ with sync_playwright() as p:
     ctx40=b.new_context(viewport={'width':390,'height':844}); pg40=ctx40.new_page(); err40=[]
     pg40.on('pageerror', lambda e: err40.append(str(e))); pg40.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err40.append(m.text))
     pg40.goto(BASE); pg40.wait_for_timeout(1200)
-    cat40=pg40.evaluate("""async () => (await SRP.almacen.todos('catalogos')).filter(c => c.tipo === 'vehiculo').map(c => c.nombre).sort()""")
+    cat40=pg40.evaluate("""async () => (await SRP.almacen.catalogos()).filter(c => c.tipo === 'vehiculo').map(c => c.nombre).sort()""")
     ok(len(cat40)==16 and all(re.fullmatch(r'PRU \d{3}', x) for x in cat40),'un teléfono nuevo recibe 16 vehículos de prueba con placas ficticias «PRU 001» a «PRU 016»: %s' % cat40[:3])
     pg40.select_option('#sel-usuario-prueba','u-cabo-1'); pg40.click('#btn-entrar-prueba'); pg40.wait_for_timeout(600)
     # Un teléfono con capturas y vehículos de arranque de antes: al cambiar el sello se retiran
@@ -3599,11 +3599,11 @@ with sync_playwright() as p:
           fecha_plantacion: '2026-09-25', comentarios: '', foto_id: null, foto_base64: null, fecha_registro: '2026-09-25T10:00:00-06:00', fecha_ultima_edicion: null, editado_por_id: null, folio: null };
       await SRP.almacen.guardarJuntos([{ almacen: 'jornadas', objeto: j, bitacora: SRP.bitacora.entrada('CREADO', 'jornada', 'jr-v40', 'prueba') },
                                       { almacen: 'plantaciones', objeto: r, bitacora: SRP.bitacora.entrada('CREADO', 'plantacion', 'pl-v40', 'prueba') }]);
-      await SRP.almacen._tx(['catalogos'], 'readwrite', (tx) => { const st = tx.objectStore('catalogos');
+      await SRP.almacen._tx(['vehiculos'], 'readwrite', (tx) => { const st = tx.objectStore('vehiculos');
         st.put(v('v-VIEJO1', 'VIEJO 1', null)); st.put(v('v-VIEJO2', 'VIEJO 2', null)); st.put(v('v-ALTA1', 'ALTA 1', 'u-admin-1')); st.delete('v-PRU003'); });
       localStorage.setItem(SRP.CONFIG.CLAVE_SELLO, 'sello-viejo'); }""")
     pg40.reload(); pg40.wait_for_timeout(1800)
-    v40=pg40.evaluate("""async () => { const c = await SRP.almacen.todos('catalogos'), por = id => c.find(x => x.id === id), j = await SRP.almacen.uno('jornadas', 'jr-v40');
+    v40=pg40.evaluate("""async () => { const c = await SRP.almacen.catalogos(), por = id => c.find(x => x.id === id), j = await SRP.almacen.uno('jornadas', 'jr-v40');
       return { arranque: SRP.almacen.arranque, viejo1: !!por('v-VIEJO1'), viejo2: por('v-VIEJO2') ? por('v-VIEJO2').activo : 'sin', alta: por('v-ALTA1') ? por('v-ALTA1').activo : 'sin',
         pru: c.filter(x => x.tipo === 'vehiculo' && /^PRU \d{3}$/.test(x.nombre)).length, jornada: [j.vehiculo_id, j.vehiculo_placa], arbol: !!(await SRP.almacen.uno('plantaciones', 'pl-v40')) }; }""")
     ok(v40['arranque']=='conservado' and v40['viejo1'] is False and v40['viejo2'] is False and v40['alta'] is True and v40['pru']==16 and v40['jornada']==['v-VIEJO2','VIEJO 2'] and v40['arbol'],
@@ -3674,12 +3674,12 @@ with sync_playwright() as p:
     p42=pg42.eval_on_selector_all('#ini-programa option','l=>l.map(o=>o.textContent.trim()).filter(t => t && !t.startsWith("Seleccione"))')
     ok(p42==['Reforestación Urbana','Centro Histórico','Compensaciones','Palmeras'],'Iniciar jornada ofrece a SEDEMA los cuatro programas, con «Palmeras» y «Compensaciones» por separado y sin «Jornadas de voluntariado»: %s' % p42)
     # Un teléfono con capturas y el sello anterior los recibe sin perder lo capturado
-    pg42.evaluate("""async () => { await SRP.almacen._tx(['catalogos'], 'readwrite', tx => { tx.objectStore('catalogos').delete('p-palmeras'); tx.objectStore('catalogos').delete('p-compensaciones'); });
+    pg42.evaluate("""async () => { await SRP.almacen._tx(['programas'], 'readwrite', tx => { tx.objectStore('programas').delete('p-palmeras'); tx.objectStore('programas').delete('p-compensaciones'); });
       const u = SRP.sesion.usuario;
       await SRP.almacen.guardarConBitacora('plantaciones', { id: 'pl-p42', jornada_id: null, estatus: 'activo', cabo_id: u.id, lat: 19.4326, lng: -99.1332, especie_id: 'ESP-0002', programa_id: 'p-refor', fecha_plantacion: '2026-09-20', fecha_registro: '2026-09-20T10:00:00-06:00', folio: null }, SRP.bitacora.entrada('CREADO', 'plantacion', 'pl-p42', 'prueba'));
       localStorage.setItem(SRP.CONFIG.CLAVE_SELLO, 'sello-viejo'); }""")
     pg42.reload(); pg42.wait_for_timeout(1800)
-    q42=pg42.evaluate("""async () => { const c = await SRP.almacen.todos('catalogos'); return { arr: SRP.almacen.arranque, pal: c.some(x => x.id === 'p-palmeras'), vol: c.some(x => x.id === 'p-compensaciones'), arbol: !!(await SRP.almacen.uno('plantaciones', 'pl-p42')) }; }""")
+    q42=pg42.evaluate("""async () => { const c = await SRP.almacen.catalogos(); return { arr: SRP.almacen.arranque, pal: c.some(x => x.id === 'p-palmeras'), vol: c.some(x => x.id === 'p-compensaciones'), arbol: !!(await SRP.almacen.uno('plantaciones', 'pl-p42')) }; }""")
     ok(q42=={'arr':'conservado','pal':True,'vol':True,'arbol':True},'un teléfono con capturas recibe los dos programas nuevos con el sello nuevo y conserva lo capturado: %s' % q42)
     ok(not err42,'sin errores en consola: %s' % err42[:2])
     ctx42.close()
@@ -3714,7 +3714,7 @@ with sync_playwright() as p:
     pg43.fill('#cat-nombre','Green Cover México'); pg43.click('#form-catalogo button[type=submit]'); pg43.wait_for_timeout(500)
     ok(r43==['Renombrar institución',True,True,'Empresa privada'] and dup43 and pg43.evaluate("SRP.ref.catalogoPorId['o-green-cover'].nombre")=='Green Cover México',
        'renombrar una institución: sin clave a la vista, el tipo fijo, sin nombres repetidos: %s' % r43)
-    pg43.evaluate("(async () => { const o = Object.assign({}, SRP.ref.catalogoPorId['o-green-cover'], { nombre: 'Green Cover' }); await SRP.almacen.guardarConBitacora('catalogos', o, null); await SRP.ref.recargar(); SRP.catalogos.preparar(); })()"); pg43.wait_for_timeout(300)
+    pg43.evaluate("(async () => { const o = Object.assign({}, SRP.ref.catalogoPorId['o-green-cover'], { nombre: 'Green Cover' }); await SRP.almacen.guardarCatalogo(o, null); await SRP.ref.recargar(); SRP.catalogos.preparar(); })()"); pg43.wait_for_timeout(300)
     # Agregar una institución: sólo aquí, con su tipo (nunca Alcaldía) y la clave puesta por el sistema
     pg43.click('#btn-cat-agregar'); pg43.wait_for_timeout(300)
     ag43=[pg43.inner_text('#dlg-catalogo-titulo'), pg43.is_enabled('#cat-tipo-org'), pg43.eval_on_selector_all('#cat-tipo-org option:not([hidden])','l=>l.map(o=>o.value).filter(Boolean)'), pg43.is_hidden('#cat-clave')]
@@ -3781,32 +3781,32 @@ with sync_playwright() as p:
     pg43.click('#btn-cierre-cerrar'); pg43.wait_for_timeout(200)
     # Institución desactivada: sus cuentas no entran, ni con la sesión abierta
     pg43.evaluate("""async () => { const o = Object.assign({}, SRP.catalogos ? SRP.ref.catalogoPorId['%s'] : null, { activo: false });
-      await SRP.almacen.guardarConBitacora('catalogos', o, null); await SRP.ref.recargar(); }""" % emp43)
+      await SRP.almacen.guardarCatalogo(o, null); await SRP.ref.recargar(); }""" % emp43)
     pg43.evaluate("""async () => { const u = Object.assign({}, SRP.sesion.usuario, { organizacion_id: '%s' }); await SRP.almacen.guardarConBitacora('usuarios', u, null); }""" % emp43)
     pg43.reload(); pg43.wait_for_timeout(1500)
     pg43.fill('#acceso-correo','nadia.viveros@ejemplo.local'); pg43.fill('#acceso-clave','x'); pg43.click('#form-acceso button[type=submit]'); pg43.wait_for_timeout(500)
     ok(pg43.is_visible('#form-acceso') and 'está desactivada' in pg43.inner_text('#acceso-errores') and 'Viveros' not in pg43.inner_text('#sel-usuario-prueba'),
        'con la institución desactivada sus cuentas no entran —tampoco con la sesión abierta— y se dice por qué: %s' % pg43.inner_text('#acceso-errores').replace('\n',' | ')[:140])
     # Al abrir: cuentas de antes con tres campos de nombre y sin institución; instituciones con tipos, contrato o vigencia de antes
-    pg43.evaluate("""() => SRP.almacen._tx(['usuarios', 'jornadas', 'catalogos'], 'readwrite', tx => {
+    pg43.evaluate("""() => SRP.almacen._tx(['usuarios', 'jornadas', 'instituciones'], 'readwrite', tx => {
       tx.objectStore('usuarios').put({ id: 'u-viejo', correo: 'v@ejemplo.local', nombre: 'Vieja', apellido_paterno: 'Cuenta', apellido_materno: '', perfil: 'CABO', activo: true });
       tx.objectStore('jornadas').put({ id: 'j-vieja', cabo_id: 'u-viejo', fecha: '2026-09-01', estatus: 'cerrada', nombre: 'Jornada de antes' });
-      tx.objectStore('catalogos').put({ id: 'o-vieja', tipo: 'organizacion', clave: 'VIEJA', nombre: 'Institución de antes', activo: true, tipo_organizacion: 'Organismo público', instrumento: 'X', vigente_hasta: '2030-01-01' });
-      tx.objectStore('catalogos').put(Object.assign({}, SRP.ref.catalogoPorId['o-alc-09003'], { nombre: 'Alcaldía Coyoacán' })); })""")
+      tx.objectStore('instituciones').put({ id: 'o-vieja', clave: 'VIEJA', nombre: 'Institución de antes', activo: true, tipo_organizacion: 'Organismo público', instrumento: 'X', vigente_hasta: '2030-01-01' });
+      SRP.almacen.ponerCatalogo(tx, Object.assign({}, SRP.ref.catalogoPorId['o-alc-09003'], { nombre: 'Alcaldía Coyoacán' })); })""")
     pg43.reload(); pg43.wait_for_timeout(1500)
-    mg43=pg43.evaluate("""async () => { const u = await SRP.almacen.uno('usuarios', 'u-viejo'), j = await SRP.almacen.uno('jornadas', 'j-vieja'), o = await SRP.almacen.uno('catalogos', 'o-vieja'), c = await SRP.almacen.uno('catalogos', 'o-alc-09003');
+    mg43=pg43.evaluate("""async () => { const u = await SRP.almacen.uno('usuarios', 'u-viejo'), j = await SRP.almacen.uno('jornadas', 'j-vieja'), o = await SRP.almacen.catalogo('o-vieja'), c = await SRP.almacen.catalogo('o-alc-09003');
       return { u: [u.organizacion_id, u.nombre_completo, 'nombre' in u, 'apellido_paterno' in u], j: j.organizacion_id, o: [o.tipo_organizacion, 'instrumento' in o, 'vigente_hasta' in o], c: c.nombre }; }""")
     ok(mg43=={'u':['o-sedema','Vieja Cuenta',False,False],'j':'o-sedema','o':['Gobierno de la CDMX',False,False],'c':'Coyoacán'},
        'al abrir se ponen al día las cuentas (institución y nombre completo), las jornadas y las instituciones de antes, sin borrar nada: %s' % mg43)
     # Áreas de la Secretaría: las cuatro; un teléfono con capturas y el catálogo anterior pasa sus cuentas a la nueva
     ar43=pg43.evaluate("SRP.ref.deTipo('area', false).map(a => a.nombre)")
-    pg43.evaluate("""async () => { await SRP.almacen._tx(['catalogos', 'usuarios'], 'readwrite', tx => {
-        tx.objectStore('catalogos').put({ id: 'a-div', tipo: 'area', clave: 'DIV', nombre: 'Dirección de Infraestructura Verde', activo: true, creado_por_id: 'u-admin-1', fecha_creacion: '2026-09-01T09:00:00-06:00', editado_por_id: null, fecha_ultima_edicion: null });
-        tx.objectStore('catalogos').put(Object.assign({}, SRP.ref.catalogoPorId['a-sia'], { nombre: 'Coordinación del SIA' }));
+    pg43.evaluate("""async () => { await SRP.almacen._tx(['areas', 'usuarios'], 'readwrite', tx => {
+        SRP.almacen.ponerCatalogo(tx, { id: 'a-div', tipo: 'area', clave: 'DIV', nombre: 'Dirección de Infraestructura Verde', activo: true, creado_por_id: 'u-admin-1', fecha_creacion: '2026-09-01T09:00:00-06:00', editado_por_id: null, fecha_ultima_edicion: null });
+        SRP.almacen.ponerCatalogo(tx, Object.assign({}, SRP.ref.catalogoPorId['a-sia'], { nombre: 'Coordinación del SIA' }));
         tx.objectStore('usuarios').put(Object.assign({}, SRP.ref.usuarioPorId['u-coord-1'], { area_id: 'a-div' })); });
       localStorage.setItem(SRP.CONFIG.CLAVE_SELLO, 'sello-viejo'); }""")
     pg43.reload(); pg43.wait_for_timeout(1500)
-    rt43=pg43.evaluate("""async () => ({ arr: SRP.almacen.arranque, div: !!(await SRP.almacen.uno('catalogos', 'a-div')), sia: (await SRP.almacen.uno('catalogos', 'a-sia')).nombre,
+    rt43=pg43.evaluate("""async () => ({ arr: SRP.almacen.arranque, div: !!(await SRP.almacen.catalogo('a-div')), sia: (await SRP.almacen.catalogo('a-sia')).nombre,
       coord: (await SRP.almacen.uno('usuarios', 'u-coord-1')).area_id })""")
     ok(sorted(ar43)==['DGEIRA','DGSANPAVA','Oficina de la Secretaría','Sistema de Información Ambiental'] and rt43=={'arr':'conservado','div':False,'sia':'Sistema de Información Ambiental','coord':'a-dgsanpava'},
        'las áreas son DGSANPAVA, Oficina de la Secretaría, Sistema de Información Ambiental y DGEIRA; un teléfono con capturas pasa sus cuentas del área retirada a DGSANPAVA y renombra la del SIA: %s %s' % (ar43, rt43))
@@ -3867,7 +3867,7 @@ with sync_playwright() as p:
       titulo: document.getElementById('titulo-supervision').textContent, filtro: !document.getElementById('caja-sup-organizacion').hidden, desglose: !!document.querySelector('section[aria-labelledby=sup-t-instituciones]') })""")
     ok(z44=={'orgs':['o-alc-09007'],'cabos':['u-demo-z2'],'titulo':'Mi avance','filtro':False,'desglose':False},'un cabo de la alcaldía ve sólo lo suyo en «Mi avance», sin filtro ni desglose de instituciones: %s' % z44)
     entrar44('u-admin-1')
-    q44=pg44.evaluate("async () => { await SRP.demo.quitar(); return [!!(await SRP.almacen.uno('catalogos', 'demo-org-empresa')), !!(await SRP.almacen.uno('catalogos', 'o-alc-09007'))]; }")
+    q44=pg44.evaluate("async () => { await SRP.demo.quitar(); return [!!(await SRP.almacen.catalogo('demo-org-empresa')), !!(await SRP.almacen.catalogo('o-alc-09007'))]; }")
     ok(q44==[False,True],'al quitar la demostración se va también la empresa de demostración; la alcaldía, que es de arranque, se queda')
     ok(not err44,'sin errores en consola: %s' % err44[:2])
     ctx44.close()
@@ -3940,10 +3940,10 @@ with sync_playwright() as p:
     ok(g46==[True,True,True,True],'en otra institución de fuera tampoco se piden personal ni vehículo: %s' % g46)
     pg46.click('#btn-cierre-cerrar'); pg46.wait_for_timeout(200)
     # Un teléfono con capturas y el programa de antes: «Palmeras y compensaciones» pasa a «Palmeras» y llega «Compensaciones»
-    pg46.evaluate("""async () => { await SRP.almacen._tx(['catalogos'], 'readwrite', tx => { tx.objectStore('catalogos').put(Object.assign({}, SRP.ref.catalogoPorId['p-palmeras'], { nombre: 'Palmeras y compensaciones', clave: 'PALMERAS_COMPENSACIONES' })); tx.objectStore('catalogos').delete('p-compensaciones'); });
+    pg46.evaluate("""async () => { await SRP.almacen._tx(['programas'], 'readwrite', tx => { SRP.almacen.ponerCatalogo(tx, Object.assign({}, SRP.ref.catalogoPorId['p-palmeras'], { nombre: 'Palmeras y compensaciones', clave: 'PALMERAS_COMPENSACIONES' })); tx.objectStore('programas').delete('p-compensaciones'); });
       localStorage.setItem(SRP.CONFIG.CLAVE_SELLO, SRP.CONFIG.SELLO_REINICIO + '-previo'); }""")
     pg46.reload(); pg46.wait_for_timeout(1800)
-    m46=pg46.evaluate("""async () => ({ arr: SRP.almacen.arranque, pal: [(await SRP.almacen.uno('catalogos', 'p-palmeras')).nombre, (await SRP.almacen.uno('catalogos', 'p-palmeras')).clave], comp: !!(await SRP.almacen.uno('catalogos', 'p-compensaciones')), jornada: !!(await SRP.almacen.uno('jornadas', '%s')) })""" % jz46)
+    m46=pg46.evaluate("""async () => ({ arr: SRP.almacen.arranque, pal: [(await SRP.almacen.catalogo('p-palmeras')).nombre, (await SRP.almacen.catalogo('p-palmeras')).clave], comp: !!(await SRP.almacen.catalogo('p-compensaciones')), jornada: !!(await SRP.almacen.uno('jornadas', '%s')) })""" % jz46)
     ok(m46=={'arr':'conservado','pal':['Palmeras','PALMERAS'],'comp':True,'jornada':True},'un teléfono con capturas conserva lo capturado, renombra «Palmeras y compensaciones» a «Palmeras» y recibe «Compensaciones»: %s' % m46)
     ok(not err46,'sin errores en consola: %s' % err46[:2])
     ctx46.close()
@@ -4018,12 +4018,12 @@ with sync_playwright() as p:
     ok(ms47==['Secretaría del Medio Ambiente (SEDEMA)'],'el reporte de SEDEMA también dice la institución que ejecuta: %s' % ms47)
     # «Jornadas de voluntariado» se retira: con uso se desactiva; sin uso se quita
     PREVIO="SRP.CONFIG.SELLO_REINICIO + '-previo'"
-    pg47.evaluate("""async () => { await SRP.almacen._tx(['catalogos'], 'readwrite', tx => tx.objectStore('catalogos').put({ id: 'p-voluntariado', tipo: 'programa', clave: 'JORNADAS_VOLUNTARIADO', nombre: 'Jornadas de voluntariado', activo: true,
+    pg47.evaluate("""async () => { await SRP.almacen._tx(['programas'], 'readwrite', tx => SRP.almacen.ponerCatalogo(tx, { id: 'p-voluntariado', tipo: 'programa', clave: 'JORNADAS_VOLUNTARIADO', nombre: 'Jornadas de voluntariado', activo: true,
         creado_por_id: 'u-admin-1', fecha_creacion: '2026-09-01T09:00:00-06:00', editado_por_id: null, fecha_ultima_edicion: null }));
       const j = await SRP.almacen.uno('jornadas', '%s'); j.programa_id = 'p-voluntariado'; await SRP.almacen.guardarConBitacora('jornadas', j, null);
       localStorage.setItem(SRP.CONFIG.CLAVE_SELLO, %s); }""" % (js47, PREVIO))
     pg47.reload(); pg47.wait_for_timeout(1800)
-    u47=pg47.evaluate("""async () => { const p = await SRP.almacen.uno('catalogos', 'p-voluntariado'); return { arr: SRP.almacen.arranque, existe: !!p, activo: p ? p.activo : null,
+    u47=pg47.evaluate("""async () => { const p = await SRP.almacen.catalogo('p-voluntariado'); return { arr: SRP.almacen.arranque, existe: !!p, activo: p ? p.activo : null,
       ofrece: SRP.ref.programasPara('o-sedema').some(x => x.id === 'p-voluntariado') }; }""")
     ok(u47=={'arr':'conservado','existe':True,'activo':False,'ofrece':False},'un teléfono con una jornada de «Jornadas de voluntariado» conserva la referencia, pero el programa queda inactivo y ya no se ofrece: %s' % u47)
     pg47.evaluate("""async () => { const j = await SRP.almacen.uno('jornadas', '%s'); j.programa_id = 'p-refor'; await SRP.almacen.guardarConBitacora('jornadas', j, null);
@@ -4031,7 +4031,7 @@ with sync_playwright() as p:
     pg47.evaluate("""async () => { const ps = (await SRP.almacen.todos('plantaciones')).filter(r => r.programa_id === 'p-voluntariado');
       await SRP.almacen._tx(['plantaciones'], 'readwrite', tx => ps.forEach(r => tx.objectStore('plantaciones').put(Object.assign({}, r, { programa_id: 'p-refor' })))); }""")
     pg47.reload(); pg47.wait_for_timeout(1800)
-    d47=pg47.evaluate("async () => !!(await SRP.almacen.uno('catalogos', 'p-voluntariado'))")
+    d47=pg47.evaluate("async () => !!(await SRP.almacen.catalogo('p-voluntariado'))")
     ok(d47 is False,'sin nada que lo use, «Jornadas de voluntariado» se quita del catálogo')
     # El sello de reinicio de este bloque vuelve a empezar los teléfonos del anterior
     pg47.evaluate("localStorage.setItem(SRP.CONFIG.CLAVE_SELLO, '2026-09-30-usuarios')")
@@ -4076,9 +4076,9 @@ with sync_playwright() as p:
               'u-cabo-gob':[['Reforestación Urbana'],'p-refor'],'u-cabo-emp':[['Palmeras'],'p-palmeras'],'u-cabo-osc':[['Reforestación Urbana','Palmeras'],'']},
        'Iniciar jornada ofrece a cada institución lo marcado en el catálogo, sin tocar la configuración; SEDEMA, todos: %s' % pr48)
     # Un teléfono con programas sin el dato: los de arranque toman los suyos; los agregados, sólo SEDEMA
-    pg48.evaluate("""async () => { const c = await SRP.almacen.todos('catalogos'); await SRP.almacen._tx(['catalogos'], 'readwrite', tx => c.filter(x => x.tipo === 'programa').forEach(x => { const n = Object.assign({}, x); delete n.tipos_organizacion; tx.objectStore('catalogos').put(n); })); }""")
+    pg48.evaluate("""async () => { const c = await SRP.almacen.catalogos(); await SRP.almacen._tx(['programas'], 'readwrite', tx => c.filter(x => x.tipo === 'programa').forEach(x => { const n = Object.assign({}, x); delete n.tipos_organizacion; SRP.almacen.ponerCatalogo(tx, n); })); }""")
     pg48.reload(); pg48.wait_for_timeout(1800)
-    z48=pg48.evaluate("""async () => { const c = (await SRP.almacen.todos('catalogos')).filter(x => x.tipo === 'programa'), r = {}; c.forEach(x => { r[x.nombre] = x.tipos_organizacion; }); return r; }""")
+    z48=pg48.evaluate("""async () => { const c = (await SRP.almacen.catalogos()).filter(x => x.tipo === 'programa'), r = {}; c.forEach(x => { r[x.nombre] = x.tipos_organizacion; }); return r; }""")
     ok(z48=={'Reforestación Urbana':['Alcaldía','Gobierno de la CDMX','Organización civil'],'Centro Histórico':[],'Palmeras':['Empresa privada'],'Compensaciones':[],'Arbolado escolar':[]},
        'al abrir, un programa sin el dato lo recibe: el de arranque, el suyo; el agregado, sólo SEDEMA: %s' % z48)
     ok(not err48,'sin errores en consola: %s' % err48[:2])
@@ -4178,7 +4178,7 @@ with sync_playwright() as p:
     # Acerca del sistema
     pg50.evaluate("SRP.app.mostrarVista('acerca')"); pg50.wait_for_timeout(800)
     a50=pg50.inner_text('#cfg-acerca')
-    ok(pg50.evaluate("SRP.CONFIG.VERSION + ' (' + SRP.CONFIG.ETAPA + ')'") in a50 and 'srp_db, versión 7' in a50 and 'sia-2026-09-22' in a50 and 'iecm-2022' in a50 and 'Pendientes de envío' in a50,
+    ok(pg50.evaluate("SRP.CONFIG.VERSION + ' (' + SRP.CONFIG.ETAPA + ')'") in a50 and 'srp_db, versión 8' in a50 and 'sia-2026-09-22' in a50 and 'iecm-2022' in a50 and 'Pendientes de envío' in a50,
        'Acerca del sistema dice versión, base, capas y pendientes de este dispositivo')
     anchos50=[]
     for v in ['configuracion','parametros','cambios','acerca']:
@@ -5473,7 +5473,7 @@ with sync_playwright() as p:
        'al abrir, la jornada que tenía una institución como solicitante pasa al solicitante que le corresponde o queda escrita como otra instancia: %s' % m67)
     # Un teléfono con capturas y el sello anterior recibe el catálogo de solicitantes sin perder nada
     pg67.evaluate("""async () => { const sol = SRP.ref.deTipo('solicitante', false).map(s => s.id);
-      await SRP.almacen._tx(['catalogos'], 'readwrite', tx => sol.forEach(id => tx.objectStore('catalogos').delete(id))); localStorage.setItem(SRP.CONFIG.CLAVE_SELLO, '2026-09-30c-programas'); }""")
+      await SRP.almacen._tx(['solicitantes'], 'readwrite', tx => sol.forEach(id => tx.objectStore('solicitantes').delete(id))); localStorage.setItem(SRP.CONFIG.CLAVE_SELLO, '2026-09-30c-programas'); }""")
     pg67.reload(); pg67.wait_for_timeout(1800)
     c67 = pg67.evaluate("""async () => { await SRP.ref.recargar(); return [SRP.ref.deTipo('solicitante', true).length, (await SRP.almacen.todos('jornadas')).filter(j => /67$/.test(j.id)).length, localStorage.getItem(SRP.CONFIG.CLAVE_SELLO) === SRP.CONFIG.SELLO_DATOS]; }""")
     ok(c67 == [21, 4, True],'un teléfono con capturas y el sello anterior recibe los solicitantes de arranque y conserva sus jornadas: %s' % c67)
@@ -5808,6 +5808,56 @@ with sync_playwright() as p:
     u72 = pg72.evaluate("[Object.keys(SRP.PERFILES), SRP.PERFILES.DIRECTIVO.etiqueta, SRP.ref.usuarios.filter(u => u.perfil === 'DIRECTIVO').map(u => u.id).sort()]")
     ok(u72 == [['CABO','COORDINADOR','DIRECTIVO','ADMIN'], 'Directivo', ['u-dir-1','u-dir-alc']], 'el catálogo de perfiles tiene cuatro, con «Directivo», y hay una cuenta de prueba en la Secretaría y otra en una alcaldía: %s' % u72)
     ctx72.close()
+
+    # ---------- ctx73: cada catálogo en su tabla: la migración reparte la tabla única sin perder nada ----------
+    ctx73 = b.new_context(viewport={'width':1280,'height':900}, timezone_id='America/Mexico_City')
+    pg73 = ctx73.new_page(); err73 = []
+    pg73.on('pageerror', lambda e: err73.append(str(e))); pg73.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err73.append(m.text))
+    pg73.route('**/*.js*', lambda r: r.abort())
+    pg73.goto(BASE); pg73.wait_for_timeout(500)
+    pg73.evaluate("""() => new Promise((ok, no) => { const r = indexedDB.open('srp_db', 7);
+      r.onupgradeneeded = () => { const db = r.result;
+        const pl = db.createObjectStore('plantaciones', { keyPath: 'id' }); ['estatus', 'jornada_id'].forEach(i => pl.createIndex(i, i));
+        const us = db.createObjectStore('usuarios', { keyPath: 'id' }); const ca = db.createObjectStore('catalogos', { keyPath: 'id' });
+        db.createObjectStore('bitacora', { keyPath: 'id' }).createIndex('entidad_id', 'entidad_id');
+        const jo = db.createObjectStore('jornadas', { keyPath: 'id' }); jo.createIndex('cabo_id', 'cabo_id');
+        const base = { activo: true, creado_por_id: 'u-admin-1', fecha_creacion: '2026-09-01T09:00:00-06:00', editado_por_id: null, fecha_ultima_edicion: null };
+        us.put({ id: 'u-admin-1', correo: 'administracion@ejemplo.local', nombre_completo: 'Administración SIA Ejemplo', organizacion_id: 'o-sedema', area_id: 'a-b160', cargo_rol: 'Administración global', perfil: 'ADMIN', coordinadores_ids: [], activo: true, fecha_creacion: '2026-09-01T09:00:00-06:00', creado_por_id: null, fecha_ultima_edicion: null, editado_por_id: null });
+        ca.put(Object.assign({ id: 'p-b160', tipo: 'programa', clave: 'B160', nombre: 'Programa B160', tipos_organizacion: ['Alcaldía'] }, base));
+        ca.put(Object.assign({ id: 'a-b160', tipo: 'area', clave: 'AREA_B160', nombre: 'Área B160' }, base));
+        ca.put(Object.assign({ id: 'ESP-9001', tipo: 'especie', clave: 'ESP-9001', nombre: 'Árbol B160', nombre_cientifico: 'Arbor centum', otros_nombres_comunes: '', tipo_distribucion: 'Nativa', formadecrecimiento: 'Árbol', id_snib: null, id_enciclovida: null }, base));
+        ca.put(Object.assign({ id: 'v-B160', tipo: 'vehiculo', clave: 'B160', nombre: 'B 160', modelo: 'Dodge', tipo_vehiculo: 'Pipa' }, base));
+        ca.put(Object.assign({ id: 'o-b160', tipo: 'organizacion', clave: 'ORG_B160', nombre: 'Institución B160', tipo_organizacion: 'Empresa privada' }, base));
+        ca.put(Object.assign({ id: 's-b160', tipo: 'solicitante', clave: 'SOL_B160', nombre: 'Solicitante B160', tipo_solicitante: 'Vecinos' }, base));
+        jo.put({ id: 'jr-b160', nombre: 'Jornada B160', cabo_id: 'u-admin-1', fecha: '2026-09-20', estatus: 'cerrada', programa_id: 'p-b160', vehiculo_id: 'v-B160', organizacion_id: 'o-b160', solicitante_id: 's-b160', origen: 'PEDIDO' }); };
+      r.onsuccess = () => { r.result.close(); ok(true); }; r.onerror = () => no(r.error); })""")
+    pg73.unroute('**/*.js*'); pg73.reload(); pg73.wait_for_timeout(1800)
+    m73 = pg73.evaluate("""async () => { const A = SRP.almacen, fila = async (t, id) => await A.uno(t, id);
+      const filas = { programas: await fila('programas', 'p-b160'), areas: await fila('areas', 'a-b160'), especies: await fila('especies', 'ESP-9001'), vehiculos: await fila('vehiculos', 'v-B160'), instituciones: await fila('instituciones', 'o-b160'), solicitantes: await fila('solicitantes', 's-b160') };
+      const usos = await SRP.ref.usosDe('catalogos');
+      return { v: A.db.version, tablas: [...A.db.objectStoreNames].sort(), todas: Object.values(filas).every(Boolean), sinTipo: Object.values(filas).every(f => f && !('tipo' in f)),
+        propios: [filas.programas.tipos_organizacion, filas.vehiculos.modelo, filas.instituciones.tipo_organizacion, filas.solicitantes.tipo_solicitante, filas.especies.nombre_cientifico],
+        ajenos: ['modelo', 'nombre_cientifico', 'tipo_organizacion'].some(k => k in filas.areas),
+        memoria: ['p-b160', 'a-b160', 'ESP-9001', 'v-B160', 'o-b160', 's-b160'].map(id => (SRP.ref.catalogoPorId[id] || {}).tipo),
+        usos: ['p-b160', 'v-B160', 'o-b160', 's-b160', 'a-b160'].map(id => usos[id] || null), uno: (await A.catalogo('v-B160')).tipo }; }""")
+    ok(m73['v'] == 8 and 'catalogos' not in m73['tablas'] and m73['tablas'] == sorted(['plantaciones','usuarios','bitacora','jornadas','programas','areas','especies','vehiculos','instituciones','solicitantes']),
+       'la base queda en la versión 8, con diez tablas y sin la tabla única de catálogos: %s' % m73['tablas'])
+    ok(m73['todas'] and m73['sinTipo'] and m73['propios'] == [['Alcaldía'], 'Dodge', 'Empresa privada', 'Vecinos', 'Arbor centum'] and m73['ajenos'] is False,
+       'cada catálogo pasó a su tabla con sus campos, sin `tipo` y sin campos de otro catálogo: %s' % m73['propios'])
+    ok(m73['memoria'] == ['programa', 'area', 'especie', 'vehiculo', 'organizacion', 'solicitante'] and m73['uno'] == 'vehiculo',
+       'en memoria cada renglón sigue diciendo de qué catálogo es: %s' % m73['memoria'])
+    ok(m73['usos'] == [{'jornadas': 1}, {'jornadas': 1}, {'jornadas': 1}, {'jornadas': 1}, {'usuarios': 1}],
+       'el uso de cada valor se cuenta igual que antes, contra su tabla: %s' % m73['usos'])
+    # La pantalla de Catálogos sigue igual: guardar, desactivar y eliminar escriben en la tabla del catálogo
+    pg73.select_option('#sel-usuario-prueba', 'u-admin-1'); pg73.click('#btn-entrar-prueba'); pg73.wait_for_timeout(700)
+    g73 = pg73.evaluate("""async () => { const A = SRP.almacen;
+      await A.guardarCatalogo({ id: 'a-nueva-b160', tipo: 'area', clave: 'NUEVA_B160', nombre: 'Área nueva B160', activo: true, creado_por_id: 'u-admin-1', fecha_creacion: SRP.util.ahoraISO(), editado_por_id: null, fecha_ultima_edicion: null, modelo: 'no debe guardarse' }, SRP.bitacora.entrada('CREADO', 'catalogo', 'a-nueva-b160', 'prueba'));
+      const f = await A.uno('areas', 'a-nueva-b160'), enOtra = await A.uno('programas', 'a-nueva-b160');
+      await A.borrarCatalogo({ id: 'a-nueva-b160', tipo: 'area' }, SRP.bitacora.entrada('ELIMINADO', 'catalogo', 'a-nueva-b160', 'prueba'));
+      return [!!f, 'tipo' in f, 'modelo' in f, !!enOtra, !!(await A.uno('areas', 'a-nueva-b160')), (await A.catalogos()).length === SRP.ref.catalogos.length]; }""")
+    ok(g73 == [True, False, False, False, False, True], 'guardar y eliminar un valor escriben en su tabla, sin `tipo` ni campos ajenos: %s' % g73)
+    ok(err73 == [], 'la migración y la pantalla corren sin errores de consola: %s' % err73[:2])
+    ctx73.close()
 
 
 

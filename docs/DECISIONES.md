@@ -2483,3 +2483,16 @@
     escribir nada.
   · **Por qué:** quien dirige necesita ver jornadas, árboles y fotografías reales, no sólo un tablero.
     Modifica D87, que había retirado el perfil de consulta, y D192.
+
+- **D225. Cada catálogo en su tabla, igual en el teléfono y en el servidor (bloque 160).** 03-10-2026. Decisión de Liber.
+  · **Qué:** la tabla única `catalogos`, que distinguía seis catálogos con un campo `tipo`, se reparte en
+    `programas`, `areas`, `especies`, `vehiculos`, `instituciones` y `solicitantes`, cada una sólo con sus
+    campos. La base del teléfono pasa a la versión 8; la migración lleva cada renglón a su tabla antes de
+    retirar la anterior. El modelo queda en diez tablas y 152 campos.
+  · **Por qué:** de los 20 campos de la tabla única, 11 sólo aplicaban a un catálogo, y la base no podía
+    exigir que una especie tuviera nombre científico ni impedir que un árbol apuntara a un vehículo. Con
+    tablas distintas en el teléfono y en el servidor haría falta una capa de traducción que alguien
+    tendría que mantener. Se hace antes del traspaso al SIA y sin datos reales capturados.
+  · **Lo que no cambia:** la sección Catálogos y sus pestañas. En memoria cada renglón lleva `tipo` para
+    que la pantalla sepa de qué catálogo es; ese dato no se guarda. La bitácora sigue diciendo `catalogo`
+    como entidad: los identificadores no se repiten entre tablas.

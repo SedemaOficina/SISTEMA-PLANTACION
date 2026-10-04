@@ -3,11 +3,16 @@
   "version_esquema": "2026-10-03",
   "etapa": "Etapa 1 (Fase 1: dispositivo, sin servidor)",
   "almacenamiento": {
-    "motor": "IndexedDB del navegador: base `srp_db` en la versión de prueba y `srp_sia` en la real (SRP.CONFIG.DB_NOMBRE, según ES_FICTICIO), versión 7 (SRP.CONFIG.DB_VERSION). Nunca comparten datos",
+    "motor": "IndexedDB del navegador: base `srp_db` en la versión de prueba y `srp_sia` en la real (SRP.CONFIG.DB_NOMBRE, según ES_FICTICIO), versión 8 (SRP.CONFIG.DB_VERSION). Nunca comparten datos",
     "tablas": [
       "plantaciones",
       "usuarios",
-      "catalogos",
+      "programas",
+      "areas",
+      "especies",
+      "vehiculos",
+      "instituciones",
+      "solicitantes",
       "bitacora",
       "jornadas"
     ],
@@ -126,7 +131,7 @@
         "organizacion",
         "solicitante"
       ],
-      "fuente": "js/catalogos.js ETIQUETA",
+      "fuente": "js/catalogos.js ETIQUETA. No es un campo de la base: cada catálogo tiene su tabla (SRP.almacen.TABLA_DE_TIPO); en memoria, cada renglón lleva `tipo` para saber de cuál es",
       "codigo": "Object.keys(SRP.catalogos.ETIQUETA)"
     },
     "tipo_distribucion": {
@@ -298,7 +303,7 @@
           "tipo": "char(8)",
           "nulo": true,
           "origen": "Catálogo",
-          "dominio": "→ catalogos.id con tipo = especie (id_especie ESP-0000)",
+          "dominio": "→ especies.id (id_especie ESP-0000)",
           "pantalla": "Especie (autocompletado por nombre común, científico y otros nombres)",
           "regla": "Obligatoria salvo con «Otra especie», donde queda nula. El registro guarda sólo la clave; género, epíteto, distribución, forma de crecimiento, id_snib e id_enciclovida se obtienen del catálogo (D84)"
         },
@@ -379,7 +384,7 @@
           "tipo": "text",
           "nulo": false,
           "origen": "Jornada",
-          "dominio": "→ catalogos.id con tipo = programa",
+          "dominio": "→ programas.id",
           "pantalla": "Ficha de revisión y detalle («Programa», el de la jornada); no se edita por árbol",
           "regla": "Es el de su jornada (D151): se toma al registrar, cambia cuando cambia el de la jornada —también en los eliminados, en la misma transacción— y al mover el árbol toma el de su jornada nueva"
         },
@@ -531,7 +536,7 @@
           "tipo": "text",
           "nulo": false,
           "origen": "Catálogo",
-          "dominio": "→ catalogos.id con tipo = organizacion",
+          "dominio": "→ instituciones.id",
           "pantalla": "Tipo de institución e Institución",
           "regla": "La institución de la cuenta. En el alta se elige primero el tipo (Alcaldía, Gobierno de la CDMX, Empresa privada, Organización civil) y luego la institución de la lista; las que falten las agrega la Administración en Catálogos › Instituciones, a solicitud. Sólo SEDEMA (o-sedema) tiene área y ADMIN; las cuentas de fuera son CABO o COORDINADOR, y el cabo depende de un coordinador de su misma institución (D192). Al abrir, las cuentas sin institución quedan en SEDEMA"
         },
@@ -540,7 +545,7 @@
           "tipo": "text",
           "nulo": true,
           "origen": "Catálogo",
-          "dominio": "→ catalogos.id con tipo = area (DGSANPAVA, Oficina de la Secretaría, Sistema de Información Ambiental, DGEIRA)",
+          "dominio": "→ areas.id (DGSANPAVA, Oficina de la Secretaría, Sistema de Información Ambiental, DGEIRA)",
           "pantalla": "Área (sólo cuentas de la Secretaría)",
           "regla": "Obligatoria en cuentas de SEDEMA; nula en las de otras organizaciones"
         },
@@ -618,47 +623,38 @@
         }
       ]
     },
-    "catalogos": {
-      "que_es": "Los seis catálogos administrables en una sola tabla, distinguidos por `tipo`: programas, áreas, especies, vehículos, instituciones y solicitantes de pedidos especiales. Las especies son el catálogo real del SIA (D84) y los vehículos, el de las cuadrillas (D162); los dos llevan campos adicionales.",
+    "programas": {
+      "que_es": "Los programas de plantación. La jornada elige uno y sus árboles lo toman (D151). Cada programa dice qué tipos de institución, además de la Secretaría, pueden usarlo (D193).",
       "llave": "id",
       "indices": [],
-      "pantalla": "Catálogos (sólo Administración global); alimentan Nuevo registro (especie, programa) y Usuarios (área, institución) e Iniciar jornada (programa, quién solicita)",
+      "pantalla": "Catálogos › Programas (sólo Administración global); se elige en Iniciar jornada",
       "campos": [
         {
           "campo": "id",
           "tipo": "text",
           "nulo": false,
           "origen": "Sistema",
-          "dominio": "UUID v4 en programas, áreas y organizaciones (los de arranque: p-refor, p-centro, p-palmeras, p-compensaciones, a-dgsanpava, a-oficina, a-sia, a-dgeira, o-sedema, o-paot, o-sobse, o-green-cover, o-reforestamos, o-alc-09002…o-alc-09017); en solicitantes, UUID v4 (los de arranque: s-alc-09002…s-alc-09017, s-sobse, s-segiagua, s-jefatura, s-diputados); en especies es la propia clave ESP-0000; en vehículos, «v-» más la placa sin espacios en los de arranque y UUID v4 en los que se agreguen",
+          "dominio": "UUID v4; los de arranque: p-refor, p-centro, p-palmeras, p-compensaciones",
           "pantalla": "No",
-          "regla": "Es lo que guardan plantaciones.especie_id, plantaciones.programa_id, usuarios.area_id, usuarios.organizacion_id, jornadas.organizacion_id, jornadas.solicitante_id y jornadas.vehiculo_id"
-        },
-        {
-          "campo": "tipo",
-          "tipo": "text",
-          "nulo": false,
-          "origen": "Sistema",
-          "dominio": "tipo_catalogo",
-          "pantalla": "Pestaña",
-          "regla": "Lo fija la pestaña en la que se está"
+          "regla": "Es lo que guardan plantaciones.programa_id y jornadas.programa_id"
         },
         {
           "campo": "clave",
           "tipo": "text",
           "nulo": false,
           "origen": "Persona",
-          "dominio": "Programas, áreas y organizaciones: `[A-Z0-9_]{2,30}`, única por tipo. Especies: id_especie. Vehículos: la placa sin espacios ni guiones",
+          "dominio": "`[A-Z0-9_]{2,30}`, única",
           "pantalla": "Clave",
-          "regla": "Programas y áreas: se sugiere del nombre, editable antes de guardar, fija después. Especies: consecutivo ESP-0000 que asigna el sistema; nunca se escribe ni se reutiliza. Vehículos: sale de la placa al darlo de alta y no se muestra; dos placas que sólo difieren en espacios son la misma (D162). Instituciones y solicitantes: la pone el sistema a partir del nombre y no se muestra"
+          "regla": "Se sugiere del nombre, editable antes de guardar, fija después"
         },
         {
           "campo": "nombre",
           "tipo": "text",
           "nulo": false,
           "origen": "Persona",
-          "dominio": "Texto, único por tipo",
-          "pantalla": "Nombre / Nombre común",
-          "regla": "En especies es el nombre_comun del catálogo del SIA: la etiqueta de campo. En vehículos es la placa, en mayúsculas: «PRU 005» (D162). En instituciones: único entre todas; las alcaldías sin la palabra «Alcaldía» (la pone la pantalla). En solicitantes: único entre todos; las alcaldías también sin la palabra, y así se leen: su tipo las agrupa en la lista"
+          "dominio": "Texto, único",
+          "pantalla": "Nombre",
+          "regla": ""
         },
         {
           "campo": "activo",
@@ -674,7 +670,176 @@
           "tipo": "uuid",
           "nulo": true,
           "origen": "Sesión",
-          "dominio": "→ usuarios.id; null en las especies del SIA y en los vehículos de arranque",
+          "dominio": "→ usuarios.id",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "fecha_creacion",
+          "tipo": "timestamptz",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "ISO 8601",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "editado_por_id",
+          "tipo": "uuid",
+          "nulo": true,
+          "origen": "Sesión",
+          "dominio": "→ usuarios.id",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "fecha_ultima_edicion",
+          "tipo": "timestamptz",
+          "nulo": true,
+          "origen": "Sistema",
+          "dominio": "ISO 8601",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "tipos_organizacion",
+          "tipo": "varchar(30)[]",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Lista de tipo_organizacion; [] = sólo SEDEMA",
+          "pantalla": "Quién puede usarlo (Catálogos › Programas)",
+          "regla": "Los tipos de institución que, además de SEDEMA, pueden elegir el programa al iniciar o editar una jornada; SEDEMA puede usar todos. Lo marca la Administración (D193). Un programa nuevo empieza vacío. De arranque: Reforestación Urbana, Alcaldía, Gobierno de la CDMX y Organización civil; Palmeras, Empresa privada; Centro Histórico y Compensaciones, vacío. Al abrir, un programa sin el dato recibe el de arranque o, si lo agregó la Administración, vacío"
+        }
+      ]
+    },
+    "areas": {
+      "que_es": "Las áreas de la Secretaría a las que pertenece una cuenta. Las cuentas de otras instituciones no llevan área.",
+      "llave": "id",
+      "indices": [],
+      "pantalla": "Catálogos › Áreas (sólo Administración global); se elige en Usuarios",
+      "campos": [
+        {
+          "campo": "id",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "UUID v4; las de arranque: a-dgsanpava, a-oficina, a-sia, a-dgeira",
+          "pantalla": "No",
+          "regla": "Es lo que guarda usuarios.area_id"
+        },
+        {
+          "campo": "clave",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "`[A-Z0-9_]{2,30}`, única",
+          "pantalla": "Clave",
+          "regla": "Se sugiere del nombre, editable antes de guardar, fija después"
+        },
+        {
+          "campo": "nombre",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto, único",
+          "pantalla": "Nombre",
+          "regla": ""
+        },
+        {
+          "campo": "activo",
+          "tipo": "boolean",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "true/false",
+          "pantalla": "Estado",
+          "regla": "Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina (D08)"
+        },
+        {
+          "campo": "creado_por_id",
+          "tipo": "uuid",
+          "nulo": true,
+          "origen": "Sesión",
+          "dominio": "→ usuarios.id",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "fecha_creacion",
+          "tipo": "timestamptz",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "ISO 8601",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "editado_por_id",
+          "tipo": "uuid",
+          "nulo": true,
+          "origen": "Sesión",
+          "dominio": "→ usuarios.id",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "fecha_ultima_edicion",
+          "tipo": "timestamptz",
+          "nulo": true,
+          "origen": "Sistema",
+          "dominio": "ISO 8601",
+          "pantalla": "No",
+          "regla": ""
+        }
+      ]
+    },
+    "especies": {
+      "que_es": "El catálogo de especies: el real del SIA (D84), 76 de arranque, más las que agregue la Administración. Lleva los datos taxonómicos y las llaves externas al SNIB y a EncicloVida.",
+      "llave": "id",
+      "indices": [],
+      "pantalla": "Catálogos › Especies (sólo Administración global); se elige en Nuevo registro",
+      "campos": [
+        {
+          "campo": "id",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "id_especie",
+          "pantalla": "No",
+          "regla": "Es la propia clave ESP-0000. Es lo que guarda plantaciones.especie_id"
+        },
+        {
+          "campo": "clave",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "id_especie",
+          "pantalla": "Clave",
+          "regla": "Consecutivo ESP-0000 que asigna el sistema; nunca se escribe ni se reutiliza"
+        },
+        {
+          "campo": "nombre",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto, único",
+          "pantalla": "Nombre común",
+          "regla": "Es el nombre_comun del catálogo del SIA: la etiqueta de campo"
+        },
+        {
+          "campo": "activo",
+          "tipo": "boolean",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "true/false",
+          "pantalla": "Estado",
+          "regla": "Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina (D08)"
+        },
+        {
+          "campo": "creado_por_id",
+          "tipo": "uuid",
+          "nulo": true,
+          "origen": "Sesión",
+          "dominio": "→ usuarios.id; null en las especies del SIA",
           "pantalla": "No",
           "regla": ""
         },
@@ -712,8 +877,7 @@
           "origen": "Persona",
           "dominio": "Género + epíteto, sin autoría ni subgénero; único",
           "pantalla": "Nombre científico (y entre paréntesis en Nuevo registro)",
-          "regla": "Sólo especies. Validado: inicial mayúscula y al menos dos palabras",
-          "solo_tipo": "especie"
+          "regla": "Validado: inicial mayúscula y al menos dos palabras"
         },
         {
           "campo": "otros_nombres_comunes",
@@ -722,8 +886,7 @@
           "origen": "Persona",
           "dominio": "Nombres separados por coma y espacio; '' si no hay",
           "pantalla": "Otros nombres comunes; en Nuevo registro sólo como criterio de búsqueda («también: Fresno»)",
-          "regla": "Sólo especies. Un mismo nombre puede señalar a varias especies: la búsqueda las ofrece todas, nunca resuelve sola",
-          "solo_tipo": "especie"
+          "regla": "Un mismo nombre puede señalar a varias especies: la búsqueda las ofrece todas, nunca resuelve sola"
         },
         {
           "campo": "tipo_distribucion",
@@ -732,8 +895,7 @@
           "origen": "Persona",
           "dominio": "tipo_distribucion",
           "pantalla": "Tipo de distribución (Catálogos)",
-          "regla": "Sólo especies. Campo del SNIB; sustituye a Nativa/Introducida",
-          "solo_tipo": "especie"
+          "regla": "Campo del SNIB; sustituye a Nativa/Introducida"
         },
         {
           "campo": "formadecrecimiento",
@@ -742,8 +904,7 @@
           "origen": "Persona",
           "dominio": "Árbol · Arbusto · Palma · Liana · Hierba · Sufrútice, varios separados por coma y espacio; '' si no hay",
           "pantalla": "Forma de crecimiento (Catálogos)",
-          "regla": "Sólo especies. Literal de la ficha técnica",
-          "solo_tipo": "especie"
+          "regla": "Literal de la ficha técnica"
         },
         {
           "campo": "id_snib",
@@ -752,8 +913,7 @@
           "origen": "Persona",
           "dominio": "Número + ANGIO o GIMNO (IdCAT)",
           "pantalla": "Id SNIB (Catálogos)",
-          "regla": "Sólo especies. Llave externa al Catálogo Taxonómico de la Biota; puede venir vacía (Quercus rubra)",
-          "solo_tipo": "especie"
+          "regla": "Llave externa al Catálogo Taxonómico de la Biota; puede venir vacía (Quercus rubra)"
         },
         {
           "campo": "id_enciclovida",
@@ -762,56 +922,283 @@
           "origen": "Persona",
           "dominio": "Entero",
           "pantalla": "Id EncicloVida (Catálogos)",
-          "regla": "Sólo especies. Llave para reconsultar la ficha (enciclovida.mx/especies/{id}.json); más completa que el IdCAT",
-          "solo_tipo": "especie"
+          "regla": "Llave para reconsultar la ficha (enciclovida.mx/especies/{id}.json); más completa que el IdCAT"
+        }
+      ]
+    },
+    "vehiculos": {
+      "que_es": "Los vehículos de las cuadrillas (D162). Se eligen en el cierre de la jornada, que copia placa, modelo y tipo. En la versión de prueba llevan placas ficticias; los reales se cargan en el servidor.",
+      "llave": "id",
+      "indices": [],
+      "pantalla": "Catálogos › Vehículos (sólo Administración global); se elige en el cierre de la jornada",
+      "campos": [
+        {
+          "campo": "id",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "«v-» más la placa sin espacios en los de arranque; UUID v4 en los que se agreguen",
+          "pantalla": "No",
+          "regla": "Es lo que guarda jornadas.vehiculo_id"
+        },
+        {
+          "campo": "clave",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "La placa sin espacios ni guiones; única",
+          "pantalla": "No",
+          "regla": "Sale de la placa al darlo de alta y no se muestra; dos placas que sólo difieren en espacios son la misma (D162)"
+        },
+        {
+          "campo": "nombre",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto, único",
+          "pantalla": "Placa",
+          "regla": "Es la placa, en mayúsculas: «PRU 005» (D162). Se copia a jornadas.vehiculo_placa"
+        },
+        {
+          "campo": "activo",
+          "tipo": "boolean",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "true/false",
+          "pantalla": "Estado",
+          "regla": "Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina (D08)"
+        },
+        {
+          "campo": "creado_por_id",
+          "tipo": "uuid",
+          "nulo": true,
+          "origen": "Sesión",
+          "dominio": "→ usuarios.id; null en los vehículos de arranque",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "fecha_creacion",
+          "tipo": "timestamptz",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "ISO 8601",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "editado_por_id",
+          "tipo": "uuid",
+          "nulo": true,
+          "origen": "Sesión",
+          "dominio": "→ usuarios.id",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "fecha_ultima_edicion",
+          "tipo": "timestamptz",
+          "nulo": true,
+          "origen": "Sistema",
+          "dominio": "ISO 8601",
+          "pantalla": "No",
+          "regla": ""
         },
         {
           "campo": "modelo",
           "tipo": "varchar(40)",
-          "nulo": true,
+          "nulo": false,
           "origen": "Persona",
           "dominio": "Texto, inicial mayúscula: «Dodge», «Internacional»",
           "pantalla": "Modelo",
-          "regla": "Sólo vehículos; obligatorio en ellos. Se copia a jornadas.vehiculo_modelo al elegir la placa en el cierre (D162)"
+          "regla": "Obligatorio. Se copia a jornadas.vehiculo_modelo al elegir la placa en el cierre (D162)"
         },
         {
           "campo": "tipo_vehiculo",
           "tipo": "varchar(30)",
-          "nulo": true,
+          "nulo": false,
           "origen": "Persona",
           "dominio": "Texto, inicial mayúscula: Pipa · Pick up · Doble cabina · Estacas · Redilas · Grúa; se proponen los que ya hay",
           "pantalla": "Tipo",
-          "regla": "Sólo vehículos; obligatorio en ellos. Agrupa la lista de placas del cierre y se copia a jornadas.vehiculo_tipo (D162)"
+          "regla": "Obligatorio. Agrupa la lista de placas del cierre y se copia a jornadas.vehiculo_tipo (D162)"
+        }
+      ]
+    },
+    "instituciones": {
+      "que_es": "Las instituciones que ejecutan plantaciones y tienen cuentas: la Secretaría, las 16 alcaldías, otras dependencias, empresas y organizaciones civiles (D186). De ellas depende el alcance de un directivo de fuera de la Secretaría (D224).",
+      "llave": "id",
+      "indices": [],
+      "pantalla": "Catálogos › Instituciones (sólo Administración global); se elige en Usuarios",
+      "campos": [
+        {
+          "campo": "id",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "UUID v4; las de arranque: o-sedema, o-paot, o-sobse, o-green-cover, o-reforestamos, o-alc-09002…o-alc-09017",
+          "pantalla": "No",
+          "regla": "Es lo que guardan usuarios.organizacion_id y jornadas.organizacion_id"
+        },
+        {
+          "campo": "clave",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "`[A-Z0-9_]{2,30}`, única",
+          "pantalla": "No",
+          "regla": "La pone el sistema a partir del nombre y no se muestra"
+        },
+        {
+          "campo": "nombre",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto, único",
+          "pantalla": "Nombre",
+          "regla": "Único entre todas; las alcaldías sin la palabra «Alcaldía» (la pone la pantalla)"
+        },
+        {
+          "campo": "activo",
+          "tipo": "boolean",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "true/false",
+          "pantalla": "Estado",
+          "regla": "Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina (D08)"
+        },
+        {
+          "campo": "creado_por_id",
+          "tipo": "uuid",
+          "nulo": true,
+          "origen": "Sesión",
+          "dominio": "→ usuarios.id",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "fecha_creacion",
+          "tipo": "timestamptz",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "ISO 8601",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "editado_por_id",
+          "tipo": "uuid",
+          "nulo": true,
+          "origen": "Sesión",
+          "dominio": "→ usuarios.id",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "fecha_ultima_edicion",
+          "tipo": "timestamptz",
+          "nulo": true,
+          "origen": "Sistema",
+          "dominio": "ISO 8601",
+          "pantalla": "No",
+          "regla": ""
         },
         {
           "campo": "tipo_organizacion",
           "tipo": "varchar(30)",
-          "nulo": true,
+          "nulo": false,
           "origen": "Persona",
           "dominio": "tipo_organizacion",
           "pantalla": "Tipo de institución (Usuarios, al dar de alta; Catálogos › Instituciones, al agregarla)",
-          "regla": "Sólo instituciones; obligatorio: se elige al agregarla en Catálogos (nunca Alcaldía: las 16 son fijas) y no cambia. Las alcaldías se guardan sin la palabra «Alcaldía» en el nombre",
-          "solo_tipo": "organizacion"
+          "regla": "Obligatorio: se elige al agregarla en Catálogos (nunca Alcaldía: las 16 son fijas) y no cambia. Las alcaldías se guardan sin la palabra «Alcaldía» en el nombre"
+        }
+      ]
+    },
+    "solicitantes": {
+      "que_es": "Quién pide un pedido especial (D217). No son quienes plantan ni tienen cuentas: por eso van aparte de las instituciones.",
+      "llave": "id",
+      "indices": [],
+      "pantalla": "Catálogos › Solicitantes (sólo Administración global); se elige en Iniciar jornada › Quién lo solicita",
+      "campos": [
+        {
+          "campo": "id",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "UUID v4; los de arranque: s-alc-09002…s-alc-09017, s-oficina-secretaria, s-sobse, s-segiagua, s-jefatura, s-diputados",
+          "pantalla": "No",
+          "regla": "Es lo que guarda jornadas.solicitante_id"
+        },
+        {
+          "campo": "clave",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "`[A-Z0-9_]{2,30}`, única",
+          "pantalla": "No",
+          "regla": "La pone el sistema a partir del nombre y no se muestra"
+        },
+        {
+          "campo": "nombre",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "Texto, único",
+          "pantalla": "Nombre",
+          "regla": "Único entre todos; las alcaldías sin la palabra «Alcaldía»: su tipo las agrupa en la lista"
+        },
+        {
+          "campo": "activo",
+          "tipo": "boolean",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "true/false",
+          "pantalla": "Estado",
+          "regla": "Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina (D08)"
+        },
+        {
+          "campo": "creado_por_id",
+          "tipo": "uuid",
+          "nulo": true,
+          "origen": "Sesión",
+          "dominio": "→ usuarios.id",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "fecha_creacion",
+          "tipo": "timestamptz",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "ISO 8601",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "editado_por_id",
+          "tipo": "uuid",
+          "nulo": true,
+          "origen": "Sesión",
+          "dominio": "→ usuarios.id",
+          "pantalla": "No",
+          "regla": ""
+        },
+        {
+          "campo": "fecha_ultima_edicion",
+          "tipo": "timestamptz",
+          "nulo": true,
+          "origen": "Sistema",
+          "dominio": "ISO 8601",
+          "pantalla": "No",
+          "regla": ""
         },
         {
           "campo": "tipo_solicitante",
           "tipo": "varchar(30)",
-          "nulo": true,
+          "nulo": false,
           "origen": "Persona",
           "dominio": "tipo_solicitante",
           "pantalla": "Tipo de solicitante (Catálogos › Solicitantes)",
-          "regla": "Sólo solicitantes; obligatorio. Agrupa la lista «Quién lo solicita» y la tabla del catálogo. Se elige al agregarlo y se puede corregir después",
-          "solo_tipo": "solicitante"
-        },
-        {
-          "campo": "tipos_organizacion",
-          "tipo": "varchar(30)[]",
-          "nulo": false,
-          "origen": "Persona",
-          "dominio": "Lista de tipo_organizacion; [] = sólo SEDEMA",
-          "pantalla": "Quién puede usarlo (Catálogos › Programas)",
-          "regla": "Sólo programas. Los tipos de institución que, además de SEDEMA, pueden elegir el programa al iniciar o editar una jornada; SEDEMA puede usar todos. Lo marca la Administración (D193). Un programa nuevo empieza vacío. De arranque: Reforestación Urbana, Alcaldía, Gobierno de la CDMX y Organización civil; Palmeras, Empresa privada; Centro Histórico y Compensaciones, vacío. Al abrir, un programa sin el dato recibe el de arranque o, si lo agregó la Administración, vacío",
-          "solo_tipo": "programa"
+          "regla": "Obligatorio. Agrupa la lista «Quién lo solicita» y la tabla del catálogo. Se elige al agregarlo y se puede corregir después"
         }
       ]
     },
@@ -946,9 +1333,9 @@
           "tipo": "text",
           "nulo": false,
           "origen": "Persona",
-          "dominio": "→ catalogos.id con tipo = programa",
+          "dominio": "→ programas.id",
           "pantalla": "Programa (Iniciar jornada)",
-          "regla": "Obligatorio al iniciar (D130). Sus árboles lo toman siempre (D151): al registrar, al cambiarlo aquí y al moverlos a esta jornada. SEDEMA elige todos; las demás instituciones, los que tienen marcado su tipo en catalogos.tipos_organizacion (D193). Con un solo programa posible viene ya elegido"
+          "regla": "Obligatorio al iniciar (D130). Sus árboles lo toman siempre (D151): al registrar, al cambiarlo aquí y al moverlos a esta jornada. SEDEMA elige todos; las demás instituciones, los que tienen marcado su tipo en programas.tipos_organizacion (D193). Con un solo programa posible viene ya elegido"
         },
         {
           "campo": "lat",
@@ -1054,7 +1441,7 @@
           "tipo": "text",
           "nulo": false,
           "origen": "Sesión",
-          "dominio": "→ catalogos.id con tipo = organizacion",
+          "dominio": "→ instituciones.id",
           "pantalla": "No (el reporte la dice si no es SEDEMA)",
           "regla": "La institución que ejecuta la jornada: la de quien la inicia. Se fija al iniciar y no cambia aunque la cuenta cambie de organización. Al abrir, las jornadas sin organización quedan en SEDEMA (asignarOrganizacion). Las de otras instituciones no llevan chófer ni vehículo"
         },
@@ -1126,7 +1513,7 @@
           "tipo": "text",
           "nulo": true,
           "origen": "Persona",
-          "dominio": "→ catalogos.id con tipo = solicitante",
+          "dominio": "→ solicitantes.id",
           "pantalla": "Iniciar jornada › Quién lo solicita; Editar jornada",
           "regla": "Quién solicita el pedido especial, del catálogo de solicitantes (Catálogos › Solicitantes), que es aparte del de instituciones. No es quien ejecuta (organizacion_id): quien pide no es quien planta. Nulo si la jornada es programada o si la instancia no está en el catálogo. Obligatorio, este o solicitante_otro, cuando origen = PEDIDO"
         },
@@ -1243,7 +1630,7 @@
           "tipo": "text",
           "nulo": false,
           "origen": "Catálogo",
-          "dominio": "Copia de catalogos.modelo del vehículo elegido; '' sin vehículo",
+          "dominio": "Copia de vehiculos.modelo del vehículo elegido; '' sin vehículo",
           "pantalla": "(se ve en la ficha bajo la lista de vehículos)",
           "regla": "Se copia del catálogo al guardar el cierre (D162); ya no se escribe a mano (D174). La migración 4 quitó lo escrito a mano y el `vehiculo` de antes del bloque 20"
         },
@@ -1252,7 +1639,7 @@
           "tipo": "text",
           "nulo": false,
           "origen": "Catálogo",
-          "dominio": "Copia de catalogos.nombre (la placa) del vehículo elegido; '' sin vehículo",
+          "dominio": "Copia de vehiculos.nombre (la placa) del vehículo elegido; '' sin vehículo",
           "pantalla": "Vehículo (lista de placas)",
           "regla": "Se copia del catálogo al guardar el cierre (D162); ya no se escribe a mano (D174)"
         },
@@ -1261,7 +1648,7 @@
           "tipo": "text",
           "nulo": false,
           "origen": "Catálogo",
-          "dominio": "Copia de catalogos.tipo_vehiculo del vehículo elegido; '' sin vehículo",
+          "dominio": "Copia de vehiculos.tipo_vehiculo del vehículo elegido; '' sin vehículo",
           "pantalla": "(se ve en la ficha bajo la lista de vehículos)",
           "regla": "Se copia del catálogo al guardar el cierre (D162); ya no se escribe a mano (D174)"
         },
@@ -1270,7 +1657,7 @@
           "tipo": "text",
           "nulo": true,
           "origen": "Persona",
-          "dominio": "→ catalogos.id con tipo = vehiculo",
+          "dominio": "→ vehiculos.id",
           "pantalla": "Vehículo (lista de placas o botones de los más usados)",
           "regla": "El vehículo del catálogo; nulo sin vehículo. Con él se cuentan los que más usa cada encargado (D162). Sólo del catálogo: sin «Otro vehículo» (D174)"
         },
@@ -1301,13 +1688,13 @@
     },
     {
       "de": "plantaciones.especie_id",
-      "a": "catalogos.id (tipo especie)",
+      "a": "especies.id",
       "cardinalidad": "N:1",
       "regla": "Nula sólo con «Otra especie» (entonces especie_otra obligatoria; es lo que la bandeja de especies de la Fase 2 resuelve)"
     },
     {
       "de": "plantaciones.programa_id",
-      "a": "catalogos.id (tipo programa)",
+      "a": "programas.id",
       "cardinalidad": "N:1",
       "regla": "Obligatoria; siempre la de su jornada (D151)"
     },
@@ -1325,7 +1712,7 @@
     },
     {
       "de": "usuarios.area_id",
-      "a": "catalogos.id (tipo area)",
+      "a": "areas.id",
       "cardinalidad": "N:1",
       "regla": "Obligatoria"
     },
@@ -1336,7 +1723,7 @@
       "regla": ""
     },
     {
-      "de": "catalogos.creado_por_id / editado_por_id",
+      "de": "programas, areas, especies, vehiculos, instituciones y solicitantes: creado_por_id / editado_por_id",
       "a": "usuarios.id",
       "cardinalidad": "N:1",
       "regla": "Nulo en las especies que vienen del SIA"
@@ -1355,7 +1742,7 @@
     },
     {
       "de": "jornadas.programa_id",
-      "a": "catalogos.id (tipo programa)",
+      "a": "programas.id",
       "cardinalidad": "N:1",
       "regla": "Obligatoria; sus árboles la toman (D151)"
     },
@@ -1367,7 +1754,7 @@
     },
     {
       "de": "bitacora.entidad_id",
-      "a": "plantaciones.id / usuarios.id / catalogos.id / jornadas.id según entidad",
+      "a": "plantaciones.id / usuarios.id / jornadas.id o el id del catálogo (programas, areas, especies, vehiculos, instituciones, solicitantes) según entidad",
       "cardinalidad": "N:1",
       "regla": "Sin restricción de integridad: la bitácora sobrevive a la eliminación de la entidad"
     },
@@ -1379,25 +1766,25 @@
     },
     {
       "de": "jornadas.vehiculo_id",
-      "a": "catalogos.id (tipo vehiculo)",
+      "a": "vehiculos.id",
       "cardinalidad": "N:1",
       "regla": "Opcional. La jornada guarda además una copia de placa, modelo y tipo: el reporte no cambia si después se corrige el catálogo (D162)"
     },
     {
       "de": "usuarios.organizacion_id",
-      "a": "catalogos.id (tipo organizacion: institución)",
+      "a": "instituciones.id",
       "cardinalidad": "N:1",
       "regla": "Obligatoria. Fuera de SEDEMA sólo hay cabos, sin área ni coordinador, así que nadie ve registros de otra institución"
     },
     {
       "de": "jornadas.organizacion_id",
-      "a": "catalogos.id (tipo organizacion: institución)",
+      "a": "instituciones.id",
       "cardinalidad": "N:1",
       "regla": "Obligatoria. Se copia de la cuenta que inicia la jornada; sus árboles son de esa organización (en la Fase 2, el servidor filtra por ella)"
     },
     {
       "de": "jornadas.solicitante_id",
-      "a": "catalogos.id (tipo solicitante)",
+      "a": "solicitantes.id",
       "cardinalidad": "N:1",
       "regla": "Opcional: sólo en un pedido especial cuya instancia está en el catálogo. Un solicitante que aparece en alguna jornada no se elimina del catálogo; se desactiva"
     },
@@ -1452,7 +1839,7 @@
       "ver": "Ficha de la foto"
     },
     {
-      "campo": "catalogos.clave (especie)",
+      "campo": "especies.clave",
       "de": "Máximo ESP-0000 en uso + 1",
       "cuando": "Al abrir el alta",
       "ver": "Clave (sólo lectura)"
@@ -1473,7 +1860,7 @@
   "calculados_no_guardados": [
     {
       "que": "Nombre común y científico de la especie, nombre del programa, nombre del cabo",
-      "de": "Los ids contra catalogos y usuarios (SRP.ref)",
+      "de": "Los ids contra los catálogos y las cuentas (SRP.ref)",
       "donde": "Lista, detalle, ficha, PDF"
     },
     {
@@ -1683,12 +2070,12 @@
       "se_vacia": "Al cambiar a otro perfil; al cambiar de institución quedan sólo los de la nueva ([] si ninguno)"
     },
     {
-      "campo": "catalogos.nombre_cientifico … id_enciclovida",
+      "campo": "especies.nombre_cientifico … id_enciclovida",
       "aparece": "Sólo en tipo = especie",
       "se_vacia": "No existen en programas ni áreas"
     },
     {
-      "campo": "catalogos.modelo, tipo_vehiculo",
+      "campo": "vehiculos.modelo, tipo_vehiculo",
       "aparece": "Sólo en tipo = vehiculo",
       "se_vacia": "No existen en programas, áreas ni especies"
     },
@@ -1703,17 +2090,17 @@
       "se_vacia": "En jornadas de otras instituciones el cierre no los ofrece, quedan vacíos y el reporte no los imprime"
     },
     {
-      "campo": "catalogos.tipo_organizacion",
+      "campo": "instituciones.tipo_organizacion",
       "aparece": "Sólo en tipo = organizacion",
       "se_vacia": "No existe en los demás catálogos"
     },
     {
-      "campo": "catalogos.tipo_solicitante",
+      "campo": "solicitantes.tipo_solicitante",
       "aparece": "Sólo en tipo = solicitante",
       "se_vacia": "No existe en los demás catálogos"
     },
     {
-      "campo": "catalogos.tipos_organizacion",
+      "campo": "programas.tipos_organizacion",
       "aparece": "Sólo en tipo = programa",
       "se_vacia": "No existe en los demás catálogos; [] en un programa = sólo SEDEMA"
     },
@@ -1749,7 +2136,7 @@
     {
       "id": "R-P03",
       "tabla": "plantaciones",
-      "regla": "El programa es el de la jornada (D151): no se elige por árbol. Al iniciar la jornada se elige entre los programas activos. SEDEMA elige todos; cada tipo de institución, los que tienen marcado su tipo en catalogos.tipos_organizacion, que la Administración cambia en Catálogos › Programas (D193)",
+      "regla": "El programa es el de la jornada (D151): no se elige por árbol. Al iniciar la jornada se elige entre los programas activos. SEDEMA elige todos; cada tipo de institución, los que tienen marcado su tipo en programas.tipos_organizacion, que la Administración cambia en Catálogos › Programas (D193)",
       "donde": "js/formulario.js programaDeJornada(); js/jornada-activa.js iniciarJornada(); js/referencias.js programasPara()"
     },
     {
@@ -1862,37 +2249,37 @@
     },
     {
       "id": "R-C01",
-      "tabla": "catalogos",
-      "regla": "Nombre obligatorio y único por tipo; clave `[A-Z0-9_]{2,30}` única por tipo (programas y áreas), fija después de guardar",
+      "tabla": "programas, areas, especies, vehiculos, instituciones, solicitantes",
+      "regla": "Nombre obligatorio y único en su tabla; clave `[A-Z0-9_]{2,30}` única en su tabla (programas y áreas), fija después de guardar",
       "donde": "js/catalogos.js validar()"
     },
     {
       "id": "R-C02",
-      "tabla": "catalogos",
+      "tabla": "especies",
       "regla": "Especies: científico obligatorio con formato «Genus epíteto» y único; clave ESP-0000 consecutiva que asigna el sistema; id = clave; género y epíteto derivados; id_snib `número+ANGIO|GIMNO`; id_enciclovida entero",
       "donde": "js/catalogos.js validar(), guardar(), siguienteClaveEspecie()"
     },
     {
       "id": "R-C03",
-      "tabla": "catalogos",
+      "tabla": "programas, areas, especies, vehiculos, instituciones, solicitantes",
       "regla": "Con uso en cualquier tabla —árboles, también eliminados; jornadas; cuentas— no se elimina: se desactiva (D151). Inactivo deja de ofrecerse; lo ya guardado no cambia",
       "donde": "js/referencias.js usosDe(); js/catalogos.js eliminar(), cambiarEstado()"
     },
     {
       "id": "R-C04",
-      "tabla": "catalogos",
+      "tabla": "especies",
       "regla": "Las 76 especies del SIA se siembran desde assets/catalogos/catalogo-especies.js (generado del Excel); para cambiarlas se corrige el Excel y se regenera",
       "donde": "herramientas/generar_especies.py; js/datos-ficticios.js"
     },
     {
       "id": "R-C05",
-      "tabla": "catalogos",
+      "tabla": "instituciones",
       "regla": "Instituciones: cuatro tipos fijos. Sólo la Administración las agrega (a solicitud, en Catálogos › Instituciones: tipo —nunca Alcaldía— y nombre único; la clave la pone el sistema), las renombra y las desactiva (desactivar corta el acceso de sus cuentas); no se eliminan. Las 16 alcaldías son fijas y SEDEMA no se desactiva. De arranque: SEDEMA, PAOT, SOBSE (Gobierno de la CDMX), Green Cover (Empresa privada), Reforestamos México, A.C. (Organización civil) y las 16 alcaldías (id o-alc-<cvegeo>). Áreas de arranque: DGSANPAVA, Oficina de la Secretaría, Sistema de Información Ambiental y DGEIRA; en un teléfono con capturas, las cuentas del área retirada «Dirección de Infraestructura Verde» pasan a DGSANPAVA. Programas de arranque: Reforestación Urbana, Centro Histórico, Palmeras y Compensaciones; «Jornadas de voluntariado» se retiró (D192): en un teléfono con capturas se desactiva si alguna jornada o árbol lo usa, y si no, se quita",
       "donde": "js/catalogos.js esFija(), validar(), guardar(), cambiarEstado(); js/datos-ficticios.js; js/almacen.js completarCatalogos()"
     },
     {
       "id": "R-C06",
-      "tabla": "catalogos",
+      "tabla": "solicitantes",
       "regla": "Solicitantes: quién pide un pedido especial. Catálogo aparte del de instituciones: un solicitante no tiene cuentas ni ejecuta jornadas. Sólo la Administración los agrega, edita y desactiva (Catálogos › Solicitantes): nombre único, tipo de la lista fija de siete (Alcaldía, Dependencia de gobierno, Congreso, Empresa, Organización civil, Escuela, Vecinos) y clave que pone el sistema; sin uso se eliminan. De arranque: las 16 alcaldías (id s-alc-<cvegeo>, sin la palabra «Alcaldía»), Secretaría de Obras y Servicios (SOBSE), Secretaría de Gestión Integral del Agua (SEGIAGUA), Jefatura de Gobierno (Dependencia de gobierno) y Diputadas y diputados (Congreso). «Quién lo solicita» los ofrece agrupados por tipo y, al final, «Otra instancia»",
       "donde": "js/catalogos.js validar(), guardar(); js/referencias.js TIPOS_SOLICITANTE, nombreSolicitante(), ordenSolicitantes(); js/pedido.js opciones(); js/datos-ficticios.js"
     },
@@ -1961,7 +2348,7 @@
     {
       "id": "S-03",
       "que": "Integridad referencial y unicidad en la base",
-      "detalle": "FK de todas las relaciones de arriba, que son las mismas con que el dispositivo cuenta el uso antes de eliminar (D151); UNIQUE en plantaciones.folio, usuarios.correo, catalogos (tipo, clave), catalogos (tipo, nombre), catalogos.nombre_cientifico; CHECK de los dominios; la bitácora sin FK a propósito",
+      "detalle": "FK de todas las relaciones de arriba, que son las mismas con que el dispositivo cuenta el uso antes de eliminar (D151); UNIQUE en plantaciones.folio, usuarios.correo, clave y nombre de cada tabla de catálogo (programas, areas, especies, vehiculos, instituciones, solicitantes), especies.nombre_cientifico; CHECK de los dominios; la bitácora sin FK a propósito",
       "referencia": "Esta tabla de relaciones"
     },
     {
@@ -2082,7 +2469,7 @@
       "capa": "catálogo de especies",
       "archivo": "assets/catalogos/catalogo-especies.js (fuente originales/CGO_ESPECIES_REFORESTACION_URBANA_2026-09-22.xlsx)",
       "version": "2026-09-22",
-      "alimenta": "catalogos (tipo especie)",
+      "alimenta": "especies",
       "estado": "Definitivo (D84)"
     }
   ]

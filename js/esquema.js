@@ -149,7 +149,7 @@ SRP.ESQUEMA = {
     "char(8)",
     true,
     null,
-    "catalogos"
+    "especies"
    ],
    [
     "especie_otra",
@@ -212,7 +212,7 @@ SRP.ESQUEMA = {
     "text",
     false,
     null,
-    "catalogos"
+    "programas"
    ],
    [
     "fecha_plantacion",
@@ -326,14 +326,14 @@ SRP.ESQUEMA = {
     "text",
     false,
     null,
-    "catalogos"
+    "instituciones"
    ],
    [
     "area_id",
     "text",
     true,
     null,
-    "catalogos"
+    "areas"
    ],
    [
     "cargo_rol",
@@ -392,7 +392,7 @@ SRP.ESQUEMA = {
     "usuarios"
    ]
   ],
-  "catalogos": [
+  "programas": [
    [
     "id",
     "text",
@@ -401,10 +401,126 @@ SRP.ESQUEMA = {
     null
    ],
    [
-    "tipo",
+    "clave",
     "text",
     false,
-    "tipo_catalogo",
+    null,
+    null
+   ],
+   [
+    "nombre",
+    "text",
+    false,
+    null,
+    null
+   ],
+   [
+    "activo",
+    "boolean",
+    false,
+    null,
+    null
+   ],
+   [
+    "creado_por_id",
+    "uuid",
+    true,
+    null,
+    "usuarios"
+   ],
+   [
+    "fecha_creacion",
+    "timestamptz",
+    false,
+    null,
+    null
+   ],
+   [
+    "editado_por_id",
+    "uuid",
+    true,
+    null,
+    "usuarios"
+   ],
+   [
+    "fecha_ultima_edicion",
+    "timestamptz",
+    true,
+    null,
+    null
+   ],
+   [
+    "tipos_organizacion",
+    "varchar(30)[]",
+    false,
+    null,
+    null
+   ]
+  ],
+  "areas": [
+   [
+    "id",
+    "text",
+    false,
+    null,
+    null
+   ],
+   [
+    "clave",
+    "text",
+    false,
+    null,
+    null
+   ],
+   [
+    "nombre",
+    "text",
+    false,
+    null,
+    null
+   ],
+   [
+    "activo",
+    "boolean",
+    false,
+    null,
+    null
+   ],
+   [
+    "creado_por_id",
+    "uuid",
+    true,
+    null,
+    "usuarios"
+   ],
+   [
+    "fecha_creacion",
+    "timestamptz",
+    false,
+    null,
+    null
+   ],
+   [
+    "editado_por_id",
+    "uuid",
+    true,
+    null,
+    "usuarios"
+   ],
+   [
+    "fecha_ultima_edicion",
+    "timestamptz",
+    true,
+    null,
+    null
+   ]
+  ],
+  "especies": [
+   [
+    "id",
+    "text",
+    false,
+    null,
     null
    ],
    [
@@ -497,40 +613,207 @@ SRP.ESQUEMA = {
     true,
     null,
     null
+   ]
+  ],
+  "vehiculos": [
+   [
+    "id",
+    "text",
+    false,
+    null,
+    null
+   ],
+   [
+    "clave",
+    "text",
+    false,
+    null,
+    null
+   ],
+   [
+    "nombre",
+    "text",
+    false,
+    null,
+    null
+   ],
+   [
+    "activo",
+    "boolean",
+    false,
+    null,
+    null
+   ],
+   [
+    "creado_por_id",
+    "uuid",
+    true,
+    null,
+    "usuarios"
+   ],
+   [
+    "fecha_creacion",
+    "timestamptz",
+    false,
+    null,
+    null
+   ],
+   [
+    "editado_por_id",
+    "uuid",
+    true,
+    null,
+    "usuarios"
+   ],
+   [
+    "fecha_ultima_edicion",
+    "timestamptz",
+    true,
+    null,
+    null
    ],
    [
     "modelo",
     "varchar(40)",
-    true,
+    false,
     null,
     null
    ],
    [
     "tipo_vehiculo",
     "varchar(30)",
-    true,
-    null,
-    null
-   ],
-   [
-    "tipo_organizacion",
-    "varchar(30)",
-    true,
-    "tipo_organizacion",
-    null
-   ],
-   [
-    "tipo_solicitante",
-    "varchar(30)",
-    true,
-    "tipo_solicitante",
-    null
-   ],
-   [
-    "tipos_organizacion",
-    "varchar(30)[]",
     false,
     null,
+    null
+   ]
+  ],
+  "instituciones": [
+   [
+    "id",
+    "text",
+    false,
+    null,
+    null
+   ],
+   [
+    "clave",
+    "text",
+    false,
+    null,
+    null
+   ],
+   [
+    "nombre",
+    "text",
+    false,
+    null,
+    null
+   ],
+   [
+    "activo",
+    "boolean",
+    false,
+    null,
+    null
+   ],
+   [
+    "creado_por_id",
+    "uuid",
+    true,
+    null,
+    "usuarios"
+   ],
+   [
+    "fecha_creacion",
+    "timestamptz",
+    false,
+    null,
+    null
+   ],
+   [
+    "editado_por_id",
+    "uuid",
+    true,
+    null,
+    "usuarios"
+   ],
+   [
+    "fecha_ultima_edicion",
+    "timestamptz",
+    true,
+    null,
+    null
+   ],
+   [
+    "tipo_organizacion",
+    "varchar(30)",
+    false,
+    "tipo_organizacion",
+    null
+   ]
+  ],
+  "solicitantes": [
+   [
+    "id",
+    "text",
+    false,
+    null,
+    null
+   ],
+   [
+    "clave",
+    "text",
+    false,
+    null,
+    null
+   ],
+   [
+    "nombre",
+    "text",
+    false,
+    null,
+    null
+   ],
+   [
+    "activo",
+    "boolean",
+    false,
+    null,
+    null
+   ],
+   [
+    "creado_por_id",
+    "uuid",
+    true,
+    null,
+    "usuarios"
+   ],
+   [
+    "fecha_creacion",
+    "timestamptz",
+    false,
+    null,
+    null
+   ],
+   [
+    "editado_por_id",
+    "uuid",
+    true,
+    null,
+    "usuarios"
+   ],
+   [
+    "fecha_ultima_edicion",
+    "timestamptz",
+    true,
+    null,
+    null
+   ],
+   [
+    "tipo_solicitante",
+    "varchar(30)",
+    false,
+    "tipo_solicitante",
     null
    ]
   ],
@@ -626,7 +909,7 @@ SRP.ESQUEMA = {
     "text",
     false,
     null,
-    "catalogos"
+    "programas"
    ],
    [
     "lat",
@@ -710,7 +993,7 @@ SRP.ESQUEMA = {
     "text",
     false,
     null,
-    "catalogos"
+    "instituciones"
    ],
    [
     "estatus",
@@ -766,7 +1049,7 @@ SRP.ESQUEMA = {
     "text",
     true,
     null,
-    "catalogos"
+    "solicitantes"
    ],
    [
     "solicitante_otro",
@@ -878,7 +1161,7 @@ SRP.ESQUEMA = {
     "text",
     true,
     null,
-    "catalogos"
+    "vehiculos"
    ],
    [
     "hora",

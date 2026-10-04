@@ -6,8 +6,8 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 
 ## 1. Dónde viven los datos
 
-- **Motor:** IndexedDB del navegador: base `srp_db` en la versión de prueba y `srp_sia` en la real (SRP.CONFIG.DB_NOMBRE, según ES_FICTICIO), versión 7 (SRP.CONFIG.DB_VERSION). Nunca comparten datos.
-- **Tablas (almacenes):** `plantaciones`, `usuarios`, `catalogos`, `bitacora`, `jornadas`.
+- **Motor:** IndexedDB del navegador: base `srp_db` en la versión de prueba y `srp_sia` en la real (SRP.CONFIG.DB_NOMBRE, según ES_FICTICIO), versión 8 (SRP.CONFIG.DB_VERSION). Nunca comparten datos.
+- **Tablas (almacenes):** `plantaciones`, `usuarios`, `programas`, `areas`, `especies`, `vehiculos`, `instituciones`, `solicitantes`, `bitacora`, `jornadas`.
 
 | Dónde | Qué guarda | En Fase 2 |
 |---|---|---|
@@ -44,7 +44,7 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 | `estatus_jornada` | `abierta` · `cerrada` | js/jornada-activa.js iniciarJornada() y cambiarEstatus() |
 | `punto_origen` | `gps` · `mapa` · `manual` · `ajustado` | js/mapa.js ORIGENES |
 | `perfil` | `CABO` · `COORDINADOR` · `DIRECTIVO` · `ADMIN` | js/permisos.js SRP.PERFILES (Consulta/VIEWER retirado en D87; DIRECTIVO, de sólo lectura, desde D224) |
-| `tipo_catalogo` | `programa` · `area` · `especie` · `vehiculo` · `organizacion` · `solicitante` | js/catalogos.js ETIQUETA |
+| `tipo_catalogo` | `programa` · `area` · `especie` · `vehiculo` · `organizacion` · `solicitante` | js/catalogos.js ETIQUETA. No es un campo de la base: cada catálogo tiene su tabla (SRP.almacen.TABLA_DE_TIPO); en memoria, cada renglón lleva `tipo` para saber de cuál es |
 | `tipo_distribucion` | `Nativa` · `Endémica` · `Exótica` · `Exótica-Invasora` | SNIB/CONABIO (EncicloVida); lista en index.html #cat-distribucion |
 | `tipo_organizacion` | `Alcaldía` · `Gobierno de la CDMX` · `Empresa privada` · `Organización civil` | Lista fija en index.html #usr-tipo-org y #cat-tipo-org; js/referencias.js TIPOS_INSTITUCION |
 | `tipo_solicitante` | `Dependencia de gobierno` · `Alcaldía` · `Congreso` · `Empresa` · `Organización civil` · `Escuela` · `Vecinos` | js/referencias.js TIPOS_SOLICITANTE; la lista de Catálogos › Solicitantes (#cat-tipo-sol) se llena de ahí |
@@ -75,7 +75,7 @@ Un renglón por ejemplar plantado. Es el registro individual de campo; todo lo d
 | `punto_origen` | text | No | Sistema | dominio `punto_origen` | «Cómo se obtuvo» (sólo lectura) | Lo determina la acción con la que se colocó el punto, no una elección. Es la prueba de cómo se obtuvo la coordenada cuando no hay fotografía |
 | `gps_precision_m` | integer | Sí | Sistema | Metros, entero; null salvo con GPS | «Cómo se obtuvo» (±N m) | Existe si y sólo si punto_origen = gps: al mover el punto a mano se borra. La auditoría lo comprueba. En Fase 2 alimenta la regla de duplicados (D69) |
 | `folio` | char(13) | Sí | Servidor | `AAA-000-00000` (SRP.folio.PATRON): clave de la celda UGA y consecutivo de la celda; UNIQUE. AAA es el prefijo de la celda, no la alcaldía del árbol (difieren en el 4.3 % del territorio, D152) | «Folio»: PROVISIONAL mientras sea nulo (R1) | Con datos reales, nulo en toda la Fase 1: lo asigna el servidor una sola vez al sincronizar (R3), es inmutable (R7) y no lleva la especie ni el año (D67). El consecutivo sale de una secuencia perpetua por celda, nunca de MAX+1 (R5–R6). Con datos de prueba lo llena el servidor simulado (D110), marcado «(simulado)» en pantalla y en cada renglón del PDF; su secuencia vive en cada teléfono y dos teléfonos pueden repetir números. Sin alcaldía o con capas incompletas no se emite (D152) |
-| `especie_id` | char(8) | Sí | Catálogo | → catalogos.id con tipo = especie (id_especie ESP-0000) | Especie (autocompletado por nombre común, científico y otros nombres) | Obligatoria salvo con «Otra especie», donde queda nula. El registro guarda sólo la clave; género, epíteto, distribución, forma de crecimiento, id_snib e id_enciclovida se obtienen del catálogo (D84) |
+| `especie_id` | char(8) | Sí | Catálogo | → especies.id (id_especie ESP-0000) | Especie (autocompletado por nombre común, científico y otros nombres) | Obligatoria salvo con «Otra especie», donde queda nula. El registro guarda sólo la clave; género, epíteto, distribución, forma de crecimiento, id_snib e id_enciclovida se obtienen del catálogo (D84) |
 | `especie_otra` | text | No | Persona | Texto libre; '' salvo con «Otra especie» | Especifique la especie (aparece sólo al elegir «Otra especie») | Obligatoria cuando especie_id es nula. Se vacía al elegir una especie del catálogo |
 | `alcaldia_cve` | char(5) | Sí | Capa | dominio `alcaldia_cve` | No | Derivada del punto contra la capa de alcaldías. Llave para unir con el esquema territorio del SIA. Nula si el punto cae en un hueco de la capa (se avisa, no se impide guardar) |
 | `alcaldia` | text | Sí | Capa | Nombre de la alcaldía según la capa | Alcaldía (sólo lectura); «Sin alcaldía (territorio pendiente)» si es nula | Copia del nombre para leerse sin cargar la capa. Se rederiva cada vez que el punto se mueve; se puede rederivar en lote si la capa cambia (capa_version). Un punto dentro del margen del límite toma la alcaldía más cercana (D152) |
@@ -84,7 +84,7 @@ Un renglón por ejemplar plantado. Es el registro individual de campo; todo lo d
 | `uga` | char(7) | Sí | Capa | dominio `uga` | No | Celda vigente del punto. Su prefijo es el de la celda y NO la alcaldía del punto (difieren en el 4.3 % del territorio); la alcaldía sale de su propia capa. Cambia si el punto se corrige; la celda con que se asignó el folio la congela el servidor (S-02) |
 | `uga_borde_m` | integer | Sí | Capa | Metros enteros ≥ 0; nulo sin celda | Detalle › Datos del sistema («A N m del borde de la celda»); «Celda incierta» junto al folio si es menor que la precisión del GPS | Distancia del punto al borde de su celda UGA, al derivar (D152). Si es menor que gps_precision_m, la celda del folio podría ser la vecina: la pantalla lo dice y el servidor la confirma en la Fase 2 |
 | `capa_version` | text | Sí | Capa | `alcaldias=v;uga=v;colonias=v` | Detalle › Datos del sistema («Capas») y pie del PDF (D152) | Con qué versión de cada capa se derivó; permite rehacer alcaldia/colonia/uga cuando el SIA entregue las capas definitivas |
-| `programa_id` | text | No | Jornada | → catalogos.id con tipo = programa | Ficha de revisión y detalle («Programa», el de la jornada); no se edita por árbol | Es el de su jornada (D151): se toma al registrar, cambia cuando cambia el de la jornada —también en los eliminados, en la misma transacción— y al mover el árbol toma el de su jornada nueva |
+| `programa_id` | text | No | Jornada | → programas.id | Ficha de revisión y detalle («Programa», el de la jornada); no se edita por árbol | Es el de su jornada (D151): se toma al registrar, cambia cuando cambia el de la jornada —también en los eliminados, en la misma transacción— y al mover el árbol toma el de su jornada nueva |
 | `fecha_plantacion` | date | No | Persona | AAAA-MM-DD, ≤ hoy | Fecha de plantación (se muestra 21-SEP-2026). En el formulario se pide sólo si la jornada empezó antes de hoy; en «Sustituir», como fecha de la sustitución | El día en que se plantó el árbol, entre la fecha de su jornada y hoy. Arranca con la fecha de la jornada el día en que la jornada se inicia y con la de hoy los días siguientes; lo elegido se conserva para el árbol siguiente de la misma jornada. Un sustituto lleva la fecha de la sustitución, no anterior a la plantación del árbol perdido. Si cambia la fecha de la jornada, la toman los árboles del día de inicio (también los eliminados, en la misma transacción); al mover el árbol a otra jornada, la de la jornada nueva si era del día de inicio, y si no conserva la suya (nunca antes del inicio de la jornada nueva); al restaurarlo, la suya, salvo que la jornada empiece después |
 | `jornada_id` | uuid | No | Sistema | → jornadas.id | Jornada (ficha de revisión y detalle) | La jornada activa al registrar (D119). Cambia sólo con «Mover a otra jornada» en Jornadas, que también ajusta fecha_plantacion y programa_id (D151) |
 | `sustituye_id` | uuid | Sí | Sistema | → plantaciones.id | Detalle («Sustituye a») y marca «Sustituto» en tarjeta, ficha y mapa (punto morado) | Sólo en el árbol que reemplaza a uno perdido (D203); nulo en los demás. Se registra en la jornada del árbol perdido |
@@ -110,8 +110,8 @@ Cuentas del sistema. Una por persona; el perfil decide qué puede hacer (js/perm
 | `id` | uuid | No | Sistema | UUID v4 (las de arranque: u-admin-1, u-coord-1, u-cabo-1) | No | — |
 | `correo` | text | No | Persona | Correo válido, en minúsculas, único | Correo | Identifica la cuenta y sirve para entrar; no se puede cambiar después. No tiene que ser institucional |
 | `nombre_completo` | text | No | Persona | Texto, hasta 160: nombre y al menos un apellido | Nombre completo | Un solo campo. Sustituye a nombre, apellido_paterno y apellido_materno: al abrir, las cuentas que los tenían se unen aquí (js/almacen.js normalizar) |
-| `organizacion_id` | text | No | Catálogo | → catalogos.id con tipo = organizacion | Tipo de institución e Institución | La institución de la cuenta. En el alta se elige primero el tipo (Alcaldía, Gobierno de la CDMX, Empresa privada, Organización civil) y luego la institución de la lista; las que falten las agrega la Administración en Catálogos › Instituciones, a solicitud. Sólo SEDEMA (o-sedema) tiene área y ADMIN; las cuentas de fuera son CABO o COORDINADOR, y el cabo depende de un coordinador de su misma institución (D192). Al abrir, las cuentas sin institución quedan en SEDEMA |
-| `area_id` | text | Sí | Catálogo | → catalogos.id con tipo = area (DGSANPAVA, Oficina de la Secretaría, Sistema de Información Ambiental, DGEIRA) | Área (sólo cuentas de la Secretaría) | Obligatoria en cuentas de SEDEMA; nula en las de otras organizaciones |
+| `organizacion_id` | text | No | Catálogo | → instituciones.id | Tipo de institución e Institución | La institución de la cuenta. En el alta se elige primero el tipo (Alcaldía, Gobierno de la CDMX, Empresa privada, Organización civil) y luego la institución de la lista; las que falten las agrega la Administración en Catálogos › Instituciones, a solicitud. Sólo SEDEMA (o-sedema) tiene área y ADMIN; las cuentas de fuera son CABO o COORDINADOR, y el cabo depende de un coordinador de su misma institución (D192). Al abrir, las cuentas sin institución quedan en SEDEMA |
+| `area_id` | text | Sí | Catálogo | → areas.id (DGSANPAVA, Oficina de la Secretaría, Sistema de Información Ambiental, DGEIRA) | Área (sólo cuentas de la Secretaría) | Obligatoria en cuentas de SEDEMA; nula en las de otras organizaciones |
 | `cargo_rol` | text | No | Persona | Texto libre | Cargo | Descriptivo; no gobierna permisos |
 | `perfil` | text | No | Persona | dominio `perfil` | Perfil de captura | Decide alcance y acciones. Una cuenta de administración no puede quitarse a sí misma el perfil ADMIN. Un perfil desconocido queda sin permisos y se avisa (D87). ADMIN sólo en SEDEMA; fuera, CABO, COORDINADOR o DIRECTIVO (D192, D224) |
 | `coordinadores_ids` | uuid[] | No | Persona | → usuarios.id con perfil COORDINADOR; [] si no tiene | Coordinadores (sólo cabos) | Sólo en cabos; puede tener más de uno, todos de su misma institución; [] en los demás perfiles. Es lo que define la cuadrilla: cada coordinador ve y edita los registros de los cabos que lo tienen asignado, nunca los de otra institución |
@@ -121,37 +121,126 @@ Cuentas del sistema. Una por persona; el perfil decide qué puede hacer (js/perm
 | `fecha_ultima_edicion` | timestamptz | Sí | Sistema | ISO 8601 | No | — |
 | `editado_por_id` | uuid | Sí | Sesión | → usuarios.id | No | — |
 
-### 4.3 `catalogos`
+### 4.3 `programas`
 
-Los seis catálogos administrables en una sola tabla, distinguidos por `tipo`: programas, áreas, especies, vehículos, instituciones y solicitantes de pedidos especiales. Las especies son el catálogo real del SIA (D84) y los vehículos, el de las cuadrillas (D162); los dos llevan campos adicionales.
+Los programas de plantación. La jornada elige uno y sus árboles lo toman (D151). Cada programa dice qué tipos de institución, además de la Secretaría, pueden usarlo (D193).
 
-- **Llave:** `id`. **Índices:** ninguno. **Pantalla:** Catálogos (sólo Administración global); alimentan Nuevo registro (especie, programa) y Usuarios (área, institución) e Iniciar jornada (programa, quién solicita).
-- **Campos:** 20.
+- **Llave:** `id`. **Índices:** ninguno. **Pantalla:** Catálogos › Programas (sólo Administración global); se elige en Iniciar jornada.
+- **Campos:** 9.
 
 | Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
 |---|---|---|---|---|---|---|
-| `id` | text | No | Sistema | UUID v4 en programas, áreas y organizaciones (los de arranque: p-refor, p-centro, p-palmeras, p-compensaciones, a-dgsanpava, a-oficina, a-sia, a-dgeira, o-sedema, o-paot, o-sobse, o-green-cover, o-reforestamos, o-alc-09002…o-alc-09017); en solicitantes, UUID v4 (los de arranque: s-alc-09002…s-alc-09017, s-sobse, s-segiagua, s-jefatura, s-diputados); en especies es la propia clave ESP-0000; en vehículos, «v-» más la placa sin espacios en los de arranque y UUID v4 en los que se agreguen | No | Es lo que guardan plantaciones.especie_id, plantaciones.programa_id, usuarios.area_id, usuarios.organizacion_id, jornadas.organizacion_id, jornadas.solicitante_id y jornadas.vehiculo_id |
-| `tipo` | text | No | Sistema | dominio `tipo_catalogo` | Pestaña | Lo fija la pestaña en la que se está |
-| `clave` | text | No | Persona | Programas, áreas y organizaciones: `[A-Z0-9_]{2,30}`, única por tipo. Especies: id_especie. Vehículos: la placa sin espacios ni guiones | Clave | Programas y áreas: se sugiere del nombre, editable antes de guardar, fija después. Especies: consecutivo ESP-0000 que asigna el sistema; nunca se escribe ni se reutiliza. Vehículos: sale de la placa al darlo de alta y no se muestra; dos placas que sólo difieren en espacios son la misma (D162). Instituciones y solicitantes: la pone el sistema a partir del nombre y no se muestra |
-| `nombre` | text | No | Persona | Texto, único por tipo | Nombre / Nombre común | En especies es el nombre_comun del catálogo del SIA: la etiqueta de campo. En vehículos es la placa, en mayúsculas: «PRU 005» (D162). En instituciones: único entre todas; las alcaldías sin la palabra «Alcaldía» (la pone la pantalla). En solicitantes: único entre todos; las alcaldías también sin la palabra, y así se leen: su tipo las agrupa en la lista |
+| `id` | text | No | Sistema | UUID v4; los de arranque: p-refor, p-centro, p-palmeras, p-compensaciones | No | Es lo que guardan plantaciones.programa_id y jornadas.programa_id |
+| `clave` | text | No | Persona | `[A-Z0-9_]{2,30}`, única | Clave | Se sugiere del nombre, editable antes de guardar, fija después |
+| `nombre` | text | No | Persona | Texto, único | Nombre | — |
 | `activo` | boolean | No | Persona | true/false | Estado | Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina (D08) |
-| `creado_por_id` | uuid | Sí | Sesión | → usuarios.id; null en las especies del SIA y en los vehículos de arranque | No | — |
+| `creado_por_id` | uuid | Sí | Sesión | → usuarios.id | No | — |
+| `fecha_creacion` | timestamptz | No | Sistema | ISO 8601 | No | — |
+| `editado_por_id` | uuid | Sí | Sesión | → usuarios.id | No | — |
+| `fecha_ultima_edicion` | timestamptz | Sí | Sistema | ISO 8601 | No | — |
+| `tipos_organizacion` | varchar(30)[] | No | Persona | Lista de tipo_organizacion; [] = sólo SEDEMA | Quién puede usarlo (Catálogos › Programas) | Los tipos de institución que, además de SEDEMA, pueden elegir el programa al iniciar o editar una jornada; SEDEMA puede usar todos. Lo marca la Administración (D193). Un programa nuevo empieza vacío. De arranque: Reforestación Urbana, Alcaldía, Gobierno de la CDMX y Organización civil; Palmeras, Empresa privada; Centro Histórico y Compensaciones, vacío. Al abrir, un programa sin el dato recibe el de arranque o, si lo agregó la Administración, vacío |
+
+### 4.4 `areas`
+
+Las áreas de la Secretaría a las que pertenece una cuenta. Las cuentas de otras instituciones no llevan área.
+
+- **Llave:** `id`. **Índices:** ninguno. **Pantalla:** Catálogos › Áreas (sólo Administración global); se elige en Usuarios.
+- **Campos:** 8.
+
+| Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
+|---|---|---|---|---|---|---|
+| `id` | text | No | Sistema | UUID v4; las de arranque: a-dgsanpava, a-oficina, a-sia, a-dgeira | No | Es lo que guarda usuarios.area_id |
+| `clave` | text | No | Persona | `[A-Z0-9_]{2,30}`, única | Clave | Se sugiere del nombre, editable antes de guardar, fija después |
+| `nombre` | text | No | Persona | Texto, único | Nombre | — |
+| `activo` | boolean | No | Persona | true/false | Estado | Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina (D08) |
+| `creado_por_id` | uuid | Sí | Sesión | → usuarios.id | No | — |
+| `fecha_creacion` | timestamptz | No | Sistema | ISO 8601 | No | — |
+| `editado_por_id` | uuid | Sí | Sesión | → usuarios.id | No | — |
+| `fecha_ultima_edicion` | timestamptz | Sí | Sistema | ISO 8601 | No | — |
+
+### 4.5 `especies`
+
+El catálogo de especies: el real del SIA (D84), 76 de arranque, más las que agregue la Administración. Lleva los datos taxonómicos y las llaves externas al SNIB y a EncicloVida.
+
+- **Llave:** `id`. **Índices:** ninguno. **Pantalla:** Catálogos › Especies (sólo Administración global); se elige en Nuevo registro.
+- **Campos:** 14.
+
+| Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
+|---|---|---|---|---|---|---|
+| `id` | text | No | Sistema | dominio `id_especie` | No | Es la propia clave ESP-0000. Es lo que guarda plantaciones.especie_id |
+| `clave` | text | No | Sistema | dominio `id_especie` | Clave | Consecutivo ESP-0000 que asigna el sistema; nunca se escribe ni se reutiliza |
+| `nombre` | text | No | Persona | Texto, único | Nombre común | Es el nombre_comun del catálogo del SIA: la etiqueta de campo |
+| `activo` | boolean | No | Persona | true/false | Estado | Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina (D08) |
+| `creado_por_id` | uuid | Sí | Sesión | → usuarios.id; null en las especies del SIA | No | — |
 | `fecha_creacion` | timestamptz | No | Sistema | ISO 8601; en las especies del SIA, la fecha de corte | No | — |
 | `editado_por_id` | uuid | Sí | Sesión | → usuarios.id | No | — |
 | `fecha_ultima_edicion` | timestamptz | Sí | Sistema | ISO 8601 | No | — |
-| `nombre_cientifico` *(sólo especie)* | varchar(140) | No | Persona | Género + epíteto, sin autoría ni subgénero; único | Nombre científico (y entre paréntesis en Nuevo registro) | Sólo especies. Validado: inicial mayúscula y al menos dos palabras |
-| `otros_nombres_comunes` *(sólo especie)* | varchar(400) | No | Persona | Nombres separados por coma y espacio; '' si no hay | Otros nombres comunes; en Nuevo registro sólo como criterio de búsqueda («también: Fresno») | Sólo especies. Un mismo nombre puede señalar a varias especies: la búsqueda las ofrece todas, nunca resuelve sola |
-| `tipo_distribucion` *(sólo especie)* | text | No | Persona | dominio `tipo_distribucion` | Tipo de distribución (Catálogos) | Sólo especies. Campo del SNIB; sustituye a Nativa/Introducida |
-| `formadecrecimiento` *(sólo especie)* | varchar(100) | No | Persona | Árbol · Arbusto · Palma · Liana · Hierba · Sufrútice, varios separados por coma y espacio; '' si no hay | Forma de crecimiento (Catálogos) | Sólo especies. Literal de la ficha técnica |
-| `id_snib` *(sólo especie)* | varchar(16) | Sí | Persona | Número + ANGIO o GIMNO (IdCAT) | Id SNIB (Catálogos) | Sólo especies. Llave externa al Catálogo Taxonómico de la Biota; puede venir vacía (Quercus rubra) |
-| `id_enciclovida` *(sólo especie)* | integer | Sí | Persona | Entero | Id EncicloVida (Catálogos) | Sólo especies. Llave para reconsultar la ficha (enciclovida.mx/especies/{id}.json); más completa que el IdCAT |
-| `modelo` | varchar(40) | Sí | Persona | Texto, inicial mayúscula: «Dodge», «Internacional» | Modelo | Sólo vehículos; obligatorio en ellos. Se copia a jornadas.vehiculo_modelo al elegir la placa en el cierre (D162) |
-| `tipo_vehiculo` | varchar(30) | Sí | Persona | Texto, inicial mayúscula: Pipa · Pick up · Doble cabina · Estacas · Redilas · Grúa; se proponen los que ya hay | Tipo | Sólo vehículos; obligatorio en ellos. Agrupa la lista de placas del cierre y se copia a jornadas.vehiculo_tipo (D162) |
-| `tipo_organizacion` *(sólo organizacion)* | varchar(30) | Sí | Persona | dominio `tipo_organizacion` | Tipo de institución (Usuarios, al dar de alta; Catálogos › Instituciones, al agregarla) | Sólo instituciones; obligatorio: se elige al agregarla en Catálogos (nunca Alcaldía: las 16 son fijas) y no cambia. Las alcaldías se guardan sin la palabra «Alcaldía» en el nombre |
-| `tipo_solicitante` *(sólo solicitante)* | varchar(30) | Sí | Persona | dominio `tipo_solicitante` | Tipo de solicitante (Catálogos › Solicitantes) | Sólo solicitantes; obligatorio. Agrupa la lista «Quién lo solicita» y la tabla del catálogo. Se elige al agregarlo y se puede corregir después |
-| `tipos_organizacion` *(sólo programa)* | varchar(30)[] | No | Persona | Lista de tipo_organizacion; [] = sólo SEDEMA | Quién puede usarlo (Catálogos › Programas) | Sólo programas. Los tipos de institución que, además de SEDEMA, pueden elegir el programa al iniciar o editar una jornada; SEDEMA puede usar todos. Lo marca la Administración (D193). Un programa nuevo empieza vacío. De arranque: Reforestación Urbana, Alcaldía, Gobierno de la CDMX y Organización civil; Palmeras, Empresa privada; Centro Histórico y Compensaciones, vacío. Al abrir, un programa sin el dato recibe el de arranque o, si lo agregó la Administración, vacío |
+| `nombre_cientifico` | varchar(140) | No | Persona | Género + epíteto, sin autoría ni subgénero; único | Nombre científico (y entre paréntesis en Nuevo registro) | Validado: inicial mayúscula y al menos dos palabras |
+| `otros_nombres_comunes` | varchar(400) | No | Persona | Nombres separados por coma y espacio; '' si no hay | Otros nombres comunes; en Nuevo registro sólo como criterio de búsqueda («también: Fresno») | Un mismo nombre puede señalar a varias especies: la búsqueda las ofrece todas, nunca resuelve sola |
+| `tipo_distribucion` | text | No | Persona | dominio `tipo_distribucion` | Tipo de distribución (Catálogos) | Campo del SNIB; sustituye a Nativa/Introducida |
+| `formadecrecimiento` | varchar(100) | No | Persona | Árbol · Arbusto · Palma · Liana · Hierba · Sufrútice, varios separados por coma y espacio; '' si no hay | Forma de crecimiento (Catálogos) | Literal de la ficha técnica |
+| `id_snib` | varchar(16) | Sí | Persona | Número + ANGIO o GIMNO (IdCAT) | Id SNIB (Catálogos) | Llave externa al Catálogo Taxonómico de la Biota; puede venir vacía (Quercus rubra) |
+| `id_enciclovida` | integer | Sí | Persona | Entero | Id EncicloVida (Catálogos) | Llave para reconsultar la ficha (enciclovida.mx/especies/{id}.json); más completa que el IdCAT |
 
-### 4.4 `bitacora`
+### 4.6 `vehiculos`
+
+Los vehículos de las cuadrillas (D162). Se eligen en el cierre de la jornada, que copia placa, modelo y tipo. En la versión de prueba llevan placas ficticias; los reales se cargan en el servidor.
+
+- **Llave:** `id`. **Índices:** ninguno. **Pantalla:** Catálogos › Vehículos (sólo Administración global); se elige en el cierre de la jornada.
+- **Campos:** 10.
+
+| Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
+|---|---|---|---|---|---|---|
+| `id` | text | No | Sistema | «v-» más la placa sin espacios en los de arranque; UUID v4 en los que se agreguen | No | Es lo que guarda jornadas.vehiculo_id |
+| `clave` | text | No | Sistema | La placa sin espacios ni guiones; única | No | Sale de la placa al darlo de alta y no se muestra; dos placas que sólo difieren en espacios son la misma (D162) |
+| `nombre` | text | No | Persona | Texto, único | Placa | Es la placa, en mayúsculas: «PRU 005» (D162). Se copia a jornadas.vehiculo_placa |
+| `activo` | boolean | No | Persona | true/false | Estado | Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina (D08) |
+| `creado_por_id` | uuid | Sí | Sesión | → usuarios.id; null en los vehículos de arranque | No | — |
+| `fecha_creacion` | timestamptz | No | Sistema | ISO 8601 | No | — |
+| `editado_por_id` | uuid | Sí | Sesión | → usuarios.id | No | — |
+| `fecha_ultima_edicion` | timestamptz | Sí | Sistema | ISO 8601 | No | — |
+| `modelo` | varchar(40) | No | Persona | Texto, inicial mayúscula: «Dodge», «Internacional» | Modelo | Obligatorio. Se copia a jornadas.vehiculo_modelo al elegir la placa en el cierre (D162) |
+| `tipo_vehiculo` | varchar(30) | No | Persona | Texto, inicial mayúscula: Pipa · Pick up · Doble cabina · Estacas · Redilas · Grúa; se proponen los que ya hay | Tipo | Obligatorio. Agrupa la lista de placas del cierre y se copia a jornadas.vehiculo_tipo (D162) |
+
+### 4.7 `instituciones`
+
+Las instituciones que ejecutan plantaciones y tienen cuentas: la Secretaría, las 16 alcaldías, otras dependencias, empresas y organizaciones civiles (D186). De ellas depende el alcance de un directivo de fuera de la Secretaría (D224).
+
+- **Llave:** `id`. **Índices:** ninguno. **Pantalla:** Catálogos › Instituciones (sólo Administración global); se elige en Usuarios.
+- **Campos:** 9.
+
+| Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
+|---|---|---|---|---|---|---|
+| `id` | text | No | Sistema | UUID v4; las de arranque: o-sedema, o-paot, o-sobse, o-green-cover, o-reforestamos, o-alc-09002…o-alc-09017 | No | Es lo que guardan usuarios.organizacion_id y jornadas.organizacion_id |
+| `clave` | text | No | Sistema | `[A-Z0-9_]{2,30}`, única | No | La pone el sistema a partir del nombre y no se muestra |
+| `nombre` | text | No | Persona | Texto, único | Nombre | Único entre todas; las alcaldías sin la palabra «Alcaldía» (la pone la pantalla) |
+| `activo` | boolean | No | Persona | true/false | Estado | Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina (D08) |
+| `creado_por_id` | uuid | Sí | Sesión | → usuarios.id | No | — |
+| `fecha_creacion` | timestamptz | No | Sistema | ISO 8601 | No | — |
+| `editado_por_id` | uuid | Sí | Sesión | → usuarios.id | No | — |
+| `fecha_ultima_edicion` | timestamptz | Sí | Sistema | ISO 8601 | No | — |
+| `tipo_organizacion` | varchar(30) | No | Persona | dominio `tipo_organizacion` | Tipo de institución (Usuarios, al dar de alta; Catálogos › Instituciones, al agregarla) | Obligatorio: se elige al agregarla en Catálogos (nunca Alcaldía: las 16 son fijas) y no cambia. Las alcaldías se guardan sin la palabra «Alcaldía» en el nombre |
+
+### 4.8 `solicitantes`
+
+Quién pide un pedido especial (D217). No son quienes plantan ni tienen cuentas: por eso van aparte de las instituciones.
+
+- **Llave:** `id`. **Índices:** ninguno. **Pantalla:** Catálogos › Solicitantes (sólo Administración global); se elige en Iniciar jornada › Quién lo solicita.
+- **Campos:** 9.
+
+| Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
+|---|---|---|---|---|---|---|
+| `id` | text | No | Sistema | UUID v4; los de arranque: s-alc-09002…s-alc-09017, s-oficina-secretaria, s-sobse, s-segiagua, s-jefatura, s-diputados | No | Es lo que guarda jornadas.solicitante_id |
+| `clave` | text | No | Sistema | `[A-Z0-9_]{2,30}`, única | No | La pone el sistema a partir del nombre y no se muestra |
+| `nombre` | text | No | Persona | Texto, único | Nombre | Único entre todos; las alcaldías sin la palabra «Alcaldía»: su tipo las agrupa en la lista |
+| `activo` | boolean | No | Persona | true/false | Estado | Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina (D08) |
+| `creado_por_id` | uuid | Sí | Sesión | → usuarios.id | No | — |
+| `fecha_creacion` | timestamptz | No | Sistema | ISO 8601 | No | — |
+| `editado_por_id` | uuid | Sí | Sesión | → usuarios.id | No | — |
+| `fecha_ultima_edicion` | timestamptz | Sí | Sistema | ISO 8601 | No | — |
+| `tipo_solicitante` | varchar(30) | No | Persona | dominio `tipo_solicitante` | Tipo de solicitante (Catálogos › Solicitantes) | Obligatorio. Agrupa la lista «Quién lo solicita» y la tabla del catálogo. Se elige al agregarlo y se puede corregir después |
+
+### 4.9 `bitacora`
 
 Quién, cuándo y qué, en cada alta, edición, eliminación, activación y desactivación (Norma 7.7, D10). Sólo se escribe; se lee en el historial del detalle de cada registro.
 
@@ -170,7 +259,7 @@ Quién, cuándo y qué, en cada alta, edición, eliminación, activación y desa
 | `entidad_id` | text | No | Sistema | id de la tabla correspondiente | No | Se escribe en la misma transacción que el dato (guardarConBitacora) |
 | `detalle` | text | No | Sistema | Texto; '' si no aplica | Historial | En una edición, la lista de campos que cambiaron |
 
-### 4.5 `jornadas`
+### 4.10 `jornadas`
 
 Una jornada de plantación: se declara antes de registrar el primer árbol (D119). Agrupa los registros, lleva la conciliación y la revisión, y guarda los datos de cierre del reporte (antes en la tabla cierres, retirada en el bloque 62).
 
@@ -182,7 +271,7 @@ Una jornada de plantación: se declara antes de registrar el primer árbol (D119
 | `id` | uuid | No | Sistema | UUID | No | Se fija al iniciar la jornada |
 | `nombre` | text | No | Persona | Texto libre, hasta 120 | Nombre de la jornada | Obligatorio al iniciar: el parque, la calle o el sitio. Es el nombre de la tarjeta en Jornadas y el «Jornada:» del reporte (D119) |
 | `ubicacion` | text | No | Persona | Texto libre, hasta 200; '' si no se escribe | Dirección de la jornada | Calle y número, entre calles o tramo (D165; antes dirección, parque o referencia, D120); la etiqueta pasó a «Dirección de la jornada» (D143). Va al reporte bajo el nombre de la jornada |
-| `programa_id` | text | No | Persona | → catalogos.id con tipo = programa | Programa (Iniciar jornada) | Obligatorio al iniciar (D130). Sus árboles lo toman siempre (D151): al registrar, al cambiarlo aquí y al moverlos a esta jornada. SEDEMA elige todos; las demás instituciones, los que tienen marcado su tipo en catalogos.tipos_organizacion (D193). Con un solo programa posible viene ya elegido |
+| `programa_id` | text | No | Persona | → programas.id | Programa (Iniciar jornada) | Obligatorio al iniciar (D130). Sus árboles lo toman siempre (D151): al registrar, al cambiarlo aquí y al moverlos a esta jornada. SEDEMA elige todos; las demás instituciones, los que tienen marcado su tipo en programas.tipos_organizacion (D193). Con un solo programa posible viene ya elegido |
 | `lat` | numeric(9,6) | Sí | Dispositivo | Grados decimales WGS84, 6 decimales; nulo sin ubicación | Detectar ubicación de la jornada, o «Capturar coordenadas a mano» | Latitud del punto de la jornada: detectado con el GPS al iniciar (D122) o escrito a mano cuando no hubo señal (D143). No es la de ningún árbol |
 | `lng` | numeric(9,6) | Sí | Dispositivo | Grados decimales WGS84, 6 decimales; nulo sin ubicación; siempre negativa | Detectar ubicación de la jornada, o «Capturar coordenadas a mano» | Longitud del punto de la jornada (D122, D143) |
 | `punto_origen` | text | Sí | Sistema | 'gps' o 'manual'; nulo sin ubicación | (nota bajo el botón) | Cómo se obtuvo el punto de la jornada: con «Detectar ubicación» (gps) o escribiendo las coordenadas cuando no hubo señal en el sitio (manual) (D143). Lo determina la acción, no una elección |
@@ -194,7 +283,7 @@ Una jornada de plantación: se declara antes de registrar el primer árbol (D119
 | `fecha` | date | No | Persona | AAAA-MM-DD, no posterior a hoy | Fecha de la jornada de plantación (el día en que empieza) | Día en que empieza la jornada. Sus árboles llevan cada uno su fecha de plantación, desde este día: una jornada puede durar varios días. Al cambiarla, la toman los árboles plantados el día de inicio; no puede quedar después de un árbol plantado otro día |
 | `comentarios` | text | No | Persona | Texto libre, hasta 500; '' si no se escribe | Comentarios | Van al reporte como «Comentarios de la jornada» (D119) |
 | `cabo_id` | uuid | No | Sesión | → usuarios.id | No | Titular: quien inició la jornada. No cambia con un relevo; cada árbol queda a nombre de quien lo capturó |
-| `organizacion_id` | text | No | Sesión | → catalogos.id con tipo = organizacion | No (el reporte la dice si no es SEDEMA) | La institución que ejecuta la jornada: la de quien la inicia. Se fija al iniciar y no cambia aunque la cuenta cambie de organización. Al abrir, las jornadas sin organización quedan en SEDEMA (asignarOrganizacion). Las de otras instituciones no llevan chófer ni vehículo |
+| `organizacion_id` | text | No | Sesión | → instituciones.id | No (el reporte la dice si no es SEDEMA) | La institución que ejecuta la jornada: la de quien la inicia. Se fija al iniciar y no cambia aunque la cuenta cambie de organización. Al abrir, las jornadas sin organización quedan en SEDEMA (asignarOrganizacion). Las de otras instituciones no llevan chófer ni vehículo |
 | `estatus` | text | No | Sistema | dominio `estatus_jornada` | Franja de la jornada; Jornadas | Se cierra desde la franja o la revisión; se reabre desde la revisión o con «Registrar árbol» (D119, D153) |
 | `fecha_inicio` | timestamptz | No | Sistema | ISO 8601 | No | Ordena las jornadas del día: «Jornada 2 de 3» |
 | `fecha_cierre` | timestamptz | Sí | Sistema | ISO 8601 | Jornadas: «Cerrada a las 15:40» en la ficha y «cerrada el lunes 22 de septiembre a las 15:40» en el detalle | Nulo mientras está abierta |
@@ -202,7 +291,7 @@ Una jornada de plantación: se declara antes de registrar el primer árbol (D119
 | `relevo_id` | uuid | Sí | Persona | → usuarios.id | Jornadas › Relevo de cabo | El cabo que registra en lugar del titular: lo elige la coordinación entre los cabos activos de su cuadrilla y de la institución de la jornada, con la jornada abierta. Nulo: registra el titular. Sólo quien registra en la jornada (este cabo o, sin relevo, el titular) agrega árboles en ella |
 | `relevos` | objeto[] | No | Sistema | [{ cabo_id → usuarios.id, fecha ISO 8601, por_id → usuarios.id }]; [] sin relevos | No como campo; la ficha y el reporte dicen el relevo | Cada relevo hecho, también el que devuelve la jornada al titular: a quién se pasó, cuándo y quién lo hizo. Quien estuvo en un relevo sigue viendo la jornada y todos sus árboles, aunque sólo edita los suyos |
 | `origen` | text | No | Persona | dominio `origen_jornada` | Iniciar jornada › Origen de la jornada; Editar jornada | De dónde viene la jornada: PROGRAMADA (del programa de trabajo) o PEDIDO (pedido especial de otra instancia). Es obligatorio y no trae valor por omisión: quien inicia la jornada lo elige, y se corrige en «Editar jornada». Es de la jornada, no del árbol: los árboles lo toman de ella al leerse. Una jornada sin el dato se lee como PROGRAMADA. Las de carga masiva nacen PROGRAMADA |
-| `solicitante_id` | text | Sí | Persona | → catalogos.id con tipo = solicitante | Iniciar jornada › Quién lo solicita; Editar jornada | Quién solicita el pedido especial, del catálogo de solicitantes (Catálogos › Solicitantes), que es aparte del de instituciones. No es quien ejecuta (organizacion_id): quien pide no es quien planta. Nulo si la jornada es programada o si la instancia no está en el catálogo. Obligatorio, este o solicitante_otro, cuando origen = PEDIDO |
+| `solicitante_id` | text | Sí | Persona | → solicitantes.id | Iniciar jornada › Quién lo solicita; Editar jornada | Quién solicita el pedido especial, del catálogo de solicitantes (Catálogos › Solicitantes), que es aparte del de instituciones. No es quien ejecuta (organizacion_id): quien pide no es quien planta. Nulo si la jornada es programada o si la instancia no está en el catálogo. Obligatorio, este o solicitante_otro, cuando origen = PEDIDO |
 | `solicitante_otro` | text | No | Persona | Texto ≤ 120; '' si no aplica | Iniciar jornada › Nombre de la instancia; Editar jornada | El nombre de la instancia que solicita cuando no está en el catálogo («Otra instancia»). Vacío con solicitante_id o en una jornada programada |
 | `pedido_descripcion` | text | No | Persona | Texto ≤ 200; '' si no aplica | Iniciar jornada › Descripción del pedido; Editar jornada | De qué se trata el pedido especial; obligatoria con origen «Pedido especial». Vacío en una jornada programada. No se pide oficio ni folio de la solicitud |
 | `editado_por_id` | uuid | Sí | Sesión | → usuarios.id; nulo sin ediciones | No | Nulo hasta la primera edición, como en las demás tablas |
@@ -215,10 +304,10 @@ Una jornada de plantación: se declara antes de registrar el primer árbol (D119
 | `apoyo` | text | No | Persona | Texto libre, varias líneas | Personal de apoyo | Sólo en jornadas de SEDEMA; en las de otras instituciones no se pide y queda vacío (D192) |
 | `observaciones` | text | No | Persona | Texto libre | Observaciones | Aquí se explica a mano una diferencia contra los árboles previstos |
 | `chofer` | text | No | Persona | Texto libre | Chófer | Sólo en jornadas de SEDEMA; en las de otras instituciones no se pide y queda vacío |
-| `vehiculo_modelo` | text | No | Catálogo | Copia de catalogos.modelo del vehículo elegido; '' sin vehículo | (se ve en la ficha bajo la lista de vehículos) | Se copia del catálogo al guardar el cierre (D162); ya no se escribe a mano (D174). La migración 4 quitó lo escrito a mano y el `vehiculo` de antes del bloque 20 |
-| `vehiculo_placa` | text | No | Catálogo | Copia de catalogos.nombre (la placa) del vehículo elegido; '' sin vehículo | Vehículo (lista de placas) | Se copia del catálogo al guardar el cierre (D162); ya no se escribe a mano (D174) |
-| `vehiculo_tipo` | text | No | Catálogo | Copia de catalogos.tipo_vehiculo del vehículo elegido; '' sin vehículo | (se ve en la ficha bajo la lista de vehículos) | Se copia del catálogo al guardar el cierre (D162); ya no se escribe a mano (D174) |
-| `vehiculo_id` | text | Sí | Persona | → catalogos.id con tipo = vehiculo | Vehículo (lista de placas o botones de los más usados) | El vehículo del catálogo; nulo sin vehículo. Con él se cuentan los que más usa cada encargado (D162). Sólo del catálogo: sin «Otro vehículo» (D174) |
+| `vehiculo_modelo` | text | No | Catálogo | Copia de vehiculos.modelo del vehículo elegido; '' sin vehículo | (se ve en la ficha bajo la lista de vehículos) | Se copia del catálogo al guardar el cierre (D162); ya no se escribe a mano (D174). La migración 4 quitó lo escrito a mano y el `vehiculo` de antes del bloque 20 |
+| `vehiculo_placa` | text | No | Catálogo | Copia de vehiculos.nombre (la placa) del vehículo elegido; '' sin vehículo | Vehículo (lista de placas) | Se copia del catálogo al guardar el cierre (D162); ya no se escribe a mano (D174) |
+| `vehiculo_tipo` | text | No | Catálogo | Copia de vehiculos.tipo_vehiculo del vehículo elegido; '' sin vehículo | (se ve en la ficha bajo la lista de vehículos) | Se copia del catálogo al guardar el cierre (D162); ya no se escribe a mano (D174) |
+| `vehiculo_id` | text | Sí | Persona | → vehiculos.id | Vehículo (lista de placas o botones de los más usados) | El vehículo del catálogo; nulo sin vehículo. Con él se cuentan los que más usa cada encargado (D162). Sólo del catálogo: sin «Otro vehículo» (D174) |
 | `hora` | time | No | Persona | HH:MM; '' si no se elige | Hora de finalización (selector) | — |
 
 ## 5. Relaciones entre tablas
@@ -227,23 +316,23 @@ Una jornada de plantación: se declara antes de registrar el primer árbol (D119
 |---|---|---|---|
 | plantaciones.cabo_id | usuarios.id | N:1 | Obligatoria. Define el alcance: un cabo ve los suyos; un coordinador, los de los cabos que lo tienen en coordinadores_ids |
 | plantaciones.editado_por_id | usuarios.id | N:1 | Opcional |
-| plantaciones.especie_id | catalogos.id (tipo especie) | N:1 | Nula sólo con «Otra especie» (entonces especie_otra obligatoria; es lo que la bandeja de especies de la Fase 2 resuelve) |
-| plantaciones.programa_id | catalogos.id (tipo programa) | N:1 | Obligatoria; siempre la de su jornada (D151) |
+| plantaciones.especie_id | especies.id | N:1 | Nula sólo con «Otra especie» (entonces especie_otra obligatoria; es lo que la bandeja de especies de la Fase 2 resuelve) |
+| plantaciones.programa_id | programas.id | N:1 | Obligatoria; siempre la de su jornada (D151) |
 | plantaciones.alcaldia_cve / colonia_cve / uga | capas del SIA (alcaldías, colonias, UGA) | N:1 | No son llaves foráneas en la base del dispositivo: son derivaciones del punto, con capa_version para rehacerlas |
 | usuarios.coordinadores_ids | usuarios.id | N:M | Sólo con perfil CABO; cada elemento apunta a una cuenta COORDINADOR de su institución |
-| usuarios.area_id | catalogos.id (tipo area) | N:1 | Obligatoria |
+| usuarios.area_id | areas.id | N:1 | Obligatoria |
 | usuarios.creado_por_id / editado_por_id | usuarios.id | N:1 | — |
-| catalogos.creado_por_id / editado_por_id | usuarios.id | N:1 | Nulo en las especies que vienen del SIA |
+| programas, areas, especies, vehiculos, instituciones y solicitantes: creado_por_id / editado_por_id | usuarios.id | N:1 | Nulo en las especies que vienen del SIA |
 | jornadas.cabo_id / encargado_id / relevo_id / editado_por_id | usuarios.id | N:1 | cabo_id es el titular, quien inició la jornada (D119); relevo_id, el cabo que registra en su lugar tras un relevo |
 | plantaciones.jornada_id | jornadas.id | N:1 | Cada árbol nace en la jornada activa y toma su fecha y su programa (D119, D151); «Mover a otra jornada» la cambia. Una jornada que tiene árboles, aun eliminados, no se borra |
-| jornadas.programa_id | catalogos.id (tipo programa) | N:1 | Obligatoria; sus árboles la toman (D151) |
+| jornadas.programa_id | programas.id | N:1 | Obligatoria; sus árboles la toman (D151) |
 | jornadas.puntos_revisados | plantaciones.id | N:M | Lista de ids; sólo árboles de la misma jornada |
-| bitacora.entidad_id | plantaciones.id / usuarios.id / catalogos.id / jornadas.id según entidad | N:1 | Sin restricción de integridad: la bitácora sobrevive a la eliminación de la entidad |
+| bitacora.entidad_id | plantaciones.id / usuarios.id / jornadas.id o el id del catálogo (programas, areas, especies, vehiculos, instituciones, solicitantes) según entidad | N:1 | Sin restricción de integridad: la bitácora sobrevive a la eliminación de la entidad |
 | bitacora.usuario_id | usuarios.id | N:1 | Sin restricción: conserva usuario_nombre por si la cuenta desaparece |
-| jornadas.vehiculo_id | catalogos.id (tipo vehiculo) | N:1 | Opcional. La jornada guarda además una copia de placa, modelo y tipo: el reporte no cambia si después se corrige el catálogo (D162) |
-| usuarios.organizacion_id | catalogos.id (tipo organizacion: institución) | N:1 | Obligatoria. Fuera de SEDEMA sólo hay cabos, sin área ni coordinador, así que nadie ve registros de otra institución |
-| jornadas.organizacion_id | catalogos.id (tipo organizacion: institución) | N:1 | Obligatoria. Se copia de la cuenta que inicia la jornada; sus árboles son de esa organización (en la Fase 2, el servidor filtra por ella) |
-| jornadas.solicitante_id | catalogos.id (tipo solicitante) | N:1 | Opcional: sólo en un pedido especial cuya instancia está en el catálogo. Un solicitante que aparece en alguna jornada no se elimina del catálogo; se desactiva |
+| jornadas.vehiculo_id | vehiculos.id | N:1 | Opcional. La jornada guarda además una copia de placa, modelo y tipo: el reporte no cambia si después se corrige el catálogo (D162) |
+| usuarios.organizacion_id | instituciones.id | N:1 | Obligatoria. Fuera de SEDEMA sólo hay cabos, sin área ni coordinador, así que nadie ve registros de otra institución |
+| jornadas.organizacion_id | instituciones.id | N:1 | Obligatoria. Se copia de la cuenta que inicia la jornada; sus árboles son de esa organización (en la Fase 2, el servidor filtra por ella) |
+| jornadas.solicitante_id | solicitantes.id | N:1 | Opcional: sólo en un pedido especial cuya instancia está en el catálogo. Un solicitante que aparece en alguna jornada no se elimina del catálogo; se desactiva |
 | plantaciones.sustituye_id / sustituido_por_id | plantaciones.id | 1:1 | Un árbol perdido tiene a lo más un sustituto y el sustituto apunta a él; los dos se escriben en la misma operación (D203) |
 
 ## 6. Campos que se derivan sin capturarse
@@ -259,7 +348,7 @@ Se guardan en la tabla, pero nadie los teclea: salen de otro dato o de la sesió
 | plantaciones.punto_origen, gps_precision_m | La acción con la que se colocó el punto (botón GPS, toque en el mapa, captura a mano, arrastre) | Al colocar el punto | «Cómo se obtuvo» |
 | plantaciones.cabo_id | La sesión | En el alta; se conserva al editar | Encabezado y ficha |
 | plantaciones.foto_id | La imagen comprimida | Al elegir la foto | Ficha de la foto |
-| catalogos.clave (especie) | Máximo ESP-0000 en uso + 1 | Al abrir el alta | Clave (sólo lectura) |
+| especies.clave | Máximo ESP-0000 en uso + 1 | Al abrir el alta | Clave (sólo lectura) |
 | jornadas.encargado_id | La sesión si es cabo; elección entre cabos con registros ese día si no | Al abrir el cierre | Encargado |
 | bitacora.usuario_id, usuario_nombre, perfil | La sesión | En cada movimiento | Historial |
 
@@ -267,7 +356,7 @@ Se guardan en la tabla, pero nadie los teclea: salen de otro dato o de la sesió
 
 | Qué | A partir de | Dónde se usa |
 |---|---|---|
-| Nombre común y científico de la especie, nombre del programa, nombre del cabo | Los ids contra catalogos y usuarios (SRP.ref) | Lista, detalle, ficha, PDF |
+| Nombre común y científico de la especie, nombre del programa, nombre del cabo | Los ids contra los catálogos y las cuentas (SRP.ref) | Lista, detalle, ficha, PDF |
 | Folio en pantalla y PDF (PROVISIONAL mientras folio sea nulo) y etiqueta de campo folio · especie · alcaldía · fecha | SRP.folio.texto / etiqueta | Ficha, lista, PDF |
 | Totales del parte: ejemplares, conteo por especie, resumen por programa, alcaldía del sitio | Las plantaciones del día | PDF (Norma 10.2: nunca se capturan) |
 | Uso de cada valor de catálogo y de cada cuenta (N registros) | Conteo de plantaciones (incluidos eliminados) | Catálogos y Usuarios; decide si se puede eliminar |
@@ -327,13 +416,13 @@ Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras
 | plantaciones.gps_precision_m | Sólo con punto_origen = gps | Al tocar el mapa, capturar a mano o arrastrar (null) |
 | plantaciones.foto_base64, foto_id | Al elegir una foto | Al quitarla (null, null) |
 | usuarios.coordinadores_ids | Sólo con perfil CABO | Al cambiar a otro perfil; al cambiar de institución quedan sólo los de la nueva ([] si ninguno) |
-| catalogos.nombre_cientifico … id_enciclovida | Sólo en tipo = especie | No existen en programas ni áreas |
-| catalogos.modelo, tipo_vehiculo | Sólo en tipo = vehiculo | No existen en programas, áreas ni especies |
+| especies.nombre_cientifico … id_enciclovida | Sólo en tipo = especie | No existen en programas ni áreas |
+| vehiculos.modelo, tipo_vehiculo | Sólo en tipo = vehiculo | No existen en programas, áreas ni especies |
 | usuarios.area_id | Sólo con organización SEDEMA | Al elegir otra organización (null) |
 | jornadas.chofer, vehiculo_id, vehiculo_placa, vehiculo_modelo, vehiculo_tipo | Sólo en jornadas de SEDEMA | En jornadas de otras instituciones el cierre no los ofrece, quedan vacíos y el reporte no los imprime |
-| catalogos.tipo_organizacion | Sólo en tipo = organizacion | No existe en los demás catálogos |
-| catalogos.tipo_solicitante | Sólo en tipo = solicitante | No existe en los demás catálogos |
-| catalogos.tipos_organizacion | Sólo en tipo = programa | No existe en los demás catálogos; [] en un programa = sólo SEDEMA |
+| instituciones.tipo_organizacion | Sólo en tipo = organizacion | No existe en los demás catálogos |
+| solicitantes.tipo_solicitante | Sólo en tipo = solicitante | No existe en los demás catálogos |
+| programas.tipos_organizacion | Sólo en tipo = programa | No existe en los demás catálogos; [] en un programa = sólo SEDEMA |
 | jornadas.personal, apoyo | Sólo en jornadas de SEDEMA (D192) | En jornadas de otras instituciones el cierre no los ofrece, quedan vacíos y el reporte no los imprime |
 | plantaciones.motivo_sustitucion_otro | Sólo con motivo «Otro» al sustituir | Con cualquier otro motivo ('') |
 | jornadas.solicitante_id / solicitante_otro / pedido_descripcion | Sólo con origen «Pedido especial»; solicitante_otro, sólo con «Otra instancia» | Al volver a «Programada» (nulo y '') |
@@ -344,7 +433,7 @@ Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras
 |---|---|---|---|
 | R-P01 | plantaciones | Ubicación obligatoria (GPS, toque en el mapa o captura a mano) y dentro de la Ciudad de México: la unión de las alcaldías más MARGEN_AMBITO_M (100 m), no la caja de CONFIG.MAPA.LIMITES, que sólo es el primer filtro (D152). Al tocar el mapa se pide acercamiento ZOOM_TOQUE (17) o más | js/derivacion.js dentroDelAmbito(); js/mapa.js colocar(), alTocar(); js/formulario.js validar() |
 | R-P02 | plantaciones | Especie obligatoria: de la lista de activas, o «Otra especie» con texto | js/formulario.js validar() |
-| R-P03 | plantaciones | El programa es el de la jornada (D151): no se elige por árbol. Al iniciar la jornada se elige entre los programas activos. SEDEMA elige todos; cada tipo de institución, los que tienen marcado su tipo en catalogos.tipos_organizacion, que la Administración cambia en Catálogos › Programas (D193) | js/formulario.js programaDeJornada(); js/jornada-activa.js iniciarJornada(); js/referencias.js programasPara() |
+| R-P03 | plantaciones | El programa es el de la jornada (D151): no se elige por árbol. Al iniciar la jornada se elige entre los programas activos. SEDEMA elige todos; cada tipo de institución, los que tienen marcado su tipo en programas.tipos_organizacion, que la Administración cambia en Catálogos › Programas (D193) | js/formulario.js programaDeJornada(); js/jornada-activa.js iniciarJornada(); js/referencias.js programasPara() |
 | R-P04 | plantaciones | Fecha de plantación obligatoria, no posterior a hoy ni anterior a la fecha de su jornada | js/formulario.js validar(); campo-fecha.max |
 | R-P05 | plantaciones | Comentarios hasta 500 caracteres | index.html maxlength |
 | R-P06 | plantaciones | La foto se comprime a ≤ 800×600 JPEG 0.7 antes de guardarse; el peso se calcula de la propia foto cuando se necesita (SRP.foto.pesoDe) | js/foto.js comprimir(); CONFIG.FOTO |
@@ -363,12 +452,12 @@ Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras
 | R-U03 | usuarios | Una cuenta de administración no puede quitarse a sí misma el perfil ADMIN | js/usuarios.js validar() |
 | R-U04 | usuarios | Si otro renglón la nombra no se elimina: se desactiva (D151). Cuenta en todas las tablas: árboles (también eliminados), jornadas como cabo, encargado o quien la creó o editó, cabos que coordina y cuentas o catálogos que dio de alta o editó. Inactiva no puede entrar; sus registros siguen a su nombre | js/referencias.js usosDe(); js/usuarios.js eliminar(), cambiarEstado(); js/sesion.js autenticar() |
 | R-U05 | usuarios | Institución obligatoria, elegida por tipo de la lista (no se crea desde el alta). Fuera de SEDEMA: sin área, perfil CABO y sin coordinador. Quien coordina cabos no cambia de institución hasta reasignarlos. Una cuenta cuya institución está desactivada no entra, tampoco con la sesión abierta | js/usuarios.js validar(), guardar(); js/sesion.js autenticar(), leer(); js/referencias.js accesoOrganizacion() |
-| R-C01 | catalogos | Nombre obligatorio y único por tipo; clave `[A-Z0-9_]{2,30}` única por tipo (programas y áreas), fija después de guardar | js/catalogos.js validar() |
-| R-C02 | catalogos | Especies: científico obligatorio con formato «Genus epíteto» y único; clave ESP-0000 consecutiva que asigna el sistema; id = clave; género y epíteto derivados; id_snib `número+ANGIO\|GIMNO`; id_enciclovida entero | js/catalogos.js validar(), guardar(), siguienteClaveEspecie() |
-| R-C03 | catalogos | Con uso en cualquier tabla —árboles, también eliminados; jornadas; cuentas— no se elimina: se desactiva (D151). Inactivo deja de ofrecerse; lo ya guardado no cambia | js/referencias.js usosDe(); js/catalogos.js eliminar(), cambiarEstado() |
-| R-C04 | catalogos | Las 76 especies del SIA se siembran desde assets/catalogos/catalogo-especies.js (generado del Excel); para cambiarlas se corrige el Excel y se regenera | herramientas/generar_especies.py; js/datos-ficticios.js |
-| R-C05 | catalogos | Instituciones: cuatro tipos fijos. Sólo la Administración las agrega (a solicitud, en Catálogos › Instituciones: tipo —nunca Alcaldía— y nombre único; la clave la pone el sistema), las renombra y las desactiva (desactivar corta el acceso de sus cuentas); no se eliminan. Las 16 alcaldías son fijas y SEDEMA no se desactiva. De arranque: SEDEMA, PAOT, SOBSE (Gobierno de la CDMX), Green Cover (Empresa privada), Reforestamos México, A.C. (Organización civil) y las 16 alcaldías (id o-alc-<cvegeo>). Áreas de arranque: DGSANPAVA, Oficina de la Secretaría, Sistema de Información Ambiental y DGEIRA; en un teléfono con capturas, las cuentas del área retirada «Dirección de Infraestructura Verde» pasan a DGSANPAVA. Programas de arranque: Reforestación Urbana, Centro Histórico, Palmeras y Compensaciones; «Jornadas de voluntariado» se retiró (D192): en un teléfono con capturas se desactiva si alguna jornada o árbol lo usa, y si no, se quita | js/catalogos.js esFija(), validar(), guardar(), cambiarEstado(); js/datos-ficticios.js; js/almacen.js completarCatalogos() |
-| R-C06 | catalogos | Solicitantes: quién pide un pedido especial. Catálogo aparte del de instituciones: un solicitante no tiene cuentas ni ejecuta jornadas. Sólo la Administración los agrega, edita y desactiva (Catálogos › Solicitantes): nombre único, tipo de la lista fija de siete (Alcaldía, Dependencia de gobierno, Congreso, Empresa, Organización civil, Escuela, Vecinos) y clave que pone el sistema; sin uso se eliminan. De arranque: las 16 alcaldías (id s-alc-<cvegeo>, sin la palabra «Alcaldía»), Secretaría de Obras y Servicios (SOBSE), Secretaría de Gestión Integral del Agua (SEGIAGUA), Jefatura de Gobierno (Dependencia de gobierno) y Diputadas y diputados (Congreso). «Quién lo solicita» los ofrece agrupados por tipo y, al final, «Otra instancia» | js/catalogos.js validar(), guardar(); js/referencias.js TIPOS_SOLICITANTE, nombreSolicitante(), ordenSolicitantes(); js/pedido.js opciones(); js/datos-ficticios.js |
+| R-C01 | programas, areas, especies, vehiculos, instituciones, solicitantes | Nombre obligatorio y único en su tabla; clave `[A-Z0-9_]{2,30}` única en su tabla (programas y áreas), fija después de guardar | js/catalogos.js validar() |
+| R-C02 | especies | Especies: científico obligatorio con formato «Genus epíteto» y único; clave ESP-0000 consecutiva que asigna el sistema; id = clave; género y epíteto derivados; id_snib `número+ANGIO\|GIMNO`; id_enciclovida entero | js/catalogos.js validar(), guardar(), siguienteClaveEspecie() |
+| R-C03 | programas, areas, especies, vehiculos, instituciones, solicitantes | Con uso en cualquier tabla —árboles, también eliminados; jornadas; cuentas— no se elimina: se desactiva (D151). Inactivo deja de ofrecerse; lo ya guardado no cambia | js/referencias.js usosDe(); js/catalogos.js eliminar(), cambiarEstado() |
+| R-C04 | especies | Las 76 especies del SIA se siembran desde assets/catalogos/catalogo-especies.js (generado del Excel); para cambiarlas se corrige el Excel y se regenera | herramientas/generar_especies.py; js/datos-ficticios.js |
+| R-C05 | instituciones | Instituciones: cuatro tipos fijos. Sólo la Administración las agrega (a solicitud, en Catálogos › Instituciones: tipo —nunca Alcaldía— y nombre único; la clave la pone el sistema), las renombra y las desactiva (desactivar corta el acceso de sus cuentas); no se eliminan. Las 16 alcaldías son fijas y SEDEMA no se desactiva. De arranque: SEDEMA, PAOT, SOBSE (Gobierno de la CDMX), Green Cover (Empresa privada), Reforestamos México, A.C. (Organización civil) y las 16 alcaldías (id o-alc-<cvegeo>). Áreas de arranque: DGSANPAVA, Oficina de la Secretaría, Sistema de Información Ambiental y DGEIRA; en un teléfono con capturas, las cuentas del área retirada «Dirección de Infraestructura Verde» pasan a DGSANPAVA. Programas de arranque: Reforestación Urbana, Centro Histórico, Palmeras y Compensaciones; «Jornadas de voluntariado» se retiró (D192): en un teléfono con capturas se desactiva si alguna jornada o árbol lo usa, y si no, se quita | js/catalogos.js esFija(), validar(), guardar(), cambiarEstado(); js/datos-ficticios.js; js/almacen.js completarCatalogos() |
+| R-C06 | solicitantes | Solicitantes: quién pide un pedido especial. Catálogo aparte del de instituciones: un solicitante no tiene cuentas ni ejecuta jornadas. Sólo la Administración los agrega, edita y desactiva (Catálogos › Solicitantes): nombre único, tipo de la lista fija de siete (Alcaldía, Dependencia de gobierno, Congreso, Empresa, Organización civil, Escuela, Vecinos) y clave que pone el sistema; sin uso se eliminan. De arranque: las 16 alcaldías (id s-alc-<cvegeo>, sin la palabra «Alcaldía»), Secretaría de Obras y Servicios (SOBSE), Secretaría de Gestión Integral del Agua (SEGIAGUA), Jefatura de Gobierno (Dependencia de gobierno) y Diputadas y diputados (Congreso). «Quién lo solicita» los ofrece agrupados por tipo y, al final, «Otra instancia» | js/catalogos.js validar(), guardar(); js/referencias.js TIPOS_SOLICITANTE, nombreSolicitante(), ordenSolicitantes(); js/pedido.js opciones(); js/datos-ficticios.js |
 | R-J01 | jornadas | Sólo se elimina sin ningún árbol, ni eliminado: los eliminados se conservan como constancia y siguen apuntando a ella. La eliminan quien la inició, su coordinador o administración (D132, D151) | js/jornadas.js eliminarJornada(), pintarDetalle() |
 | R-J02 | jornadas | Al cambiar su programa, todos sus árboles —también los eliminados— lo toman en la misma transacción que la jornada; al cambiar su fecha, la toman los árboles plantados el día de inicio y los de otros días conservan la suya (la jornada no puede empezar después de ellos). Un árbol movido toma el programa de su jornada nueva y la fecha si era del día de inicio; su marca de revisado sale | js/jornadas.js guardarEdicion(), mover(); js/registros.js restaurar(); js/almacen.js guardarJuntos() |
 | R-J05 | jornadas | Relevo de cabo: sólo la coordinación, en una jornada abierta de su alcance, la pasa a un cabo activo de su cuadrilla y de la institución de la jornada, o se la devuelve al titular. Registra en la jornada sólo quien la tiene a su cargo (relevo_id o, sin relevo, cabo_id); el titular no cambia y el relevo queda en relevos y en la bitácora (RELEVO) | js/permisos.js jornada.relevo, jornada.registrar; js/jornadas.js relevar(); js/jornada-activa.js abiertas() |
@@ -384,7 +473,7 @@ Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras
 |---|---|---|---|
 | S-01 | Cola de envío | Cada registro guardado queda en cola (guardado → enviado → con error); envío automático en segundo plano con señal, «Enviar ahora», y nada se borra del dispositivo hasta que el servidor confirme (qué se queda después, en S-11). Requiere dos campos nuevos en plantaciones: identificador del servidor y marca de envío (retirados en D17 por no tener uso todavía) | DECISIONES, pendiente «Cola de envío al servidor»; D83 |
 | S-02 | Emisión del folio | Tabla de secuencias por celda UGA, perpetua y monotónica (sin reinicio por ejercicio, administración ni versión); lectura e incremento atómicos, nunca MAX(folio)+1 ni COUNT+1; asignación en transacción con plantaciones.id como clave de idempotencia (R3–R6). Sólo con la malla UGA corregida, versionada y congelada. El servidor vuelve a derivar la celda con la coordenada recibida y no confía en la del teléfono; si el punto está más cerca del borde que su precisión (uga_borde_m), decide la celda con la regla que fije el SIA (D152). Al asignarlo, el servidor guarda congelados la celda UGA, la versión de capas y el punto con que lo asignó (R8): son columnas del servidor, no del teléfono. | D67; js/folio.js; pendiente «Emisión del folio» |
-| S-03 | Integridad referencial y unicidad en la base | FK de todas las relaciones de arriba, que son las mismas con que el dispositivo cuenta el uso antes de eliminar (D151); UNIQUE en plantaciones.folio, usuarios.correo, catalogos (tipo, clave), catalogos (tipo, nombre), catalogos.nombre_cientifico; CHECK de los dominios; la bitácora sin FK a propósito | Esta tabla de relaciones |
+| S-03 | Integridad referencial y unicidad en la base | FK de todas las relaciones de arriba, que son las mismas con que el dispositivo cuenta el uso antes de eliminar (D151); UNIQUE en plantaciones.folio, usuarios.correo, clave y nombre de cada tabla de catálogo (programas, areas, especies, vehiculos, instituciones, solicitantes), especies.nombre_cientifico; CHECK de los dominios; la bitácora sin FK a propósito | Esta tabla de relaciones |
 | S-04 | Permisos en el servidor | Las reglas de js/permisos.js (PERFILES y ACCIONES, D151) se imponen en la API en cada operación (Norma 7.1); la pantalla sólo las refleja. Autenticación con el proveedor institucional: sólo cambia autenticar() en js/sesion.js | js/permisos.js; D05 |
 | S-05 | Posible duplicado | Aviso al sincronizar cuando otro registro cae a menos de la incertidumbre combinada de ambos puntos (suma de gps_precision_m, piso 4 m), en el servidor; nunca con 4 m fijos | D69 |
 | S-06 | Bandeja de especies fuera de catálogo | Donde el SIA resuelve cada «Otra especie» (especie_id nula y especie_otra escrita): alta en el catálogo (siguiente ESP-0000) o reasignación a una existente; al resolverse cambia especie_id, nunca el folio. Si la bandeja necesita estados propios (p. ej. rechazada), son del servidor | D68 |
@@ -408,11 +497,11 @@ Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras
 | malla UGA | assets/capas/capa-uga.js (fuente originales/UGA_CDMX.geojson) | sia-2026-09-22 | uga (y la celda congelada del folio, en el servidor) | Definitiva según el SIA; misma geometría que la anterior. Siguen 8 celdas cuyo prefijo no es la alcaldía de su centro (TLP-040, TLP-085, IZP-005, IZP-011, COY-054, MIH-001, MIH-002, IZC-021): no afecta la alcaldía del registro, que sale de su propia capa |
 | colonias | assets/capas/capa-colonias.js (fuente originales/colonias_iecm2022.geojson) | iecm-2022 | colonia_cve, colonia | Definitiva desde el 28-09-2026: las colonias del IECM 2022 son la unidad oficial de reporte. Nueve geometrías se ajustan a la rejilla de seis decimales para que sigan válidas (D152). En el 1.25 % del territorio la colonia cruza el límite de su alcaldía; la alcaldía siempre sale de su propia capa |
 | colonias prioritarias | assets/capas/capa-prioritarias.js (fuente originales/colonias_prioritarias_reforestacion.geojson) | priorizacion-2026-10-01 | Nada que se guarde: la capa en los mapas, la prioridad del punto en pantalla y el indicador «Por prioridad de la colonia» | Capa de referencia del modelo de priorización (Liber, 01-10-2026): 2,243 colonias, prioridad 0 (Muy baja) a 4 (Muy alta). Se publican sólo colonia, alcaldía y prioridad. Sus colonias no son las unidades territoriales del IECM; polígonos simplificados (15 vértices en promedio) con 6.5 km² de solapes, donde gana el más pequeño; nueve geometrías ajustadas a la rejilla. Por confirmar con el SIA: versión oficial y geometría completa |
-| catálogo de especies | assets/catalogos/catalogo-especies.js (fuente originales/CGO_ESPECIES_REFORESTACION_URBANA_2026-09-22.xlsx) | 2026-09-22 | catalogos (tipo especie) | Definitivo (D84) |
+| catálogo de especies | assets/catalogos/catalogo-especies.js (fuente originales/CGO_ESPECIES_REFORESTACION_URBANA_2026-09-22.xlsx) | 2026-09-22 | especies | Definitivo (D84) |
 
 ## 13. Borrador de tablas para la Fase 2 (PostgreSQL)
 
-Traducción directa del esquema, para no rediseñarlo desde cero. Los tipos son los de la columna «Tipo»; las llaves foráneas, las de la sección 5. Las cinco tablas se crean tal cual y se agregan las dos columnas de la cola de envío (S-01) y la tabla de secuencias del folio (S-02) cuando toque.
+Traducción directa del esquema, para no rediseñarlo desde cero. Los tipos son los de la columna «Tipo»; las llaves foráneas, las de la sección 5. Las tablas se crean tal cual —son las mismas en el teléfono y en el servidor, cada catálogo en la suya— y se agregan las dos columnas de la cola de envío (S-01) y la tabla de secuencias del folio (S-02) cuando toque.
 
 ```sql
 CREATE TABLE plantaciones (
@@ -468,9 +557,33 @@ CREATE TABLE usuarios (
   PRIMARY KEY (id)
 );
 
-CREATE TABLE catalogos (
+CREATE TABLE programas (
   id                       text           NOT NULL,
-  tipo                     text           NOT NULL,
+  clave                    text           NOT NULL,
+  nombre                   text           NOT NULL,
+  activo                   boolean        NOT NULL,
+  creado_por_id            uuid           NULL,
+  fecha_creacion           timestamptz    NOT NULL,
+  editado_por_id           uuid           NULL,
+  fecha_ultima_edicion     timestamptz    NULL,
+  tipos_organizacion       varchar(30)[]  NOT NULL,
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE areas (
+  id                       text           NOT NULL,
+  clave                    text           NOT NULL,
+  nombre                   text           NOT NULL,
+  activo                   boolean        NOT NULL,
+  creado_por_id            uuid           NULL,
+  fecha_creacion           timestamptz    NOT NULL,
+  editado_por_id           uuid           NULL,
+  fecha_ultima_edicion     timestamptz    NULL,
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE especies (
+  id                       text           NOT NULL,
   clave                    text           NOT NULL,
   nombre                   text           NOT NULL,
   activo                   boolean        NOT NULL,
@@ -484,11 +597,46 @@ CREATE TABLE catalogos (
   formadecrecimiento       varchar(100)   NOT NULL,
   id_snib                  varchar(16)    NULL,
   id_enciclovida           integer        NULL,
-  modelo                   varchar(40)    NULL,
-  tipo_vehiculo            varchar(30)    NULL,
-  tipo_organizacion        varchar(30)    NULL,
-  tipo_solicitante         varchar(30)    NULL,
-  tipos_organizacion       varchar(30)[]  NOT NULL,
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE vehiculos (
+  id                       text           NOT NULL,
+  clave                    text           NOT NULL,
+  nombre                   text           NOT NULL,
+  activo                   boolean        NOT NULL,
+  creado_por_id            uuid           NULL,
+  fecha_creacion           timestamptz    NOT NULL,
+  editado_por_id           uuid           NULL,
+  fecha_ultima_edicion     timestamptz    NULL,
+  modelo                   varchar(40)    NOT NULL,
+  tipo_vehiculo            varchar(30)    NOT NULL,
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE instituciones (
+  id                       text           NOT NULL,
+  clave                    text           NOT NULL,
+  nombre                   text           NOT NULL,
+  activo                   boolean        NOT NULL,
+  creado_por_id            uuid           NULL,
+  fecha_creacion           timestamptz    NOT NULL,
+  editado_por_id           uuid           NULL,
+  fecha_ultima_edicion     timestamptz    NULL,
+  tipo_organizacion        varchar(30)    NOT NULL,
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE solicitantes (
+  id                       text           NOT NULL,
+  clave                    text           NOT NULL,
+  nombre                   text           NOT NULL,
+  activo                   boolean        NOT NULL,
+  creado_por_id            uuid           NULL,
+  fecha_creacion           timestamptz    NOT NULL,
+  editado_por_id           uuid           NULL,
+  fecha_ultima_edicion     timestamptz    NULL,
+  tipo_solicitante         varchar(30)    NOT NULL,
   PRIMARY KEY (id)
 );
 

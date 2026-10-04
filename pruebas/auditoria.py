@@ -232,7 +232,8 @@ with sync_playwright() as p:
       return {
         plantaciones: plant,
         usuarios: await campos('usuarios'),
-        catalogos: await campos('catalogos'),
+        programas: await campos('programas'), areas: await campos('areas'), especies: await campos('especies'),
+        vehiculos: await campos('vehiculos'), instituciones: await campos('instituciones'), solicitantes: await campos('solicitantes'),
         /* Los campos de la jornada salen del propio código: se arma una jornada con el formulario de
            «Iniciar jornada», con una cuenta de cabo prestada, y se lee lo que se iba a guardar sin
            guardarlo. Así un campo nuevo o quitado se detecta solo contra el esquema. */

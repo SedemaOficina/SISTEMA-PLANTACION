@@ -291,7 +291,7 @@ corregida y congelada (DECISIONES D67–D69 y pendientes).
 
 ## Modelo de datos
 
-`datos/esquema.json` es la fuente única del modelo: las cinco tablas del dispositivo con cada campo
+`datos/esquema.json` es la fuente única del modelo: las diez tablas del dispositivo —árboles, jornadas, cuentas, bitácora y los seis catálogos, cada uno en la suya— con cada campo
 (tipo, nulo, origen, dominio, si se ve en pantalla, regla), los dominios y de dónde salen, las
 relaciones, los campos derivados del punto o de la sesión, lo que se calcula y no se guarda, el
 estado que vive sólo en memoria, los campos condicionales, las reglas vigentes con el archivo donde
@@ -304,7 +304,7 @@ pantalla (etiqueta ↔ campo). Los tres se auditan (D86).
 Las especies son las reales del SIA: `CGO_ESPECIES_REFORESTACION_URBANA` (76 especies, verificadas
 ficha por ficha contra EncicloVida/CONABIO el 22-09-2026). El Excel vive en `originales/` (no se publica, D164) y
 `herramientas/generar_especies.py` lo convierte en `assets/catalogos/catalogo-especies.js`, que se siembra en el
-almacén `catalogos` tal cual: **la clave es el `id_especie` (`ESP-0001`…) y es la única llave por
+almacén `especies` tal cual: **la clave es el `id_especie` (`ESP-0001`…) y es la única llave por
 la que se enlazan las plantaciones**; el nombre común es la etiqueta de campo; el tipo de
 distribución (Endémica · Nativa · Exótica · Exótica-Invasora), la forma de crecimiento y los
 identificadores de CONABIO (`id_snib`, `id_enciclovida`) viajan con la especie y no se copian al

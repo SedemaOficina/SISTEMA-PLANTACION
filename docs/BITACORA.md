@@ -3045,3 +3045,26 @@ cada etiqueta del mapeo es la que la pantalla dice—.
 
 **Verificación:** auditoria.py 124 comprobaciones, 0 hallazgos; auditoria_css.py 0. La corrida completa de
 prueba.py no se repitió: no cambió código de la aplicación (la última, del bloque 158, 1274 y 0 fallas).
+
+## Bloque 160 — Cada catálogo en su tabla (03-10-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.9.27. Base del teléfono, versión 8.
+
+**Qué cambió (D225).** `js/almacen.js`: diez tablas (`ALMACENES`); `TABLA_DE_TIPO`, `TABLAS_CATALOGO` y
+`CAMPOS_CATALOGO`; `catalogos()`, `catalogo(id)`, `guardarCatalogo()`, `borrarCatalogo()`, `ponerCatalogo()` y
+`quitarCatalogo()`; migración 8, que reparte la tabla única; `rehacerConservando()` reparte también lo de una
+base anterior; `normalizar()`, `completarCatalogos()` y `sembrar()` escriben en la tabla de cada catálogo.
+`js/referencias.js`: lee los seis catálogos y `usosDe('catalogos')` cuenta contra las seis tablas.
+`js/catalogos.js` y `js/demostracion.js`: guardan y eliminan con las funciones nuevas.
+`datos/esquema.json`: seis tablas en lugar de una, relaciones y reglas al día; `datos/MAPEO-CAMPOS.md`,
+`README.md` y `docs/FASE2-Y-TRASPASO.md` (fila 22). `herramientas/generar_diccionario.py`: el borrador de
+PostgreSQL dice que las tablas son las mismas en ambos lados.
+
+`js/almacen.js` abre además en dos pasos una base anterior a la versión 7 (`versionActual()`, `subirA()`):
+primero la lleva a la 7 y después reparte los catálogos, porque retirar la tabla única mientras una
+migración anterior la recorre interrumpía la actualización.
+
+**Verificación:** prueba.py 1280 comprobaciones, 0 fallas (ctx73, 6 nuevas: la migración desde la versión 7
+con un renglón de cada catálogo, las diez tablas, los campos propios de cada una, el uso contado contra
+su tabla y la escritura desde la pantalla; las cuatro pruebas de migración desde versiones 2 a 6 llegan
+ahora a la 8). auditoria.py 139 comprobaciones, 0 hallazgos; auditoria_css.py 0; revisar.py sin problemas.
+No probado en iPhone real.
