@@ -410,7 +410,7 @@ SRP.catalogos = {
     }
     const ok = await SRP.app.confirmar({ titulo: 'Eliminar del catálogo', pregunta: '¿Eliminar «' + item.nombre + '»?',
       puntos: ['No aparece en ningún árbol, jornada ni cuenta.', 'La bitácora conserva la constancia.', 'Si sólo debe dejar de ofrecerse, desactívelo: eso sí se deshace.'],
-      irreversible: true, boton: 'Eliminar', icono: 'basura' });
+      irreversible: true, boton: 'Eliminar', icono: 'basura', escribir: 'ELIMINAR' });
     if (!ok) return;
     await SRP.almacen.borrarCatalogo(item,
       SRP.bitacora.entrada('ELIMINADO', 'catalogo', item.id, item.tipo + ' ' + item.clave + ': ' + item.nombre));

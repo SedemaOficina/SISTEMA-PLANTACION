@@ -349,7 +349,7 @@ SRP.usuarios = {
     }
     const ok = await SRP.app.confirmar({ titulo: 'Eliminar cuenta', pregunta: '¿Eliminar la cuenta de ' + SRP.util.nombreCompleto(u) + '?',
       puntos: ['No aparece en ningún árbol, jornada, cuenta ni catálogo.', 'La bitácora conserva la constancia.', 'Si sólo no debe entrar, desactívela: eso sí se deshace.'],
-      irreversible: true, boton: 'Eliminar cuenta', icono: 'basura' });
+      irreversible: true, boton: 'Eliminar cuenta', icono: 'basura', escribir: u.correo, escribirEtiqueta: 'Para confirmar, escriba el correo de la cuenta:' });
     if (!ok) return;
     await SRP.almacen.borrarConBitacora('usuarios', u.id,
       SRP.bitacora.entrada('ELIMINADO', 'usuario', u.id, u.correo));

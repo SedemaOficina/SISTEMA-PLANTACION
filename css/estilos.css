@@ -970,6 +970,9 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .confirmar-nota { display: flex; align-items: flex-start; gap: var(--e-2); margin: 0; font-size: var(--t-s); color: var(--gris); }
 .confirmar-nota svg { flex-shrink: 0; margin-top: 1px; }
 .confirmar-nota[data-tono="alerta"] { color: var(--error); font-weight: 600; }
+.confirmar-escribir { margin: var(--e-3) 0 0; }
+.confirmar-escribir label { font-weight: 400; font-size: var(--t-s); overflow-wrap: anywhere; }
+.confirmar-escribir b { font-weight: 700; }
 .dlg-confirmar .acciones { margin-top: var(--e-4); }
 /* CAMPOS (D140). El error va debajo de su campo, en rojo con icono (el resumen de arriba se queda);
    la ayuda es una línea gris bajo el control; el contador aparece al pasar del 80 % del límite. */

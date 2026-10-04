@@ -2531,3 +2531,12 @@
     descargas quedaban al final.
   · **Lo que no cambia:** los cálculos (`js/indicadores.js`), el informe en PDF y la tabla CSV.
 
+- **D228. Eliminar una cuenta o un valor de catálogo pide escribirlo (bloque 164).** 04-10-2026. Decisión de Liber.
+  · **Qué:** la confirmación de lo que no se deshace lleva un campo: para un valor de catálogo hay que
+    escribir «ELIMINAR»; para una cuenta, su correo. El botón rojo no se activa hasta que lo escrito
+    coincide (sin distinguir mayúsculas ni espacios de los lados); Intro confirma sólo entonces.
+  · **Por qué:** un toque de más en el teléfono no debe borrar algo que no vuelve. Escribir obliga a una
+    pausa y, en la cuenta, a mirar de quién es.
+  · **Alcance:** sólo esas dos eliminaciones. Las demás confirmaciones siguen igual; lo que tiene uso
+    sigue sin poder eliminarse y se desactiva.
+

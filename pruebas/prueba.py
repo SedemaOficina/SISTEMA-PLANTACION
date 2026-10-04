@@ -42,6 +42,10 @@ def abrir_sup(pg):
     esperar(pg, "!!SRP.supervision.modelo", 8000)
     pg.evaluate("SRP.supervision.abrirTodo()"); pg.wait_for_timeout(400)
 
+def confirmar_escribiendo(pg, texto):
+    # Lo que no se deshace pide escribir una palabra: el botón no se activa hasta que coincide
+    pg.fill('#confirmar-palabra', texto); pg.click('#btn-confirmar-si')
+
 def abrir_filtros(pg):
     """En teléfono los filtros de Registros van plegados (D100): se abren antes de usarlos."""
     if pg.is_visible('#btn-filtros') and pg.get_attribute('#btn-filtros','aria-expanded')!='true':
@@ -1286,7 +1290,7 @@ with sync_playwright() as p:
     ok(pg.input_value('#cat-clave')=='MI_CLAVE_PROPIA','y deja de sugerirse si se editó a mano')
     pg.click('#form-catalogo button[type=submit]'); pg.wait_for_timeout(500)
     ok('Otro Programa' in pg.inner_text('#tabla-catalogo'),'se agrega el programa nuevo')
-    accion(pg, pg.locator('#tabla-catalogo tbody tr', has_text='Otro Programa'),'eliminar'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(400)
+    accion(pg, pg.locator('#tabla-catalogo tbody tr', has_text='Otro Programa'),'eliminar'); pg.wait_for_timeout(300); confirmar_escribiendo(pg, 'ELIMINAR'); pg.wait_for_timeout(400)
     ok('Otro Programa' not in pg.inner_text('#tabla-catalogo'),'y se elimina, porque no tiene uso')
     pg.click('#btn-cat-agregar'); pg.fill('#cat-nombre','Reforestación Urbana'); pg.fill('#cat-clave','REFOR_URBANA')
     pg.click('#form-catalogo button[type=submit]'); pg.wait_for_timeout(300)
@@ -1394,6 +1398,13 @@ with sync_playwright() as p:
     accion(pg,f,'eliminar'); pg.wait_for_timeout(300)
     ok(pg.inner_text('#dlg-confirmar-titulo')=='Eliminar cuenta' and 'desactívela' in pg.inner_text('#dlg-confirmar-puntos') and pg.get_attribute('#dlg-confirmar-nota','data-tono')=='alerta',
        'eliminar una cuenta confirma, y ofrece la salida reversible: desactivarla (D139)')
+    correo_s=pg.inner_text('#confirmar-palabra-etiqueta b')
+    ok(pg.is_visible('#confirmar-palabra') and pg.is_disabled('#btn-confirmar-si') and '@' in correo_s and pg.evaluate("document.activeElement.id")=='confirmar-palabra','y pide escribir el correo de la cuenta: el botón espera, y el foco está en el campo: %s' % correo_s)
+    pg.fill('#confirmar-palabra','otro@ejemplo.local'); pg.wait_for_timeout(100)
+    d1=pg.is_disabled('#btn-confirmar-si'); pg.keyboard.press('Enter'); pg.wait_for_timeout(200)
+    ok(d1 and pg.evaluate("document.getElementById('dlg-confirmar').open") and 'Sutana' in pg.inner_text('#tabla-usuarios'),'con otro correo no se activa, y Intro no elimina')
+    pg.fill('#confirmar-palabra','  '+correo_s.upper()+' '); pg.wait_for_timeout(100)
+    ok(not pg.is_disabled('#btn-confirmar-si'),'con el correo de la cuenta se activa, sin distinguir mayúsculas ni espacios de los lados')
     pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
     ok('Sutana' not in pg.inner_text('#tabla-usuarios'),'se elimina una cuenta sin registros')
     f2=pg.locator('#tabla-usuarios tbody tr', has_text='Fulana')
@@ -5467,7 +5478,7 @@ with sync_playwright() as p:
     pg67.evaluate("SRP.almacen._tx(['jornadas'], 'readwrite', tx => tx.objectStore('jornadas').delete('j-sol-67'))"); pg67.wait_for_timeout(200)
     pg67.click('#cat-tipos .chip[data-tipo=solicitante]'); pg67.wait_for_timeout(500)
     accion(pg67, pg67.locator('#tabla-catalogo tbody tr', has_text='Comité vecinal Ejemplo'), 'eliminar'); pg67.wait_for_timeout(500)
-    pg67.click('#btn-confirmar-si'); pg67.wait_for_timeout(700)
+    confirmar_escribiendo(pg67, 'eliminar'); pg67.wait_for_timeout(700)
     ok(pg67.evaluate("id => !SRP.ref.catalogoPorId[id]", id67) and pg67.inner_text('#cat-cuenta') == '21 solicitantes','un solicitante sin uso se elimina del catálogo')
     # Al abrir: una jornada cuyo solicitante era una institución pasa a su solicitante o queda escrita
     pg67.evaluate("""() => SRP.almacen._tx(['jornadas'], 'readwrite', tx => { const j = (id, s) => tx.objectStore('jornadas').put({ id, nombre: 'Pedido de antes', cabo_id: 'u-cabo-1', organizacion_id: 'o-sedema', programa_id: 'p-refor',
@@ -5950,6 +5961,30 @@ with sync_playwright() as p:
        'con ancho, los desgloses se muestran abiertos y las tablas conservan sus columnas')
     ok(err75 == [], 'sin errores de consola: %s' % err75[:2])
     ctx75.close()
+
+    # ---------- ctx76: eliminar un valor de catálogo pide escribir ELIMINAR ----------
+    ctx76 = b.new_context(viewport={'width':390,'height':844}, timezone_id='America/Mexico_City')
+    pg76 = ctx76.new_page(); err76 = []
+    pg76.on('pageerror', lambda e: err76.append(str(e)))
+    pg76.goto(BASE); pg76.wait_for_timeout(1200)
+    pg76.select_option('#sel-usuario-prueba', 'u-admin-1'); pg76.click('#btn-entrar-prueba'); pg76.wait_for_timeout(900)
+    pg76.evaluate("""async () => { await SRP.almacen.guardarCatalogo({ id: 'p-b164', tipo: 'programa', clave: 'B164', nombre: 'Programa sin uso B164', activo: true, creado_por_id: 'u-admin-1', fecha_creacion: SRP.util.ahoraISO() }, null);
+      await SRP.ref.recargar(); }"""); pg76.evaluate("(() => { SRP.catalogos.eliminar(SRP.ref.catalogoPorId['p-b164']); })()"""); pg76.wait_for_timeout(900)
+    e76 = pg76.evaluate("[document.getElementById('dlg-confirmar').open, !document.getElementById('dlg-confirmar-escribir').hidden, document.getElementById('confirmar-palabra-etiqueta').textContent, document.getElementById('btn-confirmar-si').disabled, document.activeElement.id, document.documentElement.scrollWidth]")
+    ok(e76[:2] == [True, True] and e76[2] == 'Para confirmar, escriba ELIMINAR' and e76[3] and e76[4] == 'confirmar-palabra' and e76[5] <= 390, 'eliminar del catálogo pide escribir ELIMINAR; el botón espera: %s' % e76[2])
+    pg76.screenshot(path=sal('b164_confirmar.png'))
+    pg76.fill('#confirmar-palabra', 'ELIMINA'); pg76.wait_for_timeout(100); a76 = pg76.is_disabled('#btn-confirmar-si')
+    pg76.click('#btn-confirmar-no'); pg76.wait_for_timeout(400)
+    ok(a76 and pg76.evaluate("!!SRP.ref.catalogoPorId['p-b164']"), 'con la palabra incompleta no se activa, y «Cancelar» lo deja como estaba')
+    pg76.evaluate("(() => { SRP.catalogos.eliminar(SRP.ref.catalogoPorId['p-b164']); })()"); pg76.wait_for_timeout(900)
+    v76 = pg76.input_value('#confirmar-palabra'); pg76.fill('#confirmar-palabra', 'eliminar'); pg76.keyboard.press('Enter'); pg76.wait_for_timeout(900)
+    ok(v76 == '' and pg76.evaluate("(async () => !(await SRP.almacen.uno('programas', 'p-b164')))()"), 'al volver a abrir, el campo viene vacío; escrita la palabra, Intro elimina')
+    # Una confirmación que sí se deshace no pide escribir, y su botón queda activo
+    pg76.evaluate("(() => { SRP.app.confirmar({ pregunta: '¿Cerrar?', boton: 'Cerrar', icono: 'candado' }); })()"); pg76.wait_for_timeout(300)
+    ok(pg76.is_hidden('#dlg-confirmar-escribir') and not pg76.is_disabled('#btn-confirmar-si'), 'las demás confirmaciones no piden escribir nada')
+    pg76.click('#btn-confirmar-no')
+    ok(err76 == [], 'sin errores de consola: %s' % err76[:2])
+    ctx76.close()
 
 
 

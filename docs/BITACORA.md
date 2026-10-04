@@ -3139,3 +3139,18 @@ avance» del cabo con sus dos mapas, y todo abierto con ancho). Las comprobacion
 abren antes los desgloses (`abrir_sup`). auditoria.py 141 comprobaciones, 0 hallazgos; auditoria_css.py 0;
 revisar.py sin problemas. No probado en iPhone real.
 
+## Bloque 164 — Eliminar pide escribirlo (04-10-2026)
+Etapa 1. Estado: **cerrado**. Versión 0.9.30.
+
+**Qué cambió (D228).** `js/app.js`: `confirmar()` acepta `escribir` (lo que hay que teclear) y
+`escribirEtiqueta`; `revisarPalabra()` activa el botón cuando coincide; el foco entra al campo e Intro
+confirma. `index.html`: `#dlg-confirmar-escribir` con `#confirmar-palabra`. `js/catalogos.js` pide
+«ELIMINAR»; `js/usuarios.js`, el correo de la cuenta. `css/estilos.css`: `.confirmar-escribir`.
+
+**Pantalla: qué se agregó y qué se quitó.** Un campo, sólo en esas dos confirmaciones. Nada se quitó.
+
+**Verificación:** prueba.py 1299 comprobaciones, 0 fallas (8 nuevas: en la eliminación de una cuenta, el
+botón espera, otro correo no lo activa e Intro no elimina; ctx76, lo mismo para un valor de catálogo, el
+campo vuelve vacío y las demás confirmaciones no piden escribir). auditoria.py 141 comprobaciones, 0
+hallazgos; auditoria_css.py 0; revisar.py sin problemas. No probado en iPhone real.
+

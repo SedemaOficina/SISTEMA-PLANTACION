@@ -524,6 +524,11 @@ SRP.app = {
     });
     this.el('btn-confirmar-si').addEventListener('click', () => this.el('dlg-confirmar').close('si'));
     this.el('btn-confirmar-no').addEventListener('click', () => this.el('dlg-confirmar').close('no'));
+    // Con palabra de confirmación, el botón se activa cuando lo escrito coincide; Intro confirma
+    this.el('confirmar-palabra').addEventListener('input', () => this.revisarPalabra());
+    this.el('confirmar-palabra').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); if (!this.el('btn-confirmar-si').disabled) this.el('dlg-confirmar').close('si'); }
+    });
   },
 
   /* CONFIRMAR (D139). La confirmación queda para lo que no se deshace —eliminar una jornada, una
@@ -559,11 +564,25 @@ SRP.app = {
       b.className = 'btn ' + (o.soloAceptar ? 'btn-primario' : o.icono === 'palomita' ? 'btn-exito' : o.icono === 'candado' ? 'btn-primario' : 'btn-peligro');
       // Un aviso que sólo se lee (`soloAceptar`) no lleva «Cancelar»
       this.el('btn-confirmar-no').hidden = !!o.soloAceptar;
+      /* `escribir`: lo que hay que teclear para confirmar algo que no se deshace. No distingue
+         mayúsculas ni espacios al inicio o al final: lo que se pide es una pausa, no una prueba */
+      const caja = this.el('dlg-confirmar-escribir'), campo = this.el('confirmar-palabra');
+      this.palabra = o.escribir ? String(o.escribir) : '';
+      caja.hidden = !this.palabra;
+      campo.value = '';
+      this.el('confirmar-palabra-etiqueta').innerHTML = this.palabra ? SRP.util.escapar(o.escribirEtiqueta || 'Para confirmar, escriba') + ' <b>' + SRP.util.escapar(this.palabra) + '</b>' : '';
+      this.revisarPalabra();
       dlg.returnValue = '';
       dlg.addEventListener('close', () => resolver(dlg.returnValue === 'si'), { once: true });
       dlg.showModal();
-      (o.soloAceptar ? b : this.el('btn-confirmar-no')).focus();
+      (this.palabra ? campo : o.soloAceptar ? b : this.el('btn-confirmar-no')).focus();
     });
+  },
+
+  palabra: '',
+  revisarPalabra() {
+    const igual = t => String(t).trim().toLocaleLowerCase('es');
+    this.el('btn-confirmar-si').disabled = !!this.palabra && igual(this.el('confirmar-palabra').value) !== igual(this.palabra);
   }
 };
 
