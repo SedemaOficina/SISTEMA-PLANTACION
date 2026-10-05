@@ -440,6 +440,7 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M442 | Liber | En «Revise antes de guardar», los dos botones van en un renglón en computadora | Baja | 0.9.40 (B174) | Revise antes de guardar | D247 |
 | M443 | Liber | Especies escritas en tabla | Media | 0.9.40 (B174) | Catálogos › Especies › Especies escritas | D247 |
 | M444 | Liber | Defecto: la Administración global ya puede editar y sustituir un árbol | Alta | 0.9.40 (B174) | Ficha de la jornada y Registros › Editar | D247 |
+| M445 | Liber | En computadora, Nuevo registro, Editar árbol y Registrar jornada van en una columna centrada, en el orden del teléfono | Media | 0.9.41 (B175) | Nuevo registro; Registrar jornada | D248 |
 
 ## 2. Por hacer
 
@@ -467,4 +468,4 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 425 hechas · 7 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 426 hechas · 7 por hacer · 2 revisadas · 2 descartadas.

@@ -3341,3 +3341,15 @@ alta». Se agregaron el panel de capas (en lugar del interruptor), un renglón d
 y la tabla de especies escritas (en lugar de la lista).
 
 **Verificación:** corrida completa sola, 1,362 comprobaciones, 2 fallas, sin errores de consola (última sección `ctx83`). Las dos fallas son de las pruebas, no del sistema: una esperaba el texto anterior de la nota del mapa de prioridad (corregida; su sección pasa sola, 15 de 15) y otra es intermitente, en el aviso de relevo de cabo (sección `ctx58`), que no toca este bloque: pasa sola (35 de 35) y con el procesador ralentizado, y quedó instrumentada para decir qué leyó la próxima vez que falle. `auditoria.py`: 140 comprobaciones, 0 hallazgos. `auditoria_css.py`: 0 hallazgos. `revisar.py`: sin problemas. No probado en iPhone por Claude; el mapa de calles no se vio con imagen real, porque el entorno de pruebas no alcanza el servicio de mapas.
+
+## Bloque 175 — Formularios en una columna en computadora; cierre de la Etapa 1 (05-10-2026)
+
+Versión 0.9.41. Petición de Liber.
+
+**Qué cambió (D248).** `css/estilos.css`: en computadora la vista de registro mide el ancho de formulario
+(`--ancho-formulario`) y deja de repartirse en dos columnas, igual que «Registrar jornada».
+`docs/DECISIONES.md`: D249, con el cierre de la Etapa 1 y las decisiones para el traspaso.
+
+**Pantalla: qué se agregó y qué se quitó.** No se agregó ni se quitó nada: cambió la disposición.
+
+**Verificación:** corrida completa sola, 1,363 comprobaciones, 0 fallas, sin errores de consola (última sección `ctx83`). Dos corridas anteriores no terminaron porque el entorno de pruebas se reinició a media corrida. `auditoria.py`: 140 comprobaciones, 0 hallazgos. `auditoria_css.py`: 0 hallazgos. `revisar.py`: sin problemas. No probado en iPhone por Claude.

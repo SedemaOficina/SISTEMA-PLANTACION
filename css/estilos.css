@@ -110,6 +110,7 @@
   --z-lista: 1100; --z-menu: 1200; --z-menu-acciones: 1300; --z-confirmacion: 1500; --z-saltar: 2000; --z-aviso: 3000;
   --dur-rapida: .15s; --dur-media: .2s;   /* cambios de estado; aparecer y desaparecer */
   --ancho-max: 44rem;          /* formularios y lectura: línea corta, fácil de leer */
+  --ancho-formulario: 50rem;   /* formularios con mapa en computadora: una columna centrada */
   --ancho-max-tabla: 78rem;    /* pantallas de tabla: aprovechan el monitor sin cortar columnas */
   --toque: 48px;
   --texto-guia: #6B6E70;       /* placeholder y textos guía de campos vacíos */
@@ -1202,19 +1203,16 @@ dialog::backdrop { background: var(--velo-oscuro); }
   .sup-cifras { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 @media (min-width: 1024px) {
-  /* EQUILIBRIO EN COMPUTADORA (D109). Nuevo registro en dos columnas: ubicación y mapa a la
-   izquierda, datos del árbol a la derecha, así el mapa gana tamaño y no queda media pantalla vacía.
-   El resto de las vistas, en el sistema de ancho de D145 (en la consulta de 701 px). */
-  .vista-registrar > .registrar-columnas { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: var(--e-6); align-items: start; }
-  .registrar-ubicacion .mapa { height: clamp(320px, 52vh, 520px); }
+  /* LOS FORMULARIOS, EN UNA COLUMNA TAMBIÉN EN COMPUTADORA. Nuevo registro, Editar árbol y Registrar
+     jornada se llenan de arriba abajo, en el mismo orden que en el teléfono, en una columna centrada:
+     en dos columnas el orden de lectura no era claro. «Guardar» queda fijo al pie. */
+  .vista.vista-registrar { max-width: var(--ancho-formulario); }
+  .registrar-ubicacion .mapa { height: clamp(300px, 46vh, 460px); }
   .form-plantacion .combo { margin-top: 0; }
   .acordeon-filtros { max-width: var(--ancho-max); }
-  /* Registrar jornada: el lugar a la izquierda y el plan a la derecha, como en «Nuevo árbol» */
-  .form-iniciar-jornada { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 var(--e-6); align-items: start; }
-  .form-iniciar-jornada > .errores { grid-column: 1 / -1; }
   .panel-iniciar { padding: var(--e-5) var(--e-6); }
   .panel-iniciar .fila-botones { margin-top: var(--e-4); }
-  /* Nuevo árbol: «Guardar» ocupa su columna de orilla a orilla */
+  /* Nuevo árbol: «Guardar» ocupa la columna de orilla a orilla */
   .form-plantacion .barra-guardar .btn-destacado { max-width: none; }
   /* Listas de jornadas, registros y reportes: tarjetas de dos en dos */
   .rejilla-tarjetas { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }

@@ -2776,3 +2776,28 @@
   · **Defecto:** la Administración global no podía editar ni sustituir un árbol: «Editar» la llevaba a
     Registros, porque no tiene permiso de «Nuevo registro». Ahora el formulario se le abre para
     corregir; «Nuevo registro» sigue sin abrírsele.
+
+- **D248. Los formularios van en una columna también en computadora (bloque 175).**
+  05-10-2026. Petición de Liber, aprobada sobre una comparación del antes y el después.
+  · **Nuevo registro, Editar árbol y Registrar jornada** se llenan de arriba abajo, en una columna
+    centrada y en el mismo orden que en el teléfono. En dos columnas el orden de lectura no era claro
+    (de «Ubicación» se saltaba a «Especie»). «Guardar» sigue fijo al pie mientras se llena el formulario.
+  · **No cambian** la ficha de la jornada ni Supervisión (mapa junto a su lista o su tabla: no son
+    formularios) ni las listas de tarjetas de dos en dos.
+  · Sustituye lo que D109 y D145 decían de Nuevo registro y Registrar jornada en dos columnas.
+
+- **D249. Cierre de la Etapa 1 y decisiones para el traspaso al SIA.**
+  05-10-2026. Decisiones de Liber.
+  · **La Etapa 1 se cierra con la versión 0.9.41.** Lo que siga en la aplicación son correcciones de
+    las pruebas en teléfono, no funciones nuevas. Lo siguiente es el servidor.
+  · **Nombre:** `srp` para el proyecto, su esquema y su ruta.
+  · **Acceso:** base propia de usuarios, con correo y contraseña; el módulo de usuarios se construye en
+    este proyecto. No hay servicio de correo: la contraseña la restablece la Administración global.
+  · **Doble conteo entre instituciones:** el servidor acepta el registro y lo marca en una bandeja de revisión.
+  · **Prioridad de la colonia:** el servidor la congela con el árbol al recibirlo, con la versión de la capa.
+  · **Histórico cargado:** queda a nombre de la Administración global.
+  · **Celdas UGA con prefijo distinto al de su alcaldía:** sus claves son correctas.
+  · **Aviso de privacidad:** consultado; no se requiere.
+  · **Repositorio:** uno nuevo y limpio con el mismo nombre, al iniciar la fase de servidor.
+  · **Excel del catálogo de especies:** se queda como el libro de origen, sin hoja de estado y usos.
+  · La etiqueta «Perfil de captura» se queda como está.

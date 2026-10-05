@@ -403,8 +403,8 @@ with sync_playwright() as p:
     ok(prec['manual'][0] is None and not prec['manual'][2],'un punto a mano no muestra insignia ni círculo')
     ok(pg.evaluate("getComputedStyle(document.querySelector('.barra-guardar')).position")=='sticky','Revisar y guardar va en una barra fija al pie (D96)')
     pg.set_viewport_size({'width':1280,'height':900}); pg.wait_for_timeout(300)
-    col=pg.evaluate("(() => { const m=document.getElementById('mapa').getBoundingClientRect(), f=document.getElementById('form-plantacion').getBoundingClientRect(); return { lado_a_lado: f.left >= m.right, arriba_igual: Math.abs(f.top - document.querySelector('.registrar-ubicacion').getBoundingClientRect().top) < 40 }; })()")
-    ok(col=={'lado_a_lado':True,'arriba_igual':True},'en computadora el mapa va a la izquierda y el formulario a la derecha (D109): %s' % col)
+    col=pg.evaluate("(() => { const m=document.getElementById('mapa').getBoundingClientRect(), f=document.getElementById('form-plantacion').getBoundingClientRect(); return { debajo: f.top >= m.bottom, mismo_borde: Math.abs(f.left - document.querySelector('.registrar-ubicacion').getBoundingClientRect().left) < 2 }; })()")
+    ok(col=={'debajo':True,'mismo_borde':True},'en computadora el formulario va debajo del mapa, en la misma columna: %s' % col)
     pg.set_viewport_size({'width':390,'height':844}); pg.wait_for_timeout(300)
 
     # Con la captura a mano desplegada no conviven dos formas de fijar el punto: el botón de
@@ -1881,12 +1881,14 @@ with sync_playwright() as p:
         ok(fr=={'rotulo_solo':True,'cerrar_un_renglon':True,'botones_der':True,'mismo_borde':True},
            'a %d px el panel de la jornada lleva «Jornada activa» solo en su renglón, «Cerrar jornada» en una línea a la derecha, y panel, título y formulario en el mismo borde (D145): %s' % (ancho, fr))
     gu=pg.evaluate("(() => { const b=document.getElementById('btn-revisar').getBoundingClientRect(), f=document.getElementById('form-plantacion').getBoundingClientRect(); return b.width >= f.width - 2; })()")
-    ok(gu,'en computadora «Guardar» ocupa su columna de orilla a orilla')
-    # Registrar jornada: el lugar a la izquierda y el plan a la derecha
+    ok(gu,'en computadora «Guardar» ocupa la columna de orilla a orilla')
+    una=pg.evaluate("(() => { const u=document.querySelector('.registrar-ubicacion').getBoundingClientRect(), f=document.getElementById('form-plantacion').getBoundingClientRect(), v=document.getElementById('vista-registrar').getBoundingClientRect(), b=getComputedStyle(document.querySelector('.barra-guardar')); return { debajo: f.top >= u.bottom - 1, mismoAncho: Math.abs(u.width - f.width) < 2, centrada: Math.abs((v.left + v.right) / 2 - window.innerWidth / 2) < 12, ancho: Math.round(v.width), fija: b.position }; })()")
+    ok(una['debajo'] and una['mismoAncho'] and una['centrada'] and 600 < una['ancho'] <= 820 and una['fija']=='sticky','en computadora Nuevo registro va en una columna centrada: los campos debajo del mapa, del mismo ancho, y «Guardar» fijo al pie: %s' % una)
+    # Registrar jornada: una columna, el lugar arriba y el plan debajo
     pg.click('#btn-jornada-cambiar'); pg.wait_for_timeout(200); pg.click('#btn-cambiar-nueva'); pg.wait_for_timeout(300)
     ini=pg.evaluate("""() => { const a=document.querySelector('.ini-col-lugar').getBoundingClientRect(), b=document.querySelector('.ini-col-plan').getBoundingClientRect(), p=document.getElementById('panel-iniciar-jornada').getBoundingClientRect();
-        return { dos: b.left >= a.right && Math.abs(a.top - b.top) < 4, ancho: Math.round(p.width), boton_der: document.getElementById('btn-iniciar-jornada').getBoundingClientRect().left >= b.left - 1 }; }""")
-    ok(ini['dos'] and ini['ancho'] > 1000 and ini['boton_der'],'en computadora «Registrar jornada» va en dos columnas: lugar a la izquierda, programa, meta, fecha y botón a la derecha (D145): %s' % ini)
+        return { una: b.top >= a.bottom - 1 && Math.abs(a.left - b.left) < 2 && Math.abs(a.width - b.width) < 2, ancho: Math.round(p.width), boton: document.getElementById('btn-iniciar-jornada').getBoundingClientRect().top >= b.top }; }""")
+    ok(ini['una'] and 600 < ini['ancho'] <= 820 and ini['boton'],'en computadora «Registrar jornada» va en una columna: el lugar arriba; programa, meta, fecha y botón debajo: %s' % ini)
     pg.set_viewport_size({'width':390,'height':844}); pg.wait_for_timeout(300)
     ini=pg.evaluate("""() => { const a=document.querySelector('.ini-col-lugar').getBoundingClientRect(), b=document.querySelector('.ini-col-plan').getBoundingClientRect(); return b.top >= a.bottom - 1; }""")
     ok(ini,'en teléfono los mismos campos siguen uno bajo otro')
