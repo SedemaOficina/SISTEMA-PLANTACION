@@ -110,7 +110,7 @@ Las fases 1 y 2 pueden correr en paralelo. La 3 es la de mayor esfuerzo y la que
 
 **Falta, del lado del SRP**
 
-- Paquete de traspaso (apartado 6 de `FASE2-Y-TRASPASO.md`): especificación consolidada, comentarios sin
+- Paquete de traspaso (apartado 7 de `FASE2-Y-TRASPASO.md`): especificación consolidada, comentarios sin
   historia, documentación de proceso al archivo. Se hace cuando la Etapa 1 deje de cambiar.
 - Prueba en iPhone y Android reales.
 - Pendientes de pantalla que conviene cerrar antes: revisión de Supervisión y «Mi avance», y confirmación

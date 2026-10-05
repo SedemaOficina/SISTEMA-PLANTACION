@@ -2677,3 +2677,58 @@
   · La confirmación genérica acepta otro nombre para su segunda salida (`cancelar`), que entonces va
     neutra y sin tache.
 
+- **D238. Una jornada con árboles en otra colonia los enseña y los dice; su prioridad sigue siendo una (bloque 171).**
+  05-10-2026. Consulta de Liber sobre una jornada con árboles en dos colonias; propuesta aprobada.
+  · **Mapas de campo (Nuevo registro y ficha de la jornada):** se pintan la colonia donde se ubicó la
+    jornada y las colonias donde cayeron sus árboles, cada una con el color de su prioridad. El mismo
+    botón las enciende y las apaga.
+  · **Ficha de la jornada:** después de la prioridad, «1 árbol en otra colonia, de prioridad media»;
+    con varias prioridades, «3 árboles en otras colonias: 2 de prioridad media y 1 de prioridad alta».
+  · **Reporte de la jornada:** renglón «Árboles en otra colonia», debajo de «Prioridad de reforestación»,
+    con el nombre de cada colonia: «1 en Pro Hogar, de prioridad media». Sólo aparece si los hay.
+  · **Lo que no cambia (D233):** la prioridad de la jornada es la de la colonia donde se ubicó, y
+    Supervisión e informes siguen contando cada árbol en la prioridad de su jornada. Los árboles que
+    quedan fuera de la capa no se mencionan.
+
+- **D239. Catálogo de especies: el Excel sale con la forma del libro de origen; «Especies escritas» vive en Catálogos › Especies (bloque 172).**
+  05-10-2026. Petición de Liber.
+  · **Descarga:** el archivo se llama `CGO_ESPECIES_REFORESTACION_URBANA_[fecha].xlsx` y trae las tres
+    hojas del original: «especies» (las once columnas con sus nombres de campo: `id_especie`, `genero`,
+    `especie`, `nombre_cientifico`, `nombre_comun`, `otros_nombres_comunes`, `tipo_distribucion`,
+    `id_snib`, `formadecrecimiento`, `id_enciclovida`, `nota_discrepancia`), «diccionario_datos» y
+    «catalogos». Así lo que sale del sistema se revisa con las mismas herramientas que el original.
+    Género y especie se obtienen del nombre científico; las notas de discrepancia y las hojas de
+    referencia las guarda `herramientas/generar_especies.py` en el catálogo generado. Ya no lleva las
+    columnas «Estado» y «Usos», que se ven en pantalla.
+  · **Especies escritas** deja de ser tarjeta de Configuración: se abre con un botón en Catálogos ›
+    Especies, que dice cuántas hay, y regresa ahí. Sigue siendo sólo consulta (D232).
+  · **Solicitantes:** al agregar no se ofrece el tipo «Alcaldía»: las dieciséis ya están en el catálogo.
+    La que ya lo es lo conserva al editarla.
+
+- **D240. La entrada de prueba ofrece una cuenta por rol distinto (bloque 172).**
+  05-10-2026. Petición de Liber: la lista tenía 29 cuentas y un grupo «Datos de demostración» que se
+  confundía con la herramienta del mismo nombre.
+  · Se listan siete: Administración global, Directivo, Coordinador y Cabo de la Secretaría, y
+    Directivo, Coordinador y Cabo de una alcaldía. Sustituye la lista anterior, de un par por tipo de institución.
+  · Las demás cuentas de arranque (Gobierno de la CDMX, empresa, organización civil) y las de los datos
+    de demostración siguen existiendo —son dueñas de sus jornadas y aparecen en filtros y Supervisión—
+    pero no se ofrecen para entrar.
+  · Las cuentas que se den de alta en Usuarios sí aparecen, en el grupo «Cuentas dadas de alta en
+    Usuarios», para poder probarlas.
+  · Con datos reales la entrada de prueba no existe (`ES_FICTICIO: false`): permite entrar sin
+    contraseña. En el ambiente de pruebas del SIA puede conservarse.
+
+- **D241. En una ventana, el campo que se escribe queda a la vista (bloque 172).**
+  05-10-2026. Reporte de Liber en iPhone: en «Datos de cierre de la jornada», al tocar «Personal
+  participante» salía el teclado y el campo quedaba tapado por el pie fijo.
+  · Al enfocar un campo dentro de una ventana, y otra vez cuando el teclado termina de salir, el campo
+    se lleva al centro de la ventana.
+  · Con el teclado en pantalla, la ventana se limita al alto visible y su pie deja de estar fijo.
+  · Aplica a todas las ventanas con campos. No probado en iPhone por Claude.
+
+- **D242. Supervisión se vacía al entrar con otra cuenta (bloque 172).**
+  05-10-2026. Hallazgo de la corrida de pruebas: al cambiar de cuenta en el mismo dispositivo, mientras
+  se leían los datos de la nueva, la lista «Quién registró» y las cifras conservaban por un instante
+  lo de la cuenta anterior; una coordinación de otra institución podía leer nombres que no le
+  corresponden. Ahora, al entrar con otra cuenta, Supervisión borra de inmediato listas y cifras, y
+  sus controles esperan a que estén los datos propios.

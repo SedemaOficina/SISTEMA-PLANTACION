@@ -70,6 +70,8 @@ SRP.catalogos = {
     this.el('btn-cat-agregar').addEventListener('click', () => this.abrirFormulario(null));
     SRP.ICONOS.poner(this.el('btn-cat-excel'), 'descargar', 'medio');
     this.el('btn-cat-excel').addEventListener('click', () => this.descargarEspecies());
+    SRP.ICONOS.poner(this.el('btn-cat-escritas'), 'ver', 'medio');
+    this.el('btn-cat-escritas').addEventListener('click', () => SRP.app.mostrarVista('revision-especies'));
     this.el('cat-forma-botones').addEventListener('click', (e) => {
       const b = e.target.closest('.chip'); if (b) this.alternarForma(b.dataset.forma);
     });
@@ -103,6 +105,9 @@ SRP.catalogos = {
     this.el('cat-filtro-tipo-etiqueta').textContent = esSol ? 'Tipo de solicitante' : 'Tipo de institución';
     if (conTipo) { const sel = this.el('cat-filtro-tipo'), antes = sel.value; sel.innerHTML = SRP.util.opciones('Todos', this.tiposDe(this.tipo).map(t => [t, t])); sel.value = antes; }
     this.el('btn-cat-excel').hidden = this.tipo !== 'especie';
+    // Lo escrito en «Otra especie» se consulta desde aquí, con su cuenta a la vista
+    this.el('btn-cat-escritas').hidden = this.tipo !== 'especie';
+    if (this.tipo === 'especie') SRP.especiesRevision.cuantas().then(n => { this.el('btn-cat-escritas-texto').textContent = 'Especies escritas (' + n.toLocaleString('es-MX') + ')'; });
     this.el('btn-cat-agregar').innerHTML = SRP.ICONOS.svg('mas', 'medio') + '<span>Agregar ' + this.ETIQUETA[this.tipo] + '</span>';
     this.el('cat-nota-org').hidden = this.tipo !== 'organizacion';
     this.el('cat-nota-sol').hidden = !esSol;
@@ -191,18 +196,32 @@ SRP.catalogos = {
     this.el('cat-forma-botones').querySelectorAll('.chip').forEach(b => b.setAttribute('aria-pressed', String(actuales.has(b.dataset.forma))));
   },
 
-  /* EL CATÁLOGO DE ESPECIES EN EXCEL: todas, activas e inactivas, con todos sus campos y cuántos
-     árboles o jornadas las usan. Es la misma lista con que se valida la carga masiva. */
+  /* EL CATÁLOGO DE ESPECIES EN EXCEL, con la forma del libro de origen del SIA: la hoja «especies»
+     con sus once columnas y nombres de campo, y las hojas «diccionario_datos» y «catalogos». Así el
+     archivo que sale de aquí se revisa y se vuelve a cargar con las mismas herramientas que el
+     original. Van todas las especies, también las inactivas y las dadas de alta en el sistema. */
+  CAMPOS_ORIGEN: ['id_especie', 'genero', 'especie', 'nombre_cientifico', 'nombre_comun', 'otros_nombres_comunes', 'tipo_distribucion', 'id_snib', 'formadecrecimiento', 'id_enciclovida', 'nota_discrepancia'],
+  librosEspecies() {
+    const meta = (SRP.CATALOGO_ESPECIES && SRP.CATALOGO_ESPECIES.meta) || {}, notas = meta.notas_discrepancia || {}, anchos = meta.anchos || [];
+    const especies = SRP.ref.deTipo('especie', false).slice().sort((a, b) => String(a.clave).localeCompare(String(b.clave)));
+    const filas = especies.map(e => {
+      const cientifico = String(e.nombre_cientifico || '').trim(), corte = cientifico.indexOf(' ');
+      return [e.clave, corte < 0 ? cientifico : cientifico.slice(0, corte), corte < 0 ? '' : cientifico.slice(corte + 1), cientifico, e.nombre, e.otros_nombres_comunes || '',
+        e.tipo_distribucion || '', e.id_snib || '', e.formadecrecimiento || '', e.id_enciclovida == null ? '' : e.id_enciclovida, notas[e.clave] || ''];
+    });
+    const hojas = [{ nombre: 'especies', columnas: this.CAMPOS_ORIGEN.map((titulo, i) => ({ titulo, ancho: anchos[i] || 16 })), filas }];
+    // Las hojas de referencia, como en el original; la cuenta de especies por valor se dice con el catálogo de hoy
+    const ref = meta.hojas_referencia || {};
+    const cuenta = (campo, valor) => especies.filter(e => campo === 'formadecrecimiento' ? String(e[campo] || '').split(',').map(t => t.trim()).includes(valor) : e[campo] === valor).length;
+    ['diccionario_datos', 'catalogos'].forEach(n => {
+      if (!ref[n]) return;
+      const filasRef = n === 'catalogos' ? ref[n].filas.map(f => (f[0] === 'tipo_distribucion' || f[0] === 'formadecrecimiento') && f[1] ? [f[0], f[1], cuenta(f[0], f[1]), f[3]] : f) : ref[n].filas;
+      hojas.push({ nombre: n, columnas: ref[n].columnas, filas: filasRef, filtro: false });
+    });
+    return hojas;
+  },
   async descargarEspecies() {
-    const usos = this.usos || {};
-    const filas = SRP.ref.deTipo('especie', false).slice().sort((a, b) => String(a.clave).localeCompare(String(b.clave)))
-      .map(e => [e.clave, e.nombre, e.nombre_cientifico || '', e.tipo_distribucion || '', e.otros_nombres_comunes || '', e.formadecrecimiento || '',
-        e.id_snib || '', e.id_enciclovida == null ? '' : e.id_enciclovida, e.activo ? 'Activa' : 'Inactiva', SRP.ref.totalUsos(usos[e.id])]);
-    const hoja = { nombre: 'Especies', columnas: [
-      { titulo: 'Clave', ancho: 11 }, { titulo: 'Nombre común', ancho: 28 }, { titulo: 'Nombre científico', ancho: 32 }, { titulo: 'Distribución', ancho: 16 },
-      { titulo: 'Otros nombres comunes', ancho: 36 }, { titulo: 'Forma de crecimiento', ancho: 20 }, { titulo: 'Id SNIB', ancho: 14 }, { titulo: 'Id EncicloVida', ancho: 14 },
-      { titulo: 'Estado', ancho: 10 }, { titulo: 'Usos', ancho: 8 }], filas };
-    await SRP.reportes.entregarArchivo(SRP.excel.armar([hoja]), 'Catalogo_especies_SRP_' + SRP.util.fechaHoy() + '.xlsx', 'Catálogo de especies');
+    await SRP.reportes.entregarArchivo(SRP.excel.armar(this.librosEspecies()), 'CGO_ESPECIES_REFORESTACION_URBANA_' + SRP.util.fechaHoy() + '.xlsx', 'Catálogo de especies');
   },
 
   // Los tipos de institución marcados en el formulario de programa, en el orden fijo de los tipos
@@ -240,8 +259,11 @@ SRP.catalogos = {
     document.querySelectorAll('.solo-vehiculo').forEach(n => { n.hidden = !esVehiculo; });
     document.querySelectorAll('.solo-organizacion').forEach(n => { n.hidden = this.tipo !== 'organizacion'; });
     document.querySelectorAll('.solo-solicitante').forEach(n => { n.hidden = this.tipo !== 'solicitante'; });
-    // Solicitantes: el tipo se elige de la lista y se puede corregir después
-    this.el('cat-tipo-sol').innerHTML = SRP.util.opciones('Seleccione el tipo', SRP.ref.TIPOS_SOLICITANTE.map(t => [t, t]));
+    /* Solicitantes: el tipo se elige de la lista y se puede corregir después. «Alcaldía» no se
+       ofrece: las dieciséis ya están en el catálogo y no hay más que agregar; sólo lo conserva la
+       que ya lo es. */
+    const esAlcaldia = !!item && item.tipo_solicitante === 'Alcaldía';
+    this.el('cat-tipo-sol').innerHTML = SRP.util.opciones('Seleccione el tipo', SRP.ref.TIPOS_SOLICITANTE.filter(t => t !== 'Alcaldía' || esAlcaldia).map(t => [t, t]));
     this.el('cat-tipo-sol').value = item ? item.tipo_solicitante || '' : '';
     document.querySelectorAll('.solo-programa').forEach(n => { n.hidden = this.tipo !== 'programa'; });
     // Un programa nuevo empieza sólo para la Secretaría; la Administración marca quién más lo usa

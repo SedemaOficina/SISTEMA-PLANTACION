@@ -371,6 +371,8 @@ SRP.reportes = {
         ['Solicitado por', SRP.solicitud.solicitante(cierre)],
         ['Descripción de la solicitud', SRP.solicitud.es(cierre) ? cierre.solicitud_descripcion || '' : ''],
         ['Prioridad de reforestación', hayPri ? SRP.prioritarias.textoJornada(priJornada).replace(/^Prioridad /, '').replace(/^./, c => c.toUpperCase()) : ''],
+        // Los árboles que cayeron fuera de la colonia de la jornada, con la prioridad de la suya
+        ['Árboles en otra colonia', hayPri ? SRP.prioritarias.textoOtras(registros, cierre, true) : ''],
         // La institución que ejecutó, también la Secretaría
         ['Institución que ejecuta', SRP.ref.nombreOrganizacion(orgId)],
         ['Hora de finalización', hay('hora') ? cierre.hora + ' h' : ''],

@@ -189,7 +189,7 @@ with sync_playwright() as p:
 
     # --- 4. Lo que ve la persona ---
     opciones = pg.eval_on_selector_all('#sel-usuario-prueba option', 'os=>os.map(o=>o.textContent)')
-    mirar(len(opciones) == 13, 'el selector ofrece las trece cuentas de arranque', str(opciones))
+    mirar(len(opciones) == 7, 'el selector ofrece siete cuentas de prueba, una por rol distinto', str(opciones))
     mirar(not [o for o in opciones if 'no reconocido' in o or o.endswith('— Consulta')],
           'ninguna cuenta aparece con perfil no reconocido', str(opciones))
     mirar(any('— Cabo' in o for o in opciones), 'aparecen cuentas de Cabo', str(opciones))

@@ -86,14 +86,46 @@ SRP.prioritarias = {
     return mejor ? { id: mejor.p.id, prioridad: mejor.p.prioridad, texto: mejor.p.texto, colonia: mejor.p.colonia } : null;
   },
 
-  /* Lo que se pinta en el mapa para una jornada: la colonia donde se ubicó, { id: 1 }. Una jornada
-     sin ubicación pinta las colonias de sus árboles. */
+  /* Lo que se pinta en el mapa para una jornada: la colonia donde se ubicó y las colonias donde
+     cayeron sus árboles, { id: árboles }. La prioridad sigue siendo una, la de la jornada; el mapa
+     enseña además dónde quedó cada árbol. */
   coloniaDeJornada(registros, dato) {
+    const c = this.coloniasDe(registros || []);
     if (dato && typeof dato.lat === 'number' && typeof dato.lng === 'number') {
       const p = this.de(dato.lat, dato.lng);
-      return p && p.id != null ? { [p.id]: 1 } : {};
+      if (p && p.id != null && !c[p.id]) c[p.id] = 0;
     }
-    return this.coloniasDe(registros || []);
+    return c;
+  },
+
+  /* Los árboles que cayeron en una colonia distinta de la de la jornada:
+     [{ id, colonia, prioridad, texto, n }], primero donde hay más. Los que quedan fuera de la capa
+     no cuentan: de ellos no hay prioridad que decir. */
+  otrasColonias(registros, dato) {
+    if (!this.hay()) return [];
+    const pj = this.deJornada(registros, dato), otras = new Map();
+    (registros || []).forEach(r => {
+      const p = r && this.de(r.lat, r.lng);
+      if (!p || p.id == null || (pj && p.id === pj.id)) return;
+      const o = otras.get(p.id) || { id: p.id, colonia: p.colonia, prioridad: p.prioridad, texto: p.texto, n: 0 };
+      o.n++; otras.set(p.id, o);
+    });
+    return [...otras.values()].sort((a, b) => b.n - a.n || b.prioridad - a.prioridad || String(a.colonia).localeCompare(String(b.colonia), 'es'));
+  },
+
+  /* Lo mismo, dicho: «1 árbol en otra colonia, de prioridad media»; con varias prioridades,
+     «3 árboles en otras colonias: 2 de prioridad media y 1 de prioridad alta». Con `nombres`, para
+     el reporte, cada colonia por su nombre: «1 en Del Carmen, de prioridad media». Sin árboles en
+     otra colonia, cadena vacía. */
+  textoOtras(registros, dato, nombres) {
+    const o = this.otrasColonias(registros, dato);
+    if (!o.length) return '';
+    const pri = x => 'de prioridad ' + x.texto.toLowerCase();
+    if (nombres) return SRP.util.enumerar(o.map(x => x.n + ' en ' + x.colonia + ', ' + pri(x)));
+    const total = o.reduce((s, x) => s + x.n, 0);
+    const donde = total + (total === 1 ? ' árbol' : ' árboles') + (o.length === 1 ? ' en otra colonia' : ' en otras colonias');
+    const porNivel = this.NIVELES.map(([n, t]) => ({ texto: t, n: o.filter(x => x.prioridad === n).reduce((s, x) => s + x.n, 0) })).filter(x => x.n);
+    return porNivel.length === 1 ? donde + ', ' + pri(porNivel[0]) : donde + ': ' + SRP.util.enumerar(porNivel.map(x => x.n + ' ' + pri(x)));
   },
 
   // «Prioridad alta», o «Sin dato de prioridad»
@@ -158,7 +190,7 @@ SRP.prioritarias = {
       if (!mapa.getPane('prioritarias')) { mapa.createPane('prioritarias'); mapa.getPane('prioritarias').classList.add('pane-prioritarias'); }
       capa = L.geoJSON(SRP.CAPAS.prioritarias.geojson, {
         pane: 'prioritarias', interactive: !!interactiva, attribution: 'Colonias prioritarias: modelo de priorización, SIA/SEDEMA',
-        filter: intervenidas ? (f => !!intervenidas[f.properties.id]) : undefined,
+        filter: intervenidas ? (f => intervenidas[f.properties.id] != null) : undefined,
         style: f => ({ className: 'pri-colonia pri-nivel-' + f.properties.prioridad, weight: 1 }),
         onEachFeature: interactiva ? (f, l) => {
           const n = intervenidas ? intervenidas[f.properties.id] : null;
@@ -167,7 +199,7 @@ SRP.prioritarias = {
       });
       capa.claveColonias = clave;
       // Los niveles que de verdad se pintan: con colonias elegidas, sólo los suyos
-      capa.nivelesPintados = intervenidas ? new Set(SRP.CAPAS.prioritarias.geojson.features.filter(f => intervenidas[f.properties.id]).map(f => String(f.properties.prioridad))) : null;
+      capa.nivelesPintados = intervenidas ? new Set(SRP.CAPAS.prioritarias.geojson.features.filter(f => intervenidas[f.properties.id] != null).map(f => String(f.properties.prioridad))) : null;
       this.capas.set(mapa, capa);
     }
     if (!capa) return;
@@ -196,11 +228,11 @@ SRP.prioritarias = {
     /* En campo el control es un solo botón que enciende o apaga el polígono de la colonia de la
        jornada: no hay niveles ni opacidad que elegir */
     if (o.simple) {
-      caja.innerHTML = '<button type="button" class="pri-capas-boton" aria-pressed="false" aria-label="Colonia de la jornada, con el color de su prioridad" title="Colonia de la jornada">' + SRP.ICONOS.svg('capas', 'medio') + '</button>';
+      caja.innerHTML = '<button type="button" class="pri-capas-boton" aria-pressed="false" aria-label="Colonias de la jornada, con el color de su prioridad" title="Colonias de la jornada">' + SRP.ICONOS.svg('capas', 'medio') + '</button>';
       L.DomEvent.disableClickPropagation(caja); L.DomEvent.disableScrollPropagation(caja);
       caja.querySelector('button').addEventListener('click', () => {
         this.alternar();
-        SRP.util.anunciarSilencioso(this.encendida() ? 'Colonia de la jornada a la vista.' : 'Colonia de la jornada oculta.');
+        SRP.util.anunciarSilencioso(this.encendida() ? 'Colonias de la jornada a la vista.' : 'Colonias de la jornada ocultas.');
       });
       const S = L.Control.extend({ onAdd: () => caja });
       new S({ position: 'topright' }).addTo(m);

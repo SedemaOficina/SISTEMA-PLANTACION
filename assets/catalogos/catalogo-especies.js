@@ -8,7 +8,284 @@ SRP.CATALOGO_ESPECIES = {
   "version": "2026-09-22",
   "total": 76,
   "verificado_contra": "EncicloVida (CONABIO)",
-  "siguiente_clave": "ESP-0077"
+  "siguiente_clave": "ESP-0077",
+  "anchos": [
+   12.0,
+   19.0,
+   20.0,
+   31.0,
+   22.0,
+   48.0,
+   18.0,
+   17.0,
+   24.0,
+   15.0,
+   86.0
+  ],
+  "notas_discrepancia": {
+   "ESP-0015": "CORREGIDO. Antes decía «Citrus x aurantifolia»; esa grafía no se conserva en el catálogo. CONABIO lo tiene como Citrus x aurantiifolia, con doble i, que es la grafía correcta porque el epíteto se forma de aurantium + folium. La búsqueda fallaba por eso, no por ser híbrido. Ficha localizada: id 170941, IdCAT 35131ANGIO.",
+   "ESP-0032": "CORREGIDO. Antes decía «Hesperocyparis lusitanica». Se adopta el nombre de CONABIO (id 155213), que es también el de GBIF y el de uso corriente en la literatura mexicana. POWO acepta Hesperocyparis y trata Cupressus como sinónimo, pero la segregación del género no tiene consenso. Por decisión de la Secretaría, el nombre anterior no se conserva como sinónimo.",
+   "ESP-0033": "CORREGIDO, con advertencia sobre el dato de origen. Antes decía «Hesperocyparis macrocarpa». Se adopta el nombre de CONABIO (id 171613) por la misma razón que ESP-0032, y el anterior no se conserva como sinónimo. ADVERTENCIA: su tipo_distribucion «Nativa» se conserva tal como lo publica CONABIO, por decisión de la Secretaría de no corregir el catálogo nacional por cuenta propia, pero el dato es erróneo: el área natural de la especie es un endemismo puntual de Monterey, California, y en México sólo existe cultivada. Al contar especies nativas para cualquier reporte, descontar ésta.",
+   "ESP-0059": "CORREGIDO. Antes decía «Psidium cattleianum»; esa grafía no se conserva en el catálogo. La grafía correcta es cattleyanum: el epíteto conmemora a William Cattley y el Código de Nomenclatura obliga a respetar la grafía del apellido (Art. 60.7); IPNI registra la corrección expresamente. POWO y CONABIO ya usan cattleyanum; GBIF conserva la forma antigua.",
+   "ESP-0074": "SIN CAMBIO: tu nombre es el correcto y CONABIO es el atrasado. El Congreso de Melbourne (2011) conservó Acacia para el grupo australiano y las especies americanas pasaron a Vachellia y Senegalia. POWO, GBIF y eFloraMex (Instituto de Biología, UNAM) aceptan Vachellia farnesiana; CONABIO sigue con Acacia farnesiana (id 155101). El id_enciclovida mantiene el enlace con el registro de CONABIO, que sigue bajo Acacia farnesiana.",
+   "ESP-0076": "SIN REGISTRO EN EL CATÁLOGO TAXONÓMICO DE CONABIO, ausencia confirmada. Se recorrió el listado completo del género Quercus en EncicloVida (212 entradas): la secuencia pasa de resinosa a rubramenta a rugosa, sin rubra. No es falla de búsqueda ni regla sobre exóticas (Quercus virginiana sí está registrada). Sí aparece en iNaturalist/Naturalista, taxón 49005, pero esa es la plataforma de observaciones ciudadanas, cuyo respaldo taxonómico viene de POWO y Wikipedia: no es el Catálogo Taxonómico de la Biota y no genera IdCAT. Los nombres comunes de esta fila provienen de ahí, no de CONABIO. POWO la registra como aceptada y nativa del centro y este de Norteamérica, sin distribución natural en México; en la CDMX sólo existe cultivada. Por esa razón se le asignó tipo_distribucion = Exótica: es el único valor de esa columna cuya fuente es POWO y no el Catálogo Taxonómico de CONABIO. Por la misma razón y con la misma fuente se le asignó formadecrecimiento = Árbol: POWO la describe como árbol, y «árbol» equivale al valor del dominio de CONABIO."
+  },
+  "hojas_referencia": {
+   "diccionario_datos": {
+    "columnas": [
+     {
+      "titulo": "Campo",
+      "ancho": 21.0
+     },
+     {
+      "titulo": "Tipo de dato",
+      "ancho": 15.0
+     },
+     {
+      "titulo": "Obligatorio",
+      "ancho": 13.0
+     },
+     {
+      "titulo": "Dominio o formato",
+      "ancho": 34.0
+     },
+     {
+      "titulo": "Descripción y regla de captura",
+      "ancho": 86.0
+     },
+     {
+      "titulo": "Fuente del dato",
+      "ancho": 40.0
+     }
+    ],
+    "filas": [
+     [
+      "id_especie",
+      "varchar(8)",
+      "Sí",
+      "ESP-0000 (prefijo fijo + consecutivo de cuatro dígitos)",
+      "Llave primaria del catálogo, propiedad de la Secretaría. Se asigna al dar de alta la especie, no cambia nunca, no se reutiliza y no codifica nada: ni género, ni estrato, ni origen. Es el único campo por el que se enlazan las plantaciones. Las altas futuras continúan en ESP-0077 sin importar el orden alfabético.",
+      "SEDEMA / Coordinación del SIA"
+     ],
+     [
+      "genero",
+      "varchar(60)",
+      "Sí",
+      "Una palabra, inicial mayúscula",
+      "Género del taxón. Se conserva el de la base original salvo donde la verificación obligó a corregirlo.",
+      "Base original SEDEMA, verificada contra CONABIO"
+     ],
+     [
+      "especie",
+      "varchar(80)",
+      "Sí",
+      "Minúsculas; admite rango infraespecífico (p. ej. «serotina var. salicifolia»)",
+      "Epíteto específico. Dos se corrigieron por ortografía: ESP-0015 y ESP-0059. Ver nota_discrepancia.",
+      "Base original SEDEMA, verificada contra CONABIO e IPNI"
+     ],
+     [
+      "nombre_cientifico",
+      "varchar(140)",
+      "Sí",
+      "Género + epíteto. Sin autoría y sin paréntesis de subgénero",
+      "Nombre con el que la Secretaría opera el taxón. Se eliminaron los paréntesis de subgénero que CONABIO intercala en su catálogo (p. ej. «Quercus (Quercus) (Quercus) rugosa» quedó «Quercus rugosa»). No usar este campo para empatar contra CONABIO: usar id_enciclovida.",
+      "Base original SEDEMA, verificada contra CONABIO, POWO e IPNI"
+     ],
+     [
+      "nombre_comun",
+      "varchar(80)",
+      "Sí",
+      "Texto libre",
+      "Etiqueta de uso en campo: es la que reconoce el personal técnico y la que debe mostrarse en el formulario. No se modificó en ninguna fila.",
+      "Base original SEDEMA"
+     ],
+     [
+      "otros_nombres_comunes",
+      "varchar(400)",
+      "No",
+      "Nombres separados por coma y espacio",
+      "Demás nombres comunes registrados para el taxón, hasta cinco, con el principal al frente. Excluye el de nombre_comun para no duplicarlo. Advertencia: cinco nombres resuelven a más de una especie del propio catálogo («Retama», «Primavera», «Colorín», «Cazahuate», «Guaje»), así que la búsqueda por nombre común no debe resolver a una sola especie.",
+      "EncicloVida (CONABIO). Excepción ESP-0076: iNaturalist"
+     ],
+     [
+      "tipo_distribucion",
+      "enum",
+      "Sí",
+      "Endémica · Nativa · Exótica · Exótica-Invasora",
+      "Campo del SNIB. Cuando la ficha devuelve dos valores («Endémica, Nativa») se conserva Endémica por ser el específico: toda endémica es nativa. Las definiciones de cada valor están en la hoja catalogos.",
+      "EncicloVida, campo e_tipo_distribucion. Excepción ESP-0076: POWO"
+     ],
+     [
+      "id_snib",
+      "varchar(16)",
+      "No",
+      "IdCAT: número + ANGIO (angiospermas) o + GIMNO (coníferas)",
+      "Identificador del Catálogo Taxonómico de la Biota. Llave externa para interoperar con el SNIB. Puede venir vacío y eso no impide dar de alta la especie: hoy lo está en ESP-0076, ausente del catálogo de CONABIO. La regla de formación está al pie de la hoja catalogos.",
+      "CONABIO, Catálogo Taxonómico de la Biota"
+     ],
+     [
+      "formadecrecimiento",
+      "varchar(100)",
+      "No",
+      "Árbol · Arbusto · Palma · Liana · Hierba · Sufrútice, separados por coma y espacio",
+      "Valor literal de la ficha técnica. Una misma especie puede traer varios: 50 de las 76 están registradas a la vez como Árbol y Arbusto. No se depuró ni se eligió uno.",
+      "EncicloVida, campo e_caracteristicas. Excepción ESP-0076: POWO"
+     ],
+     [
+      "id_enciclovida",
+      "integer",
+      "No",
+      "Número entero",
+      "Identificador interno de EncicloVida. Es la llave para volver a consultar la ficha por API (enciclovida.mx/especies/{id}.json) y resincronizar el catálogo, y para enlazar a la ficha pública. Más completo que id_snib. No sustituirlo por una búsqueda por nombre: CONABIO intercala el subgénero y la búsqueda devuelve coincidencias difusas en vez de vacío, produciendo falsos negativos silenciosos.",
+      "CONABIO / EncicloVida"
+     ],
+     [
+      "nota_discrepancia",
+      "varchar(700)",
+      "No",
+      "Texto. Inicia con una de cuatro etiquetas: CORREGIDO · PENDIENTE DE DECISIÓN · SIN CAMBIO · SIN REGISTRO",
+      "Sólo se llena en filas con hallazgo; hoy son seis de 76. Registra qué se modificó respecto de la fuente, qué queda por decidir y de dónde proviene un dato cuando no viene de CONABIO. Es el rastro de auditoría del catálogo: no borrar una nota al resolver el caso, sino actualizar su etiqueta.",
+      "SEDEMA / Coordinación del SIA"
+     ],
+     [
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+     ],
+     [
+      "Catálogo de especies del Sistema de Plantación de Arbolado Urbano. 76 especies, 11 campos. Los campos del SNIB se verificaron ficha por ficha contra EncicloVida (CONABIO) el 22-SEP-2026.",
+      "",
+      "",
+      "",
+      "",
+      ""
+     ],
+     [
+      "Los tres identificadores cumplen funciones distintas y no son intercambiables: id_especie es la llave primaria y es de la Secretaría; id_snib e id_enciclovida son llaves externas de CONABIO y pueden venir vacías sin bloquear nada.",
+      "",
+      "",
+      "",
+      "",
+      ""
+     ]
+    ]
+   },
+   "catalogos": {
+    "columnas": [
+     {
+      "titulo": "Campo",
+      "ancho": 24.0
+     },
+     {
+      "titulo": "Valor admitido",
+      "ancho": 26.0
+     },
+     {
+      "titulo": "Especies",
+      "ancho": 11.0
+     },
+     {
+      "titulo": "Nota",
+      "ancho": 96.0
+     }
+    ],
+    "filas": [
+     [
+      "tipo_distribucion",
+      "Endémica",
+      5,
+      "EncicloVida devuelve «Endémica, Nativa» en estas especies; se conserva Endémica por ser el valor específico (toda endémica es nativa)."
+     ],
+     [
+      "tipo_distribucion",
+      "Nativa",
+      52,
+      "Nativa de México. No distingue si la especie pertenece a la Cuenca de México."
+     ],
+     [
+      "tipo_distribucion",
+      "Exótica",
+      17,
+      "Fuera de su área natural de distribución; llegó por intervención humana."
+     ],
+     [
+      "tipo_distribucion",
+      "Exótica-Invasora",
+      2,
+      "Sometida a Análisis de Riesgo de Invasividad con resultado invasora."
+     ],
+     [
+      "formadecrecimiento",
+      "Árbol",
+      75,
+      "Valor tomado literal de la ficha técnica. Una especie puede traer varios; se separan con coma y espacio."
+     ],
+     [
+      "formadecrecimiento",
+      "Arbusto",
+      51,
+      "Valor tomado literal de la ficha técnica. Una especie puede traer varios; se separan con coma y espacio."
+     ],
+     [
+      "formadecrecimiento",
+      "Sufrútice",
+      1,
+      "Valor tomado literal de la ficha técnica. Una especie puede traer varios; se separan con coma y espacio."
+     ],
+     [
+      "formadecrecimiento",
+      "Liana",
+      1,
+      "Valor tomado literal de la ficha técnica. Una especie puede traer varios; se separan con coma y espacio."
+     ],
+     [
+      "formadecrecimiento",
+      "Hierba",
+      1,
+      "Valor tomado literal de la ficha técnica. Una especie puede traer varios; se separan con coma y espacio."
+     ],
+     [
+      "formadecrecimiento",
+      "Palma",
+      1,
+      "Valor tomado literal de la ficha técnica. Una especie puede traer varios; se separan con coma y espacio."
+     ],
+     [
+      "",
+      "",
+      "",
+      ""
+     ],
+     [
+      "Identificador único del SNIB (IdCAT) = IdOriginal del Catálogo Taxonómico de la Biota + sufijo del grupo: ANGIO en angiospermas, GIMNO en coníferas. Cuando la ficha no trae IdOriginal, el IdCAT se forma con el id de EncicloVida. Ambos casos verificados ficha por ficha, no inferidos.",
+      "",
+      "",
+      ""
+     ],
+     [
+      "id_enciclovida es la llave para volver a consultar la ficha por API (enciclovida.mx/especies/{id}.json) y resincronizar el catálogo. Es más completo que id_snib. No buscar por nombre: CONABIO intercala el subgénero y la búsqueda devuelve coincidencias difusas en vez de vacío.",
+      "",
+      "",
+      ""
+     ],
+     [
+      "Excepción de procedencia: el tipo_distribucion y el formadecrecimiento de Quercus rubra (ESP-0076) provienen de POWO, no del Catálogo Taxonómico de CONABIO, porque esa especie no está registrada ahí. Son los únicos valores de esas columnas que no vienen de CONABIO y están documentados en su nota_discrepancia.",
+      "",
+      "",
+      ""
+     ],
+     [
+      "Última consulta al SNIB: 22-SEP-2026.",
+      "",
+      "",
+      ""
+     ]
+    ]
+   }
+  }
  },
  "especies": [
   {

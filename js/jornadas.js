@@ -739,6 +739,7 @@ SRP.jornadas = {
       (this.alcaldiasDe(j).length ? ' · ' + SRP.ref.lugar(this.alcaldiasDe(j)) : SRP.activa.lugarDe(guardada) ? ' · ' + SRP.activa.lugarDe(guardada) : '') +
       ' · ' + (guardada.estatus === 'abierta' ? 'abierta' : this.textoCierre(guardada, true)) +
       (SRP.prioritarias.hay() ? ' · ' + SRP.prioritarias.textoJornada(j.prioridad).toLowerCase() : '') +
+      (SRP.prioritarias.textoOtras(j.registros, j.dato) ? ' · ' + SRP.prioritarias.textoOtras(j.registros, j.dato) : '') +
       (SRP.solicitud.es(guardada) ? ' · solicita ' + SRP.solicitud.solicitanteCompleto(guardada) : '');
     this.el('jornada-comentarios').hidden = !guardada.comentarios;
     this.el('jornada-comentarios').textContent = guardada.comentarios || '';
@@ -909,7 +910,7 @@ SRP.jornadas = {
       SRP.mapa.ponerCredito(this.mapa);   // el mismo crédito en todos los mapas (D152)
       c.CAPAS.forEach(capa => L.tileLayer(capa.url, { attribution: capa.atribucion, maxZoom: c.ZOOM_JORNADA, maxNativeZoom: c.ZOOM_MAX }).addTo(this.mapa));
       this.capaPuntos = L.layerGroup().addTo(this.mapa);
-      // El polígono de la colonia de la jornada, con el color de su prioridad; un botón sobre el mapa lo apaga
+      // Los polígonos de la colonia de la jornada y de las colonias donde cayeron sus árboles, cada uno con el color de su prioridad; un botón sobre el mapa los apaga
       SRP.prioritarias.control(() => this.mapa, { grupo: 'campo', simple: true,
         intervenidas: () => { const j = this.jornada || {}; return SRP.prioritarias.coloniaDeJornada(j.registros, j.dato); } });
     }

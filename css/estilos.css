@@ -795,6 +795,10 @@ html:has(dialog[open]) { overflow: hidden; }
 dialog { width: min(40rem, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); border: 0; border-top: 4px solid var(--borde-control); border-radius: var(--radio); padding: var(--e-5); overscroll-behavior: contain; }
 /* En iOS la barra del navegador hace que 100vh sea más alto que la pantalla y el pie del diálogo quede oculto */
 @supports (height: 100dvh) { dialog { max-height: calc(100dvh - 2rem); } }
+/* Con el teclado en pantalla la ventana se limita a lo que queda a la vista y su pie deja de estar
+   fijo: el poco alto que queda es para el campo que se está escribiendo */
+.con-teclado dialog { max-height: calc(var(--alto-visible, 100dvh) - 1rem); }
+.con-teclado .dialogo-pie { position: static; box-shadow: none; }
 dialog::backdrop { background: var(--velo-oscuro); }
 /* Cabecera fija del diálogo: se queda arriba mientras el cuerpo se desplaza; el fondo tapa lo que pasa debajo */
 .dialogo-cabecera { position: sticky; top: calc(-1 * var(--e-5)); z-index: var(--z-dialogo-barra); margin: calc(-1 * var(--e-5)) calc(-1 * var(--e-5)) var(--e-3); padding: var(--e-4) var(--e-5) var(--e-3); background: var(--fondo); border-bottom: 1px solid var(--borde-suave); }

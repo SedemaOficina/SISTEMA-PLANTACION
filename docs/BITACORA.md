@@ -3279,3 +3279,36 @@ extra de la tarjeta) y dos preguntas que sólo aparecen al rebasar lo previsto. 
 
 **Verificación:** corrida completa sola, 1,336 comprobaciones, 0 fallas, sin errores de consola (última sección `ctx81`). `auditoria.py`: 140 comprobaciones, 0 hallazgos. `auditoria_css.py`: 0 hallazgos. `revisar.py`: sin problemas. No probado en iPhone por Claude.
 
+## Bloque 171 — Jornada con árboles en otra colonia (05-10-2026)
+
+Versión 0.9.37. Consulta de Liber; propuesta aprobada.
+
+**Qué cambió (D238).** `js/prioritarias.js`: `coloniaDeJornada()` devuelve la colonia de la jornada y
+las de sus árboles; `otrasColonias()` y `textoOtras()`; el filtro de la capa acepta colonias sin
+árboles. `js/jornadas.js`: la línea de datos de la ficha añade los árboles en otra colonia.
+`js/reportes.js`: renglón «Árboles en otra colonia» en la identificación.
+
+**Pantalla: qué se agregó y qué se quitó.** Se agregó un dato en la ficha y un renglón en el reporte,
+sólo cuando hay árboles en otra colonia; en el mapa, los polígonos de esas colonias. No se quitó nada.
+
+**Verificación:** se verificó junto con el Bloque 172.
+
+## Bloque 172 — Entrada de prueba por rol, catálogo de especies con la forma del original y campo a la vista (05-10-2026)
+
+Versión 0.9.38. Peticiones de Liber.
+
+**Qué cambió.** D239: `js/catalogos.js` (`librosEspecies()`, botón «Especies escritas», tipo de
+solicitante sin «Alcaldía»), `herramientas/generar_especies.py` y `assets/catalogos/catalogo-especies.js`
+(notas de discrepancia, anchos y hojas de referencia en `meta`; las especies no cambian),
+`js/especies-revision.js`, `js/configuracion.js`, `index.html`. D240: `js/app.js` (`CUENTAS_POR_ROL`).
+D241: `js/app.js` (`cuidarCampoEnVentana()`), `css/estilos.css` (`.con-teclado`).
+D242: `js/supervision.js` (al cambiar de cuenta se vacían listas y cifras; `pintar()` espera los datos).
+`docs/FASE2-Y-TRASPASO.md`: lista de verificación previa al traspaso.
+
+**Pantalla: qué se agregó y qué se quitó.** Se quitaron una tarjeta de Configuración, 22 cuentas y un
+grupo de la lista de entrada de prueba, y una opción del tipo de solicitante. Se agregó un botón en
+Catálogos › Especies.
+
+**Pruebas.** Las secciones entran con `entrar_como()`, que añade a la lista las cuentas que ya no se ofrecen.
+
+**Verificación:** corrida completa sola, 1,348 comprobaciones, 0 fallas, sin errores de consola (última sección `ctx82`). `auditoria.py`: 140 comprobaciones, 0 hallazgos. `auditoria_css.py`: 0 hallazgos. `revisar.py`: sin problemas. No probado en iPhone por Claude: el campo a la vista con el teclado se comprobó en pantalla baja simulada.

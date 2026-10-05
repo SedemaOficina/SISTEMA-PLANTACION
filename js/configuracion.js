@@ -28,9 +28,7 @@ SRP.configuracion = {
     const activos = t => SRP.ref.deTipo(t, true).length;
     const todos = await this.cambios();
     const cambios = todos.length, cargas = todos.filter(b => b.entidad === 'carga' && b.accion === 'CREADO').length;
-    const escritas = await SRP.especiesRevision.cuantas();
     const resumen = {
-      revision: escritas ? pl(escritas, 'especie escrita', 'especies escritas') : 'Ninguna especie escrita',
       usuarios: pl(us.length, 'cuenta', 'cuentas') + (inactivas ? ' · ' + pl(inactivas, 'inactiva', 'inactivas') : ''),
       catalogos: pl(activos('programa'), 'programa', 'programas') + ' · ' + pl(activos('organizacion'), 'institución', 'instituciones') + ' · ' + pl(activos('especie'), 'especie', 'especies'),
       parametros: pl(this.parametros().reduce((s, g) => s + g.filas.length, 0), 'valor', 'valores') + ' · sólo consulta',

@@ -1,4 +1,4 @@
-/* ESPECIES ESCRITAS (sólo Administración global). Lo que las personas escriben en «Otra especie»
+/* ESPECIES ESCRITAS (sólo Administración global; se abre desde Catálogos › Especies). Lo que las personas escriben en «Otra especie»
    se lista aquí, agrupado por lo escrito sin distinguir mayúsculas, acentos ni espacios. Es sólo
    consulta: la revisión —si es un error de escritura, si la especie existe— se hace fuera, con la
    lista descargada; el alta de una especie sigue en Catálogos. */
@@ -12,6 +12,7 @@ SRP.especiesRevision = {
   iniciar() {
     SRP.ICONOS.poner(this.el('btn-rev-excel'), 'descargar', 'medio');
     this.el('btn-rev-excel').addEventListener('click', () => this.descargar());
+    this.el('btn-rev-volver').addEventListener('click', () => SRP.app.mostrarVista('catalogos'));
   },
 
   clave(texto) { return SRP.util.normalizar(String(texto || '').replace(/\s+/g, ' ').trim()); },

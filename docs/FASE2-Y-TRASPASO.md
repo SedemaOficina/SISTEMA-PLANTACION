@@ -10,7 +10,7 @@ aquí, además de en `DECISIONES.md`. El detalle técnico de cada campo está en
 `datos/DICCIONARIO-DATOS.md`, que se genera de él); las reglas de la Fase 2 del esquema son las `S-nn`
 que se citan abajo.
 
-Estado al 05-10-2026: versión 0.9.36 (Bloque 170). Base del teléfono versión 9: `srp_db` en pruebas, `srp_sia` en la real.
+Estado al 05-10-2026: versión 0.9.38 (Bloque 172). Base del teléfono versión 9: `srp_db` en pruebas, `srp_sia` en la real.
 
 ---
 
@@ -98,7 +98,24 @@ no envía con la app cerrada: los datos salen cuando el cabo abre la app con se�
 | Histórico cargado y cuentas de la institución | Hoy lo cargado queda a nombre de quien carga y sólo lo ve la Administración; podría asignarse al coordinador de la institución para que lo vean sus cuentas | Decidir antes de cargar el histórico real (D196) |
 | Historial de git | Los archivos originales del SIA y, del bloque 100 al 117, las placas reales siguen en el historial: dejarlo, reescribirlo, repositorio nuevo y limpio, o resolverlo en el traspaso | Resolverlo en el traspaso: el SIA recibe una copia sin historial y, con el sistema en sus servidores, el repositorio de GitHub se archiva y se hace privado. Si no se quiere esperar, repositorio nuevo y limpio con el mismo nombre (el sitio conserva su dirección) |
 
-## 6. Paquete de traspaso (al cerrar la Etapa 1)
+## 6. Lista de verificación antes de entregar al SIA
+
+Lo que hoy es de prueba y no debe llegar a producción. Los detalles están en el apartado 3.
+
+- [ ] `ES_FICTICIO: false`. Con eso desaparecen la banda «Datos ficticios de prueba», «Entrar como
+      usuario de prueba», el cambio de perfil, «Simular sin señal», «Restablecer datos de prueba» y
+      «Campos que viajan a la base y no se ven en pantalla».
+- [ ] La entrada como usuario de prueba permite entrar sin contraseña: nunca en producción. Sí puede
+      conservarse en el ambiente de pruebas del SIA, con `ES_FICTICIO: true`.
+- [ ] Retirar los datos de demostración (`js/demostracion.js`) y sus botones.
+- [ ] **Vehículos: los del catálogo de la app son ficticios** (placas inventadas). Cargar en el
+      servidor la lista real, que está en `originales/` y no se publica.
+- [ ] Cuentas, áreas, instituciones y solicitantes de arranque (`js/datos-ficticios.js`) son de
+      ejemplo: cargar los reales en el servidor.
+- [ ] El catálogo de especies sí es el real (76 especies verificadas); no se sustituye.
+- [ ] Conectar el proveedor institucional de identidad, la API de envío y la emisión de folios.
+
+## 7. Paquete de traspaso (al cerrar la Etapa 1)
 
 Se hace en un solo bloque, cuando la Etapa 1 deje de cambiar, para no hacer trabajo doble:
 

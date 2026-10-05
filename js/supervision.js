@@ -92,7 +92,17 @@ SRP.supervision = {
     this.el('caja-sup-organizacion').hidden = !this.veOrganizaciones();
     // Quien entra con otra cuenta empieza en la semana en curso y sin filtros: no hereda el año
     // ni la alcaldía que dejó la cuenta anterior en este mismo dispositivo (D160)
-    if (this.usuarioId !== u.id) { this.usuarioId = u.id; this.periodo = null; this.abiertas = null; this.filtros = { alcaldia: '', programa: '', cabo: '', organizacion: '' }; }
+    if (this.usuarioId !== u.id) {
+      this.usuarioId = u.id; this.periodo = null; this.abiertas = null; this.filtros = { alcaldia: '', programa: '', cabo: '', organizacion: '' };
+      /* Tampoco ve, mientras se lee lo suyo, las cifras ni las listas de la cuenta anterior: otra
+         institución no debe leer ni por un instante los nombres de quien no le corresponde */
+      this.datos = null; this.modelo = null;
+      ['sup-alcaldia', 'sup-programa', 'sup-cabo', 'sup-organizacion'].forEach(id => { const lista = this.el(id); if (lista) lista.innerHTML = ''; });
+      // Las descargas y los mapas salen del cuerpo antes de vaciarlo, como al repintar
+      this.el('sup-cuerpo').after(this.el('sup-acciones')); this.quitarMapas();
+      this.el('sup-cuerpo').innerHTML = '';
+      this.el('btn-sup-pdf').disabled = true; this.el('btn-sup-csv').disabled = true;
+    }
     if (!this.periodo) this.periodo = SRP.indicadores.periodo('semana');
     const datos = await SRP.indicadores.cargar();
     /* Con mucho volumen la lectura tarda: si mientras tanto se salió o se cambió de cuenta, lo leído
@@ -131,6 +141,8 @@ SRP.supervision = {
 
   // El periodo y los filtros en pantalla; luego, el cuerpo con el modelo recién calculado
   pintar() {
+    // Mientras se leen los datos de la cuenta no hay qué pintar: los controles esperan
+    if (!this.datos) return;
     const p = this.periodo, I = SRP.indicadores;
     this.el('sup-tipos').querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', String(c.dataset.tipo === p.tipo)));
     this.el('sup-etiqueta').textContent = p.etiqueta;

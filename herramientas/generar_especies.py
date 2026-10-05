@@ -12,6 +12,7 @@ Uso:  python3 herramientas/generar_especies.py
 """
 import json, os, sys
 import openpyxl
+import openpyxl.utils
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FUENTE = os.path.join(RAIZ, 'originales', 'CGO_ESPECIES_REFORESTACION_URBANA_2026-09-22.xlsx')
@@ -69,9 +70,21 @@ def main():
             'editado_por_id': None, 'fecha_ultima_edicion': None,
         })
 
+    # El catálogo se descarga de la app con la misma forma del libro de origen: de él se guardan
+    # las notas de discrepancia y las dos hojas de referencia (diccionario de datos y catálogos)
+    for f in filas:
+        assert f['nombre_cientifico'] == f['genero'] + ' ' + f['especie'], (f['id_especie'], 'nombre científico distinto de género + especie')
+    def hoja(nombre):
+        h = wb[nombre]
+        letras = [openpyxl.utils.get_column_letter(i + 1) for i in range(h.max_column)]
+        todas = [[('' if v is None else v) for v in r] for r in h.iter_rows(values_only=True)]
+        return {'columnas': [{'titulo': t, 'ancho': h.column_dimensions[l].width or 13} for t, l in zip(todas[0], letras)], 'filas': todas[1:]}
     meta = {'fuente': os.path.basename(FUENTE), 'fecha_corte': FECHA_CORTE, 'version': VERSION,
             'total': len(especies), 'verificado_contra': 'EncicloVida (CONABIO)',
-            'siguiente_clave': 'ESP-%04d' % (max(int(i[4:]) for i in ids) + 1)}
+            'siguiente_clave': 'ESP-%04d' % (max(int(i[4:]) for i in ids) + 1),
+            'anchos': [ws.column_dimensions[openpyxl.utils.get_column_letter(i + 1)].width or 13 for i in range(len(CAMPOS))],
+            'notas_discrepancia': {f['id_especie']: f['nota_discrepancia'] for f in filas if f['nota_discrepancia']},
+            'hojas_referencia': {n: hoja(n) for n in ('diccionario_datos', 'catalogos')}}
     cuerpo = json.dumps({'meta': meta, 'especies': especies}, ensure_ascii=False, indent=1)
     with open(SALIDA, 'w', encoding='utf-8') as s:
         s.write('/* CATÁLOGO DE ESPECIES. Generado por herramientas/generar_especies.py a partir de\n'

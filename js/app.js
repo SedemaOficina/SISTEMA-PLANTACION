@@ -63,6 +63,7 @@ SRP.app = {
     SRP.configuracion.iniciar();
     SRP.carga.iniciar();
     SRP.especiesRevision.iniciar();
+    this.cuidarCampoEnVentana();
     SRP.conexion.iniciar();
     SRP.jornadas.iniciar();
     SRP.galeria.iniciar();
@@ -265,6 +266,31 @@ SRP.app = {
     this.el('btn-cuenta').setAttribute('aria-expanded', String(!!abrir));
   },
 
+  /* EL CAMPO QUE SE ESCRIBE, A LA VISTA. En teléfono, al tocar un campo dentro de una ventana el
+     teclado ocupa media pantalla y la ventana se encoge: el campo podía quedar tapado por el pie
+     fijo. Al enfocar un campo de una ventana, y otra vez cuando el teclado termina de salir, el
+     campo se lleva al centro de la ventana. Con el teclado fuera, el pie deja de estar fijo
+     (clase `con-teclado`) para dejarle el espacio al campo. */
+  cuidarCampoEnVentana() {
+    const vv = window.visualViewport, raiz = document.documentElement;
+    const escribible = el => !!el && el.matches && el.matches('textarea, select, input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=button]):not([type=range])');
+    const acomodar = () => {
+      const el = document.activeElement;
+      if (escribible(el) && el.closest('dialog[open]')) el.scrollIntoView({ block: 'center' });
+    };
+    document.addEventListener('focusin', (e) => { if (escribible(e.target) && e.target.closest('dialog[open]')) setTimeout(acomodar, 300); });
+    if (!vv) return;
+    vv.addEventListener('resize', () => {
+      const conTeclado = vv.height < window.innerHeight * 0.75;
+      raiz.classList.toggle('con-teclado', conTeclado);
+      raiz.style.setProperty('--alto-visible', Math.round(vv.height) + 'px');
+      if (conTeclado) setTimeout(acomodar, 60);
+    });
+  },
+
+  // Las cuentas de prueba que se ofrecen al entrar: una por rol distinto
+  CUENTAS_POR_ROL: ['u-admin-1', 'u-dir-1', 'u-coord-1', 'u-cabo-1', 'u-dir-alc', 'u-coord-alc', 'u-cabo-alc'],
+
   mostrarAcceso() {
     this.campoClave(true);
     this.menuCuenta(false);
@@ -279,20 +305,22 @@ SRP.app = {
     const prueba = this.el('acceso-prueba');
     prueba.hidden = !SRP.CONFIG.ES_FICTICIO;
     if (!prueba.hidden) {
-      /* Sólo las que pueden entrar: primero la Secretaría por perfil, luego cada tipo de institución
-         con su coordinador y su cabo, que dicen cuál («Cabo, Alcaldía Iztapalapa»). Las cuentas de
-         los datos de demostración van aparte, en su grupo. */
+      /* UNA CUENTA POR ROL DISTINTO: los cuatro perfiles de la Secretaría y los tres de una
+         institución de fuera, que dicen cuál («Cabo, Alcaldía Iztapalapa»). Las demás cuentas de
+         arranque y las de los datos de demostración existen —son dueñas de sus jornadas— pero no
+         se listan: no enseñan nada distinto. Las que se dan de alta en Usuarios sí aparecen, en su
+         grupo, para probarlas. */
       const esc = SRP.util.escapar, rango = { ADMIN: 0, DIRECTIVO: 1, COORDINADOR: 2, CABO: 3 };
-      const tipos = SRP.ref.TIPOS_INSTITUCION;
-      const orden = u => [SRP.ref.esSedema(u.organizacion_id) ? 0 : 1, tipos.indexOf((SRP.ref.organizacionDe(u) || {}).tipo_organizacion),
-        rango[u.perfil] ?? 4, SRP.util.nombreCompleto(u)];
+      const orden = u => [SRP.ref.esSedema(u.organizacion_id) ? 0 : 1, rango[u.perfil] ?? 4, SRP.util.nombreCompleto(u)];
       const comparar = (a, b) => { const x = orden(a), y = orden(b); for (let i = 0; i < x.length; i++) { if (x[i] < y[i]) return -1; if (x[i] > y[i]) return 1; } return 0; };
       const opcion = u => '<option value="' + esc(u.id) + '">' + esc(SRP.util.nombreCompleto(u) + ' — ' + SRP.permisos.de(u).etiqueta +
         (SRP.ref.esSedema(u.organizacion_id) ? '' : ', ' + SRP.ref.nombreOrganizacion(u.organizacion_id))) + '</option>';
       const pueden = SRP.ref.usuarios.filter(u => u.activo && SRP.ref.accesoOrganizacion(SRP.ref.organizacionDe(u)).ok).sort(comparar);
-      const demo = pueden.filter(u => SRP.demo && SRP.demo.es(u.id));
-      this.el('sel-usuario-prueba').innerHTML = pueden.filter(u => !demo.includes(u)).map(opcion).join('') +
-        (demo.length ? '<optgroup label="Datos de demostración">' + demo.map(opcion).join('') + '</optgroup>' : '');   // M15
+      const deArranque = new Set(((SRP.DATOS_FICTICIOS || {}).usuarios || []).map(u => u.id));
+      const porRol = pueden.filter(u => this.CUENTAS_POR_ROL.includes(u.id));
+      const propias = pueden.filter(u => !deArranque.has(u.id) && !(SRP.demo && SRP.demo.es(u.id)));
+      this.el('sel-usuario-prueba').innerHTML = porRol.map(opcion).join('') +
+        (propias.length ? '<optgroup label="Cuentas dadas de alta en Usuarios">' + propias.map(opcion).join('') + '</optgroup>' : '');
     }
     this.mostrarVista('acceso');
   },

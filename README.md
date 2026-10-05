@@ -37,9 +37,8 @@ La versión que corre se lee al pie de cada pantalla.
 6. **Registros**: la lista de árboles con filtros, detalle, edición y eliminación que se deshace.
    **Configuración** (D195), sólo para la Administración global, última pestaña de la barra de secciones (D231):
    **Usuarios**, **Catálogos** (programas, áreas, especies, vehículos, instituciones y solicitantes),
-   **Especies escritas** (lo que se escribió en «Otra especie», para revisarlo fuera; se descarga en Excel, D232),
    **Parámetros** (sólo consulta), **Registro de cambios**, **Carga masiva** del histórico desde
-   Excel o CSV (D196), que no vuelve a cargar lo que ya está y se deshace por lote (D199), y **Acerca del sistema**. El catálogo de especies se descarga en Excel.
+   Excel o CSV (D196), que no vuelve a cargar lo que ya está y se deshace por lote (D199), y **Acerca del sistema**. El catálogo de especies se descarga en Excel con la forma del libro de origen del SIA (D239); desde Catálogos › Especies se abre **Especies escritas** (lo que se escribió en «Otra especie», para revisarlo fuera; D232).
 7. **Instituciones** (D186–D193). Además de la Secretaría registran las alcaldías, otras
    dependencias del Gobierno de la CDMX (PAOT, SOBSE), empresas (Green Cover) y organizaciones
    civiles (Reforestamos México), con cuentas de cabo y de coordinación que da de alta la
