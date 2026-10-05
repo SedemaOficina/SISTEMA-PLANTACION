@@ -500,7 +500,7 @@ SRP.formulario = {
     const cajaAvisos = this.el('revision-avisos');
     cajaAvisos.hidden = !avisos.length;
     // Con avisos en un árbol nuevo, guardar es una decisión: el botón lo dice
-    this.el('btn-resumen-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>' + (avisos.length && !this.estado.editando ? 'Guardar de todos modos' : 'Guardar') + '</span>';
+    this.el('btn-resumen-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>' + (this.estado.editando ? 'Guardar cambios' : avisos.length ? 'Guardar de todos modos' : 'Guardar') + '</span>';
     cajaAvisos.innerHTML = avisos.length ? '<p class="revision-avisos-titulo">' + (avisos.length === 1 ? 'Hay algo que revisar' : 'Hay ' + avisos.length + ' cosas que revisar') + '</p><ul>' +
       avisos.map(a => '<li data-tipo="' + a.tipo + '">' + SRP.util.escapar(a.texto) + '</li>').join('') + '</ul>' : '';
 
@@ -875,6 +875,11 @@ SRP.formulario = {
     aviso.textContent = 'Está editando el registro del ' + SRP.util.formatearFecha(registro.fecha_plantacion) +
       ' capturado por ' + SRP.ref.nombreUsuario(registro.cabo_id) + '. Los cambios quedan en el historial.';
     aviso.hidden = false;
+    // La edición se distingue de la captura: franja fija con el folio, marco del formulario y «Guardar cambios»
+    this.el('edicion-franja-folio').textContent = SRP.folio.valido(registro.folio) ? SRP.folio.textoLargo(registro) : '';
+    this.el('edicion-franja').hidden = false;
+    this.el('vista-registrar').dataset.editando = 'true';
+    this.el('btn-revisar').innerHTML = SRP.ICONOS.svg('disco', 'grande') + '<span>Guardar cambios</span>';
     this.el('btn-cancelar-edicion').hidden = false;
     this.el('campo-fecha').value = registro.fecha_plantacion;
     this.el('campo-comentarios').value = registro.comentarios || '';
@@ -906,6 +911,9 @@ SRP.formulario = {
     this.el('titulo-registrar').classList.add('oculto-visual');   // se lee, no se ve (D153)
     const ta = this.el('titulo-arbol'); if (ta) ta.textContent = 'Nuevo árbol';
     this.el('edicion-aviso').hidden = true;
+    this.el('edicion-franja').hidden = true;
+    delete this.el('vista-registrar').dataset.editando;
+    this.el('btn-revisar').innerHTML = SRP.ICONOS.svg('disco', 'grande') + '<span>Guardar</span>';
     this.el('btn-cancelar-edicion').hidden = true;
     this.el('campo-especie').value = ''; this.estado.especieId = null; this.mostrarOtra(false);
     this.el('campo-fecha').value = '';

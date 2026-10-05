@@ -574,6 +574,12 @@ fieldset.campo { margin-inline: 0; }
 /* Con la captura a mano desplegada, el botón de ubicación se oculta: no conviven dos formas de fijar el punto */
 .btn-ubicacion[hidden], .btn-ubicacion:has(+ .coord-manual[open]) { display: none; }
 .franja-edicion { background: var(--acento-suave); border-left: 4px solid var(--acento); padding: var(--e-3) var(--e-4); }
+/* Edición de un árbol: una franja fija arriba, que dice qué registro es, y el formulario dentro de un
+   marco de acento. Los campos conservan su apariencia: el punteado es de la fotografía y el ámbar, de los avisos */
+.edicion-franja { position: sticky; top: 0; z-index: var(--z-saltos); display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--e-1) var(--e-3);
+  margin: 0 0 var(--e-2); padding: var(--e-2) var(--e-4); border-radius: var(--radio-chico); background: var(--acento); color: var(--fondo); font-size: var(--t-s); }
+.edicion-franja[hidden] { display: none; }
+.vista-registrar[data-editando="true"] .registrar-columnas { border: 2px solid var(--acento); border-radius: var(--radio); padding: var(--e-3); }
 /* ESPEJO DE CAMPOS — SE ELIMINA AL CERRAR LA ETAPA 1 (bloque completo, de aquí al cierre).
    Es una herramienta de trabajo, no parte del sistema: gris, sin guinda y separado por una
    línea, para que nadie lo confunda con un dato que el personal de campo deba leer. */

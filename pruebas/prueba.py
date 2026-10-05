@@ -1173,6 +1173,15 @@ with sync_playwright() as p:
     ok(pg.evaluate("SRP.registros.mapaDetalle")is None,'al cerrar, su mapa se destruye')
     accion(pg,'#lista-registros','editar'); pg.wait_for_timeout(600)
     ok(pg.is_visible('#edicion-aviso'),'editar abre el formulario precargado')
+    ed0=pg.evaluate("""() => { const f = document.getElementById('edicion-franja'), v = document.getElementById('vista-registrar'), m = getComputedStyle(document.getElementById('registrar-columnas'));
+      return { franja: !f.hidden && f.textContent.startsWith('Editando registro'), fija: getComputedStyle(f).position, marco: [v.dataset.editando, m.borderTopStyle, m.borderTopWidth], boton: document.getElementById('btn-revisar').textContent.trim(),
+        campo: getComputedStyle(document.getElementById('campo-especie')).borderTopStyle }; }""")
+    ok(ed0=={'franja':True,'fija':'sticky','marco':['true','solid','2px'],'boton':'Guardar cambios','campo':'solid'},
+       'la edición se distingue de la captura: franja fija «Editando registro», el formulario dentro de un marco de acento y el botón «Guardar cambios»; los campos no cambian: %s' % ed0)
+    pg.evaluate("SRP.formulario.limpiar()"); pg.wait_for_timeout(200)
+    ed1=pg.evaluate("[document.getElementById('edicion-franja').hidden, document.getElementById('vista-registrar').dataset.editando || '', document.getElementById('btn-revisar').textContent.trim(), getComputedStyle(document.getElementById('registrar-columnas')).borderTopWidth]")
+    ok(ed1==[True,'','Guardar','0px'],'al salir de la edición, Nuevo registro vuelve a su apariencia y a «Guardar»: %s' % ed1)
+    pg.evaluate("SRP.app.mostrarVista('registros')"); pg.wait_for_timeout(500); accion(pg,'#lista-registros','editar'); pg.wait_for_timeout(600)
     ok(pg.get_attribute('.pestana[data-vista=registros]','aria-current')=='page' and pg.get_attribute('.pestana[data-vista=registrar]','aria-current') is None,
        'al editar queda marcada la pestaña Registros, no «Nuevo registro» (D100)')
     # En edición el espejo cambia de cara: conserva al cabo original, anuncia EDITADO y
@@ -5813,11 +5822,11 @@ with sync_playwright() as p:
     pg71.click('#btn-resumen-cambiar'); pg71.wait_for_timeout(500)
     ok(pg71.is_hidden('#dlg-resumen') and pg71.is_visible('#dlg-cambiar-jornada') and pg71.evaluate("SRP.formulario.estado.especieId") == 'ESP-0002', '«Cambiar jornada» cierra la revisión y abre el cambio, con el árbol todavía en el formulario')
     pg71.click('#btn-cambiar-cerrar'); pg71.wait_for_timeout(300)
-    # Al editar, la revisión conserva «Guardar» y no ofrece cambiar de jornada
+    # Al editar, la revisión dice «Guardar cambios» y no ofrece cambiar de jornada
     pg71.evaluate("SRP.formulario.limpiar()"); pg71.wait_for_timeout(200)
     pg71.click('#btn-guardado-corregir'); pg71.wait_for_timeout(700)
     pg71.click('#form-plantacion button[type=submit]'); pg71.wait_for_timeout(1000)
-    ok(pg71.is_visible('#dlg-resumen') and pg71.inner_text('#btn-resumen-guardar').strip() == 'Guardar' and pg71.is_hidden('#btn-resumen-cambiar'), 'al corregir un árbol la revisión dice «Guardar» y no ofrece cambiar de jornada')
+    ok(pg71.is_visible('#dlg-resumen') and pg71.inner_text('#btn-resumen-guardar').strip() == 'Guardar cambios' and pg71.is_hidden('#btn-resumen-cambiar'), 'al corregir un árbol la revisión dice «Guardar cambios» y no ofrece cambiar de jornada')
     pg71.click('#btn-resumen-cerrar'); pg71.wait_for_timeout(200)
     ctx71.close()
 

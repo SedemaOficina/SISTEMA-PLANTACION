@@ -2732,3 +2732,12 @@
   lo de la cuenta anterior; una coordinación de otra institución podía leer nombres que no le
   corresponden. Ahora, al entrar con otra cuenta, Supervisión borra de inmediato listas y cifras, y
   sus controles esperan a que estén los datos propios.
+
+- **D243. La edición de un árbol se distingue de la captura (bloque 173).**
+  05-10-2026. Petición de Liber; eligió la variante A entre tres ejemplos.
+  · **Franja fija «Editando registro»** con el folio, que se queda arriba al desplazarse.
+  · **Marco de acento** alrededor de ubicación y campos.
+  · El botón dice **«Guardar cambios»**, también en la ficha de revisión.
+  · Los campos conservan su apariencia. Se descartó marcarlos con línea punteada o en ámbar: el
+    punteado ya significa «aquí se agrega una fotografía» y el ámbar, «advertencia».
+  · «Nuevo registro» y la sustitución no cambian.

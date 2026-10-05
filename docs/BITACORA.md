@@ -3312,3 +3312,15 @@ Catálogos › Especies.
 **Pruebas.** Las secciones entran con `entrar_como()`, que añade a la lista las cuentas que ya no se ofrecen.
 
 **Verificación:** corrida completa sola, 1,348 comprobaciones, 0 fallas, sin errores de consola (última sección `ctx82`). `auditoria.py`: 140 comprobaciones, 0 hallazgos. `auditoria_css.py`: 0 hallazgos. `revisar.py`: sin problemas. No probado en iPhone por Claude: el campo a la vista con el teclado se comprobó en pantalla baja simulada.
+
+## Bloque 173 — La edición de un árbol se distingue de la captura (05-10-2026)
+
+Versión 0.9.39. Petición de Liber (variante A).
+
+**Qué cambió (D243).** `index.html`: `#edicion-franja`. `css/estilos.css`: `.edicion-franja` y el marco
+de `.registrar-columnas` en edición. `js/formulario.js`: `editar()` y `limpiar()` ponen y quitan la
+franja, la marca `data-editando` y el texto del botón.
+
+**Pantalla: qué se agregó y qué se quitó.** Se agregó una franja de un renglón, sólo al editar. No se quitó nada.
+
+**Verificación:** corrida completa sola, 1,350 comprobaciones, 0 fallas, sin errores de consola (última sección `ctx82`). `auditoria.py`: 140 comprobaciones, 0 hallazgos. `auditoria_css.py`: 0 hallazgos. `revisar.py`: sin problemas. No probado en iPhone por Claude.

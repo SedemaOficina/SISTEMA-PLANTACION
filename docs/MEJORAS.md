@@ -431,6 +431,7 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M433 | Liber | La entrada de prueba ofrece una cuenta por rol (7 en lugar de 29) y sin el grupo «Datos de demostración» | Media | 0.9.38 (B172) | Acceso | D240 |
 | M434 | Liber | En teléfono, el campo que se escribe dentro de una ventana queda a la vista sobre el teclado | Alta | 0.9.38 (B172) | Ventanas con campos | D241 |
 | M435 | Claude | Supervisión no conserva, ni por un instante, las listas y cifras de la cuenta anterior al cambiar de cuenta | Alta | 0.9.38 (B172) | Supervisión | D242 |
+| M436 | Liber | Al editar un árbol: franja fija «Editando registro» con el folio, marco de acento en el formulario y botón «Guardar cambios» | Media | 0.9.39 (B173) | Registros › Editar | D243 |
 
 ## 2. Por hacer
 
@@ -458,4 +459,4 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 416 hechas · 7 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 417 hechas · 7 por hacer · 2 revisadas · 2 descartadas.
