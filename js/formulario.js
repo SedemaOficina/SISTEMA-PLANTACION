@@ -816,7 +816,7 @@ SRP.formulario = {
       this._completaLista = true;
       this.el('btn-completa-seguir').addEventListener('click', () => d.close());
       // La jornada acaba de cuadrar: si no queda nada pendiente, se cierra sin volver a preguntar
-      this.el('btn-completa-cerrar').addEventListener('click', () => { d.close(); SRP.activa.cerrarJornada({ sinPreguntarSiCuadra: true }); });
+      this.el('btn-completa-cerrar').addEventListener('click', () => { d.close(); SRP.activa.cerrarJornada({ directo: true }); });
     }
     if (!d.open) d.showModal();
     try { if (navigator.vibrate) navigator.vibrate([60, 90, 60]); } catch (e) { /* sin vibración: basta lo visible */ }

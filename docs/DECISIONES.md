@@ -2741,3 +2741,38 @@
   · Los campos conservan su apariencia. Se descartó marcarlos con línea punteada o en ámbar: el
     punteado ya significa «aquí se agrega una fotografía» y el ámbar, «advertencia».
   · «Nuevo registro» y la sustitución no cambian.
+
+- **D244. Supervisión cuenta cada árbol en la colonia donde quedó, y cada nivel de prioridad por separado (bloque 174).**
+  05-10-2026. Petición de Liber, tras probar una jornada con dos árboles en una colonia de prioridad muy
+  alta y uno en otra de muy baja: Supervisión decía «3 de 3 en alta o muy alta» y pintaba una colonia.
+  · «Por prioridad de la colonia» cuenta cada árbol en la prioridad de la colonia donde quedó plantado,
+    aunque su jornada se haya ubicado en otra. El mapa pinta todas las colonias con árboles.
+  · Ya no se suman «alta o muy alta»: el encabezado, la frase y el informe en PDF dicen cada nivel por
+    separado («2 en muy alta · 1 en muy baja»). El pie de la tabla del PDF es el total.
+  · **Sustituye a D233 en Supervisión e informes.** D233 sigue valiendo para la jornada: su prioridad es
+    una, la de la colonia donde se ubicó, y así se dice en su ficha, su tarjeta y su reporte (D238).
+
+- **D245. El botón de capas elige el mapa base —satélite o calles— y la simbología de las colonias va bajo el mapa (bloque 174).**
+  05-10-2026. Petición de Liber.
+  · En Nuevo registro y en la ficha de la jornada, el botón de capas abre un panel: «Mapa base»
+    (Satélite, Calles) y la casilla «Colonias de la jornada». Sustituye al botón que sólo encendía o
+    apagaba las colonias.
+  · El mapa base elegido vale para todos los mapas (también los de la revisión y el detalle) y se
+    recuerda en el dispositivo. «Calles» es el plano de calles del mismo proveedor y dominio que la
+    imagen, así que la política de seguridad no cambia. El croquis del reporte sigue con imagen.
+  · Bajo el mapa, la simbología dice qué prioridad es cada color de las colonias pintadas; sólo los
+    niveles que se ven, y se oculta al apagar las colonias.
+
+- **D246. «Cerrar jornada» desde «Jornada completa» cierra sin otra ventana (bloque 174).**
+  05-10-2026. Petición de Liber: tras «Jornada completa» salía una segunda ventana de confirmación.
+  Ahora cierra de inmediato y lleva a la ficha, que dice qué sigue (revisar puntos o generar el
+  reporte). «Cerrar jornada» desde su botón habitual sí sigue preguntando. Sustituye lo de D237 para ese caso.
+
+- **D247. Ajustes del bloque 174.**
+  05-10-2026. Peticiones y un defecto reportado por Liber.
+  · **Revise antes de guardar:** en computadora, «Cambiar jornada» y «Guardar de todos modos» van en un
+    renglón, del mismo tamaño; en teléfono, uno debajo del otro.
+  · **Especies escritas** se presenta en tabla (siete columnas); en teléfono, como fichas.
+  · **Defecto:** la Administración global no podía editar ni sustituir un árbol: «Editar» la llevaba a
+    Registros, porque no tiene permiso de «Nuevo registro». Ahora el formulario se le abre para
+    corregir; «Nuevo registro» sigue sin abrírsele.

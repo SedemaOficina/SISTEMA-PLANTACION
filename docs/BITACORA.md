@@ -3324,3 +3324,20 @@ franja, la marca `data-editando` y el texto del botón.
 **Pantalla: qué se agregó y qué se quitó.** Se agregó una franja de un renglón, sólo al editar. No se quitó nada.
 
 **Verificación:** corrida completa sola, 1,350 comprobaciones, 0 fallas, sin errores de consola (última sección `ctx82`). `auditoria.py`: 140 comprobaciones, 0 hallazgos. `auditoria_css.py`: 0 hallazgos. `revisar.py`: sin problemas. No probado en iPhone por Claude.
+
+## Bloque 174 — Prioridad por árbol en Supervisión, mapa base, simbología y cierre directo (05-10-2026)
+
+Versión 0.9.40. Peticiones de Liber y un defecto reportado por él.
+
+**Qué cambió.** D244: `js/indicadores.js` (cada árbol en su colonia; se quitó `altas`), `js/supervision.js`
+e `js/informes.js` (cada nivel por separado). D245: `js/config.js` (`CAPAS_CALLES`), `js/mapa.js`
+(`ponerBase()`, `pintarBase()`, `cambiarBase()`), `js/prioritarias.js` (panel de capas de campo,
+`armarPanel()`, simbología), `js/jornadas.js`, `index.html` (`#mapa-simbologia`, `#jornada-simbologia`).
+D246: `js/jornada-activa.js` (`cerrarJornada({ directo })`). D247: `index.html` y `css/estilos.css` (pie
+de la revisión), `js/especies-revision.js` (tabla), `js/app.js` (la vista de registro se abre a quien edita).
+
+**Pantalla: qué se agregó y qué se quitó.** Se quitó una ventana de confirmación y la frase «alta o muy
+alta». Se agregaron el panel de capas (en lugar del interruptor), un renglón de simbología bajo el mapa
+y la tabla de especies escritas (en lugar de la lista).
+
+**Verificación:** corrida completa sola, 1,362 comprobaciones, 2 fallas, sin errores de consola (última sección `ctx83`). Las dos fallas son de las pruebas, no del sistema: una esperaba el texto anterior de la nota del mapa de prioridad (corregida; su sección pasa sola, 15 de 15) y otra es intermitente, en el aviso de relevo de cabo (sección `ctx58`), que no toca este bloque: pasa sola (35 de 35) y con el procesador ralentizado, y quedó instrumentada para decir qué leyó la próxima vez que falle. `auditoria.py`: 140 comprobaciones, 0 hallazgos. `auditoria_css.py`: 0 hallazgos. `revisar.py`: sin problemas. No probado en iPhone por Claude; el mapa de calles no se vio con imagen real, porque el entorno de pruebas no alcanza el servicio de mapas.

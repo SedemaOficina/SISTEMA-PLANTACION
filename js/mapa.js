@@ -54,17 +54,14 @@ SRP.mapa = {
     // Sólo la capa de imagen avisa si no carga: las de nombres son complemento, y su ausencia
     // no impide colocar el punto. El aviso va en su propio renglón: ya no tapa la precisión (D152)
     let fallas = 0;
-    c.CAPAS.forEach(capa => {
-      const capaLeaflet = L.tileLayer(capa.url, { attribution: capa.atribucion, maxZoom: c.ZOOM_MAX });
-      if (capa.base) {
-        capaLeaflet.on('tileerror', () => {
-          fallas += 1;
-          if (fallas === 3) this.aviso('imagen', 'La imagen del mapa no cargó. Puede acercar el mapa y tocar donde está el árbol, o capturar coordenadas a mano.');
-        });
-        capaLeaflet.on('tileload', () => { if (fallas >= 3) { fallas = 0; this.aviso('imagen', null); } });
-      }
-      capaLeaflet.addTo(this.mapa);
-    });
+    this.ponerBase(this.mapa, { alCrearBase: (capaLeaflet) => {
+      fallas = 0; this.aviso('imagen', null);
+      capaLeaflet.on('tileerror', () => {
+        fallas += 1;
+        if (fallas === 3) this.aviso('imagen', 'La imagen del mapa no cargó. Puede acercar el mapa y tocar donde está el árbol, o capturar coordenadas a mano.');
+      });
+      capaLeaflet.on('tileload', () => { if (fallas >= 3) { fallas = 0; this.aviso('imagen', null); } });
+    } });
     // La punta del pin marca la coordenada exacta: el anclaje va en ella, no en el centro
     this.icono = L.divIcon({ className: 'pin', html: this.ICONO_SVG, iconSize: [24, 32], iconAnchor: [12, 31] });
     this.mapa.on('click', (e) => this.alTocar(e.latlng));
@@ -74,13 +71,46 @@ SRP.mapa = {
     ver.setAttribute('aria-label', 'Ver el registro de este árbol');
     ver.addEventListener('click', () => { const r = this.plantados[this.elegido]; if (r) SRP.registros.verDetalle(r.registro); });
     // El polígono de la colonia de la jornada activa, con el color de su prioridad; un botón sobre el mapa lo apaga
-    SRP.prioritarias.control(() => this.mapa, { grupo: 'campo', simple: true,
+    SRP.prioritarias.control(() => this.mapa, { grupo: 'campo', simple: true, leyenda: document.getElementById('mapa-simbologia'),
       intervenidas: () => { const j = SRP.activa && SRP.activa.jornada; return j ? SRP.prioritarias.coloniaDeJornada(Object.values(this.plantados).map(p => p.registro), j) : {}; } });
   },
 
   /* CRÉDITO DEL MAPA (D108, D152), en todos los mapas: Leaflet, «Powered by Esri» —que Esri pide
      no ocultar— y el crédito de cada capa tal como lo declara su servicio. En teléfono va en un
      renglón que termina en «…»; al tocarlo se ve completo. */
+  /* ---------- Mapa base: satélite o calles ---------- */
+
+  /* Todos los mapas usan el mismo mapa base, el que la persona eligió con el botón de capas:
+     «satelite» (imagen con nombres de calles y lugares) o «calles» (sólo el plano). Se recuerda en
+     el dispositivo. `op`: { capa: opciones de Leaflet para cada capa, alCrearBase(capa) }. */
+  CLAVE_BASE: 'srp_mapa_base',
+  bases: new Map(),
+  base: null,
+  baseElegida() {
+    if (!this.base) { try { this.base = localStorage.getItem(this.CLAVE_BASE); } catch (e) { /* sin almacenamiento: vale la de arranque */ } }
+    return this.base === 'calles' ? 'calles' : 'satelite';
+  },
+  ponerBase(m, op) {
+    this.bases.set(m, { capas: [], op: op || {} });
+    this.pintarBase(m);
+  },
+  pintarBase(m) {
+    const reg = this.bases.get(m), c = SRP.CONFIG.MAPA;
+    if (!reg) return;
+    reg.capas.forEach(capa => m.removeLayer(capa));
+    reg.capas = (this.baseElegida() === 'calles' ? c.CAPAS_CALLES : c.CAPAS).map(def => {
+      const capa = L.tileLayer(def.url, Object.assign({ attribution: def.atribucion, maxZoom: c.ZOOM_MAX }, reg.op.capa || {}));
+      if (def.base && reg.op.alCrearBase) reg.op.alCrearBase(capa);
+      return capa.addTo(m);
+    });
+  },
+  // Cambia el mapa base de todos los mapas abiertos; los que ya no están en pantalla se sueltan
+  cambiarBase(base) {
+    this.base = base === 'calles' ? 'calles' : 'satelite';
+    try { localStorage.setItem(this.CLAVE_BASE, this.base); } catch (e) { /* sin almacenamiento: vale mientras la página siga abierta */ }
+    this.bases.forEach((reg, m) => { if (m._container && document.body.contains(m._container)) this.pintarBase(m); else this.bases.delete(m); });
+  },
+
   ponerCredito(m) {
     m.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a> | ' + SRP.CONFIG.MAPA.CREDITO_PROVEEDOR);
     const credito = m.attributionControl.getContainer();
@@ -372,7 +402,7 @@ SRP.mapa = {
       dragging: false, scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false, keyboard: false
     });
     this.ponerCredito(m);   // también en las fichas: la imagen es la misma (D152)
-    c.CAPAS.forEach(capa => L.tileLayer(capa.url, { attribution: capa.atribucion, maxZoom: c.ZOOM_MAX }).addTo(m));
+    this.ponerBase(m);
     L.marker([lat, lng], { icon: this.icono, interactive: false }).addTo(m);
     setTimeout(() => m.invalidateSize(), 60);
     return m;

@@ -183,20 +183,19 @@ SRP.indicadores = {
       solicitantes: [...new Set(pedidas.map(j => S.clave(j.dato)))].map(k => ({ clave: k, solicitante: S.nombreClave(k),
         jornadas: pedidas.filter(j => S.clave(j.dato) === k).length, arboles: arboles.filter(a => S.clave(a.j.dato) === k).length }))
         .sort((a, b) => b.arboles - a.arboles || a.solicitante.localeCompare(b.solicitante, 'es')) };
-    /* Por prioridad de reforestación: cada árbol cuenta en la prioridad de su jornada, que es la de la
-       colonia donde se ubicó (modelo de priorización). No se guarda: se dice con la capa vigente. */
+    /* Por prioridad de reforestación: cada árbol cuenta en la prioridad de la colonia donde quedó
+       plantado (modelo de priorización), aunque su jornada se haya ubicado en otra. Cada nivel va por
+       separado. No se guarda: se dice con la capa vigente. */
     let prioridad = null;
     if (SRP.prioritarias.hay()) {
-      const deJ = new Map(), priDe = j => { if (!deJ.has(j)) deJ.set(j, j.prioridad || SRP.prioritarias.deJornada(j.registros, j.dato)); return deJ.get(j); };
       const cuenta = {}; let sin = 0;
-      // Las colonias de las jornadas, con sus árboles: son las que pinta el mapa
+      // Las colonias donde hay árboles, con cuántos: son las que pinta el mapa
       const colonias = {};
-      arboles.forEach(a => { const p = priDe(a.j);
+      arboles.forEach(a => { const p = SRP.prioritarias.de(a.r.lat, a.r.lng);
         if (!p) { sin++; return; }
         cuenta[p.prioridad] = (cuenta[p.prioridad] || 0) + 1;
         if (p.id != null) colonias[p.id] = (colonias[p.id] || 0) + 1; });
       prioridad = { niveles: SRP.prioritarias.NIVELES.map(([n, texto]) => ({ prioridad: n, texto, n: cuenta[n] || 0 })), sin, total: arboles.length, colonias };
-      prioridad.altas = prioridad.niveles.filter(x => x.prioridad >= 3).reduce((s, x) => s + x.n, 0);
     }
 
     // Trazabilidad del periodo: árboles eliminados y ediciones, del alcance y con los filtros

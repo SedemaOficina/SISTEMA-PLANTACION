@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 173',
+  ETAPA: 'Bloque 174',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -95,6 +95,14 @@ SRP.CONFIG = {
         atribucion: 'Vías: Esri, HERE, Garmin, © OpenStreetMap contributors', base: false },
       { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
         atribucion: 'Lugares: Esri, HERE, Garmin, © OpenStreetMap contributors y GIS User Community', base: false }
+    ],
+    /* El otro mapa base, que se elige con el botón de capas: sólo calles, sin imagen. Es del mismo
+       proveedor y del mismo dominio, así que la política de seguridad no cambia. Crédito según su
+       copyrightText (consultado el 05-10-2026). */
+    CAPAS_CALLES: [
+      { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+        atribucion: 'Calles: Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCan, Esri Japan, METI, Esri China (Hong Kong), Esri Korea, Esri (Thailand), NGCC, © OpenStreetMap contributors y GIS User Community',
+        base: true }
     ],
     CREDITO_PROVEEDOR: 'Powered by Esri',
     GPS_ESPERA_MS: 15000,

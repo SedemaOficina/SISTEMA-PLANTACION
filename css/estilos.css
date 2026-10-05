@@ -249,6 +249,7 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 /* Especies escritas: lo escrito va al frente */
 .rev-escrito { font-family: var(--fuente-titulo); font-weight: 600; font-size: var(--t-m); overflow-wrap: anywhere; }
 .rev-parecida { color: var(--texto); }
+.rev-tabla .c-num { text-align: right; font-variant-numeric: tabular-nums; }
 /* Carga masiva: cifras de la revisión y renglones con problemas (el error en rojo, el aviso en ámbar) */
 .carga-cifras { margin: var(--e-2) 0 var(--e-3); padding-left: var(--e-5); }
 .carga-problemas .cmb-item { padding-left: var(--e-3); border-left: 3px solid var(--borde-suave); }
@@ -819,6 +820,8 @@ dialog::backdrop { background: var(--velo-oscuro); }
 /* Las dos acciones, con el mismo ancho y el mismo alto: en un renglón cuando caben sin partir su
    texto (computadora, tableta); en teléfono, una debajo de la otra a todo lo ancho */
 .dialogo-pie-doble .btn { flex: 1 1 9.5rem; width: auto; min-height: var(--toque); white-space: nowrap; }
+/* Si una de las dos es la acción destacada, la otra toma su alto: se ven como un par */
+.dialogo-pie-doble:has(.btn-destacado) .btn { min-height: 56px; max-width: none; }
 .dialogo-titulo { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); }
 .dialogo-titulo h2 { margin: 0; }
 .dialogo-titulo h2:focus { outline: none; }
@@ -906,6 +909,8 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .dist-otra { fill: var(--dist-sin-dato); background: var(--dist-sin-dato); }
 .dialogo-pie .btn-texto { margin-top: var(--e-1); }
 .dialogo-pie .btn-secundario.btn-ancho { margin-bottom: var(--e-2); }
+/* En el pie de dos acciones la separación la pone la rejilla */
+.dialogo-pie-doble .btn-secundario.btn-ancho { margin-bottom: 0; }
 /* Los demás árboles de la jornada, en el mapa de la revisión de un punto que quedó lejos */
 .revision-otro { fill: var(--exito); fill-opacity: 1; stroke: var(--fondo); stroke-width: 2; }
 
@@ -1457,6 +1462,13 @@ dialog::backdrop { background: var(--velo-oscuro); }
 /* El panel va al lado del botón y cabe en el mapa del teléfono: niveles en dos columnas y la opacidad en un renglón */
 .pri-capas-panel { width: 15rem; box-sizing: border-box; overflow-y: auto; overscroll-behavior: contain; padding: var(--e-2); border: 1px solid var(--borde-control); border-radius: var(--radio); background: var(--fondo); color: var(--texto); box-shadow: var(--sombra-menu); font-size: var(--t-s); }
 .pri-capas-panel[hidden] { display: none; }
+/* En campo el panel es corto: mapa base y colonias de la jornada */
+.pri-capas-campo { width: 12.5rem; }
+.pri-capas-base { margin: 0; padding: 0 0 var(--e-1); border: 0; min-width: 0; }
+.pri-capas-base legend { padding: 0; font-weight: 600; }
+.pri-capas-colonias { border-top: 1px solid var(--borde-suave); padding-top: var(--e-1); }
+.pri-capas-colonias[hidden] { display: none; }
+.mapa-simbologia { margin: var(--e-2) 0; }
 .pri-capas-fila { display: flex; align-items: center; gap: var(--e-2); min-height: 34px; cursor: pointer; }
 .pri-capas-fila input { width: 20px; height: 20px; margin: 0; flex: none; }
 .pri-capas-todo { font-weight: 600; margin: 0; }

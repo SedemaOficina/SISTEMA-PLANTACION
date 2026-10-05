@@ -392,7 +392,9 @@ SRP.app = {
     if (u) {
       const p = SRP.permisos.de(u);
       const admin = p.catalogos && p.usuarios;
-      if ((nombre === 'registrar' && !p.registrar) || (nombre === 'catalogos' && !p.catalogos) || (nombre === 'galeria' && !p.galeria) || (nombre === 'supervision' && p.alcance === 'ninguno') ||
+      // Quien no registra árboles nuevos pero sí puede corregirlos (la Administración global) entra a «Nuevo registro» sólo a editar
+      const editando = !!(SRP.formulario && SRP.formulario.estado && (SRP.formulario.estado.editando || SRP.formulario.estado.sustitucion));
+      if ((nombre === 'registrar' && !p.registrar && !editando) || (nombre === 'catalogos' && !p.catalogos) || (nombre === 'galeria' && !p.galeria) || (nombre === 'supervision' && p.alcance === 'ninguno') ||
           (nombre === 'usuarios' && !p.usuarios) || (['configuracion', 'parametros', 'cambios', 'acerca', 'carga', 'revision-especies'].includes(nombre) && !admin)) nombre = 'registros';
     }
     // Una sección que ya no existe (un «atrás» hacia Reportes, de una versión anterior) lleva a Jornadas

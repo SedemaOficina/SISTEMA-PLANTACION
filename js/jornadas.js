@@ -908,10 +908,10 @@ SRP.jornadas = {
       this.mapa = L.map('jornada-mapa', { center: c.CENTRO, zoom: c.ZOOM_INICIAL, minZoom: c.ZOOM_MIN, maxZoom: c.ZOOM_JORNADA,
         maxBounds: c.LIMITES, maxBoundsViscosity: 1, gestureHandling: true });
       SRP.mapa.ponerCredito(this.mapa);   // el mismo crédito en todos los mapas (D152)
-      c.CAPAS.forEach(capa => L.tileLayer(capa.url, { attribution: capa.atribucion, maxZoom: c.ZOOM_JORNADA, maxNativeZoom: c.ZOOM_MAX }).addTo(this.mapa));
+      SRP.mapa.ponerBase(this.mapa, { capa: { maxZoom: c.ZOOM_JORNADA, maxNativeZoom: c.ZOOM_MAX } });
       this.capaPuntos = L.layerGroup().addTo(this.mapa);
       // Los polígonos de la colonia de la jornada y de las colonias donde cayeron sus árboles, cada uno con el color de su prioridad; un botón sobre el mapa los apaga
-      SRP.prioritarias.control(() => this.mapa, { grupo: 'campo', simple: true,
+      SRP.prioritarias.control(() => this.mapa, { grupo: 'campo', simple: true, leyenda: this.el('jornada-simbologia'),
         intervenidas: () => { const j = this.jornada || {}; return SRP.prioritarias.coloniaDeJornada(j.registros, j.dato); } });
     }
     SRP.prioritarias.refrescar();

@@ -221,18 +221,24 @@ SRP.prioritarias = {
   control(mapa, o) {
     o = Object.assign({ grupo: 'campo', interruptor: true }, o || {});
     const m = mapa();
-    if (!m || !window.L || !this.hay()) { if (o.leyenda) o.leyenda.hidden = true; return; }
+    // El control de campo también elige el mapa base: existe aunque falte la capa de prioridad
+    if (!m || !window.L || (!this.hay() && !o.simple)) { if (o.leyenda) o.leyenda.hidden = true; return; }
     if (this.controles.some(c => c.m === m)) { this.refrescar(); return; }
     const id = 'pri-panel-' + (this.controles.length + 1), esc = SRP.util.escapar;
     const caja = L.DomUtil.create('div', 'leaflet-control pri-capas');
-    /* En campo el control es un solo botón que enciende o apaga el polígono de la colonia de la
-       jornada: no hay niveles ni opacidad que elegir */
+    /* En campo el botón de capas abre lo que se puede elegir del mapa: el mapa base —satélite o
+       calles— y si se ven las colonias de la jornada. No hay niveles ni opacidad que elegir. */
     if (o.simple) {
-      caja.innerHTML = '<button type="button" class="pri-capas-boton" aria-pressed="false" aria-label="Colonias de la jornada, con el color de su prioridad" title="Colonias de la jornada">' + SRP.ICONOS.svg('capas', 'medio') + '</button>';
-      L.DomEvent.disableClickPropagation(caja); L.DomEvent.disableScrollPropagation(caja);
-      caja.querySelector('button').addEventListener('click', () => {
-        this.alternar();
-        SRP.util.anunciarSilencioso(this.encendida() ? 'Colonias de la jornada a la vista.' : 'Colonias de la jornada ocultas.');
+      caja.innerHTML = '<button type="button" class="pri-capas-boton" aria-expanded="false" aria-controls="' + id + '" aria-label="Capas del mapa: mapa base y colonias de la jornada" title="Capas del mapa">' + SRP.ICONOS.svg('capas', 'medio') + '</button>' +
+        '<div id="' + id + '" class="pri-capas-panel pri-capas-campo" hidden>' +
+        '<fieldset class="pri-capas-base"><legend>Mapa base</legend>' +
+        [['satelite', 'Satélite'], ['calles', 'Calles']].map(([v, t]) => '<label class="pri-capas-fila"><input type="radio" name="' + id + '-base" data-pri="base" value="' + v + '"><span>' + t + '</span></label>').join('') + '</fieldset>' +
+        '<label class="pri-capas-fila pri-capas-colonias"><input type="checkbox" data-pri="ver"><span>Colonias de la jornada</span></label></div>';
+      this.armarPanel(caja, m);
+      caja.addEventListener('change', (e) => {
+        const que = e.target.dataset.pri;
+        if (que === 'base') { SRP.mapa.cambiarBase(e.target.value); this.refrescar(); SRP.util.anunciarSilencioso(e.target.value === 'calles' ? 'Mapa de calles.' : 'Mapa de satélite.'); }
+        if (que === 'ver') { this.alternar(); SRP.util.anunciarSilencioso(this.encendida() ? 'Colonias de la jornada a la vista.' : 'Colonias de la jornada ocultas.'); }
       });
       const S = L.Control.extend({ onAdd: () => caja });
       new S({ position: 'topright' }).addTo(m);
@@ -246,21 +252,25 @@ SRP.prioritarias = {
       '<fieldset class="pri-capas-niveles"><legend>Niveles</legend>' + this.NIVELES.map(([n, t]) =>
         '<label class="pri-capas-fila"><input type="checkbox" data-pri="nivel" value="' + n + '"><i class="pri-muestra pri-nivel-' + n + '"></i><span>' + esc(t) + '</span></label>').join('') + '</fieldset>' +
       '<label class="pri-capas-opacidad"><span>Opacidad <output></output></span><input type="range" data-pri="opacidad" min="10" max="100" step="5"></label></div>';
-    // Lo que pasa dentro del control no llega al mapa: ni coloca el punto ni lo mueve
-    L.DomEvent.disableClickPropagation(caja); L.DomEvent.disableScrollPropagation(caja);
-    const boton = caja.querySelector('.pri-capas-boton'), panel = caja.querySelector('.pri-capas-panel');
-    /* El panel cabe siempre dentro del mapa: se abre al lado del botón y su alto y su ancho se ajustan
-       a los del mapa; si aun así no cabe (mapa muy bajo), se desplaza por dentro */
-    const ajustar = () => { const t = m.getSize(); panel.style.maxHeight = Math.max(120, t.y - 20) + 'px'; panel.style.maxWidth = Math.max(160, t.x - 74) + 'px'; };
-    boton.addEventListener('click', () => { panel.hidden = !panel.hidden; boton.setAttribute('aria-expanded', String(!panel.hidden)); if (!panel.hidden) ajustar(); });
-    m.on('resize', () => { if (!panel.hidden) ajustar(); });
-    caja.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !panel.hidden) { panel.hidden = true; boton.setAttribute('aria-expanded', 'false'); boton.focus(); } });
+    this.armarPanel(caja, m);
     caja.addEventListener('change', (e) => this.alCambiar(o.grupo, e.target));
     caja.addEventListener('input', (e) => { if (e.target.dataset.pri === 'opacidad') this.alCambiar(o.grupo, e.target); });
     const C = L.Control.extend({ onAdd: () => caja });
     new C({ position: 'topright' }).addTo(m);
     this.controles.push({ m, mapa, caja, o });
     this.refrescar();
+  },
+
+  /* El botón abre y cierra su panel. Lo que pasa dentro del control no llega al mapa: ni coloca el
+     punto ni lo mueve. El panel cabe siempre dentro del mapa: se abre al lado del botón y su alto y
+     su ancho se ajustan a los del mapa; si aun así no cabe (mapa muy bajo), se desplaza por dentro. */
+  armarPanel(caja, m) {
+    L.DomEvent.disableClickPropagation(caja); L.DomEvent.disableScrollPropagation(caja);
+    const boton = caja.querySelector('.pri-capas-boton'), panel = caja.querySelector('.pri-capas-panel');
+    const ajustar = () => { const t = m.getSize(); panel.style.maxHeight = Math.max(120, t.y - 20) + 'px'; panel.style.maxWidth = Math.max(160, t.x - 74) + 'px'; };
+    boton.addEventListener('click', () => { panel.hidden = !panel.hidden; boton.setAttribute('aria-expanded', String(!panel.hidden)); if (!panel.hidden) ajustar(); });
+    m.on('resize', () => { if (!panel.hidden) ajustar(); });
+    caja.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !panel.hidden) { panel.hidden = true; boton.setAttribute('aria-expanded', 'false'); boton.focus(); } });
   },
 
   alCambiar(grupo, el) {
@@ -293,11 +303,19 @@ SRP.prioritarias = {
       const pane = m.getPane('prioritarias');
       if (o.simple) {
         if (pane) pane.style.opacity = String(this.inicial(o.grupo).opacidad);
-        const b = caja.querySelector('.pri-capas-boton');
-        b.dataset.activa = String(ver); b.setAttribute('aria-pressed', String(ver));
-        // Sin colonia que pintar, el botón no tiene qué encender
-        const capaS = this.capas.get(m);
-        caja.hidden = !!(capaS && capaS.nivelesPintados && !capaS.nivelesPintados.size) || (!capaS && ver);
+        const capaS = this.capas.get(m), pintados = capaS ? capaS.nivelesPintados : null;
+        // Sin colonia que pintar no se ofrece encenderla ni hay colores que explicar
+        const hayColonias = this.hay() && !((pintados && !pintados.size) || (!capaS && ver));
+        caja.querySelector('.pri-capas-colonias').hidden = !hayColonias;
+        caja.querySelector('[data-pri="ver"]').checked = ver;
+        caja.querySelectorAll('[data-pri="base"]').forEach(r => { r.checked = r.value === SRP.mapa.baseElegida(); });
+        caja.querySelector('.pri-capas-boton').dataset.activa = String(ver && hayColonias);
+        /* Bajo el mapa, la simbología: qué prioridad dice cada color de las colonias que se ven */
+        if (o.leyenda) {
+          o.leyenda.hidden = !(ver && hayColonias && pintados && pintados.size);
+          o.leyenda.innerHTML = o.leyenda.hidden ? '' : '<p class="pri-leyenda"><span class="pri-leyenda-titulo">' + (pintados.size === 1 ? 'Colonia de la jornada, de prioridad:' : 'Colonias de la jornada, por prioridad:') + '</span>' +
+            this.NIVELES.filter(([n]) => pintados.has(String(n))).map(([n, t]) => '<span><i class="pri-muestra pri-nivel-' + n + '"></i>' + SRP.util.escapar(t) + '</span>').join('') + '</p>';
+        }
         return;
       }
       if (pane) {

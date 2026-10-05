@@ -522,9 +522,13 @@ SRP.activa = {
   async cerrarJornada(op) {
     let j = this.jornada; if (!j) return;
     if (!SRP.permisos.exigir('jornada.editar', j)) return;
-    const c = await this.confirmacionCierre(j);
-    if (!(op && op.sinPreguntarSiCuadra && !c.puntos.length) && !(await SRP.app.confirmar(c))) return;
-    j = await this.ofrecerActualizarPrevistos(j);
+    /* Desde «Jornada completa» ya se eligió cerrar: no se vuelve a preguntar. Lo que quede pendiente
+       —puntos por revisar, datos de cierre— lo dice la ficha de la jornada, que es a donde se llega. */
+    if (!(op && op.directo)) {
+      const c = await this.confirmacionCierre(j);
+      if (!(await SRP.app.confirmar(c))) return;
+      j = await this.ofrecerActualizarPrevistos(j);
+    }
     if (!await this.cambiarEstatus(j, 'cerrada')) return;
     this.jornada = null;
     SRP.jornadas.actual = j.id;

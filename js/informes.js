@@ -154,7 +154,7 @@ SRP.informes = {
       const p = m.prioridad, P = SRP.indicadores.pct;
       titulo('Por prioridad de la colonia');
       tabla(['Prioridad de reforestación', 'Árboles', '% del total'], p.niveles.map(x => [x.texto, num(x.n), (P(x.n, p.total) || 0) + ' %'])
-        .concat(p.sin ? [['Sin dato en la capa', num(p.sin), (P(p.sin, p.total) || 0) + ' %']] : []), { derecha: [1, 2], pie: ['Alta y muy alta', num(p.altas), (P(p.altas, p.total) || 0) + ' %'] });
+        .concat(p.sin ? [['Sin dato en la capa', num(p.sin), (P(p.sin, p.total) || 0) + ' %']] : []), { derecha: [1, 2], pie: ['Total', num(p.total), '100 %'] });
     }
     titulo('Por especie');
     tabla(['Especie', 'Nombre científico', 'Distribución', 'Árboles', '% del total'], SRP.supervision.conPct(m.porEspecie, c.arboles).map(x => [x.comun, x.cientifico, x.distribucion || '—', num(x.arboles), x.pct + ' %']),

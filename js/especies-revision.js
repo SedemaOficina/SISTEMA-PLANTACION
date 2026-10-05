@@ -71,23 +71,27 @@ SRP.especiesRevision = {
     const num = n => n.toLocaleString('es-MX'), pl = (n, uno, varios) => num(n) + ' ' + (n === 1 ? uno : varios);
     const g = this.grupos, arboles = g.reduce((s, x) => s + x.arboles.length, 0);
     this.el('rev-cuenta').textContent = g.length ? pl(g.length, 'especie escrita', 'especies escritas') + ' · ' + pl(arboles, 'árbol', 'árboles') : '';
-    this.el('rev-lista').innerHTML = g.map(x => this.htmlGrupo(x)).join('');
+    this.el('rev-lista').innerHTML = g.length ? '<thead><tr><th scope="col">Especie escrita</th><th scope="col">También escrita como</th><th scope="col" class="c-num">Árboles</th><th scope="col" class="c-num">Jornadas</th>' +
+      '<th scope="col">Quién la escribió</th><th scope="col">Fechas</th><th scope="col">Parecida en el catálogo</th></tr></thead><tbody>' + g.map(x => this.htmlGrupo(x)).join('') + '</tbody>' : '';
+    this.el('rev-caja').hidden = !g.length;
     this.el('btn-rev-excel').hidden = !g.length;
     const vacio = this.el('rev-vacio');
     vacio.hidden = g.length > 0;
     if (!vacio.hidden) vacio.innerHTML = '<p class="vacio-titulo">Ninguna especie escrita</p><p class="vacio-texto">Nadie ha registrado árboles con «Otra especie». Cuando alguien escriba una, aparecerá aquí.</p>';
   },
 
+  /* Un renglón de la tabla. En teléfono cada renglón se muestra como ficha: lo escrito, la cuenta y,
+     si la hay, la parecida del catálogo. */
   htmlGrupo(g) {
-    const esc = SRP.util.escapar, num = n => n.toLocaleString('es-MX');
+    const esc = SRP.util.escapar, num = n => n.toLocaleString('es-MX'), f = d => SRP.util.formatearFecha(d);
     const pl = (n, uno, varios) => num(n) + ' ' + (n === 1 ? uno : varios);
-    const quien = this.quienes(g);
-    const cuando = g.desde ? (g.desde === g.hasta ? SRP.util.formatearFecha(g.desde) : SRP.util.formatearFecha(g.desde) + ' al ' + SRP.util.formatearFecha(g.hasta)) : '';
-    return '<li class="cmb-item rev-item" data-clave="' + esc(g.clave) + '">' +
-      '<span class="rev-escrito">«' + esc(g.texto) + '»</span>' +
-      '<span class="cmb-que">' + [pl(g.arboles.length, 'árbol', 'árboles'), pl(g.jornadas.length, 'jornada', 'jornadas'), quien ? 'Escrita por ' + esc(quien) : '', esc(cuando)].filter(Boolean).join(' · ') + '</span>' +
-      (g.variantes.length ? '<span class="cmb-campos">También escrita: ' + g.variantes.map(v => '«' + esc(v) + '»').join(', ') + '</span>' : '') +
-      (g.parecida ? '<span class="cmb-campos rev-parecida">Parecida en el catálogo: ' + esc(g.parecida.nombre) + ' · <i>' + esc(g.parecida.nombre_cientifico || '') + '</i></span>' : '') + '</li>';
+    const cuando = g.desde ? (g.desde === g.hasta ? f(g.desde) : f(g.desde) + ' al ' + f(g.hasta)) : '';
+    return '<tr data-clave="' + esc(g.clave) + '"><td class="c-titulo rev-escrito" data-etiqueta="Especie escrita">«' + esc(g.texto) + '»</td>' +
+      '<td class="c-sub" data-etiqueta="También escrita como">' + g.variantes.map(v => '«' + esc(v) + '»').join(', ') + '</td>' +
+      '<td class="c-num c-movil-oculta" data-etiqueta="Árboles">' + num(g.arboles.length) + '</td><td class="c-num c-movil-oculta" data-etiqueta="Jornadas">' + num(g.jornadas.length) + '</td>' +
+      '<td class="c-movil-oculta" data-etiqueta="Quién la escribió">' + esc(this.quienes(g)) + '</td><td class="c-movil-oculta" data-etiqueta="Fechas">' + esc(cuando) + '</td>' +
+      '<td class="c-sub rev-parecida" data-etiqueta="Parecida en el catálogo">' + (g.parecida ? esc(g.parecida.nombre) + ' · <i>' + esc(g.parecida.nombre_cientifico || '') + '</i>' : '') + '</td>' +
+      '<td class="c-resumen">' + esc([pl(g.arboles.length, 'árbol', 'árboles'), pl(g.jornadas.length, 'jornada', 'jornadas'), this.quienes(g), cuando].filter(Boolean).join(' · ')) + '</td></tr>';
   },
 
   /* LA LISTA EN EXCEL, para revisarla fuera: un renglón por especie escrita, con todas las formas

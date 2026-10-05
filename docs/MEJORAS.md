@@ -432,6 +432,14 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M434 | Liber | En teléfono, el campo que se escribe dentro de una ventana queda a la vista sobre el teclado | Alta | 0.9.38 (B172) | Ventanas con campos | D241 |
 | M435 | Claude | Supervisión no conserva, ni por un instante, las listas y cifras de la cuenta anterior al cambiar de cuenta | Alta | 0.9.38 (B172) | Supervisión | D242 |
 | M436 | Liber | Al editar un árbol: franja fija «Editando registro» con el folio, marco de acento en el formulario y botón «Guardar cambios» | Media | 0.9.39 (B173) | Registros › Editar | D243 |
+| M437 | Liber | Supervisión cuenta cada árbol en la prioridad de la colonia donde quedó y pinta todas las colonias con árboles | Alta | 0.9.40 (B174) | Supervisión › Por prioridad de la colonia | D244 |
+| M438 | Liber | La prioridad se dice por nivel, sin sumar «alta o muy alta», en pantalla y en el informe | Alta | 0.9.40 (B174) | Supervisión; informe en PDF | D244 |
+| M439 | Liber | El botón de capas elige el mapa base: satélite o calles | Media | 0.9.40 (B174) | Nuevo registro › mapa; ficha de la jornada | D245 |
+| M440 | Liber | Bajo el mapa, simbología de la prioridad de las colonias pintadas | Media | 0.9.40 (B174) | Nuevo registro › mapa; ficha de la jornada | D245 |
+| M441 | Liber | «Cerrar jornada» desde «Jornada completa» cierra sin una segunda ventana | Alta | 0.9.40 (B174) | Jornada completa | D246 |
+| M442 | Liber | En «Revise antes de guardar», los dos botones van en un renglón en computadora | Baja | 0.9.40 (B174) | Revise antes de guardar | D247 |
+| M443 | Liber | Especies escritas en tabla | Media | 0.9.40 (B174) | Catálogos › Especies › Especies escritas | D247 |
+| M444 | Liber | Defecto: la Administración global ya puede editar y sustituir un árbol | Alta | 0.9.40 (B174) | Ficha de la jornada y Registros › Editar | D247 |
 
 ## 2. Por hacer
 
@@ -459,4 +467,4 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 417 hechas · 7 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 425 hechas · 7 por hacer · 2 revisadas · 2 descartadas.
