@@ -3353,3 +3353,27 @@ Versión 0.9.41. Petición de Liber.
 **Pantalla: qué se agregó y qué se quitó.** No se agregó ni se quitó nada: cambió la disposición.
 
 **Verificación:** corrida completa sola, 1,363 comprobaciones, 0 fallas, sin errores de consola (última sección `ctx83`). Dos corridas anteriores no terminaron porque el entorno de pruebas se reinició a media corrida. `auditoria.py`: 140 comprobaciones, 0 hallazgos. `auditoria_css.py`: 0 hallazgos. `revisar.py`: sin problemas. No probado en iPhone por Claude.
+
+## Bloque 176 — Arranque de la fase de servidor: equipo y documentación del traspaso (05-10-2026)
+
+Versión de la aplicación sin cambio: 0.9.41. Primer bloque de la fase de servidor (fase 0).
+
+**Qué cambió (D249, al detalle).** `docs/FASE2-Y-TRASPASO.md`: el servidor se construye en este proyecto
+(`servidor/`) con el nombre `srp`; fila 8, doble conteo entre instituciones con bandeja de revisión;
+fila 16, histórico a nombre de la Administración global; fila 19, prioridad congelada con el árbol al
+recibirlo y conteo por árbol (D244); fila 28 nueva, usuarios y acceso con cuentas propias, sin servicio
+de correo; apartados 3 a 6 al día (preguntas al SIA, decisiones abiertas y ya tomadas, lista de
+verificación). `docs/PLAN-TRASPASO-SIA.md`: ruta `/srp/`, esquema `srp`, sesión con cookie detrás del
+intermediario, conexión cifrada a la base, responsables de las fases 2 a 4 (el SRP construye; el SIA
+ejecuta e instala), decisiones 1, 2 y 7 cerradas y 8 y 9 nuevas, siguiente paso. `README.md`: la línea
+de `sesion.js`.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada: sólo documentación. Configuración › Acceso aún dice
+«proveedor institucional de identidad»; se corrige al adaptar la aplicación al servidor.
+
+**Equipo de desarrollo.** Node.js, git, Python con Playwright, y PostgreSQL con PostGIS locales en la
+misma versión mayor que el SIA, con una base de desarrollo y una cuenta sin privilegios de superusuario.
+En Windows las pruebas de Python se corren con `PYTHONUTF8=1`.
+
+**Verificación:** `auditoria.py` en Windows, 140 comprobaciones, 0 hallazgos. No se corrió `prueba.py`:
+no cambió código de la aplicación.

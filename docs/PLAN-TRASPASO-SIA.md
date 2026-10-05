@@ -13,17 +13,18 @@ versiones exactas de los servidores: esos datos viven en la documentación inter
 
 | Pieza | Qué ofrece el SIA | Qué usa el SRP |
 |---|---|---|
-| Dominio | Dominio público de la Secretaría con HTTPS; el certificado lo administra y renueva la ADIP | Una ruta propia bajo ese dominio. HTTPS es requisito: sin él no hay GPS, cámara ni trabajo sin señal |
-| Servidor web | Proxy inverso que reparte el tráfico y sirve sitios estáticos, con historial de versiones publicadas | Los archivos de la aplicación (HTML, CSS, JS, capas, iconos). Es el servidor más holgado |
-| Servidor de aplicaciones | Backend central en Node.js con Express; cada módulo tiene su cuenta de base de datos y no ve los datos de los demás | Un módulo nuevo para el SRP, con su propia cuenta de servicio |
-| Base de datos | PostgreSQL con PostGIS, conexiones cifradas, un esquema por sistema, respaldos diarios y semanales con restauración probada | Un esquema nuevo con las diez tablas del SRP |
+| Dominio | Dominio público de la Secretaría con HTTPS; el certificado lo administra y renueva la ADIP | La ruta `/srp/` bajo ese dominio. HTTPS es requisito: sin él no hay GPS, cámara ni trabajo sin señal |
+| Servidor web | Proxy inverso que reparte el tráfico y sirve sitios estáticos, con historial de versiones publicadas; el cifrado termina en él | Los archivos de la aplicación (HTML, CSS, JS, capas, iconos). Es el servidor más holgado |
+| Servidor de aplicaciones | Backend central en Node.js con Express; cada módulo tiene su cuenta de base de datos y no ve los datos de los demás | El servicio del SRP, construido en este proyecto (`servidor/`), con su propia cuenta de servicio. Puede montarse como módulo del backend central o correr aparte: lo confirma el SIA |
+| Base de datos | PostgreSQL con PostGIS, conexiones cifradas obligatorias, un esquema por sistema, respaldos diarios y semanales con restauración probada | El esquema `srp`, con las diez tablas del SRP más las de usuarios y sesiones |
+| Correo | No hay servicio de correo | Nada: el restablecimiento de contraseñas lo hace la Administración global |
 | Marco territorial | Esquema `territorio` compartido: 16 alcaldías y 1,817 unidades territoriales | Alcaldías, colonias y malla UGA, previa verificación (apartado 3) |
 | Servidor de mapas | GeoServer con servicios WMS, WFS y WMTS públicos | Opcional: ortofoto propia como mapa base, en lugar de Esri |
 | Acceso de administración | Sólo por la red privada de gobierno | Lo opera el SIA; el SRP no requiere acceso de administración desde fuera |
 
 Ya existe en el SIA un módulo y un esquema de plantación. **El SRP no los reutiliza** (decisión del
-03-10-2026): entra como proyecto nuevo, con otro nombre, su propio esquema, su propia ruta y su propia
-cuenta de servicio. Qué pasa con el módulo anterior —se conserva, se archiva o se migra su contenido—
+03-10-2026): entra como proyecto nuevo, con su propio esquema, su propia ruta y su propia cuenta de
+servicio, todos con el nombre `srp` (D249). Qué pasa con el módulo anterior —se conserva, se archiva o se migra su contenido—
 lo decide el SIA y no condiciona este plan.
 
 ## 2. Arquitectura de destino
@@ -33,9 +34,9 @@ Teléfono (navegador, trabaja sin señal)
    │  HTTPS
    ▼
 Dominio de la Secretaría
-   ├── /<ruta>/            archivos de la aplicación        → servidor web
-   ├── /api/<ruta>/        recepción, consulta y permisos   → módulo nuevo del backend
-   │                              ├── esquema <esquema>     → base de datos
+   ├── /srp/               archivos de la aplicación        → servidor web
+   ├── /api/srp/           acceso, recepción, consulta      → servicio del SRP
+   │                              ├── esquema srp           → base de datos
    │                              ├── esquema territorio    → sólo lectura
    │                              └── fotografías           → volumen de datos, fuera de carpeta pública
    └── /geoserver/         mapa base propio (opcional)      → servidor de mapas
@@ -50,7 +51,12 @@ Criterios:
 3. **El servidor es la fuente de verdad.** Emite el folio, valida cada renglón, impone los permisos y
    escribe la bitácora. La pantalla sólo refleja.
 4. **Mínimo privilegio.** La cuenta de servicio del SRP escribe en su esquema y sólo lee `territorio`.
-5. **Sin datos de prueba en producción.** La versión real usa otra base en el teléfono (`srp_sia`) y el
+   Se conecta a la base con cifrado.
+5. **Sesión con cookie.** Mismo dominio, cookie sólo HTTP, segura y del mismo sitio. El servidor de
+   aplicaciones recibe HTTP del intermediario, así que confía en su cabecera para saber que la petición
+   llegó cifrada. Las cuentas son propias del SRP (correo y contraseña); no hay servicio externo de
+   autenticación ni de correo.
+6. **Sin datos de prueba en producción.** La versión real usa otra base en el teléfono (`srp_sia`) y el
    servidor arranca vacío.
 
 ## 3. Verificación de capas (requisito previo)
@@ -85,11 +91,11 @@ Cada fase tiene un criterio de salida; no se pasa a la siguiente sin cumplirlo.
 
 | Fase | Qué se hace | Responsable | Criterio de salida |
 |---|---|---|---|
-| **0. Acuerdos** | Nombre del proyecto, ruta de publicación, nombre del esquema y de la cuenta de servicio. Proveedor de identidad y si cubre a instituciones externas. Aviso de privacidad. Mapa base de producción | Oficina de la Secretaría y SIA | Las decisiones del apartado 6, por escrito |
+| **0. Acuerdos** | Forma de montaje del servicio (módulo del backend central o servicio aparte), quién crea el esquema y la cuenta de servicio, cómo se instala una versión nueva, límites del servidor web, ambiente de pruebas. Mapa base de producción. Ya decididos: nombre `srp` para proyecto, esquema y ruta; acceso con cuentas propias; sin aviso de privacidad (D249) | Oficina de la Secretaría y SIA | Las decisiones del apartado 6, por escrito |
 | **1. Capas** | Verificación del apartado 3; conciliación de colonias; confirmación de la malla UGA | SIA, con la huella que entrega el SRP | Las tres capas dan «IGUAL», o la aplicación se regeneró con las del SIA |
-| **2. Base de datos** | Esquema nuevo con las diez tablas, llaves foráneas, índices, secuencia del folio por celda y columnas de la cola de envío. Permisos de la cuenta de servicio. Alta en los respaldos | SIA | El esquema existe, la cuenta sólo ve lo suyo y `territorio` en lectura, y una restauración de prueba lo incluye |
-| **3. Servicios** | Módulo nuevo en el backend: acceso, catálogos, recepción idempotente de jornadas y árboles, folio, validación, permisos, bitácora, fotografías, consultas de Supervisión | SIA (desarrollo), con `FASE2-Y-TRASPASO.md` como especificación | Las 26 filas de su apartado 1 resueltas o diferidas por escrito |
-| **4. Aplicación** | Sustituir lo simulado (apartado 3 de `FASE2-Y-TRASPASO.md`): acceso, envío y folio. `ES_FICTICIO: false`. Publicar en la ruta. Retirar demostración y espejo de campos | SIA, con acompañamiento | La aplicación abre en la ruta definitiva, instala, trabaja sin señal y envía al volver la señal |
+| **2. Base de datos** | Esquema `srp` con las diez tablas, las de usuarios y sesiones, llaves foráneas, índices, secuencia del folio por celda y columnas de la cola de envío. Permisos de la cuenta de servicio. Alta en los respaldos | SRP (guion SQL, probado en una base local) y SIA (ejecución) | El esquema existe, la cuenta sólo ve lo suyo y `territorio` en lectura, y una restauración de prueba lo incluye |
+| **3. Servicios** | Servicio del SRP en `servidor/`: usuarios y sesión, catálogos, recepción idempotente de jornadas y árboles, folio, validación, permisos, bitácora, fotografías, bandeja de duplicados, consultas de Supervisión | SRP (desarrollo y pruebas locales), con `FASE2-Y-TRASPASO.md` como especificación; el SIA lo instala | Las filas del apartado 1 de ese archivo resueltas o diferidas por escrito |
+| **4. Aplicación** | Sustituir lo simulado (apartado 3 de `FASE2-Y-TRASPASO.md`): acceso, envío y folio. `ES_FICTICIO: false`. Publicar en la ruta. Retirar demostración y espejo de campos | SRP (cambios y pruebas contra el servicio local) y SIA (publicación) | La aplicación abre en la ruta definitiva, instala, trabaja sin señal y envía al volver la señal |
 | **5. Piloto** | Una cuadrilla, una semana, datos reales. Teléfonos iPhone y Android. Revisión diaria de lo recibido contra lo capturado | Oficina de la Secretaría, Reforestación Urbana y SIA | Cero árboles perdidos o duplicados; folios consecutivos por celda; reporte de jornada conforme |
 | **6. Operación** | Alta de cuentas y catálogos reales, vehículos incluidos. Carga del histórico. Monitoreo de disco de fotografías. Archivo del repositorio público | SIA | Todas las cuadrillas capturan en producción; el repositorio de GitHub queda privado y archivado |
 
@@ -110,6 +116,10 @@ Las fases 1 y 2 pueden correr en paralelo. La 3 es la de mayor esfuerzo y la que
 
 **Falta, del lado del SRP**
 
+- El servicio (`servidor/`): guion SQL, usuarios y sesión, permisos, recepción, folio, bandeja de
+  duplicados, y la adaptación de la aplicación para usarlo. Paquete de instalación con instrucciones
+  para el SIA.
+- Repositorio nuevo y limpio con el mismo nombre (D249).
 - Paquete de traspaso (apartado 7 de `FASE2-Y-TRASPASO.md`): especificación consolidada, comentarios sin
   historia, documentación de proceso al archivo. Se hace cuando la Etapa 1 deje de cambiar.
 - Prueba en iPhone y Android reales.
@@ -124,13 +134,15 @@ Las fases 1 y 2 pueden correr en paralelo. La 3 es la de mayor esfuerzo y la que
 
 | # | Decisión | Opciones | Recomendación |
 |---|---|---|---|
-| 1 | Nombre del proyecto, ruta y esquema | — | Un solo nombre corto para los tres, en minúsculas y sin acentos, distinto del módulo existente |
-| 2 | Proveedor de identidad | Llave CDMX, directorio institucional o cuentas propias del SIA | El que cubra también a alcaldías, PAOT, SOBSE, empresas y organizaciones civiles; si ninguno, cuentas propias con alta por la Administración global |
+| 1 | Nombre del proyecto, ruta y esquema | — | **Decidido: `srp`** para los tres (D249) |
+| 2 | Proveedor de identidad | Llave CDMX, directorio institucional o cuentas propias | **Decidido: cuentas propias** con correo y contraseña, en una base de usuarios que construye el SRP; alta y restablecimiento por la Administración global, sin servicio de correo (D249) |
 | 3 | Mapa base | Esri con cuenta y clave restringida al dominio; ortofoto propia por GeoServer; OpenStreetMap de respaldo | Ortofoto propia si el SIA tiene una vigente: sin costo ni dependencia externa. Requiere caché de teselas y disco para ella |
 | 4 | Fotografías | Volumen de datos del servidor de aplicaciones; almacenamiento de objetos de la ADIP | Volumen de datos, fuera de carpeta pública, con ampliación solicitada antes del piloto (apartado 7) |
 | 5 | Colonias | Las 1,837 del IECM 2022 o las 1,817 de `territorio` | La que el SIA declare oficial; el SRP se regenera con ella |
 | 6 | Módulo de plantación existente | Conservar, archivar o migrar su contenido | Archivar si no tiene datos en uso; si los tiene, cargarlos como histórico (fila 16) |
-| 7 | Aviso de privacidad | — | Requisito para el piloto: el sistema guarda nombre, correo, institución y cargo del personal, y fotografías con ubicación |
+| 7 | Aviso de privacidad | — | **Decidido: no se requiere** (consultado; D249) |
+| 8 | Montaje del servicio | Módulo del backend central o servicio aparte | Lo decide el SIA; el servicio se construye para admitir las dos formas |
+| 9 | Esquema y cuenta de servicio | Los crea el SIA con el guion del SRP, o el proyecto | Que los cree el SIA con el guion: mantiene su patrón de un esquema y una cuenta por sistema |
 
 ## 7. Capacidad
 
@@ -158,9 +170,12 @@ Las fases 1 y 2 pueden correr en paralelo. La 3 es la de mayor esfuerzo y la que
 | Reenvíos que duplican | Doble conteo de árboles | El `id` de cada registro es la clave de idempotencia (S-01); se prueba en el piloto |
 | iPhone no envía con la aplicación cerrada | Datos retenidos en el teléfono | La aplicación lo avisa; el procedimiento de cierre de jornada pide abrirla con señal |
 | Administración sólo por red privada | Una falla de acceso detiene despliegues, no la captura | La aplicación sigue trabajando sin señal y envía después |
-| Repositorio público con historial | Archivos originales y, en un tramo, placas reales siguen en el historial | El SIA recibe una copia sin historial; el repositorio se archiva y se hace privado en la fase 6 |
+| Repositorio público con historial | Archivos originales y, en un tramo, placas reales siguen en el historial | Repositorio nuevo y limpio con el mismo nombre al iniciar la fase de servidor (D249); el repositorio se archiva y se hace privado en la fase 6 |
+| Contraseñas sin servicio de correo | Una persona que olvida su contraseña no puede recuperarla sola | Restablecimiento por la Administración global con contraseña temporal de un solo uso |
 
 ## 9. Siguiente paso
 
-Enviar al SIA este plan, `FASE2-Y-TRASPASO.md` y la huella de capas, y pedir dos cosas: el resultado de la
-consulta de capas (fase 1) y una reunión para las decisiones de la fase 0.
+Enviar al SIA este plan, `FASE2-Y-TRASPASO.md` y la huella de capas, y pedir: el esquema `srp`, la cuenta
+de servicio, el lugar en el servidor de aplicaciones y la ruta; el resultado de la consulta de capas
+(fase 1); y respuesta a las decisiones 3, 5, 8 y 9 del apartado 6. Mientras responde, el servicio se
+construye y se prueba en una base local (fases 2 y 3).

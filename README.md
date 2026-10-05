@@ -134,7 +134,7 @@ js/                     La aplicación, un archivo por tema
   config.js             ÚNICO lugar con valores configurables (distancias, precisión, versión, base)
   permisos.js           ÚNICO lugar con las reglas de cada perfil y lo que exige cada acción (D151)
   almacen.js            Base del dispositivo (IndexedDB), migraciones y bitácora
-  sesion.js             Acceso; se sustituye al conectar el proveedor institucional
+  sesion.js             Acceso; se conecta a las cuentas propias del servidor (correo y contraseña)
   derivacion.js         Cruce punto-en-polígono (alcaldía, UGA, colonia)
   prioritarias.js       Colonias prioritarias para reforestar: prioridad de la jornada, su colonia en los mapas y conteo por nivel (D206, D233)
   folio.js              Patrón, validación y etiqueta del folio; sólo lo emite el servidor simulado de prueba (D110)
