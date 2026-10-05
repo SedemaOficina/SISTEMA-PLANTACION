@@ -18,8 +18,8 @@ versiones exactas de los servidores: esos datos viven en la documentación inter
 | Servidor de aplicaciones | Backend central en Node.js con Express; cada módulo tiene su cuenta de base de datos y no ve los datos de los demás | El servicio del SRP, construido en este proyecto (`servidor/`), con su propia cuenta de servicio. Puede montarse como módulo del backend central o correr aparte: lo confirma el SIA |
 | Base de datos | PostgreSQL con PostGIS, conexiones cifradas obligatorias, un esquema por sistema, respaldos diarios y semanales con restauración probada | El esquema `srp`, con las diez tablas del SRP más las de usuarios y sesiones |
 | Correo | No hay servicio de correo | Nada: el restablecimiento de contraseñas lo hace la Administración global |
-| Marco territorial | Esquema `territorio` compartido: 16 alcaldías y 1,817 unidades territoriales | Alcaldías, colonias y malla UGA, previa verificación (apartado 3) |
-| Servidor de mapas | GeoServer con servicios WMS, WFS y WMTS públicos | Opcional: ortofoto propia como mapa base, en lugar de Esri |
+| Marco territorial | Esquema `territorio` compartido: 16 alcaldías y 1,817 unidades territoriales | No lo consume: alcaldías, colonias y malla UGA viajan con el SRP y son las mismas del SIA (apartado 3) |
+| Servidor de mapas | GeoServer con servicios WMS, WFS y WMTS públicos | Nada por ahora: el mapa base es CARTO para calles y Esri para satélite (D251) |
 | Acceso de administración | Sólo por la red privada de gobierno | Lo opera el SIA; el SRP no requiere acceso de administración desde fuera |
 
 Ya existe en el SIA un módulo y un esquema de plantación. **El SRP no los reutiliza** (decisión del
@@ -63,13 +63,14 @@ Criterios:
 
 El SRP deriva alcaldía, colonia y celda UGA de cada árbol con tres capas incluidas en la aplicación. Si
 el servidor deriva con capas distintas, un mismo punto puede quedar en otra colonia o recibir otro folio.
-Antes de consumir `territorio` hay que comprobar que son las mismas.
+**Verificación hecha el 05-10-2026 (D251): las tres capas son las mismas.** Las capas viajan con el SRP y el
+servidor las carga en su esquema `srp`; no consume las de `territorio`.
 
 | Capa | En el SRP | En `territorio` | Estado |
 |---|---|---|---|
-| Alcaldías | 16 polígonos, versión `sia-2026-01-01`, clave `cvegeo` | 16 alcaldías | Por comparar |
-| Colonias | **1,837** polígonos, IECM 2022, clave `clave` | **1,817** unidades territoriales | **No coinciden en número: hay que conciliar antes de avanzar** |
-| Malla UGA | 1,624 celdas, versión `sia-2026-09-22`; define el folio | No se menciona en `territorio` | Confirmar que está publicada y con qué nombre |
+| Alcaldías | 16 polígonos, versión `sia-2026-01-01`, clave `cvegeo` | Capa de alcaldías del servidor de mapas del SIA | **Igual**: mismas 16 claves y superficie; diferencia máxima de borde de 0.1 m (redondeo a seis decimales) |
+| Colonias | **1,837** polígonos, IECM 2022, clave `clave` | Archivo que entregó el SIA | **Igual**: el archivo es idéntico al original del SRP. Las 1,817 unidades territoriales de `territorio` son otra capa; el SRP no la usa |
+| Malla UGA | 1,624 celdas, versión `sia-2026-09-22`; define el folio | Archivo que entregó el SIA | **Igual**: archivo idéntico al original del SRP. Las ocho celdas con prefijo distinto a su alcaldía son correctas (D249) |
 | Colonias prioritarias | 2,243 polígonos, geometría simplificada | — | El SIA la publica completa (fila 19 de `FASE2-Y-TRASPASO.md`) |
 
 Cómo se compara, sin mover archivos pesados:
@@ -82,8 +83,8 @@ Cómo se compara, sin mover archivos pesados:
 
 Regla de decisión: si las capas difieren, **manda la del SIA**, y la aplicación se regenera con ella
 (`herramientas/generar_capas.py`). Con datos de prueba no hay nada que rederivar; si el cambio ocurre con
-datos reales, aplica la rederivación por `capa_version` (regla S-08). Pendiente aparte: las ocho celdas
-UGA cuyo prefijo no corresponde a su alcaldía, que el SIA debe confirmar antes de emitir folios.
+datos reales, aplica la rederivación por `capa_version` (regla S-08). Si en el futuro el SIA
+publica una versión nueva de alguna capa, se repite esta comparación.
 
 ## 4. Fases
 
@@ -92,7 +93,7 @@ Cada fase tiene un criterio de salida; no se pasa a la siguiente sin cumplirlo.
 | Fase | Qué se hace | Responsable | Criterio de salida |
 |---|---|---|---|
 | **0. Acuerdos** | Forma de montaje del servicio (módulo del backend central o servicio aparte), quién crea el esquema y la cuenta de servicio, cómo se instala una versión nueva, límites del servidor web, ambiente de pruebas. Mapa base de producción. Ya decididos: nombre `srp` para proyecto, esquema y ruta; acceso con cuentas propias; sin aviso de privacidad (D249) | Oficina de la Secretaría y SIA | Las decisiones del apartado 6, por escrito |
-| **1. Capas** | Verificación del apartado 3; conciliación de colonias; confirmación de la malla UGA | SIA, con la huella que entrega el SRP | Las tres capas dan «IGUAL», o la aplicación se regeneró con las del SIA |
+| **1. Capas** | Verificación del apartado 3 | SRP, con los archivos del SIA | **Cumplida el 05-10-2026**: las tres capas son iguales (D251) |
 | **2. Base de datos** | Esquema `srp` con las diez tablas, las de usuarios y sesiones, llaves foráneas, índices, secuencia del folio por celda y columnas de la cola de envío. Permisos de la cuenta de servicio. Alta en los respaldos | SRP (guion SQL, probado en una base local) y SIA (ejecución) | El esquema existe, la cuenta sólo ve lo suyo y `territorio` en lectura, y una restauración de prueba lo incluye |
 | **3. Servicios** | Servicio del SRP en `servidor/`: usuarios y sesión, catálogos, recepción idempotente de jornadas y árboles, folio, validación, permisos, bitácora, fotografías, bandeja de duplicados, consultas de Supervisión | SRP (desarrollo y pruebas locales), con `FASE2-Y-TRASPASO.md` como especificación; el SIA lo instala | Las filas del apartado 1 de ese archivo resueltas o diferidas por escrito |
 | **4. Aplicación** | Sustituir lo simulado (apartado 3 de `FASE2-Y-TRASPASO.md`): acceso, envío y folio. `ES_FICTICIO: false`. Publicar en la ruta. Retirar demostración y espejo de campos | SRP (cambios y pruebas contra el servicio local) y SIA (publicación) | La aplicación abre en la ruta definitiva, instala, trabaja sin señal y envía al volver la señal |
@@ -136,10 +137,10 @@ Las fases 1 y 2 pueden correr en paralelo. La 3 es la de mayor esfuerzo y la que
 |---|---|---|---|
 | 1 | Nombre del proyecto, ruta y esquema | — | **Decidido: `srp`** para los tres (D249) |
 | 2 | Proveedor de identidad | Llave CDMX, directorio institucional o cuentas propias | **Decidido: cuentas propias** con correo y contraseña, en una base de usuarios que construye el SRP; alta y restablecimiento por la Administración global, sin servicio de correo (D249) |
-| 3 | Mapa base | Esri con cuenta y clave restringida al dominio; ortofoto propia por GeoServer; OpenStreetMap de respaldo | Ortofoto propia si el SIA tiene una vigente: sin costo ni dependencia externa. Requiere caché de teselas y disco para ella |
+| 3 | Mapa base | Esri con cuenta y clave restringida al dominio; ortofoto propia por GeoServer; OpenStreetMap de respaldo | **Decidido: CARTO para calles y Esri gratuito para satélite**; la clave de CARTO la guarda el servidor (D251) |
 | 4 | Fotografías | Volumen de datos del servidor de aplicaciones; almacenamiento de objetos de la ADIP | Volumen de datos, fuera de carpeta pública, con ampliación solicitada antes del piloto (apartado 7) |
-| 5 | Colonias | Las 1,837 del IECM 2022 o las 1,817 de `territorio` | La que el SIA declare oficial; el SRP se regenera con ella |
-| 6 | Módulo de plantación existente | Conservar, archivar o migrar su contenido | Archivar si no tiene datos en uso; si los tiene, cargarlos como histórico (fila 16) |
+| 5 | Colonias | Las 1,837 del IECM 2022 o las 1,817 de `territorio` | **Decidido: las 1,837 del IECM 2022**, confirmadas con el archivo que entregó el SIA (D251) |
+| 6 | Módulo de plantación existente | Conservar, archivar o migrar su contenido | **Decidido: convive con el SRP** hasta que éste opere; entonces se carga como histórico (fila 16) o se archiva (D251) |
 | 7 | Aviso de privacidad | — | **Decidido: no se requiere** (consultado; D249) |
 | 8 | Montaje del servicio | Módulo del backend central o servicio aparte | Lo decide el SIA; el servicio se construye para admitir las dos formas |
 | 9 | Esquema y cuenta de servicio | Los crea el SIA con el guion del SRP, o el proyecto | Que los cree el SIA con el guion: mantiene su patrón de un esquema y una cuenta por sistema |
@@ -163,7 +164,7 @@ Las fases 1 y 2 pueden correr en paralelo. La 3 es la de mayor esfuerzo y la que
 
 | Riesgo | Efecto | Cómo se atiende |
 |---|---|---|
-| Capas distintas entre teléfono y servidor | Árboles en otra colonia; folios de otra celda | Apartado 3, antes de la fase 2 |
+| Capas distintas entre teléfono y servidor | Árboles en otra colonia; folios de otra celda | Verificadas iguales (apartado 3); el servidor usa las mismas capas que la app |
 | Proveedor de identidad que no cubre instituciones externas | Alcaldías y empresas sin acceso | Decisión 2 de la fase 0; cuentas propias como salida |
 | Disco de fotografías insuficiente | El servidor rechaza capturas a media temporada | Ampliación previa y monitoreo con alerta al 70 % |
 | Fotografías sin respaldo | Pérdida irreversible de evidencia | Respaldo propio del volumen antes de operar |
@@ -176,6 +177,6 @@ Las fases 1 y 2 pueden correr en paralelo. La 3 es la de mayor esfuerzo y la que
 ## 9. Siguiente paso
 
 Enviar al SIA este plan, `FASE2-Y-TRASPASO.md` y la huella de capas, y pedir: el esquema `srp`, la cuenta
-de servicio, el lugar en el servidor de aplicaciones y la ruta; el resultado de la consulta de capas
-(fase 1); y respuesta a las decisiones 3, 5, 8 y 9 del apartado 6. Mientras responde, el servicio se
+de servicio, el lugar en el servidor de aplicaciones y la ruta; y respuesta a las decisiones 8 y 9 del
+apartado 6. Las capas ya están verificadas (fase 1). Mientras responde, el servicio se
 construye y se prueba en una base local (fases 2 y 3).

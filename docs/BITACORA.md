@@ -3390,3 +3390,17 @@ coordinación.
 **Pantalla: qué se agregó y qué se quitó.** Nada: sólo documentación.
 
 **Verificación:** `auditoria.py`, 140 comprobaciones, 0 hallazgos.
+
+## Bloque 178 — Capas verificadas contra las del SIA; colonias, mapa base y módulo actual (05-10-2026)
+
+Versión de la aplicación sin cambio: 0.9.41.
+
+**Qué cambió (D251).** Comparación de las tres capas: alcaldías contra el servicio WFS del servidor de
+mapas del SIA (iguales); colonias y malla UGA contra los archivos que entregó el SIA (idénticos a los
+originales). `docs/PLAN-TRASPASO-SIA.md`: apartado 3 con el resultado, fase 1 cumplida, decisiones 3, 5 y
+6 cerradas, riesgo de capas atendido. `docs/FASE2-Y-TRASPASO.md`: apartados 4 y 5 al día (capas, mapa
+base con CARTO y Esri, convivencia con el módulo actual).
+
+**Pantalla: qué se agregó y qué se quitó.** Nada: sólo documentación.
+
+**Verificación:** comparación geométrica con Shapely; `auditoria.py`, 140 comprobaciones, 0 hallazgos.

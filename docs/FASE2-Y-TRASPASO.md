@@ -84,28 +84,26 @@ no envía con la app cerrada: los datos salen cuando el cabo abre la app con se�
 
 ## 4. Qué debe entregar el SIA antes de operar
 
-- Las tres capas ya son definitivas: alcaldías y UGA del SIA, y colonias del IECM 2022, que son la unidad oficial de reporte. Falta que el SIA confirme las ocho claves UGA con prefijo distinto a su alcaldía antes de emitir folios. Una capa nueva se carga con `herramientas/generar_capas.py`.
-- Mapa base de producción con licencia confirmada (hoy Esri); si cambia el dominio, también en la política de seguridad de `index.html`.
+- Las tres capas son definitivas y **están verificadas contra las del SIA** (D251): alcaldías y UGA del SIA, y colonias del IECM 2022 (1,837), que son la unidad oficial de reporte. Las claves de las ocho celdas UGA con prefijo distinto a su alcaldía son correctas (D249). Una capa nueva se carga con `herramientas/generar_capas.py`.
+- Mapa base de producción (D251): **CARTO para «Calles»** y **Esri, en su modalidad gratuita, para «Satélite»**; confirmar los términos de uso de cada uno. La clave de CARTO la guarda el servidor, en su configuración fuera del repositorio, y la app pide las teselas a través de él: nunca va en el código de la app ni en el repositorio. El dominio de cada proveedor que llegue directo al teléfono se agrega a la política de seguridad de `index.html`.
 - Convenio o carta responsiva con cada institución externa antes de darle cuentas; el sistema no guarda su referencia (D188), vive en el expediente.
 - Dónde viven las fotografías (archivo y disco) y su respaldo: viven fuera de la base y no entran a su respaldo. El espacio disponible alcanza para el piloto, no para la operación plena.
 - Límites del servidor web: tamaño de subida y peticiones por minuto.
 - El módulo y el esquema de plantación que ya existen en el SIA no se reutilizan: el SRP entra como proyecto nuevo, con su esquema, su ruta y su cuenta de servicio (03-10-2026), todos con el nombre `srp` (D249). Al SIA se le pide el esquema `srp`, una cuenta de servicio de permisos mínimos, el lugar en el servidor de aplicaciones y la ruta. El módulo de usuarios lo trae el SRP: no se pide al SIA.
 - Preguntas al SIA para la construcción: si el SRP entra como módulo del backend central o como servicio aparte, y con qué convenciones; la versión de Node.js del servidor de aplicaciones; quién crea el esquema y la cuenta de servicio (el SIA con el guion que entrega el SRP, o el proyecto); cómo se instala una versión nueva y quién lo hace; si hay ambiente de pruebas separado.
 - Ya no aplican: el aviso de privacidad (consultado; no se requiere, D249) y el proveedor institucional de identidad (el acceso es con cuentas propias, fila 28).
-- Las capas se consumirán del esquema territorial del SIA: antes hay que comprobar que son las mismas con que se trabajó aquí. `datos/HUELLA-CAPAS.md` trae la huella de las del SRP y la consulta para comparar; ya se sabe que las colonias no coinciden en número (1,837 del IECM 2022 aquí, 1,817 unidades territoriales allá).
+- Las capas viajan con el SRP: el servidor las carga en su esquema `srp` y no depende de las del esquema `territorio`. Las 1,817 unidades territoriales de `territorio` son otra capa y el SRP no la usa (D251).
 - El orden de todo lo anterior, con responsables y criterios de salida, está en `docs/PLAN-TRASPASO-SIA.md`.
 
 ## 5. Decisiones abiertas
 
 | Tema | Opciones | Recomendación |
 |---|---|---|
-| Mapa base de producción | Esri con licencia u otro proveedor | — |
-| Colonias | Las 1,837 del IECM 2022 o las 1,817 unidades territoriales del SIA; en el teléfono o sólo en el servidor | La que el SIA declare oficial |
 | Fotografías | Espacio y respaldo del volumen donde vivan | Ampliación solicitada antes de la operación plena |
-| Módulo de plantación actual del SIA | Conservar, archivar o migrar su contenido | Lo decide el SIA |
+| Módulo de plantación actual del SIA, al final | Cuando el SRP opere: cargar su contenido como histórico (fila 16) o archivarlo. Hasta entonces conviven (D251) | — |
 | Frutales (M343) | Marcar en el catálogo qué especies son frutales: de dónde sale la marca (el catálogo del SIA no la trae) y dónde se muestra | En trabajo de Liber |
 
-Ya decididas (D249): doble conteo entre instituciones (fila 8), histórico cargado a nombre de la
+Ya decididas (D249 a D251): colonias del IECM 2022 y capas verificadas; mapa base con CARTO y Esri; doble conteo entre instituciones (fila 8), histórico cargado a nombre de la
 Administración global (fila 16), prioridad congelada con el árbol y con la jornada (fila 19, D250), acceso con cuentas propias
 y restablecimiento sólo por la Administración global (fila 28, D250) y repositorio: uno nuevo y limpio con el mismo nombre al iniciar la fase de servidor, para
 que los archivos originales del SIA y las placas reales que quedaron en el historial no pasen a él; el

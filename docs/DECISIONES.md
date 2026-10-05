@@ -2809,3 +2809,16 @@
   · **La prioridad de la jornada también se congela** al recibirla, con la versión de la capa, igual que
     la de cada árbol (D249). Un reporte regenerado dice la misma prioridad aunque la capa cambie.
   · Frutales (M343) sigue abierta.
+
+- **D251. Capas verificadas, colonias del IECM 2022, mapa base y convivencia con el módulo actual (bloque 178).**
+  05-10-2026. Decisiones de Liber, con la comparación de capas hecha ese día.
+  · **Capas verificadas.** Alcaldías: iguales a las del servidor de mapas del SIA (16 claves, misma
+    superficie, diferencia máxima de borde de 0.1 m por el redondeo). Colonias y malla UGA: los archivos
+    que entregó el SIA son idénticos, byte por byte, a los originales con que se generó la aplicación.
+  · **Colonias:** las 1,837 del IECM 2022. Las 1,817 unidades territoriales del esquema `territorio` son
+    otra capa y el SRP no la usa. Las capas viajan con el SRP y el servidor las carga en su esquema.
+  · **Mapa base:** CARTO para «Calles» y Esri, en su modalidad gratuita, para «Satélite». La clave de
+    CARTO la guarda el servidor, fuera del repositorio; la aplicación pide las teselas a través de él. Se
+    aplica al adaptar la aplicación al servidor; mientras, sigue Esri en las dos.
+  · **Módulo de plantación actual del SIA:** convive con el SRP hasta que éste opere; entonces se carga
+    como histórico o se archiva.
