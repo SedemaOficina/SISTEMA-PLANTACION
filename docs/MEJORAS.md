@@ -413,9 +413,12 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M415 | Liber | Detalle del registro sin «Datos del sistema»; el folio, al frente | Media | 0.9.34 (B168) | Registros › detalle | D234 |
 | M416 | Liber | El lugar se dice sin la palabra «Alcaldía» | Baja | 0.9.34 (B168) | Franja de la jornada; Jornadas | D234 |
 | M417 | Liber | Botones del pie con el mismo tamaño y contorno, en el detalle y en la vista previa del reporte | Baja | 0.9.34 (B168) | Detalle del registro; vista previa del reporte | D234 |
-| M418 | Liber | Mover a otra jornada: buscador por nombre y fecha del día | Media | 0.9.34 (B168) | Ficha de la jornada › Mover a otra jornada | D234 |
+| M418 | Liber | Mover a otra jornada: buscador por nombre y fecha del día (con su texto guía, B169) | Media | 0.9.34 (B168) | Ficha de la jornada › Mover a otra jornada | D234 |
 | M419 | Liber | Los informes en PDF dicen siempre de qué fecha a qué fecha son, en el encabezado y en el pie de cada página | Alta | 0.9.34 (B168) | Supervisión › Informe en PDF | D235 |
 | M420 | Liber | Fotografías va por páginas, como Registros y Jornadas | Media | 0.9.34 (B168) | Supervisión › Fotografías | D235 |
+| M421 | Inventario de avisos | Se quitan dos avisos que repetían lo que ya se ve: «Jornada activa» y «Catálogo actualizado» | Baja | 0.9.35 (B169) | Cambiar de jornada; Catálogos | D236 |
+| M422 | Inventario de avisos | Los avisos que dicen una regla o una espera van en ámbar; el rojo queda para lo que salió mal | Media | 0.9.35 (B169) | Avisos flotantes | D236 |
+| M423 | Inventario de avisos | «Generando reporte…» se queda a la vista hasta que el reporte termina | Media | 0.9.35 (B169) | Vista previa del reporte › Generar PDF | D236 |
 
 ## 2. Por hacer
 
@@ -443,4 +446,4 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 401 hechas · 7 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 404 hechas · 7 por hacer · 2 revisadas · 2 descartadas.

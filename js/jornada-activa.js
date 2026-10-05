@@ -50,7 +50,7 @@ SRP.activa = {
     this.el('lista-jornadas-abiertas').addEventListener('click', async (e) => {
       const b = e.target.closest('button[data-id]'); if (!b) return;
       const j = await SRP.almacen.uno('jornadas', b.dataset.id);
-      if (j) { this.jornada = j; this.el('dlg-cambiar-jornada').close(); await this.preparar(); SRP.util.anunciar('Jornada activa: ' + j.nombre + '.', 'aviso'); }
+      if (j) { this.jornada = j; this.el('dlg-cambiar-jornada').close(); await this.preparar(); SRP.util.anunciarSilencioso('Jornada activa: ' + j.nombre + '.'); }   // la franja ya lo dice a la vista
     });
     this.el('btn-iniciar-cancelar').addEventListener('click', () => { this.mostrarInicio(false); this.preparar(); });
     this.el('ini-fecha').max = SRP.util.fechaHoy();
@@ -131,7 +131,7 @@ SRP.activa = {
          puede durar varios días); iniciar la de hoy queda en «Cambiar de jornada». */
       const j = this.jornada;
       const relevo = j.relevo_id === SRP.sesion.usuario.id && j.cabo_id !== j.relevo_id ? ', que recibió en relevo de ' + SRP.ref.nombreUsuario(j.cabo_id) + ',' : '';
-      SRP.util.anunciar('Sigue abierta la jornada «' + j.nombre + '»' + relevo + ' iniciada el ' + SRP.util.formatearFecha(j.fecha) + '. Puede seguir registrando en ella: cada árbol lleva la fecha en que se planta. Si ya terminó, ciérrela.', 'alerta',
+      SRP.util.anunciar('Sigue abierta la jornada «' + j.nombre + '»' + relevo + ' iniciada el ' + SRP.util.formatearFecha(j.fecha) + '. Puede seguir registrando en ella: cada árbol lleva la fecha en que se planta. Si ya terminó, ciérrela.', 'aviso',
         { deshacer: () => this.cerrarJornada(), textoAccion: 'Cerrar «' + j.nombre + '»' });
     }
   },
@@ -553,7 +553,7 @@ SRP.activa = {
     if (this.jornada && this.jornada.estatus === 'abierta') return true;
     if (SRP.formulario.estado.editando) return true;
     this.mostrarInicio(true);
-    SRP.util.anunciar('Inicie una jornada antes de registrar árboles.', 'alerta');
+    SRP.util.anunciar('Inicie una jornada antes de registrar árboles.', 'aviso');
     return false;
   },
 

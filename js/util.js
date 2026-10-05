@@ -215,14 +215,24 @@ SRP.util = {
     }
     // Duración: base según el tono (con «Deshacer» o alerta, más tiempo para decidir) más 1s por
     // cada ~40 caracteres del mensaje, para que un texto largo no se cierre antes de terminar de leerlo.
-    const base = op.deshacer ? 8000 : (t.color === 'alerta' ? 7000 : 4500);
+    // Ámbar («tome nota») dura más que la confirmación en verde: suele traer una regla que hay que leer
+    const base = op.deshacer ? 8000 : (t.color === 'alerta' ? 7000 : t.color === 'aviso' ? 6000 : 4500);
     const duracion = base + Math.floor(mensaje.length / 40) * 1000;
     let restante = duracion, marca = Date.now();
     clearTimeout(SRP.util._temporizadorAviso);
     const programar = (ms) => { SRP.util._temporizadorAviso = setTimeout(() => { zona.hidden = true; }, ms); };
+    // `op.fijo`: dice que algo está en curso y se queda hasta que otro aviso lo sustituya o se quite con quitarAviso()
+    zona.dataset.fijo = op.fijo ? 'true' : 'false';
+    if (op.fijo) { zona.onmouseenter = zona.onmouseleave = null; return; }
     programar(duracion);
     zona.onmouseenter = () => { clearTimeout(SRP.util._temporizadorAviso); restante -= (Date.now() - marca); };
     zona.onmouseleave = () => { marca = Date.now(); programar(Math.max(restante, 1500)); };
+  },
+
+  // Quita el aviso «en curso» si sigue a la vista: lo que se esperaba terminó sin otro aviso (por ejemplo, se canceló)
+  quitarAviso() {
+    const zona = document.getElementById('aviso');
+    if (zona.dataset.fijo === 'true') { zona.hidden = true; zona.dataset.fijo = 'false'; }
   },
 
   /* ERRORES AL PIE DEL CAMPO (D140). El resumen de arriba se queda (con enlaces, sirve al lector de

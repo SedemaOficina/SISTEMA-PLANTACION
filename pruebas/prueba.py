@@ -1073,7 +1073,7 @@ with sync_playwright() as p:
     ok(est[0]=='true' and 'Enviando' in est[1] and est[2],'«Enviar ahora» dice «Enviando…», queda aria-busy y no admite otro toque mientras intenta (D136): '+str(est))
     pg.wait_for_timeout(300)
     ok(pg.get_attribute('#btn-franja-enviar','aria-busy') is None and pg.inner_text('#btn-franja-enviar')=='Enviar ahora','y vuelve a su texto al terminar')
-    ok('Sin conexión' in pg.inner_text('#aviso') and pg.get_attribute('#aviso','data-tipo')=='alerta','«Enviar ahora» sin señal explica que se enviará solo (D111): '+pg.inner_text('#aviso'))
+    ok('Sin conexión' in pg.inner_text('#aviso') and pg.get_attribute('#aviso','data-tipo')=='aviso','«Enviar ahora» sin señal explica, en ámbar, que se enviará solo (D111): '+pg.inner_text('#aviso'))
     pg.evaluate("SRP.app.mostrarVista('registros')"); pg.wait_for_timeout(500)
     ok(pg.locator('#lista-registros li[data-id="%s"] .marca-envio' % rid).count()==1,'la tarjeta lleva la marca «Por enviar» (D111)')
     ctx.set_offline(False); pg.wait_for_timeout(300)
@@ -1428,17 +1428,17 @@ with sync_playwright() as p:
     borde=pg.evaluate("[getComputedStyle(document.getElementById('aviso')).borderLeftColor]")[0]
     pg.evaluate("SRP.util.anunciar('x')"); pg.wait_for_timeout(50)
     ok(borde!=pg.evaluate("getComputedStyle(document.getElementById('aviso')).borderLeftColor"),'y su filete es de otro color que el de éxito: '+borde)
-    # La duración crece con el largo del mensaje (D136): 'Ok.' dura 4.5 s; uno de ~150 caracteres, 7.5 s
+    # La duración crece con el largo del mensaje (D136): en verde, 'Ok.' dura 4.5 s; uno de ~150 caracteres, 7.5 s. El ámbar dura 6 s de base (D236)
     largo = 'Este es un mensaje de aviso bastante más largo para comprobar que la duración crece con el número de caracteres del texto mostrado, como pide D136.'
     pg.mouse.move(5,800)
-    pg.evaluate("SRP.util.anunciar('Ok.','aviso')"); pg.wait_for_timeout(4800)
+    pg.evaluate("SRP.util.anunciar('Ok.')"); pg.wait_for_timeout(4800)
     ok(pg.is_hidden('#aviso'),'un aviso corto se cierra solo a los 4.5 s')
-    pg.evaluate("SRP.util.anunciar('%s','aviso')" % largo); pg.wait_for_timeout(4800)
+    pg.evaluate("SRP.util.anunciar('%s')" % largo); pg.wait_for_timeout(4800)
     ok(pg.is_visible('#aviso'),'uno largo sigue en pantalla a los 4.8 s: dura más porque tarda más en leerse')
     pg.wait_for_timeout(3000)
     ok(pg.is_hidden('#aviso'),'y se cierra solo poco después')
     # Con el puntero encima el tiempo se detiene; al quitarlo, corre lo que faltaba
-    pg.evaluate("SRP.util.anunciar('Ok.','aviso')"); pg.wait_for_timeout(100)
+    pg.evaluate("SRP.util.anunciar('Ok.')"); pg.wait_for_timeout(100)
     pg.hover('#aviso .aviso-texto'); pg.wait_for_timeout(5500)
     ok(pg.is_visible('#aviso'),'con el puntero encima no se cierra aunque pase su tiempo (D136)')
     pg.mouse.move(5,800); pg.wait_for_timeout(4800)
@@ -6138,6 +6138,8 @@ with sync_playwright() as p:
     pg79.evaluate("(async () => { SRP.jornadas.abrirMover(await SRP.almacen.uno('plantaciones', 'a79')); })()"); pg79.wait_for_timeout(600)
     m0 = pg79.evaluate("[document.getElementById('dlg-mover-jornada').open, !document.getElementById('mover-filtros').hidden, document.querySelectorAll('#lista-mover-jornadas button[data-id]').length, document.getElementById('mover-cuenta').textContent, document.documentElement.scrollWidth <= window.innerWidth]")
     ok(m0 == [True, True, 6, '', True], '«Mover a otra jornada» trae buscador y fecha cuando hay muchas jornadas, y de entrada las lista todas: %s' % m0)
+    v79 = pg79.evaluate("(() => { const e = document.getElementById('mover-fecha').closest('.envoltura-vacio'); return e ? [e.dataset.vacio, e.querySelector('.texto-vacio').textContent] : null; })()")
+    ok(v79 == ['true', 'Elija la fecha'], 'la fecha vacía dice «Elija la fecha», como las demás (en iPhone un campo de fecha vacío se ve en blanco): %s' % v79)
     pg79.fill('#mover-buscar', 'alamos'); pg79.wait_for_timeout(200)
     m1 = pg79.evaluate("[[...document.querySelectorAll('#lista-mover-jornadas .jornada-dia')].map(x => x.textContent), document.getElementById('mover-cuenta').textContent]")
     pg79.fill('#mover-buscar', ''); pg79.fill('#mover-fecha', '2026-08-17'); pg79.wait_for_timeout(200)
@@ -6157,6 +6159,35 @@ with sync_playwright() as p:
     ok(m5 == [True, '', 3], 'con cinco jornadas o menos se listan sin buscador, y la búsqueda anterior no se conserva: %s' % m5)
     ok(err79 == [], 'sin errores de consola: %s' % err79[:2])
     ctx79.close()
+
+    # ---------- ctx80: avisos: menos repetidos, ámbar para lo que no es falla, y «en curso» hasta que termine ----------
+    ctx80 = b.new_context(viewport={'width':1280,'height':900}, timezone_id='America/Mexico_City')
+    pg80 = ctx80.new_page(); err80 = []
+    pg80.on('pageerror', lambda e: err80.append(str(e)))
+    pg80.goto(BASE); pg80.wait_for_timeout(1300)
+    pg80.select_option('#sel-usuario-prueba','u-admin-1'); pg80.click('#btn-entrar-prueba'); pg80.wait_for_timeout(900)
+    pg80.evaluate("() => { window.__avisos = []; const o = SRP.util.anunciar; SRP.util.anunciar = function (m, t, op) { window.__avisos.push([m, t || 'exito']); return o.apply(this, arguments); }; document.getElementById('aviso').hidden = true; }")
+    # Guardar un valor de catálogo ya no pone aviso flotante: la lista cambia a la vista
+    pg80.evaluate("SRP.app.mostrarVista('catalogos')"); pg80.wait_for_timeout(500)
+    pg80.click('#cat-tipos .chip[data-tipo=area]'); pg80.wait_for_timeout(300); pg80.click('#btn-cat-agregar'); pg80.wait_for_timeout(300)
+    pg80.fill('#cat-nombre', 'Área B169'); pg80.click('#btn-cat-guardar'); pg80.wait_for_timeout(700)
+    c80 = pg80.evaluate("[window.__avisos.length, document.getElementById('aviso').hidden, document.getElementById('dlg-catalogo').open, [...document.querySelectorAll('#tabla-catalogo tbody .c-titulo')].some(x => x.textContent === 'Área B169')]")
+    ok(c80 == [0, True, False, True], 'guardar un valor de catálogo no pone aviso flotante: la lista ya lo muestra: %s' % c80)
+    # Una regla que impide algo no es una falla: va en ámbar; lo que salió mal sigue en rojo
+    pg80.evaluate("(async () => { await SRP.catalogos.cambiarEstado(SRP.ref.catalogoPorId['o-alc-09007']); await SRP.usuarios.cambiarEstado(SRP.sesion.usuario); })()"); pg80.wait_for_timeout(500)
+    pg80.evaluate("SRP.permisos.exigir('registro.crear')"); pg80.wait_for_timeout(200)
+    t80 = pg80.evaluate("window.__avisos.map(a => [a[0].slice(0, 22), a[1]])")
+    ok(t80 == [['Las alcaldías son fija', 'aviso'], ['No puede desactivar su', 'aviso'], ['No tiene permiso para ', 'alerta']], 'las reglas («las alcaldías son fijas», «no puede desactivar su cuenta») van en ámbar; la falta de permiso, en rojo: %s' % t80)
+    # Un aviso «en curso» no se cierra solo; se quita al terminar o lo sustituye el resultado
+    pg80.evaluate("SRP.util.anunciar('Generando reporte…', 'aviso', { fijo: true })"); pg80.wait_for_timeout(7200)
+    f80 = pg80.evaluate("[document.getElementById('aviso').hidden, document.getElementById('aviso').dataset.fijo]")
+    pg80.evaluate("SRP.util.anunciar('Reporte generado.', 'exito'); SRP.util.quitarAviso()"); pg80.wait_for_timeout(100)
+    g80 = pg80.evaluate("[document.getElementById('aviso').hidden, document.querySelector('#aviso .aviso-texto').textContent]")
+    pg80.evaluate("SRP.util.anunciar('Generando reporte…', 'aviso', { fijo: true }); SRP.util.quitarAviso()"); pg80.wait_for_timeout(100)
+    ok(f80 == [False, 'true'] and g80 == [False, 'Reporte generado.'] and pg80.evaluate("document.getElementById('aviso').hidden"),
+       '«Generando reporte…» sigue a la vista pasados 7 segundos; el resultado lo sustituye, y si no hay resultado se quita: %s %s' % (f80, g80))
+    ok(err80 == [], 'sin errores de consola: %s' % err80[:2])
+    ctx80.close()
 
     b.close()
 

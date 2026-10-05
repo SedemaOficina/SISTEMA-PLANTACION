@@ -121,7 +121,7 @@ SRP.envio = {
     }
     if (!SRP.conexion.enLinea()) {
       await SRP.conexion.refrescar();   // el indicador dice cuántos esperan, también sin señal
-      if (op.manual) SRP.util.anunciar('Sin conexión. ' + this.textoCuenta(n) + ' en el teléfono y ' + (n === 1 ? 'se enviará solo' : 'se enviarán solos') + ' cuando haya señal.', 'alerta');
+      if (op.manual) SRP.util.anunciar('Sin conexión. ' + this.textoCuenta(n) + ' en el teléfono y ' + (n === 1 ? 'se enviará solo' : 'se enviarán solos') + ' cuando haya señal.', 'aviso');
       return { enviados: 0, pendientes: n };
     }
     const envio = (async () => {
@@ -145,7 +145,7 @@ SRP.envio = {
     await this.alCambiar();
     // Si el envío fue automático, su aviso no tapa un «Deshacer» a la vista (D151)
     const fondo = { secundario: !op.manual };
-    if (res.cortado) SRP.util.anunciar('Se perdió la señal durante el envío. ' + this.textoCuenta(n) + ' en el teléfono; ' + (n === 1 ? 'se enviará' : 'se enviarán') + ' cuando vuelva.', 'alerta', fondo);
+    if (res.cortado) SRP.util.anunciar('Se perdió la señal durante el envío. ' + this.textoCuenta(n) + ' en el teléfono; ' + (n === 1 ? 'se enviará' : 'se enviarán') + ' cuando vuelva.', 'aviso', fondo);
     else if (!op.silencioso) SRP.util.anunciar((n === 1 ? '1 registro enviado' : n + ' registros enviados') + ' al servidor (simulado). Recepción confirmada.', undefined, fondo);
     return res;
   },

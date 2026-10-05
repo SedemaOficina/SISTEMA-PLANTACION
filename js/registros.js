@@ -558,7 +558,7 @@ SRP.registros = {
       : fecha < r.fecha_plantacion ? 'La fecha de la sustitución no puede ser anterior a la plantación del árbol perdido (' + SRP.util.formatearFecha(r.fecha_plantacion) + ').' : '';
     if (falta) { const e = this.el('sustituir-error'); e.textContent = falta; e.hidden = false; return; }
     const j = r.jornada_id ? await SRP.almacen.uno('jornadas', r.jornada_id) : null;
-    if (!j) { SRP.util.anunciar('No se puede sustituir: la jornada de ese árbol ya no existe.', 'alerta'); return; }
+    if (!j) { SRP.util.anunciar('No se puede sustituir: la jornada de ese árbol ya no existe.', 'aviso'); return; }
     this.el('dlg-sustituir').close();
     // El sustituto se guarda en la jornada del árbol perdido. Si está cerrada se pregunta antes de
     // reabrirla, y vuelve a cerrarse al guardar el sustituto o al cancelar
@@ -601,7 +601,7 @@ SRP.registros = {
     if (!SRP.permisos.exigir('registro.restaurar', r)) return;
     const actual = (await SRP.almacen.uno('plantaciones', r.id)) || r;
     const jornada = actual.jornada_id ? await SRP.almacen.uno('jornadas', actual.jornada_id) : null;
-    if (!jornada) { SRP.util.anunciar('No se puede restaurar: su jornada ya no existe.', 'alerta'); return; }
+    if (!jornada) { SRP.util.anunciar('No se puede restaurar: su jornada ya no existe.', 'aviso'); return; }
     const vuelto = Object.assign({}, actual, { estatus: 'activo', fecha_plantacion: SRP.util.fechaEnJornada(actual.fecha_plantacion, jornada), programa_id: jornada.programa_id,
       fecha_ultima_edicion: SRP.util.ahoraISO(), editado_por_id: SRP.sesion.usuario.id });
     const cambios = [{ almacen: 'plantaciones', objeto: vuelto, bitacora: SRP.bitacora.entrada('RESTAURADO', 'plantacion', r.id, 'Se deshizo la eliminación') }];

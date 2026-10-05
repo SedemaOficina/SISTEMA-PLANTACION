@@ -1013,7 +1013,7 @@ SRP.jornadas = {
      jornada de origen sin su marca de «revisado», que era de ese punto en ese sitio. */
   async mover(r, destino) {
     if (!SRP.permisos.exigir('registro.mover', r)) return;
-    if (destino.cabo_id !== r.cabo_id) { SRP.util.anunciar('Sólo se mueve a otra jornada del mismo cabo.', 'alerta'); return; }
+    if (destino.cabo_id !== r.cabo_id) { SRP.util.anunciar('Sólo se mueve a otra jornada del mismo cabo.', 'aviso'); return; }
     const u = SRP.sesion.usuario;
     const ahora = SRP.util.ahoraISO();
     const actual = (await SRP.almacen.uno('plantaciones', r.id)) || r;
@@ -1150,7 +1150,7 @@ SRP.jornadas = {
     if (SRP.ref.totalUsos(usos)) {
       const n = SRP.ref.totalUsos(usos) - activos;
       SRP.util.anunciar(activos ? 'No se puede eliminar: tiene árboles registrados. Muévalos o elimínelos primero.'
-        : 'No se puede eliminar: guarda ' + (n === 1 ? '1 árbol eliminado, que se conserva' : n + ' árboles eliminados, que se conservan') + ' como constancia. Si ya no se usará, ciérrela.', 'alerta');
+        : 'No se puede eliminar: guarda ' + (n === 1 ? '1 árbol eliminado, que se conserva' : n + ' árboles eliminados, que se conservan') + ' como constancia. Si ya no se usará, ciérrela.', 'aviso');
       return;
     }
     const ok = await SRP.app.confirmar({ titulo: 'Eliminar jornada', pregunta: '¿Eliminar la jornada «' + c.nombre + '» del ' + SRP.util.formatearFecha(c.fecha) + '?',
@@ -1226,7 +1226,7 @@ SRP.jornadas = {
 
   async registrarFaltante() {
     const j = await this.jornadaGuardada(this.jornada); if (!j) return;
-    if (SRP.activa.capturista(j) !== SRP.sesion.usuario.id) { SRP.util.anunciar('En esta jornada registra ' + SRP.ref.nombreUsuario(SRP.activa.capturista(j)) + '.', 'alerta'); return; }
+    if (SRP.activa.capturista(j) !== SRP.sesion.usuario.id) { SRP.util.anunciar('En esta jornada registra ' + SRP.ref.nombreUsuario(SRP.activa.capturista(j)) + '.', 'aviso'); return; }
     this.volverAlDetalle = false;
     if (j.estatus !== 'abierta') { if (!await SRP.activa.reabrir(j)) return; } else SRP.activa.jornada = j;
     SRP.formulario.limpiar();

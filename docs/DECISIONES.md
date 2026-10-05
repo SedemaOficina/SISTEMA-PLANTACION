@@ -2647,3 +2647,17 @@
   · **Fotografías:** por páginas, como Registros y Jornadas, de 25 en 25 (rejilla); la cuenta, el peso
     y «Descargar todas» siguen siendo de todo lo filtrado.
 
+- **D236. Avisos: menos repetidos, ámbar para lo que no es falla y «en curso» hasta que termine (bloque 169).**
+  05-10-2026. A partir del inventario de avisos (77 flotantes), con el visto bueno de Liber.
+  · **Dos avisos menos:** «Jornada activa: …» (la franja ya lo dice) y «Catálogo actualizado» (la lista
+    ya cambió) dejan de mostrarse; se siguen anunciando al lector de pantalla.
+  · **El rojo es para lo que salió mal.** Pasan a ámbar 17 avisos que dicen una regla o una espera, no
+    una falla: «Las alcaldías son fijas», «No puede desactivar su propia cuenta», «No se puede eliminar:
+    aparece en…», «Sólo se mueve a otra jornada del mismo cabo», «Sin conexión… se enviarán solos»,
+    «Sigue abierta la jornada…», entre otros. Siguen en rojo las fallas (no se pudo guardar, no se pudo
+    generar el PDF), los datos mal puestos (rango de fechas al revés) y la falta de permiso.
+  · **Duración:** el ámbar dura 6 s de base (antes 4.5 s), porque suele traer una regla que hay que leer;
+    verde, 4.5 s; rojo, 7 s; con «Deshacer», 8 s; más 1 s por cada 40 caracteres.
+  · **«Generando reporte…»** ya no se cierra a los 4.5 s: se queda hasta que el resultado lo sustituye;
+    si no hay resultado (se canceló), se quita (`anunciar(…, { fijo: true })`, `quitarAviso()`).
+

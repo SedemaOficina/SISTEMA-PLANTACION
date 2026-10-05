@@ -65,10 +65,10 @@ SRP.reportes = {
       // con aria-busy y un aviso flotante «Generando…» para que no parezca que no pasó nada (D136).
       const zona = this.el('principal');
       zona.setAttribute('aria-busy', 'true');
-      SRP.util.anunciar(v.soloLectura ? 'Preparando el reporte…' : 'Generando reporte…', 'aviso');
+      SRP.util.anunciar(v.soloLectura ? 'Preparando el reporte…' : 'Generando reporte…', 'aviso', { fijo: true });
       try { await this.generar(v.registros, v.cierre, v.fecha, v.jornada); }
       catch (err) { SRP.util.avisarError(err, 'generar el reporte'); }   // antes se quedaba «Generando reporte…» (D149)
-      finally { zona.removeAttribute('aria-busy'); }
+      finally { zona.removeAttribute('aria-busy'); SRP.util.quitarAviso(); }
     });
     // Corregir vuelve al formulario de cierre con lo ya escrito (se guardó al pedir la vista previa)
     this.el('btn-previa-corregir').addEventListener('click', () => {

@@ -321,7 +321,7 @@ SRP.usuarios = {
      `deshaciendo`: viene de «Deshacer» del aviso; no se vuelve a ofrecer deshacer (D101) */
   async cambiarEstado(u, deshaciendo) {
     if (!SRP.permisos.exigir('usuario.administrar')) return;
-    if (u.id === SRP.sesion.usuario.id) { SRP.util.anunciar('No puede desactivar su propia cuenta: el sistema se quedaría sin quien lo administre.', 'alerta'); return; }
+    if (u.id === SRP.sesion.usuario.id) { SRP.util.anunciar('No puede desactivar su propia cuenta: el sistema se quedaría sin quien lo administre.', 'aviso'); return; }
     const activar = !u.activo;
     const nuevo = Object.assign({}, u, { activo: activar, editado_por_id: SRP.sesion.usuario.id, fecha_ultima_edicion: SRP.util.ahoraISO() });
     await SRP.almacen.guardarConBitacora('usuarios', nuevo, SRP.bitacora.entrada(activar ? 'ACTIVADO' : 'DESACTIVADO', 'usuario', u.id));
@@ -334,7 +334,7 @@ SRP.usuarios = {
 
   async eliminar(u) {
     if (!SRP.permisos.exigir('usuario.administrar')) return;
-    if (u.id === SRP.sesion.usuario.id) { SRP.util.anunciar('No puede eliminar su propia cuenta.', 'alerta'); return; }
+    if (u.id === SRP.sesion.usuario.id) { SRP.util.anunciar('No puede eliminar su propia cuenta.', 'aviso'); return; }
     await this.preparar();                 // recuenta justo antes de decidir
     // Cuenta en todas las tablas (D151): árboles, jornadas de las que es cabo o encargado, cabos
     // que coordina, cuentas y catálogos que dio de alta o editó
@@ -345,7 +345,7 @@ SRP.usuarios = {
       const resto = Object.assign({}, usos, { usuarios: (usos.usuarios || 0) - cabos });
       const motivo = [cabos ? 'coordina a ' + cabos + (cabos === 1 ? ' cabo' : ' cabos') : '',
         SRP.ref.totalUsos(resto) ? 'aparece en ' + SRP.ref.textoUsos(resto) : ''].filter(Boolean).join(' y ');
-      SRP.util.anunciar('No se puede eliminar: ' + motivo + '. Desactive la cuenta: eso sí se deshace.', 'alerta');
+      SRP.util.anunciar('No se puede eliminar: ' + motivo + '. Desactive la cuenta: eso sí se deshace.', 'aviso');
       return;
     }
     const ok = await SRP.app.confirmar({ titulo: 'Eliminar cuenta', pregunta: '¿Eliminar la cuenta de ' + SRP.util.nombreCompleto(u) + '?',

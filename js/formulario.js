@@ -675,7 +675,7 @@ SRP.formulario = {
         await this.guardarSustituto(ahora);
       } else {
         const nuevo = this.registroPrevisto(ahora);
-        if (!nuevo.jornada_id) { SRP.util.anunciar('No hay jornada activa. Inicie una antes de guardar.', 'alerta'); return; }
+        if (!nuevo.jornada_id) { SRP.util.anunciar('No hay jornada activa. Inicie una antes de guardar.', 'aviso'); return; }
         // Sólo quien tiene la jornada a su cargo registra en ella: si pasó a otro cabo en relevo, ya no
         if (!SRP.permisos.exigir('jornada.registrar', await SRP.almacen.uno('jornadas', nuevo.jornada_id) || {})) { await SRP.activa.preparar(); return; }
         // La distancia a los demás de la jornada ya se avisó en la ficha (D130, supera la pregunta de D119)
@@ -748,7 +748,7 @@ SRP.formulario = {
     const s = this.estado.sustitucion;
     const original = await SRP.almacen.uno('plantaciones', s.original.id);
     if (!original || original.estatus !== 'activo' || original.sustituido_por_id) {
-      SRP.util.anunciar('Ese árbol ya no se puede sustituir: se eliminó o ya tiene sustituto.', 'alerta'); return;
+      SRP.util.anunciar('Ese árbol ya no se puede sustituir: se eliminó o ya tiene sustituto.', 'aviso'); return;
     }
     const nuevo = this.registroPrevisto(ahora);
     const motivo = SRP.ref.motivoSustitucion(nuevo);

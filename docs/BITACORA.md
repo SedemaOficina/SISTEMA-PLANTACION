@@ -3250,3 +3250,16 @@ campos en «Mover a otra jornada», que sólo aparecen con más de cinco jornada
 
 **Verificación:** corrida completa sola, 1,325 comprobaciones, 0 fallas, sin errores de consola (última sección `ctx79`). `auditoria.py`: 140 comprobaciones, 0 hallazgos. `auditoria_css.py`: 0 hallazgos. `revisar.py`: sin problemas. No probado en iPhone por Claude.
 
+## Bloque 169 — Avisos: menos, con el color que corresponde (05-10-2026)
+
+Versión 0.9.35. Tres ajustes que salieron del inventario de avisos, aprobados por Liber.
+
+**Qué cambió (D236).** `js/util.js`: `anunciar()` acepta `{ fijo: true }` y el ámbar dura 6 s de base;
+`quitarAviso()`. `js/reportes.js`: «Generando reporte…» fijo, y se quita al terminar. `js/jornada-activa.js`
+y `js/catalogos.js`: dos avisos pasan a `anunciarSilencioso()`. 17 avisos de `'alerta'` a `'aviso'` en
+`catalogos`, `usuarios`, `jornadas`, `registros`, `formulario`, `jornada-activa` y `envio`.
+
+**Pantalla: qué se agregó y qué se quitó.** Se quitaron dos avisos flotantes. No se agregó nada.
+
+**Verificación:** corrida completa sola, 1,330 comprobaciones, 0 fallas, sin errores de consola (última sección `ctx80`). `auditoria.py`: 140 comprobaciones, 0 hallazgos. `auditoria_css.py`: 0 hallazgos. `revisar.py`: sin problemas. No probado en iPhone por Claude. Incluye el texto guía «Elija la fecha» en «Mover a otra jornada».
+

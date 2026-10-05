@@ -380,7 +380,7 @@ SRP.catalogos = {
     await SRP.almacen.guardarCatalogo(item, entrada);
     this.el('dlg-catalogo').close();
     await SRP.ref.recargar();
-    SRP.util.anunciar('Catálogo actualizado.');
+    SRP.util.anunciarSilencioso('Catálogo actualizado.');   // la lista ya cambió a la vista
     this.preparar();
   },
 
@@ -388,8 +388,8 @@ SRP.catalogos = {
      `deshaciendo`: viene de «Deshacer» del aviso; no se vuelve a ofrecer deshacer (D101) */
   async cambiarEstado(item, deshaciendo) {
     if (!SRP.permisos.exigir('catalogo.administrar')) return;
-    if (SRP.ref.esSedema(item.id) && item.activo) { SRP.util.anunciar('La Secretaría no se desactiva: sus cuentas administran el sistema.', 'alerta'); return; }
-    if (this.esFija(item)) { SRP.util.anunciar('Las alcaldías son fijas: no se desactivan. Para cortar el acceso, desactive sus cuentas.', 'alerta'); return; }
+    if (SRP.ref.esSedema(item.id) && item.activo) { SRP.util.anunciar('La Secretaría no se desactiva: sus cuentas administran el sistema.', 'aviso'); return; }
+    if (this.esFija(item)) { SRP.util.anunciar('Las alcaldías son fijas: no se desactivan. Para cortar el acceso, desactive sus cuentas.', 'aviso'); return; }
     const activar = !item.activo;
     const nuevo = Object.assign({}, item, { activo: activar, editado_por_id: SRP.sesion.usuario.id, fecha_ultima_edicion: SRP.util.ahoraISO() });
     await SRP.almacen.guardarCatalogo(nuevo, SRP.bitacora.entrada(activar ? 'ACTIVADO' : 'DESACTIVADO', 'catalogo', item.id));
@@ -407,7 +407,7 @@ SRP.catalogos = {
     await this.preparar();                        // recuenta el uso justo antes de decidir
     const usos = this.usos[item.id];
     if (SRP.ref.totalUsos(usos)) {
-      SRP.util.anunciar('No se puede eliminar: aparece en ' + SRP.ref.textoUsos(usos) + '. Desactívelo: eso sí se deshace.', 'alerta');
+      SRP.util.anunciar('No se puede eliminar: aparece en ' + SRP.ref.textoUsos(usos) + '. Desactívelo: eso sí se deshace.', 'aviso');
       return;
     }
     const ok = await SRP.app.confirmar({ titulo: 'Eliminar del catálogo', pregunta: '¿Eliminar «' + item.nombre + '»?',
