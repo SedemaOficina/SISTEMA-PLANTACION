@@ -478,7 +478,7 @@ SRP.util = {
   tamPagina(clave) {
     let t = null;
     try { t = Number(localStorage.getItem('srp_tam_pagina_' + clave)); } catch (e) { /* sin almacenamiento */ }
-    return SRP.CONFIG.TAMANOS_PAGINA.includes(t) ? t : SRP.CONFIG.LISTA_PAGINA;
+    return SRP.CONFIG.TAMANOS_PAGINA.includes(t) ? t : (SRP.CONFIG.PAGINA_POR_LISTA || {})[clave] || SRP.CONFIG.LISTA_PAGINA;
   },
 
   /* Las páginas que se ofrecen como botones: la primera, la última y las vecinas de la actual, con

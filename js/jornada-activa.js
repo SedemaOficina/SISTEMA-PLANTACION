@@ -271,7 +271,7 @@ SRP.activa = {
       (j.estatus === 'cerrada' ? ' · cerrada' : '') + (atrasada ? ' · <b>no es de hoy</b>' : '') +
       (j.relevo_id && j.relevo_id !== j.cabo_id ? ' · relevo de ' + esc(SRP.ref.nombreUsuario(j.cabo_id)) : '') + '</span>' +
       (SRP.solicitud.es(j) ? '<span class="franja-jornada-solicitud">' + SRP.solicitud.insignia(j) + '</span>' : '') +
-      // La prioridad de reforestación de la jornada: la de la mayoría de sus árboles o, sin árboles, la de su ubicación
+      // La prioridad de reforestación de la jornada: la de la colonia donde se ubicó
       (SRP.prioritarias.hay() ? '<span class="franja-jornada-prioridad">' + SRP.prioritarias.insignia(SRP.prioritarias.deJornada(registros, j)) + '</span>' : '');
     this.el('franja-jornada-acciones').hidden = !!editando;
     this.el('btn-franja-editar').hidden = !!editando || !SRP.permisos.puede('jornada.editar', j);
@@ -318,7 +318,8 @@ SRP.activa = {
     this.el('ini-alcaldia').textContent = p ? SRP.ref.alcaldia(p.t.alcaldia) : '—';
     this.el('ini-colonia').textContent = p ? SRP.ref.colonia(p.t.colonia) : '—';
     this.el('caja-ini-prioridad').hidden = !SRP.prioritarias.hay();
-    this.el('ini-prioridad').textContent = p ? SRP.prioritarias.textoPunto(p.lat, p.lng) : '—';
+    // Sin ubicación todavía, la escala se ve completa y sin nivel resaltado
+    this.el('ini-prioridad').innerHTML = SRP.prioritarias.hay() ? SRP.prioritarias.htmlEscala(p ? SRP.prioritarias.de(p.lat, p.lng) : null).replace('Sin dato en la capa de prioridad', p ? 'Sin dato en la capa de prioridad' : 'Detecte la ubicación para ver la prioridad de la colonia') : '';
     if (!p && !buscando) this.el('ini-detectado').hidden = true;
   },
 

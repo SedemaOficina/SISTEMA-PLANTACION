@@ -407,6 +407,15 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M409 | Liber (iPhone) | Coordinación: la barra queda Nuevo registro, Jornadas, Registros y Supervisión | Media | 0.9.32 (B166) | Barra de secciones | D231 |
 | M410 | Liber (iPhone) | En los catálogos y listas de institución, las alcaldías van sólo con su nombre, sin la palabra «Alcaldía» | Baja | 0.9.32 (B166) | Catálogos › Instituciones; filtros de institución | D231 |
 | M411 | Liber | Especies escritas: la Administración global ve, agrupado, lo que se escribió en «Otra especie», y lo descarga en Excel para revisarlo fuera | Alta | 0.9.33 (B167) | Configuración › Especies escritas | D232 |
+| M412 | Liber | La prioridad de reforestación es de la jornada: se quita de Nuevo registro, de cada punto, del reporte por árbol y de la tabla de árboles | Alta | 0.9.34 (B168) | Nuevo registro; ficha de la jornada; reporte; Supervisión | D233 |
+| M413 | Liber | Iniciar jornada: escala de los cinco niveles de prioridad con el de la colonia resaltado | Media | 0.9.34 (B168) | Nuevo registro › Iniciar jornada | D233 |
+| M414 | Liber | Mapas de campo: sólo el polígono de la colonia de la jornada, con un botón para apagarlo | Media | 0.9.34 (B168) | Mapa del árbol; mapa de la ficha de la jornada | D233 |
+| M415 | Liber | Detalle del registro sin «Datos del sistema»; el folio, al frente | Media | 0.9.34 (B168) | Registros › detalle | D234 |
+| M416 | Liber | El lugar se dice sin la palabra «Alcaldía» | Baja | 0.9.34 (B168) | Franja de la jornada; Jornadas | D234 |
+| M417 | Liber | Botones del pie con el mismo tamaño y contorno, en el detalle y en la vista previa del reporte | Baja | 0.9.34 (B168) | Detalle del registro; vista previa del reporte | D234 |
+| M418 | Liber | Mover a otra jornada: buscador por nombre y fecha del día | Media | 0.9.34 (B168) | Ficha de la jornada › Mover a otra jornada | D234 |
+| M419 | Liber | Los informes en PDF dicen siempre de qué fecha a qué fecha son, en el encabezado y en el pie de cada página | Alta | 0.9.34 (B168) | Supervisión › Informe en PDF | D235 |
+| M420 | Liber | Fotografías va por páginas, como Registros y Jornadas | Media | 0.9.34 (B168) | Supervisión › Fotografías | D235 |
 
 ## 2. Por hacer
 
@@ -434,4 +443,4 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 392 hechas · 7 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 401 hechas · 7 por hacer · 2 revisadas · 2 descartadas.

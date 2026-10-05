@@ -149,11 +149,12 @@ SRP.ref = {
     const m = (SRP.CONFIG.MOTIVOS_SUSTITUCION.find(x => x[0] === r.motivo_sustitucion) || [null, r.motivo_sustitucion])[1];
     return r.motivo_sustitucion === 'OTRO' && r.motivo_sustitucion_otro ? m + ': ' + r.motivo_sustitucion_otro : m;
   },
-  /* DÓNDE, EN UN SOLO FORMATO (M15): «Alcaldía Coyoacán · Col. Del Carmen». Antes la franja decía
-     «colonia, Alcaldía X» y la lista de jornadas «X · Col. colonia». `alcaldias`: una o varias. */
+  /* DÓNDE, EN UN SOLO FORMATO (M15): «Coyoacán · Col. Del Carmen», igual en la franja, la lista de
+     jornadas y la ficha. La alcaldía va sin la palabra: el nombre basta y ahorra un tramo del
+     renglón en el teléfono. `alcaldias`: una o varias. */
   lugar(alcaldias, colonia) {
     const a = [].concat(alcaldias || []).filter(Boolean);
-    return [a.length ? (a.length === 1 ? 'Alcaldía ' : 'Alcaldías ') + a.join(', ') : '', colonia ? 'Col. ' + colonia : ''].filter(Boolean).join(' · ');
+    return [a.join(', '), colonia ? 'Col. ' + colonia : ''].filter(Boolean).join(' · ');
   },
   colonia(valor) { return valor || 'Sin colonia en la capa'; },
 

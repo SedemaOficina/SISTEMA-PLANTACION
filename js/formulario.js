@@ -232,9 +232,6 @@ SRP.formulario = {
     this.el('dato-origen').textContent = t ? SRP.mapa.textoOrigen(SRP.mapa.origen, SRP.mapa.precision) : '—';
     this.el('dato-alcaldia').textContent = t ? SRP.ref.alcaldia(t.alcaldia) : '—';
     this.el('dato-colonia').textContent = t ? SRP.ref.colonia(t.colonia) : '—';
-    // Referencia para quien planta: no se guarda en el registro
-    this.el('caja-dato-prioridad').hidden = !SRP.prioritarias.hay();
-    this.el('dato-prioridad').textContent = (t && lat !== null) ? SRP.prioritarias.textoPunto(lat, lng) : '—';
     if (SRP.espejo) SRP.espejo.refrescar();
   },
 

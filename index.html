@@ -14,12 +14,12 @@
 <!-- Las peticiones al mapa no dicen desde qué sitio se hacen -->
 <meta name="referrer" content="no-referrer">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.9.33">
-<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.9.33">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.9.34">
+<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.9.34">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.9.33">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.9.33">
-<link rel="stylesheet" href="css/estilos.css?v=0.9.33">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.9.34">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.9.34">
+<link rel="stylesheet" href="css/estilos.css?v=0.9.34">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -30,8 +30,8 @@
   <div class="encabezado-interior">
     <!-- Logotipo (D90, D137): Gobierno CDMX · SEDEMA · SIA · Reforestación Urbana en pantalla ancha; en teléfono, SIA y Reforestación Urbana -->
     <picture>
-      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.9.33">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.9.33" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
+      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.9.34">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.9.34" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» (D80) -->
@@ -195,8 +195,8 @@
             <div class="campo"><label for="ini-alcaldia">Alcaldía</label><output id="ini-alcaldia" class="campo-lectura" for="btn-ini-detectar">—</output></div>
             <div class="campo"><label for="ini-colonia">Colonia</label><output id="ini-colonia" class="campo-lectura" for="btn-ini-detectar">—</output></div>
           </div>
-          <!-- La prioridad de reforestación de la colonia donde se ubica la jornada (modelo de priorización) -->
-          <div class="campo" id="caja-ini-prioridad"><label for="ini-prioridad">Prioridad de reforestación de la colonia</label><output id="ini-prioridad" class="campo-lectura" for="btn-ini-detectar">—</output></div>
+          <!-- La prioridad de reforestación de la colonia donde se ubica la jornada: la escala completa, con su nivel resaltado -->
+          <div class="campo" id="caja-ini-prioridad"><p class="campo-titulo" id="etq-ini-prioridad">Prioridad de reforestación de la colonia</p><div id="ini-prioridad" class="pri-escala-caja" role="group" aria-labelledby="etq-ini-prioridad" aria-live="polite"></div></div>
         </div>
         <!-- Ayuda bajo los campos que se prestan a duda (D140) -->
         <div class="campo"><label for="ini-ubicacion">Dirección de la jornada</label>
@@ -268,8 +268,6 @@
 
     <div class="mapa-bloque">
       <div id="mapa" class="mapa" aria-label="Mapa para ubicar el árbol. Toque el mapa o arrastre el marcador."></div>
-      <!-- Colonias prioritarias: la leyenda de los niveles que se ven; el control va sobre el mapa -->
-      <div id="mapa-prioritarias" class="pri-control"></div>
       <!-- Bajo el mapa queda sólo el aviso de lo que pasó: si hubo señal, con qué precisión,
            qué hacer si falló. Los datos del punto son campos del formulario, más abajo. -->
       <p id="mapa-estado" class="ficha-estado" aria-live="polite">Obteniendo su ubicación…</p>
@@ -298,9 +296,6 @@
         <div class="campo"><label for="dato-colonia">Colonia</label>
           <output id="dato-colonia" class="campo-lectura" for="mapa">—</output></div>
       </div>
-      <!-- La prioridad de la colonia donde cae el punto, según el modelo de priorización: es referencia, no se guarda -->
-      <div class="campo campo-prioridad" id="caja-dato-prioridad"><label for="dato-prioridad">Prioridad de reforestación de la colonia</label>
-        <output id="dato-prioridad" class="campo-lectura" for="mapa">—</output></div>
       <!-- Fuera de la rejilla: oculto a la vista pero anunciado al lector de pantalla y guardado en el registro -->
       <div class="campo oculto-visual"><label for="dato-origen">Cómo se obtuvo el punto</label>
         <output id="dato-origen" class="campo-lectura" for="mapa">—</output>
@@ -540,8 +535,6 @@
       <h2 id="sec-jornada-mapa" class="titulo-bloque titulo-seccion" tabindex="-1">Mapa</h2>
       <div id="jornada-mapa" class="mapa mapa-jornada" role="region" aria-label="Mapa de la jornada con los puntos numerados"></div>
       <p id="jornada-leyenda" class="leyenda-jornada" aria-hidden="true"><span><i data-tono=""></i>Correcto</span><span><i data-tono="rev"></i>Por revisar</span><span><i data-tono="err"></i>Lejos del resto</span><span><i data-tono="ok"></i>Revisado</span><span><i data-tono="sust"></i>Sustituto</span></p>
-      <div id="jornada-prioritarias" class="pri-control"></div>
-      <p id="jornada-prioridad" class="nota" hidden></p>
       </div>
       <div id="ficha-col-lista" class="ficha-col-lista">
       <!-- La meta se escribió al iniciar la jornada (D131); aquí sólo se compara -->
@@ -584,6 +577,7 @@
         <button type="button" id="btn-galeria-zip" class="btn btn-primario" disabled></button>
       </div>
       <ul id="galeria-rejilla" class="galeria-rejilla"></ul>
+      <nav id="galeria-paginas" class="paginador" aria-label="Páginas de fotografías" hidden></nav>
       <div id="galeria-vacio" class="vacio" aria-live="polite" hidden></div>
     </section>
   </section>
@@ -837,6 +831,12 @@
     </div>
   </div>
   <p id="dlg-mover-texto" class="nota"></p>
+  <!-- Con muchas jornadas la lista no basta: se busca por nombre y se acota a un día -->
+  <div id="mover-filtros" class="mover-filtros">
+    <div class="campo"><label for="mover-buscar">Buscar por nombre</label><input id="mover-buscar" type="search" placeholder="Nombre de la jornada" autocomplete="off"></div>
+    <div class="campo"><label for="mover-fecha">Fecha de la jornada</label><input id="mover-fecha" type="date"></div>
+  </div>
+  <p id="mover-cuenta" class="conteo-lista" aria-live="polite"></p>
   <ul id="lista-mover-jornadas" class="lista-jornadas lista-elegir"></ul>
 </dialog>
 
@@ -916,7 +916,7 @@
   <!-- «Editar» al pie, fijo, como «Guardar» en la ficha de revisión (D100) -->
   <div id="detalle-pie" class="dialogo-pie dialogo-pie-doble" hidden>
     <button type="button" id="btn-detalle-editar" class="btn btn-editar btn-ancho"></button>
-    <button type="button" id="btn-detalle-sustituir" class="btn btn-secundario btn-ancho" hidden></button>
+    <button type="button" id="btn-detalle-sustituir" class="btn btn-editar btn-ancho" hidden></button>
   </div>
 </dialog>
 
@@ -1045,9 +1045,10 @@
     </div>
   </div>
   <div id="previa-hoja" class="previa-hoja"></div>
-  <div class="dialogo-pie">
-    <button type="button" id="btn-previa-generar" class="btn btn-primario btn-ancho btn-destacado">Generar PDF</button>
-    <button type="button" id="btn-previa-corregir" class="btn btn-texto-editar btn-ancho">Corregir datos de cierre</button>
+  <!-- Las dos acciones en un renglón, con el mismo alto: corregir a la izquierda, generar a la derecha -->
+  <div class="dialogo-pie dialogo-pie-doble">
+    <button type="button" id="btn-previa-corregir" class="btn btn-editar btn-ancho">Corregir datos</button>
+    <button type="button" id="btn-previa-generar" class="btn btn-primario btn-ancho">Generar PDF</button>
   </div>
 </dialog>
 
@@ -1134,58 +1135,58 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.9.33"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.9.33"></script>
-<script src="vendor/turf-pip.min.js?v=0.9.33"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.9.33"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.9.33"></script>
+<script src="vendor/leaflet.js?v=0.9.34"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.9.34"></script>
+<script src="vendor/turf-pip.min.js?v=0.9.34"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.9.34"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.9.34"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.9.33"></script>
-<script src="js/util.js?v=0.9.33"></script>
-<script src="js/filtros.js?v=0.9.33"></script>
-<script src="js/iconos.js?v=0.9.33"></script>
+<script src="js/config.js?v=0.9.34"></script>
+<script src="js/util.js?v=0.9.34"></script>
+<script src="js/filtros.js?v=0.9.34"></script>
+<script src="js/iconos.js?v=0.9.34"></script>
 <!-- Capas territoriales del SIA, compactadas por herramientas/generar_capas.py desde originales/ -->
-<script src="assets/capas/capa-alcaldias.js?v=0.9.33"></script>
-<script src="assets/capas/capa-uga.js?v=0.9.33"></script>
-<script src="assets/capas/capa-colonias.js?v=0.9.33"></script>
+<script src="assets/capas/capa-alcaldias.js?v=0.9.34"></script>
+<script src="assets/capas/capa-uga.js?v=0.9.34"></script>
+<script src="assets/capas/capa-colonias.js?v=0.9.34"></script>
 <!-- Colonias prioritarias para reforestar: capa de referencia del modelo de priorización -->
-<script src="assets/capas/capa-prioritarias.js?v=0.9.33"></script>
-<script src="assets/catalogos/catalogo-especies.js?v=0.9.33"></script>
-<script src="assets/catalogos/catalogo-vehiculos.js?v=0.9.33"></script>
-<script src="js/datos-ficticios.js?v=0.9.33"></script>
-<script src="js/permisos.js?v=0.9.33"></script>
-<script src="js/derivacion.js?v=0.9.33"></script>
-<script src="js/prioritarias.js?v=0.9.33"></script>
-<script src="js/solicitud.js?v=0.9.33"></script>
-<script src="js/almacen.js?v=0.9.33"></script>
-<script src="js/sesion.js?v=0.9.33"></script>
-<script src="js/referencias.js?v=0.9.33"></script>
-<script src="js/folio.js?v=0.9.33"></script>
+<script src="assets/capas/capa-prioritarias.js?v=0.9.34"></script>
+<script src="assets/catalogos/catalogo-especies.js?v=0.9.34"></script>
+<script src="assets/catalogos/catalogo-vehiculos.js?v=0.9.34"></script>
+<script src="js/datos-ficticios.js?v=0.9.34"></script>
+<script src="js/permisos.js?v=0.9.34"></script>
+<script src="js/derivacion.js?v=0.9.34"></script>
+<script src="js/prioritarias.js?v=0.9.34"></script>
+<script src="js/solicitud.js?v=0.9.34"></script>
+<script src="js/almacen.js?v=0.9.34"></script>
+<script src="js/sesion.js?v=0.9.34"></script>
+<script src="js/referencias.js?v=0.9.34"></script>
+<script src="js/folio.js?v=0.9.34"></script>
 <!-- Esquema generado de datos/esquema.json: relaciones entre tablas (D150) -->
-<script src="js/esquema.js?v=0.9.33"></script>
-<script src="js/conexion.js?v=0.9.33"></script>
-<script src="js/envio.js?v=0.9.33"></script>
-<script src="js/mapa.js?v=0.9.33"></script>
-<script src="js/foto.js?v=0.9.33"></script>
-<script src="js/jornada-activa.js?v=0.9.33"></script>
-<script src="js/formulario.js?v=0.9.33"></script>
+<script src="js/esquema.js?v=0.9.34"></script>
+<script src="js/conexion.js?v=0.9.34"></script>
+<script src="js/envio.js?v=0.9.34"></script>
+<script src="js/mapa.js?v=0.9.34"></script>
+<script src="js/foto.js?v=0.9.34"></script>
+<script src="js/jornada-activa.js?v=0.9.34"></script>
+<script src="js/formulario.js?v=0.9.34"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.9.33"></script>
-<script src="js/registros.js?v=0.9.33"></script>
-<script src="js/galeria.js?v=0.9.33"></script>
-<script src="js/jornadas.js?v=0.9.33"></script>
-<script src="js/informes.js?v=0.9.33"></script>
-<script src="js/supervision.js?v=0.9.33"></script>
-<script src="js/indicadores.js?v=0.9.33"></script>
-<script src="js/demostracion.js?v=0.9.33"></script>
-<script src="js/croquis.js?v=0.9.33"></script>
-<script src="js/reportes.js?v=0.9.33"></script>
-<script src="js/catalogos.js?v=0.9.33"></script>
-<script src="js/usuarios.js?v=0.9.33"></script>
-<script src="js/excel.js?v=0.9.33"></script>
-<script src="js/carga.js?v=0.9.33"></script>
-<script src="js/configuracion.js?v=0.9.33"></script>
-<script src="js/especies-revision.js?v=0.9.33"></script>
-<script src="js/app.js?v=0.9.33"></script>
+<script src="js/espejo.js?v=0.9.34"></script>
+<script src="js/registros.js?v=0.9.34"></script>
+<script src="js/galeria.js?v=0.9.34"></script>
+<script src="js/jornadas.js?v=0.9.34"></script>
+<script src="js/informes.js?v=0.9.34"></script>
+<script src="js/supervision.js?v=0.9.34"></script>
+<script src="js/indicadores.js?v=0.9.34"></script>
+<script src="js/demostracion.js?v=0.9.34"></script>
+<script src="js/croquis.js?v=0.9.34"></script>
+<script src="js/reportes.js?v=0.9.34"></script>
+<script src="js/catalogos.js?v=0.9.34"></script>
+<script src="js/usuarios.js?v=0.9.34"></script>
+<script src="js/excel.js?v=0.9.34"></script>
+<script src="js/carga.js?v=0.9.34"></script>
+<script src="js/configuracion.js?v=0.9.34"></script>
+<script src="js/especies-revision.js?v=0.9.34"></script>
+<script src="js/app.js?v=0.9.34"></script>
 </body>
 </html>

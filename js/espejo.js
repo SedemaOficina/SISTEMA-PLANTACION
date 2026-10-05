@@ -45,7 +45,7 @@ SRP.espejo = {
     estatus: 'Siempre «activo» al crear. Eliminar marca, no borra',
     cabo_id: 'De la sesión abierta. En edición conserva al cabo que capturó',
     alcaldia_cve: 'Clave INEGI (cvegeo) de la alcaldía; es la llave para unir con el SIA',
-    uga: 'Del punto contra la malla hexagonal UGA (~1 km²). El detalle la dice en «Datos del sistema»',
+    uga: 'Del punto contra la malla hexagonal UGA (~1 km²). Con ella se arma el folio',
     uga_borde_m: 'Metros del punto al borde de su celda UGA; si es menor que la precisión del GPS, la celda es incierta',
     capa_version: 'Con qué versión de cada capa se derivó; permite rehacer el dato si cambian',
     foto_id: 'UUID de la fotografía; nulo si no hay',
@@ -61,9 +61,9 @@ SRP.espejo = {
   },
 
   // Lo que el detalle del registro sí enseña (registros.js, verDetalle): el resto va al espejo
-  VISIBLES_DETALLE: ['id', 'folio', 'lat', 'lng', 'punto_origen', 'gps_precision_m', 'alcaldia', 'colonia',
+  VISIBLES_DETALLE: ['folio', 'lat', 'lng', 'punto_origen', 'gps_precision_m', 'alcaldia', 'colonia',
                      'especie_id', 'especie_otra', 'programa_id', 'fecha_plantacion', 'cabo_id',
-                     'comentarios', 'foto_base64', 'uga', 'uga_borde_m', 'capa_version'],
+                     'comentarios', 'foto_base64'],
 
   // Cierre del reporte: lo que se ve en el formulario son sus CAMPOS y el encargado
   NOTAS_CIERRE: {

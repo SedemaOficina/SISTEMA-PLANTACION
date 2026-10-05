@@ -13,11 +13,26 @@ SRP.informes = {
     return t + (m.filtros.organizacion ? ' · ' + SRP.ref.nombreOrganizacion(m.filtros.organizacion) : '') + (m.filtros.alcaldia ? ' · Alcaldía ' + m.filtros.alcaldia : '');
   },
 
+  /* DE CUÁNDO A CUÁNDO, SIEMPRE CON FECHAS. «Año 2026» o «Todo el registro» no dicen qué días cubre
+     el informe: aquí se dice «Periodo: del 01-ENE-2026 al 31-DIC-2026». «Todo el registro» va del
+     primer árbol o jornada a hoy. Si el periodo termina después de hoy, se dice el corte. */
+  fechasPeriodo(m) {
+    const p = m.periodo, hoy = SRP.util.fechaHoy();
+    if (p.tipo !== 'todo') return { desde: p.desde, hasta: p.hasta };
+    const f = (m.detalle || []).map(x => x.fecha).concat((m.jornadas || []).map(j => j.fecha)).filter(Boolean).sort();
+    return { desde: f[0] || hoy, hasta: hoy };
+  },
+  // `corto`: sin el corte, para el pie de página
+  textoPeriodo(m, corto) {
+    const F = t => SRP.util.formatearFecha(t), hoy = SRP.util.fechaHoy(), { desde, hasta } = this.fechasPeriodo(m);
+    return 'Periodo: ' + (desde === hasta ? F(desde) : 'del ' + F(desde) + ' al ' + F(hasta)) + (!corto && hasta > hoy ? ' (corte al ' + F(hoy) + ')' : '');
+  },
+
   // «Informe_semanal_2026-09-21_al_2026-09-27_Coyoacan.pdf»: sin acentos ni espacios
   nombreArchivo(m, prefijo, ext) {
     const p = m.periodo;
     const limpio = t => String(t).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
-    const cuando = p.tipo === 'mes' ? p.desde.slice(0, 7) : p.tipo === 'anio' ? p.desde.slice(0, 4) : p.tipo === 'todo' ? 'todo' : p.desde + '_al_' + p.hasta;
+    const cuando = p.tipo === 'mes' ? p.desde.slice(0, 7) : p.tipo === 'anio' ? p.desde.slice(0, 4) : p.tipo === 'todo' ? 'todo' : p.desde + '_al_' + p.hasta;   // el nombre conserva su forma corta; las fechas van dentro
     const tipo = { semana: '_semanal', mes: '_mensual', anio: '_anual' }[p.tipo] || '';
     const f = m.filtros;
     const org = f.organizacion ? SRP.ref.catalogoPorId[f.organizacion] : null;
@@ -86,7 +101,8 @@ SRP.informes = {
     doc.setFont(F, 'bold'); doc.setFontSize(14); doc.setTextColor(...C.guinda);
     doc.text(doc.splitTextToSize(this.titulo(m).toUpperCase(), util), ancho / 2, 40, { align: 'center' });
     doc.setFont(F, 'normal'); doc.setFontSize(10); doc.setTextColor(...C.gris);
-    const lineas = [m.periodo.etiqueta, this.alcance(),
+    // El nombre del periodo cuando lo tiene (mes, año, todo) y, siempre, sus fechas
+    const lineas = [['mes', 'anio', 'todo'].includes(m.periodo.tipo) ? m.periodo.etiqueta : '', this.textoPeriodo(m), this.alcance(),
       [m.filtros.programa ? 'Programa: ' + SRP.ref.nombreCatalogo(m.filtros.programa) : '', m.filtros.cabo ? 'Registró: ' + SRP.ref.nombreUsuario(m.filtros.cabo) : ''].filter(Boolean).join(' · ')].filter(Boolean);
     lineas.forEach((t, i) => doc.text(t, ancho / 2, 47 + i * 5, { align: 'center' }));
     y = 47 + lineas.length * 5 + 5;
@@ -165,12 +181,14 @@ SRP.informes = {
     doc.text('Generado por ' + SRP.util.nombreCompleto(SRP.sesion.usuario) + ' (' + SRP.permisos.de(SRP.sesion.usuario).etiqueta + ').', M, y);
 
     const paginas = doc.getNumberOfPages();
-    const sello = 'SEDEMA, Sistema de Registro de Plantaciones. Generado el ' + SRP.util.formatearFechaHora(new Date().toISOString());
+    // El pie de cada página repite el periodo: una hoja suelta dice de cuándo es
+    const sello = 'SEDEMA, Sistema de Registro de Plantaciones. Generado el ' + SRP.util.formatearFechaHora(new Date().toISOString()), periodoPie = this.textoPeriodo(m, true);
     for (let p = 1; p <= paginas; p++) {
       doc.setPage(p);
       doc.setDrawColor(...C.dorado); doc.setLineWidth(0.4); doc.line(M, alto - 16, ancho - M, alto - 16);
       doc.setFontSize(8); doc.setTextColor(...C.gris);
       doc.text(sello, M, alto - 11);
+      doc.text(periodoPie, M, alto - 6);
       doc.text('Página ' + p + ' de ' + paginas, ancho / 2, alto - 6, { align: 'center' });
     }
     const nombre = this.nombreArchivo(m, 'Informe', 'pdf');
@@ -189,7 +207,7 @@ SRP.informes = {
   COLUMNAS: [['folio', 'Folio'], ['fecha', 'Fecha de plantación'], ['jornada', 'Jornada'], ['organizacion', 'Institución que ejecuta'], ['cabo', 'Cabo'], ['programa', 'Programa'], ['especie', 'Especie'],
     ['cientifico', 'Nombre científico'], ['distribucion', 'Distribución'], ['alcaldia', 'Alcaldía'], ['colonia', 'Colonia'], ['uga', 'Celda UGA'],
     ['lat', 'Latitud'], ['lng', 'Longitud'], ['origen', 'Origen del punto'], ['precision', 'Precisión GPS (m)'], ['foto', 'Con fotografía'], ['reporte', 'Reporte de la jornada'], ['sustituto', 'Sustituto'], ['motivo', 'Motivo de la sustitución'],
-    ['prioridad', 'Prioridad de reforestación de la colonia'], ['solicitante', 'Quién lo solicita'], ['solicitudDescripcion', 'Descripción de la solicitud']],
+    ['solicitante', 'Quién lo solicita'], ['solicitudDescripcion', 'Descripción de la solicitud']],
 
   texto(m) {
     const campo = v => {

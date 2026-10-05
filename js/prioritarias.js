@@ -1,7 +1,8 @@
 /* COLONIAS PRIORITARIAS PARA REFORESTAR. Capa de referencia del modelo de priorización (SIA/SEDEMA):
    2,243 colonias con prioridad de Muy baja (0) a Muy alta (4). No deriva ningún dato que se guarde:
-   se dibuja en los mapas para que quien planta vea la zona que interviene, dice la prioridad de la
-   colonia donde cae un punto y deja contar en Supervisión cuántos árboles van en cada nivel.
+   dice la prioridad de la colonia donde se ubica una jornada, la dibuja en los mapas de campo para
+   que quien planta vea la zona que interviene, y deja contar en Supervisión cuántos árboles van en
+   jornadas de cada nivel. La prioridad es de la jornada, no de cada árbol.
 
    LO QUE SE SABE DE LA CAPA (medido al recibirla). Sus colonias no son las unidades territoriales
    del IECM con que se reporta: son otra división, con su propio nombre. Sus polígonos son
@@ -17,7 +18,7 @@ window.SRP = window.SRP || {};
 SRP.prioritarias = {
   // De mayor a menor: así se leen en la leyenda y en las tablas
   NIVELES: [[4, 'Muy alta'], [3, 'Alta'], [2, 'Media'], [1, 'Baja'], [0, 'Muy baja']],
-  CLAVE: 'srp_capa_prioritarias_2',
+  CLAVE: 'srp_capa_prioritarias_3',
   memoria: new Map(),
   capas: new Map(),   // mapa de Leaflet → su capa
 
@@ -70,22 +71,42 @@ SRP.prioritarias = {
     return SRP.util.enumerar(partes);
   },
 
-  /* La prioridad de una jornada: el nivel donde cayó la mayoría de sus árboles (en empate, el más
-     alto); sin árboles con dato, la de su punto de ubicación. { prioridad, texto, n, total, porPunto },
-     o null si no hay de dónde decirla. */
+  /* La prioridad de una jornada: la de la colonia donde se ubicó. Una jornada sin ubicación toma
+     la de la colonia donde cayó la mayoría de sus árboles; en empate, la de mayor prioridad.
+     { id, prioridad, texto, colonia }, o null si no hay de dónde decirla. */
   deJornada(registros, dato) {
     if (!this.hay()) return null;
-    const c = this.contar(registros || []);
-    const mejor = c.niveles.filter(x => x.n).sort((a, b) => b.n - a.n || b.prioridad - a.prioridad)[0];
-    if (mejor) return { prioridad: mejor.prioridad, texto: mejor.texto, n: mejor.n, total: c.total, porPunto: false };
-    const p = dato && typeof dato.lat === 'number' ? this.de(dato.lat, dato.lng) : null;
-    return p ? { prioridad: p.prioridad, texto: p.texto, n: 0, total: 0, porPunto: true } : null;
+    if (dato && typeof dato.lat === 'number' && typeof dato.lng === 'number') {
+      const p = this.de(dato.lat, dato.lng);
+      return p ? { id: p.id, prioridad: p.prioridad, texto: p.texto, colonia: p.colonia } : null;
+    }
+    const porColonia = new Map();
+    (registros || []).forEach(r => { const p = this.de(r.lat, r.lng); if (!p) return; const c = porColonia.get(p.id) || { p, n: 0 }; c.n++; porColonia.set(p.id, c); });
+    const mejor = [...porColonia.values()].sort((a, b) => b.n - a.n || b.p.prioridad - a.p.prioridad)[0];
+    return mejor ? { id: mejor.p.id, prioridad: mejor.p.prioridad, texto: mejor.p.texto, colonia: mejor.p.colonia } : null;
   },
 
-  // «Prioridad alta» y, si no todos sus árboles cayeron ahí, «(8 de 10 árboles)»
-  textoJornada(p) {
-    if (!p) return 'Sin dato de prioridad';
-    return 'Prioridad ' + p.texto.toLowerCase() + (p.total && p.n < p.total ? ' (' + p.n + ' de ' + p.total + ' árboles)' : '');
+  /* Lo que se pinta en el mapa para una jornada: la colonia donde se ubicó, { id: 1 }. Una jornada
+     sin ubicación pinta las colonias de sus árboles. */
+  coloniaDeJornada(registros, dato) {
+    if (dato && typeof dato.lat === 'number' && typeof dato.lng === 'number') {
+      const p = this.de(dato.lat, dato.lng);
+      return p && p.id != null ? { [p.id]: 1 } : {};
+    }
+    return this.coloniasDe(registros || []);
+  },
+
+  // «Prioridad alta», o «Sin dato de prioridad»
+  textoJornada(p) { return p ? 'Prioridad ' + p.texto.toLowerCase() : 'Sin dato de prioridad'; },
+
+  /* LA ESCALA COMPLETA, CON EL NIVEL DE LA COLONIA RESALTADO. Los cinco niveles en orden, de menor a
+     mayor, cada uno con su color y su nombre; el de la colonia crece, lleva marca y se dice con
+     palabras debajo, para que no dependa del color. `p`: lo que devuelve `de()`, o null. */
+  htmlEscala(p) {
+    const esc = SRP.util.escapar, niveles = this.NIVELES.slice().reverse();
+    return '<span class="pri-escala" role="img" aria-label="' + esc(p ? 'Prioridad ' + p.texto.toLowerCase() + ', nivel ' + (p.prioridad + 1) + ' de 5' : 'Sin dato de prioridad') + '">' +
+      niveles.map(([n, t]) => '<span class="pri-tramo"' + (p && p.prioridad === n ? ' data-es="true"' : '') + '><i class="pri-nivel-' + n + '"></i><span>' + esc(t) + '</span></span>').join('') + '</span>' +
+      '<span class="pri-escala-dicho">' + (p ? '<b>' + esc(p.texto) + '</b>' + (p.colonia ? ' · ' + esc(p.colonia) : '') : 'Sin dato en la capa de prioridad') + '</span>';
   },
 
   /* La marca de prioridad de una tarjeta: muestra del color y texto. La prioridad es de la colonia,
@@ -103,11 +124,11 @@ SRP.prioritarias = {
   /* ---------- En el mapa ---------- */
 
   /* LO QUE SE VE DE LA CAPA. Por grupo de mapas —«campo»: Nuevo registro y la ficha de la jornada;
-     «supervision»: el mapa de colonias de Supervisión—: si la capa está encendida, qué niveles se
-     ven y con cuánta opacidad. Se recuerda en el dispositivo. */
+     «supervision»: el mapa de colonias de Supervisión—: si la capa está encendida y, en Supervisión,
+     qué niveles se ven y con cuánta opacidad. Se recuerda en el dispositivo. */
   estados: null,
-  // En campo la capa arranca apagada: quien la quiere la enciende con el botón de capas
-  inicial(grupo) { return { ver: grupo === 'supervision', niveles: { 0: true, 1: true, 2: true, 3: true, 4: true }, opacidad: grupo === 'supervision' ? 0.9 : 0.45 }; },
+  // En campo se ve el polígono de la colonia de la jornada; quien no lo quiere lo apaga con su botón
+  inicial(grupo) { return { ver: true, niveles: { 0: true, 1: true, 2: true, 3: true, 4: true }, opacidad: grupo === 'supervision' ? 0.9 : 0.45 }; },
   estado(grupo) {
     if (!this.estados) {
       this.estados = {};
@@ -160,8 +181,9 @@ SRP.prioritarias = {
 
   /* EL CONTROL SOBRE EL MAPA. Un botón en la esquina del mapa abre el panel de la capa: encenderla o
      apagarla, elegir qué niveles se ven (cada uno con su muestra de color, que hace de leyenda) y su
-     opacidad. `mapa()` devuelve el mapa de Leaflet; `o`: { grupo, leyenda (elemento bajo el mapa, opcional),
-     interruptor (false donde la capa es el mapa mismo), interactiva, intervenidas (sólo esas colonias) }. Lo elegido vale para los mapas
+     opacidad. `mapa()` devuelve el mapa de Leaflet; `o`: { grupo, simple (un solo botón que enciende y apaga),
+     leyenda (elemento bajo el mapa, opcional), interruptor (false donde la capa es el mapa mismo),
+     interactiva, intervenidas (sólo esas colonias) }. Lo elegido vale para los mapas
      del mismo grupo. */
   controles: [],
   control(mapa, o) {
@@ -171,6 +193,21 @@ SRP.prioritarias = {
     if (this.controles.some(c => c.m === m)) { this.refrescar(); return; }
     const id = 'pri-panel-' + (this.controles.length + 1), esc = SRP.util.escapar;
     const caja = L.DomUtil.create('div', 'leaflet-control pri-capas');
+    /* En campo el control es un solo botón que enciende o apaga el polígono de la colonia de la
+       jornada: no hay niveles ni opacidad que elegir */
+    if (o.simple) {
+      caja.innerHTML = '<button type="button" class="pri-capas-boton" aria-pressed="false" aria-label="Colonia de la jornada, con el color de su prioridad" title="Colonia de la jornada">' + SRP.ICONOS.svg('capas', 'medio') + '</button>';
+      L.DomEvent.disableClickPropagation(caja); L.DomEvent.disableScrollPropagation(caja);
+      caja.querySelector('button').addEventListener('click', () => {
+        this.alternar();
+        SRP.util.anunciarSilencioso(this.encendida() ? 'Colonia de la jornada a la vista.' : 'Colonia de la jornada oculta.');
+      });
+      const S = L.Control.extend({ onAdd: () => caja });
+      new S({ position: 'topright' }).addTo(m);
+      this.controles.push({ m, mapa, caja, o });
+      this.refrescar();
+      return;
+    }
     caja.innerHTML = '<button type="button" class="pri-capas-boton" aria-expanded="false" aria-controls="' + id + '" aria-label="Capa de colonias prioritarias: niveles y opacidad" title="Colonias prioritarias">' + SRP.ICONOS.svg('capas', 'medio') + '</button>' +
       '<div id="' + id + '" class="pri-capas-panel" hidden>' +
       (o.interruptor ? '<label class="pri-capas-fila pri-capas-todo"><input type="checkbox" data-pri="ver"><span>Colonias prioritarias</span></label>' : '<p class="pri-capas-titulo">Colonias prioritarias</p>') +
@@ -222,6 +259,15 @@ SRP.prioritarias = {
       const e = this.estado(o.grupo), ver = e.ver || !o.interruptor;
       this.pintar(m, ver, o.interactiva, o.intervenidas);
       const pane = m.getPane('prioritarias');
+      if (o.simple) {
+        if (pane) pane.style.opacity = String(this.inicial(o.grupo).opacidad);
+        const b = caja.querySelector('.pri-capas-boton');
+        b.dataset.activa = String(ver); b.setAttribute('aria-pressed', String(ver));
+        // Sin colonia que pintar, el botón no tiene qué encender
+        const capaS = this.capas.get(m);
+        caja.hidden = !!(capaS && capaS.nivelesPintados && !capaS.nivelesPintados.size) || (!capaS && ver);
+        return;
+      }
       if (pane) {
         pane.style.opacity = String(e.opacidad);
         this.NIVELES.forEach(([n]) => pane.classList.toggle('pri-sin-' + n, !e.niveles[n]));

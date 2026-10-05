@@ -1882,7 +1882,7 @@
       "donde": "Reporte de la jornada (D58, D70)"
     },
     {
-      "que": "Prioridad de reforestación de la colonia donde cae el árbol (Muy alta a Muy baja, o sin dato) y prioridad de la jornada (el nivel donde cayó la mayoría de sus árboles; en empate, el más alto; sin árboles, la de su punto)",
+      "que": "Prioridad de reforestación de la jornada: la de la colonia donde se ubicó (Muy alta a Muy baja, o sin dato). Una jornada sin ubicación toma el nivel donde cayó la mayoría de sus árboles; en empate, el más alto. No hay prioridad por árbol (D233)",
       "de": "El punto del árbol contra la capa de colonias prioritarias (SRP.prioritarias.de); en un solape, el polígono más pequeño. La de la jornada, SRP.prioritarias.deJornada",
       "donde": "Iniciar jornada, Nuevo registro, lista y ficha de Jornadas (con filtro), reporte de la jornada (vista previa y PDF), Supervisión, informe PDF y CSV"
     }
@@ -1960,7 +1960,7 @@
     },
     {
       "indicador": "Por prioridad de la colonia",
-      "calculo": "Árboles plantados del periodo según la prioridad de la colonia donde cae su punto en la capa de colonias prioritarias (cinco niveles y «sin dato»); «alta y muy alta» suma los dos niveles superiores. Se calcula al consultar, con la versión vigente de la capa: si la capa cambia, la cifra cambia",
+      "calculo": "Árboles plantados del periodo según la prioridad de su jornada, que es la de la colonia donde se ubicó en la capa de colonias prioritarias (cinco niveles y «sin dato»); «alta y muy alta» suma los dos niveles superiores. Se calcula al consultar, con la versión vigente de la capa: si la capa cambia, la cifra cambia",
       "donde": "Supervisión (tabla y mapa), informe PDF, CSV"
     }
   ],
@@ -2445,7 +2445,7 @@
       "capa": "colonias prioritarias",
       "archivo": "assets/capas/capa-prioritarias.js (fuente originales/colonias_prioritarias_reforestacion.geojson)",
       "version": "priorizacion-2026-10-01",
-      "alimenta": "Nada que se guarde: la capa en los mapas, la prioridad del punto en pantalla y el indicador «Por prioridad de la colonia»",
+      "alimenta": "Nada que se guarde: la prioridad de la jornada (escala al iniciarla, tarjeta, ficha y reporte), el polígono de su colonia en los mapas de campo y el indicador «Por prioridad de la colonia»",
       "estado": "Capa de referencia del modelo de priorización (Liber, 01-10-2026): 2,243 colonias, prioridad 0 (Muy baja) a 4 (Muy alta). Se publican sólo colonia, alcaldía y prioridad. Sus colonias no son las unidades territoriales del IECM; polígonos simplificados (15 vértices en promedio) con 6.5 km² de solapes, donde gana el más pequeño; nueve geometrías ajustadas a la rejilla. Por confirmar con el SIA: versión oficial y geometría completa"
     },
     {

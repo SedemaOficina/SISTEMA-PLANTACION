@@ -87,7 +87,7 @@ SRP.registros = {
       if (b.dataset.accion === 'eliminar') this.eliminar(r);
       if (b.dataset.accion === 'sustituir') this.sustituir(r);
     });
-    this.el('btn-detalle-editar').innerHTML = SRP.ICONOS.svg('lapiz') + '<span>Editar</span>';
+    this.el('btn-detalle-editar').innerHTML = SRP.ICONOS.svg('lapiz', 'medio') + '<span>Editar</span>';
     // Editar desde el detalle: cierra la ficha y abre el registro en el formulario (D91)
     this.el('btn-detalle-editar').addEventListener('click', () => {
       const r = this.detalleActual; if (!r) return;
@@ -413,16 +413,6 @@ SRP.registros = {
     });
   },
 
-  // La fila «Envío» del detalle (D111)
-  textoEnvio(r) {
-    const e = SRP.envio.leer();
-    const est = SRP.envio.estado(r, e);
-    if (est === 'por_enviar') return 'Guardado en el teléfono, por enviar. Se envía solo cuando hay señal.';
-    if (est === 'cambios') return 'Enviado; los cambios posteriores están por enviar.';
-    const cuando = e.recibidos[r.id];
-    return 'Recibido por el servidor' + (cuando ? ' ' + SRP.envio.cuando(cuando) : '') + ' (simulado).';
-  },
-
   /* Estado vacío con salida (D96): en lugar de pedir «Toque Todos», el aviso trae el botón que
      resuelve. Tres casos: no hay ningún registro, no hay de hoy, o el filtro no encuentra nada.
      «Registrar árbol» sólo aparece a quien captura. */
@@ -473,9 +463,11 @@ SRP.registros = {
     this.el('btn-detalle-sustituir').hidden = !sustituible;
     this.el('detalle-pie').hidden = !SRP.permisos.puedeEditar(SRP.sesion.usuario, r, SRP.ref.usuarioPorId) && !sustituible;
     const esp = SRP.ref.especieDe(r);
-    // Mismo orden que el formulario y la ficha de revisión; lo que pone el sistema, al final (D100)
+    /* Mismo orden que el formulario y la ficha de revisión, con el folio al frente: es como se nombra
+       al árbol. Celda, capas, identificador y envío son de la base de datos y no se muestran aquí. */
     const jornada = r.jornada_id ? await SRP.almacen.uno('jornadas', r.jornada_id) : null;
     const filas = [
+      ['Folio', '<span class="folio-provisional">' + esc(SRP.folio.textoLargo(r)) + '</span>'],
       ['Especie', esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : '')],
       ['Programa', esc(SRP.ref.nombreCatalogo(r.programa_id))],
       ['Jornada', jornada ? esc(jornada.nombre) : 'Sin jornada'],
@@ -491,17 +483,6 @@ SRP.registros = {
         ? '<img class="revision-foto" src="' + SRP.util.fotoSegura(r.foto_base64) + '" alt="Fotografía del árbol registrado">'
         : 'Sin fotografía']
     ];
-    const incierta = SRP.folio.celdaIncierta(r);
-    const sistema = [
-      ['Folio', '<span class="folio-provisional">' + esc(SRP.folio.textoLargo(r)) + '</span>' +
-        (incierta ? '<span class="revision-sub">' + esc(incierta) + '</span>' : '')],
-      // La celda (su prefijo no es la alcaldía) y las capas con que se derivó el territorio (D152)
-      ['Celda UGA', esc(r.uga || '—') + (r.uga_borde_m != null ? '<span class="revision-sub">A ' + r.uga_borde_m + ' m del borde de la celda</span>' : '')],
-      ['Capas', esc(SRP.ref.textoCapas(r.capa_version))],
-      ['Identificador', '<span class="revision-id">' + esc(r.id) + '</span>']
-    ];
-    if (SRP.envio.simulado()) sistema.push(['Envío', esc(this.textoEnvio(r))]);
-
     const historial = await SRP.bitacora.deEntidad(r.id);
     const lineas = historial.length ? historial.map(h =>
       '<li>' + SRP.util.formatearFechaHora(h.fecha) + ': ' + esc(h.accion.toLowerCase().replace(/_/g, ' ')) + ' por ' + esc(h.usuario_nombre) +
@@ -513,8 +494,6 @@ SRP.registros = {
       '<dl class="revision-lista">' + filas.map(([etiqueta, valor]) =>
         '<div class="revision-fila revision-fila-sola"><dt>' + etiqueta + '</dt><dd>' + valor + '</dd></div>').join('') + '</dl>' +
       '<h3 class="titulo-bloque">Historial</h3><ul class="historial">' + lineas + '</ul>' +
-      '<div class="revision-sistema"><p class="revision-sistema-titulo">Datos del sistema</p>' +
-      sistema.map(([etiqueta, valor]) => '<div class="revision-fila revision-fila-sola"><dt>' + etiqueta + '</dt><dd>' + valor + '</dd></div>').join('') + '</div>' +
       (SRP.espejo ? SRP.espejo.htmlDetalle(r) : '');
 
     this.el('dlg-detalle').showModal();

@@ -515,7 +515,7 @@ SRP.app = {
     this.el('btn-usr-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar</span>';
     const I = (id, icono, texto, tam) => { const b = this.el(id); if (b) b.innerHTML = SRP.ICONOS.svg(icono, tam || 'medio') + '<span>' + texto + '</span>'; };
     I('btn-cierre-generar', 'ver', 'Ver vista previa', 'medio');
-    I('btn-previa-corregir', 'lapiz', 'Corregir datos de cierre');
+    I('btn-previa-corregir', 'lapiz', 'Corregir datos');
     I('btn-enviar-ahora', 'senal', 'Enviar ahora');
     I('btn-franja-enviar', 'senal', 'Enviar ahora');
     I('btn-filtrar', 'buscar', 'Aplicar');

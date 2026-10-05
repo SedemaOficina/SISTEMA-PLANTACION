@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 167',
+  ETAPA: 'Bloque 168',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -112,6 +112,8 @@ SRP.CONFIG = {
   FOTO: { ANCHO_MAX: 800, ALTO_MAX: 600, CALIDAD: 0.7 },
 
   LISTA_PAGINA: 10,
+  // Fotografías se ven en rejilla: caben más por página
+  PAGINA_POR_LISTA: { 'galeria-paginas': 25 },
   TAMANOS_PAGINA: [10, 25, 50, 100],
   // Por qué se sustituyó un árbol: clave que se guarda y texto que se ve. «Otro» pide escribirlo
   MOTIVOS_SUSTITUCION: [['VANDALISMO', 'Vandalismo'], ['IMPACTO_VEHICULAR', 'Impacto vehicular'], ['ROBO', 'Robo'], ['MUERTE', 'Muerte'], ['OTRO', 'Otro']]   // lo que ofrece «Resultados por página»; la primera vez, LISTA_PAGINA

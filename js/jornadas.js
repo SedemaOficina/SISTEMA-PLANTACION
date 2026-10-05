@@ -125,6 +125,7 @@ SRP.jornadas = {
     this.el('btn-jornada-faltante').innerHTML = SRP.ICONOS.svg('mas', 'medio') + '<span>Registrar árbol</span>';
     this.el('btn-jornada-reporte').innerHTML = SRP.ICONOS.svg('reportes', 'medio') + '<span>Generar PDF</span>';
     this.el('btn-mover-cerrar').addEventListener('click', () => this.el('dlg-mover-jornada').close());
+    ['mover-buscar', 'mover-fecha'].forEach(id => this.el(id).addEventListener('input', () => this.pintarMover()));
     this.el('lista-mover-jornadas').addEventListener('click', async (e) => {
       const b = e.target.closest('button[data-id]'); if (!b || !this.moviendo) return;
       const destino = await SRP.almacen.uno('jornadas', b.dataset.id);
@@ -793,15 +794,11 @@ SRP.jornadas = {
         '<div class="punto-datos"><span class="punto-especie"><span class="oculto-visual">Punto ' + (i + 1) + ': </span>' + esc(esp.comun) + '</span>' +
         '<span class="punto-detalle">' + (r.fecha_plantacion !== j.fecha ? esc(SRP.util.formatearFecha(r.fecha_plantacion)) + ' ' : '') + esc(h(r)) +
           (r.cabo_id !== j.cabo_id ? ' · ' + esc(SRP.ref.nombreUsuario(r.cabo_id)) : '') + ' · ' + detalle + '</span>' +
-        (SRP.prioritarias.hay() ? '<span class="punto-prioridad">' + SRP.prioritarias.insignia(SRP.prioritarias.de(r.lat, r.lng) && Object.assign({ n: 0, total: 0 }, SRP.prioritarias.de(r.lat, r.lng))) + '</span>' : '') + '</div>' +
+        '</div>' +
         '<div class="punto-acciones">' + acciones.join('') + tuerca + '</div></li>';
     }).join('');
 
     this.pintarPasos(j, guardada, propia, puedeJornada);
-    // En qué prioridad de colonia cayeron los árboles de la jornada, según el modelo de priorización
-    const pri = this.el('jornada-prioridad');
-    pri.hidden = !(SRP.prioritarias.hay() && regs.length);
-    if (!pri.hidden) pri.textContent = 'Árboles por prioridad de la colonia: ' + SRP.prioritarias.resumen(regs) + '.';
     this.el('jornada-puntos-n').textContent = regs.length;
     this.el('jornada-saltos-n').textContent = regs.length;
     this.pintarMapa(avisos, revisados, encuadrar);
@@ -912,9 +909,9 @@ SRP.jornadas = {
       SRP.mapa.ponerCredito(this.mapa);   // el mismo crédito en todos los mapas (D152)
       c.CAPAS.forEach(capa => L.tileLayer(capa.url, { attribution: capa.atribucion, maxZoom: c.ZOOM_JORNADA, maxNativeZoom: c.ZOOM_MAX }).addTo(this.mapa));
       this.capaPuntos = L.layerGroup().addTo(this.mapa);
-      // Encendida, la capa pinta sólo las colonias de la jornada: las de sus árboles o, sin árboles, la de su ubicación
-      SRP.prioritarias.control(() => this.mapa, { grupo: 'campo', leyenda: this.el('jornada-prioritarias'),
-        intervenidas: () => { const j = this.jornada || {}, regs = j.registros || []; return SRP.prioritarias.coloniasDe(regs.length ? regs : [j.dato || {}]); } });
+      // El polígono de la colonia de la jornada, con el color de su prioridad; un botón sobre el mapa lo apaga
+      SRP.prioritarias.control(() => this.mapa, { grupo: 'campo', simple: true,
+        intervenidas: () => { const j = this.jornada || {}; return SRP.prioritarias.coloniaDeJornada(j.registros, j.dato); } });
     }
     SRP.prioritarias.refrescar();
     this.capaPuntos.clearLayers();
@@ -990,14 +987,26 @@ SRP.jornadas = {
     const jornadas = (await SRP.almacen.porIndice('jornadas', 'cabo_id', r.cabo_id))
       .filter(j => j.id !== r.jornada_id)
       .sort((a, b) => b.fecha.localeCompare(a.fecha) || String(b.fecha_inicio).localeCompare(String(a.fecha_inicio)));
-    const esc = SRP.util.escapar;
     this.moviendo = r;
+    this.destinos = jornadas;
     this.el('dlg-mover-texto').textContent = 'Elija la jornada a la que pertenece el ' + SRP.ref.especieDe(r).comun + ' (punto ' + (this.jornada.registros.indexOf(r) + 1) + ').';
-    this.el('lista-mover-jornadas').innerHTML = jornadas.length ? jornadas.map(j =>
-      '<li><button type="button" class="jornada-boton" data-id="' + SRP.util.escapar(j.id) + '"><span class="jornada-datos"><span class="jornada-dia">' + esc(j.nombre) + '</span>' +
-      '<span class="jornada-cifras">' + esc(SRP.util.formatearFecha(j.fecha)) + ' · ' + (j.estatus === 'abierta' ? 'abierta' : 'cerrada') + '</span></span></button></li>').join('')
-      : '<li class="nota">No hay otra jornada de este cabo. Inicie una en Nuevo registro.</li>';
+    this.el('mover-buscar').value = ''; this.el('mover-fecha').value = '';
+    // Con pocas jornadas se ven todas de un vistazo: buscar no hace falta
+    this.el('mover-filtros').hidden = jornadas.length <= 5;
+    this.pintarMover();
     this.el('dlg-mover-jornada').showModal();
+  },
+
+  // Las jornadas destino que pasan el nombre escrito (sin acentos ni mayúsculas) y el día elegido
+  pintarMover() {
+    const esc = SRP.util.escapar, n = SRP.util.normalizar, todas = this.destinos || [];
+    const q = n(this.el('mover-buscar').value), dia = this.el('mover-fecha').value;
+    const lista = todas.filter(j => (!q || n(j.nombre).includes(q)) && (!dia || j.fecha === dia));
+    this.el('mover-cuenta').textContent = !todas.length || (!q && !dia) ? '' : lista.length + ' de ' + todas.length + (todas.length === 1 ? ' jornada' : ' jornadas');
+    this.el('lista-mover-jornadas').innerHTML = lista.length ? lista.map(j =>
+      '<li><button type="button" class="jornada-boton" data-id="' + esc(j.id) + '"><span class="jornada-datos"><span class="jornada-dia">' + esc(j.nombre) + '</span>' +
+      '<span class="jornada-cifras">' + esc(SRP.util.formatearFecha(j.fecha)) + ' · ' + (j.estatus === 'abierta' ? 'abierta' : 'cerrada') + '</span></span></button></li>').join('')
+      : '<li class="nota">' + (todas.length ? 'Ninguna jornada con ese nombre' + (dia ? ' en esa fecha' : '') + '. Cambie la búsqueda o quite la fecha.' : 'No hay otra jornada de este cabo. Inicie una en Nuevo registro.') + '</li>';
   },
 
   /* Todo en una transacción (D151): el árbol con la fecha y el programa de su jornada nueva, y la

@@ -342,11 +342,9 @@ SRP.reportes = {
     // Una jornada de varios días dice sus días y cada árbol, el suyo
     const dias = SRP.util.diasJornada({ fecha }, registros), variosDias = dias.desde !== dias.hasta;
     // Relevo: quién más registró en la jornada y desde cuándo (el titular firma el reporte)
-    /* Prioridad de reforestación (modelo de priorización de colonias): la de la jornada, cuántos árboles
-       cayeron en cada nivel y la de cada árbol en la tabla */
+    // Prioridad de reforestación (modelo de priorización de colonias): la de la jornada, que es la de la colonia donde se ubicó
     const hayPri = SRP.prioritarias.hay();
     const priJornada = hayPri ? SRP.prioritarias.deJornada(registros, cierre) : null;
-    const priDe = r => (SRP.prioritarias.de(r.lat, r.lng) || {}).texto || 'Sin dato';
     const relevos = (cierre.relevos || []).filter(x => x.cabo_id !== cierre.cabo_id)
       .map(x => SRP.ref.nombreUsuario(x.cabo_id) + ', desde el ' + SRP.util.formatearFecha(SRP.indicadores.dia(x.fecha)));
     return {
@@ -373,7 +371,6 @@ SRP.reportes = {
         ['Solicitado por', SRP.solicitud.solicitante(cierre)],
         ['Descripción de la solicitud', SRP.solicitud.es(cierre) ? cierre.solicitud_descripcion || '' : ''],
         ['Prioridad de reforestación', hayPri ? SRP.prioritarias.textoJornada(priJornada).replace(/^Prioridad /, '').replace(/^./, c => c.toUpperCase()) : ''],
-        ['Árboles por prioridad de la colonia', hayPri && n ? SRP.prioritarias.resumen(registros).replace(/^./, c => c.toUpperCase()) : ''],
         // La institución que ejecutó, también la Secretaría
         ['Institución que ejecuta', SRP.ref.nombreOrganizacion(orgId)],
         ['Hora de finalización', hay('hora') ? cierre.hora + ' h' : ''],
@@ -392,15 +389,14 @@ SRP.reportes = {
          especie lleva el nombre científico entre paréntesis (D169); la precisión, su nivel para el
          color (verde buena, ámbar aceptable, rojo baja). */
       ejemplares: {
-        cabecera: ['N.º', 'Especie', 'Coordenada', 'Precisión'].concat(variosDias ? ['Fecha'] : [], hayPri ? ['Prioridad'] : [], conComentario ? ['Comentario'] : []),
+        cabecera: ['N.º', 'Especie', 'Coordenada', 'Precisión'].concat(variosDias ? ['Fecha'] : [], conComentario ? ['Comentario'] : []),
         filas: registros.map((r, i) => [String(i + 1), especieCon(SRP.ref.especieDe(r)), this.textoCoordenada(r), this.textoPrecision(r)]
-          .concat(variosDias ? [SRP.util.formatearFecha(r.fecha_plantacion)] : [], hayPri ? [priDe(r)] : [], conComentario ? [this.textoComentario(r)] : [])),
+          .concat(variosDias ? [SRP.util.formatearFecha(r.fecha_plantacion)] : [], conComentario ? [this.textoComentario(r)] : [])),
         niveles: registros.map(r => this.nivelPrecision(r)),
         especies: registros.map(r => { const e = SRP.ref.especieDe(r); return [e.comun, e.cientifico || '']; })
       },
       notaPrecision: 'Precisión del GPS: en verde, ±' + SRP.CONFIG.MAPA.PRECISION_BUENA_M + ' m o menos; en ámbar, hasta ±' + SRP.CONFIG.MAPA.PRECISION_ACEPTABLE_M +
-        ' m; en rojo, más de ±' + SRP.CONFIG.MAPA.PRECISION_ACEPTABLE_M + ' m (conviene revisar el punto). «En el mapa» y «A mano» no tienen medida del GPS.' +
-        (hayPri ? ' Prioridad: la de reforestación de la colonia donde cae el árbol, según el modelo de priorización de colonias (capa ' + SRP.prioritarias.version() + '); cerca de un límite es aproximada.' : ''),
+        ' m; en rojo, más de ±' + SRP.CONFIG.MAPA.PRECISION_ACEPTABLE_M + ' m (conviene revisar el punto). «En el mapa» y «A mano» no tienen medida del GPS.',
       totales,
       total: n,
       graficas: { distribucion },

@@ -21,6 +21,7 @@ SRP.galeria = {
   get filtro() { return this.zona.filtro; },
   jornadasPorId: {},
   fotos: [],
+  pagina: 1,
   actual: null,
 
   el(id) { return document.getElementById(id); },
@@ -94,9 +95,18 @@ SRP.galeria = {
     const f = this.filtro;
     this.jornadasPorId = Object.fromEntries((await SRP.almacen.todos('jornadas')).map(j => [j.id, j]));
     this.fotos = SRP.util.ordenar(this.zona.usar(await this.conFoto()), 'fotografias');
-    SRP.util.pintarOrden(this.el('galeria-orden'), 'fotografias', () => this.pintar());
+    SRP.util.pintarOrden(this.el('galeria-orden'), 'fotografias', () => { this.pagina = 1; this.pintar(); });
     const esc = SRP.util.escapar;
-    this.el('galeria-rejilla').innerHTML = this.fotos.map(r => {
+    /* Por páginas, como Registros y Jornadas: sólo se cargan las imágenes de la página que se ve. La
+       cuenta, el peso y «Descargar todas» siguen siendo de todo lo filtrado. Otro filtro vuelve a la primera. */
+    const clave = JSON.stringify(f);
+    if (clave !== this._claveFiltro) { this._claveFiltro = clave; this.pagina = 1; }
+    const info = SRP.util.paginar(this.fotos, this.pagina, 'galeria-paginas');
+    this.pagina = info.pagina;
+    SRP.util.pintarPaginador(this.el('galeria-paginas'), info, 'fotografía', 'fotografías', (p) => {
+      this.pagina = p; this.pintar(); SRP.util.subirA(this.el('galeria-cuenta'));
+    });
+    this.el('galeria-rejilla').innerHTML = info.items.map(r => {
       const e = SRP.ref.especieDe(r);
       const j = r.jornada_id && this.jornadasPorId[r.jornada_id];
       return '<li><button type="button" class="galeria-foto" data-id="' + SRP.util.escapar(r.id) + '" aria-label="' + esc(e.comun) + ', ' + esc(SRP.util.formatearFecha(r.fecha_plantacion)) + (j ? ', ' + esc(j.nombre) : '') + ', ' + esc(SRP.ref.nombreUsuario(r.cabo_id)) + '">' +

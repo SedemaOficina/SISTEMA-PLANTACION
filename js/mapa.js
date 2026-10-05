@@ -73,10 +73,9 @@ SRP.mapa = {
     ver.innerHTML = SRP.ICONOS.svg('ver', 'chico') + '<span>Ver</span>';
     ver.setAttribute('aria-label', 'Ver el registro de este árbol');
     ver.addEventListener('click', () => { const r = this.plantados[this.elegido]; if (r) SRP.registros.verDetalle(r.registro); });
-    // Colonias prioritarias: capa de referencia; su control (encender, niveles y opacidad) va sobre el mapa
-    // Encendida, la capa pinta sólo las colonias de la jornada: las de sus árboles y la del punto que se está ubicando
-    SRP.prioritarias.control(() => this.mapa, { grupo: 'campo', leyenda: document.getElementById('mapa-prioritarias'),
-      intervenidas: () => SRP.prioritarias.coloniasDe(Object.values(this.plantados).map(p => p.registro).concat(this.lat !== null ? [{ lat: this.lat, lng: this.lng }] : [])) });
+    // El polígono de la colonia de la jornada activa, con el color de su prioridad; un botón sobre el mapa lo apaga
+    SRP.prioritarias.control(() => this.mapa, { grupo: 'campo', simple: true,
+      intervenidas: () => { const j = SRP.activa && SRP.activa.jornada; return j ? SRP.prioritarias.coloniaDeJornada(Object.values(this.plantados).map(p => p.registro), j) : {}; } });
   },
 
   /* CRÉDITO DEL MAPA (D108, D152), en todos los mapas: Leaflet, «Powered by Esri» —que Esri pide

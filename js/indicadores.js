@@ -183,13 +183,20 @@ SRP.indicadores = {
       solicitantes: [...new Set(pedidas.map(j => S.clave(j.dato)))].map(k => ({ clave: k, solicitante: S.nombreClave(k),
         jornadas: pedidas.filter(j => S.clave(j.dato) === k).length, arboles: arboles.filter(a => S.clave(a.j.dato) === k).length }))
         .sort((a, b) => b.arboles - a.arboles || a.solicitante.localeCompare(b.solicitante, 'es')) };
-    // Por prioridad de la colonia donde cayó cada árbol (modelo de priorización); se cruza con el punto, no se guarda
-    const prioridad = SRP.prioritarias.hay() ? SRP.prioritarias.contar(arboles.map(a => a.r)) : null;
-    if (prioridad) {
+    /* Por prioridad de reforestación: cada árbol cuenta en la prioridad de su jornada, que es la de la
+       colonia donde se ubicó (modelo de priorización). No se guarda: se dice con la capa vigente. */
+    let prioridad = null;
+    if (SRP.prioritarias.hay()) {
+      const deJ = new Map(), priDe = j => { if (!deJ.has(j)) deJ.set(j, j.prioridad || SRP.prioritarias.deJornada(j.registros, j.dato)); return deJ.get(j); };
+      const cuenta = {}; let sin = 0;
+      // Las colonias de las jornadas, con sus árboles: son las que pinta el mapa
+      const colonias = {};
+      arboles.forEach(a => { const p = priDe(a.j);
+        if (!p) { sin++; return; }
+        cuenta[p.prioridad] = (cuenta[p.prioridad] || 0) + 1;
+        if (p.id != null) colonias[p.id] = (colonias[p.id] || 0) + 1; });
+      prioridad = { niveles: SRP.prioritarias.NIVELES.map(([n, texto]) => ({ prioridad: n, texto, n: cuenta[n] || 0 })), sin, total: arboles.length, colonias };
       prioridad.altas = prioridad.niveles.filter(x => x.prioridad >= 3).reduce((s, x) => s + x.n, 0);
-      // Las colonias donde se plantó, con sus árboles: son las que pinta el mapa
-      prioridad.colonias = {};
-      arboles.forEach(a => { const c = SRP.prioritarias.de(a.r.lat, a.r.lng); if (c && c.id != null) prioridad.colonias[c.id] = (prioridad.colonias[c.id] || 0) + 1; });
     }
 
     // Trazabilidad del periodo: árboles eliminados y ediciones, del alcance y con los filtros
@@ -273,8 +280,7 @@ SRP.indicadores = {
           alcaldia: r.alcaldia || '', colonia: r.colonia || '', uga: r.uga || '', lat: r.lat, lng: r.lng, origen: SRP.mapa.textoOrigen(r.punto_origen),
           precision: r.punto_origen === 'gps' && r.gps_precision_m != null ? Math.round(r.gps_precision_m) : '', foto: r.foto_id || r.foto_base64 ? 'Sí' : 'No',
           reporte: j.dato && j.dato.reporte_en ? 'Generado' : 'Pendiente', sustituto: r.sustituye_id ? 'Sí' : 'No', motivo: SRP.ref.motivoSustitucion(r),
-          solicitante: SRP.solicitud.solicitante(j.dato), solicitudDescripcion: SRP.solicitud.es(j.dato) ? j.dato.solicitud_descripcion || '' : '',
-          prioridad: prioridad ? ((SRP.prioritarias.de(r.lat, r.lng) || {}).texto || 'Sin dato') : '' };
+          solicitante: SRP.solicitud.solicitante(j.dato), solicitudDescripcion: SRP.solicitud.es(j.dato) ? j.dato.solicitud_descripcion || '' : '' };
       })
     };
   },

@@ -3221,3 +3221,32 @@ vista es de Configuración y su tarjeta dice cuántas hay. `README.md`, `datos/M
 pantalla de consulta. No se quitó nada. Para cabos, coordinación y dirección no cambia nada.
 
 **Verificación:** corrida completa sola, 1,322 comprobaciones, 0 fallas, sin errores de consola (última sección `ctx78`). `auditoria.py`: 140 comprobaciones, 0 hallazgos. `auditoria_css.py`: 0 hallazgos. No probado en iPhone por Claude.
+
+## Bloque 168 — La prioridad es de la jornada; detalle sin datos de la base (04-10-2026)
+
+Versión 0.9.34. Observaciones de Liber en computadora, con capturas.
+
+**Qué cambió (D233).** `js/prioritarias.js`: `deJornada()` toma la colonia donde se ubicó la jornada;
+`coloniaDeJornada()`, `htmlEscala()`; el control de mapa en modo `simple` (un botón); la capa arranca
+encendida en campo (clave `srp_capa_prioritarias_3`). `js/jornada-activa.js` e `index.html`: la escala
+en Iniciar jornada. `js/formulario.js`, `js/mapa.js`, `js/jornadas.js`: sin prioridad por punto ni
+leyenda bajo el mapa. `js/reportes.js`: sin desglose ni columna por árbol. `js/indicadores.js`: cada
+árbol cuenta en la prioridad de su jornada; sin prioridad en el detalle por árbol. `js/informes.js`,
+`js/supervision.js`: columnas y textos.
+
+**Qué cambió (D234).** `js/registros.js`: el detalle sin «Datos del sistema», con el folio al frente.
+`js/espejo.js`: celda, capas e identificador vuelven al espejo. `js/referencias.js`: `lugar()` sin
+«Alcaldía». `js/jornadas.js` e `index.html`: `pintarMover()`, buscador y fecha en «Mover a otra
+jornada». `css/estilos.css`: pie de dos acciones con el mismo tamaño.
+
+**Qué cambió (D235).** `js/informes.js`: `fechasPeriodo()` y `textoPeriodo()`, en el encabezado y el pie
+del PDF. `js/galeria.js`, `js/util.js`, `js/config.js`: paginador en Fotografías, de 25 en 25.
+
+**Pantalla: qué se agregó y qué se quitó.** Se quitaron: dos textos de prioridad en Nuevo registro, el
+panel de niveles y opacidad en los mapas de campo, el desglose y la prioridad por punto en la ficha, un
+renglón y una columna del reporte, el grupo «Datos del sistema» del detalle (cuatro renglones) y la
+palabra «Alcaldía» del lugar. Se agregaron: la escala en Iniciar jornada (sustituye a un texto) y dos
+campos en «Mover a otra jornada», que sólo aparecen con más de cinco jornadas.
+
+**Verificación:** corrida completa sola, 1,325 comprobaciones, 0 fallas, sin errores de consola (última sección `ctx79`). `auditoria.py`: 140 comprobaciones, 0 hallazgos. `auditoria_css.py`: 0 hallazgos. `revisar.py`: sin problemas. No probado en iPhone por Claude.
+

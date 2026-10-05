@@ -227,18 +227,18 @@ SRP.supervision = {
       (m.filtros.alcaldia
         ? this.tabla(['Colonia', 'Árboles', '% del total', 'Jornadas'], cols.map(x => [conBarra(x.colonia, x.arboles, cols), num(x.arboles), x.pct + ' %', num(x.jornadas)]), [1, 2, 3], 'colonias')
         : this.tabla(['Alcaldía', 'Árboles', '% del total', 'Jornadas', 'Colonias'], alcs.map(x => [conBarra(x.clave, x.arboles, alcs), num(x.arboles), x.pct + ' %', num(x.jornadas), num(x.colonias)]), [1, 2, 3, 4])) + '</div></div>');
-    /* Por prioridad de la colonia: cuántos árboles cayeron en cada nivel del modelo de priorización,
+    /* Por prioridad de la colonia: cuántos árboles van en jornadas de cada nivel del modelo de priorización,
        con el mapa de las colonias (más intenso, más prioridad) */
     if (m.prioridad) {
       const p = m.prioridad, nCol = Object.keys(p.colonias || {}).length;
       const filas = p.niveles.map(x => [x.texto, num(x.n), (P(x.n, p.total) || 0) + ' %']).concat(p.sin ? [['Sin dato en la capa', num(p.sin), (P(p.sin, p.total) || 0) + ' %']] : []);
       h += seccion('prioridad', 'sup-t-prioridad', 'Por prioridad de la colonia', p.total ? (P(p.altas, p.total) || 0) + ' % en prioridad alta o muy alta' : 'Sin árboles en el periodo',
         '<p class="sup-prioridad-lema">' + (p.total ? '<b>' + num(p.altas) + ' de ' + num(p.total) + '</b> árboles (' + (P(p.altas, p.total) || 0) + ' %) en colonias de prioridad alta o muy alta.' : 'Sin árboles en el periodo.') + '</p>' +
-        '<div class="sup-dos"><div><div id="sup-mapa-prioridad" class="sup-mapa" role="group" aria-label="Mapa de las colonias donde se plantó, con el color de su prioridad de reforestación. Las cifras por nivel están en la tabla de al lado"></div>' +
+        '<div class="sup-dos"><div><div id="sup-mapa-prioridad" class="sup-mapa" role="group" aria-label="Mapa de las colonias de las jornadas, con el color de su prioridad de reforestación. Las cifras por nivel están en la tabla de al lado"></div>' +
         '<p class="nota pri-leyenda">' + SRP.prioritarias.htmlLeyenda() + '</p>' +
-        '<p id="sup-prioridad-colonias" class="nota">' + (nCol ? (nCol === 1 ? 'Se pinta la colonia' : 'Se pintan las ' + num(nCol) + ' colonias') + ' donde se plantó, con el color de su prioridad; pase el cursor sobre una colonia, o tóquela, para ver cuántos árboles.' : 'Ninguna colonia con árboles en lo filtrado.') + '</p></div><div>' +
+        '<p id="sup-prioridad-colonias" class="nota">' + (nCol ? (nCol === 1 ? 'Se pinta la colonia' : 'Se pintan las ' + num(nCol) + ' colonias') + ' de las jornadas, con el color de su prioridad; pase el cursor sobre una colonia, o tóquela, para ver cuántos árboles.' : 'Ninguna colonia con árboles en lo filtrado.') + '</p></div><div>' +
         this.tabla(['Prioridad', 'Árboles', '% del total'], filas, [1, 2]) +
-        '<p class="nota">Según el modelo de priorización de colonias (capa ' + esc(SRP.prioritarias.version()) + '). Se calcula del punto de cada árbol; los límites de la capa son aproximados.</p></div></div>');
+        '<p class="nota">Según el modelo de priorización de colonias (capa ' + esc(SRP.prioritarias.version()) + '). Cada árbol cuenta en la prioridad de su jornada, que es la de la colonia donde se ubicó; los límites de la capa son aproximados.</p></div></div>');
     }
     // En computadora, en dos columnas
     h += '<div class="sup-columnas">';

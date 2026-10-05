@@ -299,7 +299,7 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 /* La acción que cierra el formulario: más alta y con letra mayor; en teléfono, de margen a margen */
 .btn-destacado { min-height: 56px; font-size: var(--t-m); font-weight: 600; }
 .campo { margin-bottom: var(--e-4); border: 0; padding: 0; min-width: 0; }
-.campo label, .campo legend { display: block; font-weight: 500; margin-bottom: var(--e-1); }
+.campo label, .campo legend, .campo .campo-titulo { display: block; font-weight: 500; margin-bottom: var(--e-1); }
 /* La leyenda de un fieldset trae relleno propio del navegador y quedaba corrida (D107) */
 .campo legend { padding: 0; }
 fieldset.campo { margin-inline: 0; }
@@ -789,10 +789,6 @@ th[aria-sort="descending"] .th-flecha::after { content: '▼'; opacity: 1; font-
 .revision-fila dd { margin: 0; overflow-wrap: anywhere; }
 /* Donde irá el folio: la leyenda se ve distinta de un folio real, para que nadie la copie como si lo fuera */
 .folio-provisional { font-family: ui-monospace, 'Courier New', monospace; letter-spacing: 0.04em; color: var(--gris); }
-.revision-id { font-family: ui-monospace, 'Courier New', monospace; font-size: var(--t-xs); }
-.revision-sistema { margin-top: var(--e-4); }
-.revision-sistema-titulo { font-size: var(--t-xs); font-weight: 700; color: var(--gris); text-transform: uppercase; letter-spacing: .04em; margin: 0; }
-.revision-sistema .revision-fila dt, .revision-sistema .revision-fila dd { font-size: var(--t-xs); color: var(--gris); }
 .historial { padding-left: var(--e-5); font-size: var(--t-s); }
 /* Con un diálogo abierto, la página de atrás no se desplaza: el gesto se queda en el diálogo */
 html:has(dialog[open]) { overflow: hidden; }
@@ -810,8 +806,9 @@ dialog::backdrop { background: var(--velo-oscuro); }
 /* Pie con dos acciones: una junto a la otra y, si no caben, una bajo la otra con su separación */
 .dialogo-pie-doble { display: flex; flex-wrap: wrap; gap: var(--e-2); }
 .dialogo-pie-doble[hidden] { display: none; }
-/* Cada botón en un renglón; si los dos no caben, el segundo baja completo en lugar de partirse */
-.dialogo-pie-doble .btn { flex: 1 1 9rem; width: auto; white-space: nowrap; }
+/* Las dos acciones, con el mismo ancho y el mismo alto: en un renglón cuando caben sin partir su
+   texto (computadora, tableta); en teléfono, una debajo de la otra a todo lo ancho */
+.dialogo-pie-doble .btn { flex: 1 1 9.5rem; width: auto; min-height: var(--toque); white-space: nowrap; }
 .dialogo-titulo { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); }
 .dialogo-titulo h2 { margin: 0; }
 .dialogo-titulo h2:focus { outline: none; }
@@ -1234,14 +1231,11 @@ dialog::backdrop { background: var(--velo-oscuro); }
   .campo-punto .campo-triple .campo { display: block; flex: 0 1 auto; min-width: 0; padding: 0; }
   .campo-punto .campo-triple .campo-lectura { display: inline; overflow-wrap: anywhere; }
   .campo-punto .campo-triple .campo + .campo { border: 0; }
-  .campo-punto .campo-triple label, .campo-punto .campo-prioridad label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .campo-punto .campo-triple label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .campo-punto .campo-triple .campo:nth-child(1) { order: 3; flex: 1 1 100%; }
   .campo-punto .campo-triple .campo:nth-child(3) { flex: 0 1 auto; }
   .campo-punto .campo-triple .campo:nth-child(1) .campo-lectura { font-weight: 400; font-size: var(--t-xs); color: var(--gris); }
   .campo-punto .campo-triple .campo:nth-child(3) .campo-lectura::before { content: "· "; color: var(--gris); }
-  .campo-punto .campo-prioridad { margin: var(--e-1) 0 0; }
-  .campo-punto .campo-prioridad .campo-lectura { min-height: 0; padding: 0 var(--e-3); border: 0; background: none; font-size: var(--t-xs); color: var(--gris); }
-  .campo-punto .campo-prioridad .campo-lectura::before { content: "Prioridad de la colonia:\00a0"; }
   /* La fotografía: una zona del alto de un botón; con foto, la miniatura y sus acciones, sin nombre de archivo */
   .campo .zona-foto { flex-direction: row; gap: var(--e-2); min-height: var(--toque); padding: var(--e-2) var(--e-3); }
   .zona-foto .zona-foto-ayuda, .ficha-foto-nombre { display: none; }
@@ -1404,8 +1398,6 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .sup-mapa .pri-colonia { stroke-width: .3; }
 .pri-contorno { fill: none; stroke: var(--texto); stroke-width: 1; stroke-opacity: .55; }
 .pane-prioritarias { z-index: var(--z-capa-mapa); }
-.pri-control { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2) var(--e-3); margin: var(--e-2) 0; }
-.pri-control[hidden] { display: none; }
 .pri-leyenda { display: flex; flex-wrap: wrap; gap: var(--e-1) var(--e-3); margin: 0; font-size: var(--t-xs); color: var(--gris); }
 .pri-leyenda[hidden] { display: none; }
 .pri-leyenda-titulo { font-weight: 500; }
@@ -1413,8 +1405,22 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .sup-prioridad-lema { margin: 0 0 var(--e-3); }
 
 /* La marca de prioridad de una jornada o de un punto: muestra del color y texto */
+/* La escala completa en Iniciar jornada: cinco tramos en orden, de menor a mayor; el de la colonia
+   crece y lleva marca. Debajo se dice con palabras, para que no dependa del color. */
+.pri-escala-caja { display: flex; flex-direction: column; gap: var(--e-2); }
+.pri-escala { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 3px; align-items: end; }
+.pri-tramo { display: flex; flex-direction: column; align-items: center; gap: var(--e-1); min-width: 0; }
+.pri-tramo i { display: block; width: 100%; height: 12px; border: 1px solid var(--borde-control); border-radius: var(--radio-min); }
+.pri-tramo span { font-size: var(--t-xs); line-height: 1.15; color: var(--gris); text-align: center; }
+.pri-tramo[data-es="true"]::before { content: ""; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid var(--texto); }
+.pri-tramo[data-es="true"] i { height: 26px; outline: 2px solid var(--texto); outline-offset: 1px; }
+.pri-tramo[data-es="true"] span { color: var(--texto); font-weight: 700; }
+.pri-escala-dicho { color: var(--gris); }
+.pri-escala-dicho b { color: var(--texto); font-weight: 500; }
+/* Mover a otra jornada: buscador y día, lado a lado cuando caben */
+.mover-filtros { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: var(--e-2) var(--e-3); margin-bottom: var(--e-2); }
 .pri-insignia { display: inline-flex; align-items: center; font-size: var(--t-xs); color: var(--gris); }
-.jornada-prioridad, .punto-prioridad, .franja-jornada-prioridad { display: block; }
+.jornada-prioridad, .franja-jornada-prioridad { display: block; }
 
 /* Solicitud: quién lo solicita, en las tarjetas y la franja, y el bloque de sus datos en el formulario */
 .solicitud-insignia { display: inline-flex; align-items: center; gap: var(--e-1); font-size: var(--t-xs); font-weight: 500; color: var(--texto); }

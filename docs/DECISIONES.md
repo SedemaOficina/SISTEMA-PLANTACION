@@ -2604,3 +2604,46 @@
     especie al editarlo y entonces deja de aparecer en la lista. El modelo de datos no cambia (151 campos).
   · **Alcance en la Etapa 1:** la lista sale de los árboles que hay en el dispositivo de quien
     administra. Reunir lo de todas las instituciones es del servidor (fila 27 de `FASE2-Y-TRASPASO.md`).
+
+- **D233. La prioridad de reforestación es de la jornada, no de cada árbol (bloque 168).**
+  04-10-2026. Petición de Liber: la prioridad ya se ve al registrar la jornada; repetirla en cada árbol
+  —bajo el mapa, bajo las coordenadas y en los informes— no aporta. Un árbol puede caer en una colonia
+  de otra prioridad que la de su jornada; se acepta.
+  · **Prioridad de la jornada:** la de la colonia donde se ubicó. Sólo una jornada sin ubicación toma el
+    nivel donde cayó la mayoría de sus árboles. Sustituye a D207.
+  · **Iniciar jornada:** en lugar del texto, la escala de los cinco niveles en orden, de menor a mayor,
+    cada uno con su color y su nombre; el de la colonia crece, lleva marca y se dice con palabras
+    debajo («Baja · Los Reyes»). Elegida por Liber entre tres variantes (barra, lista, fichas).
+  · **Nuevo registro:** se quitan «Prioridad» bajo el mapa y «Prioridad de reforestación de la colonia»
+    bajo las coordenadas.
+  · **Mapas de campo (árbol y ficha de la jornada):** queda sólo el polígono de la colonia de la
+    jornada, con el color de su prioridad, encendido de entrada; un botón sobre el mapa lo apaga y lo
+    enciende. Ya no hay panel de niveles ni opacidad ahí; sigue en el mapa de Supervisión.
+  · **Ficha de la jornada y reporte diario:** sólo la prioridad de la jornada; se quitan el desglose
+    «Árboles por prioridad de la colonia» y la prioridad de cada punto o árbol.
+  · **Supervisión e informes:** «Por prioridad de la colonia» cuenta cada árbol en la prioridad de su
+    jornada y pinta las colonias de las jornadas. La tabla de árboles (CSV) ya no trae prioridad.
+  · Ajusta D206 y D209.
+
+- **D234. Detalle del registro sin «Datos del sistema»; el lugar, sin la palabra «Alcaldía» (bloque 168).**
+  04-10-2026. Observaciones de Liber.
+  · **Detalle del registro:** se quita el grupo «Datos del sistema» (celda UGA, capas, identificador y
+    envío): son de la base de datos y no le sirven a quien consulta. El folio pasa al frente de los
+    datos. En la versión de prueba, esos campos siguen en el espejo.
+  · **Lugar:** «Coyoacán · Col. Del Carmen», sin «Alcaldía», en la franja de la jornada, la franja
+    «Guardado», la lista de jornadas y la ficha. Ajusta el formato único del lugar (M15).
+  · **Botones al pie:** «Editar» y «Sustituir árbol», y «Corregir datos» y «Generar PDF» en la vista
+    previa del reporte, llevan los dos contorno y el mismo tamaño; van en un renglón en computadora y
+    uno bajo el otro en teléfono, donde no caben sin partir su texto.
+  · **Mover a otra jornada:** con más de cinco jornadas, el diálogo trae buscador por nombre y fecha
+    del día; se combinan y dicen cuántas quedan.
+
+- **D235. Los informes dicen siempre sus fechas; Fotografías va por páginas (bloque 168).**
+  04-10-2026. Observaciones de Liber.
+  · **Informes en PDF:** bajo el título va siempre «Periodo: del 01-ENE-2026 al 31-DIC-2026», además del
+    nombre del periodo cuando lo tiene (mes, año, todo el registro). Si el periodo termina después de
+    hoy se dice el corte. «Todo el registro» va del primer árbol o jornada a hoy. El pie de cada página
+    repite el periodo, para que una hoja suelta diga de cuándo es.
+  · **Fotografías:** por páginas, como Registros y Jornadas, de 25 en 25 (rejilla); la cuenta, el peso
+    y «Descargar todas» siguen siendo de todo lo filtrado.
+
