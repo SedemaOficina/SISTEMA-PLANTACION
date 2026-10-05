@@ -15,14 +15,17 @@ import openpyxl
 import openpyxl.utils
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FUENTE = os.path.join(RAIZ, 'originales', 'CGO_ESPECIES_REFORESTACION_URBANA_2026-09-22.xlsx')
+FUENTE = os.path.join(RAIZ, 'originales', '16._Registro_plantaciones_catalogos_05_10_2026.xlsx')
 SALIDA = os.path.join(RAIZ, 'assets', 'catalogos', 'catalogo-especies.js')
 FECHA_CORTE = '2026-09-22'          # fecha de verificación contra EncicloVida, según el diccionario
-VERSION = '2026-09-22'              # se sube cada vez que cambia el Excel
+VERSION = '2026-10-05'              # se sube cada vez que cambia el Excel
 
 CAMPOS = ['id_especie', 'genero', 'especie', 'nombre_cientifico', 'nombre_comun', 'otros_nombres_comunes',
-          'tipo_distribucion', 'id_snib', 'formadecrecimiento', 'id_enciclovida', 'nota_discrepancia']
+          'tipo_distribucion', 'id_snib', 'formadecrecimiento', 'paleta_vegetal', 'fruto_comestible', 'id_enciclovida',
+          'nota_discrepancia']
 DISTRIBUCION = {'Endémica', 'Nativa', 'Exótica', 'Exótica-Invasora'}
+PALETA = {'Sí', 'No'}
+FRUTO = {'Sí', 'No', 'Por determinar'}
 
 def limpiar(v):
     if v is None: return None
@@ -44,9 +47,11 @@ def main():
     assert len(ids) == len(set(ids)), 'id_especie repetido'
     for f in filas:
         assert f['id_especie'].startswith('ESP-') and len(f['id_especie']) == 8, f['id_especie']
-        for k in ('genero', 'especie', 'nombre_cientifico', 'nombre_comun', 'tipo_distribucion'):
+        for k in ('genero', 'especie', 'nombre_cientifico', 'nombre_comun', 'tipo_distribucion', 'paleta_vegetal', 'fruto_comestible'):
             assert f[k], '%s sin %s' % (f['id_especie'], k)
         assert f['tipo_distribucion'] in DISTRIBUCION, (f['id_especie'], f['tipo_distribucion'])
+        assert f['paleta_vegetal'] in PALETA, (f['id_especie'], f['paleta_vegetal'])
+        assert f['fruto_comestible'] in FRUTO, (f['id_especie'], f['fruto_comestible'])
         assert f['nombre_cientifico'].startswith(f['genero'] + ' '), (f['id_especie'], 'género no coincide')
         if f['id_enciclovida'] is not None: assert isinstance(f['id_enciclovida'], int), f['id_especie']
     comunes = [f['nombre_comun'] for f in filas]
@@ -63,6 +68,8 @@ def main():
             'otros_nombres_comunes': f['otros_nombres_comunes'] or '',
             'tipo_distribucion': f['tipo_distribucion'],
             'formadecrecimiento': f['formadecrecimiento'] or '',
+            'paleta_vegetal': f['paleta_vegetal'],
+            'fruto_comestible': f['fruto_comestible'],
             'id_snib': f['id_snib'] or None,
             'id_enciclovida': f['id_enciclovida'],
             'activo': True,

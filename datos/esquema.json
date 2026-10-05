@@ -144,6 +144,23 @@
       "fuente": "SNIB/CONABIO (EncicloVida); lista en index.html #cat-distribucion",
       "codigo": "[...document.querySelectorAll('#cat-distribucion option')].map(o => o.value)"
     },
+    "paleta_vegetal": {
+      "valores": [
+        "Sí",
+        "No"
+      ],
+      "fuente": "Catálogo de especies del SIA (libro de origen); js/catalogos.js PALETA",
+      "codigo": "SRP.catalogos.PALETA"
+    },
+    "fruto_comestible": {
+      "valores": [
+        "Sí",
+        "No",
+        "Por determinar"
+      ],
+      "fuente": "Catálogo de especies del SIA (libro de origen), captura del área técnica; js/catalogos.js FRUTO",
+      "codigo": "SRP.catalogos.FRUTO"
+    },
     "tipo_organizacion": {
       "valores": [
         "Alcaldía",
@@ -785,7 +802,7 @@
       ]
     },
     "especies": {
-      "que_es": "El catálogo de especies: el real del SIA (D84), 76 de arranque, más las que agregue la Administración. Lleva los datos taxonómicos y las llaves externas al SNIB y a EncicloVida.",
+      "que_es": "El catálogo de especies: el real del SIA (D84), 79 de arranque, más las que agregue la Administración. Lleva los datos taxonómicos, si pertenece a la paleta vegetal de la Secretaría, si su fruto es comestible y las llaves externas al SNIB y a EncicloVida.",
       "llave": "id",
       "indices": [],
       "pantalla": "Catálogos › Especies (sólo Administración global); se elige en Nuevo registro",
@@ -897,6 +914,24 @@
           "dominio": "Árbol · Arbusto · Palma · Liana · Hierba · Sufrútice, varios separados por coma y espacio; '' si no hay",
           "pantalla": "Forma de crecimiento (Catálogos)",
           "regla": "Literal de la ficha técnica"
+        },
+        {
+          "campo": "paleta_vegetal",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "paleta_vegetal",
+          "pantalla": "«¿Pertenece a la paleta vegetal de la Secretaría?» (Catálogos); marca «Fuera de la paleta» en la lista y aviso en Nuevo registro",
+          "regla": "Obligatorio al dar de alta. Sí en las 76 del catálogo original; No en las que se dieron de alta fuera de la paleta. Estar fuera no impide registrar árboles"
+        },
+        {
+          "campo": "fruto_comestible",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "fruto_comestible",
+          "pantalla": "«¿Su fruto es comestible?» (Catálogos); marca «Fruto comestible» en la lista",
+          "regla": "Obligatorio al dar de alta: Sí, No o Por determinar, sin valor por omisión. Captura manual del área técnica; no sale de CONABIO"
         },
         {
           "campo": "id_snib",

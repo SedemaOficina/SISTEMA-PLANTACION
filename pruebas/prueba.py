@@ -419,8 +419,8 @@ with sync_playwright() as p:
 
     pg.fill('#campo-especie','fraxinus'); pg.wait_for_timeout(120)
     ok(pg.locator('.combo-opcion').count()==2 and 'Fresno' in pg.inner_text('#lista-especies'),'el autocompletado busca por nombre científico')
-    # Catálogo real (D84): 76 especies con clave ESP-0000, y se busca también por los otros nombres comunes
-    ok(pg.evaluate("SRP.ref.deTipo('especie', true).length")==76 and pg.evaluate("SRP.CATALOGO_ESPECIES.meta.total")==76,'el catálogo es el real del SIA: 76 especies (D84)')
+    # Catálogo real (D84): 79 especies con clave ESP-0000, y se busca también por los otros nombres comunes
+    ok(pg.evaluate("SRP.ref.deTipo('especie', true).length")==79 and pg.evaluate("SRP.CATALOGO_ESPECIES.meta.total")==79,'el catálogo es el real del SIA: 79 especies (D84)')
     pg.fill('#campo-especie','acecintle'); pg.wait_for_timeout(120)
     ok(pg.locator('.combo-opcion[data-id="ESP-0001"]').count()==1 and 'también: Acecintle' in pg.inner_text('#lista-especies'),'busca por otro nombre común y dice por cuál coincidió: '+pg.inner_text('.combo-opcion[data-id="ESP-0001"]').replace('\n',' '))
     pg.fill('#campo-especie','fresno'); pg.wait_for_timeout(120)
@@ -1327,7 +1327,7 @@ with sync_playwright() as p:
     ok(pg.locator('#cat-errores li').count()==2,'se bloquean nombre y clave repetidos')
     pg.click('#btn-cat-cerrar'); pg.wait_for_timeout(200)
     pg.click('#cat-tipos .chip[data-tipo=especie]'); pg.wait_for_timeout(400)
-    ok(pg.locator('#tabla-catalogo tbody tr').count()==76 and 'Distribución' in pg.inner_text('#tabla-catalogo thead'),'la tabla lista las 76 especies con su distribución (D84)')
+    ok(pg.locator('#tabla-catalogo tbody tr').count()==79 and 'Distribución' in pg.inner_text('#tabla-catalogo thead'),'la tabla lista las 79 especies con su distribución (D84)')
     # Forma de crecimiento con botones de opción múltiple (D107)
     pg.click('#btn-cat-agregar'); pg.wait_for_timeout(300)
     ok(pg.locator('#cat-forma-botones .chip').count()==6 and pg.locator('#cat-forma-botones .chip[aria-pressed=true]').count()==0,'la forma de crecimiento se elige con seis botones, ninguno marcado al dar de alta (D107)')
@@ -1347,7 +1347,7 @@ with sync_playwright() as p:
     pg.evaluate("SRP.app.mostrarVista('catalogos')"); pg.wait_for_timeout(300)
     pg.fill('#cat-buscar','quercus'); pg.wait_for_timeout(200)
     ok(pg.locator('#tabla-catalogo tbody tr').count()==4,'el buscador de especies encuentra los cuatro Quercus')
-    ok(pg.inner_text('#cat-cuenta').strip()=='4 de 76 especies','y el contador dice cuántos coinciden (D105): '+pg.inner_text('#cat-cuenta'))
+    ok(pg.inner_text('#cat-cuenta').strip()=='4 de 79 especies','y el contador dice cuántos coinciden (D105): '+pg.inner_text('#cat-cuenta'))
     pg.click('#tabla-catalogo tbody tr >> nth=0 >> .c-titulo'); pg.wait_for_timeout(300)
     ok(pg.is_visible('#dlg-catalogo') and pg.evaluate("!!document.getElementById('btn-cat-guardar').closest('.dialogo-pie')"),'tocar la tarjeta abre la edición, con Guardar al pie (D105)')
     pg.click('#btn-cat-cerrar'); pg.wait_for_timeout(200)
@@ -1357,16 +1357,17 @@ with sync_playwright() as p:
     pg.fill('#cat-buscar',''); pg.wait_for_timeout(200)
     # Alta de especie: clave consecutiva fija, campos del SNIB opcionales, género y epíteto derivados
     pg.click('#btn-cat-agregar'); pg.wait_for_timeout(200)
-    ok(pg.input_value('#cat-clave')=='ESP-0077' and pg.evaluate("document.getElementById('cat-clave').readOnly"),'la clave de una especie nueva es el consecutivo ESP-0077 y no se escribe')
+    ok(pg.input_value('#cat-clave')=='ESP-0080' and pg.evaluate("document.getElementById('cat-clave').readOnly"),'la clave de una especie nueva es el consecutivo ESP-0080 y no se escribe')
     pg.fill('#cat-nombre','Especie de prueba'); pg.fill('#cat-cientifico','quercus mala')
     pg.fill('#cat-snib','12345'); pg.fill('#cat-enciclovida','abc')
     pg.click('#form-catalogo button[type=submit]'); pg.wait_for_timeout(300)
-    ok(pg.locator('#cat-errores li').count()==3,'rechaza científico sin mayúscula, id SNIB sin sufijo e id EncicloVida no numérico (%d)' % pg.locator('#cat-errores li').count())
+    ok(pg.locator('#cat-errores li').count()==5,'rechaza científico sin mayúscula, id SNIB sin sufijo, id EncicloVida no numérico, y sin paleta vegetal ni fruto comestible elegidos (%d)' % pg.locator('#cat-errores li').count())
+    pg.click('#cat-paleta-botones .chip[data-valor="No"]'); pg.click('#cat-fruto-botones .chip[data-valor="Por determinar"]')
     pg.fill('#cat-cientifico','Genus prueba'); pg.fill('#cat-snib','99999angio'); pg.fill('#cat-enciclovida','123456')
     pg.select_option('#cat-distribucion','Exótica'); pg.fill('#cat-otros-nombres','Nombre uno,  Nombre dos ,'); pg.fill('#cat-forma','Árbol, Arbusto')
     pg.click('#form-catalogo button[type=submit]'); pg.wait_for_timeout(400)
-    nueva=pg.evaluate("SRP.ref.catalogoPorId['ESP-0077']")
-    ok(nueva and nueva['id']=='ESP-0077' and nueva['clave']=='ESP-0077' and nueva['nombre_cientifico']=='Genus prueba' and 'genero' not in nueva and 'especie' not in nueva and nueva['tipo_distribucion']=='Exótica'
+    nueva=pg.evaluate("SRP.ref.catalogoPorId['ESP-0080']")
+    ok(nueva and nueva['id']=='ESP-0080' and nueva['clave']=='ESP-0080' and nueva['paleta_vegetal']=='No' and nueva['fruto_comestible']=='Por determinar' and nueva['nombre_cientifico']=='Genus prueba' and 'genero' not in nueva and 'especie' not in nueva and nueva['tipo_distribucion']=='Exótica'
        and nueva['otros_nombres_comunes']=='Nombre uno, Nombre dos' and nueva['id_snib']=='99999ANGIO' and nueva['id_enciclovida']==123456 and nueva['formadecrecimiento']=='Árbol, Arbusto',
        'la especie nueva se guarda con id = clave, su nombre científico (sin copiar género ni epíteto) y los campos del SNIB limpios: %s' % (nueva and {k:nueva.get(k) for k in ('id','nombre_cientifico','id_snib','id_enciclovida','otros_nombres_comunes')}))
     pg.fill('#cat-buscar','prueba'); pg.wait_for_timeout(200)
@@ -2799,7 +2800,18 @@ with sync_playwright() as p:
     _app = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     raiz22 = _tf.mkdtemp()
     for _n in ['index.html', 'sw.js', 'manifest.webmanifest']: _sh.copy(os.path.join(_app, _n), raiz22)
-    for _d in ['js', 'css', 'vendor', 'assets']: os.symlink(os.path.join(_app, _d), os.path.join(raiz22, _d))
+    # En Windows un enlace simbólico pide permisos de administrador; un enlace de directorio no
+    def _enlazar(origen, destino):
+        try: os.symlink(origen, destino)
+        except OSError:
+            import _winapi; _winapi.CreateJunction(origen, destino)
+    # Antes de borrar la copia se quitan sus enlaces: así el borrado nunca alcanza las carpetas de la app
+    def _desenlazar(raiz):
+        for _d in ['js', 'css', 'vendor', 'assets']:
+            r = os.path.join(raiz, _d)
+            if os.path.islink(r): os.unlink(r)
+            elif hasattr(os.path, 'isjunction') and os.path.isjunction(r): os.rmdir(r)
+    for _d in ['js', 'css', 'vendor', 'assets']: _enlazar(os.path.join(_app, _d), os.path.join(raiz22, _d))
     class _H22(_hs.SimpleHTTPRequestHandler):
         def end_headers(self):
             if self.path.split('?')[0] in ('/', '/index.html'): self.send_header('Cache-Control', 'max-age=600')
@@ -2827,7 +2839,7 @@ with sync_playwright() as p:
     ok('Sistema de Registro de Plantaciones' in pg22.inner_text('.pie p') and pg22.is_visible('#vista-registrar, #vista-acceso'), 'y sin señal sigue abriendo')
     pg22.context.set_offline(False)
     ok(not err22, 'sin errores en consola: %s' % err22[:2])
-    ctx22.close(); srv22.shutdown(); _sh.rmtree(raiz22, ignore_errors=True)
+    ctx22.close(); srv22.shutdown(); _desenlazar(raiz22); _sh.rmtree(raiz22, ignore_errors=True)
 
     # ---------- Bloque 100: catálogo de vehículos en el reporte (D162) ----------
     from pypdf import PdfReader as _Pdf23
@@ -4199,7 +4211,7 @@ with sync_playwright() as p:
     t50=pg50.eval_on_selector_all('.cfg-tarjeta','l=>l.map(t=>[t.dataset.ir, t.querySelector(".cfg-titulo").textContent, t.querySelector(".cfg-resumen").textContent])')
     ok('Configuración' not in m50 and 'Catálogos' not in m50 and 'Usuarios' not in m50,'el menú de la cuenta no trae Configuración, Catálogos ni Usuarios: se entra por la barra: %s' % m50)
     ok([x[:2] for x in t50]==[['usuarios','Usuarios'],['catalogos','Catálogos'],['parametros','Parámetros'],['cambios','Registro de cambios'],['carga','Carga masiva'],['acerca','Acerca del sistema']]
-       and t50[0][2]=='13 cuentas' and t50[1][2]=='5 programas · 21 instituciones · 76 especies' and t50[2][2]=='11 valores · sólo consulta' and t50[3][2]=='Sin cambios todavía' and t50[4][2]=='Plantilla, revisión y carga' and t50[5][2].startswith('Versión '),
+       and t50[0][2]=='13 cuentas' and t50[1][2]=='5 programas · 21 instituciones · 79 especies' and t50[2][2]=='11 valores · sólo consulta' and t50[3][2]=='Sin cambios todavía' and t50[4][2]=='Plantilla, revisión y carga' and t50[5][2].startswith('Versión '),
        'Configuración muestra seis tarjetas con su resumen al día: %s' % t50)
     # Cada tarjeta lleva a su apartado y éste vuelve a Configuración
     ida50=[]
@@ -4273,13 +4285,13 @@ with sync_playwright() as p:
     pg51.click('#cat-tipos .chip[data-tipo=especie]'); pg51.wait_for_timeout(500)
     with pg51.expect_download() as d51: pg51.click('#btn-cat-excel')
     d51.value.save_as(sal('especies51.xlsx')); w51=_xl51.load_workbook(sal('especies51.xlsx')); h51=w51['especies']
-    o51=_xl51.load_workbook(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),'originales','CGO_ESPECIES_REFORESTACION_URBANA_2026-09-22.xlsx'))
+    o51=_xl51.load_workbook(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),'originales','16._Registro_plantaciones_catalogos_05_10_2026.xlsx'))
     val51=lambda h: [[('' if c is None else c) for c in r] for r in h.iter_rows(values_only=True)]
     lim51=lambda t: [[(' '.join(c.split()) if isinstance(c,str) else c) for c in r] for r in t]
     ok(ex51 and d51.value.suggested_filename.startswith('CGO_ESPECIES_REFORESTACION_URBANA_') and w51.sheetnames==o51.sheetnames==['especies','diccionario_datos','catalogos'],
        'Catálogos › Especies descarga el catálogo con el nombre y las tres hojas del libro de origen; en otros catálogos no aparece el botón: %s' % w51.sheetnames)
-    ok(val51(h51)==lim51(val51(o51['especies'])) and [h51.column_dimensions[l].width for l in 'ABCDEFGHIJK']==[o51['especies'].column_dimensions[l].width for l in 'ABCDEFGHIJK'],
-       'la hoja «especies» sale igual que la del original: mismas once columnas, mismos nombres de campo, las 76 especies con género, especie y nota de discrepancia, y los mismos anchos')
+    ok(val51(h51)==lim51(val51(o51['especies'])) and [h51.column_dimensions[l].width for l in 'ABCDEFGHIJKLM']==[o51['especies'].column_dimensions[l].width for l in 'ABCDEFGHIJKLM'],
+       'la hoja «especies» sale igual que la del original: mismas trece columnas, mismos nombres de campo, las 79 especies con género, especie, paleta vegetal, fruto comestible y nota de discrepancia, y los mismos anchos')
     ok(val51(w51['diccionario_datos'])==val51(o51['diccionario_datos']) and [r[:4] for r in val51(w51['catalogos']) if any(r)]==[r[:4] for r in val51(o51['catalogos']) if any(r)],
        'las hojas «diccionario_datos» y «catalogos» van como en el original, con la cuenta de especies por valor al día')
     # Plantilla
@@ -4287,7 +4299,7 @@ with sync_playwright() as p:
     with pg51.expect_download() as d51: pg51.click('#btn-carga-plantilla')
     d51.value.save_as(sal('plantilla51.xlsx')); w51=_xl51.load_workbook(sal('plantilla51.xlsx'))
     ok(w51.sheetnames==['Árboles','Instrucciones','Especies','Programas','Instituciones'] and [c.value for c in w51['Árboles'][1]]==['Latitud','Longitud','Nombre científico','Fecha de plantación','Programa','Tipo de institución','Institución']
-       and w51['Árboles'].max_row==1 and w51['Especies'].max_row==77 and w51['Programas'].max_row==5 and w51['Instituciones'].max_row==22,
+       and w51['Árboles'].max_row==1 and w51['Especies'].max_row==80 and w51['Programas'].max_row==5 and w51['Instituciones'].max_row==22,
        'la plantilla trae la hoja para llenar, las instrucciones y las listas válidas de especies, programas e instituciones: %s' % w51.sheetnames)
     # Revisión de un Excel con renglones buenos y malos
     pg51.set_input_files('#carga-archivo', CAR51); pg51.wait_for_timeout(1500)
@@ -5241,7 +5253,7 @@ with sync_playwright() as p:
     # ---------- ctx63: sin conexión: versión nueva sin quedarse a medias, indicador de pendientes, borrador del árbol y botón «atrás» ----------
     raiz63 = _tf.mkdtemp()
     for _n in ['index.html', 'sw.js', 'manifest.webmanifest']: _sh.copy(os.path.join(_app, _n), raiz63)
-    for _d in ['js', 'css', 'vendor', 'assets']: os.symlink(os.path.join(_app, _d), os.path.join(raiz63, _d))
+    for _d in ['js', 'css', 'vendor', 'assets']: _enlazar(os.path.join(_app, _d), os.path.join(raiz63, _d))
     estado63 = {'cortar': False}
     class _H63(_hs.SimpleHTTPRequestHandler):
         def do_GET(self):
@@ -5318,7 +5330,7 @@ with sync_playwright() as p:
     d63 = pg63.evaluate("(async () => [SRP.CONFIG.VERSION, await caches.keys(), (await SRP.almacen.todos('plantaciones')).length, [...document.querySelectorAll('script[src]')].filter(e => !e.src.includes('v=9.9.9')).length])()")
     ok(d63 == ['9.9.9', ['srp-9.9.9'], len(f63), 0], 'cuando la versión nueva queda completa se aplica sola, sin mezclar archivos y con los registros intactos: %s' % d63)
     ok(not err63, 'sin errores en consola: %s' % err63[:2])
-    ctx63.close(); srv63.shutdown(); _sh.rmtree(raiz63, ignore_errors=True)
+    ctx63.close(); srv63.shutdown(); _desenlazar(raiz63); _sh.rmtree(raiz63, ignore_errors=True)
 
     # ---------- ctx64: lo que se descarga: tabla sin fórmulas, letra del sistema en el PDF, totales que suman y eliminados por día local ----------
     from pypdf import PdfReader as _Pdf64
@@ -6474,6 +6486,80 @@ with sync_playwright() as p:
        'la Administración global no abre «Nuevo registro», pero «Editar» desde la ficha sí le abre el formulario del árbol, guarda y vuelve a la jornada: %s · %s' % (ed83, fin83))
     ok(err83 == [], 'sin errores de consola: %s' % err83[:2])
     ctx83.close()
+
+    # ---------- ctx84: paleta vegetal y fruto comestible en el catálogo de especies ----------
+    ctx84 = contexto_llano(viewport={'width':1280,'height':900}, geolocation={'latitude':19.4326,'longitude':-99.1332,'accuracy':5}, permissions=['geolocation'], timezone_id='America/Mexico_City')
+    pg84 = ctx84.new_page(); err84 = []
+    pg84.on('pageerror', lambda e: err84.append(str(e)))
+    pg84.goto(BASE); pg84.wait_for_timeout(1300)
+    entrar_como(pg84, 'u-admin-1'); pg84.wait_for_timeout(900)
+    d84 = pg84.evaluate("""() => { const e = SRP.ref.deTipo('especie', false), x = id => SRP.ref.catalogoPorId[id];
+      return [e.length, e.filter(c => c.paleta_vegetal === 'No').map(c => c.id).sort().join(','), e.filter(c => c.fruto_comestible === 'Sí').length,
+        e.every(c => ['Sí', 'No'].includes(c.paleta_vegetal) && ['Sí', 'No', 'Por determinar'].includes(c.fruto_comestible)), x('ESP-0078').nombre, x('ESP-0078').fruto_comestible]; }""")
+    ok(d84 == [79, 'ESP-0077,ESP-0078,ESP-0079', 16, True, 'Peral', 'Sí'],
+       'el catálogo trae 79 especies: tres fuera de la paleta (Níspero, Peral y Ciruelo), 16 con fruto comestible, y todas con las dos respuestas: %s' % d84)
+    pg84.evaluate("SRP.app.mostrarVista('catalogos')"); pg84.wait_for_timeout(400)
+    pg84.click('#cat-tipos .chip[data-tipo=especie]'); pg84.wait_for_timeout(500)
+    m84 = pg84.evaluate("""() => { const fila = id => document.querySelector('#tabla-catalogo tr[data-id="' + id + '"]');
+      const marcas = id => [...fila(id).querySelectorAll('.marca-especie')].map(m => m.textContent);
+      return [marcas('ESP-0078'), marcas('ESP-0029'), getComputedStyle(fila('ESP-0078').querySelector('.marca-fuera')).color === getComputedStyle(document.documentElement).getPropertyValue('--editar').trim().replace(/^#(..)(..)(..)$/, (m, r, g, b) => 'rgb(' + [r, g, b].map(h => parseInt(h, 16)).join(', ') + ')'),
+        !document.getElementById('caja-cat-filtro-especie').hidden]; }""")
+    ok(m84 == [['Fuera de la paleta', 'Fruto comestible'], [], True, True],
+       'la lista marca «Fuera de la paleta» en ámbar y «Fruto comestible»; una especie de la paleta sin fruto comestible no lleva marca; el filtro «Mostrar» está a la vista: %s' % m84)
+    pg84.select_option('#cat-filtro-especie', 'fruto'); pg84.wait_for_timeout(250)
+    f84 = [pg84.locator('#tabla-catalogo tbody tr').count(), pg84.inner_text('#cat-cuenta').strip()]
+    pg84.select_option('#cat-filtro-especie', 'fuera'); pg84.wait_for_timeout(250)
+    f84 += [pg84.locator('#tabla-catalogo tbody tr').count(), pg84.inner_text('#cat-cuenta').strip()]
+    pg84.click('#cat-tipos .chip[data-tipo=programa]'); pg84.wait_for_timeout(300)
+    f84 += [pg84.is_hidden('#caja-cat-filtro-especie')]
+    pg84.click('#cat-tipos .chip[data-tipo=especie]'); pg84.wait_for_timeout(400)
+    f84 += [pg84.input_value('#cat-filtro-especie'), pg84.locator('#tabla-catalogo tbody tr').count()]
+    ok(f84 == [16, '16 de 79 especies', 3, '3 de 79 especies', True, '', 79],
+       '«Mostrar» deja sólo las de fruto comestible o sólo las de fuera de la paleta, con su cuenta; en otro catálogo no aparece y al volver empieza en «Todas»: %s' % f84)
+    # Alta: las dos preguntas sin respuesta de inicio; las dos son obligatorias
+    pg84.click('#btn-cat-agregar'); pg84.wait_for_timeout(300)
+    a84 = pg84.evaluate("""() => [[...document.querySelectorAll('#cat-paleta-botones .chip')].map(b => b.textContent), [...document.querySelectorAll('#cat-fruto-botones .chip')].map(b => b.textContent),
+      document.querySelectorAll('#cat-paleta-botones .chip[aria-pressed=true], #cat-fruto-botones .chip[aria-pressed=true]').length]""")
+    pg84.fill('#cat-nombre', 'Especie B179'); pg84.fill('#cat-cientifico', 'Genus bciento')
+    pg84.click('#form-catalogo button[type=submit]'); pg84.wait_for_timeout(300)
+    e84 = [pg84.locator('#cat-errores li').count(), pg84.is_visible('#cat-paleta-error'), pg84.is_visible('#cat-fruto-error')]
+    pg84.click('#cat-paleta-botones .chip[data-valor="Sí"]'); pg84.click('#cat-fruto-botones .chip[data-valor="No"]'); pg84.click('#cat-fruto-botones .chip[data-valor="Sí"]'); pg84.wait_for_timeout(100)
+    e84 += [pg84.is_visible('#cat-paleta-error'), pg84.locator('#cat-fruto-botones .chip[aria-pressed=true]').count(), pg84.input_value('#cat-fruto')]
+    pg84.click('#form-catalogo button[type=submit]'); pg84.wait_for_timeout(500)
+    n84 = pg84.evaluate("(() => { const e = SRP.ref.catalogoPorId['ESP-0080']; return e && [e.nombre, e.paleta_vegetal, e.fruto_comestible]; })()")
+    ok(a84 == [['Sí', 'No'], ['Sí', 'No', 'Por determinar'], 0] and e84 == [2, True, True, False, 1, 'Sí'] and n84 == ['Especie B179', 'Sí', 'Sí'],
+       'al dar de alta, paleta vegetal (Sí, No) y fruto comestible (Sí, No, Por determinar) empiezan sin respuesta y son obligatorias; se elige una por pregunta y se guarda: %s · %s · %s' % (a84, e84, n84))
+    # Editar: la respuesta guardada viene marcada y el cambio queda en la bitácora con su nombre de pantalla
+    pg84.evaluate("SRP.catalogos.abrirFormulario(SRP.ref.catalogoPorId['ESP-0056'])"); pg84.wait_for_timeout(300)
+    r84 = pg84.evaluate("[document.querySelector('#cat-paleta-botones .chip[aria-pressed=true]').textContent, document.querySelector('#cat-fruto-botones .chip[aria-pressed=true]').textContent]")
+    pg84.click('#cat-fruto-botones .chip[data-valor="Por determinar"]'); pg84.click('#form-catalogo button[type=submit]'); pg84.wait_for_timeout(500)
+    b84 = pg84.evaluate("""async () => { const b = (await SRP.almacen.todos('bitacora')).filter(x => x.entidad_id === 'ESP-0056').pop();
+      return [SRP.ref.catalogoPorId['ESP-0056'].fruto_comestible, b && b.detalle, SRP.configuracion.CAMPO.fruto_comestible]; }""")
+    ok(r84 == ['Sí', 'Sí'] and b84 == ['Por determinar', 'Campos: fruto_comestible', 'fruto comestible'],
+       'al editar el Durazno sus respuestas vienen marcadas; el cambio se guarda y la bitácora lo registra: %s · %s' % (r84, b84))
+    # Un teléfono que ya tenía capturas recibe las especies nuevas y las dos respuestas sin perder nada
+    c84 = pg84.evaluate("""async () => {
+      const vieja = Object.assign({}, SRP.ref.catalogoPorId['ESP-0029']); delete vieja.paleta_vegetal; delete vieja.fruto_comestible;
+      const propia = Object.assign({}, SRP.ref.catalogoPorId['ESP-0080']); delete propia.paleta_vegetal; delete propia.fruto_comestible;
+      await SRP.almacen._tx(SRP.almacen.TABLAS_CATALOGO, 'readwrite', tx => { SRP.almacen.ponerCatalogo(tx, vieja); SRP.almacen.ponerCatalogo(tx, propia); SRP.almacen.quitarCatalogo(tx, SRP.ref.catalogoPorId['ESP-0079']); });
+      await SRP.almacen.completarCatalogos(); await SRP.ref.recargar();
+      const x = id => SRP.ref.catalogoPorId[id];
+      return [x('ESP-0029').paleta_vegetal, x('ESP-0029').fruto_comestible, !!x('ESP-0079') && x('ESP-0079').paleta_vegetal, x('ESP-0080').paleta_vegetal, x('ESP-0080').fruto_comestible]; }""")
+    ok(c84 == ['Sí', 'No', 'No', '', 'Por determinar'],
+       'en un teléfono con capturas, las especies del catálogo toman sus respuestas y la que falta se agrega; la que dio de alta la Administración queda con el fruto «Por determinar» y la paleta por declarar: %s' % c84)
+    # Captura: una especie fuera de la paleta se avisa en la lista, y se registra igual
+    pg84.evaluate("SRP.sesion.cerrar(); SRP.app.mostrarAcceso()"); pg84.wait_for_timeout(300)
+    entrar_como(pg84, 'u-coord-1'); pg84.wait_for_timeout(900)
+    pg84.evaluate("SRP.app.mostrarVista('registrar')"); pg84.wait_for_timeout(500)
+    iniciar_jornada(pg84, 'Paleta B179'); pg84.wait_for_timeout(700)
+    pg84.fill('#campo-especie', 'peral'); pg84.wait_for_timeout(300)
+    o84 = pg84.evaluate("[document.querySelector('.combo-opcion[data-id=\"ESP-0078\"] small').textContent, document.querySelector('.combo-opcion[data-id=\"ESP-0056\"]') ? 1 : 0]")
+    pg84.fill('#campo-especie', 'durazno'); pg84.wait_for_timeout(300)
+    o84 += [pg84.evaluate("document.querySelector('.combo-opcion[data-id=\"ESP-0056\"] small').textContent")]
+    ok(o84[0] == 'Pyrus communis · Fuera de la paleta vegetal' and 'Fuera de la paleta' not in o84[2],
+       'en Nuevo registro, la lista de especies avisa «Fuera de la paleta vegetal» sólo en las que lo están: %s' % o84)
+    ok(err84 == [], 'sin errores de consola: %s' % err84[:2])
+    ctx84.close()
 
     b.close()
 

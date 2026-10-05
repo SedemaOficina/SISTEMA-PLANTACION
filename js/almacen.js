@@ -24,7 +24,7 @@ SRP.almacen = {
   CAMPOS_CATALOGO: {
     comunes: ['id', 'clave', 'nombre', 'activo', 'creado_por_id', 'fecha_creacion', 'editado_por_id', 'fecha_ultima_edicion'],
     programas: ['tipos_organizacion'], areas: [],
-    especies: ['nombre_cientifico', 'otros_nombres_comunes', 'tipo_distribucion', 'formadecrecimiento', 'id_snib', 'id_enciclovida'],
+    especies: ['nombre_cientifico', 'otros_nombres_comunes', 'tipo_distribucion', 'formadecrecimiento', 'paleta_vegetal', 'fruto_comestible', 'id_snib', 'id_enciclovida'],
     vehiculos: ['modelo', 'tipo_vehiculo'], instituciones: ['tipo_organizacion'], solicitantes: ['tipo_solicitante']
   },
   tipoDeTabla(tabla) { return Object.keys(this.TABLA_DE_TIPO).find(t => this.TABLA_DE_TIPO[t] === tabla); },
@@ -540,11 +540,19 @@ SRP.almacen = {
     const renombrar = todos.filter(c => (c.tipo === 'area' || c.tipo === 'programa') && !c.fecha_ultima_edicion && vigentes.has(c.id))
       .map(c => [c, SRP.DATOS_FICTICIOS.catalogos.find(x => x.id === c.id)]).filter(([c, n]) => n && (n.nombre !== c.nombre || n.clave !== c.clave));
     const quitar = todos.filter(c => c.tipo === 'area' && retiradas[c.id]);
-    if (faltan.length || viejos.length || cuentas.length || renombrar.length || quitar.length) await this._tx(this.TABLAS_CATALOGO.concat('usuarios'), 'readwrite', (tx) => {
+    /* Las especies que aún no dicen si son de la paleta vegetal o si su fruto es comestible toman lo
+       que dice el catálogo; las que dio de alta la administración, que no están en él, quedan «Por
+       determinar» en el fruto. La paleta de éstas no se supone: la declara la administración al editarlas. */
+    const marcas = todos.filter(c => c.tipo === 'especie' && (!c.paleta_vegetal || !c.fruto_comestible)).map(c => {
+      const n = SRP.DATOS_FICTICIOS.catalogos.find(x => x.id === c.id) || {};
+      return Object.assign({}, c, { paleta_vegetal: c.paleta_vegetal || n.paleta_vegetal || '', fruto_comestible: c.fruto_comestible || n.fruto_comestible || 'Por determinar' });
+    });
+    if (faltan.length || viejos.length || cuentas.length || renombrar.length || quitar.length || marcas.length) await this._tx(this.TABLAS_CATALOGO.concat('usuarios'), 'readwrite', (tx) => {
       faltan.forEach(c => this.ponerCatalogo(tx, c));
       viejos.forEach(c => { if (!usados.has(c.id)) this.quitarCatalogo(tx, c); else if (c.activo) this.ponerCatalogo(tx, Object.assign({}, c, { activo: false })); });
       renombrar.forEach(([c, n]) => this.ponerCatalogo(tx, Object.assign({}, c, { nombre: n.nombre, clave: n.clave })));
       quitar.forEach(c => this.quitarCatalogo(tx, c));
+      marcas.forEach(c => this.ponerCatalogo(tx, c));
       cuentas.forEach(u => tx.objectStore('usuarios').put(Object.assign({}, u, { area_id: retiradas[u.area_id] })));
     });
     return faltan.length;

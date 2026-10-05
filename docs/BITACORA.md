@@ -3404,3 +3404,37 @@ base con CARTO y Esri, convivencia con el módulo actual).
 **Pantalla: qué se agregó y qué se quitó.** Nada: sólo documentación.
 
 **Verificación:** comparación geométrica con Shapely; `auditoria.py`, 140 comprobaciones, 0 hallazgos.
+
+## Bloque 179 — Paleta vegetal y fruto comestible en el catálogo de especies (05-10-2026)
+
+Versión 0.9.42. Petición de Liber, aprobada sobre un ejemplo del antes y el después. Reabre la
+aplicación después del cierre de la Etapa 1.
+
+**Qué cambió (D252).** Catálogo: `originales/16._Registro_plantaciones_catalogos_05_10_2026.xlsx` (79
+especies; textos de su diccionario corregidos) sustituye al libro anterior, que pasó a `_to_delete/`.
+`herramientas/generar_especies.py` lo lee y valida los dos campos nuevos; `assets/catalogos/catalogo-especies.js`
+regenerado. `datos/esquema.json`: `paleta_vegetal` y `fruto_comestible` en `especies`, con sus dominios
+(153 campos); diccionario y `js/esquema.js` regenerados. `js/catalogos.js`: preguntas obligatorias en el
+alta y la edición, marcas en la lista, filtro «Mostrar», Excel con trece columnas y cuenta por valor.
+`js/almacen.js`: los dos campos en la tabla y su llegada a teléfonos con capturas; `SELLO_DATOS` nuevo.
+`js/formulario.js`: aviso «Fuera de la paleta vegetal» en la lista de especies. `css/estilos.css`: marcas.
+`js/configuracion.js`: nombres de los campos en el Registro de cambios. Pruebas: sección `ctx84` y las
+cuentas de especies al día.
+
+**Pantalla: qué se agregó y qué se quitó.** Se agregó: en Catálogos › Especies, las marcas «Fuera de la
+paleta» y «Fruto comestible», el filtro «Mostrar» y, en el formulario, «¿Pertenece a la paleta vegetal de
+la Secretaría?» y «¿Su fruto es comestible?»; en Nuevo registro, «Fuera de la paleta vegetal» bajo el
+nombre de la especie. No se quitó nada.
+
+**Verificación:** primera corrida completa en Windows (equipo de Liber). Las pruebas se escribieron en
+Linux: se ajustaron para Windows los enlaces de carpeta (enlace de directorio en lugar de enlace
+simbólico, que pide permisos de administrador) y se quitan antes de borrar la copia temporal. Segunda
+corrida: 1,367 de 1,371. Fallas: (1) el Excel de especies salía ordenado por clave y el libro de origen
+va por nombre científico; corregido, y su sección pasa sola, 16 de 16; (2 y 3) «Subir al inicio» en la
+ficha, que pasa sola dos veces, 19 de 19: sólo falla con la carga de la corrida completa; (4) el PDF del
+reporte pesa 184 KB y la prueba pide menos de 150: en este equipo el croquis trae la imagen satelital
+real (88 KB). Tercera corrida, con el código final: se detuvo a la mitad en los datos de demostración
+(un aviso tapó el botón de la cuenta, de tiempo); hasta ahí, sólo el PDF y «aria-busy» del PDF, que se
+genera más rápido de lo que la prueba alcanza a ver. La sección nueva `ctx84` pasa sola, 8 de 8.
+`auditoria.py`: 142 comprobaciones, 0 hallazgos. `auditoria_css.py`: 0 hallazgos. No probado en
+teléfono por Claude.

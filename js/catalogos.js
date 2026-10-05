@@ -27,7 +27,10 @@ SRP.catalogos = {
   tipo: 'programa', editando: null, usos: {},
   claveTocada: false,   // deja de sugerir en cuanto la persona escribe su propia clave
   ETIQUETA: { programa: 'programa', area: 'área', especie: 'especie', vehiculo: 'vehículo', organizacion: 'institución', solicitante: 'solicitante' },
-  CAMPOS_ESPECIE: ['cat-cientifico', 'cat-distribucion', 'cat-otros-nombres', 'cat-forma', 'cat-snib', 'cat-enciclovida'],
+  CAMPOS_ESPECIE: ['cat-cientifico', 'cat-distribucion', 'cat-otros-nombres', 'cat-forma', 'cat-paleta', 'cat-fruto', 'cat-snib', 'cat-enciclovida'],
+  // Respuestas admitidas, las mismas del libro de origen del catálogo
+  PALETA: ['Sí', 'No'],
+  FRUTO: ['Sí', 'No', 'Por determinar'],
   CAMPOS_VEHICULO: ['cat-modelo', 'cat-tipo-vehiculo'],
   CAMPOS_TIPO: ['cat-tipo-org', 'cat-tipo-sol'],
   // El tipo de una institución o de un solicitante, y el orden de sus tipos
@@ -49,10 +52,12 @@ SRP.catalogos = {
       this.el('cat-tipos').querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', String(c === b)));
       this.el('cat-buscar').value = '';
       this.el('cat-filtro-tipo').value = '';
+      this.el('cat-filtro-especie').value = '';
       this.preparar();
     });
     this.el('cat-buscar').addEventListener('input', () => this.pintar());
     this.el('cat-filtro-tipo').addEventListener('change', () => this.pintar());
+    this.el('cat-filtro-especie').addEventListener('change', () => this.pintar());
     // La clave se propone a partir del nombre mientras nadie la edite a mano (no en especies: consecutivo fijo)
     this.el('cat-nombre').addEventListener('input', (e) => {
       // La placa se escribe y se ve en mayúsculas
@@ -75,6 +80,9 @@ SRP.catalogos = {
     this.el('cat-forma-botones').addEventListener('click', (e) => {
       const b = e.target.closest('.chip'); if (b) this.alternarForma(b.dataset.forma);
     });
+    ['cat-paleta-botones', 'cat-fruto-botones'].forEach(id => this.el(id).addEventListener('click', (e) => {
+      const b = e.target.closest('.chip'); if (b) this.elegirRespuesta(this.el(id), b.dataset.valor);
+    }));
     this.el('cat-tipos-org-botones').addEventListener('click', (e) => {
       const b = e.target.closest('.chip'); if (b) b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'));
     });
@@ -105,6 +113,7 @@ SRP.catalogos = {
     this.el('cat-filtro-tipo-etiqueta').textContent = esSol ? 'Tipo de solicitante' : 'Tipo de institución';
     if (conTipo) { const sel = this.el('cat-filtro-tipo'), antes = sel.value; sel.innerHTML = SRP.util.opciones('Todos', this.tiposDe(this.tipo).map(t => [t, t])); sel.value = antes; }
     this.el('btn-cat-excel').hidden = this.tipo !== 'especie';
+    this.el('caja-cat-filtro-especie').hidden = this.tipo !== 'especie';
     // Lo escrito en «Otra especie» se consulta desde aquí, con su cuenta a la vista
     this.el('btn-cat-escritas').hidden = this.tipo !== 'especie';
     if (this.tipo === 'especie') SRP.especiesRevision.cuantas().then(n => { this.el('btn-cat-escritas-texto').textContent = 'Especies escritas (' + n.toLocaleString('es-MX') + ')'; });
@@ -126,7 +135,10 @@ SRP.catalogos = {
     const tipoOrg = conTipo ? this.el('cat-filtro-tipo').value : '';
     const coincide = c => !q || (conTipo ? [this.nombreDe(c), c.clave].some(t => SRP.util.normalizar(t).includes(q)) : SRP.ref.especieCoincide(c, q));
     // Instituciones y solicitantes, agrupados por tipo (en el orden de los tipos) y por nombre dentro de cada uno
-    const items = SRP.ref.deTipo(this.tipo, false).filter(c => coincide(c) && (!tipoOrg || this.tipoDe(c) === tipoOrg));
+    // Especies: sólo las de fruto comestible o sólo las de fuera de la paleta vegetal
+    const marca = esEspecie ? this.el('cat-filtro-especie').value : '';
+    const conMarca = c => !marca || (marca === 'fruto' ? c.fruto_comestible === 'Sí' : c.paleta_vegetal === 'No');
+    const items = SRP.ref.deTipo(this.tipo, false).filter(c => coincide(c) && conMarca(c) && (!tipoOrg || this.tipoDe(c) === tipoOrg));
     if (conTipo) items.sort((a, b) => tipos.indexOf(this.tipoDe(a)) - tipos.indexOf(this.tipoDe(b)) ||
       this.nombreDe(a).localeCompare(this.nombreDe(b), 'es'));
     const cab = '<thead><tr><th scope="col">' + (esEspecie ? 'Nombre común' : esVehiculo ? 'Placa' : 'Nombre') + '</th>' +
@@ -148,7 +160,9 @@ SRP.catalogos = {
       const estado = '<span class="estado-texto" data-activo="' + c.activo + '">' + (c.activo ? 'Activo' : 'Inactivo') + '</span>';
       // Clases c-*: en teléfono la fila es una tarjeta compacta (D105): título, científico, un
       // renglón de resumen y la tuerca arriba a la derecha; el resto de celdas se oculta ahí
-      return '<tr data-id="' + SRP.util.escapar(c.id) + '"' + (fija ? ' data-fija="true"' : '') + '><td class="c-titulo" data-etiqueta="Nombre">' + esc(this.nombreDe(c)) + '</td>' +
+      // Marcas de la especie: fuera de la paleta vegetal (advertencia) y fruto comestible
+      const marcas = esEspecie ? this.marcasEspecie(c) : '';
+      return '<tr data-id="' + SRP.util.escapar(c.id) + '"' + (fija ? ' data-fija="true"' : '') + '><td class="c-titulo" data-etiqueta="Nombre">' + esc(this.nombreDe(c)) + marcas + '</td>' +
         (esEspecie ? '<td class="c-sub" data-etiqueta="Científico"><i>' + esc(c.nombre_cientifico) + '</i>' +
           (c.otros_nombres_comunes ? '<small class="tabla-detalle">También: ' + esc(c.otros_nombres_comunes) + '</small>' : '') +
           '</td><td class="c-movil-oculta" data-etiqueta="Distribución">' + esc(c.tipo_distribucion || '') + '</td>' : '') +
@@ -168,10 +182,10 @@ SRP.catalogos = {
     const nombres = { programa: ['programa', 'programas'], area: ['área', 'áreas'], especie: ['especie', 'especies'], vehiculo: ['vehículo', 'vehículos'], organizacion: ['institución', 'instituciones'], solicitante: ['solicitante', 'solicitantes'] }[this.tipo];
     const total = SRP.ref.deTipo(this.tipo, false).length;
     const pal = (n) => n === 1 ? nombres[0] : nombres[1];
-    // Y cuántos están inactivos (D142): «76 especies · 3 inactivas»
+    // Y cuántos están inactivos (D142): «79 especies · 3 inactivas»
     const inactivos = SRP.ref.deTipo(this.tipo, false).filter(c => !c.activo).length;
     const femenino = this.tipo === 'area' || this.tipo === 'especie' || this.tipo === 'organizacion';
-    this.el('cat-cuenta').textContent = (q || tipoOrg ? items.length + ' de ' + total + ' ' + pal(total) : total + ' ' + pal(total)) +
+    this.el('cat-cuenta').textContent = (q || tipoOrg || marca ? items.length + ' de ' + total + ' ' + pal(total) : total + ' ' + pal(total)) +
       (inactivos ? ' · ' + inactivos + ' ' + (femenino ? (inactivos === 1 ? 'inactiva' : 'inactivas') : (inactivos === 1 ? 'inactivo' : 'inactivos')) : '');
   },
 
@@ -196,18 +210,41 @@ SRP.catalogos = {
     this.el('cat-forma-botones').querySelectorAll('.chip').forEach(b => b.setAttribute('aria-pressed', String(actuales.has(b.dataset.forma))));
   },
 
+  /* PALETA VEGETAL Y FRUTO COMESTIBLE: una respuesta por pregunta. Al dar de alta no hay ninguna
+     marcada: las dos son obligatorias y se eligen a propósito. El campo oculto guarda la elegida. */
+  pintarRespuestas(grupo, valores, actual) {
+    const esc = SRP.util.escapar;
+    grupo.innerHTML = valores.map(v => '<button type="button" class="chip" data-valor="' + esc(v) + '" aria-pressed="' + (v === actual) + '">' + esc(v) + '</button>').join('');
+    this.el(grupo.dataset.campo).value = actual;
+  },
+  elegirRespuesta(grupo, valor) {
+    grupo.querySelectorAll('.chip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.valor === valor)));
+    const campo = this.el(grupo.dataset.campo);
+    campo.value = valor;
+    SRP.util.quitarErrorCampo(campo);
+  },
+  // En la lista: «Fuera de la paleta» sólo cuando lo es (las demás sí son de ella) y «Fruto comestible»
+  marcasEspecie(c) {
+    const m = [];
+    if (c.paleta_vegetal === 'No') m.push('<span class="marca-especie marca-fuera">Fuera de la paleta</span>');
+    if (c.fruto_comestible === 'Sí') m.push('<span class="marca-especie marca-fruto">Fruto comestible</span>');
+    return m.length ? '<span class="marcas-especie">' + m.join('') + '</span>' : '';
+  },
+
   /* EL CATÁLOGO DE ESPECIES EN EXCEL, con la forma del libro de origen del SIA: la hoja «especies»
      con sus once columnas y nombres de campo, y las hojas «diccionario_datos» y «catalogos». Así el
      archivo que sale de aquí se revisa y se vuelve a cargar con las mismas herramientas que el
      original. Van todas las especies, también las inactivas y las dadas de alta en el sistema. */
-  CAMPOS_ORIGEN: ['id_especie', 'genero', 'especie', 'nombre_cientifico', 'nombre_comun', 'otros_nombres_comunes', 'tipo_distribucion', 'id_snib', 'formadecrecimiento', 'id_enciclovida', 'nota_discrepancia'],
+  CAMPOS_ORIGEN: ['id_especie', 'genero', 'especie', 'nombre_cientifico', 'nombre_comun', 'otros_nombres_comunes', 'tipo_distribucion', 'id_snib', 'formadecrecimiento', 'paleta_vegetal', 'fruto_comestible', 'id_enciclovida', 'nota_discrepancia'],
   librosEspecies() {
     const meta = (SRP.CATALOGO_ESPECIES && SRP.CATALOGO_ESPECIES.meta) || {}, notas = meta.notas_discrepancia || {}, anchos = meta.anchos || [];
-    const especies = SRP.ref.deTipo('especie', false).slice().sort((a, b) => String(a.clave).localeCompare(String(b.clave)));
+    // En el orden del libro de origen: por nombre científico, carácter por carácter
+    const cientifico = e => String(e.nombre_cientifico || '');
+    const especies = SRP.ref.deTipo('especie', false).slice().sort((a, b) => cientifico(a) < cientifico(b) ? -1 : cientifico(a) > cientifico(b) ? 1 : 0);
     const filas = especies.map(e => {
       const cientifico = String(e.nombre_cientifico || '').trim(), corte = cientifico.indexOf(' ');
       return [e.clave, corte < 0 ? cientifico : cientifico.slice(0, corte), corte < 0 ? '' : cientifico.slice(corte + 1), cientifico, e.nombre, e.otros_nombres_comunes || '',
-        e.tipo_distribucion || '', e.id_snib || '', e.formadecrecimiento || '', e.id_enciclovida == null ? '' : e.id_enciclovida, notas[e.clave] || ''];
+        e.tipo_distribucion || '', e.id_snib || '', e.formadecrecimiento || '', e.paleta_vegetal || '', e.fruto_comestible || '', e.id_enciclovida == null ? '' : e.id_enciclovida, notas[e.clave] || ''];
     });
     const hojas = [{ nombre: 'especies', columnas: this.CAMPOS_ORIGEN.map((titulo, i) => ({ titulo, ancho: anchos[i] || 16 })), filas }];
     // Las hojas de referencia, como en el original; la cuenta de especies por valor se dice con el catálogo de hoy
@@ -215,7 +252,8 @@ SRP.catalogos = {
     const cuenta = (campo, valor) => especies.filter(e => campo === 'formadecrecimiento' ? String(e[campo] || '').split(',').map(t => t.trim()).includes(valor) : e[campo] === valor).length;
     ['diccionario_datos', 'catalogos'].forEach(n => {
       if (!ref[n]) return;
-      const filasRef = n === 'catalogos' ? ref[n].filas.map(f => (f[0] === 'tipo_distribucion' || f[0] === 'formadecrecimiento') && f[1] ? [f[0], f[1], cuenta(f[0], f[1]), f[3]] : f) : ref[n].filas;
+      const contados = ['tipo_distribucion', 'formadecrecimiento', 'paleta_vegetal', 'fruto_comestible'];
+      const filasRef = n === 'catalogos' ? ref[n].filas.map(f => contados.includes(f[0]) && f[1] ? [f[0], f[1], cuenta(f[0], f[1]), f[3]] : f) : ref[n].filas;
       hojas.push({ nombre: n, columnas: ref[n].columnas, filas: filasRef, filtro: false });
     });
     return hojas;
@@ -294,6 +332,8 @@ SRP.catalogos = {
     this.el('cat-otros-nombres').value = item ? item.otros_nombres_comunes || '' : '';
     this.el('cat-forma').value = item ? item.formadecrecimiento || '' : '';
     this.pintarFormas();
+    this.pintarRespuestas(this.el('cat-paleta-botones'), this.PALETA, item ? item.paleta_vegetal || '' : '');
+    this.pintarRespuestas(this.el('cat-fruto-botones'), this.FRUTO, item ? item.fruto_comestible || '' : '');
     this.el('cat-snib').value = item ? item.id_snib || '' : '';
     this.el('cat-enciclovida').value = item && item.id_enciclovida !== null && item.id_enciclovida !== undefined ? String(item.id_enciclovida) : '';
     this.el('cat-errores').hidden = true;
@@ -342,6 +382,8 @@ SRP.catalogos = {
       if (!datos.nombre_cientifico) errores.push(['cat-cientifico', 'Escriba el nombre científico.']);
       else if (!/^[A-ZÁÉÍÓÚ][a-záéíóú-]+ \S+/.test(datos.nombre_cientifico)) errores.push(['cat-cientifico', 'El nombre científico lleva género con inicial mayúscula y epíteto: «Quercus rugosa».']);
       else if (mismos.some(c => norm(c.nombre_cientifico) === norm(datos.nombre_cientifico))) errores.push(['cat-cientifico', 'Ya existe una especie con ese nombre científico.']);
+      if (!this.PALETA.includes(datos.paleta_vegetal)) errores.push(['cat-paleta', 'Diga si la especie pertenece a la paleta vegetal de la Secretaría.']);
+      if (!this.FRUTO.includes(datos.fruto_comestible)) errores.push(['cat-fruto', 'Diga si su fruto es comestible; si aún no se sabe, elija «Por determinar».']);
       if (datos.id_enciclovida !== null && !Number.isInteger(datos.id_enciclovida)) errores.push(['cat-enciclovida', 'El id de EncicloVida es un número entero.']);
       if (datos.id_snib && !/^\d+(ANGIO|GIMNO)$/.test(datos.id_snib)) errores.push(['cat-snib', 'El id SNIB es un número seguido de ANGIO o GIMNO: «26796ANGIO».']);
     }
@@ -359,6 +401,8 @@ SRP.catalogos = {
       tipo_distribucion: this.el('cat-distribucion').value,
       otros_nombres_comunes: limpio('cat-otros-nombres').split(',').map(t => t.trim()).filter(Boolean).join(', '),
       formadecrecimiento: limpio('cat-forma').split(',').map(t => t.trim()).filter(Boolean).join(', '),
+      paleta_vegetal: this.el('cat-paleta').value,
+      fruto_comestible: this.el('cat-fruto').value,
       id_snib: limpio('cat-snib').toUpperCase() || null,
       id_enciclovida: enciclovida === '' ? null : (/^\d+$/.test(enciclovida) ? parseInt(enciclovida, 10) : NaN),
       // Vehículos: la placa en mayúsculas; el tipo con inicial mayúscula, como los demás
@@ -378,7 +422,8 @@ SRP.catalogos = {
     const extra = this.tipo === 'especie' ? {
       nombre_cientifico: datos.nombre_cientifico,
       tipo_distribucion: datos.tipo_distribucion, otros_nombres_comunes: datos.otros_nombres_comunes,
-      formadecrecimiento: datos.formadecrecimiento, id_snib: datos.id_snib, id_enciclovida: datos.id_enciclovida
+      formadecrecimiento: datos.formadecrecimiento, paleta_vegetal: datos.paleta_vegetal, fruto_comestible: datos.fruto_comestible,
+      id_snib: datos.id_snib, id_enciclovida: datos.id_enciclovida
     } : this.tipo === 'vehiculo' ? { modelo: datos.modelo, tipo_vehiculo: datos.tipo_vehiculo }
       : this.tipo === 'organizacion' ? { tipo_organizacion: this.editando ? this.editando.tipo_organizacion : datos.tipo_organizacion }
       : this.tipo === 'solicitante' ? { tipo_solicitante: datos.tipo_solicitante }

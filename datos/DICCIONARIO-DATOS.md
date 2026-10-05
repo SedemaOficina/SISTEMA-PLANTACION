@@ -46,6 +46,8 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 | `perfil` | `CABO` · `COORDINADOR` · `DIRECTIVO` · `ADMIN` | js/permisos.js SRP.PERFILES (Consulta/VIEWER retirado en D87; DIRECTIVO, de sólo lectura, desde D224) |
 | `tipo_catalogo` | `programa` · `area` · `especie` · `vehiculo` · `organizacion` · `solicitante` | js/catalogos.js ETIQUETA. No es un campo de la base: cada catálogo tiene su tabla (SRP.almacen.TABLA_DE_TIPO); en memoria, cada renglón lleva `tipo` para saber de cuál es |
 | `tipo_distribucion` | `Nativa` · `Endémica` · `Exótica` · `Exótica-Invasora` | SNIB/CONABIO (EncicloVida); lista en index.html #cat-distribucion |
+| `paleta_vegetal` | `Sí` · `No` | Catálogo de especies del SIA (libro de origen); js/catalogos.js PALETA |
+| `fruto_comestible` | `Sí` · `No` · `Por determinar` | Catálogo de especies del SIA (libro de origen), captura del área técnica; js/catalogos.js FRUTO |
 | `tipo_organizacion` | `Alcaldía` · `Gobierno de la CDMX` · `Empresa privada` · `Organización civil` | Lista fija en index.html #usr-tipo-org y #cat-tipo-org; js/referencias.js TIPOS_INSTITUCION |
 | `tipo_solicitante` | `Dependencia de gobierno` · `Alcaldía` · `Congreso` · `Empresa` · `Organización civil` · `Escuela` · `Vecinos` | js/referencias.js TIPOS_SOLICITANTE; la lista de Catálogos › Solicitantes (#cat-tipo-sol) se llena de ahí |
 | `accion_bitacora` | `CREADO` · `EDITADO` · `ELIMINADO` · `RESTAURADO` · `SUSTITUIDO` · `RELEVO` · `ACTIVADO` · `DESACTIVADO` · `FOLIO_ASIGNADO` | llamadas a SRP.bitacora.entrada() en formulario, registros, jornadas, catalogos, usuarios, reportes y folio (servidor simulado, D110) |
@@ -159,10 +161,10 @@ Las áreas de la Secretaría a las que pertenece una cuenta. Las cuentas de otra
 
 ### 4.5 `especies`
 
-El catálogo de especies: el real del SIA (D84), 76 de arranque, más las que agregue la Administración. Lleva los datos taxonómicos y las llaves externas al SNIB y a EncicloVida.
+El catálogo de especies: el real del SIA (D84), 79 de arranque, más las que agregue la Administración. Lleva los datos taxonómicos, si pertenece a la paleta vegetal de la Secretaría, si su fruto es comestible y las llaves externas al SNIB y a EncicloVida.
 
 - **Llave:** `id`. **Índices:** ninguno. **Pantalla:** Catálogos › Especies (sólo Administración global); se elige en Nuevo registro.
-- **Campos:** 14.
+- **Campos:** 16.
 
 | Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
 |---|---|---|---|---|---|---|
@@ -178,6 +180,8 @@ El catálogo de especies: el real del SIA (D84), 76 de arranque, más las que ag
 | `otros_nombres_comunes` | varchar(400) | No | Persona | Nombres separados por coma y espacio; '' si no hay | Otros nombres comunes; en Nuevo registro sólo como criterio de búsqueda («también: Fresno») | Un mismo nombre puede señalar a varias especies: la búsqueda las ofrece todas, nunca resuelve sola |
 | `tipo_distribucion` | text | No | Persona | dominio `tipo_distribucion` | Tipo de distribución (Catálogos) | Campo del SNIB; sustituye a Nativa/Introducida |
 | `formadecrecimiento` | varchar(100) | No | Persona | Árbol · Arbusto · Palma · Liana · Hierba · Sufrútice, varios separados por coma y espacio; '' si no hay | Forma de crecimiento (Catálogos) | Literal de la ficha técnica |
+| `paleta_vegetal` | text | No | Persona | dominio `paleta_vegetal` | «¿Pertenece a la paleta vegetal de la Secretaría?» (Catálogos); marca «Fuera de la paleta» en la lista y aviso en Nuevo registro | Obligatorio al dar de alta. Sí en las 76 del catálogo original; No en las que se dieron de alta fuera de la paleta. Estar fuera no impide registrar árboles |
+| `fruto_comestible` | text | No | Persona | dominio `fruto_comestible` | «¿Su fruto es comestible?» (Catálogos); marca «Fruto comestible» en la lista | Obligatorio al dar de alta: Sí, No o Por determinar, sin valor por omisión. Captura manual del área técnica; no sale de CONABIO |
 | `id_snib` | varchar(16) | Sí | Persona | Número + ANGIO o GIMNO (IdCAT) | Id SNIB (Catálogos) | Llave externa al Catálogo Taxonómico de la Biota; puede venir vacía (Quercus rubra) |
 | `id_enciclovida` | integer | Sí | Persona | Entero | Id EncicloVida (Catálogos) | Llave para reconsultar la ficha (enciclovida.mx/especies/{id}.json); más completa que el IdCAT |
 
@@ -593,6 +597,8 @@ CREATE TABLE especies (
   otros_nombres_comunes    varchar(400)   NOT NULL,
   tipo_distribucion        text           NOT NULL,
   formadecrecimiento       varchar(100)   NOT NULL,
+  paleta_vegetal           text           NOT NULL,
+  fruto_comestible         text           NOT NULL,
   id_snib                  varchar(16)    NULL,
   id_enciclovida           integer        NULL,
   PRIMARY KEY (id)

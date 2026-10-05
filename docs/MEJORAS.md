@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.9.23 (Bloque 156)»**.
+Al pie de cualquier pantalla: **«Versión 0.9.42 (Bloque 179)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -441,6 +441,11 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M443 | Liber | Especies escritas en tabla | Media | 0.9.40 (B174) | Catálogos › Especies › Especies escritas | D247 |
 | M444 | Liber | Defecto: la Administración global ya puede editar y sustituir un árbol | Alta | 0.9.40 (B174) | Ficha de la jornada y Registros › Editar | D247 |
 | M445 | Liber | En computadora, Nuevo registro, Editar árbol y Registrar jornada van en una columna centrada, en el orden del teléfono | Media | 0.9.41 (B175) | Nuevo registro; Registrar jornada | D248 |
+| M446 | Liber | Catálogo de especies del libro del 05-10-2026: 79 especies (Níspero, Peral y Ciruelo, nuevas y fuera de la paleta), con «paleta vegetal» y «fruto comestible»; llegan también a los teléfonos con capturas | Alta | 0.9.42 (B179) | Catálogos › Especies | D252 |
+| M447 | Liber | Alta y edición de especie con «¿Pertenece a la paleta vegetal de la Secretaría?» y «¿Su fruto es comestible?», las dos obligatorias y sin respuesta de inicio | Alta | 0.9.42 (B179) | Catálogos › Especies › Agregar especie | D252 |
+| M448 | Liber | La lista de especies marca «Fuera de la paleta» y «Fruto comestible», y filtra con «Mostrar» | Media | 0.9.42 (B179) | Catálogos › Especies | D252 |
+| M449 | Liber | En Nuevo registro, la lista de especies avisa «Fuera de la paleta vegetal»; se registra igual | Baja | 0.9.42 (B179) | Nuevo registro › Especie | D252 |
+| M450 | Liber | El Excel de especies sale con las trece columnas y las hojas del libro de origen, con la cuenta por valor al día | Media | 0.9.42 (B179) | Catálogos › Especies › Descargar en Excel | D252 |
 
 ## 2. Por hacer
 
@@ -450,9 +455,9 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M168 | Auditoría 360 | Bloque «Publicación ligera», lo que queda: capas con su propia versión (que no se vuelvan a descargar con cada versión de la app) y aligeradas; licencia del mapa base (M2, M4) | Media | Pendiente | Decisiones 3 y 5 de la lista del 26-09-2026. Originales y jsPDF, hechos en B102 |
 | M170 | Auditoría 360 | Bloque «Pruebas en iPhone»: GitHub Actions con Chromium y WebKit, pruebas de migración e integridad (M17, M18) | Media | Pendiente | |
 | M171 | Auditoría 360 | Fotografías como Blob (hoy ocupan un tercio más como texto) y sello de datos dentro de la base | Media | Pendiente | Resto de A1 y A2 |
-| M343 | Liber | Catálogo de especies: marcar cuáles son frutales, para filtrar y contar los árboles frutales plantados | Media | Pendiente | Pedido el 01-10-2026. Falta decidir de dónde sale la marca (el catálogo del SIA no la trae) y dónde se muestra |
-| M397 | Liber | En el SIA el SRP va como proyecto nuevo, con otro nombre: no reutiliza el módulo ni el esquema de plantación que ya existen ahí | Alta | Pendiente | Decidido el 03-10-2026. Falta el nombre del proyecto, de su esquema en la base y de su ruta de publicación |
-| M398 | Liber | Las capas (alcaldías, colonias, UGA) se van a consumir del esquema territorial del SIA: antes de cambiar, comprobar que son las mismas con que se trabajó aquí —mismos polígonos, claves y versión—, para que lo ya derivado no cambie de alcaldía, colonia ni celda | Alta | En curso | Lista la huella de las capas del SRP y la herramienta que compara (`herramientas/huella_capas.py`, `datos/HUELLA-CAPAS.md`). Falta que el SIA corra la consulta. Ya se sabe que las colonias difieren en número: 1,837 aquí, 1,817 allá |
+| M343 | Liber | Catálogo de especies: marcar cuáles son frutales, para filtrar y contar los árboles frutales plantados | Media | En curso | La marca y el filtro, hechos en B179 (M446 a M448). Falta contar los árboles con fruto comestible en Supervisión e informes: cuando lean del servidor |
+| M397 | Liber | En el SIA el SRP va como proyecto nuevo, con otro nombre: no reutiliza el módulo ni el esquema de plantación que ya existen ahí | Alta | Decidido | Nombre `srp` para el proyecto, su esquema y su ruta (D249). Se atiende en la fase de servidor |
+| M398 | Liber | Las capas (alcaldías, colonias, UGA) se van a consumir del esquema territorial del SIA: antes de cambiar, comprobar que son las mismas con que se trabajó aquí —mismos polígonos, claves y versión—, para que lo ya derivado no cambie de alcaldía, colonia ni celda | Alta | Hecha | Verificadas el 05-10-2026: las tres capas son las mismas (D251). Las 1,817 de `territorio` son otra capa; el SRP no la usa |
 
 ## 3. Verificadas sin falla
 

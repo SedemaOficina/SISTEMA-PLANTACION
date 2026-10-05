@@ -2822,3 +2822,23 @@
     aplica al adaptar la aplicación al servidor; mientras, sigue Esri en las dos.
   · **Módulo de plantación actual del SIA:** convive con el SRP hasta que éste opere; entonces se carga
     como histórico o se archiva.
+
+- **D252. Paleta vegetal y fruto comestible en el catálogo de especies (bloque 179).**
+  05-10-2026. Petición de Liber, aprobada sobre un ejemplo del antes y el después. Atiende M343 en parte.
+  · **Catálogo nuevo:** el libro `16._Registro_plantaciones_catalogos_05_10_2026.xlsx`, con 79 especies:
+    las 76 de la paleta vegetal de la Secretaría y Níspero (ESP-0077), Peral (ESP-0078) y Ciruelo
+    (ESP-0079), fuera de ella. Dos campos nuevos en `especies`: `paleta_vegetal` (Sí · No) y
+    `fruto_comestible` (Sí · No · Por determinar). Ese libro es el que lee la herramienta del catálogo y
+    contra el que se compara el Excel que descarga la app; el anterior pasó a `_to_delete/`. En su hoja
+    `diccionario_datos` se corrigieron los textos que ya no estaban al día.
+  · **Alta y edición:** las dos preguntas son obligatorias y empiezan sin respuesta: se eligen a
+    propósito. «Por determinar» es una respuesta válida para el fruto mientras el área técnica lo revisa.
+  · **Lista:** marca «Fuera de la paleta» en ámbar (algo que mirar) y «Fruto comestible» en gris (un
+    dato, sin carga: el verde significa «quedó bien»). Filtro «Mostrar»: todas, con fruto comestible o
+    fuera de la paleta.
+  · **Captura:** la lista de especies de Nuevo registro avisa «Fuera de la paleta vegetal». Sólo informa:
+    estar fuera de la paleta no impide registrar.
+  · **Teléfonos con capturas:** reciben las especies nuevas y las dos respuestas sin perder nada; una
+    especie que dio de alta la Administración queda con el fruto «Por determinar» y la paleta por
+    declarar al editarla.
+  · Contar los árboles con fruto comestible en Supervisión e informes queda para cuando lean del servidor.

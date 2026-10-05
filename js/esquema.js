@@ -48,6 +48,15 @@ SRP.ESQUEMA = {
    "Exótica",
    "Exótica-Invasora"
   ],
+  "paleta_vegetal": [
+   "Sí",
+   "No"
+  ],
+  "fruto_comestible": [
+   "Sí",
+   "No",
+   "Por determinar"
+  ],
   "tipo_organizacion": [
    "Alcaldía",
    "Gobierno de la CDMX",
@@ -594,6 +603,20 @@ SRP.ESQUEMA = {
     "varchar(100)",
     false,
     null,
+    null
+   ],
+   [
+    "paleta_vegetal",
+    "text",
+    false,
+    "paleta_vegetal",
+    null
+   ],
+   [
+    "fruto_comestible",
+    "text",
+    false,
+    "fruto_comestible",
     null
    ],
    [

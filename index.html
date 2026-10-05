@@ -14,12 +14,12 @@
 <!-- Las peticiones al mapa no dicen desde qué sitio se hacen -->
 <meta name="referrer" content="no-referrer">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.9.41">
-<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.9.41">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.9.42">
+<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.9.42">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.9.41">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.9.41">
-<link rel="stylesheet" href="css/estilos.css?v=0.9.41">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.9.42">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.9.42">
+<link rel="stylesheet" href="css/estilos.css?v=0.9.42">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -30,8 +30,8 @@
   <div class="encabezado-interior">
     <!-- Logotipo (D90, D137): Gobierno CDMX · SEDEMA · SIA · Reforestación Urbana en pantalla ancha; en teléfono, SIA y Reforestación Urbana -->
     <picture>
-      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.9.41">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.9.41" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
+      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.9.42">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.9.42" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» (D80) -->
@@ -606,6 +606,8 @@
         <label for="cat-buscar" id="cat-buscar-etiqueta">Buscar especie</label><input id="cat-buscar" type="search" placeholder="Nombre o clave ESP">
       </div>
       <div id="caja-cat-filtro-tipo" class="campo" hidden><label for="cat-filtro-tipo" id="cat-filtro-tipo-etiqueta">Tipo de institución</label><select id="cat-filtro-tipo"></select></div>
+      <div id="caja-cat-filtro-especie" class="campo" hidden><label for="cat-filtro-especie">Mostrar</label>
+        <select id="cat-filtro-especie"><option value="">Todas</option><option value="fruto">Con fruto comestible</option><option value="fuera">Fuera de la paleta</option></select></div>
       <button type="button" id="btn-cat-agregar" class="btn btn-primario">Agregar</button>
     </div>
     <!-- Cuántos hay y cuántos coinciden con la búsqueda (D105) -->
@@ -959,6 +961,15 @@
     <div class="campo solo-especie"><label for="cat-forma" id="etq-cat-forma">Forma de crecimiento</label>
       <div id="cat-forma-botones" class="chips chips-campo chips-multi" role="group" aria-labelledby="etq-cat-forma"></div>
       <input id="cat-forma" class="oculto-visual" tabindex="-1" aria-hidden="true"></div>
+    <!-- Paleta vegetal y fruto comestible: una respuesta cada uno, sin valor de inicio al dar de alta; el campo oculto guarda la elegida -->
+    <div class="campo solo-especie"><label for="cat-paleta" id="etq-cat-paleta">¿Pertenece a la paleta vegetal de la Secretaría? <span class="obligatorio" aria-hidden="true">*</span></label>
+      <div id="cat-paleta-botones" class="chips chips-campo" role="group" aria-labelledby="etq-cat-paleta" aria-describedby="cat-paleta-ayuda" data-campo="cat-paleta"></div>
+      <input id="cat-paleta" class="oculto-visual" tabindex="-1" aria-hidden="true">
+      <p id="cat-paleta-ayuda" class="nota">Estar fuera de la paleta no impide registrar árboles de la especie.</p></div>
+    <div class="campo solo-especie"><label for="cat-fruto" id="etq-cat-fruto">¿Su fruto es comestible? <span class="obligatorio" aria-hidden="true">*</span></label>
+      <div id="cat-fruto-botones" class="chips chips-campo" role="group" aria-labelledby="etq-cat-fruto" aria-describedby="cat-fruto-ayuda" data-campo="cat-fruto"></div>
+      <input id="cat-fruto" class="oculto-visual" tabindex="-1" aria-hidden="true">
+      <p id="cat-fruto-ayuda" class="nota">Si el área técnica aún no lo revisa, elija «Por determinar».</p></div>
     <div class="campo-doble solo-especie">
       <div class="campo"><label for="cat-snib">Id SNIB (IdCAT)</label><input id="cat-snib"></div>
       <div class="campo"><label for="cat-enciclovida">Id EncicloVida</label><input id="cat-enciclovida" inputmode="numeric"></div>
@@ -1151,58 +1162,58 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.9.41"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.9.41"></script>
-<script src="vendor/turf-pip.min.js?v=0.9.41"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.9.41"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.9.41"></script>
+<script src="vendor/leaflet.js?v=0.9.42"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.9.42"></script>
+<script src="vendor/turf-pip.min.js?v=0.9.42"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.9.42"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.9.42"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.9.41"></script>
-<script src="js/util.js?v=0.9.41"></script>
-<script src="js/filtros.js?v=0.9.41"></script>
-<script src="js/iconos.js?v=0.9.41"></script>
+<script src="js/config.js?v=0.9.42"></script>
+<script src="js/util.js?v=0.9.42"></script>
+<script src="js/filtros.js?v=0.9.42"></script>
+<script src="js/iconos.js?v=0.9.42"></script>
 <!-- Capas territoriales del SIA, compactadas por herramientas/generar_capas.py desde originales/ -->
-<script src="assets/capas/capa-alcaldias.js?v=0.9.41"></script>
-<script src="assets/capas/capa-uga.js?v=0.9.41"></script>
-<script src="assets/capas/capa-colonias.js?v=0.9.41"></script>
+<script src="assets/capas/capa-alcaldias.js?v=0.9.42"></script>
+<script src="assets/capas/capa-uga.js?v=0.9.42"></script>
+<script src="assets/capas/capa-colonias.js?v=0.9.42"></script>
 <!-- Colonias prioritarias para reforestar: capa de referencia del modelo de priorización -->
-<script src="assets/capas/capa-prioritarias.js?v=0.9.41"></script>
-<script src="assets/catalogos/catalogo-especies.js?v=0.9.41"></script>
-<script src="assets/catalogos/catalogo-vehiculos.js?v=0.9.41"></script>
-<script src="js/datos-ficticios.js?v=0.9.41"></script>
-<script src="js/permisos.js?v=0.9.41"></script>
-<script src="js/derivacion.js?v=0.9.41"></script>
-<script src="js/prioritarias.js?v=0.9.41"></script>
-<script src="js/solicitud.js?v=0.9.41"></script>
-<script src="js/almacen.js?v=0.9.41"></script>
-<script src="js/sesion.js?v=0.9.41"></script>
-<script src="js/referencias.js?v=0.9.41"></script>
-<script src="js/folio.js?v=0.9.41"></script>
+<script src="assets/capas/capa-prioritarias.js?v=0.9.42"></script>
+<script src="assets/catalogos/catalogo-especies.js?v=0.9.42"></script>
+<script src="assets/catalogos/catalogo-vehiculos.js?v=0.9.42"></script>
+<script src="js/datos-ficticios.js?v=0.9.42"></script>
+<script src="js/permisos.js?v=0.9.42"></script>
+<script src="js/derivacion.js?v=0.9.42"></script>
+<script src="js/prioritarias.js?v=0.9.42"></script>
+<script src="js/solicitud.js?v=0.9.42"></script>
+<script src="js/almacen.js?v=0.9.42"></script>
+<script src="js/sesion.js?v=0.9.42"></script>
+<script src="js/referencias.js?v=0.9.42"></script>
+<script src="js/folio.js?v=0.9.42"></script>
 <!-- Esquema generado de datos/esquema.json: relaciones entre tablas (D150) -->
-<script src="js/esquema.js?v=0.9.41"></script>
-<script src="js/conexion.js?v=0.9.41"></script>
-<script src="js/envio.js?v=0.9.41"></script>
-<script src="js/mapa.js?v=0.9.41"></script>
-<script src="js/foto.js?v=0.9.41"></script>
-<script src="js/jornada-activa.js?v=0.9.41"></script>
-<script src="js/formulario.js?v=0.9.41"></script>
+<script src="js/esquema.js?v=0.9.42"></script>
+<script src="js/conexion.js?v=0.9.42"></script>
+<script src="js/envio.js?v=0.9.42"></script>
+<script src="js/mapa.js?v=0.9.42"></script>
+<script src="js/foto.js?v=0.9.42"></script>
+<script src="js/jornada-activa.js?v=0.9.42"></script>
+<script src="js/formulario.js?v=0.9.42"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.9.41"></script>
-<script src="js/registros.js?v=0.9.41"></script>
-<script src="js/galeria.js?v=0.9.41"></script>
-<script src="js/jornadas.js?v=0.9.41"></script>
-<script src="js/informes.js?v=0.9.41"></script>
-<script src="js/supervision.js?v=0.9.41"></script>
-<script src="js/indicadores.js?v=0.9.41"></script>
-<script src="js/demostracion.js?v=0.9.41"></script>
-<script src="js/croquis.js?v=0.9.41"></script>
-<script src="js/reportes.js?v=0.9.41"></script>
-<script src="js/catalogos.js?v=0.9.41"></script>
-<script src="js/usuarios.js?v=0.9.41"></script>
-<script src="js/excel.js?v=0.9.41"></script>
-<script src="js/carga.js?v=0.9.41"></script>
-<script src="js/configuracion.js?v=0.9.41"></script>
-<script src="js/especies-revision.js?v=0.9.41"></script>
-<script src="js/app.js?v=0.9.41"></script>
+<script src="js/espejo.js?v=0.9.42"></script>
+<script src="js/registros.js?v=0.9.42"></script>
+<script src="js/galeria.js?v=0.9.42"></script>
+<script src="js/jornadas.js?v=0.9.42"></script>
+<script src="js/informes.js?v=0.9.42"></script>
+<script src="js/supervision.js?v=0.9.42"></script>
+<script src="js/indicadores.js?v=0.9.42"></script>
+<script src="js/demostracion.js?v=0.9.42"></script>
+<script src="js/croquis.js?v=0.9.42"></script>
+<script src="js/reportes.js?v=0.9.42"></script>
+<script src="js/catalogos.js?v=0.9.42"></script>
+<script src="js/usuarios.js?v=0.9.42"></script>
+<script src="js/excel.js?v=0.9.42"></script>
+<script src="js/carga.js?v=0.9.42"></script>
+<script src="js/configuracion.js?v=0.9.42"></script>
+<script src="js/especies-revision.js?v=0.9.42"></script>
+<script src="js/app.js?v=0.9.42"></script>
 </body>
 </html>

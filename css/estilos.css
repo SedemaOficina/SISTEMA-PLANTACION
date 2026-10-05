@@ -384,6 +384,11 @@ fieldset.campo { margin-inline: 0; }
 .insignia-jornada[data-tono="ok"] { background: var(--exito-fondo); color: var(--exito); }
 .insignia-jornada[data-tono="rev"] { background: var(--editar-fondo); color: var(--editar); }
 .insignia-jornada[data-tono="err"] { background: var(--error-fondo); color: var(--error); }
+/* Marcas de la especie en Catálogos: fuera de la paleta vegetal es algo que mirar (ámbar); el fruto
+   comestible es un dato, sin carga (gris). El texto dice lo que es: el color no va solo. */
+.marcas-especie { display: flex; flex-wrap: wrap; gap: var(--e-1); margin-top: var(--e-1); }
+.marca-especie { display: inline-block; padding: 0 var(--e-2); border-radius: var(--radio-control); font-size: var(--t-xs); font-weight: 500; background: var(--neutro-fondo); color: var(--gris); }
+.marca-especie.marca-fuera { background: var(--editar-fondo); color: var(--editar); }
 .jornada-lugar { display: flex; gap: var(--e-15); align-items: flex-start; font-size: var(--t-s); overflow-wrap: anywhere; }
 .jornada-lugar svg { flex: none; margin-top: 3px; color: var(--gris); }
 .jornada-ubic { color: var(--gris); }

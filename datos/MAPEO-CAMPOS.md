@@ -128,8 +128,9 @@ tipo (D162); las instituciones y los solicitantes, su tipo; los programas, quié
 | — | `fecha_creacion`, `creado_por_id` | Sí | Sistema | En las especies del catálogo: fecha de corte del SIA y creador nulo |
 | — | `fecha_ultima_edicion`, `editado_por_id` | No | Sistema | |
 
-**Sólo en especies** (catálogo `CGO_ESPECIES_REFORESTACION_URBANA`, 76 especies verificadas
-contra EncicloVida/CONABIO el 22-09-2026; se genera con `herramientas/generar_especies.py`, D84):
+**Sólo en especies** (libro `16._Registro_plantaciones_catalogos_05_10_2026.xlsx`, 79 especies: las 76 de la
+paleta vegetal, verificadas contra EncicloVida/CONABIO el 22-09-2026, y tres fuera de ella; se genera con
+`herramientas/generar_especies.py`, D84):
 
 | Etiqueta en pantalla | Campo | Obligatorio | Origen | Se ve en el formulario de registro | Notas |
 |---|---|---|---|---|---|
@@ -137,6 +138,8 @@ contra EncicloVida/CONABIO el 22-09-2026; se genera con `herramientas/generar_es
 | Tipo de distribución | `tipo_distribucion` | Sí | Persona | No | `Endémica` · `Nativa` · `Exótica` · `Exótica-Invasora`, campo del SNIB. Sustituye a Nativa/Introducida |
 | Otros nombres comunes | `otros_nombres_comunes` | No | Persona | Sólo como criterio de búsqueda | Separados por coma y espacio, hasta cinco. **Se buscan** en el formulario de registro y en Catálogos; la lista dice por cuál coincidió («también: Fresno»). Un mismo nombre puede señalar a varias especies, así que nunca resuelve solo |
 | Forma de crecimiento | `formadecrecimiento` | No | Persona | No | Literal de la ficha técnica: `Árbol, Arbusto`… Puede traer varios |
+| ¿Pertenece a la paleta vegetal de la Secretaría? | `paleta_vegetal` | Sí | Persona | Sí, como «Fuera de la paleta vegetal» bajo el nombre | `Sí` · `No`. En Catálogos, marca ámbar «Fuera de la paleta» y filtro «Mostrar». No impide registrar |
+| ¿Su fruto es comestible? | `fruto_comestible` | Sí | Persona | No | `Sí` · `No` · `Por determinar`, sin valor de inicio al dar de alta. En Catálogos, marca gris «Fruto comestible» y filtro «Mostrar». Captura manual del área técnica |
 | Id SNIB (IdCAT) | `id_snib` | No | Persona | No | Número + `ANGIO` o `GIMNO`. Llave externa al SNIB; puede venir vacío (Quercus rubra) |
 | Id EncicloVida | `id_enciclovida` | No | Persona | No | Entero. Llave para reconsultar la ficha por API y enlazarla; más completa que el IdCAT |
 

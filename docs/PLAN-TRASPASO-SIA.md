@@ -113,7 +113,7 @@ Las fases 1 y 2 pueden correr en paralelo. La 3 es la de mayor esfuerzo y la que
 - Especificación del servidor: `docs/FASE2-Y-TRASPASO.md`.
 - Reglas de permisos en un solo archivo (`js/permisos.js`), para replicarlas en el servidor.
 - Huella de capas y herramienta de comparación (apartado 3).
-- Catálogo real de especies (76). La lista real de vehículos está fuera del repositorio y se entrega aparte.
+- Catálogo real de especies (79, con paleta vegetal y fruto comestible). La lista real de vehículos está fuera del repositorio y se entrega aparte.
 
 **Falta, del lado del SRP**
 

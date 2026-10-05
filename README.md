@@ -159,7 +159,7 @@ js/                     La aplicación, un archivo por tema
 
 assets/
   capas/                capa-alcaldias.js, capa-uga.js, capa-colonias.js y capa-prioritarias.js: capas compactadas (generadas)
-  catalogos/            catalogo-especies.js (76 especies del SIA, generado) y catalogo-vehiculos.js (de prueba, placas ficticias)
+  catalogos/            catalogo-especies.js (79 especies del SIA, generado) y catalogo-vehiculos.js (de prueba, placas ficticias)
   encabezado-ru-sia.png, encabezado-ru-sia-movil.png   Logotipo para el encabezado y el PDF
   icono-192.png, icono-512.png, icono-512-maskable.png, apple-touch-icon.png   Icono de la app (D90)
 
@@ -309,8 +309,9 @@ pantalla (etiqueta ↔ campo). Los tres se auditan (D86).
 
 ## Catálogo de especies
 
-Las especies son las reales del SIA: `CGO_ESPECIES_REFORESTACION_URBANA` (76 especies, verificadas
-ficha por ficha contra EncicloVida/CONABIO el 22-09-2026). El Excel vive en `originales/` (no se publica, D164) y
+Las especies son las reales del SIA, del libro `16._Registro_plantaciones_catalogos_05_10_2026.xlsx`: 79 especies,
+las 76 de la paleta vegetal de la Secretaría (verificadas ficha por ficha contra EncicloVida/CONABIO el
+22-09-2026) y tres fuera de ella; cada una dice si es de la paleta y si su fruto es comestible. El Excel vive en `originales/` (no se publica, D164) y
 `herramientas/generar_especies.py` lo convierte en `assets/catalogos/catalogo-especies.js`, que se siembra en el
 almacén `especies` tal cual: **la clave es el `id_especie` (`ESP-0001`…) y es la única llave por
 la que se enlazan las plantaciones**; el nombre común es la etiqueta de campo; el tipo de
