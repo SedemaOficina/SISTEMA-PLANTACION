@@ -2661,3 +2661,19 @@
   · **«Generando reporte…»** ya no se cierra a los 4.5 s: se queda hasta que el resultado lo sustituye;
     si no hay resultado (se canceló), se quita (`anunciar(…, { fijo: true })`, `quitarAviso()`).
 
+- **D237. Jornada completa con ventana propia; un árbol de más se pregunta una vez; al cerrar se ofrece actualizar lo previsto (bloque 170).**
+  05-10-2026. Petición de Liber, sobre una propuesta acordada en la conversación.
+  · **Jornada completa:** al guardar el último árbol previsto ya no sale la tarjeta «Registro exitoso»
+    con un renglón extra, sino una ventana distinta: «Jornada completa. Registró los 3 árboles previstos
+    en «[jornada]»». No se cierra sola y ofrece «Cerrar jornada» o «Seguir registrando». Desde ahí,
+    «Cerrar jornada» no vuelve a preguntar si no queda nada pendiente. Sustituye lo de D171 para ese caso.
+  · **Un árbol de más:** con lo previsto ya registrado, el siguiente árbol se confirma antes de guardar
+    («Este sería el árbol 4 de la jornada… ¿Lo registra de todos modos?»). Se pregunta una vez por
+    jornada y se recuerda en el dispositivo: plantar de más es normal y preguntar en cada árbol sumaría
+    un toque por árbol. Al cancelar, lo capturado sigue en pantalla. La sustitución no pregunta.
+  · **Al cerrar con árboles de más** —desde Nuevo registro o desde la ficha— se ofrece actualizar los
+    árboles previstos a lo registrado («Actualizar a 5» / «Dejar en 3»). Al actualizar, la conciliación
+    cuadra y el cambio queda en el historial de la jornada; al dejarlo, la conciliación dice cuántos sobran.
+  · La confirmación genérica acepta otro nombre para su segunda salida (`cancelar`), que entonces va
+    neutra y sin tache.
+

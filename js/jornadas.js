@@ -153,7 +153,7 @@ SRP.jornadas = {
     if (j.estatus === 'abierta') {
       const ok = await SRP.app.confirmar(await SRP.activa.confirmacionCierre(j));
       if (!ok) return;
-      await SRP.activa.cambiarEstatus(j, 'cerrada');
+      await SRP.activa.cambiarEstatus(await SRP.activa.ofrecerActualizarPrevistos(j), 'cerrada');
       if (SRP.activa.jornada && SRP.activa.jornada.id === j.id) SRP.activa.jornada = null;
       await this.refrescar();
       // Terminar un paso anuncia el siguiente (D138)

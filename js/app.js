@@ -542,7 +542,7 @@ SRP.app = {
      jornada de otro día). Lo reversible se hace de una vez y ofrece «Deshacer» (D101): así, que
      aparezca este diálogo vuelve a significar algo.
      Forma estructurada: { titulo, pregunta, puntosTitulo, puntos: [], nota, irreversible, boton,
-     icono }. La corta (texto, textoBoton, icono) sirve para una pregunta simple.
+     icono, cancelar }. La corta (texto, textoBoton, icono) sirve para una pregunta simple.
      icono: 'basura' elimina (rojo), 'palomita' confirma (verde), 'candado' cierra (acento). */
   confirmar(texto, textoBoton, icono) {
     const o = typeof texto === 'object' ? texto : { pregunta: texto, boton: textoBoton, icono };
@@ -569,6 +569,11 @@ SRP.app = {
       b.className = 'btn ' + (o.soloAceptar ? 'btn-primario' : o.icono === 'palomita' ? 'btn-exito' : o.icono === 'candado' ? 'btn-primario' : 'btn-peligro');
       // Un aviso que sólo se lee (`soloAceptar`) no lleva «Cancelar»
       this.el('btn-confirmar-no').hidden = !!o.soloAceptar;
+      // `cancelar`: cómo se llama la otra salida cuando no es cancelar («Dejar en 3»)
+      // y entonces va neutra, sin tache: no cancela nada, es la otra respuesta
+      const no = this.el('btn-confirmar-no');
+      no.className = 'btn ' + (o.cancelar ? 'btn-editar' : 'btn-cancelar');
+      no.innerHTML = (o.cancelar ? '' : SRP.ICONOS.svg('cerrar', 'medio')) + '<span>' + SRP.util.escapar(o.cancelar || 'Cancelar') + '</span>';
       /* `escribir`: lo que hay que teclear para confirmar algo que no se deshace. No distingue
          mayúsculas ni espacios al inicio o al final: lo que se pide es una pausa, no una prueba */
       const caja = this.el('dlg-confirmar-escribir'), campo = this.el('confirmar-palabra');

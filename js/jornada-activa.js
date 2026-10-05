@@ -177,6 +177,48 @@ SRP.activa = {
     return ok;
   },
 
+  /* MÁS ÁRBOLES QUE LOS PREVISTOS. Con los previstos ya registrados, el siguiente árbol se confirma:
+     puede ser un toque de más o un árbol de otra jornada. Se pregunta una vez por jornada —plantar de
+     más es normal y preguntar en cada árbol sumaría un toque por árbol—; se recuerda en el dispositivo.
+     La sustitución no pregunta: el árbol que reemplaza deja de contar. Devuelve true si se puede seguir. */
+  CLAVE_EXCESO: 'srp_jornadas_exceso',
+  excesoConfirmado() { try { return JSON.parse(localStorage.getItem(this.CLAVE_EXCESO) || '[]'); } catch (e) { return this._exceso || []; } },
+  async confirmarExceso() {
+    const j = this.jornada;
+    if (!j || SRP.formulario.estado.sustitucion) return true;
+    const meta = SRP.jornadas.previstosDe(j);
+    if (meta === null) return true;
+    const n = (await this.registrosDe(j)).length;
+    if (n < meta || this.excesoConfirmado().includes(j.id)) return true;
+    const ok = await SRP.app.confirmar({ titulo: meta === 1 ? 'Ya registró el árbol previsto' : 'Ya registró los ' + meta + ' árboles previstos',
+      pregunta: 'Este sería el árbol ' + (n + 1) + ' de la jornada «' + j.nombre + '». ¿Lo registra de todos modos?',
+      nota: 'Se pregunta una vez por jornada. Al cerrarla podrá actualizar los árboles previstos.', boton: 'Registrar el árbol', icono: 'palomita' });
+    if (ok) {
+      const lista = this.excesoConfirmado().concat(j.id).slice(-50);
+      this._exceso = lista;
+      try { localStorage.setItem(this.CLAVE_EXCESO, JSON.stringify(lista)); } catch (e) { /* vale para esta sesión */ }
+    }
+    return ok;
+  },
+
+  /* Al cerrar con más árboles que los previstos se ofrece actualizar la cantidad prevista a lo
+     registrado, para que la conciliación cuadre. Si no se acepta, la jornada se cierra igual y la
+     conciliación dice cuántos sobran. Devuelve la jornada, actualizada o no. */
+  async ofrecerActualizarPrevistos(j) {
+    const meta = SRP.jornadas.previstosDe(j);
+    if (meta === null) return j;
+    const n = (await this.registrosDe(j)).length;
+    if (n <= meta) return j;
+    const ok = await SRP.app.confirmar({ titulo: 'Árboles previstos',
+      pregunta: (meta === 1 ? 'Se previó 1 árbol' : 'Se previeron ' + meta + ' árboles') + ' y se registraron ' + n + '. ¿Actualizar los árboles previstos a ' + n + '?',
+      nota: 'Si no los actualiza, la conciliación dirá que ' + (n - meta === 1 ? 'sobra 1 registro.' : 'sobran ' + (n - meta) + ' registros.'),
+      boton: 'Actualizar a ' + n, icono: 'palomita', cancelar: 'Dejar en ' + meta });
+    if (!ok) return j;
+    const u = SRP.sesion.usuario, nuevo = Object.assign({}, j, { arboles_previstos: n, editado_por_id: u.id, fecha_ultima_edicion: SRP.util.ahoraISO() });
+    await SRP.almacen.guardarConBitacora('jornadas', nuevo, SRP.bitacora.entrada('EDITADO', 'jornada', j.id, 'Árboles previstos: ' + meta + ' → ' + n + ', al cerrar la jornada'));
+    return nuevo;
+  },
+
   /* ---------- Pantalla ---------- */
 
   mostrarInicio(ver) {
@@ -476,11 +518,13 @@ SRP.activa = {
       nota: (avisos.length ? 'Se puede cerrar de todos modos y reabrir después.' : 'Se puede reabrir después.'), boton: 'Cerrar jornada', icono: 'candado' };
   },
 
-  async cerrarJornada() {
-    const j = this.jornada; if (!j) return;
+  // `op.sinPreguntarSiCuadra`: viene de «Jornada completa»; si no queda nada pendiente, no se vuelve a preguntar
+  async cerrarJornada(op) {
+    let j = this.jornada; if (!j) return;
     if (!SRP.permisos.exigir('jornada.editar', j)) return;
-    const ok = await SRP.app.confirmar(await this.confirmacionCierre(j));
-    if (!ok) return;
+    const c = await this.confirmacionCierre(j);
+    if (!(op && op.sinPreguntarSiCuadra && !c.puntos.length) && !(await SRP.app.confirmar(c))) return;
+    j = await this.ofrecerActualizarPrevistos(j);
     if (!await this.cambiarEstatus(j, 'cerrada')) return;
     this.jornada = null;
     SRP.jornadas.actual = j.id;

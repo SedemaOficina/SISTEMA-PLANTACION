@@ -419,6 +419,9 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M421 | Inventario de avisos | Se quitan dos avisos que repetían lo que ya se ve: «Jornada activa» y «Catálogo actualizado» | Baja | 0.9.35 (B169) | Cambiar de jornada; Catálogos | D236 |
 | M422 | Inventario de avisos | Los avisos que dicen una regla o una espera van en ámbar; el rojo queda para lo que salió mal | Media | 0.9.35 (B169) | Avisos flotantes | D236 |
 | M423 | Inventario de avisos | «Generando reporte…» se queda a la vista hasta que el reporte termina | Media | 0.9.35 (B169) | Vista previa del reporte › Generar PDF | D236 |
+| M424 | Liber | «Jornada completa» es una ventana propia, distinta de la tarjeta de cada árbol: no se cierra sola y ofrece cerrar la jornada o seguir | Alta | 0.9.36 (B170) | Nuevo registro, al guardar el último árbol previsto | D237 |
+| M425 | Liber | Con lo previsto ya registrado, un árbol más se pregunta antes de guardarlo, una vez por jornada | Alta | 0.9.36 (B170) | Nuevo registro › Guardar | D237 |
+| M426 | Liber | Al cerrar una jornada con árboles de más se ofrece actualizar los árboles previstos | Media | 0.9.36 (B170) | Cerrar jornada | D237 |
 
 ## 2. Por hacer
 
@@ -446,4 +449,4 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 404 hechas · 7 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 407 hechas · 7 por hacer · 2 revisadas · 2 descartadas.

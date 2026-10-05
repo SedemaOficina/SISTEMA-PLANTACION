@@ -820,7 +820,14 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .confirmacion-titulo { font-family: var(--fuente-titulo); font-size: var(--t-xl); color: var(--exito); line-height: 1.2; }
 .confirmacion-especie { font-size: var(--t-l); font-weight: 500; color: var(--texto); }
 /* Segundo renglón de la confirmación: con este árbol se llegó a lo previsto para la jornada */
-.confirmacion-completa { margin-top: var(--e-2); padding: var(--e-2) var(--e-3); border-radius: var(--radio); background: var(--exito-fondo); color: var(--exito); font-weight: 600; text-align: center; max-width: 20rem; }
+/* Jornada completa: ventana propia, con borde de acento y botones; no se confunde con la tarjeta verde de cada árbol */
+.dlg-completa { width: min(26rem, calc(100vw - 2 * var(--e-4))); border: 2px solid var(--acento); text-align: center; }
+.dlg-completa[open] { display: grid; justify-items: center; gap: var(--e-2); }
+.completa-icono { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: var(--acento); color: var(--fondo); }
+.completa-titulo { font-family: var(--fuente-titulo); font-size: var(--t-xl); color: var(--acento); line-height: 1.2; margin: 0; }
+.completa-texto { font-size: var(--t-m); font-weight: 500; margin: 0; overflow-wrap: anywhere; }
+.completa-nota { font-size: var(--t-s); color: var(--gris); margin: 0 0 var(--e-2); }
+.dlg-completa .dialogo-pie-doble { width: 100%; }
 /* Aviso flotante único (D101): arriba, para no tapar las barras fijas del pie; fondo oscuro
    neutro con un filete de color e icono que dicen si es éxito o alerta (el color no va solo:
    también cambian el icono y el texto). «Deshacer» en dorado claro, que contrasta sobre el oscuro. */

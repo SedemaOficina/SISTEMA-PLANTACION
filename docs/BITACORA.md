@@ -3263,3 +3263,19 @@ y `js/catalogos.js`: dos avisos pasan a `anunciarSilencioso()`. 17 avisos de `'a
 
 **Verificación:** corrida completa sola, 1,330 comprobaciones, 0 fallas, sin errores de consola (última sección `ctx80`). `auditoria.py`: 140 comprobaciones, 0 hallazgos. `auditoria_css.py`: 0 hallazgos. `revisar.py`: sin problemas. No probado en iPhone por Claude. Incluye el texto guía «Elija la fecha» en «Mover a otra jornada».
 
+## Bloque 170 — Jornada completa, árboles de más y previstos al cerrar (05-10-2026)
+
+Versión 0.9.36. Petición de Liber.
+
+**Qué cambió (D237).** `index.html` y `css/estilos.css`: diálogo `dlg-completa`. `js/formulario.js`:
+`avisarCompleta()`; `guardar()` llama a `SRP.activa.confirmarExceso()`. `js/jornada-activa.js`:
+`confirmarExceso()`, `ofrecerActualizarPrevistos()`, `cerrarJornada({ sinPreguntarSiCuadra })`.
+`js/jornadas.js`: el cierre desde la ficha también ofrece actualizar. `js/app.js`: `confirmar()` acepta
+`cancelar`.
+
+**Pantalla: qué se agregó y qué se quitó.** Se agregó una ventana (jornada completa, en lugar del renglón
+extra de la tarjeta) y dos preguntas que sólo aparecen al rebasar lo previsto. Se quitó el renglón
+«Se registraron los N árboles previstos» de la tarjeta de guardado.
+
+**Verificación:** corrida completa sola, 1,336 comprobaciones, 0 fallas, sin errores de consola (última sección `ctx81`). `auditoria.py`: 140 comprobaciones, 0 hallazgos. `auditoria_css.py`: 0 hallazgos. `revisar.py`: sin problemas. No probado en iPhone por Claude.
+

@@ -452,6 +452,8 @@ SRP.formulario = {
     try {
       // Una jornada que no es de hoy se confirma antes de guardar en ella (D133)
       if (!this.estado.editando && !(await SRP.activa.confirmarOtroDia())) return;
+      // Con los árboles previstos ya registrados, uno más se confirma, una vez por jornada
+      if (!this.estado.editando && !(await SRP.activa.confirmarExceso())) return;
       // El identificador se fija aquí y es el que se guarda, pase o no por la ficha
       if (!this.estado.editando && !this.estado.idPrevisto) this.estado.idPrevisto = SRP.util.generarId();
       const avisos = await this.avisos(this.valores());
@@ -788,7 +790,8 @@ SRP.formulario = {
     this.limpiar();
     SRP.mapa.refrescar();
     this.el('btn-ubicacion').focus({ preventScroll: true });
-    this.confirmarGuardado(esp.comun, previstosCompletos);
+    // El último árbol previsto no lleva la tarjeta de cada árbol: lleva su propio aviso, que espera respuesta
+    if (previstosCompletos) this.avisarCompleta(previstosCompletos); else this.confirmarGuardado(esp.comun);
     SRP.util.anunciarSilencioso('Registro exitoso: ' + esp.comun + '. ' + (previstosCompletos ? this.textoCompleta(previstosCompletos) + ' Puede cerrar la jornada o seguir registrando.' : 'Listo para el siguiente árbol.'));
   },
 
@@ -796,25 +799,37 @@ SRP.formulario = {
      guardado, sin desplazarse. Una ventana que hubiera que cerrar sumaría un toque por árbol (D130
      los quitó): ésta aparece al centro, dice «Registro exitoso» y la especie, vibra un instante y se
      cierra sola; no tapa los toques (pointer-events: none). */
-  /* JORNADA COMPLETA. Cuando el árbol guardado es el último de los previstos, la misma confirmación lo
-     dice en un segundo renglón, dura más y vibra dos veces: un solo aviso, no dos que se encimen. La
-     franja de la jornada lo deja escrito después, junto a «Cerrar jornada». */
-  DURACION_CONFIRMACION: 1500, DURACION_COMPLETA: 4000,
+  /* JORNADA COMPLETA. Cuando el árbol guardado es el último de los previstos se dice en una ventana
+     propia, distinta de la tarjeta de cada árbol: no se cierra sola, nombra la jornada y ofrece
+     cerrarla o seguir registrando. Vibra dos veces. La franja de la jornada lo deja escrito después. */
+  DURACION_CONFIRMACION: 1500,
   textoCompleta(previstos) {
     return previstos === 1 ? 'Se registró el árbol previsto para la jornada.' : 'Se registraron los ' + previstos + ' árboles previstos para la jornada.';
   },
-  confirmarGuardado(especie, previstosCompletos) {
+  avisarCompleta(previstos) {
+    const j = SRP.activa.jornada, d = this.el('dlg-completa');
+    this.el('dlg-completa-icono').innerHTML = SRP.ICONOS.svg('palomita', 'grande');
+    this.el('dlg-completa-texto').textContent = (previstos === 1 ? 'Registró el árbol previsto' : 'Registró los ' + previstos + ' árboles previstos') + (j ? ' en «' + j.nombre + '».' : '.');
+    this.el('btn-completa-cerrar').innerHTML = SRP.ICONOS.svg('candado', 'medio') + '<span>Cerrar jornada</span>';
+    this.el('btn-completa-seguir').innerHTML = SRP.ICONOS.svg('mas', 'medio') + '<span>Seguir registrando</span>';
+    if (!this._completaLista) {
+      this._completaLista = true;
+      this.el('btn-completa-seguir').addEventListener('click', () => d.close());
+      // La jornada acaba de cuadrar: si no queda nada pendiente, se cierra sin volver a preguntar
+      this.el('btn-completa-cerrar').addEventListener('click', () => { d.close(); SRP.activa.cerrarJornada({ sinPreguntarSiCuadra: true }); });
+    }
+    if (!d.open) d.showModal();
+    try { if (navigator.vibrate) navigator.vibrate([60, 90, 60]); } catch (e) { /* sin vibración: basta lo visible */ }
+  },
+  confirmarGuardado(especie) {
     const c = this.el('confirmacion-guardado');
     const ic = this.el('confirmacion-icono');
     if (!ic.firstChild) ic.innerHTML = SRP.ICONOS.svg('palomita', 'grande');
     this.el('confirmacion-especie').textContent = especie;
-    const completa = this.el('confirmacion-completa');
-    completa.hidden = !previstosCompletos;
-    completa.textContent = previstosCompletos ? this.textoCompleta(previstosCompletos) : '';
     c.hidden = false;
     clearTimeout(this._tConfirmacion);
-    this._tConfirmacion = setTimeout(() => { c.hidden = true; }, previstosCompletos ? this.DURACION_COMPLETA : this.DURACION_CONFIRMACION);
-    try { if (navigator.vibrate) navigator.vibrate(previstosCompletos ? [60, 90, 60] : 60); } catch (e) { /* sin vibración: basta lo visible */ }
+    this._tConfirmacion = setTimeout(() => { c.hidden = true; }, this.DURACION_CONFIRMACION);
+    try { if (navigator.vibrate) navigator.vibrate(60); } catch (e) { /* sin vibración: basta lo visible */ }
   },
 
   /* Lo que dice la franja «Guardado» con el envío simulado (D111): «Enviando…» mientras sale, y

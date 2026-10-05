@@ -97,6 +97,22 @@ def registrar(pg, busqueda, especie_id, programa='p-refor', fecha=None, foto=Non
 
 with sync_playwright() as p:
     b=p.chromium.launch()
+    # Las ventanas de jornada completa y de árboles de más (D237) esperan respuesta. Casi ninguna prueba
+    # trata de ellas: en cuanto abren se contestan solas —seguir registrando, registrar el árbol,
+    # dejar lo previsto como estaba—. Las secciones que sí las prueban piden su contexto con `contexto_llano`.
+    contexto_llano = b.new_context
+    ATENDER_VENTANAS = """setInterval(() => {
+      const c = document.getElementById('dlg-completa'); if (c && c.open) c.close();
+      const d = document.getElementById('dlg-confirmar'); if (!d || !d.open) return;
+      const t = d.textContent;
+      if (t.includes('¿Lo registra de todos modos?')) d.close('si');
+      else if (t.includes('¿Actualizar los árboles previstos')) d.close('no');
+    }, 60);"""
+    def _contexto(*a, **k):
+        c = contexto_llano(*a, **k)
+        c.add_init_script(ATENDER_VENTANAS)
+        return c
+    b.new_context = _contexto
     ctx=b.new_context(viewport={'width':390,'height':844},geolocation={'latitude':19.432,'longitude':-99.133},
                       permissions=['geolocation'],accept_downloads=True,device_scale_factor=2)
     pg=ctx.new_page()
@@ -5502,7 +5518,7 @@ with sync_playwright() as p:
     ctx67.close()
 
     # ---------- ctx68: editar la jornada desde «Nuevo registro», árboles de la jornada en el mapa y aviso de jornada completa
-    ctx68 = b.new_context(viewport={'width':390,'height':844}, timezone_id='America/Mexico_City', geolocation={'latitude':19.4326,'longitude':-99.1332,'accuracy':5}, permissions=['geolocation'])
+    ctx68 = contexto_llano(viewport={'width':390,'height':844}, timezone_id='America/Mexico_City', geolocation={'latitude':19.4326,'longitude':-99.1332,'accuracy':5}, permissions=['geolocation'])
     pg68 = ctx68.new_page(); err68 = []
     pg68.on('pageerror', lambda e: err68.append(str(e))); pg68.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err68.append(m.text))
     pg68.goto(BASE); pg68.wait_for_timeout(1200)
@@ -5521,13 +5537,19 @@ with sync_playwright() as p:
         if not pg68.evaluate("!!SRP.formulario.estado.especieId"):
             pg68.fill('#campo-especie', 'fres'); pg68.wait_for_timeout(200); pg68.dispatch_event('.combo-opcion[data-id="ESP-0029"]', 'mousedown'); pg68.wait_for_timeout(150)
         pg68.click('#form-plantacion button[type=submit]')
-        visto = {'completa': None}
+        visto = {'completa': '', 'exceso': ''}
         for _ in range(60):
             pg68.wait_for_timeout(150)
             if pg68.is_visible('#dlg-resumen'): pg68.click('#btn-resumen-guardar'); esperar(pg68, "!document.getElementById('dlg-resumen').open", 6000); continue
+            # Pasado lo previsto se pregunta antes de guardar: se lee la pregunta y se acepta
+            if pg68.is_visible('#dlg-confirmar'): visto['exceso'] = pg68.inner_text('#dlg-confirmar'); pg68.click('#btn-confirmar-si'); pg68.wait_for_timeout(200); continue
+            # El último previsto abre «Jornada completa», que espera respuesta: se lee y se sigue registrando
+            if pg68.is_visible('#dlg-completa'):
+                visto['completa'] = pg68.inner_text('#dlg-completa'); visto['tarjeta'] = pg68.is_visible('#confirmacion-guardado')
+                pg68.wait_for_timeout(2000); visto['sigue'] = pg68.is_visible('#dlg-completa')
+                pg68.click('#btn-completa-seguir'); pg68.wait_for_timeout(200); continue
             if pg68.evaluate("p => SRP.formulario.estado.ultimoGuardado !== p && !document.querySelector('dialog[open]')", previo): break
         visto['confirmacion'] = pg68.is_visible('#confirmacion-guardado')
-        visto['completa'] = pg68.inner_text('#confirmacion-completa') if pg68.is_visible('#confirmacion-completa') else ''
         pg68.wait_for_timeout(300)
         return pg68.evaluate("SRP.formulario.estado.ultimoGuardado"), visto
     a68, v1 = arbol68(19.43260)
@@ -5555,15 +5577,22 @@ with sync_playwright() as p:
        'al guardar se sigue en «Nuevo registro», con la franja y los puntos al día: %s' % pg68.text_content('#franja-jornada-texto')[:60])
     bit68 = pg68.evaluate("(async () => (await SRP.almacen.todos('bitacora')).filter(x => x.entidad === 'jornada' && x.accion === 'EDITADO').map(x => x.detalle))()")
     ok(any('nombre' in t for t in bit68), 'la edición desde la franja deja su renglón de bitácora: %s' % bit68)
-    # El tercer árbol completa lo previsto: lo dice la misma confirmación y queda escrito en la franja
+    # El tercer árbol completa lo previsto: lo dice una ventana propia, que no se cierra sola, y queda escrito en la franja
     c68, v3 = arbol68(19.43272)
-    ok(v3['confirmacion'] and '3 árboles previstos' in v3['completa'], 'al llegar a lo previsto, la confirmación de guardado lo dice en su segundo renglón: «%s»' % v3['completa'])
+    ok('Jornada completa' in v3['completa'] and 'Registró los 3 árboles previstos en «' in v3['completa'] and 'Cerrar jornada' in v3['completa'] and 'Seguir registrando' in v3['completa'] and v3.get('tarjeta') is False and v3.get('sigue') is True,
+       'al llegar a lo previsto se abre «Jornada completa», distinta de la tarjeta de cada árbol: nombra la jornada, ofrece cerrarla o seguir y no se cierra sola: «%s»' % v3['completa'].replace(chr(10), ' | '))
     ok(pg68.is_visible('#franja-siguiente') and 'Se plantó lo previsto: 3 de 3' in pg68.inner_text('#franja-siguiente') and pg68.is_visible('#franja-guardado'),
        'la franja deja escrito que se plantó lo previsto, junto a la franja «Guardado»')
-    pg68.wait_for_timeout(4200)
-    ok(not pg68.is_visible('#confirmacion-guardado'), 'la confirmación de jornada completa también se cierra sola')
+    ok(not pg68.is_visible('#dlg-completa') and pg68.evaluate("SRP.activa.jornada && SRP.activa.jornada.estatus") == 'abierta', '«Seguir registrando» cierra la ventana y deja la jornada abierta')
+    # El cuarto árbol rebasa lo previsto: se pregunta antes de guardarlo, una sola vez por jornada
     d68, v4 = arbol68(19.43278)
-    ok(v4['completa'] == '' and 'Van 4 árboles: 1 más de los 3 previstos' in pg68.inner_text('#franja-siguiente'), 'pasado lo previsto no se repite el aviso; la franja dice cuántos van de más: %s' % pg68.inner_text('#franja-siguiente'))
+    ok('Ya registró los 3 árboles previstos' in v4['exceso'] and 'Este sería el árbol 4 de la jornada «' in v4['exceso'] and 'Registrar el árbol' in v4['exceso'] and v4['completa'] == '' and v4['confirmacion']
+       and 'Van 4 árboles: 1 más de los 3 previstos' in pg68.inner_text('#franja-siguiente'),
+       'pasado lo previsto se pregunta antes de guardar; al aceptar, el árbol se guarda con su tarjeta de siempre y la franja dice cuántos van de más: %s' % v4['exceso'].replace(chr(10), ' | ')[:160])
+    e68, v5 = arbol68(19.43284)
+    ok(v5['exceso'] == '' and v5['completa'] == '' and pg68.evaluate("(async () => (await SRP.activa.registrosDe(SRP.activa.jornada)).length)()") == 5, 'el quinto ya no pregunta: se preguntó una vez en esta jornada')
+    # El quinto sale de la jornada, para que lo que sigue parta de cuatro árboles
+    pg68.evaluate("(async () => { const r = await SRP.almacen.uno('plantaciones', '%s'); await SRP.almacen.guardarConBitacora('plantaciones', Object.assign({}, r, { estatus: 'eliminado' }), SRP.bitacora.entrada('ELIMINADO', 'plantacion', r.id)); await SRP.activa.preparar(); })()" % e68); pg68.wait_for_timeout(700)
     # Al corregir un árbol, el mapa enseña los demás de su jornada; al eliminar uno, su punto se va
     pg68.evaluate("async id => SRP.formulario.editar(await SRP.almacen.uno('plantaciones', id))", b68); pg68.wait_for_timeout(900)
     ok(pg68.evaluate(PUNTOS68) == 3 and pg68.evaluate("id => !SRP.mapa.plantados[id]", b68) and pg68.evaluate("SRP.mapa.marcador !== null") and not pg68.is_visible('#btn-franja-editar'),
@@ -6188,6 +6217,75 @@ with sync_playwright() as p:
        '«Generando reporte…» sigue a la vista pasados 7 segundos; el resultado lo sustituye, y si no hay resultado se quita: %s %s' % (f80, g80))
     ok(err80 == [], 'sin errores de consola: %s' % err80[:2])
     ctx80.close()
+
+    # ---------- ctx81: jornada completa, exceso y actualización de los árboles previstos al cerrar ----------
+    ctx81 = contexto_llano(viewport={'width':390,'height':844}, geolocation={'latitude':19.4326,'longitude':-99.1332,'accuracy':5}, permissions=['geolocation'], timezone_id='America/Mexico_City')
+    pg81 = ctx81.new_page(); err81 = []
+    pg81.on('pageerror', lambda e: err81.append(str(e)))
+    pg81.goto(BASE); pg81.wait_for_timeout(1300)
+    pg81.select_option('#sel-usuario-prueba','u-cabo-1'); pg81.click('#btn-entrar-prueba'); pg81.wait_for_timeout(900)
+    def jornada81(nombre, meta):
+        pg81.evaluate("SRP.app.mostrarVista('registrar')"); pg81.wait_for_timeout(500)
+        pg81.fill('#ini-nombre', nombre); pg81.fill('#ini-fecha', HOY); pg81.select_option('#ini-programa', 'p-refor'); pg81.fill('#ini-meta', str(meta)); pg81.click('#btn-iniciar-jornada'); pg81.wait_for_timeout(700)
+        return pg81.evaluate("SRP.activa.jornada.id")
+    def arbol81(n):
+        """Guarda un árbol; devuelve qué ventana apareció: 'completa', 'exceso' o ''. No la contesta."""
+        ctx81.set_geolocation({'latitude': 19.4326 + n * 0.00007, 'longitude': -99.1332, 'accuracy': 5})
+        pg81.click('#btn-ubicacion'); pg81.wait_for_timeout(900)
+        if not pg81.evaluate("!!SRP.formulario.estado.especieId"):
+            pg81.fill('#campo-especie', 'fres'); pg81.wait_for_timeout(200); pg81.dispatch_event('.combo-opcion[data-id="ESP-0029"]', 'mousedown'); pg81.wait_for_timeout(150)
+        pg81.click('#form-plantacion button[type=submit]')
+        for _ in range(50):
+            pg81.wait_for_timeout(150)
+            if pg81.is_visible('#dlg-resumen'): pg81.click('#btn-resumen-guardar'); pg81.wait_for_timeout(300); continue
+            if pg81.is_visible('#dlg-completa'): return 'completa'
+            if pg81.is_visible('#dlg-confirmar'): return 'exceso'
+            if pg81.is_visible('#franja-guardado') and not pg81.evaluate("!!document.querySelector('dialog[open]')") and pg81.evaluate("SRP.mapa.lat === null"): return ''
+        return '?'
+    # Jornada de 2: el segundo árbol la completa y «Cerrar jornada» la cierra sin volver a preguntar
+    j1 = jornada81('Completa B170', 2)
+    v81 = [arbol81(1), arbol81(2)]
+    t81 = pg81.inner_text('#dlg-completa')
+    pg81.click('#btn-completa-cerrar'); pg81.wait_for_timeout(1200)
+    c81 = pg81.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); return [j.estatus, j.arboles_previstos, SRP.activa.jornada === null, SRP.app.vista, !!document.querySelector('dialog[open]')]; }", j1)
+    ok(v81 == ['', 'completa'] and 'Registró los 2 árboles previstos en «Completa B170».' in t81 and c81 == ['cerrada', 2, True, 'jornadas', False],
+       '«Jornada completa» aparece con el último árbol previsto y su botón cierra la jornada de un toque, porque ya cuadra: %s %s' % (v81, c81))
+    # Jornada de 1: el segundo árbol pregunta; «Cancelar» no lo guarda y lo capturado sigue en pantalla
+    j2 = jornada81('Exceso B170', 1)
+    w81 = [arbol81(3)]
+    pg81.click('#btn-completa-seguir'); pg81.wait_for_timeout(300)
+    w81.append(arbol81(4))
+    q81 = pg81.inner_text('#dlg-confirmar')
+    pg81.click('#btn-confirmar-no'); pg81.wait_for_timeout(600)
+    n81 = pg81.evaluate("(async () => [(await SRP.activa.registrosDe(SRP.activa.jornada)).length, SRP.mapa.lat !== null, !!SRP.formulario.estado.especieId])()")
+    ok(w81 == ['completa', 'exceso'] and 'Ya registró el árbol previsto' in q81 and 'Este sería el árbol 2 de la jornada «Exceso B170»' in q81 and n81 == [1, True, True],
+       'con lo previsto ya registrado, el siguiente árbol se pregunta; al cancelar no se guarda y lo capturado sigue en pantalla: %s' % n81)
+    # Al aceptar se guarda; el tercero ya no pregunta. Al cerrar se ofrece actualizar los previstos
+    pg81.click('#form-plantacion button[type=submit]'); pg81.wait_for_timeout(600)
+    if pg81.is_visible('#dlg-resumen'): pg81.click('#btn-resumen-guardar'); pg81.wait_for_timeout(500)
+    pg81.click('#btn-confirmar-si'); pg81.wait_for_timeout(1200)
+    x81 = arbol81(5)
+    pg81.evaluate("(() => { SRP.activa.cerrarJornada(); })()"); pg81.wait_for_timeout(500)
+    p1 = pg81.inner_text('#dlg-confirmar'); pg81.click('#btn-confirmar-si'); pg81.wait_for_timeout(500)
+    p2 = pg81.inner_text('#dlg-confirmar'); b2 = [pg81.inner_text('#btn-confirmar-si').strip(), pg81.inner_text('#btn-confirmar-no').strip()]
+    pg81.click('#btn-confirmar-si'); pg81.wait_for_timeout(1500)
+    u81 = pg81.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); const b = (await SRP.bitacora.deEntidad(id)).map(x => x.detalle); return [j.estatus, j.arboles_previstos, b.some(t => /Árboles previstos: 1 → 3/.test(t)), document.getElementById('jornada-resultado').textContent]; }", j2)
+    ok(x81 == '' and '2 árboles por encima de lo previsto (3 de 1)' in p1 and 'Se previó 1 árbol y se registraron 3. ¿Actualizar los árboles previstos a 3?' in p2 and b2 == ['Actualizar a 3', 'Dejar en 1']
+       and u81[:3] == ['cerrada', 3, True] and 'Cuadra: 3 previstos y 3 registrados' in u81[3],
+       'al cerrar con árboles de más se ofrece actualizar los previstos; al aceptar, la jornada cuadra y queda en su historial: %s · %s' % (b2, u81))
+    # «Dejar en N» cierra igual y la conciliación dice cuántos sobran; la confirmación vuelve a decir «Cancelar»
+    j3 = jornada81('Sobran B170', 1)
+    arbol81(6); pg81.click('#btn-completa-seguir'); pg81.wait_for_timeout(300)
+    arbol81(7); pg81.click('#btn-confirmar-si'); pg81.wait_for_timeout(1200)
+    pg81.evaluate("(() => { SRP.activa.cerrarJornada(); })()"); pg81.wait_for_timeout(500)
+    pg81.click('#btn-confirmar-si'); pg81.wait_for_timeout(500); pg81.click('#btn-confirmar-no'); pg81.wait_for_timeout(1500)
+    d81 = pg81.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); return [j.estatus, j.arboles_previstos, document.getElementById('jornada-resultado').textContent]; }", j3)
+    pg81.evaluate("(() => { SRP.app.confirmar({ pregunta: '¿Prueba?', boton: 'Sí' }); })()"); pg81.wait_for_timeout(200)
+    ok(d81[:2] == ['cerrada', 1] and 'Sobra 1 registro' in d81[2] and pg81.inner_text('#btn-confirmar-no').strip() == 'Cancelar',
+       '«Dejar en 1» cierra la jornada sin cambiar lo previsto y la conciliación dice que sobra uno; las demás confirmaciones siguen diciendo «Cancelar»: %s' % d81)
+    pg81.click('#btn-confirmar-no')
+    ok(err81 == [], 'sin errores de consola: %s' % err81[:2])
+    ctx81.close()
 
     b.close()
 
