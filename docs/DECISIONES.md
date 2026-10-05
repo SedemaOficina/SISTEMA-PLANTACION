@@ -2801,3 +2801,11 @@
   · **Repositorio:** uno nuevo y limpio con el mismo nombre, al iniciar la fase de servidor.
   · **Excel del catálogo de especies:** se queda como el libro de origen, sin hoja de estado y usos.
   · La etiqueta «Perfil de captura» se queda como está.
+
+- **D250. Restablecimiento de contraseñas y prioridad de la jornada (bloque 177).**
+  05-10-2026. Decisiones de Liber.
+  · **Sólo la Administración global restablece contraseñas**, con una contraseña temporal de un solo
+    uso. Las coordinaciones no restablecen las de sus cabos. Se descarta la propuesta de D249.
+  · **La prioridad de la jornada también se congela** al recibirla, con la versión de la capa, igual que
+    la de cada árbol (D249). Un reporte regenerado dice la misma prioridad aunque la capa cambie.
+  · Frutales (M343) sigue abierta.

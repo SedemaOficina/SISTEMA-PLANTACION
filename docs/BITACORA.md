@@ -3377,3 +3377,16 @@ En Windows las pruebas de Python se corren con `PYTHONUTF8=1`.
 
 **Verificación:** `auditoria.py` en Windows, 140 comprobaciones, 0 hallazgos. No se corrió `prueba.py`:
 no cambió código de la aplicación.
+
+## Bloque 177 — Restablecimiento de contraseñas y prioridad de la jornada (05-10-2026)
+
+Versión de la aplicación sin cambio: 0.9.41.
+
+**Qué cambió (D250).** `docs/DECISIONES.md`: D250. `docs/FASE2-Y-TRASPASO.md`: fila 28, sólo la
+Administración global restablece contraseñas; fila 19, la prioridad de la jornada también se congela al
+recibirla; apartado 5, frutales (M343) como decisión abierta en lugar del restablecimiento por la
+coordinación.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada: sólo documentación.
+
+**Verificación:** `auditoria.py`, 140 comprobaciones, 0 hallazgos.
