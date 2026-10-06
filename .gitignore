@@ -4,3 +4,6 @@ historial/
 originales/
 # Temporales de Python
 __pycache__/
+# Dependencias y configuración local del servidor: no se suben
+servidor/node_modules/
+servidor/.env

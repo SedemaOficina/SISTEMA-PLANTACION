@@ -2853,3 +2853,31 @@
   · No queda nada por hacer en GitHub. Si el anterior se conserva como privado, se borra o no a juicio de
     Liber; mientras sea privado, nadie más lo ve.
 
+- **D254. La base de datos del servidor: esquema `srp`, cuentas y permisos (bloque 182).**
+  05-10-2026. Fase 1 de la fase de servidor.
+  · **Las tablas salen del diccionario.** `herramientas/generar_sql.py` traduce `datos/esquema.json` a
+    `servidor/sql/02_tablas.sql`: las diez tablas con sus campos en el mismo orden, tipos y nulos, su llave,
+    sus índices, una regla por cada lista de valores, «único» donde el diccionario lo dice, las llaves
+    foráneas de cada «→ tabla.id» y un comentario por tabla y campo. La auditoría falla si el guion queda
+    atrasado. Las reglas en prosa que se imponen en la base (patrón del folio y de la especie, especie o
+    especie escrita, motivo «OTRO» escrito, árboles previstos de 1 a 9999, hora, correo en minúsculas)
+    están en la herramienta.
+  · **Dos tipos del diccionario, corregidos:** `jornadas.hora` pasa de `time` a `varchar(5)` («HH:MM» o
+    vacío: el teléfono guarda '' cuando no se elige, y un `time` no lo admite); `plantaciones.especie_id`,
+    de `char(8)` a `text`, el tipo de `especies.id`, para que la llave foránea funcione. `relevos` es
+    `jsonb` en el servidor. La aplicación no usa esos tipos: no cambia su comportamiento.
+  · **Llaves foráneas diferibles** y sin borrado en cascada: lo que está en uso no se elimina. Diferibles
+    para escribir juntos, en una transacción, un árbol perdido y su sustituto, que se señalan entre sí. No
+    hay llave en `bitacora.usuario_id` (conserva el nombre por si la cuenta desaparece) ni en las listas.
+  · **Lo propio del servidor va aparte**, no en las tablas del teléfono: `credenciales` (la contraseña
+    sólo derivada con sal, temporal de un solo uso, intentos y bloqueo), `sesiones` (sólo el resumen del
+    testigo; cada cierre dice por qué) y `migraciones` (la instalación es la versión 1).
+  · **Dos cuentas:** `srp_propietario`, dueña de todo, que no se conecta, y `srp_servicio`, la del servicio:
+    lee, agrega, cambia y borra datos, pero no crea, altera, vacía ni borra tablas, y a la bitácora sólo le
+    agrega renglones. Quien administra la base no ve los datos sin asumir la cuenta propietaria. No hace
+    falta superusuario para instalar.
+  · **Instalación en una sola transacción** (`servidor/sql/instalar.sql`); falla si el esquema ya existe.
+  · **Pruebas del servidor en Node.js** (`servidor/`, `npm test`), con el cliente `pg`: instalan,
+    comparan cada tabla contra el diccionario, prueban reglas y permisos, y destruyen.
+  · **Pendiente para la adaptación de la app:** `SRP.util.generarId()` debe dar siempre un UUID v4, también
+    en su respaldo (FASE2-Y-TRASPASO, apartado 3).

@@ -17,6 +17,11 @@ puede montarse en el backend central del SIA o correr como servicio aparte, seg�
 prueba con PostgreSQL y PostGIS locales de la misma versión mayor que la del SIA. El nombre del
 proyecto, de su esquema y de su ruta es **`srp`** (D249).
 
+**Fase 1 hecha (D254):** el guion SQL del esquema `srp` está en `servidor/sql/` —las diez tablas,
+generadas del diccionario, más contraseñas, sesiones y versiones— con las cuentas `srp_propietario` y
+`srp_servicio` y sus permisos mínimos. Se instala con `servidor/sql/instalar.sql`; sus pruebas, en
+`servidor/pruebas/`. Ver `servidor/README.md`.
+
 ---
 
 ## 1. Qué construir en el servidor
@@ -73,6 +78,7 @@ no envía con la app cerrada: los datos salen cuando el cabo abre la app con se�
 
 | Pieza | Hoy (Etapa 1) | Qué hacer |
 |---|---|---|
+| Identificadores | `SRP.util.generarId()` en `js/util.js` usa `crypto.randomUUID()` y, si el navegador no lo tiene, arma un texto que no es UUID. | En el servidor los identificadores de árboles, jornadas, cuentas y bitácora son `uuid`: el respaldo debe dar siempre un UUID v4 (con `crypto.getRandomValues`). Las cuentas de prueba (`u-admin-1`…) y los datos de demostración no son UUID y nunca llegan al servidor. |
 | Datos de prueba | `ES_FICTICIO: true` en `js/config.js`: banda de datos ficticios, entrada de prueba, cambio de perfil, herramientas del pie, espejo de campos. | `ES_FICTICIO: false` apaga todo eso y usa la base real `srp_sia`, vacía y distinta de la de prueba. |
 | Acceso | `autenticar()` en `js/sesion.js` con proveedor «simulado»; con `ES_FICTICIO: false` el acceso queda cerrado. | Conectar el acceso con correo y contraseña contra la base propia de usuarios del servidor (fila 28, `AUTENTICACION.PROVEEDOR`); agregar en Cuentas el botón «Restablecer contraseña» para la Administración global. |
 | Envío | Servidor simulado en `js/envio.js`; nada sale del teléfono. | Sustituir por la API real conservando estados, avisos y reintentos. |

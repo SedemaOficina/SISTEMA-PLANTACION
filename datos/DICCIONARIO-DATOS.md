@@ -76,7 +76,7 @@ Un renglón por ejemplar plantado. Es el registro individual de campo; todo lo d
 | `punto_origen` | text | No | Sistema | dominio `punto_origen` | «Cómo se obtuvo» (sólo lectura) | Lo determina la acción con la que se colocó el punto, no una elección. Es la prueba de cómo se obtuvo la coordenada cuando no hay fotografía |
 | `gps_precision_m` | integer | Sí | Sistema | Metros, entero; null salvo con GPS | «Cómo se obtuvo» (±N m) | Existe si y sólo si punto_origen = gps: al mover el punto a mano se borra. La auditoría lo comprueba. En Fase 2 alimenta la regla de duplicados (D69) |
 | `folio` | char(13) | Sí | Servidor | `AAA-000-00000` (SRP.folio.PATRON): clave de la celda UGA y consecutivo de la celda; UNIQUE. AAA es el prefijo de la celda, no la alcaldía del árbol (difieren en el 4.3 % del territorio, D152) | «Folio»: PROVISIONAL mientras sea nulo (R1) | Con datos reales, nulo en toda la Fase 1: lo asigna el servidor una sola vez al sincronizar (R3), es inmutable (R7) y no lleva la especie ni el año (D67). El consecutivo sale de una secuencia perpetua por celda, nunca de MAX+1 (R5–R6). Con datos de prueba lo llena el servidor simulado (D110), marcado «(simulado)» en pantalla y en cada renglón del PDF; su secuencia vive en cada teléfono y dos teléfonos pueden repetir números. Sin alcaldía o con capas incompletas no se emite (D152) |
-| `especie_id` | char(8) | Sí | Catálogo | → especies.id (id_especie ESP-0000) | Especie (autocompletado por nombre común, científico y otros nombres) | Obligatoria salvo con «Otra especie», donde queda nula. El registro guarda sólo la clave; género, epíteto, distribución, forma de crecimiento, id_snib e id_enciclovida se obtienen del catálogo (D84) |
+| `especie_id` | text | Sí | Catálogo | → especies.id (id_especie ESP-0000) | Especie (autocompletado por nombre común, científico y otros nombres) | Obligatoria salvo con «Otra especie», donde queda nula. El registro guarda sólo la clave; género, epíteto, distribución, forma de crecimiento, id_snib e id_enciclovida se obtienen del catálogo (D84) |
 | `especie_otra` | text | No | Persona | Texto libre; '' salvo con «Otra especie» | Especifique la especie (aparece sólo al elegir «Otra especie») | Obligatoria cuando especie_id es nula. Se vacía al elegir una especie del catálogo |
 | `alcaldia_cve` | char(5) | Sí | Capa | dominio `alcaldia_cve` | No | Derivada del punto contra la capa de alcaldías. Llave para unir con el esquema territorio del SIA. Nula si el punto cae en un hueco de la capa (se avisa, no se impide guardar) |
 | `alcaldia` | text | Sí | Capa | Nombre de la alcaldía según la capa | Alcaldía (sólo lectura); «Sin alcaldía (territorio pendiente)» si es nula | Copia del nombre para leerse sin cargar la capa. Se rederiva cada vez que el punto se mueve; se puede rederivar en lote si la capa cambia (capa_version). Un punto dentro del margen del límite toma la alcaldía más cercana (D152) |
@@ -310,7 +310,7 @@ Una jornada de plantación: se declara antes de registrar el primer árbol (D119
 | `vehiculo_placa` | text | No | Catálogo | Copia de vehiculos.nombre (la placa) del vehículo elegido; '' sin vehículo | Vehículo (lista de placas) | Se copia del catálogo al guardar el cierre (D162); ya no se escribe a mano (D174) |
 | `vehiculo_tipo` | text | No | Catálogo | Copia de vehiculos.tipo_vehiculo del vehículo elegido; '' sin vehículo | (se ve en la ficha bajo la lista de vehículos) | Se copia del catálogo al guardar el cierre (D162); ya no se escribe a mano (D174) |
 | `vehiculo_id` | text | Sí | Persona | → vehiculos.id | Vehículo (lista de placas o botones de los más usados) | El vehículo del catálogo; nulo sin vehículo. Con él se cuentan los que más usa cada encargado (D162). Sólo del catálogo: sin «Otro vehículo» (D174) |
-| `hora` | time | No | Persona | HH:MM; '' si no se elige | Hora de finalización (selector) | — |
+| `hora` | varchar(5) | No | Persona | HH:MM, de 00:00 a 23:59; '' si no se elige | Hora de finalización (selector) | — |
 
 ## 5. Relaciones entre tablas
 
@@ -515,7 +515,7 @@ CREATE TABLE plantaciones (
   punto_origen             text           NOT NULL,
   gps_precision_m          integer        NULL,
   folio                    char(13)       NULL,
-  especie_id               char(8)        NULL,
+  especie_id               text           NULL,
   especie_otra             text           NOT NULL,
   alcaldia_cve             char(5)        NULL,
   alcaldia                 text           NULL,
@@ -698,7 +698,7 @@ CREATE TABLE jornadas (
   vehiculo_placa           text           NOT NULL,
   vehiculo_tipo            text           NOT NULL,
   vehiculo_id              text           NULL,
-  hora                     time           NOT NULL,
+  hora                     varchar(5)     NOT NULL,
   PRIMARY KEY (id)
 );
 CREATE INDEX jornadas_cabo_id ON jornadas (cabo_id);

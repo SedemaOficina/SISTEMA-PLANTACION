@@ -106,6 +106,9 @@ Las fases 1 y 2 pueden correr en paralelo. La 3 es la de mayor esfuerzo y la que
 
 **Listo en este repositorio**
 
+- Guion SQL del esquema `srp` (fase 2 de este plan, del lado del SRP): `servidor/sql/instalar.sql`, probado
+  en una base local; ver `servidor/README.md` (D254).
+
 - Aplicación completa de captura, jornadas, reportes, supervisión, catálogos, cuentas y permisos, con
   pruebas automáticas y auditorías (`pruebas/`).
 - Modelo de datos: `datos/esquema.json`, diccionario (`datos/DICCIONARIO-DATOS.md`) con el borrador de
@@ -117,8 +120,7 @@ Las fases 1 y 2 pueden correr en paralelo. La 3 es la de mayor esfuerzo y la que
 
 **Falta, del lado del SRP**
 
-- El servicio (`servidor/`): guion SQL, usuarios y sesión, permisos, recepción, folio, bandeja de
-  duplicados, y la adaptación de la aplicación para usarlo. Paquete de instalación con instrucciones
+- El servicio (`servidor/`): usuarios y sesión, permisos, recepción, folio, bandeja de duplicados, y la adaptación de la aplicación para usarlo. Paquete de instalación con instrucciones
   para el SIA.
 - Paquete de traspaso (apartado 7 de `FASE2-Y-TRASPASO.md`): especificación consolidada, comentarios sin
   historia, documentación de proceso al archivo. Se hace cuando la Etapa 1 deje de cambiar.

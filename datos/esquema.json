@@ -309,7 +309,7 @@
         },
         {
           "campo": "especie_id",
-          "tipo": "char(8)",
+          "tipo": "text",
           "nulo": true,
           "origen": "Catálogo",
           "dominio": "→ especies.id (id_especie ESP-0000)",
@@ -1681,10 +1681,10 @@
         },
         {
           "campo": "hora",
-          "tipo": "time",
+          "tipo": "varchar(5)",
           "nulo": false,
           "origen": "Persona",
-          "dominio": "HH:MM; '' si no se elige",
+          "dominio": "HH:MM, de 00:00 a 23:59; '' si no se elige",
           "pantalla": "Hora de finalización (selector)",
           "regla": ""
         }

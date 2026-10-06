@@ -335,6 +335,10 @@ with sync_playwright() as p:
     # Y el esquema que lee el navegador (D150, D175)
     js_actual = open(os.path.join(APP, 'js', 'esquema.js'), encoding='utf-8').read()
     mirar(generar_diccionario.generar_js(esquema) == js_actual, 'js/esquema.js está regenerado a partir de esquema.json (lo lee js/referencias.js)', 'corra herramientas/generar_diccionario.py')
+    # Y las tablas del servidor, que son las mismas
+    import subprocess as _sp, sys as _sys
+    sql_al_dia = _sp.run([_sys.executable, os.path.join(APP, 'herramientas', 'generar_sql.py'), '--revisar'], capture_output=True).returncode == 0
+    mirar(sql_al_dia, 'servidor/sql/02_tablas.sql está generado a partir de esquema.json: las tablas del servidor son las del teléfono', 'corra herramientas/generar_sql.py')
     # Capas (D152): toda geometría válida después de redondear, o el cruce falla sin avisar
     try:
         from shapely.geometry import shape as _forma

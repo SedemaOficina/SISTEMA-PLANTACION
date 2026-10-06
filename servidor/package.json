@@ -1,0 +1,16 @@
+{
+  "name": "srp-servidor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Servicio del Sistema de Registro de Plantaciones (SRP): recepción, acceso y consulta, sobre PostgreSQL con PostGIS.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test --test-concurrency=1 \"pruebas/**/*.test.js\""
+  },
+  "dependencies": {
+    "pg": "^8.23.1"
+  }
+}

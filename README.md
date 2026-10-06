@@ -185,9 +185,12 @@ herramientas/           Generan archivos del sitio a partir de originales/ y de 
   huella_capas.py       assets/capas/ → datos/HUELLA-CAPAS.md y .json; con un archivo, compara contra otra fuente
   generar_especies.py   Excel de especies del SIA → assets/catalogos/catalogo-especies.js
   generar_diccionario.py  datos/esquema.json → datos/DICCIONARIO-DATOS.md y js/esquema.js
+  generar_sql.py        datos/esquema.json → servidor/sql/02_tablas.sql (las tablas del servidor)
   extraer_iconos.py     Set de iconografía CDMX (.ai) → trazados para js/iconos.js
 
 pruebas/                prueba.py (recorrido completo), auditoria.py (auditoría), auditoria_css.py (hoja de estilos), revisar.py (presentación) y requisitos.txt (bibliotecas)
+
+servidor/               El servicio del SRP (Node.js y PostgreSQL con PostGIS): guiones SQL del esquema srp y sus pruebas; ver servidor/README.md
 
 originales/             Capas, catálogos e iconografía tal como llegaron; no se editan ni se publican
                         (.gitignore, D164); ver originales/LEEME.md

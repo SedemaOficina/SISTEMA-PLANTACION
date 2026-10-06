@@ -151,7 +151,7 @@ SRP.ESQUEMA = {
    ],
    [
     "especie_id",
-    "char(8)",
+    "text",
     true,
     null,
     "especies"
@@ -1177,7 +1177,7 @@ SRP.ESQUEMA = {
    ],
    [
     "hora",
-    "time",
+    "varchar(5)",
     false,
     null,
     null

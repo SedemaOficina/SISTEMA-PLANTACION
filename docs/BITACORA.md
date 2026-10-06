@@ -3470,3 +3470,26 @@ pendiente de los originales en el historial, resuelto. `docs/FASE2-Y-TRASPASO.md
 reales en los 31 commits (ninguna); ningún archivo de `originales/` ni de `assets/fuentes/` en el
 historial; autores de los commits; lista de repositorios públicos de la cuenta; sitio en línea (HTTP 200).
 No se pudo ver si el repositorio anterior existe como privado: lo ve sólo la cuenta de Liber.
+
+## Bloque 182 — Fase 1 del servidor: la base de datos (05-10-2026)
+
+Versión de la aplicación sin cambio: 0.9.42. Primer bloque con código del servidor.
+
+**Qué cambió (D254).** Nuevo `servidor/`: `sql/00_cuentas.sql`, `01_esquema.sql`, `02_tablas.sql`
+(generado), `03_acceso.sql`, `04_permisos.sql`, `instalar.sql` y `destruir_local.sql`; `package.json` con el
+cliente `pg`; `pruebas/apoyo.js` y `pruebas/esquema.test.js`; `README.md`. Nuevo
+`herramientas/generar_sql.py`. `datos/esquema.json`: `jornadas.hora` a `varchar(5)` y
+`plantaciones.especie_id` a `text`; diccionario y `js/esquema.js` regenerados. `pruebas/auditoria.py`:
+comprueba que el guion de tablas esté al día. `.gitignore`: `servidor/node_modules/` y `servidor/.env`.
+`README.md`, `docs/FASE2-Y-TRASPASO.md` y `docs/PLAN-TRASPASO-SIA.md` al día.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada.
+
+**Verificación:** en la base local (PostgreSQL con PostGIS, cuenta sin superusuario): `npm test`, 7 de 7
+—instalación en una transacción, las diez tablas iguales al diccionario campo por campo, segunda
+instalación rechazada sin dejar nada a medias, la cuenta que administra no ve los datos, la cuenta del
+servicio escribe una cadena completa (institución, cuenta, catálogos, jornada, árboles, un sustituto y su
+original, bitácora), trece reglas rechazan lo inválido, ocho operaciones prohibidas al servicio,
+borrado en cascada de contraseña y sesiones, destrucción y reinstalación limpias—. La instalación con
+`psql -f instalar.sql` también, a mano. `auditoria.py`: 143, 0 hallazgos. No se corrió `prueba.py`: la
+aplicación sólo cambió dos tipos en `js/esquema.js`, que no usa.
