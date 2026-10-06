@@ -12,7 +12,7 @@ export const RAIZ = path.join(SERVIDOR, '..');
 
 /* La contraseña del archivo de contraseñas: renglones «servidor:puerto:base:cuenta:contraseña», con *
    como comodín y \ para escapar «:» y «\». Gana el primer renglón que coincide. */
-function contrasenaDe({ host, port, database, user }) {
+export function contrasenaDe({ host, port, database, user }) {
   const archivo = process.env.PGPASSFILE || (process.platform === 'win32'
     ? path.join(process.env.APPDATA || '', 'postgresql', 'pgpass.conf')
     : path.join(process.env.HOME || '', '.pgpass'));

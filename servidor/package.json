@@ -8,10 +8,13 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node --test --test-concurrency=1 pruebas/esquema.test.js pruebas/datos.test.js",
-    "cargar": "node cargar.js"
+    "test": "node --test --test-concurrency=1 pruebas/esquema.test.js pruebas/datos.test.js pruebas/acceso.test.js",
+    "cargar": "node cargar.js",
+    "iniciar": "node iniciar.js",
+    "cuenta-inicial": "node cuenta-inicial.js"
   },
   "dependencies": {
+    "express": "^5.2.1",
     "pg": "^8.23.1"
   }
 }

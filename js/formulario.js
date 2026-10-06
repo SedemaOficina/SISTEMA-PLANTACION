@@ -530,7 +530,7 @@ SRP.formulario = {
       // Nombre común, científico y tipo de distribución del catálogo (D123)
       ['Especie', esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : '') +
         (esp.distribucion ? '<span class="revision-distribucion">' + esc(esp.distribucion) + '</span>' : ''), 'especie'],
-      ['Programa', esc(SRP.ref.nombreCatalogo(v.programa_id)) + '<span class="revision-sub">El de la jornada</span>', null],
+      ['Programa', esc(SRP.ref.nombreCatalogo(v.programa_id)), null],
       ['Jornada', esc(this.nombreJornada()), null],
       ['Fecha de plantación', esc(SRP.util.formatearFecha(v.fecha_plantacion)), this.el('caja-fecha-arbol').hidden ? null : 'fecha'],
       ['Alcaldía', esc(SRP.ref.alcaldia(v.alcaldia)), null],
@@ -826,7 +826,7 @@ SRP.formulario = {
   avisarCompleta(previstos) {
     const j = SRP.activa.jornada, d = this.el('dlg-completa');
     this.el('dlg-completa-icono').innerHTML = SRP.ICONOS.svg('palomita', 'grande');
-    this.el('dlg-completa-texto').textContent = (previstos === 1 ? 'Registró el árbol previsto' : 'Registró los ' + previstos + ' árboles previstos') + (j ? ' en «' + j.nombre + '».' : '.');
+    this.el('dlg-completa-texto').textContent = (previstos === 1 ? 'Registró el árbol previsto' : 'Registró los ' + previstos + ' árboles previstos') + (j ? ' en la jornada «' + j.nombre + '».' : '.');
     this.el('btn-completa-cerrar').innerHTML = SRP.ICONOS.svg('candado', 'medio') + '<span>Cerrar jornada</span>';
     this.el('btn-completa-seguir').innerHTML = SRP.ICONOS.svg('mas', 'medio') + '<span>Seguir registrando</span>';
     if (!this._completaLista) {

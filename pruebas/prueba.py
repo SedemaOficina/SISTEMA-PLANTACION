@@ -1650,8 +1650,8 @@ with sync_playwright() as p:
     pg.click('#btn-ini-hoy'); pg.wait_for_timeout(100)
     ok(pg.locator('#ini-fecha-error').count()==0,'«Hoy» también quita el error de la fecha')
     ok(pg.locator('#ini-meta-ayuda').count()==0 and 'ayuda' not in (pg.get_attribute('#ini-meta','aria-describedby') or '')
-       and pg.inner_text('#ini-ubicacion-ayuda').strip()=='Calle y número, entre calles o tramo.' and pg.get_attribute('#ini-ubicacion','aria-describedby')=='ini-ubicacion-ayuda',
-       'la meta ya no lleva línea de ayuda; la dirección pide calle y número, entre calles o tramo, enlazada al campo (D165)')
+       and pg.locator('#ini-ubicacion-ayuda').count()==0 and pg.get_attribute('#ini-ubicacion','placeholder')=='Calle y número, entre calles o tramo',
+       'la meta ya no lleva línea de ayuda; la dirección pide calle y número, entre calles o tramo, en su texto de ejemplo')
     # Contador: aparece al pasar del 80 %, dice el límite al llegar
     pg.fill('#ini-comentarios','x'*390); pg.wait_for_timeout(100)
     c1=pg.is_hidden('#ini-comentarios-contador')
@@ -5104,8 +5104,8 @@ with sync_playwright() as p:
     i0=pg61.inner_text('#ini-prioridad')
     pg61.click('#btn-ini-detectar'); pg61.wait_for_timeout(1200)
     i1=pg61.inner_text('#ini-prioridad')
-    e61=pg61.evaluate("() => { const c = document.getElementById('ini-prioridad'), t = [...c.querySelectorAll('.pri-tramo')]; const es = c.querySelector('.pri-tramo[data-es]'); const a = es.querySelector('i').getBoundingClientRect().height, o = t.find(x => x !== es).querySelector('i').getBoundingClientRect().height; return [t.map(x => x.textContent), es.textContent, a > o, c.querySelector('.pri-escala').getAttribute('aria-label'), c.querySelector('.pri-escala-dicho').textContent, document.documentElement.scrollWidth <= window.innerWidth]; }")
-    ok('Detecte la ubicación' in i0 and pg61.locator('#ini-prioridad .pri-tramo[data-es]').count()==1 and e61==[['Muy baja','Baja','Media','Alta','Muy alta'], 'Alta', True, 'Prioridad alta, nivel 4 de 5', 'Alta · Vicente Guerrero', True],
+    e61=pg61.evaluate("() => { const c = document.getElementById('ini-prioridad'), t = [...c.querySelectorAll('.pri-tramo')]; const es = c.querySelector('.pri-tramo[data-es]'); const a = es.querySelector('i').getBoundingClientRect().height, o = t.find(x => x !== es).querySelector('i').getBoundingClientRect().height; return [t.map(x => x.textContent), es.textContent, a > o, c.querySelector('.pri-escala').getAttribute('aria-label'), !c.querySelector('.pri-escala-dicho'), document.documentElement.scrollWidth <= window.innerWidth]; }")
+    ok('Detecte la ubicación' in i0 and pg61.locator('#ini-prioridad .pri-tramo[data-es]').count()==1 and e61==[['Muy baja','Baja','Media','Alta','Muy alta'], 'Alta', True, 'Prioridad alta, nivel 4 de 5', True, True],
        'al iniciar la jornada se ve la escala de cinco niveles, de menor a mayor, con el de la colonia resaltado y dicho con palabras: %s' % e61)
     pg61.fill('#ini-nombre','Prioridad B143'); pg61.fill('#ini-fecha', HOY); pg61.select_option('#ini-programa','p-refor'); pg61.fill('#ini-meta','10'); pg61.click('#btn-iniciar-jornada'); pg61.wait_for_timeout(700)
     j61=pg61.evaluate("SRP.activa.jornada.id")
@@ -5646,7 +5646,7 @@ with sync_playwright() as p:
     ok(any('nombre' in t for t in bit68), 'la edición desde la franja deja su renglón de bitácora: %s' % bit68)
     # El tercer árbol completa lo previsto: lo dice una ventana propia, que no se cierra sola, y queda escrito en la franja
     c68, v3 = arbol68(19.43272)
-    ok('Jornada completa' in v3['completa'] and 'Registró los 3 árboles previstos en «' in v3['completa'] and 'Cerrar jornada' in v3['completa'] and 'Seguir registrando' in v3['completa'] and v3.get('tarjeta') is False and v3.get('sigue') is True,
+    ok('Jornada completa' in v3['completa'] and 'Registró los 3 árboles previstos en la jornada «' in v3['completa'] and 'Cerrar jornada' in v3['completa'] and 'Seguir registrando' in v3['completa'] and v3.get('tarjeta') is False and v3.get('sigue') is True,
        'al llegar a lo previsto se abre «Jornada completa», distinta de la tarjeta de cada árbol: nombra la jornada, ofrece cerrarla o seguir y no se cierra sola: «%s»' % v3['completa'].replace(chr(10), ' | '))
     ok(pg68.is_visible('#franja-siguiente') and 'Se plantó lo previsto: 3 de 3' in pg68.inner_text('#franja-siguiente') and pg68.is_visible('#franja-guardado'),
        'la franja deja escrito que se plantó lo previsto, junto a la franja «Guardado»')
@@ -6327,7 +6327,7 @@ with sync_playwright() as p:
     t81 = pg81.inner_text('#dlg-completa')
     pg81.click('#btn-completa-cerrar'); pg81.wait_for_timeout(1200)
     c81 = pg81.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); return [j.estatus, j.arboles_previstos, SRP.activa.jornada === null, SRP.app.vista, !!document.querySelector('dialog[open]')]; }", j1)
-    ok(v81 == ['', 'completa'] and 'Registró los 2 árboles previstos en «Completa B170».' in t81 and c81 == ['cerrada', 2, True, 'jornadas', False],
+    ok(v81 == ['', 'completa'] and 'Registró los 2 árboles previstos en la jornada «Completa B170».' in t81 and c81 == ['cerrada', 2, True, 'jornadas', False],
        '«Jornada completa» aparece con el último árbol previsto y su botón cierra la jornada de un toque, sin otra ventana, y lleva a su ficha: %s %s' % (v81, c81))
     # Jornada de 1: el segundo árbol pregunta; «Cancelar» no lo guarda y lo capturado sigue en pantalla
     j2 = jornada81('Exceso B170', 1)
@@ -6662,6 +6662,38 @@ with sync_playwright() as p:
     pg86.click('#btn-completa-seguir'); pg86.wait_for_timeout(300)
     ok(err86 == [], 'sin errores de consola: %s' % err86[:2])
     ctx86.close()
+
+    # ---------- ctx87: Registrar jornada sin repeticiones; «Jornada completa» con «Cerrar jornada» primero ----------
+    ctx87 = contexto_llano(viewport={'width':390,'height':844}, geolocation={'latitude':19.4326,'longitude':-99.1332,'accuracy':5}, permissions=['geolocation'], timezone_id='America/Mexico_City')
+    pg87 = ctx87.new_page(); err87 = []
+    pg87.on('pageerror', lambda e: err87.append(str(e)))
+    pg87.goto(BASE); pg87.wait_for_timeout(1300)
+    entrar_como(pg87, 'u-cabo-1'); pg87.wait_for_timeout(900)
+    pg87.evaluate("SRP.app.mostrarVista('registrar')"); pg87.wait_for_timeout(500)
+    pg87.click('#btn-ini-detectar'); pg87.wait_for_timeout(1500)
+    r87 = pg87.evaluate("""() => { const vis = el => !!el && el.getClientRects().length > 0;
+      const espejos = [...document.querySelectorAll('#vista-registrar .espejo, #vista-registrar [data-espejo]')].filter(vis);
+      return [document.querySelectorAll('#ini-prioridad .pri-tramo[data-es]').length, !document.querySelector('#ini-prioridad .pri-escala-dicho'),
+        document.getElementById('ini-ubicacion').placeholder, !document.getElementById('ini-ubicacion-ayuda'),
+        [...document.querySelectorAll('#vista-registrar summary')].filter(vis).filter(x => x.textContent.includes('Campos que viajan a la base')).length,
+        vis(document.getElementById('espejo-campos'))]; }""")
+    ok(r87 == [1, True, 'Calle y número, entre calles o tramo', True, 1, False],
+       'Registrar jornada: la escala resalta la prioridad sin repetirla debajo, la dirección lleva su ayuda como texto de ejemplo y sólo se ve la sección de campos de la jornada: %s' % r87)
+    iniciar_jornada(pg87, 'Orden B186'); pg87.wait_for_timeout(500)
+    pg87.evaluate("SRP.formulario.avisarCompleta(3)"); pg87.wait_for_timeout(400)
+    c87 = pg87.evaluate("""() => { const c = document.getElementById('btn-completa-cerrar').getBoundingClientRect(), s = document.getElementById('btn-completa-seguir').getBoundingClientRect();
+      return [document.getElementById('dlg-completa-texto').textContent, c.top < s.top || (c.top === s.top && c.left < s.left)]; }""")
+    pg87.click('#btn-completa-seguir'); pg87.wait_for_timeout(300)
+    ok(c87 == ['Registró los 3 árboles previstos en la jornada «Orden B186».', True], '«Jornada completa» dice «en la jornada» y ofrece primero «Cerrar jornada»: %s' % c87)
+    # «Especifique la especie» se marca obligatoria; «Revise antes de guardar» no repite de dónde sale el programa
+    pg87.fill('#campo-especie', 'zzzz'); pg87.wait_for_timeout(200); pg87.dispatch_event('#op-otra', 'mousedown'); pg87.wait_for_timeout(200)
+    o87 = pg87.evaluate("!!document.querySelector('label[for=campo-otra-especie] .obligatorio')")
+    pg87.fill('#campo-otra-especie', 'Árbol raro'); pg87.click('#btn-ubicacion'); pg87.wait_for_timeout(1100)
+    pg87.click('#form-plantacion button[type=submit]'); pg87.wait_for_timeout(900)
+    v87 = pg87.evaluate("(() => { const d = document.getElementById('dlg-resumen'); return [d.open, d.textContent.includes('El de la jornada'), d.textContent.includes('Reforestación Urbana')]; })()")
+    ok(o87 and v87 == [True, False, True], '«Especifique la especie» lleva su asterisco y la revisión dice el programa sin «El de la jornada»: %s · %s' % (o87, v87))
+    ok(err87 == [], 'sin errores de consola: %s' % err87[:2])
+    ctx87.close()
 
     b.close()
 

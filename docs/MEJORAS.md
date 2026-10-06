@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.9.45 (Bloque 185)»**.
+Al pie de cualquier pantalla: **«Versión 0.9.46 (Bloque 186)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -453,6 +453,11 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M455 | Liber | Al iniciar la jornada en el teléfono, la captura empieza arriba, con la jornada a la vista; antes quedaba al fondo, donde estaba «Iniciar jornada» | Media | 0.9.45 (B185) | Nuevo registro › Iniciar jornada | D257 |
 | M456 | Liber | «Jornada completa» sin el marco azul alrededor del título, y sin estirarse cuando se cierra el teclado | Media | 0.9.45 (B185) | Nuevo registro › ventana «Jornada completa» | D257 |
 | M457 | Liber | «Cancelar edición» y «Cancelar sustitución» del mismo ancho que «Guardar», debajo de él | Baja | 0.9.45 (B185) | Editar árbol; Sustituir árbol | D257 |
+| M458 | Liber | Registrar jornada: la escala de prioridad ya no repite debajo «Media · colonia» (el nivel va resaltado y en negritas); la ayuda de la dirección pasa al texto de ejemplo del campo | Baja | 0.9.46 (B186) | Nuevo registro › Registrar jornada | D258 |
+| M459 | Liber | Defecto: en Registrar jornada se veía también la sección «Campos que viajan a la base» del árbol (con sustituye_id, foto_id…), aunque su formulario estuviera oculto | Media | 0.9.46 (B186) | Nuevo registro › Registrar jornada | D258 |
+| M460 | Liber | «Especifique la especie» lleva el asterisco de obligatorio (ya lo era) | Baja | 0.9.46 (B186) | Nuevo registro › Especie › Otra especie | D258 |
+| M461 | Liber | «Revise antes de guardar» dice el programa sin «El de la jornada» | Baja | 0.9.46 (B186) | Revise antes de guardar | D258 |
+| M462 | Liber | «Jornada completa»: «Cerrar jornada» primero y el texto «Registró los N árboles previstos en la jornada «…»» | Media | 0.9.46 (B186) | Ventana «Jornada completa» | D258 |
 
 ## 2. Por hacer
 

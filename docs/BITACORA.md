@@ -3557,3 +3557,39 @@ pintarse; pasan solas dos veces); ahora esperan a que la pantalla esté lista. S
 0 hallazgos. El estiramiento de «Jornada completa» no se pudo reproducir en Chromium (ocurre en iPhone al
 cerrarse el teclado): la prueba fuerza la ventana más alta y comprueba que el contenido no se separe. No
 probado en teléfono por Claude.
+
+## Bloque 186 — Registrar jornada sin repeticiones; «Jornada completa» con el cierre primero (06-10-2026)
+
+Versión 0.9.46. Peticiones de Liber.
+
+**Qué cambió (D258).** `js/prioritarias.js`: `htmlEscala()` ya no escribe el nivel y la colonia debajo de la
+escala si hay nivel. `index.html`: la dirección de la jornada sin línea de ayuda y con su texto de ejemplo;
+asterisco en «Especifique la especie»; en «Jornada completa», «Cerrar jornada» antes que «Seguir
+registrando». `js/formulario.js`: sin «El de la jornada» en la revisión; «en la jornada «…»» en «Jornada
+completa». `css/estilos.css`: el espejo del árbol se oculta con su formulario; fuera la regla de negritas del
+texto bajo la escala. Pruebas: `ctx87`, y las comprobaciones de esos textos al día.
+
+**Pantalla: qué se agregó y qué se quitó.** Se quitó: «Media · colonia» bajo la escala, la línea de ayuda de
+la dirección, «El de la jornada» en la revisión y la sección «Campos que viajan a la base» del árbol mientras
+se registra la jornada. Se agregó: el asterisco de «Especifique la especie». Cambió el orden de los botones de
+«Jornada completa» y su texto.
+
+**Verificación:** las secciones afectadas pasan solas (10, 25, 5 y 4, con `ctx87` nueva). Una primera corrida
+completa dio fallas de conexión y de Supervisión mientras en el mismo equipo corrían las pruebas del servidor
+(scrypt ocupa el procesador): la corrida completa debe correr sola. Corrida completa sola: 1,385
+comprobaciones, 0 fallas, sin errores de consola. `auditoria.py`: 143, 0 hallazgos. No probado en teléfono por Claude.
+
+## Bloque 187 — Fase 2 del servidor: acceso con cuentas propias (06-10-2026)
+
+Versión de la aplicación sin cambio. Sólo el servidor.
+
+**Qué cambió (D259).** `servidor/src/`: `config.js`, `contrasenas.js`, `sesiones.js`, `conexion.js`,
+`acceso.js`, `cuentas.js` y `app.js`. `servidor/iniciar.js` y `servidor/cuenta-inicial.js`. `servidor/bd.js`
+comparte la lectura del archivo de contraseñas. `servidor/package.json`: Express 5 y las órdenes
+`iniciar` y `cuenta-inicial`. `servidor/pruebas/acceso.test.js`. `servidor/README.md` y
+`docs/FASE2-Y-TRASPASO.md` al día.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada: la aplicación todavía no usa el servicio (fase 6).
+
+**Verificación:** `npm test` en el servidor, 21 de 21 (esquema 7, datos 5, acceso 9). La primera cuenta,
+creada en una base recién instalada y rechazada la segunda vez. No probado contra el servidor del SIA.

@@ -598,6 +598,8 @@ fieldset.campo { margin-inline: 0; }
    Es una herramienta de trabajo, no parte del sistema: gris, sin guinda y separado por una
    línea, para que nadie lo confunda con un dato que el personal de campo deba leer. */
 .espejo { margin-top: var(--e-6); padding-top: var(--e-4); border-top: 1px dashed var(--borde-control); color: var(--gris); }
+/* El espejo del árbol va con su formulario: mientras se registra la jornada, el del árbol no se ve */
+.registrar-columnas[hidden] ~ .espejo { display: none; }
 .espejo-encabezado { font-size: var(--t-m); color: var(--gris); display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); }
 .espejo-marca { padding: 0 var(--e-2); border-radius: var(--radio-control); background: var(--fondo-suave); font-family: var(--fuente-cuerpo); font-size: var(--t-xs); font-weight: 400; }
 .espejo-ayuda { font-size: var(--t-xs); line-height: 1.6; }
@@ -1450,7 +1452,6 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .pri-tramo[data-es="true"] i { height: 26px; outline: 2px solid var(--texto); outline-offset: 1px; }
 .pri-tramo[data-es="true"] span { color: var(--texto); font-weight: 700; }
 .pri-escala-dicho { color: var(--gris); }
-.pri-escala-dicho b { color: var(--texto); font-weight: 500; }
 /* Mover a otra jornada: buscador y día, lado a lado cuando caben */
 .mover-filtros { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: var(--e-2) var(--e-3); margin-bottom: var(--e-2); }
 .pri-insignia { display: inline-flex; align-items: center; font-size: var(--t-xs); color: var(--gris); }

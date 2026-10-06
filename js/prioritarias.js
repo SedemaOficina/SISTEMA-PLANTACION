@@ -132,13 +132,14 @@ SRP.prioritarias = {
   textoJornada(p) { return p ? 'Prioridad ' + p.texto.toLowerCase() : 'Sin dato de prioridad'; },
 
   /* LA ESCALA COMPLETA, CON EL NIVEL DE LA COLONIA RESALTADO. Los cinco niveles en orden, de menor a
-     mayor, cada uno con su color y su nombre; el de la colonia crece, lleva marca y se dice con
-     palabras debajo, para que no dependa del color. `p`: lo que devuelve `de()`, o null. */
+     mayor, cada uno con su color y su nombre; el de la colonia crece, lleva marca y su nombre va en
+     negritas, para que no dependa del color. Debajo sólo se escribe algo cuando no hay nivel que
+     resaltar. `p`: lo que devuelve `de()`, o null. */
   htmlEscala(p) {
     const esc = SRP.util.escapar, niveles = this.NIVELES.slice().reverse();
     return '<span class="pri-escala" role="img" aria-label="' + esc(p ? 'Prioridad ' + p.texto.toLowerCase() + ', nivel ' + (p.prioridad + 1) + ' de 5' : 'Sin dato de prioridad') + '">' +
       niveles.map(([n, t]) => '<span class="pri-tramo"' + (p && p.prioridad === n ? ' data-es="true"' : '') + '><i class="pri-nivel-' + n + '"></i><span>' + esc(t) + '</span></span>').join('') + '</span>' +
-      '<span class="pri-escala-dicho">' + (p ? '<b>' + esc(p.texto) + '</b>' + (p.colonia ? ' · ' + esc(p.colonia) : '') : 'Sin dato en la capa de prioridad') + '</span>';
+      (p ? '' : '<span class="pri-escala-dicho">Sin dato en la capa de prioridad</span>');
   },
 
   /* La marca de prioridad de una tarjeta: muestra del color y texto. La prioridad es de la colonia,

@@ -6,8 +6,9 @@ independiente, para montarse en el servidor de aplicaciones del SIA (Node.js con
 servicio aparte, sobre PostgreSQL con PostGIS. Qué debe hacer está en `docs/FASE2-Y-TRASPASO.md`; cómo
 se llega al SIA, en `docs/PLAN-TRASPASO-SIA.md`.
 
-Estado: **la base de datos, con sus capas territoriales y sus datos de arranque**. El servicio en sí
-(acceso, recepción, folio) viene en las fases siguientes.
+Estado: **la base de datos, con sus capas territoriales y sus datos de arranque, y el acceso con cuentas
+propias**. La recepción de jornadas y árboles, los permisos por perfil y el folio vienen en las fases
+siguientes.
 
 ## La base de datos
 
@@ -62,6 +63,37 @@ Y el administrador le pone contraseña a `srp_servicio` (`ALTER ROLE srp_servici
 entrega, fuera del repositorio, a quien configure el servicio. La conexión del servicio a la base va
 cifrada.
 
+## El servicio: acceso y cuentas
+
+`npm run iniciar` lo arranca solo, en `SRP_PUERTO` (3100), bajo `/api/srp`. Para montarlo en el backend
+central del SIA se usa `crearRutas({ grupo, config })` de `src/app.js`. La configuración, toda por
+variables de entorno, está explicada en `src/config.js`.
+
+| Ruta | Qué hace | Quién |
+|---|---|---|
+| `POST /acceso/entrar` | Correo y contraseña; abre la sesión con una cookie sólo HTTP, del mismo sitio y sólo para la API | Cualquiera |
+| `POST /acceso/salir` | Cierra la sesión de este equipo | Con sesión |
+| `GET /acceso/yo` | La cuenta de la sesión y si debe cambiar su contraseña | Con sesión |
+| `POST /acceso/contrasena` | Cambia la contraseña; cierra las demás sesiones de la cuenta | Con sesión |
+| `POST /cuentas` | Alta con contraseña temporal, que se responde una sola vez | Administración global |
+| `POST /cuentas/:id/restablecer` | Otra contraseña temporal; cierra las sesiones de la cuenta | Administración global |
+| `POST /cuentas/:id/estado` | Activa o desactiva; desactivar cierra sus sesiones | Administración global |
+
+- **Contraseñas:** sólo se guarda lo que deriva scrypt, con sal, nunca la contraseña. Al menos 10
+  caracteres, con letras y números, sin el correo. No hay servicio de correo: la Administración global
+  da una temporal de un solo uso (vale 72 horas) y la persona la cambia al primer acceso; mientras tanto
+  no puede hacer nada más.
+- **Bloqueo:** 5 intentos fallidos seguidos bloquean la cuenta 15 minutos, o hasta que la Administración
+  restablezca la contraseña. Una cuenta que no existe y una contraseña equivocada responden lo mismo.
+- **Sesiones:** vencen tras 12 horas sin uso o a los 7 días. Una sesión vencida responde
+  `SESION_VENCIDA`: la aplicación vuelve a pedir la contraseña sin perder lo capturado. Desactivar la
+  cuenta o su institución, o cambiar o restablecer la contraseña, cierra sus sesiones.
+- **Primera cuenta:** en una base recién instalada, quien la administra crea la primera Administración
+  global con `npm run cuenta-inicial -- <correo> "<nombre completo>" "<cargo>"`; la contraseña temporal
+  se escribe una sola vez en pantalla. Las demás cuentas se dan de alta desde la aplicación.
+
+Los plazos, el largo mínimo y el bloqueo son parámetros (`src/config.js`): se cambian sin tocar código.
+
 ## Cargar datos
 
 `npm run cargar -- <orden>`:
@@ -101,6 +133,9 @@ Las pruebas:
 
 - `pruebas/esquema.test.js`: instala en limpio, comprueba que las tablas sean las del diccionario, que las
   reglas rechacen lo inválido y que la cuenta del servicio tenga sólo sus permisos, y destruye.
+- `pruebas/acceso.test.js`: levanta el servicio y lo usa como la aplicación: entrar, salir, alta con
+  temporal, cambio obligatorio, bloqueo, restablecimiento, desactivación, institución desactivada,
+  vencimiento de la sesión y de la temporal.
 - `pruebas/datos.test.js`: carga todo y comprueba que cupo, que las capas estén completas y, sobre todo,
   que PostGIS ubique cada árbol y cada jornada igual que la aplicación (alcaldía, colonia y celda UGA).
   Se omite si no hay exportación de la aplicación.

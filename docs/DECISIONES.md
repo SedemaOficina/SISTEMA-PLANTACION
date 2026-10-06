@@ -2931,3 +2931,43 @@
     mide lo que su contenido; en iPhone, al cerrarse el teclado, llegó a tomar por un instante todo el alto
     con huecos entre sus partes: si un navegador vuelve a estirarla, el contenido queda junto arriba.
   · **«Cancelar edición» y «Cancelar sustitución»** ocupan el mismo ancho que «Guardar», debajo de él.
+
+- **D258. Registrar jornada sin repeticiones y «Jornada completa» con el cierre primero (bloque 186).**
+  06-10-2026. Peticiones de Liber.
+  · **Escala de prioridad:** el nivel de la colonia va resaltado y su nombre en negritas; ya no se repite
+    debajo «Media · colonia» (la colonia ya está en su campo). Debajo sólo se escribe algo cuando no hay
+    nivel que resaltar («Detecte la ubicación…», «Sin dato en la capa de prioridad»).
+  · **Dirección de la jornada:** «Calle y número, entre calles o tramo» pasa al texto de ejemplo del campo;
+    se quita la línea de ayuda. Sustituye a lo que D165 decía de esa línea.
+  · **«Campos que viajan a la base»:** en Registrar jornada se veían dos, la de la jornada y la del árbol
+    (con sus campos: sustituye_id, motivo_sustitucion, foto_id…), porque la del árbol estaba fuera de su
+    formulario y no se ocultaba con él. Ahora sólo se ve la del formulario que está a la vista. Cada una
+    enseña los campos de su tabla que no están en pantalla, con lo que se capturó y lo que el sistema pone
+    por detrás.
+  · **«Especifique la especie»** lleva el asterisco de obligatorio; ya no se podía guardar vacía.
+  · **«Revise antes de guardar»** dice el programa sin «El de la jornada».
+  · **«Jornada completa»:** «Cerrar jornada» va primero y «Seguir registrando» después; el texto dice
+    «Registró los N árboles previstos en la jornada «…»».
+
+- **D259. Fase 2 del servidor: acceso con cuentas propias (bloque 187).**
+  06-10-2026. Lo decidido en D249 y D250, construido en `servidor/src/`.
+  · **Servicio en Express**, montable en el backend central del SIA (`crearRutas`) o solo (`npm run
+    iniciar`). La cuenta de la base es `srp_servicio`; en desarrollo, la de administración local la asume
+    al conectar (`SRP_ROL`).
+  · **Contraseñas:** scrypt (N 32768, r 8, p 1) con sal de 16 bytes; el texto guardado lleva algoritmo y
+    parámetros. Nueva contraseña: al menos 10 caracteres, letras y números, sin el correo, distinta de la
+    anterior. Temporal de doce caracteres sin letras que se confunden, en tres grupos, para dictarla.
+  · **Sesión:** testigo al azar de 32 bytes en una cookie sólo HTTP, `SameSite=Strict`, con ruta `/api/srp`
+    y segura en el SIA; la base guarda su resumen SHA-256. Vence tras 12 horas sin uso o a los 7 días.
+    Se confía en un salto de intermediario para saber que la petición llegó cifrada.
+  · **Bloqueo:** 5 intentos fallidos seguidos, 15 minutos. Una cuenta inexistente y una contraseña
+    equivocada responden igual y tardan lo mismo. Lo demás (cuenta o institución desactivada, temporal
+    vencida) sólo se dice con la contraseña correcta.
+  · **Cuentas:** alta, restablecimiento y activación, sólo por la Administración global, con las reglas del
+    formulario de Usuarios y su renglón de bitácora. La temporal se responde una sola vez y vale 72 horas.
+    La Administración no se desactiva a sí misma. La edición de los demás datos de la cuenta va con los
+    permisos (fase 3).
+  · **Primera cuenta** de una base nueva: `npm run cuenta-inicial`, que crea también la Secretaría y el área
+    del SIA si faltan, y se niega si ya hay Administración global.
+  · Plazos, largo mínimo y bloqueo son parámetros de entorno; se moverán a Configuración › Parámetros
+    cuando los parámetros vivan en la base.
