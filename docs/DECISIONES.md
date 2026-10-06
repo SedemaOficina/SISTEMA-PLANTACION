@@ -62,7 +62,7 @@
 - ~~Icono de la app instalada~~ Resuelto en D90: emblema del Programa de Reforestación Urbana en blanco sobre guinda
 - ~~Tipografías sin señal~~ Resuelto en D87: Cabin y Roboto en `vendor/fuentes/` (woff2, ~110 KB)
 
-- [pendiente] **Los originales del SIA siguen en el historial de git del repositorio público.** Desde
+- [resuelto, D253] **Los originales del SIA siguen en el historial de git del repositorio público.** Desde
   el bloque 102 (D164) ya no se publican ni se suben (`originales/`, fuera de git), pero quien
   revise commits anteriores en GitHub todavía puede descargarlos: capas en GeoJSON, Excel de
   especies, set de iconografía en .ai y metadatos. Opciones: (a) dejarlos así, si no preocupa que
@@ -2842,3 +2842,14 @@
     especie que dio de alta la Administración queda con el fruto «Por determinar» y la paleta por
     declarar al editarla.
   · Contar los árboles con fruto comestible en Supervisión e informes queda para cuando lean del servidor.
+
+- **D253. El repositorio limpio ya existe desde el 02-10-2026 (bloque 181).**
+  05-10-2026. Comprobado al iniciar la fase de servidor, para cumplir lo que D249 pedía hacer en ella.
+  · El repositorio público `SISTEMA-PLANTACION` se creó de nuevo el 02-10-2026, con el mismo nombre, a
+    partir del commit «repositorio sin historial previo» (Bloque 148). El sitio conservó su dirección.
+  · Su historial (31 commits al 05-10-2026) no trae archivos originales del SIA ni ninguna de las 16
+    placas reales; todos los commits van a nombre de `SedemaOficina`, sin correo personal. Nadie lo ha
+    copiado (*forks*: 0). El repositorio anterior ya no está entre los públicos de la cuenta.
+  · No queda nada por hacer en GitHub. Si el anterior se conserva como privado, se borra o no a juicio de
+    Liber; mientras sea privado, nadie más lo ve.
+

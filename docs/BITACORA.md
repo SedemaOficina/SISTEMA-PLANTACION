@@ -3454,3 +3454,19 @@ en los datos de demostración (se cierra antes el aviso que tapaba el botón de 
 
 **Verificación:** corrida completa en Windows, sola: 1,371 comprobaciones, 0 fallas, sin errores de
 consola (última sección `ctx84`). Es la primera corrida completa limpia en el equipo de Liber.
+
+## Bloque 181 — El repositorio limpio ya existía (05-10-2026)
+
+Versión de la aplicación sin cambio: 0.9.42. Sólo documentación.
+
+**Qué cambió (D253).** Al preparar el repositorio limpio que pedía D249 se comprobó que ya existe: el
+público se creó de nuevo el 02-10-2026 (Bloque 148), con el mismo nombre. `docs/DECISIONES.md`: D253 y el
+pendiente de los originales en el historial, resuelto. `docs/FASE2-Y-TRASPASO.md` y
+`docs/PLAN-TRASPASO-SIA.md`: el repositorio deja de figurar como pendiente.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada.
+
+**Verificación:** fecha de creación del repositorio en la API pública de GitHub; búsqueda de las 16 placas
+reales en los 31 commits (ninguna); ningún archivo de `originales/` ni de `assets/fuentes/` en el
+historial; autores de los commits; lista de repositorios públicos de la cuenta; sitio en línea (HTTP 200).
+No se pudo ver si el repositorio anterior existe como privado: lo ve sólo la cuenta de Liber.

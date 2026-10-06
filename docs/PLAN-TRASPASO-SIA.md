@@ -120,7 +120,6 @@ Las fases 1 y 2 pueden correr en paralelo. La 3 es la de mayor esfuerzo y la que
 - El servicio (`servidor/`): guion SQL, usuarios y sesión, permisos, recepción, folio, bandeja de
   duplicados, y la adaptación de la aplicación para usarlo. Paquete de instalación con instrucciones
   para el SIA.
-- Repositorio nuevo y limpio con el mismo nombre (D249).
 - Paquete de traspaso (apartado 7 de `FASE2-Y-TRASPASO.md`): especificación consolidada, comentarios sin
   historia, documentación de proceso al archivo. Se hace cuando la Etapa 1 deje de cambiar.
 - Prueba en iPhone y Android reales.
@@ -171,7 +170,7 @@ Las fases 1 y 2 pueden correr en paralelo. La 3 es la de mayor esfuerzo y la que
 | Reenvíos que duplican | Doble conteo de árboles | El `id` de cada registro es la clave de idempotencia (S-01); se prueba en el piloto |
 | iPhone no envía con la aplicación cerrada | Datos retenidos en el teléfono | La aplicación lo avisa; el procedimiento de cierre de jornada pide abrirla con señal |
 | Administración sólo por red privada | Una falla de acceso detiene despliegues, no la captura | La aplicación sigue trabajando sin señal y envía después |
-| Repositorio público con historial | Archivos originales y, en un tramo, placas reales siguen en el historial | Repositorio nuevo y limpio con el mismo nombre al iniciar la fase de servidor (D249); el repositorio se archiva y se hace privado en la fase 6 |
+| Repositorio público con historial | Archivos originales y, en un tramo, placas reales en el historial | Atendido: el repositorio es nuevo y limpio desde el 02-10-2026 (D253); se archiva y se hace privado en la fase 6 |
 | Contraseñas sin servicio de correo | Una persona que olvida su contraseña no puede recuperarla sola | Restablecimiento por la Administración global con contraseña temporal de un solo uso |
 
 ## 9. Siguiente paso

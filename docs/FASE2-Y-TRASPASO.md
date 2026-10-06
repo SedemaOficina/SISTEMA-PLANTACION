@@ -106,9 +106,9 @@ no envía con la app cerrada: los datos salen cuando el cabo abre la app con se�
 
 Ya decididas (D249 a D251): colonias del IECM 2022 y capas verificadas; mapa base con CARTO y Esri; doble conteo entre instituciones (fila 8), histórico cargado a nombre de la
 Administración global (fila 16), prioridad congelada con el árbol y con la jornada (fila 19, D250), acceso con cuentas propias
-y restablecimiento sólo por la Administración global (fila 28, D250) y repositorio: uno nuevo y limpio con el mismo nombre al iniciar la fase de servidor, para
-que los archivos originales del SIA y las placas reales que quedaron en el historial no pasen a él; el
-sitio conserva su dirección.
+y restablecimiento sólo por la Administración global (fila 28, D250). Repositorio: el nuevo y limpio, con el
+mismo nombre, existe desde el 02-10-2026 (Bloque 148); su historial no trae archivos originales del SIA ni
+placas reales, y el sitio conservó su dirección (D253).
 
 ## 6. Lista de verificación antes de entregar al SIA
 
