@@ -497,6 +497,8 @@ SRP.activa = {
     this.mostrarInicio(false);
     await this.preparar();
     SRP.util.anunciar('Jornada «' + nombre + '» iniciada. Ya puede registrar árboles.');
+    // La captura empieza arriba, con la jornada a la vista: «Iniciar jornada» quedaba al fondo del formulario
+    window.scrollTo(0, 0);
     SRP.formulario.el('btn-ubicacion').focus({ preventScroll: true });
   },
 

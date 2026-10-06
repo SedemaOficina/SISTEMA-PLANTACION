@@ -2921,3 +2921,13 @@
     especie escrita—. La ubicación ya llegaba vacía y sigue así.
   · **Se descartaron:** la fotografía obligatoria al sustituir (la fotografía nunca es obligatoria) y una
     marca en el mapa de dónde estaba el árbol perdido (Liber prefiere el mapa sin ella).
+
+- **D257. Ajustes de captura en el teléfono (bloque 185).**
+  05-10-2026. Reportes de Liber al probar en iPhone.
+  · **Al iniciar la jornada la pantalla vuelve arriba:** quedaba a la altura de «Iniciar jornada», al fondo del
+    formulario, y se veían «Guardar» y el pie. El foco sigue en «Registrar ubicación del punto».
+  · **«Jornada completa»:** su título recibe el foco para el lector de pantalla, sin el marco de foco, como
+    los títulos de las vistas (aplica a todo título de nivel 2 que recibe foco por programa). La ventana
+    mide lo que su contenido; en iPhone, al cerrarse el teclado, llegó a tomar por un instante todo el alto
+    con huecos entre sus partes: si un navegador vuelve a estirarla, el contenido queda junto arriba.
+  · **«Cancelar edición» y «Cancelar sustitución»** ocupan el mismo ancho que «Guardar», debajo de él.

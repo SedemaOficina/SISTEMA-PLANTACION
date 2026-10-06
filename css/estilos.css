@@ -147,7 +147,7 @@ img { max-width: 100%; }
 input, select, button, textarea { font: inherit; }
 :focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
 /* Los títulos reciben foco por programa al cambiar de vista (para el lector de pantalla); no son controles */
-h1[tabindex="-1"]:focus { outline: none; }
+h1[tabindex="-1"]:focus, h2[tabindex="-1"]:focus { outline: none; }
 
 /* ========== 3. ESTRUCTURA ========== */
 .encabezado { border-bottom: 1px solid var(--borde-suave); }
@@ -358,6 +358,8 @@ fieldset.campo { margin-inline: 0; }
   padding: var(--e-3) 0 calc(var(--e-3) + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--borde-suave); box-shadow: var(--sombra-pie);
 }
+/* «Cancelar edición» o «Cancelar sustitución», del mismo ancho que «Guardar», debajo de él */
+.barra-guardar .btn-cancelar { width: 100%; }
 /* JORNADAS (D112): tarjetas de jornada, revisión con mapa numerado, conciliación y lista de puntos */
 .lista-jornadas { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e-3); }
 /* Ficha de jornada (D128): nombre → cuándo → estado → dónde → cuánto → quién */
@@ -846,7 +848,9 @@ dialog::backdrop { background: var(--velo-oscuro); }
 /* Segundo renglón de la confirmación: con este árbol se llegó a lo previsto para la jornada */
 /* Jornada completa: ventana propia, con borde de acento y botones; no se confunde con la tarjeta verde de cada árbol */
 .dlg-completa { width: min(26rem, calc(100vw - 2 * var(--e-4))); border: 2px solid var(--acento); text-align: center; }
-.dlg-completa[open] { display: grid; justify-items: center; gap: var(--e-2); }
+/* Mide lo que su contenido: en iPhone, al cerrarse el teclado, la ventana llegó a tomar por un instante
+   todo el alto de la pantalla; si un navegador vuelve a estirarla, el contenido no se reparte en huecos */
+.dlg-completa[open] { display: grid; justify-items: center; align-content: start; gap: var(--e-2); height: fit-content; }
 .completa-icono { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: var(--acento); color: var(--fondo); }
 .completa-titulo { font-family: var(--fuente-titulo); font-size: var(--t-xl); color: var(--acento); line-height: 1.2; margin: 0; }
 .completa-texto { font-size: var(--t-m); font-weight: 500; margin: 0; overflow-wrap: anywhere; }

@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.9.44 (Bloque 184)»**.
+Al pie de cualquier pantalla: **«Versión 0.9.45 (Bloque 185)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -450,6 +450,9 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M452 | Liber | Opacidad de las colonias de la jornada en los mapas de Nuevo registro y de la ficha de la jornada: barra de 10 a 100 %, la misma en los dos y recordada en el teléfono | Media | 0.9.44 (B184) | Nuevo registro y ficha de la jornada › botón de capas | D256 |
 | M453 | Liber | La sustitución se ve en morado, el color del sustituto: franja fija «Sustituyendo árbol» con especie, folio y motivo del perdido, aviso y marco morados, «Guardar sustituto» y «Cancelar sustitución» | Media | 0.9.44 (B184) | Registros › Sustituir árbol | D256 |
 | M454 | Liber | Al sustituir ya no llega precargada la especie del árbol perdido: el primer botón rápido es «La misma: …», que hay que tocar a propósito | Alta | 0.9.44 (B184) | Registros › Sustituir árbol › Especie | D256 |
+| M455 | Liber | Al iniciar la jornada en el teléfono, la captura empieza arriba, con la jornada a la vista; antes quedaba al fondo, donde estaba «Iniciar jornada» | Media | 0.9.45 (B185) | Nuevo registro › Iniciar jornada | D257 |
+| M456 | Liber | «Jornada completa» sin el marco azul alrededor del título, y sin estirarse cuando se cierra el teclado | Media | 0.9.45 (B185) | Nuevo registro › ventana «Jornada completa» | D257 |
+| M457 | Liber | «Cancelar edición» y «Cancelar sustitución» del mismo ancho que «Guardar», debajo de él | Baja | 0.9.45 (B185) | Editar árbol; Sustituir árbol | D257 |
 
 ## 2. Por hacer
 

@@ -3537,3 +3537,23 @@ panel de campo no tiene opacidad (se actualizaron a la regla nueva; su sección 
 Supervisión y Jornadas que pasan solas (18 de 18 y 4 de 4) y no tocan lo cambiado. Segunda corrida
 completa: 1,377 comprobaciones, 0 fallas, sin errores de consola. `auditoria.py`: 143, 0 hallazgos;
 `auditoria_css.py`: 0 hallazgos. No probado en teléfono por Claude.
+
+## Bloque 185 — Ajustes de captura en el teléfono (05-10-2026)
+
+Versión 0.9.45. Reportes de Liber al probar en iPhone.
+
+**Qué cambió (D257).** `js/jornada-activa.js`: al guardar la jornada nueva, la página vuelve arriba antes de
+poner el foco en la ubicación. `css/estilos.css`: los títulos de nivel 2 con foco por programa no dibujan el
+marco; «Jornada completa» mide lo que su contenido y lo mantiene junto arriba; el botón de cancelar de la
+barra de guardar ocupa todo el ancho. Pruebas: `ctx86`, y `ctx85` mide los dos botones.
+
+**Pantalla: qué se agregó y qué se quitó.** Se quitó el marco azul del título de «Jornada completa». Cambió
+la posición al iniciar una jornada y el ancho de «Cancelar edición» y «Cancelar sustitución».
+
+**Verificación:** una primera corrida completa se detuvo por dos comprobaciones de tiempo ajenas a este
+bloque (la búsqueda de jornadas y la pestaña de instituciones leían la pantalla antes de terminar de
+pintarse; pasan solas dos veces); ahora esperan a que la pantalla esté lista. Segunda corrida completa:
+1,381 comprobaciones, 0 fallas, sin errores de consola. `auditoria.py`: 143, 0 hallazgos; `auditoria_css.py`:
+0 hallazgos. El estiramiento de «Jornada completa» no se pudo reproducir en Chromium (ocurre en iPhone al
+cerrarse el teclado): la prueba fuerza la ventana más alta y comprueba que el contenido no se separe. No
+probado en teléfono por Claude.

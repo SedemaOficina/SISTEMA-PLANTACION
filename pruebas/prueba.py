@@ -4404,8 +4404,15 @@ with sync_playwright() as p:
     pg53.evaluate("SRP.app.mostrarVista('jornadas')"); pg53.wait_for_timeout(700)
     pg53.click('#jornada-atajos .chip[data-atajo=todas]'); pg53.wait_for_timeout(400)
     def busca53(t):
+        # La lista se filtra mientras se escribe: se lee cuando dos lecturas seguidas coinciden
         pg53.fill('#jornada-buscar', t); pg53.wait_for_timeout(500)
-        return sorted(x.split('\n')[0] for x in pg53.eval_on_selector_all('#lista-jornadas .jornada','l=>l.map(x=>x.innerText)'))
+        leer = lambda: sorted(x.split('\n')[0] for x in pg53.eval_on_selector_all('#lista-jornadas .jornada','l=>l.map(x=>x.innerText)'))
+        antes = leer()
+        for _ in range(15):
+            pg53.wait_for_timeout(200); ahora = leer()
+            if ahora == antes: break
+            antes = ahora
+        return antes
     b53={t: busca53(t) for t in ['parque','PARQUE NORTE','camellon','hundido sección','']}
     ok(b53['parque']==['Parque Hundido, sección norte','Parque de los Venados'] and b53['PARQUE NORTE']==['Parque Hundido, sección norte'] and b53['camellon']==['Camellón Insurgentes']
        and b53['hundido sección']==['Parque Hundido, sección norte'] and len(b53[''])==3,
@@ -4566,7 +4573,8 @@ with sync_playwright() as p:
     ok(pg55.evaluate("document.documentElement.scrollWidth")<=390,'los filtros nuevos no se salen de lado en el teléfono')
     # Catálogos › Instituciones: buscar y filtrar por tipo, agrupadas por tipo
     pg55.evaluate("SRP.app.mostrarVista('catalogos')"); pg55.wait_for_timeout(500)
-    pg55.click('#cat-tipos .chip[data-tipo=organizacion]'); pg55.wait_for_timeout(500)
+    pg55.click('#cat-tipos .chip[data-tipo=organizacion]')
+    esperar(pg55, "(() => { const f = [...document.querySelectorAll('#tabla-catalogo tbody tr[data-id]')]; return f.length > 0 && f.every(tr => (SRP.ref.catalogoPorId[tr.dataset.id] || {}).tipo === 'organizacion'); })()", 5000)
     orden55=pg55.evaluate("[...document.querySelectorAll('#tabla-catalogo tbody tr')].map(tr => SRP.ref.catalogoPorId[tr.dataset.id].tipo_organizacion)")
     idx55=[['Alcaldía','Gobierno de la CDMX','Empresa privada','Organización civil'].index(t) for t in orden55]
     ok(pg55.is_visible('#cat-buscar') and pg55.inner_text('#cat-buscar-etiqueta')=='Buscar institución' and pg55.is_visible('#cat-filtro-tipo') and idx55==sorted(idx55) and len(idx55)==pg55.evaluate("SRP.ref.deTipo('organizacion', false).length"),
@@ -6608,6 +6616,13 @@ with sync_playwright() as p:
         [...document.querySelectorAll('#especies-recientes .chip')].map(b => b.textContent + ':' + b.getAttribute('aria-pressed'))]; }""")
     ok(s85 == [None, '', 'Sustituyendo árbol', True, True, True, 'Guardar sustituto', 'Cancelar sustitución', ['La misma: Fresno:false']],
        'al sustituir, la franja y el marco son morados, la especie llega vacía y el primer botón rápido es «La misma»: %s' % s85)
+    # «Cancelar sustitución» mide lo mismo que «Guardar sustituto», en computadora y en teléfono
+    anchos85 = []
+    for vp in ({'width': 1280, 'height': 900}, {'width': 390, 'height': 844}):
+        pg85.set_viewport_size(vp); pg85.wait_for_timeout(300)
+        anchos85.append(pg85.evaluate("(() => { const g = document.getElementById('btn-revisar').getBoundingClientRect(), c = document.getElementById('btn-cancelar-edicion').getBoundingClientRect(); return [Math.round(g.width) === Math.round(c.width), Math.round(g.left) === Math.round(c.left), c.top >= g.bottom]; })()"))
+    pg85.set_viewport_size({'width': 1280, 'height': 900}); pg85.wait_for_timeout(300)
+    ok(anchos85 == [[True, True, True], [True, True, True]], '«Cancelar sustitución» va debajo de «Guardar sustituto» y mide lo mismo, en computadora y en teléfono: %s' % anchos85)
     pg85.click('#btn-ubicacion'); pg85.wait_for_timeout(900)
     pg85.click('#form-plantacion button[type=submit]'); pg85.wait_for_timeout(500)
     e85 = [pg85.is_visible('#campo-especie-error'), pg85.evaluate("SRP.app.vista")]
@@ -6621,6 +6636,32 @@ with sync_playwright() as p:
     ok(c85 == ['', 'Editando registro', 'Cancelar edición'], 'al cancelar, el formulario deja el morado y sus textos de sustitución: %s' % c85)
     ok(err85 == [], 'sin errores de consola: %s' % err85[:2])
     ctx85.close()
+
+    # ---------- ctx86: al iniciar la jornada en el teléfono, la captura empieza arriba ----------
+    ctx86 = contexto_llano(viewport={'width':390,'height':844}, is_mobile=True, has_touch=True, timezone_id='America/Mexico_City')
+    pg86 = ctx86.new_page(); err86 = []
+    pg86.on('pageerror', lambda e: err86.append(str(e)))
+    pg86.goto(BASE); pg86.wait_for_timeout(1300)
+    entrar_como(pg86, 'u-cabo-1'); pg86.wait_for_timeout(900)
+    pg86.evaluate("SRP.app.mostrarVista('registrar')"); pg86.wait_for_timeout(500)
+    pg86.fill('#ini-nombre', 'Arriba B185'); pg86.fill('#ini-fecha', HOY); pg86.select_option('#ini-programa', 'p-refor'); pg86.fill('#ini-meta', '5')
+    pg86.evaluate("document.getElementById('btn-iniciar-jornada').scrollIntoView({ block: 'center' })"); pg86.wait_for_timeout(200)
+    abajo86 = pg86.evaluate("scrollY")
+    pg86.click('#btn-iniciar-jornada'); esperar(pg86, "!!SRP.activa.jornada", 3000); pg86.wait_for_timeout(600)
+    a86 = pg86.evaluate("[scrollY, document.activeElement.id, document.getElementById('franja-jornada') ? document.getElementById('franja-jornada').getBoundingClientRect().top < innerHeight : true]")
+    ok(abajo86 > 300 and a86 == [0, 'btn-ubicacion', True], 'al iniciar la jornada en el teléfono la pantalla vuelve arriba, con la jornada a la vista, y el foco queda en la ubicación: %s desde %s' % (a86, abajo86))
+    # «Jornada completa»: el título recibe el foco sin marco, y si la ventana se estira, el contenido no se reparte
+    pg86.evaluate("SRP.formulario.avisarCompleta(5)"); pg86.wait_for_timeout(400)
+    c86 = pg86.evaluate("""() => { const d = document.getElementById('dlg-completa'), t = document.getElementById('dlg-completa-titulo'), x = document.getElementById('dlg-completa-texto');
+      const pegados = () => Math.round(x.getBoundingClientRect().top - t.getBoundingClientRect().bottom);
+      const normal = [Math.round(d.getBoundingClientRect().height), pegados()];
+      d.style.height = '90vh'; const estirada = pegados(); d.style.height = '';
+      return [document.activeElement.id, getComputedStyle(t).outlineStyle, normal[1], estirada, normal[0] < innerHeight * 0.75]; }""")
+    ok(c86[0] == 'dlg-completa-titulo' and c86[1] == 'none' and c86[3] == c86[2] and c86[4],
+       '«Jornada completa» pone el foco en su título sin marco, mide lo que su contenido y, si se estira, el contenido no se separa: %s' % c86)
+    pg86.click('#btn-completa-seguir'); pg86.wait_for_timeout(300)
+    ok(err86 == [], 'sin errores de consola: %s' % err86[:2])
+    ctx86.close()
 
     b.close()
 
