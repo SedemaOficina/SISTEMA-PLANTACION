@@ -587,6 +587,11 @@ fieldset.campo { margin-inline: 0; }
   margin: 0 0 var(--e-2); padding: var(--e-2) var(--e-4); border-radius: var(--radio-chico); background: var(--acento); color: var(--fondo); font-size: var(--t-s); }
 .edicion-franja[hidden] { display: none; }
 .vista-registrar[data-editando="true"] .registrar-columnas { border: 2px solid var(--acento); border-radius: var(--radio); padding: var(--e-3); }
+/* Sustitución: lo mismo en morado, el color del árbol sustituto en el mapa */
+.vista-registrar[data-sustituyendo="true"] .edicion-franja { background: var(--sustituto); }
+.vista-registrar[data-sustituyendo="true"] .registrar-columnas { border: 2px solid var(--sustituto); border-radius: var(--radio); padding: var(--e-3); }
+.vista-registrar[data-sustituyendo="true"] .franja-edicion { background: var(--sustituto-fondo); border-left-color: var(--sustituto); }
+.vista-registrar[data-sustituyendo="true"] .chip-misma { border-color: var(--sustituto); }
 /* ESPEJO DE CAMPOS — SE ELIMINA AL CERRAR LA ETAPA 1 (bloque completo, de aquí al cierre).
    Es una herramienta de trabajo, no parte del sistema: gris, sin guinda y separado por una
    línea, para que nadie lo confunda con un dato que el personal de campo deba leer. */

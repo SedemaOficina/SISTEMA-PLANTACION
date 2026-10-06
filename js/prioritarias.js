@@ -227,14 +227,16 @@ SRP.prioritarias = {
     const id = 'pri-panel-' + (this.controles.length + 1), esc = SRP.util.escapar;
     const caja = L.DomUtil.create('div', 'leaflet-control pri-capas');
     /* En campo el botón de capas abre lo que se puede elegir del mapa: el mapa base —satélite o
-       calles— y si se ven las colonias de la jornada. No hay niveles ni opacidad que elegir. */
+       calles—, si se ven las colonias de la jornada y con cuánta opacidad. No hay niveles que elegir. */
     if (o.simple) {
       caja.innerHTML = '<button type="button" class="pri-capas-boton" aria-expanded="false" aria-controls="' + id + '" aria-label="Capas del mapa: mapa base y colonias de la jornada" title="Capas del mapa">' + SRP.ICONOS.svg('capas', 'medio') + '</button>' +
         '<div id="' + id + '" class="pri-capas-panel pri-capas-campo" hidden>' +
         '<fieldset class="pri-capas-base"><legend>Mapa base</legend>' +
         [['satelite', 'Satélite'], ['calles', 'Calles']].map(([v, t]) => '<label class="pri-capas-fila"><input type="radio" name="' + id + '-base" data-pri="base" value="' + v + '"><span>' + t + '</span></label>').join('') + '</fieldset>' +
-        '<label class="pri-capas-fila pri-capas-colonias"><input type="checkbox" data-pri="ver"><span>Colonias de la jornada</span></label></div>';
+        '<div class="pri-capas-colonias"><label class="pri-capas-fila"><input type="checkbox" data-pri="ver"><span>Colonias de la jornada</span></label>' +
+        '<label class="pri-capas-opacidad"><span>Opacidad <output></output></span><input type="range" data-pri="opacidad" min="10" max="100" step="5"></label></div></div>';
       this.armarPanel(caja, m);
+      caja.addEventListener('input', (e) => { if (e.target.dataset.pri === 'opacidad') this.alCambiar(o.grupo, e.target); });
       caja.addEventListener('change', (e) => {
         const que = e.target.dataset.pri;
         if (que === 'base') { SRP.mapa.cambiarBase(e.target.value); this.refrescar(); SRP.util.anunciarSilencioso(e.target.value === 'calles' ? 'Mapa de calles.' : 'Mapa de satélite.'); }
@@ -302,12 +304,16 @@ SRP.prioritarias = {
       this.pintar(m, ver, o.interactiva, o.intervenidas);
       const pane = m.getPane('prioritarias');
       if (o.simple) {
-        if (pane) pane.style.opacity = String(this.inicial(o.grupo).opacidad);
+        if (pane) pane.style.opacity = String(e.opacidad);
         const capaS = this.capas.get(m), pintados = capaS ? capaS.nivelesPintados : null;
         // Sin colonia que pintar no se ofrece encenderla ni hay colores que explicar
         const hayColonias = this.hay() && !((pintados && !pintados.size) || (!capaS && ver));
         caja.querySelector('.pri-capas-colonias').hidden = !hayColonias;
         caja.querySelector('[data-pri="ver"]').checked = ver;
+        // La opacidad, la misma en los mapas de campo; con las colonias apagadas no hay qué atenuar
+        const op = caja.querySelector('[data-pri="opacidad"]');
+        op.value = Math.round(e.opacidad * 100); op.disabled = !ver;
+        caja.querySelector('output').textContent = Math.round(e.opacidad * 100) + ' %';
         caja.querySelectorAll('[data-pri="base"]').forEach(r => { r.checked = r.value === SRP.mapa.baseElegida(); });
         caja.querySelector('.pri-capas-boton').dataset.activa = String(ver && hayColonias);
         /* Bajo el mapa, la simbología: qué prioridad dice cada color de las colonias que se ven */

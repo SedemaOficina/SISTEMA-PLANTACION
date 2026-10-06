@@ -4684,8 +4684,9 @@ with sync_playwright() as p:
     if pg57.is_visible('#dlg-confirmar'): pg57.click('#btn-confirmar-si'); pg57.wait_for_timeout(800)
     reabre57=pg57.evaluate("async (id) => (await SRP.almacen.uno('jornadas', id)).estatus", jor57)=='abierta'
     f57=pg57.evaluate("[SRP.app.vista, document.getElementById('titulo-registrar').textContent, document.getElementById('edicion-aviso').textContent, SRP.formulario.estado.especieId, SRP.activa.jornada && SRP.activa.jornada.id]")
-    ok(reabre57 and f57[0]=='registrar' and f57[1]=='Sustituir árbol' and 'Sustituto del Ahuehuete' in f57[2] and 'otro: lo atropelló una grúa' in f57[2] and f57[3]=='ESP-0070' and f57[4]==jor57,
-       'la jornada cerrada se reabre y el formulario queda listo para el sustituto, en esa jornada y con la misma especie: %s' % f57[2])
+    ok(reabre57 and f57[0]=='registrar' and f57[1]=='Sustituir árbol' and 'Sustituto del Ahuehuete' in f57[2] and 'otro: lo atropelló una grúa' in f57[2] and f57[3] is None and f57[4]==jor57,
+       'la jornada cerrada se reabre y el formulario queda listo para el sustituto, en esa jornada y sin la especie del perdido: %s' % f57[2])
+    pg57.click('#especies-recientes .chip-misma'); pg57.wait_for_timeout(150)
     pg57.click('#btn-ubicacion'); pg57.wait_for_timeout(700)
     dup57=pg57.evaluate("async () => (await SRP.formulario.avisos(SRP.formulario.valores())).filter(a => a.tipo === 'duplicado').length")
     ok(dup57==0,'el árbol perdido no cuenta como «posible duplicado» del sustituto, aunque esté en el mismo punto')
@@ -4828,6 +4829,7 @@ with sync_playwright() as p:
     if pg58.is_visible('#dlg-confirmar'): pg58.click('#btn-confirmar-si'); pg58.wait_for_timeout(900)   # la jornada estaba cerrada: se pregunta antes de reabrirla
     f58=pg58.evaluate("[document.getElementById('campo-fecha').value, !document.getElementById('caja-fecha-arbol').hidden, document.getElementById('edicion-aviso').textContent]")
     ok(f58[0]==D(2) and f58[1] and 'plantado el ' + TXT(D(2)) in f58[2],'el formulario del sustituto llega con esa fecha, a la vista: %s' % f58)
+    pg58.click('#especies-recientes .chip-misma'); pg58.wait_for_timeout(150)
     pg58.click('#btn-ubicacion'); pg58.wait_for_timeout(700)
     pg58.click('#form-plantacion button[type=submit]'); pg58.wait_for_timeout(800)
     ok(not pg58.is_visible('#dlg-confirmar'),'la sustitución no vuelve a preguntar por la jornada de otro día: su fecha ya se eligió')
@@ -5002,14 +5004,14 @@ with sync_playwright() as p:
     pg60.fill('#ini-nombre','Prioritarias B142'); pg60.fill('#ini-fecha', HOY); pg60.select_option('#ini-programa','p-refor'); pg60.fill('#ini-meta','10'); pg60.click('#btn-iniciar-jornada'); pg60.wait_for_timeout(700)
     pg60.click('#btn-ubicacion'); pg60.wait_for_timeout(1500)
     f60=pg60.evaluate("""() => { const c = document.querySelector('#mapa .pri-capas'); const b = c.querySelector('.pri-capas-boton'); const r = b.getBoundingClientRect(), m = document.getElementById('mapa').getBoundingClientRect();
-      return { sobre: r.top >= m.top && r.bottom <= m.bottom && r.right <= m.right && r.left >= m.left, tam: [Math.round(r.width), Math.round(r.height)], simple: !c.querySelector('[data-pri=nivel]') && !c.querySelector('[data-pri=opacidad]') && c.querySelector('.pri-capas-panel').hidden, activa: [b.dataset.activa, String(c.querySelector('[data-pri=ver]').checked)],
+      return { sobre: r.top >= m.top && r.bottom <= m.bottom && r.right <= m.right && r.left >= m.left, tam: [Math.round(r.width), Math.round(r.height)], simple: !c.querySelector('[data-pri=nivel]') && !!c.querySelector('[data-pri=opacidad]') && c.querySelector('.pri-capas-panel').hidden, activa: [b.dataset.activa, String(c.querySelector('[data-pri=ver]').checked)],
       trazos: document.querySelectorAll('#mapa path.pri-colonia').length, nivel: document.querySelectorAll('#mapa path.pri-nivel-3').length, opacidad: getComputedStyle(document.querySelector('#mapa .pane-prioritarias')).opacity,
       textos: [document.getElementById('dato-prioridad'), document.getElementById('mapa-prioritarias'), document.querySelector('#vista-registrar .campo-prioridad')].map(x => !!x), enPunto: /[Pp]rioridad/.test(document.getElementById('campo-punto').textContent),
       debajo: Number(getComputedStyle(document.querySelector('#mapa .pane-prioritarias')).zIndex) < Number(getComputedStyle(document.querySelector('#mapa .leaflet-marker-pane')).zIndex),
       color: [0, 1, 2, 3, 4].map(n => { const i = document.createElement('i'); i.className = 'pri-muestra pri-nivel-' + n; document.body.appendChild(i); const c = getComputedStyle(i).backgroundColor; i.remove(); return c; }) }; }""")
     ok(f60['trazos']==1 and f60['nivel']==1 and f60['debajo'] and f60['opacidad']=='0.45' and f60['activa']==['true','true'] and f60['color']==['rgb(249, 231, 191)','rgb(244, 197, 110)','rgb(232, 138, 46)','rgb(194, 66, 27)','rgb(127, 29, 18)'],
        'el mapa del árbol pinta de entrada sólo el polígono de la colonia de la jornada, con el color de su prioridad y debajo del marcador: %s' % [f60['trazos'], f60['activa']])
-    ok(f60['sobre'] and f60['tam'][0]>=44 and f60['tam'][1]>=44 and f60['simple'],'el control es un solo botón de buen tamaño sobre el mapa, con su panel cerrado y sin niveles ni opacidad: %s' % f60['tam'])
+    ok(f60['sobre'] and f60['tam'][0]>=44 and f60['tam'][1]>=44 and f60['simple'],'el control es un solo botón de buen tamaño sobre el mapa, con su panel cerrado, con opacidad y sin niveles: %s' % f60['tam'])
     ok(f60['textos']==[False, False, False] and not f60['enPunto'],'Nuevo registro no dice la prioridad como dato del punto ni bajo las coordenadas: %s' % f60['textos'])
     s60=pg60.evaluate("(() => { const s = document.getElementById('mapa-simbologia'); return [!s.hidden, s.textContent.trim(), s.querySelectorAll('.pri-muestra').length, !!s.querySelector('.pri-nivel-3')]; })()")
     ok(s60==[True, 'Colonia de la jornada, de prioridad:Alta', 1, True],'bajo el mapa, la simbología dice qué prioridad es el color de la colonia pintada: %s' % s60)
@@ -5017,7 +5019,7 @@ with sync_playwright() as p:
     p60=pg60.evaluate("[SRP.mapa.lat, SRP.mapa.lng]")
     pg60.click('#mapa .pri-capas-boton'); pg60.wait_for_timeout(300)
     panel60=pg60.evaluate("(() => { const c = document.querySelector('#mapa .pri-capas'), p = c.querySelector('.pri-capas-panel'); return [!p.hidden, c.querySelector('.pri-capas-boton').getAttribute('aria-expanded'), [...p.querySelectorAll('label')].map(l => l.textContent.trim()), [...p.querySelectorAll('[data-pri=base]')].filter(r => r.checked).map(r => r.value)]; })()")
-    ok(panel60==[True, 'true', ['Satélite', 'Calles', 'Colonias de la jornada'], ['satelite']],'el botón de capas abre el mapa base —satélite o calles— y las colonias de la jornada: %s' % panel60)
+    ok(panel60==[True, 'true', ['Satélite', 'Calles', 'Colonias de la jornada', 'Opacidad 45 %'], ['satelite']],'el botón de capas abre el mapa base —satélite o calles—, las colonias de la jornada y su opacidad: %s' % panel60)
     pg60.click('#mapa [data-pri=ver]'); pg60.wait_for_timeout(300)
     a60=pg60.evaluate("[document.querySelectorAll('#mapa path.pri-colonia').length, String(document.querySelector('#mapa [data-pri=ver]').checked), JSON.parse(localStorage.getItem('srp_capa_prioritarias_3')).campo.ver, getComputedStyle(document.querySelector('#mapa .pri-capas')).display !== 'none', document.getElementById('mapa-simbologia').hidden]")
     pg60.click('#mapa [data-pri=ver]'); pg60.wait_for_timeout(300)
@@ -5449,6 +5451,7 @@ with sync_playwright() as p:
     ok(pg65.evaluate(J65) == [['Doble toque B151', 'cerrada', False]] and 'volvió a cerrarse' in pg65.inner_text('#aviso'), 'al cancelar la sustitución la jornada vuelve a cerrarse: %s' % pg65.inner_text('#aviso')[:60])
     sustituir65(); pg65.click('#btn-confirmar-si'); esperar(pg65, "SRP.app.vista === 'registrar'", 5000); pg65.wait_for_timeout(500)
     ctx65.set_geolocation({'latitude': 19.4321, 'longitude': -99.1331, 'accuracy': 5})
+    pg65.click('#especies-recientes .chip-misma'); pg65.wait_for_timeout(150)
     pg65.click('#btn-ubicacion'); pg65.wait_for_timeout(1000); pg65.click('#form-plantacion button[type=submit]')
     for _ in range(40):
         pg65.wait_for_timeout(150)
@@ -6125,9 +6128,9 @@ with sync_playwright() as p:
     l77 = pg77.evaluate("""() => { const p = document.getElementById('jornada-leyenda'); const vis = [...p.querySelectorAll('span')].filter(s => !s.hidden).map(s => s.textContent.trim());
       const tonos = [...new Set([...document.querySelectorAll('#jornada-mapa .pin-num span')].map(s => s.dataset.tono))];
       const caja = document.querySelector('#jornada-mapa .pri-capas');
-      return [vis, tonos, !!caja && !caja.querySelector('[data-pri=nivel]') && !caja.querySelector('[data-pri=opacidad]'), !!caja && caja.querySelectorAll('button').length === 1]; }""")
+      return [vis, tonos, !!caja && !caja.querySelector('[data-pri=nivel]') && !!caja.querySelector('[data-pri=opacidad]'), !!caja && caja.querySelectorAll('button').length === 1]; }""")
     ok(len(l77[0]) == len(l77[1]) >= 1 and 'Sustituto' not in l77[0] and 'Lejos del resto' not in l77[0], 'la simbología del mapa de la jornada dice sólo los tipos de punto que hay: %s' % l77[0])
-    ok(l77[2] and l77[3], 'en la ficha, el control de capas es un solo botón, sin niveles ni opacidad')
+    ok(l77[2] and l77[3], 'en la ficha, el control de capas es un solo botón, con opacidad y sin niveles')
     pg77.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-admin-1'])"); pg77.reload(); pg77.wait_for_timeout(1800)
     pg77.evaluate("SRP.app.mostrarVista('usuarios')"); pg77.wait_for_timeout(1000)
     pg77.evaluate("SRP.usuarios.abrirFormulario(null)"); pg77.wait_for_timeout(500)
@@ -6563,6 +6566,61 @@ with sync_playwright() as p:
        'en Nuevo registro, la lista de especies avisa «Fuera de la paleta vegetal» sólo en las que lo están: %s' % o84)
     ok(err84 == [], 'sin errores de consola: %s' % err84[:2])
     ctx84.close()
+
+    # ---------- ctx85: opacidad de las colonias en los mapas de campo; sustitución en morado y sin la especie del perdido ----------
+    ctx85 = contexto_llano(viewport={'width':1280,'height':900}, geolocation={'latitude':19.4326,'longitude':-99.1332,'accuracy':5}, permissions=['geolocation'], timezone_id='America/Mexico_City')
+    pg85 = ctx85.new_page(); err85 = []
+    pg85.on('pageerror', lambda e: err85.append(str(e)))
+    pg85.goto(BASE); pg85.wait_for_timeout(1300)
+    entrar_como(pg85, 'u-coord-1'); pg85.wait_for_timeout(900)
+    iniciar_jornada(pg85, 'Opacidad B184'); pg85.wait_for_timeout(500)
+    pg85.click('#btn-ubicacion'); pg85.wait_for_timeout(1100)
+    pg85.fill('#campo-especie', 'fres'); pg85.wait_for_timeout(200); pg85.dispatch_event('.combo-opcion[data-id="ESP-0029"]', 'mousedown'); pg85.wait_for_timeout(150)
+    pg85.click('#form-plantacion button[type=submit]'); pg85.wait_for_timeout(1200)
+    if pg85.is_visible('#dlg-resumen'): pg85.click('#btn-resumen-guardar'); pg85.wait_for_timeout(1500)
+    # Opacidad en el mapa de Nuevo registro: se elige, se aplica, se recuerda y la ficha de la jornada la usa igual
+    pg85.click('#vista-registrar .pri-capas-boton'); pg85.wait_for_timeout(200)
+    o85 = pg85.evaluate("""() => { const op = document.querySelector('#vista-registrar [data-pri=opacidad]'); return [op.value, op.min, op.max, op.disabled]; }""")
+    pg85.fill('#vista-registrar [data-pri=opacidad]', '80'); pg85.dispatch_event('#vista-registrar [data-pri=opacidad]', 'input'); pg85.wait_for_timeout(200)
+    a85 = pg85.evaluate("""() => [document.querySelector('#vista-registrar .pri-capas output').textContent, SRP.mapa.mapa.getPane('prioritarias').style.opacity,
+      JSON.parse(localStorage.getItem(SRP.prioritarias.CLAVE)).campo.opacidad]""")
+    pg85.click('#vista-registrar [data-pri=ver]'); pg85.wait_for_timeout(200)
+    apagada85 = pg85.evaluate("document.querySelector('#vista-registrar [data-pri=opacidad]').disabled")
+    pg85.click('#vista-registrar [data-pri=ver]'); pg85.wait_for_timeout(200)
+    ok(o85 == ['45', '10', '100', False] and a85 == ['80 %', '0.8', 0.8] and apagada85,
+       'en Nuevo registro, la opacidad de las colonias empieza en 45 %%, va de 10 a 100, se aplica y se recuerda; con las colonias apagadas se apaga: %s · %s' % (o85, a85))
+    j85 = pg85.evaluate("SRP.activa.jornada.id")
+    pg85.evaluate("async id => { SRP.app.mostrarVista('jornadas'); await SRP.jornadas.abrir(id); }", j85); pg85.wait_for_timeout(1500)
+    f85 = pg85.evaluate("""() => { const c = document.querySelector('#jornada-mapa .pri-capas'); const op = c && c.querySelector('[data-pri=opacidad]');
+      const pane = document.querySelector('#jornada-mapa .leaflet-prioritarias-pane'); return [op && op.value, pane && pane.style.opacity]; }""")
+    ok(f85 == ['80', '0.8'], 'la ficha de la jornada tiene la misma barra y usa la opacidad elegida: %s' % f85)
+    # Sustitución: morado, «Guardar sustituto», «Cancelar sustitución» y sin la especie del perdido
+    r85 = pg85.evaluate("async id => (await SRP.activa.registrosDe(await SRP.almacen.uno('jornadas', id)))[0].id", j85)
+    pg85.evaluate("async id => { await SRP.registros.sustituir(await SRP.almacen.uno('plantaciones', id)); }", r85); pg85.wait_for_timeout(500)
+    pg85.click('#sustituir-motivos .chip[data-motivo=ROBO]'); pg85.click('#btn-sustituir-seguir'); pg85.wait_for_timeout(1200)
+    s85 = pg85.evaluate("""() => { const v = getComputedStyle(document.documentElement).getPropertyValue('--sustituto').trim().toLowerCase();
+      const hex = c => '#' + c.match(/\d+/g).slice(0, 3).map(n => Number(n).toString(16).padStart(2, '0')).join('');
+      return [SRP.formulario.estado.especieId, document.getElementById('campo-especie').value, document.getElementById('edicion-franja-titulo').textContent,
+        document.getElementById('edicion-franja-folio').textContent.startsWith('Fresno · ') && document.getElementById('edicion-franja-folio').textContent.endsWith(' · Robo'),
+        hex(getComputedStyle(document.getElementById('edicion-franja')).backgroundColor) === v,
+        hex(getComputedStyle(document.querySelector('#vista-registrar .registrar-columnas')).borderTopColor) === v,
+        document.getElementById('btn-revisar').textContent.trim(), document.getElementById('btn-cancelar-edicion').textContent.trim(),
+        [...document.querySelectorAll('#especies-recientes .chip')].map(b => b.textContent + ':' + b.getAttribute('aria-pressed'))]; }""")
+    ok(s85 == [None, '', 'Sustituyendo árbol', True, True, True, 'Guardar sustituto', 'Cancelar sustitución', ['La misma: Fresno:false']],
+       'al sustituir, la franja y el marco son morados, la especie llega vacía y el primer botón rápido es «La misma»: %s' % s85)
+    pg85.click('#btn-ubicacion'); pg85.wait_for_timeout(900)
+    pg85.click('#form-plantacion button[type=submit]'); pg85.wait_for_timeout(500)
+    e85 = [pg85.is_visible('#campo-especie-error'), pg85.evaluate("SRP.app.vista")]
+    pg85.click('#especies-recientes .chip-misma'); pg85.wait_for_timeout(150)
+    m85 = pg85.evaluate("[SRP.formulario.estado.especieId, document.querySelector('#especies-recientes .chip-misma').getAttribute('aria-pressed'), !document.getElementById('campo-especie-error')]")
+    ok(e85 == [True, 'registrar'] and m85 == ['ESP-0029', 'true', True],
+       'sin elegir especie el sustituto no se guarda; «La misma» la pone y quita el error: %s · %s' % (e85, m85))
+    pg85.click('#btn-cancelar-edicion'); pg85.wait_for_timeout(900)
+    c85 = pg85.evaluate("""() => [document.getElementById('vista-registrar').dataset.sustituyendo || '', document.getElementById('edicion-franja-titulo').textContent,
+      document.getElementById('btn-cancelar-edicion').textContent.trim()]""")
+    ok(c85 == ['', 'Editando registro', 'Cancelar edición'], 'al cancelar, el formulario deja el morado y sus textos de sustitución: %s' % c85)
+    ok(err85 == [], 'sin errores de consola: %s' % err85[:2])
+    ctx85.close()
 
     b.close()
 

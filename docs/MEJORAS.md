@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.9.43 (Bloque 183)»**.
+Al pie de cualquier pantalla: **«Versión 0.9.44 (Bloque 184)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -447,6 +447,9 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M449 | Liber | En Nuevo registro, la lista de especies avisa «Fuera de la paleta vegetal»; se registra igual | Baja | 0.9.42 (B179) | Nuevo registro › Especie | D252 |
 | M450 | Liber | El Excel de especies sale con las trece columnas y las hojas del libro de origen, con la cuenta por valor al día | Media | 0.9.42 (B179) | Catálogos › Especies › Descargar en Excel | D252 |
 | M451 | Base local | Defecto en los datos de demostración: 181 árboles guardaban la alcaldía, colonia o celda de otro punto (los duplicados simulados copiaban el punto y no su ubicación, y la ubicación se calculaba antes de redondear). Ahora se calcula sobre el punto que se guarda, como en la captura | Media | 0.9.43 (B183) | Configuración › Datos de demostración | D255 |
+| M452 | Liber | Opacidad de las colonias de la jornada en los mapas de Nuevo registro y de la ficha de la jornada: barra de 10 a 100 %, la misma en los dos y recordada en el teléfono | Media | 0.9.44 (B184) | Nuevo registro y ficha de la jornada › botón de capas | D256 |
+| M453 | Liber | La sustitución se ve en morado, el color del sustituto: franja fija «Sustituyendo árbol» con especie, folio y motivo del perdido, aviso y marco morados, «Guardar sustituto» y «Cancelar sustitución» | Media | 0.9.44 (B184) | Registros › Sustituir árbol | D256 |
+| M454 | Liber | Al sustituir ya no llega precargada la especie del árbol perdido: el primer botón rápido es «La misma: …», que hay que tocar a propósito | Alta | 0.9.44 (B184) | Registros › Sustituir árbol › Especie | D256 |
 
 ## 2. Por hacer
 

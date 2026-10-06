@@ -2906,3 +2906,18 @@
   · **Defecto encontrado y corregido en la demostración** (M451): 178 duplicados simulados copiaban el punto
     del árbol anterior y no su ubicación, y en tres puntos a centímetros de un límite la ubicación se
     calculaba antes de redondear. No afecta a la captura real.
+
+- **D256. Opacidad de las colonias en campo y sustitución en morado, sin la especie del perdido (bloque 184).**
+  05-10-2026. Peticiones de Liber, aprobadas sobre un ejemplo del antes y el después.
+  · **Opacidad:** el botón de capas de los mapas de Nuevo registro y de la ficha de la jornada lleva, bajo
+    «Colonias de la jornada», la barra de opacidad (10 a 100 %, empieza en 45 %), la misma en los dos
+    mapas y recordada en el teléfono. Con las colonias apagadas, la barra se apaga. Sustituye lo que D245
+    decía de que en campo no hay opacidad que elegir; los niveles siguen siendo sólo de Supervisión.
+  · **Sustitución en morado**, el color del árbol sustituto en el mapa: franja fija «Sustituyendo árbol» con
+    especie, folio y motivo del árbol perdido; el aviso y el marco del formulario en morado; «Guardar
+    sustituto» (en verde, el color de guardar) y «Cancelar sustitución».
+  · **Nada del árbol perdido llega precargado.** Antes llegaba la especie, y se podía guardar el sustituto
+    sin mirarla. Ahora queda vacía y el primer botón rápido es «La misma: …» —también si el perdido era una
+    especie escrita—. La ubicación ya llegaba vacía y sigue así.
+  · **Se descartaron:** la fotografía obligatoria al sustituir (la fotografía nunca es obligatoria) y una
+    marca en el mapa de dónde estaba el árbol perdido (Liber prefiere el mapa sin ella).

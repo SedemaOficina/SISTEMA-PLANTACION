@@ -69,7 +69,7 @@ SRP.formulario = {
     });
     this.el('especies-recientes').addEventListener('click', (e) => {
       const b = e.target.closest('.chip'); if (!b) return;
-      this.elegirEspecie(b.dataset.id);
+      if (b.dataset.otra) this.elegirEspecie(this.OTRA, b.dataset.otra); else this.elegirEspecie(b.dataset.id);
       SRP.util.quitarErrorCampo(this.el('campo-especie'));
       this.pintarEspeciesRecientes();
       if (SRP.espejo) SRP.espejo.refrescar();
@@ -182,15 +182,22 @@ SRP.formulario = {
   },
 
   /* Las últimas especies de la jornada activa, a un toque (D130): hasta tres, la más reciente
-     primero; «Otra especie» no se ofrece porque cada una es distinta. */
+     primero; «Otra especie» no se ofrece porque cada una es distinta. Al sustituir, el primero es «La
+     misma»: la especie del árbol perdido, también si era una especie escrita. */
   async pintarEspeciesRecientes() {
     const caja = this.el('especies-recientes');
     const j = this.estado.editando ? null : SRP.activa.jornada;
     const regs = j ? (await SRP.activa.registrosDe(j)).filter(r => r.especie_id).sort((a, b) => String(b.fecha_registro).localeCompare(String(a.fecha_registro))) : [];
-    const ids = [...new Set(regs.map(r => r.especie_id))].slice(0, 3);
-    caja.hidden = !ids.length;
-    caja.innerHTML = ids.map(id => '<button type="button" class="chip" data-id="' + SRP.util.escapar(id) + '" aria-pressed="' + (this.estado.especieId === id) + '">' +
-      SRP.util.escapar((SRP.ref.catalogoPorId[id] || {}).nombre || id) + '</button>').join('');
+    const s = this.estado.sustitucion, esc = SRP.util.escapar;
+    const misma = s ? (s.original.especie_id || this.OTRA) : null;
+    const ids = [...new Set(regs.map(r => r.especie_id))].filter(id => id !== misma).slice(0, misma ? 2 : 3);
+    const otra = s && !s.original.especie_id ? s.original.especie_otra : '';
+    const elegida = misma && this.estado.especieId === misma && (misma !== this.OTRA || this.el('campo-otra-especie').value === otra);
+    caja.hidden = !ids.length && !misma;
+    caja.innerHTML = (misma ? '<button type="button" class="chip chip-misma" data-id="' + esc(misma) + '"' + (otra ? ' data-otra="' + esc(otra) + '"' : '') +
+      ' aria-pressed="' + elegida + '">La misma: ' + esc(otra || (SRP.ref.catalogoPorId[misma] || {}).nombre || misma) + '</button>' : '') +
+      ids.map(id => '<button type="button" class="chip" data-id="' + esc(id) + '" aria-pressed="' + (this.estado.especieId === id) + '">' +
+      esc((SRP.ref.catalogoPorId[id] || {}).nombre || id) + '</button>').join('');
   },
 
   /* EL PROGRAMA ES DE LA JORNADA (D151, supera a D130 y D132). Se elige al iniciarla y sus árboles lo
@@ -718,7 +725,9 @@ SRP.formulario = {
 
   /* ---------- Sustitución ---------- */
 
-  // El formulario listo para el árbol que reemplaza a `original`: misma especie de inicio, la fecha elegida, aviso arriba
+  /* El formulario listo para el árbol que reemplaza a `original`, en morado, el color del sustituto: franja
+     fija con el árbol que se reemplaza, marco y «Guardar sustituto». Nada del árbol perdido llega
+     precargado, ni la especie: el primer botón rápido ofrece «La misma», que hay que tocar a propósito. */
   // `reabierta`: la jornada cerrada que se reabrió para este sustituto; vuelve a cerrarse al terminar
   sustituir(original, motivo, otro, fecha, reabierta) {
     this.limpiar();
@@ -730,10 +739,16 @@ SRP.formulario = {
       SRP.ref.motivoSustitucion({ motivo_sustitucion: motivo, motivo_sustitucion_otro: otro }).toLowerCase() + ', plantado el ' + SRP.util.formatearFecha(this.estado.sustitucion.fecha) + '. Ubique el árbol nuevo; se guarda en la jornada «' +
       (SRP.activa.jornada ? SRP.activa.jornada.nombre : '') + '» y el anterior deja de contar.';
     aviso.hidden = false;
+    this.el('edicion-franja-titulo').textContent = 'Sustituyendo árbol';
+    this.el('edicion-franja-folio').textContent = [SRP.ref.especieDe(original).comun, SRP.folio.valido(original.folio) ? SRP.folio.texto(original) : '',
+      SRP.ref.motivoSustitucion({ motivo_sustitucion: motivo, motivo_sustitucion_otro: otro })].filter(Boolean).join(' · ');
+    this.el('edicion-franja').hidden = false;
+    this.el('vista-registrar').dataset.sustituyendo = 'true';
+    this.el('btn-revisar').innerHTML = SRP.ICONOS.svg('disco', 'grande') + '<span>Guardar sustituto</span>';
+    this.el('btn-cancelar-edicion-texto').textContent = 'Cancelar sustitución';
     this.el('btn-cancelar-edicion').hidden = false;
-    if (original.especie_id) this.elegirEspecie(original.especie_id);
-    else this.elegirEspecie(this.OTRA, original.especie_otra);
     SRP.app.mostrarVista('registrar');
+    this.pintarEspeciesRecientes();
   },
 
   // Cierra de nuevo la jornada que se reabrió para la sustitución en curso. Devuelve si la cerró
@@ -914,9 +929,12 @@ SRP.formulario = {
     const ta = this.el('titulo-arbol'); if (ta) ta.textContent = 'Nuevo árbol';
     this.el('edicion-aviso').hidden = true;
     this.el('edicion-franja').hidden = true;
+    this.el('edicion-franja-titulo').textContent = 'Editando registro';
     delete this.el('vista-registrar').dataset.editando;
+    delete this.el('vista-registrar').dataset.sustituyendo;
     this.el('btn-revisar').innerHTML = SRP.ICONOS.svg('disco', 'grande') + '<span>Guardar</span>';
     this.el('btn-cancelar-edicion').hidden = true;
+    this.el('btn-cancelar-edicion-texto').textContent = 'Cancelar edición';
     this.el('campo-especie').value = ''; this.estado.especieId = null; this.mostrarOtra(false);
     this.el('campo-fecha').value = '';
     this.el('caja-fecha-arbol').hidden = true;

@@ -3515,3 +3515,25 @@ especies, las diez tablas de la aplicación cargadas completas, PostGIS igual a 
 árboles y 1,305 jornadas, vehículos reales en las jornadas. Antes de corregir la demostración, la misma
 comparación dio 182 diferencias, todas explicadas. `auditoria.py`: 143, 0 hallazgos. `prueba.py`, corrida
 completa sola: 1,371 comprobaciones, 0 fallas, sin errores de consola. No probado en teléfono por Claude.
+
+## Bloque 184 — Opacidad de las colonias en campo; sustitución en morado y sin la especie del perdido (05-10-2026)
+
+Versión 0.9.44. Peticiones de Liber, aprobadas sobre un ejemplo.
+
+**Qué cambió (D256).** `js/prioritarias.js`: el panel de campo lleva la barra de opacidad, guardada con el
+estado del grupo de campo. `js/formulario.js`: `sustituir()` ya no elige la especie; pone la franja
+«Sustituyendo árbol» con especie, folio y motivo, el modo morado, «Guardar sustituto» y «Cancelar
+sustitución»; `limpiar()` lo quita; `pintarEspeciesRecientes()` pone primero «La misma: …» (también con
+especie escrita). `index.html`: título de la franja y texto del botón de cancelar con su propio elemento.
+`css/estilos.css`: franja, aviso, marco y botón «La misma» en morado. Pruebas: `ctx85`, y las secciones de
+sustitución eligen «La misma» antes de guardar; la ficha ya trae opacidad.
+
+**Pantalla: qué se agregó y qué se quitó.** Se agregó: la barra de opacidad en el botón de capas de Nuevo
+registro y de la ficha de la jornada; en la sustitución, la franja morada, el marco morado y el botón «La
+misma: …». Se quitó: la especie precargada al sustituir.
+
+**Verificación:** primera corrida completa, 5 fallas de 1,377: dos comprobaciones de antes decían que el
+panel de campo no tiene opacidad (se actualizaron a la regla nueva; su sección pasa sola, 22 de 22) y tres de
+Supervisión y Jornadas que pasan solas (18 de 18 y 4 de 4) y no tocan lo cambiado. Segunda corrida
+completa: 1,377 comprobaciones, 0 fallas, sin errores de consola. `auditoria.py`: 143, 0 hallazgos;
+`auditoria_css.py`: 0 hallazgos. No probado en teléfono por Claude.
