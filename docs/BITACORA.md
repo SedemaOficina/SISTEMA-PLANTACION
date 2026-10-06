@@ -3438,3 +3438,19 @@ real (88 KB). Tercera corrida, con el código final: se detuvo a la mitad en los
 genera más rápido de lo que la prueba alcanza a ver. La sección nueva `ctx84` pasa sola, 8 de 8.
 `auditoria.py`: 142 comprobaciones, 0 hallazgos. `auditoria_css.py`: 0 hallazgos. No probado en
 teléfono por Claude.
+
+## Bloque 180 — La prueba completa corre limpia en Windows (05-10-2026)
+
+Versión de la aplicación sin cambio: 0.9.42. Sólo cambian las pruebas.
+
+**Qué cambió.** `pruebas/prueba.py`: el límite de peso del reporte PDF sube de 150 a 250 KB (decisión de
+Liber): con señal, el croquis trae la imagen satelital real y el reporte pesa unos 184 KB, todavía ligero
+para mensajería. Tres comprobaciones que esperaban un tiempo fijo ahora esperan a que ocurra lo que
+comprueban: el estado «ocupado» mientras se arma el PDF (un observador lo anota aunque el PDF termine
+antes de mirarlo), «Subir al inicio» en Nuevo registro y en la ficha de la jornada, y el cambio de cuenta
+en los datos de demostración (se cierra antes el aviso que tapaba el botón de la cuenta).
+
+**Pantalla: qué se agregó y qué se quitó.** Nada.
+
+**Verificación:** corrida completa en Windows, sola: 1,371 comprobaciones, 0 fallas, sin errores de
+consola (última sección `ctx84`). Es la primera corrida completa limpia en el equipo de Liber.
