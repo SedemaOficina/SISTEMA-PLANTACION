@@ -1,15 +1,16 @@
 /* EL ESQUEMA srp: se crea y se destruye en limpio, sus tablas son las del diccionario de datos, sus
    reglas rechazan lo inválido y la cuenta del servicio tiene sólo los permisos que necesita.
-   Corre contra la base local de desarrollo: al empezar la deja sin el esquema y al terminar lo deja
-   instalado y vacío. */
+   Corre contra la base local de desarrollo: al empezar la deja sin el esquema y al terminar lo vuelve a
+   instalar y a cargar con lo que haya (npm run cargar -- rehacer). */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { conectar, instalar, destruir, codigoDeError, RAIZ } from './apoyo.js';
 
 const ESQUEMA = JSON.parse(fs.readFileSync(path.join(RAIZ, 'datos', 'esquema.json'), 'utf8'));
-const PROPIAS_DEL_SERVIDOR = ['credenciales', 'migraciones', 'sesiones'];
+const PROPIAS_DEL_SERVIDOR = ['capa_alcaldias', 'capa_colonias', 'capa_prioritarias', 'capa_uga', 'capas', 'credenciales', 'migraciones', 'sesiones'];
 const PERMISO_DENEGADO = '42501', VIOLA_CHECK = '23514', VIOLA_FORANEA = '23503', VIOLA_UNICO = '23505';
 
 // El tipo del diccionario como lo escribe PostgreSQL (format_type)
@@ -29,11 +30,10 @@ before(async () => {
 after(async () => {
   try {
     await c.query('ROLLBACK').catch(() => {});
-    await destruir(c);
-    await instalar(c);
   } finally {
     await c.end();
   }
+  execFileSync(process.execPath, [path.join(RAIZ, 'servidor', 'cargar.js'), 'rehacer'], { stdio: 'ignore' });
 });
 
 test('la instalación crea el esquema completo en una sola transacción', async () => {

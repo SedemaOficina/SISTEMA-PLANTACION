@@ -12,5 +12,6 @@ BEGIN;
 \ir 01_esquema.sql
 \ir 02_tablas.sql
 \ir 03_acceso.sql
-\ir 04_permisos.sql
+\ir 04_capas.sql
+\ir 05_permisos.sql
 COMMIT;

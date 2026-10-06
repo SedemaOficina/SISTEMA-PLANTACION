@@ -2881,3 +2881,28 @@
     comparan cada tabla contra el diccionario, prueban reglas y permisos, y destruyen.
   · **Pendiente para la adaptación de la app:** `SRP.util.generarId()` debe dar siempre un UUID v4, también
     en su respaldo (FASE2-Y-TRASPASO, apartado 3).
+
+- **D255. Base local con capas en PostGIS, catálogos y los datos de la aplicación (bloque 183).**
+  05-10-2026. Petición de Liber: antes del acceso, tener en el equipo la base como quedará en el SIA y
+  comprobar que todo corre. Liber pidió cargar la lista real de vehículos.
+  · **Capas en PostGIS** (`servidor/sql/04_capas.sql`, parte de la instalación): alcaldías, colonias, malla
+    UGA y colonias prioritarias, con índice espacial, cargadas de `assets/capas/` —las mismas de la
+    aplicación— con `npm run cargar -- capas`. `srp.capas` anota la versión de cada una.
+  · **El punto no agrega campos:** las tablas siguen guardando latitud y longitud, como el teléfono;
+    `srp.punto(lat, lng)` da el punto y lleva índice espacial en árboles y jornadas.
+  · **`srp.derivar(lat, lng)`** da alcaldía, colonia, celda UGA, distancia al borde de la celda y
+    capa_version con las reglas de `js/derivacion.js`: primer polígono en el orden de la capa, borde
+    dentro, alcaldía más cercana dentro del margen, colonia más pequeña donde se enciman. Las distancias
+    se miden sobre el elipsoide; la aplicación usa una proyección local: difieren hasta un 1 %.
+  · **Cargador** (`servidor/cargar.js`): capas y especies (también en el SIA), vehículos de un CSV (la lista
+    real, sólo en el equipo), y lo que exporta `herramientas/exportar_datos_app.py` de un teléfono de prueba
+    con la demostración (sólo local). Lo de la aplicación entra con la cuenta del servicio, en una
+    transacción. Los identificadores que no son UUID (cuentas de prueba, demostración) toman un UUID fijo
+    derivado de ellos.
+  · **Resultado:** las diez tablas del teléfono caben sin cambios —ningún campo de más ni de menos— y
+    cumplen todas las reglas y llaves. PostGIS ubica los 17,479 árboles y las 1,305 jornadas igual que la
+    aplicación. La captura real calcula la ubicación sobre el punto ya redondeado a seis decimales
+    (`SRP.mapa.colocar`), igual que el servidor.
+  · **Defecto encontrado y corregido en la demostración** (M451): 178 duplicados simulados copiaban el punto
+    del árbol anterior y no su ubicación, y en tres puntos a centímetros de un límite la ubicación se
+    calculaba antes de redondear. No afecta a la captura real.

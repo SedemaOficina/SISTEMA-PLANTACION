@@ -3493,3 +3493,25 @@ original, bitácora), trece reglas rechazan lo inválido, ocho operaciones prohi
 borrado en cascada de contraseña y sesiones, destrucción y reinstalación limpias—. La instalación con
 `psql -f instalar.sql` también, a mano. `auditoria.py`: 143, 0 hallazgos. No se corrió `prueba.py`: la
 aplicación sólo cambió dos tipos en `js/esquema.js`, que no usa.
+
+## Bloque 183 — Base local con capas en PostGIS, catálogos y datos de la aplicación (05-10-2026)
+
+Versión 0.9.43. Petición de Liber.
+
+**Qué cambió (D255).** `servidor/sql/04_capas.sql` (nuevo): capas, `srp.punto`, `srp.derivar` e índices
+espaciales; `04_permisos.sql` pasa a `05_permisos.sql`, con lectura de capas y uso de las funciones.
+`servidor/cargar.js` (nuevo) y `servidor/bd.js` (conexión, instalación y destrucción, compartidas con las
+pruebas). `servidor/pruebas/datos.test.js` (nuevo); `esquema.test.js` deja la base cargada al terminar.
+`herramientas/exportar_datos_app.py` (nuevo). `js/demostracion.js`: la ubicación de cada árbol y jornada de
+demostración se calcula sobre el punto que se guarda, y la del duplicado simulado sobre su propio punto.
+`.gitignore`: `servidor/local/`. `servidor/README.md`, `README.md`, `docs/FASE2-Y-TRASPASO.md`,
+`docs/PLAN-TRASPASO-SIA.md` y `docs/MEJORAS.md` al día.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada. En los datos de demostración, 181 árboles cambian de
+colonia, alcaldía o celda a la que de verdad les corresponde.
+
+**Verificación:** `npm test` en el servidor, 12 de 12: el esquema (7) y los datos (5): capas completas,
+especies, las diez tablas de la aplicación cargadas completas, PostGIS igual a la aplicación en 17,479
+árboles y 1,305 jornadas, vehículos reales en las jornadas. Antes de corregir la demostración, la misma
+comparación dio 182 diferencias, todas explicadas. `auditoria.py`: 143, 0 hallazgos. `prueba.py`, corrida
+completa sola: 1,371 comprobaciones, 0 fallas, sin errores de consola. No probado en teléfono por Claude.

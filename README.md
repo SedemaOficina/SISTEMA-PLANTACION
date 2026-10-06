@@ -186,6 +186,7 @@ herramientas/           Generan archivos del sitio a partir de originales/ y de 
   generar_especies.py   Excel de especies del SIA → assets/catalogos/catalogo-especies.js
   generar_diccionario.py  datos/esquema.json → datos/DICCIONARIO-DATOS.md y js/esquema.js
   generar_sql.py        datos/esquema.json → servidor/sql/02_tablas.sql (las tablas del servidor)
+  exportar_datos_app.py La base de un teléfono de prueba con la demostración → servidor/local/datos-app.json, para cargarla en la base local
   extraer_iconos.py     Set de iconografía CDMX (.ai) → trazados para js/iconos.js
 
 pruebas/                prueba.py (recorrido completo), auditoria.py (auditoría), auditoria_css.py (hoja de estilos), revisar.py (presentación) y requisitos.txt (bibliotecas)

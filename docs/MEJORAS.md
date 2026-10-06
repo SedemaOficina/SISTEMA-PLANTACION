@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.9.42 (Bloque 179)»**.
+Al pie de cualquier pantalla: **«Versión 0.9.43 (Bloque 183)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -446,6 +446,7 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M448 | Liber | La lista de especies marca «Fuera de la paleta» y «Fruto comestible», y filtra con «Mostrar» | Media | 0.9.42 (B179) | Catálogos › Especies | D252 |
 | M449 | Liber | En Nuevo registro, la lista de especies avisa «Fuera de la paleta vegetal»; se registra igual | Baja | 0.9.42 (B179) | Nuevo registro › Especie | D252 |
 | M450 | Liber | El Excel de especies sale con las trece columnas y las hojas del libro de origen, con la cuenta por valor al día | Media | 0.9.42 (B179) | Catálogos › Especies › Descargar en Excel | D252 |
+| M451 | Base local | Defecto en los datos de demostración: 181 árboles guardaban la alcaldía, colonia o celda de otro punto (los duplicados simulados copiaban el punto y no su ubicación, y la ubicación se calculaba antes de redondear). Ahora se calcula sobre el punto que se guarda, como en la captura | Media | 0.9.43 (B183) | Configuración › Datos de demostración | D255 |
 
 ## 2. Por hacer
 

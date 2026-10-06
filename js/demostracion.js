@@ -232,7 +232,7 @@ SRP.demo = {
         const alc = pick(alcaldias);
         const col = pick(colonias[alc] || colonias[Object.keys(colonias)[0]]);
         const [lat, lng] = this.puntoEn(col, r);
-        const t = SRP.derivacion.derivar(lat, lng);
+        const t = SRP.derivacion.derivar(+lat.toFixed(6), +lng.toFixed(6));   // el punto que se guarda
         if (!t.alcaldia) continue;
         const idj = 'demo-j-' + String(++nj).padStart(5, '0');
         const abierta = forzada;
@@ -252,7 +252,8 @@ SRP.demo = {
           // Alrededor del sitio, a menos de ~70 m; de vez en cuando uno lejos (un error de captura)
           const lejos = !abierta && r() < 0.025 && i === n - 1;
           const radio = lejos ? 0.0035 : 0.0006;
-          const la = lat + (r() - 0.5) * radio * 2, lo = lng + (r() - 0.5) * radio * 2;
+          // Con seis decimales, como los guarda la captura, y la ubicación de ese mismo punto
+          const la = +(lat + (r() - 0.5) * radio * 2).toFixed(6), lo = +(lng + (r() - 0.5) * radio * 2).toFixed(6);
           const ta = SRP.derivacion.derivar(la, lo);
           const x = r();
           const origen = x < 0.85 ? 'gps' : x < 0.95 ? 'mapa' : 'manual';
@@ -260,7 +261,7 @@ SRP.demo = {
           minuto += 6 + Math.floor(r() * 12);
           const reg = hora(d, 8 + Math.floor(minuto / 60), minuto % 60);
           const id = 'demo-a-' + String(++na).padStart(6, '0');
-          const a = { id, estatus: 'activo', cabo_id: cabo, lat: +la.toFixed(6), lng: +lo.toFixed(6), punto_origen: origen, gps_precision_m: prec,
+          const a = { id, estatus: 'activo', cabo_id: cabo, lat: la, lng: lo, punto_origen: origen, gps_precision_m: prec,
             folio: null,
             especie_id: especie(), especie_otra: '',
             alcaldia_cve: ta.alcaldia_cve, alcaldia: ta.alcaldia, colonia_cve: ta.colonia_cve, colonia: ta.colonia, uga: ta.uga, uga_borde_m: ta.uga_borde_m, capa_version: ta.capa_version,
@@ -268,7 +269,11 @@ SRP.demo = {
             foto_base64: null, foto_id: null, fecha_registro: reg, fecha_ultima_edicion: null, editado_por_id: null,
             sustituye_id: null, motivo_sustitucion: null, motivo_sustitucion_otro: '', sustituido_por_id: null };
           // Un posible duplicado: la misma especie a un par de metros del anterior
-          if (!abierta && i > 0 && r() < 0.012) { const o = regs[i - 1]; Object.assign(a, { especie_id: o.especie_id, lat: +(o.lat + 0.00001).toFixed(6), lng: o.lng }); }
+          if (!abierta && i > 0 && r() < 0.012) {
+            const o = regs[i - 1], dla = +(o.lat + 0.00001).toFixed(6), t2 = SRP.derivacion.derivar(dla, o.lng);
+            Object.assign(a, { especie_id: o.especie_id, lat: dla, lng: o.lng, alcaldia_cve: t2.alcaldia_cve, alcaldia: t2.alcaldia, colonia_cve: t2.colonia_cve,
+              colonia: t2.colonia, uga: t2.uga, uga_borde_m: t2.uga_borde_m, capa_version: t2.capa_version });
+          }
           regs.push(a);
           bit('CREADO', 'plantacion', id, reg, cabo);
         }

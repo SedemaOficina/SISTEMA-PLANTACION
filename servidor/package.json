@@ -8,7 +8,8 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node --test --test-concurrency=1 \"pruebas/**/*.test.js\""
+    "test": "node --test --test-concurrency=1 pruebas/esquema.test.js pruebas/datos.test.js",
+    "cargar": "node cargar.js"
   },
   "dependencies": {
     "pg": "^8.23.1"
