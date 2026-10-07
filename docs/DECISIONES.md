@@ -2971,3 +2971,44 @@
     del SIA si faltan, y se niega si ya hay Administración global.
   · Plazos, largo mínimo y bloqueo son parámetros de entorno; se moverán a Configuración › Parámetros
     cuando los parámetros vivan en la base.
+
+- **D260. La ubicación de la jornada es obligatoria (bloque 188).**
+  06-10-2026. Liber: se registraba una jornada sin coordenadas. Sustituye lo que D122 decía de que, sin
+  tocar el botón, la jornada se guardaba sin punto.
+  · «Registrar jornada» lleva «Ubicación de la jornada *» sobre «Detectar ubicación de la jornada». Sin
+    punto —del GPS o de «Capturar coordenadas a mano»— no se registra: el error lo dice bajo el botón y en el
+    resumen, y se va en cuanto hay punto.
+  · «Editar jornada» no cambia la ubicación; la carga masiva ya ubica cada jornada. Las jornadas
+    anteriores a esta regla pueden no tener punto, por eso `lat` y `lng` siguen admitiendo nulos.
+  · El servidor rechazará una jornada nueva sin punto (validación de la recepción, fase 4).
+  · **La prioridad junto a la colonia** (misma petición de Liber): en la tarjeta de Jornadas, en la franja
+    de la jornada (activa o del registro que se edita) y en la ficha, el lugar se dice «Alcaldía · Col. … ·
+    ■ Alta · dirección»: la muestra del color y el nombre del nivel entre la colonia y la dirección. Se quita
+    el renglón aparte «Colonia de prioridad …». Sin dato de prioridad no se pone nada. El lector de pantalla
+    oye «prioridad alta».
+  · **«Editar registro» sin el recuadro** «Está editando el registro del … capturado por …»: la franja fija
+    «Editando registro» con el folio ya lo dice. La sustitución conserva el suyo, que dice la fecha del
+    sustituto y la jornada donde se guarda.
+
+- **D261. La ventana «Sustituir árbol» en morado y con otros textos (bloque 188).**
+  06-10-2026. Petición de Liber; eligió la variante B.
+  · Franja de arriba e icono de intercambio junto al título en morado, el color del sustituto en el mapa.
+    El botón «Registrar el sustituto» sigue azul (avanzar).
+  · Texto: «El … (folio, fecha) se perdió por alguna razón. El nuevo árbol se registra en la misma jornada y
+    queda en el mapa en morado.» La pregunta pasa a «Razón de la sustitución *».
+  · La fecha no cambia: desde el día en que se plantó el árbol perdido —nunca antes del día de la jornada— y
+    hasta hoy. Liber pidió que el mínimo fuera el día de la jornada; con la explicación (en una jornada de
+    varios días permitiría fechar el sustituto antes que el árbol que reemplaza) aceptó dejarla igual.
+
+- **D262. «Lo que viaja a la base de datos», una sola sección en todas las pantallas que guardan (bloque 188).**
+  06-10-2026. Petición de Liber, aprobada sobre un ejemplo. Sólo en la versión de prueba.
+  · Sustituye a «Campos que viajan a la base y no se ven en pantalla». En Nuevo registro, Editar, Sustituir,
+    el detalle del árbol, Registrar jornada, la ficha de la jornada, el cierre del reporte, Usuarios y
+    Catálogos dice lo mismo y en el mismo orden: **dónde se guarda** (la base del teléfono y su tabla; el
+    esquema `srp` del servidor y su tabla), **lo que se ve en pantalla** con la etiqueta donde se captura
+    (del diccionario de datos), **lo que no se ve** con de dónde sale, y el renglón de **bitácora** que se
+    escribe en el mismo acto, cuando se escribe. Un valor muy largo (la fotografía) se recorta y dice cuánto mide.
+  · **Defecto corregido:** en Registrar jornada no se desplegaba. Al tocar su título justo después de
+    escribir en un campo, el campo avisaba su cambio y la sección se volvía a pintar entre que el dedo bajaba
+    y subía. Ahora se actualiza su contenido sin reemplazarla.
+  · El diccionario en el navegador (`js/esquema.js`) lleva ahora, por campo, dónde se ve en pantalla.

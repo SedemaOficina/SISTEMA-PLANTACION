@@ -120,24 +120,36 @@ SRP.espejo = {
   },
 
 
+  // De dónde sale cada campo del renglón de bitácora que se escribe con el dato
+  NOTAS_BITACORA: {
+    id: 'UUID del renglón', fecha: 'El momento en que se guarda', usuario_id: 'La cuenta con sesión abierta',
+    usuario_nombre: 'Su nombre, por si la cuenta desaparece después', perfil: 'Su perfil al hacerlo',
+    accion: 'Qué se hizo', entidad: 'Sobre qué se hizo', entidad_id: 'El identificador de lo que se guarda', detalle: 'Qué cambió'
+  },
+
   iniciar() {
     if (!SRP.CONFIG.ES_FICTICIO) return;
     document.getElementById('espejo-campos').hidden = false;
-    // Cualquier cambio del formulario repinta: no hay que acordarse de llamarlo desde cada sitio
+    /* Cualquier cambio del formulario repinta: no hay que acordarse de llamarlo desde cada sitio. Lo que
+       pasa dentro del propio espejo no lo repinta: abrirlo es un toque, y repintarlo en ese momento lo
+       volvía a cerrar. */
+    const fuera = (fn) => (e) => { if (!(e.target.closest && e.target.closest('.espejo'))) fn(); };
     const vista = document.getElementById('vista-registrar');
-    ['input', 'change'].forEach(evento => vista.addEventListener(evento, () => this.refrescar()));
+    ['input', 'change'].forEach(evento => vista.addEventListener(evento, fuera(() => this.refrescar())));
     const cierre = document.getElementById('form-cierre');
-    ['input', 'change'].forEach(evento => cierre.addEventListener(evento, () => this.refrescarCierre()));
+    ['input', 'change'].forEach(evento => cierre.addEventListener(evento, fuera(() => this.refrescarCierre())));
     const iniciar = document.getElementById('panel-iniciar-jornada');
-    ['input', 'change', 'click'].forEach(evento => iniciar.addEventListener(evento, () => this.refrescarIniciar()));
+    ['input', 'change', 'click'].forEach(evento => iniciar.addEventListener(evento, fuera(() => this.refrescarIniciar())));
   },
 
-  // Formato legible sin disfrazar el dato: se ve lo que se guarda, no una interpretación
+  // Formato legible sin disfrazar el dato: se ve lo que se guarda, no una interpretación. Un texto muy
+  // largo (la fotografía) se recorta y dice cuánto mide
   formatear(valor) {
     if (valor === null || valor === undefined || valor === '') return '—';
     if (valor === true) return 'true';
     if (valor === false) return 'false';
-    return String(valor);
+    const t = typeof valor === 'object' ? JSON.stringify(valor) : String(valor);
+    return t.length > 120 ? t.slice(0, 60) + '… (' + t.length.toLocaleString('es-MX') + ' caracteres)' : t;
   },
 
   /* Lo que todavía no existe se dice, no se inventa. registroPrevisto() pone la hora actual
@@ -153,40 +165,64 @@ SRP.espejo = {
     return null;
   },
 
-  // Filas de una tabla espejo: los campos del objeto que no están en `visibles`
-  filas(objeto, visibles, notas, provisional) {
-    const esc = SRP.util.escapar;
-    const ocultos = Object.keys(objeto).filter(k => !visibles.includes(k));
-    return { ocultos, html: ocultos.map(k =>
-      '<tr><td class="espejo-campo">' + esc(k) + '</td>' +
-      '<td class="espejo-valor">' + esc((provisional && provisional(k, objeto)) || this.formatear(objeto[k])) + '</td>' +
-      '<td class="espejo-nota">' + esc(notas[k] || '') + '</td></tr>').join('') };
+  // Dónde se ve un campo en pantalla, según el diccionario de datos
+  pantallaDe(tabla, campo) {
+    const c = ((SRP.ESQUEMA && SRP.ESQUEMA.tablas[tabla]) || []).find(x => x[0] === campo);
+    return (c && c[5]) || '';
   },
 
-  /* El desplegable de un objeto: los campos que no están en `visibles`, con su valor y su nota.
-     `previsto`: todavía no se guarda, y `provisional` dice qué se fija al guardar. */
-  htmlGuardado(almacen, objeto, visibles, notas, previsto, provisional) {
-    if (!SRP.CONFIG.ES_FICTICIO || !objeto) return '';
-    const f = this.filas(objeto, visibles, notas, provisional);
-    return '<details class="desplegable espejo espejo-en-dialogo"><summary><span>Campos que viajan a la base y no se ven en pantalla</span></summary>' +
-      '<p class="espejo-ayuda">' + (previsto ? 'Tal como quedarían guardados en este momento.' : 'Tal como están guardados.') + ' <span class="espejo-marca">sólo en la versión de prueba</span></p>' +
-      '<table class="espejo-tabla"><caption>Almacén <code>' + SRP.util.escapar(almacen) + '</code> · ' + f.ocultos.length + ' campos</caption>' +
-      '<thead><tr><th>Campo</th><th>' + (previsto ? 'Valor previsto' : 'Valor guardado') + '</th><th>De dónde sale</th></tr></thead><tbody>' + f.html + '</tbody></table></details>';
+  /* EL ESPEJO, IGUAL EN TODAS LAS PANTALLAS QUE GUARDAN ALGO. Dice dónde se guarda —la base del
+     teléfono y la del servidor, con su tabla—, lo que se ve en pantalla con la etiqueta donde se
+     captura, lo que no se ve con de dónde sale, y el renglón de bitácora que se escribe en el mismo
+     acto, si se escribe. `o`: { tabla, objeto, visibles, notas, previsto, provisional, bitacora:
+     { accion, entidad, detalle, alGuardar } o null, prefijo (ids de sus tablas) }. */
+  htmlCuerpo(o) {
+    const esc = SRP.util.escapar, obj = o.objeto, notas = o.notas || {};
+    const id = sufijo => o.prefijo ? ' id="' + o.prefijo + '-' + sufijo + '"' : '';
+    const valor = k => (o.provisional && o.provisional(k, obj)) || this.formatear(obj[k]);
+    const fila = (k, v, nota) => '<tr><td class="espejo-campo">' + esc(k) + '</td><td class="espejo-valor">' + esc(v) + '</td><td class="espejo-nota">' + esc(nota || '') + '</td></tr>';
+    const tabla = (clase, titulo, sufijo, filas) => '<table class="espejo-tabla ' + clase + '"><caption>' + titulo + '</caption><thead><tr><th>Campo</th><th>' +
+      (o.previsto ? 'Valor previsto' : 'Valor guardado') + '</th><th>De dónde sale</th></tr></thead><tbody' + id(sufijo) + '>' + filas + '</tbody></table>';
+    const campos = Object.keys(obj), vis = campos.filter(k => o.visibles.includes(k)), ocu = campos.filter(k => !o.visibles.includes(k));
+    const n = x => x + (x === 1 ? ' campo' : ' campos');
+    let html = '<p class="espejo-ayuda">' + (o.previsto ? 'Tal como quedaría guardado en este momento.' : 'Tal como está guardado.') +
+      ' <span class="espejo-marca">sólo en la versión de prueba</span></p>' +
+      '<dl class="espejo-destino"><dt>En el teléfono</dt><dd><code>' + esc(SRP.CONFIG.DB_NOMBRE) + '</code> › tabla <code>' + esc(o.tabla) + '</code></dd>' +
+      '<dt>En el servidor</dt><dd>PostgreSQL › esquema <code>srp</code> › tabla <code>' + esc(o.tabla) + '</code></dd>' +
+      (o.bitacora ? '<dt>Además</dt><dd>un renglón en <code>bitacora</code>, en el mismo acto</dd>' : '') + '</dl>' +
+      tabla('espejo-visibles', 'Se ve en pantalla · ' + n(vis.length), 'visibles', vis.map(k => fila(k, valor(k), this.pantallaDe(o.tabla, k))).join('')) +
+      tabla('espejo-ocultos', 'No se ve en pantalla · ' + n(ocu.length), 'cuerpo', ocu.map(k => fila(k, valor(k), notas[k])).join(''));
+    if (o.bitacora) {
+      // El renglón apunta al mismo identificador que se enseña arriba: si aún no se fija, lo dice igual
+      const b = SRP.bitacora.entrada(o.bitacora.accion, o.bitacora.entidad, (o.provisional && o.provisional('id', obj)) || obj.id || o.bitacora.alGuardar, o.bitacora.detalle || '');
+      html += tabla('espejo-bitacora-tabla', 'También se escribe en <code>bitacora</code> · ' + n(Object.keys(b).length), 'bitacora',
+        Object.keys(b).map(k => fila(k, (k === 'id' || k === 'fecha') ? o.bitacora.alGuardar : this.formatear(b[k]), this.NOTAS_BITACORA[k])).join(''));
+    }
+    return html;
   },
 
-  /* Pone un espejo al final de `contenedor`, en su propia caja: la crea la primera vez y después
-     sólo cambia su contenido, conservando si estaba abierto. */
+  // El desplegable de un espejo, plegado de inicio: se abre sólo cuando se quiere revisar
+  htmlGuardado(o) {
+    if (!SRP.CONFIG.ES_FICTICIO || !o.objeto) return '';
+    return '<details class="desplegable espejo espejo-en-dialogo"><summary><span>Lo que viaja a la base de datos</span></summary><div class="espejo-contenido">' + this.htmlCuerpo(o) + '</div></details>';
+  },
+
+  /* Pone un espejo al final de `contenedor`, en su propia caja: la crea la primera vez y después sólo
+     cambia lo de adentro. El desplegable no se reemplaza: si alguien escribe en un campo y toca el título
+     del espejo, el campo avisa su cambio en ese mismo toque, y un desplegable nuevo se tragaría el toque. */
   colocar(contenedor, clave, html) {
     if (!contenedor) return;
     let caja = contenedor.querySelector(':scope > [data-espejo="' + clave + '"]');
     if (!caja) { caja = document.createElement('div'); caja.dataset.espejo = clave; contenedor.appendChild(caja); }
-    const abierto = !!caja.querySelector('details[open]');
-    caja.innerHTML = html;
-    if (abierto && caja.firstElementChild) caja.firstElementChild.open = true;
+    const actual = caja.querySelector(':scope > details > .espejo-contenido');
+    const nuevo = document.createElement('template'); nuevo.innerHTML = html;
+    const contenido = nuevo.content.querySelector('.espejo-contenido');
+    if (actual && contenido) actual.innerHTML = contenido.innerHTML;
+    else caja.innerHTML = html;
   },
 
   // Detalle de un árbol guardado (registros.js): lo que está en la base
-  htmlDetalle(registro) { return this.htmlGuardado('plantaciones', registro, this.VISIBLES_DETALLE, this.NOTAS); },
+  htmlDetalle(registro) { return this.htmlGuardado({ tabla: 'plantaciones', objeto: registro, visibles: this.VISIBLES_DETALLE, notas: this.NOTAS }); },
 
   // «Iniciar jornada»: la jornada que se guardaría con lo escrito hasta ahora
   refrescarIniciar() {
@@ -194,67 +230,47 @@ SRP.espejo = {
     if (!SRP.CONFIG.ES_FICTICIO || !panel || panel.hidden || !SRP.sesion.usuario) return;
     let j; try { j = SRP.activa.jornadaPrevista(); } catch (err) { return; }
     const alIniciar = k => (k === 'id' || k === 'fecha_inicio') ? '(se fija al iniciar)' : null;
-    this.colocar(panel, 'iniciar', this.htmlGuardado('jornadas', j, this.VISIBLES_INICIAR, this.NOTAS_CIERRE, true, alIniciar));
+    this.colocar(panel, 'iniciar', this.htmlGuardado({ tabla: 'jornadas', objeto: j, visibles: this.VISIBLES_INICIAR, notas: this.NOTAS_CIERRE, previsto: true, provisional: alIniciar,
+      bitacora: { accion: 'CREADO', entidad: 'jornada', detalle: 'Jornada «' + (j.nombre || '') + '»', alGuardar: '(se fija al iniciar)' } }));
   },
 
   // Ficha de la jornada (jornadas.js): la jornada tal como está guardada
-  enFicha(contenedor, jornada) { this.colocar(contenedor, 'jornada', this.htmlGuardado('jornadas', jornada, this.VISIBLES_JORNADA.concat(SRP.reportes.CAMPOS), this.NOTAS_CIERRE)); },
+  enFicha(contenedor, jornada) {
+    this.colocar(contenedor, 'jornada', this.htmlGuardado({ tabla: 'jornadas', objeto: jornada, visibles: this.VISIBLES_JORNADA.concat(SRP.reportes.CAMPOS), notas: this.NOTAS_CIERRE }));
+  },
 
-  /* Alta o edición de una cuenta o de un valor de catálogo: lo que pone el sistema. En un alta
-     todavía no existe: se dice cuándo se fija. */
+  /* Alta o edición de una cuenta o de un valor de catálogo: lo que se escribe en su formulario y lo que
+     pone el sistema. En un alta todavía no existe: se dice cuándo se fija. */
   enFormulario(contenedor, almacen, objeto) {
     const nuevo = !objeto, u = SRP.sesion.usuario;
     const o = objeto || { id: null, activo: true, creado_por_id: u ? u.id : null, fecha_creacion: null, editado_por_id: null, fecha_ultima_edicion: null };
     const visibles = Object.keys(o).filter(k => !this.DEL_SISTEMA.includes(k));
     const alGuardar = k => nuevo && (k === 'id' || k === 'fecha_creacion') ? '(se fija al guardar)' : null;
-    this.colocar(contenedor, 'formulario', this.htmlGuardado(almacen, o, visibles, this.NOTAS_SISTEMA, nuevo, alGuardar));
+    this.colocar(contenedor, 'formulario', this.htmlGuardado({ tabla: almacen, objeto: o, visibles, notas: this.NOTAS_SISTEMA, previsto: nuevo, provisional: alGuardar,
+      bitacora: { accion: nuevo ? 'CREADO' : 'EDITADO', entidad: almacen === 'usuarios' ? 'usuario' : 'catalogo', alGuardar: '(se fija al guardar)' } }));
   },
 
-  /* Cierre del reporte (reportes.js): el objeto que escribiría «Generar reporte», con lo que la
-     pantalla no enseña. Se repinta con cada tecla del formulario de cierre. */
+  /* Cierre del reporte (reportes.js): el objeto que escribiría «Generar reporte». Se repinta con cada
+     tecla del formulario de cierre. */
   refrescarCierre() {
     const caja = document.getElementById('espejo-cierre');
     if (!caja || !SRP.CONFIG.ES_FICTICIO || !SRP.reportes.contexto) return;
     caja.hidden = false;
     const cierre = SRP.reportes.cierrePrevisto();
-    const visibles = SRP.reportes.CAMPOS.concat(['encargado_id']);
-    const prov = (k) => {
-      if (k === 'fecha_ultima_edicion') return '(se fija al generar)';
-      return null;
-    };
-    const f = this.filas(cierre, visibles, this.NOTAS_CIERRE, prov);
-    document.getElementById('espejo-cierre-cuerpo').innerHTML = f.html;
-    const b = SRP.bitacora.entrada('EDITADO', 'jornada', cierre.id, 'Datos de cierre del reporte');
-    const esc = SRP.util.escapar;
-    document.getElementById('espejo-cierre-bitacora').innerHTML = Object.keys(b).map(k =>
-      '<tr><td class="espejo-campo">' + esc(k) + '</td>' +
-      '<td class="espejo-valor">' + esc((k === 'id' || k === 'fecha') ? '(se fija al generar)' : this.formatear(b[k])) + '</td></tr>').join('');
-    document.getElementById('espejo-cierre-conteo').textContent =
-      f.ocultos.length + ' campos en jornadas + ' + Object.keys(b).length + ' en bitacora';
+    document.getElementById('espejo-cierre-contenido').innerHTML = this.htmlCuerpo({ tabla: 'jornadas', objeto: cierre, visibles: SRP.reportes.CAMPOS.concat(['encargado_id']),
+      notas: this.NOTAS_CIERRE, previsto: true, provisional: k => k === 'fecha_ultima_edicion' ? '(se fija al generar)' : null, prefijo: 'espejo-cierre',
+      bitacora: { accion: 'EDITADO', entidad: 'jornada', detalle: 'Datos de cierre del reporte', alGuardar: '(se fija al generar)' } });
   },
 
+  // El formulario del árbol: el registro que escribiría el botón Guardar
   refrescar() {
     const caja = document.getElementById('espejo-campos');
     if (!caja || caja.hidden) return;
     let registro;
     try { registro = SRP.formulario.registroPrevisto(); } catch (err) { return; }
-
-    const esc = SRP.util.escapar;
-    const f = this.filas(registro, this.VISIBLES, this.NOTAS, (k, r) => this.provisional(k, r));
-    const ocultos = f.ocultos;
-    document.getElementById('espejo-cuerpo').innerHTML = f.html;
-
-    // La bitácora es otro almacén y se escribe sola en el mismo acto de guardar:
-    // también sale de esta pantalla, así que también se enseña.
-    const accion = SRP.formulario.estado.editando ? 'EDITADO' : 'CREADO';
-    const b = SRP.bitacora.entrada(accion, 'plantacion', registro.id || '(se fija al revisar)');
-    // El identificador y la hora de la bitácora nacen en el acto de guardar; antes no son nada
-    const alGuardar = { id: true, fecha: true };
-    document.getElementById('espejo-bitacora').innerHTML = Object.keys(b).map(k =>
-      '<tr><td class="espejo-campo">' + esc(k) + '</td>' +
-      '<td class="espejo-valor">' + esc(alGuardar[k] ? '(se fija al guardar)' : this.formatear(b[k])) + '</td></tr>').join('');
-
-    document.getElementById('espejo-conteo').textContent =
-      ocultos.length + ' campos en plantaciones + ' + Object.keys(b).length + ' en bitacora';
+    const editando = !!SRP.formulario.estado.editando;
+    document.getElementById('espejo-contenido').innerHTML = this.htmlCuerpo({ tabla: 'plantaciones', objeto: registro, visibles: this.VISIBLES, notas: this.NOTAS, previsto: true,
+      provisional: (k, r) => this.provisional(k, r), prefijo: 'espejo',
+      bitacora: { accion: editando ? 'EDITADO' : 'CREADO', entidad: 'plantacion', alGuardar: '(se fija al guardar)' } });
   }
 };

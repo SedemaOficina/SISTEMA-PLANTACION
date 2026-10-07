@@ -309,12 +309,13 @@ SRP.activa = {
       // Lo que cambia con cada árbol va siempre a la vista: cuántos van, y su barra frente a lo previsto
       '<span class="franja-jornada-avance"><b>' + n + (meta !== null ? ' de ' + meta : '') + (n === 1 && meta === null ? ' árbol' : ' árboles') + '</b>' +
         (meta ? '<svg class="jornada-barra" data-tono="' + (n >= meta ? 'ok' : 'curso') + '" viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true"><rect width="' + Math.min(100, Math.round(n / meta * 100)) + '" height="8"/></svg>' : '') + '</span>' +
-      '<span class="franja-jornada-datos">' + esc(SRP.util.textoDias(SRP.util.diasJornada(j, registros))) + (j.ubicacion ? ' · ' + esc(j.ubicacion) : '') + (this.lugarDe(j) ? ' · ' + esc(this.lugarDe(j)) : '') + (j.programa_id ? ' · ' + esc(SRP.ref.nombreCatalogo(j.programa_id)) : '') + '' +
+      '<span class="franja-jornada-datos">' + esc(SRP.util.textoDias(SRP.util.diasJornada(j, registros))) + (this.lugarDe(j) ? ' · ' + esc(this.lugarDe(j)) : '') +
+        // La prioridad de la jornada, la de la colonia donde se ubicó, junto a ella; después la dirección
+        (SRP.prioritarias.marca(SRP.prioritarias.deJornada(registros, j)) ? ' · ' + SRP.prioritarias.marca(SRP.prioritarias.deJornada(registros, j)) : '') +
+        (j.ubicacion ? ' · ' + esc(j.ubicacion) : '') + (j.programa_id ? ' · ' + esc(SRP.ref.nombreCatalogo(j.programa_id)) : '') + '' +
       (j.estatus === 'cerrada' ? ' · cerrada' : '') + (atrasada ? ' · <b>no es de hoy</b>' : '') +
       (j.relevo_id && j.relevo_id !== j.cabo_id ? ' · relevo de ' + esc(SRP.ref.nombreUsuario(j.cabo_id)) : '') + '</span>' +
-      (SRP.solicitud.es(j) ? '<span class="franja-jornada-solicitud">' + SRP.solicitud.insignia(j) + '</span>' : '') +
-      // La prioridad de reforestación de la jornada: la de la colonia donde se ubicó
-      (SRP.prioritarias.hay() ? '<span class="franja-jornada-prioridad">' + SRP.prioritarias.insignia(SRP.prioritarias.deJornada(registros, j)) + '</span>' : '');
+      (SRP.solicitud.es(j) ? '<span class="franja-jornada-solicitud">' + SRP.solicitud.insignia(j) + '</span>' : '');
     this.el('franja-jornada-acciones').hidden = !!editando;
     this.el('btn-franja-editar').hidden = !!editando || !SRP.permisos.puede('jornada.editar', j);
     // En qué paso va (D138). Al editar un registro se enseña la jornada del registro, no el flujo.
@@ -354,6 +355,7 @@ SRP.activa = {
     b.disabled = !!buscando;
     b.setAttribute('aria-busy', String(!!buscando));
     const p = this.punto;
+    if (p) SRP.util.quitarErrorCampo(b);   // ya ubicada: el aviso de que faltaba la ubicación se va
     b.className = 'btn btn-ancho ' + (p ? 'btn-editar' : 'btn-primario');
     b.innerHTML = SRP.ICONOS.svg('ubicacion', 'medio') + '<span>' +
       (buscando ? 'Buscando señal…' : p ? 'Detectar de nuevo la ubicación' : 'Detectar ubicación de la jornada') + '</span>';
@@ -438,6 +440,8 @@ SRP.activa = {
     const previstos = metaTexto === '' ? null : Number(metaTexto);
     const errores = [];
     if (!nombre) errores.push(['ini-nombre', 'Escriba el nombre de la jornada: el parque, la calle o el sitio.']);
+    // La jornada se ubica siempre: con el GPS o con las coordenadas a mano
+    if (!this.punto) errores.push(['btn-ini-detectar', 'Ubique la jornada: use «Detectar ubicación de la jornada» o capture las coordenadas a mano.']);
     if (!programa_id) errores.push(['ini-programa', 'Elija el programa de la jornada.']);
     else if (!SRP.ref.programasPara(SRP.sesion.usuario.organizacion_id).some(p => p.id === programa_id)) errores.push(['ini-programa', 'Ese programa no está disponible para su institución.']);
     SRP.solicitud.errores('ini').forEach(e => errores.push(e));
@@ -445,7 +449,7 @@ SRP.activa = {
     if (!fecha) errores.push(['ini-fecha', 'Indique la fecha de la jornada.']);
     else if (fecha > SRP.util.fechaHoy()) errores.push(['ini-fecha', 'La fecha no puede ser posterior a hoy.']);
     // Cada campo dice su error (D140) y arriba el resumen, igual que en todos los formularios (M15)
-    if (SRP.util.resumenErrores(this.el('ini-errores'), errores, ['ini-nombre', 'ini-programa', 'ini-meta', 'ini-fecha'].concat(SRP.solicitud.ids('ini')))) return;
+    if (SRP.util.resumenErrores(this.el('ini-errores'), errores, ['ini-nombre', 'btn-ini-detectar', 'ini-programa', 'ini-meta', 'ini-fecha'].concat(SRP.solicitud.ids('ini')))) return;
     // Un segundo toque mientras se guarda no inicia otra jornada igual
     if (this._iniciando) return;
     this._iniciando = true;

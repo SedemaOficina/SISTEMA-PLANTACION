@@ -524,7 +524,8 @@ SRP.registros = {
     this.motivo = '';
     const esc = SRP.util.escapar;
     this.el('dlg-sustituir-texto').textContent = 'El ' + SRP.ref.especieDe(r).comun + ' (' + SRP.folio.texto(r) + ', ' + SRP.util.formatearFecha(r.fecha_plantacion) +
-      ') se perdió. El nuevo se registra en la misma jornada y queda en el mapa en morado.';
+      ') se perdió por alguna razón. El nuevo árbol se registra en la misma jornada y queda en el mapa en morado.';
+    this.el('dlg-sustituir-icono').innerHTML = SRP.ICONOS.svg('intercambio', 'chico');
     this.el('sustituir-motivos').innerHTML = SRP.CONFIG.MOTIVOS_SUSTITUCION.map(([k, t]) =>
       '<button type="button" class="chip" data-motivo="' + esc(k) + '" aria-pressed="false">' + esc(t) + '</button>').join('');
     this.el('sustituir-otro').value = '';

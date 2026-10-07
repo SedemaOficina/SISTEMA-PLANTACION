@@ -242,6 +242,8 @@ with sync_playwright() as p:
           SRP.sesion.usuario = SRP.ref.usuarios.find(u => u.perfil === 'CABO');
           const valor = (id, v) => { document.getElementById(id).value = v; };
           valor('ini-nombre', 'Auditoría'); valor('ini-meta', '1'); valor('ini-fecha', SRP.util.fechaHoy());
+          // La jornada se ubica siempre: el punto del Zócalo, capturado a mano
+          valor('ini-coord-lat', '19.432600'); valor('ini-coord-lng', '99.133200'); SRP.activa.aplicarCoordenadas();
           const prog = document.getElementById('ini-programa');
           if (!prog.querySelector('option[value="p-refor"]')) prog.add(new Option('Programa', 'p-refor'));
           prog.value = 'p-refor';

@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.9.46 (Bloque 186)»**.
+Al pie de cualquier pantalla: **«Versión 0.9.47 (Bloque 188)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -458,6 +458,11 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M460 | Liber | «Especifique la especie» lleva el asterisco de obligatorio (ya lo era) | Baja | 0.9.46 (B186) | Nuevo registro › Especie › Otra especie | D258 |
 | M461 | Liber | «Revise antes de guardar» dice el programa sin «El de la jornada» | Baja | 0.9.46 (B186) | Revise antes de guardar | D258 |
 | M462 | Liber | «Jornada completa»: «Cerrar jornada» primero y el texto «Registró los N árboles previstos en la jornada «…»» | Media | 0.9.46 (B186) | Ventana «Jornada completa» | D258 |
+| M463 | Liber | La ubicación de la jornada es obligatoria: «Ubicación de la jornada *» y, sin punto (GPS o coordenadas a mano), la jornada no se registra | Alta | 0.9.47 (B188) | Nuevo registro › Registrar jornada | D260 |
+| M464 | Liber | La prioridad de la colonia junto a ella: «Alcaldía · Col. … · ■ Alta · dirección» en la tarjeta, la franja y la ficha de la jornada; fuera el renglón aparte | Media | 0.9.47 (B188) | Jornadas; Nuevo registro › franja | D260 |
+| M465 | Liber | «Editar registro» sin el recuadro «Está editando el registro…»: basta la franja fija | Baja | 0.9.47 (B188) | Registros › Editar | D260 |
+| M466 | Liber | «Sustituir árbol» en morado (franja e icono) y con «se perdió por alguna razón» y «Razón de la sustitución» | Baja | 0.9.47 (B188) | Registros › Sustituir árbol | D261 |
+| M467 | Liber | «Lo que viaja a la base de datos»: la misma sección en todas las pantallas que guardan, con destino (teléfono y servidor), lo que se ve, lo que no y la bitácora; y se despliega en Registrar jornada | Media | 0.9.47 (B188) | Versión de prueba, al pie de cada formulario | D262 |
 
 ## 2. Por hacer
 

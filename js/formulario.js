@@ -888,11 +888,8 @@ SRP.formulario = {
     if (registro.jornada_id) SRP.almacen.uno('jornadas', registro.jornada_id).then(j => { this.estado.jornadaEditando = j || null; });
     this.el('titulo-registrar').textContent = 'Editar registro';
     this.el('titulo-registrar').classList.remove('oculto-visual');
-    const aviso = this.el('edicion-aviso');
-    aviso.textContent = 'Está editando el registro del ' + SRP.util.formatearFecha(registro.fecha_plantacion) +
-      ' capturado por ' + SRP.ref.nombreUsuario(registro.cabo_id) + '. Los cambios quedan en el historial.';
-    aviso.hidden = false;
-    // La edición se distingue de la captura: franja fija con el folio, marco del formulario y «Guardar cambios»
+    // La edición se distingue de la captura: franja fija con el folio, marco del formulario y «Guardar cambios».
+    // La franja basta: no hace falta otro aviso que diga que se está editando
     this.el('edicion-franja-folio').textContent = SRP.folio.valido(registro.folio) ? SRP.folio.textoLargo(registro) : '';
     this.el('edicion-franja').hidden = false;
     this.el('vista-registrar').dataset.editando = 'true';

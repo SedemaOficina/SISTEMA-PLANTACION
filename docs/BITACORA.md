@@ -3593,3 +3593,41 @@ comparte la lectura del archivo de contraseñas. `servidor/package.json`: Expres
 
 **Verificación:** `npm test` en el servidor, 21 de 21 (esquema 7, datos 5, acceso 9). La primera cuenta,
 creada en una base recién instalada y rechazada la segunda vez. No probado contra el servidor del SIA.
+
+## Bloque 188 — La ubicación de la jornada es obligatoria (06-10-2026)
+
+Versión 0.9.47. Petición de Liber.
+
+**Qué cambió (D260).** `index.html`: «Ubicación de la jornada *» sobre el botón de detectar.
+`js/jornada-activa.js`: `iniciarJornada()` exige el punto; `pintarDetectar()` quita el error al haberlo.
+`datos/MAPEO-CAMPOS.md`, `docs/FASE2-Y-TRASPASO.md` y `docs/MEJORAS.md` al día. Pruebas: `ctx88`; la
+comprobación que decía que sin detectar se guardaba sin punto ahora dice que no se registra; y, como casi
+ninguna prueba trata de la ubicación de la jornada, al tocar «Iniciar jornada» sin punto se capturan a mano
+las coordenadas del Zócalo (se apaga con `window.__sinPuntoAutomatico`).
+
+Además: `js/prioritarias.js`, `marca()` en lugar de `insignia()`; `js/jornadas.js` (tarjeta y ficha) y
+`js/jornada-activa.js` (franja) ponen la marca entre la colonia y la dirección; `css/estilos.css`, fuera los
+estilos del renglón aparte. `js/formulario.js`: «Editar registro» sin el recuadro de aviso. Pruebas: las de
+la prioridad leen la marca junto a la colonia.
+
+También (D261, D262): `index.html`, `js/registros.js` y `css/estilos.css`, la ventana «Sustituir árbol» en
+morado con sus textos nuevos. `js/espejo.js` reescrito alrededor de `htmlCuerpo()`, la misma sección en todas
+las pantallas; las dos secciones fijas de `index.html` quedan como su contenedor; `css/estilos.css`, el
+recuadro de destino. `herramientas/generar_diccionario.py`: `js/esquema.js` lleva la etiqueta de pantalla de
+cada campo. `pruebas/auditoria.py`: su jornada de prueba lleva ubicación. Pruebas: `ctx89`, y las de la
+sección leen sus tablas por separado.
+
+**Pantalla: qué se agregó y qué se quitó.** Se agregó el rótulo «Ubicación de la jornada *» y el error cuando
+falta; en «Sustituir árbol», la franja y el icono morados; en la sección de prueba de lo que viaja a la base,
+el destino, lo que se ve en pantalla y la bitácora en todas las pantallas. Se quitó el renglón «Colonia de
+prioridad …» (la prioridad pasa junto a la colonia, en la tarjeta, la franja y la ficha) y el recuadro «Está
+editando el registro…» de «Editar registro».
+
+**Verificación.** `pruebas/prueba.py` completa, sola: 1,394 comprobaciones, 0 fallas (una corrida previa se
+cortó a la mitad porque el servidor local de prueba rechazó una conexión; se repitió entera).
+`pruebas/auditoria.py`: 143 comprobaciones, 0 hallazgos; `pruebas/auditoria_css.py`: 0 hallazgos. No se
+probó en un teléfono real: la ubicación obligatoria, la marca de prioridad junto a la colonia, la ventana
+morada y la sección de lo que viaja a la base se vieron sólo en el navegador de pruebas.
+
+**Siguiente paso.** Fase 3 del servidor (permisos por perfil e institución, edición de cuentas), cuando Liber
+lo indique.

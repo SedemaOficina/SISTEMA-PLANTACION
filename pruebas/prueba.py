@@ -106,7 +106,20 @@ with sync_playwright() as p:
     # Las ventanas de jornada completa y de árboles de más (D237) esperan respuesta. Casi ninguna prueba
     # trata de ellas: en cuanto abren se contestan solas —seguir registrando, registrar el árbol,
     # dejar lo previsto como estaba—. Las secciones que sí las prueban piden su contexto con `contexto_llano`.
-    contexto_llano = b.new_context
+    # La ubicación de la jornada es obligatoria. Casi ninguna prueba trata de ella: si se toca «Iniciar
+    # jornada» sin punto, se captura a mano el del Zócalo, como lo haría quien la registra. Las que
+    # prueban la regla lo apagan con window.__sinPuntoAutomatico.
+    PUNTO_JORNADA = """document.addEventListener('click', (e) => {
+      if (window.__sinPuntoAutomatico || !e.target.closest || !e.target.closest('#btn-iniciar-jornada')) return;
+      if (!window.SRP || !SRP.activa || SRP.activa.punto) return;
+      document.getElementById('ini-coord-lat').value = '19.432600'; document.getElementById('ini-coord-lng').value = '99.133200';
+      SRP.activa.aplicarCoordenadas();
+    }, true);"""
+    _contexto_base = b.new_context
+    def contexto_llano(*a, **k):
+        c = _contexto_base(*a, **k)
+        c.add_init_script(PUNTO_JORNADA)
+        return c
     ATENDER_VENTANAS = """setInterval(() => {
       const c = document.getElementById('dlg-completa'); if (c && c.open) c.close();
       const d = document.getElementById('dlg-confirmar'); if (!d || !d.open) return;
@@ -170,6 +183,7 @@ with sync_playwright() as p:
     ok(pg.is_visible('#panel-iniciar-jornada') and pg.is_hidden('#registrar-columnas'),'sin jornada abierta, Nuevo registro pide iniciar una antes del formulario (D119)')
     ok(pg.is_hidden('#btn-iniciar-cancelar'),'y sin jornada no hay «Cancelar»: no hay a dónde volver')
     ok(pg.input_value('#ini-fecha')=='' and pg.get_attribute('#ini-fecha','max')==HOY,'la fecha de la jornada arranca vacía y no admite futuro (D29, D120)')
+    pg.evaluate("window.__sinPuntoAutomatico = true")   # aquí se prueban los errores: sin punto automático
     pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(300)
     ok(pg.is_visible('#ini-errores') and 'nombre' in pg.inner_text('#ini-errores').lower() and 'fecha' in pg.inner_text('#ini-errores').lower(),'sin nombre ni fecha no se inicia: '+pg.inner_text('#ini-errores').replace('\n',' | '))
     pg.fill('#ini-nombre','Parque Hundido'); pg.fill('#ini-fecha','2030-01-01'); pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(300)
@@ -180,6 +194,7 @@ with sync_playwright() as p:
     orden=pg.evaluate("[...document.querySelectorAll('#form-iniciar-jornada button, #form-iniciar-jornada input, #form-iniciar-jornada output')].map(e => e.id)")
     ok(orden.index('btn-ini-detectar') < orden.index('ini-ubicacion') and orden.index('ini-nombre') < orden.index('btn-ini-detectar'),'el botón «Detectar ubicación» está entre el nombre y el campo de ubicación (D122): %s' % orden[:5])
     ok(pg.inner_text('#ini-alcaldia')=='—' and pg.inner_text('#ini-colonia')=='—' and 'btn-primario' in pg.get_attribute('#btn-ini-detectar','class') and 'Detectar ubicación' in pg.inner_text('#btn-ini-detectar'),'antes de detectar: guiones, botón azul con su icono (D166)')
+    pg.evaluate("window.__sinPuntoAutomatico = false")
     pg.fill('#ini-ubicacion','Av. Insurgentes Sur 1500, Benito Juárez')
     pg.click('#btn-ini-detectar'); pg.wait_for_timeout(700)
     det=[pg.inner_text('#ini-alcaldia'), pg.inner_text('#ini-colonia'), pg.inner_text('#ini-detectado'), pg.get_attribute('#btn-ini-detectar','class'), pg.input_value('#ini-ubicacion')]
@@ -197,13 +212,12 @@ with sync_playwright() as p:
     ok('Insurgentes' in pg.text_content('#franja-jornada') and 'Cuauhtémoc' in pg.text_content('#franja-jornada') and 'Alcaldía' not in pg.text_content('#franja-jornada'),'y la franja muestra la ubicación escrita y la colonia y alcaldía detectadas: '+pg.text_content('#franja-jornada').replace('\n',' '))
     geo=pg.evaluate("async () => { const j = (await SRP.almacen.todos('jornadas'))[0]; return [j.alcaldia, j.alcaldia_cve, !!j.colonia, !!j.colonia_cve, typeof j.lat, typeof j.gps_precision_m, j.punto_origen]; }")
     ok(geo[0]=='Cuauhtémoc' and geo[1] and geo[2] and geo[3] and geo[4]=='number' and geo[5]=='number' and geo[6]=='gps','la jornada guarda punto, precisión, alcaldía y colonia con sus claves, y que el punto vino del GPS (D122, D143): %s' % geo)
-    # Sin tocar el botón, la jornada se guarda sin punto: nada se inventa
-    sin=pg.evaluate("""async () => { SRP.activa.mostrarInicio(true); const antes = [document.getElementById('ini-alcaldia').textContent, document.getElementById('btn-ini-detectar').className.includes('btn-primario')];
+    # Sin ubicación la jornada no se registra: el error lo dice bajo el botón
+    sin=pg.evaluate("""async () => { const previa = SRP.activa.jornada; SRP.activa.mostrarInicio(true); const antes = [document.getElementById('ini-alcaldia').textContent, document.getElementById('btn-ini-detectar').className.includes('btn-primario')];
       document.getElementById('ini-nombre').value = 'Sin detectar'; document.getElementById('ini-programa').value = 'p-refor'; document.getElementById('ini-meta').value = '5'; document.getElementById('btn-ini-hoy').click(); await SRP.activa.iniciarJornada();
-      const j = SRP.activa.jornada; return [antes, j.lat, j.alcaldia, j.colonia_cve]; }""")
-    ok(sin==[['—',True],None,None,None],'al abrir otra vez el panel vuelve a los guiones, y sin detectar la jornada queda con punto y alcaldía nulos: %s' % sin)
-    # La jornada de prueba se retira para no alterar el resto de las pruebas; la primera vuelve a ser la activa
-    pg.evaluate("async () => { const j = SRP.activa.jornada; await SRP.almacen.borrarConBitacora('jornadas', j.id, SRP.bitacora.entrada('ELIMINADO', 'jornada', j.id, 'Prueba')); SRP.activa.jornada = null; await SRP.activa.preparar(); }")
+      const e = document.getElementById('btn-ini-detectar-error'); const r = [antes, !!e && e.textContent.includes('Ubique la jornada'), (await SRP.almacen.todos('jornadas')).some(j => j.nombre === 'Sin detectar')];
+      SRP.activa.jornada = previa; await SRP.activa.preparar(); return r; }""")
+    ok(sin==[['—',True],True,False],'al abrir otra vez el panel vuelve a los guiones, y sin ubicación la jornada no se registra: el error lo dice bajo el botón: %s' % sin)
     pg.wait_for_timeout(300)
     ok('Parque Hundido' in pg.text_content('#franja-jornada'),'y «Parque Hundido» sigue siendo la jornada activa')
     # Sin jornada no hay forma de registrar (D120): el formulario no se ve, ni en computadora, y sus botones devuelven al inicio
@@ -636,7 +650,7 @@ with sync_playwright() as p:
     ok('(' in fila and 'CENTRO IV' in fila,'cada renglón trae común (científico) y alcaldía, colonia: '+fila.replace(chr(10),' | ')[:90])
     # Espejo en el detalle (B22): los campos guardados que la ficha no enseña
     accion(pg,'#lista-registros','ver'); pg.wait_for_timeout(500)
-    campos=pg.evaluate("[...document.querySelectorAll('#dlg-detalle .espejo .espejo-campo')].map(e=>e.textContent)")
+    campos=pg.evaluate("[...document.querySelectorAll('#dlg-detalle .espejo .espejo-ocultos .espejo-campo')].map(e=>e.textContent)")
     ok('colonia_cve' in campos and 'jornada_id' in campos and 'capa_version' in campos and 'uga' in campos and 'id' in campos and 'folio' not in campos,
        'el detalle lleva su espejo con lo que no se ve: también la celda UGA, las capas y el identificador (%d campos)' % len(campos))
     # Todas las ventanas con cabecera fija: título, × y acción arriba (D91)
@@ -1172,7 +1186,7 @@ with sync_playwright() as p:
     pg.click('#btn-detalle-cerrar'); pg.wait_for_timeout(300)
     ok(pg.evaluate("SRP.registros.mapaDetalle")is None,'al cerrar, su mapa se destruye')
     accion(pg,'#lista-registros','editar'); pg.wait_for_timeout(600)
-    ok(pg.is_visible('#edicion-aviso'),'editar abre el formulario precargado')
+    ok(pg.is_visible('#edicion-franja') and pg.is_hidden('#edicion-aviso'),'editar abre el formulario precargado, con la franja fija y sin otro aviso que lo repita')
     ed0=pg.evaluate("""() => { const f = document.getElementById('edicion-franja'), v = document.getElementById('vista-registrar'), m = getComputedStyle(document.getElementById('registrar-columnas'));
       return { franja: !f.hidden && f.textContent.startsWith('Editando registro'), fija: getComputedStyle(f).position, marco: [v.dataset.editando, m.borderTopStyle, m.borderTopWidth], boton: document.getElementById('btn-revisar').textContent.trim(),
         campo: getComputedStyle(document.getElementById('campo-especie')).borderTopStyle }; }""")
@@ -5053,7 +5067,7 @@ with sync_playwright() as p:
     base60=pg60.evaluate("(() => { const u = []; SRP.jornadas.mapa.eachLayer(l => { if (l._url) u.push(l._url.split('/services/')[1].split('/MapServer')[0]); }); return [u, document.querySelector('#jornada-mapa [data-pri=base][value=calles]').checked, document.getElementById('jornada-simbologia').textContent.trim()]; })()")
     ok(base60==[['World_Street_Map'], True, 'Colonia de la jornada, de prioridad:Alta'],'el mapa de la ficha usa el mapa base elegido y trae la misma simbología: %s' % base60)
     pg60.evaluate("SRP.mapa.cambiarBase('satelite')")
-    ok(jf60[:4]==[False, True, 1, 0] and 'prioridad alta' in jf60[4],'la ficha de la jornada dice su prioridad, sin desglose ni prioridad por punto, y su mapa pinta su colonia con el mismo botón: %s' % jf60[4])
+    ok(jf60[:4]==[False, True, 1, 0] and 'prioridad alta' in jf60[4].lower(),'la ficha de la jornada dice su prioridad, sin desglose ni prioridad por punto, y su mapa pinta su colonia con el mismo botón: %s' % jf60[4])
     # Supervisión: árboles por nivel de prioridad, en pantalla, en el informe y en la tabla
     pg60.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-admin-1'])"); pg60.reload(); pg60.wait_for_timeout(1500)
     pg60.evaluate("async () => { await SRP.demo.cargar(); }"); pg60.wait_for_timeout(500)
@@ -5110,7 +5124,7 @@ with sync_playwright() as p:
     pg61.fill('#ini-nombre','Prioridad B143'); pg61.fill('#ini-fecha', HOY); pg61.select_option('#ini-programa','p-refor'); pg61.fill('#ini-meta','10'); pg61.click('#btn-iniciar-jornada'); pg61.wait_for_timeout(700)
     j61=pg61.evaluate("SRP.activa.jornada.id")
     fr0=pg61.text_content('#franja-jornada-texto')
-    ok('prioridad alta' in fr0,'la franja de la jornada activa dice su prioridad desde antes del primer árbol (la de su ubicación): %s' % fr0.replace(chr(10),' · '))
+    ok('prioridad alta' in fr0.lower(),'la franja de la jornada activa dice su prioridad desde antes del primer árbol (la de su ubicación): %s' % fr0.replace(chr(10),' · '))
     registrar(pg61,'ahuehu','ESP-0070'); registrar(pg61,'aile','ESP-0002')
     # Un árbol en otra colonia, de prioridad distinta: la jornada conserva la de su ubicación
     otro61=pg61.evaluate("""async () => { const f = SRP.CAPAS.prioritarias.geojson.features.find(x => x.properties.prioridad === 1); const a = f.geometry.coordinates[0][0]; const lng = (a[0][0] + a[1][0] + a[2][0]) / 3, lat = (a[0][1] + a[1][1] + a[2][1]) / 3;
@@ -5118,13 +5132,13 @@ with sync_playwright() as p:
       await SRP.almacen.guardarConBitacora('plantaciones', Object.assign({}, base, { id: 'b143-otro', lat, lng, folio: null }), null); return p && p.texto; }""")
     pg61.evaluate("async () => { await SRP.activa.cambiarEstatus(SRP.activa.jornada, 'cerrada'); SRP.activa.jornada = null; }"); pg61.wait_for_timeout(400)
     pg61.evaluate("SRP.app.mostrarVista('jornadas')"); pg61.wait_for_timeout(1500)
-    t61=pg61.evaluate("id => { const li = document.querySelector('#lista-jornadas li[data-clave=\"' + id + '\"]'); const p = li.querySelector('.jornada-prioridad'); return [p.textContent.trim(), !!p.querySelector('.pri-muestra.pri-nivel-3')]; }", j61)
-    ok(otro61 and t61==['Colonia de prioridad alta', True],'la tarjeta de la jornada marca su prioridad —la de la colonia donde se ubicó, aunque un árbol caiga en otra— con su muestra de color: %s' % t61[0])
+    t61=pg61.evaluate("id => { const li = document.querySelector('#lista-jornadas li[data-clave=\"' + id + '\"]'); const p = li.querySelector('.jornada-lugar .pri-marca'); return [p.textContent.trim(), !!p.querySelector('.pri-muestra.pri-nivel-3')]; }", j61)
+    ok(otro61 and t61==['prioridad Alta', True],'la tarjeta de la jornada marca su prioridad junto a su colonia —la de la colonia donde se ubicó, aunque un árbol caiga en otra— con su muestra de color: %s' % t61[0])
     ok(pg61.locator('#jornada-filtro-prioridad').count()==0,'la prioridad se lee en la tarjeta; ya no es un filtro de Jornadas')
     pg61.evaluate("async (id) => { await SRP.jornadas.abrir(id); }", j61); pg61.wait_for_timeout(1500)
     esperar(pg61, "document.querySelectorAll('#jornada-lista .punto-jornada').length === 3 && /prioridad/.test(document.getElementById('jornada-sub').textContent)", 6000)   # la lista se pinta por partes
     fi61=pg61.evaluate("[document.getElementById('jornada-sub').textContent, document.querySelectorAll('#jornada-lista .punto-prioridad').length, /Árboles por prioridad/.test(document.getElementById('jornada-detalle').textContent)]")
-    ok('prioridad alta' in fi61[0] and 'de 3 árboles' not in fi61[0] and fi61[1:]==[0, False],
+    ok('prioridad alta' in fi61[0].lower() and 'de 3 árboles' not in fi61[0] and fi61[1:]==[0, False],
        'la ficha dice sólo la prioridad de la jornada: sin desglose y sin prioridad por punto: %s' % fi61[0])
     # El reporte de la jornada: sólo su prioridad
     rep61=pg61.evaluate("""async (id) => { const j = await SRP.almacen.uno('jornadas', id); const regs = await SRP.activa.registrosDe(j); const m = SRP.reportes.modelo(regs, j, j.fecha, j);
@@ -5410,6 +5424,7 @@ with sync_playwright() as p:
     pg65.select_option('#sel-usuario-prueba', 'u-cabo-1'); pg65.click('#btn-entrar-prueba'); pg65.wait_for_timeout(900)
     J65 = "(async () => (await SRP.almacen.todos('jornadas')).map(j => [j.nombre, j.estatus, !!j.reporte_en]))()"
     pg65.fill('#ini-nombre', 'Doble toque B151'); pg65.fill('#ini-fecha', HOY); pg65.select_option('#ini-programa', 'p-refor'); pg65.fill('#ini-meta', '10')
+    pg65.evaluate("(() => { document.getElementById('ini-coord-lat').value = '19.432600'; document.getElementById('ini-coord-lng').value = '99.133200'; SRP.activa.aplicarCoordenadas(); })()")
     pg65.evaluate("(() => { const f = document.getElementById('form-iniciar-jornada'); f.requestSubmit(); f.requestSubmit(); })()")
     esperar(pg65, "!!SRP.activa.jornada && !document.getElementById('btn-ubicacion').disabled", 5000); pg65.wait_for_timeout(500)
     ok(pg65.evaluate(J65) == [['Doble toque B151', 'abierta', False]], 'dos toques seguidos en «Iniciar jornada» inician una sola jornada: %s' % pg65.evaluate(J65))
@@ -5591,6 +5606,7 @@ with sync_playwright() as p:
     pg68.goto(BASE); pg68.wait_for_timeout(1200)
     pg68.select_option('#sel-usuario-prueba', 'u-cabo-1'); pg68.click('#btn-entrar-prueba'); pg68.wait_for_timeout(900)
     pg68.fill('#ini-nombre', 'Mapa B154'); pg68.fill('#ini-fecha', HOY); pg68.select_option('#ini-programa', 'p-refor'); pg68.fill('#ini-meta', '3')
+    pg68.evaluate("(() => { document.getElementById('ini-coord-lat').value = '19.432600'; document.getElementById('ini-coord-lng').value = '99.133200'; SRP.activa.aplicarCoordenadas(); })()")
     pg68.evaluate("document.getElementById('form-iniciar-jornada').requestSubmit()")
     esperar(pg68, "!!SRP.activa.jornada && !document.getElementById('btn-ubicacion').disabled", 5000); pg68.wait_for_timeout(500)
     PUNTOS68 = "document.querySelectorAll('#mapa .punto-plantado').length"
@@ -6122,10 +6138,12 @@ with sync_playwright() as p:
     if pg77.is_hidden('#panel-iniciar-jornada'):
         pg77.click('#btn-jornada-cambiar'); pg77.wait_for_timeout(200); pg77.click('#btn-cambiar-nueva'); pg77.wait_for_timeout(300)
     pg77.fill('#ini-nombre', 'Espejo B166'); pg77.wait_for_timeout(200)
-    ESP77 = """sel => { const d = document.querySelector(sel + ' [data-espejo] details'); if (!d) return null; const f = [...d.querySelectorAll('tbody tr')].map(tr => [tr.cells[0].textContent, tr.cells[1].textContent]);
-      return { titulo: d.querySelector('caption').textContent, campos: f.map(x => x[0]), valores: Object.fromEntries(f), sinNota: [...d.querySelectorAll('tbody tr')].filter(tr => !tr.cells[2].textContent.trim()).map(tr => tr.cells[0].textContent) }; }"""
+    ESP77 = """sel => { const d = document.querySelector(sel + ' [data-espejo] details'); if (!d) return null; const filas = d.querySelectorAll('.espejo-ocultos tbody tr');
+      const f = [...filas].map(tr => [tr.cells[0].textContent, tr.cells[1].textContent]);
+      return { titulo: d.querySelector('.espejo-destino').textContent, campos: f.map(x => x[0]), valores: Object.fromEntries(f), sinNota: [...filas].filter(tr => !tr.cells[2].textContent.trim()).map(tr => tr.cells[0].textContent),
+        visibles: [...d.querySelectorAll('.espejo-visibles tbody tr')].map(tr => tr.cells[0].textContent) }; }"""
     e77 = pg77.evaluate(ESP77, '#panel-iniciar-jornada')
-    ok(e77 and e77['titulo'].startswith('Almacén jornadas') and e77['valores']['id'] == '(se fija al iniciar)' and e77['valores']['cabo_id'] == 'u-cabo-1' and 'nombre' not in e77['campos'] and 'origen' not in e77['campos'] and e77['sinNota'] == [],
+    ok(e77 and 'tabla jornadas' in e77['titulo'] and 'nombre' in e77['visibles'] and e77['valores']['id'] == '(se fija al iniciar)' and e77['valores']['cabo_id'] == 'u-cabo-1' and 'nombre' not in e77['campos'] and 'origen' not in e77['campos'] and e77['sinNota'] == [],
        '«Iniciar jornada» enseña los campos que se guardarían y no se ven, cada uno con su nota: %s campos' % len(e77['campos'] if e77 else []))
     pg77.evaluate("SRP.app.mostrarVista('jornadas')"); pg77.wait_for_timeout(1000)
     pg77.evaluate("async () => { SRP.jornadas.aplicarAtajo('todas'); await SRP.jornadas.abrir('j-ped'); }"); pg77.wait_for_timeout(1500)
@@ -6152,7 +6170,7 @@ with sync_playwright() as p:
     pg77.evaluate("SRP.catalogos.abrirFormulario(SRP.ref.catalogoPorId['p-solicitud'])"); pg77.wait_for_timeout(500)
     c77 = pg77.evaluate(ESP77, '#form-catalogo')
     pg77.evaluate("document.getElementById('dlg-catalogo').close()")
-    ok(c77 and c77['titulo'].startswith('Almacén programas') and c77['valores']['id'] == 'p-solicitud' and 'nombre' not in c77['campos'], 'la edición de un valor de catálogo dice su tabla y lo que pone el sistema: %s' % (c77 and c77['titulo']))
+    ok(c77 and 'tabla programas' in c77['titulo'] and c77['valores']['id'] == 'p-solicitud' and 'nombre' not in c77['campos'] and 'nombre' in c77['visibles'], 'la edición de un valor de catálogo dice su tabla y lo que pone el sistema: %s' % (c77 and c77['titulo']))
     # «Sustituir árbol» no se parte en dos renglones
     pg77.evaluate("SRP.app.mostrarVista('registros')"); pg77.wait_for_timeout(1200)
     pg77.evaluate("SRP.registros.aplicarAtajo('todos')"); pg77.wait_for_timeout(800)
@@ -6675,7 +6693,7 @@ with sync_playwright() as p:
       const espejos = [...document.querySelectorAll('#vista-registrar .espejo, #vista-registrar [data-espejo]')].filter(vis);
       return [document.querySelectorAll('#ini-prioridad .pri-tramo[data-es]').length, !document.querySelector('#ini-prioridad .pri-escala-dicho'),
         document.getElementById('ini-ubicacion').placeholder, !document.getElementById('ini-ubicacion-ayuda'),
-        [...document.querySelectorAll('#vista-registrar summary')].filter(vis).filter(x => x.textContent.includes('Campos que viajan a la base')).length,
+        [...document.querySelectorAll('#vista-registrar summary')].filter(vis).filter(x => x.textContent.includes('Lo que viaja a la base')).length,
         vis(document.getElementById('espejo-campos'))]; }""")
     ok(r87 == [1, True, 'Calle y número, entre calles o tramo', True, 1, False],
        'Registrar jornada: la escala resalta la prioridad sin repetirla debajo, la dirección lleva su ayuda como texto de ejemplo y sólo se ve la sección de campos de la jornada: %s' % r87)
@@ -6694,6 +6712,77 @@ with sync_playwright() as p:
     ok(o87 and v87 == [True, False, True], '«Especifique la especie» lleva su asterisco y la revisión dice el programa sin «El de la jornada»: %s · %s' % (o87, v87))
     ok(err87 == [], 'sin errores de consola: %s' % err87[:2])
     ctx87.close()
+
+    # ---------- ctx88: la ubicación de la jornada es obligatoria ----------
+    ctx88 = contexto_llano(viewport={'width':390,'height':844}, timezone_id='America/Mexico_City')
+    pg88 = ctx88.new_page(); err88 = []
+    pg88.on('pageerror', lambda e: err88.append(str(e)))
+    pg88.add_init_script("window.__sinPuntoAutomatico = true")
+    pg88.goto(BASE); pg88.wait_for_timeout(1300)
+    entrar_como(pg88, 'u-cabo-1'); pg88.wait_for_timeout(900)
+    pg88.evaluate("SRP.app.mostrarVista('registrar')"); pg88.wait_for_timeout(500)
+    r88 = pg88.evaluate("[document.getElementById('etq-ini-punto').textContent.trim(), !!document.querySelector('#etq-ini-punto .obligatorio')]")
+    pg88.fill('#ini-nombre', 'Sin punto B188'); pg88.fill('#ini-fecha', HOY); pg88.select_option('#ini-programa', 'p-refor'); pg88.fill('#ini-meta', '5')
+    pg88.click('#btn-iniciar-jornada'); pg88.wait_for_timeout(600)
+    e88 = pg88.evaluate("""() => [!!SRP.activa.jornada, document.getElementById('btn-ini-detectar-error') && document.getElementById('btn-ini-detectar-error').textContent.trim(),
+      [...document.querySelectorAll('#ini-errores li')].map(l => l.textContent)]""")
+    ok(r88 == ['Ubicación de la jornada *', True] and e88[0] is False and 'Ubique la jornada' in (e88[1] or '') and any('Ubique la jornada' in t for t in e88[2]),
+       'Registrar jornada pide la ubicación con asterisco; sin ella no inicia y lo dice bajo el botón y en el resumen: %s · %s' % (r88, e88))
+    pg88.evaluate("document.getElementById('ini-detalles-coord').open = true"); pg88.fill('#ini-coord-lat', '19.432600'); pg88.fill('#ini-coord-lng', '99.133200'); pg88.click('#btn-ini-coord-aplicar'); pg88.wait_for_timeout(300)
+    q88 = pg88.evaluate("!document.getElementById('btn-ini-detectar-error')")
+    pg88.click('#btn-iniciar-jornada'); pg88.wait_for_timeout(800)
+    j88 = pg88.evaluate("SRP.activa.jornada && [SRP.activa.jornada.nombre, SRP.activa.jornada.punto_origen, SRP.activa.jornada.alcaldia]")
+    ok(q88 and j88 == ['Sin punto B188', 'manual', 'Cuauhtémoc'], 'al capturar las coordenadas a mano el error se va y la jornada se registra con su punto: %s' % j88)
+    # Recuadro de edición: ya no se repite lo que dice la franja; la prioridad va junto a la colonia y antes de la dirección
+    pg88.evaluate("async () => { const j = SRP.activa.jornada; j.ubicacion = 'Calle Uno 123'; await SRP.almacen.guardarConBitacora('jornadas', j, null); SRP.app.mostrarVista('jornadas'); }"); pg88.wait_for_timeout(1200)
+    o88 = pg88.evaluate("""() => { const l = document.querySelector('#lista-jornadas li .jornada-lugar'); const t = l.textContent.replace(/\s+/g, ' ').trim();
+      return [t, !!l.querySelector('.pri-marca .pri-muestra'), !document.querySelector('#lista-jornadas .jornada-prioridad')]; }""")
+    ok(o88[0].startswith('Cuauhtémoc · Col. ') and ' · prioridad ' in o88[0] and o88[0].endswith(' · Calle Uno 123') and o88[1:] == [True, True],
+       'la tarjeta dice alcaldía · colonia · prioridad con su muestra · dirección, sin renglón aparte de prioridad: %s' % o88)
+    ok(err88 == [], 'sin errores de consola: %s' % err88[:2])
+    ctx88.close()
+
+    # ---------- ctx89: «Lo que viaja a la base», igual en todas las pantallas; sustitución en morado ----------
+    ctx89 = contexto_llano(viewport={'width':1280,'height':900}, geolocation={'latitude':19.4326,'longitude':-99.1332,'accuracy':5}, permissions=['geolocation'], timezone_id='America/Mexico_City')
+    pg89 = ctx89.new_page(); err89 = []
+    pg89.on('pageerror', lambda e: err89.append(str(e)))
+    pg89.goto(BASE); pg89.wait_for_timeout(1300)
+    entrar_como(pg89, 'u-cabo-1'); pg89.wait_for_timeout(900)
+    pg89.evaluate("SRP.app.mostrarVista('registrar')"); pg89.wait_for_timeout(500)
+    pg89.fill('#ini-nombre', 'Espejo B188'); pg89.wait_for_timeout(200)
+    caja89 = '#panel-iniciar-jornada [data-espejo="iniciar"]'
+    pg89.click(caja89 + ' summary'); pg89.wait_for_timeout(300)
+    s89 = pg89.evaluate("""sel => { const d = document.querySelector(sel + ' details'); const filas = c => [...d.querySelectorAll(c + ' tbody tr')].map(tr => [tr.cells[0].textContent, tr.cells[2].textContent]);
+      return [d.open, d.querySelector('summary').textContent, d.querySelector('.espejo-destino').textContent.replace(/\\s+/g, ' '),
+        Object.fromEntries(filas('.espejo-visibles')).nombre || '', filas('.espejo-ocultos').some(f => f[0] === 'id'), filas('.espejo-bitacora-tabla').length,
+        [...document.querySelectorAll('#vista-registrar details')].filter(x => x.getClientRects().length && x.textContent.includes('Lo que viaja a la base')).length]; }""", caja89)
+    ok(s89[0] and s89[1] == 'Lo que viaja a la base de datos' and 'srp_db › tabla jornadas' in s89[2] and 'esquema srp › tabla jornadas' in s89[2] and 'bitacora' in s89[2]
+       and s89[3] and s89[4] and s89[5] == 9 and s89[6] == 1,
+       'en Registrar jornada «Lo que viaja a la base de datos» se despliega y dice dónde se guarda, lo que se ve con su etiqueta, lo que no y su bitácora: %s' % s89)
+    pg89.fill('#ini-nombre', 'Espejo B188 bis'); pg89.wait_for_timeout(300)
+    ok(pg89.evaluate("document.querySelector('" + caja89 + " details').open"), 'al seguir escribiendo, la sección sigue abierta')
+    iniciar_jornada(pg89, 'Espejo árbol B188'); pg89.wait_for_timeout(500)
+    a89 = pg89.evaluate("""() => { const d = document.querySelector('#espejo-campos details'); const vis = [...d.querySelectorAll('#espejo-visibles tr')].map(tr => [tr.cells[0].textContent, tr.cells[2].textContent]);
+      return [d.querySelector('summary').textContent, d.querySelector('.espejo-destino').textContent.includes('tabla plantaciones'), vis.some(f => f[0] === 'especie_id' && f[1]),
+        document.querySelectorAll('#espejo-cuerpo tr').length > 10, document.querySelectorAll('#espejo-bitacora tr').length]; }""")
+    ok(a89[:4] == ['Lo que viaja a la base de datos', True, True, True] and a89[4] == 9, 'en Nuevo registro, la misma sección para el árbol: %s' % a89)
+    # Sustituir: franja e icono morados, textos nuevos
+    pg89.click('#btn-ubicacion'); pg89.wait_for_timeout(1100)
+    pg89.fill('#campo-especie', 'fres'); pg89.wait_for_timeout(200); pg89.dispatch_event('.combo-opcion[data-id="ESP-0029"]', 'mousedown'); pg89.wait_for_timeout(150)
+    pg89.click('#form-plantacion button[type=submit]'); pg89.wait_for_timeout(1200)
+    if pg89.is_visible('#dlg-resumen'): pg89.click('#btn-resumen-guardar'); pg89.wait_for_timeout(1500)
+    r89 = pg89.evaluate("async () => (await SRP.activa.registrosDe(SRP.activa.jornada))[0].id")
+    pg89.evaluate("async id => { await SRP.registros.sustituir(await SRP.almacen.uno('plantaciones', id)); }", r89); pg89.wait_for_timeout(500)
+    t89 = pg89.evaluate("""() => { const v = getComputedStyle(document.documentElement).getPropertyValue('--sustituto').trim().toLowerCase();
+      const hex = c => '#' + c.match(/\\d+/g).slice(0, 3).map(n => Number(n).toString(16).padStart(2, '0')).join('');
+      const d = document.getElementById('dlg-sustituir');
+      return [hex(getComputedStyle(d).borderTopColor) === v, hex(getComputedStyle(document.getElementById('dlg-sustituir-icono')).backgroundColor) === v,
+        !!document.querySelector('#dlg-sustituir-icono svg'), document.getElementById('dlg-sustituir-texto').textContent.includes('se perdió por alguna razón. El nuevo árbol se registra en la misma jornada'),
+        d.querySelector('legend').textContent.trim()]; }""")
+    pg89.keyboard.press('Escape'); pg89.wait_for_timeout(200)
+    ok(t89 == [True, True, True, True, 'Razón de la sustitución *'], '«Sustituir árbol» lleva la franja y el icono morados, y dice «se perdió por alguna razón» y «Razón de la sustitución»: %s' % t89)
+    ok(err89 == [], 'sin errores de consola: %s' % err89[:2])
+    ctx89.close()
 
     b.close()
 

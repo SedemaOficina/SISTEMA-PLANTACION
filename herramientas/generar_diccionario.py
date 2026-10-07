@@ -20,9 +20,9 @@ SALIDA = os.path.join(RAIZ, 'datos', 'DICCIONARIO-DATOS.md')
 SALIDA_JS = os.path.join(RAIZ, 'js', 'esquema.js')
 
 def generar_js(d):
-    """El esquema en el navegador: por tabla, [campo, tipo, nulo, dominio, referencia].
+    """El esquema en el navegador: por tabla, [campo, tipo, nulo, dominio, referencia, pantalla].
     dominio: nombre de un dominio con lista de valores (o null); referencia: la tabla a la que apunta
-    un campo «→ tabla.id» (o null)."""
+    un campo «→ tabla.id» (o null); pantalla: dónde se ve el campo, o null si no se ve."""
     dominios = {k: v['valores'] for k, v in d['dominios'].items() if isinstance(v.get('valores'), list)}
     tablas = {}
     for t, info in d['tablas'].items():
@@ -32,12 +32,14 @@ def generar_js(d):
             ref = None
             if dom.startswith('→ '):
                 ref = dom[2:].split('.')[0].strip()
-            filas.append([c['campo'], c['tipo'], bool(c['nulo']), dom if dom in dominios else None, ref])
+            pan = c.get('pantalla') or ''
+            filas.append([c['campo'], c['tipo'], bool(c['nulo']), dom if dom in dominios else None, ref, None if pan in ('', 'No') else pan])
         tablas[t] = filas
     datos = {'version_esquema': d['version_esquema'], 'dominios': dominios, 'tablas': tablas}
     return ('/* ESQUEMA EN EL NAVEGADOR (D150, D175). Generado de datos/esquema.json por herramientas/generar_diccionario.py:\n'
-            '   no se edita a mano. Lo usa js/referencias.js para leer las relaciones entre tablas.\n'
-            '   Por tabla: [campo, tipo, nulo, dominio, referencia]. */\n'
+            '   no se edita a mano. Lo usan js/referencias.js, para leer las relaciones entre tablas, y el espejo de\n'
+            '   campos de la versión de prueba, para decir dónde se ve cada campo.\n'
+            '   Por tabla: [campo, tipo, nulo, dominio, referencia, pantalla]. */\n'
             'window.SRP = window.SRP || {};\n\n'
             'SRP.ESQUEMA = ' + json.dumps(datos, ensure_ascii=False, indent=1) + ';\n')
 

@@ -142,11 +142,12 @@ SRP.prioritarias = {
       (p ? '' : '<span class="pri-escala-dicho">Sin dato en la capa de prioridad</span>');
   },
 
-  /* La marca de prioridad de una tarjeta: muestra del color y texto. La prioridad es de la colonia,
-     no de la jornada, y así se dice. */
-  insignia(p) {
-    if (!this.hay()) return '';
-    return '<span class="pri-insignia">' + (p ? '<i class="pri-muestra pri-nivel-' + p.prioridad + '"></i>' : '') + SRP.util.escapar(this.textoJornada(p).replace(/^Prioridad /, 'Colonia de prioridad ')) + '</span>';
+  /* La prioridad de la colonia junto a ella, donde se dice el lugar de la jornada: «Álvaro Obregón · Col.
+     BELLA VISTA · ■ Alta · dirección». La muestra del color y el nombre del nivel; el lector de pantalla
+     oye «prioridad alta». Sin dato de prioridad no se pone nada. */
+  marca(p) {
+    if (!this.hay() || !p) return '';
+    return '<span class="pri-marca"><i class="pri-muestra pri-nivel-' + p.prioridad + '"></i><span class="oculto-visual">prioridad </span>' + SRP.util.escapar(p.texto) + '</span>';
   },
 
   // Las opciones del filtro por prioridad, de mayor a menor, y «Sin dato»

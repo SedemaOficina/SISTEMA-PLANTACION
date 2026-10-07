@@ -1,6 +1,7 @@
 /* ESQUEMA EN EL NAVEGADOR (D150, D175). Generado de datos/esquema.json por herramientas/generar_diccionario.py:
-   no se edita a mano. Lo usa js/referencias.js para leer las relaciones entre tablas.
-   Por tabla: [campo, tipo, nulo, dominio, referencia]. */
+   no se edita a mano. Lo usan js/referencias.js, para leer las relaciones entre tablas, y el espejo de
+   campos de la versión de prueba, para decir dónde se ve cada campo.
+   Por tabla: [campo, tipo, nulo, dominio, referencia, pantalla]. */
 window.SRP = window.SRP || {};
 
 SRP.ESQUEMA = {
@@ -98,75 +99,86 @@ SRP.ESQUEMA = {
     "uuid",
     false,
     null,
-    null
+    null,
+    "Ficha de revisión y aviso de guardado («Identificador»)"
    ],
    [
     "estatus",
     "text",
     false,
     "estatus_plantacion",
-    null
+    null,
+    "No (los eliminados y sustituidos no se listan)"
    ],
    [
     "cabo_id",
     "uuid",
     false,
     null,
-    "usuarios"
+    "usuarios",
+    "No como campo; el encabezado dice quién tiene la sesión y la ficha lo repite («Cabo»)"
    ],
    [
     "lat",
     "numeric(9,6)",
     false,
     null,
-    null
+    null,
+    "Coordenadas (sólo lectura)"
    ],
    [
     "lng",
     "numeric(9,6)",
     false,
     null,
-    null
+    null,
+    "Coordenadas (sólo lectura)"
    ],
    [
     "punto_origen",
     "text",
     false,
     "punto_origen",
-    null
+    null,
+    "«Cómo se obtuvo» (sólo lectura)"
    ],
    [
     "gps_precision_m",
     "integer",
     true,
     null,
-    null
+    null,
+    "«Cómo se obtuvo» (±N m)"
    ],
    [
     "folio",
     "char(13)",
     true,
     null,
-    null
+    null,
+    "«Folio»: PROVISIONAL mientras sea nulo (R1)"
    ],
    [
     "especie_id",
     "text",
     true,
     null,
-    "especies"
+    "especies",
+    "Especie (autocompletado por nombre común, científico y otros nombres)"
    ],
    [
     "especie_otra",
     "text",
     false,
     null,
-    null
+    null,
+    "Especifique la especie (aparece sólo al elegir «Otra especie»)"
    ],
    [
     "alcaldia_cve",
     "char(5)",
     true,
+    null,
     null,
     null
    ],
@@ -175,12 +187,14 @@ SRP.ESQUEMA = {
     "text",
     true,
     null,
-    null
+    null,
+    "Alcaldía (sólo lectura); «Sin alcaldía (territorio pendiente)» si es nula"
    ],
    [
     "colonia_cve",
     "text",
     true,
+    null,
     null,
     null
    ],
@@ -189,12 +203,14 @@ SRP.ESQUEMA = {
     "text",
     true,
     null,
-    null
+    null,
+    "Colonia (sólo lectura): «Sin colonia en la capa» si es nula (D152)"
    ],
    [
     "uga",
     "char(7)",
     true,
+    null,
     null,
     null
    ],
@@ -203,82 +219,94 @@ SRP.ESQUEMA = {
     "integer",
     true,
     null,
-    null
+    null,
+    "Detalle › Datos del sistema («A N m del borde de la celda»); «Celda incierta» junto al folio si es menor que la precisión del GPS"
    ],
    [
     "capa_version",
     "text",
     true,
     null,
-    null
+    null,
+    "Detalle › Datos del sistema («Capas») y pie del PDF (D152)"
    ],
    [
     "programa_id",
     "text",
     false,
     null,
-    "programas"
+    "programas",
+    "Ficha de revisión y detalle («Programa», el de la jornada); no se edita por árbol"
    ],
    [
     "fecha_plantacion",
     "date",
     false,
     null,
-    null
+    null,
+    "Fecha de plantación (se muestra 21-SEP-2026). En el formulario se pide sólo si la jornada empezó antes de hoy; en «Sustituir», como fecha de la sustitución"
    ],
    [
     "jornada_id",
     "uuid",
     false,
     null,
-    "jornadas"
+    "jornadas",
+    "Jornada (ficha de revisión y detalle)"
    ],
    [
     "sustituye_id",
     "uuid",
     true,
     null,
-    "plantaciones"
+    "plantaciones",
+    "Detalle («Sustituye a») y marca «Sustituto» en tarjeta, ficha y mapa (punto morado)"
    ],
    [
     "motivo_sustitucion",
     "text",
     true,
     "motivo_sustitucion",
-    null
+    null,
+    "Ventana «Sustituir árbol» (obligatorio); detalle («Motivo de la sustitución»)"
    ],
    [
     "motivo_sustitucion_otro",
     "varchar(120)",
     false,
     null,
-    null
+    null,
+    "«Escriba el motivo», sólo con «Otro»"
    ],
    [
     "sustituido_por_id",
     "uuid",
     true,
     null,
-    "plantaciones"
+    "plantaciones",
+    "Detalle («Sustituido por»)"
    ],
    [
     "comentarios",
     "varchar(500)",
     false,
     null,
-    null
+    null,
+    "Comentarios (opcional)"
    ],
    [
     "foto_base64",
     "text",
     true,
     null,
-    null
+    null,
+    "Fotografía (opcional)"
    ],
    [
     "foto_id",
     "uuid",
     true,
+    null,
     null,
     null
    ],
@@ -287,21 +315,24 @@ SRP.ESQUEMA = {
     "timestamptz",
     false,
     null,
-    null
+    null,
+    "Detalle"
    ],
    [
     "fecha_ultima_edicion",
     "timestamptz",
     true,
     null,
-    null
+    null,
+    "Detalle e historial"
    ],
    [
     "editado_por_id",
     "uuid",
     true,
     null,
-    "usuarios"
+    "usuarios",
+    "Historial"
    ]
   ],
   "usuarios": [
@@ -310,6 +341,7 @@ SRP.ESQUEMA = {
     "uuid",
     false,
     null,
+    null,
     null
    ],
    [
@@ -317,61 +349,70 @@ SRP.ESQUEMA = {
     "text",
     false,
     null,
-    null
+    null,
+    "Correo"
    ],
    [
     "nombre_completo",
     "text",
     false,
     null,
-    null
+    null,
+    "Nombre completo"
    ],
    [
     "organizacion_id",
     "text",
     false,
     null,
-    "instituciones"
+    "instituciones",
+    "Tipo de institución e Institución"
    ],
    [
     "area_id",
     "text",
     true,
     null,
-    "areas"
+    "areas",
+    "Área (sólo cuentas de la Secretaría)"
    ],
    [
     "cargo_rol",
     "text",
     false,
     null,
-    null
+    null,
+    "Cargo"
    ],
    [
     "perfil",
     "text",
     false,
     "perfil",
-    null
+    null,
+    "Perfil de captura"
    ],
    [
     "coordinadores_ids",
     "uuid[]",
     false,
     null,
-    "usuarios"
+    "usuarios",
+    "Coordinadores (sólo cabos)"
    ],
    [
     "activo",
     "boolean",
     false,
     null,
-    null
+    null,
+    "Estado"
    ],
    [
     "fecha_creacion",
     "timestamptz",
     false,
+    null,
     null,
     null
    ],
@@ -380,12 +421,14 @@ SRP.ESQUEMA = {
     "uuid",
     false,
     null,
-    "usuarios"
+    "usuarios",
+    null
    ],
    [
     "fecha_ultima_edicion",
     "timestamptz",
     true,
+    null,
     null,
     null
    ],
@@ -394,7 +437,8 @@ SRP.ESQUEMA = {
     "uuid",
     true,
     null,
-    "usuarios"
+    "usuarios",
+    null
    ]
   ],
   "programas": [
@@ -403,6 +447,7 @@ SRP.ESQUEMA = {
     "text",
     false,
     null,
+    null,
     null
    ],
    [
@@ -410,33 +455,38 @@ SRP.ESQUEMA = {
     "text",
     false,
     null,
-    null
+    null,
+    "Clave"
    ],
    [
     "nombre",
     "text",
     false,
     null,
-    null
+    null,
+    "Nombre"
    ],
    [
     "activo",
     "boolean",
     false,
     null,
-    null
+    null,
+    "Estado"
    ],
    [
     "creado_por_id",
     "uuid",
     true,
     null,
-    "usuarios"
+    "usuarios",
+    null
    ],
    [
     "fecha_creacion",
     "timestamptz",
     false,
+    null,
     null,
     null
    ],
@@ -445,12 +495,14 @@ SRP.ESQUEMA = {
     "uuid",
     true,
     null,
-    "usuarios"
+    "usuarios",
+    null
    ],
    [
     "fecha_ultima_edicion",
     "timestamptz",
     true,
+    null,
     null,
     null
    ],
@@ -459,7 +511,8 @@ SRP.ESQUEMA = {
     "varchar(30)[]",
     false,
     null,
-    null
+    null,
+    "Quién puede usarlo (Catálogos › Programas)"
    ]
   ],
   "areas": [
@@ -468,6 +521,7 @@ SRP.ESQUEMA = {
     "text",
     false,
     null,
+    null,
     null
    ],
    [
@@ -475,33 +529,38 @@ SRP.ESQUEMA = {
     "text",
     false,
     null,
-    null
+    null,
+    "Clave"
    ],
    [
     "nombre",
     "text",
     false,
     null,
-    null
+    null,
+    "Nombre"
    ],
    [
     "activo",
     "boolean",
     false,
     null,
-    null
+    null,
+    "Estado"
    ],
    [
     "creado_por_id",
     "uuid",
     true,
     null,
-    "usuarios"
+    "usuarios",
+    null
    ],
    [
     "fecha_creacion",
     "timestamptz",
     false,
+    null,
     null,
     null
    ],
@@ -510,12 +569,14 @@ SRP.ESQUEMA = {
     "uuid",
     true,
     null,
-    "usuarios"
+    "usuarios",
+    null
    ],
    [
     "fecha_ultima_edicion",
     "timestamptz",
     true,
+    null,
     null,
     null
    ]
@@ -526,6 +587,7 @@ SRP.ESQUEMA = {
     "text",
     false,
     null,
+    null,
     null
    ],
    [
@@ -533,33 +595,38 @@ SRP.ESQUEMA = {
     "text",
     false,
     null,
-    null
+    null,
+    "Clave"
    ],
    [
     "nombre",
     "text",
     false,
     null,
-    null
+    null,
+    "Nombre común"
    ],
    [
     "activo",
     "boolean",
     false,
     null,
-    null
+    null,
+    "Estado"
    ],
    [
     "creado_por_id",
     "uuid",
     true,
     null,
-    "usuarios"
+    "usuarios",
+    null
    ],
    [
     "fecha_creacion",
     "timestamptz",
     false,
+    null,
     null,
     null
    ],
@@ -568,12 +635,14 @@ SRP.ESQUEMA = {
     "uuid",
     true,
     null,
-    "usuarios"
+    "usuarios",
+    null
    ],
    [
     "fecha_ultima_edicion",
     "timestamptz",
     true,
+    null,
     null,
     null
    ],
@@ -582,56 +651,64 @@ SRP.ESQUEMA = {
     "varchar(140)",
     false,
     null,
-    null
+    null,
+    "Nombre científico (y entre paréntesis en Nuevo registro)"
    ],
    [
     "otros_nombres_comunes",
     "varchar(400)",
     false,
     null,
-    null
+    null,
+    "Otros nombres comunes; en Nuevo registro sólo como criterio de búsqueda («también: Fresno»)"
    ],
    [
     "tipo_distribucion",
     "text",
     false,
     "tipo_distribucion",
-    null
+    null,
+    "Tipo de distribución (Catálogos)"
    ],
    [
     "formadecrecimiento",
     "varchar(100)",
     false,
     null,
-    null
+    null,
+    "Forma de crecimiento (Catálogos)"
    ],
    [
     "paleta_vegetal",
     "text",
     false,
     "paleta_vegetal",
-    null
+    null,
+    "«¿Pertenece a la paleta vegetal de la Secretaría?» (Catálogos); marca «Fuera de la paleta» en la lista y aviso en Nuevo registro"
    ],
    [
     "fruto_comestible",
     "text",
     false,
     "fruto_comestible",
-    null
+    null,
+    "«¿Su fruto es comestible?» (Catálogos); marca «Fruto comestible» en la lista"
    ],
    [
     "id_snib",
     "varchar(16)",
     true,
     null,
-    null
+    null,
+    "Id SNIB (Catálogos)"
    ],
    [
     "id_enciclovida",
     "integer",
     true,
     null,
-    null
+    null,
+    "Id EncicloVida (Catálogos)"
    ]
   ],
   "vehiculos": [
@@ -640,12 +717,14 @@ SRP.ESQUEMA = {
     "text",
     false,
     null,
+    null,
     null
    ],
    [
     "clave",
     "text",
     false,
+    null,
     null,
     null
    ],
@@ -654,26 +733,30 @@ SRP.ESQUEMA = {
     "text",
     false,
     null,
-    null
+    null,
+    "Placa"
    ],
    [
     "activo",
     "boolean",
     false,
     null,
-    null
+    null,
+    "Estado"
    ],
    [
     "creado_por_id",
     "uuid",
     true,
     null,
-    "usuarios"
+    "usuarios",
+    null
    ],
    [
     "fecha_creacion",
     "timestamptz",
     false,
+    null,
     null,
     null
    ],
@@ -682,12 +765,14 @@ SRP.ESQUEMA = {
     "uuid",
     true,
     null,
-    "usuarios"
+    "usuarios",
+    null
    ],
    [
     "fecha_ultima_edicion",
     "timestamptz",
     true,
+    null,
     null,
     null
    ],
@@ -696,14 +781,16 @@ SRP.ESQUEMA = {
     "varchar(40)",
     false,
     null,
-    null
+    null,
+    "Modelo"
    ],
    [
     "tipo_vehiculo",
     "varchar(30)",
     false,
     null,
-    null
+    null,
+    "Tipo"
    ]
   ],
   "instituciones": [
@@ -712,12 +799,14 @@ SRP.ESQUEMA = {
     "text",
     false,
     null,
+    null,
     null
    ],
    [
     "clave",
     "text",
     false,
+    null,
     null,
     null
    ],
@@ -726,26 +815,30 @@ SRP.ESQUEMA = {
     "text",
     false,
     null,
-    null
+    null,
+    "Nombre"
    ],
    [
     "activo",
     "boolean",
     false,
     null,
-    null
+    null,
+    "Estado"
    ],
    [
     "creado_por_id",
     "uuid",
     true,
     null,
-    "usuarios"
+    "usuarios",
+    null
    ],
    [
     "fecha_creacion",
     "timestamptz",
     false,
+    null,
     null,
     null
    ],
@@ -754,12 +847,14 @@ SRP.ESQUEMA = {
     "uuid",
     true,
     null,
-    "usuarios"
+    "usuarios",
+    null
    ],
    [
     "fecha_ultima_edicion",
     "timestamptz",
     true,
+    null,
     null,
     null
    ],
@@ -768,7 +863,8 @@ SRP.ESQUEMA = {
     "varchar(30)",
     false,
     "tipo_organizacion",
-    null
+    null,
+    "Tipo de institución (Usuarios, al dar de alta; Catálogos › Instituciones, al agregarla)"
    ]
   ],
   "solicitantes": [
@@ -777,12 +873,14 @@ SRP.ESQUEMA = {
     "text",
     false,
     null,
+    null,
     null
    ],
    [
     "clave",
     "text",
     false,
+    null,
     null,
     null
    ],
@@ -791,26 +889,30 @@ SRP.ESQUEMA = {
     "text",
     false,
     null,
-    null
+    null,
+    "Nombre"
    ],
    [
     "activo",
     "boolean",
     false,
     null,
-    null
+    null,
+    "Estado"
    ],
    [
     "creado_por_id",
     "uuid",
     true,
     null,
-    "usuarios"
+    "usuarios",
+    null
    ],
    [
     "fecha_creacion",
     "timestamptz",
     false,
+    null,
     null,
     null
    ],
@@ -819,12 +921,14 @@ SRP.ESQUEMA = {
     "uuid",
     true,
     null,
-    "usuarios"
+    "usuarios",
+    null
    ],
    [
     "fecha_ultima_edicion",
     "timestamptz",
     true,
+    null,
     null,
     null
    ],
@@ -833,7 +937,8 @@ SRP.ESQUEMA = {
     "varchar(30)",
     false,
     "tipo_solicitante",
-    null
+    null,
+    "Tipo de solicitante (Catálogos › Solicitantes)"
    ]
   ],
   "bitacora": [
@@ -842,6 +947,7 @@ SRP.ESQUEMA = {
     "uuid",
     false,
     null,
+    null,
     null
    ],
    [
@@ -849,47 +955,54 @@ SRP.ESQUEMA = {
     "timestamptz",
     false,
     null,
-    null
+    null,
+    "Historial"
    ],
    [
     "usuario_id",
     "uuid",
     false,
     null,
-    "usuarios"
+    "usuarios",
+    null
    ],
    [
     "usuario_nombre",
     "text",
     false,
     null,
-    null
+    null,
+    "Historial"
    ],
    [
     "perfil",
     "text",
     false,
     "perfil",
-    null
+    null,
+    "Historial"
    ],
    [
     "accion",
     "text",
     false,
     "accion_bitacora",
-    null
+    null,
+    "Historial"
    ],
    [
     "entidad",
     "text",
     false,
     "entidad_bitacora",
+    null,
     null
    ],
    [
     "entidad_id",
     "text",
     false,
+    null,
     null,
     null
    ],
@@ -898,7 +1011,8 @@ SRP.ESQUEMA = {
     "text",
     false,
     null,
-    null
+    null,
+    "Historial"
    ]
   ],
   "jornadas": [
@@ -907,6 +1021,7 @@ SRP.ESQUEMA = {
     "uuid",
     false,
     null,
+    null,
     null
    ],
    [
@@ -914,117 +1029,134 @@ SRP.ESQUEMA = {
     "text",
     false,
     null,
-    null
+    null,
+    "Nombre de la jornada"
    ],
    [
     "ubicacion",
     "text",
     false,
     null,
-    null
+    null,
+    "Dirección de la jornada"
    ],
    [
     "programa_id",
     "text",
     false,
     null,
-    "programas"
+    "programas",
+    "Programa (Iniciar jornada)"
    ],
    [
     "lat",
     "numeric(9,6)",
     true,
     null,
-    null
+    null,
+    "Detectar ubicación de la jornada, o «Capturar coordenadas a mano»"
    ],
    [
     "lng",
     "numeric(9,6)",
     true,
     null,
-    null
+    null,
+    "Detectar ubicación de la jornada, o «Capturar coordenadas a mano»"
    ],
    [
     "punto_origen",
     "text",
     true,
     null,
-    null
+    null,
+    "(nota bajo el botón)"
    ],
    [
     "gps_precision_m",
     "integer",
     true,
     null,
-    null
+    null,
+    "(nota bajo el botón)"
    ],
    [
     "alcaldia_cve",
     "text",
     true,
     null,
-    null
+    null,
+    "—"
    ],
    [
     "alcaldia",
     "text",
     true,
     null,
-    null
+    null,
+    "Alcaldía"
    ],
    [
     "colonia_cve",
     "text",
     true,
     null,
-    null
+    null,
+    "—"
    ],
    [
     "colonia",
     "text",
     true,
     null,
-    null
+    null,
+    "Colonia"
    ],
    [
     "fecha",
     "date",
     false,
     null,
-    null
+    null,
+    "Fecha de la jornada de plantación (el día en que empieza)"
    ],
    [
     "comentarios",
     "text",
     false,
     null,
-    null
+    null,
+    "Comentarios"
    ],
    [
     "cabo_id",
     "uuid",
     false,
     null,
-    "usuarios"
+    "usuarios",
+    null
    ],
    [
     "organizacion_id",
     "text",
     false,
     null,
-    "instituciones"
+    "instituciones",
+    "No (el reporte la dice si no es SEDEMA)"
    ],
    [
     "estatus",
     "text",
     false,
     "estatus_jornada",
-    null
+    null,
+    "Franja de la jornada; Jornadas"
    ],
    [
     "fecha_inicio",
     "timestamptz",
     false,
+    null,
     null,
     null
    ],
@@ -1033,61 +1165,70 @@ SRP.ESQUEMA = {
     "timestamptz",
     true,
     null,
-    null
+    null,
+    "Jornadas: «Cerrada a las 15:40» en la ficha y «cerrada el lunes 22 de septiembre a las 15:40» en el detalle"
    ],
    [
     "encargado_id",
     "uuid",
     true,
     null,
-    "usuarios"
+    "usuarios",
+    "Encargado"
    ],
    [
     "relevo_id",
     "uuid",
     true,
     null,
-    "usuarios"
+    "usuarios",
+    "Jornadas › Relevo de cabo"
    ],
    [
     "relevos",
     "objeto[]",
     false,
     null,
-    null
+    null,
+    "No como campo; la ficha y el reporte dicen el relevo"
    ],
    [
     "solicitante_id",
     "text",
     true,
     null,
-    "solicitantes"
+    "solicitantes",
+    "Iniciar jornada › Quién lo solicita (con el programa «Solicitud»); Editar jornada"
    ],
    [
     "solicitante_otro",
     "text",
     false,
     null,
-    null
+    null,
+    "Iniciar jornada › Nombre de la instancia; Editar jornada"
    ],
    [
     "solicitud_descripcion",
     "text",
     false,
     null,
-    null
+    null,
+    "Iniciar jornada › Descripción de la solicitud (con el programa «Solicitud»); Editar jornada"
    ],
    [
     "editado_por_id",
     "uuid",
     true,
     null,
-    "usuarios"
+    "usuarios",
+    null
    ],
    [
     "fecha_ultima_edicion",
     "timestamptz",
     true,
+    null,
     null,
     null
    ],
@@ -1096,91 +1237,104 @@ SRP.ESQUEMA = {
     "integer",
     false,
     null,
-    null
+    null,
+    "Árboles que se van a plantar (Iniciar jornada)"
    ],
    [
     "puntos_revisados",
     "uuid[]",
     false,
     null,
-    "plantaciones"
+    "plantaciones",
+    "Jornadas → «Está bien» en un punto con aviso"
    ],
    [
     "reporte_en",
     "timestamptz",
     true,
     null,
-    null
+    null,
+    "Jornadas: tarjeta «Reporte: fecha y hora» o «Sin reporte todavía», y filtro «Reporte»"
    ],
    [
     "carga_id",
     "uuid",
     true,
     null,
-    null
+    null,
+    "No se muestra; el nombre de la jornada dice «Carga histórica»"
    ],
    [
     "personal",
     "text",
     false,
     null,
-    null
+    null,
+    "Personal participante"
    ],
    [
     "apoyo",
     "text",
     false,
     null,
-    null
+    null,
+    "Personal de apoyo"
    ],
    [
     "observaciones",
     "text",
     false,
     null,
-    null
+    null,
+    "Observaciones"
    ],
    [
     "chofer",
     "text",
     false,
     null,
-    null
+    null,
+    "Chófer"
    ],
    [
     "vehiculo_modelo",
     "text",
     false,
     null,
-    null
+    null,
+    "(se ve en la ficha bajo la lista de vehículos)"
    ],
    [
     "vehiculo_placa",
     "text",
     false,
     null,
-    null
+    null,
+    "Vehículo (lista de placas)"
    ],
    [
     "vehiculo_tipo",
     "text",
     false,
     null,
-    null
+    null,
+    "(se ve en la ficha bajo la lista de vehículos)"
    ],
    [
     "vehiculo_id",
     "text",
     true,
     null,
-    "vehiculos"
+    "vehiculos",
+    "Vehículo (lista de placas o botones de los más usados)"
    ],
    [
     "hora",
     "varchar(5)",
     false,
     null,
-    null
+    null,
+    "Hora de finalización (selector)"
    ]
   ]
  }

@@ -14,12 +14,12 @@
 <!-- Las peticiones al mapa no dicen desde qué sitio se hacen -->
 <meta name="referrer" content="no-referrer">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.9.46">
-<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.9.46">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.9.47">
+<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.9.47">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.9.46">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.9.46">
-<link rel="stylesheet" href="css/estilos.css?v=0.9.46">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.9.47">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.9.47">
+<link rel="stylesheet" href="css/estilos.css?v=0.9.47">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -30,8 +30,8 @@
   <div class="encabezado-interior">
     <!-- Logotipo (D90, D137): Gobierno CDMX · SEDEMA · SIA · Reforestación Urbana en pantalla ancha; en teléfono, SIA y Reforestación Urbana -->
     <picture>
-      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.9.46">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.9.46" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
+      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.9.47">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.9.47" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» (D80) -->
@@ -181,7 +181,8 @@
         <!-- Detectar la ubicación de la jornada (D122): sólo la jornada; alcaldía y colonia salen de las
              capas del dispositivo. La dirección o referencia se sigue escribiendo abajo. -->
         <div class="campo campo-ini-detectar">
-          <button type="button" id="btn-ini-detectar" class="btn btn-primario btn-ancho"></button>
+          <p class="campo-titulo" id="etq-ini-punto">Ubicación de la jornada <span class="obligatorio" aria-hidden="true">*</span></p>
+          <button type="button" id="btn-ini-detectar" class="btn btn-primario btn-ancho" aria-describedby="etq-ini-punto"></button>
           <!-- Sin señal en el sitio, las coordenadas se escriben, como en «Registrar árbol» (D143); la longitud con «−» fijo y el par se puede pegar (D170) -->
           <details class="coord-manual desplegable" id="ini-detalles-coord">
             <summary><span>Capturar coordenadas a mano</span></summary>
@@ -371,26 +372,11 @@
          Para quitarlo, ver el encabezado de js/espejo.js: este bloque y el del cierre del reporte,
          el archivo y su <script>, y los estilos `.espejo`. Las pruebas comprueban que la app abre
          sin él (D153). -->
-    <section id="espejo-campos" class="espejo" aria-labelledby="espejo-titulo" hidden>
-      <!-- Plegado de inicio (24-09-2026): se abre sólo cuando se quiere revisar -->
+    <section id="espejo-campos" class="espejo" aria-label="Lo que viaja a la base de datos" hidden>
+      <!-- Plegado de inicio (24-09-2026): se abre sólo cuando se quiere revisar. Lo llena js/espejo.js -->
       <details class="desplegable">
-        <summary><span>Campos que viajan a la base y no se ven en pantalla</span></summary>
-        <h2 id="espejo-titulo" class="espejo-encabezado">Espejo de campos
-          <span class="espejo-marca">sólo en la versión de prueba</span></h2>
-        <p class="espejo-ayuda">Es el registro tal como quedaría guardado en este momento. No es
-          una copia: sale del mismo objeto que escribe el botón Guardar. Desaparece al cerrar la
-          Etapa 1; después estos campos viven sólo en el código y en las capas.</p>
-        <table class="espejo-tabla">
-          <caption>Almacén <code>plantaciones</code></caption>
-          <thead><tr><th>Campo</th><th>Valor ahora</th><th>De dónde sale</th></tr></thead>
-          <tbody id="espejo-cuerpo"></tbody>
-        </table>
-        <table class="espejo-tabla">
-          <caption>Almacén <code>bitacora</code>, que se escribe solo al guardar</caption>
-          <thead><tr><th>Campo</th><th>Valor ahora</th></tr></thead>
-          <tbody id="espejo-bitacora"></tbody>
-        </table>
-        <p id="espejo-conteo" class="espejo-ayuda"></p>
+        <summary><span>Lo que viaja a la base de datos</span></summary>
+        <div id="espejo-contenido"></div>
       </details>
     </section>
 
@@ -858,17 +844,17 @@
 </dialog>
 
 <!-- Sustituir un árbol perdido: por qué se perdió, y luego se registra el nuevo en su jornada -->
-<dialog id="dlg-sustituir" aria-labelledby="dlg-sustituir-titulo">
+<dialog id="dlg-sustituir" class="dlg-sustituir" aria-labelledby="dlg-sustituir-titulo">
   <div class="dialogo-cabecera">
     <div class="dialogo-titulo">
-      <h2 id="dlg-sustituir-titulo" tabindex="-1" autofocus>Sustituir árbol</h2>
+      <h2 id="dlg-sustituir-titulo" tabindex="-1" autofocus><span id="dlg-sustituir-icono" class="sustituir-icono" aria-hidden="true"></span>Sustituir árbol</h2>
       <button type="button" id="btn-sustituir-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar"></button>
     </div>
   </div>
   <p id="dlg-sustituir-texto" class="nota"></p>
   <fieldset class="campo">
-    <legend>¿Por qué se sustituye? <span class="obligatorio" aria-hidden="true">*</span></legend>
-    <div id="sustituir-motivos" class="chips chips-envuelve motivos-sustitucion" role="group" aria-label="Motivo"></div>
+    <legend>Razón de la sustitución <span class="obligatorio" aria-hidden="true">*</span></legend>
+    <div id="sustituir-motivos" class="chips chips-envuelve motivos-sustitucion" role="group" aria-label="Razón de la sustitución"></div>
   </fieldset>
   <div id="caja-sustituir-otro" class="campo" hidden><label for="sustituir-otro">Escriba el motivo <span class="obligatorio" aria-hidden="true">*</span></label><input id="sustituir-otro" type="text" maxlength="120" autocomplete="off"></div>
   <!-- El día en que se planta el sustituto: es su fecha de plantación y cuenta en ese periodo -->
@@ -1040,19 +1026,8 @@
 
     <!-- ESPEJO DEL CIERRE — se elimina al cerrar la Etapa 1 (ver js/espejo.js) -->
     <details id="espejo-cierre" class="desplegable espejo espejo-en-dialogo" hidden>
-      <summary><span>Campos que viajan a la base y no se ven en pantalla</span></summary>
-      <p class="espejo-ayuda">Es el cierre tal como quedaría guardado al pulsar Generar. Sale del mismo objeto que se escribe. <span class="espejo-marca">sólo en la versión de prueba</span></p>
-      <table class="espejo-tabla">
-        <caption>Almacén <code>cierres</code></caption>
-        <thead><tr><th>Campo</th><th>Valor ahora</th><th>De dónde sale</th></tr></thead>
-        <tbody id="espejo-cierre-cuerpo"></tbody>
-      </table>
-      <table class="espejo-tabla">
-        <caption>Almacén <code>bitacora</code>, que se escribe solo al generar</caption>
-        <thead><tr><th>Campo</th><th>Valor ahora</th></tr></thead>
-        <tbody id="espejo-cierre-bitacora"></tbody>
-      </table>
-      <p id="espejo-cierre-conteo" class="espejo-ayuda"></p>
+      <summary><span>Lo que viaja a la base de datos</span></summary>
+      <div id="espejo-cierre-contenido"></div>
     </details>
 
     <!-- La acción va al pie y lleva a la vista previa antes del PDF (D101) -->
@@ -1161,58 +1136,58 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.9.46"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.9.46"></script>
-<script src="vendor/turf-pip.min.js?v=0.9.46"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.9.46"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.9.46"></script>
+<script src="vendor/leaflet.js?v=0.9.47"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.9.47"></script>
+<script src="vendor/turf-pip.min.js?v=0.9.47"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.9.47"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.9.47"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.9.46"></script>
-<script src="js/util.js?v=0.9.46"></script>
-<script src="js/filtros.js?v=0.9.46"></script>
-<script src="js/iconos.js?v=0.9.46"></script>
+<script src="js/config.js?v=0.9.47"></script>
+<script src="js/util.js?v=0.9.47"></script>
+<script src="js/filtros.js?v=0.9.47"></script>
+<script src="js/iconos.js?v=0.9.47"></script>
 <!-- Capas territoriales del SIA, compactadas por herramientas/generar_capas.py desde originales/ -->
-<script src="assets/capas/capa-alcaldias.js?v=0.9.46"></script>
-<script src="assets/capas/capa-uga.js?v=0.9.46"></script>
-<script src="assets/capas/capa-colonias.js?v=0.9.46"></script>
+<script src="assets/capas/capa-alcaldias.js?v=0.9.47"></script>
+<script src="assets/capas/capa-uga.js?v=0.9.47"></script>
+<script src="assets/capas/capa-colonias.js?v=0.9.47"></script>
 <!-- Colonias prioritarias para reforestar: capa de referencia del modelo de priorización -->
-<script src="assets/capas/capa-prioritarias.js?v=0.9.46"></script>
-<script src="assets/catalogos/catalogo-especies.js?v=0.9.46"></script>
-<script src="assets/catalogos/catalogo-vehiculos.js?v=0.9.46"></script>
-<script src="js/datos-ficticios.js?v=0.9.46"></script>
-<script src="js/permisos.js?v=0.9.46"></script>
-<script src="js/derivacion.js?v=0.9.46"></script>
-<script src="js/prioritarias.js?v=0.9.46"></script>
-<script src="js/solicitud.js?v=0.9.46"></script>
-<script src="js/almacen.js?v=0.9.46"></script>
-<script src="js/sesion.js?v=0.9.46"></script>
-<script src="js/referencias.js?v=0.9.46"></script>
-<script src="js/folio.js?v=0.9.46"></script>
+<script src="assets/capas/capa-prioritarias.js?v=0.9.47"></script>
+<script src="assets/catalogos/catalogo-especies.js?v=0.9.47"></script>
+<script src="assets/catalogos/catalogo-vehiculos.js?v=0.9.47"></script>
+<script src="js/datos-ficticios.js?v=0.9.47"></script>
+<script src="js/permisos.js?v=0.9.47"></script>
+<script src="js/derivacion.js?v=0.9.47"></script>
+<script src="js/prioritarias.js?v=0.9.47"></script>
+<script src="js/solicitud.js?v=0.9.47"></script>
+<script src="js/almacen.js?v=0.9.47"></script>
+<script src="js/sesion.js?v=0.9.47"></script>
+<script src="js/referencias.js?v=0.9.47"></script>
+<script src="js/folio.js?v=0.9.47"></script>
 <!-- Esquema generado de datos/esquema.json: relaciones entre tablas (D150) -->
-<script src="js/esquema.js?v=0.9.46"></script>
-<script src="js/conexion.js?v=0.9.46"></script>
-<script src="js/envio.js?v=0.9.46"></script>
-<script src="js/mapa.js?v=0.9.46"></script>
-<script src="js/foto.js?v=0.9.46"></script>
-<script src="js/jornada-activa.js?v=0.9.46"></script>
-<script src="js/formulario.js?v=0.9.46"></script>
+<script src="js/esquema.js?v=0.9.47"></script>
+<script src="js/conexion.js?v=0.9.47"></script>
+<script src="js/envio.js?v=0.9.47"></script>
+<script src="js/mapa.js?v=0.9.47"></script>
+<script src="js/foto.js?v=0.9.47"></script>
+<script src="js/jornada-activa.js?v=0.9.47"></script>
+<script src="js/formulario.js?v=0.9.47"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.9.46"></script>
-<script src="js/registros.js?v=0.9.46"></script>
-<script src="js/galeria.js?v=0.9.46"></script>
-<script src="js/jornadas.js?v=0.9.46"></script>
-<script src="js/informes.js?v=0.9.46"></script>
-<script src="js/supervision.js?v=0.9.46"></script>
-<script src="js/indicadores.js?v=0.9.46"></script>
-<script src="js/demostracion.js?v=0.9.46"></script>
-<script src="js/croquis.js?v=0.9.46"></script>
-<script src="js/reportes.js?v=0.9.46"></script>
-<script src="js/catalogos.js?v=0.9.46"></script>
-<script src="js/usuarios.js?v=0.9.46"></script>
-<script src="js/excel.js?v=0.9.46"></script>
-<script src="js/carga.js?v=0.9.46"></script>
-<script src="js/configuracion.js?v=0.9.46"></script>
-<script src="js/especies-revision.js?v=0.9.46"></script>
-<script src="js/app.js?v=0.9.46"></script>
+<script src="js/espejo.js?v=0.9.47"></script>
+<script src="js/registros.js?v=0.9.47"></script>
+<script src="js/galeria.js?v=0.9.47"></script>
+<script src="js/jornadas.js?v=0.9.47"></script>
+<script src="js/informes.js?v=0.9.47"></script>
+<script src="js/supervision.js?v=0.9.47"></script>
+<script src="js/indicadores.js?v=0.9.47"></script>
+<script src="js/demostracion.js?v=0.9.47"></script>
+<script src="js/croquis.js?v=0.9.47"></script>
+<script src="js/reportes.js?v=0.9.47"></script>
+<script src="js/catalogos.js?v=0.9.47"></script>
+<script src="js/usuarios.js?v=0.9.47"></script>
+<script src="js/excel.js?v=0.9.47"></script>
+<script src="js/carga.js?v=0.9.47"></script>
+<script src="js/configuracion.js?v=0.9.47"></script>
+<script src="js/especies-revision.js?v=0.9.47"></script>
+<script src="js/app.js?v=0.9.47"></script>
 </body>
 </html>

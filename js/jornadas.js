@@ -642,8 +642,8 @@ SRP.jornadas = {
         '<span class="jornada-estado"><span class="jornada-estatus" data-estatus="' + (abierta ? 'abierta' : 'cerrada') + '">' + SRP.ICONOS.svg(abierta ? 'candadoAbierto' : 'candado', 'chico') +
         '<span>' + (abierta ? 'Abierta' : esc(this.textoCierre(guardada))) + '</span></span>' +
         (!abierta && n && generado ? '<span class="jornada-reporte insignia-reporte">' + SRP.ICONOS.svg('reportes', 'chico') + '<span>Reporte: ' + esc(this.cuandoCorto(generado)) + '</span></span>' : '') + '</span>' +
-        (lugar || ubic ? '<span class="jornada-lugar">' + SRP.ICONOS.svg('ubicacion', 'chico') + '<span>' + esc(lugar) + (ubic ? (lugar ? ' · ' : '') + '<span class="jornada-ubic">' + esc(ubic) + '</span>' : '') + '</span></span>' : '') +
-        (SRP.prioritarias.hay() ? '<span class="jornada-prioridad">' + SRP.prioritarias.insignia(j.prioridad) + '</span>' : '') +
+        (lugar || ubic ? '<span class="jornada-lugar">' + SRP.ICONOS.svg('ubicacion', 'chico') + '<span>' + [esc(lugar), SRP.prioritarias.marca(j.prioridad),
+          ubic ? '<span class="jornada-ubic">' + esc(ubic) + '</span>' : ''].filter(Boolean).join(' · ') + '</span></span>' : '') +
         (programa || variosAutores || relevo ? '<span class="jornada-cabo">' + (programa ? '<span class="jornada-programa">' + esc(SRP.ref.nombreCatalogo(programa)) + '</span>' : '') +
           (variosAutores || relevo ? (programa ? ' · ' : '') + '<b>' + esc(SRP.ref.nombreUsuario(j.cabo_id)) + '</b>' + (relevo ? ' · relevo: ' + esc(SRP.ref.nombreUsuario(relevo)) : '') : '') + '</span>' : '') +
         (SRP.solicitud.es(guardada) ? '<span class="jornada-solicitud">' + SRP.solicitud.insignia(guardada) + '</span>' : '') +
@@ -732,15 +732,15 @@ SRP.jornadas = {
     // Varios días: del primero al último; un solo día: el día y las horas del primer y el último árbol
     const dias = SRP.util.diasJornada(j, regs), unDia = dias.desde === dias.hasta;
     const relevo = guardada.relevo_id && guardada.relevo_id !== guardada.cabo_id ? guardada.relevo_id : '';
-    this.el('jornada-sub').textContent = SRP.envio.diaEnLetra(j.fecha).split(' ')[0] + ' ' + SRP.util.textoDias(dias) +
+    const lugarFicha = this.alcaldiasDe(j).length ? SRP.ref.lugar(this.alcaldiasDe(j)) : SRP.activa.lugarDe(guardada);
+    this.el('jornada-sub').innerHTML = esc(SRP.envio.diaEnLetra(j.fecha).split(' ')[0] + ' ' + SRP.util.textoDias(dias) +
       (j.total > 1 ? ' · Jornada ' + j.n + ' de ' + j.total : '') + ' · ' +
       SRP.ref.nombreUsuario(j.cabo_id) + (relevo ? ' (titular) · relevo: ' + SRP.ref.nombreUsuario(relevo) : '') +
-      (regs.length && unDia ? ' · ' + h(regs[0]) + (regs.length > 1 ? '–' + h(regs[regs.length - 1]) : '') : '') +
-      (this.alcaldiasDe(j).length ? ' · ' + SRP.ref.lugar(this.alcaldiasDe(j)) : SRP.activa.lugarDe(guardada) ? ' · ' + SRP.activa.lugarDe(guardada) : '') +
-      ' · ' + (guardada.estatus === 'abierta' ? 'abierta' : this.textoCierre(guardada, true)) +
-      (SRP.prioritarias.hay() ? ' · ' + SRP.prioritarias.textoJornada(j.prioridad).toLowerCase() : '') +
+      (regs.length && unDia ? ' · ' + h(regs[0]) + (regs.length > 1 ? '–' + h(regs[regs.length - 1]) : '') : '')) +
+      (lugarFicha ? ' · ' + esc(lugarFicha) : '') + (SRP.prioritarias.marca(j.prioridad) ? ' · ' + SRP.prioritarias.marca(j.prioridad) : '') +
+      esc(' · ' + (guardada.estatus === 'abierta' ? 'abierta' : this.textoCierre(guardada, true)) +
       (SRP.prioritarias.textoOtras(j.registros, j.dato) ? ' · ' + SRP.prioritarias.textoOtras(j.registros, j.dato) : '') +
-      (SRP.solicitud.es(guardada) ? ' · solicita ' + SRP.solicitud.solicitanteCompleto(guardada) : '');
+      (SRP.solicitud.es(guardada) ? ' · solicita ' + SRP.solicitud.solicitanteCompleto(guardada) : ''));
     this.el('jornada-comentarios').hidden = !guardada.comentarios;
     this.el('jornada-comentarios').textContent = guardada.comentarios || '';
     // Cerrar o reabrir la jornada desde su revisión (D119): quien registra en ella (el titular o el cabo del relevo)
