@@ -122,10 +122,17 @@ with sync_playwright() as p:
       document.getElementById('ini-coord-lat').value = '19.432600'; document.getElementById('ini-coord-lng').value = '99.133200';
       SRP.activa.aplicarCoordenadas();
     }, true);"""
+    # En el teléfono los filtros de Jornadas arrancan plegados (D274); casi ninguna prueba trata de eso, así que
+    # se abren al cargar, como si la persona tocara «Filtros». `window.__filtrosComoEnTelefono` lo apaga
+    FILTROS_ABIERTOS = """document.addEventListener('DOMContentLoaded', () => {
+      if (window.__filtrosComoEnTelefono) return;
+      const p = document.getElementById('jornada-panel-filtros'); if (p) p.dataset.abierto = 'true';
+    });"""
     _contexto_base = b.new_context
     def contexto_llano(*a, **k):
         c = _contexto_base(*a, **k)
         c.add_init_script(PUNTO_JORNADA)
+        c.add_init_script(FILTROS_ABIERTOS)
         return c
     ATENDER_VENTANAS = """setInterval(() => {
       const c = document.getElementById('dlg-completa'); if (c && c.open) c.close();
@@ -915,8 +922,8 @@ with sync_playwright() as p:
     ok(cro and cro['src'].startswith('data:image/') and '4 puntos' in cro['alt'] and 'orden de la tabla' in cro['nota'],'la vista previa trae el croquis de la jornada con los puntos numerados (D115): %s' % (cro and cro['nota'][:80]))
     ok(cro and ('sin conexión' in cro['nota'] or 'Esri' in cro['nota']),'y el pie dice si lleva imagen de satélite o si se generó sin conexión')
     hoja=pg.inner_text('#previa-hoja')
-    ok('Territorio derivado con las capas: Alcaldías sia-2026-01-01 · UGA sia-2026-09-22 · Colonias iecm-2022.' in hoja and 'capa de prueba' not in hoja,
-       'el reporte dice con qué capas se derivó el territorio; las tres son definitivas y ninguna se dice de prueba')
+    ok('Territorio derivado' not in hoja and pg.evaluate("SRP.reportes.vistaPrevia.registros.every(r => /sia-2026-01-01/.test(r.capa_version) && !/prueba/.test(r.capa_version))"),
+       'el reporte ya no imprime con qué capas se derivó el territorio (D274); cada árbol lo guarda, con capas definitivas')
     cab=pg.evaluate("[...document.querySelector('#previa-hoja table').querySelectorAll('thead th')].map(x => x.textContent)")
     fil=pg.evaluate("[...document.querySelector('#previa-hoja table tbody tr').children].map(x => x.textContent)")
     ok(cab==['N.º','Especie','Coordenada','Precisión'] and re.fullmatch(r'.+ \(.+\)', fil[1]) is not None and re.fullmatch(r'19\.\d{6}, -99\.\d{6}', fil[2]) is not None and re.fullmatch(r'±\d+ m|En el mapa|A mano', fil[3]) is not None,
@@ -1586,8 +1593,8 @@ with sync_playwright() as p:
     ok(pg.is_visible('#jornada-detalle') and 'cerrada' in pg.inner_text('#aviso') and 'Siguiente: generar el reporte' in pg.inner_text('#aviso'),
        'al cerrar, la ficha abre y el aviso dice qué sigue (D138): '+pg.inner_text('#aviso'))
     ok(est('#jornada-pasos')==['hecho','hecho','hecho','actual'],'en la ficha, sin puntos por revisar, «Revisar» queda hecho y el actual es «Reporte»: '+str(est('#jornada-pasos')))
-    ok('Siguiente: generar el reporte' in pg.inner_text('#jornada-siguiente') and pg.is_visible('#btn-jornada-reporte') and 'Generar reporte' in pg.inner_text('#btn-jornada-reporte')
-       and 'btn-primario' in pg.get_attribute('#btn-jornada-reporte','class'),'la barra del pie dice lo que sigue y su botón principal lo hace: «Generar reporte»')
+    ok(pg.is_hidden('#jornada-siguiente') and pg.is_visible('#btn-jornada-reporte') and 'Generar reporte' in pg.inner_text('#btn-jornada-reporte')
+       and 'btn-primario' in pg.get_attribute('#btn-jornada-reporte','class'),'lo que sigue lo dicen el paso marcado y su botón principal, «Generar reporte», sin repetirlo en un renglón (D274)')
     ok(pg.evaluate("document.activeElement.id")=='btn-jornada-reporte','y el foco queda en ese botón, listo para el siguiente paso')
     ok(pg.is_hidden('#btn-jornada-siguiente') and 'Registrar árbol' in pg.inner_text('#btn-jornada-faltante') and 'btn-secundario' in pg.get_attribute('#btn-jornada-faltante','class'),
        'cerrada, «Registrar árbol» queda como secundario')
@@ -1883,7 +1890,8 @@ with sync_playwright() as p:
     ok(fic=={'lado':True,'arriba':True,'fija':'sticky','renglon':True},'en computadora la ficha va en dos columnas: mapa fijo a la izquierda, conciliación y puntos a la derecha; pasos y botones en un renglón (D145): %s' % fic)
     bar=pg.evaluate("""() => { const bs=[...document.querySelectorAll('.barra-jornada .btn')].filter(b => !b.hidden && b.offsetParent).map(b => b.getBoundingClientRect());
         const s=document.getElementById('jornada-siguiente').getBoundingClientRect();
-        return { un_renglon: bs.every(b => Math.abs(b.top - bs[0].top) < 2) && Math.abs(s.top + s.height / 2 - (bs[0].top + bs[0].height / 2)) < 16, texto_izq: s.right <= bs[0].left + 1, n: bs.length }; }""")
+        const conTexto = s.width > 0;   // el renglón «Siguiente» sólo sale cuando agrega algo (D274)
+        return { un_renglon: bs.every(b => Math.abs(b.top - bs[0].top) < 2) && (!conTexto || Math.abs(s.top + s.height / 2 - (bs[0].top + bs[0].height / 2)) < 16), texto_izq: !conTexto || s.right <= bs[0].left + 1, n: bs.length }; }""")
     ok(bar['un_renglon'] and bar['texto_izq'] and bar['n']>=1,'la barra del pie de la ficha: qué sigue a la izquierda y los botones a la derecha, en un renglón (D145): %s' % bar)
     # Todas las vistas arrancan en el mismo borde y ninguna se centra
     bordes={}
@@ -3171,6 +3179,7 @@ with sync_playwright() as p:
     pg27.evaluate("SRP.jornadas.aplicarAtajo('mes')"); pg27.wait_for_timeout(500)
     jm27=pg27.evaluate("(() => { const h = SRP.util.fechaHoy().slice(0, 7); return [document.querySelector('#jornada-atajos [data-atajo=mes]').getAttribute('aria-pressed'), SRP.jornadas.lista.every(j => j.fecha.startsWith(h)), document.getElementById('caja-jornada-anio') === null]; })()")
     pg27.evaluate("SRP.jornadas.aplicarAtajo('anio')"); pg27.wait_for_timeout(500)
+    esperar(pg27, "document.querySelector('#jornada-atajos [data-atajo=anio]').getAttribute('aria-pressed') === 'true'", 5000)   # bajo carga, la lista tarda en repintarse
     ja27=pg27.evaluate("(() => { const h = SRP.util.fechaHoy().slice(0, 4); return [document.querySelector('#jornada-atajos [data-atajo=anio]').getAttribute('aria-pressed'), SRP.jornadas.lista.length > 0 && SRP.jornadas.lista.every(j => j.fecha.startsWith(h)), document.getElementById('jornada-mas-filtros-texto').textContent]; })()")
     pg27.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg27.wait_for_timeout(500)
     ok(jm27==['true',True,True] and ja27[0]=='true' and ja27[1] and 'año' not in ja27[2],'en Jornadas, igual: %s · %s' % (jm27, ja27))
@@ -4345,6 +4354,12 @@ with sync_playwright() as p:
     ok(w51.sheetnames==['Árboles','Instrucciones','Especies','Programas','Instituciones'] and [c.value for c in w51['Árboles'][1]]==['Latitud','Longitud','Nombre científico','Fecha de plantación','Programa','Tipo de institución','Institución']
        and w51['Árboles'].max_row==1 and w51['Especies'].max_row==80 and w51['Programas'].max_row==5 and w51['Instituciones'].max_row==8,
        'la plantilla trae la hoja para llenar, las instrucciones y las listas válidas de especies, programas e instituciones: %s' % w51.sheetnames)
+    va51=w51['Árboles'].data_validations.dataValidation
+    ins51=' '.join(str(c.value) for f in w51['Instrucciones'].iter_rows() for c in f if c.value)
+    ok(len(va51)==4 and sorted(str(v.sqref) for v in va51)==['C2:C20001','E2:E20001','F2:F20001','G2:G20001'] and all(v.errorStyle=='warning' for v in va51)
+       and any("'Especies'!$A$2:$A$80" in v.formula1 for v in va51) and w51['Árboles'].auto_filter.ref=='A1:G1'
+       and '20,000 renglones por archivo' in ins51 and 'carga histórica' in ins51 and 'se eligen de una lista' in ins51,
+       'en «Árboles», nombre científico, programa, tipo e institución se eligen de una lista (avisa sin impedir), la hoja trae filtro y las instrucciones dicen el límite y a nombre de quién quedan: %s' % [str(v.sqref) for v in va51])
     # Revisión de un Excel con renglones buenos y malos
     pg51.set_input_files('#carga-archivo', CAR51); pg51.wait_for_timeout(1500)
     r51=pg51.inner_text('#carga-resumen')
@@ -4620,6 +4635,7 @@ with sync_playwright() as p:
     idx55=[['Alcaldía','Gobierno de la CDMX','Empresa privada','Organización civil'].index(t) for t in orden55]
     ok(pg55.is_visible('#cat-buscar') and pg55.inner_text('#cat-buscar-etiqueta')=='Buscar institución' and pg55.is_visible('#cat-filtro-tipo') and idx55==sorted(idx55) and len(idx55)==pg55.evaluate("SRP.ref.deTipo('organizacion', false).length"),
        'Catálogos › Instituciones trae buscador y tipo, y la lista va agrupada por tipo de institución')
+    esperar(pg55, "(() => { const b = document.getElementById('cat-buscar'); return !!b && !b.disabled && b.getClientRects().length > 0; })()", 8000)   # bajo carga, el catálogo tarda en pintarse
     pg55.fill('#cat-buscar','izta'); pg55.wait_for_timeout(300)
     b55=pg55.eval_on_selector_all('#tabla-catalogo tbody tr .c-titulo','l=>l.map(x=>x.innerText)')
     pg55.fill('#cat-buscar',''); pg55.select_option('#cat-filtro-tipo','Empresa privada'); pg55.wait_for_timeout(300)
@@ -6925,6 +6941,37 @@ with sync_playwright() as p:
     ok(m92 == 'Horario: 2 árboles, a las 19:57', 'dos árboles en el mismo minuto: sin duración ni promedio en cero: %s' % m92)
     ok(err92 == [], 'sin errores de consola: %s' % err92[:2])
     ctx92.close()
+
+    # ---------- ctx93: en el teléfono, los filtros de Jornadas plegados; el renglón «Siguiente» sólo cuando agrega algo ----------
+    ctx93 = contexto_llano(viewport={'width':390,'height':844}, timezone_id='America/Mexico_City')
+    ctx93.add_init_script("window.__filtrosComoEnTelefono = true")
+    pg93 = ctx93.new_page(); err93 = []
+    pg93.on('pageerror', lambda e: err93.append(str(e)))
+    pg93.goto(BASE); pg93.wait_for_timeout(1300)
+    entrar_como(pg93, 'u-dir-1'); pg93.wait_for_timeout(900)
+    # Una jornada abierta de un cabo, con su árbol: lo que sigue es cerrarla
+    pg93.evaluate("""async () => { const u = 'u-cabo-1', hoy = SRP.util.fechaHoy(), t = SRP.derivacion.derivar(19.4326, -99.1332);
+      await SRP.almacen.guardarConBitacora('jornadas', { id: 'jr-b194', nombre: 'Por cerrar B194', fecha: hoy, cabo_id: u, estatus: 'abierta', programa_id: 'p-refor', organizacion_id: 'o-sedema',
+        arboles_previstos: 1, puntos_revisados: [], fecha_inicio: new Date().toISOString(), lat: 19.4326, lng: -99.1332, alcaldia: t.alcaldia, colonia: t.colonia }, null);
+      await SRP.almacen.guardarConBitacora('plantaciones', { id: 'pl-b194', jornada_id: 'jr-b194', cabo_id: u, especie_id: 'ESP-0002', especie_otra: '', programa_id: 'p-refor', lat: 19.4326, lng: -99.1332,
+        punto_origen: 'gps', gps_precision_m: 5, fecha_plantacion: hoy, fecha_registro: new Date().toISOString(), estatus: 'activo', alcaldia: t.alcaldia, colonia: t.colonia, uga: t.uga, capa_version: t.capa_version,
+        folio: null, sustituye_id: null, comentarios: '' }, null);
+      SRP.app.mostrarVista('jornadas'); }""")
+    pg93.wait_for_timeout(1200)
+    f93 = pg93.evaluate("""() => { const p = document.getElementById('jornada-panel-filtros'), t = document.querySelector('#lista-jornadas .jornada');
+      return [p.getClientRects().length === 0, !!document.getElementById('jornada-btn-filtros').getClientRects().length, t ? Math.round(t.getBoundingClientRect().top) : null]; }""")
+    ok(f93[0] and f93[1] and f93[2] is not None and f93[2] < 844, 'en el teléfono los filtros de Jornadas arrancan plegados, con su botón, y la primera jornada se ve en la primera pantalla: %s' % f93)
+    pg93.click('#jornada-btn-filtros'); pg93.wait_for_timeout(200)
+    pg93.click('#jornada-atajos [data-atajo=anio]'); pg93.wait_for_timeout(600)
+    pg93.click('#jornada-btn-filtros'); pg93.wait_for_timeout(200)
+    g93 = pg93.evaluate("[document.getElementById('jornada-panel-filtros').getClientRects().length === 0, document.getElementById('jornada-filtros-cuenta').textContent, document.getElementById('jornada-fichas').innerText.trim()]")
+    ok(g93[0] and g93[1] == '1' and HOY[:4] in g93[2], '«Filtros» los abre y los cierra; plegados, el botón dice cuántos hay y las fichas dicen cuáles: %s' % g93)
+    # El Directivo no cierra jornadas: el renglón dice que lo hace el cabo
+    pg93.evaluate("SRP.jornadas.abrir('jr-b194')"); pg93.wait_for_timeout(1200)
+    d93 = pg93.evaluate("[document.getElementById('jornada-siguiente').hidden, document.getElementById('jornada-siguiente').textContent]")
+    ok(d93[0] is False and d93[1].startswith('Siguiente: cerrar la jornada') and d93[1].endswith('(lo hace el cabo).'), 'el Directivo ve qué sigue con «(lo hace el cabo)», porque no puede hacerlo: %s' % d93)
+    ok(err93 == [], 'sin errores de consola: %s' % err93[:2])
+    ctx93.close()
 
     b.close()
 

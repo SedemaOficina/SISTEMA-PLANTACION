@@ -218,12 +218,12 @@ SRP.supervision = {
       // Quien no tuvo jornadas en el periodo va aparte, en un renglón que se abre: así la lista dice quién trabajó
       const activos = m.porCabo.filter(x => x.jornadas || x.arboles), sin = m.porCabo.filter(x => !x.jornadas && !x.arboles);
       const conPend = m.porCabo.filter(x => pendientes(x)).length;
-      h += seccion('cabos', 'sup-t-cabos', 'Por cabo', num(activos.length) + ' con jornadas en el periodo' + (conPend ? ' · ' + num(conPend) + ' con pendientes' : ''),
-        (activos.length ? this.tabla(['Cabo', 'Árboles', 'De lo previsto', 'Jornadas', 'Última', 'Pendientes'],
+      h += seccion('cabos', 'sup-t-cabos', 'Por quién registró', num(activos.length) + ' con jornadas en el periodo' + (conPend ? ' · ' + num(conPend) + ' con pendientes' : ''),
+        (activos.length ? this.tabla(['Quién registró', 'Árboles', 'De lo previsto', 'Jornadas', 'Última', 'Pendientes'],
           activos.map(x => [enlace(x), num(x.arboles), x.avance == null ? '—' : x.avance + ' %', num(x.jornadas), x.ultima ? SRP.util.formatearFecha(x.ultima) : 'Sin jornadas', marca(x)]), [1, 2, 3], 'cabos', 'sup-tabla-cabos')
           : '<p class="nota">Nadie cerró jornadas en este periodo.</p>') +
         (sin.length ? '<details class="desplegable sup-sin-jornadas"><summary><span>' + num(sin.length) + ' sin jornadas en el periodo</span></summary>' +
-          this.tabla(['Cabo', 'Pendientes'], sin.map(x => [enlace(x), marca(x)]), [], null, 'sup-tabla-cabos') + '</details>' : ''));
+          this.tabla(['Quién registró', 'Pendientes'], sin.map(x => [enlace(x), marca(x)]), [], null, 'sup-tabla-cabos') + '</details>' : ''));
     }
     /* Por institución: lo de fuera suma al total de la Ciudad y aquí se ve quién lo plantó. Sólo
        para la Administración, sin institución elegida y cuando plantó más de una */

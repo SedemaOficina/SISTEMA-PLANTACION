@@ -2,7 +2,7 @@
    funcione sin señal y sin cargar un paquete de cientos de kilobytes.
    - Escribir: un .xlsx es un ZIP de archivos XML. Se arma con SRP.zip (galeria.js), sin comprimir:
      Excel lo abre igual. Textos en línea (sin tabla compartida), encabezado en negritas, fijo y con
-     filtro, y ancho de columna.
+     filtro, ancho de columna y, si se piden, listas para elegir en una columna.
    - Leer: se abre el ZIP leyendo su directorio central; lo comprimido se descomprime con
      DecompressionStream('deflate-raw'). Se leen la primera hoja, los textos compartidos y en línea,
      números y fechas (las fechas de Excel llegan como número de días desde 1899-12-30).
@@ -33,7 +33,17 @@ SRP.excel = {
       '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
       '<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>' +
       '<cols>' + cols + '</cols><sheetData>' + datos + '</sheetData>' +
-      (filas.length > 1 && h.filtro !== false ? '<autoFilter ref="A1:' + ultima + filas.length + '"/>' : '') + '</worksheet>';
+      ((filas.length > 1 || h.filtro === true) && h.filtro !== false ? '<autoFilter ref="A1:' + ultima + filas.length + '"/>' : '') +
+      this.validacionesXml(h.validaciones) + '</worksheet>';
+  },
+
+  /* Listas para elegir: `[{ rango: 'E2:E20001', lista: "'Programas'!$A$2:$A$6" }]`, o con `valores` fijos.
+     Avisan sin impedir: un valor escrito fuera de la lista (un alias que la carga reconoce) se puede
+     dejar, y la revisión de la carga dice si no sirve. */
+  validacionesXml(lista) {
+    if (!lista || !lista.length) return '';
+    return '<dataValidations count="' + lista.length + '">' + lista.map(v => '<dataValidation type="list" allowBlank="1" showErrorMessage="1" errorStyle="warning" sqref="' + v.rango + '">' +
+      '<formula1>' + this.esc(v.valores ? '"' + v.valores.join(',') + '"' : v.lista) + '</formula1></dataValidation>').join('') + '</dataValidations>';
   },
 
   /* hojas: [{ nombre, columnas: [{ titulo, ancho }], filas: [[valor…]] }] → Blob .xlsx */

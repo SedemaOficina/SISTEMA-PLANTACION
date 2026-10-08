@@ -174,7 +174,7 @@ SRP.indicadores = {
     // Por institución: quién ejecutó, con su tipo; la Secretaría primero cuando empatan
     const porOrganizacion = cuenta(arboles, a => this.organizacionDe(a.j), a => {
       const id = this.organizacionDe(a.j), o = SRP.ref.catalogoPorId[id] || {};
-      return { organizacion: SRP.ref.nombreOrganizacion(id), tipo: SRP.ref.esSedema(id) ? 'Secretaría' : o.tipo_organizacion || '', sedema: SRP.ref.esSedema(id) };
+      return { organizacion: SRP.ref.nombreOrganizacion(id), tipo: o.tipo_organizacion || '', sedema: SRP.ref.esSedema(id) };
     });
     const nativas = arboles.filter(a => this.esNativa(especieDe(a.r).distribucion)).length;
     // Solicitudes: las jornadas cerradas del programa «Solicitud», con sus árboles del periodo, por solicitante

@@ -75,6 +75,8 @@ SRP.jornadas = {
     this.el('jornada-programa').addEventListener('change', (e) => { this.filtro.programa = e.target.value; this.pintarLista(); });
     // «Quitar filtros» deja la lista como al entrar; cada ficha quita lo suyo
     this.el('jornada-quitar').addEventListener('click', () => this.quitarFiltros(true));
+    // En el teléfono los filtros van plegados: el botón los abre y los cierra (como en Registros)
+    this.el('jornada-btn-filtros').addEventListener('click', () => this.plegarFiltros(this.el('jornada-panel-filtros').dataset.abierto !== 'true'));
     this.el('jornada-fichas').addEventListener('click', (e) => {
       const b = e.target.closest('button[data-quitar]'); if (!b) return;
       const f = this.filtro, q = b.dataset.quitar;
@@ -445,6 +447,13 @@ SRP.jornadas = {
   },
 
   /* Deja la lista como al entrar: todas, sin búsqueda, sin revisión y sin listas. Con `avisar`, lo dice y ofrece deshacer. */
+  plegarFiltros(abrir) {
+    this.el('jornada-panel-filtros').dataset.abierto = String(abrir);
+    this.el('jornada-btn-filtros').setAttribute('aria-expanded', String(abrir));
+    // Las fichas sólo se ven con el panel plegado: abierto, los controles ya dicen lo mismo
+    this.el('jornada-fichas').dataset.visible = String(!abrir);
+  },
+
   quitarFiltros(avisar) {
     const antes = Object.assign({}, this.filtro), dia = this.diaAbierto, per = this.periodoAbierto;
     Object.assign(this.filtro, { texto: '', revision: '', cabo: '', programa: '', alcaldia: '', organizacion: '' });
@@ -493,6 +502,9 @@ SRP.jornadas = {
     const fichas = this.fichas();
     SRP.util.pintarFichas(this.el('jornada-fichas'), fichas);
     this.el('jornada-quitar').hidden = !fichas.length;
+    const cuenta = this.el('jornada-filtros-cuenta');
+    cuenta.hidden = !fichas.length; cuenta.textContent = fichas.length;
+    this.el('jornada-btn-filtros').setAttribute('aria-label', 'Filtros' + (fichas.length ? ', ' + fichas.length + (fichas.length === 1 ? ' activo' : ' activos') : ''));
   },
 
   /* REVISIÓN DE UNA JORNADA, para el filtro: qué tiene pendiente.
@@ -815,8 +827,15 @@ SRP.jornadas = {
     this.el('jornada-pasos').innerHTML = this.htmlPasos(p);
     const s = this.siguiente(p, propia);
     const linea = this.el('jornada-siguiente');
-    linea.innerHTML = s.html;
     linea.dataset.tono = s.tono;
+    /* El renglón «Siguiente» sólo cuando dice algo que los pasos y el botón no dicen (D274): cuántos puntos
+       hay por revisar, que una jornada cerrada está vacía, que todo está listo, o que lo que sigue lo hace
+       otra persona. Quien puede hacerlo ya tiene el paso marcado y su botón */
+    const puede = p.actual === 'registrar' ? propia : puedeJornada;
+    const repite = puede && (p.actual === 'cerrar' || p.actual === 'reporte' || (p.actual === 'registrar' && p.abierta));
+    const ajeno = !puede && ['cerrar', 'revisar', 'reporte'].includes(p.actual);
+    linea.hidden = repite;
+    linea.innerHTML = ajeno ? s.html.replace(/\.<\/span>$/, ' (lo hace el cabo).</span>') : s.html;
     const I = n => SRP.ICONOS.svg(n, 'medio');
     // Registrar sólo en la jornada propia (el árbol queda a nombre de quien entra). «Registrar árbol»
     // abierta o cerrada: cerrada, la reabre (un nombre por acción, D153)

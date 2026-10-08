@@ -68,7 +68,12 @@ SRP.carga = {
       .sort((a, b) => SRP.ref.TIPOS_INSTITUCION.indexOf(a.tipo_organizacion) - SRP.ref.TIPOS_INSTITUCION.indexOf(b.tipo_organizacion) || a.nombre.localeCompare(b.nombre, 'es'));
     const hoy = SRP.util.fechaHoy();
     return [
-      { nombre: 'Árboles', columnas: this.COLUMNAS.map(c => ({ titulo: c.titulo, ancho: c.ancho })), filas: [] },
+      // Listas para elegir en nombre científico, programa, tipo de institución e institución (las de las otras hojas)
+      { nombre: 'Árboles', columnas: this.COLUMNAS.map(c => ({ titulo: c.titulo, ancho: c.ancho })), filas: [], filtro: true, validaciones: [
+        { rango: 'C2:C' + (this.MAX_RENGLONES + 1), lista: "'Especies'!$A$2:$A$" + (especies.length + 1) },
+        { rango: 'E2:E' + (this.MAX_RENGLONES + 1), lista: "'Programas'!$A$2:$A$" + (programas.length + 1) },
+        { rango: 'F2:F' + (this.MAX_RENGLONES + 1), valores: SRP.ref.TIPOS_INSTITUCION },
+        { rango: 'G2:G' + (this.MAX_RENGLONES + 1), lista: "'Instituciones'!$B$2:$B$" + (orgs.length + 1) }] },
       { nombre: 'Instrucciones', filtro: false, columnas: [{ titulo: 'Columna', ancho: 22 }, { titulo: 'Qué escribir', ancho: 80 }, { titulo: 'Ejemplo', ancho: 34 }], filas: [
         ['Latitud', 'Grados decimales, con punto. En la Ciudad va de 19.0 a 19.6.', 19.432608],
         ['Longitud', 'Grados decimales, con punto. Es negativa; si se escribe sin el signo, se toma como negativa.', -99.133209],
@@ -78,6 +83,9 @@ SRP.carga = {
         ['Tipo de institución', 'Alcaldía, Gobierno de la CDMX, Empresa privada u Organización civil.', 'Alcaldía'],
         ['Institución', 'Como está en la hoja «Instituciones», del tipo elegido. En alcaldías, sólo el nombre.', 'Iztapalapa'],
         ['', 'Un renglón por árbol, en la hoja «Árboles». No cambie los encabezados.', ''],
+        ['', 'Hasta ' + this.MAX_RENGLONES.toLocaleString('es-MX') + ' renglones por archivo; si son más, divídalos en varios archivos.', ''],
+        ['', 'Nombre científico, programa, tipo de institución e institución se eligen de una lista; también se pueden escribir o pegar.', ''],
+        ['', 'Los árboles quedan a nombre de quien los carga, en jornadas cerradas marcadas como carga histórica.', ''],
         ['', 'Antes de cargar, el sistema revisa todo y dice qué renglones tienen problemas; nada se guarda hasta que usted confirma.', '']
       ] },
       { nombre: 'Especies', columnas: [{ titulo: 'Nombre científico', ancho: 36 }, { titulo: 'Nombre común', ancho: 30 }, { titulo: 'Clave', ancho: 12 }],

@@ -3791,3 +3791,34 @@ actualización de un teléfono con datos de verdad: la regla de «lo que nadie t
 
 **Siguiente paso.** Lo que Liber apruebe de lo pendiente (D1, D2, D3; P6, P7; X1 a X4; «Quién registró» en la
 pantalla de Supervisión) y la fase 3 del servidor.
+
+## Bloque 194 — Lo pendiente de las dos revisiones (08-10-2026)
+
+Versión 0.9.53. Liber aprobó lo pendiente y eligió en P6 (quitarla), P7 (como viene) y X3 (Gobierno de la CDMX).
+
+**Qué cambió (D274).** `index.html` y `js/jornadas.js`: el botón «Filtros» y el panel plegado de Jornadas
+(`plegarFiltros()`); el renglón «Siguiente» de la ficha, sólo cuando agrega algo, con «(lo hace el cabo)» a quien no
+puede hacerlo. `js/reportes.js`: sin la nota de capas (fuera `textoCapas()` del reporte). `js/excel.js`:
+`validacionesXml()` y el filtro en una hoja con sólo encabezados. `js/carga.js`: las listas, el filtro y las tres
+instrucciones nuevas. `js/indicadores.js`: el tipo de la Secretaría. `js/supervision.js`: «Por quién registró».
+Pruebas: el arnés abre los filtros de Jornadas al cargar (`FILTROS_ABIERTOS`; casi ninguna prueba trata de eso);
+`ctx93` prueba el teléfono sin esa ayuda y el renglón del Directivo; la plantilla, sus listas y su filtro; las del
+renglón «Siguiente», al día.
+
+**Pantalla: qué se agregó y qué se quitó.** Se agregaron el botón «Filtros» en Jornadas (teléfono) y las listas de la
+plantilla. Se quitaron el renglón «Siguiente» cuando repetía el paso y la nota de capas del reporte.
+
+También, en `docs/FASE2-Y-TRASPASO.md`: la limpieza de comentarios del código antes de pasar al servidor (§ 6) y cómo
+conectar el módulo Usuarios con las cuentas del servidor según lo que conteste el SIA (fila 31 y § 5), las dos a
+pedido de Liber.
+
+**Verificación.** `pruebas/prueba.py` completa, sola: 1,425 comprobaciones, 1 falla de tiempos (el chip «Este año» de
+Jornadas se leyó antes de que terminara de marcarse; el resto de esa comprobación pasó). La prueba espera ahora a que
+el chip quede marcado y su sección pasa sola (4 de 4); no se repitió la corrida completa. La corrida anterior se había
+detenido en otra espera (el buscador de Catálogos, que pasa solo), también corregida en la prueba. Entre esas corridas
+no cambió el código de la aplicación, sólo las pruebas. En la consola salió un aviso de CORS de un mosaico externo de
+Esri, ajeno a la app. `pruebas/auditoria.py`: 143 comprobaciones, 0 hallazgos; `pruebas/auditoria_css.py`: 0
+hallazgos. No se probó en un teléfono real; la plantilla con listas se revisó con openpyxl, no abriéndola en Excel.
+
+**Siguiente paso.** Las respuestas del SIA (esquema, `territorio`, cuentas, marco de las pantallas); la limpieza de
+comentarios; la fase 3 del servidor.

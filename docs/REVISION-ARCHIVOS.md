@@ -22,7 +22,7 @@ cubrió. Sólo sugerencias: nada de esto está programado.
 Los marcados **Defecto** son fallas, no gustos.
 
 **Estado (07-10-2026).** Liber aprobó P, S y C: hechos en el bloque 192 (versión 0.9.51, D272), salvo **P6 y P7,
-por decidir**. La plantilla de Excel (X) queda pendiente.
+por decidir**. La plantilla de Excel (X) queda pendiente. **Actualización (08-10-2026):** lo pendiente se aprobó y se hizo en el bloque 194 (versión 0.9.53, D274); P6 se quitó del PDF, P7 se queda como viene y X3 es «Gobierno de la CDMX».
 
 ---
 

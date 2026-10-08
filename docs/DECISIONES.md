@@ -3139,3 +3139,22 @@
     una alcaldía con cuentas se queda activa, para no cortarles el acceso.
   · La versión real todavía no siembra catálogos en el teléfono: los recibirá del servidor. La regla queda en
     `docs/FASE2-Y-TRASPASO.md` (punto 30).
+
+- **D274. Lo pendiente de las dos revisiones (bloque 194).**
+  08-10-2026. Liber aprobó lo que quedaba de `docs/REVISION-PANTALLAS.md` y `docs/REVISION-ARCHIVOS.md`, y eligió en P6,
+  P7 y X3.
+  · **D1.** En el teléfono los filtros de Jornadas arrancan plegados, con el botón «Filtros» que dice cuántos hay y las
+    fichas de lo filtrado, como en Registros; la lista queda arriba. En computadora, siempre abiertos.
+  · **D2.** El renglón «Siguiente» de la ficha sólo sale cuando agrega algo: cuántos puntos hay por revisar, que una
+    jornada cerrada está vacía, que todo está listo, o que lo hace otra persona. Quien puede hacerlo ya tiene el paso
+    marcado y su botón. Los avisos al cerrar o revisar siguen diciendo qué sigue.
+  · **D3.** A quien no puede hacer lo que sigue (el Directivo; la coordinación en «registrar»), el renglón le dice «(lo
+    hace el cabo)».
+  · **P6.** El reporte ya no imprime con qué capas se derivó el territorio: se guarda en cada árbol (`capa_version`).
+  · **P7.** La colonia se queda como viene en la capa, en mayúsculas: es el dato oficial.
+  · **X1, X2, X4.** La plantilla de carga ofrece listas para elegir en nombre científico, programa, tipo de institución
+    e institución (avisan sin impedir, porque la carga reconoce alias), su hoja «Árboles» trae filtro, y las
+    instrucciones dicen el límite de 20,000 renglones y que los árboles quedan a nombre de quien carga, en jornadas de
+    carga histórica.
+  · **X3.** La Secretaría es «Gobierno de la CDMX» en todo el sistema; el informe ya no dice «Secretaría».
+  · Supervisión en pantalla: «Por quién registró», como el informe y la tabla.

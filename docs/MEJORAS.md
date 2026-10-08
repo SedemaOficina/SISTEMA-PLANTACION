@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.9.52 (Bloque 193)»**.
+Al pie de cualquier pantalla: **«Versión 0.9.53 (Bloque 194)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -480,6 +480,8 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M482 | Liber | Reporte de la jornada: croquis en la página 1, distribución bajo los totales, «nativas o endémicas», crédito una vez, textos libres con su momento | Media | 0.9.51 (B192) | Reporte en PDF | D272 |
 | M483 | Liber | Informe de Supervisión y tabla: plurales, «Quién registró», columnas, semanas, notas juntas, institución, «menos de 1 %», solicitante completo | Media | 0.9.51 (B192) | Informe en PDF y CSV | D272 |
 | M484 | Liber | Alcaldías que se activan y desactivan (de arranque inactivas) y solicitantes de arranque reducidos a tres activos | Media | 0.9.52 (B193) | Configuración › Catálogos | D273 |
+| M485 | Liber | Jornadas en el teléfono con los filtros plegados; la ficha sin el «Siguiente» repetido y con «(lo hace el cabo)» a quien no puede hacerlo | Media | 0.9.53 (B194) | Jornadas | D274 |
+| M486 | Liber | Plantilla de carga con listas para elegir, filtro e instrucciones completas; el reporte sin la nota de capas; «Gobierno de la CDMX» y «Por quién registró» en todo el sistema | Baja | 0.9.53 (B194) | Carga masiva, Reporte, Supervisión | D274 |
 
 ## 2. Por hacer
 

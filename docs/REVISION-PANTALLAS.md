@@ -13,7 +13,7 @@ Cada punto dice **quién lo ve**, **qué pasa hoy** y **qué se propone**. Los m
 fallas, no gustos.
 
 **Estado (07-10-2026).** Liber aprobó A, B, C, D4, E, F, G y H: hechos en el bloque 191 (versión 0.9.50,
-D270). **D1, D2 y D3 quedan pendientes.** G2 quedó resuelto con A2.
+D270). **D1, D2 y D3 quedan pendientes.** G2 quedó resuelto con A2. **Actualización (08-10-2026):** lo pendiente se aprobó y se hizo en el bloque 194 (versión 0.9.53, D274).
 
 ---
 

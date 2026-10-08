@@ -278,15 +278,6 @@ SRP.reportes = {
   },
 
   // «Jornada 2 de 3» bajo la fecha, sólo cuando el día tuvo más de una (D117)
-  // «Territorio derivado con las capas: Alcaldías … · UGA … · Colonias ….», y los
-  // registros que aún no lo tienen (D152)
-  textoCapas(registros) {
-    const versiones = [...new Set(registros.map(r => r.capa_version).filter(Boolean))];
-    const sin = registros.filter(r => !r.capa_version).length;
-    return [versiones.length ? 'Territorio derivado con las capas: ' + versiones.map(v => SRP.ref.textoCapas(v)).join(' / ') + '.' : '',
-      sin ? (sin === 1 ? '1 registro' : sin + ' registros') + ' con el territorio pendiente de derivar.' : ''].filter(Boolean).join(' ');
-  },
-
   textoJornada(jornada) { return jornada && jornada.total > 1 ? 'Jornada ' + jornada.n + ' de ' + jornada.total : ''; },
 
   /* UN SOLO MODELO DEL REPORTE (M15). Lo que dice el reporte se decide aquí una vez; la vista
@@ -396,7 +387,6 @@ SRP.reportes = {
       /* CALIDAD DE LA UBICACIÓN. Con la fotografía opcional, la coordenada es la prueba: quien lea el
          reporte merece saber de qué clase de coordenada se trata. */
       gps: 'Ubicados con GPS del dispositivo: ' + conGps + ' de ' + n + ' (' + pct(conGps, n) + ' %).',
-      capas: this.textoCapas(registros),
       generado: 'Generado por ' + SRP.util.nombreCompleto(u) + ' (' + SRP.permisos.de(u).etiqueta + ').',
       /* La cifra del sistema no es la cifra del programa: se registra lo que alcanza a registrarse.
          Decirlo en el documento protege a quien lo firma. */
@@ -467,7 +457,7 @@ SRP.reportes = {
     // Personal y vehículo al final: así el croquis cabe en la primera página, como en las demás instituciones
     if (m.personal.length) h += apartado('Personal', datos(m.personal));
     if (m.vehiculo.length) h += apartado('Datos del vehículo', datos(m.vehiculo, 'previa-datos-tres'));
-    h += '<div class="previa-pie"><p>' + [m.gps, m.capas, m.advertencia, m.generado].filter(Boolean).map(esc).join('</p><p>') + '</p>' +
+    h += '<div class="previa-pie"><p>' + [m.gps, m.advertencia, m.generado].filter(Boolean).map(esc).join('</p><p>') + '</p>' +
       (m.ficticio ? '<p class="previa-ficticio">' + esc(m.ficticio) + '</p>' : '') + '</div>';
     return h;
   },
@@ -750,7 +740,8 @@ SRP.reportes = {
     if (m.vehiculo.length) { seccion('Datos del vehículo'); datos(m.vehiculo, 3); }
 
     // Notas al pie del contenido: calidad de la ubicación, capas, lo que la cifra no dice y quién lo generó
-    const notas = [m.gps, m.capas, m.advertencia, m.generado].filter(Boolean);
+    // Con qué capas se derivó el territorio no se imprime: se guarda en cada árbol (capa_version)
+    const notas = [m.gps, m.advertencia, m.generado].filter(Boolean);
     letra('normal', 8, C.gris);
     const lineasNotas = [].concat(...notas.map(t => doc.splitTextToSize(t, util)));
     salto(6 + lineasNotas.length * 3.8 + (m.ficticio ? 6 : 0));
