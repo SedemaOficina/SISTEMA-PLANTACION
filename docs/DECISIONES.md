@@ -3074,3 +3074,32 @@
   · Es la hora de captura, no la de plantación: si se captura todo al final, mide la captura.
   · El análisis entre jornadas (promedios por cabo, programa o mes) espera a que la app lea del servidor,
     en Supervisión, como el conteo de frutales.
+
+- **D270. Lo que sobraba en las pantallas, fuera (bloque 191).**
+  07-10-2026. Liber pidió revisar todas las pantallas, ventanas y mensajes con todas las cuentas y variantes;
+  la revisión está en `docs/REVISION-PANTALLAS.md`. Aprobó A, B, C, D4, E, F, G y H; D1, D2 y D3 quedan pendientes.
+  · **A1.** El pie de cada sección sólo dice la versión. «Restablecer datos de prueba» y «Datos de
+    demostración» pasan a la ventana «Datos de prueba», en el menú de la cuenta.
+  · **A2.** Sin párrafos que repiten el título (Registrar jornada, Jornadas, Fotografías, Configuración,
+    Acerca del sistema). Mi avance y Supervisión dicen sólo la regla: «Sólo cuentan las jornadas cerradas.»
+  · **A3.** En Usuarios y Catálogos sólo se marca lo inactivo.
+  · **A4.** «Quitar filtros» sólo con algo filtrado (faltaba en Registros).
+  · **A5.** «Más filtros» en el mismo orden en todas las secciones: quién registró, especie, programa,
+    alcaldía, institución.
+  · **A6, A7.** Sin «Fase 2» ni «Etapa 1» en Parámetros y Acerca del sistema; el mapa base dice «Esri
+    (provisional)» hasta conectar CARTO.
+  · **B.** Registrar jornada: sin la ayuda que repetía el ejemplo del nombre; lo detectado en un renglón
+    («Cuauhtémoc · Col. CENTRO IV · ■ Muy alta») en lugar de dos cajas y la escala de cinco niveles (que
+    desaparece); avisos de ubicación cortos; «Fecha» en lugar de «Fecha de la jornada de plantación»; la
+    dirección con el mismo ejemplo dentro del campo al iniciar y al editar.
+  · **C.** La franja con lo previsto completo dice sólo «Siguiente: cerrar la jornada.» (o cuántos van de
+    más). **Defecto corregido:** la etiqueta del punto en el mapa decía «PROVISIONAL» aunque el árbol ya
+    tuviera folio; ahora dice la especie y el folio en cuanto llega.
+  · **D4.** Con todos los pasos hechos, la ficha dice «Todo listo: reporte generado …» y no «Jornada
+    completa», que es la ventana de cuando se llega a lo previsto.
+  · **E1.** Datos de cierre: «Todos opcionales: lo que quede vacío no sale en el reporte.»
+  · **F.** Detalle del árbol sin renglones vacíos ni «Cabo» en los árboles propios; el folio lo asigna «el
+    servidor» en el historial; «Sustituir» con un árbol plantado hoy dice la fecha en lugar de preguntarla.
+  · **G1.** Un periodo sin jornadas cerradas da el mismo aviso corto a todos los perfiles, con las jornadas
+    en curso y «Qué atender»; ya no un tablero en ceros.
+  · **H1.** «¿Qué hacer sin internet?»: con envío, al cambiar de teléfono hay que enviar lo pendiente.

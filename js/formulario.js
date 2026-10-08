@@ -857,6 +857,7 @@ SRP.formulario = {
     const pinta = (estado, texto) => this.pintarEnvio(id, estado, texto);
     if (SRP.conexion.enLinea()) pinta('enviando', 'enviando…');
     await envio.enviar({ silencioso: true });
+    SRP.mapa.refrescarFolios();   // los puntos del mapa toman el folio que acaba de llegar
     const r = await SRP.almacen.uno('plantaciones', id);
     if (!r) return;
     const e = envio.leer();

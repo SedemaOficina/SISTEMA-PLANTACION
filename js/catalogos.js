@@ -157,7 +157,8 @@ SRP.catalogos = {
       if (!fija && !SRP.ref.esSedema(c.id)) items.push({ accion: 'estado', texto: c.activo ? 'Desactivar' : 'Activar', icono: c.activo ? 'cerrar' : 'palomita' });
       if (uso === 0 && !esOrg) items.push({ accion: 'eliminar', texto: 'Eliminar', icono: 'basura', peligro: true });
       // data-etiqueta: en teléfono cada renglón se muestra como ficha con su etiqueta
-      const estado = '<span class="estado-texto" data-activo="' + c.activo + '">' + (c.activo ? 'Activo' : 'Inactivo') + '</span>';
+      // Sólo se marca lo inactivo: casi todo está activo y marcarlo en cada renglón no distingue nada
+      const estado = c.activo ? '' : '<span class="estado-texto" data-activo="false">Inactivo</span>';
       // Clases c-*: en teléfono la fila es una tarjeta compacta (D105): título, científico, un
       // renglón de resumen y la tuerca arriba a la derecha; el resto de celdas se oculta ahí
       // Marcas de la especie: fuera de la paleta vegetal (advertencia) y fruto comestible

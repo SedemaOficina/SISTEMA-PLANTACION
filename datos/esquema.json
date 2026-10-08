@@ -1442,7 +1442,7 @@
           "nulo": false,
           "origen": "Persona",
           "dominio": "AAAA-MM-DD, no posterior a hoy",
-          "pantalla": "Fecha de la jornada de plantación (el día en que empieza)",
+          "pantalla": "Fecha (el día en que empieza la jornada)",
           "regla": "Día en que empieza la jornada. Sus árboles llevan cada uno su fecha de plantación, desde este día: una jornada puede durar varios días. Al cambiarla, la toman los árboles plantados el día de inicio; no puede quedar después de un árbol plantado otro día"
         },
         {

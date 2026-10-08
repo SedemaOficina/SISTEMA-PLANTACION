@@ -219,6 +219,8 @@ SRP.envio = {
     if (!caja || !this.simulado()) return;
     this.el('senal-destino').innerHTML = '<strong>Sus registros se guardan primero en este teléfono</strong> y se envían solos al servidor en cuanto hay señal; ' +
       'no tiene que hacer nada. En pruebas el servidor es simulado: nada sale del teléfono.';
+    // Con envío, lo que importa al cambiar de teléfono es no dejar nada sin enviar
+    this.el('senal-cambio').innerHTML = '<strong>Si va a cambiar de teléfono</strong>, antes envíe lo pendiente: la pastilla de arriba debe decir «Al día».';
     // Sólo si hay algo en cola: cuántos y de qué días, del más reciente al más antiguo
     const pend = await this.pendientesPropios();
     caja.hidden = !(pend && pend.length);

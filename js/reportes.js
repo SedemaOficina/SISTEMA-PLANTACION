@@ -98,10 +98,6 @@ SRP.reportes = {
     if (!registros.length || !jornada) return;
     this.contexto = { registros, fecha, cabo_id: caboId || '', jornada };
 
-    this.el('dlg-cierre-dia').textContent = jornada.nombre + ' · ' + SRP.util.formatearFecha(fecha) + (jornada.total > 1 ? ' · Jornada ' + jornada.n + ' de ' + jornada.total : '');
-    this.el('dlg-cierre-cuenta').textContent = registros.length +
-      (registros.length === 1 ? ' ejemplar registrado' : ' ejemplares registrados');
-
     // Lo capturado antes para esta misma jornada no se vuelve a escribir (Norma 7.6)
     const previo = await this.cierreDeJornada(jornada);
     this.contexto.previo = previo || null;

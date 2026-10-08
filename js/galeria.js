@@ -84,8 +84,6 @@ SRP.galeria = {
     // El cabo ve y descarga sólo sus fotografías, y vuelve a «Mi avance»
     const propias = SRP.permisos.de(SRP.sesion.usuario).alcance === 'propios';
     this.el('btn-galeria-volver').lastChild.textContent = propias ? 'Mi avance' : 'Supervisión';
-    this.el('galeria-nota').textContent = (propias ? 'Las fotografías de los árboles que usted registró.' : 'Las fotografías de los árboles registrados.') +
-      ' Toque una para verla grande y descargarla, o descargue todas las filtradas en un archivo ZIP.';
     await this.pintar();
   },
 

@@ -82,9 +82,8 @@ SRP.supervision = {
   async preparar() {
     const u = SRP.sesion.usuario, cabo = this.esCabo();
     this.el('titulo-supervision').textContent = this.titulo();
-    this.el('sup-nota').textContent = cabo
-      ? 'Lo que usted ha plantado, por semana, mes o año. Cuentan sólo las jornadas cerradas; las abiertas se dicen aparte.'
-      : 'Lo que se ha plantado en su ' + ({ todos: 'ciudad', institucion: 'institución' }[SRP.permisos.de(u).alcance] || 'cuadrilla') + ', por semana, mes o año. Cuentan sólo las jornadas cerradas; las abiertas se dicen aparte.';
+    // La única regla que no se ve en las cifras: las jornadas abiertas no cuentan todavía
+    this.el('sup-nota').textContent = 'Sólo cuentan las jornadas cerradas.';
     this.el('btn-sup-fotos').hidden = !SRP.permisos.de(u).galeria;
     // La tabla para Excel es de quien supervisa; el cabo se lleva su informe en PDF
     this.el('btn-sup-csv').hidden = cabo;
@@ -152,12 +151,12 @@ SRP.supervision = {
     this.el('form-sup-rango').hidden = p.tipo !== 'rango';
     const f = this.filtros;
     this.llenarFiltros();
-    const dichos = [f.organizacion ? SRP.ref.nombreOrganizacion(f.organizacion) : '', f.alcaldia, f.programa ? SRP.ref.nombreCatalogo(f.programa) : '', f.cabo ? SRP.ref.nombreUsuario(f.cabo) : ''].filter(Boolean);
+    const dichos = [f.cabo ? SRP.ref.nombreUsuario(f.cabo) : '', f.programa ? SRP.ref.nombreCatalogo(f.programa) : '', f.alcaldia, f.organizacion ? SRP.ref.nombreOrganizacion(f.organizacion) : ''].filter(Boolean);
     this.el('sup-filtros-texto').textContent = 'Más filtros: ' + (dichos.length ? dichos.join(' · ')
-      : SRP.util.enumerar(['alcaldía', 'programa'].concat(this.esCabo() ? [] : ['quién registró'], this.veOrganizaciones() ? ['institución'] : [])));
+      : SRP.util.enumerar((this.esCabo() ? [] : ['quién registró']).concat(['programa', 'alcaldía'], this.veOrganizaciones() ? ['institución'] : [])));
     this.el('btn-sup-quitar').hidden = !dichos.length;
-    SRP.util.pintarFichas(this.el('sup-fichas'), [f.alcaldia ? ['alcaldia', 'Alcaldía: ' + f.alcaldia] : null, f.programa ? ['programa', 'Programa: ' + SRP.ref.nombreCatalogo(f.programa)] : null,
-      f.cabo ? ['cabo', 'Registró: ' + SRP.ref.nombreUsuario(f.cabo)] : null,
+    SRP.util.pintarFichas(this.el('sup-fichas'), [f.cabo ? ['cabo', 'Registró: ' + SRP.ref.nombreUsuario(f.cabo)] : null,
+      f.programa ? ['programa', 'Programa: ' + SRP.ref.nombreCatalogo(f.programa)] : null, f.alcaldia ? ['alcaldia', 'Alcaldía: ' + f.alcaldia] : null,
       f.organizacion ? ['institucion', 'Institución: ' + SRP.ref.nombreOrganizacion(f.organizacion)] : null].filter(Boolean));
     this.modelo = I.calcular(this.datos, p, f);
     // Las descargas salen del cuerpo antes de repintarlo y vuelven a su lugar, bajo las cifras
@@ -190,9 +189,12 @@ SRP.supervision = {
     const conBarra = (texto, n, lista) => ({ html: esc(texto) + barra(n, Math.max(1, ...lista.map(x => x.arboles))) });
     const primero = lista => lista.length ? esc(lista[0].organizacion || lista[0].colonia || lista[0].clave) + ' ' + lista[0].pct + ' %' : '';
     const plural = (n, uno, varios) => num(n) + ' ' + (n === 1 ? uno : varios);
-    if (!c.arboles && !c.jornadas && !c.enCurso && !m.atender.length) {
+    /* Sin jornadas cerradas en el periodo, el mismo aviso corto para todos: un tablero en ceros no dice
+       nada. Se conserva lo que sí dice algo: cuántas siguen en curso y qué atender */
+    if (!c.arboles && !c.jornadas) {
+      const curso = c.enCurso ? ' ' + (c.enCurso === 1 ? 'Hay 1 jornada en curso' : 'Hay ' + num(c.enCurso) + ' jornadas en curso') + ': cuenta al cerrarse.' : '';
       return '<div class="vacio">' + SRP.util.htmlVacio('avance', 'Sin jornadas cerradas en este periodo',
-        cabo ? 'Cuando cierre una jornada, aquí verá cuántos árboles plantó.' : 'Cuando se cierren jornadas, aquí se verá cuánto se plantó.', []) + '</div>' + this.htmlAtender(m);
+        (cabo ? 'Cuando cierre una jornada, aquí verá cuántos árboles plantó.' : 'Cuando se cierren jornadas, aquí se verá cuánto se plantó.') + curso, []) + '</div>' + this.htmlAtender(m);
     }
     // «Previstos»: lo que se dijo al iniciar cada jornada; no es la meta del programa
     const previsto = cifra(c.avance == null ? '—' : c.avance + ' %', 'de lo previsto', c.meta ? num(c.arbolesConMeta) + ' de ' + num(c.meta) + ' previstos en las jornadas' : 'sin cantidad prevista');

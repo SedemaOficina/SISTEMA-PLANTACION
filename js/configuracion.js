@@ -172,13 +172,14 @@ SRP.configuracion = {
         ['Versión', C.VERSION + ' (' + C.ETAPA + ')'],
         ['Datos', C.ES_FICTICIO ? 'De prueba: no usar para reportes oficiales' : 'Reales'],
         ['Base del dispositivo', C.DB_NOMBRE + ', versión ' + C.DB_VERSION],
-        ['Acceso', C.AUTENTICACION.PROVEEDOR === 'simulado' ? 'Simulado (Etapa 1): en la Fase 2, proveedor institucional de identidad' : C.AUTENTICACION.PROVEEDOR]
+        ['Acceso', 'Cuentas del sistema' + (C.AUTENTICACION.PROVEEDOR === 'simulado' ? ' (de prueba: no se verifica la contraseña)' : '')]
       ]],
       ['Capas geográficas', [
         ['Alcaldías', capa('alcaldias')],
         ['Celdas UGA', capa('uga')],
         ['Colonias', capa('colonias')],
-        ['Mapa base', C.MAPA.CREDITO_PROVEEDOR + ' (licencia para producción por confirmar)']
+        // Lo decidido para producción es CARTO para calles y Esri para satélite; mientras no se conecte CARTO, todo es Esri
+        ['Mapa base', 'Esri (provisional)']
       ]],
       ['Este dispositivo', [
         ['Pendientes de envío', pendientes === null ? 'No se pudo leer' : pendientes.length === 0 ? 'Ninguno' : pendientes.length.toLocaleString('es-MX') + (pendientes.length === 1 ? ' registro' : ' registros')],

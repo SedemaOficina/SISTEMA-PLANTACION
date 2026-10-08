@@ -3691,3 +3691,40 @@ cero): se probó con `ctx92` y la sección del cierre de otro día, no con otra 
 teléfono se verá a partir de la siguiente actualización. No se probó en un teléfono real.
 
 **Siguiente paso.** La revisión de todas las pantallas que pidió Liber (sugerencias, sin tocar código).
+
+## Bloque 191 — Lo que sobraba en las pantallas (07-10-2026)
+
+Versión 0.9.50. Revisión de todas las pantallas pedida por Liber (`docs/REVISION-PANTALLAS.md`); aprobó A,
+B, C, D4, E, F, G y H. D1, D2 y D3 quedan pendientes.
+
+**Qué cambió (D270).** `index.html`: pie con la versión; ventana `dlg-prueba` con la demostración y
+restablecer; menú «Datos de prueba»; fuera los párrafos de presentación, la ayuda del nombre, las cajas de
+alcaldía y colonia y la escala de prioridad (en su lugar `ini-lugar`); «Fecha»; el ejemplo de la dirección
+al editar; el cierre con su regla corta; Supervisión con los filtros en el orden común. `js/app.js`:
+`cerrarDatosPrueba()` y el menú. `js/demostracion.js`: cierra la ventana al terminar. `js/jornada-activa.js`:
+el renglón de lo detectado, avisos cortos, la franja. `js/prioritarias.js`: fuera `htmlEscala()`.
+`js/mapa.js`: `textoPlantado()` sin «PROVISIONAL» y `refrescarFolios()`; `js/formulario.js` la llama tras
+enviar. `js/jornadas.js`: «Todo listo». `js/registros.js`: detalle sin renglones vacíos ni «Cabo» propio,
+historial del folio, «Quitar filtros», fecha fija al sustituir. `js/usuarios.js` y `js/catalogos.js`: sólo
+lo inactivo. `js/supervision.js`: la regla corta, el orden de los filtros, el aviso de periodo vacío.
+`js/galeria.js`, `js/configuracion.js`, `js/envio.js` y `js/reportes.js`: sus textos. `css/estilos.css`:
+fuera la escala; `.ini-lugar`, `.sustituir-fecha-fija`, la marca de inactivo. `datos/esquema.json` y
+`datos/MAPEO-CAMPOS.md`: «Fecha»; generados al día. Pruebas: las que leían lo quitado o movido, al día; la
+etiqueta del punto con su folio, nueva.
+
+**Pantalla: qué se agregó y qué se quitó.** Se agregaron la ventana «Datos de prueba» y el renglón de lo
+detectado en Registrar jornada. Se quitaron el bloque de prueba del pie, cinco párrafos de presentación, la
+ayuda del nombre, las cajas de alcaldía y colonia, la escala de prioridad, «Activo» en cada tarjeta,
+«PROVISIONAL» en el mapa, la cuenta repetida en la franja, los renglones vacíos del detalle y el tablero en
+ceros de Supervisión.
+
+**Verificación.** `pruebas/prueba.py` completa, sola: 1,417 comprobaciones, 0 fallas. Antes hubo cuatro corridas
+que se detuvieron en pruebas desactualizadas (leían lo que se quitó: la caja de alcaldía, el renglón de
+fotografía vacío, «Quitar filtros» sin filtros, el párrafo de Fotografías), no en fallas de la aplicación. En
+una apareció una vez «L is not defined» en la consola de alguna página de prueba; no se repitió en las dos
+corridas siguientes ni al correr aparte las secciones sospechosas. Para ubicarlo si vuelve, cada falla dice
+ahora su renglón en `pruebas/prueba.py`. `pruebas/auditoria.py`: 143 comprobaciones, 0 hallazgos;
+`pruebas/auditoria_css.py`: 0 hallazgos. No se probó en un teléfono real.
+
+**Siguiente paso.** La revisión de los PDF por dentro y de la plantilla de Excel de la carga masiva, que pidió
+Liber; después, D1, D2 y D3 si los aprueba, y la fase 3 del servidor.

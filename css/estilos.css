@@ -796,10 +796,9 @@ th[aria-sort="descending"] .th-flecha::after { content: '▼'; opacity: 1; font-
 .tabla .c-resumen { display: none; }
 .tabla-tarjetas tbody tr[data-id] { cursor: pointer; }
 .conteo-lista { font-size: var(--t-s); color: var(--gris); margin: 0 0 var(--e-1); }
-.estado-texto { display: inline-flex; align-items: center; gap: var(--e-15); font-size: var(--t-xs); font-weight: 500; }
-/* Punto de estado, como «● Paid» de la referencia: el color acompaña a la palabra (D100) */
-.estado-texto::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--exito); }
-.estado-texto[data-activo="false"]::before { background: var(--error); }
+/* Sólo se marca lo inactivo; el punto de color acompaña a la palabra (D100) */
+.estado-texto { display: inline-flex; align-items: center; gap: var(--e-15); font-size: var(--t-xs); font-weight: 500; color: var(--error); }
+.estado-texto::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--error); }
 /* Ficha de revisión previa: cada dato con su botón de corregir */
 /* El mapa va aislado en su propio contexto de apilamiento: los z-index de Leaflet (200–600) no salen de su caja
    y no pueden pintarse sobre la cabecera fija del diálogo, como pasaba en Safari (D78) */
@@ -845,6 +844,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .dialogo-titulo h2:focus { outline: none; }
 /* Sustituir árbol, en morado: el color del sustituto en el mapa, en la franja de arriba y en el icono del título */
 .dlg-sustituir { border-top-color: var(--sustituto); }
+.sustituir-fecha-fija { margin: var(--e-3) 0; }
 .sustituir-icono { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; margin-right: var(--e-2); vertical-align: -6px; border-radius: 50%; background: var(--sustituto); color: var(--fondo); }
 /* Confirmación al guardar (D171): al centro, encima de todo, sin atrapar los toques */
 .confirmacion-guardado { position: fixed; inset: 0; z-index: var(--z-confirmacion); display: grid; place-items: center; padding: var(--e-4); pointer-events: none; }
@@ -1131,8 +1131,9 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .sup-esp-barra rect { fill: var(--exito); }
 .sup-tabla-cabos .enlace-fila { display: inline; width: auto; min-height: 0; padding: 0; border: 0; background: none; color: var(--acento); font-weight: 600;
   text-decoration: underline; text-underline-offset: 3px; }
-/* Datos de demostración, al pie (D160): herramienta de prueba, en el gris del pie */
+/* Ventana «Datos de prueba» (D160): demostración y restablecer, separados por una línea */
 .demo-caja { margin-top: var(--e-3); padding-top: var(--e-3); border-top: 1px dashed var(--borde-suave); }
+.dialogo-cabecera + .demo-caja { margin-top: 0; padding-top: 0; border-top: 0; }
 .demo-titulo { margin: 0 0 var(--e-1); font-size: var(--t-s); font-weight: 600; color: var(--texto); }
 .demo-estado { margin: 0 0 var(--e-2); max-width: var(--ancho-max); }
 .demo-caja .btn { font-size: var(--t-s); }
@@ -1159,7 +1160,6 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .aviso[data-tipo="alerta"] .aviso-icono { color: var(--aviso-alerta); }
 .aviso[data-tipo="aviso"] { border-left-color: var(--aviso-aviso); }
 .aviso[data-tipo="aviso"] .aviso-icono { color: var(--aviso-aviso); }
-.estado-texto[data-activo="false"] { color: var(--error); }
 .ficha-estado[data-tipo="alerta"] { color: var(--error); font-weight: 500; }
 /* El renglón de avisos bajo la precisión (D152): continúa la misma ficha, sin tapar la insignia */
 .ficha-estado-extra { border-top: 0; margin-top: -1px; }
@@ -1452,17 +1452,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .sup-prioridad-lema { margin: 0 0 var(--e-3); }
 
 /* La marca de prioridad de una jornada o de un punto: muestra del color y texto */
-/* La escala completa en Iniciar jornada: cinco tramos en orden, de menor a mayor; el de la colonia
-   crece y lleva marca. Debajo se dice con palabras, para que no dependa del color. */
-.pri-escala-caja { display: flex; flex-direction: column; gap: var(--e-2); }
-.pri-escala { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 3px; align-items: end; }
-.pri-tramo { display: flex; flex-direction: column; align-items: center; gap: var(--e-1); min-width: 0; }
-.pri-tramo i { display: block; width: 100%; height: 12px; border: 1px solid var(--borde-control); border-radius: var(--radio-min); }
-.pri-tramo span { font-size: var(--t-xs); line-height: 1.15; color: var(--gris); text-align: center; }
-.pri-tramo[data-es="true"]::before { content: ""; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid var(--texto); }
-.pri-tramo[data-es="true"] i { height: 26px; outline: 2px solid var(--texto); outline-offset: 1px; }
-.pri-tramo[data-es="true"] span { color: var(--texto); font-weight: 700; }
-.pri-escala-dicho { color: var(--gris); }
+.ini-lugar { margin: var(--e-2) 0 0; font-weight: 500; }
 /* Mover a otra jornada: buscador y día, lado a lado cuando caben */
 .mover-filtros { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: var(--e-2) var(--e-3); margin-bottom: var(--e-2); }
 .pri-marca { white-space: nowrap; }

@@ -339,11 +339,12 @@ SRP.activa = {
     if (editando) return;
     const p = SRP.jornadas.pasos({ registros }, j);
     pasos.innerHTML = SRP.jornadas.htmlPasos(p);
-    // Con la meta alcanzada, lo que sigue es cerrar: el botón ya está al lado, aquí sólo se dice
+    // Con la meta alcanzada, lo que sigue es cerrar: el botón ya está al lado, aquí sólo se dice. La
+    // cuenta ya está arriba («2 de 2 árboles»); sólo se repite lo que agrega: cuántos van de más
     if (p.actual === 'cerrar') {
       sig.hidden = false;
-      const avance = p.meta === null ? '' : n > p.meta ? 'Van ' + n + ' árboles: ' + (n - p.meta) + ' más de los ' + p.meta + ' previstos. ' : 'Se plantó lo previsto: ' + n + ' de ' + p.meta + '. ';
-      sig.innerHTML = SRP.ICONOS.svg('palomita', 'medio') + '<span>' + esc(avance + 'Siguiente: cerrar la jornada cuando termine.') + '</span>';
+      const avance = p.meta !== null && n > p.meta ? 'Van ' + n + ' árboles: ' + (n - p.meta) + ' más de los ' + p.meta + ' previstos. ' : '';
+      sig.innerHTML = SRP.ICONOS.svg('palomita', 'medio') + '<span>' + esc(avance + 'Siguiente: cerrar la jornada.') + '</span>';
     }
   },
 
@@ -386,7 +387,7 @@ SRP.activa = {
 
   punto: null,   // { lat, lng, precision, t } de la última detección en el panel; null si no se detectó
 
-  /* El botón y los dos datos de lectura reflejan lo detectado. Sin punto es la acción principal
+  /* El botón y el renglón de lo detectado reflejan el punto. Sin punto es la acción principal
      (azul); con punto es corregir (neutro con lápiz, «Detectar de nuevo»), como el botón del árbol (D48, D166). */
   pintarDetectar(buscando) {
     const b = this.el('btn-ini-detectar');
@@ -397,11 +398,10 @@ SRP.activa = {
     b.className = 'btn btn-ancho ' + (p ? 'btn-editar' : 'btn-primario');
     b.innerHTML = SRP.ICONOS.svg('ubicacion', 'medio') + '<span>' +
       (buscando ? 'Buscando señal…' : p ? 'Detectar de nuevo la ubicación' : 'Detectar ubicación de la jornada') + '</span>';
-    this.el('ini-alcaldia').textContent = p ? SRP.ref.alcaldia(p.t.alcaldia) : '—';
-    this.el('ini-colonia').textContent = p ? SRP.ref.colonia(p.t.colonia) : '—';
-    this.el('caja-ini-prioridad').hidden = !SRP.prioritarias.hay();
-    // Sin ubicación todavía, la escala se ve completa y sin nivel resaltado
-    this.el('ini-prioridad').innerHTML = SRP.prioritarias.hay() ? SRP.prioritarias.htmlEscala(p ? SRP.prioritarias.de(p.lat, p.lng) : null).replace('Sin dato en la capa de prioridad', p ? 'Sin dato en la capa de prioridad' : 'Detecte la ubicación para ver la prioridad de la colonia') : '';
+    // Lo detectado en un renglón, como en la tarjeta y la franja: alcaldía · colonia · prioridad
+    const lugar = this.el('ini-lugar');
+    lugar.hidden = !p;
+    lugar.innerHTML = p ? [SRP.util.escapar(SRP.ref.lugar(p.t.alcaldia, p.t.colonia)), SRP.prioritarias.marca(SRP.prioritarias.de(p.lat, p.lng))].filter(Boolean).join(' · ') : '';
     if (!p && !buscando) this.el('ini-detectado').hidden = true;
   },
 
@@ -430,7 +430,7 @@ SRP.activa = {
         this.punto = { lat, lng, precision, t, origen: 'gps' };
         this.pintarDetectar(false);
         const borde = t.fuera_m ? ' El punto cae a ' + t.fuera_m + ' m fuera del límite: se toma ' + t.alcaldia + ', la alcaldía más cercana.' : '';
-        this.avisoDetectar('Ubicación detectada' + (m != null ? ' (±' + m + ' m)' : '') + '.' + borde + ' Complete abajo la dirección o referencia si hace falta.',
+        this.avisoDetectar('Ubicación detectada' + (m != null ? ' (±' + m + ' m)' : '') + '.' + borde,
           (m != null && m > SRP.CONFIG.MAPA.PRECISION_ACEPTABLE_M) || t.fuera_m ? 'alerta' : 'bien');
       },
       (err) => {
@@ -459,7 +459,7 @@ SRP.activa = {
     this.punto = { lat: Number(lat.toFixed(6)), lng: Number(lng.toFixed(6)), precision: null, t, origen: 'manual' };
     this.pintarDetectar(false);
     this.avisoDetectar(t.fuera_m ? 'Punto capturado a mano, a ' + t.fuera_m + ' m fuera del límite: se toma ' + t.alcaldia + ', la alcaldía más cercana. Revise las coordenadas.'
-      : 'Punto capturado a mano. Complete abajo la dirección si hace falta.', t.fuera_m ? 'alerta' : 'bien');
+      : 'Punto capturado a mano.', t.fuera_m ? 'alerta' : 'bien');
   },
 
   // «Colonia, Alcaldía» de una jornada, para la franja, Jornadas y el reporte; '' si no se detectó

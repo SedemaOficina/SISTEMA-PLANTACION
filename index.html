@@ -14,12 +14,12 @@
 <!-- Las peticiones al mapa no dicen desde qué sitio se hacen -->
 <meta name="referrer" content="no-referrer">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.9.49">
-<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.9.49">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.9.50">
+<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.9.50">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.9.49">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.9.49">
-<link rel="stylesheet" href="css/estilos.css?v=0.9.49">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.9.50">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.9.50">
+<link rel="stylesheet" href="css/estilos.css?v=0.9.50">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -30,8 +30,8 @@
   <div class="encabezado-interior">
     <!-- Logotipo (D90, D137): Gobierno CDMX · SEDEMA · SIA · Reforestación Urbana en pantalla ancha; en teléfono, SIA y Reforestación Urbana -->
     <picture>
-      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.9.49">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.9.49" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
+      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.9.50">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.9.50" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» (D80) -->
@@ -51,6 +51,7 @@
             <!-- Envío simulado (D111): se comporta como sin conexión sin poner el teléfono en modo avión -->
             <button type="button" id="btn-sin-senal" class="menu-opcion" role="switch" aria-checked="false" hidden>
               <span>Simular sin señal (pruebas)</span><span class="interruptor" aria-hidden="true"></span></button>
+            <button type="button" id="btn-datos-prueba" class="menu-opcion" hidden>Datos de prueba</button>
             <button type="button" id="btn-cambiar-perfil" class="menu-opcion" hidden>Cambiar usuario (pruebas)</button>
             <button type="button" id="btn-cerrar-sesion" class="menu-opcion menu-peligro">Cerrar sesión</button>
           </div>
@@ -138,9 +139,10 @@
         <details id="sup-filtros" class="acordeon-filtros">
           <summary><span id="sup-filtros-texto">Más filtros</span></summary>
           <div class="filtros-listas acordeon-cuerpo">
-            <div class="campo campo-corto"><label for="sup-alcaldia">Alcaldía</label><select id="sup-alcaldia"></select></div>
-            <div class="campo campo-corto"><label for="sup-programa">Programa</label><select id="sup-programa"></select></div>
+            <!-- El mismo orden que en Jornadas y Registros: quién registró, programa, alcaldía, institución -->
             <div id="caja-sup-cabo" class="campo campo-corto"><label for="sup-cabo">Quién registró</label><select id="sup-cabo"></select></div>
+            <div class="campo campo-corto"><label for="sup-programa">Programa</label><select id="sup-programa"></select></div>
+            <div class="campo campo-corto"><label for="sup-alcaldia">Alcaldía</label><select id="sup-alcaldia"></select></div>
             <!-- Sólo para la Administración: las demás cuentas ya ven sólo lo de su institución -->
             <div id="caja-sup-organizacion" class="campo campo-corto" hidden><label for="sup-organizacion">Institución</label><select id="sup-organizacion"></select></div>
           </div>
@@ -167,17 +169,14 @@
 
     <!-- INICIAR JORNADA (D119): sin jornada abierta no se registra; se declara una sola vez -->
     <section id="panel-iniciar-jornada" class="tarjeta panel-iniciar" hidden aria-labelledby="titulo-iniciar-jornada">
-      <!-- Título e introducción (D143) -->
       <h2 id="titulo-iniciar-jornada">Registrar jornada</h2>
-      <p class="nota">Registre los datos de la jornada (proyecto) del día.</p>
       <form id="form-iniciar-jornada" class="form-iniciar-jornada" novalidate>
         <div id="ini-errores" class="errores" role="alert" tabindex="-1" hidden></div>
         <!-- En computadora, dos columnas (D145): el lugar a la izquierda y el plan a la derecha, como en
              «Nuevo árbol». En teléfono las dos cajas no se notan: los campos siguen uno bajo otro. -->
         <div class="ini-col ini-col-lugar">
         <div class="campo"><label for="ini-nombre">Nombre de la jornada <span class="obligatorio" aria-hidden="true">*</span></label>
-          <input id="ini-nombre" maxlength="120" placeholder="p. ej. Parque Los Pericos" autocomplete="off" spellcheck="false" aria-describedby="ini-nombre-ayuda">
-          <p id="ini-nombre-ayuda" class="nota ayuda-campo">Un nombre que identifique la jornada; por ejemplo, Parque Los Pericos o Intervención en Calzada de Tlalpan.</p></div>
+          <input id="ini-nombre" maxlength="120" placeholder="p. ej. Parque Los Pericos" autocomplete="off" spellcheck="false"></div>
         <!-- Detectar la ubicación de la jornada (D122): sólo la jornada; alcaldía y colonia salen de las
              capas del dispositivo. La dirección o referencia se sigue escribiendo abajo. -->
         <div class="campo campo-ini-detectar">
@@ -194,12 +193,8 @@
             <button type="button" id="btn-ini-coord-aplicar" class="btn btn-secundario">Colocar punto</button>
           </details>
           <p id="ini-detectado" class="nota ini-detectado" aria-live="polite" hidden></p>
-          <div class="campo-doble">
-            <div class="campo"><label for="ini-alcaldia">Alcaldía</label><output id="ini-alcaldia" class="campo-lectura" for="btn-ini-detectar">—</output></div>
-            <div class="campo"><label for="ini-colonia">Colonia</label><output id="ini-colonia" class="campo-lectura" for="btn-ini-detectar">—</output></div>
-          </div>
-          <!-- La prioridad de reforestación de la colonia donde se ubica la jornada: la escala completa, con su nivel resaltado -->
-          <div class="campo" id="caja-ini-prioridad"><p class="campo-titulo" id="etq-ini-prioridad">Prioridad de reforestación de la colonia</p><div id="ini-prioridad" class="pri-escala-caja" role="group" aria-labelledby="etq-ini-prioridad" aria-live="polite"></div></div>
+          <!-- Lo detectado, en un renglón como en la tarjeta y la franja: alcaldía · colonia · prioridad. Antes de detectar, nada -->
+          <p id="ini-lugar" class="ini-lugar" aria-live="polite" hidden></p>
         </div>
         <!-- Ayuda bajo los campos que se prestan a duda (D140) -->
         <div class="campo"><label for="ini-ubicacion">Dirección de la jornada</label>
@@ -216,7 +211,7 @@
         <!-- Meta de la jornada (D131): cuántos árboles se van a plantar; la revisión compara contra ella -->
         <div class="campo"><label for="ini-meta">Árboles que se van a plantar <span class="obligatorio" aria-hidden="true">*</span></label>
           <input type="number" id="ini-meta" inputmode="numeric" min="1" max="9999" step="1" placeholder="Cantidad" autocomplete="off" required></div>
-        <div class="campo"><label for="ini-fecha">Fecha de la jornada de plantación <span class="obligatorio" aria-hidden="true">*</span></label>
+        <div class="campo"><label for="ini-fecha">Fecha <span class="obligatorio" aria-hidden="true">*</span></label>
           <!-- Arranca vacía y «Hoy» la pone de un toque, como en el resto del sistema (D29, D98) -->
           <div class="fecha-con-hoy"><input type="date" id="ini-fecha" required data-vacio="Seleccione la fecha"><button type="button" id="btn-ini-hoy" class="btn btn-secundario btn-chico">Hoy</button></div></div>
         <div class="campo"><label for="ini-comentarios">Comentarios <span class="opcional">(opcional)</span></label>
@@ -397,7 +392,7 @@
       <button type="button" id="btn-filtros" class="btn btn-secundario btn-filtros" aria-expanded="true" aria-controls="panel-filtros">
         <span>Filtros</span><span id="filtros-cuenta" class="filtros-cuenta" hidden></span></button>
       <!-- Vuelve al estado con que se abre la vista (Hoy, sin rango, todos los cabos). «Todos» sólo quita el periodo -->
-      <button type="button" id="btn-reiniciar-filtros" class="btn btn-reiniciar">Quitar filtros</button>
+      <button type="button" id="btn-reiniciar-filtros" class="btn btn-reiniciar" hidden>Quitar filtros</button>
     </div>
     <!-- Lo que está filtrando ahora, como fichas que se quitan con × (D100) -->
     <ul id="filtros-activos" class="filtros-activos" aria-label="Filtros activos"></ul>
@@ -449,7 +444,6 @@
   <section id="vista-jornadas" class="vista vista-ancha vista-jornadas" hidden aria-labelledby="titulo-jornadas">
     <div id="jornadas-lista-caja" class="jornadas-lista-caja">
       <h1 id="titulo-jornadas">Jornadas</h1>
-      <p class="nota">Cada día de trabajo con su mapa, para comprobar al cierre que cada árbol plantado tenga su punto.</p>
       <!-- Filtros (D128): Todas · Hoy · Un día · Un periodo; año, mes y cabo plegados en «Más filtros» -->
       <section class="bloque" aria-labelledby="jornada-titulo-filtros">
         <!-- Misma cabecera que en Registros y Fotografías: título, «Quitar filtros» y fichas de lo elegido -->
@@ -559,7 +553,6 @@
   <section id="vista-galeria" class="vista vista-ancha" hidden aria-labelledby="titulo-galeria">
     <button type="button" id="btn-galeria-volver" class="btn btn-texto volver">Supervisión</button>
     <h1 id="titulo-galeria">Fotografías</h1>
-    <p id="galeria-nota" class="nota">Las fotografías de los árboles registrados. Toque una para verla grande y descargarla, o descargue todas las filtradas en un archivo ZIP.</p>
     <section class="bloque" aria-label="Filtros de fotografías">
       <!-- La zona de filtros la arma SRP.zonaFiltros (js/filtros.js) -->
       <div id="galeria-filtros"></div>
@@ -634,7 +627,6 @@
        son sus propias vistas y vuelven aquí -->
   <section id="vista-configuracion" class="vista vista-ancha" hidden aria-labelledby="titulo-configuracion">
     <h1 id="titulo-configuracion">Configuración</h1>
-    <p class="nota">Lo que administra la Administración global: cuentas, catálogos, los valores con que el sistema revisa y la trazabilidad de los cambios.</p>
     <div id="cfg-tarjetas" class="cfg-tarjetas">
       <button type="button" class="cfg-tarjeta" data-ir="usuarios"><span class="cfg-icono" data-icono="usuarios"></span><span class="cfg-texto"><span class="cfg-titulo">Usuarios</span><span class="cfg-descripcion">Dar de alta, editar y desactivar cuentas de todas las instituciones</span><span class="cfg-resumen" data-resumen="usuarios"></span></span></button>
       <button type="button" class="cfg-tarjeta" data-ir="catalogos"><span class="cfg-icono" data-icono="catalogos"></span><span class="cfg-texto"><span class="cfg-titulo">Catálogos</span><span class="cfg-descripcion">Programas y quién los usa, instituciones, áreas, especies y vehículos</span><span class="cfg-resumen" data-resumen="catalogos"></span></span></button>
@@ -660,7 +652,7 @@
   <section id="vista-parametros" class="vista vista-ancha" hidden aria-labelledby="titulo-parametros">
     <button type="button" class="btn btn-texto volver" data-volver-configuracion>Configuración</button>
     <h1 id="titulo-parametros">Parámetros</h1>
-    <p class="nota">Valores con que el sistema revisa y avisa. Se consultan aquí; en la Fase 2 se cambiarán desde el servidor, para todos los teléfonos a la vez. Cambiarlos en un solo teléfono haría que cada cuadrilla se revisara con reglas distintas.</p>
+    <p class="nota">Valores con que el sistema revisa y avisa. Se consultan aquí y se cambian desde el servidor, para todos los teléfonos a la vez: cambiarlos en un solo teléfono haría que cada cuadrilla se revisara con reglas distintas.</p>
     <div id="cfg-parametros"></div>
   </section>
 
@@ -717,26 +709,36 @@
   <section id="vista-acerca" class="vista vista-ancha" hidden aria-labelledby="titulo-acerca">
     <button type="button" class="btn btn-texto volver" data-volver-configuracion>Configuración</button>
     <h1 id="titulo-acerca">Acerca del sistema</h1>
-    <p class="nota">Datos de esta instalación y de este dispositivo, para dar soporte o reportar una falla.</p>
     <div id="cfg-acerca"></div>
   </section>
 </main>
 
 <footer class="pie">
   <p>Sistema de Registro de Plantaciones. Versión <span id="version"></span></p>
-  <div id="herramientas-prueba" class="fila-botones" hidden>
-    <button type="button" id="btn-restablecer" class="btn btn-texto">Restablecer datos de prueba</button>
+</footer>
+
+<!-- Datos de prueba: restablecer y datos de demostración (D160). Sólo con datos de prueba; se abre desde
+     el menú de la cuenta, para no ocupar el pie de cada sección -->
+<dialog id="dlg-prueba" aria-labelledby="dlg-prueba-titulo">
+  <div class="dialogo-cabecera">
+    <div class="dialogo-titulo">
+      <h2 id="dlg-prueba-titulo" tabindex="-1" autofocus>Datos de prueba</h2>
+      <button type="button" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar"></button>
+    </div>
   </div>
-  <!-- Datos de demostración (D160): sólo con datos de prueba; se retira al cerrar la Etapa 1 -->
   <section id="caja-demo" class="demo-caja" aria-labelledby="titulo-demo" hidden>
-    <h2 id="titulo-demo" class="demo-titulo">Datos de demostración</h2>
+    <h3 id="titulo-demo" class="demo-titulo">Datos de demostración</h3>
     <p id="demo-estado" class="demo-estado" aria-live="polite"></p>
     <div class="fila-botones">
       <button type="button" id="btn-demo-cargar" class="btn btn-secundario"><span>Cargar datos de demostración</span></button>
       <button type="button" id="btn-demo-quitar" class="btn btn-peligro-linea"><span>Quitar datos de demostración</span></button>
     </div>
   </section>
-</footer>
+  <div id="herramientas-prueba" class="demo-caja" hidden>
+    <h3 class="demo-titulo">Empezar de cero</h3>
+    <button type="button" id="btn-restablecer" class="btn btn-peligro-linea">Restablecer datos de prueba</button>
+  </div>
+</dialog>
 
 <!-- Subir al inicio (D154): aparece al bajar más de una pantalla, arriba de la barra inferior -->
 <button type="button" id="btn-subir" class="btn btn-subir" aria-label="Subir al inicio" title="Subir al inicio" data-visible="no"></button>
@@ -809,8 +811,7 @@
     <div class="campo"><label for="ej-nombre">Nombre de la jornada <span class="obligatorio" aria-hidden="true">*</span></label>
       <input id="ej-nombre" maxlength="120" autocomplete="off" spellcheck="false"></div>
     <div class="campo"><label for="ej-ubicacion">Dirección de la jornada</label>
-      <input id="ej-ubicacion" maxlength="200" autocomplete="off" aria-describedby="ej-ubicacion-ayuda">
-      <p id="ej-ubicacion-ayuda" class="nota ayuda-campo">Dirección, parque o referencia.</p></div>
+      <input id="ej-ubicacion" maxlength="200" placeholder="Calle y número, entre calles o tramo" autocomplete="off"></div>
     <div class="campo"><label for="ej-programa">Programa <span class="obligatorio" aria-hidden="true">*</span></label>
       <select id="ej-programa"></select></div>
     <p class="nota" id="ej-nota-programa" hidden>Al cambiar el programa, los árboles de la jornada toman el programa nuevo.</p>
@@ -861,8 +862,10 @@
     <div id="sustituir-motivos" class="chips chips-envuelve motivos-sustitucion" role="group" aria-label="Razón de la sustitución"></div>
   </fieldset>
   <div id="caja-sustituir-otro" class="campo" hidden><label for="sustituir-otro">Escriba el motivo <span class="obligatorio" aria-hidden="true">*</span></label><input id="sustituir-otro" type="text" maxlength="120" autocomplete="off"></div>
-  <!-- El día en que se planta el sustituto: es su fecha de plantación y cuenta en ese periodo -->
-  <div class="campo"><label for="sustituir-fecha">Fecha de la sustitución <span class="obligatorio" aria-hidden="true">*</span></label>
+  <!-- El día en que se planta el sustituto: es su fecha de plantación y cuenta en ese periodo. Si sólo
+       puede ser hoy, no se pregunta: se dice -->
+  <p id="sustituir-fecha-fija" class="sustituir-fecha-fija" hidden></p>
+  <div class="campo" id="caja-sustituir-fecha"><label for="sustituir-fecha">Fecha de la sustitución <span class="obligatorio" aria-hidden="true">*</span></label>
     <div class="fecha-con-hoy"><input type="date" id="sustituir-fecha" aria-describedby="sustituir-fecha-ayuda"><button type="button" id="btn-sustituir-hoy" class="btn btn-secundario btn-chico">Hoy</button></div>
     <p id="sustituir-fecha-ayuda" class="nota ayuda-campo"></p></div>
   <div id="sustituir-error" class="errores" role="alert" hidden></div>
@@ -993,7 +996,8 @@
       <button type="button" id="btn-cierre-cerrar" class="btn btn-icono-solo btn-texto dialogo-cerrar" aria-label="Cerrar sin generar"></button>
     </div>
   </div>
-    <p class="nota">Reporte del <strong id="dlg-cierre-dia"></strong>. <span id="dlg-cierre-cuenta"></span>. Todos los campos son opcionales; los que queden vacíos no aparecen en el reporte.</p>
+    <!-- La jornada y su fecha ya se ven en la ficha de atrás: aquí sólo la regla -->
+    <p class="nota">Todos opcionales: lo que quede vacío no sale en el reporte.</p>
 
     <!-- El encargado abre el reporte: es el primer dato que se lee en el papel (D60). Un cabo es el
          encargado de su propio reporte: no se le pregunta ni se le muestra, ya lo lleva la jornada. Quien
@@ -1077,7 +1081,7 @@
     <li><strong>Abra la app al menos una vez con señal</strong> después de instalarla o de que haya versión nueva: así queda guardada en el teléfono y abre aunque no haya red.</li>
     <li id="senal-destino"><strong>Sus registros viven en este teléfono.</strong> Por ahora no se envían a ningún servidor. Cuando tenga señal, genere el reporte del día y compártalo con su coordinador.</li>
     <li><strong>No borre los datos del navegador</strong> ni use el modo privado: se perderían los registros.</li>
-    <li><strong>Si va a cambiar de teléfono</strong>, cierre antes sus jornadas y genere sus reportes: lo guardado no pasa solo al teléfono nuevo.</li>
+    <li id="senal-cambio"><strong>Si va a cambiar de teléfono</strong>, cierre antes sus jornadas y genere sus reportes: lo guardado no pasa solo al teléfono nuevo.</li>
   </ol>
 </dialog>
 
@@ -1140,58 +1144,58 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.9.49"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.9.49"></script>
-<script src="vendor/turf-pip.min.js?v=0.9.49"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.9.49"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.9.49"></script>
+<script src="vendor/leaflet.js?v=0.9.50"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.9.50"></script>
+<script src="vendor/turf-pip.min.js?v=0.9.50"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.9.50"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.9.50"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.9.49"></script>
-<script src="js/util.js?v=0.9.49"></script>
-<script src="js/filtros.js?v=0.9.49"></script>
-<script src="js/iconos.js?v=0.9.49"></script>
+<script src="js/config.js?v=0.9.50"></script>
+<script src="js/util.js?v=0.9.50"></script>
+<script src="js/filtros.js?v=0.9.50"></script>
+<script src="js/iconos.js?v=0.9.50"></script>
 <!-- Capas territoriales del SIA, compactadas por herramientas/generar_capas.py desde originales/ -->
-<script src="assets/capas/capa-alcaldias.js?v=0.9.49"></script>
-<script src="assets/capas/capa-uga.js?v=0.9.49"></script>
-<script src="assets/capas/capa-colonias.js?v=0.9.49"></script>
+<script src="assets/capas/capa-alcaldias.js?v=0.9.50"></script>
+<script src="assets/capas/capa-uga.js?v=0.9.50"></script>
+<script src="assets/capas/capa-colonias.js?v=0.9.50"></script>
 <!-- Colonias prioritarias para reforestar: capa de referencia del modelo de priorización -->
-<script src="assets/capas/capa-prioritarias.js?v=0.9.49"></script>
-<script src="assets/catalogos/catalogo-especies.js?v=0.9.49"></script>
-<script src="assets/catalogos/catalogo-vehiculos.js?v=0.9.49"></script>
-<script src="js/datos-ficticios.js?v=0.9.49"></script>
-<script src="js/permisos.js?v=0.9.49"></script>
-<script src="js/derivacion.js?v=0.9.49"></script>
-<script src="js/prioritarias.js?v=0.9.49"></script>
-<script src="js/solicitud.js?v=0.9.49"></script>
-<script src="js/almacen.js?v=0.9.49"></script>
-<script src="js/sesion.js?v=0.9.49"></script>
-<script src="js/referencias.js?v=0.9.49"></script>
-<script src="js/folio.js?v=0.9.49"></script>
+<script src="assets/capas/capa-prioritarias.js?v=0.9.50"></script>
+<script src="assets/catalogos/catalogo-especies.js?v=0.9.50"></script>
+<script src="assets/catalogos/catalogo-vehiculos.js?v=0.9.50"></script>
+<script src="js/datos-ficticios.js?v=0.9.50"></script>
+<script src="js/permisos.js?v=0.9.50"></script>
+<script src="js/derivacion.js?v=0.9.50"></script>
+<script src="js/prioritarias.js?v=0.9.50"></script>
+<script src="js/solicitud.js?v=0.9.50"></script>
+<script src="js/almacen.js?v=0.9.50"></script>
+<script src="js/sesion.js?v=0.9.50"></script>
+<script src="js/referencias.js?v=0.9.50"></script>
+<script src="js/folio.js?v=0.9.50"></script>
 <!-- Esquema generado de datos/esquema.json: relaciones entre tablas (D150) -->
-<script src="js/esquema.js?v=0.9.49"></script>
-<script src="js/conexion.js?v=0.9.49"></script>
-<script src="js/envio.js?v=0.9.49"></script>
-<script src="js/mapa.js?v=0.9.49"></script>
-<script src="js/foto.js?v=0.9.49"></script>
-<script src="js/jornada-activa.js?v=0.9.49"></script>
-<script src="js/formulario.js?v=0.9.49"></script>
+<script src="js/esquema.js?v=0.9.50"></script>
+<script src="js/conexion.js?v=0.9.50"></script>
+<script src="js/envio.js?v=0.9.50"></script>
+<script src="js/mapa.js?v=0.9.50"></script>
+<script src="js/foto.js?v=0.9.50"></script>
+<script src="js/jornada-activa.js?v=0.9.50"></script>
+<script src="js/formulario.js?v=0.9.50"></script>
 <!-- Sólo para la versión de prueba; se elimina al cerrar la Etapa 1 -->
-<script src="js/espejo.js?v=0.9.49"></script>
-<script src="js/registros.js?v=0.9.49"></script>
-<script src="js/galeria.js?v=0.9.49"></script>
-<script src="js/jornadas.js?v=0.9.49"></script>
-<script src="js/informes.js?v=0.9.49"></script>
-<script src="js/supervision.js?v=0.9.49"></script>
-<script src="js/indicadores.js?v=0.9.49"></script>
-<script src="js/demostracion.js?v=0.9.49"></script>
-<script src="js/croquis.js?v=0.9.49"></script>
-<script src="js/reportes.js?v=0.9.49"></script>
-<script src="js/catalogos.js?v=0.9.49"></script>
-<script src="js/usuarios.js?v=0.9.49"></script>
-<script src="js/excel.js?v=0.9.49"></script>
-<script src="js/carga.js?v=0.9.49"></script>
-<script src="js/configuracion.js?v=0.9.49"></script>
-<script src="js/especies-revision.js?v=0.9.49"></script>
-<script src="js/app.js?v=0.9.49"></script>
+<script src="js/espejo.js?v=0.9.50"></script>
+<script src="js/registros.js?v=0.9.50"></script>
+<script src="js/galeria.js?v=0.9.50"></script>
+<script src="js/jornadas.js?v=0.9.50"></script>
+<script src="js/informes.js?v=0.9.50"></script>
+<script src="js/supervision.js?v=0.9.50"></script>
+<script src="js/indicadores.js?v=0.9.50"></script>
+<script src="js/demostracion.js?v=0.9.50"></script>
+<script src="js/croquis.js?v=0.9.50"></script>
+<script src="js/reportes.js?v=0.9.50"></script>
+<script src="js/catalogos.js?v=0.9.50"></script>
+<script src="js/usuarios.js?v=0.9.50"></script>
+<script src="js/excel.js?v=0.9.50"></script>
+<script src="js/carga.js?v=0.9.50"></script>
+<script src="js/configuracion.js?v=0.9.50"></script>
+<script src="js/especies-revision.js?v=0.9.50"></script>
+<script src="js/app.js?v=0.9.50"></script>
 </body>
 </html>

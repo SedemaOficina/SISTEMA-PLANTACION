@@ -407,7 +407,7 @@ SRP.demo = {
     return { quitados: ids.length + sueltas.length, conservar, jornadas: [...conservar].filter(id => /^demo-j-/.test(id)).length };
   },
 
-  /* ---------- Los botones del pie ---------- */
+  /* ---------- Los botones de la ventana «Datos de prueba» ---------- */
 
   iniciar() {
     if (!SRP.CONFIG.ES_FICTICIO) return;
@@ -444,6 +444,7 @@ SRP.demo = {
     try {
       const res = await this.cargar(f => { estado.textContent = 'Cargando datos de demostración… ' + Math.round(f * 100) + ' %'; });
       try { localStorage.removeItem('srp_demo_quitados'); } catch (e) { /* sin persistencia */ }
+      SRP.app.cerrarDatosPrueba();
       SRP.util.anunciar('Datos de demostración cargados: ' + res.jornadas.toLocaleString('es-MX') + ' jornadas y ' + res.arboles.toLocaleString('es-MX') +
         ' árboles. Con «Cambiar usuario (pruebas)», en el menú de la cuenta, puede entrar como uno de sus cabos o coordinaciones.', 'exito');
       await this.refrescar();
@@ -462,6 +463,7 @@ SRP.demo = {
       const u = SRP.sesion.usuario;
       const res = await this.quitar();
       try { localStorage.setItem('srp_demo_quitados', '1'); } catch (e) { /* sin persistencia */ }
+      SRP.app.cerrarDatosPrueba();
       SRP.util.anunciar('Datos de demostración quitados.' + (res.jornadas ? ' Se conservó ' + (res.jornadas === 1 ? '1 jornada' : res.jornadas + ' jornadas') + ' donde se registró un árbol propio.' : ''), 'exito');
       // Quien estaba dentro con una cuenta de demostración sale: esa cuenta ya no existe
       if (u && this.es(u.id) && !res.conservar.has(u.id)) { SRP.sesion.cerrar(); SRP.app.mostrarAcceso(); }

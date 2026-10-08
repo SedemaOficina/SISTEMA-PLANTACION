@@ -23,7 +23,7 @@ SRP.app = {
     // Cancelar lleva tache y va en rojo de contorno (D116)
     I.poner(this.el('btn-cancelar-edicion'), 'cerrar', 'medio');
     I.poner(this.el('btn-confirmar-no'), 'cerrar', 'medio');
-    [['btn-contraste', 'sol'], ['btn-sin-senal', 'sinSenal'], ['btn-cambiar-perfil', 'usuario'], ['btn-cerrar-sesion', 'salir']]
+    [['btn-contraste', 'sol'], ['btn-sin-senal', 'sinSenal'], ['btn-datos-prueba', 'regenerar'], ['btn-cambiar-perfil', 'usuario'], ['btn-cerrar-sesion', 'salir']]
       .forEach(([id, icono]) => I.poner(this.el(id), icono, 'medio'));
     // Los buscadores llevan la lupa dentro del campo, desde la hoja de estilos (D95)
     // Avisos informativos: el icono va al frente del texto
@@ -187,6 +187,7 @@ SRP.app = {
     };
     this.el('btn-cerrar-sesion').addEventListener('click', () => { this.menuCuenta(false); salir(); });
     this.el('btn-cambiar-perfil').addEventListener('click', () => { this.menuCuenta(false); salir(); });
+    this.el('btn-datos-prueba').addEventListener('click', async () => { this.menuCuenta(false); await SRP.demo.pintar(); this.el('dlg-prueba').showModal(); });
     // Menú de la cuenta (D93): abre y cierra con el botón; se cierra al tocar fuera o con Escape
     this.el('btn-cuenta').innerHTML = SRP.ICONOS.svg('usuario', 'grande');
     this.el('btn-cuenta').addEventListener('click', () => this.menuCuenta(this.el('menu-cuenta').hidden));
@@ -206,6 +207,7 @@ SRP.app = {
           cola ? (cola === 1 ? '1 registro no se ha enviado y se perderá.' : cola + ' registros no se han enviado y se perderán.') : '',
           'Se cierra la sesión.'], irreversible: true, boton: 'Restablecer', icono: 'basura' });
       if (!ok) return;
+      this.cerrarDatosPrueba();
       await SRP.almacen.restablecer();
       await SRP.ref.recargar();
       SRP.formulario.limpiar();
@@ -288,6 +290,9 @@ SRP.app = {
     });
   },
 
+  // La ventana «Datos de prueba» se cierra al terminar lo que hizo, para que se lea el aviso
+  cerrarDatosPrueba() { const d = this.el('dlg-prueba'); if (d.open) d.close(); },
+
   // Las cuentas de prueba que se ofrecen al entrar: una por rol distinto
   CUENTAS_POR_ROL: ['u-admin-1', 'u-dir-1', 'u-coord-1', 'u-cabo-1', 'u-dir-alc', 'u-coord-alc', 'u-cabo-alc'],
 
@@ -298,6 +303,8 @@ SRP.app = {
     this.el('encabezado-usuario').hidden = true;
     this.el('herramientas-prueba').hidden = true;
     this.el('caja-demo').hidden = true;
+    this.el('btn-datos-prueba').hidden = true;
+    this.cerrarDatosPrueba();
     this.el('franja-envio').hidden = true;
     this.el('form-acceso').reset();
     this.el('acceso-errores').hidden = true;
@@ -335,6 +342,7 @@ SRP.app = {
     this.el('btn-cambiar-perfil').hidden = !SRP.CONFIG.ES_FICTICIO;
     this.el('navegacion').hidden = false;
     this.el('herramientas-prueba').hidden = !SRP.CONFIG.ES_FICTICIO;
+    this.el('btn-datos-prueba').hidden = !SRP.CONFIG.ES_FICTICIO;
     SRP.demo.pintar();
     const nav = this.el('navegacion');
     nav.querySelector('[data-vista="registrar"]').hidden = !p.registrar;

@@ -1118,7 +1118,7 @@ SRP.ESQUEMA = {
     false,
     null,
     null,
-    "Fecha de la jornada de plantación (el día en que empieza)"
+    "Fecha (el día en que empieza la jornada)"
    ],
    [
     "comentarios",

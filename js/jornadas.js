@@ -375,7 +375,9 @@ SRP.jornadas = {
     else if (p.actual === 'revisar') { que = 'revisar ' + (p.pend === 1 ? '1 punto marcado' : p.pend + ' puntos marcados'); tono = 'rev'; }
     else if (p.actual === 'reporte') que = 'generar el reporte';
     else {
-      const t = 'Jornada completa: reporte generado ' + SRP.envio.cuando(p.reporte_en) + '.';
+      // «Todo listo», no «Jornada completa»: eso es la ventana de cuando se llega a lo previsto, y aquí
+      // puede faltar algún árbol (4 de 5) con todos los pasos hechos
+      const t = 'Todo listo: reporte generado ' + SRP.envio.cuando(p.reporte_en) + '.';
       return { html: SRP.ICONOS.svg('palomita', 'chico') + '<span>' + SRP.util.escapar(t) + '</span>', texto: t, tono: 'ok' };
     }
     const texto = 'Siguiente: ' + que + cola + '.';

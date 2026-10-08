@@ -141,8 +141,23 @@ SRP.mapa = {
      mueve el marcador: el toque es del punto, no del mapa. */
   capaPlantados: null, plantados: {}, elegido: null, jornadaVista: null,
 
+  // La especie y, cuando ya lo tiene, el folio. Sin folio no se dice nada más: «PROVISIONAL» en el mapa alarmaba
   textoPlantado(r) {
-    return SRP.ref.especieDe(r).comun + ' · ' + SRP.folio.texto(r);
+    return SRP.ref.especieDe(r).comun + (SRP.folio.valido(r.folio) ? ' · ' + r.folio : '');
+  },
+
+  /* El folio llega del servidor después de guardar: las etiquetas de los puntos se ponen al día con lo
+     que ya está en la base, sin volver a pintar el mapa. */
+  async refrescarFolios() {
+    for (const [id, p] of Object.entries(this.plantados)) {
+      const r = await SRP.almacen.uno('plantaciones', id);
+      if (!r || r.folio === p.registro.folio) continue;
+      p.registro = r;
+      p.marcador.setTooltipContent(SRP.util.escapar(this.textoPlantado(r)));
+      const e = p.marcador.getElement();
+      if (e) e.setAttribute('aria-label', 'Árbol ya registrado: ' + this.textoPlantado(r) + '. Pulse para elegirlo.');
+    }
+    this.pintarRenglonPlantados();
   },
 
   pintarPlantados(registros, jornadaId) {
@@ -198,7 +213,7 @@ SRP.mapa = {
     const p = this.plantados[this.elegido], esc = SRP.util.escapar;
     document.getElementById('btn-plantado-ver').hidden = !p;
     document.getElementById('mapa-plantados-texto').innerHTML = p
-      ? '<i class="punto-muestra" data-tono="' + (p.registro.sustituye_id ? 'sust' : 'ok') + '" aria-hidden="true"></i><span><strong>' + esc(SRP.ref.especieDe(p.registro).comun) + '</strong> · ' + esc(SRP.folio.texto(p.registro)) +
+      ? '<i class="punto-muestra" data-tono="' + (p.registro.sustituye_id ? 'sust' : 'ok') + '" aria-hidden="true"></i><span><strong>' + esc(SRP.ref.especieDe(p.registro).comun) + '</strong>' + (SRP.folio.valido(p.registro.folio) ? ' · ' + esc(p.registro.folio) : '') +
         ' · plantado el ' + esc(SRP.util.formatearFecha(p.registro.fecha_plantacion)) + (p.registro.sustituye_id ? ' · sustituto' : '') + '</span>'
       : '<i class="punto-muestra" data-tono="ok" aria-hidden="true"></i><span>' + (n === 1 ? '1 árbol ya registrado en esta jornada' : n + ' árboles ya registrados en esta jornada') + '. Toque un punto para ver cuál es.</span>';
   },

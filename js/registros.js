@@ -312,6 +312,7 @@ SRP.registros = {
       SRP.ICONOS.svg('cerrar', 'chico') + '</button></li>').join('');
     const cuenta = this.el('filtros-cuenta');
     cuenta.hidden = !fichas.length;
+    this.el('btn-reiniciar-filtros').hidden = !fichas.length;   // sin nada filtrado no hay qué quitar
     cuenta.textContent = fichas.length;
     this.el('btn-filtros').setAttribute('aria-label', 'Filtros' + (fichas.length ? ', ' + fichas.length + (fichas.length === 1 ? ' activo' : ' activos') : ''));
   },
@@ -476,17 +477,19 @@ SRP.registros = {
       ['Colonia', esc(SRP.ref.colonia(r.colonia))],
       ['Coordenadas', r.lat.toFixed(5) + ', ' + r.lng.toFixed(5)],
       ['Cómo se obtuvo', SRP.formulario.textoOrigenRevision(r, false)],
-      ['Cabo', esc(SRP.ref.nombreUsuario(r.cabo_id))],
+      // Quien sólo ve lo suyo no necesita leer su propio nombre en cada árbol
+      SRP.permisos.de(SRP.sesion.usuario).alcance === 'propios' ? null : ['Cabo', esc(SRP.ref.nombreUsuario(r.cabo_id))],
       ...(await this.filasSustitucion(r)),
-      ['Comentarios', r.comentarios ? esc(r.comentarios) : 'Sin comentarios'],
-      ['Fotografía', SRP.util.fotoSegura(r.foto_base64)
-        ? '<img class="revision-foto" src="' + SRP.util.fotoSegura(r.foto_base64) + '" alt="Fotografía del árbol registrado">'
-        : 'Sin fotografía']
-    ];
+      // Un renglón sin dato no se muestra: «Sin comentarios», «Sin fotografía» no dicen nada
+      r.comentarios ? ['Comentarios', esc(r.comentarios)] : null,
+      SRP.util.fotoSegura(r.foto_base64) ? ['Fotografía', '<img class="revision-foto" src="' + SRP.util.fotoSegura(r.foto_base64) + '" alt="Fotografía del árbol registrado">'] : null
+    ].filter(Boolean);
     const historial = await SRP.bitacora.deEntidad(r.id);
+    // El folio lo asigna el servidor, no quien tenía la sesión abierta cuando llegó
+    const quien = h => h.accion === 'FOLIO_ASIGNADO' ? 'el servidor'
+      : esc(h.usuario_nombre) + ' (' + esc(SRP.PERFILES[h.perfil] ? SRP.PERFILES[h.perfil].etiqueta : h.perfil) + ')';
     const lineas = historial.length ? historial.map(h =>
-      '<li>' + SRP.util.formatearFechaHora(h.fecha) + ': ' + esc(h.accion.toLowerCase().replace(/_/g, ' ')) + ' por ' + esc(h.usuario_nombre) +
-      ' (' + esc(SRP.PERFILES[h.perfil] ? SRP.PERFILES[h.perfil].etiqueta : h.perfil) + ')' +
+      '<li>' + SRP.util.formatearFechaHora(h.fecha) + ': ' + esc(h.accion.toLowerCase().replace(/_/g, ' ')) + ' por ' + quien(h) +
       (h.detalle ? '. ' + esc(h.detalle) : '') + '</li>').join('')
       : '<li>Sin movimientos registrados.</li>';
 
@@ -533,10 +536,13 @@ SRP.registros = {
     // La fecha: hoy de inicio; entre la plantación del árbol perdido y hoy
     const fecha = this.el('sustituir-fecha');
     fecha.min = r.fecha_plantacion; fecha.max = SRP.util.fechaHoy(); fecha.value = SRP.util.fechaHoy();
-    // La fecha se elige en el calendario del campo o con «Hoy». Si el perdido se plantó hoy, el calendario sólo ofrece hoy, y se dice
+    // La fecha se elige en el calendario del campo o con «Hoy». Si el perdido se plantó hoy, sólo puede
+    // ser hoy: no se pregunta, se dice
     const soloHoy = r.fecha_plantacion >= SRP.util.fechaHoy();
-    this.el('sustituir-fecha-ayuda').textContent = soloHoy ? 'El árbol perdido se plantó hoy: la sustitución sólo puede ser de hoy.'
-      : 'El día en que se planta el árbol nuevo: desde el ' + SRP.util.formatearFecha(r.fecha_plantacion) + ', cuando se plantó el perdido, hasta hoy.';
+    this.el('caja-sustituir-fecha').hidden = soloHoy;
+    this.el('sustituir-fecha-fija').hidden = !soloHoy;
+    this.el('sustituir-fecha-fija').innerHTML = '<b>Fecha de la sustitución:</b> hoy, ' + esc(SRP.util.formatearFecha(SRP.util.fechaHoy()));
+    this.el('sustituir-fecha-ayuda').textContent = 'El día en que se planta el árbol nuevo: desde el ' + SRP.util.formatearFecha(r.fecha_plantacion) + ', cuando se plantó el perdido, hasta hoy.';
     this.el('sustituir-error').hidden = true;
     if (this.el('dlg-detalle').open) this.el('dlg-detalle').close();
     this.el('dlg-sustituir').showModal();

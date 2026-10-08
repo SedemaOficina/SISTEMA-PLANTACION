@@ -109,7 +109,8 @@ SRP.usuarios = {
         items.push({ accion: 'estado', texto: u.activo ? 'Desactivar' : 'Activar', icono: u.activo ? 'cerrar' : 'palomita' });
         if (!SRP.ref.totalUsos(this.usos[u.id])) items.push({ accion: 'eliminar', texto: 'Eliminar', icono: 'basura', peligro: true });
       }
-      const estado = '<span class="estado-texto" data-activo="' + u.activo + '">' + (u.activo ? 'Activo' : 'Inactivo') + '</span>';
+      // Sólo se marca lo inactivo: casi todo está activo y marcarlo en cada tarjeta no distingue nada
+      const estado = u.activo ? '' : '<span class="estado-texto" data-activo="false">Inactivo</span>';
       // En teléfono, tarjeta compacta (D105): nombre, correo, un renglón de resumen y la tuerca
       return '<tr data-id="' + SRP.util.escapar(u.id) + '"><td class="c-titulo" data-etiqueta="Nombre">' + esc(SRP.util.nombreCompleto(u)) + (soyYo ? ' <span class="insignia">usted</span>' : '') + '</td>' +
         '<td class="c-sub" data-etiqueta="Correo">' + esc(u.correo) + '</td>' +

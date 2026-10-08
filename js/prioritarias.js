@@ -131,17 +131,6 @@ SRP.prioritarias = {
   // «Prioridad alta», o «Sin dato de prioridad»
   textoJornada(p) { return p ? 'Prioridad ' + p.texto.toLowerCase() : 'Sin dato de prioridad'; },
 
-  /* LA ESCALA COMPLETA, CON EL NIVEL DE LA COLONIA RESALTADO. Los cinco niveles en orden, de menor a
-     mayor, cada uno con su color y su nombre; el de la colonia crece, lleva marca y su nombre va en
-     negritas, para que no dependa del color. Debajo sólo se escribe algo cuando no hay nivel que
-     resaltar. `p`: lo que devuelve `de()`, o null. */
-  htmlEscala(p) {
-    const esc = SRP.util.escapar, niveles = this.NIVELES.slice().reverse();
-    return '<span class="pri-escala" role="img" aria-label="' + esc(p ? 'Prioridad ' + p.texto.toLowerCase() + ', nivel ' + (p.prioridad + 1) + ' de 5' : 'Sin dato de prioridad') + '">' +
-      niveles.map(([n, t]) => '<span class="pri-tramo"' + (p && p.prioridad === n ? ' data-es="true"' : '') + '><i class="pri-nivel-' + n + '"></i><span>' + esc(t) + '</span></span>').join('') + '</span>' +
-      (p ? '' : '<span class="pri-escala-dicho">Sin dato en la capa de prioridad</span>');
-  },
-
   /* La prioridad de la colonia junto a ella, donde se dice el lugar de la jornada: «Álvaro Obregón · Col.
      BELLA VISTA · ■ Alta · dirección». La muestra del color y el nombre del nivel; el lector de pantalla
      oye «prioridad alta». Sin dato de prioridad no se pone nada. */

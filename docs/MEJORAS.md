@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.9.49 (Bloque 190)»**.
+Al pie de cualquier pantalla: **«Versión 0.9.50 (Bloque 191)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -470,6 +470,12 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M472 | Liber | La versión nueva se busca también cada 15 minutos con la app abierta, y al aplicarse se avisa «Se actualizó a la versión …» | Media | 0.9.49 (B190) | Toda la aplicación | D267 |
 | M473 | Liber | Tras «Seguir registrando» en «Jornada completa», el árbol de más se guarda sin volver a preguntar | Baja | 0.9.49 (B190) | Nuevo registro | D268 |
 | M474 | Liber | La ficha de la jornada sin horas en el renglón de arriba; en Conciliación, «Horario» con duración, cierre y promedio entre árboles | Baja | 0.9.49 (B190) | Jornadas › ficha | D269 |
+| M475 | Liber | El pie sólo con la versión; «Datos de prueba» (restablecer y demostración) en el menú de la cuenta | Media | 0.9.50 (B191) | Todas las secciones | D270 |
+| M476 | Liber | Sin párrafos que repiten el título; en Usuarios y Catálogos sólo se marca lo inactivo; «Quitar filtros» sólo con filtros; «Más filtros» en un solo orden | Baja | 0.9.50 (B191) | Todas las secciones | D270 |
+| M477 | Liber | Registrar jornada más corta: lo detectado en un renglón con su prioridad, sin la escala ni ayudas repetidas | Media | 0.9.50 (B191) | Nuevo registro › Registrar jornada | D270 |
+| M478 | Liber | El punto del mapa toma su folio en cuanto llega, sin «PROVISIONAL»; la franja dice sólo lo que sigue | Media | 0.9.50 (B191) | Nuevo registro | D270 |
+| M479 | Liber | «Todo listo» en lugar de «Jornada completa» en la ficha; cierre, detalle y sustitución sin renglones de más | Baja | 0.9.50 (B191) | Jornadas, Registros | D270 |
+| M480 | Liber | Supervisión: un periodo sin jornadas cerradas da un aviso corto, no un tablero en ceros | Baja | 0.9.50 (B191) | Supervisión | D270 |
 
 ## 2. Por hacer
 
