@@ -44,7 +44,7 @@ SRP.informes = {
   alcance() {
     const u = SRP.sesion.usuario, a = SRP.permisos.de(u).alcance;
     if (a === 'propios') return 'Cabo: ' + SRP.util.nombreCompleto(u);
-    if (a === 'equipo') return 'Cuadrilla de ' + SRP.util.nombreCompleto(u) + ' (coordinación)';
+    if (a === 'equipo') return 'Cuadrilla de ' + SRP.util.nombreCompleto(u) + ' (coordinación)' + (SRP.ref.esSedema(u.organizacion_id) ? '' : ' · ' + SRP.ref.nombreOrganizacion(u.organizacion_id));
     if (a === 'institucion') return ((SRP.ref.organizacionDe(u) || {}).nombre || 'Su institución') + ' (dirección)';
     return 'Toda la Ciudad (' + (u.perfil === 'DIRECTIVO' ? 'dirección' : 'administración') + ')';
   },
@@ -89,6 +89,8 @@ SRP.informes = {
       });
       y = doc.lastAutoTable.finalY + 7;
     };
+    // Un porcentaje que se redondea a cero con árboles no es cero: se dice «menos de 1 %»
+    const pc = (pct, n) => (n > 0 && !pct ? 'menos de 1' : String(pct || 0)) + ' %';
     const nota = (t) => {
       doc.setFont(F, 'italic'); doc.setFontSize(8); doc.setTextColor(...C.gris);
       const l = doc.splitTextToSize(t, util); salto(l.length * 3.6 + 2); doc.text(l, M, y); y += l.length * 3.6 + 2;
@@ -117,7 +119,7 @@ SRP.informes = {
       cabo ? null : ['Cabos que trabajaron', num(c.cabosActivos) + ' de ' + num(c.cabosAsignados)],
       ['Árboles por jornada', c.promedio == null ? '—' : String(c.promedio)],
       q.sustitutos ? ['Sustitutos plantados (incluidos arriba)', num(q.sustitutos) + ': ' + q.sustitutosMotivo.map(([t, n]) => t + ' ' + num(n)).join(', ')] : null,
-      ['Especies distintas', num(c.especies) + (c.nativasPct == null ? '' : ' (' + c.nativasPct + ' % de los árboles son nativos)')],
+      ['Especies distintas', num(c.especies) + (c.nativasPct == null ? '' : ' (' + c.nativasPct + ' % de los árboles son nativos o endémicos)')],
       ['Alcaldías y colonias', num(c.alcaldias) + (c.alcaldias === 1 ? ' alcaldía · ' : ' alcaldías · ') + num(c.colonias) + (c.colonias === 1 ? ' colonia' : ' colonias')],
       ['Con fotografía', num(q.conFoto) + (q.conFotoPct == null ? '' : ' (' + q.conFotoPct + ' %)')],
       ['Ubicados con GPS', num(q.gps) + (q.gpsPct == null ? '' : ' (' + q.gpsPct + ' %)') + (q.precisionMediana == null ? '' : ', precisión típica ±' + Math.round(q.precisionMediana) + ' m')]
@@ -133,49 +135,56 @@ SRP.informes = {
     // Lo de las alcaldías, PAOT, SOBSE y empresas suma al total; aquí se dice quién lo plantó
     if (!cabo && !m.filtros.organizacion && m.porOrganizacion.length > 1) {
       titulo('Por institución');
-      tabla(['Institución', 'Tipo', 'Árboles', '% del total', 'Jornadas'], SRP.supervision.conPct(m.porOrganizacion, c.arboles).map(x => [x.organizacion, x.tipo, num(x.arboles), x.pct + ' %', num(x.jornadas)]),
+      tabla(['Institución', 'Tipo', 'Árboles', '% del total', 'Jornadas'], SRP.supervision.conPct(m.porOrganizacion, c.arboles).map(x => [x.organizacion, x.tipo, num(x.arboles), pc(x.pct, x.arboles), num(x.jornadas)]),
         { derecha: [2, 3, 4], pie: ['Total', '', num(c.arboles), '100 %', ''] });
     }
+    // «Quién registró»: las coordinaciones también registran, no sólo los cabos
     if (!cabo && !m.filtros.cabo) {
-      titulo('Por cabo');
-      tabla(['Cabo', 'Jornadas', 'Árboles', 'De lo previsto', 'Última', 'Pendientes'], m.porCabo.map(x => [x.nombre, num(x.jornadas), num(x.arboles),
+      const pl = (n, uno, varios) => n + ' ' + (n === 1 ? uno : varios);
+      titulo('Por quién registró');
+      tabla(['Quién registró', 'Jornadas', 'Árboles', 'De lo previsto', 'Última', 'Pendientes'], m.porCabo.map(x => [x.nombre, num(x.jornadas), num(x.arboles),
         x.avance == null ? '—' : x.avance + ' %', x.ultima ? SRP.util.formatearFecha(x.ultima) : '—',
-        [x.abiertasViejas ? x.abiertasViejas + ' abiertas de antes' : '', x.sinRevisar ? x.sinRevisar + ' sin revisar' : '', x.sinReporte ? x.sinReporte + ' sin reporte' : '',
-          x.eliminados ? x.eliminados + ' eliminados' : '', x.editados ? x.editados + ' editados' : ''].filter(Boolean).join(', ') || '—']), { derecha: [1, 2, 3] });
+        [x.abiertasViejas ? pl(x.abiertasViejas, 'abierta de antes', 'abiertas de antes') : '', x.sinRevisar ? x.sinRevisar + ' sin revisar' : '', x.sinReporte ? x.sinReporte + ' sin reporte' : '',
+          x.eliminados ? pl(x.eliminados, 'eliminado', 'eliminados') : '', x.editados ? pl(x.editados, 'editado', 'editados') : ''].filter(Boolean).join(', ') || '—']), { derecha: [1, 2, 3] });
     }
     if (m.filtros.alcaldia) {
       titulo('Por colonia');
-      tabla(['Colonia', 'Árboles', '% del total', 'Jornadas'], SRP.supervision.conPct(m.porColonia, c.arboles).map(x => [x.colonia, num(x.arboles), x.pct + ' %', num(x.jornadas)]), { derecha: [1, 2, 3] });
+      tabla(['Colonia', 'Árboles', '% del total', 'Jornadas'], SRP.supervision.conPct(m.porColonia, c.arboles).map(x => [x.colonia, num(x.arboles), pc(x.pct, x.arboles), num(x.jornadas)]), { derecha: [1, 2, 3] });
     } else {
       titulo('Por alcaldía');
-      tabla(['Alcaldía', 'Árboles', '% del total', 'Jornadas', 'Colonias'], SRP.supervision.conPct(m.porAlcaldia, c.arboles).map(x => [x.clave, num(x.arboles), x.pct + ' %', num(x.jornadas), num(x.colonias)]), { derecha: [1, 2, 3, 4] });
+      tabla(['Alcaldía', 'Árboles', '% del total', 'Jornadas', 'Colonias'], SRP.supervision.conPct(m.porAlcaldia, c.arboles).map(x => [x.clave, num(x.arboles), pc(x.pct, x.arboles), num(x.jornadas), num(x.colonias)]), { derecha: [1, 2, 3, 4] });
     }
     if (m.prioridad && m.prioridad.total) {
       const p = m.prioridad, P = SRP.indicadores.pct;
       titulo('Por prioridad de la colonia');
-      tabla(['Prioridad de reforestación', 'Árboles', '% del total'], p.niveles.map(x => [x.texto, num(x.n), (P(x.n, p.total) || 0) + ' %'])
-        .concat(p.sin ? [['Sin dato en la capa', num(p.sin), (P(p.sin, p.total) || 0) + ' %']] : []), { derecha: [1, 2], pie: ['Total', num(p.total), '100 %'] });
+      tabla(['Prioridad de reforestación', 'Árboles', '% del total'], p.niveles.map(x => [x.texto, num(x.n), pc(P(x.n, p.total), x.n)])
+        .concat(p.sin ? [['Sin dato en la capa', num(p.sin), pc(P(p.sin, p.total), p.sin)]] : []), { derecha: [1, 2], pie: ['Total', num(p.total), '100 %'] });
     }
     titulo('Por especie');
-    tabla(['Especie', 'Nombre científico', 'Distribución', 'Árboles', '% del total'], SRP.supervision.conPct(m.porEspecie, c.arboles).map(x => [x.comun, x.cientifico, x.distribucion || '—', num(x.arboles), x.pct + ' %']),
+    tabla(['Especie', 'Nombre científico', 'Distribución', 'Árboles', '% del total'], SRP.supervision.conPct(m.porEspecie, c.arboles).map(x => [x.comun, x.cientifico, x.distribucion || '—', num(x.arboles), pc(x.pct, x.arboles)]),
       { derecha: [3, 4], pie: ['Total', '', '', num(c.arboles), '100 %'], columnas: { 1: { fontStyle: 'italic' } } });
     titulo('Por programa');
-    tabla(['Programa', 'Árboles', '% del total', 'Jornadas'], SRP.supervision.conPct(m.porPrograma, c.arboles).map(x => [x.clave, num(x.arboles), x.pct + ' %', num(x.jornadas)]), { derecha: [1, 2, 3] });
+    tabla(['Programa', 'Árboles', '% del total', 'Jornadas'], SRP.supervision.conPct(m.porPrograma, c.arboles).map(x => [x.clave, num(x.arboles), pc(x.pct, x.arboles), num(x.jornadas)]), { derecha: [1, 2, 3] });
     if (m.solicitudes.jornadas) {
       const pe = m.solicitudes, P = SRP.indicadores.pct;
       titulo('Solicitudes');
-      tabla(['Quién lo solicitó', 'Jornadas', 'Árboles', '% del total'], pe.solicitantes.map(x => [x.solicitante, num(x.jornadas), num(x.arboles), (P(x.arboles, c.arboles) || 0) + ' %']),
-        { derecha: [1, 2, 3], pie: ['Total a solicitud de otra instancia', num(pe.jornadas), num(pe.arboles), (P(pe.arboles, c.arboles) || 0) + ' %'] });
+      tabla(['Quién lo solicitó', 'Jornadas', 'Árboles', '% del total'], pe.solicitantes.map(x => [x.solicitante, num(x.jornadas), num(x.arboles), pc(P(x.arboles, c.arboles), x.arboles)]),
+        { derecha: [1, 2, 3], pie: ['Total a solicitud de otra instancia', num(pe.jornadas), num(pe.arboles), pc(P(pe.arboles, c.arboles), pe.arboles)] });
     }
     titulo('Jornadas cerradas del periodo');
     const conPri = SRP.prioritarias.hay();
-    tabla(['Fecha', 'Jornada', cabo ? 'Lugar' : 'Cabo'].concat(conPri ? ['Prioridad'] : [], ['Árboles', 'Reporte']), m.jornadas.map(j => [SRP.util.formatearFecha(j.fecha), j.nombre + (j.solicitante ? ' (solicita ' + j.solicitante + ')' : ''), cabo ? j.lugar : j.cabo]
-      .concat(conPri ? [j.prioridad] : [], [num(j.arboles) + (j.meta ? ' de ' + num(j.meta) : ''), j.reporte ? 'Generado' : 'Pendiente'])), { derecha: [conPri ? 4 : 3] });
+    tabla(['Fecha', 'Jornada', cabo ? 'Lugar' : 'Quién registró'].concat(conPri ? ['Prioridad'] : [], ['Árboles', 'Reporte']), m.jornadas.map(j => [SRP.util.formatearFecha(j.fecha), j.nombre + (j.solicitante ? ' (solicita ' + j.solicitante + ')' : ''), cabo ? j.lugar : j.cabo]
+      .concat(conPri ? [j.prioridad] : [], [num(j.arboles) + (j.meta ? ' de ' + num(j.meta) : ''), j.reporte ? 'Generado' : 'Pendiente'])),
+      // «17 de 17» en un renglón: la columna de árboles mide lo que su cifra más larga
+      { derecha: [conPri ? 4 : 3], columnas: { [conPri ? 4 : 3]: { cellWidth: 20 }, [conPri ? 5 : 4]: { cellWidth: 19 } } });
     titulo('Trazabilidad');
-    tabla(['Movimiento en el periodo', 'Árboles'], [['Eliminados', num(m.trazabilidad.eliminados)], ['Ediciones', num(m.trazabilidad.editados)]], { derecha: [1] });
+    if (m.trazabilidad.eliminados || m.trazabilidad.editados) tabla(['Movimiento en el periodo', 'Árboles'], [['Eliminados', num(m.trazabilidad.eliminados)], ['Ediciones', num(m.trazabilidad.editados)]], { derecha: [1] });
+    else nota('Sin árboles eliminados ni editados en el periodo.');
 
+    // Las notas del final, juntas: si no caben en lo que queda de la página, pasan todas a la siguiente
+    salto(30);
     nota('Cuentan sólo las jornadas cerradas: una jornada abierta todavía puede cambiar. La semana va de lunes a domingo. Los árboles eliminados y editados se cuentan aparte, como constancia, y no cambian la cifra de árboles.');
-    nota('Cifra de ejemplares registrados en el sistema. No equivale necesariamente al total plantado. En esta etapa, el informe reúne lo capturado en este dispositivo.');
+    nota('Cifra de ejemplares registrados en el sistema. No equivale necesariamente al total plantado. Reúne lo capturado en este dispositivo.');
     if (SRP.CONFIG.ES_FICTICIO) { doc.setTextColor(...C.ficticio); doc.setFontSize(8); salto(6); doc.text('Documento de prueba con datos ficticios. Sin validez oficial.', M, y); y += 5; }
     doc.setFontSize(8); doc.setTextColor(...C.gris); salto(5);
     doc.text('Generado por ' + SRP.util.nombreCompleto(SRP.sesion.usuario) + ' (' + SRP.permisos.de(SRP.sesion.usuario).etiqueta + ').', M, y);
@@ -204,7 +213,7 @@ SRP.informes = {
      acentos, y cada campo entre comillas. Un texto que empieza como fórmula («=», «+», «-», «@»,
      tabulador o retorno) lleva un apóstrofo delante: Excel lo muestra como texto y no lo calcula.
      Las cifras —la longitud es negativa— quedan como están. */
-  COLUMNAS: [['folio', 'Folio'], ['fecha', 'Fecha de plantación'], ['jornada', 'Jornada'], ['organizacion', 'Institución que ejecuta'], ['cabo', 'Cabo'], ['programa', 'Programa'], ['especie', 'Especie'],
+  COLUMNAS: [['folio', 'Folio'], ['fecha', 'Fecha de plantación'], ['jornada', 'Jornada'], ['organizacion', 'Institución que ejecuta'], ['cabo', 'Quién registró'], ['programa', 'Programa'], ['especie', 'Especie'],
     ['cientifico', 'Nombre científico'], ['distribucion', 'Distribución'], ['alcaldia', 'Alcaldía'], ['colonia', 'Colonia'], ['uga', 'Celda UGA'],
     ['lat', 'Latitud'], ['lng', 'Longitud'], ['origen', 'Origen del punto'], ['precision', 'Precisión GPS (m)'], ['foto', 'Con fotografía'], ['reporte', 'Reporte de la jornada'], ['sustituto', 'Sustituto'], ['motivo', 'Motivo de la sustitución'],
     ['solicitante', 'Quién lo solicita'], ['solicitudDescripcion', 'Descripción de la solicitud']],

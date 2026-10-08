@@ -3103,3 +3103,24 @@
   · **G1.** Un periodo sin jornadas cerradas da el mismo aviso corto a todos los perfiles, con las jornadas
     en curso y «Qué atender»; ya no un tablero en ceros.
   · **H1.** «¿Qué hacer sin internet?»: con envío, al cambiar de teléfono hay que enviar lo pendiente.
+
+- **D271. Chips de programa: sólo el fijo y los usados (bloque 192).** Corrige D263.
+  07-10-2026. Liber vio tres chips en una cuenta sin jornadas: cuando alguien había usado pocos programas,
+  se completaban con los del catálogo, y eso no fue lo acordado. Ahora: «Reforestación Urbana» siempre y,
+  después, sólo los programas que esa persona ya usó (los dos que más). Quien no ha usado otros ve un solo chip.
+
+- **D272. El reporte, el informe y la tabla, corregidos según su revisión (bloque 192).**
+  07-10-2026. Revisión de los archivos en `docs/REVISION-ARCHIVOS.md`; Liber aprobó P (salvo P6 y P7, por
+  decidir), S y C. La plantilla de Excel (X) queda pendiente.
+  · **Reporte de la jornada.** El croquis va primero, después los ejemplares y los totales; Personal y Datos
+    del vehículo, al final: así el croquis cabe en la página 1 también en las jornadas de la Secretaría. La
+    distribución de las especies va bajo los totales, sin sección propia. La cifra dice «nativas o
+    endémicas». El crédito del mapa va sólo en el texto bajo el croquis, ya no también sobre la imagen.
+    «Comentarios al iniciar» y «Observaciones del cierre».
+  · **Informe de Supervisión.** Plurales bien dichos en los pendientes («1 eliminado»); «Por quién registró»
+    en lugar de «Por cabo» (las coordinaciones también registran); «17 de 17» en un renglón; la primera
+    semana de un mes se nombra por el día 1; las notas del final, juntas; la coordinación de otra
+    institución dice cuál; «menos de 1 %» en lugar de «0 %»; el solicitante con su nombre completo
+    («Alcaldía Iztapalapa», también en la pantalla); sin la palabra «etapa»; sin la tabla de trazabilidad
+    en ceros.
+  · **Tabla CSV.** La columna «Cabo» se llama «Quién registró».

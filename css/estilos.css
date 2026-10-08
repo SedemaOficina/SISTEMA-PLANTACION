@@ -95,7 +95,6 @@
   --croquis-fondo: #F3EFE9;                               /* croquis sin imagen: papel */
   --croquis-reticula: #E4DED5;                            /* y su retícula de 100 px */
   --velo-halo: rgba(255, 255, 255, .9);                   /* halo del texto sobre la imagen */
-  --velo-pie: rgba(255, 255, 255, .75);                   /* fondo del crédito en el croquis */
   --aviso-ficticio: #55585A;                              /* «Documento de prueba» en el PDF: gris, como en pantalla (D166) */
 
   --fuente-titulo: 'Cabin', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;

@@ -378,8 +378,8 @@ esté, con el servidor local levantado:
 ```
 pip install -r pruebas/requisitos.txt
 python3 -m playwright install chromium
-python3 -m http.server 8099 --bind 127.0.0.1      (en otra terminal)
-python3 pruebas/prueba.py        # de 25 a 35 minutos; al final dice «fallas: 0 de N»
+python3 pruebas/servir.py        (en otra terminal; no http.server: rechaza conexiones al abrir)
+python3 pruebas/prueba.py        # unos 40 minutos, sola; al final dice «fallas: 0 de N»
 python3 pruebas/auditoria.py     # unos 2 minutos
 python3 pruebas/revisar.py       # unos 2 minutos
 ```

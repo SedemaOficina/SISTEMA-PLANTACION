@@ -184,22 +184,6 @@ SRP.croquis = {
     ctx.fillStyle = SRP.util.colorBase('texto'); ctx.fillText(texto, x, y);
   },
 
-  // El crédito completo ya no cabe en un renglón (D152): se parte por « · » en los renglones que hagan falta
-  pieDeImagen(ctx, texto, conImagen) {
-    ctx.font = '12px Roboto, Arial, sans-serif'; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
-    const max = this.ANCHO * 0.6, renglones = [];   // a la derecha: la escala y el norte van a la izquierda
-    texto.split(' · ').forEach(parte => {
-      const ultimo = renglones[renglones.length - 1];
-      if (ultimo && ctx.measureText(ultimo + ' · ' + parte).width <= max) renglones[renglones.length - 1] = ultimo + ' · ' + parte;
-      else renglones.push(parte);
-    });
-    renglones.reverse().forEach((r, i) => {
-      const base = this.ALTO - 4 - i * 16;
-      if (conImagen) { ctx.fillStyle = SRP.util.colorBase('velo-pie'); const w = ctx.measureText(r).width + 12; ctx.fillRect(this.ANCHO - w, base - 16, w, 18); }
-      ctx.fillStyle = SRP.util.colorBase('texto'); ctx.fillText(r, this.ANCHO - 6, base);
-    });
-  },
-
   /* ---------- Entrada ---------- */
   /* Devuelve { datos (data URL), formato ('JPEG'|'PNG'), conImagen, nota } o null si no hay lienzo.
      Se arma una vez por conjunto de puntos. */
@@ -230,7 +214,7 @@ SRP.croquis = {
     this.puntos(ctx, registros, enc);
     this.escalaYNorte(ctx, enc, conImagen);
     const credito = SRP.CONFIG.MAPA.CAPAS.filter(c => c.atribucion).map(c => c.atribucion).concat(SRP.CONFIG.MAPA.CREDITO_PROVEEDOR).join(' · ');
-    this.pieDeImagen(ctx, conImagen ? credito : 'Sin imagen de fondo: se generó sin conexión', conImagen);
+    // El crédito y el aviso de «sin imagen» van en el texto bajo el croquis (`nota`), no también sobre la imagen
     let valor;
     try {
       valor = conImagen

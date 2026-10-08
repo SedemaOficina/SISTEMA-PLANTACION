@@ -342,7 +342,8 @@ SRP.reportes = {
         { valor: meta === null ? '—' : String(meta), texto: 'previstos en la jornada' },
         { valor: meta ? pct(n, meta) + ' %' : '—', texto: 'de lo previsto' },
         { valor: String(totales.length), texto: totales.length === 1 ? 'especie' : 'especies' },
-        { valor: nativasPct + ' %', texto: 'nativas' }
+        // Toda endémica es nativa: la cifra lo dice, para no contradecir la distribución de abajo
+        { valor: nativasPct + ' %', texto: 'nativas o endémicas' }
       ],
       // Datos de la jornada, bajo el nombre del cabo (D169): [etiqueta, valor, ancho completo]
       identificacion: [
@@ -363,8 +364,9 @@ SRP.reportes = {
         // La institución que ejecutó, también la Secretaría
         ['Institución que ejecuta', SRP.ref.nombreOrganizacion(orgId)],
         ['Hora de finalización', hay('hora') ? cierre.hora + ' h' : ''],
-        ['Comentarios', hay('comentarios') ? cierre.comentarios : '', true],
-        ['Observaciones', hay('observaciones') ? lista(cierre.observaciones).join('\n') : '', true]
+        // Dos textos libres de dos momentos: el nombre dice cuál es cuál
+        ['Comentarios al iniciar', hay('comentarios') ? cierre.comentarios : '', true],
+        ['Observaciones del cierre', hay('observaciones') ? lista(cierre.observaciones).join('\n') : '', true]
       ].filter(([, v]) => v && String(v).trim()),
       // Personal y vehículo, sólo de la Secretaría: de otra institución no se piden ni se imprimen
       personal: externa ? [] : [
@@ -450,8 +452,6 @@ SRP.reportes = {
     // El cabo y, en la misma franja, los datos que distinguen a la jornada (D169)
     h += '<div class="previa-responsable">' + (m.cabo ? '<p class="previa-cabo"><b>Nombre del cabo:</b> ' + esc(m.cabo) + '</p>' : '') + datos(m.identificacion) + '</div>';
     h += '<div class="previa-cifras">' + m.cifras.map(c => '<div class="previa-cifra"><b>' + esc(c.valor) + '</b><span>' + esc(c.texto) + '</span></div>').join('') + '</div>';
-    if (m.personal.length) h += apartado('Personal', datos(m.personal));
-    if (m.vehiculo.length) h += apartado('Datos del vehículo', datos(m.vehiculo, 'previa-datos-tres'));
     // Croquis de la jornada (D115): se llena cuando la imagen está lista
     h += apartado('Croquis de la jornada', '<div id="previa-croquis" class="previa-croquis" aria-live="polite"><p class="previa-nota">Preparando el croquis…</p></div>');
     const ej = m.ejemplares;
@@ -463,19 +463,25 @@ SRP.reportes = {
       nota(m.notaPrecision));
     h += apartado('Totales por especie', '<div class="previa-tabla-caja"><table class="previa-tabla"><thead><tr><th>Especie</th><th>Distribución</th><th class="cifra">Ejemplares</th><th class="cifra">% del total</th></tr></thead><tbody>' +
       m.totales.map(t => '<tr><td>' + esc(t.comun) + (t.cientifico ? ' (<i>' + esc(t.cientifico) + '</i>)' : '') + '</td><td>' + esc(t.distribucion || '—') + '</td><td class="cifra">' + t.n + '</td><td class="cifra">' + t.pct + ' %</td></tr>').join('') +
-      '</tbody><tfoot><tr><td>Total</td><td></td><td class="cifra">' + m.total + '</td><td class="cifra">100 %</td></tr></tfoot></table></div>' + nota(m.notaTotales));
-    /* La distribución de las especies, en una barra apilada. El conteo por especie ya lo da la tabla
-       de totales, y el avance contra lo previsto, la franja de cifras del inicio: no se repiten. */
-    const g = m.graficas;
+      '</tbody><tfoot><tr><td>Total</td><td></td><td class="cifra">' + m.total + '</td><td class="cifra">100 %</td></tr></tfoot></table></div>' + nota(m.notaTotales) + this.htmlDistribucion(m));
+    // Personal y vehículo al final: así el croquis cabe en la primera página, como en las demás instituciones
+    if (m.personal.length) h += apartado('Personal', datos(m.personal));
+    if (m.vehiculo.length) h += apartado('Datos del vehículo', datos(m.vehiculo, 'previa-datos-tres'));
+    h += '<div class="previa-pie"><p>' + [m.gps, m.capas, m.advertencia, m.generado].filter(Boolean).map(esc).join('</p><p>') + '</p>' +
+      (m.ficticio ? '<p class="previa-ficticio">' + esc(m.ficticio) + '</p>' : '') + '</div>';
+    return h;
+  },
+
+  /* La distribución de las especies, en una barra apilada bajo los totales, sin sección propia: la
+     columna «Distribución» ya la dice por especie; la barra la resume. */
+  htmlDistribucion(m) {
+    const esc = SRP.util.escapar, g = m.graficas;
     let x = 0;
     const gr = '<div class="previa-grafica">' +
       '<svg class="previa-apilada" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true" focusable="false">' +
       g.distribucion.map(d => { const w = d.n * 100 / m.total; const r = '<rect class="dist-' + d.clave + '" x="' + x.toFixed(2) + '" width="' + w.toFixed(2) + '" height="10"></rect>'; x += w; return r; }).join('') + '</svg>' +
       '<ul class="previa-leyenda">' + g.distribucion.map(d => '<li><span class="previa-muestra dist-' + d.clave + '"></span>' + esc(d.etiqueta) + ': <b>' + d.pct + ' %</b> (' + d.n + ')</li>').join('') + '</ul></div>';
-    h += apartado('Distribución de las especies', gr);
-    h += '<div class="previa-pie"><p>' + [m.gps, m.capas, m.advertencia, m.generado].filter(Boolean).map(esc).join('</p><p>') + '</p>' +
-      (m.ficticio ? '<p class="previa-ficticio">' + esc(m.ficticio) + '</p>' : '') + '</div>';
-    return h;
+    return gr;
   },
 
   /* ---------- El documento ---------- */
@@ -677,9 +683,6 @@ SRP.reportes = {
     });
     y += 22;
 
-    if (m.personal.length) { seccion('Personal'); datos(m.personal, 2); }
-    if (m.vehiculo.length) { seccion('Datos del vehículo'); datos(m.vehiculo, 3); }
-
     // Croquis de la jornada (D115): encuadra todos los puntos solo (D163); si no cabe, pasa a la siguiente página
     const croquis = SRP.croquis ? await SRP.croquis.generar(registros) : null;
     if (croquis) {
@@ -714,12 +717,13 @@ SRP.reportes = {
       // Las cifras del total se alinean como las de arriba (D103): el pie no hereda columnStyles
       foot: [['Total', '', { content: String(m.total), styles: { halign: 'right' } }, { content: '100 %', styles: { halign: 'right' } }]],
       columnStyles: { 1: { cellWidth: 34 }, 2: { halign: 'right', cellWidth: 22 }, 3: { halign: 'right', cellWidth: 22 } } });
-    letra('italic', 7.5, C.gris); doc.text(m.notaTotales, M, y); y += 7;
+    letra('italic', 7.5, C.gris); doc.text(m.notaTotales, M, y); y += 6;
 
-    /* La distribución de las especies, dibujada con trazos: pesa casi nada y se lee igual impresa en gris */
+    /* La distribución de las especies, bajo los totales y sin sección propia (la columna «Distribución» ya
+       la dice por especie): una barra dibujada con trazos, que pesa casi nada y se lee igual en gris */
     const g = m.graficas;
-    seccion('Distribución de las especies', 22);
-    salto(18);
+    salto(24);
+    letra('bold', 9, C.tinta); doc.text('Distribución de las especies', M, y + 3); y += 5.5;
     let x = M;
     g.distribucion.forEach(d => {
       const w = util * d.n / m.total;
@@ -741,7 +745,9 @@ SRP.reportes = {
     });
     y += 9;
 
-    // Comentarios por ejemplar (D164): al final, sólo los árboles que lo tienen
+    // Personal y vehículo, al final: así el croquis cabe en la primera página
+    if (m.personal.length) { seccion('Personal'); datos(m.personal, 2); }
+    if (m.vehiculo.length) { seccion('Datos del vehículo'); datos(m.vehiculo, 3); }
 
     // Notas al pie del contenido: calidad de la ubicación, capas, lo que la cifra no dice y quién lo generó
     const notas = [m.gps, m.capas, m.advertencia, m.generado].filter(Boolean);

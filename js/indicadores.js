@@ -264,7 +264,7 @@ SRP.indicadores = {
         organizacion: SRP.ref.nombreOrganizacion(this.organizacionDe(j)), externa: !SRP.ref.esSedema(this.organizacionDe(j)),
         // Los árboles de la jornada que cuentan en el periodo: así la suma de la tabla es el total
         programa: SRP.ref.nombreCatalogo(j.dato && j.dato.programa_id) || '', arboles: arboles.filter(a => a.j === j).length, meta: SRP.jornadas.previstosDe(j),
-        lugar: SRP.jornadas.lugarDe(j), reporte: !!(j.dato && j.dato.reporte_en), pendientes: pendientes(j), solicitante: SRP.solicitud.solicitante(j.dato),
+        lugar: SRP.jornadas.lugarDe(j), reporte: !!(j.dato && j.dato.reporte_en), pendientes: pendientes(j), solicitante: SRP.solicitud.es(j.dato) ? SRP.solicitud.solicitanteCompleto(j.dato) : '',
         prioridad: SRP.prioritarias.hay() ? ((j.prioridad || SRP.prioritarias.deJornada(j.registros, j.dato) || {}).texto || 'Sin dato') : ''
       })),
       enCurso: enCurso.map(j => ({ id: j.id, fecha: j.fecha, nombre: j.nombre, cabo: SRP.ref.nombreUsuario(j.cabo_id), arboles: j.registros.length })),
@@ -279,7 +279,7 @@ SRP.indicadores = {
           alcaldia: r.alcaldia || '', colonia: r.colonia || '', uga: r.uga || '', lat: r.lat, lng: r.lng, origen: SRP.mapa.textoOrigen(r.punto_origen),
           precision: r.punto_origen === 'gps' && r.gps_precision_m != null ? Math.round(r.gps_precision_m) : '', foto: r.foto_id || r.foto_base64 ? 'Sí' : 'No',
           reporte: j.dato && j.dato.reporte_en ? 'Generado' : 'Pendiente', sustituto: r.sustituye_id ? 'Sí' : 'No', motivo: SRP.ref.motivoSustitucion(r),
-          solicitante: SRP.solicitud.solicitante(j.dato), solicitudDescripcion: SRP.solicitud.es(j.dato) ? j.dato.solicitud_descripcion || '' : '' };
+          solicitante: SRP.solicitud.es(j.dato) ? SRP.solicitud.solicitanteCompleto(j.dato) : '', solicitudDescripcion: SRP.solicitud.es(j.dato) ? j.dato.solicitud_descripcion || '' : '' };
       })
     };
   },
@@ -299,7 +299,9 @@ SRP.indicadores = {
       : dias <= 31 ? 'dia' : dias <= 182 ? 'semana' : dias <= 731 ? 'mes' : 'anio';
     const clave = t => unidad === 'dia' ? t : unidad === 'semana' ? this.lunes(t) : unidad === 'mes' ? t.slice(0, 7) : t.slice(0, 4);
     const casillas = [];
-    const poner = k => casillas.push({ clave: k, etiqueta: this.etiquetaCasilla(unidad, k), arboles: 0, jornadas: 0 });
+    // Una semana que empezó antes del periodo se nombra por el día en que empieza el periodo: en el
+    // informe de septiembre, «1-SEP» y no «31-AGO», que no se cuenta
+    const poner = k => casillas.push({ clave: k, etiqueta: this.etiquetaCasilla(unidad, unidad === 'semana' && k < desde ? desde : k), arboles: 0, jornadas: 0 });
     if (unidad === 'dia') for (let t = desde; t <= hasta; t = this.sumarDias(t, 1)) poner(t);
     else if (unidad === 'semana') for (let t = this.lunes(desde); t <= hasta; t = this.sumarDias(t, 7)) poner(t);
     else if (unidad === 'mes') {

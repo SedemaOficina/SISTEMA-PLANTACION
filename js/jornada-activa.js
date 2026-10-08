@@ -360,18 +360,18 @@ SRP.activa = {
     this.pintarProgramasFrecuentes(opciones);
   },
 
-  /* Programas a un toque, sobre la lista: Reforestación Urbana siempre primero, por ser el más común, y
-     después los que más ha usado quien inicia la jornada; si ha usado pocos, completan los del catálogo
-     en su orden. Con un solo programa ya viene puesto: no hay chips. */
+  /* Programas a un toque, sobre la lista: Reforestación Urbana siempre, por ser el más común, y después
+     sólo los que ya ha usado quien inicia la jornada, los dos que más. Quien no ha usado otros ve un solo
+     chip. Con un solo programa ya viene puesto: no hay chips. */
   async pintarProgramasFrecuentes(opciones) {
     const caja = this.el('ini-programa-chips');
     if (opciones.length < 2) { caja.hidden = true; caja.innerHTML = ''; return; }
     const u = SRP.sesion.usuario, cuenta = {};
     (await SRP.almacen.todos('jornadas')).forEach(j => { if (u && j.cabo_id === u.id && j.programa_id) cuenta[j.programa_id] = (cuenta[j.programa_id] || 0) + 1; });
     const fijo = opciones.find(p => p.clave === 'REFOR_URBANA');
-    const resto = opciones.filter(p => p !== fijo);
-    const usados = resto.filter(p => cuenta[p.id]).sort((a, b) => cuenta[b.id] - cuenta[a.id]);
-    const lista = (fijo ? [fijo] : []).concat(usados, resto.filter(p => !cuenta[p.id])).slice(0, 3);
+    const usados = opciones.filter(p => p !== fijo && cuenta[p.id]).sort((a, b) => cuenta[b.id] - cuenta[a.id]).slice(0, 2);
+    const lista = (fijo ? [fijo] : []).concat(usados);
+    if (!lista.length) { caja.hidden = true; caja.innerHTML = ''; return; }
     const esc = SRP.util.escapar;
     caja.innerHTML = lista.map(p => '<button type="button" class="chip" data-id="' + esc(p.id) + '" aria-pressed="false">' + esc(p.nombre) + '</button>').join('');
     caja.hidden = false;

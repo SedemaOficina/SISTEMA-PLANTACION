@@ -94,7 +94,11 @@ SRP.solicitud = {
   solicitante(j) { return !this.es(j) ? '' : j.solicitante_id ? SRP.ref.nombreSolicitante(j.solicitante_id) : (j.solicitante_otro || 'Sin dato'); },
   // La clave del solicitante para contar: su id del catálogo o «otra:Nombre»
   clave(j) { return !this.es(j) ? '' : j.solicitante_id || 'otra:' + (j.solicitante_otro || ''); },
-  nombreClave(k) { return k.startsWith('otra:') ? (k.slice(5) || 'Sin dato') : SRP.ref.nombreSolicitante(k); },
+  nombreClave(k) {
+    if (k.startsWith('otra:')) return k.slice(5) || 'Sin dato';
+    const s = SRP.ref.catalogoPorId[k];
+    return (s && s.tipo_solicitante === 'Alcaldía' ? 'Alcaldía ' : '') + SRP.ref.nombreSolicitante(k);
+  },
   // Una alcaldía se nombra con su tipo: «Iztapalapa» sola se lee como el lugar de la jornada
   solicitanteCompleto(j) {
     const s = j && j.solicitante_id ? SRP.ref.catalogoPorId[j.solicitante_id] : null;

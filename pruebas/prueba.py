@@ -793,7 +793,7 @@ with sync_playwright() as p:
     pg.click('#btn-cierre-generar'); pg.wait_for_timeout(500)
     prev=pg.inner_text('#previa-hoja')
     ok(pg.is_visible('#dlg-previa') and 'REPORTE DE LA JORNADA DE PLANTACIÓN' in prev.upper() and 'Nombre del cabo:' in prev and 'Nombre de la jornada: Parque Hundido' in prev
-       and 'Comentarios: Jornada de prueba con la comunidad' in prev and 'Chófer: Fulano de Tal' in prev and 'Hora de finalización: 14:30 h' in prev
+       and 'Comentarios al iniciar: Jornada de prueba con la comunidad' in prev and 'Chófer: Fulano de Tal' in prev and 'Hora de finalización: 14:30 h' in prev
        and 'TOTALES POR ESPECIE' in prev.upper() and 'Folio' not in prev and 'PROVISIONAL' not in prev,
        'antes del PDF se ve la vista previa con el cabo, los datos de la jornada, el personal, los totales, y sin folios (D101, D119, D163): '+prev[:300].replace('\n',' | '))
     ok('Personal de apoyo' not in prev and 'DATOS DEL VEHÍCULO' in prev.upper(),'y como el PDF, un dato vacío no aparece')
@@ -2683,7 +2683,7 @@ with sync_playwright() as p:
         return d.value.suggested_filename, ' '.join(t.split()), os.path.getsize(ruta)
     n1,t1,peso1=pdf20()
     ok(re.fullmatch(r'Informe_semanal_\d{4}-\d{2}-\d{2}_al_\d{4}-\d{2}-\d{2}\.pdf', n1) is not None and 'INFORME SEMANAL DE PLANTACIÓN' in t1 and 'Cabo: Fulana' in t1
-       and 'POR CABO' not in t1 and 'Árboles plantados' in t1 and peso1 < 200000,
+       and 'POR QUIÉN REGISTRÓ' not in t1 and 'Árboles plantados' in t1 and peso1 < 200000,
        'el cabo descarga su informe semanal en PDF, con membrete y sin la tabla por cabo: %s (%d KB)' % (n1, peso1//1024))
     # La coordinación: informe mensual de una alcaldía, con sus colonias, y la tabla en CSV
     entrar20('u-coord-1')
@@ -2691,7 +2691,7 @@ with sync_playwright() as p:
     pg20.click('#sup-filtros summary'); pg20.wait_for_timeout(150)
     pg20.select_option('#sup-alcaldia','Cuauhtémoc'); pg20.wait_for_timeout(400)
     n2,t2,_=pdf20()
-    ok(n2=='Informe_mensual_'+HOY[:7]+'_Cuauhtemoc.pdf' and 'ALCALDÍA CUAUHTÉMOC' in t2 and 'POR COLONIA' in t2 and 'POR CABO' in t2 and 'Fulana' in t2
+    ok(n2=='Informe_mensual_'+HOY[:7]+'_Cuauhtemoc.pdf' and 'ALCALDÍA CUAUHTÉMOC' in t2 and 'POR COLONIA' in t2 and 'POR QUIÉN REGISTRÓ' in t2 and 'Fulana' in t2
        and 'Cuadrilla de' in t2 and 'Documento de prueba' in t2,
        'la coordinación descarga el informe mensual de una alcaldía, con sus colonias y la tabla por cabo: %s' % n2)
     with pg20.expect_download() as dc: pg20.click('#btn-sup-csv')
@@ -2831,6 +2831,7 @@ with sync_playwright() as p:
     # copia vieja hasta 10 minutos aunque ya estuviera publicada la nueva. Se reproduce con un
     # servidor propio que manda esa cabecera y una copia de la app cuya página se cambia.
     import http.server as _hs, threading as _th, shutil as _sh, tempfile as _tf, functools as _ft
+    _hs.ThreadingHTTPServer.request_queue_size = 256   # como pruebas/servir.py: sin conexiones rechazadas al abrir
     _app = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     raiz22 = _tf.mkdtemp()
     for _n in ['index.html', 'sw.js', 'manifest.webmanifest']: _sh.copy(os.path.join(_app, _n), raiz22)
@@ -3009,16 +3010,16 @@ with sync_playwright() as p:
         dia: m.identificacion.find(x => x[0] === 'Día de la jornada')[1], sumaPct: m.totales.reduce((s, t) => s + t.n, 0) === m.total && (m.totales.reduce((s, t) => s + t.pct, 0) === 100 || (m.totales.reduce((s, t) => s + t.pct, 0) >= 97 && m.notaTotales.includes('redondeados'))),
         sumaDist: m.graficas.distribucion.reduce((s, d) => s + d.pct, 0), dist: m.graficas.distribucion.map(d => d.clave),
         h3: [...document.querySelectorAll('#previa-hoja .previa-apartado h3')].map(h => h.textContent) }; })()""")
-    ok(m24['cabo'] and m24['cifras']==['árboles plantados','previstos en la jornada','de lo previsto','especies','nativas'],'arriba, el nombre del cabo y cinco cifras: plantados, previstos, avance, especies y nativas (D168)')
-    ok(m24['ident'][:3]==['Nombre de la jornada','Día de la jornada','Alcaldía'] and 'Programa' in m24['ident'] and 'Árboles previstos' not in m24['ident'] and 'Hora de finalización' in m24['ident'] and 'Observaciones' in m24['ident']
+    ok(m24['cabo'] and m24['cifras']==['árboles plantados','previstos en la jornada','de lo previsto','especies','nativas o endémicas'],'arriba, el nombre del cabo y cinco cifras: plantados, previstos, avance, especies y nativas o endémicas (D168)')
+    ok(m24['ident'][:3]==['Nombre de la jornada','Día de la jornada','Alcaldía'] and 'Programa' in m24['ident'] and 'Árboles previstos' not in m24['ident'] and 'Hora de finalización' in m24['ident'] and 'Observaciones del cierre' in m24['ident']
        and re.fullmatch(r'(Lunes|Martes|Miércoles|Jueves|Viernes|Sábado|Domingo) \d{1,2} de [a-z]+ de 20\d\d', m24['dia']) is not None,
        'bajo el nombre del cabo, los datos de la jornada con el día completo; lo previsto va en las cifras (D169): %s · %s' % (m24['dia'], m24['ident']))
-    ok(m24['personal'][:2]==['Personal participante','Personal de apoyo'] and m24['vehiculo']==['Tipo','Modelo','Placas'],'la sección 2 es el personal (con chófer) y la 3 el vehículo: tipo, modelo y placas')
-    # Sin sección de identificación ni de comentarios: seis secciones (D169)
-    ok(m24['h3']==['1. Personal','2. Datos del vehículo','3. Croquis de la jornada','4. Ejemplares plantados','5. Totales por especie','6. Distribución de las especies'],
+    ok(m24['personal'][:2]==['Personal participante','Personal de apoyo'] and m24['vehiculo']==['Tipo','Modelo','Placas'],'el personal (con chófer) y el vehículo: tipo, modelo y placas')
+    # El croquis primero, para que quepa en la primera página; personal y vehículo al final; la distribución, bajo los totales
+    ok(m24['h3']==['1. Croquis de la jornada','2. Ejemplares plantados','3. Totales por especie','4. Personal','5. Datos del vehículo'],
        'las secciones van en el orden pedido y numeradas: %s' % m24['h3'])
-    tot24=pg24.eval_on_selector_all('#previa-hoja .previa-apartado:nth-of-type(5) thead th','l=>l.map(x=>x.textContent)')
-    pie24=pg24.eval_on_selector_all('#previa-hoja .previa-apartado:nth-of-type(5) tfoot td','l=>l.map(x=>x.textContent)')
+    tot24=pg24.eval_on_selector_all('#previa-hoja .previa-apartado:nth-of-type(3) thead th','l=>l.map(x=>x.textContent)')
+    pie24=pg24.eval_on_selector_all('#previa-hoja .previa-apartado:nth-of-type(3) tfoot td','l=>l.map(x=>x.textContent)')
     ok(tot24==['Especie','Distribución','Ejemplares','% del total'] and pie24[-1]=='100 %' and m24['sumaPct'] and 97<=m24['sumaDist']<=100,
        'los totales por especie traen su distribución y el porcentaje del total; suman 100 o el reporte advierte el redondeo (D168)')
     gr24=pg24.evaluate("({ barras: document.querySelectorAll('#previa-hoja .previa-barra-fila').length, apilada: document.querySelectorAll('#previa-hoja .previa-apilada rect').length, meta: !!document.querySelector('#previa-hoja .previa-meta'), titulos: [...document.querySelectorAll('#previa-hoja .previa-grafica .previa-subtitulo')].map(e => e.textContent), leyenda: document.querySelector('#previa-hoja .previa-leyenda').textContent })")
@@ -3028,9 +3029,9 @@ with sync_playwright() as p:
     with pg24.expect_download() as d24: pg24.click('#btn-previa-generar')
     d24.value.save_as(sal('reporte_secciones.pdf'))
     t24=' '.join(' '.join((p.extract_text() or '') for p in _Pdf24(sal('reporte_secciones.pdf')).pages).split())
-    ok(all(x in t24 for x in ['REPORTE DE LA JORNADA DE PLANTACIÓN','Nombre del cabo:','Nombre de la jornada:','1. PERSONAL','2. DATOS DEL VEHÍCULO','3. CROQUIS DE LA JORNADA',
-       '4. EJEMPLARES PLANTADOS','5. TOTALES POR ESPECIE','6. DISTRIBUCIÓN DE LAS ESPECIES','Día de la jornada:','Placas:']) and 'Ejemplares por especie' not in t24 and 'Avance contra lo previsto' not in t24 and 'Folio' not in t24,
-       'el PDF trae la franja del cabo con los datos de la jornada y las seis secciones, con la distribución como única gráfica, sin folios')
+    ok(all(x in t24 for x in ['REPORTE DE LA JORNADA DE PLANTACIÓN','Nombre del cabo:','Nombre de la jornada:','1. CROQUIS DE LA JORNADA','2. EJEMPLARES PLANTADOS',
+       '3. TOTALES POR ESPECIE','Distribución de las especies','4. PERSONAL','5. DATOS DEL VEHÍCULO','Día de la jornada:','Placas:']) and '6. ' not in t24 and 'Ejemplares por especie' not in t24 and 'Avance contra lo previsto' not in t24 and 'Folio' not in t24,
+       'el PDF trae la franja del cabo con los datos de la jornada y cinco secciones, con la distribución bajo los totales como única gráfica, sin folios')
     ok(os.path.getsize(sal('reporte_secciones.pdf')) < 250000,'y sigue pesando poco: %d KB' % (os.path.getsize(sal('reporte_secciones.pdf'))//1024))
     # El croquis encuadra todos los puntos llenando el lienzo, y aparta los que se enciman
     cr24=pg24.evaluate("""(() => { const C = SRP.croquis; const pts = [[19.4326,-99.1332],[19.43262,-99.13318],[19.43265,-99.13316],[19.43261,-99.13321],[19.4326,-99.1332]].map(([lat,lng]) => ({ lat, lng }));
@@ -3945,7 +3946,7 @@ with sync_playwright() as p:
        'con la institución elegida quedan sólo sus árboles, sus 3 cabos (2 de demostración y el de arranque) y su coordinador, que también registra; «3 de 3 cabos» no cuenta al coordinador; y ya no se desglosa: %s' % f44)
     with pg44.expect_download() as dc44: pg44.click('#btn-sup-csv')
     csv44=open(dc44.value.path(), encoding='utf-8').read()
-    ok(dc44.value.suggested_filename=='Arboles_todo_ALC_IZP.csv' and csv44.split('\r\n')[0].startswith('﻿"Folio","Fecha de plantación","Jornada","Institución que ejecuta","Cabo"') and '"Alcaldía Iztapalapa"' in csv44 and 'SEDEMA' not in csv44,
+    ok(dc44.value.suggested_filename=='Arboles_todo_ALC_IZP.csv' and csv44.split('\r\n')[0].startswith('﻿"Folio","Fecha de plantación","Jornada","Institución que ejecuta","Quién registró"') and '"Alcaldía Iztapalapa"' in csv44 and 'SEDEMA' not in csv44,
        'la tabla para Excel dice la institución que ejecuta y se nombra por ella: %s' % dc44.value.suggested_filename)
     pg44.select_option('#sup-organizacion',''); pg44.wait_for_timeout(900)
     pg44.click('#sup-tipos .chip[data-tipo=anio]'); pg44.wait_for_timeout(900)
@@ -6821,12 +6822,19 @@ with sync_playwright() as p:
     pg90.on('pageerror', lambda e: err90.append(str(e)))
     pg90.goto(BASE); pg90.wait_for_timeout(1300)
     entrar_como(pg90, 'u-cabo-1'); pg90.wait_for_timeout(900)
-    pg90.evaluate("SRP.activa.mostrarInicio(true)"); pg90.wait_for_timeout(600)
+    # Sin jornadas propias: sólo el chip fijo de Reforestación Urbana
+    pg90.evaluate("async () => { await SRP.almacen._tx(['jornadas'], 'readwrite', tx => tx.objectStore('jornadas').clear()); SRP.activa.mostrarInicio(true); }"); pg90.wait_for_timeout(600)
+    v90 = pg90.evaluate("[...document.querySelectorAll('#ini-programa-chips .chip')].map(x => x.textContent)")
+    ok(v90 == ['Reforestación Urbana'], 'quien no ha usado otros programas ve un solo chip, el de Reforestación Urbana: %s' % v90)
+    # Con jornadas en otros programas: después del fijo, los que más ha usado, en ese orden
+    pg90.evaluate("""async () => { const u = SRP.sesion.usuario; const j = (id, p) => ({ id, nombre: id, fecha: '2026-09-01', cabo_id: u.id, estatus: 'cerrada', programa_id: p });
+      await SRP.almacen._tx(['jornadas'], 'readwrite', tx => { const s = tx.objectStore('jornadas'); [j('a', 'p-compensaciones'), j('b', 'p-centro'), j('c', 'p-centro'), j('d', 'p-refor')].forEach(x => s.put(x)); });
+      SRP.activa.mostrarInicio(true); }"""); pg90.wait_for_timeout(600)
     p90 = pg90.evaluate("""() => { const c = [...document.querySelectorAll('#ini-programa-chips .chip')];
       return [!document.getElementById('ini-programa-chips').hidden, c.map(x => x.textContent), c.length && c[0].dataset.id,
         document.getElementById('ini-programa-chips').compareDocumentPosition(document.getElementById('ini-programa')) & Node.DOCUMENT_POSITION_FOLLOWING]; }""")
-    ok(p90[0] and len(p90[1]) == 3 and p90[1][0] == 'Reforestación Urbana' and p90[2] == 'p-refor' and p90[3],
-       'sobre la lista de programas, tres chips con Reforestación Urbana siempre primero: %s' % p90)
+    ok(p90[0] and p90[1] == ['Reforestación Urbana', 'Centro Histórico', 'Compensaciones'] and p90[2] == 'p-refor' and p90[3],
+       'sobre la lista: Reforestación Urbana primero y después los programas usados, del más usado al menos: %s' % p90)
     pg90.click('#ini-programa-chips .chip:nth-child(2)'); pg90.wait_for_timeout(200)
     q90 = pg90.evaluate("""() => [document.getElementById('ini-programa').value, [...document.querySelectorAll('#ini-programa-chips .chip')].map(c => c.getAttribute('aria-pressed'))]""")
     ok(q90[0] == pg90.evaluate("document.querySelector('#ini-programa-chips .chip:nth-child(2)').dataset.id") and q90[1] == ['false', 'true', 'false'],

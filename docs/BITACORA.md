@@ -3728,3 +3728,39 @@ ahora su renglón en `pruebas/prueba.py`. `pruebas/auditoria.py`: 143 comprobaci
 
 **Siguiente paso.** La revisión de los PDF por dentro y de la plantilla de Excel de la carga masiva, que pidió
 Liber; después, D1, D2 y D3 si los aprueba, y la fase 3 del servidor.
+
+## Bloque 192 — Chips de programa; el reporte, el informe y la tabla (07-10-2026)
+
+Versión 0.9.51. Liber vio en su teléfono tres chips de programa en una cuenta sin jornadas, y aprobó las
+correcciones de los PDF y la tabla CSV (`docs/REVISION-ARCHIVOS.md`).
+
+**Qué cambió (D271).** `js/jornada-activa.js`, `pintarProgramasFrecuentes()`: después de «Reforestación
+Urbana» van sólo los programas que la persona ya usó, hasta dos; ya no se completa con los del catálogo.
+`datos/MAPEO-CAMPOS.md` al día. Pruebas: `ctx90` prueba la cuenta sin jornadas (un solo chip) y el orden de
+los usados.
+
+También (D272): `js/reportes.js`, el orden de las secciones, la distribución bajo los totales
+(`htmlDistribucion()`), «nativas o endémicas», los nombres de los dos textos libres; `js/croquis.js`, sin el
+crédito dibujado (fuera `pieDeImagen()` y la variable `--velo-pie`); `js/informes.js`, plurales, «Quién
+registró», anchos de columna, notas juntas, la institución de la coordinación, «menos de 1 %», sin «etapa»
+ni trazabilidad en ceros, y la columna de la tabla; `js/indicadores.js`, la etiqueta de la primera semana y
+el solicitante completo; `js/solicitud.js`, `nombreClave()` con «Alcaldía». Pruebas: las del reporte por
+secciones, del informe y de la tabla, al día.
+
+**Pantalla: qué se agregó y qué se quitó.** Se quitaron los chips de programas que la persona no ha usado. En
+el reporte se quitó la sección «Distribución de las especies» (la barra queda bajo los totales) y el
+crédito sobre el croquis; en el informe, la tabla de trazabilidad cuando está en ceros.
+
+**Herramienta de prueba.** `pruebas/servir.py` sirve la aplicación para las pruebas: `python -m http.server`
+deja sólo 5 conexiones en espera y en Windows rechazaba archivos al abrir la app (unos 55 a la vez). Ésa era
+la causa del «L is not defined» intermitente (el mapa no cargaba) y de un `ECONNREFUSED` anterior; no de la
+aplicación. Los dos servidores internos de `pruebas/prueba.py` admiten también 256 en espera. El README lo
+dice. Cada falla de la prueba dice ahora su renglón.
+
+**Verificación.** `pruebas/prueba.py` completa, sola, con `pruebas/servir.py`: 1,418 comprobaciones, 0 fallas,
+sin errores de consola. `pruebas/auditoria.py`: 143 comprobaciones, 0 hallazgos; `pruebas/auditoria_css.py`: 0
+hallazgos. Los PDF se generaron y se vieron página por página antes de los cambios; después, la prueba del
+reporte por secciones lee el PDF nuevo (orden, secciones y cifras), pero no se volvieron a mirar como imagen.
+No se probó en un teléfono real.
+
+**Siguiente paso.** Alcaldías y solicitantes que se activan cuando hagan falta (pedido de Liber, ya decidido).
