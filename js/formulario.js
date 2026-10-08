@@ -831,7 +831,8 @@ SRP.formulario = {
     this.el('btn-completa-seguir').innerHTML = SRP.ICONOS.svg('mas', 'medio') + '<span>Seguir registrando</span>';
     if (!this._completaLista) {
       this._completaLista = true;
-      this.el('btn-completa-seguir').addEventListener('click', () => d.close());
+      // «Seguir registrando» ya dice que habrá más árboles: el siguiente no vuelve a preguntarlo
+      this.el('btn-completa-seguir').addEventListener('click', () => { if (SRP.activa.jornada) SRP.activa.aceptarExceso(SRP.activa.jornada.id); d.close(); });
       // La jornada acaba de cuadrar: si no queda nada pendiente, se cierra sin volver a preguntar
       this.el('btn-completa-cerrar').addEventListener('click', () => { d.close(); SRP.activa.cerrarJornada({ directo: true }); });
     }

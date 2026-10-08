@@ -3648,8 +3648,9 @@ with sync_playwright() as p:
     aria39=pg39.locator('#lista-jornadas > li', has_text='Cierre otro día').locator('.jornada-boton').get_attribute('aria-label')
     ok('cerrada el miércoles 23 de septiembre a las 10:05' in aria39,'el lector de pantalla también lo dice: '+aria39)
     pg39.locator('#lista-jornadas > li', has_text='Cierre mismo día').locator('.jornada-boton').click(); pg39.wait_for_timeout(800)
-    sub39=pg39.inner_text('#jornada-sub')
-    ok('cerrada el martes 22 de septiembre a las 15:40' in sub39,'el detalle dice «cerrada el martes 22 de septiembre a las 15:40»: '+sub39)
+    sub39=pg39.inner_text('#jornada-sub'); hor39=pg39.inner_text('#jornada-horario')
+    ok('cerrada el martes 22 de septiembre a las 15:40' in hor39 and 'cerrada' in sub39 and '15:40' not in sub39,
+       'el horario de la ficha dice «cerrada el martes 22 de septiembre a las 15:40»; el renglón de arriba sólo «cerrada»: %s | %s' % (hor39, sub39))
     pg39.click('#btn-jornada-volver'); pg39.wait_for_timeout(600)
     anchos=pg39.evaluate("""() => { const d = document.documentElement; return [d.scrollWidth <= d.clientWidth,
       [...document.querySelectorAll('#lista-jornadas .jornada-estado')].every(e => e.scrollWidth <= e.clientWidth + 1)]; }""")
@@ -5355,6 +5356,9 @@ with sync_playwright() as p:
     pg63.reload(); pg63.wait_for_timeout(9000)
     d63 = pg63.evaluate("(async () => [SRP.CONFIG.VERSION, await caches.keys(), (await SRP.almacen.todos('plantaciones')).length, [...document.querySelectorAll('script[src]')].filter(e => !e.src.includes('v=9.9.9')).length])()")
     ok(d63 == ['9.9.9', ['srp-9.9.9'], len(f63), 0], 'cuando la versión nueva queda completa se aplica sola, sin mezclar archivos y con los registros intactos: %s' % d63)
+    ok(pg63.evaluate("SRP.conexion.actualizada") == {'de': v63, 'a': '9.9.9'}, 'y al recargar sola dice «Se actualizó a la versión …»: %s' % pg63.evaluate("SRP.conexion.actualizada"))
+    pg63.reload(); pg63.wait_for_timeout(2500)
+    ok(pg63.evaluate("SRP.conexion.actualizada") is None, 'el aviso sale una sola vez: al volver a abrir ya no')
     ok(not err63, 'sin errores en consola: %s' % err63[:2])
     ctx63.close(); srv63.shutdown(); _desenlazar(raiz63); _sh.rmtree(raiz63, ignore_errors=True)
 
@@ -5666,13 +5670,13 @@ with sync_playwright() as p:
     ok(pg68.is_visible('#franja-siguiente') and 'Se plantó lo previsto: 3 de 3' in pg68.inner_text('#franja-siguiente') and pg68.is_visible('#franja-guardado'),
        'la franja deja escrito que se plantó lo previsto, junto a la franja «Guardado»')
     ok(not pg68.is_visible('#dlg-completa') and pg68.evaluate("SRP.activa.jornada && SRP.activa.jornada.estatus") == 'abierta', '«Seguir registrando» cierra la ventana y deja la jornada abierta')
-    # El cuarto árbol rebasa lo previsto: se pregunta antes de guardarlo, una sola vez por jornada
+    # El cuarto árbol rebasa lo previsto: tras «Seguir registrando» ya no se pregunta
     d68, v4 = arbol68(19.43278)
-    ok('Ya registró los 3 árboles previstos' in v4['exceso'] and 'Este sería el árbol 4 de la jornada «' in v4['exceso'] and 'Registrar el árbol' in v4['exceso'] and v4['completa'] == '' and v4['confirmacion']
+    ok(v4['exceso'] == '' and v4['completa'] == '' and v4['confirmacion']
        and 'Van 4 árboles: 1 más de los 3 previstos' in pg68.inner_text('#franja-siguiente'),
-       'pasado lo previsto se pregunta antes de guardar; al aceptar, el árbol se guarda con su tarjeta de siempre y la franja dice cuántos van de más: %s' % v4['exceso'].replace(chr(10), ' | ')[:160])
+       'tras «Seguir registrando», el árbol de más se guarda sin preguntar, con su tarjeta de siempre, y la franja dice cuántos van de más: %s' % pg68.inner_text('#franja-siguiente')[:80])
     e68, v5 = arbol68(19.43284)
-    ok(v5['exceso'] == '' and v5['completa'] == '' and pg68.evaluate("(async () => (await SRP.activa.registrosDe(SRP.activa.jornada)).length)()") == 5, 'el quinto ya no pregunta: se preguntó una vez en esta jornada')
+    ok(v5['exceso'] == '' and v5['completa'] == '' and pg68.evaluate("(async () => (await SRP.activa.registrosDe(SRP.activa.jornada)).length)()") == 5, 'el quinto tampoco pregunta')
     # El quinto sale de la jornada, para que lo que sigue parta de cuatro árboles
     pg68.evaluate("(async () => { const r = await SRP.almacen.uno('plantaciones', '%s'); await SRP.almacen.guardarConBitacora('plantaciones', Object.assign({}, r, { estatus: 'eliminado' }), SRP.bitacora.entrada('ELIMINADO', 'plantacion', r.id)); await SRP.activa.preparar(); })()" % e68); pg68.wait_for_timeout(700)
     # Al corregir un árbol, el mapa enseña los demás de su jornada; al eliminar uno, su punto se va
@@ -6349,13 +6353,13 @@ with sync_playwright() as p:
     # Jornada de 1: el segundo árbol pregunta; «Cancelar» no lo guarda y lo capturado sigue en pantalla
     j2 = jornada81('Exceso B170', 1)
     w81 = [arbol81(3)]
-    pg81.click('#btn-completa-seguir'); pg81.wait_for_timeout(300)
+    pg81.keyboard.press('Escape'); pg81.wait_for_timeout(300)   # se cierra «Jornada completa» sin «Seguir registrando»
     w81.append(arbol81(4))
     q81 = pg81.inner_text('#dlg-confirmar')
     pg81.click('#btn-confirmar-no'); pg81.wait_for_timeout(600)
     n81 = pg81.evaluate("(async () => [(await SRP.activa.registrosDe(SRP.activa.jornada)).length, SRP.mapa.lat !== null, !!SRP.formulario.estado.especieId])()")
     ok(w81 == ['completa', 'exceso'] and 'Ya registró el árbol previsto' in q81 and 'Este sería el árbol 2 de la jornada «Exceso B170»' in q81 and n81 == [1, True, True],
-       'con lo previsto ya registrado, el siguiente árbol se pregunta; al cancelar no se guarda y lo capturado sigue en pantalla: %s' % n81)
+       'con lo previsto ya registrado y «Jornada completa» cerrada sin «Seguir registrando», el siguiente árbol se pregunta; al cancelar no se guarda y lo capturado sigue en pantalla: %s' % n81)
     # Al aceptar se guarda; el tercero ya no pregunta. Al cerrar se ofrece actualizar los previstos
     pg81.click('#form-plantacion button[type=submit]'); pg81.wait_for_timeout(600)
     if pg81.is_visible('#dlg-resumen'): pg81.click('#btn-resumen-guardar'); pg81.wait_for_timeout(500)
@@ -6372,7 +6376,9 @@ with sync_playwright() as p:
     # «Dejar en N» cierra igual y la conciliación dice cuántos sobran; la confirmación vuelve a decir «Cancelar»
     j3 = jornada81('Sobran B170', 1)
     arbol81(6); pg81.click('#btn-completa-seguir'); pg81.wait_for_timeout(300)
-    arbol81(7); pg81.click('#btn-confirmar-si'); pg81.wait_for_timeout(1200)
+    s81 = arbol81(7); pg81.wait_for_timeout(600)
+    ok(s81 == '' and pg81.evaluate("(async () => (await SRP.activa.registrosDe(SRP.activa.jornada)).length)()") == 2,
+       'tras «Seguir registrando», el árbol siguiente se guarda sin volver a preguntar: ya se respondió: %s' % s81)
     pg81.evaluate("(() => { SRP.activa.cerrarJornada(); })()"); pg81.wait_for_timeout(500)
     pg81.click('#btn-confirmar-si'); pg81.wait_for_timeout(500); pg81.click('#btn-confirmar-no'); pg81.wait_for_timeout(1500)
     d81 = pg81.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); return [j.estatus, j.arboles_previstos, document.getElementById('jornada-resultado').textContent]; }", j3)
@@ -6827,6 +6833,51 @@ with sync_playwright() as p:
     ok(d90 and d90[0] >= 44 and d90[1] >= d90[2] - 40, 'el deslizador de opacidad mide 44 px de alto y ocupa el ancho del panel: %s' % d90)
     ok(err90 == [], 'sin errores de consola: %s' % err90[:2])
     ctx90.close()
+
+    # ---------- ctx91: la versión nueva se busca también con la app abierta, y se avisa al aplicarla ----------
+    ctx91 = contexto_llano(viewport={'width':390,'height':844})
+    pg91 = ctx91.new_page(); err91 = []
+    pg91.on('pageerror', lambda e: err91.append(str(e)))
+    pg91.goto(BASE); pg91.wait_for_timeout(1300)
+    ok(pg91.evaluate("SRP.conexion.INTERVALO_VERSION") == 15 * 60 * 1000, 'con la app abierta se pregunta por una versión nueva cada 15 minutos')
+    n91 = pg91.evaluate("""async () => { const c = SRP.conexion; let n = 0; const orig = c.buscarVersionNueva; c.buscarVersionNueva = () => { n += 1; };
+      c.INTERVALO_VERSION = 200; c.vigilarVersion(); await new Promise(r => setTimeout(r, 900)); clearInterval(c._vigilancia); c.buscarVersionNueva = orig; return n; }""")
+    ok(n91 >= 3, 'la pregunta se repite sola mientras la app está abierta: %s veces' % n91)
+    pg91.evaluate("sessionStorage.setItem(SRP.conexion.CLAVE_ANTERIOR, '0.0.1')")
+    pg91.reload(); pg91.wait_for_timeout(1300)
+    v91 = pg91.evaluate("SRP.CONFIG.VERSION")
+    a91 = pg91.evaluate("[document.getElementById('aviso').hidden, document.getElementById('aviso').innerText.trim(), document.getElementById('aviso').dataset.tipo]")
+    ok(a91 == [False, 'Se actualizó a la versión ' + v91 + '.', 'exito'], 'tras recargar por una versión nueva, un aviso verde dice a cuál se actualizó: %s' % a91)
+    ok(err91 == [], 'sin errores de consola: %s' % err91[:2])
+    ctx91.close()
+
+    # ---------- ctx92: el horario de la jornada va en Conciliación, no en el renglón de arriba ----------
+    ctx92 = contexto_llano(viewport={'width':390,'height':844}, timezone_id='America/Mexico_City')
+    pg92 = ctx92.new_page(); err92 = []
+    pg92.on('pageerror', lambda e: err92.append(str(e)))
+    pg92.goto(BASE); pg92.wait_for_timeout(1300)
+    entrar_como(pg92, 'u-cabo-1'); pg92.wait_for_timeout(900)
+    pg92.evaluate("""async () => { const u = SRP.sesion.usuario, hoy = SRP.util.fechaHoy();
+      const iso = (h, m) => new Date(hoy + 'T' + String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':00-06:00').toISOString();
+      const j = { id: 'jr-b190', nombre: 'Horario B190', ubicacion: '', fecha: hoy, comentarios: '', programa_id: 'p-refor', cabo_id: u.id, estatus: 'cerrada',
+        organizacion_id: u.organizacion_id, lat: 19.4326, lng: -99.1332, fecha_inicio: iso(17, 40), fecha_cierre: iso(19, 48), encargado_id: u.id, editado_por_id: null,
+        fecha_ultima_edicion: null, arboles_previstos: 3, puntos_revisados: [], reporte_en: null };
+      await SRP.almacen.guardarConBitacora('jornadas', j, null);
+      const base = (await SRP.almacen.todos('plantaciones'))[0];
+      const horas = [[17, 49], [18, 45], [19, 42]];
+      for (let i = 0; i < 3; i++) await SRP.almacen.guardarConBitacora('plantaciones', Object.assign({}, base, { id: 'pl-b190-' + i, jornada_id: j.id, cabo_id: u.id, fecha_plantacion: hoy,
+        fecha_registro: iso(horas[i][0], horas[i][1]), estatus: 'activo', lat: 19.4326 + i * 0.00005, lng: -99.1332, folio: null, sustituye_id: null }), null);
+      SRP.app.mostrarVista('jornadas'); await SRP.jornadas.abrir(j.id); }""")
+    pg92.wait_for_timeout(1500)
+    h92 = pg92.evaluate("[document.getElementById('jornada-horario').hidden, document.getElementById('jornada-horario').textContent, document.getElementById('jornada-sub').textContent]")
+    ok(h92[0] is False and h92[1] == 'Horario: 17:49 a 19:42 (1 h 53 min) · cerrada hoy a las 19:48 · 57 min entre árbol y árbol en promedio'
+       and '17:49' not in h92[2] and '19:48' not in h92[2] and 'cerrada' in h92[2],
+       'en Conciliación, el horario: del primer al último árbol, el cierre y el promedio entre árboles; arriba sólo «cerrada»: %s' % h92[:2])
+    m92 = pg92.evaluate("""() => { const t = '2026-10-07T19:57:10-06:00'; SRP.jornadas.pintarHorario({ estatus: 'abierta' }, [{ fecha_registro: t }, { fecha_registro: '2026-10-07T19:57:40-06:00' }]);
+      return document.getElementById('jornada-horario').textContent; }""")
+    ok(m92 == 'Horario: 2 árboles, a las 19:57', 'dos árboles en el mismo minuto: sin duración ni promedio en cero: %s' % m92)
+    ok(err92 == [], 'sin errores de consola: %s' % err92[:2])
+    ctx92.close()
 
     b.close()
 

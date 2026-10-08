@@ -3658,3 +3658,36 @@ probó en un teléfono real: el tamaño del deslizador en iPhone y los chips de 
 navegador de pruebas; en Firefox la barra del deslizador queda con su estilo propio.
 
 **Siguiente paso.** Que Liber pruebe la 0.9.48 en su teléfono; después, la fase 3 del servidor.
+
+## Bloque 190 — La versión nueva, también con la app abierta (07-10-2026)
+
+Versión 0.9.49. Preguntas de Liber; aprobó las dos propuestas.
+
+**Qué cambió (D267).** `js/conexion.js`: `vigilarVersion()` pregunta por una versión nueva cada 15 minutos
+mientras la app está a la vista; `aplicarVersionNueva()` anota la versión de antes al recargar y
+`avisarActualizada()` lo dice una vez al abrir la nueva. Pruebas: `ctx91`, y en `ctx63` el aviso tras
+aplicarse la versión nueva.
+
+También (D268): `js/jornada-activa.js`, `aceptarExceso()`; `js/formulario.js`, «Seguir registrando» la llama.
+Pruebas: `ctx68` y `ctx81` al día (la pregunta del árbol de más se prueba cerrando «Jornada completa» con
+Escape).
+
+Y (D269): `index.html`, `js/jornadas.js` (`pintarHorario()`) y `css/estilos.css`: el horario de la jornada en
+Conciliación. Pruebas: `ctx92`; la del cierre de otro día lee el horario.
+
+**Defecto del bloque 189 corregido.** En el teléfono, los chips de programa partían las palabras
+(«Reforestació / n Urbana»): `css/estilos.css`, `.chips-programa`, cada chip mide lo que su nombre y se parte
+sólo entre palabras. Se vio en la revisión de pantallas que pidió Liber.
+
+**Pantalla: qué se agregó y qué se quitó.** Se agregaron el aviso verde «Se actualizó a la versión …» después de
+una actualización y el renglón «Horario» en Conciliación. Se quitaron la pregunta «¿Lo registra de todos
+modos?» después de «Seguir registrando» y las horas del renglón de arriba de la ficha.
+
+**Verificación.** `pruebas/prueba.py` completa, sola: 1,412 comprobaciones, 0 fallas. Después se ajustó el caso
+de varios árboles en el mismo minuto del horario («2 árboles, a las 19:57», sin duración ni promedio en
+cero): se probó con `ctx92` y la sección del cierre de otro día, no con otra corrida completa.
+`pruebas/auditoria.py`: 143 comprobaciones, 0 hallazgos; `pruebas/auditoria_css.py`: 0 hallazgos. El aviso
+«Se actualizó a la versión …» se probó con una versión simulada (9.9.9) en un servidor de prueba; en el
+teléfono se verá a partir de la siguiente actualización. No se probó en un teléfono real.
+
+**Siguiente paso.** La revisión de todas las pantallas que pidió Liber (sugerencias, sin tocar código).

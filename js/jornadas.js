@@ -729,16 +729,15 @@ SRP.jornadas = {
     const h = r => SRP.envio.hora(r.fecha_registro);
 
     this.el('jornada-titulo').textContent = this.nombreSitio(j);
-    // Varios días: del primero al último; un solo día: el día y las horas del primer y el último árbol
-    const dias = SRP.util.diasJornada(j, regs), unDia = dias.desde === dias.hasta;
+    // Varios días: del primero al último. Las horas y el momento del cierre van en Conciliación, en «Horario»
+    const dias = SRP.util.diasJornada(j, regs);
     const relevo = guardada.relevo_id && guardada.relevo_id !== guardada.cabo_id ? guardada.relevo_id : '';
     const lugarFicha = this.alcaldiasDe(j).length ? SRP.ref.lugar(this.alcaldiasDe(j)) : SRP.activa.lugarDe(guardada);
     this.el('jornada-sub').innerHTML = esc(SRP.envio.diaEnLetra(j.fecha).split(' ')[0] + ' ' + SRP.util.textoDias(dias) +
       (j.total > 1 ? ' · Jornada ' + j.n + ' de ' + j.total : '') + ' · ' +
-      SRP.ref.nombreUsuario(j.cabo_id) + (relevo ? ' (titular) · relevo: ' + SRP.ref.nombreUsuario(relevo) : '') +
-      (regs.length && unDia ? ' · ' + h(regs[0]) + (regs.length > 1 ? '–' + h(regs[regs.length - 1]) : '') : '')) +
+      SRP.ref.nombreUsuario(j.cabo_id) + (relevo ? ' (titular) · relevo: ' + SRP.ref.nombreUsuario(relevo) : '')) +
       (lugarFicha ? ' · ' + esc(lugarFicha) : '') + (SRP.prioritarias.marca(j.prioridad) ? ' · ' + SRP.prioritarias.marca(j.prioridad) : '') +
-      esc(' · ' + (guardada.estatus === 'abierta' ? 'abierta' : this.textoCierre(guardada, true)) +
+      esc(' · ' + (guardada.estatus === 'abierta' ? 'abierta' : 'cerrada') +
       (SRP.prioritarias.textoOtras(j.registros, j.dato) ? ' · ' + SRP.prioritarias.textoOtras(j.registros, j.dato) : '') +
       (SRP.solicitud.es(guardada) ? ' · solicita ' + SRP.solicitud.solicitanteCompleto(guardada) : ''));
     this.el('jornada-comentarios').hidden = !guardada.comentarios;
@@ -889,12 +888,37 @@ SRP.jornadas = {
       tono = 'err'; texto = (n === 1 ? 'Sobra 1 registro' : 'Sobran ' + n + ' registros') + ': se previeron ' + plantados + ' y hay ' + puntos(reg) + '. Busque duplicados en el mapa.' + cola;
     }
     caja.dataset.tono = tono;
+    this.pintarHorario(this.guardada || j, j.registros);
     // El resultado lleva el icono de su tono (D141)
     res.innerHTML = SRP.ICONOS.svg(this.iconoTono(tono, (this.guardada || j).estatus === 'abierta'), 'medio') + '<span>' + SRP.util.escapar(texto) + '</span>';
     // Con dos o más puntos por revisar, se pueden aprobar todos de una vez
     const todos = this.el('btn-jornada-todos-bien');
     todos.hidden = pend < 2 || !this.guardada || !SRP.permisos.puede('jornada.editar', this.guardada);
     if (!todos.hidden) todos.querySelector('span').textContent = 'Marcar los ' + pend + ' como revisados';
+  },
+
+  /* HORARIO. Cuándo se trabajó, con lo que ya guarda la base: la hora en que se guardó el primer y el
+     último árbol (`fecha_registro`), lo que hay entre ellos, el cierre (`fecha_cierre`) y el tiempo
+     promedio entre un árbol y el siguiente. Es la hora de captura, no la de plantación. En una jornada
+     de varios días las noches deformarían la duración y el promedio: se dice sólo el cierre. Todo en el
+     mismo minuto no tiene duración ni promedio que decir: sólo la hora. */
+  pintarHorario(g, regs) {
+    const p = this.el('jornada-horario');
+    const horas = regs.map(r => r.fecha_registro).filter(Boolean).sort();
+    const dia = iso => SRP.envio.diaLocal(iso), hora = iso => SRP.envio.hora(iso);
+    const unDia = horas.length && dia(horas[0]) === dia(horas[horas.length - 1]);
+    const lapso = min => min < 60 ? min + ' min' : Math.floor(min / 60) + ' h' + (min % 60 ? ' ' + (min % 60) + ' min' : '');
+    const partes = [];
+    const min = unDia ? Math.round((new Date(horas[horas.length - 1]) - new Date(horas[0])) / 60000) : 0;
+    const prom = horas.length > 1 ? Math.round(min / (horas.length - 1)) : 0;
+    const mismoMinuto = horas.length > 1 && hora(horas[0]) === hora(horas[horas.length - 1]);
+    if (horas.length === 1) partes.push('un árbol, a las ' + hora(horas[0]));
+    else if (unDia && mismoMinuto) partes.push(horas.length + ' árboles, a las ' + hora(horas[0]));
+    else if (unDia) partes.push(hora(horas[0]) + ' a ' + hora(horas[horas.length - 1]) + ' (' + lapso(Math.max(min, 1)) + ')');
+    if (g.estatus === 'cerrada' && g.fecha_cierre) partes.push(this.textoCierre(g, true));
+    if (unDia && !mismoMinuto && prom >= 1) partes.push(lapso(prom) + ' entre árbol y árbol en promedio');
+    p.hidden = !partes.length;
+    p.textContent = partes.length ? 'Horario: ' + partes.join(' · ') : '';
   },
 
   /* Mapa de la jornada: Leaflet con los puntos numerados. Se crea una vez y se reutiliza. Sin

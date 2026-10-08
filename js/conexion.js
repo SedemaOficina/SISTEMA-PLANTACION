@@ -48,6 +48,29 @@ SRP.conexion = {
     // Al volver a la app o recuperar la señal se vuelve a mirar si hay versión nueva
     window.addEventListener('online', () => this.buscarVersionNueva());
     document.addEventListener('visibilitychange', () => { if (!document.hidden) this.buscarVersionNueva(); });
+    this.vigilarVersion();
+    this.avisarActualizada();
+  },
+
+  /* Con la app abierta y al frente toda la mañana no hay regreso ni señal recuperada que la haga
+     mirar: se pregunta además cada cierto tiempo. Es una consulta de pocos kilobytes; en segundo plano
+     no se pregunta, ya se mirará al volver. */
+  INTERVALO_VERSION: 15 * 60 * 1000,
+  vigilarVersion() {
+    clearInterval(this._vigilancia);
+    this._vigilancia = setInterval(() => { if (!document.hidden) this.buscarVersionNueva(); }, this.INTERVALO_VERSION);
+  },
+
+  /* Tras recargar por una versión nueva se dice, una vez: la pantalla sólo parpadeó y nadie sabría
+     que cambió. La versión de antes se anota justo antes de recargar. */
+  CLAVE_ANTERIOR: 'srp_version_anterior',
+  actualizada: null,   // { de, a } cuando esta carga vino de una actualización
+  avisarActualizada() {
+    let de = null;
+    try { de = sessionStorage.getItem(this.CLAVE_ANTERIOR); sessionStorage.removeItem(this.CLAVE_ANTERIOR); } catch (e) { return; }
+    if (!de || de === SRP.CONFIG.VERSION) return;
+    this.actualizada = { de, a: SRP.CONFIG.VERSION };
+    setTimeout(() => SRP.util.anunciar('Se actualizó a la versión ' + SRP.CONFIG.VERSION + '.'), 600);
   },
 
   /* VERSIÓN NUEVA SIN QUEDARSE A MEDIAS. Mientras el teléfono trabaja con su versión guardada, se
@@ -79,6 +102,7 @@ SRP.conexion = {
       const f = SRP.formulario;
       // Con una ventana abierta, un árbol a medias o una edición en curso se espera a que termine
       if (document.querySelector('dialog[open]') || (f && (f.aMedias() || f.estado.editando || f.estado.sustitucion))) { setTimeout(recargar, 1500); return; }
+      try { sessionStorage.setItem(this.CLAVE_ANTERIOR, SRP.CONFIG.VERSION); } catch (e) { /* sin aviso: la versión cambia igual */ }
       location.reload();
     };
     recargar();

@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.9.48 (Bloque 189)»**.
+Al pie de cualquier pantalla: **«Versión 0.9.49 (Bloque 190)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -467,6 +467,9 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M469 | Liber | «Registro exitoso» al centro dura un segundo (antes 1.5) y «Jornada completa» dice que al cerrar se ajusta la cantidad prevista | Baja | 0.9.48 (B189) | Nuevo registro | D264 |
 | M470 | Liber | Deslizador de opacidad grande en el teléfono; la simbología bajo el mapa sólo con colonias de dos o más niveles | Baja | 0.9.48 (B189) | Nuevo registro y Jornadas › mapa | D265 |
 | M471 | Liber | El cabo ya no ve «Encargado» en los datos de cierre: es él y lo lleva la base | Baja | 0.9.48 (B189) | Jornadas › Generar reporte | D266 |
+| M472 | Liber | La versión nueva se busca también cada 15 minutos con la app abierta, y al aplicarse se avisa «Se actualizó a la versión …» | Media | 0.9.49 (B190) | Toda la aplicación | D267 |
+| M473 | Liber | Tras «Seguir registrando» en «Jornada completa», el árbol de más se guarda sin volver a preguntar | Baja | 0.9.49 (B190) | Nuevo registro | D268 |
+| M474 | Liber | La ficha de la jornada sin horas en el renglón de arriba; en Conciliación, «Horario» con duración, cierre y promedio entre árboles | Baja | 0.9.49 (B190) | Jornadas › ficha | D269 |
 
 ## 2. Por hacer
 

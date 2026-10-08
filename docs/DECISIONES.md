@@ -3040,3 +3040,37 @@
   · El cabo es el encargado de su propio reporte: se guarda (`encargado_id`) y el reporte lo imprime,
     pero no se le muestra. Quien ve a varias personas (coordinación, administración) sigue eligiéndolo
     entre los cabos con registros ese día: para ellos es una elección, no un dato repetido.
+
+- **D267. La versión nueva también llega con la app abierta, y se avisa al aplicarla (bloque 190).**
+  07-10-2026. Liber preguntó si la página podía recargarse sola al publicar una versión, o pedir al usuario
+  que refresque. Ya se recargaba sola (al abrir, al volver a la app o al recuperar la señal; baja la versión
+  completa y recarga cuando no interrumpe nada). Quedaban dos huecos:
+  · Con la app abierta y al frente no se volvía a preguntar. Ahora se pregunta también cada 15 minutos,
+    sólo si la app está a la vista; es una consulta de pocos kilobytes.
+  · La recarga era silenciosa. Ahora, tras recargar por una versión nueva, un aviso verde dice «Se
+    actualizó a la versión …», una sola vez.
+  · No se pide al usuario que refresque: en campo es un toque más y la recarga sola ya espera a que no
+    haya ventana abierta, árbol a medias ni edición en curso.
+
+- **D268. «Seguir registrando» ya es la respuesta a «¿Lo registra de todos modos?» (bloque 190).**
+  07-10-2026. Liber preguntó si, al seguir registrando con los árboles previstos completos, había que pedir
+  antes la nueva cantidad prevista. Se le recomendó que no: en ese momento casi nunca se sabe cuántos más
+  habrá, y al cerrar ya se sabe el número exacto (ahí se ofrece «Actualizar a N», D264). Aceptó.
+  · Lo que sobraba era la pregunta del árbol siguiente: tocar «Seguir registrando» ya dice que habrá más.
+    Ahora cuenta como esa respuesta y el árbol de más se guarda sin preguntar.
+  · Si «Jornada completa» se cierra de otro modo (Escape), la pregunta se queda: puede ser un árbol
+    registrado dos veces por error.
+  · El orden de los botones no cambia: «Cerrar jornada» primero (D258), por ser lo más común.
+
+- **D269. El horario de la jornada pasa a Conciliación (bloque 190).**
+  07-10-2026. Liber preguntó qué significaban las horas del renglón de la ficha y si convenía mostrarlas o
+  sólo guardarlas para analizar tiempos. Ya se guardaban todas: `fecha_inicio`, `fecha_registro` de cada
+  árbol y `fecha_cierre`.
+  · El renglón de arriba de la ficha queda corto: ya no lleva las horas del primer y el último árbol, y del
+    cierre sólo dice «cerrada».
+  · En Conciliación, un renglón «Horario: 17:49 a 19:42 (1 h 53 min) · cerrada hoy a las 19:48 · 57 min
+    entre árbol y árbol en promedio». En una jornada de varios días sólo dice el cierre: las noches
+    deformarían la duración y el promedio.
+  · Es la hora de captura, no la de plantación: si se captura todo al final, mide la captura.
+  · El análisis entre jornadas (promedios por cabo, programa o mes) espera a que la app lea del servidor,
+    en Supervisión, como el conteo de frutales.

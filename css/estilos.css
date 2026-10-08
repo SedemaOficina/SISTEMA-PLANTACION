@@ -961,6 +961,10 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .revision-avisos li + li { margin-top: var(--e-1); }
 .chips-recientes { grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: none; margin-bottom: var(--e-2); }
 .chips-recientes .chip { min-height: 40px; font-size: var(--t-xs); overflow-wrap: anywhere; }
+/* Los programas tienen nombres largos de palabras largas: cada chip mide lo que su nombre y se parte entre
+   palabras, nunca a media palabra */
+.chips.chips-programa { display: flex; flex-wrap: wrap; }
+.chips-programa .chip { flex: 1 1 auto; overflow-wrap: normal; }
 /* Los cuatro catálogos (D162): en un teléfono chico se parten en dos renglones antes que salirse de lado */
 .chips.chips-envuelve { display: flex; flex-wrap: wrap; max-width: none; }
 .chips-envuelve .chip { flex: 1 1 auto; }
@@ -1043,6 +1047,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .registro .registro-lugar svg { flex: none; margin-top: 3px; color: var(--gris); }
 .insignia-jornada svg { flex: none; }
 .conciliacion-resultado svg { flex: none; margin-top: 1px; }
+.conciliacion-horario { margin: var(--e-2) 0 0; }
 /* Tarjeta de Reportes en columna, como la de Jornadas: cada pieza en su renglón y el botón al final, a la derecha */
 /* Ficha de la jornada: subtítulos de sección y, en teléfono, barra fija de saltos */
 .titulo-seccion { margin: var(--e-4) 0 var(--e-2); scroll-margin-top: 64px; }

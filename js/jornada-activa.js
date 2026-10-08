@@ -191,7 +191,8 @@ SRP.activa = {
   /* MÁS ÁRBOLES QUE LOS PREVISTOS. Con los previstos ya registrados, el siguiente árbol se confirma:
      puede ser un toque de más o un árbol de otra jornada. Se pregunta una vez por jornada —plantar de
      más es normal y preguntar en cada árbol sumaría un toque por árbol—; se recuerda en el dispositivo.
-     La sustitución no pregunta: el árbol que reemplaza deja de contar. Devuelve true si se puede seguir. */
+     La sustitución no pregunta: el árbol que reemplaza deja de contar. Tocar «Seguir registrando» en
+     «Jornada completa» ya es la respuesta: tampoco se pregunta. Devuelve true si se puede seguir. */
   CLAVE_EXCESO: 'srp_jornadas_exceso',
   excesoConfirmado() { try { return JSON.parse(localStorage.getItem(this.CLAVE_EXCESO) || '[]'); } catch (e) { return this._exceso || []; } },
   async confirmarExceso() {
@@ -204,12 +205,14 @@ SRP.activa = {
     const ok = await SRP.app.confirmar({ titulo: meta === 1 ? 'Ya registró el árbol previsto' : 'Ya registró los ' + meta + ' árboles previstos',
       pregunta: 'Este sería el árbol ' + (n + 1) + ' de la jornada «' + j.nombre + '». ¿Lo registra de todos modos?',
       nota: 'Se pregunta una vez por jornada. Al cerrarla podrá actualizar los árboles previstos.', boton: 'Registrar el árbol', icono: 'palomita' });
-    if (ok) {
-      const lista = this.excesoConfirmado().concat(j.id).slice(-50);
-      this._exceso = lista;
-      try { localStorage.setItem(this.CLAVE_EXCESO, JSON.stringify(lista)); } catch (e) { /* vale para esta sesión */ }
-    }
+    if (ok) this.aceptarExceso(j.id);
     return ok;
+  },
+  aceptarExceso(id) {
+    if (!id || this.excesoConfirmado().includes(id)) return;
+    const lista = this.excesoConfirmado().concat(id).slice(-50);
+    this._exceso = lista;
+    try { localStorage.setItem(this.CLAVE_EXCESO, JSON.stringify(lista)); } catch (e) { /* vale para esta sesión */ }
   },
 
   /* Al cerrar con más árboles que los previstos se ofrece actualizar la cantidad prevista a lo
