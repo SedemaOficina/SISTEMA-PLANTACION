@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.9.47 (Bloque 188)»**.
+Al pie de cualquier pantalla: **«Versión 0.9.48 (Bloque 189)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -463,6 +463,10 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M465 | Liber | «Editar registro» sin el recuadro «Está editando el registro…»: basta la franja fija | Baja | 0.9.47 (B188) | Registros › Editar | D260 |
 | M466 | Liber | «Sustituir árbol» en morado (franja e icono) y con «se perdió por alguna razón» y «Razón de la sustitución» | Baja | 0.9.47 (B188) | Registros › Sustituir árbol | D261 |
 | M467 | Liber | «Lo que viaja a la base de datos»: la misma sección en todas las pantallas que guardan, con destino (teléfono y servidor), lo que se ve, lo que no y la bitácora; y se despliega en Registrar jornada | Media | 0.9.47 (B188) | Versión de prueba, al pie de cada formulario | D262 |
+| M468 | Liber | Programa de la jornada a un toque: chips con Reforestación Urbana siempre primero y los que más usa cada persona | Media | 0.9.48 (B189) | Nuevo registro › Registrar jornada | D263 |
+| M469 | Liber | «Registro exitoso» al centro dura un segundo (antes 1.5) y «Jornada completa» dice que al cerrar se ajusta la cantidad prevista | Baja | 0.9.48 (B189) | Nuevo registro | D264 |
+| M470 | Liber | Deslizador de opacidad grande en el teléfono; la simbología bajo el mapa sólo con colonias de dos o más niveles | Baja | 0.9.48 (B189) | Nuevo registro y Jornadas › mapa | D265 |
+| M471 | Liber | El cabo ya no ve «Encargado» en los datos de cierre: es él y lo lleva la base | Baja | 0.9.48 (B189) | Jornadas › Generar reporte | D266 |
 
 ## 2. Por hacer
 

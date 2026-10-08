@@ -819,7 +819,7 @@ SRP.formulario = {
   /* JORNADA COMPLETA. Cuando el árbol guardado es el último de los previstos se dice en una ventana
      propia, distinta de la tarjeta de cada árbol: no se cierra sola, nombra la jornada y ofrece
      cerrarla o seguir registrando. Vibra dos veces. La franja de la jornada lo deja escrito después. */
-  DURACION_CONFIRMACION: 1500,
+  DURACION_CONFIRMACION: 1000,
   textoCompleta(previstos) {
     return previstos === 1 ? 'Se registró el árbol previsto para la jornada.' : 'Se registraron los ' + previstos + ' árboles previstos para la jornada.';
   },

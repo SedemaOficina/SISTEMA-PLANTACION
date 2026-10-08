@@ -1506,7 +1506,7 @@
           "origen": "Sesión",
           "dominio": "→ usuarios.id",
           "pantalla": "Encargado",
-          "regla": "Para un cabo es él mismo (no se pregunta); quien ve a varias personas lo elige sólo entre los cabos con registros ese día (D57)"
+          "regla": "Para un cabo es él mismo (no se pregunta ni se muestra en el cierre; el reporte lo imprime); quien ve a varias personas lo elige sólo entre los cabos con registros ese día (D57)"
         },
         {
           "campo": "relevo_id",
@@ -1866,7 +1866,7 @@
       "campo": "jornadas.encargado_id",
       "de": "La sesión si es cabo; elección entre cabos con registros ese día si no",
       "cuando": "Al abrir el cierre",
-      "ver": "Encargado"
+      "ver": "Encargado (sólo quien ve a varias personas; a un cabo no se le muestra)"
     },
     {
       "campo": "bitacora.usuario_id, usuario_nombre, perfil",

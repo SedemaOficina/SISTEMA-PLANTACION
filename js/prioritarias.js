@@ -318,10 +318,11 @@ SRP.prioritarias = {
         caja.querySelector('output').textContent = Math.round(e.opacidad * 100) + ' %';
         caja.querySelectorAll('[data-pri="base"]').forEach(r => { r.checked = r.value === SRP.mapa.baseElegida(); });
         caja.querySelector('.pri-capas-boton').dataset.activa = String(ver && hayColonias);
-        /* Bajo el mapa, la simbología: qué prioridad dice cada color de las colonias que se ven */
+        /* Bajo el mapa, la simbología: qué prioridad dice cada color, sólo cuando hay colonias de dos o más
+           niveles. Con un solo nivel repetiría lo que ya dice la jornada junto a su colonia */
         if (o.leyenda) {
-          o.leyenda.hidden = !(ver && hayColonias && pintados && pintados.size);
-          o.leyenda.innerHTML = o.leyenda.hidden ? '' : '<p class="pri-leyenda"><span class="pri-leyenda-titulo">' + (pintados.size === 1 ? 'Colonia de la jornada, de prioridad:' : 'Colonias de la jornada, por prioridad:') + '</span>' +
+          o.leyenda.hidden = !(ver && hayColonias && pintados && pintados.size > 1);
+          o.leyenda.innerHTML = o.leyenda.hidden ? '' : '<p class="pri-leyenda"><span class="pri-leyenda-titulo">Colonias de la jornada, por prioridad:</span>' +
             this.NIVELES.filter(([n]) => pintados.has(String(n))).map(([n, t]) => '<span><i class="pri-muestra pri-nivel-' + n + '"></i>' + SRP.util.escapar(t) + '</span>').join('') + '</p>';
         }
         return;

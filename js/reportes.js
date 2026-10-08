@@ -123,23 +123,14 @@ SRP.reportes = {
   },
 
   /* ENCARGADO. Quien captura en campo es responsable de su propio reporte, así que a un cabo no se
-     le pregunta: es él, y el campo se muestra como respuesta, no como pregunta. Quien ve a varias
+     le pregunta ni se le muestra: es él, se guarda y el reporte lo imprime. Quien ve a varias
      personas —coordinador o administración— sí elige, y sólo entre los cabos que tienen registros
      ese día: ofrecer el padrón completo sería ofrecer a gente que no estuvo. */
   prepararEncargado(registros, previo) {
     const u = SRP.sesion.usuario;
     const propios = SRP.permisos.de(u).alcance === 'propios';
-    const lectura = this.el('cie-encargado-lectura');
-    const caja = this.el('cie-encargado-caja');
-
-    lectura.hidden = !propios;
-    caja.hidden = propios;
-
-    if (propios) {
-      this.contexto.encargado_id = u.id;
-      lectura.textContent = SRP.util.nombreCompleto(u);
-      return;
-    }
+    this.el('caja-cie-encargado').hidden = propios;
+    if (propios) { this.contexto.encargado_id = u.id; return; }
 
     const ids = SRP.util.paresPersonas(registros.map(r => r.cabo_id));
     const sel = this.el('cie-encargado');

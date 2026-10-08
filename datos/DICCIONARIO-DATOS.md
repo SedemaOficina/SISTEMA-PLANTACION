@@ -290,7 +290,7 @@ Una jornada de plantación: se declara antes de registrar el primer árbol (D119
 | `estatus` | text | No | Sistema | dominio `estatus_jornada` | Franja de la jornada; Jornadas | Se cierra desde la franja o la revisión; se reabre desde la revisión o con «Registrar árbol» (D119, D153) |
 | `fecha_inicio` | timestamptz | No | Sistema | ISO 8601 | No | Ordena las jornadas del día: «Jornada 2 de 3» |
 | `fecha_cierre` | timestamptz | Sí | Sistema | ISO 8601 | Jornadas: «Cerrada a las 15:40» en la ficha y «cerrada el lunes 22 de septiembre a las 15:40» en el detalle | Nulo mientras está abierta |
-| `encargado_id` | uuid | Sí | Sesión | → usuarios.id | Encargado | Para un cabo es él mismo (no se pregunta); quien ve a varias personas lo elige sólo entre los cabos con registros ese día (D57) |
+| `encargado_id` | uuid | Sí | Sesión | → usuarios.id | Encargado | Para un cabo es él mismo (no se pregunta ni se muestra en el cierre; el reporte lo imprime); quien ve a varias personas lo elige sólo entre los cabos con registros ese día (D57) |
 | `relevo_id` | uuid | Sí | Persona | → usuarios.id | Jornadas › Relevo de cabo | El cabo que registra en lugar del titular: lo elige la coordinación entre los cabos activos de su cuadrilla y de la institución de la jornada, con la jornada abierta. Nulo: registra el titular. Sólo quien registra en la jornada (este cabo o, sin relevo, el titular) agrega árboles en ella |
 | `relevos` | objeto[] | No | Sistema | [{ cabo_id → usuarios.id, fecha ISO 8601, por_id → usuarios.id }]; [] sin relevos | No como campo; la ficha y el reporte dicen el relevo | Cada relevo hecho, también el que devuelve la jornada al titular: a quién se pasó, cuándo y quién lo hizo. Quien estuvo en un relevo sigue viendo la jornada y todos sus árboles, aunque sólo edita los suyos |
 | `solicitante_id` | text | Sí | Persona | → solicitantes.id | Iniciar jornada › Quién lo solicita (con el programa «Solicitud»); Editar jornada | Quién solicita la jornada, del catálogo de solicitantes (Catálogos › Solicitantes), que es aparte del de instituciones. No es quien ejecuta (organizacion_id): quien solicita no es quien planta. Nulo si la jornada es de otro programa o si la instancia no está en el catálogo. Obligatorio, este o solicitante_otro, con el programa «Solicitud» |
@@ -351,7 +351,7 @@ Se guardan en la tabla, pero nadie los teclea: salen de otro dato o de la sesió
 | plantaciones.cabo_id | La sesión | En el alta; se conserva al editar | Encabezado y ficha |
 | plantaciones.foto_id | La imagen comprimida | Al elegir la foto | Ficha de la foto |
 | especies.clave | Máximo ESP-0000 en uso + 1 | Al abrir el alta | Clave (sólo lectura) |
-| jornadas.encargado_id | La sesión si es cabo; elección entre cabos con registros ese día si no | Al abrir el cierre | Encargado |
+| jornadas.encargado_id | La sesión si es cabo; elección entre cabos con registros ese día si no | Al abrir el cierre | Encargado (sólo quien ve a varias personas; a un cabo no se le muestra) |
 | bitacora.usuario_id, usuario_nombre, perfil | La sesión | En cada movimiento | Historial |
 
 ## 7. Lo que se calcula y no se guarda

@@ -1498,3 +1498,13 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .pri-capas-opacidad { display: flex; align-items: center; gap: var(--e-2); border-top: 1px solid var(--borde-suave); padding-top: var(--e-1); }
 .pri-capas-opacidad span { flex: none; font-size: var(--t-xs); color: var(--gris); white-space: nowrap; }
 .pri-capas-opacidad input { flex: 1; min-width: 0; min-height: 36px; margin: 0; }
+/* El deslizador nativo del teléfono es delgado y su botón chico, difícil de tomar con el dedo: aquí la
+   barra es gruesa, el botón de 28 px y el área de toque de 44 px de alto. En campo va en su propio
+   renglón, a todo lo ancho del panel */
+.pri-capas-opacidad input[type="range"] { -webkit-appearance: none; appearance: none; height: 44px; background: transparent; cursor: pointer; touch-action: none; }
+.pri-capas-opacidad input[type="range"]::-webkit-slider-runnable-track { height: 8px; border-radius: var(--radio-pildora); background: var(--borde-control); }
+.pri-capas-opacidad input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 28px; height: 28px; margin-top: calc(-1 * var(--e-25)); border: 3px solid var(--fondo); border-radius: 50%; background: var(--acento); box-shadow: 0 0 0 1px var(--acento); }
+.pri-capas-opacidad input[type="range"]::-moz-range-thumb { width: 28px; height: 28px; box-sizing: border-box; border: 3px solid var(--fondo); border-radius: 50%; background: var(--acento); box-shadow: 0 0 0 1px var(--acento); }
+.pri-capas-opacidad input[type="range"]:disabled { opacity: 0.45; cursor: default; }
+.pri-capas-campo .pri-capas-opacidad { flex-wrap: wrap; row-gap: 0; border-top: 0; }
+.pri-capas-campo .pri-capas-opacidad input { flex-basis: 100%; }

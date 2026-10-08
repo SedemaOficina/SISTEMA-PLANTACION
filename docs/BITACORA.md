@@ -3631,3 +3631,30 @@ morada y la sección de lo que viaja a la base se vieron sólo en el navegador d
 
 **Siguiente paso.** Fase 3 del servidor (permisos por perfil e institución, edición de cuentas), cuando Liber
 lo indique.
+
+## Bloque 189 — Ajustes de la prueba en el teléfono (07-10-2026)
+
+Versión 0.9.48. Peticiones de Liber al probar la 0.9.47 en su teléfono, aprobadas sobre un ejemplo.
+
+**Qué cambió.** `index.html` y `js/jornada-activa.js`: chips de programa sobre la lista
+(`pintarProgramasFrecuentes()`, `marcarChipPrograma()`; D263). `js/formulario.js`: la confirmación al
+centro dura 1 s; `index.html`, la nota de «Jornada completa» (D264). `css/estilos.css`: el deslizador de
+opacidad; `js/prioritarias.js`: la simbología bajo el mapa sólo con dos o más niveles (D265).
+`index.html`, `js/reportes.js` y `js/espejo.js`: el campo Encargado del cierre se oculta al cabo y el espejo
+lo cuenta entre lo que no se ve (D266). `datos/esquema.json`, `datos/MAPEO-CAMPOS.md` y, generados,
+`datos/DICCIONARIO-DATOS.md` y `servidor/sql/02_tablas.sql` (sólo el comentario de la regla). Pruebas:
+`ctx90`; las de la simbología, del encargado y de la confirmación, al día.
+
+**Pantalla: qué se agregó y qué se quitó.** Se agregaron los chips de programa en Registrar jornada y el
+deslizador grande en el panel de capas. Se quitaron el campo Encargado del cierre para el cabo y la
+simbología bajo el mapa cuando hay un solo nivel; la confirmación al centro se ve menos tiempo.
+
+**Verificación.** `pruebas/prueba.py` completa, sola: 1,403 comprobaciones, 0 fallas. La primera corrida dio 2
+fallas de pruebas que había que poner al día, no de la aplicación: el espejo del cierre ya cuenta
+`encargado_id` entre lo que no se ve, y la del botón «Subir al inicio» exigía que quedara siempre encima de la
+barra Guardar aunque no se tocaran (ahora revisa que no se encimen). `pruebas/auditoria.py`: 143
+comprobaciones, 0 hallazgos; `pruebas/auditoria_css.py`: 0 hallazgos; `servidor` (`npm test`): 21 de 21. No se
+probó en un teléfono real: el tamaño del deslizador en iPhone y los chips de programa se vieron sólo en el
+navegador de pruebas; en Firefox la barra del deslizador queda con su estilo propio.
+
+**Siguiente paso.** Que Liber pruebe la 0.9.48 en su teléfono; después, la fase 3 del servidor.

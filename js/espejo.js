@@ -257,7 +257,7 @@ SRP.espejo = {
     if (!caja || !SRP.CONFIG.ES_FICTICIO || !SRP.reportes.contexto) return;
     caja.hidden = false;
     const cierre = SRP.reportes.cierrePrevisto();
-    document.getElementById('espejo-cierre-contenido').innerHTML = this.htmlCuerpo({ tabla: 'jornadas', objeto: cierre, visibles: SRP.reportes.CAMPOS.concat(['encargado_id']),
+    document.getElementById('espejo-cierre-contenido').innerHTML = this.htmlCuerpo({ tabla: 'jornadas', objeto: cierre, visibles: SRP.reportes.CAMPOS.concat(document.getElementById('caja-cie-encargado').hidden ? [] : ['encargado_id']),
       notas: this.NOTAS_CIERRE, previsto: true, provisional: k => k === 'fecha_ultima_edicion' ? '(se fija al generar)' : null, prefijo: 'espejo-cierre',
       bitacora: { accion: 'EDITADO', entidad: 'jornada', detalle: 'Datos de cierre del reporte', alGuardar: '(se fija al generar)' } });
   },

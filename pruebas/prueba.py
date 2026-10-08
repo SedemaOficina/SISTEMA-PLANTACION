@@ -768,13 +768,12 @@ with sync_playwright() as p:
     reporte_de(pg)
     ok(pg.is_visible('#dlg-cierre'),'«Generar reporte» abre el cierre del reporte antes de generar')
     espejoC=pg.evaluate("[...document.querySelectorAll('#espejo-cierre-cuerpo .espejo-campo')].map(e=>e.textContent)")
-    ok(espejoC==['id','nombre','ubicacion','fecha','comentarios','programa_id','cabo_id','estatus','organizacion_id','lat','lng','punto_origen','gps_precision_m','alcaldia_cve','alcaldia','colonia_cve','colonia','fecha_inicio','fecha_cierre','editado_por_id','fecha_ultima_edicion','arboles_previstos','puntos_revisados','reporte_en','relevo_id','relevos','solicitante_id','solicitante_otro','solicitud_descripcion','carga_id','vehiculo_id','vehiculo_placa','vehiculo_modelo','vehiculo_tipo'],
-       'el cierre lleva su espejo con los treinta y cuatro campos de la jornada, con la institución que ejecuta, el relevo, los datos de la solicitud y la clave de carga masiva, que no se capturan aquí, con el vehículo y sus tres datos copiados del catálogo (D112, D119, D120, D122, D130, D131, D143, D162, D174): '+', '.join(espejoC))
+    ok('encargado_id' in espejoC and [c for c in espejoC if c!='encargado_id']==['id','nombre','ubicacion','fecha','comentarios','programa_id','cabo_id','estatus','organizacion_id','lat','lng','punto_origen','gps_precision_m','alcaldia_cve','alcaldia','colonia_cve','colonia','fecha_inicio','fecha_cierre','editado_por_id','fecha_ultima_edicion','arboles_previstos','puntos_revisados','reporte_en','relevo_id','relevos','solicitante_id','solicitante_otro','solicitud_descripcion','carga_id','vehiculo_id','vehiculo_placa','vehiculo_modelo','vehiculo_tipo'],
+       'el cierre lleva su espejo con los treinta y cinco campos de la jornada que no se ven (al cabo tampoco el encargado), con la institución que ejecuta, el relevo, los datos de la solicitud y la clave de carga masiva, que no se capturan aquí, con el vehículo y sus tres datos copiados del catálogo (D112, D119, D120, D122, D130, D131, D143, D162, D174): '+', '.join(espejoC))
     pg.fill('#cie-chofer','Mengano'); pg.wait_for_timeout(200)
     ok(pg.evaluate("SRP.reportes.cierrePrevisto().chofer")=='Mengano','y lo que se escribe entra al mismo objeto que se guarda')
-    ok(pg.is_visible('#cie-encargado-lectura') and pg.is_hidden('#cie-encargado-caja'),
-       'a un cabo no se le pregunta el encargado: es él')
-    ok(pg.inner_text('#cie-encargado-lectura').strip()!='','y sale su nombre: '+pg.inner_text('#cie-encargado-lectura'))
+    ok(pg.is_hidden('#caja-cie-encargado'), 'a un cabo no se le pregunta ni se le muestra el encargado: es él')
+    ok(pg.evaluate("SRP.reportes.encargadoElegido() === SRP.sesion.usuario.id"), 'y queda él como encargado del reporte')
     ok('Parque Hundido' in pg.inner_text('#dlg-cierre-dia') and pg.locator('#cie-sitio').count()==0,'el cierre es de la jornada y ya no pregunta el sitio: lo da el nombre de la jornada (D119): '+pg.inner_text('#dlg-cierre-dia'))
     pg.fill('#cie-chofer','Fulano de Tal')
     pg.fill('#cie-hora','14:30')
@@ -1163,7 +1162,7 @@ with sync_playwright() as p:
     ok(pg.input_value('#cie-chofer')=='Fulano de Tal','al regenerar, el cierre ya viene escrito')
     ok(pg.input_value('#cie-hora')=='14:30' and pg.input_value('#cie-vehiculo')=='v-PRU005','con todos sus campos, el vehículo elegido incluido')
     ok(pg.evaluate("document.getElementById('cie-apoyo').tagName")=='TEXTAREA','personal de apoyo admite varias líneas')
-    ok(pg.evaluate("[...document.querySelectorAll('#form-cierre .campo')][0].contains(document.getElementById('cie-encargado'))"),'el encargado es el primer campo del cierre')
+    ok(pg.evaluate("[...document.querySelectorAll('#form-cierre .campo')][0].contains(document.getElementById('cie-encargado'))"),'el encargado es el primer campo del cierre (oculto para el cabo)')
     pg.click('#btn-cierre-cerrar'); pg.wait_for_timeout(300)
     # Los campos vacíos no se inventan: el cierre guardado no trae lo que no se escribió
     vacios=pg.evaluate("async () => { const c = (await SRP.almacen.todos('jornadas')).find(j => j.nombre === 'Parque Hundido' && j.fecha === SRP.util.fechaHoy()); return [c.observaciones, 'actividades' in c ? 'sobra' : '', document.getElementById('cie-actividades') ? 'campo' : '', c.chofer === 'Fulano de Tal' ? '' : 'sin cierre']; }")
@@ -1296,7 +1295,7 @@ with sync_playwright() as p:
     pg.evaluate("document.getElementById('jornada-mas-filtros').open = true"); pg.wait_for_timeout(100)
     ok(pg.is_visible('#caja-jornada-cabo') and pg.locator('#jornada-cabo option').count()>=2 and pg.locator('#jornada-cabo option[value=""]').count()==1 and pg.evaluate("SRP.jornadas._todas.filter(j => j.estatus === 'cerrada').length")>=1,'el coordinador filtra por cabo y ve las jornadas cerradas de su cuadrilla (D134)')
     reporte_de(pg)
-    ok(pg.is_visible('#cie-encargado-caja') and pg.is_hidden('#cie-encargado-lectura'),
+    ok(pg.is_visible('#caja-cie-encargado') and pg.is_visible('#cie-encargado'),
        'al coordinador se le ofrece la lista de cabos responsables')
     opciones=pg.eval_on_selector('#cie-encargado',"s=>[...s.options].map(o=>o.textContent.trim()).filter(Boolean)")
     ok(any('Fulana' in o for o in opciones),'con los cabos que registraron ese día: '+', '.join(opciones))
@@ -2354,13 +2353,13 @@ with sync_playwright() as p:
     def subir16():
         return pg16.evaluate("""() => { const b = document.getElementById('btn-subir'), r = b.getBoundingClientRect();
           const barras = [...document.querySelectorAll('.vista:not([hidden]) .barra-guardar')].filter(x => x.offsetParent).map(x => x.getBoundingClientRect())
-            .filter(x => x.bottom > innerHeight - 160).map(x => x.top);
-          return { vis: b.dataset.visible, abajo: r.bottom, nav: document.getElementById('navegacion').getBoundingClientRect().top, barras, ancho: r.width, alto: r.height }; }""")
+            .filter(x => x.bottom > innerHeight - 160).map(x => [x.top, x.bottom]);
+          return { vis: b.dataset.visible, arriba: r.top, abajo: r.bottom, nav: document.getElementById('navegacion').getBoundingClientRect().top, barras, ancho: r.width, alto: r.height }; }""")
     pg16.evaluate("window.scrollTo(0, 0)"); pg16.wait_for_timeout(300)
     ok(subir16()['vis']=='no','arriba no se ve el botón «Subir al inicio» (D154)')
     pg16.evaluate("window.scrollTo(0, 1000)"); pg16.wait_for_timeout(400)
     s16=subir16()
-    ok(s16['vis']=='si' and s16['ancho']==48 and s16['alto']==48 and s16['abajo']<=s16['nav'] and all(s16['abajo']<=t for t in s16['barras']),
+    ok(s16['vis']=='si' and s16['ancho']==48 and s16['alto']==48 and s16['abajo']<=s16['nav'] and all(s16['abajo']<=t or s16['arriba']>=f for t, f in s16['barras']),
        'al bajar aparece, redondo, encima de la navegación y de la barra Guardar sin tapar sus botones: %s' % s16)
     pg16.click('#btn-subir'); esperar(pg16, "scrollY === 0 && document.activeElement.id === 'titulo-registrar'", 5000)
     ok(pg16.evaluate("scrollY")==0 and pg16.evaluate("document.activeElement.id")=='titulo-registrar','y lo lleva al inicio con el foco en el título de la sección')
@@ -2406,7 +2405,7 @@ with sync_playwright() as p:
     ok(pg16.is_visible('#jornada-detalle') and pg16.locator('#jornada-lista .punto-jornada').count()==6,'y al cancelar vuelve a la ficha de la jornada')
     esperar(pg16, "(window.scrollTo(0, 800), document.getElementById('btn-subir').dataset.visible === 'si')", 4000)
     s16=subir16()
-    ok(s16['vis']=='si' and s16['barras'] and all(s16['abajo']<=t for t in s16['barras']) and s16['abajo']<=s16['nav'],'en la ficha el botón queda encima de la barra «Siguiente»: %s' % s16)
+    ok(s16['vis']=='si' and s16['barras'] and all(s16['abajo']<=t for t, f in s16['barras']) and s16['abajo']<=s16['nav'],'en la ficha el botón queda encima de la barra «Siguiente»: %s' % s16)
     pg16.click('#btn-jornada-volver'); pg16.wait_for_timeout(900)
     ok(pg16.evaluate("scrollY")==0,'y al volver a la lista de jornadas, también empieza arriba')
     # D155: la coordinación elimina lo suyo y lo de sus cabos, no lo de fuera de su cuadrilla
@@ -3281,8 +3280,8 @@ with sync_playwright() as p:
         franja: f.top >= 0 && f.bottom <= innerHeight, foco: document.activeElement && document.activeElement.id }; })()""")
     ok(cf31['visible'] and cf31['texto']=='Registro exitoso Aile' and cf31['icono'] and cf31['toques']=='none','al guardar, al centro «Registro exitoso» con la especie y la palomita, sin atrapar los toques (D171): %s' % cf31)
     ok(cf31['franja'] and cf31['foco']=='btn-ubicacion','la franja «Guardado» queda a la vista en un teléfono chico y el foco, listo para el siguiente árbol: %s' % cf31)
-    pg31.wait_for_timeout(1500)
-    ok(pg31.is_hidden('#confirmacion-guardado'),'la confirmación se cierra sola, sin tocar nada')
+    pg31.wait_for_timeout(1100)
+    ok(pg31.is_hidden('#confirmacion-guardado'),'la confirmación se cierra sola en un segundo, sin tocar nada')
     ok(not err31,'sin errores en consola: %s' % err31[:2])
     ctx31.close()
 
@@ -4069,8 +4068,8 @@ with sync_playwright() as p:
     registrar(pg47,'aile','ESP-0002'); pg47.wait_for_timeout(300)
     pg47.evaluate("""async () => { const j = await SRP.almacen.uno('jornadas', '%s'); j.estatus = 'cerrada'; j.fecha_cierre = SRP.util.ahoraISO(); await SRP.almacen.guardarConBitacora('jornadas', j, null); }""" % jz47); pg47.wait_for_timeout(300)
     reporte_de(pg47,'Camellón coordinado')
-    z47=[pg47.is_hidden('#caja-cie-'+c) for c in ['personal','apoyo','chofer','vehiculo']]+[pg47.is_visible('label[for=cie-encargado]'), pg47.is_visible('#cie-observaciones'), pg47.is_visible('#cie-hora')]
-    ok(z47==[True]*7,'el cierre de una alcaldía pide sólo encargado, observaciones y hora: %s' % z47)
+    z47=[pg47.is_hidden('#caja-cie-'+c) for c in ['personal','apoyo','chofer','vehiculo']]+[pg47.is_hidden('label[for=cie-encargado]'), pg47.is_visible('#cie-observaciones'), pg47.is_visible('#cie-hora')]
+    ok(z47==[True]*7,'el cierre del cabo de una alcaldía pide sólo observaciones y hora: %s' % z47)
     pg47.click('#btn-cierre-cerrar'); pg47.wait_for_timeout(200)
     mz47=pg47.evaluate("""async () => { const j = await SRP.almacen.uno('jornadas', '%s'); const regs = (await SRP.almacen.todos('plantaciones')).filter(r => r.jornada_id === j.id && r.estatus === 'activo');
       const m = SRP.reportes.modelo(regs, Object.assign({}, j, { personal: 'Persona Ejemplo', apoyo: 'Otra Ejemplo', chofer: 'Chofer Ejemplo', vehiculo_tipo: 'Pipa', vehiculo_placa: 'PRU 001', vehiculo_modelo: 'X' }), j.fecha, null);
@@ -5036,7 +5035,7 @@ with sync_playwright() as p:
     ok(f60['sobre'] and f60['tam'][0]>=44 and f60['tam'][1]>=44 and f60['simple'],'el control es un solo botón de buen tamaño sobre el mapa, con su panel cerrado, con opacidad y sin niveles: %s' % f60['tam'])
     ok(f60['textos']==[False, False, False] and not f60['enPunto'],'Nuevo registro no dice la prioridad como dato del punto ni bajo las coordenadas: %s' % f60['textos'])
     s60=pg60.evaluate("(() => { const s = document.getElementById('mapa-simbologia'); return [!s.hidden, s.textContent.trim(), s.querySelectorAll('.pri-muestra').length, !!s.querySelector('.pri-nivel-3')]; })()")
-    ok(s60==[True, 'Colonia de la jornada, de prioridad:Alta', 1, True],'bajo el mapa, la simbología dice qué prioridad es el color de la colonia pintada: %s' % s60)
+    ok(s60==[False, '', 0, False],'con una sola colonia pintada no hay simbología bajo el mapa: la prioridad ya va junto a la colonia de la jornada: %s' % s60)
     # El botón apaga y enciende el polígono; se recuerda, y usarlo no mueve el punto del árbol
     p60=pg60.evaluate("[SRP.mapa.lat, SRP.mapa.lng]")
     pg60.click('#mapa .pri-capas-boton'); pg60.wait_for_timeout(300)
@@ -5065,7 +5064,7 @@ with sync_playwright() as p:
     pg60.evaluate("async (id) => { SRP.app.mostrarVista('jornadas'); await SRP.jornadas.abrir(id); }", j60); pg60.wait_for_timeout(1800)
     jf60=pg60.evaluate("[!!document.getElementById('jornada-prioridad'), !!document.querySelector('#jornada-mapa .pri-capas-boton') && !document.querySelector('#jornada-mapa [data-pri=nivel]'), document.querySelectorAll('#jornada-mapa path.pri-colonia').length, document.querySelectorAll('#jornada-lista .punto-prioridad').length, document.getElementById('jornada-sub').textContent]")
     base60=pg60.evaluate("(() => { const u = []; SRP.jornadas.mapa.eachLayer(l => { if (l._url) u.push(l._url.split('/services/')[1].split('/MapServer')[0]); }); return [u, document.querySelector('#jornada-mapa [data-pri=base][value=calles]').checked, document.getElementById('jornada-simbologia').textContent.trim()]; })()")
-    ok(base60==[['World_Street_Map'], True, 'Colonia de la jornada, de prioridad:Alta'],'el mapa de la ficha usa el mapa base elegido y trae la misma simbología: %s' % base60)
+    ok(base60==[['World_Street_Map'], True, ''],'el mapa de la ficha usa el mapa base elegido y, con una sola colonia, tampoco lleva simbología: %s' % base60)
     pg60.evaluate("SRP.mapa.cambiarBase('satelite')")
     ok(jf60[:4]==[False, True, 1, 0] and 'prioridad alta' in jf60[4].lower(),'la ficha de la jornada dice su prioridad, sin desglose ni prioridad por punto, y su mapa pinta su colonia con el mismo botón: %s' % jf60[4])
     # Supervisión: árboles por nivel de prioridad, en pantalla, en el informe y en la tabla
@@ -6440,7 +6439,7 @@ with sync_playwright() as p:
     pg82.click('#jornada-mapa [data-pri=ver]'); pg82.wait_for_timeout(300)
     pg82.click('#jornada-mapa .pri-capas-boton'); pg82.wait_for_timeout(200)
     esperada82 = ['Colonias de la jornada, por prioridad:'] + [t for t in ['Muy alta', 'Alta', 'Media', 'Baja', 'Muy baja'] if t in (c82['a']['texto'], c82['o']['texto'])]
-    ok(apag82 == [0, True] and trazos82('#jornada-mapa') == 2 and (simb82 == esperada82 or (c82['a']['texto'] == c82['o']['texto'] and simb82 == ['Colonia de la jornada, de prioridad:', c82['a']['texto']])),
+    ok(apag82 == [0, True] and trazos82('#jornada-mapa') == 2 and (simb82 == esperada82 if c82['a']['texto'] != c82['o']['texto'] else simb82 == []),
        'la casilla apaga y enciende los dos polígonos, y la simbología bajo el mapa dice la prioridad de cada color: %s' % simb82)
     r82 = pg82.evaluate("""async id => { const j = await SRP.almacen.uno('jornadas', id); const regs = await SRP.activa.registrosDe(j);
       const m = SRP.reportes.modelo(regs, j, j.fecha, j), i = m.identificacion.map(x => x[0]);
@@ -6783,6 +6782,51 @@ with sync_playwright() as p:
     ok(t89 == [True, True, True, True, 'Razón de la sustitución *'], '«Sustituir árbol» lleva la franja y el icono morados, y dice «se perdió por alguna razón» y «Razón de la sustitución»: %s' % t89)
     ok(err89 == [], 'sin errores de consola: %s' % err89[:2])
     ctx89.close()
+
+    # ---------- ctx90: chips de programa, confirmación breve, nota de «Jornada completa» y deslizador de opacidad ----------
+    ctx90 = contexto_llano(viewport={'width':390,'height':844}, geolocation={'latitude':19.4326,'longitude':-99.1332,'accuracy':5}, permissions=['geolocation'], timezone_id='America/Mexico_City')
+    pg90 = ctx90.new_page(); err90 = []
+    pg90.on('pageerror', lambda e: err90.append(str(e)))
+    pg90.goto(BASE); pg90.wait_for_timeout(1300)
+    entrar_como(pg90, 'u-cabo-1'); pg90.wait_for_timeout(900)
+    pg90.evaluate("SRP.activa.mostrarInicio(true)"); pg90.wait_for_timeout(600)
+    p90 = pg90.evaluate("""() => { const c = [...document.querySelectorAll('#ini-programa-chips .chip')];
+      return [!document.getElementById('ini-programa-chips').hidden, c.map(x => x.textContent), c.length && c[0].dataset.id,
+        document.getElementById('ini-programa-chips').compareDocumentPosition(document.getElementById('ini-programa')) & Node.DOCUMENT_POSITION_FOLLOWING]; }""")
+    ok(p90[0] and len(p90[1]) == 3 and p90[1][0] == 'Reforestación Urbana' and p90[2] == 'p-refor' and p90[3],
+       'sobre la lista de programas, tres chips con Reforestación Urbana siempre primero: %s' % p90)
+    pg90.click('#ini-programa-chips .chip:nth-child(2)'); pg90.wait_for_timeout(200)
+    q90 = pg90.evaluate("""() => [document.getElementById('ini-programa').value, [...document.querySelectorAll('#ini-programa-chips .chip')].map(c => c.getAttribute('aria-pressed'))]""")
+    ok(q90[0] == pg90.evaluate("document.querySelector('#ini-programa-chips .chip:nth-child(2)').dataset.id") and q90[1] == ['false', 'true', 'false'],
+       'tocar un chip elige ese programa en la lista y queda marcado: %s' % q90)
+    pg90.select_option('#ini-programa', 'p-refor'); pg90.wait_for_timeout(150)
+    ok(pg90.evaluate("[...document.querySelectorAll('#ini-programa-chips .chip')].map(c => c.getAttribute('aria-pressed'))") == ['true', 'false', 'false'],
+       'elegir en la lista marca su chip')
+    # Con el programa «Solicitud» desde un chip aparece su bloque, igual que desde la lista
+    pg90.evaluate("""() => { const s = document.getElementById('ini-programa'); s.value = 'p-solicitud'; s.dispatchEvent(new Event('change', { bubbles: true })); }""")
+    pg90.wait_for_timeout(200)
+    sol90 = pg90.evaluate("!!document.querySelector('#ini-caja-solicitud input, #ini-caja-solicitud select') && getComputedStyle(document.getElementById('ini-caja-solicitud')).display !== 'none'")
+    pg90.select_option('#ini-programa', 'p-refor'); pg90.wait_for_timeout(150)
+    ok(sol90, 'el bloque de la solicitud sigue apareciendo con su programa')
+    # Una institución con un solo programa no lleva chips
+    pg90.evaluate("SRP.sesion.cerrar(); SRP.app.mostrarAcceso()"); pg90.wait_for_timeout(300)
+    entrar_como(pg90, 'u-cabo-alc'); pg90.wait_for_timeout(900)
+    pg90.evaluate("SRP.activa.mostrarInicio(true)"); pg90.wait_for_timeout(500)
+    ok(pg90.is_hidden('#ini-programa-chips') and pg90.input_value('#ini-programa') == 'p-refor', 'con un solo programa posible no hay chips: ya viene elegido')
+    ok(pg90.evaluate("SRP.formulario.DURACION_CONFIRMACION") == 1000, 'la confirmación al centro dura un segundo')
+    ok('al cerrar se ajusta la cantidad prevista' in pg90.evaluate("document.querySelector('#dlg-completa .completa-nota').textContent"),
+       '«Jornada completa» dice que al cerrar se ajusta la cantidad prevista')
+    # El deslizador de opacidad: área de toque de 44 px y a todo lo ancho del panel de campo
+    pg90.evaluate("SRP.sesion.cerrar(); SRP.app.mostrarAcceso()"); pg90.wait_for_timeout(300)
+    entrar_como(pg90, 'u-cabo-1'); pg90.wait_for_timeout(900)
+    iniciar_jornada(pg90, 'Deslizador B189'); pg90.wait_for_timeout(800)
+    pg90.click('#mapa .pri-capas-boton'); pg90.wait_for_timeout(300)
+    d90 = pg90.evaluate("""() => { const r = document.querySelector('#mapa [data-pri=opacidad]'); const p = r.closest('.pri-capas-panel');
+      if (!r.getClientRects().length) return null; const a = r.getBoundingClientRect(), b = p.getBoundingClientRect();
+      return [Math.round(a.height), Math.round(a.width), Math.round(b.width)]; }""")
+    ok(d90 and d90[0] >= 44 and d90[1] >= d90[2] - 40, 'el deslizador de opacidad mide 44 px de alto y ocupa el ancho del panel: %s' % d90)
+    ok(err90 == [], 'sin errores de consola: %s' % err90[:2])
+    ctx90.close()
 
     b.close()
 

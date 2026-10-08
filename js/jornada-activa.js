@@ -60,6 +60,17 @@ SRP.activa = {
       this.el('ini-fecha').dispatchEvent(new Event('change', { bubbles: true }));
     });
     this.el('btn-ini-detectar').addEventListener('click', () => this.detectarUbicacion());
+    // Un chip de programa elige en la lista, y la lista avisa su cambio como si se hubiera elegido en ella
+    this.el('ini-programa-chips').addEventListener('click', (e) => {
+      const b = e.target.closest('.chip'); if (!b) return;
+      const sel = this.el('ini-programa');
+      sel.value = b.dataset.id;
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    this.el('ini-programa').addEventListener('change', () => {
+      this.marcarChipPrograma();
+      SRP.util.quitarErrorCampo(this.el('ini-programa'));
+    });
     this.el('btn-ini-coord-aplicar').addEventListener('click', () => this.aplicarCoordenadas());
     SRP.util.coordenadas.enlazar(this.el('ini-coord-lat'), this.el('ini-coord-lng'));   // D170
     this.pintarDetectar();
@@ -342,6 +353,30 @@ SRP.activa = {
     sel.innerHTML = SRP.util.opciones('Seleccione un programa', opciones.map(o => [o.id, o.nombre]));
     sel.value = opciones.length === 1 ? opciones[0].id : '';
     SRP.util.quitarErrorCampo(sel);
+    this.pintarProgramasFrecuentes(opciones);
+  },
+
+  /* Programas a un toque, sobre la lista: Reforestación Urbana siempre primero, por ser el más común, y
+     después los que más ha usado quien inicia la jornada; si ha usado pocos, completan los del catálogo
+     en su orden. Con un solo programa ya viene puesto: no hay chips. */
+  async pintarProgramasFrecuentes(opciones) {
+    const caja = this.el('ini-programa-chips');
+    if (opciones.length < 2) { caja.hidden = true; caja.innerHTML = ''; return; }
+    const u = SRP.sesion.usuario, cuenta = {};
+    (await SRP.almacen.todos('jornadas')).forEach(j => { if (u && j.cabo_id === u.id && j.programa_id) cuenta[j.programa_id] = (cuenta[j.programa_id] || 0) + 1; });
+    const fijo = opciones.find(p => p.clave === 'REFOR_URBANA');
+    const resto = opciones.filter(p => p !== fijo);
+    const usados = resto.filter(p => cuenta[p.id]).sort((a, b) => cuenta[b.id] - cuenta[a.id]);
+    const lista = (fijo ? [fijo] : []).concat(usados, resto.filter(p => !cuenta[p.id])).slice(0, 3);
+    const esc = SRP.util.escapar;
+    caja.innerHTML = lista.map(p => '<button type="button" class="chip" data-id="' + esc(p.id) + '" aria-pressed="false">' + esc(p.nombre) + '</button>').join('');
+    caja.hidden = false;
+    this.marcarChipPrograma();
+  },
+
+  marcarChipPrograma() {
+    const v = this.el('ini-programa').value;
+    this.el('ini-programa-chips').querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', String(c.dataset.id === v)));
   },
 
   /* ---------- Ubicación de la jornada (D122) ---------- */

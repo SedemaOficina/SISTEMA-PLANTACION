@@ -3012,3 +3012,31 @@
     escribir en un campo, el campo avisaba su cambio y la sección se volvía a pintar entre que el dedo bajaba
     y subía. Ahora se actualiza su contenido sin reemplazarla.
   · El diccionario en el navegador (`js/esquema.js`) lleva ahora, por campo, dónde se ve en pantalla.
+
+- **D263. El programa de la jornada, también a un toque (bloque 189).**
+  07-10-2026. Petición de Liber tras probar en el teléfono; aprobada sobre un ejemplo.
+  · En Registrar jornada, sobre la lista de programas, tres chips: «Reforestación Urbana» siempre primero,
+    por ser el programa más común, y después los que más ha usado quien inicia la jornada; si ha usado
+    pocos, completan los del catálogo en su orden. La lista completa sigue debajo.
+  · Tocar un chip elige ese programa en la lista; elegir en la lista marca su chip. Con un solo programa
+    posible (una alcaldía, una empresa privada) ya viene puesto y no hay chips.
+
+- **D264. La confirmación «Registro exitoso» dura un segundo (bloque 189).**
+  07-10-2026. Petición de Liber: tapaba la pantalla demasiado tiempo. Antes, segundo y medio.
+  · En «Jornada completa» la nota dice ahora «Si se plantaron más árboles, siga registrando; al cerrar se
+    ajusta la cantidad prevista.» Liber preguntó qué pasa con la cantidad prevista si se siguen
+    registrando árboles: ya estaba resuelto (al pasar de lo previsto se confirma una vez por jornada, y al
+    cerrar se ofrece actualizar la cantidad a lo registrado); faltaba decirlo en la ventana.
+
+- **D265. Mapa en campo: deslizador de opacidad más grande y simbología sólo cuando explica algo (bloque 189).**
+  07-10-2026. Petición de Liber tras probar en el teléfono.
+  · El deslizador nativo era delgado y su botón chico. Ahora la barra es gruesa, el botón de 28 px, el
+    área de toque de 44 px y, en el panel de campo, va en su propio renglón a todo lo ancho.
+  · La simbología bajo el mapa («Colonia de la jornada, de prioridad: …») repetía lo que ya dice la
+    jornada junto a su colonia. Sólo aparece cuando hay colonias de dos o más niveles en el mapa.
+
+- **D266. En «Datos de cierre de la jornada», el cabo no ve el campo Encargado (bloque 189).**
+  07-10-2026. Petición de Liber, para acortar la pantalla.
+  · El cabo es el encargado de su propio reporte: se guarda (`encargado_id`) y el reporte lo imprime,
+    pero no se le muestra. Quien ve a varias personas (coordinación, administración) sigue eligiéndolo
+    entre los cabos con registros ese día: para ellos es una elección, no un dato repetido.
