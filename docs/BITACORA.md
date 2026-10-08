@@ -3764,3 +3764,30 @@ reporte por secciones lee el PDF nuevo (orden, secciones y cifras), pero no se v
 No se probó en un teléfono real.
 
 **Siguiente paso.** Alcaldías y solicitantes que se activan cuando hagan falta (pedido de Liber, ya decidido).
+
+## Bloque 193 — Alcaldías y solicitantes que se activan cuando hagan falta (08-10-2026)
+
+Versión 0.9.52. Petición de Liber; eligió cómo dejar la versión de prueba y cuáles solicitantes traer activos.
+
+**Qué cambió (D273).** `js/datos-ficticios.js`: las alcaldías de arranque inactivas salvo Iztapalapa y Coyoacán;
+los solicitantes inactivos salvo Oficina de la Secretaría, Jefatura de Gobierno y SOBSE. `js/almacen.js`,
+`completarCatalogos()`: en un teléfono con datos, lo que nadie activó ni editó toma ese estado (una alcaldía con
+cuentas se queda activa). `js/config.js`: sello de datos nuevo. `js/catalogos.js`: las alcaldías se activan y
+desactivan desde su tuerca. `js/usuarios.js`: si la alcaldía no aparece al dar de alta una cuenta, se dice dónde
+activarla. `index.html`: la nota de Instituciones. `docs/FASE2-Y-TRASPASO.md`: el arranque de la versión real.
+Pruebas: las de Instituciones y Solicitantes, al día; una nueva activa y desactiva una alcaldía. Por el mismo
+cambio, la tarjeta de Catálogos cuenta 7 instituciones (las activas) y la plantilla de carga masiva ofrece sólo
+las activas, porque un renglón con una institución inactiva no se carga; sus pruebas, al día.
+
+**Pantalla: qué se agregó y qué se quitó.** Se agregó «Activar/Desactivar» en la tuerca de cada alcaldía y la ayuda
+en el alta de cuentas. En «Quién lo solicita» dejan de ofrecerse los solicitantes inactivos.
+
+**Verificación.** `pruebas/prueba.py` completa, sola, con `pruebas/servir.py`: 1,420 comprobaciones, 0 fallas, sin
+errores de consola. Antes, una corrida dio 4 fallas de pruebas que suponían todo activo (las tarjetas, la plantilla,
+«Quién lo solicita» y el aviso de «alcaldías fijas») y otra se detuvo porque un aviso flotante tapó el botón de la
+cuenta en la prueba de «Datos de prueba»; las dos se corrigieron en las pruebas. `pruebas/auditoria.py`: 143
+comprobaciones, 0 hallazgos; `pruebas/auditoria_css.py`: 0 hallazgos. No se probó en un teléfono real ni la
+actualización de un teléfono con datos de verdad: la regla de «lo que nadie tocó» se probó con la base de prueba.
+
+**Siguiente paso.** Lo que Liber apruebe de lo pendiente (D1, D2, D3; P6, P7; X1 a X4; «Quién registró» en la
+pantalla de Supervisión) y la fase 3 del servidor.

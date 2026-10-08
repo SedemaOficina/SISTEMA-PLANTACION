@@ -3124,3 +3124,18 @@
     («Alcaldía Iztapalapa», también en la pantalla); sin la palabra «etapa»; sin la tabla de trazabilidad
     en ceros.
   · **Tabla CSV.** La columna «Cabo» se llama «Quién registró».
+
+- **D273. Alcaldías y solicitantes que se activan cuando hagan falta (bloque 193).**
+  08-10-2026. Petición de Liber: tener todo dado de alta y activarlo cuando se pida usar el sistema.
+  · **Alcaldías (Instituciones).** Ya no son fijas en su estado: se activan y desactivan desde su tuerca. Siguen
+    sin agregarse, renombrarse ni eliminarse. Una alcaldía inactiva no deja entrar a sus cuentas y no se ofrece al
+    dar de alta una cuenta; el formulario dice dónde activarla.
+  · **De arranque**, en la versión real, las 16 inactivas. En la de prueba, Liber eligió dejar activas
+    Iztapalapa y Coyoacán, que tienen cuentas de prueba y datos de demostración.
+  · **Solicitantes.** De arranque, activos sólo la Oficina de la Secretaría, la Jefatura de Gobierno y SOBSE; los
+    demás (SEGIAGUA, Diputadas y diputados y las 16 alcaldías) dados de alta e inactivos. Un solicitante inactivo
+    no se ofrece en «Quién lo solicita», pero la jornada que ya lo tiene lo conserva.
+  · **En un teléfono con datos**, lo que nadie activó ni editó toma el estado de arranque (sello de datos nuevo);
+    una alcaldía con cuentas se queda activa, para no cortarles el acceso.
+  · La versión real todavía no siembra catálogos en el teléfono: los recibirá del servidor. La regla queda en
+    `docs/FASE2-Y-TRASPASO.md` (punto 30).

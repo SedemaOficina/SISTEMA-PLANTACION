@@ -547,7 +547,13 @@ SRP.almacen = {
       const n = SRP.DATOS_FICTICIOS.catalogos.find(x => x.id === c.id) || {};
       return Object.assign({}, c, { paleta_vegetal: c.paleta_vegetal || n.paleta_vegetal || '', fruto_comestible: c.fruto_comestible || n.fruto_comestible || 'Por determinar' });
     });
-    if (faltan.length || viejos.length || cuentas.length || renombrar.length || quitar.length || marcas.length) await this._tx(this.TABLAS_CATALOGO.concat('usuarios'), 'readwrite', (tx) => {
+    /* Alcaldías y solicitantes que de arranque vienen inactivos: los que nadie activó ni editó toman ese
+       estado. Una alcaldía con cuentas se queda activa: desactivarla les cortaría el acceso. */
+    const conCuentas = new Set((await this.todos('usuarios')).map(u => u.organizacion_id));
+    const apagar = todos.filter(c => c.activo && !c.fecha_ultima_edicion && !conCuentas.has(c.id) && (c.tipo === 'organizacion' || c.tipo === 'solicitante') &&
+      (SRP.DATOS_FICTICIOS.catalogos.find(x => x.id === c.id) || {}).activo === false);
+    if (faltan.length || viejos.length || cuentas.length || renombrar.length || quitar.length || marcas.length || apagar.length) await this._tx(this.TABLAS_CATALOGO.concat('usuarios'), 'readwrite', (tx) => {
+      apagar.forEach(c => this.ponerCatalogo(tx, Object.assign({}, c, { activo: false })));
       faltan.forEach(c => this.ponerCatalogo(tx, c));
       viejos.forEach(c => { if (!usados.has(c.id)) this.quitarCatalogo(tx, c); else if (c.activo) this.ponerCatalogo(tx, Object.assign({}, c, { activo: false })); });
       renombrar.forEach(([c, n]) => this.ponerCatalogo(tx, Object.assign({}, c, { nombre: n.nombre, clave: n.clave })));

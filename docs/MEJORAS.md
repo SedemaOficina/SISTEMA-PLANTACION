@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.9.51 (Bloque 192)»**.
+Al pie de cualquier pantalla: **«Versión 0.9.52 (Bloque 193)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -479,6 +479,7 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M481 | Liber | Chips de programa: Reforestación Urbana fijo y sólo los programas que la persona ya usó; sin relleno del catálogo | Baja | 0.9.51 (B192) | Nuevo registro › Registrar jornada | D271 |
 | M482 | Liber | Reporte de la jornada: croquis en la página 1, distribución bajo los totales, «nativas o endémicas», crédito una vez, textos libres con su momento | Media | 0.9.51 (B192) | Reporte en PDF | D272 |
 | M483 | Liber | Informe de Supervisión y tabla: plurales, «Quién registró», columnas, semanas, notas juntas, institución, «menos de 1 %», solicitante completo | Media | 0.9.51 (B192) | Informe en PDF y CSV | D272 |
+| M484 | Liber | Alcaldías que se activan y desactivan (de arranque inactivas) y solicitantes de arranque reducidos a tres activos | Media | 0.9.52 (B193) | Configuración › Catálogos | D273 |
 
 ## 2. Por hacer
 

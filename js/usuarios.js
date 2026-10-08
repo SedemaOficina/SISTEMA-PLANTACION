@@ -159,7 +159,10 @@ SRP.usuarios = {
     const orgs = SRP.ref.deTipo('organizacion', false).filter(o => o.tipo_organizacion === tipo && (o.activo || o.id === actual))
       .sort((a, b) => (SRP.ref.esSedema(b.id) - SRP.ref.esSedema(a.id)) || a.nombre.localeCompare(b.nombre, 'es'));
     const pares = orgs.map(o => [o.id, o.nombre + (o.activo ? '' : ' (inactiva)')]);
-    this.el('usr-organizacion-ayuda').hidden = !tipo || alcaldia;
+    // Sólo se ofrecen las activas: lo que falta se agrega o, si es una alcaldía, se activa en Catálogos
+    this.el('usr-organizacion-ayuda').hidden = !tipo;
+    this.el('usr-organizacion-ayuda').textContent = alcaldia ? '¿No aparece? Las alcaldías se activan en Catálogos › Instituciones.'
+      : '¿No está en la lista? Una institución nueva se agrega en Catálogos › Instituciones.';
     this.el('usr-organizacion').innerHTML = SRP.util.opciones(alcaldia ? 'Seleccione la alcaldía' : 'Seleccione la institución', pares);
     this.el('usr-organizacion').value = actual && orgs.some(o => o.id === actual) ? actual : '';
   },

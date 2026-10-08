@@ -2721,8 +2721,9 @@ with sync_playwright() as p:
         entrar_como(pg21, uid); pg21.wait_for_timeout(900)
     def estado21(): return pg21.inner_text('#demo-estado')
     def abrir_prueba21():
-        if pg21.is_visible('#aviso .aviso-cerrar'): pg21.click('#aviso .aviso-cerrar'); pg21.wait_for_timeout(200)
-        pg21.evaluate("SRP.app.menuCuenta(false)"); pg21.click('#btn-cuenta'); pg21.click('#btn-datos-prueba'); pg21.wait_for_timeout(400)
+        # Un aviso flotante puede aparecer en cualquier momento y tapar el botón de la cuenta
+        pg21.evaluate("document.getElementById('aviso').hidden = true; SRP.app.menuCuenta(false)")
+        pg21.click('#btn-cuenta'); pg21.click('#btn-datos-prueba'); pg21.wait_for_timeout(400)
     ok(not pg21.is_visible('#caja-demo'),'en el acceso no se ofrecen los datos de demostración')
     entrar21('u-admin-1')
     # Algo propio antes de cargar: una jornada con un árbol, que la carga y el retiro no tocan
@@ -3802,7 +3803,13 @@ with sync_playwright() as p:
     t43=[pg43.inner_text('#cat-cuenta'), pg43.inner_text('#btn-cat-agregar').strip(), pg43.is_visible('#cat-nota-org'), pg43.inner_text('#cat-tipos .chip[data-tipo=organizacion]'),
          fila('Secretaría del Medio Ambiente').locator('button[data-accion=estado]').count(), fila('Iztapalapa').locator('button[data-accion]').count(),
          fila('Green Cover').locator('button[data-accion=editar]').count(), fila('Green Cover').locator('button[data-accion=estado]').count(), fila('Green Cover').locator('button[data-accion=eliminar]').count()]
-    ok(t43==['21 instituciones','Agregar institución',True,'Instituciones',0,0,1,1,0],'la pestaña Instituciones agrega, renombra y desactiva; las alcaldías son fijas, SEDEMA no se desactiva y ninguna se elimina: %s' % t43)
+    ok(t43==['21 instituciones · 14 inactivas','Agregar institución',True,'Instituciones',0,1,1,1,0],
+       'la pestaña Instituciones agrega, renombra y desactiva; de las alcaldías sólo Iztapalapa y Coyoacán vienen activas y sólo se activan o desactivan; SEDEMA no se desactiva y ninguna se elimina: %s' % t43)
+    # Una alcaldía inactiva se activa desde su tuerca, y se vuelve a ofrecer al dar de alta una cuenta
+    accion(pg43, fila('Tlalpan'), 'estado'); pg43.wait_for_timeout(500)
+    tl43=[pg43.evaluate("SRP.ref.catalogoPorId['o-alc-09012'].activo"), fila('Tlalpan').locator('button[data-accion]').evaluate_all('l=>l.map(b=>b.dataset.accion)')]
+    accion(pg43, fila('Tlalpan'), 'estado'); pg43.wait_for_timeout(500)
+    ok(tl43==[True, ['estado']] and pg43.evaluate("SRP.ref.catalogoPorId['o-alc-09012'].activo") is False,'una alcaldía se activa y se desactiva desde su tuerca; no se renombra ni se elimina: %s' % tl43)
     fila('Iztapalapa').click(); pg43.wait_for_timeout(300)
     ok(pg43.is_hidden('#dlg-catalogo'),'tocar una alcaldía no abre la edición')
     fila('Green Cover').click(); pg43.wait_for_timeout(300)
@@ -3831,8 +3838,9 @@ with sync_playwright() as p:
        'el alta empieza por el tipo de institución; la institución y el área aparecen después, y el nombre va completo en un solo campo: %s' % a43)
     pg43.select_option('#usr-tipo-org','Alcaldía'); pg43.wait_for_timeout(200)
     al43=pg43.eval_on_selector_all('#usr-organizacion option','l=>l.map(o=>o.textContent)')
-    ok(len(al43)==17 and 'Iztapalapa' in al43 and not any(x.startswith('Alcaldía ') for x in al43) and pg43.inner_text('#etq-usr-organizacion').startswith('Alcaldía'),
-       'con «Alcaldía» salen las 16 sin repetir la palabra: %s…' % al43[:4])
+    ok(al43==['Seleccione la alcaldía','Coyoacán','Iztapalapa'] and pg43.inner_text('#etq-usr-organizacion').startswith('Alcaldía')
+       and 'se activan en Catálogos' in pg43.inner_text('#usr-organizacion-ayuda'),
+       'con «Alcaldía» salen sólo las activas, sin repetir la palabra, y se dice dónde activar las demás: %s' % al43)
     pg43.select_option('#usr-organizacion','o-alc-09007'); pg43.wait_for_timeout(200)
     b43=[pg43.is_hidden('#caja-usr-area'), pg43.eval_on_selector_all('#usr-perfil option','l=>l.map(o=>o.value).filter(Boolean)'), pg43.is_hidden('#caja-usr-coordinador')]
     ok(b43==[True,['CABO','COORDINADOR','DIRECTIVO'],False],'una cuenta de alcaldía es de cabo, de coordinación o directiva, sin área; el cabo lleva coordinador: %s' % b43)
@@ -4247,7 +4255,7 @@ with sync_playwright() as p:
     t50=pg50.eval_on_selector_all('.cfg-tarjeta','l=>l.map(t=>[t.dataset.ir, t.querySelector(".cfg-titulo").textContent, t.querySelector(".cfg-resumen").textContent])')
     ok('Configuración' not in m50 and 'Catálogos' not in m50 and 'Usuarios' not in m50,'el menú de la cuenta no trae Configuración, Catálogos ni Usuarios: se entra por la barra: %s' % m50)
     ok([x[:2] for x in t50]==[['usuarios','Usuarios'],['catalogos','Catálogos'],['parametros','Parámetros'],['cambios','Registro de cambios'],['carga','Carga masiva'],['acerca','Acerca del sistema']]
-       and t50[0][2]=='13 cuentas' and t50[1][2]=='5 programas · 21 instituciones · 79 especies' and t50[2][2]=='11 valores · sólo consulta' and t50[3][2]=='Sin cambios todavía' and t50[4][2]=='Plantilla, revisión y carga' and t50[5][2].startswith('Versión '),
+       and t50[0][2]=='13 cuentas' and t50[1][2]=='5 programas · 7 instituciones · 79 especies' and t50[2][2]=='11 valores · sólo consulta' and t50[3][2]=='Sin cambios todavía' and t50[4][2]=='Plantilla, revisión y carga' and t50[5][2].startswith('Versión '),
        'Configuración muestra seis tarjetas con su resumen al día: %s' % t50)
     # Cada tarjeta lleva a su apartado y éste vuelve a Configuración
     ida50=[]
@@ -4335,7 +4343,7 @@ with sync_playwright() as p:
     with pg51.expect_download() as d51: pg51.click('#btn-carga-plantilla')
     d51.value.save_as(sal('plantilla51.xlsx')); w51=_xl51.load_workbook(sal('plantilla51.xlsx'))
     ok(w51.sheetnames==['Árboles','Instrucciones','Especies','Programas','Instituciones'] and [c.value for c in w51['Árboles'][1]]==['Latitud','Longitud','Nombre científico','Fecha de plantación','Programa','Tipo de institución','Institución']
-       and w51['Árboles'].max_row==1 and w51['Especies'].max_row==80 and w51['Programas'].max_row==5 and w51['Instituciones'].max_row==22,
+       and w51['Árboles'].max_row==1 and w51['Especies'].max_row==80 and w51['Programas'].max_row==5 and w51['Instituciones'].max_row==8,
        'la plantilla trae la hoja para llenar, las instrucciones y las listas válidas de especies, programas e instituciones: %s' % w51.sheetnames)
     # Revisión de un Excel con renglones buenos y malos
     pg51.set_input_files('#carga-archivo', CAR51); pg51.wait_for_timeout(1500)
@@ -5203,7 +5211,7 @@ with sync_playwright() as p:
     pg62.fill('#ini-nombre','Solicitud B166'); pg62.fill('#ini-fecha', HOY); pg62.fill('#ini-meta','10')
     pg62.select_option('#ini-programa','p-solicitud'); pg62.wait_for_timeout(150)
     b62=pg62.evaluate("[document.getElementById('ini-solicitud').hidden, document.getElementById('caja-ini-solicitante-otro').hidden, [...document.getElementById('ini-solicitante').options].some(o => o.value === 's-sobse'), [...document.getElementById('ini-solicitante').options].pop().textContent, document.getElementById('ini-solicitud-descripcion').tagName, [...document.querySelectorAll('#ini-solicitante optgroup')].map(g => g.label), [...document.getElementById('ini-solicitante').options].some(o => /^o-/.test(o.value)), document.querySelector('label[for=ini-solicitud-descripcion]').textContent.replace('*','').trim()]")
-    ok(b62==[False, True, True, 'Otra instancia', 'TEXTAREA', ['Dependencia de gobierno','Alcaldía','Congreso'], False, 'Descripción de la solicitud'] and pg62.evaluate("document.querySelector('#ini-solicitante optgroup option').textContent") == 'Oficina de la Secretaría','con el programa «Solicitud» aparecen quién lo solicita (del catálogo, agrupados por tipo, y «Otra instancia») y la descripción, en varios renglones: %s' % b62)
+    ok(b62==[False, True, True, 'Otra instancia', 'TEXTAREA', ['Dependencia de gobierno'], False, 'Descripción de la solicitud'] and pg62.evaluate("document.querySelector('#ini-solicitante optgroup option').textContent") == 'Oficina de la Secretaría','con el programa «Solicitud» aparecen quién lo solicita (del catálogo, agrupados por tipo, y «Otra instancia») y la descripción, en varios renglones: %s' % b62)
     pg62.click('#btn-iniciar-jornada'); pg62.wait_for_timeout(400)
     e62=pg62.inner_text('#ini-errores') if pg62.is_visible('#ini-errores') else ''
     ok('Elija quién lo solicita' in e62 and pg62.is_visible('#panel-iniciar-jornada'),'sin solicitante la solicitud no se inicia: %s' % e62.replace(chr(10),' · '))
@@ -5548,14 +5556,14 @@ with sync_playwright() as p:
       return [t('cat-cuenta'), t('btn-cat-agregar'), !document.getElementById('cat-nota-sol').hidden, document.getElementById('cat-nota-org').hidden, t('cat-buscar-etiqueta'), t('cat-filtro-tipo-etiqueta'),
         idx.join() === idx.slice().sort((a, b) => a - b).join(), filas[0].querySelector('.c-titulo').textContent, [...document.querySelectorAll('#tabla-catalogo thead th')].map(th => th.textContent).includes('Clave'),
         [...document.getElementById('cat-filtro-tipo').options].map(o => o.value).filter(Boolean).join('|') === T.join('|')]; }""")
-    ok(t67 == ['21 solicitantes','Agregar solicitante',True,True,'Buscar solicitante','Tipo de solicitante',True,'Jefatura de Gobierno',False,True],
+    ok(t67 == ['21 solicitantes · 18 inactivos','Agregar solicitante',True,True,'Buscar solicitante','Tipo de solicitante',True,'Jefatura de Gobierno',False,True],
        'Catálogos › Solicitantes trae su nota, buscador y tipo, la lista agrupada por tipo y en orden alfabético, sin clave a la vista: %s' % t67)
     pg67.fill('#cat-buscar','izta'); pg67.wait_for_timeout(300)
     b67 = pg67.eval_on_selector_all('#tabla-catalogo tbody tr .c-titulo','l=>l.map(x=>x.innerText)')
     pg67.fill('#cat-buscar',''); pg67.select_option('#cat-filtro-tipo','Congreso'); pg67.wait_for_timeout(300)
     f67 = [pg67.eval_on_selector_all('#tabla-catalogo tbody tr .c-titulo','l=>l.map(x=>x.innerText)'), pg67.inner_text('#cat-cuenta')]
     pg67.select_option('#cat-filtro-tipo',''); pg67.wait_for_timeout(300)
-    ok(b67 == ['Iztacalco','Iztapalapa'] and f67 == [['Diputadas y diputados'],'1 de 21 solicitantes'],'los solicitantes se buscan por nombre y se filtran por tipo: %s · %s' % (b67, f67))
+    ok(b67 == ['Iztacalco','Iztapalapa'] and f67 == [['Diputadas y diputados'],'1 de 21 solicitantes · 18 inactivos'],'los solicitantes se buscan por nombre y se filtran por tipo: %s · %s' % (b67, f67))
     # Agregar: tipo de la lista y nombre único; la clave la pone el sistema
     pg67.click('#btn-cat-agregar'); pg67.wait_for_timeout(400)
     g67 = [pg67.inner_text('#dlg-catalogo-titulo'), pg67.is_hidden('#cat-clave'), pg67.is_hidden('#cat-tipo-org'), pg67.is_visible('#cat-tipo-sol'),
@@ -5568,15 +5576,20 @@ with sync_playwright() as p:
     n67 = pg67.evaluate("""async () => { const s = SRP.ref.deTipo('solicitante', false).find(x => x.nombre === 'Escuela Primaria Ejemplo'); if (!s) return null;
       const bt = (await SRP.almacen.todos('bitacora')).filter(x => x.entidad_id === s.id).map(x => x.accion + ' ' + x.entidad + ' ' + (x.detalle || ''));
       return { id: s.id, d: [s.tipo, s.clave, s.tipo_solicitante, s.activo, s.creado_por_id], bt, cuenta: document.getElementById('cat-cuenta').textContent }; }""")
-    ok(pg67.is_hidden('#dlg-catalogo') and n67 and n67['d'] == ['solicitante','ESCUELA_PRIMARIA_EJEMPLO','Escuela',True,'u-admin-1'] and n67['bt'] == ['CREADO catalogo solicitante ESCUELA_PRIMARIA_EJEMPLO'] and n67['cuenta'] == '22 solicitantes',
+    ok(pg67.is_hidden('#dlg-catalogo') and n67 and n67['d'] == ['solicitante','ESCUELA_PRIMARIA_EJEMPLO','Escuela',True,'u-admin-1'] and n67['bt'] == ['CREADO catalogo solicitante ESCUELA_PRIMARIA_EJEMPLO'] and n67['cuenta'] == '22 solicitantes · 18 inactivos',
        'el solicitante nuevo se guarda con su tipo, la clave que pone el sistema y su renglón de bitácora: %s' % (n67 and n67['d']))
     id67 = n67['id']
     # «Quién lo solicita» lo ofrece en su grupo; las instituciones ya no salen ahí
+    # De arranque sólo se ofrecen los activos: Oficina de la Secretaría, Jefatura de Gobierno y SOBSE (y el nuevo)
     q67 = pg67.evaluate("""id => { const s = document.createElement('select'); s.innerHTML = SRP.solicitud.opciones(null); const g = [...s.querySelectorAll('optgroup')];
-      const alc = [...g[1].children].map(o => o.textContent);
-      return [g.map(x => x.label), alc.length, alc.join() === alc.slice().sort((a, b) => a.localeCompare(b, 'es')).join(), alc[0], [...s.options].some(o => o.value === id), [...s.options].some(o => /^o-/.test(o.value)), s.options[0].value, [...s.options].pop().textContent]; }""", id67)
-    ok(q67 == [['Dependencia de gobierno','Alcaldía','Congreso','Escuela'], 16, True, 'Álvaro Obregón', True, False, '', 'Otra instancia'],
-       '«Quién lo solicita» agrupa por tipo, con las alcaldías en orden alfabético y sin la palabra, trae el solicitante nuevo y termina en «Otra instancia»; ninguna institución: %s' % q67[0])
+      return [g.map(x => x.label), [...g[0].children].map(o => o.textContent), [...s.options].some(o => o.value === id), [...s.options].some(o => /^o-/.test(o.value)), s.options[0].value, [...s.options].pop().textContent]; }""", id67)
+    ok(q67 == [['Dependencia de gobierno','Escuela'], ['Oficina de la Secretaría','Jefatura de Gobierno','Secretaría de Obras y Servicios (SOBSE)'], True, False, '', 'Otra instancia'],
+       '«Quién lo solicita» ofrece sólo los activos, agrupados por tipo, con el solicitante nuevo y «Otra instancia» al final; ninguna institución: %s' % q67[:2])
+    # Las alcaldías, al activarse, van en su grupo en orden alfabético y sin la palabra
+    qa67 = pg67.evaluate("""() => { const ids = ['s-alc-09007', 's-alc-09010']; ids.forEach(i => { SRP.ref.catalogoPorId[i].activo = true; });
+      const s = document.createElement('select'); s.innerHTML = SRP.solicitud.opciones(null); ids.forEach(i => { SRP.ref.catalogoPorId[i].activo = false; });
+      const g = [...s.querySelectorAll('optgroup')].find(x => x.label === 'Alcaldía'); return g ? [...g.children].map(o => o.textContent) : null; }""")
+    ok(qa67 == ['Álvaro Obregón','Iztapalapa'], 'las alcaldías activas van en su grupo, en orden alfabético y sin la palabra: %s' % qa67)
     # Editar: se corrigen nombre y tipo
     pg67.locator('#tabla-catalogo tbody tr', has_text='Escuela Primaria Ejemplo').locator('.c-titulo').click(); pg67.wait_for_timeout(400)
     h67 = [pg67.inner_text('#dlg-catalogo-titulo'), pg67.input_value('#cat-tipo-sol'), pg67.is_enabled('#cat-tipo-sol')]
@@ -5595,14 +5608,14 @@ with sync_playwright() as p:
     accion(pg67, fila67, 'estado'); pg67.wait_for_timeout(600)
     d67 = pg67.evaluate("""id => { const s = document.createElement('select'); s.innerHTML = SRP.solicitud.opciones(null); const t = document.createElement('select'); t.innerHTML = SRP.solicitud.opciones(id);
       return [SRP.ref.catalogoPorId[id].activo, [...s.options].some(o => o.value === id), [...t.options].some(o => o.value === id), document.getElementById('cat-cuenta').textContent]; }""", id67)
-    ok(u67 == ['Solicita: Comité vecinal Ejemplo', True] and ac67 == ['editar','estado'] and '1 jornada' in fila67.inner_text() and d67 == [False, False, True, '22 solicitantes · 1 inactivo'],
+    ok(u67 == ['Solicita: Comité vecinal Ejemplo', True] and ac67 == ['editar','estado'] and '1 jornada' in fila67.inner_text() and d67 == [False, False, True, '22 solicitantes · 19 inactivos'],
        'un solicitante con jornadas no ofrece «Eliminar»; desactivado ya no sale en «Quién lo solicita», salvo en la jornada que ya lo tiene: %s' % d67)
     # Sin uso sí se elimina
     pg67.evaluate("SRP.almacen._tx(['jornadas'], 'readwrite', tx => tx.objectStore('jornadas').delete('j-sol-67'))"); pg67.wait_for_timeout(200)
     pg67.click('#cat-tipos .chip[data-tipo=solicitante]'); pg67.wait_for_timeout(500)
     accion(pg67, pg67.locator('#tabla-catalogo tbody tr', has_text='Comité vecinal Ejemplo'), 'eliminar'); pg67.wait_for_timeout(500)
     confirmar_escribiendo(pg67, 'eliminar'); pg67.wait_for_timeout(700)
-    ok(pg67.evaluate("id => !SRP.ref.catalogoPorId[id]", id67) and pg67.inner_text('#cat-cuenta') == '21 solicitantes','un solicitante sin uso se elimina del catálogo')
+    ok(pg67.evaluate("id => !SRP.ref.catalogoPorId[id]", id67) and pg67.inner_text('#cat-cuenta') == '21 solicitantes · 18 inactivos','un solicitante sin uso se elimina del catálogo')
     # Al abrir: una jornada cuyo solicitante era una institución pasa a su solicitante o queda escrita
     pg67.evaluate("""() => SRP.almacen._tx(['jornadas'], 'readwrite', tx => { const j = (id, s) => tx.objectStore('jornadas').put({ id, nombre: 'Solicitud de antes', cabo_id: 'u-cabo-1', organizacion_id: 'o-sedema', programa_id: 'p-solicitud',
         fecha: '2026-09-01', estatus: 'cerrada', solicitante_id: s, solicitante_otro: '', solicitud_descripcion: 'x' });
@@ -5616,7 +5629,7 @@ with sync_playwright() as p:
       await SRP.almacen._tx(['solicitantes'], 'readwrite', tx => sol.forEach(id => tx.objectStore('solicitantes').delete(id))); localStorage.setItem(SRP.CONFIG.CLAVE_SELLO, '2026-09-30c-programas'); }""")
     pg67.reload(); pg67.wait_for_timeout(1800)
     c67 = pg67.evaluate("""async () => { await SRP.ref.recargar(); return [SRP.ref.deTipo('solicitante', true).length, (await SRP.almacen.todos('jornadas')).filter(j => /67$/.test(j.id)).length, localStorage.getItem(SRP.CONFIG.CLAVE_SELLO) === SRP.CONFIG.SELLO_DATOS]; }""")
-    ok(c67 == [21, 4, True],'un teléfono con capturas y el sello anterior recibe los solicitantes de arranque y conserva sus jornadas: %s' % c67)
+    ok(c67 == [3, 4, True],'un teléfono con capturas y el sello anterior recibe los solicitantes de arranque, con los tres activos de arranque, y conserva sus jornadas: %s' % c67)
     ok(not err67, 'sin errores en consola: %s' % err67[:2])
     ctx67.close()
 
@@ -6330,10 +6343,10 @@ with sync_playwright() as p:
     c80 = pg80.evaluate("[window.__avisos.length, document.getElementById('aviso').hidden, document.getElementById('dlg-catalogo').open, [...document.querySelectorAll('#tabla-catalogo tbody .c-titulo')].some(x => x.textContent === 'Área B169')]")
     ok(c80 == [0, True, False, True], 'guardar un valor de catálogo no pone aviso flotante: la lista ya lo muestra: %s' % c80)
     # Una regla que impide algo no es una falla: va en ámbar; lo que salió mal sigue en rojo
-    pg80.evaluate("(async () => { await SRP.catalogos.cambiarEstado(SRP.ref.catalogoPorId['o-alc-09007']); await SRP.usuarios.cambiarEstado(SRP.sesion.usuario); })()"); pg80.wait_for_timeout(500)
+    pg80.evaluate("(async () => { await SRP.catalogos.cambiarEstado(SRP.ref.catalogoPorId['o-sedema']); await SRP.usuarios.cambiarEstado(SRP.sesion.usuario); })()"); pg80.wait_for_timeout(500)
     pg80.evaluate("SRP.permisos.exigir('registro.crear')"); pg80.wait_for_timeout(200)
     t80 = pg80.evaluate("window.__avisos.map(a => [a[0].slice(0, 22), a[1]])")
-    ok(t80 == [['Las alcaldías son fija', 'aviso'], ['No puede desactivar su', 'aviso'], ['No tiene permiso para ', 'alerta']], 'las reglas («las alcaldías son fijas», «no puede desactivar su cuenta») van en ámbar; la falta de permiso, en rojo: %s' % t80)
+    ok(t80 == [['La Secretaría no se de', 'aviso'], ['No puede desactivar su', 'aviso'], ['No tiene permiso para ', 'alerta']], 'las reglas («la Secretaría no se desactiva», «no puede desactivar su cuenta») van en ámbar; la falta de permiso, en rojo: %s' % t80)
     # Un aviso «en curso» no se cierra solo; se quita al terminar o lo sustituye el resultado
     pg80.evaluate("SRP.util.anunciar('Generando reporte…', 'aviso', { fijo: true })"); pg80.wait_for_timeout(7200)
     f80 = pg80.evaluate("[document.getElementById('aviso').hidden, document.getElementById('aviso').dataset.fijo]")

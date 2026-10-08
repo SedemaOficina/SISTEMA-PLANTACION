@@ -15,7 +15,7 @@
    Aquí, y sólo aquí, la Administración agrega a solicitud dependencias de gobierno, empresas y
    organizaciones civiles, las renombra y las desactiva (desactivar corta el acceso de sus cuentas);
    no se eliminan. El tipo se elige al agregarla y no cambia; la clave la pone el sistema. Las 16
-   alcaldías son fijas y la Secretaría no se desactiva.
+   alcaldías ya vienen dadas de alta: sólo se activan y desactivan. La Secretaría no se desactiva.
 
    SOLICITANTES (tipo `solicitante`). Quién solicita una jornada; se eligen al iniciar o editar
    una jornada. Llevan nombre y tipo (los de SRP.ref.TIPOS_SOLICITANTE), que agrupa la lista; la
@@ -150,11 +150,11 @@ SRP.catalogos = {
     const filas = items.map(c => {
       const uso = SRP.ref.totalUsos(this.usos[c.id]);
       // Acciones en el menú de la tuerca (D94); Eliminar sólo si no tiene uso
-      // Instituciones: se renombran y se desactivan, no se eliminan; las alcaldías, ni eso. La
-      // Secretaría no se desactiva: sus cuentas administran el sistema
+      // Instituciones: se renombran y se desactivan, no se eliminan; las alcaldías sólo se activan y
+      // desactivan. La Secretaría no se desactiva: sus cuentas administran el sistema
       const fija = this.esFija(c);
       const items = fija ? [] : [{ accion: 'editar', texto: esOrg ? 'Renombrar' : 'Editar', icono: 'lapiz' }];
-      if (!fija && !SRP.ref.esSedema(c.id)) items.push({ accion: 'estado', texto: c.activo ? 'Desactivar' : 'Activar', icono: c.activo ? 'cerrar' : 'palomita' });
+      if (!SRP.ref.esSedema(c.id)) items.push({ accion: 'estado', texto: c.activo ? 'Desactivar' : 'Activar', icono: c.activo ? 'cerrar' : 'palomita' });
       if (uso === 0 && !esOrg) items.push({ accion: 'eliminar', texto: 'Eliminar', icono: 'basura', peligro: true });
       // data-etiqueta: en teléfono cada renglón se muestra como ficha con su etiqueta
       // Sólo se marca lo inactivo: casi todo está activo y marcarlo en cada renglón no distingue nada
@@ -359,7 +359,7 @@ SRP.catalogos = {
     // Institución: tipo al agregarla (nunca Alcaldía), nombre único entre todas; una alcaldía no se renombra
     if (this.tipo === 'organizacion') {
       if (!this.editando && !datos.tipo_organizacion) errores.push(['cat-tipo-org', 'Elija el tipo de institución.']);
-      else if (!this.editando && datos.tipo_organizacion === 'Alcaldía') errores.push(['cat-tipo-org', 'Las alcaldías son fijas: no se agregan.']);
+      else if (!this.editando && datos.tipo_organizacion === 'Alcaldía') errores.push(['cat-tipo-org', 'Las alcaldías ya están dadas de alta: actívela en la lista.']);
       if (!datos.nombre) errores.push(['cat-nombre', 'Escriba el nombre.']);
       else if (mismos.some(c => norm(c.nombre) === norm(datos.nombre))) errores.push(['cat-nombre', 'Ya existe una institución con ese nombre.']);
       if (this.editando && this.esFija(this.editando)) errores.push(['cat-nombre', 'Las alcaldías no se renombran.']);
@@ -457,7 +457,6 @@ SRP.catalogos = {
   async cambiarEstado(item, deshaciendo) {
     if (!SRP.permisos.exigir('catalogo.administrar')) return;
     if (SRP.ref.esSedema(item.id) && item.activo) { SRP.util.anunciar('La Secretaría no se desactiva: sus cuentas administran el sistema.', 'aviso'); return; }
-    if (this.esFija(item)) { SRP.util.anunciar('Las alcaldías son fijas: no se desactivan. Para cortar el acceso, desactive sus cuentas.', 'aviso'); return; }
     const activar = !item.activo;
     const nuevo = Object.assign({}, item, { activo: activar, editado_por_id: SRP.sesion.usuario.id, fecha_ultima_edicion: SRP.util.ahoraISO() });
     await SRP.almacen.guardarCatalogo(nuevo, SRP.bitacora.entrada(activar ? 'ACTIVADO' : 'DESACTIVADO', 'catalogo', item.id));

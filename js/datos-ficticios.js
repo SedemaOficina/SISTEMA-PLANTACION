@@ -39,10 +39,13 @@ window.SRP = window.SRP || {};
   const areasRetiradas = { 'a-div': 'a-dgsanpava' };
 
   /* INSTITUCIONES: a cuál pertenece cada cuenta y cuál ejecutó cada jornada. Cuatro tipos fijos. Las
-     16 alcaldías son fijas y se guardan sin la palabra «Alcaldía» (el tipo ya lo dice); su id lleva
-     el cvegeo INEGI. De Gobierno de la CDMX, empresas y organizaciones civiles vienen las primeras;
-     las demás se agregan al dar de alta una cuenta. */
-  const org = (id, clave, nombre, tipo) => cat('organizacion', id, clave, nombre, { tipo_organizacion: tipo });
+     16 alcaldías ya vienen dadas de alta, sin la palabra «Alcaldía» (el tipo ya lo dice), con el cvegeo
+     INEGI en su id, e inactivas: la Administración activa cada una cuando empiece a usar el sistema. En
+     la versión de prueba siguen activas Iztapalapa y Coyoacán, que tienen cuentas y datos de
+     demostración. De Gobierno de la CDMX, empresas y organizaciones civiles vienen las primeras; las
+     demás se agregan en Catálogos. */
+  const org = (id, clave, nombre, tipo, extra) => cat('organizacion', id, clave, nombre, Object.assign({ tipo_organizacion: tipo }, extra || {}));
+  const ALCALDIAS_ACTIVAS = ['09003', '09007'];
   const ALCALDIAS = [['09002', 'AZC', 'Azcapotzalco'], ['09003', 'COY', 'Coyoacán'], ['09004', 'CUJ', 'Cuajimalpa de Morelos'],
     ['09005', 'GAM', 'Gustavo A. Madero'], ['09006', 'IZC', 'Iztacalco'], ['09007', 'IZP', 'Iztapalapa'],
     ['09008', 'MAC', 'La Magdalena Contreras'], ['09009', 'MLP', 'Milpa Alta'], ['09010', 'AOB', 'Álvaro Obregón'],
@@ -54,12 +57,15 @@ window.SRP = window.SRP || {};
     org('o-sobse', 'SOBSE', 'Secretaría de Obras y Servicios (SOBSE)', 'Gobierno de la CDMX'),
     org('o-green-cover', 'GREEN_COVER', 'Green Cover', 'Empresa privada'),
     org('o-reforestamos', 'REFORESTAMOS_MEXICO', 'Reforestamos México, A.C.', 'Organización civil')
-  ].concat(ALCALDIAS.map(([cve, clave, nombre]) => org('o-alc-' + cve, 'ALC_' + clave, nombre, 'Alcaldía')));
+  ].concat(ALCALDIAS.map(([cve, clave, nombre]) => org('o-alc-' + cve, 'ALC_' + clave, nombre, 'Alcaldía', { activo: ALCALDIAS_ACTIVAS.includes(cve) })));
 
   /* SOLICITANTES: quién solicita una jornada. Catálogo aparte del de instituciones: quien pide no
      es quien planta ni necesita cuenta. Las alcaldías van sin la palabra «Alcaldía» (su tipo ya lo
      dice) y su id lleva el cvegeo INEGI. Los demás se agregan en Catálogos › Solicitantes. */
-  const sol = (id, clave, nombre, tipo) => cat('solicitante', id, clave, nombre, { tipo_solicitante: tipo });
+  /* De arranque sólo están activos los que piden con frecuencia: la Oficina de la Secretaría, la Jefatura
+     de Gobierno y SOBSE. Los demás ya están dados de alta, inactivos, y se activan cuando hagan falta. */
+  const SOLICITANTES_ACTIVOS = ['s-oficina-secretaria', 's-jefatura', 's-sobse'];
+  const sol = (id, clave, nombre, tipo) => cat('solicitante', id, clave, nombre, { tipo_solicitante: tipo, activo: SOLICITANTES_ACTIVOS.includes(id) });
   const solicitantes = ALCALDIAS.map(([cve, clave, nombre]) => sol('s-alc-' + cve, 'ALC_' + clave, nombre, 'Alcaldía')).concat([
     sol('s-oficina-secretaria', 'OFICINA_DE_LA_SECRETARIA', 'Oficina de la Secretaría', 'Dependencia de gobierno'),
     sol('s-sobse', 'SOBSE', 'Secretaría de Obras y Servicios (SOBSE)', 'Dependencia de gobierno'),
