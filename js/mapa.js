@@ -7,8 +7,8 @@ window.SRP = window.SRP || {};
 SRP.mapa = {
   mapa: null, marcador: null, lat: null, lng: null, alCambiar: null,
   origen: null, precision: null, margen: null,
-  vigilancia: null, finAfinado: null,   // lectura continua del GPS mientras se afina (D152)
-  avisos: {},                           // avisos que conviven bajo el mapa: imagen, territorio (D152)
+  vigilancia: null, finAfinado: null,   // lectura continua del GPS mientras se afina
+  avisos: {},                           // avisos que conviven bajo el mapa: imagen, territorio
 
   /* DE DÓNDE SALIÓ EL PUNTO.
      Cuando la fotografía es opcional —y en campo la mayoría de los registros no va a
@@ -34,7 +34,7 @@ SRP.mapa = {
   },
 
   // Icono propio e incrustado: el de Leaflet se descarga de un servidor externo. Sus colores los
-  // pone la hoja (.pin-gota, .pin-centro), no el código (M13)
+  // pone la hoja (.pin-gota, .pin-centro), no el código
   ICONO_SVG: '<svg width="24" height="32" viewBox="0 0 36 48" aria-hidden="true">' +
     '<path class="pin-gota" d="M18 2C9.2 2 2 9.1 2 17.9 2 30 18 46 18 46s16-16 16-28.1C34 9.1 26.8 2 18 2z" stroke-width="2.5"/>' +
     '<circle class="pin-centro" cx="18" cy="18" r="6.5" stroke-width="3"/></svg>',
@@ -52,7 +52,7 @@ SRP.mapa = {
     });
     this.ponerCredito(this.mapa);
     // Sólo la capa de imagen avisa si no carga: las de nombres son complemento, y su ausencia
-    // no impide colocar el punto. El aviso va en su propio renglón: ya no tapa la precisión (D152)
+    // no impide colocar el punto. El aviso va en su propio renglón, para no tapar la precisión
     let fallas = 0;
     this.ponerBase(this.mapa, { alCrearBase: (capaLeaflet) => {
       fallas = 0; this.aviso('imagen', null);
@@ -75,7 +75,7 @@ SRP.mapa = {
       intervenidas: () => { const j = SRP.activa && SRP.activa.jornada; return j ? SRP.prioritarias.coloniaDeJornada(Object.values(this.plantados).map(p => p.registro), j) : {}; } });
   },
 
-  /* CRÉDITO DEL MAPA (D108, D152), en todos los mapas: Leaflet, «Powered by Esri» —que Esri pide
+  /* CRÉDITO DEL MAPA, en todos los mapas: Leaflet, «Powered by Esri» —que Esri pide
      no ocultar— y el crédito de cada capa tal como lo declara su servicio. En teléfono va en un
      renglón que termina en «…»; al tocarlo se ve completo. */
   /* ---------- Mapa base: satélite o calles ---------- */
@@ -121,7 +121,7 @@ SRP.mapa = {
     });
   },
 
-  /* TOCAR EL MAPA (D152). A zoom 12 cada toque abarca unos 36 m: el árbol quedaba donde cayó el
+  /* TOCAR EL MAPA. A zoom 12 cada toque abarca unos 36 m: el árbol quedaba donde cayó el
      dedo, no donde está. Por debajo de ZOOM_TOQUE el primer toque acerca el mapa ahí mismo, y el
      punto se coloca con el siguiente. */
   alTocar(latlng) {
@@ -241,8 +241,8 @@ SRP.mapa = {
   /* EL BOTÓN CAMBIA CON EL ESTADO DEL PUNTO.
      Sin punto es la acción principal de la pantalla: azul relleno, icono de ubicación, y
      dice que va a registrarlo. Con punto puesto ya no se está capturando sino corrigiendo:
-     neutro (D166) y la palabra «Actualizar». El icono es el mismo de ubicación en los dos estados
-     (D48): el color no va solo porque el texto cambia (Norma 8.4). Así nadie vuelve a pulsarlo
+     neutro y la palabra «Actualizar». El icono es el mismo de ubicación en los dos estados:
+     el color no va solo porque el texto cambia (Norma 8.4). Así nadie vuelve a pulsarlo
      creyendo que aún no hay punto. */
   aparienciaBotonUbicacion() {
     return this.lat === null
@@ -258,9 +258,9 @@ SRP.mapa = {
     b.innerHTML = SRP.ICONOS.svg(a.icono, 'medio') + '<span>' + a.texto + '</span>';
   },
 
-  /* GUÍA DEL MAPA (D173). La prueba de campo notó que nadie sabía que el marcador se arrastra ni que las
-     coordenadas se actualizan solas. Sin punto, la línea bajo el mapa dice cómo ponerlo; con punto, una
-     segunda línea dice cómo ajustarlo. Una sola línea a la vez de ayuda, la que sirve en ese momento. */
+  /* GUÍA DEL MAPA. No es obvio que el marcador se arrastra ni que las coordenadas se actualizan
+     solas. Sin punto, la línea bajo el mapa dice cómo ponerlo; con punto, una segunda línea dice
+     cómo ajustarlo. Una sola línea de ayuda a la vez, la que sirve en ese momento. */
   GUIA_SIN_PUNTO: 'Toque el mapa donde está el árbol o use «Registrar ubicación del punto».',
   pintarGuia() {
     const g = document.getElementById('mapa-guia');
@@ -273,7 +273,7 @@ SRP.mapa = {
     p.dataset.tipo = tipo || 'normal';
   },
 
-  /* Nivel de la precisión del GPS (D96): buena, aceptable o baja, con su consejo. El color
+  /* Nivel de la precisión del GPS: buena, aceptable o baja, con su consejo. El color
      acompaña a la palabra; nunca la sustituye. */
   nivelPrecision(m) {
     const c = SRP.CONFIG.MAPA;
@@ -283,7 +283,7 @@ SRP.mapa = {
   },
 
   // La franja bajo el mapa con la insignia de precisión y el círculo del margen sobre el mapa.
-  // Mientras el GPS se sigue escuchando, lo dice en lugar del consejo (D152)
+  // Mientras el GPS se sigue escuchando, lo dice en lugar del consejo
   mostrarPrecision(m) {
     const n = this.nivelPrecision(m);
     const p = document.getElementById('mapa-estado');
@@ -298,8 +298,7 @@ SRP.mapa = {
   dibujarMargen(m, nivel) {
     if (this.margen) { this.margen.remove(); this.margen = null; }
     if (!this.mapa || m == null || this.lat == null) return;
-    // Los mismos tres colores de la insignia de precisión, leídos de la hoja (M13): antes el círculo
-    // usaba otro verde, otro ámbar y otro rojo
+    // Los mismos tres colores de la insignia de precisión, leídos de la hoja de estilos
     const color = SRP.util.color({ buena: 'exito', aceptable: 'editar', baja: 'error' }[nivel]);
     this.margen = L.circle([this.lat, this.lng], { radius: m, color, weight: 1.5, fillColor: color, fillOpacity: 0.12, interactive: false }).addTo(this.mapa);
   },
@@ -313,12 +312,12 @@ SRP.mapa = {
       this.estado('El punto está fuera de la Ciudad de México. Ubíquelo dentro del territorio.', 'alerta');
       return false;
     }
-    // Un punto puesto a mano (tocar, arrastrar, teclear) manda: el GPS deja de moverlo (D152)
+    // Un punto puesto a mano (tocar, arrastrar, teclear) manda: el GPS deja de moverlo
     if (op.origen !== 'gps') this.detenerAfinado();
     this.lat = Number(lat.toFixed(6));
     this.lng = Number(lng.toFixed(6));
     this.origen = op.origen || null;
-    SRP.util.quitarErrorCampo(document.getElementById('btn-ubicacion'));   // «Registre la ubicación» ya se cumplió (D140)
+    SRP.util.quitarErrorCampo(document.getElementById('btn-ubicacion'));   // «Registre la ubicación» ya se cumplió
     // Sólo el GPS tiene precisión. Al mover el punto a mano, el margen del aparato deja de
     // describirlo, así que se borra en vez de quedarse mintiendo sobre la coordenada nueva.
     this.precision = op.origen === 'gps' && op.precision != null ? Math.round(op.precision) : null;
@@ -346,10 +345,10 @@ SRP.mapa = {
     return true;
   },
 
-  /* EL GPS SE AFINA (D152). Antes se tomaba una sola lectura, a veces de ±80 m. Ahora el punto
-     aparece con la primera y el GPS se sigue escuchando hasta GPS_AFINAR_MS: cada lectura más
-     precisa mueve el punto; una peor no. Se detiene al llegar a «buena», al vencer el tiempo, al
-     revisar o guardar, o en cuanto la persona coloca el punto a mano. */
+  /* EL GPS SE AFINA. Una sola lectura puede ser de ±80 m. El punto aparece con la primera y el
+     GPS se sigue escuchando hasta GPS_AFINAR_MS: cada lectura más precisa mueve el punto; una peor
+     no. Se detiene al llegar a «buena», al vencer el tiempo, al revisar o guardar, o en cuanto la
+     persona coloca el punto a mano. */
   ubicar() {
     if (!navigator.geolocation) {
       this.estado('Este dispositivo no ofrece ubicación. Toque el mapa o capture coordenadas.', 'alerta');
@@ -416,7 +415,7 @@ SRP.mapa = {
       center: [lat, lng], zoom: c.ZOOM_PUNTO, zoomControl: false,
       dragging: false, scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false, keyboard: false
     });
-    this.ponerCredito(m);   // también en las fichas: la imagen es la misma (D152)
+    this.ponerCredito(m);   // también en las fichas: la imagen es la misma
     this.ponerBase(m);
     L.marker([lat, lng], { icon: this.icono, interactive: false }).addTo(m);
     setTimeout(() => m.invalidateSize(), 60);

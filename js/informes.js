@@ -1,8 +1,7 @@
-/* INFORMES POR PERIODO (D159): semanal, mensual, anual o de un rango, de toda la cuadrilla o de una
-   alcaldía, en PDF con membrete y en CSV para Excel. Los pidió el área de plantación. Salen del
-   mismo modelo que la pestaña Supervisión (SRP.indicadores, D157): lo que se imprime es lo que se
-   ve. El reporte de cada jornada (reportes.js) sigue igual: ése es el documento de campo; éste, el
-   de seguimiento. */
+/* INFORMES POR PERIODO: semanal, mensual, anual o de un rango, de toda la cuadrilla o de una
+   alcaldía, en PDF con membrete y en CSV para Excel. Salen del mismo modelo que la pestaña
+   Supervisión (SRP.indicadores): lo que se imprime es lo que se ve. El reporte de cada jornada
+   (reportes.js) es el documento de campo; éste, el de seguimiento. */
 window.SRP = window.SRP || {};
 
 SRP.informes = {
@@ -97,7 +96,7 @@ SRP.informes = {
       doc.setFont(F, 'normal');
     };
 
-    // Membrete, como el reporte de la jornada (D90, D137)
+    // Membrete, como el reporte de la jornada
     if (logo) { const h = 9.3; doc.addImage(R.logoJPEG(logo), 'JPEG', M, 14, h * logo.naturalWidth / logo.naturalHeight, h); }
     doc.setDrawColor(...C.guinda); doc.setLineWidth(0.4); doc.line(M, 30, ancho - M, 30);
     doc.setFont(F, 'bold'); doc.setFontSize(14); doc.setTextColor(...C.guinda);
@@ -235,5 +234,5 @@ SRP.informes = {
   }
 };
 
-// Si algo falla al armar un informe, se dice qué no se pudo hacer (D149)
+// Si algo falla al armar un informe, se dice qué no se pudo hacer
 SRP.util.proteger(SRP.informes, { pdf: 'generar el informe', csv: 'descargar la tabla' });

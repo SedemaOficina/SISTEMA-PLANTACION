@@ -20,7 +20,7 @@ SRP.util = {
   MESES_LARGOS: ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'],
   DIAS_SEMANA: ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'],
 
-  /* La fecha completa para un documento (D163): «Jueves 25 de septiembre de 2026». AAAA-MM-DD es
+  /* La fecha completa para un documento: «Jueves 25 de septiembre de 2026». AAAA-MM-DD es
      una fecha del calendario, sin hora: se lee al mediodía para que ningún huso la corra de día. */
   fechaLarga(t) {
     const [a, m, d] = String(t || '').split('-').map(Number);
@@ -54,7 +54,7 @@ SRP.util = {
   // La fecha de un árbol dentro de su jornada: nunca antes de que la jornada empiece
   fechaEnJornada(fecha, j) { return !j || !j.fecha ? fecha : (fecha && fecha >= j.fecha ? fecha : j.fecha); },
 
-  /* El atajo «Hoy» lleva la fecha con el año en dos cifras: 24-SEP-26 (D147). En el teléfono el
+  /* El atajo «Hoy» lleva la fecha con el año en dos cifras: 24-SEP-26. En el teléfono el
      chip mide un tercio de la pantalla y «24-SEP-2026» se partía en dos renglones. Un solo lugar
      para las tres vistas que lo usan (Registros, Jornadas y Fotografías). */
   pintarChipHoy(el) {
@@ -86,13 +86,13 @@ SRP.util = {
       .replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 30).replace(/_+$/, '');
   },
 
-  /* Una foto sólo se pinta si es una imagen en base64 (D150): un dato alterado no puede meter
+  /* Una foto sólo se pinta si es una imagen en base64: un dato alterado no puede meter
      código por el atributo src. Lo que no pase, se trata como registro sin foto. */
   fotoSegura(dato) {
     return typeof dato === 'string' && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/.test(dato) ? dato : '';
   },
 
-  /* COLORES DESDE LA HOJA (M13). El mapa, el croquis y el PDF no escriben colores: los toman de
+  /* COLORES DESDE LA HOJA. El mapa, el croquis y el PDF no escriben colores: los toman de
      :root. `color()` lee el valor vigente, con el modo sol si está puesto: para lo que se ve en
      pantalla. `colorBase()` lee la regla :root de la hoja, sin el modo sol: el croquis y el PDF
      salen iguales con el modo sol encendido o apagado. `rgb()` lo da como [r, g, b] para jsPDF. */
@@ -176,26 +176,26 @@ SRP.util = {
     return String(texto || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
   },
 
-  // El nombre de una cuenta, en un solo campo; las de antes lo tenían en tres y se leen igual
+  // El nombre de una cuenta, en un solo campo; las de versiones anteriores lo tenían en tres y se leen igual
   nombreCompleto(u) {
     if (!u) return '';
     return u.nombre_completo || [u.nombre, u.apellido_paterno, u.apellido_materno].filter(Boolean).join(' ');
   },
 
-  /* AVISO FLOTANTE (D101, tres tonos desde D136). Uno solo para toda la plataforma: icono, texto,
+  /* AVISO FLOTANTE, en tres tonos. Uno solo para toda la plataforma: icono, texto,
      × para cerrarlo y, cuando la acción se puede revertir, «Deshacer». Va arriba de la pantalla
      para no tapar las barras fijas del pie (Revisar y guardar, Guardar, Editar).
      Tonos: 'exito' (por omisión) confirma que algo se guardó o completó; 'aviso' informa un estado
      que no es error ni confirmación («Jornada activa: X», «reabierta para...»); 'alerta' señala un
      bloqueo o que algo salió mal. El color nunca va solo: también cambian el icono y el texto.
-     La duración crece con el largo del mensaje (D136): mínimo 4s + 1s por cada ~40 caracteres, y
+     La duración crece con el largo del mensaje: mínimo 4s + 1s por cada ~40 caracteres, y
      el temporizador se pausa mientras el puntero está encima para no cerrarlo a medio leer.
      `op`: { deshacer: función, textoAccion: 'Deshacer' } */
   anunciar(mensaje, tipo, op) {
     op = op || {};
     const zona = document.getElementById('aviso');
     // Un aviso de fondo (el envío automático) no tapa uno que ofrece «Deshacer»: se perdería la
-    // única salida de lo que se acaba de hacer (D151). Lo de fondo también se lee en la pastilla.
+    // única salida de lo que se acaba de hacer. Lo de fondo también se lee en la pastilla.
     if (op.secundario && !zona.hidden && zona.querySelector('.aviso-accion')) return;
     const tonos = { alerta: { icono: 'info', color: 'alerta' }, aviso: { icono: 'info', color: 'aviso' } };
     const t = tonos[tipo] || { icono: 'palomita', color: 'exito' };
@@ -235,14 +235,14 @@ SRP.util = {
     if (zona.dataset.fijo === 'true') { zona.hidden = true; zona.dataset.fijo = 'false'; }
   },
 
-  /* ERRORES AL PIE DEL CAMPO (D140). El resumen de arriba se queda (con enlaces, sirve al lector de
+  /* ERRORES AL PIE DEL CAMPO. El resumen de arriba se queda (con enlaces, sirve al lector de
      pantalla y en formularios largos), pero al llegar al campo, el campo mismo dice qué corregir:
      el mensaje va debajo, en rojo con su icono, y el control lo anuncia con aria-describedby.
      `errores`: [[id, texto]]; `ids`: los campos que el formulario valida, para limpiar los que ya
      quedaron bien. Un botón (la ubicación) recibe el mensaje pero no aria-invalid. */
-  /* ERRORES QUE NO SE QUEDAN MUDOS (D149, Norma 7.6). Un fallo al escribir en el teléfono se dice
-     con palabras: qué no se pudo hacer y, si fue el espacio, qué hacer. Antes 17 de 18 funciones que
-     escriben fallaban en silencio y «Guardar» decía «No se pudo guardar: .» con el espacio lleno. */
+  /* ERRORES QUE NO SE QUEDAN MUDOS (Norma 7.6). Un fallo al escribir en el teléfono se dice
+     con palabras: qué no se pudo hacer y, si fue el espacio, qué hacer. Nada que escribe falla en
+     silencio. */
   esFaltaDeEspacio(err) {
     const n = err && (err.name || (err.error && err.error.name));
     return n === 'QuotaExceededError' || n === 'NS_ERROR_DOM_QUOTA_REACHED' || (err && err.code === 22);
@@ -294,8 +294,8 @@ SRP.util = {
     window.addEventListener('error', (e) => { if (e.error) avisar(e.error); });
   },
 
-  /* RESUMEN DE ERRORES DE UN FORMULARIO (M15). Uno solo para los seis formularios: cada campo dice
-     su error debajo (D140) y arriba queda la lista con el mismo texto, escapado y con un enlace a
+  /* RESUMEN DE ERRORES DE UN FORMULARIO. Uno solo para los seis formularios: cada campo dice
+     su error debajo y arriba queda la lista con el mismo texto, escapado y con un enlace a
      su campo; el foco va a la caja, para que el lector de pantalla la lea completa. Devuelve si
      hubo errores. `ids`: los campos del formulario, para limpiar los errores de la vez anterior. */
   resumenErrores(caja, errores, ids) {
@@ -310,7 +310,7 @@ SRP.util = {
     return true;
   },
 
-  /* BOTÓN OCUPADO (M15, D136). Mientras dura una operación el botón dice qué está haciendo, queda
+  /* BOTÓN OCUPADO. Mientras dura una operación el botón dice qué está haciendo, queda
      deshabilitado y con aria-busy, para que no parezca que no respondió ni se toque dos veces.
      Devuelve la función que lo deja como estaba; llamarla dos veces no hace daño. */
   ocupado(boton, texto, icono, tam) {
@@ -325,7 +325,7 @@ SRP.util = {
     };
   },
 
-  /* OPCIONES DE UNA LISTA (M15). `pares`: [[valor, texto], …], escapados; `vacio`: el texto de la
+  /* OPCIONES DE UNA LISTA. `pares`: [[valor, texto], …], escapados; `vacio`: el texto de la
      opción sin valor («Todos», «Seleccione…»), o nada si no la lleva. */
   opciones(vacio, pares) {
     const esc = t => this.escapar(t);
@@ -348,7 +348,7 @@ SRP.util = {
     return [...new Set(ids)].filter(Boolean).map(id => [id, SRP.ref.nombreUsuario(id) + perfil(id)]).sort((a, b) => a[1].localeCompare(b[1], 'es'));
   },
 
-  /* ATAJOS DE FECHA (M15). La misma barra —Todos · Hoy · Un día · Un periodo— en Registros,
+  /* ATAJOS DE FECHA. La misma barra —Todos · Hoy · Un día · Un periodo— en Registros,
      Jornadas y Fotografías. Cada vista decide qué filtra; aquí se atiende el toque, se
      marca un solo atajo y se abren o cierran los paneles de «Un día» y «Un periodo» con su
      aria-expanded. `paneles`: { dia: [elemento, abierto], periodo: [elemento, abierto] }. */
@@ -366,7 +366,7 @@ SRP.util = {
     }
   },
 
-  /* COORDENADAS A MANO (D170). El teclado numérico del iPhone (y de algunos Android) no trae el
+  /* COORDENADAS A MANO. El teclado numérico del iPhone (y de algunos Android) no trae el
      signo menos, y en la Ciudad de México toda longitud es negativa (oeste): el campo muestra un «−»
      fijo, se escribe sólo el número y la longitud se guarda negativa con o sin signo. Se acepta coma
      decimal y el signo tipográfico «−». Pegar el par completo que da Google Maps («19.4326, -99.1332»)
@@ -436,7 +436,7 @@ SRP.util = {
     if (resto.length) c.setAttribute('aria-describedby', resto.join(' ')); else c.removeAttribute('aria-describedby');
   },
 
-  /* CONTADOR DE CARACTERES (D140). Los campos con límite (nombre 120, ubicación 200, comentarios
+  /* CONTADOR DE CARACTERES. Los campos con límite (nombre 120, ubicación 200, comentarios
      500) se cortaban en silencio al llegar al tope. El contador aparece al pasar del 80 % y, al
      llegar al límite, lo dice en letras y al lector de pantalla, una vez. */
   iniciarContadores() {
@@ -467,7 +467,7 @@ SRP.util = {
     (raiz || document).querySelectorAll('input[maxlength], textarea[maxlength]').forEach(c => this.pintarContador(c));
   },
 
-  /* ESTADO VACÍO (D141). El mismo patrón en los listados (Registros, Jornadas,
+  /* ESTADO VACÍO. El mismo patrón en los listados (Registros, Jornadas,
      Fotografías): icono, una frase en negritas, una explicación y la acción que saca del vacío.
      Un vacío sin icono ni acción parece error. Los botones llevan data-vacio con su acción; cada
      vista atiende el clic. `botones`: [{ accion, texto, clase, icono }] */
@@ -578,14 +578,14 @@ SRP.util = {
   },
 
   /* Sólo para el lector de pantalla, sin letrero. Para cambios que en pantalla ya se ven solos
-     —la fotografía aparece o desaparece— y donde el letrero encima estorbaba (bloque 21). */
+     —la fotografía aparece o desaparece— y donde el letrero encima estorbaba. */
   anunciarSilencioso(mensaje) {
     const zona = document.getElementById('aviso-lector');
     zona.textContent = '';
     setTimeout(() => { zona.textContent = mensaje; }, 50);   // el mismo texto dos veces seguidas no se anuncia
   },
 
-  /* TABLAS QUE SE ORDENAN (D100). Cada encabezado, salvo «Acciones», se vuelve un botón: un toque
+  /* TABLAS QUE SE ORDENAN. Cada encabezado, salvo «Acciones», se vuelve un botón: un toque
      ordena de A a Z, otro de Z a A. aria-sort dice al lector de pantalla cómo está ordenada. El
      orden elegido se recuerda por tabla y se vuelve a aplicar cuando la tabla se repinta. */
   _orden: {},

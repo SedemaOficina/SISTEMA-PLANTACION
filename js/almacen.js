@@ -1,13 +1,11 @@
-/* ALMACÉN LOCAL (IndexedDB). Única fuente de datos de la Fase 1.
+/* ALMACÉN LOCAL (IndexedDB). Fuente de los datos en el teléfono.
    Migraciones numeradas en MIGRACIONES: nunca se edita una ya publicada; se agrega la siguiente. */
 window.SRP = window.SRP || {};
 
 SRP.almacen = {
   db: null,
 
-  /* LO CAPTURADO NO SE BORRA SOLO (D149). Antes, un sello de datos nuevo, un sello perdido o una
-     base de otra versión vaciaban el teléfono sin preguntar, aunque hubiera árboles sin respaldo:
-     en la Etapa 1 esa es la única copia. Ahora:
+  /* LO CAPTURADO NO SE BORRA SOLO. En el teléfono puede estar la única copia de lo capturado:
        · El sello (SELLO_DATOS) sólo rehace los datos de ejemplo —cuentas y catálogos— cuando no
          hay nada capturado (árboles, jornadas o bitácora). Si lo hay, se conserva todo.
        · Una base a la que le falta un almacén, o que viene de una versión posterior, se rehace
@@ -72,7 +70,7 @@ SRP.almacen = {
       const ci = db.createObjectStore('cierres', { keyPath: 'id' });
       ci.createIndex('fecha', 'fecha');
     },
-    /* JORNADAS (D119). La jornada se declara antes de registrar y guarda también lo que antes
+    /* JORNADAS. La jornada se declara antes de registrar y guarda también lo que antes
        vivía en «cierres» (conteo, puntos revisados, datos de cierre del reporte). La tabla de
        cierres se retira; los datos de prueba se rehacen al cambiar el sello. */
     2(db) {
@@ -82,7 +80,7 @@ SRP.almacen = {
       jo.createIndex('estatus', 'estatus');
       if (db.objectStoreNames.contains('cierres')) db.deleteObjectStore('cierres');
     },
-    /* ÍNDICES AL USO (D153). Cada jornada recorría todos los árboles para encontrar los suyos: se
+    /* ÍNDICES AL USO. Cada jornada recorría todos los árboles para encontrar los suyos: se
        agrega `jornada_id`. Se retiran cinco índices que nada consulta —cabo y fecha de los árboles,
        tipo de catálogo, fecha y estatus de las jornadas—. Crear o quitar un índice no toca los datos. */
     3(db, tx) {
@@ -91,10 +89,10 @@ SRP.almacen = {
       [['plantaciones', 'cabo_id'], ['plantaciones', 'fecha_plantacion'], ['catalogos', 'tipo'], ['jornadas', 'fecha'], ['jornadas', 'estatus']]
         .forEach(([almacen, indice]) => { const s = tx.objectStore(almacen); if (s.indexNames.contains(indice)) s.deleteIndex(indice); });
     },
-    /* VEHÍCULO SÓLO DEL CATÁLOGO (D174). «Otro vehículo» se retiró. Una jornada con placa, modelo o tipo
-       escritos a mano (o el `vehiculo` de antes del bloque 20) y sin vehículo del catálogo: si su placa
-       está en el catálogo, se enlaza con él y toma sus tres datos; si no, esos datos se quitan. No se
-       borra ninguna jornada ni ningún otro dato. */
+    /* VEHÍCULO SÓLO DEL CATÁLOGO. Una jornada con placa, modelo o tipo escritos a mano (o con el
+       campo `vehiculo` de versiones anteriores) y sin vehículo del catálogo: si su placa está en el
+       catálogo, se enlaza con él y toma sus tres datos; si no, esos datos se quitan. No se borra
+       ninguna jornada ni ningún otro dato. */
     4(db, tx) {
       const clave = p => String(p || '').toUpperCase().replace(/[^A-Z0-9]/g, '');   // como SRP.catalogos.clavePlaca
       const pet = tx.objectStore('catalogos').getAll();
@@ -156,8 +154,8 @@ SRP.almacen = {
       });
     },
     /* SIN MARCA DE PRUEBA NI CAMPOS SIN USO. La marca de dato de prueba sale de las cinco tablas: la
-       versión de prueba y la real ya usan bases distintas. De los árboles salen el punto del primer
-       guardado (la bitácora dice ahora el punto anterior cuando se mueve), los datos que congela el
+       versión de prueba y la real usan bases distintas. De los árboles salen el punto del primer
+       guardado (la bitácora guarda el punto anterior cuando se mueve), los datos que congela el
        servidor al asignar el folio, el nombre y el peso de la foto (el peso se calcula de la propia
        foto) y el estatus de la especie (lo dice «Otra especie»). No se borra ningún registro. */
     6(db, tx) {
@@ -236,20 +234,20 @@ SRP.almacen = {
 
   /* CUENTAS, JORNADAS, INSTITUCIONES Y PROGRAMAS AL DÍA. Corre al abrir, ya con la base al día; sólo escribe lo
      que falte o sobre, así que repetirla no cambia nada. No borra ningún registro.
-     - Cuenta o jornada sin institución: antes de las instituciones todo era de la Secretaría.
+     - Cuenta o jornada sin institución: es de la Secretaría.
      - Jornada cuyo solicitante es una institución: quien solicita una jornada sale del
        catálogo de solicitantes. Pasa al solicitante que corresponde a esa institución (una
        alcaldía, SOBSE) o, si no lo hay, queda escrito con su nombre como «Otra instancia».
      - Nombre de la cuenta en tres campos: se une en `nombre_completo`.
      - Cuenta con un solo coordinador (`coordinador_id`): pasa a la lista `coordinadores_ids`, con ese
        coordinador o vacía.
-     - Institución con un tipo que ya no existe, contrato o vigencia, o alcaldía con la palabra
-       «Alcaldía» en el nombre: se ajusta a los cuatro tipos fijos y se quita lo que ya no se usa.
+     - Institución con un tipo que no es de los cuatro, contrato o vigencia, o alcaldía con la palabra
+       «Alcaldía» en el nombre: se ajusta a los cuatro tipos y se quita lo que no se usa.
      - Programa sin `tipos_organizacion`: el de arranque toma los suyos; el que agregó la
-       Administración queda sólo para la Secretaría, como estaba.
+       Administración queda sólo para la Secretaría.
      No es una migración numerada porque la estructura no cambia, y porque una migración recorre sus
-     renglones a la par de las anteriores en la misma actualización y podía pisar lo que éstas
-     acababan de cambiar. */
+     renglones a la par de las anteriores en la misma actualización y podría pisar lo que éstas
+     acaban de cambiar. */
   TIPOS_ANTERIORES: { 'Dependencia de gobierno': 'Gobierno de la CDMX', 'Organismo público': 'Gobierno de la CDMX' },
   async normalizar() {
     const [cuentas, jornadas, catalogos] = await Promise.all([this.todos('usuarios'), this.todos('jornadas'), this.catalogos()]);
@@ -388,7 +386,7 @@ SRP.almacen = {
     });
   },
 
-  /* Rehace la base sin perder lo que tenía (D149): la copia vive en memoria el instante entre el
+  /* Rehace la base sin perder lo que tenía: la copia vive en memoria el instante entre el
      borrado y la recreación, y cada renglón vuelve al almacén del mismo nombre si existe. */
   async rehacerConservando() {
     const copia = await this.leerTodo();
@@ -466,7 +464,7 @@ SRP.almacen = {
     });
   },
 
-  /* Varios cambios que van juntos, en una sola transacción: entran todos o ninguno (D151). Así una
+  /* Varios cambios que van juntos, en una sola transacción: entran todos o ninguno. Así una
      jornada y sus árboles no pueden quedar a medias si el teléfono se queda sin espacio o se cierra
      la página a la mitad. `cambios`: [{ almacen, objeto, bitacora }]. */
   guardarJuntos(cambios) {
@@ -500,7 +498,7 @@ SRP.almacen = {
 
   /* Datos de ejemplo al arrancar (sólo con ES_FICTICIO). Devuelve qué hizo, para avisarlo:
      'sembrado' (sin cuentas), 'igual', 'resembrado' (sello nuevo y nada capturado) o
-     'conservado' (sello nuevo o perdido, pero hay capturas: no se toca nada, D149). */
+     'conservado' (sello nuevo o perdido, pero hay capturas: no se toca nada). */
   async sembrarSiVacio() {
     const cuentas = await this.todos('usuarios');
     if (!cuentas.length) { await this.sembrar(); return 'sembrado'; }   // agrega cuentas y catálogos; no toca lo demás
@@ -513,7 +511,7 @@ SRP.almacen = {
     return 'resembrado';
   },
 
-  /* Un catálogo nuevo de una versión (los vehículos, D162) llega también al teléfono que ya tiene
+  /* Un catálogo nuevo de una versión (los vehículos) llega también al teléfono que ya tiene
      capturas: se agrega lo que falte, por id, sin tocar lo que ya está ni lo que se editó. Corre una
      sola vez por sello; lo que la administración quite después no vuelve. */
   async completarCatalogos() {
@@ -597,7 +595,7 @@ SRP.almacen = {
     await this.sembrar();
   },
 
-  /* ALMACENAMIENTO PROTEGIDO (D149). Sin protección, el navegador puede desalojar lo guardado
+  /* ALMACENAMIENTO PROTEGIDO. Sin protección, el navegador puede desalojar lo guardado
      cuando le falta espacio (y Safari, tras 7 días sin abrir un sitio que no está en la pantalla
      de inicio). Se pide la protección al guardar un árbol, que es cuando ya hay algo que perder,
      y se vigila el espacio: al 80 % se avisa una vez por sesión. */

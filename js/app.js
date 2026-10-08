@@ -5,7 +5,7 @@ SRP.app = {
   vista: null,
   el(id) { return document.getElementById(id); },
 
-  /* ICONOS DEL SET CDMX EN ACCESO, PESTAÑAS Y ACCIONES (D89). Se ponen aquí, una vez, para que
+  /* ICONOS DEL SET CDMX EN ACCESO, PESTAÑAS Y ACCIONES. Se ponen aquí, una vez, para que
      el HTML no cargue con trazados y el icono viva en un solo lugar (js/iconos.js). */
   ponerIconos() {
     const I = SRP.ICONOS;
@@ -19,20 +19,20 @@ SRP.app = {
     I.poner(this.el('btn-subir'), 'subir', 'grande');
     I.poner(this.el('btn-demo-cargar'), 'regenerar', 'medio');
     I.poner(this.el('btn-demo-quitar'), 'basura', 'medio');
-    // Menú de la cuenta con icono en cada opción (D114): el sol y la puerta por petición del área, y el resto por consistencia
-    // Cancelar lleva tache y va en rojo de contorno (D116)
+    // Menú de la cuenta con icono en cada opción: el sol y la puerta por petición del área, y el resto por consistencia
+    // Cancelar lleva tache y va en rojo de contorno
     I.poner(this.el('btn-cancelar-edicion'), 'cerrar', 'medio');
     I.poner(this.el('btn-confirmar-no'), 'cerrar', 'medio');
     [['btn-contraste', 'sol'], ['btn-sin-senal', 'sinSenal'], ['btn-datos-prueba', 'regenerar'], ['btn-cambiar-perfil', 'usuario'], ['btn-cerrar-sesion', 'salir']]
       .forEach(([id, icono]) => I.poner(this.el(id), icono, 'medio'));
-    // Los buscadores llevan la lupa dentro del campo, desde la hoja de estilos (D95)
+    // Los buscadores llevan la lupa dentro del campo, desde la hoja de estilos
     // Avisos informativos: el icono va al frente del texto
     document.querySelectorAll('.aviso-simulado').forEach(a => a.insertAdjacentHTML('afterbegin', I.svg('info', 'medio')));
   },
 
   async iniciar() {
     if (!this.comprobarVersionCompleta()) return;
-    SRP.util.redDeSeguridad();     // ningún fallo se queda mudo (D149)
+    SRP.util.redDeSeguridad();     // ningún fallo se queda mudo
     this.el('version').textContent = SRP.CONFIG.VERSION + ' (' + SRP.CONFIG.ETAPA + ')';
     this.el('banda-ficticio').hidden = !SRP.CONFIG.ES_FICTICIO;
     try {
@@ -41,7 +41,7 @@ SRP.app = {
       if (SRP.CONFIG.ES_FICTICIO) arranque = await SRP.almacen.sembrarSiVacio();
       SRP.almacen.arranque = arranque;   // queda a la vista para diagnosticar y para las pruebas
       await SRP.ref.recargar();
-      // Sólo se rehacen los datos de ejemplo cuando no hay nada capturado; si lo hay, se conserva (D149)
+      // Sólo se rehacen los datos de ejemplo cuando no hay nada capturado; si lo hay, se conserva
       if (arranque === 'resembrado') setTimeout(() => SRP.util.anunciar('Se actualizaron las cuentas y los catálogos de prueba a la versión nueva.', 'aviso'), 400);
       if (arranque === 'reiniciado') setTimeout(() => SRP.util.anunciar('Se reiniciaron los datos de prueba: una cuenta por tipo y los catálogos al día. Lo capturado antes, que era de prueba, se quitó.', 'aviso'), 400);
       const c = SRP.almacen.conservados;
@@ -55,7 +55,7 @@ SRP.app = {
       return;
     }
     SRP.formulario.iniciar();
-    if (SRP.espejo) SRP.espejo.iniciar();   // sólo en la versión de prueba; se retira al cerrar la Etapa 1 (D153)
+    if (SRP.espejo) SRP.espejo.iniciar();   // sólo en la versión de prueba
     SRP.registros.iniciar();
     SRP.reportes.iniciar();
     SRP.catalogos.iniciar();
@@ -67,15 +67,15 @@ SRP.app = {
     SRP.conexion.iniciar();
     SRP.jornadas.iniciar();
     SRP.galeria.iniciar();
-    SRP.supervision.iniciar();   // Supervisión y Mi avance (D158)
-    SRP.demo.iniciar();          // datos de demostración, al pie: sólo con datos de prueba (D160)
-    SRP.activa.iniciar();          // la jornada se declara antes de registrar (D119)
-    // Contadores de caracteres, y el error de un campo se va en cuanto se corrige (D140)
+    SRP.supervision.iniciar();   // Supervisión y Mi avance
+    SRP.demo.iniciar();          // datos de demostración, al pie: sólo con datos de prueba
+    SRP.activa.iniciar();          // la jornada se declara antes de registrar
+    // Contadores de caracteres, y el error de un campo se va en cuanto se corrige
     SRP.util.iniciarContadores();
     const alCorregir = (e) => { const c = e.target; if (c && c.id && document.getElementById(c.id + '-error')) SRP.util.quitarErrorCampo(c); };
     document.addEventListener('input', alCorregir);
     document.addEventListener('change', alCorregir);
-    SRP.envio.iniciar();           // envío simulado: sólo con datos de prueba (D111)
+    SRP.envio.iniciar();           // envío simulado: sólo con datos de prueba
     this.iniciarAcceso();
     this.iniciarDialogos();
     this.iniciarCamposFecha();
@@ -88,9 +88,9 @@ SRP.app = {
 
     this.el('navegacion').addEventListener('click', async (e) => {
       const b = e.target.closest('.pestana'); if (!b) return;
-      // Tocar la pestaña de la sección en que se está sube a su inicio, como en las apps del teléfono (D154)
+      // Tocar la pestaña de la sección en que se está sube a su inicio, como en las apps del teléfono
       if (b.dataset.vista === this.vista) { this.alInicio(true); return; }
-      // Un árbol a medias no se pierde en silencio (D133)
+      // Un árbol a medias no se pierde en silencio
       if (this.vista === 'registrar' && b.dataset.vista !== 'registrar' && SRP.formulario.aMedias()) {
         const ok = await this.confirmar({ titulo: 'Descartar el árbol', pregunta: 'El árbol que está capturando no se ha guardado. ¿Descartarlo y salir?',
           puntosTitulo: 'Se pierde lo capturado:', puntos: SRP.formulario.resumenAMedias(), irreversible: true, boton: 'Descartar el árbol', icono: 'basura' });
@@ -133,17 +133,17 @@ SRP.app = {
       ['dlg-cierre', 'el formulario del reporte'],
       ['franja-guardado', 'la franja de registro guardado'],
       ['revision-lista', 'la ficha de revisión']
-      // El espejo de campos no se exige: se retira al cerrar la Etapa 1 y la app debe abrir sin él (D153)
+      // El espejo de campos no se exige: es sólo de la versión de prueba y la app debe abrir sin él
     ].filter(([id]) => !document.getElementById(id)).map(([, que]) => que);
     const modulos = ['util', 'ICONOS', 'permisos', 'sesion', 'almacen', 'ref', 'formulario', 'registros', 'catalogos', 'usuarios', 'configuracion', 'excel', 'carga', 'ESQUEMA', 'derivacion', 'indicadores', 'supervision', 'informes', 'demo']
       .filter(m => !SRP[m]);
-    /* Las tres capas y la biblioteca del cruce también se exigen (D152): sin ellas la app abría y
+    /* Las tres capas y la biblioteca del cruce también se exigen: sin ellas la app abría y
        los árboles se guardaban sin alcaldía ni colonia, y con folio EXT-000. La de colonias pesa
        3 MB y es la que más se corta en una primera carga con mala señal. */
     const sinCapas = !modulos.length && !SRP.derivacion.capasCompletas();
     if (!faltan.length && !modulos.length && !sinCapas) return true;
     const mezcla = faltan.length || modulos.length;
-    // Nunca se sugiere borrar los datos del sitio: ahí viven los árboles capturados (D149, D152)
+    // Nunca se sugiere borrar los datos del sitio: ahí viven los árboles capturados
     document.body.innerHTML =
       '<main><div class="errores"><h2>' + (mezcla ? 'El navegador guardó una versión incompleta' : 'No se cargaron las capas del territorio') + '</h2>' +
       (mezcla ? '<p>Quedaron mezclados archivos de una versión anterior con los de la actual, y así el sistema no puede abrir.</p>'
@@ -164,7 +164,7 @@ SRP.app = {
       if (!correo) errores.push(['acceso-correo', 'Escriba su correo.']);
       if (!clave) errores.push(['acceso-clave', 'Escriba su contraseña.']);
       const caja = this.el('acceso-errores'), campos = ['acceso-correo', 'acceso-clave'];
-      if (SRP.util.resumenErrores(caja, errores, campos)) return;   // M15
+      if (SRP.util.resumenErrores(caja, errores, campos)) return;
       const r = SRP.sesion.autenticar(correo);
       if (!r.ok) { SRP.util.resumenErrores(caja, [['acceso-correo', r.motivo]], campos); return; }
       caja.hidden = true;
@@ -188,16 +188,16 @@ SRP.app = {
     this.el('btn-cerrar-sesion').addEventListener('click', () => { this.menuCuenta(false); salir(); });
     this.el('btn-cambiar-perfil').addEventListener('click', () => { this.menuCuenta(false); salir(); });
     this.el('btn-datos-prueba').addEventListener('click', async () => { this.menuCuenta(false); await SRP.demo.pintar(); this.el('dlg-prueba').showModal(); });
-    // Menú de la cuenta (D93): abre y cierra con el botón; se cierra al tocar fuera o con Escape
+    // Menú de la cuenta: abre y cierra con el botón; se cierra al tocar fuera o con Escape
     this.el('btn-cuenta').innerHTML = SRP.ICONOS.svg('usuario', 'grande');
     this.el('btn-cuenta').addEventListener('click', () => this.menuCuenta(this.el('menu-cuenta').hidden));
     document.addEventListener('click', (e) => { if (!e.target.closest('.cuenta')) this.menuCuenta(false); });
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !this.el('menu-cuenta').hidden) { this.menuCuenta(false); this.el('btn-cuenta').focus(); }
     });
-    // Restablecer es herramienta de prueba (D150): con datos reales no se conecta
+    // Restablecer es herramienta de prueba: con datos reales no se conecta
     if (SRP.CONFIG.ES_FICTICIO) this.el('btn-restablecer').addEventListener('click', async () => {
-      // Lo que se pierde, con números: «todo lo capturado» no dice cuánto (D139)
+      // Lo que se pierde, con números: «todo lo capturado» no dice cuánto
       const regs = (await SRP.almacen.todos('plantaciones')).filter(r => r.estatus !== 'eliminado').length;
       const jors = (await SRP.almacen.todos('jornadas')).length;
       const cola = SRP.envio.simulado() && SRP.sesion.usuario ? (await SRP.envio.cola()).length : 0;
@@ -217,7 +217,7 @@ SRP.app = {
     });
   },
 
-  /* Menús de acciones de los renglones (D94). Un solo manejador para las tres tablas: la tuerca
+  /* Menús de acciones de los renglones. Un solo manejador para las tres tablas: la tuerca
      abre su menú (y cierra cualquier otro); el menú se coloca con position:fixed junto a la
      tuerca para que ninguna tabla con desplazamiento lo recorte; elegir una opción, tocar fuera o
      Escape lo cierran; al desplazar, el menú sigue a su tuerca. El clic de la opción lo atiende cada módulo. */
@@ -346,7 +346,7 @@ SRP.app = {
     SRP.demo.pintar();
     const nav = this.el('navegacion');
     nav.querySelector('[data-vista="registrar"]').hidden = !p.registrar;
-    /* Supervisión (D158): primera para quien sólo consulta; para quien registra —cabo y coordinación—
+    /* Supervisión: primera para quien sólo consulta; para quien registra —cabo y coordinación—
        va al final de su barra, después de Registros, y el cabo la lee «Mi avance». Usuarios, Catálogos y lo demás que administra la Administración global, en Configuración, la última pestaña de su barra */
     const sup = nav.querySelector('[data-vista="supervision"]'), cabo = p.alcance === 'propios';
     sup.hidden = p.alcance === 'ninguno';
@@ -357,17 +357,17 @@ SRP.app = {
     nav.appendChild(cfg);
     SRP.formulario.limpiar(true);
     this.campoClave(false);
-    // La jornada abierta de quien entra queda activa; se avisa si es de otro día (D119)
+    // La jornada abierta de quien entra queda activa; se avisa si es de otro día
     SRP.activa.alEntrar().then(() => { if (this.vista === 'registrar') SRP.activa.preparar(); }).then(() => SRP.activa.avisarRelevos());
-    // Quien supervisa entra a Supervisión; el cabo, a registrar (D158)
+    // Quien supervisa entra a Supervisión; el cabo, a registrar
     this.mostrarVista(['equipo', 'institucion', 'todos'].includes(p.alcance) ? 'supervision' : p.registrar ? 'registrar' : 'registros');
     SRP.conexion.refrescar();
-    // Datos de prueba: al entrar se envía lo pendiente y, si no sale, lo dice la franja (D110, D111)
+    // Datos de prueba: al entrar se envía lo pendiente y, si no sale, lo dice la franja
     SRP.conexion.sugerirInstalar();   // en iPhone desde Safari, una vez por sesión y antes de capturar
-    SRP.envio.alEntrar();   // la pastilla cuenta los registros del alcance de quien entró (D83)
+    SRP.envio.alEntrar();   // la pastilla cuenta los registros del alcance de quien entró
   },
 
-  /* MENOS AUTOLLENADO DE SAFARI (D108). Con un campo de contraseña en la página, Safari trata
+  /* MENOS AUTOLLENADO DE SAFARI. Con un campo de contraseña en la página, Safari trata
      cualquier campo de texto como posible inicio de sesión y pone sobre el teclado la llave, la
      tarjeta y la ubicación. Mientras hay sesión, el campo de contraseña sale de la página y se
      devuelve al volver al acceso. Safari decide al final; esto sólo le quita motivos. */
@@ -383,7 +383,7 @@ SRP.app = {
     }
   },
 
-  // Fuera del acceso ningún campo pide autollenado: especies, comentarios y datos de cierre no son de contacto (D108)
+  // Fuera del acceso ningún campo pide autollenado: especies, comentarios y datos de cierre no son de contacto
   sinAutollenado() {
     document.querySelectorAll('input, textarea, form').forEach(e => {
       if (e.closest('#form-acceso') || e.type === 'file' || e.type === 'hidden') return;
@@ -405,7 +405,7 @@ SRP.app = {
       if ((nombre === 'registrar' && !p.registrar && !editando) || (nombre === 'catalogos' && !p.catalogos) || (nombre === 'galeria' && !p.galeria) || (nombre === 'supervision' && p.alcance === 'ninguno') ||
           (nombre === 'usuarios' && !p.usuarios) || (['configuracion', 'parametros', 'cambios', 'acerca', 'carga', 'revision-especies'].includes(nombre) && !admin)) nombre = 'registros';
     }
-    // Una sección que ya no existe (un «atrás» hacia Reportes, de una versión anterior) lleva a Jornadas
+    // Una sección que no existe (un «atrás» hacia una sección de una versión anterior) lleva a Jornadas
     if (!document.getElementById('vista-' + nombre)) nombre = 'jornadas';
     this.vista = nombre;
     // Cada sección queda en el historial del navegador: «atrás» vuelve a la sección anterior
@@ -413,8 +413,8 @@ SRP.app = {
       try { if (!history.state || history.state.vista !== nombre) history.pushState({ vista: nombre }, ''); } catch (e) { /* sin historial */ }
     }
     document.querySelectorAll('.vista').forEach(v => { v.hidden = v.id !== 'vista-' + nombre; });
-    // Al editar se está dentro de Registros, de donde se llegó: «Nuevo registro» no se marca (D100)
-    // Fotografías vive dentro de Supervisión: su pestaña es la que queda marcada (D158)
+    // Al editar se está dentro de Registros, de donde se llegó: «Nuevo registro» no se marca
+    // Fotografías vive dentro de Supervisión: su pestaña es la que queda marcada
     // Lo que se abre desde Configuración deja marcada su pestaña
     const deConfiguracion = ['usuarios', 'catalogos', 'parametros', 'cambios', 'acerca', 'carga', 'revision-especies'];
     const marcada = nombre === 'registrar' && (SRP.formulario.estado.editando || SRP.formulario.estado.sustitucion) ? (SRP.jornadas.volverAlDetalle ? 'jornadas' : 'registros') : nombre === 'galeria' ? 'supervision' : deConfiguracion.includes(nombre) ? 'configuracion' : nombre;
@@ -439,7 +439,7 @@ SRP.app = {
     this.alInicio();
   },
 
-  /* CADA PÁGINA EMPIEZA ARRIBA (D154). Al cambiar de sección, o de la lista de jornadas a una ficha
+  /* CADA PÁGINA EMPIEZA ARRIBA. Al cambiar de sección, o de la lista de jornadas a una ficha
      y de vuelta, la página nueva se ve desde su inicio. En iPhone, si la anterior seguía
      deslizándose por inercia cuando se tocó la pestaña, el salto se perdía y la sección nueva
      aparecía abajo: se corta la inercia un cuadro y el salto se repite cuando ya pintó.
@@ -454,7 +454,7 @@ SRP.app = {
     requestAnimationFrame(() => { raiz.classList.remove('sin-inercia'); ir(); setTimeout(ir, 120); });
   },
 
-  /* BOTÓN «SUBIR AL INICIO» (D154). Aparece al bajar más de tres cuartos de pantalla y se queda en
+  /* BOTÓN «SUBIR AL INICIO». Aparece al bajar más de tres cuartos de pantalla y se queda en
      la esquina, por encima de la navegación inferior del teléfono y de la barra fija de la sección
      (Guardar en Nuevo registro, «Siguiente» en la jornada), para no tapar sus botones. Al subir, el
      foco va al título de la sección: quien usa teclado o lector queda también al inicio. */
@@ -495,12 +495,12 @@ SRP.app = {
 
   /* ---------- Diálogos ---------- */
   // En escritorio, tocar cualquier parte de una fecha de filtro abre el calendario, no sólo el
-  // cuadrito de la derecha (D95). En teléfono el navegador ya lo hace solo.
-  /* TEXTO GUÍA EN FECHAS Y HORAS VACÍAS (D104). Cada <input data-vacio="…"> se envuelve con su
+  // cuadrito de la derecha. En teléfono el navegador ya lo hace solo.
+  /* TEXTO GUÍA EN FECHAS Y HORAS VACÍAS. Cada <input data-vacio="…"> se envuelve con su
      texto guía, que se ve sólo mientras el campo está vacío. Hay valores que el código pone o
      quita sin evento (limpiar, editar, restaurar filtros): una revisión ligera cada medio segundo
      los alcanza sin tener que avisar desde cada módulo. */
-  /* MODO SOL (D106). Sube el contraste para leer a pleno sol: texto negro, contornos oscuros y
+  /* MODO SOL. Sube el contraste para leer a pleno sol: texto negro, contornos oscuros y
      campos blancos con borde. Se recuerda en el dispositivo. Si el teléfono ya pide más contraste
      (ajuste de accesibilidad) y la persona no ha elegido, arranca activado. */
   iniciarContraste() {
@@ -548,7 +548,7 @@ SRP.app = {
 
   iniciarDialogos() {
     // Los botones fijos del HTML reciben aquí su icono, para no repetir el SVG en la página
-    // Iconos fijos por significado (D124): disco = guardar, palomita = confirmar/aprobar
+    // Iconos fijos por significado: disco = guardar, palomita = confirmar/aprobar
     this.el('btn-cat-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar</span>';
     this.el('btn-usr-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar</span>';
     const I = (id, icono, texto, tam) => { const b = this.el(id); if (b) b.innerHTML = SRP.ICONOS.svg(icono, tam || 'medio') + '<span>' + texto + '</span>'; };
@@ -557,10 +557,10 @@ SRP.app = {
     I('btn-enviar-ahora', 'senal', 'Enviar ahora');
     I('btn-franja-enviar', 'senal', 'Enviar ahora');
     I('btn-filtrar', 'buscar', 'Aplicar');
-    I('btn-reiniciar-filtros', 'cerrar', 'Quitar filtros', 'chico');   // un nombre por acción (D153)
+    I('btn-reiniciar-filtros', 'cerrar', 'Quitar filtros', 'chico');   // un nombre por acción
     I('btn-coord-aplicar', 'ubicacion', 'Colocar punto');
     I('btn-cambiar-nueva', 'mas', 'Iniciar otra jornada');
-    // Toda × de cabecera cierra su propio diálogo (D91); cada módulo reacciona al evento «close» si lo necesita
+    // Toda × de cabecera cierra su propio diálogo; cada módulo reacciona al evento «close» si lo necesita
     document.querySelectorAll('.dialogo-cerrar').forEach(b => {
       b.innerHTML = SRP.ICONOS.svg('cerrar', 'grande');
       b.addEventListener('click', () => { const d = b.closest('dialog'); if (d) d.close(); });
@@ -574,11 +574,11 @@ SRP.app = {
     });
   },
 
-  /* CONFIRMAR (D139). La confirmación queda para lo que no se deshace —eliminar una jornada, una
+  /* CONFIRMAR. La confirmación queda para lo que no se deshace —eliminar una jornada, una
      cuenta o un valor del catálogo, restablecer los datos, descartar un árbol sin guardar— y para
      decisiones con consecuencias que conviene ver antes (cerrar con pendientes, guardar en una
-     jornada de otro día). Lo reversible se hace de una vez y ofrece «Deshacer» (D101): así, que
-     aparezca este diálogo vuelve a significar algo.
+     jornada de otro día). Lo reversible se hace de una vez y ofrece «Deshacer»: así, que
+     aparezca este diálogo significa algo.
      Forma estructurada: { titulo, pregunta, puntosTitulo, puntos: [], nota, irreversible, boton,
      icono, cancelar }. La corta (texto, textoBoton, icono) sirve para una pregunta simple.
      icono: 'basura' elimina (rojo), 'palomita' confirma (verde), 'candado' cierra (acento). */

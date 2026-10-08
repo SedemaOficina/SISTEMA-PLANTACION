@@ -50,7 +50,7 @@ SRP.carga = {
     this.el('carga-lotes').addEventListener('click', (e) => { const b = e.target.closest('button[data-lote]'); if (b) this.deshacer(b.dataset.lote); });
   },
 
-  // Cada vez que se entra, desde cero: ningún archivo a medio revisar de antes
+  // Cada vez que se entra, desde cero: ningún archivo a medio revisar de la vez anterior
   preparar() {
     this.revision = null; this.archivo = null;
     this.el('carga-archivo').value = '';

@@ -1,4 +1,4 @@
-/* FOTOGRAFÍAS: GALERÍA PARA COORDINACIÓN Y ADMINISTRACIÓN (D118).
+/* FOTOGRAFÍAS: GALERÍA PARA COORDINACIÓN Y ADMINISTRACIÓN.
 
    PARA QUÉ. Quien coordina o administra necesita ver las fotografías de los árboles registrados
    y llevárselas: para un informe, para revisar un sitio o para responder una solicitud. La
@@ -11,7 +11,7 @@
    «Descargar todas» arma un ZIP con las fotografías filtradas, cada una con nombre legible:
    Foto_<folio o identificador>_<fecha>_<especie>.jpg. El ZIP se arma aquí, sin biblioteca:
    las fotografías ya son JPEG y no se comprimen más (modo «almacenar»). En teléfono se
-   comparte con las apps del dispositivo; en computadora se descarga (D61).
+   comparte con las apps del dispositivo; en computadora se descarga.
 
    El cabo no tiene galería: sus fotografías las ve en cada registro. */
 window.SRP = window.SRP || {};
@@ -76,7 +76,7 @@ SRP.galeria = {
   async conFoto() {
     const u = SRP.sesion.usuario;
     return (await SRP.almacen.porIndice('plantaciones', 'estatus', 'activo'))
-      .filter(r => SRP.util.fotoSegura(r.foto_base64) && SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId))   // sólo imágenes válidas (D150)
+      .filter(r => SRP.util.fotoSegura(r.foto_base64) && SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId))   // sólo imágenes válidas
       .sort((a, b) => b.fecha_plantacion.localeCompare(a.fecha_plantacion) || b.fecha_registro.localeCompare(a.fecha_registro));
   },
 
@@ -117,7 +117,7 @@ SRP.galeria = {
     this.el('btn-galeria-zip').disabled = !n;
     const vacio = this.el('galeria-vacio');
     vacio.hidden = n > 0;
-    // Estado vacío con salida (D141): con filtros, quitarlos; sin fotografías, ir a registrar
+    // Estado vacío con salida: con filtros, quitarlos; sin fotografías, ir a registrar
     if (!n) vacio.innerHTML = this.zona.activo()
       ? SRP.util.htmlVacio('camara', 'No hay fotografías con estos filtros.', 'Pruebe con otra jornada, otro día u otra persona.', [{ accion: 'todas', texto: 'Ver todas' }])
       : SRP.util.htmlVacio('camara', 'Todavía no hay fotografías.', 'Aparecen aquí las que se agregan a los registros; la fotografía es opcional.',
@@ -172,8 +172,8 @@ SRP.galeria = {
     if (!this.fotos.length) return;
     const b = this.el('btn-galeria-zip');
     // Armar el ZIP puede tardar con muchas fotografías: el botón cambia de texto y queda con
-    // aria-busy mientras dura, para que no parezca colgado (D136).
-    const libre = SRP.util.ocupado(b, 'Armando…');   // M15
+    // aria-busy mientras dura, para que no parezca colgado.
+    const libre = SRP.util.ocupado(b, 'Armando…');
     try {
       // El armado es síncrono y ocupa el hilo: se cede un cuadro para que «Armando…» se pinte antes
       await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
@@ -188,7 +188,7 @@ SRP.galeria = {
       const f = this.filtro;
       const limpio = t => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, '');
       const j = f.jornada && this.jornadasPorId[f.jornada];
-      // Con una jornada elegida, el ZIP lleva su nombre y su fecha (D135)
+      // Con una jornada elegida, el ZIP lleva su nombre y su fecha
       const nombre = 'Fotografias_SRP' + (j ? '_' + limpio(j.nombre).slice(0, 40) + '_' + j.fecha : (f.dia ? '_' + f.dia : '')) + (f.cabo ? '_' + limpio(SRP.ref.nombreUsuario(f.cabo)) : '') + '.zip';
       const res = await SRP.reportes.entregarArchivo(blob, nombre, 'Fotografías de los registros');
       if (res !== 'cancelado') SRP.util.anunciar((entradas.length === 1 ? '1 fotografía' : entradas.length + ' fotografías') + ' en ' + nombre + ' (' + SRP.foto.formatearPeso(blob.size) + ').');

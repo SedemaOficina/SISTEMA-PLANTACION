@@ -20,12 +20,12 @@ SRP.ref = {
 
   nombreCatalogo(id) { const c = this.catalogoPorId[id]; return c ? c.nombre : ''; },
 
-  /* QUIÉN USA CADA VALOR (D151). Por id de la tabla pedida, cuántos renglones de cada tabla lo
+  /* QUIÉN USA CADA VALOR. Por id de la tabla pedida, cuántos renglones de cada tabla lo
      nombran, leído de las relaciones del esquema (SRP.ESQUEMA): cuentas, catálogos y jornadas se
      cuentan igual en todas las pantallas. Entran los árboles eliminados, que siguen en el historial
      y se pueden restaurar. La bitácora no cuenta: es la constancia, y guarda el nombre de quien
-     actuó. Antes cada pantalla contaba sólo árboles, y se eliminaron un programa que usaban tres
-     jornadas y un coordinador con cabos asignados. Devuelve { id: { tabla: n } }. */
+     actuó. Contar sólo árboles permitiría eliminar un programa que usan jornadas o un coordinador
+     con cabos asignados. Devuelve { id: { tabla: n } }. */
   async usosDe(tabla) {
     const usos = {};
     // «catalogos» son las seis tablas de catálogo: se cuentan como una familia, igual que en pantalla
@@ -56,7 +56,7 @@ SRP.ref = {
   },
 
   /* Búsqueda de especie con un solo criterio en toda la app: nombre común, científico, género y
-     otros nombres comunes del catálogo (D84). `q` ya viene normalizado. Devuelve el otro nombre
+     otros nombres comunes del catálogo. `q` ya viene normalizado. Devuelve el otro nombre
      por el que coincidió, para decirlo en la lista, o '' si coincidió por nombre o científico. */
   especieCoincide(e, q) {
     const n = SRP.util.normalizar;
@@ -137,7 +137,7 @@ SRP.ref = {
     return { comun: registro.especie_otra || '', cientifico: 'Otra especie, fuera del catálogo', distribucion: '' };
   },
 
-  /* Dos ausencias que no son la misma (D62, D152). Sin alcaldía, el territorio no se pudo derivar
+  /* Dos ausencias que no son la misma. Sin alcaldía, el territorio no se pudo derivar
      —con las capas completas no pasa: el arranque las exige y un punto junto al límite toma la
      alcaldía más cercana—; queda pendiente de volver a derivar y no recibe folio. Sin colonia, el
      punto cae donde la capa de colonias no tiene polígono: casi siempre suelo de conservación, pero
@@ -149,7 +149,7 @@ SRP.ref = {
     const m = (SRP.CONFIG.MOTIVOS_SUSTITUCION.find(x => x[0] === r.motivo_sustitucion) || [null, r.motivo_sustitucion])[1];
     return r.motivo_sustitucion === 'OTRO' && r.motivo_sustitucion_otro ? m + ': ' + r.motivo_sustitucion_otro : m;
   },
-  /* DÓNDE, EN UN SOLO FORMATO (M15): «Coyoacán · Col. Del Carmen», igual en la franja, la lista de
+  /* DÓNDE, EN UN SOLO FORMATO: «Coyoacán · Col. Del Carmen», igual en la franja, la lista de
      jornadas y la ficha. La alcaldía va sin la palabra: el nombre basta y ahorra un tramo del
      renglón en el teléfono. `alcaldias`: una o varias. */
   lugar(alcaldias, colonia) {
@@ -158,7 +158,7 @@ SRP.ref = {
   },
   colonia(valor) { return valor || 'Sin colonia en la capa'; },
 
-  /* Con qué capas se derivó el territorio, para el detalle y el PDF (D152): «Alcaldías
+  /* Con qué capas se derivó el territorio, para el detalle y el PDF: «Alcaldías
      sia-2026-01-01 · UGA sia-2026-09-22 · Colonias iecm-2022». La versión lleva la fecha de corte;
      si alguna capa es de prueba (su versión lo dice), se aclara. */
   textoCapas(capaVersion) {

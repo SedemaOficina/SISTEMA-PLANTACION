@@ -1,11 +1,9 @@
-/* ENVÍO AL SERVIDOR, SIMULADO CON DATOS DE PRUEBA (D111).
+/* ENVÍO AL SERVIDOR, SIMULADO CON DATOS DE PRUEBA.
 
-   PARA QUÉ. En la Etapa 1 no hay servidor y los registros se quedan en el teléfono. Para ver en
-   pruebas cómo funcionará la Fase 2, con datos ficticios se simula la cola de envío completa:
-   cada registro nace «por enviar», se envía solo en cuanto hay señal y el servidor simulado
-   confirma la recepción y le asigna el folio (D110). Nada sale del teléfono: la «recepción» se
-   anota en este dispositivo. Con ES_FICTICIO en false nada de esto corre y la pantalla dice lo
-   que dice hoy (D83).
+   PARA QUÉ. Mientras la app no está conectada al servidor, con datos ficticios se simula la cola de
+   envío completa: cada registro nace «por enviar», se envía solo en cuanto hay señal y el servidor
+   simulado confirma la recepción y le asigna el folio. Nada sale del teléfono: la «recepción» se
+   anota en este dispositivo. Con ES_FICTICIO en false nada de esto corre.
 
    ESTADOS DE UN REGISTRO:
      por_enviar   guardado en el teléfono, nunca enviado (sin folio)
@@ -71,7 +69,7 @@ SRP.envio = {
       .sort((a, b) => String(a.fecha_registro).localeCompare(String(b.fecha_registro)));
   },
 
-  // Los pendientes que alcanza quien entró: es la cifra que se le enseña (D83)
+  // Los pendientes que alcanza quien entró: es la cifra que se le enseña
   async pendientesPropios() {
     const mios = await SRP.conexion.registrosPropios();
     if (mios === null) return null;
@@ -143,7 +141,7 @@ SRP.envio = {
     let res;
     try { res = await envio; } finally { this.enCurso = 0; }
     await this.alCambiar();
-    // Si el envío fue automático, su aviso no tapa un «Deshacer» a la vista (D151)
+    // Si el envío fue automático, su aviso no tapa un «Deshacer» a la vista
     const fondo = { secundario: !op.manual };
     if (res.cortado) SRP.util.anunciar('Se perdió la señal durante el envío. ' + this.textoCuenta(n) + ' en el teléfono; ' + (n === 1 ? 'se enviará' : 'se enviarán') + ' cuando vuelva.', 'aviso', fondo);
     else if (!op.silencioso) SRP.util.anunciar((n === 1 ? '1 registro enviado' : n + ' registros enviados') + ' al servidor (simulado). Recepción confirmada.', undefined, fondo);
@@ -234,13 +232,13 @@ SRP.envio = {
 
   /* ---------- Arranque ---------- */
 
-  /* Botón con estado de espera (D136): texto a «Enviando…», aria-busy y deshabilitado mientras
+  /* Botón con estado de espera: texto a «Enviando…», aria-busy y deshabilitado mientras
      dura la operación, para que un envío con demora (o sin señal, que tarda en confirmar que no
      salió) no parezca un botón que no respondió. Vuelve a su texto e icono originales al terminar,
      pase lo que pase. */
   async conBoton(b, fn) {
     if (!b || b.disabled) return;
-    const libre = SRP.util.ocupado(b, 'Enviando…');   // M15
+    const libre = SRP.util.ocupado(b, 'Enviando…');
     try { await fn(); }
     finally { libre(); }
   },

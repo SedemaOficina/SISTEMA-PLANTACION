@@ -1,4 +1,4 @@
-/* CROQUIS DE LA JORNADA PARA EL REPORTE (D115).
+/* CROQUIS DE LA JORNADA PARA EL REPORTE.
 
    Una imagen con los puntos de la jornada numerados en el mismo orden que la tabla «Ejemplares
    registrados», para la vista previa y el PDF. Con conexión lleva de fondo la imagen de satélite
@@ -7,12 +7,12 @@
    barra de escala y norte.
 
    PESO. Sin imagen es un PNG de unos pocos KB; con imagen, un JPEG de 60–120 KB. El reporte
-   sigue por debajo de lo que se comparte cómodamente por mensajería (D103).
+   sigue por debajo de lo que se comparte cómodamente por mensajería.
 
    CACHÉ. La imagen se arma una vez por conjunto de puntos y se reutiliza entre la vista previa y
    el PDF; se vuelve a armar si cambian los registros.
 
-   QUE SE VEAN TODOS (D163). El encuadre busca el acercamiento mayor en el que caben todos los
+   QUE SE VEAN TODOS. El encuadre busca el acercamiento mayor en el que caben todos los
    puntos con aire alrededor, hasta el 20: más allá de lo que da el satélite (19) el mosaico se
    amplía. Si al acercamiento elegido le faltan mosaicos, se prueba uno o dos niveles más lejos
    antes de ir sin imagen. Los árboles plantados a un par de metros quedarían encimados: el
@@ -42,10 +42,10 @@ SRP.croquis = {
 
   metrosPorPixel(lat, z) { return 156543.03392 * Math.cos(lat * Math.PI / 180) / Math.pow(2, z); },
 
-  /* El acercamiento exacto en el que todos los puntos llenan el lienzo con aire alrededor (D163).
-     Puede ser fraccionario (17.4): los mosaicos del nivel entero se amplían lo que falte. Antes se
-     usaban sólo niveles enteros y los puntos podían quedar en la mitad del croquis. Un solo punto,
-     o todos en el mismo lugar, va a un acercamiento fijo. */
+  /* El acercamiento exacto en el que todos los puntos llenan el lienzo con aire alrededor.
+     Puede ser fraccionario (17.4): los mosaicos del nivel entero se amplían lo que falte, para que
+     los puntos no queden en la mitad del croquis. Un solo punto, o todos en el mismo lugar, va a
+     un acercamiento fijo. */
   encuadre(registros) {
     const lats = registros.map(r => r.lat), lngs = registros.map(r => r.lng);
     const cLat = (Math.min(...lats) + Math.max(...lats)) / 2, cLng = (Math.min(...lngs) + Math.max(...lngs)) / 2;
@@ -99,7 +99,7 @@ SRP.croquis = {
 
   /* ---------- Dibujo ---------- */
   fondoLiso(ctx) {
-    const C = n => SRP.util.colorBase(n);   // los colores, de la hoja (M13)
+    const C = n => SRP.util.colorBase(n);   // los colores, de la hoja
     ctx.fillStyle = C('croquis-fondo');
     ctx.fillRect(0, 0, this.ANCHO, this.ALTO);
     ctx.strokeStyle = C('croquis-reticula'); ctx.lineWidth = 1;
@@ -107,10 +107,10 @@ SRP.croquis = {
     for (let y = 0; y < this.ALTO; y += 100) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(this.ANCHO, y); ctx.stroke(); }
   },
 
-  // El radio del círculo numerado: más chico cuantos más puntos (D163)
+  // El radio del círculo numerado: más chico cuantos más puntos
   radio(n) { return n > 40 ? 11 : n > 20 ? 13 : 16; },
 
-  /* Aparta los círculos que se enciman (D163): cada par que se toca se separa a lo largo de la
+  /* Aparta los círculos que se enciman: cada par que se toca se separa a lo largo de la
      línea que los une, lo justo, hasta que ninguno toca a otro o se agotan las vueltas; siempre
      dentro del lienzo. Dos puntos exactamente iguales se abren en abanico, por su número. */
   acomodar(pos, r) {
@@ -200,7 +200,7 @@ SRP.croquis = {
     // «sucio» para siempre y el principal se conserva limpio
     let conImagen = false;
     try {
-      // Si al nivel del encuadre le faltan mosaicos, uno o dos niveles más lejos (ampliados) (D163)
+      // Si al nivel del encuadre le faltan mosaicos, uno o dos niveles más lejos (ampliados)
       const tope = Math.min(Math.floor(enc.z), this.NATIVO);
       for (let tz = tope; tz >= tope - 2 && !conImagen; tz--) {
         const base = document.createElement('canvas');

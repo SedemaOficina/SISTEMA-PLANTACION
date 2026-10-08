@@ -1,9 +1,9 @@
 """Convierte el catálogo de especies (Excel del SIA) en assets/catalogos/catalogo-especies.js.
 
-El archivo fuente vive en originales/ (no se publica, D164) y no se edita: para cambiar una especie se corrige el
+El archivo fuente vive en originales/ (no se publica) y no se edita: para cambiar una especie se corrige el
 Excel y se vuelve a correr este script. Cada fila queda con el esquema del almacén `catalogos`
 (tipo = especie): `id` y `clave` son el id_especie del catálogo (ESP-0000), que es la única
-llave por la que se enlazan las plantaciones (D84); `nombre` es el nombre_comun, la etiqueta
+llave por la que se enlazan las plantaciones; `nombre` es el nombre_comun, la etiqueta
 de uso en campo. Los demás campos del catálogo se conservan con su nombre original, salvo género,
 epíteto y nota de discrepancia, que se validan aquí pero no se copian: el género y el epíteto salen
 del nombre científico, y la nota de discrepancia es rastro de depuración del Excel del SIA.

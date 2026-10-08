@@ -3158,3 +3158,15 @@
     carga histórica.
   · **X3.** La Secretaría es «Gobierno de la CDMX» en todo el sistema; el informe ya no dice «Secretaría».
   · Supervisión en pantalla: «Por quién registró», como el informe y la tabla.
+
+- **D275. Comentarios del código sin la historia del proyecto (bloque 195).**
+  08-10-2026. A pedido de Liber, antes de pasar al servidor y de entregar el código.
+  · Los comentarios de `js/`, `css/estilos.css`, `index.html`, `sw.js` y `herramientas/` dicen qué hace el código, por
+    qué así y qué cuidar. Se quitaron los números de decisión, de mejora y de bloque, quién pidió qué, lo que había
+    antes y las notas entre Liber y Claude; esa historia vive en DECISIONES y BITACORA. Las referencias a la Norma y a
+    las reglas (R…) se quedan: dicen qué regla vigente se cumple.
+  · Se cambiaron sólo comentarios. Los textos que son código —las descripciones del espejo de campos, los comentarios
+    de las columnas en `servidor/sql/02_tablas.sql` (salen de `datos/esquema.json`) y los mensajes de las
+    herramientas— se dejaron como están. La única excepción es el encabezado que `generar_diccionario.py` escribe en
+    `js/esquema.js`, que tenía que cambiar igual que el de `esquema.js` para que se regenere idéntico.
+  · Los comentarios nuevos se escriben así: en presente y sin números de decisión ni de bloque.

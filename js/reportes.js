@@ -2,37 +2,35 @@
    Dos piezas: el formulario de cierre —lo que no está en los registros y sólo va al documento— y
    el PDF que lo arma.
 
-   POR QUÉ UN SOLO DÍA. El reporte es de la jornada: así se escribe hoy en campo, un
-   reporte por día y por cuadrilla. Un reporte que abarcara un mes no tendría chófer ni hora de
-   finalización ni observaciones que valieran para todo el periodo, y esos campos son la mitad del
-   documento. Los filtros de mes, año y rango siguen sirviendo para mirar la lista; para generar
-   el reporte hay que estar parado en un día.
+   POR QUÉ UN SOLO DÍA. El reporte es de la jornada: así se escribe en campo, un reporte por día
+   y por cuadrilla. Un reporte que abarcara un mes no tendría chófer ni hora de finalización ni
+   observaciones que valieran para todo el periodo, y esos campos son la mitad del documento.
 
-   POR QUÉ UN FORMULARIO APARTE Y NO UN ENCABEZADO DE JORNADA. Así lo pidió el área: el chófer, la
-   hora de finalización y las observaciones se saben al cerrar el día, no al llegar al frente.
-   Pedirlos antes obliga a volver a abrirlos después. Se capturan al generar el reporte, que es
-   cuando la persona ya tiene esos datos enfrente.
+   POR QUÉ UN FORMULARIO APARTE Y NO UN ENCABEZADO DE JORNADA. El chófer, la hora de finalización y
+   las observaciones se saben al cerrar el día, no al llegar al frente. Pedirlos antes obliga a
+   volver a abrirlos después. Se capturan al generar el reporte, que es cuando la persona ya tiene
+   esos datos enfrente.
 
    QUÉ NO ENTRA AQUÍ. Todo lo que ya vive en los registros: especies, conteos y territorio se
    calculan, nunca se teclean. Un total escrito a mano es un total que se puede equivocar. */
 window.SRP = window.SRP || {};
 
 SRP.reportes = {
-  // Los colores del PDF son los de la hoja, sin el modo sol (M13), y los institucionales (--pdf-*, D166)
+  // Los colores del PDF son los de la hoja, sin el modo sol, y los institucionales (--pdf-*)
   colores() {
     const c = n => SRP.util.rgb(n);
     return { guinda: c('pdf-guinda'), dorado: c('pdf-dorado'), gris: c('pdf-gris'), fila: c('pdf-fila'), tinta: c('texto'), total: c('total-fondo'), ficticio: c('aviso-ficticio'),
       suave: c('pdf-fila'), linea: c('pdf-borde'), blanco: c('fondo'), exito: c('exito'), atencion: c('editar'), error: c('error'),
-      // Los colores de la gráfica de distribución (D163), los mismos de la vista previa
+      // Los colores de la gráfica de distribución, los mismos de la vista previa
       dist: Object.fromEntries(this.DISTRIBUCION.map(d => [d.clave, c(d.color)])) };
   },
 
   /* Campos del cierre. Todos opcionales y de texto libre: los reportes varían de una cuadrilla a
      otra y de un día a otro, y encajonarlos obligaría a escribir de una forma que no es la suya.
      El encargado no está en esta lista porque no se escribe: sale de la sesión. */
-  // Placa, modelo y tipo no se escriben: se copian del catálogo al guardar (D162, D174)
+  // Placa, modelo y tipo no se escriben: se copian del catálogo al guardar
   CAMPOS: ['personal', 'apoyo', 'observaciones', 'chofer', 'hora'],
-  jornadasTodas: [],   // para contar los vehículos que más usa cada encargado (D162)
+  jornadasTodas: [],   // para contar los vehículos que más usa cada encargado
 
   contexto: null,   // { registros, fecha, cabo_id } de lo que se va a reportar
 
@@ -41,7 +39,7 @@ SRP.reportes = {
   iniciar() {
     this.el('form-cierre').addEventListener('submit', (e) => { e.preventDefault(); this.aceptar(); });
     this.el('form-cierre').addEventListener('input', (e) => { if (e.target.tagName === 'TEXTAREA') this.ajustarAlto(e.target); });
-    // Vehículo del catálogo (D162): la placa elige; modelo y tipo se ponen solos
+    // Vehículo del catálogo: la placa elige; modelo y tipo se ponen solos
     this.el('cie-vehiculo').addEventListener('change', () => this.elegirVehiculo(this.el('cie-vehiculo').value, true));
     this.el('cie-vehiculo-frecuentes').addEventListener('click', (e) => {
       const b = e.target.closest('.chip'); if (!b) return;
@@ -51,7 +49,7 @@ SRP.reportes = {
     });
     // Los frecuentes son los del encargado: si la coordinación elige otro, cambian
     this.el('cie-encargado').addEventListener('change', () => this.pintarFrecuentes());
-    // «Ahora» pone la hora actual en la hora de finalización (D103)
+    // «Ahora» pone la hora actual en la hora de finalización
     this.el('btn-hora-ahora').addEventListener('click', () => {
       const d = new Date();
       this.el('cie-hora').value = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
@@ -62,12 +60,12 @@ SRP.reportes = {
       const v = this.vistaPrevia; if (!v) return;
       this.el('dlg-previa').close();
       // El armado del PDF (croquis con mosaicos incluido) puede tardar unos segundos: se avisa
-      // con aria-busy y un aviso flotante «Generando…» para que no parezca que no pasó nada (D136).
+      // con aria-busy y un aviso flotante «Generando…» para que no parezca que no pasó nada.
       const zona = this.el('principal');
       zona.setAttribute('aria-busy', 'true');
       SRP.util.anunciar(v.soloLectura ? 'Preparando el reporte…' : 'Generando reporte…', 'aviso', { fijo: true });
       try { await this.generar(v.registros, v.cierre, v.fecha, v.jornada); }
-      catch (err) { SRP.util.avisarError(err, 'generar el reporte'); }   // antes se quedaba «Generando reporte…» (D149)
+      catch (err) { SRP.util.avisarError(err, 'generar el reporte'); }   // sin esto se quedaría «Generando reporte…»
       finally { zona.removeAttribute('aria-busy'); SRP.util.quitarAviso(); }
     });
     // Corregir vuelve al formulario de cierre con lo ya escrito (se guardó al pedir la vista previa)
@@ -89,7 +87,7 @@ SRP.reportes = {
     t.style.height = (t.scrollHeight + t.offsetHeight - t.clientHeight) + 'px';
   },
 
-  // El cierre del reporte vive en la jornada (D119): es el mismo registro
+  // El cierre del reporte vive en la jornada: es el mismo registro
   async cierreDeJornada(j) { return (await SRP.almacen.uno('jornadas', j.id)) || j.dato || null; },
 
   /* ---------- Formulario de cierre ---------- */
@@ -102,7 +100,7 @@ SRP.reportes = {
     const previo = await this.cierreDeJornada(jornada);
     this.contexto.previo = previo || null;
     this.CAMPOS.forEach(c => { this.el('cie-' + c).value = previo ? (previo[c] || '') : ''; });
-    // El vehículo lo pone prepararVehiculo(), sólo del catálogo (D174)
+    // El vehículo lo pone prepararVehiculo(), sólo del catálogo
     this.prepararEncargado(registros, previo);
     await this.prepararVehiculo(previo);
     /* Personal participante, personal de apoyo, chófer y vehículo sólo se piden a la Secretaría; de
@@ -135,12 +133,11 @@ SRP.reportes = {
     sel.value = (previo && previo.encargado_id) || (ids.length === 1 ? ids[0][0] : '');
   },
 
-  /* VEHÍCULO DEL CATÁLOGO (D162). Se elige la placa y el modelo y el tipo se ponen solos; se guardan
+  /* VEHÍCULO DEL CATÁLOGO. Se elige la placa y el modelo y el tipo se ponen solos; se guardan
      el id del vehículo y una copia de sus tres datos, porque el reporte es un documento y no debe
      cambiar si después se corrige el catálogo. La lista va agrupada por tipo. Arriba, a un toque,
-     los tres que más ha usado el encargado. Sólo vehículos del catálogo (D174): «Otro vehículo» y sus
-     tres campos a mano se retiraron; una jornada de antes del catálogo cuya placa esté en él se
-     reconoce, y si no, abre sin vehículo. */
+     los tres que más ha usado el encargado. Sólo vehículos del catálogo; una jornada de antes del
+     catálogo cuya placa esté en él se reconoce, y si no, abre sin vehículo. */
   opcionesVehiculo(actualId) {
     const esc = SRP.util.escapar;
     const grupos = {};
@@ -211,7 +208,7 @@ SRP.reportes = {
     const c = this.contexto;
     const previo = c.previo;
     ahora = ahora || SRP.util.ahoraISO();
-    // La jornada tal cual está guardada, con los datos de cierre encima (D119)
+    // La jornada tal cual está guardada, con los datos de cierre encima
     const cierre = Object.assign({}, previo || c.jornada.dato || {}, {
       encargado_id: this.encargadoElegido(),
       editado_por_id: SRP.sesion.usuario.id,
@@ -219,20 +216,20 @@ SRP.reportes = {
     });
     this.CAMPOS.forEach(k => { cierre[k] = this.el('cie-' + k).value.trim(); });
     // El vehículo, del catálogo; su placa, modelo y tipo se copian en la jornada para que el reporte
-    // no cambie si después se corrige el catálogo (D162). Sin vehículo, los tres quedan vacíos (D174)
+    // no cambie si después se corrige el catálogo. Sin vehículo, los tres quedan vacíos
     const v = SRP.ref.catalogoPorId[this.el('cie-vehiculo').value] || null;
     cierre.vehiculo_id = v ? v.id : null;
     cierre.vehiculo_placa = v ? v.nombre : '';
     cierre.vehiculo_modelo = v ? v.modelo || '' : '';
     cierre.vehiculo_tipo = v ? v.tipo_vehiculo || '' : '';
-    delete cierre.vehiculo;   // el campo único de antes del bloque 20
+    delete cierre.vehiculo;   // el campo único de vehículo de versiones anteriores
     return cierre;
   },
 
   async aceptar() {
     const c = this.contexto;
     const previo = c.previo;
-    if (!SRP.permisos.exigir('jornada.editar', previo || c.jornada.dato)) return;   // el cierre se guarda en la jornada (D151)
+    if (!SRP.permisos.exigir('jornada.editar', previo || c.jornada.dato)) return;   // el cierre se guarda en la jornada
     // Aquí se guardan los datos del cierre; el reporte cuenta como generado al entregar el PDF
     const cierre = this.cierrePrevisto();
 
@@ -244,7 +241,7 @@ SRP.reportes = {
     this.mostrarPrevia(c.registros, cierre, c.fecha, c.cabo_id, c.jornada);
   },
 
-  /* VISTA PREVIA DEL REPORTE (D101). Lo mismo que dirá el PDF, en el mismo orden y con las mismas
+  /* VISTA PREVIA DEL REPORTE. Lo mismo que dirá el PDF, en el mismo orden y con las mismas
      reglas (un apartado vacío no aparece), en pantalla y antes de generarlo: así se corrige un
      dato de cierre sin haber compartido todavía un documento equivocado. No es una imagen del
      PDF —en iPhone un PDF incrustado sólo enseña la primera página—, sino el mismo contenido. */
@@ -263,7 +260,7 @@ SRP.reportes = {
     this.el('btn-previa-generar').innerHTML = SRP.ICONOS.svg(soloLectura ? 'descargar' : 'palomita') + '<span>' + (soloLectura ? 'Descargar PDF' : 'Generar PDF') + '</span>';
     this.el('previa-hoja').innerHTML = this.htmlPrevia(registros, cierre, fecha, jornada);
     this.el('dlg-previa').showModal();
-    // El croquis (D115) se arma aparte para no detener la vista previa mientras llegan los mosaicos
+    // El croquis se arma aparte para no detener la vista previa mientras llegan los mosaicos
     this.ponerCroquisEnPrevia(registros);
   },
 
@@ -277,17 +274,18 @@ SRP.reportes = {
       '<p class="previa-nota">' + SRP.util.escapar(c.nota) + '</p>';
   },
 
-  // «Jornada 2 de 3» bajo la fecha, sólo cuando el día tuvo más de una (D117)
+  // «Jornada 2 de 3» bajo la fecha, sólo cuando el día tuvo más de una
   textoJornada(jornada) { return jornada && jornada.total > 1 ? 'Jornada ' + jornada.n + ' de ' + jornada.total : ''; },
 
-  /* UN SOLO MODELO DEL REPORTE (M15). Lo que dice el reporte se decide aquí una vez; la vista
+  /* UN SOLO MODELO DEL REPORTE. Lo que dice el reporte se decide aquí una vez; la vista
      previa y el PDF sólo lo pintan, cada uno a su manera.
 
-     ORDEN DEL REPORTE (D163, D169): el nombre del cabo y, en la misma franja, los datos que
-     distinguen a la jornada (nombre, día, lugar, programa, hora, comentarios); cinco cifras;
-     1 personal; 2 vehículo; 3 croquis; 4 ejemplares plantados, con el comentario de cada árbol si
-     alguno lo tiene; 5 totales por especie; 6 distribución de las especies; y al pie las notas. Cada dato dice su nombre en
-     negritas («Chófer: …») y lo que está vacío no se imprime. El folio ya no va en el reporte. */
+     ORDEN DEL REPORTE: el nombre del cabo y, en la misma franja, los datos que distinguen a la
+     jornada (nombre, día, lugar, programa, hora, comentarios y observaciones); cinco cifras;
+     1 croquis; 2 ejemplares plantados, con el comentario de cada árbol si alguno lo tiene;
+     3 totales por especie, con la barra de su distribución; 4 personal; 5 vehículo; y al pie las
+     notas. El croquis va primero para que quepa en la primera página. Cada dato dice su nombre en
+     negritas («Chófer: …») y lo que está vacío no se imprime. El folio no va en el reporte. */
   modelo(registros, cierre, fecha, jornada) {
     const u = SRP.sesion.usuario;
     const hay = (k) => !!(cierre[k] && String(cierre[k]).trim());
@@ -300,7 +298,7 @@ SRP.reportes = {
       [...new Set(registros.map(r => SRP.ref.nombreCatalogo(r.programa_id)).filter(Boolean))].join(', ');
     const meta = SRP.jornadas.previstosDe(cierre);
     const totales = this.totalesPorEspecie(registros);
-    // Nativas: nativa o endémica en el catálogo, como en Supervisión (D157)
+    // Nativas: nativa o endémica en el catálogo, como en Supervisión
     const distribucion = this.DISTRIBUCION.map(d => ({ clave: d.clave, etiqueta: d.etiqueta,
       n: registros.filter(r => this.claseDistribucion(SRP.ref.especieDe(r).distribucion) === d.clave).length })).filter(d => d.n);
     this.porcentajes(distribucion.map(d => d.n), n).forEach((p, i) => { distribucion[i].pct = p; });
@@ -313,7 +311,7 @@ SRP.reportes = {
     // Las diez especies con más ejemplares; si hay más, el resto junto
     // Hasta 11 especies se ven todas: agrupar una sola en «Otras» no ahorra nada
     const conGps = registros.filter(r => r.punto_origen === 'gps').length;
-    /* COMENTARIOS (D169, antes una sección al final, D164): van en la tabla de ejemplares, en su
+    /* COMENTARIOS: van en la tabla de ejemplares, en su
        propia columna, sólo si algún árbol tiene comentario */
     const conComentario = registros.some(r => this.textoComentario(r));
     const especieCon = e => e.comun + (e.cientifico ? ' (' + e.cientifico + ')' : '');
@@ -336,7 +334,7 @@ SRP.reportes = {
         // Toda endémica es nativa: la cifra lo dice, para no contradecir la distribución de abajo
         { valor: nativasPct + ' %', texto: 'nativas o endémicas' }
       ],
-      // Datos de la jornada, bajo el nombre del cabo (D169): [etiqueta, valor, ancho completo]
+      // Datos de la jornada, bajo el nombre del cabo: [etiqueta, valor, ancho completo]
       identificacion: [
         ['Nombre de la jornada', cierre.nombre || (jornada && jornada.nombre) || ''],
         variosDias ? ['Días de la jornada', 'Del ' + SRP.util.fechaLarga(dias.desde).replace(/^./, c => c.toLowerCase()) + ' al ' + SRP.util.fechaLarga(dias.hasta).replace(/^./, c => c.toLowerCase())]
@@ -368,7 +366,7 @@ SRP.reportes = {
       vehiculo: externa ? [] : [['Tipo', cierre.vehiculo_tipo], ['Modelo', cierre.vehiculo_modelo], ['Placas', cierre.vehiculo_placa]]
         .filter(([, v]) => v && String(v).trim()),
       /* Uno por renglón, en el orden en que se capturaron: el mismo número que en el croquis. La
-         especie lleva el nombre científico entre paréntesis (D169); la precisión, su nivel para el
+         especie lleva el nombre científico entre paréntesis; la precisión, su nivel para el
          color (verde buena, ámbar aceptable, rojo baja). */
       ejemplares: {
         cabecera: ['N.º', 'Especie', 'Coordenada', 'Precisión'].concat(variosDias ? ['Fecha'] : [], conComentario ? ['Comentario'] : []),
@@ -396,7 +394,7 @@ SRP.reportes = {
   },
 
   /* Tipos de distribución del catálogo (SNIB), en el orden de las gráficas; su color lo da la hoja.
-     Colores lógicos (D166): lo propio del lugar en verde, lo que amenaza en rojo; `oscuro` pide texto
+     Colores lógicos: lo propio del lugar en verde, lo que amenaza en rojo; `oscuro` pide texto
      oscuro encima (el blanco sobre el dorado daba 3.0:1). */
   DISTRIBUCION: [
     { clave: 'nativa', etiqueta: 'Nativa', color: 'exito' },
@@ -413,7 +411,7 @@ SRP.reportes = {
   textoComentario(r) { return String(r.comentarios || '').split('\n').map(t => t.replace(/\s+/g, ' ').trim()).filter(Boolean).join('\n'); },
   textoCoordenada(r) { return typeof r.lat === 'number' && typeof r.lng === 'number' ? r.lat.toFixed(6) + ', ' + r.lng.toFixed(6) : ''; },
   // «±6 m» con GPS; con el mapa o a mano no hay margen que decir
-  // Nivel de la precisión para el color del reporte (D169): el mismo corte que el resto de la app
+  // Nivel de la precisión para el color del reporte: el mismo corte que el resto de la app
   nivelPrecision(r) {
     if (r.punto_origen !== 'gps' || r.gps_precision_m == null) return 'sin';
     return SRP.mapa.nivelPrecision(r.gps_precision_m).nivel;
@@ -439,10 +437,10 @@ SRP.reportes = {
     const datos = (lista, clase) => '<div class="previa-datos' + (clase ? ' ' + clase : '') + '">' + lista.map(dato).join('') + '</div>';
     const nota = t => '<p class="previa-nota">' + esc(t) + '</p>';
     let h = '<p class="previa-titulo">' + esc(m.titulo) + '</p>';
-    // El cabo y, en la misma franja, los datos que distinguen a la jornada (D169)
+    // El cabo y, en la misma franja, los datos que distinguen a la jornada
     h += '<div class="previa-responsable">' + (m.cabo ? '<p class="previa-cabo"><b>Nombre del cabo:</b> ' + esc(m.cabo) + '</p>' : '') + datos(m.identificacion) + '</div>';
     h += '<div class="previa-cifras">' + m.cifras.map(c => '<div class="previa-cifra"><b>' + esc(c.valor) + '</b><span>' + esc(c.texto) + '</span></div>').join('') + '</div>';
-    // Croquis de la jornada (D115): se llena cuando la imagen está lista
+    // Croquis de la jornada: se llena cuando la imagen está lista
     h += apartado('Croquis de la jornada', '<div id="previa-croquis" class="previa-croquis" aria-live="polite"><p class="previa-nota">Preparando el croquis…</p></div>');
     const ej = m.ejemplares;
     h += apartado('Ejemplares plantados', '<div class="previa-tabla-caja"><table class="previa-tabla"><thead><tr>' + ej.cabecera.map((c, k) => '<th' + (k === 0 ? ' class="cifra"' : '') + '>' + esc(c) + '</th>').join('') + '</tr></thead><tbody>' +
@@ -486,14 +484,14 @@ SRP.reportes = {
       t.n += 1; m.set(clave, t);
     });
     const lista = [...m.values()].sort((a, b) => b.n - a.n || a.comun.localeCompare(b.comun, 'es'));
-    // El porcentaje del total, entero, y que sumen 100 (D163)
+    // El porcentaje del total, entero, y que sumen 100
     this.porcentajes(lista.map(t => t.n), registros.length).forEach((p, i) => { lista[i].pct = p; });
     return lista;
   },
 
   /* Porcentajes enteros por el método del resto mayor: redondeados uno por uno, 69 + 13 + 19 daban
      101 % en el mismo papel que dice «Total 100 %». Cantidades iguales llevan siempre el mismo
-     porcentaje (D168): el punto que sobra se reparte a un grupo de iguales completo o a ninguno;
+     porcentaje: el punto que sobra se reparte a un grupo de iguales completo o a ninguno;
      si no alcanza para el grupo, la suma queda uno o dos puntos abajo y el reporte lo advierte. */
   porcentajes(ns, total) {
     if (!total) return ns.map(() => 0);
@@ -512,7 +510,7 @@ SRP.reportes = {
     return [...new Set(registros.map(r => r.alcaldia).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'));
   },
 
-  /* El logotipo del PDF es el mismo archivo del encabezado (D90), siempre la versión completa
+  /* El logotipo del PDF es el mismo archivo del encabezado, siempre la versión completa
      aunque el teléfono muestre el recorte; el service worker lo tiene, así que también sale sin señal. */
   cargarLogo() {
     return new Promise((resolver) => {
@@ -564,8 +562,8 @@ SRP.reportes = {
   async generar(registros, cierre, fecha, jornada) {
     if (!window.jspdf) { SRP.util.anunciar('No se pudo cargar el generador de PDF.', 'alerta'); return; }
     const logo = await this.cargarLogo();
-    const m = this.modelo(registros, cierre, fecha, jornada);   // lo mismo que la vista previa (M15)
-    // compress: con el logotipo en JPEG el archivo queda en menos de 150 KB y se comparte por mensajería (D103)
+    const m = this.modelo(registros, cierre, fecha, jornada);   // lo mismo que la vista previa
+    // compress: con el logotipo en JPEG el archivo queda en menos de 150 KB y se comparte por mensajería
     const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'letter', compress: true });
     const ancho = doc.internal.pageSize.getWidth();
     const alto = doc.internal.pageSize.getHeight();
@@ -576,11 +574,11 @@ SRP.reportes = {
     const F = await this.ponerFuentes(doc);
     const letra = (estilo, tam, color) => { doc.setFont(F, estilo); doc.setFontSize(tam); doc.setTextColor(...color); };
     let y = 0;
-    // El pie va en alto − 16: un bloque cabe si termina antes de alto − 20 (M44)
+    // El pie va en alto − 16: un bloque cabe si termina antes de alto − 20
     const salto = (necesario) => { if (y + necesario > alto - 20) { doc.addPage(); y = 20; } };
 
-    /* ENCABEZADO. El logotipo se fija por su alto (D137). Debajo, el título y el nombre del cabo en
-       una franja: es lo primero que se lee del papel (D163). */
+    /* ENCABEZADO. El logotipo se fija por su alto. Debajo, el título y el nombre del cabo en
+       una franja: es lo primero que se lee del papel. */
     if (logo) { const hLogo = 9.3; doc.addImage(this.logoJPEG(logo), 'JPEG', M, 12, hLogo * logo.naturalWidth / logo.naturalHeight, hLogo); }
     doc.setDrawColor(...C.guinda); doc.setLineWidth(0.5); doc.line(M, 26, ancho - M, 26);
     letra('bold', 14, C.guinda);
@@ -597,7 +595,7 @@ SRP.reportes = {
     };
     /* DATOS «Etiqueta: valor» con la etiqueta en negritas, en columnas; lo largo (comentarios,
        observaciones, listas de personal) ocupa el renglón entero y sus renglones van debajo */
-    /* `caja` (D169): dentro de la franja del cabo, con sangría y sin filetes; `medir` sólo devuelve
+    /* `caja`: dentro de la franja del cabo, con sangría y sin filetes; `medir` sólo devuelve
        el alto, para dibujar primero el fondo de la franja */
     const datos = (items, columnas, caja, medir) => {
       const san = caja ? 4 : 0, X0 = M + san, anchoU = util - 2 * san;
@@ -649,8 +647,8 @@ SRP.reportes = {
       y = doc.lastAutoTable.finalY + 4;
     };
 
-    /* LA FRANJA DEL CABO (D169): el nombre del cabo y, en el mismo estilo, los datos que distinguen a
-       la jornada (antes la sección 1). Primero se mide para pintar el fondo, luego se escribe. */
+    /* LA FRANJA DEL CABO: el nombre del cabo y, en el mismo estilo, los datos que distinguen a
+       la jornada. Primero se mide para pintar el fondo, luego se escribe. */
     const altoDatos = m.identificacion.length ? datos(m.identificacion, 2, true, true) : 0;
     const altoCab = (m.cabo ? 9 : 2) + altoDatos + 2;
     doc.setFillColor(...C.suave); doc.roundedRect(M, y, util, altoCab, 1.5, 1.5, 'F');
@@ -673,7 +671,7 @@ SRP.reportes = {
     });
     y += 22;
 
-    // Croquis de la jornada (D115): encuadra todos los puntos solo (D163); si no cabe, pasa a la siguiente página
+    // Croquis de la jornada: encuadra todos los puntos solo; si no cabe, pasa a la siguiente página
     const croquis = SRP.croquis ? await SRP.croquis.generar(registros) : null;
     if (croquis) {
       /* A todo el ancho; si en lo que queda de la página cabe al menos a dos tercios, se reduce y
@@ -693,7 +691,7 @@ SRP.reportes = {
 
     // Ejemplares: uno por renglón, en el orden en que se capturaron (el número del croquis)
     seccion('Ejemplares plantados', 20);
-    // La precisión en color por su nivel (D169): verde buena, ámbar aceptable, rojo baja
+    // La precisión en color por su nivel: verde buena, ámbar aceptable, rojo baja
     const colorNivel = { buena: C.exito, aceptable: C.atencion, baja: C.error };
     tabla({ head: [m.ejemplares.cabecera.map((c, k) => k === 0 ? { content: c, styles: { halign: 'right' } } : c)], body: m.ejemplares.filas,
       columnStyles: { 0: { cellWidth: 11, halign: 'right' }, 2: { cellWidth: 38 }, 3: { cellWidth: 20 } },
@@ -704,7 +702,7 @@ SRP.reportes = {
     seccion('Totales por especie', 20);
     tabla({ head: [['Especie', 'Distribución', { content: 'Ejemplares', styles: { halign: 'right' } }, { content: '% del total', styles: { halign: 'right' } }]],
       body: m.totales.map(t => [t.comun + (t.cientifico ? ' (' + t.cientifico + ')' : ''), t.distribucion || '—', String(t.n), t.pct + ' %']),
-      // Las cifras del total se alinean como las de arriba (D103): el pie no hereda columnStyles
+      // Las cifras del total se alinean como las de arriba: el pie no hereda columnStyles
       foot: [['Total', '', { content: String(m.total), styles: { halign: 'right' } }, { content: '100 %', styles: { halign: 'right' } }]],
       columnStyles: { 1: { cellWidth: 34 }, 2: { halign: 'right', cellWidth: 22 }, 3: { halign: 'right', cellWidth: 22 } } });
     letra('italic', 7.5, C.gris); doc.text(m.notaTotales, M, y); y += 6;
@@ -764,7 +762,7 @@ SRP.reportes = {
     await this.entregar(doc, this.nombreArchivo(cierre, fecha, jornada), cierre, jornada);
   },
 
-  /* Nombre del PDF (D102): «Reporte», quién responde del reporte y la fecha del reporte, p. ej.
+  /* Nombre del PDF: «Reporte», quién responde del reporte y la fecha del reporte, p. ej.
      Reporte_Perengano_Gomez_Ejemplo_2026-09-22.pdf. La persona es el encargado del cierre; si no
      lo hay, el cabo de la jornada; si tampoco, quien genera (el coordinador que saca el de
      toda su cuadrilla). Sin acentos ni espacios, para que ningún sistema de archivos lo altere. */
@@ -773,14 +771,14 @@ SRP.reportes = {
     const id = (cierre && cierre.encargado_id) || cabo || SRP.sesion.usuario.id;
     const nombre = (SRP.ref.nombreUsuario(id) || 'SRP').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
-    // Con más de una jornada en el día, el número va en el nombre: Reporte_Fulana_2026-09-23_J2.pdf (D117)
+    // Con más de una jornada en el día, el número va en el nombre: Reporte_Fulana_2026-09-23_J2.pdf
     return 'Reporte_' + nombre + '_' + fecha + (jornada && jornada.total > 1 ? '_J' + jornada.n : '') + '.pdf';
   },
 
   /* En teléfono o tableta, compartir con las apps del dispositivo; en escritorio, descargar.
-     Windows también ofrece «compartir archivos» desde Chrome y Edge, y abría su panel de
-     Compartir en vez de guardar el PDF; el destino de Acrobat de ese panel recibía el archivo
-     vacío (D61). Táctil sin ratón es el criterio, no el tamaño de la pantalla. */
+     Windows también ofrece «compartir archivos» desde Chrome y Edge, y abre su panel de Compartir
+     en vez de guardar el PDF (el destino de Acrobat de ese panel recibe el archivo vacío). Táctil
+     sin ratón es el criterio, no el tamaño de la pantalla. */
   esDispositivoTactil() {
     return window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
   },
@@ -816,7 +814,7 @@ SRP.reportes = {
     // Una descarga de sólo lectura entrega el documento y no toca la jornada
     if (this.vistaPrevia && this.vistaPrevia.soloLectura) { SRP.util.anunciar(entregado === 'descarga' ? 'Reporte descargado: ' + nombre + '.' : 'Reporte compartido.', 'exito'); return; }
     await this.marcarGenerado(cierre, jornada);
-    /* Cierre del ciclo (D138): el reporte es el último paso de la jornada, así que el aviso dice si
+    /* Cierre del ciclo: el reporte es el último paso de la jornada, así que el aviso dice si
        quedó completa o, si todavía hay puntos por revisar, qué falta. */
     let cola = '', completa = true;
     if (jornada && jornada.registros && cierre) {
@@ -850,5 +848,5 @@ SRP.reportes = {
   }
 };
 
-// Acciones que escriben en el teléfono: si fallan, se dice qué no se pudo hacer (D149)
+// Acciones que escriben en el teléfono: si fallan, se dice qué no se pudo hacer
 SRP.util.proteger(SRP.reportes, { aceptar: 'guardar los datos del cierre' });

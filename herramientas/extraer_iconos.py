@@ -1,4 +1,4 @@
-"""Extrae iconos del set de iconografía del Manual de Identidad Gráfica CDMX 2024-2030 (D88).
+"""Extrae iconos del set de iconografía del Manual de Identidad Gráfica CDMX 2024-2030.
 
 Fuente: originales/ICONOS_SET_CDMX_2024-2030.ai (Illustrator con compatibilidad PDF, una
 página con 300 iconos). Cada icono es un trazado relleno; se agrupan por cercanía, se numeran por
@@ -16,9 +16,9 @@ FUENTE = os.path.join(RAIZ, 'originales', 'ICONOS_SET_CDMX_2024-2030.ai')
 
 # nombre en js/iconos.js → número en la hoja índice
 SELECCION = {
-    # bloque 35 (D88)
+    # primer grupo de iconos
     'basura': 1, 'cerrar': 31, 'ubicacion': 12, 'camara': 62, 'ver': 21,
-    # bloque 36 (D89): acceso, cuenta, pestañas y acciones
+    # acceso, cuenta, pestañas y acciones
     'correo': 53, 'candado': 63, 'entrar': 11, 'usuario': 261, 'mas': 32, 'registros': 214,
     'reportes': 50, 'catalogos': 48, 'usuarios': 270, 'buscar': 4, 'usuarioMas': 264, 'info': 22,
 }

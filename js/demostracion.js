@@ -1,9 +1,9 @@
-/* DATOS DE DEMOSTRACIÓN (D160). Sólo con datos de prueba (ES_FICTICIO). Para probar Supervisión,
-   Mi avance, los informes y las listas con volumen de verdad, un botón al pie carga casi tres años
-   de trabajo inventado —desde enero de 2024 hasta hoy— y otro lo quita sin tocar lo que se haya
+/* DATOS DE DEMOSTRACIÓN. Sólo con datos de prueba (ES_FICTICIO). Para probar Supervisión,
+   Mi avance, los informes y las listas con volumen de verdad, la ventana «Datos de prueba» carga casi
+   tres años de trabajo inventado —desde enero de 2024 hasta hoy— y los quita sin tocar lo que se haya
    capturado a mano. Volver a cargarlos da las mismas cuentas, jornadas y árboles: el generador usa
    una semilla fija. Los folios no se repiten: siguen la secuencia simulada, que nunca retrocede
-   (R5, D110), así que al recuperar los datos los árboles reciben folios nuevos.
+   (R5), así que al recuperar los datos los árboles reciben folios nuevos.
 
    QUÉ SE CARGA. Tres pasadas por el calendario, cada una con su semilla, así que agregar una no
    cambia lo que dan las anteriores:
@@ -20,7 +20,7 @@
    temporada de lluvias que en secas y un poco más cada año. Cada jornada tiene su sitio dentro de
    una colonia real de la capa, de 5 a 22 árboles alrededor, meta, cierre y, casi siempre, reporte.
    El territorio de cada árbol se deriva con las capas, como al registrar; los folios salen de la
-   misma secuencia simulada (D110) y lo anterior a hoy ya está «enviado». Hay de todo lo que la
+   misma secuencia simulada y lo anterior a hoy ya está «enviado». Hay de todo lo que la
    supervisión debe encontrar: jornadas abiertas de días anteriores, puntos sin revisar, jornadas
    sin reporte, árboles eliminados y editados, precisión baja, algunas fotografías.
 
@@ -109,7 +109,7 @@ SRP.demo = {
     ['u-coord-1', ['Cuauhtémoc', 'Benito Juárez', 'Iztapalapa'], '2024-01-08', null, null, 0.35],
     ['u-demo-k1', ['Coyoacán', 'Tlalpan', 'Álvaro Obregón'], '2024-01-08', null, null, 0.35]
   ],
-  // Especies y su peso: lo que más se planta en la ciudad, casi todo nativo (catálogo real, D84)
+  // Especies y su peso: lo que más se planta en la ciudad, casi todo nativo (catálogo real)
   ESPECIES: [['ESP-0029', 12], ['ESP-0041', 9], ['ESP-0036', 7], ['ESP-0004', 7], ['ESP-0070', 6], ['ESP-0002', 6], ['ESP-0027', 6], ['ESP-0062', 6],
     ['ESP-0024', 5], ['ESP-0057', 5], ['ESP-0018', 4], ['ESP-0032', 4], ['ESP-0010', 3], ['ESP-0049', 3], ['ESP-0074', 3], ['ESP-0047', 3],
     ['ESP-0038', 2], ['ESP-0043', 2], ['ESP-0051', 2], ['ESP-0067', 2], ['ESP-0073', 2], ['ESP-0033', 1]],
@@ -200,7 +200,7 @@ SRP.demo = {
     // Lo que alimenta «Qué atender»: dos jornadas abiertas de días anteriores y dos de hoy
     const abiertasViejas = { 'u-demo-c2': I.sumarDias(hoy, -15), 'u-demo-c5': I.sumarDias(hoy, -28) };
     const hoyAbiertas = ['u-demo-c4', 'u-demo-c1'];
-    /* Vehículos del catálogo (D162): cada cabo usa casi siempre uno o dos, y de vez en cuando otro,
+    /* Vehículos del catálogo: cada cabo usa casi siempre uno o dos, y de vez en cuando otro,
        para que el cierre ofrezca sus frecuentes. Con su propia semilla: no mueve lo demás */
     const rv = this.azar(162);
     const vehiculos = SRP.ref.deTipo('vehiculo', true).slice().sort((a, b) => a.id.localeCompare(b.id));
@@ -319,7 +319,7 @@ SRP.demo = {
     }
     }
     r = principal;
-    // Folios y envío: lo anterior a hoy ya salió; lo de hoy espera, como en campo (D110, D111)
+    // Folios y envío: lo anterior a hoy ya salió; lo de hoy espera, como en campo
     arboles.filter(a => a.fecha_plantacion < hoy && a.estatus === 'activo' && SRP.folio.puedeEmitir(a))
       .sort((a, b) => a.fecha_registro.localeCompare(b.fecha_registro)).forEach(a => {
         const celda = a.uga && /^[A-Z]{3}-\d{3}$/.test(a.uga) ? a.uga : 'EXT-000';
@@ -346,7 +346,7 @@ SRP.demo = {
 
   /* ---------- Cargar y quitar ---------- */
 
-  // Carga (o vuelve a cargar) los datos de demostración. Antes quita los que hubiera
+  // Carga (o vuelve a cargar) los datos de demostración. Primero quita los que hubiera
   async cargar(avance) {
     if (!SRP.CONFIG.ES_FICTICIO || this.cargando) return null;
     this.cargando = true;
@@ -479,5 +479,5 @@ SRP.demo = {
   }
 };
 
-// Si algo falla al cargar o quitar, se dice qué no se pudo hacer (D149)
+// Si algo falla al cargar o quitar, se dice qué no se pudo hacer
 SRP.util.proteger(SRP.demo, { alCargar: 'cargar los datos de demostración', alQuitar: 'quitar los datos de demostración' });

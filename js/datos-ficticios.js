@@ -24,7 +24,7 @@ window.SRP = window.SRP || {};
        en Catálogos › Programas */
     cat('programa', 'p-solicitud', 'SOLICITUD', 'Solicitud', { tipos_organizacion: [] })
   ];
-  // Programas de arranque que ya no vienen: en un teléfono con capturas se quitan o, si se usaron, se desactivan
+  // Programas de arranque que se retiraron: en un teléfono con capturas se quitan o, si se usaron, se desactivan
   const programasRetirados = ['p-voluntariado'];
 
   // ÁREAS de la Secretaría: sólo las cuentas de SEDEMA llevan área
@@ -34,7 +34,7 @@ window.SRP = window.SRP || {};
     cat('area', 'a-sia', 'SIA', 'Sistema de Información Ambiental'),
     cat('area', 'a-dgeira', 'DGEIRA', 'DGEIRA')
   ];
-  /* Áreas de arranque que ya no vienen y a cuál pasan sus cuentas en un teléfono con capturas
+  /* Áreas de arranque que se retiraron y a cuál pasan sus cuentas en un teléfono con capturas
      (js/almacen.js completarCatalogos) */
   const areasRetiradas = { 'a-div': 'a-dgsanpava' };
 
@@ -74,10 +74,10 @@ window.SRP = window.SRP || {};
     sol('s-diputados', 'DIPUTADAS_Y_DIPUTADOS', 'Diputadas y diputados', 'Congreso')
   ]);
 
-  /* ESPECIES: catálogo real del SIA (assets/catalogos/catalogo-especies.js, D84). No son ficticias:
+  /* ESPECIES: catálogo real del SIA (assets/catalogos/catalogo-especies.js). No son ficticias:
      se siembran tal cual, con su id ESP-0000 como llave. */
   const especies = SRP.CATALOGO_ESPECIES.especies.map(e => Object.assign({}, e));
-  // VEHÍCULOS: los de las cuadrillas (assets/catalogos/catalogo-vehiculos.js, D162); tampoco son ficticios
+  // VEHÍCULOS: los de las cuadrillas (assets/catalogos/catalogo-vehiculos.js); tampoco son ficticios
   const vehiculos = SRP.CATALOGO_VEHICULOS.vehiculos.map(v => Object.assign({}, v));
 
   // Correos en @ejemplo.local: dominio reservado, nunca entregable (Norma 3)

@@ -1,6 +1,6 @@
-/* INDICADORES DE SUPERVISIÓN (D157). Un solo cálculo para la pestaña Supervisión («Mi avance» del
+/* INDICADORES DE SUPERVISIÓN. Un solo cálculo para la pestaña Supervisión («Mi avance» del
    cabo) y para los informes por periodo en PDF y CSV: lo que se ve en pantalla es lo mismo que se
-   imprime y se descarga. Reglas decididas el 25-09-2026:
+   imprime y se descarga. Reglas:
    - Sólo cuentan las jornadas CERRADAS: una abierta todavía cambia. Las abiertas del periodo se
      dicen aparte («en curso») y las de días anteriores aparecen en «Qué atender».
    - Cada árbol cuenta en el periodo de su fecha de plantación, no en el de su jornada: una jornada
@@ -10,7 +10,7 @@
      suyos. Las jornadas, la meta y los pendientes son del titular.
    - Semana de lunes a domingo; mes y año de calendario; o un rango de fechas.
    - Cada quien ve su alcance: el cabo lo suyo, la coordinación su cuadrilla y lo suyo, la
-     administración todo. En la Etapa 1 es lo que hay en este teléfono; en la Fase 2, el servidor.
+     administración todo. Se calcula sobre lo que hay en este dispositivo.
    - Lo que plantan las alcaldías, PAOT, SOBSE y las empresas suma a las cifras de la Ciudad, y se
      desglosa por institución; el filtro de institución deja sólo la elegida.
    - Se cuentan los árboles activos. Los eliminados y los editados se cuentan aparte, como
@@ -270,7 +270,7 @@ SRP.indicadores = {
       enCurso: enCurso.map(j => ({ id: j.id, fecha: j.fecha, nombre: j.nombre, cabo: SRP.ref.nombreUsuario(j.cabo_id), arboles: j.registros.length })),
       atender,
       trazabilidad: { eliminados: eliminados.length, editados: ediciones.length },
-      // Un renglón por árbol contado: la tabla que se descarga en CSV (D159)
+      // Un renglón por árbol contado: la tabla que se descarga en CSV
       detalle: arboles.map(({ r, j }) => {
         const e = especieDe(r);
         return { folio: SRP.folio.valido(r.folio) ? r.folio : 'PROVISIONAL', fecha: r.fecha_plantacion, jornada: j.nombre, organizacion: SRP.ref.nombreOrganizacion(this.organizacionDe(j)),

@@ -1,6 +1,6 @@
 /* ESPEJO DE CAMPOS — SÓLO EN LA VERSIÓN DE PRUEBA.
    =================================================================================
-   ESTE ARCHIVO SE ELIMINA AL CERRAR LA ETAPA 1. Para quitarlo (revisado en D153):
+   ESTE ARCHIVO SE ELIMINA EN LA VERSIÓN REAL. Para quitarlo:
      1. borrar este archivo y su <script> en index.html;
      2. borrar los dos bloques con clase `espejo` de index.html: la sección #espejo-campos del
         formulario y el desplegable #espejo-cierre del cierre del reporte (los demás no están en
@@ -9,7 +9,7 @@
      4. si se quiere, borrar las llamadas a SRP.espejo (app.js, formulario.js, registros.js,
         reportes.js, jornada-activa.js, jornadas.js, usuarios.js y catalogos.js): todas van protegidas con
         `if (SRP.espejo)`, así que la app funciona igual con ellas o sin ellas.
-   La revisión de arranque ya no lo exige, y las pruebas abren la app sin este archivo ni sus
+   La revisión de arranque no lo exige, y las pruebas abren la app sin este archivo ni sus
    bloques, registran un árbol, ven su detalle y abren el cierre del reporte. No escribe en ningún
    almacén, no altera el registro y no participa en la validación. Es una ventana, no una pieza.
 
@@ -21,10 +21,9 @@
    =================================================================================
 
    PARA QUÉ. El formulario muestra doce datos, pero el registro que llega a la base
-   lleva más de veinte: identificadores, marcas de tiempo, el punto original antes de
-   cualquier arrastre, la UGA, la versión de la capa con que se derivó. Mientras se
-   afina la interfaz conviene ver los dos lados a la vez, para cachar a tiempo un
-   campo que se queda nulo cuando no debía.
+   lleva más de veinte: identificadores, marcas de tiempo, la UGA, la versión de la capa con que
+   se derivó. Conviene ver los dos lados a la vez, para cachar a tiempo un campo que se queda nulo
+   cuando no debía.
 
    CÓMO NO MIENTE. No reconstruye el registro: pide el mismo objeto que guardar()
    escribiría, a SRP.formulario.registroPrevisto(), y enseña de él lo que la pantalla

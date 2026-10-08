@@ -3822,3 +3822,35 @@ hallazgos. No se probó en un teléfono real; la plantilla con listas se revisó
 
 **Siguiente paso.** Las respuestas del SIA (esquema, `territorio`, cuentas, marco de las pantallas); la limpieza de
 comentarios; la fase 3 del servidor.
+
+## Bloque 195 — Comentarios del código sin la historia del proyecto (08-10-2026)
+
+Versión 0.9.54. A pedido de Liber («LIMPIA COMENTARIOS»), antes de pasar al servidor y de entregar el código.
+
+**Qué cambió (D275).** Sólo comentarios, en 38 archivos de `js/`, `css/estilos.css`, `index.html`, `sw.js` y
+`herramientas/` (en `servidor/` no había nada que quitar). Primero, con un guion, se quitaron de 588 comentarios los
+números de decisión, de mejora y de bloque y las notas «(antes …)». Luego, a mano, se reescribieron 102 comentarios
+que contaban la historia (qué pidió quién, lo que había antes, «Fase 1/2», el color guinda que ya no se usa para el
+foco) para que digan lo que hace hoy el código; 16 que sólo eran un número se quitaron. También 15 párrafos y cinco
+descripciones de las herramientas. El orden del reporte descrito en `js/reportes.js` quedó al día (croquis,
+ejemplares, totales con barra, personal, vehículo). Las referencias a la Norma y a las reglas (R…) se quedan.
+`herramientas/generar_diccionario.py` escribe el encabezado de `js/esquema.js` ya sin números; al regenerarlo sale
+idéntico.
+
+No se tocaron, porque son código y no comentarios: las descripciones del espejo de campos (`js/espejo.js`), el
+comentario que `js/app.js` pone en la página en lugar del campo de contraseña, los comentarios de columna de
+`servidor/sql/02_tablas.sql` (salen de `datos/esquema.json`), los mensajes de `herramientas/` y el encabezado que
+`generar_especies.py` escribe en el catálogo de especies.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada: la pantalla es la misma.
+
+**Verificación.** El código sin comentarios es idéntico antes y después en los 70 archivos (JS comparado por fichas
+del analizador, CSS, HTML y SQL sin comentarios ni espacios, Python por su árbol sin descripciones); la única
+diferencia es el texto del encabezado que escribe `generar_diccionario.py`, buscada a propósito. `pruebas/prueba.py`
+completa, sola: 1,425 comprobaciones, 0 fallas, sin errores de consola (en la salida aparecen conexiones que el
+navegador cerró a medio envío en el servidor de prueba, sin efecto en ninguna comprobación). `pruebas/auditoria.py`:
+143 comprobaciones, 0 hallazgos; `pruebas/auditoria_css.py`: 0 hallazgos; `servidor`, `npm test`: 21 de 21. No se
+probó en un teléfono real (no hacía falta: no cambió el código).
+
+**Siguiente paso.** Las respuestas del SIA (esquema, `territorio`, cuentas, marco de las pantallas) y la fase 3 del
+servidor: permisos por perfil e institución, edición y lista de cuentas, y conectar el módulo Usuarios.

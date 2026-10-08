@@ -1,8 +1,8 @@
-/* SUPERVISIÓN Y «MI AVANCE» (D158). Lo que se ha plantado en un periodo, dicho con los indicadores de
-   SRP.indicadores (D157): la coordinación ve su cuadrilla, la administración todo y el cabo lo suyo,
+/* SUPERVISIÓN Y «MI AVANCE». Lo que se ha plantado en un periodo, dicho con los indicadores de
+   SRP.indicadores: la coordinación ve su cuadrilla, la administración todo y el cabo lo suyo,
    con la misma pantalla. Para la coordinación y la administración es la primera sección al entrar
    y trae dentro las Fotografías; el cabo la encuentra al final de su barra como «Mi avance».
-   Todo se calcula; nada se teclea. Los informes en PDF y CSV (D159) salen de este mismo modelo. */
+   Todo se calcula; nada se teclea. Los informes en PDF y CSV salen de este mismo modelo. */
 window.SRP = window.SRP || {};
 
 SRP.supervision = {
@@ -73,7 +73,7 @@ SRP.supervision = {
     // «toggle» no burbujea: se escucha en la captura
     this.el('sup-cuerpo').addEventListener('toggle', (e) => this.alPlegar(e), true);
     this.el('btn-sup-fotos').addEventListener('click', () => SRP.app.mostrarVista('galeria'));
-    // Informes por periodo (D159): del mismo modelo que se ve
+    // Informes por periodo: del mismo modelo que se ve
     this.el('btn-sup-pdf').addEventListener('click', () => SRP.informes.pdf(this.modelo));
     this.el('btn-sup-csv').addEventListener('click', () => SRP.informes.csv(this.modelo));
 
@@ -90,7 +90,7 @@ SRP.supervision = {
     this.el('caja-sup-cabo').hidden = cabo;
     this.el('caja-sup-organizacion').hidden = !this.veOrganizaciones();
     // Quien entra con otra cuenta empieza en la semana en curso y sin filtros: no hereda el año
-    // ni la alcaldía que dejó la cuenta anterior en este mismo dispositivo (D160)
+    // ni la alcaldía que dejó la cuenta anterior en este mismo dispositivo
     if (this.usuarioId !== u.id) {
       this.usuarioId = u.id; this.periodo = null; this.abiertas = null; this.filtros = { alcaldia: '', programa: '', cabo: '', organizacion: '' };
       /* Tampoco ve, mientras se lee lo suyo, las cifras ni las listas de la cuenta anterior: otra
@@ -343,13 +343,13 @@ SRP.supervision = {
       '</tbody></table></div>' + (clave ? this.botonMas(clave, filas.length) : '');
   },
 
-  // % del total de lo elegido (D168), con el mismo redondeo del reporte: cantidades iguales, mismo %
+  // % del total de lo elegido, con el mismo redondeo del reporte: cantidades iguales, mismo %
   conPct(lista, total) {
     const p = SRP.reportes.porcentajes(lista.map(x => x.arboles), total);
     return lista.map((x, i) => Object.assign({}, x, { pct: p[i] }));
   },
 
-  /* LISTAS LARGAS (D160, D168). Con un año de trabajo, las jornadas del periodo son cientos y las
+  /* LISTAS LARGAS. Con un año de trabajo, las jornadas del periodo son cientos y las
      colonias de una alcaldía, decenas. Se ven las primeras 10 (las jornadas más recientes, las
      colonias y especies con más árboles) y «Mostrar 10 más» va sumando de diez en diez sin
      recalcular; al final, el mismo botón vuelve a dejar sólo las primeras 10. */
@@ -440,7 +440,7 @@ SRP.supervision = {
     if (e.target.closest('button[data-ver-jornadas]')) { this.verJornadas(); return; }
     const b = e.target.closest('button[data-jornada], button[data-cabo]'); if (!b) return;
     if (b.dataset.jornada) {
-      // Jornadas abre esa ficha al prepararse, y ajusta su filtro si la dejaba fuera (D125)
+      // Jornadas abre esa ficha al prepararse, y ajusta su filtro si la dejaba fuera
       SRP.jornadas.actual = b.dataset.jornada;
       SRP.jornadas.volverAlDetalle = true;
       SRP.app.mostrarVista('jornadas');

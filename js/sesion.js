@@ -1,6 +1,6 @@
 /* SESIÓN (capa de autenticación aparte, Norma 1.5).
-   Fase 1: acceso simulado; el usuario queda fijo en el dispositivo (localStorage).
-   Fase 2: se sustituye sólo autenticar() por el proveedor institucional, sin tocar el resto. */
+   En la versión de prueba el acceso es simulado y el usuario queda fijo en el dispositivo
+   (localStorage). Con el servidor se sustituye sólo autenticar(), sin tocar el resto. */
 window.SRP = window.SRP || {};
 
 SRP.sesion = {
@@ -27,14 +27,14 @@ SRP.sesion = {
     try { localStorage.removeItem(SRP.CONFIG.CLAVE_SESION); } catch (e) { /* nada que borrar */ }
   },
 
-  /* ACCESO SIMULADO (Fase 1).
+  /* ACCESO SIMULADO (versión de prueba).
      La contraseña NO se verifica: comprobarla en el navegador es seguridad aparente, porque
      cualquiera puede leer el código de la página. Lo único que se comprueba es que el correo
      corresponda a una cuenta dada de alta y activa, que es lo que permite probar el flujo y los
-     perfiles. La verificación real la hace el proveedor institucional en Fase 2, y entonces se
-     sustituye sólo esta función. Ver AUTENTICACION en config.js. */
+     perfiles. La verificación real la hace el servidor, y entonces se sustituye sólo esta función.
+     Ver AUTENTICACION en config.js. */
   autenticar(correo) {
-    // Con datos reales el acceso simulado no abre (D150): hasta conectar el proveedor institucional,
+    // Con datos reales el acceso simulado no abre: hasta conectar el proveedor institucional,
     // cualquier contraseña serviría. Apagar ES_FICTICIO sin cambiar el proveedor deja el acceso cerrado.
     if (SRP.CONFIG.AUTENTICACION.PROVEEDOR === 'simulado' && !SRP.CONFIG.ES_FICTICIO) {
       return { ok: false, motivo: 'El acceso institucional todavía no está conectado: esta versión no se puede usar con datos reales.' };

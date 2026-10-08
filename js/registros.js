@@ -15,13 +15,13 @@ SRP.registros = {
   el(id) { return document.getElementById(id); },
 
   iniciar() {
-    SRP.util.atajos.iniciar(this.el('filtro-atajos'), a => this.aplicarAtajo(a));   // M15
-    // El cabo se aplica al elegirlo; ya no pasa por «Aplicar», que es sólo del rango
+    SRP.util.atajos.iniciar(this.el('filtro-atajos'), a => this.aplicarAtajo(a));
+    // El cabo se aplica al elegirlo; «Aplicar» es sólo del rango
     this.el('filtro-cabo').addEventListener('change', () => {
       this.filtro.cabo = this.el('filtro-cabo').value;
       this.aplicar();
     });
-    // Desde y Hasta no se encadenan ni se aplican solos: el rango entra con «Aplicar» (D82, que supera D75)
+    // Desde y Hasta no se encadenan ni se aplican solos: el rango entra con «Aplicar»
     this.el('btn-filtrar').addEventListener('click', () => {
       const desde = this.el('filtro-desde').value;
       const hasta = this.el('filtro-hasta').value;
@@ -35,7 +35,7 @@ SRP.registros = {
       this.sincronizarControles();
       this.aplicar();
     });
-    // «Un día» se aplica al elegir la fecha: es un solo dato, no hace falta «Aplicar» (D113)
+    // «Un día» se aplica al elegir la fecha: es un solo dato, no hace falta «Aplicar»
     this.el('filtro-dia').addEventListener('change', () => {
       this.filtro.dia = this.el('filtro-dia').value;
       this.diaAbierto = true;
@@ -46,9 +46,9 @@ SRP.registros = {
     // Especie, programa, alcaldía e institución
     ['especie', 'programa', 'alcaldia'].forEach(k => this.el('filtro-' + k).addEventListener('change', (e) => { this.filtro[k] = e.target.value; this.sincronizarControles(); this.aplicar(); }));
     this.el('filtro-org').addEventListener('change', (e) => { this.filtro.organizacion = e.target.value; this.sincronizarControles(); this.aplicar(); });
-    // En teléfono los filtros se pliegan tras «Filtros» (D100); en escritorio el botón no se ve
+    // En teléfono los filtros se pliegan tras «Filtros»; en escritorio el botón no se ve
     this.el('btn-filtros').addEventListener('click', () => this.plegarFiltros(this.el('panel-filtros').dataset.abierto !== 'true'));
-    // Cada ficha de filtro activo se quita con su × (D100)
+    // Cada ficha de filtro activo se quita con su ×
     this.el('filtros-activos').addEventListener('click', (e) => {
       const b = e.target.closest('button[data-quitar]'); if (!b) return;
       if (b.dataset.quitar === 'periodo') this.aplicarAtajo('todos');
@@ -72,7 +72,7 @@ SRP.registros = {
     this.el('btn-sustituir-hoy').addEventListener('click', () => { this.el('sustituir-fecha').value = SRP.util.fechaHoy(); this.el('sustituir-error').hidden = true; });
     this.el('sustituir-fecha').addEventListener('change', () => { this.el('sustituir-error').hidden = true; });
     this.el('lista-registros').addEventListener('click', (e) => {
-      // Tocar la tarjeta fuera de la tuerca abre el detalle: el atajo del uso más común (D100).
+      // Tocar la tarjeta fuera de la tuerca abre el detalle: el atajo del uso más común.
       // Con teclado se llega por la tuerca, que ofrece «Ver detalle»
       if (!e.target.closest('.registro-acciones')) {
         const li = e.target.closest('.registro[data-id]');
@@ -88,7 +88,7 @@ SRP.registros = {
       if (b.dataset.accion === 'sustituir') this.sustituir(r);
     });
     this.el('btn-detalle-editar').innerHTML = SRP.ICONOS.svg('lapiz', 'medio') + '<span>Editar</span>';
-    // Editar desde el detalle: cierra la ficha y abre el registro en el formulario (D91)
+    // Editar desde el detalle: cierra la ficha y abre el registro en el formulario
     this.el('btn-detalle-editar').addEventListener('click', () => {
       const r = this.detalleActual; if (!r) return;
       this.el('dlg-detalle').close();
@@ -107,7 +107,7 @@ SRP.registros = {
     const alcance = SRP.permisos.de(u).alcance;
     this.el('titulo-registros').textContent =
       alcance === 'propios' ? 'Mis registros' : alcance === 'equipo' ? 'Registros de mi cuadrilla' : alcance === 'institucion' ? 'Registros de mi institución' : 'Todos los registros';
-    // Nombre de la jornada de cada registro, para la tarjeta (D134)
+    // Nombre de la jornada de cada registro, para la tarjeta
     const jornadas = await SRP.almacen.todos('jornadas');
     this.jornadasPorId = Object.fromEntries(jornadas.map(j => [j.id, j.nombre]));
     // La institución de un árbol es la de su jornada (o, sin jornada, la de quien lo registró)
@@ -120,9 +120,9 @@ SRP.registros = {
     this.el('caja-filtro-cabo').hidden = alcance === 'propios';
     this.llenarListas();
     // El atajo lleva la fecha para que nadie dude de qué día habla; va en un segundo renglón
-    // para que quepa en un tercio del teléfono. La coma oculta hace que se lea «Hoy, 22-SEP-26» (D95, D147)
+    // para que quepa en un tercio del teléfono. La coma oculta hace que se lea «Hoy, 22-SEP-26»
     SRP.util.pintarChipHoy(this.el('chip-hoy'));
-    // Al entrar se ven todos los registros (D104): «Hoy» queda como atajo, no como filtro de inicio
+    // Al entrar se ven todos los registros: «Hoy» queda como atajo, no como filtro de inicio
     if (this.primeraVez) { this.primeraVez = false; }
     this.sincronizarControles();
     this.aplicar();
@@ -182,7 +182,7 @@ SRP.registros = {
   },
 
   /* Deja los filtros como al abrir la vista por primera vez: todos los registros, sin año ni mes,
-     sin rango y todos los cabos (D104). Es distinto de «Todos», que sólo quita el periodo y respeta el cabo. */
+     sin rango y todos los cabos. Es distinto de «Todos», que sólo quita el periodo y respeta el cabo. */
   reiniciarFiltros() {
     const antes = Object.assign({}, this.filtro);
     this.filtro = this.filtroVacio();
@@ -197,7 +197,7 @@ SRP.registros = {
     SRP.util.anunciar('Filtros quitados: todos los registros.', 'exito', { deshacer: () => this.volverAFiltro(antes) });
   },
 
-  // Devuelve los filtros a como estaban antes de «Quitar filtros» (D101)
+  // Devuelve los filtros a como estaban antes de «Quitar filtros»
   volverAFiltro(f) {
     this.filtro = Object.assign({}, f);
     this.el('filtro-cabo').value = f.cabo || '';
@@ -215,14 +215,14 @@ SRP.registros = {
   aplicarAtajo(atajo) {
     const f = this.filtro;
     // «Un periodo» no filtra por sí mismo: muestra Desde/Hasta y el filtro entra con «Aplicar».
-    // No abre el selector ni mueve el foco (D82)
+    // No abre el selector ni mueve el foco
     if (atajo === 'periodo') {
       this.periodoAbierto = true;
       this.diaAbierto = false;
       this.sincronizarControles();
       return;
     }
-    /* «Un día» muestra una sola fecha; filtra en cuanto se elige (D113). Si ya había un día
+    /* «Un día» muestra una sola fecha; filtra en cuanto se elige. Si ya había un día
        elegido, se conserva; si no, la lista sigue completa hasta elegirlo. */
     if (atajo === 'dia') {
       this.diaAbierto = true;
@@ -258,9 +258,8 @@ SRP.registros = {
     const f = this.filtro, hoy = SRP.util.fechaHoy();
     const periodo = f.anio ? f.anio + (f.mes ? '-' + f.mes : '') : '';
     const sinRango = !f.desde && !f.hasta;
-    // Un solo atajo marcado a la vez (D104): al abrir «Un periodo» se marca él y se desmarcan los
-    // otros, aunque el rango entre hasta «Aplicar». Antes «Todos» seguía marcado y «Un periodo»
-    // llevaba contorno guinda: parecían elegidos los dos.
+    // Un solo atajo marcado a la vez: al abrir «Un periodo» se marca él y se desmarcan los
+    // otros, aunque el rango entre hasta «Aplicar»: si no, parecerían elegidos dos a la vez.
     const pidePeriodo = !sinRango || !!this.periodoAbierto;
     const pideDia = !pidePeriodo && !!this.diaAbierto;
     const activo = {
@@ -273,8 +272,8 @@ SRP.registros = {
     };
     // Desde/Hasta se ven mientras haya rango o se haya pedido «Un periodo»
     const abierto = !sinRango || !!this.periodoAbierto;
-    SRP.util.atajos.marcar(this.el('filtro-atajos'), activo, { periodo: [this.el('filtro-periodo'), abierto], dia: [this.el('filtro-un-dia'), pideDia] });   // M15
-    // El acordeón «Más filtros» (D129): su resumen dice lo elegido dentro; si nada de lo suyo aplica, no se ve
+    SRP.util.atajos.marcar(this.el('filtro-atajos'), activo, { periodo: [this.el('filtro-periodo'), abierto], dia: [this.el('filtro-un-dia'), pideDia] });
+    // El acordeón «Más filtros»: su resumen dice lo elegido dentro; si nada de lo suyo aplica, no se ve
     const conCabo = !this.el('caja-filtro-cabo').hidden, conOrg = !this.el('caja-filtro-org').hidden;
     const dentro = this.elegidos().map(e => e[1].replace(/^[^:]+: /, '')).filter(Boolean);
     const disponibles = [conCabo ? 'quién registró' : '', 'especie', 'programa', 'alcaldía', conOrg ? 'institución' : ''].filter(Boolean);
@@ -296,7 +295,7 @@ SRP.registros = {
     this.pintar();
   },
 
-  /* Filtros activos como fichas con × (D100). Lo que ya está a la vista en la lista no se
+  /* Filtros activos como fichas con ×. Lo que ya está a la vista en la lista no se
      repite: sólo el periodo y el cabo, cuando los hay. El número va también en «Filtros». */
   pintarFichas() {
     const f = this.filtro, fmt = d => SRP.util.formatearFecha(d), esc = t => SRP.util.escapar(t);
@@ -320,7 +319,7 @@ SRP.registros = {
   plegarFiltros(abrir) {
     this.el('panel-filtros').dataset.abierto = String(abrir);
     this.el('btn-filtros').setAttribute('aria-expanded', String(abrir));
-    // Las fichas sólo se ven con el panel plegado: abierto, los atajos ya dicen lo mismo (D105)
+    // Las fichas sólo se ven con el panel plegado: abierto, los atajos ya dicen lo mismo
     this.el('filtros-activos').dataset.visible = String(!abrir);
   },
 
@@ -335,32 +334,32 @@ SRP.registros = {
     this.pagina = info.pagina;
     const pagina = info.items;
     const esc = SRP.util.escapar;
-    // Envío simulado (D111): la tarjeta dice si el registro espera envío; enviado no lleva marca
+    // Envío simulado: la tarjeta dice si el registro espera envío; enviado no lleva marca
     const envio = SRP.envio.simulado() ? SRP.envio.leer() : null;
     this.el('lista-registros').innerHTML = pagina.map(r => {
       const est = envio ? SRP.envio.estado(r, envio) : null;
       const esp = SRP.ref.especieDe(r);
-      // Acciones en el menú de la tuerca (D94): sólo las que el perfil permite
+      // Acciones en el menú de la tuerca: sólo las que el perfil permite
       const items = [{ accion: 'ver', texto: 'Ver detalle', icono: 'ver' }];
       if (SRP.permisos.puedeEditar(u, r, SRP.ref.usuarioPorId)) items.push({ accion: 'editar', texto: 'Editar', icono: 'lapiz' });
       if (SRP.permisos.puede('registro.sustituir', r)) items.push({ accion: 'sustituir', texto: 'Sustituir', icono: 'intercambio' });
       if (SRP.permisos.puedeEliminar(u, r, SRP.ref.usuarioPorId)) items.push({ accion: 'eliminar', texto: 'Eliminar', icono: 'basura', peligro: true });
       const menu = SRP.ICONOS.menuAcciones(r.id, esp.comun + ' del ' + SRP.util.formatearFecha(r.fecha_plantacion), items);
-      // Tarjeta (D100): miniatura, especie, lugar y fecha, con la tuerca arriba a la derecha.
-      // «PROVISIONAL» ya no se repite en cada tarjeta: lo dicen el detalle, la ficha y el PDF (R1);
+      // Tarjeta: miniatura, especie, lugar y fecha, con la tuerca arriba a la derecha.
+      // «PROVISIONAL» no se repite en cada tarjeta: lo dicen el detalle y la ficha (R1);
       // el folio sólo aparece cuando exista
       const foto = SRP.util.fotoSegura(r.foto_base64);
       const mini = foto
         ? '<img class="registro-miniatura" src="' + foto + '" alt="" loading="lazy">'
         : '<span class="registro-miniatura registro-sin-foto" aria-hidden="true">' + SRP.ICONOS.svg('registros', 'grande') + '</span>';
-      /* Anatomía común de tarjeta (D141), la misma de Jornadas y Reportes: 1) qué —la especie—,
+      /* Anatomía común de tarjeta, la misma de Jornadas y Reportes: 1) qué —la especie—,
          2) cuándo y quién, 3) fila de estado —folio y envío—, 4) dónde —jornada y lugar—; la
-         tuerca, arriba a la derecha (D100) */
+         tuerca, arriba a la derecha */
       const estado = this.htmlEstado(r, est);
       return '<li class="registro" data-id="' + SRP.util.escapar(r.id) + '">' + mini + '<div class="registro-datos">' +
         '<span class="registro-especie">' + esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : '') +
           (r.sustituye_id ? ' <span class="marca-sustituto">Sustituto · ' + esc(SRP.ref.motivoSustitucion(r)) + '</span>' : '') + '</span>' +
-        // Cuándo y estado en un mismo renglón: la tarjeta sigue compacta (D100) en una lista larga
+        // Cuándo y estado en un mismo renglón: la tarjeta sigue compacta en una lista larga
         '<span class="registro-meta"><span class="registro-fecha">' + this.htmlFecha(r, variosAutores) + '</span>' +
         '<span class="registro-estado"' + (estado ? '' : ' hidden') + '>' + estado + '</span></span>' +
         '<span class="registro-lugar">' + SRP.ICONOS.svg('ubicacion', 'chico') + '<span>' +
@@ -383,7 +382,7 @@ SRP.registros = {
     return SRP.util.formatearFecha(r.fecha_plantacion) + (variosAutores ? ' · ' + esc(SRP.ref.nombreUsuario(r.cabo_id)) : '');
   },
 
-  /* Fila de estado (D141): el folio cuando existe y, si espera envío, la marca (D111). Enviado y
+  /* Fila de estado: el folio cuando existe y, si espera envío, la marca. Enviado y
      sin folio todavía no dice nada: «PROVISIONAL» no se repite en cada tarjeta (R1). */
   MARCAS: { por_enviar: 'Por enviar', cambios: 'Cambios por enviar' },
   htmlEstado(r, est) {
@@ -392,7 +391,7 @@ SRP.registros = {
       (this.MARCAS[est] ? '<span class="etiqueta marca-envio">' + SRP.ICONOS.svg('sinSenal', 'chico') + '<span>' + this.MARCAS[est] + '</span></span>' : '');
   },
 
-  /* Después de un envío en segundo plano (D111) la lista se corrige en su lugar: folio nuevo y
+  /* Después de un envío en segundo plano la lista se corrige en su lugar: folio nuevo y
      marca «Por enviar» fuera, sin repintar. Repintar cerraría el menú de la tuerca o movería la
      lista bajo el dedo de quien la está usando. */
   async refrescarEnvio() {
@@ -414,7 +413,7 @@ SRP.registros = {
     });
   },
 
-  /* Estado vacío con salida (D96): en lugar de pedir «Toque Todos», el aviso trae el botón que
+  /* Estado vacío con salida: en lugar de pedir «Toque Todos», el aviso trae el botón que
      resuelve. Tres casos: no hay ningún registro, no hay de hoy, o el filtro no encuentra nada.
      «Registrar árbol» sólo aparece a quien captura. */
   pintarVacio(vacio, propios, u) {
@@ -438,7 +437,7 @@ SRP.registros = {
       texto = 'Pruebe con otro periodo' + (this.elegidos().length ? ' u otros filtros' : '') + ', o quite los filtros.';
       botones = [{ accion: 'quitar', texto: 'Quitar filtros', clase: 'btn-secundario' }];
     }
-    caja.innerHTML = SRP.util.htmlVacio(icono, titulo, texto, botones);   // patrón común de los cuatro listados (D141)
+    caja.innerHTML = SRP.util.htmlVacio(icono, titulo, texto, botones);   // patrón común de los cuatro listados
   },
 
   // Quita todo filtro, cabo incluido: lo que pide el estado vacío cuando el filtro no encuentra nada
@@ -579,7 +578,7 @@ SRP.registros = {
   },
 
   /* Eliminar un registro se deshace (se marca, no se borra): no pregunta; el aviso dice cuál se
-     eliminó y ofrece «Deshacer» (D139). La confirmación queda para lo que no tiene vuelta. */
+     eliminó y ofrece «Deshacer». La confirmación queda para lo que no tiene vuelta. */
   async eliminar(r) {
     if (!SRP.permisos.exigir('registro.eliminar', r)) return;
     // Retiro con constancia: se marca, no se borra (Norma 7.4)
@@ -593,7 +592,7 @@ SRP.registros = {
       bitacora: SRP.bitacora.entrada('RESTAURADO', 'plantacion', original.id, 'Se eliminó su sustituto: vuelve a contar como plantado') });
     (await SRP.reportes.caducar([r.jornada_id], 'se eliminó un árbol')).forEach(c => cambios.push(c));
     await SRP.almacen.guardarJuntos(cambios);
-    // «Deshacer» devuelve el registro tal como estaba y deja constancia (D101)
+    // «Deshacer» devuelve el registro tal como estaba y deja constancia
     const cual = SRP.folio.valido(r.folio) ? '(' + r.folio + ')' : 'del ' + SRP.util.formatearFecha(r.fecha_plantacion);
     SRP.util.anunciar('Registro de ' + SRP.ref.especieDe(r).comun + ' ' + cual + ' eliminado: ya no aparece en listados ni reportes.', 'exito', { deshacer: () => this.restaurar(r) });
     if (SRP.app.vista === 'jornadas') { SRP.jornadas.volverAlDetalle = false; SRP.jornadas.refrescar(); } else if (SRP.app.vista === 'registrar') await SRP.activa.preparar(); else this.preparar();
@@ -625,5 +624,5 @@ SRP.registros = {
   }
 };
 
-// Acciones que escriben en el teléfono: si fallan, se dice qué no se pudo hacer (D149)
+// Acciones que escriben en el teléfono: si fallan, se dice qué no se pudo hacer
 SRP.util.proteger(SRP.registros, { eliminar: 'eliminar el registro', restaurar: 'restaurar el registro', seguirSustitucion: 'preparar la sustitución' });

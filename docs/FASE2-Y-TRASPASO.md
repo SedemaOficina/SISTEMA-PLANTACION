@@ -141,7 +141,7 @@ Lo que hoy es de prueba y no debe llegar a producción. Los detalles están en e
 - [ ] El catálogo de especies sí es el real (79 especies: 76 de la paleta vegetal y 3 fuera de ella); no se sustituye.
 - [ ] Conectar el acceso con cuentas propias (correo y contraseña), la API de envío y la emisión de folios.
 - [ ] Ninguna cuenta de arranque con contraseña conocida: cada una con contraseña temporal de un solo uso.
-- [ ] **Limpiar los comentarios del código** (pedido de Liber, 08-10-2026), antes de pasar al servidor y de
+- [x] **Limpiar los comentarios del código** (pedido de Liber, 08-10-2026; hecho en el bloque 195, D275), antes de pasar al servidor y de
       entregar el código. Quedan sólo los que ayudan a un tercero a entender y mantener: qué hace, por qué así y
       qué cuidar. Fuera la historia del proyecto: números de decisión y de bloque («(D166)», «antes …», «Bloque
       188»), quién pidió qué («Liber pidió», «la prueba de campo pidió»), lo que se hizo antes y se quitó, y notas

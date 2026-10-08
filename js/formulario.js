@@ -8,11 +8,9 @@ SRP.formulario = {
 
   el(id) { return document.getElementById(id); },
 
-  /* SIN AVANCE AUTOMÁTICO DEL FOCO (D82).
-     Hasta el bloque 30 el formulario saltaba solo al campo siguiente al cerrar una respuesta
-     (ubicación → especie → programa → fecha). En uso real desorientaba: la pantalla se desplazaba
-     sin que el usuario lo pidiera y en móvil abría selectores por su cuenta. Ningún campo mueve
-     el foco por sí mismo; el usuario decide a dónde ir. */
+  /* SIN AVANCE AUTOMÁTICO DEL FOCO. Ningún campo mueve el foco por sí mismo al cerrar una
+     respuesta: saltar solo al campo siguiente desorienta (la pantalla se desplaza sin que nadie lo
+     pida y en el teléfono abre selectores por su cuenta). La persona decide a dónde ir. */
 
   iniciar() {
     SRP.mapa.iniciar((lat, lng) => this.alMoverPunto(lat, lng));
@@ -23,7 +21,7 @@ SRP.formulario = {
       this.el('btn-ubicacion').hidden = e.target.open;
     });
     this.el('btn-coord-aplicar').addEventListener('click', () => this.aplicarCoordenadasManuales());
-    SRP.util.coordenadas.enlazar(this.el('coord-lat'), this.el('coord-lng'));   // D170
+    SRP.util.coordenadas.enlazar(this.el('coord-lat'), this.el('coord-lng'));
     this.iniciarCombo();
     // Los enlaces del resumen de errores llevan al control que se ve, aunque el dato viva en otro
     this.el('resumen-errores').addEventListener('click', (e) => {
@@ -37,13 +35,13 @@ SRP.formulario = {
     this.el('btn-foto-quitar').addEventListener('click', () => {
       const f = { datos: this.estado.foto, id: this.estado.fotoId, nombre: this.estado.fotoNombre, bytes: this.estado.fotoBytes };
       this.ponerFoto(null, null);
-      // Quitar la foto por error obligaba a tomarla otra vez; ahora se deshace (D101)
+      // Quitar la foto se puede deshacer: tomarla otra vez puede no ser posible
       SRP.util.anunciar('Fotografía quitada.', 'exito', { deshacer: () => this.ponerFoto(f.datos, f.id, f.nombre, f.bytes) });
       this.el('etq-foto').focus();
     });
     this.el('form-plantacion').addEventListener('submit', (e) => {
       if (!SRP.activa.exigir()) { e.preventDefault(); return; } e.preventDefault(); this.enviarFormulario(); });
-    // Un solo «Guardar» (D130): la ficha de revisión sólo se abre cuando hay algo que revisar
+    // Un solo «Guardar»: la ficha de revisión sólo se abre cuando hay algo que revisar
     this.el('btn-revisar').innerHTML = SRP.ICONOS.svg('disco', 'grande') + '<span>Guardar</span>';
     this.el('btn-guardado-corregir').innerHTML = SRP.ICONOS.svg('lapiz', 'chico') + '<span>Corregir</span>';
     this.el('btn-guardado-ver').innerHTML = SRP.ICONOS.svg('ver', 'chico') + '<span>Ver</span>';
@@ -57,8 +55,8 @@ SRP.formulario = {
       const r = this.estado.ultimoGuardado && await SRP.almacen.uno('plantaciones', this.estado.ultimoGuardado);
       if (r) SRP.registros.verDetalle(r);
     });
-    /* ATAJO DE TECLADO (D142): Ctrl+Enter (⌘+Enter en Mac) guarda, o confirma la ficha de revisión si
-       está abierta. No se anuncia en pantalla ni hay atajos numéricos (D145): queda
+    /* ATAJO DE TECLADO: Ctrl+Enter (⌘+Enter en Mac) guarda, o confirma la ficha de revisión si
+       está abierta. No se anuncia en pantalla ni hay atajos numéricos: queda
        sólo en aria-keyshortcuts del botón. Enter solo no guarda: se evitó a propósito en la ficha. */
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Enter' || !(e.ctrlKey || e.metaKey) || SRP.app.vista !== 'registrar') return;
@@ -175,13 +173,13 @@ SRP.formulario = {
       SRP.mapa.estado(SRP.mapa.GUIA_SIN_PUNTO);
     }
     this.el('campo-fecha').max = SRP.util.fechaHoy();
-    // Sin jornada abierta, en lugar del formulario se pide iniciarla (D119)
+    // Sin jornada abierta, en lugar del formulario se pide iniciarla
     SRP.activa.preparar().then(() => { if (SRP.espejo) SRP.espejo.refrescar(); });
     SRP.mapa.refrescar();
     if (SRP.espejo) SRP.espejo.refrescar();
   },
 
-  /* Las últimas especies de la jornada activa, a un toque (D130): hasta tres, la más reciente
+  /* Las últimas especies de la jornada activa, a un toque: hasta tres, la más reciente
      primero; «Otra especie» no se ofrece porque cada una es distinta. Al sustituir, el primero es «La
      misma»: la especie del árbol perdido, también si era una especie escrita. */
   async pintarEspeciesRecientes() {
@@ -200,10 +198,10 @@ SRP.formulario = {
       esc((SRP.ref.catalogoPorId[id] || {}).nombre || id) + '</button>').join('');
   },
 
-  /* EL PROGRAMA ES DE LA JORNADA (D151, supera a D130 y D132). Se elige al iniciarla y sus árboles lo
-     toman siempre, como la fecha: si cambia el de la jornada, cambia el de todos, y un árbol movido
-     toma el de su jornada nueva. Un árbol de otro programa va en otra jornada. Por eso el formulario
-     ya no tiene campo de programa. */
+  /* EL PROGRAMA ES DE LA JORNADA. Se elige al iniciarla y sus árboles lo toman siempre, como la
+     fecha: si cambia el de la jornada, cambia el de todos, y un árbol movido toma el de su jornada
+     nueva. Un árbol de otro programa va en otra jornada. Por eso el formulario no tiene campo de
+     programa. */
   programaDeJornada() {
     const j = this.estado.editando ? this.estado.jornadaEditando : SRP.activa.jornada;
     return (j && j.programa_id) || (this.estado.editando ? this.estado.editando.programa_id : '') || '';
@@ -220,13 +218,13 @@ SRP.formulario = {
     const t = SRP.derivacion.derivar(lat, lng);
     this.estado.territorio = t;
     this.mostrarPunto(lat, lng, t);
-    // Junto al límite de la ciudad (D152): el punto cayó fuera, dentro del margen, y toma la
+    // Junto al límite de la ciudad: el punto cayó fuera, dentro del margen, y toma la
     // alcaldía más cercana. Se dice en su renglón, sin tapar la precisión
     SRP.mapa.aviso('territorio', t.fuera_m ? 'El punto cae a ' + t.fuera_m + ' m fuera del límite de la Ciudad de México; se registra en ' +
       t.alcaldia + ', la alcaldía más cercana. Revise que el árbol esté dentro de la ciudad.' : null);
     // La captura a mano refleja el punto vigente: quien la abra corrige sobre lo que ya hay
     this.el('coord-lat').value = lat.toFixed(6);
-    this.el('coord-lng').value = SRP.util.coordenadas.mostrarLongitud(lng);   // el «−» ya está a la vista (D170)
+    this.el('coord-lng').value = SRP.util.coordenadas.mostrarLongitud(lng);   // el «−» ya está a la vista
     this.guardarBorrador();
   },
 
@@ -235,7 +233,7 @@ SRP.formulario = {
   mostrarPunto(lat, lng, t) {
     // Sin punto no hay datos que enseñar: la ficha aparece cuando el punto existe
     this.el('campo-punto').hidden = !(t && lat !== null);
-    this.el('dato-coordenadas').textContent = (t && lat !== null) ? lat.toFixed(5) + ', ' + lng.toFixed(5) : '—';   // cinco decimales (~1 m) se leen; se guardan seis (D152)
+    this.el('dato-coordenadas').textContent = (t && lat !== null) ? lat.toFixed(5) + ', ' + lng.toFixed(5) : '—';   // cinco decimales (~1 m) se leen; se guardan seis
     this.el('dato-origen').textContent = t ? SRP.mapa.textoOrigen(SRP.mapa.origen, SRP.mapa.precision) : '—';
     this.el('dato-alcaldia').textContent = t ? SRP.ref.alcaldia(t.alcaldia) : '—';
     this.el('dato-colonia').textContent = t ? SRP.ref.colonia(t.colonia) : '—';
@@ -246,7 +244,7 @@ SRP.formulario = {
     const C = SRP.util.coordenadas;
     C.repartir(this.el('coord-lat'), this.el('coord-lng'));
     const lat = C.latitud(this.el('coord-lat').value);
-    const lng = C.longitud(this.el('coord-lng').value);   // negativa con o sin signo (D170)
+    const lng = C.longitud(this.el('coord-lng').value);   // negativa con o sin signo
     if (Number.isNaN(lat) || Number.isNaN(lng)) {
       SRP.mapa.estado('Escriba la latitud y la longitud, por ejemplo 19.4326 y 99.1332, o pegue las dos juntas.', 'alerta');
       return;
@@ -281,9 +279,9 @@ SRP.formulario = {
     });
   },
 
-  /* En teléfono el teclado tapaba la lista y sólo se veían dos especies. Al tocar el campo, éste
-     sube al tope de la pantalla para que la lista use el espacio que queda (D98). No mueve el foco:
-     sólo desplaza la página hasta lo que la persona acaba de tocar (D82 sigue en pie). */
+  /* En el teléfono el teclado tapa la lista y sólo se verían dos especies. Al tocar el campo, éste
+     sube al tope de la pantalla para que la lista use el espacio que queda. No mueve el foco:
+     sólo desplaza la página hasta lo que la persona acaba de tocar. */
   darEspacioALista() {
     if (!window.matchMedia('(max-width: 700px)').matches) return;
     clearTimeout(this._tEspacio);
@@ -297,11 +295,11 @@ SRP.formulario = {
   filtrarEspecies() {
     // Con una especie ya elegida, el texto del campo es «Común (Científico)», que no coincide con
     // ningún nombre por separado y dejaba la lista en sólo «Otra especie». Mientras la elección
-    // siga vigente se ofrece la lista completa; en cuanto se teclea, especieId se anula y se filtra (D76)
+    // siga vigente se ofrece la lista completa; en cuanto se teclea, especieId se anula y se filtra
     const q = this.estado.especieId ? '' : SRP.util.normalizar(this.el('campo-especie').value);
     // También se busca por los otros nombres comunes del catálogo; si coincidió por uno de ellos
-    // se dice («también: Fresno»), porque un mismo nombre puede señalar a varias especies (D84)
-    // Sin tope: con el catálogo real (79) la lista completa se recorre con desplazamiento (D87)
+    // se dice («también: Fresno»), porque un mismo nombre puede señalar a varias especies
+    // Sin tope: con el catálogo real (79) la lista completa se recorre con desplazamiento
     const coinciden = SRP.ref.deTipo('especie', true)
       .map(e => ({ e, por: q ? SRP.ref.especieCoincide(e, q) : true }))
       .filter(x => x.por);
@@ -379,7 +377,7 @@ SRP.formulario = {
       this.el('foto-vista').removeAttribute('src');
     }
     // La zona de carga dice si va a poner la primera foto o a reemplazar la que hay; con foto
-    // se reduce a un renglón, porque lo importante ya es la ficha de la foto (D98)
+    // se reduce a un renglón, porque lo importante ya es la ficha de la foto
     this.el('texto-foto').textContent = datos ? 'Cambiar fotografía' : 'Agregar fotografía';
     this.el('etq-foto').classList.toggle('con-foto', !!datos);
     if (SRP.espejo) SRP.espejo.refrescar();
@@ -403,7 +401,7 @@ SRP.formulario = {
   },
 
   mostrarErrores(errores) {
-    // Cada campo dice su error debajo (D140); el resumen de arriba se conserva (M15)
+    // Cada campo dice su error debajo; el resumen de arriba se conserva
     SRP.util.resumenErrores(this.el('resumen-errores'), errores, ['btn-ubicacion', 'campo-especie', 'campo-otra-especie', 'campo-fecha']);
     // Un error en la fecha se ve aunque el campo estuviera escondido
     if (errores.some(e => e[0] === 'campo-fecha')) this.el('caja-fecha-arbol').hidden = false;
@@ -422,7 +420,7 @@ SRP.formulario = {
       uga: t.uga || null, uga_borde_m: t.uga_borde_m == null ? null : t.uga_borde_m, capa_version: t.capa_version || null,
       especie_id: otra ? null : this.estado.especieId,
       especie_otra: otra ? this.el('campo-otra-especie').value.trim() : '',
-      programa_id: this.programaDeJornada(),   // el de la jornada (D151)
+      programa_id: this.programaDeJornada(),   // el de la jornada
       fecha_plantacion: this.el('campo-fecha').value,
       comentarios: this.el('campo-comentarios').value.trim(),
       foto_base64: this.estado.foto, foto_id: this.estado.fotoId
@@ -445,21 +443,21 @@ SRP.formulario = {
     return this.resumenAMedias().length > 0;
   },
 
-  /* Al tocar «Guardar» (D130): con errores se señalan; con algo que revisar (precisión que no es
+  /* Al tocar «Guardar»: con errores se señalan; con algo que revisar (precisión que no es
      buena, especie fuera del catálogo, posible duplicado, árbol lejos de la jornada) o en edición,
      se abre la ficha con esos avisos arriba; si no, se guarda de una vez. */
   async enviarFormulario() {
-    SRP.mapa.detenerAfinado();   // lo que se revisa y se guarda es el punto de este momento (D152)
+    SRP.mapa.detenerAfinado();   // lo que se revisa y se guarda es el punto de este momento
     const errores = this.validar();
     this.mostrarErrores(errores);
     if (errores.length) return;
-    // Doble toque en Guardar (D136): un guardado con GPS de por medio tarda un instante, y un
+    // Doble toque en Guardar: un guardado con GPS de por medio tarda un instante, y un
     // segundo toque antes de que el primero termine no debe crear dos árboles ni dos avisos.
     const boton = this.el('btn-revisar');
     if (boton.disabled) return;
-    const libre = SRP.util.ocupado(boton, 'Guardando…', 'disco', 'grande');   // M15
+    const libre = SRP.util.ocupado(boton, 'Guardando…', 'disco', 'grande');
     try {
-      // Una jornada que no es de hoy se confirma antes de guardar en ella (D133)
+      // Una jornada que no es de hoy se confirma antes de guardar en ella
       if (!this.estado.editando && !(await SRP.activa.confirmarOtroDia())) return;
       // Con los árboles previstos ya registrados, uno más se confirma, una vez por jornada
       if (!this.estado.editando && !(await SRP.activa.confirmarExceso())) return;
@@ -480,7 +478,7 @@ SRP.formulario = {
   },
 
   /* Lo que amerita mirar la ficha antes de guardar. Devuelve [{ tipo, texto }]. La fotografía es
-     opcional y nunca avisa (D130). */
+     opcional y nunca avisa. */
   async avisos(v) {
     const salida = [];
     if (v.punto_origen === 'gps' && v.gps_precision_m != null) {
@@ -525,9 +523,9 @@ SRP.formulario = {
       : await (async () => { const f = await SRP.folio.previsto(Object.assign({ id }, v)); return f || SRP.folio.PROVISIONAL; })();
 
     // Orden del formulario: primero lo que el cabo revisa; los datos que pone el sistema, al final
-    // y en chico (D99). La ubicación no se teclea: se corrige volviendo a colocar el punto.
+    // y en chico. La ubicación no se teclea: se corrige volviendo a colocar el punto.
     const filas = [
-      // Nombre común, científico y tipo de distribución del catálogo (D123)
+      // Nombre común, científico y tipo de distribución del catálogo
       ['Especie', esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : '') +
         (esp.distribucion ? '<span class="revision-distribucion">' + esc(esp.distribucion) + '</span>' : ''), 'especie'],
       ['Programa', esc(SRP.ref.nombreCatalogo(v.programa_id)), null],
@@ -537,13 +535,13 @@ SRP.formulario = {
       ['Colonia', esc(SRP.ref.colonia(v.colonia)), null],
       ['Coordenadas', v.lat.toFixed(5) + ', ' + v.lng.toFixed(5), 'punto'],
       ['Cómo se obtuvo', this.textoOrigenRevision(v), null],
-      // Sin comentarios, el renglón no sale (D174): «Sin comentarios» sólo alargaba la ficha
+      // Sin comentarios, el renglón no sale: «Sin comentarios» sólo alargaba la ficha
       v.comentarios ? ['Comentarios', esc(v.comentarios), 'comentarios'] : null,
       ['Fotografía', SRP.util.fotoSegura(v.foto_base64)
         ? '<img class="revision-foto" src="' + SRP.util.fotoSegura(v.foto_base64) + '" alt="Fotografía del árbol que se va a registrar">'
         : 'Sin fotografía', 'foto'],
-      // El folio va a la vista, bajo la fotografía (D123), y con datos de prueba se enseña el que
-      // tocará (D126); el identificador interno ya no se muestra
+      // El folio va a la vista, bajo la fotografía, y con datos de prueba se enseña el que
+      // tocará; el identificador interno no se muestra
       ['Folio', '<span class="folio-provisional">' + esc(folio) + '</span>' +
         (SRP.folio.celdaIncierta(v) ? '<span class="revision-sub">' + esc(SRP.folio.celdaIncierta(v)) + '</span>' : ''), null],
       ['Cabo', esc(this.nombreCabo()), null]
@@ -568,7 +566,7 @@ SRP.formulario = {
     }
   },
 
-  /* «Cómo se obtuvo» con la misma insignia de precisión que bajo el mapa (D99): la ficha es el
+  /* «Cómo se obtuvo» con la misma insignia de precisión que bajo el mapa: la ficha es el
      último momento para notar un punto impreciso. Con precisión baja o aceptable se dice qué
      hacer; es aviso, no impide guardar. */
   textoOrigenRevision(v, conConsejo = true) {
@@ -581,8 +579,8 @@ SRP.formulario = {
   },
 
   /* Quién queda como autor. En alta es quien tiene la sesión abierta —el encabezado lo dice
-     arriba, por eso ya no hay campo—; en edición sigue siendo el cabo que lo capturó, que no
-     tiene por qué ser quien corrige. */
+     arriba, por eso no hay campo—; en edición sigue siendo el cabo que lo capturó, que no tiene
+     por qué ser quien corrige. */
   nombreCabo() {
     return this.estado.editando
       ? SRP.ref.nombreUsuario(this.estado.editando.cabo_id)
@@ -614,7 +612,7 @@ SRP.formulario = {
   /* EL REGISTRO TAL COMO QUEDARÍA EN LA BASE, en un solo lugar. Lo arma guardar() y lo lee el
      espejo de campos: así lo que el espejo enseña no puede desfasarse de lo que de verdad se
      escribe, que es justo el error que un panel de control visual haría fácil cometer. */
-  // La jornada del registro: la activa al crear, la propia al editar (D119)
+  // La jornada del registro: la activa al crear, la propia al editar
   jornadaId() {
     return this.estado.editando ? (this.estado.editando.jornada_id || null) : (SRP.activa.jornada ? SRP.activa.jornada.id : null);
   },
@@ -638,7 +636,7 @@ SRP.formulario = {
       fecha_registro: ahora, fecha_ultima_edicion: null, editado_por_id: null,
       // El folio y lo que se congela con él los pone el servidor al sincronizar (R3, R8); aquí nacen nulos
       folio: null,
-      jornada_id: this.jornadaId(),   // la jornada declarada antes de registrar (D119)
+      jornada_id: this.jornadaId(),   // la jornada declarada antes de registrar
       // Sustitución: el sustituto apunta al árbol que reemplaza y guarda por qué; el original, a su sustituto
       sustituye_id: s ? s.original.id : null, motivo_sustitucion: s ? s.motivo : null, motivo_sustitucion_otro: s ? s.otro : '',
       sustituido_por_id: null
@@ -646,19 +644,19 @@ SRP.formulario = {
   },
 
   async guardar() {
-    // Lo mismo que esconde los botones, exigido aquí (D151)
+    // Lo mismo que esconde los botones, exigido aquí
     if (!(this.estado.editando ? SRP.permisos.exigir('registro.editar', this.estado.editando) : SRP.permisos.exigir('registro.crear'))) return;
     const v = this.valores();
     const u = SRP.sesion.usuario;
     const ahora = SRP.util.ahoraISO();
-    const libre = SRP.util.ocupado(this.el('btn-resumen-guardar'), 'Guardando…', 'disco');   // M15
+    const libre = SRP.util.ocupado(this.el('btn-resumen-guardar'), 'Guardando…', 'disco');
     try {
       if (this.estado.editando) {
         const previo = this.estado.editando;
         const cambiados = ['lat', 'lng', 'punto_origen', 'especie_id', 'especie_otra', 'programa_id', 'fecha_plantacion', 'comentarios', 'foto_id']
           .filter(k => (previo[k] || null) !== (v[k] || null));
         // Al editar se vuelve a derivar el territorio con las capas vigentes: si cambió —porque el
-        // punto se movió o porque la capa es otra—, queda en el historial (D152)
+        // punto se movió o porque la capa es otra—, queda en el historial
         const territorio = ['alcaldia', 'colonia', 'uga', 'capa_version'].filter(k => (previo[k] || null) !== (v[k] || null));
         // Si el punto se movió, el historial guarda de dónde a dónde
         const punto = previo.lat !== v.lat || previo.lng !== v.lng
@@ -671,10 +669,10 @@ SRP.formulario = {
           .concat(detalle ? await SRP.reportes.caducar([nuevo.jornada_id], 'se editó un árbol') : []));
         this.el('dlg-resumen').close();
         this.limpiar();
-        // Si se llegó desde la revisión de una jornada, se vuelve a ella (D112)
+        // Si se llegó desde la revisión de una jornada, se vuelve a ella
         SRP.app.mostrarVista(SRP.jornadas.volverAlDetalle ? 'jornadas' : 'registros');
         if (SRP.envio.simulado()) {
-          // Un registro enviado y luego editado vuelve a la cola (D111)
+          // Un registro enviado y luego editado vuelve a la cola
           SRP.envio.marcarCambios(nuevo.id);
           const res = await SRP.envio.enviar({ silencioso: true });
           SRP.util.anunciar(res && res.enviados ? 'Cambios guardados y enviados al servidor (simulado).'
@@ -689,32 +687,32 @@ SRP.formulario = {
         if (!nuevo.jornada_id) { SRP.util.anunciar('No hay jornada activa. Inicie una antes de guardar.', 'aviso'); return; }
         // Sólo quien tiene la jornada a su cargo registra en ella: si pasó a otro cabo en relevo, ya no
         if (!SRP.permisos.exigir('jornada.registrar', await SRP.almacen.uno('jornadas', nuevo.jornada_id) || {})) { await SRP.activa.preparar(); return; }
-        // La distancia a los demás de la jornada ya se avisó en la ficha (D130, supera la pregunta de D119)
+        // La distancia a los demás de la jornada ya se avisó en la ficha de revisión
         await SRP.almacen.guardarConBitacora('plantaciones', nuevo, SRP.bitacora.entrada('CREADO', 'plantacion', nuevo.id));
         if (this.el('dlg-resumen').open) this.el('dlg-resumen').close();
         // Con este árbol se llega a lo previsto: lo dice la misma confirmación de guardado, no un aviso aparte
         const jornada = SRP.activa.jornada, previstos = jornada ? SRP.jornadas.previstosDe(jornada) : null;
         const llevados = jornada && previstos !== null ? (await SRP.activa.registrosDe(jornada)).length : 0;
         this.mostrarGuardado(nuevo, previstos !== null && llevados === previstos ? previstos : null);
-        await SRP.activa.preparar();   // la franja cuenta el árbol nuevo (D119) y repinta programa y especies recientes
-        // La franja «Guardado» a la vista, arriba, y el formulario nuevo debajo (D171): antes se centraba
-        // el botón de ubicación y en un teléfono chico la franja quedaba fuera. Va después de repintar
-        // la franja de la jornada, que cambia de alto
-        // Antes se cancela el desplazamiento suave que la lista de especies pudo dejar en curso
-        // (darEspacioALista): si no, al terminar se llevaba la franja fuera de la pantalla
+        await SRP.activa.preparar();   // la franja cuenta el árbol nuevo y repinta programa y especies recientes
+        // La franja «Guardado» a la vista, arriba, y el formulario nuevo debajo: en un teléfono chico,
+        // centrar el botón de ubicación dejaría la franja fuera. Va después de repintar la franja de la
+        // jornada, que cambia de alto.
+        // Primero se cancela el desplazamiento suave que la lista de especies pudo dejar en curso
+        // (darEspacioALista): si no, al terminar se llevaría la franja fuera de la pantalla,
         // y se espera a que la página se acomode (la lista de especies se cierra en el mismo instante)
         clearTimeout(this._tEspacio);
         window.scrollTo({ top: window.scrollY, behavior: 'instant' });
         requestAnimationFrame(() => requestAnimationFrame(() => this.el('franja-guardado').scrollIntoView({ block: 'start', behavior: 'instant' })));
-        // Con datos de prueba, el registro sale en seguida si hay señal (D111) y recibe folio (D110)
-        // El envío corre aparte (D142): el árbol ya quedó en el teléfono y la franja dice «enviando…»;
+        // Con datos de prueba, el registro sale en seguida si hay señal y recibe folio
+        // El envío corre aparte: el árbol ya quedó en el teléfono y la franja dice «enviando…»;
         // esperarlo dejaba «Guardar» en «Guardando…» hasta que el servidor contestara, frenando el siguiente
         if (SRP.envio.simulado()) this.enviarTrasGuardar(nuevo.id).catch(() => this.pintarEnvio(nuevo.id, 'por_enviar', 'no se pudo enviar: se reintentará solo'));
-        // Lo capturado vive sólo en el teléfono: se pide al navegador que no lo borre y se vigila el espacio (D149)
+        // Lo capturado vive sólo en el teléfono: se pide al navegador que no lo borre y se vigila el espacio
         SRP.almacen.cuidarAlmacenamiento();
       }
     } catch (err) {
-      // Lo capturado sigue en pantalla; se dice qué pasó y, si fue el espacio, qué hacer (D149)
+      // Lo capturado sigue en pantalla; se dice qué pasó y, si fue el espacio, qué hacer
       const e = err || new Error('');
       try { e.srpAvisado = true; } catch (x) { /* se avisa igual */ }
       SRP.util.anunciar(SRP.util.mensajeError(e, 'guardar el árbol') + ' Sus datos siguen en pantalla.', 'alerta');
@@ -790,14 +788,14 @@ SRP.formulario = {
 
   /* ---------- Después de guardar ---------- */
 
-  /* En campo se registran muchos árboles seguidos (D130): al guardar, el formulario queda en
+  /* En campo se registran muchos árboles seguidos: al guardar, el formulario queda en
      blanco y listo, y arriba una franja dice qué acaba de quedar registrado —especie, folio,
      lugar y envío— con «Corregir» (abre ese registro en edición) y «Ver». Sin modal. */
   mostrarGuardado(registro, previstosCompletos) {
     const esp = SRP.ref.especieDe(registro);
     const esc = SRP.util.escapar;
     this.estado.ultimoGuardado = registro.id;
-    const lugar = SRP.ref.lugar(registro.alcaldia, registro.colonia);   // M15
+    const lugar = SRP.ref.lugar(registro.alcaldia, registro.colonia);
     this.el('franja-guardado-texto').innerHTML = SRP.ICONOS.svg('palomita', 'medio') +
       '<span class="franja-guardado-cuerpo"><strong>Guardado: ' + esc(esp.comun) + '</strong>' +
       '<span class="franja-guardado-datos"><span id="franja-guardado-folio" class="folio-provisional">' + esc(SRP.folio.textoLargo(registro)) + '</span>' +
@@ -812,10 +810,10 @@ SRP.formulario = {
     SRP.util.anunciarSilencioso('Registro exitoso: ' + esp.comun + '. ' + (previstosCompletos ? this.textoCompleta(previstosCompletos) + ' Puede cerrar la jornada o seguir registrando.' : 'Listo para el siguiente árbol.'));
   },
 
-  /* CONFIRMACIÓN AL GUARDAR (D171). La prueba de campo pidió certeza inmediata de que el árbol quedó
-     guardado, sin desplazarse. Una ventana que hubiera que cerrar sumaría un toque por árbol (D130
-     los quitó): ésta aparece al centro, dice «Registro exitoso» y la especie, vibra un instante y se
-     cierra sola; no tapa los toques (pointer-events: none). */
+  /* CONFIRMACIÓN AL GUARDAR. Da certeza inmediata de que el árbol quedó guardado, sin
+     desplazarse. Una ventana que hubiera que cerrar sumaría un toque por árbol: ésta aparece al
+     centro, dice «Registro exitoso» y la especie, vibra un instante y se cierra sola; no tapa los
+     toques (pointer-events: none). */
   /* JORNADA COMPLETA. Cuando el árbol guardado es el último de los previstos se dice en una ventana
      propia, distinta de la tarjeta de cada árbol: no se cierra sola, nombra la jornada y ofrece
      cerrarla o seguir registrando. Vibra dos veces. La franja de la jornada lo deja escrito después. */
@@ -850,7 +848,7 @@ SRP.formulario = {
     try { if (navigator.vibrate) navigator.vibrate(60); } catch (e) { /* sin vibración: basta lo visible */ }
   },
 
-  /* Lo que dice la franja «Guardado» con el envío simulado (D111): «Enviando…» mientras sale, y
+  /* Lo que dice la franja «Guardado» con el envío simulado: «Enviando…» mientras sale, y
      luego enviado con su hora de recepción, o guardado en el teléfono y cuántos esperan. */
   async enviarTrasGuardar(id) {
     const envio = SRP.envio;
@@ -878,10 +876,10 @@ SRP.formulario = {
     const e = this.el('franja-guardado-envio'); if (e) e.textContent = texto;
   },
 
-  /* El formulario arranca en blanco en cada registro. Antes conservaba programa, fecha y
-     ubicación porque los árboles de una jornada suelen compartirlos; en campo eso se convierte
-     en el dato del árbol anterior guardado sin que nadie lo note, y la coordenada heredada es
-     el peor de los casos: se ve bien y está mal. Se prefiere volver a capturar. */
+  /* El formulario arranca en blanco en cada registro. Conservar programa, fecha y ubicación del
+     árbol anterior parece cómodo, pero en campo se convierte en el dato del árbol anterior guardado
+     sin que nadie lo note, y la coordenada heredada es el peor de los casos: se ve bien y está mal.
+     Se prefiere volver a capturar. */
   /* ---------- Edición ---------- */
   editar(registro) {
     this.limpiar();
@@ -924,7 +922,7 @@ SRP.formulario = {
     this.estado.idPrevisto = null;
     this.estado.territorio = null;
     this.el('titulo-registrar').textContent = 'Nuevo registro';
-    this.el('titulo-registrar').classList.add('oculto-visual');   // se lee, no se ve (D153)
+    this.el('titulo-registrar').classList.add('oculto-visual');   // se lee, no se ve
     const ta = this.el('titulo-arbol'); if (ta) ta.textContent = 'Nuevo árbol';
     this.el('edicion-aviso').hidden = true;
     this.el('edicion-franja').hidden = true;

@@ -1,4 +1,4 @@
-/* ESQUEMA EN EL NAVEGADOR (D150, D175). Generado de datos/esquema.json por herramientas/generar_diccionario.py:
+/* ESQUEMA EN EL NAVEGADOR. Generado de datos/esquema.json por herramientas/generar_diccionario.py:
    no se edita a mano. Lo usan js/referencias.js, para leer las relaciones entre tablas, y el espejo de
    campos de la versión de prueba, para decir dónde se ve cada campo.
    Por tabla: [campo, tipo, nulo, dominio, referencia, pantalla]. */

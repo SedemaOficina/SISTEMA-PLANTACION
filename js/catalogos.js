@@ -1,13 +1,13 @@
 /* EDITOR DE CATÁLOGOS (sólo Administración global).
    Regla: un valor con uso no se elimina, se desactiva. Todo cambio va a la bitácora.
 
-   ESPECIES (D84). El catálogo es el real del SIA (assets/catalogos/catalogo-especies.js): la clave es el
+   ESPECIES. El catálogo es el real del SIA (assets/catalogos/catalogo-especies.js): la clave es el
    id_especie ESP-0000, se asigna en consecutivo y no se edita; nombre común y científico son
    obligatorios; tipo de distribución con los cuatro valores del SNIB; otros nombres comunes,
    forma de crecimiento, id SNIB e id EncicloVida son opcionales y viajan con la especie. Género y
    epíteto se derivan del nombre científico al guardar.
 
-   VEHÍCULOS (D162). La placa es el nombre y lo que se elige en el cierre del reporte; modelo y tipo
+   VEHÍCULOS. La placa es el nombre y lo que se elige en el cierre del reporte; modelo y tipo
    son obligatorios y se ponen solos al elegirla. La clave es la placa sin espacios, se fija al
    darla de alta y no se muestra: dos placas que sólo difieren en espacios son la misma.
 
@@ -88,7 +88,7 @@ SRP.catalogos = {
     });
     this.el('form-catalogo').addEventListener('submit', (e) => { e.preventDefault(); this.guardar(); });
     this.el('tabla-catalogo').addEventListener('click', (e) => {
-      // Tocar la tarjeta (fuera de la tuerca) abre la edición (D105)
+      // Tocar la tarjeta (fuera de la tuerca) abre la edición
       if (!e.target.closest('.c-acciones, thead')) {
         const tr = e.target.closest('tr[data-id]');
         if (tr && !this.esFija(SRP.ref.catalogoPorId[tr.dataset.id])) { this.abrirFormulario(SRP.ref.catalogoPorId[tr.dataset.id]); return; }
@@ -102,7 +102,7 @@ SRP.catalogos = {
   },
 
   async preparar() {
-    // Árboles (también los eliminados: siguen en el historial), jornadas y cuentas que lo usan (D151)
+    // Árboles (también los eliminados: siguen en el historial), jornadas y cuentas que lo usan
     this.usos = await SRP.ref.usosDe('catalogos');
     // Buscar en especies, instituciones y solicitantes; estos dos también por tipo
     const esOrg = this.tipo === 'organizacion', esSol = this.tipo === 'solicitante', conTipo = esOrg || esSol;
@@ -130,7 +130,7 @@ SRP.catalogos = {
     // Instituciones y solicitantes llevan tipo y no muestran clave
     const esSol = this.tipo === 'solicitante', conTipo = esOrg || esSol, tipos = this.tiposDe(this.tipo);
     const textoOrg = (c) => this.tipoDe(c);
-    // «12 árboles y 3 jornadas», «2 cuentas», «Sin uso» (D151)
+    // «12 árboles y 3 jornadas», «2 cuentas», «Sin uso»
     const textoUso = (id) => SRP.ref.textoUsos(this.usos[id]) || 'Sin uso';
     const tipoOrg = conTipo ? this.el('cat-filtro-tipo').value : '';
     const coincide = c => !q || (conTipo ? [this.nombreDe(c), c.clave].some(t => SRP.util.normalizar(t).includes(q)) : SRP.ref.especieCoincide(c, q));
@@ -149,7 +149,7 @@ SRP.catalogos = {
       '<th scope="col">Estado</th><th scope="col">Uso</th><th scope="col">Acciones</th></tr></thead>';
     const filas = items.map(c => {
       const uso = SRP.ref.totalUsos(this.usos[c.id]);
-      // Acciones en el menú de la tuerca (D94); Eliminar sólo si no tiene uso
+      // Acciones en el menú de la tuerca; Eliminar sólo si no tiene uso
       // Instituciones: se renombran y se desactivan, no se eliminan; las alcaldías sólo se activan y
       // desactivan. La Secretaría no se desactiva: sus cuentas administran el sistema
       const fija = this.esFija(c);
@@ -159,7 +159,7 @@ SRP.catalogos = {
       // data-etiqueta: en teléfono cada renglón se muestra como ficha con su etiqueta
       // Sólo se marca lo inactivo: casi todo está activo y marcarlo en cada renglón no distingue nada
       const estado = c.activo ? '' : '<span class="estado-texto" data-activo="false">Inactivo</span>';
-      // Clases c-*: en teléfono la fila es una tarjeta compacta (D105): título, científico, un
+      // Clases c-*: en teléfono la fila es una tarjeta compacta: título, científico, un
       // renglón de resumen y la tuerca arriba a la derecha; el resto de celdas se oculta ahí
       // Marcas de la especie: fuera de la paleta vegetal (advertencia) y fruto comestible
       const marcas = esEspecie ? this.marcasEspecie(c) : '';
@@ -179,21 +179,21 @@ SRP.catalogos = {
     }).join('');
     this.el('tabla-catalogo').innerHTML = cab + '<tbody>' + (filas || '<tr><td colspan="8">Sin resultados.</td></tr>') + '</tbody>';
     SRP.util.ordenable(this.el('tabla-catalogo'));
-    // Cuántos hay y cuántos coinciden (D105)
+    // Cuántos hay y cuántos coinciden
     const nombres = { programa: ['programa', 'programas'], area: ['área', 'áreas'], especie: ['especie', 'especies'], vehiculo: ['vehículo', 'vehículos'], organizacion: ['institución', 'instituciones'], solicitante: ['solicitante', 'solicitantes'] }[this.tipo];
     const total = SRP.ref.deTipo(this.tipo, false).length;
     const pal = (n) => n === 1 ? nombres[0] : nombres[1];
-    // Y cuántos están inactivos (D142): «79 especies · 3 inactivas»
+    // Y cuántos están inactivos: «79 especies · 3 inactivas»
     const inactivos = SRP.ref.deTipo(this.tipo, false).filter(c => !c.activo).length;
     const femenino = this.tipo === 'area' || this.tipo === 'especie' || this.tipo === 'organizacion';
     this.el('cat-cuenta').textContent = (q || tipoOrg || marca ? items.length + ' de ' + total + ' ' + pal(total) : total + ' ' + pal(total)) +
       (inactivos ? ' · ' + inactivos + ' ' + (femenino ? (inactivos === 1 ? 'inactiva' : 'inactivas') : (inactivos === 1 ? 'inactivo' : 'inactivos')) : '');
   },
 
-  /* FORMA DE CRECIMIENTO CON BOTONES (D107). Una especie puede tener varias (Árbol, Arbusto), así
-     que cada botón se marca o desmarca por su cuenta. El texto se guarda igual que antes, separado
-     por comas, en el orden de la lista; una forma que ya traiga el catálogo y no esté en la lista
-     se conserva como botón. */
+  /* FORMA DE CRECIMIENTO CON BOTONES. Una especie puede tener varias (Árbol, Arbusto), así
+     que cada botón se marca o desmarca por su cuenta. El texto se guarda separado por comas, en
+     el orden de la lista; una forma que ya traiga el catálogo y no esté en la lista se conserva
+     como botón. */
   FORMAS: ['Árbol', 'Arbusto', 'Palma', 'Sufrútice', 'Liana', 'Hierba'],
 
   pintarFormas() {
@@ -417,7 +417,7 @@ SRP.catalogos = {
     if (this.tipo === 'solicitante') datos.clave = this.editando ? this.editando.clave : this.claveLibre(SRP.util.claveDesdeNombre(datos.nombre) || 'SOLICITANTE');
     if (this.tipo === 'vehiculo') { datos.nombre = datos.nombre.toUpperCase(); datos.clave = this.editando ? this.editando.clave : this.clavePlaca(datos.nombre); }
     const errores = this.validar(datos);
-    if (SRP.util.resumenErrores(this.el('cat-errores'), errores, ['cat-nombre', 'cat-clave'].concat(this.CAMPOS_TIPO, this.CAMPOS_ESPECIE, this.CAMPOS_VEHICULO))) return;   // D140, M15
+    if (SRP.util.resumenErrores(this.el('cat-errores'), errores, ['cat-nombre', 'cat-clave'].concat(this.CAMPOS_TIPO, this.CAMPOS_ESPECIE, this.CAMPOS_VEHICULO))) return;
     const u = SRP.sesion.usuario;
     const ahora = SRP.util.ahoraISO();
     const extra = this.tipo === 'especie' ? {
@@ -437,7 +437,7 @@ SRP.catalogos = {
       item = Object.assign({}, previo, valores, { editado_por_id: u.id, fecha_ultima_edicion: ahora });
       entrada = SRP.bitacora.entrada('EDITADO', 'catalogo', item.id, 'Campos: ' + (cambiados.join(', ') || 'ninguno'));
     } else {
-      // En especies el id es la propia clave ESP-0000: es la llave del catálogo del SIA (D84)
+      // En especies el id es la propia clave ESP-0000: es la llave del catálogo del SIA
       const id = this.tipo === 'especie' ? datos.clave : SRP.util.generarId();
       item = Object.assign({
         id, tipo: this.tipo, clave: datos.clave, nombre: datos.nombre, activo: true,
@@ -452,8 +452,8 @@ SRP.catalogos = {
     this.preparar();
   },
 
-  /* Desactivar se deshace: no pregunta, lo dice el aviso y ofrece «Deshacer» (D139).
-     `deshaciendo`: viene de «Deshacer» del aviso; no se vuelve a ofrecer deshacer (D101) */
+  /* Desactivar se deshace: no pregunta, lo dice el aviso y ofrece «Deshacer».
+     `deshaciendo`: viene de «Deshacer» del aviso; no se vuelve a ofrecer deshacer */
   async cambiarEstado(item, deshaciendo) {
     if (!SRP.permisos.exigir('catalogo.administrar')) return;
     if (SRP.ref.esSedema(item.id) && item.activo) { SRP.util.anunciar('La Secretaría no se desactiva: sus cuentas administran el sistema.', 'aviso'); return; }
@@ -489,5 +489,5 @@ SRP.catalogos = {
   }
 };
 
-// Acciones que escriben en el teléfono: si fallan, se dice qué no se pudo hacer (D149)
+// Acciones que escriben en el teléfono: si fallan, se dice qué no se pudo hacer
 SRP.util.proteger(SRP.catalogos, { guardar: 'guardar el catálogo', cambiarEstado: 'cambiar el estado del catálogo', eliminar: 'eliminar del catálogo' });

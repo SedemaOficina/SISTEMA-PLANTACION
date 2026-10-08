@@ -1,10 +1,11 @@
-/* LA JORNADA ACTIVA: SE DECLARA ANTES DE REGISTRAR (D119).
+/* LA JORNADA ACTIVA: SE DECLARA ANTES DE REGISTRAR.
 
    La gente trabaja por jornada de plantación. Antes de registrar el primer árbol, el cabo (o el
-   coordinador que registra) declara la jornada una sola vez: nombre, fecha y comentarios. Sin
-   una jornada abierta, «Nuevo registro» enseña la pantalla «Iniciar jornada» en lugar del
-   formulario; con una, el formulario lleva arriba la franja de la jornada (nombre, fecha, cuántos
-   árboles) con «Cambiar de jornada» y «Cerrar jornada». Cada árbol nace con `jornada_id`.
+   coordinador que registra) declara la jornada una sola vez: nombre, ubicación, programa, árboles
+   previstos y fecha. Sin una jornada abierta, «Nuevo registro» enseña «Registrar jornada» en lugar
+   del formulario; con una, el formulario lleva arriba la franja de la jornada (nombre, cuántos
+   árboles) con «Editar jornada», «Cambiar jornada» y «Cerrar jornada». Cada árbol nace con
+   `jornada_id`.
 
    VARIOS DÍAS. Cada árbol lleva la fecha en que se plantó. Una jornada puede seguir abierta varios
    días: el día que se inicia, sus árboles llevan la fecha de la jornada (también si se inicia con
@@ -15,18 +16,17 @@
    RELEVO. Quien registra en una jornada es su titular o, si la coordinación la pasó a otro cabo, ese
    cabo (`relevo_id`). El titular no cambia y cada árbol queda a nombre de quien lo capturó.
 
-   SALVAGUARDA. Un árbol a más de CONFIG.JORNADA.SEPARAR_M de los demás de la jornada abierta se
-   pregunta antes de guardar: «¿Es de esta jornada?». Así un olvido de cerrar la jornada anterior
-   no mezcla dos sitios sin que nadie lo note (lo que en D117 hacía el reparto automático, aquí es
-   un aviso).
+   SALVAGUARDA. Un árbol lejos de los demás de la jornada abierta se avisa en la ficha de revisión
+   antes de guardar. Así un olvido de cerrar la jornada anterior no mezcla dos sitios sin que nadie
+   lo note.
 
    VARIAS ABIERTAS. Se puede tener más de una jornada abierta (un cabo vuelve a la mañana al
-   parque de la tarde); «Cambiar de jornada» elige entre las abiertas o inicia otra. Al entrar con una
+   parque de la tarde); «Cambiar jornada» elige entre las abiertas o inicia otra. Al entrar con una
    jornada abierta de un día anterior se avisa. Cerrar una jornada lleva a su revisión; una
    cerrada se puede reabrir para agregar un faltante.
 
-   La tabla `jornadas` guarda además lo que antes vivía en «cierres»: conteo de plantados, puntos
-   revisados y datos de cierre del reporte. */
+   La tabla `jornadas` guarda además el conteo previsto, los puntos revisados y los datos de cierre
+   del reporte. */
 window.SRP = window.SRP || {};
 
 SRP.activa = {
@@ -72,15 +72,15 @@ SRP.activa = {
       SRP.util.quitarErrorCampo(this.el('ini-programa'));
     });
     this.el('btn-ini-coord-aplicar').addEventListener('click', () => this.aplicarCoordenadas());
-    SRP.util.coordenadas.enlazar(this.el('ini-coord-lat'), this.el('ini-coord-lng'));   // D170
+    SRP.util.coordenadas.enlazar(this.el('ini-coord-lat'), this.el('ini-coord-lng'));
     this.pintarDetectar();
     this.pintarBotonIniciar();
-    // Con una fecha que no es hoy, el botón lo dice: «Iniciar jornada del 22-SEP» (D138)
+    // Con una fecha que no es hoy, el botón lo dice: «Iniciar jornada del 22-SEP»
     this.el('ini-fecha').addEventListener('change', () => this.pintarBotonIniciar());
     this.el('ini-fecha').addEventListener('input', () => this.pintarBotonIniciar());
     this.el('btn-iniciar-cancelar').innerHTML = SRP.ICONOS.svg('cerrar', 'medio') + '<span>Cancelar</span>';
     this.el('btn-jornada-cerrar').innerHTML = SRP.ICONOS.svg('candado', 'medio') + '<span>Cerrar jornada</span>';
-    // «Cambiar», con su icono de intercambio: «Cambiar de jornada» se partía en dos renglones (D141)
+    // «Cambiar», con su icono de intercambio: «Cambiar de jornada» se partía en dos renglones
     this.el('btn-jornada-cambiar').innerHTML = SRP.ICONOS.svg('intercambio', 'medio') + '<span>Cambiar jornada</span>';
   },
 
@@ -105,7 +105,7 @@ SRP.activa = {
       .sort((a, b) => b.fecha_inicio.localeCompare(a.fecha_inicio));
   },
 
-  /* La fecha con que arranca cada árbol nuevo: la que se eligió antes en esta jornada; si no, el día
+  /* La fecha con que arranca cada árbol nuevo: la que ya se eligió en esta jornada; si no, el día
      en que se inicia la jornada, su fecha, y los días siguientes, hoy. */
   fechaElegida: null,   // { id de la jornada, fecha }
   fechaInicial(j) {
@@ -127,7 +127,7 @@ SRP.activa = {
   },
 
   async registrosDe(j) {
-    return (await SRP.almacen.porIndice('plantaciones', 'jornada_id', j.id)).filter(r => r.estatus === 'activo');   // por su índice (D153)
+    return (await SRP.almacen.porIndice('plantaciones', 'jornada_id', j.id)).filter(r => r.estatus === 'activo');   // por su índice
   },
 
   // Al entrar: la jornada abierta más reciente queda activa; si es de otro día, se avisa
@@ -249,7 +249,7 @@ SRP.activa = {
       this.el('ini-coord-lat').value = ''; this.el('ini-coord-lng').value = ''; this.el('ini-detalles-coord').open = false;
       this.llenarProgramas();
       SRP.solicitud.poner('ini', null);
-      // La fecha se elige a propósito (D29): vacía, con «Hoy» a un toque
+      // La fecha se elige a propósito: vacía, con «Hoy» a un toque
       this.el('ini-fecha').value = '';
       this.el('ini-fecha').dispatchEvent(new Event('change', { bubbles: true }));
       this.el('ini-errores').hidden = true;
@@ -332,7 +332,7 @@ SRP.activa = {
       (SRP.solicitud.es(j) ? '<span class="franja-jornada-solicitud">' + SRP.solicitud.insignia(j) + '</span>' : '');
     this.el('franja-jornada-acciones').hidden = !!editando;
     this.el('btn-franja-editar').hidden = !!editando || !SRP.permisos.puede('jornada.editar', j);
-    // En qué paso va (D138). Al editar un registro se enseña la jornada del registro, no el flujo.
+    // En qué paso va. Al editar un registro se enseña la jornada del registro, no el flujo.
     const pasos = this.el('franja-pasos'), sig = this.el('franja-siguiente');
     pasos.hidden = !!editando;
     sig.hidden = true;
@@ -383,12 +383,12 @@ SRP.activa = {
     this.el('ini-programa-chips').querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', String(c.dataset.id === v)));
   },
 
-  /* ---------- Ubicación de la jornada (D122) ---------- */
+  /* ---------- Ubicación de la jornada ---------- */
 
   punto: null,   // { lat, lng, precision, t } de la última detección en el panel; null si no se detectó
 
   /* El botón y el renglón de lo detectado reflejan el punto. Sin punto es la acción principal
-     (azul); con punto es corregir (neutro con lápiz, «Detectar de nuevo»), como el botón del árbol (D48, D166). */
+     (azul); con punto es corregir (neutro con lápiz, «Detectar de nuevo»), como el botón del árbol. */
   pintarDetectar(buscando) {
     const b = this.el('btn-ini-detectar');
     b.disabled = !!buscando;
@@ -417,7 +417,7 @@ SRP.activa = {
     this.avisoDetectar('Obteniendo su ubicación…');
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        // Seis decimales, como el árbol: la coordenada del GPS llegaba con quince (D152)
+        // Seis decimales, como el árbol: la coordenada del GPS llegaba con quince
         const lat = Number(pos.coords.latitude.toFixed(6)), lng = Number(pos.coords.longitude.toFixed(6)), precision = pos.coords.accuracy;
         const m = precision != null ? Math.round(precision) : null;
         if (!SRP.derivacion.dentroDelAmbito(lat, lng)) {
@@ -436,7 +436,7 @@ SRP.activa = {
       (err) => {
         this.pintarDetectar(false);
         const motivo = err.code === 1 ? 'no se concedió el permiso de ubicación' : err.code === 3 ? 'la señal tardó demasiado' : 'no hay señal de ubicación';
-        // Sin señal, la salida queda a la vista: las coordenadas a mano (D143)
+        // Sin señal, la salida queda a la vista: las coordenadas a mano
         this.el('ini-detalles-coord').open = true;
         this.avisoDetectar('No se obtuvo la ubicación: ' + motivo + '. Capture las coordenadas a mano o escriba la dirección abajo.', 'alerta');
       },
@@ -444,7 +444,7 @@ SRP.activa = {
     );
   },
 
-  /* COORDENADAS A MANO (D143). Cuando el registro de la jornada no se hace en el sitio o no hay
+  /* COORDENADAS A MANO. Cuando el registro de la jornada no se hace en el sitio o no hay
      señal, quien la registra escribe latitud y longitud, como en «Registrar árbol». Se validan y se
      derivan alcaldía y colonia igual que con el GPS; el punto queda con origen «manual» y sin
      precisión, porque no la hay. */
@@ -452,7 +452,7 @@ SRP.activa = {
     const C = SRP.util.coordenadas;
     C.repartir(this.el('ini-coord-lat'), this.el('ini-coord-lng'));
     const lat = C.latitud(this.el('ini-coord-lat').value);
-    const lng = C.longitud(this.el('ini-coord-lng').value);   // negativa con o sin signo (D170)
+    const lng = C.longitud(this.el('ini-coord-lng').value);   // negativa con o sin signo
     if (Number.isNaN(lat) || Number.isNaN(lng)) { this.avisoDetectar('Escriba la latitud y la longitud, por ejemplo 19.4326 y 99.1332, o pegue las dos juntas.', 'alerta'); return; }
     if (!SRP.derivacion.dentroDelAmbito(lat, lng)) { this.avisoDetectar('El punto está fuera de la Ciudad de México. Revise las coordenadas.', 'alerta'); return; }
     const t = SRP.derivacion.derivar(lat, lng);
@@ -463,7 +463,7 @@ SRP.activa = {
   },
 
   // «Colonia, Alcaldía» de una jornada, para la franja, Jornadas y el reporte; '' si no se detectó
-  lugarDe(j) { return j ? SRP.ref.lugar(j.alcaldia, j.colonia) : ''; },   // M15
+  lugarDe(j) { return j ? SRP.ref.lugar(j.alcaldia, j.colonia) : ''; },
 
   /* ---------- Acciones ---------- */
 
@@ -486,7 +486,7 @@ SRP.activa = {
     if (previstos === null || !Number.isInteger(previstos) || previstos < 1 || previstos > 9999) errores.push(['ini-meta', 'Escriba cuántos árboles se van a plantar: un número entero mayor que cero.']);
     if (!fecha) errores.push(['ini-fecha', 'Indique la fecha de la jornada.']);
     else if (fecha > SRP.util.fechaHoy()) errores.push(['ini-fecha', 'La fecha no puede ser posterior a hoy.']);
-    // Cada campo dice su error (D140) y arriba el resumen, igual que en todos los formularios (M15)
+    // Cada campo dice su error y arriba el resumen, igual que en todos los formularios
     if (SRP.util.resumenErrores(this.el('ini-errores'), errores, ['ini-nombre', 'btn-ini-detectar', 'ini-programa', 'ini-meta', 'ini-fecha'].concat(SRP.solicitud.ids('ini')))) return;
     // Un segundo toque mientras se guarda no inicia otra jornada igual
     if (this._iniciando) return;
@@ -507,8 +507,8 @@ SRP.activa = {
       nombre, ubicacion, fecha, comentarios, programa_id, cabo_id: u.id, estatus: 'abierta',
       // Quién ejecuta: la institución de quien inicia; se fija aquí y no cambia aunque la cuenta cambie después
       organizacion_id: u.organizacion_id || SRP.CONFIG.ORGANIZACION_SEDEMA,
-      // Ubicación detectada (D122): nula si no se tocó el botón
-      lat: p ? Number(p.lat.toFixed(6)) : null, lng: p ? Number(p.lng.toFixed(6)) : null, punto_origen: p ? (p.origen || 'gps') : null,   // cómo se obtuvo (D143)
+      // Ubicación detectada: nula si no se tocó el botón
+      lat: p ? Number(p.lat.toFixed(6)) : null, lng: p ? Number(p.lng.toFixed(6)) : null, punto_origen: p ? (p.origen || 'gps') : null,   // cómo se obtuvo
       gps_precision_m: p && p.precision != null ? Math.round(p.precision) : null,
       alcaldia_cve: t.alcaldia_cve || null, alcaldia: t.alcaldia || null, colonia_cve: t.colonia_cve || null, colonia: t.colonia || null,
       fecha_inicio: ahora, fecha_cierre: null,
@@ -519,7 +519,7 @@ SRP.activa = {
       // Con el programa «Solicitud»: quién lo solicita y de qué se trata
       ...SRP.solicitud.leer('ini'),
       carga_id: null,   // sólo las jornadas de una carga masiva llevan la clave de su lote
-      // El vehículo se elige al cerrar, del catálogo; sus tres datos se copian entonces (D162, D174)
+      // El vehículo se elige al cerrar, del catálogo; sus tres datos se copian entonces
       vehiculo_id: null, vehiculo_placa: '', vehiculo_modelo: '', vehiculo_tipo: ''
     }, Object.fromEntries(SRP.reportes.CAMPOS.map(k => [k, ''])));
   },
@@ -534,7 +534,7 @@ SRP.activa = {
   async guardarJornadaNueva({ nombre, ubicacion, fecha, comentarios, programa_id, previstos }) {
     const j = this.armarJornada({ nombre, ubicacion, fecha, comentarios, programa_id, previstos });
     await SRP.almacen.guardarConBitacora('jornadas', j, SRP.bitacora.entrada('CREADO', 'jornada', j.id, 'Jornada «' + nombre + '» del ' + SRP.util.formatearFecha(fecha)));
-    SRP.almacen.cuidarAlmacenamiento();   // ya hay algo que perder: se pide al navegador que no lo borre (D149)
+    SRP.almacen.cuidarAlmacenamiento();   // ya hay algo que perder: se pide al navegador que no lo borre
     this.jornada = j;
     this.mostrarInicio(false);
     await this.preparar();
@@ -544,9 +544,9 @@ SRP.activa = {
     SRP.formulario.el('btn-ubicacion').focus({ preventScroll: true });
   },
 
-  /* Lo que queda pendiente al cerrar (D133): puntos por revisar y distancia a la meta. Es aviso, no
+  /* Lo que queda pendiente al cerrar: puntos por revisar y distancia a la meta. Es aviso, no
      impedimento: la jornada se puede cerrar así y reabrir después. Devuelve la confirmación
-     estructurada (D139): lo pendiente en viñetas, para que no se pierda en un párrafo. */
+     estructurada: lo pendiente en viñetas, para que no se pierda en un párrafo. */
   async confirmacionCierre(j) {
     const regs = await this.registrosDe(j);
     const vista = SRP.jornadas.jornadasAlcance ? (await SRP.jornadas.jornadasAlcance()).find(x => x.id === j.id) : null;
@@ -577,7 +577,7 @@ SRP.activa = {
     this.jornada = null;
     SRP.jornadas.actual = j.id;
     SRP.jornadas.volverAlDetalle = true;
-    SRP.jornadas.trasCierre = j;   // la ficha abre diciendo qué sigue (D138)
+    SRP.jornadas.trasCierre = j;   // la ficha abre diciendo qué sigue
     SRP.app.mostrarVista('jornadas');
   },
 
@@ -611,7 +611,7 @@ SRP.activa = {
     return true;
   },
 
-  // Devuelve si se hizo: sin permiso se detiene con aviso (D151)
+  // Devuelve si se hizo: sin permiso se detiene con aviso
   async cambiarEstatus(j, estatus) {
     if (!SRP.permisos.exigir('jornada.editar', j)) return false;
     const u = SRP.sesion.usuario;
@@ -640,7 +640,7 @@ SRP.activa = {
     this.el('dlg-cambiar-jornada').showModal();
   },
 
-  // Sin jornada abierta no hay formulario: cualquier intento vuelve al panel de inicio (D120)
+  // Sin jornada abierta no hay formulario: cualquier intento vuelve al panel de inicio
   exigir() {
     if (this.jornada && this.jornada.estatus === 'abierta') return true;
     if (SRP.formulario.estado.editando) return true;
@@ -649,9 +649,9 @@ SRP.activa = {
     return false;
   },
 
-  /* La pregunta por distancia de D119 pasó a ser un aviso de la ficha de revisión (D130): ver
+  /* La distancia a los demás árboles de la jornada se avisa en la ficha de revisión: ver
      SRP.formulario.avisos(). */
 };
 
-// Acciones que escriben en el teléfono: si fallan, se dice qué no se pudo hacer (D149)
+// Acciones que escriben en el teléfono: si fallan, se dice qué no se pudo hacer
 SRP.util.proteger(SRP.activa, { iniciarJornada: 'iniciar la jornada', cambiarEstatus: 'cambiar el estado de la jornada' });

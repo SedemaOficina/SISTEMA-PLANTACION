@@ -8,7 +8,7 @@
    relativas a la letra (em) y los ajustes de hasta 3 px. Lo comprueba pruebas/auditoria_css.py. */
 
 /* ========== 1. VARIABLES ========== */
-/* TIPOGRAFÍAS LOCALES (D87). Cabin (variable, 400–700) y Roboto (400, 500, 700) viven en
+/* TIPOGRAFÍAS LOCALES. Cabin (variable, 400–700) y Roboto (400, 500, 700) viven en
    vendor/fuentes/ en woff2 con subconjunto latino, ~110 KB en total: la identidad se ve igual con o
    sin señal. El service worker las guarda con la app (sw.js, lista explícita). Cabin bajo OFL
    (vendor/fuentes/Cabin-OFL.txt); Roboto bajo Apache 2.0. */
@@ -17,7 +17,7 @@
 @font-face { font-family: 'Roboto'; src: url('../vendor/fuentes/roboto-medium.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
 @font-face { font-family: 'Roboto'; src: url('../vendor/fuentes/roboto-bold.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
 :root {
-  /* DOS MUNDOS DE COLOR (D166). La aplicación usa colores por significado; la paleta institucional
+  /* DOS MUNDOS DE COLOR. La aplicación usa colores por significado; la paleta institucional
      (guinda, dorado y gris) queda sólo para el PDF, los informes, su vista previa y el croquis, en
      las variables --pdf-*. La identidad de la Secretaría en pantalla la da el logotipo. */
   --pdf-guinda: #9D2148;
@@ -25,7 +25,7 @@
   --pdf-gris: #55585A;
   --pdf-fila: #F7F1F3;         /* filas alternas y fondos claros del PDF */
   --pdf-borde: #E3DCDF;
-  --dist-endemica: #14532D;    /* gráfica de origen (D166): propia del lugar en verde, la endémica más oscura */
+  --dist-endemica: #14532D;    /* gráfica de origen: propia del lugar en verde, la endémica más oscura */
   --dist-sin-dato: #C4C9CE;
   --gris: #5A6269;             /* texto secundario: 6.2:1 */
   --gris-rayas: #4B5258;       /* rayas de la banda de datos de prueba */
@@ -35,12 +35,12 @@
   --cabeza-tabla: #E9EDF0;
   --borde-control: #767679;    /* contorno de controles: ≥3:1 sobre blanco */
   --borde-suave: #DDE2E6;
-  --borde-filtro: #D5D5D9;     /* atajos: borde suave del estilo de filtros (D95) */
+  --borde-filtro: #D5D5D9;     /* atajos: borde suave del estilo de filtros */
   --fondo-campo: #F2F2F4;      /* caja gris clara de los campos de filtro */
   --fondo-campo-hover: #EAEAED;
-  --aviso-exito: #7CD39A;      /* sobre el fondo oscuro del aviso flotante (D101) */
+  --aviso-exito: #7CD39A;      /* sobre el fondo oscuro del aviso flotante */
   --aviso-alerta: #F28B82;
-  --aviso-aviso: #9FC6E0;      /* tono neutro/informativo (D136), ni éxito ni error */
+  --aviso-aviso: #9FC6E0;      /* tono neutro/informativo, ni éxito ni error */
   --aviso-accion: #F0D9B5;     /* «Deshacer»: dorado claro, 10:1 sobre el oscuro */
   --total-fondo: #FFFAE9;      /* renglón de total, igual que en el PDF */
   /* ESCALA DE ÉNFASIS. Un control se ve según lo que pesa, no según quién lo escribió.
@@ -48,13 +48,13 @@
        1. Acción principal de la pantalla  → .btn-primario   (acento relleno; una por bloque)
        2. Alterna del mismo rango          → .btn-secundario (contorno gris)
        3. Apoyo: desplegar, salir, ampliar → .btn-texto / summary (gris subrayado)
-     Desde D166 el acento es azul (antes pizarra, D124) y la guinda sale de la pantalla. Si una acción de apoyo se pinta igual
-     —como estaba «Capturar coordenadas a mano» bajo el botón de ubicación— las dos parecen
-     lo mismo y la persona no sabe cuál es el camino normal.
+     El acento es azul; la guinda es sólo de los documentos. Si una acción de apoyo se pintara
+     igual que la principal —por ejemplo «Capturar coordenadas a mano» bajo el botón de
+     ubicación—, las dos parecerían lo mismo y la persona no sabría cuál es el camino normal.
 
      Colores por significado (Norma 8.4). Entre ellos hay ~1.1:1 de contraste, así que el color
      nunca va solo: cada acción lleva su icono y su palabra.
-     Colores por significado (D166), uno por pregunta y el mismo en todas las pantallas:
+     Colores por significado, uno por pregunta y el mismo en todas las pantallas:
      Azul: tocar, elegir, avanzar (acción principal, lo elegido, el foco, la jornada en curso).
      Verde: quedó bien (guardar, confirmar, revisado, precisión buena).
      Ámbar: hay que mirarlo (por revisar, precisión regular, sin señal, por enviar).
@@ -67,7 +67,7 @@
   --error-fondo: #FDECEA;
   --exito: #1E7A46;            /* comprometer: guardar, iniciar jornada, confirmar, aprobar */
   --exito-fondo: #E6F4EA;
-  --editar: #8A4B00;           /* atención: texto ámbar oscuro, 6.2:1 sobre su fondo claro (el nombre es de D124) */
+  --editar: #8A4B00;           /* atención: texto ámbar oscuro, 6.2:1 sobre su fondo claro */
   --editar-borde: #D98A1E;
   --editar-fondo: #FFF4E0;
   --atencion-relleno: #F4A62A; /* punto por revisar: con número oscuro, 7.8:1 */
@@ -77,9 +77,9 @@
   --sustituto-fondo: #F1EAF8;
   --neutro-borde: #9AA3AB;     /* apoyo: contorno gris */
   --neutro-fondo: #F1F3F5;
-  --foco: #1B5FAA;             /* un solo color de foco, el de la acción (D166) */
+  --foco: #1B5FAA;             /* un solo color de foco, el de la acción */
   --acento-borde-suave: #BFD3EC;   /* contorno del panel de la jornada activa */
-  /* SOMBRAS Y VELOS (M13): una por uso, para que ninguna se escriba suelta en la hoja */
+  /* SOMBRAS Y VELOS: una por uso, para que ninguna se escriba suelta en la hoja */
   --sombra-menu: 0 6px 18px rgba(35, 37, 38, 0.18);       /* menús que se despliegan */
   --sombra-lista: 0 4px 12px rgba(35, 37, 38, 0.15);      /* lista de especies bajo el campo */
   --sombra-flotante: 0 4px 12px rgba(35, 37, 38, .22);    /* botón «Subir al inicio» */
@@ -91,11 +91,11 @@
   --sombra-pin: 0 1px 3px rgba(0, 0, 0, .35);             /* número de punto en el mapa */
   --velo-oscuro: rgba(35, 37, 38, 0.55);                  /* detrás de un diálogo */
   --velo-claro: rgba(255, 255, 255, .92);                 /* crédito del mapa sobre la imagen */
-  /* CROQUIS Y PDF (M13): el código los lee de aquí con SRP.util.colorBase() */
+  /* CROQUIS Y PDF: el código los lee de aquí con SRP.util.colorBase() */
   --croquis-fondo: #F3EFE9;                               /* croquis sin imagen: papel */
   --croquis-reticula: #E4DED5;                            /* y su retícula de 100 px */
   --velo-halo: rgba(255, 255, 255, .9);                   /* halo del texto sobre la imagen */
-  --aviso-ficticio: #55585A;                              /* «Documento de prueba» en el PDF: gris, como en pantalla (D166) */
+  --aviso-ficticio: #55585A;                              /* «Documento de prueba» en el PDF: gris, como en pantalla */
 
   --fuente-titulo: 'Cabin', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   --fuente-cuerpo: 'Roboto', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
@@ -114,7 +114,7 @@
   --toque: 48px;
   --texto-guia: #6B6E70;       /* placeholder y textos guía de campos vacíos */
 }
-/* MODO SOL (D106): mismos colores de la casa, más oscuros los que leen. El guinda ya da 8:1 y no
+/* MODO SOL: mismos colores de la casa, más oscuros los que leen. El guinda ya da 8:1 y no
    cambia; los grises pasan a casi negro, los bordes suaves a contornos visibles y los campos
    grises de filtro a blanco con borde, que a pleno sol se distinguen mejor. */
 :root[data-contraste="alto"] {
@@ -158,7 +158,7 @@ h1[tabindex="-1"]:focus, h2[tabindex="-1"]:focus { outline: none; }
 .encabezado-interior > picture { flex: 0 1 auto; min-width: 0; }
 .encabezado-logo { height: auto; max-height: 40px; width: auto; max-width: 100%; display: block; }
 .encabezado-usuario { flex: none; display: flex; align-items: center; gap: var(--e-2); min-width: 0; }
-/* Menú de la cuenta (D93): un botón con el icono de usuario; al tocarlo aparecen nombre, perfil
+/* Menú de la cuenta: un botón con el icono de usuario; al tocarlo aparecen nombre, perfil
    y las salidas. Ocupa el ancho de un icono en vez de cuatro renglones. */
 .cuenta { position: relative; }
 .btn.btn-cuenta { border-radius: 50%; width: var(--toque); padding: 0; background: var(--fondo-suave); color: var(--texto); border: 1px solid var(--borde-suave); }
@@ -167,7 +167,7 @@ h1[tabindex="-1"]:focus, h2[tabindex="-1"]:focus { outline: none; }
   padding: var(--e-3) var(--e-4); background: var(--fondo); border: 1px solid var(--borde-suave); border-top: 3px solid var(--borde-control);
   border-radius: var(--radio); box-shadow: var(--sombra-menu); }
 .menu-cuenta p { margin: 0 0 var(--e-2); }
-/* Las salidas de la cuenta son renglones de texto separados por un filete, de orilla a orilla del menú (D97) */
+/* Las salidas de la cuenta son renglones de texto separados por un filete, de orilla a orilla del menú */
 .menu-cuenta-acciones { display: flex; flex-direction: column; margin: var(--e-3) calc(-1 * var(--e-4)) calc(-1 * var(--e-3)); border-top: 1px solid var(--borde-suave); padding: var(--e-1) 0; }
 .menu-cuenta-acciones .menu-opcion { font-size: var(--t-s); color: var(--texto); }
 .encabezado-nombre { font-size: var(--t-m); font-weight: 600; overflow-wrap: anywhere; }
@@ -176,7 +176,7 @@ main:focus { outline: none; }
 /* El ancho se decide por vista, no por el contenedor: un formulario se lee mejor en columna
    estrecha, y una tabla de nueve columnas necesita el monitor entero. */
 .vista { max-width: var(--ancho-max-tabla); margin: 0 auto; padding-bottom: var(--e-6); }
-/* Todas las vistas miden lo mismo y arrancan en el mismo borde (D100); en las de formulario y
+/* Todas las vistas miden lo mismo y arrancan en el mismo borde; en las de formulario y
    lectura el contenido conserva su línea corta, alineado a la izquierda */
 .vista:not(.vista-ancha) > * { max-width: var(--ancho-max); }
 .pie { max-width: var(--ancho-max-tabla); margin: 0 auto; padding: var(--e-4); color: var(--gris); font-size: var(--t-xs); border-top: 1px solid var(--borde-suave); }
@@ -185,7 +185,7 @@ main:focus { outline: none; }
 .saltar { position: absolute; left: -999px; top: 0; background: var(--acento); color: var(--fondo); padding: var(--e-2) var(--e-4); z-index: var(--z-saltar); }
 .saltar:focus { left: 0; }
 .banda-ficticio { margin: 0; padding: var(--e-2) var(--e-4); background: repeating-linear-gradient(135deg, var(--gris) 0 10px, var(--gris-rayas) 10px 20px); color: var(--fondo); font-size: var(--t-xs); text-align: center; }
-/* Crédito del mapa legible sobre cualquier imagen: el azul de Leaflet daba 2.55:1 (D153) */
+/* Crédito del mapa legible sobre cualquier imagen: el azul de Leaflet daba 2.55:1 */
 .leaflet-container .leaflet-control-attribution { background: var(--velo-claro); color: var(--texto); }
 .leaflet-container .leaflet-control-attribution a { color: var(--texto); text-decoration: underline; }
 /* El perfil es una etiqueta, no un control: con contorno guinda se leía igual que un botón
@@ -198,7 +198,7 @@ main:focus { outline: none; }
   display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: var(--e-1) var(--e-1) var(--e-2);
 }
 .pestana svg { flex: none; }
-/* Etiquetas y avisos con icono del set (D89): el icono va pegado al texto, alineado a la primera línea */
+/* Etiquetas y avisos con icono del set: el icono va pegado al texto, alineado a la primera línea */
 label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--e-1); }
 .aviso-simulado svg { float: left; margin: 0.15em var(--e-2) 0 0; }
 .entrada { color: var(--gris); }
@@ -208,7 +208,7 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 .obligatorio { color: var(--error); font-weight: 700; }
 .titulo-bloque { font-size: var(--t-m); margin-bottom: var(--e-2); }
 .total { font-weight: 500; margin-top: var(--e-4); }
-/* Bloques de una vista: separados por un filete y con su título, para que cada cosa tenga su lugar (D79) */
+/* Bloques de una vista: separados por un filete y con su título, para que cada cosa tenga su lugar */
 .bloque { margin-top: var(--e-5); padding-top: var(--e-4); border-top: 1px solid var(--borde-suave); }
 .bloque:first-of-type { margin-top: var(--e-3); padding-top: 0; border-top: 0; }
 .bloque .total { margin-top: 0; }
@@ -264,7 +264,7 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
   border: 1px solid transparent; font-weight: 500; cursor: pointer; text-decoration: none; text-align: center;
 }
 .btn-primario { background: var(--acento); color: var(--fondo); }
-/* Apoyo (D124): atajos, navegar, alternas. Contorno gris: nunca compite con el principal */
+/* Apoyo: atajos, navegar, alternas. Contorno gris: nunca compite con el principal */
 .btn-secundario { background: var(--fondo); color: var(--texto); border-color: var(--neutro-borde); }
 /* Nivel 3 de la escala de énfasis: texto clicable, gris y subrayado, sin caja.
    .btn-texto conserva los 48 px de .btn para que se toque bien con el dedo. */
@@ -280,20 +280,20 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 .desplegable summary span { text-decoration: underline; text-underline-offset: 3px; }
 .btn-peligro { background: var(--error); color: var(--fondo); }
 .btn-exito { background: var(--exito); color: var(--fondo); }
-.btn-editar { background: var(--fondo); color: var(--texto); border-color: var(--borde-control); }   /* corregir: neutro con lápiz (D166) */
-/* Cancelar: rojo de contorno con tache (D116); el rojo relleno queda para eliminar */
+.btn-editar { background: var(--fondo); color: var(--texto); border-color: var(--borde-control); }   /* corregir: neutro con lápiz */
+/* Cancelar: rojo de contorno con tache; el rojo relleno queda para eliminar */
 .btn-cancelar, .btn-peligro-linea { background: var(--fondo); color: var(--error); border-color: var(--error); }
-/* Contorno por significado (D121): confirmar en verde, eliminar en rojo, sin relleno para que
+/* Contorno por significado: confirmar en verde, eliminar en rojo, sin relleno para que
    dos acciones en la misma fila no compitan */
 .btn-exito-linea { background: var(--fondo); color: var(--exito); border-color: var(--exito); }
 /* Botón sólo de icono: la etiqueta la lleva aria-label, y el título dice a qué campo se refiere */
 .btn-texto-editar { background: none; color: var(--texto); padding: 0 var(--e-2); }
 /* Botón sin palabra: sólo donde lo que representa ya está escrito al lado, y con aria-label */
 .btn-icono-solo { min-width: var(--toque); padding: 0; flex-shrink: 0; border-radius: 50%; }
-/* El tache que cierra un diálogo: círculo suave, igual en todos (D124) */
-/* La × de la franja «Guardado» se ve igual que la de los diálogos, pero no es de un diálogo (D153) */
+/* El tache que cierra un diálogo: círculo suave, igual en todos */
+/* La × de la franja «Guardado» se ve igual que la de los diálogos, pero no es de un diálogo */
 .dialogo-cerrar, .franja-cerrar { background: var(--neutro-fondo); color: var(--gris); min-height: 40px; min-width: 40px; }
-/* Volver: chevron dibujado, sin subrayado (D124) */
+/* Volver: chevron dibujado, sin subrayado */
 .volver::before { content: ''; width: 9px; height: 9px; border-left: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); margin-right: 2px; flex: none; }
 .btn-chico { min-height: 40px; padding: 0 var(--e-3); font-size: var(--t-s); }
 .btn-ancho { width: 100%; max-width: 22rem; }
@@ -301,7 +301,7 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 .btn-destacado { min-height: 56px; font-size: var(--t-m); font-weight: 600; }
 .campo { margin-bottom: var(--e-4); border: 0; padding: 0; min-width: 0; }
 .campo label, .campo legend, .campo .campo-titulo { display: block; font-weight: 500; margin-bottom: var(--e-1); }
-/* La leyenda de un fieldset trae relleno propio del navegador y quedaba corrida (D107) */
+/* La leyenda de un fieldset trae relleno propio del navegador y quedaba corrida */
 .campo legend { padding: 0; }
 fieldset.campo { margin-inline: 0; }
 .campo input, .campo select, .campo textarea {
@@ -312,13 +312,13 @@ fieldset.campo { margin-inline: 0; }
 .campo input[type="date"], .campo input[type="time"] { -webkit-appearance: none; appearance: none; text-align: left; }
 .campo input[type="date"]::-webkit-date-and-time-value, .campo input[type="time"]::-webkit-date-and-time-value { text-align: left; }
 .campo textarea { resize: vertical; min-height: 4.5rem; }
-/* Foco en campos de texto (D98): borde guinda de 2 px en lugar del contorno azul, que en iPhone
-   aparece con cada toque y es ajeno a la paleta. El azul se queda para botones y enlaces. */
+/* Foco en campos de texto: borde del color de foco, de 2 px, en lugar del contorno del navegador,
+   que en iPhone aparece con cada toque. */
 .campo input:focus-visible, .campo select:focus-visible, .campo textarea:focus-visible {
   outline: none; border-color: var(--foco); box-shadow: 0 0 0 1px var(--foco);
 }
 .fecha-con-hoy { display: grid; grid-template-columns: 1fr auto; gap: var(--e-2); }
-/* Texto guía en fechas y horas vacías (D104). El iPhone deja el campo en blanco y el atributo
+/* Texto guía en fechas y horas vacías. El iPhone deja el campo en blanco y el atributo
    placeholder no aplica a estos controles: el texto va encima y se quita en cuanto hay valor. */
 .envoltura-vacio { position: relative; display: block; min-width: 0; }
 .texto-vacio { position: absolute; left: var(--e-3); right: 48px; top: 50%; transform: translateY(-50%); display: none;
@@ -335,10 +335,10 @@ fieldset.campo { margin-inline: 0; }
 .chips-campo { max-width: none; margin-bottom: 0; }
 .chips-campo .chip { min-height: var(--toque); }
 .chips-campo[data-invalido="true"] .chip { border: 2px solid var(--error); }
-/* Botones de opción múltiple (forma de crecimiento): de tres en tres para que quepan (D107) */
+/* Botones de opción múltiple (forma de crecimiento): de tres en tres para que quepan */
 .chips.chips-multi { grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .campo input[readonly] { background: var(--fondo-suave); border-color: var(--borde-suave); color: var(--gris); }
-/* Longitud a mano (D170): el «−» fijo pegado al campo; se escribe sólo el número */
+/* Longitud a mano: el «−» fijo pegado al campo; se escribe sólo el número */
 .campo-signo { display: flex; align-items: stretch; }
 .campo .campo-signo input { flex: 1 1 auto; border-top-left-radius: 0; border-bottom-left-radius: 0; }
 .signo-fijo { display: grid; place-items: center; min-width: 2.25rem; padding: 0 var(--e-2); border: 1px solid var(--borde-control); border-right: 0;
@@ -350,7 +350,7 @@ fieldset.campo { margin-inline: 0; }
 .fila-botones { display: flex; flex-wrap: wrap; gap: var(--e-2); align-items: flex-end; margin-bottom: var(--e-3); }
 .fila-botones > .campo { margin-bottom: 0; }
 .acciones { display: flex; flex-wrap: wrap; gap: var(--e-3); margin-top: var(--e-5); }
-/* Guardar siempre a la mano (D96): la barra se queda al pie de la pantalla mientras se llena el
+/* Guardar siempre a la mano: la barra se queda al pie de la pantalla mientras se llena el
    formulario y vuelve a su lugar al llegar al final. El fondo tapa lo que pasa por debajo. */
 .barra-guardar {
   position: sticky; bottom: 0; z-index: var(--z-barra); background: var(--fondo);
@@ -359,9 +359,9 @@ fieldset.campo { margin-inline: 0; }
 }
 /* «Cancelar edición» o «Cancelar sustitución», del mismo ancho que «Guardar», debajo de él */
 .barra-guardar .btn-cancelar { width: 100%; }
-/* JORNADAS (D112): tarjetas de jornada, revisión con mapa numerado, conciliación y lista de puntos */
+/* JORNADAS: tarjetas de jornada, revisión con mapa numerado, conciliación y lista de puntos */
 .lista-jornadas { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e-3); }
-/* Ficha de jornada (D128): nombre → cuándo → estado → dónde → cuánto → quién */
+/* Ficha de jornada: nombre → cuándo → estado → dónde → cuánto → quién */
 .jornada-boton { display: grid; gap: var(--e-2); width: 100%; text-align: left; padding: var(--e-3) var(--e-4); border: 1px solid var(--borde-suave); border-radius: var(--radio-filtro); background: var(--fondo); color: inherit; font: inherit; cursor: pointer; }
 .jornada-cab { display: grid; grid-template-columns: minmax(0, 1fr) 64px; gap: var(--e-3); align-items: start; }
 .jornada-titulo-caja, .jornada-datos { min-width: 0; display: grid; gap: 2px; }
@@ -428,7 +428,7 @@ fieldset.campo { margin-inline: 0; }
 .volver { padding-left: 0; margin-bottom: var(--e-1); }
 .jornada-titulo { margin-bottom: var(--e-1); }
 .jornada-comentarios { margin: 0 0 var(--e-2); padding: var(--e-2) var(--e-3); border-left: 3px solid var(--borde-control); background: var(--fondo-suave); font-size: var(--t-s); white-space: pre-line; }
-/* (D144) Sin margen propio: en la fila de acciones estiraba al vecino a 52 px; la fila ya trae su margen */
+/* Sin margen propio: en la fila de acciones estiraba al vecino a 52 px; la fila ya trae su margen */
 .mapa-jornada { height: clamp(240px, 40vh, 420px); border-radius: var(--radio); margin-top: var(--e-3); }
 .leyenda-jornada { display: flex; gap: var(--e-3); flex-wrap: wrap; margin: var(--e-2) 0 var(--e-3); font-size: var(--t-xs); color: var(--gris); }
 .leyenda-jornada i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: var(--e-1); vertical-align: -1px; background: var(--fondo); border: 1.5px solid var(--texto); }
@@ -436,7 +436,7 @@ fieldset.campo { margin-inline: 0; }
 .leyenda-jornada i[data-tono="ok"] { background: var(--exito); border-color: var(--exito); }
 .leyenda-jornada i[data-tono="sust"] { background: var(--sustituto); border-color: var(--sustituto); }
 .leyenda-jornada i[data-tono="err"] { background: var(--error); border-color: var(--error); box-shadow: 0 0 0 1.5px var(--fondo), 0 0 0 3px var(--error); }
-/* Pin numerado del mapa (D166): siempre círculo, con semáforo. Sin aviso, blanco con borde oscuro (se ve
+/* Pin numerado del mapa: siempre círculo, con semáforo. Sin aviso, blanco con borde oscuro (se ve
    sobre techos, copas y asfalto); por revisar, ámbar; lejos del resto, rojo con un anillo más; revisado,
    verde. El elegido crece y lleva anillo azul. */
 .pin-num { background: none; border: 0; }
@@ -482,10 +482,10 @@ fieldset.campo { margin-inline: 0; }
 .barra-jornada { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-top: var(--e-3); }
 .barra-jornada .btn { flex: 1 1 0; order: 1; padding-left: var(--e-25); padding-right: var(--e-25); gap: var(--e-15); }
 .filtros-un-dia { grid-template-columns: minmax(0, 12rem); }
-/* Croquis de la jornada en la vista previa (D115) */
+/* Croquis de la jornada en la vista previa */
 .previa-croquis img { display: block; width: 100%; height: auto; border: 1px solid var(--borde-suave); border-radius: var(--radio-chico); }
 .previa-croquis .previa-nota { margin-top: var(--e-1); }
-/* Galería de fotografías (D118): rejilla de miniaturas cuadradas con pie, y la foto grande en su diálogo */
+/* Galería de fotografías: rejilla de miniaturas cuadradas con pie, y la foto grande en su diálogo */
 .galeria-barra { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); flex-wrap: wrap; margin-bottom: var(--e-3); }
 .galeria-rejilla { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--e-2); }
 .galeria-foto { display: block; width: 100%; padding: 0; border: 1px solid var(--borde-suave); border-radius: var(--radio-filtro); background: var(--fondo); overflow: hidden; cursor: pointer; text-align: left; font: inherit; color: inherit; }
@@ -494,7 +494,7 @@ fieldset.campo { margin-inline: 0; }
 .foto-grande { display: block; width: 100%; max-height: 60vh; object-fit: contain; background: var(--fondo-suave); border-radius: var(--radio); margin-bottom: var(--e-3); }
 .dlg-foto .fila-botones { display: flex; gap: var(--e-2); }
 .dlg-foto .fila-botones .btn { flex: 1 1 0; }
-/* Jornada activa (D119): panel de inicio y franja sobre el formulario */
+/* Jornada activa: panel de inicio y franja sobre el formulario */
 .panel-iniciar { max-width: var(--ancho-max); margin: 0 0 var(--e-4); }
 .panel-iniciar .fila-botones { display: flex; gap: var(--e-2); margin-top: var(--e-3); }
 .panel-iniciar .fila-botones .btn { flex: 1 1 0; }
@@ -503,9 +503,9 @@ fieldset.campo { margin-inline: 0; }
 .franja-jornada[data-tono="alerta"] { background: var(--editar-fondo); border-left-color: var(--editar-borde); }
 .franja-jornada-rotulo { flex: 1 1 100%; margin: 0 0 calc(var(--e-1) * -1); font-family: var(--fuente-titulo); font-size: var(--t-xs); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--acento); }
 .franja-jornada .franja-jornada-titulo strong { font-size: var(--t-l); font-family: var(--fuente-titulo); }
-/* Dentro del panel, el último guardado (D131): tarjeta blanca con su verde */
+/* Dentro del panel, el último guardado: tarjeta blanca con su verde */
 .franja-jornada .franja-guardado { flex: 1 1 100%; margin: var(--e-1) 0 0; background: var(--fondo); border: 1px solid var(--borde-suave); border-left: 4px solid var(--exito); }
-/* Título del formulario: separa el panel de jornada de los campos (D131) */
+/* Título del formulario: separa el panel de jornada de los campos */
 .titulo-arbol { max-width: var(--ancho-max-tabla); margin: var(--e-5) 0 var(--e-3); padding-top: var(--e-4); border-top: 2px solid var(--borde-suave); color: var(--texto); font-size: var(--t-l); }
 .franja-jornada p { margin: 0; flex: 1 1 14rem; min-width: 0; }
 .franja-jornada .franja-jornada-rotulo { flex-basis: 100%; }
@@ -522,13 +522,13 @@ fieldset.campo { margin-inline: 0; }
 .texto-crece:focus, .texto-crece:not(:placeholder-shown) { height: auto; min-height: 5.5rem; }
 .lista-elegir .jornada-boton[aria-pressed="true"] { border-color: var(--acento); background: var(--acento-suave); }
 .lista-elegir .jornada-boton { grid-template-columns: minmax(0, 1fr); }
-/* Estado vacío con salida (D96) */
+/* Estado vacío con salida */
 .vacio { text-align: center; padding: var(--e-5) var(--e-4); border: 1px dashed var(--borde-filtro); border-radius: var(--radio-filtro); background: var(--fondo); }
 .vacio-icono { display: inline-grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: var(--fondo-suave); color: var(--gris); margin-bottom: var(--e-2); }
 .vacio-titulo { font-family: var(--fuente-titulo); font-weight: 600; font-size: var(--t-m); margin-bottom: var(--e-1); }
 .vacio-texto { color: var(--gris); font-size: var(--t-s); }
 .vacio-acciones { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--e-2); margin-top: var(--e-3); }
-/* Precisión del GPS bajo el mapa (D96): punto de color más la palabra; nunca sólo el color */
+/* Precisión del GPS bajo el mapa: punto de color más la palabra; nunca sólo el color */
 .precision { display: inline-flex; align-items: center; gap: var(--e-2); font-weight: 600; padding: 2px var(--e-2); border-radius: var(--radio-pildora); }
 .precision-punto { width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
 .precision[data-nivel="buena"] { color: var(--exito); background: var(--exito-fondo); }
@@ -542,16 +542,16 @@ fieldset.campo { margin-inline: 0; }
 .mapa-bloque { margin-bottom: var(--e-5); }
 .mapa { height: clamp(260px, 45vh, 420px); border: 1px solid var(--borde-control); border-radius: var(--radio) var(--radio) 0 0; background: var(--fondo-suave);
   /* Leaflet trae capas con z-index de 400 a 1000: aislado, el mapa no se dibuja encima de las barras
-     fijas del pie (la atribución tapaba los botones de la ficha de la jornada, D138) */
+     fijas del pie (la atribución tapaba los botones de la ficha de la jornada) */
   position: relative; z-index: var(--z-base); isolation: isolate; }
 /* Franja pegada al mapa: es su acuse de recibo, no un dato del registro */
 .ficha-estado { border: 1px solid var(--borde-control); border-top: 3px solid var(--borde-control); border-radius: 0 0 var(--radio) var(--radio); padding: var(--e-3) var(--e-4); margin: 0; font-size: var(--t-s); }
-.mapa-guia { margin: var(--e-2) 0 0; }   /* guía del marcador bajo el mapa (D173) */
+.mapa-guia { margin: var(--e-2) 0 0; }   /* guía del marcador bajo el mapa */
 /* Campo de sólo lectura: misma caja y misma altura que un campo que sí se escribe, en gris
    sobre fondo suave, igual que .campo input[readonly]. Que se vea que es respuesta, no pregunta. */
-/* Ficha compacta del punto (D98): los tres datos que salen del mapa, sin cajas de campo. En
+/* Ficha compacta del punto: los tres datos que salen del mapa, sin cajas de campo. En
    escritorio en tres columnas; en teléfono en renglones etiqueta-valor. Ocupaba media pantalla. */
-.campo-punto { margin-top: var(--e-4); margin-bottom: var(--e-5); }   /* aire antes de «Especie» (D174) */
+.campo-punto { margin-top: var(--e-4); margin-bottom: var(--e-5); }   /* aire antes de «Especie» */
 .campo-punto .campo-triple { gap: 0; border: 1px solid var(--borde-suave); border-radius: var(--radio); background: var(--fondo-suave); }
 .campo-punto .campo-triple .campo { margin: 0; padding: var(--e-2) var(--e-3); }
 .campo-punto .campo-triple .campo + .campo { border-left: 1px solid var(--borde-suave); }
@@ -578,7 +578,7 @@ fieldset.campo { margin-inline: 0; }
 .punto-muestra { flex: 0 0 auto; width: 12px; height: 12px; border-radius: 50%; background: var(--exito); }
 .punto-muestra[data-tono="sust"] { background: var(--sustituto); }
 .coord-manual { margin-bottom: var(--e-3); }
-.coord-manual > .btn { margin-top: var(--e-4); }   /* «Colocar punto» separado de la ayuda (D174) */
+.coord-manual > .btn { margin-top: var(--e-4); }   /* «Colocar punto» separado de la ayuda */
 /* Con la captura a mano desplegada, el botón de ubicación se oculta: no conviven dos formas de fijar el punto */
 .btn-ubicacion[hidden], .btn-ubicacion:has(+ .coord-manual[open]) { display: none; }
 .franja-edicion { background: var(--acento-suave); border-left: 4px solid var(--acento); padding: var(--e-3) var(--e-4); }
@@ -593,7 +593,7 @@ fieldset.campo { margin-inline: 0; }
 .vista-registrar[data-sustituyendo="true"] .registrar-columnas { border: 2px solid var(--sustituto); border-radius: var(--radio); padding: var(--e-3); }
 .vista-registrar[data-sustituyendo="true"] .franja-edicion { background: var(--sustituto-fondo); border-left-color: var(--sustituto); }
 .vista-registrar[data-sustituyendo="true"] .chip-misma { border-color: var(--sustituto); }
-/* ESPEJO DE CAMPOS — SE ELIMINA AL CERRAR LA ETAPA 1 (bloque completo, de aquí al cierre).
+/* ESPEJO DE CAMPOS — SÓLO EN LA VERSIÓN DE PRUEBA (bloque completo, de aquí al cierre).
    Es una herramienta de trabajo, no parte del sistema: gris, sin guinda y separado por una
    línea, para que nadie lo confunda con un dato que el personal de campo deba leer. */
 .espejo { margin-top: var(--e-6); padding-top: var(--e-4); border-top: 1px dashed var(--borde-control); color: var(--gris); }
@@ -644,7 +644,7 @@ fieldset.campo { margin-inline: 0; }
 .ficha-foto-datos { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .ficha-foto-nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ficha-foto-peso { color: var(--gris); font-size: var(--t-s); }
-/* ---------- Atajos y filtros (D95) ----------
+/* ---------- Atajos y filtros ----------
    Botones de ancho igual con borde suave; el activo en guinda suave, para que el único
    relleno guinda de la vista sea la acción principal («Aplicar», «Agregar», «Generar»). */
 .chips { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: var(--e-2); margin-bottom: var(--e-4); max-width: 30rem; }
@@ -684,7 +684,7 @@ fieldset.campo { margin-inline: 0; }
 }
 /* El icono propio del navegador queda invisible pero encima del cuadrito: tocar el calendario lo abre */
 .zona-filtros .campo input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0; width: 32px; height: 32px; margin: 0; padding: 0; cursor: pointer; }
-/* La lupa es la del set CDMX (la misma que iba en la etiqueta), ahora dentro del campo */
+/* La lupa es la del set CDMX, dentro del campo */
 .zona-filtros .campo input[type="search"] {
   padding-left: calc(var(--e-6) + var(--e-2)); cursor: text;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24'%3E%3Cpath fill='%2355585A' d='M 9.22 14.22 C 10.61 14.22 11.79 13.74 12.76 12.76 C 13.73 11.79 14.22 10.61 14.22 9.22 C 14.22 7.84 13.73 6.65 12.76 5.68 C 11.79 4.71 10.61 4.22 9.22 4.22 C 7.83 4.22 6.65 4.71 5.68 5.68 C 4.71 6.65 4.22 7.84 4.22 9.22 C 4.22 10.61 4.71 11.79 5.68 12.76 C 6.65 13.74 7.83 14.22 9.22 14.22 M 20.44 22 L 13.44 15 C 12.89 15.45 12.25 15.8 11.53 16.05 C 10.8 16.31 10.04 16.45 9.22 16.45 C 7.2 16.45 5.5 15.74 4.1 14.35 C 2.7 12.95 2 11.24 2 9.22 C 2 7.2 2.7 5.49 4.1 4.1 C 5.5 2.7 7.2 2 9.22 2 C 11.24 2 12.95 2.7 14.35 4.1 C 15.74 5.49 16.44 7.2 16.44 9.22 C 16.44 10.04 16.31 10.81 16.06 11.53 C 15.79 12.25 15.44 12.89 15 13.44 L 22 20.44 Z M 20.44 22'/%3E%3C/svg%3E");
@@ -704,8 +704,8 @@ fieldset.campo { margin-inline: 0; }
 .paginador-salto { min-width: 24px; text-align: center; color: var(--gris); }
 .paginador-tamano { display: inline-flex; align-items: center; gap: var(--e-2); font-size: var(--t-s); color: var(--gris); white-space: nowrap; }
 .paginador-tamano select { min-height: 40px; padding: 0 var(--e-2); border: 1px solid var(--borde-control); border-radius: var(--radio-filtro); background: var(--fondo); color: var(--texto); font: inherit; }
-/* Tarjeta de registro (D100): miniatura, datos y la tuerca arriba a la derecha, en un solo bloque.
-   Antes la tuerca iba en un renglón propio y cada registro gastaba 40 px de hueco. */
+/* Tarjeta de registro: miniatura, datos y la tuerca arriba a la derecha, en un solo bloque:
+   sin renglón propio para la tuerca, cada registro ocupa menos alto. */
 .registro { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; align-items: start; gap: var(--e-3);
   padding: var(--e-3); border: 1px solid var(--borde-suave); border-radius: var(--radio-filtro); background: var(--fondo); cursor: pointer; }
 .registro-miniatura { width: 56px; height: 56px; border-radius: var(--radio); object-fit: cover; display: block; }
@@ -721,7 +721,7 @@ fieldset.campo { margin-inline: 0; }
 .conexion::after { content: ''; position: absolute; inset: calc(-1 * var(--e-2)) 0; }
 .conexion[data-estado="con"] { background: var(--exito-fondo); color: var(--exito); border-color: var(--exito); }
 .conexion[data-estado="sin"] { background: var(--editar-fondo); color: var(--editar); border-color: var(--editar); }
-/* Envío simulado (D111): «Enviando…» neutro; atraso en rojo, con palabras (el color no va solo) */
+/* Envío simulado: «Enviando…» neutro; atraso en rojo, con palabras (el color no va solo) */
 .conexion[data-estado="enviando"] { background: var(--fondo-suave); color: var(--texto); border-color: var(--borde-control); }
 .conexion[data-estado="atraso"] { background: var(--error-fondo); color: var(--error); border-color: var(--error); }
 .marca-envio { display: inline-flex; align-items: center; gap: var(--e-1); margin-top: var(--e-1); padding: 1px var(--e-2); border-radius: var(--radio-filtro);
@@ -735,7 +735,7 @@ fieldset.campo { margin-inline: 0; }
 .senal-cola[hidden] { display: none; }
 .senal-cola p { flex: 1 1 12rem; margin: 0; font-weight: 500; }
 .lista-ayuda { padding-left: 1.2em; line-height: 1.5; }
-/* Estado del teléfono en la guía (D149): etiqueta y valor por renglón; lo que requiere atención, en ámbar */
+/* Estado del teléfono en la guía: etiqueta y valor por renglón; lo que requiere atención, en ámbar */
 .senal-estado { display: grid; grid-template-columns: minmax(0, 9.5rem) minmax(0, 1fr); gap: var(--e-1) var(--e-3); margin: var(--e-3) 0; padding: var(--e-3);
   border-radius: var(--radio-filtro); background: var(--fondo-suave); font-size: var(--t-s); }
 .senal-estado dt { color: var(--gris); }
@@ -743,12 +743,12 @@ fieldset.campo { margin-inline: 0; }
 .senal-estado dd[data-tono="aviso"] { color: var(--editar); }
 .lista-ayuda li { margin-bottom: var(--e-2); }
 .registro-lugar { display: block; font-size: var(--t-s); overflow-wrap: anywhere; }
-/* Las tres acciones en fila en todo ancho: apiladas, cada registro medía tres botones de alto y la lista crece (bloque 21) */
+/* Las tres acciones en fila en todo ancho: apiladas, cada registro medía tres botones de alto y la lista crece */
 .registro-acciones { display: flex; justify-content: flex-end; margin: calc(-1 * var(--e-2)) calc(-1 * var(--e-2)) 0 0; cursor: default; }
-/* Filtros activos (D100): fichas con ×; «Filtros» con su número pliega el panel en teléfono */
+/* Filtros activos: fichas con ×; «Filtros» con su número pliega el panel en teléfono */
 .filtros-activos { list-style: none; margin: 0 0 var(--e-2); padding: 0; display: flex; flex-wrap: wrap; gap: var(--e-2); }
 .filtros-activos:empty { display: none; }
-/* Con el panel abierto las fichas repetían lo que ya marcan los atajos: sólo se ven plegado (D105) */
+/* Con el panel abierto las fichas repetían lo que ya marcan los atajos: sólo se ven plegado */
 .filtros-activos:not([data-visible="true"]) { display: none; }
 .ficha-filtro { display: inline-flex; align-items: center; gap: var(--e-1); min-height: 36px; padding: 0 var(--e-1) 0 var(--e-3);
   border-radius: var(--radio-grande); background: var(--acento-suave); color: var(--acento); font-size: var(--t-s); font-weight: 500; }
@@ -756,11 +756,11 @@ fieldset.campo { margin-inline: 0; }
 .btn.btn-filtros { display: none; min-height: 40px; padding: 0 var(--e-3); gap: var(--e-2); margin-left: auto; }
 .filtros-cuenta { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 var(--e-15); border-radius: var(--radio-pildora); background: var(--acento); color: var(--fondo); font-size: var(--t-xs); font-weight: 700; }
 .filtros-cuenta[hidden] { display: none; }
-/* En escritorio la tabla se desplaza dentro de su caja para que el encabezado quede fijo (D100) */
+/* En escritorio la tabla se desplaza dentro de su caja para que el encabezado quede fijo */
 .tabla-caja { overflow: auto; max-height: calc(100vh - 15rem); min-height: 12rem; }
 .th-orden { display: inline-flex; align-items: center; gap: var(--e-1); width: 100%; min-height: 32px; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .th-flecha::after { content: '↕'; opacity: .55; font-size: .85em; }
-/* La columna ordenada lleva su flecha en negritas (D142) */
+/* La columna ordenada lleva su flecha en negritas */
 th[aria-sort="ascending"] .th-flecha::after { content: '▲'; opacity: 1; font-weight: 800; }
 th[aria-sort="descending"] .th-flecha::after { content: '▼'; opacity: 1; font-weight: 800; }
 .tabla { width: 100%; border-collapse: collapse; font-size: var(--t-s); }
@@ -768,11 +768,11 @@ th[aria-sort="descending"] .th-flecha::after { content: '▼'; opacity: 1; font-
 .tabla td { padding: var(--e-2); border-bottom: 1px solid var(--borde-suave); vertical-align: top; }
 .tabla tr:nth-child(even) td { background: var(--fondo-suave); }
 .tabla-detalle { display: block; font-size: var(--t-xs); color: var(--gris); font-style: normal; }
-/* Tuerca de acciones y su menú (D94) */
+/* Tuerca de acciones y su menú */
 .acciones-menu { display: inline-block; }
-/* Círculo exacto en cualquier renglón (D154): el alto también es fijo, porque las filas de puntos
+/* Círculo exacto en cualquier renglón: el alto también es fijo, porque las filas de puntos
    bajan el alto mínimo de sus botones y la tuerca salía ovalada */
-/* La tuerca es sólo su icono (D167): sin círculo ni contorno; el área de toque sigue de 48 px */
+/* La tuerca es sólo su icono: sin círculo ni contorno; el área de toque sigue de 48 px */
 .btn.btn-tuerca { width: var(--toque); height: var(--toque); min-width: var(--toque); min-height: var(--toque); flex: none; padding: 0; border-radius: var(--radio); background: none; color: var(--gris); border: 1px solid transparent; }
 .btn.btn-tuerca[aria-expanded="true"] { background: var(--acento-suave); color: var(--acento); }
 .menu-acciones { position: fixed; z-index: var(--z-menu-acciones); min-width: 11rem; padding: var(--e-1) 0; background: var(--fondo);
@@ -783,24 +783,24 @@ th[aria-sort="descending"] .th-flecha::after { content: '▼'; opacity: 1; font-
 .menu-opcion svg { color: var(--gris); }
 .menu-sin-icono { width: 18px; }
 .menu-peligro, .menu-peligro svg { color: var(--error); }
-/* Cada opción del menú con el color de su intención (D124) */
+/* Cada opción del menú con el color de su intención */
 .menu-editar, .menu-editar svg { color: var(--texto); }
 .tabla td:last-child { white-space: nowrap; }
-/* Interruptor del modo sol en el menú de la cuenta (D106) */
+/* Interruptor del modo sol en el menú de la cuenta */
 .menu-opcion .interruptor { position: relative; flex-shrink: 0; width: 38px; height: 22px; margin-left: auto; border-radius: var(--radio-pildora); background: var(--borde-control); transition: background var(--dur-rapida); }
 .menu-opcion .interruptor::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--fondo); transition: left var(--dur-rapida); }
 .menu-opcion[aria-checked="true"] .interruptor { background: var(--acento); }
 .menu-opcion[aria-checked="true"] .interruptor::after { left: 19px; }
-/* Resumen de la tarjeta de teléfono (D105): sólo existe en teléfono */
+/* Resumen de la tarjeta de teléfono: sólo existe en teléfono */
 .tabla .c-resumen { display: none; }
 .tabla-tarjetas tbody tr[data-id] { cursor: pointer; }
 .conteo-lista { font-size: var(--t-s); color: var(--gris); margin: 0 0 var(--e-1); }
-/* Sólo se marca lo inactivo; el punto de color acompaña a la palabra (D100) */
+/* Sólo se marca lo inactivo; el punto de color acompaña a la palabra */
 .estado-texto { display: inline-flex; align-items: center; gap: var(--e-15); font-size: var(--t-xs); font-weight: 500; color: var(--error); }
 .estado-texto::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--error); }
 /* Ficha de revisión previa: cada dato con su botón de corregir */
 /* El mapa va aislado en su propio contexto de apilamiento: los z-index de Leaflet (200–600) no salen de su caja
-   y no pueden pintarse sobre la cabecera fija del diálogo, como pasaba en Safari (D78) */
+   y no pueden pintarse sobre la cabecera fija del diálogo, como pasaba en Safari */
 .revision-mapa { height: 190px; border: 1px solid var(--borde-control); border-radius: var(--radio); margin-bottom: var(--e-3); position: relative; z-index: var(--z-base); isolation: isolate; overflow: hidden; }
 /* Dentro de la ficha, la fotografía se ve en su propio renglón, al final, donde se nombra */
 .revision-foto { display: block; max-width: 100%; max-height: 9rem; border-radius: var(--radio-control); }
@@ -826,7 +826,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
 /* Cabecera fija del diálogo: se queda arriba mientras el cuerpo se desplaza; el fondo tapa lo que pasa debajo */
 .dialogo-cabecera { position: sticky; top: calc(-1 * var(--e-5)); z-index: var(--z-dialogo-barra); margin: calc(-1 * var(--e-5)) calc(-1 * var(--e-5)) var(--e-3); padding: var(--e-4) var(--e-5) var(--e-3); background: var(--fondo); border-bottom: 1px solid var(--borde-suave); }
 .dialogo-cabecera h2 { margin-top: 0; }
-/* Barra fija al pie de una ventana: la acción principal a todo el ancho y al alcance del pulgar (D99) */
+/* Barra fija al pie de una ventana: la acción principal a todo el ancho y al alcance del pulgar */
 .dialogo-pie { position: sticky; bottom: calc(-1 * var(--e-5)); z-index: var(--z-dialogo-barra); margin: var(--e-3) calc(-1 * var(--e-5)) calc(-1 * var(--e-5));
   padding: var(--e-3) var(--e-5) calc(var(--e-3) + env(safe-area-inset-bottom, 0px)); background: var(--fondo);
   border-top: 1px solid var(--borde-suave); box-shadow: var(--sombra-pie); }
@@ -845,7 +845,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .dlg-sustituir { border-top-color: var(--sustituto); }
 .sustituir-fecha-fija { margin: var(--e-3) 0; }
 .sustituir-icono { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; margin-right: var(--e-2); vertical-align: -6px; border-radius: 50%; background: var(--sustituto); color: var(--fondo); }
-/* Confirmación al guardar (D171): al centro, encima de todo, sin atrapar los toques */
+/* Confirmación al guardar: al centro, encima de todo, sin atrapar los toques */
 .confirmacion-guardado { position: fixed; inset: 0; z-index: var(--z-confirmacion); display: grid; place-items: center; padding: var(--e-4); pointer-events: none; }
 .confirmacion-caja { display: grid; justify-items: center; gap: var(--e-2); min-width: min(18rem, 100%); padding: var(--e-5) var(--e-6); border: 2px solid var(--exito);
   border-radius: var(--radio); background: var(--fondo); box-shadow: var(--sombra-aviso); text-align: center; }
@@ -863,7 +863,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .completa-texto { font-size: var(--t-m); font-weight: 500; margin: 0; overflow-wrap: anywhere; }
 .completa-nota { font-size: var(--t-s); color: var(--gris); margin: 0 0 var(--e-2); }
 .dlg-completa .dialogo-pie-doble { width: 100%; }
-/* Aviso flotante único (D101): arriba, para no tapar las barras fijas del pie; fondo oscuro
+/* Aviso flotante único: arriba, para no tapar las barras fijas del pie; fondo oscuro
    neutro con un filete de color e icono que dicen si es éxito o alerta (el color no va solo:
    también cambian el icono y el texto). «Deshacer» en dorado claro, que contrasta sobre el oscuro. */
 .aviso {
@@ -872,18 +872,18 @@ dialog::backdrop { background: var(--velo-oscuro); }
   padding: var(--e-2) var(--e-2) var(--e-2) var(--e-3); border-radius: var(--radio-filtro); border-left: 4px solid var(--exito);
   background: var(--texto); color: var(--fondo); font-weight: 500; font-size: var(--t-s); box-shadow: var(--sombra-aviso);
 }
-/* Rejilla (D172): icono · texto · acción · cerrar. La × siempre arriba a la derecha; antes, con
-   flex-wrap, un texto largo la mandaba sola a otro renglón, abajo a la izquierda */
+/* Rejilla: icono · texto · acción · cerrar. La × siempre arriba a la derecha: con flex-wrap, un
+   texto largo la mandaría sola a otro renglón, abajo a la izquierda */
 .aviso-icono { grid-column: 1; grid-row: 1; display: grid; color: var(--aviso-exito); }
 .aviso-texto { grid-column: 2; grid-row: 1; }
 .aviso-accion { min-height: 40px; padding: 0 var(--e-3); border: 0; border-radius: var(--radio); background: none; color: var(--aviso-accion); font: inherit; font-weight: 700; cursor: pointer; white-space: nowrap; grid-column: 3; grid-row: 1; }
 .aviso-cerrar { grid-column: 4; grid-row: 1; display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: none; color: var(--fondo); opacity: .8; cursor: pointer; flex-shrink: 0; }
-/* Vista previa del parte (D101): una hoja blanca con el contenido del PDF */
+/* Vista previa del parte: una hoja blanca con el contenido del PDF */
 .previa-hoja { border: 1px solid var(--borde-suave); border-radius: var(--radio); padding: var(--e-4); background: var(--fondo); box-shadow: var(--sombra-hoja); font-size: var(--t-s); }
 .previa-titulo { text-align: center; text-transform: uppercase; font-family: var(--fuente-titulo); font-weight: 700; color: var(--pdf-guinda); margin: 0 0 var(--e-2); }
-/* El reporte por secciones (D163): nombre del cabo, cinco cifras, secciones con franja guinda
+/* El reporte por secciones: nombre del cabo, cinco cifras, secciones con franja guinda
    numerada y los datos «Etiqueta: valor» con la etiqueta en negritas */
-/* La franja del cabo con los datos de la jornada (D169) */
+/* La franja del cabo con los datos de la jornada */
 .previa-responsable { margin: 0 0 var(--e-2); padding: var(--e-2) var(--e-3); border-radius: var(--radio-chico); background: var(--pdf-fila); }
 .previa-cabo { margin: 0 0 var(--e-1); font-weight: 700; }
 .previa-cabo b { color: var(--pdf-guinda); }
@@ -909,11 +909,11 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .previa-tabla td { padding: 3px var(--e-15); }
 .previa-tabla tbody tr:nth-child(even) td { background: var(--pdf-fila); }
 .previa-tabla tfoot td { font-weight: 700; background: var(--total-fondo); }
-/* Las cifras, alineadas a la derecha en cuerpo y total (D103) */
+/* Las cifras, alineadas a la derecha en cuerpo y total */
 .previa-tabla .cifra { text-align: right; }
-/* Un comentario de varios renglones los conserva (D164) */
+/* Un comentario de varios renglones los conserva */
 .previa-tabla .previa-comentario { white-space: pre-line; }
-/* Precisión en color por su nivel (D169), la misma escala que en pantalla */
+/* Precisión en color por su nivel, la misma escala que en pantalla */
 .previa-tabla .previa-precision[data-nivel="buena"] { color: var(--exito); font-weight: 700; }
 .previa-tabla .previa-precision[data-nivel="aceptable"] { color: var(--editar); font-weight: 700; }
 .previa-tabla .previa-precision[data-nivel="baja"] { color: var(--error); font-weight: 700; }
@@ -936,14 +936,14 @@ dialog::backdrop { background: var(--velo-oscuro); }
 /* Los demás árboles de la jornada, en el mapa de la revisión de un punto que quedó lejos */
 .revision-otro { fill: var(--exito); fill-opacity: 1; stroke: var(--fondo); stroke-width: 2; }
 
-/* Detectar ubicación de la jornada (D122): el botón, su aviso y los dos datos de lectura */
+/* Detectar ubicación de la jornada: el botón, su aviso y los dos datos de lectura */
 .campo-ini-detectar .ini-detectado { margin: var(--e-1) 0 0; }
 .campo-ini-detectar .ini-detectado[data-tono="alerta"] { color: var(--editar); font-weight: 500; }
 .campo-ini-detectar .ini-detectado[data-tono="bien"] { color: var(--exito); }
 .campo-ini-detectar .campo-doble { margin-top: var(--e-2); }
-/* Tipo de distribución en la fila de Especie de la ficha de revisión (D123) */
+/* Tipo de distribución en la fila de Especie de la ficha de revisión */
 .revision-distribucion, .revision-sub { display: block; font-size: var(--t-xs); color: var(--gris); margin-top: 2px; }
-/* Guardar en un toque (D130): franja del último guardado, avisos de la ficha, especies recientes */
+/* Guardar en un toque: franja del último guardado, avisos de la ficha, especies recientes */
 .franja-guardado { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-2) var(--e-3); max-width: var(--ancho-max-tabla); margin: 0 auto var(--e-4);
   padding: var(--e-3) var(--e-4); border-radius: var(--radio-filtro); background: var(--exito-fondo); border-left: 4px solid var(--exito); scroll-margin-top: var(--e-4); }
 .franja-guardado p { margin: 0; flex: 1 1 14rem; min-width: 0; display: flex; gap: var(--e-2); align-items: flex-start; }
@@ -964,25 +964,25 @@ dialog::backdrop { background: var(--velo-oscuro); }
    palabras, nunca a media palabra */
 .chips.chips-programa { display: flex; flex-wrap: wrap; }
 .chips-programa .chip { flex: 1 1 auto; overflow-wrap: normal; }
-/* Los cuatro catálogos (D162): en un teléfono chico se parten en dos renglones antes que salirse de lado */
+/* Los cuatro catálogos: en un teléfono chico se parten en dos renglones antes que salirse de lado */
 .chips.chips-envuelve { display: flex; flex-wrap: wrap; max-width: none; }
 .chips-envuelve .chip { flex: 1 1 auto; }
-/* Vehículo del cierre (D162): los que más usa el encargado arriba, con su tipo debajo de la placa (.chip-sub) */
+/* Vehículo del cierre: los que más usa el encargado arriba, con su tipo debajo de la placa (.chip-sub) */
 .campo-vehiculo .chips-recientes { margin-bottom: var(--e-2); }
 .campo-vehiculo .nota { margin: var(--e-1) 0 0; }
-/* Conciliación con la meta (D131): dos cifras, sin campo */
+/* Conciliación con la meta: dos cifras, sin campo */
 .conciliacion-cifras { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-15); margin-bottom: var(--e-2); }
 .conciliacion-cifras .jornada-cifra b { font-size: var(--t-l); }
-/* Acciones de la ficha de jornada (D132) */
+/* Acciones de la ficha de jornada */
 .jornada-acciones-cab { display: flex; flex-wrap: wrap; gap: var(--e-2); margin: 0 0 var(--e-3); }
-/* Reportes por jornada cerrada (D134): la ficha no es botón; el botón va a la derecha */
+/* Reportes por jornada cerrada: la ficha no es botón; el botón va a la derecha */
 .registro-jornada { font-weight: 600; color: var(--texto); }
 .galeria-jornada { font-weight: 600; }
-/* PASOS DE LA JORNADA (D138, D146). Indicador de avance —Registrar · Cerrar · Revisar · Reporte—:
-   un círculo por paso, unido al anterior por un tramo, con el nombre debajo. Antes eran píldoras y
-   se leían como filtros que se pueden tocar (iguales a «Todas · Hoy · Un día»); esto no se toca, se
-   lee. El actual, relleno en acento y nombre en negritas; el hecho, verde con palomita y su tramo
-   verde; el que falta, blanco con su número. */
+/* PASOS DE LA JORNADA. Indicador de avance —Registrar · Cerrar · Revisar · Reporte—:
+   un círculo por paso, unido al anterior por un tramo, con el nombre debajo. No son píldoras, para
+   que no se lean como filtros que se tocan (iguales a «Todas · Hoy · Un día»): esto se lee. El
+   actual, relleno en acento y nombre en negritas; el hecho, verde con palomita y su tramo verde; el
+   que falta, blanco con su número. */
 .pasos { --paso-d: 26px; list-style: none; margin: var(--e-3) 0; padding: 0; display: flex; max-width: 30rem; counter-reset: paso; }
 .paso { position: relative; flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: var(--e-1);
   counter-increment: paso; color: var(--gris); font-size: var(--t-xs); line-height: 1.2; text-align: center; }
@@ -1008,9 +1008,9 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .pasos-siguiente:focus { outline: none; }
 .pasos-siguiente[data-tono="rev"] b { color: var(--editar); }
 .pasos-siguiente[data-tono="ok"] { color: var(--exito); font-weight: 600; }
-/* Menos aire a los lados en las barras de dos botones, para que cada etiqueta quepa en un renglón (D141) */
+/* Menos aire a los lados en las barras de dos botones, para que cada etiqueta quepa en un renglón */
 .barra-jornada .btn-primario, .barra-jornada .btn-editar { order: 2; }
-/* CONFIRMACIÓN ESTRUCTURADA (D139): título con la acción, pregunta, lo que implica en viñetas y una
+/* CONFIRMACIÓN ESTRUCTURADA: título con la acción, pregunta, lo que implica en viñetas y una
    nota final; «No se puede deshacer» en rojo con su icono, porque es lo que distingue a este diálogo */
 .dlg-confirmar { max-width: min(30rem, calc(100vw - 2rem)); }
 .confirmar-titulo { margin: 0 0 var(--e-2); font-family: var(--fuente-titulo); font-size: var(--t-l); color: var(--texto); }
@@ -1025,7 +1025,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .confirmar-escribir label { font-weight: 400; font-size: var(--t-s); overflow-wrap: anywhere; }
 .confirmar-escribir b { font-weight: 700; }
 .dlg-confirmar .acciones { margin-top: var(--e-4); }
-/* CAMPOS (D140). El error va debajo de su campo, en rojo con icono (el resumen de arriba se queda);
+/* CAMPOS. El error va debajo de su campo, en rojo con icono (el resumen de arriba se queda);
    la ayuda es una línea gris bajo el control; el contador aparece al pasar del 80 % del límite. */
 .campo-error { display: flex; align-items: flex-start; gap: var(--e-1); margin: var(--e-1) 0 0; color: var(--error); font-size: var(--t-s); font-weight: 600; }
 .campo-error svg { flex-shrink: 0; margin-top: 2px; }
@@ -1033,7 +1033,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .ayuda-campo { margin: var(--e-1) 0 0; font-size: var(--t-xs); line-height: 1.4; }
 .contador { display: block; margin-top: 2px; text-align: right; font-size: var(--t-xs); color: var(--gris); font-variant-numeric: tabular-nums; }
 .contador[data-lleno="true"] { color: var(--editar); font-weight: 600; }
-/* TARJETAS, SECCIONES E ICONOS (D141) */
+/* TARJETAS, SECCIONES E ICONOS */
 /* Etiqueta: la misma píldora para el estado en las tres tarjetas (folio, envío, reporte) */
 .etiqueta { display: inline-flex; align-items: center; gap: var(--e-1); padding: 1px var(--e-2); border-radius: var(--radio-pildora);
   background: var(--neutro-fondo); color: var(--texto); font-size: var(--t-xs); font-weight: 500; }
@@ -1052,10 +1052,10 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .titulo-seccion { margin: var(--e-4) 0 var(--e-2); scroll-margin-top: 64px; }
 .titulo-seccion:focus { outline: none; }
 .saltos { display: none; }
-/* TABLAS Y ACCESIBILIDAD (D142) */
+/* TABLAS Y ACCESIBILIDAD */
 /* La columna por la que está ordenada la tabla se distingue: fondo de acento (la flecha, arriba) */
 .tabla th[aria-sort="ascending"], .tabla th[aria-sort="descending"] { background: var(--acento); color: var(--fondo); }
-/* SUBIR AL INICIO (D154). Círculo flotante en la esquina inferior derecha; --subir-sobre lo pone
+/* SUBIR AL INICIO. Círculo flotante en la esquina inferior derecha; --subir-sobre lo pone
    app.js con lo que ya ocupa el pie de la pantalla (navegación del teléfono y barra de la sección) */
 .btn.btn-subir { position: fixed; z-index: var(--z-subir); right: calc(var(--e-4) + env(safe-area-inset-right, 0px)); bottom: calc(var(--subir-sobre, 0px) + var(--e-4));
   width: var(--toque); height: var(--toque); min-height: var(--toque); padding: 0; border-radius: 50%;
@@ -1063,7 +1063,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
   transition: opacity var(--dur-media), visibility var(--dur-media); }
 .btn.btn-subir[data-visible="no"] { opacity: 0; visibility: hidden; pointer-events: none; }
 
-/* SUPERVISIÓN Y MI AVANCE (D158): periodo, cifras, qué atender, gráfica, tablas y mapa por alcaldía */
+/* SUPERVISIÓN Y MI AVANCE: periodo, cifras, qué atender, gráfica, tablas y mapa por alcaldía */
 .chips-cinco .chip { padding-left: var(--e-15); padding-right: var(--e-15); }
 .sup-navegar { display: flex; align-items: center; gap: var(--e-2); margin: var(--e-3) 0 var(--e-2); }
 .sup-etiqueta { flex: 1 1 auto; margin: 0; text-align: center; font-family: var(--fuente-titulo); font-weight: 600; font-size: var(--t-m); }
@@ -1087,7 +1087,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .sup-grafica { margin: 0; }
 .sup-grafica-lienzo { height: 150px; border-bottom: 1px solid var(--borde-control); }
 .sup-grafica-lienzo svg { display: block; width: 100%; height: 100%; }
-.sup-barra { fill: var(--exito); }   /* árboles plantados: verde (D166) */
+.sup-barra { fill: var(--exito); }   /* árboles plantados: verde */
 .sup-grafica-cifras, .sup-grafica-ejes { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); text-align: center; font-size: var(--t-xs); font-variant-numeric: tabular-nums; }
 .sup-grafica-cifras { margin-top: 2px; font-weight: 600; }
 .sup-grafica-ejes { color: var(--gris); white-space: nowrap; }
@@ -1117,7 +1117,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .sup-sin-jornadas { margin-top: var(--e-2); }
 .sup-ver-jornadas { margin-top: var(--e-3); color: var(--acento); font-weight: 600; }
 .sup-tabla-caja { overflow-x: auto; }
-/* Listas largas: las primeras 15 y un botón para las demás (D160) */
+/* Listas largas: las primeras 15 y un botón para las demás */
 .sup-mas { margin-top: var(--e-2); }
 .sup-tabla { width: 100%; border-collapse: collapse; font-size: var(--t-s); }
 .sup-tabla th { background: var(--cabeza-tabla); color: var(--texto); text-align: left; padding: var(--e-2); font-weight: 600; box-shadow: inset 0 -2px 0 var(--borde-control); }
@@ -1125,12 +1125,12 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .sup-tabla tbody tr:nth-child(even) td { background: var(--fondo-suave); }
 .sup-tabla .cifra { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .sup-tabla small { display: block; color: var(--gris); font-size: var(--t-xs); }
-/* Barra de la especie (D168): bajo el nombre, sin carril de fondo; compara con la más plantada */
+/* Barra de la especie: bajo el nombre, sin carril de fondo; compara con la más plantada */
 .sup-esp-barra { display: block; width: 100%; height: 6px; margin-top: var(--e-1); }
 .sup-esp-barra rect { fill: var(--exito); }
 .sup-tabla-cabos .enlace-fila { display: inline; width: auto; min-height: 0; padding: 0; border: 0; background: none; color: var(--acento); font-weight: 600;
   text-decoration: underline; text-underline-offset: 3px; }
-/* Ventana «Datos de prueba» (D160): demostración y restablecer, separados por una línea */
+/* Ventana «Datos de prueba»: demostración y restablecer, separados por una línea */
 .demo-caja { margin-top: var(--e-3); padding-top: var(--e-3); border-top: 1px dashed var(--borde-suave); }
 .dialogo-cabecera + .demo-caja { margin-top: 0; padding-top: 0; border-top: 0; }
 .demo-titulo { margin: 0 0 var(--e-1); font-size: var(--t-s); font-weight: 600; color: var(--texto); }
@@ -1143,15 +1143,15 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .campo .zona-foto.con-foto { flex-direction: row; gap: var(--e-2); min-height: var(--toque); padding: var(--e-2) var(--e-3); }
 .zona-foto.con-foto .zona-foto-ayuda { display: none; }
 .zona-foto.con-foto .icono-foto svg { width: 20px; height: 20px; }
-/* escala de tres tamaños (D141) */
+/* escala de tres tamaños */
 .zona-foto:focus-within { outline: 3px solid var(--foco); outline-offset: 2px; }
 .btn:disabled { opacity: 0.55; cursor: not-allowed; }
 .pestana[aria-current="page"] { color: var(--acento); border-bottom-color: var(--acento); }
 .chip-sub { display: block; font-size: var(--t-xs); font-weight: 400; color: var(--gris); }
-/* La fecha del atajo «Hoy» va en un renglón (D147) */
+/* La fecha del atajo «Hoy» va en un renglón */
 .chip .chip-sub { white-space: nowrap; }
 .chip[aria-pressed="true"] .chip-sub { color: var(--fondo); opacity: .9; }
-/* Activo: guinda suave con borde guinda (propuesta A de la maqueta, D95) */
+/* Activo: guinda suave con borde guinda (propuesta A de la maqueta) */
 .chip[aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: var(--fondo); }
 .combo-opcion[aria-selected="true"] { background: var(--fondo-suave); outline: 2px solid var(--acento); outline-offset: -2px; }
 .campo input[aria-invalid="true"], .campo select[aria-invalid="true"] { border: 2px solid var(--error); }
@@ -1160,11 +1160,11 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .aviso[data-tipo="aviso"] { border-left-color: var(--aviso-aviso); }
 .aviso[data-tipo="aviso"] .aviso-icono { color: var(--aviso-aviso); }
 .ficha-estado[data-tipo="alerta"] { color: var(--error); font-weight: 500; }
-/* El renglón de avisos bajo la precisión (D152): continúa la misma ficha, sin tapar la insignia */
+/* El renglón de avisos bajo la precisión: continúa la misma ficha, sin tapar la insignia */
 .ficha-estado-extra { border-top: 0; margin-top: -1px; }
 .ficha-estado:has(+ .ficha-estado-extra:not([hidden])) { border-radius: 0; }
 
-/* MODO SOL (D106) en todo lo que tiene relleno claro o texto gris: bordes de 2 px y negritas */
+/* MODO SOL en todo lo que tiene relleno claro o texto gris: bordes de 2 px y negritas */
 /* Ajustes del modo sol que no son sólo color: trazo más grueso y texto un punto más pesado */
 [data-contraste="alto"] body { font-weight: 500; }
 [data-contraste="alto"] .zona-filtros .campo select,
@@ -1179,7 +1179,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
 [data-contraste="alto"] .texto-vacio { color: var(--texto-guia); opacity: 1; font-weight: 400; font-style: italic; }
 [data-contraste="alto"] .paso-marca { border-width: 3px; }
 [data-contraste="alto"] .paso + .paso::before { height: 3px; }
-/* Modo sol (D106) también en lo que llegó después: etiquetas de estado, cifras y pasos llevan
+/* Modo sol también en lo que llegó después: etiquetas de estado, cifras y pasos llevan
    borde de 2 px y texto en negritas, para que un relleno claro no se lave a pleno sol */
 [data-contraste="alto"] .insignia-jornada, [data-contraste="alto"] .jornada-estatus, [data-contraste="alto"] .etiqueta,
 [data-contraste="alto"] .marca-envio { border: 2px solid currentColor; font-weight: 700; }
@@ -1194,20 +1194,19 @@ dialog::backdrop { background: var(--velo-oscuro); }
    arrastraba la página de lado. `.campo .oculto-visual` gana por especificidad, no por orden. */
 .oculto-visual,
 .campo .oculto-visual { position: absolute; width: 1px; height: 1px; min-height: 0; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-/* Lo oculto se oculta aunque otra regla le ponga display (D120): sin esto, en computadora el
+/* Lo oculto se oculta aunque otra regla le ponga display: sin esto, en computadora el
    formulario de registro asomaba bajo «Iniciar jornada» por la regla de dos columnas */
 [hidden] { display: none !important; }
 
 /* ========== 7. @MEDIA ========== */
-/* TRES CORTES (M13): 480 px (teléfono chico), 700 px (teléfono: navegación abajo, filtros plegados,
+/* TRES CORTES: 480 px (teléfono chico), 700 px (teléfono: navegación abajo, filtros plegados,
    puntos apilados) y 1024 px (computadora: columnas). Una sola consulta por corte: primero las de
    «desde» de menor a mayor, luego las de «hasta» de mayor a menor, y al final las de capacidad
-   del dispositivo (ratón, pantalla táctil, menos movimiento). Antes había siete cortes (400, 480,
-   600, 601, 700, 767 y 1024): los de 600 y 767 se unieron al de 700 y el de 601 al de 701. */
+   del dispositivo (ratón, pantalla táctil, menos movimiento). No se agregan cortes nuevos. */
 @media (min-width: 701px) {
   .chips.chips-seis { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .cfg-tarjetas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  /* SISTEMA DE ANCHO EN TABLETA Y COMPUTADORA (D145). El teléfono es el uso principal y no cambia:
+  /* SISTEMA DE ANCHO EN TABLETA Y COMPUTADORA. El teléfono es el uso principal y no cambia:
    todo lo de aquí vive en consultas de 701 px o más. Reglas:
    1. Todas las vistas arrancan en el mismo borde izquierdo y ninguna se centra por su cuenta.
    2. En computadora (1024 px o más) cada vista usa el ancho completo (78rem) y lo reparte en
@@ -1289,19 +1288,19 @@ dialog::backdrop { background: var(--velo-oscuro); }
   /* En teléfono las acciones bajan a un segundo renglón para no aplastar la especie y el aviso */
   .punto-jornada { grid-template-columns: 28px minmax(0, 1fr); row-gap: var(--e-1); }
   .punto-acciones { grid-column: 2; justify-content: flex-start; }
-  /* La tuerca a la orilla derecha, a la misma altura en todos los puntos (D154) */
+  /* La tuerca a la orilla derecha, a la misma altura en todos los puntos */
   .punto-acciones .acciones-menu { margin-left: auto; }
-  /* En teléfono los dos botones ocupan el renglón completo; en pantallas muy angostas se apilan (D124) */
+  /* En teléfono los dos botones ocupan el renglón completo; en pantallas muy angostas se apilan */
   .franja-jornada-acciones { flex: 1 1 100%; flex-wrap: wrap; }
   .franja-jornada-acciones .btn { flex: 1 1 9rem; }
   .franja-jornada-acciones .btn:not(.btn-primario) { flex: 1 1 0; white-space: nowrap; font-size: var(--t-s); }
   .franja-jornada-acciones .btn-primario { flex: 1 1 100%; }
-  /* Filtros plegados en teléfono (D100): quedan a la vista las fichas y el botón «Filtros» */
+  /* Filtros plegados en teléfono: quedan a la vista las fichas y el botón «Filtros» */
   .btn.btn-filtros { display: inline-flex; margin-left: 0; }
   .filtros[data-abierto="false"] { display: none; }
   /* El botón ya dice «Filtros»: el título se queda sólo para el lector de pantalla */
   .titulo-filtros { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  /* NAVEGACIÓN INFERIOR EN TELÉFONO (D107): las secciones van abajo, al alcance del pulgar, como
+  /* NAVEGACIÓN INFERIOR EN TELÉFONO: las secciones van abajo, al alcance del pulgar, como
    en las apps del teléfono. La barra fija de guardar sube para quedar encima de ella. */
   :root { --alto-nav: calc(64px + env(safe-area-inset-bottom, 0px)); }
   .pestanas { position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-pestanas); max-width: none; margin: 0; padding: 0 0 env(safe-area-inset-bottom, 0px);
@@ -1309,7 +1308,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
   .pestana { min-height: 64px; font-size: var(--t-xs); border-bottom: 0; border-top: 3px solid transparent; padding: var(--e-1) 2px; }
   .pestana[aria-current="page"] { border-top-color: var(--acento); }
   body { padding-bottom: var(--alto-nav); }
-  /* Crédito del mapa en un renglón; al tocarlo se despliega (D108) */
+  /* Crédito del mapa en un renglón; al tocarlo se despliega */
   .leaflet-control-attribution { max-width: calc(100vw - 4rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
   .leaflet-control-attribution.credito-abierto { white-space: normal; }
   .barra-guardar { bottom: var(--alto-nav); }
@@ -1323,28 +1322,28 @@ dialog::backdrop { background: var(--velo-oscuro); }
   .paginador-botones { width: 100%; justify-content: space-between; gap: var(--e-1); }
   .paginador-botones .btn { min-width: 40px; padding-left: var(--e-2); padding-right: var(--e-2); }
   .paginador-botones .btn span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  /* Barra del pie de la jornada en teléfono chico (D172): «Registrar árbol» y «Generar reporte» en un
+  /* Barra del pie de la jornada en teléfono chico: «Registrar árbol» y «Generar reporte» en un
      renglón cada uno, con menos relleno y sin partir la etiqueta */
   .barra-jornada .btn { padding-left: var(--e-15); padding-right: var(--e-15); gap: var(--e-1); white-space: nowrap; }
-  /* Aviso con «Deshacer» en teléfono chico (D172): la acción baja bajo el texto; la × sigue arriba a la derecha */
+  /* Aviso con «Deshacer» en teléfono chico: la acción baja bajo el texto; la × sigue arriba a la derecha */
   .aviso { grid-template-columns: auto minmax(0, 1fr) auto; }
   .aviso-accion { grid-column: 2; grid-row: 2; justify-self: start; margin-left: calc(-1 * var(--e-3)); }
   .aviso-cerrar { grid-column: 3; }
-  /* El reporte en teléfono chico (D163): cifras en tres columnas y los datos uno por renglón */
+  /* El reporte en teléfono chico: cifras en tres columnas y los datos uno por renglón */
   .previa-cifras { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .previa-datos, .previa-datos-tres { grid-template-columns: minmax(0, 1fr); }
   .galeria-rejilla { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .galeria-pie { font-size: var(--t-xxs); }
   .encabezado-logo { max-height: 38px; }
-  /* Estado del teléfono en la guía: etiqueta sobre el valor (D149) */
+  /* Estado del teléfono en la guía: etiqueta sobre el valor */
   .senal-estado { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .senal-estado dd { margin-bottom: var(--e-2); }
-  /* En teléfono logotipo, conexión y cuenta caben en una sola fila (D93) */
+  /* En teléfono logotipo, conexión y cuenta caben en una sola fila */
   .encabezado-interior { padding: var(--e-2) var(--e-3); gap: var(--e-2); }
   .conexion { padding: 0 var(--e-2); font-size: var(--t-xxs); }
   .cx-palabra { display: none; }
   .campo-doble { grid-template-columns: 1fr; }
-  /* Reportes: el cabo a todo el ancho para que su nombre no se corte (D103) */
+  /* Reportes: el cabo a todo el ancho para que su nombre no se corte */
   .campo-triple { grid-template-columns: 1fr; }
   .btn-destacado { max-width: none; }
   .revision-fila { grid-template-columns: 1fr auto; }
@@ -1359,7 +1358,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
   .tabla td::before { content: attr(data-etiqueta); color: var(--gris); font-size: var(--t-xs); }
   .tabla tr:nth-child(even) td { background: none; }
   .tabla td:last-child { white-space: normal; }
-  /* Tarjeta compacta de Catálogos y Usuarios (D105): título y tuerca arriba, científico o correo,
+  /* Tarjeta compacta de Catálogos y Usuarios: título y tuerca arriba, científico o correo,
      y un renglón de resumen con el estado; las demás celdas se quedan en la tabla de escritorio */
   .tabla-tarjetas tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--e-2); padding: var(--e-2) var(--e-3); border-radius: var(--radio-filtro); }
   .tabla-tarjetas td { display: block; grid-column: 1; padding: 0; border: 0; }
@@ -1369,7 +1368,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
   .tabla-tarjetas .c-sub { color: var(--gris); overflow-wrap: anywhere; }
   .tabla-tarjetas .c-acciones { grid-column: 2; grid-row: 1 / span 3; align-self: start; margin: calc(-1 * var(--e-1)) calc(-1 * var(--e-2)) 0 0; }
   .tabla-tarjetas .c-resumen { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-1) var(--e-2); margin-top: var(--e-1); font-size: var(--t-xs); color: var(--gris); }
-  /* ESPEJO DE CAMPOS — se elimina al cerrar la Etapa 1 */
+  /* ESPEJO DE CAMPOS — sólo en la versión de prueba */
   .espejo-tabla, .espejo-tabla caption, .espejo-tabla tbody, .espejo-tabla tr { display: block; }
   .espejo-tabla tr { border-bottom: 1px solid var(--borde-suave); padding: var(--e-2) 0; }
   .espejo-tabla td { display: block; border: 0; padding: 0; }
@@ -1396,7 +1395,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
 }
 @media (hover: hover) {
   .cfg-tarjeta:hover { border-color: var(--acento); background: var(--acento-suave); }
-  /* Los estados de «señalar» sólo existen con ratón (D98). En iPhone y Android un toque dejaba
+  /* Los estados de «señalar» sólo existen con ratón. En iPhone y Android un toque dejaba
      pegado el hover: la zona de foto quedaba rosa y la primera especie parecía elegida. */
   .btn-reiniciar:hover { text-decoration: underline; text-underline-offset: 3px; }
   .zona-filtros .campo select:hover,
@@ -1404,9 +1403,9 @@ dialog::backdrop { background: var(--velo-oscuro); }
   .btn.btn-tuerca:hover { background: var(--fondo-suave); color: var(--acento); }
   .btn.btn-subir:hover { background: var(--acento-suave); border-color: var(--acento); }
   .menu-opcion:hover { background: var(--fondo-suave); outline: none; }
-  /* El acento, no la guinda (D124): al pasar el puntero, el botón principal seguía volviéndose guinda (D141) */
+  /* El acento, no la guinda: al pasar el puntero, el botón principal seguía volviéndose guinda */
   .btn-primario:hover { background: var(--acento-oscuro); }
-  /* El nivel 3 se pinta de guinda sólo al señalarlo: ahí ya no hay confusión posible,
+  /* El nivel 3 toma el color de acento sólo al señalarlo: ahí ya no hay confusión posible,
      porque el puntero está encima y nada más cambia de color al mismo tiempo. */
   .btn-texto:hover, .desplegable summary:hover { color: var(--acento); }
   .zona-foto:hover { border-color: var(--acento); background: var(--fondo-suave); }
@@ -1416,7 +1415,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
   .combo-opcion:hover { background: var(--fondo-suave); outline: 2px solid var(--acento); outline-offset: -2px; }
 }
 @media (pointer: coarse) {
-  /* Corta por un cuadro la inercia del dedo al cambiar de página (D154): en iPhone, un salto a la
+  /* Corta por un cuadro la inercia del dedo al cambiar de página: en iPhone, un salto a la
    cima mientras la página sigue deslizándose se perdía */
   html.sin-inercia { overflow: hidden; }
 }

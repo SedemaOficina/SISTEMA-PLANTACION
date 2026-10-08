@@ -23,7 +23,7 @@ SRP.usuarios = {
     // El tipo decide la lista de instituciones; la institución, el área, los perfiles y los coordinadores
     this.el('usr-tipo-org').addEventListener('change', () => { this.llenarInstituciones(''); this.ajustarPorOrganizacion(); });
     this.el('usr-organizacion').addEventListener('change', () => this.ajustarPorOrganizacion());
-    // Atajos de estado de la cuenta (D107)
+    // Atajos de estado de la cuenta
     this.el('usr-estado').addEventListener('click', (e) => {
       const b = e.target.closest('.chip'); if (!b) return;
       this.estado = b.dataset.estado;
@@ -32,7 +32,7 @@ SRP.usuarios = {
     });
     this.el('btn-usr-agregar').addEventListener('click', () => this.abrirFormulario(null));
     this.el('form-usuario').addEventListener('submit', (e) => { e.preventDefault(); this.guardar(); });
-    // El campo Coordinador sólo tiene sentido para un cabo. Sin saltos de foco automáticos (D82)
+    // El campo Coordinador sólo tiene sentido para un cabo. Sin saltos de foco automáticos
     this.el('usr-perfil').addEventListener('change', () => this.ajustarPorPerfil());
     this.el('usr-coordinadores').addEventListener('click', (e) => {
       const b = e.target.closest('.chip'); if (!b) return;
@@ -41,7 +41,7 @@ SRP.usuarios = {
       this.pintarNotaCoordinadores();
     });
     this.el('tabla-usuarios').addEventListener('click', (e) => {
-      // Tocar la tarjeta (fuera de la tuerca) abre la edición (D105)
+      // Tocar la tarjeta (fuera de la tuerca) abre la edición
       if (!e.target.closest('.c-acciones, thead')) {
         const tr = e.target.closest('tr[data-id]');
         if (tr) { this.abrirFormulario(SRP.ref.usuarioPorId[tr.dataset.id]); return; }
@@ -58,7 +58,7 @@ SRP.usuarios = {
     const plantaciones = await SRP.almacen.todos('plantaciones');
     this.uso = {};   // árboles a nombre de cada cuenta: la columna «Registros»
     plantaciones.forEach(p => { this.uso[p.cabo_id] = (this.uso[p.cabo_id] || 0) + 1; });
-    this.usos = await SRP.ref.usosDe('usuarios');   // todo lo que la nombra: decide si se puede eliminar (D151)
+    this.usos = await SRP.ref.usosDe('usuarios');   // todo lo que la nombra: decide si se puede eliminar
     this.llenarFiltros();
     this.pintar();
   },
@@ -102,7 +102,7 @@ SRP.usuarios = {
     const filas = lista.map(u => {
       const n = this.uso[u.id] || 0;
       const soyYo = u.id === yo;
-      // Acciones en el menú de la tuerca (D94). Nadie se desactiva ni se elimina a sí mismo:
+      // Acciones en el menú de la tuerca. Nadie se desactiva ni se elimina a sí mismo:
       // dejaría el sistema sin quien administre
       const items = [{ accion: 'editar', texto: 'Editar', icono: 'lapiz' }];
       if (!soyYo) {
@@ -111,7 +111,7 @@ SRP.usuarios = {
       }
       // Sólo se marca lo inactivo: casi todo está activo y marcarlo en cada tarjeta no distingue nada
       const estado = u.activo ? '' : '<span class="estado-texto" data-activo="false">Inactivo</span>';
-      // En teléfono, tarjeta compacta (D105): nombre, correo, un renglón de resumen y la tuerca
+      // En teléfono, tarjeta compacta: nombre, correo, un renglón de resumen y la tuerca
       return '<tr data-id="' + SRP.util.escapar(u.id) + '"><td class="c-titulo" data-etiqueta="Nombre">' + esc(SRP.util.nombreCompleto(u)) + (soyYo ? ' <span class="insignia">usted</span>' : '') + '</td>' +
         '<td class="c-sub" data-etiqueta="Correo">' + esc(u.correo) + '</td>' +
         '<td class="c-movil-oculta" data-etiqueta="Institución">' + esc(SRP.ref.nombreOrganizacion(u.organizacion_id)) + '</td>' +
@@ -125,7 +125,7 @@ SRP.usuarios = {
         '<td class="c-resumen">' + estado + '<span>' + [esc(SRP.permisos.de(u).etiqueta),
           // De la Secretaría se dice el área; de fuera, la institución
           esc(SRP.ref.esSedema(u.organizacion_id) ? SRP.ref.nombreCatalogo(u.area_id) : SRP.ref.nombreOrganizacion(u.organizacion_id)),
-          // «coordinador: …» en el cabo; «coordina a 2 cabos» en quien coordina (antes el cabo decía «coordina» a su coordinador)
+          // «coordinador: …» en el cabo; «coordina a 2 cabos» en quien coordina
           (u.coordinadores_ids || []).length ? ((u.coordinadores_ids.length === 1 ? 'coordinador: ' : 'coordinadores: ') + esc(coordinadoresDe(u))) : '',
           cabos[u.id] ? 'coordina a ' + cabos[u.id] + (cabos[u.id] === 1 ? ' cabo' : ' cabos') : '',
           n + (n === 1 ? ' registro' : ' registros')].filter(Boolean).join(' · ') + '</span></td></tr>';
@@ -135,7 +135,7 @@ SRP.usuarios = {
     SRP.util.ordenable(this.el('tabla-usuarios'));
     const total = SRP.ref.usuarios.length;
     const filtrado = q || this.estado !== 'todos' || this.filtroOrg || this.filtroPerfil;
-    const inactivos = SRP.ref.usuarios.filter(x => !x.activo).length;   // «3 usuarios · 1 inactivo» (D142)
+    const inactivos = SRP.ref.usuarios.filter(x => !x.activo).length;   // «3 usuarios · 1 inactivo»
     this.el('usr-cuenta').textContent = (filtrado ? lista.length + ' de ' : '') + total + (total === 1 ? ' usuario' : ' usuarios') +
       (inactivos ? ' · ' + inactivos + (inactivos === 1 ? ' inactivo' : ' inactivos') : '');
   },
@@ -144,7 +144,7 @@ SRP.usuarios = {
     const areaActual = usuario ? usuario.area_id : '';
     const areas = SRP.ref.deTipo('area', true).slice();
     if (areaActual && !areas.find(a => a.id === areaActual) && SRP.ref.catalogoPorId[areaActual]) areas.push(SRP.ref.catalogoPorId[areaActual]);
-    this.el('usr-area').innerHTML = SRP.util.opciones('Seleccione el área', areas.map(a => [a.id, a.nombre + (a.activo ? '' : ' (inactiva)')]));   // M15
+    this.el('usr-area').innerHTML = SRP.util.opciones('Seleccione el área', areas.map(a => [a.id, a.nombre + (a.activo ? '' : ' (inactiva)')]));
 
   },
 
@@ -294,7 +294,7 @@ SRP.usuarios = {
       coordinadores_ids: this.el('usr-perfil').value === 'CABO' ? this.coordinadoresElegidos() : []
     };
     const errores = this.validar(d);
-    if (SRP.util.resumenErrores(this.el('usr-errores'), errores, this.CAMPOS)) return;   // D140, M15
+    if (SRP.util.resumenErrores(this.el('usr-errores'), errores, this.CAMPOS)) return;
 
     const yo = SRP.sesion.usuario;
     const ahora = SRP.util.ahoraISO();
@@ -321,8 +321,8 @@ SRP.usuarios = {
     this.preparar();
   },
 
-  /* Desactivar se deshace: no pregunta, lo dice el aviso y ofrece «Deshacer» (D139).
-     `deshaciendo`: viene de «Deshacer» del aviso; no se vuelve a ofrecer deshacer (D101) */
+  /* Desactivar se deshace: no pregunta, lo dice el aviso y ofrece «Deshacer».
+     `deshaciendo`: viene de «Deshacer» del aviso; no se vuelve a ofrecer deshacer */
   async cambiarEstado(u, deshaciendo) {
     if (!SRP.permisos.exigir('usuario.administrar')) return;
     if (u.id === SRP.sesion.usuario.id) { SRP.util.anunciar('No puede desactivar su propia cuenta: el sistema se quedaría sin quien lo administre.', 'aviso'); return; }
@@ -340,7 +340,7 @@ SRP.usuarios = {
     if (!SRP.permisos.exigir('usuario.administrar')) return;
     if (u.id === SRP.sesion.usuario.id) { SRP.util.anunciar('No puede eliminar su propia cuenta.', 'aviso'); return; }
     await this.preparar();                 // recuenta justo antes de decidir
-    // Cuenta en todas las tablas (D151): árboles, jornadas de las que es cabo o encargado, cabos
+    // Cuenta en todas las tablas: árboles, jornadas de las que es cabo o encargado, cabos
     // que coordina, cuentas y catálogos que dio de alta o editó
     const usos = this.usos[u.id];
     if (SRP.ref.totalUsos(usos)) {
@@ -364,5 +364,5 @@ SRP.usuarios = {
   }
 };
 
-// Acciones que escriben en el teléfono: si fallan, se dice qué no se pudo hacer (D149)
+// Acciones que escriben en el teléfono: si fallan, se dice qué no se pudo hacer
 SRP.util.proteger(SRP.usuarios, { guardar: 'guardar la cuenta', cambiarEstado: 'cambiar el estado de la cuenta', eliminar: 'eliminar la cuenta' });

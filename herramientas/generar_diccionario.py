@@ -1,11 +1,11 @@
-"""Genera DICCIONARIO-DATOS.md a partir de esquema.json (D86).
+"""Genera DICCIONARIO-DATOS.md a partir de esquema.json.
 
 esquema.json es la fuente única del modelo de datos: tablas, campos, dominios, relaciones,
 derivaciones, campos efímeros y reglas. Este script sólo lo pone en prosa y tablas legibles;
 no se edita el .md a mano. pruebas/auditoria.py comprueba que el esquema coincide con lo que el
 sistema guarda y que el .md está regenerado.
 
-Escribe además js/esquema.js (D150): los campos, tipos, nulos, dominios y referencias en la forma
+Escribe además js/esquema.js: los campos, tipos, nulos, dominios y referencias en la forma
 que lee el navegador (hoy, js/referencias.js para contar el uso de cuentas y catálogos). Tampoco
 se edita a mano.
 
@@ -36,7 +36,7 @@ def generar_js(d):
             filas.append([c['campo'], c['tipo'], bool(c['nulo']), dom if dom in dominios else None, ref, None if pan in ('', 'No') else pan])
         tablas[t] = filas
     datos = {'version_esquema': d['version_esquema'], 'dominios': dominios, 'tablas': tablas}
-    return ('/* ESQUEMA EN EL NAVEGADOR (D150, D175). Generado de datos/esquema.json por herramientas/generar_diccionario.py:\n'
+    return ('/* ESQUEMA EN EL NAVEGADOR. Generado de datos/esquema.json por herramientas/generar_diccionario.py:\n'
             '   no se edita a mano. Lo usan js/referencias.js, para leer las relaciones entre tablas, y el espejo de\n'
             '   campos de la versión de prueba, para decir dónde se ve cada campo.\n'
             '   Por tabla: [campo, tipo, nulo, dominio, referencia, pantalla]. */\n'

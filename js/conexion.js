@@ -1,19 +1,16 @@
-/* CONEXIÓN Y TRABAJO SIN SEÑAL (D71). El respaldo del teléfono se retiró (D175): proteger lo
-   capturado es tarea del servidor y de su cola de envío en la Fase 2.
+/* CONEXIÓN Y TRABAJO SIN SEÑAL. Lo capturado se protege en el servidor, con su cola de envío;
+   el teléfono no guarda respaldos aparte.
 
    QUÉ SE LE DICE A QUIEN REGISTRA, Y POR QUÉ. La aplicación funciona sin señal: el GPS, la
-   captura, el guardado y el reporte en PDF viven en el teléfono. Lo que no se decía en pantalla es
-   qué pasa con esos registros: en la Etapa 1 no hay servidor, así que no hay nada que enviar
-   cuando vuelve la señal, y borrar los datos del navegador los pierde. Este módulo pone las tres
-   cosas a la vista: el estado de la conexión, cuántos registros guarda este dispositivo y qué
-   hacer con ellos. Cuando exista el servidor (Fase 2), el mismo aviso dirá «N pendientes de
-   enviar» y aquí vivirá el botón de sincronizar.
+   captura, el guardado y el reporte en PDF viven en el teléfono. Este módulo pone a la vista qué
+   pasa con esos registros: el estado de la conexión, cuántos registros guarda este dispositivo o
+   esperan envío, y qué hacer con ellos (borrar los datos del navegador pierde lo que no se ha
+   enviado).
 
-   LA CUENTA VA EN LA PASTILLA (D83). El bloque «Registros en este dispositivo» vive en Reportes,
-   a donde el cabo no va en campo; la pastilla del encabezado se ve en todas las pantallas, así
-   que lleva la cuenta («Con conexión · 4 guardados») y al tocarla abre la guía. Es lo que hace
-   la cola de envío de KoboToolbox, sin su barra lateral. La franja «Guardado» del formulario dice
-   además si el árbol ya salió o cuántos esperan, sin pedir otro clic. */
+   LA CUENTA VA EN LA PASTILLA. La pastilla del encabezado se ve en todas las pantallas, así que
+   lleva la cuenta («Con conexión · 4 guardados») y al tocarla abre la guía, como la cola de envío
+   de KoboToolbox, sin su barra lateral. La franja «Guardado» del formulario dice además si el
+   árbol ya salió o cuántos esperan, sin pedir otro clic. */
 window.SRP = window.SRP || {};
 
 SRP.conexion = {
@@ -21,7 +18,7 @@ SRP.conexion = {
 
   iniciar() {
     this.registrarWorker();
-    // Al volver la señal se envía la cola (D111); con ella, el servidor simulado emite los folios (D110)
+    // Al volver la señal se envía la cola; con ella, el servidor simulado emite los folios
     window.addEventListener('online', async () => {
       await this.refrescar();
       await SRP.envio.pintarFranja();
@@ -29,7 +26,7 @@ SRP.conexion = {
     });
     window.addEventListener('offline', async () => { await this.refrescar(); await SRP.envio.pintarFranja(); });
     this.el('conexion').addEventListener('click', async () => { await this.pintarEstado(); this.el('dlg-senal').showModal(); });
-    // La fecha del último respaldo quedó sin uso al retirarse el respaldo (D175)
+    // La fecha del último respaldo quedó sin uso al retirarse el respaldo
     try { localStorage.removeItem('srp_ultimo_respaldo'); } catch (e) { /* sin persistencia */ }
     this.refrescar();
   },
@@ -61,8 +58,8 @@ SRP.conexion = {
     this._vigilancia = setInterval(() => { if (!document.hidden) this.buscarVersionNueva(); }, this.INTERVALO_VERSION);
   },
 
-  /* Tras recargar por una versión nueva se dice, una vez: la pantalla sólo parpadeó y nadie sabría
-     que cambió. La versión de antes se anota justo antes de recargar. */
+  /* Tras recargar por una versión nueva se dice, una vez: la pantalla sólo parpadea y nadie sabría
+     que cambió. La versión anterior se anota justo antes de recargar. */
   CLAVE_ANTERIOR: 'srp_version_anterior',
   actualizada: null,   // { de, a } cuando esta carga vino de una actualización
   avisarActualizada() {
@@ -130,7 +127,7 @@ SRP.conexion = {
     caja.innerHTML = iphone ? '<dt>En iPhone</dt><dd data-tono="aviso">' + SRP.util.escapar('Agregue el SRP a la pantalla de inicio (Compartir › Agregar a inicio): Safari borra lo guardado de los sitios que no se abren en 7 días.') + '</dd>' : '';
   },
 
-  // «Simular sin señal» (pruebas, D111) manda sobre lo que diga el teléfono
+  // «Simular sin señal» (pruebas) manda sobre lo que diga el teléfono
   enLinea() { return navigator.onLine !== false && !SRP.envio.sinSenalForzada(); },
 
   async refrescar() {
@@ -138,7 +135,7 @@ SRP.conexion = {
     const ind = this.el('conexion');
     if (SRP.envio.simulado()) return this.refrescarSimulado(ind, con);
     const n = await this.contarGuardados();
-    // En teléfono chico la palabra «guardados» se oculta por CSS (queda «Con conexión · 4»); la etiqueta accesible la dice completa (D93)
+    // En teléfono chico la palabra «guardados» se oculta por CSS (queda «Con conexión · 4»); la etiqueta accesible la dice completa
     const cuenta = n === null ? '' : ' · ' + n + '<span class="cx-palabra"> ' + (n === 1 ? 'guardado' : 'guardados') + '</span>';
     ind.innerHTML = SRP.ICONOS.svg(con ? 'senal' : 'sinSenal', 'medio') +
       '<span>' + (con ? 'Con conexión' : 'Sin conexión') + cuenta + '</span>';
@@ -147,7 +144,7 @@ SRP.conexion = {
       (n === null ? '' : ', ' + n + ' registros guardados en este dispositivo') + '. Abrir la guía de qué hacer sin internet');
   },
 
-  /* La pastilla con el envío simulado (D111): en lugar de cuántos guarda el teléfono, cuántos
+  /* La pastilla con el envío simulado: en lugar de cuántos guarda el teléfono, cuántos
      esperan envío. «Al día» cuando no queda nada; rojo cuando hay atraso (días anteriores o
      pasada la hora de cierre); «Enviando 3…» mientras dura el envío. */
   async refrescarSimulado(ind, con) {
@@ -160,7 +157,7 @@ SRP.conexion = {
       texto = 'Enviando ' + enviando + '…';
       etiqueta = 'Enviando ' + enviando + (enviando === 1 ? ' registro' : ' registros') + ' al servidor';
     } else {
-      // «Al día» con un servidor simulado no es «enviado» (D150): en pantallas anchas lo dice; en el
+      // «Al día» con un servidor simulado no es «enviado»: en pantallas anchas lo dice; en el
       // teléfono lo dicen la banda de datos ficticios, la etiqueta accesible y la guía
       const cuenta = n === null ? '' : n === 0 ? ' · Al día<span class="cx-palabra"> (simulado)</span>' : ' · ' + n + '<span class="cx-palabra"> por enviar</span>';
       texto = (con ? 'Con conexión' : 'Sin conexión') + cuenta;

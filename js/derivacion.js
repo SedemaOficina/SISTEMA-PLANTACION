@@ -1,7 +1,7 @@
 /* DERIVACIÓN TERRITORIAL: punto-en-polígono local contra SRP.CAPAS.
    Resultado orientativo para el registro de campo; no produce consecuencias jurídicas.
-   Si en Fase 2 el dato se usa para turnar o validar, el cruce se hace en el servidor
-   contra la capa completa (Norma 6.4).
+   Si el dato se usa para turnar o validar, el cruce se hace en el servidor contra la capa
+   completa (Norma 6.4).
 
    CAPAS. Vienen del SIA (originales/, intactas) y se cargan compactadas por
    herramientas/generar_capas.py:
@@ -10,24 +10,23 @@
      colonias   1,837 unidades territoriales del IECM 2022, clave `CVEUT` (`10-001`). Es la
                 definitiva: las colonias del IECM son la unidad oficial de reporte.
 
-   LO QUE SE SABE DE LA CAPA DE COLONIAS (medido al recibirla, D62):
+   LO QUE SE SABE DE LA CAPA DE COLONIAS (medido al recibirla):
    - No cubre el suelo de conservación: 532 km² al sur sin colonia; y quedan 31 km² urbanos sin
-     colonia. Un punto ahí se guarda con `colonia` nula y la pantalla dice «Sin colonia en la capa»
-     (D152): no siempre es zona no urbana, y el rótulo anterior lo afirmaba.
+     colonia. Un punto ahí se guarda con `colonia` nula y la pantalla dice «Sin colonia en la capa»:
+     no siempre es zona no urbana, así que no se afirma.
    - 215 solapes (1.6 km²), casi siempre una unidad habitacional dibujada encima del pueblo o
      colonia que la rodea. Gana el polígono MÁS PEQUEÑO: es la unidad más específica.
    - Sus límites no coinciden con los de alcaldías: 12 colonias tienen el interior en otra
-     alcaldía. La alcaldía sale de su capa, nunca de la demarcación que trae la colonia (D47).
+     alcaldía. La alcaldía sale de su capa, nunca de la demarcación que trae la colonia.
 
-   ÁMBITO (D152). La Ciudad de México es la unión de las alcaldías, no un rectángulo: la caja de
-   antes aceptaba Nezahualcóyotl, Naucalpan o Huixquilucan (47 % de su superficie queda fuera) y
-   hasta les daba celda UGA de borde. Se admite un margen de MARGEN_AMBITO_M metros alrededor del
-   límite, porque el GPS de un árbol plantado junto al límite puede caer unos metros afuera; ese
-   punto toma la alcaldía más cercana y la pantalla lo dice.
+   ÁMBITO. La Ciudad de México es la unión de las alcaldías, no un rectángulo: una caja aceptaría
+   Nezahualcóyotl, Naucalpan o Huixquilucan (47 % de su superficie queda fuera) y hasta les daría
+   celda UGA de borde. Se admite un margen de MARGEN_AMBITO_M metros alrededor del límite, porque
+   el GPS de un árbol plantado junto al límite puede caer unos metros afuera; ese punto toma la
+   alcaldía más cercana y la pantalla lo dice.
 
-   LO QUE SE SABE DE LA CAPA DE ALCALDÍAS. La definitiva (sia-2026-01-01, bloque 38) no tiene
-   solapes ni huecos: los tres solapes y cinco huecos de la entrega anterior quedaron corregidos
-   en la fuente. Las dos reglas se conservan como defensa, por si una entrega futura los trae:
+   LO QUE SE SABE DE LA CAPA DE ALCALDÍAS. La definitiva (sia-2026-01-01) no tiene solapes ni
+   huecos. Las dos reglas se conservan como defensa, por si una entrega futura los trae:
    - En un solape gana el primer polígono de la capa que contiene el punto (el borde cuenta
      como dentro). Regla fija, para que el mismo punto derive siempre lo mismo.
    - En un hueco no se deriva alcaldía: el registro se guarda igual, con `alcaldia` nula y
@@ -74,7 +73,7 @@ SRP.derivacion = {
   },
 
   /* Área planar aproximada (grados², fórmula del zapatero), sólo para COMPARAR polígonos de la
-     misma capa: en un solape de colonias gana el más pequeño (D62). No es una superficie real. */
+     misma capa: en un solape de colonias gana el más pequeño. No es una superficie real. */
   areaDe(feature) {
     if (feature._area === undefined) {
       let a = 0;
@@ -123,7 +122,7 @@ SRP.derivacion = {
     return mejor;
   },
 
-  // ¿Están las tres capas y la biblioteca del cruce? El arranque lo exige (D152)
+  // ¿Están las tres capas y la biblioteca del cruce? El arranque lo exige
   capasCompletas() {
     return !!(SRP.CAPAS && ['alcaldias', 'uga', 'colonias'].every(k => SRP.CAPAS[k] && SRP.CAPAS[k].geojson && SRP.CAPAS[k].geojson.features.length) &&
       typeof window.turfPIP === 'function');
@@ -131,7 +130,7 @@ SRP.derivacion = {
 
   /* `fuera_m`: si el punto cae fuera de las alcaldías pero dentro del margen, a cuántos metros del
      límite quedó (la alcaldía es la más cercana). `uga_borde_m`: a cuántos metros del borde de su
-     celda: si es menos que la precisión del GPS, la celda del folio no es segura (D152). */
+     celda: si es menos que la precisión del GPS, la celda del folio no es segura. */
   derivar(lat, lng) {
     const r = { alcaldia_cve: null, alcaldia: null, colonia_cve: null, colonia: null, uga: null, capa_version: null, dentro: false, fuera_m: 0, uga_borde_m: null };
     if (!SRP.CAPAS || typeof window.turfPIP !== 'function') return r;
@@ -150,7 +149,7 @@ SRP.derivacion = {
     const u = this.buscar('uga', punto, lng, lat);
     if (u) { r.uga = u.properties.clave; r.uga_borde_m = Math.round(this.distanciaBorde(u, lat, lng)); }
 
-    // Colonia: si el punto cae en varias, la más pequeña; si en ninguna, nula (D62)
+    // Colonia: si el punto cae en varias, la más pequeña; si en ninguna, nula
     const cs = this.buscarTodos('colonias', punto, lng, lat, false);
     if (cs.length) {
       const c = cs.reduce((m, f) => this.areaDe(f) < this.areaDe(m) ? f : m, cs[0]);
@@ -160,9 +159,8 @@ SRP.derivacion = {
     return r;
   },
 
-  /* El ámbito es la unión de las alcaldías más el margen (D152). La capa definitiva no tiene
-     huecos (bloque 38), así que ya no hace falta la caja para no dejar fuera un árbol real. La caja
-     sigue como primer filtro, y como único si faltara la capa (el arranque no lo permite). */
+  /* El ámbito es la unión de las alcaldías más el margen. La caja sigue como primer filtro, y como
+     único si faltara la capa (el arranque no lo permite). */
   dentroDelAmbito(lat, lng) {
     if (typeof lat !== 'number' || typeof lng !== 'number' || !isFinite(lat) || !isFinite(lng)) return false;
     const [[s, o], [n, e]] = SRP.CONFIG.MAPA.LIMITES;

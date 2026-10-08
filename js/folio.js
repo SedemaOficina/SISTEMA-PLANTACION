@@ -1,10 +1,10 @@
-/* FOLIO DEL EJEMPLAR — nomenclatura adoptada (D67) y lo que de ella vive en el dispositivo.
+/* FOLIO DEL EJEMPLAR — nomenclatura adoptada y lo que de ella vive en el dispositivo.
 
-   FORMA: AAA-000-00000, 13 caracteres fijos, dos segmentos congelados al asignar (D67):
+   FORMA: AAA-000-00000, 13 caracteres fijos, dos segmentos congelados al asignar:
      AAA-000    celda UGA del punto, por cruce contra la malla vigente al alta (EXT-000 si el
                 punto queda fuera de la malla, dentro del margen del límite). AAA es el PREFIJO
                 DE LA CELDA, no la alcaldía del árbol: difieren en el 4.3 % del territorio (un
-                árbol en Milpa Alta puede llevar TLP-040). La alcaldía es su propio campo (D152)
+                árbol en Milpa Alta puede llevar TLP-040). La alcaldía es su propio campo
      00000      consecutivo de la celda, de una tabla de secuencias PERPETUA y MONOTÓNICA:
                 no se reinicia por ejercicio, administración ni versión del sistema (R5–R6)
    El origen del registro y el ejercicio no van en el folio: son campos de la base.
@@ -32,14 +32,13 @@ SRP.folio = {
 
   valido(f) { return typeof f === 'string' && this.PATRON.test(f); },
 
-  /* ¿Se le puede emitir folio? (D152) Con alcaldía y con las tres capas en su capa_version. Sin
-     ellas el territorio está pendiente: antes recibía EXT-000 como si el punto estuviera fuera de
-     la malla, cuando lo que faltaba era la capa. */
+  /* ¿Se le puede emitir folio? Con alcaldía y con las tres capas en su capa_version. Sin
+     ellas el territorio está pendiente: no es lo mismo que un punto fuera de la malla (EXT-000). */
   puedeEmitir(r) {
     return !!(r && r.alcaldia && typeof r.capa_version === 'string' && ['alcaldias=', 'uga=', 'colonias='].every(k => r.capa_version.includes(k)));
   },
 
-  /* Celda incierta (D152): el punto está más cerca del borde de su celda UGA que la precisión con
+  /* Celda incierta: el punto está más cerca del borde de su celda UGA que la precisión con
      que se tomó, así que la celda del folio podría ser la vecina. Se dice; el servidor la confirma. */
   celdaIncierta(r) {
     if (!r || r.uga_borde_m == null || r.punto_origen !== 'gps' || r.gps_precision_m == null) return '';
@@ -66,13 +65,13 @@ SRP.folio = {
     return registro && this.valido(registro.folio) ? registro.folio : this.PROVISIONAL;
   },
 
-  /* ---------- SERVIDOR SIMULADO (D110): sólo con datos de prueba ----------
-     En la Etapa 1 no hay servidor, pero para ver el folio en pantalla, lista, detalle y PDF, con
-     datos ficticios se simula la emisión tal como la hará el servidor: al haber conexión, cada
-     registro sin folio recibe el suyo, una sola vez, con el consecutivo de una secuencia por celda
-     que sólo avanza (R5–R6) y se congelan celda, versión de capas y coordenada (R8). La secuencia
-     vive en este dispositivo: dos teléfonos de prueba pueden repetir números, que es justo lo que
-     el servidor real evitará. Con ES_FICTICIO en false nada de esto corre. */
+  /* ---------- SERVIDOR SIMULADO: sólo con datos de prueba ----------
+     Para ver el folio en pantalla, lista, detalle y PDF sin servidor, con datos ficticios se
+     simula la emisión tal como la hará el servidor: al haber conexión, cada registro sin folio
+     recibe el suyo, una sola vez, con el consecutivo de una secuencia por celda que sólo avanza
+     (R5–R6) y se congelan celda, versión de capas y coordenada (R8). La secuencia vive en este
+     dispositivo: dos teléfonos de prueba pueden repetir números, que es justo lo que el servidor
+     real evita. Con ES_FICTICIO en false nada de esto corre. */
   simulado() { return !!SRP.CONFIG.ES_FICTICIO; },
 
   leerSecuencias() {
@@ -97,7 +96,7 @@ SRP.folio = {
       .sort((a, b) => String(a.fecha_registro).localeCompare(String(b.fecha_registro)));
     for (const r of pendientes) {
       // Si la sesión se cierra a medio envío (salir, cambiar de perfil, quitar la cuenta de
-      // demostración con que se entró), se para aquí: lo que falta sale en el próximo envío (D160)
+      // demostración con que se entró), se para aquí: lo que falta sale en el próximo envío
       if (!SRP.sesion.usuario) break;
       const celda = r.uga && /^[A-Z]{3}-\d{3}$/.test(r.uga) ? r.uga : 'EXT-000';
       const folio = this.armar(celda, this.siguiente(celda));
@@ -108,7 +107,7 @@ SRP.folio = {
     return pendientes.length;
   },
 
-  /* El folio que tocará a un registro nuevo, para la ficha «Revise antes de guardar» (D126): con datos
+  /* El folio que tocará a un registro nuevo, para la ficha «Revise antes de guardar»: con datos
      de prueba, la celda del punto y el consecutivo que sigue, contando los registros de esa celda
      que aún esperan folio. No incrementa la secuencia: la emisión sigue siendo una sola, al guardar
      y sincronizar (R3). Sin simulación devuelve null. */
@@ -137,5 +136,5 @@ SRP.folio = {
   }
 };
 
-// Acciones que escriben en el teléfono: si fallan, se dice qué no se pudo hacer (D149)
+// Acciones que escriben en el teléfono: si fallan, se dice qué no se pudo hacer
 SRP.util.proteger(SRP.folio, { emitirPendientes: 'asignar los folios' });

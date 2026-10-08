@@ -1,14 +1,14 @@
 /* REGLAS DE PERFIL: fuente única de qué puede hacer cada perfil.
-   En Fase 2 estas reglas se imponen en el servidor (Norma 7.1); la pantalla sólo las refleja.
+   El servidor impone estas mismas reglas (Norma 7.1); la pantalla sólo las refleja.
    Aquí viven una sola vez para que la pantalla no las repita. */
 window.SRP = window.SRP || {};
 
 SRP.PERFILES = {
-  // eliminarJornadaVacia: una jornada sin ningún árbol, ni eliminado, se puede borrar (D132, D151)
+  // eliminarJornadaVacia: una jornada sin ningún árbol, ni eliminado, se puede borrar
   CABO:        { etiqueta: 'Cabo',                   alcance: 'propios', registrar: true,  editar: true,  eliminar: true,  eliminarJornadaVacia: true, relevar: false, catalogos: false, usuarios: false, galeria: true,
                  descripcion: 'Registra plantaciones y ve, edita y elimina únicamente las suyas; descarga sus fotografías.' },
   // Registra, edita y elimina lo de su cuadrilla: un árbol capturado por error se corrige sin
-  // esperar a Administración (D155, sustituye el «no elimina» de D87); ve la galería (D118)
+  // esperar a Administración; ve la galería
   COORDINADOR: { etiqueta: 'Coordinador',            alcance: 'equipo',  registrar: true,  editar: true,  eliminar: true,  eliminarJornadaVacia: true, relevar: true,  catalogos: false, usuarios: false, galeria: true,
                  descripcion: 'Registra, y ve, edita y elimina los registros de los cabos que tiene asignados y los suyos. Elimina también las jornadas vacías y pasa una jornada abierta a otro cabo de su cuadrilla (relevo).' },
   /* Sólo ve: subdirecciones, direcciones de área y direcciones generales. El de la Secretaría ve toda
@@ -20,8 +20,8 @@ SRP.PERFILES = {
   // a nombre de quien plantó el árbol, no de quien administra el sistema.
   ADMIN:       { etiqueta: 'Administración global',  alcance: 'todos',   registrar: false, editar: true,  eliminar: true,  eliminarJornadaVacia: true, relevar: false, catalogos: true,  usuarios: true,  galeria: true,
                  descripcion: 'Ve, edita y elimina todo, y administra los catálogos y las cuentas. No captura registros.' }
-  // Hubo un cuarto perfil, Consulta (VIEWER): se retiró en D87 por no tener uso. Los tableros de
-  // consulta los da el SIA sobre la copia publicada (D38), no esta aplicación.
+  // No hay perfil de sólo consulta: los tableros de consulta los da el SIA sobre la copia
+  // publicada, no esta aplicación.
 };
 
 // Lo que recibe una cuenta cuyo perfil no existe: nada. Nunca un perfil real por omisión.
@@ -30,8 +30,8 @@ SRP.SIN_PERMISOS = { etiqueta: 'Perfil no reconocido', alcance: 'ninguno', regis
                      descripcion: 'La cuenta tiene un perfil que el sistema no reconoce. Pida a Administración que lo corrija.' };
 
 SRP.permisos = {
-  /* Un perfil que no está en el catálogo se queda sin permisos, y nunca en silencio: antes, una
-     cuenta con un perfil viejo caía en «Consulta» sin que nada lo dijera, y costó ver por qué. */
+  /* Un perfil que no está en el catálogo se queda sin permisos, y nunca en silencio: una cuenta
+     con un perfil que no existe no debe caer en otro perfil sin que nada lo diga. */
   de(usuario) {
     const p = SRP.PERFILES[usuario.perfil];
     // El directivo de una institución que no es la Secretaría ve sólo lo de la suya
@@ -73,11 +73,11 @@ SRP.permisos = {
     return this.de(usuario).eliminar && this.alcanza(usuario, registro, usuariosPorId);
   },
 
-  /* LO QUE EXIGE CADA ACCIÓN (D151), en un solo lugar. Las funciones que escriben lo consultan al
+  /* LO QUE EXIGE CADA ACCIÓN, en un solo lugar. Las funciones que escriben lo consultan al
      empezar con exigir(), y se detienen con aviso si no alcanza: esconder el botón no basta, porque
-     la función se puede llamar igual. En la Etapa 1 no es una frontera real —cada quien controla su
-     teléfono—, pero es la lista exacta de lo que el servidor impondrá en la Fase 2 (datos/esquema.json,
-     reglas de Fase 2). `objeto` es el registro, la jornada o nada. */
+     la función se puede llamar igual. En el teléfono no es una frontera real —cada quien controla su
+     teléfono—, pero es la lista exacta de lo que impone el servidor (datos/esquema.json, reglas del
+     servidor). `objeto` es el registro, la jornada o nada. */
   ACCIONES: {
     'registro.crear':       { texto: 'registrar árboles',                 regla: (p) => p.registrar },
     'registro.editar':      { texto: 'editar este registro',              regla: (p, u, r) => p.editar && SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId) },
@@ -87,7 +87,7 @@ SRP.permisos = {
     'registro.sustituir':   { texto: 'sustituir este árbol',              regla: (p, u, r) => p.registrar && r.estatus === 'activo' && !r.sustituido_por_id && SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId) },
     'registro.mover':       { texto: 'mover este registro de jornada',    regla: (p, u, r) => p.editar && SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId) },
     'jornada.crear':        { texto: 'iniciar jornadas',                  regla: (p) => p.registrar },
-    // Editar, cerrar, reabrir, revisar sus puntos y llenar el cierre del reporte (D132, D133)
+    // Editar, cerrar, reabrir, revisar sus puntos y llenar el cierre del reporte
     'jornada.editar':       { texto: 'modificar esta jornada',            regla: (p, u, j) => p.editar && SRP.permisos.alcanza(u, j, SRP.ref.usuarioPorId) },
     'jornada.eliminar':     { texto: 'eliminar esta jornada',             regla: (p, u, j) => p.eliminarJornadaVacia && SRP.permisos.alcanza(u, j, SRP.ref.usuarioPorId) },
     // Registrar árboles en una jornada abierta: sólo quien la tiene a su cargo, el titular o el cabo del relevo

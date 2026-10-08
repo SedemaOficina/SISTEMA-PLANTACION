@@ -1,7 +1,7 @@
 # GENERA LAS CAPAS QUE CARGA LA APLICACIÓN A PARTIR DE LOS ARCHIVOS TAL COMO LLEGARON DEL SIA.
 #
 # Los originales viven en originales/, en la raíz del repositorio, y no se tocan: son la constancia
-# de qué se recibió. Esa carpeta no se sube a GitHub ni se publica (D164); si no está, se piden a Liber.
+# de qué se recibió. Esa carpeta no se sube a GitHub ni se publica; si no está, se piden al área del SIA.
 # Este script los valida, se queda sólo con los atributos que el sistema usa, redondea a seis
 # decimales (~11 cm, por debajo de la exactitud de cualquier capa de límites) y escribe dos
 # scripts clásicos que definen SRP.CAPAS.alcaldias, SRP.CAPAS.uga y SRP.CAPAS.colonias. Clásicos y no módulos,
@@ -78,7 +78,7 @@ def listas(o):
     return [listas(x) for x in o] if isinstance(o, (list, tuple)) else o
 
 def geometria_final(coords, clave, archivo):
-    """Redondea a seis decimales y comprueba que la geometría siga siendo válida (D152). El redondeo
+    """Redondea a seis decimales y comprueba que la geometría siga siendo válida. El redondeo
     simple puede dejar anillos que se tocan o se cruzan: pasó en nueve colonias, y una geometría
     inválida hace que el cruce punto-en-polígono falle sin avisar. Si el redondeo la rompe, se
     ajusta a la misma rejilla con shapely.set_precision, que la conserva válida; si aun así no lo
@@ -95,7 +95,7 @@ def geometria_final(coords, clave, archivo):
         fallar(f'{archivo}: la geometría de {clave} queda inválida al redondear y no se pudo ajustar')
     return r, True
 
-# Prefijo de tres letras de cada alcaldía, por clave INEGI. La capa definitiva ya no lo trae
+# Prefijo de tres letras de cada alcaldía, por clave INEGI. La capa definitiva no lo trae
 # (sí la anterior, como clv_mun); es el mismo que usa la malla UGA en sus claves.
 PREFIJO = {'09002': 'AZC', '09003': 'COY', '09004': 'CUJ', '09005': 'GAM', '09006': 'IZC', '09007': 'IZP',
            '09008': 'MAC', '09009': 'MLP', '09010': 'AOB', '09011': 'TLH', '09012': 'TLP', '09013': 'XOC',
@@ -172,9 +172,9 @@ if raros: fallar(f'UGAs con prefijo que no es alcaldía: {raros}')
 
 escribir('alcaldias', alc, lambda p: {'cvegeo': p['cvegeo'], 'nombre': p['nomgeo'], 'clave': PREFIJO[p['cvegeo']]})
 escribir('uga', uga, lambda p: {'clave': p['clave']})
-# El nombre va como viene —mayúsculas y tipo entre paréntesis, D62—; sólo se quitan los espacios
+# El nombre va como viene —mayúsculas y tipo entre paréntesis—; sólo se quitan los espacios
 # dobles (23 casos como «GRAL C  A  MADRAZO»), que son error de captura y no parte del nombre.
-# La demarcación del IECM no se conserva: la alcaldía del punto sale de su propia capa (D47).
+# La demarcación del IECM no se conserva: la alcaldía del punto sale de su propia capa.
 escribir('colonias', col, lambda p: {'clave': p['CVEUT'], 'nombre': re.sub(r' {2,}', ' ', p['UT']).strip()})
 # Colonias prioritarias: sólo colonia, alcaldía y prioridad (0 Muy Baja … 4 Muy Alta)
 pri = cargar('prioritarias')

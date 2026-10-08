@@ -2,12 +2,11 @@
    y el ámbar hay 1.0-1.3:1 de contraste, así que quien no distingue el color necesita la forma
    y el texto para saber qué hace el botón (Norma 8.4).
 
-   IDENTIDAD (D88). Los que existen en el set de iconografía del Manual de Identidad Gráfica
-   CDMX 2024-2030 se toman de ahí (basura, cerrar, ubicación, cámara, ver), extraídos del
-   ICONOS SET.ai que entregó el área y normalizados a una caja de 24×24 con
-   herramientas/extraer_iconos.py; el número es su posición en la hoja índice. Palomita, lápiz, disco
-   y señal no existen en el set y se conservan. En el bloque 36 (D89) entraron los del acceso, la
-   cuenta, las pestañas y varias acciones; conexión con y sin señal siguen con las ondas. */
+   IDENTIDAD. Los que existen en el set de iconografía del Manual de Identidad Gráfica
+   CDMX 2024-2030 se toman de ahí (basura, cerrar, ubicación, cámara, ver; acceso, cuenta,
+   pestañas y varias acciones), extraídos del ICONOS SET.ai que entregó el área y normalizados a
+   una caja de 24×24 con herramientas/extraer_iconos.py; el número es su posición en la hoja
+   índice. Palomita, lápiz, disco, señal y conexión con y sin señal no existen en el set. */
 window.SRP = window.SRP || {};
 
 SRP.ICONOS = {
@@ -30,11 +29,11 @@ SRP.ICONOS = {
   // Agregar fotografía (set CDMX #62)
   camara: '<path fill="currentColor" d="M 18.36 8.37 L 18.36 6.54 L 16.55 6.54 L 16.55 4.73 L 18.36 4.73 L 18.36 2.91 L 20.18 2.91 L 20.18 4.73 L 22 4.73 L 22 6.54 L 20.18 6.54 L 20.18 8.37 Z M 11.09 16.09 C 10.45 16.09 9.92 15.87 9.48 15.43 C 9.04 14.99 8.82 14.45 8.82 13.82 C 8.82 13.18 9.04 12.65 9.48 12.21 C 9.92 11.77 10.45 11.54 11.09 11.54 C 11.73 11.54 12.27 11.77 12.71 12.21 C 13.15 12.65 13.36 13.18 13.36 13.82 C 13.36 14.45 13.15 14.99 12.71 15.43 C 12.27 15.87 11.73 16.09 11.09 16.09 M 11.09 17.91 C 12.23 17.91 13.19 17.51 13.99 16.72 C 14.78 15.92 15.18 14.96 15.18 13.82 C 15.18 12.68 14.78 11.71 13.99 10.92 C 13.19 10.12 12.23 9.73 11.09 9.73 C 9.95 9.73 8.99 10.12 8.19 10.92 C 7.4 11.71 7 12.68 7 13.82 C 7 14.96 7.4 15.92 8.19 16.72 C 8.99 17.51 9.95 17.91 11.09 17.91 M 3.82 21.09 C 3.32 21.09 2.89 20.91 2.53 20.56 C 2.18 20.2 2 19.78 2 19.28 L 2 8.37 C 2 7.86 2.18 7.44 2.53 7.08 C 2.89 6.72 3.32 6.54 3.82 6.54 L 6.68 6.54 L 8.36 4.73 L 13.82 4.73 L 13.82 6.54 L 9.16 6.54 L 7.5 8.37 L 3.82 8.37 L 3.82 19.28 L 18.36 19.28 L 18.36 11.09 L 20.18 11.09 L 20.18 19.28 C 20.18 19.78 20.01 20.2 19.65 20.56 C 19.29 20.91 18.86 21.09 18.36 21.09 Z M 3.82 21.09"/>',
 
-  // ---- Bloque 36 (D89): acceso, cuenta, pestañas y acciones ----
+  // ---- Acceso, cuenta, pestañas y acciones ----
   // Correo (set CDMX #53)
   correo: '<path fill="currentColor" d="M 13.82 12.27 L 7.46 7.84 L 7.46 14.73 L 20.18 14.73 L 20.18 7.84 Z M 20.18 7.77 L 20.18 5.64 L 7.46 5.64 L 7.46 7.77 L 7.46 5.64 L 20.18 5.64 Z M 13.82 10.04 L 20.18 5.64 L 7.46 5.64 Z M 7.46 16.55 C 6.96 16.55 6.53 16.37 6.17 16.01 C 5.81 15.66 5.64 15.23 5.64 14.73 L 5.64 5.64 C 5.64 5.14 5.81 4.71 6.17 4.35 C 6.53 4 6.96 3.82 7.46 3.82 L 20.18 3.82 C 20.68 3.82 21.11 4 21.46 4.35 C 21.82 4.71 22 5.14 22 5.64 L 22 14.73 C 22 15.23 21.82 15.66 21.46 16.01 C 21.11 16.37 20.68 16.55 20.18 16.55 Z M 3.82 20.18 C 3.32 20.18 2.89 20 2.54 19.65 C 2.18 19.29 2 18.86 2 18.36 L 2 7 L 3.82 7 L 3.82 18.36 L 18.82 18.36 L 18.82 20.18 Z M 3.82 20.18"/>',
   // Contraseña (set CDMX #63)
-  // Candado abierto: jornada abierta (D131)
+  // Candado abierto: jornada abierta
   candadoAbierto: '<path fill="currentColor" d="M 12 17.24 C 12.52 17.24 12.97 17.05 13.34 16.68 C 13.72 16.31 13.9 15.86 13.9 15.34 C 13.9 14.82 13.72 14.37 13.34 14 C 12.97 13.63 12.52 13.44 12 13.44 C 11.48 13.44 11.03 13.63 10.66 14 C 10.28 14.37 10.1 14.82 10.1 15.34 C 10.1 15.86 10.28 16.31 10.66 16.68 C 11.03 17.05 11.48 17.24 12 17.24 M 6 22 C 5.45 22 4.98 21.8 4.59 21.41 C 4.2 21.02 4 20.55 4 20 L 4 10 C 4 9.45 4.2 8.98 4.59 8.59 C 4.98 8.2 5.45 8 6 8 L 15 8 L 15 6 C 15 5.17 14.71 4.46 14.12 3.88 C 13.54 3.29 12.83 3 12 3 C 11.17 3 10.46 3.29 9.88 3.88 C 9.29 4.46 9 5.17 9 6 L 7 6 C 7 4.62 7.49 3.44 8.46 2.46 C 9.44 1.49 10.62 1 12 1 C 13.38 1 14.56 1.49 15.54 2.46 C 16.51 3.44 17 4.62 17 6 L 17 8 L 18 8 C 18.55 8 19.02 8.2 19.41 8.59 C 19.8 8.98 20 9.45 20 10 L 20 20 C 20 20.55 19.8 21.02 19.41 21.41 C 19.02 21.8 18.55 22 18 22 Z M 6 20 L 18 20 L 18 10 L 6 10 Z"/>',
   candado: '<path fill="currentColor" d="M 12 17.24 C 12.52 17.24 12.97 17.05 13.34 16.68 C 13.72 16.31 13.9 15.86 13.9 15.33 C 13.9 14.81 13.72 14.36 13.34 13.99 C 12.97 13.61 12.52 13.43 12 13.43 C 11.48 13.43 11.03 13.61 10.66 13.99 C 10.28 14.36 10.1 14.81 10.1 15.33 C 10.1 15.86 10.28 16.31 10.66 16.68 C 11.03 17.05 11.48 17.24 12 17.24 M 9.14 8.67 L 14.86 8.67 L 14.86 6.76 C 14.86 5.97 14.58 5.29 14.02 4.74 C 13.47 4.18 12.79 3.91 12 3.91 C 11.2 3.91 10.53 4.18 9.98 4.74 C 9.42 5.29 9.14 5.97 9.14 6.76 Z M 6.29 10.57 L 6.29 20.09 Z M 17.71 10.57 L 6.29 10.57 L 6.29 20.1 L 17.71 20.1 Z M 6.29 22 C 5.76 22 5.31 21.81 4.94 21.44 C 4.57 21.07 4.38 20.62 4.38 20.09 L 4.38 10.57 C 4.38 10.05 4.57 9.6 4.94 9.23 C 5.31 8.85 5.76 8.67 6.29 8.67 L 7.24 8.67 L 7.24 6.76 C 7.24 5.44 7.7 4.32 8.63 3.39 C 9.56 2.47 10.68 2 12 2 C 13.32 2 14.44 2.47 15.37 3.39 C 16.3 4.32 16.76 5.44 16.76 6.76 L 16.76 8.67 L 17.71 8.67 C 18.24 8.67 18.69 8.85 19.06 9.23 C 19.43 9.6 19.62 10.05 19.62 10.57 L 19.62 20.09 C 19.62 20.62 19.43 21.07 19.06 21.44 C 18.69 21.81 18.24 22 17.71 22 Z M 6.29 22"/>',
   // Entrar (set CDMX #11)
@@ -46,7 +45,7 @@ SRP.ICONOS = {
   // Pestaña Registros (set CDMX #214, árbol)
   registros: '<path fill="currentColor" d="M 9 14 L 15 14 C 15.83 14 16.54 13.71 17.12 13.13 C 17.7 12.54 18 11.83 18 11 C 18 10.4 17.83 9.85 17.48 9.35 C 17.14 8.85 16.7 8.48 16.15 8.25 L 15.1 7.8 L 14.95 6.65 C 14.85 5.9 14.52 5.27 13.96 4.76 C 13.4 4.26 12.75 4 12 4 C 11.25 4 10.6 4.26 10.04 4.76 C 9.48 5.27 9.15 5.9 9.05 6.65 L 8.9 7.8 L 7.85 8.25 C 7.3 8.48 6.86 8.85 6.51 9.35 C 6.17 9.85 6 10.4 6 11 C 6 11.83 6.29 12.54 6.88 13.13 C 7.46 13.71 8.16 14 9 14 M 5 22 L 5 20 L 11 20 L 11 16 L 9 16 C 7.62 16 6.43 15.51 5.46 14.54 C 4.49 13.56 4 12.38 4 11 C 4 10 4.27 9.08 4.83 8.24 C 5.38 7.4 6.11 6.78 7.05 6.4 C 7.2 5.15 7.75 4.11 8.69 3.26 C 9.63 2.42 10.73 2 12 2 C 13.26 2 14.37 2.42 15.31 3.26 C 16.25 4.11 16.8 5.15 16.95 6.4 C 17.88 6.78 18.62 7.4 19.17 8.24 C 19.72 9.08 20 10 20 11 C 20 12.38 19.51 13.56 18.54 14.54 C 17.56 15.51 16.38 16 15 16 L 13 16 L 13 20 L 19 20 L 19 22 Z M 5 22"/>',
   // Pestaña Reportes (set CDMX #50)
-  // Menú de la cuenta (D114): sol para el modo sol, puerta para cerrar sesión
+  // Menú de la cuenta: sol para el modo sol, puerta para cerrar sesión
   sol: '<path fill="currentColor" d="M12 7a5 5 0 100 10 5 5 0 000-10zM2 13h2a1 1 0 000-2H2a1 1 0 000 2zm18 0h2a1 1 0 000-2h-2a1 1 0 000 2zM11 2v2a1 1 0 002 0V2a1 1 0 00-2 0zm0 18v2a1 1 0 002 0v-2a1 1 0 00-2 0zM5.99 4.58a1 1 0 00-1.41 1.41l1.06 1.06a1 1 0 001.41-1.41L5.99 4.58zm12.37 12.37a1 1 0 00-1.41 1.41l1.06 1.06a1 1 0 001.41-1.41l-1.06-1.06zm1.06-10.96a1 1 0 00-1.41-1.41l-1.06 1.06a1 1 0 001.41 1.41l1.06-1.06zM7.05 18.36a1 1 0 00-1.41-1.41l-1.06 1.06a1 1 0 001.41 1.41l1.06-1.06z"/>',
   salir: '<path fill="currentColor" d="M5 3h8a2 2 0 012 2v3h-2V5H5v14h8v-3h2v3a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2zm11.6 5.4L21.2 12l-4.6 4.6-1.4-1.4 2.2-2.2H9v-2h8.4l-2.2-2.2 1.4-1.4z"/>',
   descargar: '<path fill="currentColor" d="M5 20h14v-2H5v2zm7-18-5.5 6H10v6h4V8h3.5L12 2z" transform="rotate(180 12 10)"/>',
@@ -64,30 +63,30 @@ SRP.ICONOS = {
   // Aviso informativo (set CDMX #22)
   info: '<path fill="currentColor" d="M 11 17 L 13 17 L 13 11 L 11 11 Z M 12 9 C 12.28 9 12.52 8.9 12.71 8.71 C 12.9 8.52 13 8.29 13 8 C 13 7.71 12.9 7.48 12.71 7.29 C 12.52 7.1 12.28 7 12 7 C 11.71 7 11.48 7.1 11.28 7.29 C 11.1 7.48 11 7.71 11 8 C 11 8.29 11.1 8.52 11.28 8.71 C 11.48 8.9 11.71 9 12 9 M 12 20 C 14.23 20 16.12 19.23 17.67 17.67 C 19.23 16.13 20 14.23 20 12 C 20 9.77 19.23 7.87 17.67 6.33 C 16.12 4.77 14.23 4 12 4 C 9.77 4 7.87 4.77 6.32 6.33 C 4.77 7.87 4 9.77 4 12 C 4 14.23 4.77 16.13 6.32 17.67 C 7.87 19.23 9.77 20 12 20 M 12 22 C 10.61 22 9.31 21.74 8.1 21.21 C 6.88 20.69 5.82 19.97 4.92 19.07 C 4.02 18.17 3.31 17.12 2.79 15.9 C 2.26 14.69 2 13.38 2 12 C 2 10.62 2.26 9.31 2.79 8.1 C 3.31 6.88 4.02 5.82 4.92 4.92 C 5.82 4.02 6.88 3.31 8.1 2.79 C 9.31 2.26 10.61 2 12 2 C 13.38 2 14.69 2.26 15.9 2.79 C 17.11 3.31 18.17 4.02 19.07 4.92 C 19.97 5.82 20.69 6.88 21.21 8.1 C 21.74 9.31 22 10.62 22 12 C 22 13.38 21.74 14.69 21.21 15.9 C 20.69 17.12 19.97 18.17 19.07 19.07 C 18.17 19.97 17.11 20.69 15.9 21.21 C 14.69 21.74 13.38 22 12 22"/>',
 
-  // Cambiar de jornada (D141): intercambio; el mapa queda para la sección Jornadas
+  // Cambiar de jornada: intercambio; el mapa queda para la sección Jornadas
   intercambio: '<path fill="currentColor" d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/>',
   // Capas del mapa: el control de las colonias prioritarias
   capas: '<path fill="currentColor" d="M11.99 18.54l-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27-7.38 5.74zM12 16l7.36-5.73L21 9l-9-7-9 7 1.63 1.27L12 16z"/>',
-  // En curso (D141): reloj, para la etiqueta de una jornada abierta que aún no llega a su meta
-  // Volver a generar el reporte (D148): flecha en círculo; el lápiz queda sólo para editar (D144)
+  // En curso: reloj, para la etiqueta de una jornada abierta que aún no llega a su meta
+  // Volver a generar el reporte: flecha en círculo; el lápiz queda sólo para editar
   regenerar: '<path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>',
   reloj: '<path fill="currentColor" d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>',
 
-  // Tuerca de acciones de un renglón (D94). El set CDMX no trae engrane suelto: contorno sencillo, mismo peso que los del set
+  // Tuerca de acciones de un renglón. El set CDMX no trae engrane suelto: contorno sencillo, mismo peso que los del set
   tuerca: '<path fill="currentColor" d="M19.43 12.98c.04-.32.07-.64.07-.98 0-.34-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46a.5.5 0 00-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65A.49.49 0 0014 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1a.57.57 0 00-.18-.03c-.17 0-.34.09-.43.25l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46a.5.5 0 00.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.06.02.12.03.18.03.17 0 .34-.09.43-.25l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zm-1.98-1.71c.04.31.05.52.05.73 0 .21-.02.43-.05.73l-.14 1.13.89.7 1.08.84-.7 1.21-1.27-.51-1.04-.42-.9.68c-.43.32-.84.56-1.25.73l-1.06.43-.16 1.13-.2 1.35h-1.4l-.19-1.35-.16-1.13-1.06-.43c-.43-.18-.83-.41-1.23-.71l-.91-.7-1.06.43-1.27.51-.7-1.21 1.08-.84.89-.7-.14-1.13c-.03-.31-.05-.54-.05-.74s.02-.43.05-.73l.14-1.13-.89-.7-1.08-.84.7-1.21 1.27.51 1.04.42.9-.68c.43-.32.84-.56 1.25-.73l1.06-.43.16-1.13.2-1.35h1.39l.19 1.35.16 1.13 1.06.43c.43.18.83.41 1.23.71l.91.7 1.06-.43 1.27-.51.7 1.21-1.07.85-.89.7.14 1.13zM12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>',
-  // Supervisión (D158): barras; periodo anterior y siguiente: galones
+  // Supervisión: barras; periodo anterior y siguiente: galones
   avance: '<path fill="currentColor" d="M4 9h4v11H4zm6-5h4v16h-4zm6 8h4v8h-4z"/>',
   anterior: '<path fill="currentColor" d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>',
   siguiente: '<path fill="currentColor" d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>',
-  // Tabla para descargar en CSV (D159): una rejilla
+  // Tabla para descargar en CSV: una rejilla
   tabla: '<path fill="currentColor" d="M3 3h18v18H3V3zm2 2v4h5V5H5zm7 0v4h7V5h-7zM5 11v8h5v-8H5zm7 0v8h7v-8h-7z"/>',
-  // Subir al inicio de la página (D154): la flecha del botón flotante
+  // Subir al inicio de la página: la flecha del botón flotante
   subir: '<path fill="currentColor" d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/>',
 
-  /* MENÚ DE ACCIONES DE UN RENGLÓN (D94). En lugar de tres o cuatro botones por renglón, una
+  /* MENÚ DE ACCIONES DE UN RENGLÓN. En lugar de tres o cuatro botones por renglón, una
      tuerca que despliega las acciones. Cada opción conserva su data-accion y data-id, así que
-     los módulos siguen atendiendo el clic igual que antes; app.js abre, coloca y cierra el menú.
-     `items`: [{accion, texto, icono, peligro}] */
+     los módulos atienden el clic como si fuera un botón del renglón; app.js abre, coloca y cierra
+     el menú. `items`: [{accion, texto, icono, peligro}] */
   menuAcciones(id, etiqueta, items) {
     const esc = SRP.util.escapar;
     return '<div class="acciones-menu">' +
@@ -106,8 +105,7 @@ SRP.ICONOS = {
     el.insertAdjacentHTML('afterbegin', this.svg(nombre, tam));
   },
 
-  /* ESCALA DE TRES TAMAÑOS (D141). Antes había siete (14, 16, 18, 20, 22, 24, 34) y en una misma
-     fila convivían 16 y 18. Ahora: 'chico' 16 dentro de texto, etiquetas y chips; 'medio' 20 en
+  /* ESCALA DE TRES TAMAÑOS: 'chico' 16 dentro de texto, etiquetas y chips; 'medio' 20 en
      botones (por omisión); 'grande' 24 en pestañas, estados vacíos y la zona de la fotografía. Un
      número suelto se lleva al escalón más cercano, para que ningún tamaño nuevo se cuele. */
   TAMANOS: { chico: 16, medio: 20, grande: 24 },
