@@ -5,7 +5,6 @@
 window.SRP = window.SRP || {};
 
 SRP.configuracion = {
-  VISTAS: ['configuracion', 'usuarios', 'catalogos', 'revision-especies', 'parametros', 'cambios', 'carga', 'acerca'],
   pagina: 1,
 
   el(id) { return document.getElementById(id); },
@@ -178,7 +177,7 @@ SRP.configuracion = {
         ['Alcaldías', capa('alcaldias')],
         ['Celdas UGA', capa('uga')],
         ['Colonias', capa('colonias')],
-        // Lo decidido para producción es CARTO para calles y Esri para satélite; mientras no se conecte CARTO, todo es Esri
+        // En producción, CARTO para calles y Esri para satélite; mientras no se conecte CARTO, todo es Esri
         ['Mapa base', 'Esri (provisional)']
       ]],
       ['Este dispositivo', [

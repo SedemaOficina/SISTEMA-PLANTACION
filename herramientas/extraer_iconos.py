@@ -9,7 +9,7 @@ Uso:  python3 herramientas/extraer_iconos.py            imprime los trazados de 
       python3 herramientas/extraer_iconos.py --indice   además escribe herramientas/iconos_indice.svg
 Requiere pdftocairo (poppler).
 """
-import json, os, re, subprocess, sys, tempfile
+import os, re, subprocess, sys, tempfile
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FUENTE = os.path.join(RAIZ, 'originales', 'ICONOS_SET_CDMX_2024-2030.ai')

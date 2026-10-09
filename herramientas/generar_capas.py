@@ -10,7 +10,7 @@
 # Uso:  python3 generar_capas.py          (desde la carpeta de la aplicación o desde herramientas/)
 # Si algo del original no cuadra —un feature de más, una clave repetida, una geometría rota—
 # se detiene y lo dice; no genera capas a medias.
-import json, os, sys, math, re
+import json, os, sys, re
 import shapely
 from shapely.geometry import shape, mapping
 

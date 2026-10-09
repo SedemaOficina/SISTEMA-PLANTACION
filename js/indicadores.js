@@ -28,8 +28,6 @@ SRP.indicadores = {
   // El lunes de la semana de una fecha (la semana va de lunes a domingo)
   lunes(t) { const f = this.aFecha(t); return this.sumarDias(t, -((f.getDay() + 6) % 7)); },
 
-  TIPOS: { semana: 'Semana', mes: 'Mes', anio: 'Año', rango: 'Un periodo', todo: 'Todo' },
-
   /* Un periodo: { tipo, desde, hasta, etiqueta }. `ref` es cualquier fecha dentro del periodo
      (por omisión, hoy); en un rango, `ref` es su inicio y `hasta` su fin. «todo» no tiene límites. */
   periodo(tipo, ref, hasta) {

@@ -647,7 +647,6 @@ SRP.formulario = {
     // Lo mismo que esconde los botones, exigido aquí
     if (!(this.estado.editando ? SRP.permisos.exigir('registro.editar', this.estado.editando) : SRP.permisos.exigir('registro.crear'))) return;
     const v = this.valores();
-    const u = SRP.sesion.usuario;
     const ahora = SRP.util.ahoraISO();
     const libre = SRP.util.ocupado(this.el('btn-resumen-guardar'), 'Guardando…', 'disco');
     try {

@@ -3917,3 +3917,35 @@ capas están en las preguntas para el SIA.
 
 **Siguiente paso.** La respuesta del SIA sobre las cuentas de las personas, y la fase 2: el servicio en
 TypeScript con la forma de los módulos del SIA.
+
+## Bloque 198 — Sin código muerto en la aplicación (08-10-2026)
+
+Versión 0.9.57. Liber pidió una auditoría de limpieza antes de entregar; se hizo sin subagentes y sin tocar
+`servidor/`, que la fase 2 reescribe.
+
+**Qué cambió (D278).**
+- Código sin uso, quitado: `SRP.configuracion.VISTAS`, `SRP.indicadores.TIPOS`,
+  `SRP.jornadas.registrosAlcance`, `SRP.prioritarias.textoPunto`, `opcionesFiltro`, `claveFiltro` y
+  `textoFiltro`, `SRP.solicitud.CAMPOS`, `SRP.util.tipoDe`; una variable local en `formulario.js guardar()`;
+  los imports `json` de `extraer_iconos.py` y `math` de `generar_capas.py`.
+- Comentarios con historia: `jornadas.js` («antes decía…»), `index.html` (fecha de un cambio), `config.js`
+  (fecha en el sello de reinicio), `util.js`, `configuracion.js` («lo decidido…»).
+- `pruebas/prueba.py`: 79 etiquetas y comentarios sin «ya no» cuando habla de algo que se quitó del sistema, y
+  21 sin claves de auditoría. Se comprobó que sólo cambiaron textos: el código de la prueba, token por token,
+  es el mismo.
+- Documentación: `README.md` (cinco archivos de `js/` que faltaban en el árbol, una frase con historia),
+  `datos/esquema.json` (fuente vigente del catálogo de especies y sus claves, frases con historia, referencias
+  a una auditoría con fecha) y lo que sale de él, `datos/MAPEO-CAMPOS.md`.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada.
+
+**Verificación.** Análisis de nombres sin uso en todo el proyecto (JS, HTML, CSS, pruebas y herramientas,
+también nombres armados al vuelo), eslint y pyflakes: después de quitar, ningún hallazgo nuevo. Las 467
+clases de la hoja se usan. `pruebas/prueba.py` completa, sola: 1,425 comprobaciones, 0 fallas, sin errores de
+consola. `pruebas/auditoria.py`: 143 comprobaciones, 0 hallazgos; hoja de estilos, 0; servidor, 21 de 21.
+Búsqueda final («claude», «IA», «decidi», «pidi», «auditor», versiones) fuera de `docs/`, `vendor/` y
+`originales/`: quedan sólo coincidencias legítimas (la herramienta `auditoria.py`, la extensión `.ai`,
+comandos de trazados SVG, «decidir» y «pidió» referidos a lo que hace la persona en pantalla) y una nota del
+catálogo de especies que viene del Excel original del SIA. No se probó en un teléfono real.
+
+**Siguiente paso.** La fase 2 del servidor: el servicio en TypeScript con la forma de los módulos del SIA.

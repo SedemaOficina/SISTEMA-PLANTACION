@@ -43,12 +43,6 @@ SRP.prioritarias = {
     return r;
   },
 
-  // «Alta · Aguilera», o «Sin dato en la capa de prioridad»
-  textoPunto(lat, lng) {
-    const p = this.de(lat, lng);
-    return p ? p.texto + ' · ' + p.colonia : 'Sin dato en la capa de prioridad';
-  },
-
   // Las colonias de la capa donde caen unos puntos: { id de colonia: cuántos }
   coloniasDe(puntos) {
     const c = {};
@@ -138,11 +132,6 @@ SRP.prioritarias = {
     if (!this.hay() || !p) return '';
     return '<span class="pri-marca"><i class="pri-muestra pri-nivel-' + p.prioridad + '"></i><span class="oculto-visual">prioridad </span>' + SRP.util.escapar(p.texto) + '</span>';
   },
-
-  // Las opciones del filtro por prioridad, de mayor a menor, y «Sin dato»
-  opcionesFiltro() { return this.NIVELES.map(([n, t]) => [String(n), t]).concat([['sin', 'Sin dato']]); },
-  claveFiltro(p) { return p ? String(p.prioridad) : 'sin'; },
-  textoFiltro(v) { return v === 'sin' ? 'Sin dato' : this.texto(Number(v)); },
 
   /* ---------- En el mapa ---------- */
 

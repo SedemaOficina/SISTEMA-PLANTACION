@@ -191,7 +191,7 @@ with sync_playwright() as p:
     pg.mouse.move(1,1)   # el puntero quedaba sobre el botón de ubicación y pintaba su estado hover
     pg.keyboard.press('Escape'); pg.wait_for_timeout(100)
     ok(pg.is_hidden('#menu-cuenta'),'Escape cierra el menú de la cuenta')
-    ok(pg.locator('#herramientas-prueba #btn-cambiar-perfil').count()==0,'ya no está duplicado al pie')
+    ok(pg.locator('#herramientas-prueba #btn-cambiar-perfil').count()==0,'no está duplicado al pie')
 
     # ---------- INICIAR JORNADA ----------
     ok(pg.is_visible('#panel-iniciar-jornada') and pg.is_hidden('#registrar-columnas'),'sin jornada abierta, Nuevo registro pide iniciar una antes del formulario')
@@ -241,7 +241,7 @@ with sync_playwright() as p:
       document.getElementById('btn-ubicacion').click(); const sigue = !document.getElementById('panel-iniciar-jornada').hidden;
       SRP.activa.jornada = j; await SRP.activa.preparar(); return [oculto, sigue]; }""")
     ok(bloqueo==[True,True],'sin jornada el formulario no se muestra ni responde: %s' % bloqueo)
-    ok(pg.is_hidden('#campo-fecha'),'la fecha de plantación ya no se pide por árbol: se hereda de la jornada')
+    ok(pg.is_hidden('#campo-fecha'),'la fecha de plantación no se pide por árbol: se hereda de la jornada')
 
     # ---------- REGISTRAR ----------
     # A nombre de quién se registra lo dice el encabezado; no se repite como campo
@@ -292,11 +292,11 @@ with sync_playwright() as p:
        'cerrar sesión es un renglón de texto del menú de la cuenta, sin caja ni subrayado: %s' % enfasis)
 
     # Los datos del punto son campos del formulario, no un recuadro bajo el mapa
-    ok(pg.locator('.ficha-datos').count()==0,'bajo el mapa ya no cuelga el recuadro de datos')
+    ok(pg.locator('.ficha-datos').count()==0,'bajo el mapa no cuelga el recuadro de datos')
     ok(pg.inner_text('#dato-coordenadas')=='—' and pg.inner_text('#dato-alcaldia')=='—',
        'sin punto, los campos del punto están en blanco')
     ok(pg.locator('.campo-punto .campo-lectura').count()==4,
-       'coordenadas, origen, alcaldía y colonia son cuatro campos de sólo lectura; la prioridad ya no va en el árbol')
+       'coordenadas, origen, alcaldía y colonia son cuatro campos de sólo lectura; la prioridad no va en el árbol')
     ok(pg.evaluate("['dato-coordenadas','dato-origen','dato-alcaldia','dato-colonia'].every(i=>document.querySelector('label[for='+i+']'))"),
        'y cada uno lleva su etiqueta, como cualquier campo')
 
@@ -370,9 +370,9 @@ with sync_playwright() as p:
     ok(capas['cruzaAlc']['colonia_cve']=='07-010' and capas['cruzaAlc']['alcaldia']=='Tláhuac',
        'la alcaldía sale de su capa aunque la colonia diga otra demarcación: '+capas['cruzaAlc']['alcaldia'])
     ok(pg.inner_text('#dato-coordenadas').count('.')==2,'la coordenada se escribe en su campo: '+pg.inner_text('#dato-coordenadas'))
-    ok(',' not in pg.inner_text('#mapa-estado'),'y ya no se repite bajo el mapa: '+pg.inner_text('#mapa-estado'))
+    ok(',' not in pg.inner_text('#mapa-estado'),'y no se repite bajo el mapa: '+pg.inner_text('#mapa-estado'))
     ok('Actualizar ubicación' in pg.inner_text('#btn-ubicacion'),'con punto puesto, el botón pasa a actualizar')
-    # Con punto puesto ya no se captura: se corrige, y se ve como todo lo que se corrige
+    # Con punto puesto no se captura: se corrige, y se ve como todo lo que se corrige
     corr=pg.evaluate("""() => {
       const b = document.getElementById('btn-ubicacion');
       return { clase: b.className, color: getComputedStyle(b).color,
@@ -459,9 +459,9 @@ with sync_playwright() as p:
     pg.dispatch_event('.combo-opcion[data-id="ESP-0029"]','mousedown'); pg.wait_for_timeout(200)
     ok(pg.input_value('#campo-especie')=='Fresno (Fraxinus uhdei)','al elegir, el campo queda como en el catálogo')
     ok(pg.evaluate("document.activeElement.id")=='campo-especie','elegir especie deja el foco en la especie: no salta a otro campo')
-    # El programa es el de la jornada: el formulario del árbol ya no lo tiene
+    # El programa es el de la jornada: el formulario del árbol no lo tiene
     prog=pg.evaluate("({ campo: document.querySelectorAll('#campo-programa, #caja-programa, #programa-botones').length, valor: SRP.formulario.valores().programa_id })")
-    ok(prog=={'campo':0,'valor':'p-refor'},'el programa es el de la jornada y el formulario del árbol ya no lo pregunta: %s' % prog)
+    ok(prog=={'campo':0,'valor':'p-refor'},'el programa es el de la jornada y el formulario del árbol no lo pregunta: %s' % prog)
     # El texto guía de los campos de fecha vacíos se comprueba en la fecha de la jornada
     vac=pg.evaluate("(() => { const e=document.getElementById('ini-fecha').closest('.envoltura-vacio'); return e ? e.querySelector('.texto-vacio').textContent : null; })()")
     ok(vac=='Seleccione la fecha','la fecha de la jornada lleva el texto guía «Seleccione la fecha»: %s' % vac)
@@ -501,7 +501,7 @@ with sync_playwright() as p:
     ok(pg.evaluate("SRP.mapa.icono.options.iconSize[0]")<=24,
        'el pin es discreto (%s px de ancho)' % pg.evaluate("SRP.mapa.icono.options.iconSize[0]"))
     id1=pg.evaluate("SRP.formulario.estado.idPrevisto")
-    ok(len(id1)>20 and pg.locator('#revision-lista .revision-id').count()==0 and 'Identificador' not in pg.inner_text('#revision-lista'),'el identificador queda fijado pero ya no se muestra en la ficha')
+    ok(len(id1)>20 and pg.locator('#revision-lista .revision-id').count()==0 and 'Identificador' not in pg.inner_text('#revision-lista'),'el identificador queda fijado pero no se muestra en la ficha')
     ok(pg.locator('button[data-campo=punto]').count()==1,'sólo las coordenadas remiten al mapa')
     ok(pg.locator('.revision-fila', has_text='Alcaldía').locator('button').count()==0,'la alcaldía no se edita: sale del punto')
     ok(pg.inner_text('button[data-campo=especie]').strip()=='Editar','la ficha usa la palabra Editar')
@@ -520,7 +520,7 @@ with sync_playwright() as p:
     pg.dispatch_event('.combo-opcion[data-id="ESP-0029"]','mousedown'); pg.wait_for_timeout(200)
     pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(800)
     pg.click('#btn-resumen-cerrar'); pg.wait_for_timeout(200)
-    ok(not pg.is_visible('#dlg-resumen') and pg.locator('#btn-resumen-corregir').count()==0,'la ficha cierra con la × y ya no hay botón Corregir')
+    ok(not pg.is_visible('#dlg-resumen') and pg.locator('#btn-resumen-corregir').count()==0,'la ficha cierra con la × y no hay botón Corregir')
     pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(800)
     fijo=pg.evaluate("(() => { const d=document.getElementById('dlg-resumen'); d.scrollTop=600; const c=d.querySelector('.dialogo-cabecera').getBoundingClientRect(); const b=document.getElementById('btn-resumen-guardar').getBoundingClientRect(); const dr=d.getBoundingClientRect(); d.scrollTop=0; return { arriba: Math.round(c.top-dr.top), botonVisible: b.top>=dr.top && b.bottom<=dr.bottom, sticky: getComputedStyle(d.querySelector('.dialogo-cabecera')).position }; })()")
     ok(fijo['sticky']=='sticky' and fijo['botonVisible'] and fijo['arriba']<=8,'la cabecera queda fija arriba y Guardar a la vista aunque se desplace la ficha: %s' % fijo)
@@ -605,19 +605,19 @@ with sync_playwright() as p:
       cero: (() => { try { SRP.folio.armar('CUH-021', 0); return 'aceptado'; } catch (e) { return 'rechazado'; } })() })""")
     ok(f['v1'] and not f['v2'] and not f['v3'],'el patrón del folio acepta la forma adoptada y rechaza las demás')
     ok(f['a1']=='TLP-318-00007' and f['a2']=='EXT-000-00012' and f['largo']==13,'armar rellena el consecutivo y usa EXT-000 fuera de la malla, en 13 caracteres: '+f['a1'])
-    ok(not f['v4'],'el formato anterior de 22 caracteres ya no es válido')
+    ok(not f['v4'],'un folio de 22 caracteres no es válido')
     ok(f['tope']=='rechazado' and f['cero']=='rechazado','un consecutivo fuera de 1–99 999 se rechaza en vez de recortarse o reiniciarse (R6)')
     ok(f['texto']=='PROVISIONAL','sin folio, la pantalla dice PROVISIONAL')
     guardado=pg.evaluate("id => SRP.almacen.uno('plantaciones', id)", ids[0])
     nace=pg.evaluate("(() => { const r = SRP.formulario.registroPrevisto(); return SRP.folio.CAMPOS.every(k => k in r && r[k] === null); })()")
-    ok(nace and pg.evaluate("SRP.folio.CAMPOS")==['folio'],'el registro nace con el folio en nulo; lo que congela el servidor al asignarlo (R8) ya no se guarda en el teléfono')
+    ok(nace and pg.evaluate("SRP.folio.CAMPOS")==['folio'],'el registro nace con el folio en nulo; lo que congela el servidor al asignarlo (R8) no se guarda en el teléfono')
     # Servidor simulado con datos de prueba: al guardar con conexión recibe folio, una vez, y se congela lo de R8
     ok(re.fullmatch(r'[A-Z]{3}-\d{3}-\d{5}', guardado['folio'] or '') is not None and guardado['folio'][:7]==guardado['uga']
        and not any(k in guardado for k in ('folio_uga','folio_capa_version','folio_lat','folio_lng')),'con datos de prueba el servidor simulado asigna el folio con la celda del punto, sin copiar al teléfono lo que congela el servidor: %s' % guardado['folio'])
     seq=pg.evaluate("(async () => { const b = await SRP.almacen.todos('bitacora'); const s = SRP.folio.leerSecuencias(); const todos = await SRP.almacen.todos('plantaciones'); return { bitacora: b.some(x => x.accion === 'FOLIO_ASIGNADO'), unicos: new Set(todos.filter(t=>t.folio).map(t=>t.folio)).size === todos.filter(t=>t.folio).length, secuencia: Object.values(s).reduce((a,n)=>a+n,0) >= todos.filter(t=>t.folio).length }; })()")
     ok(seq=={'bitacora':True,'unicos':True,'secuencia':True},'la asignación deja constancia, no repite folios y sale de la secuencia, no de contar registros (R5–R6): %s' % seq)
     ok(pg.evaluate("SRP.folio.textoLargo({folio:'TLP-318-00001'})")=='TLP-318-00001','el folio se escribe solo, sin «(simulado)»: la banda de datos ficticios ya lo dice')
-    ok(not any(k in guardado for k in ('es_ficticio','especie_estatus','lat_original','lng_original','foto_nombre','foto_bytes')),'el árbol guardado ya no lleva marca de prueba, estatus de especie, punto original, nombre ni peso de foto: %s' % sorted(guardado.keys()))
+    ok(not any(k in guardado for k in ('es_ficticio','especie_estatus','lat_original','lng_original','foto_nombre','foto_bytes')),'el árbol guardado no lleva marca de prueba, estatus de especie, punto original, nombre ni peso de foto: %s' % sorted(guardado.keys()))
 
     # ---------- REGISTROS ----------
     pg.click('.pestana[data-vista=registros]'); pg.wait_for_timeout(600)
@@ -689,7 +689,7 @@ with sync_playwright() as p:
     pg.click('#registros-vacio button[data-vacio=quitar]'); pg.wait_for_timeout(300)
     ok('Total: 4 ' in pg.inner_text('#registros-total') and pg.is_hidden('#registros-vacio'),'«Quitar filtros» devuelve los cuatro')
     ok(pg.is_hidden('#caja-filtro-cabo'),'el cabo no tiene filtro por cabo')
-    ok(pg.locator('#filtro-anio').count()==0 and pg.locator('#filtro-mes').count()==0,'ya no hay listas de año ni de mes: los atajos «Este mes» y «Este año» las sustituyen')
+    ok(pg.locator('#filtro-anio').count()==0 and pg.locator('#filtro-mes').count()==0,'no hay listas de año ni de mes: el periodo se elige con los atajos «Este mes» y «Este año»')
     pg.click('#filtro-atajos [data-atajo=anio]'); pg.wait_for_timeout(300)
     ok('Total: 4 ' in pg.inner_text('#registros-total') and pg.get_attribute('#filtro-atajos [data-atajo=anio]','aria-pressed')=='true' and pg.locator('#filtro-atajos .chip[aria-pressed=true]').count()==1,'«Este año» deja los cuatro de 2026: '+pg.inner_text('#registros-total'))
     pg.click('#filtro-atajos [data-atajo=mes]'); pg.wait_for_timeout(300)
@@ -704,7 +704,7 @@ with sync_playwright() as p:
     pg.fill('#filtro-hasta','2026-07-31'); pg.wait_for_timeout(300)
     ok(pg.evaluate("SRP.registros.filtro.desde")=='','y al elegir Hasta no se aplica solo')
     ok(pg.locator('#filtro-atajos .chip[aria-pressed=true]').count()==1 and pg.get_attribute('.chip[data-atajo=periodo]','aria-pressed')=='true',
-       'con «Un periodo» abierto sólo él queda marcado; ya no parecen elegidos dos atajos')
+       'con «Un periodo» abierto sólo él queda marcado; no parecen elegidos dos atajos')
     pg.click('#btn-filtrar'); pg.wait_for_timeout(300)
     ok('Total: 1 ' in pg.inner_text('#registros-total') and pg.get_attribute('.chip[data-atajo=periodo]','aria-pressed')=='true','el rango entra con «Aplicar»: '+pg.inner_text('#registros-total'))
     pg.fill('#filtro-desde','2026-09-30'); pg.fill('#filtro-hasta','2026-09-01'); pg.click('#btn-filtrar'); pg.wait_for_timeout(300)
@@ -756,10 +756,10 @@ with sync_playwright() as p:
 
     # ---------- EL REPORTE SE GENERA EN LA FICHA DE LA JORNADA ----------
     ok(pg.locator('.pestana[data-vista=reportes]').count()==0 and pg.locator('#vista-reportes').count()==0 and pg.evaluate("(() => { SRP.app.mostrarVista('reportes'); return SRP.app.vista; })()")=='jornadas',
-       'ya no hay pestaña ni pantalla de Reportes; pedirla lleva a Jornadas')
+       'no hay pestaña ni pantalla de Reportes; pedirla lleva a Jornadas')
     pg.evaluate("async () => { for (const j of await SRP.activa.abiertas()) await SRP.activa.cambiarEstatus(j, 'cerrada'); SRP.activa.jornada = null; }"); pg.wait_for_timeout(300)
     pg.evaluate("SRP.app.mostrarVista('registros')"); pg.wait_for_timeout(300)
-    ok(pg.locator('#vista-registros #btn-pdf').count()==0 and pg.locator('#vista-registros #aviso-envio').count()==0,'Registros ya no lleva el reporte ni el bloque del dispositivo')
+    ok(pg.locator('#vista-registros #btn-pdf').count()==0 and pg.locator('#vista-registros #aviso-envio').count()==0,'Registros no lleva el reporte ni el bloque del dispositivo')
     ok(pg.locator('#lista-registros .registro-jornada').count()==pg.locator('#lista-registros .registro').count() and any('Jornada de prueba' in t for t in pg.eval_on_selector_all('#lista-registros .registro-jornada','l=>l.map(x=>x.textContent)')),'cada tarjeta de Registros dice a qué jornada pertenece el árbol')
     pg.click('.pestana[data-vista=jornadas]'); pg.wait_for_timeout(800)
     pg.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg.wait_for_timeout(600)
@@ -790,7 +790,7 @@ with sync_playwright() as p:
     ok(pg.evaluate("SRP.reportes.cierrePrevisto().chofer")=='Mengano','y lo que se escribe entra al mismo objeto que se guarda')
     ok(pg.is_hidden('#caja-cie-encargado'), 'a un cabo no se le pregunta ni se le muestra el encargado: es él')
     ok(pg.evaluate("SRP.reportes.encargadoElegido() === SRP.sesion.usuario.id"), 'y queda él como encargado del reporte')
-    ok('Parque Hundido' in pg.evaluate("SRP.reportes.contexto.jornada.nombre + ' · ' + SRP.util.formatearFecha(SRP.reportes.contexto.fecha) + (SRP.reportes.contexto.jornada.total > 1 ? ' · Jornada ' + SRP.reportes.contexto.jornada.n + ' de ' + SRP.reportes.contexto.jornada.total : '')") and pg.locator('#cie-sitio').count()==0,'el cierre es de la jornada y ya no pregunta el sitio: lo da el nombre de la jornada: '+pg.evaluate("SRP.reportes.contexto.jornada.nombre + ' · ' + SRP.util.formatearFecha(SRP.reportes.contexto.fecha) + (SRP.reportes.contexto.jornada.total > 1 ? ' · Jornada ' + SRP.reportes.contexto.jornada.n + ' de ' + SRP.reportes.contexto.jornada.total : '')"))
+    ok('Parque Hundido' in pg.evaluate("SRP.reportes.contexto.jornada.nombre + ' · ' + SRP.util.formatearFecha(SRP.reportes.contexto.fecha) + (SRP.reportes.contexto.jornada.total > 1 ? ' · Jornada ' + SRP.reportes.contexto.jornada.n + ' de ' + SRP.reportes.contexto.jornada.total : '')") and pg.locator('#cie-sitio').count()==0,'el cierre es de la jornada y no pregunta el sitio: lo da el nombre de la jornada: '+pg.evaluate("SRP.reportes.contexto.jornada.nombre + ' · ' + SRP.util.formatearFecha(SRP.reportes.contexto.fecha) + (SRP.reportes.contexto.jornada.total > 1 ? ' · Jornada ' + SRP.reportes.contexto.jornada.n + ' de ' + SRP.reportes.contexto.jornada.total : '')"))
     pg.fill('#cie-chofer','Fulano de Tal')
     pg.fill('#cie-hora','14:30')
     # El vehículo sale sólo del catálogo
@@ -808,8 +808,8 @@ with sync_playwright() as p:
     ok(pg.is_visible('#dlg-cierre') and pg.input_value('#cie-chofer')=='Fulano de Tal','«Corregir datos» vuelve al formulario con lo escrito')
     # Sin campos de vehículo a mano: modelo, placa y tipo salen del catálogo
     ok(pg.locator('#cie-vehiculo_modelo, #cie-vehiculo_placa, #cie-vehiculo_tipo, #cie-vehiculo-otro').count()==0 and pg.locator('#cie-vehiculo option[value="__otro__"]').count()==0,
-       'el cierre ya no trae «Otro vehículo» ni modelo, placa y tipo a mano')
-    ok(pg.evaluate("getComputedStyle(document.getElementById('cie-personal')).backgroundColor")=='rgb(255, 255, 255)','los campos del cierre son cajas blancas con contorno, como los demás formularios: vacías ya no parecen desactivadas')
+       'el cierre no trae «Otro vehículo» ni modelo, placa y tipo a mano')
+    ok(pg.evaluate("getComputedStyle(document.getElementById('cie-personal')).backgroundColor")=='rgb(255, 255, 255)','los campos del cierre son cajas blancas con contorno, como los demás formularios: vacías no parecen desactivadas')
     pg.fill('#cie-hora',''); pg.click('#btn-hora-ahora'); pg.wait_for_timeout(100)
     ok(re.fullmatch(r'\d\d:\d\d', pg.input_value('#cie-hora')) is not None,'«Ahora» pone la hora actual en la hora de finalización: '+pg.input_value('#cie-hora'))
     pg.fill('#cie-hora','14:30')
@@ -882,7 +882,7 @@ with sync_playwright() as p:
     tonos=pg.eval_on_selector_all('#jornada-lista .punto-num','s=>s.map(x=>x.dataset.tono)')
     ok(tonos==['','','rev','rev','err'],'los números llevan el color del aviso: %s' % tonos)
     ok(pg.get_attribute('#jornada-conciliacion','data-tono')=='neutro' and 'no tiene cantidad prevista' in pg.inner_text('#jornada-resultado') and 'Quedan 3 puntos por revisar' in pg.inner_text('#jornada-resultado') and pg.locator('#jornada-plantados').count()==0,
-       'sin meta la conciliación lo dice, ya no pide el conteo de la cuadrilla, y dice cuántos puntos quedan por revisar')
+       'sin meta la conciliación lo dice, no pide el conteo de la cuadrilla, y dice cuántos puntos quedan por revisar')
     # La meta se escribe al iniciar la jornada; aquí se fija en el dato para probar la comparación
     pg.evaluate("async () => { const j = await SRP.almacen.uno('jornadas', '%s'); j.arboles_previstos = 4; await SRP.almacen.guardarConBitacora('jornadas', j, SRP.bitacora.entrada('EDITADO','jornada',j.id,'Meta 4')); await SRP.jornadas.abrir('%s'); }" % (J['jid'], J['jid'])); pg.wait_for_timeout(600)
     ok(pg.get_attribute('#jornada-conciliacion','data-tono')=='err' and 'Sobra 1 registro' in pg.inner_text('#jornada-resultado') and pg.inner_text('#jornada-meta')=='4','con meta 4 y 5 registrados avisa que sobra 1: '+pg.inner_text('#jornada-resultado'))
@@ -923,7 +923,7 @@ with sync_playwright() as p:
     ok(cro and ('sin conexión' in cro['nota'] or 'Esri' in cro['nota']),'y el pie dice si lleva imagen de satélite o si se generó sin conexión')
     hoja=pg.inner_text('#previa-hoja')
     ok('Territorio derivado' not in hoja and pg.evaluate("SRP.reportes.vistaPrevia.registros.every(r => /sia-2026-01-01/.test(r.capa_version) && !/prueba/.test(r.capa_version))"),
-       'el reporte ya no imprime con qué capas se derivó el territorio; cada árbol lo guarda, con capas definitivas')
+       'el reporte no imprime con qué capas se derivó el territorio; cada árbol lo guarda, con capas definitivas')
     cab=pg.evaluate("[...document.querySelector('#previa-hoja table').querySelectorAll('thead th')].map(x => x.textContent)")
     fil=pg.evaluate("[...document.querySelector('#previa-hoja table tbody tr').children].map(x => x.textContent)")
     ok(cab==['N.º','Especie','Coordenada','Precisión'] and re.fullmatch(r'.+ \(.+\)', fil[1]) is not None and re.fullmatch(r'19\.\d{6}, -99\.\d{6}', fil[2]) is not None and re.fullmatch(r'±\d+ m|En el mapa|A mano', fil[3]) is not None,
@@ -967,15 +967,15 @@ with sync_playwright() as p:
     ok(pg.is_visible('#jornada-periodo') and pg.is_hidden('#jornada-un-dia') and pg.get_attribute('#jornada-atajos [data-atajo=periodo]','aria-pressed')=='true','«Un periodo» abre Desde y Hasta y cierra «Un día»')
     pg.fill('#jornada-desde', M['f']); pg.fill('#jornada-hasta', M['f']); pg.click('#btn-jornada-filtrar'); pg.wait_for_timeout(400)
     ok(pg.locator('#lista-jornadas .jornada').count()==3 and pg.evaluate("SRP.jornadas.filtro.dia")=='' and pg.evaluate("SRP.jornadas.filtro.desde")==M['f'],'el rango Desde/Hasta deja las 3 jornadas de ese día y el filtro por día queda vacío: %d' % pg.locator('#lista-jornadas .jornada').count())
-    # Año y mes ya no son listas: «Este año» y «Este mes» son atajos y cierran el rango
-    ok(pg.locator('#caja-jornada-anio').count()==0 and pg.locator('#jornada-mes').count()==0,'Jornadas ya no lleva listas de año ni de mes')
+    # Año y mes no son listas: «Este año» y «Este mes» son atajos y cierran el rango
+    ok(pg.locator('#caja-jornada-anio').count()==0 and pg.locator('#jornada-mes').count()==0,'Jornadas no lleva listas de año ni de mes')
     pg.click('#jornada-atajos [data-atajo=anio]'); pg.wait_for_timeout(300)
     ok(pg.is_hidden('#jornada-periodo') and pg.get_attribute('#jornada-atajos [data-atajo=anio]','aria-pressed')=='true' and pg.locator('#jornada-atajos .chip[aria-pressed=true]').count()==1 and pg.locator('#lista-jornadas .jornada').count()>=3 and pg.evaluate("SRP.jornadas.filtro.desde")=='',
        '«Este año» cierra el rango y deja las jornadas del año en curso: %d' % pg.locator('#lista-jornadas .jornada').count())
     pg.click('#jornada-atajos [data-atajo=mes]'); pg.wait_for_timeout(300)
     ok(pg.get_attribute('#jornada-atajos [data-atajo=mes]','aria-pressed')=='true' and pg.evaluate("SRP.jornadas.lista.every(j => j.fecha.startsWith(SRP.util.fechaHoy().slice(0, 7)))"),'«Este mes» deja sólo las jornadas del mes en curso')
     pg.click('#jornada-atajos [data-atajo=todas]'); pg.wait_for_timeout(300)
-    ok(pg.evaluate("SRP.jornadas.filtro.anio + SRP.jornadas.filtro.mes")=='' and 'año' not in pg.inner_text('#jornada-mas-filtros summary'),'«Todas» quita el periodo, y «Más filtros» ya no menciona año ni mes: '+pg.inner_text('#jornada-mas-filtros summary'))
+    ok(pg.evaluate("SRP.jornadas.filtro.anio + SRP.jornadas.filtro.mes")=='' and 'año' not in pg.inner_text('#jornada-mas-filtros summary'),'«Todas» quita el periodo, y «Más filtros» no menciona año ni mes: '+pg.inner_text('#jornada-mas-filtros summary'))
     pg.click('#jornada-atajos [data-atajo=dia]'); pg.fill('#jornada-dia', M['f']); pg.dispatch_event('#jornada-dia','change'); pg.wait_for_timeout(500)
     pg.click('#lista-jornadas .jornada:nth-child(2) button'); pg.wait_for_timeout(800)
     ok(pg.inner_text('#jornada-titulo')=='Parque Hundido' and 'Jornada 2 de 3' in pg.inner_text('#jornada-sub') and pg.inner_text('#jornada-registrados')=='2','la jornada 2 se revisa sola con su nombre: 2 registrados en esta jornada')
@@ -1094,7 +1094,7 @@ with sync_playwright() as p:
     pg.click('#conexion'); pg.wait_for_timeout(200)
     ok(pg.is_visible('#dlg-senal'),'y tocar la pastilla abre la guía de qué hacer sin internet')
     pg.click('#btn-senal-cerrar'); pg.wait_for_timeout(200)
-    ok(pg.locator('#aviso-envio').count()==0 and pg.locator('#btn-ayuda-senal').count()==0,'el bloque «Registros en este dispositivo» ya no existe')
+    ok(pg.locator('#aviso-envio').count()==0 and pg.locator('#btn-ayuda-senal').count()==0,'el bloque «Registros en este dispositivo» no existe')
     pg.click('#conexion'); pg.wait_for_timeout(200)
     ok(pg.is_visible('#dlg-senal') and pg.locator('#dlg-senal li').count()==5,'la ayuda «¿Qué hacer sin internet?» tiene cinco pasos')
     ok(pg.is_hidden('#senal-cola') and pg.is_hidden('#senal-estado') and 'se envían solos' in pg.inner_text('#senal-destino'),
@@ -1135,7 +1135,7 @@ with sync_playwright() as p:
     li='#lista-registros li[data-id="%s"]' % rid
     ok(pg.locator(li+' .marca-envio').count()==0 and re.search(r'[A-Z]{3}-\d{3}-\d{5}', pg.inner_text(li+' .registro-estado .registro-folio')) is not None,'la tarjeta pierde la marca y muestra su folio, sin repintar la lista')
     pg.click(li); pg.wait_for_timeout(500)
-    ok('Recibido por el servidor' not in pg.inner_text('#dlg-detalle-cuerpo') and 'folio asignado' in pg.inner_text('#dlg-detalle-cuerpo').lower(),'el detalle ya no trae el renglón de envío; el historial dice cuándo se le asignó folio')
+    ok('Recibido por el servidor' not in pg.inner_text('#dlg-detalle-cuerpo') and 'folio asignado' in pg.inner_text('#dlg-detalle-cuerpo').lower(),'el detalle no trae el renglón de envío; el historial dice cuándo se le asignó folio')
     pg.keyboard.press('Escape'); pg.wait_for_timeout(300)
     est=pg.evaluate("""async () => { SRP.envio.marcarCambios('%s'); const r = await SRP.almacen.uno('plantaciones','%s'); const a = SRP.envio.estado(r);
       const f = r.folio; await SRP.envio.enviar({ silencioso: true }); const r2 = await SRP.almacen.uno('plantaciones','%s'); return [a, SRP.envio.estado(r2), r2.folio === f]; }""" % (rid,rid,rid))
@@ -1166,11 +1166,11 @@ with sync_playwright() as p:
         menu: document.getElementById('menu-cuenta').innerText })""")
     ok(not sin['boton'] and not sin['restaurar'] and sin['funciones']=='undefined/undefined/undefined' and sin['validar']=='undefined'
        and not sin['clave'] and sin['guardada'] is None and 'respaldo' not in sin['menu'].lower(),
-       'el respaldo del teléfono ya no existe: sin «Guardar respaldo», sin «Restaurar respaldo», sin validador ni fecha guardada: %s' % {k: v for k, v in sin.items() if k != 'menu'})
+       'el respaldo del teléfono no existe: sin «Guardar respaldo», sin «Restaurar respaldo», sin validador ni fecha guardada: %s' % {k: v for k, v in sin.items() if k != 'menu'})
     pg.keyboard.press('Escape'); pg.wait_for_timeout(150)
     fic=pg.evaluate("""async () => { const j = await SRP.almacen.todos('jornadas'), b = await SRP.almacen.todos('bitacora');
         return j.length > 0 && b.length > 0 && !j.some(x => 'es_ficticio' in x) && !b.some(x => 'es_ficticio' in x); }""")
-    ok(fic,'jornadas y bitácora ya no llevan marca de prueba: la versión de prueba vive en su propia base')
+    ok(fic,'jornadas y bitácora no llevan marca de prueba: la versión de prueba vive en su propia base')
     # Lo escrito no se vuelve a pedir al regenerar el reporte de la misma jornada
     reporte_de(pg)
     gen=pg.evaluate("""async () => { const c = (await SRP.jornadas.jornadasAlcance()).filter(j => j.estatus === 'cerrada' && j.dato.reporte_en); return c.length; }""")
@@ -1182,7 +1182,7 @@ with sync_playwright() as p:
     pg.click('#btn-cierre-cerrar'); pg.wait_for_timeout(300)
     # Los campos vacíos no se inventan: el cierre guardado no trae lo que no se escribió
     vacios=pg.evaluate("async () => { const c = (await SRP.almacen.todos('jornadas')).find(j => j.nombre === 'Parque Hundido' && j.fecha === SRP.util.fechaHoy()); return [c.observaciones, 'actividades' in c ? 'sobra' : '', document.getElementById('cie-actividades') ? 'campo' : '', c.chofer === 'Fulano de Tal' ? '' : 'sin cierre']; }")
-    ok(all(v=='' for v in vacios),'y lo que no se escribió queda vacío, no inventado; y «Actividades» ya no existe: %s' % vacios)
+    ok(all(v=='' for v in vacios),'y lo que no se escribió queda vacío, no inventado; y «Actividades» no existe: %s' % vacios)
 
     pg.click('.pestana[data-vista=registros]'); pg.wait_for_timeout(500)
     abrir_filtros(pg)
@@ -1440,7 +1440,7 @@ with sync_playwright() as p:
     ok(pg.is_visible('#caja-usr-coordinador') and pg.is_visible('#caja-usr-area'),'en la Secretaría aparecen el área y, para perfil Cabo, el coordinador')
     pg.select_option('#usr-perfil','ADMIN'); pg.wait_for_timeout(200)
     ok(pg.is_hidden('#caja-usr-coordinador'),'y desaparece para Administración')
-    ok(pg.locator('#usr-perfil option').count()==5 and pg.locator('#usr-perfil option[value=VIEWER]').count()==0 and pg.locator('#usr-perfil option[value=DIRECTIVO]').count()==1,'el perfil ofrece cuatro opciones, con Directivo; ya no existe Consulta')
+    ok(pg.locator('#usr-perfil option').count()==5 and pg.locator('#usr-perfil option[value=VIEWER]').count()==0 and pg.locator('#usr-perfil option[value=DIRECTIVO]').count()==1,'el perfil ofrece cuatro opciones, con Directivo; no existe Consulta')
     ok('No captura' in pg.inner_text('#usr-perfil-ayuda'),'se explica qué puede hacer cada perfil')
     pg.select_option('#usr-perfil','CABO'); pg.wait_for_timeout(200)
     pg.fill('#usr-nombre-completo','Sutana Nueva Ejemplo')
@@ -1668,7 +1668,7 @@ with sync_playwright() as p:
     usos=pg.evaluate("""async () => { const r = await fetch('js/registros.js?x=' + Date.now()).then(x => x.text());
       const c = await fetch('js/catalogos.js?x=' + Date.now()).then(x => x.text()); const u = await fetch('js/usuarios.js?x=' + Date.now()).then(x => x.text());
       return [(r.match(/confirmar\\(/g) || []).length, (c.match(/confirmar\\(/g) || []).length, (u.match(/confirmar\\(/g) || []).length]; }""")
-    ok(usos==[0,1,1],'lo reversible ya no confirma: registros 0; catálogo y cuentas sólo al eliminar: %s' % usos)
+    ok(usos==[0,1,1],'lo reversible no confirma: registros 0; catálogo y cuentas sólo al eliminar: %s' % usos)
 
     # ---------- BLOQUE 81: CAMPOS ----------
     pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(500)
@@ -1686,7 +1686,7 @@ with sync_playwright() as p:
     ok(pg.locator('#ini-fecha-error').count()==0,'«Hoy» también quita el error de la fecha')
     ok(pg.locator('#ini-meta-ayuda').count()==0 and 'ayuda' not in (pg.get_attribute('#ini-meta','aria-describedby') or '')
        and pg.locator('#ini-ubicacion-ayuda').count()==0 and pg.get_attribute('#ini-ubicacion','placeholder')=='Calle y número, entre calles o tramo',
-       'la meta ya no lleva línea de ayuda; la dirección pide calle y número, entre calles o tramo, en su texto de ejemplo')
+       'la meta no lleva línea de ayuda; la dirección pide calle y número, entre calles o tramo, en su texto de ejemplo')
     # Contador: aparece al pasar del 80 %, dice el límite al llegar
     pg.fill('#ini-comentarios','x'*390); pg.wait_for_timeout(100)
     c1=pg.is_hidden('#ini-comentarios-contador')
@@ -1783,7 +1783,7 @@ with sync_playwright() as p:
     n0=pg.evaluate("async () => (await SRP.almacen.todos('plantaciones')).length")
     pg.click('#btn-ubicacion'); pg.wait_for_timeout(700)
     pg.focus('#campo-especie'); pg.keyboard.press('1'); pg.wait_for_timeout(200)
-    ok(pg.evaluate("SRP.formulario.estado.especieId")!='ESP-0002' or pg.input_value('#campo-especie')=='1','ya no hay atajos numéricos: «1» con el buscador vacío no elige especie')
+    ok(pg.evaluate("SRP.formulario.estado.especieId")!='ESP-0002' or pg.input_value('#campo-especie')=='1','no hay atajos numéricos: «1» con el buscador vacío no elige especie')
     pg.fill('#campo-especie',''); pg.click('#especies-recientes .chip'); pg.wait_for_timeout(200)
     pg.keyboard.press('Control+Enter'); pg.wait_for_timeout(900)
     ok(pg.is_visible('#dlg-resumen'),'Ctrl+Enter guarda; aquí el árbol cae en el mismo punto y abre la ficha de revisión por posible duplicado')
@@ -1960,7 +1960,7 @@ with sync_playwright() as p:
           lector: ol.innerText.replace(/\s+/g, ' ').trim() };
         ol.remove(); return out; }""")
     ok(pas['circulos'] and pas['sin_pildora'] and pas['un_renglon'] and pas['nombre_abajo'],
-       'los pasos ya no parecen fichas de filtro: un círculo por paso en un renglón y el nombre debajo, sin borde de píldora: %s' % {k: pas[k] for k in ('circulos','sin_pildora','un_renglon','nombre_abajo')})
+       'los pasos no parecen fichas de filtro: un círculo por paso en un renglón y el nombre debajo, sin borde de píldora: %s' % {k: pas[k] for k in ('circulos','sin_pildora','un_renglon','nombre_abajo')})
     ok(pas['actual']=='rgb(27, 95, 170)' and pas['palomita'] and 'counter(paso)' in pas['numero'],
        'el actual va relleno en acento, los hechos con palomita y el que falta con su número: %s, %s' % (pas['actual'], pas['numero']))
     ok(pas['tramos'][0]=='rgb(30, 122, 70)' and pas['tramos'][1]=='rgb(30, 122, 70)' and pas['tramos'][2]!='rgb(30, 122, 70)',
@@ -1990,7 +1990,7 @@ with sync_playwright() as p:
     pg.evaluate("() => { localStorage.removeItem(SRP.CONFIG.CLAVE_SELLO); }"); pg.reload(); pg.wait_for_timeout(1500)
     d2=cuenta(); a2=pg.evaluate("SRP.almacen.arranque")
     ok(antes[0]>0 and d1==antes and d2==antes and a1=='conservado' and a2=='conservado',
-       'un sello de datos nuevo o perdido ya no borra lo capturado: árboles, jornadas y cuentas se conservan: %s → %s → %s' % (antes,d1,d2))
+       'un sello de datos nuevo o perdido no borra lo capturado: árboles, jornadas y cuentas se conservan: %s → %s → %s' % (antes,d1,d2))
     # Una base de una versión posterior se rehace conservando lo que tenía
     pg.evaluate("""async () => { SRP.almacen.db.close(); await new Promise((ok, no) => { const r = indexedDB.open(SRP.CONFIG.DB_NOMBRE, SRP.CONFIG.DB_VERSION + 1);
         r.onupgradeneeded = () => {}; r.onsuccess = () => { r.result.close(); ok(); }; r.onerror = () => no(r.error); }); }""")
@@ -2012,13 +2012,13 @@ with sync_playwright() as p:
     pg.click('#conexion'); pg.wait_for_timeout(400)
     est=pg.inner_text('#dlg-senal'); guia=est
     ok('Protegido' not in est and 'Abre sin señal' not in est and 'Espacio usado' not in est and 'respaldo' not in guia.lower() and 'No borre los datos del navegador' in guia,
-       'la guía «¿Qué hacer sin internet?» ya no enseña protección, espacio ni si abre sin señal, ni habla de respaldos')
+       'la guía «¿Qué hacer sin internet?» no enseña protección, espacio ni si abre sin señal, ni habla de respaldos')
     pg.click('#btn-senal-cerrar'); pg.wait_for_timeout(200)
-    # Al cerrar la jornada ya no se recuerda ningún respaldo
+    # Al cerrar la jornada no se recuerda ningún respaldo
     pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(300)
     pg.click('#btn-jornada-cerrar'); pg.wait_for_timeout(400)
     nota=pg.inner_text('#dlg-confirmar-nota')
-    ok('respaldo' not in nota.lower() and 'reabrir' in nota,'al cerrar la jornada, la confirmación ya no pide guardar un respaldo: '+nota)
+    ok('respaldo' not in nota.lower() and 'reabrir' in nota,'al cerrar la jornada, la confirmación no pide guardar un respaldo: '+nota)
     pg.click('#btn-confirmar-no'); pg.wait_for_timeout(200)
     # Espacio lleno: las acciones que escriben lo dicen con palabras
     pg.evaluate("() => { window.__guardar = SRP.almacen.guardarConBitacora; SRP.almacen.guardarConBitacora = () => Promise.reject(new DOMException('lleno', 'QuotaExceededError')); }")
@@ -2040,7 +2040,7 @@ with sync_playwright() as p:
         ['jornadas','marcarRevisado'],['registros','eliminar'],['registros','restaurar'],['reportes','aceptar'],['folio','emitirPendientes']]
         .filter(([m, f]) => !(SRP[m][f] && SRP[m][f].protegido)).map(x => x.join('.'))""")
     ok(prot==[],'las 17 acciones que escriben en el teléfono avisan si fallan: sin protección %s' % prot)
-    # El PDF que falla ya no se queda en «Generando reporte…»
+    # El PDF que falla no se queda en «Generando reporte…»
     pg.evaluate("() => { window.__generar = SRP.reportes.generar; SRP.reportes.generar = async () => { throw new Error('falla simulada del PDF'); }; SRP.reportes.vistaPrevia = { registros: [], cierre: {}, fecha: '', jornada: {} }; document.getElementById('btn-previa-generar').click(); }")
     pg.wait_for_timeout(400)
     ok('No se pudo generar el reporte' in pg.inner_text('#aviso') and pg.get_attribute('#principal','aria-busy') is None,'si el PDF falla, se dice y la pantalla deja de estar ocupada: '+pg.inner_text('#aviso'))
@@ -2049,7 +2049,7 @@ with sync_playwright() as p:
     pg.evaluate("() => { setTimeout(() => Promise.reject(new Error('red de seguridad (prueba)')), 0); }"); pg.wait_for_timeout(400)
     ok('No se pudo completar la última acción' in pg.inner_text('#aviso'),'un fallo inesperado se avisa en pantalla y sigue en la consola para diagnosticarlo')
     errores[:]=[e for e in errores if 'red de seguridad (prueba)' not in e and 'falla simulada del PDF' not in e and 'lleno' not in e]
-    # La × de la franja «Guardado» ya no lanza un error
+    # La × de la franja «Guardado» no lanza un error
     registrar(pg,'aile','ESP-0002')
     n0=len(errores)
     pg.click('#btn-guardado-cerrar'); pg.wait_for_timeout(300)
@@ -2146,9 +2146,9 @@ with sync_playwright() as p:
        'mover un árbol le da la fecha y el programa de su jornada nueva y quita su marca de revisado de la de origen: %s' % aviso11())
     pg11.evaluate("async () => { await SRP.jornadas.mover(await SRP.almacen.uno('plantaciones', '%s'), { id: 'jr-ajena', cabo_id: 'u-coord-1', nombre: 'Ajena', fecha: '%s', programa_id: 'p-refor' }); }" % (a2, HOY)); pg11.wait_for_timeout(200)
     ok(uno11('plantaciones',a2)['jornada_id']==jA and 'mismo cabo' in aviso11(),'y no se mueve a la jornada de otro cabo')
-    # Una jornada con un árbol eliminado no se elimina: el árbol sigue apuntando a ella (A5)
+    # Una jornada con un árbol eliminado no se elimina: el árbol sigue apuntando a ella
     pg11.evaluate("SRP.jornadas.abrir('%s')" % jC); pg11.wait_for_timeout(600)
-    ok(pg11.locator('#jornada-lista .punto-jornada').count()==0 and pg11.is_hidden('#btn-jornada-eliminar'),'una jornada sin árboles a la vista pero con uno eliminado no ofrece «Eliminar jornada» (A5)')
+    ok(pg11.locator('#jornada-lista .punto-jornada').count()==0 and pg11.is_hidden('#btn-jornada-eliminar'),'una jornada sin árboles a la vista pero con uno eliminado no ofrece «Eliminar jornada»')
     pg11.evaluate("SRP.jornadas.eliminarJornada()"); pg11.wait_for_timeout(300)
     ok(uno11('jornadas',jC) is not None and 'guarda 1 árbol eliminado' in aviso11() and pg11.is_hidden('#dlg-confirmar'),'y aunque se llame a la función, no se borra y dice por qué: '+aviso11())
     # Los permisos se exigen en la función, no sólo en el botón
@@ -2166,21 +2166,21 @@ with sync_playwright() as p:
     ok(pg11.is_visible('#btn-jornada-eliminar'),'la coordinación ve «Eliminar jornada» en una jornada vacía de su cuadrilla')
     pg11.click('#btn-jornada-eliminar'); pg11.wait_for_timeout(300); pg11.click('#btn-confirmar-si'); pg11.wait_for_timeout(600)
     ok(uno11('jornadas',jD) is None,'y la elimina')
-    # A5: el uso se cuenta en todas las tablas
+    # El uso se cuenta en todas las tablas
     entrar11('u-admin-1')
     pg11.evaluate("SRP.app.mostrarVista('catalogos')"); pg11.wait_for_timeout(500)
     pg11.click('#btn-cat-agregar'); pg11.wait_for_timeout(300); pg11.fill('#cat-nombre','Programa B91'); pg11.click('#form-catalogo button[type=submit]'); pg11.wait_for_timeout(500)
     pid=pg11.evaluate("SRP.ref.deTipo('programa').find(c => c.nombre === 'Programa B91').id")
     pg11.evaluate("async () => { const j = await SRP.almacen.uno('jornadas', '%s'); j.programa_id = '%s'; await SRP.almacen.guardarConBitacora('jornadas', j, null); await SRP.catalogos.preparar(); }" % (jE, pid)); pg11.wait_for_timeout(300)
     fila=pg11.locator('#tabla-catalogo tbody tr', has_text='Programa B91')
-    ok('1 jornada' in fila.inner_text() and fila.locator('button[data-accion=eliminar]').count()==0,'un programa que sólo usa una jornada dice «1 jornada» y no ofrece Eliminar (A5): '+fila.inner_text().replace('\n',' | '))
+    ok('1 jornada' in fila.inner_text() and fila.locator('button[data-accion=eliminar]').count()==0,'un programa que sólo usa una jornada dice «1 jornada» y no ofrece Eliminar: '+fila.inner_text().replace('\n',' | '))
     ok('2 árboles y 1 jornada' in pg11.locator('#tabla-catalogo tbody tr', has_text='Centro Histórico').inner_text(),'el uso cuenta árboles y jornadas: «2 árboles y 1 jornada»')
     pg11.evaluate("async () => { await SRP.catalogos.eliminar(SRP.ref.catalogoPorId['%s']); }" % pid); pg11.wait_for_timeout(300)
     ok(uno11('programas',pid) is not None and 'aparece en 1 jornada' in aviso11(),'y aunque se llame a la función, no se borra: '+aviso11())
     pg11.evaluate("SRP.app.mostrarVista('usuarios')"); pg11.wait_for_timeout(500)
-    ok(pg11.locator('#tabla-usuarios tbody tr', has_text='Perengano').locator('button[data-accion=eliminar]').count()==0,'un coordinador con cabos asignados no ofrece Eliminar (A5)')
+    ok(pg11.locator('#tabla-usuarios tbody tr', has_text='Perengano').locator('button[data-accion=eliminar]').count()==0,'un coordinador con cabos asignados no ofrece Eliminar')
     ok('coordina a 1 cabo' in pg11.locator('#tabla-usuarios tbody tr', has_text='coordinador@').inner_text() and 'coordinador: Perengano' in pg11.locator('#tabla-usuarios tbody tr', has_text='Fulana').inner_text(),
-       'la tarjeta del coordinador dice cuántos cabos coordina, y la del cabo quién es su coordinador (antes decía que el cabo «coordina» a su coordinador)')
+       'la tarjeta del coordinador dice cuántos cabos coordina, y la del cabo quién es su coordinador')
     pg11.evaluate("async () => { await SRP.usuarios.eliminar(SRP.ref.usuarioPorId['u-coord-1']); }"); pg11.wait_for_timeout(300)
     ok(uno11('usuarios','u-coord-1') is not None and 'coordina a 1 cabo' in aviso11(),'y la función tampoco lo borra: '+aviso11())
     integ11=pg11.evaluate(INTEGRIDAD)
@@ -2194,7 +2194,7 @@ with sync_playwright() as p:
     pg12.on('pageerror', lambda e: err12.append(str(e))); pg12.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err12.append(m.text))
     pg12.goto(BASE); pg12.wait_for_timeout(1200)
     pg12.select_option('#sel-usuario-prueba','u-cabo-1'); pg12.click('#btn-entrar-prueba'); pg12.wait_for_timeout(700)
-    # A6: el ámbito es la unión de las alcaldías con 100 m de margen, no la caja
+    # El ámbito es la unión de las alcaldías con 100 m de margen, no la caja
     amb=pg12.evaluate("""() => { const d = SRP.derivacion; const a = (la, lo) => d.dentroDelAmbito(la, lo);
       const borde = d.derivar(19.095827, -99.22707);
       return { neza: a(19.40, -99.015), huixquilucan: a(19.37, -99.30), naucalpan: a(19.478, -99.239), ecatepec: a(19.585, -99.060),
@@ -2202,19 +2202,19 @@ with sync_playwright() as p:
         colocar: SRP.mapa.colocar(19.40, -99.015, 'x', { origen: 'manual' }), estado: document.getElementById('mapa-estado').textContent,
         completas: d.capasCompletas(), colonia: SRP.ref.colonia(d.derivar(19.502765, -99.157045).colonia), alcaldia: SRP.ref.alcaldia(null) }; }""")
     ok(not amb['neza'] and not amb['huixquilucan'] and not amb['naucalpan'] and not amb['ecatepec'] and amb['zocalo'],
-       'Nezahualcóyotl, Huixquilucan, Naucalpan y Ecatepec ya no se aceptan; el Zócalo sí (A6): %s' % {k: amb[k] for k in ('neza','huixquilucan','naucalpan','ecatepec','zocalo')})
+       'Nezahualcóyotl, Huixquilucan, Naucalpan y Ecatepec no se aceptan; el Zócalo sí: %s' % {k: amb[k] for k in ('neza','huixquilucan','naucalpan','ecatepec','zocalo')})
     ok(amb['margen'] and not amb['lejos'] and amb['borde'][0]=='Tlalpan' and 30 <= amb['borde'][1] <= 45,
-       'a 39 m fuera del límite se acepta con la alcaldía más cercana; a 250 m ya no (A6): %s' % amb['borde'])
+       'a 39 m fuera del límite se acepta con la alcaldía más cercana; a 250 m no: %s' % amb['borde'])
     ok(amb['colocar'] is False and 'fuera de la Ciudad de México' in amb['estado'],'colocar un punto en Nezahualcóyotl lo rechaza y lo dice')
-    ok(amb['colonia']=='Sin colonia en la capa' and amb['alcaldia']=='Sin alcaldía (territorio pendiente)','los rótulos ya no afirman «fuera de zona urbana» ni «hueco entre polígonos»')
-    ok(amb['completas'],'las tres capas y la biblioteca del cruce están cargadas (A7)')
-    # Jornada y árbol junto al límite: el aviso va en su renglón, sin tapar la precisión (A6, B8)
+    ok(amb['colonia']=='Sin colonia en la capa' and amb['alcaldia']=='Sin alcaldía (territorio pendiente)','los rótulos no afirman «fuera de zona urbana» ni «hueco entre polígonos»')
+    ok(amb['completas'],'las tres capas y la biblioteca del cruce están cargadas')
+    # Jornada y árbol junto al límite: el aviso va en su renglón, sin tapar la precisión
     pg12.evaluate("SRP.app.mostrarVista('registrar')"); pg12.wait_for_timeout(300)
     pg12.click('#btn-ini-hoy'); pg12.fill('#ini-nombre','Jornada B92'); pg12.select_option('#ini-programa','p-refor'); pg12.fill('#ini-meta','5')
     pg12.click('#ini-detalles-coord summary'); pg12.fill('#ini-coord-lat','19.095827'); pg12.fill('#ini-coord-lng','-99.22707'); pg12.click('#btn-ini-coord-aplicar'); pg12.wait_for_timeout(200)
     ok('fuera del límite' in pg12.inner_text('#ini-detectado') and pg12.inner_text('#ini-lugar').startswith('Tlalpan'),'la jornada junto al límite toma la alcaldía más cercana y lo dice')
     pg12.click('#btn-iniciar-jornada'); pg12.wait_for_timeout(600)
-    # M6: el GPS se sigue escuchando y se queda con la mejor lectura
+    # El GPS se sigue escuchando y se queda con la mejor lectura
     pg12.click('#btn-ubicacion'); pg12.wait_for_timeout(700)
     g1=pg12.evaluate("[SRP.mapa.precision, SRP.mapa.vigilancia != null, document.getElementById('mapa-estado').textContent]")
     ok(g1[0]==60 and g1[1] and 'Afinando' in g1[2],'con ±60 m el punto aparece y el GPS se sigue escuchando unos segundos: %s' % g1[2])
@@ -2229,21 +2229,21 @@ with sync_playwright() as p:
     pg12.evaluate("SRP.mapa.colocar(19.4328, -99.1334, 'Punto colocado en el mapa.', { origen: 'mapa' })")
     ctx12.set_geolocation({'latitude':19.4330,'longitude':-99.1336,'accuracy':5}); pg12.wait_for_timeout(800)
     ok(pg12.evaluate("[SRP.mapa.lat, SRP.mapa.origen, SRP.mapa.vigilancia]")==[19.4328,'mapa',None],'si la persona coloca el punto a mano, el GPS ya no lo mueve')
-    # M6: tocar el mapa lejos acerca primero; con acercamiento suficiente coloca
+    # Tocar el mapa lejos acerca primero; con acercamiento suficiente coloca
     toque=pg12.evaluate("""() => { SRP.mapa.limpiar(); SRP.mapa.mapa.setZoom(12, { animate: false });
       SRP.mapa.alTocar({ lat: 19.4331, lng: -99.1337 }); const primero = [SRP.mapa.lat, SRP.mapa.mapa.getZoom(), document.getElementById('mapa-estado').textContent];
       SRP.mapa.alTocar({ lat: 19.4331, lng: -99.1337 }); return [primero, SRP.mapa.lat, SRP.mapa.origen]; }""")
     ok(toque[0][0] is None and toque[0][1]==17 and 'toque otra vez' in toque[0][2] and toque[1]==19.4331 and toque[2]=='mapa',
        'a zoom 12 el primer toque acerca el mapa y el segundo coloca el punto: %s' % toque)
-    # B8: el aviso de imagen caída ya no tapa la insignia de precisión
+    # El aviso de imagen caída no tapa la insignia de precisión
     pg12.evaluate("SRP.mapa.colocar(19.4326, -99.1332, 'x', { origen: 'gps', precision: 40 }); SRP.mapa.aviso('imagen', 'La imagen del mapa no cargó. Puede acercar el mapa y tocar donde está el árbol, o capturar coordenadas a mano.')")
-    ok(pg12.locator('#mapa-estado .precision').count()==1 and pg12.is_visible('#mapa-aviso') and 'no cargó' in pg12.inner_text('#mapa-aviso'),'el aviso de la imagen y la precisión conviven, cada uno en su renglón (B8)')
+    ok(pg12.locator('#mapa-estado .precision').count()==1 and pg12.is_visible('#mapa-aviso') and 'no cargó' in pg12.inner_text('#mapa-aviso'),'el aviso de la imagen y la precisión conviven, cada uno en su renglón')
     pg12.evaluate("SRP.mapa.aviso('imagen', null)")
     pg12.evaluate("SRP.mapa.colocar(19.095827, -99.22707, 'Punto capturado a mano.', { origen: 'manual' })"); pg12.wait_for_timeout(200)
     ok('fuera del límite' in pg12.inner_text('#mapa-aviso') and 'Tlalpan' in pg12.inner_text('#mapa-aviso') and pg12.inner_text('#dato-alcaldia')=='Tlalpan','un árbol junto al límite dice que toma la alcaldía más cercana')
     pg12.evaluate("SRP.mapa.colocar(19.4326, -99.1332, 'x', { origen: 'gps', precision: 6 })"); pg12.wait_for_timeout(150)
     ok('fuera del límite' not in pg12.inner_text('#mapa-aviso'),'y el aviso se va cuando el punto vuelve a la ciudad (el de la imagen, si la hay, se queda)')
-    # M3: créditos completos en todos los mapas
+    # Créditos completos en todos los mapas
     cred=pg12.inner_text('#mapa .leaflet-control-attribution')
     ok('Powered by Esri' in cred and 'Vantor' in cred and 'OpenStreetMap' in cred and 'Maxar' not in cred,'el mapa de captura acredita a Esri («Powered by Esri»), Vantor y OpenStreetMap: '+cred)
     # Se guarda un árbol y se revisa su detalle: celda, capas y cinco decimales
@@ -2259,10 +2259,10 @@ with sync_playwright() as p:
     pg12.evaluate("async () => SRP.registros.verDetalle(await SRP.almacen.uno('plantaciones', '%s'))" % rid12); pg12.wait_for_timeout(600)
     det=pg12.inner_text('#dlg-detalle-cuerpo')
     ok('Celda UGA' not in det and 'del borde de la celda' not in det and pg12.evaluate("SRP.ref.textoCapas('%s')" % r12['capa_version'].replace("'", "")) == 'Alcaldías sia-2026-01-01 · UGA sia-2026-09-22 · Colonias iecm-2022',
-       'el detalle ya no dice la celda ni las capas: van a la base; la versión de las capas se sigue leyendo igual')
+       'el detalle no dice la celda ni las capas: van a la base; la versión de las capas se sigue leyendo igual')
     ok('Powered by Esri' in pg12.inner_text('#detalle-mapa .leaflet-control-attribution'),'y su mapa lleva el crédito')
     pg12.click('#btn-detalle-cerrar'); pg12.wait_for_timeout(200)
-    # Celda incierta y folio sólo con territorio (A6, A7)
+    # Celda incierta y folio sólo con territorio
     fol=pg12.evaluate("""async () => { const f = SRP.folio;
       const incierta = f.celdaIncierta({ uga_borde_m: 4, punto_origen: 'gps', gps_precision_m: 12 });
       const segura = f.celdaIncierta({ uga_borde_m: 40, punto_origen: 'gps', gps_precision_m: 12 });
@@ -2277,8 +2277,8 @@ with sync_playwright() as p:
       return { incierta, segura, sinAlc: a.folio, sinCapa: c.folio, previsto: await f.previsto(sinAlc), ext, conFolio: f.valido((await SRP.almacen.uno('plantaciones', base.id)).folio) }; }""" % rid12)
     ok('Celda incierta' in fol['incierta'] and fol['segura']=='','si el punto está más cerca del borde de su celda que la precisión del GPS, se marca «celda incierta»')
     ok(fol['sinAlc'] is None and fol['sinCapa'] is None and fol['previsto'] is None and fol['ext']==0 and fol['conFolio'],
-       'sin alcaldía o con capas incompletas no se emite folio, y nunca EXT-000 por una capa ausente; el registro completo sí lo tiene (A6, A7): %s' % fol)
-    # M5: si al editar cambia el territorio, queda en el historial
+       'sin alcaldía o con capas incompletas no se emite folio, y nunca EXT-000 por una capa ausente; el registro completo sí lo tiene: %s' % fol)
+    # Si al editar cambia el territorio, queda en el historial
     pg12.evaluate("async () => SRP.formulario.editar(await SRP.almacen.uno('plantaciones', '%s'))" % rid12); pg12.wait_for_timeout(700)
     pg12.evaluate("SRP.mapa.colocar(19.3600, -99.1600, 'Punto capturado a mano.', { origen: 'manual' })"); pg12.wait_for_timeout(200)
     pg12.click('#form-plantacion button[type=submit]'); pg12.wait_for_timeout(900)
@@ -2288,17 +2288,17 @@ with sync_playwright() as p:
     ok(pg12.evaluate("SRP.CONFIG.JORNADA.DUPLICADO_M")==4,'el aviso de posible duplicado usa 4 m: por debajo del ruido del GPS no significa nada')
     ok(not err12,'y sin errores en consola: %s' % err12[:2])
     ctx12.close()
-    # A7: sin la capa de colonias la aplicación no abre, y no sugiere borrar los datos
+    # Sin la capa de colonias la aplicación no abre, y no sugiere borrar los datos
     ctx13=b.new_context(viewport={'width':390,'height':844}); pg13=ctx13.new_page()
     pg13.route('**/capa-colonias.js*', lambda r: r.abort())
     pg13.goto(BASE); pg13.wait_for_timeout(1500)
     txt13=pg13.inner_text('body')
     ok('No se cargaron las capas del territorio' in txt13 and 'borre los datos' not in txt13 and 'antes de borrar nada' in txt13 and pg13.locator('#form-acceso').count()==0,
-       'sin una capa la aplicación no abre, lo dice y no sugiere borrar los datos del sitio, donde viven los árboles (A7): '+txt13[:120])
+       'sin una capa la aplicación no abre, lo dice y no sugiere borrar los datos del sitio, donde viven los árboles: '+txt13[:120])
     ctx13.close()
 
     # ---------- BLOQUE 94: ORDEN DEL CÓDIGO Y LOS TEXTOS ----------
-    # M11: la app abre y funciona sin el espejo de campos, retirado como dicen sus instrucciones
+    # La app abre y funciona sin el espejo de campos, retirado como dicen sus instrucciones
     import re as _re
     ctx14=b.new_context(viewport={'width':390,'height':844},geolocation={'latitude':19.4326,'longitude':-99.1332},permissions=['geolocation'])
     pg14=ctx14.new_page(); err14=[]
@@ -2325,21 +2325,21 @@ with sync_playwright() as p:
     pg14.evaluate("SRP.app.mostrarVista('registrar')"); pg14.wait_for_timeout(300)
     pg14.click('#btn-jornada-cerrar'); pg14.wait_for_timeout(300); pg14.click('#btn-confirmar-si'); pg14.wait_for_timeout(1200)
     reporte_de(pg14,'Jornada sin espejo'); pg14.wait_for_timeout(300)
-    ok(pg14.is_visible('#dlg-cierre') and pg14.inner_text('#dlg-cierre-titulo')=='Datos de cierre de la jornada','y abre los datos de cierre, que ahora son «de la jornada»')
+    ok(pg14.is_visible('#dlg-cierre') and pg14.inner_text('#dlg-cierre-titulo')=='Datos de cierre de la jornada','y abre los datos de cierre de la jornada')
     pg14.click('#btn-cierre-generar'); pg14.wait_for_timeout(800)
     ok(pg14.is_visible('#dlg-previa'),'y la vista previa del reporte')
     ok(not err14,'todo sin errores en consola: %s' % err14[:2])
-    # B5 y M16: título legible en Nuevo registro, banda dentro del encabezado, etiquetas únicas
+    # Título legible en Nuevo registro, banda dentro del encabezado, etiquetas únicas
     acc=pg14.evaluate("""() => ({ h1: (() => { const h = document.getElementById('titulo-registrar'); return !h.hidden && h.classList.contains('oculto-visual') && h.textContent; })(),
       banda: !!document.querySelector('header #banda-ficticio'), quitar: document.getElementById('btn-reiniciar-filtros').textContent.trim(),
       faltante: document.getElementById('btn-jornada-faltante').textContent.trim() })""")
     ok(acc=={'h1':'Nuevo registro','banda':True,'quitar':'Quitar filtros','faltante':'Registrar árbol'},
-       'Nuevo registro tiene título de primer nivel legible, la banda de prueba va dentro del encabezado y cada acción tiene un solo nombre (B5): %s' % acc)
+       'Nuevo registro tiene título de primer nivel legible, la banda de prueba va dentro del encabezado y cada acción tiene un solo nombre: %s' % acc)
     ctx14.close()
-    # B2: la base sube a la versión 3 con el índice de árboles por jornada, sin perder nada
+    # La base sube a la versión 3 con el índice de árboles por jornada, sin perder nada
     ind=pg.evaluate("""() => { const r = {}; for (const n of SRP.almacen.db.objectStoreNames) r[n] = [...SRP.almacen.db.transaction(n).objectStore(n).indexNames].sort(); return { v: SRP.almacen.db.version, r }; }""")
     ok(ind['v']==9 and ind['r']['plantaciones']==['estatus','jornada_id'] and ind['r']['jornadas']==['cabo_id'] and 'catalogos' not in ind['r'] and all(ind['r'][t]==[] for t in ['programas','areas','especies','vehiculos','instituciones','solicitantes']),
-       'la base está en la versión 9, con cada catálogo en su tabla, con el índice de árboles por jornada y sin los cinco que nadie consultaba (B2): %s' % ind)
+       'la base está en la versión 9, con cada catálogo en su tabla, con el índice de árboles por jornada y sin los cinco que nadie consultaba: %s' % ind)
     # Y un teléfono con la base en la versión 2 sube a la 3 sin perder lo capturado
     ctx15=b.new_context(viewport={'width':390,'height':844}); pg15=ctx15.new_page()
     pg15.route('**/*.js*', lambda r: r.abort())
@@ -2355,7 +2355,7 @@ with sync_playwright() as p:
       r.onsuccess = () => { r.result.close(); ok(true); }; r.onerror = () => no(r.error); })""")
     pg15.unroute('**/*.js*'); pg15.reload(); pg15.wait_for_timeout(1500)
     v2=pg15.evaluate("async () => ({ v: SRP.almacen.db.version, arboles: (await SRP.almacen.porIndice('plantaciones', 'jornada_id', 'jr-v2')).map(r => r.id), jornadas: (await SRP.almacen.todos('jornadas')).map(j => j.id) })")
-    ok(v2=={'v':9,'arboles':['pl-v2'],'jornadas':['jr-v2']},'una base en la versión 2 sube a la 9 conservando árboles y jornadas, y el índice nuevo los encuentra (B2): %s' % v2)
+    ok(v2=={'v':9,'arboles':['pl-v2'],'jornadas':['jr-v2']},'una base en la versión 2 sube a la 9 conservando árboles y jornadas, y el índice nuevo los encuentra: %s' % v2)
     ctx15.close()
 
     # ---------- BLOQUE 95: TUERCA, SUBIR AL INICIO Y ERRORES EN LA JORNADA ----------
@@ -2654,7 +2654,7 @@ with sync_playwright() as p:
     marca19=pg19.evaluate("[...document.querySelectorAll('#navegacion .pestana[aria-current]')].map(b => b.dataset.vista)")
     ancho19=pg19.evaluate("[...document.querySelectorAll('#navegacion .pestana')].filter(b => !b.hidden).every(b => b.scrollWidth <= b.clientWidth + 1) && document.documentElement.scrollWidth <= window.innerWidth")
     ok(nav19==['Supervisión','Jornadas','Registros','Configuración'] and menu19==[0,False] and pg19.is_visible('#vista-usuarios') and marca19==['configuracion'] and ancho19,
-       'la administración tiene «Configuración» en la barra, junto a Registros, y ya no en el menú de la cuenta; dentro de Usuarios su pestaña sigue marcada y la barra cabe: %s %s %s %s' % (nav19, menu19, marca19, ancho19))
+       'la administración tiene «Configuración» en la barra, junto a Registros, y no en el menú de la cuenta; dentro de Usuarios su pestaña sigue marcada y la barra cabe: %s %s %s %s' % (nav19, menu19, marca19, ancho19))
     pg19.set_viewport_size({'width':1280,'height':900}); pg19.click('.pestana[data-vista=supervision]'); pg19.wait_for_timeout(800)
     abrir_sup(pg19)
     cols=pg19.evaluate("getComputedStyle(document.querySelector('.sup-cifras')).gridTemplateColumns.split(' ').length")
@@ -2711,7 +2711,7 @@ with sync_playwright() as p:
        'y la tabla en CSV, un renglón por árbol, con acentos para Excel: %s, %d renglones' % (dc.value.suggested_filename, len(lineas)))
     esc20=pg20.evaluate("SRP.informes.texto({ detalle: [{ folio: 'a\"b', jornada: 'x, y' }] }).split('\\r\\n')[1]")
     ok(esc20.startswith('"a""b"') and '"x, y"' in esc20,'el CSV escapa comillas y comas: %s' % esc20[:30])
-    pg20.evaluate("SRP.supervision.filtros.alcaldia = 'Tlalpan'; SRP.supervision.pintar()"); pg20.wait_for_timeout(400)   # sin jornadas: ya no se ofrece en la lista
+    pg20.evaluate("SRP.supervision.filtros.alcaldia = 'Tlalpan'; SRP.supervision.pintar()"); pg20.wait_for_timeout(400)   # sin jornadas: no se ofrece en la lista
     ok(pg20.is_disabled('#btn-sup-pdf') and pg20.is_disabled('#btn-sup-csv'),'sin jornadas cerradas no se ofrece informe ni tabla')
     ok(not err20,'sin errores en consola: %s' % err20[:2])
     ctx20.close()
@@ -2970,7 +2970,7 @@ with sync_playwright() as p:
     pg23.evaluate("SRP.reportes.prepararVehiculo({ vehiculo_placa: 'pru009', vehiculo_modelo: 'Camión' })"); pg23.wait_for_timeout(200)
     ok(pg23.input_value('#cie-vehiculo')=='v-PRU009' and pg23.inner_text('#cie-vehiculo-ficha')=='Internacional · Redilas','una placa escrita a mano antes del catálogo se reconoce: PRU009 → PRU 009, Internacional · Redilas')
     pg23.evaluate("SRP.reportes.prepararVehiculo({ vehiculo_placa: 'DEM-123', vehiculo_modelo: 'Camioneta de redilas' })"); pg23.wait_for_timeout(200)
-    ok(pg23.input_value('#cie-vehiculo')=='' and 'DEM-123' not in pg23.inner_text('#dlg-cierre'),'y una que no está abre sin vehículo: lo escrito a mano ya no se ofrece')
+    ok(pg23.input_value('#cie-vehiculo')=='' and 'DEM-123' not in pg23.inner_text('#dlg-cierre'),'y una que no está abre sin vehículo: lo escrito a mano no se ofrece')
     pg23.click('#btn-cierre-cerrar'); pg23.wait_for_timeout(200)
     # La coordinación ve los frecuentes del encargado de esa jornada
     entrar23('u-coord-1')
@@ -3065,7 +3065,7 @@ with sync_playwright() as p:
     v25=pg25.evaluate("(() => { const J = window.jspdf.jsPDF; const d = new J(); return { v: J.version, tabla: typeof d.autoTable }; })()")
     ok(v25['v']=='4.2.1' and v25['tabla']=='function','jsPDF al día (%s) y la tabla del reporte sigue disponible' % v25['v'])
     st25=pg25.evaluate("fetch('assets/fuentes/UGA_CDMX.geojson', { cache: 'no-store' }).then(r => r.status)")
-    ok(st25==404,'los archivos originales ya no están dentro del sitio (assets/fuentes da %s)' % st25)
+    ok(st25==404,'los archivos originales no están dentro del sitio (assets/fuentes da %s)' % st25)
     pg25.evaluate("SRP.demo.cargar()"); pg25.evaluate("SRP.app.mostrarVista('jornadas')"); pg25.wait_for_timeout(1200)
     pg25.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg25.wait_for_timeout(800)
     # Una jornada con varios árboles: sin comentarios, y luego con dos (uno de dos renglones y espacios de sobra)
@@ -3167,14 +3167,14 @@ with sync_playwright() as p:
     pg27.goto(BASE); pg27.wait_for_timeout(1200)
     pg27.select_option('#sel-usuario-prueba','u-admin-1'); pg27.click('#btn-entrar-prueba'); pg27.wait_for_timeout(900)
     pg27.evaluate("SRP.demo.cargar()"); pg27.wait_for_timeout(800)
-    # Año y mes ya no son listas: los atajos «Este mes» y «Este año» los sustituyen
+    # Año y mes no son listas: el periodo se elige con los atajos «Este mes» y «Este año»
     pg27.evaluate("SRP.app.mostrarVista('registros')"); pg27.wait_for_timeout(700)
     pg27.evaluate("SRP.registros.aplicarAtajo('mes')"); pg27.wait_for_timeout(400)
     rm27=pg27.evaluate("(() => { const h = SRP.util.fechaHoy().slice(0, 7); return [document.querySelector('#filtro-atajos [data-atajo=mes]').getAttribute('aria-pressed'), SRP.registros.filtrados.every(r => r.fecha_plantacion.startsWith(h)), document.getElementById('caja-filtro-anio') === null]; })()")
     pg27.evaluate("SRP.registros.aplicarAtajo('anio')"); pg27.wait_for_timeout(400)
     ra27=pg27.evaluate("(() => { const h = SRP.util.fechaHoy().slice(0, 4); return [document.querySelector('#filtro-atajos [data-atajo=anio]').getAttribute('aria-pressed'), SRP.registros.filtrados.length > 0 && SRP.registros.filtrados.every(r => r.fecha_plantacion.startsWith(h)), document.getElementById('filtro-mas-filtros-texto').textContent]; })()")
     pg27.evaluate("SRP.registros.aplicarAtajo('todos')"); pg27.wait_for_timeout(400)
-    ok(rm27==['true',True,True] and ra27[0]=='true' and ra27[1] and 'año' not in ra27[2],'en Registros, «Este mes» y «Este año» filtran el periodo en curso; «Más filtros» ya no lleva año ni mes: %s · %s' % (rm27, ra27))
+    ok(rm27==['true',True,True] and ra27[0]=='true' and ra27[1] and 'año' not in ra27[2],'en Registros, «Este mes» y «Este año» filtran el periodo en curso; «Más filtros» no lleva año ni mes: %s · %s' % (rm27, ra27))
     pg27.evaluate("SRP.app.mostrarVista('jornadas')"); pg27.wait_for_timeout(700)
     pg27.evaluate("SRP.jornadas.aplicarAtajo('mes')"); pg27.wait_for_timeout(500)
     jm27=pg27.evaluate("(() => { const h = SRP.util.fechaHoy().slice(0, 7); return [document.querySelector('#jornada-atajos [data-atajo=mes]').getAttribute('aria-pressed'), SRP.jornadas.lista.every(j => j.fecha.startsWith(h)), document.getElementById('caja-jornada-anio') === null]; })()")
@@ -3343,7 +3343,7 @@ with sync_playwright() as p:
       await SRP.jornadas.abrir(j.clave); await new Promise(r => setTimeout(r, 900)); const b = document.getElementById('btn-jornada-reporte');
       const r = { texto: b.textContent.trim(), oculto: b.hidden, editar: b.classList.contains('btn-editar'), generados: SRP.jornadas._todas.filter(x => x.dato.reporte_en).length }; await SRP.jornadas.cerrar(); return r; }""")
     ok(bt32 and bt32['texto']=='Generar reporte' and not bt32['editar'] and bt32['generados']>0,'en la ficha de una jornada que ya tiene reporte el botón dice «Generar reporte», no «Regenerar»: %s' % bt32)
-    ok(pg32.evaluate("document.body.innerText.includes('Regenerar')")==False,'la palabra «Regenerar» ya no aparece')
+    ok(pg32.evaluate("document.body.innerText.includes('Regenerar')")==False,'la palabra «Regenerar» no aparece')
     # El aviso con «Deshacer» y texto largo: la × arriba a la derecha, «Deshacer» bajo el texto
     pg32.evaluate("SRP.util.anunciar('Punto 3 marcado como revisado. Siguiente: generar el reporte.', 'exito', { deshacer: () => {} })"); pg32.wait_for_timeout(200)
     av32=pg32.evaluate("""(() => { const a = document.getElementById('aviso').getBoundingClientRect(), x = document.querySelector('#aviso .aviso-cerrar').getBoundingClientRect(),
@@ -3470,14 +3470,14 @@ with sync_playwright() as p:
     ok(m36['b']==[3,False,'u-cabo-1','2026-09-21T12:00:00-06:00'],'una jornada editada conserva quién y cuándo, y el conteo viejo pasa a arboles_previstos: %s' % m36['b'])
     ok(m36['u']==['2026-09-01T08:00:00-06:00','u-admin-1',False,False],'en las cuentas, fecha_alta y alta_por_id pasan a fecha_creacion y creado_por_id: %s' % m36['u'])
     ok(pg36.evaluate("typeof SRP.conexion.refrescarAvisoEnvio + '/' + typeof SRP.conexion.resumenFotos")=='undefined/undefined' and not pg36.query_selector('#cie-vehiculo_id'),
-       'el código muerto y el campo oculto del vehículo ya no existen')
+       'el código muerto y el campo oculto del vehículo no existen')
     ok(not err36,'sin errores en consola: %s' % err36[:2])
     ctx36.close()
     # Una jornada nueva nace con arboles_previstos y sin datos de edición
     pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(300)
     nueva_j=pg.evaluate("""async () => { const js = (await SRP.almacen.todos('jornadas')).filter(j => j.cabo_id === SRP.sesion.usuario.id).sort((a, b) => b.fecha_inicio.localeCompare(a.fecha_inicio));
       const j = js[0]; return j ? { previstos: 'arboles_previstos' in j, meta: 'meta_arboles' in j, creado: 'creado_por_id' in j, fc: 'fecha_creacion' in j } : null; }""")
-    ok(nueva_j is not None and nueva_j['previstos'] and not nueva_j['meta'] and not nueva_j['creado'] and not nueva_j['fc'],'las jornadas guardan arboles_previstos y ya no llevan meta_arboles, creado_por_id ni fecha_creacion: %s' % nueva_j)
+    ok(nueva_j is not None and nueva_j['previstos'] and not nueva_j['meta'] and not nueva_j['creado'] and not nueva_j['fc'],'las jornadas guardan arboles_previstos y no llevan meta_arboles, creado_por_id ni fecha_creacion: %s' % nueva_j)
 
 
     # ---------- BLOQUE 115: PAGINACIÓN, CIERRE Y FECHA ----------
@@ -3648,7 +3648,7 @@ with sync_playwright() as p:
     ok(m39['v']==9 and m39['a']=='alcaldias=sia-2026-01-01;uga=sia-2026-09-22;colonias=iecm-2022' and m39['colonia']=='CENTRO I' and m39['b'] is None,
        'la migración 7 cambia sólo el nombre de la versión de colonias en lo ya derivado, sin tocar la colonia ni lo que no tenía capas: %s' % m39)
     ok(m39['capa']=='iecm-2022' and m39['vigente'].endswith('colonias=iecm-2022') and m39['texto']=='Alcaldías sia-2026-01-01 · UGA sia-2026-09-22 · Colonias iecm-2022',
-       'la capa de colonias del IECM es la definitiva: su versión ya no dice «prueba» ni el detalle «capa de prueba»: %s' % m39['texto'])
+       'la capa de colonias del IECM es la definitiva: su versión no dice «prueba» ni el detalle «capa de prueba»: %s' % m39['texto'])
     ctx39.close()
     ctx39=b.new_context(viewport={'width':360,'height':780}, timezone_id='America/Mexico_City'); pg39=ctx39.new_page()
     pg39.on('pageerror', lambda e: err39.append(str(e))); pg39.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err39.append(m.text))
@@ -3726,7 +3726,7 @@ with sync_playwright() as p:
     pg41.goto(BASE); pg41.wait_for_timeout(1200)
     acc41=pg41.evaluate("""(() => { const f = document.getElementById('form-acceso'), b = f.querySelector('button[type=submit]'), n = b.nextElementSibling;
       return { leyenda: document.body.innerHTML.includes('son obligatorios'), sep: Math.round(n.getBoundingClientRect().top - b.getBoundingClientRect().bottom) }; })()""")
-    ok(not acc41['leyenda'] and acc41['sep']>=8,'sin la leyenda «Los campos marcados con * son obligatorios» en ninguna pantalla, y la nota bajo «Entrar» ya no va pegada al botón: %s' % acc41)
+    ok(not acc41['leyenda'] and acc41['sep']>=8,'sin la leyenda «Los campos marcados con * son obligatorios» en ninguna pantalla, y la nota bajo «Entrar» no va pegada al botón: %s' % acc41)
     pg41.select_option('#sel-usuario-prueba','u-cabo-1'); pg41.click('#btn-entrar-prueba'); pg41.wait_for_timeout(700)
     pg41.evaluate("SRP.app.mostrarVista('registrar')"); pg41.wait_for_timeout(500)
     ok(pg41.locator('#panel-iniciar-jornada > .nota').count()==0,'Registrar jornada no lleva párrafo de presentación: el título basta')
@@ -3753,7 +3753,7 @@ with sync_playwright() as p:
     pg41.click('#btn-revisar'); pg41.wait_for_timeout(1500)
     if pg41.is_visible('#dlg-resumen'): pg41.click('#btn-resumen-guardar'); pg41.wait_for_timeout(1500)
     g41=pg41.evaluate("document.getElementById('franja-guardado').hidden ? '' : document.getElementById('franja-guardado').textContent.replace(/\\s+/g, ' ')")
-    ok('(simulado)' not in g41 and 'Guardado' in g41,'la franja «Guardado» ya no dice «(simulado)» junto al folio: %s' % g41.replace('\n',' | ')[:120])
+    ok('(simulado)' not in g41 and 'Guardado' in g41,'la franja «Guardado» no dice «(simulado)» junto al folio: %s' % g41.replace('\n',' | ')[:120])
     # La guía «¿Qué hacer sin internet?»: sólo la cola, con cuántos y de qué días
     pg41.evaluate("SRP.envio.forzarSinSenal(true)"); pg41.wait_for_timeout(300)
     pg41.evaluate("""async () => { const u = SRP.sesion.usuario, cv = SRP.derivacion.derivar(19.4326, -99.1332).capa_version, j = (await SRP.almacen.todos('jornadas'))[0];
@@ -3960,7 +3960,7 @@ with sync_playwright() as p:
     f44=[pg44.inner_text('.sup-cifra b >> nth=0'), pg44.locator('.sup-tabla-cabos tbody tr').count(), pg44.inner_text('#sup-filtros-texto'),
          pg44.locator('details[data-seccion=instituciones]').count(), pg44.inner_text('.sup-cifra >> nth=2')]
     ok(f44[0]==izp44[1] and f44[1]==4 and f44[2]=='Más filtros: Alcaldía Iztapalapa' and f44[3]==0 and '3 de 3' in f44[4],
-       'con la institución elegida quedan sólo sus árboles, sus 3 cabos (2 de demostración y el de arranque) y su coordinador, que también registra; «3 de 3 cabos» no cuenta al coordinador; y ya no se desglosa: %s' % f44)
+       'con la institución elegida quedan sólo sus árboles, sus 3 cabos (2 de demostración y el de arranque) y su coordinador, que también registra; «3 de 3 cabos» no cuenta al coordinador; y no se desglosa: %s' % f44)
     with pg44.expect_download() as dc44: pg44.click('#btn-sup-csv')
     csv44=open(dc44.value.path(), encoding='utf-8').read()
     ok(dc44.value.suggested_filename=='Arboles_todo_ALC_IZP.csv' and csv44.split('\r\n')[0].startswith('﻿"Folio","Fecha de plantación","Jornada","Institución que ejecuta","Quién registró"') and '"Alcaldía Iztapalapa"' in csv44 and 'SEDEMA' not in csv44,
@@ -4163,7 +4163,7 @@ with sync_playwright() as p:
     def programas48(uid):
         entrar48(uid); pg48.evaluate("SRP.app.mostrarVista('registrar')"); pg48.wait_for_timeout(500)
         return [pg48.eval_on_selector_all('#ini-programa option','l=>l.map(o=>o.textContent.trim()).filter(t => t && !t.startsWith("Seleccione"))'), pg48.input_value('#ini-programa')]
-    ok(pg48.evaluate("typeof SRP.CONFIG.PROGRAMAS_POR_TIPO_INSTITUCION")=='undefined','la regla de programas por institución ya no vive en la configuración')
+    ok(pg48.evaluate("typeof SRP.CONFIG.PROGRAMAS_POR_TIPO_INSTITUCION")=='undefined','la regla de programas por institución no vive en la configuración')
     entrar48('u-admin-1')
     pg48.click('.pestana[data-vista=configuracion]'); pg48.wait_for_timeout(300); pg48.click('.cfg-tarjeta[data-ir=catalogos]'); pg48.wait_for_timeout(500)
     q48=pg48.evaluate("""(() => { const r = {}; document.querySelectorAll('#tabla-catalogo tbody tr').forEach(tr => { const c = tr.querySelector('[data-etiqueta="Quién lo usa"]'); r[tr.querySelector('.c-titulo').textContent] = c ? c.textContent : null; }); return r; })()""")
@@ -4416,7 +4416,7 @@ with sync_playwright() as p:
         a('b1', 200, 0, 'ESP-0004'), a('b2', 200, 8, 'ESP-0005'), a('b3', 200, 16, 'ESP-0006'), a('b4', 200, 24, 'ESP-0007'), a('b5', 200, 32, 'ESP-0008'), a('solo', -400, 0, 'ESP-0009')];
       const av = SRP.jornadas.avisos({ registros: regs }); return Object.keys(av).map(k => [k, av[k].map(x => x.tipo + ': ' + x.texto)]); })()""")
     ok(l52==[['solo',['lejos: Lejos del resto · a 400 m del más cercano']]],
-       'con dos grupos de árboles juntos, «Lejos del resto» ya no marca un grupo entero: sólo el árbol que no tiene a nadie a menos de 150 m, y dice a cuánto está del más cercano: %s' % l52)
+       'con dos grupos de árboles juntos, «Lejos del resto» no marca un grupo entero: sólo el árbol que no tiene a nadie a menos de 150 m, y dice a cuánto está del más cercano: %s' % l52)
     # Tres árboles de la misma especie en el mismo punto: tres posibles duplicados por revisar
     pg52.select_option('#sel-usuario-prueba','u-cabo-1'); pg52.click('#btn-entrar-prueba'); pg52.wait_for_timeout(700)
     iniciar_jornada(pg52,'Alineación de palos verdes')
@@ -5124,7 +5124,7 @@ with sync_playwright() as p:
         det: 'prioridad' in m.detalle[0], porArbol: (() => { const c = {}; SRP.supervision.datos.jornadas.filter(j => j.estatus !== 'abierta').forEach(j => j.registros.forEach(r => { const q = SRP.prioritarias.de(r.lat, r.lng); if (q) c[q.prioridad] = (c[q.prioridad] || 0) + 1; })); return p.niveles.every(x => (c[x.prioridad] || 0) >= x.n) && p.niveles.some(x => x.n); })() }; }""")
     ok(s60['suma']==s60['arboles']>0 and not s60['altas'] and s60['filas'][:5]==['Muy alta','Alta','Media','Baja','Muy baja'] and 'alta o muy alta' not in s60['lema'] and 'alta o muy alta' not in s60['resumen'] and ' en prioridad ' in s60['lema'] and 0 < s60['mapa'] == s60['col'] < 2243 and 'donde hay árboles' in s60['nota'] and s60['porArbol'],
        'Supervisión cuenta cada árbol en la prioridad de la colonia donde quedó, cada nivel por separado (suman el total), y pinta las colonias con árboles: %s · %s de 2243 colonias' % (s60['lema'], s60['mapa']))
-    ok(not s60['csv'] and not s60['det'],'la tabla de árboles para Excel ya no trae prioridad por árbol')
+    ok(not s60['csv'] and not s60['det'],'la tabla de árboles para Excel no trae prioridad por árbol')
     ok(s60['ctl']==[True, True, 5, '0.9'],'el mapa de Supervisión lleva el control de niveles y opacidad, sin interruptor (ahí la capa es el mapa) y con su propia opacidad: %s' % s60['ctl'])
     with pg60.expect_download() as d60: pg60.click('#btn-sup-pdf')
     d60.value.save_as(sal('informe_prioridad.pdf'))
@@ -5176,7 +5176,7 @@ with sync_playwright() as p:
     pg61.evaluate("SRP.app.mostrarVista('jornadas')"); pg61.wait_for_timeout(1500)
     t61=pg61.evaluate("id => { const li = document.querySelector('#lista-jornadas li[data-clave=\"' + id + '\"]'); const p = li.querySelector('.jornada-lugar .pri-marca'); return [p.textContent.trim(), !!p.querySelector('.pri-muestra.pri-nivel-3')]; }", j61)
     ok(otro61 and t61==['prioridad Alta', True],'la tarjeta de la jornada marca su prioridad junto a su colonia —la de la colonia donde se ubicó, aunque un árbol caiga en otra— con su muestra de color: %s' % t61[0])
-    ok(pg61.locator('#jornada-filtro-prioridad').count()==0,'la prioridad se lee en la tarjeta; ya no es un filtro de Jornadas')
+    ok(pg61.locator('#jornada-filtro-prioridad').count()==0,'la prioridad se lee en la tarjeta; no es un filtro de Jornadas')
     pg61.evaluate("async (id) => { await SRP.jornadas.abrir(id); }", j61); pg61.wait_for_timeout(1500)
     esperar(pg61, "document.querySelectorAll('#jornada-lista .punto-jornada').length === 3 && /prioridad/.test(document.getElementById('jornada-sub').textContent)", 6000)   # la lista se pinta por partes
     fi61=pg61.evaluate("[document.getElementById('jornada-sub').textContent, document.querySelectorAll('#jornada-lista .punto-prioridad').length, /Árboles por prioridad/.test(document.getElementById('jornada-detalle').textContent)]")
@@ -5213,7 +5213,7 @@ with sync_playwright() as p:
     pg62.on('pageerror', lambda e: err62.append(str(e))); pg62.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err62.append(m.text))
     pg62.goto(BASE); pg62.wait_for_timeout(1300)
     pg62.select_option('#sel-usuario-prueba','u-cabo-1'); pg62.click('#btn-entrar-prueba'); pg62.wait_for_timeout(800)
-    # Ya no se pregunta el origen: «Solicitud» es una opción de Programa, la última
+    # No se pregunta el origen: «Solicitud» es una opción de Programa, la última
     pg62.evaluate("SRP.app.mostrarVista('registrar')"); pg62.wait_for_timeout(500)
     a62=pg62.evaluate("[!!document.getElementById('ini-origen'), document.getElementById('ini-solicitud').hidden, [...document.getElementById('ini-programa').options].map(o => o.textContent)]")
     ok(a62[0] is False and a62[1] is True and a62[2][0]=='Seleccione un programa' and a62[2][1]=='Reforestación Urbana' and a62[2][-1]=='Solicitud','al iniciar una jornada no se pregunta el origen; «Solicitud» es la última opción de Programa y sus datos no se piden todavía: %s' % a62[2])
@@ -5251,12 +5251,12 @@ with sync_playwright() as p:
     pa62=pg62.evaluate("async id => (await SRP.almacen.todos('plantaciones')).filter(r => r.jornada_id === id).map(r => r.programa_id)", j62)
     ok(pa62==['p-solicitud','p-solicitud'],'los árboles de una solicitud toman el programa «Solicitud»')
     pg62.evaluate("async () => { await SRP.activa.cambiarEstatus(SRP.activa.jornada, 'cerrada'); SRP.activa.jornada = null; }"); pg62.wait_for_timeout(400)
-    # Jornadas: la marca en la tarjeta; se filtra con Programa, ya no hay filtro «Origen»
+    # Jornadas: la marca en la tarjeta; se filtra con Programa, no hay filtro «Origen»
     pg62.evaluate("SRP.app.mostrarVista('jornadas')"); pg62.wait_for_timeout(1500)
     c62=pg62.evaluate("""([p, n]) => { const t = id => { const m = document.querySelector('#lista-jornadas li[data-clave="' + id + '"] .jornada-solicitud'); return m ? m.textContent.trim() : ''; };
       return [t(p), t(n), !!document.getElementById('jornada-origen'), [...document.getElementById('jornada-programa').options].map(o => o.textContent)]; }""", [j62, jp62])
     ok(c62[0]=='Solicita: Secretaría de Obras y Servicios (SOBSE)' and c62[1]=='' and c62[2] is False and 'Solicitud' in c62[3],
-       'la tarjeta de la jornada dice quién lo solicita; el filtro «Origen» ya no existe y «Solicitud» está en el de Programa: %s' % c62[3])
+       'la tarjeta de la jornada dice quién lo solicita; el filtro «Origen» no existe y «Solicitud» está en el de Programa: %s' % c62[3])
     pg62.evaluate("document.getElementById('jornada-mas-filtros').open = true")
     pg62.select_option('#jornada-programa','p-solicitud'); pg62.wait_for_timeout(900)
     d62=pg62.evaluate("([p, n]) => [SRP.jornadas.lista.some(j => j.id === p), SRP.jornadas.lista.some(j => j.id === n), document.getElementById('jornada-fichas').textContent]", [j62, jp62])
@@ -5547,7 +5547,7 @@ with sync_playwright() as p:
     pg66.click('#btn-jornada-cerrar'); pg66.wait_for_timeout(300); pg66.click('#btn-confirmar-si'); pg66.wait_for_timeout(1200)
     pg66.click('.pestana[data-vista=supervision]'); abrir_sup(pg66); esperar(pg66, "!!document.querySelector('#sup-mapa .leaflet-container, #sup-mapa.leaflet-container')", 8000); pg66.wait_for_timeout(600)
     a66 = pg66.evaluate("[...document.querySelectorAll('.sup-mapa')].map(m => [m.getAttribute('role'), /tabla de al lado/.test(m.getAttribute('aria-label') || ''), m.querySelectorAll('a[href], button, [tabindex]').length > 0])")
-    ok(len(a66) >= 1 and all(x == ['group', True, True] for x in a66), 'los mapas de Supervisión ya no se declaran imagen: sus controles se alcanzan y la etiqueta remite a la tabla: %s' % a66)
+    ok(len(a66) >= 1 and all(x == ['group', True, True] for x in a66), 'los mapas de Supervisión no se declaran imagen: sus controles se alcanzan y la etiqueta remite a la tabla: %s' % a66)
     ok(not err66, 'sin errores en consola: %s' % err66[:2])
     ctx66.close()
 
@@ -5595,7 +5595,7 @@ with sync_playwright() as p:
     ok(pg67.is_hidden('#dlg-catalogo') and n67 and n67['d'] == ['solicitante','ESCUELA_PRIMARIA_EJEMPLO','Escuela',True,'u-admin-1'] and n67['bt'] == ['CREADO catalogo solicitante ESCUELA_PRIMARIA_EJEMPLO'] and n67['cuenta'] == '22 solicitantes · 18 inactivos',
        'el solicitante nuevo se guarda con su tipo, la clave que pone el sistema y su renglón de bitácora: %s' % (n67 and n67['d']))
     id67 = n67['id']
-    # «Quién lo solicita» lo ofrece en su grupo; las instituciones ya no salen ahí
+    # «Quién lo solicita» lo ofrece en su grupo; las instituciones no salen ahí
     # De arranque sólo se ofrecen los activos: Oficina de la Secretaría, Jefatura de Gobierno y SOBSE (y el nuevo)
     q67 = pg67.evaluate("""id => { const s = document.createElement('select'); s.innerHTML = SRP.solicitud.opciones(null); const g = [...s.querySelectorAll('optgroup')];
       return [g.map(x => x.label), [...g[0].children].map(o => o.textContent), [...s.options].some(o => o.value === id), [...s.options].some(o => /^o-/.test(o.value)), s.options[0].value, [...s.options].pop().textContent]; }""", id67)
@@ -5875,7 +5875,7 @@ with sync_playwright() as p:
     }""", [HOY, FOTO70])
     # Sin pestaña Reportes: la ficha de la jornada genera el reporte
     nav70 = pg70.evaluate("[...document.querySelectorAll('#navegacion .pestana')].filter(b => !b.hidden).map(b => b.textContent.trim())")
-    ok(nav70 == ['Nuevo registro', 'Jornadas', 'Registros', 'Mi avance'], 'el cabo tiene cuatro secciones; Reportes ya no es una de ellas: %s' % nav70)
+    ok(nav70 == ['Nuevo registro', 'Jornadas', 'Registros', 'Mi avance'], 'el cabo tiene cuatro secciones; Reportes no es una de ellas: %s' % nav70)
     pg70.evaluate("SRP.app.mostrarVista('jornadas')"); pg70.wait_for_timeout(1000)
     t70 = pg70.evaluate("[...document.querySelectorAll('#lista-jornadas .jornada')].map(l => [l.querySelector('.jornada-sitio').textContent, (l.querySelector('.insignia-reporte') || {}).textContent || ''])")
     ok(t70 == [['Reporte en ficha', 'Sin reporte todavía']], 'la tarjeta de la jornada cerrada dice que aún no tiene reporte: %s' % t70)
@@ -6069,7 +6069,7 @@ with sync_playwright() as p:
            'en el teléfono, %s lleva seis atajos en dos renglones de tres, con área de toque y sin salirse de lado: %s' % (vista, t74))
     n74 = pg74.evaluate("""() => [...document.querySelectorAll('section[id^=vista-]')].map(s => [s.id.replace('vista-', ''), [...s.querySelectorAll('select, input[type=search], .chips[role=group]')].filter(e => !e.closest('form, dialog') && e.id && !e.id.endsWith('-orden-lista')).length]).filter(x => x[1] && x[0] !== 'acceso')""")
     ok(all(n <= 8 for _, n in n74) and not pg74.evaluate("['jornada-anio', 'jornada-mes', 'jornada-reporte', 'jornada-filtro-prioridad', 'jornada-tipo-org', 'filtro-anio', 'filtro-mes', 'filtro-tipo-org', 'sup-tipo', 'usr-filtro-tipo'].some(id => document.getElementById(id))"),
-       'ninguna vista pasa de ocho filtros y los que se quitaron ya no existen: %s' % n74)
+       'ninguna vista pasa de ocho filtros, y no hay filtros de año, mes, reporte, prioridad ni tipo de institución: %s' % n74)
     pg74.evaluate("SRP.app.mostrarVista('jornadas')"); pg74.wait_for_timeout(700)
     pg74.click('#jornada-atajos [data-atajo=anio]'); pg74.wait_for_timeout(600)
     f74 = pg74.evaluate("[document.getElementById('jornada-fichas').textContent, SRP.jornadas.lista.length]")
@@ -6272,7 +6272,7 @@ with sync_playwright() as p:
     pg78.click('#cat-tipos .chip[data-tipo=programa]'); pg78.wait_for_timeout(400); otro78 = pg78.is_hidden('#btn-cat-escritas')
     pg78.click('#cat-tipos .chip[data-tipo=especie]'); pg78.wait_for_timeout(500)
     ok(sin78 == ['Especies escritas (0)', 0] and con78 == [True, 'true', 'Especies escritas (3)'] and otro78,
-       '«Especies escritas» ya no es tarjeta de Configuración: se abre desde Catálogos › Especies, con su cuenta, y regresa ahí: %s · %s' % (sin78, con78))
+       '«Especies escritas» no es tarjeta de Configuración: se abre desde Catálogos › Especies, con su cuenta, y regresa ahí: %s · %s' % (sin78, con78))
     pg78.click('#btn-cat-escritas'); pg78.wait_for_timeout(600)
     g78 = pg78.evaluate("[...document.querySelectorAll('#rev-lista tbody tr')].map(l => [l.dataset.clave, l.querySelector('.c-resumen').textContent.split(' · ')[0], !!l.querySelector('.rev-parecida').textContent, l.querySelectorAll('button').length])")
     ok(g78 == [['fresno', '3 árboles', True, 0], ['guayabo fresa', '1 árbol', False, 0], ['no se', '1 árbol', False, 0]]
@@ -6352,7 +6352,7 @@ with sync_playwright() as p:
     pg80.goto(BASE); pg80.wait_for_timeout(1300)
     pg80.select_option('#sel-usuario-prueba','u-admin-1'); pg80.click('#btn-entrar-prueba'); pg80.wait_for_timeout(900)
     pg80.evaluate("() => { window.__avisos = []; const o = SRP.util.anunciar; SRP.util.anunciar = function (m, t, op) { window.__avisos.push([m, t || 'exito']); return o.apply(this, arguments); }; document.getElementById('aviso').hidden = true; }")
-    # Guardar un valor de catálogo ya no pone aviso flotante: la lista cambia a la vista
+    # Guardar un valor de catálogo no pone aviso flotante: la lista cambia a la vista
     pg80.evaluate("SRP.app.mostrarVista('catalogos')"); pg80.wait_for_timeout(500)
     pg80.click('#cat-tipos .chip[data-tipo=area]'); pg80.wait_for_timeout(300); pg80.click('#btn-cat-agregar'); pg80.wait_for_timeout(300)
     pg80.fill('#cat-nombre', 'Área B169'); pg80.click('#btn-cat-guardar'); pg80.wait_for_timeout(700)
@@ -6794,7 +6794,7 @@ with sync_playwright() as p:
     pg88.click('#btn-iniciar-jornada'); pg88.wait_for_timeout(800)
     j88 = pg88.evaluate("SRP.activa.jornada && [SRP.activa.jornada.nombre, SRP.activa.jornada.punto_origen, SRP.activa.jornada.alcaldia]")
     ok(q88 and j88 == ['Sin punto B188', 'manual', 'Cuauhtémoc'], 'al capturar las coordenadas a mano el error se va y la jornada se registra con su punto: %s' % j88)
-    # Recuadro de edición: ya no se repite lo que dice la franja; la prioridad va junto a la colonia y antes de la dirección
+    # Recuadro de edición: no se repite lo que dice la franja; la prioridad va junto a la colonia y antes de la dirección
     pg88.evaluate("async () => { const j = SRP.activa.jornada; j.ubicacion = 'Calle Uno 123'; await SRP.almacen.guardarConBitacora('jornadas', j, null); SRP.app.mostrarVista('jornadas'); }"); pg88.wait_for_timeout(1200)
     o88 = pg88.evaluate("""() => { const l = document.querySelector('#lista-jornadas li .jornada-lugar'); const t = l.textContent.replace(/\s+/g, ' ').trim();
       return [t, !!l.querySelector('.pri-marca .pri-muestra'), !document.querySelector('#lista-jornadas .jornada-prioridad')]; }""")

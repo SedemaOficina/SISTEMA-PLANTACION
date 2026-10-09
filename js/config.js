@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 197',
+  ETAPA: 'Bloque 198',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -30,7 +30,7 @@ SRP.CONFIG = {
      sistema se quedaría con los datos anteriores (por ejemplo, con perfiles que ya no existen). */
   SELLO_DATOS: '2026-10-08-activables',   // qué cambió en los datos de prueba con este sello
   /* REINICIO DE LOS DATOS DE PRUEBA. Un teléfono con un sello anterior a éste vuelve a empezar aunque
-     tenga capturas: todo lo que hay en los teléfonos es de prueba (30-09-2026). Con sellos
+     tenga capturas: todo lo que hay en los teléfonos es de prueba. Con sellos
      posteriores se vuelve a conservar lo capturado. Se comparan como texto: uno nuevo debe ordenar
      después del anterior («2026-09-30b-…» va después de «2026-09-30-…»). */
   SELLO_REINICIO: '2026-09-30b-coordinacion',

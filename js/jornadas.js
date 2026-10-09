@@ -175,12 +175,6 @@ SRP.jornadas = {
     return 2 * R * Math.asin(Math.sqrt(h));
   },
 
-  async registrosAlcance() {
-    const u = SRP.sesion.usuario;
-    return (await SRP.almacen.porIndice('plantaciones', 'estatus', 'activo'))
-      .filter(r => SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId));
-  },
-
   /* Las jornadas que alcanza quien entró, con sus registros. Se devuelven en orden: fecha
      más reciente primero, luego cabo, luego hora de inicio. `n` y `total` numeran las del mismo
      día y cabo. */
@@ -889,7 +883,7 @@ SRP.jornadas = {
     const pend = this.pendientes(j, this.avisosActuales || {}, this.guardada).length;
     const caja = this.el('jornada-conciliacion');
     const res = this.el('jornada-resultado');
-    // Concordancia en número: «Queda 1 punto», «hay 1 punto»; antes decía «Quedan 1 punto» y «hay 1 puntos»
+    // Concordancia en número: «Queda 1 punto», «hay 1 punto»
     const cola = pend ? (pend === 1 ? ' Queda 1 punto por revisar.' : ' Quedan ' + pend + ' puntos por revisar.') : '';
     const puntos = n => n + (n === 1 ? ' punto' : ' puntos');
     let tono, texto;

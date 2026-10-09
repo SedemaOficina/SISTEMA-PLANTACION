@@ -398,7 +398,7 @@ COMMENT ON COLUMN srp.bitacora.detalle IS 'Texto; '''' si no aplica; En una edic
 COMMENT ON TABLE srp.jornadas IS 'Una jornada de plantación: se declara antes de registrar el primer árbol. Agrupa los registros, lleva la conciliación y la revisión, y guarda los datos de cierre del reporte.';
 COMMENT ON COLUMN srp.jornadas.id IS 'UUID; Se fija al iniciar la jornada';
 COMMENT ON COLUMN srp.jornadas.nombre IS 'Texto libre, hasta 120; Obligatorio al iniciar: el parque, la calle o el sitio. Es el nombre de la tarjeta en Jornadas y el «Jornada:» del reporte';
-COMMENT ON COLUMN srp.jornadas.ubicacion IS 'Texto libre, hasta 200; '''' si no se escribe; Calle y número, entre calles o tramo (antes dirección, parque o referencia); la etiqueta pasó a «Dirección de la jornada». Va al reporte bajo el nombre de la jornada';
+COMMENT ON COLUMN srp.jornadas.ubicacion IS 'Texto libre, hasta 200; '''' si no se escribe; Calle y número, entre calles o tramo, en «Dirección de la jornada». Va al reporte bajo el nombre de la jornada';
 COMMENT ON COLUMN srp.jornadas.programa_id IS '→ programas.id; Obligatorio al iniciar. Sus árboles lo toman siempre: al registrar, al cambiarlo aquí y al moverlos a esta jornada. SEDEMA elige todos; las demás instituciones, los que tienen marcado su tipo en programas.tipos_organizacion. Con un solo programa posible viene ya elegido. El programa «Solicitud» (id p-solicitud) marca la jornada que atiende una solicitud de otra instancia: con él se piden quién lo solicita y la descripción. Es un valor del catálogo: la Administración puede renombrarlo o desactivarlo; el sistema lo reconoce por su id';
 COMMENT ON COLUMN srp.jornadas.lat IS 'Grados decimales WGS84, 6 decimales; nulo sin ubicación; Latitud del punto de la jornada: detectado con el GPS al iniciar o escrito a mano cuando no hubo señal. No es la de ningún árbol';
 COMMENT ON COLUMN srp.jornadas.lng IS 'Grados decimales WGS84, 6 decimales; nulo sin ubicación; siempre negativa; Longitud del punto de la jornada';
@@ -431,8 +431,8 @@ COMMENT ON COLUMN srp.jornadas.personal IS 'Texto libre; Sólo en jornadas de SE
 COMMENT ON COLUMN srp.jornadas.apoyo IS 'Texto libre, varias líneas; Sólo en jornadas de SEDEMA; en las de otras instituciones no se pide y queda vacío';
 COMMENT ON COLUMN srp.jornadas.observaciones IS 'Texto libre; Aquí se explica a mano una diferencia contra los árboles previstos';
 COMMENT ON COLUMN srp.jornadas.chofer IS 'Texto libre; Sólo en jornadas de SEDEMA; en las de otras instituciones no se pide y queda vacío';
-COMMENT ON COLUMN srp.jornadas.vehiculo_modelo IS 'Copia de vehiculos.modelo del vehículo elegido; '''' sin vehículo; Se copia del catálogo al guardar el cierre; ya no se escribe a mano. La migración 4 quita lo escrito a mano y el campo `vehiculo` de versiones anteriores';
-COMMENT ON COLUMN srp.jornadas.vehiculo_placa IS 'Copia de vehiculos.nombre (la placa) del vehículo elegido; '''' sin vehículo; Se copia del catálogo al guardar el cierre; ya no se escribe a mano';
-COMMENT ON COLUMN srp.jornadas.vehiculo_tipo IS 'Copia de vehiculos.tipo_vehiculo del vehículo elegido; '''' sin vehículo; Se copia del catálogo al guardar el cierre; ya no se escribe a mano';
+COMMENT ON COLUMN srp.jornadas.vehiculo_modelo IS 'Copia de vehiculos.modelo del vehículo elegido; '''' sin vehículo; Se copia del catálogo al guardar el cierre; no se escribe a mano. La migración 4 quita lo escrito a mano y el campo `vehiculo` de versiones anteriores';
+COMMENT ON COLUMN srp.jornadas.vehiculo_placa IS 'Copia de vehiculos.nombre (la placa) del vehículo elegido; '''' sin vehículo; Se copia del catálogo al guardar el cierre; no se escribe a mano';
+COMMENT ON COLUMN srp.jornadas.vehiculo_tipo IS 'Copia de vehiculos.tipo_vehiculo del vehículo elegido; '''' sin vehículo; Se copia del catálogo al guardar el cierre; no se escribe a mano';
 COMMENT ON COLUMN srp.jornadas.vehiculo_id IS '→ vehiculos.id; El vehículo del catálogo; nulo sin vehículo. Con él se cuentan los que más usa cada encargado. Sólo del catálogo: sin «Otro vehículo»';
 COMMENT ON COLUMN srp.jornadas.hora IS 'HH:MM, de 00:00 a 23:59; '''' si no se elige';

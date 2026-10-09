@@ -16,7 +16,6 @@ window.SRP = window.SRP || {};
 
 SRP.solicitud = {
   OTRA: '__otra',
-  CAMPOS: ['solicitante_id', 'solicitante_otro', 'solicitud_descripcion'],
   LARGO_DESCRIPCION: 500,
 
   el(p, s) { return document.getElementById(p + '-' + s); },

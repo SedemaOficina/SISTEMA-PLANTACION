@@ -91,7 +91,7 @@ Pantalla **Usuarios**, sólo Administración global. Almacén `usuarios`.
 | — | `id` | Sí | Sistema | UUID |
 | Tipo de institución e Institución | `organizacion_id` | Sí | Catálogo | Primero el tipo (Alcaldía · Gobierno de la CDMX · Empresa privada · Organización civil), luego la institución de ese tipo; remite a `catalogos.id` con `tipo = organizacion`. Sólo se elige de la lista: las nuevas las agrega la Administración en Catálogos › Instituciones. Fuera de SEDEMA la cuenta es de cabo o de coordinación, sin área; el cabo depende de un coordinador de su misma institución |
 | Área | `area_id` | Sólo en SEDEMA | Catálogo | Remite a `areas.id`: DGSANPAVA, Oficina de la Secretaría, Sistema de Información Ambiental, DGEIRA; nula en cuentas de otras instituciones |
-| Nombre completo | `nombre_completo` | Sí | Persona | Nombre y apellidos en un solo campo (antes eran tres; al abrir se unen) |
+| Nombre completo | `nombre_completo` | Sí | Persona | Nombre y apellidos en un solo campo; una cuenta guardada con nombre y apellidos aparte se une al abrir |
 | Correo | `correo` | Sí | Persona | Identifica la cuenta y sirve para entrar. Único. No se puede cambiar después |
 | Cargo | `cargo_rol` | Sí | Persona | Texto libre; descriptivo, no gobierna permisos |
 | Perfil de captura | `perfil` | Sí | Persona | `CABO`, `COORDINADOR`, `DIRECTIVO` o `ADMIN`. Es lo que decide qué puede hacer. `DIRECTIVO` sólo ve y descarga: en la Secretaría, todo; en otra institución, lo de la suya. |
@@ -135,7 +135,7 @@ paleta vegetal, verificadas contra EncicloVida/CONABIO el 22-09-2026, y tres fue
 | Etiqueta en pantalla | Campo | Obligatorio | Origen | Se ve en el formulario de registro | Notas |
 |---|---|---|---|---|---|
 | Nombre científico | `nombre_cientifico` | Sí | Persona | Sí, entre paréntesis | Género + epíteto, sin autoría ni subgénero: «Quercus rugosa». Único |
-| Tipo de distribución | `tipo_distribucion` | Sí | Persona | No | `Endémica` · `Nativa` · `Exótica` · `Exótica-Invasora`, campo del SNIB. Sustituye a Nativa/Introducida |
+| Tipo de distribución | `tipo_distribucion` | Sí | Persona | No | `Endémica` · `Nativa` · `Exótica` · `Exótica-Invasora`, campo del SNIB |
 | Otros nombres comunes | `otros_nombres_comunes` | No | Persona | Sólo como criterio de búsqueda | Separados por coma y espacio, hasta cinco. **Se buscan** en el formulario de registro y en Catálogos; la lista dice por cuál coincidió («también: Fresno»). Un mismo nombre puede señalar a varias especies, así que nunca resuelve solo |
 | Forma de crecimiento | `formadecrecimiento` | No | Persona | No | Literal de la ficha técnica: `Árbol, Arbusto`… Puede traer varios |
 | ¿Pertenece a la paleta vegetal de la Secretaría? | `paleta_vegetal` | Sí | Persona | Sí, como «Fuera de la paleta vegetal» bajo el nombre | `Sí` · `No`. En Catálogos, marca ámbar «Fuera de la paleta» y filtro «Mostrar». No impide registrar |
@@ -222,7 +222,7 @@ Almacén `jornadas`. Lo que ya vive en los registros
 | Personal de apoyo | `apoyo` | No | Persona | Personal de otra institución; varias líneas. Sólo en jornadas de SEDEMA |
 | Observaciones | `observaciones` | No | Persona | Una por renglón |
 | Chófer | `chofer` | No | Persona | Sólo en jornadas de SEDEMA |
-| No como campo: se ve bajo la lista de vehículos | `vehiculo_modelo` | No | Catálogo | Se copia del catálogo al guardar el cierre; ya no se escribe a mano. Sustituye a `vehiculo` |
+| No como campo: se ve bajo la lista de vehículos | `vehiculo_modelo` | No | Catálogo | Se copia del catálogo al guardar el cierre; no se escribe a mano |
 | Vehículo | `vehiculo_placa` | No | Catálogo | La placa del vehículo elegido en la lista |
 | No como campo: se ve bajo la lista de vehículos | `vehiculo_tipo` | No | Catálogo | El tipo del vehículo elegido (Estacas, Pipa…), copiado del catálogo |
 | Vehículo | `vehiculo_id` | No | Persona | Remite a `vehiculos.id` del vehículo elegido; nulo sin vehículo (sólo del catálogo). Con él se cuentan los que más usa cada encargado, que se ofrecen a un toque |

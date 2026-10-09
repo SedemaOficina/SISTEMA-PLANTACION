@@ -3205,3 +3205,17 @@
     simula un error de captura (a unos 390 m de su sitio) podía salir de la capa de alcaldías y quedar sin
     alcaldía ni folio. Si sale, se queda en el punto del sitio. Apareció al cambiar el orden de las capas,
     porque la demostración elige colonias por su posición.
+
+- **D278. Sin código muerto en la aplicación (bloque 198).**
+  08-10-2026. Liber pidió una auditoría de limpieza antes de entregar: código que nada usa, comentarios y
+  etiquetas de pruebas con historia, nombres de archivo y documentación. Sin subagentes, como manda la regla
+  del proyecto; `servidor/` queda para después de la fase 2, que lo reescribe.
+  · Se buscó lo que nada usa en todo el proyecto a la vez (JS, HTML, CSS, pruebas y herramientas), también
+    con nombres armados al vuelo, con un analizador de JS, eslint (variables locales, código inalcanzable) y
+    pyflakes. Se quitaron nueve funciones y propiedades sin uso, una variable local y dos imports de Python.
+    Las 467 clases de la hoja se usan; no había archivos sin cargar ni nombrados por su historia.
+  · Las etiquetas de las pruebas dicen sólo qué comprueban: sin «ya no» cuando habla de algo que se quitó del
+    sistema, y sin claves de auditoría (A5, B8, M16…). Las reglas del folio (R1 a R8) se quedan: el código
+    también las nombra.
+  · La documentación técnica nombra la fuente vigente del catálogo de especies y los cinco archivos de `js/`
+    que faltaban en el README.

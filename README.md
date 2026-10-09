@@ -151,6 +151,10 @@ js/                     La aplicación, un archivo por tema
   filtros.js            Zona de filtros de Fotografías: buscar, periodo, listas dependientes, fichas
   galeria.js            Sección Fotografías: rejilla, foto grande, descarga y ZIP
   catalogos.js, usuarios.js                     Administración de catálogos y cuentas
+  configuracion.js      Configuración (Administración global): una tarjeta por apartado, parámetros y registro de cambios
+  especies-revision.js  Especies escritas en «Otra especie», para revisarlas (desde Catálogos › Especies)
+  carga.js, excel.js    Carga masiva de árboles anteriores desde Excel o CSV, y lectura y escritura de .xlsx
+  solicitud.js          Jornadas del programa «Solicitud»: quién lo solicita y de qué se trata
   mapa.js, foto.js, iconos.js, util.js, app.js  Mapa, fotografía, iconos, utilidades y arranque
   datos-ficticios.js    Cuentas y catálogos de arranque de la versión de prueba
   demostracion.js       Datos de demostración del pie (sólo versión de prueba; se retira al cerrar la Etapa 1)
@@ -222,8 +226,8 @@ falla si alguna pide más de ocho, o más de cuatro a la vista.
 arranque. El dispositivo guarda el sello con el que cargó los datos de ejemplo; si no coincide y
 **no hay nada capturado** (árboles, jornadas o bitácora), los vuelve a cargar y lo avisa. Si hay
 capturas, **no se borra nada**: en la Etapa 1 el teléfono es la única copia. Por eso un
-cambio en la forma de los datos ya no se resuelve con el sello, sino con una migración numerada
-en `js/almacen.js` que traslada lo guardado antes de retirar nada.
+cambio en la forma de los datos se resuelve con una migración numerada en `js/almacen.js`, que
+traslada lo guardado antes de retirar nada, y no con el sello.
 
 ## El reporte de la jornada
 
@@ -276,7 +280,7 @@ capas se declaran en `CAPAS`, dentro de `js/config.js`; cambiar de proveedor es 
 y el dominio en la política de seguridad de `index.html`. Cada mapa —captura, jornada, ficha de
 revisión y detalle— muestra el crédito de cada capa tal como lo declara su servicio y «Powered by
 Esri»; el croquis del PDF lo lleva al pie. La licencia y el token de Esri están pendientes
-de confirmar antes de operar (pendiente de la auditoría integral).
+de confirmar antes de operar.
 
 ## Sin señal
 

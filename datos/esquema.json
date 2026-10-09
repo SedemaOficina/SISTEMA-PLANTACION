@@ -221,8 +221,8 @@
       "fuente": "assets/capas/capa-colonias.js (IECM 2022, versión iecm-2022; definitiva)"
     },
     "id_especie": {
-      "valores": "`ESP-0000`, consecutivo del SIA; hoy ESP-0001…ESP-0076 y las altas continúan en ESP-0077",
-      "fuente": "assets/catalogos/catalogo-especies.js (CGO_ESPECIES_REFORESTACION_URBANA, 22-09-2026)"
+      "valores": "`ESP-0000`, consecutivo del SIA; hoy ESP-0001…ESP-0079 y las altas continúan en ESP-0080",
+      "fuente": "assets/catalogos/catalogo-especies.js (16._Registro_plantaciones_catalogos_05_10_2026.xlsx)"
     }
   },
   "tablas": {
@@ -1353,7 +1353,7 @@
           "origen": "Persona",
           "dominio": "Texto libre, hasta 200; '' si no se escribe",
           "pantalla": "Dirección de la jornada",
-          "regla": "Calle y número, entre calles o tramo (antes dirección, parque o referencia); la etiqueta pasó a «Dirección de la jornada». Va al reporte bajo el nombre de la jornada"
+          "regla": "Calle y número, entre calles o tramo, en «Dirección de la jornada». Va al reporte bajo el nombre de la jornada"
         },
         {
           "campo": "programa_id",
@@ -1650,7 +1650,7 @@
           "origen": "Catálogo",
           "dominio": "Copia de vehiculos.modelo del vehículo elegido; '' sin vehículo",
           "pantalla": "(se ve en la ficha bajo la lista de vehículos)",
-          "regla": "Se copia del catálogo al guardar el cierre; ya no se escribe a mano. La migración 4 quita lo escrito a mano y el campo `vehiculo` de versiones anteriores"
+          "regla": "Se copia del catálogo al guardar el cierre; no se escribe a mano. La migración 4 quita lo escrito a mano y el campo `vehiculo` de versiones anteriores"
         },
         {
           "campo": "vehiculo_placa",
@@ -1659,7 +1659,7 @@
           "origen": "Catálogo",
           "dominio": "Copia de vehiculos.nombre (la placa) del vehículo elegido; '' sin vehículo",
           "pantalla": "Vehículo (lista de placas)",
-          "regla": "Se copia del catálogo al guardar el cierre; ya no se escribe a mano"
+          "regla": "Se copia del catálogo al guardar el cierre; no se escribe a mano"
         },
         {
           "campo": "vehiculo_tipo",
@@ -1668,7 +1668,7 @@
           "origen": "Catálogo",
           "dominio": "Copia de vehiculos.tipo_vehiculo del vehículo elegido; '' sin vehículo",
           "pantalla": "(se ve en la ficha bajo la lista de vehículos)",
-          "regla": "Se copia del catálogo al guardar el cierre; ya no se escribe a mano"
+          "regla": "Se copia del catálogo al guardar el cierre; no se escribe a mano"
         },
         {
           "campo": "vehiculo_id",
@@ -2433,25 +2433,25 @@
       "id": "S-15",
       "que": "Jornada íntegra y alcance por institución",
       "detalle": "El servidor entrega a quien tiene una jornada a su cargo (titular, cabo en relevo y coordinación) todos sus árboles activos, los haya capturado quien los haya capturado: el reporte, la conciliación y el avance de la jornada se calculan con todos. Los permisos de edición y eliminación siguen siendo por árbol. El alcance se decide por la institución de la jornada (jornadas.organizacion_id), no por la institución o la coordinación actual de quien capturó: al cambiar una cuenta de institución o de coordinación, lo que plantó para la anterior no pasa a la nueva. Un cabo que recibió un relevo y ya devolvió la jornada conserva la lectura, no la edición: editar, cerrar, reabrir y generar el reporte corresponden al titular, al cabo con el relevo vigente y a la coordinación",
-      "referencia": "Auditoría integral del 02-10-2026; FASE2-Y-TRASPASO"
+      "referencia": "FASE2-Y-TRASPASO"
     },
     {
       "id": "S-16",
       "que": "Escrituras parciales y folio inmutable",
       "detalle": "Cada operación modifica sólo los campos que le corresponden sobre el registro vigente en el servidor, nunca sobrescribe el registro completo con la copia que tenía el teléfono: cerrar una jornada no borra las marcas de revisión hechas entre tanto y editar o eliminar un árbol no toca su folio. El folio se asigna una sola vez; ninguna operación posterior lo cambia ni lo anula. El servidor rechaza una escritura hecha sobre una versión anterior del registro y devuelve la vigente",
-      "referencia": "Auditoría integral del 02-10-2026; FASE2-Y-TRASPASO"
+      "referencia": "FASE2-Y-TRASPASO"
     },
     {
       "id": "S-17",
       "que": "Árboles eliminados y registro de cambios",
       "detalle": "El servidor ofrece la consulta de árboles y jornadas eliminados dentro del alcance de la cuenta, con su historial, y permite restaurarlos a quien puede eliminarlos. El registro de cambios incluye árboles y jornadas además de cuentas, catálogos y cargas, y guarda de cada cambio el valor anterior y el nuevo, la cuenta, la fecha y hora y el identificador del dispositivo. La eliminación pide un motivo",
-      "referencia": "Auditoría integral del 02-10-2026; FASE2-Y-TRASPASO"
+      "referencia": "FASE2-Y-TRASPASO"
     },
     {
       "id": "S-18",
       "que": "Cola de envío por operación",
       "detalle": "La cola del teléfono envía cada operación, no sólo los árboles activos: altas, ediciones, eliminaciones, restauraciones, sustituciones, jornadas, cierres, reaperturas y relevos. El indicador de pendientes cuenta todas. La cola simulada de la Etapa 1 (js/envio.js) sólo considera árboles activos y sirve de referencia para los estados y avisos, no para el alcance",
-      "referencia": "Auditoría integral del 02-10-2026; FASE2-Y-TRASPASO"
+      "referencia": "FASE2-Y-TRASPASO"
     }
   ],
   "capas": [
@@ -2485,8 +2485,8 @@
     },
     {
       "capa": "catálogo de especies",
-      "archivo": "assets/catalogos/catalogo-especies.js (fuente originales/CGO_ESPECIES_REFORESTACION_URBANA_2026-09-22.xlsx)",
-      "version": "2026-09-22",
+      "archivo": "assets/catalogos/catalogo-especies.js (fuente originales/16._Registro_plantaciones_catalogos_05_10_2026.xlsx)",
+      "version": "2026-10-05",
       "alimenta": "especies",
       "estado": "Definitivo"
     }

@@ -55,7 +55,7 @@ SRP.util = {
   fechaEnJornada(fecha, j) { return !j || !j.fecha ? fecha : (fecha && fecha >= j.fecha ? fecha : j.fecha); },
 
   /* El atajo «Hoy» lleva la fecha con el año en dos cifras: 24-SEP-26. En el teléfono el
-     chip mide un tercio de la pantalla y «24-SEP-2026» se partía en dos renglones. Un solo lugar
+     chip mide un tercio de la pantalla y «24-SEP-2026» se partiría en dos renglones. Un solo lugar
      para las tres vistas que lo usan (Registros, Jornadas y Fotografías). */
   pintarChipHoy(el) {
     const [a, m, d] = this.fechaHoy().split('-');
@@ -145,9 +145,6 @@ SRP.util = {
     });
     return salida;
   },
-
-  // El tipo de institución de una institución, o vacío
-  tipoDe(orgId) { return (SRP.ref.catalogoPorId[orgId] || {}).tipo_organizacion || ''; },
 
   /* Una lista de opciones a partir de valores, en orden alfabético o en el de `comparar` (sobre los
      valores). El valor elegido se queda aunque ya no tenga resultados con los demás filtros (`etiqueta`
