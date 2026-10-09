@@ -18,7 +18,7 @@ with sync_playwright() as p:
       if pg.is_visible('#btn-cuenta'): pg.click('#btn-cuenta'); pg.click('#btn-cambiar-perfil'); pg.wait_for_timeout(300)
       pg.select_option('#sel-usuario-prueba', quien); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(500)
       pg.evaluate(f"SRP.app.mostrarVista('{vista}')"); pg.wait_for_timeout(500)
-      # Nuevo registro pide iniciar una jornada (D119): se inicia para revisar el formulario con su mapa
+      # Nuevo registro pide iniciar una jornada: se inicia para revisar el formulario con su mapa
       if vista=='registrar' and pg.is_visible('#panel-iniciar-jornada'):
         pg.fill('#ini-nombre','Jornada de revisión'); pg.select_option('#ini-programa','p-refor'); pg.fill('#ini-meta','10'); pg.click('#btn-ini-hoy'); pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(600)
       # Jornadas se revisa con una jornada abierta: es la pantalla con mapa, conciliación y lista
@@ -45,7 +45,7 @@ with sync_playwright() as p:
       # alto del mapa
       if vista=='registrar':
         h=pg.evaluate("document.getElementById('mapa').getBoundingClientRect().height")
-        # En computadora el mapa va en su propia columna y puede crecer hasta 520 px (D109)
+        # En computadora el mapa va en su propia columna y puede crecer hasta 520 px
         tope = 530 if int(ancho/escala) >= 1024 else 430
         if h>tope or h<255: problemas.append(f"{nombre}: mapa mide {h:.0f}px")
       # Reglas que otra más específica puede estar anulando sin avisar

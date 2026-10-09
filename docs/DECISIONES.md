@@ -3170,3 +3170,17 @@
     herramientas— se dejaron como están. La única excepción es el encabezado que `generar_diccionario.py` escribe en
     `js/esquema.js`, que tenía que cambiar igual que el de `esquema.js` para que se regenere idéntico.
   · Los comentarios nuevos se escriben así: en presente y sin números de decisión ni de bloque.
+
+- **D276. Sin historia ni nombres también en textos, datos y documentos de entrega (bloque 196).**
+  08-10-2026. Liber pidió completar la limpieza de D275: también los textos que son código y todo lo que nombra a
+  Liber o a Claude fuera de `docs/`.
+  · Sin números de decisión, de mejora ni de bloque, y sin nombres: las descripciones del espejo de campos, los textos
+    de las pruebas y de las auditorías, `datos/esquema.json` (y lo que sale de él: `js/esquema.js`,
+    `datos/DICCIONARIO-DATOS.md` y `servidor/sql/02_tablas.sql`), `datos/MAPEO-CAMPOS.md`, `README.md`, las
+    herramientas, los encabezados de las capas y del catálogo de especies, y `.gitignore`. La columna «referencia» de
+    las reglas que esperan al servidor apunta ahora a un archivo o a FASE2-Y-TRASPASO, no a una decisión.
+  · Se quedan los identificadores que son código: las reglas (`R-D01`, `S-05`…), las comprobaciones de la auditoría de
+    la hoja (`D1`, `D2`, `D3`) y la etiqueta de la versión en el pie («Bloque N»), que sirve para saber qué versión
+    tiene el teléfono.
+  · `docs/` (DECISIONES, BITACORA, MEJORAS, revisiones y traspaso) se queda como está: es la historia del proyecto.
+    Liber lo eligió sabiendo que el repositorio es público.

@@ -3854,3 +3854,30 @@ probó en un teléfono real (no hacía falta: no cambió el código).
 
 **Siguiente paso.** Las respuestas del SIA (esquema, `territorio`, cuentas, marco de las pantallas) y la fase 3 del
 servidor: permisos por perfil e institución, edición y lista de cuentas, y conectar el módulo Usuarios.
+
+## Bloque 196 — Sin historia ni nombres también en textos, datos y documentos de entrega (08-10-2026)
+
+Versión 0.9.55. Liber pidió completar la limpieza: también los textos que son código y todo lo que dice «Liber» o
+«Claude».
+
+**Qué cambió (D276).** Fuera de `docs/` ya no hay números de decisión, de mejora ni de bloque, ni nombres. Una pasada
+automática quitó 685 referencias entre paréntesis: descripciones del espejo de campos (`js/espejo.js`), el comentario
+que `js/app.js` deja en la página, los textos de `pruebas/prueba.py`, `pruebas/auditoria.py` y `pruebas/revisar.py`,
+`datos/esquema.json`, `datos/MAPEO-CAMPOS.md`, `README.md`, las herramientas, los encabezados de las capas y del
+catálogo de especies, y `.gitignore`. A mano: 33 frases que contaban la historia o nombraban a Liber, y 21 títulos y
+comentarios de sección en las pruebas. Se regeneraron `js/esquema.js`, `datos/DICCIONARIO-DATOS.md` y
+`servidor/sql/02_tablas.sql`. Liber eligió dejar `docs/` como está.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada. Sólo cambian las descripciones del espejo de campos de la versión de
+prueba, que ya no llevan números de decisión.
+
+**Verificación.** La pasada automática confundió `pg22.goto(B22)` y `pg63.goto(B63)` (seis llamadas en
+`pruebas/prueba.py`) con referencias de bloque y las rompió; la primera corrida completa lo detectó (2 fallas y se
+detuvo). Se restauraron y se comparó cada `.py` cambiado contra la versión anterior, token por token sin contar
+textos ni comentarios: idénticos. En JS sólo cambiaron textos. `pruebas/prueba.py` completa, sola: 1,425
+comprobaciones, 0 fallas, sin errores de consola (otra vez algunas conexiones cortadas en el servidor de prueba, sin
+efecto). `pruebas/auditoria.py`: 143 comprobaciones, 0 hallazgos; `pruebas/auditoria_css.py`: 0 hallazgos;
+`servidor`, `npm test`: 21 de 21. La base local del servidor conserva los comentarios de columna anteriores hasta que
+se reinstale; no se probó en un teléfono real.
+
+**Siguiente paso.** Las respuestas del SIA y la fase 3 del servidor.

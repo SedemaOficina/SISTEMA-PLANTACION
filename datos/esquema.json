@@ -1,5 +1,5 @@
 {
-  "_": "ESQUEMA DE DATOS DEL SRP: fuente única (D86). De aquí se genera DICCIONARIO-DATOS.md con herramientas/generar_diccionario.py, y pruebas/auditoria.py lo compara contra lo que el sistema guarda y contra los dominios del código. Si un campo cambia en el código y no aquí, la auditoría falla.",
+  "_": "ESQUEMA DE DATOS DEL SRP: fuente única. De aquí se genera DICCIONARIO-DATOS.md con herramientas/generar_diccionario.py, y pruebas/auditoria.py lo compara contra lo que el sistema guarda y contra los dominios del código. Si un campo cambia en el código y no aquí, la auditoría falla.",
   "version_esquema": "2026-10-04",
   "etapa": "Etapa 1 (Fase 1: dispositivo, sin servidor)",
   "almacenamiento": {
@@ -19,32 +19,32 @@
     "otros": [
       {
         "donde": "localStorage `srp_sesion_usuario_id`",
-        "que": "id de la cuenta con sesión abierta; el dispositivo queda fijo a esa cuenta (D06)",
+        "que": "id de la cuenta con sesión abierta; el dispositivo queda fijo a esa cuenta",
         "fase2": "Lo sustituye el proveedor de identidad institucional; sólo cambia `autenticar()` en js/sesion.js"
       },
       {
         "donde": "localStorage `srp_sello_datos`",
-        "que": "sello de las cuentas y catálogos de ejemplo cargados en este teléfono (SRP.CONFIG.SELLO_DATOS); si no coincide y no hay nada capturado, se vuelven a cargar; si hay capturas, se conserva todo (D149)",
+        "que": "sello de las cuentas y catálogos de ejemplo cargados en este teléfono (SRP.CONFIG.SELLO_DATOS); si no coincide y no hay nada capturado, se vuelven a cargar; si hay capturas, se conserva todo",
         "fase2": "Desaparece con ES_FICTICIO"
       },
       {
         "donde": "localStorage `srp_contraste`",
-        "que": "preferencia del modo sol (contraste alto) de este teléfono (D106)",
+        "que": "preferencia del modo sol (contraste alto) de este teléfono",
         "fase2": "Se conserva"
       },
       {
         "donde": "localStorage `srp_secuencias_folio_prueba`",
-        "que": "consecutivos del servidor simulado de folios, por celda (D110); por dispositivo",
+        "que": "consecutivos del servidor simulado de folios, por celda; por dispositivo",
         "fase2": "Desaparece: el consecutivo vive en el servidor"
       },
       {
         "donde": "localStorage `srp_envios_prueba`",
-        "que": "estado del envío simulado: ids de registros recibidos con su hora (D111)",
+        "que": "estado del envío simulado: ids de registros recibidos con su hora",
         "fase2": "Desaparece: lo sustituye la cola de envío real"
       },
       {
         "donde": "localStorage `srp_sin_senal_prueba`",
-        "que": "«Simular sin señal» de las herramientas de prueba (D111)",
+        "que": "«Simular sin señal» de las herramientas de prueba",
         "fase2": "Desaparece con ES_FICTICIO"
       },
       {
@@ -72,7 +72,7 @@
     "Sesión": "Se toma de la cuenta con sesión abierta",
     "Servidor": "Lo asignará el servidor en Fase 2; en Fase 1 nace nulo",
     "SIA": "Viene del archivo fuente del SIA (catálogo de especies, capas)",
-    "Jornada": "Se toma de la jornada en que está el árbol y cambia con ella (D119, D151)",
+    "Jornada": "Se toma de la jornada en que está el árbol y cambia con ella",
     "Dispositivo": "Lo toma el teléfono al detectar la ubicación, o se captura a mano"
   },
   "dominios": {
@@ -93,7 +93,7 @@
         "OTRO"
       ],
       "codigo": "SRP.CONFIG.MOTIVOS_SUSTITUCION.map(m => m[0])",
-      "fuente": "js/config.js MOTIVOS_SUSTITUCION (D203)"
+      "fuente": "js/config.js MOTIVOS_SUSTITUCION"
     },
     "estatus_jornada": {
       "valores": [
@@ -119,7 +119,7 @@
         "DIRECTIVO",
         "ADMIN"
       ],
-      "fuente": "js/permisos.js SRP.PERFILES (Consulta/VIEWER retirado en D87; DIRECTIVO, de sólo lectura, desde D224)",
+      "fuente": "js/permisos.js SRP.PERFILES (DIRECTIVO es de sólo lectura)",
       "codigo": "Object.keys(SRP.PERFILES)"
     },
     "tipo_catalogo": {
@@ -196,7 +196,7 @@
         "DESACTIVADO",
         "FOLIO_ASIGNADO"
       ],
-      "fuente": "llamadas a SRP.bitacora.entrada() en formulario, registros, jornadas, catalogos, usuarios, reportes y folio (servidor simulado, D110)"
+      "fuente": "llamadas a SRP.bitacora.entrada() en formulario, registros, jornadas, catalogos, usuarios, reportes y folio (servidor simulado)"
     },
     "entidad_bitacora": {
       "valores": [
@@ -227,7 +227,7 @@
   },
   "tablas": {
     "plantaciones": {
-      "que_es": "Un renglón por ejemplar plantado. Es el registro individual de campo; todo lo demás (partes, tableros, cifra pública) se construye encima (D38).",
+      "que_es": "Un renglón por ejemplar plantado. Es el registro individual de campo; todo lo demás (partes, tableros, cifra pública) se construye encima.",
       "llave": "id",
       "indices": [
         "estatus",
@@ -251,7 +251,7 @@
           "origen": "Sistema",
           "dominio": "estatus_plantacion",
           "pantalla": "No (los eliminados y sustituidos no se listan)",
-          "regla": "Nace `activo`; «Eliminar» lo marca `eliminado`, nunca borra (D11, Norma 7.4). Un registro eliminado sigue contando en el uso de catálogos y cuentas. «Sustituir» lo marca `sustituido` al guardar su sustituto (D203): deja de contar como plantado y conserva su historial"
+          "regla": "Nace `activo`; «Eliminar» lo marca `eliminado`, nunca borra (Norma 7.4). Un registro eliminado sigue contando en el uso de catálogos y cuentas. «Sustituir» lo marca `sustituido` al guardar su sustituto: deja de contar como plantado y conserva su historial"
         },
         {
           "campo": "cabo_id",
@@ -296,16 +296,16 @@
           "origen": "Sistema",
           "dominio": "Metros, entero; null salvo con GPS",
           "pantalla": "«Cómo se obtuvo» (±N m)",
-          "regla": "Existe si y sólo si punto_origen = gps: al mover el punto a mano se borra. La auditoría lo comprueba. En Fase 2 alimenta la regla de duplicados (D69)"
+          "regla": "Existe si y sólo si punto_origen = gps: al mover el punto a mano se borra. La auditoría lo comprueba. En Fase 2 alimenta la regla de duplicados"
         },
         {
           "campo": "folio",
           "tipo": "char(13)",
           "nulo": true,
           "origen": "Servidor",
-          "dominio": "`AAA-000-00000` (SRP.folio.PATRON): clave de la celda UGA y consecutivo de la celda; UNIQUE. AAA es el prefijo de la celda, no la alcaldía del árbol (difieren en el 4.3 % del territorio, D152)",
+          "dominio": "`AAA-000-00000` (SRP.folio.PATRON): clave de la celda UGA y consecutivo de la celda; UNIQUE. AAA es el prefijo de la celda, no la alcaldía del árbol (difieren en el 4.3 % del territorio)",
           "pantalla": "«Folio»: PROVISIONAL mientras sea nulo (R1)",
-          "regla": "Con datos reales, nulo en toda la Fase 1: lo asigna el servidor una sola vez al sincronizar (R3), es inmutable (R7) y no lleva la especie ni el año (D67). El consecutivo sale de una secuencia perpetua por celda, nunca de MAX+1 (R5–R6). Con datos de prueba lo llena el servidor simulado (D110), marcado «(simulado)» en pantalla y en cada renglón del PDF; su secuencia vive en cada teléfono y dos teléfonos pueden repetir números. Sin alcaldía o con capas incompletas no se emite (D152)"
+          "regla": "Con datos reales, nulo en toda la Fase 1: lo asigna el servidor una sola vez al sincronizar (R3), es inmutable (R7) y no lleva la especie ni el año. El consecutivo sale de una secuencia perpetua por celda, nunca de MAX+1 (R5–R6). Con datos de prueba lo llena el servidor simulado, marcado «(simulado)» en pantalla y en cada renglón del PDF; su secuencia vive en cada teléfono y dos teléfonos pueden repetir números. Sin alcaldía o con capas incompletas no se emite"
         },
         {
           "campo": "especie_id",
@@ -314,7 +314,7 @@
           "origen": "Catálogo",
           "dominio": "→ especies.id (id_especie ESP-0000)",
           "pantalla": "Especie (autocompletado por nombre común, científico y otros nombres)",
-          "regla": "Obligatoria salvo con «Otra especie», donde queda nula. El registro guarda sólo la clave; género, epíteto, distribución, forma de crecimiento, id_snib e id_enciclovida se obtienen del catálogo (D84)"
+          "regla": "Obligatoria salvo con «Otra especie», donde queda nula. El registro guarda sólo la clave; género, epíteto, distribución, forma de crecimiento, id_snib e id_enciclovida se obtienen del catálogo"
         },
         {
           "campo": "especie_otra",
@@ -341,7 +341,7 @@
           "origen": "Capa",
           "dominio": "Nombre de la alcaldía según la capa",
           "pantalla": "Alcaldía (sólo lectura); «Sin alcaldía (territorio pendiente)» si es nula",
-          "regla": "Copia del nombre para leerse sin cargar la capa. Se rederiva cada vez que el punto se mueve; se puede rederivar en lote si la capa cambia (capa_version). Un punto dentro del margen del límite toma la alcaldía más cercana (D152)"
+          "regla": "Copia del nombre para leerse sin cargar la capa. Se rederiva cada vez que el punto se mueve; se puede rederivar en lote si la capa cambia (capa_version). Un punto dentro del margen del límite toma la alcaldía más cercana"
         },
         {
           "campo": "colonia_cve",
@@ -350,7 +350,7 @@
           "origen": "Capa",
           "dominio": "colonia_cve",
           "pantalla": "No",
-          "regla": "Nula fuera de la zona urbana (suelo de conservación): no es defecto (D62). En solape gana la colonia más pequeña"
+          "regla": "Nula fuera de la zona urbana (suelo de conservación): no es defecto. En solape gana la colonia más pequeña"
         },
         {
           "campo": "colonia",
@@ -358,7 +358,7 @@
           "nulo": true,
           "origen": "Capa",
           "dominio": "Nombre como viene en la capa, mayúsculas y tipo entre paréntesis",
-          "pantalla": "Colonia (sólo lectura): «Sin colonia en la capa» si es nula (D152)",
+          "pantalla": "Colonia (sólo lectura): «Sin colonia en la capa» si es nula",
           "regla": "Capa definitiva (IECM 2022): las colonias del IECM son la unidad oficial de reporte"
         },
         {
@@ -377,7 +377,7 @@
           "origen": "Capa",
           "dominio": "Metros enteros ≥ 0; nulo sin celda",
           "pantalla": "Detalle › Datos del sistema («A N m del borde de la celda»); «Celda incierta» junto al folio si es menor que la precisión del GPS",
-          "regla": "Distancia del punto al borde de su celda UGA, al derivar (D152). Si es menor que gps_precision_m, la celda del folio podría ser la vecina: la pantalla lo dice y el servidor la confirma en la Fase 2"
+          "regla": "Distancia del punto al borde de su celda UGA, al derivar. Si es menor que gps_precision_m, la celda del folio podría ser la vecina: la pantalla lo dice y el servidor la confirma en la Fase 2"
         },
         {
           "campo": "capa_version",
@@ -385,7 +385,7 @@
           "nulo": true,
           "origen": "Capa",
           "dominio": "`alcaldias=v;uga=v;colonias=v`",
-          "pantalla": "Detalle › Datos del sistema («Capas») y pie del PDF (D152)",
+          "pantalla": "Detalle › Datos del sistema («Capas») y pie del PDF",
           "regla": "Con qué versión de cada capa se derivó; permite rehacer alcaldia/colonia/uga cuando el SIA entregue las capas definitivas"
         },
         {
@@ -395,7 +395,7 @@
           "origen": "Jornada",
           "dominio": "→ programas.id",
           "pantalla": "Ficha de revisión y detalle («Programa», el de la jornada); no se edita por árbol",
-          "regla": "Es el de su jornada (D151): se toma al registrar, cambia cuando cambia el de la jornada —también en los eliminados, en la misma transacción— y al mover el árbol toma el de su jornada nueva"
+          "regla": "Es el de su jornada: se toma al registrar, cambia cuando cambia el de la jornada —también en los eliminados, en la misma transacción— y al mover el árbol toma el de su jornada nueva"
         },
         {
           "campo": "fecha_plantacion",
@@ -413,7 +413,7 @@
           "origen": "Sistema",
           "dominio": "→ jornadas.id",
           "pantalla": "Jornada (ficha de revisión y detalle)",
-          "regla": "La jornada activa al registrar (D119). Cambia sólo con «Mover a otra jornada» en Jornadas, que también ajusta fecha_plantacion y programa_id (D151)"
+          "regla": "La jornada activa al registrar. Cambia sólo con «Mover a otra jornada» en Jornadas, que también ajusta fecha_plantacion y programa_id"
         },
         {
           "campo": "sustituye_id",
@@ -422,7 +422,7 @@
           "origen": "Sistema",
           "dominio": "→ plantaciones.id",
           "pantalla": "Detalle («Sustituye a») y marca «Sustituto» en tarjeta, ficha y mapa (punto morado)",
-          "regla": "Sólo en el árbol que reemplaza a uno perdido (D203); nulo en los demás. Se registra en la jornada del árbol perdido"
+          "regla": "Sólo en el árbol que reemplaza a uno perdido; nulo en los demás. Se registra en la jornada del árbol perdido"
         },
         {
           "campo": "motivo_sustitucion",
@@ -431,7 +431,7 @@
           "origen": "Persona",
           "dominio": "motivo_sustitucion",
           "pantalla": "Ventana «Sustituir árbol» (obligatorio); detalle («Motivo de la sustitución»)",
-          "regla": "Obligatorio en un sustituto; nulo en los demás (D203)"
+          "regla": "Obligatorio en un sustituto; nulo en los demás"
         },
         {
           "campo": "motivo_sustitucion_otro",
@@ -440,7 +440,7 @@
           "origen": "Persona",
           "dominio": "Texto libre ≤ 120; '' salvo con motivo OTRO",
           "pantalla": "«Escriba el motivo», sólo con «Otro»",
-          "regla": "Obligatorio cuando motivo_sustitucion es OTRO (D203)"
+          "regla": "Obligatorio cuando motivo_sustitucion es OTRO"
         },
         {
           "campo": "sustituido_por_id",
@@ -449,7 +449,7 @@
           "origen": "Sistema",
           "dominio": "→ plantaciones.id",
           "pantalla": "Detalle («Sustituido por»)",
-          "regla": "Sólo en el árbol perdido, junto con estatus `sustituido` (D203). Si se elimina el sustituto, vuelve a nulo y el árbol a `activo`"
+          "regla": "Sólo en el árbol perdido, junto con estatus `sustituido`. Si se elimina el sustituto, vuelve a nulo y el árbol a `activo`"
         },
         {
           "campo": "comentarios",
@@ -458,7 +458,7 @@
           "origen": "Persona",
           "dominio": "Texto libre ≤ 500; '' si no se escribe",
           "pantalla": "Comentarios (opcional)",
-          "regla": "Reincorporado en D50. Entra al reporte PDF en «Comentarios por ejemplar», al final, sólo los árboles que lo tienen (D164). Registros anteriores a D50 no traen la llave y se leen como «Sin comentarios»"
+          "regla": "Entra al reporte PDF en «Comentarios por ejemplar», al final, sólo los árboles que lo tienen. Un registro sin la llave se lee como «Sin comentarios»"
         },
         {
           "campo": "foto_base64",
@@ -547,7 +547,7 @@
           "origen": "Catálogo",
           "dominio": "→ instituciones.id",
           "pantalla": "Tipo de institución e Institución",
-          "regla": "La institución de la cuenta. En el alta se elige primero el tipo (Alcaldía, Gobierno de la CDMX, Empresa privada, Organización civil) y luego la institución de la lista; las que falten las agrega la Administración en Catálogos › Instituciones, a solicitud. Sólo SEDEMA (o-sedema) tiene área y ADMIN; las cuentas de fuera son CABO o COORDINADOR, y el cabo depende de un coordinador de su misma institución (D192). Al abrir, las cuentas sin institución quedan en SEDEMA"
+          "regla": "La institución de la cuenta. En el alta se elige primero el tipo (Alcaldía, Gobierno de la CDMX, Empresa privada, Organización civil) y luego la institución de la lista; las que falten las agrega la Administración en Catálogos › Instituciones, a solicitud. Sólo SEDEMA (o-sedema) tiene área y ADMIN; las cuentas de fuera son CABO o COORDINADOR, y el cabo depende de un coordinador de su misma institución. Al abrir, las cuentas sin institución quedan en SEDEMA"
         },
         {
           "campo": "area_id",
@@ -574,7 +574,7 @@
           "origen": "Persona",
           "dominio": "perfil",
           "pantalla": "Perfil de captura",
-          "regla": "Decide alcance y acciones. Una cuenta de administración no puede quitarse a sí misma el perfil ADMIN. Un perfil desconocido queda sin permisos y se avisa (D87). ADMIN sólo en SEDEMA; fuera, CABO, COORDINADOR o DIRECTIVO (D192, D224)"
+          "regla": "Decide alcance y acciones. Una cuenta de administración no puede quitarse a sí misma el perfil ADMIN. Un perfil desconocido queda sin permisos y se avisa. ADMIN sólo en SEDEMA; fuera, CABO, COORDINADOR o DIRECTIVO"
         },
         {
           "campo": "coordinadores_ids",
@@ -633,7 +633,7 @@
       ]
     },
     "programas": {
-      "que_es": "Los programas de plantación. La jornada elige uno y sus árboles lo toman (D151). Cada programa dice qué tipos de institución, además de la Secretaría, pueden usarlo (D193).",
+      "que_es": "Los programas de plantación. La jornada elige uno y sus árboles lo toman. Cada programa dice qué tipos de institución, además de la Secretaría, pueden usarlo.",
       "llave": "id",
       "indices": [],
       "pantalla": "Catálogos › Programas (sólo Administración global); se elige en Iniciar jornada",
@@ -672,7 +672,7 @@
           "origen": "Persona",
           "dominio": "true/false",
           "pantalla": "Estado",
-          "regla": "Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina (D08)"
+          "regla": "Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina"
         },
         {
           "campo": "creado_por_id",
@@ -717,7 +717,7 @@
           "origen": "Persona",
           "dominio": "Lista de tipo_organizacion; [] = sólo SEDEMA",
           "pantalla": "Quién puede usarlo (Catálogos › Programas)",
-          "regla": "Los tipos de institución que, además de SEDEMA, pueden elegir el programa al iniciar o editar una jornada; SEDEMA puede usar todos. Lo marca la Administración (D193). Un programa nuevo empieza vacío. De arranque: Reforestación Urbana, Alcaldía, Gobierno de la CDMX y Organización civil; Palmeras, Empresa privada; Centro Histórico y Compensaciones, vacío. Al abrir, un programa sin el dato recibe el de arranque o, si lo agregó la Administración, vacío"
+          "regla": "Los tipos de institución que, además de SEDEMA, pueden elegir el programa al iniciar o editar una jornada; SEDEMA puede usar todos. Lo marca la Administración. Un programa nuevo empieza vacío. De arranque: Reforestación Urbana, Alcaldía, Gobierno de la CDMX y Organización civil; Palmeras, Empresa privada; Centro Histórico y Compensaciones, vacío. Al abrir, un programa sin el dato recibe el de arranque o, si lo agregó la Administración, vacío"
         }
       ]
     },
@@ -761,7 +761,7 @@
           "origen": "Persona",
           "dominio": "true/false",
           "pantalla": "Estado",
-          "regla": "Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina (D08)"
+          "regla": "Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina"
         },
         {
           "campo": "creado_por_id",
@@ -802,7 +802,7 @@
       ]
     },
     "especies": {
-      "que_es": "El catálogo de especies: el real del SIA (D84), 79 de arranque, más las que agregue la Administración. Lleva los datos taxonómicos, si pertenece a la paleta vegetal de la Secretaría, si su fruto es comestible y las llaves externas al SNIB y a EncicloVida.",
+      "que_es": "El catálogo de especies: el real del SIA, 79 de arranque, más las que agregue la Administración. Lleva los datos taxonómicos, si pertenece a la paleta vegetal de la Secretaría, si su fruto es comestible y las llaves externas al SNIB y a EncicloVida.",
       "llave": "id",
       "indices": [],
       "pantalla": "Catálogos › Especies (sólo Administración global); se elige en Nuevo registro",
@@ -841,7 +841,7 @@
           "origen": "Persona",
           "dominio": "true/false",
           "pantalla": "Estado",
-          "regla": "Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina (D08)"
+          "regla": "Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina"
         },
         {
           "campo": "creado_por_id",
@@ -954,7 +954,7 @@
       ]
     },
     "vehiculos": {
-      "que_es": "Los vehículos de las cuadrillas (D162). Se eligen en el cierre de la jornada, que copia placa, modelo y tipo. En la versión de prueba llevan placas ficticias; los reales se cargan en el servidor.",
+      "que_es": "Los vehículos de las cuadrillas. Se eligen en el cierre de la jornada, que copia placa, modelo y tipo. En la versión de prueba llevan placas ficticias; los reales se cargan en el servidor.",
       "llave": "id",
       "indices": [],
       "pantalla": "Catálogos › Vehículos (sólo Administración global); se elige en el cierre de la jornada",
@@ -975,7 +975,7 @@
           "origen": "Sistema",
           "dominio": "La placa sin espacios ni guiones; única",
           "pantalla": "No",
-          "regla": "Sale de la placa al darlo de alta y no se muestra; dos placas que sólo difieren en espacios son la misma (D162)"
+          "regla": "Sale de la placa al darlo de alta y no se muestra; dos placas que sólo difieren en espacios son la misma"
         },
         {
           "campo": "nombre",
@@ -984,7 +984,7 @@
           "origen": "Persona",
           "dominio": "Texto, único",
           "pantalla": "Placa",
-          "regla": "Es la placa, en mayúsculas: «PRU 005» (D162). Se copia a jornadas.vehiculo_placa"
+          "regla": "Es la placa, en mayúsculas: «PRU 005». Se copia a jornadas.vehiculo_placa"
         },
         {
           "campo": "activo",
@@ -993,7 +993,7 @@
           "origen": "Persona",
           "dominio": "true/false",
           "pantalla": "Estado",
-          "regla": "Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina (D08)"
+          "regla": "Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina"
         },
         {
           "campo": "creado_por_id",
@@ -1038,7 +1038,7 @@
           "origen": "Persona",
           "dominio": "Texto, inicial mayúscula: «Dodge», «Internacional»",
           "pantalla": "Modelo",
-          "regla": "Obligatorio. Se copia a jornadas.vehiculo_modelo al elegir la placa en el cierre (D162)"
+          "regla": "Obligatorio. Se copia a jornadas.vehiculo_modelo al elegir la placa en el cierre"
         },
         {
           "campo": "tipo_vehiculo",
@@ -1047,12 +1047,12 @@
           "origen": "Persona",
           "dominio": "Texto, inicial mayúscula: Pipa · Pick up · Doble cabina · Estacas · Redilas · Grúa; se proponen los que ya hay",
           "pantalla": "Tipo",
-          "regla": "Obligatorio. Agrupa la lista de placas del cierre y se copia a jornadas.vehiculo_tipo (D162)"
+          "regla": "Obligatorio. Agrupa la lista de placas del cierre y se copia a jornadas.vehiculo_tipo"
         }
       ]
     },
     "instituciones": {
-      "que_es": "Las instituciones que ejecutan plantaciones y tienen cuentas: la Secretaría, las 16 alcaldías, otras dependencias, empresas y organizaciones civiles (D186). De ellas depende el alcance de un directivo de fuera de la Secretaría (D224).",
+      "que_es": "Las instituciones que ejecutan plantaciones y tienen cuentas: la Secretaría, las 16 alcaldías, otras dependencias, empresas y organizaciones civiles. De ellas depende el alcance de un directivo de fuera de la Secretaría.",
       "llave": "id",
       "indices": [],
       "pantalla": "Catálogos › Instituciones (sólo Administración global); se elige en Usuarios",
@@ -1091,7 +1091,7 @@
           "origen": "Persona",
           "dominio": "true/false",
           "pantalla": "Estado",
-          "regla": "Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina (D08)"
+          "regla": "Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina"
         },
         {
           "campo": "creado_por_id",
@@ -1141,7 +1141,7 @@
       ]
     },
     "solicitantes": {
-      "que_es": "Quién solicita una jornada (D217, D229). No son quienes plantan ni tienen cuentas: por eso van aparte de las instituciones.",
+      "que_es": "Quién solicita una jornada. No son quienes plantan ni tienen cuentas: por eso van aparte de las instituciones.",
       "llave": "id",
       "indices": [],
       "pantalla": "Catálogos › Solicitantes (sólo Administración global); se elige en Iniciar jornada › Quién lo solicita",
@@ -1180,7 +1180,7 @@
           "origen": "Persona",
           "dominio": "true/false",
           "pantalla": "Estado",
-          "regla": "Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina (D08)"
+          "regla": "Inactivo deja de ofrecerse; los registros que ya lo usan no cambian. Con uso no se elimina"
         },
         {
           "campo": "creado_por_id",
@@ -1230,7 +1230,7 @@
       ]
     },
     "bitacora": {
-      "que_es": "Quién, cuándo y qué, en cada alta, edición, eliminación, activación y desactivación (Norma 7.7, D10). Sólo se escribe; se lee en el historial del detalle de cada registro.",
+      "que_es": "Quién, cuándo y qué, en cada alta, edición, eliminación, activación y desactivación (Norma 7.7). Sólo se escribe; se lee en el historial del detalle de cada registro.",
       "llave": "id",
       "indices": [
         "entidad_id"
@@ -1321,7 +1321,7 @@
       ]
     },
     "jornadas": {
-      "que_es": "Una jornada de plantación: se declara antes de registrar el primer árbol (D119). Agrupa los registros, lleva la conciliación y la revisión, y guarda los datos de cierre del reporte (antes en la tabla cierres, retirada en el bloque 62).",
+      "que_es": "Una jornada de plantación: se declara antes de registrar el primer árbol. Agrupa los registros, lleva la conciliación y la revisión, y guarda los datos de cierre del reporte.",
       "llave": "id",
       "indices": [
         "cabo_id"
@@ -1344,7 +1344,7 @@
           "origen": "Persona",
           "dominio": "Texto libre, hasta 120",
           "pantalla": "Nombre de la jornada",
-          "regla": "Obligatorio al iniciar: el parque, la calle o el sitio. Es el nombre de la tarjeta en Jornadas y el «Jornada:» del reporte (D119)"
+          "regla": "Obligatorio al iniciar: el parque, la calle o el sitio. Es el nombre de la tarjeta en Jornadas y el «Jornada:» del reporte"
         },
         {
           "campo": "ubicacion",
@@ -1353,7 +1353,7 @@
           "origen": "Persona",
           "dominio": "Texto libre, hasta 200; '' si no se escribe",
           "pantalla": "Dirección de la jornada",
-          "regla": "Calle y número, entre calles o tramo (D165; antes dirección, parque o referencia, D120); la etiqueta pasó a «Dirección de la jornada» (D143). Va al reporte bajo el nombre de la jornada"
+          "regla": "Calle y número, entre calles o tramo (antes dirección, parque o referencia); la etiqueta pasó a «Dirección de la jornada». Va al reporte bajo el nombre de la jornada"
         },
         {
           "campo": "programa_id",
@@ -1362,7 +1362,7 @@
           "origen": "Persona",
           "dominio": "→ programas.id",
           "pantalla": "Programa (Iniciar jornada)",
-          "regla": "Obligatorio al iniciar (D130). Sus árboles lo toman siempre (D151): al registrar, al cambiarlo aquí y al moverlos a esta jornada. SEDEMA elige todos; las demás instituciones, los que tienen marcado su tipo en programas.tipos_organizacion (D193). Con un solo programa posible viene ya elegido. El programa «Solicitud» (id p-solicitud) marca la jornada que atiende una solicitud de otra instancia: con él se piden quién lo solicita y la descripción (D229). Es un valor del catálogo: la Administración puede renombrarlo o desactivarlo; el sistema lo reconoce por su id"
+          "regla": "Obligatorio al iniciar. Sus árboles lo toman siempre: al registrar, al cambiarlo aquí y al moverlos a esta jornada. SEDEMA elige todos; las demás instituciones, los que tienen marcado su tipo en programas.tipos_organizacion. Con un solo programa posible viene ya elegido. El programa «Solicitud» (id p-solicitud) marca la jornada que atiende una solicitud de otra instancia: con él se piden quién lo solicita y la descripción. Es un valor del catálogo: la Administración puede renombrarlo o desactivarlo; el sistema lo reconoce por su id"
         },
         {
           "campo": "lat",
@@ -1371,7 +1371,7 @@
           "origen": "Dispositivo",
           "dominio": "Grados decimales WGS84, 6 decimales; nulo sin ubicación",
           "pantalla": "Detectar ubicación de la jornada, o «Capturar coordenadas a mano»",
-          "regla": "Latitud del punto de la jornada: detectado con el GPS al iniciar (D122) o escrito a mano cuando no hubo señal (D143). No es la de ningún árbol"
+          "regla": "Latitud del punto de la jornada: detectado con el GPS al iniciar o escrito a mano cuando no hubo señal. No es la de ningún árbol"
         },
         {
           "campo": "lng",
@@ -1380,7 +1380,7 @@
           "origen": "Dispositivo",
           "dominio": "Grados decimales WGS84, 6 decimales; nulo sin ubicación; siempre negativa",
           "pantalla": "Detectar ubicación de la jornada, o «Capturar coordenadas a mano»",
-          "regla": "Longitud del punto de la jornada (D122, D143)"
+          "regla": "Longitud del punto de la jornada"
         },
         {
           "campo": "punto_origen",
@@ -1389,7 +1389,7 @@
           "origen": "Sistema",
           "dominio": "'gps' o 'manual'; nulo sin ubicación",
           "pantalla": "(nota bajo el botón)",
-          "regla": "Cómo se obtuvo el punto de la jornada: con «Detectar ubicación» (gps) o escribiendo las coordenadas cuando no hubo señal en el sitio (manual) (D143). Lo determina la acción, no una elección"
+          "regla": "Cómo se obtuvo el punto de la jornada: con «Detectar ubicación» (gps) o escribiendo las coordenadas cuando no hubo señal en el sitio (manual). Lo determina la acción, no una elección"
         },
         {
           "campo": "gps_precision_m",
@@ -1398,7 +1398,7 @@
           "origen": "Dispositivo",
           "dominio": "Metros enteros; nulo sin detección o con el punto escrito a mano",
           "pantalla": "(nota bajo el botón)",
-          "regla": "Margen del GPS al detectar (D122). Existe sólo si punto_origen es gps"
+          "regla": "Margen del GPS al detectar. Existe sólo si punto_origen es gps"
         },
         {
           "campo": "alcaldia_cve",
@@ -1407,7 +1407,7 @@
           "origen": "Sistema",
           "dominio": "cvegeo INEGI (09012); nulo sin detección o en hueco",
           "pantalla": "—",
-          "regla": "Derivada de la capa de alcaldías con el punto detectado (D122)"
+          "regla": "Derivada de la capa de alcaldías con el punto detectado"
         },
         {
           "campo": "alcaldia",
@@ -1416,7 +1416,7 @@
           "origen": "Sistema",
           "dominio": "Nombre de la alcaldía; nulo sin detección",
           "pantalla": "Alcaldía",
-          "regla": "Va a la franja de la jornada, a Jornadas y al reporte (D122). No sustituye a la alcaldía de cada árbol"
+          "regla": "Va a la franja de la jornada, a Jornadas y al reporte. No sustituye a la alcaldía de cada árbol"
         },
         {
           "campo": "colonia_cve",
@@ -1425,7 +1425,7 @@
           "origen": "Sistema",
           "dominio": "CVEUT IECM; nulo sin detección o donde la capa no tiene colonia",
           "pantalla": "—",
-          "regla": "Derivada de la capa de colonias con el punto detectado (D122)"
+          "regla": "Derivada de la capa de colonias con el punto detectado"
         },
         {
           "campo": "colonia",
@@ -1434,7 +1434,7 @@
           "origen": "Sistema",
           "dominio": "Nombre de la colonia; nulo sin detección",
           "pantalla": "Colonia",
-          "regla": "Va a la franja, a Jornadas y al reporte (D122)"
+          "regla": "Va a la franja, a Jornadas y al reporte"
         },
         {
           "campo": "fecha",
@@ -1452,7 +1452,7 @@
           "origen": "Persona",
           "dominio": "Texto libre, hasta 500; '' si no se escribe",
           "pantalla": "Comentarios",
-          "regla": "Van al reporte como «Comentarios de la jornada» (D119)"
+          "regla": "Van al reporte como «Comentarios de la jornada»"
         },
         {
           "campo": "cabo_id",
@@ -1479,7 +1479,7 @@
           "origen": "Sistema",
           "dominio": "estatus_jornada",
           "pantalla": "Franja de la jornada; Jornadas",
-          "regla": "Se cierra desde la franja o la revisión; se reabre desde la revisión o con «Registrar árbol» (D119, D153)"
+          "regla": "Se cierra desde la franja o la revisión; se reabre desde la revisión o con «Registrar árbol»"
         },
         {
           "campo": "fecha_inicio",
@@ -1506,7 +1506,7 @@
           "origen": "Sesión",
           "dominio": "→ usuarios.id",
           "pantalla": "Encargado",
-          "regla": "Para un cabo es él mismo (no se pregunta ni se muestra en el cierre; el reporte lo imprime); quien ve a varias personas lo elige sólo entre los cabos con registros ese día (D57)"
+          "regla": "Para un cabo es él mismo (no se pregunta ni se muestra en el cierre; el reporte lo imprime); quien ve a varias personas lo elige sólo entre los cabos con registros ese día"
         },
         {
           "campo": "relevo_id",
@@ -1587,7 +1587,7 @@
           "origen": "Persona",
           "dominio": "→ plantaciones.id; [] si nadie ha revisado",
           "pantalla": "Jornadas → «Está bien» en un punto con aviso",
-          "regla": "Puntos con aviso (duplicado, lejos, precisión) que alguien confirmó como correctos (D112); el aviso deja de contarse, no se borra. Al mover un árbol a otra jornada su marca sale de ésta (D151)"
+          "regla": "Puntos con aviso (duplicado, lejos, precisión) que alguien confirmó como correctos; el aviso deja de contarse, no se borra. Al mover un árbol a otra jornada su marca sale de ésta"
         },
         {
           "campo": "reporte_en",
@@ -1605,7 +1605,7 @@
           "origen": "Sistema",
           "dominio": "UUID v4 del lote de carga masiva; nulo en las jornadas iniciadas en campo",
           "pantalla": "No se muestra; el nombre de la jornada dice «Carga histórica»",
-          "regla": "Lo pone la carga masiva de Configuración (D196): todas las jornadas de un mismo archivo llevan la misma clave, que también es el entidad_id del renglón «carga» de la bitácora. Una jornada con carga_id no se cuenta como «sin reporte» en Supervisión"
+          "regla": "Lo pone la carga masiva de Configuración: todas las jornadas de un mismo archivo llevan la misma clave, que también es el entidad_id del renglón «carga» de la bitácora. Una jornada con carga_id no se cuenta como «sin reporte» en Supervisión"
         },
         {
           "campo": "personal",
@@ -1614,7 +1614,7 @@
           "origen": "Persona",
           "dominio": "Texto libre",
           "pantalla": "Personal participante",
-          "regla": "Sólo en jornadas de SEDEMA; en las de otras instituciones no se pide y queda vacío (D192)"
+          "regla": "Sólo en jornadas de SEDEMA; en las de otras instituciones no se pide y queda vacío"
         },
         {
           "campo": "apoyo",
@@ -1623,7 +1623,7 @@
           "origen": "Persona",
           "dominio": "Texto libre, varias líneas",
           "pantalla": "Personal de apoyo",
-          "regla": "Sólo en jornadas de SEDEMA; en las de otras instituciones no se pide y queda vacío (D192)"
+          "regla": "Sólo en jornadas de SEDEMA; en las de otras instituciones no se pide y queda vacío"
         },
         {
           "campo": "observaciones",
@@ -1650,7 +1650,7 @@
           "origen": "Catálogo",
           "dominio": "Copia de vehiculos.modelo del vehículo elegido; '' sin vehículo",
           "pantalla": "(se ve en la ficha bajo la lista de vehículos)",
-          "regla": "Se copia del catálogo al guardar el cierre (D162); ya no se escribe a mano (D174). La migración 4 quitó lo escrito a mano y el `vehiculo` de antes del bloque 20"
+          "regla": "Se copia del catálogo al guardar el cierre; ya no se escribe a mano. La migración 4 quita lo escrito a mano y el campo `vehiculo` de versiones anteriores"
         },
         {
           "campo": "vehiculo_placa",
@@ -1659,7 +1659,7 @@
           "origen": "Catálogo",
           "dominio": "Copia de vehiculos.nombre (la placa) del vehículo elegido; '' sin vehículo",
           "pantalla": "Vehículo (lista de placas)",
-          "regla": "Se copia del catálogo al guardar el cierre (D162); ya no se escribe a mano (D174)"
+          "regla": "Se copia del catálogo al guardar el cierre; ya no se escribe a mano"
         },
         {
           "campo": "vehiculo_tipo",
@@ -1668,7 +1668,7 @@
           "origen": "Catálogo",
           "dominio": "Copia de vehiculos.tipo_vehiculo del vehículo elegido; '' sin vehículo",
           "pantalla": "(se ve en la ficha bajo la lista de vehículos)",
-          "regla": "Se copia del catálogo al guardar el cierre (D162); ya no se escribe a mano (D174)"
+          "regla": "Se copia del catálogo al guardar el cierre; ya no se escribe a mano"
         },
         {
           "campo": "vehiculo_id",
@@ -1677,7 +1677,7 @@
           "origen": "Persona",
           "dominio": "→ vehiculos.id",
           "pantalla": "Vehículo (lista de placas o botones de los más usados)",
-          "regla": "El vehículo del catálogo; nulo sin vehículo. Con él se cuentan los que más usa cada encargado (D162). Sólo del catálogo: sin «Otro vehículo» (D174)"
+          "regla": "El vehículo del catálogo; nulo sin vehículo. Con él se cuentan los que más usa cada encargado. Sólo del catálogo: sin «Otro vehículo»"
         },
         {
           "campo": "hora",
@@ -1714,7 +1714,7 @@
       "de": "plantaciones.programa_id",
       "a": "programas.id",
       "cardinalidad": "N:1",
-      "regla": "Obligatoria; siempre la de su jornada (D151)"
+      "regla": "Obligatoria; siempre la de su jornada"
     },
     {
       "de": "plantaciones.alcaldia_cve / colonia_cve / uga",
@@ -1750,19 +1750,19 @@
       "de": "jornadas.cabo_id / encargado_id / relevo_id / editado_por_id",
       "a": "usuarios.id",
       "cardinalidad": "N:1",
-      "regla": "cabo_id es el titular, quien inició la jornada (D119); relevo_id, el cabo que registra en su lugar tras un relevo"
+      "regla": "cabo_id es el titular, quien inició la jornada; relevo_id, el cabo que registra en su lugar tras un relevo"
     },
     {
       "de": "plantaciones.jornada_id",
       "a": "jornadas.id",
       "cardinalidad": "N:1",
-      "regla": "Cada árbol nace en la jornada activa y toma su fecha y su programa (D119, D151); «Mover a otra jornada» la cambia. Una jornada que tiene árboles, aun eliminados, no se borra"
+      "regla": "Cada árbol nace en la jornada activa y toma su fecha y su programa; «Mover a otra jornada» la cambia. Una jornada que tiene árboles, aun eliminados, no se borra"
     },
     {
       "de": "jornadas.programa_id",
       "a": "programas.id",
       "cardinalidad": "N:1",
-      "regla": "Obligatoria; sus árboles la toman (D151)"
+      "regla": "Obligatoria; sus árboles la toman"
     },
     {
       "de": "jornadas.puntos_revisados",
@@ -1786,7 +1786,7 @@
       "de": "jornadas.vehiculo_id",
       "a": "vehiculos.id",
       "cardinalidad": "N:1",
-      "regla": "Opcional. La jornada guarda además una copia de placa, modelo y tipo: el reporte no cambia si después se corrige el catálogo (D162)"
+      "regla": "Opcional. La jornada guarda además una copia de placa, modelo y tipo: el reporte no cambia si después se corrige el catálogo"
     },
     {
       "de": "usuarios.organizacion_id",
@@ -1810,7 +1810,7 @@
       "de": "plantaciones.sustituye_id / sustituido_por_id",
       "a": "plantaciones.id",
       "cardinalidad": "1:1",
-      "regla": "Un árbol perdido tiene a lo más un sustituto y el sustituto apunta a él; los dos se escriben en la misma operación (D203)"
+      "regla": "Un árbol perdido tiene a lo más un sustituto y el sustituto apunta a él; los dos se escriben en la misma operación"
     }
   ],
   "derivados": [
@@ -1914,10 +1914,10 @@
     {
       "que": "El PDF del parte del día",
       "de": "jornada + sus plantaciones; no se guarda el archivo, se regenera",
-      "donde": "Reporte de la jornada (D58, D70)"
+      "donde": "Reporte de la jornada"
     },
     {
-      "que": "Prioridad de reforestación de la jornada: la de la colonia donde se ubicó (Muy alta a Muy baja, o sin dato). Una jornada sin ubicación toma el nivel donde cayó la mayoría de sus árboles; en empate, el más alto. No hay prioridad por árbol (D233)",
+      "que": "Prioridad de reforestación de la jornada: la de la colonia donde se ubicó (Muy alta a Muy baja, o sin dato). Una jornada sin ubicación toma el nivel donde cayó la mayoría de sus árboles; en empate, el más alto. No hay prioridad por árbol",
       "de": "El punto del árbol contra la capa de colonias prioritarias (SRP.prioritarias.de); en un solape, el polígono más pequeño. La de la jornada, SRP.prioritarias.deJornada",
       "donde": "Iniciar jornada, Nuevo registro, lista y ficha de Jornadas (con filtro), reporte de la jornada (vista previa y PDF), Supervisión, informe PDF y CSV"
     }
@@ -2124,7 +2124,7 @@
     },
     {
       "campo": "jornadas.personal, apoyo",
-      "aparece": "Sólo en jornadas de SEDEMA (D192)",
+      "aparece": "Sólo en jornadas de SEDEMA",
       "se_vacia": "En jornadas de otras instituciones el cierre no los ofrece, quedan vacíos y el reporte no los imprime"
     },
     {
@@ -2142,7 +2142,7 @@
     {
       "id": "R-P01",
       "tabla": "plantaciones",
-      "regla": "Ubicación obligatoria (GPS, toque en el mapa o captura a mano) y dentro de la Ciudad de México: la unión de las alcaldías más MARGEN_AMBITO_M (100 m), no la caja de CONFIG.MAPA.LIMITES, que sólo es el primer filtro (D152). Al tocar el mapa se pide acercamiento ZOOM_TOQUE (17) o más",
+      "regla": "Ubicación obligatoria (GPS, toque en el mapa o captura a mano) y dentro de la Ciudad de México: la unión de las alcaldías más MARGEN_AMBITO_M (100 m), no la caja de CONFIG.MAPA.LIMITES, que sólo es el primer filtro. Al tocar el mapa se pide acercamiento ZOOM_TOQUE (17) o más",
       "donde": "js/derivacion.js dentroDelAmbito(); js/mapa.js colocar(), alTocar(); js/formulario.js validar()"
     },
     {
@@ -2154,7 +2154,7 @@
     {
       "id": "R-P03",
       "tabla": "plantaciones",
-      "regla": "El programa es el de la jornada (D151): no se elige por árbol. Al iniciar la jornada se elige entre los programas activos. SEDEMA elige todos; cada tipo de institución, los que tienen marcado su tipo en programas.tipos_organizacion, que la Administración cambia en Catálogos › Programas (D193)",
+      "regla": "El programa es el de la jornada: no se elige por árbol. Al iniciar la jornada se elige entre los programas activos. SEDEMA elige todos; cada tipo de institución, los que tienen marcado su tipo en programas.tipos_organizacion, que la Administración cambia en Catálogos › Programas",
       "donde": "js/formulario.js programaDeJornada(); js/jornada-activa.js iniciarJornada(); js/referencias.js programasPara()"
     },
     {
@@ -2178,7 +2178,7 @@
     {
       "id": "R-P07",
       "tabla": "plantaciones",
-      "regla": "Territorio (alcaldía, colonia, UGA, uga_borde_m, capa_version) se rederiva con cada movimiento del punto; nunca se teclea. Junto al límite, la alcaldía más cercana y un aviso; sin colonia se dice «Sin colonia en la capa». Si al editar el territorio cambia, la bitácora lo registra (D152)",
+      "regla": "Territorio (alcaldía, colonia, UGA, uga_borde_m, capa_version) se rederiva con cada movimiento del punto; nunca se teclea. Junto al límite, la alcaldía más cercana y un aviso; sin colonia se dice «Sin colonia en la capa». Si al editar el territorio cambia, la bitácora lo registra",
       "donde": "js/formulario.js alMoverPunto(), guardar(); js/derivacion.js"
     },
     {
@@ -2208,25 +2208,25 @@
     {
       "id": "R-P12",
       "tabla": "plantaciones",
-      "regla": "Folio y campos folio_* nacen nulos; con datos reales no se tocan en el dispositivo y la pantalla y el PDF dicen PROVISIONAL. Con datos de prueba los llena el servidor simulado (D110), sólo si el registro tiene alcaldía y las tres capas (D152)",
+      "regla": "Folio y campos folio_* nacen nulos; con datos reales no se tocan en el dispositivo y la pantalla y el PDF dicen PROVISIONAL. Con datos de prueba los llena el servidor simulado, sólo si el registro tiene alcaldía y las tres capas",
       "donde": "js/folio.js puedeEmitir(), emitirPendientes(); js/formulario.js registroPrevisto()"
     },
     {
       "id": "R-P13",
       "tabla": "plantaciones",
-      "regla": "El GPS se escucha hasta GPS_AFINAR_MS (8 s) y el punto queda con la lectura más precisa; se detiene al llegar a precisión buena, al revisar o guardar, o si la persona coloca el punto a mano (D152)",
+      "regla": "El GPS se escucha hasta GPS_AFINAR_MS (8 s) y el punto queda con la lectura más precisa; se detiene al llegar a precisión buena, al revisar o guardar, o si la persona coloca el punto a mano",
       "donde": "js/mapa.js ubicar(), detenerAfinado()"
     },
     {
       "id": "R-P14",
       "tabla": "plantaciones",
-      "regla": "La aplicación no abre sin las capas de alcaldías, UGA y colonias y la biblioteca del cruce (D152)",
+      "regla": "La aplicación no abre sin las capas de alcaldías, UGA y colonias y la biblioteca del cruce",
       "donde": "js/app.js comprobarVersionCompleta(); js/derivacion.js capasCompletas()"
     },
     {
       "id": "R-A01",
       "tabla": "todas",
-      "regla": "Alcance por perfil: CABO ve/edita/elimina los suyos; COORDINADOR registra, ve, edita y elimina los de sus cabos y los suyos (D155), y elimina jornadas vacías (D151); DIRECTIVO sólo ve y descarga (reportes ya generados, tablas y fotografías): en SEDEMA, todo; en otra institución, lo de la suya, por jornadas.organizacion_id y por la institución de quien capturó el árbol (D224); ADMIN todo, no captura. Un perfil desconocido no alcanza nada. Cada acción que escribe lo exige al empezar, no sólo esconde el botón (D151)",
+      "regla": "Alcance por perfil: CABO ve/edita/elimina los suyos; COORDINADOR registra, ve, edita y elimina los de sus cabos y los suyos, y elimina jornadas vacías; DIRECTIVO sólo ve y descarga (reportes ya generados, tablas y fotografías): en SEDEMA, todo; en otra institución, lo de la suya, por jornadas.organizacion_id y por la institución de quien capturó el árbol; ADMIN todo, no captura. Un perfil desconocido no alcanza nada. Cada acción que escribe lo exige al empezar, no sólo esconde el botón",
       "donde": "js/permisos.js PERFILES, ACCIONES, exigir() (fuente única); la interfaz sólo lo refleja"
     },
     {
@@ -2256,7 +2256,7 @@
     {
       "id": "R-U04",
       "tabla": "usuarios",
-      "regla": "Si otro renglón la nombra no se elimina: se desactiva (D151). Cuenta en todas las tablas: árboles (también eliminados), jornadas como cabo, encargado o quien la creó o editó, cabos que coordina y cuentas o catálogos que dio de alta o editó. Inactiva no puede entrar; sus registros siguen a su nombre",
+      "regla": "Si otro renglón la nombra no se elimina: se desactiva. Cuenta en todas las tablas: árboles (también eliminados), jornadas como cabo, encargado o quien la creó o editó, cabos que coordina y cuentas o catálogos que dio de alta o editó. Inactiva no puede entrar; sus registros siguen a su nombre",
       "donde": "js/referencias.js usosDe(); js/usuarios.js eliminar(), cambiarEstado(); js/sesion.js autenticar()"
     },
     {
@@ -2280,7 +2280,7 @@
     {
       "id": "R-C03",
       "tabla": "programas, areas, especies, vehiculos, instituciones, solicitantes",
-      "regla": "Con uso en cualquier tabla —árboles, también eliminados; jornadas; cuentas— no se elimina: se desactiva (D151). Inactivo deja de ofrecerse; lo ya guardado no cambia",
+      "regla": "Con uso en cualquier tabla —árboles, también eliminados; jornadas; cuentas— no se elimina: se desactiva. Inactivo deja de ofrecerse; lo ya guardado no cambia",
       "donde": "js/referencias.js usosDe(); js/catalogos.js eliminar(), cambiarEstado()"
     },
     {
@@ -2292,7 +2292,7 @@
     {
       "id": "R-C05",
       "tabla": "instituciones",
-      "regla": "Instituciones: cuatro tipos fijos. Sólo la Administración las agrega (a solicitud, en Catálogos › Instituciones: tipo —nunca Alcaldía— y nombre único; la clave la pone el sistema), las renombra y las desactiva (desactivar corta el acceso de sus cuentas); no se eliminan. Las 16 alcaldías son fijas y SEDEMA no se desactiva. De arranque: SEDEMA, PAOT, SOBSE (Gobierno de la CDMX), Green Cover (Empresa privada), Reforestamos México, A.C. (Organización civil) y las 16 alcaldías (id o-alc-<cvegeo>). Áreas de arranque: DGSANPAVA, Oficina de la Secretaría, Sistema de Información Ambiental y DGEIRA; en un teléfono con capturas, las cuentas del área retirada «Dirección de Infraestructura Verde» pasan a DGSANPAVA. Programas de arranque: Reforestación Urbana, Centro Histórico, Palmeras y Compensaciones; «Jornadas de voluntariado» se retiró (D192): en un teléfono con capturas se desactiva si alguna jornada o árbol lo usa, y si no, se quita",
+      "regla": "Instituciones: cuatro tipos fijos. Sólo la Administración las agrega (a solicitud, en Catálogos › Instituciones: tipo —nunca Alcaldía— y nombre único; la clave la pone el sistema), las renombra y las desactiva (desactivar corta el acceso de sus cuentas); no se eliminan. Las 16 alcaldías son fijas y SEDEMA no se desactiva. De arranque: SEDEMA, PAOT, SOBSE (Gobierno de la CDMX), Green Cover (Empresa privada), Reforestamos México, A.C. (Organización civil) y las 16 alcaldías (id o-alc-<cvegeo>). Áreas de arranque: DGSANPAVA, Oficina de la Secretaría, Sistema de Información Ambiental y DGEIRA; en un teléfono con capturas, las cuentas del área retirada «Dirección de Infraestructura Verde» pasan a DGSANPAVA. Programas de arranque: Reforestación Urbana, Centro Histórico, Palmeras y Compensaciones; «Jornadas de voluntariado» se retiró: en un teléfono con capturas se desactiva si alguna jornada o árbol lo usa, y si no, se quita",
       "donde": "js/catalogos.js esFija(), validar(), guardar(), cambiarEstado(); js/datos-ficticios.js; js/almacen.js completarCatalogos()"
     },
     {
@@ -2304,7 +2304,7 @@
     {
       "id": "R-J01",
       "tabla": "jornadas",
-      "regla": "Sólo se elimina sin ningún árbol, ni eliminado: los eliminados se conservan como constancia y siguen apuntando a ella. La eliminan quien la inició, su coordinador o administración (D132, D151)",
+      "regla": "Sólo se elimina sin ningún árbol, ni eliminado: los eliminados se conservan como constancia y siguen apuntando a ella. La eliminan quien la inició, su coordinador o administración",
       "donde": "js/jornadas.js eliminarJornada(), pintarDetalle()"
     },
     {
@@ -2328,7 +2328,7 @@
     {
       "id": "R-R01",
       "tabla": "jornadas",
-      "regla": "El reporte es de una jornada declarada: reúne las plantaciones activas con ese jornada_id; regenerar la misma jornada reabre sus datos de cierre (D119)",
+      "regla": "El reporte es de una jornada declarada: reúne las plantaciones activas con ese jornada_id; regenerar la misma jornada reabre sus datos de cierre",
       "donde": "js/reportes.js refrescarVista(), abrir(), cierreDeJornada()"
     },
     {
@@ -2340,13 +2340,13 @@
     {
       "id": "R-F01",
       "tabla": "plantaciones",
-      "regla": "Filtros de Registros: Hoy / Todos / Un periodo (Desde ≤ Hasta, entra con Aplicar), Año y Mes sólo con registros, Cabo según alcance; ningún control mueve el foco solo (D82)",
+      "regla": "Filtros de Registros: Hoy / Todos / Un periodo (Desde ≤ Hasta, entra con Aplicar), Año y Mes sólo con registros, Cabo según alcance; ningún control mueve el foco solo",
       "donde": "js/registros.js"
     },
     {
       "id": "R-D01",
       "tabla": "todas",
-      "regla": "Siembra: al abrir con sello distinto de CONFIG.SELLO_DATOS se vuelven a cargar cuentas y catálogos de ejemplo sólo si no hay nada capturado (árboles, jornadas o bitácora); si lo hay, se conserva todo. Una base a la que le falta un almacén, o de una versión posterior, se rehace conservando lo que tenía (D149; sólo con ES_FICTICIO)",
+      "regla": "Siembra: al abrir con sello distinto de CONFIG.SELLO_DATOS se vuelven a cargar cuentas y catálogos de ejemplo sólo si no hay nada capturado (árboles, jornadas o bitácora); si lo hay, se conserva todo. Una base a la que le falta un almacén, o de una versión posterior, se rehace conservando lo que tenía (sólo con ES_FICTICIO)",
       "donde": "js/almacen.js sembrarSiVacio(); js/config.js"
     }
   ],
@@ -2354,38 +2354,38 @@
     {
       "id": "S-01",
       "que": "Cola de envío",
-      "detalle": "Cada registro guardado queda en cola (guardado → enviado → con error); envío automático en segundo plano con señal, «Enviar ahora», y nada se borra del dispositivo hasta que el servidor confirme (qué se queda después, en S-11). Requiere dos campos nuevos en plantaciones: identificador del servidor y marca de envío (retirados en D17 por no tener uso todavía)",
-      "referencia": "DECISIONES, pendiente «Cola de envío al servidor»; D83"
+      "detalle": "Cada registro guardado queda en cola (guardado → enviado → con error); envío automático en segundo plano con señal, «Enviar ahora», y nada se borra del dispositivo hasta que el servidor confirme (qué se queda después, en S-11). Requiere dos campos nuevos en plantaciones: identificador del servidor y marca de envío (no existen todavía porque aún no tienen uso)",
+      "referencia": "DECISIONES, pendiente «Cola de envío al servidor»"
     },
     {
       "id": "S-02",
       "que": "Emisión del folio",
-      "detalle": "Tabla de secuencias por celda UGA, perpetua y monotónica (sin reinicio por ejercicio, administración ni versión); lectura e incremento atómicos, nunca MAX(folio)+1 ni COUNT+1; asignación en transacción con plantaciones.id como clave de idempotencia (R3–R6). Sólo con la malla UGA corregida, versionada y congelada. El servidor vuelve a derivar la celda con la coordenada recibida y no confía en la del teléfono; si el punto está más cerca del borde que su precisión (uga_borde_m), decide la celda con la regla que fije el SIA (D152). Al asignarlo, el servidor guarda congelados la celda UGA, la versión de capas y el punto con que lo asignó (R8): son columnas del servidor, no del teléfono.",
-      "referencia": "D67; js/folio.js; pendiente «Emisión del folio»"
+      "detalle": "Tabla de secuencias por celda UGA, perpetua y monotónica (sin reinicio por ejercicio, administración ni versión); lectura e incremento atómicos, nunca MAX(folio)+1 ni COUNT+1; asignación en transacción con plantaciones.id como clave de idempotencia (R3–R6). Sólo con la malla UGA corregida, versionada y congelada. El servidor vuelve a derivar la celda con la coordenada recibida y no confía en la del teléfono; si el punto está más cerca del borde que su precisión (uga_borde_m), decide la celda con la regla que fije el SIA. Al asignarlo, el servidor guarda congelados la celda UGA, la versión de capas y el punto con que lo asignó (R8): son columnas del servidor, no del teléfono.",
+      "referencia": "js/folio.js; pendiente «Emisión del folio»"
     },
     {
       "id": "S-03",
       "que": "Integridad referencial y unicidad en la base",
-      "detalle": "FK de todas las relaciones de arriba, que son las mismas con que el dispositivo cuenta el uso antes de eliminar (D151); UNIQUE en plantaciones.folio, usuarios.correo, clave y nombre de cada tabla de catálogo (programas, areas, especies, vehiculos, instituciones, solicitantes), especies.nombre_cientifico; CHECK de los dominios; la bitácora sin FK a propósito",
+      "detalle": "FK de todas las relaciones de arriba, que son las mismas con que el dispositivo cuenta el uso antes de eliminar; UNIQUE en plantaciones.folio, usuarios.correo, clave y nombre de cada tabla de catálogo (programas, areas, especies, vehiculos, instituciones, solicitantes), especies.nombre_cientifico; CHECK de los dominios; la bitácora sin FK a propósito",
       "referencia": "Esta tabla de relaciones"
     },
     {
       "id": "S-04",
       "que": "Permisos en el servidor",
-      "detalle": "Las reglas de js/permisos.js (PERFILES y ACCIONES, D151) se imponen en la API en cada operación (Norma 7.1); la pantalla sólo las refleja. Autenticación con el proveedor institucional: sólo cambia autenticar() en js/sesion.js",
-      "referencia": "js/permisos.js; D05"
+      "detalle": "Las reglas de js/permisos.js (PERFILES y ACCIONES) se imponen en la API en cada operación (Norma 7.1); la pantalla sólo las refleja. Autenticación con el proveedor institucional: sólo cambia autenticar() en js/sesion.js",
+      "referencia": "js/permisos.js"
     },
     {
       "id": "S-05",
       "que": "Posible duplicado",
       "detalle": "Aviso al sincronizar cuando otro registro cae a menos de la incertidumbre combinada de ambos puntos (suma de gps_precision_m, piso 4 m), en el servidor; nunca con 4 m fijos",
-      "referencia": "D69"
+      "referencia": "js/config.js, JORNADA.DUPLICADO_M; FASE2-Y-TRASPASO"
     },
     {
       "id": "S-06",
       "que": "Bandeja de especies fuera de catálogo",
       "detalle": "Donde el SIA resuelve cada «Otra especie» (especie_id nula y especie_otra escrita): alta en el catálogo (siguiente ESP-0000) o reasignación a una existente; al resolverse cambia especie_id, nunca el folio. Si la bandeja necesita estados propios (p. ej. rechazada), son del servidor",
-      "referencia": "D68"
+      "referencia": "Catálogos › Especies › Especies escritas; FASE2-Y-TRASPASO"
     },
     {
       "id": "S-07",
@@ -2415,19 +2415,19 @@
       "id": "S-12",
       "que": "Organizaciones externas",
       "detalle": "Alcaldías, PAOT, SOBSE, empresas y organizaciones civiles usan el sistema con cuentas de cabo que da de alta la Secretaría a solicitud. El servidor filtra por organizacion_id: una cuenta nunca recibe registros de otra institución. Carga en la base real el catálogo de instituciones de arranque (SEDEMA o-sedema, PAOT, SOBSE, Green Cover, Reforestamos México y las 16 alcaldías o-alc-<cvegeo>). Rechaza el acceso de cuentas cuya institución esté desactivada. Lo que plantan suma a las cifras de la Ciudad. Pendientes: acceso para cuentas externas (el proveedor institucional puede no cubrir a empresas ni organizaciones civiles), aviso de privacidad que cubra a su personal y convenio o carta responsiva por institución",
-      "referencia": "DECISIONES D186 a D189; FASE2-Y-TRASPASO"
+      "referencia": "FASE2-Y-TRASPASO"
     },
     {
       "id": "S-13",
       "que": "Jornada de varios días y relevo de cabo",
       "detalle": "El servidor acepta en una jornada abierta árboles de días posteriores a su fecha, con fecha_plantacion entre jornadas.fecha y la fecha de recepción, y sólo de quien la tiene a su cargo (relevo_id o, sin relevo, cabo_id); la sustitución, de quien tenga el árbol perdido en su alcance. Al hacer un relevo entrega la jornada abierta y sus árboles al teléfono del cabo que la recibe, y el teléfono del titular deja de poder registrar en ella. Rechaza un relevo que no venga de la coordinación del titular o hacia un cabo de otra cuadrilla o institución. Avisa del relevo a los dos cabos en su teléfono (al que recibe la jornada y al que deja de registrar en ella, y al titular cuando vuelve a él): hoy el aviso sale al entrar, en el equipo donde se hizo el relevo",
-      "referencia": "DECISIONES D204, D205; FASE2-Y-TRASPASO"
+      "referencia": "FASE2-Y-TRASPASO"
     },
     {
       "id": "S-14",
       "que": "Solicitud",
       "detalle": "El servidor valida lo mismo que el teléfono: una jornada del programa «Solicitud» lleva solicitante, del catálogo de solicitantes (solicitante_id) o escrito (solicitante_otro), y su descripción (solicitud_descripcion), obligatoria; una jornada de otro programa lleva los tres vacíos. No hay campo de origen: lo dice el programa. El solicitante no da acceso a la jornada",
-      "referencia": "D210, D217, D219"
+      "referencia": "js/solicitud.js"
     },
     {
       "id": "S-15",
@@ -2460,7 +2460,7 @@
       "archivo": "assets/capas/capa-alcaldias.js (fuente originales/alcaldias_cdmx.json, con metadato en originales/documentacion/)",
       "version": "sia-2026-01-01",
       "alimenta": "alcaldia_cve, alcaldia",
-      "estado": "Definitiva: 16 polígonos, sin solapes ni huecos (bloque 38)"
+      "estado": "Definitiva: 16 polígonos, sin solapes ni huecos"
     },
     {
       "capa": "malla UGA",
@@ -2474,21 +2474,21 @@
       "archivo": "assets/capas/capa-colonias.js (fuente originales/colonias_iecm2022.geojson)",
       "version": "iecm-2022",
       "alimenta": "colonia_cve, colonia",
-      "estado": "Definitiva desde el 28-09-2026: las colonias del IECM 2022 son la unidad oficial de reporte. Nueve geometrías se ajustan a la rejilla de seis decimales para que sigan válidas (D152). En el 1.25 % del territorio la colonia cruza el límite de su alcaldía; la alcaldía siempre sale de su propia capa"
+      "estado": "Definitiva desde el 28-09-2026: las colonias del IECM 2022 son la unidad oficial de reporte. Nueve geometrías se ajustan a la rejilla de seis decimales para que sigan válidas. En el 1.25 % del territorio la colonia cruza el límite de su alcaldía; la alcaldía siempre sale de su propia capa"
     },
     {
       "capa": "colonias prioritarias",
       "archivo": "assets/capas/capa-prioritarias.js (fuente originales/colonias_prioritarias_reforestacion.geojson)",
       "version": "priorizacion-2026-10-01",
       "alimenta": "Nada que se guarde: la prioridad de la jornada (escala al iniciarla, tarjeta, ficha y reporte), el polígono de su colonia en los mapas de campo y el indicador «Por prioridad de la colonia»",
-      "estado": "Capa de referencia del modelo de priorización (Liber, 01-10-2026): 2,243 colonias, prioridad 0 (Muy baja) a 4 (Muy alta). Se publican sólo colonia, alcaldía y prioridad. Sus colonias no son las unidades territoriales del IECM; polígonos simplificados (15 vértices en promedio) con 6.5 km² de solapes, donde gana el más pequeño; nueve geometrías ajustadas a la rejilla. Por confirmar con el SIA: versión oficial y geometría completa"
+      "estado": "Capa de referencia del modelo de priorización (entregada el 01-10-2026): 2,243 colonias, prioridad 0 (Muy baja) a 4 (Muy alta). Se publican sólo colonia, alcaldía y prioridad. Sus colonias no son las unidades territoriales del IECM; polígonos simplificados (15 vértices en promedio) con 6.5 km² de solapes, donde gana el más pequeño; nueve geometrías ajustadas a la rejilla. Por confirmar con el SIA: versión oficial y geometría completa"
     },
     {
       "capa": "catálogo de especies",
       "archivo": "assets/catalogos/catalogo-especies.js (fuente originales/CGO_ESPECIES_REFORESTACION_URBANA_2026-09-22.xlsx)",
       "version": "2026-09-22",
       "alimenta": "especies",
-      "estado": "Definitivo (D84)"
+      "estado": "Definitivo"
     }
   ]
 }

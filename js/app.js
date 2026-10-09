@@ -374,7 +374,7 @@ SRP.app = {
   campoClave(poner) {
     if (!poner && !this._campoClave) {
       const c = this.el('acceso-clave').closest('.campo');
-      this._marcaClave = document.createComment('campo de contraseña fuera mientras hay sesión (D108)');
+      this._marcaClave = document.createComment('campo de contraseña fuera mientras hay sesión');
       c.replaceWith(this._marcaClave);
       this._campoClave = c;
     } else if (poner && this._campoClave) {

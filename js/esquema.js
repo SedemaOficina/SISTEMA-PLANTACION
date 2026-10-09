@@ -204,7 +204,7 @@ SRP.ESQUEMA = {
     true,
     null,
     null,
-    "Colonia (sólo lectura): «Sin colonia en la capa» si es nula (D152)"
+    "Colonia (sólo lectura): «Sin colonia en la capa» si es nula"
    ],
    [
     "uga",
@@ -228,7 +228,7 @@ SRP.ESQUEMA = {
     true,
     null,
     null,
-    "Detalle › Datos del sistema («Capas») y pie del PDF (D152)"
+    "Detalle › Datos del sistema («Capas») y pie del PDF"
    ],
    [
     "programa_id",

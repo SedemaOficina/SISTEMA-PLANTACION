@@ -1,5 +1,5 @@
 /* CATÁLOGO DE ESPECIES. Generado por herramientas/generar_especies.py a partir de
-   originales/16._Registro_plantaciones_catalogos_05_10_2026.xlsx: no se edita a mano (D84). */
+   originales/16._Registro_plantaciones_catalogos_05_10_2026.xlsx: no se edita a mano. */
 window.SRP = window.SRP || {};
 SRP.CATALOGO_ESPECIES = {
  "meta": {

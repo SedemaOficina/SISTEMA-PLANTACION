@@ -26,7 +26,7 @@ for termino in ['Jefe de registradores', 'registrador', '`grupo`', 'cuatro almac
 _ids = re.findall(r'\sid="([^"]+)"', open(APP+'/index.html', encoding='utf-8').read())
 mirar(len(_ids) == len(set(_ids)), 'ningún id se repite en index.html', ', '.join(sorted({i for i in _ids if _ids.count(i) > 1})))
 
-# --- 1b. La hoja de estilos cumple su norma (M13, bloque 94b) ---
+# --- 1b. La hoja de estilos cumple su norma ---
 css = open(APP + '/css/estilos.css', encoding='utf-8').read()
 sin_com = re.sub(r'/\*.*?\*/', '', css, flags=re.S)
 i7 = sin_com.index('@media')   # la primera consulta abre la sección 7
@@ -161,12 +161,12 @@ with sync_playwright() as p:
       claves: SRP.CAPAS.alcaldias.geojson.features.map(f=>f.properties.clave).sort(),
       versiones: [SRP.CAPAS.alcaldias.meta.version, SRP.CAPAS.uga.meta.version, SRP.CAPAS.colonias.meta.version]
     })""")
-    # Los originales del SIA no se publican (D164): viven en originales/, fuera de git, en la raíz
+    # Los originales del SIA no se publican: viven en originales/, fuera de git, en la raíz
     raiz_app = '.' if os.path.exists('index.html') else '..'
-    mirar(not os.path.exists(os.path.join(raiz_app, 'assets', 'fuentes')), 'los archivos originales no están dentro del sitio publicado (D164)')
+    mirar(not os.path.exists(os.path.join(raiz_app, 'assets', 'fuentes')), 'los archivos originales no están dentro del sitio publicado')
     gi_ruta = os.path.join(raiz_app, '.gitignore')
     if os.path.exists(gi_ruta):
-        mirar('originales/' in open(gi_ruta, encoding='utf-8').read().split(), '.gitignore deja fuera la carpeta originales/ (D164)')
+        mirar('originales/' in open(gi_ruta, encoding='utf-8').read().split(), '.gitignore deja fuera la carpeta originales/')
     ruta_f = os.path.join(raiz_app, 'originales')
     if os.path.isdir(ruta_f):
         # La capa de alcaldías viene como GeoJSON por renglones (un Feature por línea)
@@ -180,7 +180,7 @@ with sync_playwright() as p:
         orig_c = sorted(f['properties']['CVEUT'] for f in _json.load(open(os.path.join(ruta_f, 'colonias_iecm2022.geojson'), encoding='utf-8'))['features'])
         mirar(capas['col'] == orig_c, 'la capa de colonias cargada trae las mismas 1,837 claves que el original del IECM')
     else:
-        print('AVISO: esta copia no tiene originales/; se omite la comparación de las capas contra los originales (D164)')
+        print('AVISO: esta copia no tiene originales/; se omite la comparación de las capas contra los originales')
     mirar(capas['prefijos'] == capas['claves'], 'cada prefijo de UGA es una alcaldía y cada alcaldía tiene UGAs', str(capas['prefijos']))
     mirar(all(v and 'fictic' not in v for v in capas['versiones']), 'ninguna capa cargada es ficticia', str(capas['versiones']))
     mirar(not r.get('capaVieja'), 'ninguna plantación se derivó con la capa ficticia', str(r.get('capaVieja')))
@@ -272,7 +272,7 @@ with sync_playwright() as p:
                         and not c.startswith('nombre_cientifico'))
     mirar(not inventados, 'y el mapeo no inventa campos que no existen', str(inventados))
 
-    # --- 5. datos/esquema.json: la fuente única del modelo de datos (D86) ---
+    # --- 5. datos/esquema.json: la fuente única del modelo de datos ---
     import json, sys
     esquema = json.load(open(os.path.join(APP, 'datos', 'esquema.json'), encoding='utf-8'))
     almacenes = pg.evaluate("SRP.almacen.ALMACENES")
@@ -334,14 +334,14 @@ with sync_playwright() as p:
     generado = generar_diccionario.generar(esquema)
     actual = open(os.path.join(APP, 'datos', 'DICCIONARIO-DATOS.md'), encoding='utf-8').read()
     mirar(generado == actual, 'DICCIONARIO-DATOS.md está regenerado a partir de esquema.json', 'corra herramientas/generar_diccionario.py')
-    # Y el esquema que lee el navegador (D150, D175)
+    # Y el esquema que lee el navegador
     js_actual = open(os.path.join(APP, 'js', 'esquema.js'), encoding='utf-8').read()
     mirar(generar_diccionario.generar_js(esquema) == js_actual, 'js/esquema.js está regenerado a partir de esquema.json (lo lee js/referencias.js)', 'corra herramientas/generar_diccionario.py')
     # Y las tablas del servidor, que son las mismas
     import subprocess as _sp, sys as _sys
     sql_al_dia = _sp.run([_sys.executable, os.path.join(APP, 'herramientas', 'generar_sql.py'), '--revisar'], capture_output=True).returncode == 0
     mirar(sql_al_dia, 'servidor/sql/02_tablas.sql está generado a partir de esquema.json: las tablas del servidor son las del teléfono', 'corra herramientas/generar_sql.py')
-    # Capas (D152): toda geometría válida después de redondear, o el cruce falla sin avisar
+    # Capas: toda geometría válida después de redondear, o el cruce falla sin avisar
     try:
         from shapely.geometry import shape as _forma
         invalidas = []
@@ -353,15 +353,15 @@ with sync_playwright() as p:
         mirar(not invalidas, 'las cuatro capas tienen todas sus geometrías válidas tras el redondeo', ', '.join(invalidas[:6]))
     except ImportError:
         mirar(False, 'shapely instalado para revisar las geometrías de las capas', 'pip install shapely')
-    # Créditos del mapa (D152): ningún mapa sin crédito
+    # Créditos del mapa: ningún mapa sin crédito
     sin_credito = [os.path.basename(f) for f in glob.glob(APP + '/js/*.js') if 'attributionControl: false' in open(f, encoding='utf-8').read()]
     mirar(not sin_credito, 'todos los mapas muestran el crédito del proveedor (ninguno con attributionControl: false)', ', '.join(sin_credito))
-    # Un nombre por acción (D153): las etiquetas retiradas no vuelven a aparecer en pantalla
+    # Un nombre por acción: las etiquetas retiradas no vuelven a aparecer en pantalla
     retiradas = ['Reiniciar filtros', 'Registrar un árbol', 'Ver registro', 'Registrar faltante', 'Datos de cierre del día']
     visibles = [open(os.path.join(APP, 'index.html'), encoding='utf-8').read()] + [re.sub(r'/\*.*?\*/|//[^\n]*', '', open(x, encoding='utf-8').read(), flags=re.S) for x in glob.glob(APP + '/js/*.js')]
     quedan = [t for t in retiradas if any(t in v for v in visibles)]
     mirar(not quedan, 'una etiqueta por acción: no quedan «Reiniciar filtros», «Ver registro», «Registrar faltante» ni «Datos de cierre del día»', ', '.join(quedan))
-    # Política de seguridad (D150): nada en línea que la política vaya a bloquear en el teléfono
+    # Política de seguridad: nada en línea que la política vaya a bloquear en el teléfono
     en_linea = []
     html = re.sub(r'<!--.*?-->', '', open(os.path.join(APP, 'index.html'), encoding='utf-8').read(), flags=re.S)
     if re.search(r'<script(?![^>]*\bsrc=)[^>]*>', html): en_linea.append('index.html: <script> sin src')
@@ -371,8 +371,8 @@ with sync_playwright() as p:
         for m in re.finditer(r'''\s(style|on[a-z]+)=["'\\]''', txt):
             en_linea.append('%s: %s=' % (f, m.group(1)))
     mirar(not en_linea, 'ningún estilo ni manejador en línea en la página ni en el HTML que arma el código (la política de seguridad los bloquearía)', ', '.join(en_linea[:6]))
-    # Folio (D67, 23-09-2026): 13 caracteres, sin prefijo de sistema ni año. No debe quedar rastro
-    # del formato de 22 caracteres fuera de la historia (BITACORA y la nota de sustitución de D67)
+    # Folio: 13 caracteres, sin prefijo de sistema ni año. No debe quedar rastro
+    # del formato de 22 caracteres fuera de la historia (BITACORA y DECISIONES)
     campo_folio = next(c for c in esquema['tablas']['plantaciones']['campos'] if c['campo'] == 'folio')
     mirar(campo_folio['tipo'] == 'char(13)' and 'UNIQUE' in campo_folio['dominio'], 'el folio mide 13 caracteres y es único en el esquema', campo_folio['tipo'])
     patron = pg.evaluate("[SRP.folio.PATRON.source, SRP.folio.LARGO, SRP.folio.armar('TLP-318', 1).length]")
@@ -383,13 +383,13 @@ with sync_playwright() as p:
         for marca in ('SRP-AAA-000-AAAA-00000', 'char(22)', 'SRP-TLP-', "'SRP-' +"):
             if marca in t: viejos.append(f + ': ' + marca)
     mirar(not viejos, 'no queda rastro del folio de 22 caracteres fuera de la bitácora', '; '.join(sorted(set(viejos))))
-    # Los árboles se plantan; «sembrar» es de agricultura (D114). Se revisa lo que ve la persona: pantalla,
+    # Los árboles se plantan; «sembrar» es de agricultura. Se revisa lo que ve la persona: pantalla,
     # reportes y esquema. Cargar los datos de arranque se sigue llamando sembrar en almacen.js: no habla de árboles
     prohibidos = []
     for f in ['index.html', 'datos/esquema.json', 'datos/MAPEO-CAMPOS.md', 'docs/MEJORAS.md', 'js/jornadas.js', 'js/reportes.js', 'js/registros.js', 'js/formulario.js', 'js/espejo.js', 'js/conexion.js', 'js/envio.js']:
         t = open(os.path.join(APP, f), encoding='utf-8').read()
         if re.search(r'\b(sembrad[oa]s?|sembr[oó]|sembraron|siembras?)\b', t.replace('sello con el que se sembró', '').replace('se siembran desde assets', '').replace('Siembra: al abrir con sello', '')): prohibidos.append(f)
-    mirar(not prohibidos, 'ningún texto de pantalla, reporte ni esquema dice «sembrar» de un árbol: se dice plantar (D114)', ', '.join(prohibidos))
+    mirar(not prohibidos, 'ningún texto de pantalla, reporte ni esquema dice «sembrar» de un árbol: se dice plantar', ', '.join(prohibidos))
     # Placas reales fuera del repositorio y del sitio: el catálogo de prueba lleva placas ficticias y la
     # lista real vive en originales/ (fuera de git). Se buscan en todo lo que se publica.
     placas = pg.evaluate("SRP.CATALOGO_VEHICULOS.vehiculos.map(v => v.nombre)")

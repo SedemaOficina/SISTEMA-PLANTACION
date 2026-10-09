@@ -1,6 +1,6 @@
 _to_delete/
 historial/
-# Archivos originales del SIA (capas, Excel de especies, iconografía): no se publican (D164)
+# Archivos originales del SIA (capas, Excel de especies, iconografía): no se publican
 originales/
 # Temporales de Python
 __pycache__/

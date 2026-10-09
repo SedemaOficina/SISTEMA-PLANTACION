@@ -124,7 +124,7 @@ def generar(d):
     p(tabla_md(['Qué', 'A partir de', 'Dónde se usa'],
                [(x['que'], x['de'], x['donde']) for x in d['calculados_no_guardados']]))
     p('')
-    p('### Indicadores de supervisión (D157)')
+    p('### Indicadores de supervisión')
     p('')
     p('Un solo cálculo (`js/indicadores.js`) para la pestaña Supervisión o Mi avance y para los informes por periodo en PDF y CSV. '
       'Se calculan cada vez; no se guardan. El SIA debe calcularlos igual en la Fase 2.')

@@ -18,7 +18,7 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 RAIZ = AQUI if os.path.exists(os.path.join(AQUI, 'assets')) else os.path.join(AQUI, '..')
 FUENTES = os.path.join(RAIZ, 'originales')
 if not os.path.isdir(FUENTES):
-    sys.exit('Faltan los archivos originales en ' + FUENTES + ': no viajan con el repositorio (D164); se piden a Liber.')
+    sys.exit('Faltan los archivos originales en ' + FUENTES + ': no viajan con el repositorio; se piden al área del SIA.')
 DESTINO = os.path.join(RAIZ, 'assets', 'capas')
 DECIMALES = 6
 
@@ -26,7 +26,7 @@ DECIMALES = 6
 META = {
     'alcaldias': {
         'archivo': 'alcaldias_cdmx.json',
-        'origen': 'SIA (CSIA/SEDEMA) con base en INEGI, 16 demarcaciones publicadas el 14-AGO-2017; metadato del 01-ENE-2026 (originales/documentacion). DEFINITIVA: sin solapes ni huecos (bloque 38)',
+        'origen': 'SIA (CSIA/SEDEMA) con base en INEGI, 16 demarcaciones publicadas el 14-AGO-2017; metadato del 01-ENE-2026 (originales/documentacion). DEFINITIVA: sin solapes ni huecos',
         'version': 'sia-2026-01-01',
         'fecha_corte': '2026-01-01',
         'crs': 'EPSG:4326 (longitud, latitud)',
@@ -35,7 +35,7 @@ META = {
     },
     'uga': {
         'archivo': 'UGA_CDMX.geojson',
-        'origen': 'SIA, entregada el 22-SEP-2026 como versión final. Malla hexagonal de ~1 km2, misma geometría que la del 21-SEP. El prefijo de la clave NO indica la alcaldía del punto: 8 celdas siguen con prefijo distinto a su alcaldía (bloque 38)',
+        'origen': 'SIA, entregada el 22-SEP-2026 como versión final. Malla hexagonal de ~1 km2, misma geometría que la del 21-SEP. El prefijo de la clave NO indica la alcaldía del punto: 8 celdas siguen con prefijo distinto a su alcaldía',
         'version': 'sia-2026-09-22',
         'fecha_corte': '2026-09-22',
         'crs': 'EPSG:4326 (longitud, latitud)',
@@ -55,7 +55,7 @@ META = {
     # colonia donde cae un punto y se dibuja en los mapas. Sus colonias no son las del IECM.
     'prioritarias': {
         'archivo': 'colonias_prioritarias_reforestacion.geojson',
-        'origen': 'Modelo de priorización de colonias para reforestación (SIA/SEDEMA), entregado por Liber el 01-OCT-2026: 2,243 colonias con prioridad Muy Baja (0) a Muy Alta (4). Se publican sólo colonia, alcaldía y prioridad; marginación, población y pobreza se quedan en el original',
+        'origen': 'Modelo de priorización de colonias para reforestación (SIA/SEDEMA), entregado el 01-OCT-2026: 2,243 colonias con prioridad Muy Baja (0) a Muy Alta (4). Se publican sólo colonia, alcaldía y prioridad; marginación, población y pobreza se quedan en el original',
         'version': 'priorizacion-2026-10-01',
         'fecha_corte': '2026-10-01',
         'crs': 'EPSG:4326 (longitud, latitud)',

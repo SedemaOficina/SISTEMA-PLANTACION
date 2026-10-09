@@ -95,7 +95,7 @@ def main():
     cuerpo = json.dumps({'meta': meta, 'especies': especies}, ensure_ascii=False, indent=1)
     with open(SALIDA, 'w', encoding='utf-8') as s:
         s.write('/* CATÁLOGO DE ESPECIES. Generado por herramientas/generar_especies.py a partir de\n'
-                '   originales/%s: no se edita a mano (D84). */\n' % os.path.basename(FUENTE))
+                '   originales/%s: no se edita a mano. */\n' % os.path.basename(FUENTE))
         s.write('window.SRP = window.SRP || {};\nSRP.CATALOGO_ESPECIES = ' + cuerpo + ';\n')
     print('%d especies → %s (siguiente clave %s)' % (len(especies), os.path.relpath(SALIDA, RAIZ), meta['siguiente_clave']))
 

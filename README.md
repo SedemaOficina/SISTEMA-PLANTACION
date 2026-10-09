@@ -11,10 +11,9 @@ La versión que corre se lee al pie de cada pantalla.
 1. **Registrar jornada** (pestaña Nuevo registro). Antes de registrar árboles se declara la jornada:
    nombre del sitio, programa, fecha, árboles que se van a plantar y, si se quiere, la ubicación y la dirección.
    Si la jornada atiende una solicitud de otra instancia (SOBSE, una alcaldía), se elige el programa
-   **Solicitud** y se dicen quién lo solicita, del catálogo de solicitantes, y de qué se trata (D217, D229).
-   El programa es de la jornada: todos sus árboles lo toman (D151). La fecha es el día en que
-   empieza: la jornada puede seguir abierta varios días y cada árbol lleva la fecha en que se plantó
-   (D204).
+   **Solicitud** y se dicen quién lo solicita, del catálogo de solicitantes, y de qué se trata.
+   El programa es de la jornada: todos sus árboles lo toman. La fecha es el día en que
+   empieza: la jornada puede seguir abierta varios días y cada árbol lleva la fecha en que se plantó.
 2. **Nuevo árbol.** Con la jornada activa: ubicación (GPS, toque en el mapa o coordenadas a mano),
    especie, comentarios y fotografía opcional; si la jornada empezó otro día, también la fecha de
    plantación. «Guardar» registra de una vez; sólo si hay algo que
@@ -23,7 +22,7 @@ La versión que corre se lee al pie de cada pantalla.
    árboles previstos. Ahí se revisan los puntos y se cierra la jornada; la tuerca de cada punto edita, mueve a
    otra jornada, sustituye o elimina el árbol (un error de captura se corrige sin salir de la
    jornada). La coordinación hace ahí el **relevo de cabo**: pasa la jornada abierta a otro cabo de
-   su cuadrilla, que sigue registrando en ella; el titular no cambia (D204). La ficha de cada
+   su cuadrilla, que sigue registrando en ella; el titular no cambia. La ficha de cada
    jornada cerrada trae **«Generar reporte»**: datos de cierre, vista previa y PDF con croquis, sin
    salir de Jornadas; el vehículo se elige por su placa y el modelo y el tipo se ponen solos. El
    filtro «Reporte» deja las jornadas con reporte generado o sin generar. No hay sección Reportes.
@@ -31,23 +30,23 @@ La versión que corre se lee al pie de cada pantalla.
    cabo, al final de su barra): lo plantado por semana, mes, año o rango, con filtros de alcaldía,
    programa y cabo; cuentan sólo las jornadas cerradas. Arriba, cifras, «Qué atender», descargas y
    gráfica; debajo, cada desglose plegado con su dato principal: por cabo, institución, alcaldía y
-   prioridad con mapa, especie, programa y calidad del dato (D157, D158, D227). De ahí salen los
+   prioridad con mapa, especie, programa y calidad del dato. De ahí salen los
    **informes** semanal, mensual, anual o por alcaldía en PDF con membrete, y la tabla de árboles en
-   CSV para Excel (D159). Dentro están las **Fotografías** de los registros, con descarga en ZIP.
+   CSV para Excel. Dentro están las **Fotografías** de los registros, con descarga en ZIP.
 6. **Registros**: la lista de árboles con filtros, detalle, edición y eliminación que se deshace.
-   **Configuración** (D195), sólo para la Administración global, última pestaña de la barra de secciones (D231):
+   **Configuración**, sólo para la Administración global, última pestaña de la barra de secciones:
    **Usuarios**, **Catálogos** (programas, áreas, especies, vehículos, instituciones y solicitantes),
    **Parámetros** (sólo consulta), **Registro de cambios**, **Carga masiva** del histórico desde
-   Excel o CSV (D196), que no vuelve a cargar lo que ya está y se deshace por lote (D199), y **Acerca del sistema**. El catálogo de especies se descarga en Excel con la forma del libro de origen del SIA (D239); desde Catálogos › Especies se abre **Especies escritas** (lo que se escribió en «Otra especie», para revisarlo fuera; D232).
-7. **Instituciones** (D186–D193). Además de la Secretaría registran las alcaldías, otras
+   Excel o CSV, que no vuelve a cargar lo que ya está y se deshace por lote, y **Acerca del sistema**. El catálogo de especies se descarga en Excel con la forma del libro de origen del SIA; desde Catálogos › Especies se abre **Especies escritas** (lo que se escribió en «Otra especie», para revisarlo fuera).
+7. **Instituciones**. Además de la Secretaría registran las alcaldías, otras
    dependencias del Gobierno de la CDMX (PAOT, SOBSE), empresas (Green Cover) y organizaciones
    civiles (Reforestamos México), con cuentas de cabo y de coordinación que da de alta la
    Secretaría: primero el tipo de institución, luego la institución, y el nombre completo en un solo
    campo. El cabo depende de uno o varios coordinadores de su misma institución. Las instituciones nuevas las
-   agrega la Administración en Catálogos (D189). Cada cuenta y cada jornada llevan su institución;
+   agrega la Administración en Catálogos. Cada cuenta y cada jornada llevan su institución;
    ninguna ve lo de otra. Programas: SEDEMA, todos; las demás, los que la Administración marca en
    Catálogos › Programas (de arranque: alcaldías, Gobierno de la CDMX y organizaciones civiles,
-   Reforestación Urbana; empresas, Palmeras; D193). El cierre de las de fuera es encargado,
+   Reforestación Urbana; empresas, Palmeras). El cierre de las de fuera es encargado,
    observaciones y hora: personal, chófer y vehículo sólo los captura SEDEMA. Lo que plantan suma
    al total de la Ciudad; Supervisión y los informes de la Administración lo desglosan y filtran
    por institución.
@@ -69,7 +68,7 @@ se reintenta la próxima vez. Un árbol a medio capturar se guarda como borrador
 
 ## Cuentas de arranque
 
-El sistema arranca con once cuentas de prueba (D190, D192) y **ninguna plantación**: se
+El sistema arranca con once cuentas de prueba y **ninguna plantación**: se
 llena con lo que se capture.
 
 | Correo | Institución | Perfil | Qué puede hacer |
@@ -107,12 +106,12 @@ Mientras `ES_FICTICIO` sea `true` (en `js/config.js`), la pantalla de acceso ofr
 como cuenta de prueba, y el pie de página deja cambiar de cuenta y restablecer los datos. Todo eso
 desaparece al poner `ES_FICTICIO: false`.
 
-**Datos de demostración (D160).** Hasta abajo, en el pie, «Cargar datos de demostración» agrega casi
+**Datos de demostración.** Hasta abajo, en el pie, «Cargar datos de demostración» agrega casi
 tres años de trabajo inventado (enero de 2024 a hoy): unas 1,300 jornadas y 17,000 árboles de la
 Secretaría y de una institución de cada tipo —las alcaldías Iztapalapa y Coyoacán, PAOT, SOBSE,
 Green Cover, Reforestamos México y una empresa de demostración—, con los cuatro programas. Registran
 todas las cuentas de prueba que capturan (cabos y coordinadores, de SEDEMA y de fuera) y 16 cuentas
-de demostración (D194), para probar Supervisión, Mi avance y los informes con volumen. Con
+de demostración, para probar Supervisión, Mi avance y los informes con volumen. Con
 «Cambiar usuario (pruebas)», en el menú de la cuenta, se entra como cualquiera de sus cuentas (apellido «Demo»). «Quitar datos de
 demostración» los borra sin tocar lo capturado; después, «Recuperar datos de demostración» los
 vuelve a cargar iguales. Todo lo cargado lleva identificador «demo-» (`js/demostracion.js`).
@@ -125,32 +124,32 @@ el repositorio pero la app no las carga.
 ```
 index.html              Pantallas y marca de versión de los archivos
 sw.js                   Service worker: la app abre sin señal; versión = marca ?v= de index.html
-manifest.webmanifest    Instalación en pantalla de inicio; iconos en assets/ (D90)
+manifest.webmanifest    Instalación en pantalla de inicio; iconos en assets/
 README.md               Este archivo
 
 css/estilos.css         Estilos (orden fijo por bloques; ver el encabezado del archivo)
 
 js/                     La aplicación, un archivo por tema
   config.js             ÚNICO lugar con valores configurables (distancias, precisión, versión, base)
-  permisos.js           ÚNICO lugar con las reglas de cada perfil y lo que exige cada acción (D151)
+  permisos.js           ÚNICO lugar con las reglas de cada perfil y lo que exige cada acción
   almacen.js            Base del dispositivo (IndexedDB), migraciones y bitácora
   sesion.js             Acceso; se conecta a las cuentas propias del servidor (correo y contraseña)
   derivacion.js         Cruce punto-en-polígono (alcaldía, UGA, colonia)
-  prioritarias.js       Colonias prioritarias para reforestar: prioridad de la jornada, su colonia en los mapas y conteo por nivel (D206, D233)
-  folio.js              Patrón, validación y etiqueta del folio; sólo lo emite el servidor simulado de prueba (D110)
+  prioritarias.js       Colonias prioritarias para reforestar: prioridad de la jornada, su colonia en los mapas y conteo por nivel
+  folio.js              Patrón, validación y etiqueta del folio; sólo lo emite el servidor simulado de prueba
   conexion.js           Estado de la conexión (guía «¿Qué hacer sin internet?»)
-  envio.js              Envío al servidor simulado con datos de prueba: cola, avisos de atraso, «Simular sin señal» (D111)
+  envio.js              Envío al servidor simulado con datos de prueba: cola, avisos de atraso, «Simular sin señal»
   esquema.js            Generado de datos/esquema.json por herramientas/generar_diccionario.py: no se edita a mano
-  referencias.js        Catálogos y cuentas en memoria; quién usa cada valor, en todas las tablas (D151)
-  jornada-activa.js     La jornada se declara antes de registrar: inicio, franja, cambiar, cerrar (D119)
-  jornadas.js           Sección Jornadas: mapa y lista de un día de trabajo, avisos y conciliación (D112)
+  referencias.js        Catálogos y cuentas en memoria; quién usa cada valor, en todas las tablas
+  jornada-activa.js     La jornada se declara antes de registrar: inicio, franja, cambiar, cerrar
+  jornadas.js           Sección Jornadas: mapa y lista de un día de trabajo, avisos y conciliación
   formulario.js         Nuevo árbol y edición
   registros.js          Sección Registros y detalle del registro
   reportes.js           Datos de cierre y reporte PDF de la jornada
-  croquis.js            Croquis del reporte: puntos numerados sobre imagen de satélite o fondo liso (D115)
+  croquis.js            Croquis del reporte: puntos numerados sobre imagen de satélite o fondo liso
   supervision.js, indicadores.js, informes.js   Supervisión, sus cifras y los informes PDF y CSV
-  filtros.js            Zona de filtros de Fotografías: buscar, periodo, listas dependientes, fichas (D205)
-  galeria.js            Sección Fotografías: rejilla, foto grande, descarga y ZIP (D118)
+  filtros.js            Zona de filtros de Fotografías: buscar, periodo, listas dependientes, fichas
+  galeria.js            Sección Fotografías: rejilla, foto grande, descarga y ZIP
   catalogos.js, usuarios.js                     Administración de catálogos y cuentas
   mapa.js, foto.js, iconos.js, util.js, app.js  Mapa, fotografía, iconos, utilidades y arranque
   datos-ficticios.js    Cuentas y catálogos de arranque de la versión de prueba
@@ -161,14 +160,14 @@ assets/
   capas/                capa-alcaldias.js, capa-uga.js, capa-colonias.js y capa-prioritarias.js: capas compactadas (generadas)
   catalogos/            catalogo-especies.js (79 especies del SIA, generado) y catalogo-vehiculos.js (de prueba, placas ficticias)
   encabezado-ru-sia.png, encabezado-ru-sia-movil.png   Logotipo para el encabezado y el PDF
-  icono-192.png, icono-512.png, icono-512-maskable.png, apple-touch-icon.png   Icono de la app (D90)
+  icono-192.png, icono-512.png, icono-512-maskable.png, apple-touch-icon.png   Icono de la app
 
 vendor/                 Bibliotecas incluidas localmente; versiones y licencias en vendor/LICENCIAS.md
   fuentes/              Cabin y Roboto en woff2 para la pantalla (subconjunto latino, ~110 KB) y Roboto en TTF
                         (normal, negrita y cursiva; latino extendido, ~100 KB) para incrustarla en los PDF
 
 datos/                  El modelo de datos
-  esquema.json          Fuente única del modelo de datos (D86)
+  esquema.json          Fuente única del modelo de datos
   DICCIONARIO-DATOS.md  Inventario de tablas y diccionario de datos, generado de esquema.json
   HUELLA-CAPAS.md       Cuenta, claves, superficie y centroides de las capas, para compararlas con las del SIA
   MAPEO-CAMPOS.md       Campos vistos por pantalla: etiqueta ↔ campo, obligatorio, origen
@@ -194,7 +193,7 @@ pruebas/                prueba.py (recorrido completo), auditoria.py (auditoría
 servidor/               El servicio del SRP (Node.js y PostgreSQL con PostGIS): guiones SQL del esquema srp y sus pruebas; ver servidor/README.md
 
 originales/             Capas, catálogos e iconografía tal como llegaron; no se editan ni se publican
-                        (.gitignore, D164); ver originales/LEEME.md
+                        (.gitignore); ver originales/LEEME.md
 ```
 
 ## Al cerrar un bloque: subir la marca de versión
@@ -211,35 +210,35 @@ recarga, en vez de quedarse en blanco.
 **Si el bloque tocó algún campo** (nuevo, retirado, otro dominio, otra regla): se actualiza
 `datos/esquema.json`, se regenera el diccionario con `python3 herramientas/generar_diccionario.py` y se
 ajusta `datos/MAPEO-CAMPOS.md`. No es opcional: `pruebas/auditoria.py` falla si el esquema y el
-sistema no guardan lo mismo o si el diccionario no está regenerado (D86).
+sistema no guardan lo mismo o si el diccionario no está regenerado.
 
 **Si el bloque tocó una pantalla:** en el cierre se dice qué se agregó y qué se pudo quitar. Cada
 control nuevo tiene que ganarse su lugar: `pruebas/auditoria.py` cuenta los filtros de cada vista y
-falla si alguna pide más de ocho, o más de cuatro a la vista (D226).
+falla si alguna pide más de ocho, o más de cuatro a la vista.
 
 ## Si cambian los datos de arranque
 
 `SELLO_DATOS`, en `js/config.js`, se cambia cada vez que cambian las cuentas o los catálogos de
 arranque. El dispositivo guarda el sello con el que cargó los datos de ejemplo; si no coincide y
 **no hay nada capturado** (árboles, jornadas o bitácora), los vuelve a cargar y lo avisa. Si hay
-capturas, **no se borra nada** (D149): en la Etapa 1 el teléfono es la única copia. Por eso un
+capturas, **no se borra nada**: en la Etapa 1 el teléfono es la única copia. Por eso un
 cambio en la forma de los datos ya no se resuelve con el sello, sino con una migración numerada
 en `js/almacen.js` que traslada lo guardado antes de retirar nada.
 
 ## El reporte de la jornada
 
-El reporte es el **parte de una jornada** (D119, D134), no de un día ni de un periodo: un día puede
+El reporte es el **parte de una jornada**, no de un día ni de un periodo: un día puede
 tener varias jornadas. Se genera desde la ficha de la jornada, en Jornadas. Primero se piden los **datos de cierre de la jornada**: personal,
 apoyo, encargado, observaciones, chófer, vehículo y hora de finalización. Todos opcionales, y
-los que quedan vacíos no se imprimen. El **vehículo** sale del catálogo (D162): se elige la placa,
+los que quedan vacíos no se imprimen. El **vehículo** sale del catálogo: se elige la placa,
 agrupada por tipo, y el modelo y el tipo se ponen solos; arriba aparecen, a un toque, los tres que
-más ha usado el encargado. Sólo se eligen vehículos del catálogo: uno prestado o rentado se da de alta primero en Catálogos (D174). El catálogo lo
+más ha usado el encargado. Sólo se eligen vehículos del catálogo: uno prestado o rentado se da de alta primero en Catálogos. El catálogo lo
 lleva la Administración en Catálogos › Vehículos (`assets/catalogos/catalogo-vehiculos.js` trae 16 de
 prueba con placas ficticias; las reales no se publican y se cargan en el servidor en la Fase 2). El encargado no se escribe: para un cabo
 es él; para quien ve a varias personas se elige entre los cabos con registros ese día. Luego se
 abre la **vista previa**, con el mismo contenido que tendrá el PDF, y desde ahí se genera el PDF.
 
-**El PDF va por secciones (D163):** arriba el nombre del cabo y cinco cifras (árboles plantados,
+**El PDF va por secciones:** arriba el nombre del cabo y cinco cifras (árboles plantados,
 previstos, avance, especies y porcentaje de nativas); luego 1) datos de identificación de la jornada
 (nombre, día completo —«Jueves 25 de septiembre de 2026»—, alcaldía, colonia, dirección, programa,
 árboles previstos, hora de finalización, comentarios y observaciones), 2) personal (participantes, apoyo
@@ -247,19 +246,19 @@ y chófer), 3) datos del vehículo (tipo, modelo y placas), 4) croquis, que encu
 y aparta los números que se enciman, 5) ejemplares plantados (número, especie, nombre científico,
 coordenada y precisión; sin folio), 6) totales por especie con su distribución y porcentaje, 7)
 distribución de las especies en una barra (el conteo por especie ya lo da la tabla de totales y el avance contra lo previsto, la franja de cifras) y 8) comentarios por ejemplar: sólo
-los árboles que tienen comentario, con su número y especie; si ninguno tiene, no sale (D164). Cada
+los árboles que tienen comentario, con su número y especie; si ninguno tiene, no sale. Cada
 dato dice su nombre en negritas.
 
 Los totales por especie, los porcentajes, el total de ejemplares y las gráficas **se calculan** a
 partir de los registros. Un total tecleado es un total que se puede equivocar.
 
-Lo capturado se guarda en la propia jornada (almacén `jornadas`, D119): volver a generar el
+Lo capturado se guarda en la propia jornada (almacén `jornadas`): volver a generar el
 reporte de una jornada no obliga a escribirlo otra vez.
 
 ## La base del dispositivo
 
 La estructura vive en migraciones numeradas (`MIGRACIONES` en `js/almacen.js`; hoy van tres) y los
-almacenes que el código espera se declaran en `ALMACENES`. **Lo capturado no se borra solo** (D149):
+almacenes que el código espera se declaran en `ALMACENES`. **Lo capturado no se borra solo**:
 un cambio de estructura es una migración nueva que traslada lo guardado antes de retirar nada; una
 base a la que le falta un almacén, o de una versión posterior, se rehace conservando cada renglón;
 y el sello de datos sólo vuelve a cargar las cuentas y catálogos de ejemplo cuando no hay nada
@@ -267,7 +266,7 @@ capturado. Al guardar el primer árbol se pide al navegador que no desaloje lo g
 
 En la Etapa 1 todo vive en el navegador de cada teléfono: borrar los datos del navegador borra los
 registros. Por eso la guía «¿Qué hacer sin internet?» pide no borrar los datos del navegador y,
-cuando hay registros en cola, dice cuántos son y de qué días (D183). No hay respaldo en el teléfono (D175): proteger lo capturado es
+cuando hay registros en cola, dice cuántos son y de qué días. No hay respaldo en el teléfono: proteger lo capturado es
 tarea del servidor y de su cola de envío en la Fase 2.
 
 ## Mapa
@@ -276,8 +275,8 @@ La capa base es imagen de satélite de Esri, con los nombres de vías y lugares 
 capas se declaran en `CAPAS`, dentro de `js/config.js`; cambiar de proveedor es cambiar esa lista
 y el dominio en la política de seguridad de `index.html`. Cada mapa —captura, jornada, ficha de
 revisión y detalle— muestra el crédito de cada capa tal como lo declara su servicio y «Powered by
-Esri»; el croquis del PDF lo lleva al pie (D152). La licencia y el token de Esri están pendientes
-de confirmar antes de operar (D5 de la auditoría).
+Esri»; el croquis del PDF lo lleva al pie. La licencia y el token de Esri están pendientes
+de confirmar antes de operar (pendiente de la auditoría integral).
 
 ## Sin señal
 
@@ -289,8 +288,8 @@ marca al cerrar un bloque sigue siendo lo único que hay que hacer** para que lo
 actualicen (el worker nuevo reemplaza al viejo al abrir con señal). `manifest.webmanifest` permite
 instalarla en la pantalla de inicio. En la Etapa 1 no hay servidor: los registros se quedan en el
 dispositivo; la pastilla del encabezado dice el estado de la conexión y del envío simulado, y al
-tocarla abre la guía con el estado del teléfono. El respaldo del teléfono («Guardar respaldo» y
-«Restaurar respaldo») se retiró en el bloque 113 (D175, revoca D72). Ver D71, D149 y D175.
+tocarla abre la guía con el estado del teléfono. No hay respaldo dentro del teléfono: lo capturado
+se protege enviándolo al servidor.
 
 ## Folio del ejemplar
 
@@ -299,7 +298,7 @@ consecutivo corre en una secuencia perpetua por celda que no se reinicia nunca. 
 tiene folio**: lo asigna el servidor una sola vez al sincronizar, y la pantalla y el PDF dicen
 PROVISIONAL. `js/folio.js` guarda el patrón, la validación y la etiqueta de campo —lo que el
 servidor reutilizará—; la emisión no existe todavía y depende de que el SIA entregue la malla UGA
-corregida y congelada (DECISIONES D67–D69 y pendientes).
+corregida y congelada.
 
 ## Modelo de datos
 
@@ -309,13 +308,13 @@ relaciones, los campos derivados del punto o de la sesión, lo que se calcula y 
 estado que vive sólo en memoria, los campos condicionales, las reglas vigentes con el archivo donde
 viven y las que esperan al servidor. `datos/DICCIONARIO-DATOS.md` se genera de ahí y trae además el
 borrador de tablas PostgreSQL para la Fase 2. `datos/MAPEO-CAMPOS.md` es la misma información vista por
-pantalla (etiqueta ↔ campo). Los tres se auditan (D86).
+pantalla (etiqueta ↔ campo). Los tres se auditan.
 
 ## Catálogo de especies
 
 Las especies son las reales del SIA, del libro `16._Registro_plantaciones_catalogos_05_10_2026.xlsx`: 79 especies,
 las 76 de la paleta vegetal de la Secretaría (verificadas ficha por ficha contra EncicloVida/CONABIO el
-22-09-2026) y tres fuera de ella; cada una dice si es de la paleta y si su fruto es comestible. El Excel vive en `originales/` (no se publica, D164) y
+22-09-2026) y tres fuera de ella; cada una dice si es de la paleta y si su fruto es comestible. El Excel vive en `originales/` (no se publica) y
 `herramientas/generar_especies.py` lo convierte en `assets/catalogos/catalogo-especies.js`, que se siembra en el
 almacén `especies` tal cual: **la clave es el `id_especie` (`ESP-0001`…) y es la única llave por
 la que se enlazan las plantaciones**; el nombre común es la etiqueta de campo; el tipo de
@@ -325,12 +324,12 @@ registro. El formulario busca por nombre común, científico y **otros nombres c
 cuál coincidió, porque un mismo nombre («Fresno», «Colorín») señala a más de una especie. Las
 altas nuevas desde Catálogos reciben el consecutivo siguiente (`ESP-0077`…). Para cambiar una
 especie del catálogo se corrige el Excel y se vuelve a correr el script; las altas y ediciones
-hechas en Catálogos viven en el almacén del dispositivo. Ver D84 y MAPEO-CAMPOS.
+hechas en Catálogos viven en el almacén del dispositivo. Ver MAPEO-CAMPOS.
 
 ## Capas territoriales
 
-Las capas son del SIA. Los archivos originales viven en `originales/`, fuera del sitio publicado
-(D164), y no se tocan: son la constancia de qué se recibió. La aplicación carga versiones compactadas —atributos mínimos, seis
+Las capas son del SIA. Los archivos originales viven en `originales/`, fuera del sitio publicado,
+y no se tocan: son la constancia de qué se recibió. La aplicación carga versiones compactadas —atributos mínimos, seis
 decimales— que produce `herramientas/generar_capas.py`. **Nunca se editan a mano**: para cambiar una
 capa se sustituye el original y se vuelve a correr el script, que valida cantidad de features,
 claves únicas, anillos cerrados y sistema de referencia antes de escribir nada.
@@ -341,17 +340,17 @@ claves únicas, anillos cerrados y sistema de referencia antes de escribir nada.
 | Malla UGA | `UGA_CDMX.geojson` (definitiva) | 1,624 hexágonos de ~1 km² | `clave` (`TLP-318`) | `uga` |
 | Colonias | `colonias_iecm2022.geojson` | 1,837 unidades territoriales del IECM 2022 | `CVEUT` (`10-001`) | `colonia_cve` y `colonia` (nombre) |
 
-**Las tres capas son definitivas:** alcaldías y UGA del SIA (bloque 38, D92) y colonias del IECM 2022, la unidad oficial
-de reporte (bloque 117, D180). La de colonias pesa 3 MB compactada —125 mil vértices—: si se queda en el teléfono o sólo
+**Las tres capas son definitivas:** alcaldías y UGA del SIA y colonias del IECM 2022, la unidad oficial
+de reporte. La de colonias pesa 3 MB compactada —125 mil vértices—: si se queda en el teléfono o sólo
 en el servidor está en `docs/FASE2-Y-TRASPASO.md`.
 
 La capa de colonias no cubre el suelo de conservación (532 km² al sur sin colonia) ni 31 km²
-urbanos: un punto ahí se guarda con `colonia` nula y la pantalla dice «Sin colonia en la capa»
-(D152). `generar_capas.py` ajusta cada geometría a la rejilla de seis decimales sin romperla y se
+urbanos: un punto ahí se guarda con `colonia` nula y la pantalla dice «Sin colonia en la capa».
+`generar_capas.py` ajusta cada geometría a la rejilla de seis decimales sin romperla y se
 detiene si alguna queda inválida (el redondeo simple dejaba nueve colonias inválidas). Trae 215
 solapes, casi siempre una unidad habitacional encima del pueblo que la rodea: gana el polígono más
 pequeño. Doce colonias tienen el interior en otra alcaldía que la que declaran: la alcaldía sale de
-su propia capa, nunca de la colonia (D62).
+su propia capa, nunca de la colonia.
 
 La capa definitiva de alcaldías no tiene huecos ni solapes (la anterior traía cinco y tres). Las
 reglas se conservan por si una entrega futura los trae: en un solape gana el primer polígono; en un
@@ -360,7 +359,7 @@ definitiva tiene la misma geometría que la anterior y conserva ocho celdas cuyo
 alcaldía de su centro; no afecta al registro, cuya alcaldía sale de su propia capa. Al actualizar una
 capa se sube `meta.version` en `generar_capas.py`.
 
-**Dónde se acepta un punto (D152).** En la unión de las 16 alcaldías, con 100 m de margen
+**Dónde se acepta un punto.** En la unión de las 16 alcaldías, con 100 m de margen
 (`MAPA.MARGEN_AMBITO_M`): un árbol junto al límite cuyo GPS cae unos metros afuera toma la alcaldía
 más cercana y la pantalla lo dice. La caja de `MAPA.LIMITES` sólo es el límite del mapa y el primer
 filtro. La aplicación no abre si falta alguna de las tres capas; un registro sin alcaldía o sin las
