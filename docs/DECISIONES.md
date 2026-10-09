@@ -3219,3 +3219,17 @@
     también las nombra.
   · La documentación técnica nombra la fuente vigente del catálogo de especies y los cinco archivos de `js/`
     que faltaban en el README.
+
+- **D279. Auditoría integral de la aplicación antes del traspaso (bloque 199).**
+  08-10-2026. Liber pidió una auditoría integral y profesional antes de pasar el sistema al SIA: ahora la
+  aplicación y, al terminar sus fases, el servidor; los cuatro frentes (seguridad y datos personales,
+  integridad, accesibilidad y uso en campo, código y rendimiento); corrigiendo sobre la marcha lo que no
+  cambia pantallas ni decisiones. El informe está en `docs/AUDITORIA-INTEGRAL-APP.md`.
+  · Corregido: identificadores UUID también sin `crypto.randomUUID`; mapas fijos sin marcador enfocable y
+    como grupo con su etiqueta; la API fuera de la caché del service worker; el texto del periodo de los
+    filtros en una sola función; el traspaso al día con `territorio`.
+  · Para el SIA, en el § 4 del traspaso: compresión y caché del servidor web, y las cabeceras de seguridad
+    que una etiqueta `<meta>` no puede poner (`frame-ancestors`, transporte, tipo, permisos).
+  · Aceptado: los puntos encimados en el mapa de la jornada, por la excepción «equivalente» de WCAG 2.5.8.
+  · Cobertura de las pruebas: 98.6 % de los renglones de `js/`, medida con el perfilador de V8. La medición encontró
+    cuatro funciones sin uso dentro de objetos armados al vuelo (`fijarDia`, `etiqueta`, `contar`, `resumen`): quitadas.

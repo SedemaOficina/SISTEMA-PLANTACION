@@ -125,14 +125,6 @@ SRP.folio = {
   textoLargo(registro) {
     if (!this.valido(registro.folio)) return this.PROVISIONAL;
     return registro.folio;
-  },
-
-  /* Etiqueta de campo (no es llave): folio · especie · alcaldía · fecha. Se recalcula sola de
-     los atributos; si la especie se corrige, la etiqueta cambia y el folio no. */
-  etiqueta(registro) {
-    const e = SRP.ref.especieDe(registro);
-    return [this.texto(registro), e.cientifico || e.comun, SRP.ref.alcaldia(registro.alcaldia),
-            SRP.util.formatearFecha(registro.fecha_plantacion)].join(' · ');
   }
 };
 

@@ -50,21 +50,6 @@ SRP.prioritarias = {
     return c;
   },
 
-  // Cuántos puntos caen en cada nivel: [{ prioridad, texto, n }] de mayor a menor, y los que quedan sin dato
-  contar(puntos) {
-    const cuenta = {}; let sin = 0;
-    puntos.forEach(r => { const p = this.de(r.lat, r.lng); if (p) cuenta[p.prioridad] = (cuenta[p.prioridad] || 0) + 1; else sin++; });
-    return { niveles: this.NIVELES.map(([prioridad, texto]) => ({ prioridad, texto, n: cuenta[prioridad] || 0 })), sin, total: puntos.length };
-  },
-
-  // «5 en prioridad alta, 2 en media y 1 sin dato»
-  resumen(puntos) {
-    const c = this.contar(puntos);
-    const partes = c.niveles.filter(x => x.n).map((x, i) => x.n + (i === 0 ? ' en prioridad ' : ' en ') + x.texto.toLowerCase());
-    if (c.sin) partes.push(c.sin + ' sin dato');
-    return SRP.util.enumerar(partes);
-  },
-
   /* La prioridad de una jornada: la de la colonia donde se ubicó. Una jornada sin ubicación toma
      la de la colonia donde cayó la mayoría de sus árboles; en empate, la de mayor prioridad.
      { id, prioridad, texto, colonia }, o null si no hay de dónde decirla. */

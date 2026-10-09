@@ -3949,3 +3949,35 @@ comandos de trazados SVG, «decidir» y «pidió» referidos a lo que hace la pe
 catálogo de especies que viene del Excel original del SIA. No se probó en un teléfono real.
 
 **Siguiente paso.** La fase 2 del servidor: el servicio en TypeScript con la forma de los módulos del SIA.
+
+## Bloque 199 — Auditoría integral de la aplicación (08 y 09-10-2026)
+
+Versión 0.9.58. Liber pidió una auditoría integral y profesional antes de pasar el sistema al SIA: la
+aplicación ahora, el servidor al terminar sus fases, corrigiendo sobre la marcha. Informe completo en
+`docs/AUDITORIA-INTEGRAL-APP.md`.
+
+**Qué cambió (D279).**
+- `js/util.js`: `generarId` da un UUID v4 con `crypto.getRandomValues` cuando no hay `crypto.randomUUID`
+  (antes, un `id-…` con `Math.random` que el servidor rechazaría). `textoPeriodo`, el texto del periodo
+  de los filtros, en un solo lugar (estaba tres veces).
+- `js/mapa.js` e `index.html`: en los mapas fijos el marcador no se enfoca y el contenedor es un grupo con
+  su etiqueta.
+- `sw.js`: la API va directo a la red.
+- `js/registros.js`: reiniciar los filtros llama a «Quitar filtros» en vez de repetirlo.
+- Código sin uso que encontró la cobertura: `fijarDia`, `folio.etiqueta`, `prioritarias.contar` y `resumen`.
+- `docs/FASE2-Y-TRASPASO.md`, § 4: capas de `territorio`, compresión y caché del servidor web, cabeceras de
+  seguridad. `README.md`: descripción de `prioritarias.js`.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada visible.
+
+**Verificación.** Herramientas: análisis propio del HTML que arma el código (190 lugares), eslint, pyflakes,
+jscpd (duplicación: 0 %), axe-core 4.10 (WCAG 2.2 AA y buenas prácticas: 14 pantallas, 4 perfiles, teléfono
+y computadora, 16 ventanas, modo sol), mediciones con CPU 4 y 6 veces más lenta, y cobertura con el
+perfilador de V8: 98.6 % de los renglones de `js/`. Lighthouse no corrió (incompatible con Node 24 del
+equipo). La corrida con medición de cobertura da 6 fallas en «sin señal»: la sesión de depuración que mide
+interfiere con la emulación de red de Playwright al recargar. `pruebas/prueba.py` completa sin medición,
+sola: 1,425 comprobaciones, 0 fallas, sin errores de consola (dos veces: antes y después de quitar las
+funciones sin uso). `pruebas/auditoria.py`: 143, 0 hallazgos; hoja de estilos, 0; servidor, 21 de 21. No se
+probó en teléfonos reales ni con VoiceOver o TalkBack.
+
+**Siguiente paso.** La fase 2 del servidor, y al terminar sus fases, su parte de la auditoría.

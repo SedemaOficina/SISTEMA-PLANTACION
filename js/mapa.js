@@ -417,7 +417,8 @@ SRP.mapa = {
     });
     this.ponerCredito(m);   // también en las fichas: la imagen es la misma
     this.ponerBase(m);
-    L.marker([lat, lng], { icon: this.icono, interactive: false }).addTo(m);
+    // Sin teclado: en un mapa fijo el marcador es parte de la imagen, no un botón sin nombre
+    L.marker([lat, lng], { icon: this.icono, interactive: false, keyboard: false }).addTo(m);
     setTimeout(() => m.invalidateSize(), 60);
     return m;
   }

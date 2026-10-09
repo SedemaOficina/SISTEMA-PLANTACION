@@ -64,6 +64,7 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
   if (url.origin !== self.location.origin) return;   // externo: a la red, sin intervenir
+  if (url.pathname.includes('/api/')) return;         // la API del servidor, también: nunca de la caché
 
   if (e.request.mode === 'navigate') {
     e.respondWith((async () => {

@@ -130,15 +130,6 @@ SRP.zonaFiltros = {
       this.cambioDePeriodo();
     },
 
-    // Fija un día desde fuera (una vista que llega pidiendo «la jornada de tal fecha»)
-    fijarDia(dia) {
-      const f = this.filtro;
-      f.dia = dia || ''; f.anio = ''; f.mes = ''; this.limpiarRango();
-      this.periodoAbierto = false;
-      this.diaAbierto = !!dia && dia !== SRP.util.fechaHoy();
-      this.el('dia').value = this.diaAbierto ? dia : '';
-    },
-
     /* Deja la zona como al abrir la vista: todo, sin búsqueda ni listas. Con `avisar`, lo dice y ofrece deshacer. */
     reiniciar(avisar) {
       const antes = Object.assign({}, this.filtro), dia = this.diaAbierto, per = this.periodoAbierto;
@@ -266,12 +257,9 @@ SRP.zonaFiltros = {
 
     // Lo que está filtrando: [qué quitar, texto]
     fichas() {
-      const f = this.filtro, o = this.o, fmt = d => SRP.util.formatearFecha(d), salida = [];
+      const f = this.filtro, o = this.o, salida = [];
       if (f.texto && o.buscar) salida.push(['texto', 'Buscar: ' + f.texto]);
-      let periodo = '';
-      if (f.desde || f.hasta) periodo = f.desde && f.hasta ? fmt(f.desde) + ' al ' + fmt(f.hasta) : (f.desde ? 'Desde ' + fmt(f.desde) : 'Hasta ' + fmt(f.hasta));
-      else if (f.dia) periodo = (f.dia === SRP.util.fechaHoy() ? 'Hoy, ' : '') + fmt(f.dia);
-      else if (f.anio) periodo = f.mes ? SRP.util.nombreMes(f.anio + '-' + f.mes) : f.anio;
+      const periodo = SRP.util.textoPeriodo(f);
       if (periodo) salida.push(['periodo', periodo]);
       o.listas.forEach(l => {
         const v = f[l.clave]; if (!v || !this.visible(l)) return;

@@ -135,7 +135,7 @@ js/                     La aplicación, un archivo por tema
   almacen.js            Base del dispositivo (IndexedDB), migraciones y bitácora
   sesion.js             Acceso; se conecta a las cuentas propias del servidor (correo y contraseña)
   derivacion.js         Cruce punto-en-polígono (alcaldía, UGA, colonia)
-  prioritarias.js       Colonias prioritarias para reforestar: prioridad de la jornada, su colonia en los mapas y conteo por nivel
+  prioritarias.js       Colonias prioritarias para reforestar: prioridad de la jornada y de su colonia, y la capa en los mapas
   folio.js              Patrón, validación y etiqueta del folio; sólo lo emite el servidor simulado de prueba
   conexion.js           Estado de la conexión (guía «¿Qué hacer sin internet?»)
   envio.js              Envío al servidor simulado con datos de prueba: cola, avisos de atraso, «Simular sin señal»

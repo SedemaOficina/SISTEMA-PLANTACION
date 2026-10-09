@@ -4,8 +4,12 @@ window.SRP = window.SRP || {};
 SRP.util = {
   generarId() {
     if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
-    // Respaldo para navegadores o contextos sin randomUUID
-    return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+    // Sin randomUUID (iOS anterior a 15.4): un UUID v4 igual, con el generador seguro del navegador,
+    // porque el servidor guarda los identificadores como uuid
+    const b = crypto.getRandomValues(new Uint8Array(16));
+    b[6] = (b[6] & 0x0f) | 0x40; b[8] = (b[8] & 0x3f) | 0x80;
+    const h = [...b].map(x => x.toString(16).padStart(2, '0')).join('');
+    return h.slice(0, 8) + '-' + h.slice(8, 12) + '-' + h.slice(12, 16) + '-' + h.slice(16, 20) + '-' + h.slice(20);
   },
 
   ahoraISO() { return new Date().toISOString(); },
@@ -39,6 +43,15 @@ SRP.util = {
     const [a, m, d] = iso.slice(0, 10).split('-');
     const mes = this.MESES_CORTOS[Number(m) - 1];
     return mes ? d + '-' + mes + '-' + a : d + '-' + m + '-' + a;
+  },
+
+  // El periodo de un filtro, como lo dicen sus fichas: «01-SEP-2026 al 30-SEP-2026», «Hoy, 08-OCT-2026», «Septiembre de 2026»; o vacío
+  textoPeriodo(f) {
+    const fmt = d => this.formatearFecha(d);
+    if (f.desde || f.hasta) return f.desde && f.hasta ? fmt(f.desde) + ' al ' + fmt(f.hasta) : (f.desde ? 'Desde ' + fmt(f.desde) : 'Hasta ' + fmt(f.hasta));
+    if (f.dia) return (f.dia === this.fechaHoy() ? 'Hoy, ' : '') + fmt(f.dia);
+    if (f.anio) return f.mes ? this.nombreMes(f.anio + '-' + f.mes) : String(f.anio);
+    return '';
   },
 
   /* Los días de una jornada: de su fecha de inicio al último árbol plantado. Cada árbol lleva la

@@ -462,13 +462,10 @@ SRP.jornadas = {
 
   // Lo que está filtrando: [qué quitar, texto]
   fichas() {
-    const f = this.filtro, fmt = d => SRP.util.formatearFecha(d), salida = [];
+    const f = this.filtro, salida = [];
     if (f.texto) salida.push(['texto', 'Buscar: ' + f.texto]);
     if (f.revision) salida.push(['revision', f.revision === 'lista' ? this.REVISION.lista : 'Pendientes: ' + this.REVISION[f.revision].toLowerCase()]);
-    let periodo = '';
-    if (f.desde || f.hasta) periodo = f.desde && f.hasta ? fmt(f.desde) + ' al ' + fmt(f.hasta) : (f.desde ? 'Desde ' + fmt(f.desde) : 'Hasta ' + fmt(f.hasta));
-    else if (f.dia) periodo = (f.dia === SRP.util.fechaHoy() ? 'Hoy, ' : '') + fmt(f.dia);
-    else if (f.anio) periodo = f.mes ? SRP.util.nombreMes(f.anio + '-' + f.mes) : f.anio;
+    const periodo = SRP.util.textoPeriodo(f);
     if (periodo) salida.push(['periodo', periodo]);
     if (f.cabo) salida.push(['cabo', 'Registró: ' + SRP.ref.nombreUsuario(f.cabo)]);
     if (f.programa) salida.push(['programa', 'Programa: ' + SRP.ref.nombreCatalogo(f.programa)]);

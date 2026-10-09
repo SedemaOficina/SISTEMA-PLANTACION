@@ -185,15 +185,7 @@ SRP.registros = {
      sin rango y todos los cabos. Es distinto de «Todos», que sólo quita el periodo y respeta el cabo. */
   reiniciarFiltros() {
     const antes = Object.assign({}, this.filtro);
-    this.filtro = this.filtroVacio();
-    this.el('filtro-cabo').value = '';
-    this.llenarListas();
-    this.periodoAbierto = false;
-    this.diaAbierto = false;
-    this.el('filtro-dia').value = '';
-    this.limpiarRango();
-    this.sincronizarControles();
-    this.aplicar();
+    this.quitarFiltros();
     SRP.util.anunciar('Filtros quitados: todos los registros.', 'exito', { deshacer: () => this.volverAFiltro(antes) });
   },
 
@@ -298,12 +290,9 @@ SRP.registros = {
   /* Filtros activos como fichas con ×. Lo que ya está a la vista en la lista no se
      repite: sólo el periodo y el cabo, cuando los hay. El número va también en «Filtros». */
   pintarFichas() {
-    const f = this.filtro, fmt = d => SRP.util.formatearFecha(d), esc = t => SRP.util.escapar(t);
+    const f = this.filtro, esc = t => SRP.util.escapar(t);
     const fichas = [];
-    let periodo = '';
-    if (f.desde || f.hasta) periodo = f.desde && f.hasta ? fmt(f.desde) + ' al ' + fmt(f.hasta) : (f.desde ? 'Desde ' + fmt(f.desde) : 'Hasta ' + fmt(f.hasta));
-    else if (f.dia) periodo = (f.dia === SRP.util.fechaHoy() ? 'Hoy, ' : '') + fmt(f.dia);
-    else if (f.anio) periodo = f.mes ? SRP.util.nombreMes(f.anio + '-' + f.mes) : f.anio;
+    const periodo = SRP.util.textoPeriodo(f);
     if (periodo) fichas.push(['periodo', periodo]);
     fichas.push(...this.elegidos());
     this.el('filtros-activos').innerHTML = fichas.map(([q, t]) =>
