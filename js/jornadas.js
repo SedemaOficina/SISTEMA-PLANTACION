@@ -25,10 +25,10 @@
 window.SRP = window.SRP || {};
 
 SRP.jornadas = {
-  /* Filtros. La fecha se elige con los atajos (Todas, Hoy, Este mes, Este año, Un día, Un periodo); «Este
-     mes» y «Este año» guardan `anio` y `mes`. Las listas viven plegadas en «Más filtros». Al entrar se
+  /* Filtros. La fecha se elige con los atajos (Todas, Hoy, Un día, Un periodo); el mes y el año son
+     periodos rápidos dentro de «Un periodo». Las listas viven plegadas en «Más filtros». Al entrar se
      ven todas. */
-  filtro: { texto: '', revision: '', dia: '', desde: '', hasta: '', anio: '', mes: '', cabo: '', programa: '', alcaldia: '', organizacion: '' },
+  filtro: { texto: '', revision: '', dia: '', desde: '', hasta: '', cabo: '', programa: '', alcaldia: '', organizacion: '' },
   // «Pendientes»: lo que le falta a cada jornada. El reporte es de una jornada cerrada con árboles
   REVISION: { pendiente: 'Con algo por atender', revisar: 'Con puntos por revisar', cuadra: 'No cuadran con lo previsto', sinreporte: 'Sin reporte todavía', lista: 'Sin pendientes' },
   diaAbierto: false,
@@ -43,9 +43,10 @@ SRP.jornadas = {
 
   iniciar() {
     SRP.util.atajos.iniciar(this.el('jornada-atajos'), a => this.aplicarAtajo(a));
+    SRP.util.atajos.rapidos(this.el('jornada-periodo'), this.el('jornada-desde'), this.el('jornada-hasta'), () => this.el('btn-jornada-filtrar').click());
     this.el('jornada-dia').addEventListener('change', () => {
       const f = this.filtro;
-      f.dia = this.el('jornada-dia').value; f.anio = ''; f.mes = ''; f.desde = ''; f.hasta = '';
+      f.dia = this.el('jornada-dia').value; f.desde = ''; f.hasta = '';
       this.diaAbierto = true; this.periodoAbierto = false;
       this.pintarLista();
     });
@@ -56,7 +57,7 @@ SRP.jornadas = {
       if (desde && hasta && desde > hasta) { SRP.util.anunciar('La fecha «Desde» es posterior a «Hasta». Corrija el rango.', 'alerta'); return; }
       const f = this.filtro;
       f.desde = desde; f.hasta = hasta;
-      if (desde || hasta) { f.dia = ''; f.anio = ''; f.mes = ''; }
+      if (desde || hasta) f.dia = '';
       this.pintarLista();
     });
     // Buscar por nombre: se filtra mientras se escribe, sin distinguir acentos ni mayúsculas
@@ -405,7 +406,7 @@ SRP.jornadas = {
       if (!this.lista.some(j => j.clave === this.actual)) {
         const j = await SRP.almacen.uno('jornadas', this.actual);
         if (j) {
-          Object.assign(this.filtro, { dia: j.fecha, desde: '', hasta: '', anio: '', mes: '' }); this.periodoAbierto = false;
+          Object.assign(this.filtro, { dia: j.fecha, desde: '', hasta: '' }); this.periodoAbierto = false;
           if (j.fecha === SRP.util.fechaHoy()) { this.diaAbierto = false; this.el('jornada-dia').value = ''; }
           else { this.diaAbierto = true; this.el('jornada-dia').value = j.fecha; }
           if (this.filtro.cabo && !SRP.permisos.personasDe(j).includes(this.filtro.cabo)) { this.filtro.cabo = ''; if (this.el('jornada-cabo')) this.el('jornada-cabo').value = ''; }
@@ -425,16 +426,11 @@ SRP.jornadas = {
 
   aplicarAtajo(atajo) {
     const f = this.filtro;
-    const limpiarFechas = () => { f.dia = ''; f.desde = ''; f.hasta = ''; f.anio = ''; f.mes = ''; this.el('jornada-dia').value = ''; this.el('jornada-desde').value = ''; this.el('jornada-hasta').value = ''; };
+    const limpiarFechas = () => { f.dia = ''; f.desde = ''; f.hasta = ''; this.el('jornada-dia').value = ''; this.el('jornada-desde').value = ''; this.el('jornada-hasta').value = ''; };
     if (atajo === 'hoy') { limpiarFechas(); f.dia = SRP.util.fechaHoy(); this.diaAbierto = false; this.periodoAbierto = false; }
     if (atajo === 'todas') { limpiarFechas(); this.diaAbierto = false; this.periodoAbierto = false; }
-    // «Este mes» y «Este año»: el mes y el año en curso, sin abrir ningún campo
-    if (atajo === 'mes' || atajo === 'anio') {
-      limpiarFechas(); this.diaAbierto = false; this.periodoAbierto = false;
-      const hoy = SRP.util.fechaHoy(); f.anio = hoy.slice(0, 4); f.mes = atajo === 'mes' ? hoy.slice(5, 7) : '';
-    }
     // «Un día» y «Un periodo» sólo abren su fecha; filtran al elegirla o con «Aplicar»
-    if (atajo === 'dia') { this.diaAbierto = true; this.periodoAbierto = false; f.desde = ''; f.hasta = ''; f.dia = this.el('jornada-dia').value; if (f.dia) { f.anio = ''; f.mes = ''; } }
+    if (atajo === 'dia') { this.diaAbierto = true; this.periodoAbierto = false; f.desde = ''; f.hasta = ''; f.dia = this.el('jornada-dia').value; }
     if (atajo === 'periodo') { this.periodoAbierto = true; this.diaAbierto = false; }
     this.pintarLista();
   },
@@ -477,11 +473,10 @@ SRP.jornadas = {
   sincronizarAtajos() {
     const f = this.filtro, hoy = SRP.util.fechaHoy();
     const libre = !this.diaAbierto && !this.periodoAbierto;
-    const esteAnio = libre && !f.dia && !f.desde && !f.hasta && f.anio === hoy.slice(0, 4);
     const activo = { hoy: libre && f.dia === hoy, dia: this.diaAbierto, periodo: this.periodoAbierto,
-      mes: esteAnio && f.mes === hoy.slice(5, 7), anio: esteAnio && !f.mes,
-      todas: libre && !f.dia && !f.desde && !f.hasta && !f.anio && !f.mes };
+      todas: libre && !f.dia && !f.desde && !f.hasta };
     SRP.util.atajos.marcar(this.el('jornada-atajos'), activo, { dia: [this.el('jornada-un-dia'), this.diaAbierto], periodo: [this.el('jornada-periodo'), this.periodoAbierto] });
+    SRP.util.atajos.marcarRapidos(this.el('jornada-periodo'), f);
     // El resumen del acordeón dice qué hay elegido dentro, aunque esté plegado
     const conCabo = !this.el('caja-jornada-cabo').hidden, conOrg = !this.el('caja-jornada-org').hidden;
     this.el('jornada-mas-filtros').hidden = false;
@@ -563,8 +558,6 @@ SRP.jornadas = {
     if (f.dia) return j.fecha === f.dia;
     if (f.desde && j.fecha < f.desde) return false;
     if (f.hasta && j.fecha > f.hasta) return false;
-    if (f.anio && !j.fecha.startsWith(f.anio)) return false;
-    if (f.mes && j.fecha.slice(5, 7) !== f.mes) return false;
     return true;
   },
 
@@ -663,12 +656,12 @@ SRP.jornadas = {
     const vacio = this.el('jornadas-vacio');
     vacio.hidden = n > 0;
     // Estado vacío con salida
-    const filtrado = f.texto || f.revision || f.dia || f.desde || f.hasta || f.anio || f.cabo || f.programa || f.alcaldia || f.organizacion;
+    const filtrado = f.texto || f.revision || f.dia || f.desde || f.hasta || f.cabo || f.programa || f.alcaldia || f.organizacion;
     const REVISION = { pendiente: 'con algo por atender', revisar: 'con puntos por revisar', cuadra: 'que no cuadren con lo previsto', sinreporte: 'sin reporte', lista: 'sin pendientes' };
     const puedeRegistrar = SRP.permisos.de(u).registrar;
     if (!n) vacio.innerHTML = filtrado
-      ? SRP.util.htmlVacio('jornadas', f.texto ? 'Ninguna jornada coincide con «' + f.texto + '»' + (f.dia || f.desde || f.anio || f.cabo || f.revision ? ' con estos filtros.' : '.')
-          : f.revision ? 'No hay jornadas ' + REVISION[f.revision] + (f.dia || f.desde || f.anio || f.cabo ? ' con estos filtros.' : '.') : f.dia ? 'No hay jornadas del ' + SRP.util.formatearFecha(f.dia) + '.' : 'No hay jornadas con este filtro.',
+      ? SRP.util.htmlVacio('jornadas', f.texto ? 'Ninguna jornada coincide con «' + f.texto + '»' + (f.dia || f.desde || f.hasta || f.cabo || f.revision ? ' con estos filtros.' : '.')
+          : f.revision ? 'No hay jornadas ' + REVISION[f.revision] + (f.dia || f.desde || f.hasta || f.cabo ? ' con estos filtros.' : '.') : f.dia ? 'No hay jornadas del ' + SRP.util.formatearFecha(f.dia) + '.' : 'No hay jornadas con este filtro.',
           f.texto ? 'Pruebe con otra parte del nombre o vea todas.' : 'Pruebe con otro periodo o vea todas.', [{ accion: 'todas', texto: 'Ver todas' }])
       : SRP.util.htmlVacio('jornadas', 'Todavía no hay jornadas.', 'Cada jornada que se inicie en Nuevo registro aparece aquí con su mapa.',
           [puedeRegistrar ? { accion: 'iniciar', texto: 'Iniciar una jornada', clase: 'btn-primario', icono: 'mas' } : null]);

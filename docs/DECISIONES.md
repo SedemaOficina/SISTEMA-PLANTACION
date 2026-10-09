@@ -3241,3 +3241,12 @@
     institución, o cambiar o restablecer la contraseña, sigue cerrando sus sesiones al instante.
   · La cookie dura 400 días, lo más que admiten los navegadores; quien decide si la sesión vale es el servidor.
   · Sustituye a las 12 horas sin uso y 7 días como máximo de D259. Parámetro: `SRP_SESION_INACTIVIDAD_DIAS`.
+
+- **D281. El mes y el año, dentro de «Un periodo» (bloque 201).**
+  09-10-2026. Liber propuso quitar «Este mes» y «Este año», porque se pueden elegir con «Un periodo»; eligió la
+  variante de dejarlos dentro de «Un periodo» para que ver un mes no cueste unos siete toques.
+  · Registros, Jornadas y Fotografías: la fila queda en cuatro atajos y un renglón (Todas · Hoy · Un día ·
+    Un periodo). Dentro de «Un periodo», «Este mes», «Mes pasado» (nuevo) y «Este año» llenan Desde y Hasta
+    y aplican; el que coincide con el rango aplicado queda marcado.
+  · El periodo es un día o un rango: se retira el filtro interno por año y mes. Un mes o un año completos se
+    nombran en la ficha por su nombre («Septiembre de 2026», «2026»). Supervisión y Mi avance no cambian.

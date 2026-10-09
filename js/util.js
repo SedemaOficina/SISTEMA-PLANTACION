@@ -45,13 +45,37 @@ SRP.util = {
     return mes ? d + '-' + mes + '-' + a : d + '-' + m + '-' + a;
   },
 
-  // El periodo de un filtro, como lo dicen sus fichas: «01-SEP-2026 al 30-SEP-2026», «Hoy, 08-OCT-2026», «Septiembre de 2026»; o vacío
+  /* El periodo de un filtro, como lo dicen sus fichas: «01-SEP-2026 al 15-SEP-2026», «Hoy, 08-OCT-2026»; o
+     vacío. Un mes o un año completos se dicen por su nombre: «Septiembre de 2026», «2026». */
   textoPeriodo(f) {
     const fmt = d => this.formatearFecha(d);
-    if (f.desde || f.hasta) return f.desde && f.hasta ? fmt(f.desde) + ' al ' + fmt(f.hasta) : (f.desde ? 'Desde ' + fmt(f.desde) : 'Hasta ' + fmt(f.hasta));
+    if (f.desde && f.hasta) {
+      const a = f.desde.slice(0, 4), m = f.desde.slice(5, 7);
+      if (f.desde === a + '-01-01' && f.hasta === a + '-12-31') return a;
+      if (f.desde === a + '-' + m + '-01' && f.hasta === this.finDeMes(a, m)) return this.nombreMes(a + '-' + m);
+      return fmt(f.desde) + ' al ' + fmt(f.hasta);
+    }
+    if (f.desde || f.hasta) return f.desde ? 'Desde ' + fmt(f.desde) : 'Hasta ' + fmt(f.hasta);
     if (f.dia) return (f.dia === this.fechaHoy() ? 'Hoy, ' : '') + fmt(f.dia);
-    if (f.anio) return f.mes ? this.nombreMes(f.anio + '-' + f.mes) : String(f.anio);
     return '';
+  },
+
+  // El último día de un mes, AAAA-MM-DD
+  finDeMes(a, m) { return a + '-' + String(m).padStart(2, '0') + '-' + String(new Date(Number(a), Number(m), 0).getDate()).padStart(2, '0'); },
+
+  /* PERIODOS RÁPIDOS dentro de «Un periodo»: «mes» (el mes en curso), «mes-pasado» y «anio» (el año en
+     curso), como [desde, hasta] completos. Llenan Desde y Hasta y entran con «Aplicar». */
+  rangoRapido(clave) {
+    const [a, m] = this.fechaHoy().split('-').map(Number);
+    if (clave === 'anio') return [a + '-01-01', a + '-12-31'];
+    const [ma, mm] = clave === 'mes-pasado' ? (m === 1 ? [a - 1, 12] : [a, m - 1]) : [a, m];
+    return [ma + '-' + String(mm).padStart(2, '0') + '-01', this.finDeMes(ma, mm)];
+  },
+  htmlRapidos() {
+    return '<div class="chips chips-rapidos" role="group" aria-label="Periodos rápidos">' +
+      '<button type="button" class="chip" data-rapido="mes">Este mes</button>' +
+      '<button type="button" class="chip" data-rapido="mes-pasado">Mes pasado</button>' +
+      '<button type="button" class="chip" data-rapido="anio">Este año</button></div>';
   },
 
   /* Los días de una jornada: de su fecha de inicio al último árbol plantado. Cada árbol lleva la
@@ -372,6 +396,21 @@ SRP.util = {
         if (panel) panel.hidden = !abierto;
         const c = caja.querySelector('[data-atajo="' + atajo + '"]');
         if (c) c.setAttribute('aria-expanded', String(!!abierto));
+      });
+    },
+    // Los periodos rápidos de un panel «Un periodo»: llenan Desde y Hasta y aplican con el botón de la vista
+    rapidos(panel, desde, hasta, aplicar) {
+      panel.addEventListener('click', (e) => {
+        const b = e.target.closest('.chip[data-rapido]'); if (!b) return;
+        [desde.value, hasta.value] = SRP.util.rangoRapido(b.dataset.rapido);
+        aplicar();
+      });
+    },
+    // Marcado el que coincide con el rango aplicado
+    marcarRapidos(panel, f) {
+      panel.querySelectorAll('.chip[data-rapido]').forEach(c => {
+        const [d, h] = SRP.util.rangoRapido(c.dataset.rapido);
+        c.setAttribute('aria-pressed', String(f.desde === d && f.hasta === h));
       });
     }
   },

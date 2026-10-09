@@ -415,10 +415,11 @@ fieldset.campo { margin-inline: 0; }
 .jornada-cifra[data-cero="true"] b { color: var(--neutro-borde); }
 .jornada-cabo { display: block; font-size: var(--t-xs); color: var(--gris); overflow-wrap: anywhere; }
 .jornada-cabo b { color: var(--texto); font-weight: 500; }
-/* Filtros de Jornadas y Registros: seis atajos de periodo y el acordeón «Más filtros» */
-/* Seis atajos de periodo: dos renglones de tres en el teléfono, uno solo cuando hay ancho */
-.chips.chips-seis { grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: none; }
-.chips-seis .chip { padding-left: var(--e-15); padding-right: var(--e-15); }
+/* Filtros de Jornadas, Registros y Fotografías: cuatro atajos de periodo en un renglón, los periodos
+   rápidos dentro de «Un periodo» y el acordeón «Más filtros» */
+.chips-periodo .chip { padding-left: var(--e-15); padding-right: var(--e-15); }
+/* Su ancho no cuenta para el de las columnas: «Aplicar» conserva el suyo */
+.filtros-periodo .chips-rapidos { grid-column: 1 / -1; margin-bottom: 0; contain: inline-size; }
 .acordeon-filtros { border: 1px solid var(--borde-filtro); border-radius: var(--radio-filtro); margin-top: var(--e-2); }
 .acordeon-filtros summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); min-height: 44px; padding: 0 var(--e-3); font-size: var(--t-s); font-weight: 500; color: var(--gris); cursor: pointer; }
 .acordeon-filtros summary::-webkit-details-marker { display: none; }
@@ -1204,7 +1205,6 @@ dialog::backdrop { background: var(--velo-oscuro); }
    «desde» de menor a mayor, luego las de «hasta» de mayor a menor, y al final las de capacidad
    del dispositivo (ratón, pantalla táctil, menos movimiento). No se agregan cortes nuevos. */
 @media (min-width: 701px) {
-  .chips.chips-seis { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .cfg-tarjetas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   /* SISTEMA DE ANCHO EN TABLETA Y COMPUTADORA. El teléfono es el uso principal y no cambia:
    todo lo de aquí vive en consultas de 701 px o más. Reglas:

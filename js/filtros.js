@@ -4,7 +4,7 @@
      Filtrar                                             Quitar filtros
      [fichas de lo que está filtrando, cada una con su ×]
      Buscar (si la vista lo pide)
-     Todas · Hoy · Este mes · Este año · Un día · Un periodo
+     Todas · Hoy · Un día · Un periodo (dentro, el mes en curso, el pasado y el año)
      Más filtros: las listas de la vista
 
    Cada vista dice qué busca, cuál es la fecha de cada elemento y qué listas ofrece; la zona arma los
@@ -33,7 +33,7 @@ SRP.zonaFiltros = {
     caja(s) { return document.getElementById('caja-' + this.p + '-' + s); },
 
     vacio() {
-      const f = { texto: '', dia: '', desde: '', hasta: '', anio: '', mes: '', organizacion: '' };
+      const f = { texto: '', dia: '', desde: '', hasta: '', organizacion: '' };
       this.o.listas.forEach(l => { f[l.clave] = ''; });
       return f;
     },
@@ -53,14 +53,13 @@ SRP.zonaFiltros = {
         '<ul id="' + p + '-fichas" class="filtros-activos" data-visible="true" aria-label="Filtros activos"></ul>' +
         '<div class="filtros zona-filtros">' +
         (o.buscar ? '<div class="campo"><label for="' + p + '-buscar">' + esc(o.buscar.etiqueta) + '</label><input id="' + p + '-buscar" type="search" placeholder="' + esc(o.buscar.marcador) + '" autocomplete="off"></div>' : '') +
-        '<div id="' + p + '-atajos" class="chips chips-seis" role="group" aria-label="Periodo">' +
+        '<div id="' + p + '-atajos" class="chips chips-periodo" role="group" aria-label="Periodo">' +
         '<button type="button" class="chip" data-atajo="todas">' + esc(o.todas || 'Todas') + '</button>' +
         '<button type="button" class="chip" data-atajo="hoy" id="' + p + '-chip-hoy">Hoy</button>' +
-        '<button type="button" class="chip" data-atajo="mes">Este mes</button><button type="button" class="chip" data-atajo="anio">Este año</button>' +
         '<button type="button" class="chip" data-atajo="dia" aria-controls="' + p + '-un-dia" aria-expanded="false">Un día</button>' +
         '<button type="button" class="chip" data-atajo="periodo" aria-controls="' + p + '-periodo" aria-expanded="false">Un periodo</button></div>' +
         '<div id="' + p + '-un-dia" class="filtros-periodo filtros-un-dia" hidden><div class="campo campo-corto"><label for="' + p + '-dia">Día</label>' + fecha('dia') + '</div></div>' +
-        '<div id="' + p + '-periodo" class="filtros-periodo" hidden><div class="campo campo-corto"><label for="' + p + '-desde">Desde</label>' + fecha('desde') + '</div>' +
+        '<div id="' + p + '-periodo" class="filtros-periodo" hidden>' + SRP.util.htmlRapidos() + '<div class="campo campo-corto"><label for="' + p + '-desde">Desde</label>' + fecha('desde') + '</div>' +
         '<div class="campo campo-corto"><label for="' + p + '-hasta">Hasta</label>' + fecha('hasta') + '</div>' +
         '<button type="button" id="' + p + '-aplicar" class="btn btn-primario btn-chico">Aplicar</button></div>' +
         '<details id="' + p + '-mas" class="acordeon-filtros"><summary><span id="' + p + '-mas-texto">Más filtros</span></summary>' +
@@ -70,13 +69,14 @@ SRP.zonaFiltros = {
         '</div></details></div>';
 
       SRP.util.atajos.iniciar(this.el('atajos'), a => this.aplicarAtajo(a));
+      SRP.util.atajos.rapidos(this.el('periodo'), this.el('desde'), this.el('hasta'), () => this.el('aplicar').click());
       this.el('dia').addEventListener('change', () => { this.filtro.dia = this.el('dia').value; this.diaAbierto = true; this.cambioDePeriodo(); });
       // Desde y Hasta entran con «Aplicar», como en Registros
       this.el('aplicar').addEventListener('click', () => {
         const desde = this.el('desde').value, hasta = this.el('hasta').value, f = this.filtro;
         if (desde && hasta && desde > hasta) { SRP.util.anunciar('La fecha «Desde» es posterior a «Hasta». Corrija el rango.', 'alerta'); return; }
         f.desde = desde; f.hasta = hasta;
-        if (desde || hasta) { f.dia = ''; f.anio = ''; f.mes = ''; }
+        if (desde || hasta) f.dia = '';
         this.cambioDePeriodo();
       });
       o.listas.forEach(l => this.el(l.clave).addEventListener('change', (e) => { this.filtro[l.clave] = e.target.value; this.cambio(); }));
@@ -115,7 +115,7 @@ SRP.zonaFiltros = {
       if (atajo === 'periodo') { this.periodoAbierto = true; this.diaAbierto = false; this.sincronizar(); return; }
       if (atajo === 'dia') {
         this.diaAbierto = true; this.periodoAbierto = false;
-        f.anio = ''; f.mes = ''; f.dia = this.el('dia').value;
+        f.dia = this.el('dia').value;
         this.limpiarRango();
         this.cambioDePeriodo();
         return;
@@ -124,8 +124,6 @@ SRP.zonaFiltros = {
       this.el('dia').value = '';
       const hoy = SRP.util.fechaHoy();
       f.dia = atajo === 'hoy' ? hoy : '';
-      // «Este mes» y «Este año»: el mes y el año en curso
-      f.anio = atajo === 'mes' || atajo === 'anio' ? hoy.slice(0, 4) : ''; f.mes = atajo === 'mes' ? hoy.slice(5, 7) : '';
       this.limpiarRango();
       this.cambioDePeriodo();
     },
@@ -159,8 +157,7 @@ SRP.zonaFiltros = {
 
     cumplePeriodo(e) {
       const f = this.filtro, d = this.o.fecha(e) || '';
-      const periodo = f.anio ? f.anio + (f.mes ? '-' + f.mes : '') : '';
-      return (!f.dia || d === f.dia) && (!periodo || d.startsWith(periodo)) && (!f.desde || d >= f.desde) && (!f.hasta || d <= f.hasta);
+      return (!f.dia || d === f.dia) && (!f.desde || d >= f.desde) && (!f.hasta || d <= f.hasta);
     },
 
     // Todas las palabras, en cualquier orden, sin acentos ni mayúsculas
@@ -240,15 +237,13 @@ SRP.zonaFiltros = {
     sincronizar() {
       const f = this.filtro, o = this.o, hoy = SRP.util.fechaHoy();
       if (o.buscar && this.el('buscar').value.trim() !== f.texto) this.el('buscar').value = f.texto;
-      const periodo = f.anio ? f.anio + (f.mes ? '-' + f.mes : '') : '';
       const conRango = !!(f.desde || f.hasta);
       // Un solo atajo marcado a la vez
       const pidePeriodo = conRango || this.periodoAbierto;
       const pideDia = !pidePeriodo && this.diaAbierto;
-      const libre = !pidePeriodo && !pideDia && !f.dia, esteAnio = libre && f.anio === hoy.slice(0, 4);
-      const activo = { hoy: !pidePeriodo && !pideDia && f.dia === hoy, dia: pideDia, todas: libre && periodo === '', periodo: pidePeriodo,
-        mes: esteAnio && f.mes === hoy.slice(5, 7), anio: esteAnio && !f.mes };
+      const activo = { hoy: !pidePeriodo && !pideDia && f.dia === hoy, dia: pideDia, todas: !pidePeriodo && !pideDia && !f.dia, periodo: pidePeriodo };
       SRP.util.atajos.marcar(this.el('atajos'), activo, { periodo: [this.el('periodo'), pidePeriodo], dia: [this.el('un-dia'), pideDia] });
+      SRP.util.atajos.marcarRapidos(this.el('periodo'), f);
       // El resumen de «Más filtros» dice lo elegido dentro; si no hay nada, lo que ofrece
       const dentro = this.fichas().filter(x => !['periodo', 'texto'].includes(x[0])).map(x => x[1].replace(/^[^:]+: /, '')).filter(Boolean);
       const disponibles = [].concat(o.listas.filter(l => this.visible(l)).map(l => l.etiqueta.toLowerCase()), this.conInstituciones() ? ['institución'] : []).filter(Boolean);

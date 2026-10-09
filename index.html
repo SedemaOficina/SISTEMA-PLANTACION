@@ -14,12 +14,12 @@
 <!-- Las peticiones al mapa no dicen desde qué sitio se hacen -->
 <meta name="referrer" content="no-referrer">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.9.59">
-<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.9.59">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.9.60">
+<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.9.60">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.9.59">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.9.59">
-<link rel="stylesheet" href="css/estilos.css?v=0.9.59">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.9.60">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.9.60">
+<link rel="stylesheet" href="css/estilos.css?v=0.9.60">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -30,8 +30,8 @@
   <div class="encabezado-interior">
     <!-- Logotipo: Gobierno CDMX · SEDEMA · SIA · Reforestación Urbana en pantalla ancha; en teléfono, SIA y Reforestación Urbana -->
     <picture>
-      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.9.59">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.9.59" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
+      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.9.60">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.9.60" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» -->
@@ -397,12 +397,10 @@
     <ul id="filtros-activos" class="filtros-activos" aria-label="Filtros activos"></ul>
     <div id="panel-filtros" class="filtros zona-filtros" data-abierto="true">
       <!-- Una sola fila: atajos y listas. Desde/Hasta sólo al pedir «Un periodo» -->
-      <!-- Mismo orden que Jornadas: Todos · Hoy · Este mes · Este año · Un día · Un periodo; las listas, plegadas -->
-      <div id="filtro-atajos" class="chips chips-seis" role="group" aria-label="Periodo">
+      <!-- Mismo orden que Jornadas: Todos · Hoy · Un día · Un periodo; el mes y el año, dentro de «Un periodo» -->
+      <div id="filtro-atajos" class="chips chips-periodo" role="group" aria-label="Periodo">
         <button type="button" class="chip" data-atajo="todos">Todos</button>
         <button type="button" class="chip" data-atajo="hoy" id="chip-hoy">Hoy</button>
-        <button type="button" class="chip" data-atajo="mes">Este mes</button>
-        <button type="button" class="chip" data-atajo="anio">Este año</button>
         <!-- «Un día»: una sola fecha, sin repetirla en Desde y Hasta -->
         <button type="button" class="chip" data-atajo="dia" aria-controls="filtro-un-dia" aria-expanded="false">Un día</button>
         <button type="button" class="chip" data-atajo="periodo" aria-controls="filtro-periodo" aria-expanded="false">Un periodo</button>
@@ -411,6 +409,7 @@
         <div class="campo campo-corto"><label for="filtro-dia">Día</label><input type="date" id="filtro-dia" data-vacio="Elija la fecha"></div>
       </div>
       <div id="filtro-periodo" class="filtros-periodo" hidden>
+        <div class="chips chips-rapidos" role="group" aria-label="Periodos rápidos"><button type="button" class="chip" data-rapido="mes">Este mes</button><button type="button" class="chip" data-rapido="mes-pasado">Mes pasado</button><button type="button" class="chip" data-rapido="anio">Este año</button></div>
         <div class="campo campo-corto"><label for="filtro-desde">Desde</label><input type="date" id="filtro-desde" data-vacio="Elija la fecha"></div>
         <div class="campo campo-corto"><label for="filtro-hasta">Hasta</label><input type="date" id="filtro-hasta" data-vacio="Elija la fecha"></div>
         <button type="button" id="btn-filtrar" class="btn btn-primario btn-chico">Aplicar</button>
@@ -460,11 +459,9 @@
               <option value="">Todas</option><option value="pendiente">Con algo por atender</option><option value="revisar">Con puntos por revisar</option>
               <option value="cuadra">No cuadran con lo previsto</option><option value="sinreporte">Sin reporte todavía</option><option value="lista">Sin pendientes</option></select></div>
           </div>
-          <div id="jornada-atajos" class="chips chips-seis" role="group" aria-label="Periodo">
+          <div id="jornada-atajos" class="chips chips-periodo" role="group" aria-label="Periodo">
             <button type="button" class="chip" data-atajo="todas">Todas</button>
             <button type="button" class="chip" data-atajo="hoy" id="jornada-chip-hoy">Hoy</button>
-            <button type="button" class="chip" data-atajo="mes">Este mes</button>
-            <button type="button" class="chip" data-atajo="anio">Este año</button>
             <button type="button" class="chip" data-atajo="dia" aria-controls="jornada-un-dia" aria-expanded="false">Un día</button>
             <button type="button" class="chip" data-atajo="periodo" aria-controls="jornada-periodo" aria-expanded="false">Un periodo</button>
           </div>
@@ -472,6 +469,7 @@
             <div class="campo campo-corto"><label for="jornada-dia">Día</label><input type="date" id="jornada-dia" data-vacio="Elija la fecha"></div>
           </div>
           <div id="jornada-periodo" class="filtros-periodo" hidden>
+            <div class="chips chips-rapidos" role="group" aria-label="Periodos rápidos"><button type="button" class="chip" data-rapido="mes">Este mes</button><button type="button" class="chip" data-rapido="mes-pasado">Mes pasado</button><button type="button" class="chip" data-rapido="anio">Este año</button></div>
             <div class="campo campo-corto"><label for="jornada-desde">Desde</label><input type="date" id="jornada-desde" data-vacio="Elija la fecha"></div>
             <div class="campo campo-corto"><label for="jornada-hasta">Hasta</label><input type="date" id="jornada-hasta" data-vacio="Elija la fecha"></div>
             <button type="button" id="btn-jornada-filtrar" class="btn btn-primario btn-chico"></button>
@@ -1146,58 +1144,58 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.9.59"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.9.59"></script>
-<script src="vendor/turf-pip.min.js?v=0.9.59"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.9.59"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.9.59"></script>
+<script src="vendor/leaflet.js?v=0.9.60"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.9.60"></script>
+<script src="vendor/turf-pip.min.js?v=0.9.60"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.9.60"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.9.60"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.9.59"></script>
-<script src="js/util.js?v=0.9.59"></script>
-<script src="js/filtros.js?v=0.9.59"></script>
-<script src="js/iconos.js?v=0.9.59"></script>
+<script src="js/config.js?v=0.9.60"></script>
+<script src="js/util.js?v=0.9.60"></script>
+<script src="js/filtros.js?v=0.9.60"></script>
+<script src="js/iconos.js?v=0.9.60"></script>
 <!-- Capas territoriales del SIA, compactadas por herramientas/generar_capas.py desde originales/ -->
-<script src="assets/capas/capa-alcaldias.js?v=0.9.59"></script>
-<script src="assets/capas/capa-uga.js?v=0.9.59"></script>
-<script src="assets/capas/capa-colonias.js?v=0.9.59"></script>
+<script src="assets/capas/capa-alcaldias.js?v=0.9.60"></script>
+<script src="assets/capas/capa-uga.js?v=0.9.60"></script>
+<script src="assets/capas/capa-colonias.js?v=0.9.60"></script>
 <!-- Colonias prioritarias para reforestar: capa de referencia del modelo de priorización -->
-<script src="assets/capas/capa-prioritarias.js?v=0.9.59"></script>
-<script src="assets/catalogos/catalogo-especies.js?v=0.9.59"></script>
-<script src="assets/catalogos/catalogo-vehiculos.js?v=0.9.59"></script>
-<script src="js/datos-ficticios.js?v=0.9.59"></script>
-<script src="js/permisos.js?v=0.9.59"></script>
-<script src="js/derivacion.js?v=0.9.59"></script>
-<script src="js/prioritarias.js?v=0.9.59"></script>
-<script src="js/solicitud.js?v=0.9.59"></script>
-<script src="js/almacen.js?v=0.9.59"></script>
-<script src="js/sesion.js?v=0.9.59"></script>
-<script src="js/referencias.js?v=0.9.59"></script>
-<script src="js/folio.js?v=0.9.59"></script>
+<script src="assets/capas/capa-prioritarias.js?v=0.9.60"></script>
+<script src="assets/catalogos/catalogo-especies.js?v=0.9.60"></script>
+<script src="assets/catalogos/catalogo-vehiculos.js?v=0.9.60"></script>
+<script src="js/datos-ficticios.js?v=0.9.60"></script>
+<script src="js/permisos.js?v=0.9.60"></script>
+<script src="js/derivacion.js?v=0.9.60"></script>
+<script src="js/prioritarias.js?v=0.9.60"></script>
+<script src="js/solicitud.js?v=0.9.60"></script>
+<script src="js/almacen.js?v=0.9.60"></script>
+<script src="js/sesion.js?v=0.9.60"></script>
+<script src="js/referencias.js?v=0.9.60"></script>
+<script src="js/folio.js?v=0.9.60"></script>
 <!-- Esquema generado de datos/esquema.json: relaciones entre tablas -->
-<script src="js/esquema.js?v=0.9.59"></script>
-<script src="js/conexion.js?v=0.9.59"></script>
-<script src="js/envio.js?v=0.9.59"></script>
-<script src="js/mapa.js?v=0.9.59"></script>
-<script src="js/foto.js?v=0.9.59"></script>
-<script src="js/jornada-activa.js?v=0.9.59"></script>
-<script src="js/formulario.js?v=0.9.59"></script>
+<script src="js/esquema.js?v=0.9.60"></script>
+<script src="js/conexion.js?v=0.9.60"></script>
+<script src="js/envio.js?v=0.9.60"></script>
+<script src="js/mapa.js?v=0.9.60"></script>
+<script src="js/foto.js?v=0.9.60"></script>
+<script src="js/jornada-activa.js?v=0.9.60"></script>
+<script src="js/formulario.js?v=0.9.60"></script>
 <!-- Sólo en la versión de prueba -->
-<script src="js/espejo.js?v=0.9.59"></script>
-<script src="js/registros.js?v=0.9.59"></script>
-<script src="js/galeria.js?v=0.9.59"></script>
-<script src="js/jornadas.js?v=0.9.59"></script>
-<script src="js/informes.js?v=0.9.59"></script>
-<script src="js/supervision.js?v=0.9.59"></script>
-<script src="js/indicadores.js?v=0.9.59"></script>
-<script src="js/demostracion.js?v=0.9.59"></script>
-<script src="js/croquis.js?v=0.9.59"></script>
-<script src="js/reportes.js?v=0.9.59"></script>
-<script src="js/catalogos.js?v=0.9.59"></script>
-<script src="js/usuarios.js?v=0.9.59"></script>
-<script src="js/excel.js?v=0.9.59"></script>
-<script src="js/carga.js?v=0.9.59"></script>
-<script src="js/configuracion.js?v=0.9.59"></script>
-<script src="js/especies-revision.js?v=0.9.59"></script>
-<script src="js/app.js?v=0.9.59"></script>
+<script src="js/espejo.js?v=0.9.60"></script>
+<script src="js/registros.js?v=0.9.60"></script>
+<script src="js/galeria.js?v=0.9.60"></script>
+<script src="js/jornadas.js?v=0.9.60"></script>
+<script src="js/informes.js?v=0.9.60"></script>
+<script src="js/supervision.js?v=0.9.60"></script>
+<script src="js/indicadores.js?v=0.9.60"></script>
+<script src="js/demostracion.js?v=0.9.60"></script>
+<script src="js/croquis.js?v=0.9.60"></script>
+<script src="js/reportes.js?v=0.9.60"></script>
+<script src="js/catalogos.js?v=0.9.60"></script>
+<script src="js/usuarios.js?v=0.9.60"></script>
+<script src="js/excel.js?v=0.9.60"></script>
+<script src="js/carga.js?v=0.9.60"></script>
+<script src="js/configuracion.js?v=0.9.60"></script>
+<script src="js/especies-revision.js?v=0.9.60"></script>
+<script src="js/app.js?v=0.9.60"></script>
 </body>
 </html>

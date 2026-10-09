@@ -689,11 +689,7 @@ with sync_playwright() as p:
     pg.click('#registros-vacio button[data-vacio=quitar]'); pg.wait_for_timeout(300)
     ok('Total: 4 ' in pg.inner_text('#registros-total') and pg.is_hidden('#registros-vacio'),'«Quitar filtros» devuelve los cuatro')
     ok(pg.is_hidden('#caja-filtro-cabo'),'el cabo no tiene filtro por cabo')
-    ok(pg.locator('#filtro-anio').count()==0 and pg.locator('#filtro-mes').count()==0,'no hay listas de año ni de mes: el periodo se elige con los atajos «Este mes» y «Este año»')
-    pg.click('#filtro-atajos [data-atajo=anio]'); pg.wait_for_timeout(300)
-    ok('Total: 4 ' in pg.inner_text('#registros-total') and pg.get_attribute('#filtro-atajos [data-atajo=anio]','aria-pressed')=='true' and pg.locator('#filtro-atajos .chip[aria-pressed=true]').count()==1,'«Este año» deja los cuatro de 2026: '+pg.inner_text('#registros-total'))
-    pg.click('#filtro-atajos [data-atajo=mes]'); pg.wait_for_timeout(300)
-    ok(pg.evaluate("SRP.registros.filtrados.every(r => r.fecha_plantacion.startsWith(SRP.util.fechaHoy().slice(0, 7)))") and pg.get_attribute('#filtro-atajos [data-atajo=mes]','aria-pressed')=='true','«Este mes» deja sólo los del mes en curso')
+    ok(pg.locator('#filtro-anio').count()==0 and pg.locator('#filtro-mes').count()==0,'no hay listas de año ni de mes: el mes y el año son periodos rápidos dentro de «Un periodo»')
     ok(pg.is_hidden('#filtro-desde'),'el rango viene plegado')
     pg.click('.chip[data-atajo=periodo]'); pg.wait_for_timeout(200)
     ok(pg.is_visible('#filtro-desde') and pg.get_attribute('.chip[data-atajo=periodo]','aria-expanded')=='true','«Un periodo» abre Desde/Hasta')
@@ -711,15 +707,31 @@ with sync_playwright() as p:
     ok('posterior' in pg.inner_text('#aviso'),'un rango invertido se rechaza')
     pg.fill('#filtro-desde','2026-08-01'); pg.fill('#filtro-hasta','2026-08-31'); pg.click('#btn-filtrar'); pg.wait_for_timeout(300)
     ok('Total: 1 ' in pg.inner_text('#registros-total'),'el rango de agosto trae uno')
-    ok(pg.evaluate("SRP.registros.filtro.anio + SRP.registros.filtro.mes")=='','el rango quita «Este mes» y «Este año»')
+    ok(pg.evaluate("SRP.util.textoPeriodo(SRP.registros.filtro)")=='Agosto de 2026','un mes completo se nombra por su mes en la ficha')
     ok(pg.get_attribute('.chip[data-atajo=periodo]','aria-pressed')=='true','y «Un periodo» queda marcado mientras haya rango')
+    # El mes y el año, dentro de «Un periodo»: llenan Desde y Hasta y aplican
+    ok([c for c in pg.eval_on_selector_all('#filtro-periodo .chip','b=>b.map(x=>x.dataset.rapido)')]==['mes','mes-pasado','anio'],'dentro de «Un periodo» están Este mes, Mes pasado y Este año')
+    pg.click('#filtro-periodo [data-rapido=anio]'); pg.wait_for_timeout(300)
+    hoy_a=pg.evaluate("SRP.util.fechaHoy().slice(0, 4)")
+    ok('Total: 4 ' in pg.inner_text('#registros-total') and pg.input_value('#filtro-desde')==hoy_a+'-01-01' and pg.input_value('#filtro-hasta')==hoy_a+'-12-31'
+       and pg.get_attribute('#filtro-periodo [data-rapido=anio]','aria-pressed')=='true' and pg.locator('#filtro-atajos .chip[aria-pressed=true]').count()==1,
+       '«Este año» llena Desde y Hasta con el año en curso y deja los cuatro: '+pg.inner_text('#registros-total'))
+    pg.click('#filtro-periodo [data-rapido=mes]'); pg.wait_for_timeout(300)
+    ok(pg.evaluate("SRP.registros.filtrados.every(r => r.fecha_plantacion.startsWith(SRP.util.fechaHoy().slice(0, 7)))") and pg.get_attribute('#filtro-periodo [data-rapido=mes]','aria-pressed')=='true'
+       and pg.get_attribute('#filtro-periodo [data-rapido=anio]','aria-pressed')=='false','«Este mes» deja sólo los del mes en curso, y sólo él queda marcado')
+    pg.click('#filtro-periodo [data-rapido=mes-pasado]'); pg.wait_for_timeout(300)
+    import datetime as _dt, calendar as _cal
+    _h=_dt.date.fromisoformat(pg.evaluate("SRP.util.fechaHoy()")); _a, _m = (_h.year, _h.month-1) if _h.month > 1 else (_h.year-1, 12)
+    mp_esperado=['%d-%02d-01' % (_a, _m), '%d-%02d-%02d' % (_a, _m, _cal.monthrange(_a, _m)[1])]
+    mp=[pg.input_value('#filtro-desde'), pg.input_value('#filtro-hasta'), pg.evaluate("SRP.util.textoPeriodo(SRP.registros.filtro)"), pg.evaluate("SRP.util.nombreMes('%d-%02d')" % (_a, _m))]
+    ok(mp[:2]==mp_esperado and mp[2]==mp[3],'«Mes pasado» llena el mes anterior completo y la ficha lo nombra: %s' % mp)
     # Reiniciar vuelve al estado de entrada: Hoy, sin rango
     pg.click('#btn-reiniciar-filtros'); pg.wait_for_timeout(300)
     ok(pg.locator('#filtro-atajos .chip[data-atajo=todos][aria-pressed=true]').count()==1 and pg.input_value('#filtro-desde')=='',
        '«Quitar filtros» vuelve a Todos y limpia el rango')
     ok('Total: 4 ' in pg.inner_text('#registros-total'),'y lista todos: '+pg.inner_text('#registros-total'))
     ok(pg.is_hidden('#filtro-desde'),'y Reiniciar pliega Desde/Hasta')
-    ok([c for c in pg.eval_on_selector_all('#filtro-atajos .chip','b=>b.map(x=>x.dataset.atajo)')]==['todos','hoy','mes','anio','dia','periodo'],'los atajos son Todos, Hoy, Este mes, Este año, Un día y Un periodo, en ese orden, como en Jornadas')
+    ok([c for c in pg.eval_on_selector_all('#filtro-atajos .chip','b=>b.map(x=>x.dataset.atajo)')]==['todos','hoy','dia','periodo'],'los atajos son Todos, Hoy, Un día y Un periodo, en ese orden, como en Jornadas')
     # «Un día»: una sola fecha, sin repetirla en Desde y Hasta
     abrir_filtros(pg)
     pg.click('#filtro-atajos [data-atajo=dia]'); pg.wait_for_timeout(300)
@@ -854,7 +866,7 @@ with sync_playwright() as p:
        'cada opción del menú de la cuenta lleva icono: sol en Modo sol y puerta en Cerrar sesión')
     pg.keyboard.press('Escape'); pg.evaluate("SRP.app.menuCuenta(false)"); pg.wait_for_timeout(150)
     ok(pg.evaluate("(() => { const b=document.querySelector('#navegacion [data-vista=jornadas]'); const r=b.getBoundingClientRect(); return r.top > 700 && r.bottom <= 844; })()"),'y en teléfono va en la barra de abajo')
-    ok([c for c in pg.eval_on_selector_all('#jornada-atajos .chip','b=>b.map(x=>x.dataset.atajo)')]==['todas','hoy','mes','anio','dia','periodo'],'con los atajos Todas, Hoy, Este mes, Este año, Un día y Un periodo')
+    ok([c for c in pg.eval_on_selector_all('#jornada-atajos .chip','b=>b.map(x=>x.dataset.atajo)')]==['todas','hoy','dia','periodo'],'con los atajos Todas, Hoy, Un día y Un periodo')
     ok(pg.is_visible('#jornada-mas-filtros') and not pg.evaluate("document.getElementById('jornada-mas-filtros').open") and pg.locator('#jornada-mas-filtros select').count()==4 and 'Más filtros' in pg.inner_text('#jornada-mas-filtros summary'),'quién registró, programa, alcaldía e institución van plegados en «Más filtros»')
     tarj=pg.locator('#lista-jornadas .jornada')
     ok(tarj.count()>=2 and re.match(r'^\d+ jornadas · \d+ árboles$', pg.inner_text('#jornadas-total')) is not None,'cada jornada es una ficha y el total dice jornadas y árboles: '+pg.inner_text('#jornadas-total'))
@@ -967,15 +979,17 @@ with sync_playwright() as p:
     ok(pg.is_visible('#jornada-periodo') and pg.is_hidden('#jornada-un-dia') and pg.get_attribute('#jornada-atajos [data-atajo=periodo]','aria-pressed')=='true','«Un periodo» abre Desde y Hasta y cierra «Un día»')
     pg.fill('#jornada-desde', M['f']); pg.fill('#jornada-hasta', M['f']); pg.click('#btn-jornada-filtrar'); pg.wait_for_timeout(400)
     ok(pg.locator('#lista-jornadas .jornada').count()==3 and pg.evaluate("SRP.jornadas.filtro.dia")=='' and pg.evaluate("SRP.jornadas.filtro.desde")==M['f'],'el rango Desde/Hasta deja las 3 jornadas de ese día y el filtro por día queda vacío: %d' % pg.locator('#lista-jornadas .jornada').count())
-    # Año y mes no son listas: «Este año» y «Este mes» son atajos y cierran el rango
+    # Año y mes no son listas: son periodos rápidos dentro de «Un periodo»
     ok(pg.locator('#caja-jornada-anio').count()==0 and pg.locator('#jornada-mes').count()==0,'Jornadas no lleva listas de año ni de mes')
-    pg.click('#jornada-atajos [data-atajo=anio]'); pg.wait_for_timeout(300)
-    ok(pg.is_hidden('#jornada-periodo') and pg.get_attribute('#jornada-atajos [data-atajo=anio]','aria-pressed')=='true' and pg.locator('#jornada-atajos .chip[aria-pressed=true]').count()==1 and pg.locator('#lista-jornadas .jornada').count()>=3 and pg.evaluate("SRP.jornadas.filtro.desde")=='',
-       '«Este año» cierra el rango y deja las jornadas del año en curso: %d' % pg.locator('#lista-jornadas .jornada').count())
-    pg.click('#jornada-atajos [data-atajo=mes]'); pg.wait_for_timeout(300)
-    ok(pg.get_attribute('#jornada-atajos [data-atajo=mes]','aria-pressed')=='true' and pg.evaluate("SRP.jornadas.lista.every(j => j.fecha.startsWith(SRP.util.fechaHoy().slice(0, 7)))"),'«Este mes» deja sólo las jornadas del mes en curso')
+    pg.click('#jornada-atajos [data-atajo=periodo]'); pg.wait_for_timeout(200)
+    pg.click('#jornada-periodo [data-rapido=anio]'); pg.wait_for_timeout(400)
+    ok(pg.is_visible('#jornada-periodo') and pg.get_attribute('#jornada-periodo [data-rapido=anio]','aria-pressed')=='true' and pg.locator('#jornada-atajos .chip[aria-pressed=true]').count()==1
+       and pg.locator('#lista-jornadas .jornada').count()>=3 and pg.evaluate("SRP.jornadas.filtro.desde")==pg.evaluate("SRP.util.fechaHoy().slice(0, 4)")+'-01-01',
+       '«Este año», dentro de «Un periodo», llena Desde y Hasta con el año en curso y deja sus jornadas: %d' % pg.locator('#lista-jornadas .jornada').count())
+    pg.click('#jornada-periodo [data-rapido=mes]'); pg.wait_for_timeout(300)
+    ok(pg.get_attribute('#jornada-periodo [data-rapido=mes]','aria-pressed')=='true' and pg.evaluate("SRP.jornadas.lista.every(j => j.fecha.startsWith(SRP.util.fechaHoy().slice(0, 7)))"),'«Este mes» deja sólo las jornadas del mes en curso')
     pg.click('#jornada-atajos [data-atajo=todas]'); pg.wait_for_timeout(300)
-    ok(pg.evaluate("SRP.jornadas.filtro.anio + SRP.jornadas.filtro.mes")=='' and 'año' not in pg.inner_text('#jornada-mas-filtros summary'),'«Todas» quita el periodo, y «Más filtros» no menciona año ni mes: '+pg.inner_text('#jornada-mas-filtros summary'))
+    ok(pg.evaluate("SRP.jornadas.filtro.desde + SRP.jornadas.filtro.hasta")=='' and 'año' not in pg.inner_text('#jornada-mas-filtros summary'),'«Todas» quita el periodo, y «Más filtros» no menciona año ni mes: '+pg.inner_text('#jornada-mas-filtros summary'))
     pg.click('#jornada-atajos [data-atajo=dia]'); pg.fill('#jornada-dia', M['f']); pg.dispatch_event('#jornada-dia','change'); pg.wait_for_timeout(500)
     pg.click('#lista-jornadas .jornada:nth-child(2) button'); pg.wait_for_timeout(800)
     ok(pg.inner_text('#jornada-titulo')=='Parque Hundido' and 'Jornada 2 de 3' in pg.inner_text('#jornada-sub') and pg.inner_text('#jornada-registrados')=='2','la jornada 2 se revisa sola con su nombre: 2 registrados en esta jornada')
@@ -1247,10 +1261,10 @@ with sync_playwright() as p:
     ok('Total: 3 ' in pg.inner_text('#registros-total'),'se vuelve a eliminar para seguir la prueba')
     abrir_filtros(pg)
     ok(pg.is_hidden('#btn-reiniciar-filtros'),'sin nada filtrado no se ofrece «Quitar filtros»')
-    pg.click('#filtro-atajos .chip[data-atajo=mes]'); pg.wait_for_timeout(300)
+    pg.click('#filtro-atajos .chip[data-atajo=periodo]'); pg.click('#filtro-periodo [data-rapido=mes]'); pg.wait_for_timeout(300)
     pg.click('#btn-reiniciar-filtros'); pg.wait_for_timeout(300)
     pg.click('#aviso .aviso-accion'); pg.wait_for_timeout(300)
-    ok(pg.get_attribute('.chip[data-atajo=mes]','aria-pressed')=='true','«Deshacer» de «Quitar filtros» devuelve el filtro anterior')
+    ok(pg.get_attribute('#filtro-periodo [data-rapido=mes]','aria-pressed')=='true','«Deshacer» de «Quitar filtros» devuelve el filtro anterior')
     pg.click('#filtro-atajos .chip[data-atajo=todos]'); pg.wait_for_timeout(300)
     ok('Total: 3 ' in pg.inner_text('#registros-total'),'y con «Todos» vuelven los tres')
 
@@ -1300,7 +1314,7 @@ with sync_playwright() as p:
         nombres=z.namelist(); okzip=z.testzip() is None; primero=z.read(nombres[0])[:3]
     ok(dz.value.suggested_filename.startswith('Fotografias_SRP') and okzip and len(nombres)>=1 and primero==b'\xff\xd8\xff','«Descargar todas» arma un ZIP válido con las fotos en JPEG: %s' % nombres)
     # Por jornada: la lista trae las jornadas con fotos; elegir una filtra y nombra el ZIP con ella
-    ok([c for c in pg.eval_on_selector_all('#galeria-atajos .chip','b=>b.map(x=>x.dataset.atajo)')]==['todas','hoy','mes','anio','dia','periodo'],'los atajos de Fotografías van en el orden Todas, Hoy, Este mes, Este año, Un día, Un periodo')
+    ok([c for c in pg.eval_on_selector_all('#galeria-atajos .chip','b=>b.map(x=>x.dataset.atajo)')]==['todas','hoy','dia','periodo'],'los atajos de Fotografías van en el orden Todas, Hoy, Un día, Un periodo')
     pg.click('#galeria-atajos [data-atajo=todas]'); pg.wait_for_timeout(300)
     opciones=pg.eval_on_selector('#galeria-jornada',"s=>[...s.options].map(o=>o.value)")
     ok(len(opciones)>=2 and opciones[0]=='' and not pg.is_disabled('#galeria-jornada'),'la lista de jornadas ofrece «Todas» y las jornadas con fotografías: %d' % (len(opciones)-1))
@@ -3167,20 +3181,20 @@ with sync_playwright() as p:
     pg27.goto(BASE); pg27.wait_for_timeout(1200)
     pg27.select_option('#sel-usuario-prueba','u-admin-1'); pg27.click('#btn-entrar-prueba'); pg27.wait_for_timeout(900)
     pg27.evaluate("SRP.demo.cargar()"); pg27.wait_for_timeout(800)
-    # Año y mes no son listas: el periodo se elige con los atajos «Este mes» y «Este año»
+    # Año y mes no son listas: son periodos rápidos dentro de «Un periodo»
     pg27.evaluate("SRP.app.mostrarVista('registros')"); pg27.wait_for_timeout(700)
-    pg27.evaluate("SRP.registros.aplicarAtajo('mes')"); pg27.wait_for_timeout(400)
-    rm27=pg27.evaluate("(() => { const h = SRP.util.fechaHoy().slice(0, 7); return [document.querySelector('#filtro-atajos [data-atajo=mes]').getAttribute('aria-pressed'), SRP.registros.filtrados.every(r => r.fecha_plantacion.startsWith(h)), document.getElementById('caja-filtro-anio') === null]; })()")
-    pg27.evaluate("SRP.registros.aplicarAtajo('anio')"); pg27.wait_for_timeout(400)
-    ra27=pg27.evaluate("(() => { const h = SRP.util.fechaHoy().slice(0, 4); return [document.querySelector('#filtro-atajos [data-atajo=anio]').getAttribute('aria-pressed'), SRP.registros.filtrados.length > 0 && SRP.registros.filtrados.every(r => r.fecha_plantacion.startsWith(h)), document.getElementById('filtro-mas-filtros-texto').textContent]; })()")
+    pg27.evaluate("document.querySelector('#filtro-periodo [data-rapido=mes]').click()"); pg27.wait_for_timeout(400)
+    rm27=pg27.evaluate("(() => { const h = SRP.util.fechaHoy().slice(0, 7); return [document.querySelector('#filtro-periodo [data-rapido=mes]').getAttribute('aria-pressed'), SRP.registros.filtrados.every(r => r.fecha_plantacion.startsWith(h)), document.getElementById('caja-filtro-anio') === null]; })()")
+    pg27.evaluate("document.querySelector('#filtro-periodo [data-rapido=anio]').click()"); pg27.wait_for_timeout(400)
+    ra27=pg27.evaluate("(() => { const h = SRP.util.fechaHoy().slice(0, 4); return [document.querySelector('#filtro-periodo [data-rapido=anio]').getAttribute('aria-pressed'), SRP.registros.filtrados.length > 0 && SRP.registros.filtrados.every(r => r.fecha_plantacion.startsWith(h)), document.getElementById('filtro-mas-filtros-texto').textContent]; })()")
     pg27.evaluate("SRP.registros.aplicarAtajo('todos')"); pg27.wait_for_timeout(400)
-    ok(rm27==['true',True,True] and ra27[0]=='true' and ra27[1] and 'año' not in ra27[2],'en Registros, «Este mes» y «Este año» filtran el periodo en curso; «Más filtros» no lleva año ni mes: %s · %s' % (rm27, ra27))
+    ok(rm27==['true',True,True] and ra27[0]=='true' and ra27[1] and 'año' not in ra27[2],'en Registros, «Este mes» y «Este año» de «Un periodo» filtran el periodo en curso; «Más filtros» no lleva año ni mes: %s · %s' % (rm27, ra27))
     pg27.evaluate("SRP.app.mostrarVista('jornadas')"); pg27.wait_for_timeout(700)
-    pg27.evaluate("SRP.jornadas.aplicarAtajo('mes')"); pg27.wait_for_timeout(500)
-    jm27=pg27.evaluate("(() => { const h = SRP.util.fechaHoy().slice(0, 7); return [document.querySelector('#jornada-atajos [data-atajo=mes]').getAttribute('aria-pressed'), SRP.jornadas.lista.every(j => j.fecha.startsWith(h)), document.getElementById('caja-jornada-anio') === null]; })()")
-    pg27.evaluate("SRP.jornadas.aplicarAtajo('anio')"); pg27.wait_for_timeout(500)
-    esperar(pg27, "document.querySelector('#jornada-atajos [data-atajo=anio]').getAttribute('aria-pressed') === 'true'", 5000)   # bajo carga, la lista tarda en repintarse
-    ja27=pg27.evaluate("(() => { const h = SRP.util.fechaHoy().slice(0, 4); return [document.querySelector('#jornada-atajos [data-atajo=anio]').getAttribute('aria-pressed'), SRP.jornadas.lista.length > 0 && SRP.jornadas.lista.every(j => j.fecha.startsWith(h)), document.getElementById('jornada-mas-filtros-texto').textContent]; })()")
+    pg27.evaluate("document.querySelector('#jornada-periodo [data-rapido=mes]').click()"); pg27.wait_for_timeout(500)
+    jm27=pg27.evaluate("(() => { const h = SRP.util.fechaHoy().slice(0, 7); return [document.querySelector('#jornada-periodo [data-rapido=mes]').getAttribute('aria-pressed'), SRP.jornadas.lista.every(j => j.fecha.startsWith(h)), document.getElementById('caja-jornada-anio') === null]; })()")
+    pg27.evaluate("document.querySelector('#jornada-periodo [data-rapido=anio]').click()"); pg27.wait_for_timeout(500)
+    esperar(pg27, "document.querySelector('#jornada-periodo [data-rapido=anio]').getAttribute('aria-pressed') === 'true'", 5000)   # bajo carga, la lista tarda en repintarse
+    ja27=pg27.evaluate("(() => { const h = SRP.util.fechaHoy().slice(0, 4); return [document.querySelector('#jornada-periodo [data-rapido=anio]').getAttribute('aria-pressed'), SRP.jornadas.lista.length > 0 && SRP.jornadas.lista.every(j => j.fecha.startsWith(h)), document.getElementById('jornada-mas-filtros-texto').textContent]; })()")
     pg27.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg27.wait_for_timeout(500)
     ok(jm27==['true',True,True] and ja27[0]=='true' and ja27[1] and 'año' not in ja27[2],'en Jornadas, igual: %s · %s' % (jm27, ja27))
     # La tuerca es sólo su icono: sin círculo ni contorno, con su área de toque
@@ -5145,7 +5159,7 @@ with sync_playwright() as p:
        'Fotografías muestra 25 por página con su paginador; la cuenta sigue siendo de todas las filtradas: %s' % fg60)
     pg60.click('#galeria-paginas button[data-paso="1"]'); pg60.wait_for_timeout(700)
     fg60b=pg60.evaluate("[SRP.galeria.pagina, document.querySelector('#galeria-paginas .paginador-texto').textContent.slice(0, 16), !!document.querySelector('#galeria-rejilla .galeria-foto')]")
-    pg60.evaluate("SRP.galeria.aplicarAtajo('anio')"); pg60.wait_for_timeout(1200)
+    pg60.evaluate("document.querySelector('#galeria-periodo [data-rapido=anio]').click()"); pg60.wait_for_timeout(1200)
     ok(fg60b == [2, 'Mostrando 26–50 ', True] and pg60.evaluate("SRP.galeria.pagina") == 1, '«Siguiente» pasa a la segunda página y cambiar el filtro vuelve a la primera: %s' % fg60b)
     ok(not err60,'sin errores en consola: %s' % err60[:2])
     ctx60.close()
@@ -6065,19 +6079,19 @@ with sync_playwright() as p:
         pg74.evaluate("v => SRP.app.mostrarVista(v)", vista); pg74.wait_for_timeout(900)
         if vista == 'registros': abrir_filtros(pg74)
         t74 = pg74.evaluate(medir74, caja)
-        ok(t74['textos'] == [primero, 'Hoy', 'Este mes', 'Este año', 'Un día', 'Un periodo'] and t74['renglones'] == 2 and t74['alto'] >= 44 and t74['ancho'] <= 390,
-           'en el teléfono, %s lleva seis atajos en dos renglones de tres, con área de toque y sin salirse de lado: %s' % (vista, t74))
+        ok(t74['textos'] == [primero, 'Hoy', 'Un día', 'Un periodo'] and t74['renglones'] == 1 and t74['alto'] >= 44 and t74['ancho'] <= 390,
+           'en el teléfono, %s lleva cuatro atajos en un renglón, con área de toque y sin salirse de lado: %s' % (vista, t74))
     n74 = pg74.evaluate("""() => [...document.querySelectorAll('section[id^=vista-]')].map(s => [s.id.replace('vista-', ''), [...s.querySelectorAll('select, input[type=search], .chips[role=group]')].filter(e => !e.closest('form, dialog') && e.id && !e.id.endsWith('-orden-lista')).length]).filter(x => x[1] && x[0] !== 'acceso')""")
     ok(all(n <= 8 for _, n in n74) and not pg74.evaluate("['jornada-anio', 'jornada-mes', 'jornada-reporte', 'jornada-filtro-prioridad', 'jornada-tipo-org', 'filtro-anio', 'filtro-mes', 'filtro-tipo-org', 'sup-tipo', 'usr-filtro-tipo'].some(id => document.getElementById(id))"),
        'ninguna vista pasa de ocho filtros, y no hay filtros de año, mes, reporte, prioridad ni tipo de institución: %s' % n74)
     pg74.evaluate("SRP.app.mostrarVista('jornadas')"); pg74.wait_for_timeout(700)
-    pg74.click('#jornada-atajos [data-atajo=anio]'); pg74.wait_for_timeout(600)
+    pg74.click('#jornada-atajos [data-atajo=periodo]'); pg74.click('#jornada-periodo [data-rapido=anio]'); pg74.wait_for_timeout(600)
     f74 = pg74.evaluate("[document.getElementById('jornada-fichas').textContent, SRP.jornadas.lista.length]")
     pg74.click('#jornada-fichas button[data-quitar=periodo]'); pg74.wait_for_timeout(600)
     ok(pg74.evaluate("SRP.util.fechaHoy().slice(0, 4)") in f74[0] and f74[1] > 0 and pg74.get_attribute('#jornada-atajos [data-atajo=todas]', 'aria-pressed') == 'true',
        '«Este año» deja su ficha con el año, y quitarla vuelve a «Todas»: %s' % f74[0])
     pg74.set_viewport_size({'width': 1280, 'height': 900}); pg74.wait_for_timeout(400)
-    ok(pg74.evaluate(medir74, 'jornada-atajos')['renglones'] == 1, 'con ancho, los seis atajos caben en un renglón')
+    ok(pg74.evaluate(medir74, 'jornada-atajos')['renglones'] == 1, 'con ancho, los cuatro atajos siguen en un renglón')
     ok(err74 == [], 'sin errores de consola: %s' % err74[:2])
     ctx74.close()
 
@@ -6962,7 +6976,7 @@ with sync_playwright() as p:
       return [p.getClientRects().length === 0, !!document.getElementById('jornada-btn-filtros').getClientRects().length, t ? Math.round(t.getBoundingClientRect().top) : null]; }""")
     ok(f93[0] and f93[1] and f93[2] is not None and f93[2] < 844, 'en el teléfono los filtros de Jornadas arrancan plegados, con su botón, y la primera jornada se ve en la primera pantalla: %s' % f93)
     pg93.click('#jornada-btn-filtros'); pg93.wait_for_timeout(200)
-    pg93.click('#jornada-atajos [data-atajo=anio]'); pg93.wait_for_timeout(600)
+    pg93.click('#jornada-atajos [data-atajo=periodo]'); pg93.click('#jornada-periodo [data-rapido=anio]'); pg93.wait_for_timeout(600)
     pg93.click('#jornada-btn-filtros'); pg93.wait_for_timeout(200)
     g93 = pg93.evaluate("[document.getElementById('jornada-panel-filtros').getClientRects().length === 0, document.getElementById('jornada-filtros-cuenta').textContent, document.getElementById('jornada-fichas').innerText.trim()]")
     ok(g93[0] and g93[1] == '1' and HOY[:4] in g93[2], '«Filtros» los abre y los cierra; plegados, el botón dice cuántos hay y las fichas dicen cuáles: %s' % g93)

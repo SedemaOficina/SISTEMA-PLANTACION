@@ -454,7 +454,7 @@ SRP.supervision = {
   // Jornadas, con el periodo y los filtros que se están viendo aquí
   verJornadas() {
     const J = SRP.jornadas, p = this.periodo, f = this.filtros;
-    Object.assign(J.filtro, { texto: '', revision: '', dia: '', anio: '', mes: '', desde: p.desde || '', hasta: p.hasta || '',
+    Object.assign(J.filtro, { texto: '', revision: '', dia: '', desde: p.desde || '', hasta: p.hasta || '',
       cabo: f.cabo, programa: f.programa, alcaldia: f.alcaldia, organizacion: f.organizacion });
     J.diaAbierto = false; J.periodoAbierto = p.tipo !== 'todo';
     J.el('jornada-buscar').value = ''; J.el('jornada-revision').value = ''; J.el('jornada-dia').value = '';

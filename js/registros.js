@@ -2,12 +2,11 @@
 window.SRP = window.SRP || {};
 
 SRP.registros = {
-  // anio y mes son el camino normal; desde/hasta es el rango fino. Los dos no conviven:
-  // elegir uno limpia el otro, para que la pantalla nunca muestre dos criterios a la vez.
-  // dia gana sobre anio/mes cuando está puesto; el rango los limpia a los tres.
-  // Al entrar, el filtro es el día de hoy: en campo lo que interesa es la jornada en curso.
-  filtro: { dia: '', anio: '', mes: '', desde: '', hasta: '', cabo: '', especie: '', programa: '', alcaldia: '', organizacion: '' },
-  filtroVacio() { return { dia: '', anio: '', mes: '', desde: '', hasta: '', cabo: '', especie: '', programa: '', alcaldia: '', organizacion: '' }; },
+  // El periodo es un día (dia) o un rango (desde/hasta), nunca los dos: elegir uno limpia el otro, para que
+  // la pantalla no muestre dos criterios a la vez. Al entrar, el filtro es el día de hoy: en campo lo que
+  // interesa es la jornada en curso.
+  filtro: { dia: '', desde: '', hasta: '', cabo: '', especie: '', programa: '', alcaldia: '', organizacion: '' },
+  filtroVacio() { return { dia: '', desde: '', hasta: '', cabo: '', especie: '', programa: '', alcaldia: '', organizacion: '' }; },
   OTRA: '__otra',   // valor del filtro para «Otra especie» (sin especie del catálogo)
   primeraVez: true,
   visibles: [], filtrados: [], pagina: 1,
@@ -16,6 +15,7 @@ SRP.registros = {
 
   iniciar() {
     SRP.util.atajos.iniciar(this.el('filtro-atajos'), a => this.aplicarAtajo(a));
+    SRP.util.atajos.rapidos(this.el('filtro-periodo'), this.el('filtro-desde'), this.el('filtro-hasta'), () => this.el('btn-filtrar').click());
     // El cabo se aplica al elegirlo; «Aplicar» es sólo del rango
     this.el('filtro-cabo').addEventListener('change', () => {
       this.filtro.cabo = this.el('filtro-cabo').value;
@@ -31,7 +31,7 @@ SRP.registros = {
       }
       this.filtro.desde = desde;
       this.filtro.hasta = hasta;
-      if (desde || hasta) { this.filtro.dia = ''; this.filtro.anio = ''; this.filtro.mes = ''; }
+      if (desde || hasta) this.filtro.dia = '';
       this.sincronizarControles();
       this.aplicar();
     });
@@ -181,8 +181,8 @@ SRP.registros = {
       f.organizacion ? ['institucion', 'Institución: ' + SRP.ref.nombreOrganizacion(f.organizacion)] : null].filter(Boolean);
   },
 
-  /* Deja los filtros como al abrir la vista por primera vez: todos los registros, sin año ni mes,
-     sin rango y todos los cabos. Es distinto de «Todos», que sólo quita el periodo y respeta el cabo. */
+  /* Deja los filtros como al abrir la vista por primera vez: todos los registros, sin periodo y
+     todos los cabos. Es distinto de «Todos», que sólo quita el periodo y respeta el cabo. */
   reiniciarFiltros() {
     const antes = Object.assign({}, this.filtro);
     this.quitarFiltros();
@@ -219,7 +219,6 @@ SRP.registros = {
     if (atajo === 'dia') {
       this.diaAbierto = true;
       this.periodoAbierto = false;
-      f.anio = ''; f.mes = '';
       f.dia = this.el('filtro-dia').value;
       this.limpiarRango();
         this.sincronizarControles();
@@ -229,11 +228,7 @@ SRP.registros = {
     this.diaAbierto = false;
     this.el('filtro-dia').value = '';
     f.dia = '';
-    const hoy = SRP.util.fechaHoy();
-    if (atajo === 'hoy') { f.dia = hoy; f.anio = ''; f.mes = ''; }
-    // «Este mes» y «Este año»: el mes y el año en curso, sin abrir ningún campo
-    else if (atajo === 'mes' || atajo === 'anio') { f.anio = hoy.slice(0, 4); f.mes = atajo === 'mes' ? hoy.slice(5, 7) : ''; }
-    else { f.anio = ''; f.mes = ''; }   // 'todos'
+    if (atajo === 'hoy') f.dia = SRP.util.fechaHoy();
     this.periodoAbierto = false;
     this.limpiarRango();
     this.sincronizarControles();
@@ -247,8 +242,7 @@ SRP.registros = {
 
   // Deja los controles mostrando exactamente lo que dice this.filtro
   sincronizarControles() {
-    const f = this.filtro, hoy = SRP.util.fechaHoy();
-    const periodo = f.anio ? f.anio + (f.mes ? '-' + f.mes : '') : '';
+    const f = this.filtro;
     const sinRango = !f.desde && !f.hasta;
     // Un solo atajo marcado a la vez: al abrir «Un periodo» se marca él y se desmarcan los
     // otros, aunque el rango entre hasta «Aplicar»: si no, parecerían elegidos dos a la vez.
@@ -257,14 +251,13 @@ SRP.registros = {
     const activo = {
       hoy: !pidePeriodo && !pideDia && f.dia === SRP.util.fechaHoy(),
       dia: pideDia,
-      todos: !pidePeriodo && !pideDia && !f.dia && periodo === '',
-      mes: !pidePeriodo && !pideDia && !f.dia && f.anio === hoy.slice(0, 4) && f.mes === hoy.slice(5, 7),
-      anio: !pidePeriodo && !pideDia && !f.dia && f.anio === hoy.slice(0, 4) && !f.mes,
+      todos: !pidePeriodo && !pideDia && !f.dia,
       periodo: pidePeriodo
     };
     // Desde/Hasta se ven mientras haya rango o se haya pedido «Un periodo»
     const abierto = !sinRango || !!this.periodoAbierto;
     SRP.util.atajos.marcar(this.el('filtro-atajos'), activo, { periodo: [this.el('filtro-periodo'), abierto], dia: [this.el('filtro-un-dia'), pideDia] });
+    SRP.util.atajos.marcarRapidos(this.el('filtro-periodo'), f);
     // El acordeón «Más filtros»: su resumen dice lo elegido dentro; si nada de lo suyo aplica, no se ve
     const conCabo = !this.el('caja-filtro-cabo').hidden, conOrg = !this.el('caja-filtro-org').hidden;
     const dentro = this.elegidos().map(e => e[1].replace(/^[^:]+: /, '')).filter(Boolean);
@@ -275,10 +268,8 @@ SRP.registros = {
 
   aplicar() {
     const f = this.filtro;
-    const periodo = f.anio ? f.anio + (f.mes ? '-' + f.mes : '') : '';
     this.filtrados = this.visibles.filter(r =>
       (!f.dia || r.fecha_plantacion === f.dia) &&
-      (!periodo || r.fecha_plantacion.startsWith(periodo)) &&
       (!f.desde || r.fecha_plantacion >= f.desde) &&
       (!f.hasta || r.fecha_plantacion <= f.hasta) &&
       this.cumpleListas(r));

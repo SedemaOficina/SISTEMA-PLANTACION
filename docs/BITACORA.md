@@ -3999,3 +3999,27 @@ días pide la contraseña sin perder lo capturado, y que la cookie dura 400 día
 0 hallazgos. En la aplicación sólo cambió la marca de versión: no se repitió `pruebas/prueba.py`.
 
 **Siguiente paso.** La fase 2 del servidor.
+
+## Bloque 201 — El mes y el año, dentro de «Un periodo» (09-10-2026)
+
+Versión 0.9.60. Liber propuso quitar «Este mes» y «Este año» de los filtros y eligió dejarlos dentro de «Un
+periodo», con «Mes pasado» además.
+
+**Qué cambió (D281).** `index.html`, `js/registros.js`, `js/jornadas.js` y `js/filtros.js` (Fotografías): la
+fila de atajos queda en Todas · Hoy · Un día · Un periodo; dentro de «Un periodo», «Este mes», «Mes pasado» y
+«Este año» llenan Desde y Hasta y aplican con el «Aplicar» de cada vista. Se retira el filtro interno por año y
+mes (`anio`, `mes`): el periodo es un día o un rango. `js/util.js`: `rangoRapido`, `finDeMes`,
+`htmlRapidos`, `atajos.rapidos` y `atajos.marcarRapidos`; `textoPeriodo` nombra un mes o un año completos.
+`js/supervision.js`: el paso a Jornadas ya no lleva año ni mes. `css/estilos.css`: cuatro atajos en un renglón;
+los periodos rápidos en su renglón, sin estirar «Aplicar». Pruebas: las de «Este mes» y «Este año» pasan al
+panel, y se agregan «Mes pasado» (comparado contra el mes anterior calculado aparte) y el nombre del mes en la
+ficha.
+
+**Pantalla: qué se agregó y qué se quitó.** Se quitaron «Este mes» y «Este año» de la fila de atajos de Registros,
+Jornadas y Fotografías; se agregaron, dentro de «Un periodo», «Este mes», «Mes pasado» y «Este año».
+
+**Verificación.** `pruebas/prueba.py` completa, sola: 1,427 comprobaciones, 0 fallas, sin errores de consola.
+`pruebas/auditoria.py`: 143, 0 hallazgos; hoja de estilos, 0; eslint sin avisos. Revisado en pantalla a 360,
+390 y 1,280 px: los cuatro atajos en un renglón de 46 px de alto. No se probó en un teléfono real.
+
+**Siguiente paso.** La fase 2 del servidor.
