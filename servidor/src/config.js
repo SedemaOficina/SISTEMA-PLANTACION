@@ -3,9 +3,9 @@
    PostgreSQL o la pone quien instala en el entorno del servidor, nunca en el repositorio.
 
    Base de datos: las variables de PostgreSQL (PGHOST, PGPORT, PGDATABASE, PGUSER, PGPASSWORD o
-   PGPASSFILE, PGSSLMODE). En el SIA la cuenta es srp_servicio y la conexión va cifrada.
+   PGPASSFILE, PGSSLMODE). En el SIA la cuenta es srp_api y la conexión va cifrada.
    SRP_ROL       Sólo en desarrollo: cuenta que se asume al conectar (SET ROLE), para que una cuenta de
-                 administración local opere con los permisos de srp_servicio.
+                 administración local opere con los permisos de srp_api.
    SRP_PUERTO    Puerto cuando el servicio corre solo (por omisión 3100).
    SRP_RUTA      Ruta bajo la que se monta la API (por omisión /api/srp).
    SRP_PROXY     Saltos de intermediario en que se confía para saber si la petición llegó cifrada

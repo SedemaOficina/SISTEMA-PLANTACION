@@ -12,56 +12,59 @@ siguientes.
 
 ## La base de datos
 
-Todo vive en el esquema `srp`. Las diez tablas son las mismas del teléfono —mismos nombres de tabla y de
-campo, sin capa de traducción— y se generan del diccionario de datos; lo que es propio del servidor va
-aparte.
+El SRP vive en la base compartida del SIA como un módulo más, con la misma forma que los demás: su propio
+esquema, `srp`, y su propia cuenta de servicio, `srp_api`, que no ve los esquemas de otros proyectos. Las
+capas que no son del programa —alcaldías, colonias del IECM y malla UGA— las lee del esquema compartido
+`territorio`, de sólo lectura, con el rol de grupo `territorio_lectura`; el SRP no guarda copia. Las diez
+tablas son las mismas del teléfono —mismos nombres de tabla y de campo, sin capa de traducción— y se
+generan del diccionario de datos; lo que es propio del servidor va aparte.
 
-| Guion | Qué hace | Quién lo corre |
-|---|---|---|
-| `sql/00_cuentas.sql` | Crea las cuentas `srp_propietario` (dueña del esquema, no se conecta) y `srp_servicio` (la del servicio). Se puede repetir | Quien administra la base |
-| `sql/01_esquema.sql` | Crea el esquema `srp` y la tabla de versiones. Falla si el esquema ya existe | Ídem, que asume la cuenta propietaria |
-| `sql/02_tablas.sql` | Las diez tablas, con sus llaves, reglas, índices y comentarios. **Generado**: no se edita a mano | Ídem |
-| `sql/03_acceso.sql` | Contraseñas (sólo derivadas con sal, nunca en claro) y sesiones (sólo el resumen del testigo) | Ídem |
-| `sql/04_capas.sql` | Las cuatro capas territoriales en PostGIS, el índice espacial de árboles y jornadas, y `srp.derivar`, que da alcaldía, colonia y celda UGA de un punto con las mismas reglas que la aplicación | Ídem |
-| `sql/05_permisos.sql` | Los permisos mínimos de `srp_servicio` y la versión 1 del esquema | Ídem |
-| `sql/instalar.sql` | Corre los anteriores en orden, en una sola transacción | — |
-| `sql/destruir_local.sql` | Borra el esquema y sus cuentas. **Sólo para la base local de desarrollo** | — |
+Los guiones están en `db/srp/`, con la numeración de los módulos del SIA, para copiarse tal cual a su
+repositorio:
 
-`02_tablas.sql` sale de `datos/esquema.json` con `python herramientas/generar_sql.py`. Si el diccionario
-cambia, se vuelve a generar; `pruebas/auditoria.py` falla si quedó atrasado.
+| Guion | Qué hace |
+|---|---|
+| `db/srp/01-srp-esquema.sql` | Comprueba que estén PostGIS, `territorio` y `territorio_lectura`; crea el esquema `srp` y la tabla de versiones. Si el esquema ya está instalado, se detiene sin tocar nada |
+| `db/srp/02-srp-tablas.sql` | Las diez tablas, con sus llaves, reglas, índices y comentarios. **Generado**: no se edita a mano |
+| `db/srp/03-srp-acceso.sql` | Contraseñas (sólo derivadas con sal, nunca en claro) y sesiones (sólo el resumen del testigo) |
+| `db/srp/04-srp-sobre-territorio.sql` | La capa propia (colonias prioritarias), el índice espacial de árboles y jornadas, y `srp.derivar`, que da alcaldía, colonia y celda UGA de un punto sobre `territorio`, con las mismas reglas que la aplicación |
+| `db/srp/05-srp-rol-y-grants.sql` | La cuenta `srp_api`, sin contraseña, con sus permisos mínimos y `territorio_lectura`; la versión 1 del esquema. Al final, la verificación para correr como la cuenta: lo que debe funcionar y lo que debe fallar |
+| `db/srp/instalar.sql` | Corre los anteriores en orden, en una sola transacción |
+
+Todos los corre quien administra la base, que queda como dueño de lo que se crea. `02-srp-tablas.sql` sale
+de `datos/esquema.json` con `python herramientas/generar_sql.py`; si el diccionario cambia, se vuelve a
+generar, y `pruebas/auditoria.py` falla si quedó atrasado.
 
 Las tablas guardan latitud y longitud, como el teléfono. El punto geográfico se calcula con
-`srp.punto(lat, lng)` y tiene índice espacial, sin agregar campos a las tablas.
+`srp.punto(lat, lng)` y tiene índice espacial, sin agregar campos a las tablas. Donde dos polígonos
+empatan en un borde gana la clave menor, en el servidor y en la aplicación, que lleva sus capas en orden
+de clave.
 
-### Permisos de la cuenta del servicio
+### Permisos de srp_api
 
 - Usa el esquema, pero no crea, altera ni borra tablas, ni dentro ni fuera de él.
 - Lee, agrega y cambia renglones de las tablas de datos, y borra sólo lo que el sistema permite borrar
   (un valor de catálogo o una cuenta sin uso, un lote de carga masiva, las sesiones).
 - A la bitácora sólo le agrega renglones: no la edita ni la borra.
-- Las capas territoriales sólo las lee; `srp.punto` y `srp.derivar` las puede usar.
-- La cuenta que administra la base no ve los datos si no asume la cuenta propietaria.
+- Lee `territorio` y la capa propia; `srp.punto` y `srp.derivar` las puede usar. No escribe en ninguna.
+- No tiene ningún permiso directo fuera de `srp`.
 
-### Instalar en un servidor
+### Instalar en el SIA
 
-PostGIS debe estar instalado en la base (lo instala quien la administra). Conectado a esa base, como
-quien la administra:
-
-```
-psql -h <servidor> -U <administrador> -d <base> -v ON_ERROR_STOP=1 -f sql/instalar.sql
-```
-
-Después se cargan las capas y el catálogo de especies, con la misma cuenta (variables `PGHOST`,
-`PGDATABASE`, `PGUSER` y su contraseña en el archivo de contraseñas de PostgreSQL):
+Conectado a la base como quien la administra, desde `db/srp/`:
 
 ```
-npm install
-npm run cargar -- capas especies
+psql -d <base> -v ON_ERROR_STOP=on -f instalar.sql
 ```
 
-Y el administrador le pone contraseña a `srp_servicio` (`ALTER ROLE srp_servicio PASSWORD '…'`) y la
-entrega, fuera del repositorio, a quien configure el servicio. La conexión del servicio a la base va
-cifrada.
+Después, en este orden, porque el backend no arranca el módulo sin su cuenta:
+
+1. Contraseña de `srp_api` de forma interactiva (`\password srp_api` en psql), para que no quede en
+   ningún registro.
+2. Su entrada cifrada en la configuración de acceso de PostgreSQL.
+3. `SRP_DB_USER` y `SRP_DB_PASS` en el archivo de entorno del backend.
+4. El backend con el módulo.
+5. La capa propia y el catálogo de especies: `npm run cargar -- capas especies`.
 
 ## El servicio: acceso y cuentas
 
@@ -100,14 +103,15 @@ Los plazos, el largo mínimo y el bloqueo son parámetros (`src/config.js`): se 
 
 | Orden | Qué carga | Dónde |
 |---|---|---|
-| `capas` | Las cuatro capas, de `assets/capas/` (las mismas de la aplicación). Las reemplaza completas | Local y SIA |
+| `territorio` | La réplica de `territorio` (alcaldías, malla UGA y colonias del IECM), de `assets/capas/`. Si encuentra capas que no cargó el SRP, no toca nada | **Sólo local** |
+| `capas` | La capa propia, las colonias prioritarias, de `assets/capas/`. La reemplaza completa | Local y SIA |
 | `especies` | El catálogo de especies de la aplicación. Agrega las que falten, sin tocar las demás | Local y SIA |
 | `vehiculos` | La lista de un CSV con columnas `placa`, `modelo` y `tipo`; por omisión, la real más reciente de `originales/`, que nunca entra al repositorio | Local; el SIA carga la suya |
 | `app` | Lo que exporta `python herramientas/exportar_datos_app.py`: cuentas de prueba, catálogos de arranque y los datos de demostración, tal como los guarda un teléfono | **Sólo local** |
 | `todo` | Las anteriores, las que tengan su archivo | — |
-| `rehacer` | Destruye el esquema, lo instala y carga todo | **Sólo local** |
+| `rehacer` | Destruye el esquema, lo instala y carga `territorio` y todo | **Sólo local** |
 
-Lo de la aplicación entra con la cuenta del servicio, como llegará de los teléfonos, en una sola
+Lo de la aplicación entra con `srp_api`, como llegará de los teléfonos, en una sola
 transacción. Las cuentas de prueba y los datos de demostración no usan UUID, que es lo que guarda el
 servidor: cada identificador así toma un UUID fijo derivado de él, el mismo en cada carga y en todas las
 referencias. Si está la lista real de vehículos, las jornadas de demostración usan esos vehículos.
@@ -116,6 +120,8 @@ referencias. Si está la lista real de vehículos, las jornadas de demostración
 
 Requisitos: Node.js 20 o posterior y PostgreSQL con PostGIS, de la misma versión mayor que la del servidor
 de destino, con una base de desarrollo y una cuenta que pueda crear cuentas (no hace falta superusuario).
+La base local lleva una réplica de las tablas de `territorio` que lee el SRP (`db/local/territorio.sql`),
+con los mismos nombres y columnas que en el SIA; se crea al instalar y nunca se entrega.
 La contraseña de esa cuenta va en el archivo de contraseñas de PostgreSQL del equipo
 (`%APPDATA%\postgresql\pgpass.conf` en Windows, `~/.pgpass` en los demás), nunca en el código. Por omisión
 se usa la base `srp_local` en `127.0.0.1` con la cuenta `srp_local_admin`; se cambia con `PGHOST`,
@@ -132,12 +138,14 @@ npm test
 Las pruebas:
 
 - `pruebas/esquema.test.js`: instala en limpio, comprueba que las tablas sean las del diccionario, que las
-  reglas rechacen lo inválido y que la cuenta del servicio tenga sólo sus permisos, y destruye.
+  reglas rechacen lo inválido y que `srp_api` tenga sólo sus permisos —`territorio` de sólo lectura,
+  nada directo fuera de `srp`—, y destruye.
 - `pruebas/acceso.test.js`: levanta el servicio y lo usa como la aplicación: entrar, salir, alta con
   temporal, cambio obligatorio, bloqueo, restablecimiento, desactivación, institución desactivada,
   vencimiento de la sesión y de la temporal.
 - `pruebas/datos.test.js`: carga todo y comprueba que cupo, que las capas estén completas y, sobre todo,
-  que PostGIS ubique cada árbol y cada jornada igual que la aplicación (alcaldía, colonia y celda UGA).
+  que PostGIS, leyendo `territorio`, ubique cada árbol y cada jornada igual que la aplicación (alcaldía,
+  colonia y celda UGA).
   Se omite si no hay exportación de la aplicación.
 
 Al terminar, la base local queda instalada y cargada.

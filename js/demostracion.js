@@ -253,8 +253,10 @@ SRP.demo = {
           const lejos = !abierta && r() < 0.025 && i === n - 1;
           const radio = lejos ? 0.0035 : 0.0006;
           // Con seis decimales, como los guarda la captura, y la ubicación de ese mismo punto
-          const la = +(lat + (r() - 0.5) * radio * 2).toFixed(6), lo = +(lng + (r() - 0.5) * radio * 2).toFixed(6);
-          const ta = SRP.derivacion.derivar(la, lo);
+          let la = +(lat + (r() - 0.5) * radio * 2).toFixed(6), lo = +(lng + (r() - 0.5) * radio * 2).toFixed(6);
+          let ta = SRP.derivacion.derivar(la, lo);
+          // En el límite de la ciudad el desplazamiento puede sacarlo de la CDMX: entonces se queda en el sitio
+          if (!ta.alcaldia) { la = +lat.toFixed(6); lo = +lng.toFixed(6); ta = t; }
           const x = r();
           const origen = x < 0.85 ? 'gps' : x < 0.95 ? 'mapa' : 'manual';
           const prec = origen === 'gps' ? (r() < 0.03 ? 32 + Math.floor(r() * 25) : 3 + Math.floor(r() * 18)) : null;

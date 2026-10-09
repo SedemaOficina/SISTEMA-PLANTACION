@@ -3881,3 +3881,39 @@ efecto). `pruebas/auditoria.py`: 143 comprobaciones, 0 hallazgos; `pruebas/audit
 se reinstale; no se probó en un teléfono real.
 
 **Siguiente paso.** Las respuestas del SIA y la fase 3 del servidor.
+
+## Bloque 197 — El servidor con la forma de los módulos del SIA (08-10-2026)
+
+Versión 0.9.56. Liber pidió revisar el backend del SIA y preparar el proyecto para que el SIA trabaje lo menos
+posible; aprobó dejar el esquema `srp` y pasar el servicio a TypeScript. La revisión, las decisiones, las fases y
+las preguntas para el SIA están en `docs/ALINEACION-SIA.md`.
+
+**Qué cambió (D277).** Fase 1 de la alineación:
+- `servidor/sql/` pasa a `servidor/db/srp/`, del `01-srp-esquema` al `05-srp-rol-y-grants`, más `instalar.sql`.
+- Una sola cuenta, `srp_api`, que hereda `territorio_lectura`, en lugar de `srp_propietario` y `srp_servicio`.
+- `srp.derivar` lee alcaldías, colonias del IECM y malla UGA de `territorio`; en `srp` queda sólo la capa de
+  colonias prioritarias.
+- Una segunda instalación se detiene con un mensaje claro, sin tocar nada.
+- La réplica local de `territorio` está en `servidor/db/local/territorio.sql` (nunca se entrega), y
+  `npm run cargar -- territorio` la llena desde `assets/capas/`.
+- `herramientas/generar_capas.py` escribe las capas en orden de clave; las cuatro capas regeneradas tienen los
+  mismos elementos y datos, sólo cambia el orden.
+- `js/demostracion.js`: un árbol desplazado que sale de la ciudad se queda en su sitio.
+- Pruebas del servidor, `servidor/README.md`, `docs/FASE2-Y-TRASPASO.md` y `docs/PLAN-TRASPASO-SIA.md`, al día.
+- `servidor/sql/00_cuentas.sql`, sin uso, se movió a `_to_delete/`.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada.
+
+**Verificación.** Pruebas del servidor: 21 de 21. Entre ellas, PostGIS leyendo `territorio` ubica los 17,479
+árboles y las jornadas igual que la aplicación, y `srp_api` no tiene ningún permiso directo fuera de `srp` ni
+puede escribir en `territorio`. `instalar.sql` probado con `psql`: instala y una segunda vez se niega.
+La primera corrida de esas pruebas se colgó con una transacción abortada en la limpieza de las de acceso,
+estando la base local aún con la instalación anterior; después de limpiarla, las tres corridas siguientes pasaron.
+`pruebas/prueba.py` completa, sola: la primera corrida dio 1 falla (la demostración, corregida y su sección
+27 de 27); la segunda, 4 fallas en la lista de puntos de una jornada, cuya sección pasa sola (19 de 19);
+la tercera, 1,425 comprobaciones, 0 fallas, sin errores de consola. Auditorías: 143 comprobaciones, 0
+hallazgos; hoja de estilos, 0. No se probó contra el `territorio` real del SIA: las columnas y versiones de sus
+capas están en las preguntas para el SIA.
+
+**Siguiente paso.** La respuesta del SIA sobre las cuentas de las personas, y la fase 2: el servicio en
+TypeScript con la forma de los módulos del SIA.

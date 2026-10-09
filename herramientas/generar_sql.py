@@ -1,9 +1,9 @@
-"""Escribe servidor/sql/02_tablas.sql a partir de datos/esquema.json.
+"""Escribe servidor/db/srp/02-srp-tablas.sql a partir de datos/esquema.json.
 
 El esquema es la fuente única del modelo de datos: las diez tablas del servidor son las mismas del
 teléfono, con los mismos nombres de tabla y de campo, y este script sólo las traduce a PostgreSQL. Lo
 que es propio del servidor (contraseñas, sesiones, control de versiones del esquema) va escrito a mano
-en los demás guiones de servidor/sql/.
+en los demás guiones de servidor/db/srp/.
 
 Qué sale del esquema:
   · Cada tabla con sus campos en el orden del esquema, su tipo y si admite nulos.
@@ -25,7 +25,7 @@ import json, os, re, sys
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ESQUEMA = os.path.join(RAIZ, 'datos', 'esquema.json')
-SALIDA = os.path.join(RAIZ, 'servidor', 'sql', '02_tablas.sql')
+SALIDA = os.path.join(RAIZ, 'servidor', 'db', 'srp', '02-srp-tablas.sql')
 ESQ = 'srp'
 
 # Tipos del esquema que en PostgreSQL se escriben de otra forma
@@ -62,10 +62,8 @@ def main():
     L = []
     p = L.append
     p('-- TABLAS DEL SRP. Generado por herramientas/generar_sql.py a partir de datos/esquema.json')
-    p('-- (versión del esquema %s): no se edita a mano. Lo corre la cuenta propietaria, dentro del' % d['version_esquema'])
-    p('-- esquema %s, después de 01_esquema.sql.' % ESQ)
-    p('')
-    p('SET ROLE srp_propietario;')
+    p('-- (versión del esquema %s): no se edita a mano. Lo corre quien administra la base, dentro de' % d['version_esquema'])
+    p('-- instalar.sql, después de 01-srp-esquema.sql.')
     p('')
     foraneas, comentarios = [], []
     for nombre, t in tablas.items():
@@ -112,16 +110,14 @@ def main():
     p('')
     p('-- Para quien administre la base: qué es cada tabla y cada campo, tomado del diccionario de datos')
     L.extend(comentarios)
-    p('')
-    p('RESET ROLE;')
     texto = '\n'.join(L) + '\n'
 
     if '--revisar' in sys.argv:
         actual = open(SALIDA, encoding='utf-8').read() if os.path.exists(SALIDA) else ''
         if actual != texto:
-            print('servidor/sql/02_tablas.sql no está al día con datos/esquema.json: correr herramientas/generar_sql.py')
+            print('servidor/db/srp/02-srp-tablas.sql no está al día con datos/esquema.json: correr herramientas/generar_sql.py')
             sys.exit(1)
-        print('servidor/sql/02_tablas.sql al día')
+        print('servidor/db/srp/02-srp-tablas.sql al día')
         return
     os.makedirs(os.path.dirname(SALIDA), exist_ok=True)
     with open(SALIDA, 'w', encoding='utf-8', newline='\n') as s:

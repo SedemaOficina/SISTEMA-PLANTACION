@@ -1,8 +1,6 @@
 -- TABLAS DEL SRP. Generado por herramientas/generar_sql.py a partir de datos/esquema.json
--- (versión del esquema 2026-10-04): no se edita a mano. Lo corre la cuenta propietaria, dentro del
--- esquema srp, después de 01_esquema.sql.
-
-SET ROLE srp_propietario;
+-- (versión del esquema 2026-10-04): no se edita a mano. Lo corre quien administra la base, dentro de
+-- instalar.sql, después de 01-srp-esquema.sql.
 
 CREATE TABLE srp.plantaciones (
   id                         uuid           NOT NULL,
@@ -438,5 +436,3 @@ COMMENT ON COLUMN srp.jornadas.vehiculo_placa IS 'Copia de vehiculos.nombre (la 
 COMMENT ON COLUMN srp.jornadas.vehiculo_tipo IS 'Copia de vehiculos.tipo_vehiculo del vehículo elegido; '''' sin vehículo; Se copia del catálogo al guardar el cierre; ya no se escribe a mano';
 COMMENT ON COLUMN srp.jornadas.vehiculo_id IS '→ vehiculos.id; El vehículo del catálogo; nulo sin vehículo. Con él se cuentan los que más usa cada encargado. Sólo del catálogo: sin «Otro vehículo»';
 COMMENT ON COLUMN srp.jornadas.hora IS 'HH:MM, de 00:00 a 23:59; '''' si no se elige';
-
-RESET ROLE;

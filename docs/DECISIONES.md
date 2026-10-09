@@ -3184,3 +3184,24 @@
     tiene el teléfono.
   · `docs/` (DECISIONES, BITACORA, MEJORAS, revisiones y traspaso) se queda como está: es la historia del proyecto.
     Liber lo eligió sabiendo que el repositorio es público.
+
+- **D277. El servidor con la forma de los módulos del SIA (bloque 197).**
+  08-10-2026. Liber pidió revisar el backend del SIA y preparar el proyecto para que el SIA trabaje lo menos
+  posible y todo quede como lo hace el SIA. La revisión y el plan están en `docs/ALINEACION-SIA.md`.
+  · El SIA ya tiene un módulo `plantacion`, que sustituyó a un sistema anterior. El SRP va aparte, convive
+    con él y lo sustituye cuando funcione; entonces el SIA retira el viejo (Liber).
+  · Liber aprobó: el esquema sigue siendo `srp`, con la cuenta `srp_api` y la ruta `/api/srp`; el servicio
+    pasa a TypeScript con la forma de los módulos del SIA. Queda abierta, para el SIA, dónde viven las
+    cuentas de las personas.
+  · Hecho en este bloque: los guiones pasan a `servidor/db/srp/` con la numeración del SIA; una sola cuenta,
+    `srp_api`, en lugar de `srp_propietario` y `srp_servicio` (los objetos quedan a nombre de quien instala,
+    como en el SIA); alcaldías, colonias del IECM y malla UGA se leen de `territorio` con
+    `territorio_lectura`, sin copia propia; queda en `srp` sólo la capa de colonias prioritarias, que es otro
+    marco de colonias (2,243); una segunda instalación se detiene sin tocar nada; la base local lleva una
+    réplica de las tablas de `territorio`, que nunca se entrega.
+  · Las capas de la aplicación van en orden de clave, y el servidor desempata por clave: en un punto sobre
+    un borde compartido, el teléfono y el servidor eligen el mismo polígono.
+  · La demostración no deja árboles fuera de la ciudad: en el límite con el Estado de México, el árbol que
+    simula un error de captura (a unos 390 m de su sitio) podía salir de la capa de alcaldías y quedar sin
+    alcaldía ni folio. Si sale, se queda en el punto del sitio. Apareció al cambiar el orden de las capas,
+    porque la demostración elige colonias por su posición.

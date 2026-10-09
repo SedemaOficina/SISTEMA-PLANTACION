@@ -106,10 +106,10 @@ Las fases 1 y 2 pueden correr en paralelo. La 3 es la de mayor esfuerzo y la que
 
 **Listo en este repositorio**
 
-- Guion SQL del esquema `srp` (fase 2 de este plan, del lado del SRP): `servidor/sql/instalar.sql`, probado
-  en una base local; ver `servidor/README.md` (D254). Con las capas territoriales en PostGIS, que se cargan
-  con `npm run cargar -- capas especies`, y la derivación de alcaldía, colonia y celda UGA en el servidor,
-  comprobada contra la aplicación con 17,479 árboles (D255).
+- Guion SQL del esquema `srp` (fase 2 de este plan, del lado del SRP): `servidor/db/srp/instalar.sql`, con
+  la forma de los módulos del SIA (cuenta `srp_api`, capas de `territorio`), probado en una base local; ver
+  `servidor/README.md` y `docs/ALINEACION-SIA.md` (D254, D277). La derivación de alcaldía, colonia y celda
+  UGA en el servidor lee `territorio` y está comprobada contra la aplicación con 17,479 árboles (D255).
 
 - Aplicación completa de captura, jornadas, reportes, supervisión, catálogos, cuentas y permisos, con
   pruebas automáticas y auditorías (`pruebas/`).

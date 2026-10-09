@@ -20,7 +20,6 @@ if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(correo || '') || !nombre || nombre.spl
 const c = await conectar();
 try {
   await c.query('BEGIN');
-  await c.query('SET LOCAL ROLE srp_propietario');
   if ((await c.query("SELECT 1 FROM srp.usuarios WHERE perfil = 'ADMIN'")).rowCount) throw new Error('Ya hay una cuenta de Administración global: las demás se dan de alta desde la aplicación.');
   await c.query(`INSERT INTO srp.instituciones (id, clave, nombre, activo, creado_por_id, fecha_creacion, editado_por_id, fecha_ultima_edicion, tipo_organizacion)
     VALUES ('o-sedema', 'SEDEMA', 'Secretaría del Medio Ambiente', true, NULL, now(), NULL, NULL, 'Gobierno de la CDMX') ON CONFLICT (id) DO NOTHING`);

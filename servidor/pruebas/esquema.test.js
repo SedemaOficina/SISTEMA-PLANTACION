@@ -1,5 +1,6 @@
 /* EL ESQUEMA srp: se crea y se destruye en limpio, sus tablas son las del diccionario de datos, sus
-   reglas rechazan lo inválido y la cuenta del servicio tiene sólo los permisos que necesita.
+   reglas rechazan lo inválido y la cuenta del servicio, srp_api, tiene sólo los permisos que necesita,
+   con territorio de sólo lectura.
    Corre contra la base local de desarrollo: al empezar la deja sin el esquema y al terminar lo vuelve a
    instalar y a cargar con lo que haya (npm run cargar -- rehacer). */
 import { test, before, after } from 'node:test';
@@ -10,7 +11,7 @@ import { execFileSync } from 'node:child_process';
 import { conectar, instalar, destruir, codigoDeError, RAIZ } from './apoyo.js';
 
 const ESQUEMA = JSON.parse(fs.readFileSync(path.join(RAIZ, 'datos', 'esquema.json'), 'utf8'));
-const PROPIAS_DEL_SERVIDOR = ['capa_alcaldias', 'capa_colonias', 'capa_prioritarias', 'capa_uga', 'capas', 'credenciales', 'migraciones', 'sesiones'];
+const PROPIAS_DEL_SERVIDOR = ['capa_prioritarias', 'capas', 'credenciales', 'migraciones', 'sesiones'];
 const PERMISO_DENEGADO = '42501', VIOLA_CHECK = '23514', VIOLA_FORANEA = '23503', VIOLA_UNICO = '23505';
 
 // El tipo del diccionario como lo escribe PostgreSQL (format_type)
@@ -38,47 +39,42 @@ after(async () => {
 
 test('la instalación crea el esquema completo en una sola transacción', async () => {
   await instalar(c);
-  await c.query('SET ROLE srp_propietario');
-  const { rows } = await c.query("SELECT tablename, tableowner FROM pg_tables WHERE schemaname = 'srp' ORDER BY tablename");
-  await c.query('RESET ROLE');
+  const { rows } = await c.query("SELECT tablename, tableowner = current_user AS de_quien_instala FROM pg_tables WHERE schemaname = 'srp' ORDER BY tablename");
   const esperadas = Object.keys(ESQUEMA.tablas).concat(PROPIAS_DEL_SERVIDOR).sort();
   assert.deepEqual(rows.map(r => r.tablename), esperadas);
-  assert.ok(rows.every(r => r.tableowner === 'srp_propietario'), 'todas las tablas son de la cuenta propietaria');
+  assert.ok(rows.every(r => r.de_quien_instala), 'todas las tablas son de quien instala, como en el SIA');
 });
 
 test('cada tabla tiene los campos del diccionario, en su orden, con su tipo y sus nulos', async () => {
-  await c.query('SET ROLE srp_propietario');
   for (const [tabla, info] of Object.entries(ESQUEMA.tablas)) {
     const { rows } = await c.query(
       `SELECT a.attname AS campo, format_type(a.atttypid, a.atttypmod) AS tipo, NOT a.attnotnull AS nulo
          FROM pg_attribute a WHERE a.attrelid = $1::regclass AND a.attnum > 0 AND NOT a.attisdropped ORDER BY a.attnum`, ['srp.' + tabla]);
     assert.deepEqual(rows, info.campos.map(x => ({ campo: x.campo, tipo: tipoPg(x.tipo), nulo: x.nulo })), 'tabla ' + tabla);
   }
-  await c.query('RESET ROLE');
 });
 
 test('queda anotada la versión 1 y una segunda instalación falla sin dejar nada a medias', async () => {
-  await c.query('SET ROLE srp_propietario');
   const v = await c.query('SELECT version FROM srp.migraciones');
-  await c.query('RESET ROLE');
   assert.deepEqual(v.rows, [{ version: 1 }]);
-  await assert.rejects(instalar(c), /ya existe|already exists/);
-  await c.query('SET ROLE srp_propietario');
+  await assert.rejects(instalar(c), /ya está instalado/);
   const n = await c.query("SELECT count(*)::int AS n FROM pg_tables WHERE schemaname = 'srp'");
-  await c.query('RESET ROLE');
   assert.equal(n.rows[0].n, Object.keys(ESQUEMA.tablas).length + PROPIAS_DEL_SERVIDOR.length);
 });
 
-test('quien administra la base no ve los datos sin asumir la cuenta propietaria', async () => {
-  await c.query('BEGIN');
-  assert.equal(await codigoDeError(c, 'SELECT 1 FROM srp.plantaciones'), PERMISO_DENEGADO);
-  await c.query('ROLLBACK');
+test('la cuenta del servicio no tiene ningún permiso directo fuera de srp, y lee territorio por su rol de grupo', async () => {
+  const r = await c.query(`SELECT
+    (SELECT count(*) FROM information_schema.role_table_grants WHERE grantee = 'srp_api' AND table_schema <> 'srp')::int AS fuera,
+    (SELECT rolinherit FROM pg_roles WHERE rolname = 'srp_api') AS hereda,
+    (SELECT rolsuper OR rolcreaterole OR rolcreatedb FROM pg_roles WHERE rolname = 'srp_api') AS privilegiada,
+    pg_has_role('srp_api', 'territorio_lectura', 'MEMBER') AS lee_territorio`);
+  assert.deepEqual(r.rows[0], { fuera: 0, hereda: true, privilegiada: false, lee_territorio: true });
 });
 
 test('la cuenta del servicio sólo opera datos; la bitácora sólo crece', async () => {
-  await c.query('GRANT srp_servicio TO CURRENT_USER WITH INHERIT FALSE, SET TRUE');
+  await c.query('GRANT srp_api TO CURRENT_USER WITH INHERIT FALSE, SET TRUE');
   await c.query('BEGIN');
-  await c.query('SET LOCAL ROLE srp_servicio');
+  await c.query('SET LOCAL ROLE srp_api');
   const ahora = new Date().toISOString();
   const admin = '00000000-0000-4000-8000-000000000001';
   // Una cadena completa: institución, cuenta, catálogos, jornada y árbol
@@ -129,13 +125,19 @@ test('la cuenta del servicio sólo opera datos; la bitácora sólo crece', async
   assert.equal(await codigoDeError(c, 'ALTER TABLE srp.plantaciones ADD COLUMN x int'), PERMISO_DENEGADO, 'cambiar tablas');
   assert.equal(await codigoDeError(c, "INSERT INTO srp.migraciones VALUES (2, 'x')"), PERMISO_DENEGADO, 'anotar versiones');
   assert.equal(await codigoDeError(c, 'CREATE TABLE public.otra (x int)'), PERMISO_DENEGADO, 'crear tablas fuera del esquema');
+
+  // territorio se lee y se usa para derivar, pero no se escribe
+  assert.equal(await codigoDeError(c, 'SELECT count(*) FROM territorio.alcaldia'), null, 'leer territorio');
+  assert.equal(await codigoDeError(c, 'SELECT * FROM srp.derivar(19.4326, -99.1332)'), null, 'derivar sobre territorio');
+  assert.equal(await codigoDeError(c, "UPDATE territorio.alcaldia SET nombre = 'x'"), PERMISO_DENEGADO, 'escribir en territorio');
+  assert.equal(await codigoDeError(c, 'DELETE FROM territorio.colonias_iecm_2022'), PERMISO_DENEGADO, 'borrar en territorio');
+  assert.equal(await codigoDeError(c, 'DELETE FROM srp.capa_prioritarias'), PERMISO_DENEGADO, 'cambiar la capa propia');
   await c.query('ROLLBACK');
-  await c.query('REVOKE srp_servicio FROM CURRENT_USER');
+  await c.query('REVOKE srp_api FROM CURRENT_USER');
 });
 
 test('al eliminar una cuenta sin registros se van su contraseña y sus sesiones', async () => {
   await c.query('BEGIN');
-  await c.query('SET LOCAL ROLE srp_propietario');
   const id = '00000000-0000-4000-8000-000000000002';
   await c.query("INSERT INTO srp.instituciones VALUES ('o-x', 'X', 'Institución X', true, NULL, now(), NULL, NULL, 'Empresa privada')");
   await c.query("INSERT INTO srp.usuarios VALUES ($1, 'cabo@ejemplo.local', 'Cabo Ejemplo', 'o-x', NULL, 'Cabo', 'CABO', '{}', true, now(), $1, NULL, NULL)", [id]);
@@ -148,10 +150,12 @@ test('al eliminar una cuenta sin registros se van su contraseña y sus sesiones'
   await c.query('ROLLBACK');
 });
 
-test('destruir deja la base sin el esquema ni sus cuentas, y se puede volver a instalar', async () => {
+test('destruir deja la base sin el esquema ni su cuenta, con territorio intacto, y se puede volver a instalar', async () => {
   await destruir(c);
-  const r = await c.query("SELECT (SELECT count(*) FROM pg_namespace WHERE nspname = 'srp')::int AS esquemas, (SELECT count(*) FROM pg_roles WHERE rolname IN ('srp_propietario', 'srp_servicio'))::int AS cuentas");
-  assert.deepEqual(r.rows[0], { esquemas: 0, cuentas: 0 });
+  const r = await c.query(`SELECT (SELECT count(*) FROM pg_namespace WHERE nspname = 'srp')::int AS esquemas,
+    (SELECT count(*) FROM pg_roles WHERE rolname IN ('srp_api', 'srp_propietario', 'srp_servicio'))::int AS cuentas,
+    (SELECT count(*) FROM pg_namespace WHERE nspname = 'territorio')::int AS territorio`);
+  assert.deepEqual(r.rows[0], { esquemas: 0, cuentas: 0, territorio: 1 });
   await instalar(c);
   await destruir(c);
 });

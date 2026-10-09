@@ -17,13 +17,15 @@ puede montarse en el backend central del SIA o correr como servicio aparte, seg�
 prueba con PostgreSQL y PostGIS locales de la misma versión mayor que la del SIA. El nombre del
 proyecto, de su esquema y de su ruta es **`srp`** (D249).
 
-**Fase 1 hecha (D254):** el guion SQL del esquema `srp` está en `servidor/sql/` —las diez tablas,
-generadas del diccionario, más contraseñas, sesiones y versiones— con las cuentas `srp_propietario` y
-`srp_servicio` y sus permisos mínimos. Se instala con `servidor/sql/instalar.sql`; sus pruebas, en
-`servidor/pruebas/`. Ver `servidor/README.md`.
+**Fase 1 hecha (D254), alineada con el backend del SIA (D277):** los guiones del esquema `srp` están en
+`servidor/db/srp/`, con la numeración de los módulos del SIA —las diez tablas, generadas del diccionario,
+más contraseñas, sesiones y versiones— y una sola cuenta de servicio, `srp_api`, con sus permisos mínimos.
+Alcaldías, colonias del IECM y malla UGA se leen del esquema compartido `territorio` del SIA; el SRP sólo
+guarda su capa propia, las colonias prioritarias. Se instala con `servidor/db/srp/instalar.sql`; sus
+pruebas, en `servidor/pruebas/`. Ver `servidor/README.md` y `docs/ALINEACION-SIA.md`.
 
-**Base local cargada (D255):** las cuatro capas en PostGIS y `srp.derivar`, que ubica un punto con las
-mismas reglas que la aplicación; el catálogo de especies; la lista real de vehículos (sólo en el equipo
+**Base local cargada (D255):** una réplica local de `territorio`, la capa propia y `srp.derivar`, que
+ubica un punto con las mismas reglas que la aplicación; el catálogo de especies; la lista real de vehículos (sólo en el equipo
 de desarrollo) y lo que guarda un teléfono de prueba con la demostración. Todo cupo, y PostGIS ubica
 los 17,479 árboles y las 1,305 jornadas igual que la aplicación.
 

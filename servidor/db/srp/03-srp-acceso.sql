@@ -1,7 +1,6 @@
 -- ACCESO: contraseñas y sesiones. Son propias del servidor: el teléfono nunca las recibe, por eso no
--- van en la tabla usuarios, que es la misma del teléfono. Lo corre la cuenta propietaria.
-
-SET ROLE srp_propietario;
+-- van en la tabla usuarios, que es la misma del teléfono. Lo corre quien administra la base, dentro de
+-- instalar.sql.
 
 -- Una contraseña por cuenta. Nunca se guarda en claro: sólo el resultado de un algoritmo de derivación
 -- lento y con sal, con sus parámetros en el mismo texto para poder subirlos después sin perder las
@@ -51,5 +50,3 @@ COMMENT ON COLUMN srp.sesiones.agente IS 'Navegador y equipo desde donde se entr
 ALTER TABLE srp.credenciales ADD CONSTRAINT credenciales_usuario_id_fk FOREIGN KEY (usuario_id) REFERENCES srp.usuarios (id) ON DELETE CASCADE;
 ALTER TABLE srp.credenciales ADD CONSTRAINT credenciales_cambiada_por_id_fk FOREIGN KEY (cambiada_por_id) REFERENCES srp.usuarios (id) DEFERRABLE INITIALLY IMMEDIATE;
 ALTER TABLE srp.sesiones ADD CONSTRAINT sesiones_usuario_id_fk FOREIGN KEY (usuario_id) REFERENCES srp.usuarios (id) ON DELETE CASCADE;
-
-RESET ROLE;

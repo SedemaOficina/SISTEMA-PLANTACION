@@ -29,16 +29,15 @@ function cliente() {
 
 before(async () => {
   admin = await conectar();
-  await admin.query('GRANT srp_servicio TO CURRENT_USER WITH INHERIT FALSE, SET TRUE');
+  await admin.query('GRANT srp_api TO CURRENT_USER WITH INHERIT FALSE, SET TRUE');
   await admin.query('BEGIN');
-  await admin.query('SET LOCAL ROLE srp_propietario');
   await admin.query(`INSERT INTO srp.instituciones VALUES ('o-sedema', 'SEDEMA', 'Secretaría del Medio Ambiente', true, NULL, now(), NULL, NULL, 'Gobierno de la CDMX') ON CONFLICT (id) DO NOTHING`);
   await admin.query(`INSERT INTO srp.areas VALUES ('a-sia', 'SIA', 'Sistema de Información Ambiental', true, NULL, now(), NULL, NULL) ON CONFLICT (id) DO NOTHING`);
   await admin.query(`INSERT INTO srp.instituciones VALUES ('o-prueba-acceso', 'PRUEBA_ACCESO', 'Institución de prueba del acceso', true, NULL, now(), NULL, NULL, 'Empresa privada') ON CONFLICT (id) DO NOTHING`);
   await admin.query(`INSERT INTO srp.usuarios VALUES ($1, $2, 'Administración Prueba Acceso', 'o-sedema', 'a-sia', 'Administración global', 'ADMIN', '{}', true, now(), $1, NULL, NULL)`, [ADMIN.id, ADMIN.correo]);
   await admin.query(`INSERT INTO srp.credenciales VALUES ($1, $2, false, NULL, 0, NULL, now(), $1)`, [ADMIN.id, await derivar(ADMIN.clave)]);
   await admin.query('COMMIT');
-  grupo = crearGrupo({ rol: 'srp_servicio' });
+  grupo = crearGrupo({ rol: 'srp_api' });
   servidor = crearApp({ grupo, config }).listen(0);
   await new Promise(r => servidor.once('listening', r));
   base = 'http://127.0.0.1:' + servidor.address().port + config.ruta;
@@ -49,7 +48,6 @@ after(async () => {
   grupo && await grupo.end();
   // Se quita lo que creó la prueba: sus cuentas (con sus contraseñas y sesiones), su bitácora y su institución
   await admin.query('BEGIN');
-  await admin.query('SET LOCAL ROLE srp_propietario');
   const ids = (await admin.query("SELECT id FROM srp.usuarios WHERE correo LIKE '%.prueba.%@ejemplo.local' OR organizacion_id = 'o-prueba-acceso'")).rows.map(r => r.id);
   await admin.query('DELETE FROM srp.bitacora WHERE usuario_id = ANY($1::uuid[]) OR entidad_id = ANY($1::text[])', [ids]);
   await admin.query('DELETE FROM srp.credenciales WHERE usuario_id = ANY($1::uuid[])', [ids]);
@@ -57,7 +55,7 @@ after(async () => {
   await admin.query('DELETE FROM srp.usuarios WHERE id = $1', [ADMIN.id]);
   await admin.query("DELETE FROM srp.instituciones WHERE id = 'o-prueba-acceso'");
   await admin.query('COMMIT');
-  await admin.query('REVOKE srp_servicio FROM CURRENT_USER');
+  await admin.query('REVOKE srp_api FROM CURRENT_USER');
   await admin.end();
 });
 
@@ -83,9 +81,7 @@ test('al entrar, la cookie es sólo HTTP, del mismo sitio y sólo para la API; a
   assert.equal(e.datos.debeCambiar, false);
   assert.match(e.puesta, /HttpOnly/i); assert.match(e.puesta, /SameSite=Strict/i); assert.match(e.puesta, /Path=\/api\/srp/);
   const testigo = decodeURIComponent(c.cookie.split('=')[1]);
-  await admin.query('SET ROLE srp_propietario');
   const g = (await admin.query("SELECT count(*) FILTER (WHERE testigo_resumen = convert_to($1, 'UTF8'))::int AS tal_cual, count(*) FILTER (WHERE testigo_resumen = sha256(convert_to($1, 'UTF8')))::int AS resumen FROM srp.sesiones", [testigo])).rows[0];
-  await admin.query('RESET ROLE');
   assert.deepEqual(g, { tal_cual: 0, resumen: 1 }, 'la base guarda el resumen del testigo, no el testigo');
   assert.equal((await c.pedir('GET', '/acceso/yo')).estado, 200);
   const anterior = c.cookie;
@@ -122,9 +118,7 @@ test('la Administración da de alta una cuenta con contraseña temporal, que obl
   assert.equal((await cabo.pedir('POST', '/cuentas', {})).datos.codigo, 'SIN_PERMISO');
   // La temporal ya no sirve
   assert.equal((await cliente().pedir('POST', '/acceso/entrar', { correo: 'cabo.prueba.uno@ejemplo.local', contrasena: alta.datos.temporal })).datos.codigo, 'INCORRECTO');
-  await admin.query('SET ROLE srp_propietario');
   const bit = (await admin.query('SELECT accion, detalle FROM srp.bitacora WHERE entidad_id = $1', [alta.datos.usuario.id])).rows;
-  await admin.query('RESET ROLE');
   assert.deepEqual(bit, [{ accion: 'CREADO', detalle: 'Alta de cabo.prueba.uno@ejemplo.local con perfil CABO en Institución de prueba del acceso' }]);
 });
 
@@ -167,28 +161,24 @@ test('si la institución se desactiva, sus sesiones dejan de valer', async () =>
   const alta = await a.pedir('POST', '/cuentas', { correo: 'cabo.prueba.cuatro@ejemplo.local', nombre_completo: 'Cabo Prueba Cuatro', organizacion_id: 'o-prueba-acceso', cargo_rol: 'Cabo', perfil: 'CABO' });
   const cabo = cliente();
   await cabo.pedir('POST', '/acceso/entrar', { correo: 'cabo.prueba.cuatro@ejemplo.local', contrasena: alta.datos.temporal });
-  await admin.query("SET ROLE srp_propietario"); await admin.query("UPDATE srp.instituciones SET activo = false WHERE id = 'o-prueba-acceso'");
+  await admin.query("UPDATE srp.instituciones SET activo = false WHERE id = 'o-prueba-acceso'");
   try {
     assert.equal((await cabo.pedir('GET', '/acceso/yo')).datos.codigo, 'SESION_INSTITUCION_DESACTIVADA');
   } finally {
-    await admin.query("UPDATE srp.instituciones SET activo = true WHERE id = 'o-prueba-acceso'"); await admin.query('RESET ROLE');
+    await admin.query("UPDATE srp.instituciones SET activo = true WHERE id = 'o-prueba-acceso'");
   }
 });
 
 test('una sesión vence por inactividad y por su duración máxima', async () => {
   const c = cliente();
   await c.pedir('POST', '/acceso/entrar', { correo: ADMIN.correo, contrasena: ADMIN.clave });
-  await admin.query("SET ROLE srp_propietario");
   await admin.query("UPDATE srp.sesiones SET ultima_actividad = now() - interval '13 hours' WHERE usuario_id = $1 AND cerrada_en IS NULL", [ADMIN.id]);
-  await admin.query('RESET ROLE');
   const r = await c.pedir('GET', '/acceso/yo');
   assert.equal(r.datos.codigo, 'SESION_VENCIDA');
   assert.match(r.datos.mensaje, /lo capturado se conserva/);
   const c2 = cliente();
   await c2.pedir('POST', '/acceso/entrar', { correo: ADMIN.correo, contrasena: ADMIN.clave });
-  await admin.query("SET ROLE srp_propietario");
   await admin.query("UPDATE srp.sesiones SET expira_en = now() - interval '1 minute' WHERE usuario_id = $1 AND cerrada_en IS NULL", [ADMIN.id]);
-  await admin.query('RESET ROLE');
   assert.equal((await c2.pedir('GET', '/acceso/yo')).datos.codigo, 'SESION_VENCIDA');
 });
 
@@ -196,10 +186,8 @@ test('la contraseña nunca se guarda en claro y la temporal vence', async () => 
   const a = cliente();
   await a.pedir('POST', '/acceso/entrar', { correo: ADMIN.correo, contrasena: ADMIN.clave });
   const alta = await a.pedir('POST', '/cuentas', { correo: 'cabo.prueba.cinco@ejemplo.local', nombre_completo: 'Cabo Prueba Cinco', organizacion_id: 'o-prueba-acceso', cargo_rol: 'Cabo', perfil: 'CABO' });
-  await admin.query("SET ROLE srp_propietario");
   const cred = (await admin.query('SELECT derivada FROM srp.credenciales WHERE usuario_id = $1', [alta.datos.usuario.id])).rows[0];
   await admin.query("UPDATE srp.credenciales SET temporal_expira_en = now() - interval '1 minute' WHERE usuario_id = $1", [alta.datos.usuario.id]);
-  await admin.query('RESET ROLE');
   assert.ok(!cred.derivada.includes(alta.datos.temporal) && cred.derivada.startsWith('scrypt$32768$8$1$'));
   assert.equal((await cliente().pedir('POST', '/acceso/entrar', { correo: 'cabo.prueba.cinco@ejemplo.local', contrasena: alta.datos.temporal })).datos.codigo, 'TEMPORAL_VENCIDA');
 });

@@ -7,7 +7,8 @@ import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 
 export const SERVIDOR = path.dirname(fileURLToPath(import.meta.url));
-export const SQL = path.join(SERVIDOR, 'sql');
+export const SQL = path.join(SERVIDOR, 'db', 'srp');
+export const SQL_LOCAL = path.join(SERVIDOR, 'db', 'local');
 export const RAIZ = path.join(SERVIDOR, '..');
 
 /* La contraseña del archivo de contraseñas: renglones «servidor:puerto:base:cuenta:contraseña», con *
@@ -38,15 +39,22 @@ export async function conectar() {
   return c;
 }
 
-const leer = (nombre) => fs.readFileSync(path.join(SQL, nombre), 'utf8');
+const leer = (nombre, carpeta = SQL) => fs.readFileSync(path.join(carpeta, nombre), 'utf8');
 
 // Los guiones en el orden en que los corre instalar.sql: el orden vive en un solo lugar
 export function guionesDeInstalacion() {
   return leer('instalar.sql').split('\n').map(l => l.match(/^\\ir\s+(\S+)/)).filter(Boolean).map(m => m[1]);
 }
 
+/* Sólo para la base local de desarrollo: la réplica de las tablas de territorio que lee el SRP, con su
+   rol de lectura. En el SIA territorio ya existe. Sus datos los carga «npm run cargar -- territorio». */
+export async function prepararTerritorio(c) {
+  await c.query(leer('territorio.sql', SQL_LOCAL));
+}
+
 // La instalación completa, en una transacción, como la hace instalar.sql con psql
 export async function instalar(c) {
+  await prepararTerritorio(c);
   await c.query('BEGIN');
   try {
     for (const g of guionesDeInstalacion()) await c.query(leer(g));
@@ -59,5 +67,5 @@ export async function instalar(c) {
 
 // Sólo para la base local de desarrollo: borra el esquema y sus cuentas sin preguntar
 export async function destruir(c) {
-  await c.query(leer('destruir_local.sql'));
+  await c.query(leer('destruir.sql', SQL_LOCAL));
 }

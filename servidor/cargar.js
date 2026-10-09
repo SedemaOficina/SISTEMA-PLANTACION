@@ -2,8 +2,11 @@
 
    Uso:  npm run cargar -- <orden> [<orden>…]
 
-   capas      Las cuatro capas territoriales, de assets/capas/ (las mismas de la aplicación). Se
-              reemplazan completas. También en los servidores del SIA, después de instalar.
+   territorio SÓLO EN LA BASE LOCAL: la réplica de territorio (alcaldías, malla UGA y colonias del IECM),
+              de assets/capas/, las mismas capas de la aplicación. En el SIA territorio ya existe y
+              es del SIA: si encuentra capas que no cargó el SRP, no toca nada.
+   capas      La capa propia del SRP, las colonias prioritarias, de assets/capas/. Se reemplaza
+              completa. También en los servidores del SIA, después de instalar.
    especies   El catálogo de especies, de assets/catalogos/catalogo-especies.js. Agrega las que falten;
               no toca las que ya están. También en el SIA.
    vehiculos  La lista de vehículos de un CSV con columnas placa, modelo y tipo (por omisión, el más
@@ -11,15 +14,15 @@
    app        Lo que exportó herramientas/exportar_datos_app.py (servidor/local/datos-app.json): cuentas
               de prueba, catálogos de arranque y los datos de demostración. SÓLO EN LA BASE LOCAL.
    todo       capas, especies, vehiculos y app, los que tengan su archivo.
-   rehacer    SÓLO EN LA BASE LOCAL: destruye el esquema, lo instala y carga todo.
+   rehacer    SÓLO EN LA BASE LOCAL: destruye el esquema, lo instala y carga territorio y todo.
 
-   Las capas y las especies las carga la cuenta propietaria; lo de la aplicación entra con la cuenta
-   del servicio, como llegará de los teléfonos, en una sola transacción. */
+   Las capas y las especies las carga quien administra la base; lo de la aplicación entra con la cuenta
+   del servicio, srp_api, como llegará de los teléfonos, en una sola transacción. */
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import crypto from 'node:crypto';
-import { conectar, instalar, destruir, RAIZ, SERVIDOR } from './bd.js';
+import { conectar, instalar, destruir, prepararTerritorio, RAIZ, SERVIDOR } from './bd.js';
 
 const ESQUEMA = JSON.parse(fs.readFileSync(path.join(RAIZ, 'datos', 'esquema.json'), 'utf8'));
 const APP_JSON = path.join(SERVIDOR, 'local', 'datos-app.json');
@@ -46,29 +49,54 @@ async function contar(c, tabla) {
   return (await c.query(`SELECT count(*)::int AS n FROM srp.${tabla}`)).rows[0].n;
 }
 
-// ---------- Capas ----------
-const CAPAS = {
-  alcaldias: { tabla: 'capa_alcaldias', campos: "f->'properties'->>'cvegeo', f->'properties'->>'nombre', f->'properties'->>'clave'", columnas: 'cvegeo, nombre, clave' },
-  colonias: { tabla: 'capa_colonias', campos: "f->'properties'->>'clave', f->'properties'->>'nombre'", columnas: 'clave, nombre' },
-  uga: { tabla: 'capa_uga', campos: "f->'properties'->>'clave'", columnas: 'clave' },
-  prioritarias: { tabla: 'capa_prioritarias', campos: "(f->'properties'->>'id')::int, f->'properties'->>'colonia', f->'properties'->>'alcaldia', (f->'properties'->>'prioridad')::smallint", columnas: 'id, colonia, alcaldia, prioridad' }
-};
+// ---------- Réplica local de territorio ----------
+const CAPAS_TERRITORIO = ['alcaldia', 'malla_uga_1km', 'colonias_iecm_2022'];
+const FUENTE_LOCAL = 'Réplica local del SRP, de assets/capas/';
 
-async function cargarCapas(c) {
+const geomDe = "ST_Multi(ST_SetSRID(ST_GeomFromGeoJSON(f->>'geometry'), 4326))";
+
+async function cargarTerritorio(c) {
+  const ajenas = (await c.query('SELECT count(*)::int AS n FROM territorio.version_capa WHERE fuente <> $1', [FUENTE_LOCAL])).rows[0].n;
+  if (ajenas) throw new Error('territorio tiene capas que no cargó el SRP: es el del SIA y no se toca');
+  const leer = (n) => delaApp(`assets/capas/capa-${n}.js`).CAPAS[n];
+  const alc = leer('alcaldias'), uga = leer('uga'), col = leer('colonias');
   await c.query('BEGIN');
-  await c.query('SET LOCAL ROLE srp_propietario');
-  for (const [nombre, d] of Object.entries(CAPAS)) {
-    const capa = delaApp(`assets/capas/capa-${nombre}.js`).CAPAS[nombre];
-    await c.query(`DELETE FROM srp.${d.tabla}`);
-    await c.query(`INSERT INTO srp.${d.tabla} (${d.columnas}, orden, geom)
-      SELECT ${d.campos}, t.orden::int, ST_Multi(ST_SetSRID(ST_GeomFromGeoJSON(f->>'geometry'), 4326))
-        FROM jsonb_array_elements($1::jsonb) WITH ORDINALITY AS t(f, orden)`, [JSON.stringify(capa.geojson.features)]);
-    await c.query(`INSERT INTO srp.capas (nombre, version, fecha_corte, origen, elementos) VALUES ($1, $2, $3, $4, $5)
-      ON CONFLICT (nombre) DO UPDATE SET version = EXCLUDED.version, fecha_corte = EXCLUDED.fecha_corte, origen = EXCLUDED.origen,
-        elementos = EXCLUDED.elementos, cargada_en = now()`,
-      [nombre, capa.meta.version, String(capa.meta.fecha_corte), capa.meta.origen, capa.geojson.features.length]);
-    console.log(`capa ${nombre}: ${await contar(c, d.tabla)} polígonos, versión ${capa.meta.version}`);
+  await c.query('DELETE FROM territorio.alcaldia; DELETE FROM territorio.malla_uga_1km; DELETE FROM territorio.colonias_iecm_2022');
+  await c.query(`INSERT INTO territorio.alcaldia (cve_alcaldia, cve_ut_prefijo, nombre, cvegeo, geom)
+    SELECT right(f->'properties'->>'cvegeo', 3), lpad(ltrim(right(f->'properties'->>'cvegeo', 3), '0'), 2, '0'),
+           f->'properties'->>'nombre', f->'properties'->>'cvegeo', ${geomDe}
+      FROM jsonb_array_elements($1::jsonb) AS t(f)`, [JSON.stringify(alc.geojson.features)]);
+  // La malla del SIA guarda polígonos sencillos: cada celda es un solo hexágono
+  await c.query(`INSERT INTO territorio.malla_uga_1km (clave, cve_alcaldia_3, consecutivo, geom, version)
+    SELECT f->'properties'->>'clave', split_part(f->'properties'->>'clave', '-', 1), split_part(f->'properties'->>'clave', '-', 2),
+           ST_GeometryN(${geomDe}, 1), $2
+      FROM jsonb_array_elements($1::jsonb) AS t(f)`, [JSON.stringify(uga.geojson.features), uga.meta.version]);
+  await c.query(`INSERT INTO territorio.colonias_iecm_2022 (id, cveut, ut, geom)
+    SELECT t.n::int, f->'properties'->>'clave', f->'properties'->>'nombre', ${geomDe}
+      FROM jsonb_array_elements($1::jsonb) WITH ORDINALITY AS t(f, n)`, [JSON.stringify(col.geojson.features)]);
+  await c.query('DELETE FROM territorio.version_capa WHERE capa = ANY($1)', [CAPAS_TERRITORIO]);
+  for (const [capa, d] of [['alcaldia', alc], ['malla_uga_1km', uga], ['colonias_iecm_2022', col]]) {
+    await c.query(`INSERT INTO territorio.version_capa (capa, version, fuente, filas, nota) VALUES ($1, $2, $3, $4, $5)`,
+      [capa, d.meta.version, FUENTE_LOCAL, d.geojson.features.length, d.meta.origen]);
+    console.log(`territorio.${capa}: ${d.geojson.features.length} polígonos, versión ${d.meta.version}`);
   }
+  await c.query('COMMIT');
+}
+
+// ---------- Capa propia: colonias prioritarias ----------
+async function cargarCapas(c) {
+  const capa = delaApp('assets/capas/capa-prioritarias.js').CAPAS.prioritarias;
+  await c.query('BEGIN');
+  await c.query('DELETE FROM srp.capa_prioritarias');
+  await c.query(`INSERT INTO srp.capa_prioritarias (id, colonia, alcaldia, prioridad, geom)
+    SELECT (f->'properties'->>'id')::int, f->'properties'->>'colonia', f->'properties'->>'alcaldia',
+           (f->'properties'->>'prioridad')::smallint, ${geomDe}
+      FROM jsonb_array_elements($1::jsonb) AS t(f)`, [JSON.stringify(capa.geojson.features)]);
+  await c.query(`INSERT INTO srp.capas (nombre, version, fecha_corte, origen, elementos) VALUES ('prioritarias', $1, $2, $3, $4)
+    ON CONFLICT (nombre) DO UPDATE SET version = EXCLUDED.version, fecha_corte = EXCLUDED.fecha_corte, origen = EXCLUDED.origen,
+      elementos = EXCLUDED.elementos, cargada_en = now()`,
+    [capa.meta.version, String(capa.meta.fecha_corte), capa.meta.origen, capa.geojson.features.length]);
+  console.log(`capa prioritarias: ${await contar(c, 'capa_prioritarias')} polígonos, versión ${capa.meta.version}`);
   await c.query('COMMIT');
 }
 
@@ -76,7 +104,6 @@ async function cargarCapas(c) {
 async function cargarEspecies(c) {
   const especies = delaApp('assets/catalogos/catalogo-especies.js').CATALOGO_ESPECIES.especies;
   await c.query('BEGIN');
-  await c.query('SET LOCAL ROLE srp_propietario');
   await insertar(c, 'especies', especies, 'ON CONFLICT (id) DO NOTHING');
   console.log(`especies: ${await contar(c, 'especies')} en la base (${especies.length} en el catálogo)`);
   await c.query('COMMIT');
@@ -107,7 +134,6 @@ async function cargarVehiculos(c, archivo) {
     creado_por_id: null, fecha_creacion: ahora, editado_por_id: null, fecha_ultima_edicion: null, modelo: v.modelo, tipo_vehiculo: v.tipo
   }));
   await c.query('BEGIN');
-  await c.query('SET LOCAL ROLE srp_propietario');
   await insertar(c, 'vehiculos', filas, 'ON CONFLICT (id) DO NOTHING');
   console.log(`vehículos: ${await contar(c, 'vehiculos')} en la base (${filas.length} en ${path.basename(archivo)})`);
   await c.query('COMMIT');
@@ -143,10 +169,10 @@ function adaptar(tabla, fila, mapaVehiculos) {
 
 async function cargarApp(c, archivo) {
   const { tablas, exportado_en } = JSON.parse(fs.readFileSync(archivo, 'utf8'));
-  await c.query('GRANT srp_servicio TO CURRENT_USER WITH INHERIT FALSE, SET TRUE');
+  await c.query('GRANT srp_api TO CURRENT_USER WITH INHERIT FALSE, SET TRUE');
   await c.query('BEGIN');
   try {
-    await c.query('SET LOCAL ROLE srp_servicio');
+    await c.query('SET LOCAL ROLE srp_api');
     await c.query('SET CONSTRAINTS ALL DEFERRED');
     // Si ya están los vehículos reales, los de prueba de la aplicación se cambian por ellos, uno por uno
     const reales = (await c.query("SELECT id, nombre, modelo, tipo_vehiculo FROM srp.vehiculos WHERE id NOT LIKE 'v-PRU%' ORDER BY clave")).rows;
@@ -164,7 +190,7 @@ async function cargarApp(c, archivo) {
     await c.query('ROLLBACK');
     throw e;
   } finally {
-    await c.query('REVOKE srp_servicio FROM CURRENT_USER');
+    await c.query('REVOKE srp_api FROM CURRENT_USER');
   }
   console.log(`datos de la aplicación exportados el ${exportado_en}: cargados`);
 }
@@ -175,7 +201,8 @@ async function principal(ordenes) {
   const c = await conectar();
   try {
     for (const o of ordenes) {
-      if (o === 'rehacer') { await destruir(c); await instalar(c); console.log('esquema srp instalado de nuevo'); await principal.todo(c); }
+      if (o === 'rehacer') { await destruir(c); await instalar(c); console.log('esquema srp instalado de nuevo'); await cargarTerritorio(c); await principal.todo(c); }
+      else if (o === 'territorio') { await prepararTerritorio(c); await cargarTerritorio(c); }
       else if (o === 'todo') await principal.todo(c);
       else if (o === 'capas') await cargarCapas(c);
       else if (o === 'especies') await cargarEspecies(c);

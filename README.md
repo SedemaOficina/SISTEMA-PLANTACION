@@ -184,7 +184,7 @@ herramientas/           Generan archivos del sitio a partir de originales/ y de 
   huella_capas.py       assets/capas/ → datos/HUELLA-CAPAS.md y .json; con un archivo, compara contra otra fuente
   generar_especies.py   Excel de especies del SIA → assets/catalogos/catalogo-especies.js
   generar_diccionario.py  datos/esquema.json → datos/DICCIONARIO-DATOS.md y js/esquema.js
-  generar_sql.py        datos/esquema.json → servidor/sql/02_tablas.sql (las tablas del servidor)
+  generar_sql.py        datos/esquema.json → servidor/db/srp/02-srp-tablas.sql (las tablas del servidor)
   exportar_datos_app.py La base de un teléfono de prueba con la demostración → servidor/local/datos-app.json, para cargarla en la base local
   extraer_iconos.py     Set de iconografía CDMX (.ai) → trazados para js/iconos.js
 

@@ -138,7 +138,9 @@ def escribir(nombre, features, props):
     salida['meta']['features'] = len(features)
     salida['meta']['generado_por'] = 'generar_capas.py a partir de originales/' + m['archivo']
     ajustadas = []
-    for f in features:
+    # En orden de clave: donde dos polígonos contienen un punto (un borde compartido) gana el primero,
+    # y el servidor, que lee las capas de territorio sin orden propio, desempata igual, por clave
+    for f in sorted(features, key=lambda f: f['properties'][m['clave']]):
         clave = f['properties'].get(m['clave'])
         coords, ajustada = geometria_final(f['geometry']['coordinates'], clave, m['archivo'])
         if ajustada: ajustadas.append(clave)

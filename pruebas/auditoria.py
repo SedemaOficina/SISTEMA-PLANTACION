@@ -340,7 +340,7 @@ with sync_playwright() as p:
     # Y las tablas del servidor, que son las mismas
     import subprocess as _sp, sys as _sys
     sql_al_dia = _sp.run([_sys.executable, os.path.join(APP, 'herramientas', 'generar_sql.py'), '--revisar'], capture_output=True).returncode == 0
-    mirar(sql_al_dia, 'servidor/sql/02_tablas.sql está generado a partir de esquema.json: las tablas del servidor son las del teléfono', 'corra herramientas/generar_sql.py')
+    mirar(sql_al_dia, 'servidor/db/srp/02-srp-tablas.sql está generado a partir de esquema.json: las tablas del servidor son las del teléfono', 'corra herramientas/generar_sql.py')
     # Capas: toda geometría válida después de redondear, o el cruce falla sin avisar
     try:
         from shapely.geometry import shape as _forma

@@ -1,5 +1,5 @@
-/* LA BASE LOCAL CON SUS DATOS: capas, catálogos y lo que exporta la aplicación, cargados con
-   «npm run cargar -- rehacer». Comprueba que todo cupo y, sobre todo, que PostGIS ubica cada árbol y
+/* LA BASE LOCAL CON SUS DATOS: la réplica de territorio, la capa propia, los catálogos y lo que exporta
+   la aplicación, cargados con «npm run cargar -- rehacer». Comprueba que todo cupo y, sobre todo, que PostGIS ubica cada árbol y
    cada jornada igual que el teléfono: misma alcaldía, misma colonia, misma celda UGA (la del folio).
    Sólo corre si existe la exportación de la aplicación (servidor/local/datos-app.json). */
 import { test, before, after } from 'node:test';
@@ -20,18 +20,18 @@ before(async () => {
   execFileSync(process.execPath, [path.join(RAIZ, 'servidor', 'cargar.js'), 'rehacer'], { stdio: 'ignore' });
   app = JSON.parse(fs.readFileSync(APP_JSON, 'utf8')).tablas;
   c = await conectar();
-  await c.query('SET ROLE srp_propietario');
 });
 after(async () => { if (c) await c.end(); });
 
 const uno = async (sql) => (await c.query(sql)).rows[0];
 
-test('las cuatro capas están completas, válidas y en la versión de la aplicación', { skip: omitir }, async () => {
-  const r = await uno(`SELECT (SELECT count(*) FROM srp.capa_alcaldias)::int AS alcaldias, (SELECT count(*) FROM srp.capa_colonias)::int AS colonias,
-    (SELECT count(*) FROM srp.capa_uga)::int AS uga, (SELECT count(*) FROM srp.capa_prioritarias)::int AS prioritarias,
-    (SELECT string_agg(nombre || '=' || version, ';' ORDER BY nombre) FROM srp.capas) AS versiones`);
+test('territorio y la capa propia están completos y en la versión de la aplicación', { skip: omitir }, async () => {
+  const r = await uno(`SELECT (SELECT count(*) FROM territorio.alcaldia)::int AS alcaldias, (SELECT count(*) FROM territorio.colonias_iecm_2022)::int AS colonias,
+    (SELECT count(*) FROM territorio.malla_uga_1km)::int AS uga, (SELECT count(*) FROM srp.capa_prioritarias)::int AS prioritarias,
+    (SELECT string_agg(capa || '=' || version, ';' ORDER BY capa) FROM territorio.version_capa WHERE vigente) AS territorio,
+    (SELECT string_agg(nombre || '=' || version, ';' ORDER BY nombre) FROM srp.capas) AS propias`);
   assert.deepEqual(r, { alcaldias: 16, colonias: 1837, uga: 1624, prioritarias: 2243,
-    versiones: 'alcaldias=sia-2026-01-01;colonias=iecm-2022;prioritarias=priorizacion-2026-10-01;uga=sia-2026-09-22' });
+    territorio: 'alcaldia=sia-2026-01-01;colonias_iecm_2022=iecm-2022;malla_uga_1km=sia-2026-09-22', propias: 'prioritarias=priorizacion-2026-10-01' });
 });
 
 test('el catálogo de especies es el de la aplicación, con su paleta vegetal y su fruto comestible', { skip: omitir }, async () => {
