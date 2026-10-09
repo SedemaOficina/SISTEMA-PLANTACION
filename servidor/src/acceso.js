@@ -84,8 +84,8 @@ export function rutasAcceso({ grupo, config }) {
       if (!u.institucion_activa) return error(res, 403, 'INSTITUCION_INACTIVA', 'Su institución está desactivada. Consulte a la Administración global.');
       if (u.temporal_vencida) return error(res, 403, 'TEMPORAL_VENCIDA', 'Su contraseña temporal venció. Pida otra a la Administración global.');
       await grupo.query('UPDATE srp.credenciales SET intentos_fallidos = 0, bloqueada_hasta = NULL WHERE usuario_id = $1', [u.id]);
-      const testigo = await S.abrir(grupo, u.id, { agente: req.get('user-agent') || '', duracionMaximaDias: A.duracionMaximaDias });
-      S.cookie(res, testigo, { ruta: config.ruta, segura: config.cookieSegura, duracionMaximaDias: A.duracionMaximaDias });
+      const testigo = await S.abrir(grupo, u.id, { agente: req.get('user-agent') || '', inactividadDias: A.inactividadDias });
+      S.cookie(res, testigo, { ruta: config.ruta, segura: config.cookieSegura });
       res.json({ usuario: cuentaPublica(u), debeCambiar: u.temporal });
     } catch (e) { next(e); }
   });

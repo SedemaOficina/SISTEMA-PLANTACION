@@ -78,4 +78,5 @@ que `acceso`, para que mudarlas después sea copiar renglones sin pedir contrase
 - Los comentarios con historia (fechas, números de decisión, incidentes): el código del SRP dice qué hace
   y por qué; la historia vive en DECISIONES y BITACORA.
 - Las sesiones de 30 minutos que se cierran con el navegador: un cabo trabaja horas en campo, a veces sin
-  señal. El SRP deja sus sesiones de 12 horas sin uso y 7 días como máximo.
+  señal. En el SRP la sesión vence tras una semana sin uso; cada uso renueva la semana (decisión de Liber,
+  09-10-2026).

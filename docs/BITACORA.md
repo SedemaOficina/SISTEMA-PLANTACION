@@ -3981,3 +3981,21 @@ funciones sin uso). `pruebas/auditoria.py`: 143, 0 hallazgos; hoja de estilos, 0
 probó en teléfonos reales ni con VoiceOver o TalkBack.
 
 **Siguiente paso.** La fase 2 del servidor, y al terminar sus fases, su parte de la auditoría.
+
+## Bloque 200 — La sesión vence tras una semana sin uso (09-10-2026)
+
+Versión 0.9.59. Liber decidió la duración de la sesión antes de la fase 2 del servidor.
+
+**Qué cambió (D280).** `servidor/src/sesiones.js`: el vencimiento se recorre con cada uso y ya no hay
+duración máxima; la cookie dura 400 días. `servidor/src/config.js`: `inactividadDias` (7) en lugar de las
+horas de inactividad y los días máximos. `servidor/src/acceso.js`, la prueba de vencimiento de
+`servidor/pruebas/acceso.test.js`, `servidor/README.md` y `docs/ALINEACION-SIA.md`, al día.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada.
+
+**Verificación.** Pruebas del servidor: 21 de 21; la de vencimiento comprueba que al entrar vence en siete
+días, que tras seis días sin uso sigue valiendo y el uso le devuelve la semana completa, que a los siete
+días pide la contraseña sin perder lo capturado, y que la cookie dura 400 días. `pruebas/auditoria.py`: 143,
+0 hallazgos. En la aplicación sólo cambió la marca de versión: no se repitió `pruebas/prueba.py`.
+
+**Siguiente paso.** La fase 2 del servidor.

@@ -3233,3 +3233,11 @@
   · Aceptado: los puntos encimados en el mapa de la jornada, por la excepción «equivalente» de WCAG 2.5.8.
   · Cobertura de las pruebas: 98.6 % de los renglones de `js/`, medida con el perfilador de V8. La medición encontró
     cuatro funciones sin uso dentro de objetos armados al vuelo (`fijarDia`, `etiqueta`, `contar`, `resumen`): quitadas.
+
+- **D280. La sesión vence tras una semana sin uso (bloque 200).**
+  09-10-2026. Liber: la sesión dura una semana; si en una semana no se entra, pide la contraseña otra vez. Sin
+  límite total: quien entra al menos una vez por semana no vuelve a escribirla.
+  · Cada uso renueva la semana (`expira_en` se recorre a lo más una vez por minuto). Desactivar la cuenta o su
+    institución, o cambiar o restablecer la contraseña, sigue cerrando sus sesiones al instante.
+  · La cookie dura 400 días, lo más que admiten los navegadores; quien decide si la sesión vale es el servidor.
+  · Sustituye a las 12 horas sin uso y 7 días como máximo de D259. Parámetro: `SRP_SESION_INACTIVIDAD_DIAS`.

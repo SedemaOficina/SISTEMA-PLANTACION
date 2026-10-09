@@ -88,9 +88,10 @@ variables de entorno, está explicada en `src/config.js`.
   no puede hacer nada más.
 - **Bloqueo:** 5 intentos fallidos seguidos bloquean la cuenta 15 minutos, o hasta que la Administración
   restablezca la contraseña. Una cuenta que no existe y una contraseña equivocada responden lo mismo.
-- **Sesiones:** vencen tras 12 horas sin uso o a los 7 días. Una sesión vencida responde
-  `SESION_VENCIDA`: la aplicación vuelve a pedir la contraseña sin perder lo capturado. Desactivar la
-  cuenta o su institución, o cambiar o restablecer la contraseña, cierra sus sesiones.
+- **Sesiones:** vencen tras una semana sin uso; cada uso renueva la semana y no hay límite total. Una
+  sesión vencida responde `SESION_VENCIDA`: la aplicación vuelve a pedir la contraseña sin perder lo
+  capturado. Desactivar la cuenta o su institución, o cambiar o restablecer la contraseña, cierra sus
+  sesiones. La cookie dura 400 días, lo más que admiten los navegadores: quien decide es el servidor.
 - **Primera cuenta:** en una base recién instalada, quien la administra crea la primera Administración
   global con `npm run cuenta-inicial -- <correo> "<nombre completo>" "<cargo>"`; la contraseña temporal
   se escribe una sola vez en pantalla. Las demás cuentas se dan de alta desde la aplicación.

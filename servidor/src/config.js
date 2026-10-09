@@ -23,8 +23,8 @@ export function leerConfig(env = process.env) {
     rol: env.SRP_ROL || '',
     // Parámetros del acceso. Se podrán cambiar desde Configuración › Parámetros cuando vivan en la base
     acceso: {
-      inactividadHoras: num(env.SRP_SESION_INACTIVIDAD_H, 12),
-      duracionMaximaDias: num(env.SRP_SESION_MAXIMA_DIAS, 7),
+      // Una semana sin entrar y pide la contraseña otra vez; cada uso renueva la semana, sin límite total
+      inactividadDias: num(env.SRP_SESION_INACTIVIDAD_DIAS, 7),
       largoMinimo: num(env.SRP_CONTRASENA_MINIMO, 10),
       intentosMaximos: num(env.SRP_INTENTOS_MAXIMOS, 5),
       bloqueoMinutos: num(env.SRP_BLOQUEO_MINUTOS, 15),

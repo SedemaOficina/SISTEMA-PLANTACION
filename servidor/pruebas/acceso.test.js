@@ -169,17 +169,23 @@ test('si la institución se desactiva, sus sesiones dejan de valer', async () =>
   }
 });
 
-test('una sesión vence por inactividad y por su duración máxima', async () => {
+test('una sesión dura una semana sin uso: cada uso la renueva, y a los siete días sin entrar vence', async () => {
   const c = cliente();
-  await c.pedir('POST', '/acceso/entrar', { correo: ADMIN.correo, contrasena: ADMIN.clave });
-  await admin.query("UPDATE srp.sesiones SET ultima_actividad = now() - interval '13 hours' WHERE usuario_id = $1 AND cerrada_en IS NULL", [ADMIN.id]);
+  const e = await c.pedir('POST', '/acceso/entrar', { correo: ADMIN.correo, contrasena: ADMIN.clave });
+  // La cookie no se cae antes que la sesión: dura lo más que admiten los navegadores
+  assert.match(e.puesta, /Max-Age=34560000/);
+  const plazo = async () => Number((await admin.query(`SELECT extract(epoch FROM expira_en - now()) / 86400 AS d FROM srp.sesiones
+    WHERE usuario_id = $1 AND cerrada_en IS NULL ORDER BY creada_en DESC LIMIT 1`, [ADMIN.id])).rows[0].d);
+  assert.ok(Math.abs(await plazo() - 7) < 0.01, 'al entrar vence en siete días');
+  // Seis días sin entrar: sigue valiendo y el uso le devuelve la semana completa
+  await admin.query("UPDATE srp.sesiones SET ultima_actividad = now() - interval '6 days', expira_en = now() + interval '1 day' WHERE usuario_id = $1 AND cerrada_en IS NULL", [ADMIN.id]);
+  assert.equal((await c.pedir('GET', '/acceso/yo')).estado, 200);
+  assert.ok(Math.abs(await plazo() - 7) < 0.01, 'usarla renueva la semana');
+  // Siete días sin entrar: pide la contraseña otra vez, sin perder lo capturado
+  await admin.query("UPDATE srp.sesiones SET ultima_actividad = now() - interval '7 days 1 minute', expira_en = now() - interval '1 minute' WHERE usuario_id = $1 AND cerrada_en IS NULL", [ADMIN.id]);
   const r = await c.pedir('GET', '/acceso/yo');
   assert.equal(r.datos.codigo, 'SESION_VENCIDA');
   assert.match(r.datos.mensaje, /lo capturado se conserva/);
-  const c2 = cliente();
-  await c2.pedir('POST', '/acceso/entrar', { correo: ADMIN.correo, contrasena: ADMIN.clave });
-  await admin.query("UPDATE srp.sesiones SET expira_en = now() - interval '1 minute' WHERE usuario_id = $1 AND cerrada_en IS NULL", [ADMIN.id]);
-  assert.equal((await c2.pedir('GET', '/acceso/yo')).datos.codigo, 'SESION_VENCIDA');
 });
 
 test('la contraseña nunca se guarda en claro y la temporal vence', async () => {
