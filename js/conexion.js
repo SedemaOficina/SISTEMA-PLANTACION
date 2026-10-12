@@ -26,8 +26,6 @@ SRP.conexion = {
     });
     window.addEventListener('offline', async () => { await this.refrescar(); await SRP.envio.pintarFranja(); });
     this.el('conexion').addEventListener('click', async () => { await this.pintarEstado(); this.el('dlg-senal').showModal(); });
-    // La fecha del último respaldo quedó sin uso al retirarse el respaldo
-    try { localStorage.removeItem('srp_ultimo_respaldo'); } catch (e) { /* sin persistencia */ }
     this.refrescar();
   },
 

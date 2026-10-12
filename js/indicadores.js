@@ -175,7 +175,7 @@ SRP.indicadores = {
       return { organizacion: SRP.ref.nombreOrganizacion(id), tipo: o.tipo_organizacion || '', sedema: SRP.ref.esSedema(id) };
     });
     const nativas = arboles.filter(a => this.esNativa(especieDe(a.r).distribucion)).length;
-    // Solicitudes: las jornadas cerradas del programa «Solicitud», con sus árboles del periodo, por solicitante
+    // Solicitudes: las jornadas cerradas del programa «Solicitud especial», con sus árboles del periodo, por solicitante
     const S = SRP.solicitud, pedidas = cerradas.filter(j => S.es(j.dato));
     const solicitudes = { jornadas: pedidas.length, arboles: arboles.filter(a => S.es(a.j.dato)).length,
       solicitantes: [...new Set(pedidas.map(j => S.clave(j.dato)))].map(k => ({ clave: k, solicitante: S.nombreClave(k),

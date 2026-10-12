@@ -3250,3 +3250,28 @@
     y aplican; el que coincide con el rango aplicado queda marcado.
   · El periodo es un día o un rango: se retira el filtro interno por año y mes. Un mes o un año completos se
     nombran en la ficha por su nombre («Septiembre de 2026», «2026»). Supervisión y Mi avance no cambian.
+
+- **D282. Auditoría completa del proyecto (bloque 202).**
+  12-10-2026. Liber pidió la auditoría más completa posible: archivos, código sin uso, persistencia, reglas,
+  conexiones, rapidez, diseño, experiencia de uso, textos, botones, avisos y tipografía. Informe en
+  `docs/AUDITORIA-COMPLETA.md`; lo que cambia la pantalla, en propuestas que se aprueban antes.
+  · Corregido: repositorio local compactado (37 → 5 MB); README al día con los archivos y la forma de servir la
+    app; la limpieza heredada del respaldo y su prueba, fuera; títulos «BLOQUE n:» de las pruebas, fuera; dos
+    reglas documentadas con funciones que ya no existen; el proveedor institucional y el aviso de privacidad,
+    al día en lo que no se ve.
+  · Recomendación para la fase 4: fotografías en un almacén aparte en el teléfono y depuración de lo ya
+    confirmado por el servidor, antes de que un año de trabajo pese cientos de megas en cada lista.
+
+- **D283. Territorios de Paz, Utopías y «Solicitud especial» (bloque 202).**
+  12-10-2026. Liber pidió dos programas nuevos en Registrar jornada, que «Solicitud» se llame «Solicitud
+  especial» y que los «Seleccione…» de Programa y Quién lo solicita dejen de ser una opción de la lista.
+  · «Territorios de Paz» (`p-territorios-paz`) y «Utopías» (`p-utopias`) llegan de arranque sólo para SEDEMA,
+    como Centro Histórico y Compensaciones; la Administración los abre a otros tipos de institución en
+    Catálogos › Programas. En la lista van por orden alfabético, entre Reforestación Urbana, primero, y
+    «Solicitud especial», al final.
+  · «Solicitud especial» conserva su identificador y su clave (`p-solicitud`, `SOLICITUD`): lo capturado no cambia.
+  · Un teléfono con capturas recibe los dos programas y el nombre nuevo con el sello de datos; un programa que
+    la Administración ya editó no se renombra.
+  · «Seleccione un programa» y «Seleccione quién lo solicita» se ven mientras no hay nada elegido y no
+    aparecen al abrir la lista. Las demás listas con «Seleccione…» (área, perfil, institución, tipo, cabo del
+    relevo) no cambian.

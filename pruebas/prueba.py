@@ -1498,7 +1498,7 @@ with sync_playwright() as p:
     pg.click('#form-acceso button[type=submit]'); pg.wait_for_timeout(400)
     ok('desactivada' in pg.inner_text('#acceso-errores'),'y la cuenta desactivada ya no entra')
 
-    # ---------- BLOQUE 77: NOTIFICACIONES Y ESPERA ----------
+    # ---------- NOTIFICACIONES Y ESPERA ----------
     # La pantalla de acceso quedó rechazando una cuenta desactivada (la del cabo), sin sesión: se
     # entra con la del coordinador, que también registra y cierra jornadas.
     pg.select_option('#sel-usuario-prueba','u-coord-1'); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(500)
@@ -1574,7 +1574,7 @@ with sync_playwright() as p:
         pg.wait_for_timeout(1500)
         ok(pg.get_attribute('#btn-galeria-zip','aria-busy') is None and 'Descargar todas' in pg.inner_text('#btn-galeria-zip'),'y vuelve a su texto normal al terminar')
 
-    # ---------- BLOQUE 78: PASOS DE LA JORNADA ----------
+    # ---------- PASOS DE LA JORNADA ----------
     pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(500)
     if pg.is_hidden('#panel-iniciar-jornada'):
         pg.click('#btn-jornada-cambiar'); pg.wait_for_timeout(200); pg.click('#btn-cambiar-nueva'); pg.wait_for_timeout(300)
@@ -1663,7 +1663,7 @@ with sync_playwright() as p:
       const x = b.left + 20, y = b.bottom - 20; const e = document.elementFromPoint(x, y); return e ? !!e.closest('.barra-jornada') : true; }""")
     ok(tapa,'el mapa no se dibuja encima de la barra del pie (Leaflet aislado)')
 
-    # ---------- BLOQUE 80: CONFIRMACIONES ----------
+    # ---------- CONFIRMACIONES ----------
     # Restablecer dice cuánto se pierde, con números; «Cancelar» no toca nada
     n_regs=pg.evaluate("(async () => (await SRP.almacen.todos('plantaciones')).filter(r => r.estatus !== 'eliminado').length)()")
     n_jor=pg.evaluate("(async () => (await SRP.almacen.todos('jornadas')).length)()")
@@ -1684,7 +1684,7 @@ with sync_playwright() as p:
       return [(r.match(/confirmar\\(/g) || []).length, (c.match(/confirmar\\(/g) || []).length, (u.match(/confirmar\\(/g) || []).length]; }""")
     ok(usos==[0,1,1],'lo reversible no confirma: registros 0; catálogo y cuentas sólo al eliminar: %s' % usos)
 
-    # ---------- BLOQUE 81: CAMPOS ----------
+    # ---------- CAMPOS ----------
     pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(500)
     if pg.is_hidden('#panel-iniciar-jornada'):
         pg.click('#btn-jornada-cambiar'); pg.wait_for_timeout(200); pg.click('#btn-cambiar-nueva'); pg.wait_for_timeout(300)
@@ -1737,7 +1737,7 @@ with sync_playwright() as p:
     ok(pg.locator('#dlg-editar-jornada .campo-error').count()==0,'al volver a abrir el diálogo, los errores de antes ya no están')
     pg.keyboard.press('Escape'); pg.wait_for_timeout(200)
 
-    # ---------- BLOQUE 82: TARJETAS, SECCIONES E ICONOS ----------
+    # ---------- TARJETAS, SECCIONES E ICONOS ----------
     tam=lambda: set(pg.evaluate("[...document.querySelectorAll('svg[width]')].filter(s => !s.closest('.leaflet-container')).map(s => s.getAttribute('width'))"))
     vistos=set()
     for v in ('registrar','jornadas','registros','galeria'):
@@ -1788,7 +1788,7 @@ with sync_playwright() as p:
     pg.click('#galeria-vacio button[data-vacio]'); pg.wait_for_timeout(600)
     ok(pg.is_hidden('#galeria-vacio'),'y la acción lo resuelve')
 
-    # ---------- BLOQUE 83: TABLAS Y ACCESIBILIDAD ----------
+    # ---------- TABLAS Y ACCESIBILIDAD ----------
     # Atajos de teclado en la captura
     iniciar_jornada(pg,'Jornada de los atajos',HOY)
     registrar(pg,'aile','ESP-0002')
@@ -1837,7 +1837,7 @@ with sync_playwright() as p:
     if pg.is_hidden('#btn-contraste'): pg.click('#btn-cuenta')   # el menú sigue abierto tras el interruptor
     pg.click('#btn-contraste'); pg.wait_for_timeout(300); pg.keyboard.press('Escape')
 
-    # ---------- BLOQUE 84: REGISTRAR JORNADA ----------
+    # ---------- REGISTRAR JORNADA ----------
     pg.click('#btn-cuenta'); pg.click('#btn-cambiar-perfil'); pg.select_option('#sel-usuario-prueba','u-coord-1'); pg.click('#btn-entrar-prueba'); pg.wait_for_timeout(700)
     pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(500)
     if pg.is_hidden('#panel-iniciar-jornada'):
@@ -1870,7 +1870,7 @@ with sync_playwright() as p:
     ctx.grant_permissions(['geolocation'])
     pg.click('#btn-iniciar-cancelar'); pg.wait_for_timeout(300)
 
-    # ---------- BLOQUE 85: REVISIÓN DE LA FICHA ----------
+    # ---------- REVISIÓN DE LA FICHA ----------
     # Jornada cerrada con un solo punto, de precisión baja: una captura de campo
     iniciar_jornada(pg,'Jornada de un punto',HOY)
     ctx.set_geolocation({'latitude':19.4331,'longitude':-99.1341,'accuracy':139})
@@ -1889,7 +1889,7 @@ with sync_playwright() as p:
     uno=pg.evaluate("(() => { const r = { id: 'x1', lat: 19.43, lng: -99.13, punto_origen: 'gps', gps_precision_m: 5, especie_id: 'ESP-0002', programa_id: 'p-refor', cabo_id: SRP.sesion.usuario.id }; const m = SRP.reportes.modelo([r], { arboles_previstos: 1, nombre: 'Uno' }, SRP.util.fechaHoy(), null); return [m.cifras[0].texto, m.cifras[3].texto, m.cifras[2].valor]; })()")
     ok(uno==['árbol plantado','especie','100 %'],'en el reporte, «1 árbol plantado» y «1 especie», no «1 árboles»: %s' % uno)
 
-    # ---------- BLOQUE 86: SISTEMA DE ANCHO EN TABLETA Y COMPUTADORA ----------
+    # ---------- SISTEMA DE ANCHO EN TABLETA Y COMPUTADORA ----------
     # Teléfono: la ficha sigue en una columna (el uso principal no cambia)
     pg.set_viewport_size({'width':390,'height':844}); pg.wait_for_timeout(300)
     tel=pg.evaluate("""() => ({ cuerpo: getComputedStyle(document.getElementById('ficha-cuerpo')).display, fija: getComputedStyle(document.getElementById('ficha-col-mapa')).position,
@@ -1960,7 +1960,7 @@ with sync_playwright() as p:
         return [...document.querySelectorAll('#jornada-mapa .leaflet-marker-icon')].filter(m => { const r=m.getBoundingClientRect(); return r.left < z.right && r.top < z.bottom && r.right > z.left && r.bottom > z.top; }).length; }""")
     ok(tapa==0,'en la ficha ningún punto queda bajo los botones de acercar: el encuadre deja margen arriba a la izquierda')
 
-    # ---------- BLOQUE 87: LOS PASOS COMO INDICADOR DE AVANCE ----------
+    # ---------- LOS PASOS COMO INDICADOR DE AVANCE ----------
     # Se arma una tira aparte con un estado fijo (dos hechos, «Revisar» actual) para medirla
     pas=pg.evaluate("""() => { const ol=document.createElement('ol'); ol.className='pasos'; document.getElementById('jornada-detalle').prepend(ol);
         ol.innerHTML=SRP.jornadas.htmlPasos({ hecho: { registrar: true, cerrar: true, revisar: false, reporte: false }, actual: 'revisar' });
@@ -1982,7 +1982,7 @@ with sync_playwright() as p:
     ok(not any(c.isdigit() for c in pas['lector']) and 'Revisar (paso actual)' in pas['lector'],
        'el lector de pantalla oye los nombres y su estado, sin los números de los círculos: «%s»' % pas['lector'])
 
-    # ---------- BLOQUE 88: «HOY» CON EL AÑO EN DOS CIFRAS ----------
+    # ---------- «HOY» CON EL AÑO EN DOS CIFRAS ----------
     pg.set_viewport_size({'width':390,'height':844}); pg.wait_for_timeout(300)
     chips={}
     for v, c in (('registros','chip-hoy'),('jornadas','jornada-chip-hoy')):
@@ -1994,7 +1994,7 @@ with sync_playwright() as p:
     ok(all(t==HOY_CHIP and un for t, un in chips.values()),'en Registros y Jornadas «Hoy» dice %s en un solo renglón, sin partir el año: %s' % (HOY_CHIP, chips))
     ok(pg.evaluate("SRP.util.formatearFecha('2026-09-24')")=='24-SEP-2026','el resto de las fechas conserva el año completo')
 
-    # ---------- BLOQUE 89: BLINDAJE DE LOS DATOS EN EL TELÉFONO ----------
+    # ---------- BLINDAJE DE LOS DATOS EN EL TELÉFONO ----------
     pg.set_viewport_size({'width':390,'height':844}); pg.wait_for_timeout(200)
     cuenta=lambda: pg.evaluate("async () => { const n = async a => (await SRP.almacen.todos(a)).length; return [await n('plantaciones'), await n('jornadas'), await n('usuarios')]; }")
     antes=cuenta()
@@ -2069,7 +2069,7 @@ with sync_playwright() as p:
     pg.click('#btn-guardado-cerrar'); pg.wait_for_timeout(300)
     ok(pg.is_hidden('#franja-guardado') and len(errores)==n0,'la × de la franja «Guardado» la oculta sin lanzar un error (antes: TypeError en cada toque)')
 
-    # ---------- BLOQUE 90: SEGURIDAD ----------
+    # ---------- SEGURIDAD ----------
     csp=pg.evaluate("(document.querySelector('meta[http-equiv=\"Content-Security-Policy\"]') || {}).content || ''")
     ok("script-src 'self'" in csp and 'unsafe-inline' not in csp and "object-src 'none'" in csp and pg.evaluate("(document.querySelector('meta[name=referrer]') || {}).content")=='no-referrer',
        'la página declara su política de seguridad: sólo código propio, sin scripts en línea, y no dice desde dónde pide el mapa')
@@ -2094,7 +2094,7 @@ with sync_playwright() as p:
     fuera=pg.evaluate("() => { SRP.CONFIG.ES_FICTICIO = false; const r = SRP.sesion.autenticar('cabo@ejemplo.local'); SRP.CONFIG.ES_FICTICIO = true; return r; }")
     ok(fuera['ok'] is False and 'acceso institucional todavía no está conectado' in fuera['motivo'],'con ES_FICTICIO apagado y el proveedor aún simulado, el acceso queda cerrado: '+fuera['motivo'])
 
-    # ---------- BLOQUE 91: INTEGRIDAD ----------
+    # ---------- INTEGRIDAD ----------
     # Revisión de integridad sobre lo capturado en toda la prueba, no sobre la base recién sembrada:
     # toda referencia existe, cada árbol tiene la fecha y el programa de su jornada y cada marca de
     # revisado es de un árbol de esa jornada
@@ -2202,7 +2202,7 @@ with sync_playwright() as p:
     ok(not err11,'y sin errores en consola: %s' % err11[:2])
     ctx11.close()
 
-    # ---------- BLOQUE 92: TERRITORIO CONFIABLE ----------
+    # ---------- TERRITORIO CONFIABLE ----------
     ctx12=b.new_context(viewport={'width':390,'height':844},geolocation={'latitude':19.4326,'longitude':-99.1332,'accuracy':60},permissions=['geolocation'])
     pg12=ctx12.new_page(); err12=[]
     pg12.on('pageerror', lambda e: err12.append(str(e))); pg12.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err12.append(m.text))
@@ -2311,7 +2311,7 @@ with sync_playwright() as p:
        'sin una capa la aplicación no abre, lo dice y no sugiere borrar los datos del sitio, donde viven los árboles: '+txt13[:120])
     ctx13.close()
 
-    # ---------- BLOQUE 94: ORDEN DEL CÓDIGO Y LOS TEXTOS ----------
+    # ---------- ORDEN DEL CÓDIGO Y LOS TEXTOS ----------
     # La app abre y funciona sin el espejo de campos, retirado como dicen sus instrucciones
     import re as _re
     ctx14=b.new_context(viewport={'width':390,'height':844},geolocation={'latitude':19.4326,'longitude':-99.1332},permissions=['geolocation'])
@@ -2372,7 +2372,7 @@ with sync_playwright() as p:
     ok(v2=={'v':9,'arboles':['pl-v2'],'jornadas':['jr-v2']},'una base en la versión 2 sube a la 9 conservando árboles y jornadas, y el índice nuevo los encuentra: %s' % v2)
     ctx15.close()
 
-    # ---------- BLOQUE 95: TUERCA, SUBIR AL INICIO Y ERRORES EN LA JORNADA ----------
+    # ---------- TUERCA, SUBIR AL INICIO Y ERRORES EN LA JORNADA ----------
     ctx16=b.new_context(viewport={'width':390,'height':844},geolocation={'latitude':19.4326,'longitude':-99.1332,'accuracy':5},permissions=['geolocation'])
     pg16=ctx16.new_page(); err16=[]
     pg16.on('pageerror', lambda e: err16.append(str(e))); pg16.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err16.append(m.text))
@@ -2459,7 +2459,7 @@ with sync_playwright() as p:
     ok(not err16,'todo sin errores en consola: %s' % err16[:2])
     ctx16.close()
 
-    # ---------- BLOQUE 94b: ESTILOS Y CÓDIGO REPETIDO ----------
+    # ---------- ESTILOS Y CÓDIGO REPETIDO ----------
     ctx18=b.new_context(viewport={'width':390,'height':844},geolocation={'latitude':19.4326,'longitude':-99.1332,'accuracy':5},permissions=['geolocation'])
     pg18=ctx18.new_page(); err18=[]
     pg18.on('pageerror', lambda e: err18.append(str(e))); pg18.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err18.append(m.text))
@@ -2512,7 +2512,7 @@ with sync_playwright() as p:
     ok(not err18,'sin errores en consola: %s' % err18[:2])
     ctx18.close()
 
-    # ---------- BLOQUE 96: INDICADORES CON UN SOLO CÁLCULO ----------
+    # ---------- INDICADORES CON UN SOLO CÁLCULO ----------
     ctx17=b.new_context(viewport={'width':390,'height':844}); pg17=ctx17.new_page(); err17=[]
     pg17.on('pageerror', lambda e: err17.append(str(e)))
     pg17.goto(BASE); pg17.wait_for_timeout(1200)
@@ -2574,7 +2574,7 @@ with sync_playwright() as p:
     ok(not err17,'sin errores: %s' % err17[:2])
     ctx17.close()
 
-    # ---------- BLOQUE 97: SUPERVISIÓN Y MI AVANCE ----------
+    # ---------- SUPERVISIÓN Y MI AVANCE ----------
     import datetime as _dt
     AYER=(_dt.date.fromisoformat(HOY)-_dt.timedelta(days=1)).isoformat()
     ctx19=b.new_context(viewport={'width':390,'height':844},geolocation={'latitude':19.4326,'longitude':-99.1332,'accuracy':5},permissions=['geolocation'])
@@ -2676,7 +2676,7 @@ with sync_playwright() as p:
     ok(not err19,'sin errores en consola: %s' % err19[:2])
     ctx19.close()
 
-    # ---------- BLOQUE 98: INFORMES POR PERIODO EN PDF Y CSV ----------
+    # ---------- INFORMES POR PERIODO EN PDF Y CSV ----------
     import warnings as _w; _w.filterwarnings('ignore')
     from pypdf import PdfReader as _Pdf
     ctx20=b.new_context(viewport={'width':1280,'height':900},geolocation={'latitude':19.4326,'longitude':-99.1332,'accuracy':5},permissions=['geolocation'],accept_downloads=True)
@@ -3435,13 +3435,10 @@ with sync_playwright() as p:
     ok(not err34,'sin errores en consola: %s' % err34[:2])
     ctx34.close()
 
-    # ---------- BLOQUE 113: SIN RESPALDO EN EL TELÉFONO ----------
+    # ---------- SIN RESPALDO EN EL TELÉFONO ----------
     ctx35=b.new_context(viewport={'width':390,'height':844}); pg35=ctx35.new_page(); err35=[]
     pg35.on('pageerror', lambda e: err35.append(str(e))); pg35.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err35.append(m.text))
-    # Un teléfono que ya tenía la fecha del último respaldo guardada
     pg35.goto(BASE); pg35.wait_for_timeout(1000)
-    pg35.evaluate("localStorage.setItem('srp_ultimo_respaldo', '2026-09-20T10:00:00-06:00')"); pg35.reload(); pg35.wait_for_timeout(1500)
-    ok(pg35.evaluate("localStorage.getItem('srp_ultimo_respaldo')") is None,'al abrir, la fecha del último respaldo que quedó en el teléfono se limpia')
     pg35.select_option('#sel-usuario-prueba','u-cabo-1'); pg35.click('#btn-entrar-prueba'); pg35.wait_for_timeout(600)
     html35=pg35.content().lower()
     ok('respald' not in html35 and 'validar.js' not in html35 and pg35.is_hidden('#archivo-restaurar') ,
@@ -3451,7 +3448,7 @@ with sync_playwright() as p:
     ok(not err35,'sin errores en consola: %s' % err35[:2])
     ctx35.close()
 
-    # ---------- BLOQUE 114: CAMPOS DEPURADOS Y RENOMBRADOS (migración 5) ----------
+    # ---------- CAMPOS DEPURADOS Y RENOMBRADOS (migración 5) ----------
     ctx36=b.new_context(viewport={'width':390,'height':844}); pg36=ctx36.new_page(); err36=[]
     pg36.on('pageerror', lambda e: err36.append(str(e))); pg36.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err36.append(m.text))
     pg36.route('**/*.js*', lambda r: r.abort())
@@ -3494,7 +3491,7 @@ with sync_playwright() as p:
     ok(nueva_j is not None and nueva_j['previstos'] and not nueva_j['meta'] and not nueva_j['creado'] and not nueva_j['fc'],'las jornadas guardan arboles_previstos y no llevan meta_arboles, creado_por_id ni fecha_creacion: %s' % nueva_j)
 
 
-    # ---------- BLOQUE 115: PAGINACIÓN, CIERRE Y FECHA ----------
+    # ---------- PAGINACIÓN, CIERRE Y FECHA ----------
     ctx37=b.new_context(viewport={'width':390,'height':844}); pg37=ctx37.new_page(); err37=[]
     pg37.on('pageerror', lambda e: err37.append(str(e))); pg37.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err37.append(m.text))
     pg37.goto(BASE); pg37.wait_for_timeout(1200)
@@ -3573,7 +3570,7 @@ with sync_playwright() as p:
     ctx37.close()
 
 
-    # ---------- BLOQUE 116: SIN MARCA DE PRUEBA, BASES SEPARADAS Y CAMPOS SIN USO ----------
+    # ---------- SIN MARCA DE PRUEBA, BASES SEPARADAS Y CAMPOS SIN USO ----------
     FOTO38='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
     ctx38=b.new_context(viewport={'width':390,'height':844}); pg38=ctx38.new_page(); err38=[]
     pg38.on('pageerror', lambda e: err38.append(str(e))); pg38.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err38.append(m.text))
@@ -3640,7 +3637,7 @@ with sync_playwright() as p:
     ctx38.close()
 
 
-    # ---------- BLOQUE 117: FECHA DE CIERRE A LA VISTA Y COLONIAS DEFINITIVAS ----------
+    # ---------- FECHA DE CIERRE A LA VISTA Y COLONIAS DEFINITIVAS ----------
     ctx39=b.new_context(viewport={'width':390,'height':844}, timezone_id='America/Mexico_City'); pg39=ctx39.new_page(); err39=[]
     pg39.on('pageerror', lambda e: err39.append(str(e))); pg39.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err39.append(m.text))
     pg39.route('**/*.js*', lambda r: r.abort())
@@ -3702,7 +3699,7 @@ with sync_playwright() as p:
     ctx39.close()
 
 
-    # ---------- BLOQUE 118: VEHÍCULOS DE PRUEBA CON PLACAS FICTICIAS ----------
+    # ---------- VEHÍCULOS DE PRUEBA CON PLACAS FICTICIAS ----------
     ctx40=b.new_context(viewport={'width':390,'height':844}); pg40=ctx40.new_page(); err40=[]
     pg40.on('pageerror', lambda e: err40.append(str(e))); pg40.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err40.append(m.text))
     pg40.goto(BASE); pg40.wait_for_timeout(1200)
@@ -3734,7 +3731,7 @@ with sync_playwright() as p:
     ctx40.close()
 
 
-    # ---------- BLOQUE 120: CORRECCIONES DE LA REVISIÓN DE PANTALLAS ----------
+    # ---------- CORRECCIONES DE LA REVISIÓN DE PANTALLAS ----------
     ctx41=b.new_context(viewport={'width':390,'height':844}, timezone_id='America/Mexico_City'); pg41=ctx41.new_page(); err41=[]
     pg41.on('pageerror', lambda e: err41.append(str(e))); pg41.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err41.append(m.text))
     pg41.goto(BASE); pg41.wait_for_timeout(1200)
@@ -3787,22 +3784,27 @@ with sync_playwright() as p:
     ctx41.close()
 
 
-    # ---------- BLOQUE 122: PROGRAMAS NUEVOS ----------
+    # ---------- PROGRAMAS NUEVOS ----------
     ctx42=b.new_context(viewport={'width':390,'height':844}); pg42=ctx42.new_page(); err42=[]
     pg42.on('pageerror', lambda e: err42.append(str(e)))
     pg42.goto(BASE); pg42.wait_for_timeout(1200)
     pg42.select_option('#sel-usuario-prueba','u-cabo-1'); pg42.click('#btn-entrar-prueba'); pg42.wait_for_timeout(700)
     pg42.evaluate("SRP.app.mostrarVista('registrar')"); pg42.wait_for_timeout(500)
     p42=pg42.eval_on_selector_all('#ini-programa option','l=>l.map(o=>o.textContent.trim()).filter(t => t && !t.startsWith("Seleccione"))')
-    ok(p42==['Reforestación Urbana','Centro Histórico','Compensaciones','Palmeras','Solicitud'],'Iniciar jornada ofrece a SEDEMA los cuatro programas y «Solicitud» al final, con «Palmeras» y «Compensaciones» por separado y sin «Jornadas de voluntariado»: %s' % p42)
+    ok(p42==['Reforestación Urbana','Centro Histórico','Compensaciones','Palmeras','Territorios de Paz','Utopías','Solicitud especial'],'Iniciar jornada ofrece a SEDEMA los programas y «Solicitud especial» al final, con «Palmeras» y «Compensaciones» por separado y sin «Jornadas de voluntariado»: %s' % p42)
+    g42=pg42.evaluate("""() => { const d = s => { const o = document.querySelector(s + ' option[value=""]'); return o ? [o.textContent, o.disabled, o.hidden, document.querySelector(s).value] : null; };
+      return [d('#ini-programa'), d('#ini-solicitante')]; }""")
+    ok(g42==[['Seleccione un programa',True,True,''],['Seleccione quién lo solicita',True,True,'']],'«Seleccione un programa» y «Seleccione quién lo solicita» sólo guían: se ven sin nada elegido y no son opciones de la lista: %s' % g42)
     # Un teléfono con capturas y el sello anterior los recibe sin perder lo capturado
-    pg42.evaluate("""async () => { await SRP.almacen._tx(['programas'], 'readwrite', tx => { tx.objectStore('programas').delete('p-palmeras'); tx.objectStore('programas').delete('p-compensaciones'); });
+    pg42.evaluate("""async () => { await SRP.almacen._tx(['programas'], 'readwrite', tx => { ['p-palmeras', 'p-compensaciones', 'p-territorios-paz', 'p-utopias'].forEach(id => tx.objectStore('programas').delete(id));
+        SRP.almacen.ponerCatalogo(tx, Object.assign({}, SRP.ref.catalogoPorId['p-solicitud'], { nombre: 'Solicitud' })); });
       const u = SRP.sesion.usuario;
       await SRP.almacen.guardarConBitacora('plantaciones', { id: 'pl-p42', jornada_id: null, estatus: 'activo', cabo_id: u.id, lat: 19.4326, lng: -99.1332, especie_id: 'ESP-0002', programa_id: 'p-refor', fecha_plantacion: '2026-09-20', fecha_registro: '2026-09-20T10:00:00-06:00', folio: null }, SRP.bitacora.entrada('CREADO', 'plantacion', 'pl-p42', 'prueba'));
       localStorage.setItem(SRP.CONFIG.CLAVE_SELLO, 'sello-viejo'); }""")
     pg42.reload(); pg42.wait_for_timeout(1800)
-    q42=pg42.evaluate("""async () => { const c = await SRP.almacen.catalogos(); return { arr: SRP.almacen.arranque, pal: c.some(x => x.id === 'p-palmeras'), vol: c.some(x => x.id === 'p-compensaciones'), arbol: !!(await SRP.almacen.uno('plantaciones', 'pl-p42')) }; }""")
-    ok(q42=={'arr':'conservado','pal':True,'vol':True,'arbol':True},'un teléfono con capturas recibe los dos programas nuevos con el sello nuevo y conserva lo capturado: %s' % q42)
+    q42=pg42.evaluate("""async () => { const c = await SRP.almacen.catalogos(); return { arr: SRP.almacen.arranque, pal: c.some(x => x.id === 'p-palmeras'), vol: c.some(x => x.id === 'p-compensaciones'),
+      paz: c.some(x => x.id === 'p-territorios-paz'), uto: c.some(x => x.id === 'p-utopias'), sol: (c.find(x => x.id === 'p-solicitud') || {}).nombre, arbol: !!(await SRP.almacen.uno('plantaciones', 'pl-p42')) }; }""")
+    ok(q42=={'arr':'conservado','pal':True,'vol':True,'paz':True,'uto':True,'sol':'Solicitud especial','arbol':True},'un teléfono con capturas recibe los programas nuevos con el sello nuevo, «Solicitud» pasa a «Solicitud especial» y conserva lo capturado: %s' % q42)
     ok(not err42,'sin errores en consola: %s' % err42[:2])
     ctx42.close()
 
@@ -3943,7 +3945,7 @@ with sync_playwright() as p:
     ctx43.close()
 
 
-    # ---------- BLOQUE 124: SUPERVISIÓN E INFORMES POR INSTITUCIÓN ----------
+    # ---------- SUPERVISIÓN E INFORMES POR INSTITUCIÓN ----------
     ctx44=b.new_context(viewport={'width':1280,'height':900}, timezone_id='America/Mexico_City', accept_downloads=True); pg44=ctx44.new_page(); err44=[]
     pg44.on('pageerror', lambda e: err44.append(str(e))); pg44.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err44.append(m.text))
     pg44.goto(BASE); pg44.wait_for_timeout(1200)
@@ -4001,7 +4003,7 @@ with sync_playwright() as p:
     ctx44.close()
 
 
-    # ---------- BLOQUE 127: UNA CUENTA DE PRUEBA POR TIPO Y REINICIO DE LOS DATOS DE PRUEBA ----------
+    # ---------- UNA CUENTA DE PRUEBA POR TIPO Y REINICIO DE LOS DATOS DE PRUEBA ----------
     ctx45=b.new_context(viewport={'width':390,'height':844}); pg45=ctx45.new_page(); err45=[]
     pg45.on('pageerror', lambda e: err45.append(str(e))); pg45.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err45.append(m.text))
     pg45.goto(BASE); pg45.wait_for_timeout(1300)
@@ -4035,7 +4037,7 @@ with sync_playwright() as p:
     ctx45.close()
 
 
-    # ---------- BLOQUE 128: PROGRAMAS POR INSTITUCIÓN Y CIERRE DE EMPRESAS PRIVADAS ----------
+    # ---------- PROGRAMAS POR INSTITUCIÓN Y CIERRE DE EMPRESAS PRIVADAS ----------
     ctx46=b.new_context(viewport={'width':390,'height':844}, geolocation={'latitude':19.432,'longitude':-99.133}, permissions=['geolocation']); pg46=ctx46.new_page(); err46=[]
     pg46.on('pageerror', lambda e: err46.append(str(e))); pg46.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err46.append(m.text))
     pg46.goto(BASE); pg46.wait_for_timeout(1300)
@@ -4074,7 +4076,7 @@ with sync_playwright() as p:
     ctx46.close()
 
 
-    # ---------- BLOQUE 129: COORDINACIÓN EN CADA INSTITUCIÓN, PROGRAMAS POR TIPO Y CIERRE SÓLO SEDEMA CON PERSONAL ----------
+    # ---------- COORDINACIÓN EN CADA INSTITUCIÓN, PROGRAMAS POR TIPO Y CIERRE SÓLO SEDEMA CON PERSONAL ----------
     ctx47=b.new_context(viewport={'width':390,'height':844}, timezone_id='America/Mexico_City', geolocation={'latitude':19.357,'longitude':-99.06}, permissions=['geolocation']); pg47=ctx47.new_page(); err47=[]
     pg47.on('pageerror', lambda e: err47.append(str(e))); pg47.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err47.append(m.text))
     pg47.goto(BASE); pg47.wait_for_timeout(1300)
@@ -4085,7 +4087,7 @@ with sync_playwright() as p:
         entrar47(uid); pg47.evaluate("SRP.app.mostrarVista('registrar')"); pg47.wait_for_timeout(500)
         return [pg47.eval_on_selector_all('#ini-programa option','l=>l.map(o=>o.textContent.trim()).filter(t => t && !t.startsWith("Seleccione"))'), pg47.input_value('#ini-programa')]
     pr47={u: programas47(u) for u in ['u-cabo-1','u-coord-alc','u-coord-gob','u-coord-emp','u-coord-osc']}
-    ok(pr47=={'u-cabo-1':[['Reforestación Urbana','Centro Histórico','Compensaciones','Palmeras','Solicitud'],''],'u-coord-alc':[['Reforestación Urbana'],'p-refor'],'u-coord-gob':[['Reforestación Urbana'],'p-refor'],
+    ok(pr47=={'u-cabo-1':[['Reforestación Urbana','Centro Histórico','Compensaciones','Palmeras','Territorios de Paz','Utopías','Solicitud especial'],''],'u-coord-alc':[['Reforestación Urbana'],'p-refor'],'u-coord-gob':[['Reforestación Urbana'],'p-refor'],
               'u-coord-emp':[['Palmeras'],'p-palmeras'],'u-coord-osc':[['Reforestación Urbana'],'p-refor']},
        'SEDEMA elige entre todos los programas, sin preselección; alcaldías, Gobierno de la CDMX y organizaciones civiles tienen sólo «Reforestación Urbana», y las empresas sólo «Palmeras», ya puesto: %s' % pr47)
     # Alta: fuera de la Secretaría hay cabo y coordinador; el cabo elige coordinador de su institución
@@ -4167,7 +4169,7 @@ with sync_playwright() as p:
     ctx47.close()
 
 
-    # ---------- BLOQUE 130: QUIÉN USA CADA PROGRAMA, EN CATÁLOGOS ----------
+    # ---------- QUIÉN USA CADA PROGRAMA, EN CATÁLOGOS ----------
     ctx48=b.new_context(viewport={'width':1280,'height':900}); pg48=ctx48.new_page(); err48=[]
     pg48.on('pageerror', lambda e: err48.append(str(e))); pg48.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err48.append(m.text))
     pg48.goto(BASE); pg48.wait_for_timeout(1300)
@@ -4181,7 +4183,7 @@ with sync_playwright() as p:
     entrar48('u-admin-1')
     pg48.click('.pestana[data-vista=configuracion]'); pg48.wait_for_timeout(300); pg48.click('.cfg-tarjeta[data-ir=catalogos]'); pg48.wait_for_timeout(500)
     q48=pg48.evaluate("""(() => { const r = {}; document.querySelectorAll('#tabla-catalogo tbody tr').forEach(tr => { const c = tr.querySelector('[data-etiqueta="Quién lo usa"]'); r[tr.querySelector('.c-titulo').textContent] = c ? c.textContent : null; }); return r; })()""")
-    ok(q48=={'Reforestación Urbana':'SEDEMA · Alcaldía · Gobierno de la CDMX · Organización civil','Centro Histórico':'Sólo SEDEMA','Palmeras':'SEDEMA · Empresa privada','Compensaciones':'Sólo SEDEMA','Solicitud':'Sólo SEDEMA'},
+    ok(q48=={'Reforestación Urbana':'SEDEMA · Alcaldía · Gobierno de la CDMX · Organización civil','Centro Histórico':'Sólo SEDEMA','Palmeras':'SEDEMA · Empresa privada','Compensaciones':'Sólo SEDEMA','Territorios de Paz':'Sólo SEDEMA','Utopías':'Sólo SEDEMA','Solicitud especial':'Sólo SEDEMA'},
        'Catálogos › Programas dice quién usa cada programa: %s' % q48)
     pg48.click('#btn-cat-agregar'); pg48.wait_for_timeout(300)
     t48=[pg48.is_visible('#cat-tipos-org-botones'), pg48.eval_on_selector_all('#cat-tipos-org-botones .chip','l=>l.map(b=>[b.textContent, b.getAttribute("aria-pressed")])')]
@@ -4198,20 +4200,20 @@ with sync_playwright() as p:
     ok(e48==['Empresa privada'] and p48[0]==['Empresa privada','Organización civil'] and 'tipos_organizacion' in (p48[1] or ''),'al editar «Palmeras» se ve lo marcado; se suma Organización civil y queda en la bitácora: %s %s' % (e48, p48))
     ok(pg48.locator('#tabla-catalogo tbody tr', has_text='Palmeras').locator('[data-etiqueta="Quién lo usa"]').inner_text()=='SEDEMA · Empresa privada · Organización civil','y la lista lo refleja')
     pr48={u: programas48(u) for u in ['u-cabo-1','u-cabo-alc','u-cabo-gob','u-cabo-emp','u-cabo-osc']}
-    ok(pr48=={'u-cabo-1':[['Reforestación Urbana','Arbolado escolar','Centro Histórico','Compensaciones','Palmeras','Solicitud'],''],'u-cabo-alc':[['Reforestación Urbana','Arbolado escolar'],''],
+    ok(pr48=={'u-cabo-1':[['Reforestación Urbana','Arbolado escolar','Centro Histórico','Compensaciones','Palmeras','Territorios de Paz','Utopías','Solicitud especial'],''],'u-cabo-alc':[['Reforestación Urbana','Arbolado escolar'],''],
               'u-cabo-gob':[['Reforestación Urbana'],'p-refor'],'u-cabo-emp':[['Palmeras'],'p-palmeras'],'u-cabo-osc':[['Reforestación Urbana','Palmeras'],'']},
        'Iniciar jornada ofrece a cada institución lo marcado en el catálogo, sin tocar la configuración; SEDEMA, todos: %s' % pr48)
     # Un teléfono con programas sin el dato: los de arranque toman los suyos; los agregados, sólo SEDEMA
     pg48.evaluate("""async () => { const c = await SRP.almacen.catalogos(); await SRP.almacen._tx(['programas'], 'readwrite', tx => c.filter(x => x.tipo === 'programa').forEach(x => { const n = Object.assign({}, x); delete n.tipos_organizacion; SRP.almacen.ponerCatalogo(tx, n); })); }""")
     pg48.reload(); pg48.wait_for_timeout(1800)
     z48=pg48.evaluate("""async () => { const c = (await SRP.almacen.catalogos()).filter(x => x.tipo === 'programa'), r = {}; c.forEach(x => { r[x.nombre] = x.tipos_organizacion; }); return r; }""")
-    ok(z48=={'Reforestación Urbana':['Alcaldía','Gobierno de la CDMX','Organización civil'],'Centro Histórico':[],'Palmeras':['Empresa privada'],'Compensaciones':[],'Arbolado escolar':[],'Solicitud':[]},
+    ok(z48=={'Reforestación Urbana':['Alcaldía','Gobierno de la CDMX','Organización civil'],'Centro Histórico':[],'Palmeras':['Empresa privada'],'Compensaciones':[],'Territorios de Paz':[],'Utopías':[],'Arbolado escolar':[],'Solicitud especial':[]},
        'al abrir, un programa sin el dato lo recibe: el de arranque, el suyo; el agregado, sólo SEDEMA: %s' % z48)
     ok(not err48,'sin errores en consola: %s' % err48[:2])
     ctx48.close()
 
 
-    # ---------- BLOQUE 131: DEMOSTRACIÓN CON TODAS LAS INSTITUCIONES, PERFILES Y PROGRAMAS ----------
+    # ---------- DEMOSTRACIÓN CON TODAS LAS INSTITUCIONES, PERFILES Y PROGRAMAS ----------
     ctx49=b.new_context(viewport={'width':1280,'height':900}); pg49=ctx49.new_page(); err49=[]
     pg49.on('pageerror', lambda e: err49.append(str(e))); pg49.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err49.append(m.text))
     pg49.goto(BASE); pg49.wait_for_timeout(1300)
@@ -4258,7 +4260,7 @@ with sync_playwright() as p:
     ctx49.close()
 
 
-    # ---------- BLOQUE 132: CONFIGURACIÓN DE LA ADMINISTRACIÓN GLOBAL ----------
+    # ---------- CONFIGURACIÓN DE LA ADMINISTRACIÓN GLOBAL ----------
     ctx50=b.new_context(viewport={'width':390,'height':844}, timezone_id='America/Mexico_City'); pg50=ctx50.new_page(); err50=[]
     pg50.on('pageerror', lambda e: err50.append(str(e))); pg50.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err50.append(m.text))
     pg50.goto(BASE); pg50.wait_for_timeout(1300)
@@ -4278,7 +4280,7 @@ with sync_playwright() as p:
     t50=pg50.eval_on_selector_all('.cfg-tarjeta','l=>l.map(t=>[t.dataset.ir, t.querySelector(".cfg-titulo").textContent, t.querySelector(".cfg-resumen").textContent])')
     ok('Configuración' not in m50 and 'Catálogos' not in m50 and 'Usuarios' not in m50,'el menú de la cuenta no trae Configuración, Catálogos ni Usuarios: se entra por la barra: %s' % m50)
     ok([x[:2] for x in t50]==[['usuarios','Usuarios'],['catalogos','Catálogos'],['parametros','Parámetros'],['cambios','Registro de cambios'],['carga','Carga masiva'],['acerca','Acerca del sistema']]
-       and t50[0][2]=='13 cuentas' and t50[1][2]=='5 programas · 7 instituciones · 79 especies' and t50[2][2]=='11 valores · sólo consulta' and t50[3][2]=='Sin cambios todavía' and t50[4][2]=='Plantilla, revisión y carga' and t50[5][2].startswith('Versión '),
+       and t50[0][2]=='13 cuentas' and t50[1][2]=='7 programas · 7 instituciones · 79 especies' and t50[2][2]=='11 valores · sólo consulta' and t50[3][2]=='Sin cambios todavía' and t50[4][2]=='Plantilla, revisión y carga' and t50[5][2].startswith('Versión '),
        'Configuración muestra seis tarjetas con su resumen al día: %s' % t50)
     # Cada tarjeta lleva a su apartado y éste vuelve a Configuración
     ida50=[]
@@ -4320,7 +4322,7 @@ with sync_playwright() as p:
     ctx50.close()
 
 
-    # ---------- BLOQUE 133: CATÁLOGO DE ESPECIES EN EXCEL Y CARGA MASIVA ----------
+    # ---------- CATÁLOGO DE ESPECIES EN EXCEL Y CARGA MASIVA ----------
     import openpyxl as _xl51, datetime as _dt51
     CAR51=sal('carga_prueba.xlsx')
     _wb=_xl51.Workbook(); _ws=_wb.active; _ws.title='Árboles'
@@ -4366,7 +4368,7 @@ with sync_playwright() as p:
     with pg51.expect_download() as d51: pg51.click('#btn-carga-plantilla')
     d51.value.save_as(sal('plantilla51.xlsx')); w51=_xl51.load_workbook(sal('plantilla51.xlsx'))
     ok(w51.sheetnames==['Árboles','Instrucciones','Especies','Programas','Instituciones'] and [c.value for c in w51['Árboles'][1]]==['Latitud','Longitud','Nombre científico','Fecha de plantación','Programa','Tipo de institución','Institución']
-       and w51['Árboles'].max_row==1 and w51['Especies'].max_row==80 and w51['Programas'].max_row==5 and w51['Instituciones'].max_row==8,
+       and w51['Árboles'].max_row==1 and w51['Especies'].max_row==80 and w51['Programas'].max_row==7 and w51['Instituciones'].max_row==8,
        'la plantilla trae la hoja para llenar, las instrucciones y las listas válidas de especies, programas e instituciones: %s' % w51.sheetnames)
     va51=w51['Árboles'].data_validations.dataValidation
     ins51=' '.join(str(c.value) for f in w51['Instrucciones'].iter_rows() for c in f if c.value)
@@ -4420,7 +4422,7 @@ with sync_playwright() as p:
     ctx51.close()
 
 
-    # ---------- BLOQUE 134: «LEJOS DEL RESTO» FRENTE AL MÁS CERCANO Y APROBAR TODOS LOS PUNTOS ----------
+    # ---------- «LEJOS DEL RESTO» FRENTE AL MÁS CERCANO Y APROBAR TODOS LOS PUNTOS ----------
     ctx52=b.new_context(viewport={'width':390,'height':844}, geolocation={'latitude':19.357,'longitude':-99.06}, permissions=['geolocation'], timezone_id='America/Mexico_City'); pg52=ctx52.new_page(); err52=[]
     pg52.on('pageerror', lambda e: err52.append(str(e))); pg52.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err52.append(m.text))
     pg52.goto(BASE); pg52.wait_for_timeout(1300)
@@ -4459,7 +4461,7 @@ with sync_playwright() as p:
     ctx52.close()
 
 
-    # ---------- BLOQUE 135: BUSCAR JORNADAS POR NOMBRE ----------
+    # ---------- BUSCAR JORNADAS POR NOMBRE ----------
     ctx53=b.new_context(viewport={'width':390,'height':844}, geolocation={'latitude':19.357,'longitude':-99.06}, permissions=['geolocation'], timezone_id='America/Mexico_City'); pg53=ctx53.new_page(); err53=[]
     pg53.on('pageerror', lambda e: err53.append(str(e))); pg53.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err53.append(m.text))
     pg53.goto(BASE); pg53.wait_for_timeout(1300)
@@ -4508,7 +4510,7 @@ with sync_playwright() as p:
     ok(not err53,'sin errores en consola: %s' % err53[:2])
     ctx53.close()
 
-    # ---------- BLOQUE 136: LA CARGA MASIVA RECONOCE LO YA CARGADO Y SE PUEDE DESHACER ----------
+    # ---------- LA CARGA MASIVA RECONOCE LO YA CARGADO Y SE PUEDE DESHACER ----------
     CAR54=sal('carga54.csv')
     ENC54='Latitud,Longitud,Nombre científico,Fecha de plantación,Programa,Tipo de institución,Institución\n'
     REN54=['19.3571,-99.0601,Fraxinus uhdei,2025-03-10,Reforestación Urbana,Alcaldía,Iztapalapa',
@@ -4585,7 +4587,7 @@ with sync_playwright() as p:
     ok(not err54,'sin errores en consola: %s' % err54[:2])
     ctx54.close()
 
-    # ---------- BLOQUE 137: FILTROS POR ESPECIE, PROGRAMA, ALCALDÍA E INSTITUCIÓN ----------
+    # ---------- FILTROS POR ESPECIE, PROGRAMA, ALCALDÍA E INSTITUCIÓN ----------
     ctx55=b.new_context(viewport={'width':390,'height':844}, timezone_id='America/Mexico_City'); pg55=ctx55.new_page(); err55=[]
     pg55.on('pageerror', lambda e: err55.append(str(e))); pg55.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err55.append(m.text))
     pg55.goto(BASE); pg55.wait_for_timeout(1300)
@@ -4677,7 +4679,7 @@ with sync_playwright() as p:
     ok(not err55,'sin errores en consola: %s' % err55[:2])
     ctx55.close()
 
-    # ---------- BLOQUE 138: LISTAS QUE DEPENDEN DE LAS DEMÁS, SUPERVISIÓN CON SU ALCANCE, «QUIÉN REGISTRÓ» ----------
+    # ---------- LISTAS QUE DEPENDEN DE LAS DEMÁS, SUPERVISIÓN CON SU ALCANCE, «QUIÉN REGISTRÓ» ----------
     ctx56=b.new_context(viewport={'width':390,'height':844}, timezone_id='America/Mexico_City'); pg56=ctx56.new_page(); err56=[]
     pg56.on('pageerror', lambda e: err56.append(str(e))); pg56.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err56.append(m.text))
     pg56.goto(BASE); pg56.wait_for_timeout(1300)
@@ -4736,7 +4738,7 @@ with sync_playwright() as p:
     ok(not err56,'sin errores en consola: %s' % err56[:2])
     ctx56.close()
 
-    # ---------- BLOQUE 139: SUSTITUIR UN ÁRBOL PERDIDO; DUPLICADOS A 4 M ----------
+    # ---------- SUSTITUIR UN ÁRBOL PERDIDO; DUPLICADOS A 4 M ----------
     ctx57=b.new_context(viewport={'width':390,'height':844}, geolocation={'latitude':19.357,'longitude':-99.06,'accuracy':5}, permissions=['geolocation'], timezone_id='America/Mexico_City', accept_downloads=True)
     pg57=ctx57.new_page(); err57=[]
     pg57.on('pageerror', lambda e: err57.append(str(e))); pg57.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err57.append(m.text))
@@ -4989,7 +4991,7 @@ with sync_playwright() as p:
     ok(not err58,'sin errores en consola: %s' % err58[:2])
     ctx58.close()
 
-    # ---------- BLOQUE 141: LA MISMA ZONA DE FILTROS EN TODOS LOS MÓDULOS ----------
+    # ---------- LA MISMA ZONA DE FILTROS EN TODOS LOS MÓDULOS ----------
     ctx59=b.new_context(viewport={'width':390,'height':844}, timezone_id='America/Mexico_City'); pg59=ctx59.new_page(); err59=[]
     pg59.on('pageerror', lambda e: err59.append(str(e))); pg59.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err59.append(m.text))
     pg59.goto(BASE); pg59.wait_for_timeout(1300)
@@ -5064,7 +5066,7 @@ with sync_playwright() as p:
     ok(not err59,'sin errores en consola: %s' % err59[:2])
     ctx59.close()
 
-    # ---------- BLOQUE 142: COLONIAS PRIORITARIAS PARA REFORESTAR ----------
+    # ---------- COLONIAS PRIORITARIAS PARA REFORESTAR ----------
     ctx60=b.new_context(viewport={'width':390,'height':844}, geolocation={'latitude':19.357,'longitude':-99.06,'accuracy':5}, permissions=['geolocation'], timezone_id='America/Mexico_City', accept_downloads=True)
     pg60=ctx60.new_page(); err60=[]
     pg60.on('pageerror', lambda e: err60.append(str(e))); pg60.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err60.append(m.text))
@@ -5164,7 +5166,7 @@ with sync_playwright() as p:
     ok(not err60,'sin errores en consola: %s' % err60[:2])
     ctx60.close()
 
-    # ---------- BLOQUE 143: LA PRIORIDAD EN LA JORNADA Y EN TODOS LOS INFORMES ----------
+    # ---------- LA PRIORIDAD EN LA JORNADA Y EN TODOS LOS INFORMES ----------
     ctx61=b.new_context(viewport={'width':390,'height':844}, geolocation={'latitude':19.357,'longitude':-99.06,'accuracy':5}, permissions=['geolocation'], timezone_id='America/Mexico_City', accept_downloads=True)
     pg61=ctx61.new_page(); err61=[]
     pg61.on('pageerror', lambda e: err61.append(str(e))); pg61.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err61.append(m.text))
@@ -5227,10 +5229,10 @@ with sync_playwright() as p:
     pg62.on('pageerror', lambda e: err62.append(str(e))); pg62.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err62.append(m.text))
     pg62.goto(BASE); pg62.wait_for_timeout(1300)
     pg62.select_option('#sel-usuario-prueba','u-cabo-1'); pg62.click('#btn-entrar-prueba'); pg62.wait_for_timeout(800)
-    # No se pregunta el origen: «Solicitud» es una opción de Programa, la última
+    # No se pregunta el origen: «Solicitud especial» es una opción de Programa, la última
     pg62.evaluate("SRP.app.mostrarVista('registrar')"); pg62.wait_for_timeout(500)
     a62=pg62.evaluate("[!!document.getElementById('ini-origen'), document.getElementById('ini-solicitud').hidden, [...document.getElementById('ini-programa').options].map(o => o.textContent)]")
-    ok(a62[0] is False and a62[1] is True and a62[2][0]=='Seleccione un programa' and a62[2][1]=='Reforestación Urbana' and a62[2][-1]=='Solicitud','al iniciar una jornada no se pregunta el origen; «Solicitud» es la última opción de Programa y sus datos no se piden todavía: %s' % a62[2])
+    ok(a62[0] is False and a62[1] is True and a62[2][0]=='Seleccione un programa' and a62[2][1]=='Reforestación Urbana' and a62[2][-1]=='Solicitud especial','al iniciar una jornada no se pregunta el origen; «Solicitud especial» es la última opción de Programa y sus datos no se piden todavía: %s' % a62[2])
     jp62=iniciar_jornada(pg62,'De programa B166')
     g62=pg62.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); return ['origen' in j, j.programa_id, j.solicitante_id, j.solicitante_otro, j.solicitud_descripcion]; }", jp62)
     ok(g62==[False, 'p-refor', None, '', ''] and 'Solicita' not in pg62.text_content('#franja-jornada-texto'),'una jornada de otro programa se guarda sin campo de origen y con los datos de la solicitud vacíos: %s' % g62)
@@ -5252,10 +5254,10 @@ with sync_playwright() as p:
     pg62.select_option('#ini-solicitante','s-sobse'); pg62.click('#btn-iniciar-jornada'); pg62.wait_for_timeout(400)
     e62c=pg62.inner_text('#ini-errores') if pg62.is_visible('#ini-errores') else ''
     ok('Escriba de qué se trata la solicitud' in e62c and pg62.is_visible('#panel-iniciar-jornada'),'la descripción de la solicitud es obligatoria: %s' % e62c.replace(chr(10),' · '))
-    # Otro programa esconde el bloque y no exige nada; volver a «Solicitud» conserva lo escrito
+    # Otro programa esconde el bloque y no exige nada; volver a «Solicitud especial» conserva lo escrito
     pg62.select_option('#ini-programa','p-refor'); pg62.wait_for_timeout(150); oc62=pg62.is_hidden('#ini-solicitud')
     pg62.select_option('#ini-programa','p-solicitud'); pg62.wait_for_timeout(150)
-    ok(oc62 and pg62.is_visible('#ini-solicitud') and pg62.input_value('#ini-solicitante')=='s-sobse','con otro programa el bloque se esconde; al volver a «Solicitud», sigue lo elegido')
+    ok(oc62 and pg62.is_visible('#ini-solicitud') and pg62.input_value('#ini-solicitante')=='s-sobse','con otro programa el bloque se esconde; al volver a «Solicitud especial», sigue lo elegido')
     pg62.fill('#ini-solicitud-descripcion','Compensación por obra.\nOficio de la dependencia.'); pg62.click('#btn-iniciar-jornada'); pg62.wait_for_timeout(700)
     j62=pg62.evaluate("SRP.activa.jornada && SRP.activa.jornada.id")
     h62=pg62.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); return [j.programa_id, j.solicitante_id, j.solicitante_otro, j.solicitud_descripcion, j.organizacion_id]; }", j62)
@@ -5263,18 +5265,18 @@ with sync_playwright() as p:
     ok(h62==['p-solicitud','s-sobse','','Compensación por obra.\nOficio de la dependencia.','o-sedema'] and 'Solicita: Secretaría de Obras y Servicios (SOBSE)' in fr62,'la solicitud se guarda con su solicitante, que no es quien ejecuta, y su descripción en dos renglones; la franja lo dice: %s' % h62)
     registrar(pg62,'ahuehu','ESP-0070', programa='p-solicitud'); registrar(pg62,'aile','ESP-0002', programa='p-solicitud')
     pa62=pg62.evaluate("async id => (await SRP.almacen.todos('plantaciones')).filter(r => r.jornada_id === id).map(r => r.programa_id)", j62)
-    ok(pa62==['p-solicitud','p-solicitud'],'los árboles de una solicitud toman el programa «Solicitud»')
+    ok(pa62==['p-solicitud','p-solicitud'],'los árboles de una solicitud toman el programa «Solicitud especial»')
     pg62.evaluate("async () => { await SRP.activa.cambiarEstatus(SRP.activa.jornada, 'cerrada'); SRP.activa.jornada = null; }"); pg62.wait_for_timeout(400)
     # Jornadas: la marca en la tarjeta; se filtra con Programa, no hay filtro «Origen»
     pg62.evaluate("SRP.app.mostrarVista('jornadas')"); pg62.wait_for_timeout(1500)
     c62=pg62.evaluate("""([p, n]) => { const t = id => { const m = document.querySelector('#lista-jornadas li[data-clave="' + id + '"] .jornada-solicitud'); return m ? m.textContent.trim() : ''; };
       return [t(p), t(n), !!document.getElementById('jornada-origen'), [...document.getElementById('jornada-programa').options].map(o => o.textContent)]; }""", [j62, jp62])
-    ok(c62[0]=='Solicita: Secretaría de Obras y Servicios (SOBSE)' and c62[1]=='' and c62[2] is False and 'Solicitud' in c62[3],
-       'la tarjeta de la jornada dice quién lo solicita; el filtro «Origen» no existe y «Solicitud» está en el de Programa: %s' % c62[3])
+    ok(c62[0]=='Solicita: Secretaría de Obras y Servicios (SOBSE)' and c62[1]=='' and c62[2] is False and 'Solicitud especial' in c62[3],
+       'la tarjeta de la jornada dice quién lo solicita; el filtro «Origen» no existe y «Solicitud especial» está en el de Programa: %s' % c62[3])
     pg62.evaluate("document.getElementById('jornada-mas-filtros').open = true")
     pg62.select_option('#jornada-programa','p-solicitud'); pg62.wait_for_timeout(900)
     d62=pg62.evaluate("([p, n]) => [SRP.jornadas.lista.some(j => j.id === p), SRP.jornadas.lista.some(j => j.id === n), document.getElementById('jornada-fichas').textContent]", [j62, jp62])
-    ok(d62[0] and not d62[1] and 'Programa: Solicitud' in d62[2],'las solicitudes se filtran con Programa, con su ficha: %s' % d62[2])
+    ok(d62[0] and not d62[1] and 'Programa: Solicitud especial' in d62[2],'las solicitudes se filtran con Programa, con su ficha: %s' % d62[2])
     pg62.click('#jornada-quitar'); pg62.wait_for_timeout(800)
     # La ficha lo dice y «Editar jornada» lo corrige
     pg62.evaluate("async (id) => { await SRP.jornadas.abrir(id); }", j62); pg62.wait_for_timeout(1200)
@@ -5289,14 +5291,14 @@ with sync_playwright() as p:
     # El reporte de la jornada
     r62=pg62.evaluate("""async ([p, n]) => { const de = async id => { const j = await SRP.almacen.uno('jornadas', id); const regs = await SRP.activa.registrosDe(j); const m = SRP.reportes.modelo(regs, j, j.fecha, j);
       const v = k => (m.identificacion.find(x => x[0] === k) || [])[1]; return [v('Programa'), v('Solicitado por'), v('Descripción de la solicitud')]; }; return [await de(p), await de(n)]; }""", [j62, jp62])
-    ok(r62[0]==['Solicitud','Metro','Compensación por obra.\nOficio de la dependencia.'] and r62[1][0]=='Reforestación Urbana' and not r62[1][1] and not r62[1][2],'el reporte de la jornada dice el programa «Solicitud», quién lo solicitó y la descripción; con otro programa no aparecen: %s' % r62)
+    ok(r62[0]==['Solicitud especial','Metro','Compensación por obra.\nOficio de la dependencia.'] and r62[1][0]=='Reforestación Urbana' and not r62[1][1] and not r62[1][2],'el reporte de la jornada dice el programa «Solicitud especial», quién lo solicitó y la descripción; con otro programa no aparecen: %s' % r62)
     # Indicadores: solicitudes del periodo, filtro por programa y columnas del CSV
     i62=pg62.evaluate("""async id => { const I = SRP.indicadores, d = await I.cargar(); const m = I.calcular(d, I.periodo('todo'), {}); const f = I.calcular(d, I.periodo('todo'), { programa: 'p-solicitud' }); const g = I.calcular(d, I.periodo('todo'), { programa: 'p-refor' });
       const csv = SRP.informes.texto(f).split('\\r\\n'); const j = m.jornadas.find(x => x.id === id);
       return [m.cifras.jornadas, m.cifras.arboles, m.solicitudes.jornadas, m.solicitudes.arboles, m.solicitudes.solicitantes.map(x => [x.solicitante, x.jornadas, x.arboles]), f.cifras.jornadas, f.cifras.arboles, g.cifras.jornadas, g.cifras.arboles, g.solicitudes.jornadas,
-        csv[0].endsWith('"Quién lo solicita","Descripción de la solicitud"') && !csv[0].includes('Origen de la jornada'), csv[1].includes('"Solicitud"') && csv[1].includes('"Metro","Compensación por obra.'), j && j.solicitante,
+        csv[0].endsWith('"Quién lo solicita","Descripción de la solicitud"') && !csv[0].includes('Origen de la jornada'), csv[1].includes('"Solicitud especial"') && csv[1].includes('"Metro","Compensación por obra.'), j && j.solicitante,
         m.porPrograma.map(x => [x.clave, x.arboles])]; }""", j62)
-    ok(i62[:4]==[2,3,1,2] and i62[4]==[['Metro',1,2]] and i62[5:10]==[1,2,1,1,0] and i62[10] and i62[11] and i62[12]=='Metro' and sorted(i62[13])==[['Reforestación Urbana',1],['Solicitud',2]],'los indicadores cuentan las solicitudes por solicitante y como programa; el CSV lleva quién lo solicita y la descripción, sin origen: %s' % i62[:10])
+    ok(i62[:4]==[2,3,1,2] and i62[4]==[['Metro',1,2]] and i62[5:10]==[1,2,1,1,0] and i62[10] and i62[11] and i62[12]=='Metro' and sorted(i62[13])==[['Reforestación Urbana',1],['Solicitud especial',2]],'los indicadores cuentan las solicitudes por solicitante y como programa; el CSV lleva quién lo solicita y la descripción, sin origen: %s' % i62[:10])
     pg62.evaluate("SRP.app.mostrarVista('supervision')"); pg62.wait_for_timeout(1500)
     abrir_sup(pg62)
     pg62.evaluate("() => { SRP.supervision.periodo = SRP.indicadores.periodo('todo'); SRP.supervision.pintar(); }"); pg62.wait_for_timeout(900)
@@ -5327,9 +5329,9 @@ with sync_playwright() as p:
     pg62.click('#btn-ej-guardar'); pg62.wait_for_timeout(900)
     z62=pg62.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); const a = (await SRP.almacen.todos('plantaciones')).filter(r => r.jornada_id === id).map(r => r.programa_id); return [j.programa_id, j.solicitante_id, j.solicitante_otro, j.solicitud_descripcion, a]; }", j62)
     ok(y62==1 and oe62 and z62==['p-refor', None, '', '', ['p-refor','p-refor']],'el solicitante de una jornada cuenta como usado; al pasar la jornada a otro programa, los datos de la solicitud se vacían y sus árboles toman el programa nuevo: %s' % z62)
-    # «Solicitud» no se carga por archivo: no trae quién lo solicita
+    # «Solicitud especial» no se carga por archivo: no trae quién lo solicita
     cg62=pg62.evaluate("SRP.CONFIG.PROGRAMA_SOLICITUD")
-    ok(cg62=='p-solicitud' and pg62.evaluate("SRP.ref.catalogoPorId['p-solicitud'].nombre")=='Solicitud','«Solicitud» es un valor del catálogo de programas, que el sistema reconoce por su identificador')
+    ok(cg62=='p-solicitud' and pg62.evaluate("SRP.ref.catalogoPorId['p-solicitud'].nombre")=='Solicitud especial','«Solicitud especial» es un valor del catálogo de programas, que el sistema reconoce por su identificador')
     ok(not err62,'sin errores en consola: %s' % err62[:2])
     ctx62.close()
 
@@ -6153,6 +6155,8 @@ with sync_playwright() as p:
     pg75.set_viewport_size({'width': 1280, 'height': 900})
     pg75.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-admin-1'])"); pg75.reload(); pg75.wait_for_timeout(1800)
     pg75.evaluate("SRP.app.mostrarVista('supervision')"); esperar(pg75, "!!SRP.supervision.modelo && !!document.querySelector('.sup-seccion')", 8000); pg75.wait_for_timeout(600)
+    # En «Todo», para que haya tablas sea el día que sea: la semana en curso puede no tener jornadas cerradas
+    pg75.click('#sup-tipos .chip[data-tipo=todo]'); esperar(pg75, "!!document.querySelector('.sup-tabla thead')", 8000)
     ok(pg75.evaluate("[...document.querySelectorAll('details[data-seccion]')].every(d => d.open) && getComputedStyle(document.querySelector('.sup-tabla thead')).position !== 'absolute'"),
        'con ancho, los desgloses se muestran abiertos y las tablas conservan sus columnas')
     ok(err75 == [], 'sin errores de consola: %s' % err75[:2])
@@ -6204,7 +6208,7 @@ with sync_playwright() as p:
       return { v: A.db.version, ped: [p.programa_id, 'origen' in p, 'pedido_descripcion' in p, p.solicitante_id, p.solicitud_descripcion], pro: [q.programa_id, 'origen' in q, q.solicitud_descripcion],
         arboles: Object.fromEntries(ar.map(a => [a.id, a.programa_id])), programa: !!(await A.uno('programas', 'p-solicitud')) }; }""")
     ok(m77['v'] == 9 and m77['ped'] == ['p-solicitud', False, False, 's-sobse', 'Camellón'] and m77['pro'] == ['p-refor', False, ''] and m77['arboles'] == {'a-ped-1': 'p-solicitud', 'a-ped-2': 'p-solicitud', 'a-pro-1': 'p-refor'} and m77['programa'],
-       'la migración 9 pasa el pedido especial al programa «Solicitud», con sus árboles, conserva solicitante y descripción y retira el origen: %s' % m77)
+       'la migración 9 pasa el pedido especial al programa «Solicitud especial», con sus árboles, conserva solicitante y descripción y retira el origen: %s' % m77)
     # Espejos: «Iniciar jornada», la ficha de la jornada, y el alta de una cuenta y de un valor de catálogo
     pg77.select_option('#sel-usuario-prueba', 'u-cabo-1'); pg77.click('#btn-entrar-prueba'); pg77.wait_for_timeout(900)
     pg77.evaluate("SRP.app.mostrarVista('registrar')"); pg77.wait_for_timeout(600)
@@ -6885,7 +6889,7 @@ with sync_playwright() as p:
     pg90.select_option('#ini-programa', 'p-refor'); pg90.wait_for_timeout(150)
     ok(pg90.evaluate("[...document.querySelectorAll('#ini-programa-chips .chip')].map(c => c.getAttribute('aria-pressed'))") == ['true', 'false', 'false'],
        'elegir en la lista marca su chip')
-    # Con el programa «Solicitud» desde un chip aparece su bloque, igual que desde la lista
+    # Con el programa «Solicitud especial» desde un chip aparece su bloque, igual que desde la lista
     pg90.evaluate("""() => { const s = document.getElementById('ini-programa'); s.value = 'p-solicitud'; s.dispatchEvent(new Event('change', { bubbles: true })); }""")
     pg90.wait_for_timeout(200)
     sol90 = pg90.evaluate("!!document.querySelector('#ini-caja-solicitud input, #ini-caja-solicitud select') && getComputedStyle(document.getElementById('ini-caja-solicitud')).display !== 'none'")

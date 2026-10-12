@@ -20,7 +20,7 @@
       {
         "donde": "localStorage `srp_sesion_usuario_id`",
         "que": "id de la cuenta con sesión abierta; el dispositivo queda fijo a esa cuenta",
-        "fase2": "Lo sustituye el proveedor de identidad institucional; sólo cambia `autenticar()` en js/sesion.js"
+        "fase2": "Lo sustituye la sesión del servidor, en una cookie sólo HTTP; sólo cambia `autenticar()` en js/sesion.js"
       },
       {
         "donde": "localStorage `srp_sello_datos`",
@@ -717,7 +717,7 @@
           "origen": "Persona",
           "dominio": "Lista de tipo_organizacion; [] = sólo SEDEMA",
           "pantalla": "Quién puede usarlo (Catálogos › Programas)",
-          "regla": "Los tipos de institución que, además de SEDEMA, pueden elegir el programa al iniciar o editar una jornada; SEDEMA puede usar todos. Lo marca la Administración. Un programa nuevo empieza vacío. De arranque: Reforestación Urbana, Alcaldía, Gobierno de la CDMX y Organización civil; Palmeras, Empresa privada; Centro Histórico y Compensaciones, vacío. Al abrir, un programa sin el dato recibe el de arranque o, si lo agregó la Administración, vacío"
+          "regla": "Los tipos de institución que, además de SEDEMA, pueden elegir el programa al iniciar o editar una jornada; SEDEMA puede usar todos. Lo marca la Administración. Un programa nuevo empieza vacío. De arranque: Reforestación Urbana, Alcaldía, Gobierno de la CDMX y Organización civil; Palmeras, Empresa privada; Centro Histórico, Compensaciones, Territorios de Paz, Utopías y Solicitud especial, vacío. Al abrir, un programa sin el dato recibe el de arranque o, si lo agregó la Administración, vacío"
         }
       ]
     },
@@ -1362,7 +1362,7 @@
           "origen": "Persona",
           "dominio": "→ programas.id",
           "pantalla": "Programa (Iniciar jornada)",
-          "regla": "Obligatorio al iniciar. Sus árboles lo toman siempre: al registrar, al cambiarlo aquí y al moverlos a esta jornada. SEDEMA elige todos; las demás instituciones, los que tienen marcado su tipo en programas.tipos_organizacion. Con un solo programa posible viene ya elegido. El programa «Solicitud» (id p-solicitud) marca la jornada que atiende una solicitud de otra instancia: con él se piden quién lo solicita y la descripción. Es un valor del catálogo: la Administración puede renombrarlo o desactivarlo; el sistema lo reconoce por su id"
+          "regla": "Obligatorio al iniciar. Sus árboles lo toman siempre: al registrar, al cambiarlo aquí y al moverlos a esta jornada. SEDEMA elige todos; las demás instituciones, los que tienen marcado su tipo en programas.tipos_organizacion. Con un solo programa posible viene ya elegido. El programa «Solicitud especial» (id p-solicitud) marca la jornada que atiende una solicitud de otra instancia: con él se piden quién lo solicita y la descripción. Es un valor del catálogo: la Administración puede renombrarlo o desactivarlo; el sistema lo reconoce por su id"
         },
         {
           "campo": "lat",
@@ -1532,8 +1532,8 @@
           "nulo": true,
           "origen": "Persona",
           "dominio": "→ solicitantes.id",
-          "pantalla": "Iniciar jornada › Quién lo solicita (con el programa «Solicitud»); Editar jornada",
-          "regla": "Quién solicita la jornada, del catálogo de solicitantes (Catálogos › Solicitantes), que es aparte del de instituciones. No es quien ejecuta (organizacion_id): quien solicita no es quien planta. Nulo si la jornada es de otro programa o si la instancia no está en el catálogo. Obligatorio, este o solicitante_otro, con el programa «Solicitud»"
+          "pantalla": "Iniciar jornada › Quién lo solicita (con el programa «Solicitud especial»); Editar jornada",
+          "regla": "Quién solicita la jornada, del catálogo de solicitantes (Catálogos › Solicitantes), que es aparte del de instituciones. No es quien ejecuta (organizacion_id): quien solicita no es quien planta. Nulo si la jornada es de otro programa o si la instancia no está en el catálogo. Obligatorio, este o solicitante_otro, con el programa «Solicitud especial»"
         },
         {
           "campo": "solicitante_otro",
@@ -1550,8 +1550,8 @@
           "nulo": false,
           "origen": "Persona",
           "dominio": "Texto ≤ 500, en varios renglones; '' si no aplica",
-          "pantalla": "Iniciar jornada › Descripción de la solicitud (con el programa «Solicitud»); Editar jornada",
-          "regla": "De qué se trata la solicitud; obligatoria con el programa «Solicitud». Vacía en una jornada de otro programa. Admite varios renglones: ahí cabe la referencia del oficio, si la hay"
+          "pantalla": "Iniciar jornada › Descripción de la solicitud (con el programa «Solicitud especial»); Editar jornada",
+          "regla": "De qué se trata la solicitud; obligatoria con el programa «Solicitud especial». Vacía en una jornada de otro programa. Admite varios renglones: ahí cabe la referencia del oficio, si la hay"
         },
         {
           "campo": "editado_por_id",
@@ -1804,7 +1804,7 @@
       "de": "jornadas.solicitante_id",
       "a": "solicitantes.id",
       "cardinalidad": "N:1",
-      "regla": "Opcional: sólo en una jornada del programa «Solicitud» cuya instancia está en el catálogo. Un solicitante que aparece en alguna jornada no se elimina del catálogo; se desactiva"
+      "regla": "Opcional: sólo en una jornada del programa «Solicitud especial» cuya instancia está en el catálogo. Un solicitante que aparece en alguna jornada no se elimina del catálogo; se desactiva"
     },
     {
       "de": "plantaciones.sustituye_id / sustituido_por_id",
@@ -2134,7 +2134,7 @@
     },
     {
       "campo": "jornadas.solicitante_id / solicitante_otro / solicitud_descripcion",
-      "aparece": "Sólo con el programa «Solicitud»; solicitante_otro, sólo con «Otra instancia»",
+      "aparece": "Sólo con el programa «Solicitud especial»; solicitante_otro, sólo con «Otra instancia»",
       "se_vacia": "Al volver a «Programada» (nulo y '')"
     }
   ],
@@ -2191,7 +2191,7 @@
       "id": "R-P09",
       "tabla": "plantaciones",
       "regla": "El formulario arranca en blanco en cada registro: nada se hereda del anterior (ni programa, ni punto). La fecha de plantación arranca según la jornada (o la elegida antes en esa misma jornada, que está a la vista)",
-      "donde": "js/formulario.js limpiar(), nuevoRegistro()"
+      "donde": "js/formulario.js limpiar()"
     },
     {
       "id": "R-P10",
@@ -2292,7 +2292,7 @@
     {
       "id": "R-C05",
       "tabla": "instituciones",
-      "regla": "Instituciones: cuatro tipos fijos. Sólo la Administración las agrega (a solicitud, en Catálogos › Instituciones: tipo —nunca Alcaldía— y nombre único; la clave la pone el sistema), las renombra y las desactiva (desactivar corta el acceso de sus cuentas); no se eliminan. Las 16 alcaldías son fijas y SEDEMA no se desactiva. De arranque: SEDEMA, PAOT, SOBSE (Gobierno de la CDMX), Green Cover (Empresa privada), Reforestamos México, A.C. (Organización civil) y las 16 alcaldías (id o-alc-<cvegeo>). Áreas de arranque: DGSANPAVA, Oficina de la Secretaría, Sistema de Información Ambiental y DGEIRA; en un teléfono con capturas, las cuentas del área retirada «Dirección de Infraestructura Verde» pasan a DGSANPAVA. Programas de arranque: Reforestación Urbana, Centro Histórico, Palmeras y Compensaciones; «Jornadas de voluntariado» se retiró: en un teléfono con capturas se desactiva si alguna jornada o árbol lo usa, y si no, se quita",
+      "regla": "Instituciones: cuatro tipos fijos. Sólo la Administración las agrega (a solicitud, en Catálogos › Instituciones: tipo —nunca Alcaldía— y nombre único; la clave la pone el sistema), las renombra y las desactiva (desactivar corta el acceso de sus cuentas); no se eliminan. Las 16 alcaldías son fijas y SEDEMA no se desactiva. De arranque: SEDEMA, PAOT, SOBSE (Gobierno de la CDMX), Green Cover (Empresa privada), Reforestamos México, A.C. (Organización civil) y las 16 alcaldías (id o-alc-<cvegeo>). Áreas de arranque: DGSANPAVA, Oficina de la Secretaría, Sistema de Información Ambiental y DGEIRA; en un teléfono con capturas, las cuentas del área retirada «Dirección de Infraestructura Verde» pasan a DGSANPAVA. Programas de arranque: Reforestación Urbana, Centro Histórico, Palmeras, Compensaciones, Territorios de Paz, Utopías y Solicitud especial; «Jornadas de voluntariado» se retiró: en un teléfono con capturas se desactiva si alguna jornada o árbol lo usa, y si no, se quita",
       "donde": "js/catalogos.js esFija(), validar(), guardar(), cambiarEstado(); js/datos-ficticios.js; js/almacen.js completarCatalogos()"
     },
     {
@@ -2322,14 +2322,14 @@
     {
       "id": "R-J06",
       "tabla": "jornadas",
-      "regla": "Solicitud: una jornada del programa «Solicitud» lleva quién lo solicita, del catálogo de solicitantes (solicitante_id) o escrito (solicitante_otro), y su descripción (solicitud_descripcion), obligatoria; una jornada de otro programa lleva los tres vacíos. La solicitud sustituye al programa: sus árboles cuentan en «Solicitud». No cambia quién ejecuta. No se carga por archivo",
+      "regla": "Solicitud: una jornada del programa «Solicitud especial» lleva quién lo solicita, del catálogo de solicitantes (solicitante_id) o escrito (solicitante_otro), y su descripción (solicitud_descripcion), obligatoria; una jornada de otro programa lleva los tres vacíos. La solicitud sustituye al programa: sus árboles cuentan en «Solicitud especial». No cambia quién ejecuta. No se carga por archivo",
       "donde": "js/solicitud.js leer() y errores(); js/jornada-activa.js iniciarJornada(); js/jornadas.js guardarEdicion(); js/carga.js; js/almacen.js migración 9"
     },
     {
       "id": "R-R01",
       "tabla": "jornadas",
       "regla": "El reporte es de una jornada declarada: reúne las plantaciones activas con ese jornada_id; regenerar la misma jornada reabre sus datos de cierre",
-      "donde": "js/reportes.js refrescarVista(), abrir(), cierreDeJornada()"
+      "donde": "js/reportes.js abrir(), cierreDeJornada(), modelo()"
     },
     {
       "id": "R-R02",
@@ -2372,7 +2372,7 @@
     {
       "id": "S-04",
       "que": "Permisos en el servidor",
-      "detalle": "Las reglas de js/permisos.js (PERFILES y ACCIONES) se imponen en la API en cada operación (Norma 7.1); la pantalla sólo las refleja. Autenticación con el proveedor institucional: sólo cambia autenticar() en js/sesion.js",
+      "detalle": "Las reglas de js/permisos.js (PERFILES y ACCIONES) se imponen en la API en cada operación (Norma 7.1); la pantalla sólo las refleja. Autenticación con las cuentas propias del servidor: sólo cambia autenticar() en js/sesion.js",
       "referencia": "js/permisos.js"
     },
     {
@@ -2414,7 +2414,7 @@
     {
       "id": "S-12",
       "que": "Organizaciones externas",
-      "detalle": "Alcaldías, PAOT, SOBSE, empresas y organizaciones civiles usan el sistema con cuentas de cabo que da de alta la Secretaría a solicitud. El servidor filtra por organizacion_id: una cuenta nunca recibe registros de otra institución. Carga en la base real el catálogo de instituciones de arranque (SEDEMA o-sedema, PAOT, SOBSE, Green Cover, Reforestamos México y las 16 alcaldías o-alc-<cvegeo>). Rechaza el acceso de cuentas cuya institución esté desactivada. Lo que plantan suma a las cifras de la Ciudad. Pendientes: acceso para cuentas externas (el proveedor institucional puede no cubrir a empresas ni organizaciones civiles), aviso de privacidad que cubra a su personal y convenio o carta responsiva por institución",
+      "detalle": "Alcaldías, PAOT, SOBSE, empresas y organizaciones civiles usan el sistema con cuentas de cabo que da de alta la Secretaría a solicitud. El servidor filtra por organizacion_id: una cuenta nunca recibe registros de otra institución. Carga en la base real el catálogo de instituciones de arranque (SEDEMA o-sedema, PAOT, SOBSE, Green Cover, Reforestamos México y las 16 alcaldías o-alc-<cvegeo>). Rechaza el acceso de cuentas cuya institución esté desactivada. Lo que plantan suma a las cifras de la Ciudad. Las cuentas externas entran como las demás, con cuentas propias del servidor; el aviso de privacidad no se requiere. Pendiente: convenio o carta responsiva por institución, que vive en el expediente",
       "referencia": "FASE2-Y-TRASPASO"
     },
     {
@@ -2426,7 +2426,7 @@
     {
       "id": "S-14",
       "que": "Solicitud",
-      "detalle": "El servidor valida lo mismo que el teléfono: una jornada del programa «Solicitud» lleva solicitante, del catálogo de solicitantes (solicitante_id) o escrito (solicitante_otro), y su descripción (solicitud_descripcion), obligatoria; una jornada de otro programa lleva los tres vacíos. No hay campo de origen: lo dice el programa. El solicitante no da acceso a la jornada",
+      "detalle": "El servidor valida lo mismo que el teléfono: una jornada del programa «Solicitud especial» lleva solicitante, del catálogo de solicitantes (solicitante_id) o escrito (solicitante_otro), y su descripción (solicitud_descripcion), obligatoria; una jornada de otro programa lleva los tres vacíos. No hay campo de origen: lo dice el programa. El solicitante no da acceso a la jornada",
       "referencia": "js/solicitud.js"
     },
     {

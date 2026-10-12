@@ -34,8 +34,8 @@ SRP.sesion = {
      perfiles. La verificación real la hace el servidor, y entonces se sustituye sólo esta función.
      Ver AUTENTICACION en config.js. */
   autenticar(correo) {
-    // Con datos reales el acceso simulado no abre: hasta conectar el proveedor institucional,
-    // cualquier contraseña serviría. Apagar ES_FICTICIO sin cambiar el proveedor deja el acceso cerrado.
+    // Con datos reales el acceso simulado no abre: hasta conectar el servidor, cualquier contraseña
+    // serviría. Apagar ES_FICTICIO sin conectar el servidor deja el acceso cerrado.
     if (SRP.CONFIG.AUTENTICACION.PROVEEDOR === 'simulado' && !SRP.CONFIG.ES_FICTICIO) {
       return { ok: false, motivo: 'El acceso institucional todavía no está conectado: esta versión no se puede usar con datos reales.' };
     }

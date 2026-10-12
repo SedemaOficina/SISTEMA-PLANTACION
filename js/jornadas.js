@@ -1093,7 +1093,7 @@ SRP.jornadas = {
     const sel = this.el('ej-programa');
     // Los programas de la institución que ejecuta la jornada, más el que ya tiene
     const opciones = SRP.ref.programasPara(c.organizacion_id, c.programa_id);
-    sel.innerHTML = SRP.util.opciones('Seleccione un programa', opciones.map(o => [o.id, o.nombre]));
+    sel.innerHTML = SRP.util.opciones('Seleccione un programa', opciones.map(o => [o.id, o.nombre]), true);
     sel.value = c.programa_id || '';
     this.el('ej-nombre').value = c.nombre || '';
     this.el('ej-ubicacion').value = c.ubicacion || '';

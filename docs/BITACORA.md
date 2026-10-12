@@ -4023,3 +4023,43 @@ Jornadas y Fotografías; se agregaron, dentro de «Un periodo», «Este mes», �
 390 y 1,280 px: los cuatro atajos en un renglón de 46 px de alto. No se probó en un teléfono real.
 
 **Siguiente paso.** La fase 2 del servidor.
+
+## Bloque 202 — Auditoría completa; Territorios de Paz, Utopías y «Solicitud especial» (12-10-2026)
+
+Versión 0.9.61. Liber pidió la auditoría más completa posible de todo el proyecto y, durante ella, dos programas
+nuevos, el nombre «Solicitud especial» y que los «Seleccione…» de Programa y Quién lo solicita dejen de ser una
+opción de la lista.
+
+**Auditoría (D282).** Informe en `docs/AUDITORIA-COMPLETA.md`: recorrido de 50 pantallas con los cuatro perfiles
+en teléfono y computadora, ortografía de los 2,018 textos con el diccionario es_MX, los 96 avisos, código sin
+uso, reglas documentadas contra el código, la carpeta local y git. Corregido sobre la marcha, sin cambiar la
+pantalla: repositorio compactado (37 → 5 MB); README con los archivos al día y `servir.py` para abrir la app;
+fuera la limpieza heredada del respaldo (`js/conexion.js`) y su prueba; fuera 46 títulos «BLOQUE n:» de las
+pruebas; `datos/esquema.json` con las funciones vigentes en R-P09 y R-R01 y con cuentas propias en lugar del
+proveedor institucional (S-04, S-12), con el diccionario, `js/esquema.js` y el SQL regenerados; el comentario
+de `js/sesion.js`. Una prueba de Supervisión en computadora dependía del día de la semana: elige «Todo». Lo que
+cambia la pantalla queda en 12 propuestas, por aprobar.
+
+**Programas (D283).** `js/datos-ficticios.js`: «Territorios de Paz» y «Utopías», de arranque sólo para SEDEMA;
+«Solicitud» pasa a «Solicitud especial» con el mismo identificador y clave. `js/config.js`: sello de datos
+nuevo, para que un teléfono con capturas reciba los programas y el nombre (`completarCatalogos`).
+`js/util.js`: `opciones` admite un texto que sólo guía (opción vacía, deshabilitada y escondida); lo usan
+Programa en Registrar jornada y en Editar jornada (`js/jornada-activa.js`, `js/jornadas.js`) y Quién lo
+solicita (`js/solicitud.js`). Comentarios, `index.html`, README y `datos/esquema.json` dicen «Solicitud
+especial»; el esquema lista los siete programas de arranque. Pruebas: las listas de programas por institución,
+Catálogos › Programas, la plantilla de carga (seis programas: «Solicitud especial» no se carga por archivo), el
+reporte, los indicadores y el CSV con el nombre nuevo; nuevas, que los dos «Seleccione…» sólo guían y que un
+teléfono con capturas recibe los dos programas y el nombre nuevo.
+
+**Pantalla: qué se agregó y qué se quitó.** Se agregaron «Territorios de Paz» y «Utopías» a la lista Programa
+(y a los chips, cuando se usen). «Solicitud» se llama «Solicitud especial». Se quitaron «Seleccione un
+programa» y «Seleccione quién lo solicita» de las opciones: siguen a la vista mientras no se elige nada.
+
+**Verificación.** `pruebas/prueba.py` completa, sola: 1,427 comprobaciones, 1 falla, sin errores de consola. La
+falla era de la prueba: esperaba cuatro programas en la plantilla de carga y ahora son seis. Corregida, la
+sección de Excel y carga masiva corrió de nuevo: 29 de 29. `pruebas/auditoria.py`: 143, 0 hallazgos; hoja de
+estilos, 0; eslint sin avisos. Que la lista abierta no muestre el «Seleccione…» se comprobó por sus atributos
+(deshabilitada y escondida); la lista nativa del sistema no se puede capturar, y en Safari de iPhone una opción
+escondida puede verse en gris sin poder elegirse. No se probó en un teléfono real.
+
+**Siguiente paso.** Aprobar o descartar las 12 propuestas de la auditoría; después, la fase 2 del servidor.

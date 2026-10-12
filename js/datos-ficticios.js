@@ -19,10 +19,12 @@ window.SRP = window.SRP || {};
     cat('programa', 'p-centro', 'CENTRO_HISTORICO', 'Centro Histórico', { tipos_organizacion: [] }),
     cat('programa', 'p-palmeras', 'PALMERAS', 'Palmeras', { tipos_organizacion: ['Empresa privada'] }),
     cat('programa', 'p-compensaciones', 'COMPENSACIONES', 'Compensaciones', { tipos_organizacion: [] }),
+    cat('programa', 'p-territorios-paz', 'TERRITORIOS_PAZ', 'Territorios de Paz', { tipos_organizacion: [] }),
+    cat('programa', 'p-utopias', 'UTOPIAS', 'Utopías', { tipos_organizacion: [] }),
     /* La jornada que atiende una solicitud de otra instancia: al elegirlo se piden quién lo solicita y la
        descripción. De arranque es de la Secretaría; la Administración lo abre a otros tipos de institución
        en Catálogos › Programas */
-    cat('programa', 'p-solicitud', 'SOLICITUD', 'Solicitud', { tipos_organizacion: [] })
+    cat('programa', 'p-solicitud', 'SOLICITUD', 'Solicitud especial', { tipos_organizacion: [] })
   ];
   // Programas de arranque que se retiraron: en un teléfono con capturas se quitan o, si se usaron, se desactivan
   const programasRetirados = ['p-voluntariado'];

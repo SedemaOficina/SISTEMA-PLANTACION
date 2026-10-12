@@ -1198,7 +1198,7 @@ SRP.ESQUEMA = {
     true,
     null,
     "solicitantes",
-    "Iniciar jornada › Quién lo solicita (con el programa «Solicitud»); Editar jornada"
+    "Iniciar jornada › Quién lo solicita (con el programa «Solicitud especial»); Editar jornada"
    ],
    [
     "solicitante_otro",
@@ -1214,7 +1214,7 @@ SRP.ESQUEMA = {
     false,
     null,
     null,
-    "Iniciar jornada › Descripción de la solicitud (con el programa «Solicitud»); Editar jornada"
+    "Iniciar jornada › Descripción de la solicitud (con el programa «Solicitud especial»); Editar jornada"
    ],
    [
     "editado_por_id",

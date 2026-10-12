@@ -360,10 +360,11 @@ SRP.util = {
   },
 
   /* OPCIONES DE UNA LISTA. `pares`: [[valor, texto], …], escapados; `vacio`: el texto de la
-     opción sin valor («Todos», «Seleccione…»), o nada si no la lleva. */
-  opciones(vacio, pares) {
+     opción sin valor («Todos», «Seleccione…»), o nada si no la lleva. Con `guia`, ese texto sólo dice
+     qué elegir: se ve mientras no hay nada elegido y no aparece entre las opciones. */
+  opciones(vacio, pares, guia) {
     const esc = t => this.escapar(t);
-    return (vacio == null ? '' : '<option value="">' + esc(vacio) + '</option>') +
+    return (vacio == null ? '' : '<option value=""' + (guia ? ' disabled hidden selected' : '') + '>' + esc(vacio) + '</option>') +
       pares.map(([v, t]) => '<option value="' + esc(v) + '">' + esc(t) + '</option>').join('');
   },
   /* Fichas de los filtros activos: cada una dice qué filtra y se quita con su ×. `fichas`: [qué quitar, texto].

@@ -197,7 +197,7 @@ SRP.almacen = {
       };
     },
     /* 9. LA SOLICITUD ES UN PROGRAMA. Se retira el origen de la jornada: la que venía de otra instancia
-       pasa al programa «Solicitud», y sus árboles con ella; conserva quién lo solicitó y la descripción,
+       pasa al programa «Solicitud especial», y sus árboles con ella; conserva quién lo solicitó y la descripción,
        que cambia de nombre. No se borra ningún registro. */
     9(db, tx) {
       const A = SRP.almacen, P = SRP.CONFIG.PROGRAMA_SOLICITUD, solicitudes = new Set();

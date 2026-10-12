@@ -11,7 +11,7 @@ La versión que corre se lee al pie de cada pantalla.
 1. **Registrar jornada** (pestaña Nuevo registro). Antes de registrar árboles se declara la jornada:
    nombre del sitio, programa, fecha, árboles que se van a plantar y, si se quiere, la ubicación y la dirección.
    Si la jornada atiende una solicitud de otra instancia (SOBSE, una alcaldía), se elige el programa
-   **Solicitud** y se dicen quién lo solicita, del catálogo de solicitantes, y de qué se trata.
+   **Solicitud especial** y se dicen quién lo solicita, del catálogo de solicitantes, y de qué se trata.
    El programa es de la jornada: todos sus árboles lo toman. La fecha es el día en que
    empieza: la jornada puede seguir abierta varios días y cada árbol lleva la fecha en que se plantó.
 2. **Nuevo árbol.** Con la jornada activa: ubicación (GPS, toque en el mapa o coordenadas a mano),
@@ -54,8 +54,9 @@ La versión que corre se lee al pie de cada pantalla.
 ## Cómo abrirlo
 
 **En la computadora.** Doble clic en `index.html` sirve para mirar, pero para probar de verdad
-conviene servirlo: `python3 -m http.server 8099` dentro de esta carpeta, y abrir
-`http://127.0.0.1:8099/`. Así el navegador lo trata igual que al sitio publicado.
+conviene servirlo: `python3 pruebas/servir.py` dentro de esta carpeta, y abrir
+`http://127.0.0.1:8099/`. Así el navegador lo trata igual que al sitio publicado. (No `http.server`: deja
+muy pocas conexiones en espera y en Windows rechaza archivos al abrir.)
 
 **En el teléfono.** La ubicación y la cámara sólo funcionan en una dirección `https://`, así que
 hay que abrir el sitio publicado: https://sedemaoficina.github.io/SISTEMA-PLANTACION/
@@ -154,7 +155,7 @@ js/                     La aplicación, un archivo por tema
   configuracion.js      Configuración (Administración global): una tarjeta por apartado, parámetros y registro de cambios
   especies-revision.js  Especies escritas en «Otra especie», para revisarlas (desde Catálogos › Especies)
   carga.js, excel.js    Carga masiva de árboles anteriores desde Excel o CSV, y lectura y escritura de .xlsx
-  solicitud.js          Jornadas del programa «Solicitud»: quién lo solicita y de qué se trata
+  solicitud.js          Jornadas del programa «Solicitud especial»: quién lo solicita y de qué se trata
   mapa.js, foto.js, iconos.js, util.js, app.js  Mapa, fotografía, iconos, utilidades y arranque
   datos-ficticios.js    Cuentas y catálogos de arranque de la versión de prueba
   demostracion.js       Datos de demostración del pie (sólo versión de prueba; se retira al cerrar la Etapa 1)
@@ -174,11 +175,16 @@ datos/                  El modelo de datos
   esquema.json          Fuente única del modelo de datos
   DICCIONARIO-DATOS.md  Inventario de tablas y diccionario de datos, generado de esquema.json
   HUELLA-CAPAS.md       Cuenta, claves, superficie y centroides de las capas, para compararlas con las del SIA
+  HUELLA-CAPAS.json     Lo mismo, para leerlo con un programa (lo escribe herramientas/huella_capas.py)
   MAPEO-CAMPOS.md       Campos vistos por pantalla: etiqueta ↔ campo, obligatorio, origen
 
 docs/                   Memoria del proyecto
   FASE2-Y-TRASPASO.md   Lo que el programador del SIA debe construir, reemplazar y decidir
   PLAN-TRASPASO-SIA.md  Cómo se llega a los servidores del SIA: fases, responsables, decisiones y riesgos
+  ALINEACION-SIA.md     Cómo trabaja el backend del SIA y cómo se alinea el servidor del SRP
+  AUDITORIA-INTEGRAL-APP.md  Auditoría de la aplicación: seguridad, integridad, accesibilidad, rendimiento y código
+  AUDITORIA-COMPLETA.md  Auditoría de todo el proyecto: archivos, código, reglas, diseño, textos, botones y avisos
+  REVISION-PANTALLAS.md, REVISION-ARCHIVOS.md   Revisiones de las pantallas y de los archivos que se descargan
   DECISIONES.md         Decisiones numeradas (Dnn)
   BITACORA.md           Qué cambió en cada bloque y cómo se verificó
   MEJORAS.md            Tablero de mejoras (Mnn)
@@ -192,9 +198,9 @@ herramientas/           Generan archivos del sitio a partir de originales/ y de 
   exportar_datos_app.py La base de un teléfono de prueba con la demostración → servidor/local/datos-app.json, para cargarla en la base local
   extraer_iconos.py     Set de iconografía CDMX (.ai) → trazados para js/iconos.js
 
-pruebas/                prueba.py (recorrido completo), auditoria.py (auditoría), auditoria_css.py (hoja de estilos), revisar.py (presentación) y requisitos.txt (bibliotecas)
+pruebas/                prueba.py (recorrido completo), auditoria.py (auditoría), auditoria_css.py (hoja de estilos), revisar.py (presentación), servir.py (el servidor local para correrlas) y requisitos.txt (bibliotecas)
 
-servidor/               El servicio del SRP (Node.js y PostgreSQL con PostGIS): guiones SQL del esquema srp y sus pruebas; ver servidor/README.md
+servidor/               El servicio del SRP (Node.js y PostgreSQL con PostGIS): guiones SQL del esquema srp (db/srp/), acceso con cuentas propias (src/) y sus pruebas; ver servidor/README.md
 
 originales/             Capas, catálogos e iconografía tal como llegaron; no se editan ni se publican
                         (.gitignore); ver originales/LEEME.md

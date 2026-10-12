@@ -354,7 +354,7 @@ SRP.activa = {
   llenarProgramas() {
     const sel = this.el('ini-programa');
     const opciones = SRP.ref.programasPara(SRP.sesion.usuario && SRP.sesion.usuario.organizacion_id);
-    sel.innerHTML = SRP.util.opciones('Seleccione un programa', opciones.map(o => [o.id, o.nombre]));
+    sel.innerHTML = SRP.util.opciones('Seleccione un programa', opciones.map(o => [o.id, o.nombre]), true);
     sel.value = opciones.length === 1 ? opciones[0].id : '';
     SRP.util.quitarErrorCampo(sel);
     this.pintarProgramasFrecuentes(opciones);
@@ -516,7 +516,7 @@ SRP.activa = {
       arboles_previstos: previstos, puntos_revisados: [], reporte_en: null, encargado_id: u.id,
       // Relevo: el cabo que registra en lugar del titular (nulo: el titular) y la lista de los relevos hechos
       relevo_id: null, relevos: [],
-      // Con el programa «Solicitud»: quién lo solicita y de qué se trata
+      // Con el programa «Solicitud especial»: quién lo solicita y de qué se trata
       ...SRP.solicitud.leer('ini'),
       carga_id: null,   // sólo las jornadas de una carga masiva llevan la clave de su lote
       // El vehículo se elige al cerrar, del catálogo; sus tres datos se copian entonces

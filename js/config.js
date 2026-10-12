@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 201',
+  ETAPA: 'Bloque 202',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -28,7 +28,7 @@ SRP.CONFIG = {
      significado de alguno de sus campos. El dispositivo guarda el sello con el que sembró; si
      no coincide con este, vuelve a sembrar. Sin esto, un teléfono que ya había abierto el
      sistema se quedaría con los datos anteriores (por ejemplo, con perfiles que ya no existen). */
-  SELLO_DATOS: '2026-10-08-activables',   // qué cambió en los datos de prueba con este sello
+  SELLO_DATOS: '2026-10-12-programas',    // qué cambió en los datos de prueba con este sello
   /* REINICIO DE LOS DATOS DE PRUEBA. Un teléfono con un sello anterior a éste vuelve a empezar aunque
      tenga capturas: todo lo que hay en los teléfonos es de prueba. Con sellos
      posteriores se vuelve a conservar lo capturado. Se comparan como texto: uno nuevo debe ordenar

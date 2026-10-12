@@ -107,7 +107,7 @@ SRP.ref = {
     const o = this.catalogoPorId[organizacionId || SRP.CONFIG.ORGANIZACION_SEDEMA];
     const tipo = o && !this.esSedema(o.id) ? o.tipo_organizacion : null;
     const lista = this.deTipo('programa', true).filter(p => !tipo || (p.tipos_organizacion || []).includes(tipo))
-      // Reforestación Urbana primero, por ser el más usado; «Solicitud» al final, por ser la excepción
+      // Reforestación Urbana primero, por ser el más usado; «Solicitud especial» al final, por ser la excepción
       .sort((a, b) => (b.clave === 'REFOR_URBANA') - (a.clave === 'REFOR_URBANA') || (a.id === SRP.CONFIG.PROGRAMA_SOLICITUD) - (b.id === SRP.CONFIG.PROGRAMA_SOLICITUD));
     if (incluir && !lista.find(p => p.id === incluir) && this.catalogoPorId[incluir]) lista.push(this.catalogoPorId[incluir]);
     return lista;

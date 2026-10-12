@@ -1,11 +1,11 @@
 /* SOLICITUD. Una jornada puede atender una solicitud de otra instancia (SOBSE, una alcaldía, otra
-   dependencia) en lugar de un programa de trabajo. Se dice en el propio programa: «Solicitud» es una
-   opción de la lista Programa, y al elegirla se piden quién lo solicita y de qué se trata.
+   dependencia) en lugar de un programa de trabajo. Se dice en el propio programa: «Solicitud especial»
+   es una opción de la lista Programa, y al elegirla se piden quién lo solicita y de qué se trata.
    Quien solicita no es quien planta: sale de su propio catálogo (Catálogos › Solicitantes), no del de
    instituciones.
 
    Es un dato de la jornada. Se captura al iniciarla y se corrige en «Editar jornada»:
-     programa_id            el programa «Solicitud» (SRP.CONFIG.PROGRAMA_SOLICITUD)
+     programa_id            el programa «Solicitud especial» (SRP.CONFIG.PROGRAMA_SOLICITUD)
      solicitante_id         quién lo solicita, del catálogo de solicitantes; nulo si es otra instancia
      solicitante_otro       el nombre, cuando la instancia no está en el catálogo
      solicitud_descripcion  de qué se trata; obligatoria, en varios renglones
@@ -45,7 +45,7 @@ SRP.solicitud = {
     lista.sort(SRP.ref.ordenSolicitantes);
     const op = (v, t) => '<option value="' + esc(v) + '">' + esc(t) + '</option>';
     const tipos = [...new Set(lista.map(s => s.tipo_solicitante || ''))];
-    return op('', 'Seleccione quién lo solicita') +
+    return SRP.util.opciones('Seleccione quién lo solicita', [], true) +
       tipos.map(t => '<optgroup label="' + esc(t || 'Sin tipo') + '">' + lista.filter(s => (s.tipo_solicitante || '') === t).map(s => op(s.id, s.nombre)).join('') + '</optgroup>').join('') +
       op(this.OTRA, 'Otra instancia');
   },
