@@ -80,6 +80,8 @@ SRP.ICONOS = {
   siguiente: '<path fill="currentColor" d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>',
   // Tabla para descargar en CSV: una rejilla
   tabla: '<path fill="currentColor" d="M3 3h18v18H3V3zm2 2v4h5V5H5zm7 0v4h7V5h-7zM5 11v8h5v-8H5zm7 0v8h7v-8h-7z"/>',
+  // Filtros: tres renglones que se acortan, el botón que abre y pliega los filtros en el teléfono
+  filtros: '<path fill="currentColor" d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>',
   // Subir al inicio de la página: la flecha del botón flotante
   subir: '<path fill="currentColor" d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/>',
 

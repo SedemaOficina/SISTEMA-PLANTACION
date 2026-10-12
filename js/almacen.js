@@ -342,7 +342,7 @@ SRP.almacen = {
         const faltan = this.ALMACENES.filter(n => !this.db.objectStoreNames.contains(n));
         if (!faltan.length) { resolver(); return; }
         if (!SRP.CONFIG.ES_FICTICIO) {
-          rechazar(new Error('La base de este dispositivo no tiene: ' + faltan.join(', ') + '.'));
+          rechazar(new Error('La base de este equipo no tiene: ' + faltan.join(', ') + '.'));
           return;
         }
         this.db.close();

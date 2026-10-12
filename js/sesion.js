@@ -37,7 +37,7 @@ SRP.sesion = {
     // Con datos reales el acceso simulado no abre: hasta conectar el servidor, cualquier contraseña
     // serviría. Apagar ES_FICTICIO sin conectar el servidor deja el acceso cerrado.
     if (SRP.CONFIG.AUTENTICACION.PROVEEDOR === 'simulado' && !SRP.CONFIG.ES_FICTICIO) {
-      return { ok: false, motivo: 'El acceso institucional todavía no está conectado: esta versión no se puede usar con datos reales.' };
+      return { ok: false, motivo: 'El acceso con el servidor todavía no está conectado: esta versión no se puede usar con datos reales.' };
     }
     const buscado = SRP.util.normalizar(correo);
     const u = SRP.ref.usuarios.find(x => SRP.util.normalizar(x.correo) === buscado);

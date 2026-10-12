@@ -60,6 +60,13 @@ for f in glob.glob(APP + '/js/*.js'):
     for m in re.finditer(r"""['"]#[0-9A-Fa-f]{3,8}['"]|rgba?\(\s*\d|(?:fill|text|line|draw)Color\s*:\s*\[\s*\d|set(?:Text|Draw|Fill)Color\(\s*\d""", t):
         js_colores.append(os.path.basename(f) + ': ' + m.group(0))
 mirar(not js_colores, 'el código no escribe colores: los lee de :root (SRP.util.color, colorBase, rgb)', ', '.join(js_colores[:6]))
+# Lo que se ve dice «teléfono» a quien registra y «este equipo» en Configuración: nunca «dispositivo»
+dispositivo = []
+for f in glob.glob(APP + '/js/*.js') + [APP + '/index.html']:
+    t = open(f, encoding='utf-8').read()
+    t = re.sub(r'<!--.*?-->', '', t, flags=re.S) if f.endswith('.html') else re.sub(r'/\*.*?\*/|(?<!:)//[^\n]*', '', t, flags=re.S)
+    dispositivo += [os.path.basename(f) + ': ' + m.group(0)[:60] for m in re.finditer(r'''['">][^'"<>]*\bdispositivo[^'"<>]*''', t, flags=re.I)]
+mirar(not dispositivo, 'los textos dicen «teléfono» o «este equipo», no «dispositivo»', '; '.join(dispositivo[:4]))
 # La norma completa de la hoja (tokens, reglas repetidas, clases sin uso, estilos fuera de la hoja) la revisa su propia auditoría
 import subprocess, sys as _sys
 _css = subprocess.run([_sys.executable, APP + '/pruebas/auditoria_css.py'], capture_output=True, text=True)

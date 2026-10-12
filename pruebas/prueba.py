@@ -14,7 +14,7 @@ HOY=datetime.date.today().isoformat()
 MESES=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC']
 HOY_TXT=HOY[8:10]+'-'+MESES[int(HOY[5:7])-1]+'-'+HOY[0:4]   # como lo pinta SRP.util.formatearFecha
 HOY_CHIP=HOY[8:10]+'-'+MESES[int(HOY[5:7])-1]+'-'+HOY[2:4]  # el atajo «Hoy», con el año en dos cifras
-SRP_GPS='GPS del dispositivo'
+SRP_GPS='GPS del teléfono'
 errores=[]; res=[]
 def ok(c,m):
     res.append(('OK ' if c else 'FALLA ')+m)
@@ -2092,7 +2092,7 @@ with sync_playwright() as p:
     ctx10.close()
     # Modo de prueba apagado: el acceso simulado no abre con cualquier contraseña
     fuera=pg.evaluate("() => { SRP.CONFIG.ES_FICTICIO = false; const r = SRP.sesion.autenticar('cabo@ejemplo.local'); SRP.CONFIG.ES_FICTICIO = true; return r; }")
-    ok(fuera['ok'] is False and 'acceso institucional todavía no está conectado' in fuera['motivo'],'con ES_FICTICIO apagado y el proveedor aún simulado, el acceso queda cerrado: '+fuera['motivo'])
+    ok(fuera['ok'] is False and 'acceso con el servidor todavía no está conectado' in fuera['motivo'],'con ES_FICTICIO apagado y el proveedor aún simulado, el acceso queda cerrado: '+fuera['motivo'])
 
     # ---------- INTEGRIDAD ----------
     # Revisión de integridad sobre lo capturado en toda la prueba, no sobre la base recién sembrada:
@@ -2298,7 +2298,7 @@ with sync_playwright() as p:
     pg12.click('#form-plantacion button[type=submit]'); pg12.wait_for_timeout(900)
     if pg12.is_visible('#dlg-resumen'): pg12.click('#btn-resumen-guardar'); pg12.wait_for_timeout(700)
     hist12=pg12.evaluate("async () => (await SRP.bitacora.deEntidad('%s')).map(h => h.detalle || '').join(' | ')" % rid12)
-    ok('Territorio rederivado' in hist12 and 'alcaldia' in hist12,'al editar, si el territorio cambia, el historial lo registra: '+hist12[-160:])
+    ok('Territorio recalculado' in hist12 and 'alcaldia' in hist12,'al editar, si el territorio cambia, el historial lo registra: '+hist12[-160:])
     ok(pg12.evaluate("SRP.CONFIG.JORNADA.DUPLICADO_M")==4,'el aviso de posible duplicado usa 4 m: por debajo del ruido del GPS no significa nada')
     ok(not err12,'y sin errores en consola: %s' % err12[:2])
     ctx12.close()
@@ -4293,7 +4293,7 @@ with sync_playwright() as p:
     # Parámetros: los valores que usa el sistema, sólo para consulta
     pg50.click('.cfg-tarjeta[data-ir=parametros]'); pg50.wait_for_timeout(500)
     p50=pg50.eval_on_selector_all('#cfg-parametros .cfg-cifra','l=>l.map(d=>d.textContent)')
-    ok(p50==['4 m','150 m','500 m','Hasta ±10 m','Hasta ±30 m','100 m','15 s','17:00 h','60 s','800 × 600 px','10'] and pg50.locator('#vista-parametros input, #vista-parametros select, #vista-parametros textarea').count()==0,
+    ok(p50==['4 m','150 m','500 m','Hasta ±10 m','Hasta ±30 m','100 m','15 s','17:00 h','60 s','800 × 600 px','10 en teléfono · 25 en computadora'] and pg50.locator('#vista-parametros input, #vista-parametros select, #vista-parametros textarea').count()==0,
        'Parámetros muestra los valores que usa el sistema, sin campos para cambiarlos: %s' % p50)
     # Registro de cambios: una edición de catálogo y una desactivación de cuenta
     pg50.evaluate("""async () => { SRP.app.mostrarVista('catalogos'); await new Promise(r => setTimeout(r, 300));
@@ -4313,7 +4313,7 @@ with sync_playwright() as p:
     pg50.evaluate("SRP.app.mostrarVista('acerca')"); pg50.wait_for_timeout(800)
     a50=pg50.inner_text('#cfg-acerca')
     ok(pg50.evaluate("SRP.CONFIG.VERSION + ' (' + SRP.CONFIG.ETAPA + ')'") in a50 and 'srp_db, versión 9' in a50 and 'sia-2026-09-22' in a50 and 'iecm-2022' in a50 and 'Pendientes de envío' in a50,
-       'Acerca del sistema dice versión, base, capas y pendientes de este dispositivo')
+       'Acerca del sistema dice versión, base, capas y pendientes de este equipo')
     anchos50=[]
     for v in ['configuracion','parametros','cambios','acerca']:
         pg50.evaluate("SRP.app.mostrarVista('%s')" % v); pg50.wait_for_timeout(400); anchos50.append(pg50.evaluate("document.documentElement.scrollWidth"))
@@ -6990,6 +6990,62 @@ with sync_playwright() as p:
     ok(d93[0] is False and d93[1].startswith('Siguiente: cerrar la jornada') and d93[1].endswith('(lo hace el cabo).'), 'el Directivo ve qué sigue con «(lo hace el cabo)», porque no puede hacerlo: %s' % d93)
     ok(err93 == [], 'sin errores de consola: %s' % err93[:2])
     ctx93.close()
+
+    # ---------- ctx94: propuestas de la auditoría completa, en computadora ----------
+    ctx94 = b.new_context(viewport={'width':1280,'height':800}, timezone_id='America/Mexico_City'); pg94 = ctx94.new_page(); err94 = []
+    pg94.on('pageerror', lambda e: err94.append(str(e)))
+    pg94.goto(BASE); pg94.wait_for_timeout(1300)
+    # El aviso del acceso de prueba es una advertencia: ámbar, con el texto al día
+    a94 = pg94.evaluate("""() => { const a = document.querySelector('#acceso-prueba .aviso-simulado'), s = getComputedStyle(a);
+      return [a.textContent.trim(), s.borderLeftColor, s.color]; }""")
+    ok(a94[0].endswith('Con el servidor, cada cuenta entra con su correo y su contraseña.') and 'proveedor' not in a94[0] and a94[1:] == ['rgb(217, 138, 30)', 'rgb(138, 75, 0)'],
+       'el aviso del acceso de prueba va en ámbar y dice cómo se entrará con el servidor: %s' % a94)
+    # Con datos de prueba el pie lleva el bloque; en la versión real, sólo el número
+    v94 = pg94.evaluate("() => { const C = SRP.CONFIG, f = C.ES_FICTICIO; C.ES_FICTICIO = false; const real = SRP.util.textoVersion(); C.ES_FICTICIO = f; return [real, C.VERSION, document.getElementById('version').textContent, C.ETAPA]; }")
+    ok(v94[0] == v94[1] and v94[2] == v94[1] + ' (' + v94[3] + ')', 'el pie dice «%s» con datos de prueba y «%s» en la versión real' % (v94[2], v94[0]))
+    # «Colocar punto» y «Filtros» con su icono, como las demás acciones
+    i94 = pg94.evaluate("['btn-ini-coord-aplicar', 'btn-coord-aplicar', 'btn-filtros', 'jornada-btn-filtros'].map(id => !!document.querySelector('#' + id + ' svg'))")
+    ok(i94 == [True, True, True, True], '«Colocar punto» y «Filtros» llevan su icono: %s' % i94)
+    # El texto de código, con la monoespaciada del proyecto
+    c94 = pg94.evaluate("() => { const c = document.createElement('code'); document.body.appendChild(c); const f = getComputedStyle(c).fontFamily; c.remove(); return f; }")
+    ok(c94.startswith('ui-monospace'), 'el texto de código usa la monoespaciada del proyecto: %s' % c94)
+    entrar_como(pg94, 'u-admin-1'); pg94.wait_for_timeout(1000)
+    # En computadora las listas empiezan de 25 en 25
+    p94 = pg94.evaluate("[SRP.util.tamInicial(), SRP.util.paginar(Array(60).fill(0), 1, 'lista-de-prueba').items.length]")
+    ok(p94 == [25, 25], 'en computadora las listas empiezan de 25 en 25: %s' % p94)
+    # Los encabezados que ordenan se ven igual y responden en 44 px
+    pg94.evaluate("SRP.app.mostrarVista('usuarios')"); pg94.wait_for_timeout(900)
+    t94 = pg94.evaluate("""() => { const th = document.querySelector('#vista-usuarios .th-orden'), r = th.getBoundingClientRect();
+      const en = y => { const e = document.elementFromPoint(r.left + 10, y); return !!e && e.closest('.th-orden') === th; };
+      return [Math.round(r.height), en(r.top - 5), en(r.bottom + 5)]; }""")
+    ok(t94[0] < 44 and t94[1] and t94[2], 'el encabezado que ordena mide %s px a la vista y responde en 44 px: %s' % (t94[0], t94))
+    # La × del aviso flotante, igual
+    pg94.evaluate("SRP.util.anunciar('Aviso de prueba.', 'aviso')"); pg94.wait_for_timeout(300)
+    x94 = pg94.evaluate("""() => { const x = document.querySelector('#aviso .aviso-cerrar'), r = x.getBoundingClientRect();
+      const en = (px, py) => { const e = document.elementFromPoint(px, py); return !!e && e.closest('.aviso-cerrar') === x; };
+      return [Math.round(r.width), en(r.left + r.width / 2, r.top - 1), en(r.left + r.width / 2, r.bottom + 1)]; }""")
+    ok(x94[0] < 44 and x94[1] and x94[2], 'la × del aviso mide %s px a la vista y responde en 44 px: %s' % (x94[0], x94))
+    # La ficha de la jornada: cuándo y quién en un renglón; dónde, prioridad, estado y solicitud en otro
+    pg94.evaluate("""async () => { const u = 'u-cabo-1', hoy = SRP.util.fechaHoy(), t = SRP.derivacion.derivar(19.4326, -99.1332);
+      await SRP.almacen.guardarConBitacora('jornadas', { id: 'jr-b203', nombre: 'Ficha B203', fecha: hoy, cabo_id: u, estatus: 'abierta', programa_id: 'p-refor', organizacion_id: 'o-sedema',
+        arboles_previstos: 1, puntos_revisados: [], fecha_inicio: new Date().toISOString(), lat: 19.4326, lng: -99.1332, alcaldia: t.alcaldia, colonia: t.colonia }, null);
+      await SRP.almacen.guardarConBitacora('plantaciones', { id: 'pl-b203', jornada_id: 'jr-b203', cabo_id: u, especie_id: 'ESP-0002', especie_otra: '', programa_id: 'p-refor', lat: 19.4326, lng: -99.1332,
+        punto_origen: 'gps', gps_precision_m: 5, fecha_plantacion: hoy, fecha_registro: new Date().toISOString(), estatus: 'activo', alcaldia: t.alcaldia, colonia: t.colonia, uga: t.uga, capa_version: t.capa_version,
+        folio: null, sustituye_id: null, comentarios: '' }, null);
+      SRP.app.mostrarVista('jornadas'); }""")
+    pg94.wait_for_timeout(1200)
+    pg94.evaluate("SRP.jornadas.abrir('jr-b203')"); pg94.wait_for_timeout(1500)
+    f94 = pg94.evaluate("[[...document.querySelectorAll('#jornada-sub .ficha-renglon')].map(x => x.textContent), SRP.ref.nombreUsuario('u-cabo-1')]")
+    ok(len(f94[0]) == 2 and f94[1] in f94[0][0] and 'abierta' not in f94[0][0] and f94[0][1].endswith('abierta'),
+       'la ficha de la jornada dice cuándo y quién en un renglón, y dónde y su estado en otro: %s' % f94[0])
+    # El crédito del mapa, plegado en un renglón también en computadora; al tocarlo se despliega
+    esperar(pg94, "!!document.querySelector('#jornada-mapa .leaflet-control-attribution')", 6000)
+    k94 = pg94.evaluate("""() => { const a = document.querySelector('#jornada-mapa .leaflet-control-attribution'), m = document.getElementById('jornada-mapa');
+      const h1 = a.getBoundingClientRect().height; a.click(); const h2 = a.getBoundingClientRect().height; a.click();
+      return [Math.round(h1), Math.round(h2), a.getBoundingClientRect().width < m.getBoundingClientRect().width]; }""")
+    ok(k94[0] < 22 and k94[1] > k94[0] and k94[2], 'en computadora el crédito del mapa ocupa un renglón y se despliega al tocarlo: %s' % k94)
+    ok(err94 == [], 'sin errores de consola: %s' % err94[:2])
+    ctx94.close()
 
     b.close()
 

@@ -102,12 +102,13 @@ for ctx, sel, cuerpo, ln in normales:
         if p == 'z-index' and 'var(--z-' not in v: b['B5'].append(caso); cuenta['B5'].update([v])
         if p == 'font-weight': cuenta['B6'].update([v])
         if p in ('transition', 'animation') and re.search(r'\d(ms|s)\b', v): b['B7'].append(caso); [cuenta['B7'].update([x]) for x in re.findall(r'[\d.]+m?s\b', v)]
-        if p == 'line-height': cuenta['B8'].update([v])
+        # Tres interlineados: 1 para símbolos, 1.2 para títulos y controles, 1.5 para texto
+        if p == 'line-height': cuenta['B8'].update([v]); v not in ('1', '1.2', '1.5') and b['B8'].append(caso)
         if p in ('width', 'height', 'min-width', 'min-height', 'max-width', 'max-height') and sueltas(v): b['B9'].append(caso); [cuenta['B9'].update([x]) for x in sueltas(v)]
 T = {'B1': 'Espacios (margin, padding, gap) con medida suelta en lugar de --e-*', 'B2': 'Tamaño de letra sin token --t-*', 'B3': 'Radio sin token --radio*',
-     'B4': 'Sombra escrita fuera de :root', 'B5': 'z-index fuera de la escala de capas --z-*', 'B7': 'Transiciones y animaciones: duraciones sin token',
+     'B4': 'Sombra escrita fuera de :root', 'B5': 'z-index fuera de la escala de capas --z-*', 'B7': 'Transiciones y animaciones: duraciones sin token', 'B8': 'Interlineado fuera de los tres de la norma (1, 1.2, 1.5)',
      'B9': 'Anchos y altos con medida suelta (controles, mapas, iconos)'}
-for k in ('B1', 'B2', 'B3', 'B4', 'B5', 'B7', 'B9'): anota(k, T[k], b[k])
+for k in ('B1', 'B2', 'B3', 'B4', 'B5', 'B7', 'B8', 'B9'): anota(k, T[k], b[k])
 
 # ---------- C. Limpieza ----------
 anota('C1', 'Variables definidas que nadie usa', sorted(v for v in definidas if not usadas[v]))

@@ -139,7 +139,7 @@ SRP.conexion = {
       '<span>' + (con ? 'Con conexión' : 'Sin conexión') + cuenta + '</span>';
     ind.dataset.estado = con ? 'con' : 'sin';
     ind.setAttribute('aria-label', (con ? 'Con conexión' : 'Sin conexión, puede seguir registrando') +
-      (n === null ? '' : ', ' + n + ' registros guardados en este dispositivo') + '. Abrir la guía de qué hacer sin internet');
+      (n === null ? '' : ', ' + n + ' registros guardados en este teléfono') + '. Abrir la guía de qué hacer sin internet');
   },
 
   /* La pastilla con el envío simulado: en lugar de cuántos guarda el teléfono, cuántos

@@ -17,6 +17,8 @@ SRP.app = {
     this.el('navegacion').querySelectorAll('.pestana').forEach(b => I.poner(b, pestana[b.dataset.vista], 'grande'));
     I.poner(this.el('btn-usr-agregar'), 'usuarioMas', 'medio');
     I.poner(this.el('btn-subir'), 'subir', 'grande');
+    ['btn-ini-coord-aplicar', 'btn-coord-aplicar'].forEach(id => I.poner(this.el(id), 'ubicacion', 'medio'));
+    ['btn-filtros', 'jornada-btn-filtros'].forEach(id => I.poner(this.el(id), 'filtros', 'medio'));
     I.poner(this.el('btn-demo-cargar'), 'regenerar', 'medio');
     I.poner(this.el('btn-demo-quitar'), 'basura', 'medio');
     // Menú de la cuenta con icono en cada opción: el sol y la puerta por petición del área, y el resto por consistencia
@@ -33,7 +35,7 @@ SRP.app = {
   async iniciar() {
     if (!this.comprobarVersionCompleta()) return;
     SRP.util.redDeSeguridad();     // ningún fallo se queda mudo
-    this.el('version').textContent = SRP.CONFIG.VERSION + ' (' + SRP.CONFIG.ETAPA + ')';
+    this.el('version').textContent = SRP.util.textoVersion();
     this.el('banda-ficticio').hidden = !SRP.CONFIG.ES_FICTICIO;
     try {
       await SRP.almacen.abrir();
@@ -50,7 +52,7 @@ SRP.app = {
         setTimeout(() => SRP.util.anunciar('La base del teléfono se actualizó y se conservó todo lo guardado: ' + txt + '.', 'aviso'), 600);
       }
     } catch (err) {
-      this.el('principal').innerHTML = '<div class="errores"><h2>No se pudo abrir el almacenamiento del dispositivo</h2>' +
+      this.el('principal').innerHTML = '<div class="errores"><h2>No se pudo abrir el almacenamiento de este equipo</h2>' +
         '<p>' + SRP.util.escapar(err.message) + '. Revise que el navegador no esté en modo privado.</p></div>';
       return;
     }
@@ -201,7 +203,7 @@ SRP.app = {
       const regs = (await SRP.almacen.todos('plantaciones')).filter(r => r.estatus !== 'eliminado').length;
       const jors = (await SRP.almacen.todos('jornadas')).length;
       const cola = SRP.envio.simulado() && SRP.sesion.usuario ? (await SRP.envio.cola()).length : 0;
-      const ok = await this.confirmar({ titulo: 'Restablecer los datos de prueba', pregunta: '¿Borrar lo capturado en este dispositivo y volver a los datos de ejemplo?',
+      const ok = await this.confirmar({ titulo: 'Restablecer los datos de prueba', pregunta: '¿Borrar lo capturado en este equipo y volver a los datos de ejemplo?',
         puntosTitulo: 'Qué pasa:', puntos: [
           'Se borran ' + regs + (regs === 1 ? ' registro' : ' registros') + ' y ' + jors + (jors === 1 ? ' jornada' : ' jornadas') + '.',
           cola ? (cola === 1 ? '1 registro no se ha enviado y se perderá.' : cola + ' registros no se han enviado y se perderán.') : '',

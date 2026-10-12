@@ -573,7 +573,7 @@ SRP.formulario = {
     const esc = SRP.util.escapar;
     if (v.punto_origen !== 'gps' || v.gps_precision_m == null) return esc(SRP.mapa.textoOrigen(v.punto_origen, v.gps_precision_m));
     const n = SRP.mapa.nivelPrecision(v.gps_precision_m);
-    return 'GPS del dispositivo<br><span class="precision" data-nivel="' + n.nivel + '"><span class="precision-punto" aria-hidden="true"></span>' +
+    return 'GPS del teléfono<br><span class="precision" data-nivel="' + n.nivel + '"><span class="precision-punto" aria-hidden="true"></span>' +
       n.texto + ' · ±' + Math.round(v.gps_precision_m) + ' m</span>' +
       (n.nivel === 'buena' || !conConsejo ? '' : '<span class="precision-consejo">Revise el punto; puede corregirlo con «Editar» en Coordenadas.</span>');
   },
@@ -661,7 +661,7 @@ SRP.formulario = {
         const punto = previo.lat !== v.lat || previo.lng !== v.lng
           ? 'Punto: ' + Number(previo.lat).toFixed(6) + ', ' + Number(previo.lng).toFixed(6) + ' → ' + Number(v.lat).toFixed(6) + ', ' + Number(v.lng).toFixed(6) : '';
         const detalle = [cambiados.length ? 'Campos: ' + cambiados.join(', ') : '', punto,
-          territorio.length ? 'Territorio rederivado: ' + territorio.map(k => k === 'capa_version' ? 'capas ' + (v[k] || '—')
+          territorio.length ? 'Territorio recalculado: ' + territorio.map(k => k === 'capa_version' ? 'capas ' + (v[k] || '—')
             : k + ' ' + (previo[k] || '—') + ' → ' + (v[k] || '—')).join('; ') : ''].filter(Boolean).join('. ');
         const nuevo = this.registroPrevisto(ahora);
         await SRP.almacen.guardarJuntos([{ almacen: 'plantaciones', objeto: nuevo, bitacora: SRP.bitacora.entrada('EDITADO', 'plantacion', nuevo.id, detalle || 'Sin cambios en los datos') }]
@@ -798,7 +798,7 @@ SRP.formulario = {
     this.el('franja-guardado-texto').innerHTML = SRP.ICONOS.svg('palomita', 'medio') +
       '<span class="franja-guardado-cuerpo"><strong>Guardado: ' + esc(esp.comun) + '</strong>' +
       '<span class="franja-guardado-datos"><span id="franja-guardado-folio" class="folio-provisional">' + esc(SRP.folio.textoLargo(registro)) + '</span>' +
-      (lugar ? ' · ' + esc(lugar) : '') + ' · <span id="franja-guardado-envio" class="franja-guardado-envio">' + (SRP.envio.simulado() ? 'guardado en el teléfono' : 'guardado en este dispositivo') + '</span></span></span>';
+      (lugar ? ' · ' + esc(lugar) : '') + ' · <span id="franja-guardado-envio" class="franja-guardado-envio">' + (SRP.envio.simulado() ? 'guardado en el teléfono' : 'guardado en este teléfono') + '</span></span></span>';
     const f = this.el('franja-guardado');
     f.dataset.envio = ''; f.hidden = false;
     this.limpiar();

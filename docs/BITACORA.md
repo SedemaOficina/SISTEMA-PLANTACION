@@ -4063,3 +4063,45 @@ estilos, 0; eslint sin avisos. Que la lista abierta no muestre el «Seleccione�
 escondida puede verse en gris sin poder elegirse. No se probó en un teléfono real.
 
 **Siguiente paso.** Aprobar o descartar las 12 propuestas de la auditoría; después, la fase 2 del servidor.
+
+## Bloque 203 — Las 12 propuestas de la auditoría completa (12-10-2026)
+
+Versión 0.9.62. Liber aprobó las 12 propuestas de `docs/AUDITORIA-COMPLETA.md` § 3.
+
+**Qué cambió (D284).**
+- `css/estilos.css`: los controles que se ven de 28 a 40 px (encabezados que ordenan, paginación, × de avisos,
+  ventanas y fichas de filtro, «Filtros», «Quitar filtros», «Deshacer», saltos de la ficha, programas
+  frecuentes, botones del punto en el mapa, enlaces de las tablas de Supervisión) responden en 44 px con un
+  `::after` transparente junto a la regla de cada uno. En el teléfono los botones de página miden 44 px de
+  ancho: los de las orillas tocan el borde y el área no puede crecer a los lados. «Resultados por página», 44 px.
+- Interlineados en 1, 1.2 y 1.5; `--fuente-mono` para `<code>` y el folio por asignar; el crédito del mapa en
+  un renglón en teléfono y computadora (`container-type` en el mapa). Aviso del acceso de prueba en ámbar.
+- `js/util.js`: `textoVersion()` (el bloque sólo con datos de prueba) y `tamInicial()` (25 renglones desde
+  701 px; `LISTA_PAGINA_ANCHA` en `js/config.js`). `js/app.js` y `js/configuracion.js` los usan; Parámetros
+  dice «10 en teléfono · 25 en computadora».
+- `js/iconos.js`: icono `filtros`; `js/app.js` pone la ubicación en «Colocar punto» y el de filtros en «Filtros».
+- `js/jornadas.js`: la ficha de la jornada en dos renglones (`.ficha-renglon`).
+- Textos: «GPS del teléfono», «Este teléfono no ofrece ubicación», «guardado en este teléfono», «registros
+  guardados en este teléfono»; «este equipo» en Configuración, los datos de prueba, el informe y los errores
+  de arranque; «Territorio recalculado»; «El acceso con el servidor todavía no está conectado…»; «Con el
+  servidor, cada cuenta entra con su correo y su contraseña».
+- `pruebas/auditoria_css.py` marca un interlineado fuera de los tres; `pruebas/auditoria.py` (144), que
+  «dispositivo» no aparezca en lo que se ve. `pruebas/prueba.py`: sección nueva en computadora (aviso ámbar,
+  versión real, iconos, monoespaciada, 25 por página, áreas de toque del encabezado y de la × del aviso, ficha
+  en dos renglones, crédito del mapa) y las esperas de Parámetros, del origen del GPS y del historial.
+
+**Pantalla: qué se agregó y qué se quitó.** Se agregaron los iconos de «Colocar punto» y «Filtros», el segundo
+renglón de la ficha de la jornada y 15 renglones más por página en computadora. Se quitó «(Bloque …)» del pie
+en la versión real y el rojo del aviso de prueba. Cambiaron palabras («teléfono», «este equipo»,
+«recalculado»). Lo demás se ve igual: crece el área que responde al toque.
+
+**Verificación.** `pruebas/prueba.py` completa, sola: 1,437 comprobaciones, 2 fallas, sin errores de consola. Una
+era de la prueba (Parámetros esperaba «10»). La otra, del cambio: el área ampliada del último botón de página
+salía 2 px del paginador en el teléfono; se corrigió con botones de 44 px sin área a los lados. Las secciones de
+Configuración, filtros y paginador, paginación y la nueva corrieron de nuevo: 10, 16, 12 y 10, sin fallas.
+Auditorías: 144 sin hallazgos; hoja de estilos, 0; eslint sin avisos. Medido en pantalla: ningún control por
+debajo de 44 px salvo el enlace «Saltar al contenido» (sólo con teclado); el paginador cabe en 360 px con
+1,793 páginas; el crédito del mapa ocupa 17 px plegado. No se probó en un teléfono real; en Safari de iPhone
+anterior a la versión 16 el crédito usa el ancho de la pantalla en lugar del del mapa.
+
+**Siguiente paso.** La fase 2 del servidor.

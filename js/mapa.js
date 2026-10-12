@@ -18,7 +18,7 @@ SRP.mapa = {
      las cuatro fue; lo que faltaba era guardarlo. Es un dato que sólo existe en el instante
      de la captura: si no se escribe entonces, no se reconstruye nunca. */
   ORIGENES: {
-    gps:      'GPS del dispositivo',
+    gps:      'GPS del teléfono',
     mapa:     'Señalado en el mapa',
     manual:   'Capturado a mano',
     ajustado: 'Ajustado arrastrando el pin'
@@ -351,7 +351,7 @@ SRP.mapa = {
      persona coloca el punto a mano. */
   ubicar() {
     if (!navigator.geolocation) {
-      this.estado('Este dispositivo no ofrece ubicación. Toque el mapa o capture coordenadas.', 'alerta');
+      this.estado('Este teléfono no ofrece ubicación. Toque el mapa o capture coordenadas.', 'alerta');
       return;
     }
     this.detenerAfinado();

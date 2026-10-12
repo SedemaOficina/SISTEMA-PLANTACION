@@ -85,6 +85,11 @@ Lo que no está bien va en las propuestas.
 
 ## 3. Propuestas (cambian la pantalla: se aprueban antes)
 
+Liber aprobó las 12 el 12-10-2026; quedaron hechas en la versión 0.9.62 (bloque 203, D284). En la 1, la
+pastilla de conexión ya respondía en 48 px; se sumaron la × de las fichas de filtro (28 px), la × de las
+ventanas, «Deshacer», los botones del punto en el mapa y los enlaces de las tablas de Supervisión. El selector
+«Resultados por página» crece a 44 px también a la vista: un selector no admite un área ampliada.
+
 | # | Qué | Antes | Después |
 |---|---|---|---|
 | 1 | Áreas de toque de 44 px | La pastilla de conexión y los encabezados que ordenan las tablas miden 32 px; la paginación, la × de los avisos, «Filtros», los saltos de la ficha (Mapa · Conciliación · Puntos) y los programas frecuentes, 40 px. El proyecto pide 48 (`--toque`). | 44 px como mínimo, ampliando el área que responde al toque sin cambiar cómo se ven. |

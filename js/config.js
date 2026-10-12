@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 202',
+  ETAPA: 'Bloque 203',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -119,11 +119,13 @@ SRP.CONFIG = {
   FOTO: { ANCHO_MAX: 800, ALTO_MAX: 600, CALIDAD: 0.7 },
 
   LISTA_PAGINA: 10,
+  // En computadora caben más renglones: las listas empiezan de 25 en 25
+  LISTA_PAGINA_ANCHA: 25,
   // Fotografías se ven en rejilla: caben más por página
   PAGINA_POR_LISTA: { 'galeria-paginas': 25 },
-  TAMANOS_PAGINA: [10, 25, 50, 100],
+  TAMANOS_PAGINA: [10, 25, 50, 100],   // lo que ofrece «Resultados por página»
   // Por qué se sustituyó un árbol: clave que se guarda y texto que se ve. «Otro» pide escribirlo
-  MOTIVOS_SUSTITUCION: [['VANDALISMO', 'Vandalismo'], ['IMPACTO_VEHICULAR', 'Impacto vehicular'], ['ROBO', 'Robo'], ['MUERTE', 'Muerte'], ['OTRO', 'Otro']]   // lo que ofrece «Resultados por página»; la primera vez, LISTA_PAGINA
+  MOTIVOS_SUSTITUCION: [['VANDALISMO', 'Vandalismo'], ['IMPACTO_VEHICULAR', 'Impacto vehicular'], ['ROBO', 'Robo'], ['MUERTE', 'Muerte'], ['OTRO', 'Otro']]
 };
 
 // La base de esta versión: la de prueba o la real, nunca la misma

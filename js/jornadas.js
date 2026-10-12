@@ -730,13 +730,14 @@ SRP.jornadas = {
     const dias = SRP.util.diasJornada(j, regs);
     const relevo = guardada.relevo_id && guardada.relevo_id !== guardada.cabo_id ? guardada.relevo_id : '';
     const lugarFicha = this.alcaldiasDe(j).length ? SRP.ref.lugar(this.alcaldiasDe(j)) : SRP.activa.lugarDe(guardada);
-    this.el('jornada-sub').innerHTML = esc(SRP.envio.diaEnLetra(j.fecha).split(' ')[0] + ' ' + SRP.util.textoDias(dias) +
-      (j.total > 1 ? ' · Jornada ' + j.n + ' de ' + j.total : '') + ' · ' +
-      SRP.ref.nombreUsuario(j.cabo_id) + (relevo ? ' (titular) · relevo: ' + SRP.ref.nombreUsuario(relevo) : '')) +
-      (lugarFicha ? ' · ' + esc(lugarFicha) : '') + (SRP.prioritarias.marca(j.prioridad) ? ' · ' + SRP.prioritarias.marca(j.prioridad) : '') +
-      esc(' · ' + (guardada.estatus === 'abierta' ? 'abierta' : 'cerrada') +
-      (SRP.prioritarias.textoOtras(j.registros, j.dato) ? ' · ' + SRP.prioritarias.textoOtras(j.registros, j.dato) : '') +
-      (SRP.solicitud.es(guardada) ? ' · solicita ' + SRP.solicitud.solicitanteCompleto(guardada) : ''));
+    // Dos renglones: cuándo y quién; dónde, su prioridad, su estado y quién la solicita
+    const cuando = [SRP.envio.diaEnLetra(j.fecha).split(' ')[0] + ' ' + SRP.util.textoDias(dias),
+      j.total > 1 ? 'Jornada ' + j.n + ' de ' + j.total : '',
+      SRP.ref.nombreUsuario(j.cabo_id) + (relevo ? ' (titular) · relevo: ' + SRP.ref.nombreUsuario(relevo) : '')].filter(Boolean);
+    const otras = SRP.prioritarias.textoOtras(j.registros, j.dato);
+    const donde = [lugarFicha ? esc(lugarFicha) : '', SRP.prioritarias.marca(j.prioridad), guardada.estatus === 'abierta' ? 'abierta' : 'cerrada',
+      otras ? esc(otras) : '', SRP.solicitud.es(guardada) ? esc('solicita ' + SRP.solicitud.solicitanteCompleto(guardada)) : ''].filter(Boolean);
+    this.el('jornada-sub').innerHTML = '<span class="ficha-renglon">' + esc(cuando.join(' · ')) + '</span><span class="ficha-renglon">' + donde.join(' · ') + '</span>';
     this.el('jornada-comentarios').hidden = !guardada.comentarios;
     this.el('jornada-comentarios').textContent = guardada.comentarios || '';
     // Cerrar o reabrir la jornada desde su revisión: quien registra en ella (el titular o el cabo del relevo)

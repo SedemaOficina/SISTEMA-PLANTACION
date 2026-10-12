@@ -269,7 +269,7 @@ SRP.reportes = {
     if (!caja || !SRP.croquis) return;
     const c = await SRP.croquis.generar(registros);
     if (!caja.isConnected) return;   // la vista previa ya se cerró o se repintó
-    if (!c) { caja.innerHTML = '<p class="previa-nota">No se pudo armar el croquis en este dispositivo.</p>'; return; }
+    if (!c) { caja.innerHTML = '<p class="previa-nota">No se pudo armar el croquis en este equipo.</p>'; return; }
     caja.innerHTML = '<img src="' + c.datos + '" alt="' + (registros.length === 1 ? 'Croquis de la jornada con su punto' : 'Croquis de la jornada con los ' + registros.length + ' puntos numerados') + '">' +
       '<p class="previa-nota">' + SRP.util.escapar(c.nota) + '</p>';
   },
@@ -384,7 +384,7 @@ SRP.reportes = {
         (totales.reduce((x, t) => x + t.pct, 0) === 100 ? '' : ' Los porcentajes están redondeados: especies con la misma cantidad llevan el mismo porcentaje.'),
       /* CALIDAD DE LA UBICACIÓN. Con la fotografía opcional, la coordenada es la prueba: quien lea el
          reporte merece saber de qué clase de coordenada se trata. */
-      gps: 'Ubicados con GPS del dispositivo: ' + conGps + ' de ' + n + ' (' + pct(conGps, n) + ' %).',
+      gps: 'Ubicados con GPS del teléfono: ' + conGps + ' de ' + n + ' (' + pct(conGps, n) + ' %).',
       generado: 'Generado por ' + SRP.util.nombreCompleto(u) + ' (' + SRP.permisos.de(u).etiqueta + ').',
       /* La cifra del sistema no es la cifra del programa: se registra lo que alcanza a registrarse.
          Decirlo en el documento protege a quien lo firma. */

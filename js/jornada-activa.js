@@ -412,7 +412,7 @@ SRP.activa = {
 
   // Sólo la jornada: alcaldía y colonia de donde está quien la inicia. No toca el mapa del árbol.
   detectarUbicacion() {
-    if (!navigator.geolocation) { this.el('ini-detalles-coord').open = true; this.avisoDetectar('Este dispositivo no ofrece ubicación. Capture las coordenadas a mano o escriba la dirección abajo.', 'alerta'); return; }
+    if (!navigator.geolocation) { this.el('ini-detalles-coord').open = true; this.avisoDetectar('Este teléfono no ofrece ubicación. Capture las coordenadas a mano o escriba la dirección abajo.', 'alerta'); return; }
     this.pintarDetectar(true);
     this.avisoDetectar('Obteniendo su ubicación…');
     navigator.geolocation.getCurrentPosition(

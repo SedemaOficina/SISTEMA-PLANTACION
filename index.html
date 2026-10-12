@@ -14,12 +14,12 @@
 <!-- Las peticiones al mapa no dicen desde qué sitio se hacen -->
 <meta name="referrer" content="no-referrer">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.9.61">
-<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.9.61">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.9.62">
+<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.9.62">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.9.61">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.9.61">
-<link rel="stylesheet" href="css/estilos.css?v=0.9.61">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.9.62">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.9.62">
+<link rel="stylesheet" href="css/estilos.css?v=0.9.62">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -30,8 +30,8 @@
   <div class="encabezado-interior">
     <!-- Logotipo: Gobierno CDMX · SEDEMA · SIA · Reforestación Urbana en pantalla ancha; en teléfono, SIA y Reforestación Urbana -->
     <picture>
-      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.9.61">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.9.61" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
+      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.9.62">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.9.62" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» -->
@@ -105,7 +105,7 @@
       <p class="nota">Sólo en desarrollo: permite revisar cómo ve el sistema cada perfil, sin escribir credenciales.</p>
       <div class="campo"><label for="sel-usuario-prueba">Usuario ficticio</label><select id="sel-usuario-prueba"></select></div>
       <button type="button" id="btn-entrar-prueba" class="btn btn-secundario">Entrar con este usuario</button>
-      <p class="aviso-simulado">La contraseña todavía no se verifica: basta un correo dado de alta. La verificación real corresponde al proveedor institucional en la siguiente fase.</p>
+      <p class="aviso-simulado">La contraseña todavía no se verifica: basta un correo dado de alta. Con el servidor, cada cuenta entra con su correo y su contraseña.</p>
     </div>
   </section>
 
@@ -633,7 +633,7 @@
       <button type="button" class="cfg-tarjeta" data-ir="parametros"><span class="cfg-icono" data-icono="tabla"></span><span class="cfg-texto"><span class="cfg-titulo">Parámetros</span><span class="cfg-descripcion">Distancias y valores con que el sistema revisa puntos, GPS y envíos</span><span class="cfg-resumen" data-resumen="parametros"></span></span></button>
       <button type="button" class="cfg-tarjeta" data-ir="cambios"><span class="cfg-icono" data-icono="reloj"></span><span class="cfg-texto"><span class="cfg-titulo">Registro de cambios</span><span class="cfg-descripcion">Quién dio de alta, editó o desactivó cuentas y catálogos, y cuándo</span><span class="cfg-resumen" data-resumen="cambios"></span></span></button>
       <button type="button" class="cfg-tarjeta" data-ir="carga"><span class="cfg-icono" data-icono="subir"></span><span class="cfg-texto"><span class="cfg-titulo">Carga masiva</span><span class="cfg-descripcion">Subir de una vez, desde Excel, los árboles plantados antes de usar el sistema</span><span class="cfg-resumen" data-resumen="carga"></span></span></button>
-      <button type="button" class="cfg-tarjeta" data-ir="acerca"><span class="cfg-icono" data-icono="info"></span><span class="cfg-texto"><span class="cfg-titulo">Acerca del sistema</span><span class="cfg-descripcion">Versión, base de datos, capas geográficas y envíos de este dispositivo</span><span class="cfg-resumen" data-resumen="acerca"></span></span></button>
+      <button type="button" class="cfg-tarjeta" data-ir="acerca"><span class="cfg-icono" data-icono="info"></span><span class="cfg-texto"><span class="cfg-titulo">Acerca del sistema</span><span class="cfg-descripcion">Versión, base de datos, capas geográficas y envíos de este equipo</span><span class="cfg-resumen" data-resumen="acerca"></span></span></button>
     </div>
   </section>
 
@@ -1144,58 +1144,58 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.9.61"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.9.61"></script>
-<script src="vendor/turf-pip.min.js?v=0.9.61"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.9.61"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.9.61"></script>
+<script src="vendor/leaflet.js?v=0.9.62"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.9.62"></script>
+<script src="vendor/turf-pip.min.js?v=0.9.62"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.9.62"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.9.62"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.9.61"></script>
-<script src="js/util.js?v=0.9.61"></script>
-<script src="js/filtros.js?v=0.9.61"></script>
-<script src="js/iconos.js?v=0.9.61"></script>
+<script src="js/config.js?v=0.9.62"></script>
+<script src="js/util.js?v=0.9.62"></script>
+<script src="js/filtros.js?v=0.9.62"></script>
+<script src="js/iconos.js?v=0.9.62"></script>
 <!-- Capas territoriales del SIA, compactadas por herramientas/generar_capas.py desde originales/ -->
-<script src="assets/capas/capa-alcaldias.js?v=0.9.61"></script>
-<script src="assets/capas/capa-uga.js?v=0.9.61"></script>
-<script src="assets/capas/capa-colonias.js?v=0.9.61"></script>
+<script src="assets/capas/capa-alcaldias.js?v=0.9.62"></script>
+<script src="assets/capas/capa-uga.js?v=0.9.62"></script>
+<script src="assets/capas/capa-colonias.js?v=0.9.62"></script>
 <!-- Colonias prioritarias para reforestar: capa de referencia del modelo de priorización -->
-<script src="assets/capas/capa-prioritarias.js?v=0.9.61"></script>
-<script src="assets/catalogos/catalogo-especies.js?v=0.9.61"></script>
-<script src="assets/catalogos/catalogo-vehiculos.js?v=0.9.61"></script>
-<script src="js/datos-ficticios.js?v=0.9.61"></script>
-<script src="js/permisos.js?v=0.9.61"></script>
-<script src="js/derivacion.js?v=0.9.61"></script>
-<script src="js/prioritarias.js?v=0.9.61"></script>
-<script src="js/solicitud.js?v=0.9.61"></script>
-<script src="js/almacen.js?v=0.9.61"></script>
-<script src="js/sesion.js?v=0.9.61"></script>
-<script src="js/referencias.js?v=0.9.61"></script>
-<script src="js/folio.js?v=0.9.61"></script>
+<script src="assets/capas/capa-prioritarias.js?v=0.9.62"></script>
+<script src="assets/catalogos/catalogo-especies.js?v=0.9.62"></script>
+<script src="assets/catalogos/catalogo-vehiculos.js?v=0.9.62"></script>
+<script src="js/datos-ficticios.js?v=0.9.62"></script>
+<script src="js/permisos.js?v=0.9.62"></script>
+<script src="js/derivacion.js?v=0.9.62"></script>
+<script src="js/prioritarias.js?v=0.9.62"></script>
+<script src="js/solicitud.js?v=0.9.62"></script>
+<script src="js/almacen.js?v=0.9.62"></script>
+<script src="js/sesion.js?v=0.9.62"></script>
+<script src="js/referencias.js?v=0.9.62"></script>
+<script src="js/folio.js?v=0.9.62"></script>
 <!-- Esquema generado de datos/esquema.json: relaciones entre tablas -->
-<script src="js/esquema.js?v=0.9.61"></script>
-<script src="js/conexion.js?v=0.9.61"></script>
-<script src="js/envio.js?v=0.9.61"></script>
-<script src="js/mapa.js?v=0.9.61"></script>
-<script src="js/foto.js?v=0.9.61"></script>
-<script src="js/jornada-activa.js?v=0.9.61"></script>
-<script src="js/formulario.js?v=0.9.61"></script>
+<script src="js/esquema.js?v=0.9.62"></script>
+<script src="js/conexion.js?v=0.9.62"></script>
+<script src="js/envio.js?v=0.9.62"></script>
+<script src="js/mapa.js?v=0.9.62"></script>
+<script src="js/foto.js?v=0.9.62"></script>
+<script src="js/jornada-activa.js?v=0.9.62"></script>
+<script src="js/formulario.js?v=0.9.62"></script>
 <!-- Sólo en la versión de prueba -->
-<script src="js/espejo.js?v=0.9.61"></script>
-<script src="js/registros.js?v=0.9.61"></script>
-<script src="js/galeria.js?v=0.9.61"></script>
-<script src="js/jornadas.js?v=0.9.61"></script>
-<script src="js/informes.js?v=0.9.61"></script>
-<script src="js/supervision.js?v=0.9.61"></script>
-<script src="js/indicadores.js?v=0.9.61"></script>
-<script src="js/demostracion.js?v=0.9.61"></script>
-<script src="js/croquis.js?v=0.9.61"></script>
-<script src="js/reportes.js?v=0.9.61"></script>
-<script src="js/catalogos.js?v=0.9.61"></script>
-<script src="js/usuarios.js?v=0.9.61"></script>
-<script src="js/excel.js?v=0.9.61"></script>
-<script src="js/carga.js?v=0.9.61"></script>
-<script src="js/configuracion.js?v=0.9.61"></script>
-<script src="js/especies-revision.js?v=0.9.61"></script>
-<script src="js/app.js?v=0.9.61"></script>
+<script src="js/espejo.js?v=0.9.62"></script>
+<script src="js/registros.js?v=0.9.62"></script>
+<script src="js/galeria.js?v=0.9.62"></script>
+<script src="js/jornadas.js?v=0.9.62"></script>
+<script src="js/informes.js?v=0.9.62"></script>
+<script src="js/supervision.js?v=0.9.62"></script>
+<script src="js/indicadores.js?v=0.9.62"></script>
+<script src="js/demostracion.js?v=0.9.62"></script>
+<script src="js/croquis.js?v=0.9.62"></script>
+<script src="js/reportes.js?v=0.9.62"></script>
+<script src="js/catalogos.js?v=0.9.62"></script>
+<script src="js/usuarios.js?v=0.9.62"></script>
+<script src="js/excel.js?v=0.9.62"></script>
+<script src="js/carga.js?v=0.9.62"></script>
+<script src="js/configuracion.js?v=0.9.62"></script>
+<script src="js/especies-revision.js?v=0.9.62"></script>
+<script src="js/app.js?v=0.9.62"></script>
 </body>
 </html>

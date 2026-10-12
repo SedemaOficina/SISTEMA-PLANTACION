@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.9.61 (Bloque 202)»**.
+Al pie de cualquier pantalla: **«Versión 0.9.62 (Bloque 203)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -484,6 +484,18 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M486 | Liber | Plantilla de carga con listas para elegir, filtro e instrucciones completas; el reporte sin la nota de capas; «Gobierno de la CDMX» y «Por quién registró» en todo el sistema | Baja | 0.9.53 (B194) | Carga masiva, Reporte, Supervisión | D274 |
 | M487 | Liber | Programas «Territorios de Paz» y «Utopías»; «Solicitud» pasa a «Solicitud especial» | Media | 0.9.61 (B202) | Nuevo registro › Registrar jornada › Programa | D283 |
 | M488 | Liber | «Seleccione un programa» y «Seleccione quién lo solicita» sólo guían: se ven sin nada elegido y no son opciones de la lista | Baja | 0.9.61 (B202) | Nuevo registro › Registrar jornada; Jornadas › Editar jornada | D283 |
+| M489 | Auditoría completa | Áreas de toque de 44 px como mínimo (ordenar tablas, paginación, × de avisos, ventanas y fichas, «Filtros», saltos, programas frecuentes), sin cambiar cómo se ven | Alta | 0.9.62 (B203) | Toda la aplicación | D284 |
+| M490 | Auditoría completa | El pie de la versión real sin «(Bloque …)» | Baja | 0.9.62 (B203) | Pie de página; Acerca del sistema | D284 |
+| M491 | Auditoría completa | «Teléfono» en lo que ve el cabo y «este equipo» en Configuración, en lugar de «dispositivo» | Baja | 0.9.62 (B203) | Nuevo registro, Configuración, avisos | D284 |
+| M492 | Auditoría completa | «Colocar punto» y «Filtros» con su icono | Baja | 0.9.62 (B203) | Nuevo registro; Registros y Jornadas en teléfono | D284 |
+| M493 | Auditoría completa | Aviso del acceso de prueba en ámbar y con el texto al día | Baja | 0.9.62 (B203) | Acceso | D284 |
+| M494 | Auditoría completa | Mensaje de la versión real sin servidor: «El acceso con el servidor todavía no está conectado…» | Baja | 0.9.62 (B203) | Acceso | D284 |
+| M495 | Auditoría completa | Historial del árbol: «Territorio recalculado» | Baja | 0.9.62 (B203) | Registros › historial | D284 |
+| M496 | Auditoría completa | Ficha de la jornada en dos renglones: cuándo y quién; dónde, prioridad, estado y solicitud | Media | 0.9.62 (B203) | Jornadas › ficha | D284 |
+| M497 | Auditoría completa | Crédito del mapa plegado en un renglón también en computadora; completo al tocarlo | Baja | 0.9.62 (B203) | Mapas en computadora | D284 |
+| M498 | Auditoría completa | Tres interlineados (1, 1.2, 1.5), vigilados por la auditoría de la hoja | Baja | 0.9.62 (B203) | Toda la aplicación | D284 |
+| M499 | Auditoría completa | Texto de código con la monoespaciada del proyecto | Baja | 0.9.62 (B203) | Lo que viaja a la base de datos | D284 |
+| M500 | Auditoría completa | En computadora las listas empiezan de 25 en 25 (en el teléfono, de 10 en 10) | Media | 0.9.62 (B203) | Registros, Jornadas, Registro de cambios | D284 |
 
 ## 2. Por hacer
 
@@ -511,4 +523,4 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 428 hechas · 7 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 440 hechas · 7 por hacer · 2 revisadas · 2 descartadas.

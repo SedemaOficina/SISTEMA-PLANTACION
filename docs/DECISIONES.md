@@ -3275,3 +3275,17 @@
   · «Seleccione un programa» y «Seleccione quién lo solicita» se ven mientras no hay nada elegido y no
     aparecen al abrir la lista. Las demás listas con «Seleccione…» (área, perfil, institución, tipo, cabo del
     relevo) no cambian.
+
+- **D284. Las 12 propuestas de la auditoría completa (bloque 203).**
+  12-10-2026. Liber aprobó las 12 propuestas de `docs/AUDITORIA-COMPLETA.md` § 3.
+  · Área de toque: los controles que se ven de 28 a 40 px responden en 44 px con un `::after` transparente,
+    junto a la regla de cada componente; se ven igual. El selector «Resultados por página» crece a 44 px a la
+    vista, porque un selector no admite área ampliada.
+  · Versión: `SRP.util.textoVersion()` lleva el bloque sólo con datos de prueba.
+  · Palabras: «teléfono» en lo que ve el cabo; «este equipo» en Configuración, en los datos de prueba y en los
+    errores que puede ver cualquiera. La auditoría vigila que «dispositivo» no vuelva a lo que se ve.
+  · El aviso del acceso de prueba es una advertencia: ámbar (`--editar`).
+  · Interlineados: 1, 1.2 y 1.5; la auditoría de la hoja marca cualquier otro. Monoespaciada: `--fuente-mono`.
+  · Crédito del mapa: un renglón a lo ancho del mapa (`container-type` en el mapa y `cqw`), en teléfono y en
+    computadora.
+  · Listas: `LISTA_PAGINA_ANCHA` (25) desde 701 px de ancho; lo que cada quien elige se sigue recordando.

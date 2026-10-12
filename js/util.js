@@ -194,6 +194,13 @@ SRP.util = {
     sel.value = f[campo];
   },
 
+  /* La versión que se muestra: con datos de prueba lleva el bloque, para ubicar lo publicado; en la
+     versión real, sólo el número */
+  textoVersion() {
+    const C = SRP.CONFIG;
+    return C.VERSION + (C.ES_FICTICIO ? ' (' + C.ETAPA + ')' : '');
+  },
+
   // «año, mes, cabo y especie»
   enumerar(lista) {
     return lista.length < 2 ? lista.join('') : lista.slice(0, -1).join(', ') + (/^[ií]/i.test(lista[lista.length - 1]) ? ' e ' : ' y ') + lista[lista.length - 1];
@@ -530,15 +537,20 @@ SRP.util = {
         (b.icono ? SRP.ICONOS.svg(b.icono, 'medio') : '') + '<span>' + esc(b.texto) + '</span></button>').join('') + '</div>' : '');
   },
 
-  /* PAGINACIÓN. Jornadas y Registros se muestran de LISTA_PAGINA en LISTA_PAGINA, con
-     «Anterior» y «Siguiente» bajo la lista. `paginar` devuelve la rebanada de la página pedida,
-     ajustada si la lista se acortó; `pintarPaginador` dibuja «Mostrando 11–20 de 85 jornadas» y
-     los botones con la lista de páginas, y se oculta cuando todo cabe en una página. */
-  // Resultados por página de cada lista (`clave` = id de su paginador); se recuerda en el dispositivo
+  /* PAGINACIÓN. Jornadas y Registros se muestran por páginas (LISTA_PAGINA, o LISTA_PAGINA_ANCHA en
+     computadora), con «Anterior» y «Siguiente» bajo la lista. `paginar` devuelve la rebanada de la
+     página pedida, ajustada si la lista se acortó; `pintarPaginador` dibuja «Mostrando 11–20 de 85
+     jornadas» y los botones con la lista de páginas, y se oculta cuando todo cabe en una página. */
+  // Resultados por página de cada lista (`clave` = id de su paginador); se recuerda en el equipo
   tamPagina(clave) {
     let t = null;
     try { t = Number(localStorage.getItem('srp_tam_pagina_' + clave)); } catch (e) { /* sin almacenamiento */ }
-    return SRP.CONFIG.TAMANOS_PAGINA.includes(t) ? t : (SRP.CONFIG.PAGINA_POR_LISTA || {})[clave] || SRP.CONFIG.LISTA_PAGINA;
+    return SRP.CONFIG.TAMANOS_PAGINA.includes(t) ? t : (SRP.CONFIG.PAGINA_POR_LISTA || {})[clave] || this.tamInicial();
+  },
+  // Con cuántos renglones empieza una lista: en computadora caben más que en el teléfono
+  tamInicial() {
+    const ancha = window.matchMedia && window.matchMedia('(min-width: 701px)').matches;
+    return ancha ? SRP.CONFIG.LISTA_PAGINA_ANCHA : SRP.CONFIG.LISTA_PAGINA;
   },
 
   /* Las páginas que se ofrecen como botones: la primera, la última y las vecinas de la actual, con
@@ -579,7 +591,7 @@ SRP.util = {
   },
 
   paginar(lista, pagina, clave) {
-    const tam = clave ? this.tamPagina(clave) : SRP.CONFIG.LISTA_PAGINA;
+    const tam = clave ? this.tamPagina(clave) : this.tamInicial();
     const paginas = Math.max(1, Math.ceil(lista.length / tam));
     const p = Math.min(Math.max(1, pagina || 1), paginas);
     const inicio = (p - 1) * tam;

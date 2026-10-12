@@ -183,7 +183,7 @@ SRP.informes = {
     // Las notas del final, juntas: si no caben en lo que queda de la página, pasan todas a la siguiente
     salto(30);
     nota('Cuentan sólo las jornadas cerradas: una jornada abierta todavía puede cambiar. La semana va de lunes a domingo. Los árboles eliminados y editados se cuentan aparte, como constancia, y no cambian la cifra de árboles.');
-    nota('Cifra de ejemplares registrados en el sistema. No equivale necesariamente al total plantado. Reúne lo capturado en este dispositivo.');
+    nota('Cifra de ejemplares registrados en el sistema. No equivale necesariamente al total plantado. Reúne lo capturado en este equipo.');
     if (SRP.CONFIG.ES_FICTICIO) { doc.setTextColor(...C.ficticio); doc.setFontSize(8); salto(6); doc.text('Documento de prueba con datos ficticios. Sin validez oficial.', M, y); y += 5; }
     doc.setFontSize(8); doc.setTextColor(...C.gris); salto(5);
     doc.text('Generado por ' + SRP.util.nombreCompleto(SRP.sesion.usuario) + ' (' + SRP.permisos.de(SRP.sesion.usuario).etiqueta + ').', M, y);

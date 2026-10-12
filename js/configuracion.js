@@ -62,7 +62,7 @@ SRP.configuracion = {
       ] },
       { titulo: 'Fotografías y listas', filas: [
         ['Tamaño de la fotografía', C.FOTO.ANCHO_MAX + ' × ' + C.FOTO.ALTO_MAX + ' px', 'Las fotografías se reducen a este tamaño máximo al guardarse, para no llenar el teléfono.'],
-        ['Renglones por página', String(C.LISTA_PAGINA), 'Jornadas, Registros y el registro de cambios empiezan con este número; cada lista ofrece ' + SRP.util.enumerar(C.TAMANOS_PAGINA.map(String)) + ' en «Resultados por página», y el teléfono recuerda lo elegido.']
+        ['Renglones por página', C.LISTA_PAGINA + ' en teléfono · ' + C.LISTA_PAGINA_ANCHA + ' en computadora', 'Jornadas, Registros y el registro de cambios empiezan con este número; cada lista ofrece ' + SRP.util.enumerar(C.TAMANOS_PAGINA.map(String)) + ' en «Resultados por página», y cada equipo recuerda lo elegido.']
       ] }
     ];
   },
@@ -168,9 +168,9 @@ SRP.configuracion = {
     } catch (e) { /* sin estimación */ }
     const grupos = [
       ['Sistema', [
-        ['Versión', C.VERSION + ' (' + C.ETAPA + ')'],
+        ['Versión', SRP.util.textoVersion()],
         ['Datos', C.ES_FICTICIO ? 'De prueba: no usar para reportes oficiales' : 'Reales'],
-        ['Base del dispositivo', C.DB_NOMBRE + ', versión ' + C.DB_VERSION],
+        ['Base de este equipo', C.DB_NOMBRE + ', versión ' + C.DB_VERSION],
         ['Acceso', 'Cuentas del sistema' + (C.AUTENTICACION.PROVEEDOR === 'simulado' ? ' (de prueba: no se verifica la contraseña)' : '')]
       ]],
       ['Capas geográficas', [
@@ -180,7 +180,7 @@ SRP.configuracion = {
         // En producción, CARTO para calles y Esri para satélite; mientras no se conecte CARTO, todo es Esri
         ['Mapa base', 'Esri (provisional)']
       ]],
-      ['Este dispositivo', [
+      ['Este equipo', [
         ['Pendientes de envío', pendientes === null ? 'No se pudo leer' : pendientes.length === 0 ? 'Ninguno' : pendientes.length.toLocaleString('es-MX') + (pendientes.length === 1 ? ' registro' : ' registros')],
         ['Espacio usado', espacio]
       ]]
