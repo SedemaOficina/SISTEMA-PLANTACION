@@ -4242,3 +4242,50 @@ la función nueva, volvió a su lugar, y `VERSION` entró al árbol del README. 
 - prueba completa: 1,440 comprobaciones, 0 fallas;
 - `auditoria.py`: 144 comprobaciones, 0 hallazgos;
 - `auditoria_css.py`: 0 hallazgos.
+
+## Bloque 208 — El servidor en TypeScript, con la forma de un módulo del SIA (12-10-2026)
+
+Sin cambio en la aplicación: la versión 0.9.64 es la del bloque 207. Fase 2 de `docs/ALINEACION-SIA.md`,
+aprobada el 08-10-2026 (D288). Se trabajó al mismo tiempo que el bloque 207, en otra sesión; su código
+llegó a git antes (`2c46ac9`) y esta entrada, después del 207.
+
+**Qué cambió.**
+- `servidor/src/modulos/srp/`, nuevo: `config.ts`, `contrasenas.ts`, `sesiones.ts`, `transaccion.ts`,
+  `errores.ts`, `acceso.ts`, `cuentas.ts` y `rutas.ts`, con `crearRutasSrp(pool)`. Es lo único que viaja al
+  SIA; el backend central lo monta en `/api/srp` con `SRP_DB_USER` y `SRP_DB_PASS`.
+- `errores.ts` traduce como el SIA: JSON mal formado (400), demasiado grande (413), base sin conexión (503),
+  permiso que le falta a `srp_api` (500, nombrado en el registro), correo repetido (409). El detalle va sólo
+  al registro; la respuesta sigue siendo `{ codigo, mensaje }`.
+- `servidor/src/independiente.ts` e `iniciar.ts`: el módulo fuera del SIA, para desarrollo y pruebas.
+  `servidor/bd.d.ts`: los tipos de `bd.js`.
+- `servidor/deploy/srp-cuenta-inicial.mjs`: la primera cuenta, como las da el SIA. Imprime sólo el SQL; la
+  temporal sale una vez por la salida de errores y nunca toca la base. Sustituye a `cuenta-inicial.js`.
+- `package.json`: `build`, `typecheck` y `test`, que compila antes; Express 5, TypeScript 7 y `tsup` en las
+  versiones de `sia-backend`. `tsconfig.check.json` como el del SIA, `tsup.config.ts`, y `dist/` en
+  `.gitignore`. Los archivos JS anteriores, en `_to_delete/servidor-js-antes-de-typescript/`.
+- `servidor/README.md`: el código, las órdenes y la instalación con la primera cuenta.
+  `docs/ALINEACION-SIA.md`: fase 2 y § 6.9 hechas. `docs/FASE2-Y-TRASPASO.md`: las rutas nuevas. README: la
+  carpeta `servidor/`.
+- El paquete para el SIA, `srp-fase2-2026-10-12`, en `servidor/local/entrega-sia/`, fuera del repositorio
+  porque el diff y los archivos completos llevan líneas de `sia-backend`. Contiene los guiones, el diff,
+  los archivos completos, el guion de la primera cuenta, el fragmento del servidor web y el LEEME con la
+  instalación en tres pasos, más el manifiesto, el ZIP y su `.sha256`. Todavía no se entrega.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada: la aplicación todavía no habla con el servidor.
+
+**Verificación.** `npm run typecheck` sin errores. Servidor: 25 pruebas, 0 fallas. La nueva comprueba que
+el guion de la primera cuenta da una sola, con el resumen de la temporal que entrega, y que la segunda vez
+se niega. En una copia desechable de `sia-backend`, en su versión vigente al 12-10-2026:
+- el diff aplica limpio;
+- `typecheck` y `build` pasan sin errores;
+- el binario del SIA, con el módulo adentro y contra la base local, pasa 10 de 10 en la prueba de humo.
+  Comprueba que entra como `srp_api` sin superusuario, el 401 único, la cookie con sus cuatro atributos,
+  `no-store`, las cabeceras de helmet, el 404 propio, la salida y que `/api/health` sigue respondiendo.
+
+Las sumas del ZIP y del manifiesto coinciden. No se probó en el servidor del SIA ni con nginx.
+`npm audit` da un aviso bajo de esbuild, el mismo que tiene `sia-backend`.
+
+**Siguiente paso.** Entregar el paquete al SIA cuando Liber lo decida. Después, la fase 3:
+- en el servidor, los permisos por perfil e institución, y la edición de cuentas;
+- el registro de entradas como `acceso.bitacora`;
+- el límite por procedencia con `procedencia.ts` del SIA.
