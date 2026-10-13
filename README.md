@@ -399,6 +399,17 @@ temporal del equipo (`srp_pruebas`). Dos variables de entorno cambian lo que vie
 esos archivos. El servidor debe servir la carpeta del proyecto: `prueba.py` levanta además un
 segundo servidor propio en el puerto 8094 para probar el cambio de versión.
 
+Otras dos variables sirven para probar lo que no se ve con Chromium un día cualquiera:
+- `SRP_MOTOR=webkit` corre con el motor de Safari (`python3 -m playwright install webkit`). El de
+  Playwright para Windows no tiene campo de fecha ni sirve sin red con el service worker, así que la
+  suite completa no pasa en él; sí sus secciones que no dependen de eso. Firefox (`firefox`) también se
+  puede elegir.
+- `SRP_HOY=AAAA-MM-DD` corre como si ese fuera el día, en Python y en el navegador. El lunes 1 de enero
+  de 2029 prueba a la vez el inicio de semana, de mes y de año.
+
+Cada carga de la app espera la marca `data-listo` que pone `js/app.js` al terminar de arrancar, no un
+tiempo fijo.
+
 | Archivo | Qué comprueba |
 |---|---|
 | `prueba.py` | Recorrido completo: acceso, captura, listados, filtros, PDF, catálogos y cuentas, en los tres perfiles; también el ciclo de la base (sello, versión) y la seguridad ante datos alterados |

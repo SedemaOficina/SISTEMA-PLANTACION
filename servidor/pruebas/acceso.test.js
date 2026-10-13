@@ -141,6 +141,20 @@ test('tras varios intentos fallidos la cuenta se bloquea; restablecer la desbloq
   assert.deepEqual([e.estado, e.datos.debeCambiar], [200, true]);
 });
 
+test('intentos simultáneos no pasan del máximo: los que sobran encuentran la cuenta bloqueada', async () => {
+  const a = cliente();
+  await a.pedir('POST', '/acceso/entrar', { correo: ADMIN.correo, contrasena: ADMIN.clave });
+  const correo = 'cabo.prueba.simultanea@ejemplo.local';
+  const alta = await a.pedir('POST', '/cuentas', { correo, nombre_completo: 'Cabo Prueba Simultánea', organizacion_id: 'o-prueba-acceso', cargo_rol: 'Cabo', perfil: 'CABO' });
+  assert.equal(alta.estado, 201);
+  const r = await Promise.all(Array.from({ length: 8 }, (_, i) => cliente().pedir('POST', '/acceso/entrar', { correo, contrasena: 'equivocada simultánea ' + i })));
+  const codigos = r.map(x => x.datos.codigo).sort();
+  assert.deepEqual(codigos, ['BLOQUEADA', 'BLOQUEADA', 'BLOQUEADA', 'BLOQUEADA', 'BLOQUEADA', 'INCORRECTO', 'INCORRECTO', 'INCORRECTO'],
+    'se verifican a lo más tres contraseñas; las demás no llegan a probarse');
+  const c = (await admin.query('SELECT intentos_fallidos, bloqueada_hasta > now() AS bloqueada FROM srp.credenciales WHERE usuario_id = $1', [alta.datos.usuario.id])).rows[0];
+  assert.deepEqual([c.intentos_fallidos, c.bloqueada], [3, true]);
+});
+
 test('desactivar una cuenta cierra sus sesiones y le impide entrar; la Administración no se desactiva a sí misma', async () => {
   const a = cliente();
   await a.pedir('POST', '/acceso/entrar', { correo: ADMIN.correo, contrasena: ADMIN.clave });

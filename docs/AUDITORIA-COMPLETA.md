@@ -107,6 +107,52 @@ ventanas, «Deshacer», los botones del punto en el mapa y los enlaces de las ta
 
 ## 4. Lo que esta auditoría no cubre
 
-- El servidor (`servidor/`): se revisa al terminar sus fases 2 a 4.
-- Teléfonos reales, VoiceOver y TalkBack: todo se midió en Chromium.
+- El servidor (`servidor/`): sus guiones y su acceso se revisan en la sección 5; el resto, al terminar sus fases 2 a 4.
+- Teléfonos reales, VoiceOver y TalkBack: todo se midió en Chromium y, desde la sección 5, también en WebKit.
 - Los PDF y el Excel se revisaron en `docs/REVISION-ARCHIVOS.md`; aquí no se repitieron.
+
+## 5. Antes del servidor: navegadores, pruebas, servidor y librerías (bloque 204)
+
+12-10-2026 · versión 0.9.63. Liber pidió dejar todo limpio y probado antes de la fase 2 del servidor. Se
+cubrió lo que las auditorías anteriores dejaron fuera a propósito.
+
+### Otros navegadores
+
+| # | Hallazgo | Estado |
+|---|---|---|
+| 10 | Todo se había probado sólo en Chromium. | **Hecho**: la prueba elige el motor con `SRP_MOTOR` (`webkit` es el de Safari). En WebKit, 57 secciones independientes pasan completas: 523 comprobaciones, 0 fallas, después de corregir la prueba del hallazgo 12. |
+| 11 | El WebKit de Playwright para Windows no es Safari del iPhone: no tiene campo de fecha (lo trata como texto) ni `overscroll-behavior`, y se cae al recargar sin red con el service worker. Por eso la suite completa no corre en él de principio a fin. | **Límite de la herramienta**: en WebKit se bloquea el service worker y lo de sin señal se prueba en Chromium. La prueba en un Safari real queda en M170 (GitHub Actions con macOS) y M46. |
+| 12 | Una prueba dependía del orden en que el navegador avisa que se salió de un campo: Safari reparte el par de coordenadas al salir de Latitud, antes que Chromium. | **Corregido** en la prueba; en el uso real (escribir el par y tocar «Colocar punto») las dos funcionan igual. |
+| 13 | Escribir de golpe los 17,800 árboles de demostración tardó 11 minutos en WebKit y 2 segundos en Chromium. Leerlos, 167 ms contra 142; abrir Registros, 0.4 s contra 0.3; Jornadas, 0.9 s contra 0.2. | **Para la fase 4**: lo que baje del servidor a un teléfono se escribe por partes, y se mide en un iPhone real antes de darlo por bueno. El uso diario (un árbol a la vez, leer listas) no se afecta. |
+| 14 | El código no usa nada que Safari no tenga: fechas en formato ISO, sin «lookbehind» en expresiones regulares, y lo reciente con su alternativa. La hoja pide iOS 15.4 o posterior (`<dialog>`, `:has()`); en iOS 15 el crédito del mapa usa el ancho de la pantalla. | Revisado y bien. |
+| 15 | Firefox no abre en este equipo: le falta una biblioteca de Microsoft (Visual C++). | No se instaló: cambia el sistema. Firefox casi no se usa en teléfonos. |
+
+### Pruebas confiables
+
+| # | Hallazgo | Estado |
+|---|---|---|
+| 16 | Las pruebas esperaban tiempos fijos después de abrir la app; en un navegador más lento o un equipo ocupado se adelantaban. | **Corregido**: la app marca `data-listo` al terminar de arrancar (también si se detiene por un error) y la prueba espera esa marca en cada carga y recarga. |
+| 17 | Una prueba que depende del día solo se descubre el día en que falla. | **Hecho**: `SRP_HOY=AAAA-MM-DD` corre la prueba como si fuera ese día, en Python y en el navegador. Corrida completa como si fuera el lunes 1 de enero de 2029 (inicio de semana, de mes y de año a la vez): salieron diez comprobaciones que dependían del día —años escritos a mano, «Este año» con árboles de ayer o de agosto, Supervisión vacía un 1 de enero—, una del peso de un PDF y una espera fija. **Corregidas**: calculan lo esperado con la fecha del día. En esa fecha pasa la suite completa hasta el mapa de prioridad y, de ahí al final, sus 26 secciones por separado. |
+
+### Servidor actual
+
+| # | Hallazgo | Estado |
+|---|---|---|
+| 18 | **Bloqueo por intentos burlable.** El contador de intentos fallidos se leía y se escribía en dos pasos: ocho contraseñas mandadas al mismo tiempo se probaban todas y la cuenta no se bloqueaba. | **Corregido**: cada intento se anota en la base, en un solo paso, antes de verificar la contraseña. Prueba nueva: de ocho simultáneos se verifican tres (el máximo de la prueba) y cinco encuentran la cuenta bloqueada; con el código anterior la prueba falla. |
+| 19 | La contraseña temporal repartía las letras con un pequeño sesgo (el residuo de un byte). | **Corregido**: `crypto.randomInt`, parejo entre las 31 letras. |
+| 20 | Guiones SQL: permisos mínimos de `srp_api`, bitácora que sólo crece, funciones sin permiso público, instalación en una sola transacción. | Revisado y bien; 22 pruebas del servidor, 0 fallas. |
+
+Para las fases 2 a 4, sin cambio hoy:
+- **Índices del servidor** para las consultas de Supervisión (`cabo_id` y `fecha_plantacion` de los árboles, `fecha` de las jornadas): se agregan cuando existan las consultas, como `indices_servidor` en el esquema, porque `indices` es también lo que tiene el teléfono.
+- **Límite por equipo** en `/acceso/entrar`, además del bloqueo por cuenta, para que no se pruebe una contraseña en muchas cuentas: con el formato de acceso del SIA (fase 3).
+- Una cuenta bloqueada responde distinto de una que no existe: así se sabe que el correo tiene cuenta. Se acepta: decir «bloqueada» ayuda a quien se equivocó, y los correos son institucionales.
+- El cuerpo de las peticiones admite 100 KB: la recepción con fotografías (fase 4) necesitará más.
+- Express tiene una versión menor nueva (5.3.0): se sube al empaquetar en la fase 2.
+
+### Librerías y migraciones
+
+| # | Hallazgo | Estado |
+|---|---|---|
+| 21 | Dos versiones de `vendor/` estaban «por confirmar». | **Corregido**: Leaflet Gesture Handling 1.2.2 (idéntico byte a byte al publicado) y Turf 6.x (el código incluido es el mismo de la 6.2 a la 6.5), anotadas en `vendor/LICENCIAS.md`. Leaflet, jsPDF y AutoTable están en su última versión; el servidor, sin avisos de seguridad. |
+| 22 | La imagen del encabezado del teléfono se descargaba también en computadora (precarga sin condición). | **Corregido**: la precarga sólo en pantallas de teléfono. |
+| 23 | Migraciones de la base del teléfono. | Revisado y bien: cada una, de la 2 a la 9, tiene su prueba desde la anterior, y otra sube de la 2 a la 9 de un jalón. La base real nace en la 9: ningún dato real pasa por las viejas. |

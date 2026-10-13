@@ -21,7 +21,7 @@ CREATE TABLE srp.credenciales (
 COMMENT ON TABLE srp.credenciales IS 'La contraseña de cada cuenta, derivada con sal; nunca en claro. La da y la restablece sólo la Administración global, como temporal de un solo uso.';
 COMMENT ON COLUMN srp.credenciales.derivada IS 'Algoritmo, parámetros, sal y resultado en un solo texto.';
 COMMENT ON COLUMN srp.credenciales.temporal IS 'Verdadero mientras sea la temporal que dio la Administración: el primer acceso obliga a cambiarla.';
-COMMENT ON COLUMN srp.credenciales.intentos_fallidos IS 'Intentos fallidos seguidos; vuelve a 0 al entrar.';
+COMMENT ON COLUMN srp.credenciales.intentos_fallidos IS 'Intentos seguidos sin entrar; se anota cada uno antes de verificar y vuelve a 0 al entrar.';
 COMMENT ON COLUMN srp.credenciales.bloqueada_hasta IS 'Tras varios intentos fallidos la cuenta no entra hasta esta hora.';
 COMMENT ON COLUMN srp.credenciales.cambiada_por_id IS 'La propia cuenta o la Administración global que la restableció.';
 

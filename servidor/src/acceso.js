@@ -57,33 +57,35 @@ export function rutasAcceso({ grupo, config }) {
       const correo = String((req.body || {}).correo || '').trim().toLowerCase();
       const contrasena = String((req.body || {}).contrasena || '');
       const incorrecto = () => error(res, 401, 'INCORRECTO', 'Correo o contraseña incorrectos.');
+      const bloqueada = (hasta) => error(res, 423, 'BLOQUEADA', 'Demasiados intentos fallidos. Podrá intentarlo de nuevo a las ' +
+        new Date(hasta).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Mexico_City' }) +
+        ', o pida a la Administración global que restablezca su contraseña.');
       if (!correo || !contrasena) return error(res, 400, 'FALTAN_DATOS', 'Escriba su correo y su contraseña.');
       const { rows } = await grupo.query(`
-        SELECT u.*, o.activo AS institucion_activa, c.derivada, c.temporal, c.intentos_fallidos, c.bloqueada_hasta,
+        SELECT u.*, o.activo AS institucion_activa, c.derivada, c.temporal, c.bloqueada_hasta,
                c.bloqueada_hasta > now() AS bloqueada, c.temporal AND c.temporal_expira_en <= now() AS temporal_vencida
           FROM srp.usuarios u JOIN srp.instituciones o ON o.id = u.organizacion_id
           LEFT JOIN srp.credenciales c ON c.usuario_id = u.id
          WHERE u.correo = $1`, [correo]);
       const u = rows[0];
       if (!u || !u.derivada) { await verificarSombra(contrasena); return incorrecto(); }
-      if (u.bloqueada) {
-        const hasta = new Date(u.bloqueada_hasta).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Mexico_City' });
-        return error(res, 423, 'BLOQUEADA', 'Demasiados intentos fallidos. Podrá intentarlo de nuevo a las ' + hasta + ', o pida a la Administración global que restablezca su contraseña.');
-      }
-      if (!(await verificar(contrasena, u.derivada))) {
-        const intentos = u.intentos_fallidos + 1;
-        if (intentos >= A.intentosMaximos) {
-          await grupo.query("UPDATE srp.credenciales SET intentos_fallidos = 0, bloqueada_hasta = now() + make_interval(mins => $2) WHERE usuario_id = $1", [u.id, A.bloqueoMinutos]);
-        } else {
-          await grupo.query('UPDATE srp.credenciales SET intentos_fallidos = $2 WHERE usuario_id = $1', [u.id, intentos]);
-        }
-        return incorrecto();
-      }
-      // La contraseña es correcta: ya se puede decir por qué no entra
+      if (u.bloqueada) return bloqueada(u.bloqueada_hasta);
+      /* Cada intento se anota antes de verificar la contraseña, en un solo paso de la base: intentos
+         simultáneos no pasan del máximo. El que llega al máximo bloquea la cuenta; vencido el bloqueo, la
+         cuenta vuelve a contar desde uno. */
+      const turno = (await grupo.query(`UPDATE srp.credenciales SET
+            intentos_fallidos = CASE WHEN bloqueada_hasta IS NULL THEN intentos_fallidos + 1 ELSE 1 END,
+            bloqueada_hasta = CASE WHEN (CASE WHEN bloqueada_hasta IS NULL THEN intentos_fallidos + 1 ELSE 1 END) >= $2
+                                   THEN now() + make_interval(mins => $3) END
+          WHERE usuario_id = $1 AND (bloqueada_hasta IS NULL OR bloqueada_hasta <= now())
+          RETURNING bloqueada_hasta`, [u.id, A.intentosMaximos, A.bloqueoMinutos])).rows[0];
+      if (!turno) return bloqueada((await grupo.query('SELECT bloqueada_hasta FROM srp.credenciales WHERE usuario_id = $1', [u.id])).rows[0].bloqueada_hasta);
+      if (!(await verificar(contrasena, u.derivada))) return incorrecto();
+      // La contraseña es correcta: la cuenta vuelve a contar desde cero, y ya se puede decir por qué no entra
+      await grupo.query('UPDATE srp.credenciales SET intentos_fallidos = 0, bloqueada_hasta = NULL WHERE usuario_id = $1', [u.id]);
       if (!u.activo) return error(res, 403, 'CUENTA_INACTIVA', 'Su cuenta está desactivada. Consulte a la Administración global.');
       if (!u.institucion_activa) return error(res, 403, 'INSTITUCION_INACTIVA', 'Su institución está desactivada. Consulte a la Administración global.');
       if (u.temporal_vencida) return error(res, 403, 'TEMPORAL_VENCIDA', 'Su contraseña temporal venció. Pida otra a la Administración global.');
-      await grupo.query('UPDATE srp.credenciales SET intentos_fallidos = 0, bloqueada_hasta = NULL WHERE usuario_id = $1', [u.id]);
       const testigo = await S.abrir(grupo, u.id, { agente: req.get('user-agent') || '', inactividadDias: A.inactividadDias });
       S.cookie(res, testigo, { ruta: config.ruta, segura: config.cookieSegura });
       res.json({ usuario: cuentaPublica(u), debeCambiar: u.temporal });

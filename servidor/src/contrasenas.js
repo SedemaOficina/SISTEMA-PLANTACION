@@ -38,8 +38,8 @@ export async function verificarSombra(texto) {
    confunden (0 y o, 1, l e i). La da la Administración global y sirve una sola vez. */
 const LETRAS = 'abcdefghjkmnpqrstuvwxyz23456789';
 export function temporal() {
-  const b = crypto.randomBytes(12);
-  const t = [...b].map(x => LETRAS[x % LETRAS.length]).join('');
+  // randomInt reparte parejo entre las 31 letras; el residuo de un byte favorecería a las primeras
+  const t = Array.from({ length: 12 }, () => LETRAS[crypto.randomInt(LETRAS.length)]).join('');
   return t.slice(0, 4) + '-' + t.slice(4, 8) + '-' + t.slice(8, 12);
 }
 

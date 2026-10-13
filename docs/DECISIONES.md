@@ -3289,3 +3289,17 @@
   · Crédito del mapa: un renglón a lo ancho del mapa (`container-type` en el mapa y `cqw`), en teléfono y en
     computadora.
   · Listas: `LISTA_PAGINA_ANCHA` (25) desde 701 px de ancho; lo que cada quien elige se sigue recordando.
+
+- **D285. Súper auditoría antes del servidor (bloque 204).**
+  12-10-2026. Liber pidió dejar todo limpio y probado antes de la fase 2, en cuatro frentes: otros
+  navegadores, pruebas confiables, el servidor actual y librerías y migraciones. Informe en
+  `docs/AUDITORIA-COMPLETA.md` § 5.
+  · La prueba elige el motor (`SRP_MOTOR`) y la fecha (`SRP_HOY`), y espera la marca `data-listo` que pone la
+    app al arrancar, no tiempos fijos. El WebKit de Playwright para Windows no sustituye a Safari: sin campo
+    de fecha ni `overscroll-behavior`, y se cae sin red con el service worker; Safari real queda en M170 y M46.
+  · Servidor: cada intento de acceso se anota en la base antes de verificar la contraseña, en un solo paso;
+    antes, intentos simultáneos no bloqueaban la cuenta. La temporal reparte parejo sus letras.
+  · Pruebas que dependían del día (años escritos a mano, «Este año» con datos de agosto, Supervisión en un
+    lunes 1): calculan lo esperado con la fecha del día.
+  · Para la fase 4: lo que baje del servidor al teléfono se escribe por partes y se mide en un iPhone real;
+    escribir 17,800 árboles de golpe tomó 11 minutos en WebKit.

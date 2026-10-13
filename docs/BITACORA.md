@@ -4105,3 +4105,44 @@ debajo de 44 px salvo el enlace «Saltar al contenido» (sólo con teclado); el 
 anterior a la versión 16 el crédito usa el ancho de la pantalla en lugar del del mapa.
 
 **Siguiente paso.** La fase 2 del servidor.
+
+## Bloque 204 — Súper auditoría antes del servidor (12-10-2026)
+
+Versión 0.9.63. Liber pidió dejar todo limpio y probado antes de la fase 2 del servidor, en cuatro frentes:
+otros navegadores, pruebas confiables, el servidor actual y librerías y migraciones. Informe en
+`docs/AUDITORIA-COMPLETA.md` § 5 (D285).
+
+**Qué cambió.**
+- `servidor/src/acceso.js`: cada intento de acceso se anota en la base, en un solo paso, antes de verificar la
+  contraseña; con el código anterior, ocho intentos simultáneos se probaban todos y la cuenta no se bloqueaba.
+  La cuenta vuelve a contar desde cero en cuanto la contraseña es correcta. `servidor/src/contrasenas.js`: la
+  temporal reparte parejo sus 31 letras (`crypto.randomInt`). Prueba nueva de intentos simultáneos, que falla
+  con el código anterior. `servidor/README.md` y el comentario de `credenciales.intentos_fallidos`, al día.
+- `js/app.js`: `marcarListo()` pone `data-listo` al terminar de arrancar, también si se detiene por un error.
+  `index.html`: la imagen del encabezado del teléfono se precarga sólo en pantallas de teléfono.
+- `pruebas/prueba.py`: `SRP_MOTOR` elige el motor (en WebKit se bloquea el service worker) y `SRP_HOY` la fecha,
+  en Python y en el navegador; cada carga y recarga espera `data-listo`. Diez comprobaciones que dependían del
+  día calculan lo esperado con la fecha (años escritos a mano, «Este año» con árboles de ayer o de agosto,
+  Supervisión vacía un 1 de enero, con la utilidad `anio_con_datos`); el aviso del relevo espera su ventana;
+  el peso del reporte admite hasta 350 KB, porque varía con la imagen del croquis; una prueba de coordenadas
+  vacía la longitud antes de escribir el par. Dos títulos de sección con números de bloque, fuera.
+- `vendor/LICENCIAS.md`: Leaflet Gesture Handling 1.2.2 y Turf 6.x, confirmadas. README: cómo correr las
+  pruebas en WebKit y con otra fecha.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada a la vista. Propuesta pendiente (M501): la ventana de datos de
+demostración dice «casi tres años», y con cada año que pasa son más.
+
+**Verificación.**
+- `pruebas/prueba.py` completa, sola, con la fecha de hoy: 1,437 comprobaciones, 0 fallas, sin errores de
+  consola.
+- Como si fuera el lunes 1 de enero de 2029: la suite completa hasta la sección del mapa de prioridad, y de
+  ahí al final por secciones (26, sin fallas), después de corregir las pruebas que dependían del día.
+- WebKit: 57 secciones independientes pasan completas (523 comprobaciones); 19 se omitieron porque cargan los
+  datos de demostración, que en WebKit tardan 11 minutos; 3 dependen de la sesión principal. La suite completa
+  no corre en el WebKit de Windows (sin campo de fecha, sin `overscroll-behavior`, se cae sin red con el
+  service worker). Firefox no abre en este equipo: le falta una biblioteca de Microsoft que no se instaló.
+- Servidor: 22 pruebas, 0 fallas. `pruebas/auditoria.py`: 144, 0 hallazgos; hoja de estilos, 0; eslint sin
+  avisos en la app ni en el servidor.
+- No se probó en un iPhone ni en un Android reales.
+
+**Siguiente paso.** La fase 2 del servidor.

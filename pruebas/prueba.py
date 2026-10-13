@@ -10,6 +10,19 @@ def sal(nombre): return os.path.join(SALIDA, nombre)
 # La fecha de hoy se calcula: escrita a mano, la prueba caducaba al día siguiente (los
 # registros «de hoy» dejaban de serlo y el filtro Hoy quedaba vacío)
 import datetime
+# SRP_HOY=AAAA-MM-DD corre la prueba como si ese fuera el día, en Python y en el navegador, a la hora de
+# ahora: sirve para probar los bordes (un lunes, el día 1, el 1 de enero)
+SRP_HOY=os.environ.get('SRP_HOY')
+DESFASE=datetime.timedelta(0)
+if SRP_HOY:
+    _Fecha = datetime.date
+    DESFASE = _Fecha.fromisoformat(SRP_HOY) - _Fecha.today()
+    class _FechaMovida(_Fecha):
+        @classmethod
+        def today(cls):
+            d = _Fecha.today() + DESFASE
+            return cls(d.year, d.month, d.day)
+    datetime.date = _FechaMovida
 HOY=datetime.date.today().isoformat()
 MESES=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC']
 HOY_TXT=HOY[8:10]+'-'+MESES[int(HOY[5:7])-1]+'-'+HOY[0:4]   # como lo pinta SRP.util.formatearFecha
@@ -44,6 +57,12 @@ def abrir_sup(pg):
     # Los desgloses de Supervisión van plegados en el teléfono: las comprobaciones de su contenido los abren
     esperar(pg, "!!SRP.supervision.modelo", 8000)
     pg.evaluate("SRP.supervision.abrirTodo()"); pg.wait_for_timeout(400)
+
+def anio_con_datos(pg, espera=1500):
+    """Supervisión en «Año». A principios de enero el año en curso todavía no tiene jornadas cerradas y se
+    ve vacío: entonces se pasa al anterior, para probar con datos cualquier día."""
+    pg.click('#sup-tipos .chip[data-tipo=anio]'); pg.wait_for_timeout(espera)
+    if not pg.evaluate("!!document.querySelector('#vista-supervision .sup-cifras')"): pg.click('#sup-anterior'); pg.wait_for_timeout(espera)
 
 def confirmar_escribiendo(pg, texto):
     # Lo que no se deshace pide escribir una palabra: el botón no se activa hasta que coincide
@@ -108,8 +127,27 @@ def registrar(pg, busqueda, especie_id, programa='p-refor', fecha=None, foto=Non
     pg.wait_for_timeout(300)
     return editando or pg.evaluate("SRP.formulario.estado.ultimoGuardado")
 
+# Cargar o recargar la app espera a que termine de arrancar (la marca data-listo que pone js/app.js), no
+# un tiempo fijo: un navegador más lento o un equipo ocupado no adelantan la prueba
+from playwright.sync_api import Page
+_ir, _recargar = Page.goto, Page.reload
+def _esperar_arranque(pg):
+    # Se espera el elemento, no una consulta: en WebKit, una consulta a media navegación no regresa nunca
+    try: pg.wait_for_selector('html[data-listo="true"]', state='attached', timeout=15000)
+    except Exception: pass   # no arrancó (una prueba que la rompe a propósito): sigue la prueba
+def _goto(self, url, *a, **k):
+    r = _ir(self, url, *a, **k)
+    if url.startswith(BASE): _esperar_arranque(self)
+    return r
+def _reload(self, *a, **k):
+    r = _recargar(self, *a, **k)
+    if self.url.startswith(BASE): _esperar_arranque(self)
+    return r
+Page.goto, Page.reload = _goto, _reload
+# El motor del navegador: Chromium por omisión; SRP_MOTOR=webkit (el de Safari en iPhone) o firefox
+MOTOR=os.environ.get('SRP_MOTOR','chromium')
 with sync_playwright() as p:
-    b=p.chromium.launch()
+    b=getattr(p, MOTOR).launch()
     # Las ventanas de jornada completa y de árboles de más esperan respuesta. Casi ninguna prueba
     # trata de ellas: en cuanto abren se contestan solas —seguir registrando, registrar el árbol,
     # dejar lo previsto como estaba—. Las secciones que sí las prueban piden su contexto con `contexto_llano`.
@@ -128,9 +166,18 @@ with sync_playwright() as p:
       if (window.__filtrosComoEnTelefono) return;
       const p = document.getElementById('jornada-panel-filtros'); if (p) p.dataset.abierto = 'true';
     });"""
-    _contexto_base = b.new_context
+    _contexto_nuevo = b.new_context
+    def _contexto_base(*a, **k):
+        # Firefox no emula un teléfono (is_mobile): el resto de la prueba vale igual
+        if MOTOR == 'firefox': k.pop('is_mobile', None)
+        # El WebKit de Playwright en Windows se cae al recargar sin red con el service worker: en él se
+        # bloquea, y lo de sin señal se prueba en Chromium
+        if MOTOR == 'webkit': k.setdefault('service_workers', 'block')
+        return _contexto_nuevo(*a, **k)
     def contexto_llano(*a, **k):
         c = _contexto_base(*a, **k)
+        # Con SRP_HOY el reloj de la página también se mueve; el tiempo sigue corriendo desde ahí
+        if SRP_HOY: c.clock.install(time=datetime.datetime.now(datetime.timezone.utc) + DESFASE)
         c.add_init_script(PUNTO_JORNADA)
         c.add_init_script(FILTROS_ABIERTOS)
         return c
@@ -713,9 +760,11 @@ with sync_playwright() as p:
     ok([c for c in pg.eval_on_selector_all('#filtro-periodo .chip','b=>b.map(x=>x.dataset.rapido)')]==['mes','mes-pasado','anio'],'dentro de «Un periodo» están Este mes, Mes pasado y Este año')
     pg.click('#filtro-periodo [data-rapido=anio]'); pg.wait_for_timeout(300)
     hoy_a=pg.evaluate("SRP.util.fechaHoy().slice(0, 4)")
-    ok('Total: 4 ' in pg.inner_text('#registros-total') and pg.input_value('#filtro-desde')==hoy_a+'-01-01' and pg.input_value('#filtro-hasta')==hoy_a+'-12-31'
+    # Los del año en curso: cuatro casi todo el año; en enero, el de agosto ya es del año anterior
+    n_a=pg.evaluate("SRP.registros.visibles.filter(r => r.fecha_plantacion.startsWith(SRP.util.fechaHoy().slice(0, 4))).length")
+    ok(n_a>=1 and ('Total: %d ' % n_a) in pg.inner_text('#registros-total') and pg.input_value('#filtro-desde')==hoy_a+'-01-01' and pg.input_value('#filtro-hasta')==hoy_a+'-12-31'
        and pg.get_attribute('#filtro-periodo [data-rapido=anio]','aria-pressed')=='true' and pg.locator('#filtro-atajos .chip[aria-pressed=true]').count()==1,
-       '«Este año» llena Desde y Hasta con el año en curso y deja los cuatro: '+pg.inner_text('#registros-total'))
+       '«Este año» llena Desde y Hasta con el año en curso y deja los de ese año: '+pg.inner_text('#registros-total'))
     pg.click('#filtro-periodo [data-rapido=mes]'); pg.wait_for_timeout(300)
     ok(pg.evaluate("SRP.registros.filtrados.every(r => r.fecha_plantacion.startsWith(SRP.util.fechaHoy().slice(0, 7)))") and pg.get_attribute('#filtro-periodo [data-rapido=mes]','aria-pressed')=='true'
        and pg.get_attribute('#filtro-periodo [data-rapido=anio]','aria-pressed')=='false','«Este mes» deja sólo los del mes en curso, y sólo él queda marcado')
@@ -984,7 +1033,8 @@ with sync_playwright() as p:
     pg.click('#jornada-atajos [data-atajo=periodo]'); pg.wait_for_timeout(200)
     pg.click('#jornada-periodo [data-rapido=anio]'); pg.wait_for_timeout(400)
     ok(pg.is_visible('#jornada-periodo') and pg.get_attribute('#jornada-periodo [data-rapido=anio]','aria-pressed')=='true' and pg.locator('#jornada-atajos .chip[aria-pressed=true]').count()==1
-       and pg.locator('#lista-jornadas .jornada').count()>=3 and pg.evaluate("SRP.jornadas.filtro.desde")==pg.evaluate("SRP.util.fechaHoy().slice(0, 4)")+'-01-01',
+       and pg.locator('#lista-jornadas .jornada').count()>=1 and pg.evaluate("SRP.jornadas.lista.every(j => j.fecha.startsWith(SRP.util.fechaHoy().slice(0, 4)))")
+       and pg.evaluate("SRP.jornadas.filtro.desde")==pg.evaluate("SRP.util.fechaHoy().slice(0, 4)")+'-01-01',
        '«Este año», dentro de «Un periodo», llena Desde y Hasta con el año en curso y deja sus jornadas: %d' % pg.locator('#lista-jornadas .jornada').count())
     pg.click('#jornada-periodo [data-rapido=mes]'); pg.wait_for_timeout(300)
     ok(pg.get_attribute('#jornada-periodo [data-rapido=mes]','aria-pressed')=='true' and pg.evaluate("SRP.jornadas.lista.every(j => j.fecha.startsWith(SRP.util.fechaHoy().slice(0, 7)))"),'«Este mes» deja sólo las jornadas del mes en curso')
@@ -2612,6 +2662,9 @@ with sync_playwright() as p:
     # Periodos: anterior, mes, año, rango y todo
     pg19.click('#sup-anterior'); pg19.wait_for_timeout(300)
     ant=pg19.inner_text('#sup-etiqueta'); sig=pg19.is_disabled('#sup-siguiente')
+    # De vuelta a la semana en curso: el mes y el año que siguen son los de hoy aunque la semana anterior
+    # sea de otro mes o de otro año (un lunes 1)
+    pg19.click('#sup-siguiente'); pg19.wait_for_timeout(300)
     pg19.click('#sup-tipos .chip[data-tipo=mes]'); pg19.wait_for_timeout(300)
     mes=pg19.inner_text('#sup-etiqueta')
     pg19.click('#sup-tipos .chip[data-tipo=anio]'); pg19.wait_for_timeout(300)
@@ -2773,8 +2826,10 @@ with sync_playwright() as p:
         conFolioHoy: da.filter(x=>x.fecha_plantacion===hoy && x.folio).length, fotos: da.filter(x=>x.foto_base64).length, elim: da.filter(x=>x.estatus==='eliminado').length,
         bit: bi.filter(x=>SRP.demo.es(x.id)).length, sinReporte: dj.filter(x=>x.estatus==='cerrada' && !x.reporte_en).length,
         propia: !!j.find(x=>x.id==='propia-j1'), sembr: JSON.stringify(dj).search(/sembr|siembr/i) }; }""")
-    ok(c21['j']>=1200 and c21['a']>=15000 and c21['u']==16 and c21['anios']==['2024','2025','2026'] and c21['cabos']==26,
-       'se cargan %d jornadas y %d árboles de 2024, 2025 y 2026, registrados por 26 cuentas (20 cabos y 6 coordinaciones, de SEDEMA y de fuera), con 16 cuentas de demostración, en %.1f s' % (c21['j'],c21['a'],seg21))
+    # La demostración va de enero de 2024 al día de hoy: un año más con cada año que pasa
+    ANIOS21=[str(a) for a in range(2024, int(HOY[:4])+1)]; ANT21=str(int(HOY[:4])-1)
+    ok(c21['j']>=1200 and c21['a']>=15000 and c21['u']==16 and c21['anios']==ANIOS21 and c21['cabos']==26,
+       'se cargan %d jornadas y %d árboles de 2024 a este año, registrados por 26 cuentas (20 cabos y 6 coordinaciones, de SEDEMA y de fuera), con 16 cuentas de demostración, en %.1f s' % (c21['j'],c21['a'],seg21))
     ok(c21['viejas']==2 and c21['deHoy']==2 and c21['sinReporte']>0 and c21['elim']>0 and c21['fotos']>0,
        'con lo que la supervisión debe encontrar: 2 jornadas abiertas de días anteriores, 2 de hoy, %d sin reporte, %d eliminados, %d fotografías' % (c21['sinReporte'],c21['elim'],c21['fotos']))
     ok(c21['sinAlcaldia']==0 and c21['sinFolio']==0 and c21['bit']>c21['a'] and c21['propia'] and c21['sembr']==-1,
@@ -2785,7 +2840,7 @@ with sync_playwright() as p:
     pg21.evaluate("SRP.app.mostrarVista('supervision')"); pg21.wait_for_timeout(600)
     abrir_sup(pg21)
     pg21.click('#sup-tipos .chip[data-tipo=anio]'); pg21.wait_for_timeout(300); pg21.click('#sup-anterior'); pg21.wait_for_timeout(900)
-    ok(pg21.inner_text('#sup-etiqueta')=='Año 2025' and pg21.locator('.sup-tabla-cabos tbody tr').count()==26,'la administración ve el año 2025 completo: sus 20 cabos activos —también los que no trabajaron ese año, como el de la empresa, que empezó en 2026: así se ve quién falta— y las 6 coordinaciones que registraron')
+    ok(pg21.inner_text('#sup-etiqueta')=='Año '+ANT21 and pg21.locator('.sup-tabla-cabos tbody tr').count()==26,'la administración ve el año anterior completo: sus 20 cabos activos —también los que no trabajaron ese año, como el de la empresa, que empezó en 2026: así se ve quién falta— y las 6 coordinaciones que registraron')
     LIS21="document.querySelectorAll('details[data-seccion=cabos] > .sup-seccion-cuerpo > .sup-tabla-caja tbody tr:not([hidden])').length"
     vis21=pg21.evaluate(LIS21)
     mas21=pg21.locator('button[data-mas=cabos]')
@@ -2805,7 +2860,7 @@ with sync_playwright() as p:
     d21.value.save_as(sal('demo_prueba.pdf'))
     from pypdf import PdfReader as _Pdf21
     txt21=' '.join(' '.join((p.extract_text() or '') for p in _Pdf21(sal('demo_prueba.pdf')).pages).split())
-    ok(d21.value.suggested_filename=='Informe_anual_2025_Gustavo_A_Madero.pdf' and 'POR COLONIA' in txt21 and 'Marisol' in txt21,'el informe anual de una alcaldía sale con los datos de demostración: %s' % d21.value.suggested_filename)
+    ok(d21.value.suggested_filename=='Informe_anual_'+ANT21+'_Gustavo_A_Madero.pdf' and 'POR COLONIA' in txt21 and 'Marisol' in txt21,'el informe anual de una alcaldía sale con los datos de demostración: %s' % d21.value.suggested_filename)
     entrar21('u-coord-1'); esperar(pg21,"SRP.supervision.datos && SRP.sesion.usuario && SRP.supervision.datos.usuario.id === SRP.sesion.usuario.id",30000); pg21.wait_for_timeout(300)
     cab21=pg21.evaluate("SRP.supervision.datos.cabos.slice().sort()")
     ok(pg21.inner_text('#sup-etiqueta').startswith('Semana') and pg21.inner_text('#sup-filtros-texto')=='Más filtros: quién registró, programa y alcaldía',
@@ -3055,7 +3110,8 @@ with sync_playwright() as p:
     ok(all(x in t24 for x in ['REPORTE DE LA JORNADA DE PLANTACIÓN','Nombre del cabo:','Nombre de la jornada:','1. CROQUIS DE LA JORNADA','2. EJEMPLARES PLANTADOS',
        '3. TOTALES POR ESPECIE','Distribución de las especies','4. PERSONAL','5. DATOS DEL VEHÍCULO','Día de la jornada:','Placas:']) and '6. ' not in t24 and 'Ejemplares por especie' not in t24 and 'Avance contra lo previsto' not in t24 and 'Folio' not in t24,
        'el PDF trae la franja del cabo con los datos de la jornada y cinco secciones, con la distribución bajo los totales como única gráfica, sin folios')
-    ok(os.path.getsize(sal('reporte_secciones.pdf')) < 250000,'y sigue pesando poco: %d KB' % (os.path.getsize(sal('reporte_secciones.pdf'))//1024))
+    # El peso varía con la imagen del croquis, según el sitio de la jornada: entre 200 y 300 KB
+    ok(os.path.getsize(sal('reporte_secciones.pdf')) < 350000,'y sigue pesando poco: %d KB' % (os.path.getsize(sal('reporte_secciones.pdf'))//1024))
     # El croquis encuadra todos los puntos llenando el lienzo, y aparta los que se enciman
     cr24=pg24.evaluate("""(() => { const C = SRP.croquis; const pts = [[19.4326,-99.1332],[19.43262,-99.13318],[19.43265,-99.13316],[19.43261,-99.13321],[19.4326,-99.1332]].map(([lat,lng]) => ({ lat, lng }));
       const e = C.encuadre(pts); const reales = pts.map(p => { const q = C.aPixel(p.lat, p.lng, e.z); return { x: q.x - e.origenX, y: q.y - e.origenY }; });
@@ -3290,8 +3346,9 @@ with sync_playwright() as p:
     pg30.evaluate("(() => { const dt = new DataTransfer(); dt.setData('text/plain', '19.3500, -99.1620'); document.getElementById('ini-coord-lat').dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true })); })()")
     pe30=[pg30.input_value('#ini-coord-lat'), pg30.input_value('#ini-coord-lng')]
     ok(pe30==['19.350000','99.162000'],'pegar «19.3500, -99.1620» en Latitud llena latitud y longitud: %s' % pe30)
-    # Escribir el par en un solo campo y tocar «Colocar punto» también lo reparte
-    pg30.fill('#ini-coord-lat','19.4326 -99.1332'); pg30.fill('#ini-coord-lng',''); pg30.click('#btn-ini-coord-aplicar'); pg30.wait_for_timeout(250)
+    # Escribir el par en un solo campo y tocar «Colocar punto» también lo reparte. La longitud se vacía
+    # antes: Safari reparte el par al salir de la latitud, y vaciarla después borraría lo repartido
+    pg30.fill('#ini-coord-lng',''); pg30.fill('#ini-coord-lat','19.4326 -99.1332'); pg30.click('#btn-ini-coord-aplicar'); pg30.wait_for_timeout(250)
     ok(pg30.input_value('#ini-coord-lng')=='99.133200' and pg30.inner_text('#ini-lugar').startswith('Cuauhtémoc'),'el par escrito en un solo campo se reparte al colocar el punto')
     # La ayuda dice que se puede pegar el par y de dónde sale; el ejemplo mismo se pega bien
     ay30=[pg30.inner_text('#ini-coord-ayuda'), pg30.get_attribute('#ini-coord-lat','aria-describedby'), pg30.inner_text('#coord-ayuda')]
@@ -3809,7 +3866,7 @@ with sync_playwright() as p:
     ctx42.close()
 
 
-    # ---------- BLOQUES 123 A 125: INSTITUCIONES (ALCALDÍAS, GOBIERNO DE LA CDMX, EMPRESAS, ORGANIZACIONES CIVILES) ----------
+    # ---------- INSTITUCIONES (ALCALDÍAS, GOBIERNO DE LA CDMX, EMPRESAS, ORGANIZACIONES CIVILES) ----------
     ctx43=b.new_context(viewport={'width':390,'height':844}, timezone_id='America/Mexico_City', geolocation={'latitude':19.357,'longitude':-99.06}, permissions=['geolocation'])
     pg43=ctx43.new_page(); err43=[]
     pg43.on('pageerror', lambda e: err43.append(str(e))); pg43.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err43.append(m.text))
@@ -3982,7 +4039,7 @@ with sync_playwright() as p:
     ok(dc44.value.suggested_filename=='Arboles_todo_ALC_IZP.csv' and csv44.split('\r\n')[0].startswith('﻿"Folio","Fecha de plantación","Jornada","Institución que ejecuta","Quién registró"') and '"Alcaldía Iztapalapa"' in csv44 and 'SEDEMA' not in csv44,
        'la tabla para Excel dice la institución que ejecuta y se nombra por ella: %s' % dc44.value.suggested_filename)
     pg44.select_option('#sup-organizacion',''); pg44.wait_for_timeout(900)
-    pg44.click('#sup-tipos .chip[data-tipo=anio]'); pg44.wait_for_timeout(900)
+    anio_con_datos(pg44, 900)
     with pg44.expect_download() as dp44: pg44.click('#btn-sup-pdf')
     dp44.value.save_as(sal('informe_org.pdf'))
     from pypdf import PdfReader as _Pdf44
@@ -4813,7 +4870,7 @@ with sync_playwright() as p:
     ok(not err57,'sin errores en consola: %s' % err57[:2])
     ctx57.close()
 
-    # ---------- BLOQUES 140 Y 141: CADA ÁRBOL CON SU FECHA; JORNADA DE VARIOS DÍAS; RELEVO DE CABO Y SU AVISO ----------
+    # ---------- CADA ÁRBOL CON SU FECHA; JORNADA DE VARIOS DÍAS; RELEVO DE CABO Y SU AVISO ----------
     D = lambda n: (datetime.date.today()-datetime.timedelta(days=n)).isoformat()
     TXT = lambda f: f[8:10]+'-'+MESES[int(f[5:7])-1]+'-'+f[0:4]
     ctx58=b.new_context(viewport={'width':390,'height':844}, geolocation={'latitude':19.357,'longitude':-99.06,'accuracy':5}, permissions=['geolocation'], timezone_id='America/Mexico_City')
@@ -4942,7 +4999,7 @@ with sync_playwright() as p:
        'el relevo pasa la jornada al cabo elegido; el titular no cambia y queda en el historial: %s' % rl58)
     ok('relevo: ' in pg58.inner_text('#jornada-sub') and 'Relevo hecho' in pg58.inner_text('#aviso'),'la ficha dice quién registra ahora: %s' % pg58.inner_text('#jornada-sub'))
     # El titular ya no registra en ella
-    pg58.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-cabo-1'])"); pg58.reload(); pg58.wait_for_timeout(1800)
+    pg58.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-cabo-1'])"); pg58.reload(); esperar(pg58, "document.getElementById('dlg-confirmar').open", 6000)
     av58a=[pg58.is_visible('#dlg-confirmar'), pg58.inner_text('#dlg-confirmar-titulo') if pg58.is_visible('#dlg-confirmar') else '', pg58.inner_text('#dlg-confirmar-texto') if pg58.is_visible('#dlg-confirmar') else '', pg58.is_hidden('#btn-confirmar-no')]
     ok(av58a[0] and av58a[1]=='Relevo de cabo' and 'pasó a' in av58a[2] and 'ya no registra en ella' in av58a[2] and 'Lo hizo' in av58a[2] and av58a[3],'al entrar, el cabo que deja la jornada lee un aviso con «Entendido»: a quién pasó y quién hizo el relevo: %s' % av58a)
     if pg58.is_visible('#dlg-confirmar'): pg58.click('#btn-confirmar-si'); pg58.wait_for_timeout(300)
@@ -4952,7 +5009,7 @@ with sync_playwright() as p:
     pg58.evaluate("async (id) => { SRP.app.mostrarVista('jornadas'); await SRP.jornadas.abrir(id); }", jr); pg58.wait_for_timeout(1500)
     ok(t58==[False, False] and pg58.is_hidden('#btn-jornada-faltante') and pg58.is_visible('#jornada-detalle'),'el titular sigue viendo su jornada, pero ya no registra en ella: %s' % t58)
     # El cabo del relevo la tiene activa, ve lo ya plantado y registra a su nombre
-    pg58.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-demo-c1'])"); pg58.reload(); pg58.wait_for_timeout(1800)
+    pg58.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-demo-c1'])"); pg58.reload(); esperar(pg58, "document.getElementById('dlg-confirmar').open", 6000)
     av58b=[pg58.is_visible('#dlg-confirmar'), pg58.inner_text('#dlg-confirmar-titulo') if pg58.is_visible('#dlg-confirmar') else '', pg58.inner_text('#dlg-confirmar-texto') if pg58.is_visible('#dlg-confirmar') else '', pg58.is_hidden('#btn-confirmar-no')]
     ok(av58b[0] and av58b[1]=='Relevo de cabo' and 'Recibió la jornada «Relevo B140» en relevo de' in av58b[2] and 'ya puede registrar en ella' in av58b[2] and av58b[3],'el cabo que recibe la jornada lee que la recibió y de quién: %s' % av58b[2])
     if pg58.is_visible('#dlg-confirmar'): pg58.click('#btn-confirmar-si'); pg58.wait_for_timeout(300)
@@ -5132,7 +5189,7 @@ with sync_playwright() as p:
     pg60.evaluate("async () => { await SRP.demo.cargar(); }"); pg60.wait_for_timeout(500)
     pg60.evaluate("SRP.app.mostrarVista('supervision')"); pg60.wait_for_timeout(2500)
     abrir_sup(pg60)
-    pg60.click('#sup-tipos .chip[data-tipo=anio]'); pg60.wait_for_timeout(2500)
+    anio_con_datos(pg60, 2500)
     s60=pg60.evaluate("""() => { const m = SRP.supervision.modelo, p = m.prioridad; const sec = document.querySelector('details[data-seccion=prioridad]');
       return { suma: p.niveles.reduce((s, x) => s + x.n, 0) + p.sin, arboles: m.cifras.arboles, altas: 'altas' in p, resumen: sec.querySelector('summary').textContent, filas: [...sec.querySelectorAll('tbody tr td:first-child')].map(td => td.textContent.trim()),
         lema: sec.querySelector('.sup-prioridad-lema').textContent, mapa: sec.querySelectorAll('#sup-mapa-prioridad path.pri-colonia').length, col: Object.keys(p.colonias).length, nota: sec.querySelector('#sup-prioridad-colonias').textContent,
@@ -5148,8 +5205,9 @@ with sync_playwright() as p:
     t60=' '.join(' '.join((p.extract_text() or '') for p in _Pdf60(sal('informe_prioridad.pdf')).pages).split())
     ok('POR PRIORIDAD DE LA COLONIA' in t60 and 'Alta y muy alta' not in t60,'el informe en PDF trae el apartado «Por prioridad de la colonia»')
     # El informe dice siempre de cuándo a cuándo, con fechas: en el encabezado y en el pie de cada página
-    np60=len(_Pdf60(sal('informe_prioridad.pdf')).pages); an60=HOY[:4]
-    ok(('Año %s' % an60) in t60 and ('Periodo: del 01-ENE-%s al 31-DIC-%s (corte al ' % (an60, an60)) in t60 and t60.count('Periodo: del 01-ENE-%s al 31-DIC-%s' % (an60, an60)) == np60 + 1,
+    np60=len(_Pdf60(sal('informe_prioridad.pdf')).pages); an60=pg60.evaluate("SRP.supervision.modelo.periodo.desde.slice(0, 4)")
+    # El corte de hoy sólo cuando el año sigue en curso
+    ok(('Año %s' % an60) in t60 and ('Periodo: del 01-ENE-%s al 31-DIC-%s' % (an60, an60) + (' (corte al ' if an60 == HOY[:4] else '')) in t60 and t60.count('Periodo: del 01-ENE-%s al 31-DIC-%s' % (an60, an60)) == np60 + 1,
        'el informe anual dice sus fechas —del 1 de enero al 31 de diciembre, con el corte de hoy— en el encabezado y en el pie de sus %d páginas' % np60)
     tp60=pg60.evaluate("() => { const I = SRP.informes, m = SRP.supervision.modelo; const todo = Object.assign({}, m, { periodo: SRP.indicadores.periodo('todo') }), dia = Object.assign({}, m, { periodo: SRP.indicadores.periodo('rango', '2026-09-10', '2026-09-10') }); return [I.textoPeriodo(todo), I.textoPeriodo(dia), SRP.util.formatearFecha(SRP.util.fechaHoy())]; }")
     ok(re.fullmatch(r'Periodo: del \d{2}-[A-Z]{3}-\d{4} al ' + tp60[2], tp60[0]) is not None and tp60[1]=='Periodo: 10-SEP-2026','«Todo el registro» se dice del primer registro a hoy, y un solo día, con su fecha: %s' % tp60[:2])
@@ -5864,7 +5922,9 @@ with sync_playwright() as p:
     # Supervisión: el mapa de prioridad pinta sólo las colonias donde se plantó
     entrar69('u-coord-1'); pg69.evaluate("SRP.app.mostrarVista('supervision')"); pg69.wait_for_timeout(1500)
     abrir_sup(pg69)
-    pg69.click('#sup-tipos .chip[data-tipo=anio]'); pg69.wait_for_timeout(1500)
+    # De ayer a hoy: los tres árboles cualquier día, también el 1 de enero
+    pg69.click('#sup-tipos .chip[data-tipo=rango]'); pg69.wait_for_timeout(300)
+    pg69.fill('#sup-desde', AYER69); pg69.fill('#sup-hasta', HOY); pg69.click('#btn-sup-rango'); pg69.wait_for_timeout(1500)
     m69 = pg69.evaluate("""() => { const p = SRP.supervision.modelo.prioridad; const tr = document.querySelectorAll('#sup-mapa-prioridad path.pri-colonia');
       const capa = SRP.prioritarias.capas.get(SRP.supervision.mapaPrioridad); const eti = []; capa.eachLayer(l => eti.push(l.getTooltip().getContent()));
       return { col: Object.keys(p.colonias).length, suma: Object.values(p.colonias).reduce((a, b) => a + b, 0), conDato: p.niveles.reduce((a, x) => a + x.n, 0), trazos: tr.length, eti, nota: document.getElementById('sup-prioridad-colonias').textContent,
@@ -6105,7 +6165,7 @@ with sync_playwright() as p:
     pg75.select_option('#sel-usuario-prueba', 'u-admin-1'); pg75.click('#btn-entrar-prueba'); pg75.wait_for_timeout(900)
     pg75.evaluate("async () => { await SRP.demo.cargar(); }"); pg75.wait_for_timeout(600)
     pg75.evaluate("SRP.app.mostrarVista('supervision')"); esperar(pg75, "!!SRP.supervision.modelo && !!document.querySelector('.sup-seccion')", 8000)
-    pg75.click('#sup-tipos .chip[data-tipo=anio]'); pg75.wait_for_timeout(1500)
+    anio_con_datos(pg75)
     s75 = pg75.evaluate("""() => { const v = document.getElementById('vista-supervision'), q = x => [...v.querySelectorAll(x)];
       const acc = document.getElementById('sup-acciones'), cif = v.querySelector('.sup-cifras'), ava = document.getElementById('sup-t-avance');
       return { alto: v.scrollHeight, ancho: document.documentElement.scrollWidth, cifras: q('.sup-cifra').length,

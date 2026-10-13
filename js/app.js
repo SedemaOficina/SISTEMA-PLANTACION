@@ -33,7 +33,7 @@ SRP.app = {
   },
 
   async iniciar() {
-    if (!this.comprobarVersionCompleta()) return;
+    if (!this.comprobarVersionCompleta()) { this.marcarListo(); return; }
     SRP.util.redDeSeguridad();     // ningún fallo se queda mudo
     this.el('version').textContent = SRP.util.textoVersion();
     this.el('banda-ficticio').hidden = !SRP.CONFIG.ES_FICTICIO;
@@ -54,6 +54,7 @@ SRP.app = {
     } catch (err) {
       this.el('principal').innerHTML = '<div class="errores"><h2>No se pudo abrir el almacenamiento de este equipo</h2>' +
         '<p>' + SRP.util.escapar(err.message) + '. Revise que el navegador no esté en modo privado.</p></div>';
+      this.marcarListo();
       return;
     }
     SRP.formulario.iniciar();
@@ -123,7 +124,12 @@ SRP.app = {
 
     const u = await SRP.sesion.leer();
     if (u) this.entrar(); else this.mostrarAcceso();
+    this.marcarListo();
   },
+
+  /* Terminó de arrancar, o se detuvo con su aviso. Las pruebas esperan esta marca en lugar de un tiempo
+     fijo: un navegador más lento o un equipo ocupado no las adelantan. */
+  marcarListo() { document.documentElement.dataset.listo = 'true'; },
 
   /* Un navegador que ya abrió una versión anterior puede servir unos archivos de su memoria y
      otros de la red, y esa mezcla no arranca: antes quedaba la pantalla en blanco, sin explicación.

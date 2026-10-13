@@ -87,7 +87,9 @@ variables de entorno, está explicada en `src/config.js`.
   da una temporal de un solo uso (vale 72 horas) y la persona la cambia al primer acceso; mientras tanto
   no puede hacer nada más.
 - **Bloqueo:** 5 intentos fallidos seguidos bloquean la cuenta 15 minutos, o hasta que la Administración
-  restablezca la contraseña. Una cuenta que no existe y una contraseña equivocada responden lo mismo.
+  restablezca la contraseña. Cada intento se anota en la base antes de verificar la contraseña, en un solo
+  paso: muchos intentos al mismo tiempo no pasan del máximo. Una cuenta que no existe y una contraseña
+  equivocada responden lo mismo.
 - **Sesiones:** vencen tras una semana sin uso; cada uso renueva la semana y no hay límite total. Una
   sesión vencida responde `SESION_VENCIDA`: la aplicación vuelve a pedir la contraseña sin perder lo
   capturado. Desactivar la cuenta o su institución, o cambiar o restablecer la contraseña, cierra sus
@@ -142,8 +144,8 @@ Las pruebas:
   reglas rechacen lo inválido y que `srp_api` tenga sólo sus permisos —`territorio` de sólo lectura,
   nada directo fuera de `srp`—, y destruye.
 - `pruebas/acceso.test.js`: levanta el servicio y lo usa como la aplicación: entrar, salir, alta con
-  temporal, cambio obligatorio, bloqueo, restablecimiento, desactivación, institución desactivada,
-  vencimiento de la sesión y de la temporal.
+  temporal, cambio obligatorio, bloqueo (también con intentos simultáneos), restablecimiento,
+  desactivación, institución desactivada, vencimiento de la sesión y de la temporal.
 - `pruebas/datos.test.js`: carga todo y comprueba que cupo, que las capas estén completas y, sobre todo,
   que PostGIS, leyendo `territorio`, ubique cada árbol y cada jornada igual que la aplicación (alcaldía,
   colonia y celda UGA).

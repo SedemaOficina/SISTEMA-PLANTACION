@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.9.62 (Bloque 203)»**.
+Al pie de cualquier pantalla: **«Versión 0.9.63 (Bloque 204)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -508,6 +508,7 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M343 | Liber | Catálogo de especies: marcar cuáles son frutales, para filtrar y contar los árboles frutales plantados | Media | En curso | La marca y el filtro, hechos en B179 (M446 a M448). Falta contar los árboles con fruto comestible en Supervisión e informes: cuando lean del servidor |
 | M397 | Liber | En el SIA el SRP va como proyecto nuevo, con otro nombre: no reutiliza el módulo ni el esquema de plantación que ya existen ahí | Alta | Decidido | Nombre `srp` para el proyecto, su esquema y su ruta (D249). Se atiende en la fase de servidor |
 | M398 | Liber | Las capas (alcaldías, colonias, UGA) se van a consumir del esquema territorial del SIA: antes de cambiar, comprobar que son las mismas con que se trabajó aquí —mismos polígonos, claves y versión—, para que lo ya derivado no cambie de alcaldía, colonia ni celda | Alta | Hecha | Verificadas el 05-10-2026: las tres capas son las mismas (D251). Las 1,817 de `territorio` son otra capa; el SRP no la usa |
+| M501 | Auditoría (B204) | La ventana de datos de demostración dice «casi tres años»: con cada año que pasa son más. Decir «desde enero de 2024 hasta hoy» | Baja | Propuesta | Cambia un texto de la pantalla de pruebas |
 
 ## 3. Verificadas sin falla
 
@@ -523,4 +524,4 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 440 hechas · 7 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 440 hechas · 8 por hacer · 2 revisadas · 2 descartadas.
