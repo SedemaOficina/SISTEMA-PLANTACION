@@ -4176,3 +4176,41 @@ versiones, ni detalles de seguridad. Se tomaron sólo las reglas de diseño que 
 infraestructura: sin coincidencias. No hubo cambios de código: no se corrieron las pruebas.
 
 **Siguiente paso.** La fase 2 del servidor, ya con los puntos de la sección 6 que le tocan.
+
+## Bloque 206 — El servidor con lo que el SIA pidió a otros proyectos (12-10-2026)
+
+Sin cambio en la aplicación: sigue la versión 0.9.63. Liber pidió aplicar al SRP los puntos de
+`docs/ALINEACION-SIA.md` § 6 (D287). Modelo: el módulo `acceso` de la versión vigente de `sia-backend`.
+
+**Qué cambió.**
+- `servidor/src/acceso.js`: un mismo 401 para toda entrada fallida (correo inexistente, cuenta o institución
+  desactivadas, cuenta bloqueada, contraseña mala), verificando siempre la contraseña; límites de largo
+  (correo hasta 254, contraseña hasta 256).
+- `servidor/src/contrasenas.js`: el formato de `acceso`; lee también el anterior.
+- `servidor/src/sesiones.js`: resumen sha256 en hexadecimal, testigo revisado antes de buscarlo, cookie
+  `sia_srp_sesion`; una cookie mal escrita ya no tumba la petición.
+- `servidor/db/srp/03-srp-acceso.sql`: `testigo_resumen` como texto hexadecimal con su regla; disparadores
+  que impiden editar, borrar o vaciar la bitácora.
+- `servidor/src/config.js` y `app.js`: dos saltos conocidos por omisión; el comentario dice dónde termina el
+  cifrado.
+- `servidor/servidor-web/srp.conf`: el fragmento del servidor web, con las reglas del SIA y el manifiesto de la
+  aplicación con su tipo. `herramientas/empaquetar.py`: el manifiesto, el ZIP y su `.sha256`.
+- `servidor/README.md`: el formato de las contraseñas y de la sesión, la respuesta única y la instalación en el
+  orden del SIA. `docs/ALINEACION-SIA.md` § 6: el estado de cada punto. La plantilla de la skill
+  `proyecto-sia` recibió también el manifiesto.
+- Pruebas del servidor: toda entrada fallida responde igual (correo inexistente, desactivada, bloqueada y de
+  institución desactivada, las tres últimas con la contraseña correcta); el formato de la contraseña; el
+  testigo y su resumen; cookies mal formadas; la bitácora que ni la administración edita, borra o vacía; el
+  resumen con su regla. La de intentos simultáneos comprueba el máximo exacto en la base, porque las
+  respuestas ya no distinguen la cuenta bloqueada.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada: la aplicación todavía no habla con el servidor. Cuando lo
+haga, quien tenga la cuenta desactivada o bloqueada leerá el mensaje único.
+
+**Verificación.** Servidor: 24 pruebas, 0 fallas, contra la base local reinstalada con el esquema nuevo.
+Antes de esa corrida, una primera vuelta falló a medias (una prueba nueva estaba mal escrita: insertaba en la
+bitácora sin `usuario_id`) y dejó 12 cuentas de prueba en la base local; se borraron a mano y no quedó
+rastro. El fragmento del servidor web no se
+validó con nginx: no hay uno en este equipo. eslint sin avisos.
+
+**Siguiente paso.** La fase 2: el servicio en TypeScript con la forma de los módulos de `sia-backend`.

@@ -66,13 +66,13 @@ cuentas viven en `srp`; altas, bajas y restablecimientos los hace la Administrac
    clave, para que el teléfono y el servidor desempaten igual en un borde.
 2. **El servicio en TypeScript**, en `servidor/src/modulos/srp/`, con `crearRutasSrp(pool)`, conexión por
    `SRP_DB_USER` y `SRP_DB_PASS`, y errores traducidos como en el SIA. Sin dependencias que el SIA no use ya.
-   Con lo de la sección 6 que toca a esta fase: un mismo 401 para toda entrada fallida (6.1), el paquete
-   como lo revisa el SIA (6.9) y la guía de instalación con su orden y su fragmento del servidor web (6.8,
-   6.10).
-3. **El acceso con los formatos del SIA:** contraseña con scrypt N=16384, r=8, p=1, en base64url; testigo
-   de sesión de 32 bytes con su resumen sha256 en hexadecimal; la primera cuenta con un guion que sólo
-   imprime el SQL. El límite por procedencia, con el módulo común del SIA (6.2). Después, lo que se
-   acuerde en la decisión 3.
+   Con el paquete como lo revisa el SIA (6.9): diff sobre la versión vigente de `sia-backend` y
+   `npm run typecheck`. Lo demás de la sección 6 que tocaba a esta fase ya está hecho (bloque 206).
+3. **El acceso con los formatos del SIA.** Ya hechos (bloque 206): contraseña con scrypt N=16384, r=8,
+   p=1, en base64url; testigo de sesión de 32 bytes con su resumen sha256 en hexadecimal; la cookie
+   `sia_srp_sesion`. Falta: la primera cuenta con un guion que sólo imprime el SQL, el registro de entradas
+   y salidas con su procedencia como `acceso.bitacora`, y el límite por procedencia con el módulo común del
+   SIA (6.2). Después, lo que se acuerde en la decisión 3.
 4. **La recepción como la hace el SIA:** disparadores que vuelven a derivar el punto, asignan el folio con
    un contador por celda y escriben la bitácora, que ya no se podrá editar ni borrar ni siquiera por error.
    Fotografías como archivos, con su estimado de espacio (6.11). Carga masiva y envío por tandas, cada una
@@ -109,16 +109,16 @@ equipo, aplican igual al SRP:
 
 | # | Lo que pide el SIA | El SRP hoy | Cuándo |
 |---|---|---|---|
-| 1 | Un mismo 401, con el mismo mensaje y el mismo tiempo, si el correo no existe, la cuenta está inactiva o bloqueada o la contraseña es mala: si no, se averigua qué correos tienen cuenta | Responde 423 a la cuenta bloqueada, y 403 a la inactiva o de institución desactivada después de la contraseña correcta | Fase 2 |
-| 2 | Límite de intentos por procedencia: contar sólo los fallidos, y tomar la dirección de la persona descartando los saltos conocidos, no la última de `X-Forwarded-For`, que es el intermediario y es la misma para todos. El SIA lo corrige en su módulo común (`src/comun/procedencia.ts`): se importa de ahí, no se copia | Sin límite por procedencia; el bloqueo por cuenta cuenta sólo los fallidos | Fase 3 |
+| 1 | Un mismo 401, con el mismo mensaje y el mismo tiempo, si el correo no existe, la cuenta está inactiva o bloqueada o la contraseña es mala: si no, se averigua qué correos tienen cuenta | Así responde: 401 con el mismo mensaje, verificando la contraseña también en la cuenta bloqueada o desactivada. Sólo a quien escribió la contraseña correcta se le dice que su temporal venció | **Hecho** (bloque 206) |
+| 2 | Límite de intentos por procedencia: contar sólo los fallidos, y tomar la dirección de la persona descartando los saltos conocidos, no la última de `X-Forwarded-For`, que es el intermediario y es la misma para todos. El SIA lo corrige en su módulo común (`src/comun/procedencia.ts`): se importa de ahí, no se copia | Sin límite por procedencia; el bloqueo por cuenta cuenta sólo los fallidos y anota el intento antes de verificar. Los saltos conocidos, en 2 (`SRP_PROXY`) | Fase 3, con `procedencia.ts` del SIA: hoy todavía toma la última entrada; el SIA la corrige ahí |
 | 3 | Cada petición termina en menos de un minuto: el servidor web corta la API después. Una alta masiva de cuentas con un hash lento perdía las contraseñas temporales | Carga masiva de hasta 20,000 árboles por archivo; envío de jornadas | Fase 4: por tandas |
-| 4 | El hash de contraseñas con los parámetros de `acceso` (scrypt N=2^14): con 2^17, diez accesos simultáneos ocupaban 1.3 GB de una memoria que comparten todos los módulos | scrypt N=2^15 | Fase 3 |
+| 4 | El hash de contraseñas con los parámetros de `acceso` (scrypt N=2^14): con 2^17, diez accesos simultáneos ocupaban 1.3 GB de una memoria que comparten todos los módulos | Igual que `acceso`: `scrypt$16384$8$1$sal$derivada` en base64url, sal de 16 bytes, 64 de derivada, texto en NFKC. Las guardadas antes siguen verificando | **Hecho** (bloque 206) |
 | 5 | La cookie con su ruta acotada, nunca `/`: con `/` viaja a todas las aplicaciones del dominio | `Path=/api/srp` | Bien |
 | 6 | Sesiones propias de cada aplicación: con una tabla común, «cerrar sesiones» cierra también las de otra | Tabla propia, `srp.sesiones` | Bien |
-| 7 | Bitácora que no se edita ni se borra, por disparador y no sólo por permisos; nada que la recorte | Sólo por permisos | Fase 4 |
-| 8 | Fragmento del servidor web: `absolute_redirect off` en las redirecciones; sin `Strict-Transport-Security`, que se decide para todo el dominio; la entrada de sesión con su límite de velocidad | Aún no trae fragmento | Guía de instalación, fase 2 |
-| 9 | El paquete: ZIP con su `.sha256`, un manifiesto que cubra todas las carpetas, el cambio a `sia-backend` como diff que aplique limpio sobre su versión vigente más los archivos completos, y `npm run typecheck` sin errores | — | Fase 2 |
-| 10 | Instalar primero la base y las variables y después el código: un módulo sin sus variables detiene el backend entero. Cada módulo en un despliegue aparte, con respaldo de la base antes | El módulo no arranca sin sus variables | Guía de instalación, fase 2 |
+| 7 | Bitácora que no se edita ni se borra, por disparador y no sólo por permisos; nada que la recorte | Disparadores que impiden editarla, borrarla o vaciarla, también a quien administra la base | **Hecho** (bloque 206) |
+| 8 | Fragmento del servidor web: `absolute_redirect off` en las redirecciones; sin `Strict-Transport-Security`, que se decide para todo el dominio; la entrada de sesión con su límite de velocidad | `servidor/servidor-web/srp.conf`, con la ruta pública por confirmar (pregunta 5) | **Hecho** (bloque 206) |
+| 9 | El paquete: ZIP con su `.sha256`, un manifiesto que cubra todas las carpetas, el cambio a `sia-backend` como diff que aplique limpio sobre su versión vigente más los archivos completos, y `npm run typecheck` sin errores | `herramientas/empaquetar.py` arma el manifiesto, el ZIP y su `.sha256`; el diff y el `typecheck`, con el módulo en TypeScript | Fase 2 |
+| 10 | Instalar primero la base y las variables y después el código: un módulo sin sus variables detiene el backend entero. Cada módulo en un despliegue aparte, con respaldo de la base antes | La guía de instalación de `servidor/README.md` lleva ese orden | **Hecho** (bloque 206) |
 | 11 | Fotografías fuera de las carpetas publicadas, en el servidor de aplicaciones, cuyo disco es limitado y lo comparten todos los módulos | Dentro del registro, como texto | Fase 4: archivos, con su estimado (un cabo con fotografía en cada árbol: 300 a 600 MB al año) para pedir el espacio antes |
 | 12 | El aviso de privacidad se confirma con la Unidad de Transparencia | Consultado: no se requiere (D250) | Llevar en el paquete la constancia de esa consulta |
 | 13 | No publicar una tercera capa de colonias si sus datos caben en una que ya existe (el marco de unidades territoriales 2020 o el catálogo IECM 2022) | Prioritarias: 2,243 colonias del modelo de priorización, capa propia | **Pendiente de Liber**: de qué catálogo salen las 2,243, y si la prioridad puede ir como campo de una capa del SIA |

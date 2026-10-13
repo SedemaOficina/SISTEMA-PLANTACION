@@ -8,9 +8,12 @@
                  administración local opere con los permisos de srp_api.
    SRP_PUERTO    Puerto cuando el servicio corre solo (por omisión 3100).
    SRP_RUTA      Ruta bajo la que se monta la API (por omisión /api/srp).
-   SRP_PROXY     Saltos de intermediario en que se confía para saber si la petición llegó cifrada
-                 (por omisión 1: el servidor web del SIA termina el cifrado y reenvía en HTTP).
-   SRP_COOKIE_SEGURA  «no» sólo en desarrollo sin HTTPS; en el SIA la cookie de sesión es segura. */
+   SRP_PROXY     Saltos de intermediario conocidos entre la persona y el servicio, para saber su
+                 dirección descartándolos (por omisión 2: el intermediario de gobierno que termina el
+                 cifrado y el servidor web del SIA). La última dirección de X-Forwarded-For es la del
+                 intermediario, la misma para todos. En el SIA, la procedencia se toma de su módulo común.
+   SRP_COOKIE_SEGURA  «no» sólo en desarrollo sin HTTPS; en el SIA la cookie de sesión es segura. Se decide
+                 aquí y no por la petición: el intermediario no avisa que llegó cifrada. */
 
 const num = (v, d) => (v === undefined || v === '' ? d : Number(v));
 
@@ -18,7 +21,7 @@ export function leerConfig(env = process.env) {
   return {
     puerto: num(env.SRP_PUERTO, 3100),
     ruta: env.SRP_RUTA || '/api/srp',
-    proxy: num(env.SRP_PROXY, 1),
+    proxy: num(env.SRP_PROXY, 2),
     cookieSegura: env.SRP_COOKIE_SEGURA !== 'no',
     rol: env.SRP_ROL || '',
     // Parámetros del acceso. Se podrán cambiar desde Configuración › Parámetros cuando vivan en la base

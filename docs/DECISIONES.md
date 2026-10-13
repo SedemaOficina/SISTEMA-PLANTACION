@@ -3321,3 +3321,22 @@
     backend, cuentas, servidor web, capas, aplicación, paquete y lista de verificación. Sin direcciones,
     nombres de equipo, versiones ni detalles de seguridad de la infraestructura.
   · El documento de infraestructura no se copia a ningún archivo: de él se tomaron sólo reglas de diseño.
+
+- **D287. El servidor del SRP con lo que el SIA pidió a otros proyectos (bloque 206).**
+  12-10-2026. Liber pidió aplicar al SRP lo de `docs/ALINEACION-SIA.md` § 6. Se tomó como modelo el módulo
+  `acceso` de la versión vigente de `sia-backend`.
+  · Toda entrada fallida responde el mismo 401, con el mismo mensaje, y verifica la contraseña también en la
+    cuenta bloqueada o desactivada, para que el tiempo no diga nada: «Correo o contraseña incorrectos. Si son
+    correctos y no puede entrar, consulte a la Administración global.» Sólo a quien escribió la contraseña
+    correcta se le dice que su temporal venció.
+  · Contraseñas en el formato de `acceso`: scrypt N=2^14, r=8, p=1, sal de 16 bytes, 64 de derivada, en
+    base64url, texto en NFKC. Las guardadas con el formato anterior siguen verificando.
+  · Sesión como `acceso`: testigo de 32 bytes en base64url, revisado antes de buscarlo; su resumen sha256 en
+    hexadecimal, con su regla en la tabla; cookie `sia_srp_sesion`. La duración sigue siendo la del SRP.
+  · La bitácora no se edita, no se borra y no se vacía, por disparadores que alcanzan también a quien
+    administra la base.
+  · Se conserva lo que el SRP hace mejor que `acceso`: el intento se anota antes de verificar, así que
+    intentos simultáneos no pasan del máximo.
+  · Dos saltos conocidos por omisión (`SRP_PROXY`). El límite por procedencia espera a la fase 3, con el
+    `procedencia.ts` del SIA, que hoy todavía toma la última entrada de `X-Forwarded-For`.
+  · `servidor/servidor-web/srp.conf`, `herramientas/empaquetar.py` y la instalación en el orden del SIA.

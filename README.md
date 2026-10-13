@@ -198,10 +198,11 @@ herramientas/           Generan archivos del sitio a partir de originales/ y de 
   generar_sql.py        datos/esquema.json → servidor/db/srp/02-srp-tablas.sql (las tablas del servidor)
   exportar_datos_app.py La base de un teléfono de prueba con la demostración → servidor/local/datos-app.json, para cargarla en la base local
   extraer_iconos.py     Set de iconografía CDMX (.ai) → trazados para js/iconos.js
+  empaquetar.py         Una carpeta → paquete para el SIA: manifiesto con la suma de cada archivo, ZIP y su .sha256
 
 pruebas/                prueba.py (recorrido completo), auditoria.py (auditoría), auditoria_css.py (hoja de estilos), revisar.py (presentación), servir.py (el servidor local para correrlas) y requisitos.txt (bibliotecas)
 
-servidor/               El servicio del SRP (Node.js y PostgreSQL con PostGIS): guiones SQL del esquema srp (db/srp/), acceso con cuentas propias (src/) y sus pruebas; ver servidor/README.md
+servidor/               El servicio del SRP (Node.js y PostgreSQL con PostGIS): guiones SQL del esquema srp (db/srp/), acceso con cuentas propias (src/), fragmento del servidor web (servidor-web/) y sus pruebas; ver servidor/README.md
 
 originales/             Capas, catálogos e iconografía tal como llegaron; no se editan ni se publican
                         (.gitignore); ver originales/LEEME.md

@@ -12,7 +12,7 @@ import { conectar, instalar, destruir, codigoDeError, RAIZ } from './apoyo.js';
 
 const ESQUEMA = JSON.parse(fs.readFileSync(path.join(RAIZ, 'datos', 'esquema.json'), 'utf8'));
 const PROPIAS_DEL_SERVIDOR = ['capa_prioritarias', 'capas', 'credenciales', 'migraciones', 'sesiones'];
-const PERMISO_DENEGADO = '42501', VIOLA_CHECK = '23514', VIOLA_FORANEA = '23503', VIOLA_UNICO = '23505';
+const PERMISO_DENEGADO = '42501', VIOLA_CHECK = '23514', VIOLA_FORANEA = '23503', VIOLA_UNICO = '23505', LO_IMPIDE_UN_DISPARADOR = 'P0001';
 
 // El tipo del diccionario como lo escribe PostgreSQL (format_type)
 function tipoPg(t) {
@@ -142,11 +142,21 @@ test('al eliminar una cuenta sin registros se van su contraseña y sus sesiones'
   await c.query("INSERT INTO srp.instituciones VALUES ('o-x', 'X', 'Institución X', true, NULL, now(), NULL, NULL, 'Empresa privada')");
   await c.query("INSERT INTO srp.usuarios VALUES ($1, 'cabo@ejemplo.local', 'Cabo Ejemplo', 'o-x', NULL, 'Cabo', 'CABO', '{}', true, now(), $1, NULL, NULL)", [id]);
   await c.query("INSERT INTO srp.credenciales VALUES ($1, 'scrypt$x', true, now() + interval '1 day', 0, NULL, now(), $1)", [id]);
-  await c.query("INSERT INTO srp.sesiones (testigo_resumen, usuario_id, expira_en) VALUES ('\\x01', $1, now() + interval '1 day')", [id]);
+  await c.query("INSERT INTO srp.sesiones (testigo_resumen, usuario_id, expira_en) VALUES (repeat('a', 64), $1, now() + interval '1 day')", [id]);
+  assert.equal(await codigoDeError(c, "INSERT INTO srp.sesiones (testigo_resumen, usuario_id, expira_en) VALUES ('no-es-un-resumen', $1, now())", [id]), VIOLA_CHECK, 'el resumen del testigo es sha256 en hexadecimal');
   assert.equal(await codigoDeError(c, "UPDATE srp.sesiones SET cerrada_en = now()"), VIOLA_CHECK, 'una sesión cerrada dice por qué');
   await c.query('DELETE FROM srp.usuarios WHERE id = $1', [id]);
   const r = await c.query('SELECT (SELECT count(*) FROM srp.credenciales)::int + (SELECT count(*) FROM srp.sesiones)::int AS n');
   assert.equal(r.rows[0].n, 0);
+  await c.query('ROLLBACK');
+});
+
+test('la bitácora sólo crece: ni quien administra la base la edita, la borra o la vacía', async () => {
+  await c.query('BEGIN');
+  await c.query("INSERT INTO srp.bitacora (id, fecha, usuario_id, usuario_nombre, perfil, accion, entidad, entidad_id, detalle) VALUES (gen_random_uuid(), now(), gen_random_uuid(), 'Prueba', 'ADMIN', 'CREADO', 'usuario', 'x', '')");
+  assert.equal(await codigoDeError(c, "UPDATE srp.bitacora SET detalle = 'cambiado'"), LO_IMPIDE_UN_DISPARADOR, 'editarla');
+  assert.equal(await codigoDeError(c, 'DELETE FROM srp.bitacora'), LO_IMPIDE_UN_DISPARADOR, 'borrarla');
+  assert.equal(await codigoDeError(c, 'TRUNCATE srp.bitacora'), LO_IMPIDE_UN_DISPARADOR, 'vaciarla');
   await c.query('ROLLBACK');
 });
 

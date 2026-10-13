@@ -6,8 +6,10 @@
    GET  /acceso/yo                 la cuenta de la sesión y si debe cambiar su contraseña
    POST /acceso/contrasena         { actual, nueva } → cambia la contraseña y cierra sus otras sesiones
 
-   Las respuestas de error llevan { codigo, mensaje }. Una cuenta que no existe y una contraseña
-   equivocada responden lo mismo, y tardan lo mismo, para no revelar qué correos tienen cuenta. */
+   Las respuestas de error llevan { codigo, mensaje }. Toda entrada fallida responde lo mismo y tarda lo
+   mismo —el correo no existe, la cuenta o su institución están desactivadas, la cuenta está bloqueada o
+   la contraseña es mala—, como el módulo `acceso` del SIA: si se distinguieran, se sabría qué correos
+   tienen cuenta. */
 import express from 'express';
 import { verificar, verificarSombra, derivar, revisarNueva } from './contrasenas.js';
 import * as S from './sesiones.js';
@@ -56,35 +58,34 @@ export function rutasAcceso({ grupo, config }) {
     try {
       const correo = String((req.body || {}).correo || '').trim().toLowerCase();
       const contrasena = String((req.body || {}).contrasena || '');
-      const incorrecto = () => error(res, 401, 'INCORRECTO', 'Correo o contraseña incorrectos.');
-      const bloqueada = (hasta) => error(res, 423, 'BLOQUEADA', 'Demasiados intentos fallidos. Podrá intentarlo de nuevo a las ' +
-        new Date(hasta).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Mexico_City' }) +
-        ', o pida a la Administración global que restablezca su contraseña.');
+      // El mensaje le dice a quien sí tiene cuenta a quién acudir, sin decir qué pasó
+      const incorrecto = () => error(res, 401, 'INCORRECTO', 'Correo o contraseña incorrectos. Si son correctos y no puede entrar, consulte a la Administración global.');
       if (!correo || !contrasena) return error(res, 400, 'FALTAN_DATOS', 'Escriba su correo y su contraseña.');
+      if (correo.length > 254 || contrasena.length > 256) { await verificarSombra(contrasena.slice(0, 256)); return incorrecto(); }
       const { rows } = await grupo.query(`
-        SELECT u.*, o.activo AS institucion_activa, c.derivada, c.temporal, c.bloqueada_hasta,
-               c.bloqueada_hasta > now() AS bloqueada, c.temporal AND c.temporal_expira_en <= now() AS temporal_vencida
+        SELECT u.*, o.activo AS institucion_activa, c.derivada, c.temporal,
+               c.temporal AND c.temporal_expira_en <= now() AS temporal_vencida
           FROM srp.usuarios u JOIN srp.instituciones o ON o.id = u.organizacion_id
           LEFT JOIN srp.credenciales c ON c.usuario_id = u.id
          WHERE u.correo = $1`, [correo]);
       const u = rows[0];
       if (!u || !u.derivada) { await verificarSombra(contrasena); return incorrecto(); }
-      if (u.bloqueada) return bloqueada(u.bloqueada_hasta);
       /* Cada intento se anota antes de verificar la contraseña, en un solo paso de la base: intentos
-         simultáneos no pasan del máximo. El que llega al máximo bloquea la cuenta; vencido el bloqueo, la
-         cuenta vuelve a contar desde uno. */
+         simultáneos no pasan del máximo. El que llega al máximo bloquea la cuenta; una cuenta bloqueada no
+         recibe turno; vencido el bloqueo, vuelve a contar desde uno. */
       const turno = (await grupo.query(`UPDATE srp.credenciales SET
             intentos_fallidos = CASE WHEN bloqueada_hasta IS NULL THEN intentos_fallidos + 1 ELSE 1 END,
             bloqueada_hasta = CASE WHEN (CASE WHEN bloqueada_hasta IS NULL THEN intentos_fallidos + 1 ELSE 1 END) >= $2
                                    THEN now() + make_interval(mins => $3) END
           WHERE usuario_id = $1 AND (bloqueada_hasta IS NULL OR bloqueada_hasta <= now())
           RETURNING bloqueada_hasta`, [u.id, A.intentosMaximos, A.bloqueoMinutos])).rows[0];
-      if (!turno) return bloqueada((await grupo.query('SELECT bloqueada_hasta FROM srp.credenciales WHERE usuario_id = $1', [u.id])).rows[0].bloqueada_hasta);
-      if (!(await verificar(contrasena, u.derivada))) return incorrecto();
-      // La contraseña es correcta: la cuenta vuelve a contar desde cero, y ya se puede decir por qué no entra
+      // Se verifica siempre, también bloqueada o desactivada: el tiempo no debe decir en qué estado está la cuenta
+      const correcta = await verificar(contrasena, u.derivada);
+      if (!turno || !correcta) return incorrecto();
+      // La contraseña es correcta: la cuenta vuelve a contar desde cero
       await grupo.query('UPDATE srp.credenciales SET intentos_fallidos = 0, bloqueada_hasta = NULL WHERE usuario_id = $1', [u.id]);
-      if (!u.activo) return error(res, 403, 'CUENTA_INACTIVA', 'Su cuenta está desactivada. Consulte a la Administración global.');
-      if (!u.institucion_activa) return error(res, 403, 'INSTITUCION_INACTIVA', 'Su institución está desactivada. Consulte a la Administración global.');
+      if (!u.activo || !u.institucion_activa) return incorrecto();
+      // Una temporal vencida sólo se dice a quien escribió la contraseña correcta
       if (u.temporal_vencida) return error(res, 403, 'TEMPORAL_VENCIDA', 'Su contraseña temporal venció. Pida otra a la Administración global.');
       const testigo = await S.abrir(grupo, u.id, { agente: req.get('user-agent') || '', inactividadDias: A.inactividadDias });
       S.cookie(res, testigo, { ruta: config.ruta, segura: config.cookieSegura });

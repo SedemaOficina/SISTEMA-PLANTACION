@@ -1,6 +1,7 @@
--- ACCESO: contraseñas y sesiones. Son propias del servidor: el teléfono nunca las recibe, por eso no
--- van en la tabla usuarios, que es la misma del teléfono. Lo corre quien administra la base, dentro de
--- instalar.sql.
+-- ACCESO Y BITÁCORA: contraseñas, sesiones y la bitácora que no se edita ni se borra. Contraseñas y
+-- sesiones son propias del servidor: el teléfono nunca las recibe, por eso no van en la tabla usuarios,
+-- que es la misma del teléfono. Tienen la forma del módulo `acceso` del SIA. Lo corre quien administra la
+-- base, dentro de instalar.sql.
 
 -- Una contraseña por cuenta. Nunca se guarda en claro: sólo el resultado de un algoritmo de derivación
 -- lento y con sal, con sus parámetros en el mismo texto para poder subirlos después sin perder las
@@ -26,10 +27,11 @@ COMMENT ON COLUMN srp.credenciales.bloqueada_hasta IS 'Tras varios intentos fall
 COMMENT ON COLUMN srp.credenciales.cambiada_por_id IS 'La propia cuenta o la Administración global que la restableció.';
 
 -- Una sesión por equipo en que se entra. Del lado del teléfono viaja un testigo al azar en una cookie
--- sólo HTTP; aquí se guarda únicamente su resumen, de modo que quien lea la tabla no pueda usarla.
+-- sólo HTTP; aquí se guarda únicamente su resumen sha256 en hexadecimal, de modo que quien lea la tabla
+-- no pueda usarla.
 CREATE TABLE srp.sesiones (
   id                 uuid         NOT NULL DEFAULT gen_random_uuid(),
-  testigo_resumen    bytea        NOT NULL,
+  testigo_resumen    text         NOT NULL,
   usuario_id         uuid         NOT NULL,
   creada_en          timestamptz  NOT NULL DEFAULT now(),
   ultima_actividad   timestamptz  NOT NULL DEFAULT now(),
@@ -39,6 +41,7 @@ CREATE TABLE srp.sesiones (
   agente             text         NOT NULL DEFAULT '',
   CONSTRAINT sesiones_pk PRIMARY KEY (id),
   CONSTRAINT sesiones_testigo_unico UNIQUE (testigo_resumen),
+  CONSTRAINT sesiones_testigo_resumen CHECK (testigo_resumen ~ '^[0-9a-f]{64}$'),
   CONSTRAINT sesiones_motivo_valido CHECK (motivo_cierre IN ('SALIDA', 'VENCIDA', 'CUENTA_DESACTIVADA', 'INSTITUCION_DESACTIVADA', 'CONTRASENA_CAMBIADA', 'CONTRASENA_RESTABLECIDA')),
   CONSTRAINT sesiones_cierre CHECK ((cerrada_en IS NULL) = (motivo_cierre IS NULL))
 );
@@ -50,3 +53,14 @@ COMMENT ON COLUMN srp.sesiones.agente IS 'Navegador y equipo desde donde se entr
 ALTER TABLE srp.credenciales ADD CONSTRAINT credenciales_usuario_id_fk FOREIGN KEY (usuario_id) REFERENCES srp.usuarios (id) ON DELETE CASCADE;
 ALTER TABLE srp.credenciales ADD CONSTRAINT credenciales_cambiada_por_id_fk FOREIGN KEY (cambiada_por_id) REFERENCES srp.usuarios (id) DEFERRABLE INITIALLY IMMEDIATE;
 ALTER TABLE srp.sesiones ADD CONSTRAINT sesiones_usuario_id_fk FOREIGN KEY (usuario_id) REFERENCES srp.usuarios (id) ON DELETE CASCADE;
+
+-- LA BITÁCORA SÓLO CRECE. La cuenta del servicio ya no puede editarla ni borrarla por sus permisos; los
+-- disparadores lo impiden también a quien administra la base, aunque sea por error. Nada la recorta.
+CREATE FUNCTION srp.bitacora_inmutable() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  RAISE EXCEPTION 'La bitácora del SRP no se edita ni se borra';
+END $$;
+CREATE TRIGGER bitacora_inmutable BEFORE UPDATE OR DELETE ON srp.bitacora
+  FOR EACH ROW EXECUTE FUNCTION srp.bitacora_inmutable();
+CREATE TRIGGER bitacora_sin_vaciar BEFORE TRUNCATE ON srp.bitacora
+  FOR EACH STATEMENT EXECUTE FUNCTION srp.bitacora_inmutable();

@@ -21,7 +21,7 @@ function cliente() {
     const r = await fetch(base + ruta, { method: metodo, headers: Object.assign({ 'content-type': 'application/json' }, cookie ? { cookie } : {}),
       body: cuerpo === undefined ? undefined : JSON.stringify(cuerpo) });
     const puesta = r.headers.get('set-cookie');
-    if (puesta) cookie = /srp_sesion=;|Expires=Thu, 01 Jan 1970/.test(puesta) ? '' : puesta.split(';')[0];
+    if (puesta) cookie = /sia_srp_sesion=;|Expires=Thu, 01 Jan 1970/.test(puesta) ? '' : puesta.split(';')[0];
     return { estado: r.status, datos: await r.json().catch(() => null), puesta };
   };
   return { pedir, get cookie() { return cookie; } };
@@ -49,7 +49,10 @@ after(async () => {
   // Se quita lo que creó la prueba: sus cuentas (con sus contraseñas y sesiones), su bitácora y su institución
   await admin.query('BEGIN');
   const ids = (await admin.query("SELECT id FROM srp.usuarios WHERE correo LIKE '%.prueba.%@ejemplo.local' OR organizacion_id = 'o-prueba-acceso'")).rows.map(r => r.id);
+  // La bitácora sólo crece: para quitar la de la prueba, la dueña de la tabla apaga un momento sus disparadores
+  await admin.query('ALTER TABLE srp.bitacora DISABLE TRIGGER bitacora_inmutable');
   await admin.query('DELETE FROM srp.bitacora WHERE usuario_id = ANY($1::uuid[]) OR entidad_id = ANY($1::text[])', [ids]);
+  await admin.query('ALTER TABLE srp.bitacora ENABLE TRIGGER bitacora_inmutable');
   await admin.query('DELETE FROM srp.credenciales WHERE usuario_id = ANY($1::uuid[])', [ids]);
   await admin.query('DELETE FROM srp.usuarios WHERE id = ANY($1::uuid[]) AND id <> $2', [ids, ADMIN.id]);
   await admin.query('DELETE FROM srp.usuarios WHERE id = $1', [ADMIN.id]);
@@ -69,8 +72,36 @@ test('sin sesión no se entra a nada, y la respuesta no se guarda en cachés', a
 test('una cuenta que no existe y una contraseña equivocada responden lo mismo', async () => {
   const a = await cliente().pedir('POST', '/acceso/entrar', { correo: 'nadie.prueba.x@ejemplo.local', contrasena: 'Lo que sea 123' });
   const b = await cliente().pedir('POST', '/acceso/entrar', { correo: ADMIN.correo, contrasena: 'Equivocada 123' });
-  assert.deepEqual([a.estado, a.datos], [401, { codigo: 'INCORRECTO', mensaje: 'Correo o contraseña incorrectos.' }]);
+  assert.deepEqual([a.estado, a.datos], [401, { codigo: 'INCORRECTO', mensaje: 'Correo o contraseña incorrectos. Si son correctos y no puede entrar, consulte a la Administración global.' }]);
   assert.deepEqual([b.estado, b.datos], [a.estado, a.datos]);
+});
+
+test('toda entrada fallida responde igual: desactivada, bloqueada o de institución desactivada, aun con la contraseña correcta', async () => {
+  const a = cliente();
+  await a.pedir('POST', '/acceso/entrar', { correo: ADMIN.correo, contrasena: ADMIN.clave });
+  const cuenta = async (correo, clave) => {
+    const alta = await a.pedir('POST', '/cuentas', { correo, nombre_completo: 'Cabo Prueba Igual', organizacion_id: 'o-prueba-acceso', cargo_rol: 'Cabo', perfil: 'CABO' });
+    const c = cliente();
+    await c.pedir('POST', '/acceso/entrar', { correo, contrasena: alta.datos.temporal });
+    await c.pedir('POST', '/acceso/contrasena', { actual: alta.datos.temporal, nueva: clave });
+    return alta.datos.usuario.id;
+  };
+  const entrar = async (correo, clave) => { const r = await cliente().pedir('POST', '/acceso/entrar', { correo, contrasena: clave }); return [r.estado, r.datos]; };
+  const nadie = await entrar('nadie.prueba.igual@ejemplo.local', 'Clave igual 2026');
+  const inactiva = await cuenta('cabo.prueba.inactiva@ejemplo.local', 'Clave inactiva 2026');
+  await a.pedir('POST', '/cuentas/' + inactiva + '/estado', { activo: false });
+  const bloqueada = await cuenta('cabo.prueba.bloqueada@ejemplo.local', 'Clave bloqueada 2026');
+  for (let i = 0; i < 3; i++) await entrar('cabo.prueba.bloqueada@ejemplo.local', 'equivocada ' + i);
+  assert.equal((await admin.query('SELECT bloqueada_hasta > now() AS b FROM srp.credenciales WHERE usuario_id = $1', [bloqueada])).rows[0].b, true);
+  const resultados = [nadie, await entrar('cabo.prueba.inactiva@ejemplo.local', 'Clave inactiva 2026'), await entrar('cabo.prueba.bloqueada@ejemplo.local', 'Clave bloqueada 2026')];
+  await cuenta('cabo.prueba.sininstitucion@ejemplo.local', 'Clave institucion 2026');
+  await admin.query("UPDATE srp.instituciones SET activo = false WHERE id = 'o-prueba-acceso'");
+  try {
+    resultados.push(await entrar('cabo.prueba.sininstitucion@ejemplo.local', 'Clave institucion 2026'));
+  } finally {
+    await admin.query("UPDATE srp.instituciones SET activo = true WHERE id = 'o-prueba-acceso'");
+  }
+  for (const r of resultados) assert.deepEqual(r, [401, { codigo: 'INCORRECTO', mensaje: 'Correo o contraseña incorrectos. Si son correctos y no puede entrar, consulte a la Administración global.' }]);
 });
 
 test('al entrar, la cookie es sólo HTTP, del mismo sitio y sólo para la API; al salir, la sesión se cierra', async () => {
@@ -79,10 +110,16 @@ test('al entrar, la cookie es sólo HTTP, del mismo sitio y sólo para la API; a
   assert.equal(e.estado, 200);
   assert.equal(e.datos.usuario.perfil, 'ADMIN');
   assert.equal(e.datos.debeCambiar, false);
-  assert.match(e.puesta, /HttpOnly/i); assert.match(e.puesta, /SameSite=Strict/i); assert.match(e.puesta, /Path=\/api\/srp/);
+  assert.match(e.puesta, /^sia_srp_sesion=/); assert.match(e.puesta, /HttpOnly/i); assert.match(e.puesta, /SameSite=Strict/i); assert.match(e.puesta, /Path=\/api\/srp/);
   const testigo = decodeURIComponent(c.cookie.split('=')[1]);
-  const g = (await admin.query("SELECT count(*) FILTER (WHERE testigo_resumen = convert_to($1, 'UTF8'))::int AS tal_cual, count(*) FILTER (WHERE testigo_resumen = sha256(convert_to($1, 'UTF8')))::int AS resumen FROM srp.sesiones", [testigo])).rows[0];
-  assert.deepEqual(g, { tal_cual: 0, resumen: 1 }, 'la base guarda el resumen del testigo, no el testigo');
+  assert.match(testigo, /^[A-Za-z0-9_-]{43}$/, 'el testigo: 32 bytes al azar en base64url, como en acceso');
+  const g = (await admin.query("SELECT count(*) FILTER (WHERE testigo_resumen = $1)::int AS tal_cual, count(*) FILTER (WHERE testigo_resumen = encode(sha256(convert_to($1, 'UTF8')), 'hex'))::int AS resumen FROM srp.sesiones", [testigo])).rows[0];
+  assert.deepEqual(g, { tal_cual: 0, resumen: 1 }, 'la base guarda el resumen sha256 en hexadecimal, no el testigo');
+  // Un testigo con otra forma no se busca, y uno mal escrito no tumba la petición
+  for (const malo of ['corto', '%E0%A4%A', 'x'.repeat(43) + '!']) {
+    const m = await fetch(base + '/acceso/yo', { headers: { cookie: 'sia_srp_sesion=' + malo } });
+    assert.deepEqual([m.status, (await m.json()).codigo], [401, 'SIN_SESION']);
+  }
   assert.equal((await c.pedir('GET', '/acceso/yo')).estado, 200);
   const anterior = c.cookie;
   assert.equal((await c.pedir('POST', '/acceso/salir')).estado, 200);
@@ -130,9 +167,10 @@ test('tras varios intentos fallidos la cuenta se bloquea; restablecer la desbloq
   await cabo.pedir('POST', '/acceso/entrar', { correo: 'cabo.prueba.dos@ejemplo.local', contrasena: alta.datos.temporal });
   await cabo.pedir('POST', '/acceso/contrasena', { actual: alta.datos.temporal, nueva: 'Mi clave segura 77' });
   for (let i = 0; i < 3; i++) await cliente().pedir('POST', '/acceso/entrar', { correo: 'cabo.prueba.dos@ejemplo.local', contrasena: 'equivocada ' + i });
+  // Bloqueada, ni con la contraseña correcta entra, y responde como cualquier entrada fallida
   const bloqueada = await cliente().pedir('POST', '/acceso/entrar', { correo: 'cabo.prueba.dos@ejemplo.local', contrasena: 'Mi clave segura 77' });
-  assert.equal(bloqueada.estado, 423);
-  assert.equal(bloqueada.datos.codigo, 'BLOQUEADA');
+  assert.deepEqual([bloqueada.estado, bloqueada.datos.codigo], [401, 'INCORRECTO']);
+  assert.equal((await admin.query('SELECT bloqueada_hasta > now() AS b FROM srp.credenciales WHERE usuario_id = $1', [alta.datos.usuario.id])).rows[0].b, true);
   const nueva = await a.pedir('POST', '/cuentas/' + alta.datos.usuario.id + '/restablecer');
   assert.equal(nueva.estado, 200);
   const r = await cabo.pedir('GET', '/acceso/yo');
@@ -141,16 +179,15 @@ test('tras varios intentos fallidos la cuenta se bloquea; restablecer la desbloq
   assert.deepEqual([e.estado, e.datos.debeCambiar], [200, true]);
 });
 
-test('intentos simultáneos no pasan del máximo: los que sobran encuentran la cuenta bloqueada', async () => {
+test('intentos simultáneos no pasan del máximo: la cuenta queda bloqueada con el máximo exacto', async () => {
   const a = cliente();
   await a.pedir('POST', '/acceso/entrar', { correo: ADMIN.correo, contrasena: ADMIN.clave });
   const correo = 'cabo.prueba.simultanea@ejemplo.local';
   const alta = await a.pedir('POST', '/cuentas', { correo, nombre_completo: 'Cabo Prueba Simultánea', organizacion_id: 'o-prueba-acceso', cargo_rol: 'Cabo', perfil: 'CABO' });
   assert.equal(alta.estado, 201);
   const r = await Promise.all(Array.from({ length: 8 }, (_, i) => cliente().pedir('POST', '/acceso/entrar', { correo, contrasena: 'equivocada simultánea ' + i })));
-  const codigos = r.map(x => x.datos.codigo).sort();
-  assert.deepEqual(codigos, ['BLOQUEADA', 'BLOQUEADA', 'BLOQUEADA', 'BLOQUEADA', 'BLOQUEADA', 'INCORRECTO', 'INCORRECTO', 'INCORRECTO'],
-    'se verifican a lo más tres contraseñas; las demás no llegan a probarse');
+  assert.ok(r.every(x => x.estado === 401 && x.datos.codigo === 'INCORRECTO'), 'todas responden como entrada fallida');
+  // Tres turnos y no más: con el contador leído y escrito en dos pasos, quedaba en uno y sin bloquear
   const c = (await admin.query('SELECT intentos_fallidos, bloqueada_hasta > now() AS bloqueada FROM srp.credenciales WHERE usuario_id = $1', [alta.datos.usuario.id])).rows[0];
   assert.deepEqual([c.intentos_fallidos, c.bloqueada], [3, true]);
 });
@@ -165,7 +202,7 @@ test('desactivar una cuenta cierra sus sesiones y le impide entrar; la Administr
   const d = await a.pedir('POST', '/cuentas/' + alta.datos.usuario.id + '/estado', { activo: false });
   assert.deepEqual([d.estado, d.datos.usuario.activo, d.datos.sesionesCerradas], [200, false, 1]);
   assert.equal((await cabo.pedir('GET', '/acceso/yo')).datos.codigo, 'SESION_CUENTA_DESACTIVADA');
-  assert.equal((await cliente().pedir('POST', '/acceso/entrar', { correo: 'cabo.prueba.tres@ejemplo.local', contrasena: 'Otra clave segura 88' })).datos.codigo, 'CUENTA_INACTIVA');
+  assert.equal((await cliente().pedir('POST', '/acceso/entrar', { correo: 'cabo.prueba.tres@ejemplo.local', contrasena: 'Otra clave segura 88' })).datos.codigo, 'INCORRECTO');
   assert.equal((await a.pedir('POST', '/cuentas/' + ADMIN.id + '/estado', { activo: false })).datos.codigo, 'PROPIA');
 });
 
@@ -202,12 +239,13 @@ test('una sesión dura una semana sin uso: cada uso la renueva, y a los siete d�
   assert.match(r.datos.mensaje, /lo capturado se conserva/);
 });
 
-test('la contraseña nunca se guarda en claro y la temporal vence', async () => {
+test('la contraseña nunca se guarda en claro, con el formato de acceso del SIA, y la temporal vence', async () => {
   const a = cliente();
   await a.pedir('POST', '/acceso/entrar', { correo: ADMIN.correo, contrasena: ADMIN.clave });
   const alta = await a.pedir('POST', '/cuentas', { correo: 'cabo.prueba.cinco@ejemplo.local', nombre_completo: 'Cabo Prueba Cinco', organizacion_id: 'o-prueba-acceso', cargo_rol: 'Cabo', perfil: 'CABO' });
   const cred = (await admin.query('SELECT derivada FROM srp.credenciales WHERE usuario_id = $1', [alta.datos.usuario.id])).rows[0];
   await admin.query("UPDATE srp.credenciales SET temporal_expira_en = now() - interval '1 minute' WHERE usuario_id = $1", [alta.datos.usuario.id]);
-  assert.ok(!cred.derivada.includes(alta.datos.temporal) && cred.derivada.startsWith('scrypt$32768$8$1$'));
+  assert.ok(!cred.derivada.includes(alta.datos.temporal));
+  assert.match(cred.derivada, /^scrypt\$16384\$8\$1\$[A-Za-z0-9_-]{22}\$[A-Za-z0-9_-]{86}$/, 'scrypt N=2^14, sal de 16 bytes y 64 de derivada, en base64url');
   assert.equal((await cliente().pedir('POST', '/acceso/entrar', { correo: 'cabo.prueba.cinco@ejemplo.local', contrasena: alta.datos.temporal })).datos.codigo, 'TEMPORAL_VENCIDA');
 });

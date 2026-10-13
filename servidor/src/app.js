@@ -2,8 +2,9 @@
    (iniciar.js) o montarse en el backend central del SIA con `app.use(crearRutas(...))`.
 
    La aplicación y su API viven en el mismo dominio, así que no hace falta abrir el acceso a otros
-   sitios. El servidor web del SIA termina el cifrado y reenvía en HTTP: se confía en su cabecera para
-   saber que la petición llegó cifrada y dar la cookie de sesión como segura. */
+   sitios. El cifrado termina en un intermediario de gobierno, antes del servidor web del SIA, y adentro
+   todo viaja en HTTP: la cookie de sesión es segura por configuración, y la dirección de la persona se
+   toma descartando los saltos conocidos (`config.proxy`). */
 import express from 'express';
 import { rutasAcceso } from './acceso.js';
 import { rutasCuentas } from './cuentas.js';

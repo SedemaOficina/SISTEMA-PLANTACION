@@ -1,12 +1,16 @@
 /* SESIONES. Al entrar se da un testigo al azar que viaja en una cookie sólo HTTP; en la base se guarda
-   únicamente su resumen, así que quien lea la tabla no puede hacerse pasar por nadie. Una sesión deja de
+   únicamente su resumen, así que quien lea la tabla no puede hacerse pasar por nadie. Testigo y resumen
+   tienen la forma del módulo `acceso` del SIA: 32 bytes al azar en base64url (43 caracteres) y su sha256
+   en hexadecimal; un testigo con otra forma no se busca en la base. Una sesión deja de
    valer al salir, al pasar el tiempo de inactividad sin usarla, al cambiar o restablecer la contraseña, y
    en cuanto su cuenta o su institución dejan de estar activas. Cada uso renueva el plazo: `expira_en` es
    el momento en que vencerá si nadie la vuelve a usar. */
 import crypto from 'node:crypto';
 
-export const COOKIE = 'srp_sesion';
-const resumen = (testigo) => crypto.createHash('sha256').update(String(testigo)).digest();
+// El nombre sigue el de las cookies del SIA: sia_<módulo>_sesion
+export const COOKIE = 'sia_srp_sesion';
+const BIEN_FORMADO = /^[A-Za-z0-9_-]{43}$/;
+export const resumen = (testigo) => crypto.createHash('sha256').update(String(testigo), 'utf8').digest('hex');
 
 export async function abrir(bd, usuarioId, { agente = '', inactividadDias }) {
   const testigo = crypto.randomBytes(32).toString('base64url');
@@ -18,7 +22,7 @@ export async function abrir(bd, usuarioId, { agente = '', inactividadDias }) {
 /* La sesión del testigo, con su cuenta, si sigue valiendo; si no, la cierra diciendo por qué y devuelve
    { cerrada: motivo }. La actividad, y con ella el nuevo vencimiento, se anota a lo más una vez por minuto. */
 export async function validar(bd, testigo, { inactividadDias }) {
-  if (!testigo) return null;
+  if (!testigo || !BIEN_FORMADO.test(testigo)) return null;
   const { rows } = await bd.query(`
     SELECT s.id, s.expira_en, s.ultima_actividad, s.cerrada_en, s.motivo_cierre,
            s.expira_en <= now() AS vencida,
@@ -54,7 +58,8 @@ export function testigoDe(req) {
   const c = req.headers.cookie || '';
   for (const parte of c.split(';')) {
     const [k, ...v] = parte.trim().split('=');
-    if (k === COOKIE) return decodeURIComponent(v.join('='));
+    // Un testigo bien formado no lleva nada que decodificar; uno mal escrito no tumba la petición
+    if (k === COOKIE) { try { return decodeURIComponent(v.join('=')); } catch (e) { return null; } }
   }
   return null;
 }

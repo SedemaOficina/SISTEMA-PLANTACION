@@ -45,26 +45,31 @@ de clave.
 - Usa el esquema, pero no crea, altera ni borra tablas, ni dentro ni fuera de él.
 - Lee, agrega y cambia renglones de las tablas de datos, y borra sólo lo que el sistema permite borrar
   (un valor de catálogo o una cuenta sin uso, un lote de carga masiva, las sesiones).
-- A la bitácora sólo le agrega renglones: no la edita ni la borra.
+- A la bitácora sólo le agrega renglones: no la edita ni la borra. Sus disparadores lo impiden también a
+  quien administra la base.
 - Lee `territorio` y la capa propia; `srp.punto` y `srp.derivar` las puede usar. No escribe en ninguna.
 - No tiene ningún permiso directo fuera de `srp`.
 
 ### Instalar en el SIA
 
-Conectado a la base como quien la administra, desde `db/srp/`:
+En este orden, que es el que pide el SIA: un módulo sin sus variables detiene el backend entero, así que
+la base y las variables van antes que el código. Un módulo por despliegue.
 
-```
-psql -d <base> -v ON_ERROR_STOP=on -f instalar.sql
-```
+1. **Respaldo de la base.**
+2. **Guiones**, conectado a la base como quien la administra, desde `db/srp/`:
+   `psql -d <base> -v ON_ERROR_STOP=on -f instalar.sql`. Corre todo en una transacción y se detiene sin
+   tocar nada si el esquema ya estaba instalado.
+3. **La cuenta:** contraseña de `srp_api` de forma interactiva (`\password srp_api` en psql), para que no
+   quede en ningún registro; su entrada cifrada sólo desde el servidor de aplicaciones; y `SRP_DB_USER` y
+   `SRP_DB_PASS` en el archivo de entorno del backend.
+4. **El código:** el backend con el módulo.
+5. **El servidor web:** `servidor-web/srp.conf`, que el SIA integra (rutas de disco y destino suyos).
+6. **Verificación:** la del final de `05-srp-rol-y-grants.sql`, corrida como `srp_api`.
+7. **Datos de arranque:** la capa propia y el catálogo de especies, `npm run cargar -- capas especies`.
 
-Después, en este orden, porque el backend no arranca el módulo sin su cuenta:
-
-1. Contraseña de `srp_api` de forma interactiva (`\password srp_api` en psql), para que no quede en
-   ningún registro.
-2. Su entrada cifrada en la configuración de acceso de PostgreSQL.
-3. `SRP_DB_USER` y `SRP_DB_PASS` en el archivo de entorno del backend.
-4. El backend con el módulo.
-5. La capa propia y el catálogo de especies: `npm run cargar -- capas especies`.
+El paquete para el SIA se arma con `python herramientas/empaquetar.py <carpeta>`: escribe el manifiesto
+con la suma de cada archivo de todas las carpetas, el ZIP y su `.sha256`, y avisa si algún archivo parece
+llevar una dirección interna, una llave o una contraseña.
 
 ## El servicio: acceso y cuentas
 
@@ -82,15 +87,22 @@ variables de entorno, está explicada en `src/config.js`.
 | `POST /cuentas/:id/restablecer` | Otra contraseña temporal; cierra las sesiones de la cuenta | Administración global |
 | `POST /cuentas/:id/estado` | Activa o desactiva; desactivar cierra sus sesiones | Administración global |
 
-- **Contraseñas:** sólo se guarda lo que deriva scrypt, con sal, nunca la contraseña. Al menos 10
-  caracteres, con letras y números, sin el correo. No hay servicio de correo: la Administración global
+- **Contraseñas:** sólo se guarda lo que deriva scrypt, con sal, nunca la contraseña, en el formato del
+  módulo `acceso` del SIA (`scrypt$16384$8$1$sal$derivada`, en base64url): si un día las cuentas se mudan
+  a `acceso`, se copian sin pedir contraseñas nuevas. Al menos 10 caracteres, con letras y números, sin el
+  correo. No hay servicio de correo: la Administración global
   da una temporal de un solo uso (vale 72 horas) y la persona la cambia al primer acceso; mientras tanto
   no puede hacer nada más.
 - **Bloqueo:** 5 intentos fallidos seguidos bloquean la cuenta 15 minutos, o hasta que la Administración
   restablezca la contraseña. Cada intento se anota en la base antes de verificar la contraseña, en un solo
-  paso: muchos intentos al mismo tiempo no pasan del máximo. Una cuenta que no existe y una contraseña
-  equivocada responden lo mismo.
-- **Sesiones:** vencen tras una semana sin uso; cada uso renueva la semana y no hay límite total. Una
+  paso: muchos intentos al mismo tiempo no pasan del máximo.
+- **Toda entrada fallida responde igual**, con el mismo 401 y el mismo tiempo: el correo no existe, la
+  cuenta o su institución están desactivadas, la cuenta está bloqueada o la contraseña es mala. Así lo hace
+  `acceso`: si se distinguieran, se sabría qué correos tienen cuenta. Sólo a quien escribió la contraseña
+  correcta se le dice que su temporal venció.
+- **Sesiones:** un testigo de 32 bytes en la cookie `sia_srp_sesion`; en la base, sólo su resumen sha256 en
+  hexadecimal, como en `acceso`. Vencen tras una semana sin uso; cada uso renueva la semana y no hay límite
+  total. Una
   sesión vencida responde `SESION_VENCIDA`: la aplicación vuelve a pedir la contraseña sin perder lo
   capturado. Desactivar la cuenta o su institución, o cambiar o restablecer la contraseña, cierra sus
   sesiones. La cookie dura 400 días, lo más que admiten los navegadores: quien decide es el servidor.

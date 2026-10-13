@@ -145,7 +145,7 @@ cubrió lo que las auditorías anteriores dejaron fuera a propósito.
 Para las fases 2 a 4, sin cambio hoy:
 - **Índices del servidor** para las consultas de Supervisión (`cabo_id` y `fecha_plantacion` de los árboles, `fecha` de las jornadas): se agregan cuando existan las consultas, como `indices_servidor` en el esquema, porque `indices` es también lo que tiene el teléfono.
 - **Límite por equipo** en `/acceso/entrar`, además del bloqueo por cuenta, para que no se pruebe una contraseña en muchas cuentas: con el formato de acceso del SIA (fase 3).
-- Una cuenta bloqueada responde distinto de una que no existe: así se sabe que el correo tiene cuenta. El SIA pidió a otro proyecto lo mismo que su módulo `acceso`: un único 401 para toda entrada fallida. Va en la fase 2 (`docs/ALINEACION-SIA.md`, 6.1).
+- Una cuenta bloqueada responde distinto de una que no existe: así se sabe que el correo tiene cuenta. El SIA pidió a otro proyecto lo mismo que su módulo `acceso`: un único 401 para toda entrada fallida. **Hecho** en el bloque 206 (`docs/ALINEACION-SIA.md`, 6.1).
 - El cuerpo de las peticiones admite 100 KB: la recepción con fotografías (fase 4) necesitará más.
 - Express tiene una versión menor nueva (5.3.0): se sube al empaquetar en la fase 2.
 
