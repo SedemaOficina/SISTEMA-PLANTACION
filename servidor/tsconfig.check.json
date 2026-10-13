@@ -1,0 +1,17 @@
+{
+  // Sólo para `npm run typecheck`, con las mismas reglas que sia-backend. No se llama tsconfig.json para que
+  // tsup no lo lea: verifica tipos y no emite nada.
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2023"],
+    "types": ["node"],
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*.ts", "bd.d.ts"]
+}

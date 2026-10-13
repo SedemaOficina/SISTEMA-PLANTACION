@@ -1,0 +1,59 @@
+import express from "express";
+import pg from "pg";
+import { contrasenaDe } from "../bd.js";
+import { leerConfig, numero, type ConfigSrp } from "./modulos/srp/config";
+import { crearRutasSrp } from "./modulos/srp/rutas";
+
+/* EL MÓDULO FUERA DEL SIA: para desarrollo y pruebas, contra la base local. En el SIA no se usa este
+   archivo: el backend central monta crearRutasSrp(poolSrp) en /api/srp con su propia conexión, la de
+   SRP_DB_USER y SRP_DB_PASS. Nada de esta carpeta, salvo modulos/srp/, viaja al SIA.
+
+   SRP_PUERTO   Puerto (por omisión 3100).
+   SRP_PROXY    Saltos de intermediario conocidos entre la persona y el servicio (por omisión 2: el que
+                termina el cifrado y el servidor web del SIA).
+   SRP_ROL      Cuenta que se asume al conectar (SET ROLE), para que la cuenta local de administración
+                opere con los permisos de srp_api. */
+
+export { leerConfig } from "./modulos/srp/config";
+export { derivar, temporal, verificar } from "./modulos/srp/contrasenas";
+
+export interface ConfigLocal {
+  puerto: number;
+  proxy: number;
+  rol: string;
+}
+
+export function leerConfigLocal(env: Record<string, string | undefined> = process.env): ConfigLocal {
+  return { puerto: numero(env.SRP_PUERTO, 3100), proxy: numero(env.SRP_PROXY, 2), rol: env.SRP_ROL || "" };
+}
+
+/* La conexión local: las variables de PostgreSQL (PGHOST, PGPORT, PGDATABASE, PGUSER) o la base de
+   desarrollo, con la contraseña del archivo de contraseñas del equipo. Con `rol`, cada conexión asume
+   esa cuenta al abrirse; si no puede, no se usa: operaría con más permisos de los que tendrá en el SIA. */
+export function crearGrupo({ rol = "" }: { rol?: string } = {}): pg.Pool {
+  const datos = {
+    host: process.env.PGHOST || "127.0.0.1",
+    port: Number(process.env.PGPORT || 5432),
+    database: process.env.PGDATABASE || "srp_local",
+    user: process.env.PGUSER || "srp_local_admin",
+  };
+  const grupo = new pg.Pool({ ...datos, max: 10, password: process.env.PGPASSWORD || (async () => contrasenaDe(datos) ?? "") });
+  if (rol) {
+    grupo.on("connect", (c) => {
+      c.query("SET ROLE " + pg.escapeIdentifier(rol)).catch((e: Error) => {
+        console.error(`🔥 [SRP] no se pudo asumir ${rol}: ${e.message}`);
+        void c.end();
+      });
+    });
+  }
+  return grupo;
+}
+
+// La aplicación: el módulo montado donde lo monta el SIA, en la ruta de la configuración
+export function crearApp({ pool, config = leerConfig(), proxy = 2 }: { pool: pg.Pool; config?: ConfigSrp; proxy?: number }): express.Express {
+  const app = express();
+  app.disable("x-powered-by");
+  app.set("trust proxy", proxy);
+  app.use(config.ruta, crearRutasSrp(pool, config));
+  return app;
+}

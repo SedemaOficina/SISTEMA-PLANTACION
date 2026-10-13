@@ -6,5 +6,6 @@ originales/
 __pycache__/
 # Dependencias y configuración local del servidor: no se suben
 servidor/node_modules/
+servidor/dist/
 servidor/.env
 servidor/local/

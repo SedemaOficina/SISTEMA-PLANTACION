@@ -5,12 +5,10 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import { conectar } from './apoyo.js';
-import { leerConfig } from '../src/config.js';
-import { crearGrupo } from '../src/conexion.js';
-import { crearApp } from '../src/app.js';
-import { derivar } from '../src/contrasenas.js';
+// El módulo compilado, tal como corre (npm test compila antes de probar)
+import { leerConfig, crearGrupo, crearApp, derivar } from '../dist/independiente.js';
 
-const config = leerConfig({ SRP_COOKIE_SEGURA: 'no', SRP_PROXY: '0', SRP_INTENTOS_MAXIMOS: '3', SRP_BLOQUEO_MINUTOS: '15' });
+const config = leerConfig({ SRP_COOKIE_SEGURA: 'no', SRP_INTENTOS_MAXIMOS: '3', SRP_BLOQUEO_MINUTOS: '15' });
 const ADMIN = { id: crypto.randomUUID(), correo: 'admin.prueba.' + Date.now() + '@ejemplo.local', clave: 'Clave de prueba 2026' };
 let admin, grupo, servidor, base;
 
@@ -38,7 +36,7 @@ before(async () => {
   await admin.query(`INSERT INTO srp.credenciales VALUES ($1, $2, false, NULL, 0, NULL, now(), $1)`, [ADMIN.id, await derivar(ADMIN.clave)]);
   await admin.query('COMMIT');
   grupo = crearGrupo({ rol: 'srp_api' });
-  servidor = crearApp({ grupo, config }).listen(0);
+  servidor = crearApp({ pool: grupo, config, proxy: 0 }).listen(0);
   await new Promise(r => servidor.once('listening', r));
   base = 'http://127.0.0.1:' + servidor.address().port + config.ruta;
 });

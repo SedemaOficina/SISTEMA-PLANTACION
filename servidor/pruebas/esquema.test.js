@@ -7,8 +7,9 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { conectar, instalar, destruir, codigoDeError, RAIZ } from './apoyo.js';
+import { verificar } from '../dist/independiente.js';
 
 const ESQUEMA = JSON.parse(fs.readFileSync(path.join(RAIZ, 'datos', 'esquema.json'), 'utf8'));
 const PROPIAS_DEL_SERVIDOR = ['capa_prioritarias', 'capas', 'credenciales', 'migraciones', 'sesiones'];
@@ -149,6 +150,27 @@ test('al eliminar una cuenta sin registros se van su contraseña y sus sesiones'
   const r = await c.query('SELECT (SELECT count(*) FROM srp.credenciales)::int + (SELECT count(*) FROM srp.sesiones)::int AS n');
   assert.equal(r.rows[0].n, 0);
   await c.query('ROLLBACK');
+});
+
+test('la primera cuenta se da con un guion que sólo imprime el SQL; la contraseña no toca la base, y no se da dos veces', async () => {
+  const guion = path.join(RAIZ, 'servidor', 'deploy', 'srp-cuenta-inicial.mjs');
+  const correr = () => {
+    const r = spawnSync(process.execPath, [guion, 'Primera.Admin@Ejemplo.Local', 'Primera  Administración', 'Coordinación del SIA'], { encoding: 'utf8' });
+    return { sql: r.stdout, temporal: (r.stderr.match(/: ([a-z2-9]{4}-[a-z2-9]{4}-[a-z2-9]{4})$/m) || [])[1] };
+  };
+  const { sql, temporal } = correr();
+  assert.ok(temporal, 'la temporal sale por la salida de errores');
+  assert.ok(!sql.includes(temporal), 'el SQL lleva el resumen, nunca la contraseña');
+  await c.query(sql);
+  const u = (await c.query("SELECT u.correo, u.nombre_completo, u.perfil, c.derivada, c.temporal, c.temporal_expira_en > now() + interval '71 hours' AS vence_en_72 FROM srp.usuarios u JOIN srp.credenciales c ON c.usuario_id = u.id WHERE u.perfil = 'ADMIN'")).rows;
+  assert.equal(u.length, 1);
+  assert.deepEqual([u[0].correo, u[0].nombre_completo, u[0].temporal, u[0].vence_en_72], ['primera.admin@ejemplo.local', 'Primera Administración', true, true]);
+  assert.match(u[0].derivada, /^scrypt\$16384\$8\$1\$/);
+  assert.equal(await verificar(temporal, u[0].derivada), true, 'el resumen corresponde a la temporal que se entrega');
+  // Una segunda vez se niega, y no deja nada a medias
+  await assert.rejects(c.query(correr().sql), /Ya hay una cuenta de Administración global/);
+  await c.query('ROLLBACK');
+  assert.equal((await c.query("SELECT count(*)::int AS n FROM srp.usuarios WHERE perfil = 'ADMIN'")).rows[0].n, 1);
 });
 
 test('la bitácora sólo crece: ni quien administra la base la edita, la borra o la vacía', async () => {

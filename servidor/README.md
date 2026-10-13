@@ -7,8 +7,31 @@ servicio aparte, sobre PostgreSQL con PostGIS. Qué debe hacer está en `docs/FA
 se llega al SIA, en `docs/PLAN-TRASPASO-SIA.md`.
 
 Estado: **la base de datos, con sus capas territoriales y sus datos de arranque, y el acceso con cuentas
-propias**. La recepción de jornadas y árboles, los permisos por perfil y el folio vienen en las fases
-siguientes.
+propias, en TypeScript y con la forma de un módulo de `sia-backend`**. La recepción de jornadas y árboles,
+los permisos por perfil y el folio vienen en las fases siguientes.
+
+## El código
+
+| | |
+|---|---|
+| `src/modulos/srp/` | **El módulo**, lo único que viaja al SIA: se copia tal cual a `sia-backend/src/modulos/srp/`. `crearRutasSrp(pool)` da sus rutas; el backend central lo monta en `/api/srp` con su propia conexión, la de `SRP_DB_USER` y `SRP_DB_PASS` |
+| `src/independiente.ts` | El módulo fuera del SIA, para desarrollo y pruebas: la conexión local (con el archivo de contraseñas del equipo y, si se pide, asumiendo `srp_api`) y una aplicación que lo monta |
+| `src/iniciar.ts` | Arranca el módulo solo |
+| `deploy/srp-cuenta-inicial.mjs` | La primera Administración global: imprime el SQL del alta, sin dependencias |
+| `bd.js`, `cargar.js` | La conexión de quien administra la base local y la carga de datos |
+| `dist/` | Lo que compila `tsup`; no se guarda en el repositorio |
+
+Se escribe como el resto de `sia-backend`: Express 5, TypeScript estricto con la misma configuración
+(`tsconfig.check.json`) y empaquetado con `tsup`. Los errores los traduce `errores.ts`, como en los demás
+módulos: la persona ve un mensaje claro, el detalle sólo va al registro del servidor, y una base caída
+responde 503.
+
+| Orden | Qué hace |
+|---|---|
+| `npm run typecheck` | Revisa los tipos, como lo hace el SIA antes de compilar |
+| `npm run build` | Compila a `dist/` |
+| `npm test` | Compila y corre las pruebas contra la base local |
+| `npm run iniciar` | Compila y arranca el módulo solo |
 
 ## La base de datos
 
@@ -62,20 +85,26 @@ la base y las variables van antes que el código. Un módulo por despliegue.
 3. **La cuenta:** contraseña de `srp_api` de forma interactiva (`\password srp_api` en psql), para que no
    quede en ningún registro; su entrada cifrada sólo desde el servidor de aplicaciones; y `SRP_DB_USER` y
    `SRP_DB_PASS` en el archivo de entorno del backend.
-4. **El código:** el backend con el módulo.
-5. **El servidor web:** `servidor-web/srp.conf`, que el SIA integra (rutas de disco y destino suyos).
-6. **Verificación:** la del final de `05-srp-rol-y-grants.sql`, corrida como `srp_api`.
-7. **Datos de arranque:** la capa propia y el catálogo de especies, `npm run cargar -- capas especies`.
+4. **Verificación:** la del final de `05-srp-rol-y-grants.sql`, corrida como `srp_api`.
+5. **El código:** `src/modulos/srp/` en `sia-backend`, su conexión en `src/db.ts` y su montaje en
+   `src/index.ts`; `npm run typecheck`, `npm run build` y el despliegue. Al arrancar, el backend reporta
+   el módulo conectado como `srp_api`, sin superusuario.
+6. **El servidor web:** `servidor-web/srp.conf`, que el SIA integra (rutas de disco y destino suyos).
+7. **La primera cuenta:** con `deploy/srp-cuenta-inicial.mjs` (ver abajo).
+8. **Datos de arranque:** la capa propia y el catálogo de especies, `npm run cargar -- capas especies`.
 
 El paquete para el SIA se arma con `python herramientas/empaquetar.py <carpeta>`: escribe el manifiesto
 con la suma de cada archivo de todas las carpetas, el ZIP y su `.sha256`, y avisa si algún archivo parece
-llevar una dirección interna, una llave o una contraseña.
+llevar una dirección interna, una llave o una contraseña. El cambio a `sia-backend` (un diff y los
+archivos completos) se arma sobre una copia del repositorio del SIA y lleva líneas suyas: vive sólo en
+`servidor/local/`, que no se sube.
 
 ## El servicio: acceso y cuentas
 
-`npm run iniciar` lo arranca solo, en `SRP_PUERTO` (3100), bajo `/api/srp`. Para montarlo en el backend
-central del SIA se usa `crearRutas({ grupo, config })` de `src/app.js`. La configuración, toda por
-variables de entorno, está explicada en `src/config.js`.
+En el SIA lo monta el backend central: `app.use("/api/srp", crearRutasSrp(poolSrp))`. Fuera de él,
+`npm run iniciar` lo arranca solo, en `SRP_PUERTO` (3100), bajo `/api/srp`. La configuración, toda por
+variables de entorno, está explicada en `src/modulos/srp/config.ts`. Las respuestas de error llevan
+`{ codigo, mensaje }`: el código lo lee la aplicación y el mensaje lo ve la persona.
 
 | Ruta | Qué hace | Quién |
 |---|---|---|
@@ -106,11 +135,14 @@ variables de entorno, está explicada en `src/config.js`.
   sesión vencida responde `SESION_VENCIDA`: la aplicación vuelve a pedir la contraseña sin perder lo
   capturado. Desactivar la cuenta o su institución, o cambiar o restablecer la contraseña, cierra sus
   sesiones. La cookie dura 400 días, lo más que admiten los navegadores: quien decide es el servidor.
-- **Primera cuenta:** en una base recién instalada, quien la administra crea la primera Administración
-  global con `npm run cuenta-inicial -- <correo> "<nombre completo>" "<cargo>"`; la contraseña temporal
-  se escribe una sola vez en pantalla. Las demás cuentas se dan de alta desde la aplicación.
+- **Primera cuenta:** como da las suyas el SIA. En una base recién instalada, quien la administra corre
+  `node deploy/srp-cuenta-inicial.mjs <correo> "<nombre completo>" "<cargo>" | psql -d <base> -v ON_ERROR_STOP=on`
+  en su propia terminal. El guion calcula el resumen en ese equipo e imprime sólo el SQL del alta; la
+  contraseña temporal sale una sola vez, por la salida de errores, y nunca toca la base. Se niega si ya
+  hay una Administración global: las demás cuentas se dan de alta desde la aplicación.
 
-Los plazos, el largo mínimo y el bloqueo son parámetros (`src/config.js`): se cambian sin tocar código.
+Los plazos, el largo mínimo y el bloqueo son parámetros (`src/modulos/srp/config.ts`): se cambian sin
+tocar código.
 
 ## Cargar datos
 
@@ -154,7 +186,8 @@ Las pruebas:
 
 - `pruebas/esquema.test.js`: instala en limpio, comprueba que las tablas sean las del diccionario, que las
   reglas rechacen lo inválido y que `srp_api` tenga sólo sus permisos —`territorio` de sólo lectura,
-  nada directo fuera de `srp`—, y destruye.
+  nada directo fuera de `srp`—, que la bitácora no se edite ni se vacíe, y que el guion de la primera
+  cuenta dé una sola, con el resumen de la temporal que entrega; y destruye.
 - `pruebas/acceso.test.js`: levanta el servicio y lo usa como la aplicación: entrar, salir, alta con
   temporal, cambio obligatorio, bloqueo (también con intentos simultáneos), restablecimiento,
   desactivación, institución desactivada, vencimiento de la sesión y de la temporal.

@@ -3340,3 +3340,22 @@
   · Dos saltos conocidos por omisión (`SRP_PROXY`). El límite por procedencia espera a la fase 3, con el
     `procedencia.ts` del SIA, que hoy todavía toma la última entrada de `X-Forwarded-For`.
   · `servidor/servidor-web/srp.conf`, `herramientas/empaquetar.py` y la instalación en el orden del SIA.
+
+- **D288. El servidor en TypeScript, con la forma de un módulo del SIA (bloque 208).**
+  12-10-2026. Fase 2 de `docs/ALINEACION-SIA.md`, aprobada por Liber el 08-10-2026 (decisión 2 de ese
+  documento).
+  · El módulo vive en `servidor/src/modulos/srp/` y es lo único que viaja: `crearRutasSrp(pool)` da sus
+    rutas y el backend central lo monta en `/api/srp` con su propia conexión (`SRP_DB_USER`, `SRP_DB_PASS`).
+    El resto de `servidor/src/` sirve para correrlo fuera del SIA, en desarrollo y en las pruebas.
+  · Mismas herramientas y versiones que `sia-backend`: Express 5, TypeScript 7 con su `tsconfig.check.json`,
+    `tsup`. Sin dependencias nuevas.
+  · Errores con la forma del SIA (`errores.ts`): el detalle sólo al registro, 503 si la base no responde,
+    falta de permiso de `srp_api` señalada como tal. La respuesta sigue siendo `{ codigo, mensaje }`, que la
+    aplicación necesita para distinguir una sesión vencida de una contraseña mala.
+  · La primera cuenta, como las da el SIA: `deploy/srp-cuenta-inicial.mjs` calcula el resumen en el equipo
+    de quien administra e imprime sólo el SQL; la temporal sale una vez por la salida de errores y nunca
+    toca la base. Antes, `npm run cuenta-inicial` la escribía directo en la base.
+  · El paquete se probó dentro de una copia de `sia-backend`: el diff aplica limpio, `npm run typecheck`
+    sin errores y el binario compilado del SIA, con el módulo adentro y conectado como `srp_api`, pasa la
+    prueba de humo. El diff y los archivos completos llevan líneas del repositorio del SIA: se arman y se
+    guardan sólo en `servidor/local/`, que no se sube.

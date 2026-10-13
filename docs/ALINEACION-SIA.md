@@ -64,15 +64,17 @@ cuentas viven en `srp`; altas, bajas y restablecimientos los hace la Administrac
    marco de colonias). La base local lleva una réplica de las tablas de `territorio`
    (`servidor/db/local/territorio.sql`) que nunca se entrega. Las capas de la aplicación van en orden de
    clave, para que el teléfono y el servidor desempaten igual en un borde.
-2. **El servicio en TypeScript**, en `servidor/src/modulos/srp/`, con `crearRutasSrp(pool)`, conexión por
-   `SRP_DB_USER` y `SRP_DB_PASS`, y errores traducidos como en el SIA. Sin dependencias que el SIA no use ya.
-   Con el paquete como lo revisa el SIA (6.9): diff sobre la versión vigente de `sia-backend` y
-   `npm run typecheck`. Lo demás de la sección 6 que tocaba a esta fase ya está hecho (bloque 206).
+2. **Hecha (bloque 208).** El servicio en TypeScript, en `servidor/src/modulos/srp/`, con
+   `crearRutasSrp(pool)`, conexión por `SRP_DB_USER` y `SRP_DB_PASS`, y errores traducidos como en el SIA.
+   Sin dependencias que el SIA no use ya; las mismas versiones de TypeScript, `tsup` y Express. El paquete,
+   como lo revisa el SIA (6.9): diff que aplica limpio sobre la versión vigente de `sia-backend`, los
+   archivos completos, `npm run typecheck` sin errores y el binario del SIA probado con el módulo adentro.
+   El diff lleva líneas del repositorio del SIA, así que vive sólo en `servidor/local/`, que no se sube.
 3. **El acceso con los formatos del SIA.** Ya hechos (bloque 206): contraseña con scrypt N=16384, r=8,
    p=1, en base64url; testigo de sesión de 32 bytes con su resumen sha256 en hexadecimal; la cookie
-   `sia_srp_sesion`. Falta: la primera cuenta con un guion que sólo imprime el SQL, el registro de entradas
-   y salidas con su procedencia como `acceso.bitacora`, y el límite por procedencia con el módulo común del
-   SIA (6.2). Después, lo que se acuerde en la decisión 3.
+   `sia_srp_sesion`; y, en la fase 2, la primera cuenta con un guion que sólo imprime el SQL. Falta: el
+   registro de entradas y salidas con su procedencia como `acceso.bitacora`, y el límite por procedencia
+   con el módulo común del SIA (6.2). Después, lo que se acuerde en la decisión 3.
 4. **La recepción como la hace el SIA:** disparadores que vuelven a derivar el punto, asignan el folio con
    un contador por celda y escriben la bitácora, que ya no se podrá editar ni borrar ni siquiera por error.
    Fotografías como archivos, con su estimado de espacio (6.11). Carga masiva y envío por tandas, cada una
@@ -117,7 +119,7 @@ equipo, aplican igual al SRP:
 | 6 | Sesiones propias de cada aplicación: con una tabla común, «cerrar sesiones» cierra también las de otra | Tabla propia, `srp.sesiones` | Bien |
 | 7 | Bitácora que no se edita ni se borra, por disparador y no sólo por permisos; nada que la recorte | Disparadores que impiden editarla, borrarla o vaciarla, también a quien administra la base | **Hecho** (bloque 206) |
 | 8 | Fragmento del servidor web: `absolute_redirect off` en las redirecciones; sin `Strict-Transport-Security`, que se decide para todo el dominio; la entrada de sesión con su límite de velocidad | `servidor/servidor-web/srp.conf`, con la ruta pública por confirmar (pregunta 5) | **Hecho** (bloque 206) |
-| 9 | El paquete: ZIP con su `.sha256`, un manifiesto que cubra todas las carpetas, el cambio a `sia-backend` como diff que aplique limpio sobre su versión vigente más los archivos completos, y `npm run typecheck` sin errores | `herramientas/empaquetar.py` arma el manifiesto, el ZIP y su `.sha256`; el diff y el `typecheck`, con el módulo en TypeScript | Fase 2 |
+| 9 | El paquete: ZIP con su `.sha256`, un manifiesto que cubra todas las carpetas, el cambio a `sia-backend` como diff que aplique limpio sobre su versión vigente más los archivos completos, y `npm run typecheck` sin errores | `herramientas/empaquetar.py` arma el manifiesto, el ZIP y su `.sha256`; el diff aplica limpio sobre la versión vigente y `npm run typecheck` no da errores dentro de `sia-backend` | **Hecho** (bloque 208) |
 | 10 | Instalar primero la base y las variables y después el código: un módulo sin sus variables detiene el backend entero. Cada módulo en un despliegue aparte, con respaldo de la base antes | La guía de instalación de `servidor/README.md` lleva ese orden | **Hecho** (bloque 206) |
 | 11 | Fotografías fuera de las carpetas publicadas, en el servidor de aplicaciones, cuyo disco es limitado y lo comparten todos los módulos | Dentro del registro, como texto | Fase 4: archivos, con su estimado (un cabo con fotografía en cada árbol: 300 a 600 MB al año) para pedir el espacio antes |
 | 12 | El aviso de privacidad se confirma con la Unidad de Transparencia | Consultado: no se requiere (D250) | Llevar en el paquete la constancia de esa consulta |
