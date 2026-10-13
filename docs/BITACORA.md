@@ -4146,3 +4146,33 @@ demostración dice «casi tres años», y con cada año que pasa son más.
 - No se probó en un iPhone ni en un Android reales.
 
 **Siguiente paso.** La fase 2 del servidor.
+
+## Bloque 205 — Lo que el SIA pidió a otros proyectos, y una guía para los nuevos (12-10-2026)
+
+Sin cambio en la aplicación: sigue la versión 0.9.63. Liber compartió las características del SIA, sus
+conversaciones con el equipo del SIA y la revisión que ese equipo hizo de dos paquetes antes de instalarlos
+(Reforestación y Categorías de Protección), y pidió aplicarlas al SRP y hacer una guía para empezar proyectos
+nuevos ya alineados al SIA (D286).
+
+**Qué cambió.**
+- `docs/ALINEACION-SIA.md`: tres rasgos del SIA que importan al diseño (dónde termina el cifrado, el servidor
+  web como puerta y su corte de un minuto, la base aislada); la decisión 3 inclinada a esquema propio, con la
+  propuesta de quién opera las cuentas; las fases 2 a 4 con lo que les toca; dos preguntas nuevas (dónde
+  cuelga la API, límite de subida); y la sección 6, con quince puntos que el SIA pidió a otros proyectos,
+  cada uno con su estado en el SRP y su fase.
+- `docs/GUIA-PROYECTOS-SIA.md`, nueva: cómo está montado el SIA, lo que se decide antes de programar, base de
+  datos, módulo del backend, cuentas y sesiones, fragmento del servidor web, mapas y capas, aplicación,
+  paquete que se entrega, lista de verificación, preguntas al SIA y lo que no se hace.
+- `docs/AUDITORIA-COMPLETA.md`: la cuenta bloqueada que responde distinto ya no se da por aceptada; el SIA
+  pide un único 401, y va en la fase 2.
+- README: el árbol de `docs/` con la guía.
+
+Del documento de infraestructura no se copió nada a ningún archivo: ni direcciones, ni nombres de equipo, ni
+versiones, ni detalles de seguridad. Se tomaron sólo las reglas de diseño que se desprenden de él.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada.
+
+**Verificación.** Revisión de lo que se sube contra direcciones, nombres de equipo, versiones y nombres de la
+infraestructura: sin coincidencias. No hubo cambios de código: no se corrieron las pruebas.
+
+**Siguiente paso.** La fase 2 del servidor, ya con los puntos de la sección 6 que le tocan.

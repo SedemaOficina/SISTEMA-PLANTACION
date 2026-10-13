@@ -1,11 +1,20 @@
 # Alineación del servidor del SRP con el backend del SIA
 
-Revisión del 08-10-2026 contra el repositorio del backend del SIA. El objetivo: que el SIA pueda copiar el
-módulo del SRP a su backend casi sin tocarlo, con la misma forma que sus otros módulos. Este documento
-no lleva direcciones, cuentas de equipo ni versiones de la infraestructura del SIA.
+Revisión del 08-10-2026 contra el repositorio del backend del SIA, y del 12-10-2026 con lo que el SIA
+pidió a otros proyectos (sección 6). El objetivo: que el SIA pueda copiar el módulo del SRP a su backend
+casi sin tocarlo, con la misma forma que sus otros módulos. Este documento no lleva direcciones, cuentas
+de equipo, versiones ni detalles de seguridad de la infraestructura del SIA.
 
 ## 1. Cómo trabaja el backend del SIA
 
+- **El cifrado termina antes del SIA.** Un intermediario de gobierno recibe el HTTPS y lo reenvía; adentro
+  todo viaja sin cifrar y el intermediario no avisa por cabecera que la petición llegó cifrada. Por eso la
+  cookie del SRP es segura por configuración, no por lo que diga la petición.
+- **Un servidor web es la puerta.** Sirve los sitios estáticos (la aplicación del SRP lo es) y reenvía
+  `/api/` al backend. Ahí viven las cabeceras de seguridad, la compresión y los límites de velocidad y de
+  subida, y ahí se corta una petición a la API que tarda más de un minuto.
+- **La base vive aparte**, sin salida a internet, y sólo acepta conexiones cifradas de cuentas de servicio
+  desde el servidor de aplicaciones.
 - **Una base, un esquema por proyecto.** Todos los proyectos viven en la misma base. Cada proyecto tiene
   su esquema y su propia cuenta de servicio, `<esquema>_api`, sin superusuario y con un límite de
   conexiones. Esa cuenta sólo alcanza su esquema: la de un proyecto no puede leer otro, y eso se prueba
@@ -38,10 +47,14 @@ no lleva direcciones, cuentas de equipo ni versiones de la infraestructura del S
 |---|---|---|
 | 1 | El esquema se llama `srp`, la cuenta `srp_api` y la ruta `/api/srp`: siglas, como `jpv`, `irs` o `caec`, sin chocar con `plantacion` | Aprobada (08-10-2026) |
 | 2 | El servicio pasa a TypeScript con la forma de los módulos del SIA, para copiarse tal cual | Aprobada (08-10-2026) |
-| 3 | Dónde viven las cuentas de las personas: en el SRP (las da de alta la Administración global desde la aplicación) o en `acceso` del SIA | **Abierta**: pregunta al SIA |
+| 3 | Dónde viven las cuentas de las personas: en el SRP (las da de alta la Administración global desde la aplicación) o en `acceso` del SIA | **Inclinada a esquema propio**: falta el acuerdo por escrito |
 
-Mientras se decide la 3, el SRP conserva sus cuentas, pero con el mismo formato de contraseña y de sesión
-que `acceso`, para que mudarlas después sea copiar renglones sin pedir contraseñas nuevas.
+Al revisar otro proyecto con personas externas (enlaces de alcaldías, cientos de cuentas, altas que da la
+oficina sin depender del SIA), el SIA se inclinó por el esquema propio, siempre que quede por escrito quién
+opera las cuentas; el SIA sólo mantiene el servidor. Es el caso del SRP. Propuesta para el acuerdo: las
+cuentas viven en `srp`; altas, bajas y restablecimientos los hace la Administración global del SRP
+(SEDEMA) desde la aplicación. Mientras se firma, las cuentas usan el formato de contraseña y de sesión de
+`acceso`, para que mudarlas, si un día se decide, sea copiar renglones sin pedir contraseñas nuevas.
 
 ## 3. Fases
 
@@ -53,12 +66,17 @@ que `acceso`, para que mudarlas después sea copiar renglones sin pedir contrase
    clave, para que el teléfono y el servidor desempaten igual en un borde.
 2. **El servicio en TypeScript**, en `servidor/src/modulos/srp/`, con `crearRutasSrp(pool)`, conexión por
    `SRP_DB_USER` y `SRP_DB_PASS`, y errores traducidos como en el SIA. Sin dependencias que el SIA no use ya.
+   Con lo de la sección 6 que toca a esta fase: un mismo 401 para toda entrada fallida (6.1), el paquete
+   como lo revisa el SIA (6.9) y la guía de instalación con su orden y su fragmento del servidor web (6.8,
+   6.10).
 3. **El acceso con los formatos del SIA:** contraseña con scrypt N=16384, r=8, p=1, en base64url; testigo
    de sesión de 32 bytes con su resumen sha256 en hexadecimal; la primera cuenta con un guion que sólo
-   imprime el SQL. Después, lo que decida el SIA en la decisión 3.
+   imprime el SQL. El límite por procedencia, con el módulo común del SIA (6.2). Después, lo que se
+   acuerde en la decisión 3.
 4. **La recepción como la hace el SIA:** disparadores que vuelven a derivar el punto, asignan el folio con
    un contador por celda y escriben la bitácora, que ya no se podrá editar ni borrar ni siquiera por error.
-   Fotografías como archivos.
+   Fotografías como archivos, con su estimado de espacio (6.11). Carga masiva y envío por tandas, cada una
+   de menos de un minuto (6.3); y lo que baje al teléfono, escrito por partes.
 
 ## 4. Preguntas para el SIA
 
@@ -71,7 +89,9 @@ que `acceso`, para que mudarlas después sea copiar renglones sin pedir contrase
    ella. Y `territorio.alcaldia`: ¿es la misma capa de alcaldías que usa el SRP?
 4. ¿Les parecen bien el esquema `srp`, la cuenta `srp_api` y la ruta `/api/srp`?
 5. La aplicación es una página estática que se instala en el teléfono: ¿dónde la publican, junto a su
-   API?
+   API? ¿La API va en `/api/srp` o colgada de la ruta de la aplicación, como Categorías de Protección?
+6. ¿Cuál es el límite de subida del servidor web para `/api/`? De él dependen las tandas de la carga
+   masiva y las fotografías.
 
 ## 5. Lo que no se copia
 
@@ -80,3 +100,27 @@ que `acceso`, para que mudarlas después sea copiar renglones sin pedir contrase
 - Las sesiones de 30 minutos que se cierran con el navegador: un cabo trabaja horas en campo, a veces sin
   señal. En el SRP la sesión vence tras una semana sin uso; cada uso renueva la semana (decisión de Liber,
   09-10-2026).
+
+## 6. Lo que el SIA ya pidió a otros proyectos
+
+En octubre de 2026 el SIA revisó dos paquetes de Liber (Reforestación, el modelo de priorización, y el
+Tablero de Categorías de Protección) antes de instalarlos. Lo que pidió corregir, y las conversaciones con su
+equipo, aplican igual al SRP:
+
+| # | Lo que pide el SIA | El SRP hoy | Cuándo |
+|---|---|---|---|
+| 1 | Un mismo 401, con el mismo mensaje y el mismo tiempo, si el correo no existe, la cuenta está inactiva o bloqueada o la contraseña es mala: si no, se averigua qué correos tienen cuenta | Responde 423 a la cuenta bloqueada, y 403 a la inactiva o de institución desactivada después de la contraseña correcta | Fase 2 |
+| 2 | Límite de intentos por procedencia: contar sólo los fallidos, y tomar la dirección de la persona descartando los saltos conocidos, no la última de `X-Forwarded-For`, que es el intermediario y es la misma para todos. El SIA lo corrige en su módulo común (`src/comun/procedencia.ts`): se importa de ahí, no se copia | Sin límite por procedencia; el bloqueo por cuenta cuenta sólo los fallidos | Fase 3 |
+| 3 | Cada petición termina en menos de un minuto: el servidor web corta la API después. Una alta masiva de cuentas con un hash lento perdía las contraseñas temporales | Carga masiva de hasta 20,000 árboles por archivo; envío de jornadas | Fase 4: por tandas |
+| 4 | El hash de contraseñas con los parámetros de `acceso` (scrypt N=2^14): con 2^17, diez accesos simultáneos ocupaban 1.3 GB de una memoria que comparten todos los módulos | scrypt N=2^15 | Fase 3 |
+| 5 | La cookie con su ruta acotada, nunca `/`: con `/` viaja a todas las aplicaciones del dominio | `Path=/api/srp` | Bien |
+| 6 | Sesiones propias de cada aplicación: con una tabla común, «cerrar sesiones» cierra también las de otra | Tabla propia, `srp.sesiones` | Bien |
+| 7 | Bitácora que no se edita ni se borra, por disparador y no sólo por permisos; nada que la recorte | Sólo por permisos | Fase 4 |
+| 8 | Fragmento del servidor web: `absolute_redirect off` en las redirecciones; sin `Strict-Transport-Security`, que se decide para todo el dominio; la entrada de sesión con su límite de velocidad | Aún no trae fragmento | Guía de instalación, fase 2 |
+| 9 | El paquete: ZIP con su `.sha256`, un manifiesto que cubra todas las carpetas, el cambio a `sia-backend` como diff que aplique limpio sobre su versión vigente más los archivos completos, y `npm run typecheck` sin errores | — | Fase 2 |
+| 10 | Instalar primero la base y las variables y después el código: un módulo sin sus variables detiene el backend entero. Cada módulo en un despliegue aparte, con respaldo de la base antes | El módulo no arranca sin sus variables | Guía de instalación, fase 2 |
+| 11 | Fotografías fuera de las carpetas publicadas, en el servidor de aplicaciones, cuyo disco es limitado y lo comparten todos los módulos | Dentro del registro, como texto | Fase 4: archivos, con su estimado (un cabo con fotografía en cada árbol: 300 a 600 MB al año) para pedir el espacio antes |
+| 12 | El aviso de privacidad se confirma con la Unidad de Transparencia | Consultado: no se requiere (D250) | Llevar en el paquete la constancia de esa consulta |
+| 13 | No publicar una tercera capa de colonias si sus datos caben en una que ya existe (el marco de unidades territoriales 2020 o el catálogo IECM 2022) | Prioritarias: 2,243 colonias del modelo de priorización, capa propia | **Pendiente de Liber**: de qué catálogo salen las 2,243, y si la prioridad puede ir como campo de una capa del SIA |
+| 14 | La caché de teselas tiene una cuota que comparten todas las capas: no se precargan niveles amplios | El mapa base es externo y las capas viajan con la aplicación | Sin efecto hoy |
+| 15 | Sin servidor de correo: la contraseña no se recupera, se restablece; la administración da una temporal de un solo uso que se cambia al primer acceso | Así funciona | Bien |

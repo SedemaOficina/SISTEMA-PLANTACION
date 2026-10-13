@@ -181,7 +181,8 @@ datos/                  El modelo de datos
 docs/                   Memoria del proyecto
   FASE2-Y-TRASPASO.md   Lo que el programador del SIA debe construir, reemplazar y decidir
   PLAN-TRASPASO-SIA.md  Cómo se llega a los servidores del SIA: fases, responsables, decisiones y riesgos
-  ALINEACION-SIA.md     Cómo trabaja el backend del SIA y cómo se alinea el servidor del SRP
+  ALINEACION-SIA.md     Cómo trabaja el backend del SIA, cómo se alinea el servidor del SRP y lo que el SIA pidió a otros proyectos
+  GUIA-PROYECTOS-SIA.md  Guía para empezar un proyecto nuevo pensando desde el principio en el SIA
   AUDITORIA-INTEGRAL-APP.md  Auditoría de la aplicación: seguridad, integridad, accesibilidad, rendimiento y código
   AUDITORIA-COMPLETA.md  Auditoría de todo el proyecto: archivos, código, reglas, diseño, textos, botones y avisos
   REVISION-PANTALLAS.md, REVISION-ARCHIVOS.md   Revisiones de las pantallas y de los archivos que se descargan

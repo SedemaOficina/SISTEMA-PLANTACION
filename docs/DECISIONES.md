@@ -3303,3 +3303,21 @@
     lunes 1): calculan lo esperado con la fecha del día.
   · Para la fase 4: lo que baje del servidor al teléfono se escribe por partes y se mide en un iPhone real;
     escribir 17,800 árboles de golpe tomó 11 minutos en WebKit.
+
+- **D286. Lo que el SIA pidió a otros proyectos, y una guía para los nuevos (bloque 205).**
+  12-10-2026. Liber compartió las características del SIA y la revisión que su equipo hizo de dos paquetes
+  (Reforestación y Categorías de Protección), y pidió aplicarlas al SRP y sacar de ellas una guía para
+  empezar proyectos nuevos ya alineados al SIA.
+  · `docs/ALINEACION-SIA.md` § 6: quince puntos, cada uno con su estado en el SRP y su fase. Para la fase 2:
+    un mismo 401 para toda entrada fallida; el paquete como lo revisa el SIA (ZIP con su suma, manifiesto,
+    diff sobre `sia-backend`, `typecheck`); la guía de instalación con su orden y su fragmento del servidor
+    web. Para la 3: el límite por procedencia con el módulo común del SIA y scrypt con N=2^14. Para la 4:
+    tandas de menos de un minuto, fotografías con su estimado de espacio, bitácora inmutable por disparador.
+  · Decisión 3 (dónde viven las cuentas): el SIA se inclina por el esquema propio cuando las personas son
+    externas y la oficina da las altas, si queda por escrito quién las opera. Falta ese acuerdo.
+  · Pendiente de Liber: de qué catálogo salen las 2,243 colonias del modelo de priorización; el SIA no
+    quiere una tercera capa de colonias si la prioridad cabe en una existente.
+  · `docs/GUIA-PROYECTOS-SIA.md`: cómo está montado el SIA, lo que se decide antes de programar, base,
+    backend, cuentas, servidor web, capas, aplicación, paquete y lista de verificación. Sin direcciones,
+    nombres de equipo, versiones ni detalles de seguridad de la infraestructura.
+  · El documento de infraestructura no se copia a ningún archivo: de él se tomaron sólo reglas de diseño.
