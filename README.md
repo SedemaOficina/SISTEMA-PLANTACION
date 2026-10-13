@@ -127,6 +127,7 @@ index.html              Pantallas y marca de versión de los archivos
 sw.js                   Service worker: la app abre sin señal; versión = marca ?v= de index.html
 manifest.webmanifest    Instalación en pantalla de inicio; iconos en assets/
 README.md               Este archivo
+VERSION                 El número de versión, el mismo de la marca ?v=; la franja de arriba lo muestra
 
 css/estilos.css         Estilos (orden fijo por bloques; ver el encabezado del archivo)
 
@@ -214,7 +215,12 @@ En `index.html`, cada archivo propio se pide con `?v=0.0.0`. **Ese número se su
 etiquetas a la vez** antes de publicar. Es lo único que obliga al navegador de quien ya abrió el
 sitio a descargar la versión nueva; sin eso sirve unos archivos de su memoria y otros de la red, y
 esa mezcla no arranca. `js/config.js` lee ese mismo número de su propia dirección, así que la
-versión se escribe en un solo lugar.
+versión se escribe en un solo lugar del código.
+
+**El archivo `VERSION`, en la raíz, lleva el mismo número** (lo pide la guía del SIA, sección 8); la prueba
+falla si no coincide con la marca. Ese número se ve siempre en la franja fija de arriba: «Versión de prueba
+0.9.64» mientras el SIA no instale el sistema; al pasar al SIA, `VERSION` y la marca van en `1` y la franja
+dice «Versión 1».
 
 Si aun así alguien cae en una mezcla, el sistema lo detecta al abrir y explica cómo forzar la
 recarga, en vez de quedarse en blanco.

@@ -194,6 +194,14 @@ SRP.util = {
     sel.value = f[campo];
   },
 
+  /* Lo que dice el distintivo fijo de arriba (guía SIA, sección 8): de prueba mientras empiece en 0;
+     desde 1, ya instalada en el SIA. Devuelve también la clase que le toca. */
+  versionEnPantalla() {
+    const v = SRP.CONFIG.VERSION;
+    if (!/^\d+(\.\d+)*$/.test(v)) return { texto: 'Versión sin identificar', clase: 'version-sia-error' };
+    return /^0\./.test(v) ? { texto: 'Versión de prueba ' + v, clase: 'version-sia-prueba' } : { texto: 'Versión ' + v, clase: '' };
+  },
+
   /* La versión que se muestra: con datos de prueba lleva el bloque, para ubicar lo publicado; en la
      versión real, sólo el número */
   textoVersion() {

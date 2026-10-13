@@ -33,6 +33,9 @@ SRP.app = {
   },
 
   async iniciar() {
+    const vp = SRP.util.versionEnPantalla();   // primero: también se ve si la versión llegó mezclada
+    this.el('version-sia').textContent = vp.texto;
+    this.el('version-sia').className = ('version-sia ' + vp.clase).trim();
     if (!this.comprobarVersionCompleta()) { this.marcarListo(); return; }
     SRP.util.redDeSeguridad();     // ningún fallo se queda mudo
     this.el('version').textContent = SRP.util.textoVersion();

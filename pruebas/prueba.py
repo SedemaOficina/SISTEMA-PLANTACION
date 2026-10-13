@@ -205,6 +205,13 @@ with sync_playwright() as p:
     # La marca se lee de index.html, no se escribe aquí: así la prueba no caduca en cada bloque
     MARCA=re.search(r'js/config\.js\?v=([\w.]+)', open(os.path.join(os.path.dirname(__file__), '..', 'index.html'), encoding='utf-8').read()).group(1)
     ok(MARCA in pg.inner_text('#version'),'la versión sale de la marca del archivo: '+pg.inner_text('#version'))
+    # VERSIÓN EN PANTALLA (guía SIA, sección 8): VERSION y la marca dicen lo mismo, y la franja lo muestra
+    VERSION=open(os.path.join(os.path.dirname(__file__), '..', 'VERSION'), encoding='utf-8').read().strip()
+    ok(VERSION==MARCA,'el archivo VERSION (%s) y la marca ?v= (%s) dicen lo mismo' % (VERSION, MARCA))
+    vtxt=pg.inner_text('#version-sia'); esperado=('Versión de prueba ' if VERSION.startswith('0.') else 'Versión ')+VERSION
+    ok(pg.is_visible('#version-sia') and vtxt==esperado,'la versión se ve en pantalla desde el acceso: '+vtxt)
+    vcaja=pg.evaluate("(() => { const r = document.getElementById('version-sia').getBoundingClientRect(); return { top: r.top, alto: r.height, ancho: r.width, fija: getComputedStyle(document.getElementById('version-sia')).position }; })()")
+    ok(vcaja['fija']=='fixed' and vcaja['top']==0 and vcaja['alto']>=19 and vcaja['ancho']==390,'la franja de la versión va fija arriba, de orilla a orilla: %s' % vcaja)
     sinmarca=pg.evaluate("""() => [...document.querySelectorAll('script[src],link[rel=stylesheet][href]')]
         .map(e=>e.src||e.href).filter(u=>u.includes('127.0.0.1')&&!u.includes('?v=')).length""")
     ok(sinmarca==0,'todos los archivos propios llevan marca de versión')

@@ -173,6 +173,54 @@ El paquete trae el fragmento de configuración del sitio, y el SIA lo integra:
   navegador (Chromium y WebKit, el de Safari); con fechas movidas, porque una prueba que depende del día
   sólo se descubre el día que falla; y esperando señales de la aplicación, no tiempos fijos.
 
+### Versión en pantalla (regla agregada el 2026-10-12)
+
+Quien usa o revisa el sistema debe saber, sin preguntar, si está frente a una prueba o frente a lo que ya
+instaló el SIA.
+
+- **Un solo número:** el archivo `VERSION` en la raíz del proyecto, con una sola línea (`0.3`, `0.9.64`,
+  `1`, `1.2`). El `?v=` de cada archivo de la página lleva ese mismo número, y una prueba automática falla si
+  no coinciden. Si lo publicado vive en una subcarpeta (`sitio/`), se copia ahí `VERSION` al construir; el
+  empaquetado comprueba que ambas digan lo mismo.
+- **Mientras no esté instalado en el SIA:** versión de prueba, siempre empezando en `0.` (`0.1`, `0.2`…, o
+  `0.9.64` si el proyecto ya numera por bloques). Sube en cada publicación de prueba y nunca llega a `1` por
+  su cuenta.
+- **Al pasar al SIA:** el paquete de la primera instalación lleva versión `1`. Si el SIA devuelve
+  observaciones antes de instalarlo, se corrige y se reentrega como `1`, con nueva fecha. Ya instalado,
+  cada entrega posterior sube: `1.1`, `1.2`…; un cambio de fondo, `2`.
+- **Siempre visible en la interfaz:** fija en todas las pantallas —también la de entrada y las que no piden
+  sesión—, en teléfono y escritorio, sin depender de desplazarse. Con el texto completo: «Versión de prueba
+  0.3» o «Versión 1»; nunca sólo «v0.3». La de prueba, con un estilo que no se confunda con la instalada; la
+  diferencia va en el texto, no sólo en el color.
+- **No tapa nada:** si la aplicación tiene barras fijas abajo (navegación, «Guardar»), la versión va en una
+  franja fija arriba que ocupa su propio lugar (el cuerpo y lo que se pega arriba bajan lo mismo). En una
+  página sin barras fijas basta una pastilla en una esquina.
+- **Se lee del `?v=` del propio archivo**, no de una petición a la red: así se ve también sin señal, en una
+  aplicación instalable.
+- **Si no se puede leer**, lo dice («Versión sin identificar») en lugar de esconderse.
+- **Una prueba automática** comprueba que se ve y que dice lo mismo que `VERSION`.
+- Es distinto de la bandera de datos de prueba (arriba): una versión `1` puede tener datos de prueba en su
+  ambiente de ensayo, y una `0.N` nunca debe tener datos reales sin que se diga.
+
+La plantilla `plantillas/version/` trae la pastilla lista para una página sencilla (`version-visible.js` y
+`version-visible.css`, servidos desde el propio sitio, compatibles con una política de seguridad de
+contenido estricta). El `?v=` del script es el que muestra:
+
+```html
+<link rel="stylesheet" href="version-visible.css?v=0.3">
+<script src="version-visible.js?v=0.3" defer></script>
+```
+
+Prueba mínima (Playwright):
+
+```js
+const version = fs.readFileSync('VERSION', 'utf8').trim();
+const texto = version.startsWith('0.') ? `Versión de prueba ${version}` : `Versión ${version}`;
+await expect(page.getByTestId('version-sia')).toHaveText(texto);
+```
+
+El SRP la tiene como franja arriba, porque abajo lleva navegación y «Guardar»; sirve de ejemplo.
+
 ## 9. El paquete que se entrega
 
 - Un ZIP con su `.sha256`, y adentro un manifiesto con la suma de cada archivo de **todas** las carpetas.
@@ -182,7 +230,8 @@ El paquete trae el fragmento de configuración del sitio, y el SIA lo integra:
 - Una guía de instalación en pasos, en este orden: respaldo de la base; guiones SQL; contraseña de la
   cuenta y variables; código; fragmento del servidor web; verificación como la cuenta de servicio. Un
   módulo por despliegue.
-- Un LEEME con qué hace el proyecto, qué toca del SIA, los conteos de control, las decisiones tomadas, las
+- El archivo `VERSION` en la raíz del paquete, en `1` o mayor; el empaquetado se detiene si dice `0.N`.
+- Un LEEME con su versión (la misma de `VERSION`), qué hace el proyecto, qué toca del SIA, los conteos de control, las decisiones tomadas, las
   preguntas abiertas, quién opera las cuentas y la constancia del aviso de privacidad.
 
 ## 10. Antes de cada entrega
@@ -201,6 +250,8 @@ El paquete trae el fragmento de configuración del sitio, y el SIA lo integra:
 - [ ] Aviso de privacidad o constancia de la Unidad de Transparencia.
 - [ ] ZIP, `.sha256` y manifiesto de todas las carpetas; diff que aplica limpio; `typecheck` sin errores.
 - [ ] Guía de instalación con el orden de la sección 9.
+- [ ] `VERSION` en `1` (primera instalación) o mayor; el distintivo de versión visible en todas las
+      pantallas y la prueba que lo compara con `VERSION`, pasando.
 - [ ] Ni contraseñas, ni llaves, ni direcciones, ni nombres de equipo, ni versiones exactas de la
       infraestructura en ningún archivo.
 
@@ -222,5 +273,6 @@ El paquete trae el fragmento de configuración del sitio, y el SIA lo integra:
 - `Strict-Transport-Security` en el fragmento del proyecto.
 - Depender de las cabeceras del intermediario para saber si la petición llegó cifrada.
 - Peticiones de más de un minuto.
+- Una interfaz sin su versión en pantalla, o una versión `0.N` entregada al SIA.
 - Subir al repositorio contraseñas, llaves, direcciones, nombres de equipo o versiones exactas de la
   infraestructura.

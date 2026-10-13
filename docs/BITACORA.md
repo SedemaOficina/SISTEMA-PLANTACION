@@ -4214,3 +4214,31 @@ rastro. El fragmento del servidor web no se
 validó con nginx: no hay uno en este equipo. eslint sin avisos.
 
 **Siguiente paso.** La fase 2: el servicio en TypeScript con la forma de los módulos de `sia-backend`.
+
+## Bloque 207 — La versión, siempre en pantalla (12-10-2026)
+
+Versión 0.9.64. Liber pidió una regla para todos los proyectos que van al SIA: un número de versión de prueba
+mientras no pasen al SIA, versión 1 al pasar, y siempre a la vista en la interfaz. Se agregó a la guía y a la
+skill del SIA, y se aplicó aquí.
+
+**Qué cambió.**
+- Franja fija de 20 px arriba, en todas las pantallas, también la de acceso: «Versión de prueba 0.9.64», en
+  ámbar. Al pasar al SIA dirá «Versión 1», en gris. Si la versión no llega, dice «Versión sin identificar», en
+  rojo. Ocupa su propio lugar: el cuerpo, la barra de saltos de la ficha, la franja de edición y el aviso
+  bajan lo mismo, así que no tapa ningún control.
+- `VERSION` en la raíz, con el mismo número que la marca `?v=`.
+- `docs/GUIA-PROYECTOS-SIA.md`: la versión actualizada de la guía, con la sección «Versión en pantalla».
+- README: `VERSION` en «Al cerrar un bloque».
+
+**Pantalla: qué se agregó y qué se quitó.** Se agregó la franja de la versión. No se quitó nada.
+
+**Verificación.** La prueba del acceso comprueba que `VERSION` y la marca coinciden y que la franja se ve
+fija arriba con el texto que les toca. La sesión que hizo el bloque corrió la prueba completa: 1,440
+comprobaciones, 0 fallas.
+
+Antes de subirlo, `auditoria_css.py` marcó el interlineado de la franja (19 px, fuera de los tres de la
+norma). Pasó a 1.5, que en 20 px se ve igual. El comentario de `textoVersion`, que había quedado arriba de
+la función nueva, volvió a su lugar, y `VERSION` entró al árbol del README. Después de esos cambios:
+- prueba completa: 1,440 comprobaciones, 0 fallas;
+- `auditoria.py`: 144 comprobaciones, 0 hallazgos;
+- `auditoria_css.py`: 0 hallazgos.

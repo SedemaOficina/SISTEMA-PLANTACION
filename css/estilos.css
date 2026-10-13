@@ -106,13 +106,14 @@
   --radio: 8px; --radio-control: 8px; --radio-filtro: 10px; --radio-pildora: 999px; --radio-chico: 6px; --radio-min: 2px; --radio-grande: 18px;
   /* Capas: una sola escala. Leaflet ocupa de 200 a 1000 dentro de cada mapa; lo de la aplicación que va
      encima del mapa (listas, menús, avisos) empieza en 1100 */
-  --z-base: 0; --z-fijo: 1; --z-dialogo-barra: 2; --z-barra: 5; --z-saltos: 6; --z-capa-mapa: 350; --z-subir: 850; --z-pestanas: 900;
+  --z-base: 0; --z-fijo: 1; --z-dialogo-barra: 2; --z-barra: 5; --z-saltos: 6; --z-capa-mapa: 350; --z-subir: 850; --z-pestanas: 900; --z-version: 950;
   --z-lista: 1100; --z-menu: 1200; --z-menu-acciones: 1300; --z-confirmacion: 1500; --z-saltar: 2000; --z-aviso: 3000;
   --dur-rapida: .15s; --dur-media: .2s;   /* cambios de estado; aparecer y desaparecer */
   --ancho-max: 44rem;          /* formularios y lectura: línea corta, fácil de leer */
   --ancho-formulario: 50rem;   /* formularios con mapa en computadora: una columna centrada */
   --ancho-max-tabla: 78rem;    /* pantallas de tabla: aprovechan el monitor sin cortar columnas */
   --toque: 48px;
+  --alto-version: calc(20px + env(safe-area-inset-top, 0px));   /* franja fija de la versión, arriba */
   --texto-guia: #6B6E70;       /* placeholder y textos guía de campos vacíos */
 }
 /* MODO SOL: mismos colores de la casa, más oscuros los que leen. El guinda ya da 8:1 y no
@@ -136,7 +137,7 @@
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body {
-  margin: 0; background: var(--fondo); color: var(--texto);
+  margin: 0; padding-top: var(--alto-version); background: var(--fondo); color: var(--texto);
   font-family: var(--fuente-cuerpo); font-size: var(--t-m); line-height: 1.5;
 }
 h1, h2 { font-family: var(--fuente-titulo); color: var(--texto); line-height: 1.2; margin: 0 0 var(--e-3); }
@@ -186,6 +187,14 @@ main:focus { outline: none; }
 /* ========== 4. COMPONENTES ========== */
 .saltar { position: absolute; left: -999px; top: 0; background: var(--acento); color: var(--fondo); padding: var(--e-2) var(--e-4); z-index: var(--z-saltar); }
 .saltar:focus { left: 0; }
+/* VERSIÓN EN PANTALLA: franja fija de 20 px, arriba, en todas las pantallas. Ocupa su propio lugar
+   (el cuerpo baja lo mismo y las barras pegadas arriba se quedan debajo), así que nunca tapa un control.
+   De prueba en ámbar, «hay que mirarlo»; instalada en el SIA, en gris; sin identificar, en rojo. El
+   texto dice cuál es: el color no va solo. */
+.version-sia { position: fixed; top: 0; left: 0; right: 0; z-index: var(--z-version); height: var(--alto-version); margin: 0;
+  padding: env(safe-area-inset-top, 0px) var(--e-4) 0; background: var(--neutro-fondo); color: var(--gris);
+  border-bottom: 1px solid var(--borde-suave); font-size: var(--t-xxs); font-weight: 500; line-height: 1.5; text-align: center;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
 .banda-ficticio { margin: 0; padding: var(--e-2) var(--e-4); background: repeating-linear-gradient(135deg, var(--gris) 0 10px, var(--gris-rayas) 10px 20px); color: var(--fondo); font-size: var(--t-xs); text-align: center; }
 /* Crédito del mapa en un renglón, en teléfono y en computadora; al tocarlo se despliega. Llega a lo
    ancho del mapa menos el lugar de los controles de la izquierda. Legible sobre cualquier imagen: el azul
@@ -599,7 +608,7 @@ fieldset.campo { margin-inline: 0; }
 .franja-edicion { background: var(--acento-suave); border-left: 4px solid var(--acento); padding: var(--e-3) var(--e-4); }
 /* Edición de un árbol: una franja fija arriba, que dice qué registro es, y el formulario dentro de un
    marco de acento. Los campos conservan su apariencia: el punteado es de la fotografía y el ámbar, de los avisos */
-.edicion-franja { position: sticky; top: 0; z-index: var(--z-saltos); display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--e-1) var(--e-3);
+.edicion-franja { position: sticky; top: var(--alto-version); z-index: var(--z-saltos); display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--e-1) var(--e-3);
   margin: 0 0 var(--e-2); padding: var(--e-2) var(--e-4); border-radius: var(--radio-chico); background: var(--acento); color: var(--fondo); font-size: var(--t-s); }
 .edicion-franja[hidden] { display: none; }
 .vista-registrar[data-editando="true"] .registrar-columnas { border: 2px solid var(--acento); border-radius: var(--radio); padding: var(--e-3); }
@@ -888,7 +897,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
    neutro con un filete de color e icono que dicen si es éxito o alerta (el color no va solo:
    también cambian el icono y el texto). «Deshacer» en dorado claro, que contrasta sobre el oscuro. */
 .aviso {
-  position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + var(--e-3)); transform: translateX(-50%); z-index: var(--z-aviso);
+  position: fixed; left: 50%; top: calc(var(--alto-version) + var(--e-3)); transform: translateX(-50%); z-index: var(--z-aviso);
   width: max-content; max-width: min(34rem, calc(100vw - 2rem)); display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: var(--e-1) var(--e-2);
   padding: var(--e-2) var(--e-2) var(--e-2) var(--e-3); border-radius: var(--radio-filtro); border-left: 4px solid var(--exito);
   background: var(--texto); color: var(--fondo); font-weight: 500; font-size: var(--t-s); box-shadow: var(--sombra-aviso);
@@ -1213,6 +1222,9 @@ dialog::backdrop { background: var(--velo-oscuro); }
 [data-contraste="alto"] .paso-texto { font-weight: 700; }
 [data-contraste="alto"] .pasos-siguiente, [data-contraste="alto"] .campo-error, [data-contraste="alto"] .ayuda-campo { font-weight: 700; }
 
+.version-sia.version-sia-prueba { background: var(--editar-fondo); color: var(--editar); border-bottom-color: var(--editar-borde); }
+.version-sia.version-sia-error { background: var(--error-fondo); color: var(--error); border-bottom-color: var(--error); }
+
 /* ========== 6. UTILIDADES ========== */
 /* El doble selector no es adorno: `.campo input { width:100% }` tiene la misma especificidad
    que `.oculto-visual` y estiraba el selector de archivo a todo el ancho; invisible, pero
@@ -1333,7 +1345,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
   .pestana[aria-current="page"] { border-top-color: var(--acento); }
   body { padding-bottom: var(--alto-nav); }
   .barra-guardar { bottom: var(--alto-nav); }
-  .saltos { position: sticky; top: 0; z-index: var(--z-saltos); display: flex; gap: var(--e-1); margin: 0 calc(-1 * var(--e-4)); padding: var(--e-2) var(--e-4);
+  .saltos { position: sticky; top: var(--alto-version); z-index: var(--z-saltos); display: flex; gap: var(--e-1); margin: 0 calc(-1 * var(--e-4)); padding: var(--e-2) var(--e-4);
     background: var(--fondo); border-bottom: 1px solid var(--borde-suave); box-shadow: var(--sombra-saltos); }
   .saltos button { flex: 1 1 0; min-height: 40px; padding: 0 var(--e-2); border: 1px solid var(--borde-filtro); border-radius: var(--radio-pildora);
     background: var(--fondo); color: var(--texto); font: inherit; font-size: var(--t-s); font-weight: 500; cursor: pointer; white-space: nowrap; position: relative; }
