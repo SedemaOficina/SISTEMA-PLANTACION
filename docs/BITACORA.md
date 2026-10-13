@@ -4289,3 +4289,28 @@ Las sumas del ZIP y del manifiesto coinciden. No se probó en el servidor del SI
 - en el servidor, los permisos por perfil e institución, y la edición de cuentas;
 - el registro de entradas como `acceso.bitacora`;
 - el límite por procedencia con `procedencia.ts` del SIA.
+
+## Bloque 209 — El paquete de la fase 2, para revisión (12-10-2026)
+
+Sin cambio en la aplicación: sigue la versión 0.9.64. La guía del SIA, actualizada en el bloque 207, pide
+que todo paquete entregado lleve `VERSION` en 1 o más. Liber eligió mandar el de la fase 2 para revisión,
+en 0.9.64, y dejar el 1 para la primera instalación (D289).
+
+**Qué cambió.**
+- El paquete `srp-fase2-2026-10-12` (fuera del repositorio) lleva `VERSION`. Su LEEME dice desde el
+  principio «Versión de prueba 0.9.64 · para revisión: todavía no se instala», y suma lo que falta para la
+  versión 1. Se volvió a armar: 21 archivos en el manifiesto, con su ZIP y su `.sha256`.
+- `herramientas/empaquetar.py`: pide `VERSION` en la raíz y la misma versión en el LEEME. Con 0.N se
+  detiene, salvo con `--revision` y un LEEME que diga «para revisión».
+- `docs/GUIA-PROYECTOS-SIA.md`: la excepción del paquete para revisión. `docs/ALINEACION-SIA.md`,
+  `servidor/README.md` y el README, al tanto.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada.
+
+**Verificación.** `empaquetar.py` se probó contra una carpeta de ensayo con cada caso: sin `VERSION`, con
+`VERSION` inválido, un LEEME sin la versión o con el número suelto, 0.N sin `--revision`, `--revision` con un
+LEEME que no lo dice, y los dos casos buenos (1, y 0.N para revisión). Sobre el paquete real, sin
+`--revision` se detiene y con `--revision` lo arma. Las sumas del ZIP y del manifiesto coinciden. El aviso
+sobre `backend/completos/src/db.ts` son líneas del propio `sia-backend`, como en el bloque 208.
+
+**Siguiente paso.** Liber manda el paquete al SIA. Después, la fase 3 del servidor.

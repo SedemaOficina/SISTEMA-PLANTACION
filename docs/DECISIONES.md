@@ -3359,3 +3359,13 @@
     sin errores y el binario compilado del SIA, con el módulo adentro y conectado como `srp_api`, pasa la
     prueba de humo. El diff y los archivos completos llevan líneas del repositorio del SIA: se arman y se
     guardan sólo en `servidor/local/`, que no se sube.
+
+- **D289. El paquete de la fase 2 va al SIA para revisión, en 0.9.64 (bloque 209).**
+  12-10-2026. La guía del SIA pide que todo paquete entregado lleve `VERSION` en 1 o más. Liber eligió
+  mandar el de la fase 2 para revisión, en la versión de prueba 0.9.64, y dejar el 1 para la primera
+  instalación, con el sistema completo (la aplicación conectada y la recepción de la fase 4). Así el SIA
+  revisa la forma del módulo antes de que crezca, sin instalar algo que nadie puede usar todavía.
+  · El paquete lleva `VERSION` y su LEEME lo dice desde el principio, junto con lo que falta para la
+    versión 1.
+  · `empaquetar.py` pide `VERSION` y la misma versión en el LEEME. Se detiene con 0.N, salvo con
+    `--revision` y un LEEME que diga «para revisión». La guía recoge esa excepción.

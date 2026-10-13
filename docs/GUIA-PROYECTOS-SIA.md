@@ -231,6 +231,9 @@ El SRP la tiene como franja arriba, porque abajo lleva navegación y «Guardar»
   cuenta y variables; código; fragmento del servidor web; verificación como la cuenta de servicio. Un
   módulo por despliegue.
 - El archivo `VERSION` en la raíz del paquete, en `1` o mayor; el empaquetado se detiene si dice `0.N`.
+  La excepción es un paquete que el SIA sólo revisa antes de que el sistema esté completo: lleva su `0.N`, el
+  LEEME dice desde el principio que es «para revisión» y que todavía no se instala, y se arma con
+  `empaquetar.py --revision`.
 - Un LEEME con su versión (la misma de `VERSION`), qué hace el proyecto, qué toca del SIA, los conteos de control, las decisiones tomadas, las
   preguntas abiertas, quién opera las cuentas y la constancia del aviso de privacidad.
 

@@ -95,7 +95,9 @@ la base y las variables van antes que el código. Un módulo por despliegue.
 
 El paquete para el SIA se arma con `python herramientas/empaquetar.py <carpeta>`: escribe el manifiesto
 con la suma de cada archivo de todas las carpetas, el ZIP y su `.sha256`, y avisa si algún archivo parece
-llevar una dirección interna, una llave o una contraseña. El cambio a `sia-backend` (un diff y los
+llevar una dirección interna, una llave o una contraseña. Pide `VERSION` en la raíz del paquete y la misma
+versión en su LEEME: un paquete para instalar va en 1 o más; uno que el SIA sólo revisa puede ir en 0.N,
+con `--revision` y diciéndolo en el LEEME. El cambio a `sia-backend` (un diff y los
 archivos completos) se arma sobre una copia del repositorio del SIA y lleva líneas suyas: vive sólo en
 `servidor/local/`, que no se sube.
 
