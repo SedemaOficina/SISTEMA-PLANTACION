@@ -4639,3 +4639,44 @@ No se probó: la pantalla de la bandeja ni el aviso en el teléfono, que llegan 
 
 **Siguiente paso.** El paso 4: que la aplicación hable con el servidor. Antes de tocar pantallas, se le
 muestran a Liber el antes y el después de Parámetros y la propuesta de la bandeja.
+
+## Bloque 219 — Las pantallas aprobadas y la misma especie en los posibles duplicados (14-10-2026)
+
+Sin cambio en la aplicación: sigue la versión 0.9.64 (D299).
+
+**Lo que se le mostró a Liber.** Capturas de la aplicación con los datos de demostración, con la propuesta
+armada encima sólo para la captura, sin cambiar código:
+- Parámetros hoy y con «Editar», y el diálogo para editar un valor;
+- Configuración con la tarjeta nueva de la bandeja;
+- la bandeja de posibles duplicados, en computadora y en teléfono.
+
+Liber aprobó las dos pantallas como se ven. De las tres reglas para la bandeja eligió la segunda: la suma de
+las precisiones, sólo entre árboles de la misma especie. En la demostración, eso deja 32 parejas, contra 351
+con la regla anterior y 11 con 4 m fijos.
+
+**Qué cambió.**
+- `07-srp-duplicados.sql`: `srp.especie_clave`, la especie para comparar. `srp.vecinos` sólo cuenta los de la
+  misma especie.
+- `08-srp-rol-y-grants.sql`: `srp_api` usa la función nueva.
+- `datos/esquema.json` y `datos/DICCIONARIO-DATOS.md`: la regla S-05 dice la misma especie y la bandeja.
+  `js/esquema.js` no cambia: no lleva las reglas.
+- `duplicados.test.js`: una prueba más. Otra especie a un metro no avisa; el mismo nombre escrito en «Otra
+  especie» con otras mayúsculas y sin acento, sí.
+- `servidor/README.md` y `docs/FASE2-Y-TRASPASO.md`: la regla y el avance.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada todavía: se programan al conectar la aplicación.
+
+**Verificación.**
+- Servidor: 81 pruebas, 0 fallas. El único aviso del registro es el de la fotografía que falta, a propósito.
+- `pruebas/auditoria.py`: 144 comprobaciones, 0 hallazgos.
+- En la copia desechable de `sia-backend`: `typecheck` y `build` sin errores, y la prueba de humo sin fallas.
+- La base local quedó sin datos de prueba.
+- Dos tropiezos:
+  - el guion que escribió la función puso los acentos invisibles en lugar de su código `̀`; se corrigió;
+  - el generador del diccionario escribe con saltos de línea de Windows, y `js/esquema.js` parecía cambiado
+    entero sin cambiar nada. Se dejó como estaba.
+
+No se probó: las especies reales. En la demostración se asignaron al azar, así que con datos reales la
+diferencia entre las dos reglas será menor.
+
+**Siguiente paso.** El paso 4: que la aplicación hable con el servidor, por partes.

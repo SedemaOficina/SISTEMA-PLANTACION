@@ -29,7 +29,7 @@ ubica un punto con las mismas reglas que la aplicación; el catálogo de especie
 de desarrollo) y lo que guarda un teléfono de prueba con la demostración. Todo cupo, y PostGIS ubica
 los 17,479 árboles y las 1,305 jornadas igual que la aplicación.
 
-**Avance en el servidor (bloques 210 a 218, D290 a D298):**
+**Avance en el servidor (bloques 210 a 219, D290 a D299):**
 - los permisos de cada perfil (fila 5);
 - la consulta de jornadas y árboles por alcance;
 - el registro de entradas;
@@ -46,7 +46,7 @@ los 17,479 árboles y las 1,305 jornadas igual que la aplicación.
 - el aviso de posible duplicado y la bandeja de doble conteo entre instituciones (fila 8).
 
 Sigue que la aplicación hable con el servidor. Las pantallas que eso cambia —Parámetros, que podrá
-editarlos, y la bandeja de posibles duplicados, que todavía no existe— se muestran antes a Liber.
+editarlos, y la bandeja de posibles duplicados, que todavía no existe— ya las aprobó Liber (D299).
 
 Ver `servidor/README.md`.
 
@@ -63,7 +63,7 @@ Ver `servidor/README.md`.
 | 5 | Permisos (S-04) | Imponer en cada operación las reglas de `js/permisos.js` (`PERFILES` y `ACCIONES`); la pantalla sólo las refleja. | Decidido | `js/permisos.js`. |
 | 6 | Integridad y unicidad (S-03) | Llaves foráneas con las relaciones del esquema; no eliminar lo que está en uso (un catálogo o una cuenta con registros se desactiva). | Decidido | `usosDe()` en `js/referencias.js`. |
 | 7 | Bitácora | Registrar quién, cuándo y qué en cada alta, edición, eliminación y activación, del lado del servidor. | Decidido | `bitacora` en el teléfono; `js/almacen.js` la escribe en la misma operación que el dato. |
-| 8 | Posible duplicado y doble conteo (S-05, D249) | Avisar al recibir cuando otro registro cae a menos de la incertidumbre combinada de ambos puntos (suma de precisiones, piso 4 m). Aviso, no bloqueo. **Doble conteo entre instituciones:** si el registro cercano es de otra institución, el servidor acepta el árbol y lo marca en una **bandeja de revisión de duplicados** que atiende la Administración global; ninguna de las dos instituciones ve los datos de la otra por esa marca. | Decidido | En el teléfono sólo hay avisos dentro de la jornada (`js/jornadas.js`). |
+| 8 | Posible duplicado y doble conteo (S-05, D249, D299) | Avisar al recibir cuando otro registro de la misma especie y de otra jornada cae a menos de la incertidumbre combinada de ambos puntos (suma de precisiones, piso 4 m). Aviso, no bloqueo. **Doble conteo entre instituciones:** si el registro cercano es de otra institución, el servidor acepta el árbol y lo marca en una **bandeja de revisión de duplicados** que atiende la Administración global; ninguna de las dos instituciones ve los datos de la otra por esa marca. | Decidido | En el teléfono sólo hay avisos dentro de la jornada (`js/jornadas.js`). |
 | 9 | Bandeja de especies (S-06) | Donde el SIA resuelve cada «Otra especie»: alta en el catálogo o reasignación a una existente. | Decidido | `especie_id` vacío y `especie_otra` escrita en `plantaciones`; si la bandeja necesita estados propios, son del servidor. |
 | 10 | Fotografías a archivo (S-07) | Sacar la foto del renglón y guardarla como archivo referido por `foto_id`. | Decidido | Hoy van dentro del registro (`foto_base64`). |
 | 11 | Rederivación territorial (S-08) | Con las capas definitivas, recalcular alcaldía, colonia y celda UGA de todo registro según su `capa_version`. El servidor lo hace con `srp.derivar(lat, lng)`, que da lo mismo que el teléfono (D255). | Decidido | `js/derivacion.js`; `servidor/sql/04_capas.sql`. |

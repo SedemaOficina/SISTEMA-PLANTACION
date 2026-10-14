@@ -54,7 +54,7 @@ repositorio:
 | `db/srp/04-srp-sobre-territorio.sql` | La capa propia (colonias prioritarias), el índice espacial de árboles y jornadas, `srp.derivar`, que da alcaldía, colonia y celda UGA de un punto sobre `territorio` con las mismas reglas que la aplicación, el folio (la secuencia de cada celda y lo que se congela con cada folio) y la prioridad de la colonia, congelada con cada árbol y cada jornada |
 | `db/srp/05-srp-fotografias.sql` | El registro de las fotografías: de qué árbol es cada una, su tipo, su peso, su huella y quién la mandó. Los archivos viven fuera de la base |
 | `db/srp/06-srp-parametros.sql` | Los parámetros que la Administración global cambió; los de arranque los dice el módulo |
-| `db/srp/07-srp-duplicados.sql` | `srp.vecinos`, que busca los árboles cercanos que podrían ser el mismo, y la bandeja de posibles duplicados entre instituciones |
+| `db/srp/07-srp-duplicados.sql` | `srp.vecinos`, que busca los árboles cercanos de la misma especie que podrían ser el mismo, y la bandeja de posibles duplicados entre instituciones |
 | `db/srp/08-srp-rol-y-grants.sql` | La cuenta `srp_api`, sin contraseña, con sus permisos mínimos y `territorio_lectura`; la versión 1 del esquema. Al final, la verificación para correr como la cuenta: lo que debe funcionar y lo que debe fallar |
 | `db/srp/instalar.sql` | Corre los anteriores en orden, en una sola transacción |
 
@@ -79,8 +79,8 @@ de clave.
 - A las bitácoras, la de cambios y la de entradas, sólo les agrega renglones: no las edita ni las borra.
   Sus disparadores lo impiden también a quien administra la base. Una cuenta que ya intentó entrar no se
   elimina: su registro de entradas la sostiene, y se desactiva.
-- Lee `territorio` y la capa propia; `srp.punto`, `srp.derivar`, `srp.prioridad` y `srp.vecinos` las puede
-  usar. No escribe en ninguna.
+- Lee `territorio` y la capa propia; `srp.punto`, `srp.derivar`, `srp.prioridad`, `srp.especie_clave` y
+  `srp.vecinos` las puede usar. No escribe en ninguna.
 - No tiene ningún permiso directo fuera de `srp`.
 
 ### Instalar en el SIA
@@ -229,7 +229,8 @@ clave, y la respuesta es la misma.
   recibirlos, con la versión de la capa (`srp.prioridades`): si la capa cambia, lo ya recibido conserva la
   suya, y un reporte regenerado dice la misma. Sólo se vuelve a calcular si se corrige el punto de un árbol.
   El árbol cuenta en la prioridad de la colonia donde quedó; la jornada, en la de la colonia donde se ubicó.
-- Si el árbol cae muy cerca de otro de otra jornada, puede ser el mismo registrado dos veces: se recibe
+- Si el árbol cae muy cerca de otro de la misma especie y de otra jornada, puede ser el mismo registrado dos
+  veces: se recibe
   igual y se avisa, o va a la bandeja si el otro es de otra institución (abajo).
 
 Lo que cambia un árbol que ya está en el servidor sigue las reglas de la aplicación:
@@ -303,9 +304,15 @@ publica, nombrado por su id (el `foto_id` de su árbol). La base guarda sólo su
 ### Posibles duplicados
 
 Al recibir un árbol —nuevo, sustituto, restaurado o con el punto corregido— `srp.vecinos` busca otro árbol
-activo, de otra jornada, a menos de la incertidumbre combinada de los dos puntos: la suma de sus precisiones
-de GPS, nunca menos que el parámetro «Puntos duplicados» (4 m). Un punto puesto en el mapa o escrito no trae
-precisión, así que cuenta el piso. Los de la misma jornada los revisa el teléfono con sus propios avisos.
+activo, de la misma especie y de otra jornada, a menos de la incertidumbre combinada de los dos puntos: la suma
+de sus precisiones de GPS, nunca menos que el parámetro «Puntos duplicados» (4 m). Un punto puesto en el mapa
+o escrito no trae precisión, así que cuenta el piso. Los de la misma jornada los revisa el teléfono con sus
+propios avisos.
+
+La especie es la del catálogo o, si se escribió en «Otra especie», ese texto sin acentos ni mayúsculas
+(`srp.especie_clave`). Dos árboles distintos a pocos metros son lo normal en una banqueta o un parque; el mismo
+árbol registrado dos veces casi siempre lleva la misma especie. Con los datos de demostración, la bandeja pasa
+de unas 350 parejas a unas 30.
 
 - **De la misma institución:** el árbol se recibe con el aviso en `duplicado`: la distancia y, si quien lo
   mandó puede ver el otro árbol, su folio, su especie y su jornada. Si no lo puede ver, sólo la distancia.
@@ -412,8 +419,8 @@ esa base y nunca sobre una instalación anterior.
     relevo, los puntos revisados y eliminarla;
   - que una versión vieja no escribe;
   - la prioridad de la colonia que se congela, y que se conserva aunque cambie la capa.
-- `pruebas/duplicados.test.js`: el aviso de posible duplicado con la suma de las precisiones y su piso, lo
-  que dice según quién lo manda, la pareja entre instituciones que va a la bandeja sin que se entere nadie,
+- `pruebas/duplicados.test.js`: el aviso de posible duplicado con la suma de las precisiones y su piso, sólo
+  entre árboles de la misma especie, lo que dice según quién lo manda, la pareja entre instituciones que va a la bandeja sin que se entere nadie,
   y la bandeja: quién la ve, la revisión, y los árboles eliminados, restaurados o corregidos.
 - `pruebas/permisos.test.js`: carga `js/permisos.js` tal cual y lo compara con el servidor: cada perfil,
   cada acción y cientos de registros armados para los casos de borde; la consulta en la base, con todas

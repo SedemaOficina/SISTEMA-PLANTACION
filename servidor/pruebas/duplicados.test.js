@@ -1,5 +1,6 @@
-/* POSIBLES DUPLICADOS: al recibir un árbol, el servidor busca otro árbol activo de otra jornada a menos de la
-   incertidumbre combinada de los dos puntos (la suma de sus precisiones, con el piso del parámetro). Si es de la
+/* POSIBLES DUPLICADOS: al recibir un árbol, el servidor busca otro árbol activo de la misma especie y de otra
+   jornada a menos de la incertidumbre combinada de los dos puntos (la suma de sus precisiones, con el piso del
+   parámetro). Si es de la
    misma institución, lo avisa; si es de otra, recibe el árbol sin decir nada y anota la pareja en la bandeja que
    sólo la Administración global ve y revisa. Trabaja en un lugar de la Ciudad sin árboles cerca, crea sus
    cuentas, jornadas y árboles, y al terminar los quita. */
@@ -159,6 +160,20 @@ test('la distancia que cuenta es la suma de las precisiones, nunca menos que el 
   assert.equal((await plantar(cabo, J5, alNorte(Q, 3), null)).r.duplicado?.umbral_m, 4);
   const J6 = await nuevaJornada(cabo, 'Jornada del piso 3');
   assert.equal((await plantar(cabo, J6, alNorte(Q, -5), null)).r.duplicado, undefined, 'a 5 m del primero, fuera del piso');
+});
+
+test('sólo cuenta un árbol de la misma especie; lo escrito en «Otra especie» se compara sin acentos ni mayúsculas', async () => {
+  const cabo = await sesion(CABO);
+  const Q = alNorte(P, 600);
+  const J = await nuevaJornada(cabo, 'Jornada de especies');
+  await plantar(cabo, J, Q, 5, { especie_id: '', especie_otra: 'Árbol de las Pagodas' });
+  const J2 = await nuevaJornada(cabo, 'Jornada de especies 2');
+  // Una especie del catálogo, a un metro del escrito: son árboles distintos
+  assert.equal((await plantar(cabo, J2, alNorte(Q, 1), 5)).r.duplicado, undefined);
+  // El mismo nombre, con otras mayúsculas y sin acento: sí
+  const r = (await plantar(cabo, J2, alNorte(Q, 1.5), 5, { especie_id: '', especie_otra: ' arbol de las PAGODAS ' })).r;
+  assert.equal(r.duplicado?.umbral_m, 10);
+  assert.match(r.duplicado.texto, / de Árbol de las Pagodas \(/, 'nombra lo escrito en el árbol que ya estaba');
 });
 
 test('si el árbol cercano es de alguien de su institución que no puede ver, el aviso no dice cuál', async () => {

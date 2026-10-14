@@ -9,9 +9,9 @@ import type { Usuario } from "./sesiones";
 import { enTransaccion } from "./transaccion";
 
 /* LOS POSIBLES DUPLICADOS. Al recibir un árbol —alta, sustitución, restauración o punto corregido— se busca otro
-   árbol activo, de otra jornada, a menos de la incertidumbre combinada de los dos puntos: la suma de sus
-   precisiones, nunca menos que el parámetro de puntos duplicados (srp.vecinos). Los de la misma jornada los
-   revisa el teléfono con sus propios avisos.
+   árbol activo, de la misma especie y de otra jornada, a menos de la incertidumbre combinada de los dos puntos:
+   la suma de sus precisiones, nunca menos que el parámetro de puntos duplicados (srp.vecinos). Los de la misma
+   jornada los revisa el teléfono con sus propios avisos.
 
    · Si es de la misma institución, la respuesta trae el aviso en `duplicado`. Dice de qué árbol se trata sólo si
      quien mandó éste lo puede ver.

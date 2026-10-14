@@ -2378,7 +2378,7 @@
     {
       "id": "S-05",
       "que": "Posible duplicado",
-      "detalle": "Aviso al sincronizar cuando otro registro cae a menos de la incertidumbre combinada de ambos puntos (suma de gps_precision_m, piso 4 m), en el servidor; nunca con 4 m fijos",
+      "detalle": "Aviso al sincronizar cuando otro registro de la misma especie y de otra jornada cae a menos de la incertidumbre combinada de ambos puntos (suma de gps_precision_m, piso JORNADA.DUPLICADO_M), en el servidor; nunca con 4 m fijos. Si es de otra institución, va a la bandeja de revisión",
       "referencia": "js/config.js, JORNADA.DUPLICADO_M; FASE2-Y-TRASPASO"
     },
     {

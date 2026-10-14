@@ -3560,3 +3560,31 @@
     pantalla de la bandeja pasa a los dos lados, y esa pantalla se le muestra antes a Liber.
   · La carga de la demostración no llena la bandeja: la bandeja es de lo que se recibe.
   · `07-srp-duplicados.sql` es nuevo, y el guion de la cuenta pasa a `08-srp-rol-y-grants.sql`.
+
+- **D299. Las pantallas de Parámetros y de la bandeja, y la misma especie en los posibles duplicados (bloque 219).**
+  14-10-2026. Decisiones de Liber, con capturas de la propuesta hechas sobre la aplicación.
+  · **Parámetros**, para la Administración global:
+    · Cada valor lleva «Editar», con el lápiz. Abre un diálogo con la explicación, el campo, el rango, el
+      valor de arranque y «Guardar».
+    · Los que guardan dos valores —tamaño de la fotografía y renglones por página— llevan dos campos en su
+      diálogo.
+    · Un valor cambiado dice «Cambiado», cuándo, quién y cuál es el de arranque.
+    · La nota de arriba dice que el cambio llega a cada teléfono al conectarse y queda en el Registro de
+      cambios.
+    · En teléfono, el valor baja bajo el nombre.
+    · La tarjeta de Configuración dice cuántos valores hay y cuántos se cambiaron: «11 valores · 1 cambiado».
+  · **Bandeja**: una tarjeta nueva en Configuración, «Posibles duplicados», con cuántas parejas faltan por
+    revisar. En su pantalla:
+    · la nota, «Mostrar» (por revisar, revisadas o todas) y el conteo;
+    · una tarjeta por pareja con la distancia, la precisión sumada, el día en que se detectó y un mapa con los
+      dos puntos: ámbar el que llegó después y azul el que ya estaba;
+    · los datos de los dos árboles lado a lado: especie, folio, institución, quién lo registró, jornada,
+      fecha, cómo se ubicó y colonia, cada uno con «Abrir en Registros»;
+    · los botones «Es el mismo árbol» y «Son distintos».
+  · **La regla**: sólo cuenta un árbol de la misma especie, la del catálogo o lo escrito en «Otra especie» sin
+    acentos ni mayúsculas. Vale también para el aviso dentro de una institución. Sustituye en eso a S-05 y a
+    D298.
+    · Con la demostración cargada en la aplicación, la bandeja pasaba de 351 parejas a 32; con 4 m fijos
+      serían 11. Liber eligió la misma especie con la suma de las precisiones.
+    · Las especies de la demostración se asignaron al azar: con datos reales la diferencia será menor.
+    · Si una institución escribió a mano una especie que está en el catálogo, esa pareja no sale.
