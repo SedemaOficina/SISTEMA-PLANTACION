@@ -94,8 +94,10 @@ cuentas viven en `srp`; altas, bajas y restablecimientos los hace la Administrac
    Hecho en el bloque 213: editar, eliminar, restaurar, sustituir y mover árboles, sin escribir sobre una
    versión vieja.
 
+   Hecho en el bloque 214: la vida de la jornada (editarla, cerrarla, reabrirla, sus datos de cierre, el
+   reporte, el relevo, los puntos revisados y eliminarla).
+
    Falta:
-   - la vida de la jornada: editarla, cerrarla, reabrirla y el relevo;
    - las fotografías como archivos, con su estimado de espacio (6.11);
    - la carga masiva por tandas;
    - lo que baje al teléfono, escrito por partes.

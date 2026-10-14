@@ -17,11 +17,13 @@ const INST = 'o-prueba-rec-' + CORRIDA;
 const COORD = cuenta('coordinador', 'COORDINADOR', 'o-sedema');
 const CABO = cuenta('cabo', 'CABO', 'o-sedema', [COORD.id]);
 const CABO2 = cuenta('otrocabo', 'CABO', 'o-sedema');
+const CABO3 = cuenta('cabotres', 'CABO', 'o-sedema', [COORD.id]);
 const EXTERNO = cuenta('externo', 'CABO', INST);
 const DIRECTIVO = cuenta('directivo', 'DIRECTIVO', 'o-sedema');
-const CUENTAS = [COORD, CABO, CABO2, EXTERNO, DIRECTIVO];
+const CUENTAS = [COORD, CABO, CABO2, CABO3, EXTERNO, DIRECTIVO];
 const PROG = 'p-prueba-rec-' + CORRIDA, PROG2 = 'p-prueba-rec-2-' + CORRIDA, PROG_EMP = 'p-prueba-rec-emp-' + CORRIDA, SOLICITUD = 'p-solicitud';
 const SOLICITANTE = 's-prueba-rec-' + CORRIDA;
+const VEHICULO = { id: 'v-prueba-rec-' + CORRIDA, placa: 'PR ' + String(CORRIDA).slice(-6) };
 const PUNTO = { lat: 19.432600, lng: -99.133200 };
 const MESES = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
 
@@ -48,6 +50,7 @@ before(async () => {
   await admin.query(`INSERT INTO srp.programas VALUES ($1, $2, $3, true, NULL, now(), NULL, NULL, '{Empresa privada}')`, [PROG_EMP, 'PRUEBA_REC_EMP_' + CORRIDA, 'Programa de empresas de prueba ' + CORRIDA]);
   creoSolicitud = (await admin.query(`INSERT INTO srp.programas VALUES ($1, 'SOLICITUD_ESPECIAL', 'Solicitud especial', true, NULL, now(), NULL, NULL, '{}') ON CONFLICT DO NOTHING`, [SOLICITUD])).rowCount === 1;
   await admin.query(`INSERT INTO srp.solicitantes VALUES ($1, $2, $3, true, NULL, now(), NULL, NULL, 'Vecinos')`, [SOLICITANTE, 'PRUEBA_REC_' + CORRIDA, 'Vecinos de prueba ' + CORRIDA]);
+  await admin.query(`INSERT INTO srp.vehiculos VALUES ($1, $2, $3, true, NULL, now(), NULL, NULL, 'Modelo de prueba', 'Pipa')`, [VEHICULO.id, VEHICULO.placa.replace(' ', ''), VEHICULO.placa]);
   const derivada = await derivar(CLAVE);
   for (const u of CUENTAS) {
     await admin.query(`INSERT INTO srp.usuarios VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true, now(), $1, NULL, NULL)`,
@@ -80,6 +83,7 @@ after(async () => {
     await admin.query('DELETE FROM srp.usuarios WHERE id = ANY($1::uuid[])', [ids]);
     await admin.query('DELETE FROM srp.programas WHERE id = ANY($1)', [[PROG, PROG2, PROG_EMP, ...(creoSolicitud ? [SOLICITUD] : [])]]);
     await admin.query('DELETE FROM srp.solicitantes WHERE id = $1', [SOLICITANTE]);
+    await admin.query('DELETE FROM srp.vehiculos WHERE id = $1', [VEHICULO.id]);
     await admin.query('DELETE FROM srp.instituciones WHERE id = $1', [INST]);
   });
 });
@@ -363,4 +367,107 @@ test('cada quien cambia lo de su alcance: la coordinación, lo de su cuadrilla; 
   assert.equal((await (await telefono(DIRECTIVO)).una('registro.eliminar', { id: A.id, version })).codigo, 'SIN_PERMISO');
   const coord = await (await telefono(COORD)).una('registro.editar', { id: A.id, version, cambios: { comentarios: 'Lo corrige la coordinación' } });
   assert.deepEqual([coord.estado, coord.fila.comentarios, coord.fila.editado_por_id, coord.fila.cabo_id], ['recibido', 'Lo corrige la coordinación', COORD.id, CABO.id]);
+});
+
+/* ---------- La vida de la jornada ---------- */
+
+test('editar la jornada: sus árboles del día de inicio toman la fecha nueva y todos el programa nuevo; no puede empezar después de un árbol de otro día', async () => {
+  const t = await telefono(CABO);
+  const { J, A } = await conArbol(t, { fecha: dias(-3) });
+  const B = (await t.una('registro.crear', arbol(J.id, { fecha_plantacion: dias(-2) }))).fila;
+  const version = (await admin.query("SELECT to_jsonb(j) ->> 'fecha_inicio' AS v FROM srp.jornadas j WHERE id = $1", [J.id])).rows[0].v;
+  const errores = async (cambios) => (await t.una('jornada.editar', { id: J.id, version, cambios })).errores;
+  assert.deepEqual(await errores({ nombre: ' ', arboles_previstos: 0 }), [['nombre', 'Escriba el nombre de la jornada.'], ['arboles_previstos', 'Escriba cuántos árboles se van a plantar: un entero mayor que cero.']]);
+  assert.deepEqual(await errores({ fecha: dias(-1) }), [['fecha', 'Hay árboles de esta jornada plantados el ' + fechaCorta(dias(-2)) + ': la jornada no puede empezar después de ese día.']]);
+  const r = await t.una('jornada.editar', { id: J.id, version, cambios: { nombre: 'Jornada renombrada', programa_id: PROG2, fecha: dias(-2) } });
+  assert.equal(r.estado, 'recibido', JSON.stringify(r));
+  assert.deepEqual([r.fila.nombre, r.fila.programa_id, r.fila.fecha], ['Jornada renombrada', PROG2, dias(-2)]);
+  const porId = Object.fromEntries(r.otras.map((o) => [o.fila.id, o.fila]));
+  assert.deepEqual([porId[A.id].fecha_plantacion, porId[A.id].programa_id, porId[B.id].fecha_plantacion, porId[B.id].programa_id], [dias(-2), PROG2, dias(-2), PROG2]);
+  const programa = 'Otro programa de prueba ' + CORRIDA;
+  assert.deepEqual((await bitacora(J.id)).find((b) => b[0] === 'EDITADO'), ['EDITADO', 'Campos: nombre, programa_id, fecha']);
+  assert.deepEqual((await bitacora(A.id)).find((b) => b[0] === 'EDITADO'), ['EDITADO', 'Por cambio de la jornada: fecha ' + fechaCorta(dias(-2)) + ' y programa ' + programa]);
+  assert.deepEqual((await bitacora(B.id)).find((b) => b[0] === 'EDITADO'), ['EDITADO', 'Por cambio de la jornada: programa ' + programa]);
+  // Sobre la versión de antes no escribe; el mismo cambio otra vez, tampoco
+  assert.equal((await t.una('jornada.editar', { id: J.id, version, cambios: { comentarios: 'Escrito sobre lo viejo' } })).codigo, 'VERSION_VIEJA');
+  assert.equal((await t.una('jornada.editar', { id: J.id, version, cambios: { nombre: 'Jornada renombrada' } })).repetido, true);
+});
+
+test('cerrar y reabrir; los datos de cierre y el reporte son de una jornada cerrada, y reabrirla deja sin vigencia el reporte', async () => {
+  const t = await telefono(CABO);
+  const { J } = await conArbol(t);
+  let version = (await admin.query("SELECT to_jsonb(j) ->> 'fecha_inicio' AS v FROM srp.jornadas j WHERE id = $1", [J.id])).rows[0].v;
+  assert.equal((await t.una('jornada.cierre', { id: J.id, version, personal: 'Cuadrilla 1' })).codigo, 'NO_CERRADA');
+  assert.equal((await t.una('jornada.reporte', { id: J.id, version })).codigo, 'NO_CERRADA');
+  const cerrada = await t.una('jornada.cerrar', { id: J.id, version });
+  assert.deepEqual([cerrada.estado, cerrada.fila.estatus, !!cerrada.fila.fecha_cierre], ['recibido', 'cerrada', true]);
+  assert.equal((await t.una('jornada.cerrar', { id: J.id, version })).repetido, true, 'un reenvío no se repite');
+  assert.equal((await t.una('registro.crear', arbol(J.id))).codigo, 'SIN_PERMISO', 'en una jornada cerrada no se registra');
+  version = cerrada.version;
+  assert.deepEqual((await t.una('jornada.cierre', { id: J.id, version, hora: '25:00' })).errores, [['hora', 'Escriba la hora como 14:30.']]);
+  const cierre = await t.una('jornada.cierre', { id: J.id, version, personal: ' Cuadrilla 1 ', observaciones: 'Sin novedad', hora: '14:30', vehiculo_id: VEHICULO.id, encargado_id: CABO2.id });
+  assert.deepEqual([cierre.estado, cierre.fila.personal, cierre.fila.hora, cierre.fila.vehiculo_placa, cierre.fila.vehiculo_modelo, cierre.fila.vehiculo_tipo, cierre.fila.encargado_id],
+    ['recibido', 'Cuadrilla 1', '14:30', VEHICULO.placa, 'Modelo de prueba', 'Pipa', CABO.id], 'el encargado de un cabo es él mismo; el vehículo se copia del catálogo');
+  const reporte = await t.una('jornada.reporte', { id: J.id, version: cierre.version });
+  assert.ok(reporte.fila.reporte_en, 'el reporte queda entregado');
+  assert.equal((await t.una('jornada.reporte', { id: J.id, version: cierre.version })).repetido, true);
+  const reabierta = await t.una('jornada.reabrir', { id: J.id, version: reporte.version });
+  assert.deepEqual([reabierta.fila.estatus, reabierta.fila.fecha_cierre, reabierta.fila.reporte_en], ['abierta', null, null]);
+  assert.deepEqual((await bitacora(J.id)).filter((b) => b[0] === 'EDITADO').map((b) => b[1]),
+    ['Jornada cerrada', 'Datos de cierre del reporte', 'Reporte generado', 'Jornada reabierta; su reporte deja de estar vigente']);
+  // Personal, apoyo, chófer y vehículo, sólo en las jornadas de la Secretaría
+  const ext = await telefono(EXTERNO);
+  const E = jornada({ programa_id: PROG_EMP });
+  const ce = await ext.una('jornada.cerrar', { id: E.id, version: (await ext.una('jornada.crear', E)).version });
+  assert.deepEqual((await ext.una('jornada.cierre', { id: E.id, version: ce.version, chofer: 'Alguien' })).errores,
+    [['personal', 'Personal, apoyo, chófer y vehículo sólo se piden en las jornadas de la Secretaría.']]);
+});
+
+test('el relevo pasa la jornada a un cabo de la cuadrilla, que desde entonces registra en ella; el titular no, hasta que se la devuelven', async () => {
+  const t = await telefono(CABO);
+  const { J } = await conArbol(t);
+  const coord = await telefono(COORD);
+  const version = (await admin.query("SELECT to_jsonb(j) ->> 'fecha_inicio' AS v FROM srp.jornadas j WHERE id = $1", [J.id])).rows[0].v;
+  assert.equal((await t.una('jornada.relevo', { id: J.id, version, cabo_id: CABO3.id })).mensaje, 'No tiene permiso para pasar esta jornada a otro cabo.');
+  assert.deepEqual((await coord.una('jornada.relevo', { id: J.id, version, cabo_id: CABO2.id })).errores, [['cabo_id', 'Elija el cabo que sigue registrando.']], 'sólo a su cuadrilla');
+  const r = await coord.una('jornada.relevo', { id: J.id, version, cabo_id: CABO3.id });
+  assert.equal(r.estado, 'recibido', JSON.stringify(r));
+  const ultimo = r.fila.relevos[r.fila.relevos.length - 1];
+  assert.deepEqual([r.fila.relevo_id, r.fila.cabo_id, ultimo.cabo_id, ultimo.por_id], [CABO3.id, CABO.id, CABO3.id, COORD.id]);
+  assert.match(ultimo.fecha, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+  assert.equal((await (await telefono(CABO3)).una('registro.crear', arbol(J.id))).estado, 'recibido', 'registra quien la recibió');
+  assert.equal((await t.una('registro.crear', arbol(J.id))).mensaje, 'No tiene permiso para registrar en esta jornada.', 'el titular ya no');
+  const vuelve = await coord.una('jornada.relevo', { id: J.id, version: r.version, cabo_id: CABO.id });
+  assert.equal(vuelve.fila.relevo_id, null);
+  assert.deepEqual((await bitacora(J.id)).filter((b) => b[0] === 'RELEVO').map((b) => b[1]),
+    ['Registra Prueba cabotres en lugar de Prueba cabo; titular: Prueba cabo', 'Registra Prueba cabo en lugar de Prueba cabotres: vuelve el titular']);
+});
+
+test('los puntos revisados son árboles de la jornada, y la bitácora dice cuáles por su folio', async () => {
+  const t = await telefono(CABO);
+  const { J, A } = await conArbol(t);
+  const v0 = (await admin.query("SELECT to_jsonb(j) ->> 'fecha_inicio' AS v FROM srp.jornadas j WHERE id = $1", [J.id])).rows[0].v;
+  assert.deepEqual((await t.una('jornada.revisar', { id: J.id, version: v0, puntos_revisados: [uuid()] })).errores, [['puntos_revisados', 'Los puntos revisados son árboles de esta jornada.']]);
+  const r = await t.una('jornada.revisar', { id: J.id, version: v0, puntos_revisados: [A.id] });
+  assert.deepEqual(r.fila.puntos_revisados, [A.id]);
+  const d = await t.una('jornada.revisar', { id: J.id, version: r.version, puntos_revisados: [] });
+  assert.deepEqual(d.fila.puntos_revisados, []);
+  assert.deepEqual((await bitacora(J.id)).filter((b) => b[0] === 'EDITADO').map((b) => b[1]), ['Punto revisado: está bien (' + A.folio + ')', 'Se deshizo la revisión del punto ' + A.folio]);
+});
+
+test('una jornada sólo se elimina sin árboles, y los eliminados también cuentan', async () => {
+  const t = await telefono(CABO);
+  const V = jornada({ nombre: 'Jornada vacía' });
+  const creada = await t.una('jornada.crear', V);
+  const { J, A, version } = await conArbol(t);
+  const vj = (await admin.query("SELECT to_jsonb(j) ->> 'fecha_inicio' AS v FROM srp.jornadas j WHERE id = $1", [J.id])).rows[0].v;
+  assert.equal((await t.una('jornada.eliminar', { id: J.id, version: vj })).mensaje, 'No se puede eliminar: tiene árboles registrados. Muévalos o elimínelos primero.');
+  await t.una('registro.eliminar', { id: A.id, version });
+  assert.equal((await t.una('jornada.eliminar', { id: J.id, version: vj })).mensaje,
+    'No se puede eliminar: guarda 1 árbol eliminado, que se conserva como constancia. Si ya no se usará, ciérrela.');
+  const e = await t.una('jornada.eliminar', { id: V.id, version: creada.version });
+  assert.equal(e.estado, 'recibido');
+  assert.equal((await admin.query('SELECT count(*)::int AS n FROM srp.jornadas WHERE id = $1', [V.id])).rows[0].n, 0);
+  assert.deepEqual((await bitacora(V.id)).find((b) => b[0] === 'ELIMINADO'), ['ELIMINADO', 'Jornada «Jornada vacía» eliminada (sin árboles)']);
+  assert.equal((await t.una('jornada.eliminar', { id: V.id, version: creada.version })).repetido, true, 'un reenvío no se repite');
 });

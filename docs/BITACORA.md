@@ -4467,3 +4467,33 @@ No se probó: la cola del teléfono mandando estos cambios, que llega en el paso
 
 **Siguiente paso.** 3c: la vida de la jornada en el servidor. Editarla, cerrarla, reabrirla, el relevo,
 la solicitud al editarla, el reporte entregado y eliminar una jornada vacía.
+
+## Bloque 214 — La vida de la jornada en el servidor (15-10-2026)
+
+Sin cambio en la aplicación: sigue la versión 0.9.64. Paso 3c (D294).
+
+**Qué cambió.**
+- `servidor/src/modulos/srp/recepcion-jornadas.ts`: editar, cerrar, reabrir, marcar puntos revisados,
+  datos de cierre, reporte entregado, relevo y eliminar, con las reglas, los mensajes y la bitácora de la
+  aplicación. Al editar se conserva el solicitante que ya tenía la jornada, aunque se haya desactivado.
+- `recepcion.ts`: las ocho operaciones nuevas y la lista completa de lo que lleva cada una.
+- Pruebas: `recepcion.test.js`, con cinco más, y una cuenta de cabo y un vehículo de prueba nuevos.
+- `servidor/README.md`, `docs/ALINEACION-SIA.md` y `docs/FASE2-Y-TRASPASO.md`: el avance.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada: la aplicación todavía no habla con el servidor.
+
+**Verificación.**
+- Servidor: 63 pruebas, 0 fallas, sin avisos. Las cinco nuevas pasaron a la primera.
+  - Editar la jornada movió de fecha a su árbol del día de inicio y no al de otro día, y no dejó que
+    empezara después de él.
+  - Reabrirla dejó sin vigencia su reporte.
+  - En una jornada cerrada no se pudo registrar.
+  - Tras el relevo registró el cabo que la recibió y el titular ya no, hasta que se la devolvieron.
+  - Una jornada con un árbol eliminado no se pudo eliminar.
+- En la copia desechable de `sia-backend`: `typecheck` y `build` sin errores, y la prueba de humo 17 de 17.
+- Al terminar, la base local quedó sin datos de prueba.
+
+No se probó: la aplicación mandando estas operaciones, que llega en el paso 4.
+
+**Siguiente paso.** 3d: las fotografías como archivos, fuera de la base y de lo publicado, con su estimado
+de espacio (§ 6.11 de la alineación).

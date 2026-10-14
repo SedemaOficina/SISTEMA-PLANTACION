@@ -3455,3 +3455,24 @@
   · Lo que cambia de otros registros (el original de un sustituto, la jornada cuyo reporte deja de estar
     vigente, la jornada de origen al mover) vuelve en `otras`, para que el teléfono los ponga al día.
   · `recepcion.ts` se separó en cuatro: la ruta, lo común, las jornadas y los árboles.
+
+- **D294. La vida de la jornada en el servidor (bloque 214).**
+  15-10-2026. Paso 3c.
+  · Ocho operaciones por `POST /envios`: `jornada.editar`, `.cerrar`, `.reabrir`, `.revisar`, `.cierre`,
+    `.reporte`, `.relevo` y `.eliminar`. Las seis primeras piden el permiso `jornada.editar`, como en la
+    aplicación; el nombre de la operación dice qué hace. Reglas, mensajes, bitácora y efectos de
+    `js/jornadas.js`, `js/jornada-activa.js` y `js/reportes.js`.
+  · La versión de una jornada es el momento de su último cambio en el servidor, o el de su inicio (S-16).
+  · Editar la jornada cambia sus árboles en la misma transacción: todos toman el programa nuevo y, los del
+    día de inicio, la fecha nueva, con su renglón de bitácora cada uno (fila 18). Los árboles cambiados
+    vuelven en `otras`.
+  · Al editarla se conservan el programa y el solicitante que ya tenía aunque se hayan desactivado, como en
+    las listas de la aplicación; uno nuevo tiene que estar activo y disponible para la institución de la
+    jornada.
+  · Los datos de cierre y el reporte son de una jornada cerrada; la aplicación sólo los ofrece así. El
+    servidor copia del catálogo la placa, el modelo y el tipo del vehículo, y rechaza personal, apoyo,
+    chófer y vehículo en las jornadas que no son de la Secretaría (fila 14).
+  · En la bitácora de los puntos revisados, el servidor nombra cada árbol por su folio. La aplicación dice
+    «punto 3», que es su lugar en la lista de la pantalla, y el servidor no lo conoce.
+  · El relevo guarda su fecha al milésimo de segundo y en UTC, como la escribe el teléfono.
+  · Eliminar una jornada ya eliminada se reconoce por su renglón en la bitácora y no se toma como error.

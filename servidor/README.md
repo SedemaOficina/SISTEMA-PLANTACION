@@ -127,7 +127,7 @@ variables de entorno, está explicada en `src/modulos/srp/config.ts`. Las respue
 | `PUT /catalogos/:tabla/:id` | Edición (en instituciones, sólo el nombre) | Administración global |
 | `POST /catalogos/:tabla/:id/estado` | Activa o desactiva | Administración global |
 | `DELETE /catalogos/:tabla/:id` | Elimina un valor sin uso | Administración global |
-| `POST /envios` | Lo que manda el teléfono: jornadas y árboles nuevos, con su folio, y los cambios a los árboles | Según la operación |
+| `POST /envios` | Lo que manda el teléfono: jornadas y árboles nuevos, con su folio, y lo que después se les hace | Según la operación |
 | `GET /jornadas` | Las jornadas de su alcance, por páginas | Con sesión |
 | `GET /plantaciones` | Los árboles de su alcance, por páginas, sin la fotografía | Con sesión |
 
@@ -185,8 +185,11 @@ validación con la de la aplicación caso por caso.
 ### Recepción y folio
 
 `POST /envios` recibe hasta 100 operaciones por vez, en el orden en que se hicieron, cada una con el nombre
-de la acción de permisos que la autoriza: `jornada.crear`, `registro.crear`, `registro.editar`,
-`registro.eliminar`, `registro.restaurar`, `registro.sustituir` y `registro.mover`. Cada operación va en su
+de la acción de permisos que la autoriza, o de lo que hace: para las jornadas, `jornada.crear`,
+`jornada.editar`, `jornada.cerrar`, `jornada.reabrir`, `jornada.revisar`, `jornada.cierre`,
+`jornada.reporte`, `jornada.relevo` y `jornada.eliminar`; para los árboles, `registro.crear`,
+`registro.editar`, `registro.eliminar`, `registro.restaurar`, `registro.sustituir` y `registro.mover`. La
+lista completa, con lo que lleva cada una, está al principio de `src/modulos/srp/recepcion.ts`. Cada operación va en su
 propia transacción, así que una rechazada no detiene a las demás. La respuesta dice, para cada una, si
 quedó recibida —con el renglón como lo guardó el servidor— o rechazada y por qué, con los mensajes de los
 formularios de la aplicación. Reenviar una operación ya recibida no duplica nada: el id del registro es la
@@ -224,7 +227,19 @@ En todos los casos:
 - El reporte de la jornada afectada deja de estar vigente, en la misma transacción.
 - Lo que cambió de otros registros vuelve en `otras`.
 
-**Versión.** Cada cambio trae la versión del árbol que conocía el teléfono: el momento de su último cambio
+Lo que se le hace a una jornada que ya está en el servidor, también con las reglas de la aplicación:
+- **Editar:** sus árboles toman el programa nuevo y, los plantados el día de inicio, también la fecha
+  nueva, en la misma transacción. La jornada no puede empezar después de un árbol plantado otro día.
+- **Cerrar y reabrir:** reabrirla deja sin vigencia su reporte.
+- **Datos de cierre y reporte entregado:** sólo de una jornada cerrada. El vehículo sale del catálogo y
+  su placa, modelo y tipo se copian en la jornada. Personal, apoyo, chófer y vehículo sólo se piden en
+  las jornadas de la Secretaría. El encargado de un cabo es él mismo.
+- **Relevo:** la coordinación pasa una jornada abierta a otro cabo activo de su cuadrilla y de la
+  institución de la jornada, o se la devuelve al titular. Desde entonces registra en ella el cabo del
+  relevo, y el titular no.
+- **Eliminar:** sólo una jornada sin árboles; los eliminados también cuentan.
+
+**Versión.** Cada cambio trae la versión del registro que conocía el teléfono: el momento de su último cambio
 en el servidor, o el de su alta, tal como vino en la respuesta anterior. Si alguien lo cambió mientras
 tanto, no se escribe: se responde `VERSION_VIEJA` con el árbol como está ahora. Un reenvío de un cambio que
 ya se aplicó se reconoce y no se repite.
@@ -307,6 +322,8 @@ esa base y nunca sobre una instalación anterior.
   - que cada regla rechaza con el mensaje de la aplicación, y que un folio no cambia;
   - editar, eliminar, restaurar, sustituir y mover, cada uno con su bitácora, el reporte que deja de estar
     vigente y el alcance de cada perfil;
+  - editar la jornada y su efecto en los árboles, cerrarla, reabrirla, sus datos de cierre, el reporte, el
+    relevo, los puntos revisados y eliminarla;
   - que una versión vieja no escribe.
 - `pruebas/permisos.test.js`: carga `js/permisos.js` tal cual y lo compara con el servidor: cada perfil,
   cada acción y cientos de registros armados para los casos de borde; la consulta en la base, con todas

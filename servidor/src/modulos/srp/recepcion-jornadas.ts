@@ -1,13 +1,16 @@
 import type pg from "pg";
 import { anotarCambio } from "./bitacora";
-import { puede, SEDEMA } from "./permisos";
+import { capacidadesDe, puede, SEDEMA } from "./permisos";
 import {
-  esFecha, fechaCorta, filaDe, hoyEnLaCiudad, idDe, instante, puntoDe, rechazo, recibido, repetida, sinPermiso, texto, ubicar,
-  type Errores, type Fila, type Punto, type Resultado, type Territorio,
+  AHORA, autoresDe, comoObjeto, conVigente, esFecha, esVigente, fechaCorta, filaDe, hoyEnLaCiudad, idDe, instante, puntoDe, rechazo, recibido, repetida,
+  sinPermiso, texto, textoFolio, ubicar, versionVieja, type Errores, type Fila, type Punto, type Resultado, type Territorio,
 } from "./recepcion-apoyo";
 import type { Usuario } from "./sesiones";
 
-/* LAS JORNADAS QUE LLEGAN DEL TELÉFONO, con las reglas de «Iniciar jornada» (js/jornada-activa.js). */
+/* LAS JORNADAS QUE LLEGAN DEL TELÉFONO: el alta, con las reglas de «Iniciar jornada» (js/jornada-activa.js), y
+   lo que después se le hace, con las de la ficha de la jornada (js/jornadas.js), el cierre y el reporte
+   (js/jornada-activa.js, js/reportes.js). Lo que cambia una jornada que ya está en el servidor trae la versión
+   que conocía el teléfono, como en los árboles. */
 
 export const PROGRAMA_SOLICITUD = "p-solicitud";
 
@@ -35,10 +38,12 @@ function solicitudDe(programaId: string, d: Record<string, unknown>): Solicitud 
   return { solicitante_id: id, solicitante_otro: id ? "" : texto(d.solicitante_otro), solicitud_descripcion: texto(d.solicitud_descripcion) };
 }
 
-// Los errores de la solicitud, como el bloque de la aplicación (js/solicitud.js): uno a la vez
-async function erroresSolicitud(c: pg.PoolClient, s: Solicitud): Promise<Errores> {
+/* Los errores de la solicitud, como el bloque de la aplicación (js/solicitud.js): uno a la vez. Al editar, el
+   solicitante que ya tenía la jornada se conserva aunque se haya desactivado. */
+async function erroresSolicitud(c: pg.PoolClient, s: Solicitud, yaTenia: unknown = null): Promise<Errores> {
   if (s.solicitante_id) {
-    if (!(await c.query("SELECT 1 FROM srp.solicitantes WHERE id = $1 AND activo", [s.solicitante_id])).rowCount) return [["solicitante_id", "Elija quién lo solicita."]];
+    const vale = s.solicitante_id === yaTenia || (await c.query("SELECT 1 FROM srp.solicitantes WHERE id = $1 AND activo", [s.solicitante_id])).rowCount;
+    if (!vale) return [["solicitante_id", "Elija quién lo solicita."]];
   } else if (!s.solicitante_otro) return [["solicitante_id", "Elija quién lo solicita."]];
   else if (s.solicitante_otro.length > 120) return [["solicitante_otro", "El nombre de la instancia lleva hasta 120 caracteres."]];
   if (!s.solicitud_descripcion) return [["solicitud_descripcion", "Escriba de qué se trata la solicitud."]];
@@ -92,4 +97,267 @@ export async function crearJornada(c: pg.PoolClient, u: Usuario, d: Record<strin
   if (!fila) return repetida((await filaDe(c, "jornadas", id)) as Fila, u);
   await anotarCambio(c, u, "CREADO", "jornada", id, "Jornada «" + nombre + "» del " + fechaCorta(fecha as string));
   return recibido(fila);
+}
+
+/* ---------- Lo que se le hace a una jornada que ya está en el servidor ---------- */
+
+type Otras = NonNullable<Resultado["otras"]>;
+const SOLICITUD = ["solicitante_id", "solicitante_otro", "solicitud_descripcion"];
+const vacio = (x: unknown) => (x === undefined || x === null ? "" : x);
+
+// La jornada, bloqueada mientras cambia
+async function jornadaParaCambiar(c: pg.PoolClient, d: Record<string, unknown>): Promise<Resultado | { id: string; actual: Fila }> {
+  const id = idDe(d.id);
+  if (!id) return rechazo(null, "DATOS_INVALIDOS", "El cambio no dice de qué jornada es.");
+  const actual = await filaDe(c, "jornadas", id, "FOR UPDATE");
+  if (!actual) return rechazo(id, "NO_EXISTE", "Esa jornada no está en el servidor.");
+  return { id, actual };
+}
+const esResultado = (x: object): x is Resultado => "estado" in x;
+
+// El nombre de una cuenta, para la bitácora
+const nombreDe = async (c: pg.PoolClient, id: unknown): Promise<string> =>
+  (await c.query<{ n: string }>("SELECT nombre_completo AS n FROM srp.usuarios WHERE id = $1", [id])).rows[0]?.n ?? "Usuario no identificado";
+
+const actualizar = async (c: pg.PoolClient, id: string, u: Usuario, campos: Record<string, unknown>): Promise<Fila> => {
+  const k = Object.keys(campos);
+  return (await c.query<{ fila: Fila }>(
+    `UPDATE srp.jornadas SET ${k.map((x, i) => `${x} = $${i + 2}`).join(", ")}${k.length ? ", " : ""}editado_por_id = $${k.length + 2}, fecha_ultima_edicion = ${AHORA}
+      WHERE id = $1 RETURNING to_jsonb(jornadas) AS fila`,
+    [id, ...Object.values(campos), u.id],
+  )).rows[0].fila;
+};
+
+/* EDICIÓN de la jornada: nombre, dirección, programa, árboles previstos, fecha, comentarios y solicitud. Sus
+   árboles toman el programa nuevo y, los plantados el día de inicio, también la fecha nueva; los de otros
+   días conservan la suya. Todos, también los eliminados, en la misma transacción. La jornada no puede empezar
+   después de un árbol plantado otro día. */
+export async function editarJornada(c: pg.PoolClient, u: Usuario, d: Record<string, unknown>): Promise<Resultado> {
+  const leido = await jornadaParaCambiar(c, d);
+  if (esResultado(leido)) return leido;
+  const { id, actual } = leido;
+  if (!puede("jornada.editar", u, comoObjeto(actual), await autoresDe(c, actual))) return sinPermiso(id, "jornada.editar");
+
+  const cambios = d.cambios && typeof d.cambios === "object" ? (d.cambios as Record<string, unknown>) : {};
+  const de = (k: string) => (Object.hasOwn(cambios, k) ? cambios[k] : actual[k]);
+  const programaId = texto(de("programa_id"));
+  const nuevo: Record<string, unknown> = {
+    nombre: texto(de("nombre")), ubicacion: texto(de("ubicacion")), programa_id: programaId,
+    arboles_previstos: de("arboles_previstos"), fecha: de("fecha"), comentarios: texto(de("comentarios")),
+    ...solicitudDe(programaId, Object.fromEntries(SOLICITUD.map((k) => [k, de(k)]))),
+  };
+  const campos = Object.keys(nuevo).filter((k) => vacio(actual[k]) !== vacio(nuevo[k]));
+  if (!campos.length) return recibido(actual, { repetido: true });
+  if (!(await esVigente(c, "jornadas", id, d.version))) return versionVieja(actual);
+
+  const errores: Errores = [];
+  if (!nuevo.nombre) errores.push(["nombre", "Escriba el nombre de la jornada."]);
+  if (!programaId) errores.push(["programa_id", "Elija el programa."]);
+  // Los programas de la institución que ejecuta la jornada, más el que ya tiene
+  else if (programaId !== actual.programa_id && !(await programaPermitido(c, programaId, String(actual.organizacion_id)))) {
+    errores.push(["programa_id", "Ese programa no está disponible para la institución de la jornada."]);
+  }
+  if (programaId === PROGRAMA_SOLICITUD) errores.push(...(await erroresSolicitud(c, nuevo as unknown as Solicitud, actual.solicitante_id)));
+  const previstos = nuevo.arboles_previstos;
+  if (typeof previstos !== "number" || !Number.isInteger(previstos) || previstos < 1 || previstos > 9999) errores.push(["arboles_previstos", "Escriba cuántos árboles se van a plantar: un entero mayor que cero."]);
+  const fecha = nuevo.fecha;
+  if (!esFecha(fecha)) errores.push(["fecha", "Indique la fecha."]);
+  else if (fecha > (await hoyEnLaCiudad(c))) errores.push(["fecha", "La fecha no puede ser posterior a hoy."]);
+  if (errores.length) return conVigente(rechazo(id, "DATOS_INVALIDOS", "Revise los datos de la jornada.", errores), actual);
+  const cambiaFecha = campos.includes("fecha"), cambiaPrograma = campos.includes("programa_id");
+  if (cambiaFecha) {
+    const antes = (await c.query<{ f: string }>(
+      "SELECT min(fecha_plantacion)::text AS f FROM srp.plantaciones WHERE jornada_id = $1 AND fecha_plantacion <> $2 AND fecha_plantacion < $3",
+      [id, actual.fecha, fecha],
+    )).rows[0].f;
+    if (antes) return conVigente(rechazo(id, "DATOS_INVALIDOS", "Revise los datos de la jornada.",
+      [["fecha", "Hay árboles de esta jornada plantados el " + fechaCorta(antes) + ": la jornada no puede empezar después de ese día."]]), actual);
+  }
+
+  const fila = await actualizar(c, id, u, Object.fromEntries(campos.map((k) => [k, nuevo[k]])));
+  await anotarCambio(c, u, "EDITADO", "jornada", id, "Campos: " + campos.join(", "));
+  const otras: Otras = [];
+  if (cambiaFecha || cambiaPrograma) {
+    const programa = cambiaPrograma ? (await c.query<{ nombre: string }>("SELECT nombre FROM srp.programas WHERE id = $1", [programaId])).rows[0]?.nombre ?? "" : "";
+    const arboles = (await c.query<{ id: string; fecha: string }>(
+      "SELECT id, fecha_plantacion::text AS fecha FROM srp.plantaciones WHERE jornada_id = $1 ORDER BY id FOR UPDATE", [id])).rows;
+    for (const a of arboles) {
+      const nuevaFecha = cambiaFecha && a.fecha === actual.fecha;
+      const detalle = [nuevaFecha ? "fecha " + fechaCorta(fecha as string) : "", cambiaPrograma ? "programa " + programa : ""].filter(Boolean).join(" y ");
+      if (!detalle) continue;
+      otras.push({ tabla: "plantaciones", fila: (await c.query<{ fila: Fila }>(
+        `UPDATE srp.plantaciones SET fecha_plantacion = $2, programa_id = $3, editado_por_id = $4, fecha_ultima_edicion = ${AHORA}
+          WHERE id = $1 RETURNING to_jsonb(plantaciones) - 'foto_base64' AS fila`,
+        [a.id, nuevaFecha ? fecha : a.fecha, programaId, u.id],
+      )).rows[0].fila });
+      await anotarCambio(c, u, "EDITADO", "plantacion", a.id, "Por cambio de la jornada: " + detalle);
+    }
+  }
+  return recibido(fila, otras.length ? { otras } : {});
+}
+
+/* CERRAR Y REABRIR. Al cerrarla queda la hora del cierre; al reabrirla, su reporte deja de estar vigente,
+   porque va a cambiar. */
+async function cambiarEstatus(c: pg.PoolClient, u: Usuario, d: Record<string, unknown>, estatus: "abierta" | "cerrada"): Promise<Resultado> {
+  const leido = await jornadaParaCambiar(c, d);
+  if (esResultado(leido)) return leido;
+  const { id, actual } = leido;
+  if (!puede("jornada.editar", u, comoObjeto(actual), await autoresDe(c, actual))) return sinPermiso(id, "jornada.editar");
+  if (actual.estatus === estatus) return recibido(actual, { repetido: true });
+  if (!(await esVigente(c, "jornadas", id, d.version))) return versionVieja(actual);
+  const caduca = estatus === "abierta" && !!actual.reporte_en;
+  const fila = (await c.query<{ fila: Fila }>(
+    `UPDATE srp.jornadas SET estatus = $2, fecha_cierre = CASE WHEN $2 = 'cerrada' THEN ${AHORA} END,
+        reporte_en = CASE WHEN $2 = 'cerrada' THEN reporte_en END, editado_por_id = $3, fecha_ultima_edicion = ${AHORA}
+      WHERE id = $1 RETURNING to_jsonb(jornadas) AS fila`,
+    [id, estatus, u.id],
+  )).rows[0].fila;
+  await anotarCambio(c, u, "EDITADO", "jornada", id, estatus === "cerrada" ? "Jornada cerrada" : "Jornada reabierta" + (caduca ? "; su reporte deja de estar vigente" : ""));
+  return recibido(fila);
+}
+export const cerrarJornada = (c: pg.PoolClient, u: Usuario, d: Record<string, unknown>) => cambiarEstatus(c, u, d, "cerrada");
+export const reabrirJornada = (c: pg.PoolClient, u: Usuario, d: Record<string, unknown>) => cambiarEstatus(c, u, d, "abierta");
+
+/* LOS PUNTOS REVISADOS: los árboles con aviso que quien revisa ya vio en el mapa y están bien. Llega la lista
+   completa; la bitácora dice cuáles se agregaron y cuáles se quitaron, por su folio. */
+export async function revisarPuntos(c: pg.PoolClient, u: Usuario, d: Record<string, unknown>): Promise<Resultado> {
+  const leido = await jornadaParaCambiar(c, d);
+  if (esResultado(leido)) return leido;
+  const { id, actual } = leido;
+  if (!puede("jornada.editar", u, comoObjeto(actual), await autoresDe(c, actual))) return sinPermiso(id, "jornada.editar");
+  const lista = Array.isArray(d.puntos_revisados) ? [...new Set(d.puntos_revisados.map(idDe))] : [null];
+  const antes = (actual.puntos_revisados as string[] | undefined) ?? [];
+  const agregados = lista.filter((x): x is string => !!x && !antes.includes(x)), quitados = antes.filter((x) => !lista.includes(x));
+  if (!agregados.length && !quitados.length && !lista.includes(null)) return recibido(actual, { repetido: true });
+  if (!(await esVigente(c, "jornadas", id, d.version))) return versionVieja(actual);
+  const arboles = (await c.query<Fila>("SELECT id, folio FROM srp.plantaciones WHERE jornada_id = $1 AND id = ANY($2::uuid[])", [id, [...agregados, ...quitados]])).rows;
+  if (lista.includes(null) || agregados.some((x) => !arboles.some((a) => a.id === x))) {
+    return conVigente(rechazo(id, "DATOS_INVALIDOS", "Revise los puntos.", [["puntos_revisados", "Los puntos revisados son árboles de esta jornada."]]), actual);
+  }
+  const folios = (ids: string[]) => ids.map((x) => textoFolio(arboles.find((a) => a.id === x) ?? { id: x })).join(", ");
+  const detalle = [
+    agregados.length === 1 ? "Punto revisado: está bien (" + folios(agregados) + ")" : agregados.length ? agregados.length + " puntos revisados de una vez: están bien (" + folios(agregados) + ")" : "",
+    quitados.length === 1 ? "Se deshizo la revisión del punto " + folios(quitados) : quitados.length ? "Se deshizo la revisión de " + quitados.length + " puntos (" + folios(quitados) + ")" : "",
+  ].filter(Boolean).join("; ");
+  const fila = await actualizar(c, id, u, { puntos_revisados: lista });
+  await anotarCambio(c, u, "EDITADO", "jornada", id, detalle);
+  return recibido(fila);
+}
+
+const HORA = /^([01]\d|2[0-3]):[0-5]\d$/;
+/* LOS DATOS DE CIERRE DEL REPORTE, de una jornada cerrada: encargado, personal, apoyo, observaciones, chófer,
+   vehículo y hora. El vehículo sale del catálogo, y su placa, modelo y tipo se copian en la jornada, porque
+   el reporte es un documento y no cambia si después se corrige el catálogo. Personal, apoyo, chófer y
+   vehículo sólo son de las jornadas de la Secretaría. El encargado de un cabo es él mismo; quien ve a varias
+   personas elige entre quienes registraron árboles en la jornada. */
+export async function cierreJornada(c: pg.PoolClient, u: Usuario, d: Record<string, unknown>): Promise<Resultado> {
+  const leido = await jornadaParaCambiar(c, d);
+  if (esResultado(leido)) return leido;
+  const { id, actual } = leido;
+  if (!puede("jornada.editar", u, comoObjeto(actual), await autoresDe(c, actual))) return sinPermiso(id, "jornada.editar");
+  if (actual.estatus !== "cerrada") return conVigente(rechazo(id, "NO_CERRADA", "El reporte es de una jornada cerrada: ciérrela primero."), actual);
+
+  const propios = capacidadesDe(u).alcance === "propios";
+  const nuevo: Record<string, unknown> = {
+    encargado_id: propios ? u.id : idDe(d.encargado_id),
+    personal: texto(d.personal), apoyo: texto(d.apoyo), observaciones: texto(d.observaciones), chofer: texto(d.chofer), hora: texto(d.hora),
+    vehiculo_id: texto(d.vehiculo_id) || null,
+  };
+  const iguales = Object.keys(nuevo).every((k) => vacio(actual[k]) === vacio(nuevo[k]));
+  if (iguales) return recibido(actual, { repetido: true });
+  if (!(await esVigente(c, "jornadas", id, d.version))) return versionVieja(actual);
+
+  const errores: Errores = [];
+  if (actual.organizacion_id !== SEDEMA && (nuevo.personal || nuevo.apoyo || nuevo.chofer || nuevo.vehiculo_id)) {
+    errores.push(["personal", "Personal, apoyo, chófer y vehículo sólo se piden en las jornadas de la Secretaría."]);
+  }
+  if (nuevo.hora && !HORA.test(String(nuevo.hora))) errores.push(["hora", "Escriba la hora como 14:30."]);
+  const vehiculo = nuevo.vehiculo_id
+    ? (await c.query<{ nombre: string; modelo: string; tipo_vehiculo: string }>("SELECT nombre, modelo, tipo_vehiculo FROM srp.vehiculos WHERE id = $1 AND (activo OR id = $2)",
+      [nuevo.vehiculo_id, actual.vehiculo_id])).rows[0]
+    : undefined;
+  if (nuevo.vehiculo_id && !vehiculo) errores.push(["vehiculo_id", "Elija un vehículo del catálogo."]);
+  if (!propios && nuevo.encargado_id && !(await c.query("SELECT 1 FROM srp.plantaciones WHERE jornada_id = $1 AND cabo_id = $2", [id, nuevo.encargado_id])).rowCount) {
+    errores.push(["encargado_id", "El encargado es alguien que registró árboles en la jornada."]);
+  }
+  if (errores.length) return conVigente(rechazo(id, "DATOS_INVALIDOS", "Revise los datos del cierre.", errores), actual);
+
+  const fila = await actualizar(c, id, u, { ...nuevo, vehiculo_placa: vehiculo?.nombre ?? "", vehiculo_modelo: vehiculo?.modelo ?? "", vehiculo_tipo: vehiculo?.tipo_vehiculo ?? "" });
+  await anotarCambio(c, u, "EDITADO", "jornada", id, "Datos de cierre del reporte");
+  return recibido(fila);
+}
+
+/* EL REPORTE ENTREGADO: cuenta como generado cuando el PDF se entregó, no al verlo. Vale para lo que la
+   jornada tenía entonces: cualquier cambio a sus árboles lo deja sin vigencia. */
+export async function reporteJornada(c: pg.PoolClient, u: Usuario, d: Record<string, unknown>): Promise<Resultado> {
+  const leido = await jornadaParaCambiar(c, d);
+  if (esResultado(leido)) return leido;
+  const { id, actual } = leido;
+  if (!puede("jornada.editar", u, comoObjeto(actual), await autoresDe(c, actual))) return sinPermiso(id, "jornada.editar");
+  if (actual.estatus !== "cerrada") return conVigente(rechazo(id, "NO_CERRADA", "El reporte es de una jornada cerrada: ciérrela primero."), actual);
+  const vigente = await esVigente(c, "jornadas", id, d.version);
+  // Ya generado y sin cambios desde entonces: es el mismo aviso que vuelve a llegar
+  if (actual.reporte_en && !vigente) return recibido(actual, { repetido: true });
+  if (!vigente) return versionVieja(actual);
+  const fila = (await c.query<{ fila: Fila }>(
+    `UPDATE srp.jornadas SET reporte_en = ${AHORA}, editado_por_id = $2, fecha_ultima_edicion = ${AHORA} WHERE id = $1 RETURNING to_jsonb(jornadas) AS fila`,
+    [id, u.id],
+  )).rows[0].fila;
+  await anotarCambio(c, u, "EDITADO", "jornada", id, actual.reporte_en ? "Reporte generado de nuevo" : "Reporte generado");
+  return recibido(fila);
+}
+
+/* RELEVO: la coordinación pasa una jornada abierta a otro cabo activo de su cuadrilla y de la institución de
+   la jornada, o se la devuelve al titular. Queda en `relevo_id` (nulo si vuelve el titular), en la lista de
+   relevos —con quién, cuándo y quién lo hizo— y en la bitácora. La jornada y sus árboles no cambian de dueño. */
+export async function relevoJornada(c: pg.PoolClient, u: Usuario, d: Record<string, unknown>): Promise<Resultado> {
+  const leido = await jornadaParaCambiar(c, d);
+  if (esResultado(leido)) return leido;
+  const { id, actual } = leido;
+  if (!puede("jornada.relevo", u, comoObjeto(actual), await autoresDe(c, actual))) return sinPermiso(id, "jornada.relevo");
+  const destino = idDe(d.cabo_id);
+  const capturista = String(actual.relevo_id ?? actual.cabo_id);
+  if (destino === capturista) return recibido(actual, { repetido: true });
+  if (!(await esVigente(c, "jornadas", id, d.version))) return versionVieja(actual);
+  const vuelve = destino === actual.cabo_id;
+  const deSuCuadrilla = !!destino && !vuelve && !!(await c.query(
+    `SELECT 1 FROM srp.usuarios WHERE id = $1 AND activo AND perfil = 'CABO' AND coordinadores_ids @> ARRAY[$2::uuid] AND organizacion_id = $3`,
+    [destino, u.id, actual.organizacion_id],
+  )).rowCount;
+  if (!vuelve && !deSuCuadrilla) return conVigente(rechazo(id, "DATOS_INVALIDOS", "Revise el relevo.", [["cabo_id", "Elija el cabo que sigue registrando."]]), actual);
+  const fila = (await c.query<{ fila: Fila }>(
+    `UPDATE srp.jornadas SET relevo_id = $2,
+        relevos = relevos || jsonb_build_array(jsonb_build_object('cabo_id', $3::text, 'fecha', to_char(${AHORA} AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'), 'por_id', $4::text)),
+        editado_por_id = $5, fecha_ultima_edicion = ${AHORA}
+      WHERE id = $1 RETURNING to_jsonb(jornadas) AS fila`,
+    [id, vuelve ? null : destino, destino, u.id, u.id],
+  )).rows[0].fila;
+  await anotarCambio(c, u, "RELEVO", "jornada", id, "Registra " + (await nombreDe(c, destino)) + " en lugar de " + (await nombreDe(c, capturista)) +
+    (vuelve ? ": vuelve el titular" : "; titular: " + (await nombreDe(c, actual.cabo_id))));
+  return recibido(fila);
+}
+
+/* ELIMINAR UNA JORNADA: sólo si no tiene árboles. Los eliminados también cuentan: se conservan como
+   constancia y siguen apuntando a su jornada. */
+export async function eliminarJornada(c: pg.PoolClient, u: Usuario, d: Record<string, unknown>): Promise<Resultado> {
+  const id = idDe(d.id);
+  if (!id) return rechazo(null, "DATOS_INVALIDOS", "El cambio no dice de qué jornada es.");
+  const actual = await filaDe(c, "jornadas", id, "FOR UPDATE");
+  if (!actual) {
+    // Ya se eliminó: es el mismo cambio que vuelve a llegar
+    const ya = (await c.query("SELECT 1 FROM srp.bitacora WHERE entidad = 'jornada' AND entidad_id = $1 AND accion = 'ELIMINADO'", [id])).rowCount;
+    return ya ? { id, estado: "recibido", repetido: true } : rechazo(id, "NO_EXISTE", "Esa jornada no está en el servidor.");
+  }
+  if (!puede("jornada.eliminar", u, comoObjeto(actual), await autoresDe(c, actual))) return sinPermiso(id, "jornada.eliminar");
+  if (!(await esVigente(c, "jornadas", id, d.version))) return versionVieja(actual);
+  const { activos, otros } = (await c.query<{ activos: number; otros: number }>(
+    "SELECT count(*) FILTER (WHERE estatus = 'activo')::int AS activos, count(*) FILTER (WHERE estatus <> 'activo')::int AS otros FROM srp.plantaciones WHERE jornada_id = $1",
+    [id],
+  )).rows[0];
+  if (activos) return conVigente(rechazo(id, "CON_ARBOLES", "No se puede eliminar: tiene árboles registrados. Muévalos o elimínelos primero."), actual);
+  if (otros) return conVigente(rechazo(id, "CON_ARBOLES", "No se puede eliminar: guarda " + (otros === 1 ? "1 árbol eliminado, que se conserva" : otros + " árboles eliminados, que se conservan") +
+    " como constancia. Si ya no se usará, ciérrela."), actual);
+  await c.query("DELETE FROM srp.jornadas WHERE id = $1", [id]);
+  await anotarCambio(c, u, "ELIMINADO", "jornada", id, "Jornada «" + String(actual.nombre) + "» eliminada (sin árboles)");
+  return recibido(actual);
 }

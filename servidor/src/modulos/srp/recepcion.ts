@@ -4,15 +4,23 @@ import { sesionDe } from "./acceso";
 import { responder, traducir } from "./errores";
 import { crearArbol, editarArbol, eliminarArbol, moverArbol, restaurarArbol, sustituirArbol } from "./recepcion-arboles";
 import { idDe, rechazo, type Operacion, type Resultado } from "./recepcion-apoyo";
-import { crearJornada } from "./recepcion-jornadas";
+import { cerrarJornada, cierreJornada, crearJornada, editarJornada, eliminarJornada, reabrirJornada, relevoJornada, reporteJornada, revisarPuntos } from "./recepcion-jornadas";
 import { enTransaccion } from "./transaccion";
 
 /* RECEPCIÓN: lo que envían los teléfonos.
 
    POST /envios   { operaciones: [{ tipo, datos }] }, hasta 100 por envío, en el orden en que se hicieron
 
-   Cada operación lleva el nombre de la acción de permisos.ts que la autoriza:
+   Cada operación lleva el nombre de la acción de permisos.ts que la autoriza, o de lo que hace con ella:
      jornada.crear        una jornada nueva
+     jornada.editar       { id, version, cambios }: nombre, dirección, programa, previstos, fecha, comentarios, solicitud
+     jornada.cerrar       { id, version }                        (con el permiso jornada.editar)
+     jornada.reabrir      { id, version }                        (jornada.editar)
+     jornada.revisar      { id, version, puntos_revisados }      (jornada.editar)
+     jornada.cierre       { id, version, encargado_id, personal, apoyo, observaciones, chofer, vehiculo_id, hora }  (jornada.editar)
+     jornada.reporte      { id, version }: el reporte se entregó  (jornada.editar)
+     jornada.relevo       { id, version, cabo_id }
+     jornada.eliminar     { id, version }: sólo sin árboles
      registro.crear       un árbol nuevo, en una jornada que ya está en el servidor
      registro.editar      { id, version, cambios }: sólo los campos que cambiaron
      registro.eliminar    { id, version }
@@ -33,6 +41,14 @@ export const MAXIMO_OPERACIONES = 100;
 
 const OPERACIONES: Record<string, Operacion> = {
   "jornada.crear": crearJornada,
+  "jornada.editar": editarJornada,
+  "jornada.cerrar": cerrarJornada,
+  "jornada.reabrir": reabrirJornada,
+  "jornada.revisar": revisarPuntos,
+  "jornada.cierre": cierreJornada,
+  "jornada.reporte": reporteJornada,
+  "jornada.relevo": relevoJornada,
+  "jornada.eliminar": eliminarJornada,
   "registro.crear": crearArbol,
   "registro.editar": editarArbol,
   "registro.eliminar": eliminarArbol,
