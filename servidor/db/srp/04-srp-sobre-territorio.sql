@@ -1,5 +1,6 @@
--- EL SRP SOBRE territorio: la derivación de alcaldía, colonia y celda UGA de un punto, y la única capa
--- que es propia del programa. Lo corre quien administra la base, dentro de instalar.sql.
+-- EL SRP SOBRE territorio: la derivación de alcaldía, colonia y celda UGA de un punto, el folio que se
+-- arma con esa celda y la única capa que es propia del programa. Lo corre quien administra la base, dentro
+-- de instalar.sql.
 --
 -- Alcaldías, colonias del IECM y malla UGA viven en el esquema compartido territorio, de sólo lectura:
 -- existirían aunque el SRP no existiera, así que el SRP no guarda copia. Las colonias prioritarias para
@@ -87,3 +88,53 @@ AS $$
     FROM ver LEFT JOIN alc ON true LEFT JOIN u ON true LEFT JOIN col ON true
 $$;
 COMMENT ON FUNCTION srp.derivar(numeric, numeric, integer) IS 'Alcaldía, colonia y celda UGA de un punto sobre territorio, con las mismas reglas que la aplicación (js/derivacion.js).';
+
+-- EL FOLIO DEL EJEMPLAR: AAA-000-00000, la celda UGA del punto y un consecutivo de esa celda. Lo asigna el
+-- servidor una sola vez, al recibir el árbol, en la misma transacción (R3), con el id del árbol como
+-- clave (R4). El consecutivo sale de una secuencia por celda, perpetua y que sólo avanza: se lee y se
+-- incrementa en un solo paso, nunca con MAX(folio)+1 ni contando árboles (R5). Los huecos se aceptan;
+-- repetir un número, no. Al llegar a 99,999 la celda deja de dar folios y el árbol queda PROVISIONAL hasta
+-- que el SIA decida (R6). Un folio no cambia ni se anula (R7). EXT-000 es la celda de un punto fuera de la
+-- malla.
+CREATE TABLE srp.folio_secuencias (
+  celda    char(7)  NOT NULL,
+  ultimo   integer  NOT NULL,
+  CONSTRAINT folio_secuencias_pk PRIMARY KEY (celda),
+  CONSTRAINT folio_secuencias_celda CHECK (celda ~ '^[A-Z]{3}-\d{3}$'),
+  CONSTRAINT folio_secuencias_rango CHECK (ultimo BETWEEN 1 AND 99999)
+);
+COMMENT ON TABLE srp.folio_secuencias IS 'El último consecutivo dado en cada celda UGA. Sólo avanza: no se reinicia por ejercicio, administración ni versión.';
+
+-- Lo que se congela al asignar el folio (R8): la celda, la versión de las capas y el punto con que se
+-- asignó. Son datos del servidor: el teléfono sólo recibe el folio. Nada de esto se edita ni se borra.
+CREATE TABLE srp.folios (
+  plantacion_id        uuid          NOT NULL,
+  folio                char(13)      NOT NULL,
+  folio_uga            char(7)       NOT NULL,
+  folio_capa_version   text          NOT NULL,
+  folio_lat            numeric(9,6)  NOT NULL,
+  folio_lng            numeric(9,6)  NOT NULL,
+  asignado_en          timestamptz   NOT NULL DEFAULT now(),
+  CONSTRAINT folios_pk PRIMARY KEY (plantacion_id),
+  CONSTRAINT folios_folio_unico UNIQUE (folio),
+  CONSTRAINT folios_folio_patron CHECK (folio ~ '^[A-Z]{3}-\d{3}-\d{5}$' AND left(folio, 7) = folio_uga)
+);
+COMMENT ON TABLE srp.folios IS 'Cada folio emitido, con la celda, la versión de capas y el punto congelados al asignarlo (R8).';
+ALTER TABLE srp.folios ADD CONSTRAINT folios_plantacion_id_fk FOREIGN KEY (plantacion_id) REFERENCES srp.plantaciones (id) ON DELETE RESTRICT;
+
+CREATE FUNCTION srp.folio_inmutable() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF TG_TABLE_NAME = 'plantaciones' THEN
+    IF OLD.folio IS NOT NULL AND NEW.folio IS DISTINCT FROM OLD.folio THEN
+      RAISE EXCEPTION 'El folio % no cambia ni se anula', OLD.folio;
+    END IF;
+    RETURN NEW;
+  END IF;
+  RAISE EXCEPTION 'Un folio emitido no se edita ni se borra';
+END $$;
+CREATE TRIGGER plantaciones_folio_inmutable BEFORE UPDATE OF folio ON srp.plantaciones
+  FOR EACH ROW EXECUTE FUNCTION srp.folio_inmutable();
+CREATE TRIGGER folios_inmutables BEFORE UPDATE OR DELETE ON srp.folios
+  FOR EACH ROW EXECUTE FUNCTION srp.folio_inmutable();
+CREATE TRIGGER folios_sin_vaciar BEFORE TRUNCATE ON srp.folios
+  FOR EACH STATEMENT EXECUTE FUNCTION srp.folio_inmutable();

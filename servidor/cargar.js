@@ -185,6 +185,16 @@ async function cargarApp(c, archivo) {
       await insertar(c, t, filas, ESQUEMA.tablas[t].campos.some(x => x.campo === 'clave') ? 'ON CONFLICT (id) DO NOTHING' : '');
       console.log(`${t}: ${filas.length}`);
     }
+    /* Los árboles que llegan con folio (la demostración lo trae simulado) dejan su folio registrado, con lo
+       que tenían al cargarse, y la secuencia de su celda después del más alto: el servidor sigue de ahí y
+       nunca repite un número. */
+    await c.query(`INSERT INTO srp.folios (plantacion_id, folio, folio_uga, folio_capa_version, folio_lat, folio_lng)
+      SELECT id, folio, left(folio, 7), coalesce(capa_version, ''), lat, lng FROM srp.plantaciones WHERE folio IS NOT NULL
+      ON CONFLICT (plantacion_id) DO NOTHING`);
+    const celdas = await c.query(`INSERT INTO srp.folio_secuencias (celda, ultimo)
+      SELECT left(folio, 7), max(right(folio, 5)::int) FROM srp.plantaciones WHERE folio IS NOT NULL GROUP BY 1
+      ON CONFLICT (celda) DO UPDATE SET ultimo = greatest(folio_secuencias.ultimo, EXCLUDED.ultimo)`);
+    console.log(`folios: secuencias de ${celdas.rowCount} celdas puestas después del folio más alto`);
     await c.query('COMMIT');
   } catch (e) {
     await c.query('ROLLBACK');

@@ -5,6 +5,7 @@ import { rutasCatalogos } from "./catalogos";
 import { leerConfig, type ConfigSrp } from "./config";
 import { rutasConsultas } from "./consultas";
 import { rutasCuentas } from "./cuentas";
+import { rutasRecepcion } from "./recepcion";
 import { traducir } from "./errores";
 
 /* ============================================================
@@ -16,8 +17,8 @@ import { traducir } from "./errores";
      app.use("/api/srp", crearRutasSrp(poolSrp));
 
    Hoy: el acceso con cuentas propias y su registro de entradas, la administración de cuentas y de
-   catálogos, y la consulta de jornadas y árboles, cada quien lo de su alcance (permisos.ts). Después: la
-   recepción y el folio. Lo que debe valer siempre (derivar el territorio de un punto, el folio, la
+   catálogos, la consulta de jornadas y árboles, cada quien lo de su alcance (permisos.ts), y la recepción
+   de jornadas y árboles nuevos, con su folio. Después: ediciones, eliminaciones, relevos y fotografías. Lo que debe valer siempre (derivar el territorio de un punto, el folio, la
    bitácora) lo hace la base.
    ============================================================ */
 
@@ -34,6 +35,7 @@ export function crearRutasSrp(pool: pg.Pool, config: ConfigSrp = leerConfig()): 
   r.use(rutasCuentas(pool, config, acceso.sesion));
   r.use(rutasConsultas(pool, acceso.sesion));
   r.use(rutasCatalogos(pool, acceso.sesion));
+  r.use(rutasRecepcion(pool, acceso.sesion));
   r.use((req: Request, res: Response) => {
     res.status(404).json({ codigo: "NO_EXISTE", mensaje: "Esa dirección no existe en el servicio." });
   });

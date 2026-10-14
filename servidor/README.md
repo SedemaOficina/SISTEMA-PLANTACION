@@ -51,7 +51,7 @@ repositorio:
 | `db/srp/01-srp-esquema.sql` | Comprueba que estén PostGIS, `territorio` y `territorio_lectura`; crea el esquema `srp` y la tabla de versiones. Si el esquema ya está instalado, se detiene sin tocar nada |
 | `db/srp/02-srp-tablas.sql` | Las diez tablas, con sus llaves, reglas, índices y comentarios. **Generado**: no se edita a mano |
 | `db/srp/03-srp-acceso.sql` | Contraseñas (sólo derivadas con sal, nunca en claro), sesiones (sólo el resumen del testigo) y el registro de entradas; las dos bitácoras, que sólo crecen |
-| `db/srp/04-srp-sobre-territorio.sql` | La capa propia (colonias prioritarias), el índice espacial de árboles y jornadas, y `srp.derivar`, que da alcaldía, colonia y celda UGA de un punto sobre `territorio`, con las mismas reglas que la aplicación |
+| `db/srp/04-srp-sobre-territorio.sql` | La capa propia (colonias prioritarias), el índice espacial de árboles y jornadas, `srp.derivar`, que da alcaldía, colonia y celda UGA de un punto sobre `territorio` con las mismas reglas que la aplicación, y el folio: la secuencia de cada celda y lo que se congela con cada folio |
 | `db/srp/05-srp-rol-y-grants.sql` | La cuenta `srp_api`, sin contraseña, con sus permisos mínimos y `territorio_lectura`; la versión 1 del esquema. Al final, la verificación para correr como la cuenta: lo que debe funcionar y lo que debe fallar |
 | `db/srp/instalar.sql` | Corre los anteriores en orden, en una sola transacción |
 
@@ -69,6 +69,8 @@ de clave.
 - Usa el esquema, pero no crea, altera ni borra tablas, ni dentro ni fuera de él.
 - Lee, agrega y cambia renglones de las tablas de datos, y borra sólo lo que el sistema permite borrar
   (un valor de catálogo o una cuenta sin uso, un lote de carga masiva, las sesiones).
+- Avanza la secuencia de folios de cada celda y agrega folios; un folio emitido no lo cambia ni lo borra,
+  y los disparadores lo impiden también a quien administra la base.
 - A las bitácoras, la de cambios y la de entradas, sólo les agrega renglones: no las edita ni las borra.
   Sus disparadores lo impiden también a quien administra la base. Una cuenta que ya intentó entrar no se
   elimina: su registro de entradas la sostiene, y se desactiva.
@@ -103,7 +105,7 @@ con `--revision` y diciéndolo en el LEEME. El cambio a `sia-backend` (un diff y
 archivos completos) se arma sobre una copia del repositorio del SIA y lleva líneas suyas: vive sólo en
 `servidor/local/`, que no se sube.
 
-## El servicio: acceso, cuentas, catálogos y consultas
+## El servicio: acceso, cuentas, catálogos, consultas y recepción
 
 En el SIA lo monta el backend central: `app.use("/api/srp", crearRutasSrp(poolSrp))`. Fuera de él,
 `npm run iniciar` lo arranca solo, en `SRP_PUERTO` (3100), bajo `/api/srp`. La configuración, toda por
@@ -125,6 +127,7 @@ variables de entorno, está explicada en `src/modulos/srp/config.ts`. Las respue
 | `PUT /catalogos/:tabla/:id` | Edición (en instituciones, sólo el nombre) | Administración global |
 | `POST /catalogos/:tabla/:id/estado` | Activa o desactiva | Administración global |
 | `DELETE /catalogos/:tabla/:id` | Elimina un valor sin uso | Administración global |
+| `POST /envios` | Lo que manda el teléfono: jornadas y árboles nuevos, con su folio | Quien registra |
 | `GET /jornadas` | Las jornadas de su alcance, por páginas | Con sesión |
 | `GET /plantaciones` | Los árboles de su alcance, por páginas, sin la fotografía | Con sesión |
 
@@ -178,6 +181,30 @@ validación con la de la aplicación caso por caso.
   desactiva.
 - Cada cambio va a la bitácora como lo anota la aplicación: alta, edición con los campos que cambiaron,
   activación, desactivación y eliminación.
+
+### Recepción y folio
+
+`POST /envios` recibe hasta 100 operaciones por vez, en el orden en que se hicieron, cada una con el nombre
+de la acción de permisos que la autoriza. Hoy: `jornada.crear` y `registro.crear`. Cada operación va en su
+propia transacción, así que una rechazada no detiene a las demás. La respuesta dice, para cada una, si
+quedó recibida —con el renglón como lo guardó el servidor— o rechazada y por qué, con los mensajes de los
+formularios de la aplicación. Reenviar una operación ya recibida no duplica nada: el id del registro es la
+clave, y la respuesta es la misma.
+
+- El servidor no se queda con lo que calcula el teléfono: vuelve a ubicar el punto con `srp.derivar`, y
+  pone el autor, la institución, el estado y el programa del árbol, que es el de su jornada.
+- La jornada se revisa como en «Iniciar jornada»: nombre, punto dentro de la Ciudad, programa disponible
+  para la institución, solicitud completa con «Solicitud especial», árboles previstos y fecha no futura.
+- El árbol, como en «Registrar árbol»: punto, especie del catálogo o escrita, y fecha entre el inicio de
+  la jornada y hoy. Sólo lo recibe de quien tiene la jornada a su cargo.
+- El folio se asigna al recibir el árbol, en la misma transacción: la celda UGA del punto (`EXT-000` si
+  quedó fuera de la malla) y el consecutivo de esa celda. La secuencia se lee e incrementa en un solo
+  paso y sólo avanza; nunca se calcula con el folio más alto. En `srp.folios` se congelan la celda, la
+  versión de capas y el punto con que se asignó. Al llegar una celda a 99,999, deja de dar folios y el
+  árbol se recibe PROVISIONAL, con aviso, hasta que el SIA decida. Un folio no cambia ni se borra.
+- Al cargar datos que ya traen folio, como la demostración, cada folio queda registrado y la secuencia
+  de su celda sigue después del más alto.
+- La fotografía no viaja en el envío: tendrá su propia ruta.
 
 ### Permisos de cada perfil
 
@@ -250,6 +277,9 @@ esa base y nunca sobre una instalación anterior.
 - `pruebas/catalogos.test.js`: carga el editor de catálogos de la aplicación tal cual y compara su
   validación con la del servidor, caso por caso; luego da de alta, edita, activa, desactiva y elimina por
   las rutas, y revisa la bitácora y que lo que cuenta como uso sean las llaves foráneas de la base.
+- `pruebas/recepcion.test.js`: manda jornadas y árboles como el teléfono. Comprueba qué pone el
+  servidor, el folio por celda, aun con envíos simultáneos y en el tope de 99,999, que reenviar no duplica,
+  que cada regla rechaza con el mensaje de la aplicación y que un folio no cambia.
 - `pruebas/permisos.test.js`: carga `js/permisos.js` tal cual y lo compara con el servidor: cada perfil,
   cada acción y cientos de registros armados para los casos de borde; la consulta en la base, con todas
   las cuentas, jornadas y árboles que haya; y las rutas, por páginas, como las usará la aplicación.

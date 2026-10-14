@@ -29,6 +29,17 @@ ubica un punto con las mismas reglas que la aplicación; el catálogo de especie
 de desarrollo) y lo que guarda un teléfono de prueba con la demostración. Todo cupo, y PostGIS ubica
 los 17,479 árboles y las 1,305 jornadas igual que la aplicación.
 
+**Avance en el servidor (bloques 210 a 212, D290 a D292):**
+- los permisos de cada perfil (fila 5);
+- la consulta de jornadas y árboles por alcance;
+- el registro de entradas;
+- los seis catálogos (fila 6);
+- la recepción de jornadas y árboles nuevos, con su folio (filas 1 y 3, en lo que toca a las altas).
+
+Siguen las ediciones, eliminaciones, restauraciones y sustituciones; la vida de la jornada (cierre,
+reapertura, relevo); las fotografías a archivo (fila 10); los parámetros (fila 15); la prioridad congelada
+(fila 19); y el aviso de posible duplicado (fila 8). Ver `servidor/README.md`.
+
 ---
 
 ## 1. Qué construir en el servidor

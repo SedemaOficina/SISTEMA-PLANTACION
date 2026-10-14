@@ -4394,3 +4394,43 @@ No se probó: la pantalla de Catálogos conectada al servidor, que llega en el p
 sólo los muestra. Hacerlos editables cambia esa pantalla: se le propone a Liber antes de hacerlo.
 
 **Siguiente paso.** El paso 3: la recepción de jornadas y árboles, con el folio y las fotografías.
+
+## Bloque 212 — La recepción de jornadas y árboles nuevos, con su folio (14-10-2026)
+
+Sin cambio en la aplicación: sigue la versión 0.9.64. Paso 3a (D292). Liber confirmó que nada se conecta
+todavía a un servidor real: todo corre en la base local y en una copia desechable del backend del SIA.
+
+**Qué cambió.**
+- `servidor/src/modulos/srp/recepcion.ts`, nuevo: `POST /envios`, con `jornada.crear` y
+  `registro.crear`. El servidor vuelve a ubicar el punto, pone autor, institución y programa, revisa como
+  los formularios de la aplicación y asigna el folio.
+- `04-srp-sobre-territorio.sql`: `srp.folio_secuencias` (el último consecutivo de cada celda, hasta
+  99,999) y `srp.folios` (cada folio, con la celda, la versión de capas y el punto congelados), y el
+  disparador que impide cambiar o anular un folio. `05-srp-rol-y-grants.sql`: lo que `srp_api` puede hacer
+  con ellos.
+- `servidor/cargar.js`: los folios que trae la carga quedan registrados y cada celda sigue después de su
+  folio más alto (la demostración trae 17,179 folios simulados en 611 celdas).
+- `bitacora.ts`: las acciones de la bitácora son las de la regla de la tabla.
+- Pruebas: `recepcion.test.js`, nueva. `esquema.test.js` y `datos.test.js`: el folio no cambia, la cuenta
+  del servicio no lo borra y cada celda queda después de su folio más alto. Se ajustó una prueba anterior
+  que intentaba cambiar el formato del folio de un árbol que ya tenía folio: ahora lo detiene primero la
+  regla de que el folio no cambia, y la prueba revisa el formato en un árbol sin folio.
+- `servidor/README.md`, `docs/ALINEACION-SIA.md` y `docs/FASE2-Y-TRASPASO.md`: el avance.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada: la aplicación todavía no habla con el servidor.
+
+**Verificación.**
+- Servidor: 53 pruebas, 0 fallas, sin avisos.
+  - 12 envíos al mismo tiempo en una celda dieron 12 folios distintos y seguidos.
+  - En el tope de 99,999, el árbol quedó PROVISIONAL sin que el contador se moviera.
+  - Ni quien administra la base pudo cambiar o borrar un folio.
+- En la copia desechable de `sia-backend`: `typecheck` y `build` sin errores, y la prueba de humo 16 de 16.
+  Ahí una cuenta de cabo mandó una jornada y un árbol, y recibió el folio `CUH-021-00042`, que sigue al más
+  alto de la demostración en esa celda.
+- Al terminar, la base local quedó sin datos de prueba. La secuencia de las celdas que usaron las
+  pruebas avanzó, como debe: los huecos se aceptan.
+
+No se probó: la cola del teléfono mandando de verdad, que llega en el paso 4.
+
+**Siguiente paso.** 3b: ediciones, eliminaciones, restauraciones y sustituciones, con la regla de no
+escribir sobre una versión vieja (S-16).

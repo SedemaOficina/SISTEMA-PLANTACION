@@ -3408,3 +3408,27 @@
   · Desactivar lo que ya estaba desactivado no deja renglón en la bitácora: no es un cambio.
   · Los parámetros no se pasaron al servidor. Hoy son fijos y su pantalla sólo los muestra; hacerlos
     editables cambia esa pantalla y espera la decisión de Liber.
+
+- **D292. La recepción de jornadas y árboles nuevos, y el folio (bloque 212).**
+  14-10-2026. Paso 3, primera parte (3a). Liber confirmó que nada se conecta todavía a un servidor real: se
+  prepara el paquete para que lo monte el SIA.
+  · Una sola ruta, `POST /envios`, recibe operaciones con el nombre de la acción de permisos que las
+    autoriza; hoy `jornada.crear` y `registro.crear`. Así la cola del teléfono (S-18) manda cada operación
+    tal cual, y las que siguen se agregan con su nombre.
+  · Hasta 100 operaciones por envío, cada una en su propia transacción, para que una rechazada no detenga a
+    las demás y cada envío termine en mucho menos de un minuto (§ 6.3 de la alineación).
+  · El id del registro es la clave (R4): reenviar da la misma respuesta. Si el id ya es de otra cuenta, se
+    rechaza.
+  · El servidor vuelve a ubicar el punto y pone autor, institución, estado y programa. Las reglas y los
+    mensajes son los de «Iniciar jornada» y «Registrar árbol».
+  · El folio se asigna al recibir el árbol (R3), de una secuencia por celda que se lee e incrementa en un
+    solo paso (R5). Lo que se congela (R8) va en `srp.folios`, una tabla del servidor: `plantaciones`
+    sigue siendo la misma tabla del teléfono. En el tope de 99,999 el árbol se recibe PROVISIONAL (R6). Un
+    disparador impide cambiar o anular un folio (R7).
+  · Al cargar datos que ya traen folio, la secuencia de cada celda se pone después del más alto. Es la
+    única vez que se mira el folio más alto; al asignar, nunca.
+  · Quedan para después: la fotografía (3d), la prioridad congelada con el árbol y la jornada (fila 19) y
+    el aviso de posible duplicado (fila 8).
+  · Corrige D291: los parámetros ya estaban decididos desde D195 (en el servidor, que los cambie la
+    Administración global y los reciban los teléfonos). Se hacen como está decidido; el cambio de su
+    pantalla se muestra a Liber con el antes y el después al conectar la aplicación.

@@ -3,7 +3,8 @@ import type { Consultable, Usuario } from "./sesiones";
 /* LA BITÁCORA DE CAMBIOS: quién dio de alta, editó, activó, desactivó o eliminó qué, y cuándo. Lleva el
    nombre y el perfil de quien actuó tal como eran en ese momento, como en la aplicación. Sólo crece. */
 
-export type Accion = "CREADO" | "EDITADO" | "ACTIVADO" | "DESACTIVADO" | "ELIMINADO";
+// Las de la regla de la tabla (02-srp-tablas.sql)
+export type Accion = "CREADO" | "EDITADO" | "ELIMINADO" | "RESTAURADO" | "SUSTITUIDO" | "RELEVO" | "ACTIVADO" | "DESACTIVADO" | "FOLIO_ASIGNADO";
 
 export async function anotarCambio(bd: Consultable, actor: Usuario, accion: Accion, entidad: string, entidadId: string, detalle = ""): Promise<void> {
   await bd.query(

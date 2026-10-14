@@ -72,3 +72,11 @@ test('los vehículos de las jornadas son los de la lista cargada', { skip: omiti
   assert.equal(r.distintos, 0);
   assert.ok(r.con_vehiculo > 0);
 });
+
+test('los folios que trae la carga quedan registrados, y la secuencia de cada celda sigue después del más alto', { skip: omitir }, async () => {
+  const r = await uno(`SELECT (SELECT count(*) FROM srp.plantaciones WHERE folio IS NOT NULL)::int AS con_folio, (SELECT count(*) FROM srp.folios)::int AS registrados,
+    (SELECT count(*) FROM (SELECT left(folio, 7) AS celda, max(right(folio, 5)::int) AS mayor FROM srp.plantaciones WHERE folio IS NOT NULL GROUP BY 1) m
+       LEFT JOIN srp.folio_secuencias s USING (celda) WHERE s.ultimo IS NULL OR s.ultimo < m.mayor)::int AS atrasadas`);
+  assert.ok(r.con_folio > 0, 'la demostración trae folios');
+  assert.deepEqual([r.registrados, r.atrasadas], [r.con_folio, 0]);
+});

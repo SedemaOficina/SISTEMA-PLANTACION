@@ -12,7 +12,7 @@ import { conectar, instalar, destruir, codigoDeError, RAIZ } from './apoyo.js';
 import { verificar } from '../dist/independiente.js';
 
 const ESQUEMA = JSON.parse(fs.readFileSync(path.join(RAIZ, 'datos', 'esquema.json'), 'utf8'));
-const PROPIAS_DEL_SERVIDOR = ['bitacora_acceso', 'capa_prioritarias', 'capas', 'credenciales', 'migraciones', 'sesiones'];
+const PROPIAS_DEL_SERVIDOR = ['bitacora_acceso', 'capa_prioritarias', 'capas', 'credenciales', 'folio_secuencias', 'folios', 'migraciones', 'sesiones'];
 const PERMISO_DENEGADO = '42501', VIOLA_CHECK = '23514', VIOLA_FORANEA = '23503', VIOLA_UNICO = '23505', LO_IMPIDE_UN_DISPARADOR = 'P0001';
 
 // El tipo del diccionario como lo escribe PostgreSQL (format_type)
@@ -104,7 +104,7 @@ test('la cuenta del servicio sólo opera datos; la bitácora sólo crece', async
 
   // Las reglas rechazan lo inválido
   assert.equal(await codigoDeError(c, "UPDATE srp.plantaciones SET estatus = 'perdido'"), VIOLA_CHECK, 'estatus fuera de la lista');
-  assert.equal(await codigoDeError(c, "UPDATE srp.plantaciones SET folio = 'CUH-1-1' WHERE folio IS NOT NULL"), VIOLA_CHECK, 'folio con otro formato');
+  assert.equal(await codigoDeError(c, "UPDATE srp.plantaciones SET folio = 'CUH-1-1' WHERE folio IS NULL"), VIOLA_CHECK, 'folio con otro formato');
   assert.equal(await codigoDeError(c, "UPDATE srp.plantaciones SET especie_id = NULL, especie_otra = ''"), VIOLA_CHECK, 'sin especie ni especie escrita');
   assert.equal(await codigoDeError(c, "UPDATE srp.plantaciones SET especie_id = 'ESP-9999'"), VIOLA_FORANEA, 'especie que no existe');
   assert.equal(await codigoDeError(c, "UPDATE srp.plantaciones SET motivo_sustitucion = 'OTRO' WHERE sustituye_id IS NOT NULL"), VIOLA_CHECK, 'motivo OTRO sin escribirlo');
@@ -116,6 +116,15 @@ test('la cuenta del servicio sólo opera datos; la bitácora sólo crece', async
   assert.equal(await codigoDeError(c, "UPDATE srp.especies SET paleta_vegetal = 'Tal vez'"), VIOLA_CHECK, 'paleta vegetal fuera de la lista');
   assert.equal(await codigoDeError(c, "INSERT INTO srp.areas VALUES ('a-otra', 'SIA', 'Otra', true, NULL, now(), NULL, NULL)"), VIOLA_UNICO, 'clave repetida');
   assert.equal(await codigoDeError(c, "DELETE FROM srp.especies WHERE id = 'ESP-0029'"), VIOLA_FORANEA, 'una especie en uso no se elimina');
+
+  // Un folio no cambia ni se anula; lo que se congela con él sólo se agrega, y una celda no pasa de 99,999
+  const folio = "INSERT INTO srp.folios (plantacion_id, folio, folio_uga, folio_capa_version, folio_lat, folio_lng) VALUES ('00000000-0000-4000-8000-0000000000b1', 'CUH-001-00001', 'CUH-001', 'uga=x', 19.4326, -99.1332)";
+  assert.equal(await codigoDeError(c, folio), null, 'registrar un folio');
+  assert.equal(await codigoDeError(c, "UPDATE srp.plantaciones SET folio = NULL WHERE folio IS NOT NULL"), LO_IMPIDE_UN_DISPARADOR, 'anular un folio');
+  assert.equal(await codigoDeError(c, "UPDATE srp.plantaciones SET folio = 'CUH-001-00002' WHERE folio IS NOT NULL"), LO_IMPIDE_UN_DISPARADOR, 'cambiar un folio');
+  assert.equal(await codigoDeError(c, 'UPDATE srp.folios SET folio_lat = 0'), PERMISO_DENEGADO, 'editar lo congelado');
+  assert.equal(await codigoDeError(c, 'DELETE FROM srp.folios'), PERMISO_DENEGADO, 'borrar un folio');
+  assert.equal(await codigoDeError(c, "INSERT INTO srp.folio_secuencias VALUES ('CUH-001', 100000)"), VIOLA_CHECK, 'pasar del tope de la celda');
 
   // Lo que la cuenta del servicio no puede hacer
   assert.equal(await codigoDeError(c, "UPDATE srp.bitacora SET detalle = 'cambiado'"), PERMISO_DENEGADO, 'editar la bitácora');

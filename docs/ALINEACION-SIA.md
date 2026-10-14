@@ -85,10 +85,17 @@ cuentas viven en `srp`; altas, bajas y restablecimientos los hace la Administrac
 
    Falta el límite por procedencia (6.2), cuando el SIA corrija su módulo común, y la edición de cuentas,
    que espera la decisión 3.
-4. **La recepción como la hace el SIA:** disparadores que vuelven a derivar el punto, asignan el folio con
-   un contador por celda y escriben la bitácora, que ya no se podrá editar ni borrar ni siquiera por error.
-   Fotografías como archivos, con su estimado de espacio (6.11). Carga masiva y envío por tandas, cada una
-   de menos de un minuto (6.3); y lo que baje al teléfono, escrito por partes.
+4. **La recepción como la hace el SIA.** En curso. Hecho en el bloque 212: la recepción de jornadas y
+   árboles nuevos, por envíos de hasta 100 operaciones, cada una de mucho menos de un minuto (6.3).
+   - El punto se vuelve a ubicar y el folio se asigna en la misma transacción que recibe el árbol, con
+     un contador por celda que sólo avanza y lo que se congela al asignarlo.
+   - Un disparador impide cambiar o anular un folio, y la bitácora ya no se edita ni se borra (bloque 206).
+
+   Falta:
+   - las ediciones, eliminaciones, relevos y demás operaciones;
+   - las fotografías como archivos, con su estimado de espacio (6.11);
+   - la carga masiva por tandas;
+   - lo que baje al teléfono, escrito por partes.
 
 ## 4. Preguntas para el SIA
 
