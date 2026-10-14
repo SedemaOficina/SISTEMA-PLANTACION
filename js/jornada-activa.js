@@ -229,7 +229,7 @@ SRP.activa = {
       boton: 'Actualizar a ' + n, icono: 'palomita', cancelar: 'Dejar en ' + meta });
     if (!ok) return j;
     const u = SRP.sesion.usuario, nuevo = Object.assign({}, j, { arboles_previstos: n, editado_por_id: u.id, fecha_ultima_edicion: SRP.util.ahoraISO() });
-    await SRP.almacen.guardarConBitacora('jornadas', nuevo, SRP.bitacora.entrada('EDITADO', 'jornada', j.id, 'Árboles previstos: ' + meta + ' → ' + n + ', al cerrar la jornada'));
+    await SRP.almacen.guardarConBitacora('jornadas', nuevo, SRP.bitacora.entrada('EDITADO', 'jornada', j.id, 'Árboles previstos: ' + meta + ' → ' + n + ', al cerrar la jornada'), 'jornada.editar');
     return nuevo;
   },
 
@@ -533,7 +533,7 @@ SRP.activa = {
 
   async guardarJornadaNueva({ nombre, ubicacion, fecha, comentarios, programa_id, previstos }) {
     const j = this.armarJornada({ nombre, ubicacion, fecha, comentarios, programa_id, previstos });
-    await SRP.almacen.guardarConBitacora('jornadas', j, SRP.bitacora.entrada('CREADO', 'jornada', j.id, 'Jornada «' + nombre + '» del ' + SRP.util.formatearFecha(fecha)));
+    await SRP.almacen.guardarConBitacora('jornadas', j, SRP.bitacora.entrada('CREADO', 'jornada', j.id, 'Jornada «' + nombre + '» del ' + SRP.util.formatearFecha(fecha)), 'jornada.crear');
     SRP.almacen.cuidarAlmacenamiento();   // ya hay algo que perder: se pide al navegador que no lo borre
     this.jornada = j;
     this.mostrarInicio(false);
@@ -621,7 +621,7 @@ SRP.activa = {
     const caduca = estatus !== 'cerrada' && !!j.reporte_en;
     if (caduca) nuevo.reporte_en = null;
     await SRP.almacen.guardarConBitacora('jornadas', nuevo, SRP.bitacora.entrada('EDITADO', 'jornada', j.id,
-      estatus === 'cerrada' ? 'Jornada cerrada' : 'Jornada reabierta' + (caduca ? '; su reporte deja de estar vigente' : '')));
+      estatus === 'cerrada' ? 'Jornada cerrada' : 'Jornada reabierta' + (caduca ? '; su reporte deja de estar vigente' : '')), estatus === 'cerrada' ? 'jornada.cerrar' : 'jornada.reabrir');
     if (SRP.envio.simulado()) SRP.envio.enviar({ silencioso: true });
     return true;
   },

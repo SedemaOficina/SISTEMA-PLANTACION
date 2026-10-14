@@ -3,7 +3,7 @@
   "version_esquema": "2026-10-04",
   "etapa": "Etapa 1 (Fase 1: dispositivo, sin servidor)",
   "almacenamiento": {
-    "motor": "IndexedDB del navegador: base `srp_db` en la versión de prueba y `srp_sia` en la real (SRP.CONFIG.DB_NOMBRE, según ES_FICTICIO), versión 8 (SRP.CONFIG.DB_VERSION). Nunca comparten datos",
+    "motor": "IndexedDB del navegador: base `srp_db` en la versión de prueba y `srp_sia` en la real (SRP.CONFIG.DB_NOMBRE, según ES_FICTICIO), versión 10 (SRP.CONFIG.DB_VERSION). Nunca comparten datos",
     "tablas": [
       "plantaciones",
       "usuarios",
@@ -36,6 +36,11 @@
         "donde": "localStorage `srp_secuencias_folio_prueba`",
         "que": "consecutivos del servidor simulado de folios, por celda; por dispositivo",
         "fase2": "Desaparece: el consecutivo vive en el servidor"
+      },
+      {
+        "donde": "IndexedDB, almacén `envios`",
+        "que": "con datos reales, la cola de envío: cada cambio a una jornada o a un árbol como la operación del servidor que le corresponde, con la versión que el servidor tenía del registro, y las fotografías por subir; se anota en la misma transacción que el cambio y sale cuando el servidor lo confirma (js/cola.js). Con datos de prueba queda vacía",
+        "fase2": "Es la cola de envío real"
       },
       {
         "donde": "localStorage `srp_envios_prueba`",

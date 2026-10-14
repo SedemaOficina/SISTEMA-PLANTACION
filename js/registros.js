@@ -314,10 +314,10 @@ SRP.registros = {
     this.pagina = info.pagina;
     const pagina = info.items;
     const esc = SRP.util.escapar;
-    // Envío simulado: la tarjeta dice si el registro espera envío; enviado no lleva marca
-    const envio = SRP.envio.simulado() ? SRP.envio.leer() : null;
+    // Con envío, real o simulado, la tarjeta dice si el registro espera envío; enviado no lleva marca
+    const conEnvio = SRP.envio.activo(), envio = SRP.envio.simulado() ? SRP.envio.leer() : null;
     this.el('lista-registros').innerHTML = pagina.map(r => {
-      const est = envio ? SRP.envio.estado(r, envio) : null;
+      const est = conEnvio ? SRP.envio.estado(r, envio) : null;
       const esp = SRP.ref.especieDe(r);
       // Acciones en el menú de la tuerca: sólo las que el perfil permite
       const items = [{ accion: 'ver', texto: 'Ver detalle', icono: 'ver' }];
@@ -380,7 +380,7 @@ SRP.registros = {
     if (!this.visibles) return;
     const u = SRP.sesion.usuario;
     const variosAutores = SRP.permisos.de(u).alcance !== 'propios';
-    const e = SRP.envio.leer();
+    const e = SRP.envio.simulado() ? SRP.envio.leer() : null;
     const frescos = {};
     for (const r of await SRP.almacen.porIndice('plantaciones', 'estatus', 'activo')) frescos[r.id] = r;
     const cambiar = lista => (lista || []).forEach((r, i) => { if (frescos[r.id]) lista[i] = frescos[r.id]; });
@@ -390,7 +390,7 @@ SRP.registros = {
       if (!r) return;
       li.querySelector('.registro-fecha').innerHTML = this.htmlFecha(r, variosAutores);
       const fila = li.querySelector('.registro-estado');
-      const html = this.htmlEstado(r, SRP.envio.simulado() ? SRP.envio.estado(r, e) : null);
+      const html = this.htmlEstado(r, SRP.envio.activo() ? SRP.envio.estado(r, e) : null);
       fila.innerHTML = html; fila.hidden = !html;
     });
   },
@@ -566,7 +566,8 @@ SRP.registros = {
     // Retiro con constancia: se marca, no se borra (Norma 7.4)
     const ahora = SRP.util.ahoraISO(), quien = SRP.sesion.usuario.id;
     const nuevo = Object.assign({}, r, { estatus: 'eliminado', fecha_ultima_edicion: ahora, editado_por_id: quien });
-    const cambios = [{ almacen: 'plantaciones', objeto: nuevo, bitacora: SRP.bitacora.entrada('ELIMINADO', 'plantacion', r.id) }];
+    // El árbol va a la cola de envío; su original y el reporte de su jornada los pone al día el servidor
+    const cambios = [{ almacen: 'plantaciones', objeto: nuevo, bitacora: SRP.bitacora.entrada('ELIMINADO', 'plantacion', r.id), envio: 'registro.eliminar' }];
     // Sin su sustituto, el árbol que había sustituido vuelve a contar como plantado
     const original = r.sustituye_id ? await SRP.almacen.uno('plantaciones', r.sustituye_id) : null;
     if (original && original.estatus === 'sustituido' && original.sustituido_por_id === r.id) cambios.push({ almacen: 'plantaciones',
@@ -592,7 +593,7 @@ SRP.registros = {
     if (!jornada) { SRP.util.anunciar('No se puede restaurar: su jornada ya no existe.', 'aviso'); return; }
     const vuelto = Object.assign({}, actual, { estatus: 'activo', fecha_plantacion: SRP.util.fechaEnJornada(actual.fecha_plantacion, jornada), programa_id: jornada.programa_id,
       fecha_ultima_edicion: SRP.util.ahoraISO(), editado_por_id: SRP.sesion.usuario.id });
-    const cambios = [{ almacen: 'plantaciones', objeto: vuelto, bitacora: SRP.bitacora.entrada('RESTAURADO', 'plantacion', r.id, 'Se deshizo la eliminación') }];
+    const cambios = [{ almacen: 'plantaciones', objeto: vuelto, bitacora: SRP.bitacora.entrada('RESTAURADO', 'plantacion', r.id, 'Se deshizo la eliminación'), envio: 'registro.restaurar' }];
     // Un sustituto que vuelve deja otra vez sustituido a su original, si nadie lo sustituyó entre tanto
     const original = actual.sustituye_id ? await SRP.almacen.uno('plantaciones', actual.sustituye_id) : null;
     if (original && original.estatus === 'activo' && !original.sustituido_por_id) cambios.push({ almacen: 'plantaciones',

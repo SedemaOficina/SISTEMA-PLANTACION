@@ -3,7 +3,7 @@
 El formulario funciona entero en el dispositivo. Con datos de prueba no habla con ningún servidor.
 Con datos reales (`ES_FICTICIO: false`) entra con las cuentas del servicio del SRP (`servidor/`), que
 instala el SIA. La conexión se construye por partes (`docs/FASE2-Y-TRASPASO.md`): hoy, entrar, bajar
-catálogos, cuentas y parámetros, y ver lo ya enviado, que llega del servidor.
+catálogos, cuentas y parámetros, ver lo ya enviado, que llega del servidor, y enviar lo que se captura.
 
 La versión que corre se lee al pie de cada pantalla.
 
@@ -114,6 +114,14 @@ corresponda a una cuenta dada de alta y activa.
 - Las fotografías de lo enviado se piden al servidor cuando se ven o se descargan, y ni el teléfono ni el
   navegador guardan copia (`js/foto.js`). Una que el servidor no tiene no se ve rota: en su lugar queda la
   miniatura vacía.
+- **El envío** (`js/cola.js`). Cada cambio a una jornada o a un árbol se anota en la cola de envío, en la
+  misma transacción que el cambio, como la operación del servidor que le corresponde.
+  - La cola se envía sola: al guardar, al volver la señal, al volver a la aplicación y cada minuto; «Enviar
+    ahora» la fuerza.
+  - El servidor responde con el folio y lo que pone él; la fotografía sube después de su árbol.
+  - Lo que el servidor no acepta se queda en el teléfono con su motivo, y se dice.
+  - Al cerrar la jornada y entregar su reporte, lo recibido sale del teléfono, como pide S-11.
+  - Si la sesión vence con un árbol a medias, se avisa y se pide entrar al guardarlo.
 - Al volver a abrir se entra sin esperar, también sin señal, con los últimos parámetros. Si hay señal, el
   servicio confirma la sesión, se pone al día lo que se queda en el teléfono y se trae lo enviado.
 - Si la sesión venció o la cerró la Administración, se vuelve a pedir la contraseña sin perder lo
@@ -157,6 +165,7 @@ js/                     La aplicación, un archivo por tema
   almacen.js            Base del dispositivo (IndexedDB), migraciones y bitácora
   servidor.js           Cómo se habla con el servicio del SRP (/api/srp): cada pedido dice si respondió, si faltó conexión o qué no aceptó
   remoto.js             Lo que viene del servidor: catálogos, cuentas y parámetros, que se quedan; lo enviado, sólo en memoria; los avisos cuando falta
+  cola.js               La cola de envío con datos reales: qué se anota con cada cambio, cómo se envía y qué hace el teléfono con la respuesta
   sesion.js             Acceso: simulado con datos de prueba; con datos reales, las cuentas del servicio (correo y contraseña)
   derivacion.js         Cruce punto-en-polígono (alcaldía, UGA, colonia)
   prioritarias.js       Colonias prioritarias para reforestar: prioridad de la jornada y de su colonia, y la capa en los mapas
@@ -241,7 +250,7 @@ versión se escribe en un solo lugar del código.
 
 **El archivo `VERSION`, en la raíz, lleva el mismo número** (lo pide la guía del SIA, sección 8); la prueba
 falla si no coincide con la marca. Ese número se ve siempre en la franja fija de arriba: «Versión de prueba
-0.9.67» mientras el SIA no instale el sistema; al pasar al SIA, `VERSION` y la marca van en `1` y la franja
+0.9.68» mientras el SIA no instale el sistema; al pasar al SIA, `VERSION` y la marca van en `1` y la franja
 dice «Versión 1».
 
 Si aun así alguien cae en una mezcla, el sistema lo detecta al abrir y explica cómo forzar la
@@ -452,7 +461,7 @@ tiempo fijo.
 | `auditoria.py` | Consistencia de lo guardado y del modelo: esquema contra lo que se guarda, diccionario y `js/esquema.js` regenerados, dominios, vocabulario |
 | `auditoria_css.py` | La norma de la hoja de estilos: colores sólo en `:root`, sin `#id` ni `!important`, medidas con token, una regla por selector, sin clases ni variables sin uso, sin estilos en línea. Corre dentro de `auditoria.py`; con `--todo` lista cada caso |
 | `revisar.py` | Presentación en ocho combinaciones de ancho y zoom: desbordamiento, alto del mapa, tamaño de los controles y reglas anuladas |
-| `prueba_conexion.py` | La aplicación con datos reales contra el servicio local: entrar, los mensajes al no poder, lo que baja, lo enviado en memoria y sus avisos sin señal o con falla del servidor, los parámetros, volver a abrir con y sin señal, la sesión vencida, la contraseña temporal, «Cerrar sesión» y cuánto tarda la Administración en traer todo |
+| `prueba_conexion.py` | La aplicación con datos reales contra el servicio local: entrar, los mensajes al no poder, lo que baja, lo enviado en memoria y sus avisos sin señal o con falla del servidor, los parámetros, volver a abrir con y sin señal, la sesión vencida, la contraseña temporal, «Cerrar sesión», cuánto tarda la Administración en traer todo, y el envío real: jornada y árboles capturados en la pantalla, con folio y fotografía, sin señal, una corrección, un rechazo y lo que sale del teléfono al cerrar |
 
 ## Salida a producción y Fase 2
 

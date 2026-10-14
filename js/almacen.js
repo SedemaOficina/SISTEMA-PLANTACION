@@ -13,6 +13,8 @@ SRP.almacen = {
        · Un cambio en la forma de los datos viaja como migración numerada, nunca como borrado. */
   // Los almacenes que este código da por existentes; se comprueban al abrir
   ALMACENES: ['plantaciones', 'usuarios', 'bitacora', 'jornadas', 'programas', 'areas', 'especies', 'vehiculos', 'instituciones', 'solicitantes'],
+  // Los que no son datos del sistema sino del funcionamiento del teléfono: la cola de envío (js/cola.js)
+  AUXILIARES: ['envios'],
 
   /* LOS SEIS CATÁLOGOS, CADA UNO EN SU TABLA. La pantalla los trata como una familia —la sección
      Catálogos, con una pestaña por cada uno— y en memoria cada renglón lleva `tipo` para saber de cuál
@@ -226,6 +228,12 @@ SRP.almacen = {
         }
         cur.continue();
       };
+    },
+    /* 10: la cola de envío, con datos reales (js/cola.js). Cada operación con su número, en el orden en que se
+       hizo; por registro, para saber qué espera de cada uno. Con datos de prueba queda vacía. */
+    10(db) {
+      const en = db.createObjectStore('envios', { keyPath: 'n', autoIncrement: true });
+      en.createIndex('registro_id', 'registro_id');
     }
   },
 
@@ -339,7 +347,7 @@ SRP.almacen = {
       pet.onsuccess = () => {
         this.db = pet.result;
         this.vigilarVersion();
-        const faltan = this.ALMACENES.filter(n => !this.db.objectStoreNames.contains(n));
+        const faltan = this.ALMACENES.concat(this.AUXILIARES).filter(n => !this.db.objectStoreNames.contains(n));
         if (!faltan.length) { resolver(); return; }
         if (!SRP.CONFIG.ES_FICTICIO) {
           rechazar(new Error('La base de este equipo no tiene: ' + faltan.join(', ') + '.'));
@@ -464,23 +472,60 @@ SRP.almacen = {
     });
   },
 
+  /* LA COLA DE ENVÍO. Con datos reales, el cambio que tiene que llegar al servidor lleva `envio`: la operación
+     que le corresponde ('registro.crear', 'jornada.cerrar'…). Se anota en la cola en la misma transacción que
+     el cambio, con el registro como estaba: o quedan los dos o ninguno (js/cola.js). Lo que cambia junto pero
+     lo hace el servidor por su cuenta va sin `envio`. */
+  conCola(almacenes, cambios) {
+    return SRP.cola.activa() && cambios.some(c => c.envio) ? almacenes.concat('envios') : almacenes;
+  },
+
+  // Pone el objeto; si va a la cola, primero lee cómo estaba (la lectura se atiende antes que la escritura)
+  poner(tx, almacen, objeto, envio) {
+    const t = tx.objectStore(almacen);
+    if (envio && SRP.cola.activa()) {
+      const g = t.get(objeto.id);
+      g.onsuccess = () => SRP.cola.anotar(tx, envio, almacen, g.result || SRP.remoto.uno(almacen, objeto.id) || null, objeto);
+    }
+    t.put(objeto);
+  },
+
   // Guarda el objeto y su renglón de bitácora en la misma transacción: o quedan los dos o ninguno.
-  guardarConBitacora(almacen, objeto, entradaBitacora) {
-    return this._tx([almacen, 'bitacora'], 'readwrite', (tx) => {
-      tx.objectStore(almacen).put(objeto);
+  guardarConBitacora(almacen, objeto, entradaBitacora, envio) {
+    return this._tx(this.conCola([almacen, 'bitacora'], [{ envio }]), 'readwrite', (tx) => {
+      this.poner(tx, almacen, objeto, envio);
       if (entradaBitacora) tx.objectStore('bitacora').put(entradaBitacora);
     });
   },
 
   /* Varios cambios que van juntos, en una sola transacción: entran todos o ninguno. Así una
      jornada y sus árboles no pueden quedar a medias si el teléfono se queda sin espacio o se cierra
-     la página a la mitad. `cambios`: [{ almacen, objeto, bitacora }]. */
+     la página a la mitad. `cambios`: [{ almacen, objeto, bitacora, envio }]. */
   guardarJuntos(cambios) {
-    const almacenes = [...new Set(cambios.map(c => c.almacen).concat('bitacora'))];
+    const almacenes = this.conCola([...new Set(cambios.map(c => c.almacen).concat('bitacora'))], cambios);
     return this._tx(almacenes, 'readwrite', (tx) => cambios.forEach(c => {
-      tx.objectStore(c.almacen).put(c.objeto);
+      this.poner(tx, c.almacen, c.objeto, c.envio);
       if (c.bitacora) tx.objectStore('bitacora').put(c.bitacora);
     }));
+  },
+
+  /* Sin bitácora ni cola: lo que el servidor respondió de un registro, y la cola misma (js/cola.js) */
+  ponerLocal(almacen, objeto) {
+    return this._tx([almacen], 'readwrite', (tx) => { tx.objectStore(almacen).put(objeto); });
+  },
+
+  quitarLocal(almacen, clave) {
+    return this._tx([almacen], 'readwrite', (tx) => { tx.objectStore(almacen).delete(clave); });
+  },
+
+  // Lo que ya está en el servidor sale del teléfono con su historial (S-11). `ids`: { tabla: [ids] }
+  quitarLocales(ids) {
+    const tablas = Object.keys(ids);
+    return this._tx(tablas.concat('bitacora'), 'readwrite', (tx) => tablas.forEach(t => ids[t].forEach(id => {
+      tx.objectStore(t).delete(id);
+      const b = tx.objectStore('bitacora').index('entidad_id').getAllKeys(id);
+      b.onsuccess = () => b.result.forEach(k => tx.objectStore('bitacora').delete(k));
+    })));
   },
 
   /* Lo que llega del servidor reemplaza lo que había en esas tablas, en una sola transacción: el servidor
@@ -494,9 +539,14 @@ SRP.almacen = {
     }));
   },
 
-  borrarConBitacora(almacen, id, entradaBitacora) {
-    return this._tx([almacen, 'bitacora'], 'readwrite', (tx) => {
-      tx.objectStore(almacen).delete(id);
+  borrarConBitacora(almacen, id, entradaBitacora, envio) {
+    return this._tx(this.conCola([almacen, 'bitacora'], [{ envio }]), 'readwrite', (tx) => {
+      const t = tx.objectStore(almacen);
+      if (envio && SRP.cola.activa()) {
+        const g = t.get(id);
+        g.onsuccess = () => SRP.cola.anotar(tx, envio, almacen, g.result || SRP.remoto.uno(almacen, id) || { id }, null);
+      }
+      t.delete(id);
       tx.objectStore('bitacora').put(entradaBitacora);
     });
   },

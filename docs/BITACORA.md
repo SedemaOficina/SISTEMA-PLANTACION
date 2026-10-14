@@ -4868,3 +4868,70 @@ No se probó: en un teléfono real, cuánto tarda una página de miniaturas con 
 
 **Siguiente paso.** 4c: subir lo capturado al servidor —jornadas, árboles, cambios y fotografías— con su
 folio, quitando del teléfono lo que el servidor confirme, salvo la jornada abierta.
+
+## Bloque 223 — El envío real (14-10-2026)
+
+**Versión 0.9.68.** Tercera parte del paso 4 (D303). Base del teléfono en la versión 10.
+
+| Qué | Cómo queda con datos reales |
+|---|---|
+| Cada cambio | Se anota en la cola de envío en la misma transacción, como la operación del servidor |
+| Enviar | Solo, al guardar, al volver la señal, al volver a la aplicación y cada minuto; en orden y con su versión |
+| La respuesta | Trae el folio y lo que pone el servidor; la fotografía sube después de su árbol |
+| Lo que el servidor no acepta | Se queda con su motivo y se dice; resolverlo desde la pantalla es 4d |
+| Al cerrar y entregar el reporte | Lo recibido sale del teléfono y se sigue viendo como enviado |
+| Sesión vencida a medio árbol | Se avisa; se pide entrar al guardarlo |
+
+**Qué cambió.**
+- `js/cola.js`, nuevo.
+- `js/almacen.js`: el almacén `envios` (migración 10), las escrituras que anotan en la cola, y las de sólo
+  el teléfono.
+- `js/envio.js`, `js/conexion.js`, `js/registros.js` y `js/formulario.js`: el envío real con lo que ya se
+  veía del simulado.
+- Los quince lugares que cambian jornadas o árboles dicen su operación: `formulario.js`, `registros.js`,
+  `jornadas.js`, `jornada-activa.js` y `reportes.js`.
+- `js/servidor.js`: subir una fotografía. `js/sesion.js`: la sesión que vence a medio árbol.
+- `js/app.js`: la cola al abrir.
+- `js/config.js`: la base, versión 10.
+- `index.html` y `VERSION`: la marca 0.9.68.
+- `datos/esquema.json` y `datos/DICCIONARIO-DATOS.md`: la cola, entre lo que guarda el teléfono; la versión
+  de la base, que decía 8.
+- Pruebas:
+  - `prueba.py`: la base en la versión 10;
+  - `prueba_conexion.py` y su apoyo: el envío real.
+- Documentación: `README.md`, `docs/FASE2-Y-TRASPASO.md` y `docs/MEJORAS.md`.
+
+**Pantalla: qué se agregó y qué se quitó.** Con datos de prueba, nada. Con datos reales se ve lo mismo que
+con el envío simulado, sin «(simulado)». Hay dos avisos nuevos:
+- «El servidor no aceptó…», con el motivo del servidor;
+- el de la sesión vencida con un árbol a medias.
+
+**Verificación.**
+- Aplicación: `auditoria.py`, 144 comprobaciones sin hallazgos. `prueba.py` dio 5 fallas de 1440, y las cinco
+  eran pruebas que esperaban la base en la versión 9: lo que comprobaban estaba bien, ya en la 10. Se
+  corrigieron:
+  - tres secciones corridas solas, 0 fallas;
+  - las otras dos dependen del recorrido completo y no corren solas: sus valores, en la corrida, eran
+    justo los nuevos.
+  No se repitió la corrida completa.
+- Conexión: `prueba_conexion.py`, 41 de 41, capturando en la pantalla con datos reales:
+  - la jornada iniciada llega al servidor y se queda en el teléfono;
+  - el árbol llega con su fotografía y el folio del servidor vuelve al teléfono; la franja dice «enviado»;
+  - sin conexión, el árbol queda por enviar y la pastilla lo cuenta; al volver sale;
+  - una corrección llega como cambio;
+  - si otra persona cambió el árbol antes, el servidor no escribe encima, y el cambio se queda con su motivo
+    y se dice;
+  - cerrada la jornada y entregado su reporte, sale del teléfono con lo recibido y se sigue viendo; el árbol
+    con el cambio rechazado se queda;
+  - la sesión que vence a medio árbol no saca a nadie del formulario.
+- Tropiezo: la prueba nueva no ubicaba la jornada antes de iniciarla (ahora se pide), así que el árbol caía
+  en otra jornada que ya tenía sus previstos. Era de la prueba, no de la aplicación.
+- La base local quedó sin datos de prueba, y la prueba borra sus carpetas.
+
+No se probó:
+- en un teléfono real, ni con mala señal de verdad;
+- un envío de más de cien operaciones;
+- dos personas que comparten teléfono con cambios por enviar.
+
+**Siguiente paso.** 4d: qué hacer desde la pantalla con lo que el servidor no acepta. Probablemente necesite
+una pantalla o un aviso nuevo, que se muestra antes.

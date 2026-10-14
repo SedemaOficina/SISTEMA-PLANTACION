@@ -14,15 +14,21 @@
 window.SRP = window.SRP || {};
 
 SRP.servidor = {
-  async pedir(metodo, ruta, cuerpo) {
+  pedir(metodo, ruta, cuerpo) {
+    return this.mandar(metodo, ruta, cuerpo === undefined ? undefined : JSON.stringify(cuerpo), cuerpo === undefined ? null : 'application/json');
+  },
+
+  // Una fotografía, tal cual: sus bytes y su tipo
+  subir(ruta, datos, tipo) { return this.mandar('PUT', ruta, datos, tipo); },
+
+  async mandar(metodo, ruta, cuerpo, tipo) {
     const C = SRP.CONFIG, ctrl = new AbortController();
     const reloj = setTimeout(() => ctrl.abort(), C.ESPERA_SERVIDOR_MS);
     let r;
     try {
       r = await fetch(C.API + ruta, {
         method: metodo, credentials: 'same-origin', cache: 'no-store', signal: ctrl.signal,
-        headers: cuerpo === undefined ? {} : { 'content-type': 'application/json' },
-        body: cuerpo === undefined ? undefined : JSON.stringify(cuerpo)
+        headers: tipo ? { 'content-type': tipo } : {}, body: cuerpo
       });
     } catch (e) {
       return { ok: false, sinRed: true, mensaje: 'No hay conexión con el servidor. Lo capturado se guarda en este equipo.' };

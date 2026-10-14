@@ -670,7 +670,7 @@ SRP.formulario = {
           territorio.length ? 'Territorio recalculado: ' + territorio.map(k => k === 'capa_version' ? 'capas ' + (v[k] || '—')
             : k + ' ' + (previo[k] || '—') + ' → ' + (v[k] || '—')).join('; ') : ''].filter(Boolean).join('. ');
         const nuevo = this.registroPrevisto(ahora);
-        await SRP.almacen.guardarJuntos([{ almacen: 'plantaciones', objeto: nuevo, bitacora: SRP.bitacora.entrada('EDITADO', 'plantacion', nuevo.id, detalle || 'Sin cambios en los datos') }]
+        await SRP.almacen.guardarJuntos([{ almacen: 'plantaciones', objeto: nuevo, bitacora: SRP.bitacora.entrada('EDITADO', 'plantacion', nuevo.id, detalle || 'Sin cambios en los datos'), envio: 'registro.editar' }]
           .concat(detalle ? await SRP.reportes.caducar([nuevo.jornada_id], 'se editó un árbol') : []));
         this.el('dlg-resumen').close();
         this.limpiar();
@@ -693,7 +693,7 @@ SRP.formulario = {
         // Sólo quien tiene la jornada a su cargo registra en ella: si pasó a otro cabo en relevo, ya no
         if (!SRP.permisos.exigir('jornada.registrar', await SRP.almacen.uno('jornadas', nuevo.jornada_id) || {})) { await SRP.activa.preparar(); return; }
         // La distancia a los demás de la jornada ya se avisó en la ficha de revisión
-        await SRP.almacen.guardarConBitacora('plantaciones', nuevo, SRP.bitacora.entrada('CREADO', 'plantacion', nuevo.id));
+        await SRP.almacen.guardarConBitacora('plantaciones', nuevo, SRP.bitacora.entrada('CREADO', 'plantacion', nuevo.id), 'registro.crear');
         if (this.el('dlg-resumen').open) this.el('dlg-resumen').close();
         // Con este árbol se llega a lo previsto: lo dice la misma confirmación de guardado, no un aviso aparte
         const jornada = SRP.activa.jornada, previstos = jornada ? SRP.jornadas.previstosDe(jornada) : null;
@@ -712,7 +712,7 @@ SRP.formulario = {
         // Con datos de prueba, el registro sale en seguida si hay señal y recibe folio
         // El envío corre aparte: el árbol ya quedó en el teléfono y la franja dice «enviando…»;
         // esperarlo dejaba «Guardar» en «Guardando…» hasta que el servidor contestara, frenando el siguiente
-        if (SRP.envio.simulado()) this.enviarTrasGuardar(nuevo.id).catch(() => this.pintarEnvio(nuevo.id, 'por_enviar', 'no se pudo enviar: se reintentará solo'));
+        if (SRP.envio.activo()) this.enviarTrasGuardar(nuevo.id).catch(() => this.pintarEnvio(nuevo.id, 'por_enviar', 'no se pudo enviar: se reintentará solo'));
         // Lo capturado vive sólo en el teléfono: se pide al navegador que no lo borre y se vigila el espacio
         SRP.almacen.cuidarAlmacenamiento();
       }
@@ -776,7 +776,7 @@ SRP.formulario = {
     const motivo = SRP.ref.motivoSustitucion(nuevo);
     const especie = x => SRP.ref.especieDe(x).comun + ' (' + SRP.folio.texto(x) + ')';
     await SRP.almacen.guardarJuntos([
-      { almacen: 'plantaciones', objeto: nuevo, bitacora: SRP.bitacora.entrada('CREADO', 'plantacion', nuevo.id, 'Sustituye a ' + especie(original) + ': ' + motivo) },
+      { almacen: 'plantaciones', objeto: nuevo, bitacora: SRP.bitacora.entrada('CREADO', 'plantacion', nuevo.id, 'Sustituye a ' + especie(original) + ': ' + motivo), envio: 'registro.sustituir' },
       { almacen: 'plantaciones', objeto: Object.assign({}, original, { estatus: 'sustituido', sustituido_por_id: nuevo.id, fecha_ultima_edicion: ahora, editado_por_id: SRP.sesion.usuario.id }),
         bitacora: SRP.bitacora.entrada('SUSTITUIDO', 'plantacion', original.id, 'Sustituido por ' + SRP.ref.especieDe(nuevo).comun + ': ' + motivo) }
     ]);
@@ -853,7 +853,7 @@ SRP.formulario = {
     try { if (navigator.vibrate) navigator.vibrate(60); } catch (e) { /* sin vibración: basta lo visible */ }
   },
 
-  /* Lo que dice la franja «Guardado» con el envío simulado: «Enviando…» mientras sale, y
+  /* Lo que dice la franja «Guardado» con el envío, real o simulado: «Enviando…» mientras sale, y
      luego enviado con su hora de recepción, o guardado en el teléfono y cuántos esperan. */
   async enviarTrasGuardar(id) {
     const envio = SRP.envio;
@@ -863,10 +863,10 @@ SRP.formulario = {
     SRP.mapa.refrescarFolios();   // los puntos del mapa toman el folio que acaba de llegar
     const r = await SRP.almacen.uno('plantaciones', id);
     if (!r) return;
-    const e = envio.leer();
-    if (envio.estado(r, e) === 'recibido') {
+    const e = envio.simulado() ? envio.leer() : null, recibido = envio.recibidoEn(r, e);
+    if (envio.estado(r, e) === 'recibido' && recibido) {
       if (this.estado.ultimoGuardado === id) { const f = this.el('franja-guardado-folio'); if (f) f.textContent = SRP.folio.textoLargo(r); }
-      pinta('recibido', 'enviado ' + envio.cuando(e.recibidos[r.id]));
+      pinta('recibido', 'enviado ' + envio.cuando(recibido));
     } else {
       const pend = await envio.pendientesPropios();
       const n = pend ? pend.length : 1;

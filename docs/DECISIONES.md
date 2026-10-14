@@ -3668,3 +3668,38 @@
   · Al corregir un árbol enviado, su fotografía se ve en la ficha sin bajarla al registro: el árbol conserva
     su foto_id.
   · Con datos de prueba nada cambia.
+
+- **D303. El envío real: la cola de envío (bloque 223, versión 0.9.68).**
+  14-10-2026. Tercera parte del paso 4.
+  · **La cola** es un almacén nuevo del teléfono, `envios` (la base pasa a la versión 10). No es una tabla de
+    datos del sistema: el diccionario la describe entre lo que guarda el teléfono, y el servidor no la tiene.
+  · **Qué se anota.** Cada uno de los quince lugares donde la aplicación cambia una jornada o un árbol dice qué
+    operación del servidor le corresponde. El almacén la anota en la cola en la misma transacción que el
+    cambio, con la versión que el servidor tenía del registro: o quedan los dos o ninguno.
+    · Lo que cambia junto pero hace el servidor por su cuenta no se anota: el original de un sustituto, el
+      reporte que deja de estar vigente, los árboles que toman el programa de su jornada, las jornadas de un
+      árbol que se mueve. El servidor lo hace y lo devuelve.
+  · **Qué viaja.** Se arma al enviar, con el registro como esté entonces:
+    · un alta lleva lo que se le corrigió antes de enviarla;
+    · varias ediciones de algo ya enviado se juntan en una, con sólo los campos que cambiaron respecto de lo
+      que tenía el servidor;
+    · si otra operación del mismo registro espera, la versión se sabe cuando el servidor responde ésa;
+    · un alta que se borró del teléfono antes de salir no manda nada de ese registro;
+    · sólo se envía lo de quien tiene la sesión.
+  · **Cómo se envía.** En orden, hasta cien por vez y nunca dos del mismo registro en el mismo envío.
+    · Lo recibido sale de la cola y su respuesta manda: folio, territorio y versión.
+    · Lo rechazado se queda con su motivo, detiene lo que sigue de ese registro y se dice en un aviso con el
+      mensaje del servidor.
+    · Un árbol cuya jornada todavía no llega espera.
+    · La fotografía nueva sube después de su árbol; si el servidor aún no la recibe, se intenta después.
+  · **Qué se queda en el teléfono (S-11).** Lo que espera envío, y la jornada abierta —o cerrada sin su
+    reporte— con sus árboles. Lo demás sale con su historial y se sigue viendo como lo enviado.
+  · **Lo que se ve** es lo del envío simulado, con el estado de la cola: la pastilla, la franja de atraso,
+    «Enviar ahora», la franja «Guardado» y la marca «Por enviar». Los avisos no dicen «(simulado)».
+  · **La sesión que vence** con un árbol a medias no saca a nadie del formulario: se avisa, y al guardarlo el
+    envío que sigue pide entrar.
+  · **Pendiente para 4d:** resolver desde la pantalla lo que el servidor no aceptó.
+  · **Pendiente para 4d o después:** la jornada abierta del cabo que llega del servidor, iniciada en otro
+    teléfono, se tiene sólo en memoria; sin señal no estaría.
+  · **Pendiente para 4e:** la carga masiva sigue con el envío simulado.
+  · Con datos de prueba nada cambia: el envío sigue simulado.

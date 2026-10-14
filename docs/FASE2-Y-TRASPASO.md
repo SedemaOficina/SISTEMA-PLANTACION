@@ -53,10 +53,12 @@ los 17,479 árboles y las 1,305 jornadas igual que la aplicación.
   falta.
 - Las fotografías de lo enviado (bloque 222, D302): se piden al servidor al verlas o descargarlas, sin
   guardar copia.
-- Siguen 4c, subir lo capturado con su folio y sus fotografías; 4d, lo que el servidor no acepta; y 4e, la
-  administración conectada. Las pantallas
-  que eso cambia —Parámetros, que podrá editarlos, y la bandeja de posibles duplicados— ya las aprobó Liber
-  (D299).
+- 4c, subir (bloque 223, D303): cada cambio queda en la cola de envío en la misma transacción, sale en orden
+  con su versión y vuelve con lo que puso el servidor; las fotografías suben después de su árbol; al cerrar la
+  jornada y entregar su reporte, lo recibido sale del teléfono.
+- Siguen 4d, lo que el servidor no acepta —hoy se queda con su motivo y se dice, pero no hay cómo resolverlo
+  desde la pantalla—, y 4e, la administración conectada. Las pantallas que eso cambia —Parámetros, que podrá
+  editarlos, y la bandeja de posibles duplicados— ya las aprobó Liber (D299).
 
 Ver `servidor/README.md`.
 
@@ -122,7 +124,7 @@ no envía con la app cerrada: los datos salen cuando el cabo abre la app con se�
 | Identificadores | `SRP.util.generarId()` en `js/util.js` usa `crypto.randomUUID()` y, si el navegador no lo tiene, arma un texto que no es UUID. | En el servidor los identificadores de árboles, jornadas, cuentas y bitácora son `uuid`: el respaldo debe dar siempre un UUID v4 (con `crypto.getRandomValues`). Las cuentas de prueba (`u-admin-1`…) y los datos de demostración no son UUID y nunca llegan al servidor. |
 | Datos de prueba | `ES_FICTICIO: true` en `js/config.js`: banda de datos ficticios, entrada de prueba, cambio de perfil, herramientas del pie, espejo de campos. | `ES_FICTICIO: false` apaga todo eso y usa la base real `srp_sia`, vacía y distinta de la de prueba. |
 | Acceso | `autenticar()` en `js/sesion.js` con proveedor «simulado»; con `ES_FICTICIO: false` el acceso queda cerrado. | Conectar el acceso con correo y contraseña contra la base propia de usuarios del servidor (fila 28, `AUTENTICACION.PROVEEDOR`); agregar en Cuentas el botón «Restablecer contraseña» para la Administración global. |
-| Envío | Servidor simulado en `js/envio.js`; nada sale del teléfono. | Sustituir por la API real conservando estados, avisos y reintentos. |
+| Envío | Servidor simulado en `js/envio.js`; nada sale del teléfono. | Hecho con datos reales (D303): la cola de `js/cola.js`, con los mismos estados, avisos y reintentos. El simulado se retira con `ES_FICTICIO`. |
 | Folio | Emisión simulada por celda en `js/folio.js`, con consecutivos en `localStorage`. | La emite el servidor (apartado 1, fila 3). |
 | Cuentas y catálogos de arranque | `js/datos-ficticios.js`; vehículos de prueba, con placas ficticias, en `assets/catalogos/catalogo-vehiculos.js`. | Cargar los reales en el servidor. La lista real de vehículos (16, placa, modelo y tipo) está en `originales/vehiculos_reales_2026-09-26.csv`, fuera del repositorio: nunca se publica en el sitio. Las 79 especies de `assets/catalogos/catalogo-especies.js` ya son el catálogo real del SIA, con su paleta vegetal y su fruto comestible (se generan con `herramientas/generar_especies.py`). |
 | Datos de demostración | `js/demostracion.js` (ids `demo-`). | Retirar al cerrar la Etapa 1. |

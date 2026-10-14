@@ -125,9 +125,14 @@ SRP.sesion = {
     SRP.remoto.cargar();
   },
 
-  // El servicio ya no reconoce la sesión: se vuelve a pedir la contraseña; lo capturado se queda
+  /* El servicio ya no reconoce la sesión: se vuelve a pedir la contraseña; lo capturado se queda. Con un árbol
+     a medias no se saca a nadie del formulario: se avisa, y al guardarlo, el envío que sigue vuelve aquí */
   perdida(mensaje) {
     if (!this.usuario) return;
+    if (SRP.app.vista === 'registrar' && SRP.formulario.aMedias()) {
+      SRP.util.anunciar(mensaje + ' Termine el árbol: al guardarlo se le pedirá entrar.', 'aviso');
+      return;
+    }
     SRP.formulario.limpiar(true);
     this.olvidar();
     SRP.app.mostrarAcceso();

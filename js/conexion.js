@@ -131,7 +131,7 @@ SRP.conexion = {
   async refrescar() {
     const con = this.enLinea();
     const ind = this.el('conexion');
-    if (SRP.envio.simulado()) return this.refrescarSimulado(ind, con);
+    if (SRP.envio.activo()) return this.refrescarEnvio(ind, con);
     const n = await this.contarGuardados();
     // En teléfono chico la palabra «guardados» se oculta por CSS (queda «Con conexión · 4»); la etiqueta accesible la dice completa
     const cuenta = n === null ? '' : ' · ' + n + '<span class="cx-palabra"> ' + (n === 1 ? 'guardado' : 'guardados') + '</span>';
@@ -142,10 +142,11 @@ SRP.conexion = {
       (n === null ? '' : ', ' + n + ' registros guardados en este teléfono') + '. Abrir la guía de qué hacer sin internet');
   },
 
-  /* La pastilla con el envío simulado: en lugar de cuántos guarda el teléfono, cuántos
+  /* La pastilla con el envío, real o simulado: en lugar de cuántos guarda el teléfono, cuántos
      esperan envío. «Al día» cuando no queda nada; rojo cuando hay atraso (días anteriores o
      pasada la hora de cierre); «Enviando 3…» mientras dura el envío. */
-  async refrescarSimulado(ind, con) {
+  async refrescarEnvio(ind, con) {
+    const simulado = SRP.envio.simulado();
     const pend = await SRP.envio.pendientesPropios();
     const n = pend === null ? null : pend.length;
     const enviando = SRP.envio.enCurso;
@@ -157,10 +158,10 @@ SRP.conexion = {
     } else {
       // «Al día» con un servidor simulado no es «enviado»: en pantallas anchas lo dice; en el
       // teléfono lo dicen la banda de datos ficticios, la etiqueta accesible y la guía
-      const cuenta = n === null ? '' : n === 0 ? ' · Al día<span class="cx-palabra"> (simulado)</span>' : ' · ' + n + '<span class="cx-palabra"> por enviar</span>';
+      const cuenta = n === null ? '' : n === 0 ? ' · Al día' + (simulado ? '<span class="cx-palabra"> (simulado)</span>' : '') : ' · ' + n + '<span class="cx-palabra"> por enviar</span>';
       texto = (con ? 'Con conexión' : 'Sin conexión') + cuenta;
       etiqueta = (con ? 'Con conexión' : 'Sin conexión, puede seguir registrando') +
-        (n === null ? '' : n === 0 ? ', todo enviado al servidor simulado' : ', ' + n + (n === 1 ? ' registro por enviar' : ' registros por enviar')) +
+        (n === null ? '' : n === 0 ? ', todo enviado al servidor' + (simulado ? ' simulado' : '') : ', ' + n + (n === 1 ? ' registro por enviar' : ' registros por enviar')) +
         (atraso ? ', con atraso' : '');
     }
     ind.innerHTML = SRP.ICONOS.svg(con ? 'senal' : 'sinSenal', 'medio') + '<span>' + texto + '</span>';

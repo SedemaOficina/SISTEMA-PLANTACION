@@ -6,7 +6,7 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 
 ## 1. Dónde viven los datos
 
-- **Motor:** IndexedDB del navegador: base `srp_db` en la versión de prueba y `srp_sia` en la real (SRP.CONFIG.DB_NOMBRE, según ES_FICTICIO), versión 8 (SRP.CONFIG.DB_VERSION). Nunca comparten datos.
+- **Motor:** IndexedDB del navegador: base `srp_db` en la versión de prueba y `srp_sia` en la real (SRP.CONFIG.DB_NOMBRE, según ES_FICTICIO), versión 10 (SRP.CONFIG.DB_VERSION). Nunca comparten datos.
 - **Tablas (almacenes):** `plantaciones`, `usuarios`, `programas`, `areas`, `especies`, `vehiculos`, `instituciones`, `solicitantes`, `bitacora`, `jornadas`.
 
 | Dónde | Qué guarda | En Fase 2 |
@@ -15,6 +15,7 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 | localStorage `srp_sello_datos` | sello de las cuentas y catálogos de ejemplo cargados en este teléfono (SRP.CONFIG.SELLO_DATOS); si no coincide y no hay nada capturado, se vuelven a cargar; si hay capturas, se conserva todo | Desaparece con ES_FICTICIO |
 | localStorage `srp_contraste` | preferencia del modo sol (contraste alto) de este teléfono | Se conserva |
 | localStorage `srp_secuencias_folio_prueba` | consecutivos del servidor simulado de folios, por celda; por dispositivo | Desaparece: el consecutivo vive en el servidor |
+| IndexedDB, almacén `envios` | con datos reales, la cola de envío: cada cambio a una jornada o a un árbol como la operación del servidor que le corresponde, con la versión que el servidor tenía del registro, y las fotografías por subir; se anota en la misma transacción que el cambio y sale cuando el servidor lo confirma (js/cola.js). Con datos de prueba queda vacía | Es la cola de envío real |
 | localStorage `srp_envios_prueba` | estado del envío simulado: ids de registros recibidos con su hora | Desaparece: lo sustituye la cola de envío real |
 | localStorage `srp_sin_senal_prueba` | «Simular sin señal» de las herramientas de prueba | Desaparece con ES_FICTICIO |
 | localStorage `srp_demo_quitados` | marca de que en este teléfono se quitaron los datos de demostración; la caja de demostración lo dice al volver a abrirla | Desaparece con ES_FICTICIO |

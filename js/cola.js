@@ -1,0 +1,234 @@
+/* LA COLA DE ENVÍO, con datos reales; con datos de prueba el envío es simulado (js/envio.js) y esto no corre.
+
+   QUÉ SE ANOTA. Cada cambio que este teléfono le hace a una jornada o a un árbol queda en el almacén `envios`
+   como la operación del servidor que le corresponde (la lista está en servidor/src/modulos/srp/recepcion.ts),
+   en la misma transacción que el cambio: o quedan los dos o ninguno. Lo que el servidor hace por su cuenta con
+   ese cambio —el árbol que un sustituto reemplaza, el reporte que deja de estar vigente, los árboles que toman
+   el programa de su jornada— no se anota: el servidor lo hace y lo devuelve.
+     · Una operación lleva la versión que el servidor tenía del registro antes del cambio (S-16). Si otra
+       operación del mismo registro espera, la versión se sabe cuando el servidor responde ésa.
+     · Lo que viaja se arma al enviar, con el registro como esté entonces. Un alta lleva el registro completo,
+       y lo que se le corrija antes de enviarla viaja con ella. Varias ediciones de un registro ya enviado se
+       juntan en una, con sólo los campos que cambiaron respecto de lo que tenía el servidor.
+     · Una fotografía nueva se anota aparte y sube después de su árbol.
+
+   CÓMO SE ENVÍA. En el orden en que se hizo, hasta cien operaciones por vez y nunca dos del mismo registro en
+   el mismo envío. Lo que el servidor recibe sale de la cola y su respuesta manda: el folio, el territorio y la
+   versión. Lo que rechaza se queda con su motivo y detiene lo que sigue de ese registro. Sólo se envía lo de
+   quien tiene la sesión.
+
+   QUÉ SE QUEDA EN EL TELÉFONO (S-11). Lo que espera envío, y la jornada abierta —o cerrada sin su reporte—
+   con sus árboles. Lo demás, ya recibido, sale del teléfono con su historial: se sigue viendo como lo enviado
+   (js/remoto.js). */
+window.SRP = window.SRP || {};
+
+SRP.cola = {
+  ops: [],               // lo del almacén `envios`, en el orden en que se hizo
+  recibidos: new Map(),  // registro → cuándo lo confirmó el servidor, en esta sesión
+  ALTAS: ['jornada.crear', 'registro.crear', 'registro.sustituir'],
+  EDICIONES: ['jornada.editar', 'registro.editar'],
+  // Los campos que viajan en una edición: los que el servidor deja cambiar
+  CAMPOS: {
+    plantaciones: ['lat', 'lng', 'punto_origen', 'gps_precision_m', 'especie_id', 'especie_otra', 'fecha_plantacion', 'comentarios', 'foto_id'],
+    jornadas: ['nombre', 'ubicacion', 'programa_id', 'arboles_previstos', 'fecha', 'comentarios', 'solicitante_id', 'solicitante_otro', 'solicitud_descripcion']
+  },
+  // Lo que pone el servidor en un registro que todavía tiene cambios por enviar
+  DEL_SERVIDOR: ['folio', 'alcaldia_cve', 'alcaldia', 'colonia_cve', 'colonia', 'uga', 'uga_borde_m', 'capa_version'],
+  LOTE: 100,
+
+  activa() { return SRP.remoto.activo(); },
+
+  async cargar() {
+    this.ops = this.activa() ? (await SRP.almacen.todosLocales('envios')).sort((a, b) => a.n - b.n) : [];
+  },
+
+  de(id) { return this.ops.filter(o => o.registro_id === id); },
+
+  // por_enviar: su alta no ha salido; cambios: ya está en el servidor y algo suyo espera; recibido: nada espera
+  estado(id) {
+    const p = this.de(id);
+    if (!p.length) return 'recibido';
+    return p.some(o => this.ALTAS.includes(o.tipo)) ? 'por_enviar' : 'cambios';
+  },
+
+  // La versión de un registro como la dejó el servidor: el momento de su último cambio, o el de su alta
+  version(tabla, r) { return r ? (r.fecha_ultima_edicion || (tabla === 'jornadas' ? r.fecha_inicio : r.fecha_registro) || null) : null; },
+
+  /* ---------- Anotar ---------- */
+
+  /* Dentro de la transacción del cambio (js/almacen.js). `antes`: el registro como estaba, del teléfono o de lo
+     enviado; `despues`: como queda, o null si se borró. */
+  anotar(tx, tipo, tabla, antes, despues) {
+    const id = (despues || antes).id, esperan = this.de(id);
+    const nuevas = [];
+    if (!this.EDICIONES.includes(tipo)) nuevas.push({ tipo });
+    // Con su alta o con otra edición esperando, la edición viaja con ésa
+    else if (!esperan.some(o => this.ALTAS.includes(o.tipo) || o.tipo === tipo)) nuevas.push({ tipo, antes: antes || null });
+    if (tabla === 'plantaciones' && despues && despues.foto_id && SRP.util.fotoSegura(despues.foto_base64) && (!antes || antes.foto_id !== despues.foto_id)) {
+      nuevas.push({ tipo: 'foto', foto_id: despues.foto_id });
+    }
+    if (!nuevas.length) return;
+    const ahora = SRP.util.ahoraISO(), almacen = tx.objectStore('envios'), usuario = SRP.sesion.usuario ? SRP.sesion.usuario.id : null;
+    // Una fotografía que espera no cambia la versión del registro
+    const previas = esperan.filter(o => o.tipo !== 'foto');
+    nuevas.forEach(o => {
+      const conVersion = !previas.length && !this.ALTAS.includes(o.tipo) && o.tipo !== 'foto';
+      Object.assign(o, { tabla, registro_id: id, usuario_id: usuario, version: conVersion ? this.version(tabla, antes) : null, creada: ahora, rechazo: null });
+      const r = almacen.add(o);
+      r.onsuccess = () => { o.n = r.result; };
+    });
+    tx.addEventListener('complete', () => {
+      this.ops.push(...nuevas);
+      this.ops.sort((a, b) => a.n - b.n);
+      SRP.envio.pronto();
+    });
+  },
+
+  /* ---------- Enviar ---------- */
+
+  igual(a, b) { return JSON.stringify(a == null || a === '' ? null : a) === JSON.stringify(b == null || b === '' ? null : b); },
+
+  sinFoto(r) { const x = Object.assign({}, r); delete x.foto_base64; return x; },
+
+  // Lo que viaja de una operación, con el registro como está ahora; null si ya no hay qué enviar
+  async datos(o) {
+    const r = await SRP.almacen.unoLocal(o.tabla, o.registro_id);
+    const base = { id: o.registro_id, version: o.version };
+    if (this.ALTAS.includes(o.tipo)) return r ? this.sinFoto(r) : null;
+    if (o.tipo === 'jornada.eliminar') return base;
+    if (!r) return null;
+    if (this.EDICIONES.includes(o.tipo)) {
+      const cambios = {};
+      this.CAMPOS[o.tabla].forEach(k => { if (!this.igual(r[k], (o.antes || {})[k])) cambios[k] = r[k] == null ? null : r[k]; });
+      return Object.keys(cambios).length ? Object.assign(base, { cambios }) : null;
+    }
+    if (o.tipo === 'registro.mover') return Object.assign(base, { jornada_id: r.jornada_id });
+    if (o.tipo === 'jornada.revisar') return Object.assign(base, { puntos_revisados: r.puntos_revisados || [] });
+    if (o.tipo === 'jornada.relevo') return Object.assign(base, { cabo_id: r.relevo_id || r.cabo_id });
+    if (o.tipo === 'jornada.cierre') {
+      ['encargado_id', 'personal', 'apoyo', 'observaciones', 'chofer', 'vehiculo_id', 'hora'].forEach(k => { base[k] = r[k] == null ? null : r[k]; });
+    }
+    return base;   // eliminar, restaurar, cerrar, reabrir, reporte y cierre
+  },
+
+  /* Envía lo de quien tiene la sesión. Devuelve { enviados: árboles recibidos, cortado: se fue la señal,
+     rechazados, error }. */
+  async enviar() {
+    const u = SRP.sesion.usuario, res = { enviados: new Set(), cortado: false, rechazados: 0, error: null };
+    if (!this.activa() || !u) return res;
+    const esperan = new Set();   // registros con algo antes que no salió: lo suyo espera
+    for (;;) {
+      const lote = [], ids = new Set(), sobran = new Set();
+      for (const o of this.ops) {
+        if (o.tipo === 'foto' || o.usuario_id !== u.id || ids.has(o.registro_id)) continue;
+        if (o.rechazo || esperan.has(o.registro_id) || (o.version === null && !this.ALTAS.includes(o.tipo))) { esperan.add(o.registro_id); continue; }
+        const d = await this.datos(o);
+        if (d === null) {
+          // Un alta que ya no está en el teléfono —se borró antes de salir—: nada de ese registro tiene que llegar
+          (this.ALTAS.includes(o.tipo) ? this.de(o.registro_id) : [o]).forEach(x => sobran.add(x));
+          ids.add(o.registro_id);
+          continue;
+        }
+        lote.push({ o, op: { tipo: o.tipo, datos: d } });
+        ids.add(o.registro_id);
+        if (lote.length === this.LOTE) break;
+      }
+      for (const o of sobran) await this.borrar(o);
+      if (!lote.length) break;
+      const r = await SRP.servidor.pedir('POST', '/envios', { operaciones: lote.map(x => x.op) });
+      if (!r.ok) { res.cortado = !!r.sinRed; res.error = r.sinRed ? null : r.mensaje; break; }
+      let avanzo = false;
+      for (let i = 0; i < lote.length; i++) {
+        const o = lote[i].o, x = r.datos.resultados[i];
+        if (x && x.estado === 'recibido') {
+          await this.recibida(o, x);
+          if (o.tabla === 'plantaciones') res.enviados.add(o.registro_id);
+          avanzo = true;
+        } else if (x && x.codigo === 'JORNADA_PENDIENTE') {
+          esperan.add(o.registro_id);   // su jornada todavía no llega: se intenta después
+        } else {
+          await this.rechazada(o, x || { codigo: 'SIN_RESPUESTA', mensaje: 'El servidor no respondió por esta operación.' });
+          res.rechazados++;
+          avanzo = true;
+        }
+      }
+      if (!avanzo) break;
+    }
+    if (!res.cortado && !res.error) await this.subirFotos(res);
+    await this.limpiar();
+    return res;
+  },
+
+  async recibida(o, x) {
+    // La que sigue de este registro ya sabe su versión. Se guarda antes de soltar ésta: si el teléfono se apaga
+    // en medio, ésta se vuelve a enviar y el servidor la reconoce
+    const siguiente = this.de(o.registro_id).find(s => s !== o && s.tipo !== 'foto' && s.version === null && !this.ALTAS.includes(s.tipo));
+    if (siguiente && x.version) { siguiente.version = x.version; await this.guardar(siguiente); }
+    await this.borrar(o);
+    this.recibidos.set(o.registro_id, SRP.util.ahoraISO());
+    if (o.tipo === 'jornada.eliminar') SRP.remoto.jornadas.delete(o.registro_id);
+    else if (x.fila) await this.aplicar(o.tabla, x.fila);
+    for (const y of x.otras || []) await this.aplicar(y.tabla, y.fila);
+  },
+
+  // Lo que el servidor no aceptó se queda con su motivo, y lo que sigue de ese registro espera
+  async rechazada(o, x) {
+    o.rechazo = { codigo: x.codigo || x.estado || 'ERROR', mensaje: x.mensaje || '', fila: x.fila || null, en: SRP.util.ahoraISO() };
+    await this.guardar(o);
+  },
+
+  /* Lo que respondió el servidor de un registro: se ve en lo enviado y, si el teléfono lo guarda, se pone al día.
+     Con algo suyo por enviar, sólo toma lo que pone el servidor; la fotografía que guarda el teléfono se queda. */
+  async aplicar(tabla, fila) {
+    if (!fila || !fila.id) return;
+    SRP.remoto[tabla].set(fila.id, fila);
+    const local = await SRP.almacen.unoLocal(tabla, fila.id);
+    if (!local) return;
+    const espera = this.de(fila.id).some(o => o.tipo !== 'foto');
+    const nuevo = espera
+      ? Object.assign({}, local, Object.fromEntries(this.DEL_SERVIDOR.filter(k => k in fila).map(k => [k, fila[k]])))
+      : Object.assign({}, fila, local.foto_base64 && local.foto_id === fila.foto_id ? { foto_base64: local.foto_base64 } : {});
+    await SRP.almacen.ponerLocal(tabla, nuevo);
+  },
+
+  // Las fotografías nuevas, cada una después de su árbol; la que el servidor no acepta se queda con su motivo
+  async subirFotos(res) {
+    const u = SRP.sesion.usuario;
+    for (const o of this.ops.filter(x => x.tipo === 'foto' && !x.rechazo && x.usuario_id === u.id)) {
+      if (this.de(o.registro_id).some(p => p !== o && p.tipo !== 'foto')) continue;
+      const r = await SRP.almacen.unoLocal('plantaciones', o.registro_id);
+      const b = r && r.foto_id === o.foto_id && SRP.util.fotoSegura(r.foto_base64) ? await SRP.foto.bytes(r) : null;
+      if (!b) { await this.borrar(o); continue; }
+      const x = await SRP.servidor.subir('/fotos/' + o.foto_id, b.datos, b.tipo);
+      if (x.ok) { await this.borrar(o); continue; }
+      if (x.sinRed) { res.cortado = true; break; }
+      // Su árbol todavía no llega, o el servidor aún no recibe fotografías: se intenta después
+      if (x.codigo === 'ARBOL_PENDIENTE' || x.estado === 503) continue;
+      if (x.estado === 401) break;
+      await this.rechazada(o, x);
+      res.rechazados++;
+    }
+  },
+
+  /* S-11: sale del teléfono lo ya recibido, salvo la jornada abierta —o cerrada sin su reporte— con sus
+     árboles, y lo que espera envío. Con su historial. */
+  async limpiar() {
+    const [jornadas, arboles] = await Promise.all([SRP.almacen.todosLocales('jornadas'), SRP.almacen.todosLocales('plantaciones')]);
+    const espera = id => this.ops.some(o => o.registro_id === id);
+    const quedan = new Set(jornadas.filter(j => espera(j.id) || j.estatus === 'abierta' || !j.reporte_en).map(j => j.id));
+    const fuera = {
+      jornadas: jornadas.filter(j => !quedan.has(j.id)).map(j => j.id),
+      plantaciones: arboles.filter(r => !espera(r.id) && !quedan.has(r.jornada_id)).map(r => r.id)
+    };
+    if (fuera.jornadas.length || fuera.plantaciones.length) await SRP.almacen.quitarLocales(fuera);
+  },
+
+  /* ---------- El almacén de la cola ---------- */
+
+  async guardar(o) { await SRP.almacen.ponerLocal('envios', o); },
+
+  async borrar(o) {
+    await SRP.almacen.quitarLocal('envios', o.n);
+    this.ops = this.ops.filter(x => x !== o);
+  }
+};

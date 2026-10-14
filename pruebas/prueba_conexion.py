@@ -12,12 +12,17 @@ que se piden al servidor al verlas o descargarlas, y la que no llegó no se ve r
 llega, sin señal o porque el servidor falló; que al volver a abrir se entra sin esperar y la sesión se
 confirma; que sin señal se entra igual, con los últimos parámetros; que un cambio de la cuenta en el servidor
 llega; que una sesión vencida pide la contraseña sin perder lo guardado; la contraseña temporal; que «Cerrar
-sesión» cierra también la del servicio y suelta lo enviado; y cuánto tarda la Administración en traer todo.
+sesión» cierra también la del servicio y suelta lo enviado; cuánto tarda la Administración en traer todo; y el
+envío real: una jornada y sus árboles capturados en la pantalla llegan al servidor y vuelven con su folio, con su
+fotografía; lo capturado sin señal sale al volver; una corrección viaja como cambio; lo que el servidor no acepta
+se queda con su motivo; al cerrar la jornada y entregar su reporte, sale del teléfono; y la sesión que vence a
+medio árbol no saca a nadie del formulario.
 
 Uso, desde la carpeta del proyecto (con la base local cargada):  python pruebas/prueba_conexion.py
 """
 import json
 import os
+import re
 import shutil
 import socket
 import subprocess
@@ -25,6 +30,7 @@ import sys
 import tempfile
 import time
 import uuid
+from PIL import Image
 from playwright.sync_api import sync_playwright
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -32,6 +38,7 @@ SERVIDOR = os.path.join(RAIZ, 'servidor')
 PUERTO_API, PUERTO_APP = 3109, 8098
 BASE = 'http://127.0.0.1:%d/' % PUERTO_APP
 CLAVE = 'Conexion de prueba 2026'
+HOY = time.strftime('%Y-%m-%d')
 CORRIDA = str(int(time.time()))
 cuenta = lambda nombre, perfil, **x: dict(id=str(uuid.uuid4()), correo='%s.conexion.prueba.%s@ejemplo.local' % (nombre, CORRIDA),
                                           nombre='Prueba %s Conexión' % nombre.capitalize(), perfil=perfil, organizacion_id='o-sedema', clave=CLAVE, **x)
@@ -90,6 +97,55 @@ def dentro(pg):
     return pg.evaluate("() => !document.getElementById('navegacion').hidden && !!SRP.sesion.usuario")
 
 
+def iniciar_jornada(pg, nombre):
+    """Declara una jornada desde Nuevo registro, como la persona."""
+    pg.evaluate("SRP.app.mostrarVista('registrar')")
+    pg.wait_for_timeout(500)
+    if pg.is_hidden('#panel-iniciar-jornada'):
+        pg.click('#btn-jornada-cambiar'); pg.wait_for_timeout(200); pg.click('#btn-cambiar-nueva'); pg.wait_for_timeout(300)
+    pg.fill('#ini-nombre', nombre)
+    pg.fill('#ini-fecha', HOY)
+    pg.select_option('#ini-programa', 'p-refor')
+    pg.fill('#ini-meta', '10')
+    pg.click('#btn-ini-detectar'); pg.wait_for_timeout(900)   # la jornada se ubica antes de iniciarla
+    pg.click('#btn-iniciar-jornada')
+    pg.wait_for_timeout(600)
+    return pg.evaluate("SRP.activa.jornada && SRP.activa.jornada.id")
+
+
+def registrar(pg, foto=None):
+    """Captura un ahuehuete de principio a fin en la jornada activa y devuelve su identificador."""
+    pg.evaluate("SRP.app.mostrarVista('registrar')")
+    pg.wait_for_timeout(400)
+    pg.click('#btn-ubicacion'); pg.wait_for_timeout(800)
+    pg.fill('#campo-especie', 'ahuehu'); pg.wait_for_timeout(200)
+    pg.dispatch_event('.combo-opcion[data-id="ESP-0070"]', 'mousedown'); pg.wait_for_timeout(150)
+    if foto: pg.set_input_files('#foto-archivo', foto); pg.wait_for_timeout(900)
+    pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(800)
+    if pg.is_visible('#dlg-confirmar'): pg.click('#btn-confirmar-si'); pg.wait_for_timeout(800)
+    if pg.is_visible('#dlg-resumen'): pg.click('#btn-resumen-guardar'); pg.wait_for_timeout(700)
+    return pg.evaluate("SRP.formulario.estado.ultimoGuardado")
+
+
+def corregir(pg, id, comentarios):
+    """Corrige los comentarios de un árbol desde su edición, como la persona."""
+    pg.evaluate("async id => SRP.formulario.editar(await SRP.almacen.uno('plantaciones', id))", id)
+    pg.wait_for_timeout(600)
+    pg.fill('#campo-comentarios', comentarios)
+    pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(800)
+    if pg.is_visible('#dlg-resumen'): pg.click('#btn-resumen-guardar'); pg.wait_for_timeout(700)
+
+
+# Lo que tiene el teléfono de un registro, sin lo enviado en memoria
+LOCAL = """async id => ({ jornada: await SRP.almacen.unoLocal('jornadas', id) || null, arbol: await SRP.almacen.unoLocal('plantaciones', id) || null })"""
+
+
+def esperar_cola(pg, quedan=0, espera=30000):
+    """Espera a que la cola baje a `quedan` operaciones y a que no haya envío en curso."""
+    pg.wait_for_function("n => SRP.cola.ops.length <= n && !SRP.envio.enviando", arg=quedan, timeout=espera)
+    pg.wait_for_timeout(300)
+
+
 def esperar_remoto(pg, estados=('listo',), espera=90000):
     pg.wait_for_function("e => e.includes(SRP.remoto.estado)", arg=list(estados), timeout=espera)
 
@@ -138,7 +194,7 @@ def main():
             raise RuntimeError('el servicio o el servidor de la aplicación no arrancaron')
         with sync_playwright() as p:
             b = p.chromium.launch()
-            ctx = b.new_context(service_workers='block')
+            ctx = b.new_context(service_workers='block', geolocation={'latitude': 19.357, 'longitude': -99.06, 'accuracy': 5}, permissions=['geolocation'])
             ctx.route('**/js/config.js*', config_real)
             pg = ctx.new_page()
             errores, pedidos = [], []
@@ -233,6 +289,70 @@ def main():
             ok(v['franja'] and 'No se pudo traer lo enviado' in v['franja'], 'si el servidor falla, la franja lo dice: %s' % v['franja'])
             ctx.unroute('**/api/srp/jornadas*')
 
+            # ---------- El envío real, capturando en la pantalla ----------
+            foto = os.path.join(fotos, 'prueba-arbol.jpg')   # se va con la carpeta de la prueba
+            Image.new('RGB', (64, 48), (40, 120, 60)).save(foto, 'JPEG')
+            abrir(pg)
+            esperar_remoto(pg)
+            jid = iniciar_jornada(pg, 'Jornada del envío real')
+            esperar_cola(pg)
+            ok(apoyo('leer', {'id': jid})['jornada'] == {'estatus': 'abierta', 'reporte': False, 'nombre': 'Jornada del envío real'} and pg.evaluate(LOCAL, jid)['jornada'],
+               'la jornada iniciada en la pantalla llega al servidor y se queda en el teléfono, porque está abierta')
+            a1 = registrar(pg, foto)
+            esperar_cola(pg)
+            srv = apoyo('leer', {'id': a1})
+            loc = pg.evaluate(LOCAL, a1)
+            ok(srv['arbol'] and re.match(r'^[A-Z]{3}-\d{3}-\d{5}$', srv['arbol']['folio'] or '') and loc['arbol'] and loc['arbol']['folio'] == srv['arbol']['folio'] and srv['fotos'] == 1,
+               'el árbol registrado llega al servidor con su fotografía, y el folio que asignó el servidor vuelve al teléfono: %s' % srv['arbol'])
+            franja = pg.evaluate("() => document.getElementById('franja-guardado-envio') && document.getElementById('franja-guardado-envio').textContent")
+            ok(franja and franja.startswith('enviado '), 'la franja «Guardado» dice que se envió: %s' % franja)
+
+            # Sin señal se queda en la cola, y sale al volver
+            ctx.route('**/api/srp/**', lambda r: r.abort())
+            a2 = registrar(pg)
+            pg.wait_for_timeout(800)
+            c = pg.evaluate("""() => ({ estado: SRP.cola.estado('%s'), cola: SRP.cola.ops.length, pastilla: document.getElementById('conexion').textContent.trim() })""" % a2)
+            ok(c['estado'] == 'por_enviar' and c['cola'] == 1 and 'por enviar' in c['pastilla'], 'sin conexión, el árbol queda por enviar y la pastilla lo cuenta: %s' % c)
+            ctx.unroute('**/api/srp/**')
+            pg.evaluate("() => SRP.envio.enviar({ manual: true })")
+            esperar_cola(pg)
+            ok(apoyo('leer', {'id': a2})['arbol'] is not None and pg.evaluate("() => SRP.cola.ops.length") == 0, 'al volver la conexión sale solo lo que esperaba')
+
+            # Una corrección viaja como cambio de ese árbol
+            corregir(pg, a1, 'Corregido en el teléfono')
+            esperar_cola(pg)
+            ok(apoyo('leer', {'id': a1})['arbol']['comentarios'] == 'Corregido en el teléfono', 'la corrección de un árbol enviado llega al servidor')
+
+            # Lo que el servidor no acepta se queda con su motivo: otra persona cambió el árbol antes
+            apoyo('tocar', {'id': a2, 'comentarios': 'Cambiado por otra persona'})
+            corregir(pg, a2, 'Cambiado en el teléfono')
+            pg.wait_for_function("() => SRP.cola.ops.some(o => o.rechazo)", timeout=30000)
+            x = pg.evaluate("() => { const o = SRP.cola.ops.find(o => o.rechazo); return { codigo: o.rechazo.codigo, aviso: document.getElementById('aviso').textContent, estado: SRP.cola.estado(o.registro_id) }; }")
+            ok(x['codigo'] == 'VERSION_VIEJA' and 'Alguien más cambió este registro' in x['aviso'] and x['estado'] == 'cambios' and apoyo('leer', {'id': a2})['arbol']['comentarios'] == 'Cambiado por otra persona',
+               'si alguien cambió el árbol antes, el servidor no escribe encima: el cambio se queda en el teléfono con su motivo, y se dice: %s' % x)
+
+            # Al cerrar la jornada y entregar su reporte, lo recibido sale del teléfono; lo rechazado se queda
+            pg.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); await SRP.activa.cambiarEstatus(j, 'cerrada'); }", jid)
+            esperar_cola(pg, 1)
+            pg.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); await SRP.reportes.marcarGenerado(j, null); }", jid)
+            esperar_cola(pg, 1)
+            srv = apoyo('leer', {'id': jid})['jornada']
+            loc = pg.evaluate("""async ([j, a1, a2]) => ({ jornada: !!(await SRP.almacen.unoLocal('jornadas', j)), a1: !!(await SRP.almacen.unoLocal('plantaciones', a1)),
+              a2: !!(await SRP.almacen.unoLocal('plantaciones', a2)), seVe: !!(await SRP.almacen.uno('plantaciones', a1)) })""", [jid, a1, a2])
+            ok(srv == {'estatus': 'cerrada', 'reporte': True, 'nombre': 'Jornada del envío real'} and loc == {'jornada': False, 'a1': False, 'a2': True, 'seVe': True},
+               'cerrada y con su reporte, la jornada sale del teléfono con lo recibido, y se sigue viendo como enviado; el árbol con un cambio rechazado se queda: %s' % loc)
+
+            # La sesión que vence a medio árbol no saca a nadie del formulario
+            pg.evaluate("SRP.app.mostrarVista('registrar')")
+            pg.wait_for_timeout(500)
+            pg.fill('#campo-comentarios', 'A medias')
+            pg.evaluate("() => SRP.sesion.perdida('Su sesión venció.')")
+            sigue = pg.evaluate("() => [SRP.app.vista, !!SRP.sesion.usuario, document.getElementById('aviso').textContent]")
+            ok(sigue[0] == 'registrar' and sigue[1] and 'Termine el árbol' in sigue[2], 'si la sesión vence con un árbol a medias, se avisa y no se pierde lo capturado: %s' % sigue)
+            pg.evaluate("() => { SRP.formulario.limpiar(); SRP.sesion.perdida('Su sesión venció.'); }")
+            ok(not dentro(pg), 'y sin árbol a medias, se pide entrar de nuevo')
+            entrar(pg, CABO['correo'], CLAVE)
+
             # Volver a abrir: se entra sin esperar y se confirma la sesión
             pedidos.clear()
             abrir(pg)
@@ -269,7 +389,8 @@ def main():
             pg.click('#btn-cerrar-sesion')
             pg.wait_for_timeout(1500)
             despues = apoyo('sesiones', {'id': CABO['id']})
-            ok(not dentro(pg) and antes['abiertas'] == 1 and despues['abiertas'] == 0, '«Cerrar sesión» cierra también la sesión en el servidor: %s → %s' % (antes, despues))
+            # La sesión de antes de la prueba de la sesión vencida sigue abierta en el servidor: se cuenta una menos
+            ok(not dentro(pg) and antes['abiertas'] >= 1 and despues['abiertas'] == antes['abiertas'] - 1, '«Cerrar sesión» cierra también la sesión en el servidor: %s → %s' % (antes, despues))
             ok(pg.evaluate("() => [SRP.remoto.plantaciones.size, SRP.remoto.jornadas.size, SRP.remoto.estado]") == [0, 0, 'sin-cargar'], 'y suelta lo enviado que tenía en memoria')
             abrir(pg)
             ok(not dentro(pg), 'y al volver a abrir se pide entrar')
@@ -280,9 +401,10 @@ def main():
             esperar_remoto(pg)
             segundos = time.time() - t0
             a = pg.evaluate("""async () => ({ cuentas: (await SRP.almacen.todosLocales('usuarios')).filter(u => typeof u.correo === 'string').length,
-                arboles: SRP.remoto.plantaciones.size, jornadas: SRP.remoto.jornadas.size, locales: (await SRP.almacen.todosLocales('plantaciones')).length })""")
+                arboles: SRP.remoto.plantaciones.size, jornadas: SRP.remoto.jornadas.size,
+                locales: (await SRP.almacen.todosLocales('plantaciones')).filter(r => !SRP.cola.de(r.id).length).length })""")
             ok(a['cuentas'] > 20 and a['arboles'] > 17000 and a['jornadas'] > 1000 and a['locales'] == 0,
-               'la Administración baja todas las cuentas con su correo y trae todo lo enviado en %.1f s, sin guardarlo: %s' % (segundos, a))
+               'la Administración baja todas las cuentas con su correo y trae todo lo enviado en %.1f s, sin guardarlo (en el teléfono sólo queda lo que espera envío): %s' % (segundos, a))
 
             ok(not errores, 'sin errores en la página: %s' % errores)
             ctx.close()

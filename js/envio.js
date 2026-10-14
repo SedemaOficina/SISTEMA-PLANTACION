@@ -1,9 +1,9 @@
-/* ENVÍO AL SERVIDOR, SIMULADO CON DATOS DE PRUEBA.
+/* ENVÍO AL SERVIDOR: real con datos reales, simulado con datos de prueba.
 
-   PARA QUÉ. Mientras la app no está conectada al servidor, con datos ficticios se simula la cola de
-   envío completa: cada registro nace «por enviar», se envía solo en cuanto hay señal y el servidor
-   simulado confirma la recepción y le asigna el folio. Nada sale del teléfono: la «recepción» se
-   anota en este dispositivo. Con ES_FICTICIO en false nada de esto corre.
+   CON DATOS REALES lo que se envía es la cola de js/cola.js, y el servidor confirma la recepción y da el
+   folio. Con datos de prueba se simula la cola completa: cada registro nace «por enviar», se envía solo en
+   cuanto hay señal y el servidor simulado confirma la recepción y le asigna el folio. Nada sale del teléfono:
+   la «recepción» se anota en este dispositivo. Lo que se ve es lo mismo en los dos casos.
 
    ESTADOS DE UN REGISTRO:
      por_enviar   guardado en el teléfono, nunca enviado (sin folio)
@@ -32,6 +32,10 @@ SRP.envio = {
 
   el(id) { return document.getElementById(id); },
   simulado() { return !!SRP.CONFIG.ES_FICTICIO; },
+  real() { return !this.simulado() && SRP.cola.activa(); },
+  activo() { return this.simulado() || this.real(); },
+  // «(simulado)» sólo cuando lo es
+  marca() { return this.simulado() ? ' (simulado)' : ''; },
 
   /* ---------- Lo que el servidor simulado «recibió» (vive en este dispositivo) ---------- */
 
@@ -47,9 +51,16 @@ SRP.envio = {
 
   // `e` se pasa cuando se evalúan muchos registros seguidos, para leer una sola vez
   estado(r, e) {
+    if (this.real()) return SRP.cola.estado(r.id);
     if (!SRP.folio.valido(r.folio)) return 'por_enviar';
     e = e || this.leer();
     return e.cambios.includes(r.id) ? 'cambios' : 'recibido';
+  },
+
+  // Cuándo lo confirmó el servidor; null si no se sabe
+  recibidoEn(r, e) {
+    if (this.real()) return SRP.cola.recibidos.get(r.id) || null;
+    return (e || this.leer()).recibidos[r.id] || null;
   },
 
   // Una edición de un registro ya enviado vuelve a la cola
@@ -63,9 +74,9 @@ SRP.envio = {
   // La cola del dispositivo: todos los registros de prueba activos que esperan envío
   async cola() {
     if (!SRP.almacen.db) return [];
-    const e = this.leer();
+    const e = this.simulado() ? this.leer() : null;
     return (await SRP.almacen.porIndiceLocal('plantaciones', 'estatus', 'activo'))
-      .filter(r => this.simulado() && this.estado(r, e) !== 'recibido')
+      .filter(r => this.activo() && this.estado(r, e) !== 'recibido')
       .sort((a, b) => String(a.fecha_registro).localeCompare(String(b.fecha_registro)));
   },
 
@@ -73,8 +84,8 @@ SRP.envio = {
   async pendientesPropios() {
     const mios = await SRP.conexion.registrosPropios();
     if (mios === null) return null;
-    const e = this.leer();
-    return mios.filter(r => this.simulado() && this.estado(r, e) !== 'recibido');
+    const e = this.simulado() ? this.leer() : null;
+    return mios.filter(r => this.activo() && this.estado(r, e) !== 'recibido');
   },
 
   /* ---------- Señal simulada ---------- */
@@ -99,7 +110,7 @@ SRP.envio = {
      (el diálogo de guardado), así que aquí no se pone aviso flotante. */
   enviar(op) {
     op = op || {};
-    if (!this.simulado() || !SRP.sesion.usuario || !SRP.almacen.db) return Promise.resolve(null);
+    if (!this.activo() || !SRP.sesion.usuario || !SRP.almacen.db) return Promise.resolve(null);
     // Un envío a la vez: quien llega mientras hay uno en curso recibe el mismo resultado. La marca se
     // pone antes de cualquier espera, para que dos avisos seguidos de «volvió la señal» no envíen dos veces
     if (this.enviando) return this.enviando;
@@ -110,7 +121,15 @@ SRP.envio = {
     return p;
   },
 
+  // Con datos reales, después de cada cambio: un momento después, para juntar los que llegan seguidos
+  pronto() {
+    if (!this.real()) return;
+    clearTimeout(this._pronto);
+    this._pronto = setTimeout(() => { if (SRP.conexion.enLinea()) this.enviar({ silencioso: true }); }, 400);
+  },
+
   async _enviar(op) {
+    if (this.real()) return this._enviarReal(op);
     const cola = await this.cola();
     const n = cola.length;
     if (!n) {
@@ -146,6 +165,42 @@ SRP.envio = {
     if (res.cortado) SRP.util.anunciar('Se perdió la señal durante el envío. ' + this.textoCuenta(n) + ' en el teléfono; ' + (n === 1 ? 'se enviará' : 'se enviarán') + ' cuando vuelva.', 'aviso', fondo);
     else if (!op.silencioso) SRP.util.anunciar((n === 1 ? '1 registro enviado' : n + ' registros enviados') + ' al servidor (simulado). Recepción confirmada.', undefined, fondo);
     return res;
+  },
+
+  /* Con datos reales: lo de la cola de quien tiene la sesión. Lo que el servidor no acepta se queda con su
+     motivo y se dice. */
+  async _enviarReal(op) {
+    const u = SRP.sesion.usuario;
+    const hay = SRP.cola.ops.some(o => o.usuario_id === u.id && !o.rechazo);
+    if (!hay) {
+      if (op.manual) SRP.util.anunciar('No hay registros por enviar: todo está en el servidor.', 'aviso');
+      return { enviados: 0, pendientes: (await this.cola()).length };
+    }
+    if (!SRP.conexion.enLinea()) {
+      const n = (await this.cola()).length;
+      await SRP.conexion.refrescar();
+      if (op.manual) SRP.util.anunciar('Sin conexión. ' + this.textoCuenta(Math.max(n, 1)) + ' en el teléfono y ' + (n === 1 ? 'se enviará solo' : 'se enviarán solos') + ' cuando haya señal.', 'aviso');
+      return { enviados: 0, pendientes: n };
+    }
+    this.enCurso = Math.max((await this.cola()).length, 1);
+    await SRP.conexion.refrescar();
+    let res;
+    try { res = await SRP.cola.enviar(); } finally { this.enCurso = 0; }
+    await this.alCambiar();
+    SRP.mapa.refrescarFolios();
+    const n = res.enviados.size, pendientes = (await this.cola()).length;
+    const fondo = { secundario: !op.manual };
+    if (res.cortado) SRP.util.anunciar('Se perdió la señal durante el envío. ' + this.textoCuenta(Math.max(pendientes, 1)) + ' en el teléfono; ' + (pendientes === 1 ? 'se enviará' : 'se enviarán') + ' cuando vuelva.', 'aviso', fondo);
+    else if (res.error) SRP.util.anunciar('No se pudo enviar: ' + res.error, 'aviso', fondo);
+    else if (res.rechazados) SRP.util.anunciar('El servidor no aceptó ' + (res.rechazados === 1 ? '1 cambio' : res.rechazados + ' cambios') + ': ' + this.motivoRechazo(), 'alerta', fondo);
+    else if (n && !op.silencioso) SRP.util.anunciar((n === 1 ? '1 registro enviado' : n + ' registros enviados') + ' al servidor. Recepción confirmada.', undefined, fondo);
+    return { enviados: n, pendientes, hora: SRP.util.ahoraISO() };
+  },
+
+  // El motivo del primer cambio que el servidor no aceptó, como lo dijo
+  motivoRechazo() {
+    const o = SRP.cola.ops.find(x => x.rechazo);
+    return o ? o.rechazo.mensaje : '';
   },
 
   textoCuenta(n) { return n === 1 ? 'El registro sigue guardado' : 'Los ' + n + ' registros siguen guardados'; },
@@ -195,7 +250,7 @@ SRP.envio = {
   async pintarFranja() {
     const franja = this.el('franja-envio');
     if (!franja) return;
-    const pend = this.simulado() && SRP.sesion.usuario ? await this.pendientesPropios() : null;
+    const pend = this.activo() && SRP.sesion.usuario ? await this.pendientesPropios() : null;
     const a = this.atraso(pend);
     franja.hidden = !a;
     if (!a) return;
@@ -214,9 +269,9 @@ SRP.envio = {
 
   async pintarGuia() {
     const caja = this.el('senal-cola');
-    if (!caja || !this.simulado()) return;
+    if (!caja || !this.activo()) return;
     this.el('senal-destino').innerHTML = '<strong>Sus registros se guardan primero en este teléfono</strong> y se envían solos al servidor en cuanto hay señal; ' +
-      'no tiene que hacer nada. En pruebas el servidor es simulado: nada sale del teléfono.';
+      'no tiene que hacer nada.' + (this.simulado() ? ' En pruebas el servidor es simulado: nada sale del teléfono.' : '');
     // Con envío, lo que importa al cambiar de teléfono es no dejar nada sin enviar
     this.el('senal-cambio').innerHTML = '<strong>Si va a cambiar de teléfono</strong>, antes envíe lo pendiente: la pastilla de arriba debe decir «Al día».';
     // Sólo si hay algo en cola: cuántos y de qué días, del más reciente al más antiguo
@@ -244,11 +299,14 @@ SRP.envio = {
   },
 
   iniciar() {
-    if (!this.simulado()) return;
-    const b = this.el('btn-sin-senal');
-    b.hidden = false;
-    b.setAttribute('aria-checked', String(this.sinSenalForzada()));
-    b.addEventListener('click', () => { SRP.app.menuCuenta(false); this.forzarSinSenal(!this.sinSenalForzada()); });
+    if (!this.activo()) return;
+    // «Simular sin señal» sólo existe en pruebas
+    if (this.simulado()) {
+      const b = this.el('btn-sin-senal');
+      b.hidden = false;
+      b.setAttribute('aria-checked', String(this.sinSenalForzada()));
+      b.addEventListener('click', () => { SRP.app.menuCuenta(false); this.forzarSinSenal(!this.sinSenalForzada()); });
+    }
     this.el('btn-enviar-ahora').addEventListener('click', async () => {
       await this.conBoton(this.el('btn-enviar-ahora'), async () => {
         await this.enviar({ manual: true });
@@ -264,12 +322,13 @@ SRP.envio = {
 
   // Al entrar: primero se intenta el envío de lo pendiente; lo que no salga queda en la franja
   async alEntrar() {
-    if (!this.simulado()) return;
+    if (!this.activo()) return;
     await this.pintarFranja();
     const pend = await this.pendientesPropios();
-    if (pend && pend.length && SRP.conexion.enLinea()) {
+    const espera = this.real() && SRP.cola.ops.some(o => o.usuario_id === SRP.sesion.usuario.id && !o.rechazo);
+    if (((pend && pend.length) || espera) && SRP.conexion.enLinea()) {
       const res = await this.enviar({ silencioso: true });
-      if (res && res.enviados) SRP.util.anunciar('Se enviaron ' + (res.enviados === 1 ? '1 registro que estaba pendiente' : res.enviados + ' registros que estaban pendientes') + ' (simulado).');
+      if (res && res.enviados) SRP.util.anunciar('Se enviaron ' + (res.enviados === 1 ? '1 registro que estaba pendiente' : res.enviados + ' registros que estaban pendientes') + this.marca() + '.');
     }
   }
 };

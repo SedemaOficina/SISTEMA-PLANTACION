@@ -48,6 +48,7 @@ SRP.app = {
       if (SRP.CONFIG.ES_FICTICIO) arranque = await SRP.almacen.sembrarSiVacio();
       SRP.almacen.arranque = arranque;   // queda a la vista para diagnosticar y para las pruebas
       await SRP.ref.recargar();
+      await SRP.cola.cargar();   // con datos reales, lo que espera envío
       // Sólo se rehacen los datos de ejemplo cuando no hay nada capturado; si lo hay, se conserva
       if (arranque === 'resembrado') setTimeout(() => SRP.util.anunciar('Se actualizaron las cuentas y los catálogos de prueba a la versión nueva.', 'aviso'), 400);
       if (arranque === 'reiniciado') setTimeout(() => SRP.util.anunciar('Se reiniciaron los datos de prueba: una cuenta por tipo y los catálogos al día. Lo capturado antes, que era de prueba, se quitó.', 'aviso'), 400);

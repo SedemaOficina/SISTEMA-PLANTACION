@@ -6,6 +6,8 @@
      node pruebas/apoyo_servidor.mjs vencer     { id }          las sesiones abiertas de la cuenta vencen
      node pruebas/apoyo_servidor.mjs sesiones   { id }          cuántas tiene abiertas y cuántas cerradas
      node pruebas/apoyo_servidor.mjs parametro  { clave, valor, id }   un parámetro cambiado por esa cuenta
+     node pruebas/apoyo_servidor.mjs tocar      { id, comentarios }    otra persona cambia un árbol en el servidor
+     node pruebas/apoyo_servidor.mjs leer       { id }          cómo tiene el servidor un árbol o una jornada
      node pruebas/apoyo_servidor.mjs quitar     { ids }         las cuentas, sus sesiones, sus jornadas, árboles y
                                                                 fotografías, sus parámetros y sus registros
 
@@ -39,6 +41,13 @@ try {
   } else if (orden === 'parametro') {
     await c.query(`INSERT INTO srp.parametros (clave, valor, editado_por_id, fecha_ultima_edicion) VALUES ($1, $2, $3, now())
       ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor, editado_por_id = EXCLUDED.editado_por_id`, [d.clave, d.valor, d.id]);
+  } else if (orden === 'tocar') {
+    await c.query("UPDATE srp.plantaciones SET comentarios = $2, fecha_ultima_edicion = date_trunc('milliseconds', now()) WHERE id = $1", [d.id, d.comentarios]);
+  } else if (orden === 'leer') {
+    const a = (await c.query('SELECT folio, comentarios, estatus, foto_id, jornada_id FROM srp.plantaciones WHERE id = $1', [d.id])).rows[0];
+    const j = (await c.query('SELECT estatus, reporte_en IS NOT NULL AS reporte, nombre FROM srp.jornadas WHERE id = $1', [d.id])).rows[0];
+    const f = a && a.foto_id ? (await c.query('SELECT count(*)::int AS n FROM srp.fotografias WHERE id = $1', [a.foto_id])).rows[0].n : 0;
+    salida = { arbol: a || null, jornada: j || null, fotos: f };
   } else if (orden === 'quitar') {
     await c.query('BEGIN');
     const arboles = (await c.query('SELECT id FROM srp.plantaciones WHERE cabo_id = ANY($1::uuid[])', [d.ids])).rows.map((r) => r.id);

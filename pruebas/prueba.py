@@ -2409,8 +2409,8 @@ with sync_playwright() as p:
     ctx14.close()
     # La base sube a la versión 3 con el índice de árboles por jornada, sin perder nada
     ind=pg.evaluate("""() => { const r = {}; for (const n of SRP.almacen.db.objectStoreNames) r[n] = [...SRP.almacen.db.transaction(n).objectStore(n).indexNames].sort(); return { v: SRP.almacen.db.version, r }; }""")
-    ok(ind['v']==9 and ind['r']['plantaciones']==['estatus','jornada_id'] and ind['r']['jornadas']==['cabo_id'] and 'catalogos' not in ind['r'] and all(ind['r'][t]==[] for t in ['programas','areas','especies','vehiculos','instituciones','solicitantes']),
-       'la base está en la versión 9, con cada catálogo en su tabla, con el índice de árboles por jornada y sin los cinco que nadie consultaba: %s' % ind)
+    ok(ind['v']==10 and ind['r']['plantaciones']==['estatus','jornada_id'] and ind['r']['jornadas']==['cabo_id'] and ind['r']['envios']==['registro_id'] and 'catalogos' not in ind['r'] and all(ind['r'][t]==[] for t in ['programas','areas','especies','vehiculos','instituciones','solicitantes']),
+       'la base está en la versión 10, con cada catálogo en su tabla, con el índice de árboles por jornada, la cola de envío y sin los cinco índices que nadie consultaba: %s' % ind)
     # Y un teléfono con la base en la versión 2 sube a la 3 sin perder lo capturado
     ctx15=b.new_context(viewport={'width':390,'height':844}); pg15=ctx15.new_page()
     pg15.route('**/*.js*', lambda r: r.abort())
@@ -2426,7 +2426,7 @@ with sync_playwright() as p:
       r.onsuccess = () => { r.result.close(); ok(true); }; r.onerror = () => no(r.error); })""")
     pg15.unroute('**/*.js*'); pg15.reload(); pg15.wait_for_timeout(1500)
     v2=pg15.evaluate("async () => ({ v: SRP.almacen.db.version, arboles: (await SRP.almacen.porIndice('plantaciones', 'jornada_id', 'jr-v2')).map(r => r.id), jornadas: (await SRP.almacen.todos('jornadas')).map(j => j.id) })")
-    ok(v2=={'v':9,'arboles':['pl-v2'],'jornadas':['jr-v2']},'una base en la versión 2 sube a la 9 conservando árboles y jornadas, y el índice nuevo los encuentra: %s' % v2)
+    ok(v2=={'v':10,'arboles':['pl-v2'],'jornadas':['jr-v2']},'una base en la versión 2 sube a la 10 conservando árboles y jornadas, y el índice nuevo los encuentra: %s' % v2)
     ctx15.close()
 
     # ---------- TUERCA, SUBIR AL INICIO Y ERRORES EN LA JORNADA ----------
@@ -3493,7 +3493,7 @@ with sync_playwright() as p:
     pg34.unroute('**/*.js*'); pg34.reload(); pg34.wait_for_timeout(1500)
     m34=pg34.evaluate("""async () => { const j = {}; (await SRP.almacen.todos('jornadas')).forEach(x => { j[x.id] = [x.vehiculo_id || null, x.vehiculo_placa || '', x.vehiculo_modelo || '', x.vehiculo_tipo || '', 'vehiculo' in x]; });
       return { v: SRP.almacen.db.version, j, chofer: (await SRP.almacen.uno('jornadas', 'jr-d')).chofer }; }""")
-    ok(m34['v']==9 and m34['j']['jr-a']==['v-PRU009','PRU 009','Internacional','Redilas',False],'la migración 4 enlaza con el catálogo la placa escrita a mano que sí está en él: %s' % m34['j']['jr-a'])
+    ok(m34['v']==10 and m34['j']['jr-a']==['v-PRU009','PRU 009','Internacional','Redilas',False],'la migración 4 enlaza con el catálogo la placa escrita a mano que sí está en él: %s' % m34['j']['jr-a'])
     ok(m34['j']['jr-b']==[None,'','','',False] and m34['j']['jr-c'][4]==False,'y quita lo escrito a mano que no está en el catálogo, y el `vehiculo` de versiones anteriores: %s · %s' % (m34['j']['jr-b'], m34['j']['jr-c']))
     ok(m34['j']['jr-d']==['v-PRU009','PRU 009','Internacional','Redilas',False] and m34['chofer']=='Fulano' and len(m34['j'])==4,'sin tocar las jornadas que ya tenían su vehículo del catálogo ni ningún otro dato')
     ok(not err34,'sin errores en consola: %s' % err34[:2])
@@ -3539,7 +3539,7 @@ with sync_playwright() as p:
         a: [a.arboles_previstos, 'meta_arboles' in a, 'creado_por_id' in a, 'fecha_creacion' in a, a.editado_por_id, a.fecha_ultima_edicion, a.vehiculo_tipo, a.lat, a.lng, a.chofer],
         b: [b.arboles_previstos, 'arboles_plantados' in b, b.editado_por_id, b.fecha_ultima_edicion],
         u: [u.fecha_creacion, u.creado_por_id, 'fecha_alta' in u, 'alta_por_id' in u] }; }""")
-    ok(m36['v']==9 and m36['esp']==[] and m36['cientifico']=='Acer negundo','la migración 5 quita género, epíteto y nota de discrepancia de las especies y deja el nombre científico: %s' % m36)
+    ok(m36['v']==10 and m36['esp']==[] and m36['cientifico']=='Acer negundo','la migración 5 quita género, epíteto y nota de discrepancia de las especies y deja el nombre científico: %s' % m36)
     ok(m36['a']==[7,False,False,False,None,None,'',19.432679,-99.133212,'Fulano'],
        'en la jornada: la meta pasa a arboles_previstos, se quitan quién la creó y cuándo, una jornada sin editar queda sin datos de edición, el vehículo sin nulos y el punto con seis decimales: %s' % m36['a'])
     ok(m36['b']==[3,False,'u-cabo-1','2026-09-21T12:00:00-06:00'],'una jornada editada conserva quién y cuándo, y el conteo viejo pasa a arboles_previstos: %s' % m36['b'])
@@ -3662,7 +3662,7 @@ with sync_playwright() as p:
         p: [p.lat, p.lng, p.especie_id, p.foto_id, p.foto_base64 ? 'foto' : ''], j: [j.nombre, j.reporte_en], u: u.nombre_completo, c: c.nombre_cientifico, b: b.accion,
         nombre: SRP.CONFIG.DB_NOMBRE, prueba: SRP.CONFIG.DB_NOMBRE_PRUEBA, real: SRP.CONFIG.DB_NOMBRE_REAL, ficticio: SRP.CONFIG.ES_FICTICIO,
         bases: indexedDB.databases ? (await indexedDB.databases()).map(d => d.name) : null }; }""")
-    ok(m38['v']==9 and m38['quedan']==[],'la migración 6 quita la marca de prueba de todas las tablas y del árbol el punto original, los folio_*, el nombre y peso de la foto y el estatus de especie: %s' % m38['quedan'])
+    ok(m38['v']==10 and m38['quedan']==[],'la migración 6 quita la marca de prueba de todas las tablas y del árbol el punto original, los folio_*, el nombre y peso de la foto y el estatus de especie: %s' % m38['quedan'])
     ok(m38['p']==[19.4326,-99.1332,'ESP-0002','f-6','foto'] and m38['j']==['Seis','2026-09-22T15:00:00-06:00'] and m38['u']=='Cabo' and m38['c']=='Fraxinus uhdei' and m38['b']=='CREADO',
        'sin perder nada más: el árbol conserva punto, especie y foto; la jornada su reporte_en; la cuenta (con su nombre ya en un solo campo), la especie y la bitácora sus datos: %s' % {k: m38[k] for k in 'pjucb'})
     ok(m38['nombre']=='srp_db' and m38['prueba']=='srp_db' and m38['real']=='srp_sia' and m38['ficticio'] is True and (m38['bases'] is None or 'srp_sia' not in m38['bases']),
@@ -3720,7 +3720,7 @@ with sync_playwright() as p:
     m39=pg39.evaluate("""async () => { const a = await SRP.almacen.uno('plantaciones', 'pl-7a'), b = await SRP.almacen.uno('plantaciones', 'pl-7b');
       return { v: SRP.almacen.db.version, a: a.capa_version, colonia: a.colonia, b: b.capa_version, capa: SRP.CAPAS.colonias.meta.version,
         vigente: SRP.derivacion.derivar(19.4326, -99.1332).capa_version, texto: SRP.ref.textoCapas(a.capa_version) }; }""")
-    ok(m39['v']==9 and m39['a']=='alcaldias=sia-2026-01-01;uga=sia-2026-09-22;colonias=iecm-2022' and m39['colonia']=='CENTRO I' and m39['b'] is None,
+    ok(m39['v']==10 and m39['a']=='alcaldias=sia-2026-01-01;uga=sia-2026-09-22;colonias=iecm-2022' and m39['colonia']=='CENTRO I' and m39['b'] is None,
        'la migración 7 cambia sólo el nombre de la versión de colonias en lo ya derivado, sin tocar la colonia ni lo que no tenía capas: %s' % m39)
     ok(m39['capa']=='iecm-2022' and m39['vigente'].endswith('colonias=iecm-2022') and m39['texto']=='Alcaldías sia-2026-01-01 · UGA sia-2026-09-22 · Colonias iecm-2022',
        'la capa de colonias del IECM es la definitiva: su versión no dice «prueba» ni el detalle «capa de prueba»: %s' % m39['texto'])
@@ -4376,7 +4376,7 @@ with sync_playwright() as p:
     # Acerca del sistema
     pg50.evaluate("SRP.app.mostrarVista('acerca')"); pg50.wait_for_timeout(800)
     a50=pg50.inner_text('#cfg-acerca')
-    ok(pg50.evaluate("SRP.CONFIG.VERSION + ' (' + SRP.CONFIG.ETAPA + ')'") in a50 and 'srp_db, versión 9' in a50 and 'sia-2026-09-22' in a50 and 'iecm-2022' in a50 and 'Pendientes de envío' in a50,
+    ok(pg50.evaluate("SRP.CONFIG.VERSION + ' (' + SRP.CONFIG.ETAPA + ')'") in a50 and 'srp_db, versión 10' in a50 and 'sia-2026-09-22' in a50 and 'iecm-2022' in a50 and 'Pendientes de envío' in a50,
        'Acerca del sistema dice versión, base, capas y pendientes de este equipo')
     anchos50=[]
     for v in ['configuracion','parametros','cambios','acerca']:
@@ -6116,8 +6116,8 @@ with sync_playwright() as p:
         ajenos: ['modelo', 'nombre_cientifico', 'tipo_organizacion'].some(k => k in filas.areas),
         memoria: ['p-b160', 'a-b160', 'ESP-9001', 'v-B160', 'o-b160', 's-b160'].map(id => (SRP.ref.catalogoPorId[id] || {}).tipo),
         usos: ['p-b160', 'v-B160', 'o-b160', 's-b160', 'a-b160'].map(id => usos[id] || null), uno: (await A.catalogo('v-B160')).tipo }; }""")
-    ok(m73['v'] == 9 and 'catalogos' not in m73['tablas'] and m73['tablas'] == sorted(['plantaciones','usuarios','bitacora','jornadas','programas','areas','especies','vehiculos','instituciones','solicitantes']),
-       'la base queda en la versión 9, con diez tablas y sin la tabla única de catálogos: %s' % m73['tablas'])
+    ok(m73['v'] == 10 and 'catalogos' not in m73['tablas'] and m73['tablas'] == sorted(['plantaciones','usuarios','bitacora','jornadas','programas','areas','especies','vehiculos','instituciones','solicitantes','envios']),
+       'la base queda en la versión 10, con sus diez tablas y la cola de envío, y sin la tabla única de catálogos: %s' % m73['tablas'])
     ok(m73['todas'] and m73['sinTipo'] and m73['propios'] == [['Alcaldía'], 'Dodge', 'Empresa privada', 'Vecinos', 'Arbor centum'] and m73['ajenos'] is False,
        'cada catálogo pasó a su tabla con sus campos, sin `tipo` y sin campos de otro catálogo: %s' % m73['propios'])
     ok(m73['memoria'] == ['programa', 'area', 'especie', 'vehiculo', 'organizacion', 'solicitante'] and m73['uno'] == 'vehiculo',
@@ -6274,7 +6274,7 @@ with sync_playwright() as p:
     m77 = pg77.evaluate("""async () => { const A = SRP.almacen, p = await A.uno('jornadas', 'j-ped'), q = await A.uno('jornadas', 'j-pro'), ar = await A.todos('plantaciones');
       return { v: A.db.version, ped: [p.programa_id, 'origen' in p, 'pedido_descripcion' in p, p.solicitante_id, p.solicitud_descripcion], pro: [q.programa_id, 'origen' in q, q.solicitud_descripcion],
         arboles: Object.fromEntries(ar.map(a => [a.id, a.programa_id])), programa: !!(await A.uno('programas', 'p-solicitud')) }; }""")
-    ok(m77['v'] == 9 and m77['ped'] == ['p-solicitud', False, False, 's-sobse', 'Camellón'] and m77['pro'] == ['p-refor', False, ''] and m77['arboles'] == {'a-ped-1': 'p-solicitud', 'a-ped-2': 'p-solicitud', 'a-pro-1': 'p-refor'} and m77['programa'],
+    ok(m77['v'] == 10 and m77['ped'] == ['p-solicitud', False, False, 's-sobse', 'Camellón'] and m77['pro'] == ['p-refor', False, ''] and m77['arboles'] == {'a-ped-1': 'p-solicitud', 'a-ped-2': 'p-solicitud', 'a-pro-1': 'p-refor'} and m77['programa'],
        'la migración 9 pasa el pedido especial al programa «Solicitud especial», con sus árboles, conserva solicitante y descripción y retira el origen: %s' % m77)
     # Espejos: «Iniciar jornada», la ficha de la jornada, y el alta de una cuenta y de un valor de catálogo
     pg77.select_option('#sel-usuario-prueba', 'u-cabo-1'); pg77.click('#btn-entrar-prueba'); pg77.wait_for_timeout(900)

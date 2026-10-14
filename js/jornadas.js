@@ -1055,7 +1055,7 @@ SRP.jornadas = {
     const nuevo = Object.assign({}, actual, { jornada_id: destino.id, fecha_plantacion: fecha, programa_id: destino.programa_id, fecha_ultima_edicion: ahora, editado_por_id: u.id });
     const que = [tomaFecha ? 'su fecha' : '', cambiaPrograma ? 'su programa' : ''].filter(Boolean).join(' y ');
     const cambios = [{ almacen: 'plantaciones', objeto: nuevo, bitacora: SRP.bitacora.entrada('EDITADO', 'plantacion', r.id,
-      'Movido a la jornada «' + destino.nombre + '»' + (que ? '; toma ' + que : '; conserva su fecha, ' + SRP.util.formatearFecha(fecha))) }];
+      'Movido a la jornada «' + destino.nombre + '»' + (que ? '; toma ' + que : '; conserva su fecha, ' + SRP.util.formatearFecha(fecha))), envio: 'registro.mover' }];
     // Las dos jornadas cambian de contenido: el reporte de cada una deja de estar vigente
     const revisado = origen && (origen.puntos_revisados || []).includes(r.id);
     if (origen && (revisado || origen.reporte_en)) {
@@ -1078,7 +1078,7 @@ SRP.jornadas = {
     if (!SRP.permisos.exigir('jornada.editar', previo)) return null;
     const ahora = SRP.util.ahoraISO();
     const dato = Object.assign({}, previo, cambios, { editado_por_id: u.id, fecha_ultima_edicion: ahora });
-    await SRP.almacen.guardarConBitacora('jornadas', dato, SRP.bitacora.entrada('EDITADO', 'jornada', dato.id, detalle));
+    await SRP.almacen.guardarConBitacora('jornadas', dato, SRP.bitacora.entrada('EDITADO', 'jornada', dato.id, detalle), 'jornada.revisar');
     j.dato = dato;
     return dato;
   },
@@ -1136,7 +1136,7 @@ SRP.jornadas = {
     const u = SRP.sesion.usuario;
     const ahora = SRP.util.ahoraISO();
     const dato = Object.assign({}, c, cambios, { editado_por_id: u.id, fecha_ultima_edicion: ahora });
-    const escrituras = [{ almacen: 'jornadas', objeto: dato, bitacora: SRP.bitacora.entrada('EDITADO', 'jornada', c.id, 'Campos: ' + campos.join(', ')) }];
+    const escrituras = [{ almacen: 'jornadas', objeto: dato, bitacora: SRP.bitacora.entrada('EDITADO', 'jornada', c.id, 'Campos: ' + campos.join(', ')), envio: 'jornada.editar' }];
     /* Los árboles toman el programa de su jornada y, los plantados el día de inicio, también su fecha
        nueva; los de otros días conservan la suya. Todos, también los eliminados —si se restauran,
        vuelven con los datos de su jornada—, y en la misma transacción que la jornada: o cambian todos
@@ -1186,7 +1186,7 @@ SRP.jornadas = {
     const ok = await SRP.app.confirmar({ titulo: 'Eliminar jornada', pregunta: '¿Eliminar la jornada «' + c.nombre + '» del ' + SRP.util.formatearFecha(c.fecha) + '?',
       puntos: ['No tiene árboles registrados.', 'La bitácora conserva la constancia.'], irreversible: true, boton: 'Eliminar jornada', icono: 'basura' });
     if (!ok) return;
-    await SRP.almacen.borrarConBitacora('jornadas', c.id, SRP.bitacora.entrada('ELIMINADO', 'jornada', c.id, 'Jornada «' + c.nombre + '» eliminada (sin árboles)'));
+    await SRP.almacen.borrarConBitacora('jornadas', c.id, SRP.bitacora.entrada('ELIMINADO', 'jornada', c.id, 'Jornada «' + c.nombre + '» eliminada (sin árboles)'), 'jornada.eliminar');
     if (SRP.activa.jornada && SRP.activa.jornada.id === c.id) SRP.activa.jornada = null;
     await this.cerrar();
     SRP.util.anunciar('Jornada «' + c.nombre + '» eliminada.', 'exito');
@@ -1305,7 +1305,7 @@ SRP.jornadas = {
     const dato = Object.assign({}, c, { relevo_id: vuelve ? null : caboId, relevos: (c.relevos || []).concat([{ cabo_id: caboId, fecha: ahora, por_id: u.id }]),
       editado_por_id: u.id, fecha_ultima_edicion: ahora });
     await SRP.almacen.guardarConBitacora('jornadas', dato, SRP.bitacora.entrada('RELEVO', 'jornada', c.id,
-      'Registra ' + SRP.ref.nombreUsuario(caboId) + ' en lugar de ' + SRP.ref.nombreUsuario(antes) + (vuelve ? ': vuelve el titular' : '; titular: ' + SRP.ref.nombreUsuario(c.cabo_id))));
+      'Registra ' + SRP.ref.nombreUsuario(caboId) + ' en lugar de ' + SRP.ref.nombreUsuario(antes) + (vuelve ? ': vuelve el titular' : '; titular: ' + SRP.ref.nombreUsuario(c.cabo_id))), 'jornada.relevo');
     if (SRP.activa.jornada && SRP.activa.jornada.id === c.id) SRP.activa.jornada = SRP.activa.capturista(dato) === u.id ? dato : null;
     if (SRP.envio.simulado()) SRP.envio.enviar({ silencioso: true });
     this.el('dlg-relevo').close();

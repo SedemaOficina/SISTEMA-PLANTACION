@@ -234,7 +234,7 @@ SRP.reportes = {
     const cierre = this.cierrePrevisto();
 
     await SRP.almacen.guardarConBitacora('jornadas', cierre,
-      SRP.bitacora.entrada('EDITADO', 'jornada', cierre.id, 'Datos de cierre del reporte'));
+      SRP.bitacora.entrada('EDITADO', 'jornada', cierre.id, 'Datos de cierre del reporte'), 'jornada.cierre');
     c.jornada.dato = cierre;
 
     this.el('dlg-cierre').close();
@@ -790,7 +790,7 @@ SRP.reportes = {
     if (!guardada) return;
     const ahora = SRP.util.ahoraISO();
     await SRP.almacen.guardarConBitacora('jornadas', Object.assign({}, guardada, { reporte_en: ahora }),
-      SRP.bitacora.entrada('EDITADO', 'jornada', guardada.id, guardada.reporte_en ? 'Reporte generado de nuevo' : 'Reporte generado'));
+      SRP.bitacora.entrada('EDITADO', 'jornada', guardada.id, guardada.reporte_en ? 'Reporte generado de nuevo' : 'Reporte generado'), 'jornada.reporte');
     cierre.reporte_en = ahora;
     if (jornada && jornada.dato) jornada.dato.reporte_en = ahora;
   },
