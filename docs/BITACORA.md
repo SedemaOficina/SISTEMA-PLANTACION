@@ -4434,3 +4434,36 @@ No se probó: la cola del teléfono mandando de verdad, que llega en el paso 4.
 
 **Siguiente paso.** 3b: ediciones, eliminaciones, restauraciones y sustituciones, con la regla de no
 escribir sobre una versión vieja (S-16).
+
+## Bloque 213 — Editar, eliminar, restaurar, sustituir y mover árboles en el servidor (14-10-2026)
+
+Sin cambio en la aplicación: sigue la versión 0.9.64. Paso 3b (D293).
+
+**Qué cambió.**
+- `servidor/src/modulos/srp/recepcion-arboles.ts`, nuevo: las seis operaciones de los árboles (alta,
+  edición, eliminación, restauración, sustitución y cambio de jornada), con las reglas y la bitácora de la
+  aplicación.
+- `recepcion-apoyo.ts`, nuevo: la forma de la respuesta, la versión de un registro, el punto, el folio y
+  el reporte que deja de estar vigente. `recepcion-jornadas.ts`, nuevo: el alta de jornadas.
+  `recepcion.ts` queda con la ruta.
+- Pruebas: `recepcion.test.js`, con cinco más. Cubren editar, eliminar y restaurar, sustituir, mover, el
+  alcance de cada perfil y la versión vieja. La cuenta de prueba de coordinación tiene a su cargo al cabo
+  de prueba.
+- `servidor/README.md`, `docs/ALINEACION-SIA.md` y `docs/FASE2-Y-TRASPASO.md`: el avance.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada: la aplicación todavía no habla con el servidor.
+
+**Verificación.**
+- Servidor: 58 pruebas, 0 fallas, sin avisos. Las cinco nuevas pasaron a la primera.
+  - Un cambio sobre una versión vieja no escribió y devolvió lo vigente.
+  - Un reenvío no se repitió.
+  - Eliminar un sustituto devolvió al original, y restaurarlo lo volvió a sustituir.
+  - La coordinación corrigió un árbol de su cuadrilla; otro cabo y la dirección no pudieron.
+- En la copia desechable de `sia-backend`: `typecheck` y `build` sin errores, y la prueba de humo 17 de 17.
+  La nueva edita el árbol recibido sobre su versión: se aplica y el folio no cambia.
+- Al terminar, la base local quedó sin datos de prueba.
+
+No se probó: la cola del teléfono mandando estos cambios, que llega en el paso 4.
+
+**Siguiente paso.** 3c: la vida de la jornada en el servidor. Editarla, cerrarla, reabrirla, el relevo,
+la solicitud al editarla, el reporte entregado y eliminar una jornada vacía.

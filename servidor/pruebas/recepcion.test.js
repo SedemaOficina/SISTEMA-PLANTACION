@@ -1,7 +1,8 @@
-/* RECEPCIÓN: el servidor recibe jornadas y árboles nuevos como los manda el teléfono. Los vuelve a ubicar,
-   pone autor, institución y programa, asigna el folio por celda sin repetirlo nunca, y rechaza con los
-   mensajes de los formularios de la aplicación. Reenviar no duplica nada. Crea sus cuentas, programas,
-   jornadas y árboles, y al terminar los quita. */
+/* RECEPCIÓN: el servidor recibe jornadas y árboles como los manda el teléfono. Los vuelve a ubicar, pone
+   autor, institución y programa, asigna el folio por celda sin repetirlo nunca, y rechaza con los mensajes
+   de los formularios de la aplicación. Recibe también ediciones, eliminaciones, restauraciones,
+   sustituciones y cambios de jornada, sin escribir sobre una versión vieja. Reenviar no duplica nada.
+   Crea sus cuentas, programas, jornadas y árboles, y al terminar los quita. */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
@@ -11,14 +12,15 @@ import { leerConfig, crearGrupo, crearApp, derivar } from '../dist/independiente
 const CORRIDA = Date.now();
 const CLAVE = 'Recepcion de prueba 2026';
 const uuid = () => crypto.randomUUID();
-const cuenta = (nombre, perfil, organizacion_id) => ({ id: uuid(), nombre, perfil, organizacion_id, correo: nombre.toLowerCase() + '.recepcion.prueba.' + CORRIDA + '@ejemplo.local' });
+const cuenta = (nombre, perfil, organizacion_id, coordinadores = []) => ({ id: uuid(), nombre, perfil, organizacion_id, coordinadores, correo: nombre.toLowerCase() + '.recepcion.prueba.' + CORRIDA + '@ejemplo.local' });
 const INST = 'o-prueba-rec-' + CORRIDA;
-const CABO = cuenta('cabo', 'CABO', 'o-sedema');
+const COORD = cuenta('coordinador', 'COORDINADOR', 'o-sedema');
+const CABO = cuenta('cabo', 'CABO', 'o-sedema', [COORD.id]);
 const CABO2 = cuenta('otrocabo', 'CABO', 'o-sedema');
 const EXTERNO = cuenta('externo', 'CABO', INST);
 const DIRECTIVO = cuenta('directivo', 'DIRECTIVO', 'o-sedema');
-const CUENTAS = [CABO, CABO2, EXTERNO, DIRECTIVO];
-const PROG = 'p-prueba-rec-' + CORRIDA, PROG_EMP = 'p-prueba-rec-emp-' + CORRIDA, SOLICITUD = 'p-solicitud';
+const CUENTAS = [COORD, CABO, CABO2, EXTERNO, DIRECTIVO];
+const PROG = 'p-prueba-rec-' + CORRIDA, PROG2 = 'p-prueba-rec-2-' + CORRIDA, PROG_EMP = 'p-prueba-rec-emp-' + CORRIDA, SOLICITUD = 'p-solicitud';
 const SOLICITANTE = 's-prueba-rec-' + CORRIDA;
 const PUNTO = { lat: 19.432600, lng: -99.133200 };
 const MESES = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
@@ -37,17 +39,19 @@ before(async () => {
   await admin.query('GRANT srp_api TO CURRENT_USER WITH INHERIT FALSE, SET TRUE');
   ESPECIE = (await admin.query('SELECT id FROM srp.especies WHERE activo ORDER BY id LIMIT 1')).rows[0].id;
   await admin.query('BEGIN');
+  await admin.query('SET CONSTRAINTS ALL DEFERRED');
   await admin.query(`INSERT INTO srp.instituciones VALUES ('o-sedema', 'SEDEMA', 'Secretaría del Medio Ambiente', true, NULL, now(), NULL, NULL, 'Gobierno de la CDMX') ON CONFLICT DO NOTHING`);
   await admin.query(`INSERT INTO srp.instituciones VALUES ($1, $2, $3, true, NULL, now(), NULL, NULL, 'Empresa privada')`, [INST, 'PRUEBA_REC_' + CORRIDA, 'Empresa de prueba de recepción ' + CORRIDA]);
   await admin.query(`INSERT INTO srp.areas VALUES ('a-sia', 'SIA', 'Sistema de Información Ambiental', true, NULL, now(), NULL, NULL) ON CONFLICT DO NOTHING`);
   await admin.query(`INSERT INTO srp.programas VALUES ($1, $2, $3, true, NULL, now(), NULL, NULL, '{}')`, [PROG, 'PRUEBA_REC_' + CORRIDA, 'Programa de prueba de recepción ' + CORRIDA]);
+  await admin.query(`INSERT INTO srp.programas VALUES ($1, $2, $3, true, NULL, now(), NULL, NULL, '{}')`, [PROG2, 'PRUEBA_REC_2_' + CORRIDA, 'Otro programa de prueba ' + CORRIDA]);
   await admin.query(`INSERT INTO srp.programas VALUES ($1, $2, $3, true, NULL, now(), NULL, NULL, '{Empresa privada}')`, [PROG_EMP, 'PRUEBA_REC_EMP_' + CORRIDA, 'Programa de empresas de prueba ' + CORRIDA]);
   creoSolicitud = (await admin.query(`INSERT INTO srp.programas VALUES ($1, 'SOLICITUD_ESPECIAL', 'Solicitud especial', true, NULL, now(), NULL, NULL, '{}') ON CONFLICT DO NOTHING`, [SOLICITUD])).rowCount === 1;
   await admin.query(`INSERT INTO srp.solicitantes VALUES ($1, $2, $3, true, NULL, now(), NULL, NULL, 'Vecinos')`, [SOLICITANTE, 'PRUEBA_REC_' + CORRIDA, 'Vecinos de prueba ' + CORRIDA]);
   const derivada = await derivar(CLAVE);
   for (const u of CUENTAS) {
-    await admin.query(`INSERT INTO srp.usuarios VALUES ($1, $2, $3, $4, $5, $6, $7, '{}', true, now(), $1, NULL, NULL)`,
-      [u.id, u.correo, 'Prueba ' + u.nombre, u.organizacion_id, u.organizacion_id === 'o-sedema' ? 'a-sia' : null, u.perfil, u.perfil]);
+    await admin.query(`INSERT INTO srp.usuarios VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true, now(), $1, NULL, NULL)`,
+      [u.id, u.correo, 'Prueba ' + u.nombre, u.organizacion_id, u.organizacion_id === 'o-sedema' ? 'a-sia' : null, u.perfil, u.perfil, u.coordinadores]);
     await admin.query(`INSERT INTO srp.credenciales VALUES ($1, $2, false, NULL, 0, NULL, now(), $1)`, [u.id, derivada]);
   }
   await admin.query('COMMIT');
@@ -74,7 +78,7 @@ after(async () => {
     await admin.query('DELETE FROM srp.bitacora_acceso WHERE usuario_id = ANY($1::uuid[])', [ids]);
     for (const t of ['bitacora', 'bitacora_acceso']) await admin.query(`ALTER TABLE srp.${t} ENABLE TRIGGER bitacora_inmutable`);
     await admin.query('DELETE FROM srp.usuarios WHERE id = ANY($1::uuid[])', [ids]);
-    await admin.query('DELETE FROM srp.programas WHERE id = ANY($1)', [[PROG, PROG_EMP, ...(creoSolicitud ? [SOLICITUD] : [])]]);
+    await admin.query('DELETE FROM srp.programas WHERE id = ANY($1)', [[PROG, PROG2, PROG_EMP, ...(creoSolicitud ? [SOLICITUD] : [])]]);
     await admin.query('DELETE FROM srp.solicitantes WHERE id = $1', [SOLICITANTE]);
     await admin.query('DELETE FROM srp.instituciones WHERE id = $1', [INST]);
   });
@@ -249,4 +253,114 @@ test('un folio emitido no cambia ni se borra, ni siquiera para quien administra 
   try {
     await assert.rejects(admin.query('DELETE FROM srp.folios WHERE plantacion_id = $1', [A1.id]), /no se edita ni se borra/);
   } finally { await admin.query('ROLLBACK'); }
+});
+
+/* ---------- Lo que se le hace a un árbol que ya está en el servidor ---------- */
+
+// Una jornada con un árbol, ya recibidos; devuelve los dos como quedaron y la versión del árbol
+async function conArbol(t, extraJornada = {}, extraArbol = {}) {
+  const J = jornada(extraJornada);
+  const A = arbol(J.id, { fecha_plantacion: J.fecha, ...extraArbol });
+  const r = await t.enviar([{ tipo: 'jornada.crear', datos: J }, { tipo: 'registro.crear', datos: A }]);
+  assert.ok(r.datos.resultados.every((x) => x.estado === 'recibido'), JSON.stringify(r.datos));
+  return { J: r.datos.resultados[0].fila, A: r.datos.resultados[1].fila, version: r.datos.resultados[1].version };
+}
+const bitacora = async (id) => (await admin.query('SELECT accion, detalle FROM srp.bitacora WHERE entidad_id = $1 ORDER BY fecha, accion', [id])).rows.map((b) => [b.accion, b.detalle]);
+
+test('editar aplica sólo lo que cambió sobre lo vigente: el territorio se recalcula, el folio no cambia y una versión vieja no escribe', async () => {
+  const t = await telefono(CABO);
+  const { A, version } = await conArbol(t);
+  const otro = { lat: 19.350000, lng: -99.160000 };
+  const r = await t.una('registro.editar', { id: A.id, version, cambios: { ...otro, comentarios: '  Corregido  ' } });
+  assert.equal(r.estado, 'recibido', JSON.stringify(r));
+  const u2 = (await admin.query('SELECT * FROM srp.derivar($1, $2)', [otro.lat, otro.lng])).rows[0];
+  assert.deepEqual([r.fila.comentarios, r.fila.alcaldia, r.fila.uga, r.fila.folio, r.fila.editado_por_id], ['Corregido', u2.alcaldia, u2.uga, A.folio, CABO.id]);
+  assert.notEqual(r.version, version);
+  assert.equal(Number((await admin.query('SELECT folio_lat FROM srp.folios WHERE plantacion_id = $1', [A.id])).rows[0].folio_lat), PUNTO.lat, 'lo congelado con el folio no se mueve');
+  const editado = (await bitacora(A.id)).find((b) => b[0] === 'EDITADO')[1];
+  assert.match(editado, /^Campos: lat, lng, comentarios\. Punto: 19\.432600, -99\.133200 → 19\.350000, -99\.160000\. Territorio recalculado: alcaldia .+; uga /);
+  // Reenviar el mismo cambio no lo repite
+  const otraVez = await t.una('registro.editar', { id: A.id, version, cambios: { ...otro, comentarios: 'Corregido' } });
+  assert.deepEqual([otraVez.estado, otraVez.repetido], ['recibido', true]);
+  // Otro cambio sobre la versión de antes no escribe: devuelve lo vigente, con su versión
+  const viejo = await t.una('registro.editar', { id: A.id, version, cambios: { comentarios: 'Escrito sobre lo viejo' } });
+  assert.deepEqual([viejo.estado, viejo.codigo, viejo.fila.comentarios, viejo.version], ['rechazado', 'VERSION_VIEJA', 'Corregido', r.version]);
+  assert.equal((await t.una('registro.editar', { id: A.id, cambios: { comentarios: 'Sin versión' } })).codigo, 'VERSION_VIEJA');
+  // Con la versión vigente, las reglas del formulario
+  const mala = await t.una('registro.editar', { id: A.id, version: r.version, cambios: { fecha_plantacion: dias(1), especie_id: null, especie_otra: '' } });
+  assert.deepEqual(mala.errores, [['especie_id', 'Elija una especie de la lista o la opción «Otra especie».'], ['fecha_plantacion', 'La fecha de plantación no puede ser posterior a hoy.']]);
+  assert.equal((await t.una('registro.editar', { id: uuid(), version, cambios: {} })).codigo, 'NO_EXISTE');
+});
+
+test('eliminar y restaurar se deshacen entre sí, cada uno sobre la versión vigente; el reporte de la jornada deja de estar vigente', async () => {
+  const t = await telefono(CABO);
+  const { J, A, version } = await conArbol(t, { fecha: dias(-2) });
+  await admin.query('UPDATE srp.jornadas SET reporte_en = now() WHERE id = $1', [J.id]);
+  const e = await t.una('registro.eliminar', { id: A.id, version });
+  assert.deepEqual([e.estado, e.fila.estatus, e.fila.folio], ['recibido', 'eliminado', A.folio]);
+  assert.deepEqual(e.otras.map((o) => [o.tabla, o.fila.id, o.fila.reporte_en]), [['jornadas', J.id, null]]);
+  assert.equal((await t.una('registro.eliminar', { id: A.id, version })).repetido, true, 'un reenvío no se repite');
+  assert.equal((await t.una('registro.editar', { id: A.id, version: e.version, cambios: { comentarios: 'x' } })).codigo, 'NO_ACTIVO');
+  // Si la jornada ahora empieza después, al restaurarlo toma su fecha
+  await admin.query('UPDATE srp.jornadas SET fecha = $2 WHERE id = $1', [J.id, dias(-1)]);
+  const r = await t.una('registro.restaurar', { id: A.id, version: e.version });
+  assert.deepEqual([r.estado, r.fila.estatus, r.fila.fecha_plantacion], ['recibido', 'activo', dias(-1)]);
+  assert.deepEqual((await bitacora(A.id)).filter((b) => ['ELIMINADO', 'RESTAURADO'].includes(b[0])), [['ELIMINADO', ''], ['RESTAURADO', 'Se deshizo la eliminación']]);
+  assert.ok((await bitacora(J.id)).some((b) => b[1] === 'Su reporte deja de estar vigente: se eliminó un árbol'));
+});
+
+test('la sustitución entra en la jornada del original con su folio y lo deja sustituido; eliminar el sustituto lo devuelve, y restaurarlo lo vuelve a sustituir', async () => {
+  const t = await telefono(CABO);
+  const { J, A } = await conArbol(t, { fecha: dias(-2) });
+  const especie = (await admin.query('SELECT nombre FROM srp.especies WHERE id = $1', [ESPECIE])).rows[0].nombre;
+  const S = { id: uuid(), sustituye_id: A.id, motivo_sustitucion: 'OTRO', motivo_sustitucion_otro: ' Lo atropelló una grúa ', fecha_plantacion: HOY, ...PUNTO,
+    punto_origen: 'gps', gps_precision_m: 3, especie_id: ESPECIE, comentarios: 'Árbol de prueba', fecha_registro: new Date().toISOString() };
+  // Primero las reglas del diálogo de sustitución
+  const errores = async (extra) => (await t.una('registro.sustituir', { ...S, id: uuid(), ...extra })).errores;
+  assert.deepEqual(await errores({ motivo_sustitucion: '' }), [['motivo_sustitucion', 'Elija por qué se sustituye.']]);
+  assert.deepEqual(await errores({ motivo_sustitucion_otro: '' }), [['motivo_sustitucion_otro', 'Escriba el motivo.']]);
+  assert.deepEqual(await errores({ fecha_plantacion: dias(-3) }), [['fecha_plantacion', 'La fecha de la sustitución no puede ser anterior a la plantación del árbol perdido (' + fechaCorta(dias(-2)) + ').']]);
+  const r = await t.una('registro.sustituir', S);
+  assert.equal(r.estado, 'recibido', JSON.stringify(r));
+  assert.deepEqual([r.fila.sustituye_id, r.fila.jornada_id, r.fila.programa_id, r.fila.motivo_sustitucion, r.fila.motivo_sustitucion_otro, r.fila.fecha_plantacion],
+    [A.id, J.id, PROG, 'OTRO', 'Lo atropelló una grúa', HOY]);
+  assert.match(r.fila.folio, /^[A-Z]{3}-\d{3}-\d{5}$/, 'el sustituto tiene su propio folio');
+  assert.deepEqual(r.otras.map((o) => [o.fila.id, o.fila.estatus, o.fila.sustituido_por_id]), [[A.id, 'sustituido', S.id]]);
+  assert.deepEqual((await bitacora(S.id)).find((b) => b[0] === 'CREADO'), ['CREADO', 'Sustituye a ' + especie + ' (' + A.folio + '): Otro: Lo atropelló una grúa']);
+  assert.deepEqual((await bitacora(A.id)).find((b) => b[0] === 'SUSTITUIDO'), ['SUSTITUIDO', 'Sustituido por ' + especie + ': Otro: Lo atropelló una grúa']);
+  assert.equal((await t.una('registro.sustituir', { ...S, id: uuid() })).codigo, 'NO_SUSTITUIBLE', 'no se sustituye dos veces');
+  // Eliminar el sustituto devuelve al original; restaurarlo lo vuelve a sustituir
+  const e = await t.una('registro.eliminar', { id: S.id, version: r.version });
+  assert.deepEqual(e.otras.map((o) => [o.fila.id, o.fila.estatus, o.fila.sustituido_por_id]), [[A.id, 'activo', null]]);
+  const v = await t.una('registro.restaurar', { id: S.id, version: e.version });
+  assert.deepEqual(v.otras.map((o) => [o.fila.id, o.fila.estatus, o.fila.sustituido_por_id]), [[A.id, 'sustituido', S.id]]);
+  assert.deepEqual((await bitacora(A.id)).filter((b) => ['RESTAURADO', 'SUSTITUIDO'].includes(b[0])).map((b) => b[1]).sort(), [
+    'Se eliminó su sustituto: vuelve a contar como plantado', 'Sustituido por ' + especie + ': Otro: Lo atropelló una grúa', 'Vuelve su sustituto: Otro: Lo atropelló una grúa']);
+});
+
+test('mover lleva el árbol a otra jornada del mismo cabo, con la fecha y el programa de esa jornada; la de origen pierde su marca de revisado', async () => {
+  const t = await telefono(CABO);
+  const { J, A, version } = await conArbol(t, { fecha: dias(-3), nombre: 'Jornada de origen' });
+  const D = jornada({ fecha: dias(-1), nombre: 'Jornada de destino', programa_id: PROG2 });
+  assert.equal((await t.una('jornada.crear', D)).estado, 'recibido');
+  await admin.query('UPDATE srp.jornadas SET puntos_revisados = ARRAY[$2::uuid] WHERE id = $1', [J.id, A.id]);
+  const m = await t.una('registro.mover', { id: A.id, version, jornada_id: D.id });
+  assert.deepEqual([m.estado, m.fila.jornada_id, m.fila.fecha_plantacion, m.fila.programa_id, m.fila.folio], ['recibido', D.id, dias(-1), PROG2, A.folio]);
+  assert.deepEqual(m.otras.map((o) => [o.fila.id, o.fila.puntos_revisados]), [[J.id, []]]);
+  assert.deepEqual((await bitacora(A.id)).find((b) => b[0] === 'EDITADO'), ['EDITADO', 'Movido a la jornada «Jornada de destino»; toma su fecha y su programa']);
+  assert.deepEqual((await bitacora(J.id)).find((b) => b[0] === 'EDITADO'), ['EDITADO', 'Sale un punto revisado: se movió a «Jornada de destino»']);
+  assert.equal((await t.una('registro.mover', { id: A.id, version, jornada_id: D.id })).repetido, true, 'un reenvío no se repite');
+  const ajena = jornada({ nombre: 'Jornada de otro cabo' });
+  assert.equal((await (await telefono(CABO2)).una('jornada.crear', ajena)).estado, 'recibido');
+  assert.equal((await t.una('registro.mover', { id: A.id, version: m.version, jornada_id: ajena.id })).codigo, 'OTRO_CABO');
+});
+
+test('cada quien cambia lo de su alcance: la coordinación, lo de su cuadrilla; otro cabo y la dirección, nada', async () => {
+  const t = await telefono(CABO);
+  const { A, version } = await conArbol(t);
+  const ajeno = await (await telefono(CABO2)).una('registro.editar', { id: A.id, version, cambios: { comentarios: 'x' } });
+  assert.deepEqual([ajeno.codigo, ajeno.mensaje], ['SIN_PERMISO', 'No tiene permiso para editar este registro.']);
+  assert.equal((await (await telefono(DIRECTIVO)).una('registro.eliminar', { id: A.id, version })).codigo, 'SIN_PERMISO');
+  const coord = await (await telefono(COORD)).una('registro.editar', { id: A.id, version, cambios: { comentarios: 'Lo corrige la coordinación' } });
+  assert.deepEqual([coord.estado, coord.fila.comentarios, coord.fila.editado_por_id, coord.fila.cabo_id], ['recibido', 'Lo corrige la coordinación', COORD.id, CABO.id]);
 });

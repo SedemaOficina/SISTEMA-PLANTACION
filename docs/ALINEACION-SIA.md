@@ -91,8 +91,11 @@ cuentas viven en `srp`; altas, bajas y restablecimientos los hace la Administrac
      un contador por celda que sólo avanza y lo que se congela al asignarlo.
    - Un disparador impide cambiar o anular un folio, y la bitácora ya no se edita ni se borra (bloque 206).
 
+   Hecho en el bloque 213: editar, eliminar, restaurar, sustituir y mover árboles, sin escribir sobre una
+   versión vieja.
+
    Falta:
-   - las ediciones, eliminaciones, relevos y demás operaciones;
+   - la vida de la jornada: editarla, cerrarla, reabrirla y el relevo;
    - las fotografías como archivos, con su estimado de espacio (6.11);
    - la carga masiva por tandas;
    - lo que baje al teléfono, escrito por partes.

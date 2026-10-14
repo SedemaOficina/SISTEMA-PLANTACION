@@ -3432,3 +3432,26 @@
   · Corrige D291: los parámetros ya estaban decididos desde D195 (en el servidor, que los cambie la
     Administración global y los reciban los teléfonos). Se hacen como está decidido; el cambio de su
     pantalla se muestra a Liber con el antes y el después al conectar la aplicación.
+
+- **D293. Los cambios a un árbol en el servidor (bloque 213).**
+  14-10-2026. Paso 3b.
+  · `registro.editar`, `registro.eliminar`, `registro.restaurar`, `registro.sustituir` y `registro.mover`
+    llegan por `POST /envios`, con las reglas, las bitácoras y los efectos de `js/formulario.js`,
+    `js/registros.js` y `js/jornadas.js`.
+  · La versión de un registro es el momento de su último cambio en el servidor, o el de su alta (S-16). Los
+    cambios del servidor se fechan al milésimo de segundo, la precisión con que el teléfono guarda las
+    fechas, para que la versión vaya y vuelva sin perder nada.
+  · Una versión que ya no es la vigente no escribe: se responde con el registro vigente. Un reenvío de algo
+    ya aplicado (el árbol ya está eliminado, ya está en la jornada destino, ya tiene esos valores) se
+    reconoce y no se repite, sin pedir versión.
+  · La edición recibe sólo los campos que cambiaron y vuelve a calcular el territorio siempre, como la
+    aplicación. Una especie desactivada se conserva si el árbol ya la tenía; una nueva tiene que estar
+    activa.
+  · Se editan, eliminan y mueven los árboles activos, y se restauran los eliminados: son los que la
+    aplicación ofrece en sus listas.
+  · La sustitución no pide la versión del original: lo que cuenta es que siga activo y sin sustituto, que
+    es lo que la aplicación revisa. El reporte de la jornada deja de estar vigente también al sustituir
+    (fila 25); la aplicación hoy no lo hace porque reabre la jornada para registrar el sustituto.
+  · Lo que cambia de otros registros (el original de un sustituto, la jornada cuyo reporte deja de estar
+    vigente, la jornada de origen al mover) vuelve en `otras`, para que el teléfono los ponga al día.
+  · `recepcion.ts` se separó en cuatro: la ruta, lo común, las jornadas y los árboles.

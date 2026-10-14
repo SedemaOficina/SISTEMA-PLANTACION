@@ -127,7 +127,7 @@ variables de entorno, está explicada en `src/modulos/srp/config.ts`. Las respue
 | `PUT /catalogos/:tabla/:id` | Edición (en instituciones, sólo el nombre) | Administración global |
 | `POST /catalogos/:tabla/:id/estado` | Activa o desactiva | Administración global |
 | `DELETE /catalogos/:tabla/:id` | Elimina un valor sin uso | Administración global |
-| `POST /envios` | Lo que manda el teléfono: jornadas y árboles nuevos, con su folio | Quien registra |
+| `POST /envios` | Lo que manda el teléfono: jornadas y árboles nuevos, con su folio, y los cambios a los árboles | Según la operación |
 | `GET /jornadas` | Las jornadas de su alcance, por páginas | Con sesión |
 | `GET /plantaciones` | Los árboles de su alcance, por páginas, sin la fotografía | Con sesión |
 
@@ -185,7 +185,8 @@ validación con la de la aplicación caso por caso.
 ### Recepción y folio
 
 `POST /envios` recibe hasta 100 operaciones por vez, en el orden en que se hicieron, cada una con el nombre
-de la acción de permisos que la autoriza. Hoy: `jornada.crear` y `registro.crear`. Cada operación va en su
+de la acción de permisos que la autoriza: `jornada.crear`, `registro.crear`, `registro.editar`,
+`registro.eliminar`, `registro.restaurar`, `registro.sustituir` y `registro.mover`. Cada operación va en su
 propia transacción, así que una rechazada no detiene a las demás. La respuesta dice, para cada una, si
 quedó recibida —con el renglón como lo guardó el servidor— o rechazada y por qué, con los mensajes de los
 formularios de la aplicación. Reenviar una operación ya recibida no duplica nada: el id del registro es la
@@ -205,6 +206,28 @@ clave, y la respuesta es la misma.
 - Al cargar datos que ya traen folio, como la demostración, cada folio queda registrado y la secuencia
   de su celda sigue después del más alto.
 - La fotografía no viaja en el envío: tendrá su propia ruta.
+
+Lo que cambia un árbol que ya está en el servidor sigue las reglas de la aplicación:
+- **Editar:** llegan sólo los campos que cambiaron y se aplican sobre lo vigente. El territorio se vuelve a
+  calcular y el folio no cambia. La bitácora dice qué campos cambiaron, de dónde a dónde se movió el punto
+  y si cambió su territorio.
+- **Eliminar:** se marca, no se borra. Sin su sustituto, el árbol que había sustituido vuelve a contar.
+- **Restaurar:** vuelve con el programa de su jornada y su fecha, salvo que la jornada ahora empiece
+  después. Un sustituto que vuelve deja otra vez sustituido a su original.
+- **Sustituir:** el sustituto entra en la jornada del original, con la fecha en que se planta, su motivo
+  y su propio folio, y el original pasa a «sustituido», en una sola operación.
+- **Mover:** a otra jornada del mismo cabo. Toma su programa, y su fecha si era del día de inicio. La
+  jornada de origen pierde la marca de «revisado» de ese punto.
+
+En todos los casos:
+- Sólo se aplican sobre lo que está en el alcance de quien los hace.
+- El reporte de la jornada afectada deja de estar vigente, en la misma transacción.
+- Lo que cambió de otros registros vuelve en `otras`.
+
+**Versión.** Cada cambio trae la versión del árbol que conocía el teléfono: el momento de su último cambio
+en el servidor, o el de su alta, tal como vino en la respuesta anterior. Si alguien lo cambió mientras
+tanto, no se escribe: se responde `VERSION_VIEJA` con el árbol como está ahora. Un reenvío de un cambio que
+ya se aplicó se reconoce y no se repite.
 
 ### Permisos de cada perfil
 
@@ -277,9 +300,14 @@ esa base y nunca sobre una instalación anterior.
 - `pruebas/catalogos.test.js`: carga el editor de catálogos de la aplicación tal cual y compara su
   validación con la del servidor, caso por caso; luego da de alta, edita, activa, desactiva y elimina por
   las rutas, y revisa la bitácora y que lo que cuenta como uso sean las llaves foráneas de la base.
-- `pruebas/recepcion.test.js`: manda jornadas y árboles como el teléfono. Comprueba qué pone el
-  servidor, el folio por celda, aun con envíos simultáneos y en el tope de 99,999, que reenviar no duplica,
-  que cada regla rechaza con el mensaje de la aplicación y que un folio no cambia.
+- `pruebas/recepcion.test.js`: manda jornadas y árboles como el teléfono. Comprueba:
+  - qué pone el servidor;
+  - el folio por celda, aun con envíos simultáneos y en el tope de 99,999;
+  - que reenviar no duplica;
+  - que cada regla rechaza con el mensaje de la aplicación, y que un folio no cambia;
+  - editar, eliminar, restaurar, sustituir y mover, cada uno con su bitácora, el reporte que deja de estar
+    vigente y el alcance de cada perfil;
+  - que una versión vieja no escribe.
 - `pruebas/permisos.test.js`: carga `js/permisos.js` tal cual y lo compara con el servidor: cada perfil,
   cada acción y cientos de registros armados para los casos de borde; la consulta en la base, con todas
   las cuentas, jornadas y árboles que haya; y las rutas, por páginas, como las usará la aplicación.
