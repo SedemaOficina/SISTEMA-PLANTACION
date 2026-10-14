@@ -744,6 +744,9 @@ fieldset.campo { margin-inline: 0; }
   padding: var(--e-3); border: 1px solid var(--borde-suave); border-radius: var(--radio-filtro); background: var(--fondo); cursor: pointer; }
 .registro-miniatura { width: 56px; height: 56px; border-radius: var(--radio); object-fit: cover; display: block; }
 .registro-sin-foto { display: grid; place-items: center; background: var(--fondo-suave); color: var(--gris); }
+/* Una fotografía del servidor que no llegó se quita (js/foto.js); a su lado aparece la miniatura vacía */
+.registro-sin-foto[hidden] { display: none; }
+img[data-foto-servidor][hidden] { display: none; }
 .registro-datos { min-width: 0; }
 .registro-fecha { display: block; font-size: var(--t-xs); color: var(--gris); margin-top: 2px; }
 .registro-especie { display: block; font-family: var(--fuente-titulo); font-weight: 600; }

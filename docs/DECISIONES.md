@@ -3648,3 +3648,23 @@
   · **Pendiente:** las fotografías de lo enviado no vienen en la lista. Se pedirán al servidor al verlas;
     mientras, Fotografías y las miniaturas sólo enseñan las del teléfono.
   · Con datos de prueba nada cambia.
+
+- **D302. Las fotografías de lo enviado, del servidor y sin copia (bloque 222, versión 0.9.67).**
+  14-10-2026. Lo que quedó pendiente en D301, con la regla de S-11.
+  · La fotografía de un árbol que guarda el teléfono va dentro del registro, como siempre. La de lo enviado
+    se pide al servidor (`GET /fotos/:id`) sólo cuando se ve o se descarga:
+    · la miniatura de Mis registros y la del detalle;
+    · Fotografías;
+    · la descarga de una o de todas en ZIP, pedidas de seis en seis;
+    · la vista previa al corregir un árbol enviado.
+  · **Sin copia en el teléfono.** El servidor respondía que el navegador podía guardarla un año (bloque 215).
+    Eso chocaba con S-11, así que ahora responde `no-store` y cada fotografía se vuelve a pedir al verla.
+    Pesan de 60 a 120 KB y sólo se piden las de la página que se ve.
+  · **La que no llegó** —el árbol dice que tiene, pero el servidor no la tiene todavía— no se ve rota. En Mis
+    registros queda la miniatura vacía; en Fotografías no ocupa cuadro. Si al descargar todas alguna no
+    llega, se dice cuántas faltaron.
+  · El peso que dice Fotografías es el de las que guarda el teléfono: las del servidor no se bajan para
+    pesarlas.
+  · Al corregir un árbol enviado, su fotografía se ve en la ficha sin bajarla al registro: el árbol conserva
+    su foto_id.
+  · Con datos de prueba nada cambia.

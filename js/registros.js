@@ -328,10 +328,11 @@ SRP.registros = {
       // Tarjeta: miniatura, especie, lugar y fecha, con la tuerca arriba a la derecha.
       // «PROVISIONAL» no se repite en cada tarjeta: lo dicen el detalle y la ficha (R1);
       // el folio sólo aparece cuando exista
-      const foto = SRP.util.fotoSegura(r.foto_base64);
-      const mini = foto
-        ? '<img class="registro-miniatura" src="' + foto + '" alt="" loading="lazy">'
-        : '<span class="registro-miniatura registro-sin-foto" aria-hidden="true">' + SRP.ICONOS.svg('registros', 'grande') + '</span>';
+      // La del servidor lleva a su lado la miniatura vacía, que aparece si no llega
+      const vacia = (oculta) => '<span class="registro-miniatura registro-sin-foto" aria-hidden="true"' + (oculta ? ' hidden' : '') + '>' + SRP.ICONOS.svg('registros', 'grande') + '</span>';
+      const mini = SRP.foto.fuente(r)
+        ? '<img class="registro-miniatura" ' + SRP.foto.atributos(r) + ' alt="" loading="lazy">' + (SRP.util.fotoSegura(r.foto_base64) ? '' : vacia(true))
+        : vacia(false);
       /* Anatomía común de tarjeta, la misma de Jornadas y Reportes: 1) qué —la especie—,
          2) cuándo y quién, 3) fila de estado —folio y envío—, 4) dónde —jornada y lugar—; la
          tuerca, arriba a la derecha */
@@ -462,7 +463,7 @@ SRP.registros = {
       ...(await this.filasSustitucion(r)),
       // Un renglón sin dato no se muestra: «Sin comentarios», «Sin fotografía» no dicen nada
       r.comentarios ? ['Comentarios', esc(r.comentarios)] : null,
-      SRP.util.fotoSegura(r.foto_base64) ? ['Fotografía', '<img class="revision-foto" src="' + SRP.util.fotoSegura(r.foto_base64) + '" alt="Fotografía del árbol registrado">'] : null
+      SRP.foto.fuente(r) ? ['Fotografía', '<img class="revision-foto" ' + SRP.foto.atributos(r) + ' alt="Fotografía del árbol registrado">'] : null
     ].filter(Boolean);
     const historial = await SRP.bitacora.deEntidad(r.id);
     // El folio lo asigna el servidor, no quien tenía la sesión abierta cuando llegó

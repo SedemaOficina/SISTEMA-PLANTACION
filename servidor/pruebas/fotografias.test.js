@@ -108,7 +108,7 @@ test('la descargan quienes ven el árbol y pueden descargar fotografías; para l
   const r = await (await sesion(CABO)).bajar(FOTO);
   assert.equal(r.status, 200);
   assert.deepEqual(Buffer.from(await r.arrayBuffer()), JPEG);
-  assert.deepEqual([r.headers.get('content-type'), r.headers.get('cache-control')], ['image/jpeg', 'private, max-age=31536000, immutable']);
+  assert.deepEqual([r.headers.get('content-type'), r.headers.get('cache-control')], ['image/jpeg', 'no-store']);
   assert.equal((await (await sesion(DIRECTIVO)).bajar(FOTO)).status, 200, 'la dirección de la Secretaría ve todo');
   assert.equal((await (await sesion(OTRO)).bajar(FOTO)).status, 404, 'otro cabo no ve ese árbol');
   assert.equal((await fetch(base + '/fotos/' + FOTO)).status, 401, 'sin sesión');

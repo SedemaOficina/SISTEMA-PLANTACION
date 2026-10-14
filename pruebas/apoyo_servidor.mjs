@@ -6,8 +6,8 @@
      node pruebas/apoyo_servidor.mjs vencer     { id }          las sesiones abiertas de la cuenta vencen
      node pruebas/apoyo_servidor.mjs sesiones   { id }          cuántas tiene abiertas y cuántas cerradas
      node pruebas/apoyo_servidor.mjs parametro  { clave, valor, id }   un parámetro cambiado por esa cuenta
-     node pruebas/apoyo_servidor.mjs quitar     { ids }         las cuentas, sus sesiones, sus jornadas y árboles,
-                                                                sus parámetros y sus registros
+     node pruebas/apoyo_servidor.mjs quitar     { ids }         las cuentas, sus sesiones, sus jornadas, árboles y
+                                                                fotografías, sus parámetros y sus registros
 
    «preparar» presta a la cuenta local el rol srp_api, con el que corre el servicio; «quitar» lo devuelve. */
 import { conectar } from '../servidor/bd.js';
@@ -45,6 +45,7 @@ try {
     await c.query('ALTER TABLE srp.folios DISABLE TRIGGER folios_inmutables');
     await c.query('DELETE FROM srp.folios WHERE plantacion_id = ANY($1::uuid[])', [arboles]);
     await c.query('ALTER TABLE srp.folios ENABLE TRIGGER folios_inmutables');
+    await c.query('DELETE FROM srp.fotografias WHERE plantacion_id = ANY($1::uuid[])', [arboles]);
     await c.query('DELETE FROM srp.plantaciones WHERE id = ANY($1::uuid[])', [arboles]);
     await c.query('DELETE FROM srp.jornadas WHERE cabo_id = ANY($1::uuid[])', [d.ids]);
     await c.query('DELETE FROM srp.parametros WHERE editado_por_id = ANY($1::uuid[])', [d.ids]);

@@ -111,6 +111,9 @@ corresponda a una cuenta dada de alta y activa.
   mientras la aplicación está abierta: el teléfono no acumula historial (`js/remoto.js`). Sin señal se ve
   sólo lo que aún no se envía: Registros y Jornadas lo dicen con una franja, y Supervisión y Fotografías,
   que se arman con lo enviado, enseñan sólo un aviso.
+- Las fotografías de lo enviado se piden al servidor cuando se ven o se descargan, y ni el teléfono ni el
+  navegador guardan copia (`js/foto.js`). Una que el servidor no tiene no se ve rota: en su lugar queda la
+  miniatura vacía.
 - Al volver a abrir se entra sin esperar, también sin señal, con los últimos parámetros. Si hay señal, el
   servicio confirma la sesión, se pone al día lo que se queda en el teléfono y se trae lo enviado.
 - Si la sesión venció o la cerró la Administración, se vuelve a pedir la contraseña sin perder lo
@@ -238,7 +241,7 @@ versión se escribe en un solo lugar del código.
 
 **El archivo `VERSION`, en la raíz, lleva el mismo número** (lo pide la guía del SIA, sección 8); la prueba
 falla si no coincide con la marca. Ese número se ve siempre en la franja fija de arriba: «Versión de prueba
-0.9.66» mientras el SIA no instale el sistema; al pasar al SIA, `VERSION` y la marca van en `1` y la franja
+0.9.67» mientras el SIA no instale el sistema; al pasar al SIA, `VERSION` y la marca van en `1` y la franja
 dice «Versión 1».
 
 Si aun así alguien cae en una mezcla, el sistema lo detecta al abrir y explica cómo forzar la

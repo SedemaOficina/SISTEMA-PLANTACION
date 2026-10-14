@@ -129,8 +129,8 @@ export function rutasFotografias(pool: pg.Pool, config: ConfigSrp, sesion: Reque
       console.error(`🔥 [SRP] la fotografía ${id} está registrada y su archivo no está en ${dir}`);
       return responder(res, 404, "SIN_ARCHIVO", "La fotografía está registrada, pero su archivo no está en el servidor. Avise a la Administración.");
     }
-    // Una fotografía no cambia: el navegador de quien la ve puede guardarla
-    res.set({ "Content-Type": f.tipo, "Cache-Control": "private, max-age=31536000, immutable", ETag: '"' + f.sha256 + '"' });
+    // El teléfono no acumula fotografías: se piden cada vez que se ven y el navegador no guarda copia
+    res.set({ "Content-Type": f.tipo, "Cache-Control": "no-store", ETag: '"' + f.sha256 + '"' });
     res.send(datos);
   });
 

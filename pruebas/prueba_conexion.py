@@ -7,7 +7,8 @@ esta prueba: el archivo no cambia.
 
 Comprueba: que con datos reales no hay nada de prueba en la pantalla; entrar con correo y contraseña, y los
 mensajes del servicio al no poder; que al entrar bajan la cuenta, los catálogos, las cuentas que se ven y los
-parámetros; que lo enviado llega del servidor y se ve sin guardarse en el teléfono; los avisos cuando no
+parámetros; que lo enviado llega del servidor y se ve sin guardarse en el teléfono, con sus fotografías,
+que se piden al servidor al verlas o descargarlas, y la que no llegó no se ve rota; los avisos cuando no
 llega, sin señal o porque el servidor falló; que al volver a abrir se entra sin esperar y la sesión se
 confirma; que sin señal se entra igual, con los últimos parámetros; que un cambio de la cuenta en el servidor
 llega; que una sesión vencida pide la contraseña sin perder lo guardado; la contraseña temporal; que «Cerrar
@@ -17,6 +18,7 @@ Uso, desde la carpeta del proyecto (con la base local cargada):  python pruebas/
 """
 import json
 import os
+import shutil
 import socket
 import subprocess
 import sys
@@ -92,18 +94,29 @@ def esperar_remoto(pg, estados=('listo',), espera=90000):
     pg.wait_for_function("e => e.includes(SRP.remoto.estado)", arg=list(estados), timeout=espera)
 
 
-# Una jornada y dos árboles de hoy, mandados al servidor como los mandará el teléfono
-CREAR = """async () => {
+# Una jornada y dos árboles de hoy, mandados al servidor como los mandará el teléfono. El primero lleva su
+# fotografía, que se sube aparte; el segundo dice tener una que nunca llegó
+JPEG = '/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA='
+CREAR = """async (jpeg) => {
   const hoy = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date());
   const programa = SRP.ref.deTipo('programa', true).find(p => p.id !== SRP.CONFIG.PROGRAMA_SOLICITUD).id;
   const especie = SRP.ref.deTipo('especie', true)[0].id;
   const j = crypto.randomUUID();
-  const arbol = (lat) => ({ tipo: 'registro.crear', datos: { id: crypto.randomUUID(), jornada_id: j, lat, lng: -99.1332, punto_origen: 'mapa', especie_id: especie, fecha_plantacion: hoy, comentarios: '' } });
+  const fotos = [crypto.randomUUID(), crypto.randomUUID()];
+  const arbol = (lat, foto_id) => ({ tipo: 'registro.crear', datos: { id: crypto.randomUUID(), jornada_id: j, lat, lng: -99.1332, punto_origen: 'mapa', especie_id: especie, fecha_plantacion: hoy, comentarios: '', foto_id } });
   const r = await SRP.servidor.pedir('POST', '/envios', { operaciones: [
     { tipo: 'jornada.crear', datos: { id: j, nombre: 'Jornada de la prueba de conexión', programa_id: programa, lat: 19.4326, lng: -99.1332, punto_origen: 'manual', fecha: hoy, arboles_previstos: 2 } },
-    arbol(19.43262), arbol(19.43266)] });
-  return r.ok ? r.datos.resultados.map(x => x.estado) : r;
+    arbol(19.43262, fotos[0]), arbol(19.43266, fotos[1])] });
+  const bin = Uint8Array.from(atob(jpeg), c => c.charCodeAt(0));
+  const f = await fetch(SRP.CONFIG.API + '/fotos/' + fotos[0], { method: 'PUT', credentials: 'same-origin', headers: { 'content-type': 'image/jpeg' }, body: bin });
+  return r.ok ? r.datos.resultados.map(x => x.estado).concat(f.status) : r;
 }"""
+
+# Las miniaturas de Mis registros: la imagen (oculta, cargada, del servidor) y la miniatura vacía
+MINIATURAS = """async () => { SRP.app.mostrarVista('registros'); await new Promise(r => setTimeout(r, 1500));
+  return [...document.querySelectorAll('#lista-registros > li')].map(li => { const img = li.querySelector('img.registro-miniatura'), vacia = li.querySelector('.registro-sin-foto');
+    return { img: img ? [img.hidden, img.naturalWidth > 0, img.getAttribute('src').startsWith('/api/srp/fotos/')] : null, vacia: vacia ? !vacia.hidden : null }; })
+    .sort((a, b) => String(a.img && a.img[0]).localeCompare(String(b.img && b.img[0]))); }"""
 
 # Lo que enseña una sección: su franja, su total y el aviso de Supervisión
 VISTA = """async v => { SRP.app.mostrarVista(v); await new Promise(r => setTimeout(r, 700));
@@ -170,7 +183,7 @@ def main():
             ok(c == [[CABO['id'], True]], 'el cabo baja sólo las cuentas que ve —aquí, la suya— y sólo la suya trae correo: %s' % c)
 
             # Lo enviado llega del servidor y se ve, sin guardarse en el teléfono
-            ok(pg.evaluate(CREAR) == ['recibido'] * 3, 'el cabo manda al servidor una jornada y dos árboles')
+            ok(pg.evaluate(CREAR, JPEG) == ['recibido'] * 3 + [201], 'el cabo manda al servidor una jornada y dos árboles, y la fotografía del primero')
             abrir(pg)
             esperar_remoto(pg)
             v = pg.evaluate(VISTA, 'registros')
@@ -179,6 +192,18 @@ def main():
                'al abrir, lo enviado llega del servidor y se ve en Mis registros, sin guardarse en el teléfono: %s, %s' % (v, n))
             v = pg.evaluate(VISTA, 'jornadas')
             ok(v['total'] == '1 jornada · 2 árboles', 'y en Jornadas: %s' % v['total'])
+
+            # Las fotografías de lo enviado se piden al servidor; la que no llegó no se ve rota
+            m = pg.evaluate(MINIATURAS)
+            ok(m == [{'img': [False, True, True], 'vacia': False}, {'img': [True, False, True], 'vacia': True}],
+               'en Mis registros, la fotografía del servidor se ve, y en lugar de la que nunca llegó queda la miniatura vacía: %s' % m)
+            g = pg.evaluate("""async () => { SRP.app.mostrarVista('galeria'); await new Promise(r => setTimeout(r, 1500));
+              const r = [...SRP.remoto.plantaciones.values()].find(x => x.foto_id && document.querySelector('.galeria-foto img[src$="' + x.foto_id + '"]:not([hidden])'));
+              const b = r ? await SRP.foto.bytes(r) : null;
+              return { cuadros: [...document.querySelectorAll('#galeria-rejilla > li')].filter(li => !li.hidden).length, bytes: b ? b.datos.length : null, tipo: b && b.tipo,
+                locales: (await SRP.almacen.todosLocales('plantaciones')).length }; }""")
+            ok(g == {'cuadros': 1, 'bytes': len(__import__('base64').b64decode(JPEG)), 'tipo': 'image/jpeg', 'locales': 0},
+               'en Fotografías se ve la del servidor, se descarga entera y no queda en el teléfono; la que no llegó no ocupa cuadro: %s' % g)
 
             # Los parámetros del servidor valen en el teléfono, y se quedan para abrir sin señal
             apoyo('parametro', {'clave': 'JORNADA.DUPLICADO_M', 'valor': 7, 'id': CABO['id']})
@@ -266,6 +291,7 @@ def main():
         servicio.terminate()
         app.terminate()
         apoyo('quitar', {'ids': [u['id'] for u in CUENTAS]})
+        shutil.rmtree(fotos, ignore_errors=True)
     print('\n'.join(resultados))
     fallas = [r for r in resultados if r.startswith('FALLA')]
     print('\n%d comprobaciones, %d fallas' % (len(resultados), len(fallas)))

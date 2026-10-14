@@ -62,6 +62,7 @@ SRP.app = {
       this.marcarListo();
       return;
     }
+    SRP.foto.iniciar();           // la fotografía del servidor que no llega no se ve rota
     SRP.formulario.iniciar();
     if (SRP.espejo) SRP.espejo.iniciar();   // sólo en la versión de prueba
     SRP.registros.iniciar();

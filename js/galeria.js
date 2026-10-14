@@ -76,7 +76,7 @@ SRP.galeria = {
   async conFoto() {
     const u = SRP.sesion.usuario;
     return (await SRP.almacen.porIndice('plantaciones', 'estatus', 'activo'))
-      .filter(r => SRP.util.fotoSegura(r.foto_base64) && SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId))   // sólo imágenes válidas
+      .filter(r => SRP.foto.fuente(r) && SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId))   // sólo imágenes válidas, o del servidor
       .sort((a, b) => b.fecha_plantacion.localeCompare(a.fecha_plantacion) || b.fecha_registro.localeCompare(a.fecha_registro));
   },
 
@@ -108,11 +108,12 @@ SRP.galeria = {
       const e = SRP.ref.especieDe(r);
       const j = r.jornada_id && this.jornadasPorId[r.jornada_id];
       return '<li><button type="button" class="galeria-foto" data-id="' + SRP.util.escapar(r.id) + '" aria-label="' + esc(e.comun) + ', ' + esc(SRP.util.formatearFecha(r.fecha_plantacion)) + (j ? ', ' + esc(j.nombre) : '') + ', ' + esc(SRP.ref.nombreUsuario(r.cabo_id)) + '">' +
-        '<img src="' + SRP.util.fotoSegura(r.foto_base64) + '" alt="" loading="lazy">' +
+        '<img ' + SRP.foto.atributos(r) + ' alt="" loading="lazy">' +
         '<span class="galeria-pie">' + esc(e.comun) + '<br>' + (j ? '<span class="galeria-jornada">' + esc(j.nombre) + '</span> · ' : '') + esc(SRP.util.formatearFecha(r.fecha_plantacion)) + '</span></button></li>';
     }).join('');
     const n = this.fotos.length;
-    const peso = this.fotos.reduce((s, r) => s + SRP.foto.pesoDe(r.foto_base64 || ''), 0);
+    // El peso se sabe de las que guarda el teléfono; las del servidor no se bajan para pesarlas
+    const peso = this.fotos.reduce((s, r) => s + SRP.foto.pesoDe(SRP.util.fotoSegura(r.foto_base64) || ''), 0);
     this.el('galeria-cuenta').textContent = n ? (n === 1 ? '1 fotografía' : n + ' fotografías') + (peso ? ' · ' + SRP.foto.formatearPeso(peso) : '') : '';
     this.el('btn-galeria-zip').disabled = !n;
     const vacio = this.el('galeria-vacio');
@@ -132,7 +133,10 @@ SRP.galeria = {
     const e = SRP.ref.especieDe(r);
     const jornada = r.jornada_id ? await SRP.almacen.uno('jornadas', r.jornada_id) : null;
     this.el('dlg-foto-titulo').textContent = e.comun;
-    this.el('dlg-foto-img').src = r.foto_base64;
+    const img = this.el('dlg-foto-img'), src = SRP.foto.fuente(r);
+    img.hidden = false;
+    img.src = src;
+    img.toggleAttribute('data-foto-servidor', !src.startsWith('data:'));
     this.el('dlg-foto-img').alt = 'Fotografía del ' + e.comun + ' registrado el ' + SRP.util.formatearFecha(r.fecha_plantacion);
     this.el('dlg-foto-datos').innerHTML = [
       ['Jornada', jornada ? jornada.nombre : 'Sin jornada'],
@@ -140,7 +144,7 @@ SRP.galeria = {
       ['Cabo', SRP.ref.nombreUsuario(r.cabo_id)],
       ['Lugar', [SRP.ref.alcaldia(r.alcaldia), r.colonia ? SRP.ref.colonia(r.colonia) : ''].filter(Boolean).join(', ')],
       ['Folio', SRP.folio.textoLargo(r)],
-      ['Archivo', this.nombreFoto(r) + (r.foto_base64 ? ' · ' + SRP.foto.formatearPeso(SRP.foto.pesoDe(r.foto_base64)) : '')]
+      ['Archivo', this.nombreFoto(r) + (SRP.util.fotoSegura(r.foto_base64) ? ' · ' + SRP.foto.formatearPeso(SRP.foto.pesoDe(r.foto_base64)) : '')]
     ].map(([k, v]) => '<div class="revision-fila revision-fila-sola"><dt>' + k + '</dt><dd>' + esc(v) + '</dd></div>').join('');
     this.el('dlg-foto').showModal();
   },
@@ -153,16 +157,10 @@ SRP.galeria = {
     return 'Foto_' + limpio(clave) + '_' + r.fecha_plantacion + '_' + limpio(e.comun).slice(0, 30) + '.jpg';
   },
 
-  bytesDe(r) {
-    const coma = r.foto_base64.indexOf(',');
-    const bin = atob(r.foto_base64.slice(coma + 1));
-    const out = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-    return out;
-  },
-
   async descargar(r) {
-    const blob = new Blob([this.bytesDe(r)], { type: 'image/jpeg' });
+    const b = await SRP.foto.bytes(r);
+    if (!b) { SRP.util.anunciar('No se pudo bajar la fotografía del servidor. Intente de nuevo con señal.', 'alerta'); return; }
+    const blob = new Blob([b.datos], { type: b.tipo });
     const res = await SRP.reportes.entregarArchivo(blob, this.nombreFoto(r), 'Fotografía del registro');
     if (res !== 'cancelado') SRP.util.anunciarSilencioso('Fotografía descargada.');
   },
@@ -177,13 +175,21 @@ SRP.galeria = {
     try {
       // El armado es síncrono y ocupa el hilo: se cede un cuadro para que «Armando…» se pinte antes
       await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
-      const nombres = new Set();
-      const entradas = this.fotos.map(r => {
-        let n = this.nombreFoto(r);
-        if (nombres.has(n)) n = n.replace(/\.jpg$/, '_' + r.id.slice(0, 6) + '.jpg');   // dos árboles de la misma especie sin folio
-        nombres.add(n);
-        return { nombre: n, datos: this.bytesDe(r), fecha: new Date(r.fecha_registro || Date.now()) };
-      });
+      // Las del servidor se piden de seis en seis; las que no llegan se cuentan y se dicen
+      const nombres = new Set(), entradas = [];
+      let faltan = 0;
+      for (let i = 0; i < this.fotos.length; i += 6) {
+        const lote = this.fotos.slice(i, i + 6);
+        const bytes = await Promise.all(lote.map(r => SRP.foto.bytes(r)));
+        lote.forEach((r, k) => {
+          if (!bytes[k]) { faltan++; return; }
+          let n = this.nombreFoto(r);
+          if (nombres.has(n)) n = n.replace(/\.jpg$/, '_' + r.id.slice(0, 6) + '.jpg');   // dos árboles de la misma especie sin folio
+          nombres.add(n);
+          entradas.push({ nombre: n, datos: bytes[k].datos, fecha: new Date(r.fecha_registro || Date.now()) });
+        });
+      }
+      if (!entradas.length) throw new Error('ninguna fotografía llegó del servidor; intente de nuevo con señal');
       const blob = SRP.zip.armar(entradas);
       const f = this.filtro;
       const limpio = t => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, '');
@@ -191,7 +197,8 @@ SRP.galeria = {
       // Con una jornada elegida, el ZIP lleva su nombre y su fecha
       const nombre = 'Fotografias_SRP' + (j ? '_' + limpio(j.nombre).slice(0, 40) + '_' + j.fecha : (f.dia ? '_' + f.dia : '')) + (f.cabo ? '_' + limpio(SRP.ref.nombreUsuario(f.cabo)) : '') + '.zip';
       const res = await SRP.reportes.entregarArchivo(blob, nombre, 'Fotografías de los registros');
-      if (res !== 'cancelado') SRP.util.anunciar((entradas.length === 1 ? '1 fotografía' : entradas.length + ' fotografías') + ' en ' + nombre + ' (' + SRP.foto.formatearPeso(blob.size) + ').');
+      if (res !== 'cancelado') SRP.util.anunciar((entradas.length === 1 ? '1 fotografía' : entradas.length + ' fotografías') + ' en ' + nombre + ' (' + SRP.foto.formatearPeso(blob.size) + ').' +
+        (faltan ? ' ' + (faltan === 1 ? '1 no se pudo bajar' : faltan + ' no se pudieron bajar') + ' del servidor.' : ''), faltan ? 'aviso' : undefined);
     } catch (err) {
       SRP.util.anunciar('No se pudo armar el archivo: ' + err.message, 'alerta');
     } finally {

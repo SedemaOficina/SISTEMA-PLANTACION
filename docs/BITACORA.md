@@ -4819,3 +4819,52 @@ No se probó:
 
 **Siguiente paso.** Las fotografías de lo enviado, pedidas al servidor al verlas; luego 4c, subir lo
 capturado.
+
+## Bloque 222 — Las fotografías de lo enviado (14-10-2026)
+
+**Versión 0.9.67.** Lo que quedó pendiente del bloque 221 (D302).
+
+| Qué | Cómo queda con datos reales |
+|---|---|
+| Fotografía de un árbol enviado | Se pide al servidor al verla: en la tarjeta y el detalle de Mis registros, en Fotografías y al corregirlo |
+| Descargar | Una, o todas en ZIP, pedidas al servidor; si alguna no llega, se dice cuántas |
+| Copia en el teléfono | Ninguna: el servidor responde `no-store` |
+| La que no llegó | No se ve rota: queda la miniatura vacía, o no ocupa cuadro en Fotografías |
+
+**Qué cambió.**
+- Servidor: `fotografias.ts` responde `no-store` en lugar de dejar que el navegador la guarde un año;
+  `fotografias.test.js` lo comprueba.
+- Aplicación:
+  - `js/foto.js`: de dónde sale la fotografía que se ve, sus bytes para descargarla, y quitar la que no
+    llega;
+  - `js/registros.js`, `js/galeria.js` y `js/formulario.js` la usan;
+  - `js/app.js` lo arranca;
+  - `css/estilos.css`: lo que se quita no ocupa lugar;
+  - la marca 0.9.67 y `VERSION`.
+- Pruebas: `prueba_conexion.py`, con una fotografía en el servidor y una que nunca llegó; su apoyo borra las
+  fotografías de prueba y la prueba, su carpeta.
+- Documentación: los README, `docs/FASE2-Y-TRASPASO.md` y `docs/MEJORAS.md`.
+
+**Pantalla: qué se agregó y qué se quitó.** Con datos de prueba, nada. Con datos reales:
+- las fotografías de lo enviado aparecen donde ya aparecían las del teléfono;
+- la que no llegó deja la miniatura vacía de siempre.
+
+**Verificación.**
+- Servidor: 82 pruebas, 0 fallas.
+- Aplicación: `prueba.py`, fallas: 0 de 1440. `auditoria.py`, 144 comprobaciones sin hallazgos; la
+  norma de la hoja, sin hallazgos.
+- Conexión: `prueba_conexion.py`, 31 de 31:
+  - la fotografía del servidor se ve en Mis registros y en Fotografías;
+  - se descarga entera y no queda nada en el teléfono;
+  - la que nunca llegó deja la miniatura vacía y no ocupa cuadro.
+- En la copia desechable de `sia-backend`: `typecheck` y `build` sin errores, y la prueba de humo 21 de 21
+  dos veces.
+- Un tropiezo: la limpieza de la prueba no borraba el registro de la fotografía antes del árbol, y la primera
+  corrida dejó sus cuentas en la base. Se corrigió y se limpiaron. Las carpetas temporales de fotografías de
+  corridas anteriores, que eran de la prueba, se borraron, y la prueba ya borra la suya.
+- Al terminar, la base local sin datos de prueba.
+
+No se probó: en un teléfono real, cuánto tarda una página de miniaturas con mala señal.
+
+**Siguiente paso.** 4c: subir lo capturado al servidor —jornadas, árboles, cambios y fotografías— con su
+folio, quitando del teléfono lo que el servidor confirme, salvo la jornada abierta.

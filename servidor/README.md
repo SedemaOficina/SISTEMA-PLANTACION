@@ -296,8 +296,9 @@ publica, nombrado por su id (el `foto_id` de su árbol). La base guarda sólo su
   `SRP_FOTO_MAXIMO_KB` (1024). La aplicación las guarda a 800 × 600, y pesan entre 60 y 120 KB.
 - No se reemplaza: una fotografía nueva lleva otro id. Reenviar la misma da la misma respuesta; otra
   distinta con el mismo id se rechaza. El archivo se escribe completo antes de registrarlo.
-- La descarga quien ve el árbol y puede descargar fotografías; para los demás no existe. Como no cambia,
-  el navegador puede guardarla.
+- La descarga quien ve el árbol y puede descargar fotografías; para los demás no existe. Se pide cada vez
+  que se ve: la respuesta dice `no-store`, así que el navegador no guarda copia y el teléfono no acumula
+  fotografías (S-11).
 - **Espacio:** a 60–120 KB cada una, mil árboles con fotografía ocupan de 60 a 120 MB. Un cabo con
   fotografía en cada árbol junta de 300 a 600 MB al año. `GET /fotos/uso` dice cuánto ocupan de verdad y
   cuánto ocuparían en un año al ritmo de los últimos 30 días, para pedir el espacio a tiempo.

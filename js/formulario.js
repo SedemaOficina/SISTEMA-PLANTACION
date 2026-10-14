@@ -33,10 +33,10 @@ SRP.formulario = {
     this.el('btn-foto-quitar').innerHTML = SRP.ICONOS.svg('basura', 'medio');
     this.el('icono-foto').innerHTML = SRP.ICONOS.svg('camara', 'grande');
     this.el('btn-foto-quitar').addEventListener('click', () => {
-      const f = { datos: this.estado.foto, id: this.estado.fotoId, nombre: this.estado.fotoNombre, bytes: this.estado.fotoBytes };
+      const f = { datos: this.estado.foto, id: this.estado.fotoId, nombre: this.estado.fotoNombre, bytes: this.estado.fotoBytes, servidor: this.estado.fotoServidor };
       this.ponerFoto(null, null);
       // Quitar la foto se puede deshacer: tomarla otra vez puede no ser posible
-      SRP.util.anunciar('Fotografía quitada.', 'exito', { deshacer: () => this.ponerFoto(f.datos, f.id, f.nombre, f.bytes) });
+      SRP.util.anunciar('Fotografía quitada.', 'exito', { deshacer: () => this.ponerFoto(f.datos, f.id, f.nombre, f.bytes, f.servidor) });
       this.el('etq-foto').focus();
     });
     this.el('form-plantacion').addEventListener('submit', (e) => {
@@ -362,24 +362,30 @@ SRP.formulario = {
     }
   },
 
-  ponerFoto(datos, id, nombre, bytes) {
+  /* `servidor`: la dirección de la que ya está en el servidor, al corregir un árbol enviado. Se ve, pero no se
+     guarda en el teléfono: el árbol conserva su foto_id */
+  ponerFoto(datos, id, nombre, bytes, servidor) {
     this.estado.foto = datos;
     this.estado.fotoId = id;
     this.estado.fotoNombre = nombre || '';
     this.estado.fotoBytes = bytes || (datos ? SRP.foto.pesoDe(datos) : 0);
-    this.el('ficha-foto').hidden = !datos;
-    if (datos) {
-      this.el('foto-vista').src = datos;
+    this.estado.fotoServidor = datos ? '' : servidor || '';
+    const ver = datos || this.estado.fotoServidor, vista = this.el('foto-vista');
+    this.el('ficha-foto').hidden = !ver;
+    vista.hidden = false;
+    vista.toggleAttribute('data-foto-servidor', !datos && !!ver);
+    if (ver) {
+      vista.src = ver;
       // Sin nombre de archivo —una foto ya guardada que se vuelve a abrir— se nombra por lo que es
       this.el('foto-nombre').textContent = this.estado.fotoNombre || 'Fotografía del registro';
-      this.el('foto-peso').textContent = SRP.foto.formatearPeso(this.estado.fotoBytes);
+      this.el('foto-peso').textContent = datos ? SRP.foto.formatearPeso(this.estado.fotoBytes) : '';
     } else {
-      this.el('foto-vista').removeAttribute('src');
+      vista.removeAttribute('src');
     }
     // La zona de carga dice si va a poner la primera foto o a reemplazar la que hay; con foto
     // se reduce a un renglón, porque lo importante ya es la ficha de la foto
-    this.el('texto-foto').textContent = datos ? 'Cambiar fotografía' : 'Agregar fotografía';
-    this.el('etq-foto').classList.toggle('con-foto', !!datos);
+    this.el('texto-foto').textContent = ver ? 'Cambiar fotografía' : 'Agregar fotografía';
+    this.el('etq-foto').classList.toggle('con-foto', !!ver);
     if (SRP.espejo) SRP.espejo.refrescar();
     this.guardarBorrador();
   },
@@ -899,7 +905,7 @@ SRP.formulario = {
     SRP.util.pintarContador(this.el('campo-comentarios'));
     if (registro.especie_id) this.elegirEspecie(registro.especie_id);
     else this.elegirEspecie(this.OTRA, registro.especie_otra);
-    this.ponerFoto(SRP.util.fotoSegura(registro.foto_base64) || null, registro.foto_id);
+    this.ponerFoto(SRP.util.fotoSegura(registro.foto_base64) || null, registro.foto_id, '', 0, SRP.foto.fuente(registro));
     SRP.app.mostrarVista('registrar');
     // Al editar se restituye el origen que quedó guardado: abrir un registro no lo convierte
     // en un punto señalado a mano.
