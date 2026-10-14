@@ -3391,3 +3391,20 @@
   · Las pruebas del servidor corren en un orden fijo, primero la que instala la base, y cada una con un
     tope de diez minutos. La limpieza deshace y cierra su conexión aunque falle. Una corrida interrumpida
     había dejado una conexión con bloqueos, y la siguiente esperó siete horas.
+
+- **D291. Los catálogos en el servidor (bloque 211).**
+  14-10-2026. Paso 2 de lo que se puede avanzar sin las respuestas del SIA.
+  · `catalogos.ts` lleva las reglas del editor de catálogos de la aplicación (`js/catalogos.js`): las mismas
+    validaciones y mensajes, y las mismas claves que pone el sistema. Una prueba carga `js/catalogos.js`
+    tal cual y compara la validación caso por caso.
+  · Lo que en la aplicación limita la pantalla (una lista para elegir el tipo de institución, la
+    distribución o los tipos de un programa) aquí se revisa aparte, porque al servidor le puede llegar
+    cualquier cosa.
+  · Un valor con uso no se elimina. El uso se cuenta con las mismas relaciones que la aplicación, y una
+    prueba comprueba que sean las llaves foráneas de la base. Si alguien empieza a usarlo entre la cuenta y
+    el borrado, la llave lo detiene.
+  · Las altas y ediciones de un mismo catálogo van una tras otra, para que la clave sugerida y el
+    consecutivo de especies no se repitan. Las lecturas y los registros de campo no esperan.
+  · Desactivar lo que ya estaba desactivado no deja renglón en la bitácora: no es un cambio.
+  · Los parámetros no se pasaron al servidor. Hoy son fijos y su pantalla sólo los muestra; hacerlos
+    editables cambia esa pantalla y espera la decisión de Liber.

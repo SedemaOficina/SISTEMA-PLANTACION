@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { Router, type Request, type RequestHandler, type Response } from "express";
 import type pg from "pg";
 import { cuentaPublica, sesionDe } from "./acceso";
+import { anotarCambio } from "./bitacora";
 import type { ConfigSrp } from "./config";
 import { derivar, temporal } from "./contrasenas";
 import { responder } from "./errores";
@@ -21,17 +22,6 @@ import { enTransaccion } from "./transaccion";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const limpio = (t: unknown) => String(t ?? "").trim().replace(/\s+/g, " ");
-
-type Accion = "CREADO" | "EDITADO" | "ACTIVADO" | "DESACTIVADO";
-
-// El renglón de bitácora de quien hace el cambio
-export async function bitacora(c: pg.PoolClient, actor: Usuario, accion: Accion, entidadId: string, detalle = ""): Promise<void> {
-  await c.query(
-    `INSERT INTO srp.bitacora (id, fecha, usuario_id, usuario_nombre, perfil, accion, entidad, entidad_id, detalle)
-     VALUES (gen_random_uuid(), now(), $1, $2, $3, $4, 'usuario', $5, $6)`,
-    [actor.id, actor.nombre_completo, actor.perfil, accion, entidadId, detalle],
-  );
-}
 
 // La contraseña temporal de una cuenta, con su vencimiento
 async function ponerTemporal(c: pg.PoolClient, usuarioId: string, actorId: string, horas: number): Promise<string> {
@@ -115,7 +105,7 @@ export function rutasCuentas(pool: pg.Pool, config: ConfigSrp, sesion: RequestHa
       );
       const t = await ponerTemporal(c, d.id, actor.id, config.acceso.temporalHoras);
       const org = (await c.query<{ nombre: string }>("SELECT nombre FROM srp.instituciones WHERE id = $1", [d.organizacion_id])).rows[0];
-      await bitacora(c, actor, "CREADO", d.id, "Alta de " + d.correo + " con perfil " + d.perfil + " en " + org.nombre);
+      await anotarCambio(c, actor, "CREADO", "usuario", d.id, "Alta de " + d.correo + " con perfil " + d.perfil + " en " + org.nombre);
       const u = (await c.query<Usuario>("SELECT * FROM srp.usuarios WHERE id = $1", [d.id])).rows[0];
       return { usuario: cuentaPublica(u), temporal: t };
     });
@@ -130,7 +120,7 @@ export function rutasCuentas(pool: pg.Pool, config: ConfigSrp, sesion: RequestHa
       if (!(await c.query("SELECT 1 FROM srp.usuarios WHERE id = $1", [id])).rowCount) return null;
       const nueva = await ponerTemporal(c, id, actor.id, config.acceso.temporalHoras);
       await cerrarDeCuenta(c, id, "CONTRASENA_RESTABLECIDA");
-      await bitacora(c, actor, "EDITADO", id, "Contraseña restablecida");
+      await anotarCambio(c, actor, "EDITADO", "usuario", id, "Contraseña restablecida");
       return nueva;
     });
     if (!t) return responder(res, 404, "NO_EXISTE", "Esa cuenta no existe.");
@@ -147,7 +137,7 @@ export function rutasCuentas(pool: pg.Pool, config: ConfigSrp, sesion: RequestHa
       const u = (await c.query<Usuario>("UPDATE srp.usuarios SET activo = $2, fecha_ultima_edicion = now(), editado_por_id = $3 WHERE id = $1 RETURNING *", [id, activo, actor.id])).rows[0];
       if (!u) return null;
       const cerradas = activo ? 0 : await cerrarDeCuenta(c, id, "CUENTA_DESACTIVADA");
-      await bitacora(c, actor, activo ? "ACTIVADO" : "DESACTIVADO", id);
+      await anotarCambio(c, actor, activo ? "ACTIVADO" : "DESACTIVADO", "usuario", id);
       return { usuario: cuentaPublica(u), sesionesCerradas: cerradas };
     });
     if (!r2) return responder(res, 404, "NO_EXISTE", "Esa cuenta no existe.");

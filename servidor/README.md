@@ -103,7 +103,7 @@ con `--revision` y diciéndolo en el LEEME. El cambio a `sia-backend` (un diff y
 archivos completos) se arma sobre una copia del repositorio del SIA y lleva líneas suyas: vive sólo en
 `servidor/local/`, que no se sube.
 
-## El servicio: acceso, cuentas y consultas
+## El servicio: acceso, cuentas, catálogos y consultas
 
 En el SIA lo monta el backend central: `app.use("/api/srp", crearRutasSrp(poolSrp))`. Fuera de él,
 `npm run iniciar` lo arranca solo, en `SRP_PUERTO` (3100), bajo `/api/srp`. La configuración, toda por
@@ -119,6 +119,12 @@ variables de entorno, está explicada en `src/modulos/srp/config.ts`. Las respue
 | `POST /cuentas` | Alta con contraseña temporal, que se responde una sola vez | Administración global |
 | `POST /cuentas/:id/restablecer` | Otra contraseña temporal; cierra las sesiones de la cuenta | Administración global |
 | `POST /cuentas/:id/estado` | Activa o desactiva; desactivar cierra sus sesiones | Administración global |
+| `GET /catalogos` | Los seis catálogos completos, también lo inactivo | Con sesión |
+| `GET /catalogos/:tabla/usos` | Cuántos árboles, jornadas y cuentas usan cada valor | Administración global |
+| `POST /catalogos/:tabla` | Alta de un valor | Administración global |
+| `PUT /catalogos/:tabla/:id` | Edición (en instituciones, sólo el nombre) | Administración global |
+| `POST /catalogos/:tabla/:id/estado` | Activa o desactiva | Administración global |
+| `DELETE /catalogos/:tabla/:id` | Elimina un valor sin uso | Administración global |
 | `GET /jornadas` | Las jornadas de su alcance, por páginas | Con sesión |
 | `GET /plantaciones` | Los árboles de su alcance, por páginas, sin la fotografía | Con sesión |
 
@@ -153,6 +159,25 @@ variables de entorno, está explicada en `src/modulos/srp/config.ts`. Las respue
 
 Los plazos, el largo mínimo y el bloqueo son parámetros (`src/modulos/srp/config.ts`): se cambian sin
 tocar código.
+
+### Catálogos
+
+Programas, áreas, especies, vehículos, instituciones y solicitantes (`:tabla` es el nombre de su tabla),
+con las reglas del editor de catálogos de la aplicación (`js/catalogos.js`). Una prueba compara la
+validación con la de la aplicación caso por caso.
+
+- La clave de instituciones, solicitantes y vehículos la pone el sistema: la de las dos primeras sale del
+  nombre y se completa con `_2`, `_3`… si ya existe; la del vehículo es la placa sin espacios. La de
+  especies es el consecutivo `ESP-0000`, que también es su identificador. La de programas y áreas la da
+  quien administra.
+- Los nombres no se repiten aunque cambien acentos o mayúsculas; las placas, aunque cambien los espacios.
+- Un valor con uso no se elimina: se desactiva, deja de ofrecerse y los registros que lo usan no cambian.
+  Al intentarlo, se dice dónde aparece: «aparece en 12 árboles y 3 jornadas».
+- Las instituciones no se eliminan, y su tipo se fija al darlas de alta. Las 16 alcaldías ya vienen
+  dadas de alta: no se agregan ni se renombran, sólo se activan y desactivan. La Secretaría no se
+  desactiva.
+- Cada cambio va a la bitácora como lo anota la aplicación: alta, edición con los campos que cambiaron,
+  activación, desactivación y eliminación.
 
 ### Permisos de cada perfil
 
@@ -222,6 +247,9 @@ esa base y nunca sobre una instalación anterior.
   temporal, cambio obligatorio, bloqueo (también con intentos simultáneos), restablecimiento,
   desactivación, institución desactivada, vencimiento de la sesión y de la temporal, y el registro de
   entradas.
+- `pruebas/catalogos.test.js`: carga el editor de catálogos de la aplicación tal cual y compara su
+  validación con la del servidor, caso por caso; luego da de alta, edita, activa, desactiva y elimina por
+  las rutas, y revisa la bitácora y que lo que cuenta como uso sean las llaves foráneas de la base.
 - `pruebas/permisos.test.js`: carga `js/permisos.js` tal cual y lo compara con el servidor: cada perfil,
   cada acción y cientos de registros armados para los casos de borde; la consulta en la base, con todas
   las cuentas, jornadas y árboles que haya; y las rutas, por páginas, como las usará la aplicación.

@@ -4362,3 +4362,35 @@ No se probó: el límite por procedencia, que espera la corrección del módulo 
 de cuentas, que espera su respuesta sobre dónde viven.
 
 **Siguiente paso.** El paso 2: catálogos y parámetros en el servidor.
+
+## Bloque 211 — Los catálogos en el servidor (14-10-2026)
+
+Sin cambio en la aplicación: sigue la versión 0.9.64. Paso 2 de lo que se puede avanzar sin las respuestas
+del SIA (D291).
+
+**Qué cambió.**
+- `servidor/src/modulos/srp/catalogos.ts`, nuevo: lectura de los seis catálogos para cualquier cuenta con
+  sesión, y uso, alta, edición, activación, desactivación y eliminación para la Administración global, con
+  las reglas de `js/catalogos.js`.
+- `servidor/src/modulos/srp/bitacora.ts`, nuevo: la bitácora de cambios en un solo lugar. Las cuentas y
+  los catálogos la escriben igual.
+- `errores.ts`: un valor repetido en un catálogo responde con el mismo mensaje que da la aplicación.
+- Pruebas: `catalogos.test.js`, nueva: la validación comparada con la aplicación (19,804 casos) y las rutas.
+- `servidor/README.md` y `docs/ALINEACION-SIA.md`, al tanto.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada: la aplicación todavía no habla con el servidor.
+
+**Verificación.**
+- Servidor: 42 pruebas, 0 fallas, sin avisos.
+  - La validación coincidió con la de la aplicación en los 19,804 casos.
+  - La primera corrida falló sólo por el mínimo de casos que pedía la prueba, que estaba mal calculado.
+- Al terminar, la base local quedó sin valores, cuentas ni renglones de prueba.
+- En la copia desechable de `sia-backend`: `typecheck` y `build` sin errores, y la prueba de humo 15 de 15.
+  Las dos nuevas: los seis catálogos se leen con sesión, y la Secretaría no se desactiva.
+
+No se probó: la pantalla de Catálogos conectada al servidor, que llega en el paso 4.
+
+**Por decidir.** Los parámetros (distancias, GPS, hora de atraso, tamaño de foto) son fijos y su pantalla
+sólo los muestra. Hacerlos editables cambia esa pantalla: se le propone a Liber antes de hacerlo.
+
+**Siguiente paso.** El paso 3: la recepción de jornadas y árboles, con el folio y las fotografías.

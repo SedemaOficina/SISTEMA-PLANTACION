@@ -11,13 +11,14 @@ import { crearRutasSrp } from "./modulos/srp/rutas";
    SRP_PUERTO   Puerto (por omisión 3100).
    SRP_PROXY    Saltos de intermediario conocidos entre la persona y el servicio (por omisión 2: el que
                 termina el cifrado y el servidor web del SIA).
-   SRP_ROL      Cuenta que se asume al conectar (SET ROLE), para que la cuenta local de administración
+   SRP_ROL      Cuenta que se asume al conectar (el parámetro role), para que la cuenta local de administración
                 opere con los permisos de srp_api. */
 
 export { leerConfig } from "./modulos/srp/config";
 export { derivar, temporal, verificar } from "./modulos/srp/contrasenas";
 // Para las pruebas, que comparan estas reglas con las de la aplicación
 export * as permisos from "./modulos/srp/permisos";
+export * as catalogos from "./modulos/srp/catalogos";
 
 export interface ConfigLocal {
   puerto: number;

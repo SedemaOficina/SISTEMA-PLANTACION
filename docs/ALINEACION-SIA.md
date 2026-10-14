@@ -79,7 +79,9 @@ cuentas viven en `srp`; altas, bajas y restablecimientos los hace la Administrac
    - el registro de entradas y salidas, `srp.bitacora_acceso`, con la forma de `acceso.bitacora` y la
      procedencia del módulo común del SIA (`src/comun/procedencia.ts`), que se importa y no se copia;
    - los permisos de cada perfil impuestos en el servidor, con las reglas de la aplicación;
-   - la consulta de jornadas y árboles, cada quien lo de su alcance.
+   - la consulta de jornadas y árboles, cada quien lo de su alcance;
+   - y, en el bloque 211, los seis catálogos, que administra la Administración global con las reglas de
+     la aplicación.
 
    Falta el límite por procedencia (6.2), cuando el SIA corrija su módulo común, y la edición de cuentas,
    que espera la decisión 3.

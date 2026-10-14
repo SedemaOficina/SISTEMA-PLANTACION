@@ -36,6 +36,19 @@ export function esFalloDeConexion(e: unknown): boolean {
 // Reglas únicas del esquema → lo que se le dice a la persona. Los nombres son los de 02-srp-tablas.sql
 const POR_REGLA: Record<string, string> = {
   usuarios_correo_unico: "Ese correo ya tiene cuenta.",
+  programas_clave_unico: "Esa clave ya está en uso.",
+  areas_clave_unico: "Esa clave ya está en uso.",
+  vehiculos_clave_unico: "Ya existe un vehículo con esa placa.",
+  instituciones_clave_unico: "Esa clave ya está en uso.",
+  solicitantes_clave_unico: "Esa clave ya está en uso.",
+  especies_pk: "Esa clave ya está en uso.",
+  programas_nombre_unico: "Ya existe un valor con ese nombre.",
+  areas_nombre_unico: "Ya existe un valor con ese nombre.",
+  especies_nombre_unico: "Ya existe un valor con ese nombre.",
+  especies_nombre_cientifico_unico: "Ya existe una especie con ese nombre científico.",
+  vehiculos_nombre_unico: "Ya existe un vehículo con esa placa.",
+  instituciones_nombre_unico: "Ya existe una institución con ese nombre.",
+  solicitantes_nombre_unico: "Ya existe un solicitante con ese nombre.",
 };
 
 export function traducir(e: unknown): ErrorHttp {
