@@ -51,7 +51,7 @@ repositorio:
 | `db/srp/01-srp-esquema.sql` | Comprueba que estén PostGIS, `territorio` y `territorio_lectura`; crea el esquema `srp` y la tabla de versiones. Si el esquema ya está instalado, se detiene sin tocar nada |
 | `db/srp/02-srp-tablas.sql` | Las diez tablas, con sus llaves, reglas, índices y comentarios. **Generado**: no se edita a mano |
 | `db/srp/03-srp-acceso.sql` | Contraseñas (sólo derivadas con sal, nunca en claro), sesiones (sólo el resumen del testigo) y el registro de entradas; las dos bitácoras, que sólo crecen |
-| `db/srp/04-srp-sobre-territorio.sql` | La capa propia (colonias prioritarias), el índice espacial de árboles y jornadas, `srp.derivar`, que da alcaldía, colonia y celda UGA de un punto sobre `territorio` con las mismas reglas que la aplicación, y el folio: la secuencia de cada celda y lo que se congela con cada folio |
+| `db/srp/04-srp-sobre-territorio.sql` | La capa propia (colonias prioritarias), el índice espacial de árboles y jornadas, `srp.derivar`, que da alcaldía, colonia y celda UGA de un punto sobre `territorio` con las mismas reglas que la aplicación, el folio (la secuencia de cada celda y lo que se congela con cada folio) y la prioridad de la colonia, congelada con cada árbol y cada jornada |
 | `db/srp/05-srp-fotografias.sql` | El registro de las fotografías: de qué árbol es cada una, su tipo, su peso, su huella y quién la mandó. Los archivos viven fuera de la base |
 | `db/srp/06-srp-parametros.sql` | Los parámetros que la Administración global cambió; los de arranque los dice el módulo |
 | `db/srp/07-srp-rol-y-grants.sql` | La cuenta `srp_api`, sin contraseña, con sus permisos mínimos y `territorio_lectura`; la versión 1 del esquema. Al final, la verificación para correr como la cuenta: lo que debe funcionar y lo que debe fallar |
@@ -219,7 +219,11 @@ clave, y la respuesta es la misma.
   árbol se recibe PROVISIONAL, con aviso, hasta que el SIA decida. Un folio no cambia ni se borra.
 - Al cargar datos que ya traen folio, como la demostración, cada folio queda registrado y la secuencia
   de su celda sigue después del más alto.
-- La fotografía no viaja en el envío: tendrá su propia ruta.
+- La fotografía no viaja en el envío: tiene su propia ruta (abajo).
+- La prioridad de la colonia de la capa propia donde cae el punto se congela con cada árbol y cada jornada al
+  recibirlos, con la versión de la capa (`srp.prioridades`): si la capa cambia, lo ya recibido conserva la
+  suya, y un reporte regenerado dice la misma. Sólo se vuelve a calcular si se corrige el punto de un árbol.
+  El árbol cuenta en la prioridad de la colonia donde quedó; la jornada, en la de la colonia donde se ubicó.
 
 Lo que cambia un árbol que ya está en el servidor sigue las reglas de la aplicación:
 - **Editar:** llegan sólo los campos que cambiaron y se aplican sobre lo vigente. El territorio se vuelve a

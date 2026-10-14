@@ -131,6 +131,21 @@ export const ubicar = async (c: pg.PoolClient, p: Punto): Promise<Territorio> =>
 export const hoyEnLaCiudad = async (c: pg.PoolClient): Promise<string> =>
   (await c.query<{ hoy: string }>("SELECT (now() AT TIME ZONE 'America/Mexico_City')::date::text AS hoy")).rows[0].hoy;
 
+/* LA PRIORIDAD DE LA COLONIA donde cae el punto, congelada con la versión de la capa al recibir el árbol o la
+   jornada: si la capa cambia, lo ya recibido conserva la suya. Sólo se vuelve a calcular si se corrige el
+   punto. Sin capa cargada, la versión lo dice. */
+export async function congelarPrioridad(c: pg.PoolClient, tabla: Tabla, id: string, lat: unknown, lng: unknown): Promise<void> {
+  const columna = tabla === "plantaciones" ? "plantacion_id" : "jornada_id";
+  await c.query(
+    `INSERT INTO srp.prioridades (${columna}, colonia_id, prioridad, capa_version)
+     SELECT $1, p.colonia_id, p.prioridad, coalesce((SELECT version FROM srp.capas WHERE nombre = 'prioritarias'), 'sin capa')
+       FROM (SELECT 1) uno LEFT JOIN srp.prioridad($2, $3) p ON true
+     ON CONFLICT (${columna}) DO UPDATE SET colonia_id = EXCLUDED.colonia_id, prioridad = EXCLUDED.prioridad,
+       capa_version = EXCLUDED.capa_version, congelada_en = now()`,
+    [id, lat, lng],
+  );
+}
+
 /* ---------- Cómo se nombra un árbol en la bitácora ---------- */
 
 export const MOTIVOS_SUSTITUCION: Record<string, string> = { VANDALISMO: "Vandalismo", IMPACTO_VEHICULAR: "Impacto vehicular", ROBO: "Robo", MUERTE: "Muerte", OTRO: "Otro" };

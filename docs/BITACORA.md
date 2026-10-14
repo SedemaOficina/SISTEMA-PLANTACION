@@ -4558,3 +4558,36 @@ No se probó: los teléfonos recibiendo los parámetros, que llega en el paso 4.
 
 **Siguiente paso.** La prioridad congelada con el árbol y la jornada (fila 19), y el aviso de posible
 duplicado (fila 8).
+
+## Bloque 217 — La prioridad de la colonia, congelada en el servidor (14-10-2026)
+
+Sin cambio en la aplicación: sigue la versión 0.9.64. Lo que decidieron D249 y D250, hecho en el
+servidor (D297).
+
+**Qué cambió.**
+- `04-srp-sobre-territorio.sql`: `srp.prioridad(lat, lng)` y `srp.prioridades`. `07-srp-rol-y-grants.sql`:
+  lo que `srp_api` puede hacer con ellas.
+- `recepcion-apoyo.ts`: `congelarPrioridad`. La recepción congela la prioridad de cada jornada, árbol y
+  sustituto que entra, y la recalcula si se corrige el punto de un árbol.
+- `servidor/cargar.js`: congela la de lo que carga, como si lo recibiera.
+- Pruebas:
+  - `recepcion.test.js`: la prioridad se congela, se conserva aunque cambie la capa y se recalcula al
+    corregir el punto.
+  - `datos.test.js`: cada árbol y cada jornada con punto tiene la suya, igual a la que da la capa.
+  - `esquema.test.js`: la tabla nueva.
+- `servidor/README.md` y `docs/FASE2-Y-TRASPASO.md`: el avance.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada: la aplicación todavía no habla con el servidor.
+
+**Verificación.**
+- Servidor: 73 pruebas, 0 fallas.
+- Un tropiezo: la primera versión de la tabla identificaba el registro sin llave. Las pruebas dejaron 55
+  renglones sueltos, y lo mismo habría pasado al eliminar una jornada vacía. Ahora cada renglón tiene su
+  llave y se va con su árbol o su jornada; tras las pruebas, 18,784 prioridades congeladas para los
+  18,784 árboles y jornadas con punto.
+- En la copia desechable de `sia-backend`: `typecheck` y `build` sin errores, y la prueba de humo 19 de 19.
+
+No se probó: mostrarla en Supervisión y en el reporte desde el servidor, que llega al conectar la
+aplicación.
+
+**Siguiente paso.** El aviso de posible duplicado y la bandeja de doble conteo entre instituciones (fila 8).

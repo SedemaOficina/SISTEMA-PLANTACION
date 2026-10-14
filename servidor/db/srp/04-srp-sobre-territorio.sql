@@ -1,6 +1,6 @@
 -- EL SRP SOBRE territorio: la derivación de alcaldía, colonia y celda UGA de un punto, el folio que se
--- arma con esa celda y la única capa que es propia del programa. Lo corre quien administra la base, dentro
--- de instalar.sql.
+-- arma con esa celda, la única capa que es propia del programa y la prioridad que se congela con ella. Lo
+-- corre quien administra la base, dentro de instalar.sql.
 --
 -- Alcaldías, colonias del IECM y malla UGA viven en el esquema compartido territorio, de sólo lectura:
 -- existirían aunque el SRP no existiera, así que el SRP no guarda copia. Las colonias prioritarias para
@@ -138,3 +138,38 @@ CREATE TRIGGER folios_inmutables BEFORE UPDATE OR DELETE ON srp.folios
   FOR EACH ROW EXECUTE FUNCTION srp.folio_inmutable();
 CREATE TRIGGER folios_sin_vaciar BEFORE TRUNCATE ON srp.folios
   FOR EACH STATEMENT EXECUTE FUNCTION srp.folio_inmutable();
+
+-- LA PRIORIDAD DE LA COLONIA donde cae un punto, sobre la capa propia: la del polígono que lo contiene; si se
+-- enciman, la del más pequeño, como en la aplicación (js/prioritarias.js). Sin colonia de la capa, ninguna fila.
+CREATE FUNCTION srp.prioridad(lat numeric, lng numeric)
+  RETURNS TABLE (colonia_id integer, prioridad smallint)
+  LANGUAGE sql STABLE PARALLEL SAFE SET search_path FROM CURRENT
+AS $$
+  SELECT x.id, x.prioridad FROM srp.capa_prioritarias x
+   WHERE ST_Intersects(x.geom, srp.punto(lat, lng))
+   ORDER BY ST_Area(x.geom), x.id LIMIT 1
+$$;
+COMMENT ON FUNCTION srp.prioridad(numeric, numeric) IS 'Prioridad (0 muy baja a 4 muy alta) de la colonia de la capa propia donde cae el punto.';
+
+-- LA PRIORIDAD CONGELADA: la de cada árbol y cada jornada al recibirlos, con la versión de la capa con que se
+-- calculó. Si la capa cambia, lo ya recibido conserva la suya, y un reporte regenerado dice la misma. Sólo se
+-- vuelve a calcular si se corrige el punto. Sin colonia de la capa, la prioridad queda vacía: «Sin dato».
+CREATE TABLE srp.prioridades (
+  id              bigint       GENERATED ALWAYS AS IDENTITY,
+  plantacion_id   uuid         NULL,
+  jornada_id      uuid         NULL,
+  colonia_id      integer      NULL,
+  prioridad       smallint     NULL,
+  capa_version    text         NOT NULL,
+  congelada_en    timestamptz  NOT NULL DEFAULT now(),
+  CONSTRAINT prioridades_pk PRIMARY KEY (id),
+  CONSTRAINT prioridades_plantacion_unica UNIQUE (plantacion_id),
+  CONSTRAINT prioridades_jornada_unica UNIQUE (jornada_id),
+  CONSTRAINT prioridades_de_uno CHECK ((plantacion_id IS NULL) <> (jornada_id IS NULL)),
+  CONSTRAINT prioridades_rango CHECK (prioridad BETWEEN 0 AND 4),
+  CONSTRAINT prioridades_juntas CHECK ((colonia_id IS NULL) = (prioridad IS NULL))
+);
+COMMENT ON TABLE srp.prioridades IS 'La prioridad de la colonia de cada árbol y de cada jornada, congelada al recibirlos con la versión de la capa.';
+-- Es de un árbol o de una jornada, y se va con él
+ALTER TABLE srp.prioridades ADD CONSTRAINT prioridades_plantacion_id_fk FOREIGN KEY (plantacion_id) REFERENCES srp.plantaciones (id) ON DELETE CASCADE;
+ALTER TABLE srp.prioridades ADD CONSTRAINT prioridades_jornada_id_fk FOREIGN KEY (jornada_id) REFERENCES srp.jornadas (id) ON DELETE CASCADE;

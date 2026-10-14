@@ -471,3 +471,34 @@ test('una jornada sólo se elimina sin árboles, y los eliminados también cuent
   assert.deepEqual((await bitacora(V.id)).find((b) => b[0] === 'ELIMINADO'), ['ELIMINADO', 'Jornada «Jornada vacía» eliminada (sin árboles)']);
   assert.equal((await t.una('jornada.eliminar', { id: V.id, version: creada.version })).repetido, true, 'un reenvío no se repite');
 });
+
+/* ---------- La prioridad de la colonia ---------- */
+
+test('la prioridad de la colonia se congela al recibir el árbol y la jornada: si la capa cambia la conservan, y corregir el punto la recalcula', async () => {
+  // Un punto dentro de una colonia de la capa propia
+  const col = (await admin.query('SELECT id, prioridad, ST_Y(ST_PointOnSurface(geom)) AS lat, ST_X(ST_PointOnSurface(geom)) AS lng FROM srp.capa_prioritarias ORDER BY id LIMIT 1')).rows[0];
+  const lugar = { lat: Number(col.lat.toFixed(6)), lng: Number(col.lng.toFixed(6)) };
+  const t = await telefono(CABO);
+  const { J, A, version } = await conArbol(t, lugar, lugar);
+  const congelada = async (id) => (await admin.query(`SELECT CASE WHEN plantacion_id IS NULL THEN 'jornadas' ELSE 'plantaciones' END AS tabla, colonia_id, prioridad, capa_version
+    FROM srp.prioridades WHERE plantacion_id = $1 OR jornada_id = $1`, [id])).rows[0];
+  const capa = (await admin.query("SELECT version FROM srp.capas WHERE nombre = 'prioritarias'")).rows[0].version;
+  assert.deepEqual(await congelada(A.id), { tabla: 'plantaciones', colonia_id: col.id, prioridad: col.prioridad, capa_version: capa });
+  assert.deepEqual(await congelada(J.id), { tabla: 'jornadas', colonia_id: col.id, prioridad: col.prioridad, capa_version: capa });
+  const otra = (col.prioridad + 1) % 5;
+  await admin.query('UPDATE srp.capa_prioritarias SET prioridad = $2 WHERE id = $1', [col.id, otra]);
+  try {
+    // Lo ya recibido conserva la suya; lo nuevo toma la de la capa de hoy
+    const B = (await t.una('registro.crear', arbol(J.id, lugar))).fila;
+    assert.equal((await congelada(A.id)).prioridad, col.prioridad);
+    assert.equal((await congelada(J.id)).prioridad, col.prioridad);
+    assert.equal((await congelada(B.id)).prioridad, otra);
+    // Cambiar sólo los comentarios no la toca; corregir el punto sí
+    const e = await t.una('registro.editar', { id: A.id, version, cambios: { comentarios: 'Sin mover el punto' } });
+    assert.equal((await congelada(A.id)).prioridad, col.prioridad);
+    await t.una('registro.editar', { id: A.id, version: e.version, cambios: { lat: lugar.lat + 0.000001 } });
+    assert.equal((await congelada(A.id)).prioridad, otra);
+  } finally {
+    await admin.query('UPDATE srp.capa_prioritarias SET prioridad = $2 WHERE id = $1', [col.id, col.prioridad]);
+  }
+});

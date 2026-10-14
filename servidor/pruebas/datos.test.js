@@ -90,3 +90,14 @@ test('las fotografías de la carga quedan como archivos, con su registro y su hu
   const datos = fs.readFileSync(path.join(RAIZ, 'servidor', 'local', 'fotos', f.id.slice(0, 2), f.id + '.jpg'));
   assert.deepEqual([datos.length, crypto.createHash('sha256').update(datos).digest('hex'), f.tipo], [f.bytes, f.sha256, 'image/jpeg']);
 });
+
+test('cada árbol y cada jornada con punto tienen su prioridad congelada, con la versión de la capa', { skip: omitir }, async () => {
+  const r = await uno(`SELECT (SELECT count(*) FROM srp.plantaciones)::int + (SELECT count(*) FROM srp.jornadas WHERE lat IS NOT NULL)::int AS esperadas,
+    (SELECT count(*) FROM srp.prioridades)::int AS congeladas,
+    (SELECT count(*) FROM srp.prioridades WHERE capa_version <> (SELECT version FROM srp.capas WHERE nombre = 'prioritarias'))::int AS otra_version,
+    (SELECT count(*) FROM srp.prioridades d JOIN srp.plantaciones x ON x.id = d.plantacion_id LEFT JOIN LATERAL srp.prioridad(x.lat, x.lng) p ON true
+      WHERE d.prioridad IS DISTINCT FROM p.prioridad)::int AS distintas,
+    (SELECT count(*) FROM srp.prioridades WHERE prioridad IS NOT NULL)::int AS con_colonia`);
+  assert.deepEqual([r.congeladas, r.otra_version, r.distintas], [r.esperadas, 0, 0]);
+  assert.ok(r.con_colonia > 0, 'hay árboles en colonias de la capa');
+});

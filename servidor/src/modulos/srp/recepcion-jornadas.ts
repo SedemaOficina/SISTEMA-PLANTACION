@@ -3,7 +3,7 @@ import { anotarCambio } from "./bitacora";
 import { capacidadesDe, puede, SEDEMA } from "./permisos";
 import {
   AHORA, autoresDe, comoObjeto, conVigente, esFecha, esVigente, fechaCorta, filaDe, hoyEnLaCiudad, idDe, instante, puntoDe, rechazo, recibido, repetida,
-  sinPermiso, texto, textoFolio, ubicar, versionVieja, type Errores, type Fila, type Punto, type Resultado, type Territorio,
+  sinPermiso, texto, textoFolio, ubicar, versionVieja, congelarPrioridad, type Errores, type Fila, type Punto, type Resultado, type Territorio,
 } from "./recepcion-apoyo";
 import type { Usuario } from "./sesiones";
 
@@ -96,6 +96,8 @@ export async function crearJornada(c: pg.PoolClient, u: Usuario, d: Record<strin
   // Otro envío de la misma jornada ganó por un instante: es la misma
   if (!fila) return repetida((await filaDe(c, "jornadas", id)) as Fila, u);
   await anotarCambio(c, u, "CREADO", "jornada", id, "Jornada «" + nombre + "» del " + fechaCorta(fecha as string));
+  // La prioridad de la jornada es la de la colonia donde se ubicó, y la imprime su reporte: se congela aquí
+  await congelarPrioridad(c, "jornadas", id, p.lat, p.lng);
   return recibido(fila);
 }
 

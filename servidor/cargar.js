@@ -214,6 +214,14 @@ async function cargarApp(c, archivo) {
       fotos++;
     }
     await c.query('UPDATE srp.plantaciones SET foto_base64 = NULL WHERE foto_base64 IS NOT NULL');
+    // La prioridad de la colonia de cada árbol y cada jornada con punto, congelada como al recibirlos
+    for (const [t, columna] of [['plantaciones', 'plantacion_id'], ['jornadas', 'jornada_id']]) {
+      await c.query(`INSERT INTO srp.prioridades (${columna}, colonia_id, prioridad, capa_version)
+        SELECT x.id, p.colonia_id, p.prioridad, coalesce((SELECT version FROM srp.capas WHERE nombre = 'prioritarias'), 'sin capa')
+          FROM srp.${t} x LEFT JOIN LATERAL srp.prioridad(x.lat, x.lng) p ON true
+         WHERE x.lat IS NOT NULL AND x.lng IS NOT NULL
+        ON CONFLICT (${columna}) DO NOTHING`);
+    }
     console.log(`fotografías: ${fotos} pasadas a archivos en ${carpeta}`);
     await c.query('COMMIT');
   } catch (e) {

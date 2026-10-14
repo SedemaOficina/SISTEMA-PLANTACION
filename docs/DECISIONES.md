@@ -3518,3 +3518,17 @@
     aplicación por ahora.
   · La recepción toma del parámetro el margen del límite de la Ciudad.
   · Los parámetros del acceso siguen en el entorno del backend: son de seguridad y los fija el SIA.
+
+- **D297. La prioridad de la colonia, congelada en el servidor (bloque 217).**
+  14-10-2026. Como lo decidieron D249 y D250.
+  · `srp.prioridad(lat, lng)` da la prioridad de la colonia de la capa propia donde cae el punto. Si dos
+    colonias se enciman, la del polígono más pequeño, con la misma área plana que usa la aplicación.
+  · Al recibir un árbol, un sustituto o una jornada, se congela su prioridad con la versión de la capa
+    (`srp.prioridades`). Si la capa cambia, lo recibido conserva la suya.
+  · Sólo corregir el punto de un árbol la vuelve a calcular: es una corrección, no un cambio de capa. El
+    punto de una jornada no se edita.
+  · Cada renglón apunta a su árbol o a su jornada con una llave y se va con él, así que nunca queda suelto.
+    La primera versión lo identificaba sin llave, y al eliminar una jornada vacía quedaba suelto.
+  · En la base local, la carga congela la de cada árbol y cada jornada con punto, como si los recibiera.
+  · Todavía no se devuelve en las consultas. Se mostrará con los indicadores de Supervisión y el reporte, al
+    conectar la aplicación; mientras, el teléfono la sigue calculando al consultar.

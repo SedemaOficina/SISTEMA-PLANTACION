@@ -29,7 +29,7 @@ ubica un punto con las mismas reglas que la aplicación; el catálogo de especie
 de desarrollo) y lo que guarda un teléfono de prueba con la demostración. Todo cupo, y PostGIS ubica
 los 17,479 árboles y las 1,305 jornadas igual que la aplicación.
 
-**Avance en el servidor (bloques 210 a 216, D290 a D296):**
+**Avance en el servidor (bloques 210 a 217, D290 a D297):**
 - los permisos de cada perfil (fila 5);
 - la consulta de jornadas y árboles por alcance;
 - el registro de entradas;
@@ -40,10 +40,11 @@ los 17,479 árboles y las 1,305 jornadas igual que la aplicación.
 - la vida de la jornada: edición, cierre, reapertura, datos de cierre, reporte entregado, relevo, puntos
   revisados y eliminación (filas 18, 20, 21 y 25);
 - las fotografías como archivos, fuera de la base, con su registro y su uso de espacio (fila 10);
-- los parámetros, para todos los teléfonos a la vez (fila 15).
+- los parámetros, para todos los teléfonos a la vez (fila 15);
+- la prioridad de la colonia congelada con cada árbol y cada jornada (fila 19, en lo que toca a congelarla;
+  el indicador de Supervisión llega con las consultas de la fila 13).
 
 Siguen:
-- la prioridad congelada (fila 19);
 - el aviso de posible duplicado (fila 8).
 
 Ver `servidor/README.md`.

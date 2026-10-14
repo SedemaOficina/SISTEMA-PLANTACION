@@ -18,6 +18,7 @@
 --   · Avanzar la secuencia de folios de cada celda y agregar folios; un folio emitido no lo cambia ni lo borra.
 --   · Registrar fotografías; no las cambia ni las borra.
 --   · Leer y cambiar los parámetros.
+--   · Congelar la prioridad de la colonia de cada árbol y cada jornada al recibirlos.
 --   · Leer territorio, por el rol de grupo territorio_lectura, y la capa propia de prioritarias.
 -- Lo que no puede: crear, cambiar o borrar tablas; editar o borrar la bitácora; anotar versiones del
 -- esquema; escribir en territorio; ver otros esquemas del SIA.
@@ -53,14 +54,17 @@ GRANT SELECT, INSERT ON srp.folios TO srp_api;
 -- El registro de las fotografías sólo crece: una fotografía no se cambia
 GRANT SELECT, INSERT ON srp.fotografias TO srp_api;
 
+-- La prioridad congelada: se agrega al recibir y se vuelve a calcular si se corrige el punto
+GRANT SELECT, INSERT, UPDATE ON srp.prioridades TO srp_api;
+
 -- Los parámetros: la Administración los cambia; volver al valor de arranque es escribirlo
 GRANT SELECT, INSERT, UPDATE ON srp.parametros TO srp_api;
 GRANT SELECT ON srp.migraciones TO srp_api;
 
 -- La capa propia sólo se lee: la carga quien administra la base
 GRANT SELECT ON srp.capas, srp.capa_prioritarias TO srp_api;
-REVOKE ALL ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer) TO srp_api;
+REVOKE ALL ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric) TO srp_api;
 
 -- territorio, de sólo lectura, como cualquier módulo del SIA
 GRANT territorio_lectura TO srp_api;

@@ -4,7 +4,7 @@ import { puede } from "./permisos";
 import {
   AHORA, asignarFolio, autoresDe, caducarReporte, comoObjeto, conVigente, esFecha, especieComun, esVigente, fechaCorta, fechaEnJornada, filaDe,
   hoyEnLaCiudad, idDe, instante, MOTIVOS_SUSTITUCION, motivoSustitucion, puntoDe, rechazo, recibido, repetida, sinPermiso, texto, textoFolio,
-  ubicar, versionVieja, type Errores, type Fila, type Punto, type Resultado, type Tabla, type Territorio,
+  ubicar, versionVieja, congelarPrioridad, type Errores, type Fila, type Punto, type Resultado, type Tabla, type Territorio,
 } from "./recepcion-apoyo";
 import type { Usuario } from "./sesiones";
 
@@ -49,10 +49,11 @@ interface Alta {
   sustituye?: { id: string; motivo: string; otro: string };
 }
 
-// Un árbol nuevo: el programa es el de su jornada, la fotografía llega aparte y el folio se asigna después
+/* Un árbol nuevo: el programa es el de su jornada, la fotografía llega aparte, la prioridad de su colonia se
+   congela aquí y el folio se asigna después */
 async function insertarArbol(c: pg.PoolClient, u: Usuario, a: Alta): Promise<Fila | undefined> {
   const t = a.territorio, p = a.punto;
-  return (await c.query<{ fila: Fila }>(
+  const fila = (await c.query<{ fila: Fila }>(
     `INSERT INTO srp.plantaciones (id, estatus, cabo_id, lat, lng, punto_origen, gps_precision_m, folio, especie_id, especie_otra,
         alcaldia_cve, alcaldia, colonia_cve, colonia, uga, uga_borde_m, capa_version, programa_id, fecha_plantacion, jornada_id,
         sustituye_id, motivo_sustitucion, comentarios, sustituido_por_id, motivo_sustitucion_otro, foto_base64, foto_id,
@@ -65,6 +66,8 @@ async function insertarArbol(c: pg.PoolClient, u: Usuario, a: Alta): Promise<Fil
       t.uga, t.uga_borde_m, t.capa_version, a.jornada.programa_id, a.fecha, a.jornada.id, a.sustituye?.id ?? null, a.sustituye?.motivo ?? null,
       a.comentarios, a.sustituye?.otro ?? "", a.fotoId, a.fechaRegistro],
   )).rows[0]?.fila;
+  if (fila) await congelarPrioridad(c, "plantaciones", fila.id, p.lat, p.lng);
+  return fila;
 }
 
 // Lo que el teléfono manda de un árbol nuevo, recortado como lo guarda el formulario
@@ -181,6 +184,8 @@ export async function editarArbol(c: pg.PoolClient, u: Usuario, d: Record<string
     territorio2.length ? "Territorio recalculado: " + territorio2.map((k) => (k === "capa_version" ? "capas " + (fila[k] || "—") : k + " " + (actual[k] || "—") + " → " + (fila[k] || "—"))).join("; ") : "",
   ].filter(Boolean).join(". ");
   await anotarCambio(c, u, "EDITADO", "plantacion", id, detalle || "Sin cambios en los datos");
+  // Corregir el punto es lo único que vuelve a calcular la prioridad de su colonia
+  if (punto2) await congelarPrioridad(c, "plantaciones", id, fila.lat, fila.lng);
   const otras = detalle ? await caducarReporte(c, u, fila.jornada_id, "se editó un árbol") : [];
   return recibido(fila, otras.length ? { otras } : {});
 }
