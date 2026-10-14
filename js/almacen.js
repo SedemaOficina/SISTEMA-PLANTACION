@@ -432,7 +432,15 @@ SRP.almacen = {
     });
   },
 
-  todos(almacen) {
+  /* LO QUE SE LEE ES LO DEL TELÉFONO MÁS LO ENVIADO. Con datos reales, las jornadas y los árboles ya enviados
+     llegan del servidor y viven sólo en memoria (js/remoto.js): todos, uno y porIndice los entregan junto con
+     lo de esta base, y si un registro está en los dos lados manda el de aquí, que lleva lo que aún no se
+     envía. Las versiones «Locales» leen sólo esta base: lo que guarda y espera envío este teléfono. */
+  todos(almacen) { return this.todosLocales(almacen).then(f => SRP.remoto.mezclar(almacen, f)); },
+  uno(almacen, id) { return this.unoLocal(almacen, id).then(f => f || SRP.remoto.uno(almacen, id)); },
+  porIndice(almacen, indice, valor) { return this.porIndiceLocal(almacen, indice, valor).then(f => SRP.remoto.mezclar(almacen, f, r => r[indice] === valor)); },
+
+  todosLocales(almacen) {
     return new Promise((resolver, rechazar) => {
       const pet = this.db.transaction(almacen).objectStore(almacen).getAll();
       pet.onsuccess = () => resolver(pet.result);
@@ -440,7 +448,7 @@ SRP.almacen = {
     });
   },
 
-  uno(almacen, id) {
+  unoLocal(almacen, id) {
     return new Promise((resolver, rechazar) => {
       const pet = this.db.transaction(almacen).objectStore(almacen).get(id);
       pet.onsuccess = () => resolver(pet.result);
@@ -448,7 +456,7 @@ SRP.almacen = {
     });
   },
 
-  porIndice(almacen, indice, valor) {
+  porIndiceLocal(almacen, indice, valor) {
     return new Promise((resolver, rechazar) => {
       const pet = this.db.transaction(almacen).objectStore(almacen).index(indice).getAll(valor);
       pet.onsuccess = () => resolver(pet.result);
@@ -503,7 +511,7 @@ SRP.almacen = {
 
   // Lo que alguien capturó en este teléfono: árboles, jornadas o cualquier cambio con bitácora
   async contarCapturados() {
-    const [p, j, b] = await Promise.all(['plantaciones', 'jornadas', 'bitacora'].map(a => this.todos(a)));
+    const [p, j, b] = await Promise.all(['plantaciones', 'jornadas', 'bitacora'].map(a => this.todosLocales(a)));
     return p.length + j.length + b.length;
   },
 

@@ -48,7 +48,10 @@ los 17,479 árboles y las 1,305 jornadas igual que la aplicación.
 **La aplicación hablando con el servidor (paso 4, por partes):**
 - 4a, la conexión (bloque 220, D300): con datos reales se entra con las cuentas del servicio, bajan la cuenta
   y los catálogos, la sesión se confirma al abrir y una vencida pide la contraseña sin perder lo guardado.
-- Siguen 4b, bajar jornadas, árboles, parámetros y cuentas del alcance; 4c, subir lo capturado con su
+- 4b, bajar (bloque 221, D301): las cuentas que ve cada quien y los parámetros se quedan en el teléfono; lo
+  enviado llega del servidor y vive sólo en memoria, como pide S-11, con los avisos que Liber aprobó cuando
+  falta.
+- Siguen las fotografías de lo enviado, que se piden al servidor al verlas; 4c, subir lo capturado con su
   folio y sus fotografías; 4d, lo que el servidor no acepta; y 4e, la administración conectada. Las pantallas
   que eso cambia —Parámetros, que podrá editarlos, y la bandeja de posibles duplicados— ya las aprobó Liber
   (D299).
@@ -95,8 +98,9 @@ Ver `servidor/README.md`.
 
 ## 2. Qué guarda el teléfono (S-11)
 
-Decisión del 28-09-2026. No se implementa en la Etapa 1: hoy el teléfono es la única copia y el
-envío es simulado, así que borrar lo «enviado» sería perderlo.
+Decisión del 28-09-2026. Con datos de prueba no aplica: ahí el teléfono es la única copia y el envío es
+simulado, así que borrar lo «enviado» sería perderlo. Con datos reales se cumple desde el bloque 221 (D301):
+lo enviado llega del servidor y vive sólo en memoria.
 
 | Qué | Dónde vive |
 |---|---|

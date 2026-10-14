@@ -4743,3 +4743,79 @@ No se probó:
 
 **Siguiente paso.** 4b: bajar del servidor las jornadas, los árboles, los parámetros y las cuentas del
 alcance de cada quien.
+
+## Bloque 221 — Lo que baja del servidor, y lo enviado sólo en memoria (14-10-2026)
+
+**Versión 0.9.66.** Segunda parte del paso 4 (D301).
+
+Antes de programar se encontró que la idea de bajar las jornadas y los árboles al teléfono chocaba con S-11,
+que decidió que el teléfono no acumule historial. Liber eligió seguir S-11 y aprobó, con capturas de la
+propuesta, la franja «Sin señal» de Registros y Jornadas y el aviso de Mi avance.
+
+| Qué | Cómo queda con datos reales |
+|---|---|
+| Catálogos, cuenta, cuentas que se ven y parámetros | Bajan al entrar y al abrir con señal, y se quedan en el teléfono |
+| Lo enviado | Llega del servidor y vive sólo en memoria; al cerrar no queda nada |
+| Sin señal | Registros y Jornadas, sólo lo del teléfono con su franja; Mi avance, Supervisión y Fotografías, sólo su aviso |
+| Servidor con falla | Lo mismo, diciendo «No se pudo traer lo enviado» |
+| Al volver la señal | Se confirma la sesión y se trae lo que faltaba |
+| Parámetros | Los del servidor valen en el teléfono, también al abrir sin señal |
+
+**Qué cambió.**
+- Servidor:
+  - `cuentas.ts`: `GET /cuentas`, las cuentas que ve cada quien;
+  - `permisos.test.js`: qué cuentas ve cada perfil.
+- Aplicación:
+  - `js/remoto.js`, nuevo;
+  - `js/almacen.js`: lo enviado junto con lo del teléfono, y las lecturas «Locales»;
+  - `js/sesion.js`: lo que baja al entrar y al confirmar, y soltar lo enviado al salir;
+  - `js/app.js`: los parámetros guardados al abrir y la vuelta de la señal;
+  - `js/registros.js` y `js/jornadas.js`: el total;
+  - `js/conexion.js` y `js/envio.js`: cuentan sólo lo del teléfono;
+  - `index.html` y `css/estilos.css`: la franja y el aviso; la marca 0.9.66 y `VERSION`.
+- Pruebas: `prueba_conexion.py` y su apoyo, con lo nuevo.
+- Documentación:
+  - `README.md` y `servidor/README.md`: lo que baja, lo enviado y las cuentas;
+  - `docs/FASE2-Y-TRASPASO.md`: el avance y el estado de S-11;
+  - `docs/MEJORAS.md`: la versión al pie.
+
+**Pantalla: qué se agregó y qué se quitó.** Con datos de prueba, nada. Con datos reales, lo aprobado:
+- la franja ámbar «Sin señal» o «No se pudo traer lo enviado» arriba de Mis registros y de Jornadas;
+- su total dice «en este teléfono», o «Trayendo lo enviado del servidor…» mientras llega;
+- en Mi avance, Supervisión y Fotografías, el aviso centrado en lugar de su contenido.
+
+**Verificación.**
+- Servidor: 82 pruebas, 0 fallas.
+- Aplicación: `prueba.py`, fallas: 0 de 1440. `auditoria.py`, 144 comprobaciones sin hallazgos; la
+  norma de la hoja, sin hallazgos.
+- Conexión: `prueba_conexion.py`, 29 de 29. Además de lo del bloque 220:
+  - el cabo baja sólo su cuenta, la única con correo;
+  - lo que mandó llega del servidor y se ve en Mis registros y Jornadas, con 0 renglones guardados en el
+    teléfono;
+  - un parámetro cambiado en el servidor llega, y sin señal se queda;
+  - sin señal, la franja de Mis registros y el aviso de Mi avance;
+  - con falla del servidor, su franja;
+  - «Cerrar sesión» suelta lo enviado;
+  - la Administración baja 32 cuentas con correo y trae 17,481 árboles y 1,306 jornadas en 4.4 s, sin
+    guardarlos.
+- En la copia desechable de `sia-backend`: `typecheck` y `build` sin errores. La prueba de humo, con una
+  comprobación nueva (qué cuentas ve la Administración y cuáles el cabo): una corrida tuvo una falla que no
+  se alcanzó a ver, porque sólo se guardó el final; las tres siguientes, 21 de 21.
+- Tres tropiezos de la ruta nueva, que la prueba atrapó antes de subir:
+  - comparar un id con una lista de ids;
+  - un alias que chocaba con los de las reglas de permisos;
+  - un parámetro que no se usaba en un caso.
+- La primera corrida de `prueba.py` dio 5 fallas que dependen del tiempo:
+  - el color del atajo activo medido a media transición;
+  - cuatro del envío simulado, que le da 300 ms a «Enviar ahora».
+  La computadora estaba muy ocupada. Ninguna toca lo que cambió, porque con datos de prueba `js/remoto.js`
+  no corre, y la corrida repetida dio 0.
+- Al terminar, la base local sin datos de prueba.
+
+No se probó:
+- las fotografías de lo enviado, que todavía no se piden al servidor;
+- un teléfono real, ni Safari;
+- con cuántos datos se vuelve lenta la descarga en un teléfono con mala señal.
+
+**Siguiente paso.** Las fotografías de lo enviado, pedidas al servidor al verlas; luego 4c, subir lo
+capturado.

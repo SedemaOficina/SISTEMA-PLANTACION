@@ -40,6 +40,8 @@ SRP.app = {
     SRP.util.redDeSeguridad();     // ningún fallo se queda mudo
     this.el('version').textContent = SRP.util.textoVersion();
     this.el('banda-ficticio').hidden = !SRP.CONFIG.ES_FICTICIO;
+    // Con datos reales, los últimos parámetros que mandó el servidor, antes de que los use nadie
+    SRP.remoto.aplicarParametrosGuardados();
     try {
       await SRP.almacen.abrir();
       let arranque = null;
@@ -71,6 +73,8 @@ SRP.app = {
     SRP.especiesRevision.iniciar();
     this.cuidarCampoEnVentana();
     SRP.conexion.iniciar();
+    // Con datos reales, al volver la señal se confirma la sesión y se trae lo enviado que faltaba
+    window.addEventListener('online', () => { if (SRP.sesion.usuario && !SRP.remoto.listo()) SRP.sesion.confirmar(); });
     SRP.jornadas.iniciar();
     SRP.galeria.iniciar();
     SRP.supervision.iniciar();   // Supervisión y Mi avance
@@ -383,6 +387,7 @@ SRP.app = {
     // Datos de prueba: al entrar se envía lo pendiente y, si no sale, lo dice la franja
     SRP.conexion.sugerirInstalar();   // en iPhone desde Safari, una vez por sesión y antes de capturar
     SRP.envio.alEntrar();   // la pastilla cuenta los registros del alcance de quien entró
+    SRP.remoto.pintar();    // con datos reales, los avisos de lo enviado que todavía no llega
   },
 
   /* MENOS AUTOLLENADO DE SAFARI. Con un campo de contraseña en la página, Safari trata

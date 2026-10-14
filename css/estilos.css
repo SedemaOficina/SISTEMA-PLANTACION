@@ -524,6 +524,11 @@ fieldset.campo { margin-inline: 0; }
 .franja-jornada { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); flex-wrap: wrap; max-width: var(--ancho-max-tabla); margin: 0 0 var(--e-4);
   padding: var(--e-3) var(--e-4); border-radius: var(--radio-filtro); background: var(--acento-suave); border: 1px solid var(--acento-borde-suave); border-left: 4px solid var(--acento); }
 .franja-jornada[data-tono="alerta"] { background: var(--editar-fondo); border-left-color: var(--editar-borde); }
+/* Con datos reales, cuando lo enviado no llegó del servidor: Registros y Jornadas enseñan sólo lo del teléfono */
+.franja-remoto { max-width: var(--ancho-max-tabla); margin: 0 0 var(--e-4); padding: var(--e-3) var(--e-4); border-radius: var(--radio-filtro);
+  background: var(--editar-fondo); border: 1px solid var(--borde-suave); border-left: 4px solid var(--editar-borde); }
+.franja-remoto-rotulo { margin: 0 0 var(--e-1); font-family: var(--fuente-titulo); font-size: var(--t-xs); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--editar); }
+.franja-remoto-texto { margin: 0; }
 .franja-jornada-rotulo { flex: 1 1 100%; margin: 0 0 calc(var(--e-1) * -1); font-family: var(--fuente-titulo); font-size: var(--t-xs); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--acento); }
 .franja-jornada .franja-jornada-titulo strong { font-size: var(--t-l); font-family: var(--fuente-titulo); }
 /* Dentro del panel, el último guardado: tarjeta blanca con su verde */
@@ -552,6 +557,8 @@ fieldset.campo { margin-inline: 0; }
 .vacio-titulo { font-family: var(--fuente-titulo); font-weight: 600; font-size: var(--t-m); margin-bottom: var(--e-1); }
 .vacio-texto { color: var(--gris); font-size: var(--t-s); }
 .vacio-acciones { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--e-2); margin-top: var(--e-3); }
+/* Supervisión y Fotografías se arman con lo enviado: mientras no llega del servidor, sólo el título y el aviso */
+.vista-sin-remoto > :not(h1):not(.volver):not(.vacio-remoto) { display: none; }
 /* Precisión del GPS bajo el mapa: punto de color más la palabra; nunca sólo el color */
 .precision { display: inline-flex; align-items: center; gap: var(--e-2); font-weight: 600; padding: 2px var(--e-2); border-radius: var(--radio-pildora); }
 .precision-punto { width: 10px; height: 10px; border-radius: 50%; background: currentColor; }

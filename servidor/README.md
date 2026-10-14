@@ -140,6 +140,7 @@ variables de entorno, está explicada en `src/modulos/srp/config.ts`. Las respue
 | `PUT /fotos/:id` | La fotografía de un árbol, tal cual; `id` es su `foto_id` | Quien puede editar el árbol |
 | `GET /fotos/:id` | La fotografía | Quien ve el árbol y descarga fotografías |
 | `GET /fotos/uso` | Cuántas fotografías hay, cuánto ocupan y cuánto ocuparían en un año | Administración global |
+| `GET /cuentas` | Las cuentas que ve cada quien, para decir quién registró qué; sólo la Administración global ve el correo | Con sesión |
 | `GET /parametros` | Los parámetros, con su valor vigente, el de arranque y su rango | Con sesión |
 | `PUT /parametros/:clave` | Cambia un parámetro para todos los teléfonos | Administración global |
 | `GET /duplicados` | La bandeja de posibles duplicados entre instituciones, por páginas | Administración global |
@@ -345,6 +346,15 @@ compara una por una con las de la aplicación, así que si cambia una regla, cam
 | Directivo | De la Secretaría, todo; de otra institución, sólo lo de la suya. Sólo ve |
 | Administración global | Todo; administra cuentas, catálogos y parámetros, y revisa la bandeja de posibles duplicados. No captura |
 
+**Qué cuentas ve cada quien** (`GET /cuentas`):
+- La Administración global, todas, con su correo, para administrarlas.
+- Los demás, sin correo ni fechas:
+  - el directivo de la Secretaría, todas; el de otra institución, las de la suya;
+  - la coordinación, la suya, las de su cuadrilla y las de sus coordinadores;
+  - el cabo, la suya y las de sus coordinadores;
+  - y, en todos los casos, quien aparezca en las jornadas y los árboles que ve: titulares, relevos,
+    encargados y quien los editó.
+
 Las consultas aplican el alcance en la base, sin traer todo a memoria. Van por páginas, en orden de
 identificador: `?despues=<id del último>&limite=<n>` (500 por omisión, hasta 2000), y la respuesta dice
 desde dónde sigue (`siguiente`), o `null` al terminar. Las filas llevan los campos del teléfono, con las
@@ -430,7 +440,8 @@ esa base y nunca sobre una instalación anterior.
   y la bandeja: quién la ve, la revisión, y los árboles eliminados, restaurados o corregidos.
 - `pruebas/permisos.test.js`: carga `js/permisos.js` tal cual y lo compara con el servidor: cada perfil,
   cada acción y cientos de registros armados para los casos de borde; la consulta en la base, con todas
-  las cuentas, jornadas y árboles que haya; y las rutas, por páginas, como las usará la aplicación.
+  las cuentas, jornadas y árboles que haya; las rutas, por páginas, como las usará la aplicación; y qué
+  cuentas ve cada perfil, con correo sólo para la Administración.
 - `pruebas/datos.test.js`: carga todo y comprueba que cupo, que las capas estén completas y, sobre todo,
   que PostGIS, leyendo `territorio`, ubique cada árbol y cada jornada igual que la aplicación (alcaldía,
   colonia y celda UGA).

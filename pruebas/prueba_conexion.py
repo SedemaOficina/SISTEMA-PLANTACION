@@ -6,10 +6,12 @@ cuentas en la base local y al terminar las quita. La aplicación se abre con ES_
 esta prueba: el archivo no cambia.
 
 Comprueba: que con datos reales no hay nada de prueba en la pantalla; entrar con correo y contraseña, y los
-mensajes del servicio al no poder; que al entrar bajan la cuenta y los catálogos; que al volver a abrir se
-entra sin esperar y la sesión se confirma; que sin señal se entra igual; que un cambio de la cuenta en el
-servidor llega; que una sesión vencida pide la contraseña sin perder lo guardado; la contraseña temporal; y
-que «Cerrar sesión» cierra también la del servicio.
+mensajes del servicio al no poder; que al entrar bajan la cuenta, los catálogos, las cuentas que se ven y los
+parámetros; que lo enviado llega del servidor y se ve sin guardarse en el teléfono; los avisos cuando no
+llega, sin señal o porque el servidor falló; que al volver a abrir se entra sin esperar y la sesión se
+confirma; que sin señal se entra igual, con los últimos parámetros; que un cambio de la cuenta en el servidor
+llega; que una sesión vencida pide la contraseña sin perder lo guardado; la contraseña temporal; que «Cerrar
+sesión» cierra también la del servicio y suelta lo enviado; y cuánto tarda la Administración en traer todo.
 
 Uso, desde la carpeta del proyecto (con la base local cargada):  python pruebas/prueba_conexion.py
 """
@@ -33,7 +35,8 @@ cuenta = lambda nombre, perfil, **x: dict(id=str(uuid.uuid4()), correo='%s.conex
                                           nombre='Prueba %s Conexión' % nombre.capitalize(), perfil=perfil, organizacion_id='o-sedema', clave=CLAVE, **x)
 CABO = cuenta('cabo', 'CABO')
 TEMPORAL = cuenta('temporal', 'CABO', temporal=True)
-CUENTAS = [CABO, TEMPORAL]
+ADMIN = cuenta('admin', 'ADMIN')
+CUENTAS = [CABO, TEMPORAL, ADMIN]
 
 resultados = []
 
@@ -83,6 +86,30 @@ def entrar(pg, correo, clave):
 
 def dentro(pg):
     return pg.evaluate("() => !document.getElementById('navegacion').hidden && !!SRP.sesion.usuario")
+
+
+def esperar_remoto(pg, estados=('listo',), espera=90000):
+    pg.wait_for_function("e => e.includes(SRP.remoto.estado)", arg=list(estados), timeout=espera)
+
+
+# Una jornada y dos árboles de hoy, mandados al servidor como los mandará el teléfono
+CREAR = """async () => {
+  const hoy = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date());
+  const programa = SRP.ref.deTipo('programa', true).find(p => p.id !== SRP.CONFIG.PROGRAMA_SOLICITUD).id;
+  const especie = SRP.ref.deTipo('especie', true)[0].id;
+  const j = crypto.randomUUID();
+  const arbol = (lat) => ({ tipo: 'registro.crear', datos: { id: crypto.randomUUID(), jornada_id: j, lat, lng: -99.1332, punto_origen: 'mapa', especie_id: especie, fecha_plantacion: hoy, comentarios: '' } });
+  const r = await SRP.servidor.pedir('POST', '/envios', { operaciones: [
+    { tipo: 'jornada.crear', datos: { id: j, nombre: 'Jornada de la prueba de conexión', programa_id: programa, lat: 19.4326, lng: -99.1332, punto_origen: 'manual', fecha: hoy, arboles_previstos: 2 } },
+    arbol(19.43262), arbol(19.43266)] });
+  return r.ok ? r.datos.resultados.map(x => x.estado) : r;
+}"""
+
+# Lo que enseña una sección: su franja, su total y el aviso de Supervisión
+VISTA = """async v => { SRP.app.mostrarVista(v); await new Promise(r => setTimeout(r, 700));
+  const f = document.getElementById(v + '-remoto'), total = document.getElementById(v + '-total'), sup = document.getElementById('supervision-remoto');
+  return { franja: f && f.classList.contains('franja-remoto') && !f.hidden ? f.textContent : null, total: total ? total.textContent : null,
+    aviso: !sup.hidden ? sup.textContent : null }; }"""
 
 
 def main():
@@ -138,6 +165,48 @@ def main():
             ok(len(galleta) == 1 and galleta[0]['httpOnly'] and galleta[0]['path'] == '/api/srp' and galleta[0]['sameSite'] == 'Strict',
                'la sesión es una cookie sólo HTTP, del mismo sitio y sólo para la API: la aplicación no la puede leer')
             ok(pg.evaluate("() => document.cookie.includes('sia_srp_sesion')") is False, 'y en efecto, document.cookie no la trae')
+            esperar_remoto(pg)
+            c = pg.evaluate("async () => (await SRP.almacen.todosLocales('usuarios')).map(u => [u.id, 'correo' in u])")
+            ok(c == [[CABO['id'], True]], 'el cabo baja sólo las cuentas que ve —aquí, la suya— y sólo la suya trae correo: %s' % c)
+
+            # Lo enviado llega del servidor y se ve, sin guardarse en el teléfono
+            ok(pg.evaluate(CREAR) == ['recibido'] * 3, 'el cabo manda al servidor una jornada y dos árboles')
+            abrir(pg)
+            esperar_remoto(pg)
+            v = pg.evaluate(VISTA, 'registros')
+            n = pg.evaluate("async () => [(await SRP.almacen.todosLocales('plantaciones')).length, (await SRP.almacen.todosLocales('jornadas')).length, (await SRP.almacen.todos('plantaciones')).length]")
+            ok(v['total'] == 'Total: 2 registros' and v['franja'] is None and n == [0, 0, 2],
+               'al abrir, lo enviado llega del servidor y se ve en Mis registros, sin guardarse en el teléfono: %s, %s' % (v, n))
+            v = pg.evaluate(VISTA, 'jornadas')
+            ok(v['total'] == '1 jornada · 2 árboles', 'y en Jornadas: %s' % v['total'])
+
+            # Los parámetros del servidor valen en el teléfono, y se quedan para abrir sin señal
+            apoyo('parametro', {'clave': 'JORNADA.DUPLICADO_M', 'valor': 7, 'id': CABO['id']})
+            abrir(pg)
+            esperar_remoto(pg)
+            ok(pg.evaluate("() => SRP.CONFIG.JORNADA.DUPLICADO_M") == 7, 'un parámetro cambiado en el servidor llega al teléfono')
+
+            # Sin señal: sólo lo del teléfono, con su aviso, y los últimos parámetros
+            ctx.route('**/api/srp/**', lambda r: r.abort())
+            abrir(pg)
+            esperar_remoto(pg, ('sin-senal',))
+            v = pg.evaluate(VISTA, 'registros')
+            ok(v['franja'] and 'Sin señal' in v['franja'] and 'Sólo puede ver y corregir lo que aún no se envía' in v['franja'] and v['total'] == '',
+               'sin señal, Mis registros dice por qué no se ve lo enviado y enseña sólo lo del teléfono: %s' % v)
+            v = pg.evaluate(VISTA, 'supervision')
+            oculto = pg.evaluate("() => getComputedStyle(document.getElementById('sup-nota')).display")
+            ok(v['aviso'] and 'Sin señal' in v['aviso'] and 'Mi avance se arma con lo que ya envió' in v['aviso'] and oculto == 'none',
+               'y Mi avance enseña sólo su aviso, en lugar de las cifras: %s' % v['aviso'])
+            ok(pg.evaluate("() => SRP.CONFIG.JORNADA.DUPLICADO_M") == 7, 'sin señal se abre con los últimos parámetros del servidor')
+            ctx.unroute('**/api/srp/**')
+
+            # El servidor falla al dar lo enviado: se dice distinto
+            ctx.route('**/api/srp/jornadas*', lambda r: r.fulfill(status=500, content_type='application/json', body='{"codigo":"ERROR","mensaje":"Falla de prueba."}'))
+            abrir(pg)
+            esperar_remoto(pg, ('error',))
+            v = pg.evaluate(VISTA, 'registros')
+            ok(v['franja'] and 'No se pudo traer lo enviado' in v['franja'], 'si el servidor falla, la franja lo dice: %s' % v['franja'])
+            ctx.unroute('**/api/srp/jornadas*')
 
             # Volver a abrir: se entra sin esperar y se confirma la sesión
             pedidos.clear()
@@ -176,8 +245,19 @@ def main():
             pg.wait_for_timeout(1500)
             despues = apoyo('sesiones', {'id': CABO['id']})
             ok(not dentro(pg) and antes['abiertas'] == 1 and despues['abiertas'] == 0, '«Cerrar sesión» cierra también la sesión en el servidor: %s → %s' % (antes, despues))
+            ok(pg.evaluate("() => [SRP.remoto.plantaciones.size, SRP.remoto.jornadas.size, SRP.remoto.estado]") == [0, 0, 'sin-cargar'], 'y suelta lo enviado que tenía en memoria')
             abrir(pg)
             ok(not dentro(pg), 'y al volver a abrir se pide entrar')
+
+            # La Administración: todas las cuentas, con correo, y todo lo enviado; cuánto tarda en llegar
+            entrar(pg, ADMIN['correo'], CLAVE)
+            t0 = time.time()
+            esperar_remoto(pg)
+            segundos = time.time() - t0
+            a = pg.evaluate("""async () => ({ cuentas: (await SRP.almacen.todosLocales('usuarios')).filter(u => typeof u.correo === 'string').length,
+                arboles: SRP.remoto.plantaciones.size, jornadas: SRP.remoto.jornadas.size, locales: (await SRP.almacen.todosLocales('plantaciones')).length })""")
+            ok(a['cuentas'] > 20 and a['arboles'] > 17000 and a['jornadas'] > 1000 and a['locales'] == 0,
+               'la Administración baja todas las cuentas con su correo y trae todo lo enviado en %.1f s, sin guardarlo: %s' % (segundos, a))
 
             ok(not errores, 'sin errores en la página: %s' % errores)
             ctx.close()

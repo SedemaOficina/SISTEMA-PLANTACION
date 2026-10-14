@@ -5,7 +5,9 @@
      node pruebas/apoyo_servidor.mjs renombrar  { id, nombre }
      node pruebas/apoyo_servidor.mjs vencer     { id }          las sesiones abiertas de la cuenta vencen
      node pruebas/apoyo_servidor.mjs sesiones   { id }          cuántas tiene abiertas y cuántas cerradas
-     node pruebas/apoyo_servidor.mjs quitar     { ids }         las cuentas, sus sesiones y sus registros
+     node pruebas/apoyo_servidor.mjs parametro  { clave, valor, id }   un parámetro cambiado por esa cuenta
+     node pruebas/apoyo_servidor.mjs quitar     { ids }         las cuentas, sus sesiones, sus jornadas y árboles,
+                                                                sus parámetros y sus registros
 
    «preparar» presta a la cuenta local el rol srp_api, con el que corre el servicio; «quitar» lo devuelve. */
 import { conectar } from '../servidor/bd.js';
@@ -34,8 +36,18 @@ try {
     await c.query("UPDATE srp.sesiones SET expira_en = now() - interval '1 minute' WHERE usuario_id = $1 AND cerrada_en IS NULL", [d.id]);
   } else if (orden === 'sesiones') {
     salida = (await c.query('SELECT count(*) FILTER (WHERE cerrada_en IS NULL)::int AS abiertas, count(*) FILTER (WHERE cerrada_en IS NOT NULL)::int AS cerradas FROM srp.sesiones WHERE usuario_id = $1', [d.id])).rows[0];
+  } else if (orden === 'parametro') {
+    await c.query(`INSERT INTO srp.parametros (clave, valor, editado_por_id, fecha_ultima_edicion) VALUES ($1, $2, $3, now())
+      ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor, editado_por_id = EXCLUDED.editado_por_id`, [d.clave, d.valor, d.id]);
   } else if (orden === 'quitar') {
     await c.query('BEGIN');
+    const arboles = (await c.query('SELECT id FROM srp.plantaciones WHERE cabo_id = ANY($1::uuid[])', [d.ids])).rows.map((r) => r.id);
+    await c.query('ALTER TABLE srp.folios DISABLE TRIGGER folios_inmutables');
+    await c.query('DELETE FROM srp.folios WHERE plantacion_id = ANY($1::uuid[])', [arboles]);
+    await c.query('ALTER TABLE srp.folios ENABLE TRIGGER folios_inmutables');
+    await c.query('DELETE FROM srp.plantaciones WHERE id = ANY($1::uuid[])', [arboles]);
+    await c.query('DELETE FROM srp.jornadas WHERE cabo_id = ANY($1::uuid[])', [d.ids]);
+    await c.query('DELETE FROM srp.parametros WHERE editado_por_id = ANY($1::uuid[])', [d.ids]);
     await c.query('DELETE FROM srp.sesiones WHERE usuario_id = ANY($1::uuid[])', [d.ids]);
     await c.query('DELETE FROM srp.credenciales WHERE usuario_id = ANY($1::uuid[])', [d.ids]);
     for (const t of ['bitacora', 'bitacora_acceso']) await c.query(`ALTER TABLE srp.${t} DISABLE TRIGGER bitacora_inmutable`);

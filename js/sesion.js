@@ -4,7 +4,8 @@
 
      simulado   con datos de prueba: basta un correo dado de alta; la contraseña no se verifica
      servidor   con datos reales: el servicio verifica correo y contraseña y abre la sesión con una cookie
-                que la aplicación no ve. Al entrar se bajan la cuenta y los catálogos, lo mínimo para abrir.
+                que la aplicación no ve. Al entrar bajan los catálogos y la cuenta, lo mínimo para abrir, y
+                las cuentas que se ven y los parámetros; lo enviado se trae aparte (js/remoto.js).
                 Al abrir con una sesión anotada se entra sin esperar y, si hay señal, se confirma con el
                 servicio: si ya no la reconoce, se vuelve a pedir la contraseña sin perder lo capturado. */
 window.SRP = window.SRP || {};
@@ -29,9 +30,10 @@ SRP.sesion = {
     try { localStorage.setItem(SRP.CONFIG.CLAVE_SESION, usuario.id); } catch (e) { /* sin persistencia */ }
   },
 
-  // Sale de la sesión en este dispositivo; lo capturado se queda en el almacén
+  // Sale de la sesión en este dispositivo; lo capturado se queda en el almacén y lo enviado se suelta
   olvidar() {
     this.usuario = null;
+    SRP.remoto.vaciar();
     try { localStorage.removeItem(SRP.CONFIG.CLAVE_SESION); } catch (e) { /* nada que borrar */ }
   },
 
@@ -72,13 +74,15 @@ SRP.sesion = {
     if (!r.ok) return { ok: false, motivo: r.sinRed ? 'Para entrar hace falta conexión con el servidor. Intente de nuevo cuando tenga señal.' : r.mensaje };
     if (r.datos.debeCambiar) return this.temporal();
     // Lo mínimo para abrir: los catálogos y la propia cuenta. Si no bajan y no hay unos de antes, no se entra
-    const catalogos = await this.bajarCatalogos();
+    const catalogos = await SRP.remoto.bajarCatalogos();
     if (!catalogos.ok && !(await SRP.almacen.todos('instituciones')).length) {
       SRP.servidor.pedir('POST', '/acceso/salir');
       return { ok: false, motivo: catalogos.mensaje };
     }
-    const u = await this.guardarCuenta(r.datos.usuario);
+    const u = await this.ponerAlDia(r.datos.usuario);
     this.iniciar(u);
+    // Lo enviado llega mientras tanto, sin detener la entrada
+    SRP.remoto.cargar();
     return { ok: true, usuario: u };
   },
 
@@ -88,37 +92,37 @@ SRP.sesion = {
     return { ok: false, motivo: 'Su contraseña es temporal y hay que cambiarla antes de seguir, pero esta versión todavía no permite cambiarla. Avise a la Administración global.' };
   },
 
-  // Los seis catálogos, completos: lo que manda el servicio reemplaza lo que había
-  async bajarCatalogos() {
-    const r = await SRP.servidor.pedir('GET', '/catalogos');
-    if (!r.ok) return { ok: false, mensaje: r.sinRed ? 'No se pudieron bajar los catálogos: falta conexión con el servidor. Intente de nuevo.' : r.mensaje };
-    await SRP.almacen.reemplazar(Object.fromEntries(SRP.almacen.TABLAS_CATALOGO.map(t => [t, r.datos[t] || []])));
-    await SRP.ref.recargar();
-    return { ok: true };
-  },
-
-  // La cuenta como la tiene el servicio, sobre la que había en el almacén
-  async guardarCuenta(cuenta) {
-    const u = Object.assign({}, await SRP.almacen.uno('usuarios', cuenta.id), cuenta);
+  /* Las cuentas que se ven y los parámetros, y la propia cuenta como la tiene el servicio, que siempre queda
+     aunque la lista no baje */
+  async ponerAlDia(cuenta) {
+    await SRP.remoto.bajarCuentas();
+    await SRP.remoto.bajarParametros();
+    const u = Object.assign({}, await SRP.almacen.unoLocal('usuarios', cuenta.id), cuenta);
     await SRP.almacen.guardarConBitacora('usuarios', u);
     await SRP.ref.recargar();
     return u;
   },
 
   /* Al abrir con una sesión anotada: si hay señal, el servicio dice si la sigue reconociendo y cómo está la
-     cuenta, y se ponen al día los catálogos. Sin señal no pasa nada: se sigue con lo del almacén. */
+     cuenta, se pone al día lo que se queda en el teléfono y se trae lo enviado. Sin señal se sigue con lo del
+     almacén, y lo enviado se avisa que falta. */
   async confirmar() {
     if (!this.delServidor() || !this.usuario) return;
     const r = await SRP.servidor.pedir('GET', '/acceso/yo');
-    if (!r.ok) return;   // sin señal; si la sesión ya no vale, SRP.servidor ya avisó
+    if (!r.ok) {
+      // Si la sesión ya no vale, SRP.servidor ya avisó
+      if (this.usuario) SRP.remoto.cambiar(r.sinRed ? 'sin-senal' : 'error');
+      return;
+    }
     if (r.datos.debeCambiar) { this.perdida((await this.temporal()).motivo); return; }
     const antes = this.usuario;
-    await this.bajarCatalogos();
-    const u = await this.guardarCuenta(r.datos.usuario);
+    await SRP.remoto.bajarCatalogos();
+    const u = await this.ponerAlDia(r.datos.usuario);
     this.usuario = u;
-    // Si la Administración le cambió el perfil, la institución o el nombre, se vuelve a entrar con lo nuevo
+    // Si la Administración le cambió el perfil, la institución, el nombre o la coordinación, se vuelve a entrar con lo nuevo
     if (['perfil', 'organizacion_id', 'nombre_completo', 'activo'].some(k => antes[k] !== u[k]) ||
         String(antes.coordinadores_ids) !== String(u.coordinadores_ids)) SRP.app.entrar();
+    SRP.remoto.cargar();
   },
 
   // El servicio ya no reconoce la sesión: se vuelve a pedir la contraseña; lo capturado se queda

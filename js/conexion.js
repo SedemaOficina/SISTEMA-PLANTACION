@@ -179,7 +179,8 @@ SRP.conexion = {
   async registrosPropios() {
     if (!SRP.sesion.usuario || !SRP.almacen.db) return null;
     const u = SRP.sesion.usuario;
-    const todos = await SRP.almacen.porIndice('plantaciones', 'estatus', 'activo');
+    // Los que guarda este teléfono, no lo enviado que se ve en memoria
+    const todos = await SRP.almacen.porIndiceLocal('plantaciones', 'estatus', 'activo');
     return todos.filter(r => SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId));
   }
 };

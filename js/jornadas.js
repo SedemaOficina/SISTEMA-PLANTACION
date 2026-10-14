@@ -649,7 +649,7 @@ SRP.jornadas = {
     }
     this.el('lista-jornadas').innerHTML = html.join('');
     const n = this.lista.length;
-    this.el('jornadas-total').textContent = n ? n.toLocaleString('es-MX') + (n === 1 ? ' jornada' : ' jornadas') + ' · ' + arbolesTotal.toLocaleString('es-MX') + (arbolesTotal === 1 ? ' árbol' : ' árboles') : '';
+    this.el('jornadas-total').textContent = SRP.remoto.total(n ? n.toLocaleString('es-MX') + (n === 1 ? ' jornada' : ' jornadas') + ' · ' + arbolesTotal.toLocaleString('es-MX') + (arbolesTotal === 1 ? ' árbol' : ' árboles') : '');
     SRP.util.pintarPaginador(this.el('jornadas-paginas'), info, 'jornada', 'jornadas', async (p) => {
       this.pagina = p; await this.pintarLista(); SRP.util.subirA(this.el('jornadas-total'));
     });

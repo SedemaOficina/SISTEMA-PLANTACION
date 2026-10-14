@@ -64,7 +64,7 @@ SRP.envio = {
   async cola() {
     if (!SRP.almacen.db) return [];
     const e = this.leer();
-    return (await SRP.almacen.porIndice('plantaciones', 'estatus', 'activo'))
+    return (await SRP.almacen.porIndiceLocal('plantaciones', 'estatus', 'activo'))
       .filter(r => this.simulado() && this.estado(r, e) !== 'recibido')
       .sort((a, b) => String(a.fecha_registro).localeCompare(String(b.fecha_registro)));
   },

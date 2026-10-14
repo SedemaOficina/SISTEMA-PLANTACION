@@ -3616,3 +3616,35 @@
     · `pruebas/prueba_conexion.py` prueba todo lo anterior en un navegador, con `ES_FICTICIO: false` sólo
       dentro de la prueba.
   · Con datos de prueba nada cambia: nada sale del teléfono.
+
+- **D301. Lo que baja del servidor, y lo enviado sólo en memoria (bloque 221, versión 0.9.66).**
+  14-10-2026. Segunda parte del paso 4. Liber eligió seguir S-11 en lugar de guardar una copia de lo enviado,
+  y aprobó los avisos con capturas.
+  · **Lo que se queda en el teléfono**, para trabajar sin señal:
+    · los catálogos y la cuenta;
+    · las cuentas que ve cada quien (`GET /cuentas`, nuevo), con correo sólo para la Administración global;
+    · los parámetros (`localStorage`), que se aplican al abrir, antes de que los use nadie;
+    · y lo que aún no se envía.
+  · **Lo enviado vive sólo en memoria.** Las jornadas y los árboles del alcance de cada quien llegan del
+    servidor al entrar o al abrir con señal, por páginas de 2,000. Con la demostración, la Administración
+    trae 17,481 árboles y 1,306 jornadas en unos 4 s, en esta computadora.
+    · Al cerrar la aplicación o la sesión no queda nada.
+    · `SRP.almacen` entrega lo enviado junto con lo del teléfono. Si un registro está en los dos lados, manda
+      el del teléfono, que lleva lo que aún no se envía.
+    · Las versiones «Locales» leen sólo lo del teléfono: la pastilla y la cola cuentan con ellas.
+    · Editar algo enviado lo guarda en el teléfono hasta que se envíe (4c).
+  · **Cuando falta lo enviado** (sin señal, o el servidor no lo dio), con lo que Liber aprobó:
+    · Registros y Jornadas enseñan sólo lo del teléfono, con una franja ámbar, y el total dice «en este
+      teléfono». Mientras llega, el total dice «Trayendo lo enviado del servidor…».
+    · Supervisión (Mi avance, para el cabo) y Fotografías enseñan sólo un aviso, en lugar de cifras
+      incompletas.
+    · Si hay señal y el servidor falla, se dice «No se pudo traer lo enviado».
+    · Al volver la señal se confirma la sesión y se trae lo que faltaba.
+  · **Qué cuentas ve cada quien:**
+    · el directivo de la Secretaría, todas; el de otra institución, las de la suya;
+    · la coordinación, la suya, las de su cuadrilla y las de sus coordinadores;
+    · el cabo, la suya y las de sus coordinadores;
+    · y todos, a quien aparezca en lo que ven: titulares, relevos, encargados y quien editó.
+  · **Pendiente:** las fotografías de lo enviado no vienen en la lista. Se pedirán al servidor al verlas;
+    mientras, Fotografías y las miniaturas sólo enseñan las del teléfono.
+  · Con datos de prueba nada cambia.

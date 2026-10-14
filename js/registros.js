@@ -349,8 +349,9 @@ SRP.registros = {
     }).join('');
     const n = this.filtrados.length;
     const propios = SRP.permisos.de(u).alcance === 'propios';
-    this.el('registros-total').textContent = n === 0 ? ''
-      : 'Total: ' + n.toLocaleString('es-MX') + (n === 1 ? ' registro' : ' registros');
+    // Con datos reales y sin lo enviado a la mano, el total dice que es sólo lo del teléfono
+    this.el('registros-total').textContent = SRP.remoto.total(n === 0 ? ''
+      : 'Total: ' + n.toLocaleString('es-MX') + (n === 1 ? ' registro' : ' registros'));
     this.pintarVacio(n === 0, propios, u);
     SRP.util.pintarPaginador(this.el('registros-paginas'), info, 'registro', 'registros', (p) => {
       this.pagina = p; this.pintar(); SRP.util.subirA(this.el('registros-total'));

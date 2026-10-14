@@ -6,13 +6,14 @@ import { anotarCambio } from "./bitacora";
 import type { ConfigSrp } from "./config";
 import { derivar, temporal } from "./contrasenas";
 import { responder } from "./errores";
-import { exigirPermiso, PERFILES, SEDEMA } from "./permisos";
+import { alcanceSql, capacidadesDe, exigirPermiso, Parametros, PERFILES, SEDEMA, veArbolSql } from "./permisos";
 import { cerrarDeCuenta, type Usuario } from "./sesiones";
 import { enTransaccion } from "./transaccion";
 
-/* CUENTAS: alta, restablecimiento de contraseña y activación. Sólo las administra quien tiene la regla
-   `usuario.administrar` (permisos.ts): la Administración global.
+/* CUENTAS: la lista que ve cada quien, y el alta, el restablecimiento de contraseña y la activación, que sólo
+   hace quien tiene la regla `usuario.administrar` (permisos.ts): la Administración global.
 
+   GET  /cuentas                     las cuentas que ve cada quien (abajo); con sesión
    POST /cuentas                     alta con contraseña temporal; responde la cuenta y la temporal
    POST /cuentas/:id/restablecer     otra temporal; cierra las sesiones de la cuenta
    POST /cuentas/:id/estado          { activo } → desactivar cierra las sesiones de la cuenta
@@ -77,8 +78,49 @@ async function validarAlta(c: pg.PoolClient, d: Alta): Promise<[string, string][
   return e;
 }
 
+/* QUÉ CUENTAS VE CADA QUIEN, para decir quién registró, editó o tiene a su cargo lo que ve. La Administración
+   global, todas, con su correo, para administrarlas. Los demás, sin correo: el directivo de la Secretaría,
+   todas; el de otra institución, las de la suya; la coordinación, la suya, las de su cuadrilla y las de sus
+   coordinadores; el cabo, la suya y las de sus coordinadores. Y todos, además, a quien aparezca en las
+   jornadas y los árboles que ven: titulares, relevos, encargados y quien los editó. */
+const SIN_CORREO = ["id", "nombre_completo", "organizacion_id", "area_id", "cargo_rol", "perfil", "coordinadores_ids", "activo"];
+
+function cuentasVisiblesSql(u: Usuario, p: Parametros): string {
+  const alcance = capacidadesDe(u).alcance;
+  if (alcance === "todos") return "true";
+  if (alcance === "ninguno") return `x.id = ${p.agregar(u.id)}::uuid`;
+  // Cada valor entra como parámetro sólo si se usa: uno sin usar no tiene tipo y la consulta no corre
+  let propias: string;
+  if (alcance === "institucion") propias = `x.organizacion_id = ${p.agregar(u.organizacion_id)}`;
+  else {
+    const yo = p.agregar(u.id) + "::uuid";
+    propias = `(x.id = ${yo} OR EXISTS (SELECT 1 FROM srp.usuarios y WHERE y.id = ${yo} AND x.id = ANY(y.coordinadores_ids))` +
+      (alcance === "equipo" ? ` OR x.coordinadores_ids @> ARRAY[${yo}])` : ")");
+  }
+  // Alias propios: las condiciones de permisos.ts usan «a» y «j» por dentro
+  const enJornadas = `EXISTS (SELECT 1 FROM srp.jornadas jor WHERE ${alcanceSql(u, "jornadas", "jor", p)} AND (jor.cabo_id = x.id OR jor.relevo_id = x.id
+    OR jor.encargado_id = x.id OR jor.editado_por_id = x.id OR jor.relevos @> jsonb_build_array(jsonb_build_object('cabo_id', x.id::text))))`;
+  const enArboles = `EXISTS (SELECT 1 FROM srp.plantaciones arb WHERE ${veArbolSql(u, "arb", p)} AND (arb.cabo_id = x.id OR arb.editado_por_id = x.id))`;
+  return `(${propias} OR ${enJornadas} OR ${enArboles})`;
+}
+
 export function rutasCuentas(pool: pg.Pool, config: ConfigSrp, sesion: RequestHandler): Router {
   const r = Router();
+
+  // Antes de la regla de administración, que vale para lo demás de /cuentas
+  r.get("/cuentas", sesion, async (req: Request, res: Response) => {
+    const u = sesionDe(res).usuario, p = new Parametros();
+    const administra = capacidadesDe(u).usuarios;
+    const fila = administra ? "to_jsonb(x)" : "jsonb_build_object(" + SIN_CORREO.map((k) => `'${k}', x.${k}`).join(", ") + ")";
+    const condicion = administra ? "true" : cuentasVisiblesSql(u, p);
+    const filas = await enTransaccion(pool, async (c) => {
+      // Las fechas salen en UTC, sea cual sea la zona de la base
+      await c.query("SET LOCAL TIME ZONE 'UTC'");
+      return (await c.query<{ fila: Record<string, unknown> }>(`SELECT ${fila} AS fila FROM srp.usuarios x WHERE ${condicion} ORDER BY x.nombre_completo, x.id`, p.valores)).rows.map((x) => x.fila);
+    });
+    res.json({ filas });
+  });
+
   r.use("/cuentas", sesion, exigirPermiso("usuario.administrar"));
 
   r.post("/cuentas", async (req: Request, res: Response) => {

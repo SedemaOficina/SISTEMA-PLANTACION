@@ -240,6 +240,31 @@ test('cada cuenta consulta sólo lo suyo: el cabo, sus jornadas y las de sus rel
   assert.deepEqual(await ver('ADMIN'), todas);
 });
 
+test('cada cuenta ve los nombres de quien aparece en lo suyo; sólo la Administración ve todas, con su correo', async () => {
+  const nuestras = (filas) => Object.entries(U).filter(([, v]) => filas.some((f) => f.id === v.id)).map(([k]) => k).sort();
+  const ver = async (nombre) => {
+    const r = await (await sesion(nombre)).pedir('/cuentas');
+    assert.equal(r.estado, 200, nombre);
+    return r.datos.filas;
+  };
+  const SIN_CORREO = ['activo', 'area_id', 'cargo_rol', 'coordinadores_ids', 'id', 'nombre_completo', 'organizacion_id', 'perfil'];
+  // El cabo: su coordinación, el relevo de su jornada y el titular de la jornada donde estuvo de relevo
+  const s1 = await ver('CABO_S1');
+  assert.deepEqual(nuestras(s1), ['CABO_S1', 'CABO_S2', 'CABO_S3', 'COORD_S']);
+  assert.ok(s1.every((f) => JSON.stringify(Object.keys(f).sort()) === JSON.stringify(SIN_CORREO)), 'sin correo ni fechas');
+  assert.deepEqual(nuestras(await ver('CABO_B1')), ['CABO_B1']);
+  // La coordinación: su cuadrilla y quien estuvo de relevo en sus jornadas, aunque sea de otra institución
+  assert.deepEqual(nuestras(await ver('COORD_S')), ['CABO_A1', 'CABO_S1', 'CABO_S2', 'CABO_S3', 'COORD_S']);
+  assert.deepEqual(nuestras(await ver('DIR_A')), ['CABO_A1', 'COORD_A', 'DIR_A']);
+  const dir = await ver('DIR_SEDEMA');
+  assert.deepEqual(nuestras(dir), Object.keys(U).sort());
+  assert.ok(dir.every((f) => !('correo' in f)), 'el directivo no ve correos');
+  const adm = await ver('ADMIN');
+  assert.deepEqual(nuestras(adm), Object.keys(U).sort());
+  assert.ok(adm.every((f) => typeof f.correo === 'string'), 'la Administración ve el correo de cada cuenta');
+  assert.equal((await (await sesion('TEMPORAL')).pedir('/cuentas')).datos.codigo, 'DEBE_CAMBIAR');
+});
+
 test('la consulta va por páginas, sin la fotografía y con las fechas como texto; pide sesión y la contraseña ya cambiada', async () => {
   const coord = await sesion('COORD_S');
   const enUna = await coord.todo('/plantaciones', 2000);

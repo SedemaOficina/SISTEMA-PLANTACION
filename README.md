@@ -2,8 +2,8 @@
 
 El formulario funciona entero en el dispositivo. Con datos de prueba no habla con ningún servidor.
 Con datos reales (`ES_FICTICIO: false`) entra con las cuentas del servicio del SRP (`servidor/`), que
-instala el SIA. La conexión se construye por partes (`docs/FASE2-Y-TRASPASO.md`): hoy, entrar y bajar
-los catálogos.
+instala el SIA. La conexión se construye por partes (`docs/FASE2-Y-TRASPASO.md`): hoy, entrar, bajar
+catálogos, cuentas y parámetros, y ver lo ya enviado, que llega del servidor.
 
 La versión que corre se lee al pie de cada pantalla.
 
@@ -105,15 +105,20 @@ corresponda a una cuenta dada de alta y activa.
 
 **Con datos reales, la verifica el servicio del SRP**, en `/api/srp` del mismo sitio:
 - El servicio abre la sesión con una cookie sólo HTTP, que la aplicación no ve.
-- Al entrar bajan la cuenta y los catálogos.
-- Al volver a abrir se entra sin esperar, también sin señal. Si hay señal, el servicio confirma la sesión
-  y pone al día la cuenta y los catálogos.
+- Al entrar bajan los catálogos, la cuenta, las cuentas que cada quien ve (sin correo, salvo la
+  Administración global) y los parámetros. Eso se queda en el teléfono para trabajar sin señal.
+- Lo ya enviado —jornadas y árboles del alcance de cada quien— llega del servidor y vive sólo en memoria
+  mientras la aplicación está abierta: el teléfono no acumula historial (`js/remoto.js`). Sin señal se ve
+  sólo lo que aún no se envía: Registros y Jornadas lo dicen con una franja, y Supervisión y Fotografías,
+  que se arman con lo enviado, enseñan sólo un aviso.
+- Al volver a abrir se entra sin esperar, también sin señal, con los últimos parámetros. Si hay señal, el
+  servicio confirma la sesión, se pone al día lo que se queda en el teléfono y se trae lo enviado.
 - Si la sesión venció o la cerró la Administración, se vuelve a pedir la contraseña sin perder lo
   guardado.
 - «Cerrar sesión» cierra también la del servicio.
 - Una contraseña temporal todavía no se puede cambiar desde la aplicación: se dice y no se entra.
 
-Todo eso vive en `js/sesion.js` y `js/servidor.js`.
+Todo eso vive en `js/sesion.js`, `js/servidor.js` y `js/remoto.js`.
 
 Mientras `ES_FICTICIO` sea `true` (en `js/config.js`), la pantalla de acceso ofrece además entrar
 como cuenta de prueba, y el pie de página deja cambiar de cuenta y restablecer los datos. Todo eso
@@ -148,6 +153,7 @@ js/                     La aplicación, un archivo por tema
   permisos.js           ÚNICO lugar con las reglas de cada perfil y lo que exige cada acción
   almacen.js            Base del dispositivo (IndexedDB), migraciones y bitácora
   servidor.js           Cómo se habla con el servicio del SRP (/api/srp): cada pedido dice si respondió, si faltó conexión o qué no aceptó
+  remoto.js             Lo que viene del servidor: catálogos, cuentas y parámetros, que se quedan; lo enviado, sólo en memoria; los avisos cuando falta
   sesion.js             Acceso: simulado con datos de prueba; con datos reales, las cuentas del servicio (correo y contraseña)
   derivacion.js         Cruce punto-en-polígono (alcaldía, UGA, colonia)
   prioritarias.js       Colonias prioritarias para reforestar: prioridad de la jornada y de su colonia, y la capa en los mapas
@@ -232,7 +238,7 @@ versión se escribe en un solo lugar del código.
 
 **El archivo `VERSION`, en la raíz, lleva el mismo número** (lo pide la guía del SIA, sección 8); la prueba
 falla si no coincide con la marca. Ese número se ve siempre en la franja fija de arriba: «Versión de prueba
-0.9.65» mientras el SIA no instale el sistema; al pasar al SIA, `VERSION` y la marca van en `1` y la franja
+0.9.66» mientras el SIA no instale el sistema; al pasar al SIA, `VERSION` y la marca van en `1` y la franja
 dice «Versión 1».
 
 Si aun así alguien cae en una mezcla, el sistema lo detecta al abrir y explica cómo forzar la
@@ -443,7 +449,7 @@ tiempo fijo.
 | `auditoria.py` | Consistencia de lo guardado y del modelo: esquema contra lo que se guarda, diccionario y `js/esquema.js` regenerados, dominios, vocabulario |
 | `auditoria_css.py` | La norma de la hoja de estilos: colores sólo en `:root`, sin `#id` ni `!important`, medidas con token, una regla por selector, sin clases ni variables sin uso, sin estilos en línea. Corre dentro de `auditoria.py`; con `--todo` lista cada caso |
 | `revisar.py` | Presentación en ocho combinaciones de ancho y zoom: desbordamiento, alto del mapa, tamaño de los controles y reglas anuladas |
-| `prueba_conexion.py` | La aplicación con datos reales contra el servicio local: entrar, los mensajes al no poder, lo que baja, volver a abrir con y sin señal, la sesión vencida, la contraseña temporal y «Cerrar sesión» |
+| `prueba_conexion.py` | La aplicación con datos reales contra el servicio local: entrar, los mensajes al no poder, lo que baja, lo enviado en memoria y sus avisos sin señal o con falla del servidor, los parámetros, volver a abrir con y sin señal, la sesión vencida, la contraseña temporal, «Cerrar sesión» y cuánto tarda la Administración en traer todo |
 
 ## Salida a producción y Fase 2
 
