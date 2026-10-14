@@ -53,7 +53,8 @@ repositorio:
 | `db/srp/03-srp-acceso.sql` | Contraseñas (sólo derivadas con sal, nunca en claro), sesiones (sólo el resumen del testigo) y el registro de entradas; las dos bitácoras, que sólo crecen |
 | `db/srp/04-srp-sobre-territorio.sql` | La capa propia (colonias prioritarias), el índice espacial de árboles y jornadas, `srp.derivar`, que da alcaldía, colonia y celda UGA de un punto sobre `territorio` con las mismas reglas que la aplicación, y el folio: la secuencia de cada celda y lo que se congela con cada folio |
 | `db/srp/05-srp-fotografias.sql` | El registro de las fotografías: de qué árbol es cada una, su tipo, su peso, su huella y quién la mandó. Los archivos viven fuera de la base |
-| `db/srp/06-srp-rol-y-grants.sql` | La cuenta `srp_api`, sin contraseña, con sus permisos mínimos y `territorio_lectura`; la versión 1 del esquema. Al final, la verificación para correr como la cuenta: lo que debe funcionar y lo que debe fallar |
+| `db/srp/06-srp-parametros.sql` | Los parámetros que la Administración global cambió; los de arranque los dice el módulo |
+| `db/srp/07-srp-rol-y-grants.sql` | La cuenta `srp_api`, sin contraseña, con sus permisos mínimos y `territorio_lectura`; la versión 1 del esquema. Al final, la verificación para correr como la cuenta: lo que debe funcionar y lo que debe fallar |
 | `db/srp/instalar.sql` | Corre los anteriores en orden, en una sola transacción |
 
 Todos los corre quien administra la base, que queda como dueño de lo que se crea. `02-srp-tablas.sql` sale
@@ -70,6 +71,7 @@ de clave.
 - Usa el esquema, pero no crea, altera ni borra tablas, ni dentro ni fuera de él.
 - Lee, agrega y cambia renglones de las tablas de datos, y borra sólo lo que el sistema permite borrar
   (un valor de catálogo o una cuenta sin uso, un lote de carga masiva, las sesiones).
+- Lee y cambia los parámetros, y agrega registros de fotografías sin cambiarlos ni borrarlos.
 - Avanza la secuencia de folios de cada celda y agrega folios; un folio emitido no lo cambia ni lo borra,
   y los disparadores lo impiden también a quien administra la base.
 - A las bitácoras, la de cambios y la de entradas, sólo les agrega renglones: no las edita ni las borra.
@@ -93,7 +95,7 @@ la base y las variables van antes que el código. Un módulo por despliegue.
    **Las fotografías:** una carpeta en el servidor de aplicaciones, fuera de lo que se publica, donde el
    backend pueda escribir, con su propio respaldo, y `SRP_FOTOS_DIR` con su ruta. Sin ella el módulo
    arranca igual y las fotografías responden que no están disponibles.
-4. **Verificación:** la del final de `06-srp-rol-y-grants.sql`, corrida como `srp_api`.
+4. **Verificación:** la del final de `07-srp-rol-y-grants.sql`, corrida como `srp_api`.
 5. **El código:** `src/modulos/srp/` en `sia-backend`, su conexión en `src/db.ts` y su montaje en
    `src/index.ts`; `npm run typecheck`, `npm run build` y el despliegue. Al arrancar, el backend reporta
    el módulo conectado como `srp_api`, sin superusuario.
@@ -135,6 +137,8 @@ variables de entorno, está explicada en `src/modulos/srp/config.ts`. Las respue
 | `PUT /fotos/:id` | La fotografía de un árbol, tal cual; `id` es su `foto_id` | Quien puede editar el árbol |
 | `GET /fotos/:id` | La fotografía | Quien ve el árbol y descarga fotografías |
 | `GET /fotos/uso` | Cuántas fotografías hay, cuánto ocupan y cuánto ocuparían en un año | Administración global |
+| `GET /parametros` | Los parámetros, con su valor vigente, el de arranque y su rango | Con sesión |
+| `PUT /parametros/:clave` | Cambia un parámetro para todos los teléfonos | Administración global |
 | `GET /jornadas` | Las jornadas de su alcance, por páginas | Con sesión |
 | `GET /plantaciones` | Los árboles de su alcance, por páginas, sin la fotografía | Con sesión |
 
@@ -251,6 +255,24 @@ en el servidor, o el de su alta, tal como vino en la respuesta anterior. Si algu
 tanto, no se escribe: se responde `VERSION_VIEJA` con el árbol como está ahora. Un reenvío de un cambio que
 ya se aplicó se reconoce y no se repite.
 
+### Parámetros
+
+Los que la aplicación muestra en Configuración › Parámetros —distancias de los avisos de jornada, niveles de
+precisión del GPS, margen del límite de la Ciudad, espera del GPS, hora de atraso, reintento de envío,
+tamaño de la fotografía y renglones por página— viven en el servidor y valen para todos los teléfonos a la
+vez.
+
+- Sus valores de arranque son los de `js/config.js`, y una prueba lo comprueba, junto con que sean
+  justo los que muestra la pantalla.
+- En la base sólo quedan los que la Administración global cambió (`srp.parametros`).
+- Cada uno tiene su rango; los dos de renglones por página, sus opciones (10, 25, 50 o 100). La precisión
+  buena tiene que ser menor que la aceptable.
+- Cada cambio va a la bitácora, entre los de los catálogos: «Parámetro «Puntos duplicados»: 4 → 6 m».
+- El servidor también los usa: la recepción toma el margen del límite de la Ciudad del parámetro.
+
+Los del acceso (intentos, bloqueo, temporal, inactividad y largo de la contraseña) siguen en el entorno del
+backend (`src/modulos/srp/config.ts`).
+
 ### Fotografías
 
 Las fotografías no viven en la base: cada una es un archivo en la carpeta `SRP_FOTOS_DIR`, fuera de lo que se
@@ -338,6 +360,8 @@ esa base y nunca sobre una instalación anterior.
 - `pruebas/catalogos.test.js`: carga el editor de catálogos de la aplicación tal cual y compara su
   validación con la del servidor, caso por caso; luego da de alta, edita, activa, desactiva y elimina por
   las rutas, y revisa la bitácora y que lo que cuenta como uso sean las llaves foráneas de la base.
+- `pruebas/parametros.test.js`: compara los parámetros con `js/config.js` y con la pantalla de
+  Parámetros, los cambia por su ruta y comprueba que la recepción use el margen del límite de la Ciudad.
 - `pruebas/fotografias.test.js`: sube y baja fotografías. Comprueba que lleguen después de su árbol y
   de quien puede editarlo, que queden como archivo con su registro y su huella, que no se reemplacen,
   quién las descarga, el uso de espacio, y qué pasa si falta el archivo o la carpeta.

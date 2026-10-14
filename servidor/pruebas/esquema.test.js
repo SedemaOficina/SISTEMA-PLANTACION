@@ -12,7 +12,7 @@ import { conectar, instalar, destruir, codigoDeError, RAIZ } from './apoyo.js';
 import { verificar } from '../dist/independiente.js';
 
 const ESQUEMA = JSON.parse(fs.readFileSync(path.join(RAIZ, 'datos', 'esquema.json'), 'utf8'));
-const PROPIAS_DEL_SERVIDOR = ['bitacora_acceso', 'capa_prioritarias', 'capas', 'credenciales', 'folio_secuencias', 'folios', 'fotografias', 'migraciones', 'sesiones'];
+const PROPIAS_DEL_SERVIDOR = ['bitacora_acceso', 'capa_prioritarias', 'capas', 'credenciales', 'folio_secuencias', 'folios', 'fotografias', 'migraciones', 'parametros', 'sesiones'];
 const PERMISO_DENEGADO = '42501', VIOLA_CHECK = '23514', VIOLA_FORANEA = '23503', VIOLA_UNICO = '23505', LO_IMPIDE_UN_DISPARADOR = 'P0001';
 
 // El tipo del diccionario como lo escribe PostgreSQL (format_type)

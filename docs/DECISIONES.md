@@ -3500,3 +3500,21 @@
     servidor.
   · El guion de la cuenta pasa de `05-srp-rol-y-grants.sql` a `06-…`, para que el de las fotografías vaya
     antes que los permisos.
+
+- **D296. Los parámetros en el servidor (bloque 216).**
+  14-10-2026. Como lo decidió D195: se cambian en el servidor, para todos los teléfonos a la vez, sólo los
+  cambia la Administración global y cada cambio va a la bitácora.
+  · Son los trece valores que muestra Configuración › Parámetros, con el nombre que tienen en
+    `js/config.js` y sus mismos valores de arranque. Una prueba los compara con `js/config.js` y con la
+    pantalla.
+  · Los valores de arranque, los rangos y la descripción viven en el módulo (`parametros.ts`); en la base
+    sólo los cambiados (`srp.parametros`, en `06-srp-parametros.sql`). El guion de la cuenta pasa a
+    `07-srp-rol-y-grants.sql`.
+  · Los rangos los propuso Claude para que ningún valor deje al sistema sin sentido (una distancia de cero,
+    un GPS que no espera); la aplicación hoy no los edita. Se revisan con Liber al conectar la pantalla de
+    Parámetros, que pasará de sólo consulta a poder cambiarlos; ese cambio de pantalla se le muestra antes.
+  · La bitácora del teléfono sólo admite cinco entidades, y los parámetros no son una. Se anotan como
+    `catalogo`, con `parametro:CLAVE` de identificador, para no cambiar el diccionario de datos ni la
+    aplicación por ahora.
+  · La recepción toma del parámetro el margen del límite de la Ciudad.
+  · Los parámetros del acceso siguen en el entorno del backend: son de seguridad y los fija el SIA.

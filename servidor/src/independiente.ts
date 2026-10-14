@@ -19,6 +19,7 @@ export { derivar, temporal, verificar } from "./modulos/srp/contrasenas";
 // Para las pruebas, que comparan estas reglas con las de la aplicación
 export * as permisos from "./modulos/srp/permisos";
 export * as catalogos from "./modulos/srp/catalogos";
+export * as parametros from "./modulos/srp/parametros";
 
 export interface ConfigLocal {
   puerto: number;

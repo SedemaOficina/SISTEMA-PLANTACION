@@ -1,5 +1,6 @@
 import type pg from "pg";
 import { anotarCambio } from "./bitacora";
+import { valorParametro } from "./parametros";
 import { ACCIONES, type Accion, type Autores, type Objeto } from "./permisos";
 import type { Usuario } from "./sesiones";
 
@@ -89,8 +90,6 @@ export const comoObjeto = (f: Fila): Objeto => f as Objeto;
 /* ---------- El punto ---------- */
 
 const ORIGENES = ["gps", "mapa", "manual", "ajustado"];
-// Un punto unos metros fuera del límite toma la alcaldía más cercana, como en la aplicación
-const MARGEN_AMBITO_M = 100;
 
 export interface Punto {
   lat: number;
@@ -123,9 +122,10 @@ export interface Territorio {
   dentro: boolean;
 }
 
-// Alcaldía, colonia y celda UGA del punto, sobre territorio, con las mismas reglas que la aplicación
+/* Alcaldía, colonia y celda UGA del punto, sobre territorio, con las mismas reglas que la aplicación. Un punto
+   unos metros fuera del límite toma la alcaldía más cercana: tantos metros como diga el parámetro. */
 export const ubicar = async (c: pg.PoolClient, p: Punto): Promise<Territorio> =>
-  (await c.query<Territorio>("SELECT * FROM srp.derivar($1, $2, $3)", [p.lat, p.lng, MARGEN_AMBITO_M])).rows[0];
+  (await c.query<Territorio>("SELECT * FROM srp.derivar($1, $2, $3)", [p.lat, p.lng, await valorParametro(c, "MAPA.MARGEN_AMBITO_M")])).rows[0];
 
 // Hoy en la Ciudad de México, sea cual sea la zona del servidor
 export const hoyEnLaCiudad = async (c: pg.PoolClient): Promise<string> =>

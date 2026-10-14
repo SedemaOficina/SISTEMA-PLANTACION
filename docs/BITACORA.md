@@ -4528,3 +4528,33 @@ todavía no existe.
 
 **Siguiente paso.** Los parámetros en el servidor (D195). Luego, la prioridad congelada con el árbol y la
 jornada, y el aviso de posible duplicado.
+
+## Bloque 216 — Los parámetros en el servidor (14-10-2026)
+
+Sin cambio en la aplicación: sigue la versión 0.9.64. Lo que decidió D195, hecho en el servidor (D296).
+
+**Qué cambió.**
+- `servidor/src/modulos/srp/parametros.ts`, nuevo: los trece parámetros con su valor de arranque, su rango
+  y su descripción; `GET /parametros` y `PUT /parametros/:clave`.
+- `06-srp-parametros.sql`, nuevo: `srp.parametros`. El guion de la cuenta pasa a `07-srp-rol-y-grants.sql`.
+- `recepcion-apoyo.ts`: el margen del límite de la Ciudad sale del parámetro.
+- Pruebas: `parametros.test.js`, nueva. `esquema.test.js`: la tabla nueva.
+- `servidor/README.md` y `docs/FASE2-Y-TRASPASO.md`: el avance.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada. La pantalla de Parámetros sigue siendo de sólo consulta y
+lee `js/config.js` hasta que la aplicación hable con el servidor; entonces podrá cambiarlos, y ese cambio
+de pantalla se muestra antes a Liber.
+
+**Verificación.**
+- Servidor: 71 pruebas, 0 fallas. El único aviso del registro es el que provoca a propósito la prueba de la
+  fotografía que falta.
+- Los trece valores de arranque son los de `js/config.js`, y son justo los que lee la pantalla.
+- Con margen 0, un punto a unos cientos de metros fuera del límite se rechazó; con margen 1000, se recibió
+  con la alcaldía más cercana.
+- En la copia desechable de `sia-backend`: `typecheck` y `build` sin errores, y la prueba de humo 19 de 19.
+- Al terminar, los parámetros quedaron sin cambios guardados y la base local sin datos de prueba.
+
+No se probó: los teléfonos recibiendo los parámetros, que llega en el paso 4.
+
+**Siguiente paso.** La prioridad congelada con el árbol y la jornada (fila 19), y el aviso de posible
+duplicado (fila 8).
