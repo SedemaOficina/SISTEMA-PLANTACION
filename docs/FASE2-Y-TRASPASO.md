@@ -29,7 +29,7 @@ ubica un punto con las mismas reglas que la aplicación; el catálogo de especie
 de desarrollo) y lo que guarda un teléfono de prueba con la demostración. Todo cupo, y PostGIS ubica
 los 17,479 árboles y las 1,305 jornadas igual que la aplicación.
 
-**Avance en el servidor (bloques 210 a 214, D290 a D294):**
+**Avance en el servidor (bloques 210 a 215, D290 a D295):**
 - los permisos de cada perfil (fila 5);
 - la consulta de jornadas y árboles por alcance;
 - el registro de entradas;
@@ -38,10 +38,10 @@ los 17,479 árboles y las 1,305 jornadas igual que la aplicación.
 - editar, eliminar, restaurar, sustituir y mover árboles, sin escribir sobre una versión vieja (filas 17,
   22 y 25, en lo que toca a los árboles);
 - la vida de la jornada: edición, cierre, reapertura, datos de cierre, reporte entregado, relevo, puntos
-  revisados y eliminación (filas 18, 20, 21 y 25).
+  revisados y eliminación (filas 18, 20, 21 y 25);
+- las fotografías como archivos, fuera de la base, con su registro y su uso de espacio (fila 10).
 
 Siguen:
-- las fotografías a archivo (fila 10);
 - los parámetros (fila 15);
 - la prioridad congelada (fila 19);
 - el aviso de posible duplicado (fila 8).

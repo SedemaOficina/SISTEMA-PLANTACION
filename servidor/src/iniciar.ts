@@ -1,9 +1,13 @@
+import { fileURLToPath } from "node:url";
 import { crearApp, crearGrupo, leerConfig, leerConfigLocal } from "./independiente";
 
-/* ARRANCA EL MÓDULO SOLO, para desarrollo, en SRP_PUERTO (por omisión 3100) y bajo SRP_RUTA (/api/srp).
-   En el SIA no se usa: el backend central monta crearRutasSrp. */
+/* ARRANCA EL MÓDULO SOLO, para desarrollo, en SRP_PUERTO (por omisión 3100) y bajo SRP_RUTA (/api/srp), con
+   las fotografías en servidor/local/fotos si no se dice otra carpeta. En el SIA no se usa: el backend
+   central monta crearRutasSrp. */
 
 const config = leerConfig();
+// Sin carpeta de fotografías, la de desarrollo, que no se sube
+config.fotos.carpeta ??= fileURLToPath(new URL("../local/fotos", import.meta.url));
 const local = leerConfigLocal();
 const pool = crearGrupo({ rol: local.rol });
 const servidor = crearApp({ pool, config, proxy: local.proxy }).listen(local.puerto, () => {

@@ -9,6 +9,12 @@
    SRP_INTENTOS_MAXIMOS      Intentos fallidos seguidos que bloquean la cuenta (5).
    SRP_BLOQUEO_MINUTOS       Cuánto dura el bloqueo (15).
    SRP_TEMPORAL_HORAS        Cuánto vale una contraseña temporal (72).
+   SRP_FOTOS_DIR             Carpeta donde se guardan las fotografías: en el servidor de aplicaciones, fuera
+                             de lo que se publica, con permiso de escritura para el backend y su propio
+                             respaldo. Sin ella el módulo arranca igual y las fotografías responden que no
+                             están disponibles.
+   SRP_FOTO_MAXIMO_KB        Lo más que puede pesar una fotografía (1024). La aplicación las guarda a 800 × 600
+                             y pesan entre 60 y 120 KB.
 
    Los parámetros del acceso se podrán cambiar desde Configuración › Parámetros cuando vivan en la base. */
 
@@ -20,10 +26,16 @@ export interface ConfigAcceso {
   temporalHoras: number;
 }
 
+export interface ConfigFotos {
+  carpeta: string | null;
+  maximoKb: number;
+}
+
 export interface ConfigSrp {
   ruta: string;
   cookieSegura: boolean;
   acceso: ConfigAcceso;
+  fotos: ConfigFotos;
 }
 
 export type Entorno = Record<string, string | undefined>;
@@ -43,5 +55,6 @@ export function leerConfig(env: Entorno = process.env): ConfigSrp {
       bloqueoMinutos: numero(env.SRP_BLOQUEO_MINUTOS, 15),
       temporalHoras: numero(env.SRP_TEMPORAL_HORAS, 72),
     },
+    fotos: { carpeta: env.SRP_FOTOS_DIR || null, maximoKb: numero(env.SRP_FOTO_MAXIMO_KB, 1024) },
   };
 }

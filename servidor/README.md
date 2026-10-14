@@ -52,7 +52,8 @@ repositorio:
 | `db/srp/02-srp-tablas.sql` | Las diez tablas, con sus llaves, reglas, índices y comentarios. **Generado**: no se edita a mano |
 | `db/srp/03-srp-acceso.sql` | Contraseñas (sólo derivadas con sal, nunca en claro), sesiones (sólo el resumen del testigo) y el registro de entradas; las dos bitácoras, que sólo crecen |
 | `db/srp/04-srp-sobre-territorio.sql` | La capa propia (colonias prioritarias), el índice espacial de árboles y jornadas, `srp.derivar`, que da alcaldía, colonia y celda UGA de un punto sobre `territorio` con las mismas reglas que la aplicación, y el folio: la secuencia de cada celda y lo que se congela con cada folio |
-| `db/srp/05-srp-rol-y-grants.sql` | La cuenta `srp_api`, sin contraseña, con sus permisos mínimos y `territorio_lectura`; la versión 1 del esquema. Al final, la verificación para correr como la cuenta: lo que debe funcionar y lo que debe fallar |
+| `db/srp/05-srp-fotografias.sql` | El registro de las fotografías: de qué árbol es cada una, su tipo, su peso, su huella y quién la mandó. Los archivos viven fuera de la base |
+| `db/srp/06-srp-rol-y-grants.sql` | La cuenta `srp_api`, sin contraseña, con sus permisos mínimos y `territorio_lectura`; la versión 1 del esquema. Al final, la verificación para correr como la cuenta: lo que debe funcionar y lo que debe fallar |
 | `db/srp/instalar.sql` | Corre los anteriores en orden, en una sola transacción |
 
 Todos los corre quien administra la base, que queda como dueño de lo que se crea. `02-srp-tablas.sql` sale
@@ -89,7 +90,10 @@ la base y las variables van antes que el código. Un módulo por despliegue.
 3. **La cuenta:** contraseña de `srp_api` de forma interactiva (`\password srp_api` en psql), para que no
    quede en ningún registro; su entrada cifrada sólo desde el servidor de aplicaciones; y `SRP_DB_USER` y
    `SRP_DB_PASS` en el archivo de entorno del backend.
-4. **Verificación:** la del final de `05-srp-rol-y-grants.sql`, corrida como `srp_api`.
+   **Las fotografías:** una carpeta en el servidor de aplicaciones, fuera de lo que se publica, donde el
+   backend pueda escribir, con su propio respaldo, y `SRP_FOTOS_DIR` con su ruta. Sin ella el módulo
+   arranca igual y las fotografías responden que no están disponibles.
+4. **Verificación:** la del final de `06-srp-rol-y-grants.sql`, corrida como `srp_api`.
 5. **El código:** `src/modulos/srp/` en `sia-backend`, su conexión en `src/db.ts` y su montaje en
    `src/index.ts`; `npm run typecheck`, `npm run build` y el despliegue. Al arrancar, el backend reporta
    el módulo conectado como `srp_api`, sin superusuario.
@@ -128,6 +132,9 @@ variables de entorno, está explicada en `src/modulos/srp/config.ts`. Las respue
 | `POST /catalogos/:tabla/:id/estado` | Activa o desactiva | Administración global |
 | `DELETE /catalogos/:tabla/:id` | Elimina un valor sin uso | Administración global |
 | `POST /envios` | Lo que manda el teléfono: jornadas y árboles nuevos, con su folio, y lo que después se les hace | Según la operación |
+| `PUT /fotos/:id` | La fotografía de un árbol, tal cual; `id` es su `foto_id` | Quien puede editar el árbol |
+| `GET /fotos/:id` | La fotografía | Quien ve el árbol y descarga fotografías |
+| `GET /fotos/uso` | Cuántas fotografías hay, cuánto ocupan y cuánto ocuparían en un año | Administración global |
 | `GET /jornadas` | Las jornadas de su alcance, por páginas | Con sesión |
 | `GET /plantaciones` | Los árboles de su alcance, por páginas, sin la fotografía | Con sesión |
 
@@ -244,6 +251,22 @@ en el servidor, o el de su alta, tal como vino en la respuesta anterior. Si algu
 tanto, no se escribe: se responde `VERSION_VIEJA` con el árbol como está ahora. Un reenvío de un cambio que
 ya se aplicó se reconoce y no se repite.
 
+### Fotografías
+
+Las fotografías no viven en la base: cada una es un archivo en la carpeta `SRP_FOTOS_DIR`, fuera de lo que se
+publica, nombrado por su id (el `foto_id` de su árbol). La base guarda sólo su registro, en
+`srp.fotografias`. La carpeta se respalda aparte: el respaldo de la base no la incluye.
+
+- Llega después de su árbol, de quien puede editarlo, como imagen tal cual (JPEG, PNG o WebP), hasta
+  `SRP_FOTO_MAXIMO_KB` (1024). La aplicación las guarda a 800 × 600, y pesan entre 60 y 120 KB.
+- No se reemplaza: una fotografía nueva lleva otro id. Reenviar la misma da la misma respuesta; otra
+  distinta con el mismo id se rechaza. El archivo se escribe completo antes de registrarlo.
+- La descarga quien ve el árbol y puede descargar fotografías; para los demás no existe. Como no cambia,
+  el navegador puede guardarla.
+- **Espacio:** a 60–120 KB cada una, mil árboles con fotografía ocupan de 60 a 120 MB. Un cabo con
+  fotografía en cada árbol junta de 300 a 600 MB al año. `GET /fotos/uso` dice cuánto ocupan de verdad y
+  cuánto ocuparían en un año al ritmo de los últimos 30 días, para pedir el espacio a tiempo.
+
 ### Permisos de cada perfil
 
 `src/modulos/srp/permisos.ts` tiene las reglas de la aplicación (`js/permisos.js`): los perfiles, lo que
@@ -272,7 +295,7 @@ fechas en texto ISO 8601 en UTC; la fotografía tendrá su propia ruta.
 | `capas` | La capa propia, las colonias prioritarias, de `assets/capas/`. La reemplaza completa | Local y SIA |
 | `especies` | El catálogo de especies de la aplicación. Agrega las que falten, sin tocar las demás | Local y SIA |
 | `vehiculos` | La lista de un CSV con columnas `placa`, `modelo` y `tipo`; por omisión, la real más reciente de `originales/`, que nunca entra al repositorio | Local; el SIA carga la suya |
-| `app` | Lo que exporta `python herramientas/exportar_datos_app.py`: cuentas de prueba, catálogos de arranque y los datos de demostración, tal como los guarda un teléfono | **Sólo local** |
+| `app` | Lo que exporta `python herramientas/exportar_datos_app.py`: cuentas de prueba, catálogos de arranque y los datos de demostración, tal como los guarda un teléfono. Sus fotografías quedan como archivos en `servidor/local/fotos`, como las deja el servidor | **Sólo local** |
 | `todo` | Las anteriores, las que tengan su archivo | — |
 | `rehacer` | Destruye el esquema, lo instala y carga `territorio` y todo | **Sólo local** |
 
@@ -315,6 +338,9 @@ esa base y nunca sobre una instalación anterior.
 - `pruebas/catalogos.test.js`: carga el editor de catálogos de la aplicación tal cual y compara su
   validación con la del servidor, caso por caso; luego da de alta, edita, activa, desactiva y elimina por
   las rutas, y revisa la bitácora y que lo que cuenta como uso sean las llaves foráneas de la base.
+- `pruebas/fotografias.test.js`: sube y baja fotografías. Comprueba que lleguen después de su árbol y
+  de quien puede editarlo, que queden como archivo con su registro y su huella, que no se reemplacen,
+  quién las descarga, el uso de espacio, y qué pasa si falta el archivo o la carpeta.
 - `pruebas/recepcion.test.js`: manda jornadas y árboles como el teléfono. Comprueba:
   - qué pone el servidor;
   - el folio por celda, aun con envíos simultáneos y en el tope de 99,999;

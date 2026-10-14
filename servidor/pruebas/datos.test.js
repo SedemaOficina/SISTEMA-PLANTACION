@@ -5,6 +5,7 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { conectar, RAIZ } from './apoyo.js';
@@ -79,4 +80,13 @@ test('los folios que trae la carga quedan registrados, y la secuencia de cada ce
        LEFT JOIN srp.folio_secuencias s USING (celda) WHERE s.ultimo IS NULL OR s.ultimo < m.mayor)::int AS atrasadas`);
   assert.ok(r.con_folio > 0, 'la demostración trae folios');
   assert.deepEqual([r.registrados, r.atrasadas], [r.con_folio, 0]);
+});
+
+test('las fotografías de la carga quedan como archivos, con su registro y su huella, y el árbol sin la imagen', { skip: omitir }, async () => {
+  const conFoto = app.plantaciones.filter((p) => p.foto_base64 && p.foto_id);
+  const r = await uno(`SELECT (SELECT count(*) FROM srp.fotografias)::int AS registradas, (SELECT count(*) FROM srp.plantaciones WHERE foto_base64 IS NOT NULL)::int AS dentro`);
+  assert.deepEqual(r, { registradas: conFoto.length, dentro: 0 });
+  const f = (await c.query('SELECT f.id, f.tipo, f.bytes, f.sha256 FROM srp.fotografias f ORDER BY f.id LIMIT 1')).rows[0];
+  const datos = fs.readFileSync(path.join(RAIZ, 'servidor', 'local', 'fotos', f.id.slice(0, 2), f.id + '.jpg'));
+  assert.deepEqual([datos.length, crypto.createHash('sha256').update(datos).digest('hex'), f.tipo], [f.bytes, f.sha256, 'image/jpeg']);
 });

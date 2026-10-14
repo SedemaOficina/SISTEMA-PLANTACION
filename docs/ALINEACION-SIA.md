@@ -97,8 +97,9 @@ cuentas viven en `srp`; altas, bajas y restablecimientos los hace la Administrac
    Hecho en el bloque 214: la vida de la jornada (editarla, cerrarla, reabrirla, sus datos de cierre, el
    reporte, el relevo, los puntos revisados y eliminarla).
 
+   Hecho en el bloque 215: las fotografías como archivos, con su estimado de espacio (6.11).
+
    Falta:
-   - las fotografías como archivos, con su estimado de espacio (6.11);
    - la carga masiva por tandas;
    - lo que baje al teléfono, escrito por partes.
 
@@ -143,7 +144,7 @@ equipo, aplican igual al SRP:
 | 8 | Fragmento del servidor web: `absolute_redirect off` en las redirecciones; sin `Strict-Transport-Security`, que se decide para todo el dominio; la entrada de sesión con su límite de velocidad | `servidor/servidor-web/srp.conf`, con la ruta pública por confirmar (pregunta 5) | **Hecho** (bloque 206) |
 | 9 | El paquete: ZIP con su `.sha256`, un manifiesto que cubra todas las carpetas, el cambio a `sia-backend` como diff que aplique limpio sobre su versión vigente más los archivos completos, y `npm run typecheck` sin errores | `herramientas/empaquetar.py` arma el manifiesto, el ZIP y su `.sha256`; el diff aplica limpio sobre la versión vigente y `npm run typecheck` no da errores dentro de `sia-backend` | **Hecho** (bloque 208) |
 | 10 | Instalar primero la base y las variables y después el código: un módulo sin sus variables detiene el backend entero. Cada módulo en un despliegue aparte, con respaldo de la base antes | La guía de instalación de `servidor/README.md` lleva ese orden | **Hecho** (bloque 206) |
-| 11 | Fotografías fuera de las carpetas publicadas, en el servidor de aplicaciones, cuyo disco es limitado y lo comparten todos los módulos | Dentro del registro, como texto | Fase 4: archivos, con su estimado (un cabo con fotografía en cada árbol: 300 a 600 MB al año) para pedir el espacio antes |
+| 11 | Fotografías fuera de las carpetas publicadas, en el servidor de aplicaciones, cuyo disco es limitado y lo comparten todos los módulos | Archivos en la carpeta `SRP_FOTOS_DIR`, fuera de la base y de lo publicado, con su registro en `srp.fotografias`; `GET /fotos/uso` dice cuánto ocupan y cuánto ocuparían en un año. Estimado: un cabo con fotografía en cada árbol, de 300 a 600 MB al año | **Hecho** (bloque 215). Falta que el SIA diga la carpeta y su respaldo |
 | 12 | El aviso de privacidad se confirma con la Unidad de Transparencia | Consultado: no se requiere (D250) | Llevar en el paquete la constancia de esa consulta |
 | 13 | No publicar una tercera capa de colonias si sus datos caben en una que ya existe (el marco de unidades territoriales 2020 o el catálogo IECM 2022) | Prioritarias: 2,243 colonias del modelo de priorización, capa propia | **Pendiente de Liber**: de qué catálogo salen las 2,243, y si la prioridad puede ir como campo de una capa del SIA |
 | 14 | La caché de teselas tiene una cuota que comparten todas las capas: no se precargan niveles amplios | El mapa base es externo y las capas viajan con la aplicación | Sin efecto hoy |

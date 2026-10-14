@@ -195,6 +195,26 @@ async function cargarApp(c, archivo) {
       SELECT left(folio, 7), max(right(folio, 5)::int) FROM srp.plantaciones WHERE folio IS NOT NULL GROUP BY 1
       ON CONFLICT (celda) DO UPDATE SET ultimo = greatest(folio_secuencias.ultimo, EXCLUDED.ultimo)`);
     console.log(`folios: secuencias de ${celdas.rowCount} celdas puestas después del folio más alto`);
+    /* Las fotografías que el teléfono guarda dentro del árbol quedan como archivos, con su registro, y el
+       árbol sin la imagen: como las deja el servidor al recibirlas. */
+    const carpeta = process.env.SRP_FOTOS_DIR || path.join(SERVIDOR, 'local', 'fotos');
+    const conFoto = (await c.query('SELECT id, foto_id, foto_base64, cabo_id, fecha_registro FROM srp.plantaciones WHERE foto_base64 IS NOT NULL AND foto_id IS NOT NULL')).rows;
+    const EXTENSION = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
+    let fotos = 0;
+    for (const r of conFoto) {
+      const m = /^data:(image\/(?:jpeg|png|webp));base64,(.+)$/.exec(r.foto_base64);
+      if (!m) continue;
+      const datos = Buffer.from(m[2], 'base64');
+      const destino = path.join(carpeta, r.foto_id.slice(0, 2), r.foto_id + '.' + EXTENSION[m[1]]);
+      fs.mkdirSync(path.dirname(destino), { recursive: true });
+      fs.writeFileSync(destino, datos);
+      await c.query(`INSERT INTO srp.fotografias (id, plantacion_id, tipo, bytes, sha256, recibida_en, recibida_por_id)
+        VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO NOTHING`,
+        [r.foto_id, r.id, m[1], datos.length, crypto.createHash('sha256').update(datos).digest('hex'), r.fecha_registro, r.cabo_id]);
+      fotos++;
+    }
+    await c.query('UPDATE srp.plantaciones SET foto_base64 = NULL WHERE foto_base64 IS NOT NULL');
+    console.log(`fotografías: ${fotos} pasadas a archivos en ${carpeta}`);
     await c.query('COMMIT');
   } catch (e) {
     await c.query('ROLLBACK');

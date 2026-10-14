@@ -16,6 +16,7 @@
 --     sesiones.
 --   · A las bitácoras (la de cambios y la de entradas), sólo leerlas y agregarles renglones.
 --   · Avanzar la secuencia de folios de cada celda y agregar folios; un folio emitido no lo cambia ni lo borra.
+--   · Registrar fotografías; no las cambia ni las borra.
 --   · Leer territorio, por el rol de grupo territorio_lectura, y la capa propia de prioritarias.
 -- Lo que no puede: crear, cambiar o borrar tablas; editar o borrar la bitácora; anotar versiones del
 -- esquema; escribir en territorio; ver otros esquemas del SIA.
@@ -47,6 +48,9 @@ GRANT SELECT, INSERT ON srp.bitacora, srp.bitacora_acceso TO srp_api;
 -- El folio: la secuencia de cada celda avanza; los folios emitidos sólo se agregan
 GRANT SELECT, INSERT, UPDATE ON srp.folio_secuencias TO srp_api;
 GRANT SELECT, INSERT ON srp.folios TO srp_api;
+
+-- El registro de las fotografías sólo crece: una fotografía no se cambia
+GRANT SELECT, INSERT ON srp.fotografias TO srp_api;
 GRANT SELECT ON srp.migraciones TO srp_api;
 
 -- La capa propia sólo se lee: la carga quien administra la base
@@ -58,7 +62,7 @@ GRANT EXECUTE ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, nume
 GRANT territorio_lectura TO srp_api;
 
 INSERT INTO srp.migraciones (version, nombre)
-VALUES (1, 'Instalación: diez tablas del SRP, contraseñas, sesiones, registro de entradas, prioritarias, derivación sobre territorio y folio')
+VALUES (1, 'Instalación: diez tablas del SRP, contraseñas, sesiones, registro de entradas, prioritarias, derivación sobre territorio, folio y fotografías')
 ON CONFLICT (version) DO NOTHING;
 
 /*
@@ -76,6 +80,7 @@ ON CONFLICT (version) DO NOTHING;
       DELETE FROM srp.bitacora;
       DELETE FROM srp.bitacora_acceso;
       DELETE FROM srp.folios;
+      DELETE FROM srp.fotografias;
       TRUNCATE srp.plantaciones;
       CREATE TABLE srp.otra (x int);
       CREATE TABLE public.otra (x int);

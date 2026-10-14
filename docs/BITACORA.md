@@ -4497,3 +4497,34 @@ No se probó: la aplicación mandando estas operaciones, que llega en el paso 4.
 
 **Siguiente paso.** 3d: las fotografías como archivos, fuera de la base y de lo publicado, con su estimado
 de espacio (§ 6.11 de la alineación).
+
+## Bloque 215 — Las fotografías como archivos (14-10-2026)
+
+Sin cambio en la aplicación: sigue la versión 0.9.64. Paso 3d (D295).
+
+**Qué cambió.**
+- `servidor/src/modulos/srp/fotografias.ts`, nuevo: subir, bajar y medir el uso de las fotografías.
+  `config.ts`: `SRP_FOTOS_DIR` y `SRP_FOTO_MAXIMO_KB`.
+- `05-srp-fotografias.sql`, nuevo: `srp.fotografias`. El guion de la cuenta pasa a
+  `06-srp-rol-y-grants.sql`, con el permiso de sólo agregar registros de fotografías.
+- `servidor/cargar.js`: las 707 fotografías de la demostración quedan como archivos en
+  `servidor/local/fotos`, que no se sube, y los árboles sin la imagen.
+- `src/iniciar.ts`: fuera del SIA, las fotografías van a `servidor/local/fotos` si no se dice otra carpeta.
+- Pruebas: `fotografias.test.js`, nueva. `esquema.test.js` y `datos.test.js`: el registro sólo crece, y la
+  demostración queda con sus fotografías como archivos, con la misma huella.
+- `servidor/README.md`, `docs/ALINEACION-SIA.md` (§ 6.11) y `docs/FASE2-Y-TRASPASO.md`: el avance.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada: la aplicación todavía no habla con el servidor.
+
+**Verificación.**
+- Servidor: 68 pruebas, 0 fallas. El único aviso del registro es el que provoca a propósito la prueba del
+  archivo que falta.
+- En la copia desechable de `sia-backend`: `typecheck` y `build` sin errores, y la prueba de humo 18 de 18.
+  La nueva sube la fotografía del árbol recibido; queda como archivo fuera de la base y se descarga igual.
+- Al terminar, la base local quedó sin datos de prueba y la carpeta temporal de las pruebas, borrada.
+
+No se probó: la aplicación mandando fotografías, que llega en el paso 4, ni una carpeta del SIA, que
+todavía no existe.
+
+**Siguiente paso.** Los parámetros en el servidor (D195). Luego, la prioridad congelada con el árbol y la
+jornada, y el aviso de posible duplicado.

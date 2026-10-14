@@ -3476,3 +3476,27 @@
     «punto 3», que es su lugar en la lista de la pantalla, y el servidor no lo conoce.
   · El relevo guarda su fecha al milésimo de segundo y en UTC, como la escribe el teléfono.
   · Eliminar una jornada ya eliminada se reconoce por su renglón en la bitácora y no se toma como error.
+
+- **D295. Las fotografías como archivos (bloque 215).**
+  14-10-2026. Paso 3d; § 6.11 de la alineación y fila 10 de FASE2-Y-TRASPASO.
+  · Cada fotografía es un archivo en la carpeta `SRP_FOTOS_DIR`, fuera de la base y de lo publicado,
+    nombrado por el `foto_id` de su árbol, en subcarpetas por sus dos primeros caracteres. En la base sólo
+    queda su registro, `srp.fotografias`: árbol, tipo, peso, huella sha256, quién y cuándo. La tabla del
+    teléfono conserva `foto_base64`, que en el servidor queda vacía.
+  · La imagen viaja tal cual, no dentro de un JSON: pesa un tercio menos y no choca con el límite de 100 KB
+    de las demás peticiones. Hasta `SRP_FOTO_MAXIMO_KB` (1024); se revisa que sea JPEG, PNG o WebP por sus
+    primeros bytes.
+  · Llega después de su árbol y de quien puede editarlo. No se reemplaza: una nueva lleva otro id, como ya
+    hace la aplicación al cambiar la fotografía. La misma huella es un reenvío; otra distinta, un error.
+  · El archivo se escribe con otro nombre y se renombra al terminar, antes de registrarlo: nunca queda
+    registrada una fotografía a medias.
+  · La descarga sigue el alcance de los árboles, y quien no ve el árbol recibe «no existe». Se puede guardar
+    en el navegador, porque no cambia.
+  · Sin carpeta, el módulo arranca igual: el SIA puede instalarlo antes de decidir dónde van las fotografías.
+  · `GET /fotos/uso`, para la Administración: cuántas hay, cuánto ocupan y cuánto ocuparían en un año al
+    ritmo de los últimos 30 días. Estimado: 60 a 120 KB por fotografía; un cabo con fotografía en cada árbol
+    junta de 300 a 600 MB al año.
+  · En la base local, la carga pasa a archivos las fotografías de la demostración (707), como las dejaría el
+    servidor.
+  · El guion de la cuenta pasa de `05-srp-rol-y-grants.sql` a `06-…`, para que el de las fotografías vaya
+    antes que los permisos.
