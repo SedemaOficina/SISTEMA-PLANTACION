@@ -3532,3 +3532,31 @@
   · En la base local, la carga congela la de cada árbol y cada jornada con punto, como si los recibiera.
   · Todavía no se devuelve en las consultas. Se mostrará con los indicadores de Supervisión y el reporte, al
     conectar la aplicación; mientras, el teléfono la sigue calculando al consultar.
+
+- **D298. Posible duplicado y bandeja de doble conteo, en el servidor (bloque 218).**
+  14-10-2026. Como lo decidieron S-05 y D249.
+  · Al recibir un árbol nuevo, un sustituto, uno restaurado o uno con el punto corregido, `srp.vecinos`
+    busca el árbol activo más cercano de otra jornada a menos de la suma de las precisiones de los dos
+    puntos, nunca menos que «Puntos duplicados» (4 m). Un punto puesto en el mapa o escrito no trae
+    precisión: cuenta el piso.
+  · Quedan fuera los de su misma jornada. Ahí avisa el teléfono, con su regla (misma especie a menos de
+    4 m) y su «Está bien». Con la suma de las precisiones, 27 m en promedio en la demostración, seis de
+    cada diez árboles tendrían un vecino así dentro de su jornada: ahí el aviso del servidor sólo haría
+    ruido.
+  · Misma institución: aviso en la respuesta (`duplicado`), del más cercano. Lleva folio, especie y
+    jornada sólo si quien manda puede ver ese árbol; si no, sólo la distancia.
+  · Otra institución: se recibe sin decir nada y la pareja va a `srp.duplicados`. Entra una vez por pareja,
+    y de cada árbol sólo el más cercano, para que la bandeja no se llene. En la demostración, 270 de los
+    17,192 árboles activos tienen un vecino así de otra institución (27 a menos de 4 m), y 355 uno de su
+    institución en otra jornada.
+  · La bandeja: `GET /duplicados` y `POST /duplicados/revision`, sólo para la Administración global.
+    · Cada pareja se marca «mismo» o «distintos», con una nota, y una revisión no se cambia.
+    · Si son el mismo árbol, se elimina uno como cualquier otro registro.
+    · Un árbol eliminado saca la pareja de pendientes; si se restaura, vuelve.
+  · La revisión no va a la bitácora: el historial de cada árbol sale de ella y lo ve su institución. La
+    pareja guarda quién la revisó y cuándo.
+  · El permiso es una acción nueva, `duplicado.revisar`, que por ahora sólo existe en el servidor
+    (`ACCIONES_DEL_SERVIDOR`). La prueba de paridad comprueba que no esté en la aplicación. Al hacer la
+    pantalla de la bandeja pasa a los dos lados, y esa pantalla se le muestra antes a Liber.
+  · La carga de la demostración no llena la bandeja: la bandeja es de lo que se recibe.
+  · `07-srp-duplicados.sql` es nuevo, y el guion de la cuenta pasa a `08-srp-rol-y-grants.sql`.

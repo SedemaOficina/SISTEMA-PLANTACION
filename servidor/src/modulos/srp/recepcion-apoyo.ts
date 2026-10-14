@@ -1,7 +1,7 @@
 import type pg from "pg";
 import { anotarCambio } from "./bitacora";
 import { valorParametro } from "./parametros";
-import { ACCIONES, type Accion, type Autores, type Objeto } from "./permisos";
+import { textoDe, type Accion, type Autores, type Objeto } from "./permisos";
 import type { Usuario } from "./sesiones";
 
 /* LO COMÚN A LAS OPERACIONES QUE RECIBE EL SERVIDOR: la forma de la respuesta, la lectura de lo que manda el
@@ -26,6 +26,18 @@ export interface Resultado {
   otras?: { tabla: Tabla; fila: Fila }[];
   repetido?: boolean;
   aviso?: string;
+  /** Otro árbol de la misma institución, de otra jornada, que podría ser el mismo (duplicados.ts). */
+  duplicado?: Duplicado;
+}
+
+export interface Duplicado {
+  texto: string;
+  distancia_m: number;
+  /** La incertidumbre combinada de los dos puntos, con su piso. */
+  umbral_m: number;
+  /** El otro árbol, sólo si quien mandó éste lo puede ver. */
+  plantacion_id?: string;
+  folio?: string;
 }
 
 export type Operacion = (c: pg.PoolClient, u: Usuario, datos: Record<string, unknown>) => Promise<Resultado>;
@@ -41,7 +53,7 @@ const versionDe = (f: Fila): string | undefined => (f.fecha_ultima_edicion ?? f.
 export const recibido = (fila: Fila, extra: Partial<Resultado> = {}): Resultado => ({ id: fila.id, estado: "recibido", fila, version: versionDe(fila), ...extra });
 export const rechazo = (id: string | null, codigo: string, mensaje: string, errores?: Errores): Resultado =>
   ({ id, estado: "rechazado", codigo, mensaje, ...(errores ? { errores } : {}) });
-export const sinPermiso = (id: string | null, accion: Accion) => rechazo(id, "SIN_PERMISO", "No tiene permiso para " + ACCIONES[accion].texto + ".");
+export const sinPermiso = (id: string | null, accion: Accion) => rechazo(id, "SIN_PERMISO", "No tiene permiso para " + textoDe(accion) + ".");
 // Rechazado con el registro como está ahora, para que el teléfono lo muestre y se vuelva a aplicar el cambio
 export const conVigente = (r: Resultado, fila: Fila): Resultado => ({ ...r, fila, version: versionDe(fila) });
 export const versionVieja = (fila: Fila) =>

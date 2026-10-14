@@ -1,5 +1,6 @@
 import type pg from "pg";
 import { anotarCambio } from "./bitacora";
+import { conDuplicado } from "./duplicados";
 import { puede } from "./permisos";
 import {
   AHORA, asignarFolio, autoresDe, caducarReporte, comoObjeto, conVigente, esFecha, especieComun, esVigente, fechaCorta, fechaEnJornada, filaDe,
@@ -14,7 +15,8 @@ import type { Usuario } from "./sesiones";
    Lo que cambia un árbol que ya está en el servidor trae la versión que conocía el teléfono, y se rechaza
    si alguien lo cambió mientras tanto. Un reenvío de algo que ya se aplicó se reconoce y no se repite. Lo
    que toca a otro registro —el árbol que un sustituto reemplaza, el reporte de su jornada— cambia en la
-   misma transacción y vuelve en `otras`. */
+   misma transacción y vuelve en `otras`. Un árbol que queda en un punto nuevo, o vuelve a contar, se compara
+   con los cercanos de otras jornadas (duplicados.ts). */
 
 type Otras = NonNullable<Resultado["otras"]>;
 
@@ -83,7 +85,7 @@ export async function crearArbol(c: pg.PoolClient, u: Usuario, d: Record<string,
   if (!id) return rechazo(null, "DATOS_INVALIDOS", "El árbol no trae un identificador válido.");
   if (!puede("registro.crear", u)) return sinPermiso(id, "registro.crear");
   const previa = await filaDe(c, "plantaciones", id);
-  if (previa) return repetida(previa, u);
+  if (previa) return conDuplicado(c, u, repetida(previa, u));
 
   // La jornada, que no se cierra mientras se recibe su árbol
   const jornadaId = idDe(d.jornada_id);
@@ -104,11 +106,11 @@ export async function crearArbol(c: pg.PoolClient, u: Usuario, d: Record<string,
 
   let fila = await insertarArbol(c, u, { id, punto: punto as Punto, territorio: territorio as Territorio, especieId, especieOtra, comentarios,
     fecha: fecha as string, jornada, fotoId: idDe(d.foto_id), fechaRegistro: instante(d.fecha_registro) });
-  if (!fila) return repetida((await filaDe(c, "plantaciones", id)) as Fila, u);
+  if (!fila) return conDuplicado(c, u, repetida((await filaDe(c, "plantaciones", id)) as Fila, u));
   await anotarCambio(c, u, "CREADO", "plantacion", id);
   const folio = await asignarFolio(c, u, fila);
   if ("folio" in folio) fila = { ...fila, folio: folio.folio };
-  return recibido(fila, "aviso" in folio ? { aviso: folio.aviso } : {});
+  return conDuplicado(c, u, recibido(fila, "aviso" in folio ? { aviso: folio.aviso } : {}));
 }
 
 // Los errores en el orden de los campos del formulario: ubicación, especie, fecha y comentarios
@@ -187,7 +189,8 @@ export async function editarArbol(c: pg.PoolClient, u: Usuario, d: Record<string
   // Corregir el punto es lo único que vuelve a calcular la prioridad de su colonia
   if (punto2) await congelarPrioridad(c, "plantaciones", id, fila.lat, fila.lng);
   const otras = detalle ? await caducarReporte(c, u, fila.jornada_id, "se editó un árbol") : [];
-  return recibido(fila, otras.length ? { otras } : {});
+  const r = recibido(fila, otras.length ? { otras } : {});
+  return punto2 ? conDuplicado(c, u, r) : r;
 }
 
 /* ELIMINACIÓN: se marca, no se borra, y se deshace con «restaurar». Sin su sustituto, el árbol que había
@@ -251,7 +254,7 @@ export async function restaurarArbol(c: pg.PoolClient, u: Usuario, d: Record<str
     await anotarCambio(c, u, "SUSTITUIDO", "plantacion", original.id, "Vuelve su sustituto: " + motivoSustitucion(actual));
   }
   otras.push(...(await caducarReporte(c, u, actual.jornada_id, "se restauró un árbol")));
-  return recibido(fila, otras.length ? { otras } : {});
+  return conDuplicado(c, u, recibido(fila, otras.length ? { otras } : {}));
 }
 
 /* SUSTITUCIÓN de un árbol perdido: el sustituto entra en la jornada del original, con la fecha en que se
@@ -261,7 +264,7 @@ export async function sustituirArbol(c: pg.PoolClient, u: Usuario, d: Record<str
   const id = idDe(d.id);
   if (!id) return rechazo(null, "DATOS_INVALIDOS", "El sustituto no trae un identificador válido.");
   const previa = await filaDe(c, "plantaciones", id);
-  if (previa) return repetida(previa, u);
+  if (previa) return conDuplicado(c, u, repetida(previa, u));
   if (!puede("registro.crear", u)) return sinPermiso(id, "registro.crear");
   const originalId = idDe(d.sustituye_id);
   const original = originalId ? await filaDe(c, "plantaciones", originalId, "FOR UPDATE") : undefined;
@@ -291,7 +294,7 @@ export async function sustituirArbol(c: pg.PoolClient, u: Usuario, d: Record<str
 
   const nuevo = await insertarArbol(c, u, { id, punto: revisado.punto as Punto, territorio: revisado.territorio as Territorio, especieId, especieOtra, comentarios,
     fecha: fecha as string, jornada, fotoId: idDe(d.foto_id), fechaRegistro: instante(d.fecha_registro), sustituye: { id: original.id, motivo, otro } });
-  if (!nuevo) return repetida((await filaDe(c, "plantaciones", id)) as Fila, u);
+  if (!nuevo) return conDuplicado(c, u, repetida((await filaDe(c, "plantaciones", id)) as Fila, u));
   let fila = nuevo;
   const texto2 = motivoSustitucion(fila);
   await anotarCambio(c, u, "CREADO", "plantacion", id, "Sustituye a " + (await especieComun(c, original)) + " (" + textoFolio(original) + "): " + texto2);
@@ -304,7 +307,7 @@ export async function sustituirArbol(c: pg.PoolClient, u: Usuario, d: Record<str
   )).rows[0].fila }];
   await anotarCambio(c, u, "SUSTITUIDO", "plantacion", original.id, "Sustituido por " + (await especieComun(c, fila)) + ": " + texto2);
   otras.push(...(await caducarReporte(c, u, jornada.id, "se sustituyó un árbol")));
-  return recibido(fila, { otras, ...("aviso" in folio ? { aviso: folio.aviso } : {}) });
+  return conDuplicado(c, u, recibido(fila, { otras, ...("aviso" in folio ? { aviso: folio.aviso } : {}) }));
 }
 
 /* CAMBIO DE JORNADA, a otra del mismo cabo: el árbol toma el programa de la jornada destino. Si era del día

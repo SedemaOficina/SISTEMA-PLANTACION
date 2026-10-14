@@ -54,7 +54,8 @@ repositorio:
 | `db/srp/04-srp-sobre-territorio.sql` | La capa propia (colonias prioritarias), el índice espacial de árboles y jornadas, `srp.derivar`, que da alcaldía, colonia y celda UGA de un punto sobre `territorio` con las mismas reglas que la aplicación, el folio (la secuencia de cada celda y lo que se congela con cada folio) y la prioridad de la colonia, congelada con cada árbol y cada jornada |
 | `db/srp/05-srp-fotografias.sql` | El registro de las fotografías: de qué árbol es cada una, su tipo, su peso, su huella y quién la mandó. Los archivos viven fuera de la base |
 | `db/srp/06-srp-parametros.sql` | Los parámetros que la Administración global cambió; los de arranque los dice el módulo |
-| `db/srp/07-srp-rol-y-grants.sql` | La cuenta `srp_api`, sin contraseña, con sus permisos mínimos y `territorio_lectura`; la versión 1 del esquema. Al final, la verificación para correr como la cuenta: lo que debe funcionar y lo que debe fallar |
+| `db/srp/07-srp-duplicados.sql` | `srp.vecinos`, que busca los árboles cercanos que podrían ser el mismo, y la bandeja de posibles duplicados entre instituciones |
+| `db/srp/08-srp-rol-y-grants.sql` | La cuenta `srp_api`, sin contraseña, con sus permisos mínimos y `territorio_lectura`; la versión 1 del esquema. Al final, la verificación para correr como la cuenta: lo que debe funcionar y lo que debe fallar |
 | `db/srp/instalar.sql` | Corre los anteriores en orden, en una sola transacción |
 
 Todos los corre quien administra la base, que queda como dueño de lo que se crea. `02-srp-tablas.sql` sale
@@ -72,12 +73,14 @@ de clave.
 - Lee, agrega y cambia renglones de las tablas de datos, y borra sólo lo que el sistema permite borrar
   (un valor de catálogo o una cuenta sin uso, un lote de carga masiva, las sesiones).
 - Lee y cambia los parámetros, y agrega registros de fotografías sin cambiarlos ni borrarlos.
+- Anota en la bandeja los posibles duplicados y los marca revisados; no los borra.
 - Avanza la secuencia de folios de cada celda y agrega folios; un folio emitido no lo cambia ni lo borra,
   y los disparadores lo impiden también a quien administra la base.
 - A las bitácoras, la de cambios y la de entradas, sólo les agrega renglones: no las edita ni las borra.
   Sus disparadores lo impiden también a quien administra la base. Una cuenta que ya intentó entrar no se
   elimina: su registro de entradas la sostiene, y se desactiva.
-- Lee `territorio` y la capa propia; `srp.punto` y `srp.derivar` las puede usar. No escribe en ninguna.
+- Lee `territorio` y la capa propia; `srp.punto`, `srp.derivar`, `srp.prioridad` y `srp.vecinos` las puede
+  usar. No escribe en ninguna.
 - No tiene ningún permiso directo fuera de `srp`.
 
 ### Instalar en el SIA
@@ -95,7 +98,7 @@ la base y las variables van antes que el código. Un módulo por despliegue.
    **Las fotografías:** una carpeta en el servidor de aplicaciones, fuera de lo que se publica, donde el
    backend pueda escribir, con su propio respaldo, y `SRP_FOTOS_DIR` con su ruta. Sin ella el módulo
    arranca igual y las fotografías responden que no están disponibles.
-4. **Verificación:** la del final de `07-srp-rol-y-grants.sql`, corrida como `srp_api`.
+4. **Verificación:** la del final de `08-srp-rol-y-grants.sql`, corrida como `srp_api`.
 5. **El código:** `src/modulos/srp/` en `sia-backend`, su conexión en `src/db.ts` y su montaje en
    `src/index.ts`; `npm run typecheck`, `npm run build` y el despliegue. Al arrancar, el backend reporta
    el módulo conectado como `srp_api`, sin superusuario.
@@ -139,6 +142,8 @@ variables de entorno, está explicada en `src/modulos/srp/config.ts`. Las respue
 | `GET /fotos/uso` | Cuántas fotografías hay, cuánto ocupan y cuánto ocuparían en un año | Administración global |
 | `GET /parametros` | Los parámetros, con su valor vigente, el de arranque y su rango | Con sesión |
 | `PUT /parametros/:clave` | Cambia un parámetro para todos los teléfonos | Administración global |
+| `GET /duplicados` | La bandeja de posibles duplicados entre instituciones, por páginas | Administración global |
+| `POST /duplicados/revision` | Marca parejas como el mismo árbol o árboles distintos | Administración global |
 | `GET /jornadas` | Las jornadas de su alcance, por páginas | Con sesión |
 | `GET /plantaciones` | Los árboles de su alcance, por páginas, sin la fotografía | Con sesión |
 
@@ -224,6 +229,8 @@ clave, y la respuesta es la misma.
   recibirlos, con la versión de la capa (`srp.prioridades`): si la capa cambia, lo ya recibido conserva la
   suya, y un reporte regenerado dice la misma. Sólo se vuelve a calcular si se corrige el punto de un árbol.
   El árbol cuenta en la prioridad de la colonia donde quedó; la jornada, en la de la colonia donde se ubicó.
+- Si el árbol cae muy cerca de otro de otra jornada, puede ser el mismo registrado dos veces: se recibe
+  igual y se avisa, o va a la bandeja si el otro es de otra institución (abajo).
 
 Lo que cambia un árbol que ya está en el servidor sigue las reglas de la aplicación:
 - **Editar:** llegan sólo los campos que cambiaron y se aplican sobre lo vigente. El territorio se vuelve a
@@ -293,6 +300,31 @@ publica, nombrado por su id (el `foto_id` de su árbol). La base guarda sólo su
   fotografía en cada árbol junta de 300 a 600 MB al año. `GET /fotos/uso` dice cuánto ocupan de verdad y
   cuánto ocuparían en un año al ritmo de los últimos 30 días, para pedir el espacio a tiempo.
 
+### Posibles duplicados
+
+Al recibir un árbol —nuevo, sustituto, restaurado o con el punto corregido— `srp.vecinos` busca otro árbol
+activo, de otra jornada, a menos de la incertidumbre combinada de los dos puntos: la suma de sus precisiones
+de GPS, nunca menos que el parámetro «Puntos duplicados» (4 m). Un punto puesto en el mapa o escrito no trae
+precisión, así que cuenta el piso. Los de la misma jornada los revisa el teléfono con sus propios avisos.
+
+- **De la misma institución:** el árbol se recibe con el aviso en `duplicado`: la distancia y, si quien lo
+  mandó puede ver el otro árbol, su folio, su especie y su jornada. Si no lo puede ver, sólo la distancia.
+- **De otra institución:** el árbol se recibe sin decir nada, y la pareja va a la bandeja que atiende la
+  Administración global (`srp.duplicados`). Ninguna de las dos instituciones ve esa marca ni los datos de
+  la otra: tampoco va a la bitácora, que se ve en el historial de cada árbol.
+- Es un aviso, nunca un rechazo. Se toma sólo el más cercano de cada lado, y cada pareja entra una sola vez,
+  para que la bandeja no se llene. Un reenvío da el mismo aviso.
+
+La bandeja (`GET /duplicados?estado=pendientes|revisados|todos`) trae de cada pareja la distancia al
+detectarla y la de ahora, y de cada árbol su folio, especie, fecha, punto, precisión, institución, cabo y
+jornada. Pendiente es lo que no se ha revisado y tiene los dos árboles activos: si se elimina uno, ya no
+cuenta dos veces; si se restaura, vuelve. `POST /duplicados/revision` marca una o varias parejas como el
+mismo árbol (`mismo`) o árboles distintos (`distintos`), con una nota. Una revisión no se cambia y guarda
+quién la hizo y cuándo. Si son el mismo árbol, se elimina uno de los dos como cualquier otro registro.
+
+La acción `duplicado.revisar` sólo existe en el servidor mientras la aplicación no tenga la pantalla de la
+bandeja (`ACCIONES_DEL_SERVIDOR`, en `permisos.ts`); cuando la tenga, pasa a las acciones de los dos lados.
+
 ### Permisos de cada perfil
 
 `src/modulos/srp/permisos.ts` tiene las reglas de la aplicación (`js/permisos.js`): los perfiles, lo que
@@ -304,7 +336,7 @@ compara una por una con las de la aplicación, así que si cambia una regla, cam
 | Cabo | Lo suyo: sus jornadas, las que recibió en relevo y sus árboles. De una jornada donde estuvo de relevo sin ser el titular, ve todos sus árboles |
 | Coordinador | Lo suyo y lo de los cabos que lo tienen asignado |
 | Directivo | De la Secretaría, todo; de otra institución, sólo lo de la suya. Sólo ve |
-| Administración global | Todo, y administra cuentas y catálogos. No captura |
+| Administración global | Todo; administra cuentas, catálogos y parámetros, y revisa la bandeja de posibles duplicados. No captura |
 
 Las consultas aplican el alcance en la base, sin traer todo a memoria. Van por páginas, en orden de
 identificador: `?despues=<id del último>&limite=<n>` (500 por omisión, hasta 2000), y la respuesta dice
@@ -378,7 +410,11 @@ esa base y nunca sobre una instalación anterior.
     vigente y el alcance de cada perfil;
   - editar la jornada y su efecto en los árboles, cerrarla, reabrirla, sus datos de cierre, el reporte, el
     relevo, los puntos revisados y eliminarla;
-  - que una versión vieja no escribe.
+  - que una versión vieja no escribe;
+  - la prioridad de la colonia que se congela, y que se conserva aunque cambie la capa.
+- `pruebas/duplicados.test.js`: el aviso de posible duplicado con la suma de las precisiones y su piso, lo
+  que dice según quién lo manda, la pareja entre instituciones que va a la bandeja sin que se entere nadie,
+  y la bandeja: quién la ve, la revisión, y los árboles eliminados, restaurados o corregidos.
 - `pruebas/permisos.test.js`: carga `js/permisos.js` tal cual y lo compara con el servidor: cada perfil,
   cada acción y cientos de registros armados para los casos de borde; la consulta en la base, con todas
   las cuentas, jornadas y árboles que haya; y las rutas, por páginas, como las usará la aplicación.

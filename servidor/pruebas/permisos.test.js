@@ -147,6 +147,10 @@ test('cada perfil puede lo mismo en el servidor que en la aplicación, acción p
   const autores = autoresDe(usuarios);
   const acciones = Object.keys(SRP.permisos.ACCIONES);
   assert.deepEqual(Object.keys(S.ACCIONES).sort(), [...acciones].sort(), 'las mismas acciones');
+  // Lo que sólo existe en el servidor no está en la aplicación: cuando llegue a ella, pasa a ACCIONES
+  for (const accion of Object.keys(S.ACCIONES_DEL_SERVIDOR)) assert.ok(!acciones.includes(accion), accion);
+  // La bandeja de posibles duplicados la revisa sólo la Administración global
+  assert.deepEqual([...new Set(usuarios.filter((u) => S.puede('duplicado.revisar', u)).map((u) => u.perfil))], ['ADMIN']);
   assert.deepEqual(Object.keys(S.PERFILES).sort(), Object.keys(SRP.PERFILES).sort(), 'los mismos perfiles');
 
   // Registros para los casos de borde: titular, relevo vigente y devuelto, institución escrita o no, estatus

@@ -4,7 +4,7 @@
 --
 --   psql -d <base> -v ON_ERROR_STOP=on -f instalar.sql
 --
--- Después siguen los pasos de la cuenta srp_api, al principio de 07-srp-rol-y-grants.sql.
+-- Después siguen los pasos de la cuenta srp_api, al principio de 08-srp-rol-y-grants.sql.
 
 \set ON_ERROR_STOP on
 BEGIN;
@@ -14,5 +14,6 @@ BEGIN;
 \ir 04-srp-sobre-territorio.sql
 \ir 05-srp-fotografias.sql
 \ir 06-srp-parametros.sql
-\ir 07-srp-rol-y-grants.sql
+\ir 07-srp-duplicados.sql
+\ir 08-srp-rol-y-grants.sql
 COMMIT;

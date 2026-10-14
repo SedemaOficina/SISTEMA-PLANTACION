@@ -118,17 +118,27 @@ export const ACCIONES = {
   "galeria.descargar": { texto: "descargar las fotografías", regla: (p) => p.galeria },
 } satisfies Record<string, { texto: string; regla: Regla }>;
 
-export type Accion = keyof typeof ACCIONES;
+/* LO QUE SÓLO EXISTE EN EL SERVIDOR mientras la aplicación no tiene su pantalla: la bandeja de posibles
+   duplicados entre instituciones, que atiende la Administración global. Cuando la aplicación la tenga, la
+   acción pasa a ACCIONES, en los dos lados. */
+export const ACCIONES_DEL_SERVIDOR = {
+  "duplicado.revisar": { texto: "revisar los posibles duplicados", regla: (p) => p.usuarios && p.catalogos },
+} satisfies Record<string, { texto: string; regla: Regla }>;
+
+export type Accion = keyof typeof ACCIONES | keyof typeof ACCIONES_DEL_SERVIDOR;
+const TODAS: Record<Accion, { texto: string; regla: Regla }> = { ...ACCIONES, ...ACCIONES_DEL_SERVIDOR };
+
+// «No tiene permiso para …»
+export const textoDe = (accion: Accion): string => TODAS[accion].texto;
 
 export function puede(accion: Accion, u: Cuenta | null, x: Objeto = {}, autores: Autores = new Map()): boolean {
-  if (!u || !Object.hasOwn(ACCIONES, accion)) return false;
-  const regla: Regla = ACCIONES[accion].regla;
-  return regla(capacidadesDe(u), u, x, autores);
+  if (!u || !Object.hasOwn(TODAS, accion)) return false;
+  return TODAS[accion].regla(capacidadesDe(u), u, x, autores);
 }
 
 // La respuesta cuando no alcanza: la misma frase que da la aplicación
 export function negar(res: Response, accion: Accion): void {
-  responder(res, 403, "SIN_PERMISO", "No tiene permiso para " + ACCIONES[accion].texto + ".");
+  responder(res, 403, "SIN_PERMISO", "No tiene permiso para " + textoDe(accion) + ".");
 }
 
 // Para las rutas de una acción que no depende de un registro (administrar cuentas o catálogos)

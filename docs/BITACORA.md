@@ -4591,3 +4591,51 @@ No se probó: mostrarla en Supervisión y en el reporte desde el servidor, que l
 aplicación.
 
 **Siguiente paso.** El aviso de posible duplicado y la bandeja de doble conteo entre instituciones (fila 8).
+
+## Bloque 218 — El posible duplicado y la bandeja de doble conteo, en el servidor (14-10-2026)
+
+Sin cambio en la aplicación: sigue la versión 0.9.64. Lo que decidieron S-05 y D249, hecho en el servidor
+(D298).
+
+**Qué cambió.**
+- `07-srp-duplicados.sql`, nuevo:
+  - `srp.vecinos`, que busca el árbol cercano que podría ser el mismo;
+  - la bandeja `srp.duplicados`;
+  - un índice para la peor precisión.
+- El guion de la cuenta pasa a `08-srp-rol-y-grants.sql`.
+- `servidor/src/modulos/srp/duplicados.ts`, nuevo: la revisión al recibir y las dos rutas de la bandeja.
+- `recepcion-arboles.ts`: revisa al recibir un árbol nuevo, un sustituto, uno restaurado o uno con el
+  punto corregido.
+- `permisos.ts`: `duplicado.revisar`, una acción que por ahora sólo existe en el servidor.
+- Pruebas:
+  - `duplicados.test.js`, nueva.
+  - `permisos.test.js`: la acción nueva no está en la aplicación, y sólo la Administración global la tiene.
+  - `esquema.test.js`: la tabla nueva.
+- `servidor/README.md` y `docs/FASE2-Y-TRASPASO.md`: el avance. El README dice también, entre las pruebas,
+  la de la prioridad congelada del bloque 217.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada: la aplicación todavía no habla con el servidor. La pantalla
+de la bandeja, para la Administración global, se le mostrará antes a Liber.
+
+**Verificación.**
+- Servidor: 80 pruebas, 0 fallas. El único aviso del registro es el que provoca a propósito la prueba
+  de la fotografía que falta.
+- Antes de escribir la regla se midió sobre la demostración, con la suma de las precisiones (27 m en
+  promedio):
+  - seis de cada diez árboles tendrían un vecino así dentro de su jornada: por eso esos se dejan al
+    teléfono;
+  - 355 tienen uno de su institución en otra jornada;
+  - 270 tienen uno de otra institución, 27 de ellos a menos de 4 m.
+  - Buscar los vecinos de un árbol tarda de 1 a 4 ms, con el índice del punto.
+- Dos tropiezos:
+  - la prueba nueva usaba un programa que no está disponible para empresas;
+  - buscaba su lugar sin árboles ubicando 441 puntos, y tardaba 18 s. Ahora ubica sólo los diez más
+    céntricos, y la prueba completa tarda 1.6 s.
+- En la copia desechable de `sia-backend`: `typecheck` y `build` sin errores, y la prueba de humo 20 de 20.
+  La nueva comprobación es que la Administración ve la bandeja y el cabo no.
+- Al terminar, la bandeja quedó vacía y la base local sin datos de prueba.
+
+No se probó: la pantalla de la bandeja ni el aviso en el teléfono, que llegan al conectar la aplicación.
+
+**Siguiente paso.** El paso 4: que la aplicación hable con el servidor. Antes de tocar pantallas, se le
+muestran a Liber el antes y el después de Parámetros y la propuesta de la bandeja.

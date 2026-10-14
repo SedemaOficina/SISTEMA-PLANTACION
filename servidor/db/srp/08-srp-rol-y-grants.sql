@@ -19,6 +19,8 @@
 --   · Registrar fotografías; no las cambia ni las borra.
 --   · Leer y cambiar los parámetros.
 --   · Congelar la prioridad de la colonia de cada árbol y cada jornada al recibirlos.
+--   · Buscar los vecinos de un árbol, anotar en la bandeja los posibles duplicados entre instituciones y
+--     marcarlos revisados; no los borra.
 --   · Leer territorio, por el rol de grupo territorio_lectura, y la capa propia de prioritarias.
 -- Lo que no puede: crear, cambiar o borrar tablas; editar o borrar la bitácora; anotar versiones del
 -- esquema; escribir en territorio; ver otros esquemas del SIA.
@@ -57,20 +59,23 @@ GRANT SELECT, INSERT ON srp.fotografias TO srp_api;
 -- La prioridad congelada: se agrega al recibir y se vuelve a calcular si se corrige el punto
 GRANT SELECT, INSERT, UPDATE ON srp.prioridades TO srp_api;
 
+-- La bandeja de posibles duplicados: se anota al recibir y la Administración la revisa
+GRANT SELECT, INSERT, UPDATE ON srp.duplicados TO srp_api;
+
 -- Los parámetros: la Administración los cambia; volver al valor de arranque es escribirlo
 GRANT SELECT, INSERT, UPDATE ON srp.parametros TO srp_api;
 GRANT SELECT ON srp.migraciones TO srp_api;
 
 -- La capa propia sólo se lee: la carga quien administra la base
 GRANT SELECT ON srp.capas, srp.capa_prioritarias TO srp_api;
-REVOKE ALL ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric) TO srp_api;
+REVOKE ALL ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric), srp.vecinos(uuid, numeric) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric), srp.vecinos(uuid, numeric) TO srp_api;
 
 -- territorio, de sólo lectura, como cualquier módulo del SIA
 GRANT territorio_lectura TO srp_api;
 
 INSERT INTO srp.migraciones (version, nombre)
-VALUES (1, 'Instalación: diez tablas del SRP, contraseñas, sesiones, registro de entradas, prioritarias, derivación sobre territorio, folio, fotografías y parámetros')
+VALUES (1, 'Instalación: diez tablas del SRP, contraseñas, sesiones, registro de entradas, prioritarias, derivación sobre territorio, folio, fotografías, parámetros, prioridad congelada y posibles duplicados')
 ON CONFLICT (version) DO NOTHING;
 
 /*
@@ -89,6 +94,7 @@ ON CONFLICT (version) DO NOTHING;
       DELETE FROM srp.bitacora_acceso;
       DELETE FROM srp.folios;
       DELETE FROM srp.fotografias;
+      DELETE FROM srp.duplicados;
       TRUNCATE srp.plantaciones;
       CREATE TABLE srp.otra (x int);
       CREATE TABLE public.otra (x int);
