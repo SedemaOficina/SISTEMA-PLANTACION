@@ -4672,7 +4672,7 @@ con la regla anterior y 11 con 4 m fijos.
 - En la copia desechable de `sia-backend`: `typecheck` y `build` sin errores, y la prueba de humo sin fallas.
 - La base local quedó sin datos de prueba.
 - Dos tropiezos:
-  - el guion que escribió la función puso los acentos invisibles en lugar de su código `̀`; se corrigió;
+  - el guion que escribió la función puso los acentos como caracteres invisibles en lugar de su código de escape; se corrigió;
   - el generador del diccionario escribe con saltos de línea de Windows, y `js/esquema.js` parecía cambiado
     entero sin cambiar nada. Se dejó como estaba.
 
