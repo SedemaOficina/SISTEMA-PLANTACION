@@ -388,6 +388,12 @@ npm run cargar -- rehacer
 npm test
 ```
 
+**La aplicación con su servicio.** Para usarlos juntos en esta computadora, como quedarán en el SIA:
+`SRP_COOKIE_SEGURA=no SRP_ROL=srp_api npm run iniciar` aquí, y `python pruebas/servir.py` en la carpeta del
+proyecto. Ese servidor sirve la aplicación en `http://127.0.0.1:8099/` y reenvía `/api/` al servicio. La
+aplicación habla con el servicio sólo con `ES_FICTICIO: false`. `pruebas/prueba_conexion.py` lo hace así en
+su navegador, sin cambiar el archivo.
+
 Las pruebas corren en este orden, una tras otra, y cada una tiene diez minutos para terminar. Primero
 `esquema.test.js`, que deja instalados los guiones de `db/srp/` tal como están: las demás corren sobre
 esa base y nunca sobre una instalación anterior.

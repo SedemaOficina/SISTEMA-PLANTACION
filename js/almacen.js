@@ -475,6 +475,17 @@ SRP.almacen = {
     }));
   },
 
+  /* Lo que llega del servidor reemplaza lo que había en esas tablas, en una sola transacción: el servidor
+     es la fuente de verdad. `listas`: { tabla: [renglones] }. */
+  reemplazar(listas) {
+    const tablas = Object.keys(listas);
+    return this._tx(tablas, 'readwrite', (tx) => tablas.forEach(t => {
+      const almacen = tx.objectStore(t);
+      almacen.clear();
+      listas[t].forEach(f => almacen.put(f));
+    }));
+  },
+
   borrarConBitacora(almacen, id, entradaBitacora) {
     return this._tx([almacen, 'bitacora'], 'readwrite', (tx) => {
       tx.objectStore(almacen).delete(id);

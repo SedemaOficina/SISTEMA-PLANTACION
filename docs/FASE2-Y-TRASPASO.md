@@ -45,8 +45,13 @@ los 17,479 árboles y las 1,305 jornadas igual que la aplicación.
   el indicador de Supervisión llega con las consultas de la fila 13);
 - el aviso de posible duplicado y la bandeja de doble conteo entre instituciones (fila 8).
 
-Sigue que la aplicación hable con el servidor. Las pantallas que eso cambia —Parámetros, que podrá
-editarlos, y la bandeja de posibles duplicados, que todavía no existe— ya las aprobó Liber (D299).
+**La aplicación hablando con el servidor (paso 4, por partes):**
+- 4a, la conexión (bloque 220, D300): con datos reales se entra con las cuentas del servicio, bajan la cuenta
+  y los catálogos, la sesión se confirma al abrir y una vencida pide la contraseña sin perder lo guardado.
+- Siguen 4b, bajar jornadas, árboles, parámetros y cuentas del alcance; 4c, subir lo capturado con su
+  folio y sus fotografías; 4d, lo que el servidor no acepta; y 4e, la administración conectada. Las pantallas
+  que eso cambia —Parámetros, que podrá editarlos, y la bandeja de posibles duplicados— ya las aprobó Liber
+  (D299).
 
 Ver `servidor/README.md`.
 

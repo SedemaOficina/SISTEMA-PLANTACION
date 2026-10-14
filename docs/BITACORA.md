@@ -4680,3 +4680,66 @@ No se probó: las especies reales. En la demostración se asignaron al azar, as�
 diferencia entre las dos reglas será menor.
 
 **Siguiente paso.** El paso 4: que la aplicación hable con el servidor, por partes.
+
+## Bloque 220 — La conexión de la aplicación con el servidor (14-10-2026)
+
+**Versión 0.9.65.** Primera parte del paso 4 (D300).
+
+| Qué | Cómo queda |
+|---|---|
+| Entrar con datos reales | El servicio verifica correo y contraseña; bajan la cuenta y los catálogos |
+| Volver a abrir | Se entra sin esperar, también sin señal; con señal, el servicio confirma la sesión y pone al día cuenta y catálogos |
+| Sesión que ya no vale | Vuelve el acceso con el mensaje del servicio; lo guardado se queda |
+| Contraseña temporal | Se dice que todavía no se puede cambiar desde la aplicación, y no se entra |
+| Cerrar sesión | Cierra también la del servicio |
+| En desarrollo | `servir.py` reenvía `/api/` al servicio local; `prueba_conexion.py` prueba lo anterior en un navegador |
+
+**Qué cambió.**
+- `js/config.js`:
+  - `API` (`/api/srp`) y `ESPERA_SERVIDOR_MS` (20 s);
+  - con `ES_FICTICIO: false` el acceso es el del servicio;
+  - `ETAPA` pasa al bloque 220.
+- `js/servidor.js`, nuevo: el único lugar que habla con el servicio.
+- `js/sesion.js`: el acceso con el servidor, la confirmación al abrir y la sesión perdida.
+- `js/almacen.js`: `reemplazar`, para lo que llega del servidor.
+- `js/app.js`: entrar espera la respuesta, con el botón inactivo mientras tanto, y la sesión se confirma
+  al abrir.
+- `index.html`: el archivo nuevo y la marca 0.9.65; `VERSION`.
+- `pruebas/servir.py`: reenvía `/api/`.
+- `pruebas/prueba_conexion.py` y `pruebas/apoyo_servidor.mjs`, nuevos.
+- `pruebas/prueba.py`: el mensaje del acceso simulado con datos reales.
+- Documentación:
+  - `README.md` y `servidor/README.md`: cómo se entra y cómo se usan juntos;
+  - `docs/FASE2-Y-TRASPASO.md`: el avance;
+  - `docs/MEJORAS.md`: la versión al pie.
+
+**Pantalla: qué se agregó y qué se quitó.** Con datos de prueba, nada. Con datos reales:
+- el botón «Entrar» queda inactivo mientras responde el servicio;
+- los mensajes de acceso son los del servicio;
+- al vencer la sesión aparece el aviso que lo explica.
+
+**Verificación.**
+- Aplicación: `prueba.py`, fallas: 0 de 1440. `auditoria.py`, 144 comprobaciones sin hallazgos; la
+  norma de la hoja, sin hallazgos.
+- Conexión: `prueba_conexion.py`, 18 de 18, a la primera:
+  - con datos reales, nada de prueba en pantalla;
+  - una contraseña equivocada, sin conexión y una temporal, cada una con su mensaje;
+  - al entrar bajan la cuenta (cookie sólo HTTP que la página no lee) y los catálogos (79 especies,
+    22 instituciones);
+  - volver a abrir confirma la sesión, y sin señal se abre igual;
+  - un cambio de nombre en el servidor llega;
+  - la sesión vencida pide la contraseña y conserva lo guardado;
+  - «Cerrar sesión» cierra la del servicio.
+- Al terminar, la base local quedó sin cuentas de prueba y la cuenta local devolvió el rol `srp_api`.
+- Un tropiezo: la primera corrida de `prueba.py` se detuvo en la sección del directivo. El PDF del reporte
+  no se descargó en 60 s, y ese PDF dibuja el croquis con mosaicos de Esri, de internet. La sección sola
+  pasó 9 de 9, y la corrida completa repetida, 0 fallas. No tiene que ver con el acceso.
+
+No se probó:
+- en un teléfono real, ni en Safari;
+- el servidor web del SIA: se probó con `servir.py`, que hace lo mismo en esta computadora;
+- la sesión perdida a media captura: hoy sólo se descubre al abrir, y al subir lo capturado (4c) se
+  cuidará que no saque a nadie de un árbol a medias.
+
+**Siguiente paso.** 4b: bajar del servidor las jornadas, los árboles, los parámetros y las cuentas del
+alcance de cada quien.

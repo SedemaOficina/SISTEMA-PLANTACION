@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 207',
+  ETAPA: 'Bloque 220',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -58,9 +58,15 @@ SRP.CONFIG = {
   PROGRAMA_SOLICITUD: 'p-solicitud',
 
 
-  // Acceso: con el servidor, cuentas propias (correo y contraseña). En la versión de prueba el acceso
-  // es simulado, y con ES_FICTICIO: false queda cerrado hasta conectar el servidor.
+  // Acceso: con datos de prueba, simulado; con datos reales, las cuentas del servidor (correo y
+  // contraseña). El proveedor se fija abajo, según ES_FICTICIO.
   AUTENTICACION: { PROVEEDOR: 'simulado' },
+
+  /* EL SERVICIO DEL SRP, en el mismo sitio que la aplicación: el servidor web del SIA reenvía /api/ a su
+     backend, y en desarrollo pruebas/servir.py hace lo mismo. Un pedido sin respuesta en ESPERA_SERVIDOR_MS
+     se da por sin conexión: lo capturado sigue en el teléfono. */
+  API: '/api/srp',
+  ESPERA_SERVIDOR_MS: 20000,
 
   MAPA: {
     CENTRO: [19.4326, -99.1332],        // [latitud, longitud]: orden de Leaflet, no de GeoJSON
@@ -130,3 +136,5 @@ SRP.CONFIG = {
 
 // La base de esta versión: la de prueba o la real, nunca la misma
 SRP.CONFIG.DB_NOMBRE = SRP.CONFIG.ES_FICTICIO ? SRP.CONFIG.DB_NOMBRE_PRUEBA : SRP.CONFIG.DB_NOMBRE_REAL;
+// Con datos reales se entra con las cuentas del servidor, nunca con el acceso simulado
+if (!SRP.CONFIG.ES_FICTICIO) SRP.CONFIG.AUTENTICACION.PROVEEDOR = 'servidor';

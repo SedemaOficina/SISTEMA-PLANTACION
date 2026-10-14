@@ -2149,7 +2149,7 @@ with sync_playwright() as p:
     ctx10.close()
     # Modo de prueba apagado: el acceso simulado no abre con cualquier contraseña
     fuera=pg.evaluate("() => { SRP.CONFIG.ES_FICTICIO = false; const r = SRP.sesion.autenticar('cabo@ejemplo.local'); SRP.CONFIG.ES_FICTICIO = true; return r; }")
-    ok(fuera['ok'] is False and 'acceso con el servidor todavía no está conectado' in fuera['motivo'],'con ES_FICTICIO apagado y el proveedor aún simulado, el acceso queda cerrado: '+fuera['motivo'])
+    ok(fuera['ok'] is False and 'El acceso simulado no abre con datos reales' in fuera['motivo'],'con ES_FICTICIO apagado, el acceso simulado no abre: '+fuera['motivo'])
 
     # ---------- INTEGRIDAD ----------
     # Revisión de integridad sobre lo capturado en toda la prueba, no sobre la base recién sembrada:

@@ -1,8 +1,9 @@
 # SRP — Sistema de Registro de Plantaciones (SEDEMA)
 
-Prototipo en **Etapa 1**: el formulario funciona entero en el dispositivo, con datos de prueba y
-sin servidor. La conexión con servidores y el resto de las etapas vienen después, cuando se
-decida pasar a ellas.
+El formulario funciona entero en el dispositivo. Con datos de prueba no habla con ningún servidor.
+Con datos reales (`ES_FICTICIO: false`) entra con las cuentas del servicio del SRP (`servidor/`), que
+instala el SIA. La conexión se construye por partes (`docs/FASE2-Y-TRASPASO.md`): hoy, entrar y bajar
+los catálogos.
 
 La versión que corre se lee al pie de cada pantalla.
 
@@ -98,10 +99,21 @@ cuentas.
 Con **correo y contraseña**. Nadie se da de alta solo: las cuentas las crea la Administración
 global desde Usuarios, en Configuración.
 
-**La contraseña todavía no se verifica.** Comprobarla en el navegador sería seguridad aparente,
-porque cualquiera puede leer el código de la página; lo único que se comprueba es que el correo
-corresponda a una cuenta dada de alta y activa. La verificación real la hará el proveedor
-institucional más adelante, y entonces se sustituye sólo `autenticar()`, en `js/sesion.js`.
+**Con datos de prueba, la contraseña no se verifica.** Comprobarla en el navegador sería seguridad
+aparente, porque cualquiera puede leer el código de la página. Lo único que se comprueba es que el correo
+corresponda a una cuenta dada de alta y activa.
+
+**Con datos reales, la verifica el servicio del SRP**, en `/api/srp` del mismo sitio:
+- El servicio abre la sesión con una cookie sólo HTTP, que la aplicación no ve.
+- Al entrar bajan la cuenta y los catálogos.
+- Al volver a abrir se entra sin esperar, también sin señal. Si hay señal, el servicio confirma la sesión
+  y pone al día la cuenta y los catálogos.
+- Si la sesión venció o la cerró la Administración, se vuelve a pedir la contraseña sin perder lo
+  guardado.
+- «Cerrar sesión» cierra también la del servicio.
+- Una contraseña temporal todavía no se puede cambiar desde la aplicación: se dice y no se entra.
+
+Todo eso vive en `js/sesion.js` y `js/servidor.js`.
 
 Mientras `ES_FICTICIO` sea `true` (en `js/config.js`), la pantalla de acceso ofrece además entrar
 como cuenta de prueba, y el pie de página deja cambiar de cuenta y restablecer los datos. Todo eso
@@ -135,7 +147,8 @@ js/                     La aplicación, un archivo por tema
   config.js             ÚNICO lugar con valores configurables (distancias, precisión, versión, base)
   permisos.js           ÚNICO lugar con las reglas de cada perfil y lo que exige cada acción
   almacen.js            Base del dispositivo (IndexedDB), migraciones y bitácora
-  sesion.js             Acceso; se conecta a las cuentas propias del servidor (correo y contraseña)
+  servidor.js           Cómo se habla con el servicio del SRP (/api/srp): cada pedido dice si respondió, si faltó conexión o qué no aceptó
+  sesion.js             Acceso: simulado con datos de prueba; con datos reales, las cuentas del servicio (correo y contraseña)
   derivacion.js         Cruce punto-en-polígono (alcaldía, UGA, colonia)
   prioritarias.js       Colonias prioritarias para reforestar: prioridad de la jornada y de su colonia, y la capa en los mapas
   folio.js              Patrón, validación y etiqueta del folio; sólo lo emite el servidor simulado de prueba
@@ -201,7 +214,7 @@ herramientas/           Generan archivos del sitio a partir de originales/ y de 
   extraer_iconos.py     Set de iconografía CDMX (.ai) → trazados para js/iconos.js
   empaquetar.py         Una carpeta → paquete para el SIA: manifiesto con la suma de cada archivo, ZIP y su .sha256; pide VERSION (0.N sólo con --revision)
 
-pruebas/                prueba.py (recorrido completo), auditoria.py (auditoría), auditoria_css.py (hoja de estilos), revisar.py (presentación), servir.py (el servidor local para correrlas) y requisitos.txt (bibliotecas)
+pruebas/                prueba.py (recorrido completo), prueba_conexion.py (con datos reales, contra el servicio local) y su apoyo_servidor.mjs, auditoria.py (auditoría), auditoria_css.py (hoja de estilos), revisar.py (presentación), servir.py (el servidor local para correrlas, que reenvía /api/ al servicio) y requisitos.txt (bibliotecas)
 
 servidor/               El servicio del SRP (TypeScript sobre Node.js, y PostgreSQL con PostGIS): guiones SQL del esquema srp (db/srp/), el módulo para el backend del SIA (src/modulos/srp/), la primera cuenta (deploy/), fragmento del servidor web (servidor-web/) y sus pruebas; ver servidor/README.md
 
@@ -219,7 +232,7 @@ versión se escribe en un solo lugar del código.
 
 **El archivo `VERSION`, en la raíz, lleva el mismo número** (lo pide la guía del SIA, sección 8); la prueba
 falla si no coincide con la marca. Ese número se ve siempre en la franja fija de arriba: «Versión de prueba
-0.9.64» mientras el SIA no instale el sistema; al pasar al SIA, `VERSION` y la marca van en `1` y la franja
+0.9.65» mientras el SIA no instale el sistema; al pasar al SIA, `VERSION` y la marca van en `1` y la franja
 dice «Versión 1».
 
 Si aun así alguien cae en una mezcla, el sistema lo detecta al abrir y explica cómo forzar la
@@ -399,7 +412,13 @@ python3 pruebas/servir.py        (en otra terminal; no http.server: rechaza cone
 python3 pruebas/prueba.py        # unos 40 minutos, sola; al final dice «fallas: 0 de N»
 python3 pruebas/auditoria.py     # unos 2 minutos
 python3 pruebas/revisar.py       # unos 2 minutos
+python3 pruebas/prueba_conexion.py   # un minuto; con la base local del servidor cargada
 ```
+
+`servir.py` reenvía lo que va a `/api/` al servicio del SRP de esta computadora, como lo hace el servidor
+web del SIA: la aplicación y su servicio quedan en el mismo sitio. `prueba_conexion.py` arranca su propio
+servicio y su propio servidor (puertos 3109 y 8098). Abre la aplicación con `ES_FICTICIO: false` sólo en el
+navegador de la prueba, sin cambiar el archivo, y crea y quita sus cuentas en la base local.
 
 Los archivos que `prueba.py` descarga o fabrica (PDF, CSV, hojas de cálculo) quedan en una carpeta
 temporal del equipo (`srp_pruebas`). Dos variables de entorno cambian lo que viene de fábrica:
@@ -424,6 +443,7 @@ tiempo fijo.
 | `auditoria.py` | Consistencia de lo guardado y del modelo: esquema contra lo que se guarda, diccionario y `js/esquema.js` regenerados, dominios, vocabulario |
 | `auditoria_css.py` | La norma de la hoja de estilos: colores sólo en `:root`, sin `#id` ni `!important`, medidas con token, una regla por selector, sin clases ni variables sin uso, sin estilos en línea. Corre dentro de `auditoria.py`; con `--todo` lista cada caso |
 | `revisar.py` | Presentación en ocho combinaciones de ancho y zoom: desbordamiento, alto del mapa, tamaño de los controles y reglas anuladas |
+| `prueba_conexion.py` | La aplicación con datos reales contra el servicio local: entrar, los mensajes al no poder, lo que baja, volver a abrir con y sin señal, la sesión vencida, la contraseña temporal y «Cerrar sesión» |
 
 ## Salida a producción y Fase 2
 

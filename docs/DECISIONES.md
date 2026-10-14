@@ -3588,3 +3588,31 @@
       serían 11. Liber eligió la misma especie con la suma de las precisiones.
     · Las especies de la demostración se asignaron al azar: con datos reales la diferencia será menor.
     · Si una institución escribió a mano una especie que está en el catálogo, esa pareja no sale.
+
+- **D300. La conexión de la aplicación con el servidor (bloque 220, versión 0.9.65).**
+  14-10-2026. Primera parte del paso 4, que Liber aprobó hacer por partes.
+  · **Dónde está el servicio.** `CONFIG.API` es `/api/srp` del mismo sitio: el servidor web del SIA reenvía
+    `/api/` a su backend. Un pedido sin respuesta en `ESPERA_SERVIDOR_MS` (20 s) cuenta como sin conexión.
+  · **Un solo interruptor.** Con `ES_FICTICIO: false`, el acceso es siempre el del servicio, nunca el
+    simulado. Para el paquete del SIA basta ese valor.
+  · **`js/servidor.js`.** Es el único lugar que habla con el servicio, y nunca lanza: cada pedido dice si
+    respondió, si faltó conexión o qué no aceptó, con el mensaje del servicio. Un 502, 503 o 504 del
+    servidor web cuenta como falta de conexión. Si el servicio ya no reconoce la sesión, avisa a
+    `SRP.sesion`.
+  · **Entrar.** El servicio verifica correo y contraseña; luego bajan los seis catálogos, que reemplazan a
+    los del teléfono, y la propia cuenta. Si los catálogos no bajan y el teléfono no tiene unos de antes, no
+    se entra y se cierra la sesión del servicio.
+  · **Volver a abrir.** Se entra sin esperar con la sesión anotada y la cuenta guardada, también sin señal.
+    Si hay señal, el servicio confirma la sesión y se ponen al día la cuenta y los catálogos. Si la
+    Administración le cambió el perfil, la institución, el nombre o la coordinación, se vuelve a entrar
+    con lo nuevo.
+  · **Sesión que ya no vale** (vencida, cerrada por la Administración, cuenta o institución desactivada):
+    vuelve el acceso con el mensaje del servicio, y lo guardado en el teléfono se queda.
+  · **Contraseña temporal.** La pantalla para cambiarla llega con el paso 5. Mientras, se dice y no se
+    entra, y la sesión que abrió el servicio se cierra.
+  · **Cerrar sesión** cierra también la del servicio. Sin señal, ésa vence sola.
+  · **En desarrollo:**
+    · `pruebas/servir.py` reenvía `/api/` al servicio local, como el servidor web del SIA.
+    · `pruebas/prueba_conexion.py` prueba todo lo anterior en un navegador, con `ES_FICTICIO: false` sólo
+      dentro de la prueba.
+  · Con datos de prueba nada cambia: nada sale del teléfono.

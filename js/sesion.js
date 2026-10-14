@@ -1,10 +1,18 @@
 /* SESIÓN (capa de autenticación aparte, Norma 1.5).
-   En la versión de prueba el acceso es simulado y el usuario queda fijo en el dispositivo
-   (localStorage). Con el servidor se sustituye sólo autenticar(), sin tocar el resto. */
+   Quién está dentro queda anotado en el dispositivo (localStorage) y su cuenta en el almacén: así el
+   teléfono abre sin señal con la última sesión. Hay dos formas de entrar, según AUTENTICACION en config.js:
+
+     simulado   con datos de prueba: basta un correo dado de alta; la contraseña no se verifica
+     servidor   con datos reales: el servicio verifica correo y contraseña y abre la sesión con una cookie
+                que la aplicación no ve. Al entrar se bajan la cuenta y los catálogos, lo mínimo para abrir.
+                Al abrir con una sesión anotada se entra sin esperar y, si hay señal, se confirma con el
+                servicio: si ya no la reconoce, se vuelve a pedir la contraseña sin perder lo capturado. */
 window.SRP = window.SRP || {};
 
 SRP.sesion = {
   usuario: null,
+
+  delServidor() { return SRP.CONFIG.AUTENTICACION.PROVEEDOR === 'servidor'; },
 
   async leer() {
     let id = null;
@@ -21,23 +29,32 @@ SRP.sesion = {
     try { localStorage.setItem(SRP.CONFIG.CLAVE_SESION, usuario.id); } catch (e) { /* sin persistencia */ }
   },
 
-  // «Cerrar sesión» para todos; «Cambiar de perfil» (sólo pruebas) también pasa por aquí
-  cerrar() {
+  // Sale de la sesión en este dispositivo; lo capturado se queda en el almacén
+  olvidar() {
     this.usuario = null;
     try { localStorage.removeItem(SRP.CONFIG.CLAVE_SESION); } catch (e) { /* nada que borrar */ }
+  },
+
+  // «Cerrar sesión» para todos; «Cambiar de perfil» (sólo pruebas) también pasa por aquí
+  cerrar() {
+    // El servicio cierra la suya; sin señal, vence sola
+    if (this.delServidor() && this.usuario) SRP.servidor.pedir('POST', '/acceso/salir');
+    this.olvidar();
+  },
+
+  async autenticar(correo, clave) {
+    return this.delServidor() ? this.autenticarEnServidor(correo, clave) : this.autenticarSimulado(correo);
   },
 
   /* ACCESO SIMULADO (versión de prueba).
      La contraseña NO se verifica: comprobarla en el navegador es seguridad aparente, porque
      cualquiera puede leer el código de la página. Lo único que se comprueba es que el correo
      corresponda a una cuenta dada de alta y activa, que es lo que permite probar el flujo y los
-     perfiles. La verificación real la hace el servidor, y entonces se sustituye sólo esta función.
-     Ver AUTENTICACION en config.js. */
-  autenticar(correo) {
-    // Con datos reales el acceso simulado no abre: hasta conectar el servidor, cualquier contraseña
-    // serviría. Apagar ES_FICTICIO sin conectar el servidor deja el acceso cerrado.
-    if (SRP.CONFIG.AUTENTICACION.PROVEEDOR === 'simulado' && !SRP.CONFIG.ES_FICTICIO) {
-      return { ok: false, motivo: 'El acceso con el servidor todavía no está conectado: esta versión no se puede usar con datos reales.' };
+     perfiles. La verificación real la hace el servidor. */
+  autenticarSimulado(correo) {
+    // Con datos reales el acceso simulado no abre: cualquier contraseña serviría
+    if (!SRP.CONFIG.ES_FICTICIO) {
+      return { ok: false, motivo: 'El acceso simulado no abre con datos reales: se entra con las cuentas del servidor.' };
     }
     const buscado = SRP.util.normalizar(correo);
     const u = SRP.ref.usuarios.find(x => SRP.util.normalizar(x.correo) === buscado);
@@ -47,5 +64,69 @@ SRP.sesion = {
     if (!acceso.ok) return acceso;
     this.iniciar(u);
     return { ok: true, usuario: u };
+  },
+
+  /* ACCESO CON EL SERVIDOR. El mensaje de un rechazo es el del servicio: no dice si el correo existe. */
+  async autenticarEnServidor(correo, clave) {
+    const r = await SRP.servidor.pedir('POST', '/acceso/entrar', { correo, contrasena: clave });
+    if (!r.ok) return { ok: false, motivo: r.sinRed ? 'Para entrar hace falta conexión con el servidor. Intente de nuevo cuando tenga señal.' : r.mensaje };
+    if (r.datos.debeCambiar) return this.temporal();
+    // Lo mínimo para abrir: los catálogos y la propia cuenta. Si no bajan y no hay unos de antes, no se entra
+    const catalogos = await this.bajarCatalogos();
+    if (!catalogos.ok && !(await SRP.almacen.todos('instituciones')).length) {
+      SRP.servidor.pedir('POST', '/acceso/salir');
+      return { ok: false, motivo: catalogos.mensaje };
+    }
+    const u = await this.guardarCuenta(r.datos.usuario);
+    this.iniciar(u);
+    return { ok: true, usuario: u };
+  },
+
+  // Una contraseña temporal se cambia antes de seguir; la pantalla para cambiarla todavía no está
+  async temporal() {
+    await SRP.servidor.pedir('POST', '/acceso/salir');
+    return { ok: false, motivo: 'Su contraseña es temporal y hay que cambiarla antes de seguir, pero esta versión todavía no permite cambiarla. Avise a la Administración global.' };
+  },
+
+  // Los seis catálogos, completos: lo que manda el servicio reemplaza lo que había
+  async bajarCatalogos() {
+    const r = await SRP.servidor.pedir('GET', '/catalogos');
+    if (!r.ok) return { ok: false, mensaje: r.sinRed ? 'No se pudieron bajar los catálogos: falta conexión con el servidor. Intente de nuevo.' : r.mensaje };
+    await SRP.almacen.reemplazar(Object.fromEntries(SRP.almacen.TABLAS_CATALOGO.map(t => [t, r.datos[t] || []])));
+    await SRP.ref.recargar();
+    return { ok: true };
+  },
+
+  // La cuenta como la tiene el servicio, sobre la que había en el almacén
+  async guardarCuenta(cuenta) {
+    const u = Object.assign({}, await SRP.almacen.uno('usuarios', cuenta.id), cuenta);
+    await SRP.almacen.guardarConBitacora('usuarios', u);
+    await SRP.ref.recargar();
+    return u;
+  },
+
+  /* Al abrir con una sesión anotada: si hay señal, el servicio dice si la sigue reconociendo y cómo está la
+     cuenta, y se ponen al día los catálogos. Sin señal no pasa nada: se sigue con lo del almacén. */
+  async confirmar() {
+    if (!this.delServidor() || !this.usuario) return;
+    const r = await SRP.servidor.pedir('GET', '/acceso/yo');
+    if (!r.ok) return;   // sin señal; si la sesión ya no vale, SRP.servidor ya avisó
+    if (r.datos.debeCambiar) { this.perdida((await this.temporal()).motivo); return; }
+    const antes = this.usuario;
+    await this.bajarCatalogos();
+    const u = await this.guardarCuenta(r.datos.usuario);
+    this.usuario = u;
+    // Si la Administración le cambió el perfil, la institución o el nombre, se vuelve a entrar con lo nuevo
+    if (['perfil', 'organizacion_id', 'nombre_completo', 'activo'].some(k => antes[k] !== u[k]) ||
+        String(antes.coordinadores_ids) !== String(u.coordinadores_ids)) SRP.app.entrar();
+  },
+
+  // El servicio ya no reconoce la sesión: se vuelve a pedir la contraseña; lo capturado se queda
+  perdida(mensaje) {
+    if (!this.usuario) return;
+    SRP.formulario.limpiar(true);
+    this.olvidar();
+    SRP.app.mostrarAcceso();
+    SRP.util.anunciar(mensaje, 'aviso');
   }
 };

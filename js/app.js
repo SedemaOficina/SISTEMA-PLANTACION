@@ -128,6 +128,8 @@ SRP.app = {
     const u = await SRP.sesion.leer();
     if (u) this.entrar(); else this.mostrarAcceso();
     this.marcarListo();
+    // Con el servidor, se entra sin esperarlo y después se confirma la sesión, si hay señal
+    if (u) SRP.sesion.confirmar();
   },
 
   /* Terminó de arrancar, o se detuvo con su aviso. Las pruebas esperan esta marca en lugar de un tiempo
@@ -167,7 +169,7 @@ SRP.app = {
 
   /* ---------- Acceso ---------- */
   iniciarAcceso() {
-    this.el('form-acceso').addEventListener('submit', (e) => {
+    this.el('form-acceso').addEventListener('submit', async (e) => {
       e.preventDefault();
       const correo = this.el('acceso-correo').value.trim();
       const clave = this.el('acceso-clave').value;
@@ -176,7 +178,12 @@ SRP.app = {
       if (!clave) errores.push(['acceso-clave', 'Escriba su contraseña.']);
       const caja = this.el('acceso-errores'), campos = ['acceso-correo', 'acceso-clave'];
       if (SRP.util.resumenErrores(caja, errores, campos)) return;
-      const r = SRP.sesion.autenticar(correo);
+      // Con el servidor, entrar tarda lo que tarde la red: el botón no se puede tocar dos veces
+      const boton = this.el('form-acceso').querySelector('button[type="submit"]');
+      if (boton.disabled) return;
+      boton.disabled = true; boton.setAttribute('aria-busy', 'true');
+      const r = await SRP.sesion.autenticar(correo, clave);
+      boton.disabled = false; boton.removeAttribute('aria-busy');
       if (!r.ok) { SRP.util.resumenErrores(caja, [['acceso-correo', r.motivo]], campos); return; }
       caja.hidden = true;
       this.el('acceso-clave').value = '';
