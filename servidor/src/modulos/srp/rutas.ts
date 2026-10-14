@@ -2,6 +2,7 @@ import express, { Router, type NextFunction, type Request, type Response } from 
 import type pg from "pg";
 import { rutasAcceso } from "./acceso";
 import { leerConfig, type ConfigSrp } from "./config";
+import { rutasConsultas } from "./consultas";
 import { rutasCuentas } from "./cuentas";
 import { traducir } from "./errores";
 
@@ -13,9 +14,10 @@ import { traducir } from "./errores";
 
      app.use("/api/srp", crearRutasSrp(poolSrp));
 
-   Hoy: el acceso con cuentas propias y la administración de cuentas. Después: la recepción de jornadas y
-   árboles, el folio y las consultas de Supervisión. Lo que debe valer siempre (derivar el territorio de
-   un punto, el folio, la bitácora) lo hace la base.
+   Hoy: el acceso con cuentas propias y su registro de entradas, la administración de cuentas y la
+   consulta de jornadas y árboles, cada quien lo de su alcance (permisos.ts). Después: la recepción, el
+   folio y los catálogos. Lo que debe valer siempre (derivar el territorio de un punto, el folio, la
+   bitácora) lo hace la base.
    ============================================================ */
 
 export function crearRutasSrp(pool: pg.Pool, config: ConfigSrp = leerConfig()): Router {
@@ -29,6 +31,7 @@ export function crearRutasSrp(pool: pg.Pool, config: ConfigSrp = leerConfig()): 
   const acceso = rutasAcceso(pool, config);
   r.use(acceso.router);
   r.use(rutasCuentas(pool, config, acceso.sesion));
+  r.use(rutasConsultas(pool, acceso.sesion));
   r.use((req: Request, res: Response) => {
     res.status(404).json({ codigo: "NO_EXISTE", mensaje: "Esa dirección no existe en el servicio." });
   });

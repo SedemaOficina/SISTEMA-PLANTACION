@@ -10,7 +10,7 @@
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc -p tsconfig.check.json",
-    "test": "tsup && node --test --test-concurrency=1 pruebas/esquema.test.js pruebas/datos.test.js pruebas/acceso.test.js",
+    "test": "tsup && node --test --test-timeout=600000 pruebas/esquema.test.js && node --test --test-timeout=600000 pruebas/datos.test.js && node --test --test-timeout=600000 --test-concurrency=1 pruebas/acceso.test.js pruebas/permisos.test.js",
     "cargar": "node cargar.js",
     "iniciar": "tsup && node dist/iniciar.js",
     "cuenta-inicial": "node deploy/srp-cuenta-inicial.mjs"

@@ -4,7 +4,7 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
-import { conectar } from './apoyo.js';
+import { conectar, limpiar } from './apoyo.js';
 // El módulo compilado, tal como corre (npm test compila antes de probar)
 import { leerConfig, crearGrupo, crearApp, derivar } from '../dist/independiente.js';
 
@@ -44,20 +44,21 @@ before(async () => {
 after(async () => {
   servidor && servidor.close();
   grupo && await grupo.end();
-  // Se quita lo que creó la prueba: sus cuentas (con sus contraseñas y sesiones), su bitácora y su institución
-  await admin.query('BEGIN');
-  const ids = (await admin.query("SELECT id FROM srp.usuarios WHERE correo LIKE '%.prueba.%@ejemplo.local' OR organizacion_id = 'o-prueba-acceso'")).rows.map(r => r.id);
-  // La bitácora sólo crece: para quitar la de la prueba, la dueña de la tabla apaga un momento sus disparadores
-  await admin.query('ALTER TABLE srp.bitacora DISABLE TRIGGER bitacora_inmutable');
-  await admin.query('DELETE FROM srp.bitacora WHERE usuario_id = ANY($1::uuid[]) OR entidad_id = ANY($1::text[])', [ids]);
-  await admin.query('ALTER TABLE srp.bitacora ENABLE TRIGGER bitacora_inmutable');
-  await admin.query('DELETE FROM srp.credenciales WHERE usuario_id = ANY($1::uuid[])', [ids]);
-  await admin.query('DELETE FROM srp.usuarios WHERE id = ANY($1::uuid[]) AND id <> $2', [ids, ADMIN.id]);
-  await admin.query('DELETE FROM srp.usuarios WHERE id = $1', [ADMIN.id]);
-  await admin.query("DELETE FROM srp.instituciones WHERE id = 'o-prueba-acceso'");
-  await admin.query('COMMIT');
-  await admin.query('REVOKE srp_api FROM CURRENT_USER');
-  await admin.end();
+  // Se quita lo que creó la prueba: sus cuentas (con sus contraseñas y sesiones), sus bitácoras y su institución
+  await limpiar(admin, async () => {
+    const ids = (await admin.query("SELECT id FROM srp.usuarios WHERE correo LIKE '%.prueba.%@ejemplo.local' OR organizacion_id = 'o-prueba-acceso'")).rows.map(r => r.id);
+    // La bitácora sólo crece: para quitar la de la prueba, la dueña de la tabla apaga un momento sus disparadores
+    await admin.query('ALTER TABLE srp.bitacora DISABLE TRIGGER bitacora_inmutable');
+    await admin.query('DELETE FROM srp.bitacora WHERE usuario_id = ANY($1::uuid[]) OR entidad_id = ANY($1::text[])', [ids]);
+    await admin.query('ALTER TABLE srp.bitacora ENABLE TRIGGER bitacora_inmutable');
+    await admin.query('ALTER TABLE srp.bitacora_acceso DISABLE TRIGGER bitacora_inmutable');
+    await admin.query("DELETE FROM srp.bitacora_acceso WHERE usuario_id = ANY($1::uuid[]) OR correo_intentado LIKE '%.prueba.%@ejemplo.local'", [ids]);
+    await admin.query('ALTER TABLE srp.bitacora_acceso ENABLE TRIGGER bitacora_inmutable');
+    await admin.query('DELETE FROM srp.credenciales WHERE usuario_id = ANY($1::uuid[])', [ids]);
+    await admin.query('DELETE FROM srp.usuarios WHERE id = ANY($1::uuid[]) AND id <> $2', [ids, ADMIN.id]);
+    await admin.query('DELETE FROM srp.usuarios WHERE id = $1', [ADMIN.id]);
+    await admin.query("DELETE FROM srp.instituciones WHERE id = 'o-prueba-acceso'");
+  });
 });
 
 test('sin sesión no se entra a nada, y la respuesta no se guarda en cachés', async () => {
@@ -246,4 +247,27 @@ test('la contraseña nunca se guarda en claro, con el formato de acceso del SIA,
   assert.ok(!cred.derivada.includes(alta.datos.temporal));
   assert.match(cred.derivada, /^scrypt\$16384\$8\$1\$[A-Za-z0-9_-]{22}\$[A-Za-z0-9_-]{86}$/, 'scrypt N=2^14, sal de 16 bytes y 64 de derivada, en base64url');
   assert.equal((await cliente().pedir('POST', '/acceso/entrar', { correo: 'cabo.prueba.cinco@ejemplo.local', contrasena: alta.datos.temporal })).datos.codigo, 'TEMPORAL_VENCIDA');
+});
+
+test('el registro de entradas anota cada intento con su procedencia: entrada, cambio de contraseña, salida, fallidas y bloqueo', async () => {
+  const a = cliente();
+  await a.pedir('POST', '/acceso/entrar', { correo: ADMIN.correo, contrasena: ADMIN.clave });
+  const correo = 'cabo.prueba.registro@ejemplo.local', clave = 'Registro de entradas 2026';
+  const alta = await a.pedir('POST', '/cuentas', { correo, nombre_completo: 'Cabo Prueba Registro', organizacion_id: 'o-prueba-acceso', cargo_rol: 'Cabo', perfil: 'CABO' });
+  const cabo = cliente();
+  await cabo.pedir('POST', '/acceso/entrar', { correo, contrasena: alta.datos.temporal });
+  await cabo.pedir('POST', '/acceso/contrasena', { actual: alta.datos.temporal, nueva: clave });
+  await cabo.pedir('POST', '/acceso/salir');
+  for (let i = 0; i < 3; i++) await cliente().pedir('POST', '/acceso/entrar', { correo, contrasena: 'equivocada ' + i });
+  // Bloqueada, ni con la contraseña correcta: también queda anotado
+  await cliente().pedir('POST', '/acceso/entrar', { correo, contrasena: clave });
+  const filas = (await admin.query('SELECT evento, ip IS NOT NULL AS con_ip, correo_intentado FROM srp.bitacora_acceso WHERE usuario_id = $1 ORDER BY id', [alta.datos.usuario.id])).rows;
+  assert.deepEqual(filas.map(f => f.evento), ['ENTRADA', 'CONTRASENA_CAMBIADA', 'SALIDA', 'ENTRADA_FALLIDA', 'ENTRADA_FALLIDA', 'BLOQUEO', 'ENTRADA_FALLIDA']);
+  assert.ok(filas.every(f => f.con_ip && f.correo_intentado === null), 'cada renglón lleva la procedencia y la cuenta, no el correo');
+  // Un correo sin cuenta se anota tal como se intentó, con el navegador de donde vino
+  const intentado = 'nadie.prueba.registro@ejemplo.local';
+  await fetch(base + '/acceso/entrar', { method: 'POST', headers: { 'content-type': 'application/json', 'user-agent': 'Prueba del registro' },
+    body: JSON.stringify({ correo: intentado.toUpperCase(), contrasena: 'Lo que sea 123' }) });
+  const sinCuenta = (await admin.query('SELECT evento, usuario_id, agente FROM srp.bitacora_acceso WHERE correo_intentado = $1', [intentado])).rows;
+  assert.deepEqual(sinCuenta, [{ evento: 'ENTRADA_FALLIDA', usuario_id: null, agente: 'Prueba del registro' }]);
 });

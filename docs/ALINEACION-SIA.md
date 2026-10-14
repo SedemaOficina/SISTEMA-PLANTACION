@@ -74,9 +74,15 @@ cuentas viven en `srp`; altas, bajas y restablecimientos los hace la Administrac
    versión 1, con el sistema completo.
 3. **El acceso con los formatos del SIA.** Ya hechos (bloque 206): contraseña con scrypt N=16384, r=8,
    p=1, en base64url; testigo de sesión de 32 bytes con su resumen sha256 en hexadecimal; la cookie
-   `sia_srp_sesion`; y, en la fase 2, la primera cuenta con un guion que sólo imprime el SQL. Falta: el
-   registro de entradas y salidas con su procedencia como `acceso.bitacora`, y el límite por procedencia
-   con el módulo común del SIA (6.2). Después, lo que se acuerde en la decisión 3.
+   `sia_srp_sesion`; y, en la fase 2, la primera cuenta con un guion que sólo imprime el SQL. Hechos en el
+   bloque 210:
+   - el registro de entradas y salidas, `srp.bitacora_acceso`, con la forma de `acceso.bitacora` y la
+     procedencia del módulo común del SIA (`src/comun/procedencia.ts`), que se importa y no se copia;
+   - los permisos de cada perfil impuestos en el servidor, con las reglas de la aplicación;
+   - la consulta de jornadas y árboles, cada quien lo de su alcance.
+
+   Falta el límite por procedencia (6.2), cuando el SIA corrija su módulo común, y la edición de cuentas,
+   que espera la decisión 3.
 4. **La recepción como la hace el SIA:** disparadores que vuelven a derivar el punto, asignan el folio con
    un contador por celda y escriben la bitácora, que ya no se podrá editar ni borrar ni siquiera por error.
    Fotografías como archivos, con su estimado de espacio (6.11). Carga masiva y envío por tandas, cada una

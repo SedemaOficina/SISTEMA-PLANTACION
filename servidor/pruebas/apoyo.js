@@ -15,3 +15,20 @@ export async function codigoDeError(c, sql, valores) {
   await c.query('RELEASE SAVEPOINT intento');
   return null;
 }
+
+// La limpieza de una prueba, en una transacción. Si algo falla, la deshace, devuelve el permiso prestado
+// de srp_api y cierra la conexión de todos modos: una conexión que se queda a media transacción retiene
+// sus bloqueos y deja esperando para siempre a las pruebas que siguen.
+export async function limpiar(c, trabajo) {
+  try {
+    await c.query('BEGIN');
+    await trabajo();
+    await c.query('COMMIT');
+  } catch (e) {
+    await c.query('ROLLBACK').catch(() => {});
+    throw e;
+  } finally {
+    await c.query('REVOKE srp_api FROM CURRENT_USER').catch(() => {});
+    await c.end();
+  }
+}

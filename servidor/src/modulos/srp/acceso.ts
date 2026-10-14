@@ -1,5 +1,6 @@
 import { Router, type NextFunction, type Request, type RequestHandler, type Response } from "express";
 import type pg from "pg";
+import { agenteDeUsuario, ipDeOrigen } from "../../comun/procedencia";
 import type { ConfigSrp } from "./config";
 import { derivar, revisarNueva, verificar, verificarSombra } from "./contrasenas";
 import { responder } from "./errores";
@@ -17,7 +18,27 @@ import { enTransaccion } from "./transaccion";
    Las respuestas de error llevan { codigo, mensaje }. Toda entrada fallida responde lo mismo y tarda lo
    mismo —el correo no existe, la cuenta o su institución están desactivadas, la cuenta está bloqueada o
    la contraseña es mala—, como el módulo `acceso` del SIA: si se distinguieran, se sabría qué correos
-   tienen cuenta. */
+   tienen cuenta.
+
+   Cada intento de entrar, logrado o no, cada bloqueo, cada salida y cada cambio de contraseña queda en
+   srp.bitacora_acceso con su procedencia, como en `acceso.bitacora`. La procedencia la da el módulo común
+   del SIA (src/comun/procedencia.ts). Toda entrada fallida anota un solo renglón, así que tampoco el
+   registro cambia el tiempo de respuesta. */
+
+type EventoAcceso = "ENTRADA" | "ENTRADA_FALLIDA" | "BLOQUEO" | "SALIDA" | "CONTRASENA_CAMBIADA";
+
+// Un renglón del registro de entradas: de la cuenta, o del correo intentado si no tiene cuenta
+async function anotar(bd: S.Consultable, req: Request, evento: EventoAcceso, quien: { usuarioId: string } | { correo: string }): Promise<void> {
+  const usuarioId = "usuarioId" in quien ? quien.usuarioId : null;
+  const correo = "correo" in quien ? quien.correo.slice(0, 254) : null;
+  await bd.query("INSERT INTO srp.bitacora_acceso (evento, usuario_id, correo_intentado, ip, agente) VALUES ($1, $2, $3, $4, $5)", [
+    evento,
+    usuarioId,
+    correo,
+    ipDeOrigen(req),
+    agenteDeUsuario(req),
+  ]);
+}
 
 export interface Sesion {
   id: string;
@@ -103,6 +124,7 @@ export function rutasAcceso(pool: pg.Pool, config: ConfigSrp): { router: Router;
     const u = rows[0];
     if (!u || !u.derivada) {
       await verificarSombra(contrasena);
+      await anotar(pool, req, "ENTRADA_FALLIDA", u ? { usuarioId: u.id } : { correo });
       return incorrecto();
     }
     /* Cada intento se anota antes de verificar la contraseña, en un solo paso de la base: intentos
@@ -121,13 +143,25 @@ export function rutasAcceso(pool: pg.Pool, config: ConfigSrp): { router: Router;
     ).rows[0];
     // Se verifica siempre, también bloqueada o desactivada: el tiempo no debe decir en qué estado está la cuenta
     const correcta = await verificar(contrasena, u.derivada);
-    if (!turno || !correcta) return incorrecto();
+    const quien = { usuarioId: u.id };
+    if (!turno || !correcta) {
+      // El intento que llega al máximo es el que bloquea la cuenta
+      await anotar(pool, req, turno?.bloqueada_hasta ? "BLOQUEO" : "ENTRADA_FALLIDA", quien);
+      return incorrecto();
+    }
     // La contraseña es correcta: la cuenta vuelve a contar desde cero
     await pool.query("UPDATE srp.credenciales SET intentos_fallidos = 0, bloqueada_hasta = NULL WHERE usuario_id = $1", [u.id]);
-    if (!u.activo || !u.institucion_activa) return incorrecto();
+    if (!u.activo || !u.institucion_activa) {
+      await anotar(pool, req, "ENTRADA_FALLIDA", quien);
+      return incorrecto();
+    }
     // Una temporal vencida sólo se dice a quien escribió la contraseña correcta
-    if (u.temporal_vencida) return responder(res, 403, "TEMPORAL_VENCIDA", "Su contraseña temporal venció. Pida otra a la Administración global.");
+    if (u.temporal_vencida) {
+      await anotar(pool, req, "ENTRADA_FALLIDA", quien);
+      return responder(res, 403, "TEMPORAL_VENCIDA", "Su contraseña temporal venció. Pida otra a la Administración global.");
+    }
     const testigo = await S.abrir(pool, u.id, { agente: req.get("user-agent") || "", inactividadDias: A.inactividadDias });
+    await anotar(pool, req, "ENTRADA", quien);
     S.ponerCookie(res, testigo, { ruta: config.ruta, segura: config.cookieSegura });
     res.json({ usuario: cuentaPublica(u), debeCambiar: Boolean(u.temporal) });
   });
@@ -135,7 +169,9 @@ export function rutasAcceso(pool: pg.Pool, config: ConfigSrp): { router: Router;
   const sesion = exigirSesion(pool, config);
 
   r.post("/acceso/salir", sesion, async (req: Request, res: Response) => {
-    await S.cerrar(pool, sesionDe(res).id, "SALIDA");
+    const s = sesionDe(res);
+    await S.cerrar(pool, s.id, "SALIDA");
+    await anotar(pool, req, "SALIDA", { usuarioId: s.usuario.id });
     S.borrarCookie(res, { ruta: config.ruta, segura: config.cookieSegura });
     res.json({ ok: true });
   });
@@ -160,6 +196,7 @@ export function rutasAcceso(pool: pg.Pool, config: ConfigSrp): { router: Router;
         [u.id, derivada],
       );
       await S.cerrarDeCuenta(c, u.id, "CONTRASENA_CAMBIADA", s.id);
+      await anotar(c, req, "CONTRASENA_CAMBIADA", { usuarioId: u.id });
     });
     res.json({ ok: true });
   });

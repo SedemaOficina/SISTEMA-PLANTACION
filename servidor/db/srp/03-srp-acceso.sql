@@ -49,18 +49,48 @@ CREATE INDEX sesiones_usuario_id ON srp.sesiones (usuario_id);
 COMMENT ON TABLE srp.sesiones IS 'Sesiones abiertas y cerradas. Se guarda el resumen del testigo, no el testigo. Al desactivar una cuenta o su institución, o al cambiar o restablecer la contraseña, se cierran sus sesiones.';
 COMMENT ON COLUMN srp.sesiones.agente IS 'Navegador y equipo desde donde se entró, para que la persona reconozca sus sesiones.';
 
+-- EL REGISTRO DE ENTRADAS Y SALIDAS, como `acceso.bitacora` del SIA: cada intento de entrar, logrado o
+-- no, cada bloqueo, cada salida y cada cambio de contraseña, con la procedencia de la petición. Es para
+-- el forense, no identifica a nadie: la dirección es la que llega al servidor. Lo que la Administración
+-- hace con las cuentas (altas, restablecimientos, activaciones) va en srp.bitacora.
+CREATE TABLE srp.bitacora_acceso (
+  id                 bigint       GENERATED ALWAYS AS IDENTITY,
+  momento            timestamptz  NOT NULL DEFAULT now(),
+  evento             text         NOT NULL,
+  usuario_id         uuid         NULL,
+  correo_intentado   text         NULL,
+  ip                 inet         NULL,
+  agente             text         NULL,
+  CONSTRAINT bitacora_acceso_pk PRIMARY KEY (id),
+  CONSTRAINT bitacora_acceso_evento CHECK (evento IN ('ENTRADA', 'ENTRADA_FALLIDA', 'BLOQUEO', 'SALIDA', 'CONTRASENA_CAMBIADA')),
+  CONSTRAINT bitacora_acceso_correo_intentado CHECK (correo_intentado IS NULL OR length(correo_intentado) <= 254),
+  CONSTRAINT bitacora_acceso_quien CHECK (usuario_id IS NULL OR correo_intentado IS NULL),
+  CONSTRAINT bitacora_acceso_agente CHECK (agente IS NULL OR length(agente) <= 400)
+);
+CREATE INDEX bitacora_acceso_usuario_id ON srp.bitacora_acceso (usuario_id, momento);
+COMMENT ON TABLE srp.bitacora_acceso IS 'Entradas, intentos fallidos, bloqueos, salidas y cambios de contraseña, con su procedencia. Sólo crece.';
+COMMENT ON COLUMN srp.bitacora_acceso.usuario_id IS 'La cuenta del intento, si el correo existe. Una cuenta que ya intentó entrar no se elimina: se desactiva.';
+COMMENT ON COLUMN srp.bitacora_acceso.correo_intentado IS 'Sólo cuando el correo no tiene cuenta: el identificador no sirve para el forense y el correo sí.';
+COMMENT ON COLUMN srp.bitacora_acceso.ip IS 'Dirección de origen de la petición, como la da el módulo común de procedencia del SIA.';
+ALTER TABLE srp.bitacora_acceso ADD CONSTRAINT bitacora_acceso_usuario_id_fk FOREIGN KEY (usuario_id) REFERENCES srp.usuarios (id) ON DELETE RESTRICT;
+
 -- Al eliminar una cuenta (sólo se puede si no tiene registros) se van con ella su contraseña y sus sesiones
 ALTER TABLE srp.credenciales ADD CONSTRAINT credenciales_usuario_id_fk FOREIGN KEY (usuario_id) REFERENCES srp.usuarios (id) ON DELETE CASCADE;
 ALTER TABLE srp.credenciales ADD CONSTRAINT credenciales_cambiada_por_id_fk FOREIGN KEY (cambiada_por_id) REFERENCES srp.usuarios (id) DEFERRABLE INITIALLY IMMEDIATE;
 ALTER TABLE srp.sesiones ADD CONSTRAINT sesiones_usuario_id_fk FOREIGN KEY (usuario_id) REFERENCES srp.usuarios (id) ON DELETE CASCADE;
 
--- LA BITÁCORA SÓLO CRECE. La cuenta del servicio ya no puede editarla ni borrarla por sus permisos; los
--- disparadores lo impiden también a quien administra la base, aunque sea por error. Nada la recorta.
+-- LAS BITÁCORAS SÓLO CRECEN: la de los cambios y la de las entradas. La cuenta del servicio ya no puede
+-- editarlas ni borrarlas por sus permisos; los disparadores lo impiden también a quien administra la
+-- base, aunque sea por error. Nada las recorta.
 CREATE FUNCTION srp.bitacora_inmutable() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
-  RAISE EXCEPTION 'La bitácora del SRP no se edita ni se borra';
+  RAISE EXCEPTION 'La bitácora del SRP no se edita ni se borra (%)', TG_TABLE_NAME;
 END $$;
 CREATE TRIGGER bitacora_inmutable BEFORE UPDATE OR DELETE ON srp.bitacora
   FOR EACH ROW EXECUTE FUNCTION srp.bitacora_inmutable();
 CREATE TRIGGER bitacora_sin_vaciar BEFORE TRUNCATE ON srp.bitacora
+  FOR EACH STATEMENT EXECUTE FUNCTION srp.bitacora_inmutable();
+CREATE TRIGGER bitacora_inmutable BEFORE UPDATE OR DELETE ON srp.bitacora_acceso
+  FOR EACH ROW EXECUTE FUNCTION srp.bitacora_inmutable();
+CREATE TRIGGER bitacora_sin_vaciar BEFORE TRUNCATE ON srp.bitacora_acceso
   FOR EACH STATEMENT EXECUTE FUNCTION srp.bitacora_inmutable();

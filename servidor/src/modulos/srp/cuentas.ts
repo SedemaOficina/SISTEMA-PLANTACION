@@ -1,15 +1,16 @@
 import { randomUUID } from "node:crypto";
-import { Router, type NextFunction, type Request, type RequestHandler, type Response } from "express";
+import { Router, type Request, type RequestHandler, type Response } from "express";
 import type pg from "pg";
 import { cuentaPublica, sesionDe } from "./acceso";
 import type { ConfigSrp } from "./config";
 import { derivar, temporal } from "./contrasenas";
 import { responder } from "./errores";
+import { exigirPermiso, PERFILES, SEDEMA } from "./permisos";
 import { cerrarDeCuenta, type Usuario } from "./sesiones";
 import { enTransaccion } from "./transaccion";
 
-/* CUENTAS: alta, restablecimiento de contraseña y activación. Sólo la Administración global las
-   administra (la regla `usuario.administrar` de la aplicación).
+/* CUENTAS: alta, restablecimiento de contraseña y activación. Sólo las administra quien tiene la regla
+   `usuario.administrar` (permisos.ts): la Administración global.
 
    POST /cuentas                     alta con contraseña temporal; responde la cuenta y la temporal
    POST /cuentas/:id/restablecer     otra temporal; cierra las sesiones de la cuenta
@@ -18,8 +19,6 @@ import { enTransaccion } from "./transaccion";
    La contraseña temporal se dice una sola vez, en la respuesta: la Administración la entrega a la
    persona por teléfono o en persona. Cada cambio deja su renglón en la bitácora, como en la aplicación. */
 
-const PERFILES = ["CABO", "COORDINADOR", "DIRECTIVO", "ADMIN"];
-const SEDEMA = "o-sedema";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const limpio = (t: unknown) => String(t ?? "").trim().replace(/\s+/g, " ");
 
@@ -74,7 +73,7 @@ async function validarAlta(c: pg.PoolClient, d: Alta): Promise<[string, string][
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.correo)) e.push(["correo", "Escriba un correo válido."]);
   else if ((await c.query("SELECT 1 FROM srp.usuarios WHERE correo = $1", [d.correo])).rowCount) e.push(["correo", "Ese correo ya tiene cuenta."]);
   if (!d.cargo_rol) e.push(["cargo_rol", "Escriba el cargo."]);
-  if (!PERFILES.includes(d.perfil)) e.push(["perfil", "Elija el perfil de captura."]);
+  if (!Object.hasOwn(PERFILES, d.perfil)) e.push(["perfil", "Elija el perfil de captura."]);
   else if (d.perfil === "ADMIN" && !sedema) e.push(["perfil", "La Administración global es sólo de la Secretaría."]);
   if (d.coordinadores_ids.length) {
     const ok = (
@@ -90,9 +89,7 @@ async function validarAlta(c: pg.PoolClient, d: Alta): Promise<[string, string][
 
 export function rutasCuentas(pool: pg.Pool, config: ConfigSrp, sesion: RequestHandler): Router {
   const r = Router();
-  const soloAdministracion = (req: Request, res: Response, next: NextFunction) =>
-    sesionDe(res).usuario.perfil === "ADMIN" ? next() : responder(res, 403, "SIN_PERMISO", "Sólo la Administración global administra las cuentas.");
-  r.use("/cuentas", sesion, soloAdministracion);
+  r.use("/cuentas", sesion, exigirPermiso("usuario.administrar"));
 
   r.post("/cuentas", async (req: Request, res: Response) => {
     const b = req.body ?? {}, actor = sesionDe(res).usuario;

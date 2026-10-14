@@ -16,6 +16,7 @@ los permisos por perfil y el folio vienen en las fases siguientes.
 |---|---|
 | `src/modulos/srp/` | **El módulo**, lo único que viaja al SIA: se copia tal cual a `sia-backend/src/modulos/srp/`. `crearRutasSrp(pool)` da sus rutas; el backend central lo monta en `/api/srp` con su propia conexión, la de `SRP_DB_USER` y `SRP_DB_PASS` |
 | `src/independiente.ts` | El módulo fuera del SIA, para desarrollo y pruebas: la conexión local (con el archivo de contraseñas del equipo y, si se pide, asumiendo `srp_api`) y una aplicación que lo monta |
+| `src/comun/procedencia.ts` | Fuera del SIA, sustituye al módulo común de procedencia de `sia-backend`, que el módulo importa para su registro de entradas. No viaja: en el SIA se usa el suyo |
 | `src/iniciar.ts` | Arranca el módulo solo |
 | `deploy/srp-cuenta-inicial.mjs` | La primera Administración global: imprime el SQL del alta, sin dependencias |
 | `bd.js`, `cargar.js` | La conexión de quien administra la base local y la carga de datos |
@@ -49,7 +50,7 @@ repositorio:
 |---|---|
 | `db/srp/01-srp-esquema.sql` | Comprueba que estén PostGIS, `territorio` y `territorio_lectura`; crea el esquema `srp` y la tabla de versiones. Si el esquema ya está instalado, se detiene sin tocar nada |
 | `db/srp/02-srp-tablas.sql` | Las diez tablas, con sus llaves, reglas, índices y comentarios. **Generado**: no se edita a mano |
-| `db/srp/03-srp-acceso.sql` | Contraseñas (sólo derivadas con sal, nunca en claro) y sesiones (sólo el resumen del testigo) |
+| `db/srp/03-srp-acceso.sql` | Contraseñas (sólo derivadas con sal, nunca en claro), sesiones (sólo el resumen del testigo) y el registro de entradas; las dos bitácoras, que sólo crecen |
 | `db/srp/04-srp-sobre-territorio.sql` | La capa propia (colonias prioritarias), el índice espacial de árboles y jornadas, y `srp.derivar`, que da alcaldía, colonia y celda UGA de un punto sobre `territorio`, con las mismas reglas que la aplicación |
 | `db/srp/05-srp-rol-y-grants.sql` | La cuenta `srp_api`, sin contraseña, con sus permisos mínimos y `territorio_lectura`; la versión 1 del esquema. Al final, la verificación para correr como la cuenta: lo que debe funcionar y lo que debe fallar |
 | `db/srp/instalar.sql` | Corre los anteriores en orden, en una sola transacción |
@@ -68,8 +69,9 @@ de clave.
 - Usa el esquema, pero no crea, altera ni borra tablas, ni dentro ni fuera de él.
 - Lee, agrega y cambia renglones de las tablas de datos, y borra sólo lo que el sistema permite borrar
   (un valor de catálogo o una cuenta sin uso, un lote de carga masiva, las sesiones).
-- A la bitácora sólo le agrega renglones: no la edita ni la borra. Sus disparadores lo impiden también a
-  quien administra la base.
+- A las bitácoras, la de cambios y la de entradas, sólo les agrega renglones: no las edita ni las borra.
+  Sus disparadores lo impiden también a quien administra la base. Una cuenta que ya intentó entrar no se
+  elimina: su registro de entradas la sostiene, y se desactiva.
 - Lee `territorio` y la capa propia; `srp.punto` y `srp.derivar` las puede usar. No escribe en ninguna.
 - No tiene ningún permiso directo fuera de `srp`.
 
@@ -101,7 +103,7 @@ con `--revision` y diciéndolo en el LEEME. El cambio a `sia-backend` (un diff y
 archivos completos) se arma sobre una copia del repositorio del SIA y lleva líneas suyas: vive sólo en
 `servidor/local/`, que no se sube.
 
-## El servicio: acceso y cuentas
+## El servicio: acceso, cuentas y consultas
 
 En el SIA lo monta el backend central: `app.use("/api/srp", crearRutasSrp(poolSrp))`. Fuera de él,
 `npm run iniciar` lo arranca solo, en `SRP_PUERTO` (3100), bajo `/api/srp`. La configuración, toda por
@@ -117,6 +119,8 @@ variables de entorno, está explicada en `src/modulos/srp/config.ts`. Las respue
 | `POST /cuentas` | Alta con contraseña temporal, que se responde una sola vez | Administración global |
 | `POST /cuentas/:id/restablecer` | Otra contraseña temporal; cierra las sesiones de la cuenta | Administración global |
 | `POST /cuentas/:id/estado` | Activa o desactiva; desactivar cierra sus sesiones | Administración global |
+| `GET /jornadas` | Las jornadas de su alcance, por páginas | Con sesión |
+| `GET /plantaciones` | Los árboles de su alcance, por páginas, sin la fotografía | Con sesión |
 
 - **Contraseñas:** sólo se guarda lo que deriva scrypt, con sal, nunca la contraseña, en el formato del
   módulo `acceso` del SIA (`scrypt$16384$8$1$sal$derivada`, en base64url): si un día las cuentas se mudan
@@ -143,8 +147,30 @@ variables de entorno, está explicada en `src/modulos/srp/config.ts`. Las respue
   contraseña temporal sale una sola vez, por la salida de errores, y nunca toca la base. Se niega si ya
   hay una Administración global: las demás cuentas se dan de alta desde la aplicación.
 
+- **Registro de entradas:** cada intento de entrar, logrado o no, cada bloqueo, cada salida y cada cambio
+  de contraseña queda en `srp.bitacora_acceso`, con la procedencia y el navegador, como en `acceso.bitacora`
+  del SIA. Un correo sin cuenta se anota tal como se intentó. La procedencia la da el módulo común del SIA.
+
 Los plazos, el largo mínimo y el bloqueo son parámetros (`src/modulos/srp/config.ts`): se cambian sin
 tocar código.
+
+### Permisos de cada perfil
+
+`src/modulos/srp/permisos.ts` tiene las reglas de la aplicación (`js/permisos.js`): los perfiles, lo que
+alcanza cada uno y lo que exige cada acción. Aquí se imponen; la pantalla sólo las refleja. Una prueba las
+compara una por una con las de la aplicación, así que si cambia una regla, cambia en los dos lados.
+
+| Perfil | Ve y toca |
+|---|---|
+| Cabo | Lo suyo: sus jornadas, las que recibió en relevo y sus árboles. De una jornada donde estuvo de relevo sin ser el titular, ve todos sus árboles |
+| Coordinador | Lo suyo y lo de los cabos que lo tienen asignado |
+| Directivo | De la Secretaría, todo; de otra institución, sólo lo de la suya. Sólo ve |
+| Administración global | Todo, y administra cuentas y catálogos. No captura |
+
+Las consultas aplican el alcance en la base, sin traer todo a memoria. Van por páginas, en orden de
+identificador: `?despues=<id del último>&limite=<n>` (500 por omisión, hasta 2000), y la respuesta dice
+desde dónde sigue (`siguiente`), o `null` al terminar. Las filas llevan los campos del teléfono, con las
+fechas en texto ISO 8601 en UTC; la fotografía tendrá su propia ruta.
 
 ## Cargar datos
 
@@ -184,15 +210,21 @@ npm run cargar -- rehacer
 npm test
 ```
 
-Las pruebas:
+Las pruebas corren en este orden, una tras otra, y cada una tiene diez minutos para terminar. Primero
+`esquema.test.js`, que deja instalados los guiones de `db/srp/` tal como están: las demás corren sobre
+esa base y nunca sobre una instalación anterior.
 
 - `pruebas/esquema.test.js`: instala en limpio, comprueba que las tablas sean las del diccionario, que las
   reglas rechacen lo inválido y que `srp_api` tenga sólo sus permisos —`territorio` de sólo lectura,
-  nada directo fuera de `srp`—, que la bitácora no se edite ni se vacíe, y que el guion de la primera
+  nada directo fuera de `srp`—, que las bitácoras no se editen ni se vacíen, y que el guion de la primera
   cuenta dé una sola, con el resumen de la temporal que entrega; y destruye.
 - `pruebas/acceso.test.js`: levanta el servicio y lo usa como la aplicación: entrar, salir, alta con
   temporal, cambio obligatorio, bloqueo (también con intentos simultáneos), restablecimiento,
-  desactivación, institución desactivada, vencimiento de la sesión y de la temporal.
+  desactivación, institución desactivada, vencimiento de la sesión y de la temporal, y el registro de
+  entradas.
+- `pruebas/permisos.test.js`: carga `js/permisos.js` tal cual y lo compara con el servidor: cada perfil,
+  cada acción y cientos de registros armados para los casos de borde; la consulta en la base, con todas
+  las cuentas, jornadas y árboles que haya; y las rutas, por páginas, como las usará la aplicación.
 - `pruebas/datos.test.js`: carga todo y comprueba que cupo, que las capas estén completas y, sobre todo,
   que PostGIS, leyendo `territorio`, ubique cada árbol y cada jornada igual que la aplicación (alcaldía,
   colonia y celda UGA).

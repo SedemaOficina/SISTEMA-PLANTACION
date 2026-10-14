@@ -3369,3 +3369,25 @@
     versión 1.
   · `empaquetar.py` pide `VERSION` y la misma versión en el LEEME. Se detiene con 0.N, salvo con
     `--revision` y un LEEME que diga «para revisión». La guía recoge esa excepción.
+
+- **D290. Los permisos de cada perfil en el servidor y el registro de entradas (bloque 210).**
+  13-10-2026. Fase 3, en lo que no depende de las respuestas del SIA; lo aprobó Liber.
+  · `permisos.ts` tiene las reglas de `js/permisos.js` (perfiles, alcance y acciones) y el servidor las
+    impone. Una prueba carga `js/permisos.js` tal cual y compara las dos, perfil por perfil, acción por
+    acción, sobre cientos de registros de borde. Si cambia una regla, cambia en los dos lados.
+  · Qué árboles ve cada cuenta: los de su alcance y, de una jornada donde estuvo de relevo sin ser su
+    titular, todos los de esa jornada. Así los enseña hoy la vista de Jornadas de la aplicación.
+  · La consulta aplica el alcance en la base (`alcanceSql`, `veArbolSql`), sin traer todo a memoria, y se
+    comprueba contra la aplicación con todas las cuentas y todos los árboles de la base local.
+  · `GET /jornadas` y `GET /plantaciones` van por páginas en orden de identificador, sin la fotografía y
+    con las fechas en UTC. Una cuenta con un perfil que no existe no ve nada.
+  · `srp.bitacora_acceso` tiene la forma de `acceso.bitacora`: entrada, entrada fallida, bloqueo, salida y
+    cambio de contraseña, con procedencia y navegador. Sólo crece, como `srp.bitacora`.
+  · Una cuenta que ya intentó entrar no se elimina, porque su registro la sostiene: se desactiva.
+  · La procedencia se importa del módulo común del SIA (`src/comun/procedencia.ts`) y no se copia. Fuera
+    del SIA la da un sustituto local con las mismas dos funciones, que no viaja.
+  · El esquema sigue en la versión 1: no se ha instalado en ninguna parte. El paquete de revisión de la
+    fase 2 no trae la tabla nueva; el de la versión 1 la traerá.
+  · Las pruebas del servidor corren en un orden fijo, primero la que instala la base, y cada una con un
+    tope de diez minutos. La limpieza deshace y cierra su conexión aunque falle. Una corrida interrumpida
+    había dejado una conexión con bloqueos, y la siguiente esperó siete horas.

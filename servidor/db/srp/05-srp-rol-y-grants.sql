@@ -14,7 +14,7 @@
 --   · Leer, agregar y cambiar renglones de las tablas de datos. Borra sólo lo que el sistema permite
 --     borrar: un valor de catálogo o una cuenta sin uso, un lote de carga masiva al deshacerlo, y las
 --     sesiones.
---   · A la bitácora, sólo leerla y agregarle renglones.
+--   · A las bitácoras (la de cambios y la de entradas), sólo leerlas y agregarles renglones.
 --   · Leer territorio, por el rol de grupo territorio_lectura, y la capa propia de prioritarias.
 -- Lo que no puede: crear, cambiar o borrar tablas; editar o borrar la bitácora; anotar versiones del
 -- esquema; escribir en territorio; ver otros esquemas del SIA.
@@ -41,7 +41,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON
   srp.credenciales, srp.sesiones
 TO srp_api;
 
-GRANT SELECT, INSERT ON srp.bitacora TO srp_api;
+GRANT SELECT, INSERT ON srp.bitacora, srp.bitacora_acceso TO srp_api;
 GRANT SELECT ON srp.migraciones TO srp_api;
 
 -- La capa propia sólo se lee: la carga quien administra la base
@@ -53,7 +53,7 @@ GRANT EXECUTE ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, nume
 GRANT territorio_lectura TO srp_api;
 
 INSERT INTO srp.migraciones (version, nombre)
-VALUES (1, 'Instalación: diez tablas del SRP, contraseñas, sesiones, prioritarias y derivación sobre territorio')
+VALUES (1, 'Instalación: diez tablas del SRP, contraseñas, sesiones, registro de entradas, prioritarias y derivación sobre territorio')
 ON CONFLICT (version) DO NOTHING;
 
 /*
@@ -64,10 +64,12 @@ ON CONFLICT (version) DO NOTHING;
       SELECT count(*) FROM territorio.alcaldia;                  -- 16, por territorio_lectura
       SELECT * FROM srp.derivar(19.4326, -99.1332);              -- Cuauhtémoc, su colonia y su celda
       SELECT has_table_privilege('srp.bitacora', 'INSERT');      -- t
+      SELECT has_table_privilege('srp.bitacora_acceso', 'INSERT');  -- t
 
   Debe fallar (permiso denegado); si alguna pasa, la cuenta quedó abierta de más:
       UPDATE srp.bitacora SET detalle = 'x';
       DELETE FROM srp.bitacora;
+      DELETE FROM srp.bitacora_acceso;
       TRUNCATE srp.plantaciones;
       CREATE TABLE srp.otra (x int);
       CREATE TABLE public.otra (x int);

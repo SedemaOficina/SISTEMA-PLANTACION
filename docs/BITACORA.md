@@ -4314,3 +4314,51 @@ LEEME que no lo dice, y los dos casos buenos (1, y 0.N para revisión). Sobre el
 sobre `backend/completos/src/db.ts` son líneas del propio `sia-backend`, como en el bloque 208.
 
 **Siguiente paso.** Liber manda el paquete al SIA. Después, la fase 3 del servidor.
+
+## Bloque 210 — Los permisos de cada perfil en el servidor y el registro de entradas (13-10-2026)
+
+Sin cambio en la aplicación: sigue la versión 0.9.64. Primer paso de lo que se puede avanzar sin las
+respuestas del SIA (D290).
+
+**Qué cambió.**
+- `servidor/src/modulos/srp/permisos.ts`, nuevo: las reglas de `js/permisos.js`. Lo usan las cuentas
+  (`exigirPermiso`, que responde con la misma frase que da la aplicación) y las consultas.
+- `servidor/src/modulos/srp/consultas.ts`, nuevo: `GET /jornadas` y `GET /plantaciones`, cada cuenta lo de
+  su alcance, por páginas, sin la fotografía y con las fechas en UTC.
+- `srp.bitacora_acceso`, en `03-srp-acceso.sql`, con sus disparadores. `srp_api` sólo la lee y le agrega
+  renglones (`05-srp-rol-y-grants.sql`). `acceso.ts` anota cada entrada, intento fallido, bloqueo, salida
+  y cambio de contraseña.
+- `servidor/src/comun/procedencia.ts`: el sustituto local del módulo común del SIA; no viaja.
+- `servidor/src/independiente.ts`: la conexión local asume `srp_api` al abrirse, como parámetro de
+  arranque. La consulta aparte que lo hacía antes provocaba un aviso de la biblioteca de PostgreSQL.
+- Pruebas:
+  - `permisos.test.js`, nueva: las reglas comparadas con la aplicación; la consulta, contra la base
+    completa; y las rutas.
+  - `acceso.test.js` y `esquema.test.js`: el registro de entradas, que sólo crece, y que una cuenta con
+    entradas no se elimina.
+  - `apoyo.js`: `limpiar`, que deshace y cierra aunque falle.
+  - `package.json`: orden fijo y tope de diez minutos por prueba.
+- `servidor/README.md`: rutas, permisos, registro de entradas y pruebas. `docs/ALINEACION-SIA.md`: lo hecho
+  de la fase 3.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada: la aplicación todavía no habla con el servidor.
+
+**Verificación.**
+- Servidor: 32 pruebas, 0 fallas, sin avisos. La comparación de reglas hizo más de 100,000 comprobaciones.
+  La de la consulta usó las 31 cuentas y los 17,479 árboles de la demostración, más los de la prueba.
+- En una copia desechable de `sia-backend`, en su versión vigente, con su propio módulo de procedencia:
+  - `npm run typecheck` y `npm run build`, sin errores;
+  - la prueba de humo, 13 de 13: la consulta pide sesión, la Administración consulta árboles por páginas
+    sin la fotografía, y el registro anota entrada fallida, entrada, salida y entrada, cada una con su
+    procedencia.
+- Al terminar, la base local quedó sin cuentas de prueba ni renglones sobrantes.
+
+Un tropiezo: antes de una pausa se detuvo una corrida de pruebas, pero sus procesos siguieron vivos y
+dejaron una conexión con bloqueos. La corrida siguiente esperó siete horas sin avisar. Se detuvieron los
+procesos y, para que no se repita, las pruebas tienen orden fijo y tope de tiempo, y la limpieza siempre
+cierra su conexión.
+
+No se probó: el límite por procedencia, que espera la corrección del módulo común del SIA, ni la edición
+de cuentas, que espera su respuesta sobre dónde viven.
+
+**Siguiente paso.** El paso 2: catálogos y parámetros en el servidor.

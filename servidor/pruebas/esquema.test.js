@@ -12,7 +12,7 @@ import { conectar, instalar, destruir, codigoDeError, RAIZ } from './apoyo.js';
 import { verificar } from '../dist/independiente.js';
 
 const ESQUEMA = JSON.parse(fs.readFileSync(path.join(RAIZ, 'datos', 'esquema.json'), 'utf8'));
-const PROPIAS_DEL_SERVIDOR = ['capa_prioritarias', 'capas', 'credenciales', 'migraciones', 'sesiones'];
+const PROPIAS_DEL_SERVIDOR = ['bitacora_acceso', 'capa_prioritarias', 'capas', 'credenciales', 'migraciones', 'sesiones'];
 const PERMISO_DENEGADO = '42501', VIOLA_CHECK = '23514', VIOLA_FORANEA = '23503', VIOLA_UNICO = '23505', LO_IMPIDE_UN_DISPARADOR = 'P0001';
 
 // El tipo del diccionario como lo escribe PostgreSQL (format_type)
@@ -120,6 +120,9 @@ test('la cuenta del servicio sólo opera datos; la bitácora sólo crece', async
   // Lo que la cuenta del servicio no puede hacer
   assert.equal(await codigoDeError(c, "UPDATE srp.bitacora SET detalle = 'cambiado'"), PERMISO_DENEGADO, 'editar la bitácora');
   assert.equal(await codigoDeError(c, 'DELETE FROM srp.bitacora'), PERMISO_DENEGADO, 'borrar la bitácora');
+  assert.equal(await codigoDeError(c, "INSERT INTO srp.bitacora_acceso (evento, usuario_id, ip, agente) VALUES ('ENTRADA', $1, '127.0.0.1', 'Prueba')", [admin]), null, 'anotar una entrada');
+  assert.equal(await codigoDeError(c, "UPDATE srp.bitacora_acceso SET evento = 'SALIDA'"), PERMISO_DENEGADO, 'editar el registro de entradas');
+  assert.equal(await codigoDeError(c, 'DELETE FROM srp.bitacora_acceso'), PERMISO_DENEGADO, 'borrar el registro de entradas');
   assert.equal(await codigoDeError(c, 'TRUNCATE srp.plantaciones'), PERMISO_DENEGADO, 'vaciar una tabla');
   assert.equal(await codigoDeError(c, 'CREATE TABLE srp.otra (x int)'), PERMISO_DENEGADO, 'crear tablas');
   assert.equal(await codigoDeError(c, 'DROP TABLE srp.plantaciones'), PERMISO_DENEGADO, 'borrar tablas');
@@ -173,12 +176,29 @@ test('la primera cuenta se da con un guion que sólo imprime el SQL; la contrase
   assert.equal((await c.query("SELECT count(*)::int AS n FROM srp.usuarios WHERE perfil = 'ADMIN'")).rows[0].n, 1);
 });
 
-test('la bitácora sólo crece: ni quien administra la base la edita, la borra o la vacía', async () => {
+test('las bitácoras sólo crecen: ni quien administra la base edita, borra o vacía la de cambios ni la de entradas', async () => {
   await c.query('BEGIN');
   await c.query("INSERT INTO srp.bitacora (id, fecha, usuario_id, usuario_nombre, perfil, accion, entidad, entidad_id, detalle) VALUES (gen_random_uuid(), now(), gen_random_uuid(), 'Prueba', 'ADMIN', 'CREADO', 'usuario', 'x', '')");
-  assert.equal(await codigoDeError(c, "UPDATE srp.bitacora SET detalle = 'cambiado'"), LO_IMPIDE_UN_DISPARADOR, 'editarla');
-  assert.equal(await codigoDeError(c, 'DELETE FROM srp.bitacora'), LO_IMPIDE_UN_DISPARADOR, 'borrarla');
-  assert.equal(await codigoDeError(c, 'TRUNCATE srp.bitacora'), LO_IMPIDE_UN_DISPARADOR, 'vaciarla');
+  await c.query("INSERT INTO srp.bitacora_acceso (evento, correo_intentado, ip, agente) VALUES ('ENTRADA_FALLIDA', 'nadie@ejemplo.local', '127.0.0.1', 'Prueba')");
+  for (const tabla of ['srp.bitacora', 'srp.bitacora_acceso']) {
+    const columna = tabla === 'srp.bitacora' ? 'detalle' : 'agente';
+    assert.equal(await codigoDeError(c, `UPDATE ${tabla} SET ${columna} = 'cambiado'`), LO_IMPIDE_UN_DISPARADOR, 'editar ' + tabla);
+    assert.equal(await codigoDeError(c, 'DELETE FROM ' + tabla), LO_IMPIDE_UN_DISPARADOR, 'borrar ' + tabla);
+    assert.equal(await codigoDeError(c, 'TRUNCATE ' + tabla), LO_IMPIDE_UN_DISPARADOR, 'vaciar ' + tabla);
+  }
+  // El renglón es de una cuenta o de un correo intentado, no de los dos; el evento, uno de la lista
+  assert.equal(await codigoDeError(c, "INSERT INTO srp.bitacora_acceso (evento) VALUES ('OTRO')"), VIOLA_CHECK, 'evento fuera de la lista');
+  await c.query('ROLLBACK');
+});
+
+test('una cuenta que ya intentó entrar no se elimina: su registro de entradas la sostiene, y se desactiva', async () => {
+  await c.query('BEGIN');
+  const id = '00000000-0000-4000-8000-000000000003';
+  await c.query("INSERT INTO srp.instituciones VALUES ('o-x', 'X', 'Institución X', true, NULL, now(), NULL, NULL, 'Empresa privada')");
+  await c.query("INSERT INTO srp.usuarios VALUES ($1, 'entro@ejemplo.local', 'Cabo Que Entró', 'o-x', NULL, 'Cabo', 'CABO', '{}', true, now(), $1, NULL, NULL)", [id]);
+  await c.query("INSERT INTO srp.bitacora_acceso (evento, usuario_id) VALUES ('ENTRADA', $1)", [id]);
+  assert.equal(await codigoDeError(c, "INSERT INTO srp.bitacora_acceso (evento, usuario_id, correo_intentado) VALUES ('ENTRADA_FALLIDA', $1, 'entro@ejemplo.local')", [id]), VIOLA_CHECK, 'cuenta y correo a la vez');
+  assert.equal(await codigoDeError(c, 'DELETE FROM srp.usuarios WHERE id = $1', [id]), VIOLA_FORANEA);
   await c.query('ROLLBACK');
 });
 

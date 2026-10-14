@@ -16,6 +16,8 @@ import { crearRutasSrp } from "./modulos/srp/rutas";
 
 export { leerConfig } from "./modulos/srp/config";
 export { derivar, temporal, verificar } from "./modulos/srp/contrasenas";
+// Para las pruebas, que comparan estas reglas con las de la aplicación
+export * as permisos from "./modulos/srp/permisos";
 
 export interface ConfigLocal {
   puerto: number;
@@ -37,16 +39,14 @@ export function crearGrupo({ rol = "" }: { rol?: string } = {}): pg.Pool {
     database: process.env.PGDATABASE || "srp_local",
     user: process.env.PGUSER || "srp_local_admin",
   };
-  const grupo = new pg.Pool({ ...datos, max: 10, password: process.env.PGPASSWORD || (async () => contrasenaDe(datos) ?? "") });
-  if (rol) {
-    grupo.on("connect", (c) => {
-      c.query("SET ROLE " + pg.escapeIdentifier(rol)).catch((e: Error) => {
-        console.error(`🔥 [SRP] no se pudo asumir ${rol}: ${e.message}`);
-        void c.end();
-      });
-    });
-  }
-  return grupo;
+  // La cuenta se asume al abrir la conexión, como parámetro de arranque: no hay un instante en que opere sin ella
+  if (rol && !/^[a-z_][a-z0-9_]*$/.test(rol)) throw new Error("SRP_ROL no es un nombre de cuenta válido: " + rol);
+  return new pg.Pool({
+    ...datos,
+    max: 10,
+    password: process.env.PGPASSWORD || (async () => contrasenaDe(datos) ?? ""),
+    ...(rol ? { options: "-c role=" + rol } : {}),
+  });
 }
 
 // La aplicación: el módulo montado donde lo monta el SIA, en la ruta de la configuración
