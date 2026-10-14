@@ -4468,7 +4468,7 @@ No se probó: la cola del teléfono mandando estos cambios, que llega en el paso
 **Siguiente paso.** 3c: la vida de la jornada en el servidor. Editarla, cerrarla, reabrirla, el relevo,
 la solicitud al editarla, el reporte entregado y eliminar una jornada vacía.
 
-## Bloque 214 — La vida de la jornada en el servidor (15-10-2026)
+## Bloque 214 — La vida de la jornada en el servidor (14-10-2026)
 
 Sin cambio en la aplicación: sigue la versión 0.9.64. Paso 3c (D294).
 

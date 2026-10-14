@@ -3457,7 +3457,7 @@
   · `recepcion.ts` se separó en cuatro: la ruta, lo común, las jornadas y los árboles.
 
 - **D294. La vida de la jornada en el servidor (bloque 214).**
-  15-10-2026. Paso 3c.
+  14-10-2026. Paso 3c.
   · Ocho operaciones por `POST /envios`: `jornada.editar`, `.cerrar`, `.reabrir`, `.revisar`, `.cierre`,
     `.reporte`, `.relevo` y `.eliminar`. Las seis primeras piden el permiso `jornada.editar`, como en la
     aplicación; el nombre de la operación dice qué hace. Reglas, mensajes, bitácora y efectos de
