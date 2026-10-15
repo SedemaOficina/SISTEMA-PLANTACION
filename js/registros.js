@@ -364,13 +364,14 @@ SRP.registros = {
     return SRP.util.formatearFecha(r.fecha_plantacion) + (variosAutores ? ' · ' + esc(SRP.ref.nombreUsuario(r.cabo_id)) : '');
   },
 
-  /* Fila de estado: el folio cuando existe y, si espera envío, la marca. Enviado y
-     sin folio todavía no dice nada: «PROVISIONAL» no se repite en cada tarjeta (R1). */
-  MARCAS: { por_enviar: 'Por enviar', cambios: 'Cambios por enviar' },
+  /* Fila de estado: el folio cuando existe y, si espera envío, la marca; en rojo si el servidor no
+     aceptó algo suyo. Enviado y sin folio todavía no dice nada: «PROVISIONAL» no se repite en cada
+     tarjeta (R1). */
+  MARCAS: { por_enviar: 'Por enviar', cambios: 'Cambios por enviar', rechazado: 'No se pudo enviar' },
   htmlEstado(r, est) {
-    const esc = SRP.util.escapar;
+    const esc = SRP.util.escapar, rechazo = est === 'rechazado';
     return (SRP.folio.valido(r.folio) ? '<span class="etiqueta registro-folio">' + esc(r.folio) + '</span>' : '') +
-      (this.MARCAS[est] ? '<span class="etiqueta marca-envio">' + SRP.ICONOS.svg('sinSenal', 'chico') + '<span>' + this.MARCAS[est] + '</span></span>' : '');
+      (this.MARCAS[est] ? '<span class="etiqueta marca-envio' + (rechazo ? ' marca-rechazo' : '') + '">' + SRP.ICONOS.svg(rechazo ? 'info' : 'sinSenal', 'chico') + '<span>' + this.MARCAS[est] + '</span></span>' : '');
   },
 
   /* Después de un envío en segundo plano la lista se corrige en su lugar: folio nuevo y

@@ -39,7 +39,7 @@
       },
       {
         "donde": "IndexedDB, almacén `envios`",
-        "que": "con datos reales, la cola de envío: cada cambio a una jornada o a un árbol como la operación del servidor que le corresponde, con la versión que el servidor tenía del registro, y las fotografías por subir; se anota en la misma transacción que el cambio y sale cuando el servidor lo confirma (js/cola.js). Con datos de prueba queda vacía",
+        "que": "con datos reales, la cola de envío: cada cambio a una jornada o a un árbol como la operación del servidor que le corresponde, con la versión que el servidor tenía del registro, y las fotografías por subir; se anota en la misma transacción que el cambio y sale cuando el servidor lo confirma (js/cola.js). Lo que el servidor no acepta se queda con su motivo hasta que la persona decide qué hacer con él (js/rechazos.js). Con datos de prueba queda vacía",
         "fase2": "Es la cola de envío real"
       },
       {

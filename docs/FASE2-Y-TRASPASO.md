@@ -56,9 +56,10 @@ los 17,479 árboles y las 1,305 jornadas igual que la aplicación.
 - 4c, subir (bloque 223, D303): cada cambio queda en la cola de envío en la misma transacción, sale en orden
   con su versión y vuelve con lo que puso el servidor; las fotografías suben después de su árbol; al cerrar la
   jornada y entregar su reporte, lo recibido sale del teléfono.
-- Siguen 4d, lo que el servidor no acepta —hoy se queda con su motivo y se dice, pero no hay cómo resolverlo
-  desde la pantalla—, y 4e, la administración conectada. Las pantallas que eso cambia —Parámetros, que podrá
-  editarlos, y la bandeja de posibles duplicados— ya las aprobó Liber (D299).
+- 4d, lo que el servidor no acepta (bloque 224, D304): la franja de arriba lo dice, la tarjeta lleva «No se
+  pudo enviar» y en «Revisar» la persona decide qué hacer con cada cambio.
+- Sigue 4e, la administración conectada. Las pantallas que eso cambia —Parámetros, que podrá editarlos, y la
+  bandeja de posibles duplicados— ya las aprobó Liber (D299).
 
 Ver `servidor/README.md`.
 

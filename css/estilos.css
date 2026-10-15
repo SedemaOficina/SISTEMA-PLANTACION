@@ -768,6 +768,15 @@ img[data-foto-servidor][hidden] { display: none; }
 .franja-envio[hidden] { display: none; }
 .franja-envio p { flex: 1 1 16rem; margin: 0; }
 .franja-envio strong { color: var(--error); }
+/* Lo que el servidor no aceptó: cada cambio con su borde rojo, qué se cambió en gris y el motivo */
+.marca-envio.marca-rechazo { background: var(--error-fondo); color: var(--error); }
+.rechazos-lista { list-style: none; margin: var(--e-3) 0 0; padding: 0; display: grid; gap: var(--e-3); }
+.rechazo { padding: var(--e-3) var(--e-4); border: 1px solid var(--borde-suave); border-left: 4px solid var(--error); border-radius: var(--radio); background: var(--fondo); }
+.rechazo h3 { margin: 0 0 var(--e-1); font-size: var(--t-m); }
+.rechazo p { margin: var(--e-1) 0 0; }
+.rechazo-que { color: var(--gris); font-size: var(--t-s); }
+.rechazo-porque b { color: var(--error); }
+.rechazo .fila-botones { margin: var(--e-3) 0 0; }
 .senal-cola { display: flex; align-items: center; gap: var(--e-3); flex-wrap: wrap; margin: var(--e-3) 0; padding: var(--e-3); border-radius: var(--radio-filtro); background: var(--fondo-suave); }
 .senal-cola[hidden] { display: none; }
 .senal-cola p { flex: 1 1 12rem; margin: 0; font-weight: 500; }
@@ -995,6 +1004,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .franja-guardado-datos { font-size: var(--t-xs); color: var(--gris); overflow-wrap: anywhere; }
 .franja-guardado[data-envio="recibido"] .franja-guardado-envio { color: var(--exito); font-weight: 500; }
 .franja-guardado[data-envio="por_enviar"] .franja-guardado-envio { color: var(--editar); font-weight: 500; }
+.franja-guardado[data-envio="rechazado"] .franja-guardado-envio { color: var(--error); font-weight: 500; }
 .franja-guardado-acciones { display: flex; gap: var(--e-2); align-items: center; }
 .revision-avisos { margin: 0 0 var(--e-3); padding: var(--e-3) var(--e-4); border-radius: var(--radio-filtro); background: var(--editar-fondo); border-left: 4px solid var(--editar-borde); }
 .revision-avisos-titulo { margin: 0 0 var(--e-1); font-weight: 700; color: var(--editar); }

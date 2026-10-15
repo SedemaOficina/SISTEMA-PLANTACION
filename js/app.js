@@ -87,7 +87,8 @@ SRP.app = {
     const alCorregir = (e) => { const c = e.target; if (c && c.id && document.getElementById(c.id + '-error')) SRP.util.quitarErrorCampo(c); };
     document.addEventListener('input', alCorregir);
     document.addEventListener('change', alCorregir);
-    SRP.envio.iniciar();           // envío simulado: sólo con datos de prueba
+    SRP.envio.iniciar();           // el envío: real con datos reales, simulado con datos de prueba
+    SRP.rechazos.iniciar();        // lo que el servidor no aceptó, con datos reales
     this.iniciarAcceso();
     this.iniciarDialogos();
     this.iniciarCamposFecha();
@@ -329,6 +330,8 @@ SRP.app = {
     this.el('caja-demo').hidden = true;
     this.el('btn-datos-prueba').hidden = true;
     this.cerrarDatosPrueba();
+    // Ninguna ventana de la sesión que terminó se queda encima de la entrada
+    document.querySelectorAll('dialog[open]').forEach(d => d.close());
     this.el('franja-envio').hidden = true;
     this.el('form-acceso').reset();
     this.el('acceso-errores').hidden = true;
@@ -580,7 +583,6 @@ SRP.app = {
     I('btn-cierre-generar', 'ver', 'Ver vista previa', 'medio');
     I('btn-previa-corregir', 'lapiz', 'Corregir datos');
     I('btn-enviar-ahora', 'senal', 'Enviar ahora');
-    I('btn-franja-enviar', 'senal', 'Enviar ahora');
     I('btn-filtrar', 'buscar', 'Aplicar');
     I('btn-reiniciar-filtros', 'cerrar', 'Quitar filtros', 'chico');   // un nombre por acción
     I('btn-coord-aplicar', 'ubicacion', 'Colocar punto');

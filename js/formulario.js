@@ -864,9 +864,12 @@ SRP.formulario = {
     const r = await SRP.almacen.uno('plantaciones', id);
     if (!r) return;
     const e = envio.simulado() ? envio.leer() : null, recibido = envio.recibidoEn(r, e);
-    if (envio.estado(r, e) === 'recibido' && recibido) {
+    const est = envio.estado(r, e);
+    if (est === 'recibido' && recibido) {
       if (this.estado.ultimoGuardado === id) { const f = this.el('franja-guardado-folio'); if (f) f.textContent = SRP.folio.textoLargo(r); }
       pinta('recibido', 'enviado ' + envio.cuando(recibido));
+    } else if (est === 'rechazado') {
+      pinta('rechazado', 'el servidor no lo aceptó: revíselo en la franja de arriba');
     } else {
       const pend = await envio.pendientesPropios();
       const n = pend ? pend.length : 1;

@@ -19,7 +19,8 @@
      · la franja «Guardado» del formulario: enviado con su hora de recepción, o por enviar
      · la franja de atraso: «Hoy es miércoles 23 de septiembre. Tiene 5 registros sin enviar
        desde el lunes 21…», o al final de la jornada, los de hoy sin enviar
-     · la tarjeta («Por enviar») y el detalle (fila «Envío»)
+     · con datos reales, la misma franja dice antes lo que el servidor no aceptó, con «Revisar»
+     · la tarjeta («Por enviar», «No se pudo enviar») y el detalle (fila «Envío»)
 
    «SIMULAR SIN SEÑAL». Interruptor del menú de cuenta, sólo en pruebas: hace que la aplicación
    se comporte como sin conexión (pastilla, cola, franja) sin poner el teléfono en modo avión.
@@ -173,7 +174,9 @@ SRP.envio = {
     const u = SRP.sesion.usuario;
     const hay = SRP.cola.ops.some(o => o.usuario_id === u.id && !o.rechazo);
     if (!hay) {
-      if (op.manual) SRP.util.anunciar('No hay registros por enviar: todo está en el servidor.', 'aviso');
+      const r = SRP.cola.rechazadas().length;
+      if (op.manual) SRP.util.anunciar(r ? 'No hay nada más por enviar. El servidor no aceptó ' + this.textoCambios(r) + ': toque «Revisar», en la franja de arriba.'
+        : 'No hay registros por enviar: todo está en el servidor.', 'aviso');
       return { enviados: 0, pendientes: (await this.cola()).length };
     }
     if (!SRP.conexion.enLinea()) {
@@ -192,18 +195,19 @@ SRP.envio = {
     const fondo = { secundario: !op.manual };
     if (res.cortado) SRP.util.anunciar('Se perdió la señal durante el envío. ' + this.textoCuenta(Math.max(pendientes, 1)) + ' en el teléfono; ' + (pendientes === 1 ? 'se enviará' : 'se enviarán') + ' cuando vuelva.', 'aviso', fondo);
     else if (res.error) SRP.util.anunciar('No se pudo enviar: ' + res.error, 'aviso', fondo);
-    else if (res.rechazados) SRP.util.anunciar('El servidor no aceptó ' + (res.rechazados === 1 ? '1 cambio' : res.rechazados + ' cambios') + ': ' + this.motivoRechazo(), 'alerta', fondo);
+    else if (res.rechazados) SRP.util.anunciar('El servidor no aceptó ' + this.textoCambios(res.rechazados) + '.' + (res.rechazados === 1 ? ' ' + this.motivoRechazo() + ' Revíselo' : ' Revíselos') + ' con «Revisar», arriba.', 'alerta', fondo);
     else if (n && !op.silencioso) SRP.util.anunciar((n === 1 ? '1 registro enviado' : n + ' registros enviados') + ' al servidor. Recepción confirmada.', undefined, fondo);
     return { enviados: n, pendientes, hora: SRP.util.ahoraISO() };
   },
 
-  // El motivo del primer cambio que el servidor no aceptó, como lo dijo
+  // El motivo del último cambio que el servidor no aceptó, como lo dice la ventana «Revisar»
   motivoRechazo() {
-    const o = SRP.cola.ops.find(x => x.rechazo);
-    return o ? o.rechazo.mensaje : '';
+    const o = SRP.cola.rechazadas().sort((a, b) => String(b.rechazo.en).localeCompare(String(a.rechazo.en)))[0];
+    return o ? SRP.rechazos.porque(o) : '';
   },
 
   textoCuenta(n) { return n === 1 ? 'El registro sigue guardado' : 'Los ' + n + ' registros siguen guardados'; },
+  textoCambios(n) { return n === 1 ? '1 cambio' : n + ' cambios'; },
 
   // Todo lo que enseña el estado del envío se pone al día junto
   async alCambiar() {
@@ -247,13 +251,30 @@ SRP.envio = {
     return null;
   },
 
+  /* Lo que el servidor no aceptó va antes que el atraso: no se envía solo, y el botón lleva a revisarlo.
+     Si no, el atraso, con «Enviar ahora». */
   async pintarFranja() {
     const franja = this.el('franja-envio');
     if (!franja) return;
+    const boton = this.el('btn-franja-enviar');
+    const motivo = (m, icono, texto) => {
+      if (franja.dataset.motivo === m) return;
+      franja.dataset.motivo = m;
+      boton.innerHTML = SRP.ICONOS.svg(icono, 'medio') + '<span>' + texto + '</span>';
+    };
+    const r = this.real() && SRP.sesion.usuario ? SRP.cola.rechazadas().length : 0;
+    if (r) {
+      motivo('rechazo', 'ver', 'Revisar');
+      franja.hidden = false;
+      this.el('franja-envio-texto').innerHTML = '<strong>El servidor no aceptó ' + this.textoCambios(r) + '.</strong> Siguen guardados en el teléfono; ' +
+        (r === 1 ? 'revíselo para que no se quede' : 'revíselos para que no se queden') + ' sin enviar.';
+      return;
+    }
     const pend = this.activo() && SRP.sesion.usuario ? await this.pendientesPropios() : null;
     const a = this.atraso(pend);
     franja.hidden = !a;
     if (!a) return;
+    motivo('atraso', 'senal', 'Enviar ahora');
     const hoy = this.diaEnLetra(SRP.util.fechaHoy());
     const cuenta = a.n === 1 ? '1 registro sin enviar' : a.n + ' registros sin enviar';
     const texto = a.tipo === 'dias'
@@ -313,7 +334,10 @@ SRP.envio = {
         await this.pintarGuia();
       });
     });
-    this.el('btn-franja-enviar').addEventListener('click', () => this.conBoton(this.el('btn-franja-enviar'), () => this.enviar({ manual: true })));
+    this.el('btn-franja-enviar').addEventListener('click', () => {
+      if (this.el('franja-envio').dataset.motivo === 'rechazo') SRP.rechazos.abrir();
+      else this.conBoton(this.el('btn-franja-enviar'), () => this.enviar({ manual: true }));
+    });
     this.el('conexion').addEventListener('click', () => this.pintarGuia());
     // Al volver a la app (del fondo o de otra) y cada minuto: reintento y franja al día
     document.addEventListener('visibilitychange', () => { if (!document.hidden) this.enviar(); });

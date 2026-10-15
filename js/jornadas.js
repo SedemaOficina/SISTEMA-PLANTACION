@@ -622,6 +622,8 @@ SRP.jornadas = {
       // Lo normal se resume en una línea; sólo lo que pide atención lleva su marca
       const marca = (tono, icono, texto, clase) => '<span class="insignia-jornada' + (clase ? ' ' + clase : '') + '" data-tono="' + tono + '">' + SRP.ICONOS.svg(icono, 'chico') + '<span>' + esc(texto) + '</span></span>';
       const marcas = [];
+      // Lo que el servidor no aceptó de la jornada va primero: no se envía solo
+      if (SRP.envio.real() && SRP.cola.de(j.id).some(o => o.rechazo)) marcas.push(marca('err', 'info', 'No se pudo enviar'));
       if (porRevisar) marcas.push(marca('rev', 'info', porRevisar + ' por revisar'));
       if (!abierta && meta !== null && n !== meta) marcas.push(marca('err', 'cerrar', n < meta ? (meta - n === 1 ? 'Faltó 1' : 'Faltaron ' + (meta - n)) + ' de lo previsto' : (n - meta) + ' más de lo previsto'));
       if (sustituciones) marcas.push(marca('sust', 'intercambio', sustituciones + (sustituciones === 1 ? ' sustitución' : ' sustituciones')));

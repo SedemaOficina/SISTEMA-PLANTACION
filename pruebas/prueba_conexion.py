@@ -15,8 +15,10 @@ llega; que una sesión vencida pide la contraseña sin perder lo guardado; la co
 sesión» cierra también la del servicio y suelta lo enviado; cuánto tarda la Administración en traer todo; y el
 envío real: una jornada y sus árboles capturados en la pantalla llegan al servidor y vuelven con su folio, con su
 fotografía; lo capturado sin señal sale al volver; una corrección viaja como cambio; lo que el servidor no acepta
-se queda con su motivo; al cerrar la jornada y entregar su reporte, sale del teléfono; y la sesión que vence a
-medio árbol no saca a nadie del formulario.
+se queda con su motivo; al cerrar la jornada y entregar su reporte, sale del teléfono; la sesión que vence a
+medio árbol no saca a nadie del formulario; y lo que el servidor no aceptó se resuelve desde la pantalla: la
+franja y la marca lo dicen, y en «Revisar» se envía otra vez, se queda lo del servidor, se corrige, se elimina
+o se descarta.
 
 Uso, desde la carpeta del proyecto (con la base local cargada):  python pruebas/prueba_conexion.py
 """
@@ -174,6 +176,29 @@ MINIATURAS = """async () => { SRP.app.mostrarVista('registros'); await new Promi
     return { img: img ? [img.hidden, img.naturalWidth > 0, img.getAttribute('src').startsWith('/api/srp/fotos/')] : null, vacia: vacia ? !vacia.hidden : null }; })
     .sort((a, b) => String(a.img && a.img[0]).localeCompare(String(b.img && b.img[0]))); }"""
 
+# La franja de arriba, la marca de la tarjeta de un árbol y la ventana de lo que el servidor no aceptó
+FRANJA = """() => { const f = document.getElementById('franja-envio');
+  return { ver: !f.hidden, texto: f.textContent.trim().replace(/\\s+/g, ' '), boton: document.getElementById('btn-franja-enviar').textContent.trim() }; }"""
+MARCA = """async id => { SRP.app.mostrarVista('registros'); await new Promise(r => setTimeout(r, 900)); SRP.registros.aplicarAtajo('todos'); await new Promise(r => setTimeout(r, 900));
+  const li = document.querySelector('#lista-registros li[data-id="' + id + '"]'); return li ? li.querySelector('.registro-estado').textContent : null; }"""
+RECHAZOS = """() => [...document.querySelectorAll('#lista-rechazos > li')].map(li => ({ n: li.dataset.n, titulo: li.querySelector('h3').textContent,
+  que: li.querySelector('.rechazo-que').textContent, porque: li.querySelector('.rechazo-porque').textContent,
+  botones: [...li.querySelectorAll('button')].map(b => b.textContent.trim()), id: SRP.cola.ops.find(o => String(o.n) === li.dataset.n).registro_id }))"""
+
+
+def revisar(pg):
+    """Abre «Revisar» desde la franja, como la persona, y devuelve lo que dice la ventana."""
+    pg.click('#btn-franja-enviar')
+    pg.wait_for_selector('#dlg-rechazos[open]')
+    pg.wait_for_timeout(300)
+    return pg.evaluate(RECHAZOS)
+
+
+def rechazados(pg, n, espera=30000):
+    pg.wait_for_function("n => SRP.cola.rechazadas().length === n && !SRP.envio.enviando", arg=n, timeout=espera)
+    pg.wait_for_timeout(300)
+
+
 # Lo que enseña una sección: su franja, su total y el aviso de Supervisión
 VISTA = """async v => { SRP.app.mostrarVista(v); await new Promise(r => setTimeout(r, 700));
   const f = document.getElementById(v + '-remoto'), total = document.getElementById(v + '-total'), sup = document.getElementById('supervision-remoto');
@@ -324,12 +349,46 @@ def main():
             ok(apoyo('leer', {'id': a1})['arbol']['comentarios'] == 'Corregido en el teléfono', 'la corrección de un árbol enviado llega al servidor')
 
             # Lo que el servidor no acepta se queda con su motivo: otra persona cambió el árbol antes
-            apoyo('tocar', {'id': a2, 'comentarios': 'Cambiado por otra persona'})
+            apoyo('tocar', {'id': a2, 'comentarios': 'Cambiado por otra persona', 'por': ADMIN['id']})
             corregir(pg, a2, 'Cambiado en el teléfono')
-            pg.wait_for_function("() => SRP.cola.ops.some(o => o.rechazo)", timeout=30000)
+            rechazados(pg, 1)
             x = pg.evaluate("() => { const o = SRP.cola.ops.find(o => o.rechazo); return { codigo: o.rechazo.codigo, aviso: document.getElementById('aviso').textContent, estado: SRP.cola.estado(o.registro_id) }; }")
-            ok(x['codigo'] == 'VERSION_VIEJA' and 'Alguien más cambió este registro' in x['aviso'] and x['estado'] == 'cambios' and apoyo('leer', {'id': a2})['arbol']['comentarios'] == 'Cambiado por otra persona',
+            ok(x['codigo'] == 'VERSION_VIEJA' and 'Alguien más cambió este registro' in x['aviso'] and 'Revisar' in x['aviso'] and x['estado'] == 'rechazado' and apoyo('leer', {'id': a2})['arbol']['comentarios'] == 'Cambiado por otra persona',
                'si alguien cambió el árbol antes, el servidor no escribe encima: el cambio se queda en el teléfono con su motivo, y se dice: %s' % x)
+
+            # ---------- Lo que el servidor no aceptó, resuelto desde la pantalla ----------
+            # La franja roja y la marca de la tarjeta lo dicen; «Revisar» abre la ventana
+            marca = pg.evaluate(MARCA, a2)
+            f = pg.evaluate(FRANJA)
+            ok(f['ver'] and f['texto'].startswith('El servidor no aceptó 1 cambio. Siguen guardados en el teléfono') and f['boton'] == 'Revisar' and marca and 'No se pudo enviar' in marca,
+               'la franja de arriba dice que el servidor no aceptó un cambio, con «Revisar», y la tarjeta del árbol dice «No se pudo enviar»: %s · %s' % (f, marca))
+            folio2 = pg.evaluate(LOCAL, a2)['arbol']['folio']
+            v = revisar(pg)
+            ok(len(v) == 1 and v[0]['titulo'] == 'Ahuehuete · ' + folio2 and v[0]['que'] == 'Corrección: comentarios' and v[0]['porque'].startswith('Por qué: Alguien más cambió este registro antes')
+               and v[0]['botones'] == ['Enviar mi cambio otra vez', 'Quedarme con lo del servidor'],
+               'la ventana dice de qué árbol es el cambio, qué se cambió y por qué no se aceptó, con «Enviar mi cambio otra vez» y «Quedarme con lo del servidor»: %s' % v)
+            pg.click('#lista-rechazos button[data-accion="reenviar"]')
+            esperar_cola(pg)
+            loc = pg.evaluate(LOCAL, a2)['arbol']
+            ok(apoyo('leer', {'id': a2})['arbol']['comentarios'] == 'Cambiado en el teléfono' and loc['comentarios'] == 'Cambiado en el teléfono'
+               and pg.evaluate("() => !document.getElementById('dlg-rechazos').open") and not pg.evaluate(FRANJA)['ver'],
+               '«Enviar mi cambio otra vez» lo aplica sobre lo que hay ahora en el servidor; la ventana se cierra y la franja se va')
+
+            # «Quedarme con lo del servidor»: el teléfono toma lo que dejó la otra persona
+            apoyo('tocar', {'id': a2, 'comentarios': 'Lo dejó otra persona', 'por': ADMIN['id']})
+            corregir(pg, a2, 'Otro cambio en el teléfono')
+            rechazados(pg, 1)
+            revisar(pg)
+            pg.click('#lista-rechazos button[data-accion="servidor"]')
+            esperar_cola(pg)
+            loc = pg.evaluate(LOCAL, a2)['arbol']
+            ok(apoyo('leer', {'id': a2})['arbol']['comentarios'] == 'Lo dejó otra persona' and loc['comentarios'] == 'Lo dejó otra persona' and pg.evaluate("() => SRP.cola.ops.length") == 0,
+               '«Quedarme con lo del servidor» deja el árbol como lo cambió la otra persona, también en el teléfono, y su cambio sale de la cola: %s' % loc['comentarios'])
+
+            # Uno más, que se queda sin resolver para lo que sigue
+            apoyo('tocar', {'id': a2, 'comentarios': 'Otra vez otra persona', 'por': ADMIN['id']})
+            corregir(pg, a2, 'Cambio que se queda')
+            rechazados(pg, 1)
 
             # Al cerrar la jornada y entregar su reporte, lo recibido sale del teléfono; lo rechazado se queda
             pg.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); await SRP.activa.cambiarEstatus(j, 'cerrada'); }", jid)
@@ -341,6 +400,75 @@ def main():
               a2: !!(await SRP.almacen.unoLocal('plantaciones', a2)), seVe: !!(await SRP.almacen.uno('plantaciones', a1)) })""", [jid, a1, a2])
             ok(srv == {'estatus': 'cerrada', 'reporte': True, 'nombre': 'Jornada del envío real'} and loc == {'jornada': False, 'a1': False, 'a2': True, 'seVe': True},
                'cerrada y con su reporte, la jornada sale del teléfono con lo recibido, y se sigue viendo como enviado; el árbol con un cambio rechazado se queda: %s' % loc)
+
+            # Dos altas con datos que el servidor no acepta: el punto quedó fuera de la Ciudad
+            j2 = iniciar_jornada(pg, 'Jornada de los rechazos')
+            esperar_cola(pg, 1)
+            ctx.route('**/api/srp/**', lambda r: r.abort())
+            b1, b2 = registrar(pg), registrar(pg)
+            pg.evaluate("""async ids => { for (const id of ids) { const r = await SRP.almacen.unoLocal('plantaciones', id);
+              await SRP.almacen.ponerLocal('plantaciones', Object.assign({}, r, { lat: 20.6, lng: -98.9 })); } }""", [b1, b2])
+            ctx.unroute('**/api/srp/**')
+            pg.evaluate("() => SRP.envio.enviar({ manual: true })")
+            rechazados(pg, 3)
+            f = pg.evaluate(FRANJA)
+            v = {x['id']: x for x in revisar(pg)}
+            ok(f['texto'].startswith('El servidor no aceptó 3 cambios.') and len(v) == 3 and all(v[b]['titulo'] == 'Ahuehuete · nuevo, sin folio' and v[b]['que'] == 'Alta del árbol, en la jornada «Jornada de los rechazos»'
+               and v[b]['porque'] == 'Por qué: El punto está fuera de la Ciudad de México. Revise las coordenadas.' and v[b]['botones'] == ['Corregir', 'Eliminar este registro'] for b in (b1, b2)),
+               'un alta con datos que no pasan dice el motivo del servidor, con «Corregir» y «Eliminar este registro»: %s' % ([f['texto']] + [v.get(b) for b in (b1, b2)],))
+
+            # «Corregir» abre el árbol en el formulario; al guardarlo, se vuelve a enviar
+            pg.click('#lista-rechazos li[data-n="%s"] button[data-accion="corregir"]' % v[b1]['n'])
+            pg.wait_for_timeout(700)
+            editando = pg.evaluate("() => [SRP.app.vista, SRP.formulario.estado.editando && SRP.formulario.estado.editando.id, document.getElementById('dlg-rechazos').open]")
+            pg.click('#btn-ubicacion'); pg.wait_for_timeout(900)
+            pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(800)
+            if pg.is_visible('#dlg-confirmar'): pg.click('#btn-confirmar-si'); pg.wait_for_timeout(800)
+            if pg.is_visible('#dlg-resumen'): pg.click('#btn-resumen-guardar'); pg.wait_for_timeout(700)
+            pg.wait_for_function("id => !SRP.cola.de(id).length && !SRP.envio.enviando", arg=b1, timeout=30000)
+            srv = apoyo('leer', {'id': b1})['arbol']
+            ok(editando == ['registrar', b1, False] and srv and re.match(r'^[A-Z]{3}-\d{3}-\d{5}$', srv['folio'] or '') and pg.evaluate("() => SRP.cola.rechazadas().length") == 2,
+               '«Corregir» abre el árbol en el formulario y, corregido, se envía solo y vuelve con su folio: %s · %s' % (editando, srv))
+
+            # «Eliminar este registro» lo quita del teléfono con su historial, después de confirmar
+            revisar(pg)
+            pg.click('#lista-rechazos li[data-n="%s"] button[data-accion="eliminar"]' % v[b2]['n'])
+            pg.wait_for_selector('#dlg-confirmar[open]')
+            confirma = pg.evaluate("() => [document.getElementById('dlg-confirmar-texto').textContent, document.getElementById('dlg-confirmar-nota').textContent]")
+            pg.click('#btn-confirmar-si')
+            pg.wait_for_function("id => !SRP.cola.de(id).length", arg=b2, timeout=10000)
+            pg.wait_for_timeout(500)
+            quedo = pg.evaluate("""async id => ({ arbol: !!(await SRP.almacen.uno('plantaciones', id)), historial: (await SRP.almacen.porIndiceLocal('bitacora', 'entidad_id', id)).length,
+              ventana: document.getElementById('dlg-rechazos').open, items: document.querySelectorAll('#lista-rechazos > li').length })""", b2)
+            ok(confirma[0] == '¿Eliminar el Ahuehuete de este teléfono?' and 'No se puede deshacer' in confirma[1] and quedo == {'arbol': False, 'historial': 0, 'ventana': True, 'items': 1}
+               and apoyo('leer', {'id': b2})['arbol'] is None,
+               '«Eliminar este registro» pide confirmación y lo quita del teléfono con su historial; nunca llegó al servidor, y la ventana sigue con lo que falta: %s · %s' % (confirma, quedo))
+            pg.click('#dlg-rechazos .dialogo-cerrar')
+
+            # Una corrección de la jornada que el servidor no acepta: la tarjeta lo dice, y «Descartar mi cambio»
+            pg.evaluate("""async id => { const j = await SRP.almacen.unoLocal('jornadas', id);
+              await SRP.almacen.guardarConBitacora('jornadas', Object.assign({}, j, { nombre: '' }), SRP.bitacora.entrada('EDITADO', 'jornada', id, 'Campos: nombre'), 'jornada.editar'); }""", j2)
+            rechazados(pg, 2)
+            pg.evaluate("SRP.app.mostrarVista('jornadas')"); pg.wait_for_timeout(1200)
+            tarjeta = pg.evaluate("id => { const li = document.querySelector('#lista-jornadas li[data-clave=\"' + id + '\"]'); return li ? li.querySelector('.jornada-marcas').textContent : null; }", j2)
+            v = {x['id']: x for x in revisar(pg)}
+            ok(tarjeta and 'No se pudo enviar' in tarjeta and v[j2]['titulo'] == 'Jornada «sin nombre»' and v[j2]['que'] == 'Corrección: nombre' and v[j2]['botones'] == ['Corregir', 'Descartar mi cambio'],
+               'la tarjeta de la jornada dice «No se pudo enviar», y la ventana ofrece «Corregir» y «Descartar mi cambio»: %s · %s' % (tarjeta, v.get(j2)))
+            pg.click('#lista-rechazos li[data-n="%s"] button[data-accion="descartar"]' % v[j2]['n'])
+            pg.wait_for_selector('#dlg-confirmar[open]')
+            pg.click('#btn-confirmar-si')
+            pg.wait_for_function("id => !SRP.cola.de(id).length", arg=j2, timeout=10000)
+            pg.wait_for_timeout(500)
+            loc = pg.evaluate(LOCAL, j2)['jornada']
+            f = pg.evaluate(FRANJA)
+            ok(loc and loc['nombre'] == 'Jornada de los rechazos' and apoyo('leer', {'id': j2})['jornada']['nombre'] == 'Jornada de los rechazos' and f['texto'].startswith('El servidor no aceptó 1 cambio.'),
+               '«Descartar mi cambio» deja la jornada en el teléfono como la tiene el servidor, y la franja cuenta lo que falta: %s · %s' % (loc and loc['nombre'], f['texto']))
+            pg.click('#dlg-rechazos .dialogo-cerrar')
+            # Cerrada y con su reporte, sale del teléfono con su árbol
+            pg.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); await SRP.activa.cambiarEstatus(j, 'cerrada'); }", j2)
+            esperar_cola(pg, 1)
+            pg.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); await SRP.reportes.marcarGenerado(j, null); }", j2)
+            esperar_cola(pg, 1)
 
             # La sesión que vence a medio árbol no saca a nadie del formulario
             pg.evaluate("SRP.app.mostrarVista('registrar')")

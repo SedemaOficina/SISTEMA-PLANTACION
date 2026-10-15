@@ -3703,3 +3703,36 @@
     teléfono, se tiene sólo en memoria; sin señal no estaría.
   · **Pendiente para 4e:** la carga masiva sigue con el envío simulado.
   · Con datos de prueba nada cambia: el envío sigue simulado.
+
+- **D304. Lo que el servidor no aceptó, resuelto desde la pantalla (bloque 224, versión 0.9.69).**
+  15-10-2026. Cuarta parte del paso 4. Las pantallas las aprobó Liber con sus muestras.
+  · **Cómo se dice.**
+    · La franja de arriba, la misma del atraso, va antes que él: «El servidor no aceptó N cambios. Siguen
+      guardados en el teléfono; revíselos para que no se queden sin enviar.», con «Revisar».
+    · La tarjeta del árbol y la de la jornada dicen «No se pudo enviar», en rojo; la franja «Guardado» del
+      formulario, también.
+    · El aviso del envío dice el motivo y remite a «Revisar».
+  · **La ventana «Cambios que el servidor no aceptó»** (`js/rechazos.js`). Cada cambio con su registro, qué
+    se cambió, «Por qué» —el motivo del servidor, y el de cada campo si lo dio— y los botones que tocan:
+    · alguien más cambió el registro antes: «Enviar mi cambio otra vez», que lo aplica sobre lo que hay ahora
+      —sólo los campos que cambió la persona—, o «Quedarme con lo del servidor». Dice quién y cuándo, si esa
+      cuenta se ve; si fue la misma cuenta, que fue desde otro teléfono;
+    · los datos no pasan: «Corregir» abre el árbol en el formulario o la edición de la jornada, y al guardar
+      se vuelve a enviar solo;
+    · un alta que nunca llegó: «Eliminar este registro» la quita del teléfono con su historial, y el árbol
+      que sustituía vuelve a contar como plantado. Una jornada con árboles en el teléfono no se elimina: se
+      corrige;
+    · lo demás —sin permiso, el registro ya no está o ya cambió de estado—: «Descartar mi cambio». El
+      registro del teléfono vuelve a como lo tiene el servidor; si no se sabe, una corrección se deshace con
+      lo que había antes;
+    · falló el servidor: «Enviar otra vez».
+    · Eliminar y descartar borran lo que hizo la persona: piden confirmación y llevan el borde rojo.
+  · **Lo que no se vuelve a enviar solo.** Un rechazo espera a la persona, salvo uno por datos cuando se
+    corrige el registro. Que el servidor no tenga su base en ese momento ya no es rechazo: espera y se
+    intenta después.
+  · **Al volver a la entrada** se cierra cualquier ventana que hubiera quedado abierta: encima de la entrada
+    no dejaba escribir la contraseña. Lo encontró la prueba de conexión, con la sesión vencida y «Revisar»
+    abierta.
+  · Con datos de prueba nada cambia: el envío sigue simulado y no hay rechazos.
+  · **Sigue pendiente:** la jornada abierta iniciada en otro teléfono se tiene sólo en memoria (4e o
+    después); la carga masiva sigue con el envío simulado (4e).

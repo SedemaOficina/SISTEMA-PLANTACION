@@ -4935,3 +4935,67 @@ No se probó:
 
 **Siguiente paso.** 4d: qué hacer desde la pantalla con lo que el servidor no acepta. Probablemente necesite
 una pantalla o un aviso nuevo, que se muestra antes.
+
+## Bloque 224 — Lo que el servidor no aceptó (15-10-2026)
+
+**Versión 0.9.69.** Cuarta parte del paso 4 (D304).
+
+| Caso | Qué ofrece «Revisar» |
+|---|---|
+| Alguien más cambió el registro antes | «Enviar mi cambio otra vez» o «Quedarme con lo del servidor» |
+| Los datos no pasan | «Corregir»; y «Eliminar este registro» si nunca llegó, o «Descartar mi cambio» |
+| Sin permiso, ya no está o ya cambió de estado | «Eliminar este registro» si nunca llegó; si no, «Descartar mi cambio» |
+| Falló el servidor | «Enviar otra vez» |
+
+**Qué cambió.**
+- `js/rechazos.js`, nuevo: la ventana «Revisar».
+- `js/cola.js`: el estado «rechazado», el motivo de cada campo, y enviar otra vez, descartar y eliminar un
+  alta; un rechazo por datos se vuelve a intentar al corregir el registro; «sin base» del servidor espera.
+- `js/envio.js`: la franja dice antes lo que el servidor no aceptó, con «Revisar»; el aviso remite a ella.
+- `js/registros.js`, `js/jornadas.js` y `js/formulario.js`: «No se pudo enviar».
+- `js/app.js`: al volver a la entrada se cierra cualquier ventana abierta.
+- `index.html` y `css/estilos.css`: la ventana y sus estilos; la marca roja.
+- `datos/esquema.json` y `datos/DICCIONARIO-DATOS.md`: la cola dice qué pasa con lo rechazado.
+- `VERSION`, `js/config.js` e `index.html`: la marca 0.9.69.
+- Pruebas: `prueba_conexion.py` y su apoyo, que ahora dice quién cambió el árbol.
+- Documentación: `README.md`, `docs/FASE2-Y-TRASPASO.md` y `docs/MEJORAS.md`.
+
+**Pantalla: qué se agregó y qué se quitó.** Con datos de prueba, nada. Con datos reales:
+- se agregó la franja «El servidor no aceptó…» con «Revisar», la ventana «Cambios que el servidor no
+  aceptó» y la marca «No se pudo enviar» en las tarjetas y en la franja «Guardado»;
+- el aviso de un rechazo cambió: ya no pide «vuelva a hacer su cambio», remite a «Revisar»;
+- no se quitó nada.
+
+**Verificación.**
+- Conexión: `prueba_conexion.py`, 50 de 50, con datos reales en la pantalla:
+  - el rechazo por versión pone la franja y la marca, y la ventana dice de qué árbol es, qué se cambió y por
+    qué;
+  - «Enviar mi cambio otra vez» llega al servidor; «Quedarme con lo del servidor» deja en el teléfono lo que
+    puso la otra persona;
+  - dos altas con el punto fuera de la Ciudad dan el motivo del servidor; «Corregir» abre el árbol, y al
+    guardarlo se envía y vuelve con su folio; «Eliminar este registro» pide confirmación y lo quita con su
+    historial;
+  - una corrección de la jornada que no pasa pone la marca en su tarjeta, y «Descartar mi cambio» la deja
+    como la tiene el servidor.
+- Tropiezos, de la prueba y no de la aplicación: un texto mal armado en una comprobación; una corrida no
+  pudo imprimir sus resultados por los acentos en la consola; y la prueba dejaba abierta la ventana antes de
+  escribir en el formulario. Esto último enseñó un caso real: con la sesión vencida, la ventana se quedaba
+  encima de la entrada. Ya se cierra.
+- En una corrida falló una vez la comprobación de Fotografías (la que no llegó tardó en ocultar su cuadro);
+  no se repitió en la siguiente. No toca nada de este bloque.
+- Aplicación: `auditoria.py`, 144 comprobaciones sin hallazgos. `prueba.py`, 1 falla de 1,440: en el reporte con
+  comentarios, la consola registró dos veces que el servidor de mapas de Esri negó un mosaico al armar el
+  PDF. Es del proveedor del mapa, en una sección que no toca nada de este bloque; no se repitió la corrida.
+  (La primera corrida se cortó a medias cuando se apagó el servidor de la aplicación con la sesión.)
+- `auditoria_css.py`: 0 hallazgos.
+- La base local quedó sin datos de prueba.
+
+No se probó:
+- en un teléfono real;
+- «Enviar otra vez» tras una falla del servidor, ni el rechazo de una fotografía: no hay cómo provocarlos
+  en la prueba;
+- eliminar un sustituto que el servidor no aceptó (el código devuelve el original a «plantado», pero no
+  hay prueba que lo recorra).
+
+**Siguiente paso.** 4e, la administración conectada: catálogos, Parámetros editable y la bandeja de
+posibles duplicados, con las pantallas que ya aprobó Liber (D299).

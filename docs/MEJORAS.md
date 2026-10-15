@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.9.68 (Bloque 223)»**.
+Al pie de cualquier pantalla: **«Versión 0.9.69 (Bloque 224)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -496,6 +496,10 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M498 | Auditoría completa | Tres interlineados (1, 1.2, 1.5), vigilados por la auditoría de la hoja | Baja | 0.9.62 (B203) | Toda la aplicación | D284 |
 | M499 | Auditoría completa | Texto de código con la monoespaciada del proyecto | Baja | 0.9.62 (B203) | Lo que viaja a la base de datos | D284 |
 | M500 | Auditoría completa | En computadora las listas empiezan de 25 en 25 (en el teléfono, de 10 en 10) | Media | 0.9.62 (B203) | Registros, Jornadas, Registro de cambios | D284 |
+| M502 | Paso 4d | Franja roja «El servidor no aceptó N cambios», con «Revisar»; va antes que la del atraso | Alta | 0.9.69 (B224) | Con datos reales: un cambio que el servidor no acepta | D304 |
+| M503 | Paso 4d | «No se pudo enviar», en rojo, en la tarjeta del árbol y en la de la jornada, y en la franja «Guardado» | Media | 0.9.69 (B224) | Registros, Jornadas y Nuevo registro, con datos reales | D304 |
+| M504 | Paso 4d | Ventana «Cambios que el servidor no aceptó»: de qué registro es cada cambio, qué se cambió, por qué y qué hacer | Alta | 0.9.69 (B224) | Franja › Revisar | D304 |
+| M505 | Prueba de conexión | Al volver a la entrada se cierra cualquier ventana que hubiera quedado abierta | Media | 0.9.69 (B224) | Sesión vencida con una ventana abierta | D304 |
 
 ## 2. Por hacer
 
