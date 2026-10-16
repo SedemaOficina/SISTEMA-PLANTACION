@@ -19,7 +19,13 @@
       en una sola transacción: entra completo o no entra nada. La bitácora guarda cada jornada, cada
       árbol y un renglón del lote, que se ve en el Registro de cambios.
    4. Cargas hechas: cada lote se puede deshacer completo. Se quitan sus jornadas y sus árboles, y
-      la bitácora conserva el lote y que se deshizo. */
+      la bitácora conserva el lote y que se deshizo.
+
+   CON DATOS REALES la revisión es la misma, en el teléfono, y el lote va al servidor por tandas, que
+   lo vuelve a revisar y da el folio de cada árbol. Nada del lote se ve hasta que llega entero; si algo
+   falla a medias, no se carga nada. Las cargas hechas las lista el servidor, y deshacer un lote lo
+   quita de la vista y de las cifras: en el servidor queda con sus árboles eliminados, porque un árbol
+   con folio no se borra. */
 window.SRP = window.SRP || {};
 
 SRP.carga = {
@@ -38,6 +44,8 @@ SRP.carga = {
   archivo: null,
 
   el(id) { return document.getElementById(id); },
+  real() { return SRP.remoto.activo(); },
+  TANDA: 300,   // árboles por pedido al servidor: así cada tanda cabe holgada en lo que recibe de una vez
 
   iniciar() {
     SRP.ICONOS.poner(this.el('btn-carga-plantilla'), 'descargar', 'medio');
@@ -326,7 +334,8 @@ SRP.carga = {
     if (!ok) return;
     const libre = SRP.util.ocupado(this.el('btn-carga-cargar'), 'Cargando…', 'subir');
     try {
-      const r = await this.guardar(v, this.archivo.name);
+      const r = this.real() ? await this.cargarEnServidor(v, this.archivo.name) : await this.guardar(v, this.archivo.name);
+      if (!r) return;
       SRP.util.anunciar('Carga terminada: ' + num(r.arboles) + (r.arboles === 1 ? ' árbol' : ' árboles') + ' en ' + num(r.jornadas) + (r.jornadas === 1 ? ' jornada.' : ' jornadas.'), 'exito');
       this.preparar();
       this.el('carga-hecha').hidden = false;
@@ -347,15 +356,8 @@ SRP.carga = {
       const tc = SRP.derivacion.derivar(lat, lng);
       const t = tc.alcaldia_cve === a0.t.alcaldia_cve ? tc : a0.t;
       const id = SRP.util.generarId();
-      const regs = grupo.map(a => ({
-        id: SRP.util.generarId(), estatus: 'activo', cabo_id: u.id, lat: a.lat, lng: a.lng, punto_origen: 'manual', gps_precision_m: null, folio: null,
-        especie_id: a.especie.id, especie_otra: '',
-        alcaldia_cve: a.t.alcaldia_cve, alcaldia: a.t.alcaldia, colonia_cve: a.t.colonia_cve, colonia: a.t.colonia, uga: a.t.uga, uga_borde_m: a.t.uga_borde_m, capa_version: a.t.capa_version,
-        programa_id: a.programa.id, fecha_plantacion: a.fecha, jornada_id: id, comentarios: '',
-        foto_base64: null, foto_id: null, fecha_registro: ahora, fecha_ultima_edicion: null, editado_por_id: null,
-        sustituye_id: null, motivo_sustitucion: null, motivo_sustitucion_otro: '', sustituido_por_id: null }));
-      // Los avisos de una carga histórica no los revisa nadie en campo: quedan como revisados
-      const revisados = Object.keys(SRP.jornadas.avisos({ registros: regs }));
+      const regs = this.registros(grupo, id, u, ahora);
+      const revisados = this.revisados(regs);
       jornadas.push(Object.assign({
         id, nombre: 'Carga histórica · ' + (t.alcaldia || a0.t.alcaldia), ubicacion: '', programa_id: a0.programa.id,
         lat, lng, punto_origen: 'manual', gps_precision_m: null,
@@ -397,6 +399,64 @@ SRP.carga = {
     return { arboles: arboles.length, jornadas: jornadas.length, archivo, lote };
   },
 
+  // Los árboles de una jornada de la carga, como los guarda el sistema
+  registros(grupo, jornadaId, u, ahora) {
+    return grupo.map(a => ({
+      id: SRP.util.generarId(), estatus: 'activo', cabo_id: u.id, lat: a.lat, lng: a.lng, punto_origen: 'manual', gps_precision_m: null, folio: null,
+      especie_id: a.especie.id, especie_otra: '',
+      alcaldia_cve: a.t.alcaldia_cve, alcaldia: a.t.alcaldia, colonia_cve: a.t.colonia_cve, colonia: a.t.colonia, uga: a.t.uga, uga_borde_m: a.t.uga_borde_m, capa_version: a.t.capa_version,
+      programa_id: a.programa.id, fecha_plantacion: a.fecha, jornada_id: jornadaId, comentarios: '',
+      foto_base64: null, foto_id: null, fecha_registro: ahora, fecha_ultima_edicion: null, editado_por_id: null,
+      sustituye_id: null, motivo_sustitucion: null, motivo_sustitucion_otro: '', sustituido_por_id: null }));
+  },
+
+  // Los avisos de una carga histórica no los revisa nadie en campo: quedan como revisados
+  revisados(regs) { return Object.keys(SRP.jornadas.avisos({ registros: regs })); },
+
+  /* Con datos reales: el lote va al servidor por tandas, cada una con las jornadas que estrena, y al final
+     se completa. Si algo falla a medias, no se carga nada: lo que alcanzó a llegar no se ve y se quita.
+     Devuelve lo que devuelve guardar(), o null si no se cargó. */
+  async cargarEnServidor(v, archivo) {
+    const u = SRP.sesion.usuario, ahora = SRP.util.ahoraISO(), lote = SRP.util.generarId();
+    const jornadas = [], arboles = [];
+    Object.values(v.jornadas).forEach(grupo => {
+      const j = { id: SRP.util.generarId(), organizacion_id: grupo[0].org.id, programa_id: grupo[0].programa.id, fecha: grupo[0].fecha };
+      const regs = this.registros(grupo, j.id, u, ahora), revisados = new Set(this.revisados(regs));
+      jornadas.push(j);
+      regs.forEach((a, i) => arboles.push({ id: a.id, jornada_id: j.id, renglon: grupo[i].renglon, lat: a.lat, lng: a.lng, especie_id: a.especie_id,
+        fecha_plantacion: a.fecha_plantacion, revisado: revisados.has(a.id) }));
+    });
+    const tandas = Math.ceil(arboles.length / this.TANDA), enviadas = new Set();
+    const texto = this.el('btn-carga-cargar').querySelector('span');
+    for (let n = 0; n < tandas; n++) {
+      if (texto) texto.textContent = 'Subiendo tanda ' + (n + 1) + ' de ' + tandas + '…';
+      const parte = arboles.slice(n * this.TANDA, (n + 1) * this.TANDA);
+      const nuevas = jornadas.filter(j => !enviadas.has(j.id) && parte.some(a => a.jornada_id === j.id));
+      const r = await SRP.servidor.pedir('PUT', '/cargas/' + lote + '/tandas/' + (n + 1), { archivo, jornadas: nuevas, arboles: parte });
+      if (!r.ok) return this.noSeCargo(lote, r);
+      nuevas.forEach(j => enviadas.add(j.id));
+    }
+    const r = await SRP.servidor.pedir('POST', '/cargas/' + lote + '/completa', { arboles: arboles.length });
+    if (!r.ok) return this.noSeCargo(lote, r);
+    // Lo cargado ya se ve en Jornadas, Registros y Supervisión
+    await SRP.remoto.cargar();
+    return { arboles: r.datos.arboles, jornadas: r.datos.jornadas, archivo, lote };
+  },
+
+  // Lo que no llegó entero no se ve; se quita del servidor si se puede, y se dice qué pasó
+  async noSeCargo(lote, r) {
+    if (r.sinRed) {
+      SRP.util.anunciar('Se perdió la conexión con el servidor: no se cargó nada. Si en «Cargas hechas» aparece una carga sin terminar, quítela antes de volver a cargar el archivo.', 'aviso');
+    } else {
+      await SRP.servidor.pedir('DELETE', '/cargas/' + lote);
+      const primero = r.errores && r.errores.length ? ' (' + r.errores[0][0] + ': ' + r.errores[0][1] + ')' : '';
+      SRP.util.anunciar((r.errores && r.errores.length ? 'El servidor no aceptó la carga' + primero + '.' : r.mensaje) + ' No se cargó nada: revise el archivo y vuelva a intentarlo.', 'aviso');
+      // Sin conexión la lista no se podría traer, y su aviso taparía éste
+      await this.pintarLotes();
+    }
+    return null;
+  },
+
   /* ---------- Cargas hechas ---------- */
 
   // El archivo de un lote, tal como lo anotó la bitácora al cargarlo
@@ -407,7 +467,8 @@ SRP.carga = {
 
   // Cada lote, lo más reciente primero: cuándo, quién, qué dice la bitácora y si ya se deshizo
   async lotes() {
-    const bit = (await SRP.almacen.todos('bitacora')).filter(b => b.entidad === 'carga');
+    if (this.real()) return this.lotesDelServidor();
+    const bit =(await SRP.almacen.todos('bitacora')).filter(b => b.entidad === 'carga');
     const deshechos = {};
     bit.filter(b => b.accion === 'ELIMINADO').forEach(b => { deshechos[b.entidad_id] = b; });
     const quedan = {};
@@ -416,15 +477,30 @@ SRP.carga = {
       .map(b => ({ id: b.entidad_id, entrada: b, deshecho: deshechos[b.entidad_id] || null, jornadas: quedan[b.entidad_id] || 0 }));
   },
 
+  /* Con datos reales, los lotes del servidor con la misma forma; null si no respondió. Uno que no se terminó
+     de subir no se ve en ningún lado y se puede quitar */
+  async lotesDelServidor() {
+    const r = await SRP.servidor.pedir('GET', '/cargas');
+    if (!r.ok) return null;
+    const pl = (n, uno, varios) => n.toLocaleString('es-MX') + ' ' + (n === 1 ? uno : varios);
+    return r.datos.filas.map(k => ({
+      id: k.id, estado: k.estado, archivo: k.archivo, arboles: k.arboles, jornadas: k.estado === 'subiendo' ? 0 : k.jornadas,
+      entrada: { fecha: k.creada_en, usuario_nombre: k.creada_por, detalle: k.estado === 'subiendo'
+        ? 'Archivo «' + k.archivo + '»: no se terminó de subir (' + pl(k.arboles, 'árbol llegó', 'árboles llegaron') + '); no se ve en ningún lado'
+        : 'Archivo «' + k.archivo + '»: ' + pl(k.arboles, 'árbol', 'árboles') + ' en ' + pl(k.jornadas, 'jornada', 'jornadas') + ' de ' + pl(k.instituciones, 'institución', 'instituciones') },
+      deshecho: k.estado === 'deshecha' ? { fecha: k.deshecha_en, usuario_nombre: k.deshecha_por } : null }));
+  },
+
   async pintarLotes() {
     const esc = SRP.util.escapar, cuando = iso => SRP.configuracion.cuando(iso);
-    const lotes = await this.lotes();
+    let lotes = await this.lotes();
+    if (!lotes) { SRP.util.anunciar('Sin conexión con el servidor: no se pudieron traer las cargas hechas.', 'aviso', { secundario: true }); lotes = []; }
     this.el('carga-lotes-vacio').hidden = lotes.length > 0;
     this.el('carga-lotes').innerHTML = lotes.map(l => {
       const b = l.entrada, quien = b.usuario_nombre || SRP.ref.nombreUsuario(b.usuario_id);
       const estado = l.deshecho
         ? '<span class="cmb-campos">Deshecha el ' + esc(cuando(l.deshecho.fecha)) + ' por ' + esc(l.deshecho.usuario_nombre || SRP.ref.nombreUsuario(l.deshecho.usuario_id)) + '</span>'
-        : l.jornadas ? '<button type="button" class="btn btn-secundario" data-lote="' + esc(l.id) + '">' + SRP.ICONOS.svg('basura', 'medio') + '<span>Deshacer carga</span></button>'
+        : l.jornadas || l.estado === 'subiendo' ? '<button type="button" class="btn btn-secundario" data-lote="' + esc(l.id) + '">' + SRP.ICONOS.svg('basura', 'medio') + '<span>Deshacer carga</span></button>'
           : '<span class="cmb-campos">Sus jornadas ya no están en el sistema</span>';
       return '<li class="cmb-item" data-estado="' + (l.deshecho ? 'deshecha' : 'vigente') + '"><span class="cmb-fecha">' + esc(cuando(b.fecha)) + '</span>' +
         '<span class="cmb-que">' + esc(b.detalle || '') + '</span><span class="cmb-quien">Por ' + esc(quien) + '</span>' + estado + '</li>';
@@ -435,6 +511,7 @@ SRP.carga = {
      transacción. Antes dice cuántos son y si alguno se editó o se agregó después de cargarlo. */
   async deshacer(lote) {
     if (!SRP.permisos.exigir('carga.masiva')) return;
+    if (this.real()) return this.deshacerEnServidor(lote);
     const num = x => x.toLocaleString('es-MX'), pl = (n, uno, varios) => num(n) + ' ' + (n === 1 ? uno : varios);
     const jornadas = (await SRP.almacen.todos('jornadas')).filter(j => j.carga_id === lote);
     if (!jornadas.length) { SRP.util.anunciar('Esa carga ya no tiene jornadas en el sistema.', 'aviso'); return this.pintarLotes(); }
@@ -471,6 +548,30 @@ SRP.carga = {
     this.el('carga-hecha').hidden = false;
     this.el('carga-hecha').textContent = detalle + '.';
     SRP.util.anunciar(detalle + '.', 'exito');
+    await this.pintarLotes();
+  },
+
+  /* Con datos reales: el servidor oculta el lote y elimina sus árboles. Lo que dice la confirmación es lo
+     mismo; lo editado o agregado después lo sabe el servidor, que lo quita igual */
+  async deshacerEnServidor(lote) {
+    const num = x => x.toLocaleString('es-MX'), pl = (n, uno, varios) => num(n) + ' ' + (n === 1 ? uno : varios);
+    const l = ((await this.lotes()) || []).find(x => x.id === lote);
+    if (!l || l.deshecho) { SRP.util.anunciar('Esa carga ya no está en el sistema.', 'aviso'); return this.pintarLotes(); }
+    const ok = await SRP.app.confirmar({ titulo: 'Deshacer carga masiva',
+      pregunta: l.estado === 'subiendo' ? '¿Quitar la carga sin terminar del archivo «' + l.archivo + '»?'
+        : '¿Quitar ' + pl(l.arboles, 'árbol', 'árboles') + ' y ' + pl(l.jornadas, 'jornada', 'jornadas') + ' del archivo «' + l.archivo + '»?',
+      puntosTitulo: 'Qué pasa:', puntos: ['Se quitan del sistema y los informes dejan de contarlos.', 'El Registro de cambios conserva la carga y que se deshizo.'],
+      irreversible: true, boton: 'Deshacer carga', icono: 'basura', escribir: 'DESHACER' });
+    if (!ok) return;
+    const r = await SRP.servidor.pedir('DELETE', '/cargas/' + lote);
+    if (!r.ok) {
+      SRP.util.anunciar(r.sinRed ? 'Sin conexión con el servidor: la carga no se deshizo. Intente de nuevo cuando haya señal.' : r.mensaje, 'aviso');
+      return;
+    }
+    await SRP.remoto.cargar();
+    this.el('carga-hecha').hidden = false;
+    this.el('carga-hecha').textContent = r.datos.detalle + '.';
+    SRP.util.anunciar(r.datos.detalle + '.', 'exito');
     await this.pintarLotes();
   }
 };

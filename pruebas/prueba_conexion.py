@@ -22,7 +22,9 @@ o se descarta; y los catálogos de la Administración: dar de alta, renombrar, d
 servidor, que cuenta el uso de cada valor y dice lo que no acepta, y sin conexión nada cambia; y lo que dice la
 bitácora del servidor: el historial de un árbol que ya salió del teléfono y el Registro de cambios; y Parámetros,
 que la Administración cambia en el servidor para todos los teléfonos; y la bandeja de posibles duplicados:
-la tarjeta, cada pareja con su mapa y sus dos árboles, y «Es el mismo árbol» o «Son distintos».
+la tarjeta, cada pareja con su mapa y sus dos árboles, y «Es el mismo árbol» o «Son distintos»; y la carga
+masiva: el archivo sube al servidor por tandas, los árboles vuelven con folio y se ven, «Deshacer carga» los
+quita de la vista, el mismo archivo se puede volver a cargar y sin conexión no se carga nada.
 
 Uso, desde la carpeta del proyecto (con la base local cargada):  python pruebas/prueba_conexion.py
 """
@@ -226,6 +228,13 @@ BANDEJA = """async estado => { SRP.app.mostrarVista('duplicados'); const s = doc
     parejas: [...document.querySelectorAll('#dup-lista > li')].map(li => ({ id: Number(li.dataset.pareja), cabeza: li.querySelector('.dup-cabeza').textContent,
       mapa: !!li.querySelector('.dup-mapa.leaflet-container'), arboles: [...li.querySelectorAll('.dup-arboles section')].map(x => x.textContent),
       botones: [...li.querySelectorAll('button[data-resolver]')].map(b => b.textContent.trim()), revisada: (li.querySelector('.dup-revisada') || {}).textContent || '' })) }; }"""
+
+
+# Lo que dice el servidor de los lotes de carga masiva
+LOTES = """async () => ((await SRP.servidor.pedir('GET', '/cargas')).datos.filas || []).map(k => ({ id: k.id, estado: k.estado, archivo: k.archivo, arboles: k.arboles, jornadas: k.jornadas }))"""
+# Los árboles de un lote que se ven en el teléfono, con su folio
+DEL_LOTE = """lote => { const js = new Set([...SRP.remoto.jornadas.values()].filter(j => j.carga_id === lote).map(j => j.id));
+  return [...SRP.remoto.plantaciones.values()].filter(r => js.has(r.jornada_id)).map(r => r.folio); }"""
 
 
 def editar_parametro(pg, nombre, valores):
@@ -736,6 +745,45 @@ def main():
             srv = pg.evaluate("async () => ((await SRP.servidor.pedir('GET', '/duplicados?estado=revisados')).datos.filas || []).map(x => [x.id, x.resolucion])")
             ok(d['cuenta'] == '0 parejas por revisar' and 'No hay parejas por revisar' in d['vacio'] and [p1, 'mismo'] in srv and [p2, 'distintos'] in srv,
                '«Son distintos» también queda en el servidor, y sin pendientes la bandeja lo dice: %s · %s' % (d['cuenta'], srv))
+
+            # ---------- La carga masiva, con el servidor ----------
+            archivo = os.path.join(fotos, 'carga-%s.csv' % CORRIDA)   # se va con la carpeta de la prueba
+            with open(archivo, 'w', encoding='utf-8', newline='') as f:
+                f.write('Latitud,Longitud,Nombre científico,Fecha de plantación,Programa,Tipo de institución,Institución\n')
+                for i in range(4):
+                    f.write('%.6f,%.6f,Taxodium mucronatum,2024-05-10,Reforestación Urbana,Alcaldía,Iztapalapa\n' % (19.35 + (int(CORRIDA) % 997) / 100000 + i * 0.0001, -99.07 - i * 0.0001))
+            nombre = os.path.basename(archivo)
+            pg.evaluate("SRP.app.mostrarVista('carga')"); pg.wait_for_timeout(1500)
+            pg.set_input_files('#carga-archivo', archivo); pg.wait_for_timeout(2500)
+            boton = pg.inner_text('#btn-carga-cargar')
+            pg.click('#btn-carga-cargar'); pg.wait_for_selector('#dlg-confirmar[open]'); pg.click('#btn-confirmar-si')
+            pg.wait_for_function("() => (document.getElementById('carga-hecha').textContent || '').startsWith('Última carga')", timeout=60000)
+            pg.wait_for_timeout(1500)
+            lote = next((k for k in pg.evaluate(LOTES) if k['archivo'] == nombre), None)
+            folios = pg.evaluate(DEL_LOTE, lote and lote['id'])
+            lista = pg.evaluate("() => [...document.querySelectorAll('#carga-lotes > li')].map(li => li.textContent)")
+            ok(boton.strip() == 'Cargar 4 árboles' and lote and (lote['estado'], lote['arboles'], lote['jornadas']) == ('completa', 4, 1)
+               and len(folios) == 4 and all(re.match(r'^[A-Z]{3}-\d{3}-\d{5}$', x or '') for x in folios) and lista and nombre in lista[0] and 'Deshacer carga' in lista[0],
+               'la carga masiva sube al servidor por tandas: los árboles vuelven con su folio y se ven, y el lote aparece en «Cargas hechas»: %s · %s' % (lote, folios))
+
+            # «Deshacer carga» lo quita de la vista; el mismo archivo se puede volver a cargar
+            pg.click('#carga-lotes button[data-lote="%s"]' % lote['id']); pg.wait_for_selector('#dlg-confirmar[open]')
+            pg.fill('#confirmar-palabra', 'DESHACER'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(6000)
+            k = next((x for x in pg.evaluate(LOTES) if x['id'] == lote['id']), {})
+            folios = pg.evaluate(DEL_LOTE, lote['id'])
+            lista = pg.evaluate("() => [...document.querySelectorAll('#carga-lotes > li')].map(li => li.textContent)")
+            pg.set_input_files('#carga-archivo', archivo); pg.wait_for_timeout(2500)
+            otra_vez = pg.inner_text('#btn-carga-cargar')
+            ok(k.get('estado') == 'deshecha' and folios == [] and 'Deshecha el' in lista[0] and otra_vez.strip() == 'Cargar 4 árboles',
+               '«Deshacer carga» la quita de la vista y del teléfono, y el mismo archivo se puede volver a cargar: %s · %s' % (k, otra_vez))
+
+            # Sin conexión no se carga nada, y se dice
+            ctx.route('**/api/srp/**', lambda r: r.abort())
+            pg.click('#btn-carga-cargar'); pg.wait_for_selector('#dlg-confirmar[open]'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(3000)
+            aviso = pg.evaluate("() => document.getElementById('aviso').textContent")
+            ctx.unroute('**/api/srp/**')
+            ok('Se perdió la conexión con el servidor: no se cargó nada' in aviso and not [x for x in pg.evaluate(LOTES) if x['archivo'] == nombre and x['estado'] != 'deshecha'],
+               'sin conexión, la carga no sube nada y lo dice: %s' % aviso)
 
             ok(not errores, 'sin errores en la página: %s' % errores)
             ctx.close()

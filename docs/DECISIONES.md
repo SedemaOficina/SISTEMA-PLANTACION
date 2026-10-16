@@ -3846,3 +3846,17 @@
   · **Medido en la base local:** 5,000 árboles en 17 tandas de 300, en 14 segundos; la tanda más lenta, 1.2 s.
   · La cuenta `srp_api` registra, completa y deshace lotes, y no los borra; el guion de la cuenta pasa a
     `09-srp-rol-y-grants.sql`.
+
+- **D310. La pantalla de la carga masiva, conectada (bloque 230, versión 0.9.74).**
+  16-10-2026. Última parte de 4e: con ella la administración queda conectada al servidor.
+  · **Con datos reales** (`js/carga.js`), la revisión del archivo es la misma, en el teléfono. Al cargar, el lote
+    va al servidor por tandas de 300 árboles (D309) y el botón dice «Subiendo tanda N de M…». Al terminar, el
+    teléfono vuelve a traer lo enviado: los árboles se ven con su folio en Jornadas, Registros y Supervisión.
+  · **Si algo falla a medias, no se carga nada.** Si el servidor no aceptó un renglón, se dice cuál y el lote se
+    quita solo. Si se fue la conexión, el aviso pide quitar en «Cargas hechas» lo que haya quedado sin terminar.
+  · **«Cargas hechas»** viene del servidor. Una carga sin terminar se ve ahí, sin contar en ningún lado, con
+    «Deshacer carga». La confirmación de deshacer dice lo mismo que en la versión de prueba, sin los renglones
+    de lo editado o agregado después, que sólo sabe el servidor (lo quita igual).
+  · **«Deshacer carga»** la quita de la vista y de las cifras (decisión de Liber, D309), y el mismo archivo se
+    puede volver a cargar.
+  · Con datos de prueba nada cambia.

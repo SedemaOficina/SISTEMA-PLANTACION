@@ -12,7 +12,7 @@
      node pruebas/apoyo_servidor.mjs otro_valor { tabla, id, clave, nombre, por }   otra persona da de alta un valor
      node pruebas/apoyo_servidor.mjs pareja     { llego, cercano, distancia }  una pareja en la bandeja de posibles duplicados
      node pruebas/apoyo_servidor.mjs quitar     { ids }         las cuentas, sus sesiones, sus jornadas, árboles y
-                                                                fotografías, sus parámetros, los valores de catálogo
+                                                                fotografías, sus lotes de carga, sus parámetros, los valores de catálogo
                                                                 que dieron de alta y sus registros
 
    «preparar» presta a la cuenta local el rol srp_api, con el que corre el servicio; «quitar» lo devuelve. */
@@ -72,6 +72,7 @@ try {
     await c.query('DELETE FROM srp.duplicados WHERE plantacion_id = ANY($1::uuid[]) OR cercano_id = ANY($1::uuid[])', [arboles]);
     await c.query('DELETE FROM srp.plantaciones WHERE id = ANY($1::uuid[])', [arboles]);
     await c.query('DELETE FROM srp.jornadas WHERE cabo_id = ANY($1::uuid[])', [d.ids]);
+    await c.query('DELETE FROM srp.cargas WHERE creada_por_id = ANY($1::uuid[])', [d.ids]);
     await c.query('DELETE FROM srp.parametros WHERE editado_por_id = ANY($1::uuid[])', [d.ids]);
     for (const t of TABLAS_CATALOGO) {
       await c.query(`DELETE FROM srp.${t} WHERE creado_por_id = ANY($1::uuid[])`, [d.ids]);

@@ -5229,3 +5229,47 @@ No se probó:
 
 **Siguiente paso.** Conectar la pantalla de la carga masiva: mandar el lote por tandas con su avance, las cargas
 hechas y «Deshacer carga» desde el servidor.
+
+## Bloque 230 — La pantalla de la carga masiva, conectada (16-10-2026)
+
+**Versión 0.9.74.** Última parte de 4e (D310): la administración queda conectada al servidor.
+
+| Qué | Con datos reales |
+|---|---|
+| Revisar el archivo | Igual, en el teléfono |
+| Cargar | Por tandas de 300; el botón dice «Subiendo tanda N de M…»; al terminar se ve todo con su folio |
+| Si algo falla | No se carga nada, y se dice por qué |
+| Cargas hechas | Del servidor; una sin terminar se puede quitar |
+| Deshacer carga | La quita de la vista y de las cifras; el archivo se puede volver a cargar |
+
+**Qué cambió.**
+- `js/carga.js`: la carga, la lista y el deshacer con el servidor.
+- `VERSION`, `js/config.js` e `index.html`: la marca 0.9.74.
+- Pruebas: `prueba_conexion.py`, la carga masiva como Administración; su apoyo quita los lotes de la prueba.
+- Documentación: `README.md`, `docs/FASE2-Y-TRASPASO.md` y `docs/MEJORAS.md`.
+
+**Pantalla: qué se agregó y qué se quitó.** Con datos de prueba, nada. Con datos reales: el botón dice
+«Subiendo tanda N de M…» mientras sube; «Cargas hechas» enseña también una carga sin terminar; hay avisos
+nuevos para cuando el servidor no acepta un renglón o se va la conexión. No se quitó nada.
+
+**Verificación.**
+- Conexión: `prueba_conexion.py`, 73 de 73. Como Administración, en la pantalla:
+  - un archivo de 4 árboles sube al servidor, los árboles vuelven con su folio y se ven, y el lote aparece en
+    «Cargas hechas»;
+  - «Deshacer carga» lo quita de la vista y del teléfono, y el mismo archivo se puede volver a cargar;
+  - sin conexión no se carga nada y se dice.
+  La primera corrida encontró que, sin conexión, el aviso de la lista de cargas tapaba el de «no se cargó
+  nada»: sin conexión la lista ya no se vuelve a pintar.
+- Aplicación: `prueba.py`, 0 fallas de 1,441 en la segunda corrida. La primera se detuvo en «sustituir un árbol», que
+  este bloque no toca: la ventana «Revise antes de guardar» tardó en abrirse más de lo que espera la prueba y
+  quedó abierta tapando lo que seguía; repetida, pasó completa. `auditoria.py`, 144 comprobaciones sin
+  hallazgos; `auditoria_css.py`, 0 hallazgos.
+- La base local quedó sin datos de prueba.
+
+No se probó:
+- en un teléfono real;
+- con un archivo grande desde la pantalla: los 5,000 árboles se midieron directo contra el servidor (D309);
+- que el servidor rechace un renglón que el teléfono dejó pasar: lo prueba el servidor.
+
+**Siguiente paso.** El paso 5: la pantalla para cambiar la contraseña temporal y Usuarios conectado. Son
+pantallas nuevas: primero se muestran.
