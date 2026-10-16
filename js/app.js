@@ -71,6 +71,7 @@ SRP.app = {
     SRP.catalogos.iniciar();
     SRP.usuarios.iniciar();
     SRP.configuracion.iniciar();
+    SRP.duplicados.iniciar();
     SRP.carga.iniciar();
     SRP.especiesRevision.iniciar();
     this.cuidarCampoEnVentana();
@@ -431,7 +432,8 @@ SRP.app = {
       // Quien no registra árboles nuevos pero sí puede corregirlos (la Administración global) entra a «Nuevo registro» sólo a editar
       const editando = !!(SRP.formulario && SRP.formulario.estado && (SRP.formulario.estado.editando || SRP.formulario.estado.sustitucion));
       if ((nombre === 'registrar' && !p.registrar && !editando) || (nombre === 'catalogos' && !p.catalogos) || (nombre === 'galeria' && !p.galeria) || (nombre === 'supervision' && p.alcance === 'ninguno') ||
-          (nombre === 'usuarios' && !p.usuarios) || (['configuracion', 'parametros', 'cambios', 'acerca', 'carga', 'revision-especies'].includes(nombre) && !admin)) nombre = 'registros';
+          (nombre === 'usuarios' && !p.usuarios) || (['configuracion', 'parametros', 'cambios', 'acerca', 'carga', 'revision-especies'].includes(nombre) && !admin) ||
+          (nombre === 'duplicados' && !SRP.duplicados.disponible())) nombre = 'registros';
     }
     // Una sección que no existe (un «atrás» hacia una sección de una versión anterior) lleva a Jornadas
     if (!document.getElementById('vista-' + nombre)) nombre = 'jornadas';
@@ -444,7 +446,7 @@ SRP.app = {
     // Al editar se está dentro de Registros, de donde se llegó: «Nuevo registro» no se marca
     // Fotografías vive dentro de Supervisión: su pestaña es la que queda marcada
     // Lo que se abre desde Configuración deja marcada su pestaña
-    const deConfiguracion = ['usuarios', 'catalogos', 'parametros', 'cambios', 'acerca', 'carga', 'revision-especies'];
+    const deConfiguracion = ['usuarios', 'catalogos', 'parametros', 'cambios', 'acerca', 'carga', 'revision-especies', 'duplicados'];
     const marcada = nombre === 'registrar' && (SRP.formulario.estado.editando || SRP.formulario.estado.sustitucion) ? (SRP.jornadas.volverAlDetalle ? 'jornadas' : 'registros') : nombre === 'galeria' ? 'supervision' : deConfiguracion.includes(nombre) ? 'configuracion' : nombre;
     this.el('navegacion').querySelectorAll('.pestana').forEach(b => {
       if (b.dataset.vista === marcada) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
@@ -459,6 +461,7 @@ SRP.app = {
     if (nombre === 'configuracion') SRP.configuracion.preparar();
     if (nombre === 'parametros') SRP.configuracion.prepararParametros();
     if (nombre === 'cambios') SRP.configuracion.prepararCambios();
+    if (nombre === 'duplicados') SRP.duplicados.preparar();
     if (nombre === 'acerca') SRP.configuracion.prepararAcerca();
     if (nombre === 'carga') SRP.carga.preparar();
     if (nombre === 'revision-especies') SRP.especiesRevision.preparar();

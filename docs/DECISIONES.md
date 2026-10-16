@@ -3798,3 +3798,23 @@
     consultan, como antes.
   · La prueba del servidor que compara los parámetros con la pantalla busca ahora la función por su firma
     nueva.
+
+- **D308. La bandeja de posibles duplicados (bloque 228, versión 0.9.73).**
+  16-10-2026. Cuarta parte de 4e, con la pantalla que aprobó Liber (D299).
+  · **La tarjeta** «Posibles duplicados», en Configuración, dice cuántas parejas faltan por revisar. Sólo con
+    datos reales y para la Administración global: con datos de prueba no hay tarjeta y la vista no se abre.
+  · **La pantalla** (`js/duplicados.js`): la nota, «Mostrar» (por revisar, revisadas o todas) y la cuenta. Cada
+    pareja con la distancia de hoy —si se corrigió un punto, la nueva—, la precisión de los dos GPS sumada —
+    sólo si los dos puntos vienen del GPS—, el día en que se detectó y un mapa con los dos puntos: ámbar el que
+    llegó después y azul el que ya estaba. Abajo, los dos árboles uno junto al otro (en teléfono, uno bajo el
+    otro) con especie, folio, institución, quién lo registró, jornada, fecha, cómo se ubicó y colonia, cada uno
+    con «Abrir en Registros», que abre su ficha.
+  · **La decisión**: «Es el mismo árbol» o «Son distintos». Queda en el servidor y no se vuelve a revisar. Si es
+    el mismo, el aviso dice cómo seguir: eliminar uno de los dos desde su ficha. Las revisadas dicen cuándo,
+    quién y qué se decidió.
+  · **La nota dice «de la misma especie»** y el mínimo vigente de «Puntos duplicados»: la muestra aprobada
+    era de antes de la regla de la misma especie y tenía los 4 m escritos.
+  · **El permiso `duplicado.revisar`** pasa a las acciones de los dos lados (`js/permisos.js` y
+    `permisos.ts`), como se había dicho al hacer la bandeja del servidor (D298).
+  · **Si se cambia «Mostrar» mientras llega la lista anterior**, sólo cuenta la última consulta: la prueba
+    encontró que una respuesta tardía podía pintar encima de la nueva.

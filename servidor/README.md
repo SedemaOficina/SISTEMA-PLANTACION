@@ -333,8 +333,9 @@ cuenta dos veces; si se restaura, vuelve. `POST /duplicados/revision` marca una 
 mismo árbol (`mismo`) o árboles distintos (`distintos`), con una nota. Una revisión no se cambia y guarda
 quién la hizo y cuándo. Si son el mismo árbol, se elimina uno de los dos como cualquier otro registro.
 
-La acción `duplicado.revisar` sólo existe en el servidor mientras la aplicación no tenga la pantalla de la
-bandeja (`ACCIONES_DEL_SERVIDOR`, en `permisos.ts`); cuando la tenga, pasa a las acciones de los dos lados.
+La acción `duplicado.revisar` está en las acciones de los dos lados (`permisos.ts` y `js/permisos.js`): la
+aplicación tiene la pantalla de la bandeja (`js/duplicados.js`). `ACCIONES_DEL_SERVIDOR` queda vacía, para lo
+que algún día exista sólo en el servidor.
 
 ### Permisos de cada perfil
 

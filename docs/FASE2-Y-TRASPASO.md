@@ -64,8 +64,8 @@ los 17,479 árboles y las 1,305 jornadas igual que la aplicación.
     de allá;
   - Parámetros (bloque 227, D307): la Administración los cambia en el servidor con la pantalla que aprobó
     Liber (D299);
-  - siguen la bandeja de posibles duplicados, con la pantalla que ya aprobó Liber (D299), y la carga masiva
-    conectada.
+  - la bandeja de posibles duplicados (bloque 228, D308), con la pantalla que aprobó Liber (D299);
+  - sigue la carga masiva conectada.
 
 Ver `servidor/README.md`.
 

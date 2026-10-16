@@ -1,7 +1,7 @@
 /* CONFIGURACIÓN (sólo Administración global). Una pantalla con una tarjeta por apartado: Usuarios
    y Catálogos, que son sus propias vistas; Parámetros, para consulta y, con datos reales, para
-   cambiarlos en el servidor; Registro de cambios, lo que la bitácora dice de cuentas y catálogos; y
-   Acerca del sistema. Cada apartado vuelve aquí con «Configuración», arriba a la izquierda. */
+   cambiarlos en el servidor; Registro de cambios, lo que la bitácora dice de cuentas y catálogos; con
+   datos reales, Posibles duplicados (js/duplicados.js); y Acerca del sistema. Cada apartado vuelve aquí con «Configuración», arriba a la izquierda. */
 window.SRP = window.SRP || {};
 
 SRP.configuracion = {
@@ -29,17 +29,20 @@ SRP.configuracion = {
     const pl = (n, uno, varios) => num(n) + ' ' + (n === 1 ? uno : varios);
     const us = SRP.ref.usuarios, inactivas = us.filter(u => !u.activo).length;
     const activos = t => SRP.ref.deTipo(t, true).length;
-    const [todos, delServidor] = await Promise.all([this.cambios(), this.leerParametros()]);
+    const [todos, delServidor, porRevisar] = await Promise.all([this.cambios(), this.leerParametros(), SRP.duplicados.pendientes()]);
     const cambios = todos.length, cargas = todos.filter(b => b.entidad === 'carga' && b.accion === 'CREADO').length;
     const resumen = {
       usuarios: pl(us.length, 'cuenta', 'cuentas') + (inactivas ? ' · ' + pl(inactivas, 'inactiva', 'inactivas') : ''),
       catalogos: pl(activos('programa'), 'programa', 'programas') + ' · ' + pl(activos('organizacion'), 'institución', 'instituciones') + ' · ' + pl(activos('especie'), 'especie', 'especies'),
       parametros: this.resumenParametros(delServidor),
+      duplicados: porRevisar === null ? '' : porRevisar ? SRP.duplicados.textoParejas(porRevisar, 'por revisar') : 'Ninguna pareja por revisar',
       cambios: cambios ? pl(cambios, 'cambio registrado', 'cambios registrados') : 'Sin cambios todavía',
       carga: cargas ? pl(cargas, 'carga hecha', 'cargas hechas') : 'Plantilla, revisión y carga',
       acerca: 'Versión ' + SRP.CONFIG.VERSION
     };
     document.querySelectorAll('#cfg-tarjetas [data-resumen]').forEach(s => { s.textContent = resumen[s.dataset.resumen] || ''; });
+    // La bandeja de posibles duplicados vive en el servidor: con datos de prueba no hay tarjeta
+    this.el('cfg-tarjetas').querySelector('[data-ir="duplicados"]').hidden = !SRP.duplicados.disponible();
   },
 
   /* ---------- Parámetros ---------- */

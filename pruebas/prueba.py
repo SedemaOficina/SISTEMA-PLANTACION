@@ -4341,7 +4341,11 @@ with sync_playwright() as p:
     pg50.click('#btn-cuenta'); pg50.wait_for_timeout(200)
     m50=pg50.eval_on_selector_all('#menu-cuenta .menu-opcion:not([hidden])','l=>l.map(b=>b.textContent.trim())')
     pg50.evaluate("SRP.app.menuCuenta(false)"); pg50.click('.pestana[data-vista=configuracion]'); pg50.wait_for_timeout(600)
-    t50=pg50.eval_on_selector_all('.cfg-tarjeta','l=>l.map(t=>[t.dataset.ir, t.querySelector(".cfg-titulo").textContent, t.querySelector(".cfg-resumen").textContent])')
+    t50=pg50.eval_on_selector_all('.cfg-tarjeta:not([hidden])','l=>l.map(t=>[t.dataset.ir, t.querySelector(".cfg-titulo").textContent, t.querySelector(".cfg-resumen").textContent])')
+    # La bandeja de posibles duplicados vive en el servidor: con datos de prueba no hay tarjeta ni se abre
+    dup50=pg50.evaluate("() => [document.querySelector('.cfg-tarjeta[data-ir=duplicados]').hidden, (SRP.app.mostrarVista('duplicados'), SRP.app.vista)]")
+    pg50.evaluate("SRP.app.mostrarVista('configuracion')"); pg50.wait_for_timeout(400)
+    ok(dup50==[True,'registros'],'con datos de prueba no hay tarjeta de posibles duplicados, y su vista no se abre: %s' % dup50)
     ok('Configuración' not in m50 and 'Catálogos' not in m50 and 'Usuarios' not in m50,'el menú de la cuenta no trae Configuración, Catálogos ni Usuarios: se entra por la barra: %s' % m50)
     ok([x[:2] for x in t50]==[['usuarios','Usuarios'],['catalogos','Catálogos'],['parametros','Parámetros'],['cambios','Registro de cambios'],['carga','Carga masiva'],['acerca','Acerca del sistema']]
        and t50[0][2]=='13 cuentas' and t50[1][2]=='7 programas · 7 instituciones · 79 especies' and t50[2][2]=='11 valores · sólo consulta' and t50[3][2]=='Sin cambios todavía' and t50[4][2]=='Plantilla, revisión y carga' and t50[5][2].startswith('Versión '),

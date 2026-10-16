@@ -259,6 +259,22 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 .cfg-dato { display: grid; grid-template-columns: minmax(0, 12rem) minmax(0, 1fr); column-gap: var(--e-3); padding: var(--e-2) 0; border-bottom: 1px solid var(--borde-suave); }
 .cfg-dato dt { color: var(--gris); }
 .cfg-dato dd { margin: 0; overflow-wrap: anywhere; }
+/* Posibles duplicados: cada pareja con su mapa —ámbar el que llegó después, azul el que ya estaba— y los
+   dos árboles uno junto al otro en computadora, uno bajo el otro en teléfono */
+.dup-lista { list-style: none; margin: 0; padding: 0; }
+.dup-pareja { margin-top: var(--e-4); padding: var(--e-4); border: 1px solid var(--borde-suave); border-radius: var(--radio); background: var(--fondo); }
+.dup-cabeza { margin: 0 0 var(--e-3); }
+.dup-mapa { height: 190px; border-radius: var(--radio); margin-bottom: var(--e-3); }
+.dup-arboles { display: grid; gap: var(--e-4); }
+.dup-arboles h3 { display: flex; align-items: center; gap: var(--e-2); margin: 0 0 var(--e-1); font-size: var(--t-m); }
+.dup-arboles .cfg-dato { grid-template-columns: minmax(0, 8.5rem) minmax(0, 1fr); }
+.dup-punto { display: inline-block; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--fondo); outline: 1px solid var(--gris); }
+.dup-punto[data-cual="llego"] { background: var(--editar); }
+.dup-punto[data-cual="estaba"] { background: var(--acento); }
+.dup-pareja .fila-botones { margin: var(--e-3) 0 0; }
+.dup-marca-llego { fill: var(--editar); fill-opacity: 1; stroke: var(--fondo); stroke-width: 2; }
+.dup-marca-estaba { fill: var(--acento); fill-opacity: 1; stroke: var(--fondo); stroke-width: 2; }
+.dup-revisada { margin: var(--e-3) 0 0; }
 /* Registro de cambios: un renglón por cambio, de lo más reciente a lo más antiguo */
 .cmb-lista { list-style: none; margin: var(--e-3) 0 0; padding: 0; }
 .cmb-item { display: flex; flex-direction: column; gap: 2px; padding: var(--e-3) 0; border-bottom: 1px solid var(--borde-suave); }
@@ -1265,6 +1281,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
    del dispositivo (ratón, pantalla táctil, menos movimiento). No se agregan cortes nuevos. */
 @media (min-width: 701px) {
   .cfg-tarjetas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dup-arboles { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   /* SISTEMA DE ANCHO EN TABLETA Y COMPUTADORA. El teléfono es el uso principal y no cambia:
    todo lo de aquí vive en consultas de 701 px o más. Reglas:
    1. Todas las vistas arrancan en el mismo borde izquierdo y ninguna se centra por su cuenta.

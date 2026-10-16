@@ -131,6 +131,10 @@ corresponda a una cuenta dada de alta y activa.
 - **Los parámetros** son del servidor, iguales para todos los teléfonos: la Administración global los cambia
   en Configuración › Parámetros, con «Editar» en cada valor, y cada teléfono recibe el cambio la próxima vez
   que se conecta. Con datos de prueba sólo se consultan.
+- **La bandeja de posibles duplicados** (`js/duplicados.js`), en Configuración: las parejas de árboles de la
+  misma especie, de instituciones distintas, casi en el mismo lugar, que el servidor anota sin decirle nada a
+  ninguna de las dos. La Administración global revisa cada una —con su mapa y sus dos árboles— y dice si es el
+  mismo árbol o si son distintos.
 - **La bitácora** de lo enviado está en el servidor: el historial de cada árbol y el Registro de cambios de
   Configuración se leen de allá, con lo del teléfono que aún espera envío. Sin conexión queda lo del teléfono,
   y el Registro de cambios lo dice.
@@ -179,6 +183,7 @@ js/                     La aplicación, un archivo por tema
   remoto.js             Lo que viene del servidor: catálogos, cuentas y parámetros, que se quedan; lo enviado, sólo en memoria; los avisos cuando falta
   cola.js               La cola de envío con datos reales: qué se anota con cada cambio, cómo se envía y qué hace el teléfono con la respuesta
   rechazos.js           Lo que el servidor no aceptó: la ventana «Revisar» y lo que la persona decide con cada cambio
+  duplicados.js         La bandeja de posibles duplicados entre instituciones, que revisa la Administración global
   sesion.js             Acceso: simulado con datos de prueba; con datos reales, las cuentas del servicio (correo y contraseña)
   derivacion.js         Cruce punto-en-polígono (alcaldía, UGA, colonia)
   prioritarias.js       Colonias prioritarias para reforestar: prioridad de la jornada y de su colonia, y la capa en los mapas
@@ -263,7 +268,7 @@ versión se escribe en un solo lugar del código.
 
 **El archivo `VERSION`, en la raíz, lleva el mismo número** (lo pide la guía del SIA, sección 8); la prueba
 falla si no coincide con la marca. Ese número se ve siempre en la franja fija de arriba: «Versión de prueba
-0.9.72» mientras el SIA no instale el sistema; al pasar al SIA, `VERSION` y la marca van en `1` y la franja
+0.9.73» mientras el SIA no instale el sistema; al pasar al SIA, `VERSION` y la marca van en `1` y la franja
 dice «Versión 1».
 
 Si aun así alguien cae en una mezcla, el sistema lo detecta al abrir y explica cómo forzar la
@@ -474,7 +479,7 @@ tiempo fijo.
 | `auditoria.py` | Consistencia de lo guardado y del modelo: esquema contra lo que se guarda, diccionario y `js/esquema.js` regenerados, dominios, vocabulario |
 | `auditoria_css.py` | La norma de la hoja de estilos: colores sólo en `:root`, sin `#id` ni `!important`, medidas con token, una regla por selector, sin clases ni variables sin uso, sin estilos en línea. Corre dentro de `auditoria.py`; con `--todo` lista cada caso |
 | `revisar.py` | Presentación en ocho combinaciones de ancho y zoom: desbordamiento, alto del mapa, tamaño de los controles y reglas anuladas |
-| `prueba_conexion.py` | La aplicación con datos reales contra el servicio local: entrar, los mensajes al no poder, lo que baja, lo enviado en memoria y sus avisos sin señal o con falla del servidor, los parámetros, volver a abrir con y sin señal, la sesión vencida, la contraseña temporal, «Cerrar sesión», cuánto tarda la Administración en traer todo, y el envío real: jornada y árboles capturados en la pantalla, con folio y fotografía, sin señal, una corrección, un rechazo y lo que sale del teléfono al cerrar; y lo que el servidor no aceptó, resuelto desde «Revisar»: enviar otra vez, quedarse con lo del servidor, corregir, eliminar y descartar; los catálogos de la Administración en el servidor, el historial del árbol y el Registro de cambios desde la bitácora del servidor, y Parámetros cambiados por la Administración |
+| `prueba_conexion.py` | La aplicación con datos reales contra el servicio local: entrar, los mensajes al no poder, lo que baja, lo enviado en memoria y sus avisos sin señal o con falla del servidor, los parámetros, volver a abrir con y sin señal, la sesión vencida, la contraseña temporal, «Cerrar sesión», cuánto tarda la Administración en traer todo, y el envío real: jornada y árboles capturados en la pantalla, con folio y fotografía, sin señal, una corrección, un rechazo y lo que sale del teléfono al cerrar; y lo que el servidor no aceptó, resuelto desde «Revisar»: enviar otra vez, quedarse con lo del servidor, corregir, eliminar y descartar; los catálogos de la Administración en el servidor, el historial del árbol y el Registro de cambios desde la bitácora del servidor, Parámetros cambiados por la Administración, y la bandeja de posibles duplicados |
 
 ## Salida a producción y Fase 2
 

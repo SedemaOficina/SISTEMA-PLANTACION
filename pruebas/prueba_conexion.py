@@ -21,7 +21,8 @@ franja y la marca lo dicen, y en «Revisar» se envía otra vez, se queda lo del
 o se descarta; y los catálogos de la Administración: dar de alta, renombrar, desactivar y eliminar van al
 servidor, que cuenta el uso de cada valor y dice lo que no acepta, y sin conexión nada cambia; y lo que dice la
 bitácora del servidor: el historial de un árbol que ya salió del teléfono y el Registro de cambios; y Parámetros,
-que la Administración cambia en el servidor para todos los teléfonos.
+que la Administración cambia en el servidor para todos los teléfonos; y la bandeja de posibles duplicados:
+la tarjeta, cada pareja con su mapa y sus dos árboles, y «Es el mismo árbol» o «Son distintos».
 
 Uso, desde la carpeta del proyecto (con la base local cargada):  python pruebas/prueba_conexion.py
 """
@@ -216,6 +217,15 @@ PARAMETROS = """async () => { SRP.app.mostrarVista('parametros'); await new Prom
   return Object.fromEntries([...document.querySelectorAll('#cfg-parametros .cfg-valor')].map(f => [f.querySelector('dt').textContent,
     { valor: f.querySelector('.cfg-cifra').textContent, editar: !!f.querySelector('button[data-parametro]'), cambio: [...f.querySelectorAll('.cfg-que')].map(d => d.textContent).find(t => t.startsWith('Cambiado')) || '' }])); }"""
 DEL_SERVIDOR = """async () => Object.fromEntries(((await SRP.servidor.pedir('GET', '/parametros')).datos || []).map(p => [p.clave, p.valor]))"""
+
+
+# La bandeja de posibles duplicados: cuántas dice y cada pareja
+BANDEJA = """async estado => { SRP.app.mostrarVista('duplicados'); const s = document.getElementById('dup-mostrar');
+  if (s.value !== estado) { s.value = estado; s.dispatchEvent(new Event('change')); } await new Promise(r => setTimeout(r, 2500));
+  return { vista: SRP.app.vista, cuenta: document.getElementById('dup-cuenta').textContent, vacio: document.getElementById('dup-vacio').hidden ? '' : document.getElementById('dup-vacio').textContent,
+    parejas: [...document.querySelectorAll('#dup-lista > li')].map(li => ({ id: Number(li.dataset.pareja), cabeza: li.querySelector('.dup-cabeza').textContent,
+      mapa: !!li.querySelector('.dup-mapa.leaflet-container'), arboles: [...li.querySelectorAll('.dup-arboles section')].map(x => x.textContent),
+      botones: [...li.querySelectorAll('button[data-resolver]')].map(b => b.textContent.trim()), revisada: (li.querySelector('.dup-revisada') || {}).textContent || '' })) }; }"""
 
 
 def editar_parametro(pg, nombre, valores):
@@ -689,6 +699,43 @@ def main():
             ok(not any(x['editar'] for x in par.values()) and 'los parámetros se consultan, pero no se pueden cambiar' in aviso,
                'sin conexión, Parámetros sólo se consulta y lo dice: %s' % aviso)
             ctx.unroute('**/api/srp/**')
+
+            # ---------- La bandeja de posibles duplicados ----------
+            p1 = apoyo('pareja', {'llego': a2, 'cercano': a1, 'distancia': 2.1})['id']
+            p2 = apoyo('pareja', {'llego': b1, 'cercano': a1, 'distancia': 3.4})['id']
+            pg.evaluate("SRP.app.mostrarVista('configuracion')"); pg.wait_for_timeout(1500)
+            tarjeta = pg.evaluate("() => { const t = document.querySelector('.cfg-tarjeta[data-ir=\"duplicados\"]'); return [t.hidden, t.querySelector('.cfg-resumen').textContent]; }")
+            pg.click('.cfg-tarjeta[data-ir="duplicados"]'); pg.wait_for_timeout(2500)
+            d = pg.evaluate(BANDEJA, 'pendientes')
+            uno = next((x for x in d['parejas'] if x['id'] == p1), None)
+            ok(tarjeta == [False, '2 parejas por revisar'] and d['vista'] == 'duplicados' and d['cuenta'] == '2 parejas por revisar' and len(d['parejas']) == 2 and uno
+               and uno['mapa'] and len(uno['arboles']) == 2 and uno['arboles'][0].startswith('Llegó después') and uno['arboles'][1].startswith('Ya estaba')
+               and 'Ahuehuete' in uno['arboles'][0] and 'Jornada del envío real' in uno['arboles'][0] and 'se detectó el' in uno['cabeza']
+               and uno['botones'] == ['Es el mismo árbol', 'Son distintos'],
+               'la tarjeta dice cuántas parejas faltan y la bandeja enseña cada una con su mapa, sus dos árboles y la decisión: %s · %s' % (tarjeta, uno))
+
+            # «Abrir en Registros» abre la ficha del árbol
+            pg.click('#dup-lista li[data-pareja="%s"] button[data-abrir="%s"]' % (p1, a2)); pg.wait_for_timeout(1500)
+            ficha = pg.evaluate("() => [document.getElementById('dlg-detalle').open, document.getElementById('dlg-detalle').textContent.includes('Ahuehuete')]")
+            pg.evaluate("() => document.getElementById('dlg-detalle').close()")
+            ok(ficha == [True, True], '«Abrir en Registros» abre la ficha de ese árbol: %s' % ficha)
+
+            # «Es el mismo árbol» y «Son distintos» quedan en el servidor
+            pg.click('#dup-lista li[data-pareja="%s"] button[data-resolver="mismo"]' % p1); pg.wait_for_timeout(2500)
+            aviso = pg.evaluate("() => document.getElementById('aviso').textContent")
+            d = pg.evaluate(BANDEJA, 'pendientes')
+            ok(d['cuenta'] == '1 pareja por revisar' and [x['id'] for x in d['parejas']] == [p2] and 'elimine uno de los dos desde su ficha en Registros' in aviso,
+               '«Es el mismo árbol» la quita de las que faltan y dice cómo seguir: %s · %s' % (d['cuenta'], aviso))
+            r = pg.evaluate(BANDEJA, 'revisados')
+            rev = next((x for x in r['parejas'] if x['id'] == p1), None)
+            ok(rev and 'Revisada' in rev['revisada'] and 'por ' + ADMIN['nombre'] in rev['revisada'] and 'es el mismo árbol' in rev['revisada'] and not rev['botones'],
+               'en «Revisadas» se ve cuándo, quién y qué decidió, sin botones: %s' % (rev and rev['revisada']))
+            pg.evaluate(BANDEJA, 'pendientes')
+            pg.click('#dup-lista li[data-pareja="%s"] button[data-resolver="distintos"]' % p2); pg.wait_for_timeout(2500)
+            d = pg.evaluate(BANDEJA, 'pendientes')
+            srv = pg.evaluate("async () => ((await SRP.servidor.pedir('GET', '/duplicados?estado=revisados')).datos.filas || []).map(x => [x.id, x.resolucion])")
+            ok(d['cuenta'] == '0 parejas por revisar' and 'No hay parejas por revisar' in d['vacio'] and [p1, 'mismo'] in srv and [p2, 'distintos'] in srv,
+               '«Son distintos» también queda en el servidor, y sin pendientes la bandeja lo dice: %s · %s' % (d['cuenta'], srv))
 
             ok(not errores, 'sin errores en la página: %s' % errores)
             ctx.close()

@@ -10,6 +10,7 @@
      node pruebas/apoyo_servidor.mjs leer       { id }          cómo tiene el servidor un árbol o una jornada
      node pruebas/apoyo_servidor.mjs catalogo   { tabla, clave }       cómo tiene el servidor un valor de catálogo
      node pruebas/apoyo_servidor.mjs otro_valor { tabla, id, clave, nombre, por }   otra persona da de alta un valor
+     node pruebas/apoyo_servidor.mjs pareja     { llego, cercano, distancia }  una pareja en la bandeja de posibles duplicados
      node pruebas/apoyo_servidor.mjs quitar     { ids }         las cuentas, sus sesiones, sus jornadas, árboles y
                                                                 fotografías, sus parámetros, los valores de catálogo
                                                                 que dieron de alta y sus registros
@@ -58,6 +59,9 @@ try {
   } else if (orden === 'otro_valor') {
     if (!TABLAS_CATALOGO.includes(d.tabla)) throw new Error('No es un catálogo: ' + d.tabla);
     await c.query(`INSERT INTO srp.${d.tabla} (id, clave, nombre, activo, creado_por_id, fecha_creacion) VALUES ($1, $2, $3, true, $4, now())`, [d.id, d.clave, d.nombre, d.por]);
+  } else if (orden === 'pareja') {
+    salida = { id: Number((await c.query('INSERT INTO srp.duplicados (plantacion_id, cercano_id, distancia_m, umbral_m) VALUES ($1, $2, $3, $4) RETURNING id',
+      [d.llego, d.cercano, d.distancia, 4])).rows[0].id) };
   } else if (orden === 'quitar') {
     await c.query('BEGIN');
     const arboles = (await c.query('SELECT id FROM srp.plantaciones WHERE cabo_id = ANY($1::uuid[])', [d.ids])).rows.map((r) => r.id);
@@ -65,6 +69,7 @@ try {
     await c.query('DELETE FROM srp.folios WHERE plantacion_id = ANY($1::uuid[])', [arboles]);
     await c.query('ALTER TABLE srp.folios ENABLE TRIGGER folios_inmutables');
     await c.query('DELETE FROM srp.fotografias WHERE plantacion_id = ANY($1::uuid[])', [arboles]);
+    await c.query('DELETE FROM srp.duplicados WHERE plantacion_id = ANY($1::uuid[]) OR cercano_id = ANY($1::uuid[])', [arboles]);
     await c.query('DELETE FROM srp.plantaciones WHERE id = ANY($1::uuid[])', [arboles]);
     await c.query('DELETE FROM srp.jornadas WHERE cabo_id = ANY($1::uuid[])', [d.ids]);
     await c.query('DELETE FROM srp.parametros WHERE editado_por_id = ANY($1::uuid[])', [d.ids]);

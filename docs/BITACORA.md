@@ -5138,3 +5138,51 @@ No se probó:
   el bloque 221.
 
 **Siguiente paso.** La bandeja de posibles duplicados, con la pantalla que aprobó Liber (D299).
+
+## Bloque 228 — La bandeja de posibles duplicados (16-10-2026)
+
+**Versión 0.9.73.** Cuarta parte de 4e (D308), con la pantalla que aprobó Liber (D299).
+
+| Qué | Con datos reales |
+|---|---|
+| Tarjeta en Configuración | «N parejas por revisar» |
+| Cada pareja | Distancia, precisión sumada, día, mapa ámbar y azul, los dos árboles con «Abrir en Registros» |
+| La decisión | «Es el mismo árbol» o «Son distintos»; queda en el servidor |
+| Revisadas | Cuándo, quién y qué se decidió |
+
+**Qué cambió.**
+- `js/duplicados.js`, nuevo: la bandeja.
+- `index.html`: la tarjeta y la vista; `css/estilos.css`: la pareja, su mapa y sus puntos.
+- `js/configuracion.js`: la tarjeta y su cuenta; `js/app.js`: la vista, sólo con datos reales.
+- `js/permisos.js` y `servidor/src/modulos/srp/permisos.ts`: `duplicado.revisar` en las acciones de los dos
+  lados.
+- `VERSION`, `js/config.js` e `index.html`: la marca 0.9.73.
+- Pruebas: `prueba_conexion.py`, la bandeja como Administración, y su apoyo anota parejas y las quita al
+  terminar; `prueba.py`, que con datos de prueba no hay tarjeta ni vista.
+- Documentación: `README.md`, `servidor/README.md`, `docs/FASE2-Y-TRASPASO.md` y `docs/MEJORAS.md`.
+
+**Pantalla: qué se agregó y qué se quitó.** Con datos de prueba, nada. Con datos reales, lo aprobado: la
+tarjeta y la bandeja. La nota dice además «de la misma especie» y el mínimo vigente, en vez de los 4 m fijos de
+la muestra. No se quitó nada.
+
+**Verificación.**
+- Conexión: `prueba_conexion.py`, 70 de 70. Como Administración:
+  - la tarjeta dice cuántas faltan y la bandeja enseña cada pareja con su mapa, sus dos árboles y la decisión;
+  - «Abrir en Registros» abre la ficha;
+  - «Es el mismo árbol» la quita de las que faltan y dice cómo seguir; en «Revisadas» se ve quién y qué
+    decidió;
+  - «Son distintos» queda en el servidor, y sin pendientes la bandeja lo dice.
+  La primera corrida se detuvo en el cambio de «Mostrar»: una respuesta tardía pintaba encima de la nueva. Se
+  corrigió en la aplicación y la siguiente dio 70 de 70.
+- Servidor: `npm test`, 84 sin fallas. En la copia del sistema del SIA compila y la prueba de humo da 22 de 22.
+- Aplicación: `prueba.py`, 0 fallas de 1,441 (una comprobación nueva: con datos de prueba no hay bandeja);
+  `auditoria.py`, 144 comprobaciones sin hallazgos; `auditoria_css.py`, 0 hallazgos.
+- La base local quedó sin datos de prueba.
+
+No se probó:
+- en un teléfono real;
+- con parejas que de verdad detecte el servidor: la prueba las anota directo; la detección ya la prueba
+  `servidor/pruebas/duplicados.test.js`;
+- con cientos de parejas (cada página dibuja un mapa por pareja).
+
+**Siguiente paso.** La carga masiva conectada al servidor: hoy sigue con el envío simulado.

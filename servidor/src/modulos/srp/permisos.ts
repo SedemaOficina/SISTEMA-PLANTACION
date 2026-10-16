@@ -116,14 +116,13 @@ export const ACCIONES = {
   "usuario.administrar": { texto: "administrar las cuentas", regla: (p) => p.usuarios },
   "carga.masiva": { texto: "cargar árboles en bloque", regla: (p) => p.usuarios && p.catalogos },
   "galeria.descargar": { texto: "descargar las fotografías", regla: (p) => p.galeria },
-} satisfies Record<string, { texto: string; regla: Regla }>;
-
-/* LO QUE SÓLO EXISTE EN EL SERVIDOR mientras la aplicación no tiene su pantalla: la bandeja de posibles
-   duplicados entre instituciones, que atiende la Administración global. Cuando la aplicación la tenga, la
-   acción pasa a ACCIONES, en los dos lados. */
-export const ACCIONES_DEL_SERVIDOR = {
+  // La bandeja de posibles duplicados entre instituciones la atiende la Administración global
   "duplicado.revisar": { texto: "revisar los posibles duplicados", regla: (p) => p.usuarios && p.catalogos },
 } satisfies Record<string, { texto: string; regla: Regla }>;
+
+/* LO QUE SÓLO EXISTE EN EL SERVIDOR mientras la aplicación no tiene su pantalla. Hoy, nada: cuando algo
+   llega a la aplicación, su acción pasa a ACCIONES, en los dos lados. */
+export const ACCIONES_DEL_SERVIDOR = {} satisfies Record<string, { texto: string; regla: Regla }>;
 
 export type Accion = keyof typeof ACCIONES | keyof typeof ACCIONES_DEL_SERVIDOR;
 const TODAS: Record<Accion, { texto: string; regla: Regla }> = { ...ACCIONES, ...ACCIONES_DEL_SERVIDOR };

@@ -97,7 +97,9 @@ SRP.permisos = {
     'catalogo.administrar': { texto: 'administrar los catálogos',         regla: (p) => p.catalogos },
     'usuario.administrar':  { texto: 'administrar las cuentas',           regla: (p) => p.usuarios },
     'carga.masiva':         { texto: 'cargar árboles en bloque',          regla: (p) => p.usuarios && p.catalogos },
-    'galeria.descargar':    { texto: 'descargar las fotografías',         regla: (p) => p.galeria }
+    'galeria.descargar':    { texto: 'descargar las fotografías',         regla: (p) => p.galeria },
+    // La bandeja de posibles duplicados entre instituciones la atiende la Administración global
+    'duplicado.revisar':    { texto: 'revisar los posibles duplicados',   regla: (p) => p.usuarios && p.catalogos }
   },
 
   // ¿Puede quien tiene la sesión hacer la acción? Sin aviso: para decidir qué botones se enseñan

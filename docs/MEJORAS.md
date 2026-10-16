@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 0.9.72 (Bloque 227)»**.
+Al pie de cualquier pantalla: **«Versión 0.9.73 (Bloque 228)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -500,6 +500,7 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M503 | Paso 4d | «No se pudo enviar», en rojo, en la tarjeta del árbol y en la de la jornada, y en la franja «Guardado» | Media | 0.9.69 (B224) | Registros, Jornadas y Nuevo registro, con datos reales | D304 |
 | M504 | Paso 4d | Ventana «Cambios que el servidor no aceptó»: de qué registro es cada cambio, qué se cambió, por qué y qué hacer | Alta | 0.9.69 (B224) | Franja › Revisar | D304 |
 | M505 | Prueba de conexión | Al volver a la entrada se cierra cualquier ventana que hubiera quedado abierta | Media | 0.9.69 (B224) | Sesión vencida con una ventana abierta | D304 |
+| M511 | Paso 4e | Bandeja de posibles duplicados: tarjeta en Configuración con cuántas parejas faltan; cada pareja con distancia, precisión sumada, día, mapa (ámbar el que llegó después, azul el que ya estaba), los dos árboles con «Abrir en Registros», y «Es el mismo árbol» o «Son distintos» | Alta | 0.9.73 (B228) | Configuración › Posibles duplicados, con datos reales | D308 |
 | M509 | Paso 4e | Parámetros editables con datos reales: «Editar» en cada valor, con su diálogo (rango y valor de arranque); el cambiado dice cuándo, quién y cuál era; en teléfono el valor baja bajo el nombre | Alta | 0.9.72 (B227) | Configuración › Parámetros, con datos reales | D307 |
 | M510 | Paso 4e | La tarjeta de Parámetros cuenta los valores cambiados: «11 valores · 1 cambiado» | Baja | 0.9.72 (B227) | Configuración, con datos reales | D307 |
 | M507 | Paso 4e | Con datos reales, el historial del árbol y el Registro de cambios se leen de la bitácora del servidor | Alta | 0.9.71 (B226) | Registros › detalle; Configuración › Registro de cambios | D306 |
