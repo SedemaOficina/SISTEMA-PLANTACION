@@ -703,5 +703,19 @@ SRP.bitacora = {
   async deEntidad(id) {
     const lista = await SRP.almacen.porIndice('bitacora', 'entidad_id', id);
     return lista.sort((a, b) => a.fecha.localeCompare(b.fecha));
+  },
+
+  /* El historial de un árbol. Con datos reales, lo que ya llegó lo cuenta la bitácora del servidor, porque
+     el teléfono no guarda la de lo enviado; se le agrega lo del teléfono que aún espera envío. De lo que
+     nunca ha llegado, o sin respuesta del servidor, lo que sabe el teléfono. */
+  async historial(r) {
+    const locales = await this.deEntidad(r.id);
+    if (!SRP.remoto.activo() || SRP.cola.de(r.id).some(o => SRP.cola.ALTAS.includes(o.tipo))) return locales;
+    const x = await SRP.servidor.pedir('GET', '/plantaciones/' + encodeURIComponent(r.id) + '/historial');
+    if (!x.ok) return locales;
+    const delServidor = x.datos.filas || [];
+    const ms = b => new Date(b.fecha).getTime();
+    const ultimo = delServidor.length ? ms(delServidor[delServidor.length - 1]) : 0;
+    return delServidor.concat(SRP.cola.de(r.id).length ? locales.filter(b => ms(b) > ultimo) : []);
   }
 };

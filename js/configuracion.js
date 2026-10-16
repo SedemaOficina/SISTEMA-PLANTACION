@@ -77,14 +77,21 @@ SRP.configuracion = {
 
   /* ---------- Registro de cambios ---------- */
 
-  // Lo que la bitácora dice de cuentas, catálogos y cargas masivas, lo más reciente primero
-  async cambios() {
+  /* Lo que la bitácora dice de cuentas, catálogos y cargas masivas, lo más reciente primero. Con datos reales
+     la bitácora es la del servidor; si no responde, queda lo de este equipo, y en el Registro de cambios se dice */
+  async cambios(avisar) {
+    if (SRP.remoto.activo()) {
+      const r = await SRP.remoto.todo('/cambios');
+      if (r.ok) return r.filas;
+      if (avisar) SRP.util.anunciar('Sin conexión con el servidor: se ven sólo los cambios hechos en este equipo.', 'aviso', { secundario: true });
+    }
+    const ms = b => new Date(b.fecha).getTime();
     return (await SRP.almacen.todos('bitacora')).filter(b => b.entidad === 'usuario' || b.entidad === 'catalogo' || b.entidad === 'carga')
-      .sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)));
+      .sort((a, b) => ms(b) - ms(a));
   },
 
   async prepararCambios() {
-    this.lista = await this.cambios();
+    this.lista = await this.cambios(true);
     const quien = this.el('cmb-quien'), antes = quien.value;
     const personas = {}; this.lista.forEach(b => { personas[b.usuario_id] = b.usuario_nombre || SRP.ref.nombreUsuario(b.usuario_id); });
     quien.innerHTML = SRP.util.opciones('Todas las personas', Object.keys(personas).sort((a, b) => personas[a].localeCompare(personas[b], 'es')).map(id => [id, personas[id]]));
@@ -107,6 +114,9 @@ SRP.configuracion = {
     // Una carga masiva: el detalle ya dice archivo, árboles, jornadas e instituciones
     if (b.entidad === 'carga') return '<span class="cmb-que"><b>' + (b.accion === 'ELIMINADO' ? 'Carga masiva deshecha' : 'Carga masiva') + '</b></span><span class="cmb-campos">' + esc(b.detalle || '') + '</span>';
     const accion = this.ACCION[b.accion] || b.accion;
+    // Un parámetro: «Parámetro «Puntos duplicados»: 4 → 6 m», como lo anota el servidor
+    const parametro = /^parametro:/.test(b.entidad_id || '') && /^Parámetro «(.+)»: (.+)$/.exec(b.detalle || '');
+    if (parametro) return '<span class="cmb-que"><b>' + esc(accion) + '</b> del parámetro <b>' + esc(parametro[1]) + '</b></span><span class="cmb-campos">' + esc(parametro[2]) + '</span>';
     let sobre, nombre, extra = '';
     if (b.entidad === 'usuario') {
       const u = SRP.ref.usuarioPorId[b.entidad_id];
@@ -117,7 +127,9 @@ SRP.configuracion = {
       const c = SRP.ref.catalogoPorId[b.entidad_id];
       const tipo = c ? c.tipo : String(b.detalle || '').split(' ')[0];
       sobre = this.TIPO[tipo] || 'del catálogo';
-      nombre = c ? (c.tipo === 'organizacion' ? SRP.ref.nombreOrganizacion(c.id) : c.nombre) : (String(b.detalle || '').split(': ').slice(1).join(': ') || 'elemento eliminado');
+      // De un valor que ya no está, sólo su eliminación dice cómo se llamaba: «area CLAVE: Nombre»
+      nombre = c ? (c.tipo === 'organizacion' ? SRP.ref.nombreOrganizacion(c.id) : c.nombre)
+        : (b.accion === 'ELIMINADO' && String(b.detalle || '').split(': ').slice(1).join(': ')) || 'elemento eliminado';
     }
     // El detalle que sirve: los campos cambiados en una edición
     const campos = b.accion === 'EDITADO' && /^Campos: /.test(b.detalle || '') ? b.detalle.slice(8).split(', ').filter(k => k && k !== 'ninguno').map(k => this.CAMPO[k] || k) : [];

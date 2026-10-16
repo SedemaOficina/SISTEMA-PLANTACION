@@ -5045,3 +5045,48 @@ Configuración sólo vería lo del teléfono.
 **Siguiente paso.** Se propone un bloque antes de Parámetros: leer la bitácora del servidor para el
 historial del árbol y para el Registro de cambios. Después, Parámetros editables y la bandeja de posibles
 duplicados, con las pantallas que aprobó Liber (D299).
+
+## Bloque 226 — La bitácora, desde el servidor (15-10-2026)
+
+**Versión 0.9.71.** Segunda parte de 4e (D306). Liber aceptó hacerla antes de Parámetros.
+
+| Qué | Con datos reales |
+|---|---|
+| Historial de un árbol ya enviado | Lo trae el servidor, con lo del teléfono que aún espera envío |
+| Registro de cambios | Lo trae el servidor; sin respuesta, lo de este equipo, y se dice |
+| Orden de la bitácora | Cada renglón con la hora en que se anota: el alta y su folio ya no se cruzan |
+
+**Qué cambió.**
+- Servidor: `historial.ts`, nuevo, con `GET /plantaciones/:id/historial` y `GET /cambios`; `rutas.ts` lo
+  monta; `bitacora.ts` fecha cada renglón al anotarlo.
+- `js/almacen.js`: el historial de un árbol, del servidor o del teléfono. `js/registros.js` lo usa.
+- `js/configuracion.js`: el Registro de cambios desde el servidor; los parámetros y los valores eliminados
+  bien dichos.
+- `VERSION`, `js/config.js` e `index.html`: la marca 0.9.71.
+- Pruebas: `servidor/pruebas/historial.test.js`, nueva; `prueba_conexion.py`, el historial y el Registro de
+  cambios.
+- Documentación: `README.md`, `servidor/README.md`, `docs/FASE2-Y-TRASPASO.md` y `docs/MEJORAS.md`.
+
+**Pantalla: qué se agregó y qué se quitó.** Con datos de prueba, nada. Con datos reales las pantallas son
+las mismas, con lo que les faltaba. Hay un aviso nuevo: «Sin conexión con el servidor: se ven sólo los cambios
+hechos en este equipo». La edición de un valor ya eliminado dice «elemento eliminado». No se quitó nada.
+
+**Verificación.**
+- Servidor: `npm test`, 84 pruebas sin fallas (las 2 nuevas incluidas). La primera corrida de la nueva
+  encontró el desorden del alta y su folio.
+- En la copia del sistema del SIA: compila (`typecheck`) y la prueba de humo da 22 de 22, con la bitácora.
+- Conexión: `prueba_conexion.py`, 59 de 59:
+  - el historial de un árbol que ya salió del teléfono trae del servidor su alta, su folio y su corrección,
+    en orden;
+  - el Registro de cambios trae lo que la Administración hizo con un área, lo más reciente primero;
+  - sin conexión, el Registro de cambios dice que sólo ve lo de este equipo.
+- Aplicación: `prueba.py`, 0 fallas de 1,440; `auditoria.py`, 144 comprobaciones sin hallazgos; `auditoria_css.py`,
+  0 hallazgos.
+- La base local quedó sin datos de prueba.
+
+No se probó:
+- en un teléfono real;
+- el historial de un árbol con un cambio que todavía espera envío, junto con lo del servidor (el código los
+  une por la hora; no hay prueba que lo recorra).
+
+**Siguiente paso.** Parámetros editables, con la pantalla que aprobó Liber (D299).

@@ -60,6 +60,8 @@ los 17,479 árboles y las 1,305 jornadas igual que la aplicación.
   pudo enviar» y en «Revisar» la persona decide qué hacer con cada cambio.
 - 4e, la administración conectada, por partes:
   - los catálogos (bloque 225, D305): cada cambio va al servidor, que cuenta el uso de cada valor;
+  - la bitácora del servidor (bloque 226, D306): el historial de cada árbol y el Registro de cambios se leen
+    de allá;
   - siguen Parámetros, que podrá editarlos, y la bandeja de posibles duplicados, con las pantallas que ya
     aprobó Liber (D299).
 

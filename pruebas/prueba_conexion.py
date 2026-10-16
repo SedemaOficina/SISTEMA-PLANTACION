@@ -19,7 +19,8 @@ se queda con su motivo; al cerrar la jornada y entregar su reporte, sale del tel
 medio árbol no saca a nadie del formulario; y lo que el servidor no aceptó se resuelve desde la pantalla: la
 franja y la marca lo dicen, y en «Revisar» se envía otra vez, se queda lo del servidor, se corrige, se elimina
 o se descarta; y los catálogos de la Administración: dar de alta, renombrar, desactivar y eliminar van al
-servidor, que cuenta el uso de cada valor y dice lo que no acepta, y sin conexión nada cambia.
+servidor, que cuenta el uso de cada valor y dice lo que no acepta, y sin conexión nada cambia; y lo que dice la
+bitácora del servidor: el historial de un árbol que ya salió del teléfono y el Registro de cambios.
 
 Uso, desde la carpeta del proyecto (con la base local cargada):  python pruebas/prueba_conexion.py
 """
@@ -198,6 +199,15 @@ def revisar(pg):
 def rechazados(pg, n, espera=30000):
     pg.wait_for_function("n => SRP.cola.rechazadas().length === n && !SRP.envio.enviando", arg=n, timeout=espera)
     pg.wait_for_timeout(300)
+
+
+# El historial que enseña el detalle de un árbol, renglón por renglón
+HISTORIAL = """async id => { await SRP.registros.verDetalle(await SRP.almacen.uno('plantaciones', id)); await new Promise(r => setTimeout(r, 800));
+  const t = [...document.querySelectorAll('#dlg-detalle-cuerpo .historial li')].map(li => li.textContent); document.getElementById('dlg-detalle').close(); return t; }"""
+
+# El Registro de cambios de Configuración: cuántos dice y sus primeros renglones
+CAMBIOS = """async () => { SRP.app.mostrarVista('cambios'); await new Promise(r => setTimeout(r, 1500));
+  return { cuenta: document.getElementById('cmb-cuenta').textContent, renglones: [...document.querySelectorAll('#cmb-lista > li')].slice(0, 4).map(li => li.textContent) }; }"""
 
 
 # Lo que enseña una sección: su franja, su total y el aviso de Supervisión
@@ -402,6 +412,11 @@ def main():
             ok(srv == {'estatus': 'cerrada', 'reporte': True, 'nombre': 'Jornada del envío real'} and loc == {'jornada': False, 'a1': False, 'a2': True, 'seVe': True},
                'cerrada y con su reporte, la jornada sale del teléfono con lo recibido, y se sigue viendo como enviado; el árbol con un cambio rechazado se queda: %s' % loc)
 
+            # El historial de un árbol que ya salió del teléfono lo cuenta el servidor
+            h = pg.evaluate(HISTORIAL, a1)
+            ok(len(h) >= 3 and ': creado por' in h[0] and ': folio asignado por el servidor' in h[1] and any(': editado por' in x and 'comentarios' in x for x in h[2:]),
+               'el historial de un árbol que ya salió del teléfono lo trae el servidor: alta, folio y corrección, en orden: %s' % h)
+
             # Dos altas con datos que el servidor no acepta: el punto quedó fuera de la Ciudad
             j2 = iniciar_jornada(pg, 'Jornada de los rechazos')
             esperar_cola(pg, 1)
@@ -590,6 +605,17 @@ def main():
             pg.wait_for_timeout(1500)
             ok(apoyo('catalogo', {'tabla': 'areas', 'clave': clave})['fila'] is None and pg.evaluate(CATALOGO, srv['id'])['local'] is None,
                'y eliminarla, sin uso, la quita del servidor y del teléfono')
+
+            # El Registro de cambios lo trae la bitácora del servidor: el teléfono no anota los de catálogos
+            c = pg.evaluate(CAMBIOS)
+            ok(c['renglones'] and 'Eliminación del área' in c['renglones'][0] and AREA + ' renombrada' in c['renglones'][0] and 'Desactivación' in c['renglones'][1]
+               and 'Edición' in c['renglones'][2] and 'Por ' + ADMIN['nombre'] in c['renglones'][0],
+               'el Registro de cambios trae de la bitácora del servidor lo que se hizo con el área, lo más reciente primero: %s · %s' % (c['cuenta'], c['renglones'][:3]))
+            ctx.route('**/api/srp/**', lambda r: r.abort())
+            pg.evaluate(CAMBIOS)
+            aviso = pg.evaluate("() => document.getElementById('aviso').textContent")
+            ok('se ven sólo los cambios hechos en este equipo' in aviso, 'sin conexión, el Registro de cambios dice que sólo ve lo de este equipo: %s' % aviso)
+            ctx.unroute('**/api/srp/**')
 
             ok(not errores, 'sin errores en la página: %s' % errores)
             ctx.close()

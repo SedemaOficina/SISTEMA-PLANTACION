@@ -147,6 +147,8 @@ variables de entorno, está explicada en `src/modulos/srp/config.ts`. Las respue
 | `POST /duplicados/revision` | Marca parejas como el mismo árbol o árboles distintos | Administración global |
 | `GET /jornadas` | Las jornadas de su alcance, por páginas | Con sesión |
 | `GET /plantaciones` | Los árboles de su alcance, por páginas, sin la fotografía | Con sesión |
+| `GET /plantaciones/:id/historial` | Lo que se le hizo a un árbol, en orden; de otro árbol, como si no existiera | Quien ve el árbol |
+| `GET /cambios` | El registro de cambios de cuentas, catálogos y parámetros, y las cargas masivas, lo más reciente primero, por páginas | Administración global |
 
 - **Contraseñas:** sólo se guarda lo que deriva scrypt, con sal, nunca la contraseña, en el formato del
   módulo `acceso` del SIA (`scrypt$16384$8$1$sal$derivada`, en base64url): si un día las cuentas se mudan
@@ -436,6 +438,8 @@ esa base y nunca sobre una instalación anterior.
     relevo, los puntos revisados y eliminarla;
   - que una versión vieja no escribe;
   - la prioridad de la colonia que se congela, y que se conserva aunque cambie la capa.
+- `pruebas/historial.test.js`: el historial de un árbol, en orden y sólo para quien lo ve, y el registro de
+  cambios, sólo para la Administración y por páginas; las fechas, al milésimo de segundo.
 - `pruebas/duplicados.test.js`: el aviso de posible duplicado con la suma de las precisiones y su piso, sólo
   entre árboles de la misma especie, lo que dice según quién lo manda, la pareja entre instituciones que va a la bandeja sin que se entere nadie,
   y la bandeja: quién la ve, la revisión, y los árboles eliminados, restaurados o corregidos.

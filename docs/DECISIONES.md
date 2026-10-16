@@ -3754,3 +3754,27 @@
     consultarse desde la pantalla: el Registro de cambios de Configuración sólo ve lo del teléfono, y el
     historial de un árbol ya enviado dice «Sin movimientos registrados».
   · Con datos de prueba nada cambia.
+
+- **D306. La bitácora, desde el servidor (bloque 226, versión 0.9.71).**
+  15-10-2026. Segunda parte de 4e. Cierra el hueco que dejó ver el bloque 225: con datos reales el teléfono
+  no guarda la bitácora de lo enviado (S-11), así que el historial de un árbol ya enviado decía «Sin
+  movimientos registrados» y el Registro de cambios sólo veía lo del teléfono.
+  · **Dos consultas nuevas en el servidor** (`historial.ts`), sólo de lectura:
+    · `GET /plantaciones/:id/historial`: lo que se le hizo a un árbol, en orden. Sólo para quien ve el árbol;
+      para los demás, como si no existiera.
+    · `GET /cambios`: cuentas, catálogos, parámetros y cargas masivas, lo más reciente primero y por páginas.
+      Sólo la Administración global.
+    · Las fechas van al milésimo de segundo, como las demás del servicio: así las lee cualquier navegador.
+  · **La hora de cada renglón de la bitácora es la del momento en que se anota**, no la del inicio de su
+    transacción. El alta de un árbol y su folio, que pasan en la misma operación, tenían la misma hora y
+    podían salir en desorden. Lo encontró la prueba nueva.
+  · **En la aplicación** (`js/almacen.js`, `js/registros.js`, `js/configuracion.js`):
+    · el historial de un árbol que ya llegó viene del servidor, con lo del teléfono que aún espera envío;
+      el de uno que nunca ha llegado, o sin respuesta del servidor, es el del teléfono;
+    · el Registro de cambios viene del servidor; sin respuesta, queda el del teléfono y se dice;
+    · el Registro de cambios dice los parámetros como «Edición del parámetro Puntos duplicados · 4 → 6 m»;
+    · la edición de un valor de catálogo que después se eliminó dice «elemento eliminado»; antes ponía el
+      nombre del campo como si fuera el del valor.
+  · Las pantallas no cambian. Con datos de prueba nada cambia.
+  · **Sigue pendiente:** Parámetros editables y la bandeja de posibles duplicados (D299); la carga masiva
+    conectada.

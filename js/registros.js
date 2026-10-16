@@ -466,7 +466,7 @@ SRP.registros = {
       r.comentarios ? ['Comentarios', esc(r.comentarios)] : null,
       SRP.foto.fuente(r) ? ['Fotografía', '<img class="revision-foto" ' + SRP.foto.atributos(r) + ' alt="Fotografía del árbol registrado">'] : null
     ].filter(Boolean);
-    const historial = await SRP.bitacora.deEntidad(r.id);
+    const historial = await SRP.bitacora.historial(r);
     // El folio lo asigna el servidor, no quien tenía la sesión abierta cuando llegó
     const quien = h => h.accion === 'FOLIO_ASIGNADO' ? 'el servidor'
       : esc(h.usuario_nombre) + ' (' + esc(SRP.PERFILES[h.perfil] ? SRP.PERFILES[h.perfil].etiqueta : h.perfil) + ')';

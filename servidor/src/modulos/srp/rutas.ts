@@ -7,6 +7,7 @@ import { rutasConsultas } from "./consultas";
 import { rutasCuentas } from "./cuentas";
 import { rutasDuplicados } from "./duplicados";
 import { rutasFotografias } from "./fotografias";
+import { rutasHistorial } from "./historial";
 import { rutasParametros } from "./parametros";
 import { rutasRecepcion } from "./recepcion";
 import { traducir } from "./errores";
@@ -22,7 +23,8 @@ import { traducir } from "./errores";
    Hoy: el acceso con cuentas propias y su registro de entradas, la administración de cuentas, de
    catálogos y de parámetros, la consulta de jornadas y árboles, cada quien lo de su alcance (permisos.ts), y la recepción
    de lo que mandan los teléfonos —jornadas, árboles, su folio y sus fotografías— con todo lo que después se
-   les hace, y la bandeja de posibles duplicados entre instituciones. Lo que debe valer siempre (derivar el territorio de un punto, el folio, la
+   les hace, la bandeja de posibles duplicados entre instituciones, y lo que dice la bitácora: el historial de
+   cada árbol y el registro de cambios de la Administración. Lo que debe valer siempre (derivar el territorio de un punto, el folio, la
    bitácora) lo hace la base.
    ============================================================ */
 
@@ -43,6 +45,7 @@ export function crearRutasSrp(pool: pg.Pool, config: ConfigSrp = leerConfig()): 
   r.use(rutasRecepcion(pool, acceso.sesion));
   r.use(rutasFotografias(pool, config, acceso.sesion));
   r.use(rutasDuplicados(pool, acceso.sesion));
+  r.use(rutasHistorial(pool, acceso.sesion));
   r.use((req: Request, res: Response) => {
     res.status(404).json({ codigo: "NO_EXISTE", mensaje: "Esa dirección no existe en el servicio." });
   });
