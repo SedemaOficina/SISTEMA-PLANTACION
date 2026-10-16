@@ -4999,3 +4999,49 @@ No se probó:
 
 **Siguiente paso.** 4e, la administración conectada: catálogos, Parámetros editable y la bandeja de
 posibles duplicados, con las pantallas que ya aprobó Liber (D299).
+
+## Bloque 225 — Los catálogos, en el servidor (15-10-2026)
+
+**Versión 0.9.70.** Primera parte de 4e (D305).
+
+| Qué | Con datos reales |
+|---|---|
+| Agregar, editar, activar, desactivar y eliminar | Van al servidor; el teléfono guarda lo que responde |
+| Lo que el servidor no acepta | Vuelve como error del campo, con el formulario abierto |
+| Cuántos registros usan cada valor | Lo cuenta el servidor; si no responde, «Sin dato» y no se ofrece eliminar |
+| Sin conexión | Se consultan; nada cambia, y se dice |
+
+**Qué cambió.**
+- `js/catalogos.js`: con datos reales, los cambios y el uso de cada valor van con el servidor.
+- `VERSION`, `js/config.js` e `index.html`: la marca 0.9.70.
+- Pruebas: `prueba_conexion.py` recorre los catálogos como Administración; su apoyo lee y da de alta un valor
+  de catálogo, y al limpiar quita los que dieron de alta las cuentas de la prueba.
+- Documentación: `README.md`, `docs/FASE2-Y-TRASPASO.md` y `docs/MEJORAS.md`.
+
+**Pantalla: qué se agregó y qué se quitó.** Con datos de prueba, nada. Con datos reales la pantalla es la
+misma; sólo sin conexión el uso dice «Sin dato», y hay un aviso nuevo: «Sin conexión con el servidor: el
+catálogo no cambió…». No se quitó nada.
+
+**Verificación.**
+- Conexión: `prueba_conexion.py`, 56 de 56. Con la Administración en la pantalla:
+  - un área dada de alta llega al servidor y queda en el teléfono, y el uso de cada área lo cuenta el
+    servidor;
+  - renombrarla, desactivarla y eliminarla llegan al servidor;
+  - si otra persona ya dio de alta ese nombre, el servidor no lo acepta y el formulario lo dice en su campo;
+  - sin conexión, desactivar no cambia nada y se dice.
+- Aplicación: `prueba.py`, 0 fallas de 1,440; `auditoria.py`, 144 comprobaciones sin hallazgos; `auditoria_css.py`,
+  0 hallazgos.
+- La base local quedó sin datos de prueba.
+
+No se probó:
+- en un teléfono real;
+- los demás catálogos uno por uno con el servidor (especies, vehículos, instituciones, solicitantes,
+  programas): usan el mismo camino que áreas, y sus reglas ya las compara la prueba de paridad del servidor.
+
+**Hueco encontrado.** Con datos reales la bitácora de lo enviado está en el servidor, no en el teléfono: el
+historial de un árbol ya enviado diría «Sin movimientos registrados», y el Registro de cambios de
+Configuración sólo vería lo del teléfono.
+
+**Siguiente paso.** Se propone un bloque antes de Parámetros: leer la bitácora del servidor para el
+historial del árbol y para el Registro de cambios. Después, Parámetros editables y la bandeja de posibles
+duplicados, con las pantallas que aprobó Liber (D299).

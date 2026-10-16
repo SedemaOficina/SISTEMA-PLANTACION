@@ -18,7 +18,8 @@ fotografía; lo capturado sin señal sale al volver; una corrección viaja como 
 se queda con su motivo; al cerrar la jornada y entregar su reporte, sale del teléfono; la sesión que vence a
 medio árbol no saca a nadie del formulario; y lo que el servidor no aceptó se resuelve desde la pantalla: la
 franja y la marca lo dicen, y en «Revisar» se envía otra vez, se queda lo del servidor, se corrige, se elimina
-o se descarta.
+o se descarta; y los catálogos de la Administración: dar de alta, renombrar, desactivar y eliminar van al
+servidor, que cuenta el uso de cada valor y dice lo que no acepta, y sin conexión nada cambia.
 
 Uso, desde la carpeta del proyecto (con la base local cargada):  python pruebas/prueba_conexion.py
 """
@@ -533,6 +534,62 @@ def main():
                 locales: (await SRP.almacen.todosLocales('plantaciones')).filter(r => !SRP.cola.de(r.id).length).length })""")
             ok(a['cuentas'] > 20 and a['arboles'] > 17000 and a['jornadas'] > 1000 and a['locales'] == 0,
                'la Administración baja todas las cuentas con su correo y trae todo lo enviado en %.1f s, sin guardarlo (en el teléfono sólo queda lo que espera envío): %s' % (segundos, a))
+
+            # ---------- Los catálogos de la Administración, en el servidor ----------
+            AREA = 'Área de la prueba de conexión ' + CORRIDA
+            pg.evaluate("SRP.app.mostrarVista('catalogos')"); pg.wait_for_timeout(600)
+            pg.click('#cat-tipos .chip[data-tipo="area"]'); pg.wait_for_timeout(1200)
+            uso_sia = pg.evaluate("() => { const tr = document.querySelector('#tabla-catalogo tr[data-id=\"a-sia\"]'); return tr && tr.querySelector('td[data-etiqueta=\"Uso\"]').textContent; }")
+            pg.click('#btn-cat-agregar'); pg.wait_for_timeout(300)
+            pg.fill('#cat-nombre', AREA)
+            clave = pg.input_value('#cat-clave')
+            pg.click('#btn-cat-guardar')
+            pg.wait_for_function("() => !document.getElementById('dlg-catalogo').open", timeout=15000)
+            pg.wait_for_timeout(800)
+            srv = apoyo('catalogo', {'tabla': 'areas', 'clave': clave})['fila']
+            CATALOGO = """id => { const c = SRP.ref.catalogoPorId[id], tr = document.querySelector('#tabla-catalogo tr[data-id="' + id + '"]');
+              return { local: c ? { nombre: c.nombre, activo: c.activo } : null, uso: tr ? tr.querySelector('td[data-etiqueta="Uso"]').textContent : null }; }"""
+            loc = pg.evaluate(CATALOGO, srv and srv['id'])
+            ok(srv and srv['nombre'] == AREA and srv['creado_por_id'] == ADMIN['id'] and loc == {'local': {'nombre': AREA, 'activo': True}, 'uso': 'Sin uso'} and uso_sia and 'cuenta' in uso_sia,
+               'un área dada de alta en Catálogos llega al servidor y queda en el teléfono; el uso lo cuenta el servidor: %s · %s · %s' % (srv and srv['nombre'], loc, uso_sia))
+
+            # Renombrar
+            pg.click('#tabla-catalogo tr[data-id="%s"] .c-titulo' % srv['id']); pg.wait_for_timeout(300)
+            pg.fill('#cat-nombre', AREA + ' renombrada')
+            pg.click('#btn-cat-guardar')
+            pg.wait_for_function("() => !document.getElementById('dlg-catalogo').open", timeout=15000)
+            pg.wait_for_timeout(600)
+            ok(apoyo('catalogo', {'tabla': 'areas', 'clave': clave})['fila']['nombre'] == AREA + ' renombrada' and pg.evaluate(CATALOGO, srv['id'])['local']['nombre'] == AREA + ' renombrada',
+               'renombrarla también llega al servidor')
+
+            # Lo que el servidor no acepta se dice en el formulario: otra persona ya dio de alta ese nombre
+            OTRA = 'Otra área de la prueba ' + CORRIDA
+            apoyo('otro_valor', {'tabla': 'areas', 'id': str(uuid.uuid4()), 'clave': 'OTRA_PRUEBA_' + CORRIDA, 'nombre': OTRA, 'por': ADMIN['id']})
+            pg.click('#btn-cat-agregar'); pg.wait_for_timeout(300)
+            pg.fill('#cat-nombre', OTRA)
+            pg.click('#btn-cat-guardar'); pg.wait_for_timeout(1500)
+            e = pg.evaluate("() => [document.getElementById('dlg-catalogo').open, (document.getElementById('cat-nombre-error') || {}).textContent || '']")
+            ok(e[0] and 'Ya existe un valor con ese nombre' in e[1], 'si otra persona ya dio de alta ese nombre, el servidor no lo acepta y el formulario lo dice en su campo: %s' % e)
+            pg.click('#dlg-catalogo .dialogo-cerrar')
+
+            # Sin conexión nada cambia, y se dice
+            ctx.route('**/api/srp/**', lambda r: r.abort())
+            pg.evaluate("id => { SRP.catalogos.cambiarEstado(SRP.ref.catalogoPorId[id]); }", srv['id']); pg.wait_for_timeout(1200)
+            aviso = pg.evaluate("() => document.getElementById('aviso').textContent")
+            ok('Sin conexión con el servidor: el catálogo no cambió' in aviso and pg.evaluate(CATALOGO, srv['id'])['local']['activo'] and apoyo('catalogo', {'tabla': 'areas', 'clave': clave})['fila']['activo'],
+               'sin conexión, desactivar no cambia nada y se dice: %s' % aviso)
+            ctx.unroute('**/api/srp/**')
+
+            # Desactivar y eliminar
+            pg.evaluate("id => { SRP.catalogos.cambiarEstado(SRP.ref.catalogoPorId[id]); }", srv['id']); pg.wait_for_timeout(1500)
+            ok(apoyo('catalogo', {'tabla': 'areas', 'clave': clave})['fila']['activo'] is False and pg.evaluate(CATALOGO, srv['id'])['local']['activo'] is False,
+               'desactivarla llega al servidor')
+            pg.evaluate("id => { SRP.catalogos.eliminar(SRP.ref.catalogoPorId[id]); }", srv['id'])
+            pg.wait_for_selector('#dlg-confirmar[open]', timeout=15000)
+            pg.fill('#confirmar-palabra', 'ELIMINAR'); pg.click('#btn-confirmar-si')
+            pg.wait_for_timeout(1500)
+            ok(apoyo('catalogo', {'tabla': 'areas', 'clave': clave})['fila'] is None and pg.evaluate(CATALOGO, srv['id'])['local'] is None,
+               'y eliminarla, sin uso, la quita del servidor y del teléfono')
 
             ok(not errores, 'sin errores en la página: %s' % errores)
             ctx.close()

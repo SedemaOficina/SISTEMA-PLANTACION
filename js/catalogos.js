@@ -20,7 +20,12 @@
    SOLICITANTES (tipo `solicitante`). Quién solicita una jornada; se eligen al iniciar o editar
    una jornada. Llevan nombre y tipo (los de SRP.ref.TIPOS_SOLICITANTE), que agrupa la lista; la
    clave la pone el sistema. Se agregan, se editan y se desactivan; sin uso, se eliminan. No son
-   instituciones: no tienen cuentas ni ejecutan jornadas. */
+   instituciones: no tienen cuentas ni ejecutan jornadas.
+
+   CON DATOS REALES los catálogos viven en el servidor. Cada cambio va allá, que lo revisa con las
+   mismas reglas y lo anota en su bitácora; el teléfono guarda el renglón que le devuelve. El uso de
+   cada valor también lo cuenta el servidor, con todos los registros. Sin conexión se consulta lo
+   guardado, pero nada cambia. */
 window.SRP = window.SRP || {};
 
 SRP.catalogos = {
@@ -44,6 +49,8 @@ SRP.catalogos = {
   clavePlaca(placa) { return String(placa || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); },
 
   el(id) { return document.getElementById(id); },
+  real() { return SRP.remoto.activo(); },
+  tabla() { return SRP.almacen.TABLA_DE_TIPO[this.tipo]; },
 
   iniciar() {
     this.el('cat-tipos').addEventListener('click', (e) => {
@@ -102,8 +109,9 @@ SRP.catalogos = {
   },
 
   async preparar() {
-    // Árboles (también los eliminados: siguen en el historial), jornadas y cuentas que lo usan
-    this.usos = await SRP.ref.usosDe('catalogos');
+    // Árboles (también los eliminados: siguen en el historial), jornadas y cuentas que lo usan.
+    // Con datos reales los cuenta el servidor; si no responde, el uso no se sabe (null)
+    this.usos = this.real() ? await this.usosDelServidor() : await SRP.ref.usosDe('catalogos');
     // Buscar en especies, instituciones y solicitantes; estos dos también por tipo
     const esOrg = this.tipo === 'organizacion', esSol = this.tipo === 'solicitante', conTipo = esOrg || esSol;
     this.el('caja-cat-buscar').hidden = this.tipo !== 'especie' && !conTipo;
@@ -130,8 +138,8 @@ SRP.catalogos = {
     // Instituciones y solicitantes llevan tipo y no muestran clave
     const esSol = this.tipo === 'solicitante', conTipo = esOrg || esSol, tipos = this.tiposDe(this.tipo);
     const textoOrg = (c) => this.tipoDe(c);
-    // «12 árboles y 3 jornadas», «2 cuentas», «Sin uso»
-    const textoUso = (id) => SRP.ref.textoUsos(this.usos[id]) || 'Sin uso';
+    // «12 árboles y 3 jornadas», «2 cuentas», «Sin uso»; «Sin dato» si el servidor no lo dijo
+    const textoUso = (id) => !this.usos ? 'Sin dato' : SRP.ref.textoUsos(this.usos[id]) || 'Sin uso';
     const tipoOrg = conTipo ? this.el('cat-filtro-tipo').value : '';
     const coincide = c => !q || (conTipo ? [this.nombreDe(c), c.clave].some(t => SRP.util.normalizar(t).includes(q)) : SRP.ref.especieCoincide(c, q));
     // Instituciones y solicitantes, agrupados por tipo (en el orden de los tipos) y por nombre dentro de cada uno
@@ -148,8 +156,8 @@ SRP.catalogos = {
       (esPrograma ? '<th scope="col">Quién lo usa</th>' : '') +
       '<th scope="col">Estado</th><th scope="col">Uso</th><th scope="col">Acciones</th></tr></thead>';
     const filas = items.map(c => {
-      const uso = SRP.ref.totalUsos(this.usos[c.id]);
-      // Acciones en el menú de la tuerca; Eliminar sólo si no tiene uso
+      const uso = this.usos ? SRP.ref.totalUsos(this.usos[c.id]) : null;
+      // Acciones en el menú de la tuerca; Eliminar sólo si se sabe que no tiene uso
       // Instituciones: se renombran y se desactivan, no se eliminan; las alcaldías sólo se activan y
       // desactivan. La Secretaría no se desactiva: sus cuentas administran el sistema
       const fija = this.esFija(c);
@@ -429,6 +437,7 @@ SRP.catalogos = {
       : this.tipo === 'organizacion' ? { tipo_organizacion: this.editando ? this.editando.tipo_organizacion : datos.tipo_organizacion }
       : this.tipo === 'solicitante' ? { tipo_solicitante: datos.tipo_solicitante }
       : this.tipo === 'programa' ? { tipos_organizacion: this.tiposMarcados() } : {};
+    if (this.real()) { await this.guardarEnServidor(Object.assign({}, datos, extra)); return; }
     let item, entrada;
     if (this.editando) {
       const previo = this.editando;
@@ -458,8 +467,14 @@ SRP.catalogos = {
     if (!SRP.permisos.exigir('catalogo.administrar')) return;
     if (SRP.ref.esSedema(item.id) && item.activo) { SRP.util.anunciar('La Secretaría no se desactiva: sus cuentas administran el sistema.', 'aviso'); return; }
     const activar = !item.activo;
-    const nuevo = Object.assign({}, item, { activo: activar, editado_por_id: SRP.sesion.usuario.id, fecha_ultima_edicion: SRP.util.ahoraISO() });
-    await SRP.almacen.guardarCatalogo(nuevo, SRP.bitacora.entrada(activar ? 'ACTIVADO' : 'DESACTIVADO', 'catalogo', item.id));
+    let nuevo = Object.assign({}, item, { activo: activar, editado_por_id: SRP.sesion.usuario.id, fecha_ultima_edicion: SRP.util.ahoraISO() });
+    if (this.real()) {
+      const r = await SRP.servidor.pedir('POST', '/catalogos/' + SRP.almacen.TABLA_DE_TIPO[item.tipo] + '/' + encodeURIComponent(item.id) + '/estado', { activo: activar });
+      if (!r.ok) { this.noSePudo(r); return; }
+      nuevo = await this.ponerDelServidor(item.tipo, r.datos);
+    } else {
+      await SRP.almacen.guardarCatalogo(nuevo, SRP.bitacora.entrada(activar ? 'ACTIVADO' : 'DESACTIVADO', 'catalogo', item.id));
+    }
     await SRP.ref.recargar();
     const org = item.tipo === 'organizacion';
     const nombre = org ? SRP.ref.nombreOrganizacion(item.id) : item.nombre;
@@ -472,6 +487,7 @@ SRP.catalogos = {
   async eliminar(item) {
     if (!SRP.permisos.exigir('catalogo.administrar')) return;
     await this.preparar();                        // recuenta el uso justo antes de decidir
+    if (!this.usos) { this.noSePudo({ sinRed: true }); return; }
     const usos = this.usos[item.id];
     if (SRP.ref.totalUsos(usos)) {
       SRP.util.anunciar('No se puede eliminar: aparece en ' + SRP.ref.textoUsos(usos) + '. Desactívelo: eso sí se deshace.', 'aviso');
@@ -481,11 +497,65 @@ SRP.catalogos = {
       puntos: ['No aparece en ningún árbol, jornada ni cuenta.', 'La bitácora conserva la constancia.', 'Si sólo debe dejar de ofrecerse, desactívelo: eso sí se deshace.'],
       irreversible: true, boton: 'Eliminar', icono: 'basura', escribir: 'ELIMINAR' });
     if (!ok) return;
-    await SRP.almacen.borrarCatalogo(item,
-      SRP.bitacora.entrada('ELIMINADO', 'catalogo', item.id, item.tipo + ' ' + item.clave + ': ' + item.nombre));
+    if (this.real()) {
+      const tabla = SRP.almacen.TABLA_DE_TIPO[item.tipo];
+      const r = await SRP.servidor.pedir('DELETE', '/catalogos/' + tabla + '/' + encodeURIComponent(item.id));
+      if (!r.ok) { this.noSePudo(r); return; }
+      await SRP.almacen.quitarLocal(tabla, item.id);
+    } else {
+      await SRP.almacen.borrarCatalogo(item,
+        SRP.bitacora.entrada('ELIMINADO', 'catalogo', item.id, item.tipo + ' ' + item.clave + ': ' + item.nombre));
+    }
     await SRP.ref.recargar();
     SRP.util.anunciar('Valor eliminado.');
     this.preparar();
+  },
+
+  /* ---------- Con datos reales: el servidor ---------- */
+
+  // Quién usa cada valor del catálogo a la vista, contado en el servidor; null si no respondió
+  async usosDelServidor() {
+    const r = await SRP.servidor.pedir('GET', '/catalogos/' + this.tabla() + '/usos');
+    return r.ok ? r.datos || {} : null;
+  },
+
+  // Los campos del servidor y los del formulario donde se dice su error
+  CAMPO_DEL_SERVIDOR: {
+    nombre: 'cat-nombre', clave: 'cat-clave', nombre_cientifico: 'cat-cientifico', tipo_distribucion: 'cat-distribucion', paleta_vegetal: 'cat-paleta',
+    fruto_comestible: 'cat-fruto', id_snib: 'cat-snib', id_enciclovida: 'cat-enciclovida', modelo: 'cat-modelo', tipo_vehiculo: 'cat-tipo-vehiculo',
+    tipo_organizacion: 'cat-tipo-org', tipo_solicitante: 'cat-tipo-sol', tipos_organizacion: 'cat-tipos-org-botones'
+  },
+
+  // El alta o la edición va al servidor; si no la acepta, sus motivos van en el formulario, que sigue abierto
+  async guardarEnServidor(cuerpo) {
+    const ruta = '/catalogos/' + this.tabla();
+    const libre = SRP.util.ocupado(this.el('btn-cat-guardar'), 'Guardando…', 'disco');
+    let r;
+    try { r = this.editando ? await SRP.servidor.pedir('PUT', ruta + '/' + encodeURIComponent(this.editando.id), cuerpo) : await SRP.servidor.pedir('POST', ruta, cuerpo); }
+    finally { libre(); }
+    if (!r.ok) {
+      const errores = (r.errores || []).map(([campo, texto]) => [this.CAMPO_DEL_SERVIDOR[campo] || 'cat-nombre', texto]);
+      if (errores.length) SRP.util.resumenErrores(this.el('cat-errores'), errores, ['cat-nombre', 'cat-clave'].concat(this.CAMPOS_TIPO, this.CAMPOS_ESPECIE, this.CAMPOS_VEHICULO));
+      else this.noSePudo(r);
+      return;
+    }
+    await this.ponerDelServidor(this.tipo, r.datos);
+    this.el('dlg-catalogo').close();
+    await SRP.ref.recargar();
+    SRP.util.anunciarSilencioso('Catálogo actualizado.');   // la lista ya cambió a la vista
+    this.preparar();
+  },
+
+  // El renglón que devolvió el servidor, guardado en el teléfono con los demás catálogos
+  async ponerDelServidor(tipo, fila) {
+    const item = Object.assign({ tipo }, fila);
+    const { tabla, fila: renglon } = SRP.almacen.filaCatalogo(item);
+    await SRP.almacen.ponerLocal(tabla, renglon);
+    return item;
+  },
+
+  noSePudo(r) {
+    SRP.util.anunciar(r.sinRed ? 'Sin conexión con el servidor: el catálogo no cambió. Intente de nuevo cuando haya señal.' : r.mensaje, 'aviso');
   }
 };
 

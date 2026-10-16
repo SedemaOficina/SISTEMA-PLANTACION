@@ -58,8 +58,10 @@ los 17,479 árboles y las 1,305 jornadas igual que la aplicación.
   jornada y entregar su reporte, lo recibido sale del teléfono.
 - 4d, lo que el servidor no acepta (bloque 224, D304): la franja de arriba lo dice, la tarjeta lleva «No se
   pudo enviar» y en «Revisar» la persona decide qué hacer con cada cambio.
-- Sigue 4e, la administración conectada. Las pantallas que eso cambia —Parámetros, que podrá editarlos, y la
-  bandeja de posibles duplicados— ya las aprobó Liber (D299).
+- 4e, la administración conectada, por partes:
+  - los catálogos (bloque 225, D305): cada cambio va al servidor, que cuenta el uso de cada valor;
+  - siguen Parámetros, que podrá editarlos, y la bandeja de posibles duplicados, con las pantallas que ya
+    aprobó Liber (D299).
 
 Ver `servidor/README.md`.
 

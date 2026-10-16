@@ -3736,3 +3736,21 @@
   · Con datos de prueba nada cambia: el envío sigue simulado y no hay rechazos.
   · **Sigue pendiente:** la jornada abierta iniciada en otro teléfono se tiene sólo en memoria (4e o
     después); la carga masiva sigue con el envío simulado (4e).
+
+- **D305. Los catálogos, en el servidor (bloque 225, versión 0.9.70).**
+  15-10-2026. Primera parte de 4e, la administración conectada, que va en tres: catálogos, Parámetros y la
+  bandeja de posibles duplicados, cada una probada y subida por separado.
+  · **Con datos reales los catálogos viven en el servidor** (`js/catalogos.js`). Alta, edición, activar,
+    desactivar y eliminar van allá: el servidor lo revisa con las mismas reglas que la pantalla y lo anota en
+    su bitácora; el teléfono guarda el renglón que le devuelve y no escribe bitácora propia.
+  · **La pantalla no cambia.** Revisa lo mismo antes de mandar, para que el error se vea al momento; lo que
+    sólo el servidor puede saber —que otra persona ya dio de alta ese nombre— vuelve como error del campo, con
+    el formulario abierto. «Guardar» dice «Guardando…» mientras responde.
+  · **El uso de cada valor lo cuenta el servidor**, con todos los registros, no con los que tiene el teléfono.
+    Si no responde, el uso dice «Sin dato» y no se ofrece eliminar.
+  · **Sin conexión** se consultan, pero no cambian: el aviso lo dice.
+  · Los demás teléfonos reciben los catálogos al entrar y al volver a abrir con señal.
+  · **Pendiente:** con datos reales la bitácora de lo enviado está en el servidor, que todavía no tiene cómo
+    consultarse desde la pantalla: el Registro de cambios de Configuración sólo ve lo del teléfono, y el
+    historial de un árbol ya enviado dice «Sin movimientos registrados».
+  · Con datos de prueba nada cambia.
