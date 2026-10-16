@@ -12,8 +12,8 @@
 -- Lo que puede:
 --   · Usar el esquema srp, sin crear nada en él ni fuera de él.
 --   · Leer, agregar y cambiar renglones de las tablas de datos. Borra sólo lo que el sistema permite
---     borrar: un valor de catálogo o una cuenta sin uso, un lote de carga masiva al deshacerlo, y las
---     sesiones.
+--     borrar: un valor de catálogo o una cuenta sin uso, una jornada sin árboles, y las sesiones.
+--   · Registrar los lotes de carga masiva y marcarlos completos o deshechos; no los borra.
 --   · A las bitácoras (la de cambios y la de entradas), sólo leerlas y agregarles renglones.
 --   · Avanzar la secuencia de folios de cada celda y agregar folios; un folio emitido no lo cambia ni lo borra.
 --   · Registrar fotografías; no las cambia ni las borra.
@@ -62,20 +62,23 @@ GRANT SELECT, INSERT, UPDATE ON srp.prioridades TO srp_api;
 -- La bandeja de posibles duplicados: se anota al recibir y la Administración la revisa
 GRANT SELECT, INSERT, UPDATE ON srp.duplicados TO srp_api;
 
+-- Los lotes de carga masiva: se registran, se completan y se deshacen; ninguno se borra
+GRANT SELECT, INSERT, UPDATE ON srp.cargas TO srp_api;
+
 -- Los parámetros: la Administración los cambia; volver al valor de arranque es escribirlo
 GRANT SELECT, INSERT, UPDATE ON srp.parametros TO srp_api;
 GRANT SELECT ON srp.migraciones TO srp_api;
 
 -- La capa propia sólo se lee: la carga quien administra la base
 GRANT SELECT ON srp.capas, srp.capa_prioritarias TO srp_api;
-REVOKE ALL ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric), srp.especie_clave(text, text), srp.vecinos(uuid, numeric) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric), srp.especie_clave(text, text), srp.vecinos(uuid, numeric) TO srp_api;
+REVOKE ALL ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric), srp.especie_clave(text, text), srp.vecinos(uuid, numeric), srp.de_carga_oculta(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric), srp.especie_clave(text, text), srp.vecinos(uuid, numeric), srp.de_carga_oculta(uuid) TO srp_api;
 
 -- territorio, de sólo lectura, como cualquier módulo del SIA
 GRANT territorio_lectura TO srp_api;
 
 INSERT INTO srp.migraciones (version, nombre)
-VALUES (1, 'Instalación: diez tablas del SRP, contraseñas, sesiones, registro de entradas, prioritarias, derivación sobre territorio, folio, fotografías, parámetros, prioridad congelada y posibles duplicados')
+VALUES (1, 'Instalación: diez tablas del SRP, contraseñas, sesiones, registro de entradas, prioritarias, derivación sobre territorio, folio, fotografías, parámetros, prioridad congelada, posibles duplicados y lotes de carga masiva')
 ON CONFLICT (version) DO NOTHING;
 
 /*
@@ -95,6 +98,7 @@ ON CONFLICT (version) DO NOTHING;
       DELETE FROM srp.folios;
       DELETE FROM srp.fotografias;
       DELETE FROM srp.duplicados;
+      DELETE FROM srp.cargas;
       TRUNCATE srp.plantaciones;
       CREATE TABLE srp.otra (x int);
       CREATE TABLE public.otra (x int);

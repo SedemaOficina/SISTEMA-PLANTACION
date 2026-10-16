@@ -27,7 +27,7 @@ CREATE SCHEMA IF NOT EXISTS srp;
 
 COMMENT ON SCHEMA srp IS 'Sistema de Registro de Plantaciones (SRP): jornadas y árboles plantados, catálogos, cuentas y bitácora.';
 
--- Nadie más usa el esquema salvo a quien se le concede en 08-srp-rol-y-grants.sql
+-- Nadie más usa el esquema salvo a quien se le concede en 09-srp-rol-y-grants.sql
 REVOKE ALL ON SCHEMA srp FROM PUBLIC;
 
 -- Qué versiones del esquema están aplicadas. La instalación es la 1; cada migración agrega la suya.

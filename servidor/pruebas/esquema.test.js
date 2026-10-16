@@ -12,7 +12,7 @@ import { conectar, instalar, destruir, codigoDeError, RAIZ } from './apoyo.js';
 import { verificar } from '../dist/independiente.js';
 
 const ESQUEMA = JSON.parse(fs.readFileSync(path.join(RAIZ, 'datos', 'esquema.json'), 'utf8'));
-const PROPIAS_DEL_SERVIDOR = ['bitacora_acceso', 'capa_prioritarias', 'capas', 'credenciales', 'duplicados', 'folio_secuencias', 'folios', 'fotografias', 'migraciones', 'parametros', 'prioridades', 'sesiones'];
+const PROPIAS_DEL_SERVIDOR = ['bitacora_acceso', 'capa_prioritarias', 'capas', 'cargas', 'credenciales', 'duplicados', 'folio_secuencias', 'folios', 'fotografias', 'migraciones', 'parametros', 'prioridades', 'sesiones'];
 const PERMISO_DENEGADO = '42501', VIOLA_CHECK = '23514', VIOLA_FORANEA = '23503', VIOLA_UNICO = '23505', LO_IMPIDE_UN_DISPARADOR = 'P0001';
 
 // El tipo del diccionario como lo escribe PostgreSQL (format_type)
@@ -130,6 +130,7 @@ test('la cuenta del servicio sólo opera datos; la bitácora sólo crece', async
   assert.equal(await codigoDeError(c, "INSERT INTO srp.fotografias (id, plantacion_id, tipo, bytes, sha256, recibida_por_id) VALUES (gen_random_uuid(), '00000000-0000-4000-8000-0000000000b1', 'image/gif', 10, repeat('a', 64), $1)", [admin]), VIOLA_CHECK, 'una imagen de otro tipo');
   assert.equal(await codigoDeError(c, 'UPDATE srp.fotografias SET bytes = 1'), PERMISO_DENEGADO, 'cambiar el registro de una fotografía');
   assert.equal(await codigoDeError(c, 'DELETE FROM srp.fotografias'), PERMISO_DENEGADO, 'borrar el registro de una fotografía');
+  assert.equal(await codigoDeError(c, 'DELETE FROM srp.cargas'), PERMISO_DENEGADO, 'borrar un lote de carga masiva');
 
   // Lo que la cuenta del servicio no puede hacer
   assert.equal(await codigoDeError(c, "UPDATE srp.bitacora SET detalle = 'cambiado'"), PERMISO_DENEGADO, 'editar la bitácora');

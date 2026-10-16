@@ -10,6 +10,8 @@ import { enTransaccion } from "./transaccion";
    GET /jornadas        las jornadas de su alcance
    GET /plantaciones    los árboles de su alcance y, de una jornada donde estuvo de relevo, todos los suyos
 
+   Lo de un lote de carga masiva que todavía sube o que se deshizo no se ve (cargas.ts).
+
    Por páginas, en orden de identificador: `?despues=<id del último recibido>&limite=<n>` (500 por omisión,
    hasta 2000). La respuesta trae { filas, siguiente }: `siguiente` es el `despues` de la página que sigue,
    o null al terminar. Las filas llevan los campos de las tablas del teléfono, con las fechas como texto
@@ -53,14 +55,15 @@ export function rutasConsultas(pool: pg.Pool, sesion: RequestHandler): Router {
     const pagina = paginaDe(req);
     if (typeof pagina === "string") return responder(res, 400, "CONSULTA_INVALIDA", pagina);
     const p = new Parametros();
-    res.json(await listar(pool, "jornadas", alcanceSql(sesionDe(res).usuario, "jornadas", "x", p), p, pagina));
+    res.json(await listar(pool, "jornadas", alcanceSql(sesionDe(res).usuario, "jornadas", "x", p) + " AND NOT srp.de_carga_oculta(x.carga_id)", p, pagina));
   });
 
   r.get("/plantaciones", sesion, async (req: Request, res: Response) => {
     const pagina = paginaDe(req);
     if (typeof pagina === "string") return responder(res, 400, "CONSULTA_INVALIDA", pagina);
     const p = new Parametros();
-    res.json(await listar(pool, "plantaciones", veArbolSql(sesionDe(res).usuario, "x", p), p, pagina, ["foto_base64"]));
+    const visible = " AND NOT EXISTS (SELECT 1 FROM srp.jornadas jc WHERE jc.id = x.jornada_id AND srp.de_carga_oculta(jc.carga_id))";
+    res.json(await listar(pool, "plantaciones", veArbolSql(sesionDe(res).usuario, "x", p) + visible, p, pagina, ["foto_base64"]));
   });
 
   return r;

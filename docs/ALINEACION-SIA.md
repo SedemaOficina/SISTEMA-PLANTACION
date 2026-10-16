@@ -100,7 +100,7 @@ cuentas viven en `srp`; altas, bajas y restablecimientos los hace la Administrac
    Hecho en el bloque 215: las fotografías como archivos, con su estimado de espacio (6.11).
 
    Falta:
-   - la carga masiva por tandas;
+   - la carga masiva por tandas: hecha en el bloque 229 (D309), con tandas de 300 árboles que caben en 100 KB;
    - lo que baje al teléfono, escrito por partes.
 
 ## 4. Preguntas para el SIA

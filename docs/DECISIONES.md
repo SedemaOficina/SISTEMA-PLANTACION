@@ -3818,3 +3818,31 @@
     `permisos.ts`), como se había dicho al hacer la bandeja del servidor (D298).
   · **Si se cambia «Mostrar» mientras llega la lista anterior**, sólo cuenta la última consulta: la prueba
     encontró que una respuesta tardía podía pintar encima de la nueva.
+
+- **D309. La carga masiva, en el servidor (bloque 229).**
+  16-10-2026. Quinta parte de 4e, la del servidor; la pantalla se conecta en el bloque que sigue. Liber decidió
+  qué hace «Deshacer carga» y si la carga pasa por la bandeja, y dijo que su histórico es de 5,000 árboles como
+  mucho.
+  · **El problema que se resolvió.** Con datos reales cada árbol recibe su folio, y un árbol con folio no se borra
+    del servidor (R8): el folio nunca se repite. «Deshacer carga» no podía borrar.
+  · **Decisión de Liber: deshacer oculta el lote.** Para quien usa el sistema se ve igual que en la versión de
+    prueba: los árboles y sus jornadas desaparecen de las listas, del mapa y de las cifras, y el archivo se puede
+    volver a cargar. En el servidor quedan, con sus árboles eliminados y su folio, que no se vuelve a usar.
+  · **Decisión de Liber: la carga histórica no pasa por la bandeja** de posibles duplicados. Los árboles que
+    lleguen después desde el campo sí se comparan con todo, como siempre.
+  · **Cómo llega un lote** (`cargas.ts`, `08-srp-cargas.sql`, tabla `srp.cargas`):
+    · por tandas de hasta 400 árboles, cada una con las jornadas que estrena; la aplicación mandará 300, que
+      caben con holgura en los 100 KB de cada pedido;
+    · cada tanda en su transacción: revisa cada renglón con las reglas de la aplicación —punto en la Ciudad,
+      especie del catálogo, fecha no futura y la de su jornada, institución y programa que existen, sin
+      repetidos y sin lo que ya está con la misma huella— y si uno no pasa no guarda nada de la tanda y dice qué
+      renglones y por qué;
+    · lo que guarda lleva territorio, prioridad, folio y bitácora, como cualquier árbol; reenviar una tanda no
+      la repite;
+    · mientras sube, nada del lote se ve (`srp.de_carga_oculta`, en las consultas de jornadas y árboles); al
+      completarlo se ve entero, cada jornada se ubica en el centro de sus árboles —con la regla de la alcaldía de
+      la aplicación— y la bitácora anota el lote;
+    · un lote que no se terminó de subir también se quita.
+  · **Medido en la base local:** 5,000 árboles en 17 tandas de 300, en 14 segundos; la tanda más lenta, 1.2 s.
+  · La cuenta `srp_api` registra, completa y deshace lotes, y no los borra; el guion de la cuenta pasa a
+    `09-srp-rol-y-grants.sql`.

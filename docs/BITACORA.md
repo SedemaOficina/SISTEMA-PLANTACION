@@ -5186,3 +5186,46 @@ No se probó:
 - con cientos de parejas (cada página dibuja un mapa por pareja).
 
 **Siguiente paso.** La carga masiva conectada al servidor: hoy sigue con el envío simulado.
+
+## Bloque 229 — La carga masiva, en el servidor (16-10-2026)
+
+Quinta parte de 4e (D309), sólo del servidor: la aplicación no cambia y su versión sigue en 0.9.73.
+
+| Qué | Cómo queda |
+|---|---|
+| Cómo llega un lote | Por tandas de hasta 400 árboles, cada una todo o nada, con las reglas de la aplicación |
+| Cada árbol | Con territorio, prioridad, folio y bitácora |
+| Mientras sube | No se ve nada del lote |
+| Al completarlo | Se ve entero; cada jornada en el centro de sus árboles; la bitácora anota el lote |
+| Deshacer (decisión de Liber) | Oculta el lote y elimina sus árboles, sin borrar: un árbol con folio no se borra |
+| Bandeja de duplicados (decisión de Liber) | La carga histórica no pasa por ella |
+
+**Qué cambió.**
+- `servidor/src/modulos/srp/cargas.ts`, nuevo; `rutas.ts` lo monta; `consultas.ts` no enseña lo de un lote
+  que sube o se deshizo.
+- `servidor/db/srp/08-srp-cargas.sql`, nuevo: la tabla de lotes y `srp.de_carga_oculta`. El guion de la cuenta
+  pasa a `09-srp-rol-y-grants.sql`, con sus permisos sobre los lotes; `instalar.sql` y `01-srp-esquema.sql` lo
+  nombran.
+- Pruebas: `servidor/pruebas/cargas.test.js`, nueva; `esquema.test.js` cuenta la tabla nueva y que la cuenta no
+  borra lotes.
+- Documentación: `servidor/README.md`, `docs/FASE2-Y-TRASPASO.md` y `docs/ALINEACION-SIA.md`.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada: la pantalla de la carga se conecta en el bloque que sigue.
+
+**Verificación.**
+- Servidor: `npm test`, 88 pruebas sin fallas (las 4 nuevas incluidas). La primera corrida de la prueba nueva encontró que una
+  jornada no puede nacer con cero árboles previstos: ahora nace con los de su primera tanda y al completar se
+  ajusta al total.
+- Medido en la base local: 5,000 árboles en 17 tandas de 300, en 14 segundos, la tanda más lenta en 1.2 s y la
+  más pesada en 69 KB. Con tandas de 400 una pesaba 90 KB, muy cerca del tope de 100 KB: por eso la aplicación
+  mandará 300. En esa medición, unos puntos al azar cayeron fuera de la Ciudad y el servidor rechazó la tanda
+  entera, diciendo cuáles.
+- En la copia del sistema del SIA compila, y la prueba de humo da 23 de 23, ya con los lotes.
+- La base local quedó sin datos de prueba.
+
+No se probó:
+- desde la pantalla: se conecta en el bloque que sigue;
+- con el tope de 100 KB del servidor web del SIA, que todavía no se sabe (pregunta 6 al SIA).
+
+**Siguiente paso.** Conectar la pantalla de la carga masiva: mandar el lote por tandas con su avance, las cargas
+hechas y «Deshacer carga» desde el servidor.

@@ -55,7 +55,8 @@ repositorio:
 | `db/srp/05-srp-fotografias.sql` | El registro de las fotografías: de qué árbol es cada una, su tipo, su peso, su huella y quién la mandó. Los archivos viven fuera de la base |
 | `db/srp/06-srp-parametros.sql` | Los parámetros que la Administración global cambió; los de arranque los dice el módulo |
 | `db/srp/07-srp-duplicados.sql` | `srp.vecinos`, que busca los árboles cercanos de la misma especie que podrían ser el mismo, y la bandeja de posibles duplicados entre instituciones |
-| `db/srp/08-srp-rol-y-grants.sql` | La cuenta `srp_api`, sin contraseña, con sus permisos mínimos y `territorio_lectura`; la versión 1 del esquema. Al final, la verificación para correr como la cuenta: lo que debe funcionar y lo que debe fallar |
+| `db/srp/08-srp-cargas.sql` | Los lotes de carga masiva: subiendo (no se ven), completos (se ven) o deshechos (ocultos, con sus árboles eliminados), y `srp.de_carga_oculta`, que dice si una jornada no se ve |
+| `db/srp/09-srp-rol-y-grants.sql` | La cuenta `srp_api`, sin contraseña, con sus permisos mínimos y `territorio_lectura`; la versión 1 del esquema. Al final, la verificación para correr como la cuenta: lo que debe funcionar y lo que debe fallar |
 | `db/srp/instalar.sql` | Corre los anteriores en orden, en una sola transacción |
 
 Todos los corre quien administra la base, que queda como dueño de lo que se crea. `02-srp-tablas.sql` sale
@@ -98,7 +99,7 @@ la base y las variables van antes que el código. Un módulo por despliegue.
    **Las fotografías:** una carpeta en el servidor de aplicaciones, fuera de lo que se publica, donde el
    backend pueda escribir, con su propio respaldo, y `SRP_FOTOS_DIR` con su ruta. Sin ella el módulo
    arranca igual y las fotografías responden que no están disponibles.
-4. **Verificación:** la del final de `08-srp-rol-y-grants.sql`, corrida como `srp_api`.
+4. **Verificación:** la del final de `09-srp-rol-y-grants.sql`, corrida como `srp_api`.
 5. **El código:** `src/modulos/srp/` en `sia-backend`, su conexión en `src/db.ts` y su montaje en
    `src/index.ts`; `npm run typecheck`, `npm run build` y el despliegue. Al arrancar, el backend reporta
    el módulo conectado como `srp_api`, sin superusuario.
@@ -148,6 +149,10 @@ variables de entorno, está explicada en `src/modulos/srp/config.ts`. Las respue
 | `GET /jornadas` | Las jornadas de su alcance, por páginas | Con sesión |
 | `GET /plantaciones` | Los árboles de su alcance, por páginas, sin la fotografía | Con sesión |
 | `GET /plantaciones/:id/historial` | Lo que se le hizo a un árbol, en orden; de otro árbol, como si no existiera | Quien ve el árbol |
+| `PUT /cargas/:id/tandas/:n` | Una tanda de un lote de carga masiva, hasta 400 árboles con las jornadas que estrena; todo o nada | Administración global |
+| `POST /cargas/:id/completa` | El lote llegó entero: desde ahora se ve | Administración global |
+| `GET /cargas` | Los lotes de carga masiva, lo más reciente primero | Administración global |
+| `DELETE /cargas/:id` | Deshace un lote: lo oculta y elimina sus árboles, sin borrar nada | Administración global |
 | `GET /cambios` | El registro de cambios de cuentas, catálogos y parámetros, y las cargas masivas, lo más reciente primero, por páginas | Administración global |
 
 - **Contraseñas:** sólo se guarda lo que deriva scrypt, con sal, nunca la contraseña, en el formato del
@@ -439,6 +444,9 @@ esa base y nunca sobre una instalación anterior.
     relevo, los puntos revisados y eliminarla;
   - que una versión vieja no escribe;
   - la prioridad de la colonia que se congela, y que se conserva aunque cambie la capa.
+- `pruebas/cargas.test.js`: un lote en tandas, cada árbol con su folio y nada visible hasta completarlo; cada
+  renglón revisado con las reglas de la aplicación; deshacer sin borrar, y volver a cargar; sólo la
+  Administración.
 - `pruebas/historial.test.js`: el historial de un árbol, en orden y sólo para quien lo ve, y el registro de
   cambios, sólo para la Administración y por páginas; las fechas, al milésimo de segundo.
 - `pruebas/duplicados.test.js`: el aviso de posible duplicado con la suma de las precisiones y su piso, sólo
