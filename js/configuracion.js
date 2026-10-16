@@ -1,7 +1,7 @@
 /* CONFIGURACIÓN (sólo Administración global). Una pantalla con una tarjeta por apartado: Usuarios
-   y Catálogos, que son sus propias vistas; Parámetros, sólo para consulta; Registro de cambios,
-   lo que la bitácora dice de cuentas y catálogos; y Acerca del sistema. Cada apartado vuelve aquí
-   con «Configuración», arriba a la izquierda. */
+   y Catálogos, que son sus propias vistas; Parámetros, para consulta y, con datos reales, para
+   cambiarlos en el servidor; Registro de cambios, lo que la bitácora dice de cuentas y catálogos; y
+   Acerca del sistema. Cada apartado vuelve aquí con «Configuración», arriba a la izquierda. */
 window.SRP = window.SRP || {};
 
 SRP.configuracion = {
@@ -16,6 +16,10 @@ SRP.configuracion = {
     });
     document.querySelectorAll('[data-volver-configuracion]').forEach(b => b.addEventListener('click', () => SRP.app.mostrarVista('configuracion')));
     ['cmb-sobre', 'cmb-quien'].forEach(id => this.el(id).addEventListener('change', () => { this.pagina = 1; this.pintarCambios(); }));
+    this.el('cfg-parametros').addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-parametro]'); if (b) this.abrirParametro(b.dataset.parametro);
+    });
+    this.el('form-parametro').addEventListener('submit', (e) => { e.preventDefault(); this.guardarParametro(); });
   },
 
   /* ---------- Tarjetas ---------- */
@@ -25,12 +29,12 @@ SRP.configuracion = {
     const pl = (n, uno, varios) => num(n) + ' ' + (n === 1 ? uno : varios);
     const us = SRP.ref.usuarios, inactivas = us.filter(u => !u.activo).length;
     const activos = t => SRP.ref.deTipo(t, true).length;
-    const todos = await this.cambios();
+    const [todos, delServidor] = await Promise.all([this.cambios(), this.leerParametros()]);
     const cambios = todos.length, cargas = todos.filter(b => b.entidad === 'carga' && b.accion === 'CREADO').length;
     const resumen = {
       usuarios: pl(us.length, 'cuenta', 'cuentas') + (inactivas ? ' · ' + pl(inactivas, 'inactiva', 'inactivas') : ''),
       catalogos: pl(activos('programa'), 'programa', 'programas') + ' · ' + pl(activos('organizacion'), 'institución', 'instituciones') + ' · ' + pl(activos('especie'), 'especie', 'especies'),
-      parametros: pl(this.parametros().reduce((s, g) => s + g.filas.length, 0), 'valor', 'valores') + ' · sólo consulta',
+      parametros: this.resumenParametros(delServidor),
       cambios: cambios ? pl(cambios, 'cambio registrado', 'cambios registrados') : 'Sin cambios todavía',
       carga: cargas ? pl(cargas, 'carga hecha', 'cargas hechas') : 'Plantilla, revisión y carga',
       acerca: 'Versión ' + SRP.CONFIG.VERSION
@@ -40,9 +44,10 @@ SRP.configuracion = {
 
   /* ---------- Parámetros ---------- */
 
-  /* Los valores salen de SRP.CONFIG, no se copian: lo que se lee aquí es lo que el sistema usa */
-  parametros() {
-    const C = SRP.CONFIG, M = C.MAPA;
+  /* Los valores salen de SRP.CONFIG, no se copian: lo que se lee aquí es lo que el sistema usa. `C`, otra
+     configuración con la misma forma: la de arranque, para decir cuál era */
+  parametros(C = SRP.CONFIG) {
+    const M = C.MAPA;
     const m = n => n.toLocaleString('es-MX') + ' m';
     return [
       { titulo: 'Revisión de jornadas', filas: [
@@ -67,12 +72,163 @@ SRP.configuracion = {
     ];
   },
 
-  prepararParametros() {
-    const esc = SRP.util.escapar;
+  /* CON DATOS REALES los parámetros son del servidor, iguales para todos los teléfonos, y sólo la
+     Administración global los cambia: cada valor lleva «Editar», y el que no es el de arranque dice cuándo y
+     quién lo cambió. Cada teléfono recibe el cambio la próxima vez que se conecta. Con datos de prueba, o si
+     el servidor no responde, sólo se consultan. */
+  NOTA_REAL: 'Valores con que el sistema revisa y avisa, iguales para todos los teléfonos. Sólo la Administración global los cambia: cada teléfono recibe el cambio la próxima vez que se conecte, y el cambio queda en el Registro de cambios.',
+  NOTA_PRUEBA: '',
+
+  // Cómo se cambia cada renglón: sus parámetros del servidor, cómo se llama su campo y, si se escribe en otra unidad, la escala
+  EDICION: {
+    'Puntos duplicados': [{ clave: 'JORNADA.DUPLICADO_M', etiqueta: 'Distancia en metros' }],
+    'Punto lejos de la jornada': [{ clave: 'JORNADA.FUERA_M', etiqueta: 'Distancia en metros' }],
+    'Sitios separados': [{ clave: 'JORNADA.SEPARAR_M', etiqueta: 'Distancia en metros' }],
+    'Precisión buena': [{ clave: 'MAPA.PRECISION_BUENA_M', etiqueta: 'Hasta cuántos metros' }],
+    'Precisión aceptable': [{ clave: 'MAPA.PRECISION_ACEPTABLE_M', etiqueta: 'Hasta cuántos metros' }],
+    'Margen del límite de la Ciudad': [{ clave: 'MAPA.MARGEN_AMBITO_M', etiqueta: 'Margen en metros' }],
+    'Espera del GPS': [{ clave: 'MAPA.GPS_ESPERA_MS', etiqueta: 'Espera en segundos', escala: 1000, unidad: 's' }],
+    'Hora de atraso': [{ clave: 'HORA_CIERRE_JORNADA', etiqueta: 'Hora del día, de 0 a 23' }],
+    'Reintento de envío': [{ clave: 'REINTENTO_ENVIO_MS', etiqueta: 'Cada cuántos segundos', escala: 1000, unidad: 's' }],
+    'Tamaño de la fotografía': [{ clave: 'FOTO.ANCHO_MAX', etiqueta: 'Ancho en píxeles' }, { clave: 'FOTO.ALTO_MAX', etiqueta: 'Alto en píxeles' }],
+    'Renglones por página': [{ clave: 'LISTA_PAGINA', etiqueta: 'En teléfono' }, { clave: 'LISTA_PAGINA_ANCHA', etiqueta: 'En computadora' }]
+  },
+  // Lo que el servidor hace además con un valor
+  TAMBIEN: { 'Puntos duplicados': 'El servidor la usa también como la distancia mínima para avisar de árboles de otras jornadas.' },
+
+  delServidor: null,   // clave → el parámetro como lo da el servidor, con su arranque, su rango y quién lo cambió
+
+  // Los parámetros del servidor, al día; null con datos de prueba o si no responde
+  async leerParametros() {
+    if (!SRP.remoto.activo()) return (this.delServidor = null);
+    const r = await SRP.servidor.pedir('GET', '/parametros');
+    this.delServidor = r.ok ? new Map((r.datos || []).map(x => [x.clave, x])) : null;
+    return this.delServidor;
+  },
+
+  // La configuración de arranque, con la forma de SRP.CONFIG
+  arranque(servidor) {
+    const A = JSON.parse(JSON.stringify(SRP.CONFIG));
+    servidor.forEach(x => {
+      const partes = x.clave.split('.'), ultimo = partes.pop();
+      const o = partes.reduce((y, k) => (y && typeof y[k] === 'object' ? y[k] : null), A);
+      if (o && ultimo in o) o[ultimo] = x.porOmision;
+    });
+    return A;
+  },
+
+  // Un renglón cuenta como cambiado si alguno de sus valores no es el de arranque
+  cambiadoDe(nombre, servidor) {
+    const ps = (this.EDICION[nombre] || []).map(e => servidor.get(e.clave)).filter(Boolean);
+    return ps.some(x => x.valor !== x.porOmision) ? ps.filter(x => x.fecha_ultima_edicion).sort((a, b) => String(b.fecha_ultima_edicion).localeCompare(String(a.fecha_ultima_edicion)))[0] || ps[0] : null;
+  },
+
+  // «11 valores · 1 cambiado»; con datos de prueba, «… · sólo consulta»
+  resumenParametros(servidor) {
+    const filas = this.parametros().reduce((s, g) => s.concat(g.filas), []);
+    const n = filas.length.toLocaleString('es-MX') + (filas.length === 1 ? ' valor' : ' valores');
+    if (!SRP.remoto.activo()) return n + ' · sólo consulta';
+    if (!servidor) return n;
+    const c = filas.filter(([nombre]) => this.cambiadoDe(nombre, servidor)).length;
+    return n + (c ? ' · ' + c + (c === 1 ? ' cambiado' : ' cambiados') : '');
+  },
+
+  async prepararParametros() {
+    const esc = SRP.util.escapar, nota = this.el('cfg-parametros-nota');
+    if (!this.NOTA_PRUEBA) this.NOTA_PRUEBA = nota.textContent;
+    const servidor = await this.leerParametros();
+    const editable = !!servidor && SRP.permisos.puede('catalogo.administrar');
+    if (SRP.remoto.activo() && !servidor) SRP.util.anunciar('Sin conexión con el servidor: los parámetros se consultan, pero no se pueden cambiar.', 'aviso', { secundario: true });
+    nota.textContent = SRP.remoto.activo() ? this.NOTA_REAL : this.NOTA_PRUEBA;
+    const A = servidor ? this.parametros(this.arranque([...servidor.values()])) : null;
+    const deArranque = nombre => A && A.reduce((v, g) => v || (g.filas.find(f => f[0] === nombre) || [])[1], '');
     this.el('cfg-parametros').innerHTML = this.parametros().map(g =>
       '<section class="bloque" aria-label="' + esc(g.titulo) + '"><h2>' + esc(g.titulo) + '</h2><dl class="cfg-valores">' +
-      g.filas.map(([nombre, valor, que]) => '<div class="cfg-valor"><dt>' + esc(nombre) + '</dt><dd class="cfg-cifra">' + esc(valor) + '</dd><dd class="cfg-que">' + esc(que) + '</dd></div>').join('') +
-      '</dl></section>').join('');
+      g.filas.map(([nombre, valor, que]) => {
+        const c = editable && this.cambiadoDe(nombre, servidor);
+        return '<div class="cfg-valor' + (editable ? ' editable' : '') + '"><dt>' + esc(nombre) + '</dt><dd class="cfg-cifra">' + esc(valor) + '</dd>' +
+          (editable ? '<dd class="cfg-editar"><button type="button" class="btn btn-texto-editar btn-chico" data-parametro="' + esc(nombre) + '" aria-label="Editar ' + esc(nombre.toLowerCase()) + '">' +
+            SRP.ICONOS.svg('lapiz', 'chico') + '<span>Editar</span></button></dd>' : '') +
+          '<dd class="cfg-que">' + esc(que + (SRP.remoto.activo() && this.TAMBIEN[nombre] ? ' ' + this.TAMBIEN[nombre] : '')) + '</dd>' +
+          (c ? '<dd class="cfg-que"><span class="insignia">Cambiado</span> ' + (c.fecha_ultima_edicion ? 'el ' + esc(SRP.util.formatearFecha(SRP.envio.diaLocal(c.fecha_ultima_edicion))) + ' ' : '') +
+            (c.editado_por_id ? 'por ' + esc(SRP.ref.nombreUsuario(c.editado_por_id)) : '') + '. El de arranque es ' + esc(deArranque(nombre)) + '.</dd>' : '') +
+          '</div>';
+      }).join('') + '</dl></section>').join('');
+  },
+
+  /* ---------- Cambiar un parámetro ---------- */
+
+  editando: null,   // el nombre del renglón que se cambia
+
+  // El valor como se escribe en el campo: los milisegundos, en segundos
+  enCampo(e, valor) { return valor / (e.escala || 1); },
+
+  abrirParametro(nombre) {
+    if (!this.delServidor || !SRP.permisos.exigir('catalogo.administrar')) return;
+    const esc = SRP.util.escapar, campos = this.EDICION[nombre];
+    const fila = this.parametros().reduce((v, g) => v || g.filas.find(f => f[0] === nombre), null);
+    if (!campos || !fila) return;
+    this.editando = nombre;
+    this.el('dlg-parametro-titulo').textContent = nombre;
+    this.el('par-que').textContent = fila[2] + (this.TAMBIEN[nombre] ? ' ' + this.TAMBIEN[nombre] : '');
+    this.el('par-campos').innerHTML = campos.map((e, i) => {
+      const x = this.delServidor.get(e.clave), u = e.unidad || x.unidad, id = 'par-valor-' + i;
+      const con = v => this.enCampo(e, v).toLocaleString('es-MX') + (u ? ' ' + u : '');
+      const ayuda = x.opciones ? 'El de arranque es ' + con(x.porOmision) + '.' : 'De ' + this.enCampo(e, x.minimo).toLocaleString('es-MX') + ' a ' + con(x.maximo) + '. El de arranque es ' + con(x.porOmision) + '.';
+      const control = x.opciones
+        ? '<select id="' + id + '" aria-describedby="' + id + '-ayuda">' + x.opciones.map(o => '<option value="' + o + '"' + (o === x.valor ? ' selected' : '') + '>' + o + '</option>').join('') + '</select>'
+        : '<input id="' + id + '" type="number" inputmode="numeric" step="1" value="' + this.enCampo(e, x.valor) + '" aria-describedby="' + id + '-ayuda">';
+      return '<div class="campo"><label for="' + id + '">' + esc(e.etiqueta) + ' <span class="obligatorio" aria-hidden="true">*</span></label>' + control +
+        '<p id="' + id + '-ayuda" class="nota">' + esc(ayuda) + '</p></div>';
+    }).join('');
+    this.el('par-errores').hidden = true;
+    this.el('dlg-parametro').showModal();
+  },
+
+  // Lo que tiene que cumplir un valor, como lo revisa el servidor; '' si está bien
+  revisarParametro(x, v, nuevos) {
+    const u = x.unidad ? ' ' + x.unidad : '';
+    if (!Number.isFinite(v)) return 'Escriba un número.';
+    if (!Number.isInteger(v)) return 'Escriba un número entero.';
+    if (x.opciones) return x.opciones.includes(v) ? '' : 'Elija uno de la lista.';
+    if (v < x.minimo || v > x.maximo) return 'Va de ' + x.minimo.toLocaleString('es-MX') + u + ' a ' + x.maximo.toLocaleString('es-MX') + u + '.';
+    const valor = k => (k in nuevos ? nuevos[k] : this.delServidor.get(k).valor);
+    if (/^MAPA\.PRECISION_/.test(x.clave) && valor('MAPA.PRECISION_BUENA_M') >= valor('MAPA.PRECISION_ACEPTABLE_M')) return 'La precisión buena tiene que ser menor que la aceptable.';
+    return '';
+  },
+
+  async guardarParametro() {
+    if (!SRP.permisos.exigir('catalogo.administrar')) return;
+    const campos = this.EDICION[this.editando] || [], ids = campos.map((e, i) => 'par-valor-' + i);
+    const nuevos = {};
+    campos.forEach((e, i) => {
+      const t = this.el(ids[i]).value.trim();
+      nuevos[e.clave] = t === '' ? NaN : Number(t) * (e.escala || 1);
+    });
+    const errores = campos.map((e, i) => [ids[i], this.revisarParametro(this.delServidor.get(e.clave), nuevos[e.clave], nuevos)]).filter(x => x[1]);
+    if (SRP.util.resumenErrores(this.el('par-errores'), errores, ids)) return;
+    const cambian = campos.map((e, i) => [e, ids[i]]).filter(([e]) => nuevos[e.clave] !== this.delServidor.get(e.clave).valor);
+    if (!cambian.length) { this.el('dlg-parametro').close(); return; }
+    const libre = SRP.util.ocupado(this.el('btn-par-guardar'), 'Guardando…', 'disco');
+    try {
+      for (const [e, id] of cambian) {
+        const r = await SRP.servidor.pedir('PUT', '/parametros/' + encodeURIComponent(e.clave), { valor: nuevos[e.clave] });
+        if (r.ok) continue;
+        if (r.sinRed) SRP.util.anunciar('Sin conexión con el servidor: el parámetro no cambió. Intente de nuevo cuando haya señal.', 'aviso');
+        else SRP.util.resumenErrores(this.el('par-errores'), (r.errores && r.errores.length ? r.errores : [['', r.mensaje]]).map(x => [id, x[1]]), ids);
+        await this.alCambiarParametros();
+        return;
+      }
+    } finally { libre(); }
+    this.el('dlg-parametro').close();
+    await this.alCambiarParametros();
+    SRP.util.anunciar('Guardado. Cada teléfono lo recibe la próxima vez que se conecte.', 'exito');
+  },
+
+  // Este teléfono toma los valores nuevos al momento, y la pantalla dice quién los cambió
+  async alCambiarParametros() {
+    await SRP.remoto.bajarParametros();
+    if (SRP.app.vista === 'parametros') await this.prepararParametros();
   },
 
   /* ---------- Registro de cambios ---------- */

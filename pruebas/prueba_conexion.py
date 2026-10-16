@@ -20,7 +20,8 @@ medio árbol no saca a nadie del formulario; y lo que el servidor no aceptó se 
 franja y la marca lo dicen, y en «Revisar» se envía otra vez, se queda lo del servidor, se corrige, se elimina
 o se descarta; y los catálogos de la Administración: dar de alta, renombrar, desactivar y eliminar van al
 servidor, que cuenta el uso de cada valor y dice lo que no acepta, y sin conexión nada cambia; y lo que dice la
-bitácora del servidor: el historial de un árbol que ya salió del teléfono y el Registro de cambios.
+bitácora del servidor: el historial de un árbol que ya salió del teléfono y el Registro de cambios; y Parámetros,
+que la Administración cambia en el servidor para todos los teléfonos.
 
 Uso, desde la carpeta del proyecto (con la base local cargada):  python pruebas/prueba_conexion.py
 """
@@ -208,6 +209,26 @@ HISTORIAL = """async id => { await SRP.registros.verDetalle(await SRP.almacen.un
 # El Registro de cambios de Configuración: cuántos dice y sus primeros renglones
 CAMBIOS = """async () => { SRP.app.mostrarVista('cambios'); await new Promise(r => setTimeout(r, 1500));
   return { cuenta: document.getElementById('cmb-cuenta').textContent, renglones: [...document.querySelectorAll('#cmb-lista > li')].slice(0, 4).map(li => li.textContent) }; }"""
+
+
+# Parámetros: cada renglón con su valor, si tiene «Editar» y lo que dice de su cambio
+PARAMETROS = """async () => { SRP.app.mostrarVista('parametros'); await new Promise(r => setTimeout(r, 1500));
+  return Object.fromEntries([...document.querySelectorAll('#cfg-parametros .cfg-valor')].map(f => [f.querySelector('dt').textContent,
+    { valor: f.querySelector('.cfg-cifra').textContent, editar: !!f.querySelector('button[data-parametro]'), cambio: [...f.querySelectorAll('.cfg-que')].map(d => d.textContent).find(t => t.startsWith('Cambiado')) || '' }])); }"""
+DEL_SERVIDOR = """async () => Object.fromEntries(((await SRP.servidor.pedir('GET', '/parametros')).datos || []).map(p => [p.clave, p.valor]))"""
+
+
+def editar_parametro(pg, nombre, valores):
+    """Abre «Editar» de un parámetro, escribe sus valores y guarda, como la persona."""
+    pg.click('#cfg-parametros button[data-parametro="%s"]' % nombre)
+    pg.wait_for_selector('#dlg-parametro[open]')
+    for i, v in enumerate(valores):
+        if pg.evaluate("id => document.getElementById(id).tagName", 'par-valor-%d' % i) == 'SELECT':
+            pg.select_option('#par-valor-%d' % i, str(v))
+        else:
+            pg.fill('#par-valor-%d' % i, str(v))
+    pg.click('#btn-par-guardar')
+    pg.wait_for_timeout(1500)
 
 
 # Lo que enseña una sección: su franja, su total y el aviso de Supervisión
@@ -615,6 +636,58 @@ def main():
             pg.evaluate(CAMBIOS)
             aviso = pg.evaluate("() => document.getElementById('aviso').textContent")
             ok('se ven sólo los cambios hechos en este equipo' in aviso, 'sin conexión, el Registro de cambios dice que sólo ve lo de este equipo: %s' % aviso)
+            ctx.unroute('**/api/srp/**')
+
+            # ---------- Parámetros, que cambia la Administración en el servidor ----------
+            pg.evaluate("SRP.app.mostrarVista('configuracion')"); pg.wait_for_timeout(1200)
+            tarjeta = pg.evaluate("() => document.querySelector('#cfg-tarjetas [data-resumen=\"parametros\"]').textContent")
+            par = pg.evaluate(PARAMETROS)
+            dup = par['Puntos duplicados']
+            ok(tarjeta == '11 valores · 1 cambiado' and all(x['editar'] for x in par.values()) and dup['valor'] == '7 m'
+               and dup['cambio'].startswith('Cambiado el ') and 'por ' + CABO['nombre'] + ' Renombrada. El de arranque es 4 m.' in dup['cambio'],   # la cuenta se renombró antes
+               'Parámetros: cada valor con «Editar»; el que no es el de arranque dice cuándo, quién y cuál era; la tarjeta los cuenta: %s · %s' % (tarjeta, dup))
+
+            # Un valor: llega al servidor, este teléfono lo usa al momento y la pantalla dice quién lo cambió
+            editar_parametro(pg, 'Margen del límite de la Ciudad', [150])
+            par = pg.evaluate(PARAMETROS)
+            srv = pg.evaluate(DEL_SERVIDOR)
+            ok(srv['MAPA.MARGEN_AMBITO_M'] == 150 and pg.evaluate("() => SRP.CONFIG.MAPA.MARGEN_AMBITO_M") == 150 and par['Margen del límite de la Ciudad']['valor'] == '150 m'
+               and 'por ' + ADMIN['nombre'] + '. El de arranque es 100 m.' in par['Margen del límite de la Ciudad']['cambio'] and not pg.evaluate("() => document.getElementById('dlg-parametro').open"),
+               'cambiar un parámetro lo guarda en el servidor, este teléfono lo usa al momento y la pantalla dice quién lo cambió: %s' % par['Margen del límite de la Ciudad'])
+
+            # Los que guardan dos valores, y los que se eligen de una lista
+            editar_parametro(pg, 'Tamaño de la fotografía', [1024, 768])
+            editar_parametro(pg, 'Renglones por página', [25, 50])
+            srv = pg.evaluate(DEL_SERVIDOR)
+            ok([srv['FOTO.ANCHO_MAX'], srv['FOTO.ALTO_MAX'], srv['LISTA_PAGINA'], srv['LISTA_PAGINA_ANCHA']] == [1024, 768, 25, 50]
+               and pg.evaluate("() => [SRP.CONFIG.FOTO.ANCHO_MAX, SRP.CONFIG.LISTA_PAGINA]") == [1024, 25],
+               'el tamaño de la fotografía y los renglones por página cambian sus dos valores: %s' % [srv['FOTO.ANCHO_MAX'], srv['FOTO.ALTO_MAX'], srv['LISTA_PAGINA'], srv['LISTA_PAGINA_ANCHA']])
+
+            # Fuera de su rango no se manda; lo que sólo sabe el servidor vuelve en su campo
+            pg.evaluate(PARAMETROS)
+            editar_parametro(pg, 'Puntos duplicados', [0])
+            e1 = pg.evaluate("() => [document.getElementById('dlg-parametro').open, (document.getElementById('par-valor-0-error') || {}).textContent || '']")
+            pg.click('#dlg-parametro .dialogo-cerrar')
+            apoyo('parametro', {'clave': 'MAPA.PRECISION_ACEPTABLE_M', 'valor': 12, 'id': ADMIN['id']})   # otra persona, mientras tanto
+            editar_parametro(pg, 'Precisión buena', [20])
+            e2 = pg.evaluate("() => [document.getElementById('dlg-parametro').open, (document.getElementById('par-valor-0-error') || {}).textContent || '']")
+            pg.click('#dlg-parametro .dialogo-cerrar')
+            srv = pg.evaluate(DEL_SERVIDOR)
+            ok(e1[0] and 'Va de 1 m a 50 m' in e1[1] and e2[0] and 'La precisión buena tiene que ser menor que la aceptable' in e2[1] and srv['JORNADA.DUPLICADO_M'] == 7 and srv['MAPA.PRECISION_BUENA_M'] == 10,
+               'un valor fuera de su rango no se manda, y lo que sólo sabe el servidor —otra persona cambió la precisión aceptable— vuelve en su campo: %s · %s' % (e1, e2))
+
+            # El Registro de cambios lo dice como parámetro
+            c = pg.evaluate(CAMBIOS)
+            ok(any('Edición del parámetro Margen del límite de la Ciudad' in x and '100 → 150 m' in x for x in c['renglones'] + [c['cuenta']]) or
+               any('Edición del parámetro Margen del límite de la Ciudad' in x for x in pg.evaluate("() => [...document.querySelectorAll('#cmb-lista > li')].map(li => li.textContent)")),
+               'el Registro de cambios dice el cambio del parámetro: %s' % c['renglones'][:2])
+
+            # Sin conexión se consultan, sin «Editar», y se dice
+            ctx.route('**/api/srp/**', lambda r: r.abort())
+            par = pg.evaluate(PARAMETROS)
+            aviso = pg.evaluate("() => document.getElementById('aviso').textContent")
+            ok(not any(x['editar'] for x in par.values()) and 'los parámetros se consultan, pero no se pueden cambiar' in aviso,
+               'sin conexión, Parámetros sólo se consulta y lo dice: %s' % aviso)
             ctx.unroute('**/api/srp/**')
 
             ok(not errores, 'sin errores en la página: %s' % errores)

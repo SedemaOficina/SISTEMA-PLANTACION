@@ -253,6 +253,9 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 .cfg-valor dt { font-weight: 500; }
 .cfg-valor .cfg-cifra { margin: 0; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .cfg-valor .cfg-que { grid-column: 1 / -1; margin: var(--e-1) 0 0; color: var(--gris); font-size: var(--t-s); }
+/* Con datos reales cada valor lleva «Editar»: nombre, valor y botón en un renglón */
+.cfg-valor.editable { grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; }
+.cfg-valor .cfg-editar { margin: 0; }
 .cfg-dato { display: grid; grid-template-columns: minmax(0, 12rem) minmax(0, 1fr); column-gap: var(--e-3); padding: var(--e-2) 0; border-bottom: 1px solid var(--borde-suave); }
 .cfg-dato dt { color: var(--gris); }
 .cfg-dato dd { margin: 0; overflow-wrap: anywhere; }
@@ -1370,6 +1373,11 @@ dialog::backdrop { background: var(--velo-oscuro); }
   .saltos button { flex: 1 1 0; min-height: 40px; padding: 0 var(--e-2); border: 1px solid var(--borde-filtro); border-radius: var(--radio-pildora);
     background: var(--fondo); color: var(--texto); font: inherit; font-size: var(--t-s); font-weight: 500; cursor: pointer; white-space: nowrap; position: relative; }
   .saltos button::after { content: ''; position: absolute; inset: -2px 0; }
+  /* Parámetros: en teléfono el valor baja bajo el nombre, y «Editar» se queda a la derecha */
+  .cfg-valor.editable { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "nombre boton" "cifra cifra"; }
+  .cfg-valor.editable dt { grid-area: nombre; }
+  .cfg-valor.editable .cfg-editar { grid-area: boton; }
+  .cfg-valor.editable .cfg-cifra { grid-area: cifra; text-align: left; white-space: normal; }
 }
 @media (max-width: 480px) {
   /* Paginador en teléfono chico: Anterior y Siguiente sólo con su flecha, a todo el ancho */

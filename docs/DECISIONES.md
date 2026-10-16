@@ -3778,3 +3778,23 @@
   · Las pantallas no cambian. Con datos de prueba nada cambia.
   · **Sigue pendiente:** Parámetros editables y la bandeja de posibles duplicados (D299); la carga masiva
     conectada.
+
+- **D307. Parámetros, que cambia la Administración (bloque 227, versión 0.9.72).**
+  16-10-2026. Tercera parte de 4e, con la pantalla que aprobó Liber (D299).
+  · **Con datos reales** (`js/configuracion.js`), cada valor de Configuración › Parámetros lleva «Editar», que
+    abre su diálogo: la explicación, el campo —dos, en el tamaño de la fotografía y en los renglones por
+    página—, el rango, el valor de arranque y «Guardar». Las esperas se escriben en segundos y el servidor las
+    guarda en milisegundos.
+  · **Lo que se revisa antes de mandar** es lo mismo que revisa el servidor: un número entero, dentro de su
+    rango, de su lista si la tiene, y la precisión buena menor que la aceptable. Lo que sólo sabe el servidor
+    —otra persona cambió la aceptable mientras tanto— vuelve como error del campo.
+  · **Al guardar**, este teléfono toma el valor al momento; los demás, la próxima vez que se conectan. El
+    cambio queda en el Registro de cambios como «Edición del parámetro …», con el antes y el después.
+  · **Un valor que no es el de arranque** dice «Cambiado», el día, quién y cuál era el de arranque. La tarjeta
+    de Configuración los cuenta: «11 valores · 1 cambiado».
+  · «Puntos duplicados» dice además que el servidor la usa como la distancia mínima para avisar de árboles de
+    otras jornadas.
+  · **Sin conexión** se consultan sin «Editar», y se dice. **Con datos de prueba** no cambia nada: sólo se
+    consultan, como antes.
+  · La prueba del servidor que compara los parámetros con la pantalla busca ahora la función por su firma
+    nueva.

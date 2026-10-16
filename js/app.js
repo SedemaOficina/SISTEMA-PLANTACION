@@ -579,6 +579,7 @@ SRP.app = {
     // Iconos fijos por significado: disco = guardar, palomita = confirmar/aprobar
     this.el('btn-cat-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar</span>';
     this.el('btn-usr-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar</span>';
+    this.el('btn-par-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar</span>';
     const I = (id, icono, texto, tam) => { const b = this.el(id); if (b) b.innerHTML = SRP.ICONOS.svg(icono, tam || 'medio') + '<span>' + texto + '</span>'; };
     I('btn-cierre-generar', 'ver', 'Ver vista previa', 'medio');
     I('btn-previa-corregir', 'lapiz', 'Corregir datos');

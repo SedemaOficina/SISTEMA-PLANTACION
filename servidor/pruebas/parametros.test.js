@@ -78,7 +78,7 @@ test('los parámetros del servidor son los que muestra Configuración › Parám
   }
   // Los que lee la pantalla de Parámetros (js/configuracion.js), ni uno más ni uno menos
   const t = fs.readFileSync(path.join(RAIZ, 'js', 'configuracion.js'), 'utf8');
-  const cuerpo = t.slice(t.indexOf('parametros() {'), t.indexOf('prepararParametros()'));
+  const cuerpo = t.slice(t.indexOf('parametros(C = SRP.CONFIG) {'), t.indexOf('prepararParametros()'));
   const enPantalla = new Set([...cuerpo.matchAll(/\bC\.([A-Z_]+(?:\.[A-Z_]+)?)/g)].map((m) => m[1]).concat([...cuerpo.matchAll(/\bM\.([A-Z_]+)/g)].map((m) => 'MAPA.' + m[1])));
   for (const k of ['MAPA', 'TAMANOS_PAGINA']) enPantalla.delete(k);
   assert.deepEqual([...enPantalla].sort(), P.PARAMETROS.map((p) => p.clave).sort());

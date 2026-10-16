@@ -5090,3 +5090,51 @@ No se probó:
   une por la hora; no hay prueba que lo recorra).
 
 **Siguiente paso.** Parámetros editables, con la pantalla que aprobó Liber (D299).
+
+## Bloque 227 — Parámetros, que cambia la Administración (16-10-2026)
+
+**Versión 0.9.72.** Tercera parte de 4e (D307), con la pantalla que aprobó Liber (D299).
+
+| Qué | Con datos reales |
+|---|---|
+| Cada valor | «Editar», con su diálogo: rango, valor de arranque y «Guardar» |
+| El que no es el de arranque | «Cambiado», el día, quién y cuál era |
+| La tarjeta de Configuración | «11 valores · 1 cambiado» |
+| Al guardar | Este teléfono lo usa al momento; los demás, al conectarse; queda en el Registro de cambios |
+| Sin conexión | Sólo se consultan, y se dice |
+
+**Qué cambió.**
+- `js/configuracion.js`: Parámetros con el servidor, su diálogo y lo que revisa.
+- `index.html`: el diálogo del parámetro; la nota de Parámetros con su identificador.
+- `css/estilos.css`: el renglón con «Editar»; en teléfono, el valor bajo el nombre.
+- `js/app.js`: el icono de «Guardar» del diálogo.
+- `VERSION`, `js/config.js` e `index.html`: la marca 0.9.72.
+- Pruebas: `prueba_conexion.py`, Parámetros como Administración; `servidor/pruebas/parametros.test.js`
+  busca la función de la pantalla por su firma nueva.
+- Documentación: `README.md`, `docs/FASE2-Y-TRASPASO.md` y `docs/MEJORAS.md`.
+
+**Pantalla: qué se agregó y qué se quitó.** Con datos de prueba, nada. Con datos reales, lo aprobado:
+«Editar» en cada valor, su diálogo, «Cambiado…» en el que no es el de arranque, la nota nueva arriba y la
+cuenta en la tarjeta. Avisos nuevos: «Guardado. Cada teléfono lo recibe la próxima vez que se conecte.» y el
+de sin conexión. Se quitó, sólo con datos reales, el «· sólo consulta» de la tarjeta.
+
+**Verificación.**
+- Conexión: `prueba_conexion.py`, 65 de 65. Como Administración, en la pantalla:
+  - cada valor con «Editar», y el que cambió otra cuenta dice cuándo, quién y cuál era; la tarjeta los cuenta;
+  - cambiar el margen del límite lo guarda en el servidor y este teléfono lo usa al momento;
+  - el tamaño de la fotografía y los renglones por página cambian sus dos valores;
+  - fuera de rango no se manda; lo que sólo sabe el servidor vuelve en su campo;
+  - el Registro de cambios lo dice como parámetro, y sin conexión no hay «Editar».
+  Una corrida dio 1 falla de la prueba: esperaba el nombre de la cuenta antes de que la prueba misma lo
+  cambiara. Se corrigió la comprobación y la siguiente dio 65 de 65.
+- Servidor: `npm test`, 84 sin fallas.
+- Aplicación: `prueba.py`, 0 fallas de 1,440; `auditoria.py`, 144 comprobaciones sin hallazgos; `auditoria_css.py`,
+  0 hallazgos.
+- La base local quedó sin datos de prueba: los parámetros que cambió la prueba se quitan al terminar.
+
+No se probó:
+- en un teléfono real;
+- que los demás teléfonos tomen el cambio al conectarse: lo hace la descarga de parámetros, que ya probaba
+  el bloque 221.
+
+**Siguiente paso.** La bandeja de posibles duplicados, con la pantalla que aprobó Liber (D299).
