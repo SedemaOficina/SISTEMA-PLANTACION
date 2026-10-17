@@ -245,6 +245,7 @@ docs/                   Memoria del proyecto
   AUDITORIA-INTEGRAL-APP.md  Auditoría de la aplicación: seguridad, integridad, accesibilidad, rendimiento y código
   AUDITORIA-COMPLETA.md  Auditoría de todo el proyecto: archivos, código, reglas, diseño, textos, botones y avisos
   REVISION-SERVIDOR.md  Revisión del servidor: seguridad, integridad, alineación con el SIA y mediciones
+  manual/               Manual de la Administración global: el PDF, su fuente (manual-administracion.html) y sus capturas
   REVISION-PANTALLAS.md, REVISION-ARCHIVOS.md   Revisiones de las pantallas y de los archivos que se descargan
   DECISIONES.md         Decisiones numeradas (Dnn)
   BITACORA.md           Qué cambió en cada bloque y cómo se verificó
@@ -258,6 +259,7 @@ herramientas/           Generan archivos del sitio a partir de originales/ y de 
   generar_sql.py        datos/esquema.json → servidor/db/srp/02-srp-tablas.sql (las tablas del servidor)
   exportar_datos_app.py La base de un teléfono de prueba con la demostración → servidor/local/datos-app.json, para cargarla en la base local
   extraer_iconos.py     Set de iconografía CDMX (.ai) → trazados para js/iconos.js
+  manual_administracion.py  Capturas de la aplicación con datos reales, contra el servicio local, y el PDF del manual de la Administración global (docs/manual/)
   empaquetar.py         Una carpeta → paquete para el SIA: manifiesto con la suma de cada archivo, ZIP y su .sha256; pide VERSION (0.N sólo con --revision)
 
 pruebas/                prueba.py (recorrido completo), prueba_conexion.py (con datos reales, contra el servicio local) y su apoyo_servidor.mjs, auditoria.py (auditoría), auditoria_css.py (hoja de estilos), revisar.py (presentación), servir.py (el servidor local para correrlas, que reenvía /api/ al servicio) y requisitos.txt (bibliotecas)

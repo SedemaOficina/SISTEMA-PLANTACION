@@ -3916,3 +3916,21 @@
     Administración, tarda 0.3 s con los 17,479 de la base local.
   · **Para el SIA**: el plazo de conservación del registro de entradas, con el aviso de privacidad.
   · En la aplicación, los campos sin largo máximo lo tienen, y la entrada dice cuándo esperar.
+
+- **D314. El manual de la Administración global (bloque 234, versión 0.9.78).**
+  17-10-2026. Liber eligió un PDF con capturas, sólo para la Administración global; el uso en campo queda
+  fuera.
+  · **El manual** (`docs/manual/Manual-Administracion-SRP.pdf`, 23 páginas) tiene 13 secciones: para qué es,
+    primeros pasos, entrar, Configuración, Usuarios, Catálogos, Parámetros, posibles duplicados, carga masiva,
+    Registro de cambios, las demás pestañas, qué hacer si… y buenas prácticas.
+  · **Las capturas son de la aplicación de verdad**, con datos reales contra el servicio local, y las toma
+    `herramientas/manual_administracion.py`. La misma herramienta arma el PDF desde
+    `docs/manual/manual-administracion.html` y pone en la portada la versión y la fecha. Así el manual se
+    vuelve a generar cuando algo cambia: en el paquete v1 se rehace con la versión 1.
+  · **Dos cuidados**, porque el repositorio es público: la contraseña temporal que se ve es de ejemplo, y
+    ninguna captura enseña el catálogo de vehículos, que en la base local tiene las placas reales.
+  · Las capturas son de teléfono, sin la franja de arriba ni las pestañas de abajo, que se repiten; una, de
+    computadora. Se toman con Edge, si está instalado, para que el botón de archivo diga «Elegir archivo».
+  · Al revisar las capturas apareció un texto mal armado en el Registro de cambios: de una cuenta que ya se
+    eliminó decía «Alta de la cuenta cuenta eliminada». Ahora la nombra por su correo, que guardan su alta y
+    su eliminación.

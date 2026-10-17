@@ -5446,3 +5446,43 @@ No se probó:
   y el servicio, en sus propias pruebas.
 
 **Siguiente paso.** El manual de la Administración global (bloque 234), y después el paquete v1 (235).
+
+## Bloque 234 — El manual de la Administración global (17-10-2026)
+
+**Versión 0.9.78.** Un PDF con capturas, sólo para la Administración global, como eligió Liber (D314).
+
+| Qué | Dónde |
+|---|---|
+| El manual, 23 páginas | `docs/manual/Manual-Administracion-SRP.pdf` |
+| Su fuente | `docs/manual/manual-administracion.html` |
+| 25 capturas de la aplicación con datos reales | `docs/manual/capturas/` |
+| La herramienta que toma las capturas y arma el PDF | `herramientas/manual_administracion.py` |
+
+**Qué cambió.**
+- El manual, su fuente, sus capturas y su herramienta (nuevos).
+- `pruebas/apoyo_servidor.mjs`: una pareja de ejemplo para la bandeja de duplicados, y el cargo de las cuentas
+  que prepara.
+- `js/configuracion.js`: el Registro de cambios nombra por su correo a una cuenta que ya se eliminó.
+- `VERSION`, `js/config.js` e `index.html`: la marca 0.9.78.
+- Pruebas: `prueba_conexion.py` comprueba ese texto.
+- Documentación: `README.md` y `docs/MEJORAS.md`.
+
+**Pantalla: qué se agregó y qué se quitó.** En el Registro de cambios, una cuenta que ya se eliminó se nombra
+por su correo («Alta de la cuenta jose.lopez@ejemplo.local»); antes decía «Alta de la cuenta cuenta
+eliminada». Nada más cambió.
+
+**Verificación.**
+- El manual se generó completo contra el servicio local, y se revisó página por página. Dos intentos de
+  acomodo se descartaron: el primero dejaba páginas medio vacías, y el segundo separaba algunas capturas de
+  su texto. Quedó el texto a la izquierda y su captura a la derecha, recortada, dos por página.
+- La base local quedó sin las cuentas, la pareja ni la carga del manual.
+- Conexión: `prueba_conexion.py`, 92 de 92, con la comprobación nueva.
+- Aplicación: `prueba.py`, 0 fallas de 1,441 en la primera corrida. `auditoria.py`, 144 comprobaciones sin hallazgos;
+  `auditoria_css.py`, 0 hallazgos.
+
+No se probó:
+- el PDF impreso en papel; se revisó en pantalla.
+
+**Siguiente paso.** El paquete v1 para el SIA (bloque 235): quitar lo de prueba, los catálogos y los
+vehículos reales, la versión 1 y el manual vuelto a generar con ella. Antes, Liber confirma que la lista de
+16 vehículos sigue al día.

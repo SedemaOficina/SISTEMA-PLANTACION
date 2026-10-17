@@ -280,7 +280,10 @@ SRP.configuracion = {
     if (b.entidad === 'usuario') {
       const u = SRP.ref.usuarioPorId[b.entidad_id];
       sobre = 'de la cuenta';
-      nombre = u ? SRP.util.nombreCompleto(u) : (b.accion === 'ELIMINADO' ? b.detalle : 'cuenta eliminada');
+      // De una cuenta que ya no está, su correo: lo guardan su alta y su eliminación
+      const correoDe = x => x.accion === 'ELIMINADO' ? x.detalle : (/^Alta de (\S+@\S+) con perfil /.exec(x.detalle || '') || [])[1];
+      nombre = u ? SRP.util.nombreCompleto(u)
+        : correoDe(b) || (this.lista || []).filter(x => x.entidad === 'usuario' && x.entidad_id === b.entidad_id).map(correoDe).find(Boolean) || 'que ya se eliminó';
       if (u) extra = SRP.ref.esSedema(u.organizacion_id) ? (SRP.ref.nombreCatalogo(u.area_id) || 'SEDEMA') : SRP.ref.nombreOrganizacion(u.organizacion_id);
     } else {
       const c = SRP.ref.catalogoPorId[b.entidad_id];

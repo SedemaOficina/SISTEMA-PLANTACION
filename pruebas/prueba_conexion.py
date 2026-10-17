@@ -27,7 +27,8 @@ la tarjeta, cada pareja con su mapa y sus dos árboles, y «Es el mismo árbol»
 masiva: el archivo sube al servidor por tandas, los árboles vuelven con folio y se ven, «Deshacer carga» los
 quita de la vista, el mismo archivo se puede volver a cargar y sin conexión no se carga nada; y Usuarios: el alta
 da una contraseña temporal que se ve una vez y con la que la cuenta nueva entra a escribir una propia, editar,
-«Restablecer contraseña», desactivar, eliminar una cuenta sin uso, y sin conexión nada cambia.
+«Restablecer contraseña», desactivar, eliminar una cuenta sin uso —que el Registro de cambios sigue nombrando
+por su correo—, y sin conexión nada cambia.
 
 Uso, desde la carpeta del proyecto (con la base local cargada):  python pruebas/prueba_conexion.py
 """
@@ -925,6 +926,12 @@ def main():
             pg.fill('#confirmar-palabra', OTRA['correo']); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(2000)
             ok(pg.evaluate(CUENTA_SRV, OTRA['correo']) is None and 'Cuenta eliminada' in pg.evaluate(AVISO) and pg.evaluate(MENU_DE, OTRA['id']) is None,
                'eliminar una cuenta sin uso la quita del servidor y de la lista')
+            # El Registro de cambios nombra por su correo a la cuenta que ya no está
+            pg.evaluate("SRP.app.mostrarVista('cambios')"); pg.wait_for_timeout(2500)
+            cambios = pg.inner_text('#vista-cambios')
+            ok('Alta de la cuenta ' + OTRA['correo'] in cambios and 'Eliminación de la cuenta ' + OTRA['correo'] in cambios and 'cuenta cuenta' not in cambios,
+               'el Registro de cambios nombra por su correo a una cuenta que ya se eliminó')
+            pg.evaluate("SRP.app.mostrarVista('usuarios')"); pg.wait_for_timeout(1500)
 
             # Sin conexión no cambia nada: el formulario sigue abierto con lo escrito
             ctx.route('**/api/srp/**', lambda r: r.abort())

@@ -1,7 +1,7 @@
 /* APOYO DE prueba_conexion.py: lo que la prueba necesita hacer en la base local, con la cuenta que la
    administra. Recibe un JSON por la entrada estándar y responde otro por la salida.
 
-     node pruebas/apoyo_servidor.mjs preparar   { cuentas: [{ id, correo, nombre, perfil, organizacion_id, clave, temporal }] }
+     node pruebas/apoyo_servidor.mjs preparar   { cuentas: [{ id, correo, nombre, perfil, organizacion_id, clave, temporal, cargo }] }
      node pruebas/apoyo_servidor.mjs renombrar  { id, nombre }
      node pruebas/apoyo_servidor.mjs vencer     { id }          las sesiones abiertas de la cuenta vencen
      node pruebas/apoyo_servidor.mjs sesiones   { id }          cuántas tiene abiertas y cuántas cerradas
@@ -11,6 +11,9 @@
      node pruebas/apoyo_servidor.mjs catalogo   { tabla, clave }       cómo tiene el servidor un valor de catálogo
      node pruebas/apoyo_servidor.mjs otro_valor { tabla, id, clave, nombre, por }   otra persona da de alta un valor
      node pruebas/apoyo_servidor.mjs pareja     { llego, cercano, distancia }  una pareja en la bandeja de posibles duplicados
+     node pruebas/apoyo_servidor.mjs cercanos   {}              dos árboles de la misma especie y de instituciones distintas, casi en el
+                                                                mismo lugar: { llego, cercano, distancia }
+     node pruebas/apoyo_servidor.mjs sin_pareja { id }          quita esa pareja de la bandeja
      node pruebas/apoyo_servidor.mjs quitar     { ids }         las cuentas y las que ellas dieron de alta, sus sesiones,
                                                                 sus jornadas, árboles y fotografías, sus lotes de carga, sus parámetros,
                                                                 los valores de catálogo que dieron de alta y sus registros
@@ -32,7 +35,7 @@ try {
     await c.query(`INSERT INTO srp.areas VALUES ('a-sia', 'SIA', 'Sistema de Información Ambiental', true, NULL, now(), NULL, NULL) ON CONFLICT DO NOTHING`);
     for (const u of d.cuentas) {
       await c.query(`INSERT INTO srp.usuarios VALUES ($1, $2, $3, $4, $5, $6, $7, '{}', true, now(), $1, NULL, NULL)`,
-        [u.id, u.correo, u.nombre, u.organizacion_id, u.organizacion_id === 'o-sedema' ? 'a-sia' : null, u.perfil, u.perfil]);
+        [u.id, u.correo, u.nombre, u.organizacion_id, u.organizacion_id === 'o-sedema' ? 'a-sia' : null, u.cargo ?? u.perfil, u.perfil]);
       await c.query(`INSERT INTO srp.credenciales VALUES ($1, $2, $3, $4, 0, NULL, now(), $1)`,
         [u.id, await derivar(u.clave), Boolean(u.temporal), u.temporal ? new Date(Date.now() + 72 * 3600_000) : null]);
     }
@@ -62,6 +65,12 @@ try {
   } else if (orden === 'pareja') {
     salida = { id: Number((await c.query('INSERT INTO srp.duplicados (plantacion_id, cercano_id, distancia_m, umbral_m) VALUES ($1, $2, $3, $4) RETURNING id',
       [d.llego, d.cercano, d.distancia, 4])).rows[0].id) };
+  } else if (orden === 'cercanos') {
+    salida = (await c.query(`SELECT a.id AS llego, v.cercano_id AS cercano, round(v.distancia_m::numeric, 1)::float AS distancia
+       FROM (SELECT id FROM srp.plantaciones WHERE estatus = 'activo' AND especie_id IS NOT NULL) a
+       CROSS JOIN LATERAL srp.vecinos(a.id, 50) v WHERE NOT v.misma_institucion ORDER BY v.distancia_m LIMIT 1`)).rows[0] ?? {};
+  } else if (orden === 'sin_pareja') {
+    await c.query('DELETE FROM srp.duplicados WHERE id = $1', [d.id]);
   } else if (orden === 'quitar') {
     await c.query('BEGIN');
     // También las cuentas que dieron de alta en la prueba, desde Usuarios

@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Manual de la Administración global · Sistema de Registro de Plantaciones</title>
+<!-- Fuente del manual en PDF. Lo arma herramientas/manual_administracion.py, que toma las capturas y pone la versión. -->
+<style>
+  @page { size: A4; }
+  :root { --texto: #1f2021; --gris: #55595e; --acento: #1b5faa; --guinda: #9f2241; --borde: #c9ced4; --fondo: #f4f6f8; --aviso: #8a5a00; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Segoe UI", Roboto, Arial, sans-serif; font-size: 10.5pt; line-height: 1.45; color: var(--texto); }
+  h1 { font-size: 26pt; line-height: 1.15; margin: 0 0 4mm; color: var(--guinda); }
+  h2 { font-size: 16pt; margin: 0 0 4mm; padding-bottom: 2mm; border-bottom: 2px solid var(--guinda); color: var(--guinda); break-before: page; }
+  h3 { font-size: 12pt; margin: 6mm 0 2mm; color: var(--acento); break-after: avoid; }
+  p { margin: 0 0 2.5mm; }
+  ol, ul { margin: 0 0 3mm; padding-left: 6mm; }
+  li { margin-bottom: 1.2mm; }
+  b { font-weight: 600; }
+  .gris { color: var(--gris); }
+  .portada { height: 245mm; display: flex; flex-direction: column; justify-content: center; }
+  .portada .sistema { font-size: 13pt; color: var(--gris); margin-bottom: 14mm; }
+  .portada .datos { margin-top: 20mm; font-size: 10.5pt; color: var(--gris); }
+  .indice ol { padding-left: 6mm; columns: 1; }
+  .indice li { margin-bottom: 1.6mm; }
+  /* El texto a la izquierda y su captura a la derecha, sin partirse entre páginas */
+  .con-captura { display: grid; grid-template-columns: 1fr 58mm; gap: 7mm; align-items: start; margin: 3mm 0 4mm; break-inside: avoid; }
+  .con-captura > div { grid-column: 1; grid-row: 1; }
+  .con-captura > figure { grid-column: 2; grid-row: 1; }
+  .dos-capturas { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; justify-items: center; margin: 3mm 0 5mm; break-inside: avoid; }
+  figure { margin: 0; break-inside: avoid; }
+  figure img { display: block; width: 58mm; border: 1px solid var(--borde); border-radius: 2mm; }
+  figure.ancha img { width: 100%; }
+  figcaption { font-size: 8.5pt; color: var(--gris); margin-top: 1.5mm; max-width: 58mm; }
+  .nota { background: var(--fondo); border-left: 3px solid var(--acento); padding: 2.5mm 3.5mm; margin: 3mm 0 4mm; break-inside: avoid; }
+  .cuidado { background: #fff6e5; border-left: 3px solid var(--aviso); padding: 2.5mm 3.5mm; margin: 3mm 0 4mm; break-inside: avoid; }
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm; font-size: 9.5pt; }
+  th, td { text-align: left; vertical-align: top; padding: 1.8mm 2.5mm; border-bottom: 1px solid var(--borde); }
+  th { background: var(--fondo); font-weight: 600; }
+  tr { break-inside: avoid; }
+  .boton { display: inline-block; padding: 0 1.5mm; border: 1px solid var(--borde); border-radius: 1mm; font-size: 9.5pt; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<section class="portada">
+  <p class="sistema">Sistema de Registro de Plantaciones (SRP)<br>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental</p>
+  <h1>Manual de la<br>Administración global</h1>
+  <p class="gris">Cómo dar de alta y cuidar las cuentas, los catálogos y los parámetros del sistema, revisar los posibles duplicados y subir el histórico de árboles.</p>
+  <p class="datos">Versión del sistema: <span data-version>—</span><br>Fecha de este manual: <span data-fecha>—</span><br>Las capturas son de un teléfono, con datos de ejemplo.</p>
+</section>
+
+<section class="indice">
+  <h2>Contenido</h2>
+  <ol>
+    <li>Para qué es este manual</li>
+    <li>Primeros pasos</li>
+    <li>Entrar al sistema</li>
+    <li>Configuración</li>
+    <li>Usuarios</li>
+    <li>Catálogos</li>
+    <li>Parámetros</li>
+    <li>Posibles duplicados</li>
+    <li>Carga masiva</li>
+    <li>Registro de cambios</li>
+    <li>Supervisión, Jornadas y Registros</li>
+    <li>Qué hacer si…</li>
+    <li>Buenas prácticas</li>
+  </ol>
+</section>
+
+<section>
+  <h2>1. Para qué es este manual</h2>
+  <p>La <b>Administración global</b> es el perfil de las cuentas de la Secretaría que cuidan el sistema. Es la única que:</p>
+  <ul>
+    <li>da de alta las cuentas de todas las instituciones, las edita, les restablece la contraseña y las desactiva;</li>
+    <li>cambia los catálogos: programas, áreas, especies, vehículos, instituciones y solicitantes;</li>
+    <li>cambia los parámetros con que el sistema revisa los puntos, el GPS y los envíos;</li>
+    <li>revisa los posibles duplicados entre instituciones;</li>
+    <li>sube de una vez, desde un archivo, los árboles plantados antes de usar el sistema.</li>
+  </ul>
+  <p>Además ve, edita y elimina todo lo registrado en la Ciudad. <b>No captura registros</b>: no inicia jornadas ni registra árboles; eso lo hacen los cabos y la coordinación en campo.</p>
+  <div class="nota">Este manual no cubre el uso en campo ni la instalación del sistema. La instalación, el servidor, los respaldos y la dirección donde se abre el sistema son del Sistema de Información Ambiental (SIA).</div>
+  <p>Los textos de los botones van entre comillas: «Dar de alta», «Guardar». Donde dice <b>tuerca</b> es el botón con un engrane que tiene cada renglón de una lista: abre sus acciones.</p>
+</section>
+
+<section>
+  <h2>2. Primeros pasos</h2>
+  <p>Al instalar el sistema, el SIA da de alta la primera cuenta de Administración global y le entrega su contraseña temporal. Con esa cuenta, en este orden:</p>
+  <ol>
+    <li><b>Entre y escriba su propia contraseña</b> (sección 3).</li>
+    <li><b>Dé de alta una segunda Administración global</b> (sección 5). Si una sola persona olvida su contraseña o deja el puesto, nadie más podría administrar.</li>
+    <li><b>Revise los catálogos</b> (sección 6): active las alcaldías que van a usar el sistema, agregue las demás instituciones que lo pidan, y revise programas, áreas, vehículos y solicitantes.</li>
+    <li><b>Dé de alta las cuentas</b>: primero las de coordinación y después las de cabos, para poder asignarles su coordinador.</li>
+    <li><b>Si hay árboles plantados antes</b>, súbalos con la carga masiva (sección 9).</li>
+  </ol>
+</section>
+
+<section>
+  <h2>3. Entrar al sistema</h2>
+  <div class="con-captura">
+    <figure><img src="capturas/01-entrada.png" alt="Pantalla para entrar"><figcaption>La entrada.</figcaption></figure>
+    <div>
+      <p>Abra en el navegador del teléfono o de la computadora la dirección del sistema que da el SIA. Escriba su <b>correo</b> y su <b>contraseña</b>, y toque «Entrar».</p>
+      <p>Al entrar, el teléfono baja los catálogos, las cuentas y los parámetros, y trae lo registrado. La primera vez tarda unos segundos.</p>
+      <h3>Si se equivoca</h3>
+      <ul>
+        <li>Cualquier error dice lo mismo: «Correo o contraseña incorrectos». El sistema no dice cuál de los dos falló, para que nadie averigüe qué correos tienen cuenta.</li>
+        <li>Cinco intentos fallidos seguidos bloquean la cuenta 15 minutos (son los valores con que se instala el sistema). Pasado ese tiempo puede intentar otra vez, o pedir que le restablezcan la contraseña.</li>
+        <li>Si desde una misma conexión hay muchos intentos fallidos, el sistema dice «Hubo demasiados intentos fallidos desde esta conexión» y pide esperar 15 minutos.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="con-captura">
+    <figure><img src="capturas/02-cambie-contrasena.png" alt="Cambiar la contraseña temporal"><figcaption>«Cambie su contraseña».</figcaption></figure>
+    <div>
+      <h3>La primera vez: la contraseña temporal</h3>
+      <p>Una cuenta nueva, o una a la que le restablecieron la contraseña, entra con una <b>contraseña temporal</b>. El sistema no deja hacer nada más hasta escribir una propia:</p>
+      <ol>
+        <li>Escriba la contraseña nueva: al menos 10 caracteres, con letras y números, y que no contenga su correo.</li>
+        <li>Escríbala otra vez. «Mostrar lo que escribo» deja ver lo que escribe.</li>
+        <li>Toque «Guardar y entrar».</li>
+      </ol>
+      <p>«Salir sin cambiarla» regresa a la entrada; la temporal sigue sirviendo hasta que vence.</p>
+      <h3>La sesión</h3>
+      <p>La sesión sigue abierta mientras se use. Tras una semana sin usarla, el sistema pide la contraseña otra vez, sin perder lo capturado. Para salir, toque el botón de la persona, arriba a la derecha, y «Cerrar sesión».</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>4. Configuración</h2>
+  <div class="con-captura">
+    <figure><img src="capturas/03-configuracion.png" alt="Configuración en el teléfono"><figcaption>Configuración en el teléfono.</figcaption></figure>
+    <div>
+      <p>Todo lo de este manual está en la pestaña <b>Configuración</b>. En el teléfono, las pestañas están abajo; en la computadora, arriba.</p>
+      <p>Cada tarjeta lleva a una parte y dice cómo está:</p>
+      <ul>
+        <li><b>Usuarios</b>: las cuentas de todas las instituciones.</li>
+        <li><b>Catálogos</b>: las listas que se eligen al registrar.</li>
+        <li><b>Parámetros</b>: los valores con que el sistema revisa.</li>
+        <li><b>Registro de cambios</b>: quién cambió qué y cuándo.</li>
+        <li><b>Posibles duplicados</b>: cuántas parejas hay por revisar.</li>
+        <li><b>Carga masiva</b>: el histórico de árboles.</li>
+        <li><b>Acerca del sistema</b>: la versión y los datos de este equipo. Si reporta un problema al SIA, diga la versión que aparece ahí.</li>
+      </ul>
+      <p>Arriba, la franja <b>«Con conexión · Al día»</b> dice si el teléfono tiene conexión con el servidor. <b>Sin conexión, Configuración se puede consultar pero no cambia</b>: el sistema lo dice, y hay que volver a hacer el cambio cuando haya señal.</p>
+    </div>
+  </div>
+<figure class="ancha"><img src="capturas/03b-configuracion-computadora.png" alt="Configuración en la computadora"><figcaption>La misma pantalla en la computadora: las pestañas van arriba.</figcaption></figure>
+</section>
+
+<section>
+  <h2>5. Usuarios</h2>
+  <h3>Los perfiles</h3>
+  <table>
+    <tr><th style="width: 30mm">Perfil</th><th>Qué hace</th></tr>
+    <tr><td><b>Cabo</b></td><td>Registra plantaciones y ve, edita y elimina únicamente las suyas; descarga sus fotografías.</td></tr>
+    <tr><td><b>Coordinador</b></td><td>Registra, y ve, edita y elimina los registros de los cabos que tiene asignados y los suyos. Elimina también las jornadas vacías y pasa una jornada abierta a otro cabo de su cuadrilla (relevo).</td></tr>
+    <tr><td><b>Directivo</b></td><td>Ve las jornadas, los registros, las fotografías y el avance, y descarga los reportes ya generados. No registra ni modifica. En la Secretaría ve toda la Ciudad; en otra institución, sólo la suya.</td></tr>
+    <tr><td><b>Administración global</b></td><td>Ve, edita y elimina todo, y administra los catálogos y las cuentas. No captura registros.</td></tr>
+  </table>
+  <ul>
+    <li>La Administración global y el <b>área</b> son sólo de la Secretaría. En otra institución, la cuenta es de cabo, de coordinación o directiva.</li>
+    <li>Un cabo puede tener uno o varios <b>coordinadores</b>, siempre de su misma institución. Cada uno ve y edita los registros de ese cabo.</li>
+  </ul>
+
+  <div class="con-captura">
+    <figure><img src="capturas/04-usuarios.png" alt="Lista de usuarios"><figcaption>Usuarios.</figcaption></figure>
+    <div>
+      <h3>La lista</h3>
+      <p>Configuración › Usuarios enseña todas las cuentas. Puede buscar por nombre, correo, área o institución, filtrar por perfil y por institución, y elegir «Activos», «Inactivos» o «Todos».</p>
+      <p>Cada tarjeta dice el perfil, el área o la institución, sus coordinadores o a cuántos cabos coordina, y cuántos registros tiene. Su cuenta lleva la marca «usted».</p>
+    </div>
+  </div>
+
+  <div class="con-captura">
+    <figure><img src="capturas/05-alta.png" alt="Formulario para dar de alta"><figcaption>«Dar de alta», lleno.</figcaption></figure>
+    <div>
+      <h3>Dar de alta una cuenta</h3>
+      <ol>
+        <li>Toque «Dar de alta».</li>
+        <li><b>Tipo de institución</b> y luego la <b>institución</b> o la <b>alcaldía</b>. Si no aparece, primero agréguela o actívela en Catálogos › Instituciones.</li>
+        <li><b>Área</b>, sólo si es de la Secretaría.</li>
+        <li><b>Nombre completo</b>: nombre y apellidos, como aparecerán en los registros y los reportes.</li>
+        <li><b>Correo</b>: con él entra la persona. <b>No se puede cambiar después</b>: revíselo bien.</li>
+        <li><b>Cargo</b> y <b>perfil de captura</b>.</li>
+        <li>Si es cabo, marque sus <b>coordinadores</b>. Puede dejarlo sin coordinador y asignarlo después.</li>
+        <li>Toque «Guardar».</li>
+      </ol>
+      <p>Si algo falta o no cumple una regla, el formulario lo dice en su campo y no se guarda nada.</p>
+    </div>
+  </div>
+
+  <div class="con-captura">
+    <figure><img src="capturas/06-cuenta-creada.png" alt="Ventana Cuenta creada"><figcaption>«Cuenta creada».</figcaption></figure>
+    <div>
+      <h3>La contraseña temporal</h3>
+      <p>Al guardar se abre la ventana <b>«Cuenta creada»</b> con la contraseña temporal de la persona, en letra grande para dictarla sin confundir caracteres.</p>
+      <ul>
+        <li>«Copiar» la copia para pegarla donde la necesite.</li>
+        <li>Vence en 72 horas.</li>
+        <li>Al entrar con ella, el sistema le pide a la persona escribir una propia.</li>
+        <li><b>Désela en persona o por teléfono</b>. No la mande por correo ni la deje escrita.</li>
+        <li><b>No se vuelve a mostrar.</b> Si se pierde o vence, use «Restablecer contraseña».</li>
+      </ul>
+      <p class="gris">La contraseña de la captura es de ejemplo.</p>
+    </div>
+  </div>
+
+  <div class="con-captura">
+    <figure><img src="capturas/07-menu-cuenta.png" alt="Menú de la tuerca de una cuenta"><figcaption>La tuerca de una cuenta.</figcaption></figure>
+    <div>
+      <h3>Las acciones de una cuenta</h3>
+      <p>Toque la tuerca de la cuenta. Según la cuenta aparecen:</p>
+      <ul>
+        <li><b>Editar</b>: también se abre tocando la tarjeta.</li>
+        <li><b>Restablecer contraseña</b>: sólo en cuentas activas.</li>
+        <li><b>Desactivar</b> o <b>Activar</b>.</li>
+        <li><b>Eliminar</b>: sólo si la cuenta no aparece en nada y nunca entró al sistema.</li>
+      </ul>
+      <p>En su propia cuenta sólo aparece «Editar»: nadie se desactiva, se elimina ni se restablece a sí mismo.</p>
+      <h3>Editar</h3>
+      <p>Se cambian nombre, institución, área, cargo, perfil y coordinadores; el correo no. Dos reglas:</p>
+      <ul>
+        <li>quien coordina cabos no cambia de institución hasta que sus cabos tengan otro coordinador;</li>
+        <li>nadie se quita a sí mismo la Administración global: debe hacerlo otra cuenta de Administración.</li>
+      </ul>
+      <p>Un cambio de perfil o de institución vale de inmediato en el servidor; el teléfono de la persona se pone al día la próxima vez que abre la aplicación con señal.</p>
+    </div>
+  </div>
+
+  <h3>Restablecer contraseña</h3>
+  <p>Úselo cuando la persona olvidó su contraseña, se bloqueó su cuenta o venció su temporal. El sistema pregunta antes, porque:</p>
+  <ul>
+    <li>la contraseña de ahora deja de servir;</li>
+    <li>se cierra su sesión en todos sus teléfonos; lo que no haya enviado se queda guardado en cada uno;</li>
+    <li>usted ve la temporal nueva para dársela, igual que en un alta.</li>
+  </ul>
+  <div class="dos-capturas">
+    <figure><img src="capturas/08-restablecer.png" alt="Confirmar restablecer contraseña"><figcaption>La pregunta antes de restablecer.</figcaption></figure>
+    <figure><img src="capturas/09-contrasena-restablecida.png" alt="Ventana Contraseña restablecida"><figcaption>La temporal nueva (de ejemplo).</figcaption></figure>
+  </div>
+
+  <div class="con-captura">
+    <figure><img src="capturas/10-desactivada.png" alt="Aviso de cuenta desactivada con Deshacer"><figcaption>El aviso, con «Deshacer».</figcaption></figure>
+    <div>
+      <h3>Desactivar y activar</h3>
+      <p>Desactive la cuenta de quien deja de trabajar en el programa o ya no debe entrar:</p>
+      <ul>
+        <li>ya no puede entrar, y se cierra su sesión en todos sus teléfonos;</li>
+        <li>sus registros siguen a su nombre y cuentan en las cifras;</li>
+        <li>lo que tenga sin enviar se queda en su teléfono; si la vuelve a activar, se envía cuando la persona entre otra vez.</li>
+      </ul>
+      <p>No pregunta: el aviso de abajo ofrece «Deshacer» unos segundos. Para volver a activarla después, use «Activar» en su tuerca. En la lista, una cuenta desactivada dice «Inactivo».</p>
+    </div>
+  </div>
+
+  <div class="con-captura">
+    <figure><img src="capturas/11-eliminar.png" alt="Confirmar eliminar una cuenta"><figcaption>Eliminar pide escribir el correo.</figcaption></figure>
+    <div>
+      <h3>Eliminar</h3>
+      <p>Eliminar es para una cuenta dada de alta por error: con el correo mal escrito, repetida o que nunca se usó. Sólo aparece si la cuenta no aparece en ningún árbol, jornada, cuenta ni catálogo, no coordina cabos y <b>nunca entró al sistema</b>.</p>
+      <p>Para confirmar se escribe el correo de la cuenta. <b>No se puede deshacer</b>; el Registro de cambios conserva la constancia.</p>
+      <p>Una cuenta que ya entró o que tiene registros no se elimina: se desactiva. La nota de la lista lo recuerda.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>6. Catálogos</h2>
+  <div class="con-captura">
+    <figure><img src="capturas/12-catalogos.png" alt="Catálogos, programas"><figcaption>Catálogos › Programas.</figcaption></figure>
+    <div>
+      <p>Los catálogos son las listas que se eligen al registrar. Son seis, uno por botón:</p>
+      <table>
+        <tr><td><b>Programas</b></td><td>El programa de cada jornada, y qué tipos de institución lo pueden elegir.</td></tr>
+        <tr><td><b>Áreas</b></td><td>Las áreas de la Secretaría, para sus cuentas.</td></tr>
+        <tr><td><b>Especies</b></td><td>El catálogo de especies del SIA, con su clave ESP-0000.</td></tr>
+        <tr><td><b>Vehículos</b></td><td>Placa, modelo y tipo; sólo para las jornadas de la Secretaría.</td></tr>
+        <tr><td><b>Instituciones</b></td><td>Las 16 alcaldías y las instituciones que usan el sistema.</td></tr>
+        <tr><td><b>Solicitantes</b></td><td>Quién pide una «Solicitud especial».</td></tr>
+      </table>
+      <p>Cada renglón dice cuántos árboles, jornadas o cuentas lo usan.</p>
+    </div>
+  </div>
+<h3>Agregar, editar, desactivar y eliminar</h3>
+  <ul>
+    <li><b>Agregar</b>: el botón «Agregar…» de cada catálogo. La clave la sugiere o la pone el sistema.</li>
+    <li><b>Editar</b>: toque el renglón.</li>
+    <li><b>Desactivar</b>, en la tuerca: el valor deja de ofrecerse en los formularios, y los registros que ya lo usan no cambian. El aviso ofrece «Deshacer».</li>
+    <li><b>Eliminar</b>, en la tuerca: sólo lo que nada usa. Pide escribir ELIMINAR y no se deshace. <b>Lo que se usa no se elimina: se desactiva.</b></li>
+  </ul>
+  <p>Los teléfonos reciben los catálogos al entrar y cada vez que abren la aplicación con señal.</p>
+
+  <div class="con-captura">
+    <figure><img src="capturas/13-programa.png" alt="Editar un programa"><figcaption>Editar un programa.</figcaption></figure>
+    <div>
+      <h3>Programas: quién puede usarlo</h3>
+      <p>La Secretaría puede usar todos los programas. En «Quién puede usarlo» se marcan los tipos de institución que también pueden elegirlo: alcaldía, Gobierno de la CDMX, empresa privada u organización civil. Sin ninguno marcado, el programa es sólo de la Secretaría.</p>
+      <p>La clave de un programa se sugiere a partir del nombre y se puede cambiar al darlo de alta; después ya no.</p>
+    </div>
+  </div>
+
+  <div class="con-captura">
+    <figure><img src="capturas/14-instituciones.png" alt="Catálogo de instituciones"><figcaption>Catálogos › Instituciones.</figcaption></figure>
+    <div>
+      <h3>Instituciones</h3>
+      <ul>
+        <li><b>Las 16 alcaldías ya están dadas de alta.</b> Se activan cuando empiezan a usar el sistema, y no se renombran.</li>
+        <li>Las dependencias de gobierno, las empresas y las organizaciones civiles se agregan a solicitud, con «Agregar institución». Después ya se pueden elegir al dar de alta una cuenta.</li>
+        <li><b>Desactivar una institución corta el acceso de todas sus cuentas.</b> Sus registros se conservan.</li>
+        <li>La Secretaría no se desactiva: sus cuentas administran el sistema.</li>
+      </ul>
+      <h3>Especies y vehículos</h3>
+      <p>Una especie nueva toma la clave ESP siguiente, con su nombre común y científico, distribución, paleta vegetal y fruto comestible. Si la especie viene del catálogo del SIA, use sus mismos datos. Un vehículo se da de alta con su placa, de 4 a 12 letras y números, su modelo y su tipo.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>7. Parámetros</h2>
+  <div class="con-captura">
+    <figure><img src="capturas/15-parametros.png" alt="Parámetros"><figcaption>Configuración › Parámetros.</figcaption></figure>
+    <div>
+      <p>Los parámetros son los valores con que el sistema revisa y avisa. <b>Son iguales para todos los teléfonos</b>, y cada teléfono recibe un cambio la próxima vez que se conecta. Están en cuatro grupos:</p>
+      <ul>
+        <li><b>Revisión de jornadas</b>: puntos duplicados, punto lejos de la jornada y sitios separados.</li>
+        <li><b>Ubicación y GPS</b>: precisión buena, precisión aceptable, margen del límite de la Ciudad y espera del GPS.</li>
+        <li><b>Envío</b>: la hora desde la que lo no enviado se avisa como atraso, y cada cuánto se reintenta el envío.</li>
+        <li><b>Fotografías y listas</b>: el tamaño máximo de la fotografía y los renglones por página.</li>
+      </ul>
+      <p>Cada valor explica para qué sirve. El que no es el de arranque dice cuándo y quién lo cambió.</p>
+    </div>
+  </div>
+  <div class="con-captura">
+    <figure><img src="capturas/16-parametro.png" alt="Editar un parámetro"><figcaption>Editar un parámetro.</figcaption></figure>
+    <div>
+      <h3>Cambiar un valor</h3>
+      <ol>
+        <li>Toque «Editar» junto al valor.</li>
+        <li>Escriba el nuevo. La ventana dice el rango permitido y el valor de arranque.</li>
+        <li>Toque «Guardar». El cambio queda en el Registro de cambios.</li>
+      </ol>
+      <div class="cuidado">Cambie un parámetro sólo con un motivo claro, y anote por qué. Un valor muy chico o muy grande cambia los avisos que reciben todas las cuadrillas.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>8. Posibles duplicados</h2>
+  <div class="con-captura">
+    <figure><img src="capturas/17-duplicados.png" alt="Una pareja de posibles duplicados"><figcaption>Una pareja, con su mapa.</figcaption></figure>
+    <div>
+      <p>Al recibir un árbol, el servidor busca otro de la <b>misma especie</b>, de <b>otra institución</b>, más cerca que la suma de la precisión de los dos GPS. Nunca usa menos que el parámetro «Puntos duplicados». Puede ser el mismo árbol contado dos veces.</p>
+      <p>El árbol se recibe igual y la pareja llega a esta bandeja. <b>Ninguna de las dos instituciones ve la marca</b>: sólo la Administración global.</p>
+      <p>La tarjeta de Configuración dice cuántas parejas hay por revisar. Cada pareja enseña:</p>
+      <ul>
+        <li>a cuántos metros están y la precisión de los dos;</li>
+        <li>un mapa: en <b>ámbar</b> el árbol que llegó después; en <b>azul</b> el que ya estaba;</li>
+        <li>los datos de los dos: especie, folio, institución, quién lo registró, jornada, fecha, ubicación y colonia;</li>
+        <li>«Abrir en Registros», para ver cada árbol completo, con su fotografía.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="con-captura">
+    <figure><img src="capturas/17b-duplicados-decidir.png" alt="Botones para decidir"><figcaption>Abajo de cada pareja, los botones para decidir.</figcaption></figure>
+    <div>
+      <h3>Decidir</h3>
+      <ul>
+        <li><b>«Son distintos»</b>: la pareja queda revisada y no se vuelve a presentar.</li>
+        <li><b>«Es el mismo árbol»</b>: la pareja queda revisada. <b>Después elimine uno de los dos</b> en Registros: ábralo con «Abrir en Registros», y en su tuerca, «Eliminar». La bandeja no elimina nada sola.</li>
+      </ul>
+      <p>«Mostrar» cambia entre las parejas por revisar, las revisadas, que dicen quién decidió y qué, y todas. Si uno de los dos árboles se elimina, la pareja deja de estar pendiente.</p>
+      <p>La carga masiva del histórico no pasa por esta bandeja.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>9. Carga masiva</h2>
+  <p>Sirve para subir de una vez los árboles plantados <b>antes</b> de usar el sistema. Para lo que se planta de ahora en adelante, las cuadrillas registran en campo.</p>
+  <div class="con-captura">
+    <figure><img src="capturas/18-carga-revision.png" alt="Revisión del archivo"><figcaption>La revisión de un archivo de cuatro árboles.</figcaption></figure>
+    <div>
+      <h3>1. La plantilla</h3>
+      <p>«Descargar plantilla» baja un Excel con las columnas, las instrucciones y las listas válidas de especies, programas e instituciones. Cada renglón es un árbol con:</p>
+      <ul>
+        <li>latitud y longitud, en grados decimales con punto;</li>
+        <li>nombre científico, como en el catálogo de especies;</li>
+        <li>fecha de plantación;</li>
+        <li>programa, tipo de institución e institución.</li>
+      </ul>
+      <p>Hasta 20,000 renglones por archivo. Si son más, divídalos en varios archivos.</p>
+      <h3>2. El archivo y su revisión</h3>
+      <p>En «Archivo», elija el Excel o un CSV. Se revisa en el mismo equipo, renglón por renglón, y <b>nada se guarda hasta que usted confirme</b>. La revisión dice:</p>
+      <ul>
+        <li>cuántos árboles están listos para cargar;</li>
+        <li>cuántos renglones tienen error, que no se cargan, y por qué. «Descargar renglones con problemas» los baja para corregirlos;</li>
+        <li>cuántas jornadas se van a formar.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="con-captura">
+    <figure><img src="capturas/19-carga-confirmar.png" alt="Confirmar la carga"><figcaption>La confirmación antes de cargar.</figcaption></figure>
+    <div>
+      <h3>Qué cuenta como error</h3>
+      <ul>
+        <li>Un punto fuera de la Ciudad.</li>
+        <li>Una especie, un programa o una institución que no está en los catálogos.</li>
+        <li>Una fecha que no es válida o es posterior a hoy.</li>
+        <li>Un renglón repetido en el archivo.</li>
+        <li>Un árbol que ya está en el sistema, con el mismo punto, especie, fecha e institución. Pasa al subir dos veces el mismo archivo.</li>
+      </ul>
+      <h3>3. Cargar</h3>
+      <p>Toque «Cargar N árboles» y confirme. El archivo sube al servidor por partes, y el botón dice «Subiendo tanda N de M…». <b>No cierre la página hasta que termine.</b> Nada se ve hasta que llega completo.</p>
+      <p>Los árboles quedan a su nombre, en <b>jornadas cerradas marcadas como carga histórica</b>: una por institución, fecha, programa y alcaldía. Cada árbol recibe su folio y su ubicación como cualquier otro.</p>
+    </div>
+  </div>
+  <div class="con-captura">
+    <figure><img src="capturas/20-cargas-hechas.png" alt="Cargas hechas"><figcaption>«Cargas hechas», con «Deshacer carga».</figcaption></figure>
+    <div>
+      <h3>4. Cargas hechas y «Deshacer carga»</h3>
+      <p>Abajo, «Cargas hechas» lista cada carga: archivo, cuántos árboles y jornadas, quién y cuándo.</p>
+      <p>Si se cargó el archivo equivocado, <b>«Deshacer carga»</b> (pide escribir DESHACER):</p>
+      <ul>
+        <li>quita sus árboles de la vista y de las cifras;</li>
+        <li>el Registro de cambios conserva la carga y que se deshizo;</li>
+        <li>el archivo correcto, o el mismo ya corregido, se puede volver a cargar.</li>
+      </ul>
+      <div class="nota">Si se va la conexión a media carga, no se ve nada de ella. Quite en «Cargas hechas» la carga que quedó sin terminar y vuelva a cargar el archivo.</div>
+    </div>
+  </div>
+<figure style="width: 58mm; margin: 0 auto;"><img src="capturas/21-deshacer.png" alt="Confirmar deshacer una carga"><figcaption>Deshacer pide escribir DESHACER y no se deshace.</figcaption></figure>
+</section>
+
+<section>
+  <h2>10. Registro de cambios</h2>
+  <div class="con-captura">
+    <figure><img src="capturas/22-cambios.png" alt="Registro de cambios"><figcaption>El Registro de cambios.</figcaption></figure>
+    <div>
+      <p>Configuración › Registro de cambios lista, de lo más reciente a lo más antiguo:</p>
+      <ul>
+        <li>las altas, ediciones, activaciones, desactivaciones y eliminaciones de cuentas y catálogos;</li>
+        <li>los cambios de parámetros;</li>
+        <li>las cargas masivas y las que se deshicieron.</li>
+      </ul>
+      <p>Cada renglón dice qué pasó, quién lo hizo, con su perfil, y cuándo. Se puede filtrar por tipo de cambio y por persona. <b>Nadie lo puede modificar</b>, ni siquiera la Administración.</p>
+      <p>Lo que se le hace a cada árbol, como el alta, el folio, las ediciones o la eliminación, está en su propio historial, en el detalle del árbol en Registros.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>11. Supervisión, Jornadas y Registros</h2>
+  <div class="con-captura">
+    <figure><img src="capturas/23-registros.png" alt="Registros"><figcaption>Registros: todo lo de la Ciudad.</figcaption></figure>
+    <div>
+      <p>La Administración global ve todo lo de la Ciudad en las otras tres pestañas, como la dirección:</p>
+      <ul>
+        <li><b>Supervisión</b>: el avance y las cifras de la Ciudad.</li>
+        <li><b>Jornadas</b>: cada jornada con sus árboles, su reporte y sus datos de cierre.</li>
+        <li><b>Registros</b>: cada árbol, con filtros, su ficha, su fotografía y su historial.</li>
+      </ul>
+      <p>Además puede <b>editar y eliminar</b> cualquier registro, editar cualquier jornada y eliminar las jornadas vacías. Un árbol eliminado no se borra: se marca y se puede restaurar.</p>
+      <p>Si un cabo tiene cambios que el servidor no aceptó, su teléfono se lo dice con una franja y el botón «Revisar». Ahí decide qué hacer con cada uno: enviarlo otra vez, quedarse con lo del servidor, corregirlo, eliminarlo o descartarlo.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>12. Qué hacer si…</h2>
+  <table>
+    <tr><th style="width: 70mm">Si…</th><th>Qué hacer</th></tr>
+    <tr><td>Alguien olvidó su contraseña, se bloqueó o le venció la temporal</td><td>Usuarios › tuerca de su cuenta › «Restablecer contraseña», y désele la temporal nueva en persona o por teléfono.</td></tr>
+    <tr><td>Usted olvidó su contraseña</td><td>Pídale a otra Administración global que se la restablezca. Si no hay otra, al SIA.</td></tr>
+    <tr><td>Alguien deja de trabajar en el programa</td><td>Desactive su cuenta. Sus registros se conservan.</td></tr>
+    <tr><td>Una cuenta se dio de alta con el correo mal escrito</td><td>Si nunca entró, elimínela y dé de alta otra con el correo correcto. Si ya entró, desactívela y dé de alta otra.</td></tr>
+    <tr><td>Una institución nueva pide cuentas</td><td>Catálogos › Instituciones › «Agregar institución»; después, Usuarios › «Dar de alta».</td></tr>
+    <tr><td>Una alcaldía empieza a usar el sistema</td><td>Catálogos › Instituciones: actívela; después dé de alta sus cuentas.</td></tr>
+    <tr><td>Un cabo cambia de coordinador</td><td>Edite la cuenta del cabo y marque su nuevo coordinador.</td></tr>
+    <tr><td>Un coordinador cambia de institución</td><td>Primero asigne sus cabos a otra persona, editando cada cabo; después edite su institución.</td></tr>
+    <tr><td>Una institución deja de participar</td><td>Desactívela en Catálogos › Instituciones: ninguna de sus cuentas podrá entrar.</td></tr>
+    <tr><td>Un programa, especie o vehículo ya no se usa</td><td>Desactívelo: deja de ofrecerse y lo registrado no cambia.</td></tr>
+    <tr><td>Hay parejas en «Posibles duplicados»</td><td>Revíselas (sección 8). Si son el mismo árbol, elimine uno.</td></tr>
+    <tr><td>Se cargó un archivo equivocado</td><td>«Deshacer carga» en Configuración › Carga masiva, y vuelva a cargar el correcto.</td></tr>
+    <tr><td>No hay conexión</td><td>Configuración se consulta pero no cambia. Vuelva a intentar con señal.</td></tr>
+    <tr><td>El sistema no abre para nadie, o algo dice que avise a la Administración</td><td>Avise al SIA con la versión que dice «Acerca del sistema» y lo que aparece en la pantalla.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>13. Buenas prácticas</h2>
+  <ul>
+    <li><b>Tenga siempre al menos dos cuentas de Administración global activas.</b></li>
+    <li>Entregue cada contraseña temporal en persona o por teléfono, nunca por correo ni por escrito, y pida que la cambien el mismo día.</li>
+    <li>Desactive la cuenta de quien deja el programa en cuanto se vaya.</li>
+    <li>Revise el correo antes de guardar un alta: no se puede cambiar.</li>
+    <li>Cierre sesión en las computadoras que comparte con otras personas.</li>
+    <li>Prefiera desactivar a eliminar: desactivar se deshace.</li>
+    <li>Revise la bandeja de posibles duplicados con regularidad.</li>
+    <li>Antes de una carga masiva grande, pruebe con un archivo pequeño.</li>
+  </ul>
+</section>
+
+</body>
+</html>
