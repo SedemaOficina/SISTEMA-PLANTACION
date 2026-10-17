@@ -20,6 +20,8 @@ CREATE TABLE srp.fotografias (
 );
 CREATE INDEX fotografias_plantacion_id ON srp.fotografias (plantacion_id);
 CREATE INDEX fotografias_recibida_en ON srp.fotografias (recibida_en);
+-- Al llegar una fotografía se busca su árbol por el foto_id
+CREATE INDEX plantaciones_foto_id ON srp.plantaciones (foto_id) WHERE foto_id IS NOT NULL;
 COMMENT ON TABLE srp.fotografias IS 'El registro de cada fotografía recibida; el archivo vive fuera de la base, en la carpeta del SRP, y se respalda aparte.';
 COMMENT ON COLUMN srp.fotografias.id IS 'El foto_id del árbol, y el nombre de su archivo.';
 COMMENT ON COLUMN srp.fotografias.sha256 IS 'La huella del archivo: un reenvío con la misma huella es la misma fotografía.';

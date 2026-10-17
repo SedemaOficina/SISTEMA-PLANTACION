@@ -33,6 +33,7 @@ async function revisarArbol(c: pg.PoolClient, v: Record<string, unknown>, especi
       errores.push(["especie_id", "Elija una especie de la lista o la opción «Otra especie»."]);
     }
   } else if (!v.especie_otra) errores.push(["especie_id", "Elija una especie de la lista o la opción «Otra especie»."]);
+  else if (String(v.especie_otra).length > 120) errores.push(["especie_id", "El nombre de la especie lleva hasta 120 caracteres."]);
   if (String(v.comentarios ?? "").length > 500) errores.push(["comentarios", "Los comentarios llevan hasta 500 caracteres."]);
   return { errores, punto, territorio };
 }
@@ -136,7 +137,8 @@ const TERRITORIO = ["alcaldia", "colonia", "uga", "capa_version"];
 const igual = (a: unknown, b: unknown) => (a ?? null) === (b ?? null) || ((a ?? "") === "" && (b ?? "") === "");
 
 /* EDICIÓN. Llegan sólo los campos que cambiaron, en `cambios`, y se aplican sobre lo vigente. El territorio se
-   vuelve a calcular con las capas vigentes; el folio no cambia. */
+   vuelve a calcular con las capas vigentes; el folio no cambia. Un árbol que quedó PROVISIONAL porque su
+   territorio no se pudo ubicar recibe aquí su folio, si ahora sí se puede. */
 export async function editarArbol(c: pg.PoolClient, u: Usuario, d: Record<string, unknown>): Promise<Resultado> {
   const leido = await arbolParaCambiar(c, d);
   if (esResultado(leido)) return leido;
@@ -168,7 +170,7 @@ export async function editarArbol(c: pg.PoolClient, u: Usuario, d: Record<string
   if (errores.length) return conVigente(rechazo(id, "DATOS_INVALIDOS", "Revise los datos del árbol.", ordenar(errores)), actual);
 
   const p = punto as Punto, t = territorio as Territorio;
-  const fila = (await c.query<{ fila: Fila }>(
+  let fila = (await c.query<{ fila: Fila }>(
     `UPDATE srp.plantaciones SET lat = $2, lng = $3, punto_origen = $4, gps_precision_m = $5, especie_id = $6, especie_otra = $7,
         fecha_plantacion = $8, comentarios = $9, foto_id = $10, programa_id = $11, alcaldia_cve = $12, alcaldia = $13, colonia_cve = $14,
         colonia = $15, uga = $16, uga_borde_m = $17, capa_version = $18, editado_por_id = $19, fecha_ultima_edicion = ${AHORA}
@@ -186,6 +188,8 @@ export async function editarArbol(c: pg.PoolClient, u: Usuario, d: Record<string
     territorio2.length ? "Territorio recalculado: " + territorio2.map((k) => (k === "capa_version" ? "capas " + (fila[k] || "—") : k + " " + (actual[k] || "—") + " → " + (fila[k] || "—"))).join("; ") : "",
   ].filter(Boolean).join(". ");
   await anotarCambio(c, u, "EDITADO", "plantacion", id, detalle || "Sin cambios en los datos");
+  const folio = fila.folio ? null : await asignarFolio(c, u, fila);
+  if (folio && "folio" in folio) fila = { ...fila, folio: folio.folio };
   // Corregir el punto es lo único que vuelve a calcular la prioridad de su colonia
   if (punto2) await congelarPrioridad(c, "plantaciones", id, fila.lat, fila.lng);
   const otras = detalle ? await caducarReporte(c, u, fila.jornada_id, "se editó un árbol") : [];

@@ -8,7 +8,8 @@ import { conectar, limpiar } from './apoyo.js';
 // El módulo compilado, tal como corre (npm test compila antes de probar)
 import { leerConfig, crearGrupo, crearApp, derivar } from '../dist/independiente.js';
 
-const config = leerConfig({ SRP_COOKIE_SEGURA: 'no', SRP_INTENTOS_MAXIMOS: '3', SRP_BLOQUEO_MINUTOS: '15' });
+// El límite por procedencia se prueba aparte, con su propio servicio: aquí todas las peticiones vienen del mismo equipo
+const config = leerConfig({ SRP_COOKIE_SEGURA: 'no', SRP_INTENTOS_MAXIMOS: '3', SRP_BLOQUEO_MINUTOS: '15', SRP_INTENTOS_POR_PROCEDENCIA: '0' });
 const ADMIN = { id: crypto.randomUUID(), correo: 'admin.prueba.' + Date.now() + '@ejemplo.local', clave: 'Clave de prueba 2026' };
 let admin, grupo, servidor, base;
 
@@ -328,4 +329,55 @@ test('eliminar una cuenta sólo si no aparece en nada; una que ya entró se desa
   assert.equal((await cabo.pedir('PUT', '/cuentas/' + nueva.id, {})).datos.codigo, 'SIN_PERMISO');
   assert.equal((await cabo.pedir('DELETE', '/cuentas/' + entro.datos.usuario.id)).datos.codigo, 'SIN_PERMISO');
   assert.equal((await cabo.pedir('GET', '/cuentas/usos')).datos.codigo, 'SIN_PERMISO');
+});
+
+test('las entradas fallidas de una misma dirección se cuentan: pasado el tope, esa dirección espera sin que se verifique nada', async () => {
+  const conTope = crearApp({ pool: grupo, config: leerConfig({ SRP_COOKIE_SEGURA: 'no', SRP_INTENTOS_POR_PROCEDENCIA: '3' }), proxy: 0 }).listen(0);
+  await new Promise((r) => conTope.once('listening', r));
+  const en = 'http://127.0.0.1:' + conTope.address().port + config.ruta;
+  // El servidor de pruebas es un intermediario propio: la dirección de la persona es la que reenvía
+  const entrar = (ip, correo, contrasena) => fetch(en + '/acceso/entrar', { method: 'POST', headers: { 'content-type': 'application/json', 'x-forwarded-for': ip },
+    body: JSON.stringify({ correo, contrasena }) }).then(async (r) => [r.status, (await r.json()).codigo]);
+  const azar = () => crypto.randomInt(1, 255);
+  const A = '203.0.113.' + azar(), B = '198.51.100.' + azar();
+  try {
+    // Entrar bien no cuenta
+    assert.deepEqual(await entrar(A, ADMIN.correo, ADMIN.clave), [200, undefined]);
+    // Tres fallidas, con correos que no existen y con una contraseña mala
+    assert.deepEqual(await entrar(A, 'nadie.prueba.' + Date.now() + '@ejemplo.local', 'Cualquiera 2026'), [401, 'INCORRECTO']);
+    assert.deepEqual(await entrar(A, 'otro.prueba.' + Date.now() + '@ejemplo.local', 'Cualquiera 2026'), [401, 'INCORRECTO']);
+    assert.deepEqual(await entrar(A, ADMIN.correo, 'Equivocada 2026'), [401, 'INCORRECTO']);
+    // Desde esa dirección ya no se verifica nada, ni la contraseña buena; desde otra, sí
+    assert.deepEqual(await entrar(A, ADMIN.correo, ADMIN.clave), [429, 'DEMASIADOS_INTENTOS']);
+    assert.deepEqual(await entrar(B, ADMIN.correo, ADMIN.clave), [200, undefined]);
+    const filas = (await admin.query('SELECT host(ip) AS ip, evento FROM srp.bitacora_acceso WHERE ip = $1::inet ORDER BY id', [A])).rows;
+    assert.deepEqual(filas.map((f) => f.evento), ['ENTRADA', 'ENTRADA_FALLIDA', 'ENTRADA_FALLIDA', 'ENTRADA_FALLIDA'], 'la que espera no se anota');
+  } finally {
+    conTope.close();
+  }
+});
+
+test('la contraseña actual también tiene tope al cambiarla: cuenta como un intento de entrar', async () => {
+  const a = cliente();
+  await a.pedir('POST', '/acceso/entrar', { correo: ADMIN.correo, contrasena: ADMIN.clave });
+  const correo = 'cabo.prueba.actual.' + Date.now() + '@ejemplo.local';
+  const alta = (await a.pedir('POST', '/cuentas', { correo, nombre_completo: 'Cabo Prueba Actual', organizacion_id: 'o-prueba-acceso', cargo_rol: 'Cabo', perfil: 'CABO' })).datos;
+  const c = cliente();
+  await c.pedir('POST', '/acceso/entrar', { correo, contrasena: alta.temporal });
+  const cambiar = async (actual, nueva = 'Nueva clave 2026') => (await c.pedir('POST', '/acceso/contrasena', { actual, nueva })).datos.codigo ?? 'ok';
+  // Dos malas; una buena, aunque la nueva no sirva, vuelve a contar desde cero
+  assert.deepEqual([await cambiar('Mala 1'), await cambiar('Mala 2'), await cambiar(alta.temporal, 'corta')], ['ACTUAL_INCORRECTA', 'ACTUAL_INCORRECTA', 'NUEVA_INVALIDA']);
+  assert.deepEqual([await cambiar('Mala 3'), await cambiar('Mala 4'), await cambiar(alta.temporal)], ['ACTUAL_INCORRECTA', 'ACTUAL_INCORRECTA', 'ok']);
+  // Con la propia: la tercera mala bloquea la cuenta; después, ni la buena, ni para entrar
+  assert.deepEqual([await cambiar('Mala 5'), await cambiar('Mala 6'), await cambiar('Mala 7')], ['ACTUAL_INCORRECTA', 'ACTUAL_INCORRECTA', 'ACTUAL_INCORRECTA']);
+  const r = await c.pedir('POST', '/acceso/contrasena', { actual: 'Nueva clave 2026', nueva: 'Otra clave 2026' });
+  assert.deepEqual([r.estado, r.datos.codigo, r.datos.mensaje], [429, 'DEMASIADOS_INTENTOS', 'Hubo demasiados intentos con la contraseña actual. Espere 15 minutos e intente de nuevo.']);
+  assert.equal((await cliente().pedir('POST', '/acceso/entrar', { correo, contrasena: 'Nueva clave 2026' })).estado, 401);
+  const eventos = (await admin.query('SELECT evento FROM srp.bitacora_acceso WHERE usuario_id = $1 ORDER BY id', [alta.usuario.id])).rows.map((f) => f.evento);
+  assert.deepEqual(eventos, ['ENTRADA', 'CONTRASENA_CAMBIADA', 'BLOQUEO', 'ENTRADA_FALLIDA'], 'el intento que bloquea, y el de entrar con la cuenta bloqueada');
+});
+
+test('un valor de configuración mal escrito no detiene el servicio: se usa el de arranque', () => {
+  const c = leerConfig({ SRP_TEMPORAL_HORAS: '72 horas', SRP_INTENTOS_MAXIMOS: '-1', SRP_BLOQUEO_MINUTOS: '30' });
+  assert.deepEqual([c.acceso.temporalHoras, c.acceso.intentosMaximos, c.acceso.bloqueoMinutos, c.acceso.intentosPorProcedencia], [72, 5, 30, 30]);
 });

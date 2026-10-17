@@ -83,8 +83,8 @@ cuentas viven en `srp`; altas, bajas y restablecimientos los hace la Administrac
    - y, en el bloque 211, los seis catálogos, que administra la Administración global con las reglas de
      la aplicación.
 
-   Falta el límite por procedencia (6.2), cuando el SIA corrija su módulo común, y la edición de cuentas,
-   que espera la decisión 3.
+   El límite por procedencia (6.2) quedó hecho en el bloque 233, cuando el SIA corrigió su módulo común; la
+   edición de cuentas, en el 232.
 4. **La recepción como la hace el SIA.** En curso. Hecho en el bloque 212: la recepción de jornadas y
    árboles nuevos, por envíos de hasta 100 operaciones, cada una de mucho menos de un minuto (6.3).
    - El punto se vuelve a ubicar y el folio se asigna en la misma transacción que recibe el árbol, con
@@ -135,8 +135,8 @@ equipo, aplican igual al SRP:
 | # | Lo que pide el SIA | El SRP hoy | Cuándo |
 |---|---|---|---|
 | 1 | Un mismo 401, con el mismo mensaje y el mismo tiempo, si el correo no existe, la cuenta está inactiva o bloqueada o la contraseña es mala: si no, se averigua qué correos tienen cuenta | Así responde: 401 con el mismo mensaje, verificando la contraseña también en la cuenta bloqueada o desactivada. Sólo a quien escribió la contraseña correcta se le dice que su temporal venció | **Hecho** (bloque 206) |
-| 2 | Límite de intentos por procedencia: contar sólo los fallidos, y tomar la dirección de la persona descartando los saltos conocidos, no la última de `X-Forwarded-For`, que es el intermediario y es la misma para todos. El SIA lo corrige en su módulo común (`src/comun/procedencia.ts`): se importa de ahí, no se copia | Sin límite por procedencia; el bloqueo por cuenta cuenta sólo los fallidos y anota el intento antes de verificar. Los saltos conocidos, en 2 (`SRP_PROXY`) | Fase 3, con `procedencia.ts` del SIA: hoy todavía toma la última entrada; el SIA la corrige ahí |
-| 3 | Cada petición termina en menos de un minuto: el servidor web corta la API después. Una alta masiva de cuentas con un hash lento perdía las contraseñas temporales | Carga masiva de hasta 20,000 árboles por archivo; envío de jornadas | Fase 4: por tandas |
+| 2 | Límite de intentos por procedencia: contar sólo los fallidos, y tomar la dirección de la persona descartando los saltos conocidos, no la última de `X-Forwarded-For`, que es el intermediario y es la misma para todos. El SIA lo corrige en su módulo común (`src/comun/procedencia.ts`): se importa de ahí, no se copia | Las entradas fallidas se cuentan por dirección, con la de `procedencia.ts` del SIA, que ya salta sus intermediarios: pasadas 30 en 15 minutos (`SRP_INTENTOS_POR_PROCEDENCIA`), esa dirección espera (429) sin que se verifique nada. El bloqueo por cuenta sigue igual | **Hecho** (bloque 233) |
+| 3 | Cada petición termina en menos de un minuto: el servidor web corta la API después. Una alta masiva de cuentas con un hash lento perdía las contraseñas temporales | La carga masiva va por tandas de 300 árboles (5,000 en 14 s) y el envío, por lotes de hasta 100 operaciones; en la base, cada consulta de `srp_api` se cancela a los 50 s | **Hecho** (bloques 229 y 233) |
 | 4 | El hash de contraseñas con los parámetros de `acceso` (scrypt N=2^14): con 2^17, diez accesos simultáneos ocupaban 1.3 GB de una memoria que comparten todos los módulos | Igual que `acceso`: `scrypt$16384$8$1$sal$derivada` en base64url, sal de 16 bytes, 64 de derivada, texto en NFKC. Las guardadas antes siguen verificando | **Hecho** (bloque 206) |
 | 5 | La cookie con su ruta acotada, nunca `/`: con `/` viaja a todas las aplicaciones del dominio | `Path=/api/srp` | Bien |
 | 6 | Sesiones propias de cada aplicación: con una tabla común, «cerrar sesiones» cierra también las de otra | Tabla propia, `srp.sesiones` | Bien |

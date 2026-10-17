@@ -3898,3 +3898,21 @@
   · El texto aprobado decía que la temporal «sirve una sola vez»; en realidad sirve hasta que la persona
     escribe una propia o vence. La ventana dice sólo «Vence en 72 horas» (lo que diga el servicio).
   · Con datos de prueba nada cambia: no hay contraseñas, y no aparece «Restablecer contraseña».
+
+- **D313. La revisión del servidor (bloque 233, versión 0.9.77).**
+  17-10-2026. Antes del manual y del paquete v1. El informe está en `docs/REVISION-SERVIDOR.md`: 13
+  hallazgos, ninguno crítico ni alto; los de severidad media, corregidos.
+  · **Límite por procedencia**, lo que el SIA pide en todo paquete: pasadas 30 entradas fallidas desde una
+    dirección en 15 minutos, esa dirección espera sin que se verifique nada. Esperaba a que el SIA corrigiera
+    su módulo común de procedencia, y ya lo corrigió. Si un día diera la misma dirección para todos,
+    `SRP_INTENTOS_POR_PROCEDENCIA=0` apaga el límite.
+  · **La contraseña actual**, al cambiarla, cuenta como un intento de entrar: ya no se puede adivinar con
+    una sesión abierta.
+  · **En la base**, `srp_api` ya no puede borrar árboles, contraseñas ni sesiones, que el servicio nunca
+    borra, y cada consulta suya se cancela a los 50 segundos.
+  · **Integridad**: los textos llevan en el servidor los largos del formulario; dos envíos de la misma
+    fotografía van uno a la vez; un árbol PROVISIONAL recibe su folio al editarlo, si ya se puede ubicar.
+  · **Rendimiento**: dos índices. Lo más lento que trae un teléfono al entrar, todos los árboles para la
+    Administración, tarda 0.3 s con los 17,479 de la base local.
+  · **Para el SIA**: el plazo de conservación del registro de entradas, con el aviso de privacidad.
+  · En la aplicación, los campos sin largo máximo lo tienen, y la entrada dice cuándo esperar.

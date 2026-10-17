@@ -320,6 +320,12 @@ def main():
             entrar(pg, CABO['correo'], CLAVE)
             ok(not dentro(pg) and 'hace falta conexión con el servidor' in pg.inner_text('#acceso-errores'), 'sin conexión con el servidor no se puede entrar la primera vez, y se dice')
             ctx.unroute('**/api/srp/**')
+            # Pasado el tope de entradas fallidas desde una conexión, el servicio pide esperar (lo prueba el servidor), y se dice
+            ctx.route('**/api/srp/acceso/entrar', lambda r: r.fulfill(status=429, content_type='application/json', body=json.dumps(
+                {'codigo': 'DEMASIADOS_INTENTOS', 'mensaje': 'Hubo demasiados intentos fallidos desde esta conexión. Espere 15 minutos e intente de nuevo.'})))
+            entrar(pg, CABO['correo'], CLAVE)
+            ok(not dentro(pg) and 'desde esta conexión. Espere 15 minutos' in pg.inner_text('#acceso-errores'), 'pasado el tope de entradas fallidas desde una conexión, se dice que espere')
+            ctx.unroute('**/api/srp/acceso/entrar')
             # Con una contraseña temporal, antes de entrar se escribe una propia
             entrar(pg, TEMPORAL['correo'], CLAVE)
             t = pg.evaluate("() => [document.getElementById('form-acceso').hidden, !document.getElementById('form-temporal').hidden, document.getElementById('temporal-quien').textContent]")

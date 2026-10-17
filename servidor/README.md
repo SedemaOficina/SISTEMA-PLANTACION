@@ -16,7 +16,7 @@ los permisos por perfil y el folio vienen en las fases siguientes.
 |---|---|
 | `src/modulos/srp/` | **El módulo**, lo único que viaja al SIA: se copia tal cual a `sia-backend/src/modulos/srp/`. `crearRutasSrp(pool)` da sus rutas; el backend central lo monta en `/api/srp` con su propia conexión, la de `SRP_DB_USER` y `SRP_DB_PASS` |
 | `src/independiente.ts` | El módulo fuera del SIA, para desarrollo y pruebas: la conexión local (con el archivo de contraseñas del equipo y, si se pide, asumiendo `srp_api`) y una aplicación que lo monta |
-| `src/comun/procedencia.ts` | Fuera del SIA, sustituye al módulo común de procedencia de `sia-backend`, que el módulo importa para su registro de entradas. No viaja: en el SIA se usa el suyo |
+| `src/comun/procedencia.ts` | Fuera del SIA, sustituye al módulo común de procedencia de `sia-backend`, que el módulo importa para su registro de entradas y su límite por procedencia, con el mismo criterio: la dirección es la primera que no es de un intermediario propio. No viaja: en el SIA se usa el suyo |
 | `src/iniciar.ts` | Arranca el módulo solo |
 | `deploy/srp-cuenta-inicial.mjs` | La primera Administración global: imprime el SQL del alta, sin dependencias |
 | `bd.js`, `cargar.js` | La conexión de quien administra la base local y la carga de datos |
@@ -71,8 +71,12 @@ de clave.
 ### Permisos de srp_api
 
 - Usa el esquema, pero no crea, altera ni borra tablas, ni dentro ni fuera de él.
-- Lee, agrega y cambia renglones de las tablas de datos, y borra sólo lo que el sistema permite borrar
-  (un valor de catálogo o una cuenta sin uso, un lote de carga masiva, las sesiones).
+- Lee, agrega y cambia renglones de las tablas de datos, y borra sólo lo que el sistema permite borrar: un
+  valor de catálogo o una cuenta sin uso, y una jornada sin árboles. Un árbol no se borra: se marca
+  eliminado; una sesión se cierra; un lote de carga masiva se marca deshecho. Al borrar una cuenta, la base
+  se lleva su contraseña y sus sesiones.
+- Cada consulta suya termina en 50 segundos o se cancela (`statement_timeout`): el servidor web corta la API
+  al minuto, y así nada sigue corriendo en la base después.
 - Lee y cambia los parámetros, y agrega registros de fotografías sin cambiarlos ni borrarlos.
 - Anota en la bandeja los posibles duplicados y los marca revisados; no los borra.
 - Avanza la secuencia de folios de cada celda y agrega folios; un folio emitido no lo cambia ni lo borra,
@@ -162,11 +166,16 @@ variables de entorno, está explicada en `src/modulos/srp/config.ts`. Las respue
   módulo `acceso` del SIA (`scrypt$16384$8$1$sal$derivada`, en base64url): si un día las cuentas se mudan
   a `acceso`, se copian sin pedir contraseñas nuevas. Al menos 10 caracteres, con letras y números, sin el
   correo. No hay servicio de correo: la Administración global
-  da una temporal de un solo uso (vale 72 horas) y la persona la cambia al primer acceso; mientras tanto
-  no puede hacer nada más.
+  da una temporal (vale 72 horas) que sólo sirve para entrar a escribir una propia; mientras tanto no se
+  puede hacer nada más.
 - **Bloqueo:** 5 intentos fallidos seguidos bloquean la cuenta 15 minutos, o hasta que la Administración
   restablezca la contraseña. Cada intento se anota en la base antes de verificar la contraseña, en un solo
-  paso: muchos intentos al mismo tiempo no pasan del máximo.
+  paso: muchos intentos al mismo tiempo no pasan del máximo. Escribir mal la contraseña actual al
+  cambiarla cuenta igual.
+- **Límite por procedencia:** las entradas fallidas también se cuentan por dirección. Pasadas 30 en 15
+  minutos, esa dirección recibe 429 («Hubo demasiados intentos fallidos desde esta conexión…») sin que se
+  verifique nada, y lo que espera no se anota. La dirección la da el módulo común de procedencia del SIA;
+  si un día diera la misma para todos, `SRP_INTENTOS_POR_PROCEDENCIA=0` apaga el límite.
 - **Toda entrada fallida responde igual**, con el mismo 401 y el mismo tiempo: el correo no existe, la
   cuenta o su institución están desactivadas, la cuenta está bloqueada o la contraseña es mala. Así lo hace
   `acceso`: si se distinguieran, se sabría qué correos tienen cuenta. Sólo a quien escribió la contraseña
@@ -187,8 +196,9 @@ variables de entorno, está explicada en `src/modulos/srp/config.ts`. Las respue
   de contraseña queda en `srp.bitacora_acceso`, con la procedencia y el navegador, como en `acceso.bitacora`
   del SIA. Un correo sin cuenta se anota tal como se intentó. La procedencia la da el módulo común del SIA.
 
-Los plazos, el largo mínimo y el bloqueo son parámetros (`src/modulos/srp/config.ts`): se cambian sin
-tocar código.
+Los plazos, el largo mínimo, el bloqueo y el límite por procedencia son variables de entorno
+(`src/modulos/srp/config.ts`): se cambian sin tocar código. Un valor mal escrito no detiene el backend: se
+usa el de arranque y se avisa en el registro del servidor.
 
 ### Catálogos
 
@@ -422,26 +432,29 @@ esa base y nunca sobre una instalación anterior.
 
 - `pruebas/esquema.test.js`: instala en limpio, comprueba que las tablas sean las del diccionario, que las
   reglas rechacen lo inválido y que `srp_api` tenga sólo sus permisos —`territorio` de sólo lectura,
-  nada directo fuera de `srp`—, que las bitácoras no se editen ni se vacíen, y que el guion de la primera
+  nada directo fuera de `srp`, sin borrar árboles, contraseñas ni sesiones, y con su tope de 50 segundos—,
+  que las bitácoras no se editen ni se vacíen, y que el guion de la primera
   cuenta dé una sola, con el resumen de la temporal que entrega; y destruye.
 - `pruebas/acceso.test.js`: levanta el servicio y lo usa como la aplicación: entrar, salir, alta con
   temporal, cambio obligatorio, bloqueo (también con intentos simultáneos), restablecimiento,
   desactivación, institución desactivada, vencimiento de la sesión y de la temporal, y el registro de
   entradas; editar una cuenta con las reglas del formulario, y eliminar sólo la que no aparece en nada (una
-  que ya entró, o que coordina a un cabo, no se elimina).
+  que ya entró, o que coordina a un cabo, no se elimina); el límite por procedencia; el tope a la
+  contraseña actual al cambiarla; y un valor de configuración mal escrito.
 - `pruebas/catalogos.test.js`: carga el editor de catálogos de la aplicación tal cual y compara su
   validación con la del servidor, caso por caso; luego da de alta, edita, activa, desactiva y elimina por
   las rutas, y revisa la bitácora y que lo que cuenta como uso sean las llaves foráneas de la base.
 - `pruebas/parametros.test.js`: compara los parámetros con `js/config.js` y con la pantalla de
   Parámetros, los cambia por su ruta y comprueba que la recepción use el margen del límite de la Ciudad.
 - `pruebas/fotografias.test.js`: sube y baja fotografías. Comprueba que lleguen después de su árbol y
-  de quien puede editarlo, que queden como archivo con su registro y su huella, que no se reemplacen,
-  quién las descarga, el uso de espacio, y qué pasa si falta el archivo o la carpeta.
+  de quien puede editarlo, que queden como archivo con su registro y su huella, que no se reemplacen, ni
+  aun con dos envíos al mismo tiempo, quién las descarga, el uso de espacio, y qué pasa si falta el archivo o la carpeta.
 - `pruebas/recepcion.test.js`: manda jornadas y árboles como el teléfono. Comprueba:
   - qué pone el servidor;
   - el folio por celda, aun con envíos simultáneos y en el tope de 99,999;
   - que reenviar no duplica;
-  - que cada regla rechaza con el mensaje de la aplicación, y que un folio no cambia;
+  - que cada regla rechaza con el mensaje de la aplicación, también el largo de cada texto, y que un folio
+    no cambia; un árbol PROVISIONAL recibe el suyo al editarlo;
   - editar, eliminar, restaurar, sustituir y mover, cada uno con su bitácora, el reporte que deja de estar
     vigente y el alcance de cada perfil;
   - editar la jornada y su efecto en los árboles, cerrarla, reabrirla, sus datos de cierre, el reporte, el

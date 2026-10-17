@@ -234,14 +234,19 @@ test('al llegar una celda a 99,999 deja de dar folios: el árbol se recibe y que
   const celda = (await ubicado()).uga;
   const antes = (await admin.query('SELECT ultimo FROM srp.folio_secuencias WHERE celda = $1', [celda])).rows[0].ultimo;
   await admin.query('UPDATE srp.folio_secuencias SET ultimo = 99999 WHERE celda = $1', [celda]);
+  let r;
   try {
-    const r = await t.una('registro.crear', arbol(J1.id));
+    r = await t.una('registro.crear', arbol(J1.id));
     assert.deepEqual([r.estado, r.fila.folio, r.aviso], ['recibido', null, 'La celda ' + celda + ' llegó al tope de 99,999 folios: el árbol queda PROVISIONAL hasta que el SIA decida cómo seguir.']);
     assert.equal((await admin.query('SELECT ultimo FROM srp.folio_secuencias WHERE celda = $1', [celda])).rows[0].ultimo, 99999);
   } finally {
     // Sólo en la base local: la celda vuelve a donde estaba
     await admin.query('UPDATE srp.folio_secuencias SET ultimo = $2 WHERE celda = $1', [celda, antes]);
   }
+  // Cuando la celda vuelve a dar folios, el árbol PROVISIONAL recibe el suyo al editarlo
+  const e = await t.una('registro.editar', { id: r.fila.id, version: r.version, cambios: { comentarios: 'Ya con folio' } });
+  assert.deepEqual([e.estado, e.fila.folio], ['recibido', celda + '-' + String(antes + 1).padStart(5, '0')]);
+  assert.deepEqual((await bitacora(r.fila.id)).map((b) => b[0]), ['CREADO', 'EDITADO', 'FOLIO_ASIGNADO']);
 });
 
 test('un folio emitido no cambia ni se borra, ni siquiera para quien administra la base', async () => {
@@ -257,6 +262,18 @@ test('un folio emitido no cambia ni se borra, ni siquiera para quien administra 
   try {
     await assert.rejects(admin.query('DELETE FROM srp.folios WHERE plantacion_id = $1', [A1.id]), /no se edita ni se borra/);
   } finally { await admin.query('ROLLBACK'); }
+});
+
+test('los textos llevan los largos del formulario de la aplicación', async () => {
+  const t = await telefono(CABO);
+  const larga = await t.una('jornada.crear', jornada({ nombre: 'n'.repeat(121), ubicacion: 'u'.repeat(201), comentarios: 'c'.repeat(501) }));
+  assert.deepEqual(larga.errores, [['nombre', 'El nombre lleva hasta 120 caracteres.'], ['ubicacion', 'La dirección lleva hasta 200 caracteres.'],
+    ['comentarios', 'Los comentarios llevan hasta 500 caracteres.']]);
+  const { J, A, version } = await conArbol(t);
+  assert.deepEqual((await t.una('registro.editar', { id: A.id, version, cambios: { especie_id: null, especie_otra: 'e'.repeat(121) } })).errores,
+    [['especie_id', 'El nombre de la especie lleva hasta 120 caracteres.']]);
+  assert.deepEqual((await t.una('jornada.editar', { id: J.id, version: J.fecha_inicio, cambios: { nombre: 'n'.repeat(121) } })).errores,
+    [['nombre', 'El nombre lleva hasta 120 caracteres.']]);
 });
 
 /* ---------- Lo que se le hace a un árbol que ya está en el servidor ---------- */

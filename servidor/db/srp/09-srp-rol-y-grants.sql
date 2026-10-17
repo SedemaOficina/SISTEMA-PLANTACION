@@ -12,7 +12,11 @@
 -- Lo que puede:
 --   · Usar el esquema srp, sin crear nada en él ni fuera de él.
 --   · Leer, agregar y cambiar renglones de las tablas de datos. Borra sólo lo que el sistema permite
---     borrar: un valor de catálogo o una cuenta sin uso, una jornada sin árboles, y las sesiones.
+--     borrar: un valor de catálogo o una cuenta sin uso, y una jornada sin árboles. Al borrar una cuenta,
+--     la base se lleva su contraseña y sus sesiones; la cuenta del servicio no las borra por su cuenta, y
+--     un árbol nunca se borra: se marca eliminado.
+--   · Cada consulta suya termina en 50 segundos o se cancela: el servidor web corta la API al minuto, y
+--     así nada sigue corriendo en la base después.
 --   · Registrar los lotes de carga masiva y marcarlos completos o deshechos; no los borra.
 --   · A las bitácoras (la de cambios y la de entradas), sólo leerlas y agregarles renglones.
 --   · Avanzar la secuencia de folios de cada celda y agregar folios; un folio emitido no lo cambia ni lo borra.
@@ -36,15 +40,16 @@ BEGIN
 END $$;
 
 ALTER ROLE srp_api SET search_path = srp, public;
+ALTER ROLE srp_api SET statement_timeout = '50s';
 
 REVOKE CREATE ON SCHEMA public FROM srp_api;
 
 GRANT USAGE ON SCHEMA srp TO srp_api;
 
+GRANT SELECT, INSERT, UPDATE ON srp.plantaciones, srp.credenciales, srp.sesiones TO srp_api;
 GRANT SELECT, INSERT, UPDATE, DELETE ON
-  srp.plantaciones, srp.jornadas, srp.usuarios,
-  srp.programas, srp.areas, srp.especies, srp.vehiculos, srp.instituciones, srp.solicitantes,
-  srp.credenciales, srp.sesiones
+  srp.jornadas, srp.usuarios,
+  srp.programas, srp.areas, srp.especies, srp.vehiculos, srp.instituciones, srp.solicitantes
 TO srp_api;
 
 GRANT SELECT, INSERT ON srp.bitacora, srp.bitacora_acceso TO srp_api;
@@ -90,6 +95,7 @@ ON CONFLICT (version) DO NOTHING;
       SELECT * FROM srp.derivar(19.4326, -99.1332);              -- Cuauhtémoc, su colonia y su celda
       SELECT has_table_privilege('srp.bitacora', 'INSERT');      -- t
       SELECT has_table_privilege('srp.bitacora_acceso', 'INSERT');  -- t
+      SHOW statement_timeout;                                    -- 50s
 
   Debe fallar (permiso denegado); si alguna pasa, la cuenta quedó abierta de más:
       UPDATE srp.bitacora SET detalle = 'x';
@@ -99,6 +105,8 @@ ON CONFLICT (version) DO NOTHING;
       DELETE FROM srp.fotografias;
       DELETE FROM srp.duplicados;
       DELETE FROM srp.cargas;
+      DELETE FROM srp.plantaciones;
+      DELETE FROM srp.sesiones;
       TRUNCATE srp.plantaciones;
       CREATE TABLE srp.otra (x int);
       CREATE TABLE public.otra (x int);

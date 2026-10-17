@@ -14,12 +14,12 @@
 <!-- Las peticiones al mapa no dicen desde qué sitio se hacen -->
 <meta name="referrer" content="no-referrer">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.9.76">
-<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.9.76" media="(max-width: 767px)">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=0.9.77">
+<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=0.9.77" media="(max-width: 767px)">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=0.9.76">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.9.76">
-<link rel="stylesheet" href="css/estilos.css?v=0.9.76">
+<link rel="stylesheet" href="vendor/leaflet.css?v=0.9.77">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=0.9.77">
+<link rel="stylesheet" href="css/estilos.css?v=0.9.77">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -34,8 +34,8 @@
   <div class="encabezado-interior">
     <!-- Logotipo: Gobierno CDMX · SEDEMA · SIA · Reforestación Urbana en pantalla ancha; en teléfono, SIA y Reforestación Urbana -->
     <picture>
-      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.9.76">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.9.76" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
+      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=0.9.77">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=0.9.77" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» -->
@@ -344,7 +344,7 @@
       </div>
       <div class="campo" id="caja-otra-especie" hidden>
         <label for="campo-otra-especie">Especifique la especie <span class="obligatorio" aria-hidden="true">*</span></label>
-        <input id="campo-otra-especie" spellcheck="false" autocorrect="off" autocapitalize="off">
+        <input id="campo-otra-especie" maxlength="120" spellcheck="false" autocorrect="off" autocapitalize="off">
       </div>
 
       <!-- El programa no se pide por árbol: es el de la jornada -->
@@ -1080,17 +1080,17 @@
 
     <!-- Personal participante y de apoyo: sólo en jornadas de la Secretaría; de otras instituciones no se piden -->
     <div class="campo" id="caja-cie-personal"><label for="cie-personal">Personal participante</label>
-      <textarea id="cie-personal" rows="2"></textarea></div>
+      <textarea id="cie-personal" rows="2" maxlength="2000"></textarea></div>
 
     <div class="campo" id="caja-cie-apoyo"><label for="cie-apoyo">Personal de apoyo</label>
-      <textarea id="cie-apoyo" rows="2"></textarea></div>
+      <textarea id="cie-apoyo" rows="2" maxlength="2000"></textarea></div>
 
     <div class="campo"><label for="cie-observaciones">Observaciones</label>
-      <textarea id="cie-observaciones" rows="2"></textarea></div>
+      <textarea id="cie-observaciones" rows="2" maxlength="2000"></textarea></div>
 
     <!-- Logística: Modelo y Placa en una fila también en teléfono; la hora con «Ahora» de un toque -->
     <!-- Chófer y vehículo: sólo en jornadas de la Secretaría; de otras instituciones no se piden -->
-    <div class="campo" id="caja-cie-chofer"><label for="cie-chofer">Chófer</label><input id="cie-chofer"></div>
+    <div class="campo" id="caja-cie-chofer"><label for="cie-chofer">Chófer</label><input id="cie-chofer" maxlength="120"></div>
     <!-- Vehículo del catálogo: se elige la placa y el modelo y el tipo se ponen solos. Arriba,
          los que más usa el encargado, a un toque. Sólo del catálogo: sin «Otro vehículo» -->
     <div class="campo campo-vehiculo" id="caja-cie-vehiculo">
@@ -1209,7 +1209,7 @@
     <div class="campo" id="caja-usr-area" hidden><label for="usr-area">Área <span class="obligatorio" aria-hidden="true">*</span></label><select id="usr-area"></select></div>
     <div class="campo"><label for="usr-nombre-completo">Nombre completo <span class="obligatorio" aria-hidden="true">*</span></label><input id="usr-nombre-completo" required maxlength="160" autocomplete="off" aria-describedby="usr-nombre-ayuda"><p id="usr-nombre-ayuda" class="nota">Nombre y apellidos, como aparecerán en los registros y reportes.</p></div>
     <div class="campo"><label for="usr-correo">Correo <span class="obligatorio" aria-hidden="true">*</span></label><input type="email" id="usr-correo" inputmode="email" autocapitalize="off" spellcheck="false" required aria-describedby="usr-correo-ayuda"><p id="usr-correo-ayuda" class="nota">Con él inicia sesión. No se puede cambiar después.</p></div>
-    <div class="campo"><label for="usr-cargo">Cargo <span class="obligatorio" aria-hidden="true">*</span></label><input id="usr-cargo" required placeholder="p. ej. Técnico de campo"></div>
+    <div class="campo"><label for="usr-cargo">Cargo <span class="obligatorio" aria-hidden="true">*</span></label><input id="usr-cargo" required maxlength="120" placeholder="p. ej. Técnico de campo"></div>
     <div class="campo"><label for="usr-perfil">Perfil de captura <span class="obligatorio" aria-hidden="true">*</span></label><select id="usr-perfil" required></select><p id="usr-perfil-ayuda" class="nota"></p></div>
     <!-- Un cabo puede tener más de un coordinador: se marcan los que correspondan -->
     <div class="campo" id="caja-usr-coordinador"><label for="usr-coordinadores" id="usr-coordinadores-etq">Coordinadores</label>
@@ -1251,63 +1251,63 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=0.9.76"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=0.9.76"></script>
-<script src="vendor/turf-pip.min.js?v=0.9.76"></script>
-<script src="vendor/jspdf.umd.min.js?v=0.9.76"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=0.9.76"></script>
+<script src="vendor/leaflet.js?v=0.9.77"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=0.9.77"></script>
+<script src="vendor/turf-pip.min.js?v=0.9.77"></script>
+<script src="vendor/jspdf.umd.min.js?v=0.9.77"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=0.9.77"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=0.9.76"></script>
-<script src="js/util.js?v=0.9.76"></script>
-<script src="js/filtros.js?v=0.9.76"></script>
-<script src="js/iconos.js?v=0.9.76"></script>
+<script src="js/config.js?v=0.9.77"></script>
+<script src="js/util.js?v=0.9.77"></script>
+<script src="js/filtros.js?v=0.9.77"></script>
+<script src="js/iconos.js?v=0.9.77"></script>
 <!-- Capas territoriales del SIA, compactadas por herramientas/generar_capas.py desde originales/ -->
-<script src="assets/capas/capa-alcaldias.js?v=0.9.76"></script>
-<script src="assets/capas/capa-uga.js?v=0.9.76"></script>
-<script src="assets/capas/capa-colonias.js?v=0.9.76"></script>
+<script src="assets/capas/capa-alcaldias.js?v=0.9.77"></script>
+<script src="assets/capas/capa-uga.js?v=0.9.77"></script>
+<script src="assets/capas/capa-colonias.js?v=0.9.77"></script>
 <!-- Colonias prioritarias para reforestar: capa de referencia del modelo de priorización -->
-<script src="assets/capas/capa-prioritarias.js?v=0.9.76"></script>
-<script src="assets/catalogos/catalogo-especies.js?v=0.9.76"></script>
-<script src="assets/catalogos/catalogo-vehiculos.js?v=0.9.76"></script>
-<script src="js/datos-ficticios.js?v=0.9.76"></script>
-<script src="js/permisos.js?v=0.9.76"></script>
-<script src="js/derivacion.js?v=0.9.76"></script>
-<script src="js/prioritarias.js?v=0.9.76"></script>
-<script src="js/solicitud.js?v=0.9.76"></script>
-<script src="js/almacen.js?v=0.9.76"></script>
-<script src="js/servidor.js?v=0.9.76"></script>
-<script src="js/remoto.js?v=0.9.76"></script>
-<script src="js/cola.js?v=0.9.76"></script>
-<script src="js/rechazos.js?v=0.9.76"></script>
-<script src="js/sesion.js?v=0.9.76"></script>
-<script src="js/referencias.js?v=0.9.76"></script>
-<script src="js/folio.js?v=0.9.76"></script>
+<script src="assets/capas/capa-prioritarias.js?v=0.9.77"></script>
+<script src="assets/catalogos/catalogo-especies.js?v=0.9.77"></script>
+<script src="assets/catalogos/catalogo-vehiculos.js?v=0.9.77"></script>
+<script src="js/datos-ficticios.js?v=0.9.77"></script>
+<script src="js/permisos.js?v=0.9.77"></script>
+<script src="js/derivacion.js?v=0.9.77"></script>
+<script src="js/prioritarias.js?v=0.9.77"></script>
+<script src="js/solicitud.js?v=0.9.77"></script>
+<script src="js/almacen.js?v=0.9.77"></script>
+<script src="js/servidor.js?v=0.9.77"></script>
+<script src="js/remoto.js?v=0.9.77"></script>
+<script src="js/cola.js?v=0.9.77"></script>
+<script src="js/rechazos.js?v=0.9.77"></script>
+<script src="js/sesion.js?v=0.9.77"></script>
+<script src="js/referencias.js?v=0.9.77"></script>
+<script src="js/folio.js?v=0.9.77"></script>
 <!-- Esquema generado de datos/esquema.json: relaciones entre tablas -->
-<script src="js/esquema.js?v=0.9.76"></script>
-<script src="js/conexion.js?v=0.9.76"></script>
-<script src="js/envio.js?v=0.9.76"></script>
-<script src="js/mapa.js?v=0.9.76"></script>
-<script src="js/foto.js?v=0.9.76"></script>
-<script src="js/jornada-activa.js?v=0.9.76"></script>
-<script src="js/formulario.js?v=0.9.76"></script>
+<script src="js/esquema.js?v=0.9.77"></script>
+<script src="js/conexion.js?v=0.9.77"></script>
+<script src="js/envio.js?v=0.9.77"></script>
+<script src="js/mapa.js?v=0.9.77"></script>
+<script src="js/foto.js?v=0.9.77"></script>
+<script src="js/jornada-activa.js?v=0.9.77"></script>
+<script src="js/formulario.js?v=0.9.77"></script>
 <!-- Sólo en la versión de prueba -->
-<script src="js/espejo.js?v=0.9.76"></script>
-<script src="js/registros.js?v=0.9.76"></script>
-<script src="js/galeria.js?v=0.9.76"></script>
-<script src="js/jornadas.js?v=0.9.76"></script>
-<script src="js/informes.js?v=0.9.76"></script>
-<script src="js/supervision.js?v=0.9.76"></script>
-<script src="js/indicadores.js?v=0.9.76"></script>
-<script src="js/demostracion.js?v=0.9.76"></script>
-<script src="js/croquis.js?v=0.9.76"></script>
-<script src="js/reportes.js?v=0.9.76"></script>
-<script src="js/catalogos.js?v=0.9.76"></script>
-<script src="js/usuarios.js?v=0.9.76"></script>
-<script src="js/excel.js?v=0.9.76"></script>
-<script src="js/carga.js?v=0.9.76"></script>
-<script src="js/duplicados.js?v=0.9.76"></script>
-<script src="js/configuracion.js?v=0.9.76"></script>
-<script src="js/especies-revision.js?v=0.9.76"></script>
-<script src="js/app.js?v=0.9.76"></script>
+<script src="js/espejo.js?v=0.9.77"></script>
+<script src="js/registros.js?v=0.9.77"></script>
+<script src="js/galeria.js?v=0.9.77"></script>
+<script src="js/jornadas.js?v=0.9.77"></script>
+<script src="js/informes.js?v=0.9.77"></script>
+<script src="js/supervision.js?v=0.9.77"></script>
+<script src="js/indicadores.js?v=0.9.77"></script>
+<script src="js/demostracion.js?v=0.9.77"></script>
+<script src="js/croquis.js?v=0.9.77"></script>
+<script src="js/reportes.js?v=0.9.77"></script>
+<script src="js/catalogos.js?v=0.9.77"></script>
+<script src="js/usuarios.js?v=0.9.77"></script>
+<script src="js/excel.js?v=0.9.77"></script>
+<script src="js/carga.js?v=0.9.77"></script>
+<script src="js/duplicados.js?v=0.9.77"></script>
+<script src="js/configuracion.js?v=0.9.77"></script>
+<script src="js/especies-revision.js?v=0.9.77"></script>
+<script src="js/app.js?v=0.9.77"></script>
 </body>
 </html>

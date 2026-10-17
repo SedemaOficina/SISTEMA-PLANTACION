@@ -68,6 +68,8 @@ CREATE TABLE srp.bitacora_acceso (
   CONSTRAINT bitacora_acceso_agente CHECK (agente IS NULL OR length(agente) <= 400)
 );
 CREATE INDEX bitacora_acceso_usuario_id ON srp.bitacora_acceso (usuario_id, momento);
+-- Las entradas fallidas recientes de una misma dirección, que el servicio cuenta antes de verificar nada
+CREATE INDEX bitacora_acceso_ip ON srp.bitacora_acceso (ip, momento);
 COMMENT ON TABLE srp.bitacora_acceso IS 'Entradas, intentos fallidos, bloqueos, salidas y cambios de contraseña, con su procedencia. Sólo crece.';
 COMMENT ON COLUMN srp.bitacora_acceso.usuario_id IS 'La cuenta del intento, si el correo existe. Una cuenta que ya intentó entrar no se elimina: se desactiva.';
 COMMENT ON COLUMN srp.bitacora_acceso.correo_intentado IS 'Sólo cuando el correo no tiene cuenta: el identificador no sirve para el forense y el correo sí.';
@@ -94,3 +96,7 @@ CREATE TRIGGER bitacora_inmutable BEFORE UPDATE OR DELETE ON srp.bitacora_acceso
   FOR EACH ROW EXECUTE FUNCTION srp.bitacora_inmutable();
 CREATE TRIGGER bitacora_sin_vaciar BEFORE TRUNCATE ON srp.bitacora_acceso
   FOR EACH STATEMENT EXECUTE FUNCTION srp.bitacora_inmutable();
+
+-- El Registro de cambios de Configuración lee la bitácora por tipo, de lo más reciente a lo más antiguo, por
+-- páginas: así no recorre la de todos los árboles
+CREATE INDEX bitacora_entidad_fecha ON srp.bitacora (entidad, fecha, id);

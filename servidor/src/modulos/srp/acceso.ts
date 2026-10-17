@@ -8,7 +8,8 @@ import * as S from "./sesiones";
 import { enTransaccion } from "./transaccion";
 
 /* ACCESO CON CUENTAS PROPIAS: correo y contraseña. No hay servicio de correo: la contraseña la da y la
-   restablece la Administración global, como temporal de un solo uso que se cambia al primer acceso.
+   restablece la Administración global, como una temporal que sólo sirve para entrar a escribir una propia, y
+   que vence.
 
    POST /acceso/entrar             { correo, contrasena } → abre la sesión
    POST /acceso/salir              cierra la sesión de este equipo
@@ -23,7 +24,11 @@ import { enTransaccion } from "./transaccion";
    Cada intento de entrar, logrado o no, cada bloqueo, cada salida y cada cambio de contraseña queda en
    srp.bitacora_acceso con su procedencia, como en `acceso.bitacora`. La procedencia la da el módulo común
    del SIA (src/comun/procedencia.ts). Toda entrada fallida anota un solo renglón, así que tampoco el
-   registro cambia el tiempo de respuesta. */
+   registro cambia el tiempo de respuesta.
+
+   Además del bloqueo de cada cuenta, se cuentan las entradas fallidas de cada dirección: pasadas las que dice
+   SRP_INTENTOS_POR_PROCEDENCIA en los minutos del bloqueo, esa dirección espera (429), sin que se verifique
+   nada. Así no se prueba una contraseña común en muchas cuentas a la vez. */
 
 type EventoAcceso = "ENTRADA" | "ENTRADA_FALLIDA" | "BLOQUEO" | "SALIDA" | "CONTRASENA_CAMBIADA";
 
@@ -99,6 +104,33 @@ interface FilaEntrada extends S.Usuario {
 
 const texto = (v: unknown) => (typeof v === "string" ? v : v === undefined || v === null ? "" : String(v));
 
+/* Cada intento se anota antes de verificar la contraseña, en un solo paso de la base: intentos simultáneos no
+   pasan del máximo. El que llega al máximo bloquea la cuenta; una cuenta bloqueada no recibe turno; vencido el
+   bloqueo, vuelve a contar desde uno. Sin turno, la cuenta está bloqueada. */
+async function tomarTurno(bd: S.Consultable, usuarioId: string, A: ConfigSrp["acceso"]): Promise<{ bloqueada_hasta: Date | null } | undefined> {
+  return (await bd.query<{ bloqueada_hasta: Date | null }>(
+    `UPDATE srp.credenciales SET
+        intentos_fallidos = CASE WHEN bloqueada_hasta IS NULL THEN intentos_fallidos + 1 ELSE 1 END,
+        bloqueada_hasta = CASE WHEN (CASE WHEN bloqueada_hasta IS NULL THEN intentos_fallidos + 1 ELSE 1 END) >= $2
+                               THEN now() + make_interval(mins => $3) END
+      WHERE usuario_id = $1 AND (bloqueada_hasta IS NULL OR bloqueada_hasta <= now())
+      RETURNING bloqueada_hasta`,
+    [usuarioId, A.intentosMaximos, A.bloqueoMinutos],
+  )).rows[0];
+}
+
+// ¿Llegó esta dirección al tope de entradas fallidas en los minutos del bloqueo? Sin dirección no se cuenta
+async function demasiadasDesde(bd: S.Consultable, req: Request, A: ConfigSrp["acceso"]): Promise<boolean> {
+  const ip = ipDeOrigen(req);
+  if (!ip || A.intentosPorProcedencia <= 0) return false;
+  const { rows } = await bd.query<{ n: number }>(
+    `SELECT count(*)::int AS n FROM srp.bitacora_acceso
+      WHERE ip = $1 AND evento IN ('ENTRADA_FALLIDA', 'BLOQUEO') AND momento > now() - make_interval(mins => $2)`,
+    [ip, A.bloqueoMinutos],
+  );
+  return rows[0].n >= A.intentosPorProcedencia;
+}
+
 export function rutasAcceso(pool: pg.Pool, config: ConfigSrp): { router: Router; sesion: RequestHandler } {
   const r = Router();
   const A = config.acceso;
@@ -109,6 +141,9 @@ export function rutasAcceso(pool: pg.Pool, config: ConfigSrp): { router: Router;
     // El mensaje le dice a quien sí tiene cuenta a quién acudir, sin decir qué pasó
     const incorrecto = () => responder(res, 401, "INCORRECTO", "Correo o contraseña incorrectos. Si son correctos y no puede entrar, consulte a la Administración global.");
     if (!correo || !contrasena) return responder(res, 400, "FALTAN_DATOS", "Escriba su correo y su contraseña.");
+    if (await demasiadasDesde(pool, req, A)) {
+      return responder(res, 429, "DEMASIADOS_INTENTOS", "Hubo demasiados intentos fallidos desde esta conexión. Espere " + A.bloqueoMinutos + " minutos e intente de nuevo.");
+    }
     if (correo.length > 254 || contrasena.length > 256) {
       await verificarSombra(contrasena.slice(0, 256));
       return incorrecto();
@@ -127,20 +162,7 @@ export function rutasAcceso(pool: pg.Pool, config: ConfigSrp): { router: Router;
       await anotar(pool, req, "ENTRADA_FALLIDA", u ? { usuarioId: u.id } : { correo });
       return incorrecto();
     }
-    /* Cada intento se anota antes de verificar la contraseña, en un solo paso de la base: intentos
-       simultáneos no pasan del máximo. El que llega al máximo bloquea la cuenta; una cuenta bloqueada no
-       recibe turno; vencido el bloqueo, vuelve a contar desde uno. */
-    const turno = (
-      await pool.query(
-        `UPDATE srp.credenciales SET
-            intentos_fallidos = CASE WHEN bloqueada_hasta IS NULL THEN intentos_fallidos + 1 ELSE 1 END,
-            bloqueada_hasta = CASE WHEN (CASE WHEN bloqueada_hasta IS NULL THEN intentos_fallidos + 1 ELSE 1 END) >= $2
-                                   THEN now() + make_interval(mins => $3) END
-          WHERE usuario_id = $1 AND (bloqueada_hasta IS NULL OR bloqueada_hasta <= now())
-          RETURNING bloqueada_hasta`,
-        [u.id, A.intentosMaximos, A.bloqueoMinutos],
-      )
-    ).rows[0];
+    const turno = await tomarTurno(pool, u.id, A);
     // Se verifica siempre, también bloqueada o desactivada: el tiempo no debe decir en qué estado está la cuenta
     const correcta = await verificar(contrasena, u.derivada);
     const quien = { usuarioId: u.id };
@@ -185,7 +207,15 @@ export function rutasAcceso(pool: pg.Pool, config: ConfigSrp): { router: Router;
     const actual = texto(req.body?.actual), nueva = texto(req.body?.nueva);
     const s = sesionDe(res), u = s.usuario;
     const cred = (await pool.query<{ derivada: string }>("SELECT derivada FROM srp.credenciales WHERE usuario_id = $1", [u.id])).rows[0];
-    if (!cred || !(await verificar(actual, cred.derivada))) return responder(res, 400, "ACTUAL_INCORRECTA", "La contraseña actual no es correcta.");
+    if (!cred) return responder(res, 400, "ACTUAL_INCORRECTA", "La contraseña actual no es correcta.");
+    // Como al entrar: cada intento con la contraseña actual cuenta, y el que llega al máximo bloquea la cuenta
+    const turno = await tomarTurno(pool, u.id, A);
+    if (!turno) return responder(res, 429, "DEMASIADOS_INTENTOS", "Hubo demasiados intentos con la contraseña actual. Espere " + A.bloqueoMinutos + " minutos e intente de nuevo.");
+    if (!(await verificar(actual, cred.derivada))) {
+      if (turno.bloqueada_hasta) await anotar(pool, req, "BLOQUEO", { usuarioId: u.id });
+      return responder(res, 400, "ACTUAL_INCORRECTA", "La contraseña actual no es correcta.");
+    }
+    await pool.query("UPDATE srp.credenciales SET intentos_fallidos = 0, bloqueada_hasta = NULL WHERE usuario_id = $1", [u.id]);
     const motivo = revisarNueva(nueva, { largoMinimo: A.largoMinimo, correo: u.correo, actual });
     if (motivo) return responder(res, 400, "NUEVA_INVALIDA", motivo);
     const derivada = await derivar(nueva);

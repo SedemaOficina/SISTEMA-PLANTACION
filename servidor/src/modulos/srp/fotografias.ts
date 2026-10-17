@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import express, { Router, type Request, type RequestHandler, type Response } from "express";
@@ -18,8 +18,9 @@ import { enTransaccion } from "./transaccion";
                        para pedir el espacio a tiempo (sólo la Administración global)
 
    La fotografía llega después de su árbol, de quien puede editarlo. No se reemplaza: una nueva lleva otro id.
-   Reenviar la misma (la misma huella) da la misma respuesta; otra distinta con el mismo id se rechaza. El
-   archivo se escribe completo antes de registrarlo, así que nunca queda registrada una fotografía a medias. */
+   Reenviar la misma (la misma huella) da la misma respuesta; otra distinta con el mismo id se rechaza. Dos
+   envíos del mismo id van uno a la vez. El archivo se escribe completo antes de registrarlo, así que nunca
+   queda registrada una fotografía a medias. */
 
 const TIPOS: { tipo: string; extension: string; es: (b: Buffer) => boolean }[] = [
   { tipo: "image/jpeg", extension: "jpg", es: (b) => b.length > 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff },
@@ -75,6 +76,8 @@ export function rutasFotografias(pool: pg.Pool, config: ConfigSrp, sesion: Reque
     const u = sesionDe(res).usuario;
 
     const resultado = await enTransaccion(pool, async (c) => {
+      // Uno a la vez por fotografía: el segundo envío ve lo que dejó el primero
+      await c.query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", ["srp.foto:" + id]);
       // Su árbol, que no cambia mientras se registra la fotografía
       const arbolId = (await c.query<{ id: string }>("SELECT id FROM srp.plantaciones WHERE foto_id = $1 ORDER BY fecha_registro LIMIT 1", [id])).rows[0]?.id;
       const arbol = arbolId ? await filaDe(c, "plantaciones", arbolId, "FOR SHARE") : undefined;
@@ -91,7 +94,7 @@ export function rutasFotografias(pool: pg.Pool, config: ConfigSrp, sesion: Reque
       // Primero el archivo completo, con otro nombre, y luego se renombra: nunca queda uno a medias
       const destino = rutaDe(dir, id, tipo.extension);
       await fs.mkdir(path.dirname(destino), { recursive: true });
-      const temporal = destino + "." + process.pid + ".parcial";
+      const temporal = destino + "." + randomUUID() + ".parcial";
       await fs.writeFile(temporal, datos);
       await fs.rename(temporal, destino);
       await c.query(

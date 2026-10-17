@@ -24,7 +24,7 @@ const JPEG = Buffer.from('/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP////////////////////
 const OTRA = Buffer.concat([JPEG, Buffer.from('distinta')]);
 
 let admin, grupo, servidor, sinCarpeta, base, baseSin;
-const FOTO = uuid(), ARBOL = uuid(), JORNADA = uuid();
+const FOTO = uuid(), ARBOL = uuid(), JORNADA = uuid(), FOTO2 = uuid(), ARBOL2 = uuid();
 
 before(async () => {
   admin = await conectar();
@@ -53,11 +53,11 @@ after(async () => {
   grupo && await grupo.end();
   const ids = CUENTAS.map((u) => u.id);
   await limpiar(admin, async () => {
-    await admin.query('DELETE FROM srp.fotografias WHERE id = $1', [FOTO]);
+    await admin.query('DELETE FROM srp.fotografias WHERE id = ANY($1::uuid[])', [[FOTO, FOTO2]]);
     await admin.query('ALTER TABLE srp.folios DISABLE TRIGGER folios_inmutables');
-    await admin.query('DELETE FROM srp.folios WHERE plantacion_id = $1', [ARBOL]);
+    await admin.query('DELETE FROM srp.folios WHERE plantacion_id = ANY($1::uuid[])', [[ARBOL, ARBOL2]]);
     await admin.query('ALTER TABLE srp.folios ENABLE TRIGGER folios_inmutables');
-    await admin.query('DELETE FROM srp.plantaciones WHERE id = $1', [ARBOL]);
+    await admin.query('DELETE FROM srp.plantaciones WHERE id = ANY($1::uuid[])', [[ARBOL, ARBOL2]]);
     await admin.query('DELETE FROM srp.jornadas WHERE id = $1', [JORNADA]);
     for (const t of ['bitacora', 'bitacora_acceso']) await admin.query(`ALTER TABLE srp.${t} DISABLE TRIGGER bitacora_inmutable`);
     await admin.query('DELETE FROM srp.bitacora WHERE usuario_id = ANY($1::uuid[])', [ids]);
@@ -102,6 +102,20 @@ test('la fotografía llega después de su árbol, de quien puede editarlo, y que
   assert.equal((await cabo.subir(FOTO, OTRA)).datos.codigo, 'YA_EXISTE');
   assert.equal((await cabo.subir(uuid(), Buffer.from('no soy una imagen'))).datos.codigo, 'NO_ES_IMAGEN');
   assert.deepEqual(await cabo.subir(uuid(), Buffer.concat([JPEG, Buffer.alloc(70 * 1024)])), { estado: 413, datos: { codigo: 'FOTO_GRANDE', mensaje: 'La fotografía pesa más de 64 KB.' } });
+});
+
+test('dos envíos al mismo tiempo de fotografías distintas con el mismo id: entra una, y el archivo es el de su registro', async () => {
+  const cabo = await sesion(CABO);
+  const especie = (await admin.query('SELECT id FROM srp.especies WHERE activo ORDER BY id LIMIT 1')).rows[0].id;
+  const r = await cabo.json('/envios', 'POST', { operaciones: [{ tipo: 'registro.crear',
+    datos: { id: ARBOL2, jornada_id: JORNADA, lat: 19.4327, lng: -99.1333, punto_origen: 'gps', especie_id: especie, fecha_plantacion: HOY, foto_id: FOTO2 } }] });
+  assert.equal(r.datos.resultados[0].estado, 'recibido', JSON.stringify(r.datos));
+  const llegadas = await Promise.all([cabo.subir(FOTO2, JPEG), cabo.subir(FOTO2, OTRA)]);
+  assert.deepEqual(llegadas.map((x) => x.estado).sort(), [201, 409]);
+  const registrada = (await admin.query('SELECT sha256 FROM srp.fotografias WHERE id = $1', [FOTO2])).rows[0].sha256;
+  const archivo = fs.readFileSync(path.join(CARPETA, FOTO2.slice(0, 2), FOTO2 + '.jpg'));
+  assert.equal(crypto.createHash('sha256').update(archivo).digest('hex'), registrada);
+  assert.deepEqual(fs.readdirSync(path.join(CARPETA, FOTO2.slice(0, 2))).filter((f) => f.endsWith('.parcial')), [], 'no quedan archivos a medias');
 });
 
 test('la descargan quienes ven el árbol y pueden descargar fotografías; para los demás no existe', async () => {

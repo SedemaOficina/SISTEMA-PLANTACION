@@ -68,8 +68,9 @@ test('la cuenta del servicio no tiene ningún permiso directo fuera de srp, y le
     (SELECT count(*) FROM information_schema.role_table_grants WHERE grantee = 'srp_api' AND table_schema <> 'srp')::int AS fuera,
     (SELECT rolinherit FROM pg_roles WHERE rolname = 'srp_api') AS hereda,
     (SELECT rolsuper OR rolcreaterole OR rolcreatedb FROM pg_roles WHERE rolname = 'srp_api') AS privilegiada,
-    pg_has_role('srp_api', 'territorio_lectura', 'MEMBER') AS lee_territorio`);
-  assert.deepEqual(r.rows[0], { fuera: 0, hereda: true, privilegiada: false, lee_territorio: true });
+    pg_has_role('srp_api', 'territorio_lectura', 'MEMBER') AS lee_territorio,
+    (SELECT 'statement_timeout=50s' = ANY(rolconfig) FROM pg_roles WHERE rolname = 'srp_api') AS consultas_con_tope`);
+  assert.deepEqual(r.rows[0], { fuera: 0, hereda: true, privilegiada: false, lee_territorio: true, consultas_con_tope: true });
 });
 
 test('la cuenta del servicio sólo opera datos; la bitácora sólo crece', async () => {
@@ -139,6 +140,9 @@ test('la cuenta del servicio sólo opera datos; la bitácora sólo crece', async
   assert.equal(await codigoDeError(c, "UPDATE srp.bitacora_acceso SET evento = 'SALIDA'"), PERMISO_DENEGADO, 'editar el registro de entradas');
   assert.equal(await codigoDeError(c, 'DELETE FROM srp.bitacora_acceso'), PERMISO_DENEGADO, 'borrar el registro de entradas');
   assert.equal(await codigoDeError(c, 'TRUNCATE srp.plantaciones'), PERMISO_DENEGADO, 'vaciar una tabla');
+  assert.equal(await codigoDeError(c, 'DELETE FROM srp.plantaciones'), PERMISO_DENEGADO, 'borrar un árbol: se marca eliminado');
+  assert.equal(await codigoDeError(c, 'DELETE FROM srp.sesiones'), PERMISO_DENEGADO, 'borrar sesiones: se cierran');
+  assert.equal(await codigoDeError(c, 'DELETE FROM srp.credenciales'), PERMISO_DENEGADO, 'borrar contraseñas');
   assert.equal(await codigoDeError(c, 'CREATE TABLE srp.otra (x int)'), PERMISO_DENEGADO, 'crear tablas');
   assert.equal(await codigoDeError(c, 'DROP TABLE srp.plantaciones'), PERMISO_DENEGADO, 'borrar tablas');
   assert.equal(await codigoDeError(c, 'ALTER TABLE srp.plantaciones ADD COLUMN x int'), PERMISO_DENEGADO, 'cambiar tablas');
@@ -155,7 +159,8 @@ test('la cuenta del servicio sólo opera datos; la bitácora sólo crece', async
   await c.query('REVOKE srp_api FROM CURRENT_USER');
 });
 
-test('al eliminar una cuenta sin registros se van su contraseña y sus sesiones', async () => {
+test('al eliminar una cuenta sin registros se van su contraseña y sus sesiones, también cuando la elimina la cuenta del servicio', async () => {
+  await c.query('GRANT srp_api TO CURRENT_USER WITH INHERIT FALSE, SET TRUE');
   await c.query('BEGIN');
   const id = '00000000-0000-4000-8000-000000000002';
   await c.query("INSERT INTO srp.instituciones VALUES ('o-x', 'X', 'Institución X', true, NULL, now(), NULL, NULL, 'Empresa privada')");
@@ -164,10 +169,14 @@ test('al eliminar una cuenta sin registros se van su contraseña y sus sesiones'
   await c.query("INSERT INTO srp.sesiones (testigo_resumen, usuario_id, expira_en) VALUES (repeat('a', 64), $1, now() + interval '1 day')", [id]);
   assert.equal(await codigoDeError(c, "INSERT INTO srp.sesiones (testigo_resumen, usuario_id, expira_en) VALUES ('no-es-un-resumen', $1, now())", [id]), VIOLA_CHECK, 'el resumen del testigo es sha256 en hexadecimal');
   assert.equal(await codigoDeError(c, "UPDATE srp.sesiones SET cerrada_en = now()"), VIOLA_CHECK, 'una sesión cerrada dice por qué');
+  // srp_api no borra contraseñas ni sesiones, pero al borrar la cuenta la base se las lleva
+  await c.query('SET LOCAL ROLE srp_api');
   await c.query('DELETE FROM srp.usuarios WHERE id = $1', [id]);
+  await c.query('RESET ROLE');
   const r = await c.query('SELECT (SELECT count(*) FROM srp.credenciales)::int + (SELECT count(*) FROM srp.sesiones)::int AS n');
   assert.equal(r.rows[0].n, 0);
   await c.query('ROLLBACK');
+  await c.query('REVOKE srp_api FROM CURRENT_USER');
 });
 
 test('la primera cuenta se da con un guion que sólo imprime el SQL; la contraseña no toca la base, y no se da dos veces', async () => {

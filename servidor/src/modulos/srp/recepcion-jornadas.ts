@@ -14,6 +14,19 @@ import type { Usuario } from "./sesiones";
 
 export const PROGRAMA_SOLICITUD = "p-solicitud";
 
+// Los largos de los campos de texto, como los del formulario de la aplicación
+const LARGOS: Record<string, [number, string]> = {
+  nombre: [120, "El nombre lleva hasta 120 caracteres."],
+  ubicacion: [200, "La dirección lleva hasta 200 caracteres."],
+  comentarios: [500, "Los comentarios llevan hasta 500 caracteres."],
+  personal: [2000, "El personal lleva hasta 2,000 caracteres."],
+  apoyo: [2000, "El apoyo lleva hasta 2,000 caracteres."],
+  observaciones: [2000, "Las observaciones llevan hasta 2,000 caracteres."],
+  chofer: [120, "El nombre del chófer lleva hasta 120 caracteres."],
+};
+const largos = (v: Record<string, unknown>): Errores =>
+  Object.entries(LARGOS).filter(([k, [n]]) => typeof v[k] === "string" && (v[k] as string).length > n).map(([k, [, m]]) => [k, m]);
+
 /* Los programas que puede elegir una institución: la Secretaría, todos los activos; las demás, los que tienen
    marcado su tipo de institución (js/referencias.js, programasPara). */
 async function programaPermitido(c: pg.PoolClient, programaId: string, organizacionId: string): Promise<boolean> {
@@ -61,6 +74,7 @@ export async function crearJornada(c: pg.PoolClient, u: Usuario, d: Record<strin
   const errores: Errores = [];
   const nombre = texto(d.nombre);
   if (!nombre) errores.push(["nombre", "Escriba el nombre de la jornada: el parque, la calle o el sitio."]);
+  errores.push(...largos({ nombre, ubicacion: texto(d.ubicacion), comentarios: texto(d.comentarios) }));
   // La jornada se ubica siempre, con el GPS o con las coordenadas a mano
   const punto = puntoDe(d);
   const territorio = punto ? await ubicar(c, punto) : null;
@@ -154,6 +168,7 @@ export async function editarJornada(c: pg.PoolClient, u: Usuario, d: Record<stri
 
   const errores: Errores = [];
   if (!nuevo.nombre) errores.push(["nombre", "Escriba el nombre de la jornada."]);
+  errores.push(...largos(nuevo));
   if (!programaId) errores.push(["programa_id", "Elija el programa."]);
   // Los programas de la institución que ejecuta la jornada, más el que ya tiene
   else if (programaId !== actual.programa_id && !(await programaPermitido(c, programaId, String(actual.organizacion_id)))) {
@@ -274,6 +289,7 @@ export async function cierreJornada(c: pg.PoolClient, u: Usuario, d: Record<stri
     errores.push(["personal", "Personal, apoyo, chófer y vehículo sólo se piden en las jornadas de la Secretaría."]);
   }
   if (nuevo.hora && !HORA.test(String(nuevo.hora))) errores.push(["hora", "Escriba la hora como 14:30."]);
+  errores.push(...largos(nuevo));
   const vehiculo = nuevo.vehiculo_id
     ? (await c.query<{ nombre: string; modelo: string; tipo_vehiculo: string }>("SELECT nombre, modelo, tipo_vehiculo FROM srp.vehiculos WHERE id = $1 AND (activo OR id = $2)",
       [nuevo.vehiculo_id, actual.vehiculo_id])).rows[0]

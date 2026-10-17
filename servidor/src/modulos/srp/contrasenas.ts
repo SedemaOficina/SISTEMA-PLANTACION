@@ -44,7 +44,8 @@ export async function verificarSombra(texto: string): Promise<false> {
 }
 
 /* Una contraseña temporal fácil de dictar por teléfono: doce caracteres en tres grupos, sin los que se
-   confunden (0 y o, 1, l e i). La da la Administración global y sirve una sola vez. randomInt reparte
+   confunden (0 y o, 1, l e i). La da la Administración global; sólo sirve para entrar a escribir una propia, y
+   vence. randomInt reparte
    parejo entre las 31 letras; el residuo de un byte favorecería a las primeras. */
 const LETRAS = "abcdefghjkmnpqrstuvwxyz23456789";
 export function temporal(): string {

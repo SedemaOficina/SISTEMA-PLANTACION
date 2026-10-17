@@ -1142,7 +1142,9 @@ with sync_playwright() as p:
     ok(pg.is_visible('#vista-jornadas') and pg.is_visible('#dlg-cierre'),'«Generar reporte» abre el cierre de la jornada 2 sin salir de Jornadas')
     pg.click('#btn-cierre-cerrar'); pg.wait_for_timeout(200)
     pg.evaluate("SRP.jornadas.cerrar()"); pg.wait_for_timeout(500)
-    pg.evaluate("document.querySelector('#jornada-atajos [data-atajo=dia]').click()"); pg.fill('#jornada-dia', M['f']); pg.dispatch_event('#jornada-dia','change'); pg.wait_for_timeout(600)
+    pg.evaluate("document.querySelector('#jornada-atajos [data-atajo=dia]').click()"); pg.fill('#jornada-dia', M['f']); pg.dispatch_event('#jornada-dia','change')
+    try: pg.wait_for_function("() => document.querySelectorAll('#lista-jornadas .jornada').length === 3", timeout=8000)
+    except Exception: pass   # si no llegan, la comprobación lo dice
     fichas=pg.eval_on_selector_all('#lista-jornadas .jornada','l=>l.map(x=>x.textContent)')
     f2=[f for f in fichas if 'Parque Hundido' in f]
     ok(len(fichas)==3 and len(f2)==1 and 'Jornada 2 de 3' in f2[0] and 'Sin reporte todavía' in f2[0],'las tres jornadas cerradas de ese día tienen tarjeta; la 2 dice «Jornada 2 de 3» y aún no tiene reporte')
@@ -6159,9 +6161,13 @@ with sync_playwright() as p:
     ok(all(n <= 8 for _, n in n74) and not pg74.evaluate("['jornada-anio', 'jornada-mes', 'jornada-reporte', 'jornada-filtro-prioridad', 'jornada-tipo-org', 'filtro-anio', 'filtro-mes', 'filtro-tipo-org', 'sup-tipo', 'usr-filtro-tipo'].some(id => document.getElementById(id))"),
        'ninguna vista pasa de ocho filtros, y no hay filtros de año, mes, reporte, prioridad ni tipo de institución: %s' % n74)
     pg74.evaluate("SRP.app.mostrarVista('jornadas')"); pg74.wait_for_timeout(700)
-    pg74.click('#jornada-atajos [data-atajo=periodo]'); pg74.click('#jornada-periodo [data-rapido=anio]'); pg74.wait_for_timeout(600)
+    pg74.click('#jornada-atajos [data-atajo=periodo]'); pg74.click('#jornada-periodo [data-rapido=anio]')
+    try: pg74.wait_for_function("() => SRP.jornadas.lista.length > 0 && !!document.querySelector('#jornada-fichas button[data-quitar=periodo]')", timeout=8000)
+    except Exception: pass   # si no llegan, la comprobación lo dice
     f74 = pg74.evaluate("[document.getElementById('jornada-fichas').textContent, SRP.jornadas.lista.length]")
-    pg74.click('#jornada-fichas button[data-quitar=periodo]'); pg74.wait_for_timeout(600)
+    pg74.click('#jornada-fichas button[data-quitar=periodo]')
+    try: pg74.wait_for_function("() => document.querySelector('#jornada-atajos [data-atajo=todas]').getAttribute('aria-pressed') === 'true'", timeout=8000)
+    except Exception: pass
     ok(pg74.evaluate("SRP.util.fechaHoy().slice(0, 4)") in f74[0] and f74[1] > 0 and pg74.get_attribute('#jornada-atajos [data-atajo=todas]', 'aria-pressed') == 'true',
        '«Este año» deja su ficha con el año, y quitarla vuelve a «Todas»: %s' % f74[0])
     pg74.set_viewport_size({'width': 1280, 'height': 900}); pg74.wait_for_timeout(400)

@@ -244,6 +244,7 @@ docs/                   Memoria del proyecto
   GUIA-PROYECTOS-SIA.md  Guía para empezar un proyecto nuevo pensando desde el principio en el SIA
   AUDITORIA-INTEGRAL-APP.md  Auditoría de la aplicación: seguridad, integridad, accesibilidad, rendimiento y código
   AUDITORIA-COMPLETA.md  Auditoría de todo el proyecto: archivos, código, reglas, diseño, textos, botones y avisos
+  REVISION-SERVIDOR.md  Revisión del servidor: seguridad, integridad, alineación con el SIA y mediciones
   REVISION-PANTALLAS.md, REVISION-ARCHIVOS.md   Revisiones de las pantallas y de los archivos que se descargan
   DECISIONES.md         Decisiones numeradas (Dnn)
   BITACORA.md           Qué cambió en cada bloque y cómo se verificó

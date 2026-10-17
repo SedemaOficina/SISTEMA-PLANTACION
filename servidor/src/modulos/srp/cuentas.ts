@@ -67,11 +67,13 @@ async function validarAlta(c: pg.PoolClient, d: Alta, previa: Usuario | null = n
   if (d.area_id && !(await c.query("SELECT 1 FROM srp.areas WHERE id = $1 AND activo", [d.area_id])).rowCount) e.push(["area_id", "Esa área no existe o está desactivada."]);
   if (!d.nombre_completo) e.push(["nombre_completo", "Escriba el nombre completo."]);
   else if (d.nombre_completo.split(" ").length < 2) e.push(["nombre_completo", "Escriba nombre y al menos un apellido."]);
+  else if (d.nombre_completo.length > 160) e.push(["nombre_completo", "El nombre lleva hasta 160 caracteres."]);
   if (!previa) {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.correo)) e.push(["correo", "Escriba un correo válido."]);
     else if ((await c.query("SELECT 1 FROM srp.usuarios WHERE correo = $1", [d.correo])).rowCount) e.push(["correo", "Ese correo ya tiene cuenta."]);
   }
   if (!d.cargo_rol) e.push(["cargo_rol", "Escriba el cargo."]);
+  else if (d.cargo_rol.length > 120) e.push(["cargo_rol", "El cargo lleva hasta 120 caracteres."]);
   if (!Object.hasOwn(PERFILES, d.perfil)) e.push(["perfil", "Elija el perfil de captura."]);
   else if (d.perfil === "ADMIN" && !sedema) e.push(["perfil", "La Administración global es sólo de la Secretaría."]);
   if (d.coordinadores_ids.length) {

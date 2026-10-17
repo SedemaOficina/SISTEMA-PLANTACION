@@ -5383,3 +5383,66 @@ No se probó:
 
 **Siguiente paso.** La revisión del servidor (bloque 233), antes del manual de la Administración y del
 paquete v1.
+
+## Bloque 233 — La revisión del servidor (17-10-2026)
+
+**Versión 0.9.77.** Antes del manual y del paquete v1 (D313). Informe completo: `docs/REVISION-SERVIDOR.md`.
+
+| # | Qué se encontró | Qué se hizo |
+|---|---|---|
+| 1 | Sin límite de entradas fallidas por procedencia | 30 en 15 minutos por dirección; después, espera |
+| 2 | La contraseña actual se podía probar sin límite al cambiarla | Cuenta como un intento de entrar |
+| 3 | Una consulta de más de un minuto seguía corriendo en la base | `srp_api` la cancela a los 50 s |
+| 4 | La cuenta del servicio podía borrar árboles, contraseñas y sesiones | Ya no: sólo lo que se borra sin uso |
+| 5 | Textos sin largo máximo en el servidor | Los del formulario de la aplicación |
+| 6 | Dos envíos de la misma fotografía al mismo tiempo | Uno a la vez |
+| 7 | Un árbol PROVISIONAL nunca recibía su folio | Lo recibe al editarlo |
+| 8 | Un valor de configuración mal escrito hacía fallar el alta o la entrada | Se usa el de arranque y se avisa |
+| 9 | Dos consultas recorrían una tabla entera | Dos índices |
+| 10 | Comentarios que no decían lo que pasa | Corregidos |
+| 11–13 | Una diferencia de 1 ms al entrar; el plazo del registro de entradas; los datos de la fotografía | Aceptado; para el SIA; sin acción |
+
+**Qué cambió.**
+- Servidor:
+  - `acceso.ts`, el límite por procedencia y el turno para la contraseña actual;
+  - `config.ts`, la variable nueva y los valores mal escritos;
+  - `fotografias.ts`, uno a la vez;
+  - `recepcion-arboles.ts` y `recepcion-jornadas.ts`, los largos y el folio pendiente;
+  - `cuentas.ts`, los largos;
+  - `contrasenas.ts`, un comentario;
+  - `src/comun/procedencia.ts`, sólo local, con el criterio corregido del SIA.
+- Base: `03` y `05`, tres índices; `09`, los permisos y el tope de 50 s.
+- Aplicación:
+  - `index.html`, el largo máximo de «Otra especie», los datos de cierre y el cargo;
+  - `VERSION`, `js/config.js` e `index.html`, la marca 0.9.77.
+- Pruebas: 5 nuevas del servidor y 3 ampliadas; en `prueba_conexion.py`, el aviso de esperar. En `prueba.py`, las dos
+  comprobaciones de Jornadas que fallaban por tiempo esperan a la lista y no un tiempo fijo.
+- Documentación: `docs/REVISION-SERVIDOR.md` (nuevo), `README.md`, `servidor/README.md`,
+  `docs/ALINEACION-SIA.md` y `docs/MEJORAS.md`.
+
+**Pantalla: qué se agregó y qué se quitó.** Se agregó un aviso en la entrada, sólo con datos reales:
+«Hubo demasiados intentos fallidos desde esta conexión. Espere 15 minutos e intente de nuevo.». Seis campos
+de texto tienen ahora largo máximo: «Otra especie» y el cargo de una cuenta, 120 caracteres; en el cierre,
+personal, apoyo y observaciones 2,000, y chófer 120. Se ve igual. No se quitó nada.
+
+**Verificación.**
+- Servidor: `npm test`, 95 sin fallas, con las 5 nuevas y las 3 ampliadas. La primera corrida encontró un error en una prueba
+  nueva, la del tope de la cuenta del servicio, que estaba mal escrita; se corrigió.
+- Base: reinstalada desde los guiones; los índices, los permisos y el tope quedaron como dicen.
+- Copia del servicio del SIA: compila sin errores y su prueba de humo da 23 de 23.
+- Conexión: `prueba_conexion.py`, 91 de 91, ya con la cuenta del servicio sin permiso para borrar árboles:
+  eliminar una cuenta sin uso sigue funcionando.
+- Mediciones: antes y después de los índices, en el informe.
+- Aplicación: `prueba.py`, 0 fallas de 1,441 en la primera corrida, con las dos comprobaciones de Jornadas
+  que fallaban por tiempo (bloques 231 y 232) ya esperando a la lista. `auditoria.py`, 144 comprobaciones sin
+  hallazgos; `auditoria_css.py`, 0 hallazgos.
+- La base local quedó sin datos de prueba.
+
+No se probó:
+- con muchos teléfonos a la vez, ni en el servidor del SIA;
+- que el choque de dos fotografías ocurra sin el candado: la prueba nueva no logró provocarlo, así que el
+  arreglo es preventivo;
+- el aviso de esperar contra el servicio desde la pantalla: la pantalla se probó con la respuesta simulada,
+  y el servicio, en sus propias pruebas.
+
+**Siguiente paso.** El manual de la Administración global (bloque 234), y después el paquete v1 (235).
