@@ -7,11 +7,14 @@
                 que la aplicación no ve. Al entrar bajan los catálogos y la cuenta, lo mínimo para abrir, y
                 las cuentas que se ven y los parámetros; lo enviado se trae aparte (js/remoto.js).
                 Al abrir con una sesión anotada se entra sin esperar y, si hay señal, se confirma con el
-                servicio: si ya no la reconoce, se vuelve a pedir la contraseña sin perder lo capturado. */
+                servicio: si ya no la reconoce, se vuelve a pedir la contraseña sin perder lo capturado.
+                Quien entra con una contraseña temporal escribe una propia antes de seguir: hasta entonces el
+                servicio no le deja hacer nada más. */
 window.SRP = window.SRP || {};
 
 SRP.sesion = {
   usuario: null,
+  temporal: null,   // { cuenta, actual }: entró con una contraseña temporal y todavía no escribe la suya
 
   delServidor() { return SRP.CONFIG.AUTENTICACION.PROVEEDOR === 'servidor'; },
 
@@ -72,24 +75,43 @@ SRP.sesion = {
   async autenticarEnServidor(correo, clave) {
     const r = await SRP.servidor.pedir('POST', '/acceso/entrar', { correo, contrasena: clave });
     if (!r.ok) return { ok: false, motivo: r.sinRed ? 'Para entrar hace falta conexión con el servidor. Intente de nuevo cuando tenga señal.' : r.mensaje };
-    if (r.datos.debeCambiar) return this.temporal();
-    // Lo mínimo para abrir: los catálogos y la propia cuenta. Si no bajan y no hay unos de antes, no se entra
+    // Con una temporal, primero escribe una propia; la de ahora hace falta para cambiarla
+    if (r.datos.debeCambiar) {
+      this.temporal = { cuenta: r.datos.usuario, actual: clave };
+      return { ok: false, temporal: true, cuenta: r.datos.usuario };
+    }
+    return this.abrir(r.datos.usuario);
+  },
+
+  // Lo mínimo para abrir: los catálogos y la propia cuenta. Si no bajan y no hay unos de antes, no se entra
+  async abrir(cuenta) {
     const catalogos = await SRP.remoto.bajarCatalogos();
     if (!catalogos.ok && !(await SRP.almacen.todos('instituciones')).length) {
       SRP.servidor.pedir('POST', '/acceso/salir');
       return { ok: false, motivo: catalogos.mensaje };
     }
-    const u = await this.ponerAlDia(r.datos.usuario);
+    const u = await this.ponerAlDia(cuenta);
     this.iniciar(u);
     // Lo enviado llega mientras tanto, sin detener la entrada
     SRP.remoto.cargar();
     return { ok: true, usuario: u };
   },
 
-  // Una contraseña temporal se cambia antes de seguir; la pantalla para cambiarla todavía no está
-  async temporal() {
-    await SRP.servidor.pedir('POST', '/acceso/salir');
-    return { ok: false, motivo: 'Su contraseña es temporal y hay que cambiarla antes de seguir, pero esta versión todavía no permite cambiarla. Avise a la Administración global.' };
+  /* La contraseña propia en lugar de la temporal. El servicio la revisa con sus reglas y deja abierta sólo
+     esta sesión; después se entra como siempre. */
+  async cambiarTemporal(nueva) {
+    const t = this.temporal;
+    if (!t) return { ok: false, motivo: 'Vuelva a entrar con su contraseña temporal.' };
+    const r = await SRP.servidor.pedir('POST', '/acceso/contrasena', { actual: t.actual, nueva });
+    if (!r.ok) return { ok: false, motivo: r.sinRed ? 'Para cambiarla hace falta conexión con el servidor. Intente de nuevo cuando tenga señal.' : r.mensaje };
+    this.temporal = null;
+    return this.abrir(t.cuenta);
+  },
+
+  // Sale sin cambiarla: la sesión que abrió el servicio se cierra
+  salirDeTemporal() {
+    if (this.temporal) SRP.servidor.pedir('POST', '/acceso/salir');
+    this.temporal = null;
   },
 
   /* Las cuentas que se ven y los parámetros, y la propia cuenta como la tiene el servicio, que siempre queda
@@ -114,7 +136,8 @@ SRP.sesion = {
       if (this.usuario) SRP.remoto.cambiar(r.sinRed ? 'sin-senal' : 'error');
       return;
     }
-    if (r.datos.debeCambiar) { this.perdida((await this.temporal()).motivo); return; }
+    // La Administración le dio una temporal: se entra con ella para escribir una propia
+    if (r.datos.debeCambiar) { this.perdida('Su contraseña ahora es temporal: entre con ella para escribir una propia.'); return; }
     const antes = this.usuario;
     await SRP.remoto.bajarCatalogos();
     const u = await this.ponerAlDia(r.datos.usuario);

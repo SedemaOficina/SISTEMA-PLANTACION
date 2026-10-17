@@ -3860,3 +3860,20 @@
   · **«Deshacer carga»** la quita de la vista y de las cifras (decisión de Liber, D309), y el mismo archivo se
     puede volver a cargar.
   · Con datos de prueba nada cambia.
+
+- **D311. «Cambie su contraseña», al entrar con una temporal (bloque 231, versión 0.9.75).**
+  17-10-2026. Primera parte del paso 5, con la pantalla que aprobó Liber con su muestra.
+  · **Con datos reales**, quien entra con la contraseña temporal que le dio la Administración no entra todavía:
+    en lugar del formulario de entrada aparece «Cambie su contraseña», con su nombre. El servicio, mientras
+    tanto, sólo le deja cambiarla (`/acceso/contrasena`).
+  · **Lo que pide**, a la vista bajo el campo: al menos 10 caracteres, letras y números, y que no contenga su
+    correo; además, que sea distinta de la temporal y que las dos coincidan. Se revisa en el teléfono para decir
+    de una vez qué falta, y el servicio la vuelve a revisar con sus reglas.
+  · **«Mostrar lo que escribo»** cambia los dos campos para verlos. **«Guardar y entrar»** la cambia y entra
+    como siempre: bajan catálogos, cuentas y parámetros, y llega lo enviado. **«Salir sin cambiarla»** cierra la
+    sesión que abrió el servicio.
+  · El largo mínimo lo dice `CONTRASENA_MINIMA` (10), el mismo del servicio; si el SIA cambia el del servicio,
+    el servicio dice el suyo al rechazar.
+  · Si la Administración le restablece la contraseña mientras tenía la sesión abierta, al confirmar la sesión se
+    le pide entrar con la temporal nueva.
+  · Con datos de prueba nada cambia: no hay contraseñas.

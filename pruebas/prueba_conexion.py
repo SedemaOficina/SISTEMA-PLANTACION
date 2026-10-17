@@ -11,7 +11,8 @@ parámetros; que lo enviado llega del servidor y se ve sin guardarse en el telé
 que se piden al servidor al verlas o descargarlas, y la que no llegó no se ve rota; los avisos cuando no
 llega, sin señal o porque el servidor falló; que al volver a abrir se entra sin esperar y la sesión se
 confirma; que sin señal se entra igual, con los últimos parámetros; que un cambio de la cuenta en el servidor
-llega; que una sesión vencida pide la contraseña sin perder lo guardado; la contraseña temporal; que «Cerrar
+llega; que una sesión vencida pide la contraseña sin perder lo guardado; la contraseña temporal, que se cambia por
+una propia antes de entrar; que «Cerrar
 sesión» cierra también la del servicio y suelta lo enviado; cuánto tarda la Administración en traer todo; y el
 envío real: una jornada y sus árboles capturados en la pantalla llegan al servidor y vuelven con su folio, con su
 fotografía; lo capturado sin señal sale al volver; una corrección viaja como cambio; lo que el servidor no acepta
@@ -98,7 +99,7 @@ def entrar(pg, correo, clave):
     pg.fill('#acceso-correo', correo)
     pg.fill('#acceso-clave', clave)
     pg.click('#form-acceso button[type="submit"]')
-    pg.wait_for_function("() => !document.getElementById('navegacion').hidden || !document.getElementById('acceso-errores').hidden", timeout=30000)
+    pg.wait_for_function("() => !document.getElementById('navegacion').hidden || !document.getElementById('acceso-errores').hidden || !document.getElementById('form-temporal').hidden", timeout=30000)
 
 
 def dentro(pg):
@@ -292,9 +293,31 @@ def main():
             entrar(pg, CABO['correo'], CLAVE)
             ok(not dentro(pg) and 'hace falta conexión con el servidor' in pg.inner_text('#acceso-errores'), 'sin conexión con el servidor no se puede entrar la primera vez, y se dice')
             ctx.unroute('**/api/srp/**')
+            # Con una contraseña temporal, antes de entrar se escribe una propia
             entrar(pg, TEMPORAL['correo'], CLAVE)
-            ok(not dentro(pg) and 'Su contraseña es temporal' in pg.inner_text('#acceso-errores'), 'con una contraseña temporal no se entra todavía, y se dice')
-            ok(apoyo('sesiones', {'id': TEMPORAL['id']})['abiertas'] == 0, 'y la sesión que abrió el servicio para cambiarla queda cerrada')
+            t = pg.evaluate("() => [document.getElementById('form-acceso').hidden, !document.getElementById('form-temporal').hidden, document.getElementById('temporal-quien').textContent]")
+            ok(not dentro(pg) and t[0] and t[1] and TEMPORAL['nombre'] in t[2], 'con una contraseña temporal no se entra: se pide escribir una propia: %s' % t)
+            ERROR_TEMPORAL = "() => (document.getElementById('temporal-errores').hidden ? '' : document.getElementById('temporal-errores').textContent)"
+            for nueva, otra, espera in [('Corta 1', 'Corta 1', 'al menos 10 caracteres'), ('Solo letras aqui', 'Solo letras aqui', 'letras y números'),
+                                        ('Arbol nuevo 2026', 'Arbol nuevo 2027', 'no coinciden')]:
+                pg.fill('#temporal-nueva', nueva); pg.fill('#temporal-otra', otra); pg.click('#btn-temporal-guardar'); pg.wait_for_timeout(300)
+                e = pg.evaluate(ERROR_TEMPORAL)
+                ok(espera in e and not dentro(pg), 'una contraseña nueva que no cumple se dice en su campo y no se manda: %s' % e)
+            # Salir sin cambiarla cierra la sesión que abrió el servicio para cambiarla
+            pg.click('#btn-temporal-salir'); pg.wait_for_timeout(1200)
+            ok(not pg.evaluate("() => document.getElementById('form-acceso').hidden") and apoyo('sesiones', {'id': TEMPORAL['id']})['abiertas'] == 0,
+               '«Salir sin cambiarla» vuelve a la entrada y cierra la sesión que abrió el servicio')
+            entrar(pg, TEMPORAL['correo'], CLAVE)
+            pg.fill('#temporal-nueva', 'Arbol nuevo 2026'); pg.fill('#temporal-otra', 'Arbol nuevo 2026'); pg.click('#btn-temporal-guardar')
+            pg.wait_for_function("() => !document.getElementById('navegacion').hidden", timeout=30000)
+            aviso = pg.evaluate("() => document.getElementById('aviso').textContent")
+            ok(dentro(pg) and 'su contraseña quedó cambiada' in aviso, 'con una propia que cumple, entra: %s' % aviso)
+            pg.evaluate("() => { SRP.sesion.cerrar(); SRP.app.mostrarAcceso(); }"); pg.wait_for_timeout(800)
+            entrar(pg, TEMPORAL['correo'], CLAVE)
+            vieja = not dentro(pg) and 'Correo o contraseña incorrectos' in pg.inner_text('#acceso-errores')
+            entrar(pg, TEMPORAL['correo'], 'Arbol nuevo 2026')
+            ok(vieja and dentro(pg), 'desde entonces la temporal ya no sirve y la propia sí')
+            pg.evaluate("() => { SRP.sesion.cerrar(); SRP.app.mostrarAcceso(); }"); pg.wait_for_timeout(800)
 
             # Entrar: bajan la cuenta y los catálogos
             pedidos.clear()

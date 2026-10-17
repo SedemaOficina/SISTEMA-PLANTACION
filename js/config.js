@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 230',
+  ETAPA: 'Bloque 231',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -66,6 +66,8 @@ SRP.CONFIG = {
      backend, y en desarrollo pruebas/servir.py hace lo mismo. Un pedido sin respuesta en ESPERA_SERVIDOR_MS
      se da por sin conexión: lo capturado sigue en el teléfono. */
   API: '/api/srp',
+  // Lo menos que mide una contraseña propia: la del servicio, salvo que el SIA la cambie (entonces él dice la suya)
+  CONTRASENA_MINIMA: 10,
   ESPERA_SERVIDOR_MS: 20000,
 
   MAPA: {

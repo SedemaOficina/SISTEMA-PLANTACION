@@ -192,11 +192,14 @@ SRP.app = {
       boton.disabled = true; boton.setAttribute('aria-busy', 'true');
       const r = await SRP.sesion.autenticar(correo, clave);
       boton.disabled = false; boton.removeAttribute('aria-busy');
+      if (r.temporal) { caja.hidden = true; this.el('acceso-clave').value = ''; this.mostrarTemporal(r.cuenta); return; }
       if (!r.ok) { SRP.util.resumenErrores(caja, [['acceso-correo', r.motivo]], campos); return; }
       caja.hidden = true;
       this.el('acceso-clave').value = '';
       this.entrar();
     });
+
+    this.iniciarTemporal();
 
     this.el('btn-entrar-prueba').addEventListener('click', () => {
       const u = SRP.ref.usuarioPorId[this.el('sel-usuario-prueba').value];
@@ -322,6 +325,65 @@ SRP.app = {
   // Las cuentas de prueba que se ofrecen al entrar: una por rol distinto
   CUENTAS_POR_ROL: ['u-admin-1', 'u-dir-1', 'u-coord-1', 'u-cabo-1', 'u-dir-alc', 'u-coord-alc', 'u-cabo-alc'],
 
+  /* CONTRASEÑA TEMPORAL. Con datos reales, quien entra con la temporal que le dio la Administración escribe
+     una propia antes de seguir. Se revisa aquí con las reglas del servicio, para decir de una vez qué falta, y
+     el servicio la vuelve a revisar. */
+  iniciarTemporal() {
+    const campos = ['temporal-nueva', 'temporal-otra'];
+    this.el('temporal-regla-largo').textContent = 'Al menos ' + SRP.CONFIG.CONTRASENA_MINIMA + ' caracteres.';
+    this.el('btn-temporal-mostrar').addEventListener('click', (e) => {
+      const ver = e.currentTarget.getAttribute('aria-pressed') !== 'true';
+      e.currentTarget.setAttribute('aria-pressed', String(ver));
+      e.currentTarget.innerHTML = SRP.ICONOS.svg('ver', 'chico') + '<span>' + (ver ? 'Ocultar lo que escribo' : 'Mostrar lo que escribo') + '</span>';
+      campos.forEach(id => { this.el(id).type = ver ? 'text' : 'password'; });
+    });
+    SRP.ICONOS.poner(this.el('btn-temporal-mostrar'), 'ver', 'chico');
+    this.el('btn-temporal-guardar').innerHTML = SRP.ICONOS.svg('candado', 'medio') + '<span>Guardar y entrar</span>';
+    this.el('btn-temporal-salir').innerHTML = SRP.ICONOS.svg('salir', 'medio') + '<span>Salir sin cambiarla</span>';
+    this.el('btn-temporal-salir').addEventListener('click', () => { SRP.sesion.salirDeTemporal(); this.mostrarAcceso(); });
+    this.el('form-temporal').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const caja = this.el('temporal-errores'), boton = this.el('btn-temporal-guardar');
+      const nueva = this.el('temporal-nueva').value, otra = this.el('temporal-otra').value;
+      const errores = [];
+      const motivo = this.revisarContrasena(nueva);
+      if (motivo) errores.push(['temporal-nueva', motivo]);
+      if (!otra) errores.push(['temporal-otra', 'Escríbala otra vez.']);
+      else if (!motivo && otra !== nueva) errores.push(['temporal-otra', 'Las dos no coinciden: escríbalas igual.']);
+      if (SRP.util.resumenErrores(caja, errores, campos) || boton.disabled) return;
+      const libre = SRP.util.ocupado(boton, 'Guardando…', 'candado');
+      let r;
+      try { r = await SRP.sesion.cambiarTemporal(nueva); } finally { libre(); }
+      if (!r.ok) { SRP.util.resumenErrores(caja, [['temporal-nueva', r.motivo]], campos); return; }
+      caja.hidden = true;
+      this.entrar();
+      SRP.util.anunciar('Listo: su contraseña quedó cambiada. Desde ahora entra con ella.', 'exito');
+    });
+  },
+
+  // Lo que el servicio pide a una contraseña nueva; '' si está bien
+  revisarContrasena(nueva) {
+    const t = SRP.sesion.temporal, min = SRP.CONFIG.CONTRASENA_MINIMA;
+    if (!nueva) return 'Escriba su contraseña nueva.';
+    if (nueva.length < min) return 'La contraseña debe tener al menos ' + min + ' caracteres.';
+    if (!/[A-Za-zÁÉÍÓÚÑáéíóúñ]/.test(nueva) || !/\d/.test(nueva)) return 'La contraseña debe llevar letras y números.';
+    const usuario = String((t && t.cuenta.correo) || '').split('@')[0].toLowerCase();
+    if (usuario.length >= 4 && nueva.toLowerCase().includes(usuario)) return 'La contraseña no puede contener su correo.';
+    if (t && nueva === t.actual) return 'La contraseña nueva debe ser distinta de la temporal.';
+    return '';
+  },
+
+  mostrarTemporal(cuenta) {
+    this.el('form-acceso').hidden = true;
+    const f = this.el('form-temporal');
+    f.reset();
+    this.el('temporal-errores').hidden = true;
+    this.el('temporal-quien').innerHTML = 'Entró con una contraseña temporal, <b>' + SRP.util.escapar(SRP.util.nombreCompleto(cuenta) || cuenta.correo) + '</b>. ' +
+      'Antes de seguir, escriba una propia: sólo usted la sabrá.';
+    f.hidden = false;
+    this.el('temporal-nueva').focus();
+  },
+
   mostrarAcceso() {
     this.campoClave(true);
     this.menuCuenta(false);
@@ -333,6 +395,8 @@ SRP.app = {
     this.cerrarDatosPrueba();
     // Ninguna ventana de la sesión que terminó se queda encima de la entrada
     document.querySelectorAll('dialog[open]').forEach(d => d.close());
+    this.el('form-acceso').hidden = false;
+    this.el('form-temporal').hidden = true;
     this.el('franja-envio').hidden = true;
     this.el('form-acceso').reset();
     this.el('acceso-errores').hidden = true;

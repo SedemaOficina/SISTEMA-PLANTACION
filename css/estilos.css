@@ -222,6 +222,8 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 .opcional { font-weight: 400; color: var(--gris); }
 /* El asterisco es la señal visual; el atributo required es lo que anuncia el lector de pantalla */
 .obligatorio { color: var(--error); font-weight: 700; }
+/* Lo que pide una contraseña nueva, bajo su campo */
+.reglas-clave { margin: var(--e-1) 0 0; padding-left: var(--e-5); color: var(--gris); font-size: var(--t-s); }
 .titulo-bloque { font-size: var(--t-m); margin-bottom: var(--e-2); }
 .total { font-weight: 500; margin-top: var(--e-4); }
 /* Bloques de una vista: separados por un filete y con su título, para que cada cosa tenga su lugar */

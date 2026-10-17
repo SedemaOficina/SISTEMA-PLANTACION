@@ -5273,3 +5273,47 @@ No se probó:
 
 **Siguiente paso.** El paso 5: la pantalla para cambiar la contraseña temporal y Usuarios conectado. Son
 pantallas nuevas: primero se muestran.
+
+## Bloque 231 — «Cambie su contraseña», al entrar con una temporal (17-10-2026)
+
+**Versión 0.9.75.** Primera parte del paso 5 (D311), con la pantalla que aprobó Liber.
+
+| Qué | Con datos reales |
+|---|---|
+| Entrar con una temporal | Aparece «Cambie su contraseña», con su nombre |
+| Lo que pide | Al menos 10 caracteres, letras y números, sin su correo, distinta de la temporal |
+| Guardar y entrar | La cambia en el servicio y entra como siempre |
+| Salir sin cambiarla | Cierra la sesión que abrió el servicio |
+
+**Qué cambió.**
+- `index.html`: el formulario «Cambie su contraseña»; `css/estilos.css`: las reglas bajo el campo.
+- `js/sesion.js`: entrar con una temporal, cambiarla y salir sin cambiarla; lo que sigue a entrar quedó en un
+  solo lugar.
+- `js/app.js`: el formulario, lo que revisa y sus botones; `js/config.js`: `CONTRASENA_MINIMA`.
+- `VERSION`, `js/config.js` e `index.html`: la marca 0.9.75.
+- Pruebas: `prueba_conexion.py`, la cuenta con temporal recorre la pantalla nueva.
+- Documentación: `README.md`, `docs/FASE2-Y-TRASPASO.md` y `docs/MEJORAS.md`.
+
+**Pantalla: qué se agregó y qué se quitó.** Con datos de prueba, nada. Con datos reales se agregó «Cambie su
+contraseña» y el aviso «Listo: su contraseña quedó cambiada…»; se quitó el mensaje «Su contraseña es temporal…
+esta versión todavía no permite cambiarla».
+
+**Verificación.**
+- Conexión: `prueba_conexion.py`, 78 de 78. La cuenta con temporal:
+  - no entra: ve «Cambie su contraseña» con su nombre;
+  - una nueva corta, sin números o que no coincide se dice en su campo y no se manda;
+  - «Salir sin cambiarla» vuelve a la entrada y cierra la sesión en el servicio;
+  - con una que cumple, entra y se le dice; desde entonces la temporal ya no sirve y la propia sí.
+- Aplicación: `prueba.py`, 1 falla de 1,441, en una parte que este bloque no toca: la lista de Jornadas filtrada
+  por un día no tenía aún sus tres tarjetas cuando la prueba las contó, sin errores en la consola. No se
+  repitió la corrida: la del bloque siguiente la vuelve a pasar entera. `auditoria.py` dio 1 hallazgo, de
+  este bloque: una medida suelta en el estilo nuevo, que se cambió por la del proyecto; después, 144
+  comprobaciones sin hallazgos y `auditoria_css.py` 0 hallazgos.
+- La base local quedó sin datos de prueba.
+
+No se probó:
+- en un teléfono real (el teclado y el autocompletado de contraseñas de cada teléfono);
+- una temporal vencida: el servicio la rechaza al entrar con su propio mensaje, que ya probaba el servidor.
+
+**Siguiente paso.** Usuarios conectado: alta con la contraseña temporal a la vista una sola vez,
+«Restablecer contraseña», activar y desactivar, y editar, que todavía le falta al servidor.
