@@ -2,6 +2,9 @@
    Una sola puerta de alta: aquí se crea la cuenta, se le asigna institución, perfil, área y
    coordinador. Nadie se da de alta solo: la Secretaría da de alta también a las alcaldías, PAOT,
    SOBSE, empresas y organizaciones civiles, cuando lo solicitan. Todo cambio queda en la bitácora.
+   CON DATOS REALES cada cambio va al servidor, que lo vuelve a revisar, y sólo entonces cambia en el teléfono.
+   El alta y «Restablecer contraseña» dan una contraseña temporal, que se ve una sola vez para dársela a la
+   persona.
    EL ALTA VA DE LO GENERAL A LO PARTICULAR. Primero el tipo de institución (cuatro, fijos); luego la
    institución de ese tipo: las 16 alcaldías, fijas, o las de los otros tres tipos, que la
    Administración agrega a solicitud en Catálogos › Instituciones. Sólo la Secretaría lleva área y
@@ -14,6 +17,7 @@ SRP.usuarios = {
   editando: null, uso: {}, usos: {}, estado: 'todos', filtroOrg: '', filtroPerfil: '',
 
   el(id) { return document.getElementById(id); },
+  real() { return SRP.remoto.activo(); },
 
   iniciar() {
     this.el('usr-buscar').addEventListener('input', () => this.pintar());
@@ -51,14 +55,20 @@ SRP.usuarios = {
       if (b.dataset.accion === 'editar') this.abrirFormulario(u);
       if (b.dataset.accion === 'estado') this.cambiarEstado(u);
       if (b.dataset.accion === 'eliminar') this.eliminar(u);
+      if (b.dataset.accion === 'restablecer') this.restablecer(u);
     });
+    this.el('btn-clave-temporal-copiar').addEventListener('click', () => this.copiarTemporal());
+    this.el('btn-clave-temporal-listo').addEventListener('click', () => this.el('dlg-clave-temporal').close());
   },
 
   async preparar() {
     const plantaciones = await SRP.almacen.todos('plantaciones');
     this.uso = {};   // árboles a nombre de cada cuenta: la columna «Registros»
     plantaciones.forEach(p => { this.uso[p.cabo_id] = (this.uso[p.cabo_id] || 0) + 1; });
-    this.usos = await SRP.ref.usosDe('usuarios');   // todo lo que la nombra: decide si se puede eliminar
+    // Todo lo que la nombra: decide si se puede eliminar. Con datos reales lo cuenta el servidor; null si no respondió
+    this.usos = this.real() ? await this.usosDelServidor() : await SRP.ref.usosDe('usuarios');
+    // Con datos reales tampoco se elimina una cuenta que ya entró: el registro de entradas la nombra
+    if (this.real()) this.el('usr-nota-eliminar').textContent = 'Una cuenta con árboles, jornadas o cabos a su cargo, o que ya entró al sistema, no se elimina: se desactiva.';
     this.llenarFiltros();
     this.pintar();
   },
@@ -106,8 +116,10 @@ SRP.usuarios = {
       // dejaría el sistema sin quien administre
       const items = [{ accion: 'editar', texto: 'Editar', icono: 'lapiz' }];
       if (!soyYo) {
+        // Con datos reales hay contraseñas: la de una cuenta activa se puede cambiar por otra temporal
+        if (this.real() && u.activo) items.push({ accion: 'restablecer', texto: 'Restablecer contraseña', icono: 'candado' });
         items.push({ accion: 'estado', texto: u.activo ? 'Desactivar' : 'Activar', icono: u.activo ? 'cerrar' : 'palomita' });
-        if (!SRP.ref.totalUsos(this.usos[u.id])) items.push({ accion: 'eliminar', texto: 'Eliminar', icono: 'basura', peligro: true });
+        if (this.usos && !SRP.ref.totalUsos(this.usos[u.id])) items.push({ accion: 'eliminar', texto: 'Eliminar', icono: 'basura', peligro: true });
       }
       // Sólo se marca lo inactivo: casi todo está activo y marcarlo en cada tarjeta no distingue nada
       const estado = u.activo ? '' : '<span class="estado-texto" data-activo="false">Inactivo</span>';
@@ -300,6 +312,7 @@ SRP.usuarios = {
     const ahora = SRP.util.ahoraISO();
     const datos = { nombre_completo: d.nombre_completo, correo: d.correo, organizacion_id: d.organizacion_id, area_id: d.area_id,
       cargo_rol: d.cargo_rol, perfil: d.perfil, coordinadores_ids: d.coordinadores_ids };
+    if (this.real()) { await this.guardarEnServidor(datos); return; }
     let u, entrada;
     if (this.editando) {
       const previo = this.editando;
@@ -327,11 +340,20 @@ SRP.usuarios = {
     if (!SRP.permisos.exigir('usuario.administrar')) return;
     if (u.id === SRP.sesion.usuario.id) { SRP.util.anunciar('No puede desactivar su propia cuenta: el sistema se quedaría sin quien lo administre.', 'aviso'); return; }
     const activar = !u.activo;
-    const nuevo = Object.assign({}, u, { activo: activar, editado_por_id: SRP.sesion.usuario.id, fecha_ultima_edicion: SRP.util.ahoraISO() });
-    await SRP.almacen.guardarConBitacora('usuarios', nuevo, SRP.bitacora.entrada(activar ? 'ACTIVADO' : 'DESACTIVADO', 'usuario', u.id));
+    let nuevo = Object.assign({}, u, { activo: activar, editado_por_id: SRP.sesion.usuario.id, fecha_ultima_edicion: SRP.util.ahoraISO() });
+    let cerradas = 0;   // con datos reales, desactivar cierra sus sesiones abiertas
+    if (this.real()) {
+      const r = await SRP.servidor.pedir('POST', '/cuentas/' + encodeURIComponent(u.id) + '/estado', { activo: activar });
+      if (!r.ok) { this.noSePudo(r, 'la cuenta no cambió'); return; }
+      nuevo = await this.ponerDelServidor(r.datos.usuario, u);
+      cerradas = r.datos.sesionesCerradas || 0;
+    } else {
+      await SRP.almacen.guardarConBitacora('usuarios', nuevo, SRP.bitacora.entrada(activar ? 'ACTIVADO' : 'DESACTIVADO', 'usuario', u.id));
+    }
     await SRP.ref.recargar();
     const nombre = SRP.util.nombreCompleto(u);
-    SRP.util.anunciar(activar ? 'Cuenta de ' + nombre + ' activada.' : 'Cuenta de ' + nombre + ' desactivada: ya no puede entrar; sus registros siguen a su nombre.',
+    SRP.util.anunciar(activar ? 'Cuenta de ' + nombre + ' activada.'
+      : 'Cuenta de ' + nombre + ' desactivada: ' + (cerradas ? 'se cerró su sesión y ' : '') + 'ya no puede entrar; sus registros siguen a su nombre.',
       'exito', deshaciendo ? null : { deshacer: () => this.cambiarEstado(nuevo, true) });
     this.preparar();
   },
@@ -340,29 +362,128 @@ SRP.usuarios = {
     if (!SRP.permisos.exigir('usuario.administrar')) return;
     if (u.id === SRP.sesion.usuario.id) { SRP.util.anunciar('No puede eliminar su propia cuenta.', 'aviso'); return; }
     await this.preparar();                 // recuenta justo antes de decidir
+    if (!this.usos) { this.noSePudo({ sinRed: true }, 'la cuenta no se eliminó'); return; }
     // Cuenta en todas las tablas: árboles, jornadas de las que es cabo o encargado, cabos
-    // que coordina, cuentas y catálogos que dio de alta o editó
+    // que coordina, cuentas y catálogos que dio de alta o editó; con datos reales, también si ya entró
     const usos = this.usos[u.id];
     if (SRP.ref.totalUsos(usos)) {
       // Los cabos que coordina se dicen por su nombre: «aparece en 1 cuenta» no explicaba nada
       const cabos = SRP.ref.usuarios.filter(x => (x.coordinadores_ids || []).includes(u.id)).length;
-      const resto = Object.assign({}, usos, { usuarios: (usos.usuarios || 0) - cabos });
-      const motivo = [cabos ? 'coordina a ' + cabos + (cabos === 1 ? ' cabo' : ' cabos') : '',
-        SRP.ref.totalUsos(resto) ? 'aparece en ' + SRP.ref.textoUsos(resto) : ''].filter(Boolean).join(' y ');
+      const resto = SRP.ref.textoUsos(Object.assign({}, usos, { usuarios: (usos.usuarios || 0) - cabos }));
+      const partes = [cabos ? 'coordina a ' + cabos + (cabos === 1 ? ' cabo' : ' cabos') : '', resto ? 'aparece en ' + resto : '',
+        usos.entradas ? 'ya entró al sistema' : ''].filter(Boolean);
+      const motivo = partes.length > 1 ? partes.slice(0, -1).join(', ') + ' y ' + partes[partes.length - 1] : partes[0];
       SRP.util.anunciar('No se puede eliminar: ' + motivo + '. Desactive la cuenta: eso sí se deshace.', 'aviso');
       return;
     }
     const ok = await SRP.app.confirmar({ titulo: 'Eliminar cuenta', pregunta: '¿Eliminar la cuenta de ' + SRP.util.nombreCompleto(u) + '?',
-      puntos: ['No aparece en ningún árbol, jornada, cuenta ni catálogo.', 'La bitácora conserva la constancia.', 'Si sólo no debe entrar, desactívela: eso sí se deshace.'],
+      puntos: [this.real() ? 'No aparece en ningún árbol, jornada, cuenta ni catálogo, y nunca entró al sistema.' : 'No aparece en ningún árbol, jornada, cuenta ni catálogo.',
+        'La bitácora conserva la constancia.', 'Si sólo no debe entrar, desactívela: eso sí se deshace.'],
       irreversible: true, boton: 'Eliminar cuenta', icono: 'basura', escribir: u.correo, escribirEtiqueta: 'Para confirmar, escriba el correo de la cuenta:' });
     if (!ok) return;
-    await SRP.almacen.borrarConBitacora('usuarios', u.id,
-      SRP.bitacora.entrada('ELIMINADO', 'usuario', u.id, u.correo));
+    if (this.real()) {
+      const r = await SRP.servidor.pedir('DELETE', '/cuentas/' + encodeURIComponent(u.id));
+      if (!r.ok) { this.noSePudo(r, 'la cuenta no se eliminó'); return; }
+      await SRP.almacen.quitarLocal('usuarios', u.id);
+    } else {
+      await SRP.almacen.borrarConBitacora('usuarios', u.id,
+        SRP.bitacora.entrada('ELIMINADO', 'usuario', u.id, u.correo));
+    }
     await SRP.ref.recargar();
     SRP.util.anunciar('Cuenta eliminada.');
     this.preparar();
+  },
+
+  /* ---------- Con datos reales: el servidor ---------- */
+
+  // En qué aparece cada cuenta, contado en el servidor; null si no respondió
+  async usosDelServidor() {
+    const r = await SRP.servidor.pedir('GET', '/cuentas/usos');
+    return r.ok ? r.datos || {} : null;
+  },
+
+  // Los campos del servidor y los del formulario donde se dice su error
+  CAMPO_DEL_SERVIDOR: {
+    organizacion_id: 'usr-organizacion', area_id: 'usr-area', nombre_completo: 'usr-nombre-completo', correo: 'usr-correo',
+    cargo_rol: 'usr-cargo', perfil: 'usr-perfil', coordinadores_ids: 'usr-coordinadores'
+  },
+
+  // El alta o la edición va al servidor; si no la acepta, sus motivos van en el formulario, que sigue abierto
+  async guardarEnServidor(datos) {
+    const previo = this.editando;
+    const libre = SRP.util.ocupado(this.el('btn-usr-guardar'), 'Guardando…', 'disco');
+    let r;
+    try { r = previo ? await SRP.servidor.pedir('PUT', '/cuentas/' + encodeURIComponent(previo.id), datos) : await SRP.servidor.pedir('POST', '/cuentas', datos); }
+    finally { libre(); }
+    if (!r.ok) {
+      const errores = (r.errores || []).map(([campo, texto]) => [this.CAMPO_DEL_SERVIDOR[campo] || 'usr-nombre-completo', texto]);
+      if (errores.length) SRP.util.resumenErrores(this.el('usr-errores'), errores, this.CAMPOS);
+      else this.noSePudo(r, 'la cuenta no se guardó');
+      return;
+    }
+    const u = await this.ponerDelServidor(r.datos.usuario, previo);
+    this.el('dlg-usuario').close();
+    await SRP.ref.recargar();
+    this.preparar();
+    if (previo) SRP.util.anunciar('Cuenta actualizada.');
+    else this.mostrarTemporal(u, r.datos, true);
+  },
+
+  // La cuenta que devolvió el servidor, en el teléfono con lo que ya se sabía de ella
+  async ponerDelServidor(fila, previo) {
+    const yo = SRP.sesion.usuario.id, ahora = SRP.util.ahoraISO();
+    const u = previo ? Object.assign({}, previo, fila, { editado_por_id: yo, fecha_ultima_edicion: ahora })
+      : Object.assign({ fecha_creacion: ahora, creado_por_id: yo, editado_por_id: null, fecha_ultima_edicion: null }, fila);
+    await SRP.almacen.ponerLocal('usuarios', u);
+    return u;
+  },
+
+  /* RESTABLECER CONTRASEÑA: el servidor le pone otra temporal y cierra sus sesiones; lo que no haya enviado
+     se queda en cada teléfono. La propia no se restablece aquí: cada quien cambia la suya. */
+  async restablecer(u) {
+    if (!SRP.permisos.exigir('usuario.administrar') || u.id === SRP.sesion.usuario.id) return;
+    const ok = await SRP.app.confirmar({ titulo: 'Restablecer contraseña', pregunta: '¿Darle una contraseña temporal nueva a ' + SRP.util.nombreCompleto(u) + '?',
+      puntosTitulo: 'Qué pasa:', puntos: ['Su contraseña de ahora deja de servir.',
+        'Se cierra su sesión en todos sus teléfonos; lo que no haya enviado se queda guardado en cada uno.', 'Usted verá la temporal nueva para dársela.'],
+      boton: 'Restablecer', icono: 'candado' });
+    if (!ok) return;
+    const r = await SRP.servidor.pedir('POST', '/cuentas/' + encodeURIComponent(u.id) + '/restablecer');
+    if (!r.ok) { this.noSePudo(r, 'la contraseña no cambió'); return; }
+    this.mostrarTemporal(u, r.datos, false);
+  },
+
+  /* LA CONTRASEÑA TEMPORAL se ve una sola vez: el servidor no la guarda legible y no la vuelve a dar.
+     `alta`: la cuenta es nueva; si no, se restableció. */
+  mostrarTemporal(u, datos, alta) {
+    const esc = SRP.util.escapar, nombre = '<b>' + esc(SRP.util.nombreCompleto(u)) + '</b>';
+    this.el('clave-temporal-titulo').textContent = alta ? 'Cuenta creada' : 'Contraseña restablecida';
+    this.el('clave-temporal-intro').innerHTML = alta
+      ? 'La cuenta de ' + nombre + ' (' + esc(u.correo) + ') ya está dada de alta. Para que pueda entrar, dele esta contraseña temporal:'
+      : 'La contraseña de ' + nombre + ' se cambió por esta temporal. Désela para que vuelva a entrar:';
+    this.el('clave-temporal-valor').textContent = datos.temporal;
+    this.el('clave-temporal-vence').textContent = datos.temporalVence;
+    this.el('btn-clave-temporal-copiar').innerHTML = '<span>Copiar</span>';
+    this.el('dlg-clave-temporal').showModal();
+  },
+
+  // El botón dice si se copió: un aviso quedaría detrás de la ventana
+  async copiarTemporal() {
+    const b = this.el('btn-clave-temporal-copiar'), valor = this.el('clave-temporal-valor');
+    try {
+      await navigator.clipboard.writeText(valor.textContent);
+      b.innerHTML = SRP.ICONOS.svg('palomita', 'medio') + '<span>Copiada</span>';
+    } catch (e) {
+      // Sin permiso para copiar: queda seleccionada, para copiarla a mano
+      const rango = document.createRange(); rango.selectNodeContents(valor);
+      const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(rango);
+      b.innerHTML = '<span>Selecciónela y cópiela</span>';
+    }
+  },
+
+  noSePudo(r, que) {
+    SRP.util.anunciar(r.sinRed ? 'Sin conexión con el servidor: ' + que + '. Intente de nuevo cuando haya señal.' : r.mensaje, 'aviso');
   }
 };
 
 // Acciones que escriben en el teléfono: si fallan, se dice qué no se pudo hacer
-SRP.util.proteger(SRP.usuarios, { guardar: 'guardar la cuenta', cambiarEstado: 'cambiar el estado de la cuenta', eliminar: 'eliminar la cuenta' });
+SRP.util.proteger(SRP.usuarios, { guardar: 'guardar la cuenta', cambiarEstado: 'cambiar el estado de la cuenta', eliminar: 'eliminar la cuenta', restablecer: 'restablecer la contraseña' });

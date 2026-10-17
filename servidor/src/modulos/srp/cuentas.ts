@@ -3,20 +3,24 @@ import { Router, type Request, type RequestHandler, type Response } from "expres
 import type pg from "pg";
 import { cuentaPublica, sesionDe } from "./acceso";
 import { anotarCambio } from "./bitacora";
+import { TABLAS } from "./catalogos";
 import type { ConfigSrp } from "./config";
 import { derivar, temporal } from "./contrasenas";
 import { responder } from "./errores";
 import { alcanceSql, capacidadesDe, exigirPermiso, Parametros, PERFILES, SEDEMA, veArbolSql } from "./permisos";
-import { cerrarDeCuenta, type Usuario } from "./sesiones";
+import { cerrarDeCuenta, type Consultable, type Usuario } from "./sesiones";
 import { enTransaccion } from "./transaccion";
 
 /* CUENTAS: la lista que ve cada quien, y el alta, el restablecimiento de contraseña y la activación, que sólo
    hace quien tiene la regla `usuario.administrar` (permisos.ts): la Administración global.
 
-   GET  /cuentas                     las cuentas que ve cada quien (abajo); con sesión
-   POST /cuentas                     alta con contraseña temporal; responde la cuenta y la temporal
-   POST /cuentas/:id/restablecer     otra temporal; cierra las sesiones de la cuenta
-   POST /cuentas/:id/estado          { activo } → desactivar cierra las sesiones de la cuenta
+   GET    /cuentas                   las cuentas que ve cada quien (abajo); con sesión
+   GET    /cuentas/usos              en qué aparece cada cuenta: decide si se puede eliminar
+   POST   /cuentas                   alta con contraseña temporal; responde la cuenta y la temporal
+   PUT    /cuentas/:id               edición: nombre, institución, área, cargo, perfil y coordinadores (el correo no cambia)
+   POST   /cuentas/:id/restablecer   otra temporal; cierra las sesiones de la cuenta
+   POST   /cuentas/:id/estado        { activo } → desactivar cierra las sesiones de la cuenta
+   DELETE /cuentas/:id               elimina una cuenta que no aparece en nada; la que aparece, se desactiva
 
    La contraseña temporal se dice una sola vez, en la respuesta: la Administración la entrega a la
    persona por teléfono o en persona. Cada cambio deja su renglón en la bitácora, como en la aplicación. */
@@ -50,19 +54,23 @@ interface Alta {
 
 /* Las mismas reglas que el formulario de Usuarios de la aplicación (js/usuarios.js): institución
    activa, área en la Secretaría, nombre y al menos un apellido, correo válido y sin otra cuenta, cargo,
-   perfil, Administración global sólo en la Secretaría y coordinadores de la misma institución. */
-async function validarAlta(c: pg.PoolClient, d: Alta): Promise<[string, string][]> {
+   perfil, Administración global sólo en la Secretaría y coordinadores de la misma institución. Al editar
+   (`previa`), el correo no cambia y la institución sólo se revisa si cambió; quien coordina cabos no cambia de
+   institución, y quien administra no se quita a sí mismo la Administración. */
+async function validarAlta(c: pg.PoolClient, d: Alta, previa: Usuario | null = null, actor: Usuario | null = null): Promise<[string, string][]> {
   const e: [string, string][] = [];
   const org = d.organizacion_id ? (await c.query<{ activo: boolean }>("SELECT activo FROM srp.instituciones WHERE id = $1", [d.organizacion_id])).rows[0] : undefined;
   if (!org) e.push(["organizacion_id", "Elija la institución."]);
-  else if (!org.activo) e.push(["organizacion_id", "Esa institución está desactivada."]);
+  else if (!org.activo && (!previa || previa.organizacion_id !== d.organizacion_id)) e.push(["organizacion_id", "Esa institución está desactivada."]);
   const sedema = d.organizacion_id === SEDEMA;
   if (sedema && !d.area_id) e.push(["area_id", "Elija el área."]);
   if (d.area_id && !(await c.query("SELECT 1 FROM srp.areas WHERE id = $1 AND activo", [d.area_id])).rowCount) e.push(["area_id", "Esa área no existe o está desactivada."]);
   if (!d.nombre_completo) e.push(["nombre_completo", "Escriba el nombre completo."]);
   else if (d.nombre_completo.split(" ").length < 2) e.push(["nombre_completo", "Escriba nombre y al menos un apellido."]);
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.correo)) e.push(["correo", "Escriba un correo válido."]);
-  else if ((await c.query("SELECT 1 FROM srp.usuarios WHERE correo = $1", [d.correo])).rowCount) e.push(["correo", "Ese correo ya tiene cuenta."]);
+  if (!previa) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.correo)) e.push(["correo", "Escriba un correo válido."]);
+    else if ((await c.query("SELECT 1 FROM srp.usuarios WHERE correo = $1", [d.correo])).rowCount) e.push(["correo", "Ese correo ya tiene cuenta."]);
+  }
   if (!d.cargo_rol) e.push(["cargo_rol", "Escriba el cargo."]);
   if (!Object.hasOwn(PERFILES, d.perfil)) e.push(["perfil", "Elija el perfil de captura."]);
   else if (d.perfil === "ADMIN" && !sedema) e.push(["perfil", "La Administración global es sólo de la Secretaría."]);
@@ -75,6 +83,13 @@ async function validarAlta(c: pg.PoolClient, d: Alta): Promise<[string, string][
     ).rows[0].n;
     if (ok !== d.coordinadores_ids.length) e.push(["coordinadores_ids", "Los coordinadores del cabo son de su misma institución."]);
   }
+  if (previa && previa.organizacion_id !== d.organizacion_id) {
+    const cabos = (await c.query<{ n: number }>("SELECT count(*)::int AS n FROM srp.usuarios WHERE coordinadores_ids @> ARRAY[$1::uuid]", [previa.id])).rows[0].n;
+    if (cabos) e.push(["organizacion_id", "Coordina a " + cabos + (cabos === 1 ? " cabo" : " cabos") + ": asígnelos a otra persona antes de cambiarla de institución."]);
+  }
+  if (previa && actor && previa.id === actor.id && d.perfil !== "ADMIN") {
+    e.push(["perfil", "No puede cambiar su propio perfil de administración. Pida a otra cuenta de administración que lo haga."]);
+  }
   return e;
 }
 
@@ -84,6 +99,51 @@ async function validarAlta(c: pg.PoolClient, d: Alta): Promise<[string, string][
    coordinadores; el cabo, la suya y las de sus coordinadores. Y todos, además, a quien aparezca en las
    jornadas y los árboles que ven: titulares, relevos, encargados y quien los editó. */
 const SIN_CORREO = ["id", "nombre_completo", "organizacion_id", "area_id", "cargo_rol", "perfil", "coordinadores_ids", "activo"];
+
+/* EN QUÉ APARECE CADA CUENTA, contado por renglón: árboles, jornadas (también en sus relevos), otras cuentas (las
+   que dio de alta o editó, y los cabos que coordina), catálogos, y las entradas al sistema, que dejan constancia.
+   Lo mismo que cuenta la aplicación con datos de prueba, más las entradas. Quien revisó duplicados, cambió
+   parámetros, hizo una carga o subió fotografías ya entró: las entradas lo cubren. */
+type OrigenCuenta = "plantaciones" | "jornadas" | "usuarios" | "catalogos" | "entradas";
+type UsosCuenta = Partial<Record<OrigenCuenta, number> & { cabos: number }>;
+
+const ORIGENES_CUENTA: [OrigenCuenta, string][] = [
+  ["plantaciones", "SELECT x.id::text AS fila, v FROM srp.plantaciones x, unnest(ARRAY[x.cabo_id::text, x.editado_por_id::text]) v"],
+  ["jornadas", `SELECT x.id::text AS fila, v FROM srp.jornadas x, unnest(ARRAY[x.cabo_id::text, x.encargado_id::text, x.relevo_id::text, x.editado_por_id::text]
+      || ARRAY(SELECT y.r ->> k FROM jsonb_array_elements(x.relevos) y(r), unnest(ARRAY['cabo_id', 'por_id']) k)) v`],
+  // Quien se nombra a sí mismo (editó su propia cuenta) no cuenta
+  ["usuarios", "SELECT x.id::text AS fila, v FROM srp.usuarios x, unnest(ARRAY[x.creado_por_id::text, x.editado_por_id::text] || x.coordinadores_ids::text[]) v WHERE v <> x.id::text"],
+  ["catalogos", TABLAS.map((t) => `SELECT '${t}:' || x.id AS fila, v FROM srp.${t} x, unnest(ARRAY[x.creado_por_id::text, x.editado_por_id::text]) v`).join(" UNION ALL ")],
+  ["entradas", "SELECT x.id::text AS fila, x.usuario_id::text AS v FROM srp.bitacora_acceso x"],
+];
+
+// { id: { tabla: n } } de todas las cuentas, o sólo de `id`; `cabos`: cuántos cabos coordina, ya contados en `usuarios`
+async function usosDeCuentas(bd: Consultable, id: string | null = null): Promise<Record<string, UsosCuenta>> {
+  const usos: Record<string, UsosCuenta> = {};
+  const solo = id ? " AND v = $1" : "";
+  for (const [origen, sql] of ORIGENES_CUENTA) {
+    const { rows } = await bd.query<{ id: string; n: number }>(
+      `SELECT v AS id, count(DISTINCT fila)::int AS n FROM (${sql}) s WHERE v IS NOT NULL${solo} GROUP BY v`, id ? [id] : []);
+    for (const r of rows) (usos[r.id] ??= {})[origen] = r.n;
+  }
+  const { rows } = await bd.query<{ id: string; n: number }>(
+    `SELECT v::text AS id, count(*)::int AS n FROM srp.usuarios x, unnest(x.coordinadores_ids) v WHERE v <> x.id${id ? " AND v = $1" : ""} GROUP BY v`, id ? [id] : []);
+  for (const r of rows) (usos[r.id] ??= {}).cabos = r.n;
+  return usos;
+}
+
+const NOMBRES_USO: Record<Exclude<OrigenCuenta, "entradas">, [string, string]> = {
+  plantaciones: ["árbol", "árboles"], jornadas: ["jornada", "jornadas"], usuarios: ["cuenta", "cuentas"], catalogos: ["catálogo", "catálogos"],
+};
+
+// «coordina a 2 cabos, aparece en 12 árboles y 1 jornada y ya entró al sistema»; '' si no aparece en nada
+function textoUsosCuenta(u: UsosCuenta | undefined): string {
+  if (!u) return "";
+  const resto = { ...u, usuarios: (u.usuarios ?? 0) - (u.cabos ?? 0) };
+  const lista = (partes: string[]) => (partes.length > 1 ? partes.slice(0, -1).join(", ") + " y " + partes[partes.length - 1] : partes[0] || "");
+  const aparece = lista((Object.keys(NOMBRES_USO) as (keyof typeof NOMBRES_USO)[]).filter((t) => resto[t]).map((t) => resto[t] + " " + NOMBRES_USO[t][resto[t] === 1 ? 0 : 1]));
+  return lista([u.cabos ? "coordina a " + u.cabos + (u.cabos === 1 ? " cabo" : " cabos") : "", aparece ? "aparece en " + aparece : "", u.entradas ? "ya entró al sistema" : ""].filter(Boolean));
+}
 
 function cuentasVisiblesSql(u: Usuario, p: Parametros): string {
   const alcance = capacidadesDe(u).alcance;
@@ -123,6 +183,10 @@ export function rutasCuentas(pool: pg.Pool, config: ConfigSrp, sesion: RequestHa
 
   r.use("/cuentas", sesion, exigirPermiso("usuario.administrar"));
 
+  r.get("/cuentas/usos", async (req: Request, res: Response) => {
+    res.json(await usosDeCuentas(pool));
+  });
+
   r.post("/cuentas", async (req: Request, res: Response) => {
     const b = req.body ?? {}, actor = sesionDe(res).usuario;
     const sedema = b.organizacion_id === SEDEMA;
@@ -155,6 +219,41 @@ export function rutasCuentas(pool: pg.Pool, config: ConfigSrp, sesion: RequestHa
     res.status(201).json({ ...resultado, temporalVence: config.acceso.temporalHoras + " horas" });
   });
 
+  r.put("/cuentas/:id", async (req: Request, res: Response) => {
+    const b = req.body ?? {}, actor = sesionDe(res).usuario, id = String(req.params.id);
+    if (!UUID.test(id)) return responder(res, 404, "NO_EXISTE", "Esa cuenta no existe.");
+    const resultado = await enTransaccion(pool, async (c) => {
+      const previa = (await c.query<Usuario>("SELECT * FROM srp.usuarios WHERE id = $1 FOR UPDATE", [id])).rows[0];
+      if (!previa) return null;
+      const sedema = b.organizacion_id === SEDEMA;
+      const d: Alta = {
+        id, correo: previa.correo,
+        nombre_completo: limpio(b.nombre_completo),
+        organizacion_id: limpio(b.organizacion_id),
+        area_id: sedema ? limpio(b.area_id) || null : null,
+        cargo_rol: limpio(b.cargo_rol),
+        perfil: limpio(b.perfil),
+        coordinadores_ids: b.perfil === "CABO" && Array.isArray(b.coordinadores_ids) ? b.coordinadores_ids.filter((x: unknown) => typeof x === "string" && UUID.test(x)) : [],
+      };
+      const errores = await validarAlta(c, d, previa, actor);
+      if (errores.length) return { errores };
+      // La bitácora dice qué campos cambiaron, como en la aplicación
+      const campos = ["nombre_completo", "organizacion_id", "area_id", "cargo_rol", "perfil", "coordinadores_ids"] as const;
+      const valor = (o: Record<string, unknown>, k: string) => (k === "coordinadores_ids" ? [...((o[k] as string[]) ?? [])].sort().join(",") : String(o[k] ?? ""));
+      const cambiados = campos.filter((k) => valor(previa as unknown as Record<string, unknown>, k) !== valor(d as unknown as Record<string, unknown>, k));
+      const u = (await c.query<Usuario>(
+        `UPDATE srp.usuarios SET nombre_completo = $2, organizacion_id = $3, area_id = $4, cargo_rol = $5, perfil = $6, coordinadores_ids = $7,
+            fecha_ultima_edicion = now(), editado_por_id = $8 WHERE id = $1 RETURNING *`,
+        [id, d.nombre_completo, d.organizacion_id, d.area_id, d.cargo_rol, d.perfil, d.coordinadores_ids, actor.id],
+      )).rows[0];
+      await anotarCambio(c, actor, "EDITADO", "usuario", id, "Campos: " + (cambiados.join(", ") || "ninguno"));
+      return { usuario: cuentaPublica(u) };
+    });
+    if (!resultado) return responder(res, 404, "NO_EXISTE", "Esa cuenta no existe.");
+    if ("errores" in resultado) return res.status(400).json({ codigo: "DATOS_INVALIDOS", mensaje: "Revise los datos de la cuenta.", errores: resultado.errores });
+    res.json(resultado);
+  });
+
   r.post("/cuentas/:id/restablecer", async (req: Request, res: Response) => {
     const actor = sesionDe(res).usuario, id = String(req.params.id);
     if (!UUID.test(id)) return responder(res, 404, "NO_EXISTE", "Esa cuenta no existe.");
@@ -184,6 +283,30 @@ export function rutasCuentas(pool: pg.Pool, config: ConfigSrp, sesion: RequestHa
     });
     if (!r2) return responder(res, 404, "NO_EXISTE", "Esa cuenta no existe.");
     res.json(r2);
+  });
+
+  /* Sólo una cuenta que no aparece en nada (arriba): una que ya entró al sistema deja constancia. Si algo la
+     nombra y no se contó, la llave foránea de la base tampoco la deja ir. */
+  r.delete("/cuentas/:id", async (req: Request, res: Response) => {
+    const actor = sesionDe(res).usuario, id = String(req.params.id);
+    if (!UUID.test(id)) return responder(res, 404, "NO_EXISTE", "Esa cuenta no existe.");
+    if (id === actor.id) return responder(res, 400, "PROPIA", "No puede eliminar su propia cuenta.");
+    const eliminar = () => enTransaccion(pool, async (c) => {
+      const u = (await c.query<Usuario>("SELECT * FROM srp.usuarios WHERE id = $1 FOR UPDATE", [id])).rows[0];
+      if (!u) return null;
+      const usos = textoUsosCuenta((await usosDeCuentas(c, id))[id]);
+      if (usos) return { usos };
+      await c.query("DELETE FROM srp.usuarios WHERE id = $1", [id]);
+      await anotarCambio(c, actor, "ELIMINADO", "usuario", id, u.correo);
+      return { ok: true };
+    });
+    const resultado = await eliminar().catch((e: { code?: string }) => {
+      if (e?.code === "23503") return { usos: "aparece en otro registro" };
+      throw e;
+    });
+    if (!resultado) return responder(res, 404, "NO_EXISTE", "Esa cuenta no existe.");
+    if ("usos" in resultado) return responder(res, 409, "EN_USO", "No se puede eliminar: " + resultado.usos + ". Desactívela: eso sí se deshace.");
+    res.json(resultado);
   });
 
   return r;

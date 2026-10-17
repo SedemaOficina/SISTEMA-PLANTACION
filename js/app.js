@@ -655,6 +655,7 @@ SRP.app = {
     I('btn-reiniciar-filtros', 'cerrar', 'Quitar filtros', 'chico');   // un nombre por acción
     I('btn-coord-aplicar', 'ubicacion', 'Colocar punto');
     I('btn-cambiar-nueva', 'mas', 'Iniciar otra jornada');
+    I('btn-clave-temporal-listo', 'palomita', 'Listo');
     // Toda × de cabecera cierra su propio diálogo; cada módulo reacciona al evento «close» si lo necesita
     document.querySelectorAll('.dialogo-cerrar').forEach(b => {
       b.innerHTML = SRP.ICONOS.svg('cerrar', 'grande');

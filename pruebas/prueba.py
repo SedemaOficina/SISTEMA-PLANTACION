@@ -1735,11 +1735,12 @@ with sync_playwright() as p:
     ok(pg.is_hidden('#dlg-confirmar-titulo') and pg.is_hidden('#dlg-confirmar-puntos') and pg.is_hidden('#dlg-confirmar-nota') and pg.get_attribute('#dlg-confirmar','aria-labelledby')=='dlg-confirmar-texto'
        and 'btn-exito' in pg.get_attribute('#btn-confirmar-si','class'),'la forma corta sigue sirviendo: sólo la pregunta y el botón')
     pg.click('#btn-confirmar-no'); pg.wait_for_timeout(200)
-    # Quedan cinco tipos de confirmación que no se deshacen, más cerrar y otro día; ninguna para lo reversible
+    # Quedan los tipos de confirmación que no se deshacen, más cerrar y otro día; ninguna para lo reversible.
+    # En cuentas: eliminar y, con datos reales, restablecer la contraseña (la de antes deja de servir)
     usos=pg.evaluate("""async () => { const r = await fetch('js/registros.js?x=' + Date.now()).then(x => x.text());
       const c = await fetch('js/catalogos.js?x=' + Date.now()).then(x => x.text()); const u = await fetch('js/usuarios.js?x=' + Date.now()).then(x => x.text());
       return [(r.match(/confirmar\\(/g) || []).length, (c.match(/confirmar\\(/g) || []).length, (u.match(/confirmar\\(/g) || []).length]; }""")
-    ok(usos==[0,1,1],'lo reversible no confirma: registros 0; catálogo y cuentas sólo al eliminar: %s' % usos)
+    ok(usos==[0,1,2],'lo reversible no confirma: registros 0; catálogo sólo al eliminar; cuentas al eliminar y al restablecer la contraseña: %s' % usos)
 
     # ---------- CAMPOS ----------
     pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(500)

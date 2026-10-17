@@ -129,8 +129,11 @@ variables de entorno, está explicada en `src/modulos/srp/config.ts`. Las respue
 | `GET /acceso/yo` | La cuenta de la sesión y si debe cambiar su contraseña | Con sesión |
 | `POST /acceso/contrasena` | Cambia la contraseña; cierra las demás sesiones de la cuenta | Con sesión |
 | `POST /cuentas` | Alta con contraseña temporal, que se responde una sola vez | Administración global |
+| `PUT /cuentas/:id` | Edición: nombre, institución, área, cargo, perfil y coordinadores; el correo no cambia | Administración global |
 | `POST /cuentas/:id/restablecer` | Otra contraseña temporal; cierra las sesiones de la cuenta | Administración global |
 | `POST /cuentas/:id/estado` | Activa o desactiva; desactivar cierra sus sesiones | Administración global |
+| `GET /cuentas/usos` | En qué aparece cada cuenta: árboles, jornadas, otras cuentas (y los cabos que coordina), catálogos y si ya entró al sistema | Administración global |
+| `DELETE /cuentas/:id` | Elimina una cuenta que no aparece en nada y nunca entró; la que aparece, se desactiva | Administración global |
 | `GET /catalogos` | Los seis catálogos completos, también lo inactivo | Con sesión |
 | `GET /catalogos/:tabla/usos` | Cuántos árboles, jornadas y cuentas usan cada valor | Administración global |
 | `POST /catalogos/:tabla` | Alta de un valor | Administración global |
@@ -424,7 +427,8 @@ esa base y nunca sobre una instalación anterior.
 - `pruebas/acceso.test.js`: levanta el servicio y lo usa como la aplicación: entrar, salir, alta con
   temporal, cambio obligatorio, bloqueo (también con intentos simultáneos), restablecimiento,
   desactivación, institución desactivada, vencimiento de la sesión y de la temporal, y el registro de
-  entradas.
+  entradas; editar una cuenta con las reglas del formulario, y eliminar sólo la que no aparece en nada (una
+  que ya entró, o que coordina a un cabo, no se elimina).
 - `pruebas/catalogos.test.js`: carga el editor de catálogos de la aplicación tal cual y compara su
   validación con la del servidor, caso por caso; luego da de alta, edita, activa, desactiva y elimina por
   las rutas, y revisa la bitácora y que lo que cuenta como uso sean las llaves foráneas de la base.

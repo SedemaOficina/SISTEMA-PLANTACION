@@ -3877,3 +3877,24 @@
   · Si la Administración le restablece la contraseña mientras tenía la sesión abierta, al confirmar la sesión se
     le pide entrar con la temporal nueva.
   · Con datos de prueba nada cambia: no hay contraseñas.
+
+- **D312. Usuarios, conectado (bloque 232, versión 0.9.76).**
+  17-10-2026. Segunda parte del paso 5, con las pantallas que aprobó Liber con su muestra.
+  · **Con datos reales** (`js/usuarios.js`), el alta, la edición, activar, desactivar y eliminar van al
+    servidor, que los revisa con las mismas reglas del formulario; sólo cuando responde cambia el teléfono. Si
+    el servidor no acepta algo, lo dice en su campo y el formulario sigue abierto. Sin conexión no cambia nada
+    y se dice.
+  · **La contraseña temporal** se ve una sola vez, en la ventana «Cuenta creada» (al dar de alta) o
+    «Contraseña restablecida»: grande, en letra de ancho fijo, con «Copiar», cuándo vence, que al entrar se
+    le pedirá cambiarla, que se entrega en persona o por teléfono y que no se vuelve a mostrar.
+  · **«Restablecer contraseña»**, en la tuerca de cada cuenta activa salvo la propia, pregunta antes: la
+    contraseña de ahora deja de servir y se cierra su sesión en todos sus teléfonos, sin perder lo que no haya
+    enviado.
+  · **Desactivar** cierra sus sesiones, y el aviso lo dice; «Deshacer» la vuelve a activar.
+  · **Eliminar** sólo aparece si la cuenta no aparece en nada: ni en árboles, jornadas, otras cuentas o
+    catálogos, ni coordina cabos, y nunca entró al sistema. Lo cuenta el servidor (`GET /cuentas/usos`) y lo
+    vuelve a revisar al eliminar. Antes, una cuenta de coordinación con cabos que nunca había entrado se podía
+    eliminar en el servidor, porque esa lista no es una llave foránea de la base: ahora no.
+  · El texto aprobado decía que la temporal «sirve una sola vez»; en realidad sirve hasta que la persona
+    escribe una propia o vence. La ventana dice sólo «Vence en 72 horas» (lo que diga el servicio).
+  · Con datos de prueba nada cambia: no hay contraseñas, y no aparece «Restablecer contraseña».

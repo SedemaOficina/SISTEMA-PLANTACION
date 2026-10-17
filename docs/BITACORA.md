@@ -5317,3 +5317,69 @@ No se probó:
 
 **Siguiente paso.** Usuarios conectado: alta con la contraseña temporal a la vista una sola vez,
 «Restablecer contraseña», activar y desactivar, y editar, que todavía le falta al servidor.
+
+## Bloque 232 — Usuarios, conectado (17-10-2026)
+
+**Versión 0.9.76.** Segunda y última parte del paso 5 (D312), con las pantallas que aprobó Liber.
+
+| Qué | Con datos reales |
+|---|---|
+| Dar de alta | En el servidor; la ventana «Cuenta creada» enseña la contraseña temporal una vez, con «Copiar» |
+| Editar | En el servidor, con sus reglas; el correo no cambia |
+| Restablecer contraseña | En la tuerca, con confirmación; enseña la temporal nueva y cierra sus sesiones |
+| Desactivar | Cierra sus sesiones; «Deshacer» la activa otra vez |
+| Eliminar | Sólo si no aparece en nada y nunca entró, contado en el servidor |
+| Sin conexión | No cambia nada, y se dice |
+
+**Qué cambió.**
+- `servidor/src/modulos/srp/cuentas.ts`: editar una cuenta (`PUT /cuentas/:id`), en qué aparece cada
+  cuenta (`GET /cuentas/usos`) y eliminarla (`DELETE /cuentas/:id`).
+- `js/usuarios.js`: la pantalla con el servidor, «Restablecer contraseña» y la ventana de la temporal;
+  `index.html` y `css/estilos.css`: esa ventana; `js/app.js`: su botón «Listo».
+- `VERSION`, `js/config.js` e `index.html`: la marca 0.9.76.
+- Pruebas: `servidor/pruebas/acceso.test.js` (editar y eliminar), `prueba_conexion.py` (Usuarios como
+  Administración) y su apoyo, que quita también las cuentas que la prueba da de alta; `prueba.py` cuenta la
+  confirmación nueva de cuentas («Restablecer contraseña», que no se deshace).
+- Documentación: `README.md`, `servidor/README.md`, `docs/FASE2-Y-TRASPASO.md` y `docs/MEJORAS.md`.
+
+**Pantalla: qué se agregó y qué se quitó.** Con datos de prueba, nada. Con datos reales se agregó
+«Restablecer contraseña» en la tuerca de cada cuenta activa (no en la propia), la ventana de la contraseña
+temporal y los avisos de cuando no hay conexión; el aviso de desactivar dice si cerró su sesión, y la nota
+sobre la lista dice que una cuenta que ya entró al sistema tampoco se elimina. «Eliminar» aparece en menos
+cuentas: ya no en una que entró alguna vez. No se quitó nada más.
+
+**Verificación.**
+- Servidor: `npm test`, 90 sin fallas (las 2 nuevas de cuentas incluidas). Las pruebas nuevas:
+  - editar sigue las reglas del formulario: el correo no cambia, quien coordina cabos no cambia de
+    institución y nadie se quita su propia Administración;
+  - eliminar sólo la cuenta sin uso: una que ya entró o que coordina a un cabo responde por qué no;
+  - un cabo no edita, no elimina y no ve los usos.
+- Conexión: `prueba_conexion.py`, 90 de 90 en dos corridas (12 comprobaciones nuevas). Como Administración,
+  en la pantalla:
+  - la cuenta propia sólo se edita, y otra con uso ofrece «Restablecer contraseña» y no «Eliminar»;
+  - el alta va al servidor y «Cuenta creada» enseña la temporal y cuándo vence; «Copiar» la copia;
+  - con esa temporal la cuenta nueva entra, en otro navegador, y se le pide escribir una propia;
+  - editar va al servidor y cambia en el teléfono;
+  - «Restablecer contraseña» pregunta y da otra temporal: la de antes ya no sirve y la nueva sí;
+  - desactivar cierra su sesión y lo dice, y «Deshacer» la activa otra vez;
+  - una cuenta que ya entró no se elimina y se dice por qué; una sin uso se elimina del servidor;
+  - sin conexión el alta no se guarda, se dice y el formulario sigue abierto con lo escrito.
+- Copia del servicio del SIA: compila sin errores y su prueba de humo da 23 de 23.
+- Aplicación: `prueba.py`, en tres corridas completas:
+  - la primera dio 1 falla de 1,441, de este bloque: la comprobación que cuenta las confirmaciones esperaba
+    una sola en Usuarios, y ahora hay dos —eliminar y «Restablecer contraseña», que no se deshace—; se ajustó;
+  - la segunda se cortó porque el servidor local de la prueba se apagó por tiempo;
+  - la tercera dio 1 falla de 1,441, en una parte que este bloque no toca: «Este año» en Jornadas, cuya lista
+    no estaba lista a los 0.6 segundos que espera la prueba. En la primera corrida pasó.
+  Así, con el mismo código, cada comprobación pasó en al menos una corrida. Después se agregó la nota de
+  Usuarios con datos reales, que no cambia nada con datos de prueba; la comprobó la segunda corrida de
+  `prueba_conexion.py`. `auditoria.py`, 144 comprobaciones sin hallazgos; `auditoria_css.py`, 0 hallazgos.
+- La base local quedó sin datos de prueba.
+
+No se probó:
+- en un teléfono real («Copiar» depende de que el navegador lo permita: si no, la temporal queda
+  seleccionada para copiarla a mano, y eso no se probó);
+- que el servidor rechace en la edición algo que el teléfono dejó pasar: lo prueba el servidor.
+
+**Siguiente paso.** La revisión del servidor (bloque 233), antes del manual de la Administración y del
+paquete v1.

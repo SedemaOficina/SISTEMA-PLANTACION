@@ -25,7 +25,9 @@ bitácora del servidor: el historial de un árbol que ya salió del teléfono y 
 que la Administración cambia en el servidor para todos los teléfonos; y la bandeja de posibles duplicados:
 la tarjeta, cada pareja con su mapa y sus dos árboles, y «Es el mismo árbol» o «Son distintos»; y la carga
 masiva: el archivo sube al servidor por tandas, los árboles vuelven con folio y se ven, «Deshacer carga» los
-quita de la vista, el mismo archivo se puede volver a cargar y sin conexión no se carga nada.
+quita de la vista, el mismo archivo se puede volver a cargar y sin conexión no se carga nada; y Usuarios: el alta
+da una contraseña temporal que se ve una vez y con la que la cuenta nueva entra a escribir una propia, editar,
+«Restablecer contraseña», desactivar, eliminar una cuenta sin uso, y sin conexión nada cambia.
 
 Uso, desde la carpeta del proyecto (con la base local cargada):  python pruebas/prueba_conexion.py
 """
@@ -229,6 +231,31 @@ BANDEJA = """async estado => { SRP.app.mostrarVista('duplicados'); const s = doc
     parejas: [...document.querySelectorAll('#dup-lista > li')].map(li => ({ id: Number(li.dataset.pareja), cabeza: li.querySelector('.dup-cabeza').textContent,
       mapa: !!li.querySelector('.dup-mapa.leaflet-container'), arboles: [...li.querySelectorAll('.dup-arboles section')].map(x => x.textContent),
       botones: [...li.querySelectorAll('button[data-resolver]')].map(b => b.textContent.trim()), revisada: (li.querySelector('.dup-revisada') || {}).textContent || '' })) }; }"""
+
+
+# Usuarios: las acciones del menú de una cuenta, la cuenta como la tiene el servidor y la ventana de la temporal
+MENU_DE = """id => { const tr = document.querySelector('#tabla-usuarios tr[data-id="' + id + '"]');
+  return tr ? [...tr.querySelectorAll('.menu-opcion')].map(b => b.dataset.accion) : null; }"""
+CUENTA_SRV = """async correo => { const r = await SRP.servidor.pedir('GET', '/cuentas');
+  return r.ok ? r.datos.filas.find(u => u.correo === correo) || null : 'sin respuesta'; }"""
+VENTANA_TEMPORAL = """() => { const t = id => document.getElementById(id).textContent;
+  return { abierta: document.getElementById('dlg-clave-temporal').open, titulo: t('clave-temporal-titulo'), intro: t('clave-temporal-intro'),
+    valor: t('clave-temporal-valor'), vence: t('clave-temporal-vence') }; }"""
+AVISO = "() => document.getElementById('aviso').hidden ? '' : document.getElementById('aviso').textContent"
+
+
+def accion_usuario(pg, id, accion):
+    pg.click('#tabla-usuarios tr[data-id="%s"] .btn-tuerca' % id)
+    pg.click('#tabla-usuarios .menu-acciones:not([hidden]) button[data-accion="%s"]' % accion)
+
+
+def alta_usuario(pg, nombre, correo):
+    pg.click('#btn-usr-agregar'); pg.wait_for_selector('#dlg-usuario[open]')
+    pg.select_option('#usr-tipo-org', 'Alcaldía')
+    pg.select_option('#usr-organizacion', label='Iztapalapa')
+    pg.fill('#usr-nombre-completo', nombre); pg.fill('#usr-correo', correo); pg.fill('#usr-cargo', 'Cabo de prueba')
+    pg.select_option('#usr-perfil', 'CABO')
+    pg.click('#btn-usr-guardar')
 
 
 # Lo que dice el servidor de los lotes de carga masiva
@@ -807,6 +834,103 @@ def main():
             ctx.unroute('**/api/srp/**')
             ok('Se perdió la conexión con el servidor: no se cargó nada' in aviso and not [x for x in pg.evaluate(LOTES) if x['archivo'] == nombre and x['estado'] != 'deshecha'],
                'sin conexión, la carga no sube nada y lo dice: %s' % aviso)
+
+            # ---------- Usuarios, con el servidor ----------
+            ctx.grant_permissions(['clipboard-read', 'clipboard-write'], origin=BASE.rstrip('/'))
+            pg.evaluate("SRP.app.mostrarVista('usuarios')"); pg.wait_for_timeout(2000)
+            menus = [pg.evaluate(MENU_DE, x['id']) for x in (ADMIN, CABO)]
+            nota = pg.inner_text('#usr-nota-eliminar')
+            ok(menus[0] == ['editar'] and menus[1] == ['editar', 'restablecer', 'estado'] and 'o que ya entró al sistema, no se elimina' in nota,
+               'en Usuarios, la cuenta propia sólo se edita; otra, ya con uso, ofrece «Restablecer contraseña» y no «Eliminar», y la nota dice que una que ya entró no se elimina: %s' % menus)
+            NUEVA = {'nombre': 'Prueba Alta Conexión', 'correo': 'alta.conexion.prueba.%s@ejemplo.local' % CORRIDA}
+            alta_usuario(pg, NUEVA['nombre'], NUEVA['correo'])
+            pg.wait_for_selector('#dlg-clave-temporal[open]', timeout=30000)
+            v = pg.evaluate(VENTANA_TEMPORAL)
+            srv = pg.evaluate(CUENTA_SRV, NUEVA['correo'])
+            ok(v['titulo'] == 'Cuenta creada' and NUEVA['nombre'] in v['intro'] and NUEVA['correo'] in v['intro'] and len(v['valor']) >= 10 and v['vence'] == '72 horas'
+               and srv and srv.get('perfil') == 'CABO' and srv.get('cargo_rol') == 'Cabo de prueba' and not pg.evaluate("() => document.getElementById('dlg-usuario').open"),
+               'el alta va al servidor y la ventana «Cuenta creada» enseña la contraseña temporal y cuándo vence: %s · %s' % ({**v, 'valor': len(v['valor'])}, srv and srv.get('cargo_rol')))
+            pg.click('#btn-clave-temporal-copiar'); pg.wait_for_timeout(500)
+            copiada = pg.evaluate("() => navigator.clipboard.readText()")
+            boton = pg.inner_text('#btn-clave-temporal-copiar')
+            pg.click('#btn-clave-temporal-listo'); pg.wait_for_timeout(800)
+            NUEVA['id'] = srv['id']
+            ok(copiada == v['valor'] and boton.strip() == 'Copiada' and not pg.evaluate("() => document.getElementById('dlg-clave-temporal').open")
+               and pg.evaluate(MENU_DE, NUEVA['id']) == ['editar', 'restablecer', 'estado', 'eliminar'],
+               '«Copiar» la copia y lo dice; «Listo» cierra, y la cuenta nueva, sin uso, se puede eliminar: %s' % boton)
+
+            # La cuenta nueva entra con su temporal, en otro teléfono, y se le pide escribir una propia
+            ctx2 = b.new_context(service_workers='block')
+            ctx2.route('**/js/config.js*', config_real)
+            pg2 = ctx2.new_page()
+            abrir(pg2)
+            entrar(pg2, NUEVA['correo'], v['valor'])
+            t = pg2.evaluate("() => [!document.getElementById('form-temporal').hidden, document.getElementById('temporal-quien').textContent]")
+            ok(not dentro(pg2) and t[0] and NUEVA['nombre'] in t[1], 'la cuenta nueva entra con la temporal y se le pide escribir una propia: %s' % t)
+
+            # Editar va al servidor
+            pg.click('#tabla-usuarios tr[data-id="%s"] .c-titulo' % NUEVA['id']); pg.wait_for_selector('#dlg-usuario[open]')
+            correo_fijo = pg.evaluate("() => document.getElementById('usr-correo').readOnly")
+            pg.fill('#usr-cargo', 'Cabo de prueba, editado'); pg.click('#btn-usr-guardar'); pg.wait_for_timeout(2000)
+            srv = pg.evaluate(CUENTA_SRV, NUEVA['correo'])
+            ok(correo_fijo and srv and srv.get('cargo_rol') == 'Cabo de prueba, editado' and 'Cuenta actualizada' in pg.evaluate(AVISO)
+               and pg.evaluate("id => SRP.ref.usuarioPorId[id].cargo_rol", NUEVA['id']) == 'Cabo de prueba, editado',
+               'editar una cuenta va al servidor y cambia en el teléfono; el correo no se edita: %s' % (srv and srv.get('cargo_rol')))
+
+            # «Restablecer contraseña»: confirma, da otra temporal y la de antes deja de servir
+            accion_usuario(pg, NUEVA['id'], 'restablecer'); pg.wait_for_selector('#dlg-confirmar[open]')
+            c = pg.evaluate("() => [document.getElementById('dlg-confirmar-titulo').textContent, document.getElementById('dlg-confirmar-texto').textContent, document.getElementById('btn-confirmar-si').textContent]")
+            pg.click('#btn-confirmar-si'); pg.wait_for_selector('#dlg-clave-temporal[open]', timeout=30000)
+            v2 = pg.evaluate(VENTANA_TEMPORAL)
+            pg.click('#btn-clave-temporal-listo'); pg.wait_for_timeout(500)
+            ok(c[0] == 'Restablecer contraseña' and NUEVA['nombre'] in c[1] and c[2].strip() == 'Restablecer' and v2['titulo'] == 'Contraseña restablecida'
+               and NUEVA['nombre'] in v2['intro'] and v2['valor'] and v2['valor'] != v['valor'],
+               '«Restablecer contraseña» pregunta antes y enseña la temporal nueva: %s · %s' % (c, v2['titulo']))
+            pg2.click('#btn-temporal-salir'); pg2.wait_for_timeout(1200)
+            entrar(pg2, NUEVA['correo'], v['valor'])
+            vieja = pg2.inner_text('#acceso-errores')
+            entrar(pg2, NUEVA['correo'], v2['valor'])
+            ok('Correo o contraseña incorrectos' in vieja and not pg2.evaluate("() => document.getElementById('form-temporal').hidden"),
+               'con la temporal de antes ya no se entra; con la nueva, sí: %s' % vieja[:60])
+
+            # Desactivar cierra su sesión y se deshace desde el aviso
+            accion_usuario(pg, NUEVA['id'], 'estado'); pg.wait_for_timeout(2000)
+            aviso = pg.evaluate(AVISO)
+            srv = pg.evaluate(CUENTA_SRV, NUEVA['correo'])
+            fuera = apoyo('sesiones', {'id': NUEVA['id']})
+            ok('desactivada: se cerró su sesión y ya no puede entrar' in aviso and srv.get('activo') is False and fuera.get('abiertas') == 0,
+               'desactivar va al servidor, cierra su sesión y lo dice: %s · %s' % (aviso, fuera))
+            pg.click('#aviso .aviso-accion'); pg.wait_for_timeout(2000)
+            srv = pg.evaluate(CUENTA_SRV, NUEVA['correo'])
+            ok(srv.get('activo') is True and 'activada' in pg.evaluate(AVISO), '«Deshacer» la vuelve a activar en el servidor: %s' % srv.get('activo'))
+
+            # Una cuenta que ya entró no se elimina; una sin uso, sí
+            pg.evaluate("SRP.app.mostrarVista('usuarios')"); pg.wait_for_timeout(1500)
+            menu = pg.evaluate(MENU_DE, NUEVA['id'])
+            pg.evaluate("id => SRP.usuarios.eliminar(SRP.ref.usuarioPorId[id])", NUEVA['id']); pg.wait_for_timeout(1500)
+            aviso = pg.evaluate(AVISO)
+            ok('eliminar' not in menu and 'No se puede eliminar: ya entró al sistema. Desactive la cuenta' in aviso,
+               'una cuenta que ya entró no ofrece «Eliminar», y si se intenta, se dice por qué: %s · %s' % (menu, aviso))
+            OTRA = {'nombre': 'Prueba Sin Uso Conexión', 'correo': 'sinuso.conexion.prueba.%s@ejemplo.local' % CORRIDA}
+            alta_usuario(pg, OTRA['nombre'], OTRA['correo'])
+            pg.wait_for_selector('#dlg-clave-temporal[open]', timeout=30000); pg.click('#btn-clave-temporal-listo'); pg.wait_for_timeout(800)
+            OTRA['id'] = pg.evaluate(CUENTA_SRV, OTRA['correo'])['id']
+            accion_usuario(pg, OTRA['id'], 'eliminar'); pg.wait_for_selector('#dlg-confirmar[open]')
+            pg.fill('#confirmar-palabra', OTRA['correo']); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(2000)
+            ok(pg.evaluate(CUENTA_SRV, OTRA['correo']) is None and 'Cuenta eliminada' in pg.evaluate(AVISO) and pg.evaluate(MENU_DE, OTRA['id']) is None,
+               'eliminar una cuenta sin uso la quita del servidor y de la lista')
+
+            # Sin conexión no cambia nada: el formulario sigue abierto con lo escrito
+            ctx.route('**/api/srp/**', lambda r: r.abort())
+            alta_usuario(pg, 'Prueba Sin Red Conexión', 'sinred.conexion.prueba.%s@ejemplo.local' % CORRIDA); pg.wait_for_timeout(2000)
+            aviso = pg.evaluate(AVISO)
+            abierto = pg.evaluate("() => [document.getElementById('dlg-usuario').open, document.getElementById('usr-nombre-completo').value]")
+            ctx.unroute('**/api/srp/**')
+            pg.evaluate("() => document.getElementById('dlg-usuario').close()")
+            ok('Sin conexión con el servidor: la cuenta no se guardó' in aviso and abierto == [True, 'Prueba Sin Red Conexión']
+               and pg.evaluate(CUENTA_SRV, 'sinred.conexion.prueba.%s@ejemplo.local' % CORRIDA) is None,
+               'sin conexión el alta no se guarda, se dice y el formulario sigue abierto: %s' % aviso)
+            ctx2.close()
 
             ok(not errores, 'sin errores en la página: %s' % errores)
             ctx.close()

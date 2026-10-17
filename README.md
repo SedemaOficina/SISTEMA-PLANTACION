@@ -124,6 +124,10 @@ corresponda a una cuenta dada de alta y activa.
     quedarse con lo del servidor, corregirlo, eliminarlo o descartarlo— (`js/rechazos.js`).
   - Al cerrar la jornada y entregar su reporte, lo recibido sale del teléfono, como pide S-11.
   - Si la sesión vence con un árbol a medias, se avisa y se pide entrar al guardarlo.
+- **Las cuentas** las da de alta y cambia la Administración global en el servidor (`js/usuarios.js`), que las
+  revisa con las mismas reglas. El alta y «Restablecer contraseña» dan una contraseña temporal que se ve una
+  sola vez, para dársela a la persona en persona o por teléfono. Desactivar cierra sus sesiones; eliminar sólo
+  se puede con una cuenta que no aparece en nada y nunca entró al sistema, y eso lo cuenta el servidor.
 - **Los catálogos** los cambia la Administración global en el servidor (`js/catalogos.js`): cada alta,
   edición, activación o eliminación va allá, que la revisa con las mismas reglas y la anota en su bitácora,
   y el teléfono guarda lo que responde. El uso de cada valor lo cuenta el servidor. Sin conexión se
@@ -484,7 +488,7 @@ tiempo fijo.
 | `auditoria.py` | Consistencia de lo guardado y del modelo: esquema contra lo que se guarda, diccionario y `js/esquema.js` regenerados, dominios, vocabulario |
 | `auditoria_css.py` | La norma de la hoja de estilos: colores sólo en `:root`, sin `#id` ni `!important`, medidas con token, una regla por selector, sin clases ni variables sin uso, sin estilos en línea. Corre dentro de `auditoria.py`; con `--todo` lista cada caso |
 | `revisar.py` | Presentación en ocho combinaciones de ancho y zoom: desbordamiento, alto del mapa, tamaño de los controles y reglas anuladas |
-| `prueba_conexion.py` | La aplicación con datos reales contra el servicio local: entrar, los mensajes al no poder, lo que baja, lo enviado en memoria y sus avisos sin señal o con falla del servidor, los parámetros, volver a abrir con y sin señal, la sesión vencida, la contraseña temporal que se cambia por una propia, «Cerrar sesión», cuánto tarda la Administración en traer todo, y el envío real: jornada y árboles capturados en la pantalla, con folio y fotografía, sin señal, una corrección, un rechazo y lo que sale del teléfono al cerrar; y lo que el servidor no aceptó, resuelto desde «Revisar»: enviar otra vez, quedarse con lo del servidor, corregir, eliminar y descartar; los catálogos de la Administración en el servidor, el historial del árbol y el Registro de cambios desde la bitácora del servidor, Parámetros cambiados por la Administración, la bandeja de posibles duplicados, y la carga masiva: subir, deshacer, volver a cargar y sin conexión |
+| `prueba_conexion.py` | La aplicación con datos reales contra el servicio local: entrar, los mensajes al no poder, lo que baja, lo enviado en memoria y sus avisos sin señal o con falla del servidor, los parámetros, volver a abrir con y sin señal, la sesión vencida, la contraseña temporal que se cambia por una propia, «Cerrar sesión», cuánto tarda la Administración en traer todo, y el envío real: jornada y árboles capturados en la pantalla, con folio y fotografía, sin señal, una corrección, un rechazo y lo que sale del teléfono al cerrar; y lo que el servidor no aceptó, resuelto desde «Revisar»: enviar otra vez, quedarse con lo del servidor, corregir, eliminar y descartar; los catálogos de la Administración en el servidor, el historial del árbol y el Registro de cambios desde la bitácora del servidor, Parámetros cambiados por la Administración, la bandeja de posibles duplicados, la carga masiva: subir, deshacer, volver a cargar y sin conexión, y Usuarios: el alta con su contraseña temporal, entrar con ella, editar, «Restablecer contraseña», desactivar, eliminar y sin conexión |
 
 ## Salida a producción y Fase 2
 

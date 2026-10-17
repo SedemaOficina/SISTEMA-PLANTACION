@@ -11,9 +11,9 @@
      node pruebas/apoyo_servidor.mjs catalogo   { tabla, clave }       cómo tiene el servidor un valor de catálogo
      node pruebas/apoyo_servidor.mjs otro_valor { tabla, id, clave, nombre, por }   otra persona da de alta un valor
      node pruebas/apoyo_servidor.mjs pareja     { llego, cercano, distancia }  una pareja en la bandeja de posibles duplicados
-     node pruebas/apoyo_servidor.mjs quitar     { ids }         las cuentas, sus sesiones, sus jornadas, árboles y
-                                                                fotografías, sus lotes de carga, sus parámetros, los valores de catálogo
-                                                                que dieron de alta y sus registros
+     node pruebas/apoyo_servidor.mjs quitar     { ids }         las cuentas y las que ellas dieron de alta, sus sesiones,
+                                                                sus jornadas, árboles y fotografías, sus lotes de carga, sus parámetros,
+                                                                los valores de catálogo que dieron de alta y sus registros
 
    «preparar» presta a la cuenta local el rol srp_api, con el que corre el servicio; «quitar» lo devuelve. */
 import { conectar } from '../servidor/bd.js';
@@ -64,6 +64,8 @@ try {
       [d.llego, d.cercano, d.distancia, 4])).rows[0].id) };
   } else if (orden === 'quitar') {
     await c.query('BEGIN');
+    // También las cuentas que dieron de alta en la prueba, desde Usuarios
+    d.ids = (await c.query('SELECT id FROM srp.usuarios WHERE id = ANY($1::uuid[]) OR creado_por_id = ANY($1::uuid[])', [d.ids])).rows.map((r) => r.id);
     const arboles = (await c.query('SELECT id FROM srp.plantaciones WHERE cabo_id = ANY($1::uuid[])', [d.ids])).rows.map((r) => r.id);
     await c.query('ALTER TABLE srp.folios DISABLE TRIGGER folios_inmutables');
     await c.query('DELETE FROM srp.folios WHERE plantacion_id = ANY($1::uuid[])', [arboles]);

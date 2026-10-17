@@ -224,6 +224,11 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 .obligatorio { color: var(--error); font-weight: 700; }
 /* Lo que pide una contraseña nueva, bajo su campo */
 .reglas-clave { margin: var(--e-1) 0 0; padding-left: var(--e-5); color: var(--gris); font-size: var(--t-s); }
+/* La contraseña temporal, grande y en letra de ancho fijo para dictarla sin confundir caracteres */
+.temporal-caja { margin: var(--e-4) 0; padding: var(--e-4); border: 1px dashed var(--borde-control); border-radius: var(--radio); background: var(--fondo-suave); text-align: center; }
+.temporal-clave { display: block; margin: 0 0 var(--e-3); font-family: var(--fuente-mono); font-size: var(--t-xl); font-weight: 700; letter-spacing: .08em; color: var(--texto); overflow-wrap: anywhere; }
+.lista-temporal { margin: var(--e-3) 0 0; padding-left: var(--e-5); }
+.lista-temporal li { margin-bottom: var(--e-1); }
 .titulo-bloque { font-size: var(--t-m); margin-bottom: var(--e-2); }
 .total { font-weight: 500; margin-top: var(--e-4); }
 /* Bloques de una vista: separados por un filete y con su título, para que cada cosa tenga su lugar */
