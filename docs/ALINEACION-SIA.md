@@ -71,7 +71,9 @@ cuentas viven en `srp`; altas, bajas y restablecimientos los hace la Administrac
    archivos completos, `npm run typecheck` sin errores y el binario del SIA probado con el módulo adentro.
    El diff lleva líneas del repositorio del SIA, así que vive sólo en `servidor/local/`, que no se sube.
    Va al SIA **para revisión**, en la versión de prueba 0.9.64 (D289): la primera instalación será la
-   versión 1, con el sistema completo.
+   versión 1, con el sistema completo. **La versión 1 está lista** (bloque 235, D315): el paquete para
+   instalar, sobre la versión vigente de `sia-backend` al 17-10-2026, con la aplicación real, los datos de
+   arranque y el manual de la Administración global.
 3. **El acceso con los formatos del SIA.** Ya hechos (bloque 206): contraseña con scrypt N=16384, r=8,
    p=1, en base64url; testigo de sesión de 32 bytes con su resumen sha256 en hexadecimal; la cookie
    `sia_srp_sesion`; y, en la fase 2, la primera cuenta con un guion que sólo imprime el SQL. Hechos en el

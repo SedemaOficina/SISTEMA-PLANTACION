@@ -81,7 +81,7 @@ SRP.app = {
     SRP.jornadas.iniciar();
     SRP.galeria.iniciar();
     SRP.supervision.iniciar();   // Supervisión y Mi avance
-    SRP.demo.iniciar();          // datos de demostración, al pie: sólo con datos de prueba
+    if (SRP.demo) SRP.demo.iniciar();   // datos de demostración, al pie: sólo con datos de prueba
     SRP.activa.iniciar();          // la jornada se declara antes de registrar
     // Contadores de caracteres, y el error de un campo se va en cuanto se corrige
     SRP.util.iniciarContadores();
@@ -156,7 +156,9 @@ SRP.app = {
       ['revision-lista', 'la ficha de revisión']
       // El espejo de campos no se exige: es sólo de la versión de prueba y la app debe abrir sin él
     ].filter(([id]) => !document.getElementById(id)).map(([, que]) => que);
-    const modulos = ['util', 'ICONOS', 'permisos', 'sesion', 'almacen', 'ref', 'formulario', 'registros', 'catalogos', 'usuarios', 'configuracion', 'excel', 'carga', 'ESQUEMA', 'derivacion', 'indicadores', 'supervision', 'informes', 'demo']
+    // Las cuentas y la demostración son sólo de la versión de prueba: la real no las carga
+    const modulos = ['util', 'ICONOS', 'permisos', 'sesion', 'almacen', 'ref', 'formulario', 'registros', 'catalogos', 'usuarios', 'configuracion', 'excel', 'carga', 'ESQUEMA', 'derivacion', 'indicadores', 'supervision', 'informes', 'CATALOGOS_ARRANQUE']
+      .concat(SRP.CONFIG.ES_FICTICIO ? ['DATOS_FICTICIOS', 'demo'] : [])
       .filter(m => !SRP[m]);
     /* Las tres capas y la biblioteca del cruce también se exigen: sin ellas la app abría y
        los árboles se guardaban sin alcaldía ni colonia, y con folio EXT-000. La de colonias pesa
@@ -435,7 +437,7 @@ SRP.app = {
     this.el('navegacion').hidden = false;
     this.el('herramientas-prueba').hidden = !SRP.CONFIG.ES_FICTICIO;
     this.el('btn-datos-prueba').hidden = !SRP.CONFIG.ES_FICTICIO;
-    SRP.demo.pintar();
+    if (SRP.demo) SRP.demo.pintar();
     const nav = this.el('navegacion');
     nav.querySelector('[data-vista="registrar"]').hidden = !p.registrar;
     /* Supervisión: primera para quien sólo consulta; para quien registra —cabo y coordinación—

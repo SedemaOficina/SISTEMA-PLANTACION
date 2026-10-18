@@ -10,7 +10,8 @@ servidor/), como lo hace el servidor web del SIA: la aplicación y su servicio q
 cookie de la sesión funciona igual que allá. Si el servicio no está corriendo, responde 502, y la aplicación
 lo trata como falta de conexión.
 
-Uso, desde la carpeta del proyecto:  python pruebas/servir.py [puerto] [--api http://127.0.0.1:3100]
+Uso, desde la carpeta del proyecto:  python pruebas/servir.py [puerto] [--api http://127.0.0.1:3100] [--raiz <carpeta>]
+Con --raiz sirve otra carpeta, como la copia que se publica en el SIA (herramientas/preparar_produccion.py).
 """
 import argparse
 import functools
@@ -92,6 +93,7 @@ if __name__ == '__main__':
     a = argparse.ArgumentParser(description='Sirve la aplicación y reenvía /api/ al servicio local.')
     a.add_argument('puerto', nargs='?', type=int, default=8099)
     a.add_argument('--api', default='http://127.0.0.1:3100', help='dónde corre el servicio del SRP')
+    a.add_argument('--raiz', default=RAIZ, help='la carpeta de la aplicación que se sirve')
     args = a.parse_args()
     Peticion.api = args.api
-    Servidor(('127.0.0.1', args.puerto), functools.partial(Peticion, directory=RAIZ)).serve_forever()
+    Servidor(('127.0.0.1', args.puerto), functools.partial(Peticion, directory=os.path.abspath(args.raiz))).serve_forever()

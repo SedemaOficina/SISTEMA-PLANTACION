@@ -5486,3 +5486,63 @@ No se probó:
 **Siguiente paso.** El paquete v1 para el SIA (bloque 235): quitar lo de prueba, los catálogos y los
 vehículos reales, la versión 1 y el manual vuelto a generar con ella. Antes, Liber confirma que la lista de
 16 vehículos sigue al día.
+
+## Bloque 235 — La versión 1: el paquete de instalación para el SIA (17-10-2026)
+
+**Versión 1.** El paquete que el SIA instala en su servidor, con la aplicación real, los datos de arranque y el
+manual (D315).
+
+| Qué | Dónde |
+|---|---|
+| Los catálogos de arranque reales | `assets/catalogos/catalogos-arranque.js` |
+| El guion de datos de arranque para el SIA | `servidor/datos-arranque.js` → `datos/srp-datos-arranque.sql` del paquete |
+| La copia de la aplicación que se publica | `herramientas/preparar_produccion.py` → `app/` del paquete |
+| El paquete | `servidor/local/entrega-sia/srp-v1-2026-10-17/` y su ZIP, fuera de git |
+
+**Qué cambió.**
+- `assets/catalogos/catalogos-arranque.js` (nuevo): programas, áreas, instituciones y solicitantes de
+  arranque. Centro Histórico, también para el Gobierno de la CDMX.
+- `js/datos-ficticios.js`: toma de ahí los catálogos de arranque; se queda con las cuentas y los vehículos de
+  prueba.
+- `js/almacen.js`: lo que usa la versión real sale de los catálogos de arranque; un teléfono de prueba con
+  capturas recibe quién puede usar cada programa de arranque que nadie editó.
+- `js/app.js`: la revisión de arranque exige las cuentas de prueba y la demostración sólo en la versión de
+  prueba; la demostración, sólo si está.
+- `js/config.js`: el sello de los datos de prueba; `SELLO_REINICIO` no cambió.
+- `index.html`: carga los catálogos de arranque y marca los dos archivos que sólo carga la versión de prueba.
+- `servidor/datos-arranque.js` (nuevo) y `servidor/cargar.js` (la orden `arranque`, y usa sus funciones).
+- `servidor/deploy/srp-cuenta-inicial.mjs`: el nombre de la Secretaría, como en el catálogo.
+- `herramientas/preparar_produccion.py` (nuevo).
+- `pruebas/servir.py` (`--raiz`) y `pruebas/prueba_conexion.py` (`--app`): las pruebas corren también sobre la
+  copia real.
+- `datos/esquema.json`, el diccionario y `servidor/db/srp/02-srp-tablas.sql`: el permiso de Centro Histórico.
+- El manual, otra vez generado, con la versión 1.
+- `VERSION` e `index.html`: la versión 1.
+- Pruebas: `servidor/pruebas/esquema.test.js` (los datos de arranque en una base recién instalada, dos veces)
+  y las de `prueba.py` que cuentan los programas de cada institución.
+- Documentación: `README.md`, `servidor/README.md`, `docs/FASE2-Y-TRASPASO.md`, `docs/ALINEACION-SIA.md` y
+  `docs/MEJORAS.md`.
+
+**Pantalla: qué se agregó y qué se quitó.**
+- La franja de arriba dice «Versión 1»; antes, «Versión de prueba 0.9.78».
+- Iniciar jornada ofrece Centro Histórico también al Gobierno de la CDMX (PAOT y SOBSE), y Catálogos ›
+  Programas dice «SEDEMA · Gobierno de la CDMX».
+- En la copia real no hay nada de prueba; eso ya pasaba con `ES_FICTICIO` en false, y ahora además no se
+  cargan los archivos.
+
+**Verificación.**
+- Ensayo de instalación con los archivos del paquete, en la base local en limpio: 18 de 18: los guiones, la verificación como `srp_api`, los datos de arranque dos veces, la primera cuenta, el backend del SIA con el módulo y la aplicación real; la primera persona entra con la temporal, escribe la suya y ve los catálogos.
+- Servidor: `npm test`, 96 de 96 (una nueva: los datos de arranque).
+- Prueba de humo sobre la versión vigente de `sia-backend` con el módulo integrado: 23 de 23. El diff aplica limpio; `npm run typecheck` sin errores.
+- Conexión, con el repositorio: `prueba_conexion.py`, 92 de 92.
+- Conexión, con la copia real del paquete: `prueba_conexion.py --app`, 93 de 93, con la que comprueba que no carga ningún archivo de prueba.
+- Aplicación: `prueba.py`, 0 fallas en 1,441.
+- Auditorías: 144 sin hallazgos; hoja de estilos sin hallazgos.
+
+No se probó:
+- la instalación en el servidor del SIA, que la hace el SIA;
+- el manual impreso en papel; se revisó en pantalla.
+
+**Siguiente paso.** Liber decide cuándo entrega el paquete al SIA. Antes de operar faltan el acuerdo por
+escrito de quién opera las cuentas, los datos de la primera Administración global, el plazo de conservación
+del registro de entradas y confirmar el mapa base.

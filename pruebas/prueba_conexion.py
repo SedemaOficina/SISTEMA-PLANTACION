@@ -30,7 +30,9 @@ da una contraseña temporal que se ve una vez y con la que la cuenta nueva entra
 «Restablecer contraseña», desactivar, eliminar una cuenta sin uso —que el Registro de cambios sigue nombrando
 por su correo—, y sin conexión nada cambia.
 
-Uso, desde la carpeta del proyecto (con la base local cargada):  python pruebas/prueba_conexion.py
+Uso, desde la carpeta del proyecto (con la base local cargada):  python pruebas/prueba_conexion.py [--app <carpeta>]
+Con --app corre sobre la copia que se publica en el SIA (herramientas/preparar_produccion.py), que ya viene con
+datos reales y sin los archivos de prueba, y comprueba además que no los pide.
 """
 import json
 import os
@@ -47,6 +49,7 @@ from playwright.sync_api import sync_playwright
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SERVIDOR = os.path.join(RAIZ, 'servidor')
+COPIA = os.path.abspath(sys.argv[sys.argv.index('--app') + 1]) if '--app' in sys.argv else None
 PUERTO_API, PUERTO_APP = 3109, 8098
 BASE = 'http://127.0.0.1:%d/' % PUERTO_APP
 CLAVE = 'Conexion de prueba 2026'
@@ -85,11 +88,11 @@ def esperar_puerto(puerto, segundos=30):
     return False
 
 
-# La aplicación como irá al SIA: con datos reales
+# La aplicación como irá al SIA: con datos reales. La copia para el SIA ya viene así
 def config_real(route):
     r = route.fetch()
     texto = r.text()
-    assert 'ES_FICTICIO: true,' in texto
+    assert ('ES_FICTICIO: false,' if COPIA else 'ES_FICTICIO: true,') in texto
     route.fulfill(response=r, body=texto.replace('ES_FICTICIO: true,', 'ES_FICTICIO: false,'))
 
 
@@ -292,8 +295,8 @@ def main():
     fotos = tempfile.mkdtemp(prefix='srp-conexion-fotos-')
     entorno = dict(os.environ, SRP_PUERTO=str(PUERTO_API), SRP_COOKIE_SEGURA='no', SRP_ROL='srp_api', SRP_PROXY='1', SRP_FOTOS_DIR=fotos)
     servicio = subprocess.Popen(['node', os.path.join('dist', 'iniciar.js')], cwd=SERVIDOR, env=entorno, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    app = subprocess.Popen([sys.executable, os.path.join('pruebas', 'servir.py'), str(PUERTO_APP), '--api', 'http://127.0.0.1:%d' % PUERTO_API],
-                           cwd=RAIZ, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    app = subprocess.Popen([sys.executable, os.path.join('pruebas', 'servir.py'), str(PUERTO_APP), '--api', 'http://127.0.0.1:%d' % PUERTO_API]
+                           + (['--raiz', COPIA] if COPIA else []), cwd=RAIZ, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     try:
         if not (esperar_puerto(PUERTO_API) and esperar_puerto(PUERTO_APP)):
             raise RuntimeError('el servicio o el servidor de la aplicación no arrancaron')
@@ -313,6 +316,10 @@ def main():
                 acceso: !document.getElementById('vista-acceso').hidden })""")
             ok(v == {'proveedor': 'servidor', 'base': 'srp_sia', 'prueba': False, 'banda': False, 'acceso': True},
                'con datos reales se entra con el servidor, en la base real, sin «Usuario ficticio» ni la franja de datos de prueba: %s' % v)
+            if COPIA:
+                s = pg.evaluate("() => [typeof SRP.DATOS_FICTICIOS, typeof SRP.CATALOGO_VEHICULOS, typeof SRP.demo, typeof SRP.espejo, !!SRP.CATALOGOS_ARRANQUE]")
+                ok(s == ['undefined', 'undefined', 'undefined', 'undefined', True],
+                   'la copia para el SIA no carga las cuentas de prueba, los vehículos de prueba, la demostración ni el espejo de campos: %s' % s)
 
             # Lo que el servicio no acepta, con su mensaje
             entrar(pg, CABO['correo'], 'Otra contraseña 2026')

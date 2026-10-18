@@ -11,6 +11,9 @@
               no toca las que ya están. También en el SIA.
    vehiculos  La lista de vehículos de un CSV con columnas placa, modelo y tipo (por omisión, el más
               reciente originales/vehiculos_reales_*.csv). La lista real nunca entra al repositorio.
+   arranque   Los datos de arranque como llegan al SIA: el mismo guion de datos-arranque.js, con los
+              catálogos de arranque (programas, áreas, instituciones y quién solicita), las especies,
+              los vehículos del CSV más reciente y la capa propia si está vacía. Agrega lo que falte.
    app        Lo que exportó herramientas/exportar_datos_app.py (servidor/local/datos-app.json): cuentas
               de prueba, catálogos de arranque y los datos de demostración. SÓLO EN LA BASE LOCAL.
    todo       capas, especies, vehiculos y app, los que tengan su archivo.
@@ -20,22 +23,13 @@
    del servicio, srp_api, como llegará de los teléfonos, en una sola transacción. */
 import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
 import crypto from 'node:crypto';
 import { conectar, instalar, destruir, prepararTerritorio, RAIZ, SERVIDOR } from './bd.js';
+import { delaApp, vehiculosDe, sqlDeArranque } from './datos-arranque.js';
 
 const ESQUEMA = JSON.parse(fs.readFileSync(path.join(RAIZ, 'datos', 'esquema.json'), 'utf8'));
 const APP_JSON = path.join(SERVIDOR, 'local', 'datos-app.json');
 const LOTE = 2000;
-
-// Un archivo de la aplicación (window.SRP = …) leído fuera del navegador
-function delaApp(relativo) {
-  const ctx = {};
-  ctx.window = ctx;
-  vm.createContext(ctx);
-  vm.runInContext(fs.readFileSync(path.join(RAIZ, relativo), 'utf8'), ctx, { filename: relativo });
-  return ctx.SRP;
-}
 
 // Inserta renglones con los mismos nombres de campo que la tabla, por lotes
 async function insertar(c, tabla, filas, conflicto = '') {
@@ -117,22 +111,8 @@ function csvMasReciente() {
   return f ? path.join(dir, f) : null;
 }
 
-// Una lista sencilla en CSV: comas, comillas dobles opcionales y la primera fila de encabezados
-function leerCsv(archivo) {
-  const renglones = fs.readFileSync(archivo, 'utf8').replace(/^﻿/, '').split(/\r?\n/).filter(r => r.trim());
-  const partir = r => [...r.matchAll(/("([^"]|"")*"|[^,]*)(,|$)/g)].map(m => m[1].replace(/^"|"$/g, '').replace(/""/g, '"').trim()).slice(0, -1);
-  const enc = partir(renglones[0]);
-  return renglones.slice(1).map(r => Object.fromEntries(partir(r).map((v, i) => [enc[i], v])));
-}
-
-const clavePlaca = (placa) => String(placa || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-
 async function cargarVehiculos(c, archivo) {
-  const ahora = new Date().toISOString();
-  const filas = leerCsv(archivo).map(v => ({
-    id: 'v-' + clavePlaca(v.placa), clave: clavePlaca(v.placa), nombre: v.placa.toUpperCase(), activo: true,
-    creado_por_id: null, fecha_creacion: ahora, editado_por_id: null, fecha_ultima_edicion: null, modelo: v.modelo, tipo_vehiculo: v.tipo
-  }));
+  const filas = vehiculosDe(archivo);
   await c.query('BEGIN');
   await insertar(c, 'vehiculos', filas, 'ON CONFLICT (id) DO NOTHING');
   console.log(`vehículos: ${await contar(c, 'vehiculos')} en la base (${filas.length} en ${path.basename(archivo)})`);
@@ -245,6 +225,7 @@ async function principal(ordenes) {
       else if (o === 'capas') await cargarCapas(c);
       else if (o === 'especies') await cargarEspecies(c);
       else if (o === 'vehiculos') { const a = csvMasReciente(); if (!a) throw new Error('No hay originales/vehiculos_reales_*.csv'); await cargarVehiculos(c, a); }
+      else if (o === 'arranque') { const r = await c.query(sqlDeArranque({ vehiculos: csvMasReciente() })); console.log('datos de arranque:', r[r.length - 1].rows[0]); }
       else if (o === 'app') { if (!fs.existsSync(APP_JSON)) throw new Error('Falta ' + APP_JSON + ': correr herramientas/exportar_datos_app.py'); await cargarApp(c, APP_JSON); }
       else throw new Error('Orden desconocida: ' + o);
     }

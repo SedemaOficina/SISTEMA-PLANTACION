@@ -7,9 +7,11 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { conectar, instalar, destruir, codigoDeError, RAIZ } from './apoyo.js';
 import { verificar } from '../dist/independiente.js';
+import { sqlDeArranque } from '../datos-arranque.js';
 
 const ESQUEMA = JSON.parse(fs.readFileSync(path.join(RAIZ, 'datos', 'esquema.json'), 'utf8'));
 const PROPIAS_DEL_SERVIDOR = ['bitacora_acceso', 'capa_prioritarias', 'capas', 'cargas', 'credenciales', 'duplicados', 'folio_secuencias', 'folios', 'fotografias', 'migraciones', 'parametros', 'prioridades', 'sesiones'];
@@ -198,6 +200,38 @@ test('la primera cuenta se da con un guion que sólo imprime el SQL; la contrase
   await assert.rejects(c.query(correr().sql), /Ya hay una cuenta de Administración global/);
   await c.query('ROLLBACK');
   assert.equal((await c.query("SELECT count(*)::int AS n FROM srp.usuarios WHERE perfil = 'ADMIN'")).rows[0].n, 1);
+});
+
+test('los datos de arranque entran en la base recién instalada con un solo guion, y repetirlo no cambia nada', async () => {
+  const csv = path.join(os.tmpdir(), 'srp-vehiculos-prueba.csv');
+  fs.writeFileSync(csv, 'placa,modelo,tipo\nPRU 901,Ford,Pick up\n"PRU 902",Dodge,Estacas\n');
+  const sql = sqlDeArranque({ vehiculos: csv });
+  assert.ok(!/^\\/m.test(sql), 'sin órdenes de psql: también corre desde Node');
+  const huella = async () => (await c.query(`SELECT md5(string_agg(t, '|' ORDER BY t)) AS h FROM (
+    SELECT 'p' || x::text AS t FROM srp.programas x UNION ALL SELECT 'a' || x::text FROM srp.areas x
+    UNION ALL SELECT 'i' || x::text FROM srp.instituciones x UNION ALL SELECT 's' || x::text FROM srp.solicitantes x
+    UNION ALL SELECT 'e' || x::text FROM srp.especies x UNION ALL SELECT 'v' || x::text FROM srp.vehiculos x
+    UNION ALL SELECT 'c' || id || ST_AsText(geom) FROM srp.capa_prioritarias UNION ALL SELECT 'k' || nombre || version || elementos FROM srp.capas) q`)).rows[0].h;
+  await c.query(sql);
+  const r = (await c.query(`SELECT
+    (SELECT count(*) FROM srp.programas)::int AS programas, (SELECT count(*) FROM srp.areas)::int AS areas,
+    (SELECT count(*) FROM srp.instituciones)::int AS instituciones, (SELECT count(*) FROM srp.instituciones WHERE NOT activo)::int AS inactivas,
+    (SELECT count(*) FROM srp.instituciones WHERE tipo_organizacion = 'Alcaldía' AND NOT activo)::int AS alcaldias_inactivas,
+    (SELECT count(*) FROM srp.solicitantes)::int AS solicitantes, (SELECT string_agg(id, ',' ORDER BY id) FROM srp.solicitantes WHERE activo) AS solicitantes_activos,
+    (SELECT count(*) FROM srp.especies)::int AS especies, (SELECT string_agg(nombre, ',' ORDER BY nombre) FROM srp.vehiculos) AS vehiculos,
+    (SELECT count(*) FROM srp.capa_prioritarias)::int AS colonias, (SELECT elementos FROM srp.capas WHERE nombre = 'prioritarias') AS capa,
+    (SELECT tipos_organizacion FROM srp.programas WHERE id = 'p-centro') AS centro,
+    (SELECT nombre FROM srp.instituciones WHERE id = 'o-sedema') AS sedema,
+    (SELECT count(*) FROM srp.programas WHERE creado_por_id IS NOT NULL OR fecha_creacion < now() - interval '1 hour')::int AS con_autor`)).rows[0];
+  assert.deepEqual(r, { programas: 7, areas: 4, instituciones: 21, inactivas: 16, alcaldias_inactivas: 16, solicitantes: 21,
+    solicitantes_activos: 's-jefatura,s-oficina-secretaria,s-sobse', especies: 79, vehiculos: 'PRU 901,PRU 902', colonias: 2243, capa: 2243,
+    centro: ['Gobierno de la CDMX'], sedema: 'Secretaría del Medio Ambiente (SEDEMA)', con_autor: 0 });
+  // Cada colonia se ubica: la prioridad de un punto conocido sale de la capa recién cargada
+  assert.ok((await c.query('SELECT prioridad FROM srp.prioridad(19.4326, -99.1332)')).rows.length === 1, 'la capa ubica un punto del Centro');
+  const antes = await huella();
+  await c.query(sql);
+  assert.equal(await huella(), antes, 'la segunda vez no agrega ni cambia nada');
+  fs.rmSync(csv);
 });
 
 test('las bitácoras sólo crecen: ni quien administra la base edita, borra o vacía la de cambios ni la de entradas', async () => {

@@ -4115,7 +4115,7 @@ with sync_playwright() as p:
         return pg46.eval_on_selector_all('#ini-programa option','l=>l.map(o=>o.textContent.trim()).filter(t => t && !t.startsWith("Seleccione"))')
     pr46={u: programas46(u) for u in ['u-cabo-alc','u-cabo-gob','u-cabo-osc','u-cabo-emp']}
     RU=['Reforestación Urbana']
-    ok(pr46=={'u-cabo-alc':RU,'u-cabo-gob':RU,'u-cabo-osc':RU,'u-cabo-emp':['Palmeras']},'una empresa privada sólo puede elegir «Palmeras»; alcaldías, Gobierno de la CDMX y organizaciones civiles, sólo «Reforestación Urbana»: %s' % pr46)
+    ok(pr46=={'u-cabo-alc':RU,'u-cabo-gob':RU+['Centro Histórico'],'u-cabo-osc':RU,'u-cabo-emp':['Palmeras']},'una empresa privada sólo puede elegir «Palmeras»; alcaldías y organizaciones civiles, sólo «Reforestación Urbana»; Gobierno de la CDMX, también «Centro Histórico»: %s' % pr46)
     v46=pg46.evaluate("(() => { document.getElementById('ini-programa').innerHTML += '<option value=\"p-refor\">x</option>'; document.getElementById('ini-programa').value = 'p-refor'; document.getElementById('ini-nombre').value = 'Prueba'; document.getElementById('ini-meta').value = '3'; SRP.activa.iniciarJornada(); return document.getElementById('ini-errores').textContent; })()")
     ok('no está disponible para su institución' in v46,'aunque se fuerce otro programa, una empresa no puede iniciar la jornada con él')
     jz46=iniciar_jornada(pg46,'Palmeras del camellón', programa='p-palmeras')
@@ -4154,9 +4154,9 @@ with sync_playwright() as p:
         entrar47(uid); pg47.evaluate("SRP.app.mostrarVista('registrar')"); pg47.wait_for_timeout(500)
         return [pg47.eval_on_selector_all('#ini-programa option','l=>l.map(o=>o.textContent.trim()).filter(t => t && !t.startsWith("Seleccione"))'), pg47.input_value('#ini-programa')]
     pr47={u: programas47(u) for u in ['u-cabo-1','u-coord-alc','u-coord-gob','u-coord-emp','u-coord-osc']}
-    ok(pr47=={'u-cabo-1':[['Reforestación Urbana','Centro Histórico','Compensaciones','Palmeras','Territorios de Paz','Utopías','Solicitud especial'],''],'u-coord-alc':[['Reforestación Urbana'],'p-refor'],'u-coord-gob':[['Reforestación Urbana'],'p-refor'],
+    ok(pr47=={'u-cabo-1':[['Reforestación Urbana','Centro Histórico','Compensaciones','Palmeras','Territorios de Paz','Utopías','Solicitud especial'],''],'u-coord-alc':[['Reforestación Urbana'],'p-refor'],'u-coord-gob':[['Reforestación Urbana','Centro Histórico'],''],
               'u-coord-emp':[['Palmeras'],'p-palmeras'],'u-coord-osc':[['Reforestación Urbana'],'p-refor']},
-       'SEDEMA elige entre todos los programas, sin preselección; alcaldías, Gobierno de la CDMX y organizaciones civiles tienen sólo «Reforestación Urbana», y las empresas sólo «Palmeras», ya puesto: %s' % pr47)
+       'SEDEMA elige entre todos los programas, sin preselección; Gobierno de la CDMX, entre «Reforestación Urbana» y «Centro Histórico»; alcaldías y organizaciones civiles tienen sólo «Reforestación Urbana», y las empresas sólo «Palmeras», ya puesto: %s' % pr47)
     # Alta: fuera de la Secretaría hay cabo y coordinador; el cabo elige coordinador de su institución
     entrar47('u-admin-1'); pg47.evaluate("SRP.app.mostrarVista('usuarios')"); pg47.wait_for_timeout(500)
     pg47.click('#btn-usr-agregar'); pg47.wait_for_timeout(300)
@@ -4250,7 +4250,7 @@ with sync_playwright() as p:
     entrar48('u-admin-1')
     pg48.click('.pestana[data-vista=configuracion]'); pg48.wait_for_timeout(300); pg48.click('.cfg-tarjeta[data-ir=catalogos]'); pg48.wait_for_timeout(500)
     q48=pg48.evaluate("""(() => { const r = {}; document.querySelectorAll('#tabla-catalogo tbody tr').forEach(tr => { const c = tr.querySelector('[data-etiqueta="Quién lo usa"]'); r[tr.querySelector('.c-titulo').textContent] = c ? c.textContent : null; }); return r; })()""")
-    ok(q48=={'Reforestación Urbana':'SEDEMA · Alcaldía · Gobierno de la CDMX · Organización civil','Centro Histórico':'Sólo SEDEMA','Palmeras':'SEDEMA · Empresa privada','Compensaciones':'Sólo SEDEMA','Territorios de Paz':'Sólo SEDEMA','Utopías':'Sólo SEDEMA','Solicitud especial':'Sólo SEDEMA'},
+    ok(q48=={'Reforestación Urbana':'SEDEMA · Alcaldía · Gobierno de la CDMX · Organización civil','Centro Histórico':'SEDEMA · Gobierno de la CDMX','Palmeras':'SEDEMA · Empresa privada','Compensaciones':'Sólo SEDEMA','Territorios de Paz':'Sólo SEDEMA','Utopías':'Sólo SEDEMA','Solicitud especial':'Sólo SEDEMA'},
        'Catálogos › Programas dice quién usa cada programa: %s' % q48)
     pg48.click('#btn-cat-agregar'); pg48.wait_for_timeout(300)
     t48=[pg48.is_visible('#cat-tipos-org-botones'), pg48.eval_on_selector_all('#cat-tipos-org-botones .chip','l=>l.map(b=>[b.textContent, b.getAttribute("aria-pressed")])')]
@@ -4268,13 +4268,13 @@ with sync_playwright() as p:
     ok(pg48.locator('#tabla-catalogo tbody tr', has_text='Palmeras').locator('[data-etiqueta="Quién lo usa"]').inner_text()=='SEDEMA · Empresa privada · Organización civil','y la lista lo refleja')
     pr48={u: programas48(u) for u in ['u-cabo-1','u-cabo-alc','u-cabo-gob','u-cabo-emp','u-cabo-osc']}
     ok(pr48=={'u-cabo-1':[['Reforestación Urbana','Arbolado escolar','Centro Histórico','Compensaciones','Palmeras','Territorios de Paz','Utopías','Solicitud especial'],''],'u-cabo-alc':[['Reforestación Urbana','Arbolado escolar'],''],
-              'u-cabo-gob':[['Reforestación Urbana'],'p-refor'],'u-cabo-emp':[['Palmeras'],'p-palmeras'],'u-cabo-osc':[['Reforestación Urbana','Palmeras'],'']},
+              'u-cabo-gob':[['Reforestación Urbana','Centro Histórico'],''],'u-cabo-emp':[['Palmeras'],'p-palmeras'],'u-cabo-osc':[['Reforestación Urbana','Palmeras'],'']},
        'Iniciar jornada ofrece a cada institución lo marcado en el catálogo, sin tocar la configuración; SEDEMA, todos: %s' % pr48)
     # Un teléfono con programas sin el dato: los de arranque toman los suyos; los agregados, sólo SEDEMA
     pg48.evaluate("""async () => { const c = await SRP.almacen.catalogos(); await SRP.almacen._tx(['programas'], 'readwrite', tx => c.filter(x => x.tipo === 'programa').forEach(x => { const n = Object.assign({}, x); delete n.tipos_organizacion; SRP.almacen.ponerCatalogo(tx, n); })); }""")
     pg48.reload(); pg48.wait_for_timeout(1800)
     z48=pg48.evaluate("""async () => { const c = (await SRP.almacen.catalogos()).filter(x => x.tipo === 'programa'), r = {}; c.forEach(x => { r[x.nombre] = x.tipos_organizacion; }); return r; }""")
-    ok(z48=={'Reforestación Urbana':['Alcaldía','Gobierno de la CDMX','Organización civil'],'Centro Histórico':[],'Palmeras':['Empresa privada'],'Compensaciones':[],'Territorios de Paz':[],'Utopías':[],'Arbolado escolar':[],'Solicitud especial':[]},
+    ok(z48=={'Reforestación Urbana':['Alcaldía','Gobierno de la CDMX','Organización civil'],'Centro Histórico':['Gobierno de la CDMX'],'Palmeras':['Empresa privada'],'Compensaciones':[],'Territorios de Paz':[],'Utopías':[],'Arbolado escolar':[],'Solicitud especial':[]},
        'al abrir, un programa sin el dato lo recibe: el de arranque, el suyo; el agregado, sólo SEDEMA: %s' % z48)
     ok(not err48,'sin errores en consola: %s' % err48[:2])
     ctx48.close()

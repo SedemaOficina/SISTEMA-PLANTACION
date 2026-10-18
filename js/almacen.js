@@ -275,7 +275,7 @@ SRP.almacen = {
       cambios.push(['usuarios', n]);
     });
     const porId = Object.fromEntries(catalogos.map(c => [c.id, c]));
-    const deArranque = new Set(SRP.DATOS_FICTICIOS.catalogos.filter(c => c.tipo === 'solicitante').map(c => c.id));
+    const deArranque = new Set(SRP.CATALOGOS_ARRANQUE.solicitantes.map(c => c.id));
     jornadas.forEach(j => {
       const n = Object.assign({}, j);
       if (!j.organizacion_id) n.organizacion_id = sedema;
@@ -296,7 +296,7 @@ SRP.almacen = {
       delete n.instrumento; delete n.vigente_hasta;
       cambios.push(['catalogos', n]);
     });
-    const arranque = {}; SRP.DATOS_FICTICIOS.catalogos.filter(c => c.tipo === 'programa').forEach(c => { arranque[c.id] = c.tipos_organizacion; });
+    const arranque = {}; SRP.CATALOGOS_ARRANQUE.programas.forEach(c => { arranque[c.id] = c.tipos_organizacion; });
     catalogos.filter(c => c.tipo === 'programa' && !Array.isArray(c.tipos_organizacion))
       .forEach(c => cambios.push(['catalogos', Object.assign({}, c, { tipos_organizacion: (arranque[c.id] || []).slice() })]));
     if (!cambios.length) return;
@@ -601,11 +601,13 @@ SRP.almacen = {
     /* Las áreas de arranque que se retiraron pasan sus cuentas a la que las sustituye y se quitan;
        las áreas y los programas de arranque que nadie editó toman su nombre y clave nuevos
        («Coordinación del SIA» → «Sistema de Información Ambiental», «Palmeras y compensaciones» →
-       «Palmeras»). Lo que dio de alta o editó la administración no se toca. */
+       «Palmeras») y, los programas, quién puede usarlos. Lo que dio de alta o editó la administración
+       no se toca. */
     const retiradas = SRP.DATOS_FICTICIOS.areasRetiradas || {};
     const cuentas = (await this.todos('usuarios')).filter(u => retiradas[u.area_id]);
     const renombrar = todos.filter(c => (c.tipo === 'area' || c.tipo === 'programa') && !c.fecha_ultima_edicion && vigentes.has(c.id))
-      .map(c => [c, SRP.DATOS_FICTICIOS.catalogos.find(x => x.id === c.id)]).filter(([c, n]) => n && (n.nombre !== c.nombre || n.clave !== c.clave));
+      .map(c => [c, SRP.DATOS_FICTICIOS.catalogos.find(x => x.id === c.id)])
+      .filter(([c, n]) => n && (n.nombre !== c.nombre || n.clave !== c.clave || (c.tipo === 'programa' && String(n.tipos_organizacion) !== String(c.tipos_organizacion))));
     const quitar = todos.filter(c => c.tipo === 'area' && retiradas[c.id]);
     /* Las especies que aún no dicen si son de la paleta vegetal o si su fruto es comestible toman lo
        que dice el catálogo; las que dio de alta la administración, que no están en él, quedan «Por
@@ -623,7 +625,8 @@ SRP.almacen = {
       apagar.forEach(c => this.ponerCatalogo(tx, Object.assign({}, c, { activo: false })));
       faltan.forEach(c => this.ponerCatalogo(tx, c));
       viejos.forEach(c => { if (!usados.has(c.id)) this.quitarCatalogo(tx, c); else if (c.activo) this.ponerCatalogo(tx, Object.assign({}, c, { activo: false })); });
-      renombrar.forEach(([c, n]) => this.ponerCatalogo(tx, Object.assign({}, c, { nombre: n.nombre, clave: n.clave })));
+      renombrar.forEach(([c, n]) => this.ponerCatalogo(tx, Object.assign({}, c, { nombre: n.nombre, clave: n.clave },
+        c.tipo === 'programa' ? { tipos_organizacion: n.tipos_organizacion.slice() } : {})));
       quitar.forEach(c => this.quitarCatalogo(tx, c));
       marcas.forEach(c => this.ponerCatalogo(tx, c));
       cuentas.forEach(u => tx.objectStore('usuarios').put(Object.assign({}, u, { area_id: retiradas[u.area_id] })));

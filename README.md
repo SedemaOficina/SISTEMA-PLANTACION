@@ -216,13 +216,16 @@ js/                     La aplicación, un archivo por tema
   carga.js, excel.js    Carga masiva de árboles anteriores desde Excel o CSV, y lectura y escritura de .xlsx
   solicitud.js          Jornadas del programa «Solicitud especial»: quién lo solicita y de qué se trata
   mapa.js, foto.js, iconos.js, util.js, app.js  Mapa, fotografía, iconos, utilidades y arranque
-  datos-ficticios.js    Cuentas y catálogos de arranque de la versión de prueba
-  demostracion.js       Datos de demostración del pie (sólo versión de prueba; se retira al cerrar la Etapa 1)
-  espejo.js             Espejo de campos (sólo versión de prueba; se retira al cerrar la Etapa 1)
+  datos-ficticios.js    Cuentas de prueba y lo que siembra la versión de prueba (sólo versión de prueba)
+  demostracion.js       Datos de demostración del pie (sólo versión de prueba)
+  espejo.js             Espejo de campos (sólo versión de prueba)
+                        La copia real que se publica en el SIA no lleva estos tres (herramientas/preparar_produccion.py)
 
 assets/
   capas/                capa-alcaldias.js, capa-uga.js, capa-colonias.js y capa-prioritarias.js: capas compactadas (generadas)
-  catalogos/            catalogo-especies.js (79 especies del SIA, generado) y catalogo-vehiculos.js (de prueba, placas ficticias)
+  catalogos/            catalogo-especies.js (79 especies del SIA, generado), catalogos-arranque.js (los programas, áreas,
+                        instituciones y solicitantes reales con que arranca el sistema) y catalogo-vehiculos.js (sólo
+                        versión de prueba, placas ficticias)
   encabezado-ru-sia.png, encabezado-ru-sia-movil.png   Logotipo para el encabezado y el PDF
   icono-192.png, icono-512.png, icono-512-maskable.png, apple-touch-icon.png   Icono de la app
 
@@ -260,6 +263,7 @@ herramientas/           Generan archivos del sitio a partir de originales/ y de 
   exportar_datos_app.py La base de un teléfono de prueba con la demostración → servidor/local/datos-app.json, para cargarla en la base local
   extraer_iconos.py     Set de iconografía CDMX (.ai) → trazados para js/iconos.js
   manual_administracion.py  Capturas de la aplicación con datos reales, contra el servicio local, y el PDF del manual de la Administración global (docs/manual/)
+  preparar_produccion.py  La copia de la aplicación que se publica en el SIA: datos reales y sin los archivos de prueba
   empaquetar.py         Una carpeta → paquete para el SIA: manifiesto con la suma de cada archivo, ZIP y su .sha256; pide VERSION (0.N sólo con --revision)
 
 pruebas/                prueba.py (recorrido completo), prueba_conexion.py (con datos reales, contra el servicio local) y su apoyo_servidor.mjs, auditoria.py (auditoría), auditoria_css.py (hoja de estilos), revisar.py (presentación), servir.py (el servidor local para correrlas, que reenvía /api/ al servicio) y requisitos.txt (bibliotecas)
@@ -279,9 +283,8 @@ esa mezcla no arranca. `js/config.js` lee ese mismo número de su propia direcci
 versión se escribe en un solo lugar del código.
 
 **El archivo `VERSION`, en la raíz, lleva el mismo número** (lo pide la guía del SIA, sección 8); la prueba
-falla si no coincide con la marca. Ese número se ve siempre en la franja fija de arriba: «Versión de prueba
-0.9.75» mientras el SIA no instale el sistema; al pasar al SIA, `VERSION` y la marca van en `1` y la franja
-dice «Versión 1».
+falla si no coincide con la marca. Ese número se ve siempre en la franja fija de arriba. Hasta la 0.9.78 decía
+«Versión de prueba 0.9.N»; desde la versión 1, la que se entrega al SIA para instalar, dice «Versión 1».
 
 Si aun así alguien cae en una mezcla, el sistema lo detecta al abrir y explica cómo forzar la
 recarga, en vez de quedarse en blanco.
@@ -313,7 +316,8 @@ los que quedan vacíos no se imprimen. El **vehículo** sale del catálogo: se e
 agrupada por tipo, y el modelo y el tipo se ponen solos; arriba aparecen, a un toque, los tres que
 más ha usado el encargado. Sólo se eligen vehículos del catálogo: uno prestado o rentado se da de alta primero en Catálogos. El catálogo lo
 lleva la Administración en Catálogos › Vehículos (`assets/catalogos/catalogo-vehiculos.js` trae 16 de
-prueba con placas ficticias; las reales no se publican y se cargan en el servidor en la Fase 2). El encargado no se escribe: para un cabo
+prueba con placas ficticias; las reales no se publican: van sólo en el guion de datos de arranque del paquete
+de instalación). El encargado no se escribe: para un cabo
 es él; para quien ve a varias personas se elige entre los cabos con registros ese día. Luego se
 abre la **vista previa**, con el mismo contenido que tendrá el PDF, y desde ahí se genera el PDF.
 

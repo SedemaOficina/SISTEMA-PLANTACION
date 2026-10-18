@@ -46,7 +46,7 @@ BEGIN
   END IF;
 END $$;
 INSERT INTO srp.instituciones (id, clave, nombre, activo, creado_por_id, fecha_creacion, editado_por_id, fecha_ultima_edicion, tipo_organizacion)
-  VALUES ('o-sedema', 'SEDEMA', 'Secretaría del Medio Ambiente', true, NULL, now(), NULL, NULL, 'Gobierno de la CDMX') ON CONFLICT (id) DO NOTHING;
+  VALUES ('o-sedema', 'SEDEMA', 'Secretaría del Medio Ambiente (SEDEMA)', true, NULL, now(), NULL, NULL, 'Gobierno de la CDMX') ON CONFLICT (id) DO NOTHING;
 INSERT INTO srp.areas (id, clave, nombre, activo, creado_por_id, fecha_creacion, editado_por_id, fecha_ultima_edicion)
   VALUES ('a-sia', 'SIA', 'Sistema de Información Ambiental', true, NULL, now(), NULL, NULL) ON CONFLICT (id) DO NOTHING;
 INSERT INTO srp.usuarios (id, correo, nombre_completo, organizacion_id, area_id, cargo_rol, perfil, coordinadores_ids, activo,

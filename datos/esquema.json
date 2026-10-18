@@ -722,7 +722,7 @@
           "origen": "Persona",
           "dominio": "Lista de tipo_organizacion; [] = sólo SEDEMA",
           "pantalla": "Quién puede usarlo (Catálogos › Programas)",
-          "regla": "Los tipos de institución que, además de SEDEMA, pueden elegir el programa al iniciar o editar una jornada; SEDEMA puede usar todos. Lo marca la Administración. Un programa nuevo empieza vacío. De arranque: Reforestación Urbana, Alcaldía, Gobierno de la CDMX y Organización civil; Palmeras, Empresa privada; Centro Histórico, Compensaciones, Territorios de Paz, Utopías y Solicitud especial, vacío. Al abrir, un programa sin el dato recibe el de arranque o, si lo agregó la Administración, vacío"
+          "regla": "Los tipos de institución que, además de SEDEMA, pueden elegir el programa al iniciar o editar una jornada; SEDEMA puede usar todos. Lo marca la Administración. Un programa nuevo empieza vacío. De arranque: Reforestación Urbana, Alcaldía, Gobierno de la CDMX y Organización civil; Centro Histórico, Gobierno de la CDMX; Palmeras, Empresa privada; Compensaciones, Territorios de Paz, Utopías y Solicitud especial, vacío. Al abrir, un programa sin el dato recibe el de arranque o, si lo agregó la Administración, vacío"
         }
       ]
     },
@@ -2298,13 +2298,13 @@
       "id": "R-C05",
       "tabla": "instituciones",
       "regla": "Instituciones: cuatro tipos fijos. Sólo la Administración las agrega (a solicitud, en Catálogos › Instituciones: tipo —nunca Alcaldía— y nombre único; la clave la pone el sistema), las renombra y las desactiva (desactivar corta el acceso de sus cuentas); no se eliminan. Las 16 alcaldías son fijas y SEDEMA no se desactiva. De arranque: SEDEMA, PAOT, SOBSE (Gobierno de la CDMX), Green Cover (Empresa privada), Reforestamos México, A.C. (Organización civil) y las 16 alcaldías (id o-alc-<cvegeo>). Áreas de arranque: DGSANPAVA, Oficina de la Secretaría, Sistema de Información Ambiental y DGEIRA; en un teléfono con capturas, las cuentas del área retirada «Dirección de Infraestructura Verde» pasan a DGSANPAVA. Programas de arranque: Reforestación Urbana, Centro Histórico, Palmeras, Compensaciones, Territorios de Paz, Utopías y Solicitud especial; «Jornadas de voluntariado» se retiró: en un teléfono con capturas se desactiva si alguna jornada o árbol lo usa, y si no, se quita",
-      "donde": "js/catalogos.js esFija(), validar(), guardar(), cambiarEstado(); js/datos-ficticios.js; js/almacen.js completarCatalogos()"
+      "donde": "js/catalogos.js esFija(), validar(), guardar(), cambiarEstado(); assets/catalogos/catalogos-arranque.js; js/almacen.js completarCatalogos()"
     },
     {
       "id": "R-C06",
       "tabla": "solicitantes",
       "regla": "Solicitantes: quién solicita una jornada. Catálogo aparte del de instituciones: un solicitante no tiene cuentas ni ejecuta jornadas. Sólo la Administración los agrega, edita y desactiva (Catálogos › Solicitantes): nombre único, tipo de la lista fija de siete (Alcaldía, Dependencia de gobierno, Congreso, Empresa, Organización civil, Escuela, Vecinos) y clave que pone el sistema; sin uso se eliminan. De arranque: las 16 alcaldías (id s-alc-<cvegeo>, sin la palabra «Alcaldía»), Secretaría de Obras y Servicios (SOBSE), Secretaría de Gestión Integral del Agua (SEGIAGUA), Jefatura de Gobierno (Dependencia de gobierno) y Diputadas y diputados (Congreso). «Quién lo solicita» los ofrece agrupados por tipo y, al final, «Otra instancia»",
-      "donde": "js/catalogos.js validar(), guardar(); js/referencias.js TIPOS_SOLICITANTE, nombreSolicitante(), ordenSolicitantes(); js/solicitud.js opciones(); js/datos-ficticios.js"
+      "donde": "js/catalogos.js validar(), guardar(); js/referencias.js TIPOS_SOLICITANTE, nombreSolicitante(), ordenSolicitantes(); js/solicitud.js opciones(); assets/catalogos/catalogos-arranque.js"
     },
     {
       "id": "R-J01",

@@ -3934,3 +3934,37 @@
   · Al revisar las capturas apareció un texto mal armado en el Registro de cambios: de una cuenta que ya se
     eliminó decía «Alta de la cuenta cuenta eliminada». Ahora la nombra por su correo, que guardan su alta y
     su eliminación.
+
+- **D315. La versión 1: el paquete de instalación para el SIA (bloque 235).**
+  17-10-2026. Es lo que el SIA instala en su servidor; después la Administración global opera el sistema desde
+  la pantalla, con el manual.
+  · **Los catálogos de arranque los confirmó Liber**: los 7 programas, las 4 áreas con sus siglas, las 21
+    instituciones y los 21 solicitantes. Las 79 especies van como vienen del Excel oficial, sin corregir
+    nombres, y los 16 vehículos de la lista real, que sigue al día. Un cambio: Centro Histórico lo puede usar
+    también el Gobierno de la CDMX. El permiso es por tipo de institución, así que vale para PAOT y SOBSE;
+    Liber lo prefirió a un permiso institución por institución, que habría sido una función nueva.
+  · **Los catálogos de arranque son los reales** y salen de `js/datos-ficticios.js` a
+    `assets/catalogos/catalogos-arranque.js`. La versión de prueba los toma de ahí; sólo cambia que
+    Coyoacán e Iztapalapa siguen activas, porque tienen cuentas y datos de demostración. Un teléfono de
+    prueba con capturas recibe el permiso nuevo de Centro Histórico si nadie editó el programa.
+  · **En el SIA se cargan con un guion SQL**, `datos/srp-datos-arranque.sql`, que escribe
+    `servidor/datos-arranque.js`. Lleva los catálogos de arranque, las especies, los vehículos y la capa de
+    colonias prioritarias. Va en una transacción, agrega lo que falte y la capa sólo si está vacía: correrlo
+    otra vez no cambia nada. No lleva órdenes de psql, así que corre igual desde Node: «npm run cargar --
+    arranque» carga el mismo guion en la base local. Las placas reales van sólo en el guion del paquete.
+  · **La copia de la aplicación que se publica** la arma `herramientas/preparar_produccion.py`: pone
+    `ES_FICTICIO` en false y quita las cuentas de prueba, los vehículos de prueba, la demostración y el
+    espejo de campos, con su `<script>`. Sus botones y bloques se quedan en `index.html`, ocultos. Para que
+    abra sin ellos, la revisión de arranque exige las cuentas de prueba y la demostración sólo en la versión
+    de prueba, y lo que usa la versión real de esos archivos ahora sale de los catálogos de arranque.
+  · **Versión 1** en `VERSION` y en la marca de `index.html`: la franja dice «Versión 1». Así lo pide la guía
+    del SIA para un paquete que se instala.
+  · La primera cuenta crea la Secretaría con el mismo nombre que su catálogo de arranque.
+  · **El paquete** (`servidor/local/entrega-sia/srp-v1-2026-10-17/`, fuera de git) trae la aplicación, los
+    guiones de la base, los datos de arranque, el cambio a `sia-backend` sobre su versión vigente (el diff y
+    los archivos completos), el guion de la primera cuenta, el fragmento del servidor web, el manual en PDF,
+    `VERSION` y un LEEME con la instalación en cinco pasos, lo que se verificó, lo que falta y las preguntas
+    para el SIA.
+  · **Se ensayó la instalación con los archivos del paquete**, en limpio: los guiones, la verificación como
+    `srp_api`, los datos de arranque dos veces, la primera cuenta, el backend del SIA con el módulo y la
+    aplicación real; la primera persona entra con la temporal, escribe la suya y ve los catálogos.

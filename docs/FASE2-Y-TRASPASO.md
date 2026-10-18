@@ -174,19 +174,25 @@ placas reales, y el sitio conservó su dirección (D253).
 
 Lo que hoy es de prueba y no debe llegar a producción. Los detalles están en el apartado 3.
 
-- [ ] `ES_FICTICIO: false`. Con eso desaparecen la banda «Datos ficticios de prueba», «Entrar como
-      usuario de prueba», el cambio de perfil, «Simular sin señal», «Restablecer datos de prueba» y
-      «Campos que viajan a la base y no se ven en pantalla».
-- [ ] La entrada como usuario de prueba permite entrar sin contraseña: nunca en producción. Sí puede
-      conservarse en el ambiente de pruebas del SIA, con `ES_FICTICIO: true`.
-- [ ] Retirar los datos de demostración (`js/demostracion.js`) y sus botones.
-- [ ] **Vehículos: los del catálogo de la app son ficticios** (placas inventadas). Cargar en el
-      servidor la lista real, que está en `originales/` y no se publica.
-- [ ] Cuentas, áreas, instituciones y solicitantes de arranque (`js/datos-ficticios.js`) son de
-      ejemplo: cargar los reales en el servidor.
-- [ ] El catálogo de especies sí es el real (79 especies: 76 de la paleta vegetal y 3 fuera de ella); no se sustituye.
-- [ ] Conectar el acceso con cuentas propias (correo y contraseña), la API de envío y la emisión de folios.
-- [ ] Ninguna cuenta de arranque con contraseña conocida: cada una con contraseña temporal de un solo uso.
+Hecho en el paquete de la versión 1 (bloque 235, D315). El repositorio sigue siendo la versión de prueba; la
+copia que se publica en el SIA la arma `herramientas/preparar_produccion.py`.
+
+- [x] `ES_FICTICIO: false` en la copia real. Con eso desaparecen la banda «Datos ficticios de prueba»,
+      «Entrar como usuario de prueba», el cambio de perfil, «Simular sin señal», «Restablecer datos de
+      prueba» y «Campos que viajan a la base y no se ven en pantalla».
+- [x] La entrada como usuario de prueba permite entrar sin contraseña: no existe con `ES_FICTICIO: false`.
+      Sí puede conservarse en el ambiente de pruebas del SIA, con `ES_FICTICIO: true`.
+- [x] Los datos de demostración (`js/demostracion.js`) y el espejo de campos (`js/espejo.js`): la copia real
+      no los lleva; sus botones y bloques se quedan en `index.html`, ocultos.
+- [x] **Vehículos:** los del catálogo de la app son ficticios y la copia real no los lleva. La lista real,
+      que está en `originales/` y no se publica, va en el guion de datos de arranque del paquete.
+- [x] Áreas, instituciones, programas y solicitantes de arranque: los reales, en
+      `assets/catalogos/catalogos-arranque.js`, entran al servidor con el guion de datos de arranque. Las
+      cuentas de prueba (`js/datos-ficticios.js`) no van: la copia real no las lleva.
+- [x] El catálogo de especies sí es el real (79 especies: 76 de la paleta vegetal y 3 fuera de ella); no se sustituye.
+- [x] Conectar el acceso con cuentas propias (correo y contraseña), la API de envío y la emisión de folios.
+- [x] Ninguna cuenta con contraseña conocida: la primera la da el guion de la primera cuenta, con una
+      temporal que se cambia al entrar; las demás, la Administración global desde Usuarios.
 - [x] **Limpiar los comentarios del código** (pedido de Liber, 08-10-2026; hecho en el bloque 195, D275), antes de pasar al servidor y de
       entregar el código. Quedan sólo los que ayudan a un tercero a entender y mantener: qué hace, por qué así y
       qué cuidar. Fuera la historia del proyecto: números de decisión y de bloque («(D166)», «antes …», «Bloque

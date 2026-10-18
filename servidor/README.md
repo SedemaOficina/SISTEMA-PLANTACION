@@ -6,9 +6,11 @@ independiente, para montarse en el servidor de aplicaciones del SIA (Node.js con
 servicio aparte, sobre PostgreSQL con PostGIS. Qué debe hacer está en `docs/FASE2-Y-TRASPASO.md`; cómo
 se llega al SIA, en `docs/PLAN-TRASPASO-SIA.md`.
 
-Estado: **la base de datos, con sus capas territoriales y sus datos de arranque, y el acceso con cuentas
-propias, en TypeScript y con la forma de un módulo de `sia-backend`**. La recepción de jornadas y árboles,
-los permisos por perfil y el folio vienen en las fases siguientes.
+Estado: **versión 1, el sistema completo**, en TypeScript y con la forma de un módulo de `sia-backend`: el
+acceso con cuentas propias, los permisos por perfil e institución, la administración de cuentas, catálogos y
+parámetros, la recepción de jornadas y árboles con su folio, las fotografías, la bandeja de posibles
+duplicados, la carga masiva y las consultas. Se entrega al SIA en un paquete de instalación (abajo, «Instalar
+en el SIA»).
 
 ## El código
 
@@ -19,6 +21,7 @@ los permisos por perfil y el folio vienen en las fases siguientes.
 | `src/comun/procedencia.ts` | Fuera del SIA, sustituye al módulo común de procedencia de `sia-backend`, que el módulo importa para su registro de entradas y su límite por procedencia, con el mismo criterio: la dirección es la primera que no es de un intermediario propio. No viaja: en el SIA se usa el suyo |
 | `src/iniciar.ts` | Arranca el módulo solo |
 | `deploy/srp-cuenta-inicial.mjs` | La primera Administración global: imprime el SQL del alta, sin dependencias |
+| `datos-arranque.js` | El guion SQL de los datos de arranque que va al SIA: catálogos de arranque, especies, vehículos y la capa propia |
 | `bd.js`, `cargar.js` | La conexión de quien administra la base local y la carga de datos |
 | `dist/` | Lo que compila `tsup`; no se guarda en el repositorio |
 
@@ -104,14 +107,23 @@ la base y las variables van antes que el código. Un módulo por despliegue.
    backend pueda escribir, con su propio respaldo, y `SRP_FOTOS_DIR` con su ruta. Sin ella el módulo
    arranca igual y las fotografías responden que no están disponibles.
 4. **Verificación:** la del final de `09-srp-rol-y-grants.sql`, corrida como `srp_api`.
-5. **El código:** `src/modulos/srp/` en `sia-backend`, su conexión en `src/db.ts` y su montaje en
+5. **Datos de arranque:** `psql -d <base> -v ON_ERROR_STOP=on -f srp-datos-arranque.sql`, como quien
+   administra la base. El guion lo escribe `node datos-arranque.js <guion.sql> <vehiculos.csv>`: los
+   programas, áreas, instituciones y solicitantes de `assets/catalogos/catalogos-arranque.js`, las especies,
+   los vehículos del CSV y la capa propia. Va en una transacción y agrega lo que falte, así que correrlo otra
+   vez no cambia nada. Lleva las placas reales: vive sólo en el paquete.
+6. **El código:** `src/modulos/srp/` en `sia-backend`, su conexión en `src/db.ts` y su montaje en
    `src/index.ts`; `npm run typecheck`, `npm run build` y el despliegue. Al arrancar, el backend reporta
    el módulo conectado como `srp_api`, sin superusuario.
-6. **El servidor web:** `servidor-web/srp.conf`, que el SIA integra (rutas de disco y destino suyos).
-7. **La primera cuenta:** con `deploy/srp-cuenta-inicial.mjs` (ver abajo).
-8. **Datos de arranque:** la capa propia y el catálogo de especies, `npm run cargar -- capas especies`.
+7. **El servidor web y la aplicación:** `servidor-web/srp.conf`, que el SIA integra (rutas de disco y
+   destino suyos), y la copia de la aplicación que arma `python herramientas/preparar_produccion.py
+   <carpeta>`: con datos reales y sin los archivos de prueba.
+8. **La primera cuenta:** con `deploy/srp-cuenta-inicial.mjs` (ver abajo).
 
-El paquete para el SIA se arma con `python herramientas/empaquetar.py <carpeta>`: escribe el manifiesto
+El paquete de la versión 1 lleva todo eso: `app/`, `db/srp/`, `datos/srp-datos-arranque.sql`, `backend/`
+(el diff y los archivos completos), `deploy/`, `servidor-web/`, el manual de la Administración global en
+`manual/`, `VERSION` y su `LEEME.md` con estos pasos. El paquete se arma con
+`python herramientas/empaquetar.py <carpeta>`: escribe el manifiesto
 con la suma de cada archivo de todas las carpetas, el ZIP y su `.sha256`, y avisa si algún archivo parece
 llevar una dirección interna, una llave o una contraseña. Pide `VERSION` en la raíz del paquete y la misma
 versión en su LEEME: un paquete para instalar va en 1 o más; uno que el SIA sólo revisa puede ir en 0.N,
@@ -389,9 +401,10 @@ fechas en texto ISO 8601 en UTC; la fotografía tendrá su propia ruta.
 | Orden | Qué carga | Dónde |
 |---|---|---|
 | `territorio` | La réplica de `territorio` (alcaldías, malla UGA y colonias del IECM), de `assets/capas/`. Si encuentra capas que no cargó el SRP, no toca nada | **Sólo local** |
-| `capas` | La capa propia, las colonias prioritarias, de `assets/capas/`. La reemplaza completa | Local y SIA |
-| `especies` | El catálogo de especies de la aplicación. Agrega las que falten, sin tocar las demás | Local y SIA |
-| `vehiculos` | La lista de un CSV con columnas `placa`, `modelo` y `tipo`; por omisión, la real más reciente de `originales/`, que nunca entra al repositorio | Local; el SIA carga la suya |
+| `capas` | La capa propia, las colonias prioritarias, de `assets/capas/`. La reemplaza completa | **Sólo local**; al SIA va en el guion de datos de arranque |
+| `especies` | El catálogo de especies de la aplicación. Agrega las que falten, sin tocar las demás | **Sólo local**; ídem |
+| `vehiculos` | La lista de un CSV con columnas `placa`, `modelo` y `tipo`; por omisión, la real más reciente de `originales/`, que nunca entra al repositorio | **Sólo local**; ídem |
+| `arranque` | El mismo guion que va al SIA (`datos-arranque.js`), con el CSV más reciente: catálogos de arranque, especies, vehículos y la capa si está vacía. Agrega lo que falte | Local |
 | `app` | Lo que exporta `python herramientas/exportar_datos_app.py`: cuentas de prueba, catálogos de arranque y los datos de demostración, tal como los guarda un teléfono. Sus fotografías quedan como archivos en `servidor/local/fotos`, como las deja el servidor | **Sólo local** |
 | `todo` | Las anteriores, las que tengan su archivo | — |
 | `rehacer` | Destruye el esquema, lo instala y carga `territorio` y todo | **Sólo local** |
