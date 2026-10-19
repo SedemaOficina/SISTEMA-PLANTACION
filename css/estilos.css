@@ -1104,6 +1104,9 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .confirmar-escribir label { font-weight: 400; font-size: var(--t-s); overflow-wrap: anywhere; }
 .confirmar-escribir b { font-weight: 700; }
 .dlg-confirmar .acciones { margin-top: var(--e-4); }
+/* Un aviso que sólo informa lleva su icono junto al título, en el color de la acción */
+.confirmar-titulo.con-icono { display: flex; align-items: center; gap: var(--e-2); }
+.confirmar-titulo.con-icono svg { flex-shrink: 0; color: var(--acento); }
 /* CAMPOS. El error va debajo de su campo, en rojo con icono (el resumen de arriba se queda);
    la ayuda es una línea gris bajo el control; el contador aparece al pasar del 80 % del límite. */
 .campo-error { display: flex; align-items: flex-start; gap: var(--e-1); margin: var(--e-1) 0 0; color: var(--error); font-size: var(--t-s); font-weight: 600; }

@@ -2,8 +2,8 @@ import type pg from "pg";
 import { anotarCambio } from "./bitacora";
 import { capacidadesDe, puede, SEDEMA } from "./permisos";
 import {
-  AHORA, autoresDe, comoObjeto, conVigente, esFecha, esVigente, fechaCorta, filaDe, hoyEnLaCiudad, idDe, instante, puntoDe, rechazo, recibido, repetida,
-  sinPermiso, texto, textoFolio, ubicar, versionVieja, congelarPrioridad, type Errores, type Fila, type Punto, type Resultado, type Territorio,
+  AHORA, autoresDe, comoObjeto, conVigente, esFecha, esVigente, fechaCorta, filaDe, hoyEnLaCiudad, idDe, instante, jornadaEliminada, puntoDe, rechazo, recibido,
+  repetida, seElimino, sinPermiso, texto, textoFolio, ubicar, versionVieja, congelarPrioridad, type Errores, type Fila, type Punto, type Resultado, type Territorio,
 } from "./recepcion-apoyo";
 import type { Usuario } from "./sesiones";
 
@@ -126,7 +126,7 @@ async function jornadaParaCambiar(c: pg.PoolClient, d: Record<string, unknown>):
   const id = idDe(d.id);
   if (!id) return rechazo(null, "DATOS_INVALIDOS", "El cambio no dice de qué jornada es.");
   const actual = await filaDe(c, "jornadas", id, "FOR UPDATE");
-  if (!actual) return rechazo(id, "NO_EXISTE", "Esa jornada no está en el servidor.");
+  if (!actual) return (await seElimino(c, id)) ? jornadaEliminada(id) : rechazo(id, "NO_EXISTE", "Esa jornada no está en el servidor.");
   return { id, actual };
 }
 const esResultado = (x: object): x is Resultado => "estado" in x;

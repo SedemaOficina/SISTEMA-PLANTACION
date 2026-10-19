@@ -88,6 +88,12 @@ export const fechaEnJornada = (fecha: string, j: Fila): string => (fecha && fech
 export const filaDe = async (c: pg.PoolClient, tabla: Tabla, id: string, bloqueo: "" | "FOR SHARE" | "FOR UPDATE" = ""): Promise<Fila | undefined> =>
   (await c.query<{ fila: Fila }>(`SELECT to_jsonb(x) - 'foto_base64' AS fila FROM srp.${tabla} x WHERE id = $1 ${bloqueo}`, [id])).rows[0]?.fila;
 
+/* Una jornada que no está en el servidor: si estuvo y se eliminó, lo dice la bitácora. Lo que llegue para ella ya
+   no tiene dónde quedar, y el teléfono lo pone en «Revisar» en lugar de esperarla. */
+export const seElimino = async (c: pg.PoolClient, jornadaId: string): Promise<boolean> =>
+  !!(await c.query("SELECT 1 FROM srp.bitacora WHERE entidad = 'jornada' AND entidad_id = $1 AND accion = 'ELIMINADO' LIMIT 1", [jornadaId])).rowCount;
+export const jornadaEliminada = (id: string | null): Resultado => rechazo(id, "JORNADA_ELIMINADA", "Esa jornada se eliminó en el servidor.");
+
 // De quién es un registro: la institución y la coordinación de cada persona que responde de él
 export async function autoresDe(c: pg.PoolClient, x: Fila): Promise<Autores> {
   const ids = [x.cabo_id, x.relevo_id, ...((x.relevos as { cabo_id?: string }[] | undefined) ?? []).map((r) => r.cabo_id)].filter(Boolean);

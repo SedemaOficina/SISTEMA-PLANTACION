@@ -89,6 +89,24 @@ SRP.envio = {
     return mios.filter(r => this.activo() && this.estado(r, e) !== 'recibido');
   },
 
+  /* Con datos reales también esperan cambios de jornadas —el cierre, el reporte—, que no son árboles: cuentan
+     aparte. { registros, jornadas, total }, o null sin sesión. */
+  async pendientesTodos() {
+    const pend = await this.pendientesPropios();
+    if (pend === null) return null;
+    const u = SRP.sesion.usuario;
+    const jornadas = this.real() ? new Set(SRP.cola.ops.filter(o => o.tabla === 'jornadas' && o.usuario_id === u.id).map(o => o.registro_id)).size : 0;
+    return { registros: pend.length, jornadas, total: pend.length + jornadas, lista: pend };
+  },
+
+  // «3 registros», «1 registro y 1 jornada», «2 jornadas»
+  textoPendientes(p) {
+    const partes = [];
+    if (p.registros) partes.push(p.registros === 1 ? '1 registro' : p.registros + ' registros');
+    if (p.jornadas) partes.push(p.jornadas === 1 ? '1 jornada' : p.jornadas + ' jornadas');
+    return partes.join(' y ');
+  },
+
   /* ---------- Señal simulada ---------- */
 
   sinSenalForzada() {
@@ -111,7 +129,8 @@ SRP.envio = {
      (el diálogo de guardado), así que aquí no se pone aviso flotante. */
   enviar(op) {
     op = op || {};
-    if (!this.activo() || !SRP.sesion.usuario || !SRP.almacen.db) return Promise.resolve(null);
+    // Sólo envía la pestaña que tiene el turno (js/turno.js)
+    if (!this.activo() || !SRP.sesion.usuario || !SRP.almacen.db || !SRP.turno.mia()) return Promise.resolve(null);
     // Un envío a la vez: quien llega mientras hay uno en curso recibe el mismo resultado. La marca se
     // pone antes de cualquier espera, para que dos avisos seguidos de «volvió la señal» no envíen dos veces
     if (this.enviando) return this.enviando;
@@ -191,9 +210,14 @@ SRP.envio = {
     try { res = await SRP.cola.enviar(); } finally { this.enCurso = 0; }
     await this.alCambiar();
     SRP.mapa.refrescarFolios();
+    // Sin la jornada activa, que se eliminó en el servidor, «Nuevo registro» pide elegir o iniciar otra
+    const eliminadas = res.eliminadas.filter(Boolean);
+    if (eliminadas.length && SRP.app.vista === 'registrar' && !SRP.formulario.estado.editando) await SRP.activa.preparar();
     const n = res.enviados.size, pendientes = (await this.cola()).length;
     const fondo = { secundario: !op.manual };
-    if (res.cortado) SRP.util.anunciar('Se perdió la señal durante el envío. ' + this.textoCuenta(Math.max(pendientes, 1)) + ' en el teléfono; ' + (pendientes === 1 ? 'se enviará' : 'se enviarán') + ' cuando vuelva.', 'aviso', fondo);
+    if (eliminadas.length && !res.rechazados) SRP.util.anunciar((eliminadas.length === 1 ? 'La jornada «' + eliminadas[0] + '» se eliminó' : 'Las jornadas «' + eliminadas.join('», «') + '» se eliminaron') +
+      ' en el servidor: ya no ' + (eliminadas.length === 1 ? 'está' : 'están') + ' en este teléfono.', 'aviso', fondo);
+    else if (res.cortado) SRP.util.anunciar('Se perdió la señal durante el envío. ' + this.textoCuenta(Math.max(pendientes, 1)) + ' en el teléfono; ' + (pendientes === 1 ? 'se enviará' : 'se enviarán') + ' cuando vuelva.', 'aviso', fondo);
     else if (res.error) SRP.util.anunciar('No se pudo enviar: ' + res.error, 'aviso', fondo);
     else if (res.rechazados) SRP.util.anunciar('El servidor no aceptó ' + this.textoCambios(res.rechazados) + '.' + (res.rechazados === 1 ? ' ' + this.motivoRechazo() + ' Revíselo' : ' Revíselos') + ' con «Revisar», arriba.', 'alerta', fondo);
     else if (n && !op.silencioso) SRP.util.anunciar((n === 1 ? '1 registro enviado' : n + ' registros enviados') + ' al servidor. Recepción confirmada.', undefined, fondo);
@@ -295,15 +319,24 @@ SRP.envio = {
       'no tiene que hacer nada.' + (this.simulado() ? ' En pruebas el servidor es simulado: nada sale del teléfono.' : '');
     // Con envío, lo que importa al cambiar de teléfono es no dejar nada sin enviar
     this.el('senal-cambio').innerHTML = '<strong>Si va a cambiar de teléfono</strong>, antes envíe lo pendiente: la pastilla de arriba debe decir «Al día».';
-    // Sólo si hay algo en cola: cuántos y de qué días, del más reciente al más antiguo
-    const pend = await this.pendientesPropios();
-    caja.hidden = !(pend && pend.length);
+    // Sólo si hay algo en cola: cuántos y de qué días, del más reciente al más antiguo; las jornadas, aparte
+    const p = await this.pendientesTodos();
+    caja.hidden = !(p && p.total);
     if (caja.hidden) return;
-    const porDia = {};
-    pend.forEach(r => { const d = r.fecha_plantacion || this.diaLocal(r.fecha_registro); porDia[d] = (porDia[d] || 0) + 1; });
-    const dias = Object.keys(porDia).sort().reverse().map(d => SRP.util.formatearFecha(d) + ' (' + porDia[d] + ')');
-    const lista = dias.length > 1 ? dias.slice(0, -1).join(', ') + ' y ' + dias[dias.length - 1] : dias[0];
-    this.el('senal-cola-texto').textContent = (pend.length === 1 ? '1 registro por enviar' : pend.length + ' registros por enviar') + ': ' + lista + '.';
+    const pend = p.lista, partes = [];
+    if (pend.length) {
+      const porDia = {};
+      pend.forEach(r => { const d = r.fecha_plantacion || this.diaLocal(r.fecha_registro); porDia[d] = (porDia[d] || 0) + 1; });
+      const dias = Object.keys(porDia).sort().reverse().map(d => SRP.util.formatearFecha(d) + ' (' + porDia[d] + ')');
+      const lista = dias.length > 1 ? dias.slice(0, -1).join(', ') + ' y ' + dias[dias.length - 1] : dias[0];
+      partes.push((pend.length === 1 ? '1 registro por enviar' : pend.length + ' registros por enviar') + ': ' + lista + '.');
+    }
+    if (p.jornadas) partes.push((p.jornadas === 1 ? '1 jornada' : p.jornadas + ' jornadas') + ' por enviar.');
+    // Lo que no sale aunque hay conexión no se arregla esperando
+    if (this.real() && SRP.conexion.enLinea() && SRP.cola.atorada()) {
+      partes.push('Hay cambios que no salen desde hace más de ' + SRP.CONFIG.MINUTOS_ENVIO_ATORADO + ' minutos, aunque hay conexión. Toque «Enviar ahora»; si siguen sin salir, avise a su coordinación.');
+    }
+    this.el('senal-cola-texto').textContent = partes.join(' ');
   },
 
   /* ---------- Arranque ---------- */

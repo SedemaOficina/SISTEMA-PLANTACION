@@ -94,6 +94,8 @@ SRP.conexion = {
     if (this._aplicando) return;
     this._aplicando = true;
     const recargar = () => {
+      // La pestaña sin el turno no se recarga sola: al recargar lo tomaría
+      if (!SRP.turno.mia()) { this._aplicando = false; return; }
       const f = SRP.formulario;
       // Con una ventana abierta, un árbol a medias o una edición en curso se espera a que termine
       if (document.querySelector('dialog[open]') || (f && (f.aMedias() || f.estado.editando || f.estado.sustitucion))) { setTimeout(recargar, 1500); return; }
@@ -143,14 +145,15 @@ SRP.conexion = {
   },
 
   /* La pastilla con el envío, real o simulado: en lugar de cuántos guarda el teléfono, cuántos
-     esperan envío. «Al día» cuando no queda nada; rojo cuando hay atraso (días anteriores o
-     pasada la hora de cierre); «Enviando 3…» mientras dura el envío. */
+     esperan envío: árboles y, con datos reales, jornadas con un cambio por enviar. «Al día» cuando no
+     queda nada; rojo cuando hay atraso (días anteriores o pasada la hora de cierre) o cuando algo no
+     sale aunque hay conexión; «Enviando 3…» mientras dura el envío. */
   async refrescarEnvio(ind, con) {
     const simulado = SRP.envio.simulado();
-    const pend = await SRP.envio.pendientesPropios();
-    const n = pend === null ? null : pend.length;
+    const p = await SRP.envio.pendientesTodos();
+    const pend = p && p.lista, n = p === null ? null : p.total;
     const enviando = SRP.envio.enCurso;
-    const atraso = SRP.envio.atraso(pend);
+    const atraso = SRP.envio.atraso(pend) || (con && SRP.envio.real() && SRP.cola.atorada());
     let texto, etiqueta;
     if (enviando) {
       texto = 'Enviando ' + enviando + '…';
@@ -161,7 +164,7 @@ SRP.conexion = {
       const cuenta = n === null ? '' : n === 0 ? ' · Al día' + (simulado ? '<span class="cx-palabra"> (simulado)</span>' : '') : ' · ' + n + '<span class="cx-palabra"> por enviar</span>';
       texto = (con ? 'Con conexión' : 'Sin conexión') + cuenta;
       etiqueta = (con ? 'Con conexión' : 'Sin conexión, puede seguir registrando') +
-        (n === null ? '' : n === 0 ? ', todo enviado al servidor' + (simulado ? ' simulado' : '') : ', ' + n + (n === 1 ? ' registro por enviar' : ' registros por enviar')) +
+        (n === null ? '' : n === 0 ? ', todo enviado al servidor' + (simulado ? ' simulado' : '') : ', ' + SRP.envio.textoPendientes(p) + ' por enviar') +
         (atraso ? ', con atraso' : '');
     }
     ind.innerHTML = SRP.ICONOS.svg(con ? 'senal' : 'sinSenal', 'medio') + '<span>' + texto + '</span>';

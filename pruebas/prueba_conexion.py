@@ -155,6 +155,27 @@ def corregir(pg, id, comentarios):
 LOCAL = """async id => ({ jornada: await SRP.almacen.unoLocal('jornadas', id) || null, arbol: await SRP.almacen.unoLocal('plantaciones', id) || null })"""
 
 
+def guardar_sin_cambios(pg, id):
+    """Abre «Corregir» un árbol y guarda sin tocar nada, como la persona."""
+    pg.evaluate("async id => SRP.formulario.editar(await SRP.almacen.uno('plantaciones', id))", id)
+    pg.wait_for_timeout(600)
+    pg.click('#form-plantacion button[type=submit]'); pg.wait_for_timeout(800)
+    if pg.is_visible('#dlg-resumen'): pg.click('#btn-resumen-guardar'); pg.wait_for_timeout(700)
+
+
+def eliminar_arbol(pg, id):
+    pg.evaluate("async id => { SRP.registros.eliminar(await SRP.almacen.uno('plantaciones', id)); }", id)
+    pg.wait_for_timeout(600)
+    if pg.is_visible('#dlg-confirmar'): pg.click('#btn-confirmar-si'); pg.wait_for_timeout(800)
+
+
+def cerrar_y_reportar(pg, id):
+    pg.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); if (j.estatus === 'abierta') await SRP.activa.cambiarEstatus(j, 'cerrada'); }", id)
+    pg.wait_for_timeout(400)
+    pg.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); await SRP.reportes.marcarGenerado(j, null); }", id)
+    pg.wait_for_timeout(400)
+
+
 def esperar_cola(pg, quedan=0, espera=30000):
     """Espera a que la cola baje a `quedan` operaciones y a que no haya envío en curso."""
     pg.wait_for_function("n => SRP.cola.ops.length <= n && !SRP.envio.enviando", arg=quedan, timeout=espera)
@@ -210,6 +231,42 @@ def revisar(pg):
 def rechazados(pg, n, espera=30000):
     pg.wait_for_function("n => SRP.cola.rechazadas().length === n && !SRP.envio.enviando", arg=n, timeout=espera)
     pg.wait_for_timeout(300)
+
+
+# La cola como la tiene la memoria, la pastilla y su etiqueta
+COLA = "() => SRP.cola.ops.map(o => o.tipo + (o.version === null ? ' (sin versión)' : ''))"
+PASTILLA = "() => { const p = document.getElementById('conexion'); return [p.textContent.trim().replace(/\\s+/g, ' '), p.getAttribute('aria-label')]; }"
+# La jornada con otro nombre, guardada como lo hace su edición
+RENOMBRAR = """async ([id, nombre]) => { const j = await SRP.almacen.unoLocal('jornadas', id);
+  await SRP.almacen.guardarConBitacora('jornadas', Object.assign({}, j, { nombre }), SRP.bitacora.entrada('EDITADO', 'jornada', id, 'Campos: nombre'), 'jornada.editar'); }"""
+# Otro teléfono de la misma cuenta elimina la jornada en el servidor, sin pasar por la cola de éste
+ELIMINAR_EN_SERVIDOR = """async id => { const j = await SRP.almacen.unoLocal('jornadas', id);
+  const r = await SRP.servidor.pedir('POST', '/envios', { operaciones: [{ tipo: 'jornada.eliminar', datos: { id, version: SRP.cola.version('jornadas', j) } }] });
+  return r.ok ? r.datos.resultados[0].estado : r.mensaje; }"""
+# El teléfono sin espacio una vez, al poner un árbol con lo que respondió el servidor
+SIN_ESPACIO_UNA_VEZ = """() => { const antes = SRP.almacen.ponerLocal;
+  SRP.almacen.ponerLocal = function (t, o) {
+    if (t !== 'plantaciones') return antes.call(this, t, o);
+    SRP.almacen.ponerLocal = antes;
+    return Promise.reject(new DOMException('El teléfono se quedó sin espacio', 'QuotaExceededError')); }; }"""
+# Una jornada cerrada y reportada con un árbol cuya alta anotó otra pestaña: está en el almacén y no en la memoria.
+# El árbol se queda mientras su alta espere; la jornada, que no espera nada suyo, sale como siempre
+LIMPIAR_AJENO = """async hoy => { const u = SRP.sesion.usuario, j = crypto.randomUUID(), a = crypto.randomUUID(), n = 999999;
+  const hay = async () => !!(await SRP.almacen.unoLocal('plantaciones', a));
+  await SRP.almacen.ponerLocal('jornadas', { id: j, nombre: 'De otra pestaña', estatus: 'cerrada', reporte_en: new Date().toISOString(), cabo_id: u.id, fecha: hoy });
+  await SRP.almacen.ponerLocal('plantaciones', { id: a, jornada_id: j, estatus: 'eliminado', cabo_id: u.id });
+  // De otra cuenta, para que un envío de en medio no la tome: limpiar no mira de quién es
+  await SRP.almacen.ponerLocal('envios', { n, tipo: 'registro.crear', tabla: 'plantaciones', registro_id: a, usuario_id: 'otra-cuenta', version: null, rechazo: null });
+  await SRP.cola.limpiar();
+  const conAlta = await hay();
+  await SRP.almacen.quitarLocal('envios', n);
+  await SRP.cola.limpiar();
+  return [conAlta, await hay()]; }"""
+# Lo que no sale aunque hay conexión: la pastilla y la guía, como si llevara más del tiempo de aviso
+ATORADO = """async () => { SRP.cola.sinSalir.set(-1, Date.now() - (SRP.CONFIG.MINUTOS_ENVIO_ATORADO + 1) * 60000);
+  await SRP.conexion.refrescar(); await SRP.envio.pintarGuia();
+  const r = [document.getElementById('conexion').dataset.estado, document.getElementById('senal-cola-texto').textContent];
+  SRP.cola.sinSalir.delete(-1); await SRP.conexion.refrescar(); return r; }"""
 
 
 # El historial que enseña el detalle de un árbol, renglón por renglón
@@ -524,11 +581,12 @@ def main():
             # Dos altas con datos que el servidor no acepta: el punto quedó fuera de la Ciudad
             j2 = iniciar_jornada(pg, 'Jornada de los rechazos')
             esperar_cola(pg, 1)
-            ctx.route('**/api/srp/**', lambda r: r.abort())
+            # Sin señal para el teléfono, que entonces no intenta enviar: lo que se mueve en su almacén viaja en el alta
+            ctx.set_offline(True)
             b1, b2 = registrar(pg), registrar(pg)
             pg.evaluate("""async ids => { for (const id of ids) { const r = await SRP.almacen.unoLocal('plantaciones', id);
               await SRP.almacen.ponerLocal('plantaciones', Object.assign({}, r, { lat: 20.6, lng: -98.9 })); } }""", [b1, b2])
-            ctx.unroute('**/api/srp/**')
+            ctx.set_offline(False)
             pg.evaluate("() => SRP.envio.enviar({ manual: true })")
             rechazados(pg, 3)
             f = pg.evaluate(FRANJA)
@@ -590,6 +648,149 @@ def main():
             pg.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); await SRP.reportes.marcarGenerado(j, null); }", j2)
             esperar_cola(pg, 1)
 
+            # ---------- La cola de envío: nada se queda atorado ni se pierde ----------
+            # Queda en la cola el cambio rechazado de a2, sin resolver
+            j3 = iniciar_jornada(pg, 'Jornada de la cola')
+            esperar_cola(pg, 1)
+            c1 = registrar(pg)
+            esperar_cola(pg, 1)
+            # Sin señal, una corrección que deja todo igual y después eliminar el árbol: al volver la señal, la eliminación llega
+            ctx.route('**/api/srp/**', lambda r: r.abort())
+            guardar_sin_cambios(pg, c1)
+            eliminar_arbol(pg, c1)
+            cola = pg.evaluate(COLA)
+            ctx.unroute('**/api/srp/**')
+            pg.evaluate("() => SRP.envio.enviar({ manual: true })")
+            esperar_cola(pg, 1)
+            ok(apoyo('leer', {'id': c1})['arbol']['estatus'] == 'eliminado' and pg.evaluate("id => SRP.cola.de(id).length", c1) == 0,
+               'una corrección que al final dejó todo igual, sin señal, no atora lo que sigue: la eliminación del árbol llega al servidor: %s' % cola)
+            # Lo mismo con la jornada: el nombre cambiado y vuelto a dejar, y luego cerrarla. La pastilla cuenta la jornada
+            ctx.route('**/api/srp/**', lambda r: r.abort())
+            pg.evaluate(RENOMBRAR, [j3, 'Otro nombre']); pg.evaluate(RENOMBRAR, [j3, 'Jornada de la cola'])
+            pg.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); await SRP.activa.cambiarEstatus(j, 'cerrada'); }", j3)
+            pg.wait_for_timeout(800)
+            pastilla = pg.evaluate(PASTILLA)
+            ctx.unroute('**/api/srp/**')
+            pg.evaluate("() => SRP.envio.enviar({ manual: true })")
+            esperar_cola(pg, 1)
+            ok(apoyo('leer', {'id': j3})['jornada']['estatus'] == 'cerrada' and pastilla[0].endswith('· 2 por enviar') and '1 registro y 1 jornada por enviar' in pastilla[1],
+               'con la jornada: el cierre llega, y mientras espera la pastilla la cuenta: %s' % pastilla)
+
+            # La respuesta de una corrección se pierde, aunque el servidor la aplicó, y se corrige otra vez: llega la segunda, sin un falso rechazo
+            j4 = iniciar_jornada(pg, 'Jornada de la cola, otra')
+            esperar_cola(pg, 1)
+            c2 = registrar(pg)
+            esperar_cola(pg, 1)
+            ctx.route('**/api/srp/envios', lambda r: (r.fetch(), r.abort()))
+            corregir(pg, c2, 'Primera corrección')
+            pg.wait_for_function("id => SRP.cola.de(id).some(o => o.enviado) && !SRP.envio.enviando", arg=c2, timeout=30000)
+            ctx.unroute('**/api/srp/envios')
+            aplicada = apoyo('leer', {'id': c2})['arbol']['comentarios']
+            ctx.route('**/api/srp/**', lambda r: r.abort())
+            corregir(pg, c2, 'Segunda corrección')
+            cola = pg.evaluate(COLA)
+            ctx.unroute('**/api/srp/**')
+            pg.evaluate("() => SRP.envio.enviar({ manual: true })")
+            esperar_cola(pg, 1)
+            ok(aplicada == 'Primera corrección' and apoyo('leer', {'id': c2})['arbol']['comentarios'] == 'Segunda corrección' and pg.evaluate("() => SRP.cola.rechazadas().length") == 1,
+               'la corrección que salió sin respuesta vuelve a salir igual y la segunda va aparte: llega, sin «se cambió desde otro teléfono»: %s' % cola)
+
+            # Un «correcto» que no es del servicio —un portal de wifi— a la subida de la fotografía: se queda en la cola y llega después
+            ctx.route('**/api/srp/fotos/**', lambda r: r.fulfill(status=200, content_type='text/html', body='<html><body>Portal de la red</body></html>')
+                      if r.request.method == 'PUT' else r.continue_())
+            c3 = registrar(pg, foto)
+            pg.wait_for_function("id => SRP.cola.de(id).every(o => o.tipo === 'foto') && !SRP.envio.enviando", arg=c3, timeout=30000)
+            pg.wait_for_timeout(500)
+            quedo, sin = pg.evaluate("id => SRP.cola.de(id).map(o => o.tipo)", c3), apoyo('leer', {'id': c3})['fotos']
+            ctx.unroute('**/api/srp/fotos/**')
+            pg.evaluate("() => SRP.envio.enviar({ manual: true })")
+            esperar_cola(pg, 1)
+            ok(quedo == ['foto'] and sin == 0 and apoyo('leer', {'id': c3})['fotos'] == 1,
+               'una respuesta «200» que no es del servicio no da la fotografía por subida: se queda en la cola y llega cuando contesta el servicio')
+
+            # Sin espacio al poner en el teléfono lo que respondió el servidor: el árbol sigue en la cola y, al volver a enviar, recibe su folio
+            ctx.route('**/api/srp/**', lambda r: r.abort())
+            c4 = registrar(pg)
+            pg.wait_for_timeout(1000); pg.wait_for_function("() => !SRP.envio.enviando", timeout=30000)
+            ctx.unroute('**/api/srp/**')
+            pg.evaluate(SIN_ESPACIO_UNA_VEZ)
+            error = pg.evaluate("async () => { try { await SRP.envio.enviar({ manual: true }); return ''; } catch (e) { return e.name; } }")
+            sigue = pg.evaluate("id => SRP.cola.de(id).length", c4)
+            pg.evaluate("() => SRP.envio.enviar({ manual: true })")
+            esperar_cola(pg, 1)
+            srv, loc = apoyo('leer', {'id': c4})['arbol'], pg.evaluate(LOCAL, c4)['arbol']
+            ok(error == 'QuotaExceededError' and sigue == 1 and srv['folio'] and loc['folio'] == srv['folio'],
+               'sin espacio al recibir la respuesta, el árbol no sale de la cola, y con espacio recibe su folio: %s · %s' % (srv['folio'], loc['folio']))
+
+            # La jornada se elimina en el servidor, desde otro teléfono, mientras el cabo sigue registrando en ella
+            j5 = iniciar_jornada(pg, 'Jornada que se elimina')
+            esperar_cola(pg, 1)
+            eliminada = pg.evaluate(ELIMINAR_EN_SERVIDOR, j5)
+            c5 = registrar(pg)
+            rechazados(pg, 2)
+            v = {x['id']: x for x in revisar(pg)}
+            sigue = [pg.evaluate(LOCAL, j5)['jornada'] is None, pg.evaluate("() => SRP.activa.jornada && SRP.activa.jornada.id") != j5]
+            ok(eliminada == 'recibido' and c5 in v and v[c5]['que'] == 'Alta del árbol, en la jornada «Jornada que se elimina»'
+               and v[c5]['porque'] == 'Por qué: Esa jornada se eliminó en el servidor. Páselo a otra jornada suya para enviarlo.'
+               and v[c5]['botones'] == ['Pasar a otra jornada', 'Eliminar este registro'] and sigue == [True, True],
+               'un árbol de una jornada eliminada en el servidor no se queda esperando: va a «Revisar» con el motivo, y la jornada sale del teléfono: %s · %s' % (v.get(c5), sigue))
+            pg.click('#dlg-rechazos .dialogo-cerrar')
+            j6 = iniciar_jornada(pg, 'Jornada a la que pasa')
+            esperar_cola(pg, 2)
+            revisar(pg)
+            pg.click('#lista-rechazos li[data-n="%s"] button[data-accion="mover"]' % v[c5]['n'])
+            pg.wait_for_selector('#dlg-mover-jornada[open]')
+            destinos = pg.evaluate("() => [...document.querySelectorAll('#lista-mover-jornadas button[data-id]')].map(b => b.dataset.id)")
+            pg.click('#lista-mover-jornadas button[data-id="%s"]' % j6)
+            pg.wait_for_function("id => !SRP.cola.de(id).length && !SRP.envio.enviando", arg=c5, timeout=30000)
+            srv = apoyo('leer', {'id': c5})['arbol']
+            abiertas = [apoyo('leer', {'id': d})['jornada']['estatus'] == 'abierta' for d in destinos]
+            ok({j4, j6} <= set(destinos) and all(abiertas) and srv and srv['jornada_id'] == j6 and re.match(r'^[A-Z]{3}-\d{3}-\d{5}$', srv['folio'] or ''),
+               '«Pasar a otra jornada» ofrece sólo las abiertas del cabo y, elegida una, el árbol llega en ella con su folio: %s · %d destinos, abiertas %s' % (srv, len(destinos), abiertas))
+
+            # Guardar en una jornada que ya se cerró dice que está cerrada, no que falta permiso
+            pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(500)
+            activa = pg.evaluate("() => SRP.activa.jornada.id")
+            pg.evaluate("async id => { const j = await SRP.almacen.unoLocal('jornadas', id); await SRP.almacen.ponerLocal('jornadas', Object.assign({}, j, { estatus: 'cerrada' })); }", activa)
+            registrar(pg)
+            aviso = pg.evaluate(AVISO)
+            pg.evaluate("async id => { const j = await SRP.almacen.unoLocal('jornadas', id); await SRP.almacen.ponerLocal('jornadas', Object.assign({}, j, { estatus: 'abierta' })); }", activa)
+            pg.evaluate("() => { SRP.formulario.limpiar(true); return SRP.activa.preparar(); }")
+            ok('Esta jornada ya está cerrada: inicie otra en Nuevo registro o reábrala en Jornadas.' in aviso, 'guardar en una jornada ya cerrada lo dice así: %s' % aviso)
+
+            # Lo que limpia el teléfono lo decide lo que espera en su almacén, no lo que esta pestaña tiene en memoria
+            x = pg.evaluate(LIMPIAR_AJENO, HOY)
+            ok(x == [True, False], 'con un alta en el almacén que esta pestaña no tiene en memoria, el árbol de una jornada reportada se queda; sin ella, sale: %s' % x)
+
+            # Lo que no sale aunque hay conexión pone la pastilla en rojo, y la guía dice qué hacer
+            w = pg.evaluate(ATORADO)
+            ok(w[0] == 'atraso' and 'no salen desde hace más de 30 minutos, aunque hay conexión' in w[1], 'lo que lleva más de 30 minutos sin salir con conexión se ve: %s' % w)
+
+            # ---------- Una pestaña a la vez ----------
+            otra = ctx.new_page()
+            otra.on('pageerror', lambda e: errores.append(str(e)))
+            abrir(otra)
+            pg.wait_for_selector('#dlg-turno[open]', timeout=10000)
+            t = [pg.evaluate("() => [SRP.turno.mia(), document.getElementById('dlg-turno-titulo').textContent, document.getElementById('btn-turno-usar').textContent.trim()]"),
+                 otra.evaluate("() => [SRP.turno.mia(), document.getElementById('dlg-turno').open, !!SRP.sesion.usuario]")]
+            envio = pg.evaluate("() => SRP.envio.enviar({ manual: true })")
+            pg.keyboard.press('Escape'); pg.wait_for_timeout(300)
+            ok(t == [[False, 'El SRP se abrió en otra pestaña', 'Usar aquí'], [True, False, True]] and envio is None and pg.evaluate("() => document.getElementById('dlg-turno').open"),
+               'al abrir el SRP en otra pestaña, la de antes se detiene con su aviso, que no se cierra con Escape, y ya no envía: %s' % t)
+            with pg.expect_navigation():
+                pg.click('#btn-turno-usar')
+            pg.wait_for_selector('html[data-listo]')
+            otra.wait_for_selector('#dlg-turno[open]', timeout=10000)
+            ok(pg.evaluate("() => SRP.turno.mia() && !document.getElementById('dlg-turno').open && !!SRP.sesion.usuario") and otra.evaluate("() => !SRP.turno.mia()"),
+               '«Usar aquí» trae el trabajo a esa pestaña y la otra se detiene')
+            otra.close()
+            esperar_remoto(pg)
+
+            # Las jornadas de esta parte, cerradas y con su reporte, salen del teléfono con sus árboles
+            for j in (j3, j4, j6):
+                cerrar_y_reportar(pg, j)
+            esperar_cola(pg, 1)
+
             # La sesión que vence a medio árbol no saca a nadie del formulario
             pg.evaluate("SRP.app.mostrarVista('registrar')")
             pg.wait_for_timeout(500)
@@ -631,10 +832,29 @@ def main():
             entrar(pg, CABO['correo'], CLAVE)
             ok(dentro(pg), 'y se vuelve a entrar con la contraseña')
 
+            # Con algo sin enviar, «Cerrar sesión» lo dice antes y ofrece enviarlo: aquí, el cambio rechazado de a2
+            CONFIRMAR = """() => ({ titulo: document.getElementById('dlg-confirmar-titulo').textContent, pregunta: document.getElementById('dlg-confirmar-texto').textContent,
+                puntos: [...document.querySelectorAll('#dlg-confirmar-puntos li')].map(li => li.textContent),
+                botones: [...document.querySelectorAll('#dlg-confirmar .acciones button:not([hidden])')].map(b => b.textContent.trim()) })"""
+            pg.click('#btn-cuenta'); pg.click('#btn-cerrar-sesion')
+            pg.wait_for_selector('#dlg-confirmar[open]')
+            c = pg.evaluate(CONFIRMAR)
+            pg.click('#btn-confirmar-no'); pg.wait_for_timeout(400)
+            cancelar = dentro(pg)
+            pg.click('#btn-cuenta'); pg.click('#btn-cerrar-sesion')
+            pg.wait_for_selector('#dlg-confirmar[open]')
+            pg.click('#btn-confirmar-otro'); pg.wait_for_timeout(2500)
+            ok(c == {'titulo': 'Cerrar sesión', 'pregunta': 'Tiene 1 registro sin enviar.',
+                     'puntos': ['Se quedan en este teléfono y se envían cuando usted vuelva a entrar aquí.', 'Si entra otra persona, no se envían con su cuenta.'],
+                     'botones': ['Enviar ahora', 'Cerrar sesión de todos modos', 'Cancelar']} and cancelar and dentro(pg),
+               'con algo sin enviar, «Cerrar sesión» lo dice y ofrece enviarlo; «Cancelar» se queda, y si no sale todo, «Enviar ahora» tampoco cierra: %s' % c)
+
             # Cerrar sesión cierra también la del servicio
             antes = apoyo('sesiones', {'id': CABO['id']})
             pg.click('#btn-cuenta')
             pg.click('#btn-cerrar-sesion')
+            pg.wait_for_selector('#dlg-confirmar[open]')
+            pg.click('#btn-confirmar-si')
             pg.wait_for_timeout(1500)
             despues = apoyo('sesiones', {'id': CABO['id']})
             # La sesión de antes de la prueba de la sesión vencida sigue abierta en el servidor: se cuenta una menos

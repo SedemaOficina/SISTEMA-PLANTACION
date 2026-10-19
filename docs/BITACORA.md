@@ -5546,3 +5546,89 @@ No se probó:
 **Siguiente paso.** Liber decide cuándo entrega el paquete al SIA. Antes de operar faltan el acuerdo por
 escrito de quién opera las cuentas, los datos de la primera Administración global, el plazo de conservación
 del registro de entradas y confirmar el mapa base.
+
+## Bloque 236 — La cola de envío: nada se queda atorado ni se pierde (19-10-2026)
+
+**Versión 1.0.1.** El bloque 1 del plan de corrección de la auditoría del 19-10-2026
+(`docs/AUDITORIA-2026-10-19.md`, § 11): las dos fallas críticas y las demás de la cola de envío (D316).
+
+| Hallazgo | Qué pasaba | Qué pasa ahora |
+|---|---|---|
+| E3-R1-01, crítico | Una corrección que al final dejaba todo igual atoraba para siempre el cambio siguiente del mismo registro, y la pastilla decía «Al día» | La corrección vacía también viaja: el servidor la reconoce y su respuesta trae la versión que toma el cambio siguiente |
+| E3-R1-02, crítico | Con el SRP abierto en dos pestañas se perdía un árbol, y el cierre y el reporte no llegaban | Se trabaja en una pestaña a la vez; la limpieza del teléfono y el envío leen la cola del almacén, no de la memoria de cada pestaña |
+| E3-R1-03 | Un corte de señal tras una corrección, y otra corrección encima, daban un falso «se cambió desde otro teléfono» | Lo que salió sin respuesta vuelve a salir igual y el servidor lo reconoce; lo que se cambia mientras tanto va aparte |
+| E3-R4-03 | Un árbol de una jornada eliminada en el servidor esperaba para siempre, sin aviso | El servidor responde «la jornada se eliminó»; la jornada sale del teléfono y el árbol va a «Revisar», con «Pasar a otra jornada» |
+| F2-01 | Una respuesta «200» que no era del servicio daba la fotografía por subida, y se perdía | Sólo la confirmación del servicio, con el id de la fotografía, la saca de la cola; cualquier otra respuesta es como no tener señal |
+| E3-R4-05 | «Cerrar sesión» con algo sin enviar no decía nada | Lo dice y ofrece enviarlo |
+| E3-R1-07 | Sin espacio al recibir la respuesta del servidor, el árbol se quedaba sin folio en el teléfono | Primero se pone en el teléfono lo que respondió el servidor y luego sale la operación de la cola |
+| E3-R1-12 | En una jornada ya cerrada, el aviso decía «No tiene permiso para registrar en esta jornada» | «Esta jornada ya está cerrada: inicie otra en Nuevo registro o reábrala en Jornadas.» |
+| La pastilla | Contaba sólo árboles | Cuenta también las jornadas con un cambio por enviar, y se pone en rojo si algo no sale en 30 minutos aunque haya conexión |
+
+**Qué cambió.**
+- `js/cola.js`:
+  - la corrección vacía viaja;
+  - lo que sale queda marcado con lo que lleva, y sin respuesta se reenvía igual;
+  - una operación sin versión cuya anterior ya no está la toma del registro como lo tiene el servidor;
+  - antes de enviar se relee la cola del almacén, y la limpieza decide con lo que espera en el almacén;
+  - la jornada eliminada en el servidor sale del teléfono con lo suyo, y sus árboles van a «Revisar»;
+  - se vigila lo que no sale con conexión;
+  - lo que respondió el servidor se pone antes de soltar la operación;
+  - la fotografía sólo sale con la confirmación del servicio.
+- `js/turno.js` (nuevo): una pestaña a la vez, con su aviso y «Usar aquí».
+- `js/servidor.js`: un «correcto» sin el JSON del servicio cuenta como sin respuesta.
+- `js/envio.js` y `js/conexion.js`: los pendientes cuentan las jornadas; la pastilla en rojo con lo atorado; la
+  guía lo dice; el aviso de la jornada eliminada; sólo envía la pestaña con el turno, y no se recarga sola.
+- `js/app.js`: el turno al arrancar; «Cerrar sesión» con pendientes; la ventana de confirmar acepta una
+  salida más (`elegir`).
+- `js/rechazos.js` y `js/jornadas.js`: «Pasar a otra jornada» desde «Revisar», sólo a las abiertas del cabo;
+  un árbol sin su jornada conserva su fecha al moverlo.
+- `js/formulario.js`: el texto de la jornada cerrada.
+- `js/almacen.js`: `ponerLocales`, varios a la vez. `js/config.js`: `MINUTOS_ENVIO_ATORADO`.
+- `index.html` y `css/estilos.css`: el aviso del turno y el botón de más en la ventana de confirmar.
+- Servidor: `recepcion-apoyo.ts`, `recepcion-arboles.ts` y `recepcion-jornadas.ts`: `JORNADA_ELIMINADA`, con la
+  bitácora como constancia de que la jornada existió.
+- Pruebas: `servidor/pruebas/recepcion.test.js` (lo que llega para una jornada eliminada) y
+  `pruebas/prueba_conexion.py` (13 comprobaciones nuevas y dos al día, abajo).
+
+**Pantalla: qué se agregó y qué se quitó.** Lo aprobó Liber el 19-10-2026, con el antes y el después.
+- La pestaña que quedó atrás muestra «El SRP se abrió en otra pestaña», con «Usar aquí».
+- «Cerrar sesión» con algo sin enviar abre «Cerrar sesión · Tiene N registros sin enviar», con «Enviar ahora»,
+  «Cerrar sesión de todos modos» y «Cancelar». Sin pendientes, sale como antes.
+- La pastilla cuenta las jornadas («Con conexión · 2 por enviar»; la etiqueta dice «1 registro y 1 jornada por
+  enviar») y la guía dice «1 jornada por enviar». Lo que no sale en 30 minutos con conexión la pone en rojo y
+  la guía dice qué hacer.
+- En «Revisar», un árbol de una jornada eliminada dice «Por qué: Esa jornada se eliminó en el servidor. Páselo
+  a otra jornada suya para enviarlo.», con «Pasar a otra jornada» y «Eliminar este registro».
+- El aviso de la jornada cerrada, con su texto nuevo.
+- No se quitó nada.
+
+**Verificación.**
+- Antes y después, con los guiones de la auditoría, en su copia y en modo real:
+  - `verificar_criticas.py`, V4 (E3-R1-01): antes, atorado 2 de 2; después, la eliminación llega y la cola
+    queda vacía, 2 de 2.
+  - `verificar_criticas.py`, V5 (E3-R1-02): antes, el árbol perdido 2 de 2; después, el árbol, el cierre y el
+    reporte llegan, 2 de 2.
+  - `verificar_altas.py`, V1 (E3-R4-03): antes, «todavía no llega» sin aviso, 2 de 2; después, en «Revisar» y en
+    la franja, 2 de 2.
+  - `foto_falso_ok.py` (F2-01): antes, la fotografía perdida 2 de 2; después, con `foto_falso_ok_despues.py`, se
+    queda en la cola y llega cuando contesta el servicio, 2 de 2.
+- Servidor: `npm test`, 96 de 96; la de la jornada eliminada lleva cuatro comprobaciones nuevas.
+- Conexión, con el repositorio: `prueba_conexion.py`, 105 de 105; antes, 92.
+- Conexión, con la copia real: `prueba_conexion.py --app`, 106 de 106; antes, 93.
+- Aplicación: `prueba.py`, 0 fallas en 1,441. Esta vez terminó, corriendo sola. En la auditoría no terminó en
+  4 de 4 corridas (A1-01), que se hicieron con otras pruebas en marcha.
+- Auditorías: 144 sin hallazgos; hoja de estilos sin hallazgos; `revisar.py`, los mismos 12 avisos falsos de la
+  línea base (A1-04).
+
+Dos pruebas de la conexión se pusieron al día:
+- «Cerrar sesión» ahora pasa por su ventana.
+- Las dos altas con datos que el servidor no acepta se simulan sin señal para el teléfono. Antes eran con la
+  conexión cortada a medio envío, y lo que salió sin respuesta ahora se reenvía tal como salió.
+
+No se probó:
+- en teléfonos reales, ni en WebKit o Firefox, el aviso de la otra pestaña;
+- la falta de espacio con el límite real del navegador: se simuló con un error al guardar;
+- E3-R1-03 contra el código anterior: la prueba nueva repite su secuencia.
+
+**Siguiente paso.** El bloque 2 del plan: las fechas (fecha mínima del 01-OCT-2024, aviso a los 30 días, el
+cambio de día con la aplicación abierta y la hora del teléfono).

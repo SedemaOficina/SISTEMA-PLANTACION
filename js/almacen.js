@@ -514,6 +514,10 @@ SRP.almacen = {
     return this._tx([almacen], 'readwrite', (tx) => { tx.objectStore(almacen).put(objeto); });
   },
 
+  ponerLocales(almacen, objetos) {
+    return this._tx([almacen], 'readwrite', (tx) => { objetos.forEach(o => tx.objectStore(almacen).put(o)); });
+  },
+
   quitarLocal(almacen, clave) {
     return this._tx([almacen], 'readwrite', (tx) => { tx.objectStore(almacen).delete(clave); });
   },

@@ -2,9 +2,11 @@
    datos reales; con datos de prueba nada sale del teléfono.
 
    Cada pedido devuelve, sin lanzar nunca:
-     { ok: true, datos }                          lo que respondió el servicio
-     { ok: false, sinRed: true, mensaje }         no hubo respuesta: sin señal, el servicio caído o tardó
-                                                  más de ESPERA_SERVIDOR_MS. Lo capturado sigue aquí
+     { ok: true, datos }                          lo que respondió el servicio, siempre en JSON
+     { ok: false, sinRed: true, mensaje }         no hubo respuesta del servicio: sin señal, el servicio caído,
+                                                  tardó más de ESPERA_SERVIDOR_MS, o contestó otro (una página
+                                                  de mantenimiento, el portal de una red wifi). Lo capturado
+                                                  sigue aquí
      { ok: false, estado, codigo, mensaje, errores }   el servicio no aceptó el pedido; el mensaje es para
                                                   la persona y el código, para la aplicación
 
@@ -37,6 +39,8 @@ SRP.servidor = {
     }
     let datos = null;
     try { datos = await r.json(); } catch (e) { /* sin cuerpo, o no es del servicio */ }
+    // El servicio siempre contesta en JSON: un «correcto» sin él lo dio otro, y no confirma nada
+    if (r.ok && (datos === null || typeof datos !== 'object')) return { ok: false, sinRed: true, mensaje: 'El servidor no respondió. Lo capturado se guarda en este equipo.' };
     if (r.ok) return { ok: true, estado: r.status, datos };
     // El servidor web contesta por el servicio cuando éste no responde: es como no tener conexión
     if (r.status >= 502 && r.status <= 504) return { ok: false, sinRed: true, mensaje: 'El servidor no responde por ahora. Lo capturado se guarda en este equipo.' };

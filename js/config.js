@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 235',
+  ETAPA: 'Bloque 236',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -45,6 +45,7 @@ SRP.CONFIG = {
   DEMORA_ENVIO_PRUEBA_MS: 1200,     // lo que tarda el «envío», para que se vea «Enviando…»
   REINTENTO_ENVIO_MS: 60000,        // reintento mientras haya pendientes
   HORA_CIERRE_JORNADA: 17,          // desde esta hora, lo de hoy sin enviar ya es atraso
+  MINUTOS_ENVIO_ATORADO: 30,        // con conexión, lo que no sale en este tiempo pone la pastilla en rojo
   // Revisión de jornadas: umbrales de los avisos y de la partición por sitio, en metros
   // DUPLICADO_M: 4 m: por debajo, el aviso quedaría dentro del ruido del GPS
   JORNADA: { DUPLICADO_M: 4, FUERA_M: 150, SEPARAR_M: 500 },

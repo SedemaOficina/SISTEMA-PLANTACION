@@ -690,8 +690,10 @@ SRP.formulario = {
       } else {
         const nuevo = this.registroPrevisto(ahora);
         if (!nuevo.jornada_id) { SRP.util.anunciar('No hay jornada activa. Inicie una antes de guardar.', 'aviso'); return; }
-        // Sólo quien tiene la jornada a su cargo registra en ella: si pasó a otro cabo en relevo, ya no
-        if (!SRP.permisos.exigir('jornada.registrar', await SRP.almacen.uno('jornadas', nuevo.jornada_id) || {})) { await SRP.activa.preparar(); return; }
+        // Sólo en una jornada abierta, y sólo quien la tiene a su cargo: si pasó a otro cabo en relevo, ya no
+        const suJornada = await SRP.almacen.uno('jornadas', nuevo.jornada_id) || {};
+        if (suJornada.estatus === 'cerrada') { SRP.util.anunciar('Esta jornada ya está cerrada: inicie otra en Nuevo registro o reábrala en Jornadas.', 'aviso'); await SRP.activa.preparar(); return; }
+        if (!SRP.permisos.exigir('jornada.registrar', suJornada)) { await SRP.activa.preparar(); return; }
         // La distancia a los demás de la jornada ya se avisó en la ficha de revisión
         await SRP.almacen.guardarConBitacora('plantaciones', nuevo, SRP.bitacora.entrada('CREADO', 'plantacion', nuevo.id), 'registro.crear');
         if (this.el('dlg-resumen').open) this.el('dlg-resumen').close();

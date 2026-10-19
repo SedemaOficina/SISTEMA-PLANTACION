@@ -5,6 +5,7 @@
        lo del servidor.
      · Los datos no pasan: corregirlos —al guardar se vuelve a enviar— o, si nunca llegó, eliminarlo.
      · Falló el servidor: enviarlo otra vez.
+     · Su jornada se eliminó en el servidor: pasarlo a otra jornada abierta, donde sí se recibe, o eliminarlo.
      · Lo demás —sin permiso, el registro ya no está o ya cambió de estado— no se puede hacer: se descarta y el
        registro del teléfono vuelve a como está en el servidor.
    Eliminar y descartar borran lo que hizo la persona: piden confirmación y van con el borde rojo. */
@@ -61,7 +62,11 @@ SRP.rechazos = {
   },
 
   async que(o, r) {
-    const jornada = async id => { const j = id ? await SRP.almacen.uno('jornadas', id) : null; return j ? '«' + (j.nombre || 'sin nombre') + '»' : ''; };
+    // La jornada que se eliminó ya no está en el teléfono: su nombre vino con el rechazo
+    const jornada = async id => {
+      const j = id ? await SRP.almacen.uno('jornadas', id) : null;
+      return j ? '«' + (j.nombre || 'sin nombre') + '»' : o.rechazo && o.rechazo.jornada ? '«' + o.rechazo.jornada + '»' : '';
+    };
     if (o.tipo === 'registro.crear') { const j = await jornada(r && r.jornada_id); return 'Alta del árbol' + (j ? ', en la jornada ' + j : ''); }
     if (o.tipo === 'registro.sustituir') {
       const x = r && r.sustituye_id ? await SRP.almacen.uno('plantaciones', r.sustituye_id) : null;
@@ -87,6 +92,7 @@ SRP.rechazos = {
       if (f.editado_por_id && f.editado_por_id === o.usuario_id) return 'Este registro se cambió antes desde otro teléfono, con su cuenta' + cuando + '.';
       return 'Alguien más cambió este registro antes' + (quien ? ': ' + SRP.util.nombreCompleto(quien) : '') + cuando + '.';
     }
+    if (x.codigo === 'JORNADA_ELIMINADA') return 'Esa jornada se eliminó en el servidor. Páselo a otra jornada suya para enviarlo.';
     const errores = (x.errores || []).map(e => e[1]).filter(Boolean);
     return errores.length ? errores.join(' ') : x.mensaje || 'El servidor no dijo por qué.';
   },
@@ -98,6 +104,7 @@ SRP.rechazos = {
       ? (conArboles ? null : ['eliminar', jornada ? 'Eliminar esta jornada' : 'Eliminar este registro', 'btn-peligro-linea', 'basura'])
       : ['descartar', 'Descartar mi cambio', 'btn-peligro-linea', 'cerrar'];
     if (codigo === 'VERSION_VIEJA') return [['reenviar', 'Enviar mi cambio otra vez', 'btn-primario', 'senal'], ['servidor', 'Quedarme con lo del servidor', 'btn-secundario', 'palomita']];
+    if (codigo === 'JORNADA_ELIMINADA' && r) return [['mover', 'Pasar a otra jornada', 'btn-primario', 'jornadas'], quitar].filter(Boolean);
     const corregible = r && o.tipo !== 'foto' && (alta || SRP.cola.EDICIONES.includes(o.tipo)) && (codigo === 'DATOS_INVALIDOS' || (alta && jornada));
     return [
       this.DEL_SERVIDOR.includes(codigo) ? ['reenviar', 'Enviar otra vez', 'btn-primario', 'senal'] : null,
@@ -129,6 +136,7 @@ SRP.rechazos = {
   async hacer(accion, o, b) {
     const r = await this.registroDe(o);
     if (accion === 'corregir') return this.corregir(o);
+    if (accion === 'mover') { this.el('dlg-rechazos').close(); return SRP.jornadas.abrirMover(r, true); }
     if (accion === 'eliminar' && !(await this.confirmarEliminar(o, r))) return;
     if (accion === 'descartar' && !(await this.confirmarDescartar(o))) return;
     const libre = SRP.util.ocupado(b, accion === 'reenviar' ? 'Enviando…' : 'Un momento…');

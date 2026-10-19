@@ -4,7 +4,7 @@ import { conDuplicado } from "./duplicados";
 import { puede } from "./permisos";
 import {
   AHORA, asignarFolio, autoresDe, caducarReporte, comoObjeto, conVigente, esFecha, especieComun, esVigente, fechaCorta, fechaEnJornada, filaDe,
-  hoyEnLaCiudad, idDe, instante, MOTIVOS_SUSTITUCION, motivoSustitucion, puntoDe, rechazo, recibido, repetida, sinPermiso, texto, textoFolio,
+  hoyEnLaCiudad, idDe, instante, jornadaEliminada, MOTIVOS_SUSTITUCION, motivoSustitucion, puntoDe, rechazo, recibido, repetida, seElimino, sinPermiso, texto, textoFolio,
   ubicar, versionVieja, congelarPrioridad, type Errores, type Fila, type Punto, type Resultado, type Tabla, type Territorio,
 } from "./recepcion-apoyo";
 import type { Usuario } from "./sesiones";
@@ -91,7 +91,10 @@ export async function crearArbol(c: pg.PoolClient, u: Usuario, d: Record<string,
   // La jornada, que no se cierra mientras se recibe su árbol
   const jornadaId = idDe(d.jornada_id);
   const jornada = jornadaId ? await filaDe(c, "jornadas", jornadaId, "FOR SHARE") : undefined;
-  if (!jornada) return rechazo(id, "JORNADA_PENDIENTE", "La jornada de este árbol todavía no está en el servidor: el árbol se recibe después de ella.");
+  if (!jornada) {
+    return jornadaId && (await seElimino(c, jornadaId)) ? jornadaEliminada(id)
+      : rechazo(id, "JORNADA_PENDIENTE", "La jornada de este árbol todavía no está en el servidor: el árbol se recibe después de ella.");
+  }
   // Sólo quien la tiene a su cargo registra en ella: el titular o, durante un relevo, el cabo del relevo
   if (!puede("jornada.registrar", u, comoObjeto(jornada))) return sinPermiso(id, "jornada.registrar");
 
@@ -326,7 +329,7 @@ export async function moverArbol(c: pg.PoolClient, u: Usuario, d: Record<string,
   if (actual.estatus !== "activo") return conVigente(rechazo(id, "NO_ACTIVO", "Ese árbol ya no está activo: no se mueve."), actual);
   const destinoId = idDe(d.jornada_id);
   const destino = destinoId ? await filaDe(c, "jornadas", destinoId, "FOR UPDATE") : undefined;
-  if (!destino) return rechazo(id, "NO_EXISTE", "Esa jornada no está en el servidor.");
+  if (!destino) return destinoId && (await seElimino(c, destinoId)) ? jornadaEliminada(id) : rechazo(id, "NO_EXISTE", "Esa jornada no está en el servidor.");
   if (actual.jornada_id === destino.id) return recibido(actual, { repetido: true });
   if (!(await esVigente(c, "plantaciones", id, d.version))) return versionVieja(actual);
   if (destino.cabo_id !== actual.cabo_id) return conVigente(rechazo(id, "OTRO_CABO", "Sólo se mueve a otra jornada del mismo cabo."), actual);

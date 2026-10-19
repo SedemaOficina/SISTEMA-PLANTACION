@@ -3968,3 +3968,40 @@
   · **Se ensayó la instalación con los archivos del paquete**, en limpio: los guiones, la verificación como
     `srp_api`, los datos de arranque dos veces, la primera cuenta, el backend del SIA con el módulo y la
     aplicación real; la primera persona entra con la temporal, escribe la suya y ve los catálogos.
+- **D316. La cola de envío: nada se queda atorado ni se pierde (bloque 236).**
+  19-10-2026. Es el bloque 1 del plan de corrección de la auditoría del 19-10-2026, que Liber aprobó junto con
+  el bloque 2, con sus pantallas.
+  · **Una pestaña a la vez.** Con el SRP abierto en dos pestañas del mismo teléfono, cada una tenía su copia de
+    la cola en memoria y limpiaba el teléfono según la suya: así se perdió un árbol. Liber eligió trabajar en
+    una a la vez, frente a compartir la cola entre pestañas, que dejaba a la otra enseñando datos viejos. Trabaja
+    la última que se abrió; las demás muestran «El SRP se abrió en otra pestaña» con «Usar aquí», que recarga y
+    toma el turno. El turno se anota en localStorage, que avisa a las demás pestañas. Además, por si una pestaña
+    alcanza a guardar algo al perder el turno: la limpieza decide con lo que espera en el almacén y el envío
+    relee la cola del almacén antes de salir.
+  · **Una corrección que al final dejó todo igual también viaja.** El servidor la reconoce como repetida y
+    responde con el registro como lo tiene; de ahí toma su versión el cambio que sigue. Antes se descartaba en
+    el teléfono, y el cambio siguiente esperaba para siempre una versión que nadie le iba a dar. Como red, una
+    operación sin versión cuya anterior ya no está toma la del registro como lo tiene el servidor; si no es la
+    vigente, el servidor lo dice y se resuelve en «Revisar».
+  · **Lo que salió y no tuvo respuesta se reenvía tal como salió.** Queda marcado con lo que llevó y el
+    servidor lo reconoce; lo que se cambie mientras tanto va en otra operación, después. Así ya no hay un falso
+    «se cambió desde otro teléfono». Si el servidor contesta sin aplicarlo («la jornada todavía no llega»), o lo
+    rechaza, la marca se quita y lo que se corrija vuelve a viajar con él.
+  · **Una jornada eliminada en el servidor ya no se espera.** El servidor responde `JORNADA_ELIMINADA` cuando la
+    bitácora dice que existió y se eliminó; si no, sigue siendo «todavía no llega». La jornada sale del teléfono
+    con sus cambios pendientes; sus árboles sin enviar van a «Revisar» con «Pasar a otra jornada», sólo a las
+    abiertas del cabo, donde el servidor los recibe, o «Eliminar este registro». Si era la activa, se elige o se
+    inicia otra.
+  · **La fotografía sólo sale de la cola con la confirmación del servicio**, que trae su id. Un «correcto» que
+    no trae el JSON del servicio —una página de mantenimiento, el portal de una red wifi— cuenta como no tener
+    señal, en todos los pedidos.
+  · **Cerrar sesión con algo sin enviar se dice antes.** Liber eligió avisar y ofrecer enviarlo, frente a
+    impedir que entre otra cuenta, que dejaría una tableta compartida bloqueada si esa persona no vuelve.
+    «Enviar ahora» cierra la sesión si sale todo.
+  · **La pastilla cuenta también las jornadas** con un cambio por enviar —el cierre, el reporte—, que antes no
+    se veían: con ellas pendientes decía «Al día». Y se pone en rojo, como con el atraso, si algo lleva 30
+    minutos sin salir aunque haya conexión (`MINUTOS_ENVIO_ATORADO`); la guía dice qué hacer.
+  · **Lo que respondió el servidor se pone en el teléfono antes de soltar la operación**: si no cabe, la
+    operación se queda y al reenviarla el servidor la reconoce. Antes el árbol se quedaba sin folio.
+  · **En una jornada ya cerrada** el aviso dice «Esta jornada ya está cerrada: inicie otra en Nuevo registro o
+    reábrala en Jornadas.», y no «No tiene permiso».

@@ -38,6 +38,7 @@ SRP.app = {
     this.el('version-sia').className = ('version-sia ' + vp.clase).trim();
     if (!this.comprobarVersionCompleta()) { this.marcarListo(); return; }
     SRP.util.redDeSeguridad();     // ningún fallo se queda mudo
+    SRP.turno.iniciar();           // se trabaja en una pestaña a la vez: ésta toma el turno
     this.el('version').textContent = SRP.util.textoVersion();
     this.el('banda-ficticio').hidden = !SRP.CONFIG.ES_FICTICIO;
     // Con datos reales, los últimos parámetros que mandó el servidor, antes de que los use nadie
@@ -118,7 +119,8 @@ SRP.app = {
     /* EL BOTÓN «ATRÁS» DEL NAVEGADOR. Con una ventana abierta, la cierra. Si no, vuelve a la sección
        anterior. Con un árbol a medias no sale de «Nuevo registro»: pide guardarlo o descartarlo. */
     window.addEventListener('popstate', (e) => {
-      if (!SRP.sesion.usuario) return;
+      // Sin el turno, el aviso de la otra pestaña se queda: sólo «Usar aquí» lo quita
+      if (!SRP.sesion.usuario || !SRP.turno.mia()) return;
       const quedarse = () => { try { history.pushState({ vista: this.vista }, ''); } catch (err) { /* sin historial */ } };
       const abierta = document.querySelector('dialog[open]');
       if (abierta) { abierta.close(); quedarse(); return; }
@@ -157,7 +159,7 @@ SRP.app = {
       // El espejo de campos no se exige: es sólo de la versión de prueba y la app debe abrir sin él
     ].filter(([id]) => !document.getElementById(id)).map(([, que]) => que);
     // Las cuentas y la demostración son sólo de la versión de prueba: la real no las carga
-    const modulos = ['util', 'ICONOS', 'permisos', 'sesion', 'almacen', 'ref', 'formulario', 'registros', 'catalogos', 'usuarios', 'configuracion', 'excel', 'carga', 'ESQUEMA', 'derivacion', 'indicadores', 'supervision', 'informes', 'CATALOGOS_ARRANQUE']
+    const modulos = ['util', 'ICONOS', 'permisos', 'sesion', 'almacen', 'ref', 'formulario', 'registros', 'catalogos', 'usuarios', 'configuracion', 'excel', 'carga', 'ESQUEMA', 'derivacion', 'indicadores', 'supervision', 'informes', 'CATALOGOS_ARRANQUE', 'turno']
       .concat(SRP.CONFIG.ES_FICTICIO ? ['DATOS_FICTICIOS', 'demo'] : [])
       .filter(m => !SRP[m]);
     /* Las tres capas y la biblioteca del cruce también se exigen: sin ellas la app abría y
@@ -216,7 +218,7 @@ SRP.app = {
       SRP.sesion.cerrar();
       this.mostrarAcceso();
     };
-    this.el('btn-cerrar-sesion').addEventListener('click', () => { this.menuCuenta(false); salir(); });
+    this.el('btn-cerrar-sesion').addEventListener('click', async () => { this.menuCuenta(false); if (await this.salirConPendientes()) salir(); });
     this.el('btn-cambiar-perfil').addEventListener('click', () => { this.menuCuenta(false); salir(); });
     this.el('btn-datos-prueba').addEventListener('click', async () => { this.menuCuenta(false); await SRP.demo.pintar(); this.el('dlg-prueba').showModal(); });
     // Menú de la cuenta: abre y cierra con el botón; se cierra al tocar fuera o con Escape
@@ -246,6 +248,20 @@ SRP.app = {
       this.mostrarAcceso();
       SRP.util.anunciar('Datos de prueba restablecidos.');
     });
+  },
+
+  /* Cerrar sesión con algo sin enviar: se queda en el teléfono y sale cuando esa persona vuelva a entrar aquí,
+     nunca con la cuenta de otra. Se dice antes, y se ofrece enviarlo; si sale todo, la sesión se cierra. */
+  async salirConPendientes() {
+    const p = await SRP.envio.pendientesTodos();
+    if (!p || !p.total) return true;
+    const r = await this.elegir({ titulo: 'Cerrar sesión', pregunta: 'Tiene ' + SRP.envio.textoPendientes(p) + ' sin enviar.',
+      puntos: ['Se quedan en este teléfono y se envían cuando usted vuelva a entrar aquí.', 'Si entra otra persona, no se envían con su cuenta.'],
+      otro: { texto: 'Enviar ahora', icono: 'senal' }, boton: 'Cerrar sesión de todos modos', icono: 'salir', linea: true });
+    if (r !== 'otro') return r === 'si';
+    await SRP.envio.enviar({ manual: true });
+    const quedan = await SRP.envio.pendientesTodos();
+    return !quedan || !quedan.total;
   },
 
   /* Menús de acciones de los renglones. Un solo manejador para las tres tablas: la tuerca
@@ -665,6 +681,7 @@ SRP.app = {
     });
     this.el('btn-confirmar-si').addEventListener('click', () => this.el('dlg-confirmar').close('si'));
     this.el('btn-confirmar-no').addEventListener('click', () => this.el('dlg-confirmar').close('no'));
+    this.el('btn-confirmar-otro').addEventListener('click', () => this.el('dlg-confirmar').close('otro'));
     // Con palabra de confirmación, el botón se activa cuando lo escrito coincide; Intro confirma
     this.el('confirmar-palabra').addEventListener('input', () => this.revisarPalabra());
     this.el('confirmar-palabra').addEventListener('keydown', (e) => {
@@ -681,7 +698,12 @@ SRP.app = {
      icono, cancelar }. La corta (texto, textoBoton, icono) sirve para una pregunta simple.
      icono: 'basura' elimina (rojo), 'palomita' confirma (verde), 'candado' cierra (acento). */
   confirmar(texto, textoBoton, icono) {
-    const o = typeof texto === 'object' ? texto : { pregunta: texto, boton: textoBoton, icono };
+    return this.elegir(typeof texto === 'object' ? texto : { pregunta: texto, boton: textoBoton, icono }).then(r => r === 'si');
+  },
+
+  /* La misma ventana con una salida más, primero y en el color de la acción: `otro` { texto, icono }. Devuelve
+     'si', 'otro' o '' (cancelar). `linea`: el botón principal va de contorno, porque la acción es la otra. */
+  elegir(o) {
     const poner = (id, t) => { const e = this.el(id); e.textContent = t || ''; e.hidden = !t; };
     return new Promise((resolver) => {
       const dlg = this.el('dlg-confirmar');
@@ -702,7 +724,10 @@ SRP.app = {
       const b = this.el('btn-confirmar-si');
       b.innerHTML = SRP.ICONOS.svg(o.icono || 'basura') + '<span>' + SRP.util.escapar(o.boton) + '</span>';
       // Color por significado (Norma 8.4): confirmar verde, cerrar en acento, eliminar rojo
-      b.className = 'btn ' + (o.soloAceptar ? 'btn-primario' : o.icono === 'palomita' ? 'btn-exito' : o.icono === 'candado' ? 'btn-primario' : 'btn-peligro');
+      b.className = 'btn ' + (o.soloAceptar ? 'btn-primario' : o.icono === 'palomita' ? 'btn-exito' : o.icono === 'candado' ? 'btn-primario' : o.linea ? 'btn-peligro-linea' : 'btn-peligro');
+      const otro = this.el('btn-confirmar-otro');
+      otro.hidden = !o.otro;
+      otro.innerHTML = o.otro ? SRP.ICONOS.svg(o.otro.icono, 'medio') + '<span>' + SRP.util.escapar(o.otro.texto) + '</span>' : '';
       // Un aviso que sólo se lee (`soloAceptar`) no lleva «Cancelar»
       this.el('btn-confirmar-no').hidden = !!o.soloAceptar;
       // `cancelar`: cómo se llama la otra salida cuando no es cancelar («Dejar en 3»)
@@ -719,7 +744,7 @@ SRP.app = {
       this.el('confirmar-palabra-etiqueta').innerHTML = this.palabra ? SRP.util.escapar(o.escribirEtiqueta || 'Para confirmar, escriba') + ' <b>' + SRP.util.escapar(this.palabra) + '</b>' : '';
       this.revisarPalabra();
       dlg.returnValue = '';
-      dlg.addEventListener('close', () => resolver(dlg.returnValue === 'si'), { once: true });
+      dlg.addEventListener('close', () => resolver(['si', 'otro'].includes(dlg.returnValue) ? dlg.returnValue : ''), { once: true });
       dlg.showModal();
       (this.palabra ? campo : o.soloAceptar ? b : this.el('btn-confirmar-no')).focus();
     });

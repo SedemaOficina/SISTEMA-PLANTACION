@@ -133,6 +133,7 @@ SRP.jornadas = {
       const destino = await SRP.almacen.uno('jornadas', b.dataset.id);
       this.el('dlg-mover-jornada').close();
       if (destino) await this.mover(this.moviendo, destino);
+      if (destino && this.desdeRevisar) await SRP.rechazos.despues();
     });
     this.el('btn-jornada-estado').addEventListener('click', () => this.cambiarEstado());
     // Saltos a las secciones de la ficha: desplaza y deja el foco en el subtítulo
@@ -1014,14 +1015,18 @@ SRP.jornadas = {
   /* Mover un registro a otra jornada del mismo cabo: el árbol toma el programa de la jornada destino
      y el cambio queda en su historial. La fecha: si el árbol era del día de inicio de su jornada,
      toma la de la jornada destino; si era de otro día, conserva la suya (nunca antes de que la
-     jornada destino empiece). */
-  async abrirMover(r) {
+     jornada destino empiece).
+     `desdeRevisar`: un árbol que nunca llegó porque su jornada se eliminó en el servidor (js/rechazos.js). Sólo
+     va a una jornada abierta, la única donde el servidor lo recibe. */
+  async abrirMover(r, desdeRevisar) {
     const jornadas = (await SRP.almacen.porIndice('jornadas', 'cabo_id', r.cabo_id))
-      .filter(j => j.id !== r.jornada_id)
+      .filter(j => j.id !== r.jornada_id && (!desdeRevisar || j.estatus === 'abierta'))
       .sort((a, b) => b.fecha.localeCompare(a.fecha) || String(b.fecha_inicio).localeCompare(String(a.fecha_inicio)));
     this.moviendo = r;
+    this.desdeRevisar = !!desdeRevisar;
     this.destinos = jornadas;
-    this.el('dlg-mover-texto').textContent = 'Elija la jornada a la que pertenece el ' + SRP.ref.especieDe(r).comun + ' (punto ' + (this.jornada.registros.indexOf(r) + 1) + ').';
+    this.el('dlg-mover-texto').textContent = desdeRevisar ? 'Elija la jornada abierta a la que pasa el ' + SRP.ref.especieDe(r).comun + ': se enviará en ella.'
+      : 'Elija la jornada a la que pertenece el ' + SRP.ref.especieDe(r).comun + ' (punto ' + (this.jornada.registros.indexOf(r) + 1) + ').';
     this.el('mover-buscar').value = ''; this.el('mover-fecha').value = '';
     // Con pocas jornadas se ven todas de un vistazo: buscar no hace falta
     this.el('mover-filtros').hidden = jornadas.length <= 5;
@@ -1038,7 +1043,8 @@ SRP.jornadas = {
     this.el('lista-mover-jornadas').innerHTML = lista.length ? lista.map(j =>
       '<li><button type="button" class="jornada-boton" data-id="' + esc(j.id) + '"><span class="jornada-datos"><span class="jornada-dia">' + esc(j.nombre) + '</span>' +
       '<span class="jornada-cifras">' + esc(SRP.util.formatearFecha(j.fecha)) + ' · ' + (j.estatus === 'abierta' ? 'abierta' : 'cerrada') + '</span></span></button></li>').join('')
-      : '<li class="nota">' + (todas.length ? 'Ninguna jornada con ese nombre' + (dia ? ' en esa fecha' : '') + '. Cambie la búsqueda o quite la fecha.' : 'No hay otra jornada de este cabo. Inicie una en Nuevo registro.') + '</li>';
+      : '<li class="nota">' + (todas.length ? 'Ninguna jornada con ese nombre' + (dia ? ' en esa fecha' : '') + '. Cambie la búsqueda o quite la fecha.'
+        : this.desdeRevisar ? 'No hay otra jornada abierta suya. Inicie una en Nuevo registro y vuelva a «Revisar».' : 'No hay otra jornada de este cabo. Inicie una en Nuevo registro.') + '</li>';
   },
 
   /* Todo en una transacción: el árbol con la fecha y el programa de su jornada nueva, y la
@@ -1051,7 +1057,8 @@ SRP.jornadas = {
     const actual = (await SRP.almacen.uno('plantaciones', r.id)) || r;
     const origen = actual.jornada_id ? await SRP.almacen.uno('jornadas', actual.jornada_id) : null;
     const cambiaPrograma = actual.programa_id !== destino.programa_id;
-    const sigue = !origen || actual.fecha_plantacion === origen.fecha;   // era del día de inicio: sigue la fecha de la jornada
+    // Era del día de inicio: sigue la fecha de la jornada. Sin su jornada —se eliminó— conserva la suya
+    const sigue = !!origen && actual.fecha_plantacion === origen.fecha;
     const fecha = sigue ? destino.fecha : SRP.util.fechaEnJornada(actual.fecha_plantacion, destino);
     const tomaFecha = sigue || fecha !== actual.fecha_plantacion;
     const nuevo = Object.assign({}, actual, { jornada_id: destino.id, fecha_plantacion: fecha, programa_id: destino.programa_id, fecha_ultima_edicion: ahora, editado_por_id: u.id });

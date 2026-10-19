@@ -487,6 +487,12 @@ test('una jornada sólo se elimina sin árboles, y los eliminados también cuent
   assert.equal((await admin.query('SELECT count(*)::int AS n FROM srp.jornadas WHERE id = $1', [V.id])).rows[0].n, 0);
   assert.deepEqual((await bitacora(V.id)).find((b) => b[0] === 'ELIMINADO'), ['ELIMINADO', 'Jornada «Jornada vacía» eliminada (sin árboles)']);
   assert.equal((await t.una('jornada.eliminar', { id: V.id, version: creada.version })).repetido, true, 'un reenvío no se repite');
+  // Lo que llega después para la jornada eliminada ya no la espera: se dice que se eliminó
+  assert.equal((await t.una('registro.crear', arbol(V.id))).codigo, 'JORNADA_ELIMINADA', 'un árbol para ella');
+  assert.equal((await t.una('jornada.cerrar', { id: V.id, version: creada.version })).codigo, 'JORNADA_ELIMINADA', 'un cambio de ella');
+  const activo = await conArbol(t);
+  assert.equal((await t.una('registro.mover', { id: activo.A.id, version: activo.version, jornada_id: V.id })).codigo, 'JORNADA_ELIMINADA', 'mover un árbol a ella');
+  assert.equal((await t.una('registro.crear', arbol(uuid()))).codigo, 'JORNADA_PENDIENTE', 'la que todavía no llega se sigue esperando');
 });
 
 /* ---------- La prioridad de la colonia ---------- */

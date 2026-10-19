@@ -124,6 +124,9 @@ corresponda a una cuenta dada de alta y activa.
     quedarse con lo del servidor, corregirlo, eliminarlo o descartarlo— (`js/rechazos.js`).
   - Al cerrar la jornada y entregar su reporte, lo recibido sale del teléfono, como pide S-11.
   - Si la sesión vence con un árbol a medias, se avisa y se pide entrar al guardarlo.
+  - Se trabaja en una pestaña a la vez (`js/turno.js`): la que quedó atrás se detiene con un aviso y «Usar
+    aquí». Lo que salió sin respuesta se reenvía tal como salió, y la fotografía sólo sale de la cola cuando
+    el servicio la confirma.
 - **Las cuentas** las da de alta y cambia la Administración global en el servidor (`js/usuarios.js`), que las
   revisa con las mismas reglas. El alta y «Restablecer contraseña» dan una contraseña temporal que se ve una
   sola vez, para dársela a la persona en persona o por teléfono. Desactivar cierra sus sesiones; eliminar sólo
@@ -191,6 +194,7 @@ js/                     La aplicación, un archivo por tema
   servidor.js           Cómo se habla con el servicio del SRP (/api/srp): cada pedido dice si respondió, si faltó conexión o qué no aceptó
   remoto.js             Lo que viene del servidor: catálogos, cuentas y parámetros, que se quedan; lo enviado, sólo en memoria; los avisos cuando falta
   cola.js               La cola de envío con datos reales: qué se anota con cada cambio, cómo se envía y qué hace el teléfono con la respuesta
+  turno.js              Una pestaña a la vez: la que quedó atrás se detiene con su aviso y «Usar aquí»
   rechazos.js           Lo que el servidor no aceptó: la ventana «Revisar» y lo que la persona decide con cada cambio
   duplicados.js         La bandeja de posibles duplicados entre instituciones, que revisa la Administración global
   sesion.js             Acceso: simulado con datos de prueba; con datos reales, las cuentas del servicio (correo y contraseña)

@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 1 (Bloque 235)»**.
+Al pie de cualquier pantalla: **«Versión 1.0.1 (Bloque 236)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -500,6 +500,7 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M503 | Paso 4d | «No se pudo enviar», en rojo, en la tarjeta del árbol y en la de la jornada, y en la franja «Guardado» | Media | 0.9.69 (B224) | Registros, Jornadas y Nuevo registro, con datos reales | D304 |
 | M504 | Paso 4d | Ventana «Cambios que el servidor no aceptó»: de qué registro es cada cambio, qué se cambió, por qué y qué hacer | Alta | 0.9.69 (B224) | Franja › Revisar | D304 |
 | M505 | Prueba de conexión | Al volver a la entrada se cierra cualquier ventana que hubiera quedado abierta | Media | 0.9.69 (B224) | Sesión vencida con una ventana abierta | D304 |
+| M518 | Auditoría (19-10-2026) | Una pestaña a la vez: la que quedó atrás dice «El SRP se abrió en otra pestaña», con «Usar aquí». «Cerrar sesión» con algo sin enviar lo dice y ofrece «Enviar ahora». La pastilla cuenta también las jornadas con un cambio por enviar, y se pone en rojo si algo no sale en 30 minutos con conexión. En «Revisar», el árbol de una jornada eliminada en el servidor, con «Pasar a otra jornada». En una jornada cerrada, el aviso dice que está cerrada | Alta | 1.0.1 (B236) | Dos pestañas del SRP; «Cerrar sesión» sin señal; la pastilla con el cierre de una jornada pendiente; «Revisar» | D316 |
 | M517 | Versión 1 | La franja de arriba dice «Versión 1». Centro Histórico lo puede usar también el Gobierno de la CDMX: Iniciar jornada se lo ofrece a PAOT y SOBSE, y Catálogos › Programas dice «SEDEMA · Gobierno de la CDMX» | Media | 1 (B235) | Franja de versión, Iniciar jornada y Catálogos › Programas | D315 |
 | M516 | Manual | El Registro de cambios nombra por su correo a una cuenta que ya se eliminó: decía «Alta de la cuenta cuenta eliminada» | Baja | 0.9.78 (B234) | Configuración › Registro de cambios | D314 |
 | M515 | Revisión del servidor | Al entrar: pasado el tope de entradas fallidas desde una conexión, la pantalla dice «Hubo demasiados intentos fallidos desde esta conexión. Espere 15 minutos e intente de nuevo.»; los campos de texto sin largo máximo (otra especie, datos de cierre, cargo) lo tienen, el mismo que revisa el servidor | Media | 0.9.77 (B233) | Entrada, cierre de jornada, formulario y Usuarios | D313 |
@@ -540,4 +541,4 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 
-**Resumen:** 440 hechas · 8 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 441 hechas · 8 por hacer · 2 revisadas · 2 descartadas.

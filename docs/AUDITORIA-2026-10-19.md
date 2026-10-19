@@ -163,7 +163,7 @@ reprodujo además el auditor, en su propio entorno, como se dice en cada uno.
   - que la pastilla y la franja cuenten toda operación pendiente y avisen de la que lleva tiempo sin salir.
 - **Listo cuando:** una prueba en `prueba_conexion.py` hace la secuencia sin señal y, con señal, el árbol queda
   eliminado en el servidor y la cola vacía.
-- **Estado:** Abierto · decide el dueño.
+- **Estado:** Corregido en el bloque 236 (1.0.1): la corrección vacía también viaja y su respuesta trae la versión. `verificar_criticas.py`, V4, después: la eliminación llega y la cola queda vacía, 2 de 2. Prueba permanente en `prueba_conexion.py`.
 
 #### E3-R1-02 · Crítica · Con dos pestañas de la misma cuenta se pierde un árbol y el cierre y el reporte no llegan
 - **Prioridad, esfuerzo:** 2 · M. **Auditoría y etapa:** E3, B6 · antes de usar datos reales.
@@ -187,7 +187,7 @@ reprodujo además el auditor, en su propio entorno, como se dice en cada uno.
   - o que sólo una pestaña a la vez pueda capturar (Web Locks o BroadcastChannel), con un aviso en la otra.
 - **Listo cuando:** la prueba de dos pestañas de `prueba_conexion.py` registra en B sin señal, cierra en A, y el
   árbol llega.
-- **Estado:** Abierto · decide el dueño.
+- **Estado:** Corregido en el bloque 236 (1.0.1): una pestaña a la vez (decisión del dueño, 19-10-2026), y la limpieza y el envío leen la cola del almacén. `verificar_criticas.py`, V5, después: el árbol de la pestaña B, el cierre y el reporte llegan, 2 de 2. Pruebas permanentes en `prueba_conexion.py`.
 
 ### 5.2 Altos
 
@@ -209,7 +209,7 @@ reprodujo además el auditor, en su propio entorno, como se dice en cada uno.
   - en la aplicación, tratarlo como rechazo en «Revisar», con «moverlo a otra jornada» o «descartarlo»;
   - opcional: no dejar eliminar una jornada abierta con capturas recientes de su cabo.
 - **Listo cuando:** la prueba lleva el árbol a «Revisar» con su motivo y, al moverlo, llega.
-- **Estado:** Abierto.
+- **Estado:** Corregido en el bloque 236 (1.0.1): `JORNADA_ELIMINADA`, y el árbol va a «Revisar» con «Pasar a otra jornada». `verificar_altas.py`, V1, después: rechazo a la vista y franja, 2 de 2. Pruebas permanentes en `prueba_conexion.py` y `servidor/pruebas/recepcion.test.js`.
 
 #### E3-R2-01 · Alta · El año de dos cifras (y cualquier año absurdo) se acepta y distorsiona Supervisión
 - **Prioridad, esfuerzo:** 4 · S. **Auditoría y etapa:** E3, B5 · cada versión.
@@ -256,7 +256,7 @@ reprodujo además el auditor, en su propio entorno, como se dice en cada uno.
     cabecera propia);
   - en `servidor.js`, tratar un 2xx sin JSON del servicio como «sin respuesta del servicio».
 - **Listo cuando:** la misma prueba deja la fotografía en la cola y, sin intercepción, llega.
-- **Estado:** Abierto.
+- **Estado:** Corregido en el bloque 236 (1.0.1): sólo la confirmación del servicio, con el id de la fotografía, la saca de la cola. `foto_falso_ok_despues.py`: con el «200» ajeno la fotografía se queda en la cola y llega cuando contesta el servicio, 2 de 2. Prueba permanente en `prueba_conexion.py`.
 
 #### E3-R4-01 · Alta · Dos cargas masivas iguales al mismo tiempo duplican el histórico
 - **Prioridad, esfuerzo:** 7 · M. **Auditoría y etapa:** E3 · antes de usar datos reales.
@@ -635,3 +635,27 @@ Al final, las tres preguntas de cada pantalla (sección C1) contestadas por ello
 
 Para revisar a diario: la cola de cada teléfono, la bandeja de posibles duplicados y Supervisión contra el
 papel.
+
+## Seguimiento de las correcciones
+
+El dueño aprobó los bloques 1 y 2 del plan (sección 11) el 19-10-2026, con sus decisiones:
+- una pestaña a la vez (decisión 4);
+- la fecha mínima del 01-OCT-2024, cuando empezó el programa, con un aviso en campo a los 30 días (decisión 3);
+- avisar al cerrar sesión con algo sin enviar, sin bloquear otra cuenta;
+- los avisos nuevos de la pastilla, la hora del teléfono, la jornada eliminada y la jornada cerrada.
+
+### Bloque 1 · La cola de envío (bloque 236 del proyecto, versión 1.0.1)
+
+| Clave | Estado | Antes y después | Prueba permanente |
+|---|---|---|---|
+| E3-R1-01 | Corregido | `verificar_criticas.py` V4: antes, 2 de 2 atorados «sin versión»; después, 0 de 2 | `prueba_conexion.py`: corrección sin cambios y luego eliminar el árbol, y lo mismo con la jornada |
+| E3-R1-02 | Corregido | `verificar_criticas.py` V5: antes, el árbol perdido 2 de 2; después, llega con el cierre y el reporte, 2 de 2 | `prueba_conexion.py`: la segunda pestaña detiene a la primera, «Usar aquí», y la limpieza con lo que espera en el almacén |
+| E3-R1-03 | Corregido | La prueba nueva repite el corte de la respuesta; no se corrió contra el código anterior | `prueba_conexion.py`: respuesta perdida y otra corrección encima |
+| E3-R4-03 | Corregido | `verificar_altas.py` V1: antes, `JORNADA_PENDIENTE` sin aviso, 2 de 2; después, `JORNADA_ELIMINADA` y en «Revisar», 2 de 2 | `prueba_conexion.py` y `servidor/pruebas/recepcion.test.js` |
+| F2-01 | Corregido | `foto_falso_ok.py`: antes, la fotografía perdida 2 de 2; después (`foto_falso_ok_despues.py`), se queda en la cola y llega, 2 de 2 | `prueba_conexion.py`: «200» con una página a la subida |
+| E3-R4-05 | Corregido | La ventana de «Cerrar sesión» con pendientes | `prueba_conexion.py` |
+| E3-R1-07 | Corregido | Sin espacio simulado al poner la respuesta; no se repitió con el límite real del navegador | `prueba_conexion.py` |
+| E3-R1-12 | Corregido | El texto nuevo | `prueba_conexion.py` |
+| La pastilla | Corregido | Cuenta las jornadas; en rojo lo que no sale en 30 minutos con conexión | `prueba_conexion.py` |
+
+`foto_falso_ok_despues.py` está en la evidencia, junto a los guiones de la auditoría.
