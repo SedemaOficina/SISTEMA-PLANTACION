@@ -1,0 +1,5405 @@
+[
+ {
+  "periodo": [
+   "2024-01-01",
+   "2026-10-19",
+   null
+  ],
+  "pantalla": {
+   "etiqueta": "Del 01-ENE-2024 al 19-OCT-2026",
+   "cifras": [
+    "18,386árboles plantadosen 1,397 jornadas cerradas",
+    "93 %de lo previsto18,386 de 19,671 previstos en las jornadas",
+    "36 de 81cabos trabajaron13.2 árboles por jornada",
+    "77jornadas en cursono se cuentan hasta cerrarse"
+   ],
+   "arboles": 18386,
+   "tablas": {
+    "Árboles plantados #0": {
+     "encabezado": [
+      "Periodo",
+      "Árboles",
+      "Jornadas"
+     ],
+     "filas": [
+      [
+       "2024",
+       "2282",
+       "176"
+      ],
+      [
+       "2025",
+       "6741",
+       "512"
+      ],
+      [
+       "2026",
+       "9363",
+       "709"
+      ]
+     ]
+    },
+    "Por quién registró42 con jornadas en el periodo · 43 con pendientes #1": {
+     "encabezado": [
+      "Quién registró",
+      "Árboles",
+      "De lo previsto",
+      "Jornadas",
+      "Última",
+      "Pendientes"
+     ],
+     "filas": [
+      [
+       "Tomás Díaz Demo",
+       "1,302",
+       "94 %",
+       "97",
+       "14-OCT-2026",
+       "1 abierta de antes · 10 sin revisar · 8 sin reporte · 15 eliminados"
+      ],
+      [
+       "Yolanda Cruz Demo",
+       "1,244",
+       "92 %",
+       "93",
+       "29-SEP-2026",
+       "1 abierta de antes · 5 sin revisar · 6 sin reporte · 25 eliminados"
+      ],
+      [
+       "Marisol Pérez Demo",
+       "1,178",
+       "96 %",
+       "91",
+       "12-OCT-2026",
+       "1 abierta de antes · 12 sin revisar · 4 sin reporte · 28 eliminados"
+      ],
+      [
+       "Julián Ortega Demo",
+       "1,133",
+       "95 %",
+       "85",
+       "08-OCT-2026",
+       "1 abierta de antes · 9 sin revisar · 6 sin reporte · 21 eliminados"
+      ],
+      [
+       "Fulana de Tal Ejemplo",
+       "1,093",
+       "91 %",
+       "87",
+       "13-OCT-2026",
+       "9 sin revisar · 8 sin reporte · 25 eliminados"
+      ],
+      [
+       "Paula Sánchez Demo",
+       "879",
+       "95 %",
+       "66",
+       "12-OCT-2026",
+       "4 sin revisar · 5 sin reporte · 14 eliminados"
+      ],
+      [
+       "Arturo Méndez Demo",
+       "872",
+       "95 %",
+       "67",
+       "09-FEB-2026",
+       "10 sin revisar · 7 sin reporte · 15 eliminados"
+      ],
+      [
+       "Olivia Reyes Demo",
+       "872",
+       "93 %",
+       "64",
+       "15-OCT-2026",
+       "7 sin revisar · 6 sin reporte · 14 eliminados"
+      ],
+      [
+       "Omar Fuentes Demo",
+       "854",
+       "95 %",
+       "64",
+       "16-OCT-2026",
+       "9 sin revisar · 9 sin reporte · 8 eliminados"
+      ],
+      [
+       "Rocío Hernández Demo",
+       "784",
+       "95 %",
+       "59",
+       "18-SEP-2026",
+       "2 sin revisar · 2 sin reporte · 7 eliminados"
+      ],
+      [
+       "Ramiro Torres Ejemplo",
+       "753",
+       "94 %",
+       "61",
+       "14-OCT-2026",
+       "3 sin revisar · 5 sin reporte · 6 eliminados"
+      ],
+      [
+       "Andrea Solís Ejemplo",
+       "752",
+       "94 %",
+       "60",
+       "16-OCT-2026",
+       "7 sin revisar · 3 sin reporte · 11 eliminados"
+      ],
+      [
+       "Lucía Méndez Ejemplo",
+       "752",
+       "92 %",
+       "59",
+       "05-OCT-2026",
+       "5 sin revisar · 6 sin reporte · 17 eliminados"
+      ],
+      [
+       "Ernesto Luna Demo",
+       "750",
+       "97 %",
+       "54",
+       "07-OCT-2026",
+       "3 sin revisar · 2 sin reporte · 2 eliminados"
+      ],
+      [
+       "Gerardo Paredes Demo",
+       "675",
+       "93 %",
+       "52",
+       "13-OCT-2026",
+       "10 sin revisar · 4 sin reporte · 6 eliminados"
+      ],
+      [
+       "Zacarías Molina Demo",
+       "545",
+       "96 %",
+       "40",
+       "09-OCT-2026",
+       "3 sin reporte · 4 eliminados"
+      ],
+      [
+       "Silvia Rangel Demo",
+       "482",
+       "98 %",
+       "36",
+       "30-SEP-2026",
+       "3 sin revisar · 2 sin reporte · 7 eliminados"
+      ],
+      [
+       "Estela Ramírez Demo",
+       "444",
+       "96 %",
+       "32",
+       "24-SEP-2026",
+       "5 sin revisar · 3 sin reporte · 8 eliminados"
+      ],
+      [
+       "Óscar Rivas Ejemplo",
+       "438",
+       "93 %",
+       "32",
+       "16-OCT-2026",
+       "3 sin revisar · 5 eliminados"
+      ],
+      [
+       "Perengano Gómez Ejemplo",
+       "433",
+       "96 %",
+       "33",
+       "23-SEP-2026",
+       "8 sin revisar · 3 sin reporte · 6 eliminados"
+      ],
+      [
+       "Sergio Navarro Ejemplo",
+       "431",
+       "90 %",
+       "33",
+       "14-SEP-2026",
+       "2 sin revisar · 2 sin reporte · 9 eliminados"
+      ],
+      [
+       "Valeria Castro Demo",
+       "341",
+       "91 %",
+       "27",
+       "15-OCT-2026",
+       "4 sin reporte · 7 eliminados"
+      ],
+      [
+       "Nadia Flores Demo",
+       "331",
+       "96 %",
+       "24",
+       "10-OCT-2026",
+       "3 sin revisar · 6 eliminados"
+      ],
+      [
+       "E3R2 Cabo Prueba",
+       "305",
+       "97 %",
+       "5",
+       "19-OCT-2026",
+       "84 sin revisar · 2 sin reporte"
+      ],
+      [
+       "Mariana Vega Ejemplo",
+       "296",
+       "91 %",
+       "20",
+       "14-OCT-2026",
+       "3 sin revisar · 2 sin reporte · 5 eliminados"
+      ],
+      [
+       "Carmen Ibarra Ejemplo",
+       "206",
+       "93 %",
+       "17",
+       "14-SEP-2026",
+       "1 sin revisar · 1 sin reporte · 4 eliminados"
+      ],
+      [
+       "Héctor Salinas Ejemplo",
+       "193",
+       "98 %",
+       "15",
+       "07-OCT-2026",
+       "2 sin revisar · 2 sin reporte · 3 eliminados"
+      ],
+      [
+       "Auditoria Cabo Ejemplo",
+       "8",
+       "40 %",
+       "8",
+       "19-OCT-2026",
+       "2 abiertas de antes · 4 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 3 Prueba",
+       "6",
+       "60 %",
+       "1",
+       "19-OCT-2026",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 4 Prueba",
+       "6",
+       "60 %",
+       "1",
+       "19-OCT-2026",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 24 Prueba",
+       "4",
+       "40 %",
+       "1",
+       "19-OCT-2026",
+       "1 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 25 Prueba",
+       "4",
+       "40 %",
+       "1",
+       "19-OCT-2026",
+       "1 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 6 Prueba",
+       "3",
+       "30 %",
+       "1",
+       "19-OCT-2026",
+       "2 sin revisar · 1 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 7 Prueba",
+       "3",
+       "30 %",
+       "1",
+       "19-OCT-2026",
+       "1 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 8 Prueba",
+       "3",
+       "30 %",
+       "1",
+       "19-OCT-2026",
+       "1 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 13 Prueba",
+       "2",
+       "10 %",
+       "2",
+       "19-OCT-2026",
+       "2 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 14 Prueba",
+       "2",
+       "10 %",
+       "2",
+       "19-OCT-2026",
+       "2 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 17 Prueba",
+       "2",
+       "20 %",
+       "1",
+       "19-OCT-2026",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 18 Prueba",
+       "2",
+       "20 %",
+       "1",
+       "19-OCT-2026",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 15 Prueba",
+       "1",
+       "10 %",
+       "1",
+       "19-OCT-2026",
+       "1 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 16 Prueba",
+       "1",
+       "10 %",
+       "1",
+       "19-OCT-2026",
+       "1 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 19 Prueba",
+       "1",
+       "10 %",
+       "1",
+       "19-OCT-2026",
+       "1 sin reporte"
+      ]
+     ]
+    },
+    "45 sin jornadas en el periodo #2": {
+     "encabezado": [
+      "Quién registró",
+      "Pendientes"
+     ],
+     "filas": [
+      [
+       "<script>alert('E3R3XSS')</script> Apellido",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 1 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 10 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 11 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 12 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 2 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 20 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 21 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 22 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 23 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 26 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 27 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 28 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 29 Prueba",
+       "1 abierta de antes"
+      ],
+      [
+       "E3R1 Cabo 30 Prueba",
+       "1 abierta de antes"
+      ],
+      [
+       "E3R1 Cabo 31 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 32 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 33 Prueba",
+       "1 abierta de antes"
+      ],
+      [
+       "E3R1 Cabo 34 Prueba",
+       "1 abierta de antes"
+      ],
+      [
+       "E3R1 Cabo 35 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 36 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 37 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 38 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 39 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 40 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 41 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 42 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 43 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 44 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 45 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 46 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 5 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 9 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R2 Cabo Alcaldia",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Cabo Coyoacan",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Cabo Paot",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Cabo Sedema",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Cabo2 Sedema",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Temporal Sedema",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Dos Renombrado 2",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Empresa",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Iztapalapa Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Tres Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Uno Prueba",
+       "1 eliminado"
+      ],
+      [
+       "Larga Prueba",
+       "Nada pendiente"
+      ]
+     ]
+    },
+    "Por institución8 instituciones · Secretaría del Medio Ambiente (SEDEMA) 48 % #3": {
+     "encabezado": [
+      "Institución",
+      "Árboles",
+      "% del total",
+      "Tipo",
+      "Jornadas"
+     ],
+     "filas": [
+      [
+       "Secretaría del Medio Ambiente (SEDEMA)",
+       "8,836",
+       "48 %",
+       "Gobierno de la CDMX",
+       "673"
+      ],
+      [
+       "Alcaldía Iztapalapa",
+       "2,813",
+       "15 %",
+       "Alcaldía",
+       "214"
+      ],
+      [
+       "Reforestamos México, A.C.",
+       "2,684",
+       "15 %",
+       "Organización civil",
+       "205"
+      ],
+      [
+       "Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)",
+       "1,723",
+       "9 %",
+       "Gobierno de la CDMX",
+       "131"
+      ],
+      [
+       "Green Cover",
+       "972",
+       "5 %",
+       "Empresa privada",
+       "74"
+      ],
+      [
+       "Alcaldía Coyoacán",
+       "545",
+       "3 %",
+       "Alcaldía",
+       "40"
+      ],
+      [
+       "Secretaría de Obras y Servicios (SOBSE)",
+       "482",
+       "3 %",
+       "Gobierno de la CDMX",
+       "36"
+      ],
+      [
+       "Viveros y Paisaje Ejemplo, S.A. de C.V.",
+       "331",
+       "2 %",
+       "Empresa privada",
+       "24"
+      ]
+     ]
+    },
+    "Por alcaldía16 alcaldías · 1,198 colonias · Iztapalapa 22 % #4": {
+     "encabezado": [
+      "Alcaldía",
+      "Árboles",
+      "% del total",
+      "Jornadas",
+      "Colonias"
+     ],
+     "filas": [
+      [
+       "Iztapalapa",
+       "3,991",
+       "22 %",
+       "311",
+       "224"
+      ],
+      [
+       "Tlalpan",
+       "2,367",
+       "13 %",
+       "179",
+       "143"
+      ],
+      [
+       "Xochimilco",
+       "1,826",
+       "10 %",
+       "150",
+       "78"
+      ],
+      [
+       "Coyoacán",
+       "1,771",
+       "10 %",
+       "137",
+       "125"
+      ],
+      [
+       "Cuauhtémoc",
+       "1,253",
+       "7 %",
+       "105",
+       "56"
+      ],
+      [
+       "Miguel Hidalgo",
+       "1,205",
+       "7 %",
+       "86",
+       "74"
+      ],
+      [
+       "Tláhuac",
+       "994",
+       "5 %",
+       "82",
+       "51"
+      ],
+      [
+       "Álvaro Obregón",
+       "879",
+       "5 %",
+       "71",
+       "101"
+      ],
+      [
+       "Gustavo A. Madero",
+       "814",
+       "4 %",
+       "60",
+       "82"
+      ],
+      [
+       "Venustiano Carranza",
+       "664",
+       "4 %",
+       "54",
+       "49"
+      ],
+      [
+       "Azcapotzalco",
+       "634",
+       "3 %",
+       "56",
+       "68"
+      ],
+      [
+       "Benito Juárez",
+       "628",
+       "3 %",
+       "49",
+       "46"
+      ],
+      [
+       "Iztacalco",
+       "385",
+       "2 %",
+       "35",
+       "37"
+      ],
+      [
+       "Cuajimalpa de Morelos",
+       "375",
+       "2 %",
+       "31",
+       "27"
+      ],
+      [
+       "Milpa Alta",
+       "341",
+       "2 %",
+       "28",
+       "14"
+      ],
+      [
+       "La Magdalena Contreras",
+       "259",
+       "1 %",
+       "20",
+       "23"
+      ]
+     ]
+    },
+    "Por prioridad de la colonia1,672 en muy alta · 5,108 en alta · 6,057 en media · 4,759 en baja · 518 en muy baja · 272 sin dato #5": {
+     "encabezado": [
+      "Prioridad",
+      "Árboles",
+      "% del total"
+     ],
+     "filas": [
+      [
+       "Muy alta",
+       "1,672",
+       "9 %"
+      ],
+      [
+       "Alta",
+       "5,108",
+       "28 %"
+      ],
+      [
+       "Media",
+       "6,057",
+       "33 %"
+      ],
+      [
+       "Baja",
+       "4,759",
+       "26 %"
+      ],
+      [
+       "Muy baja",
+       "518",
+       "3 %"
+      ],
+      [
+       "Sin dato en la capa",
+       "272",
+       "1 %"
+      ]
+     ]
+    },
+    "Por especie26 especies · 90 % nativas #6": {
+     "encabezado": [
+      "Especie",
+      "Árboles",
+      "% del total",
+      "Distribución"
+     ],
+     "filas": [
+      [
+       "FresnoFraxinus uhdei",
+       "2,222",
+       "12 %",
+       "Nativa"
+      ],
+      [
+       "LiquidámbarLiquidambar styraciflua",
+       "1,630",
+       "9 %",
+       "Nativa"
+      ],
+      [
+       "TepozánBuddleja cordata",
+       "1,308",
+       "7 %",
+       "Nativa"
+      ],
+      [
+       "JacarandaJacaranda mimosifolia",
+       "1,274",
+       "7 %",
+       "Exótica"
+      ],
+      [
+       "AhuehueteTaxodium mucronatum",
+       "1,197",
+       "7 %",
+       "Nativa"
+      ],
+      [
+       "AileAlnus acuminata",
+       "1,162",
+       "6 %",
+       "Nativa"
+      ],
+      [
+       "Palo dulceEysenhardtia polystachya",
+       "1,056",
+       "6 %",
+       "Nativa"
+      ],
+      [
+       "Encino Quiebra HachaQuercus rugosa",
+       "1,010",
+       "5 %",
+       "Nativa"
+      ],
+      [
+       "CapulínPrunus serotina var. salicifolia",
+       "906",
+       "5 %",
+       "Nativa"
+      ],
+      [
+       "ColorínErythrina americana",
+       "875",
+       "5 %",
+       "Endémica"
+      ],
+      [
+       "Cedro blancoCupressus lusitanica",
+       "719",
+       "4 %",
+       "Nativa"
+      ],
+      [
+       "TejocoteCrataegus mexicana",
+       "702",
+       "4 %",
+       "Nativa"
+      ],
+      [
+       "Codo de fraileCascabela thevetioides",
+       "586",
+       "3 %",
+       "Endémica"
+      ],
+      [
+       "MezquiteNeltuma laevigata",
+       "560",
+       "3 %",
+       "Nativa"
+      ],
+      [
+       "PinoPinus cembroides",
+       "551",
+       "3 %",
+       "Nativa"
+      ],
+      [
+       "HuizacheVachellia farnesiana",
+       "543",
+       "3 %",
+       "Nativa"
+      ],
+      [
+       "MagnoliaMagnolia grandiflora",
+       "373",
+       "2 %",
+       "Exótica"
+      ],
+      [
+       "Olmo de texasUlmus crassifolia",
+       "365",
+       "2 %",
+       "Nativa"
+      ],
+      [
+       "Guaje rojoLeucaena esculenta",
+       "361",
+       "2 %",
+       "Nativa"
+      ],
+      [
+       "Palo locoPittocaulon praecox",
+       "332",
+       "2 %",
+       "Endémica"
+      ],
+      [
+       "SauceSalix humboldtiana",
+       "329",
+       "2 %",
+       "Nativa"
+      ],
+      [
+       "Cedro limónCupressus macrocarpa",
+       "174",
+       "1 %",
+       "Nativa"
+      ],
+      [
+       "Frijolito de TexasDermatophyllum secundiflorum",
+       "50",
+       "0 %",
+       "Nativa"
+      ],
+      [
+       "GrevileaGrevillea robusta",
+       "50",
+       "0 %",
+       "Exótica"
+      ],
+      [
+       "TruenoLigustrum lucidum",
+       "50",
+       "0 %",
+       "Exótica-Invasora"
+      ],
+      [
+       "-2+3 E3R2 <b data-inj=1>neg</b><img src=x onerror=alert(1)> \"comillas\" 'simples'Otra especie, fuera del catálogo",
+       "1",
+       "0 %",
+       "—"
+      ]
+     ]
+    },
+    "Por programa5 programas · Reforestación Urbana 76 % #7": {
+     "encabezado": [
+      "Programa",
+      "Árboles",
+      "% del total",
+      "Jornadas"
+     ],
+     "filas": [
+      [
+       "Reforestación Urbana",
+       "14,018",
+       "76 %",
+       "1,062"
+      ],
+      [
+       "Palmeras",
+       "1,931",
+       "11 %",
+       "150"
+      ],
+      [
+       "Solicitud especial",
+       "1,277",
+       "7 %",
+       "96"
+      ],
+      [
+       "Compensaciones",
+       "725",
+       "4 %",
+       "54"
+      ],
+      [
+       "Centro Histórico",
+       "435",
+       "2 %",
+       "35"
+      ]
+     ]
+    },
+    "Solicitudes96 jornadas · 7 % de los árboles #8": {
+     "encabezado": [
+      "Quién lo solicitó",
+      "Árboles",
+      "% del total",
+      "Jornadas"
+     ],
+     "filas": [
+      [
+       "Secretaría de Obras y Servicios (SOBSE)",
+       "602",
+       "3 %",
+       "47"
+      ],
+      [
+       "Alcaldía Iztapalapa",
+       "360",
+       "2 %",
+       "25"
+      ],
+      [
+       "Sistema de Transporte Colectivo Metro",
+       "313",
+       "2 %",
+       "22"
+      ],
+      [
+       "=cmd|' /C calc'!A0 E3R2 <b data-inj=1>neg</b><img src=x onerror=alert(1)> \"comillas\" 'simples'",
+       "1",
+       "0 %",
+       "1"
+      ],
+      [
+       "Oficina de la Secretaría",
+       "1",
+       "0 %",
+       "1"
+      ]
+     ]
+    }
+   }
+  },
+  "recalculo": {
+   "arboles": 18386,
+   "jornadas_con_arboles": 1397,
+   "por_institucion": {
+    "Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)": 1723,
+    "Iztapalapa": 2813,
+    "Coyoacán": 545,
+    "Secretaría de Obras y Servicios (SOBSE)": 482,
+    "Secretaría del Medio Ambiente (SEDEMA)": 8836,
+    "Green Cover": 972,
+    "Reforestamos México, A.C.": 2684,
+    "Viveros y Paisaje Ejemplo, S.A. de C.V.": 331
+   },
+   "por_alcaldia": {
+    "Benito Juárez": 628,
+    "Tlalpan": 2367,
+    "Tláhuac": 994,
+    "Xochimilco": 1826,
+    "Venustiano Carranza": 664,
+    "La Magdalena Contreras": 259,
+    "Coyoacán": 1771,
+    "Álvaro Obregón": 879,
+    "Milpa Alta": 341,
+    "Miguel Hidalgo": 1205,
+    "Azcapotzalco": 634,
+    "Cuajimalpa de Morelos": 375,
+    "Iztapalapa": 3991,
+    "Iztacalco": 385,
+    "Gustavo A. Madero": 814,
+    "Cuauhtémoc": 1253
+   }
+  }
+ },
+ {
+  "periodo": [
+   "2026-09-01",
+   "2026-09-30",
+   null
+  ],
+  "pantalla": {
+   "etiqueta": "Del 01-SEP-2026 al 30-SEP-2026",
+   "cifras": [
+    "1,382árboles plantadosen 102 jornadas cerradas",
+    "94 %de lo previsto1,382 de 1,463 previstos en las jornadas",
+    "19 de 81cabos trabajaron13.5 árboles por jornada",
+    "1jornada en cursono se cuentan hasta cerrarse"
+   ],
+   "arboles": 1382,
+   "tablas": {
+    "Árboles plantados #0": {
+     "encabezado": [
+      "Periodo",
+      "Árboles",
+      "Jornadas"
+     ],
+     "filas": [
+      [
+       "Mar 1",
+       "61",
+       "5"
+      ],
+      [
+       "Mié 2",
+       "61",
+       "5"
+      ],
+      [
+       "Jue 3",
+       "36",
+       "3"
+      ],
+      [
+       "Vie 4",
+       "92",
+       "6"
+      ],
+      [
+       "Sáb 5",
+       "14",
+       "1"
+      ],
+      [
+       "Dom 6",
+       "0",
+       "0"
+      ],
+      [
+       "Lun 7",
+       "53",
+       "3"
+      ],
+      [
+       "Mar 8",
+       "31",
+       "2"
+      ],
+      [
+       "Mié 9",
+       "20",
+       "1"
+      ],
+      [
+       "Jue 10",
+       "57",
+       "4"
+      ],
+      [
+       "Vie 11",
+       "73",
+       "5"
+      ],
+      [
+       "Sáb 12",
+       "15",
+       "2"
+      ],
+      [
+       "Dom 13",
+       "0",
+       "0"
+      ],
+      [
+       "Lun 14",
+       "89",
+       "7"
+      ],
+      [
+       "Mar 15",
+       "78",
+       "6"
+      ],
+      [
+       "Mié 16",
+       "99",
+       "7"
+      ],
+      [
+       "Jue 17",
+       "86",
+       "6"
+      ],
+      [
+       "Vie 18",
+       "46",
+       "3"
+      ],
+      [
+       "Sáb 19",
+       "0",
+       "0"
+      ],
+      [
+       "Dom 20",
+       "0",
+       "0"
+      ],
+      [
+       "Lun 21",
+       "62",
+       "5"
+      ],
+      [
+       "Mar 22",
+       "39",
+       "4"
+      ],
+      [
+       "Mié 23",
+       "53",
+       "4"
+      ],
+      [
+       "Jue 24",
+       "83",
+       "6"
+      ],
+      [
+       "Vie 25",
+       "57",
+       "5"
+      ],
+      [
+       "Sáb 26",
+       "0",
+       "0"
+      ],
+      [
+       "Dom 27",
+       "0",
+       "0"
+      ],
+      [
+       "Lun 28",
+       "63",
+       "4"
+      ],
+      [
+       "Mar 29",
+       "64",
+       "4"
+      ],
+      [
+       "Mié 30",
+       "50",
+       "4"
+      ]
+     ]
+    },
+    "Por quién registró24 con jornadas en el periodo · 20 con pendientes #1": {
+     "encabezado": [
+      "Quién registró",
+      "Árboles",
+      "De lo previsto",
+      "Jornadas",
+      "Última",
+      "Pendientes"
+     ],
+     "filas": [
+      [
+       "Ernesto Luna Demo",
+       "121",
+       "99 %",
+       "9",
+       "30-SEP-2026",
+       "Nada pendiente"
+      ],
+      [
+       "Lucía Méndez Ejemplo",
+       "95",
+       "89 %",
+       "8",
+       "25-SEP-2026",
+       "2 sin reporte · 4 eliminados"
+      ],
+      [
+       "Olivia Reyes Demo",
+       "86",
+       "90 %",
+       "6",
+       "25-SEP-2026",
+       "1 eliminado"
+      ],
+      [
+       "Zacarías Molina Demo",
+       "82",
+       "91 %",
+       "7",
+       "21-SEP-2026",
+       "1 sin reporte · 1 eliminado"
+      ],
+      [
+       "Tomás Díaz Demo",
+       "81",
+       "92 %",
+       "5",
+       "29-SEP-2026",
+       "1 abierta de antes · 1 eliminado"
+      ],
+      [
+       "Julián Ortega Demo",
+       "77",
+       "96 %",
+       "5",
+       "30-SEP-2026",
+       "1 abierta de antes · 1 sin revisar · 1 eliminado"
+      ],
+      [
+       "Marisol Pérez Demo",
+       "76",
+       "89 %",
+       "5",
+       "16-SEP-2026",
+       "1 abierta de antes · 2 sin revisar"
+      ],
+      [
+       "Paula Sánchez Demo",
+       "76",
+       "95 %",
+       "5",
+       "22-SEP-2026",
+       "1 eliminado"
+      ],
+      [
+       "Yolanda Cruz Demo",
+       "76",
+       "97 %",
+       "5",
+       "29-SEP-2026",
+       "1 abierta de antes · 1 sin reporte · 1 eliminado"
+      ],
+      [
+       "Fulana de Tal Ejemplo",
+       "74",
+       "99 %",
+       "5",
+       "30-SEP-2026",
+       "1 eliminado"
+      ],
+      [
+       "Silvia Rangel Demo",
+       "65",
+       "100 %",
+       "4",
+       "30-SEP-2026",
+       "2 sin revisar"
+      ],
+      [
+       "Andrea Solís Ejemplo",
+       "62",
+       "95 %",
+       "5",
+       "24-SEP-2026",
+       "1 sin reporte"
+      ],
+      [
+       "Omar Fuentes Demo",
+       "57",
+       "93 %",
+       "4",
+       "15-SEP-2026",
+       "Nada pendiente"
+      ],
+      [
+       "Ramiro Torres Ejemplo",
+       "48",
+       "98 %",
+       "5",
+       "28-SEP-2026",
+       "1 sin reporte"
+      ],
+      [
+       "Óscar Rivas Ejemplo",
+       "41",
+       "93 %",
+       "2",
+       "28-SEP-2026",
+       "1 sin revisar · 1 eliminado"
+      ],
+      [
+       "Perengano Gómez Ejemplo",
+       "41",
+       "95 %",
+       "3",
+       "23-SEP-2026",
+       "Nada pendiente"
+      ],
+      [
+       "Valeria Castro Demo",
+       "41",
+       "100 %",
+       "3",
+       "29-SEP-2026",
+       "1 sin reporte"
+      ],
+      [
+       "Estela Ramírez Demo",
+       "39",
+       "95 %",
+       "3",
+       "24-SEP-2026",
+       "1 eliminado"
+      ],
+      [
+       "Rocío Hernández Demo",
+       "37",
+       "100 %",
+       "3",
+       "18-SEP-2026",
+       "Nada pendiente"
+      ],
+      [
+       "Carmen Ibarra Ejemplo",
+       "31",
+       "91 %",
+       "2",
+       "14-SEP-2026",
+       "Nada pendiente"
+      ],
+      [
+       "Sergio Navarro Ejemplo",
+       "25",
+       "93 %",
+       "3",
+       "14-SEP-2026",
+       "Nada pendiente"
+      ],
+      [
+       "Mariana Vega Ejemplo",
+       "23",
+       "85 %",
+       "2",
+       "22-SEP-2026",
+       "Nada pendiente"
+      ],
+      [
+       "Gerardo Paredes Demo",
+       "18",
+       "100 %",
+       "2",
+       "03-SEP-2026",
+       "Nada pendiente"
+      ],
+      [
+       "Nadia Flores Demo",
+       "10",
+       "100 %",
+       "1",
+       "16-SEP-2026",
+       "Nada pendiente"
+      ]
+     ]
+    },
+    "62 sin jornadas en el periodo #2": {
+     "encabezado": [
+      "Quién registró",
+      "Pendientes"
+     ],
+     "filas": [
+      [
+       "<script>alert('E3R3XSS')</script> Apellido",
+       "Nada pendiente"
+      ],
+      [
+       "Arturo Méndez Demo",
+       "Nada pendiente"
+      ],
+      [
+       "Auditoria Cabo Ejemplo",
+       "2 abiertas de antes"
+      ],
+      [
+       "E3R1 Cabo 1 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 10 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 11 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 12 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 13 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 14 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 15 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 16 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 17 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 18 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 19 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 2 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 20 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 21 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 22 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 23 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 24 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 25 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 26 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 27 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 28 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 29 Prueba",
+       "1 abierta de antes"
+      ],
+      [
+       "E3R1 Cabo 3 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 30 Prueba",
+       "1 abierta de antes"
+      ],
+      [
+       "E3R1 Cabo 31 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 32 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 33 Prueba",
+       "1 abierta de antes"
+      ],
+      [
+       "E3R1 Cabo 34 Prueba",
+       "1 abierta de antes"
+      ],
+      [
+       "E3R1 Cabo 35 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 36 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 37 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 38 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 39 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 4 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 40 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 41 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 42 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 43 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 44 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 45 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 46 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 5 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 6 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 7 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 8 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 9 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R2 Cabo Alcaldia",
+       "Nada pendiente"
+      ],
+      [
+       "E3R2 Cabo Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Cabo Coyoacan",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Cabo Paot",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Cabo Sedema",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Cabo2 Sedema",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Temporal Sedema",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Dos Renombrado 2",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Empresa",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Iztapalapa Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Tres Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Uno Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "Larga Prueba",
+       "Nada pendiente"
+      ]
+     ]
+    },
+    "Por institución8 instituciones · Secretaría del Medio Ambiente (SEDEMA) 36 % #3": {
+     "encabezado": [
+      "Institución",
+      "Árboles",
+      "% del total",
+      "Tipo",
+      "Jornadas"
+     ],
+     "filas": [
+      [
+       "Secretaría del Medio Ambiente (SEDEMA)",
+       "501",
+       "36 %",
+       "Gobierno de la CDMX",
+       "34"
+      ],
+      [
+       "Alcaldía Iztapalapa",
+       "270",
+       "19 %",
+       "Alcaldía",
+       "22"
+      ],
+      [
+       "Reforestamos México, A.C.",
+       "236",
+       "17 %",
+       "Organización civil",
+       "17"
+      ],
+      [
+       "Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)",
+       "136",
+       "10 %",
+       "Gobierno de la CDMX",
+       "12"
+      ],
+      [
+       "Alcaldía Coyoacán",
+       "82",
+       "6 %",
+       "Alcaldía",
+       "7"
+      ],
+      [
+       "Green Cover",
+       "82",
+       "6 %",
+       "Empresa privada",
+       "5"
+      ],
+      [
+       "Secretaría de Obras y Servicios (SOBSE)",
+       "65",
+       "5 %",
+       "Gobierno de la CDMX",
+       "4"
+      ],
+      [
+       "Viveros y Paisaje Ejemplo, S.A. de C.V.",
+       "10",
+       "1 %",
+       "Empresa privada",
+       "1"
+      ]
+     ]
+    },
+    "Por alcaldía15 alcaldías · 160 colonias · Iztapalapa 23 % #4": {
+     "encabezado": [
+      "Alcaldía",
+      "Árboles",
+      "% del total",
+      "Jornadas",
+      "Colonias"
+     ],
+     "filas": [
+      [
+       "Iztapalapa",
+       "315",
+       "23 %",
+       "25",
+       "41"
+      ],
+      [
+       "Coyoacán",
+       "205",
+       "15 %",
+       "16",
+       "28"
+      ],
+      [
+       "Tlalpan",
+       "200",
+       "14 %",
+       "16",
+       "24"
+      ],
+      [
+       "Xochimilco",
+       "104",
+       "8 %",
+       "8",
+       "11"
+      ],
+      [
+       "Cuauhtémoc",
+       "100",
+       "7 %",
+       "8",
+       "7"
+      ],
+      [
+       "Miguel Hidalgo",
+       "77",
+       "6 %",
+       "5",
+       "10"
+      ],
+      [
+       "Azcapotzalco",
+       "74",
+       "5 %",
+       "6",
+       "9"
+      ],
+      [
+       "Tláhuac",
+       "64",
+       "5 %",
+       "5",
+       "6"
+      ],
+      [
+       "Venustiano Carranza",
+       "50",
+       "4 %",
+       "4",
+       "5"
+      ],
+      [
+       "Cuajimalpa de Morelos",
+       "45",
+       "3 %",
+       "3",
+       "4"
+      ],
+      [
+       "Gustavo A. Madero",
+       "45",
+       "3 %",
+       "3",
+       "4"
+      ],
+      [
+       "Álvaro Obregón",
+       "35",
+       "3 %",
+       "3",
+       "5"
+      ],
+      [
+       "Benito Juárez",
+       "32",
+       "2 %",
+       "2",
+       "2"
+      ],
+      [
+       "Iztacalco",
+       "30",
+       "2 %",
+       "2",
+       "3"
+      ],
+      [
+       "Milpa Alta",
+       "6",
+       "0 %",
+       "1",
+       "1"
+      ]
+     ]
+    },
+    "Por prioridad de la colonia118 en muy alta · 361 en alta · 500 en media · 375 en baja · 23 en muy baja · 5 sin dato #5": {
+     "encabezado": [
+      "Prioridad",
+      "Árboles",
+      "% del total"
+     ],
+     "filas": [
+      [
+       "Muy alta",
+       "118",
+       "9 %"
+      ],
+      [
+       "Alta",
+       "361",
+       "26 %"
+      ],
+      [
+       "Media",
+       "500",
+       "36 %"
+      ],
+      [
+       "Baja",
+       "375",
+       "27 %"
+      ],
+      [
+       "Muy baja",
+       "23",
+       "2 %"
+      ],
+      [
+       "Sin dato en la capa",
+       "5",
+       "0 %"
+      ]
+     ]
+    },
+    "Por especie22 especies · 91 % nativas #6": {
+     "encabezado": [
+      "Especie",
+      "Árboles",
+      "% del total",
+      "Distribución"
+     ],
+     "filas": [
+      [
+       "FresnoFraxinus uhdei",
+       "165",
+       "12 %",
+       "Nativa"
+      ],
+      [
+       "LiquidámbarLiquidambar styraciflua",
+       "116",
+       "8 %",
+       "Nativa"
+      ],
+      [
+       "TepozánBuddleja cordata",
+       "116",
+       "8 %",
+       "Nativa"
+      ],
+      [
+       "AileAlnus acuminata",
+       "92",
+       "7 %",
+       "Nativa"
+      ],
+      [
+       "JacarandaJacaranda mimosifolia",
+       "90",
+       "6 %",
+       "Exótica"
+      ],
+      [
+       "Palo dulceEysenhardtia polystachya",
+       "81",
+       "6 %",
+       "Nativa"
+      ],
+      [
+       "CapulínPrunus serotina var. salicifolia",
+       "80",
+       "6 %",
+       "Nativa"
+      ],
+      [
+       "ColorínErythrina americana",
+       "77",
+       "6 %",
+       "Endémica"
+      ],
+      [
+       "AhuehueteTaxodium mucronatum",
+       "72",
+       "5 %",
+       "Nativa"
+      ],
+      [
+       "Encino Quiebra HachaQuercus rugosa",
+       "68",
+       "5 %",
+       "Nativa"
+      ],
+      [
+       "TejocoteCrataegus mexicana",
+       "66",
+       "5 %",
+       "Nativa"
+      ],
+      [
+       "Cedro blancoCupressus lusitanica",
+       "54",
+       "4 %",
+       "Nativa"
+      ],
+      [
+       "HuizacheVachellia farnesiana",
+       "46",
+       "3 %",
+       "Nativa"
+      ],
+      [
+       "MezquiteNeltuma laevigata",
+       "41",
+       "3 %",
+       "Nativa"
+      ],
+      [
+       "PinoPinus cembroides",
+       "41",
+       "3 %",
+       "Nativa"
+      ],
+      [
+       "Codo de fraileCascabela thevetioides",
+       "39",
+       "3 %",
+       "Endémica"
+      ],
+      [
+       "MagnoliaMagnolia grandiflora",
+       "30",
+       "2 %",
+       "Exótica"
+      ],
+      [
+       "Olmo de texasUlmus crassifolia",
+       "29",
+       "2 %",
+       "Nativa"
+      ],
+      [
+       "Guaje rojoLeucaena esculenta",
+       "27",
+       "2 %",
+       "Nativa"
+      ],
+      [
+       "Palo locoPittocaulon praecox",
+       "23",
+       "2 %",
+       "Endémica"
+      ],
+      [
+       "SauceSalix humboldtiana",
+       "19",
+       "1 %",
+       "Nativa"
+      ],
+      [
+       "Cedro limónCupressus macrocarpa",
+       "10",
+       "1 %",
+       "Nativa"
+      ]
+     ]
+    },
+    "Por programa5 programas · Reforestación Urbana 81 % #7": {
+     "encabezado": [
+      "Programa",
+      "Árboles",
+      "% del total",
+      "Jornadas"
+     ],
+     "filas": [
+      [
+       "Reforestación Urbana",
+       "1,112",
+       "81 %",
+       "83"
+      ],
+      [
+       "Palmeras",
+       "112",
+       "8 %",
+       "8"
+      ],
+      [
+       "Solicitud especial",
+       "60",
+       "4 %",
+       "4"
+      ],
+      [
+       "Compensaciones",
+       "57",
+       "4 %",
+       "4"
+      ],
+      [
+       "Centro Histórico",
+       "41",
+       "3 %",
+       "3"
+      ]
+     ]
+    },
+    "Solicitudes4 jornadas · 4 % de los árboles #8": {
+     "encabezado": [
+      "Quién lo solicitó",
+      "Árboles",
+      "% del total",
+      "Jornadas"
+     ],
+     "filas": [
+      [
+       "Secretaría de Obras y Servicios (SOBSE)",
+       "33",
+       "2 %",
+       "2"
+      ],
+      [
+       "Sistema de Transporte Colectivo Metro",
+       "17",
+       "1 %",
+       "1"
+      ],
+      [
+       "Alcaldía Iztapalapa",
+       "10",
+       "1 %",
+       "1"
+      ]
+     ]
+    }
+   }
+  },
+  "recalculo": {
+   "arboles": 1382,
+   "jornadas_con_arboles": 102,
+   "por_institucion": {
+    "Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)": 136,
+    "Iztapalapa": 270,
+    "Coyoacán": 82,
+    "Secretaría de Obras y Servicios (SOBSE)": 65,
+    "Secretaría del Medio Ambiente (SEDEMA)": 501,
+    "Green Cover": 82,
+    "Reforestamos México, A.C.": 236,
+    "Viveros y Paisaje Ejemplo, S.A. de C.V.": 10
+   },
+   "por_alcaldia": {
+    "Benito Juárez": 32,
+    "Tlalpan": 200,
+    "Tláhuac": 64,
+    "Xochimilco": 104,
+    "Venustiano Carranza": 50,
+    "Álvaro Obregón": 35,
+    "Coyoacán": 205,
+    "Milpa Alta": 6,
+    "Miguel Hidalgo": 77,
+    "Azcapotzalco": 74,
+    "Cuajimalpa de Morelos": 45,
+    "Iztapalapa": 315,
+    "Iztacalco": 30,
+    "Gustavo A. Madero": 45,
+    "Cuauhtémoc": 100
+   }
+  }
+ },
+ {
+  "periodo": [
+   "2025-01-01",
+   "2025-12-31",
+   null
+  ],
+  "pantalla": {
+   "etiqueta": "Del 01-ENE-2025 al 31-DIC-2025",
+   "cifras": [
+    "6,741árboles plantadosen 512 jornadas cerradas",
+    "94 %de lo previsto6,741 de 7,163 previstos en las jornadas",
+    "18 de 81cabos trabajaron13.2 árboles por jornada",
+    "1jornada en cursono se cuentan hasta cerrarse"
+   ],
+   "arboles": 6741,
+   "tablas": {
+    "Árboles plantados #0": {
+     "encabezado": [
+      "Periodo",
+      "Árboles",
+      "Jornadas"
+     ],
+     "filas": [
+      [
+       "ENE 25",
+       "175",
+       "12"
+      ],
+      [
+       "FEB 25",
+       "195",
+       "13"
+      ],
+      [
+       "MAR 25",
+       "244",
+       "20"
+      ],
+      [
+       "ABR 25",
+       "510",
+       "39"
+      ],
+      [
+       "MAY 25",
+       "359",
+       "30"
+      ],
+      [
+       "JUN 25",
+       "910",
+       "67"
+      ],
+      [
+       "JUL 25",
+       "1076",
+       "80"
+      ],
+      [
+       "AGO 25",
+       "884",
+       "63"
+      ],
+      [
+       "SEP 25",
+       "961",
+       "76"
+      ],
+      [
+       "OCT 25",
+       "659",
+       "51"
+      ],
+      [
+       "NOV 25",
+       "422",
+       "36"
+      ],
+      [
+       "DIC 25",
+       "346",
+       "25"
+      ]
+     ]
+    },
+    "Por quién registró24 con jornadas en el periodo · 28 con pendientes #1": {
+     "encabezado": [
+      "Quién registró",
+      "Árboles",
+      "De lo previsto",
+      "Jornadas",
+      "Última",
+      "Pendientes"
+     ],
+     "filas": [
+      [
+       "Yolanda Cruz Demo",
+       "576",
+       "92 %",
+       "43",
+       "25-DIC-2025",
+       "1 abierta de antes · 4 sin revisar · 3 sin reporte · 10 eliminados"
+      ],
+      [
+       "Tomás Díaz Demo",
+       "485",
+       "94 %",
+       "33",
+       "03-DIC-2025",
+       "1 abierta de antes · 4 sin revisar · 5 sin reporte · 6 eliminados"
+      ],
+      [
+       "Arturo Méndez Demo",
+       "462",
+       "95 %",
+       "37",
+       "12-NOV-2025",
+       "9 sin revisar · 4 sin reporte · 10 eliminados"
+      ],
+      [
+       "Olivia Reyes Demo",
+       "433",
+       "93 %",
+       "32",
+       "27-NOV-2025",
+       "7 sin revisar · 4 sin reporte · 9 eliminados"
+      ],
+      [
+       "Andrea Solís Ejemplo",
+       "418",
+       "92 %",
+       "30",
+       "29-DIC-2025",
+       "6 sin revisar · 1 sin reporte · 8 eliminados"
+      ],
+      [
+       "Ramiro Torres Ejemplo",
+       "385",
+       "95 %",
+       "30",
+       "19-DIC-2025",
+       "3 sin revisar · 2 sin reporte · 3 eliminados"
+      ],
+      [
+       "Omar Fuentes Demo",
+       "369",
+       "95 %",
+       "27",
+       "24-DIC-2025",
+       "7 sin revisar · 4 sin reporte · 2 eliminados"
+      ],
+      [
+       "Rocío Hernández Demo",
+       "369",
+       "97 %",
+       "26",
+       "25-NOV-2025",
+       "2 sin reporte · 4 eliminados"
+      ],
+      [
+       "Paula Sánchez Demo",
+       "364",
+       "97 %",
+       "28",
+       "25-NOV-2025",
+       "2 sin reporte · 6 eliminados"
+      ],
+      [
+       "Marisol Pérez Demo",
+       "358",
+       "97 %",
+       "29",
+       "27-DIC-2025",
+       "1 abierta de antes · 3 sin revisar · 1 sin reporte · 11 eliminados"
+      ],
+      [
+       "Julián Ortega Demo",
+       "356",
+       "94 %",
+       "29",
+       "25-DIC-2025",
+       "1 abierta de antes · 3 sin revisar · 5 eliminados"
+      ],
+      [
+       "Ernesto Luna Demo",
+       "328",
+       "97 %",
+       "25",
+       "24-DIC-2025",
+       "1 sin reporte · 1 eliminado"
+      ],
+      [
+       "Lucía Méndez Ejemplo",
+       "306",
+       "92 %",
+       "22",
+       "30-DIC-2025",
+       "2 sin revisar · 2 sin reporte · 7 eliminados"
+      ],
+      [
+       "Gerardo Paredes Demo",
+       "272",
+       "96 %",
+       "22",
+       "01-DIC-2025",
+       "7 sin revisar · 2 sin reporte · 4 eliminados"
+      ],
+      [
+       "Fulana de Tal Ejemplo",
+       "259",
+       "89 %",
+       "21",
+       "27-NOV-2025",
+       "3 sin revisar · 3 sin reporte · 6 eliminados"
+      ],
+      [
+       "Sergio Navarro Ejemplo",
+       "204",
+       "91 %",
+       "16",
+       "10-OCT-2025",
+       "2 sin revisar · 1 sin reporte · 5 eliminados"
+      ],
+      [
+       "Perengano Gómez Ejemplo",
+       "194",
+       "97 %",
+       "15",
+       "26-DIC-2025",
+       "6 sin revisar · 2 sin reporte · 2 eliminados"
+      ],
+      [
+       "Estela Ramírez Demo",
+       "159",
+       "95 %",
+       "13",
+       "13-DIC-2025",
+       "1 sin revisar · 2 sin reporte · 3 eliminados"
+      ],
+      [
+       "Zacarías Molina Demo",
+       "135",
+       "95 %",
+       "10",
+       "22-NOV-2025",
+       "2 sin reporte · 1 eliminado"
+      ],
+      [
+       "Mariana Vega Ejemplo",
+       "114",
+       "86 %",
+       "8",
+       "10-NOV-2025",
+       "3 sin revisar · 4 eliminados"
+      ],
+      [
+       "Carmen Ibarra Ejemplo",
+       "75",
+       "96 %",
+       "7",
+       "12-NOV-2025",
+       "2 eliminados"
+      ],
+      [
+       "Óscar Rivas Ejemplo",
+       "72",
+       "95 %",
+       "5",
+       "12-DIC-2025",
+       "1 eliminado"
+      ],
+      [
+       "Silvia Rangel Demo",
+       "37",
+       "97 %",
+       "3",
+       "01-DIC-2025",
+       "1 sin revisar · 1 eliminado"
+      ],
+      [
+       "Héctor Salinas Ejemplo",
+       "11",
+       "110 %",
+       "1",
+       "24-NOV-2025",
+       "Nada pendiente"
+      ]
+     ]
+    },
+    "63 sin jornadas en el periodo #2": {
+     "encabezado": [
+      "Quién registró",
+      "Pendientes"
+     ],
+     "filas": [
+      [
+       "<script>alert('E3R3XSS')</script> Apellido",
+       "Nada pendiente"
+      ],
+      [
+       "Auditoria Cabo Ejemplo",
+       "2 abiertas de antes"
+      ],
+      [
+       "E3R1 Cabo 1 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 10 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 11 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 12 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 13 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 14 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 15 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 16 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 17 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 18 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 19 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 2 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 20 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 21 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 22 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 23 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 24 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 25 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 26 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 27 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 28 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 29 Prueba",
+       "1 abierta de antes"
+      ],
+      [
+       "E3R1 Cabo 3 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 30 Prueba",
+       "1 abierta de antes"
+      ],
+      [
+       "E3R1 Cabo 31 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 32 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 33 Prueba",
+       "1 abierta de antes"
+      ],
+      [
+       "E3R1 Cabo 34 Prueba",
+       "1 abierta de antes"
+      ],
+      [
+       "E3R1 Cabo 35 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 36 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 37 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 38 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 39 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 4 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 40 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 41 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 42 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 43 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 44 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 45 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 46 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 5 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 6 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 7 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 8 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 9 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R2 Cabo Alcaldia",
+       "Nada pendiente"
+      ],
+      [
+       "E3R2 Cabo Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Cabo Coyoacan",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Cabo Paot",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Cabo Sedema",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Cabo2 Sedema",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Temporal Sedema",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Dos Renombrado 2",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Empresa",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Iztapalapa Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Tres Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Uno Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "Larga Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "Nadia Flores Demo",
+       "Nada pendiente"
+      ],
+      [
+       "Valeria Castro Demo",
+       "Nada pendiente"
+      ]
+     ]
+    },
+    "Por institución7 instituciones · Secretaría del Medio Ambiente (SEDEMA) 48 % #3": {
+     "encabezado": [
+      "Institución",
+      "Árboles",
+      "% del total",
+      "Tipo",
+      "Jornadas"
+     ],
+     "filas": [
+      [
+       "Secretaría del Medio Ambiente (SEDEMA)",
+       "3,218",
+       "48 %",
+       "Gobierno de la CDMX",
+       "246"
+      ],
+      [
+       "Reforestamos México, A.C.",
+       "1,295",
+       "19 %",
+       "Organización civil",
+       "96"
+      ],
+      [
+       "Alcaldía Iztapalapa",
+       "1,281",
+       "19 %",
+       "Alcaldía",
+       "99"
+      ],
+      [
+       "Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)",
+       "692",
+       "10 %",
+       "Gobierno de la CDMX",
+       "52"
+      ],
+      [
+       "Alcaldía Coyoacán",
+       "135",
+       "2 %",
+       "Alcaldía",
+       "10"
+      ],
+      [
+       "Green Cover",
+       "83",
+       "1 %",
+       "Empresa privada",
+       "6"
+      ],
+      [
+       "Secretaría de Obras y Servicios (SOBSE)",
+       "37",
+       "1 %",
+       "Gobierno de la CDMX",
+       "3"
+      ]
+     ]
+    },
+    "Por alcaldía16 alcaldías · 607 colonias · Iztapalapa 25 % #4": {
+     "encabezado": [
+      "Alcaldía",
+      "Árboles",
+      "% del total",
+      "Jornadas",
+      "Colonias"
+     ],
+     "filas": [
+      [
+       "Iztapalapa",
+       "1,696",
+       "25 %",
+       "133",
+       "136"
+      ],
+      [
+       "Tlalpan",
+       "960",
+       "14 %",
+       "73",
+       "84"
+      ],
+      [
+       "Xochimilco",
+       "817",
+       "12 %",
+       "65",
+       "54"
+      ],
+      [
+       "Coyoacán",
+       "584",
+       "9 %",
+       "42",
+       "59"
+      ],
+      [
+       "Tláhuac",
+       "499",
+       "7 %",
+       "42",
+       "35"
+      ],
+      [
+       "Cuauhtémoc",
+       "400",
+       "6 %",
+       "34",
+       "35"
+      ],
+      [
+       "Álvaro Obregón",
+       "303",
+       "5 %",
+       "25",
+       "48"
+      ],
+      [
+       "Miguel Hidalgo",
+       "217",
+       "3 %",
+       "16",
+       "23"
+      ],
+      [
+       "Gustavo A. Madero",
+       "211",
+       "3 %",
+       "16",
+       "23"
+      ],
+      [
+       "Venustiano Carranza",
+       "197",
+       "3 %",
+       "16",
+       "19"
+      ],
+      [
+       "Milpa Alta",
+       "182",
+       "3 %",
+       "15",
+       "10"
+      ],
+      [
+       "Iztacalco",
+       "180",
+       "3 %",
+       "13",
+       "19"
+      ],
+      [
+       "Azcapotzalco",
+       "163",
+       "2 %",
+       "15",
+       "23"
+      ],
+      [
+       "Benito Juárez",
+       "159",
+       "2 %",
+       "12",
+       "18"
+      ],
+      [
+       "La Magdalena Contreras",
+       "120",
+       "2 %",
+       "9",
+       "12"
+      ],
+      [
+       "Cuajimalpa de Morelos",
+       "53",
+       "1 %",
+       "4",
+       "9"
+      ]
+     ]
+    },
+    "Por prioridad de la colonia752 en muy alta · 2,130 en alta · 2,012 en media · 1,563 en baja · 195 en muy baja · 89 sin dato #5": {
+     "encabezado": [
+      "Prioridad",
+      "Árboles",
+      "% del total"
+     ],
+     "filas": [
+      [
+       "Muy alta",
+       "752",
+       "11 %"
+      ],
+      [
+       "Alta",
+       "2,130",
+       "32 %"
+      ],
+      [
+       "Media",
+       "2,012",
+       "30 %"
+      ],
+      [
+       "Baja",
+       "1,563",
+       "23 %"
+      ],
+      [
+       "Muy baja",
+       "195",
+       "3 %"
+      ],
+      [
+       "Sin dato en la capa",
+       "89",
+       "1 %"
+      ]
+     ]
+    },
+    "Por especie22 especies · 91 % nativas #6": {
+     "encabezado": [
+      "Especie",
+      "Árboles",
+      "% del total",
+      "Distribución"
+     ],
+     "filas": [
+      [
+       "FresnoFraxinus uhdei",
+       "844",
+       "12 %",
+       "Nativa"
+      ],
+      [
+       "LiquidámbarLiquidambar styraciflua",
+       "590",
+       "9 %",
+       "Nativa"
+      ],
+      [
+       "TepozánBuddleja cordata",
+       "481",
+       "7 %",
+       "Nativa"
+      ],
+      [
+       "JacarandaJacaranda mimosifolia",
+       "479",
+       "7 %",
+       "Exótica"
+      ],
+      [
+       "AileAlnus acuminata",
+       "434",
+       "6 %",
+       "Nativa"
+      ],
+      [
+       "Palo dulceEysenhardtia polystachya",
+       "412",
+       "6 %",
+       "Nativa"
+      ],
+      [
+       "Encino Quiebra HachaQuercus rugosa",
+       "392",
+       "6 %",
+       "Nativa"
+      ],
+      [
+       "AhuehueteTaxodium mucronatum",
+       "382",
+       "6 %",
+       "Nativa"
+      ],
+      [
+       "CapulínPrunus serotina var. salicifolia",
+       "330",
+       "5 %",
+       "Nativa"
+      ],
+      [
+       "ColorínErythrina americana",
+       "325",
+       "5 %",
+       "Endémica"
+      ],
+      [
+       "Cedro blancoCupressus lusitanica",
+       "270",
+       "4 %",
+       "Nativa"
+      ],
+      [
+       "TejocoteCrataegus mexicana",
+       "266",
+       "4 %",
+       "Nativa"
+      ],
+      [
+       "Codo de fraileCascabela thevetioides",
+       "207",
+       "3 %",
+       "Endémica"
+      ],
+      [
+       "HuizacheVachellia farnesiana",
+       "207",
+       "3 %",
+       "Nativa"
+      ],
+      [
+       "PinoPinus cembroides",
+       "201",
+       "3 %",
+       "Nativa"
+      ],
+      [
+       "MezquiteNeltuma laevigata",
+       "180",
+       "3 %",
+       "Nativa"
+      ],
+      [
+       "Olmo de texasUlmus crassifolia",
+       "145",
+       "2 %",
+       "Nativa"
+      ],
+      [
+       "SauceSalix humboldtiana",
+       "137",
+       "2 %",
+       "Nativa"
+      ],
+      [
+       "Guaje rojoLeucaena esculenta",
+       "135",
+       "2 %",
+       "Nativa"
+      ],
+      [
+       "Palo locoPittocaulon praecox",
+       "127",
+       "2 %",
+       "Endémica"
+      ],
+      [
+       "MagnoliaMagnolia grandiflora",
+       "125",
+       "2 %",
+       "Exótica"
+      ],
+      [
+       "Cedro limónCupressus macrocarpa",
+       "72",
+       "1 %",
+       "Nativa"
+      ]
+     ]
+    },
+    "Por programa5 programas · Reforestación Urbana 81 % #7": {
+     "encabezado": [
+      "Programa",
+      "Árboles",
+      "% del total",
+      "Jornadas"
+     ],
+     "filas": [
+      [
+       "Reforestación Urbana",
+       "5,467",
+       "81 %",
+       "417"
+      ],
+      [
+       "Solicitud especial",
+       "520",
+       "8 %",
+       "37"
+      ],
+      [
+       "Palmeras",
+       "324",
+       "5 %",
+       "25"
+      ],
+      [
+       "Compensaciones",
+       "269",
+       "4 %",
+       "20"
+      ],
+      [
+       "Centro Histórico",
+       "161",
+       "2 %",
+       "13"
+      ]
+     ]
+    },
+    "Solicitudes37 jornadas · 8 % de los árboles #8": {
+     "encabezado": [
+      "Quién lo solicitó",
+      "Árboles",
+      "% del total",
+      "Jornadas"
+     ],
+     "filas": [
+      [
+       "Secretaría de Obras y Servicios (SOBSE)",
+       "251",
+       "4 %",
+       "19"
+      ],
+      [
+       "Alcaldía Iztapalapa",
+       "157",
+       "2 %",
+       "10"
+      ],
+      [
+       "Sistema de Transporte Colectivo Metro",
+       "112",
+       "2 %",
+       "8"
+      ]
+     ]
+    }
+   }
+  },
+  "recalculo": {
+   "arboles": 6741,
+   "jornadas_con_arboles": 512,
+   "por_institucion": {
+    "Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)": 692,
+    "Iztapalapa": 1281,
+    "Coyoacán": 135,
+    "Secretaría de Obras y Servicios (SOBSE)": 37,
+    "Secretaría del Medio Ambiente (SEDEMA)": 3218,
+    "Green Cover": 83,
+    "Reforestamos México, A.C.": 1295
+   },
+   "por_alcaldia": {
+    "Benito Juárez": 159,
+    "Tlalpan": 960,
+    "Tláhuac": 499,
+    "Xochimilco": 817,
+    "Venustiano Carranza": 197,
+    "La Magdalena Contreras": 120,
+    "Álvaro Obregón": 303,
+    "Coyoacán": 584,
+    "Milpa Alta": 182,
+    "Miguel Hidalgo": 217,
+    "Azcapotzalco": 163,
+    "Cuajimalpa de Morelos": 53,
+    "Iztapalapa": 1696,
+    "Iztacalco": 180,
+    "Gustavo A. Madero": 211,
+    "Cuauhtémoc": 400
+   }
+  }
+ },
+ {
+  "periodo": [
+   "2024-01-01",
+   "2026-10-19",
+   "o-paot"
+  ],
+  "pantalla": {
+   "etiqueta": "Del 01-ENE-2024 al 19-OCT-2026",
+   "cifras": [
+    "1,723árboles plantadosen 131 jornadas cerradas",
+    "92 %de lo previsto1,723 de 1,870 previstos en las jornadas",
+    "2 de 3cabos trabajaron13.2 árboles por jornada",
+    "1jornada en cursono se cuentan hasta cerrarse"
+   ],
+   "arboles": 1723,
+   "tablas": {
+    "Árboles plantados #0": {
+     "encabezado": [
+      "Periodo",
+      "Árboles",
+      "Jornadas"
+     ],
+     "filas": [
+      [
+       "2024",
+       "0",
+       "0"
+      ],
+      [
+       "2025",
+       "692",
+       "52"
+      ],
+      [
+       "2026",
+       "1031",
+       "79"
+      ]
+     ]
+    },
+    "Por quién registró3 con jornadas en el periodo · 3 con pendientes #1": {
+     "encabezado": [
+      "Quién registró",
+      "Árboles",
+      "De lo previsto",
+      "Jornadas",
+      "Última",
+      "Pendientes"
+     ],
+     "filas": [
+      [
+       "Lucía Méndez Ejemplo",
+       "752",
+       "92 %",
+       "59",
+       "05-OCT-2026",
+       "5 sin revisar · 6 sin reporte · 17 eliminados"
+      ],
+      [
+       "Gerardo Paredes Demo",
+       "675",
+       "93 %",
+       "52",
+       "13-OCT-2026",
+       "10 sin revisar · 4 sin reporte · 6 eliminados"
+      ],
+      [
+       "Mariana Vega Ejemplo",
+       "296",
+       "91 %",
+       "20",
+       "14-OCT-2026",
+       "3 sin revisar · 2 sin reporte · 5 eliminados"
+      ]
+     ]
+    },
+    "1 sin jornadas en el periodo #2": {
+     "encabezado": [
+      "Quién registró",
+      "Pendientes"
+     ],
+     "filas": [
+      [
+       "E3R3 Cabo Paot",
+       "Nada pendiente"
+      ]
+     ]
+    },
+    "Por alcaldía5 alcaldías · 173 colonias · Tlalpan 62 % #3": {
+     "encabezado": [
+      "Alcaldía",
+      "Árboles",
+      "% del total",
+      "Jornadas",
+      "Colonias"
+     ],
+     "filas": [
+      [
+       "Tlalpan",
+       "1,070",
+       "62 %",
+       "83",
+       "94"
+      ],
+      [
+       "Coyoacán",
+       "382",
+       "22 %",
+       "33",
+       "50"
+      ],
+      [
+       "La Magdalena Contreras",
+       "257",
+       "15 %",
+       "19",
+       "22"
+      ],
+      [
+       "Xochimilco",
+       "12",
+       "1 %",
+       "5",
+       "5"
+      ],
+      [
+       "Álvaro Obregón",
+       "2",
+       "0 %",
+       "2",
+       "2"
+      ]
+     ]
+    },
+    "Por prioridad de la colonia34 en muy alta · 28 en alta · 650 en media · 916 en baja · 85 en muy baja · 10 sin dato #4": {
+     "encabezado": [
+      "Prioridad",
+      "Árboles",
+      "% del total"
+     ],
+     "filas": [
+      [
+       "Muy alta",
+       "34",
+       "2 %"
+      ],
+      [
+       "Alta",
+       "28",
+       "2 %"
+      ],
+      [
+       "Media",
+       "650",
+       "38 %"
+      ],
+      [
+       "Baja",
+       "916",
+       "53 %"
+      ],
+      [
+       "Muy baja",
+       "85",
+       "5 %"
+      ],
+      [
+       "Sin dato en la capa",
+       "10",
+       "1 %"
+      ]
+     ]
+    },
+    "Por especie22 especies · 91 % nativas #5": {
+     "encabezado": [
+      "Especie",
+      "Árboles",
+      "% del total",
+      "Distribución"
+     ],
+     "filas": [
+      [
+       "FresnoFraxinus uhdei",
+       "206",
+       "12 %",
+       "Nativa"
+      ],
+      [
+       "LiquidámbarLiquidambar styraciflua",
+       "140",
+       "8 %",
+       "Nativa"
+      ],
+      [
+       "TepozánBuddleja cordata",
+       "125",
+       "7 %",
+       "Nativa"
+      ],
+      [
+       "Palo dulceEysenhardtia polystachya",
+       "115",
+       "7 %",
+       "Nativa"
+      ],
+      [
+       "AhuehueteTaxodium mucronatum",
+       "114",
+       "7 %",
+       "Nativa"
+      ],
+      [
+       "JacarandaJacaranda mimosifolia",
+       "113",
+       "7 %",
+       "Exótica"
+      ],
+      [
+       "Encino Quiebra HachaQuercus rugosa",
+       "103",
+       "6 %",
+       "Nativa"
+      ],
+      [
+       "AileAlnus acuminata",
+       "96",
+       "6 %",
+       "Nativa"
+      ],
+      [
+       "CapulínPrunus serotina var. salicifolia",
+       "95",
+       "5 %",
+       "Nativa"
+      ],
+      [
+       "Cedro blancoCupressus lusitanica",
+       "77",
+       "4 %",
+       "Nativa"
+      ],
+      [
+       "ColorínErythrina americana",
+       "73",
+       "4 %",
+       "Endémica"
+      ],
+      [
+       "TejocoteCrataegus mexicana",
+       "65",
+       "4 %",
+       "Nativa"
+      ],
+      [
+       "HuizacheVachellia farnesiana",
+       "63",
+       "4 %",
+       "Nativa"
+      ],
+      [
+       "PinoPinus cembroides",
+       "54",
+       "3 %",
+       "Nativa"
+      ],
+      [
+       "MezquiteNeltuma laevigata",
+       "50",
+       "3 %",
+       "Nativa"
+      ],
+      [
+       "MagnoliaMagnolia grandiflora",
+       "44",
+       "2 %",
+       "Exótica"
+      ],
+      [
+       "Codo de fraileCascabela thevetioides",
+       "42",
+       "2 %",
+       "Endémica"
+      ],
+      [
+       "Olmo de texasUlmus crassifolia",
+       "39",
+       "2 %",
+       "Nativa"
+      ],
+      [
+       "Guaje rojoLeucaena esculenta",
+       "32",
+       "2 %",
+       "Nativa"
+      ],
+      [
+       "Palo locoPittocaulon praecox",
+       "29",
+       "2 %",
+       "Endémica"
+      ],
+      [
+       "SauceSalix humboldtiana",
+       "27",
+       "2 %",
+       "Nativa"
+      ],
+      [
+       "Cedro limónCupressus macrocarpa",
+       "21",
+       "1 %",
+       "Nativa"
+      ]
+     ]
+    },
+    "Por programaReforestación Urbana · 1,723 árboles #6": {
+     "encabezado": [
+      "Programa",
+      "Árboles",
+      "% del total",
+      "Jornadas"
+     ],
+     "filas": [
+      [
+       "Reforestación Urbana",
+       "1,723",
+       "100 %",
+       "131"
+      ]
+     ]
+    }
+   }
+  },
+  "recalculo": {
+   "arboles": 1723,
+   "jornadas_con_arboles": 131,
+   "por_institucion": {
+    "Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)": 1723
+   },
+   "por_alcaldia": {
+    "Tlalpan": 1070,
+    "Xochimilco": 12,
+    "La Magdalena Contreras": 257,
+    "Álvaro Obregón": 2,
+    "Coyoacán": 382
+   }
+  }
+ },
+ {
+  "periodo": [
+   "2026-10-13",
+   "2026-10-19",
+   null
+  ],
+  "pantalla": {
+   "etiqueta": "Del 13-OCT-2026 al 19-OCT-2026",
+   "cifras": [
+    "514árboles plantadosen 42 jornadas cerradas",
+    "76 %de lo previsto514 de 677 previstos en las jornadas",
+    "25 de 81cabos trabajaron12.2 árboles por jornada",
+    "74jornadas en cursono se cuentan hasta cerrarse"
+   ],
+   "arboles": 514,
+   "tablas": {
+    "Árboles plantados #0": {
+     "encabezado": [
+      "Periodo",
+      "Árboles",
+      "Jornadas"
+     ],
+     "filas": [
+      [
+       "Mar 13",
+       "38",
+       "3"
+      ],
+      [
+       "Mié 14",
+       "56",
+       "4"
+      ],
+      [
+       "Jue 15",
+       "29",
+       "3"
+      ],
+      [
+       "Vie 16",
+       "38",
+       "3"
+      ],
+      [
+       "Sáb 17",
+       "0",
+       "0"
+      ],
+      [
+       "Dom 18",
+       "0",
+       "0"
+      ],
+      [
+       "Lun 19",
+       "353",
+       "29"
+      ]
+     ]
+    },
+    "Por quién registró26 con jornadas en el periodo · 25 con pendientes #1": {
+     "encabezado": [
+      "Quién registró",
+      "Árboles",
+      "De lo previsto",
+      "Jornadas",
+      "Última",
+      "Pendientes"
+     ],
+     "filas": [
+      [
+       "E3R2 Cabo Prueba",
+       "305",
+       "97 %",
+       "5",
+       "19-OCT-2026",
+       "84 sin revisar · 2 sin reporte"
+      ],
+      [
+       "Ramiro Torres Ejemplo",
+       "39",
+       "95 %",
+       "2",
+       "14-OCT-2026",
+       "Nada pendiente"
+      ],
+      [
+       "Andrea Solís Ejemplo",
+       "27",
+       "96 %",
+       "2",
+       "16-OCT-2026",
+       "Nada pendiente"
+      ],
+      [
+       "Omar Fuentes Demo",
+       "21",
+       "95 %",
+       "2",
+       "16-OCT-2026",
+       "1 sin reporte"
+      ],
+      [
+       "Tomás Díaz Demo",
+       "14",
+       "78 %",
+       "1",
+       "14-OCT-2026",
+       "1 abierta de antes"
+      ],
+      [
+       "Valeria Castro Demo",
+       "14",
+       "78 %",
+       "1",
+       "15-OCT-2026",
+       "1 sin reporte · 1 eliminado"
+      ],
+      [
+       "Óscar Rivas Ejemplo",
+       "13",
+       "93 %",
+       "1",
+       "16-OCT-2026",
+       "Nada pendiente"
+      ],
+      [
+       "Fulana de Tal Ejemplo",
+       "11",
+       "92 %",
+       "1",
+       "13-OCT-2026",
+       "Nada pendiente"
+      ],
+      [
+       "Auditoria Cabo Ejemplo",
+       "8",
+       "40 %",
+       "8",
+       "19-OCT-2026",
+       "2 abiertas de antes · 4 sin reporte"
+      ],
+      [
+       "Olivia Reyes Demo",
+       "8",
+       "80 %",
+       "1",
+       "15-OCT-2026",
+       "Nada pendiente"
+      ],
+      [
+       "Gerardo Paredes Demo",
+       "7",
+       "70 %",
+       "1",
+       "13-OCT-2026",
+       "1 sin reporte"
+      ],
+      [
+       "Mariana Vega Ejemplo",
+       "7",
+       "70 %",
+       "1",
+       "14-OCT-2026",
+       "1 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 3 Prueba",
+       "6",
+       "60 %",
+       "1",
+       "19-OCT-2026",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 4 Prueba",
+       "6",
+       "60 %",
+       "1",
+       "19-OCT-2026",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 24 Prueba",
+       "4",
+       "40 %",
+       "1",
+       "19-OCT-2026",
+       "1 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 25 Prueba",
+       "4",
+       "40 %",
+       "1",
+       "19-OCT-2026",
+       "1 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 6 Prueba",
+       "3",
+       "30 %",
+       "1",
+       "19-OCT-2026",
+       "2 sin revisar · 1 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 7 Prueba",
+       "3",
+       "30 %",
+       "1",
+       "19-OCT-2026",
+       "1 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 8 Prueba",
+       "3",
+       "30 %",
+       "1",
+       "19-OCT-2026",
+       "1 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 13 Prueba",
+       "2",
+       "10 %",
+       "2",
+       "19-OCT-2026",
+       "2 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 14 Prueba",
+       "2",
+       "10 %",
+       "2",
+       "19-OCT-2026",
+       "2 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 17 Prueba",
+       "2",
+       "20 %",
+       "1",
+       "19-OCT-2026",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 18 Prueba",
+       "2",
+       "20 %",
+       "1",
+       "19-OCT-2026",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 15 Prueba",
+       "1",
+       "10 %",
+       "1",
+       "19-OCT-2026",
+       "1 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 16 Prueba",
+       "1",
+       "10 %",
+       "1",
+       "19-OCT-2026",
+       "1 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 19 Prueba",
+       "1",
+       "10 %",
+       "1",
+       "19-OCT-2026",
+       "1 sin reporte"
+      ]
+     ]
+    },
+    "56 sin jornadas en el periodo #2": {
+     "encabezado": [
+      "Quién registró",
+      "Pendientes"
+     ],
+     "filas": [
+      [
+       "<script>alert('E3R3XSS')</script> Apellido",
+       "Nada pendiente"
+      ],
+      [
+       "Arturo Méndez Demo",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 1 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 10 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 11 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 12 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 2 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 20 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 21 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 22 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 23 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 26 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 27 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 28 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 29 Prueba",
+       "1 abierta de antes"
+      ],
+      [
+       "E3R1 Cabo 30 Prueba",
+       "1 abierta de antes"
+      ],
+      [
+       "E3R1 Cabo 31 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 32 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 33 Prueba",
+       "1 abierta de antes"
+      ],
+      [
+       "E3R1 Cabo 34 Prueba",
+       "1 abierta de antes"
+      ],
+      [
+       "E3R1 Cabo 35 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 36 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 37 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 38 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 39 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 40 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 41 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 42 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 43 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 44 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 45 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 46 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 5 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 9 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R2 Cabo Alcaldia",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Cabo Coyoacan",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Cabo Paot",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Cabo Sedema",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Cabo2 Sedema",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Temporal Sedema",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Dos Renombrado 2",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Empresa",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Iztapalapa Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Tres Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Uno Prueba",
+       "1 eliminado"
+      ],
+      [
+       "Ernesto Luna Demo",
+       "Nada pendiente"
+      ],
+      [
+       "Julián Ortega Demo",
+       "1 abierta de antes"
+      ],
+      [
+       "Larga Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "Lucía Méndez Ejemplo",
+       "Nada pendiente"
+      ],
+      [
+       "Marisol Pérez Demo",
+       "1 abierta de antes"
+      ],
+      [
+       "Nadia Flores Demo",
+       "Nada pendiente"
+      ],
+      [
+       "Paula Sánchez Demo",
+       "Nada pendiente"
+      ],
+      [
+       "Rocío Hernández Demo",
+       "Nada pendiente"
+      ],
+      [
+       "Silvia Rangel Demo",
+       "Nada pendiente"
+      ],
+      [
+       "Yolanda Cruz Demo",
+       "1 abierta de antes"
+      ],
+      [
+       "Zacarías Molina Demo",
+       "Nada pendiente"
+      ]
+     ]
+    },
+    "Por institución5 instituciones · Secretaría del Medio Ambiente (SEDEMA) 73 % #3": {
+     "encabezado": [
+      "Institución",
+      "Árboles",
+      "% del total",
+      "Tipo",
+      "Jornadas"
+     ],
+     "filas": [
+      [
+       "Secretaría del Medio Ambiente (SEDEMA)",
+       "378",
+       "73 %",
+       "Gobierno de la CDMX",
+       "31"
+      ],
+      [
+       "Reforestamos México, A.C.",
+       "56",
+       "11 %",
+       "Organización civil",
+       "5"
+      ],
+      [
+       "Alcaldía Iztapalapa",
+       "39",
+       "8 %",
+       "Alcaldía",
+       "2"
+      ],
+      [
+       "Green Cover",
+       "27",
+       "5 %",
+       "Empresa privada",
+       "2"
+      ],
+      [
+       "Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)",
+       "14",
+       "3 %",
+       "Gobierno de la CDMX",
+       "2"
+      ]
+     ]
+    },
+    "Por alcaldía8 alcaldías · 20 colonias · Iztapalapa 76 % #4": {
+     "encabezado": [
+      "Alcaldía",
+      "Árboles",
+      "% del total",
+      "Jornadas",
+      "Colonias"
+     ],
+     "filas": [
+      [
+       "Iztapalapa",
+       "392",
+       "76 %",
+       "31",
+       "7"
+      ],
+      [
+       "Xochimilco",
+       "37",
+       "7 %",
+       "3",
+       "3"
+      ],
+      [
+       "Tlalpan",
+       "28",
+       "5 %",
+       "3",
+       "5"
+      ],
+      [
+       "Álvaro Obregón",
+       "14",
+       "3 %",
+       "1",
+       "1"
+      ],
+      [
+       "Miguel Hidalgo",
+       "13",
+       "3 %",
+       "1",
+       "1"
+      ],
+      [
+       "Cuauhtémoc",
+       "11",
+       "2 %",
+       "1",
+       "1"
+      ],
+      [
+       "Tláhuac",
+       "11",
+       "2 %",
+       "1",
+       "1"
+      ],
+      [
+       "Milpa Alta",
+       "8",
+       "2 %",
+       "1",
+       "1"
+      ]
+     ]
+    },
+    "Por prioridad de la colonia21 en muy alta · 393 en alta · 69 en media · 29 en baja · 2 sin dato #5": {
+     "encabezado": [
+      "Prioridad",
+      "Árboles",
+      "% del total"
+     ],
+     "filas": [
+      [
+       "Muy alta",
+       "21",
+       "4 %"
+      ],
+      [
+       "Alta",
+       "393",
+       "76 %"
+      ],
+      [
+       "Media",
+       "69",
+       "13 %"
+      ],
+      [
+       "Baja",
+       "29",
+       "6 %"
+      ],
+      [
+       "Muy baja",
+       "0",
+       "0 %"
+      ],
+      [
+       "Sin dato en la capa",
+       "2",
+       "0 %"
+      ]
+     ]
+    },
+    "Por especie26 especies · 78 % nativas #6": {
+     "encabezado": [
+      "Especie",
+      "Árboles",
+      "% del total",
+      "Distribución"
+     ],
+     "filas": [
+      [
+       "AhuehueteTaxodium mucronatum",
+       "112",
+       "22 %",
+       "Nativa"
+      ],
+      [
+       "AileAlnus acuminata",
+       "54",
+       "10 %",
+       "Nativa"
+      ],
+      [
+       "Codo de fraileCascabela thevetioides",
+       "53",
+       "10 %",
+       "Endémica"
+      ],
+      [
+       "Frijolito de TexasDermatophyllum secundiflorum",
+       "50",
+       "10 %",
+       "Nativa"
+      ],
+      [
+       "GrevileaGrevillea robusta",
+       "50",
+       "10 %",
+       "Exótica"
+      ],
+      [
+       "TruenoLigustrum lucidum",
+       "50",
+       "10 %",
+       "Exótica-Invasora"
+      ],
+      [
+       "LiquidámbarLiquidambar styraciflua",
+       "23",
+       "4 %",
+       "Nativa"
+      ],
+      [
+       "TepozánBuddleja cordata",
+       "19",
+       "4 %",
+       "Nativa"
+      ],
+      [
+       "FresnoFraxinus uhdei",
+       "15",
+       "3 %",
+       "Nativa"
+      ],
+      [
+       "Encino Quiebra HachaQuercus rugosa",
+       "10",
+       "2 %",
+       "Nativa"
+      ],
+      [
+       "JacarandaJacaranda mimosifolia",
+       "10",
+       "2 %",
+       "Exótica"
+      ],
+      [
+       "Cedro blancoCupressus lusitanica",
+       "9",
+       "2 %",
+       "Nativa"
+      ],
+      [
+       "TejocoteCrataegus mexicana",
+       "8",
+       "2 %",
+       "Nativa"
+      ],
+      [
+       "ColorínErythrina americana",
+       "7",
+       "1 %",
+       "Endémica"
+      ],
+      [
+       "HuizacheVachellia farnesiana",
+       "7",
+       "1 %",
+       "Nativa"
+      ],
+      [
+       "MezquiteNeltuma laevigata",
+       "7",
+       "1 %",
+       "Nativa"
+      ],
+      [
+       "Guaje rojoLeucaena esculenta",
+       "6",
+       "1 %",
+       "Nativa"
+      ],
+      [
+       "PinoPinus cembroides",
+       "5",
+       "1 %",
+       "Nativa"
+      ],
+      [
+       "Palo dulceEysenhardtia polystachya",
+       "4",
+       "1 %",
+       "Nativa"
+      ],
+      [
+       "CapulínPrunus serotina var. salicifolia",
+       "3",
+       "1 %",
+       "Nativa"
+      ],
+      [
+       "MagnoliaMagnolia grandiflora",
+       "3",
+       "1 %",
+       "Exótica"
+      ],
+      [
+       "Olmo de texasUlmus crassifolia",
+       "3",
+       "1 %",
+       "Nativa"
+      ],
+      [
+       "Cedro limónCupressus macrocarpa",
+       "2",
+       "0 %",
+       "Nativa"
+      ],
+      [
+       "Palo locoPittocaulon praecox",
+       "2",
+       "0 %",
+       "Endémica"
+      ],
+      [
+       "-2+3 E3R2 <b data-inj=1>neg</b><img src=x onerror=alert(1)> \"comillas\" 'simples'Otra especie, fuera del catálogo",
+       "1",
+       "0 %",
+       "—"
+      ],
+      [
+       "SauceSalix humboldtiana",
+       "1",
+       "0 %",
+       "Nativa"
+      ]
+     ]
+    },
+    "Por programa3 programas · Reforestación Urbana 92 % #7": {
+     "encabezado": [
+      "Programa",
+      "Árboles",
+      "% del total",
+      "Jornadas"
+     ],
+     "filas": [
+      [
+       "Reforestación Urbana",
+       "471",
+       "92 %",
+       "37"
+      ],
+      [
+       "Palmeras",
+       "27",
+       "5 %",
+       "2"
+      ],
+      [
+       "Solicitud especial",
+       "16",
+       "3 %",
+       "3"
+      ]
+     ]
+    },
+    "Solicitudes3 jornadas · 3 % de los árboles #8": {
+     "encabezado": [
+      "Quién lo solicitó",
+      "Árboles",
+      "% del total",
+      "Jornadas"
+     ],
+     "filas": [
+      [
+       "Sistema de Transporte Colectivo Metro",
+       "14",
+       "3 %",
+       "1"
+      ],
+      [
+       "=cmd|' /C calc'!A0 E3R2 <b data-inj=1>neg</b><img src=x onerror=alert(1)> \"comillas\" 'simples'",
+       "1",
+       "0 %",
+       "1"
+      ],
+      [
+       "Oficina de la Secretaría",
+       "1",
+       "0 %",
+       "1"
+      ]
+     ]
+    }
+   }
+  },
+  "recalculo": {
+   "arboles": 514,
+   "jornadas_con_arboles": 42,
+   "por_institucion": {
+    "Green Cover": 27,
+    "Iztapalapa": 39,
+    "Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)": 14,
+    "Reforestamos México, A.C.": 56,
+    "Secretaría del Medio Ambiente (SEDEMA)": 378
+   },
+   "por_alcaldia": {
+    "Álvaro Obregón": 14,
+    "Cuauhtémoc": 11,
+    "Iztapalapa": 392,
+    "Miguel Hidalgo": 13,
+    "Milpa Alta": 8,
+    "Tláhuac": 11,
+    "Tlalpan": 28,
+    "Xochimilco": 37
+   }
+  }
+ },
+ {
+  "periodo": [
+   "2026-10-19",
+   "2026-10-19",
+   null
+  ],
+  "pantalla": {
+   "etiqueta": "19-OCT-2026",
+   "cifras": [
+    "353árboles plantadosen 29 jornadas cerradas",
+    "71 %de lo previsto353 de 494 previstos en las jornadas",
+    "16 de 81cabos trabajaron12.2 árboles por jornada",
+    "69jornadas en cursono se cuentan hasta cerrarse"
+   ],
+   "arboles": 353,
+   "tablas": {
+    "Árboles plantados #0": {
+     "encabezado": [
+      "Periodo",
+      "Árboles",
+      "Jornadas"
+     ],
+     "filas": [
+      [
+       "Lun 19",
+       "353",
+       "29"
+      ]
+     ]
+    },
+    "Por quién registró16 con jornadas en el periodo · 21 con pendientes #1": {
+     "encabezado": [
+      "Quién registró",
+      "Árboles",
+      "De lo previsto",
+      "Jornadas",
+      "Última",
+      "Pendientes"
+     ],
+     "filas": [
+      [
+       "E3R2 Cabo Prueba",
+       "305",
+       "97 %",
+       "5",
+       "19-OCT-2026",
+       "84 sin revisar · 2 sin reporte"
+      ],
+      [
+       "Auditoria Cabo Ejemplo",
+       "8",
+       "40 %",
+       "8",
+       "19-OCT-2026",
+       "2 abiertas de antes · 4 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 3 Prueba",
+       "6",
+       "60 %",
+       "1",
+       "19-OCT-2026",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 4 Prueba",
+       "6",
+       "60 %",
+       "1",
+       "19-OCT-2026",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 24 Prueba",
+       "4",
+       "40 %",
+       "1",
+       "19-OCT-2026",
+       "1 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 25 Prueba",
+       "4",
+       "40 %",
+       "1",
+       "19-OCT-2026",
+       "1 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 6 Prueba",
+       "3",
+       "30 %",
+       "1",
+       "19-OCT-2026",
+       "2 sin revisar · 1 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 7 Prueba",
+       "3",
+       "30 %",
+       "1",
+       "19-OCT-2026",
+       "1 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 8 Prueba",
+       "3",
+       "30 %",
+       "1",
+       "19-OCT-2026",
+       "1 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 13 Prueba",
+       "2",
+       "10 %",
+       "2",
+       "19-OCT-2026",
+       "2 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 14 Prueba",
+       "2",
+       "10 %",
+       "2",
+       "19-OCT-2026",
+       "2 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 17 Prueba",
+       "2",
+       "20 %",
+       "1",
+       "19-OCT-2026",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 18 Prueba",
+       "2",
+       "20 %",
+       "1",
+       "19-OCT-2026",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 15 Prueba",
+       "1",
+       "10 %",
+       "1",
+       "19-OCT-2026",
+       "1 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 16 Prueba",
+       "1",
+       "10 %",
+       "1",
+       "19-OCT-2026",
+       "1 sin reporte"
+      ],
+      [
+       "E3R1 Cabo 19 Prueba",
+       "1",
+       "10 %",
+       "1",
+       "19-OCT-2026",
+       "1 sin reporte"
+      ]
+     ]
+    },
+    "65 sin jornadas en el periodo #2": {
+     "encabezado": [
+      "Quién registró",
+      "Pendientes"
+     ],
+     "filas": [
+      [
+       "<script>alert('E3R3XSS')</script> Apellido",
+       "Nada pendiente"
+      ],
+      [
+       "Andrea Solís Ejemplo",
+       "Nada pendiente"
+      ],
+      [
+       "Arturo Méndez Demo",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 1 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 10 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 11 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 12 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 2 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 20 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 21 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 22 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 23 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 26 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 27 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 28 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 29 Prueba",
+       "1 abierta de antes"
+      ],
+      [
+       "E3R1 Cabo 30 Prueba",
+       "1 abierta de antes"
+      ],
+      [
+       "E3R1 Cabo 31 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 32 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 33 Prueba",
+       "1 abierta de antes"
+      ],
+      [
+       "E3R1 Cabo 34 Prueba",
+       "1 abierta de antes"
+      ],
+      [
+       "E3R1 Cabo 35 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 36 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 37 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 38 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 39 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 40 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 41 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 42 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 43 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 44 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 45 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 46 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 5 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R1 Cabo 9 Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3R2 Cabo Alcaldia",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Cabo Coyoacan",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Cabo Paot",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Cabo Sedema",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Cabo2 Sedema",
+       "Nada pendiente"
+      ],
+      [
+       "E3R3 Temporal Sedema",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Dos Renombrado 2",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Empresa",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Iztapalapa Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Tres Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Uno Prueba",
+       "1 eliminado"
+      ],
+      [
+       "Ernesto Luna Demo",
+       "Nada pendiente"
+      ],
+      [
+       "Fulana de Tal Ejemplo",
+       "Nada pendiente"
+      ],
+      [
+       "Gerardo Paredes Demo",
+       "Nada pendiente"
+      ],
+      [
+       "Julián Ortega Demo",
+       "1 abierta de antes"
+      ],
+      [
+       "Larga Prueba",
+       "Nada pendiente"
+      ],
+      [
+       "Lucía Méndez Ejemplo",
+       "Nada pendiente"
+      ],
+      [
+       "Marisol Pérez Demo",
+       "1 abierta de antes"
+      ],
+      [
+       "Nadia Flores Demo",
+       "Nada pendiente"
+      ],
+      [
+       "Olivia Reyes Demo",
+       "Nada pendiente"
+      ],
+      [
+       "Omar Fuentes Demo",
+       "Nada pendiente"
+      ],
+      [
+       "Óscar Rivas Ejemplo",
+       "Nada pendiente"
+      ],
+      [
+       "Paula Sánchez Demo",
+       "Nada pendiente"
+      ],
+      [
+       "Ramiro Torres Ejemplo",
+       "Nada pendiente"
+      ],
+      [
+       "Rocío Hernández Demo",
+       "Nada pendiente"
+      ],
+      [
+       "Silvia Rangel Demo",
+       "Nada pendiente"
+      ],
+      [
+       "Tomás Díaz Demo",
+       "1 abierta de antes"
+      ],
+      [
+       "Valeria Castro Demo",
+       "Nada pendiente"
+      ],
+      [
+       "Yolanda Cruz Demo",
+       "1 abierta de antes"
+      ],
+      [
+       "Zacarías Molina Demo",
+       "Nada pendiente"
+      ]
+     ]
+    },
+    "Por alcaldíaIztapalapa · 2 colonias #3": {
+     "encabezado": [
+      "Alcaldía",
+      "Árboles",
+      "% del total",
+      "Jornadas",
+      "Colonias"
+     ],
+     "filas": [
+      [
+       "Iztapalapa",
+       "353",
+       "100 %",
+       "29",
+       "2"
+      ]
+     ]
+    },
+    "Por prioridad de la colonia353 en alta #4": {
+     "encabezado": [
+      "Prioridad",
+      "Árboles",
+      "% del total"
+     ],
+     "filas": [
+      [
+       "Muy alta",
+       "0",
+       "0 %"
+      ],
+      [
+       "Alta",
+       "353",
+       "100 %"
+      ],
+      [
+       "Media",
+       "0",
+       "0 %"
+      ],
+      [
+       "Baja",
+       "0",
+       "0 %"
+      ],
+      [
+       "Muy baja",
+       "0",
+       "0 %"
+      ]
+     ]
+    },
+    "Por especie7 especies · 71 % nativas #5": {
+     "encabezado": [
+      "Especie",
+      "Árboles",
+      "% del total",
+      "Distribución"
+     ],
+     "filas": [
+      [
+       "AhuehueteTaxodium mucronatum",
+       "102",
+       "29 %",
+       "Nativa"
+      ],
+      [
+       "AileAlnus acuminata",
+       "50",
+       "14 %",
+       "Nativa"
+      ],
+      [
+       "Codo de fraileCascabela thevetioides",
+       "50",
+       "14 %",
+       "Endémica"
+      ],
+      [
+       "Frijolito de TexasDermatophyllum secundiflorum",
+       "50",
+       "14 %",
+       "Nativa"
+      ],
+      [
+       "GrevileaGrevillea robusta",
+       "50",
+       "14 %",
+       "Exótica"
+      ],
+      [
+       "TruenoLigustrum lucidum",
+       "50",
+       "14 %",
+       "Exótica-Invasora"
+      ],
+      [
+       "-2+3 E3R2 <b data-inj=1>neg</b><img src=x onerror=alert(1)> \"comillas\" 'simples'Otra especie, fuera del catálogo",
+       "1",
+       "1 %",
+       "—"
+      ]
+     ]
+    },
+    "Por programa2 programas · Reforestación Urbana 99 % #6": {
+     "encabezado": [
+      "Programa",
+      "Árboles",
+      "% del total",
+      "Jornadas"
+     ],
+     "filas": [
+      [
+       "Reforestación Urbana",
+       "351",
+       "99 %",
+       "27"
+      ],
+      [
+       "Solicitud especial",
+       "2",
+       "1 %",
+       "2"
+      ]
+     ]
+    },
+    "Solicitudes2 jornadas · 1 % de los árboles #7": {
+     "encabezado": [
+      "Quién lo solicitó",
+      "Árboles",
+      "% del total",
+      "Jornadas"
+     ],
+     "filas": [
+      [
+       "=cmd|' /C calc'!A0 E3R2 <b data-inj=1>neg</b><img src=x onerror=alert(1)> \"comillas\" 'simples'",
+       "1",
+       "0 %",
+       "1"
+      ],
+      [
+       "Oficina de la Secretaría",
+       "1",
+       "0 %",
+       "1"
+      ]
+     ]
+    }
+   }
+  },
+  "recalculo": {
+   "arboles": 353,
+   "jornadas_con_arboles": 29,
+   "por_institucion": {
+    "Secretaría del Medio Ambiente (SEDEMA)": 353
+   },
+   "por_alcaldia": {
+    "Iztapalapa": 353
+   }
+  }
+ },
+ {
+  "periodo": [
+   "2024-01-01",
+   "2026-10-19",
+   "o-alc-09007"
+  ],
+  "pantalla": {
+   "etiqueta": "Del 01-ENE-2024 al 19-OCT-2026",
+   "cifras": [
+    "2,813árboles plantadosen 214 jornadas cerradas",
+    "95 %de lo previsto2,813 de 2,973 previstos en las jornadas",
+    "3 de 5cabos trabajaron13.1 árboles por jornada",
+    "6jornadas en cursono se cuentan hasta cerrarse"
+   ],
+   "arboles": 2813,
+   "tablas": {
+    "Árboles plantados #0": {
+     "encabezado": [
+      "Periodo",
+      "Árboles",
+      "Jornadas"
+     ],
+     "filas": [
+      [
+       "2024",
+       "0",
+       "0"
+      ],
+      [
+       "2025",
+       "1281",
+       "99"
+      ],
+      [
+       "2026",
+       "1532",
+       "115"
+      ]
+     ]
+    },
+    "Por quién registró4 con jornadas en el periodo · 4 con pendientes #1": {
+     "encabezado": [
+      "Quién registró",
+      "Árboles",
+      "De lo previsto",
+      "Jornadas",
+      "Última",
+      "Pendientes"
+     ],
+     "filas": [
+      [
+       "Paula Sánchez Demo",
+       "879",
+       "95 %",
+       "66",
+       "12-OCT-2026",
+       "4 sin revisar · 5 sin reporte · 14 eliminados"
+      ],
+      [
+       "Ramiro Torres Ejemplo",
+       "753",
+       "94 %",
+       "61",
+       "14-OCT-2026",
+       "3 sin revisar · 5 sin reporte · 6 eliminados"
+      ],
+      [
+       "Ernesto Luna Demo",
+       "750",
+       "97 %",
+       "54",
+       "07-OCT-2026",
+       "3 sin revisar · 2 sin reporte · 2 eliminados"
+      ],
+      [
+       "Sergio Navarro Ejemplo",
+       "431",
+       "90 %",
+       "33",
+       "14-SEP-2026",
+       "2 sin revisar · 2 sin reporte · 9 eliminados"
+      ]
+     ]
+    },
+    "2 sin jornadas en el periodo #2": {
+     "encabezado": [
+      "Quién registró",
+      "Pendientes"
+     ],
+     "filas": [
+      [
+       "E3R2 Cabo Alcaldia",
+       "Nada pendiente"
+      ],
+      [
+       "E3r4 Cabo Iztapalapa Prueba",
+       "Nada pendiente"
+      ]
+     ]
+    },
+    "Por alcaldía3 alcaldías · 195 colonias · Iztapalapa 100 % #3": {
+     "encabezado": [
+      "Alcaldía",
+      "Árboles",
+      "% del total",
+      "Jornadas",
+      "Colonias"
+     ],
+     "filas": [
+      [
+       "Iztapalapa",
+       "2,806",
+       "100 %",
+       "214",
+       "192"
+      ],
+      [
+       "Iztacalco",
+       "4",
+       "0 %",
+       "2",
+       "1"
+      ],
+      [
+       "Tláhuac",
+       "3",
+       "0 %",
+       "2",
+       "2"
+      ]
+     ]
+    },
+    "Por prioridad de la colonia887 en muy alta · 1,342 en alta · 530 en media · 39 en baja · 15 sin dato #4": {
+     "encabezado": [
+      "Prioridad",
+      "Árboles",
+      "% del total"
+     ],
+     "filas": [
+      [
+       "Muy alta",
+       "887",
+       "32 %"
+      ],
+      [
+       "Alta",
+       "1,342",
+       "48 %"
+      ],
+      [
+       "Media",
+       "530",
+       "19 %"
+      ],
+      [
+       "Baja",
+       "39",
+       "1 %"
+      ],
+      [
+       "Muy baja",
+       "0",
+       "0 %"
+      ],
+      [
+       "Sin dato en la capa",
+       "15",
+       "1 %"
+      ]
+     ]
+    },
+    "Por especie22 especies · 91 % nativas #5": {
+     "encabezado": [
+      "Especie",
+      "Árboles",
+      "% del total",
+      "Distribución"
+     ],
+     "filas": [
+      [
+       "FresnoFraxinus uhdei",
+       "358",
+       "13 %",
+       "Nativa"
+      ],
+      [
+       "LiquidámbarLiquidambar styraciflua",
+       "249",
+       "9 %",
+       "Nativa"
+      ],
+      [
+       "JacarandaJacaranda mimosifolia",
+       "201",
+       "7 %",
+       "Exótica"
+      ],
+      [
+       "AileAlnus acuminata",
+       "181",
+       "6 %",
+       "Nativa"
+      ],
+      [
+       "Encino Quiebra HachaQuercus rugosa",
+       "179",
+       "6 %",
+       "Nativa"
+      ],
+      [
+       "TepozánBuddleja cordata",
+       "174",
+       "6 %",
+       "Nativa"
+      ],
+      [
+       "Palo dulceEysenhardtia polystachya",
+       "161",
+       "6 %",
+       "Nativa"
+      ],
+      [
+       "AhuehueteTaxodium mucronatum",
+       "153",
+       "5 %",
+       "Nativa"
+      ],
+      [
+       "ColorínErythrina americana",
+       "149",
+       "5 %",
+       "Endémica"
+      ],
+      [
+       "CapulínPrunus serotina var. salicifolia",
+       "147",
+       "5 %",
+       "Nativa"
+      ],
+      [
+       "TejocoteCrataegus mexicana",
+       "128",
+       "5 %",
+       "Nativa"
+      ],
+      [
+       "Cedro blancoCupressus lusitanica",
+       "104",
+       "4 %",
+       "Nativa"
+      ],
+      [
+       "PinoPinus cembroides",
+       "96",
+       "3 %",
+       "Nativa"
+      ],
+      [
+       "Codo de fraileCascabela thevetioides",
+       "86",
+       "3 %",
+       "Endémica"
+      ],
+      [
+       "HuizacheVachellia farnesiana",
+       "85",
+       "3 %",
+       "Nativa"
+      ],
+      [
+       "MezquiteNeltuma laevigata",
+       "83",
+       "3 %",
+       "Nativa"
+      ],
+      [
+       "Olmo de texasUlmus crassifolia",
+       "58",
+       "2 %",
+       "Nativa"
+      ],
+      [
+       "Palo locoPittocaulon praecox",
+       "54",
+       "2 %",
+       "Endémica"
+      ],
+      [
+       "Guaje rojoLeucaena esculenta",
+       "50",
+       "2 %",
+       "Nativa"
+      ],
+      [
+       "MagnoliaMagnolia grandiflora",
+       "49",
+       "2 %",
+       "Exótica"
+      ],
+      [
+       "SauceSalix humboldtiana",
+       "42",
+       "2 %",
+       "Nativa"
+      ],
+      [
+       "Cedro limónCupressus macrocarpa",
+       "26",
+       "1 %",
+       "Nativa"
+      ]
+     ]
+    },
+    "Por programaReforestación Urbana · 2,813 árboles #6": {
+     "encabezado": [
+      "Programa",
+      "Árboles",
+      "% del total",
+      "Jornadas"
+     ],
+     "filas": [
+      [
+       "Reforestación Urbana",
+       "2,813",
+       "100 %",
+       "214"
+      ]
+     ]
+    }
+   }
+  },
+  "recalculo": {
+   "arboles": 2813,
+   "jornadas_con_arboles": 214,
+   "por_institucion": {
+    "Iztapalapa": 2813
+   },
+   "por_alcaldia": {
+    "Tláhuac": 3,
+    "Iztapalapa": 2806,
+    "Iztacalco": 4
+   }
+  }
+ }
+]

@@ -1,0 +1,14 @@
+servidor npm test | 86 s | salida 0; ℹ tests 11 ℹ pass 11 ℹ fail 0 ℹ tests 8 ℹ pass 8 ℹ fail 0 ℹ tests 77 ℹ pass 77 ℹ fail 0 
+prueba_conexion (repositorio) | 233 s | salida 0; 92 comprobaciones, 0 fallas
+prueba_conexion --app (copia real) | 230 s | salida 0; 93 comprobaciones, 0 fallas
+auditoria.py | 7 s | salida 1; FileNotFoundError: [Errno 2] No such file or directory: '.\\originales\\alcaldias_cdmx.json'
+auditoria_css.py | 1 s | salida 0; Norma de la hoja: 0 hallazgos
+revisar.py | 103 s | salida 0; escritorio-zoom-67/registrar: controles menores de 24px -> ['a. h=19']
+ escritorio-zoom-200: mapa mide 0px
+ 
+prueba.py | 953 s | salida 1;     at UtilityScript.<anonymous> (<anonymous>:1:44)
+FIN
+auditoria.py (con originales/) | 132 s | salida 0; 144 comprobaciones, 0 hallazgos
+prueba.py, otra vez, hoy (lunes 19-10) | 1861 s | salida 1; 2 FALLA;     at UtilityScript.<anonymous> (<anonymous>:1:44)
+prueba.py con SRP_HOY=2026-10-17 (sábado) | 248 s | salida 1; 0 FALLA; 
+FIN2

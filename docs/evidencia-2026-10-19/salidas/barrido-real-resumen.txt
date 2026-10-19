@@ -1,0 +1,72 @@
+corridas 16 · pantallas revisadas 108 · botones presionados o revisados 1110
+
+4702 · error de consola
+      ADMIN/tel-390 Failed to load resource: the server responded with a status of 404 (Not Found)
+      ADMIN/escritorio Failed to load resource: the server responded with a status of 404 (Not Found)
+      DIRECTIVO/tel-390 Failed to load resource: the server responded with a status of 404 (Not Found)
+      DIRECTIVO/escritorio Failed to load resource: the server responded with a status of 404 (Not Found)
+      DIRECTIVO/escritorio Failed to load resource: net::ERR_CONNECTION_TIMED_OUT
+      CABO/tel-390 Failed to load resource: the server responded with a status of 404 (Not Found)
+      CABO/escritorio Failed to load resource: the server responded with a status of 404 (Not Found)
+
+4702 · petición fallida
+      ADMIN/tel-390 404 /api/srp/fotos/0c9ee086-912d-4532-9f09-bf6d54819e50
+      ADMIN/tel-390 404 /api/srp/fotos/1da6ec65-328d-4c92-89eb-eee14524300b
+      ADMIN/tel-390 404 /api/srp/fotos/db356553-cdbf-400c-b8c4-070017769721
+      ADMIN/tel-390 404 /api/srp/fotos/60531d8b-6001-4151-8f90-172f419afcfa
+      ADMIN/tel-390 404 /api/srp/fotos/ece0a6c6-2376-4cae-8297-d6bf8b7b4b4e
+      ADMIN/tel-390 404 /api/srp/fotos/a7acb39b-2d16-4863-98c8-8b889f4a8d7a
+      ADMIN/tel-390 404 /api/srp/fotos/46e85cf3-747f-4cc3-a962-53fe749321ce
+      ADMIN/tel-390 404 /api/srp/fotos/63fafe7e-44b8-488c-ae93-6a0bd44d2f19
+
+122 · error de consola al presionar
+      ADMIN/tel-390 supervision «Tabla en CSV» ['Failed to load resource: the server responded with a status of 404 (Not Found)']
+      ADMIN/tel-390 registros «Acciones de Ahuehuete del 19-OCT-2026» ['Failed to load resource: the server responded with a status of 404 (Not Found)']
+      ADMIN/tel-390 galeria «Todas» ['Failed to load resource: the server responded with a status of 404 (Not Found)']
+      ADMIN/tel-390 galeria «Hoy, 19-OCT-26» ['Failed to load resource: the server responded with a status of 404 (Not Found)']
+      ADMIN/tel-390 galeria «Un día» ['Failed to load resource: the server responded with a status of 404 (Not Found)']
+      ADMIN/tel-390 galeria «Más filtros: jornada, quién registró, especie, programa, alc» ['Failed to load resource: the server responded with a status of 404 (Not Found)']
+      ADMIN/tel-390 galeria «Página 1» ['Failed to load resource: the server responded with a status of 404 (Not Found)']
+      ADMIN/tel-390 galeria «Página 2» ['Failed to load resource: the server responded with a status of 404 (Not Found)']
+
+32 · objetivo chico (<24 px)
+      ADMIN/tel-390 supervision ['button', '', 'E3R2 Cabo Prueba', '126×23']
+      ADMIN/tel-390 supervision ['button', '', 'Auditoria Cabo Ejemplo', '158×23']
+      ADMIN/tel-390 supervision ['button', '', 'E3R1 Cabo 3 Prueba', '138×23']
+      ADMIN/tel-390 supervision ['button', '', 'E3R1 Cabo 4 Prueba', '138×23']
+      ADMIN/tel-390 supervision ['button', '', 'E3R1 Cabo 24 Prueba', '147×23']
+      ADMIN/tel-390 supervision ['button', '', 'E3R1 Cabo 25 Prueba', '147×23']
+      ADMIN/tel-390 supervision ['button', '', 'E3R1 Cabo 6 Prueba', '138×23']
+      ADMIN/tel-390 supervision ['button', '', 'E3R1 Cabo 7 Prueba', '138×23']
+
+16 · dominio externo server.arcgisonline.com
+      ADMIN/tel-390 21 peticiones
+      ADMIN/tel-390 75 peticiones
+      ADMIN/escritorio 111 peticiones
+      ADMIN/escritorio 213 peticiones
+      DIRECTIVO/tel-390 3 peticiones
+      DIRECTIVO/tel-390 45 peticiones
+      DIRECTIVO/escritorio 3 peticiones
+      DIRECTIVO/escritorio 102 peticiones
+
+8 · axe en ventana button-name
+      ADMIN/tel-390 dlg-completa #btn-completa-cerrar
+      ADMIN/tel-390 dlg-confirmar #btn-confirmar-si
+      DIRECTIVO/tel-390 dlg-completa #btn-completa-cerrar
+      DIRECTIVO/tel-390 dlg-confirmar #btn-confirmar-si
+      COORDINADOR/tel-390 dlg-completa #btn-completa-cerrar
+      COORDINADOR/tel-390 dlg-confirmar #btn-confirmar-si
+      CABO/tel-390 dlg-completa #btn-completa-cerrar
+      CABO/tel-390 dlg-confirmar #btn-confirmar-si
+
+6 · control tapado
+      ADMIN/tel-390 catalogos ['button', '', 'Clave', 'lo tapa: tr.']
+      ADMIN/tel-390 catalogos ['button', '', 'Estado', 'lo tapa: tr.']
+      ADMIN/tel-390 usuarios ['button', '', 'Correo', 'lo tapa: tr.']
+      ADMIN/tel-390 usuarios ['button', '', 'Área', 'lo tapa: tr.']
+      ADMIN/tel-390 usuarios ['button', '', 'Perfil de captura', 'lo tapa: tr.']
+      ADMIN/tel-390 usuarios ['button', '', 'Estado', 'lo tapa: tr.']
+
+2 · axe nested-interactive (serious)
+      ADMIN/tel-390 duplicados 10 nodos · #dup-mapa-132
+      ADMIN/escritorio duplicados 25 nodos · #dup-mapa-132

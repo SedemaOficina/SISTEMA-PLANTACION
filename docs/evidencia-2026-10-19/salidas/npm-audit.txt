@@ -1,0 +1,25 @@
+{
+ "vulnerabilidades": {
+  "info": 0,
+  "low": 1,
+  "moderate": 0,
+  "high": 0,
+  "critical": 0,
+  "total": 1
+ },
+ "dependencias": {
+  "prod": 81,
+  "dev": 129,
+  "optional": 74,
+  "peer": 4,
+  "peerOptional": 0,
+  "total": 211
+ },
+ "detalle": {
+  "esbuild": {
+   "gravedad": "low",
+   "rango": "0.27.3 - 0.28.0",
+   "arreglo": true
+  }
+ }
+}

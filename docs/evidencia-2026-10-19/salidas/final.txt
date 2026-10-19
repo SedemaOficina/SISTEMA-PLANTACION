@@ -1,0 +1,8 @@
+servidor npm test | 81 s | salida 0; ℹ tests 11 ℹ pass 11 ℹ fail 0 ℹ tests 8 ℹ pass 8 ℹ fail 0 ℹ tests 77 ℹ pass 77 ℹ fail 0 
+prueba_conexion (repositorio) | 253 s | salida 0; 92 comprobaciones, 0 fallas
+prueba_conexion --app (copia real) | 252 s | salida 0; 93 comprobaciones, 0 fallas
+auditoria.py | 31 s | salida 0; 144 comprobaciones, 0 hallazgos
+auditoria_css.py | 0 s | salida 0; Norma de la hoja: 0 hallazgos
+revisar.py | 100 s | salida 0; escritorio-zoom-67/registrar: controles menores de 24px -> ['a. h=19'] escritorio-zoom-200: mapa mide 0px 
+prueba.py | 437 s | salida 1; 
+FIN-FINAL

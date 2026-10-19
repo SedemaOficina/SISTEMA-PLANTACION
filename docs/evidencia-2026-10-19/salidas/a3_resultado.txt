@@ -1,0 +1,70 @@
+=== vuelta 1
+capas: 0
+especies: 0
+diccionario: 0
+sql: 0
+huella: 0
+  SÓLO SALTOS  assets/capas/capa-alcaldias.js
+  SÓLO SALTOS  assets/capas/capa-colonias.js
+  SÓLO SALTOS  assets/capas/capa-prioritarias.js
+  SÓLO SALTOS  assets/capas/capa-uga.js
+  SÓLO SALTOS  assets/catalogos/catalogo-especies.js
+  SÓLO SALTOS  datos/DICCIONARIO-DATOS.md
+  SÓLO SALTOS  js/esquema.js
+  igual        servidor/db/srp/02-srp-tablas.sql
+  SÓLO SALTOS  datos/HUELLA-CAPAS.md
+  DISTINTO     datos/HUELLA-CAPAS.json (10 renglones)
+copia real: 0
+=== vuelta 2
+capas: 0
+especies: 0
+diccionario: 0
+sql: 0
+huella: 0
+  SÓLO SALTOS  assets/capas/capa-alcaldias.js
+  SÓLO SALTOS  assets/capas/capa-colonias.js
+  SÓLO SALTOS  assets/capas/capa-prioritarias.js
+  SÓLO SALTOS  assets/capas/capa-uga.js
+  SÓLO SALTOS  assets/catalogos/catalogo-especies.js
+  SÓLO SALTOS  datos/DICCIONARIO-DATOS.md
+  SÓLO SALTOS  js/esquema.js
+  igual        servidor/db/srp/02-srp-tablas.sql
+  SÓLO SALTOS  datos/HUELLA-CAPAS.md
+  DISTINTO     datos/HUELLA-CAPAS.json (10 renglones)
+copia real: 0
+=== vuelta 1 contra vuelta 2
+  igual assets/capas/capa-alcaldias.js
+  igual assets/capas/capa-colonias.js
+  igual assets/capas/capa-prioritarias.js
+  igual assets/capas/capa-uga.js
+  igual assets/catalogos/catalogo-especies.js
+  igual datos/DICCIONARIO-DATOS.md
+  igual js/esquema.js
+  igual servidor/db/srp/02-srp-tablas.sql
+  igual datos/HUELLA-CAPAS.md
+  igual datos/HUELLA-CAPAS.json
+Only in /c/sia-rev/tmp/a3-app2/assets/capas: capa-alcaldias.js.v2
+Only in /c/sia-rev/tmp/a3-app2/assets/capas: capa-colonias.js.v2
+Only in /c/sia-rev/tmp/a3-app2/assets/capas: capa-prioritarias.js.v2
+Only in /c/sia-rev/tmp/a3-app2/assets/capas: capa-uga.js.v2
+Only in /c/sia-rev/tmp/a3-app2/assets/catalogos: catalogo-especies.js.v2
+Only in /c/sia-rev/tmp/a3-app2/js: esquema.js.v2
+Files /c/sia-rev/tmp/a3-app1/assets/capas/capa-alcaldias.js and '<proyecto>/servidor/local/entrega-sia/srp-v1-2026-10-17/app/assets/capas/capa-alcaldias.js' differ
+Only in /c/sia-rev/tmp/a3-app1/assets/capas: capa-alcaldias.js.v1
+Files /c/sia-rev/tmp/a3-app1/assets/capas/capa-colonias.js and '<proyecto>/servidor/local/entrega-sia/srp-v1-2026-10-17/app/assets/capas/capa-colonias.js' differ
+Only in /c/sia-rev/tmp/a3-app1/assets/capas: capa-colonias.js.v1
+Files /c/sia-rev/tmp/a3-app1/assets/capas/capa-prioritarias.js and '<proyecto>/servidor/local/entrega-sia/srp-v1-2026-10-17/app/assets/capas/capa-prioritarias.js' differ
+Only in /c/sia-rev/tmp/a3-app1/assets/capas: capa-prioritarias.js.v1
+Files /c/sia-rev/tmp/a3-app1/assets/capas/capa-uga.js and '<proyecto>/servidor/local/entrega-sia/srp-v1-2026-10-17/app/assets/capas/capa-uga.js' differ
+Only in /c/sia-rev/tmp/a3-app1/assets/capas: capa-uga.js.v1
+Files /c/sia-rev/tmp/a3-app1/assets/catalogos/catalogo-especies.js and '<proyecto>/servidor/local/entrega-sia/srp-v1-2026-10-17/app/assets/catalogos/catalogo-especies.js' differ
+Only in /c/sia-rev/tmp/a3-app1/assets/catalogos: catalogo-especies.js.v1
+Files /c/sia-rev/tmp/a3-app1/js/esquema.js and '<proyecto>/servidor/local/entrega-sia/srp-v1-2026-10-17/app/js/esquema.js' differ
+Only in /c/sia-rev/tmp/a3-app1/js: esquema.js.v1
+=== servidor: compilar dos veces
+tsup 1: 0
+tsup 2: 0
+  dist: idéntico las dos veces
+=== paquete: backend/completos contra la copia integrada
+  módulo del paquete = módulo del repositorio
+  guiones SQL del paquete revisados

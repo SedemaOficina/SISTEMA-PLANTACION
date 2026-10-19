@@ -1,0 +1,3 @@
+archivos 61 errores 0 avisos 1
+1 ('no-unused-vars', 1)
+    servidor/pruebas/cargas.test.js:18 'HOY' is assigned a value but never used.

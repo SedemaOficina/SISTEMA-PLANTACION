@@ -1,0 +1,37 @@
+corridas 26 · pantallas revisadas 189 · botones presionados o revisados 973
+
+26 · dominio externo server.arcgisonline.com
+      ADMIN/tel-360 3 peticiones
+      ADMIN/tel-390 3 peticiones
+      ADMIN/tel-430 3 peticiones
+      ADMIN/horizontal 3 peticiones
+      ADMIN/tableta 3 peticiones
+      ADMIN/escritorio 3 peticiones
+      ADMIN/escritorio 888 peticiones
+      ADMIN/zoom-200 3 peticiones
+
+10 · control tapado
+      ADMIN/tel-360 catalogos ['button', '', 'Clave', 'lo tapa: tr.']
+      ADMIN/tel-360 catalogos ['button', '', 'Estado', 'lo tapa: tr.']
+      ADMIN/tel-390 catalogos ['button', '', 'Clave', 'lo tapa: tr.']
+      ADMIN/tel-390 catalogos ['button', '', 'Estado', 'lo tapa: tr.']
+      ADMIN/tel-390 usuarios ['button', '', 'Correo', 'lo tapa: tr.']
+      ADMIN/tel-390 usuarios ['button', '', 'Área', 'lo tapa: tr.']
+      ADMIN/tel-390 usuarios ['button', '', 'Perfil de captura', 'lo tapa: tr.']
+      ADMIN/tel-390 usuarios ['button', '', 'Estado', 'lo tapa: tr.']
+
+8 · axe en ventana button-name
+      ADMIN/tel-390 dlg-completa #btn-completa-cerrar
+      ADMIN/tel-390 dlg-confirmar #btn-confirmar-si
+      DIRECTIVO/tel-390 dlg-completa #btn-completa-cerrar
+      DIRECTIVO/tel-390 dlg-confirmar #btn-confirmar-si
+      COORDINADOR/tel-390 dlg-completa #btn-completa-cerrar
+      COORDINADOR/tel-390 dlg-confirmar #btn-confirmar-si
+      CABO/tel-390 dlg-completa #btn-completa-cerrar
+      CABO/tel-390 dlg-confirmar #btn-confirmar-si
+
+1 · axe aria-prohibited-attr (serious)
+      ADMIN/tel-390 jornadas 1 nodos · section[aria-labelledby="jornadas-total"]
+
+1 · petición fallida
+      ADMIN/escritorio falló https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/19/233633/117808 net::ERR_BLOCKED_B
