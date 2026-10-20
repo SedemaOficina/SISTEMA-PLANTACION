@@ -6,7 +6,8 @@
    2. Revisión: se lee el archivo (Excel o CSV) en el teléfono y se revisa renglón por renglón,
       sin guardar nada. Un renglón con error no entra y se dice por qué; uno con aviso entra.
       - Error: coordenadas que no son número o fuera de la Ciudad; especie que no está en el
-        catálogo (se da de alta primero en Catálogos); fecha no válida o posterior a hoy; programa,
+        catálogo (se da de alta primero en Catálogos); fecha no válida, posterior a hoy o anterior al
+        inicio del programa; programa,
         tipo de institución o institución que no existen; renglón repetido en el archivo; árbol que
         ya está en el sistema (mismo punto, especie, fecha e institución), como pasa al subir dos
         veces el mismo archivo.
@@ -86,7 +87,7 @@ SRP.carga = {
         ['Latitud', 'Grados decimales, con punto. En la Ciudad va de 19.0 a 19.6.', 19.432608],
         ['Longitud', 'Grados decimales, con punto. Es negativa; si se escribe sin el signo, se toma como negativa.', -99.133209],
         ['Nombre científico', 'Como está en la hoja «Especies» (sin autor). Si no está, dé de alta la especie en Catálogos antes de cargar.', 'Fraxinus uhdei'],
-        ['Fecha de plantación', 'Fecha de Excel, o escrita como AAAA-MM-DD o DD/MM/AAAA. No puede ser posterior a hoy.', hoy],
+        ['Fecha de plantación', 'Fecha de Excel, o escrita como AAAA-MM-DD o DD/MM/AAAA. Desde el ' + SRP.util.formatearFecha(SRP.CONFIG.FECHA_MINIMA) + ', cuando empezó el programa, hasta hoy.', hoy],
         ['Programa', 'Como está en la hoja «Programas».', 'Reforestación Urbana'],
         ['Tipo de institución', 'Alcaldía, Gobierno de la CDMX, Empresa privada u Organización civil.', 'Alcaldía'],
         ['Institución', 'Como está en la hoja «Instituciones», del tipo elegido. En alcaldías, sólo el nombre.', 'Iztapalapa'],
@@ -218,6 +219,7 @@ SRP.carga = {
       const fecha = this.fecha(val('fecha'));
       if (!fecha) errores.push(['Fecha de plantación', 'Fecha no válida: «' + String(val('fecha')).trim() + '». Use una fecha de Excel, AAAA-MM-DD o DD/MM/AAAA.']);
       else if (fecha > hoy) errores.push(['Fecha de plantación', 'La fecha ' + SRP.util.formatearFecha(fecha) + ' es posterior a hoy.']);
+      else if (SRP.util.antesDelPrograma(fecha)) errores.push(['Fecha de plantación', 'La fecha ' + SRP.util.formatearFecha(fecha) + ' es anterior al ' + SRP.util.formatearFecha(SRP.CONFIG.FECHA_MINIMA) + ', cuando empezó el programa.']);
       const prog = ix.programas[n(val('programa'))];
       if (!prog) errores.push(['Programa', '«' + String(val('programa')).trim() + '» no está en el catálogo de programas.']);
       // Una solicitud lleva quién lo solicita y su descripción, que el archivo no trae

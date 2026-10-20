@@ -233,7 +233,7 @@ reprodujo además el auditor, en su propio entorno, como se dice en cada uno.
   - `setFullYear` en `aFecha`.
 - **Listo cuando:** una prueba teclea 19/10/26 y la aplicación la rechaza con su mensaje; el servidor rechaza
   0026 con error de campo.
-- **Estado:** Abierto.
+- **Estado:** Corregido en el bloque 237 (1.0.2): nada antes del 01-OCT-2024, cuando empezó el programa (decisión del dueño, 19-10-2026), en la pantalla, la carga masiva y el servidor, y en campo un aviso para lo de hace más de 30 días. Pruebas permanentes en `prueba_conexion.py`, `servidor/pruebas/recepcion.test.js` y `cargas.test.js`.
 
 #### F2-01 · Alta · La fotografía se pierde si una respuesta «200» que no es del servicio contesta la subida
 - **Prioridad, esfuerzo:** 5 · S. **Auditoría y etapa:** F2 · antes de usar datos reales.
@@ -659,3 +659,14 @@ El dueño aprobó los bloques 1 y 2 del plan (sección 11) el 19-10-2026, con su
 | La pastilla | Corregido | Cuenta las jornadas; en rojo lo que no sale en 30 minutos con conexión | `prueba_conexion.py` |
 
 `foto_falso_ok_despues.py` está en la evidencia, junto a los guiones de la auditoría.
+
+### Bloque 2 · Las fechas (bloque 237 del proyecto, versión 1.0.2)
+
+| Clave | Estado | Antes y después | Prueba permanente |
+|---|---|---|---|
+| E3-R2-01 | Corregido | Antes, 0026 y 1900 se aceptaban y recibían folio, 2 de 2. Después, el campo y el servidor dicen «no puede ser anterior al 01-OCT-2024» | `prueba_conexion.py` (0026 tecleado y el aviso de los 30 días), `recepcion.test.js` (0026, 1900 y 30-SEP-2024; el 01-OCT-2024 sí entra) |
+| E3-R3-01 | Corregido | Antes, `ERROR_INTERNO` 2 de 2 y la tanda entera con 500. Después, «Indique la fecha…» y, en la carga, un problema del renglón | `recepcion.test.js` y `cargas.test.js` (mes 13, día 45, mes 00) |
+| E3-R1-04 | Corregido | La prueba nueva cruza la medianoche con el reloj simulado sin salir de Nuevo registro; no se corrió contra el código anterior | `prueba_conexion.py` |
+| E3-R1-05 | Corregido en parte | «Hoy» y la hora en la zona de la Ciudad, y la franja de la hora del teléfono. Falta que el servidor guarde su propia hora de recepción | `prueba_conexion.py` (zona de Tokio; servidor con tres días de diferencia) |
+| E3-R2-18 | Corregido | Las fechas de Excel de 1899 y 1900 quedan antes de la mínima | `prueba_conexion.py` (el número 1 de Excel) |
+| `aFecha` y la serie | Corregido | `setFullYear` y el año a cuatro cifras | — (la fecha mínima ya no deja entrar esos años) |

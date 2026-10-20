@@ -39,6 +39,8 @@ SRP.servidor = {
     }
     let datos = null;
     try { datos = await r.json(); } catch (e) { /* sin cuerpo, o no es del servicio */ }
+    // La hora del servicio, para avisar si la del teléfono está mal (js/reloj.js); la de otro no cuenta
+    if (datos && typeof datos === 'object') SRP.reloj.anotar(r.headers.get('date'));
     // El servicio siempre contesta en JSON: un «correcto» sin él lo dio otro, y no confirma nada
     if (r.ok && (datos === null || typeof datos !== 'object')) return { ok: false, sinRed: true, mensaje: 'El servidor no respondió. Lo capturado se guarda en este equipo.' };
     if (r.ok) return { ok: true, estado: r.status, datos };

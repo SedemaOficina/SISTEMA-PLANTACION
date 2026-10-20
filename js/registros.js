@@ -544,7 +544,8 @@ SRP.registros = {
     const fecha = this.el('sustituir-fecha').value;
     const falta = !this.motivo ? 'Elija por qué se sustituye.' : this.motivo === 'OTRO' && !otro ? 'Escriba el motivo.'
       : !fecha ? 'Indique la fecha de la sustitución.' : fecha > SRP.util.fechaHoy() ? 'La fecha de la sustitución no puede ser posterior a hoy.'
-      : fecha < r.fecha_plantacion ? 'La fecha de la sustitución no puede ser anterior a la plantación del árbol perdido (' + SRP.util.formatearFecha(r.fecha_plantacion) + ').' : '';
+      : fecha < r.fecha_plantacion ? 'La fecha de la sustitución no puede ser anterior a la plantación del árbol perdido (' + SRP.util.formatearFecha(r.fecha_plantacion) + ').'
+      : SRP.util.antesDelPrograma(fecha) ? SRP.util.textoAntesDelPrograma('La fecha de la sustitución') : '';
     if (falta) { const e = this.el('sustituir-error'); e.textContent = falta; e.hidden = false; return; }
     const j = r.jornada_id ? await SRP.almacen.uno('jornadas', r.jornada_id) : null;
     if (!j) { SRP.util.anunciar('No se puede sustituir: la jornada de ese árbol ya no existe.', 'aviso'); return; }

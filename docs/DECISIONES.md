@@ -4005,3 +4005,29 @@
     operación se queda y al reenviarla el servidor la reconoce. Antes el árbol se quedaba sin folio.
   · **En una jornada ya cerrada** el aviso dice «Esta jornada ya está cerrada: inicie otra en Nuevo registro o
     reábrala en Jornadas.», y no «No tiene permiso».
+- **D317. Las fechas (bloque 237).**
+  19-10-2026. Es el bloque 2 del plan de corrección de la auditoría del 19-10-2026.
+  · **La fecha mínima es el 01-OCT-2024.** Liber: el programa empezó en octubre de 2024, así que ésos serán sus
+    registros más viejos. Vale para jornadas, árboles, sustituciones y la carga masiva, en la pantalla y en el
+    servidor (`CONFIG.FECHA_MINIMA` y `FECHA_MINIMA` del servicio, que deben ser la misma). Detiene también el
+    año tecleado con dos cifras, que el campo de fecha deja como 0026. Al editar vale sólo si la fecha cambia:
+    corregir una jornada o un árbol sin tocar su fecha no se detiene. Los datos de demostración de la versión
+    de prueba empiezan en enero de 2024 y se quedan así: son de prueba, y la mínima sólo vale para lo nuevo o
+    lo que cambia.
+  · **En campo, una fecha de hace más de 30 días se confirma** (`DIAS_AVISO_FECHA`): «¿La fecha es correcta? El …
+    fue hace N días.», con «Sí, es correcta» y «Corregirla». Así se detecta 2025 tecleado por 2026, que la
+    fecha mínima no detiene. Liber lo pidió junto con la mínima, frente a sólo la mínima o a bloquear lo de más
+    de un año. Pregunta sólo por una fecha nueva o cambiada —al iniciar o editar una jornada y en la fecha del
+    árbol—, no por la que propone la jornada, y una vez confirmada no vuelve a preguntar por ella.
+  · **«Hoy» es el de la Ciudad de México** (`CONFIG.ZONA`), como en el servidor, aunque el teléfono esté en otra
+    zona o con un horario de verano viejo. La hora que se enseña también.
+  · **La hora del teléfono se compara con la del servidor** en cada respuesta del servicio (la cabecera Date). Si
+    difiere más de 10 minutos (`MINUTOS_RELOJ`), una franja ámbar arriba dice cuánto y qué hacer. Sólo cuenta la
+    hora de una respuesta del servicio, no la de un portal de red. El servidor no guarda todavía su propia hora
+    de recepción: lo capturado sin señal con el reloj mal, antes de ver la franja, queda con la fecha del
+    teléfono.
+  · **Con la aplicación abierta de un día para otro**, la fecha del árbol se pone al día antes de guardar y al
+    volver a la aplicación; el campo se enseña porque la jornada ya es de otro día. Lo que se eligió a propósito
+    se queda.
+  · **Una fecha imposible** (mes 13, día 45) es una fecha no válida, con su mensaje; antes daba error interno y,
+    en la carga masiva, tiraba la tanda.

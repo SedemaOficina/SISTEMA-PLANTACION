@@ -34,6 +34,8 @@ Uso, desde la carpeta del proyecto (con la base local cargada):  python pruebas/
 Con --app corre sobre la copia que se publica en el SIA (herramientas/preparar_produccion.py), que ya viene con
 datos reales y sin los archivos de prueba, y comprueba además que no los pide.
 """
+import datetime
+import email.utils
 import json
 import os
 import re
@@ -112,14 +114,14 @@ def dentro(pg):
     return pg.evaluate("() => !document.getElementById('navegacion').hidden && !!SRP.sesion.usuario")
 
 
-def iniciar_jornada(pg, nombre):
-    """Declara una jornada desde Nuevo registro, como la persona."""
+def iniciar_jornada(pg, nombre, fecha=None):
+    """Declara una jornada desde Nuevo registro, como la persona: hoy, o la fecha que se diga."""
     pg.evaluate("SRP.app.mostrarVista('registrar')")
     pg.wait_for_timeout(500)
     if pg.is_hidden('#panel-iniciar-jornada'):
         pg.click('#btn-jornada-cambiar'); pg.wait_for_timeout(200); pg.click('#btn-cambiar-nueva'); pg.wait_for_timeout(300)
     pg.fill('#ini-nombre', nombre)
-    pg.fill('#ini-fecha', HOY)
+    pg.fill('#ini-fecha', fecha or HOY)
     pg.select_option('#ini-programa', 'p-refor')
     pg.fill('#ini-meta', '10')
     pg.click('#btn-ini-detectar'); pg.wait_for_timeout(900)   # la jornada se ubica antes de iniciarla
@@ -262,6 +264,14 @@ LIMPIAR_AJENO = """async hoy => { const u = SRP.sesion.usuario, j = crypto.rando
   await SRP.almacen.quitarLocal('envios', n);
   await SRP.cola.limpiar();
   return [conAlta, await hay()]; }"""
+# La ventana de confirmar: título, pregunta, puntos y botones a la vista
+CONFIRMAR = """() => ({ titulo: document.getElementById('dlg-confirmar-titulo').textContent, pregunta: document.getElementById('dlg-confirmar-texto').textContent,
+    puntos: [...document.querySelectorAll('#dlg-confirmar-puntos li')].map(li => li.textContent),
+    botones: [...document.querySelectorAll('#dlg-confirmar .acciones button:not([hidden])')].map(b => b.textContent.trim()) })"""
+# La franja de la hora del teléfono
+RELOJ = "() => { const f = document.getElementById('franja-reloj'); return [!f.hidden, f.textContent.trim().replace(/\\s+/g, ' ')]; }"
+MESES = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
+fecha_corta = lambda iso: iso[8:10] + '-' + MESES[int(iso[5:7]) - 1] + '-' + iso[:4]
 # Lo que no sale aunque hay conexión: la pastilla y la guía, como si llevara más del tiempo de aviso
 ATORADO = """async () => { SRP.cola.sinSalir.set(-1, Date.now() - (SRP.CONFIG.MINUTOS_ENVIO_ATORADO + 1) * 60000);
   await SRP.conexion.refrescar(); await SRP.envio.pintarGuia();
@@ -786,8 +796,90 @@ def main():
             otra.close()
             esperar_remoto(pg)
 
+            # ---------- Las fechas ----------
+            # Ninguna antes del 01-OCT-2024, cuando empezó el programa: tampoco el año tecleado con dos cifras
+            pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(500)
+            if pg.is_hidden('#panel-iniciar-jornada'):
+                pg.click('#btn-jornada-cambiar'); pg.wait_for_timeout(200); pg.click('#btn-cambiar-nueva'); pg.wait_for_timeout(300)
+            pg.fill('#ini-nombre', 'Jornada de las fechas'); pg.select_option('#ini-programa', 'p-refor'); pg.fill('#ini-meta', '5')
+            pg.click('#btn-ini-detectar'); pg.wait_for_timeout(900)
+            pg.fill('#ini-fecha', '0026-10-19'); pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(500)
+            e = pg.evaluate("() => (document.getElementById('ini-fecha-error') || {}).textContent || ''")
+            ok(e.strip() == 'La fecha no puede ser anterior al 01-OCT-2024, cuando empezó el programa.' and pg.is_visible('#panel-iniciar-jornada'),
+               'una fecha con el año de dos cifras (0026) no inicia la jornada: lo dice en su campo: %s' % e)
+            # Una de hace más de 30 días se confirma: «Corregirla» vuelve al campo, «Sí, es correcta» la inicia
+            vieja = (datetime.date.fromisoformat(HOY) - datetime.timedelta(days=40)).isoformat()
+            pg.fill('#ini-fecha', vieja); pg.click('#btn-iniciar-jornada'); pg.wait_for_selector('#dlg-confirmar[open]')
+            c = pg.evaluate(CONFIRMAR)
+            pg.click('#btn-confirmar-no'); pg.wait_for_timeout(400)
+            corregir_fecha = [pg.is_visible('#panel-iniciar-jornada'), pg.evaluate("() => document.activeElement.id")]
+            pg.click('#btn-iniciar-jornada'); pg.wait_for_selector('#dlg-confirmar[open]'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(900)
+            j7 = pg.evaluate("SRP.activa.jornada && SRP.activa.jornada.id")
+            esperar_cola(pg, 1)
+            ok(c == {'titulo': '¿La fecha es correcta?', 'pregunta': 'El %s fue hace 40 días.' % fecha_corta(vieja), 'puntos': [], 'botones': ['Sí, es correcta', 'Corregirla']}
+               and corregir_fecha == [True, 'ini-fecha'] and pg.evaluate(LOCAL, j7)['jornada']['fecha'] == vieja and apoyo('leer', {'id': j7})['jornada']['estatus'] == 'abierta',
+               'una fecha de hace más de 30 días pregunta si es correcta; «Corregirla» vuelve al campo y «Sí, es correcta» inicia la jornada: %s · %s' % (c, corregir_fecha))
+            # Sus árboles llevan esa fecha sin volver a preguntar
+            c7 = registrar(pg)
+            esperar_cola(pg, 1)
+            ok(c7 and pg.evaluate(LOCAL, c7)['arbol']['fecha_plantacion'] == vieja and apoyo('leer', {'id': c7})['arbol'] is not None,
+               'el árbol de esa jornada lleva su fecha y llega, sin volver a preguntar')
+
+            # La carga masiva tampoco acepta fechas antes del programa ni años absurdos: la revisión, sin cargar nada
+            g = pg.evaluate("""() => SRP.carga.revisar([['Latitud', 'Longitud', 'Nombre científico', 'Fecha de plantación', 'Programa', 'Tipo de institución', 'Institución'],
+                [19.3571, -99.0601, 'Fraxinus uhdei', '2024-09-30', 'Reforestación Urbana', 'Alcaldía', 'Iztapalapa'],
+                [19.3572, -99.0602, 'Fraxinus uhdei', '19/10/1026', 'Reforestación Urbana', 'Alcaldía', 'Iztapalapa'],
+                [19.3573, -99.0603, 'Fraxinus uhdei', 1, 'Reforestación Urbana', 'Alcaldía', 'Iztapalapa']], {}).problemas.filter(p => p.columna === 'Fecha de plantación').map(p => p.problema)""")
+            ok(len(g) == 3 and all('es anterior al 01-OCT-2024, cuando empezó el programa.' in x for x in g),
+               'la carga masiva rechaza el 30-SEP-2024, el año 1026 y el número 1 de Excel (31-DIC-1899): %s' % g)
+
+            # La hora del teléfono que no cuadra con la del servidor se dice arriba, con cuánto y qué hacer
+            def servidor_adelantado(route):
+                r = route.fetch()
+                cabeceras = dict(r.headers); cabeceras['date'] = email.utils.formatdate(time.time() + 3 * 86400, usegmt=True)
+                route.fulfill(response=r, headers=cabeceras)
+            ctx.route('**/api/srp/acceso/yo', servidor_adelantado)
+            pg.evaluate("() => SRP.servidor.pedir('GET', '/acceso/yo')"); pg.wait_for_timeout(300)
+            f1 = pg.evaluate(RELOJ)
+            ctx.unroute('**/api/srp/acceso/yo')
+            pg.evaluate("() => SRP.servidor.pedir('GET', '/acceso/yo')"); pg.wait_for_timeout(300)
+            f2 = pg.evaluate(RELOJ)
+            ok(f1 == [True, 'La hora de este teléfono está mal: va 3 días atrasada. Corríjala en los ajustes del teléfono: las fechas de los registros se toman de ella.'] and f2[0] is False,
+               'con la hora del teléfono 3 días atrás de la del servidor, la franja lo dice; con la hora bien, se va: %s · %s' % (f1, f2))
+
+            # «Hoy» es el de la Ciudad de México aunque el teléfono esté en otra zona; con la aplicación abierta de un
+            # día para otro, el árbol de la mañana lleva la fecha de hoy y su campo se ve
+            ayer = (datetime.date.fromisoformat(HOY) - datetime.timedelta(days=1)).isoformat()
+            ctx3 = b.new_context(service_workers='block', timezone_id='Asia/Tokyo', geolocation={'latitude': 19.357, 'longitude': -99.06, 'accuracy': 5}, permissions=['geolocation'])
+            ctx3.route('**/js/config.js*', config_real)
+            ctx3.clock.install(time=datetime.datetime.fromisoformat(ayer + 'T23:50:00-06:00'))
+            p3 = ctx3.new_page()
+            p3.on('pageerror', lambda e: errores.append(str(e)))
+            abrir(p3)
+            zona = p3.evaluate("() => [SRP.util.fechaHoy(), SRP.envio.hora(new Date().toISOString())]")
+            ok(zona == [ayer, '23:50'], 'con el teléfono en la zona de Tokio, «hoy» y la hora son los de la Ciudad de México: %s' % zona)
+            entrar(p3, CABO['correo'], CLAVE)
+            j8 = iniciar_jornada(p3, 'Jornada de medianoche', ayer)
+            esperar_cola(p3)
+            d1 = registrar(p3)
+            esperar_cola(p3)
+            p3.clock.fast_forward('01:00:00')
+            # Sin salir de Nuevo registro, como queda la aplicación de noche
+            p3.click('#btn-ubicacion'); p3.wait_for_timeout(900)
+            p3.fill('#campo-especie', 'ahuehu'); p3.wait_for_timeout(200)
+            p3.dispatch_event('.combo-opcion[data-id="ESP-0070"]', 'mousedown'); p3.wait_for_timeout(150)
+            p3.click('#form-plantacion button[type=submit]'); p3.wait_for_timeout(800)
+            if p3.is_visible('#dlg-confirmar'): p3.click('#btn-confirmar-si'); p3.wait_for_timeout(800)
+            if p3.is_visible('#dlg-resumen'): p3.click('#btn-resumen-guardar'); p3.wait_for_timeout(700)
+            d2 = p3.evaluate("SRP.formulario.estado.ultimoGuardado")
+            esperar_cola(p3)
+            m = [p3.evaluate(LOCAL, d1)['arbol']['fecha_plantacion'], p3.evaluate(LOCAL, d2)['arbol']['fecha_plantacion'], p3.is_visible('#caja-fecha-arbol'), p3.evaluate("() => SRP.util.fechaHoy()")]
+            ok(d2 != d1 and m == [ayer, HOY, True, HOY] and apoyo('leer', {'id': d2})['arbol'] is not None,
+               'el árbol de antes de medianoche lleva la fecha de ayer y el de después la de hoy, con su campo a la vista; llega: %s' % m)
+            ctx3.close()
+
             # Las jornadas de esta parte, cerradas y con su reporte, salen del teléfono con sus árboles
-            for j in (j3, j4, j6):
+            for j in (j3, j4, j6, j7):
                 cerrar_y_reportar(pg, j)
             esperar_cola(pg, 1)
 
@@ -833,9 +925,6 @@ def main():
             ok(dentro(pg), 'y se vuelve a entrar con la contraseña')
 
             # Con algo sin enviar, «Cerrar sesión» lo dice antes y ofrece enviarlo: aquí, el cambio rechazado de a2
-            CONFIRMAR = """() => ({ titulo: document.getElementById('dlg-confirmar-titulo').textContent, pregunta: document.getElementById('dlg-confirmar-texto').textContent,
-                puntos: [...document.querySelectorAll('#dlg-confirmar-puntos li')].map(li => li.textContent),
-                botones: [...document.querySelectorAll('#dlg-confirmar .acciones button:not([hidden])')].map(b => b.textContent.trim()) })"""
             pg.click('#btn-cuenta'); pg.click('#btn-cerrar-sesion')
             pg.wait_for_selector('#dlg-confirmar[open]')
             c = pg.evaluate(CONFIRMAR)
@@ -1035,7 +1124,7 @@ def main():
             with open(archivo, 'w', encoding='utf-8', newline='') as f:
                 f.write('Latitud,Longitud,Nombre científico,Fecha de plantación,Programa,Tipo de institución,Institución\n')
                 for i in range(4):
-                    f.write('%.6f,%.6f,Taxodium mucronatum,2024-05-10,Reforestación Urbana,Alcaldía,Iztapalapa\n' % (19.35 + (int(CORRIDA) % 997) / 100000 + i * 0.0001, -99.07 - i * 0.0001))
+                    f.write('%.6f,%.6f,Taxodium mucronatum,2024-11-10,Reforestación Urbana,Alcaldía,Iztapalapa\n' % (19.35 + (int(CORRIDA) % 997) / 100000 + i * 0.0001, -99.07 - i * 0.0001))
             nombre = os.path.basename(archivo)
             pg.evaluate("SRP.app.mostrarVista('carga')"); pg.wait_for_timeout(1500)
             pg.set_input_files('#carga-archivo', archivo); pg.wait_for_timeout(2500)

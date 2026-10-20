@@ -403,6 +403,8 @@ SRP.formulario = {
     if (!f) errores.push(['campo-fecha', SRP.activa.jornada || this.estado.editando ? 'Indique la fecha de plantación.' : 'No hay jornada activa: inicie una antes de registrar.']);
     else if (f > SRP.util.fechaHoy()) errores.push(['campo-fecha', 'La fecha de plantación no puede ser posterior a hoy.']);
     else if (campo.min && f < campo.min) errores.push(['campo-fecha', 'La fecha de plantación no puede ser anterior al inicio de la jornada (' + SRP.util.formatearFecha(campo.min) + ').']);
+    // Al corregir un árbol, la mínima vale sólo si su fecha cambia
+    else if (SRP.util.antesDelPrograma(f) && !(this.estado.editando && f === this.estado.editando.fecha_plantacion)) errores.push(['campo-fecha', SRP.util.textoAntesDelPrograma('La fecha de plantación')]);
     return errores;
   },
 
@@ -454,9 +456,14 @@ SRP.formulario = {
      se abre la ficha con esos avisos arriba; si no, se guarda de una vez. */
   async enviarFormulario() {
     SRP.mapa.detenerAfinado();   // lo que se revisa y se guarda es el punto de este momento
+    SRP.activa.alDia();          // con la aplicación abierta desde ayer, la fecha del árbol es la de hoy
     const errores = this.validar();
     this.mostrarErrores(errores);
     if (errores.length) return;
+    // Una fecha nueva o cambiada de hace más de un mes se confirma; la que propone la jornada, no
+    const fecha = this.el('campo-fecha').value;
+    const cambio = this.estado.editando ? fecha !== this.estado.editando.fecha_plantacion : !this.estado.sustitucion && fecha !== SRP.activa.fechaPropuesta(SRP.activa.jornada);
+    if (cambio && !(await SRP.activa.confirmarFechaVieja(fecha))) { this.el('campo-fecha').focus(); return; }
     // Doble toque en Guardar: un guardado con GPS de por medio tarda un instante, y un
     // segundo toque antes de que el primero termine no debe crear dos árboles ni dos avisos.
     const boton = this.el('btn-revisar');

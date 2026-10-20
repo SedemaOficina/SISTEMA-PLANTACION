@@ -2,8 +2,8 @@ import type pg from "pg";
 import { anotarCambio } from "./bitacora";
 import { capacidadesDe, puede, SEDEMA } from "./permisos";
 import {
-  AHORA, autoresDe, comoObjeto, conVigente, esFecha, esVigente, fechaCorta, filaDe, hoyEnLaCiudad, idDe, instante, jornadaEliminada, puntoDe, rechazo, recibido,
-  repetida, seElimino, sinPermiso, texto, textoFolio, ubicar, versionVieja, congelarPrioridad, type Errores, type Fila, type Punto, type Resultado, type Territorio,
+  AHORA, autoresDe, comoObjeto, conVigente, antesDelPrograma, esFecha, esVigente, fechaCorta, filaDe, hoyEnLaCiudad, idDe, instante, jornadaEliminada, puntoDe, rechazo, recibido,
+  noAntes, repetida, seElimino, sinPermiso, texto, textoFolio, ubicar, versionVieja, congelarPrioridad, type Errores, type Fila, type Punto, type Resultado, type Territorio,
 } from "./recepcion-apoyo";
 import type { Usuario } from "./sesiones";
 
@@ -90,6 +90,7 @@ export async function crearJornada(c: pg.PoolClient, u: Usuario, d: Record<strin
   const fecha = d.fecha;
   if (!esFecha(fecha)) errores.push(["fecha", "Indique la fecha de la jornada."]);
   else if (fecha > (await hoyEnLaCiudad(c))) errores.push(["fecha", "La fecha no puede ser posterior a hoy."]);
+  else if (antesDelPrograma(fecha)) errores.push(["fecha", noAntes("La fecha")]);
   if (errores.length) return rechazo(id, "DATOS_INVALIDOS", "Revise los datos de la jornada.", errores);
 
   const t = territorio as Territorio, p = punto as Punto;
@@ -180,6 +181,7 @@ export async function editarJornada(c: pg.PoolClient, u: Usuario, d: Record<stri
   const fecha = nuevo.fecha;
   if (!esFecha(fecha)) errores.push(["fecha", "Indique la fecha."]);
   else if (fecha > (await hoyEnLaCiudad(c))) errores.push(["fecha", "La fecha no puede ser posterior a hoy."]);
+  else if (fecha !== actual.fecha && antesDelPrograma(fecha)) errores.push(["fecha", noAntes("La fecha")]);
   if (errores.length) return conVigente(rechazo(id, "DATOS_INVALIDOS", "Revise los datos de la jornada.", errores), actual);
   const cambiaFecha = campos.includes("fecha"), cambiaPrograma = campos.includes("programa_id");
   if (cambiaFecha) {

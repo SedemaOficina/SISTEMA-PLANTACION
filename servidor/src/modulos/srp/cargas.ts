@@ -5,7 +5,7 @@ import { anotarCambio } from "./bitacora";
 import { responder } from "./errores";
 import { valorParametro } from "./parametros";
 import { exigirPermiso } from "./permisos";
-import { AHORA, asignarFolio, congelarPrioridad, esFecha, hoyEnLaCiudad, idDe, type Fila, type Territorio } from "./recepcion-apoyo";
+import { AHORA, antesDelPrograma, asignarFolio, congelarPrioridad, esFecha, hoyEnLaCiudad, idDe, noAntes, type Fila, type Territorio } from "./recepcion-apoyo";
 import { PROGRAMA_SOLICITUD } from "./recepcion-jornadas";
 import type { Usuario } from "./sesiones";
 import { enTransaccion } from "./transaccion";
@@ -189,7 +189,7 @@ async function guardarTanda(c: pg.PoolClient, u: Usuario, lote: string, t: { arc
   for (const [id, j] of previas) if (j.carga_id !== lote) return { codigo: "DATOS_INVALIDOS", mensaje: "La jornada " + id + " no es de este lote." };
   for (const j of nuevas.values()) {
     if (previas.has(j.id)) nuevas.delete(j.id);
-    else if (!esFecha(j.fecha) || j.fecha > hoy) return { codigo: "DATOS_INVALIDOS", mensaje: "Una jornada de la tanda no tiene una fecha válida." };
+    else if (!esFecha(j.fecha) || j.fecha > hoy || antesDelPrograma(j.fecha)) return { codigo: "DATOS_INVALIDOS", mensaje: "Una jornada de la tanda no tiene una fecha válida." };
   }
   // Catálogos: la institución y el programa de cada jornada, y la especie de cada árbol
   const existe = async (tabla: string, ids: string[]) => new Set((await c.query<{ id: string }>(`SELECT id FROM srp.${tabla} WHERE id = ANY($1::text[])`, [ids])).rows.map((x) => x.id));
@@ -249,6 +249,7 @@ async function guardarTanda(c: pg.PoolClient, u: Usuario, lote: string, t: { arc
     if (!especies.has(a.especie_id)) problemas.push(problema(a.renglon, "Nombre científico", "La especie no está en el catálogo de especies."));
     if (!esFecha(a.fecha_plantacion)) problemas.push(problema(a.renglon, "Fecha de plantación", "Fecha no válida."));
     else if (a.fecha_plantacion > hoy) problemas.push(problema(a.renglon, "Fecha de plantación", "La fecha es posterior a hoy."));
+    else if (antesDelPrograma(a.fecha_plantacion)) problemas.push(problema(a.renglon, "Fecha de plantación", noAntes("La fecha")));
     else if (j && a.fecha_plantacion !== j.fecha) problemas.push(problema(a.renglon, "Fecha de plantación", "No es la fecha de su jornada."));
     if (problemas.length === antes) {
       const h = huella(a), usados = enElLote.get(h) ?? 0;

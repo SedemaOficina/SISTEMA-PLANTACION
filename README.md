@@ -195,6 +195,7 @@ js/                     La aplicación, un archivo por tema
   remoto.js             Lo que viene del servidor: catálogos, cuentas y parámetros, que se quedan; lo enviado, sólo en memoria; los avisos cuando falta
   cola.js               La cola de envío con datos reales: qué se anota con cada cambio, cómo se envía y qué hace el teléfono con la respuesta
   turno.js              Una pestaña a la vez: la que quedó atrás se detiene con su aviso y «Usar aquí»
+  reloj.js              La hora del teléfono contra la del servidor: una franja ámbar si no cuadra
   rechazos.js           Lo que el servidor no aceptó: la ventana «Revisar» y lo que la persona decide con cada cambio
   duplicados.js         La bandeja de posibles duplicados entre instituciones, que revisa la Administración global
   sesion.js             Acceso: simulado con datos de prueba; con datos reales, las cuentas del servicio (correo y contraseña)

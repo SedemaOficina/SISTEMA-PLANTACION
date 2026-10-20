@@ -5632,3 +5632,82 @@ No se probó:
 
 **Siguiente paso.** El bloque 2 del plan: las fechas (fecha mínima del 01-OCT-2024, aviso a los 30 días, el
 cambio de día con la aplicación abierta y la hora del teléfono).
+
+## Bloque 237 — Las fechas (19-10-2026)
+
+**Versión 1.0.2.** El bloque 2 del plan de corrección de la auditoría del 19-10-2026
+(`docs/AUDITORIA-2026-10-19.md`, § 11), con las decisiones de Liber sobre la fecha mínima (D317).
+
+| Hallazgo | Qué pasaba | Qué pasa ahora |
+|---|---|---|
+| E3-R2-01 | Se aceptaba cualquier año: «19/10/26» quedaba como 0026, y también 1900; Mi avance «Todo» pasaba a 2,001 casillas | Nada antes del 01-OCT-2024, cuando empezó el programa, en la pantalla, la carga masiva y el servidor; en campo, una fecha de hace más de 30 días pide confirmación |
+| E3-R3-01 | Una fecha imposible (mes 13, día 45) daba error interno y, en la carga masiva, tiraba la tanda | Es una fecha no válida, con su mensaje |
+| E3-R1-04 | Con la aplicación abierta de un día para otro, el árbol de la mañana quedaba con la fecha de ayer, con su campo oculto | Antes de guardar, y al volver a la aplicación, la fecha se pone al día y el campo se ve |
+| E3-R1-05 | Con el reloj o la zona del teléfono distintos de los de la Ciudad de México, las fechas se rechazaban sin decir por qué, o se aceptaban falsas | «Hoy» y la hora son los de la Ciudad de México; si la hora del teléfono difiere de la del servidor, una franja ámbar lo dice |
+| E3-R2-18 | Las fechas de Excel anteriores al 1-MAR-1900 se leían con un día menos | Quedan antes de la fecha mínima y no entran |
+| `aFecha` y la serie | Un año de dos cifras se tomaba como 19xx, con el día de la semana equivocado, y la casilla del año no casaba | Se arma con `setFullYear`, y las casillas, con el año a cuatro cifras |
+
+**Qué cambió.**
+- `js/config.js`: `FECHA_MINIMA` (01-OCT-2024), `DIAS_AVISO_FECHA` (30), `ZONA` (America/Mexico_City) y `MINUTOS_RELOJ`
+  (10).
+- `js/util.js`: «hoy» en la zona de la Ciudad de México (`diaDe`), los días desde una fecha, la fecha mínima y su
+  texto; `fechaLarga` con el año como viene.
+- `js/indicadores.js`: `aFecha` con `setFullYear`; el día de una marca de tiempo en la zona de la Ciudad; las
+  casillas por año y por mes con el año a cuatro cifras.
+- `js/envio.js`: el día y la hora en la zona de la Ciudad, también para el atraso de la tarde.
+- `js/reloj.js` (nuevo): la hora del teléfono contra la de cada respuesta del servicio, y su franja.
+- `js/servidor.js`: anota la hora de cada respuesta del servicio.
+- `js/jornada-activa.js`: la fecha mínima y el aviso al iniciar; la fecha que propone la jornada; la fecha del
+  árbol al día con la aplicación abierta de un día para otro.
+- `js/jornadas.js`, `js/formulario.js` y `js/registros.js`: la fecha mínima, sólo si la fecha cambia, y el aviso
+  de los 30 días al editar la jornada y la fecha del árbol.
+- `js/carga.js`: el renglón con fecha anterior al programa no entra, y la plantilla lo dice.
+- `index.html` y `css/estilos.css`: la franja de la hora.
+- Servidor (`recepcion-apoyo.ts`, `recepcion-jornadas.ts`, `recepcion-arboles.ts` y `cargas.ts`): `esFecha` ya no
+  truena; la fecha mínima en jornadas, árboles, sustituciones y carga masiva.
+- Pruebas: `servidor/pruebas/recepcion.test.js` y `cargas.test.js` (la fecha mínima, las fechas imposibles y la
+  corrección vacía), `pruebas/prueba_conexion.py` (comprobaciones nuevas, abajo) y `pruebas/prueba.py` (las
+  fechas de la carga masiva de prueba, de julio a noviembre de 2024).
+
+**Pantalla: qué se agregó y qué se quitó.** Lo aprobó Liber el 19-10-2026, con el antes y el después.
+- Una fecha antes del 01-OCT-2024 dice en su campo «La fecha no puede ser anterior al 01-OCT-2024, cuando
+  empezó el programa.»; en la carga masiva, «La fecha … es anterior al 01-OCT-2024, cuando empezó el programa.».
+- Una fecha nueva o cambiada de hace más de 30 días pregunta «¿La fecha es correcta? · El 09-SEP-2026 fue hace 40
+  días.», con «Sí, es correcta» y «Corregirla». Una vez confirmada, los árboles que siguen con ella no vuelven a
+  preguntar.
+- Con la hora del teléfono mal, una franja ámbar arriba: «La hora de este teléfono está mal: va 3 días atrasada.
+  Corríjala en los ajustes del teléfono: las fechas de los registros se toman de ella.».
+- Las instrucciones de la plantilla de carga dicen desde cuándo se aceptan fechas.
+- No se quitó nada.
+
+**Verificación.**
+- Servidor: `npm test`, 96 de 96, con comprobaciones nuevas:
+  - la fecha mínima: 0026, 1900 y 30-SEP-2024 no entran y el 01-OCT-2024 sí;
+  - las fechas imposibles, en el envío y en la carga masiva;
+  - la corrección vacía.
+- Conexión, con el repositorio: `prueba_conexion.py`, 112 de 112; antes, 105. Lo nuevo:
+  - el año de dos cifras;
+  - el aviso de los 30 días con «Corregirla» y «Sí, es correcta»;
+  - el árbol de esa jornada sin volver a preguntar;
+  - la carga masiva;
+  - la franja de la hora con el servidor tres días adelante;
+  - la zona de Tokio;
+  - el cruce de la medianoche con la aplicación abierta.
+- Conexión, con la copia real: `prueba_conexion.py --app`, 113 de 113; antes, 106.
+- Aplicación: `prueba.py`, 0 fallas en 1,441. Dos corridas anteriores, con el equipo ocupado, tuvieron una falla de
+  tiempos cada una, en puntos distintos: ver «Enviando…» a los 700 ms de guardar, e iniciar una jornada con la
+  demostración cargada. Ese paso, solo, pasó 2 de 2, y la corrida siguiente, sola, 0 fallas.
+- Auditorías: 144 sin hallazgos; hoja de estilos sin hallazgos; `revisar.py`, los mismos 12 avisos falsos (A1-04).
+
+`prueba.py` se puso al día en dos cosas:
+- las fechas de su carga masiva de prueba, de julio a noviembre de 2024;
+- al iniciar o editar una jornada de hace meses, responde «Sí, es correcta».
+
+No se probó:
+- en teléfonos reales;
+- detrás del servidor web del SIA. Si agrega su propia cabecera Date, la aplicación toma la primera, y así se probó
+  con el servidor local, que deja dos;
+- E3-R1-04 contra el código anterior: la prueba nueva repite su secuencia.
+
+**Siguiente paso.** Liber decide si sigue con el bloque 3 del plan, el servidor: las cargas intercaladas, la última
+Administración global, la versión de cuentas y catálogos y los largos.

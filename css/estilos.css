@@ -794,6 +794,11 @@ img[data-foto-servidor][hidden] { display: none; }
 .franja-envio[hidden] { display: none; }
 .franja-envio p { flex: 1 1 16rem; margin: 0; }
 .franja-envio strong { color: var(--error); }
+/* La hora del teléfono que no cuadra con la del servidor: en ámbar, porque pide atención y no es una falla del envío */
+.franja-reloj { margin: var(--e-3) max(var(--e-4), calc((100% - var(--ancho-max-tabla)) / 2)) 0; padding: var(--e-3) var(--e-4);
+  background: var(--editar-fondo); border-left: 4px solid var(--editar-borde); color: var(--editar); font-size: var(--t-s); line-height: 1.5; }
+.franja-reloj[hidden] { display: none; }
+.franja-reloj p { margin: 0; }
 /* Lo que el servidor no aceptó: cada cambio con su borde rojo, qué se cambió en gris y el motivo */
 .marca-envio.marca-rechazo { background: var(--error-fondo); color: var(--error); }
 .rechazos-lista { list-style: none; margin: var(--e-3) 0 0; padding: 0; display: grid; gap: var(--e-3); }

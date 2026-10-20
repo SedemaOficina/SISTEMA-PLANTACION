@@ -83,6 +83,12 @@ def entrar_como(pagina, uid):
     pagina.evaluate("id => { const s = document.getElementById('sel-usuario-prueba'); if (![...s.options].some(o => o.value === id)) s.add(new Option(id, id)); }", uid)
     pagina.select_option('#sel-usuario-prueba', uid); pagina.click('#btn-entrar-prueba')
 
+def fecha_correcta(pg):
+    """Una fecha de hace más de 30 días pregunta si es correcta: se responde que sí, como quien la eligió."""
+    pg.wait_for_timeout(300)
+    if pg.is_visible('#dlg-confirmar') and pg.inner_text('#dlg-confirmar-titulo') == '¿La fecha es correcta?':
+        pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
+
 def iniciar_jornada(pg, nombre, fecha=None, comentarios='', programa='p-refor'):
     """Declara una jornada desde Nuevo registro. Si ya hay una activa, abre otra con «Cambiar de jornada»."""
     if not pg.is_visible('#vista-registrar'): pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(400)
@@ -92,7 +98,7 @@ def iniciar_jornada(pg, nombre, fecha=None, comentarios='', programa='p-refor'):
     pg.select_option('#ini-programa', programa)   # el programa es de la jornada
     pg.fill('#ini-meta', '10')                      # y la meta de árboles también
     if comentarios: pg.fill('#ini-comentarios', comentarios)
-    pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(500)
+    pg.click('#btn-iniciar-jornada'); fecha_correcta(pg); pg.wait_for_timeout(500)
     return pg.evaluate("SRP.activa.jornada && SRP.activa.jornada.id")
 
 def reporte_de(pg, nombre=None):
@@ -1061,11 +1067,11 @@ with sync_playwright() as p:
     otro_dia=(datetime.date.fromisoformat(M['f'])-datetime.timedelta(days=1)).isoformat()
     pg.fill('#ej-nombre','Parque Hundido, sección norte'); pg.select_option('#ej-programa','p-refor'); pg.fill('#ej-meta','3'); pg.fill('#ej-fecha',otro_dia); pg.dispatch_event('#ej-fecha','change'); pg.wait_for_timeout(200)
     ok(pg.is_visible('#ej-nota-fecha'),'al cambiar la fecha avisa que los árboles la heredan')
-    pg.click('#btn-ej-guardar'); pg.wait_for_timeout(900)
+    pg.click('#btn-ej-guardar'); fecha_correcta(pg); pg.wait_for_timeout(900)
     ed=pg.evaluate("async () => { const j = await SRP.almacen.uno('jornadas', '%s'); const r = (await SRP.almacen.todos('plantaciones')).filter(x => x.jornada_id === j.id); return [j.nombre, j.arboles_previstos, j.fecha, r.map(x => x.fecha_plantacion), (await SRP.bitacora.deEntidad(j.id)).some(h => h.detalle && h.detalle.includes('Campos: nombre, programa_id, arboles_previstos, fecha'))]; }" % M['jids'][1])
     ok(ed[0]=='Parque Hundido, sección norte' and ed[1]==3 and ed[2]==otro_dia and all(f==otro_dia for f in ed[3]) and ed[4] and pg.inner_text('#jornada-titulo')=='Parque Hundido, sección norte' and pg.inner_text('#jornada-meta')=='3',
        'la jornada guarda nombre, meta y fecha, sus árboles toman la fecha, queda en el historial y la ficha se repinta: %s' % ed[:3])
-    pg.click('#btn-jornada-editar'); pg.wait_for_timeout(300); pg.fill('#ej-nombre','Parque Hundido'); pg.fill('#ej-meta','2'); pg.fill('#ej-fecha',M['f']); pg.click('#btn-ej-guardar'); pg.wait_for_timeout(900)
+    pg.click('#btn-jornada-editar'); pg.wait_for_timeout(300); pg.fill('#ej-nombre','Parque Hundido'); pg.fill('#ej-meta','2'); pg.fill('#ej-fecha',M['f']); pg.click('#btn-ej-guardar'); fecha_correcta(pg); pg.wait_for_timeout(900)
     ok(pg.inner_text('#jornada-titulo')=='Parque Hundido' and pg.evaluate("async () => (await SRP.almacen.uno('jornadas', '%s')).fecha" % M['jids'][1])==M['f'],'y se deja como estaba')
     # Eliminar una jornada vacía
     vacia=iniciar_jornada(pg, 'Jornada por error', M['f'])
@@ -4401,7 +4407,7 @@ with sync_playwright() as p:
     for _r in [[19.3571,-99.0601,'Fraxinus uhdei',_dt51.datetime(2025,3,10),'Reforestación Urbana','Alcaldía','Iztapalapa'],
                [19.3573,99.0603,'fraxinus  UHDEI','2025-03-10','Reforestación Urbana','Alcaldía','Alcaldía Iztapalapa'],
                ['19,3575','-99,0605','Fraxinus uhdei','10/03/2025','REFOR_URBANA','alcaldia','iztapalapa'],
-               [19.29,-99.17,'Fraxinus uhdei',_dt51.datetime(2024,7,1),'Palmeras','Gobierno de la CDMX','PAOT'],
+               [19.29,-99.17,'Fraxinus uhdei',_dt51.datetime(2024,11,1),'Palmeras','Gobierno de la CDMX','PAOT'],
                [19.43,-99.13,'Arbolus inventadus','2025-01-01','Reforestación Urbana','Gobierno de la CDMX','SEDEMA'],
                [20.5,-99.13,'Fraxinus uhdei','2025-01-01','Reforestación Urbana','Gobierno de la CDMX','SEDEMA'],
                [19.43,-99.13,'Fraxinus uhdei','2099-01-01','Reforestación Urbana','Gobierno de la CDMX','SEDEMA'],
@@ -4451,7 +4457,7 @@ with sync_playwright() as p:
     pg51.set_input_files('#carga-archivo', CAR51); pg51.wait_for_timeout(1500)
     r51=pg51.inner_text('#carga-resumen')
     pr51=pg51.eval_on_selector_all('.carga-problemas .cmb-item','l=>l.map(li=>[li.dataset.tipo, li.innerText.replace(/\\n/g," | ")])')
-    ok('4 árboles listos para cargar, 1 con aviso' in r51 and '6 renglones con error' in r51 and '2 jornadas cerradas de 2 instituciones' in r51 and 'del 01-JUL-2024 al 10-MAR-2025' in r51,
+    ok('4 árboles listos para cargar, 1 con aviso' in r51 and '6 renglones con error' in r51 and '2 jornadas cerradas de 2 instituciones' in r51 and 'del 01-NOV-2024 al 10-MAR-2025' in r51,
        'la revisión dice cuántos árboles están listos, cuántos renglones tienen error y qué jornadas se formarán: %s' % r51.replace('\n',' | '))
     ok([x[0] for x in pr51]==['aviso','error','error','error','error','error','error'] and 'no está marcado hoy para Gobierno de la CDMX' in pr51[0][1] and 'Arbolus inventadus' in pr51[1][1]
        and 'fuera de la Ciudad' in pr51[2][1] and 'posterior a hoy' in pr51[3][1] and 'Programa X' in pr51[4][1] and 'Otra Empresa SA' in pr51[5][1] and 'Repite el renglón 2' in pr51[6][1],
@@ -4470,7 +4476,7 @@ with sync_playwright() as p:
       return { lotes: [...new Set(j.map(x => x.carga_id))].length, j: j.map(x => [x.nombre, x.fecha, x.organizacion_id, x.programa_id, x.estatus, x.cabo_id, x.arboles_previstos]).sort(),
         a: a.length, folios: a.every(x => SRP.folio.valido(x.folio)), origen: [...new Set(a.map(x => x.punto_origen))], cabo: [...new Set(a.map(x => x.cabo_id))],
         bit: b.map(x => [x.entidad_id === j[0].carga_id, x.detalle]) }; }""")
-    ok('Se formarán 2 jornadas cerradas' in cf51 and c51['lotes']==1 and c51['j']==[['Carga histórica · Iztapalapa','2025-03-10','o-alc-09007','p-refor','cerrada','u-admin-1',3],['Carga histórica · Tlalpan','2024-07-01','o-paot','p-palmeras','cerrada','u-admin-1',1]]
+    ok('Se formarán 2 jornadas cerradas' in cf51 and c51['lotes']==1 and c51['j']==[['Carga histórica · Iztapalapa','2025-03-10','o-alc-09007','p-refor','cerrada','u-admin-1',3],['Carga histórica · Tlalpan','2024-11-01','o-paot','p-palmeras','cerrada','u-admin-1',1]]
        and c51['a']==4 and c51['folios'] and c51['origen']==['manual'] and c51['cabo']==['u-admin-1'] and c51['bit']==[[True,'Archivo «carga_prueba.xlsx»: 4 árboles en 2 jornadas de 2 instituciones']],
        'al confirmar se cargan los 4 árboles en 2 jornadas cerradas de carga histórica, una por institución, fecha, programa y alcaldía, a nombre de quien carga, con folio y un renglón del lote en la bitácora: %s' % c51['j'])
     ok('Última carga: 4 árboles en 2 jornadas' in pg51.inner_text('#carga-hecha') and pg51.is_hidden('#carga-revision'),'al terminar se dice qué se cargó y la pantalla queda lista para otro archivo')
@@ -4587,7 +4593,7 @@ with sync_playwright() as p:
     REN54=['19.3571,-99.0601,Fraxinus uhdei,2025-03-10,Reforestación Urbana,Alcaldía,Iztapalapa',
            '19.3573,-99.0603,Fraxinus uhdei,2025-03-10,Reforestación Urbana,Alcaldía,Iztapalapa',
            '19.3575,-99.0605,Fraxinus uhdei,2025-03-10,Reforestación Urbana,Alcaldía,Iztapalapa',
-           '19.29,-99.17,Fraxinus uhdei,2024-07-01,Reforestación Urbana,Gobierno de la CDMX,PAOT']
+           '19.29,-99.17,Fraxinus uhdei,2024-11-01,Reforestación Urbana,Gobierno de la CDMX,PAOT']
     open(CAR54,'w',encoding='utf-8').write(ENC54+'\n'.join(REN54)+'\n')
     ctx54=b.new_context(viewport={'width':390,'height':844}, timezone_id='America/Mexico_City'); pg54=ctx54.new_page(); err54=[]
     pg54.on('pageerror', lambda e: err54.append(str(e))); pg54.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err54.append(m.text))
@@ -4618,7 +4624,7 @@ with sync_playwright() as p:
        and p54.count('se cargó antes un árbol con el mismo punto')==3 and pg54.is_hidden('#btn-carga-cargar'),
        'subir otra vez el mismo archivo no carga nada: cada renglón dice que ya está en el sistema y el resumen, que el archivo ya se había cargado: %s' % r54.replace('\n',' | '))
     # El archivo con un renglón nuevo: sólo entra el nuevo
-    open(CAR54,'w',encoding='utf-8').write(ENC54+'\n'.join(REN54+['19.2900,-99.1710,Fraxinus uhdei,2024-07-01,Reforestación Urbana,Gobierno de la CDMX,PAOT'])+'\n')
+    open(CAR54,'w',encoding='utf-8').write(ENC54+'\n'.join(REN54+['19.2900,-99.1710,Fraxinus uhdei,2024-11-01,Reforestación Urbana,Gobierno de la CDMX,PAOT'])+'\n')
     pg54.set_input_files('#carga-archivo', CAR54); pg54.wait_for_timeout(1200)
     r54=pg54.inner_text('#carga-resumen')
     ok('1 árbol listo' in r54 and 'de ellos, 4 ya estaban en el sistema' in r54 and 'ya se había cargado' not in r54,

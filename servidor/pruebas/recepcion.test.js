@@ -172,6 +172,11 @@ test('la jornada se rechaza con los mensajes del formulario de la aplicación', 
     ['fecha', 'La fecha no puede ser posterior a hoy.'],
   ]]);
   assert.deepEqual((await t.una('jornada.crear', jornada({ lat: 25.0, lng: -100.0 }))).errores, [['lat', 'El punto está fuera de la Ciudad de México. Revise las coordenadas.']]);
+  // Nada antes del 01-OCT-2024, cuando empezó el programa: tampoco el año tecleado con dos cifras. Una fecha imposible no truena
+  const NO_ANTES = 'La fecha no puede ser anterior al 01-OCT-2024, cuando empezó el programa.';
+  for (const fecha of ['0026-10-19', '1900-01-01', '2024-09-30']) assert.deepEqual((await t.una('jornada.crear', jornada({ fecha }))).errores, [['fecha', NO_ANTES]], fecha);
+  assert.equal((await t.una('jornada.crear', jornada({ fecha: '2024-10-01' }))).estado, 'recibido', 'el día en que empezó, sí');
+  for (const fecha of ['2026-13-45', '2026-00-00']) assert.deepEqual((await t.una('jornada.crear', jornada({ fecha }))).errores, [['fecha', 'Indique la fecha de la jornada.']], fecha);
   // Una empresa sólo usa los programas marcados para su tipo de institución
   const ext = await telefono(EXTERNO);
   assert.deepEqual((await ext.una('jornada.crear', jornada())).errores, [['programa_id', 'Ese programa no está disponible para su institución.']]);
@@ -194,6 +199,7 @@ test('el árbol se rechaza con los mensajes del formulario: fecha entre el inici
   assert.deepEqual(await errores({ fecha_plantacion: dias(-4) }), [['fecha_plantacion', 'La fecha de plantación no puede ser anterior al inicio de la jornada (' + fechaCorta(dias(-3)) + ').']]);
   assert.deepEqual(await errores({ fecha_plantacion: dias(1) }), [['fecha_plantacion', 'La fecha de plantación no puede ser posterior a hoy.']]);
   assert.deepEqual(await errores({ fecha_plantacion: '2026-02-30' }), [['fecha_plantacion', 'Indique la fecha de plantación.']]);
+  assert.deepEqual(await errores({ fecha_plantacion: '2026-13-45' }), [['fecha_plantacion', 'Indique la fecha de plantación.']], 'una fecha imposible no truena');
   assert.deepEqual(await errores({ especie_id: null, especie_otra: ' ' }), [['especie_id', 'Elija una especie de la lista o la opción «Otra especie».']]);
   assert.deepEqual(await errores({ especie_id: 'ESP-9999' }), [['especie_id', 'Elija una especie de la lista o la opción «Otra especie».']]);
   assert.deepEqual(await errores({ lat: null }), [['lat', 'Falta la ubicación: use el botón de ubicación, toque el mapa o capture coordenadas.']]);
@@ -311,6 +317,9 @@ test('editar aplica sólo lo que cambió sobre lo vigente: el territorio se reca
   const mala = await t.una('registro.editar', { id: A.id, version: r.version, cambios: { fecha_plantacion: dias(1), especie_id: null, especie_otra: '' } });
   assert.deepEqual(mala.errores, [['especie_id', 'Elija una especie de la lista o la opción «Otra especie».'], ['fecha_plantacion', 'La fecha de plantación no puede ser posterior a hoy.']]);
   assert.equal((await t.una('registro.editar', { id: uuid(), version, cambios: {} })).codigo, 'NO_EXISTE');
+  // Una corrección que al final dejó todo igual llega vacía: se reconoce y trae la versión vigente, que toma el cambio siguiente
+  const vacia = await t.una('registro.editar', { id: A.id, version, cambios: {} });
+  assert.deepEqual([vacia.estado, vacia.repetido, vacia.version], ['recibido', true, r.version]);
 });
 
 test('eliminar y restaurar se deshacen entre sí, cada uno sobre la versión vigente; el reporte de la jornada deja de estar vigente', async () => {

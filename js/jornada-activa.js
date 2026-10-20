@@ -37,6 +37,8 @@ SRP.activa = {
   iniciar() {
     SRP.solicitud.montar(this.el('ini-caja-solicitud'), 'ini');
     this.el('form-iniciar-jornada').addEventListener('submit', (e) => { e.preventDefault(); this.iniciarJornada(); });
+    // Al volver a la aplicación, quizá ya es otro día
+    document.addEventListener('visibilitychange', () => { if (!document.hidden && SRP.app.vista === 'registrar') this.alDia(); });
     this.el('btn-jornada-cambiar').addEventListener('click', () => this.abrirCambiar());
     this.el('btn-jornada-cerrar').addEventListener('click', () => this.cerrarJornada());
     // La jornada se corrige sin salir de «Nuevo registro»: el mismo formulario de su ficha
@@ -53,7 +55,7 @@ SRP.activa = {
       if (j) { this.jornada = j; this.el('dlg-cambiar-jornada').close(); await this.preparar(); SRP.util.anunciarSilencioso('Jornada activa: ' + j.nombre + '.'); }   // la franja ya lo dice a la vista
     });
     this.el('btn-iniciar-cancelar').addEventListener('click', () => { this.mostrarInicio(false); this.preparar(); });
-    this.el('ini-fecha').max = SRP.util.fechaHoy();
+    this.el('ini-fecha').max = SRP.util.fechaHoy(); this.el('ini-fecha').min = SRP.CONFIG.FECHA_MINIMA;
     this.el('btn-ini-hoy').addEventListener('click', () => {
       this.el('ini-fecha').value = SRP.util.fechaHoy();
       SRP.util.quitarErrorCampo(this.el('ini-fecha'));
@@ -110,6 +112,11 @@ SRP.activa = {
   fechaElegida: null,   // { id de la jornada, fecha }
   fechaInicial(j) {
     if (this.fechaElegida && this.fechaElegida.id === j.id) return SRP.util.fechaEnJornada(this.fechaElegida.fecha, j);
+    return this.fechaPropuesta(j);
+  },
+
+  // La que propone la jornada si nadie elige otra: su fecha el día en que se inicia; los días siguientes, hoy
+  fechaPropuesta(j) {
     const inicio = j.fecha_inicio ? SRP.indicadores.dia(j.fecha_inicio) : j.fecha;
     return inicio === SRP.util.fechaHoy() ? j.fecha : SRP.util.fechaHoy();
   },
@@ -171,6 +178,32 @@ SRP.activa = {
     const ok = await SRP.app.confirmar({ titulo: 'Relevo de cabo', pregunta: lineas.length === 1 ? lineas[0] : 'Hubo cambios en las jornadas en que registra:',
       puntos: lineas.length > 1 ? lineas : [], boton: 'Entendido', icono: 'palomita', soloAceptar: true });
     if (ok) { try { localStorage.setItem(clave, ultimo); } catch (e) { /* se volverá a avisar */ } }
+  },
+
+  /* UNA FECHA DE HACE MÁS DE DIAS_AVISO_FECHA DÍAS se confirma: suele ser un año mal tecleado, 2025 por 2026. Sólo
+     una fecha nueva o que cambia: corregir algo viejo sin tocar su fecha no pregunta. Devuelve true si se puede
+     seguir. */
+  fechaConfirmada: null,   // la última que se confirmó: los árboles que siguen con ella no vuelven a preguntar
+  async confirmarFechaVieja(fecha) {
+    const dias = fecha ? SRP.util.diasDesde(fecha) : 0;
+    if (dias <= SRP.CONFIG.DIAS_AVISO_FECHA || fecha === this.fechaConfirmada) return true;
+    const ok = await SRP.app.confirmar({ titulo: '¿La fecha es correcta?', pregunta: 'El ' + SRP.util.formatearFecha(fecha) + ' fue hace ' + dias.toLocaleString('es-MX') + ' días.',
+      boton: 'Sí, es correcta', icono: 'palomita', cancelar: 'Corregirla' });
+    if (ok) this.fechaConfirmada = fecha;
+    return ok;
+  },
+
+  /* CON LA APLICACIÓN ABIERTA DE UN DÍA PARA OTRO, la fecha del árbol y su campo se ponen al día antes de guardar y
+     al volver a la aplicación: la que arrancó ayer ya no es la de hoy, y el campo se enseña si la jornada ya es de
+     otro día. Lo que se eligió a propósito se queda. */
+  diaPreparado: null,
+  alDia() {
+    const hoy = SRP.util.fechaHoy(), f = SRP.formulario;
+    if (!this.jornada || !this.diaPreparado || this.diaPreparado === hoy || f.estado.editando || f.estado.sustitucion) return;
+    this.diaPreparado = hoy;
+    f.el('campo-fecha').value = this.fechaInicial(this.jornada);
+    this.pintarCampoFecha(this.jornada);
+    this.el('ini-fecha').max = hoy;
   },
 
   /* Registrar en una jornada que no es de hoy se confirma una vez por sesión: que no sea un olvido
@@ -290,6 +323,7 @@ SRP.activa = {
     // La fecha de plantación arranca como corresponde (la de la sustitución, si es una); el programa es el de la jornada; las especies recientes, a un toque
     SRP.formulario.el('campo-fecha').value = sust && sust.fecha ? sust.fecha : this.fechaInicial(this.jornada);
     this.pintarCampoFecha(this.jornada);
+    this.diaPreparado = SRP.util.fechaHoy();
     // El mapa estaba escondido tras «Iniciar jornada»: vuelve a medir su caja, o se queda sin tamaño
     SRP.mapa.refrescar();
     // Lo ya registrado en la jornada, a la vista mientras se ubica el siguiente árbol
@@ -486,8 +520,10 @@ SRP.activa = {
     if (previstos === null || !Number.isInteger(previstos) || previstos < 1 || previstos > 9999) errores.push(['ini-meta', 'Escriba cuántos árboles se van a plantar: un número entero mayor que cero.']);
     if (!fecha) errores.push(['ini-fecha', 'Indique la fecha de la jornada.']);
     else if (fecha > SRP.util.fechaHoy()) errores.push(['ini-fecha', 'La fecha no puede ser posterior a hoy.']);
+    else if (SRP.util.antesDelPrograma(fecha)) errores.push(['ini-fecha', SRP.util.textoAntesDelPrograma('La fecha')]);
     // Cada campo dice su error y arriba el resumen, igual que en todos los formularios
     if (SRP.util.resumenErrores(this.el('ini-errores'), errores, ['ini-nombre', 'btn-ini-detectar', 'ini-programa', 'ini-meta', 'ini-fecha'].concat(SRP.solicitud.ids('ini')))) return;
+    if (!(await this.confirmarFechaVieja(fecha))) { this.el('ini-fecha').focus(); return; }
     // Un segundo toque mientras se guarda no inicia otra jornada igual
     if (this._iniciando) return;
     this._iniciando = true;

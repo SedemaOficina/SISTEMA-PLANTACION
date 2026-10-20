@@ -21,9 +21,9 @@ window.SRP = window.SRP || {};
 SRP.indicadores = {
   /* ---------- Periodos ---------- */
 
-  // 'AAAA-MM-DD' ⇄ Date a mediodía: sin sobresaltos por horario de verano
-  aFecha(t) { const [a, m, d] = t.split('-').map(Number); return new Date(a, m - 1, d, 12); },
-  aTexto(f) { return f.getFullYear() + '-' + String(f.getMonth() + 1).padStart(2, '0') + '-' + String(f.getDate()).padStart(2, '0'); },
+  // 'AAAA-MM-DD' ⇄ Date a mediodía: sin sobresaltos por horario de verano. Con setFullYear, un año de dos cifras no se toma como 19xx
+  aFecha(t) { const [a, m, d] = t.split('-').map(Number); const f = new Date(2000, 0, 1, 12); f.setFullYear(a, m - 1, d); return f; },
+  aTexto(f) { return String(f.getFullYear()).padStart(4, '0') + '-' + String(f.getMonth() + 1).padStart(2, '0') + '-' + String(f.getDate()).padStart(2, '0'); },
   sumarDias(t, n) { const f = this.aFecha(t); f.setDate(f.getDate() + n); return this.aTexto(f); },
   // El lunes de la semana de una fecha (la semana va de lunes a domingo)
   lunes(t) { const f = this.aFecha(t); return this.sumarDias(t, -((f.getDay() + 6) % 7)); },
@@ -282,8 +282,8 @@ SRP.indicadores = {
     };
   },
 
-  // El día local de una marca de tiempo ISO
-  dia(iso) { const f = new Date(iso); return isNaN(f) ? '' : this.aTexto(f); },
+  // El día de una marca de tiempo ISO en la Ciudad de México
+  dia(iso) { const f = new Date(iso); return isNaN(f) ? '' : SRP.util.diaDe(f); },
 
   /* La serie para la gráfica: por día en una semana; por semana en un mes; por mes en un año; en
      un rango, por día hasta 31 días, por semana hasta 26 semanas y luego por mes; en «todo», por
@@ -304,8 +304,8 @@ SRP.indicadores = {
     else if (unidad === 'semana') for (let t = this.lunes(desde); t <= hasta; t = this.sumarDias(t, 7)) poner(t);
     else if (unidad === 'mes') {
       let [a, m] = desde.split('-').map(Number);
-      for (let k = desde.slice(0, 7); k <= hasta.slice(0, 7); ) { poner(k); m++; if (m > 12) { m = 1; a++; } k = a + '-' + String(m).padStart(2, '0'); }
-    } else for (let a = Number(desde.slice(0, 4)); a <= Number(hasta.slice(0, 4)); a++) poner(String(a));
+      for (let k = desde.slice(0, 7); k <= hasta.slice(0, 7); ) { poner(k); m++; if (m > 12) { m = 1; a++; } k = String(a).padStart(4, '0') + '-' + String(m).padStart(2, '0'); }
+    } else for (let a = Number(desde.slice(0, 4)); a <= Number(hasta.slice(0, 4)); a++) poner(String(a).padStart(4, '0'));
     const pos = new Map(casillas.map((c, i) => [c.clave, i]));
     arboles.forEach(a => { const i = pos.get(clave(a.r.fecha_plantacion)); if (i !== undefined) casillas[i].arboles++; });
     /* Cada jornada cuenta una vez, en la casilla de su primer árbol del periodo: una jornada de

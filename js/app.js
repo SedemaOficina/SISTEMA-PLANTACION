@@ -159,7 +159,7 @@ SRP.app = {
       // El espejo de campos no se exige: es sólo de la versión de prueba y la app debe abrir sin él
     ].filter(([id]) => !document.getElementById(id)).map(([, que]) => que);
     // Las cuentas y la demostración son sólo de la versión de prueba: la real no las carga
-    const modulos = ['util', 'ICONOS', 'permisos', 'sesion', 'almacen', 'ref', 'formulario', 'registros', 'catalogos', 'usuarios', 'configuracion', 'excel', 'carga', 'ESQUEMA', 'derivacion', 'indicadores', 'supervision', 'informes', 'CATALOGOS_ARRANQUE', 'turno']
+    const modulos = ['util', 'ICONOS', 'permisos', 'sesion', 'almacen', 'ref', 'formulario', 'registros', 'catalogos', 'usuarios', 'configuracion', 'excel', 'carga', 'ESQUEMA', 'derivacion', 'indicadores', 'supervision', 'informes', 'CATALOGOS_ARRANQUE', 'turno', 'reloj']
       .concat(SRP.CONFIG.ES_FICTICIO ? ['DATOS_FICTICIOS', 'demo'] : [])
       .filter(m => !SRP[m]);
     /* Las tres capas y la biblioteca del cruce también se exigen: sin ellas la app abría y

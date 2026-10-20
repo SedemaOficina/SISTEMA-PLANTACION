@@ -14,11 +14,40 @@ SRP.util = {
 
   ahoraISO() { return new Date().toISOString(); },
 
-  // Fecha local AAAA-MM-DD. No usar toISOString: en la tarde de CDMX ya daría el día siguiente.
+  /* Hoy, AAAA-MM-DD, en la Ciudad de México, sea cual sea la zona del teléfono: así lo calcula también el
+     servidor. No usar toISOString: en la tarde ya daría el día siguiente. */
   fechaHoy() {
-    const d = new Date();
-    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    // Se pide muchas veces seguidas: se calcula a lo más una vez por segundo
+    const ahora = Date.now();
+    if (this._hoy && ahora >= this._hoyEn && ahora - this._hoyEn < 1000) return this._hoy;
+    this._hoyEn = ahora;
+    this._hoy = this.diaDe(new Date(ahora));
+    return this._hoy;
   },
+
+  // El día de un momento en la Ciudad de México; sin zonas en el navegador, el del teléfono
+  diaDe(f) {
+    const dos = n => String(n).padStart(2, '0');
+    try {
+      this._dia = this._dia || new Intl.DateTimeFormat('en-CA', { timeZone: SRP.CONFIG.ZONA, year: 'numeric', month: '2-digit', day: '2-digit' });
+      const p = Object.fromEntries(this._dia.formatToParts(f).map(x => [x.type, x.value]));
+      if (p.year && p.month && p.day) return p.year.padStart(4, '0') + '-' + p.month + '-' + p.day;
+    } catch (e) { /* sin zonas: la del teléfono */ }
+    return String(f.getFullYear()).padStart(4, '0') + '-' + dos(f.getMonth() + 1) + '-' + dos(f.getDate());
+  },
+
+  // Cuántos días van de una fecha AAAA-MM-DD a hoy
+  diasDesde(t) {
+    // Con setUTCFullYear, un año de dos cifras no se toma como 19xx
+    const utc = x => { const [a, m, d] = x.split('-').map(Number); const f = new Date(0); f.setUTCFullYear(a, m - 1, d); return f.getTime(); };
+    return Math.round((utc(this.fechaHoy()) - utc(t)) / 864e5);
+  },
+
+  /* LA FECHA MÍNIMA de jornadas y árboles: el programa empezó en octubre de 2024 (CONFIG.FECHA_MINIMA). Detiene
+     también el año tecleado con dos cifras, que el campo de fecha deja como 0026. `que`: «La fecha»,
+     «La fecha de plantación». */
+  antesDelPrograma(t) { return !!t && t < SRP.CONFIG.FECHA_MINIMA; },
+  textoAntesDelPrograma(que) { return que + ' no puede ser anterior al ' + this.formatearFecha(SRP.CONFIG.FECHA_MINIMA) + ', cuando empezó el programa.'; },
 
   MESES_CORTOS: ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'],
   MESES_LARGOS: ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'],
@@ -29,7 +58,9 @@ SRP.util = {
   fechaLarga(t) {
     const [a, m, d] = String(t || '').split('-').map(Number);
     if (!a || !m || !d) return '';
-    const f = new Date(a, m - 1, d, 12);
+    // Con setFullYear, un año de dos cifras no se toma como 19xx y su día de la semana sale bien
+    const f = new Date(2000, 0, 1, 12);
+    f.setFullYear(a, m - 1, d);
     const texto = this.DIAS_SEMANA[f.getDay()] + ' ' + d + ' de ' + this.MESES_LARGOS[m - 1] + ' de ' + a;
     return texto.charAt(0).toUpperCase() + texto.slice(1);
   },

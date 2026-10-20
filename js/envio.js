@@ -242,10 +242,8 @@ SRP.envio = {
 
   /* ---------- Fechas y horas para los avisos ---------- */
 
-  diaLocal(iso) {
-    const d = new Date(iso);
-    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-  },
+  // El día de una marca de tiempo, en la Ciudad de México, como «hoy»
+  diaLocal(iso) { return SRP.util.diaDe(new Date(iso)); },
 
   // 'AAAA-MM-DD' -> 'miércoles 23 de septiembre'
   diaEnLetra(aaaammdd) {
@@ -253,7 +251,11 @@ SRP.envio = {
     return new Date(a, m - 1, d).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' }).replace(',', '');
   },
 
-  hora(iso) { return new Date(iso).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false }); },
+  // La hora en la Ciudad de México, como el día
+  hora(iso) {
+    const o = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' };
+    try { return new Date(iso).toLocaleTimeString('es-MX', Object.assign({ timeZone: SRP.CONFIG.ZONA }, o)); } catch (e) { return new Date(iso).toLocaleTimeString('es-MX', o); }
+  },
 
   // Cómo se dice cuándo: «hoy a las 11:42», «el lunes 21 de septiembre a las 18:05»
   cuando(iso) {
@@ -271,7 +273,7 @@ SRP.envio = {
     const dias = pendientes.map(r => this.diaLocal(r.fecha_registro)).sort();
     const viejos = dias.filter(d => d < hoy);
     if (viejos.length) return { tipo: 'dias', n: pendientes.length, desde: viejos[0] };
-    if (new Date().getHours() >= SRP.CONFIG.HORA_CIERRE_JORNADA) return { tipo: 'cierre', n: pendientes.length };
+    if (Number(this.hora(SRP.util.ahoraISO()).slice(0, 2)) >= SRP.CONFIG.HORA_CIERRE_JORNADA) return { tipo: 'cierre', n: pendientes.length };
     return null;
   },
 

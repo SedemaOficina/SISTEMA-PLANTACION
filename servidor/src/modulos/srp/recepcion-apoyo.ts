@@ -72,8 +72,12 @@ export async function esVigente(c: pg.PoolClient, tabla: Tabla, id: string, vers
 export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 export const texto = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
 export const idDe = (v: unknown): string | null => (typeof v === "string" && UUID.test(v) ? v : null);
-// AAAA-MM-DD que sea un día del calendario
-export const esFecha = (v: unknown): v is string => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) && new Date(v + "T00:00:00Z").toISOString().startsWith(v);
+// AAAA-MM-DD que sea un día del calendario; una fecha imposible (mes 13, día 45) no lo es, y no truena
+export const esFecha = (v: unknown): v is string => {
+  if (typeof v !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
+  const d = new Date(v + "T00:00:00Z");
+  return !Number.isNaN(d.getTime()) && d.toISOString().startsWith(v);
+};
 // El momento que dice el teléfono, o ahora si no trae uno que se entienda
 export const instante = (v: unknown): string => (typeof v === "string" && !Number.isNaN(Date.parse(v)) ? new Date(v).toISOString() : new Date().toISOString());
 const MESES = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
@@ -82,6 +86,12 @@ export const fechaCorta = (iso: string): string => {
   const [a, m, d] = iso.slice(0, 10).split("-");
   return d + "-" + MESES[Number(m) - 1] + "-" + a;
 };
+/* LA FECHA MÍNIMA. El programa empezó en octubre de 2024: ninguna jornada ni árbol es de antes. Detiene también el
+   año tecleado con dos cifras, que el campo de fecha deja como 0026. La aplicación usa la misma
+   (CONFIG.FECHA_MINIMA). Al editar, vale sólo si la fecha cambia. */
+export const FECHA_MINIMA = "2024-10-01";
+export const antesDelPrograma = (fecha: string): boolean => fecha < FECHA_MINIMA;
+export const noAntes = (que: string): string => que + " no puede ser anterior al " + fechaCorta(FECHA_MINIMA) + ", cuando empezó el programa.";
 // La fecha de un árbol dentro de su jornada: la suya, salvo que la jornada empiece después
 export const fechaEnJornada = (fecha: string, j: Fila): string => (fecha && fecha >= String(j.fecha) ? fecha : String(j.fecha));
 

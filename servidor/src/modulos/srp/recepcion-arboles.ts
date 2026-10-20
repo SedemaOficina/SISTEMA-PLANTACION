@@ -3,8 +3,8 @@ import { anotarCambio } from "./bitacora";
 import { conDuplicado } from "./duplicados";
 import { puede } from "./permisos";
 import {
-  AHORA, asignarFolio, autoresDe, caducarReporte, comoObjeto, conVigente, esFecha, especieComun, esVigente, fechaCorta, fechaEnJornada, filaDe,
-  hoyEnLaCiudad, idDe, instante, jornadaEliminada, MOTIVOS_SUSTITUCION, motivoSustitucion, puntoDe, rechazo, recibido, repetida, seElimino, sinPermiso, texto, textoFolio,
+  AHORA, antesDelPrograma, asignarFolio, autoresDe, caducarReporte, comoObjeto, conVigente, esFecha, especieComun, esVigente, fechaCorta, fechaEnJornada, filaDe,
+  hoyEnLaCiudad, idDe, instante, jornadaEliminada, MOTIVOS_SUSTITUCION, motivoSustitucion, noAntes, puntoDe, rechazo, recibido, repetida, seElimino, sinPermiso, texto, textoFolio,
   ubicar, versionVieja, congelarPrioridad, type Errores, type Fila, type Punto, type Resultado, type Tabla, type Territorio,
 } from "./recepcion-apoyo";
 import type { Usuario } from "./sesiones";
@@ -105,6 +105,7 @@ export async function crearArbol(c: pg.PoolClient, u: Usuario, d: Record<string,
   const fecha = d.fecha_plantacion;
   if (!esFecha(fecha)) errores.push(["fecha_plantacion", "Indique la fecha de plantación."]);
   else if (fecha > (await hoyEnLaCiudad(c))) errores.push(["fecha_plantacion", "La fecha de plantación no puede ser posterior a hoy."]);
+  else if (antesDelPrograma(fecha)) errores.push(["fecha_plantacion", noAntes("La fecha de plantación")]);
   else if (fecha < String(jornada.fecha)) errores.push(["fecha_plantacion", "La fecha de plantación no puede ser anterior al inicio de la jornada (" + fechaCorta(String(jornada.fecha)) + ")."]);
   if (errores.length) return rechazo(id, "DATOS_INVALIDOS", "Revise los datos del árbol.", ordenar(errores));
 
@@ -169,6 +170,7 @@ export async function editarArbol(c: pg.PoolClient, u: Usuario, d: Record<string
   const { errores, punto, territorio } = await revisarArbol(c, v, (actual.especie_id as string | null) ?? null);
   if (!esFecha(v.fecha_plantacion)) errores.push(["fecha_plantacion", "Indique la fecha de plantación."]);
   else if (v.fecha_plantacion > (await hoyEnLaCiudad(c))) errores.push(["fecha_plantacion", "La fecha de plantación no puede ser posterior a hoy."]);
+  else if (v.fecha_plantacion !== actual.fecha_plantacion && antesDelPrograma(v.fecha_plantacion)) errores.push(["fecha_plantacion", noAntes("La fecha de plantación")]);
   else if (v.fecha_plantacion < String(jornada.fecha)) errores.push(["fecha_plantacion", "La fecha de plantación no puede ser anterior al inicio de la jornada (" + fechaCorta(String(jornada.fecha)) + ")."]);
   if (errores.length) return conVigente(rechazo(id, "DATOS_INVALIDOS", "Revise los datos del árbol.", ordenar(errores)), actual);
 
@@ -292,6 +294,7 @@ export async function sustituirArbol(c: pg.PoolClient, u: Usuario, d: Record<str
   const fecha = d.fecha_plantacion;
   if (!esFecha(fecha)) errores.push(["fecha_plantacion", "Indique la fecha de la sustitución."]);
   else if (fecha > (await hoyEnLaCiudad(c))) errores.push(["fecha_plantacion", "La fecha de la sustitución no puede ser posterior a hoy."]);
+  else if (antesDelPrograma(fecha)) errores.push(["fecha_plantacion", noAntes("La fecha de la sustitución")]);
   else if (fecha < String(original.fecha_plantacion)) errores.push(["fecha_plantacion", "La fecha de la sustitución no puede ser anterior a la plantación del árbol perdido (" + fechaCorta(String(original.fecha_plantacion)) + ")."]);
   const { especieId, especieOtra } = especieDe(d);
   const comentarios = texto(d.comentarios);

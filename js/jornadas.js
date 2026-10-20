@@ -1108,7 +1108,7 @@ SRP.jornadas = {
     this.el('ej-nombre').value = c.nombre || '';
     this.el('ej-ubicacion').value = c.ubicacion || '';
     this.el('ej-meta').value = this.previstosDe(c) === null ? '' : this.previstosDe(c);
-    this.el('ej-fecha').value = c.fecha; this.el('ej-fecha').max = SRP.util.fechaHoy();
+    this.el('ej-fecha').value = c.fecha; this.el('ej-fecha').max = SRP.util.fechaHoy(); this.el('ej-fecha').min = SRP.CONFIG.FECHA_MINIMA;
     this.el('ej-comentarios').value = c.comentarios || '';
     SRP.solicitud.poner('ej', c);
     this.el('ej-nota-fecha').hidden = true;
@@ -1136,8 +1136,11 @@ SRP.jornadas = {
     if (previstos === null || !Number.isInteger(previstos) || previstos < 1 || previstos > 9999) errores.push(['ej-meta', 'Escriba cuántos árboles se van a plantar: un entero mayor que cero.']);
     if (!fecha) errores.push(['ej-fecha', 'Indique la fecha.']);
     else if (fecha > SRP.util.fechaHoy()) errores.push(['ej-fecha', 'La fecha no puede ser posterior a hoy.']);
+    // La mínima vale sólo si la fecha cambia: corregir una jornada vieja sin tocar su fecha se puede
+    else if (fecha !== c.fecha && SRP.util.antesDelPrograma(fecha)) errores.push(['ej-fecha', SRP.util.textoAntesDelPrograma('La fecha')]);
     // Cada campo dice su error y arriba el resumen, igual que en todos los formularios
     if (SRP.util.resumenErrores(this.el('ej-errores'), errores, ['ej-nombre', 'ej-programa', 'ej-meta', 'ej-fecha'].concat(SRP.solicitud.ids('ej')))) return;
+    if (fecha !== c.fecha && !(await SRP.activa.confirmarFechaVieja(fecha))) { this.el('ej-fecha').focus(); return; }
     const cambios = Object.assign({ nombre, ubicacion, programa_id, arboles_previstos: previstos, fecha, comentarios }, SRP.solicitud.leer('ej'));
     const v = x => (x === undefined || x === null) ? '' : x;
     const campos = Object.keys(cambios).filter(k => v(c[k]) !== v(cambios[k]) && !(k === 'arboles_previstos' && this.previstosDe(c) === previstos));

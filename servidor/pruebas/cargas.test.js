@@ -137,7 +137,9 @@ test('el servidor revisa cada renglón con las reglas de la aplicación; si uno 
     arbol(J, 22, 4, { especie_id: 'ESP-9999' }),
     arbol(J, 23, 5, { fecha_plantacion: '2025-03-16' }),
     arbol(J, 24, 6), arbol(J, 24, 7),
-    { ...ARBOLES1[0], id: uuid(), jornada_id: J.id, renglon: 8 }];
+    { ...ARBOLES1[0], id: uuid(), jornada_id: J.id, renglon: 8 },
+    arbol(J, 25, 9, { fecha_plantacion: '2024-09-30' }),
+    arbol(J, 26, 10, { fecha_plantacion: '2026-13-45' })];
   const r = await adm('PUT', '/cargas/' + L + '/tandas/1', { archivo: 'errores.xlsx', jornadas: [J], arboles });
   assert.equal(r.estado, 400);
   const por = Object.fromEntries(r.datos.errores.map(([donde, que]) => [donde, que]));
@@ -146,11 +148,18 @@ test('el servidor revisa cada renglón con las reglas de la aplicación; si uno 
   assert.match(por['Renglón 5 · Fecha de plantación'], /No es la fecha de su jornada/);
   assert.match(por['Renglón 7 · Renglón'], /Repite otro renglón/);
   assert.match(por['Renglón 8 · Renglón'], /Ya está en el sistema/);
+  assert.equal(por['Renglón 9 · Fecha de plantación'], 'La fecha no puede ser anterior al 01-OCT-2024, cuando empezó el programa.');
+  assert.equal(por['Renglón 10 · Fecha de plantación'], 'Fecha no válida.', 'una fecha imposible es un problema del renglón, no un error del servidor');
   assert.ok(!por['Renglón 2 · Renglón'] && !por['Renglón 6 · Renglón'], 'los renglones buenos no tienen problema');
   assert.equal((await admin.query('SELECT count(*)::int AS n FROM srp.plantaciones WHERE id = ANY($1::uuid[])', [arboles.map((a) => a.id)])).rows[0].n, 0, 'nada de la tanda se guardó');
   // Una jornada con fecha futura no entra
   const f = await adm('PUT', '/cargas/' + uuid() + '/tandas/1', { archivo: 'futuro.xlsx', jornadas: [otra], arboles: [arbol(otra, 30, 2)] });
   assert.equal(f.estado, 400);
+  // Ni una de antes del programa, ni una imposible, que antes tiraba la tanda con un error interno
+  for (const fecha of ['2024-09-30', '2026-13-45']) {
+    const x = jornada({ fecha });
+    assert.equal((await adm('PUT', '/cargas/' + uuid() + '/tandas/1', { archivo: 'fecha.xlsx', jornadas: [x], arboles: [arbol(x, 31, 2)] })).estado, 400, fecha);
+  }
 });
 
 test('deshacer un lote lo oculta y elimina sus árboles sin borrarlos; el archivo se puede volver a cargar', async () => {
