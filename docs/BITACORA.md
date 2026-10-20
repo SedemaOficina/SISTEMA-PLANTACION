@@ -5805,3 +5805,64 @@ No se probó:
 
 **Siguiente paso.** Liber decide si sigue con el bloque 4 (los reportes PDF y el CSV) o con el 5 (las pruebas y
 las herramientas). Antes de entregar al SIA, rearmar el paquete con esta versión.
+
+## Bloque 239 — Los reportes y los archivos (20-10-2026)
+
+**Versión 1.0.4.** El bloque 4 del plan de corrección de la auditoría del 19-10-2026
+(`docs/AUDITORIA-2026-10-19.md`, § 11). Liber aprobó el antes y el después (D319).
+
+| Hallazgo | Qué pasaba | Qué pasa ahora |
+|---|---|---|
+| E3-R2-03 | En una «Solicitud especial» con textos largos, el recuadro de datos del reporte se salía por el pie de la página 1 | Lo largo ocupa el renglón entero y el recuadro sigue en la página siguiente |
+| E3-R2-02 | Un enlace en un comentario aplastaba la columna «Especie» hasta una letra de ancho | «Especie» guarda al menos 45 mm y el enlace se parte en renglones |
+| E3-R2-08 | Los emojis y otros alfabetos desaparecían del PDF sin aviso; un acento escrito aparte se perdía | El acento se junta con su letra; lo que la letra no tiene sale como «?», y el aviso lo dice |
+| E3-R2-09 | Los PDF no traían título, autora ni idioma | Los traen, y el lector muestra el título en la ventana |
+| E3-R2-04 | El CSV que guarda Excel en español se rechazaba con «faltan columnas» | Se lee en la codificación de Windows |
+| E3-R2-16 | El Excel que genera el sistema quedaba dañado con U+FFFE o U+FFFF | Esos caracteres se quitan al escribir |
+| E3-R2-17 | Un PNG transparente quedaba con fondo negro; una HEIC decía «no es una imagen» | Fondo blanco; la HEIC dice qué hacer |
+
+**Qué cambió.**
+- `js/reportes.js`:
+  - el recuadro de datos, por renglones y por tramos de página;
+  - el ancho mínimo de «Especie»;
+  - `prepararPDF`: la letra, el filtro de lo que no tiene (`limitarTexto`) y las propiedades del documento;
+  - el aviso al entregar.
+- `js/informes.js`: el informe usa `prepararPDF` y avisa igual.
+- `js/excel.js`: `textoCsv`, con la codificación de Windows; U+FFFE y U+FFFF fuera del XML.
+- `js/foto.js` y `js/formulario.js`: el fondo blanco y la HEIC.
+- Pruebas: `pruebas/prueba.py`, sección ctx95.
+
+**Pantalla: qué se agregó y qué se quitó.** Lo aprobó Liber el 20-10-2026, con el antes y el después.
+- Reporte de la jornada: con textos largos, el recuadro sigue en la página siguiente; lo que en media columna pasa
+  de tres renglones va a lo ancho. «Especie» guarda su ancho.
+- Reporte e informe: «?» en lugar de lo que la letra no tiene, y el aviso «Algunos caracteres que la letra del PDF
+  no tiene (emojis u otros alfabetos) salen como «?».».
+- Nuevo registro: el mensaje de la fotografía HEIC.
+- No se quitó nada.
+
+**Verificación.**
+- Antes y después, con los guiones del revisor de la auditoría, sobre el código del bloque 238 y sobre una copia
+  con la corrección:
+  - el reporte con todos los textos al máximo: 15 renglones fuera de la hoja; después, ninguno;
+  - una palabra de 19 a 79 caracteres en un comentario: «Coordenada» bajaba de 256 a 128 pt, y con el enlace del
+    revisor la especie quedaba de una letra de ancho; después, 214 pt siempre;
+  - emojis, hebreo, árabe y acentos escritos aparte; los dos CSV de Windows; el Excel con U+FFFE y U+FFFF; el PNG
+    transparente y la HEIC: cada uno falla antes y pasa después.
+- Aplicación: `prueba.py`, 0 fallas en 1,450, en la primera corrida; antes, 1,441. La sección nueva (ctx95), corrida
+  contra el código de antes, da 8 fallas de 9.
+- Conexión, con el repositorio: `prueba_conexion.py`, 119 de 119. Con la copia real de la 1.0.4: 120 de 120.
+- Auditorías: 144 sin hallazgos; hoja de estilos sin hallazgos; `revisar.py`, los mismos 12 avisos falsos (A1-04).
+- El servidor no cambió: `npm test` no se volvió a correr.
+
+Tres renglones nuevos llevaban los caracteres invisibles escritos tal cual; se cambiaron por su código (`​`…)
+mientras corría `prueba.py`, que es lo mismo para el navegador. Las dos pruebas de conexión corrieron después.
+
+No se probó:
+- en teléfonos reales, ni con una fotografía HEIC de un iPhone: la de la prueba es una cabecera HEIC armada, y en
+  Safari, que sí abre la HEIC, no se probó;
+- con un CSV guardado por Excel: el de la prueba se escribió en la codificación de Windows con Python;
+- el informe de Supervisión con emojis: comparte el filtro con el reporte, que sí se probó;
+- el PDF con Helvetica, que sólo sale si Roboto no se puede leer.
+
+**Siguiente paso.** Liber decide si sigue con el bloque 5 (las pruebas y las herramientas) o con otro. Antes de
+entregar al SIA, rearmar el paquete con esta versión.

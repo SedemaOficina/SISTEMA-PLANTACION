@@ -689,3 +689,21 @@ El dueño aprobó los bloques 1 y 2 del plan (sección 11) el 19-10-2026, con su
 
 `verificar_altas_despues.py` y su salida están en la evidencia, junto a los guiones de la auditoría. Los demás
 hallazgos del bloque se probaron sólo con el código nuevo: las pruebas nuevas repiten la secuencia del revisor.
+
+### Bloque 4 · Reportes y archivos (bloque 239 del proyecto, versión 1.0.4)
+
+El dueño aprobó el 20-10-2026 el antes y el después del reporte, el «?» con su aviso y el mensaje de la HEIC.
+Antes y después se corrieron con los guiones del revisor, sobre el código del bloque 238 y sobre la corrección.
+
+| Clave | Estado | Antes y después | Prueba permanente |
+|---|---|---|---|
+| E3-R2-02 | Corregido | Antes, «Coordenada» empezaba a 256 pt con una palabra de 19 caracteres y a 128 pt con una de 79; con el enlace del revisor, la especie quedaba de una letra de ancho. Después, a 214 pt con cualquiera de ellas | `prueba.py`, ctx95 |
+| E3-R2-03 | Corregido | Antes, 15 renglones de la página 1 fuera de la hoja (el guion lista hasta 15). Después, ninguno: el recuadro sigue en la página 2 | `prueba.py`, ctx95 |
+| E3-R2-04 | Corregido | Antes, «Al archivo le faltan columnas» con los dos CSV de Windows. Después, se revisan sus renglones | `prueba.py`, ctx95 |
+| E3-R2-08 | Corregido | Antes, emojis, hebreo y árabe desaparecían sin aviso y «José Peña» escrito aparte salía «Jose Pena». Después, «José Peña», «?» por tramo y el aviso al entregar | `prueba.py`, ctx95 |
+| E3-R2-09 | Corregido | Antes, sólo el productor. Después, título, asunto, autora, creador, idioma es-MX y el título en la ventana | `prueba.py`, ctx95 |
+| E3-R2-16 | Corregido | Antes, el libro con U+FFFE o U+FFFF no abría. Después, abre sin esos caracteres | `prueba.py`, ctx95 |
+| E3-R2-17 | Corregido | Antes, la esquina del PNG transparente en (1, 1, 1) y la HEIC «no es una imagen». Después, (255, 255, 255) y el mensaje de la HEIC | `prueba.py`, ctx95 |
+
+La sección nueva de `prueba.py`, corrida contra el código de antes, da 8 fallas de 9 (la novena es la de errores de
+consola).

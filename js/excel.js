@@ -6,7 +6,8 @@
    - Leer: se abre el ZIP leyendo su directorio central; lo comprimido se descomprime con
      DecompressionStream('deflate-raw'). Se leen la primera hoja, los textos compartidos y en línea,
      números y fechas (las fechas de Excel llegan como número de días desde 1899-12-30).
-   - CSV: también se acepta, separado por comas o por punto y coma, con o sin BOM. */
+   - CSV: también se acepta, separado por comas o por punto y coma, con o sin BOM, en UTF-8 o en la
+     codificación de Windows con que lo guarda Excel en español. */
 window.SRP = window.SRP || {};
 
 SRP.excel = {
@@ -14,7 +15,8 @@ SRP.excel = {
 
   /* ---------- Escribir ---------- */
 
-  esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, ''); },
+  // Lo que el XML no admite (controles, U+FFFE y U+FFFF) se quita: con uno solo Excel da el libro por dañado
+  esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g, ''); },
 
   // 0 → A, 25 → Z, 26 → AA
   columna(i) { let s = ''; i++; while (i > 0) { const r = (i - 1) % 26; s = String.fromCharCode(65 + r) + s; i = Math.floor((i - 1) / 26); } return s; },
@@ -82,7 +84,7 @@ SRP.excel = {
   async leer(archivo) {
     const nombre = String(archivo.name || '').toLowerCase();
     const bytes = new Uint8Array(await archivo.arrayBuffer());
-    if (nombre.endsWith('.csv') || nombre.endsWith('.txt')) return { filas: this.leerCsv(new TextDecoder('utf-8').decode(bytes)) };
+    if (nombre.endsWith('.csv') || nombre.endsWith('.txt')) return { filas: this.leerCsv(this.textoCsv(bytes)) };
     if (bytes[0] !== 0x50 || bytes[1] !== 0x4B) throw new Error('El archivo no es un libro de Excel (.xlsx) ni un CSV. Si es un .xls antiguo, guárdelo como .xlsx.');
     const zip = await this.abrirZip(bytes);
     const texto = async (ruta) => zip[ruta] ? new TextDecoder('utf-8').decode(await zip[ruta]()) : null;
@@ -154,6 +156,13 @@ SRP.excel = {
       p += 46 + largoNombre + extra + comentario;
     }
     return salida;
+  },
+
+  /* El CSV que guarda Excel en español con «CSV (delimitado por comas)» va en la codificación de Windows,
+     no en UTF-8: sus acentos no se leerían y los encabezados no coincidirían. Si no es UTF-8 válido, se
+     lee con la de Windows. */
+  textoCsv(bytes) {
+    try { return new TextDecoder('utf-8', { fatal: true }).decode(bytes); } catch (e) { return new TextDecoder('windows-1252').decode(bytes); }
   },
 
   // CSV con comillas, separado por coma o punto y coma (el que más aparezca en el encabezado)

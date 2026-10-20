@@ -548,6 +548,51 @@ SRP.reportes = {
     return 'Roboto';
   },
 
+  /* LO QUE LA LETRA NO TIENE. Roboto viene recortada al alfabeto latino: un emoji, otro alfabeto o un
+     acento escrito aparte saldrían en blanco o encimados. Todo texto del documento pasa por aquí: el
+     acento se junta con su letra, las marcas invisibles (de dirección, de unión, de control) se quitan,
+     el tabulador es un espacio, y lo demás que la letra no tiene sale como «?», uno por tramo.
+     `doc.letraIncompleta` dice si algo se cambió, para avisarlo al entregar. */
+  WIN_ANSI: '€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ',   // lo que Helvetica tiene, además del latín básico
+  AVISO_LETRA: 'Algunos caracteres que la letra del PDF no tiene (emojis u otros alfabetos) salen como «?».',
+  limitarTexto(doc) {
+    const tiene = new Map();
+    const deLaLetra = () => {
+      const f = doc.getFont();
+      if (!tiene.has(f.id)) {
+        const cm = f.metadata && f.metadata.cmap && f.metadata.cmap.unicode && f.metadata.cmap.unicode.codeMap;
+        tiene.set(f.id, cm ? (c => !!cm[c]) : (c => (c >= 0x20 && c <= 0x7e) || (c >= 0xa0 && c <= 0xff) || this.WIN_ANSI.includes(String.fromCodePoint(c))));
+      }
+      return tiene.get(f.id);
+    };
+    doc.letraIncompleta = false;
+    const limpiar = (t) => {
+      if (Array.isArray(t)) return t.map(limpiar);
+      if (typeof t !== 'string') return t;
+      const puede = deLaLetra();
+      let s = '', cambiado = false;
+      for (const ch of t.normalize('NFC').replace(/\t/g, ' ').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u200B-\u200F\u202A-\u202E\u2060-\u2069\uFE00-\uFE0F\uFEFF]/g, '')) {
+        const c = ch.codePointAt(0);
+        if (c === 10 || c === 13 || puede(c)) { s += ch; cambiado = false; }
+        else { if (!cambiado) s += '?'; cambiado = true; doc.letraIncompleta = true; }
+      }
+      return s;
+    };
+    ['text', 'splitTextToSize', 'getTextWidth'].forEach(n => { const f = doc[n].bind(doc); doc[n] = (t, ...resto) => f(limpiar(t), ...resto); });
+  },
+
+  // Lo que todo PDF del sistema lleva: la letra, lo que ésta no tiene, y su título (el que muestra el
+  // lector en la ventana), quién lo emite y el idioma, para los lectores de pantalla
+  async prepararPDF(doc, titulo) {
+    const F = await this.ponerFuentes(doc);
+    this.limitarTexto(doc);
+    doc.setProperties({ title: titulo, subject: titulo, author: 'Secretaría del Medio Ambiente de la Ciudad de México',
+      creator: 'Sistema de Registro de Plantaciones ' + SRP.CONFIG.VERSION });
+    doc.setLanguage('es-MX');
+    doc.viewerPreferences({ DisplayDocTitle: true });
+    return F;
+  },
+
   /* El PNG con transparencia se incrustaba sin comprimir y era casi todo el peso del PDF. Se pasa
      a JPEG sobre blanco (el fondo del papel), a la misma resolución: no se nota la diferencia. */
   logoJPEG(img) {
@@ -571,7 +616,7 @@ SRP.reportes = {
     const M = 18;                       // margen izquierdo y derecho
     const util = ancho - M * 2;
     const hoy = new Date();
-    const F = await this.ponerFuentes(doc);
+    const F = await this.prepararPDF(doc, m.titulo + ' · ' + SRP.util.formatearFecha(fecha));
     const letra = (estilo, tam, color) => { doc.setFont(F, estilo); doc.setFontSize(tam); doc.setTextColor(...color); };
     let y = 0;
     // El pie va en alto − 16: un bloque cabe si termina antes de alto − 20
@@ -594,47 +639,52 @@ SRP.reportes = {
       y += 10.5;
     };
     /* DATOS «Etiqueta: valor» con la etiqueta en negritas, en columnas; lo largo (comentarios,
-       observaciones, listas de personal) ocupa el renglón entero y sus renglones van debajo */
-    /* `caja`: dentro de la franja del cabo, con sangría y sin filetes; `medir` sólo devuelve
-       el alto, para dibujar primero el fondo de la franja */
-    const datos = (items, columnas, caja, medir) => {
-      const san = caja ? 4 : 0, X0 = M + san, anchoU = util - 2 * san;
+       observaciones, listas de personal, y lo que en su columna pasaría de tres renglones) ocupa el
+       renglón entero y sus renglones van debajo. `caja`: dentro de la franja del cabo, con sangría.
+       Devuelve los renglones ya medidos, para escribirlos con `escribir`. */
+    const renglones = (items, columnas, caja) => {
+      const san = caja ? 4 : 0, anchoU = util - 2 * san;
       const sep = 6, colW = (anchoU - sep * (columnas - 1)) / columnas;
-      let alto0 = 0;
+      const medir = ([et, val], anchoB) => {
+        letra('bold', 9, C.tinta);
+        const lw = doc.getTextWidth(et + ':') + 1.8;
+        letra('normal', 9.5, C.tinta);
+        const varios = String(val).includes('\n');
+        const lineas = varios ? [].concat(...String(val).split('\n').map(t => doc.splitTextToSize('•  ' + t, anchoB - 6)))
+          : doc.splitTextToSize(String(val), anchoB - lw);
+        return { et, lw, lineas, varios };
+      };
+      const entero = it => it[2] || (columnas > 1 && medir(it, colW).lineas.length > 3);
       const filas = [];
       let fila = [];
       items.forEach(it => {
-        if (it[2]) { if (fila.length) filas.push(fila); filas.push([it]); fila = []; return; }
+        if (entero(it)) { if (fila.length) filas.push(fila); filas.push([it]); fila = []; return; }
         fila.push(it);
         if (fila.length === columnas) { filas.push(fila); fila = []; }
       });
       if (fila.length) filas.push(fila);
-      filas.forEach(f => {
-        const completo = f.length === 1 && f[0][2];
-        const bloques = f.map(([et, val]) => {
-          letra('bold', 9, C.tinta);
-          const lw = doc.getTextWidth(et + ':') + 1.8;
-          letra('normal', 9.5, C.tinta);
-          const varios = String(val).includes('\n');
-          const lineas = varios ? [].concat(...String(val).split('\n').map(t => doc.splitTextToSize('•  ' + t, (completo ? anchoU : colW) - 6)))
-            : doc.splitTextToSize(String(val), (completo ? anchoU : colW) - lw);
-          return { et, lw, lineas, varios };
-        });
+      return filas.map(f => {
+        const bloques = f.map(it => medir(it, f.length === 1 && entero(f[0]) ? anchoU : colW));
         const h = Math.max(...bloques.map(b => (b.varios ? b.lineas.length + 1 : b.lineas.length))) * 4.4 + (caja ? 1.2 : 2.4);
-        if (medir) { alto0 += h + (caja ? 0.6 : 1.8); return; }
-        if (!caja) salto(h + 1);
-        bloques.forEach((b, i) => {
-          const x = X0 + i * (colW + sep);
-          letra('bold', 9, C.tinta); doc.text(b.et + ':', x, y + 3.9);
-          letra('normal', 9.5, C.tinta);
-          if (b.varios) b.lineas.forEach((l, k) => doc.text(l, x + 4, y + 3.9 + (k + 1) * 4.4));
-          else doc.text(b.lineas, x + b.lw, y + 3.9, { lineHeightFactor: 1.3 });
-        });
-        if (!caja) { doc.setDrawColor(...C.linea); doc.setLineWidth(0.2); doc.line(M, y + h, M + util, y + h); }
-        y += h + (caja ? 0.6 : 1.8);
+        return { bloques, h, x0: M + san, paso: colW + sep };
       });
-      if (medir) return alto0;
-      if (!caja) y += 3;
+    };
+    const escribir = (f) => f.bloques.forEach((b, i) => {
+      const x = f.x0 + i * f.paso;
+      letra('bold', 9, C.tinta); doc.text(b.et + ':', x, y + 3.9);
+      letra('normal', 9.5, C.tinta);
+      if (b.varios) b.lineas.forEach((l, k) => doc.text(l, x + 4, y + 3.9 + (k + 1) * 4.4));
+      else doc.text(b.lineas, x + b.lw, y + 3.9, { lineHeightFactor: 1.3 });
+    });
+    // Fuera de la franja, cada renglón con su filete debajo
+    const datos = (items, columnas) => {
+      renglones(items, columnas, false).forEach(f => {
+        salto(f.h + 1);
+        escribir(f);
+        doc.setDrawColor(...C.linea); doc.setLineWidth(0.2); doc.line(M, y + f.h, M + util, y + f.h);
+        y += f.h + 1.8;
+      });
+      y += 3;
     };
     const tabla = (opciones) => {
       doc.autoTable(Object.assign({
@@ -648,20 +698,31 @@ SRP.reportes = {
     };
 
     /* LA FRANJA DEL CABO: el nombre del cabo y, en el mismo estilo, los datos que distinguen a
-       la jornada. Primero se mide para pintar el fondo, luego se escribe. */
-    const altoDatos = m.identificacion.length ? datos(m.identificacion, 2, true, true) : 0;
-    const altoCab = (m.cabo ? 9 : 2) + altoDatos + 2;
-    doc.setFillColor(...C.suave); doc.roundedRect(M, y, util, altoCab, 1.5, 1.5, 'F');
-    const yCaja = y;
-    if (m.cabo) {
-      letra('bold', 10, C.guinda); doc.text('Nombre del cabo:', M + 4, y + 6.6);
-      const lw = doc.getTextWidth('Nombre del cabo:') + 2;
-      letra('bold', 11, C.tinta); doc.text(doc.splitTextToSize(m.cabo, util - lw - 8)[0], M + 4 + lw, y + 6.6);
-      y += 9;
-    } else y += 2;
-    if (m.identificacion.length) datos(m.identificacion, 2, true);
-    y = yCaja + altoCab + 4;
-    // Cinco cifras de un vistazo
+       la jornada. Se reparte en tramos que caben en la página: con textos largos sigue en la
+       siguiente. Cada tramo se mide para pintar su fondo, y luego se escribe encima. */
+    const tramos = [[m.cabo ? { cabo: true, h: 9 } : { h: 2 }]];
+    let enPagina = y + tramos[0][0].h;
+    (m.identificacion.length ? renglones(m.identificacion, 2, true) : []).forEach(f => {
+      if (enPagina + f.h + 0.6 + 2 > alto - 20) { tramos.push([{ h: 2 }]); enPagina = 20 + 2; }
+      tramos[tramos.length - 1].push(f); enPagina += f.h + 0.6;
+    });
+    tramos.forEach((t, k) => {
+      if (k) { doc.addPage(); y = 20; }
+      const yTramo = y, altoTramo = t.reduce((s, f) => s + f.h + (f.bloques ? 0.6 : 0), 0) + 2;
+      doc.setFillColor(...C.suave); doc.roundedRect(M, y, util, altoTramo, 1.5, 1.5, 'F');
+      t.forEach(f => {
+        if (f.cabo) {
+          letra('bold', 10, C.guinda); doc.text('Nombre del cabo:', M + 4, y + 6.6);
+          const lw = doc.getTextWidth('Nombre del cabo:') + 2;
+          letra('bold', 11, C.tinta); doc.text(doc.splitTextToSize(m.cabo, util - lw - 8)[0], M + 4 + lw, y + 6.6);
+        } else if (f.bloques) escribir(f);
+        y += f.h + (f.bloques ? 0.6 : 0);
+      });
+      y = yTramo + altoTramo;
+    });
+    y += 4;
+    // Cinco cifras de un vistazo; con la franja larga, pueden pasar a la página siguiente
+    salto(22);
     const nc = m.cifras.length, hueco = 3, wc = (util - hueco * (nc - 1)) / nc;
     m.cifras.forEach((c, i) => {
       const x = M + i * (wc + hueco);
@@ -693,8 +754,9 @@ SRP.reportes = {
     seccion('Ejemplares plantados', 20);
     // La precisión en color por su nivel: verde buena, ámbar aceptable, rojo baja
     const colorNivel = { buena: C.exito, aceptable: C.atencion, baja: C.error };
+    // La especie guarda su ancho: un comentario con una palabra muy larga (un enlace) se parte, no la aplasta
     tabla({ head: [m.ejemplares.cabecera.map((c, k) => k === 0 ? { content: c, styles: { halign: 'right' } } : c)], body: m.ejemplares.filas,
-      columnStyles: { 0: { cellWidth: 11, halign: 'right' }, 2: { cellWidth: 38 }, 3: { cellWidth: 20 } },
+      columnStyles: { 0: { cellWidth: 11, halign: 'right' }, 1: { minCellWidth: 45 }, 2: { cellWidth: 38 }, 3: { cellWidth: 20 } },
       didParseCell: d => { if (d.section === 'body' && d.column.index === 3 && colorNivel[m.ejemplares.niveles[d.row.index]]) { d.cell.styles.textColor = colorNivel[m.ejemplares.niveles[d.row.index]]; d.cell.styles.fontStyle = 'bold'; } } });
     letra('italic', 7.5, C.gris); { const l = doc.splitTextToSize(m.notaPrecision, util); salto(l.length * 3.4 + 2); doc.text(l, M, y); y += l.length * 3.4 + 4; }
 
@@ -812,7 +874,8 @@ SRP.reportes = {
     const entregado = await this.entregarArchivo(doc.output('blob'), nombre, 'Reporte diario de plantación');
     if (entregado === 'cancelado') return;
     // Una descarga de sólo lectura entrega el documento y no toca la jornada
-    if (this.vistaPrevia && this.vistaPrevia.soloLectura) { SRP.util.anunciar(entregado === 'descarga' ? 'Reporte descargado: ' + nombre + '.' : 'Reporte compartido.', 'exito'); return; }
+    const letra = doc.letraIncompleta ? ' ' + this.AVISO_LETRA : '';
+    if (this.vistaPrevia && this.vistaPrevia.soloLectura) { SRP.util.anunciar((entregado === 'descarga' ? 'Reporte descargado: ' + nombre + '.' : 'Reporte compartido.') + letra, letra ? 'aviso' : 'exito'); return; }
     await this.marcarGenerado(cierre, jornada);
     /* Cierre del ciclo: el reporte es el último paso de la jornada, así que el aviso dice si
        quedó completa o, si todavía hay puntos por revisar, qué falta. */
@@ -822,7 +885,7 @@ SRP.reportes = {
       completa = p.actual === 'completa';
       cola = completa ? ' La jornada «' + jornada.nombre + '» quedó completa.' : ' ' + SRP.jornadas.siguiente(p, true).texto;
     }
-    SRP.util.anunciar((entregado === 'descarga' ? 'Reporte generado y descargado: ' + nombre + '.' : 'Reporte generado y compartido.') + cola, completa ? 'exito' : 'aviso');
+    SRP.util.anunciar((entregado === 'descarga' ? 'Reporte generado y descargado: ' + nombre + '.' : 'Reporte generado y compartido.') + cola + letra, completa && !letra ? 'exito' : 'aviso');
     // La ficha de la lista pasa a «reporte generado hoy a las …» sin salir y volver
     // La ficha y la lista de Jornadas dicen en seguida que el reporte ya se generó
     if (SRP.app.vista === 'jornadas') await SRP.jornadas.refrescar();

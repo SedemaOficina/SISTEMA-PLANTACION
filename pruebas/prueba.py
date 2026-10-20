@@ -7131,6 +7131,83 @@ with sync_playwright() as p:
     ok(err94 == [], 'sin errores de consola: %s' % err94[:2])
     ctx94.close()
 
+    # ---------- ctx95: reportes y archivos: lo largo, lo que la letra no tiene, el CSV de Windows, el Excel y las fotografías ----------
+    from pypdf import PdfReader as _Pdf95
+    import openpyxl as _xl95, io as _io95
+    ctx95 = b.new_context(viewport={'width':1280,'height':900}, timezone_id='America/Mexico_City', accept_downloads=True); pg95 = ctx95.new_page(); err95 = []
+    pg95.on('pageerror', lambda e: err95.append(str(e)))
+    pg95.goto(BASE); pg95.wait_for_timeout(1000)
+    entrar_como(pg95, 'u-cabo-1'); pg95.wait_for_timeout(1000)
+    # Una «Solicitud especial» con cada texto a su largo máximo y dos árboles: uno con un enlace en el comentario y
+    # otro con emojis, otros alfabetos y acentos escritos aparte
+    FRASE95 = 'Se plantó junto a la banqueta, frente a la escuela; el suelo estaba compactado y se agregó composta. '
+    largo95 = lambda n: (FRASE95 * (n // len(FRASE95) + 1))[:n].strip()
+    ENLACE95 = 'Ubicación exacta: https://www.google.com/maps/place/19%C2%B021%2725.2%22N+99%C2%B003%2736.0%22W/@19.3570000,-99.0600000,17z'
+    RAROS95 = 'Árbol 🌳🌲 👩🏽\u200D🌾 · Jose\u0301 Pen\u0303a · \u202Eolarbá\u202C עץ شجرة'
+    pg95.evaluate("""async ([nombre, ubicacion, comentarios, solicitante, descripcion, observaciones, enlace, raros]) => {
+      const u = SRP.sesion.usuario, hoy = SRP.util.fechaHoy(), ahora = SRP.util.ahoraISO(), t = SRP.derivacion.derivar(19.357, -99.06), jid = 'jr-b239';
+      await SRP.almacen.guardarConBitacora('jornadas', Object.assign(Object.fromEntries(SRP.reportes.CAMPOS.map(x => [x, ''])), { id: jid, nombre, fecha: hoy, cabo_id: u.id, encargado_id: u.id,
+        estatus: 'cerrada', programa_id: 'p-solicitud', solicitante_id: null, solicitante_otro: solicitante, solicitud_descripcion: descripcion, ubicacion, comentarios, observaciones, hora: '18:00',
+        organizacion_id: 'o-sedema', arboles_previstos: 2, puntos_revisados: [], fecha_inicio: ahora, fecha_cierre: ahora, lat: 19.357, lng: -99.06, alcaldia: t.alcaldia, colonia: t.colonia }), null);
+      for (const [k, c] of [[1, enlace], [2, raros]]) {
+        const id = 'pl-b239-' + k;
+        await SRP.almacen.guardarConBitacora('plantaciones', { id, jornada_id: jid, cabo_id: u.id, especie_id: 'ESP-0070', especie_otra: '', programa_id: 'p-solicitud', lat: 19.357 + k * 0.00005, lng: -99.06,
+          punto_origen: 'gps', gps_precision_m: 5, fecha_plantacion: hoy, fecha_registro: ahora, estatus: 'activo', alcaldia: t.alcaldia, colonia: t.colonia, uga: t.uga, capa_version: t.capa_version,
+          folio: null, sustituye_id: null, comentarios: c, foto_id: null, foto_base64: null }, null); } }""",
+        ['Solicitud larga ' + largo95(100), largo95(200), largo95(500), largo95(120), largo95(500), largo95(2000), ENLACE95, RAROS95])
+    reporte_de(pg95, 'Solicitud larga'); pg95.click('#btn-cierre-generar'); pg95.wait_for_timeout(800)
+    with pg95.expect_download(timeout=120000) as d95: pg95.click('#btn-previa-generar')
+    d95.value.save_as(sal('reporte_largo.pdf')); pg95.wait_for_timeout(800)
+    aviso95 = pg95.evaluate("() => document.getElementById('aviso').textContent")
+    pdf95 = _Pdf95(sal('reporte_largo.pdf'))
+    # Dónde cae cada texto: nada debajo del filete del pie (16 mm del borde) salvo el pie, y la columna «Coordenada» en su lugar
+    fuera95, x95 = [], {}
+    for n95, p95 in enumerate(pdf95.pages, 1):
+        def v95(texto, cm, tm, fd, fs):
+            t = texto.strip(); yy = tm[5] * cm[3] + cm[5]
+            if t and yy < 16 * 72 / 25.4 and not (t.startswith('SEDEMA, Sistema de Registro') or t.startswith('Página')): fuera95.append((n95, round(yy), t[:40]))
+            if t == 'Coordenada' and 'x' not in x95: x95['x'] = (tm[4] * cm[0] + cm[4]) * 25.4 / 72
+        p95.extract_text(visitor_text=v95)
+    texto95 = ' '.join(' '.join((p.extract_text() or '').split()) for p in pdf95.pages)
+    ok(not fuera95 and 'Observaciones del cierre' in texto95, 'con una solicitud de textos largos ningún dato se sale por el pie: el recuadro sigue en la página siguiente: %s' % fuera95[:3])
+    ok(x95.get('x', 0) >= 18 + 11 + 45, 'un enlace largo en un comentario no aplasta la columna «Especie»: «Coordenada» empieza a los %.0f mm' % x95.get('x', 0))
+    ok('José Peña' in texto95 and '🌳' not in texto95 and 'Árbol ?' in texto95 and aviso95.endswith('Algunos caracteres que la letra del PDF no tiene (emojis u otros alfabetos) salen como «?».'),
+       'el acento escrito aparte se junta con su letra, lo que la letra no tiene sale como «?» y el aviso lo dice: %s' % aviso95[-120:])
+    raiz95 = pdf95.trailer['/Root']; meta95 = pdf95.metadata or {}
+    ok(str(meta95.get('/Title', '')).startswith('Reporte de la jornada de plantación · ') and str(raiz95.get('/Lang')) == 'es-MX'
+       and bool(raiz95['/ViewerPreferences'].get('/DisplayDocTitle')) and str(meta95.get('/Author')) == 'Secretaría del Medio Ambiente de la Ciudad de México',
+       'el PDF trae título, idioma y quién lo emite: %s' % dict(meta95))
+    # El CSV que guarda Excel en español va en la codificación de Windows: se lee igual
+    bytes95 = list('Latitud;Longitud;Nombre científico;Fecha de plantación\r\n19,357;-99,06;Taxodium mucronatum;2025-01-10\r\n'.encode('cp1252'))
+    csv95 = pg95.evaluate("async b => (await SRP.excel.leer(new File([new Uint8Array(b)], 'excel_es.csv'))).filas", bytes95)
+    ok(csv95[0] == ['Latitud', 'Longitud', 'Nombre científico', 'Fecha de plantación'] and csv95[1][2] == 'Taxodium mucronatum',
+       'el CSV de Excel en español (codificación de Windows) se lee con sus acentos: %s' % csv95[0])
+    # El Excel que genera el sistema se abre aunque un texto traiga U+FFFE o U+FFFF
+    xl95 = pg95.evaluate("""async () => { const blob = SRP.excel.armar([{ nombre: 'Prueba', columnas: [{ titulo: 'Especie' }], filas: [['Especie \\uFFFE rara \\uFFFF']] }]);
+      return [...new Uint8Array(await blob.arrayBuffer())]; }""")
+    try: celda95 = _xl95.load_workbook(_io95.BytesIO(bytes(xl95))).active['A2'].value
+    except Exception as e: celda95 = 'no se abre: %s' % e
+    ok(celda95 == 'Especie  rara ', 'el Excel con U+FFFE o U+FFFF se abre, sin esos caracteres: %r' % celda95)
+    # Fotografías: lo transparente de un PNG queda blanco; una HEIC que el navegador no abre dice qué hacer
+    png95 = pg95.evaluate("""async () => { const c = document.createElement('canvas'); c.width = 40; c.height = 30;
+      const g = c.getContext('2d'); g.fillStyle = '#2a7'; g.fillRect(10, 10, 20, 10);
+      const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+      const f = await SRP.foto.comprimir(new File([blob], 'transparente.png', { type: 'image/png' }));
+      const img = new Image(); img.src = f.datos; await img.decode();
+      const d = document.createElement('canvas'); d.width = img.width; d.height = img.height; const h = d.getContext('2d'); h.drawImage(img, 0, 0);
+      return [...h.getImageData(1, 1, 1, 1).data].slice(0, 3); }""")
+    ok(min(png95) >= 245, 'un PNG transparente queda sobre blanco, no sobre negro: %s' % png95)
+    pg95.evaluate("SRP.app.mostrarVista('registrar')"); pg95.wait_for_timeout(500)
+    if pg95.is_visible('#panel-iniciar-jornada'): iniciar_jornada(pg95, 'Jornada de la HEIC')
+    pg95.evaluate("document.getElementById('aviso').hidden = true")
+    pg95.set_input_files('#foto-archivo', files=[{'name': 'IMG_0001.HEIC', 'mimeType': '', 'buffer': b'\x00\x00\x00\x18ftypheic\x00\x00\x00\x00mif1heic' + b'\x00' * 200}])
+    esperar(pg95, "() => !document.getElementById('aviso').hidden", 6000)
+    heic95 = pg95.evaluate("() => document.getElementById('aviso').textContent")
+    ok('La fotografía está en formato HEIC, el de los iPhone, y este navegador no la puede abrir: guárdela como JPG o súbala desde el teléfono.' in heic95 and 'Intente con otra' not in heic95,
+       'una fotografía HEIC que el navegador no abre dice qué hacer con ella: %s' % heic95)
+    ok(err95 == [], 'sin errores de consola: %s' % err95[:2])
+    ctx95.close()
+
     b.close()
 
 

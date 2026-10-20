@@ -358,7 +358,7 @@ SRP.formulario = {
       this.ponerFoto(f.datos, SRP.util.generarId(), f.nombre, f.bytes);
       SRP.util.anunciarSilencioso('Fotografía agregada.');
     } catch (err) {
-      SRP.util.anunciar(err.message + ' Intente con otra fotografía.', 'alerta');
+      SRP.util.anunciar(err.message + (err.guia ? '' : ' Intente con otra fotografía.'), 'alerta');
     }
   },
 

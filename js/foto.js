@@ -72,9 +72,17 @@ SRP.foto = {
     return (bytes / 1024 / 1024 / 1024).toFixed(1) + ' GB';   // el espacio del teléfono, en la guía
   },
 
+  /* HEIC, el formato de las fotografías del iPhone: Safari la abre, y en el iPhone el navegador la entrega
+     ya en JPEG; en computadora muchos navegadores no la abren, ni dicen que es una imagen. Se reconoce por
+     el nombre o el tipo, para decir qué hacer con ella. */
+  esHeic(archivo) { return /^image\/hei[cf]/.test(archivo.type) || /\.hei[cf]$/i.test(archivo.name || ''); },
+  AVISO_HEIC: 'La fotografía está en formato HEIC, el de los iPhone, y este navegador no la puede abrir: guárdela como JPG o súbala desde el teléfono.',
+
   comprimir(archivo) {
     return new Promise((resolver, rechazar) => {
-      if (!archivo || !archivo.type.startsWith('image/')) { rechazar(new Error('El archivo no es una imagen.')); return; }
+      // `guia`: el mensaje ya dice qué hacer
+      const heic = archivo && this.esHeic(archivo), noSePuede = () => Object.assign(new Error(this.AVISO_HEIC), { guia: true });
+      if (!archivo || !(archivo.type.startsWith('image/') || heic)) { rechazar(new Error('El archivo no es una imagen.')); return; }
       const url = URL.createObjectURL(archivo);
       const img = new Image();
       img.onload = () => {
@@ -86,12 +94,15 @@ SRP.foto = {
         const lienzo = document.createElement('canvas');
         lienzo.width = Math.round(img.naturalWidth * escala);
         lienzo.height = Math.round(img.naturalHeight * escala);
-        lienzo.getContext('2d').drawImage(img, 0, 0, lienzo.width, lienzo.height);
+        const g = lienzo.getContext('2d');
+        // El JPEG no tiene transparencia: lo transparente de un PNG queda blanco, no negro
+        g.fillStyle = SRP.util.colorBase('fondo'); g.fillRect(0, 0, lienzo.width, lienzo.height);
+        g.drawImage(img, 0, 0, lienzo.width, lienzo.height);
         URL.revokeObjectURL(url);
         const datos = lienzo.toDataURL('image/jpeg', CALIDAD);
         resolver({ datos, nombre: archivo.name, bytes: SRP.foto.pesoDe(datos) });
       };
-      img.onerror = () => { URL.revokeObjectURL(url); rechazar(new Error('No se pudo leer la imagen.')); };
+      img.onerror = () => { URL.revokeObjectURL(url); rechazar(heic ? noSePuede() : new Error('No se pudo leer la imagen.')); };
       img.src = url;
     });
   }

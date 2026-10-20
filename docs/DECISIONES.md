@@ -4059,3 +4059,27 @@
     hora del teléfono del futuro o de antes del programa se cambia por la del servidor. La hora en que llegó cada
     árbol y cada jornada ya la guarda la bitácora, con la del servidor: no hizo falta otra columna.
   · **Desactivar una institución cierra al momento las sesiones de sus cuentas**, como lo decía el README.
+
+- **D319. Los reportes y los archivos (bloque 239).**
+  20-10-2026. Es el bloque 4 del plan de corrección de la auditoría del 19-10-2026. Liber aprobó el antes y el
+  después del reporte y los avisos nuevos.
+  · **El recuadro de datos del reporte se reparte entre páginas.** Un dato que en media columna pasaría de tres
+    renglones ocupa el renglón entero, y si el recuadro no cabe en la página, sigue en la siguiente, con su fondo.
+    Antes, una «Solicitud especial» con textos largos se salía por el pie. Las cinco cifras pasan a la página
+    siguiente si ya no caben.
+  · **La columna «Especie» guarda al menos 45 mm** en la tabla de ejemplares: un comentario con una palabra muy
+    larga (un enlace) se parte en renglones en vez de aplastarla.
+  · **Lo que la letra del PDF no tiene.** Roboto viene recortada al alfabeto latino. Todo texto de los dos PDF —el
+    reporte de la jornada y el informe— pasa por un filtro: el acento escrito aparte se junta con su letra, las
+    marcas invisibles se quitan, el tabulador es un espacio, y lo demás (emojis, otros alfabetos) sale como «?»,
+    uno por tramo. El aviso al entregar el PDF lo dice. Lo guardado no cambia: sólo el documento.
+  · **Los PDF traen sus propiedades**: título, asunto, la Secretaría como autora, el sistema y su versión como
+    creador, el idioma (es-MX) y el título en la ventana del lector. No lleva el nombre de quien lo genera: ya va
+    en el texto.
+  · **El CSV en la codificación de Windows**, la que usa Excel en español con «CSV (delimitado por comas)», se lee:
+    si el archivo no es UTF-8 válido, se lee con la de Windows. Antes respondía «faltan columnas».
+  · **El Excel que genera el sistema** quita U+FFFE y U+FFFF, que el XML no admite: con uno solo, Excel daba el
+    libro por dañado.
+  · **Fotografías**: lo transparente de un PNG queda blanco al pasarlo a JPEG (antes, negro). Una HEIC —la de los
+    iPhone— que el navegador no abre dice qué hacer: guardarla como JPG o subirla desde el teléfono. En el iPhone
+    el navegador ya la entrega en JPEG.

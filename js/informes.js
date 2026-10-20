@@ -56,7 +56,7 @@ SRP.informes = {
     const R = SRP.reportes, C = R.colores();
     const logo = await R.cargarLogo();
     const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'letter', compress: true });
-    const F = await R.ponerFuentes(doc);
+    const F = await R.prepararPDF(doc, this.titulo(m));
     const ancho = doc.internal.pageSize.getWidth(), alto = doc.internal.pageSize.getHeight(), M = 20, util = ancho - 2 * M;
     const num = n => n == null ? '—' : Number(n).toLocaleString('es-MX');
     const cabo = SRP.permisos.de(SRP.sesion.usuario).alcance === 'propios';
@@ -202,7 +202,8 @@ SRP.informes = {
     const nombre = this.nombreArchivo(m, 'Informe', 'pdf');
     this.ultimo = { nombre, paginas };
     const r = await R.entregarArchivo(doc.output('blob'), nombre, this.titulo(m));
-    if (r !== 'cancelado') SRP.util.anunciar(r === 'descarga' ? 'Informe generado y descargado: ' + nombre + '.' : 'Informe generado y compartido.', 'exito');
+    const letra = doc.letraIncompleta ? ' ' + R.AVISO_LETRA : '';
+    if (r !== 'cancelado') SRP.util.anunciar((r === 'descarga' ? 'Informe generado y descargado: ' + nombre + '.' : 'Informe generado y compartido.') + letra, letra ? 'aviso' : 'exito');
   },
 
   /* ---------- CSV ---------- */
