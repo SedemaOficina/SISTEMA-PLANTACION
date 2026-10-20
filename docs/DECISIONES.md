@@ -4031,3 +4031,31 @@
     se queda.
   · **Una fecha imposible** (mes 13, día 45) es una fecha no válida, con su mensaje; antes daba error interno y,
     en la carga masiva, tiraba la tanda.
+- **D318. El servidor (bloque 238).**
+  20-10-2026. Es el bloque 3 del plan de corrección de la auditoría del 19-10-2026.
+  · **La carga masiva es una sola, de hasta 5,000 árboles** (Liber). El límite por archivo bajó de 20,000 a
+    5,000, y el texto ya no dice «divídalo». Con una carga hecha, otro archivo se avisa antes de cargar, sin
+    impedirlo: así se pueden subir después los renglones que se corrigieron. Liber lo prefirió a bloquear la
+    segunda, que obligaría a deshacer la primera entera para corregir un renglón.
+  · **Una carga a la vez**, en el servidor, con un candado: mientras un lote sube, otro no empieza, y se dice de
+    quién y de qué archivo es el que sube. Un lote que deja de subir 15 minutos se quedó a medias y ya no
+    estorba; se quita en «Cargas hechas». Al completar un lote se revisa otra vez que otro, completado mientras
+    éste subía, no haya traído los mismos árboles. Un lote cuya primera tanda no pasa no se queda.
+  · **Siempre queda una Administración global activa.** Desactivar, eliminar o quitarle el perfil a la última
+    se rechaza con su mensaje, revisado con un candado en la misma transacción.
+  · **Las cuentas y los valores de catálogo llevan versión al editarse**, como árboles y jornadas: el momento de
+    su último cambio en el servidor, comparado al milésimo. Si otra Administración los cambió mientras tanto, el
+    formulario se vuelve a llenar con lo suyo y lo dice (Liber eligió esto, frente a guardar sólo los campos
+    cambiados). Una edición sin versión, de una aplicación de antes, no se revisa.
+  · **Los largos máximos**, iguales en pantalla, en el servidor y en la base: nombre de catálogo 120, nombre
+    científico 140, otros nombres comunes 400, modelo 40, tipo de vehículo 30, correo 254. La prueba que compara
+    la validación de catálogos con la de la aplicación los incluye.
+  · **Lo que la base no puede guardar** —un texto más largo que su columna, un número fuera de rango, una fecha
+    imposible— es un dato que corregir (`DATOS_INVALIDOS`), no una falla del servidor.
+  · **Las fotografías se revisan enteras**: una JPEG bloque por bloque hasta su imagen, una PNG hasta su bloque
+    final, una WebP con su largo. Se guardan sin los datos de la cámara (la ubicación y el modelo del teléfono)
+    y ninguna respuesta se interpreta por su contenido. Una fotografía es de un solo árbol.
+  · **Lo raro de la API**: una precisión del GPS de más de 100 km queda sin dato; el carácter nulo se quita; una
+    hora del teléfono del futuro o de antes del programa se cambia por la del servidor. La hora en que llegó cada
+    árbol y cada jornada ya la guarda la bitácora, con la del servidor: no hizo falta otra columna.
+  · **Desactivar una institución cierra al momento las sesiones de sus cuentas**, como lo decía el README.

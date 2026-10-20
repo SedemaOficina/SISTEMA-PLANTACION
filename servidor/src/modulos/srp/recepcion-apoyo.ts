@@ -70,7 +70,8 @@ export async function esVigente(c: pg.PoolClient, tabla: Tabla, id: string, vers
 }
 
 export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-export const texto = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
+// Un texto recortado; el carácter nulo, que la base no guarda, se quita
+export const texto = (v: unknown): string => (typeof v === "string" ? v.replace(/\u0000/g, "").trim() : "");
 export const idDe = (v: unknown): string | null => (typeof v === "string" && UUID.test(v) ? v : null);
 // AAAA-MM-DD que sea un día del calendario; una fecha imposible (mes 13, día 45) no lo es, y no truena
 export const esFecha = (v: unknown): v is string => {
@@ -79,7 +80,13 @@ export const esFecha = (v: unknown): v is string => {
   return !Number.isNaN(d.getTime()) && d.toISOString().startsWith(v);
 };
 // El momento que dice el teléfono, o ahora si no trae uno que se entienda
-export const instante = (v: unknown): string => (typeof v === "string" && !Number.isNaN(Date.parse(v)) ? new Date(v).toISOString() : new Date().toISOString());
+/* El momento que dice el teléfono; ahora, si no trae uno que se entienda o si es imposible: antes de que empezara
+   el programa, o de más de diez minutos en el futuro. La hora en que llegó la guarda la bitácora, con la del
+   servidor. */
+export const instante = (v: unknown): string => {
+  const t = typeof v === "string" ? Date.parse(v) : NaN, ahora = Date.now();
+  return Number.isNaN(t) || t < Date.parse(FECHA_MINIMA + "T00:00:00-06:00") || t > ahora + 10 * 60000 ? new Date(ahora).toISOString() : new Date(t).toISOString();
+};
 const MESES = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
 // «05-OCT-2026», como lo escribe la aplicación
 export const fechaCorta = (iso: string): string => {
@@ -103,6 +110,15 @@ export const filaDe = async (c: pg.PoolClient, tabla: Tabla, id: string, bloqueo
 export const seElimino = async (c: pg.PoolClient, jornadaId: string): Promise<boolean> =>
   !!(await c.query("SELECT 1 FROM srp.bitacora WHERE entidad = 'jornada' AND entidad_id = $1 AND accion = 'ELIMINADO' LIMIT 1", [jornadaId])).rowCount;
 export const jornadaEliminada = (id: string | null): Resultado => rechazo(id, "JORNADA_ELIMINADA", "Esa jornada se eliminó en el servidor.");
+
+/* Una fotografía es de un solo árbol: el teléfono le da un id nuevo a cada una. Otro árbol con el mismo id no la
+   puede reclamar. Va con el candado de la fotografía (fotografias.ts), para que dos envíos no la tomen a la vez. */
+export async function fotoDeOtro(c: pg.PoolClient, fotoId: string | null, arbolId: string): Promise<boolean> {
+  if (!fotoId) return false;
+  await c.query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", ["srp.foto:" + fotoId]);
+  return !!(await c.query("SELECT 1 FROM srp.plantaciones WHERE foto_id = $1 AND id <> $2 LIMIT 1", [fotoId, arbolId])).rowCount;
+}
+export const FOTO_DE_OTRO: [string, string] = ["foto_id", "Esa fotografía ya es de otro árbol."];
 
 // De quién es un registro: la institución y la coordinación de cada persona que responde de él
 export async function autoresDe(c: pg.PoolClient, x: Fila): Promise<Autores> {
@@ -130,7 +146,8 @@ export interface Punto {
 export function puntoDe(d: Record<string, unknown>): Punto | null {
   const { lat, lng } = d;
   if (typeof lat !== "number" || typeof lng !== "number" || !Number.isFinite(lat) || !Number.isFinite(lng)) return null;
-  const precision = typeof d.gps_precision_m === "number" && Number.isFinite(d.gps_precision_m) && d.gps_precision_m >= 0 ? Math.round(d.gps_precision_m) : null;
+  // Una precisión de más de 100 km no es una lectura del GPS: queda sin dato
+  const precision = typeof d.gps_precision_m === "number" && Number.isFinite(d.gps_precision_m) && d.gps_precision_m >= 0 && d.gps_precision_m <= 100000 ? Math.round(d.gps_precision_m) : null;
   return {
     lat: Number(lat.toFixed(6)),
     lng: Number(lng.toFixed(6)),

@@ -145,19 +145,19 @@ variables de entorno, está explicada en `src/modulos/srp/config.ts`. Las respue
 | `GET /acceso/yo` | La cuenta de la sesión y si debe cambiar su contraseña | Con sesión |
 | `POST /acceso/contrasena` | Cambia la contraseña; cierra las demás sesiones de la cuenta | Con sesión |
 | `POST /cuentas` | Alta con contraseña temporal, que se responde una sola vez | Administración global |
-| `PUT /cuentas/:id` | Edición: nombre, institución, área, cargo, perfil y coordinadores; el correo no cambia | Administración global |
+| `PUT /cuentas/:id` | Edición: nombre, institución, área, cargo, perfil y coordinadores, con la versión de la cuenta; el correo no cambia | Administración global |
 | `POST /cuentas/:id/restablecer` | Otra contraseña temporal; cierra las sesiones de la cuenta | Administración global |
-| `POST /cuentas/:id/estado` | Activa o desactiva; desactivar cierra sus sesiones | Administración global |
+| `POST /cuentas/:id/estado` | Activa o desactiva; desactivar cierra sus sesiones. La última Administración global activa no se desactiva | Administración global |
 | `GET /cuentas/usos` | En qué aparece cada cuenta: árboles, jornadas, otras cuentas (y los cabos que coordina), catálogos y si ya entró al sistema | Administración global |
 | `DELETE /cuentas/:id` | Elimina una cuenta que no aparece en nada y nunca entró; la que aparece, se desactiva | Administración global |
 | `GET /catalogos` | Los seis catálogos completos, también lo inactivo | Con sesión |
 | `GET /catalogos/:tabla/usos` | Cuántos árboles, jornadas y cuentas usan cada valor | Administración global |
 | `POST /catalogos/:tabla` | Alta de un valor | Administración global |
-| `PUT /catalogos/:tabla/:id` | Edición (en instituciones, sólo el nombre) | Administración global |
+| `PUT /catalogos/:tabla/:id` | Edición (en instituciones, sólo el nombre), con la versión del valor | Administración global |
 | `POST /catalogos/:tabla/:id/estado` | Activa o desactiva | Administración global |
 | `DELETE /catalogos/:tabla/:id` | Elimina un valor sin uso | Administración global |
 | `POST /envios` | Lo que manda el teléfono: jornadas y árboles nuevos, con su folio, y lo que después se les hace | Según la operación |
-| `PUT /fotos/:id` | La fotografía de un árbol, tal cual; `id` es su `foto_id` | Quien puede editar el árbol |
+| `PUT /fotos/:id` | La fotografía de un árbol; `id` es su `foto_id`. Se revisa entera y se guarda sin los datos de la cámara | Quien puede editar el árbol |
 | `GET /fotos/:id` | La fotografía | Quien ve el árbol y descarga fotografías |
 | `GET /fotos/uso` | Cuántas fotografías hay, cuánto ocupan y cuánto ocuparían en un año | Administración global |
 | `GET /cuentas` | Las cuentas que ve cada quien, para decir quién registró qué; sólo la Administración global ve el correo | Con sesión |
@@ -168,7 +168,7 @@ variables de entorno, está explicada en `src/modulos/srp/config.ts`. Las respue
 | `GET /jornadas` | Las jornadas de su alcance, por páginas | Con sesión |
 | `GET /plantaciones` | Los árboles de su alcance, por páginas, sin la fotografía | Con sesión |
 | `GET /plantaciones/:id/historial` | Lo que se le hizo a un árbol, en orden; de otro árbol, como si no existiera | Quien ve el árbol |
-| `PUT /cargas/:id/tandas/:n` | Una tanda de un lote de carga masiva, hasta 400 árboles con las jornadas que estrena; todo o nada | Administración global |
+| `PUT /cargas/:id/tandas/:n` | Una tanda de un lote de carga masiva, hasta 400 árboles con las jornadas que estrena; todo o nada. Una carga a la vez | Administración global |
 | `POST /cargas/:id/completa` | El lote llegó entero: desde ahora se ve | Administración global |
 | `GET /cargas` | Los lotes de carga masiva, lo más reciente primero | Administración global |
 | `DELETE /cargas/:id` | Deshace un lote: lo oculta y elimina sus árboles, sin borrar nada | Administración global |
@@ -298,7 +298,14 @@ Lo que se le hace a una jornada que ya está en el servidor, también con las re
 **Versión.** Cada cambio trae la versión del registro que conocía el teléfono: el momento de su último cambio
 en el servidor, o el de su alta, tal como vino en la respuesta anterior. Si alguien lo cambió mientras
 tanto, no se escribe: se responde `VERSION_VIEJA` con el árbol como está ahora. Un reenvío de un cambio que
-ya se aplicó se reconoce y no se repite.
+ya se aplicó se reconoce y no se repite. Lo mismo vale para las cuentas y los valores de catálogo que edita la
+Administración global: dos Administraciones que editan lo mismo a la vez no escriben una encima de la otra.
+
+**Lo que no puede ser.** Ninguna fecha de jornada o árbol antes del 01-OCT-2024, cuando empezó el programa. Una
+fotografía es de un solo árbol. Un dato que la base no puede guardar —un texto más largo que su columna, un
+número fuera de rango— responde `DATOS_INVALIDOS`, no un error interno. La última Administración global activa no
+se desactiva, no se elimina ni deja de serlo. Y la carga masiva va una a la vez: mientras un lote sube, otro no
+empieza, y un lote no se completa si otro, completado mientras subía, trajo los mismos árboles.
 
 ### Parámetros
 

@@ -24,7 +24,7 @@ const JPEG = Buffer.from('/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP////////////////////
 const OTRA = Buffer.concat([JPEG, Buffer.from('distinta')]);
 
 let admin, grupo, servidor, sinCarpeta, base, baseSin;
-const FOTO = uuid(), ARBOL = uuid(), JORNADA = uuid(), FOTO2 = uuid(), ARBOL2 = uuid();
+const FOTO = uuid(), ARBOL = uuid(), JORNADA = uuid(), FOTO2 = uuid(), ARBOL2 = uuid(), FOTO3 = uuid(), ARBOL3 = uuid();
 
 before(async () => {
   admin = await conectar();
@@ -53,11 +53,11 @@ after(async () => {
   grupo && await grupo.end();
   const ids = CUENTAS.map((u) => u.id);
   await limpiar(admin, async () => {
-    await admin.query('DELETE FROM srp.fotografias WHERE id = ANY($1::uuid[])', [[FOTO, FOTO2]]);
+    await admin.query('DELETE FROM srp.fotografias WHERE id = ANY($1::uuid[])', [[FOTO, FOTO2, FOTO3]]);
     await admin.query('ALTER TABLE srp.folios DISABLE TRIGGER folios_inmutables');
-    await admin.query('DELETE FROM srp.folios WHERE plantacion_id = ANY($1::uuid[])', [[ARBOL, ARBOL2]]);
+    await admin.query('DELETE FROM srp.folios WHERE plantacion_id = ANY($1::uuid[])', [[ARBOL, ARBOL2, ARBOL3]]);
     await admin.query('ALTER TABLE srp.folios ENABLE TRIGGER folios_inmutables');
-    await admin.query('DELETE FROM srp.plantaciones WHERE id = ANY($1::uuid[])', [[ARBOL, ARBOL2]]);
+    await admin.query('DELETE FROM srp.plantaciones WHERE id = ANY($1::uuid[])', [[ARBOL, ARBOL2, ARBOL3]]);
     await admin.query('DELETE FROM srp.jornadas WHERE id = $1', [JORNADA]);
     for (const t of ['bitacora', 'bitacora_acceso']) await admin.query(`ALTER TABLE srp.${t} DISABLE TRIGGER bitacora_inmutable`);
     await admin.query('DELETE FROM srp.bitacora WHERE usuario_id = ANY($1::uuid[])', [ids]);
@@ -142,4 +142,28 @@ test('si falta el archivo se dice, y sin carpeta el servidor responde que todav�
   const r = await (await sesion(CABO)).bajar(FOTO);
   assert.deepEqual([r.status, (await r.json()).codigo], [404, 'SIN_ARCHIVO']);
   assert.deepEqual(await (await sesion(CABO, baseSin)).subir(FOTO, JPEG), { estado: 503, datos: { codigo: 'SIN_FOTOGRAFIAS', mensaje: 'Este servidor todavía no recibe fotografías.' } });
+});
+
+// Un bloque de una JPEG: su marca, su largo y su contenido
+const bloque = (marca, texto) => { const c = Buffer.from(texto, 'latin1'), b = Buffer.from([0xff, marca, 0, 0]); b.writeUInt16BE(c.length + 2, 2); return Buffer.concat([b, c]); };
+
+test('lo que llega se revisa entero y se guarda sin los datos de la cámara; la fotografía es de un solo árbol', async () => {
+  const cabo = await sesion(CABO);
+  // Sólo el comienzo de una imagen y luego otra cosa, o una WebP que sólo trae su cabecera: no entran
+  const polizon = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff]), Buffer.from('<html><script>alert(1)</script></html>')]);
+  assert.equal((await cabo.subir(uuid(), polizon)).datos.codigo, 'NO_ES_IMAGEN');
+  assert.equal((await cabo.subir(uuid(), Buffer.concat([Buffer.from('RIFF'), Buffer.alloc(4), Buffer.from('WEBP')]))).datos.codigo, 'NO_ES_IMAGEN');
+  // Una JPEG con la ubicación y el modelo del teléfono (APP1) y un comentario se guarda sin ellos
+  const especie = (await admin.query('SELECT id FROM srp.especies WHERE activo ORDER BY id LIMIT 1')).rows[0].id;
+  const arbol = (id, foto) => ({ tipo: 'registro.crear', datos: { id, jornada_id: JORNADA, lat: 19.4328, lng: -99.1334, punto_origen: 'gps', especie_id: especie, fecha_plantacion: HOY, foto_id: foto } });
+  assert.equal((await cabo.json('/envios', 'POST', { operaciones: [arbol(ARBOL3, FOTO3)] })).datos.resultados[0].estado, 'recibido');
+  const conCamara = Buffer.concat([JPEG.subarray(0, 2), bloque(0xe1, 'Exif\0\0GPS 19N 99W, Telefono X'), bloque(0xfe, 'un comentario'), JPEG.subarray(2)]);
+  const s = await cabo.subir(FOTO3, conCamara);
+  assert.deepEqual([s.estado, s.datos.bytes], [201, JPEG.length], JSON.stringify(s.datos));
+  assert.deepEqual(fs.readFileSync(path.join(CARPETA, FOTO3.slice(0, 2), FOTO3 + '.jpg')), JPEG, 'el archivo, sin los datos de la cámara');
+  // Lo que responde el servicio no se interpreta por su contenido
+  assert.equal((await cabo.bajar(FOTO3)).headers.get('x-content-type-options'), 'nosniff');
+  // Otro árbol no puede reclamar esa fotografía
+  const otro = (await cabo.json('/envios', 'POST', { operaciones: [arbol(uuid(), FOTO3)] })).datos.resultados[0];
+  assert.deepEqual([otro.estado, otro.errores], ['rechazado', [['foto_id', 'Esa fotografía ya es de otro árbol.']]]);
 });

@@ -68,6 +68,12 @@ export function traducir(e: unknown): ErrorHttp {
   if (code === "42501") {
     return { estado: 500, codigo: "ERROR_INTERNO", mensaje: "Algo falló en el servidor. Intente de nuevo; si sigue, avise a la Administración.", detalle: "PERMISO FALTANTE para srp_api → " + detalle };
   }
+  /* Clase 22, un dato que la base no puede guardar: un texto más largo que su columna, un número fuera de rango,
+     una fecha imposible. Las reglas de cada formulario los detienen antes; si alguno se escapa, es un dato que
+     corregir y no una falla del servidor */
+  if (code.startsWith("22")) {
+    return { estado: 400, codigo: "DATOS_INVALIDOS", mensaje: "Un dato no tiene la forma que espera el servidor: revise lo escrito.", detalle };
+  }
   // 23505, valor repetido: dos altas del mismo correo al mismo tiempo, por ejemplo
   if (code === "23505") {
     return { estado: 409, codigo: "REPETIDO", mensaje: POR_REGLA[err.constraint ?? ""] ?? "Ese dato ya existe.", detalle };

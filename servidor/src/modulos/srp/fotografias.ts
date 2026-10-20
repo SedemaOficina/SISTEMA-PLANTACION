@@ -20,7 +20,8 @@ import { enTransaccion } from "./transaccion";
    La fotografía llega después de su árbol, de quien puede editarlo. No se reemplaza: una nueva lleva otro id.
    Reenviar la misma (la misma huella) da la misma respuesta; otra distinta con el mismo id se rechaza. Dos
    envíos del mismo id van uno a la vez. El archivo se escribe completo antes de registrarlo, así que nunca
-   queda registrada una fotografía a medias. */
+   queda registrada una fotografía a medias. Lo que llega se revisa entero y se guarda sin los datos de la cámara
+   (imagenLimpia, abajo). */
 
 const TIPOS: { tipo: string; extension: string; es: (b: Buffer) => boolean }[] = [
   { tipo: "image/jpeg", extension: "jpg", es: (b) => b.length > 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff },
@@ -28,6 +29,29 @@ const TIPOS: { tipo: string; extension: string; es: (b: Buffer) => boolean }[] =
   { tipo: "image/webp", extension: "webp", es: (b) => b.length > 12 && b.toString("latin1", 0, 4) === "RIFF" && b.toString("latin1", 8, 12) === "WEBP" },
 ];
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+/* LO QUE ES UNA IMAGEN, no sólo su comienzo. Una JPEG se recorre bloque por bloque hasta su imagen, y sin los datos
+   de la cámara —la ubicación y el modelo del teléfono, en APP1, y los comentarios—: la aplicación ya los quita, pero
+   a la API le puede llegar una con ellos. Una PNG termina en su bloque IEND; una WebP dice su largo y trae su
+   bloque VP8. Devuelve los bytes que se guardan, o null si no es una imagen completa. */
+function imagenLimpia(tipo: string, b: Buffer): Buffer | null {
+  if (tipo === "image/png") return b.length > 20 && b.toString("latin1", b.length - 8, b.length - 4) === "IEND" ? b : null;
+  if (tipo === "image/webp") return b.length > 16 && b.readUInt32LE(4) + 8 === b.length && /^VP8[ LX]$/.test(b.toString("latin1", 12, 16)) ? b : null;
+  const partes: Buffer[] = [b.subarray(0, 2)];
+  let i = 2;
+  for (;;) {
+    if (i + 4 > b.length || b[i] !== 0xff) return null;
+    const marca = b[i + 1];
+    // La imagen comprimida: de aquí al final, tal cual
+    if (marca === 0xda) break;
+    const largo = b.readUInt16BE(i + 2);
+    if (largo < 2 || i + 2 + largo > b.length) return null;
+    if (marca !== 0xe1 && marca !== 0xfe) partes.push(b.subarray(i, i + 2 + largo));
+    i += 2 + largo;
+  }
+  partes.push(b.subarray(i));
+  return Buffer.concat(partes);
+}
 
 // Dónde vive el archivo: en subcarpetas por los dos primeros caracteres del id, para no juntar miles en una
 const rutaDe = (carpeta: string, id: string, extension: string) => path.join(carpeta, id.slice(0, 2), id + "." + extension);
@@ -69,9 +93,10 @@ export function rutasFotografias(pool: pg.Pool, config: ConfigSrp, sesion: Reque
     if (!dir) return;
     const id = String(req.params.id);
     if (!UUID.test(id)) return responder(res, 404, "NO_EXISTE", "Esa fotografía no existe.");
-    const datos = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
-    const tipo = TIPOS.find((t) => t.es(datos));
-    if (!tipo) return responder(res, 400, "NO_ES_IMAGEN", "La fotografía no es una imagen JPEG, PNG o WebP.");
+    const recibidos = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
+    const tipo = TIPOS.find((t) => t.es(recibidos));
+    const datos = tipo ? imagenLimpia(tipo.tipo, recibidos) : null;
+    if (!tipo || !datos) return responder(res, 400, "NO_ES_IMAGEN", "La fotografía no es una imagen JPEG, PNG o WebP.");
     const sha256 = createHash("sha256").update(datos).digest("hex");
     const u = sesionDe(res).usuario;
 

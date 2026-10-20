@@ -5,7 +5,7 @@ import { sesionDe } from "./acceso";
 import { anotarCambio } from "./bitacora";
 import { responder } from "./errores";
 import { exigirPermiso, SEDEMA } from "./permisos";
-import type { Consultable } from "./sesiones";
+import { cerrarDeCuenta, type Consultable } from "./sesiones";
 import { enTransaccion } from "./transaccion";
 
 /* CATÁLOGOS: programas, áreas, especies, vehículos, instituciones y solicitantes, con las reglas del
@@ -15,8 +15,9 @@ import { enTransaccion } from "./transaccion";
    GET    /catalogos                       los seis, completos, también lo inactivo   Con sesión
    GET    /catalogos/:tabla/usos           cuántos árboles, jornadas y cuentas usan cada valor
    POST   /catalogos/:tabla                alta
-   PUT    /catalogos/:tabla/:id            edición (en instituciones, sólo el nombre)
-   POST   /catalogos/:tabla/:id/estado     { activo } → activa o desactiva
+   PUT    /catalogos/:tabla/:id            edición (en instituciones, sólo el nombre), con la versión del valor
+   POST   /catalogos/:tabla/:id/estado     { activo } → activa o desactiva; una institución desactivada cierra las
+                                           sesiones de sus cuentas
    DELETE /catalogos/:tabla/:id            elimina un valor sin uso
    Salvo la lectura, todo es de quien administra catálogos: la Administración global.
 
@@ -135,6 +136,10 @@ export function datosDe(tabla: Tabla, b: Record<string, unknown>, editando: Fila
   return d;
 }
 
+// Los largos máximos, los mismos que la pantalla (maxlength) y que las columnas de la base
+export const LARGOS = { nombre: 120, nombre_cientifico: 140, otros_nombres_comunes: 400, modelo: 40, tipo_vehiculo: 30 };
+const LARGO_NOMBRE = "El nombre lleva hasta " + LARGOS.nombre + " caracteres.";
+
 /** Las reglas del formulario de catálogos de la aplicación, una por una. `existentes`: los renglones de
  *  la tabla, también los inactivos; `editando`: el que se edita, o null en un alta. Devuelve
  *  [campo, mensaje] por cada error. */
@@ -147,7 +152,9 @@ export function validarCatalogo(tabla: Tabla, d: Datos, existentes: Fila[], edit
     else if (!/^[A-Z0-9][A-Z0-9 -]{2,10}[A-Z0-9]$/.test(d.nombre) || !/\d/.test(d.nombre)) e.push(["nombre", "La placa lleva de 4 a 12 letras y números, con espacios o guiones: «1234 AB»."]);
     else if (mismos.some((c) => clavePlaca(c.nombre) === clavePlaca(d.nombre))) e.push(["nombre", "Ya existe un vehículo con esa placa."]);
     if (!d.modelo) e.push(["modelo", "Escriba el modelo."]);
+    else if (String(d.modelo).length > LARGOS.modelo) e.push(["modelo", "El modelo lleva hasta " + LARGOS.modelo + " caracteres."]);
     if (!d.tipo_vehiculo) e.push(["tipo_vehiculo", "Escriba el tipo de vehículo."]);
+    else if (String(d.tipo_vehiculo).length > LARGOS.tipo_vehiculo) e.push(["tipo_vehiculo", "El tipo de vehículo lleva hasta " + LARGOS.tipo_vehiculo + " caracteres."]);
     return e;
   }
   // Institución: tipo al agregarla (nunca Alcaldía), nombre único entre todas; una alcaldía no se renombra
@@ -155,17 +162,20 @@ export function validarCatalogo(tabla: Tabla, d: Datos, existentes: Fila[], edit
     if (!editando && !d.tipo_organizacion) e.push(["tipo_organizacion", "Elija el tipo de institución."]);
     else if (!editando && d.tipo_organizacion === "Alcaldía") e.push(["tipo_organizacion", "Las alcaldías ya están dadas de alta: actívela en la lista."]);
     if (!d.nombre) e.push(["nombre", "Escriba el nombre."]);
+    else if (d.nombre.length > LARGOS.nombre) e.push(["nombre", LARGO_NOMBRE]);
     else if (repetido("nombre", d.nombre)) e.push(["nombre", "Ya existe una institución con ese nombre."]);
     if (editando && esFija(tabla, editando)) e.push(["nombre", "Las alcaldías no se renombran."]);
     return e;
   }
   if (tabla === "solicitantes") {
     if (!d.nombre) e.push(["nombre", "Escriba el nombre."]);
+    else if (d.nombre.length > LARGOS.nombre) e.push(["nombre", LARGO_NOMBRE]);
     else if (repetido("nombre", d.nombre)) e.push(["nombre", "Ya existe un solicitante con ese nombre."]);
     if (!TIPOS_SOLICITANTE.includes(String(d.tipo_solicitante))) e.push(["tipo_solicitante", "Elija el tipo de solicitante."]);
     return e;
   }
   if (!d.nombre) e.push(["nombre", "Escriba el nombre."]);
+  else if (d.nombre.length > LARGOS.nombre) e.push(["nombre", LARGO_NOMBRE]);
   else if (repetido("nombre", d.nombre)) e.push(["nombre", "Ya existe un valor con ese nombre."]);
   if (!editando) {
     if (tabla === "especies") {
@@ -176,8 +186,10 @@ export function validarCatalogo(tabla: Tabla, d: Datos, existentes: Fila[], edit
   if (tabla === "especies") {
     const cientifico = String(d.nombre_cientifico);
     if (!cientifico) e.push(["nombre_cientifico", "Escriba el nombre científico."]);
+    else if (cientifico.length > LARGOS.nombre_cientifico) e.push(["nombre_cientifico", "El nombre científico lleva hasta " + LARGOS.nombre_cientifico + " caracteres."]);
     else if (!/^[A-ZÁÉÍÓÚ][a-záéíóú-]+ \S+/.test(cientifico)) e.push(["nombre_cientifico", "El nombre científico lleva género con inicial mayúscula y epíteto: «Quercus rugosa»."]);
     else if (repetido("nombre_cientifico", cientifico)) e.push(["nombre_cientifico", "Ya existe una especie con ese nombre científico."]);
+    if (String(d.otros_nombres_comunes).length > LARGOS.otros_nombres_comunes) e.push(["otros_nombres_comunes", "Otros nombres comunes lleva hasta " + LARGOS.otros_nombres_comunes + " caracteres."]);
     if (!PALETA.includes(String(d.paleta_vegetal))) e.push(["paleta_vegetal", "Diga si la especie pertenece a la paleta vegetal de la Secretaría."]);
     if (!FRUTO.includes(String(d.fruto_comestible))) e.push(["fruto_comestible", "Diga si su fruto es comestible; si aún no se sabe, elija «Por determinar»."]);
     if (d.id_enciclovida !== null && !Number.isInteger(d.id_enciclovida)) e.push(["id_enciclovida", "El id de EncicloVida es un número entero."]);
@@ -231,6 +243,20 @@ async function usosDe(bd: Consultable, tabla: Tabla, id: string | null = null): 
 const filasDe = async (bd: Consultable, tabla: Tabla): Promise<Fila[]> => (await bd.query<{ fila: Fila }>(`SELECT to_jsonb(x) AS fila FROM srp.${tabla} x ORDER BY x.id`)).rows.map((r) => r.fila);
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+/* LA VERSIÓN DE UN VALOR DE CATÁLOGO O DE UNA CUENTA: el momento de su último cambio, o el de su alta. La edición
+   la trae como la conoció quien la abrió; si otra Administración la cambió mientras tanto, no se escribe encima,
+   como con árboles y jornadas (S-16). Se compara al milésimo, la precisión con que viaja. Sin versión —una
+   aplicación de antes— no se revisa. */
+export async function mismaVersion(c: pg.PoolClient, tabla: "usuarios" | Tabla, id: string, version: unknown): Promise<boolean> {
+  if (version === undefined || version === null) return true;
+  if (typeof version !== "string" || Number.isNaN(Date.parse(version))) return false;
+  const r = await c.query<{ igual: boolean }>(
+    `SELECT date_trunc('milliseconds', coalesce(fecha_ultima_edicion, fecha_creacion)) = date_trunc('milliseconds', $2::timestamptz) AS igual FROM srp.${tabla} WHERE id = $1`,
+    [id, version],
+  );
+  return r.rows[0]?.igual === true;
+}
 
 export function rutasCatalogos(pool: pg.Pool, sesion: RequestHandler): Router {
   const r = Router();
@@ -301,6 +327,7 @@ export function rutasCatalogos(pool: pg.Pool, sesion: RequestHandler): Router {
       const existentes = await filasDe(c, tabla);
       const previo = existentes.find((x) => x.id === id);
       if (!previo) return null;
+      if (!(await mismaVersion(c, tabla, id, b.version))) return { vieja: true };
       const d = datosDe(tabla, b, previo, existentes);
       const errores = [...validarCatalogo(tabla, d, existentes, previo), ...revisarOpciones(tabla, d, existentes, previo)];
       if (errores.length) return { errores };
@@ -316,6 +343,7 @@ export function rutasCatalogos(pool: pg.Pool, sesion: RequestHandler): Router {
       return { fila };
     });
     if (!resultado) return responder(res, 404, "NO_EXISTE", "Ese valor no existe en el catálogo.");
+    if ("vieja" in resultado) return responder(res, 409, "VERSION_VIEJA", "Alguien más cambió este valor mientras usted lo editaba.");
     if ("errores" in resultado) return res.status(400).json({ codigo: "DATOS_INVALIDOS", mensaje: "Revise los datos del catálogo.", errores: resultado.errores });
     res.json(resultado.fila);
   });
@@ -337,6 +365,10 @@ export function rutasCatalogos(pool: pg.Pool, sesion: RequestHandler): Router {
       )).rows[0].fila;
       // Si ya estaba así, no hay cambio que anotar
       if (previo.activo !== activo) await anotarCambio(c, actor, activo ? "ACTIVADO" : "DESACTIVADO", "catalogo", id);
+      // Una institución desactivada deja fuera a sus cuentas al momento, como al desactivar una cuenta
+      if (tabla === "instituciones" && previo.activo && !activo) {
+        for (const x of (await c.query<{ id: string }>("SELECT id FROM srp.usuarios WHERE organizacion_id = $1", [id])).rows) await cerrarDeCuenta(c, x.id, "INSTITUCION_DESACTIVADA");
+      }
       return actual;
     });
     if (!fila) return responder(res, 404, "NO_EXISTE", "Ese valor no existe en el catálogo.");

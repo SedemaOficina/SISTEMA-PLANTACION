@@ -149,19 +149,20 @@ SRP.galeria = {
     this.el('dlg-foto').showModal();
   },
 
-  // Nombre legible y seguro para cualquier sistema de archivos: Foto_CUH-021-00001_2026-09-23_Fresno.jpg
-  nombreFoto(r) {
+  // Nombre legible y seguro para cualquier sistema de archivos: Foto_CUH-021-00001_2026-09-23_Fresno.jpg, con la extensión de su tipo
+  EXTENSION: { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp' },
+  nombreFoto(r, tipo) {
     const e = SRP.ref.especieDe(r);
     const limpio = t => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9-]+/g, '_').replace(/^_+|_+$/g, '');
     const clave = SRP.folio.valido(r.folio) ? r.folio : r.id.slice(0, 8);
-    return 'Foto_' + limpio(clave) + '_' + r.fecha_plantacion + '_' + limpio(e.comun).slice(0, 30) + '.jpg';
+    return 'Foto_' + limpio(clave) + '_' + r.fecha_plantacion + '_' + limpio(e.comun).slice(0, 30) + (this.EXTENSION[String(tipo || '').split(';')[0]] || '.jpg');
   },
 
   async descargar(r) {
     const b = await SRP.foto.bytes(r);
     if (!b) { SRP.util.anunciar('No se pudo bajar la fotografía del servidor. Intente de nuevo con señal.', 'alerta'); return; }
     const blob = new Blob([b.datos], { type: b.tipo });
-    const res = await SRP.reportes.entregarArchivo(blob, this.nombreFoto(r), 'Fotografía del registro');
+    const res = await SRP.reportes.entregarArchivo(blob, this.nombreFoto(r, b.tipo), 'Fotografía del registro');
     if (res !== 'cancelado') SRP.util.anunciarSilencioso('Fotografía descargada.');
   },
 
@@ -183,8 +184,8 @@ SRP.galeria = {
         const bytes = await Promise.all(lote.map(r => SRP.foto.bytes(r)));
         lote.forEach((r, k) => {
           if (!bytes[k]) { faltan++; return; }
-          let n = this.nombreFoto(r);
-          if (nombres.has(n)) n = n.replace(/\.jpg$/, '_' + r.id.slice(0, 6) + '.jpg');   // dos árboles de la misma especie sin folio
+          let n = this.nombreFoto(r, bytes[k].tipo);
+          if (nombres.has(n)) n = n.replace(/(\.\w+)$/, '_' + r.id.slice(0, 6) + '$1');   // dos árboles de la misma especie sin folio
           nombres.add(n);
           entradas.push({ nombre: n, datos: bytes[k].datos, fecha: new Date(r.fecha_registro || Date.now()) });
         });

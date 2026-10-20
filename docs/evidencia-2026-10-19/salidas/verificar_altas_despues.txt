@@ -1,0 +1,5 @@
+V2 después: con esas dos como las únicas activas, el sistema quedó sin ninguna 0 de 8 veces · respuestas: [((200, None), (401, 'SESION_CUENTA_DESACTIVADA')), ((200, None), (409, 'ULTIMA_ADMINISTRACION'))]
+V2: 2 Administraciones desactivadas mientras tanto y reactivadas al final
+V3 vuelta 1: tandas 200/409 · completar 200/404 · árboles en la base: 3 (esperado 3)
+V3 vuelta 2: tandas 200/409 · completar 200/404 · árboles en la base: 3 (esperado 3)
+cuentas extra: ['a0d10000-0000-4000-8000-0000000000a2', 'a0d10000-0000-4000-8000-0000000000a3']

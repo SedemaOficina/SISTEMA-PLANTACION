@@ -990,6 +990,18 @@ def main():
             ok(apoyo('catalogo', {'tabla': 'areas', 'clave': clave})['fila']['nombre'] == AREA + ' renombrada' and pg.evaluate(CATALOGO, srv['id'])['local']['nombre'] == AREA + ' renombrada',
                'renombrarla también llega al servidor')
 
+            # Otra Administración la cambia mientras ésta la edita: no escribe encima, y el formulario trae lo de la otra
+            pg.click('#tabla-catalogo tr[data-id="%s"] .c-titulo' % srv['id']); pg.wait_for_timeout(300)
+            pg.evaluate("([id, nombre]) => SRP.servidor.pedir('PUT', '/catalogos/areas/' + id, { nombre })", [srv['id'], AREA + ' por otra persona'])
+            pg.fill('#cat-nombre', AREA + ' encima'); pg.click('#btn-cat-guardar'); pg.wait_for_timeout(2500)
+            v = pg.evaluate("() => [document.getElementById('dlg-catalogo').open, document.getElementById('cat-nombre').value, document.getElementById('cat-version').hidden ? '' : document.getElementById('cat-version').textContent]")
+            ok(v == [True, AREA + ' por otra persona', 'Alguien más cambió este valor mientras usted lo editaba. El formulario ya tiene lo que guardó la otra persona: revíselo y vuelva a hacer su cambio.'] and apoyo('catalogo', {'tabla': 'areas', 'clave': clave})['fila']['nombre'] == AREA + ' por otra persona',
+               'si otra Administración cambió el valor mientras se editaba, no se escribe encima: el formulario trae lo de la otra persona y lo dice: %s' % v)
+            # Con lo que trae, se vuelve a guardar
+            pg.fill('#cat-nombre', AREA + ' renombrada'); pg.click('#btn-cat-guardar')
+            pg.wait_for_function("() => !document.getElementById('dlg-catalogo').open", timeout=15000); pg.wait_for_timeout(600)
+            ok(apoyo('catalogo', {'tabla': 'areas', 'clave': clave})['fila']['nombre'] == AREA + ' renombrada', 'y con lo que trae el formulario, el cambio se guarda')
+
             # Lo que el servidor no acepta se dice en el formulario: otra persona ya dio de alta ese nombre
             OTRA = 'Otra área de la prueba ' + CORRIDA
             apoyo('otro_valor', {'tabla': 'areas', 'id': str(uuid.uuid4()), 'clave': 'OTRA_PRUEBA_' + CORRIDA, 'nombre': OTRA, 'por': ADMIN['id']})
@@ -1139,6 +1151,29 @@ def main():
                and len(folios) == 4 and all(re.match(r'^[A-Z]{3}-\d{3}-\d{5}$', x or '') for x in folios) and lista and nombre in lista[0] and 'Deshacer carga' in lista[0],
                'la carga masiva sube al servidor por tandas: los árboles vuelven con su folio y se ven, y el lote aparece en «Cargas hechas»: %s · %s' % (lote, folios))
 
+            # Con una carga hecha, otro archivo se avisa antes: la carga histórica es de una sola vez
+            otro_archivo = os.path.join(fotos, 'carga-otra-%s.csv' % CORRIDA)
+            with open(otro_archivo, 'w', encoding='utf-8', newline='') as f:
+                f.write('Latitud,Longitud,Nombre científico,Fecha de plantación,Programa,Tipo de institución,Institución\n')
+                for i in range(2):
+                    f.write('%.6f,%.6f,Taxodium mucronatum,2024-11-11,Reforestación Urbana,Alcaldía,Iztapalapa\n' % (19.36 + (int(CORRIDA) % 997) / 100000 + i * 0.0001, -99.08 - i * 0.0001))
+            pg.set_input_files('#carga-archivo', otro_archivo); pg.wait_for_timeout(2500)
+            pg.click('#btn-carga-cargar'); pg.wait_for_selector('#dlg-confirmar[open]')
+            c = pg.evaluate(CONFIRMAR)
+            pg.click('#btn-confirmar-no'); pg.wait_for_timeout(500)
+            ok(c['titulo'].startswith('Ya hay ') and c['pregunta'].endswith('¿Cargar este archivo también?') and c['puntos'][0] == 'Lo que ya está en el sistema no se vuelve a cargar.'
+               and c['botones'] == ['Cargar', 'Cancelar'] and not [x for x in pg.evaluate(LOTES) if x['archivo'] == os.path.basename(otro_archivo)],
+               'con una carga ya hecha, cargar otro archivo pregunta antes, y «Cancelar» no carga nada: %s' % c)
+            # Un histórico de un árbol por día estrena muchas jornadas: las tandas se arman por peso y caben en lo que recibe el servidor
+            g = pg.evaluate("""() => { const j = [], a = [];
+              for (let i = 0; i < 300; i++) { const id = crypto.randomUUID(); j.push({ id, organizacion_id: crypto.randomUUID(), programa_id: 'p-refor', fecha: '2025-01-01' });
+                a.push({ id: crypto.randomUUID(), jornada_id: id, renglon: 10000 + i, lat: 19.123456, lng: -99.123456, especie_id: 'ESP-0070', fecha_plantacion: '2025-01-01', revisado: false }); }
+              const t = SRP.carga.tandas(a, j);
+              return { tandas: t.length, maximo: Math.max(...t.map(x => JSON.stringify({ archivo: 'archivo-de-prueba.xlsx', jornadas: x.jornadas, arboles: x.arboles }).length)),
+                arboles: t.reduce((s, x) => s + x.arboles.length, 0), jornadas: t.reduce((s, x) => s + x.jornadas.length, 0) }; }""")
+            ok(g['tandas'] > 1 and g['maximo'] < 100 * 1024 and g['arboles'] == 300 and g['jornadas'] == 300,
+               '300 árboles en 300 jornadas se parten en tandas que caben en los 100 KB del servidor: %s' % g)
+
             # «Deshacer carga» lo quita de la vista; el mismo archivo se puede volver a cargar
             pg.click('#carga-lotes button[data-lote="%s"]' % lote['id']); pg.wait_for_selector('#dlg-confirmar[open]')
             pg.fill('#confirmar-palabra', 'DESHACER'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(6000)
@@ -1149,6 +1184,18 @@ def main():
             otra_vez = pg.inner_text('#btn-carga-cargar')
             ok(k.get('estado') == 'deshecha' and folios == [] and 'Deshecha el' in lista[0] and otra_vez.strip() == 'Cargar 4 árboles',
                '«Deshacer carga» la quita de la vista y del teléfono, y el mismo archivo se puede volver a cargar: %s · %s' % (k, otra_vez))
+
+            # Mientras otra carga sube, ésta espera y se dice; no llega nada
+            otro_lote = str(uuid.uuid4())
+            r = pg.evaluate("""lote => { const a0 = SRP.carga.revision.listos[0], j = { id: crypto.randomUUID(), organizacion_id: a0.org.id, programa_id: a0.programa.id, fecha: a0.fecha };
+              return SRP.servidor.pedir('PUT', '/cargas/' + lote + '/tandas/1', { archivo: 'otra-carga.csv', jornadas: [j],
+                arboles: [{ id: crypto.randomUUID(), jornada_id: j.id, renglon: 2, lat: a0.lat + 0.002, lng: a0.lng, especie_id: a0.especie.id, fecha_plantacion: a0.fecha, revisado: false }] }).then(r => r.ok); }""", otro_lote)
+            pg.click('#btn-carga-cargar'); pg.wait_for_selector('#dlg-confirmar[open]'); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(3000)
+            aviso = pg.evaluate("() => document.getElementById('aviso').textContent")
+            pg.evaluate("lote => SRP.servidor.pedir('DELETE', '/cargas/' + lote)", otro_lote)
+            ok(r and 'Hay otra carga subiendo: la de ' + ADMIN['nombre'] + ', del archivo «otra-carga.csv». Espere a que termine e intente de nuevo. No se cargó nada.' in aviso
+               and not [x for x in pg.evaluate(LOTES) if x['archivo'] == nombre and x['estado'] != 'deshecha'],
+               'mientras otra carga sube, ésta espera y lo dice, sin cargar nada: %s' % aviso)
 
             # Sin conexión no se carga nada, y se dice
             ctx.route('**/api/srp/**', lambda r: r.abort())
@@ -1199,6 +1246,19 @@ def main():
             ok(correo_fijo and srv and srv.get('cargo_rol') == 'Cabo de prueba, editado' and 'Cuenta actualizada' in pg.evaluate(AVISO)
                and pg.evaluate("id => SRP.ref.usuarioPorId[id].cargo_rol", NUEVA['id']) == 'Cabo de prueba, editado',
                'editar una cuenta va al servidor y cambia en el teléfono; el correo no se edita: %s' % (srv and srv.get('cargo_rol')))
+
+            # Otra Administración la cambia mientras ésta la edita: no escribe encima, y el formulario trae lo de la otra
+            pg.click('#tabla-usuarios tr[data-id="%s"] .c-titulo' % NUEVA['id']); pg.wait_for_selector('#dlg-usuario[open]')
+            pg.evaluate("""id => { const u = SRP.ref.usuarioPorId[id];
+              return SRP.servidor.pedir('PUT', '/cuentas/' + id, { nombre_completo: u.nombre_completo, organizacion_id: u.organizacion_id, area_id: u.area_id,
+                cargo_rol: 'Cambiado por otra persona', perfil: u.perfil, coordinadores_ids: u.coordinadores_ids || [] }); }""", NUEVA['id'])
+            pg.fill('#usr-cargo', 'Encima'); pg.click('#btn-usr-guardar'); pg.wait_for_timeout(2500)
+            ve = pg.evaluate("() => [document.getElementById('dlg-usuario').open, document.getElementById('usr-cargo').value, document.getElementById('usr-version').hidden ? '' : document.getElementById('usr-version').textContent]")
+            ok(ve == [True, 'Cambiado por otra persona', 'Alguien más cambió esta cuenta mientras usted la editaba. El formulario ya tiene lo que guardó la otra persona: revíselo y vuelva a hacer su cambio.'] and pg.evaluate(CUENTA_SRV, NUEVA['correo']).get('cargo_rol') == 'Cambiado por otra persona',
+               'si otra Administración cambió la cuenta mientras se editaba, no se escribe encima: el formulario trae lo de la otra persona y lo dice: %s' % ve)
+            pg.fill('#usr-cargo', 'Cabo de prueba, editado'); pg.click('#btn-usr-guardar'); pg.wait_for_timeout(2000)
+            ok(pg.evaluate("() => !document.getElementById('dlg-usuario').open") and pg.evaluate(CUENTA_SRV, NUEVA['correo']).get('cargo_rol') == 'Cabo de prueba, editado',
+               'y con lo que trae el formulario, el cambio se guarda')
 
             # «Restablecer contraseña»: confirma, da otra temporal y la de antes deja de servir
             accion_usuario(pg, NUEVA['id'], 'restablecer'); pg.wait_for_selector('#dlg-confirmar[open]')

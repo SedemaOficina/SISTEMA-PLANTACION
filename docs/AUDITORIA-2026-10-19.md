@@ -273,7 +273,7 @@ reprodujo además el auditor, en su propio entorno, como se dice en cada uno.
 - **Corrección propuesta:** al completar un lote, volver a revisar la huella contra lo ya visible, dentro de un
   bloqueo, y rechazar o marcar lo repetido.
 - **Listo cuando:** la prueba de dos lotes intercalados deja 3 árboles y el segundo lote dice «ya estaban».
-- **Estado:** Abierto.
+- **Estado:** Corregido en el bloque 238 (1.0.3): una carga a la vez, y la revisión al completar. Liber: habrá una sola carga, de hasta 5,000 árboles. Pruebas permanentes en `servidor/pruebas/cargas.test.js` y `prueba_conexion.py`.
 
 #### E3-R4-02 · Alta · El sistema puede quedar sin ninguna Administración global activa
 - **Prioridad, esfuerzo:** 8 · S. **Auditoría y etapa:** E3 · antes de usar datos reales.
@@ -287,7 +287,7 @@ reprodujo además el auditor, en su propio entorno, como se dice en cada uno.
 - **Corrección propuesta:** antes de desactivar, eliminar o quitar el perfil de Administración a cualquier
   cuenta, comprobar en la misma transacción, con bloqueo, que queda al menos otra activa.
 - **Listo cuando:** la prueba simultánea deja siempre al menos una activa.
-- **Estado:** Abierto.
+- **Estado:** Corregido en el bloque 238 (1.0.3): la última Administración global activa no se desactiva, no se elimina ni deja de serlo, con candado. Prueba permanente en `servidor/pruebas/acceso.test.js`: dos que se desactivan, y dos que se quitan el perfil, al mismo tiempo.
 
 #### A1-01 · Alta · La prueba completa de la aplicación ya no termina
 - **Prioridad, esfuerzo:** 10 · M. **Auditoría y etapa:** A1 · cada cambio.
@@ -670,3 +670,22 @@ El dueño aprobó los bloques 1 y 2 del plan (sección 11) el 19-10-2026, con su
 | E3-R1-05 | Corregido en parte | «Hoy» y la hora en la zona de la Ciudad, y la franja de la hora del teléfono. Falta que el servidor guarde su propia hora de recepción | `prueba_conexion.py` (zona de Tokio; servidor con tres días de diferencia) |
 | E3-R2-18 | Corregido | Las fechas de Excel de 1899 y 1900 quedan antes de la mínima | `prueba_conexion.py` (el número 1 de Excel) |
 | `aFecha` y la serie | Corregido | `setFullYear` y el año a cuatro cifras | — (la fecha mínima ya no deja entrar esos años) |
+
+### Bloque 3 · El servidor (bloque 238 del proyecto, versión 1.0.3)
+
+| Clave | Estado | Antes y después | Prueba permanente |
+|---|---|---|---|
+| E3-R4-01 | Corregido | `verificar_altas.py` V3: antes, 6 árboles donde debían ser 3, 2 de 2. Después (`verificar_altas_despues.py`), la tanda de la segunda carga responde 409 «Hay otra carga subiendo» y quedan 3, 2 de 2. El lote que se completa después de otro igual no pasa: `cargas.test.js` | `cargas.test.js` (una a la vez; dos del mismo archivo) y `prueba_conexion.py` |
+| E3-R4-02 | Corregido | `verificar_altas.py` V2: antes, las dos desactivadas 5 de 8. Después (`verificar_altas_despues.py`), con esas dos como las únicas activas, el sistema sin ninguna 0 de 8: la segunda recibe `ULTIMA_ADMINISTRACION`, o ya no tiene sesión porque la otra la desactivó primero. El guion de antes tenía una tercera activa; el de después deja a las dos solas, que es el caso del hallazgo | `acceso.test.js` |
+| E3-R4-04 | Corregido | La prueba nueva repite la secuencia del revisor en cuentas y en catálogos | `acceso.test.js`, `catalogos.test.js` y `prueba_conexion.py` |
+| E3-R2-05 | Corregido | 300 árboles en 300 jornadas: las tandas caben en 100 KB | `prueba_conexion.py` |
+| E3-R2-06, E3-R2-07 | Corregido | Los largos, iguales en pantalla y servidor | `catalogos.test.js` (la comparación con la aplicación, con textos largos) |
+| E3-R2-14 | Corregido | Correo de 271 caracteres: rechazado en su campo | `acceso.test.js` |
+| E3-R2-11 | Corregido | Una imagen falsa y una WebP sin cuerpo no entran; los datos de la cámara se quitan; `nosniff` | `fotografias.test.js` |
+| E3-R2-12 | Corregido | Otro árbol con el mismo `foto_id`: rechazado | `fotografias.test.js` |
+| E3-R3-02, E3-R2-13 | Corregido | Precisión de 9,999,999,999 m, el nulo y el año 2999 | `recepcion.test.js` |
+| E3-R4-06 | Corregido | Desactivar la institución cierra la sesión al momento | `acceso.test.js` |
+| E3-R1-05 (lo que faltaba) | Corregido | La hora de llegada ya la guarda la bitácora con la del servidor; una hora imposible del teléfono se cambia por la del servidor | `recepcion.test.js` |
+
+`verificar_altas_despues.py` y su salida están en la evidencia, junto a los guiones de la auditoría. Los demás
+hallazgos del bloque se probaron sólo con el código nuevo: las pruebas nuevas repiten la secuencia del revisor.

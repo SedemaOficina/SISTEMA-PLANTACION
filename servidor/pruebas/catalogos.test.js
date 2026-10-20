@@ -36,7 +36,7 @@ function editorDeLaAplicacion() {
 
 // Los campos del formulario de la aplicación y las columnas del servidor
 const CAMPO = { 'cat-nombre': 'nombre', 'cat-clave': 'clave', 'cat-tipo-org': 'tipo_organizacion', 'cat-tipo-sol': 'tipo_solicitante', 'cat-cientifico': 'nombre_cientifico',
-  'cat-paleta': 'paleta_vegetal', 'cat-fruto': 'fruto_comestible', 'cat-enciclovida': 'id_enciclovida', 'cat-snib': 'id_snib', 'cat-modelo': 'modelo', 'cat-tipo-vehiculo': 'tipo_vehiculo' };
+  'cat-paleta': 'paleta_vegetal', 'cat-fruto': 'fruto_comestible', 'cat-enciclovida': 'id_enciclovida', 'cat-snib': 'id_snib', 'cat-modelo': 'modelo', 'cat-tipo-vehiculo': 'tipo_vehiculo', 'cat-otros-nombres': 'otros_nombres_comunes' };
 
 const EXISTENTES = {
   programas: [{ id: 'p1', clave: 'REFOR_URBANA', nombre: 'Reforestación Urbana', activo: true, tipos_organizacion: [] },
@@ -54,13 +54,14 @@ const EXISTENTES = {
 // Todas las combinaciones de los valores de cada campo
 const combinar = (opciones) => Object.entries(opciones).reduce((acc, [k, vs]) => acc.flatMap((o) => vs.map((v) => ({ ...o, [k]: v }))), [{}]);
 const CASOS = {
-  programas: combinar({ nombre: ['', 'Nuevo programa', 'reforestacion URBANA', 'Programa  inactivo', '  Con   espacios  '], clave: ['', 'A', 'nuevo_programa', 'REFOR_URBANA', 'CON ESPACIO', 'X'.repeat(31)], tipos_organizacion: [[], ['Empresa privada', 'Alcaldía']] }),
-  areas: combinar({ nombre: ['', 'Área nueva', 'sistema de informacion ambiental'], clave: ['', 'SIA', 'NUEVA', 'ñ'] }),
-  especies: combinar({ nombre: ['', 'Fresno', 'Ahuehuete'], clave: ['', 'ESP-0008', 'ESP-1', 'esp-0009'], nombre_cientifico: ['', 'quercus rugosa', 'Quercus  rugosa', 'Taxodium mucronatum', 'Fraxinus'],
+  programas: combinar({ nombre: ['', 'Nuevo programa', 'reforestacion URBANA', 'Programa  inactivo', '  Con   espacios  ', 'P'.repeat(121)], clave: ['', 'A', 'nuevo_programa', 'REFOR_URBANA', 'CON ESPACIO', 'X'.repeat(31)], tipos_organizacion: [[], ['Empresa privada', 'Alcaldía']] }),
+  areas: combinar({ nombre: ['', 'Área nueva', 'sistema de informacion ambiental', 'A'.repeat(121)], clave: ['', 'SIA', 'NUEVA', 'ñ'] }),
+  especies: combinar({ nombre: ['', 'Fresno', 'Ahuehuete', 'E'.repeat(121)], clave: ['', 'ESP-0008', 'ESP-1', 'esp-0009'], nombre_cientifico: ['', 'quercus rugosa', 'Quercus  rugosa', 'Taxodium mucronatum', 'Fraxinus', 'Quercus ' + 'a'.repeat(140)],
+    otros_nombres_comunes: ['', 'Uno, dos', 'x'.repeat(401)],
     paleta_vegetal: ['', 'Sí', 'Tal vez'], fruto_comestible: ['', 'Por determinar'], id_enciclovida: [null, '', '123', 'abc', 12, 1.5], id_snib: [null, '26796angio', '26796'], tipo_distribucion: ['Nativa'] }),
-  vehiculos: combinar({ nombre: ['', '1234 ab', '1234-AB', 'ABCD', '12', '1234567890123', ' 9876  xy '], modelo: ['', 'Nissan'], tipo_vehiculo: ['', 'pipa'] }),
-  instituciones: combinar({ nombre: ['', 'empresa x', 'Nueva institución', 'COYOACAN', 'Secretaría del Medio Ambiente'], tipo_organizacion: ['', 'Alcaldía', 'Empresa privada', 'Organización civil'] }),
-  solicitantes: combinar({ nombre: ['', 'vecinos de x', 'Escuela 1'], tipo_solicitante: ['', 'Escuela', 'Alcaldía', 'Inventado'] }),
+  vehiculos: combinar({ nombre: ['', '1234 ab', '1234-AB', 'ABCD', '12', '1234567890123', ' 9876  xy '], modelo: ['', 'Nissan', 'M'.repeat(41)], tipo_vehiculo: ['', 'pipa', 't'.repeat(31)] }),
+  instituciones: combinar({ nombre: ['', 'empresa x', 'Nueva institución', 'COYOACAN', 'Secretaría del Medio Ambiente', 'I'.repeat(121)], tipo_organizacion: ['', 'Alcaldía', 'Empresa privada', 'Organización civil'] }),
+  solicitantes: combinar({ nombre: ['', 'vecinos de x', 'Escuela 1', 'S'.repeat(121)], tipo_solicitante: ['', 'Escuela', 'Alcaldía', 'Inventado'] }),
 };
 
 test('el servidor valida cada catálogo como la aplicación, caso por caso, al dar de alta y al editar', () => {
@@ -286,4 +287,21 @@ test('lo que cuenta como uso son las mismas llaves foráneas que tiene la base',
     const enBase = rows.filter((r) => sin(r.destino) === tabla).map((r) => sin(r.origen) + '.' + r.campo).sort();
     assert.deepEqual(K.REFERENCIAS[tabla].map(([o, c]) => o + '.' + c).sort(), enBase, tabla);
   }
+});
+
+test('editar un valor trae su versión: si otra Administración lo cambió mientras tanto, no escribe encima', async () => {
+  const a = await sesion(ADMIN);
+  const alta = await a('POST', '/catalogos/solicitantes', { nombre: 'Solicitante versión ' + CORRIDA, tipo_solicitante: 'Vecinos' });
+  assert.equal(alta.estado, 201, JSON.stringify(alta.datos));
+  creados.solicitantes.push(alta.datos.id);
+  const ruta = '/catalogos/solicitantes/' + alta.datos.id, v0 = alta.datos.fecha_creacion;
+  const r1 = await a('PUT', ruta, { nombre: 'Solicitante versión uno ' + CORRIDA, tipo_solicitante: 'Vecinos', version: v0 });
+  assert.equal(r1.estado, 200, JSON.stringify(r1.datos));
+  const vieja = await a('PUT', ruta, { nombre: 'Solicitante encima ' + CORRIDA, tipo_solicitante: 'Vecinos', version: v0 });
+  assert.deepEqual([vieja.estado, vieja.datos.codigo, vieja.datos.mensaje], [409, 'VERSION_VIEJA', 'Alguien más cambió este valor mientras usted lo editaba.']);
+  assert.equal((await admin.query('SELECT nombre FROM srp.solicitantes WHERE id = $1', [alta.datos.id])).rows[0].nombre, 'Solicitante versión uno ' + CORRIDA);
+  assert.equal((await a('PUT', ruta, { nombre: 'Solicitante versión dos ' + CORRIDA, tipo_solicitante: 'Vecinos', version: r1.datos.fecha_ultima_edicion })).estado, 200);
+  // Un texto más largo que su columna, si se escapa de las reglas, es un dato que corregir, no un error interno
+  const largo = await a('POST', '/catalogos/vehiculos', { nombre: '9988 ZZ', modelo: 'M'.repeat(41), tipo_vehiculo: 'Pipa' });
+  assert.deepEqual([largo.estado, largo.datos.errores], [400, [['modelo', 'El modelo lleva hasta 40 caracteres.']]]);
 });

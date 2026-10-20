@@ -39,14 +39,17 @@ SRP.carga = {
     { clave: 'tipo', titulo: 'Tipo de institución', ancho: 22, alias: ['tipo de institucion', 'tipo'] },
     { clave: 'institucion', titulo: 'Institución', ancho: 44, alias: ['institucion', 'alcaldia o institucion', 'institucion o alcaldia'] }
   ],
-  MAX_RENGLONES: 20000,
+  MAX_RENGLONES: 5000,   // la carga histórica es de una sola vez, y no pasa de 5,000 árboles
   MAX_A_LA_VISTA: 20,
   revision: null,
   archivo: null,
 
   el(id) { return document.getElementById(id); },
   real() { return SRP.remoto.activo(); },
-  TANDA: 300,   // árboles por pedido al servidor: así cada tanda cabe holgada en lo que recibe de una vez
+  // Cada pedido al servidor lleva hasta 300 árboles y pesa hasta 80 KB: el servidor recibe 100 KB de una vez, y un
+  // histórico con un árbol por día estrena muchas jornadas, que también pesan
+  TANDA: 300,
+  TANDA_BYTES: 80000,
 
   iniciar() {
     SRP.ICONOS.poner(this.el('btn-carga-plantilla'), 'descargar', 'medio');
@@ -92,7 +95,7 @@ SRP.carga = {
         ['Tipo de institución', 'Alcaldía, Gobierno de la CDMX, Empresa privada u Organización civil.', 'Alcaldía'],
         ['Institución', 'Como está en la hoja «Instituciones», del tipo elegido. En alcaldías, sólo el nombre.', 'Iztapalapa'],
         ['', 'Un renglón por árbol, en la hoja «Árboles». No cambie los encabezados.', ''],
-        ['', 'Hasta ' + this.MAX_RENGLONES.toLocaleString('es-MX') + ' renglones por archivo; si son más, divídalos en varios archivos.', ''],
+        ['', 'Hasta ' + this.MAX_RENGLONES.toLocaleString('es-MX') + ' renglones: es la carga histórica, de una sola vez.', ''],
         ['', 'Nombre científico, programa, tipo de institución e institución se eligen de una lista; también se pueden escribir o pegar.', ''],
         ['', 'Los árboles quedan a nombre de quien los carga, en jornadas cerradas marcadas como carga histórica.', ''],
         ['', 'Antes de cargar, el sistema revisa todo y dice qué renglones tienen problemas; nada se guarda hasta que usted confirma.', '']
@@ -201,7 +204,7 @@ SRP.carga = {
       const original = this.COLUMNAS.map(c => val(c.clave));
       if (original.every(v => String(v).trim() === '')) continue;
       renglones++;
-      if (renglones > this.MAX_RENGLONES) throw new Error('El archivo tiene más de ' + this.MAX_RENGLONES.toLocaleString('es-MX') + ' renglones. Divídalo en varios archivos.');
+      if (renglones > this.MAX_RENGLONES) throw new Error('El archivo tiene más de ' + this.MAX_RENGLONES.toLocaleString('es-MX') + ' renglones, el máximo de la carga histórica. Revise que sea el archivo correcto.');
       const errores = [], avisos = [];
       const lat = this.numero(val('lat'));
       let lng = this.numero(val('lng'));
@@ -329,10 +332,17 @@ SRP.carga = {
     const v = this.revision; if (!v || !v.listos.length) return;
     const num = x => x.toLocaleString('es-MX');
     const nj = Object.keys(v.jornadas).length;
-    const ok = await SRP.app.confirmar({ titulo: 'Carga masiva', pregunta: '¿Cargar ' + num(v.listos.length) + (v.listos.length === 1 ? ' árbol?' : ' árboles?'),
-      puntos: ['Se formarán ' + num(nj) + (nj === 1 ? ' jornada cerrada' : ' jornadas cerradas') + ' a su nombre, marcadas como carga histórica.',
-        'Los renglones con error no se cargan.', 'Cada árbol queda en la bitácora y el lote en el Registro de cambios.'],
-      boton: 'Cargar', icono: 'palomita' });
+    const formaran = 'Se formarán ' + num(nj) + (nj === 1 ? ' jornada cerrada' : ' jornadas cerradas') + ' a su nombre, marcadas como carga histórica.';
+    // La carga histórica es de una sola vez: si ya hay una, se dice antes de cargar otro archivo
+    const previa = await this.cargaPrevia();
+    const ok = await SRP.app.confirmar(previa
+      ? { titulo: previa.cargas === 1 ? 'Ya hay una carga histórica' : 'Ya hay ' + previa.cargas + ' cargas históricas',
+        pregunta: num(previa.arboles) + (previa.arboles === 1 ? ' árbol, ' : ' árboles, ') + (previa.cargas === 1 ? 'del ' : 'la última del ') + previa.fecha + '. ¿Cargar este archivo también?',
+        puntos: ['Lo que ya está en el sistema no se vuelve a cargar.', 'Este archivo trae ' + num(v.listos.length) + (v.listos.length === 1 ? ' árbol. ' : ' árboles. ') + formaran,
+          'Los renglones con error no se cargan.'], boton: 'Cargar', icono: 'palomita' }
+      : { titulo: 'Carga masiva', pregunta: '¿Cargar ' + num(v.listos.length) + (v.listos.length === 1 ? ' árbol?' : ' árboles?'),
+        puntos: [formaran, 'Los renglones con error no se cargan.', 'Cada árbol queda en la bitácora y el lote en el Registro de cambios.'],
+        boton: 'Cargar', icono: 'palomita' });
     if (!ok) return;
     const libre = SRP.util.ocupado(this.el('btn-carga-cargar'), 'Cargando…', 'subir');
     try {
@@ -344,6 +354,14 @@ SRP.carga = {
       this.el('carga-hecha').textContent = 'Última carga: ' + num(r.arboles) + (r.arboles === 1 ? ' árbol' : ' árboles') + ' en ' + num(r.jornadas) + (r.jornadas === 1 ? ' jornada' : ' jornadas') +
         ' del archivo «' + r.archivo + '». Se ven en Jornadas, Registros y Supervisión. Si fue el archivo equivocado, se deshace abajo, en «Cargas hechas».';
     } finally { libre(); }
+  },
+
+  // Las cargas hechas que no se deshicieron: cuántas, cuántos árboles y la fecha de la última; null si no hay
+  async cargaPrevia() {
+    const hechas = ((await this.lotes()) || []).filter(k => !k.deshecho && k.estado !== 'subiendo');
+    if (!hechas.length) return null;
+    const arbolesDe = k => k.arboles != null ? k.arboles : Number(((/([\d,]+) árbol/.exec(k.entrada.detalle || '') || [])[1] || '0').replace(/,/g, ''));
+    return { cargas: hechas.length, arboles: hechas.reduce((s, k) => s + arbolesDe(k), 0), fecha: SRP.util.formatearFecha(SRP.envio.diaLocal(hechas[0].entrada.fecha)) };
   },
 
   // Arma y guarda todo en una sola transacción. Devuelve cuántos árboles y jornadas quedaron
@@ -428,15 +446,12 @@ SRP.carga = {
       regs.forEach((a, i) => arboles.push({ id: a.id, jornada_id: j.id, renglon: grupo[i].renglon, lat: a.lat, lng: a.lng, especie_id: a.especie_id,
         fecha_plantacion: a.fecha_plantacion, revisado: revisados.has(a.id) }));
     });
-    const tandas = Math.ceil(arboles.length / this.TANDA), enviadas = new Set();
+    const tandas = this.tandas(arboles, jornadas);
     const texto = this.el('btn-carga-cargar').querySelector('span');
-    for (let n = 0; n < tandas; n++) {
-      if (texto) texto.textContent = 'Subiendo tanda ' + (n + 1) + ' de ' + tandas + '…';
-      const parte = arboles.slice(n * this.TANDA, (n + 1) * this.TANDA);
-      const nuevas = jornadas.filter(j => !enviadas.has(j.id) && parte.some(a => a.jornada_id === j.id));
-      const r = await SRP.servidor.pedir('PUT', '/cargas/' + lote + '/tandas/' + (n + 1), { archivo, jornadas: nuevas, arboles: parte });
+    for (let n = 0; n < tandas.length; n++) {
+      if (texto) texto.textContent = 'Subiendo tanda ' + (n + 1) + ' de ' + tandas.length + '…';
+      const r = await SRP.servidor.pedir('PUT', '/cargas/' + lote + '/tandas/' + (n + 1), { archivo, jornadas: tandas[n].jornadas, arboles: tandas[n].arboles });
       if (!r.ok) return this.noSeCargo(lote, r);
-      nuevas.forEach(j => enviadas.add(j.id));
     }
     const r = await SRP.servidor.pedir('POST', '/cargas/' + lote + '/completa', { arboles: arboles.length });
     if (!r.ok) return this.noSeCargo(lote, r);
@@ -445,10 +460,29 @@ SRP.carga = {
     return { arboles: r.datos.arboles, jornadas: r.datos.jornadas, archivo, lote };
   },
 
+  /* Las tandas: hasta TANDA árboles y TANDA_BYTES de peso cada una, y cada jornada en la primera que trae árboles
+     suyos. Los árboles de una jornada van juntos, así que sólo la primera de sus tandas la estrena */
+  tandas(arboles, jornadas) {
+    const deId = new Map(jornadas.map(j => [j.id, j])), estrenadas = new Set(), salida = [];
+    let t = null;
+    for (const a of arboles) {
+      const nueva = estrenadas.has(a.jornada_id) ? null : deId.get(a.jornada_id);
+      const peso = JSON.stringify(a).length + 1 + (nueva ? JSON.stringify(nueva).length + 1 : 0);
+      if (!t || t.arboles.length >= this.TANDA || t.peso + peso > this.TANDA_BYTES) { t = { arboles: [], jornadas: [], peso: 200 }; salida.push(t); }
+      t.arboles.push(a);
+      if (nueva) { t.jornadas.push(nueva); estrenadas.add(a.jornada_id); }
+      t.peso += peso;
+    }
+    return salida;
+  },
+
   // Lo que no llegó entero no se ve; se quita del servidor si se puede, y se dice qué pasó
   async noSeCargo(lote, r) {
     if (r.sinRed) {
       SRP.util.anunciar('Se perdió la conexión con el servidor: no se cargó nada. Si en «Cargas hechas» aparece una carga sin terminar, quítela antes de volver a cargar el archivo.', 'aviso');
+    } else if (r.codigo === 'OTRA_CARGA') {
+      // Otra persona está cargando: de este archivo no llegó nada
+      SRP.util.anunciar(r.mensaje + ' No se cargó nada.', 'aviso');
     } else {
       await SRP.servidor.pedir('DELETE', '/cargas/' + lote);
       const primero = r.errores && r.errores.length ? ' (' + r.errores[0][0] + ': ' + r.errores[0][1] + ')' : '';

@@ -3,7 +3,7 @@ import { Router, type Request, type RequestHandler, type Response } from "expres
 import type pg from "pg";
 import { cuentaPublica, sesionDe } from "./acceso";
 import { anotarCambio } from "./bitacora";
-import { TABLAS } from "./catalogos";
+import { mismaVersion, TABLAS } from "./catalogos";
 import type { ConfigSrp } from "./config";
 import { derivar, temporal } from "./contrasenas";
 import { responder } from "./errores";
@@ -21,6 +21,9 @@ import { enTransaccion } from "./transaccion";
    POST   /cuentas/:id/restablecer   otra temporal; cierra las sesiones de la cuenta
    POST   /cuentas/:id/estado        { activo } → desactivar cierra las sesiones de la cuenta
    DELETE /cuentas/:id               elimina una cuenta que no aparece en nada; la que aparece, se desactiva
+
+   La edición trae la versión de la cuenta (mismaVersion, en catalogos.ts), y la última Administración global
+   activa no se desactiva, no se elimina ni deja de serlo.
 
    La contraseña temporal se dice una sola vez, en la respuesta: la Administración la entrega a la
    persona por teléfono o en persona. Cada cambio deja su renglón en la bitácora, como en la aplicación. */
@@ -69,7 +72,9 @@ async function validarAlta(c: pg.PoolClient, d: Alta, previa: Usuario | null = n
   else if (d.nombre_completo.split(" ").length < 2) e.push(["nombre_completo", "Escriba nombre y al menos un apellido."]);
   else if (d.nombre_completo.length > 160) e.push(["nombre_completo", "El nombre lleva hasta 160 caracteres."]);
   if (!previa) {
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.correo)) e.push(["correo", "Escriba un correo válido."]);
+    // El acceso no lee más de 254: una cuenta con un correo más largo nunca podría entrar
+    if (d.correo.length > 254) e.push(["correo", "El correo lleva hasta 254 caracteres."]);
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.correo)) e.push(["correo", "Escriba un correo válido."]);
     else if ((await c.query("SELECT 1 FROM srp.usuarios WHERE correo = $1", [d.correo])).rowCount) e.push(["correo", "Ese correo ya tiene cuenta."]);
   }
   if (!d.cargo_rol) e.push(["cargo_rol", "Escriba el cargo."]);
@@ -94,6 +99,24 @@ async function validarAlta(c: pg.PoolClient, d: Alta, previa: Usuario | null = n
   }
   return e;
 }
+
+/* SIEMPRE QUEDA UNA ADMINISTRACIÓN GLOBAL ACTIVA. Desactivar, eliminar o quitarle el perfil a una se revisa con un
+   candado y en la misma transacción: dos que se desactivan una a la otra al mismo tiempo no dejan al sistema sin
+   nadie que lo administre. true si `id` es la única activa. */
+async function esLaUltimaAdministracion(c: pg.PoolClient, id: string): Promise<boolean> {
+  await c.query("SELECT pg_advisory_xact_lock(hashtextextended('srp.administracion', 0))");
+  const r = (await c.query<{ ella: boolean | null; otras: number }>(
+    "SELECT bool_or(id = $1) AS ella, count(*) FILTER (WHERE id <> $1)::int AS otras FROM srp.usuarios WHERE perfil = 'ADMIN' AND activo",
+    [id],
+  )).rows[0];
+  return r.ella === true && r.otras === 0;
+}
+const ULTIMA = "Es la única Administración global activa: si se desactiva, nadie podría administrar el sistema. Active o dé de alta otra antes.";
+const ULTIMA_PERFIL = "Es la única Administración global activa: no puede dejar de serlo. Active o dé de alta otra antes.";
+
+// La cuenta como la responde la edición, con su versión: el momento de su último cambio en el servidor
+const conVersion = (u: Usuario & { fecha_creacion?: unknown; fecha_ultima_edicion?: unknown }) =>
+  ({ ...cuentaPublica(u), fecha_creacion: u.fecha_creacion, fecha_ultima_edicion: u.fecha_ultima_edicion });
 
 /* QUÉ CUENTAS VE CADA QUIEN, para decir quién registró, editó o tiene a su cargo lo que ve. La Administración
    global, todas, con su correo, para administrarlas. Los demás, sin correo: el directivo de la Secretaría,
@@ -215,7 +238,7 @@ export function rutasCuentas(pool: pg.Pool, config: ConfigSrp, sesion: RequestHa
       const org = (await c.query<{ nombre: string }>("SELECT nombre FROM srp.instituciones WHERE id = $1", [d.organizacion_id])).rows[0];
       await anotarCambio(c, actor, "CREADO", "usuario", d.id, "Alta de " + d.correo + " con perfil " + d.perfil + " en " + org.nombre);
       const u = (await c.query<Usuario>("SELECT * FROM srp.usuarios WHERE id = $1", [d.id])).rows[0];
-      return { usuario: cuentaPublica(u), temporal: t };
+      return { usuario: conVersion(u), temporal: t };
     });
     if ("errores" in resultado) return res.status(400).json({ codigo: "DATOS_INVALIDOS", mensaje: "Revise los datos de la cuenta.", errores: resultado.errores });
     res.status(201).json({ ...resultado, temporalVence: config.acceso.temporalHoras + " horas" });
@@ -237,7 +260,9 @@ export function rutasCuentas(pool: pg.Pool, config: ConfigSrp, sesion: RequestHa
         perfil: limpio(b.perfil),
         coordinadores_ids: b.perfil === "CABO" && Array.isArray(b.coordinadores_ids) ? b.coordinadores_ids.filter((x: unknown) => typeof x === "string" && UUID.test(x)) : [],
       };
+      if (!(await mismaVersion(c, "usuarios", id, b.version))) return { vieja: true };
       const errores = await validarAlta(c, d, previa, actor);
+      if (!errores.length && previa.perfil === "ADMIN" && d.perfil !== "ADMIN" && (await esLaUltimaAdministracion(c, id))) errores.push(["perfil", ULTIMA_PERFIL]);
       if (errores.length) return { errores };
       // La bitácora dice qué campos cambiaron, como en la aplicación
       const campos = ["nombre_completo", "organizacion_id", "area_id", "cargo_rol", "perfil", "coordinadores_ids"] as const;
@@ -249,9 +274,10 @@ export function rutasCuentas(pool: pg.Pool, config: ConfigSrp, sesion: RequestHa
         [id, d.nombre_completo, d.organizacion_id, d.area_id, d.cargo_rol, d.perfil, d.coordinadores_ids, actor.id],
       )).rows[0];
       await anotarCambio(c, actor, "EDITADO", "usuario", id, "Campos: " + (cambiados.join(", ") || "ninguno"));
-      return { usuario: cuentaPublica(u) };
+      return { usuario: conVersion(u) };
     });
     if (!resultado) return responder(res, 404, "NO_EXISTE", "Esa cuenta no existe.");
+    if ("vieja" in resultado) return responder(res, 409, "VERSION_VIEJA", "Alguien más cambió esta cuenta mientras usted la editaba.");
     if ("errores" in resultado) return res.status(400).json({ codigo: "DATOS_INVALIDOS", mensaje: "Revise los datos de la cuenta.", errores: resultado.errores });
     res.json(resultado);
   });
@@ -277,13 +303,15 @@ export function rutasCuentas(pool: pg.Pool, config: ConfigSrp, sesion: RequestHa
     // Quien administra no se desactiva a sí mismo: el sistema podría quedar sin administración
     if (id === actor.id && !activo) return responder(res, 400, "PROPIA", "No puede desactivar su propia cuenta. Pida a otra cuenta de administración que lo haga.");
     const r2 = await enTransaccion(pool, async (c) => {
+      if (!activo && (await esLaUltimaAdministracion(c, id))) return { ultima: true };
       const u = (await c.query<Usuario>("UPDATE srp.usuarios SET activo = $2, fecha_ultima_edicion = now(), editado_por_id = $3 WHERE id = $1 RETURNING *", [id, activo, actor.id])).rows[0];
       if (!u) return null;
       const cerradas = activo ? 0 : await cerrarDeCuenta(c, id, "CUENTA_DESACTIVADA");
       await anotarCambio(c, actor, activo ? "ACTIVADO" : "DESACTIVADO", "usuario", id);
-      return { usuario: cuentaPublica(u), sesionesCerradas: cerradas };
+      return { usuario: conVersion(u), sesionesCerradas: cerradas };
     });
     if (!r2) return responder(res, 404, "NO_EXISTE", "Esa cuenta no existe.");
+    if ("ultima" in r2) return responder(res, 409, "ULTIMA_ADMINISTRACION", ULTIMA);
     res.json(r2);
   });
 
@@ -296,6 +324,7 @@ export function rutasCuentas(pool: pg.Pool, config: ConfigSrp, sesion: RequestHa
     const eliminar = () => enTransaccion(pool, async (c) => {
       const u = (await c.query<Usuario>("SELECT * FROM srp.usuarios WHERE id = $1 FOR UPDATE", [id])).rows[0];
       if (!u) return null;
+      if (await esLaUltimaAdministracion(c, id)) return { ultima: true };
       const usos = textoUsosCuenta((await usosDeCuentas(c, id))[id]);
       if (usos) return { usos };
       await c.query("DELETE FROM srp.usuarios WHERE id = $1", [id]);
@@ -307,6 +336,7 @@ export function rutasCuentas(pool: pg.Pool, config: ConfigSrp, sesion: RequestHa
       throw e;
     });
     if (!resultado) return responder(res, 404, "NO_EXISTE", "Esa cuenta no existe.");
+    if ("ultima" in resultado) return responder(res, 409, "ULTIMA_ADMINISTRACION", ULTIMA);
     if ("usos" in resultado) return responder(res, 409, "EN_USO", "No se puede eliminar: " + resultado.usos + ". Desactívela: eso sí se deshace.");
     res.json(resultado);
   });

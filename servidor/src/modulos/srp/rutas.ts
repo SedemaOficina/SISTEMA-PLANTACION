@@ -32,9 +32,9 @@ import { traducir } from "./errores";
 export function crearRutasSrp(pool: pg.Pool, config: ConfigSrp = leerConfig()): Router {
   const r = Router();
   r.use(express.json({ limit: "100kb" }));
-  // Nada de la API se guarda en cachés intermedias
+  // Nada de la API se guarda en cachés intermedias, y el navegador no adivina el tipo de lo que responde
   r.use((req: Request, res: Response, next: NextFunction) => {
-    res.set("Cache-Control", "no-store");
+    res.set({ "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" });
     next();
   });
   const acceso = rutasAcceso(pool, config);

@@ -5711,3 +5711,97 @@ No se probó:
 
 **Siguiente paso.** Liber decide si sigue con el bloque 3 del plan, el servidor: las cargas intercaladas, la última
 Administración global, la versión de cuentas y catálogos y los largos.
+
+## Bloque 238 — El servidor (20-10-2026)
+
+**Versión 1.0.3.** El bloque 3 del plan de corrección de la auditoría del 19-10-2026
+(`docs/AUDITORIA-2026-10-19.md`, § 11), con lo que Liber dijo de la carga masiva: habrá una sola, de hasta 5,000
+árboles (D318).
+
+| Hallazgo | Qué pasaba | Qué pasa ahora |
+|---|---|---|
+| E3-R4-01, alto | Dos cargas del mismo archivo al mismo tiempo duplicaban el histórico | Una carga a la vez: la que llega mientras otra sube espera y se le dice. Y un lote no se completa si otro, completado mientras subía, trajo los mismos árboles |
+| E3-R4-02, alto | Dos Administraciones que se desactivaban una a la otra al mismo tiempo dejaban al sistema sin nadie que lo administrara | La última Administración global activa no se desactiva, no se elimina ni deja de serlo, con un candado en la base |
+| E3-R4-04 | Dos Administraciones editando la misma cuenta o el mismo valor: ganaba la última, en silencio | La edición lleva la versión; la segunda ve «Alguien más cambió…» y el formulario con lo que guardó la otra |
+| E3-R2-05 | Un histórico con un árbol por día no subía: la tanda pasaba de 100 KB | Las tandas se arman por peso, hasta 80 KB |
+| E3-R2-06, E3-R2-07 | Textos de catálogo muy largos daban error interno, o entraban a todas las listas | Largo máximo en pantalla y servidor: nombre 120, científico 140, otros nombres 400, modelo 40, tipo 30 |
+| E3-R2-14 | Una cuenta con un correo de más de 254 caracteres nunca podía entrar | El correo lleva hasta 254 |
+| E3-R2-11 | El servidor sólo miraba el comienzo de una fotografía y guardaba los datos de la cámara | Se revisa entera, se guarda sin la ubicación ni el modelo del teléfono, y nada se interpreta por su contenido (`nosniff`); el ZIP de Fotografías nombra cada una con la extensión de su tipo |
+| E3-R2-12 | Otra cuenta podía «reclamar» la fotografía de un árbol ajeno | Una fotografía es de un solo árbol |
+| E3-R3-02, E3-R2-13 | Una precisión del GPS enorme, el carácter nulo o una hora imposible daban error interno o se aceptaban | La precisión de más de 100 km queda sin dato; el nulo se quita; una hora del futuro o de antes del programa es la del servidor; lo que la base no puede guardar es un dato que corregir, no un error interno |
+| E3-R4-06 | Desactivar una institución cerraba las sesiones de sus cuentas hasta su siguiente uso | Las cierra al momento |
+| La carga masiva (Liber) | Hasta 20,000 renglones por archivo, «divídalos en varios» | Hasta 5,000: es la carga histórica, de una sola vez; con una carga hecha, otro archivo se avisa antes |
+
+**Qué cambió.**
+- Servidor:
+  - `cargas.ts`: una carga a la vez, con candado, y un lote que deja de subir 15 minutos ya no estorba; la
+    revisión al completar; un lote cuya primera tanda no pasa no se queda.
+  - `cuentas.ts`: la última Administración global; la versión de la cuenta, que también viaja en la respuesta;
+    el correo hasta 254.
+  - `catalogos.ts`: los largos máximos; la versión del valor (`mismaVersion`); una institución desactivada
+    cierra las sesiones de sus cuentas.
+  - `fotografias.ts`: la imagen entera y sin datos de la cámara.
+  - `recepcion-apoyo.ts` y `recepcion-arboles.ts`: una fotografía, de un solo árbol; la precisión, el nulo y
+    las horas.
+  - `errores.ts`: un dato que la base no puede guardar es `DATOS_INVALIDOS`.
+  - `rutas.ts`: `X-Content-Type-Options: nosniff` en todas las respuestas.
+- Aplicación:
+  - `js/carga.js`: 5,000 renglones; el aviso de una carga hecha; las tandas por peso; el aviso de otra carga
+    subiendo.
+  - `js/usuarios.js` y `js/catalogos.js`: la versión al editar, y el formulario con lo de la otra persona
+    cuando cambió mientras tanto; el correo hasta 254 y los largos de catálogo, como el servidor.
+  - `js/galeria.js`: la extensión de cada fotografía.
+  - `js/util.js`: `avisoEn`, la caja de un aviso informativo.
+  - `index.html`: el aviso de los dos formularios y el largo máximo de sus campos.
+- Pruebas: `servidor/pruebas/` (cargas, acceso, catálogos, fotografías y recepción),
+  `pruebas/prueba_conexion.py` y `pruebas/prueba.py` (los 5,000 renglones de la plantilla).
+- Documentación: `servidor/README.md`.
+
+**Pantalla: qué se agregó y qué se quitó.** Lo aprobó Liber el 20-10-2026, con el antes y el después.
+- Carga masiva:
+  - las instrucciones dicen «Hasta 5,000 renglones: es la carga histórica, de una sola vez.»;
+  - un archivo más grande dice que pasa del máximo y que se revise que sea el correcto;
+  - con una carga hecha, «Cargar» pregunta antes «Ya hay una carga histórica · N árboles, del … ¿Cargar este
+    archivo también?», con «Lo que ya está en el sistema no se vuelve a cargar.»;
+  - si otra carga está subiendo, se dice de quién y de qué archivo, y que espere.
+- Usuarios y Catálogos: si otra Administración cambió la cuenta o el valor mientras se editaba, el formulario
+  se vuelve a llenar con lo suyo y dice arriba «Alguien más cambió esta cuenta mientras usted la editaba…».
+- Usuarios: la última Administración global activa no se desactiva ni deja de serlo, con su mensaje.
+- Los campos con largo máximo lo dicen, como los demás.
+- No se quitó nada.
+
+**Verificación.**
+- Servidor: `npm test`, 105 de 105; antes, 96. Lo nuevo:
+  - una carga a la vez, y dos lotes del mismo archivo, uno de ellos detenido más de 15 minutos;
+  - la última Administración global, con dos que se desactivan o se quitan el perfil al mismo tiempo;
+  - la versión de cuentas y catálogos, el correo de 254 y los largos de catálogo;
+  - la imagen entera y sin datos de la cámara, y la fotografía de un solo árbol;
+  - la precisión imposible, el carácter nulo y la hora del año 2999;
+  - la institución desactivada que cierra las sesiones.
+- Los guiones de la auditoría, repetidos sobre esta versión (`verificar_altas_despues.py`, en la evidencia):
+  - dos cargas del mismo archivo intercaladas: la segunda espera y quedan 3 árboles, 2 de 2; antes, 6;
+  - dos Administraciones, las únicas activas, que se desactivan una a la otra al mismo tiempo: el sistema sin
+    ninguna 0 de 8; antes, las dos desactivadas 5 de 8.
+- Conexión, con el repositorio: `prueba_conexion.py`, 119 de 119; antes, 112. Lo nuevo:
+  - la cuenta y el valor de catálogo que otra Administración cambia mientras se editan;
+  - el aviso de una carga ya hecha;
+  - 300 árboles en 300 jornadas, en tandas de menos de 100 KB;
+  - el aviso de otra carga subiendo.
+
+  Las dos primeras corridas se detuvieron por fallas de la prueba, no del sistema: una prueba nueva reusaba un
+  nombre que otra de más abajo necesitaba, y la segunda se lanzó sin la letra UTF-8 de la consola. La tercera pasó
+  completa.
+- Conexión, con la copia real: `prueba_conexion.py --app`, 120 de 120; antes, 113.
+- Aplicación: `prueba.py`, 0 fallas en 1,441, en la primera corrida.
+- Auditorías: 144 sin hallazgos; hoja de estilos sin hallazgos; `revisar.py`, los mismos 12 avisos falsos (A1-04).
+
+No se probó:
+- en teléfonos reales;
+- detrás del servidor web del SIA;
+- una carga de 5,000 renglones de punta a punta contra el servicio: las tandas por peso se probaron con 300
+  árboles en 300 jornadas, sin subirlas;
+- la limpieza de los datos de la cámara con una fotografía de un teléfono real: con imágenes armadas en la prueba;
+- los hallazgos medios contra el código anterior: las pruebas nuevas repiten la secuencia del revisor.
+
+**Siguiente paso.** Liber decide si sigue con el bloque 4 (los reportes PDF y el CSV) o con el 5 (las pruebas y
+las herramientas). Antes de entregar al SIA, rearmar el paquete con esta versión.

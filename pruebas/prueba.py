@@ -4449,9 +4449,9 @@ with sync_playwright() as p:
        'la plantilla trae la hoja para llenar, las instrucciones y las listas válidas de especies, programas e instituciones: %s' % w51.sheetnames)
     va51=w51['Árboles'].data_validations.dataValidation
     ins51=' '.join(str(c.value) for f in w51['Instrucciones'].iter_rows() for c in f if c.value)
-    ok(len(va51)==4 and sorted(str(v.sqref) for v in va51)==['C2:C20001','E2:E20001','F2:F20001','G2:G20001'] and all(v.errorStyle=='warning' for v in va51)
+    ok(len(va51)==4 and sorted(str(v.sqref) for v in va51)==['C2:C5001','E2:E5001','F2:F5001','G2:G5001'] and all(v.errorStyle=='warning' for v in va51)
        and any("'Especies'!$A$2:$A$80" in v.formula1 for v in va51) and w51['Árboles'].auto_filter.ref=='A1:G1'
-       and '20,000 renglones por archivo' in ins51 and 'carga histórica' in ins51 and 'se eligen de una lista' in ins51,
+       and '5,000 renglones: es la carga histórica, de una sola vez' in ins51 and 'carga histórica' in ins51 and 'se eligen de una lista' in ins51,
        'en «Árboles», nombre científico, programa, tipo e institución se eligen de una lista (avisa sin impedir), la hoja trae filtro y las instrucciones dicen el límite y a nombre de quién quedan: %s' % [str(v.sqref) for v in va51])
     # Revisión de un Excel con renglones buenos y malos
     pg51.set_input_files('#carga-archivo', CAR51); pg51.wait_for_timeout(1500)

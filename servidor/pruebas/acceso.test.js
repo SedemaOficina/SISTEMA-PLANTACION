@@ -56,6 +56,8 @@ after(async () => {
     await admin.query("DELETE FROM srp.bitacora_acceso WHERE usuario_id = ANY($1::uuid[]) OR correo_intentado LIKE '%.prueba.%@ejemplo.local'", [ids]);
     await admin.query('ALTER TABLE srp.bitacora_acceso ENABLE TRIGGER bitacora_inmutable');
     await admin.query('DELETE FROM srp.credenciales WHERE usuario_id = ANY($1::uuid[])', [ids]);
+    // La institución de prueba recuerda quién la activó y desactivó en Catálogos
+    await admin.query("UPDATE srp.instituciones SET editado_por_id = NULL WHERE editado_por_id = ANY($1::uuid[])", [ids]);
     await admin.query('DELETE FROM srp.usuarios WHERE id = ANY($1::uuid[]) AND id <> $2', [ids, ADMIN.id]);
     await admin.query('DELETE FROM srp.usuarios WHERE id = $1', [ADMIN.id]);
     await admin.query("DELETE FROM srp.instituciones WHERE id = 'o-prueba-acceso'");
@@ -380,4 +382,89 @@ test('la contraseña actual también tiene tope al cambiarla: cuenta como un int
 test('un valor de configuración mal escrito no detiene el servicio: se usa el de arranque', () => {
   const c = leerConfig({ SRP_TEMPORAL_HORAS: '72 horas', SRP_INTENTOS_MAXIMOS: '-1', SRP_BLOQUEO_MINUTOS: '30' });
   assert.deepEqual([c.acceso.temporalHoras, c.acceso.intentosMaximos, c.acceso.bloqueoMinutos, c.acceso.intentosPorProcedencia], [72, 5, 30, 30]);
+});
+
+/* ---------- La Administración global, la versión de una cuenta y el correo ---------- */
+
+// Una cuenta de Administración global que ya entró y escribió su contraseña: su cliente con sesión
+async function administracion(a, nombre) {
+  const correo = nombre + '.prueba.ultima@ejemplo.local', clave = 'Clave de ' + nombre + ' 2026';
+  const alta = await a.pedir('POST', '/cuentas', { correo, nombre_completo: 'Administración ' + nombre + ' Prueba', organizacion_id: 'o-sedema', area_id: 'a-sia', cargo_rol: 'Administración', perfil: 'ADMIN' });
+  assert.equal(alta.estado, 201, JSON.stringify(alta.datos));
+  const c = cliente();
+  await c.pedir('POST', '/acceso/entrar', { correo, contrasena: alta.datos.temporal });
+  await c.pedir('POST', '/acceso/contrasena', { actual: alta.datos.temporal, nueva: clave });
+  return { id: alta.datos.usuario.id, c };
+}
+
+test('nunca queda el sistema sin una Administración global activa, ni cuando dos se desactivan o se quitan el perfil una a la otra al mismo tiempo', async () => {
+  const a = cliente();
+  await a.pedir('POST', '/acceso/entrar', { correo: ADMIN.correo, contrasena: ADMIN.clave });
+  const uno = await administracion(a, 'uno'), dos = await administracion(a, 'dos');
+  // Mientras dura la prueba, éstas dos son las únicas activas
+  const otras = (await admin.query("SELECT id FROM srp.usuarios WHERE perfil = 'ADMIN' AND activo AND id <> ALL($1::uuid[])", [[uno.id, dos.id]])).rows.map((r) => r.id);
+  await admin.query('UPDATE srp.usuarios SET activo = false WHERE id = ANY($1::uuid[])', [otras]);
+  const activas = async () => (await admin.query("SELECT count(*)::int AS n FROM srp.usuarios WHERE perfil = 'ADMIN' AND activo AND id = ANY($1::uuid[])", [[uno.id, dos.id]])).rows[0].n;
+  try {
+    for (let vuelta = 0; vuelta < 4; vuelta++) {
+      const r = await Promise.all([uno.c.pedir('POST', '/cuentas/' + dos.id + '/estado', { activo: false }), dos.c.pedir('POST', '/cuentas/' + uno.id + '/estado', { activo: false })]);
+      const ultima = r.find((x) => x.estado === 409);
+      assert.equal(await activas(), 1, 'queda una, vuelta ' + vuelta + ': ' + JSON.stringify(r.map((x) => [x.estado, x.datos.codigo])));
+      assert.ok(!ultima || (ultima.datos.codigo === 'ULTIMA_ADMINISTRACION' &&
+        ultima.datos.mensaje === 'Es la única Administración global activa: si se desactiva, nadie podría administrar el sistema. Active o dé de alta otra antes.'));
+      await admin.query('UPDATE srp.usuarios SET activo = true WHERE id = ANY($1::uuid[])', [[uno.id, dos.id]]);
+      await admin.query("UPDATE srp.sesiones SET cerrada_en = NULL, motivo_cierre = NULL WHERE usuario_id = ANY($1::uuid[]) AND motivo_cierre = 'CUENTA_DESACTIVADA'", [[uno.id, dos.id]]);
+    }
+    // Quitarse el perfil una a la otra, al mismo tiempo: una lo pierde y a la otra se le dice por qué no
+    const perfil = (yo) => ({ organizacion_id: 'o-sedema', area_id: 'a-sia', nombre_completo: 'Administración Prueba Cambiada', cargo_rol: 'Dirección', perfil: 'DIRECTIVO', id: yo });
+    const r = await Promise.all([uno.c.pedir('PUT', '/cuentas/' + dos.id, perfil(dos.id)), dos.c.pedir('PUT', '/cuentas/' + uno.id, perfil(uno.id))]);
+    const quedan = (await admin.query("SELECT count(*)::int AS n FROM srp.usuarios WHERE perfil = 'ADMIN' AND activo AND id = ANY($1::uuid[])", [[uno.id, dos.id]])).rows[0].n;
+    const rechazo = r.find((x) => x.estado === 400);
+    assert.ok(quedan >= 1, 'al menos una sigue siendo Administración: ' + JSON.stringify(r.map((x) => x.datos)));
+    if (quedan === 1) assert.deepEqual(rechazo && rechazo.datos.errores, [['perfil', 'Es la única Administración global activa: no puede dejar de serlo. Active o dé de alta otra antes.']]);
+  } finally {
+    await admin.query('UPDATE srp.usuarios SET activo = true WHERE id = ANY($1::uuid[])', [otras]);
+  }
+});
+
+test('editar una cuenta trae su versión: si otra Administración la cambió mientras tanto, no escribe encima', async () => {
+  const a = cliente();
+  await a.pedir('POST', '/acceso/entrar', { correo: ADMIN.correo, contrasena: ADMIN.clave });
+  const alta = (await a.pedir('POST', '/cuentas', { correo: 'cabo.prueba.version@ejemplo.local', nombre_completo: 'Cabo Prueba Versión', organizacion_id: 'o-prueba-acceso', cargo_rol: 'Cabo', perfil: 'CABO' })).datos.usuario;
+  const cuerpo = (extra) => ({ organizacion_id: 'o-prueba-acceso', nombre_completo: 'Cabo Prueba Versión', cargo_rol: 'Cabo', perfil: 'CABO', ...extra });
+  const v0 = alta.fecha_ultima_edicion || alta.fecha_creacion;
+  assert.ok(v0, 'el alta responde con su versión');
+  const r1 = await a.pedir('PUT', '/cuentas/' + alta.id, cuerpo({ cargo_rol: 'Jefe de cuadrilla', version: v0 }));
+  assert.equal(r1.estado, 200, JSON.stringify(r1.datos));
+  // Otra edición sobre la versión de antes: no escribe, y se dice
+  const vieja = await a.pedir('PUT', '/cuentas/' + alta.id, cuerpo({ nombre_completo: 'Cabo Prueba Encima', version: v0 }));
+  assert.deepEqual([vieja.estado, vieja.datos.codigo, vieja.datos.mensaje], [409, 'VERSION_VIEJA', 'Alguien más cambió esta cuenta mientras usted la editaba.']);
+  assert.equal((await admin.query('SELECT cargo_rol FROM srp.usuarios WHERE id = $1', [alta.id])).rows[0].cargo_rol, 'Jefe de cuadrilla', 'el cambio de la otra se queda');
+  // Con la versión de la lista, que trae microsegundos, también
+  const enLista = (await a.pedir('GET', '/cuentas')).datos.filas.find((u) => u.id === alta.id);
+  assert.equal((await a.pedir('PUT', '/cuentas/' + alta.id, cuerpo({ cargo_rol: 'Cabo', version: enLista.fecha_ultima_edicion }))).estado, 200);
+  // Sin versión, como una aplicación de antes, no se revisa
+  assert.equal((await a.pedir('PUT', '/cuentas/' + alta.id, cuerpo({}))).estado, 200);
+});
+
+test('el correo lleva hasta 254 caracteres: más largo nunca podría entrar', async () => {
+  const a = cliente();
+  await a.pedir('POST', '/acceso/entrar', { correo: ADMIN.correo, contrasena: ADMIN.clave });
+  const largo = 'x'.repeat(250) + '.prueba@ejemplo.local';
+  const r = await a.pedir('POST', '/cuentas', { correo: largo, nombre_completo: 'Correo Largo', organizacion_id: 'o-prueba-acceso', cargo_rol: 'Cabo', perfil: 'CABO' });
+  assert.deepEqual([r.estado, r.datos.errores], [400, [['correo', 'El correo lleva hasta 254 caracteres.']]]);
+});
+
+test('desactivar una institución en Catálogos cierra al momento las sesiones de sus cuentas', async () => {
+  const a = cliente();
+  await a.pedir('POST', '/acceso/entrar', { correo: ADMIN.correo, contrasena: ADMIN.clave });
+  const alta = await a.pedir('POST', '/cuentas', { correo: 'cabo.prueba.institucion@ejemplo.local', nombre_completo: 'Cabo Prueba Institución', organizacion_id: 'o-prueba-acceso', cargo_rol: 'Cabo', perfil: 'CABO' });
+  await cliente().pedir('POST', '/acceso/entrar', { correo: 'cabo.prueba.institucion@ejemplo.local', contrasena: alta.datos.temporal });
+  try {
+    assert.equal((await a.pedir('POST', '/catalogos/instituciones/o-prueba-acceso/estado', { activo: false })).estado, 200);
+    const s = (await admin.query('SELECT count(*) FILTER (WHERE cerrada_en IS NULL)::int AS abiertas, count(*) FILTER (WHERE motivo_cierre = \'INSTITUCION_DESACTIVADA\')::int AS cerradas FROM srp.sesiones WHERE usuario_id = $1', [alta.datos.usuario.id])).rows[0];
+    assert.deepEqual(s, { abiertas: 0, cerradas: 1 }, 'sin esperar a que la sesión se vuelva a usar');
+  } finally {
+    await a.pedir('POST', '/catalogos/instituciones/o-prueba-acceso/estado', { activo: true });
+  }
 });

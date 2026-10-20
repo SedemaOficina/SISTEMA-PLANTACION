@@ -233,8 +233,9 @@ SRP.usuarios = {
       : n === 1 ? '1 coordinador asignado. Puede marcar más de uno.' : n + ' coordinadores asignados.';
   },
 
-  abrirFormulario(usuario) {
+  abrirFormulario(usuario, cambiadaPorOtra) {
     this.editando = usuario;
+    SRP.util.avisoEn(this.el('usr-version'), cambiadaPorOtra ? 'Alguien más cambió esta cuenta mientras usted la editaba. El formulario ya tiene lo que guardó la otra persona: revíselo y vuelva a hacer su cambio.' : '');
     this.llenarListas(usuario);
     this.el('dlg-usuario-titulo').textContent = usuario ? 'Editar cuenta' : 'Dar de alta';
     this.el('usr-nombre-completo').value = usuario ? SRP.util.nombreCompleto(usuario) : '';
@@ -270,8 +271,9 @@ SRP.usuarios = {
     if (!d.nombre_completo) errores.push(['usr-nombre-completo', 'Escriba el nombre completo.']);
     else if (d.nombre_completo.split(' ').length < 2) errores.push(['usr-nombre-completo', 'Escriba nombre y al menos un apellido.']);
     if (!this.editando) {
-      // Comprobación deliberadamente amplia: hay correos válidos con formas poco comunes
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.correo)) errores.push(['usr-correo', 'Escriba un correo válido.']);
+      // Comprobación deliberadamente amplia: hay correos válidos con formas poco comunes. El acceso no lee más de 254
+      if (d.correo.length > 254) errores.push(['usr-correo', 'El correo lleva hasta 254 caracteres.']);
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.correo)) errores.push(['usr-correo', 'Escriba un correo válido.']);
       else if (SRP.ref.usuarios.some(u => SRP.util.normalizar(u.correo) === SRP.util.normalizar(d.correo)))
         errores.push(['usr-correo', 'Ese correo ya tiene cuenta.']);
     }
@@ -413,8 +415,11 @@ SRP.usuarios = {
     const previo = this.editando;
     const libre = SRP.util.ocupado(this.el('btn-usr-guardar'), 'Guardando…', 'disco');
     let r;
-    try { r = previo ? await SRP.servidor.pedir('PUT', '/cuentas/' + encodeURIComponent(previo.id), datos) : await SRP.servidor.pedir('POST', '/cuentas', datos); }
+    // La edición lleva la versión de la cuenta: si otra Administración la cambió mientras tanto, no escribe encima
+    const version = previo ? previo.fecha_ultima_edicion || previo.fecha_creacion || null : null;
+    try { r = previo ? await SRP.servidor.pedir('PUT', '/cuentas/' + encodeURIComponent(previo.id), Object.assign({ version }, datos)) : await SRP.servidor.pedir('POST', '/cuentas', datos); }
     finally { libre(); }
+    if (!r.ok && r.codigo === 'VERSION_VIEJA') { await this.recargarCambiada(previo); return; }
     if (!r.ok) {
       const errores = (r.errores || []).map(([campo, texto]) => [this.CAMPO_DEL_SERVIDOR[campo] || 'usr-nombre-completo', texto]);
       if (errores.length) SRP.util.resumenErrores(this.el('usr-errores'), errores, this.CAMPOS);
@@ -429,10 +434,19 @@ SRP.usuarios = {
     else this.mostrarTemporal(u, r.datos, true);
   },
 
-  // La cuenta que devolvió el servidor, en el teléfono con lo que ya se sabía de ella
+  // Otra Administración cambió la cuenta mientras ésta la editaba: el formulario se vuelve a llenar con lo que guardó
+  async recargarCambiada(previo) {
+    await SRP.remoto.bajarCuentas();
+    await SRP.ref.recargar();
+    const u = await SRP.almacen.uno('usuarios', previo.id);
+    if (u) this.abrirFormulario(u, true);
+  },
+
+  /* La cuenta que devolvió el servidor, en el teléfono con lo que ya se sabía de ella. Su alta y su último cambio,
+     los del servidor: son su versión */
   async ponerDelServidor(fila, previo) {
     const yo = SRP.sesion.usuario.id, ahora = SRP.util.ahoraISO();
-    const u = previo ? Object.assign({}, previo, fila, { editado_por_id: yo, fecha_ultima_edicion: ahora })
+    const u = previo ? Object.assign({}, previo, { editado_por_id: yo, fecha_ultima_edicion: ahora }, fila)
       : Object.assign({ fecha_creacion: ahora, creado_por_id: yo, editado_por_id: null, fecha_ultima_edicion: null }, fila);
     await SRP.almacen.ponerLocal('usuarios', u);
     return u;

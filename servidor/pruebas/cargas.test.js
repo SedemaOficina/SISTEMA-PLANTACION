@@ -191,3 +191,42 @@ test('sólo la Administración global carga, completa, consulta y deshace', asyn
     assert.deepEqual([r.estado, r.datos.codigo], [403, 'SIN_PERMISO'], metodo + ' ' + ruta);
   }
 });
+
+/* ---------- Una carga a la vez ---------- */
+
+// Un lote que dejó de subir hace `minutos`: su alta y sus árboles, más viejos
+async function envejecer(lote, minutos) {
+  await admin.query("UPDATE srp.cargas SET creada_en = creada_en - make_interval(mins => $2) WHERE id = $1", [lote, minutos]);
+  await admin.query("UPDATE srp.plantaciones SET fecha_registro = fecha_registro - make_interval(mins => $2) WHERE jornada_id IN (SELECT id FROM srp.jornadas WHERE carga_id = $1)", [lote, minutos]);
+}
+
+test('una carga a la vez: mientras un lote sube, otro no empieza; el que dejó de subir ya no estorba', async () => {
+  const adm = await sesion(ADMIN);
+  const A = uuid(), JA = jornada(), B = uuid(), JB = jornada();
+  const tandaB = { archivo: 'b.xlsx', jornadas: [JB], arboles: [arbol(JB, 51, 2)] };
+  assert.equal((await adm('PUT', '/cargas/' + A + '/tandas/1', { archivo: 'a.xlsx', jornadas: [JA], arboles: [arbol(JA, 50, 2)] })).estado, 200);
+  const b = await adm('PUT', '/cargas/' + B + '/tandas/1', tandaB);
+  assert.deepEqual([b.estado, b.datos.codigo], [409, 'OTRA_CARGA'], JSON.stringify(b.datos));
+  assert.match(b.datos.mensaje, /^Hay otra carga subiendo: la de .+, del archivo «a\.xlsx»\. Espere a que termine e intente de nuevo\.$/);
+  assert.equal((await admin.query('SELECT count(*)::int AS n FROM srp.cargas WHERE id = $1', [B])).rows[0].n, 0, 'del lote que esperó no queda nada');
+  // El que dejó de subir hace más de 15 minutos se quedó a medias: ya no estorba
+  await envejecer(A, 20);
+  assert.equal((await adm('PUT', '/cargas/' + B + '/tandas/1', tandaB)).estado, 200);
+  for (const k of [A, B]) assert.equal((await adm('DELETE', '/cargas/' + k)).estado, 200);
+});
+
+test('dos cargas del mismo archivo no duplican el histórico: la que se completa después lo dice y no se completa', async () => {
+  const adm = await sesion(ADMIN);
+  const A = uuid(), JA = jornada({ fecha: '2025-04-01' }), B = uuid(), JB = jornada({ fecha: '2025-04-01' });
+  const deA = [arbol(JA, 60, 2), arbol(JA, 61, 3)], deB = deA.map((a) => ({ ...a, id: uuid(), jornada_id: JB.id }));
+  assert.equal((await adm('PUT', '/cargas/' + A + '/tandas/1', { archivo: 'mismo.xlsx', jornadas: [JA], arboles: deA })).estado, 200);
+  // A se quedó a medias y otra persona sube el mismo archivo, entero
+  await envejecer(A, 20);
+  assert.equal((await adm('PUT', '/cargas/' + B + '/tandas/1', { archivo: 'mismo.xlsx', jornadas: [JB], arboles: deB })).estado, 200);
+  assert.equal((await adm('POST', '/cargas/' + B + '/completa', { arboles: 2 })).estado, 200);
+  // Si A sigue, no se completa: traería los mismos dos árboles otra vez
+  const a = await adm('POST', '/cargas/' + A + '/completa', { arboles: 2 });
+  assert.deepEqual([a.estado, a.datos.codigo, a.datos.mensaje], [409, 'YA_CARGADOS', 'Mientras se subía, otra carga trajo 2 árboles iguales a los de este archivo.']);
+  assert.equal(await seVe(adm, JA.id), false, 'lo de A no se ve');
+  for (const k of [A, B]) assert.equal((await adm('DELETE', '/cargas/' + k)).estado, 200);
+});

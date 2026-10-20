@@ -27,7 +27,13 @@ import { enTransaccion } from "./transaccion";
    · Deshacer un lote lo oculta y elimina sus árboles; no borra nada, porque un árbol con folio no se borra y su
      folio no se vuelve a usar. El archivo se puede volver a cargar.
    · Los árboles y las jornadas quedan a nombre de quien carga, en jornadas cerradas de la institución del
-     archivo. La carga histórica no pasa por la bandeja de posibles duplicados. */
+     archivo. La carga histórica no pasa por la bandeja de posibles duplicados.
+   · UNA CARGA A LA VEZ: mientras un lote sube, otro no empieza; el que llega se rechaza y se le dice que espere.
+     Un lote que dejó de subir hace más de MINUTOS_SIN_SUBIR ya no estorba: se quedó a medias y se quita en
+     «Cargas hechas». Y al completar un lote se revisa otra vez que otro, completado mientras éste subía, no
+     haya traído los mismos árboles: dos cargas del mismo archivo no duplican el histórico. */
+
+const MINUTOS_SIN_SUBIR = 15;
 
 // Así una tanda cabe en los 100 KB de cada pedido
 export const TANDA_MAXIMA = 400;
@@ -104,6 +110,8 @@ export function rutasCargas(pool: pg.Pool, sesion: RequestHandler): Router {
     if (typeof t === "string") return responder(res, 400, "DATOS_INVALIDOS", t);
     const u = sesionDe(res).usuario;
     const resultado = await enUtc(async (c) => {
+      const otra = await otraSubiendo(c, lote);
+      if (otra) return { codigo: "OTRA_CARGA", mensaje: "Hay otra carga subiendo: la de " + otra.por + ", del archivo «" + otra.archivo + "». Espere a que termine e intente de nuevo." };
       await c.query("INSERT INTO srp.cargas (id, archivo, creada_por_id) VALUES ($1, $2, $3) ON CONFLICT (id) DO NOTHING", [lote, t.archivo, u.id]);
       const k = (await loteDe(c, lote)) as Lote;
       if (k.creada_por_id !== u.id) return { codigo: "OTRA_PERSONA", mensaje: "Ese lote lo está subiendo otra persona." };
@@ -112,7 +120,13 @@ export function rutasCargas(pool: pg.Pool, sesion: RequestHandler): Router {
       const ya = (await c.query<{ n: number }>("SELECT count(*)::int AS n FROM srp.plantaciones WHERE id = ANY($1::uuid[])", [t.arboles.map((a) => a.id)])).rows[0].n;
       if (ya === t.arboles.length) return { repetida: true, arboles: 0 };
       if (ya) return { codigo: "TANDA_A_MEDIAS", mensaje: "Algunos árboles de esa tanda ya están en el sistema y otros no." };
-      return guardarTanda(c, u, lote, t);
+      const guardada = await guardarTanda(c, u, lote, t);
+      // Un lote cuya primera tanda no pasó no se queda: no trae nada, y estorbaría a la siguiente carga. Se deshace la transacción
+      if ("codigo" in guardada && guardada.codigo && !k.arboles) throw new SinLote(guardada as SinLote["resultado"]);
+      return guardada;
+    }).catch((e: unknown) => {
+      if (e instanceof SinLote) return e.resultado;
+      throw e;
     });
     if ("codigo" in resultado) return res.status(resultado.codigo === "DATOS_INVALIDOS" ? 400 : 409).json(resultado);
     res.json(resultado);
@@ -131,6 +145,9 @@ export function rutasCargas(pool: pg.Pool, sesion: RequestHandler): Router {
       if (k.estado === "completa") return { repetida: true, ...(await resumen(c, lote)) };
       if (k.estado !== "subiendo") return { codigo: "YA_NO_SUBE", mensaje: "Ese lote se deshizo." };
       if (k.arboles !== esperados) return { codigo: "FALTAN_TANDAS", mensaje: "Faltan tandas: llegaron " + plural(k.arboles, "árbol", "árboles") + " de " + esperados.toLocaleString("es-MX") + "." };
+      await c.query("SELECT pg_advisory_xact_lock(hashtextextended('srp.cargas', 0))");
+      const repetidos = await repetidosDeOtraCarga(c, k.id);
+      if (repetidos) return { codigo: "YA_CARGADOS", mensaje: "Mientras se subía, otra carga trajo " + plural(repetidos, "árbol igual", "árboles iguales") + " a los de este archivo." };
       return completar(c, u, k);
     });
     if ("codigo" in resultado) return res.status(resultado.codigo === "NO_EXISTE" ? 404 : 409).json(resultado);
@@ -173,6 +190,40 @@ export function rutasCargas(pool: pg.Pool, sesion: RequestHandler): Router {
   });
 
   return r;
+}
+
+/* ---------- Una carga a la vez ---------- */
+
+// La primera tanda de un lote no pasó: su transacción se deshace y la respuesta es la de la tanda
+class SinLote {
+  constructor(readonly resultado: { codigo: string; mensaje: string; errores?: Problema[] }) {}
+}
+
+// Otro lote que está subiendo, con quién lo sube; null si no hay. Con candado: dos que empiezan juntos no pasan los dos
+async function otraSubiendo(c: pg.PoolClient, lote: string): Promise<{ archivo: string; por: string } | null> {
+  await c.query("SELECT pg_advisory_xact_lock(hashtextextended('srp.cargas', 0))");
+  return (await c.query<{ archivo: string; por: string }>(
+    `SELECT k.archivo, u.nombre_completo AS por FROM srp.cargas k JOIN srp.usuarios u ON u.id = k.creada_por_id
+      WHERE k.estado = 'subiendo' AND k.id <> $1
+        AND greatest(k.creada_en, (SELECT max(x.fecha_registro) FROM srp.plantaciones x JOIN srp.jornadas j ON j.id = x.jornada_id WHERE j.carga_id = k.id))
+            > now() - make_interval(mins => $2)
+      ORDER BY k.creada_en LIMIT 1`,
+    [lote, MINUTOS_SIN_SUBIR],
+  )).rows[0] ?? null;
+}
+
+// Cuántos árboles del lote son iguales —punto, especie, fecha e institución— a los de otro lote completado después de que éste empezó
+async function repetidosDeOtraCarga(c: pg.PoolClient, lote: string): Promise<number> {
+  return (await c.query<{ n: number }>(
+    `SELECT count(DISTINCT x.id)::int AS n
+       FROM srp.cargas k JOIN srp.jornadas j ON j.carga_id = k.id JOIN srp.plantaciones x ON x.jornada_id = j.id
+       JOIN srp.cargas o ON o.estado = 'completa' AND o.id <> k.id AND o.completa_en > k.creada_en
+       JOIN srp.jornadas oj ON oj.carga_id = o.id AND oj.organizacion_id = j.organizacion_id
+       JOIN srp.plantaciones y ON y.jornada_id = oj.id AND y.estatus <> 'eliminado' AND y.especie_id = x.especie_id
+        AND y.fecha_plantacion = x.fecha_plantacion AND round(y.lat, 6) = round(x.lat, 6) AND round(y.lng, 6) = round(x.lng, 6)
+      WHERE k.id = $1`,
+    [lote],
+  )).rows[0].n;
 }
 
 /* ---------- Una tanda ---------- */

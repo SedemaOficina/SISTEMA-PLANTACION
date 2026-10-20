@@ -3,7 +3,7 @@ import { anotarCambio } from "./bitacora";
 import { conDuplicado } from "./duplicados";
 import { puede } from "./permisos";
 import {
-  AHORA, antesDelPrograma, asignarFolio, autoresDe, caducarReporte, comoObjeto, conVigente, esFecha, especieComun, esVigente, fechaCorta, fechaEnJornada, filaDe,
+  AHORA, antesDelPrograma, asignarFolio, autoresDe, FOTO_DE_OTRO, fotoDeOtro, caducarReporte, comoObjeto, conVigente, esFecha, especieComun, esVigente, fechaCorta, fechaEnJornada, filaDe,
   hoyEnLaCiudad, idDe, instante, jornadaEliminada, MOTIVOS_SUSTITUCION, motivoSustitucion, noAntes, puntoDe, rechazo, recibido, repetida, seElimino, sinPermiso, texto, textoFolio,
   ubicar, versionVieja, congelarPrioridad, type Errores, type Fila, type Punto, type Resultado, type Tabla, type Territorio,
 } from "./recepcion-apoyo";
@@ -107,6 +107,7 @@ export async function crearArbol(c: pg.PoolClient, u: Usuario, d: Record<string,
   else if (fecha > (await hoyEnLaCiudad(c))) errores.push(["fecha_plantacion", "La fecha de plantación no puede ser posterior a hoy."]);
   else if (antesDelPrograma(fecha)) errores.push(["fecha_plantacion", noAntes("La fecha de plantación")]);
   else if (fecha < String(jornada.fecha)) errores.push(["fecha_plantacion", "La fecha de plantación no puede ser anterior al inicio de la jornada (" + fechaCorta(String(jornada.fecha)) + ")."]);
+  if (await fotoDeOtro(c, idDe(d.foto_id), id)) errores.push(FOTO_DE_OTRO);
   if (errores.length) return rechazo(id, "DATOS_INVALIDOS", "Revise los datos del árbol.", ordenar(errores));
 
   let fila = await insertarArbol(c, u, { id, punto: punto as Punto, territorio: territorio as Territorio, especieId, especieOtra, comentarios,
@@ -119,7 +120,7 @@ export async function crearArbol(c: pg.PoolClient, u: Usuario, d: Record<string,
 }
 
 // Los errores en el orden de los campos del formulario: ubicación, especie, fecha y comentarios
-const ORDEN = ["motivo_sustitucion", "motivo_sustitucion_otro", "lat", "especie_id", "fecha_plantacion", "comentarios"];
+const ORDEN = ["motivo_sustitucion", "motivo_sustitucion_otro", "lat", "especie_id", "fecha_plantacion", "comentarios", "foto_id"];
 const ordenar = (e: Errores): Errores => e.slice().sort((a, b) => ORDEN.indexOf(a[0]) - ORDEN.indexOf(b[0]));
 
 /* ---------- Lo que se le hace a un árbol que ya está en el servidor ---------- */
@@ -172,6 +173,7 @@ export async function editarArbol(c: pg.PoolClient, u: Usuario, d: Record<string
   else if (v.fecha_plantacion > (await hoyEnLaCiudad(c))) errores.push(["fecha_plantacion", "La fecha de plantación no puede ser posterior a hoy."]);
   else if (v.fecha_plantacion !== actual.fecha_plantacion && antesDelPrograma(v.fecha_plantacion)) errores.push(["fecha_plantacion", noAntes("La fecha de plantación")]);
   else if (v.fecha_plantacion < String(jornada.fecha)) errores.push(["fecha_plantacion", "La fecha de plantación no puede ser anterior al inicio de la jornada (" + fechaCorta(String(jornada.fecha)) + ")."]);
+  if (v.foto_id !== actual.foto_id && (await fotoDeOtro(c, v.foto_id as string | null, id))) errores.push(FOTO_DE_OTRO);
   if (errores.length) return conVigente(rechazo(id, "DATOS_INVALIDOS", "Revise los datos del árbol.", ordenar(errores)), actual);
 
   const p = punto as Punto, t = territorio as Territorio;
@@ -300,6 +302,7 @@ export async function sustituirArbol(c: pg.PoolClient, u: Usuario, d: Record<str
   const comentarios = texto(d.comentarios);
   const revisado = await revisarArbol(c, { ...d, especie_id: especieId, especie_otra: especieOtra, comentarios }, null);
   errores.push(...revisado.errores);
+  if (await fotoDeOtro(c, idDe(d.foto_id), id)) errores.push(FOTO_DE_OTRO);
   if (errores.length) return rechazo(id, "DATOS_INVALIDOS", "Revise los datos de la sustitución.", ordenar(errores));
 
   const nuevo = await insertarArbol(c, u, { id, punto: revisado.punto as Punto, territorio: revisado.territorio as Territorio, especieId, especieOtra, comentarios,

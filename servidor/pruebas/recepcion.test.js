@@ -534,3 +534,12 @@ test('la prioridad de la colonia se congela al recibir el árbol y la jornada: s
     await admin.query('UPDATE srp.capa_prioritarias SET prioridad = $2 WHERE id = $1', [col.id, col.prioridad]);
   }
 });
+
+test('lo raro que llega por la API no da error interno: una precisión imposible queda sin dato, el carácter nulo se quita y una hora del futuro es la del servidor', async () => {
+  const t = await telefono(CABO);
+  const J = jornada();
+  assert.equal((await t.una('jornada.crear', J)).estado, 'recibido');
+  const a = await t.una('registro.crear', arbol(J.id, { gps_precision_m: 9999999999, comentarios: 'con\u0000nulo', fecha_registro: '2999-01-01T00:00:00Z' }));
+  assert.deepEqual([a.estado, a.fila.gps_precision_m, a.fila.comentarios], ['recibido', null, 'connulo'], JSON.stringify(a));
+  assert.ok(Date.parse(a.fila.fecha_registro) <= Date.now() + 60000, 'la hora del futuro se cambió por la del servidor: ' + a.fila.fecha_registro);
+});

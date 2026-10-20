@@ -14,6 +14,13 @@ SRP.util = {
 
   ahoraISO() { return new Date().toISOString(); },
 
+  // Un aviso informativo en su caja, con el icono al frente; sin texto, la caja se esconde
+  avisoEn(caja, texto) {
+    if (!caja) return;
+    caja.hidden = !texto;
+    caja.innerHTML = texto ? SRP.ICONOS.svg('info', 'medio') + '<span>' + this.escapar(texto) + '</span>' : '';
+  },
+
   /* Hoy, AAAA-MM-DD, en la Ciudad de México, sea cual sea la zona del teléfono: así lo calcula también el
      servidor. No usar toISOString: en la tarde ya daría el día siguiente. */
   fechaHoy() {

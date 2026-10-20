@@ -296,8 +296,9 @@ SRP.catalogos = {
     return 'ESP-' + String(n + 1).padStart(4, '0');
   },
 
-  abrirFormulario(item) {
+  abrirFormulario(item, cambiadoPorOtra) {
     this.editando = item;
+    SRP.util.avisoEn(this.el('cat-version'), cambiadoPorOtra ? 'Alguien más cambió este valor mientras usted lo editaba. El formulario ya tiene lo que guardó la otra persona: revíselo y vuelva a hacer su cambio.' : '');
     this.claveTocada = false;
     const esEspecie = this.tipo === 'especie', esVehiculo = this.tipo === 'vehiculo';
     this.el('dlg-catalogo-titulo').textContent = this.tipo === 'organizacion' && item ? 'Renombrar institución' : (item ? 'Editar ' : 'Agregar ') + this.ETIQUETA[this.tipo];
@@ -351,8 +352,11 @@ SRP.catalogos = {
     this.el('dlg-catalogo').showModal();
   },
 
+  // Los largos máximos, los mismos que el servidor y que el maxlength de cada campo
+  LARGOS: { nombre: 120, nombre_cientifico: 140, otros_nombres_comunes: 400, modelo: 40, tipo_vehiculo: 30 },
+
   validar(datos) {
-    const errores = [];
+    const errores = [], L = this.LARGOS, largoNombre = 'El nombre lleva hasta ' + L.nombre + ' caracteres.';
     const mismos = SRP.ref.deTipo(this.tipo, false).filter(c => !this.editando || c.id !== this.editando.id);
     const norm = SRP.util.normalizar;
     if (this.tipo === 'vehiculo') {
@@ -361,7 +365,9 @@ SRP.catalogos = {
       else if (!/^[A-Z0-9][A-Z0-9 -]{2,10}[A-Z0-9]$/.test(datos.nombre) || !/\d/.test(datos.nombre)) errores.push(['cat-nombre', 'La placa lleva de 4 a 12 letras y números, con espacios o guiones: «1234 AB».']);
       else if (mismos.some(c => this.clavePlaca(c.nombre) === clave)) errores.push(['cat-nombre', 'Ya existe un vehículo con esa placa.']);
       if (!datos.modelo) errores.push(['cat-modelo', 'Escriba el modelo.']);
+      else if (datos.modelo.length > L.modelo) errores.push(['cat-modelo', 'El modelo lleva hasta ' + L.modelo + ' caracteres.']);
       if (!datos.tipo_vehiculo) errores.push(['cat-tipo-vehiculo', 'Escriba el tipo de vehículo.']);
+      else if (datos.tipo_vehiculo.length > L.tipo_vehiculo) errores.push(['cat-tipo-vehiculo', 'El tipo de vehículo lleva hasta ' + L.tipo_vehiculo + ' caracteres.']);
       return errores;
     }
     // Institución: tipo al agregarla (nunca Alcaldía), nombre único entre todas; una alcaldía no se renombra
@@ -369,6 +375,7 @@ SRP.catalogos = {
       if (!this.editando && !datos.tipo_organizacion) errores.push(['cat-tipo-org', 'Elija el tipo de institución.']);
       else if (!this.editando && datos.tipo_organizacion === 'Alcaldía') errores.push(['cat-tipo-org', 'Las alcaldías ya están dadas de alta: actívela en la lista.']);
       if (!datos.nombre) errores.push(['cat-nombre', 'Escriba el nombre.']);
+      else if (datos.nombre.length > L.nombre) errores.push(['cat-nombre', largoNombre]);
       else if (mismos.some(c => norm(c.nombre) === norm(datos.nombre))) errores.push(['cat-nombre', 'Ya existe una institución con ese nombre.']);
       if (this.editando && this.esFija(this.editando)) errores.push(['cat-nombre', 'Las alcaldías no se renombran.']);
       return errores;
@@ -376,11 +383,13 @@ SRP.catalogos = {
     // Solicitante: nombre único y tipo de la lista; la clave la pone el sistema
     if (this.tipo === 'solicitante') {
       if (!datos.nombre) errores.push(['cat-nombre', 'Escriba el nombre.']);
+      else if (datos.nombre.length > L.nombre) errores.push(['cat-nombre', largoNombre]);
       else if (mismos.some(c => norm(c.nombre) === norm(datos.nombre))) errores.push(['cat-nombre', 'Ya existe un solicitante con ese nombre.']);
       if (!SRP.ref.TIPOS_SOLICITANTE.includes(datos.tipo_solicitante)) errores.push(['cat-tipo-sol', 'Elija el tipo de solicitante.']);
       return errores;
     }
     if (!datos.nombre) errores.push(['cat-nombre', 'Escriba el nombre.']);
+    else if (datos.nombre.length > L.nombre) errores.push(['cat-nombre', largoNombre]);
     else if (mismos.some(c => norm(c.nombre) === norm(datos.nombre))) errores.push(['cat-nombre', 'Ya existe un valor con ese nombre.']);
     if (!this.editando) {
       if (this.tipo === 'especie') { if (!/^ESP-\d{4}$/.test(datos.clave)) errores.push(['cat-clave', 'La clave de especie es ESP-0000.']); }
@@ -389,8 +398,10 @@ SRP.catalogos = {
     }
     if (this.tipo === 'especie') {
       if (!datos.nombre_cientifico) errores.push(['cat-cientifico', 'Escriba el nombre científico.']);
+      else if (datos.nombre_cientifico.length > L.nombre_cientifico) errores.push(['cat-cientifico', 'El nombre científico lleva hasta ' + L.nombre_cientifico + ' caracteres.']);
       else if (!/^[A-ZÁÉÍÓÚ][a-záéíóú-]+ \S+/.test(datos.nombre_cientifico)) errores.push(['cat-cientifico', 'El nombre científico lleva género con inicial mayúscula y epíteto: «Quercus rugosa».']);
       else if (mismos.some(c => norm(c.nombre_cientifico) === norm(datos.nombre_cientifico))) errores.push(['cat-cientifico', 'Ya existe una especie con ese nombre científico.']);
+      if (String(datos.otros_nombres_comunes || '').length > L.otros_nombres_comunes) errores.push(['cat-otros-nombres', 'Otros nombres comunes lleva hasta ' + L.otros_nombres_comunes + ' caracteres.']);
       if (!this.PALETA.includes(datos.paleta_vegetal)) errores.push(['cat-paleta', 'Diga si la especie pertenece a la paleta vegetal de la Secretaría.']);
       if (!this.FRUTO.includes(datos.fruto_comestible)) errores.push(['cat-fruto', 'Diga si su fruto es comestible; si aún no se sabe, elija «Por determinar».']);
       if (datos.id_enciclovida !== null && !Number.isInteger(datos.id_enciclovida)) errores.push(['cat-enciclovida', 'El id de EncicloVida es un número entero.']);
@@ -521,7 +532,7 @@ SRP.catalogos = {
 
   // Los campos del servidor y los del formulario donde se dice su error
   CAMPO_DEL_SERVIDOR: {
-    nombre: 'cat-nombre', clave: 'cat-clave', nombre_cientifico: 'cat-cientifico', tipo_distribucion: 'cat-distribucion', paleta_vegetal: 'cat-paleta',
+    nombre: 'cat-nombre', clave: 'cat-clave', nombre_cientifico: 'cat-cientifico', otros_nombres_comunes: 'cat-otros-nombres', tipo_distribucion: 'cat-distribucion', paleta_vegetal: 'cat-paleta',
     fruto_comestible: 'cat-fruto', id_snib: 'cat-snib', id_enciclovida: 'cat-enciclovida', modelo: 'cat-modelo', tipo_vehiculo: 'cat-tipo-vehiculo',
     tipo_organizacion: 'cat-tipo-org', tipo_solicitante: 'cat-tipo-sol', tipos_organizacion: 'cat-tipos-org-botones'
   },
@@ -531,8 +542,11 @@ SRP.catalogos = {
     const ruta = '/catalogos/' + this.tabla();
     const libre = SRP.util.ocupado(this.el('btn-cat-guardar'), 'Guardando…', 'disco');
     let r;
-    try { r = this.editando ? await SRP.servidor.pedir('PUT', ruta + '/' + encodeURIComponent(this.editando.id), cuerpo) : await SRP.servidor.pedir('POST', ruta, cuerpo); }
+    // La edición lleva la versión del valor: si otra Administración lo cambió mientras tanto, no escribe encima
+    const e = this.editando, version = e ? e.fecha_ultima_edicion || e.fecha_creacion || null : null;
+    try { r = e ? await SRP.servidor.pedir('PUT', ruta + '/' + encodeURIComponent(e.id), Object.assign({ version }, cuerpo)) : await SRP.servidor.pedir('POST', ruta, cuerpo); }
     finally { libre(); }
+    if (!r.ok && r.codigo === 'VERSION_VIEJA') { await this.recargarCambiado(e); return; }
     if (!r.ok) {
       const errores = (r.errores || []).map(([campo, texto]) => [this.CAMPO_DEL_SERVIDOR[campo] || 'cat-nombre', texto]);
       if (errores.length) SRP.util.resumenErrores(this.el('cat-errores'), errores, ['cat-nombre', 'cat-clave'].concat(this.CAMPOS_TIPO, this.CAMPOS_ESPECIE, this.CAMPOS_VEHICULO));
@@ -544,6 +558,14 @@ SRP.catalogos = {
     await SRP.ref.recargar();
     SRP.util.anunciarSilencioso('Catálogo actualizado.');   // la lista ya cambió a la vista
     this.preparar();
+  },
+
+  // Otra Administración cambió el valor mientras éste se editaba: el formulario se vuelve a llenar con lo que guardó
+  async recargarCambiado(previo) {
+    await SRP.remoto.bajarCatalogos();
+    await SRP.ref.recargar();
+    const item = SRP.ref.catalogos.find(c => c.tipo === previo.tipo && c.id === previo.id);
+    if (item) this.abrirFormulario(item, true);
   },
 
   // El renglón que devolvió el servidor, guardado en el teléfono con los demás catálogos
