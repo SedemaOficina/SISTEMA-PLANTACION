@@ -1,7 +1,8 @@
 # Las pruebas de la aplicación en cada subida, en un equipo de GitHub: la sintaxis de los guiones, la hoja de
 # estilos, la consistencia, la presentación y la prueba completa por tramos. Todo con datos de prueba: sin el
 # servicio ni la base de datos, que se prueban en el equipo de desarrollo (npm test y prueba_conexion.py).
-# Si algo falla, la subida queda marcada con una ✗ y el resultado de cada tramo queda en «Artifacts».
+# Si algo falla, la subida queda marcada con una ✗. El resumen de la prueba completa se ve en la página de la
+# corrida, y el resultado de cada tramo queda en «Artifacts».
 name: Pruebas
 
 on:
@@ -29,9 +30,9 @@ jobs:
       PYTHONUTF8: '1'
       PYTHONIOENCODING: utf-8
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
           cache: pip
@@ -62,11 +63,11 @@ jobs:
         run: python "$GITHUB_WORKSPACE/pruebas/revisar.py"
 
       - name: Prueba completa, por tramos
-        run: python pruebas/por_tramos.py --json "$RUNNER_TEMP/tramos.json"
+        run: python pruebas/por_tramos.py --json "$RUNNER_TEMP/tramos.json" --resumen "$GITHUB_STEP_SUMMARY"
 
       - name: Resultado de cada tramo y capturas
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: resultado-pruebas
           path: |

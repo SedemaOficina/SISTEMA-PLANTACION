@@ -4102,7 +4102,8 @@
     equipo con Linux y la zona horaria de la Ciudad, corren:
     – la sintaxis de los guiones: una secuencia de escape inválida es error;
     – la hoja de estilos, la consistencia y la presentación;
-    – la prueba completa por tramos. El resultado de cada tramo se guarda 14 días.
+    – la prueba completa por tramos. Su resumen queda en la página de la corrida, y el resultado de cada tramo se
+      guarda 14 días.
     No corren ahí el servicio ni la base de datos (`npm test` y `prueba_conexion.py`), que se prueban en el equipo de
     desarrollo. Tampoco lo que se compara con `originales/`, que no se sube: la prueba lo dice, y del catálogo de
     especies revisa lo publicado.

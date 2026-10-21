@@ -5886,8 +5886,8 @@ entregar al SIA, rearmar el paquete con esta versión.
 Las dos fallas nuevas de la aplicación las encontró el equipo lento simulado.
 
 **Qué cambió.**
-- `pruebas/por_tramos.py` (nuevo): la prueba completa por tramos, con `--lento`, `--solo`, `--desde` y `--json`.
-  De un tramo que se detiene dice el renglón de `prueba.py` donde se detuvo.
+- `pruebas/por_tramos.py` (nuevo): la prueba completa por tramos, con `--lento`, `--solo`, `--desde`, `--json` y
+  `--resumen`. De un tramo que se detiene dice el renglón de `prueba.py` donde se detuvo.
 - `pruebas/prueba.py`:
   - el equipo lento simulado (`SRP_LENTO`);
   - esperas a una condición donde el equipo lento hizo fallar las fijas: la lista de Jornadas pintada, la ficha
@@ -5900,7 +5900,7 @@ Las dos fallas nuevas de la aplicación las encontró el equipo lento simulado.
 - `datos/HUELLA-CAPAS.json`: vuelta a sacar; estaba atrasada desde el bloque 197.
 - `js/mapa.js` y `js/duplicados.js`: el ajuste del tamaño del mapa fijo (`ajustarLuego`).
 - `js/jornadas.js`: cada pintura de la lista lleva su turno.
-- `.github/workflows/pruebas.yml` (nuevo).
+- `.github/workflows/pruebas.yml` (nuevo). El resumen de la prueba completa queda en la página de la corrida.
 - `docs/evidencia-2026-10-19/guiones/`: `lista_atrasada.py`, `mapa_quitado.py` y `sin_leaflet.py` (nuevos).
 - `README.md` y `servidor/README.md`: la prueba por tramos y el equipo lento.
 
@@ -5939,6 +5939,12 @@ de un atajo anterior. No se quitó nada.
   proyectos; repetidas, pasaron.
 - Auditorías: hoja de estilos sin hallazgos; 144 sin hallazgos; `revisar.py` sin problemas.
 - El servidor no cambió: `npm test` no se volvió a correr.
+- En GitHub, la primera corrida (Linux, Chromium) pasó todos sus pasos en 33 min: la sintaxis, la hoja de estilos,
+  la consistencia, la presentación y la prueba completa por tramos, sin fallas ni tramos detenidos, en 30 min.
+  Su registro sólo se ve con sesión iniciada en GitHub, y de ahí no se leyó el número de comprobaciones. Desde la
+  corrida siguiente, las cifras quedan en la página de la corrida.
+- Su único aviso: las tres acciones de GitHub del flujo corrían en Node 20, que GitHub retira. Pasaron a su versión
+  7, que corre en Node 24.
 
 No se probó:
 - en teléfonos reales;

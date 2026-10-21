@@ -483,7 +483,8 @@ puede correr también de una pieza. Las cuatro salen con 1 si algo falla.
 
 En cada subida a GitHub corren solas, en un equipo de GitHub con Linux, la sintaxis de los guiones, la hoja de
 estilos, la consistencia, la presentación y la prueba completa por tramos (`.github/workflows/pruebas.yml`). Si
-algo falla, la subida queda marcada con una ✗ y el resultado de cada tramo queda en sus «Artifacts». Ahí no
+algo falla, la subida queda marcada con una ✗. El resumen de la prueba completa queda en la página de la
+corrida, y el resultado de cada tramo, en sus «Artifacts». Ahí no
 hay `originales/` (no se sube): lo que se compara con ellos se omite y se dice. El servicio y la base de datos
 se prueban en el equipo de desarrollo (`npm test` y `prueba_conexion.py`).
 

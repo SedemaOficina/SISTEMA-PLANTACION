@@ -727,7 +727,8 @@ final de la tabla.
 
 Criterio de cierre, «dos corridas seguidas en dos equipos, iguales». En el equipo de desarrollo, dos corridas
 seguidas de los 80 tramos, 1,452 de 1,452 cada una: la del equipo 3 veces más lento y otra normal. El primer
-tramo, con el equipo 4 veces más lento, 645 de 645 dos veces.
+tramo, con el equipo 4 veces más lento, 645 de 645 dos veces. En GitHub (Linux), la primera corrida pasó los 80
+tramos sin fallas ni tramos detenidos, en 30 min.
 
 `lista_atrasada.py`, `mapa_quitado.py` y `sin_leaflet.py` están en la evidencia, junto a los guiones de la
 auditoría.

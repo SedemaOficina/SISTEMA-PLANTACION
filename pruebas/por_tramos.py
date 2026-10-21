@@ -12,6 +12,7 @@ Uso:  python pruebas/por_tramos.py [opciones]
   --a-la-vez 2       cuántos tramos corren al mismo tiempo (1 por omisión: el equipo ocupado da fallas de tiempo)
   --lento 4          el navegador corre como en un equipo 4 veces más lento (SRP_LENTO, sólo Chromium)
   --json ruta        guarda el resultado de cada tramo
+  --resumen ruta     agrega el resultado en Markdown al final de ese archivo (en GitHub, el resumen de la corrida)
 Las variables de prueba.py (SRP_BASE, SRP_SALIDA, SRP_MOTOR, SRP_HOY) valen igual. Sólo usa la biblioteca estándar."""
 import json, os, re, subprocess, sys, tempfile, time
 from concurrent.futures import ThreadPoolExecutor
@@ -84,6 +85,20 @@ def correr(tramo, carpeta, env):
             'final': out[-4000:] if detenido else ''}
 
 
+def escribir_resumen(ruta, resultados, cifras):
+    """El resultado en Markdown, al final de `ruta`: las cifras y, si los hay, los tramos con fallas o detenidos."""
+    celda = lambda s: s.replace('|', '&#124;').replace('\n', ' ')
+    r = ['### Prueba completa, por tramos', '', '**%s**' % cifras]
+    problemas = [x for x in resultados if x['fallas'] or x['detenido']]
+    if problemas:
+        r += ['', '| Tramo | Qué pasó |', '|---|---|']
+        for x in problemas:
+            tramo = celda('%d · %s' % (x['tramo'], x['nombre'][:60]))
+            r += ['| %s | %s |' % (tramo, celda(f[:300])) for f in x['fallas']]
+            if x['detenido']: r.append('| %s | Detenido: %s |' % (tramo, celda(x['detenido'])))
+    open(ruta, 'a', encoding='utf-8').write('\n'.join(r) + '\n')
+
+
 def main():
     # Una consola de Windows sin UTF-8 escribe «?» en lo que no tiene, en vez de detenerse
     sys.stdout.reconfigure(errors='replace')
@@ -108,10 +123,13 @@ def main():
     total = sum(r['comprobaciones'] or 0 for r in resultados)
     fallas = sum(len(r['fallas']) for r in resultados)
     detenidos = [r['tramo'] for r in resultados if r['detenido']]
-    print('\ntramos: %d · comprobaciones: %d · fallas: %d · tramos detenidos: %d%s · %d min'
-          % (len(resultados), total, fallas, len(detenidos), (' (%s)' % ', '.join(map(str, detenidos))) if detenidos else '', round((time.time() - t0) / 60)))
+    cifras = ('tramos: %d · comprobaciones: %d · fallas: %d · tramos detenidos: %d%s · %d min'
+              % (len(resultados), total, fallas, len(detenidos), (' (%s)' % ', '.join(map(str, detenidos))) if detenidos else '', round((time.time() - t0) / 60)))
+    print('\n' + cifras)
     if opcion('--json'):
         json.dump(resultados, open(opcion('--json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+    if opcion('--resumen'):
+        escribir_resumen(opcion('--resumen'), resultados, cifras)
     return 0 if not fallas and not detenidos else 1
 
 
