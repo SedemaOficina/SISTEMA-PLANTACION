@@ -419,7 +419,14 @@ SRP.mapa = {
     this.ponerBase(m);
     // Sin teclado: en un mapa fijo el marcador es parte de la imagen, no un botón sin nombre
     L.marker([lat, lng], { icon: this.icono, interactive: false, keyboard: false }).addTo(m);
-    setTimeout(() => m.invalidateSize(), 60);
+    this.ajustarLuego(m, 60);
     return m;
+  },
+
+  /* El tamaño de un mapa recién creado se ajusta cuando su contenedor ya tiene el suyo. Si el mapa se quita
+     antes (la ficha se cerró), el ajuste ya no corre: sobre un mapa quitado y oculto, Leaflet da error. */
+  ajustarLuego(m, ms) {
+    const t = setTimeout(() => m.invalidateSize(), ms);
+    m.once('unload', () => clearTimeout(t));
   }
 };

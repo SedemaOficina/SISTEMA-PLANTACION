@@ -5,7 +5,12 @@ Uso:  python empaquetar.py <carpeta-del-paquete> [--revision]
 
 El manifiesto tiene el formato de sha256sum, así que en el SIA se comprueba con
 `sha256sum -c MANIFIESTO.sha256` desde la carpeta del paquete. Sólo usa la biblioteca estándar.
-Avisa si encuentra algo que parezca una dirección IP o una llave, para revisarlo antes de entregar.
+
+Antes de escribir nada se detiene si encuentra archivos de trabajo (respaldos, temporales, bitácoras, los de
+Windows y Mac) o algo que parezca una dirección interna, una llave o una contraseña. Un aviso que ya se revisó
+y no lleva secreto se anota en AVISOS-REVISADOS.txt, en la raíz del paquete, un renglón por archivo:
+`<sha256>  <ruta>  <por qué no es un secreto>`. La suma ata la revisión a ese contenido: si el archivo cambia,
+el aviso vuelve a detener el paquete. La lista viaja en el paquete, para que el SIA vea qué se revisó.
 
 La versión: el paquete lleva `VERSION` en su raíz y su LEEME.md dice ese mismo número. Un paquete para
 instalar va en 1 o más; si dice 0.N, una versión de prueba, se detiene. La excepción es un paquete que el
@@ -13,7 +18,10 @@ SIA sólo revisa: con --revision acepta 0.N, siempre que el LEEME diga que es «
 import hashlib, os, re, sys, zipfile
 
 MANIFIESTO = 'MANIFIESTO.sha256'
+REVISADOS = 'AVISOS-REVISADOS.txt'
 SOSPECHOSO = re.compile(rb'\b(?:10|172|192)\.\d{1,3}\.\d{1,3}\.\d{1,3}\b|-----BEGIN [A-Z ]*PRIVATE KEY-----|(?i:password|contrase\xc3\xb1a)\s*[:=]\s*\S{6,}')
+# Respaldos, temporales, bitácoras, archivos abiertos de Office y los que dejan Windows y Mac
+DE_TRABAJO = re.compile(r'(?i)(\.(bak|tmp|temp|orig|rej|swp|log)|~)$|^~\$|^(\.DS_Store|Thumbs\.db|desktop\.ini)$')
 USO = 'Uso: python empaquetar.py <carpeta-del-paquete> [--revision]'
 
 
@@ -46,6 +54,45 @@ def revisar_version(raiz, para_revision):
     return version
 
 
+# AVISOS-REVISADOS.txt → { ruta: (sha256, motivo) }
+def leer_revisados(raiz):
+    ruta = os.path.join(raiz, REVISADOS)
+    revisados = {}
+    if not os.path.isfile(ruta):
+        return revisados
+    for n, renglon in enumerate(open(ruta, encoding='utf-8').read().splitlines(), 1):
+        if not renglon.strip() or renglon.startswith('#'):
+            continue
+        partes = re.split(r'\s{2,}', renglon.strip(), maxsplit=2)
+        if len(partes) < 3 or not re.fullmatch(r'[0-9a-f]{64}', partes[0]):
+            sys.exit('%s, renglón %d: va «<sha256>  <ruta>  <motivo>», separados por dos espacios.' % (REVISADOS, n))
+        revisados[partes[1]] = (partes[0], partes[2])
+    return revisados
+
+
+# Se detiene ante archivos de trabajo y ante avisos sin revisar; devuelve los revisados que encontró
+def revisar_contenido(raiz, archivos):
+    trabajo = [rel for rel, _ in archivos if DE_TRABAJO.search(rel.rsplit('/', 1)[-1])]
+    if trabajo:
+        sys.exit('El paquete trae archivos de trabajo; quítelos y vuelva a empaquetar:\n' + '\n'.join('  ' + r for r in trabajo))
+    revisados, aceptados, pendientes = leer_revisados(raiz), [], []
+    for rel, ruta in archivos:
+        with open(ruta, 'rb') as f:
+            if not SOSPECHOSO.search(f.read()):
+                continue
+        s = suma(ruta)
+        if rel in revisados and revisados[rel][0] == s:
+            aceptados.append((rel, revisados[rel][1]))
+        else:
+            pendientes.append((rel, s, rel in revisados))
+    if pendientes:
+        sys.exit('Parecen tener una dirección interna, una llave o una contraseña; no se armó el paquete:\n' +
+                 '\n'.join('  %s%s' % (rel, ' (cambió desde que se revisó)' if cambio else '') for rel, _, cambio in pendientes) +
+                 '\n\nRevise cada uno. Si no lleva un secreto, anótelo en %s con el motivo:\n' % REVISADOS +
+                 '\n'.join('%s  %s  <por qué no es un secreto>' % (s, rel) for rel, s, _ in pendientes))
+    return aceptados
+
+
 def main():
     argumentos = [a for a in sys.argv[1:] if a != '--revision']
     if len(argumentos) != 1 or not os.path.isdir(argumentos[0]):
@@ -61,11 +108,7 @@ def main():
             rel = os.path.relpath(ruta, raiz).replace(os.sep, '/')
             if rel != MANIFIESTO:
                 archivos.append((rel, ruta))
-    avisos = []
-    for rel, ruta in archivos:
-        with open(ruta, 'rb') as f:
-            if SOSPECHOSO.search(f.read()):
-                avisos.append(rel)
+    aceptados = revisar_contenido(raiz, archivos)
     with open(os.path.join(raiz, MANIFIESTO), 'w', encoding='utf-8', newline='\n') as m:
         for rel, ruta in archivos:
             m.write('%s  %s\n' % (suma(ruta), rel))
@@ -80,10 +123,8 @@ def main():
     print('%d archivos en el manifiesto' % len(archivos))
     print('Paquete: %s' % destino)
     print('Suma:    %s.sha256' % destino)
-    if avisos:
-        print('\nREVISAR antes de entregar: parecen tener una dirección interna, una llave o una contraseña:')
-        for a in avisos:
-            print('  ' + a)
+    for rel, motivo in aceptados:
+        print('Aviso revisado: %s (%s)' % (rel, motivo))
 
 
 if __name__ == '__main__':

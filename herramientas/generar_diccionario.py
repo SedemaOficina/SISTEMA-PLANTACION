@@ -187,8 +187,8 @@ def main():
     texto = generar(d)
     if '--texto' in sys.argv:
         sys.stdout.write(texto); return
-    with open(SALIDA, 'w', encoding='utf-8') as s: s.write(texto)
-    with open(SALIDA_JS, 'w', encoding='utf-8') as s: s.write(generar_js(d))
+    with open(SALIDA, 'w', encoding='utf-8', newline='\n') as s: s.write(texto)
+    with open(SALIDA_JS, 'w', encoding='utf-8', newline='\n') as s: s.write(generar_js(d))
     n = sum(len(t['campos']) for t in d['tablas'].values())
     print('%s: %d tablas, %d campos, %d reglas de Fase 1, %d de Fase 2' % (
         os.path.relpath(SALIDA, RAIZ), len(d['tablas']), n, len(d['reglas_fase1']), len(d['reglas_fase2'])))

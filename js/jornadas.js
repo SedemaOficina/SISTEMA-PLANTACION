@@ -34,6 +34,7 @@ SRP.jornadas = {
   diaAbierto: false,
   periodoAbierto: false,
   lista: [],            // jornadas de lo filtrado
+  turnoLista: 0,        // cada pintura de la lista lleva el suyo: si termina tarde una anterior, no pinta encima de la última
   actual: null,         // clave de la jornada abierta
   volverAlDetalle: false,
   mapa: null,
@@ -581,7 +582,7 @@ SRP.jornadas = {
   },
 
   async pintarLista(soloDatos) {
-    const f = this.filtro;
+    const f = this.filtro, turno = soloDatos ? null : ++this.turnoLista;
     this._todas = await this.jornadasAlcance();
     this.llenarListas();
     this.sincronizarAtajos();
@@ -650,6 +651,8 @@ SRP.jornadas = {
         (marcas.length ? '<span class="jornada-marcas">' + marcas.join('') + '</span>' : '') +
         '</button></li>');
     }
+    // Mientras se armaba se tocó otro filtro: se pinta la lista de ése
+    if (turno !== this.turnoLista) return;
     this.el('lista-jornadas').innerHTML = html.join('');
     const n = this.lista.length;
     this.el('jornadas-total').textContent = SRP.remoto.total(n ? n.toLocaleString('es-MX') + (n === 1 ? ' jornada' : ' jornadas') + ' · ' + arbolesTotal.toLocaleString('es-MX') + (arbolesTotal === 1 ? ' árbol' : ' árboles') : '');

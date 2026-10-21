@@ -124,8 +124,11 @@ El paquete de la versión 1 lleva todo eso: `app/`, `db/srp/`, `datos/srp-datos-
 (el diff y los archivos completos), `deploy/`, `servidor-web/`, el manual de la Administración global en
 `manual/`, `VERSION` y su `LEEME.md` con estos pasos. El paquete se arma con
 `python herramientas/empaquetar.py <carpeta>`: escribe el manifiesto
-con la suma de cada archivo de todas las carpetas, el ZIP y su `.sha256`, y avisa si algún archivo parece
-llevar una dirección interna, una llave o una contraseña. Pide `VERSION` en la raíz del paquete y la misma
+con la suma de cada archivo de todas las carpetas, el ZIP y su `.sha256`. Antes de escribir nada se detiene
+si el paquete trae archivos de trabajo (respaldos, temporales, bitácoras) o si algún archivo parece llevar una
+dirección interna, una llave o una contraseña. Un aviso revisado que no es un secreto se anota en
+`AVISOS-REVISADOS.txt`, en la raíz del paquete, con la suma del archivo y el motivo; si el archivo cambia, el
+aviso vuelve a detenerlo. La lista viaja en el paquete. Pide `VERSION` en la raíz del paquete y la misma
 versión en su LEEME: un paquete para instalar va en 1 o más; uno que el SIA sólo revisa puede ir en 0.N,
 con `--revision` y diciéndolo en el LEEME. El cambio a `sia-backend` (un diff y los
 archivos completos) se arma sobre una copia del repositorio del SIA y lleva líneas suyas: vive sólo en

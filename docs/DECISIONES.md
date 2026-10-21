@@ -4083,3 +4083,43 @@
   · **Fotografías**: lo transparente de un PNG queda blanco al pasarlo a JPEG (antes, negro). Una HEIC —la de los
     iPhone— que el navegador no abre dice qué hacer: guardarla como JPG o subirla desde el teléfono. En el iPhone
     el navegador ya la entrega en JPEG.
+- **D320. Las pruebas y las herramientas (bloque 240).**
+  20-10-2026. Es el bloque 5 del plan de corrección de la auditoría del 19-10-2026. Liber decidió que las pruebas
+  corran solas en GitHub en cada subida.
+  · **La prueba completa, por tramos** (`pruebas/por_tramos.py`). Cada sección que abre su propia ventana corre en
+    su propio proceso, con un tiempo máximo de 20 minutos. Un tramo que se detiene se anota, con el renglón de
+    `prueba.py` donde se detuvo y el final de su salida, y los demás siguen. El primer tramo es el recorrido
+    inicial, junto con las secciones que usan su misma ventana. Al final se suman comprobaciones, fallas y tramos
+    detenidos. `prueba.py` se puede seguir corriendo de una pieza.
+  · **Un equipo lento, simulado** (`--lento 4`, o `SRP_LENTO`): el navegador corre como en un equipo cuatro veces
+    más lento (sólo Chromium). Así salen las esperas fijas que alcanzan en un equipo rápido y no en otro. Con ese
+    freno, Playwright pierde la simulación «sin red» al recargar, y la prueba la vuelve a poner por su cuenta.
+  · **Esperar a lo que se espera.** Las esperas fijas que fallaron con el equipo lento ahora esperan una condición:
+    la lista pintada, la ficha abierta, el aviso a la vista. Lo que dura poco en pantalla, como la tarjeta
+    «Registro exitoso» (un segundo), se anota en la página al mostrarse, no cuando la prueba alcanza a mirar.
+    Quedan unas 1,700 esperas fijas que hoy alcanzan; la que falle se cambia igual.
+  · **En GitHub** (`.github/workflows/pruebas.yml`), en cada subida a `main` y en cada propuesta de cambio, en un
+    equipo con Linux y la zona horaria de la Ciudad, corren:
+    – la sintaxis de los guiones: una secuencia de escape inválida es error;
+    – la hoja de estilos, la consistencia y la presentación;
+    – la prueba completa por tramos. El resultado de cada tramo se guarda 14 días.
+    No corren ahí el servicio ni la base de datos (`npm test` y `prueba_conexion.py`), que se prueban en el equipo de
+    desarrollo. Tampoco lo que se compara con `originales/`, que no se sube: la prueba lo dice, y del catálogo de
+    especies revisa lo publicado.
+  · **`revisar.py`, al día**: llega a Nuevo registro como lo hace una persona, con «Detectar ubicación» e «Iniciar
+    jornada». Sus 12 avisos falsos desaparecen.
+  · **`prueba.py`, `auditoria.py` y `revisar.py` salen con 1 si algo falla**, para que GitHub marque la subida.
+  · **Saltos de renglón LF** en los cinco generadores, también en Windows. La huella de las capas
+    (`datos/HUELLA-CAPAS.json`) se volvió a sacar: estaba atrasada desde el bloque 197, cuando se regeneraron las
+    capas. La herramienta de antes da lo mismo que la de ahora. Cambian cinco centroides en el sexto decimal (unos
+    10 cm), muy por debajo de la tolerancia de la comparación con el SIA (unos 5 m).
+  · **Las cuatro secuencias de escape inválidas** de `prueba.py`, corregidas.
+  · **El empaquetador se detiene**, antes de escribir nada, si el paquete trae archivos de trabajo (respaldos,
+    temporales, bitácoras, archivos del sistema) o un posible secreto. Un aviso revisado que no es secreto se anota en
+    `AVISOS-REVISADOS.txt`, con la suma del archivo y el motivo; si el archivo cambia, vuelve a detenerse.
+  · **Dos fallas de la aplicación que encontró el equipo lento:**
+    – un mapa fijo (el de la ficha de un árbol o el de una pareja de duplicados) que se quitaba antes de ajustar su
+      tamaño daba error en la consola. Ahora el ajuste se cancela al quitar el mapa;
+    – en Jornadas, con dos atajos tocados seguidos, la lista que tardaba más en pintarse podía quedar encima de la
+      última: «Hoy» marcado y todas las jornadas a la vista. Ahora cada pintura lleva su turno, como en «Posibles
+      duplicados», y una que termina tarde ya no se pinta.

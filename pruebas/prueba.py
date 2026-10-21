@@ -38,12 +38,22 @@ def ok(c,m):
         print(res[-1] + '  [renglón %d]' % inspect.currentframe().f_back.f_lineno, flush=True)
 
 def esperar(pg, expr, ms):
-    """Espera a que la expresión sea verdadera, preguntando desde aquí. No se usa wait_for_function:
-    Playwright la compila con eval dentro de la página, y la política de seguridad lo impide."""
+    """Espera a que la expresión sea verdadera, preguntando desde aquí cada 200 ms. La expresión puede ser
+    asíncrona (leer el almacén), y si no llega a cumplirse la comprobación que sigue lo dice."""
     for _ in range(max(1, ms // 200)):
         if pg.evaluate(expr): return True
         pg.wait_for_timeout(200)
     return bool(pg.evaluate(expr))
+
+# La lista de Jornadas ya pintada: sus tarjetas son, en orden, las de la página de SRP.jornadas.lista. El filtro
+# cambia al tocar, y la lista se pinta después de leer el almacén
+JORNADAS_PINTADAS = ("(() => { const i = SRP.util.paginar(SRP.jornadas.lista, SRP.jornadas.pagina, 'jornadas-paginas').items, "
+                     "d = [...document.querySelectorAll('#lista-jornadas .jornada')].map(x => x.dataset.clave); "
+                     "return d.length === i.length && i.every((j, k) => j.clave === d[k]); })()")
+
+# La ficha de una jornada terminó de abrirse: deja el foco en su título y sube al inicio. Antes, un menú abierto
+# se iría con su tuerca fuera de la pantalla
+FICHA_JORNADA = "document.activeElement === document.getElementById('jornada-titulo')"
 
 def accion(pg, cont, cual, n=0):
     """Elige una acción de renglón: abre la tuerca del renglón y pulsa la opción.
@@ -152,6 +162,9 @@ def _reload(self, *a, **k):
 Page.goto, Page.reload = _goto, _reload
 # El motor del navegador: Chromium por omisión; SRP_MOTOR=webkit (el de Safari en iPhone) o firefox
 MOTOR=os.environ.get('SRP_MOTOR','chromium')
+# SRP_LENTO=4: cada página corre como en un equipo 4 veces más lento (sólo Chromium). Encuentra las esperas
+# que alcanzan en un equipo rápido y no en otro
+LENTO=float(os.environ.get('SRP_LENTO') or 0)
 with sync_playwright() as p:
     b=getattr(p, MOTOR).launch()
     # Las ventanas de jornada completa y de árboles de más esperan respuesta. Casi ninguna prueba
@@ -179,7 +192,26 @@ with sync_playwright() as p:
         # El WebKit de Playwright en Windows se cae al recargar sin red con el service worker: en él se
         # bloquea, y lo de sin señal se prueba en Chromium
         if MOTOR == 'webkit': k.setdefault('service_workers', 'block')
-        return _contexto_nuevo(*a, **k)
+        c = _contexto_nuevo(*a, **k)
+        if LENTO > 1 and MOTOR == 'chromium': _frenar(c)
+        return c
+    # El freno va por una sesión propia del protocolo de Chromium. Con ella, el «sin red» de Playwright se pierde
+    # al recargar: por eso también se manda por esa sesión
+    def _frenar(c):
+        sesiones, red = [], {'offline': False, 'latency': 0, 'downloadThroughput': -1, 'uploadThroughput': -1}
+        def poner_red(s):
+            try: s.send('Network.enable'); s.send('Network.emulateNetworkConditions', red)
+            except Exception: pass   # la página ya se cerró
+        def nueva(pg):
+            s = c.new_cdp_session(pg); sesiones.append(s)
+            s.send('Emulation.setCPUThrottlingRate', {'rate': LENTO})
+            if red['offline']: poner_red(s)
+        _sin_red = c.set_offline
+        def sin_red(sin):
+            _sin_red(sin); red['offline'] = bool(sin)
+            for s in sesiones: poner_red(s)
+        c.set_offline = sin_red
+        c.on('page', nueva)
     def contexto_llano(*a, **k):
         c = _contexto_base(*a, **k)
         # Con SRP_HOY el reloj de la página también se mueve; el tiempo sigue corriendo desde ahí
@@ -198,6 +230,21 @@ with sync_playwright() as p:
         c = contexto_llano(*a, **k)
         c.add_init_script(ATENDER_VENTANAS)
         return c
+    # Para las secciones que levantan una copia de la app con su propio servidor (el cambio de versión)
+    import http.server as _hs, threading as _th, shutil as _sh, tempfile as _tf, functools as _ft
+    _hs.ThreadingHTTPServer.request_queue_size = 256   # como pruebas/servir.py: sin conexiones rechazadas al abrir
+    _app = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    # En Windows un enlace simbólico pide permisos de administrador; un enlace de directorio no
+    def _enlazar(origen, destino):
+        try: os.symlink(origen, destino)
+        except OSError:
+            import _winapi; _winapi.CreateJunction(origen, destino)
+    # Antes de borrar la copia se quitan sus enlaces: así el borrado nunca alcanza las carpetas de la app
+    def _desenlazar(raiz):
+        for _d in ['js', 'css', 'vendor', 'assets']:
+            r = os.path.join(raiz, _d)
+            if os.path.islink(r): os.unlink(r)
+            elif hasattr(os.path, 'isjunction') and os.path.isjunction(r): os.rmdir(r)
     b.new_context = _contexto
     ctx=b.new_context(viewport={'width':390,'height':844},geolocation={'latitude':19.432,'longitude':-99.133},
                       permissions=['geolocation'],accept_downloads=True,device_scale_factor=2)
@@ -1032,29 +1079,34 @@ with sync_playwright() as p:
       return { f, ids, jids }; }""")
     pg.click('#navegacion [data-vista=jornadas]'); pg.wait_for_timeout(600)
     pg.click('#jornada-atajos [data-atajo=dia]'); pg.fill('#jornada-dia', M['f']); pg.dispatch_event('#jornada-dia','change'); pg.wait_for_timeout(500)
-    esperar(pg, "document.querySelectorAll('#lista-jornadas .jornada').length === 3", 4000)   # la lista se repinta al filtrar
+    esperar(pg, "document.querySelectorAll('#lista-jornadas .jornada').length === 3", 15000)   # la lista se repinta al filtrar
     tarjetas=pg.eval_on_selector_all('#lista-jornadas .jornada','l=>l.map(x=>x.textContent)')
     ok(len(tarjetas)==3 and 'Jornada 1 de 3' in tarjetas[0] and 'Parque de los Pericos' in tarjetas[0] and ('3 de ' in tarjetas[0] or '3 árboles' in tarjetas[0]) and 'Jornada 3 de 3' in tarjetas[2] and 'Parque Aeropuerto' in tarjetas[2],
        'tres jornadas declaradas el mismo día son tres tarjetas con su nombre, numeradas por hora de inicio: %d tarjetas' % len(tarjetas))
     # Filtros nuevos: «Un periodo» con Desde/Hasta + Aplicar; año y mes dentro de «Más filtros»
     pg.click('#jornada-atajos [data-atajo=periodo]'); pg.wait_for_timeout(200)
     ok(pg.is_visible('#jornada-periodo') and pg.is_hidden('#jornada-un-dia') and pg.get_attribute('#jornada-atajos [data-atajo=periodo]','aria-pressed')=='true','«Un periodo» abre Desde y Hasta y cierra «Un día»')
-    pg.fill('#jornada-desde', M['f']); pg.fill('#jornada-hasta', M['f']); pg.click('#btn-jornada-filtrar'); pg.wait_for_timeout(400)
+    pg.fill('#jornada-desde', M['f']); pg.fill('#jornada-hasta', M['f']); pg.click('#btn-jornada-filtrar')
+    esperar(pg, "SRP.jornadas.filtro.desde === '%s' && document.querySelectorAll('#lista-jornadas .jornada').length === 3" % M['f'], 15000)
     ok(pg.locator('#lista-jornadas .jornada').count()==3 and pg.evaluate("SRP.jornadas.filtro.dia")=='' and pg.evaluate("SRP.jornadas.filtro.desde")==M['f'],'el rango Desde/Hasta deja las 3 jornadas de ese día y el filtro por día queda vacío: %d' % pg.locator('#lista-jornadas .jornada').count())
     # Año y mes no son listas: son periodos rápidos dentro de «Un periodo»
     ok(pg.locator('#caja-jornada-anio').count()==0 and pg.locator('#jornada-mes').count()==0,'Jornadas no lleva listas de año ni de mes')
     pg.click('#jornada-atajos [data-atajo=periodo]'); pg.wait_for_timeout(200)
-    pg.click('#jornada-periodo [data-rapido=anio]'); pg.wait_for_timeout(400)
+    pg.click('#jornada-periodo [data-rapido=anio]')
+    esperar(pg, "document.querySelector('#jornada-periodo [data-rapido=anio]').getAttribute('aria-pressed') === 'true' && " + JORNADAS_PINTADAS, 15000)
     ok(pg.is_visible('#jornada-periodo') and pg.get_attribute('#jornada-periodo [data-rapido=anio]','aria-pressed')=='true' and pg.locator('#jornada-atajos .chip[aria-pressed=true]').count()==1
        and pg.locator('#lista-jornadas .jornada').count()>=1 and pg.evaluate("SRP.jornadas.lista.every(j => j.fecha.startsWith(SRP.util.fechaHoy().slice(0, 4)))")
        and pg.evaluate("SRP.jornadas.filtro.desde")==pg.evaluate("SRP.util.fechaHoy().slice(0, 4)")+'-01-01',
        '«Este año», dentro de «Un periodo», llena Desde y Hasta con el año en curso y deja sus jornadas: %d' % pg.locator('#lista-jornadas .jornada').count())
-    pg.click('#jornada-periodo [data-rapido=mes]'); pg.wait_for_timeout(300)
+    pg.click('#jornada-periodo [data-rapido=mes]')
+    esperar(pg, "document.querySelector('#jornada-periodo [data-rapido=mes]').getAttribute('aria-pressed') === 'true' && " + JORNADAS_PINTADAS, 15000)
     ok(pg.get_attribute('#jornada-periodo [data-rapido=mes]','aria-pressed')=='true' and pg.evaluate("SRP.jornadas.lista.every(j => j.fecha.startsWith(SRP.util.fechaHoy().slice(0, 7)))"),'«Este mes» deja sólo las jornadas del mes en curso')
     pg.click('#jornada-atajos [data-atajo=todas]'); pg.wait_for_timeout(300)
     ok(pg.evaluate("SRP.jornadas.filtro.desde + SRP.jornadas.filtro.hasta")=='' and 'año' not in pg.inner_text('#jornada-mas-filtros summary'),'«Todas» quita el periodo, y «Más filtros» no menciona año ni mes: '+pg.inner_text('#jornada-mas-filtros summary'))
-    pg.click('#jornada-atajos [data-atajo=dia]'); pg.fill('#jornada-dia', M['f']); pg.dispatch_event('#jornada-dia','change'); pg.wait_for_timeout(500)
-    pg.click('#lista-jornadas .jornada:nth-child(2) button'); pg.wait_for_timeout(800)
+    pg.click('#jornada-atajos [data-atajo=dia]'); pg.fill('#jornada-dia', M['f']); pg.dispatch_event('#jornada-dia','change')
+    esperar(pg, "document.querySelectorAll('#lista-jornadas .jornada').length === 3", 15000)
+    pg.click('#lista-jornadas .jornada:nth-child(2) button')
+    esperar(pg, "document.getElementById('jornada-titulo').textContent === 'Parque Hundido' && document.getElementById('jornada-registrados').textContent === '2' && " + FICHA_JORNADA, 15000)
     ok(pg.inner_text('#jornada-titulo')=='Parque Hundido' and 'Jornada 2 de 3' in pg.inner_text('#jornada-sub') and pg.inner_text('#jornada-registrados')=='2','la jornada 2 se revisa sola con su nombre: 2 registrados en esta jornada')
     pg.evaluate("async () => { const j = await SRP.almacen.uno('jornadas', '%s'); j.arboles_previstos = 2; await SRP.almacen.guardarConBitacora('jornadas', j, SRP.bitacora.entrada('EDITADO','jornada',j.id,'Meta 2')); await SRP.jornadas.abrir('%s'); }" % (M['jids'][1], M['jids'][1])); pg.wait_for_timeout(600)
     ok(pg.get_attribute('#jornada-conciliacion','data-tono')=='ok' and pg.inner_text('#jornada-meta')=='2','y su conciliación es la suya: cuadra 2 de 2')
@@ -1089,8 +1141,10 @@ with sync_playwright() as p:
        'la confirmación es estructurada: título, pregunta, viñetas y «No se puede deshacer» en rojo con icono; el foco empieza en «Cancelar»: %s' % conf)
     pg.click('#btn-confirmar-si'); pg.wait_for_timeout(700)
     ok(pg.is_hidden('#jornada-detalle') and pg.evaluate("async () => !(await SRP.almacen.uno('jornadas', '%s'))" % vacia) and pg.evaluate("SRP.activa.jornada === null || SRP.activa.jornada.id !== '%s'" % vacia),'la jornada desaparece, vuelve a la lista y deja de ser la activa')
-    pg.click('#jornada-atajos [data-atajo=dia]'); pg.fill('#jornada-dia', M['f']); pg.dispatch_event('#jornada-dia','change'); pg.wait_for_timeout(500)
-    pg.click('#lista-jornadas .jornada:nth-child(2) button'); pg.wait_for_timeout(800)
+    pg.click('#jornada-atajos [data-atajo=dia]'); pg.fill('#jornada-dia', M['f']); pg.dispatch_event('#jornada-dia','change')
+    esperar(pg, "document.querySelectorAll('#lista-jornadas .jornada').length === 3", 15000)
+    pg.click('#lista-jornadas .jornada:nth-child(2) button')
+    esperar(pg, "!!document.querySelector('#jornada-lista .punto-jornada[data-id=\"%s\"]') && %s" % (M['ids'][3], FICHA_JORNADA), 15000)
     # Mover un árbol de la jornada 2 a la 1
     pg.click('#jornada-lista .punto-jornada[data-id="%s"] .btn-tuerca' % M['ids'][3]); pg.wait_for_timeout(200)
     pg.click('#jornada-lista .punto-jornada[data-id="%s"] [data-accion=mover]' % M['ids'][3]); pg.wait_for_timeout(400)
@@ -1149,8 +1203,7 @@ with sync_playwright() as p:
     pg.click('#btn-cierre-cerrar'); pg.wait_for_timeout(200)
     pg.evaluate("SRP.jornadas.cerrar()"); pg.wait_for_timeout(500)
     pg.evaluate("document.querySelector('#jornada-atajos [data-atajo=dia]').click()"); pg.fill('#jornada-dia', M['f']); pg.dispatch_event('#jornada-dia','change')
-    try: pg.wait_for_function("() => document.querySelectorAll('#lista-jornadas .jornada').length === 3", timeout=8000)
-    except Exception: pass   # si no llegan, la comprobación lo dice
+    esperar(pg, "document.querySelectorAll('#lista-jornadas .jornada').length === 3", 20000)   # si no llegan, la comprobación lo dice
     fichas=pg.eval_on_selector_all('#lista-jornadas .jornada','l=>l.map(x=>x.textContent)')
     f2=[f for f in fichas if 'Parque Hundido' in f]
     ok(len(fichas)==3 and len(f2)==1 and 'Jornada 2 de 3' in f2[0] and 'Sin reporte todavía' in f2[0],'las tres jornadas cerradas de ese día tienen tarjeta; la 2 dice «Jornada 2 de 3» y aún no tiene reporte')
@@ -1187,6 +1240,7 @@ with sync_playwright() as p:
     pg.reload(); pg.wait_for_timeout(1500)
     ok(pg.is_visible('#vista-registros') or pg.is_visible('#vista-registrar') or pg.is_visible('#form-acceso'),'sin red, la app vuelve a abrir desde el teléfono')
     ok(pg.evaluate("SRP.CONFIG.VERSION")==MARCA,'y es la misma versión')
+    esperar(pg, "document.getElementById('conexion').dataset.estado === 'sin'", 10000)
     ok(pg.text_content('#conexion').strip().startswith('Sin conexión · ') and pg.get_attribute('#conexion','data-estado')=='sin','el encabezado avisa que no hay señal, en ámbar y con icono tachado: '+pg.text_content('#conexion').strip())
     # ---------- ENVÍO SIMULADO ----------
     # Un registro de ayer que nunca salió del teléfono
@@ -1194,14 +1248,14 @@ with sync_playwright() as p:
       const ayer = new Date(Date.now() - 86400000).toISOString(); const id = SRP.util.generarId();
       const r = Object.assign({}, base, { id, folio: null, fecha_registro: ayer });
       await SRP.almacen.guardarConBitacora('plantaciones', r, SRP.bitacora.entrada('CREADO','plantacion',id)); await SRP.envio.alCambiar(); return id; }""")
-    pg.wait_for_timeout(300)
+    esperar(pg, "document.getElementById('conexion').dataset.estado === 'atraso' && !document.getElementById('franja-envio').hidden", 10000)
     ok(pg.text_content('#conexion').strip()=='Sin conexión · 1 por enviar' and pg.get_attribute('#conexion','data-estado')=='atraso',
        'sin señal la pastilla cuenta lo que espera envío y se pone en rojo si hay atraso: '+pg.text_content('#conexion').strip())
     fr=pg.inner_text('#franja-envio-texto')
     ok(pg.is_visible('#franja-envio') and fr.startswith('Hoy es ') and 'Tiene 1 registro sin enviar desde el ' in fr and 'Busque señal' in fr,'y la franja dice qué día es y desde cuándo no se envía: '+fr)
     est=pg.evaluate("() => { const b = document.getElementById('btn-franja-enviar'); b.click(); return [b.getAttribute('aria-busy'), b.textContent, b.disabled]; }")
     ok(est[0]=='true' and 'Enviando' in est[1] and est[2],'«Enviar ahora» dice «Enviando…», queda aria-busy y no admite otro toque mientras intenta: '+str(est))
-    pg.wait_for_timeout(300)
+    esperar(pg, "!document.getElementById('btn-franja-enviar').hasAttribute('aria-busy') && !document.getElementById('aviso').hidden", 10000)
     ok(pg.get_attribute('#btn-franja-enviar','aria-busy') is None and pg.inner_text('#btn-franja-enviar')=='Enviar ahora','y vuelve a su texto al terminar')
     ok('Sin conexión' in pg.inner_text('#aviso') and pg.get_attribute('#aviso','data-tipo')=='aviso','«Enviar ahora» sin señal explica, en ámbar, que se enviará solo: '+pg.inner_text('#aviso'))
     pg.evaluate("SRP.app.mostrarVista('registros')"); pg.wait_for_timeout(500)
@@ -2037,7 +2091,7 @@ with sync_playwright() as p:
           un_renglon: r.every(x => Math.abs(x.top - r[0].top) < 1), nombre_abajo: t.every((x, i) => x.top >= mr[i].bottom - 1),
           actual: g(m[2]).backgroundColor, palomita: !!m[0].querySelector('svg') && !!m[1].querySelector('svg') && !m[2].querySelector('svg'),
           numero: g(m[3], '::before').content, tramos: [1, 2, 3].map(i => g(li[i], '::before').backgroundColor),
-          lector: ol.innerText.replace(/\s+/g, ' ').trim() };
+          lector: ol.innerText.replace(/\\s+/g, ' ').trim() };
         ol.remove(); return out; }""")
     ok(pas['circulos'] and pas['sin_pildora'] and pas['un_renglon'] and pas['nombre_abajo'],
        'los pasos no parecen fichas de filtro: un círculo por paso en un renglón y el nombre debajo, sin borde de píldora: %s' % {k: pas[k] for k in ('circulos','sin_pildora','un_renglon','nombre_abajo')})
@@ -2900,6 +2954,7 @@ with sync_playwright() as p:
     pg21.click('#btn-confirmar-si'); pg21.wait_for_timeout(300)
     esperar(pg21,"!document.getElementById('btn-demo-quitar').hasAttribute('aria-busy') && SRP.app.vista !== 'supervision'",20000)
     ok(pg21.is_visible('#vista-acceso') and not pg21.is_visible('#caja-demo'),'quien estaba dentro con una cuenta de demostración que se quitó vuelve al acceso')
+    esperar(pg21, "(async () => !(await SRP.almacen.todos('plantaciones')).some(x => SRP.demo.es(x.id)) && !(await SRP.almacen.todos('bitacora')).some(x => SRP.demo.es(x.id) || SRP.demo.es(x.entidad_id)))()", 20000)
     q21=pg21.evaluate("""async () => { const j=await SRP.almacen.todos('jornadas'), a=await SRP.almacen.todos('plantaciones'), u=await SRP.almacen.todos('usuarios'), bi=await SRP.almacen.todos('bitacora');
       return { j: j.filter(x=>SRP.demo.es(x.id)).map(x=>x.id), a: a.filter(x=>SRP.demo.es(x.id)).length, propio: !!a.find(x=>x.id==='propio-a1'), propia: !!j.find(x=>x.id==='propia-j1'),
         u: u.filter(x=>SRP.demo.es(x.id)).map(x=>x.id).sort(), bit: bi.filter(x=>SRP.demo.es(x.id) || SRP.demo.es(x.entidad_id)).length,
@@ -2924,22 +2979,8 @@ with sync_playwright() as p:
     # GitHub Pages manda la página con «Cache-Control: max-age=600»: el navegador podía servir la
     # copia vieja hasta 10 minutos aunque ya estuviera publicada la nueva. Se reproduce con un
     # servidor propio que manda esa cabecera y una copia de la app cuya página se cambia.
-    import http.server as _hs, threading as _th, shutil as _sh, tempfile as _tf, functools as _ft
-    _hs.ThreadingHTTPServer.request_queue_size = 256   # como pruebas/servir.py: sin conexiones rechazadas al abrir
-    _app = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     raiz22 = _tf.mkdtemp()
     for _n in ['index.html', 'sw.js', 'manifest.webmanifest']: _sh.copy(os.path.join(_app, _n), raiz22)
-    # En Windows un enlace simbólico pide permisos de administrador; un enlace de directorio no
-    def _enlazar(origen, destino):
-        try: os.symlink(origen, destino)
-        except OSError:
-            import _winapi; _winapi.CreateJunction(origen, destino)
-    # Antes de borrar la copia se quitan sus enlaces: así el borrado nunca alcanza las carpetas de la app
-    def _desenlazar(raiz):
-        for _d in ['js', 'css', 'vendor', 'assets']:
-            r = os.path.join(raiz, _d)
-            if os.path.islink(r): os.unlink(r)
-            elif hasattr(os.path, 'isjunction') and os.path.isjunction(r): os.rmdir(r)
     for _d in ['js', 'css', 'vendor', 'assets']: _enlazar(os.path.join(_app, _d), os.path.join(raiz22, _d))
     class _H22(_hs.SimpleHTTPRequestHandler):
         def end_headers(self):
@@ -3143,6 +3184,7 @@ with sync_playwright() as p:
     ctx24.close()
 
     # ---------- Comentarios por ejemplar, originales fuera del sitio y jsPDF al día ----------
+    from pypdf import PdfReader as _Pdf24
     ctx25=b.new_context(viewport={'width':390,'height':844},accept_downloads=True)
     pg25=ctx25.new_page(); err25=[]
     pg25.on('pageerror', lambda e: err25.append(str(e))); pg25.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err25.append(m.text))
@@ -3797,7 +3839,7 @@ with sync_playwright() as p:
     pg40.reload(); pg40.wait_for_timeout(1800)
     v40=pg40.evaluate("""async () => { const c = await SRP.almacen.catalogos(), por = id => c.find(x => x.id === id), j = await SRP.almacen.uno('jornadas', 'jr-v40');
       return { arranque: SRP.almacen.arranque, viejo1: !!por('v-VIEJO1'), viejo2: por('v-VIEJO2') ? por('v-VIEJO2').activo : 'sin', alta: por('v-ALTA1') ? por('v-ALTA1').activo : 'sin',
-        pru: c.filter(x => x.tipo === 'vehiculo' && /^PRU \d{3}$/.test(x.nombre)).length, jornada: [j.vehiculo_id, j.vehiculo_placa], arbol: !!(await SRP.almacen.uno('plantaciones', 'pl-v40')) }; }""")
+        pru: c.filter(x => x.tipo === 'vehiculo' && /^PRU \\d{3}$/.test(x.nombre)).length, jornada: [j.vehiculo_id, j.vehiculo_placa], arbol: !!(await SRP.almacen.uno('plantaciones', 'pl-v40')) }; }""")
     ok(v40['arranque']=='conservado' and v40['viejo1'] is False and v40['viejo2'] is False and v40['alta'] is True and v40['pru']==16 and v40['jornada']==['v-VIEJO2','VIEJO 2'] and v40['arbol'],
        'con capturas, el sello nuevo agrega los vehículos de prueba que falten, quita los de arranque viejos sin uso, desactiva el que usa una jornada (que conserva su copia) y no toca los dados de alta: %s' % v40)
     ok(not err40,'sin errores en consola: %s' % err40[:2])
@@ -4431,15 +4473,23 @@ with sync_playwright() as p:
     pg51.click('#cat-tipos .chip[data-tipo=especie]'); pg51.wait_for_timeout(500)
     with pg51.expect_download() as d51: pg51.click('#btn-cat-excel')
     d51.value.save_as(sal('especies51.xlsx')); w51=_xl51.load_workbook(sal('especies51.xlsx')); h51=w51['especies']
-    o51=_xl51.load_workbook(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),'originales','16._Registro_plantaciones_catalogos_05_10_2026.xlsx'))
-    val51=lambda h: [[('' if c is None else c) for c in r] for r in h.iter_rows(values_only=True)]
-    lim51=lambda t: [[(' '.join(c.split()) if isinstance(c,str) else c) for c in r] for r in t]
-    ok(ex51 and d51.value.suggested_filename.startswith('CGO_ESPECIES_REFORESTACION_URBANA_') and w51.sheetnames==o51.sheetnames==['especies','diccionario_datos','catalogos'],
-       'Catálogos › Especies descarga el catálogo con el nombre y las tres hojas del libro de origen; en otros catálogos no aparece el botón: %s' % w51.sheetnames)
-    ok(val51(h51)==lim51(val51(o51['especies'])) and [h51.column_dimensions[l].width for l in 'ABCDEFGHIJKLM']==[o51['especies'].column_dimensions[l].width for l in 'ABCDEFGHIJKLM'],
-       'la hoja «especies» sale igual que la del original: mismas trece columnas, mismos nombres de campo, las 79 especies con género, especie, paleta vegetal, fruto comestible y nota de discrepancia, y los mismos anchos')
-    ok(val51(w51['diccionario_datos'])==val51(o51['diccionario_datos']) and [r[:4] for r in val51(w51['catalogos']) if any(r)]==[r[:4] for r in val51(o51['catalogos']) if any(r)],
-       'las hojas «diccionario_datos» y «catalogos» van como en el original, con la cuenta de especies por valor al día')
+    # El libro de origen vive en originales/, fuera de git: en un equipo sin esa carpeta (GitHub) no se compara
+    ruta_o51=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),'originales','16._Registro_plantaciones_catalogos_05_10_2026.xlsx')
+    if os.path.exists(ruta_o51):
+        o51=_xl51.load_workbook(ruta_o51)
+        val51=lambda h: [[('' if c is None else c) for c in r] for r in h.iter_rows(values_only=True)]
+        lim51=lambda t: [[(' '.join(c.split()) if isinstance(c,str) else c) for c in r] for r in t]
+        ok(ex51 and d51.value.suggested_filename.startswith('CGO_ESPECIES_REFORESTACION_URBANA_') and w51.sheetnames==o51.sheetnames==['especies','diccionario_datos','catalogos'],
+           'Catálogos › Especies descarga el catálogo con el nombre y las tres hojas del libro de origen; en otros catálogos no aparece el botón: %s' % w51.sheetnames)
+        ok(val51(h51)==lim51(val51(o51['especies'])) and [h51.column_dimensions[l].width for l in 'ABCDEFGHIJKLM']==[o51['especies'].column_dimensions[l].width for l in 'ABCDEFGHIJKLM'],
+           'la hoja «especies» sale igual que la del original: mismas trece columnas, mismos nombres de campo, las 79 especies con género, especie, paleta vegetal, fruto comestible y nota de discrepancia, y los mismos anchos')
+        ok(val51(w51['diccionario_datos'])==val51(o51['diccionario_datos']) and [r[:4] for r in val51(w51['catalogos']) if any(r)]==[r[:4] for r in val51(o51['catalogos']) if any(r)],
+           'las hojas «diccionario_datos» y «catalogos» van como en el original, con la cuenta de especies por valor al día')
+    else:
+        ok(ex51 and d51.value.suggested_filename.startswith('CGO_ESPECIES_REFORESTACION_URBANA_') and w51.sheetnames==['especies','diccionario_datos','catalogos'] and h51.max_row==80,
+           'Catálogos › Especies descarga el catálogo con su nombre, sus tres hojas y las 79 especies: %s' % w51.sheetnames)
+        ok(True, 'sin originales/ en este equipo: la hoja «especies» no se compara con el libro de origen')
+        ok(True, 'sin originales/ en este equipo: «diccionario_datos» y «catalogos» no se comparan con el libro de origen')
     # Plantilla
     pg51.evaluate("SRP.app.mostrarVista('configuracion')"); pg51.wait_for_timeout(400); pg51.click('.cfg-tarjeta[data-ir=carga]'); pg51.wait_for_timeout(500)
     with pg51.expect_download() as d51: pg51.click('#btn-carga-plantilla')
@@ -5453,7 +5503,8 @@ with sync_playwright() as p:
     pg63.click('#btn-ubicacion'); pg63.wait_for_timeout(900)
     pg63.fill('#campo-especie', 'fres'); pg63.wait_for_timeout(200); pg63.dispatch_event('.combo-opcion[data-id="ESP-0029"]', 'mousedown'); pg63.wait_for_timeout(150)
     pg63.fill('#campo-comentarios', 'árbol a medias'); pg63.set_input_files('#foto-archivo', sal('arbol.jpg')); pg63.wait_for_timeout(900)
-    pg63.reload(); pg63.wait_for_timeout(2500)
+    pg63.reload()
+    esperar(pg63, "!!SRP.formulario.estado.foto && /recuperó/.test(document.getElementById('aviso').innerText)", 15000)
     m63 = pg63.evaluate("[SRP.mapa.lat, SRP.formulario.estado.especieId, document.getElementById('campo-comentarios').value, !!SRP.formulario.estado.foto, document.getElementById('aviso').innerText.slice(0, 40)]")
     ok(m63[:4] == [19.4326, 'ESP-0029', 'árbol a medias', True] and 'recuperó' in m63[4], 'tras recargar sin señal, el árbol a medias vuelve con punto, especie, comentario y fotografía, y se avisa: %s' % m63)
     n63 = pg63.evaluate("(async () => (await SRP.almacen.todos('plantaciones')).length)()")
@@ -5754,12 +5805,16 @@ with sync_playwright() as p:
     pg68.evaluate("document.getElementById('form-iniciar-jornada').requestSubmit()")
     esperar(pg68, "!!SRP.activa.jornada && !document.getElementById('btn-ubicacion').disabled", 5000); pg68.wait_for_timeout(500)
     PUNTOS68 = "document.querySelectorAll('#mapa .punto-plantado').length"
+    # La tarjeta de cada árbol dura un segundo: se anota en la página al mostrarse, no cuando la prueba alcanza a mirar
+    TARJETA68 = """() => { window._tarjeta68 = false; const f = SRP.formulario;
+      if (!f._vigia68) { const antes = f.confirmarGuardado; f._vigia68 = true;
+        f.confirmarGuardado = function (...a) { const r = antes.apply(this, a); window._tarjeta68 = getComputedStyle(document.getElementById('confirmacion-guardado')).display !== 'none'; return r; }; } }"""
     ok(pg68.is_visible('#btn-franja-editar') and 'Editar jornada' in pg68.inner_text('#btn-franja-editar') and 'btn-editar' in pg68.get_attribute('#btn-franja-editar', 'class'),
        'la franja de la jornada activa trae «Editar jornada», con el color de editar')
     ok(pg68.evaluate(PUNTOS68) == 0 and not pg68.is_visible('#mapa-plantados'), 'sin árboles en la jornada, el mapa de registro no trae puntos ni su renglón')
     def arbol68(lat):
         ctx68.set_geolocation({'latitude': lat, 'longitude': -99.1332, 'accuracy': 5})
-        previo = pg68.evaluate("SRP.formulario.estado.ultimoGuardado")
+        previo = pg68.evaluate("SRP.formulario.estado.ultimoGuardado"); pg68.evaluate(TARJETA68)
         pg68.click('#btn-ubicacion'); pg68.wait_for_timeout(900)
         if not pg68.evaluate("!!SRP.formulario.estado.especieId"):
             pg68.fill('#campo-especie', 'fres'); pg68.wait_for_timeout(200); pg68.dispatch_event('.combo-opcion[data-id="ESP-0029"]', 'mousedown'); pg68.wait_for_timeout(150)
@@ -5772,11 +5827,11 @@ with sync_playwright() as p:
             if pg68.is_visible('#dlg-confirmar'): visto['exceso'] = pg68.inner_text('#dlg-confirmar'); pg68.click('#btn-confirmar-si'); pg68.wait_for_timeout(200); continue
             # El último previsto abre «Jornada completa», que espera respuesta: se lee y se sigue registrando
             if pg68.is_visible('#dlg-completa'):
-                visto['completa'] = pg68.inner_text('#dlg-completa'); visto['tarjeta'] = pg68.is_visible('#confirmacion-guardado')
+                visto['completa'] = pg68.inner_text('#dlg-completa'); visto['tarjeta'] = pg68.evaluate("window._tarjeta68")
                 pg68.wait_for_timeout(2000); visto['sigue'] = pg68.is_visible('#dlg-completa')
                 pg68.click('#btn-completa-seguir'); pg68.wait_for_timeout(200); continue
             if pg68.evaluate("p => SRP.formulario.estado.ultimoGuardado !== p && !document.querySelector('dialog[open]')", previo): break
-        visto['confirmacion'] = pg68.is_visible('#confirmacion-guardado')
+        visto['confirmacion'] = pg68.evaluate("window._tarjeta68")
         pg68.wait_for_timeout(300)
         return pg68.evaluate("SRP.formulario.estado.ultimoGuardado"), visto
     a68, v1 = arbol68(19.43260)
@@ -6168,12 +6223,10 @@ with sync_playwright() as p:
        'ninguna vista pasa de ocho filtros, y no hay filtros de año, mes, reporte, prioridad ni tipo de institución: %s' % n74)
     pg74.evaluate("SRP.app.mostrarVista('jornadas')"); pg74.wait_for_timeout(700)
     pg74.click('#jornada-atajos [data-atajo=periodo]'); pg74.click('#jornada-periodo [data-rapido=anio]')
-    try: pg74.wait_for_function("() => SRP.jornadas.lista.length > 0 && !!document.querySelector('#jornada-fichas button[data-quitar=periodo]')", timeout=8000)
-    except Exception: pass   # si no llegan, la comprobación lo dice
+    esperar(pg74, "SRP.jornadas.lista.length > 0 && !!document.querySelector('#jornada-fichas button[data-quitar=periodo]')", 15000)   # si no llegan, la comprobación lo dice
     f74 = pg74.evaluate("[document.getElementById('jornada-fichas').textContent, SRP.jornadas.lista.length]")
     pg74.click('#jornada-fichas button[data-quitar=periodo]')
-    try: pg74.wait_for_function("() => document.querySelector('#jornada-atajos [data-atajo=todas]').getAttribute('aria-pressed') === 'true'", timeout=8000)
-    except Exception: pass
+    esperar(pg74, "document.querySelector('#jornada-atajos [data-atajo=todas]').getAttribute('aria-pressed') === 'true'", 15000)
     ok(pg74.evaluate("SRP.util.fechaHoy().slice(0, 4)") in f74[0] and f74[1] > 0 and pg74.get_attribute('#jornada-atajos [data-atajo=todas]', 'aria-pressed') == 'true',
        '«Este año» deja su ficha con el año, y quitarla vuelve a «Todas»: %s' % f74[0])
     pg74.set_viewport_size({'width': 1280, 'height': 900}); pg74.wait_for_timeout(400)
@@ -6788,7 +6841,7 @@ with sync_playwright() as p:
     pg85.evaluate("async id => { await SRP.registros.sustituir(await SRP.almacen.uno('plantaciones', id)); }", r85); pg85.wait_for_timeout(500)
     pg85.click('#sustituir-motivos .chip[data-motivo=ROBO]'); pg85.click('#btn-sustituir-seguir'); pg85.wait_for_timeout(1200)
     s85 = pg85.evaluate("""() => { const v = getComputedStyle(document.documentElement).getPropertyValue('--sustituto').trim().toLowerCase();
-      const hex = c => '#' + c.match(/\d+/g).slice(0, 3).map(n => Number(n).toString(16).padStart(2, '0')).join('');
+      const hex = c => '#' + c.match(/\\d+/g).slice(0, 3).map(n => Number(n).toString(16).padStart(2, '0')).join('');
       return [SRP.formulario.estado.especieId, document.getElementById('campo-especie').value, document.getElementById('edicion-franja-titulo').textContent,
         document.getElementById('edicion-franja-folio').textContent.startsWith('Fresno · ') && document.getElementById('edicion-franja-folio').textContent.endsWith(' · Robo'),
         hex(getComputedStyle(document.getElementById('edicion-franja')).backgroundColor) === v,
@@ -6898,7 +6951,7 @@ with sync_playwright() as p:
     ok(q88 and j88 == ['Sin punto B188', 'manual', 'Cuauhtémoc'], 'al capturar las coordenadas a mano el error se va y la jornada se registra con su punto: %s' % j88)
     # Recuadro de edición: no se repite lo que dice la franja; la prioridad va junto a la colonia y antes de la dirección
     pg88.evaluate("async () => { const j = SRP.activa.jornada; j.ubicacion = 'Calle Uno 123'; await SRP.almacen.guardarConBitacora('jornadas', j, null); SRP.app.mostrarVista('jornadas'); }"); pg88.wait_for_timeout(1200)
-    o88 = pg88.evaluate("""() => { const l = document.querySelector('#lista-jornadas li .jornada-lugar'); const t = l.textContent.replace(/\s+/g, ' ').trim();
+    o88 = pg88.evaluate("""() => { const l = document.querySelector('#lista-jornadas li .jornada-lugar'); const t = l.textContent.replace(/\\s+/g, ' ').trim();
       return [t, !!l.querySelector('.pri-marca .pri-muestra'), !document.querySelector('#lista-jornadas .jornada-prioridad')]; }""")
     ok(o88[0].startswith('Cuauhtémoc · Col. ') and ' · prioridad ' in o88[0] and o88[0].endswith(' · Calle Uno 123') and o88[1:] == [True, True],
        'la tarjeta dice alcaldía · colonia · prioridad con su muestra · dirección, sin renglón aparte de prioridad: %s' % o88)
@@ -7006,7 +7059,9 @@ with sync_playwright() as p:
     pg91.goto(BASE); pg91.wait_for_timeout(1300)
     ok(pg91.evaluate("SRP.conexion.INTERVALO_VERSION") == 15 * 60 * 1000, 'con la app abierta se pregunta por una versión nueva cada 15 minutos')
     n91 = pg91.evaluate("""async () => { const c = SRP.conexion; let n = 0; const orig = c.buscarVersionNueva; c.buscarVersionNueva = () => { n += 1; };
-      c.INTERVALO_VERSION = 200; c.vigilarVersion(); await new Promise(r => setTimeout(r, 900)); clearInterval(c._vigilancia); c.buscarVersionNueva = orig; return n; }""")
+      c.INTERVALO_VERSION = 200; c.vigilarVersion();
+      for (let i = 0; i < 100 && n < 3; i++) await new Promise(r => setTimeout(r, 100));
+      clearInterval(c._vigilancia); c.buscarVersionNueva = orig; return n; }""")
     ok(n91 >= 3, 'la pregunta se repite sola mientras la app está abierta: %s veces' % n91)
     pg91.evaluate("sessionStorage.setItem(SRP.conexion.CLAVE_ANTERIOR, '0.0.1')")
     pg91.reload(); pg91.wait_for_timeout(1300)
@@ -7208,6 +7263,55 @@ with sync_playwright() as p:
     ok(err95 == [], 'sin errores de consola: %s' % err95[:2])
     ctx95.close()
 
+    # ---------- ctx96: un mapa fijo que se quita antes de ajustar su tamaño no da error ----------
+    ctx96 = b.new_context(viewport={'width':390,'height':844}, timezone_id='America/Mexico_City'); pg96 = ctx96.new_page(); err96 = []
+    pg96.on('pageerror', lambda e: err96.append(str(e)))
+    pg96.goto(BASE); pg96.wait_for_timeout(500)
+    # La ficha de un árbol que se cierra en seguida: su mapa se quita y su contenedor se oculta antes del ajuste
+    pg96.evaluate("""() => { const d = document.createElement('div'); d.id = 'mapa-b240'; d.style.height = '200px'; document.body.appendChild(d);
+      const m = SRP.mapa.estatico('mapa-b240', 19.4326, -99.1332); m.remove(); d.style.display = 'none'; }""")
+    pg96.wait_for_timeout(300)
+    ok(err96 == [], 'el mapa fijo que se quita antes de ajustar su tamaño no da error: %s' % err96[:2])
+    ctx96.close()
+    # ---------- ctx97: dos atajos seguidos en Jornadas: la lista que termina tarde no pinta encima de la última ----------
+    ctx97 = b.new_context(viewport={'width':1280,'height':900}, timezone_id='America/Mexico_City'); pg97 = ctx97.new_page()
+    pg97.goto(BASE); pg97.wait_for_selector('html[data-listo]')
+    pg97.select_option('#sel-usuario-prueba','u-admin-1'); pg97.click('#btn-entrar-prueba'); pg97.wait_for_function("() => SRP.sesion && SRP.sesion.usuario")
+    # Tres jornadas de hace cinco días, con un árbol cada una
+    pg97.evaluate("""async () => { const u = SRP.sesion.usuario, dia = new Date(Date.now() - 5 * 86400000), ahora = SRP.util.ahoraISO();
+      const f = dia.getFullYear() + '-' + String(dia.getMonth() + 1).padStart(2, '0') + '-' + String(dia.getDate()).padStart(2, '0');
+      for (let s = 0; s < 3; s++) {
+        const jid = SRP.util.generarId(), id = SRP.util.generarId();
+        await SRP.almacen.guardarConBitacora('jornadas', Object.assign({ id: jid, nombre: 'Jornada ' + (s + 1), fecha: f, comentarios: '', cabo_id: u.id, estatus: 'cerrada',
+          fecha_inicio: new Date(dia.getTime() + (9 + s * 3) * 3600000).toISOString(), fecha_cierre: ahora, encargado_id: u.id, editado_por_id: u.id,
+          fecha_ultima_edicion: ahora, arboles_previstos: null, puntos_revisados: [] }, Object.fromEntries(SRP.reportes.CAMPOS.map(x => [x, '']))), null);
+        await SRP.almacen.guardarConBitacora('plantaciones', { id, jornada_id: jid, estatus: 'activo', cabo_id: u.id, lat: 19.36 + s / 100, lng: -99.17, punto_origen: 'gps',
+          gps_precision_m: 6, alcaldia: 'Benito Juárez', alcaldia_cve: '09014', colonia: null, colonia_cve: null, uga: 'BJU-011',
+          capa_version: SRP.derivacion.derivar(19.4326, -99.1332).capa_version, especie_id: 'ESP-0070', especie_otra: '', programa_id: 'p-refor', fecha_plantacion: f,
+          comentarios: '', foto_id: null, foto_base64: null, fecha_registro: new Date(dia.getTime() + (9 + s * 3) * 3600000).toISOString(), fecha_ultima_edicion: null,
+          editado_por_id: null, folio: null }, SRP.bitacora.entrada('CREADO', 'plantacion', id));
+      } }""")
+    pg97.evaluate("SRP.app.mostrarVista('jornadas')")
+    esperar(pg97, "document.querySelectorAll('#lista-jornadas .jornada').length >= 3", 15000)
+    # «Todas» se frena (cada jornada que pinta espera 100 ms) y «Hoy», tocado en seguida, termina antes
+    r97 = pg97.evaluate("""async () => {
+      const J = SRP.jornadas, original = J.jornadaGuardada.bind(J);
+      let freno = true;
+      J.jornadaGuardada = async (j) => { if (freno) await new Promise(r => setTimeout(r, 100)); return original(j); };
+      J.aplicarAtajo('todas');
+      await new Promise(r => setTimeout(r, 60));
+      freno = false;
+      J.aplicarAtajo('hoy');
+      await new Promise(r => setTimeout(r, 3000));
+      J.jornadaGuardada = original;
+      return { marcado: document.querySelector('#jornada-atajos .chip[aria-pressed=true]').dataset.atajo,
+               tarjetas: document.querySelectorAll('#lista-jornadas .jornada').length,
+               pagina: SRP.util.paginar(J.lista, J.pagina, 'jornadas-paginas').items.length, todas: J._todas.length };
+    }""")
+    ok(r97['marcado'] == 'hoy' and r97['tarjetas'] == r97['pagina'] and r97['todas'] >= 3,
+       'dos atajos seguidos en Jornadas: la lista que termina tarde no pinta encima, se ve la del atajo marcado: %s' % r97)
+    ctx97.close()
+
     b.close()
 
 
@@ -7215,3 +7319,4 @@ with sync_playwright() as p:
 
 print('\n'.join(res)); print('ERRORES CONSOLA:',errores or 'ninguno')
 print('fallas:',sum(r.startswith('FALLA') for r in res),'de',len(res))
+raise SystemExit(1 if any(r.startswith('FALLA') for r in res) else 0)

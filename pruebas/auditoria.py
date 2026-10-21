@@ -436,3 +436,5 @@ malos = [h for h in hallazgos if not h[0]]
 for ok_, desc, det in hallazgos:
     print(('OK    ' if ok_ else 'FALLA ') + desc + (('  -> ' + det) if (det and not ok_) else ''))
 print('\n%d comprobaciones, %d hallazgos' % (len(hallazgos), len(malos)))
+# Con algún hallazgo sale con 1: la verificación automática lo marca
+raise SystemExit(1 if malos else 0)

@@ -154,7 +154,7 @@ def escribir(nombre, features, props):
     if ajustadas: print(f'{nombre}: {len(ajustadas)} geometrías ajustadas a la rejilla para que sigan válidas: {", ".join(str(c) for c in ajustadas)}')
     texto = json.dumps(salida, separators=(',', ':'), ensure_ascii=False)
     ruta = os.path.join(DESTINO, f'capa-{nombre}.js')
-    with open(ruta, 'w', encoding='utf-8') as w:
+    with open(ruta, 'w', encoding='utf-8', newline='\n') as w:
         w.write(f'/* CAPA {nombre.upper()} — GENERADA, NO EDITAR A MANO.\n')
         w.write(f'   Sale de originales/{m["archivo"]} con herramientas/generar_capas.py: atributos mínimos,\n')
         w.write(f'   {DECIMALES} decimales. Para cambiarla, cambiar el original y volver a generar. */\n')

@@ -707,3 +707,27 @@ Antes y después se corrieron con los guiones del revisor, sobre el código del 
 
 La sección nueva de `prueba.py`, corrida contra el código de antes, da 8 fallas de 9 (la novena es la de errores de
 consola).
+
+### Bloque 5 · Pruebas y herramientas (bloque 240 del proyecto, versión 1.0.5)
+
+El dueño aprobó el bloque el 20-10-2026 y decidió que las pruebas corran en GitHub en cada subida. El equipo
+lento simulado (`por_tramos.py --lento`) encontró dos fallas de la aplicación que no estaban en el informe; van al
+final de la tabla.
+
+| Clave | Estado | Antes y después | Prueba permanente |
+|---|---|---|---|
+| A1-01 | Corregido | Antes, 4 de 4 corridas sin terminar. Después, `por_tramos.py` termina los 80 tramos en cada corrida (ver abajo). En una corrida normal, con otros dos proyectos probándose en el mismo equipo, hubo 2 fallas: una espera de la prueba, ya corregida, y una vez que el servidor de prueba no entregó la biblioteca del mapa (`sin_leaflet.py` da el mismo error). Repetidos, los dos tramos pasan 3 de 3 | `por_tramos.py`, en GitHub en cada subida |
+| A1-04 | Corregido | Antes, 12 avisos falsos. Después, «sin problemas» y salida 0 | `revisar.py`, en GitHub |
+| A3-01 | Corregido | Antes, 9 archivos regenerados diferían de lo guardado sólo en CRLF. Después, ninguno | — (los generadores escriben LF) |
+| A4-01 | Corregido | Antes, 4 avisos de sintaxis en `prueba.py`. Después, ninguno | GitHub compila los guiones con esos avisos como error |
+| F4-01 | Corregido | Antes, sólo avisaba y armaba el paquete. Después, no escribe el ZIP con los dos avisos sin revisar, con un archivo revisado que cambió ni con `~$LEEME.docx` y un `.bak`. Con los dos avisos revisados, arma el paquete (113 archivos) | — (se prueba al armar cada paquete) |
+| M170 | Corregido en parte | Las pruebas corren en GitHub en cada subida, con Chromium. Falta WebKit. El servicio y la base de datos (`npm test`, `prueba_conexion.py`) se siguen probando en el equipo de desarrollo | `.github/workflows/pruebas.yml` |
+| Nuevo · el mapa fijo | Corregido | `mapa_quitado.py`: antes, un error de Leaflet, 2 de 2; después, sin error, 2 de 2 | `prueba.py`, ctx96 |
+| Nuevo · la lista de Jornadas | Corregido | `lista_atrasada.py`: antes, con «Hoy» marcado quedaban a la vista las jornadas de otro día, 2 de 2; después, la lista del atajo, 2 de 2 | `prueba.py`, ctx97 |
+
+Criterio de cierre, «dos corridas seguidas en dos equipos, iguales». En el equipo de desarrollo, dos corridas
+seguidas de los 80 tramos, 1,452 de 1,452 cada una: la del equipo 3 veces más lento y otra normal. El primer
+tramo, con el equipo 4 veces más lento, 645 de 645 dos veces.
+
+`lista_atrasada.py`, `mapa_quitado.py` y `sin_leaflet.py` están en la evidencia, junto a los guiones de la
+auditoría.

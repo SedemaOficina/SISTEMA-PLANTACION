@@ -5854,7 +5854,7 @@ las herramientas). Antes de entregar al SIA, rearmar el paquete con esta versió
 - Auditorías: 144 sin hallazgos; hoja de estilos sin hallazgos; `revisar.py`, los mismos 12 avisos falsos (A1-04).
 - El servidor no cambió: `npm test` no se volvió a correr.
 
-Tres renglones nuevos llevaban los caracteres invisibles escritos tal cual; se cambiaron por su código (`​`…)
+Tres renglones nuevos llevaban los caracteres invisibles escritos tal cual; se cambiaron por su código (`\u200B`…)
 mientras corría `prueba.py`, que es lo mismo para el navegador. Las dos pruebas de conexión corrieron después.
 
 No se probó:
@@ -5866,3 +5866,85 @@ No se probó:
 
 **Siguiente paso.** Liber decide si sigue con el bloque 5 (las pruebas y las herramientas) o con otro. Antes de
 entregar al SIA, rearmar el paquete con esta versión.
+
+## Bloque 240 — Las pruebas y las herramientas (20-10-2026)
+
+**Versión 1.0.5.** El bloque 5 del plan de corrección de la auditoría del 19-10-2026
+(`docs/AUDITORIA-2026-10-19.md`, § 11). Liber decidió que las pruebas corran solas en GitHub en cada subida (D320).
+
+| Hallazgo | Qué pasaba | Qué pasa ahora |
+|---|---|---|
+| A1-01 | La prueba completa de la aplicación no terminaba: en 4 corridas se detuvo en 4 puntos distintos | Corre por tramos, cada uno en su proceso; uno que se detiene no detiene a los demás. Las 80 partes terminaron en cada corrida |
+| A1-04 | `revisar.py` no llegaba a Nuevo registro y daba 12 avisos falsos | Llega como una persona y no da ninguno |
+| A3-01 | En Windows, los generadores escribían saltos CRLF: 9 archivos regenerados diferían de lo guardado sólo en eso | Escriben LF: regenerados, quedan idénticos |
+| A4-01 | 4 secuencias de escape inválidas en `prueba.py` | Ninguna; en GitHub, una nueva es error |
+| F4-01 | El empaquetador sólo avisaba ante archivos de trabajo y posibles secretos | Se detiene, salvo los avisos ya revisados |
+| M170 | Las pruebas no corrían solas | Corren en GitHub en cada subida, con Chromium |
+| Nuevo: el mapa fijo | Un mapa fijo que se quitaba antes de ajustar su tamaño daba error en la consola | El ajuste se cancela al quitar el mapa |
+| Nuevo: Jornadas | Con dos atajos tocados seguidos en un equipo lento, la lista del primero podía quedar encima de la del segundo | Queda siempre la del último atajo |
+
+Las dos fallas nuevas de la aplicación las encontró el equipo lento simulado.
+
+**Qué cambió.**
+- `pruebas/por_tramos.py` (nuevo): la prueba completa por tramos, con `--lento`, `--solo`, `--desde` y `--json`.
+  De un tramo que se detiene dice el renglón de `prueba.py` donde se detuvo.
+- `pruebas/prueba.py`:
+  - el equipo lento simulado (`SRP_LENTO`);
+  - esperas a una condición donde el equipo lento hizo fallar las fijas: la lista de Jornadas pintada, la ficha
+    de la jornada abierta, la tarjeta «Registro exitoso» anotada al mostrarse;
+  - las cuatro secuencias de escape, y la salida con 1 si algo falla;
+  - dos secciones nuevas: ctx96 (el mapa fijo) y ctx97 (dos atajos seguidos en Jornadas).
+- `pruebas/revisar.py`: llega a Nuevo registro con «Detectar ubicación» e «Iniciar jornada». Con
+  `pruebas/auditoria.py`, sale con 1 si algo falla.
+- `herramientas/`: los cinco generadores escriben LF; `empaquetar.py` se detiene y lee `AVISOS-REVISADOS.txt`.
+- `datos/HUELLA-CAPAS.json`: vuelta a sacar; estaba atrasada desde el bloque 197.
+- `js/mapa.js` y `js/duplicados.js`: el ajuste del tamaño del mapa fijo (`ajustarLuego`).
+- `js/jornadas.js`: cada pintura de la lista lleva su turno.
+- `.github/workflows/pruebas.yml` (nuevo).
+- `docs/evidencia-2026-10-19/guiones/`: `lista_atrasada.py`, `mapa_quitado.py` y `sin_leaflet.py` (nuevos).
+- `README.md` y `servidor/README.md`: la prueba por tramos y el equipo lento.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada a la vista. En Jornadas, la lista ya no puede quedarse con la
+de un atajo anterior. No se quitó nada.
+
+**Verificación.**
+- Antes y después:
+  - `lista_atrasada.py`: antes, «Hoy» marcado con 3 jornadas de otro día a la vista, 2 de 2; después, la lista
+    del atajo, 2 de 2;
+  - `mapa_quitado.py`: antes, «Cannot read properties of undefined (reading '_leaflet_pos')», 2 de 2; después,
+    sin error, 2 de 2;
+  - el empaquetador, sobre una copia del paquete del 17-10:
+    – sin revisar, se detiene con los 2 avisos conocidos y no escribe el ZIP;
+    – con los dos revisados, arma el paquete, con 113 archivos;
+    – si un archivo revisado cambia, se detiene otra vez;
+    – con `~$LEEME.docx` y un `.bak`, se detiene;
+  - los generadores, corridos en una copia: antes, 9 archivos diferían de lo guardado sólo en CRLF; después,
+    ninguno;
+  - secuencias de escape en `prueba.py`: 4 antes, ninguna después;
+  - `revisar.py`: 12 avisos falsos antes; después, «sin problemas».
+- La prueba completa por tramos, en este equipo:
+  - normal: 80 tramos y 1,452 comprobaciones, con 2 fallas, en 45 min;
+  - con el equipo 3 veces más lento: 1,452 de 1,452, en 44 min;
+  - el primer tramo, con el equipo 4 veces más lento, dos veces: 645 de 645 las dos;
+  - otra vez normal, después de corregir la prueba de la tarjeta: 1,452 de 1,452, en 44 min. Con la lenta, son
+    dos corridas seguidas iguales: todas las comprobaciones, sin fallas.
+- Las 2 fallas de la corrida normal fueron de la prueba y del equipo, no de la aplicación. A la vez corrían las
+  pruebas de otros dos proyectos, y un tramo tardó 49 s en lugar de 27:
+  - la tarjeta «Registro exitoso» dura un segundo y la prueba la buscaba después. Ahora se anota al mostrarse;
+  - «L is not defined»: el servidor de prueba no entregó una vez la biblioteca del mapa. Es el mismo error que
+    sale al quitarla a propósito (`sin_leaflet.py`), y la aplicación arranca igual;
+  - los dos tramos, repetidos: 3 de 3 sin fallas.
+- Conexión, con el repositorio: `prueba_conexion.py`, 119 de 119. Con la copia real de la 1.0.5: 120 de 120. La
+  primera vez las dos se cortaron por tiempo, en esperas de 30 s, mientras corrían las pruebas de los otros
+  proyectos; repetidas, pasaron.
+- Auditorías: hoja de estilos sin hallazgos; 144 sin hallazgos; `revisar.py` sin problemas.
+- El servidor no cambió: `npm test` no se volvió a correr.
+
+No se probó:
+- en teléfonos reales;
+- con WebKit (Safari), ni aquí ni en GitHub: el equipo lento simulado es sólo de Chromium;
+- `prueba_conexion.py` y `npm test` en GitHub: necesitan la base de datos y se corren en el equipo de desarrollo;
+- quedan unas 1,700 esperas fijas que hoy alcanzan: sólo se cambiaron las que fallaron con el equipo lento.
+
+**Siguiente paso.** Liber decide si sigue con el bloque 6 (los documentos y la entrega) o con el 7 (las propuestas
+de pantalla). Antes de entregar al SIA, rearmar el paquete con esta versión y su `AVISOS-REVISADOS.txt`.

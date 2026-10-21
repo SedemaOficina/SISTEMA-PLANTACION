@@ -86,7 +86,7 @@ def main():
             out.append('<text x="%f" y="%f" font-size="5" font-family="Arial" fill="#9D2148">%d</text>' % (cx, cy + 28, i + 1))
         out.append('</svg>')
         ruta = os.path.join(RAIZ, 'herramientas', 'iconos_indice.svg')
-        open(ruta, 'w', encoding='utf-8').write('\n'.join(out))
+        open(ruta, 'w', encoding='utf-8', newline='\n').write('\n'.join(out))
         print('índice en', os.path.relpath(ruta, RAIZ), file=sys.stderr)
 
 if __name__ == '__main__':

@@ -93,7 +93,7 @@ def main():
             'notas_discrepancia': {f['id_especie']: f['nota_discrepancia'] for f in filas if f['nota_discrepancia']},
             'hojas_referencia': {n: hoja(n) for n in ('diccionario_datos', 'catalogos')}}
     cuerpo = json.dumps({'meta': meta, 'especies': especies}, ensure_ascii=False, indent=1)
-    with open(SALIDA, 'w', encoding='utf-8') as s:
+    with open(SALIDA, 'w', encoding='utf-8', newline='\n') as s:
         s.write('/* CATÁLOGO DE ESPECIES. Generado por herramientas/generar_especies.py a partir de\n'
                 '   originales/%s: no se edita a mano. */\n' % os.path.basename(FUENTE))
         s.write('window.SRP = window.SRP || {};\nSRP.CATALOGO_ESPECIES = ' + cuerpo + ';\n')

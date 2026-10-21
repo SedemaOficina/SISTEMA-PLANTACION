@@ -1,0 +1,76 @@
+# Las pruebas de la aplicación en cada subida, en un equipo de GitHub: la sintaxis de los guiones, la hoja de
+# estilos, la consistencia, la presentación y la prueba completa por tramos. Todo con datos de prueba: sin el
+# servicio ni la base de datos, que se prueban en el equipo de desarrollo (npm test y prueba_conexion.py).
+# Si algo falla, la subida queda marcada con una ✗ y el resultado de cada tramo queda en «Artifacts».
+name: Pruebas
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Una subida nueva cancela la corrida de la anterior en la misma rama
+concurrency:
+  group: pruebas-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  aplicacion:
+    name: Aplicación, con datos de prueba
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      # «Hoy» en Python y en el navegador, el de la Ciudad de México, como en campo
+      TZ: America/Mexico_City
+      PYTHONUTF8: '1'
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: pruebas/requisitos.txt
+
+      - name: Bibliotecas y navegador
+        run: |
+          pip install -r pruebas/requisitos.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Guiones de Python sin avisos de sintaxis
+        run: python -W error::SyntaxWarning -m compileall -q pruebas herramientas
+
+      - name: Servidor local
+        run: |
+          nohup python pruebas/servir.py 8099 > "$RUNNER_TEMP/servir.log" 2>&1 &
+          for i in $(seq 1 30); do curl -sf -o /dev/null http://127.0.0.1:8099/index.html && exit 0; sleep 1; done
+          cat "$RUNNER_TEMP/servir.log"; exit 1
+
+      - name: Hoja de estilos
+        run: python pruebas/auditoria_css.py
+
+      - name: Consistencia
+        run: python pruebas/auditoria.py
+
+      - name: Presentación
+        working-directory: ${{ runner.temp }}
+        run: python "$GITHUB_WORKSPACE/pruebas/revisar.py"
+
+      - name: Prueba completa, por tramos
+        run: python pruebas/por_tramos.py --json "$RUNNER_TEMP/tramos.json"
+
+      - name: Resultado de cada tramo y capturas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultado-pruebas
+          path: |
+            ${{ runner.temp }}/tramos.json
+            ${{ runner.temp }}/rev_*.png
+          if-no-files-found: ignore
+          retention-days: 14

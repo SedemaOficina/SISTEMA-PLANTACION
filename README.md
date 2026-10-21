@@ -269,14 +269,16 @@ herramientas/           Generan archivos del sitio a partir de originales/ y de 
   extraer_iconos.py     Set de iconografía CDMX (.ai) → trazados para js/iconos.js
   manual_administracion.py  Capturas de la aplicación con datos reales, contra el servicio local, y el PDF del manual de la Administración global (docs/manual/)
   preparar_produccion.py  La copia de la aplicación que se publica en el SIA: datos reales y sin los archivos de prueba
-  empaquetar.py         Una carpeta → paquete para el SIA: manifiesto con la suma de cada archivo, ZIP y su .sha256; pide VERSION (0.N sólo con --revision)
+  empaquetar.py         Una carpeta → paquete para el SIA: manifiesto con la suma de cada archivo, ZIP y su .sha256; pide VERSION (0.N sólo con --revision); se detiene ante archivos de trabajo y avisos sin revisar (AVISOS-REVISADOS.txt)
 
-pruebas/                prueba.py (recorrido completo), prueba_conexion.py (con datos reales, contra el servicio local) y su apoyo_servidor.mjs, auditoria.py (auditoría), auditoria_css.py (hoja de estilos), revisar.py (presentación), servir.py (el servidor local para correrlas, que reenvía /api/ al servicio) y requisitos.txt (bibliotecas)
+pruebas/                prueba.py (recorrido completo) y por_tramos.py (el mismo, por tramos), prueba_conexion.py (con datos reales, contra el servicio local) y su apoyo_servidor.mjs, auditoria.py (auditoría), auditoria_css.py (hoja de estilos), revisar.py (presentación), servir.py (el servidor local para correrlas, que reenvía /api/ al servicio) y requisitos.txt (bibliotecas)
 
 servidor/               El servicio del SRP (TypeScript sobre Node.js, y PostgreSQL con PostGIS): guiones SQL del esquema srp (db/srp/), el módulo para el backend del SIA (src/modulos/srp/), la primera cuenta (deploy/), fragmento del servidor web (servidor-web/) y sus pruebas; ver servidor/README.md
 
 originales/             Capas, catálogos e iconografía tal como llegaron; no se editan ni se publican
                         (.gitignore); ver originales/LEEME.md
+
+.github/workflows/      pruebas.yml: las pruebas de la aplicación en cada subida, en un equipo de GitHub
 ```
 
 ## Al cerrar un bloque: subir la marca de versión
@@ -466,11 +468,24 @@ esté, con el servidor local levantado:
 pip install -r pruebas/requisitos.txt
 python3 -m playwright install chromium
 python3 pruebas/servir.py        (en otra terminal; no http.server: rechaza conexiones al abrir)
-python3 pruebas/prueba.py        # unos 40 minutos, sola; al final dice «fallas: 0 de N»
+python3 pruebas/por_tramos.py    # la prueba completa por tramos, unos 40 minutos, sola
 python3 pruebas/auditoria.py     # unos 2 minutos
 python3 pruebas/revisar.py       # unos 2 minutos
-python3 pruebas/prueba_conexion.py   # un minuto; con la base local del servidor cargada
+python3 pruebas/prueba_conexion.py   # unos 5 minutos; con la base local del servidor cargada
 ```
+
+`por_tramos.py` corre `prueba.py` en tramos, cada uno en su propio proceso: un tramo que se detiene se anota,
+con el renglón de `prueba.py` donde se detuvo, y los demás siguen. Al final dice «tramos: N · comprobaciones: N ·
+fallas: 0 · tramos detenidos: 0». Con
+`--lista` muestra los tramos, con `--solo 3,7` corre algunos, y con `--lento 4` el navegador corre como en un
+equipo cuatro veces más lento: así salen las esperas que sólo alcanzan en un equipo rápido. `prueba.py` se
+puede correr también de una pieza. Las cuatro salen con 1 si algo falla.
+
+En cada subida a GitHub corren solas, en un equipo de GitHub con Linux, la sintaxis de los guiones, la hoja de
+estilos, la consistencia, la presentación y la prueba completa por tramos (`.github/workflows/pruebas.yml`). Si
+algo falla, la subida queda marcada con una ✗ y el resultado de cada tramo queda en sus «Artifacts». Ahí no
+hay `originales/` (no se sube): lo que se compara con ellos se omite y se dice. El servicio y la base de datos
+se prueban en el equipo de desarrollo (`npm test` y `prueba_conexion.py`).
 
 `servir.py` reenvía lo que va a `/api/` al servicio del SRP de esta computadora, como lo hace el servidor
 web del SIA: la aplicación y su servicio quedan en el mismo sitio. `prueba_conexion.py` arranca su propio
@@ -497,6 +512,7 @@ tiempo fijo.
 | Archivo | Qué comprueba |
 |---|---|
 | `prueba.py` | Recorrido completo: acceso, captura, listados, filtros, PDF, catálogos y cuentas, en los tres perfiles; también el ciclo de la base (sello, versión) y la seguridad ante datos alterados |
+| `por_tramos.py` | `prueba.py` en tramos independientes, con su tiempo máximo cada uno; `--lento` simula un equipo lento |
 | `auditoria.py` | Consistencia de lo guardado y del modelo: esquema contra lo que se guarda, diccionario y `js/esquema.js` regenerados, dominios, vocabulario |
 | `auditoria_css.py` | La norma de la hoja de estilos: colores sólo en `:root`, sin `#id` ni `!important`, medidas con token, una regla por selector, sin clases ni variables sin uso, sin estilos en línea. Corre dentro de `auditoria.py`; con `--todo` lista cada caso |
 | `revisar.py` | Presentación en ocho combinaciones de ancho y zoom: desbordamiento, alto del mapa, tamaño de los controles y reglas anuladas |

@@ -130,7 +130,7 @@ SRP.duplicados = {
     L.circleMarker(b, { radius: 8, className: 'dup-marca-estaba', interactive: false }).addTo(m);
     L.circleMarker(a, { radius: 8, className: 'dup-marca-llego', interactive: false }).addTo(m);
     m.fitBounds(L.latLngBounds([a, b]), { padding: [60, 60], maxZoom: 19, animate: false });
-    setTimeout(() => m.invalidateSize(), 60);
+    SRP.mapa.ajustarLuego(m, 60);
     this.mapas.push(m);
   },
 

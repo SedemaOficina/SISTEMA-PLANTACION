@@ -100,7 +100,7 @@ FROM <tabla> GROUP BY ST_SRID(<geom>);'''
 
 def escribir(h):
     datos = os.path.join(RAIZ, 'datos')
-    json.dump(h, open(os.path.join(datos, 'HUELLA-CAPAS.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1, sort_keys=True)
+    json.dump(h, open(os.path.join(datos, 'HUELLA-CAPAS.json'), 'w', encoding='utf-8', newline='\n'), ensure_ascii=False, indent=1, sort_keys=True)
     L = ['# Huella de las capas territoriales', '',
          'Generado con `python3 herramientas/huella_capas.py`. No se edita a mano.', '',
          'Describe las capas con que el sistema deriva alcaldía, colonia y celda de cada árbol. Sirve para',
@@ -118,7 +118,7 @@ def escribir(h):
           '   en un archivo `{ "alcaldias": { "poligonos": {…} }, "colonias": {…}, "uga": {…} }`.',
           '2. `python3 herramientas/huella_capas.py ese_archivo.json` dice, por capa, qué claves faltan, cuáles sobran',
           '   y qué polígonos cambiaron de superficie o de lugar.', '', '```sql', SQL, '```', '']
-    open(os.path.join(datos, 'HUELLA-CAPAS.md'), 'w', encoding='utf-8').write('\n'.join(L))
+    open(os.path.join(datos, 'HUELLA-CAPAS.md'), 'w', encoding='utf-8', newline='\n').write('\n'.join(L))
 
 
 def comparar(h, otra):
