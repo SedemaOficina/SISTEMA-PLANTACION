@@ -124,8 +124,8 @@ D321, D322): falta que el SIA lo instale. Después siguen el piloto y la operaci
 
 - El servicio (`servidor/`) y la aplicación conectada a él: cuentas y sesión, permisos, recepción, folio,
   fotografías, parámetros, bandeja de duplicados y carga masiva (D292 a D312). El paquete de instalación con
-  sus instrucciones, desde la versión 1 (D315), corregido con los bloques 1 a 6 de la auditoría del 19-10-2026
-  (D316 a D321). El bloque 7, las propuestas de pantalla, sigue pendiente.
+  sus instrucciones, desde la versión 1 (D315), corregido con los siete bloques de la auditoría del 19-10-2026
+  (D316 a D322).
 - Las pruebas corren en GitHub en cada subida (D320).
 
 **Falta, del lado del SRP**
