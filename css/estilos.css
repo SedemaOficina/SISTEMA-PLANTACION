@@ -480,7 +480,7 @@ fieldset.campo { margin-inline: 0; }
 .mapa-jornada { height: clamp(240px, 40vh, 420px); border-radius: var(--radio); margin-top: var(--e-3); }
 .leyenda-jornada { display: flex; gap: var(--e-3); flex-wrap: wrap; margin: var(--e-2) 0 var(--e-3); font-size: var(--t-xs); color: var(--gris); }
 .leyenda-jornada i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: var(--e-1); vertical-align: -1px; background: var(--fondo); border: 1.5px solid var(--texto); }
-.leyenda-jornada i[data-tono="rev"] { background: var(--atencion-relleno); border-color: var(--atencion-relleno); }
+.leyenda-jornada i[data-tono="rev"] { background: var(--atencion-relleno); border-color: var(--texto); }
 .leyenda-jornada i[data-tono="ok"] { background: var(--exito); border-color: var(--exito); }
 .leyenda-jornada i[data-tono="sust"] { background: var(--sustituto); border-color: var(--sustituto); }
 .leyenda-jornada i[data-tono="err"] { background: var(--error); border-color: var(--error); box-shadow: 0 0 0 1.5px var(--fondo), 0 0 0 3px var(--error); }
@@ -490,7 +490,7 @@ fieldset.campo { margin-inline: 0; }
 .pin-num { background: none; border: 0; }
 .pin-num span { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--fondo); color: var(--texto);
   font: 700 12px/1 var(--fuente-cuerpo); border: 2px solid var(--texto); box-shadow: var(--sombra-pin); transition: transform var(--dur-rapida); }
-.pin-num span[data-tono="rev"] { background: var(--atencion-relleno); border-color: var(--fondo); }
+.pin-num span[data-tono="rev"] { background: var(--atencion-relleno); border-color: var(--texto); }
 .pin-num span[data-tono="err"] { background: var(--error); color: var(--fondo); border-color: var(--fondo); box-shadow: 0 0 0 2px var(--error), var(--sombra-pin); }
 .pin-num span[data-tono="ok"] { background: var(--exito); color: var(--fondo); border-color: var(--fondo); }
 .pin-num span[data-tono="sust"] { background: var(--sustituto); color: var(--fondo); border-color: var(--fondo); }
@@ -1216,7 +1216,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
 /* Barra de la especie: bajo el nombre, sin carril de fondo; compara con la más plantada */
 .sup-esp-barra { display: block; width: 100%; height: 6px; margin-top: var(--e-1); }
 .sup-esp-barra rect { fill: var(--exito); }
-.sup-tabla-cabos .enlace-fila { display: inline; width: auto; min-height: 0; padding: 0; border: 0; background: none; color: var(--acento); font-weight: 600;
+.sup-tabla-cabos .enlace-fila { display: inline; width: auto; min-height: 0; padding: var(--e-1) 0; border: 0; background: none; color: var(--acento); font-weight: 600;
   text-decoration: underline; text-underline-offset: 3px; }
 /* Ventana «Datos de prueba»: demostración y restablecer, separados por una línea */
 .demo-caja { margin-top: var(--e-3); padding-top: var(--e-3); border-top: 1px dashed var(--borde-suave); }

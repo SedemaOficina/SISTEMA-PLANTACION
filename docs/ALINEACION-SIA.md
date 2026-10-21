@@ -73,8 +73,9 @@ cuentas viven en `srp`; altas, bajas y restablecimientos los hace la Administrac
    Va al SIA **para revisión**, en la versión de prueba 0.9.64 (D289): la primera instalación será la
    versión 1, con el sistema completo. **La versión 1 está lista** (bloque 235, D315): el paquete para
    instalar, sobre la versión vigente de `sia-backend` al 17-10-2026, con la aplicación real, los datos de
-   arranque y el manual de la Administración global. La versión 1.0.5 (21-10-2026, D321) la sustituye, con
-   las correcciones de la auditoría del 19-10-2026, sobre la versión de `sia-backend` del 20-10-2026.
+   arranque y el manual de la Administración global. La versión 1.1 (21-10-2026, D321 y D322) la sustituye,
+   con las correcciones de la auditoría del 19-10-2026 y sus ajustes de pantalla, sobre la versión de
+   `sia-backend` del 21-10-2026.
 3. **El acceso con los formatos del SIA.** Ya hechos (bloque 206): contraseña con scrypt N=16384, r=8,
    p=1, en base64url; testigo de sesión de 32 bytes con su resumen sha256 en hexadecimal; la cookie
    `sia_srp_sesion`; y, en la fase 2, la primera cuenta con un guion que sólo imprime el SQL. Hechos en el

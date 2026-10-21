@@ -1547,7 +1547,10 @@ with sync_playwright() as p:
 
     # ---------- ADMINISTRACIÓN: usuarios ----------
     pg.click('.pestana[data-vista=configuracion]'); pg.wait_for_timeout(300); pg.click('.cfg-tarjeta[data-ir=usuarios]'); pg.wait_for_timeout(500)   # desde el menú de la cuenta
-    ok(pg.locator('#tabla-usuarios tbody tr').count()==13,'la lista trae las trece cuentas')
+    ok(pg.locator('#tabla-usuarios tbody tr').count()==10 and pg.inner_text('#usr-paginas .paginador-texto')=='Mostrando 1–10 de 13 cuentas',
+       'en el teléfono Usuarios va de 10 en 10: '+pg.inner_text('#usr-paginas .paginador-texto'))
+    pg.select_option('#usr-paginas select[data-tam]', '25'); pg.wait_for_timeout(300)
+    ok(pg.locator('#tabla-usuarios tbody tr').count()==13,'con 25 por página, la lista trae las trece cuentas')
     fila_yo=pg.locator('#tabla-usuarios tbody tr', has_text='Administración SIA')
     ok('usted' in fila_yo.inner_text(),'marca cuál es la cuenta propia')
     ok(fila_yo.locator('button[data-accion=estado]').count()==0,'que no puede desactivarse a sí misma')
@@ -2878,7 +2881,7 @@ with sync_playwright() as p:
       personal: '', apoyo: '', observaciones: '', chofer: '', vehiculo_modelo: '', vehiculo_placa: '', hora: '' };
       await SRP.almacen._tx(['jornadas'], 'readwrite', tx => tx.objectStore('jornadas').put(j)); }""" % HOY)
     abrir_prueba21()
-    ok(pg21.is_visible('#caja-demo') and pg21.inner_text('.pie').strip().startswith('Sistema de Registro') and pg21.locator('.pie button').count()==0 and 'Casi tres años' in estado21() and pg21.inner_text('#btn-demo-cargar')=='Cargar datos de demostración' and pg21.is_disabled('#btn-demo-quitar'),
+    ok(pg21.is_visible('#caja-demo') and pg21.inner_text('.pie').strip().startswith('Sistema de Registro') and pg21.locator('.pie button').count()==0 and 'de enero de 2024 a hoy' in estado21() and pg21.inner_text('#btn-demo-cargar')=='Cargar datos de demostración' and pg21.is_disabled('#btn-demo-quitar'),
        'en el menú de la cuenta, «Datos de prueba» abre la demostración, con «Cargar» y «Quitar» (apagado, no hay nada que quitar); el pie sólo dice la versión')
     pg21.click('#btn-demo-cargar'); pg21.wait_for_timeout(300)
     dlg21=pg21.inner_text('#dlg-confirmar')
@@ -2963,7 +2966,7 @@ with sync_playwright() as p:
     ok(q21['j']==[jc21] and q21['u']==['u-demo-c6','u-demo-k1'] and q21['sel']==[],
        'se conserva la jornada de demostración donde se registró un árbol propio, con su cabo y su coordinación: %s, %s' % (q21['j'], q21['u']))
     entrar21('u-admin-1'); abrir_prueba21()
-    ok(pg21.inner_text('#btn-demo-cargar')=='Recuperar datos de demostración' and pg21.is_disabled('#btn-demo-quitar') and 'Casi tres años' in estado21(),
+    ok(pg21.inner_text('#btn-demo-cargar')=='Recuperar datos de demostración' and pg21.is_disabled('#btn-demo-quitar') and 'de enero de 2024 a hoy' in estado21(),
        'después de quitarlos, la ventana ofrece «Recuperar datos de demostración»')
     pg21.click('#btn-demo-cargar'); pg21.wait_for_timeout(300); pg21.click('#btn-confirmar-si'); pg21.wait_for_timeout(500)
     esperar(pg21,"document.getElementById('demo-estado').textContent.startsWith('Cargados')",90000)
@@ -7311,6 +7314,144 @@ with sync_playwright() as p:
     ok(r97['marcado'] == 'hoy' and r97['tarjetas'] == r97['pagina'] and r97['todas'] >= 3,
        'dos atajos seguidos en Jornadas: la lista que termina tarde no pinta encima, se ve la del atajo marcado: %s' % r97)
     ctx97.close()
+
+    # ---------- ctx98: propuestas de pantalla de la auditoría: Usuarios por páginas, doble toque, borradores y avisos ----------
+    ctx98 = b.new_context(viewport={'width':390,'height':844}, timezone_id='America/Mexico_City'); pg98 = ctx98.new_page(); err98 = []
+    pg98.on('pageerror', lambda e: err98.append(str(e))); pg98.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err98.append(m.text))
+    pg98.goto(BASE); pg98.wait_for_selector('html[data-listo]')
+    # «Entrar» no se queda apagado si falla guardar lo que baja: el recuadro dice qué pasó, sin marcar campos
+    e98 = pg98.evaluate("""async () => {
+      SRP.sesion.autenticar = async () => { throw new DOMException('sin espacio', 'QuotaExceededError'); };
+      document.getElementById('acceso-correo').value = 'cabo@ejemplo.local'; document.getElementById('acceso-clave').value = 'una contraseña';
+      document.getElementById('form-acceso').requestSubmit(); await new Promise(r => setTimeout(r, 400));
+      const caja = document.getElementById('acceso-errores'), bt = document.getElementById('form-acceso').querySelector('button[type="submit"]');
+      return [caja.hidden, caja.textContent, bt.disabled, document.getElementById('acceso-correo').getAttribute('aria-invalid')]; }""")
+    ok(e98[0] is False and e98[1].startswith('No se pudo entrar') and 'no tiene espacio libre' in e98[1] and e98[2] is False and e98[3] != 'true',
+       'si guardar los catálogos falla por espacio al entrar, el botón vuelve y el recuadro lo dice, sin marcar el correo: %s' % e98[1][:80])
+    pg98.reload(); pg98.wait_for_selector('html[data-listo]')
+    pg98.select_option('#sel-usuario-prueba','u-admin-1'); pg98.click('#btn-entrar-prueba'); pg98.wait_for_function("() => SRP.sesion && SRP.sesion.usuario")
+    # Usuarios por páginas, con el orden de la tabla para toda la lista; otro filtro vuelve a la página 1
+    u98 = pg98.evaluate("""async () => {
+      const base = SRP.ref.usuarios.find(u => u.perfil === 'CABO'), espera = () => new Promise(r => setTimeout(r, 300));
+      for (let i = 0; i < 40; i++) { const u = Object.assign({}, base, { id: 'u-pag-' + i, nombre_completo: 'Zz Cuenta ' + String(i).padStart(2, '0') + ' Ejemplo', correo: 'pag' + i + '@ejemplo.local' });
+        SRP.ref.usuarios.push(u); SRP.ref.usuarioPorId[u.id] = u; }
+      SRP.app.mostrarVista('usuarios'); await espera();
+      const nombres = () => [...document.querySelectorAll('#tabla-usuarios tbody tr .c-titulo')].map(x => x.firstChild.textContent.trim());
+      const nav = document.getElementById('usr-paginas');
+      const p1 = [nombres().length, nav.hidden, nav.querySelector('.paginador-texto').textContent];
+      nav.querySelector('button[data-pagina="2"]').click(); await espera();
+      const p2 = SRP.usuarios.pagina;
+      const th = () => document.querySelector('#tabla-usuarios thead .th-orden[data-col="0"]');
+      th().click(); await espera(); th().click(); await espera();
+      nav.querySelector('button[data-pagina="1"]').click(); await espera();
+      const desc = nombres()[0];
+      const q = document.getElementById('usr-buscar'); q.value = 'zz cuenta'; q.dispatchEvent(new Event('input', { bubbles: true })); await espera();
+      // En teléfono el encabezado no se ve: sus botones de orden salen del orden del teclado y siguen para el lector de pantalla
+      const b = document.querySelector('#tabla-usuarios thead .th-orden');
+      return { p1, p2, desc, pagina: SRP.usuarios.pagina, filas: nombres().length,
+               tab: b.tabIndex, visible: getComputedStyle(document.querySelector('#tabla-usuarios thead')).visibility }; }""")
+    ok(u98['p1'][0] == 10 and u98['p1'][1] is False and u98['p1'][2].startswith('Mostrando 1–10 de ') and u98['p2'] == 2,
+       'Usuarios va por páginas de 10 en el teléfono, con el paginador de Registros: %s' % u98['p1'][2])
+    ok(u98['desc'] == 'Zz Cuenta 39 Ejemplo' and u98['pagina'] == 1 and u98['filas'] == 10,
+       'el orden de la tabla vale para toda la lista, no sólo para la página; otra búsqueda vuelve a la página 1: %s' % u98['desc'])
+    ok(u98['tab'] == -1 and u98['visible'] == 'visible', 'en teléfono los botones de orden del encabezado, que no se ven, salen del orden del teclado y siguen para el lector de pantalla')
+    # El punto «por revisar» y su leyenda llevan borde oscuro; la lista de jornadas, nombre fijo; los nombres de cabos, 24 px
+    v98 = pg98.evaluate("""() => {
+      const caja = document.createElement('div');
+      caja.innerHTML = '<div class="pin-num"><span data-tono="rev">1</span></div><p class="leyenda-jornada"><i data-tono="rev"></i></p>' +
+        '<table class="sup-tabla sup-tabla-cabos"><tbody><tr><td><button type="button" class="enlace-fila">Cabo de prueba</button></td></tr></tbody></table>';
+      document.body.appendChild(caja);
+      const texto = getComputedStyle(document.body).color;
+      const r = [getComputedStyle(caja.querySelector('.pin-num span')).borderTopColor, getComputedStyle(caja.querySelector('.leyenda-jornada i')).borderTopColor, texto,
+        caja.querySelector('.enlace-fila').getBoundingClientRect().height];
+      caja.remove();
+      const s = document.getElementById('lista-jornadas').closest('section');
+      return r.concat([s.getAttribute('aria-label'), s.hasAttribute('aria-labelledby')]); }""")
+    ok(v98[0] == v98[2] and v98[1] == v98[2] and v98[0] != 'rgb(255, 255, 255)', 'el punto «por revisar» y su leyenda llevan borde oscuro, como los demás: %s' % v98[:2])
+    ok(v98[3] >= 24, 'los nombres de cabos de Supervisión miden al menos 24 px de alto: %s' % v98[3])
+    ok(v98[4] == 'Lista de jornadas' and not v98[5], 'la lista de Jornadas tiene nombre fijo, no el de un texto que puede estar vacío')
+    # Los datos de demostración: «de enero de 2024 a hoy», en la tarjeta y en la pregunta
+    d98 = pg98.evaluate("""async () => { await SRP.demo.pintar(); const tarjeta = document.getElementById('demo-estado').textContent;
+      const ya = SRP.app.confirmar; let pregunta = ''; SRP.app.confirmar = async (o) => { pregunta = o.pregunta; return false; };
+      await SRP.demo.alCargar(); SRP.app.confirmar = ya; return [tarjeta, pregunta]; }""")
+    ok('de enero de 2024 a hoy' in d98[0] and 'de enero de 2024 a hoy' in d98[1] and 'tres años' not in (d98[0] + d98[1]).lower(),
+       'los datos de demostración dicen «de enero de 2024 a hoy», no «casi tres años»: %s' % d98[1])
+    # Carga masiva con una sola jornada: «Se formará 1 jornada cerrada… marcada»
+    carpeta98 = tempfile.mkdtemp(prefix='srp-carga98-'); arch98 = os.path.join(carpeta98, 'dos-arboles.csv')
+    with open(arch98, 'w', encoding='utf-8', newline='') as f98:
+        f98.write('Latitud,Longitud,Nombre científico,Fecha de plantación,Programa,Tipo de institución,Institución\n')
+        for i98 in range(2): f98.write('%.6f,-99.070000,Taxodium mucronatum,2024-11-15,Reforestación Urbana,Alcaldía,Iztapalapa\n' % (19.3500 + i98 * 0.0001))
+    pg98.evaluate("SRP.app.mostrarVista('carga')"); pg98.wait_for_selector('#carga-archivo', state='attached')
+    pg98.set_input_files('#carga-archivo', arch98)
+    esperar(pg98, "!document.getElementById('btn-carga-cargar').hidden", 15000)
+    c98 = pg98.evaluate("""async () => { const revision = document.getElementById('carga-revision').textContent;
+      const ya = SRP.app.confirmar; let puntos = []; SRP.app.confirmar = async (o) => { puntos = o.puntos; return false; };
+      await SRP.carga.cargar(); SRP.app.confirmar = ya; return [revision, puntos.join(' | ')]; }""")
+    ok('Se formará 1 jornada cerrada' in c98[0] and 'Se formará 1 jornada cerrada a su nombre, marcada como carga histórica.' in c98[1] and 'Se formarán 1' not in c98[0] + c98[1],
+       'la carga masiva con una sola jornada dice «Se formará 1 jornada cerrada… marcada»')
+    # Una jornada abierta y dos cerradas, con un árbol cada una, para el doble toque y el borrador del cierre
+    pg98.evaluate("""async () => { const u = SRP.ref.usuarioPorId['u-cabo-1'], hoy = SRP.util.fechaHoy(), ahora = SRP.util.ahoraISO();
+      for (const [jid, estatus] of [['j98-abierta', 'abierta'], ['j98-otra', 'abierta'], ['j98-cerrada', 'cerrada']]) {
+        await SRP.almacen.guardarConBitacora('jornadas', Object.assign({ id: jid, nombre: 'Jornada ' + jid, fecha: hoy, comentarios: '', cabo_id: u.id, estatus,
+          fecha_inicio: ahora, fecha_cierre: estatus === 'cerrada' ? ahora : null, encargado_id: u.id, editado_por_id: u.id, fecha_ultima_edicion: ahora,
+          arboles_previstos: null, puntos_revisados: [], organizacion_id: u.organizacion_id, programa_id: 'p-refor', lat: 19.36, lng: -99.17 },
+          Object.fromEntries(SRP.reportes.CAMPOS.map(x => [x, '']))), null);
+        const id = 'a98-' + jid;
+        await SRP.almacen.guardarConBitacora('plantaciones', { id, jornada_id: jid, estatus: 'activo', cabo_id: u.id, lat: 19.36, lng: -99.17, punto_origen: 'gps',
+          gps_precision_m: 6, alcaldia: 'Benito Juárez', alcaldia_cve: '09014', colonia: null, colonia_cve: null, uga: 'BJU-011',
+          capa_version: SRP.derivacion.derivar(19.4326, -99.1332).capa_version, especie_id: 'ESP-0070', especie_otra: '', programa_id: 'p-refor', fecha_plantacion: hoy,
+          comentarios: '', foto_id: null, foto_base64: null, fecha_registro: ahora, fecha_ultima_edicion: null, editado_por_id: null, folio: null, organizacion_id: u.organizacion_id },
+          SRP.bitacora.entrada('CREADO', 'plantacion', id));
+      } }""")
+    # «Cerrar jornada» dos veces seguidas cierra una sola vez: la misma bitácora que un solo toque
+    k98 = pg98.evaluate("""async () => {
+      const J = SRP.jornadas, ya = SRP.app.confirmar; SRP.app.confirmar = async () => true;
+      const cuenta = async (id) => (await SRP.almacen.todos('bitacora')).filter(x => x.entidad_id === id).length;
+      SRP.app.mostrarVista('jornadas');
+      await J.abrir('j98-otra'); let antes = await cuenta('j98-otra'); await J.cambiarEstado(); const uno = (await cuenta('j98-otra')) - antes;
+      await J.abrir('j98-abierta'); antes = await cuenta('j98-abierta'); await Promise.all([J.cambiarEstado(), J.cambiarEstado()]); const dos = (await cuenta('j98-abierta')) - antes;
+      SRP.app.confirmar = ya;
+      return [uno, dos, (await SRP.almacen.uno('jornadas', 'j98-abierta')).estatus, document.getElementById('btn-jornada-estado').textContent.trim()]; }""")
+    ok(k98[0] >= 1 and k98[1] == k98[0] and k98[2] == 'cerrada' and 'Cerrando' not in k98[3],
+       '«Cerrar jornada» con doble toque cierra una sola vez: la misma bitácora que un toque (%s y %s), y el botón vuelve a su texto: %s' % (k98[0], k98[1], k98[3]))
+    # Los datos de cierre vuelven si se sale con «Atrás» o se recarga; al guardarlos, el borrador se va
+    abrir98 = """async (id) => { const j = await SRP.almacen.uno('jornadas', id);
+      const regs = (await SRP.almacen.todos('plantaciones')).filter(p => p.jornada_id === id && p.estatus === 'activo');
+      await SRP.reportes.abrir(regs, j.fecha, j.cabo_id, { id, dato: j }); }"""
+    pg98.evaluate(abrir98, 'j98-cerrada'); pg98.wait_for_selector('#dlg-cierre[open]')
+    pg98.fill('#cie-observaciones', 'Suelo compactado en la jardinera norte'); pg98.fill('#cie-personal', 'Juan Pérez')
+    pg98.keyboard.press('Escape'); pg98.wait_for_timeout(300)
+    pg98.reload(); pg98.wait_for_selector('html[data-listo]'); pg98.wait_for_function("() => SRP.sesion && SRP.sesion.usuario")
+    pg98.evaluate(abrir98, 'j98-cerrada'); pg98.wait_for_selector('#dlg-cierre[open]')
+    b98 = pg98.evaluate("() => [document.getElementById('cie-observaciones').value, document.getElementById('cie-personal').value, document.getElementById('cie-recuperado').hidden]")
+    ok(b98 == ['Suelo compactado en la jardinera norte', 'Juan Pérez', False],
+       'los datos de cierre escritos vuelven después de salir con «Atrás» y recargar, con el aviso de que se recuperaron: %s' % b98)
+    # «Ver vista previa» dos veces seguidas guarda el cierre una sola vez
+    p98 = pg98.evaluate("""async () => { const cuenta = async () => (await SRP.almacen.todos('bitacora')).filter(x => x.entidad_id === 'j98-cerrada' && /Datos de cierre/.test(x.detalle || '')).length;
+      const antes = await cuenta(); await Promise.all([SRP.reportes.aceptar(), SRP.reportes.aceptar()]);
+      return [(await cuenta()) - antes, document.getElementById('dlg-previa').open, localStorage.getItem('srp_borrador_cierre'),
+        document.getElementById('btn-cierre-generar').textContent.trim()]; }""")
+    ok(p98[0] == 1 and p98[1] is True and p98[2] is None and p98[3] == 'Ver vista previa',
+       '«Ver vista previa» con doble toque guarda el cierre una vez y abre la vista previa; el borrador se quita: %s' % p98)
+    pg98.keyboard.press('Escape'); pg98.wait_for_timeout(300)
+    pg98.evaluate(abrir98, 'j98-cerrada'); pg98.wait_for_selector('#dlg-cierre[open]')
+    ok(pg98.evaluate("document.getElementById('cie-recuperado').hidden"), 'ya guardados, los datos de cierre no dicen que se recuperó algo')
+    pg98.keyboard.press('Escape'); pg98.wait_for_timeout(300)
+    # «Registrar jornada» a medio llenar vuelve después de recargar, sólo para la misma cuenta
+    pg98.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-cabo-alc'])"); pg98.reload(); pg98.wait_for_selector('html[data-listo]')
+    pg98.evaluate("SRP.app.mostrarVista('registrar')"); pg98.wait_for_selector('#panel-iniciar-jornada:not([hidden])')
+    pg98.fill('#ini-nombre', 'Parque de los Venados'); pg98.fill('#ini-meta', '40'); pg98.wait_for_timeout(200)
+    pg98.reload(); pg98.wait_for_selector('html[data-listo]')
+    pg98.evaluate("SRP.app.mostrarVista('registrar')"); pg98.wait_for_selector('#panel-iniciar-jornada:not([hidden])'); pg98.wait_for_timeout(300)
+    i98 = pg98.evaluate("() => [document.getElementById('ini-nombre').value, document.getElementById('ini-meta').value, document.getElementById('aviso').textContent]")
+    ok(i98[0] == 'Parque de los Venados' and i98[1] == '40' and 'Se recuperó lo que había escrito para iniciar la jornada' in i98[2],
+       '«Registrar jornada» a medio llenar vuelve después de recargar, con el aviso: %s' % i98[:2])
+    pg98.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-cabo-1'])"); pg98.reload(); pg98.wait_for_selector('html[data-listo]')
+    pg98.evaluate("SRP.app.mostrarVista('registrar')"); pg98.wait_for_timeout(800)
+    ok(pg98.evaluate("() => document.getElementById('panel-iniciar-jornada').hidden || document.getElementById('ini-nombre').value !== 'Parque de los Venados'"),
+       'el borrador de «Registrar jornada» no le aparece a otra cuenta')
+    ok(not err98, 'sin errores en consola: %s' % err98[:2])
+    ctx98.close()
 
     b.close()
 

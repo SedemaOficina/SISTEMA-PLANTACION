@@ -698,7 +698,9 @@ SRP.util = {
      orden elegido se recuerda por tabla y se vuelve a aplicar cuando la tabla se repinta. */
   _orden: {},
 
-  ordenable(tabla) {
+  /* Con `alOrdenar`, la tabla va por páginas: tocar un encabezado no reordena sólo los renglones a la vista,
+     anota la columna y pide pintar otra vez, para que el orden valga para toda la lista (ordenarLista). */
+  ordenable(tabla, alOrdenar) {
     const ths = [...tabla.querySelectorAll('thead th')];
     const est = this._orden[tabla.id];
     ths.forEach((th, i) => {
@@ -708,7 +710,8 @@ SRP.util = {
         '<span class="th-flecha" aria-hidden="true"></span></button>';
       th.setAttribute('aria-sort', est && est.col === i ? (est.dir > 0 ? 'ascending' : 'descending') : 'none');
     });
-    if (est) this.ordenarFilas(tabla, est.col, est.dir);
+    if (est && !alOrdenar) this.ordenarFilas(tabla, est.col, est.dir);
+    this.ordenSinFoco();
     tabla.querySelector('thead').onclick = (e) => {
       const b = e.target.closest('.th-orden'); if (!b) return;
       const col = Number(b.dataset.col);
@@ -717,9 +720,27 @@ SRP.util = {
       this._orden[tabla.id] = { col, dir };
       ths.forEach(t => { if (t.hasAttribute('aria-sort')) t.setAttribute('aria-sort', 'none'); });
       ths[col].setAttribute('aria-sort', dir > 0 ? 'ascending' : 'descending');
-      this.ordenarFilas(tabla, col, dir);
+      if (alOrdenar) alOrdenar(); else this.ordenarFilas(tabla, col, dir);
       this.anunciarSilencioso('Ordenado por ' + b.textContent + (dir > 0 ? ', de la A a la Z.' : ', de la Z a la A.'));
     };
+  },
+
+  /* En teléfono el encabezado de las tablas no se ve (cada renglón es una tarjeta): sus botones de orden salen del
+     orden del teclado, que si no se pierde de vista, y siguen para el lector de pantalla. Al girar el teléfono se
+     revisa otra vez. */
+  ordenSinFoco() {
+    const angosta = window.matchMedia('(max-width: 480px)');
+    const poner = () => document.querySelectorAll('.tabla .th-orden').forEach(b => { b.tabIndex = angosta.matches ? -1 : 0; });
+    if (!this._ordenSinFoco) { this._ordenSinFoco = true; angosta.addEventListener('change', poner); }
+    poner();
+  },
+
+  // La lista en el orden elegido en la tabla, con el criterio de ordenarFilas; `texto(x, col)` es lo que dice la celda
+  ordenarLista(lista, idTabla, texto) {
+    const est = this._orden[idTabla];
+    if (!est) return lista;
+    const valor = (x) => String(texto(x, est.col) == null ? '' : texto(x, est.col)).trim();
+    return lista.slice().sort((a, b) => est.dir * valor(a).localeCompare(valor(b), 'es', { numeric: true, sensitivity: 'base' }));
   },
 
   ordenarFilas(tabla, col, dir) {

@@ -754,3 +754,62 @@ escrita de la Unidad de Transparencia.
 Criterio de cierre, «una nueva revisión de coherencia»: la hizo un revisor independiente, en sólo lectura. Encontró
 26 hallazgos, 3 de ellos altos; se corrigieron todos, salvo tres que se explican en la bitácora y tres dudas que
 no se pueden resolver desde aquí.
+
+### Bloque 7 · Pantalla (bloque 242 del proyecto, versión 1.1)
+
+El dueño aprobó el 21-10-2026 las diez muestras con su antes y su después, que los datos de cierre vuelvan al
+abrir otra vez la ventana y los cuatro ajustes que no cambian lo que se ve. Antes y después se corrieron con
+`bloque7.py`, que revisa cada punto por separado, sobre la 1.0.5 y sobre la corrección.
+
+| Clave | Estado | Antes y después | Prueba permanente |
+|---|---|---|---|
+| C3-01 | Corregido | Antes, todas las cuentas en una sola lista (con 103, 13,099 px en el teléfono). Después, de 10 en 10 en el teléfono y de 25 en la computadora; el orden de la tabla vale para toda la lista | `prueba.py`, ctx98 |
+| E3-R1-06 | Corregido | Estaba en «No confirmado». Con el error de espacio lleno del navegador al guardar los catálogos, antes «Entrar» se quedaba apagado sin aviso: queda confirmado. Después, el botón vuelve, el recuadro «No se pudo entrar» dice qué hacer y la sesión del servidor se cierra | `prueba.py`, ctx98 |
+| E3-R1-08 | Corregido | Antes, dos toques en «Cerrar jornada» o en «Ver vista previa» escribían dos veces la operación y la bitácora. Después, una vez, con «Cerrando…» y «Preparando…» | `prueba.py`, ctx98 |
+| E3-R1-10 | Corregido | Antes, recargar a mitad de «Registrar jornada» perdía lo escrito. Después, vuelve con un aviso | `prueba.py`, ctx98 |
+| E3-R1-11 | Corregido | Antes, salir con «Atrás» o recargar perdía los datos de cierre. Después, vuelven en la misma jornada y con la misma cuenta, con un aviso dentro de la ventana | `prueba.py`, ctx98 |
+| E3-R4-08 | Corregido | Antes, «Elija una especie de la lista…» para una especie que se desactivó. Después, su nombre y «se desactivó», en especie, programa, solicitante y vehículo. La prueba nueva falla con el código de antes | `recepcion.test.js` |
+| A6-01 | Corregido | Antes, el punto «por revisar» con borde blanco, 1.8 a 1 sobre «Calles». Después, borde oscuro, también en la leyenda | `prueba.py`, ctx98 |
+| B1-01 | Corregido | Antes, 23 px de alto (22.5 con los datos de prueba). Después, 30.5 px | `prueba.py`, ctx98 |
+| B4-01 | Corregido | Antes, en teléfono los botones de orden escondidos estaban en el orden del teclado. Después, fuera de él, y el lector de pantalla los sigue leyendo | `prueba.py`, ctx98 |
+| B4-02 | Corregido | Antes, la lista de Jornadas tomaba su nombre de un texto a veces vacío. Después, nombre fijo | `prueba.py`, ctx98, y el barrido |
+| B4-03 | Corregido | Antes, el mapa de cada pareja de duplicados era «imagen» con enlaces adentro. Después, un grupo con su nombre | `prueba_conexion.py` y el barrido |
+| M523, M501 | Corregido | «Se formará 1 jornada… marcada» y «de enero de 2024 a hoy» | `prueba.py` |
+
+`bloque7.py`: con la 1.0.5, bien 1 de 13 (el orden de toda la lista, que sin páginas ya era de toda la lista); con la
+1.1, 13 de 13.
+
+Criterio de cierre, «el barrido de esta auditoría, sin hallazgos». Se corrió con la 1.1, en sus dos modos:
+
+| Lo que encontró | Auditoría, prueba | 1.1, prueba | Auditoría, real | 1.1, real |
+|---|---|---|---|---|
+| Control tapado (B4-01) | 10 | 0 | 6 | 0 |
+| Objetivo chico, menos de 24 px (B1-01) | 0 | 0 | 32 | 0 |
+| axe «aria-prohibited-attr» (B4-02) | 1 | 0 | 0 | 0 |
+| axe «nested-interactive» (B4-03) | 0 | 0 | 2 | 0 |
+| Errores de página y violaciones de la política de seguridad | 0 | 0 | 0 | 0 |
+
+- Con datos de prueba: 26 corridas, 189 pantallas y 1,031 botones. Con datos reales, con la copia para el SIA y la
+  cuenta del servicio: 26 corridas, 198 pantallas y 589 botones. Son menos botones que en la auditoría porque
+  Usuarios ya va por páginas.
+- La base local no tenía ninguna pareja en «Posibles duplicados». Para medir B4-03 se puso una en la bandeja y se
+  repitió la Administración en teléfono y en computadora (4 corridas, 52 pantallas, 316 botones): 0. Después se
+  quitó.
+- Siguen, igual que en la auditoría, y no son hallazgos:
+  - el mapa base (Esri), el único dominio externo, aceptado el 08-10-2026; el navegador rechaza 4 de sus
+    mosaicos de referencia en el acercamiento máximo;
+  - «button-name» en dos ventanas que el barrido abre vacías: sus botones reciben su texto cuando la aplicación
+    las abre;
+  - con datos reales, las fotografías que no se encuentran (2,844 y 1,381; en la auditoría, 4,702): cada prueba
+    anterior guardó las suyas en su propia carpeta temporal, y este servicio arrancó con una vacía. Cada error de
+    consola es una de ellas.
+- El barrido se ajustó: ya no cuenta como «control tapado» lo que está escondido con el recorte de 1 px y fuera
+  del orden del teclado, que es sólo para el lector de pantalla. Ajustado, y corrido sobre la 1.0.5 (Administración,
+  teléfono de 360 px), sigue contando los 6 botones del encabezado de Catálogos y Usuarios que contó la auditoría,
+  más 6 que tapaba en ese momento un aviso pasajero: si un botón así vuelve a recibir el foco, lo cuenta otra vez.
+
+`bloque7.py` y el barrido, con su ajuste, están en la evidencia, junto a los guiones de la auditoría.
+
+Con este bloque termina el plan de corrección (§ 11). Quedan fuera del plan, como estaban en el informe, cuatro
+hallazgos bajos (E3-R1-09, E3-R2-10, E3-R2-15 y E3-R3-03, que se confirma con el SIA) y los informativos, que no piden
+acción.

@@ -151,22 +151,30 @@ SRP.jornadas = {
       this.el('btn-jornada-siguiente').dataset.accion === 'revisar' ? this.irAPendiente() : this.cambiarEstado());
   },
 
+  /* Un segundo toque mientras se cierra o se reabre no hace nada: la operación y su bitácora irían dos veces.
+     Mientras se cierra, el botón dice «Cerrando…». */
   async cambiarEstado() {
-    const j = await this.jornadaGuardada(this.jornada); if (!j) return;
-    if (!SRP.permisos.exigir('jornada.editar', j)) return;
-    if (j.estatus === 'abierta') {
-      const ok = await SRP.app.confirmar(await SRP.activa.confirmacionCierre(j));
-      if (!ok) return;
-      await SRP.activa.cambiarEstatus(await SRP.activa.ofrecerActualizarPrevistos(j), 'cerrada');
-      if (SRP.activa.jornada && SRP.activa.jornada.id === j.id) SRP.activa.jornada = null;
+    if (this.cambiando) return;
+    this.cambiando = true;
+    try {
+      const j = await this.jornadaGuardada(this.jornada); if (!j) return;
+      if (!SRP.permisos.exigir('jornada.editar', j)) return;
+      if (j.estatus === 'abierta') {
+        const ok = await SRP.app.confirmar(await SRP.activa.confirmacionCierre(j));
+        if (!ok) return;
+        const libre = SRP.util.ocupado(this.el('btn-jornada-estado'), 'Cerrando…', 'candado');
+        try { await SRP.activa.cambiarEstatus(await SRP.activa.ofrecerActualizarPrevistos(j), 'cerrada'); }
+        finally { libre(); }
+        if (SRP.activa.jornada && SRP.activa.jornada.id === j.id) SRP.activa.jornada = null;
+        await this.refrescar();
+        // Terminar un paso anuncia el siguiente
+        await this.avisarCierre(j);
+        this.enfocarSiguiente();
+        return;
+      }
+      await SRP.activa.reabrir(j);
       await this.refrescar();
-      // Terminar un paso anuncia el siguiente
-      await this.avisarCierre(j);
-      this.enfocarSiguiente();
-      return;
-    }
-    await SRP.activa.reabrir(j);
-    await this.refrescar();
+    } finally { this.cambiando = false; }
   },
 
   /* ---------- Datos ---------- */

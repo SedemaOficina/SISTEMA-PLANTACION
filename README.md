@@ -66,7 +66,8 @@ hay que abrir el sitio publicado: https://sedemaoficina.github.io/SISTEMA-PLANTA
 «Push origin». El sitio se actualiza solo en uno o dos minutos.
 Un teléfono que ya tiene la aplicación sigue con su versión guardada hasta que la nueva termina de
 bajar completa; entonces cambia sola al abrirla con señal. Si la descarga se corta, no cambia nada y
-se reintenta la próxima vez. Un árbol a medio capturar se guarda como borrador y vuelve al abrir.
+se reintenta la próxima vez. Un árbol a medio capturar se guarda como borrador y vuelve al abrir; lo
+mismo «Registrar jornada» a medio llenar y los datos de cierre de una jornada.
 
 ## Cuentas de arranque
 
@@ -294,7 +295,7 @@ versión se escribe en un solo lugar del código.
 **El archivo `VERSION`, en la raíz, lleva el mismo número** (lo pide la guía del SIA, sección 8); la prueba
 falla si no coincide con la marca. Ese número se ve siempre en la franja fija de arriba. Hasta la 0.9.78 decía
 «Versión de prueba 0.9.N»; desde la versión 1, la que se entrega al SIA para instalar, dice «Versión» y el número de `VERSION`
-(hoy, «Versión 1.0.5»).
+(hoy, «Versión 1.1»).
 
 Si aun así alguien cae en una mezcla, el sistema lo detecta al abrir y explica cómo forzar la
 recarga, en vez de quedarse en blanco.

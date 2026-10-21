@@ -180,6 +180,20 @@ SRP.app = {
   },
 
   /* ---------- Acceso ---------- */
+
+  // Entrar falló por algo que no es un dato del formulario: el recuadro lo dice sin marcar ningún campo
+  noSePudoEntrar(caja, campos, err) {
+    SRP.util.erroresEnCampos([], campos);
+    const texto = SRP.util.esFaltaDeEspacio(err)
+      ? 'El teléfono no tiene espacio libre para guardar los catálogos. Libere espacio (fotos o aplicaciones que no use) y vuelva a tocar «Entrar».'
+      : SRP.util.mensajeError(err, 'entrar');
+    caja.innerHTML = '<h2>No se pudo entrar</h2><p></p>';
+    caja.querySelector('p').textContent = texto;
+    caja.hidden = false;
+    if (!caja.hasAttribute('tabindex')) caja.setAttribute('tabindex', '-1');
+    caja.focus();
+  },
+
   iniciarAcceso() {
     this.el('form-acceso').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -194,8 +208,12 @@ SRP.app = {
       const boton = this.el('form-acceso').querySelector('button[type="submit"]');
       if (boton.disabled) return;
       boton.disabled = true; boton.setAttribute('aria-busy', 'true');
-      const r = await SRP.sesion.autenticar(correo, clave);
-      boton.disabled = false; boton.removeAttribute('aria-busy');
+      // Un fallo al guardar lo que baja (el teléfono sin espacio) no deja el botón apagado: se dice qué pasó
+      let r;
+      try { r = await SRP.sesion.autenticar(correo, clave); }
+      catch (err) { r = { ok: false, fallo: err }; }
+      finally { boton.disabled = false; boton.removeAttribute('aria-busy'); }
+      if (r.fallo) { this.noSePudoEntrar(caja, campos, r.fallo); return; }
       if (r.temporal) { caja.hidden = true; this.el('acceso-clave').value = ''; this.mostrarTemporal(r.cuenta); return; }
       if (!r.ok) { SRP.util.resumenErrores(caja, [['acceso-correo', r.motivo]], campos); return; }
       caja.hidden = true;

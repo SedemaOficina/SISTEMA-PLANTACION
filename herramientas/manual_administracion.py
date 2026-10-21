@@ -85,8 +85,13 @@ def temporal_de_ejemplo(pg):
 
 
 def menu(pg, correo, accion):
+    """La tuerca de una cuenta. Usuarios va por páginas: si la cuenta no está en la que se ve, se busca, como lo haría
+    una persona."""
     uid = pg.evaluate("c => SRP.ref.usuarios.find(u => u.correo === c).id", correo)
-    pg.click('#tabla-usuarios tr[data-id="%s"] .btn-tuerca' % uid)
+    fila = '#tabla-usuarios tr[data-id="%s"]' % uid
+    if not pg.query_selector(fila):
+        pg.fill('#usr-buscar', correo); pg.wait_for_timeout(500)
+    pg.click(fila + ' .btn-tuerca')
     if accion:
         pg.click('#tabla-usuarios .menu-acciones:not([hidden]) button[data-accion="%s"]' % accion)
 

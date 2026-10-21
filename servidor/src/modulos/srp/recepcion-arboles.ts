@@ -5,7 +5,7 @@ import { puede } from "./permisos";
 import {
   AHORA, antesDelPrograma, asignarFolio, autoresDe, FOTO_DE_OTRO, fotoDeOtro, caducarReporte, comoObjeto, conVigente, esFecha, especieComun, esVigente, fechaCorta, fechaEnJornada, filaDe,
   hoyEnLaCiudad, idDe, instante, jornadaEliminada, MOTIVOS_SUSTITUCION, motivoSustitucion, noAntes, puntoDe, rechazo, recibido, repetida, seElimino, sinPermiso, texto, textoFolio,
-  ubicar, versionVieja, congelarPrioridad, type Errores, type Fila, type Punto, type Resultado, type Tabla, type Territorio,
+  ubicar, versionVieja, congelarPrioridad, nombreDesactivado, type Errores, type Fila, type Punto, type Resultado, type Tabla, type Territorio,
 } from "./recepcion-apoyo";
 import type { Usuario } from "./sesiones";
 
@@ -30,7 +30,9 @@ async function revisarArbol(c: pg.PoolClient, v: Record<string, unknown>, especi
   // Una especie nueva tiene que estar activa; la que ya tenía el árbol se conserva aunque se haya desactivado
   if (v.especie_id) {
     if (v.especie_id !== especieAntes && !(await c.query("SELECT 1 FROM srp.especies WHERE id = $1 AND activo", [v.especie_id])).rowCount) {
-      errores.push(["especie_id", "Elija una especie de la lista o la opción «Otra especie»."]);
+      const desactivada = await nombreDesactivado(c, "especies", v.especie_id);
+      errores.push(["especie_id", desactivada ? "La especie «" + desactivada + "» se desactivó en el catálogo: elija otra de la lista o la opción «Otra especie»."
+        : "Elija una especie de la lista o la opción «Otra especie»."]);
     }
   } else if (!v.especie_otra) errores.push(["especie_id", "Elija una especie de la lista o la opción «Otra especie»."]);
   else if (String(v.especie_otra).length > 120) errores.push(["especie_id", "El nombre de la especie lleva hasta 120 caracteres."]);

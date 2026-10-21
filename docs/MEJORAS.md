@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 1.0.5 (Bloque 240)»**.
+Al pie de cualquier pantalla: **«Versión 1.1 (Bloque 242)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -500,6 +500,16 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M503 | Paso 4d | «No se pudo enviar», en rojo, en la tarjeta del árbol y en la de la jornada, y en la franja «Guardado» | Media | 0.9.69 (B224) | Registros, Jornadas y Nuevo registro, con datos reales | D304 |
 | M504 | Paso 4d | Ventana «Cambios que el servidor no aceptó»: de qué registro es cada cambio, qué se cambió, por qué y qué hacer | Alta | 0.9.69 (B224) | Franja › Revisar | D304 |
 | M505 | Prueba de conexión | Al volver a la entrada se cierra cualquier ventana que hubiera quedado abierta | Media | 0.9.69 (B224) | Sesión vencida con una ventana abierta | D304 |
+| M531 | Auditoría (19-10-2026) | Accesibilidad: en teléfono los botones de orden escondidos salen del orden del teclado; la lista de Jornadas tiene nombre fijo; el mapa de cada pareja de duplicados es un grupo con su nombre; los nombres de cabos de Supervisión miden 30 px | Baja | 1.1 (B242) | Usuarios en el teléfono, con teclado: Tab no se detiene en el encabezado | D322 |
+| M530 | Auditoría (19-10-2026) | El punto «por revisar» del mapa lleva borde oscuro, como los demás: sobre «Calles» se distingue del fondo | Baja | 1.1 (B242) | Jornadas › una con puntos por revisar › mapa «Calles» | D322 |
+| M529 | Auditoría (19-10-2026) | Si el servidor rechaza algo por un valor del catálogo que se desactivó (especie, programa, solicitante o vehículo), el aviso lo nombra y dice que se desactivó | Media | 1.1 (B242) | Con datos reales: desactivar una especie y enviar un árbol con ella | D322 |
+| M528 | Auditoría (19-10-2026) | «Registrar jornada» a medio llenar vuelve si la página se recarga, con un aviso; la ubicación se vuelve a detectar | Media | 1.1 (B242) | Nuevo registro sin jornada: escribir el nombre y recargar | D322 |
+| M527 | Auditoría (19-10-2026) | Los datos de cierre escritos vuelven si se sale con «Atrás» o se recarga, con un aviso dentro de la ventana; se quitan al guardarlos | Media | 1.1 (B242) | Jornada cerrada › Datos de cierre: escribir, salir y volver a abrir | D322 |
+| M526 | Auditoría (19-10-2026) | «Cerrar jornada» y «Ver vista previa» no se repiten con un doble toque: dicen «Cerrando…» y «Preparando…» mientras trabajan | Media | 1.1 (B242) | Ficha de una jornada abierta: tocar dos veces «Cerrar jornada» | D322 |
+| M525 | Auditoría (19-10-2026) | Si al entrar el teléfono no tiene espacio para los catálogos, «Entrar» vuelve y un recuadro dice qué pasó y qué hacer | Media | 1.1 (B242) | Con datos reales y el teléfono sin espacio | D322 |
+| M524 | Auditoría (19-10-2026) | Usuarios por páginas, como Registros y Jornadas: de 10 en 10 en el teléfono y de 25 en la computadora; el orden de la tabla vale para toda la lista | Media | 1.1 (B242) | Configuración › Usuarios con más de 10 cuentas | D322 |
+| M523 | Revisión del manual (B241) | Carga masiva con una sola jornada: «Se formará 1 jornada cerrada… marcada» | Baja | 1.1 (B242) | Carga masiva con un archivo de una sola jornada | D322 |
+| M501 | Auditoría (B204) | Datos de demostración: «de enero de 2024 a hoy» en lugar de «casi tres años», en la ventana y en la tarjeta | Baja | 1.1 (B242) | Versión de prueba › Datos de prueba | D322 |
 | M397 | Liber | En el SIA el SRP va como proyecto nuevo, con su propio nombre: no reutiliza el módulo ni el esquema de plantación que ya existen ahí | Alta | 1 (B235) | Paquete de instalación: esquema `srp`, cuenta `srp_api` y ruta `/api/srp` | D249, D277, D315 |
 | M522 | Auditoría (19-10-2026) | Jornadas: con dos atajos tocados seguidos (por ejemplo «Todas» y luego «Hoy»), la lista es siempre la del atajo marcado; antes, en un teléfono lento podía quedar la del primero. Un mapa que se cierra en seguida ya no da error | Media | 1.0.5 (B240) | Jornadas: tocar «Todas» y en seguida «Hoy» | D320 |
 | M521 | Auditoría (19-10-2026) | Reporte de la jornada: con textos largos el recuadro de datos sigue en la página siguiente, en vez de salirse por el pie; la columna «Especie» guarda su ancho aunque un comentario traiga un enlace largo. En los PDF, lo que la letra no tiene (emojis, otros alfabetos) sale como «?» y el aviso al descargar lo dice. Una fotografía HEIC dice qué hacer con ella | Media | 1.0.4 (B239) | Reporte de una «Solicitud especial» con textos largos; un comentario con un enlace o un emoji | D319 |
@@ -527,9 +537,6 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M168 | Auditoría 360 | Bloque «Publicación ligera», lo que queda: capas con su propia versión (que no se vuelvan a descargar con cada versión de la app) y aligeradas; licencia del mapa base (M2, M4) | Media | Pendiente | Decisiones 3 y 5 de la lista del 26-09-2026. Originales y jsPDF, hechos en B102 |
 | M170 | Auditoría 360 | Bloque «Pruebas en iPhone»: GitHub Actions con Chromium y WebKit, pruebas de migración e integridad (M17, M18) | Media | En curso | Desde la 1.0.5 (B240, D320) las pruebas corren en GitHub en cada subida, con Chromium. Falta WebKit |
 | M343 | Liber | Catálogo de especies: marcar cuáles son frutales, para filtrar y contar los árboles frutales plantados | Media | En curso | La marca y el filtro, hechos en B179 (M446 a M448). Falta contar los árboles con fruto comestible en Supervisión e informes |
-| M501 | Auditoría (B204) | La ventana de datos de demostración dice «casi tres años»: con cada año que pasa son más. Decir «desde enero de 2024 hasta hoy» | Baja | Propuesta | Cambia un texto de la pantalla de pruebas |
-| M523 | Revisión del manual (B241) | Carga masiva, con una sola jornada: dice «Se formarán 1 jornada cerrada… marcadas como carga histórica»; debe decir «Se formará 1 jornada cerrada… marcada». Igual en la revisión del archivo | Baja | Propuesta | Cambia un texto de la pantalla: va con el bloque 7 |
-| M524 | Auditoría (19-10-2026) | Usuarios y Posibles duplicados por páginas, como Registros y Jornadas: con 103 cuentas la lista mide 16,266 px en teléfono (C3-01) | Media | Propuesta | Cambia la pantalla: va con el bloque 7, con su antes y después |
 
 ## 3. Verificadas sin falla
 
@@ -547,4 +554,4 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
 | M171 | Auditoría 360 | Fotografías como Blob (hoy ocupan un tercio más como texto) y sello de datos dentro de la base | Media | Descartado | Ya no aplica (auditoría del 19-10-2026): las fotografías son archivos en el servidor (D295) y en el teléfono sólo esperan su envío (S-11); el sello sólo rige los datos de prueba |
 
-**Resumen:** 503 hechas · 7 por hacer · 3 revisadas · 3 descartadas.
+**Resumen:** 513 hechas · 4 por hacer · 3 revisadas · 3 descartadas.

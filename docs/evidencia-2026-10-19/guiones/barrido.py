@@ -39,13 +39,18 @@ ESTATICO = r"""() => {
   const vis = e => { if (!e.isConnected || plegado(e)) return false; const r = e.getBoundingClientRect(); const s = getComputedStyle(e);
     return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none' && !e.closest('[hidden]') && parseFloat(s.opacity) > 0; };
   const nombre = e => (e.getAttribute('aria-label') || e.textContent || e.value || e.id || e.className.toString()).trim().replace(/\s+/g, ' ').slice(0, 60);
+  // Escondido con el recorte de 1 px y fuera del orden del teclado: es sólo para el lector de pantalla, no un objetivo
+  const soloLector = e => { if (e.tabIndex >= 0) return false;
+    for (let a = e.parentElement; a; a = a.parentElement) { const r = a.getBoundingClientRect();
+      if (r.width <= 1 && r.height <= 1 && getComputedStyle(a).overflow === 'hidden') return true; }
+    return false; };
   const d = document.documentElement, out = { desborde: null, chicos: [], tapados: [], cortados: [] };
   if (d.scrollWidth > d.clientWidth + 1) out.desborde = { ancho: d.scrollWidth, visible: d.clientWidth,
     culpables: [...document.querySelectorAll('body *')].filter(e => { const r = e.getBoundingClientRect(); const s = getComputedStyle(e);
       return vis(e) && s.position !== 'fixed' && s.position !== 'absolute' && !e.closest('.leaflet-container') && r.right > d.clientWidth + 1; })
       .slice(0, 5).map(e => e.tagName.toLowerCase() + (e.id ? '#' + e.id : '') + '.' + (e.className.toString().split(' ')[0] || '')) };
   const inter = [...document.querySelectorAll('button, a[href], input:not([type=hidden]), select, textarea, summary, [role=button], [tabindex]:not([tabindex="-1"])')]
-    .filter(e => vis(e) && !e.closest('.leaflet-control-attribution') && !e.closest('.leaflet-pane'));
+    .filter(e => vis(e) && !soloLector(e) && !e.closest('.leaflet-control-attribution') && !e.closest('.leaflet-pane'));
   for (const e of inter) {
     const r = e.getBoundingClientRect();
     // Excepción de WCAG 2.5.8: un enlace dentro de un renglón de texto

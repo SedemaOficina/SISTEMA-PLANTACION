@@ -71,6 +71,14 @@ export async function esVigente(c: pg.PoolClient, tabla: Tabla, id: string, vers
 
 export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 // Un texto recortado; el carácter nulo, que la base no guarda, se quita
+/* Si el valor existe en su catálogo pero se desactivó, su nombre: así el rechazo dice por qué, y no sólo «elija
+   otro». Los nombres de tabla son fijos, nunca vienen de la petición. */
+export async function nombreDesactivado(c: pg.PoolClient, tabla: "especies" | "programas" | "vehiculos" | "solicitantes", id: unknown): Promise<string | null> {
+  if (typeof id !== "string" || !id) return null;
+  const r = await c.query<{ nombre: string }>(`SELECT nombre FROM srp.${tabla} WHERE id = $1 AND NOT activo`, [id]);
+  return r.rows[0]?.nombre ?? null;
+}
+
 export const texto = (v: unknown): string => (typeof v === "string" ? v.replace(/\u0000/g, "").trim() : "");
 export const idDe = (v: unknown): string | null => (typeof v === "string" && UUID.test(v) ? v : null);
 // AAAA-MM-DD que sea un día del calendario; una fecha imposible (mes 13, día 45) no lo es, y no truena

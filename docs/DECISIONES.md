@@ -4177,3 +4177,35 @@
   · **Al día:** el tablero de mejoras. M171 ya no aplica, M397 está hecha y M398 verificada. Se agregan M523
     (un texto de la carga masiva) y M524 (paginar Usuarios y Posibles duplicados), para el bloque 7. El resumen
     contaba 445 hechas, y la tabla tiene 503.
+- **D322. Las propuestas de pantalla de la auditoría (bloque 242, versión 1.1).**
+  21-10-2026. Es el bloque 7, el último del plan de corrección de la auditoría del 19-10-2026. Liber aprobó las
+  diez muestras con su antes y su después (`servidor/local/muestras-b7/`, fuera de git), que los datos de cierre
+  vuelvan en lugar de preguntar al salir, y los cuatro ajustes que no cambian lo que se ve.
+  · **Usuarios por páginas** (C3-01): de 10 en 10 en el teléfono y de 25 en la computadora, con el paginador de
+    Registros y Jornadas. Tocar un encabezado ordena toda la lista, no sólo la página (`SRP.util.ordenarLista`), y
+    otra búsqueda u otro filtro vuelven a la página 1. «Posibles duplicados» ya iba por páginas desde la 0.9.73: la
+    auditoría midió una página de 10 parejas. No cambia.
+  · **«Entrar» sin espacio en el teléfono** (E3-R1-06): si guardar lo que baja falla, el botón vuelve y un recuadro
+    «No se pudo entrar» dice qué pasó, sin marcar ningún campo. La sesión que ya había abierto el servidor se
+    cierra. La auditoría lo había dejado sin confirmar: con la versión de antes el botón se quedaba apagado.
+  · **Doble toque** (E3-R1-08): «Cerrar jornada» y «Ver vista previa» no hacen nada si ya están trabajando, y dicen
+    «Cerrando…» y «Preparando…». Antes, dos toques escribían dos veces la operación y su bitácora.
+  · **Lo escrito no se pierde** (E3-R1-10, E3-R1-11), como el árbol a medias: «Registrar jornada» a medio llenar
+    (`srp_borrador_jornada`) y los datos de cierre de una jornada (`srp_borrador_cierre`) vuelven después de una
+    recarga o de salir con «Atrás», con la misma cuenta y, el cierre, en la misma jornada. Lo dicen con un aviso:
+    el de «Registrar jornada», abajo; el del cierre, dentro de la ventana. La ubicación de la jornada no vuelve:
+    se detecta otra vez. El borrador se quita al guardar, y el de la jornada también con «Cancelar».
+  · **El rechazo nombra lo que se desactivó** (E3-R4-08): si la especie, el programa, el solicitante o el vehículo
+    existen en el catálogo pero se desactivaron, el servidor lo dice con su nombre («La especie «Fresno» se
+    desactivó en el catálogo: elija otra…»). Lo que no existe sigue diciendo que se elija de la lista.
+  · **El punto «por revisar»** (A6-01) y su leyenda llevan borde oscuro, como los demás puntos: sobre «Calles» el
+    borde blanco daba 1.8 a 1 contra el fondo.
+  · **Accesibilidad**, sin cambio a la vista: en teléfono los botones de orden del encabezado, que no se ven, salen
+    del orden del teclado y el lector de pantalla los sigue leyendo (B4-01); la lista de Jornadas tiene nombre fijo
+    (B4-02); el mapa de cada pareja de duplicados es un grupo con su nombre, como los demás mapas fijos (B4-03); los
+    nombres de cabos de Supervisión miden 30 px de alto (B1-01).
+  · **Textos**: la carga masiva con una sola jornada dice «Se formará 1 jornada cerrada… marcada» (M523), y los
+    datos de demostración, «de enero de 2024 a hoy» en lugar de «casi tres años» (M501). La tarjeta de los datos de
+    demostración decía lo mismo que la ventana y también cambió.
+  · **El paquete de la 1.1** va sobre la versión de `sia-backend` del 21-10-2026, que trae otro módulo en
+    `src/db.ts` y `src/index.ts`: lo del SRP es el mismo de la versión 1 y va después de ese módulo.

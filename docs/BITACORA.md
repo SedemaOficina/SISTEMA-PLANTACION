@@ -6024,3 +6024,94 @@ No se probó:
 
 **Siguiente paso.** Liber decide cuándo entrega el paquete al SIA. Queda el bloque 7: las propuestas de
 pantalla, con su antes y después.
+
+## Bloque 242 — Las propuestas de pantalla (21-10-2026)
+
+**Versión 1.1.** El bloque 7, el último del plan de corrección de la auditoría del 19-10-2026
+(`docs/AUDITORIA-2026-10-19.md`, § 11). Liber aprobó las diez muestras con su antes y su después, que los datos de
+cierre vuelvan y los cuatro ajustes que no cambian la pantalla (D322).
+
+| Hallazgo | Qué pasaba | Qué pasa ahora |
+|---|---|---|
+| C3-01 | Usuarios no iba por páginas: con 103 cuentas, 13,099 px en el teléfono | De 10 en 10 (25 en la computadora); el orden de la tabla vale para toda la lista |
+| E3-R1-06 | Si al entrar no cabían los catálogos en el teléfono, «Entrar» se quedaba apagado sin decir nada | El botón vuelve y un recuadro dice qué pasó y qué hacer; la sesión del servidor se cierra |
+| E3-R1-08 | Dos toques en «Cerrar jornada» o «Ver vista previa» escribían dos veces la operación y la bitácora | Una vez; mientras trabajan dicen «Cerrando…» y «Preparando…» |
+| E3-R1-10 | Recargar a mitad de «Registrar jornada» perdía lo escrito | Vuelve, con un aviso |
+| E3-R1-11 | Salir con «Atrás» o recargar perdía los datos de cierre escritos | Vuelven al abrir otra vez la ventana, con un aviso adentro |
+| E3-R4-08 | El rechazo por un valor desactivado del catálogo sólo decía que se eligiera otro | Nombra el valor y dice que se desactivó |
+| A6-01 | El punto «por revisar» sobre «Calles» casi no se separaba del fondo (1.8 a 1) | Borde oscuro, como los demás; también en la leyenda |
+| B1-01 | Los nombres de cabos de Supervisión medían 23 px de alto | 30 px |
+| B4-01 | En teléfono, los botones de orden escondidos recibían el foco del teclado | Salen del orden del teclado; el lector de pantalla los sigue leyendo |
+| B4-02 | La lista de Jornadas tomaba su nombre de un texto a veces vacío | Nombre fijo |
+| B4-03 | El mapa de cada pareja de duplicados era «imagen» con enlaces adentro | Un grupo con su nombre, como los demás mapas fijos |
+| M523, M501 | «Se formarán 1 jornada… marcadas»; «casi tres años» de datos de demostración | «Se formará 1 jornada… marcada»; «de enero de 2024 a hoy» |
+
+«Posibles duplicados» ya iba por páginas desde la 0.9.73; la auditoría midió una página de 10 parejas. No cambió.
+
+**Qué cambió.**
+- `js/usuarios.js` y `index.html` (`usr-paginas`): Usuarios por páginas. `js/util.js`: `ordenable` acepta a quien
+  vuelve a pintar, y `ordenarLista` ordena toda la lista con el criterio de la tabla.
+- `js/app.js` (`noSePudoEntrar`) y `js/sesion.js` (`abrir`): «Entrar» cuando falla guardar lo que baja.
+- `js/jornadas.js` (`cambiarEstado`) y `js/reportes.js` (`aceptar`): el doble toque.
+- `js/jornada-activa.js` y `js/reportes.js`: los borradores de «Registrar jornada» y de los datos de cierre;
+  `index.html`: el aviso `cie-recuperado`.
+- `servidor/src/modulos/srp/`: `nombreDesactivado` en `recepcion-apoyo.ts`, y sus mensajes en
+  `recepcion-arboles.ts` y `recepcion-jornadas.ts`.
+- `css/estilos.css`: el borde del punto por revisar y su leyenda, y el alto de los nombres de cabos. `js/util.js`
+  (`ordenSinFoco`): en teléfono los botones de orden salen del orden del teclado. `index.html`: el nombre de la lista
+  de Jornadas. `js/duplicados.js`: el mapa como grupo.
+- `js/carga.js` y `js/demostracion.js`: los textos.
+- `herramientas/manual_administracion.py`: busca la cuenta cuando no está en la página que se ve. El manual, otra vez
+  generado con la 1.1, dice que Usuarios va por páginas.
+- Pruebas: `pruebas/prueba.py`, sección ctx98 (16 comprobaciones); `pruebas/prueba_conexion.py`, el mapa de duplicados,
+  y «Eliminar» y el alta sin conexión esperan su resultado en lugar de un tiempo fijo (con el equipo ocupado, la
+  lista se volvía a pintar después de la revisión); `servidor/pruebas/recepcion.test.js`, los cuatro mensajes.
+- Evidencia: `docs/evidencia-2026-10-19/guiones/bloque7.py`, nuevo. `barrido.py` ya no cuenta como «control tapado»
+  lo que está escondido con el recorte de 1 px y fuera del orden del teclado: es sólo para el lector de pantalla.
+  Si un botón así vuelve a recibir el foco, lo cuenta otra vez.
+- `VERSION`, `index.html` y `js/config.js`: la 1.1. `README.md`: los borradores. `docs/ALINEACION-SIA.md`,
+  `docs/FASE2-Y-TRASPASO.md`, `docs/PLAN-TRASPASO-SIA.md` y `servidor/README.md`: el paquete vigente es el de la 1.1.
+- El paquete `srp-v1.1-2026-10-21`, en `servidor/local/entrega-sia/`, fuera de git. El SIA publicó hoy otra versión
+  de `sia-backend`, con un módulo nuevo en `src/db.ts` y `src/index.ts`: lo del SRP es el mismo y va
+  después de él.
+
+**Pantalla: qué se agregó y qué se quitó.** Lo aprobado en las muestras, sin nada más:
+- Usuarios: el paginador al pie de la lista.
+- La entrada: el recuadro «No se pudo entrar».
+- «Cerrando…» y «Preparando…» en sus botones, mientras trabajan.
+- El aviso de lo recuperado en «Registrar jornada» (abajo) y en los datos de cierre (dentro de la ventana).
+- El texto del aviso del servidor; el borde oscuro del punto por revisar; los dos textos corregidos.
+- La tarjeta de los datos de demostración también dice «de enero de 2024 a hoy»: decía «casi tres años», igual que
+  la ventana aprobada.
+- No se quitó nada.
+
+**Verificación.**
+- Antes y después, con `bloque7.py`, que revisa cada punto por separado: con la 1.0.5, bien 1 de 13 (el orden de
+  toda la lista, que sin páginas ya era de toda la lista); con la 1.1, 13 de 13. Con la 1.0.5, el botón «Entrar» se
+  quedaba apagado: E3-R1-06 queda confirmado.
+- El servidor: la prueba nueva de los cuatro mensajes falla con el código de antes («Elija una especie de la
+  lista…») y pasa con el nuevo.
+- La prueba completa (`por_tramos.py`): 81 tramos, 1,469 de 1,469. Con el equipo ocupado por otras pruebas, los
+  tramos 36 y 37 se detuvieron por tiempo; repetidos aparte, 12 de 12.
+- Las pruebas del servidor: 106 de 106. La aplicación contra el servicio: `prueba_conexion.py`, 119 de 119; con la copia para
+  el SIA (`--app`), 120 de 120.
+- El barrido de la auditoría, con datos de prueba y con datos reales: ninguno de los hallazgos que encontró
+  (detalle en `docs/AUDITORIA-2026-10-19.md`, «Bloque 7»).
+- El paquete:
+  - ensayo de instalación con sus propios archivos, en la base local en limpio: 18 de 18;
+  - sobre una copia de `sia-backend` del 21-10-2026: el diff aplica limpio y se deshace limpio,
+    `npm run typecheck` sin errores y `npm run build` con el módulo;
+  - ese binario contra la base local: 23 de 23;
+  - el empaquetador: 116 archivos, los dos avisos revisados; las sumas del manifiesto y del ZIP, bien;
+    ninguna ruta personal.
+- Auditorías: 144 sin hallazgos; hoja de estilos sin hallazgos; los guiones, sin avisos de sintaxis.
+
+No se probó:
+- en teléfonos reales; la falta de espacio se simuló con el error que da el navegador, no llenando un teléfono;
+- el aviso del servidor en pantalla con datos reales: se probó la respuesta del servidor y, aparte, cómo la
+  aplicación pone el motivo en su aviso, que no cambió;
+- Safari: las pruebas automáticas siguen sólo en Chromium (M170).
+
+**Siguiente paso.** Con esto termina el plan de corrección de la auditoría. Quedan fuera del plan, como estaban en
+el informe, cuatro hallazgos bajos (E3-R1-09, E3-R2-10, E3-R2-15 y E3-R3-03, que se confirma con el SIA). Liber
+decide cuándo entrega al SIA el paquete de la versión 1.1.

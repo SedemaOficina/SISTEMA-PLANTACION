@@ -132,7 +132,7 @@ transacción y no deja nada a medias, y se vuelve al respaldo del paso 1.
 4. **Las fotografías:** la carpeta de `SRP_FOTOS_DIR` va con la base. Si se restauró el respaldo de antes de
    instalar, se puede retirar.
 
-El paquete (hoy, el de la versión 1.0.5) lleva todo eso: `app/`, `db/srp/`, `datos/srp-datos-arranque.sql`, `backend/`
+El paquete (hoy, el de la versión 1.1) lleva todo eso: `app/`, `db/srp/`, `datos/srp-datos-arranque.sql`, `backend/`
 (el diff y los archivos completos), `deploy/`, `servidor-web/`, el manual de la Administración global en
 `manual/`, `VERSION` y su `LEEME.md` con estos pasos, agrupados en cinco. El paquete se arma con
 `python herramientas/empaquetar.py <carpeta>`: escribe el manifiesto

@@ -101,8 +101,8 @@ Cada fase tiene un criterio de salida; no se pasa a la siguiente sin cumplirlo.
 | **5. Piloto** | Una cuadrilla, una semana, datos reales. Teléfonos iPhone y Android. Revisión diaria de lo recibido contra lo capturado | Oficina de la Secretaría, Reforestación Urbana y SIA | Cero árboles perdidos o duplicados; folios consecutivos por celda; reporte de jornada conforme |
 | **6. Operación** | Alta de cuentas y catálogos reales, vehículos incluidos. Carga del histórico. Monitoreo de disco de fotografías. Archivo del repositorio público | SIA | Todas las cuadrillas capturan en producción; el repositorio de GitHub queda privado y archivado |
 
-Al 21-10-2026, lo que toca al SRP de las fases 2 a 4 está hecho y va en el paquete de la versión 1.0.5 (D315,
-D321): falta que el SIA lo instale. Después siguen el piloto y la operación.
+Al 21-10-2026, lo que toca al SRP de las fases 2 a 4 está hecho y va en el paquete de la versión 1.1 (D315,
+D321, D322): falta que el SIA lo instale. Después siguen el piloto y la operación.
 
 ## 5. Qué está listo y qué falta
 
@@ -187,5 +187,5 @@ D321): falta que el SIA lo instale. Después siguen el piloto y la operación.
 
 ## 9. Siguiente paso
 
-Entregar al SIA el paquete de la versión 1.0.5, que trae sus instrucciones de instalación, y pedirle las
+Entregar al SIA el paquete de la versión 1.1, que trae sus instrucciones de instalación, y pedirle las
 respuestas de sus «Preguntas abiertas». Con el sistema instalado, el piloto (fase 5).

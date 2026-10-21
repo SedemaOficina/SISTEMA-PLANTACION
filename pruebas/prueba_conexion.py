@@ -300,7 +300,7 @@ BANDEJA = """async estado => { SRP.app.mostrarVista('duplicados'); const s = doc
   if (s.value !== estado) { s.value = estado; s.dispatchEvent(new Event('change')); } await new Promise(r => setTimeout(r, 2500));
   return { vista: SRP.app.vista, cuenta: document.getElementById('dup-cuenta').textContent, vacio: document.getElementById('dup-vacio').hidden ? '' : document.getElementById('dup-vacio').textContent,
     parejas: [...document.querySelectorAll('#dup-lista > li')].map(li => ({ id: Number(li.dataset.pareja), cabeza: li.querySelector('.dup-cabeza').textContent,
-      mapa: !!li.querySelector('.dup-mapa.leaflet-container'), arboles: [...li.querySelectorAll('.dup-arboles section')].map(x => x.textContent),
+      mapa: !!li.querySelector('.dup-mapa.leaflet-container'), mapaRol: (li.querySelector('.dup-mapa') || { getAttribute: () => '' }).getAttribute('role'), arboles: [...li.querySelectorAll('.dup-arboles section')].map(x => x.textContent),
       botones: [...li.querySelectorAll('button[data-resolver]')].map(b => b.textContent.trim()), revisada: (li.querySelector('.dup-revisada') || {}).textContent || '' })) }; }"""
 
 
@@ -1103,10 +1103,10 @@ def main():
             d = pg.evaluate(BANDEJA, 'pendientes')
             uno = next((x for x in d['parejas'] if x['id'] == p1), None)
             ok(tarjeta == [False, '2 parejas por revisar'] and d['vista'] == 'duplicados' and d['cuenta'] == '2 parejas por revisar' and len(d['parejas']) == 2 and uno
-               and uno['mapa'] and len(uno['arboles']) == 2 and uno['arboles'][0].startswith('Llegó después') and uno['arboles'][1].startswith('Ya estaba')
+               and uno['mapa'] and uno['mapaRol'] == 'group' and len(uno['arboles']) == 2 and uno['arboles'][0].startswith('Llegó después') and uno['arboles'][1].startswith('Ya estaba')
                and 'Ahuehuete' in uno['arboles'][0] and 'Jornada del envío real' in uno['arboles'][0] and 'se detectó el' in uno['cabeza']
                and uno['botones'] == ['Es el mismo árbol', 'Son distintos'],
-               'la tarjeta dice cuántas parejas faltan y la bandeja enseña cada una con su mapa, sus dos árboles y la decisión: %s · %s' % (tarjeta, uno))
+               'la tarjeta dice cuántas parejas faltan y la bandeja enseña cada una con su mapa (un grupo con su nombre), sus dos árboles y la decisión: %s · %s' % (tarjeta, uno))
 
             # «Abrir en Registros» abre la ficha del árbol
             pg.click('#dup-lista li[data-pareja="%s"] button[data-abrir="%s"]' % (p1, a2)); pg.wait_for_timeout(1500)
@@ -1299,9 +1299,12 @@ def main():
             pg.wait_for_selector('#dlg-clave-temporal[open]', timeout=30000); pg.click('#btn-clave-temporal-listo'); pg.wait_for_timeout(800)
             OTRA['id'] = pg.evaluate(CUENTA_SRV, OTRA['correo'])['id']
             accion_usuario(pg, OTRA['id'], 'eliminar'); pg.wait_for_selector('#dlg-confirmar[open]')
-            pg.fill('#confirmar-palabra', OTRA['correo']); pg.click('#btn-confirmar-si'); pg.wait_for_timeout(2000)
-            ok(pg.evaluate(CUENTA_SRV, OTRA['correo']) is None and 'Cuenta eliminada' in pg.evaluate(AVISO) and pg.evaluate(MENU_DE, OTRA['id']) is None,
-               'eliminar una cuenta sin uso la quita del servidor y de la lista')
+            pg.fill('#confirmar-palabra', OTRA['correo']); pg.click('#btn-confirmar-si')
+            # La lista se vuelve a pintar cuando el servidor dice qué usa cada cuenta
+            pg.wait_for_function("() => document.getElementById('aviso').textContent.includes('Cuenta eliminada')", timeout=30000)
+            pg.wait_for_function("id => !document.querySelector('#tabla-usuarios tr[data-id=\"' + id + '\"]')", arg=OTRA['id'], timeout=30000)
+            quedo = [pg.evaluate(CUENTA_SRV, OTRA['correo']), pg.evaluate(MENU_DE, OTRA['id'])]
+            ok(quedo == [None, None], 'eliminar una cuenta sin uso la quita del servidor y de la lista: %s' % quedo)
             # El Registro de cambios nombra por su correo a la cuenta que ya no está
             pg.evaluate("SRP.app.mostrarVista('cambios')"); pg.wait_for_timeout(2500)
             cambios = pg.inner_text('#vista-cambios')
@@ -1311,7 +1314,8 @@ def main():
 
             # Sin conexión no cambia nada: el formulario sigue abierto con lo escrito
             ctx.route('**/api/srp/**', lambda r: r.abort())
-            alta_usuario(pg, 'Prueba Sin Red Conexión', 'sinred.conexion.prueba.%s@ejemplo.local' % CORRIDA); pg.wait_for_timeout(2000)
+            alta_usuario(pg, 'Prueba Sin Red Conexión', 'sinred.conexion.prueba.%s@ejemplo.local' % CORRIDA)
+            pg.wait_for_function("() => document.getElementById('aviso').textContent.includes('Sin conexión')", timeout=30000)
             aviso = pg.evaluate(AVISO)
             abierto = pg.evaluate("() => [document.getElementById('dlg-usuario').open, document.getElementById('usr-nombre-completo').value]")
             ctx.unroute('**/api/srp/**')

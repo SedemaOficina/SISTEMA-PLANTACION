@@ -14,16 +14,16 @@
 window.SRP = window.SRP || {};
 
 SRP.usuarios = {
-  editando: null, uso: {}, usos: {}, estado: 'todos', filtroOrg: '', filtroPerfil: '',
+  editando: null, uso: {}, usos: {}, estado: 'todos', filtroOrg: '', filtroPerfil: '', pagina: 1,
 
   el(id) { return document.getElementById(id); },
   real() { return SRP.remoto.activo(); },
 
   iniciar() {
-    this.el('usr-buscar').addEventListener('input', () => this.pintar());
+    this.el('usr-buscar').addEventListener('input', () => this.filtrar());
     // La institución, en una sola lista agrupada por tipo; el perfil la acota
-    this.el('usr-filtro-org').addEventListener('change', (e) => { this.filtroOrg = e.target.value; this.llenarFiltros(); this.pintar(); });
-    this.el('usr-filtro-perfil').addEventListener('change', (e) => { this.filtroPerfil = e.target.value; this.llenarFiltros(); this.pintar(); });
+    this.el('usr-filtro-org').addEventListener('change', (e) => { this.filtroOrg = e.target.value; this.llenarFiltros(); this.filtrar(); });
+    this.el('usr-filtro-perfil').addEventListener('change', (e) => { this.filtroPerfil = e.target.value; this.llenarFiltros(); this.filtrar(); });
     // El tipo decide la lista de instituciones; la institución, el área, los perfiles y los coordinadores
     this.el('usr-tipo-org').addEventListener('change', () => { this.llenarInstituciones(''); this.ajustarPorOrganizacion(); });
     this.el('usr-organizacion').addEventListener('change', () => this.ajustarPorOrganizacion());
@@ -32,7 +32,7 @@ SRP.usuarios = {
       const b = e.target.closest('.chip'); if (!b) return;
       this.estado = b.dataset.estado;
       this.el('usr-estado').querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', String(c === b)));
-      this.pintar();
+      this.filtrar();
     });
     this.el('btn-usr-agregar').addEventListener('click', () => this.abrirFormulario(null));
     this.el('form-usuario').addEventListener('submit', (e) => { e.preventDefault(); this.guardar(); });
@@ -91,6 +91,12 @@ SRP.usuarios = {
     this.el('usr-filtro-perfil').value = this.filtroPerfil;
   },
 
+  // Otro filtro u otra búsqueda: la lista vuelve a su primera página
+  filtrar() {
+    this.pagina = 1;
+    this.pintar();
+  },
+
   pintar() {
     const esc = SRP.util.escapar;
     const q = SRP.util.normalizar(this.el('usr-buscar').value);
@@ -109,7 +115,12 @@ SRP.usuarios = {
     const cabos = {};
     SRP.ref.usuarios.forEach(x => (x.coordinadores_ids || []).forEach(c => { cabos[c] = (cabos[c] || 0) + 1; }));
     const coordinadoresDe = (x) => (x.coordinadores_ids || []).map(c => SRP.ref.nombreUsuario(c)).join(', ');
-    const filas = lista.map(u => {
+    // Lo que dice cada celda, para ordenar toda la lista y no sólo la página (en el orden de las columnas)
+    const texto = (u, col) => [SRP.util.nombreCompleto(u), u.correo, SRP.ref.nombreOrganizacion(u.organizacion_id), SRP.ref.nombreCatalogo(u.area_id) || '—',
+      u.cargo_rol, SRP.permisos.de(u).etiqueta, coordinadoresDe(u) || '—', u.activo ? '' : 'Inactivo', this.uso[u.id] || 0][col];
+    const info = SRP.util.paginar(SRP.util.ordenarLista(lista, 'tabla-usuarios', texto), this.pagina, 'usr-paginas');
+    this.pagina = info.pagina;
+    const filas = info.items.map(u => {
       const n = this.uso[u.id] || 0;
       const soyYo = u.id === yo;
       // Acciones en el menú de la tuerca. Nadie se desactiva ni se elimina a sí mismo:
@@ -144,7 +155,8 @@ SRP.usuarios = {
     }).join('');
 
     this.el('tabla-usuarios').innerHTML = cab + '<tbody>' + (filas || '<tr><td colspan="10">Sin resultados.</td></tr>') + '</tbody>';
-    SRP.util.ordenable(this.el('tabla-usuarios'));
+    SRP.util.ordenable(this.el('tabla-usuarios'), () => this.pintar());
+    SRP.util.pintarPaginador(this.el('usr-paginas'), info, 'cuenta', 'cuentas', (n) => { this.pagina = n; this.pintar(); SRP.util.subirA(this.el('usr-cuenta')); });
     const total = SRP.ref.usuarios.length;
     const filtrado = q || this.estado !== 'todos' || this.filtroOrg || this.filtroPerfil;
     const inactivos = SRP.ref.usuarios.filter(x => !x.activo).length;   // «3 usuarios · 1 inactivo»

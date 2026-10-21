@@ -297,7 +297,7 @@ SRP.carga = {
       '<li class="carga-mal"><b>' + num(errores) + '</b> ' + (errores === 1 ? 'renglón con error, que no se carga' : 'renglones con error, que no se cargan') +
         (v.yaEstaban ? '; ' + (v.yaEstaban === 1 ? 'de ellos, 1 ya estaba en el sistema' : 'de ellos, ' + num(v.yaEstaban) + ' ya estaban en el sistema') +
           (v.yaEstaban === v.renglones ? ': este archivo ya se había cargado' : '') : '') + '</li>' +
-      (v.listos.length ? '<li>Se formarán <b>' + num(nj) + '</b> ' + (nj === 1 ? 'jornada cerrada' : 'jornadas cerradas') + ' de ' + num(insts) + (insts === 1 ? ' institución' : ' instituciones') +
+      (v.listos.length ? '<li>' + (nj === 1 ? 'Se formará' : 'Se formarán') + ' <b>' + num(nj) + '</b> ' + (nj === 1 ? 'jornada cerrada' : 'jornadas cerradas') + ' de ' + num(insts) + (insts === 1 ? ' institución' : ' instituciones') +
         ', del ' + esc(SRP.util.formatearFecha(fechas[0])) + ' al ' + esc(SRP.util.formatearFecha(fechas[fechas.length - 1])) + '</li>' : '') +
       '</ul>';
     const lista = v.problemas.slice(0, this.MAX_A_LA_VISTA);
@@ -332,7 +332,8 @@ SRP.carga = {
     const v = this.revision; if (!v || !v.listos.length) return;
     const num = x => x.toLocaleString('es-MX');
     const nj = Object.keys(v.jornadas).length;
-    const formaran = 'Se formarán ' + num(nj) + (nj === 1 ? ' jornada cerrada' : ' jornadas cerradas') + ' a su nombre, marcadas como carga histórica.';
+    const formaran = nj === 1 ? 'Se formará 1 jornada cerrada a su nombre, marcada como carga histórica.'
+      : 'Se formarán ' + num(nj) + ' jornadas cerradas a su nombre, marcadas como carga histórica.';
     // La carga histórica es de una sola vez: si ya hay una, se dice antes de cargar otro archivo
     const previa = await this.cargaPrevia();
     const ok = await SRP.app.confirmar(previa

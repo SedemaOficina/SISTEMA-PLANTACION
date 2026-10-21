@@ -102,7 +102,7 @@ SRP.duplicados = {
         '<button type="button" class="btn btn-secundario" data-resolver="distintos"><span>Son distintos</span></button></div>';
     return '<li class="dup-pareja" data-pareja="' + p.id + '"><p class="dup-cabeza"><b>A ' + distancia.toLocaleString('es-MX', { maximumFractionDigits: 1 }) + ' m</b> uno del otro' + suma +
       ' · se detectó el ' + esc(this.dia(p.detectado_en)) + '</p>' +
-      '<div class="dup-mapa" id="dup-mapa-' + p.id + '" role="img" aria-label="Mapa con los dos árboles: en ámbar el que llegó después, en azul el que ya estaba"></div>' +
+      '<div class="dup-mapa" id="dup-mapa-' + p.id + '" role="group" aria-label="Mapa con los dos árboles: en ámbar el que llegó después, en azul el que ya estaba"></div>' +
       '<div class="dup-arboles">' + arbol(a, 'llego', 'Llegó después') + arbol(b, 'estaba', 'Ya estaba') + '</div>' + decision + '</li>';
   },
 

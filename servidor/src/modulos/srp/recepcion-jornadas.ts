@@ -3,7 +3,7 @@ import { anotarCambio } from "./bitacora";
 import { capacidadesDe, puede, SEDEMA } from "./permisos";
 import {
   AHORA, autoresDe, comoObjeto, conVigente, antesDelPrograma, esFecha, esVigente, fechaCorta, filaDe, hoyEnLaCiudad, idDe, instante, jornadaEliminada, puntoDe, rechazo, recibido,
-  noAntes, repetida, seElimino, sinPermiso, texto, textoFolio, ubicar, versionVieja, congelarPrioridad, type Errores, type Fila, type Punto, type Resultado, type Territorio,
+  noAntes, repetida, seElimino, sinPermiso, texto, textoFolio, ubicar, versionVieja, congelarPrioridad, nombreDesactivado, type Errores, type Fila, type Punto, type Resultado, type Territorio,
 } from "./recepcion-apoyo";
 import type { Usuario } from "./sesiones";
 
@@ -38,6 +38,12 @@ async function programaPermitido(c: pg.PoolClient, programaId: string, organizac
   return (r.rowCount ?? 0) > 0;
 }
 
+// Por qué no se acepta un programa: si se desactivó, se dice; si no, que no es de esa institución
+async function sinPrograma(c: pg.PoolClient, programaId: string, de: string): Promise<string> {
+  const desactivado = await nombreDesactivado(c, "programas", programaId);
+  return desactivado ? "El programa «" + desactivado + "» se desactivó en el catálogo: elija otro." : "Ese programa no está disponible para " + de + ".";
+}
+
 interface Solicitud {
   solicitante_id: string | null;
   solicitante_otro: string;
@@ -56,7 +62,10 @@ function solicitudDe(programaId: string, d: Record<string, unknown>): Solicitud 
 async function erroresSolicitud(c: pg.PoolClient, s: Solicitud, yaTenia: unknown = null): Promise<Errores> {
   if (s.solicitante_id) {
     const vale = s.solicitante_id === yaTenia || (await c.query("SELECT 1 FROM srp.solicitantes WHERE id = $1 AND activo", [s.solicitante_id])).rowCount;
-    if (!vale) return [["solicitante_id", "Elija quién lo solicita."]];
+    if (!vale) {
+      const desactivado = await nombreDesactivado(c, "solicitantes", s.solicitante_id);
+      return [["solicitante_id", desactivado ? "«" + desactivado + "» se desactivó en el catálogo de solicitantes: elija otro." : "Elija quién lo solicita."]];
+    }
   } else if (!s.solicitante_otro) return [["solicitante_id", "Elija quién lo solicita."]];
   else if (s.solicitante_otro.length > 120) return [["solicitante_otro", "El nombre de la instancia lleva hasta 120 caracteres."]];
   if (!s.solicitud_descripcion) return [["solicitud_descripcion", "Escriba de qué se trata la solicitud."]];
@@ -82,7 +91,7 @@ export async function crearJornada(c: pg.PoolClient, u: Usuario, d: Record<strin
   else if (!territorio?.dentro) errores.push(["lat", "El punto está fuera de la Ciudad de México. Revise las coordenadas."]);
   const programaId = texto(d.programa_id);
   if (!programaId) errores.push(["programa_id", "Elija el programa de la jornada."]);
-  else if (!(await programaPermitido(c, programaId, u.organizacion_id))) errores.push(["programa_id", "Ese programa no está disponible para su institución."]);
+  else if (!(await programaPermitido(c, programaId, u.organizacion_id))) errores.push(["programa_id", await sinPrograma(c, programaId, "su institución")]);
   const solicitud = solicitudDe(programaId, d);
   if (programaId === PROGRAMA_SOLICITUD) errores.push(...(await erroresSolicitud(c, solicitud)));
   const previstos = d.arboles_previstos;
@@ -173,7 +182,7 @@ export async function editarJornada(c: pg.PoolClient, u: Usuario, d: Record<stri
   if (!programaId) errores.push(["programa_id", "Elija el programa."]);
   // Los programas de la institución que ejecuta la jornada, más el que ya tiene
   else if (programaId !== actual.programa_id && !(await programaPermitido(c, programaId, String(actual.organizacion_id)))) {
-    errores.push(["programa_id", "Ese programa no está disponible para la institución de la jornada."]);
+    errores.push(["programa_id", await sinPrograma(c, programaId, "la institución de la jornada")]);
   }
   if (programaId === PROGRAMA_SOLICITUD) errores.push(...(await erroresSolicitud(c, nuevo as unknown as Solicitud, actual.solicitante_id)));
   const previstos = nuevo.arboles_previstos;
@@ -296,7 +305,10 @@ export async function cierreJornada(c: pg.PoolClient, u: Usuario, d: Record<stri
     ? (await c.query<{ nombre: string; modelo: string; tipo_vehiculo: string }>("SELECT nombre, modelo, tipo_vehiculo FROM srp.vehiculos WHERE id = $1 AND (activo OR id = $2)",
       [nuevo.vehiculo_id, actual.vehiculo_id])).rows[0]
     : undefined;
-  if (nuevo.vehiculo_id && !vehiculo) errores.push(["vehiculo_id", "Elija un vehículo del catálogo."]);
+  if (nuevo.vehiculo_id && !vehiculo) {
+    const desactivado = await nombreDesactivado(c, "vehiculos", nuevo.vehiculo_id);
+    errores.push(["vehiculo_id", desactivado ? "El vehículo «" + desactivado + "» se desactivó en el catálogo: elija otro." : "Elija un vehículo del catálogo."]);
+  }
   if (!propios && nuevo.encargado_id && !(await c.query("SELECT 1 FROM srp.plantaciones WHERE jornada_id = $1 AND cabo_id = $2", [id, nuevo.encargado_id])).rowCount) {
     errores.push(["encargado_id", "El encargado es alguien que registró árboles en la jornada."]);
   }

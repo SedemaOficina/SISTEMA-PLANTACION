@@ -208,6 +208,38 @@ test('el árbol se rechaza con los mensajes del formulario: fecha entre el inici
   assert.deepEqual([escrita.estado, escrita.fila.especie_id, escrita.fila.especie_otra, escrita.fila.fecha_plantacion], ['recibido', null, 'Ahuehuete raro', dias(-1)]);
 });
 
+test('un valor del catálogo que se desactivó se nombra en el rechazo: especie, programa, solicitante y vehículo', async () => {
+  const ESP_OFF = 'ESP-8' + String(CORRIDA).slice(-3);
+  await admin.query(`INSERT INTO srp.especies SELECT (jsonb_populate_record(NULL::srp.especies, to_jsonb(e) || jsonb_build_object('id', $1::text, 'clave', $1::text, 'nombre', $2::text, 'nombre_cientifico', $2::text || ' sp.', 'activo', false))).*
+    FROM srp.especies e WHERE id = $3`, [ESP_OFF, 'Especie retirada ' + CORRIDA, ESPECIE]);
+  try {
+    const t = await telefono(CABO);
+    const J = jornada({ fecha: dias(-1) });
+    assert.equal((await t.una('jornada.crear', J)).estado, 'recibido');
+    assert.deepEqual((await t.una('registro.crear', arbol(J.id, { especie_id: ESP_OFF }))).errores,
+      [['especie_id', 'La especie «Especie retirada ' + CORRIDA + '» se desactivó en el catálogo: elija otra de la lista o la opción «Otra especie».']]);
+    const { J: C } = await conArbol(t);
+    let version = (await admin.query("SELECT to_jsonb(j) ->> 'fecha_inicio' AS v FROM srp.jornadas j WHERE id = $1", [C.id])).rows[0].v;
+    version = (await t.una('jornada.cerrar', { id: C.id, version })).version;
+    await admin.query('UPDATE srp.programas SET activo = false WHERE id = $1', [PROG2]);
+    await admin.query('UPDATE srp.solicitantes SET activo = false WHERE id = $1', [SOLICITANTE]);
+    await admin.query('UPDATE srp.vehiculos SET activo = false WHERE id = $1', [VEHICULO.id]);
+    assert.deepEqual((await t.una('jornada.crear', jornada({ programa_id: PROG2 }))).errores,
+      [['programa_id', 'El programa «Otro programa de prueba ' + CORRIDA + '» se desactivó en el catálogo: elija otro.']]);
+    assert.deepEqual((await t.una('jornada.crear', jornada({ programa_id: SOLICITUD, solicitante_id: SOLICITANTE, solicitud_descripcion: 'Compensación' }))).errores,
+      [['solicitante_id', '«Vecinos de prueba ' + CORRIDA + '» se desactivó en el catálogo de solicitantes: elija otro.']]);
+    assert.deepEqual((await t.una('jornada.cierre', { id: C.id, version, vehiculo_id: VEHICULO.id })).errores,
+      [['vehiculo_id', 'El vehículo «' + VEHICULO.placa + '» se desactivó en el catálogo: elija otro.']]);
+    // Lo que no existe sigue diciendo que se elija de la lista
+    assert.deepEqual((await t.una('registro.crear', arbol(J.id, { especie_id: 'ESP-9999' }))).errores, [['especie_id', 'Elija una especie de la lista o la opción «Otra especie».']]);
+  } finally {
+    await admin.query('UPDATE srp.programas SET activo = true WHERE id = $1', [PROG2]);
+    await admin.query('UPDATE srp.solicitantes SET activo = true WHERE id = $1', [SOLICITANTE]);
+    await admin.query('UPDATE srp.vehiculos SET activo = true WHERE id = $1', [VEHICULO.id]);
+    await admin.query('DELETE FROM srp.especies WHERE id = $1', [ESP_OFF]);
+  }
+});
+
 test('sólo quien tiene la jornada a su cargo registra en ella, y sólo quien registra inicia jornadas', async () => {
   const otro = await telefono(CABO2);
   const ajeno = arbol(J1.id);

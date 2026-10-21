@@ -37,6 +37,9 @@ SRP.activa = {
   iniciar() {
     SRP.solicitud.montar(this.el('ini-caja-solicitud'), 'ini');
     this.el('form-iniciar-jornada').addEventListener('submit', (e) => { e.preventDefault(); this.iniciarJornada(); });
+    // Lo que se escribe para iniciar la jornada se guarda como borrador: una recarga no lo pierde
+    this.el('form-iniciar-jornada').addEventListener('input', () => this.guardarBorrador());
+    this.el('form-iniciar-jornada').addEventListener('change', () => this.guardarBorrador());
     // Al volver a la aplicación, quizá ya es otro día
     document.addEventListener('visibilitychange', () => { if (!document.hidden && SRP.app.vista === 'registrar') this.alDia(); });
     this.el('btn-jornada-cambiar').addEventListener('click', () => this.abrirCambiar());
@@ -54,7 +57,7 @@ SRP.activa = {
       const j = await SRP.almacen.uno('jornadas', b.dataset.id);
       if (j) { this.jornada = j; this.el('dlg-cambiar-jornada').close(); await this.preparar(); SRP.util.anunciarSilencioso('Jornada activa: ' + j.nombre + '.'); }   // la franja ya lo dice a la vista
     });
-    this.el('btn-iniciar-cancelar').addEventListener('click', () => { this.mostrarInicio(false); this.preparar(); });
+    this.el('btn-iniciar-cancelar').addEventListener('click', () => { this.quitarBorrador(); this.mostrarInicio(false); this.preparar(); });
     this.el('ini-fecha').max = SRP.util.fechaHoy(); this.el('ini-fecha').min = SRP.CONFIG.FECHA_MINIMA;
     this.el('btn-ini-hoy').addEventListener('click', () => {
       this.el('ini-fecha').value = SRP.util.fechaHoy();
@@ -275,6 +278,7 @@ SRP.activa = {
     this.el('franja-jornada').hidden = ver;
     this.el('btn-iniciar-cancelar').hidden = !this.jornada;   // sin jornada no hay a dónde volver
     if (ver) {
+      this.pausaBorrador = true;   // dejar el formulario en blanco no borra el borrador
       // El máximo de la fecha se pone cada vez: con la aplicación abierta de un día para otro, hoy ya es otro día
       this.el('ini-fecha').max = SRP.util.fechaHoy();
       this.el('ini-nombre').value = ''; this.el('ini-ubicacion').value = ''; this.el('ini-comentarios').value = ''; this.el('ini-meta').value = '';
@@ -290,7 +294,50 @@ SRP.activa = {
       SRP.util.refrescarContadores(this.el('panel-iniciar-jornada'));
       if (SRP.espejo) SRP.espejo.refrescarIniciar();
       this.el('ini-nombre').focus({ preventScroll: true });
+      const recuperado = this.recuperarBorrador();
+      this.pausaBorrador = false;
+      if (recuperado) SRP.util.anunciar('Se recuperó lo que había escrito para iniciar la jornada. Revíselo y toque «Iniciar jornada».', 'aviso');
     }
+  },
+
+  /* BORRADOR DE «REGISTRAR JORNADA». Lo escrito y aún no guardado vuelve si la página se recarga a medio llenar
+     (una llamada, el teléfono que la cierra), con la misma cuenta. La ubicación no: se vuelve a detectar. Se
+     quita al iniciar la jornada o con «Cancelar». */
+  CLAVE_BORRADOR: 'srp_borrador_jornada',
+
+  guardarBorrador() {
+    const u = SRP.sesion.usuario;
+    if (this.pausaBorrador || !u || this.el('panel-iniciar-jornada').hidden) return;
+    const v = (id) => this.el(id).value;
+    const b = { usuario: u.id, nombre: v('ini-nombre'), fecha: v('ini-fecha'), ubicacion: v('ini-ubicacion'), comentarios: v('ini-comentarios'),
+      meta: v('ini-meta'), programa_id: v('ini-programa'), solicitud: SRP.solicitud.leer('ini') };
+    try {
+      if ([b.nombre, b.fecha, b.ubicacion, b.comentarios, b.meta].some(x => String(x || '').trim())) localStorage.setItem(this.CLAVE_BORRADOR, JSON.stringify(b));
+      else localStorage.removeItem(this.CLAVE_BORRADOR);
+    } catch (e) { /* almacenamiento bloqueado: se sigue sin borrador */ }
+  },
+
+  quitarBorrador() {
+    try { localStorage.removeItem(this.CLAVE_BORRADOR); } catch (e) { /* nada que quitar */ }
+  },
+
+  // Devuelve si se recuperó algo. Sólo de la misma cuenta
+  recuperarBorrador() {
+    let b = null;
+    try { b = JSON.parse(localStorage.getItem(this.CLAVE_BORRADOR) || 'null'); } catch (e) { b = null; }
+    const u = SRP.sesion.usuario;
+    if (!b || !u || b.usuario !== u.id) return false;
+    [['ini-nombre', b.nombre], ['ini-ubicacion', b.ubicacion], ['ini-comentarios', b.comentarios], ['ini-meta', b.meta], ['ini-fecha', b.fecha]]
+      .forEach(([id, valor]) => { if (valor) this.el(id).value = valor; });
+    if (b.fecha) this.el('ini-fecha').dispatchEvent(new Event('change', { bubbles: true }));
+    const sel = this.el('ini-programa');
+    if (b.programa_id && [...sel.options].some(o => o.value === b.programa_id)) {
+      sel.value = b.programa_id;
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+      if (b.programa_id === SRP.solicitud.programa()) SRP.solicitud.poner('ini', b.solicitud);
+    }
+    SRP.util.refrescarContadores(this.el('panel-iniciar-jornada'));
+    return [b.nombre, b.fecha, b.ubicacion, b.comentarios, b.meta].some(x => String(x || '').trim());
   },
 
   /* Deja «Nuevo registro» como corresponde: sin jornada, la pantalla de inicio; con jornada, el
@@ -570,6 +617,7 @@ SRP.activa = {
   async guardarJornadaNueva({ nombre, ubicacion, fecha, comentarios, programa_id, previstos }) {
     const j = this.armarJornada({ nombre, ubicacion, fecha, comentarios, programa_id, previstos });
     await SRP.almacen.guardarConBitacora('jornadas', j, SRP.bitacora.entrada('CREADO', 'jornada', j.id, 'Jornada «' + nombre + '» del ' + SRP.util.formatearFecha(fecha)), 'jornada.crear');
+    this.quitarBorrador();
     SRP.almacen.cuidarAlmacenamiento();   // ya hay algo que perder: se pide al navegador que no lo borre
     this.jornada = j;
     this.mostrarInicio(false);

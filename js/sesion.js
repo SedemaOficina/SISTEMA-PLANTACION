@@ -85,12 +85,19 @@ SRP.sesion = {
 
   // Lo mínimo para abrir: los catálogos y la propia cuenta. Si no bajan y no hay unos de antes, no se entra
   async abrir(cuenta) {
-    const catalogos = await SRP.remoto.bajarCatalogos();
-    if (!catalogos.ok && !(await SRP.almacen.todos('instituciones')).length) {
+    let u;
+    try {
+      const catalogos = await SRP.remoto.bajarCatalogos();
+      if (!catalogos.ok && !(await SRP.almacen.todos('instituciones')).length) {
+        SRP.servidor.pedir('POST', '/acceso/salir');
+        return { ok: false, motivo: catalogos.mensaje };
+      }
+      u = await this.ponerAlDia(cuenta);
+    } catch (err) {
+      // No se pudo guardar lo que bajó (p. ej. sin espacio): la sesión que abrió el servidor no se queda colgada
       SRP.servidor.pedir('POST', '/acceso/salir');
-      return { ok: false, motivo: catalogos.mensaje };
+      throw err;
     }
-    const u = await this.ponerAlDia(cuenta);
     this.iniciar(u);
     // Lo enviado llega mientras tanto, sin detener la entrada
     SRP.remoto.cargar();

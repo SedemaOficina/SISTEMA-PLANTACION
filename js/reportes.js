@@ -39,12 +39,16 @@ SRP.reportes = {
   iniciar() {
     this.el('form-cierre').addEventListener('submit', (e) => { e.preventDefault(); this.aceptar(); });
     this.el('form-cierre').addEventListener('input', (e) => { if (e.target.tagName === 'TEXTAREA') this.ajustarAlto(e.target); });
+    // Lo que se escribe se guarda como borrador: «Atrás» o una recarga no lo pierden
+    this.el('form-cierre').addEventListener('input', () => this.guardarBorrador());
+    this.el('form-cierre').addEventListener('change', () => this.guardarBorrador());
     // Vehículo del catálogo: la placa elige; modelo y tipo se ponen solos
     this.el('cie-vehiculo').addEventListener('change', () => this.elegirVehiculo(this.el('cie-vehiculo').value, true));
     this.el('cie-vehiculo-frecuentes').addEventListener('click', (e) => {
       const b = e.target.closest('.chip'); if (!b) return;
       this.el('cie-vehiculo').value = b.dataset.id;
       this.elegirVehiculo(b.dataset.id, true);
+      this.guardarBorrador();
       if (SRP.espejo) SRP.espejo.refrescarCierre();
     });
     // Los frecuentes son los del encargado: si la coordinación elige otro, cambian
@@ -111,6 +115,7 @@ SRP.reportes = {
     ['personal', 'apoyo', 'chofer', 'vehiculo'].forEach(c => { this.el('caja-cie-' + c).hidden = externa; });
     if (externa) { ['personal', 'apoyo', 'chofer', 'vehiculo'].forEach(c => { this.el('cie-' + c).value = ''; }); this.elegirVehiculo(''); }
     if (SRP.espejo) SRP.espejo.refrescarCierre();
+    this.el('cie-recuperado').hidden = !this.recuperarBorrador(jornada);
 
     this.el('dlg-cierre').showModal();
     this.el('form-cierre').querySelectorAll('textarea').forEach(t => this.ajustarAlto(t));
@@ -226,19 +231,57 @@ SRP.reportes = {
     return cierre;
   },
 
+  // Un segundo toque mientras se guarda no arma la vista previa dos veces: el botón dice «Preparando…»
   async aceptar() {
-    const c = this.contexto;
-    const previo = c.previo;
-    if (!SRP.permisos.exigir('jornada.editar', previo || c.jornada.dato)) return;   // el cierre se guarda en la jornada
-    // Aquí se guardan los datos del cierre; el reporte cuenta como generado al entregar el PDF
-    const cierre = this.cierrePrevisto();
+    if (this.aceptando) return;
+    this.aceptando = true;
+    const libre = SRP.util.ocupado(this.el('btn-cierre-generar'), 'Preparando…', 'ver');
+    try {
+      const c = this.contexto;
+      const previo = c.previo;
+      if (!SRP.permisos.exigir('jornada.editar', previo || c.jornada.dato)) return;   // el cierre se guarda en la jornada
+      // Aquí se guardan los datos del cierre; el reporte cuenta como generado al entregar el PDF
+      const cierre = this.cierrePrevisto();
 
-    await SRP.almacen.guardarConBitacora('jornadas', cierre,
-      SRP.bitacora.entrada('EDITADO', 'jornada', cierre.id, 'Datos de cierre del reporte'), 'jornada.cierre');
-    c.jornada.dato = cierre;
+      await SRP.almacen.guardarConBitacora('jornadas', cierre,
+        SRP.bitacora.entrada('EDITADO', 'jornada', cierre.id, 'Datos de cierre del reporte'), 'jornada.cierre');
+      c.jornada.dato = cierre;
+      this.quitarBorrador();
 
-    this.el('dlg-cierre').close();
-    this.mostrarPrevia(c.registros, cierre, c.fecha, c.cabo_id, c.jornada);
+      this.el('dlg-cierre').close();
+      this.mostrarPrevia(c.registros, cierre, c.fecha, c.cabo_id, c.jornada);
+    } finally { libre(); this.aceptando = false; }
+  },
+
+  /* BORRADOR DE LOS DATOS DE CIERRE. Lo escrito y aún no guardado vuelve al abrir otra vez los datos de cierre
+     de la misma jornada, con la misma cuenta, aunque se haya salido con «Atrás» o recargado la página. Se
+     quita al guardar. */
+  CLAVE_BORRADOR: 'srp_borrador_cierre',
+
+  guardarBorrador() {
+    const c = this.contexto, u = SRP.sesion.usuario;
+    if (!c || !c.jornada || !u || !this.el('dlg-cierre').open) return;
+    const b = { jornada: c.jornada.id, usuario: u.id, encargado: this.el('cie-encargado').value, vehiculo: this.el('cie-vehiculo').value,
+      campos: Object.fromEntries(this.CAMPOS.map(k => [k, this.el('cie-' + k).value])) };
+    try { localStorage.setItem(this.CLAVE_BORRADOR, JSON.stringify(b)); } catch (e) { /* almacenamiento bloqueado: se sigue sin borrador */ }
+  },
+
+  quitarBorrador() {
+    try { localStorage.removeItem(this.CLAVE_BORRADOR); } catch (e) { /* nada que quitar */ }
+  },
+
+  // Devuelve si se recuperó algo distinto de lo que ya tenía la ventana
+  recuperarBorrador(jornada) {
+    let b = null;
+    try { b = JSON.parse(localStorage.getItem(this.CLAVE_BORRADOR) || 'null'); } catch (e) { b = null; }
+    const u = SRP.sesion.usuario;
+    if (!b || !jornada || b.jornada !== jornada.id || !u || b.usuario !== u.id) return false;
+    let cambio = false;
+    const poner = (el, valor) => { if (valor == null || el.value === valor) return; el.value = valor; if (el.value === valor) cambio = true; };
+    this.CAMPOS.forEach(k => poner(this.el('cie-' + k), (b.campos || {})[k]));
+    if (!this.el('caja-cie-encargado').hidden) poner(this.el('cie-encargado'), b.encargado);
+    if (!this.el('caja-cie-vehiculo').hidden) { poner(this.el('cie-vehiculo'), b.vehiculo); this.elegirVehiculo(this.el('cie-vehiculo').value, false); }
+    return cambio;
   },
 
   /* VISTA PREVIA DEL REPORTE. Lo mismo que dirá el PDF, en el mismo orden y con las mismas
