@@ -72,18 +72,18 @@
   repositorio: con el plan gratuito de GitHub un repositorio privado no publica el sitio. Decide Liber. Anotado a petición suya,
   26-09-2026
 
-- [pendiente] **Emisión del folio (Fase 2).** No se emite un solo folio definitivo hasta que el SIA:
-  (1) entregue la malla UGA corregida, con identificador de versión y fecha de corte, para
-  congelarla como capa de referencia; (2) informe si corregir las ocho claves inconsistentes
-  cambia la clave de otras celdas; (3) confirme nombre, tipo y formato de la llave de la celda y
-  certifique que la malla no tiene huecos ni traslapes en el límite; (4) entregue alcaldías
-  corregida y colonias definitiva; (5) documente que el prefijo UGA no indica territorio. Con eso
-  la Secretaría congela la capa y habilita la emisión. Del análisis de Liber, sección 8
+- ~~Emisión del folio (Fase 2)~~ Resuelto en D292: el servidor da el folio al recibir el árbol, de una
+  secuencia por celda, y el folio no cambia. Las capas quedaron verificadas contra las del SIA (D251) y las
+  claves de las ocho celdas UGA son correctas (D249). Antes decía: no emitir un folio definitivo hasta que el
+  SIA entregara la malla UGA corregida, alcaldías y colonias definitivas, y documentara que el prefijo UGA no
+  indica territorio. Del análisis de Liber, sección 8
 - [pendiente] **Bandeja de especies fuera de catálogo (Fase 2).** Con un responsable en el SIA que
   la cierre; sin ella el catálogo se degrada con variantes del mismo taxón (D68)
-- [pendiente] **Validación de posible duplicado (Fase 2, servidor).** Con la regla corregida de
-  D69, no con 5 m fijos
-- [pendiente] **Cola de envío al servidor (Fase 2).** Especificación acordada con Liber el
+- ~~Validación de posible duplicado (Fase 2, servidor)~~ Resuelto en D298 y D299: el servidor compara con
+  el árbol más cercano de otra jornada, de la misma especie, con la suma de las precisiones de D69, y la
+  Administración global revisa la bandeja «Posibles duplicados»
+- ~~Cola de envío al servidor (Fase 2)~~ Resuelto en D303 y corregido en D316: cada cambio espera en la
+  cola del teléfono hasta que el servidor lo confirma. Antes decía: especificación acordada con Liber el
   22-09-2026 a partir de cómo lo resuelve KoboToolbox/Enketo: (1) cada registro guardado queda en
   cola con estado local `guardado` → `enviado` → `con error`; (2) mientras la app esté abierta y
   haya señal, un proceso en segundo plano intenta enviar la cola a intervalos y reintenta los
@@ -93,10 +93,13 @@
   dispositivo» de Reportes muestra el estado de cada uno. No se adoptan de Kobo: el modal que
   exige OK en cada envío, la figura de borrador (aquí el registro está completo o no se guarda) ni
   esconder la cola en una barra lateral
-- [pendiente] **Colonias en el teléfono (3 MB) o sólo en el servidor.** El SIA hace los cruces territoriales en PostGIS, no en el dispositivo (llamada del 22-09-2026). El diseño ya lo prevé: el teléfono deriva alcaldía, colonia y UGA para verlas en campo sin señal (provisional, con `capa_version`) y en Fase 2 el servidor rederiva con PostGIS y su resultado manda (S-08). Alcaldías (390 KB) y UGA (423 KB) se quedan en el teléfono; decidir si colonias (3 MB, IECM) se queda o se deriva sólo en el servidor y el cabo la ve al sincronizar. Lo que se pide al SIA: nombre de las tablas del esquema `territorio`, SRID, campos llave, versión y fecha de corte, y una exportación de esas mismas tablas (ST_AsGeoJSON o QGIS) para que teléfono y servidor crucen contra la misma geometría
+- ~~Colonias en el teléfono (3 MB) o sólo en el servidor~~ Resuelto en D251, D255 y D277: las tres capas
+  viajan con la aplicación, que deriva alcaldía, colonia y celda para verlas sin señal; el servidor vuelve a
+  derivar con PostGIS sobre `territorio`, con las mismas capas, y su resultado manda. Antes decía: el SIA hace los cruces territoriales en PostGIS, no en el dispositivo (llamada del 22-09-2026). El diseño ya lo prevé: el teléfono deriva alcaldía, colonia y UGA para verlas en campo sin señal (provisional, con `capa_version`) y en Fase 2 el servidor rederiva con PostGIS y su resultado manda (S-08). Alcaldías (390 KB) y UGA (423 KB) se quedan en el teléfono; decidir si colonias (3 MB, IECM) se queda o se deriva sólo en el servidor y el cabo la ve al sincronizar. Lo que se pide al SIA: nombre de las tablas del esquema `territorio`, SRID, campos llave, versión y fecha de corte, y una exportación de esas mismas tablas (ST_AsGeoJSON o QGIS) para que teléfono y servidor crucen contra la misma geometría
 - ~~Sustituir alcaldías y malla UGA por las definitivas~~ Hecho en el bloque 38 (D92)
 - ~~Sustituir la capa de colonias~~ No hace falta: las colonias del IECM 2022 son la unidad oficial y definitiva (bloque 117, D180). Nota original: sustituir la capa de colonias (IECM 2022, de prueba) por la definitiva del SIA, con fuente, llave y fecha de corte, y volver a correr `pruebas/generar_capas.py`. Anotado por Liber, 22-09-2026
-- [pendiente] **Las ocho claves UGA con prefijo distinto a su alcaldía siguen en la malla definitiva** (TLP-040, TLP-085, IZP-005, IZP-011, COY-054, MIH-001, MIH-002, IZC-021). No afectan al registro (la alcaldía sale de su capa), pero sí al folio: una de esas celdas daría `TLP-040-…` a un árbol de Milpa Alta. Confirmar con el SIA si se quedan así antes de emitir folios (condición 2 y 5 de la emisión)
+- ~~Las ocho claves UGA con prefijo distinto a su alcaldía siguen en la malla definitiva~~ Resuelto en
+  D249: sus claves son correctas y se quedan así. Antes decía: (TLP-040, TLP-085, IZP-005, IZP-011, COY-054, MIH-001, MIH-002, IZC-021). No afectan al registro (la alcaldía sale de su capa), pero sí al folio: una de esas celdas daría `TLP-040-…` a un árbol de Milpa Alta. Confirmar con el SIA si se quedan así antes de emitir folios (condición 2 y 5 de la emisión)
 
 - ~~Supervisión e informes por periodo~~ Decidido por Liber el 25-09-2026 y hecho en D157–D159. Antes decía: **Supervisión e informes por periodo (propuesta del 25-09-2026, pedido del área de
   plantación).** Pestaña «Supervisión» para coordinación y administración (cifras del periodo, «Qué
@@ -113,13 +116,21 @@
 
 ### Para resolver antes de montar en los servidores del SIA
 
-- [pendiente] **El módulo `plantacion` que ya existe.** El backend del SIA tiene un módulo Plantación y `bd_csia` un esquema `plantacion`. Liber confirma que es un antecesor mal construido que el SRP sustituye. Antes de descartarlo hay que revisar **si su catálogo de especies ya tiene claves en uso**, para no estrenar claves distintas para las mismas especies (ver D22–D24)
-- [pendiente] **Dónde viven las fotografías.** Hoy van incrustadas en el registro. Deben salir a archivo, como ya hace el SIA en sus otros módulos. Sin eso, ni el teléfono del cabo ni el volumen del servidor .196 aguantan: quedan ~6 GB libres, que a 100 KB por imagen cubren unos 60 mil archivos
+- ~~El módulo de plantación que ya existe en el SIA~~ Resuelto en D249 y D251: el SRP entra como proyecto
+  nuevo, con su esquema `srp`, y convive con el módulo anterior hasta operar; entonces el anterior se carga
+  como histórico o se archiva. Las claves de especies son las del catálogo del SIA (D84)
+- ~~Dónde viven las fotografías~~ Resuelto en D295: son archivos en el servidor de aplicaciones, fuera de la
+  base y de lo publicado, como en los otros módulos del SIA, y `GET /fotos/uso` dice cuánto ocupan. Falta que
+  el SIA diga la carpeta y su respaldo
 - [pendiente] **Cuánto disco pedir a ADIP.** Depende de qué proporción suba foto: 10% son ~5 GB, 20% ~10 GB, 30% ~15 GB para la meta de 500 mil. ADIP autoriza con uso real medido, así que **el sistema debe reportar desde el primer mes cuántos registros llevan foto y cuánto pesan**, para que la solicitud sea una proyección con evidencia y no una estimación
-- [pendiente] **Colonia o unidad territorial.** Ya llegaron alcaldías y UGA; falta la capa de colonias o de unidades territoriales. El esquema `territorio` del SIA tiene 1,817 unidades territoriales. Confirmar cuál es la unidad oficial de reporte y pedir esa capa; mientras, `colonia` se guarda nula (D45)
-- [pendiente] **Fuente y fecha de corte de las dos capas recibidas.** Los atributos de alcaldías (`cvegeo`, `nomgeo`, `shape_area`, `region`) apuntan al Marco Geoestadístico del INEGI más campos propios; confirmar y anotar en `generar_capas.py`
+- ~~Colonia o unidad territorial~~ Resuelto en D180 y D251: la unidad oficial son las 1,837 colonias del
+  IECM 2022; las 1,817 unidades territoriales de `territorio` son otra capa y el SRP no la usa. Antes decía:
+  ya llegaron alcaldías y UGA; falta la capa de colonias o de unidades territoriales. El esquema `territorio` del SIA tiene 1,817 unidades territoriales. Confirmar cuál es la unidad oficial de reporte y pedir esa capa; mientras, `colonia` se guarda nula (D45)
+- ~~Fuente y fecha de corte de las dos capas recibidas~~ Anotadas en `herramientas/generar_capas.py` (origen,
+  versión y fecha de corte de cada capa) y en `docs/PLAN-TRASPASO-SIA.md`, § 3. Antes decía: los atributos de alcaldías (`cvegeo`, `nomgeo`, `shape_area`, `region`) apuntan al Marco Geoestadístico del INEGI más campos propios; confirmar y anotar en `generar_capas.py`
 - ~~Reportar al SIA los cinco huecos y tres solapes de la capa de alcaldías~~ Corregidos en la capa definitiva (D92). Antes decía: **Reportar al SIA los cinco huecos y tres solapes de la capa de alcaldías**, con sus coordenadas (en `BITACORA.md`, Bloque 15). El mayor hueco, de 1.2 ha, está cerca de 19.4838, -99.1499; el mayor solape, GAM–VCA, de 2.5 ha
-- [pendiente] **Capas reales de colonias y malla UGA: origen, fecha de corte y área responsable** → resuelto para UGA; queda colonias (arriba)
+- ~~Capas reales de colonias y malla UGA: origen, fecha de corte y área responsable~~ Resuelto: UGA en D92 y
+  colonias en D180 y D251
 - [pendiente] **Límites de nginx.** El servidor web tiene configurados límites de velocidad y de tamaño de subida. Con decenas de cuadrillas subiendo fotos a la vez se tocan; conocer el límite antes, no el primer día
 - [pendiente] **HTTPS y geolocalización.** El navegador sólo entrega la posición del GPS en contexto seguro. Hacia el ciudadano hay HTTPS porque ADIP lo termina, pero una prueba por HTTP dentro de la red interna dejará el botón de ubicación sin responder, y parecerá un defecto del sistema
 - [pendiente] **El sitio aún no se declara apto para difusión pública masiva.** Aclarar si montar el SRP ahí cuenta como difusión pública, dado que el personal de campo entra por el dominio público
@@ -127,7 +138,8 @@
 ### Para resolver en el diseño del programa
 
 - ~~Qué cuenta como plantado~~ Decidido en D87: sólo el alta. El identificador (UUID y folio inmutable) admite un seguimiento posterior si en Fase 2 se decide
-- [pendiente] **Cómo se evita el doble conteo**, con dos cuadrillas registrando el mismo árbol o un árbol repuesto contado dos veces
+- ~~Cómo se evita el doble conteo~~ Resuelto en D249 y D298: el servidor acepta el registro y, si hay otro
+  árbol cerca en otra jornada, lo pone en «Posibles duplicados» para que la Administración global decida
 - ~~¿Una fotografía por árbol o por jornada?~~ Decidido en D87: por ejemplar, opcional. El contador de fotografías (D87) medirá el uso real para la solicitud a ADIP
 
 - ~~Apellido materno obligatorio~~ Decidido en D87: opcional
@@ -137,14 +149,17 @@
 - ~~`es_ficticio` en cierres y bitácora~~ Agregado en D87
 - ~~Respaldo sin usuarios ni catálogos~~ Resuelto en D87: lleva las cinco tablas
 - [pendiente] **Constancia de generación del parte.** Liber decidió (22-09-2026) **no** registrar cada generación del PDF en bitácora; queda sólo CREADO/EDITADO del cierre. Se reabre si en Fase 2 el parte se usa como evidencia formal
-- [pendiente] **Aviso de privacidad** en la pantalla de acceso: Liber lo pospuso (22-09-2026)
+- ~~Aviso de privacidad en la pantalla de acceso~~ Resuelto: se consultó con la Unidad de Transparencia y no se requiere (D249, D321). Falta su respuesta por escrito, como constancia para el SIA
 - ~~Comentarios en el parte PDF~~ Decidido en D164: sección «Comentarios por ejemplar» al final del reporte, sólo con los árboles que lo tienen
-- [pendiente] **Doble conteo, capa oficial de colonias y mapa base para producción**: sin decidir en el Excel del 22-09-2026; siguen abiertos (ver «Para resolver en el diseño del programa»)
-- [pendiente] Proveedor de mapa base para producción (OpenStreetMap no admite uso institucional intensivo)
+- ~~Doble conteo, capa oficial de colonias y mapa base para producción~~ Resueltos: el doble conteo en D298,
+  las colonias y el mapa base en D251
+- ~~Proveedor de mapa base para producción~~ Decidido en D251: CARTO para «Calles» y Esri para «Satélite».
+  Mientras no se conecte CARTO, con su clave en el servidor, los dos son de Esri
 - ~~Validación del catálogo de especies y su clasificación~~ Resuelto en D84: catálogo real del SIA con `tipo_distribucion` del SNIB
 - ~~Formato de las claves del catálogo real de especies~~ Resuelto en D84: `ESP-0000`, consecutivo del SIA
 - ~~Cuenta institucional para el repositorio~~ Resuelto: `SedemaOficina/SISTEMA-PLANTACION`
-- [pendiente] Aviso de privacidad: el sistema recaba nombre, área y cargo del personal (Norma 1.8)
+- ~~Aviso de privacidad: el sistema recaba nombre, área y cargo del personal (Norma 1.8)~~ Resuelto, como
+  arriba (D249, D321)
 - ~~Plegar los tres campos del punto~~ Decidido en D87: se dejan visibles
 - ~~El campo «Comentarios» del registro en el reporte~~ Resuelto en D164 (ver arriba)
 
@@ -4124,3 +4139,41 @@
     – en Jornadas, con dos atajos tocados seguidos, la lista que tardaba más en pintarse podía quedar encima de la
       última: «Hoy» marcado y todas las jornadas a la vista. Ahora cada pintura lleva su turno, como en «Posibles
       duplicados», y una que termina tarde ya no se pinta.
+- **D321. Los documentos y la entrega (bloque 241).**
+  21-10-2026. Es el bloque 6 del plan de corrección de la auditoría del 19-10-2026. Liber decidió el aviso de
+  privacidad.
+  · **Aviso de privacidad: no se requiere.** Se consultó con la Unidad de Transparencia (D249). Todos los
+    documentos lo dicen igual. Falta su respuesta por escrito, como constancia para el SIA: va en «Lo que falta
+    antes de operar» del paquete.
+  · **Los pendientes del encabezado** que ya se resolvieron quedan tachados, con la decisión que los resolvió:
+    15 de 21. Siguen abiertos seis, que dependen del SIA o de la operación: la bandeja de especies, el disco,
+    los límites del servidor web, HTTPS en la red interna, la difusión pública y la constancia del parte.
+  · **Dos datos internos de la infraestructura del SIA** salen de este documento. Quedan en el historial de git.
+  · **Registro fijo de fallas de componentes compartidos:** `docs/FALLAS-COMPARTIDAS.md`, para el equipo del SIA.
+  · **El paquete, otra vez armado con la 1.0.5**, sobre la versión vigente de `sia-backend`, del 20-10-2026
+    (`servidor/local/entrega-sia/`). Va con el número de la aplicación, el mismo de la pantalla y del manual,
+    y no como «1» con otra fecha, como sugiere la guía: así las tres dicen lo mismo. La base y los datos de
+    arranque no cambiaron desde la versión 1. El LEEME trae:
+    – «Si ya está instalada la versión 1»: se reemplazan los 21 archivos del módulo y la aplicación, sin
+      guiones;
+    – «Revertir»: el servidor web, el backend y la base, en el orden contrario al de la instalación. La base se
+      restaura del respaldo sólo antes de operar;
+    – una sola lista de lo que falta antes de operar, y la pregunta de la difusión pública.
+    `AVISOS-REVISADOS.txt` viaja con los dos avisos revisados del empaquetador, y `app/` lleva su `VERSION`,
+    como pide la guía (sección 8): `herramientas/preparar_produccion.py` la copia.
+  · **El manual de la Administración** vuelve a generarse con la 1.0.5:
+    – la carga histórica es de una sola vez y de hasta 5,000 renglones; decía 20,000 por archivo;
+    – la fecha mínima, el 01-OCT-2024;
+    – tres casos nuevos en «Qué hacer si…»: alguien más cambió lo que se editaba, la última Administración
+      global y la otra pestaña;
+    – «la pastilla», como la llama la aplicación.
+    La herramienta que lo arma usaba árboles de mayo de 2024, anteriores a la fecha mínima, y se atoraba
+    desde la 1.0.2: ahora usa noviembre de 2024.
+  · **Una revisión de coherencia independiente**, que es la prueba que cierra el bloque, encontró 26
+    contradicciones y datos atrasados. Los más serios: el plan de traspaso decía que el servidor no lee las capas
+    de `territorio`; el LEEME no decía cómo actualizar una versión 1 ya instalada; el README decía que ningún
+    registro tiene folio. Se corrigieron en el plan de traspaso, la especificación, el README, la alineación, la
+    revisión del servidor, el manual y el LEEME. Las que no se tocan se dicen en la bitácora.
+  · **Al día:** el tablero de mejoras. M171 ya no aplica, M397 está hecha y M398 verificada. Se agregan M523
+    (un texto de la carga masiva) y M524 (paginar Usuarios y Posibles duplicados), para el bloque 7. El resumen
+    contaba 445 hechas, y la tabla tiene 503.

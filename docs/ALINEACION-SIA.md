@@ -73,7 +73,8 @@ cuentas viven en `srp`; altas, bajas y restablecimientos los hace la Administrac
    Va al SIA **para revisión**, en la versión de prueba 0.9.64 (D289): la primera instalación será la
    versión 1, con el sistema completo. **La versión 1 está lista** (bloque 235, D315): el paquete para
    instalar, sobre la versión vigente de `sia-backend` al 17-10-2026, con la aplicación real, los datos de
-   arranque y el manual de la Administración global.
+   arranque y el manual de la Administración global. La versión 1.0.5 (21-10-2026, D321) la sustituye, con
+   las correcciones de la auditoría del 19-10-2026, sobre la versión de `sia-backend` del 20-10-2026.
 3. **El acceso con los formatos del SIA.** Ya hechos (bloque 206): contraseña con scrypt N=16384, r=8,
    p=1, en base64url; testigo de sesión de 32 bytes con su resumen sha256 en hexadecimal; la cookie
    `sia_srp_sesion`; y, en la fase 2, la primera cuenta con un guion que sólo imprime el SQL. Hechos en el
@@ -87,7 +88,7 @@ cuentas viven en `srp`; altas, bajas y restablecimientos los hace la Administrac
 
    El límite por procedencia (6.2) quedó hecho en el bloque 233, cuando el SIA corrigió su módulo común; la
    edición de cuentas, en el 232.
-4. **La recepción como la hace el SIA.** En curso. Hecho en el bloque 212: la recepción de jornadas y
+4. **La recepción como la hace el SIA.** Hecha. Hecho en el bloque 212: la recepción de jornadas y
    árboles nuevos, por envíos de hasta 100 operaciones, cada una de mucho menos de un minuto (6.3).
    - El punto se vuelve a ubicar y el folio se asigna en la misma transacción que recibe el árbol, con
      un contador por celda que sólo avanza y lo que se congela al asignarlo.
@@ -101,9 +102,11 @@ cuentas viven en `srp`; altas, bajas y restablecimientos los hace la Administrac
 
    Hecho en el bloque 215: las fotografías como archivos, con su estimado de espacio (6.11).
 
-   Falta:
-   - la carga masiva por tandas: hecha en el bloque 229 (D309), con tandas de 300 árboles que caben en 100 KB;
-   - lo que baje al teléfono, escrito por partes.
+   Hecho en el bloque 229 (D309): la carga masiva por tandas, que desde el bloque 238 se arman por peso para
+   caber en 100 KB.
+
+   Lo que baja al teléfono llega por páginas de 2,000 y vive sólo en memoria (D301): no se escribe en la
+   base del teléfono. Falta medirlo en un iPhone real.
 
 ## 4. Preguntas para el SIA
 
@@ -138,7 +141,7 @@ equipo, aplican igual al SRP:
 |---|---|---|---|
 | 1 | Un mismo 401, con el mismo mensaje y el mismo tiempo, si el correo no existe, la cuenta está inactiva o bloqueada o la contraseña es mala: si no, se averigua qué correos tienen cuenta | Así responde: 401 con el mismo mensaje, verificando la contraseña también en la cuenta bloqueada o desactivada. Sólo a quien escribió la contraseña correcta se le dice que su temporal venció | **Hecho** (bloque 206) |
 | 2 | Límite de intentos por procedencia: contar sólo los fallidos, y tomar la dirección de la persona descartando los saltos conocidos, no la última de `X-Forwarded-For`, que es el intermediario y es la misma para todos. El SIA lo corrige en su módulo común (`src/comun/procedencia.ts`): se importa de ahí, no se copia | Las entradas fallidas se cuentan por dirección, con la de `procedencia.ts` del SIA, que ya salta sus intermediarios: pasadas 30 en 15 minutos (`SRP_INTENTOS_POR_PROCEDENCIA`), esa dirección espera (429) sin que se verifique nada. El bloqueo por cuenta sigue igual | **Hecho** (bloque 233) |
-| 3 | Cada petición termina en menos de un minuto: el servidor web corta la API después. Una alta masiva de cuentas con un hash lento perdía las contraseñas temporales | La carga masiva va por tandas de 300 árboles (5,000 en 14 s) y el envío, por lotes de hasta 100 operaciones; en la base, cada consulta de `srp_api` se cancela a los 50 s | **Hecho** (bloques 229 y 233) |
+| 3 | Cada petición termina en menos de un minuto: el servidor web corta la API después. Una alta masiva de cuentas con un hash lento perdía las contraseñas temporales | La carga masiva va por tandas de hasta 300 árboles y 80 KB (5,000 en 14 s, medido en el bloque 229) y el envío, por lotes de hasta 100 operaciones; en la base, cada consulta de `srp_api` se cancela a los 50 s | **Hecho** (bloques 229 y 233) |
 | 4 | El hash de contraseñas con los parámetros de `acceso` (scrypt N=2^14): con 2^17, diez accesos simultáneos ocupaban 1.3 GB de una memoria que comparten todos los módulos | Igual que `acceso`: `scrypt$16384$8$1$sal$derivada` en base64url, sal de 16 bytes, 64 de derivada, texto en NFKC. Las guardadas antes siguen verificando | **Hecho** (bloque 206) |
 | 5 | La cookie con su ruta acotada, nunca `/`: con `/` viaja a todas las aplicaciones del dominio | `Path=/api/srp` | Bien |
 | 6 | Sesiones propias de cada aplicación: con una tabla común, «cerrar sesiones» cierra también las de otra | Tabla propia, `srp.sesiones` | Bien |
@@ -147,7 +150,7 @@ equipo, aplican igual al SRP:
 | 9 | El paquete: ZIP con su `.sha256`, un manifiesto que cubra todas las carpetas, el cambio a `sia-backend` como diff que aplique limpio sobre su versión vigente más los archivos completos, y `npm run typecheck` sin errores | `herramientas/empaquetar.py` arma el manifiesto, el ZIP y su `.sha256`; el diff aplica limpio sobre la versión vigente y `npm run typecheck` no da errores dentro de `sia-backend` | **Hecho** (bloque 208) |
 | 10 | Instalar primero la base y las variables y después el código: un módulo sin sus variables detiene el backend entero. Cada módulo en un despliegue aparte, con respaldo de la base antes | La guía de instalación de `servidor/README.md` lleva ese orden | **Hecho** (bloque 206) |
 | 11 | Fotografías fuera de las carpetas publicadas, en el servidor de aplicaciones, cuyo disco es limitado y lo comparten todos los módulos | Archivos en la carpeta `SRP_FOTOS_DIR`, fuera de la base y de lo publicado, con su registro en `srp.fotografias`; `GET /fotos/uso` dice cuánto ocupan y cuánto ocuparían en un año. Estimado: un cabo con fotografía en cada árbol, de 300 a 600 MB al año | **Hecho** (bloque 215). Falta que el SIA diga la carpeta y su respaldo |
-| 12 | El aviso de privacidad se confirma con la Unidad de Transparencia | Consultado: no se requiere (D250) | Llevar en el paquete la constancia de esa consulta |
+| 12 | El aviso de privacidad se confirma con la Unidad de Transparencia | Consultado: no se requiere (D249, D321) | Falta su respuesta por escrito, como constancia; el paquete lo dice en «Lo que falta antes de operar» |
 | 13 | No publicar una tercera capa de colonias si sus datos caben en una que ya existe (el marco de unidades territoriales 2020 o el catálogo IECM 2022) | Prioritarias: 2,243 colonias del modelo de priorización, capa propia | **Pendiente de Liber**: de qué catálogo salen las 2,243, y si la prioridad puede ir como campo de una capa del SIA |
 | 14 | La caché de teselas tiene una cuota que comparten todas las capas: no se precargan niveles amplios | El mapa base es externo y las capas viajan con la aplicación | Sin efecto hoy |
 | 15 | Sin servidor de correo: la contraseña no se recupera, se restablece; la administración da una temporal de un solo uso que se cambia al primer acceso | Así funciona | Bien |

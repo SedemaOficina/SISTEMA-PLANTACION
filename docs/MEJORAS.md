@@ -500,6 +500,7 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M503 | Paso 4d | «No se pudo enviar», en rojo, en la tarjeta del árbol y en la de la jornada, y en la franja «Guardado» | Media | 0.9.69 (B224) | Registros, Jornadas y Nuevo registro, con datos reales | D304 |
 | M504 | Paso 4d | Ventana «Cambios que el servidor no aceptó»: de qué registro es cada cambio, qué se cambió, por qué y qué hacer | Alta | 0.9.69 (B224) | Franja › Revisar | D304 |
 | M505 | Prueba de conexión | Al volver a la entrada se cierra cualquier ventana que hubiera quedado abierta | Media | 0.9.69 (B224) | Sesión vencida con una ventana abierta | D304 |
+| M397 | Liber | En el SIA el SRP va como proyecto nuevo, con su propio nombre: no reutiliza el módulo ni el esquema de plantación que ya existen ahí | Alta | 1 (B235) | Paquete de instalación: esquema `srp`, cuenta `srp_api` y ruta `/api/srp` | D249, D277, D315 |
 | M522 | Auditoría (19-10-2026) | Jornadas: con dos atajos tocados seguidos (por ejemplo «Todas» y luego «Hoy»), la lista es siempre la del atajo marcado; antes, en un teléfono lento podía quedar la del primero. Un mapa que se cierra en seguida ya no da error | Media | 1.0.5 (B240) | Jornadas: tocar «Todas» y en seguida «Hoy» | D320 |
 | M521 | Auditoría (19-10-2026) | Reporte de la jornada: con textos largos el recuadro de datos sigue en la página siguiente, en vez de salirse por el pie; la columna «Especie» guarda su ancho aunque un comentario traiga un enlace largo. En los PDF, lo que la letra no tiene (emojis, otros alfabetos) sale como «?» y el aviso al descargar lo dice. Una fotografía HEIC dice qué hacer con ella | Media | 1.0.4 (B239) | Reporte de una «Solicitud especial» con textos largos; un comentario con un enlace o un emoji | D319 |
 | M520 | Auditoría (19-10-2026) | Carga masiva hasta 5,000 renglones, la carga histórica de una sola vez; con una carga hecha, otro archivo pregunta antes, y si otra carga está subiendo se dice de quién. Usuarios y Catálogos: si otra Administración cambió lo mismo mientras se editaba, el formulario trae lo suyo y lo dice. La última Administración global no se desactiva. Largos máximos en Catálogos y en el correo | Alta | 1.0.3 (B238) | Carga masiva con una carga hecha; dos Administraciones editando la misma cuenta | D318 |
@@ -525,11 +526,10 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M46 | Android | Revisión corta en Android: versión, botón «atrás» con ventanas abiertas, calendario y hora, especies con teclado, precisión, foto, compartir PDF, aviso | Alta | Pendiente | Espera capturas |
 | M168 | Auditoría 360 | Bloque «Publicación ligera», lo que queda: capas con su propia versión (que no se vuelvan a descargar con cada versión de la app) y aligeradas; licencia del mapa base (M2, M4) | Media | Pendiente | Decisiones 3 y 5 de la lista del 26-09-2026. Originales y jsPDF, hechos en B102 |
 | M170 | Auditoría 360 | Bloque «Pruebas en iPhone»: GitHub Actions con Chromium y WebKit, pruebas de migración e integridad (M17, M18) | Media | En curso | Desde la 1.0.5 (B240, D320) las pruebas corren en GitHub en cada subida, con Chromium. Falta WebKit |
-| M171 | Auditoría 360 | Fotografías como Blob (hoy ocupan un tercio más como texto) y sello de datos dentro de la base | Media | Pendiente | Resto de A1 y A2 |
-| M343 | Liber | Catálogo de especies: marcar cuáles son frutales, para filtrar y contar los árboles frutales plantados | Media | En curso | La marca y el filtro, hechos en B179 (M446 a M448). Falta contar los árboles con fruto comestible en Supervisión e informes: cuando lean del servidor |
-| M397 | Liber | En el SIA el SRP va como proyecto nuevo, con otro nombre: no reutiliza el módulo ni el esquema de plantación que ya existen ahí | Alta | Decidido | Nombre `srp` para el proyecto, su esquema y su ruta (D249). Se atiende en la fase de servidor |
-| M398 | Liber | Las capas (alcaldías, colonias, UGA) se van a consumir del esquema territorial del SIA: antes de cambiar, comprobar que son las mismas con que se trabajó aquí —mismos polígonos, claves y versión—, para que lo ya derivado no cambie de alcaldía, colonia ni celda | Alta | Hecha | Verificadas el 05-10-2026: las tres capas son las mismas (D251). Las 1,817 de `territorio` son otra capa; el SRP no la usa |
+| M343 | Liber | Catálogo de especies: marcar cuáles son frutales, para filtrar y contar los árboles frutales plantados | Media | En curso | La marca y el filtro, hechos en B179 (M446 a M448). Falta contar los árboles con fruto comestible en Supervisión e informes |
 | M501 | Auditoría (B204) | La ventana de datos de demostración dice «casi tres años»: con cada año que pasa son más. Decir «desde enero de 2024 hasta hoy» | Baja | Propuesta | Cambia un texto de la pantalla de pruebas |
+| M523 | Revisión del manual (B241) | Carga masiva, con una sola jornada: dice «Se formarán 1 jornada cerrada… marcadas como carga histórica»; debe decir «Se formará 1 jornada cerrada… marcada». Igual en la revisión del archivo | Baja | Propuesta | Cambia un texto de la pantalla: va con el bloque 7 |
+| M524 | Auditoría (19-10-2026) | Usuarios y Posibles duplicados por páginas, como Registros y Jornadas: con 103 cuentas la lista mide 16,266 px en teléfono (C3-01) | Media | Propuesta | Cambia la pantalla: va con el bloque 7, con su antes y después |
 
 ## 3. Verificadas sin falla
 
@@ -537,6 +537,7 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 |---|---|---|---|
 | M24 | Revisión Catálogos/Usuarios | Revisión en tamaño iPhone con capturas propias | Resultó en M52–M58; lo propio de Safari (selectores, teclado) queda por ver en el teléfono |
 | M33 | iPhone · Menú de la tuerca | El menú parecía salir lejos de la tuerca | Era efecto de la captura de página completa; en el teléfono sale junto a su tuerca |
+| M398 | Liber | Que las capas del esquema territorial del SIA (alcaldías, colonias, UGA) sean las mismas con que se trabajó aquí, para que lo ya derivado no cambie | Son las mismas: mismos polígonos y claves (D251). Las 1,817 unidades territoriales de `territorio` son otra capa; el SRP no la usa |
 
 ## 4. Descartadas
 
@@ -544,5 +545,6 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 |---|---|---|---|---|---|
 | M13 | Lista de diseño | Modo oscuro | Baja | Descartado | No sirve en campo |
 | M14 | Lista de diseño | Animaciones decorativas | Baja | Descartado | Gastan batería |
+| M171 | Auditoría 360 | Fotografías como Blob (hoy ocupan un tercio más como texto) y sello de datos dentro de la base | Media | Descartado | Ya no aplica (auditoría del 19-10-2026): las fotografías son archivos en el servidor (D295) y en el teléfono sólo esperan su envío (S-11); el sello sólo rige los datos de prueba |
 
-**Resumen:** 445 hechas · 8 por hacer · 2 revisadas · 2 descartadas.
+**Resumen:** 503 hechas · 7 por hacer · 3 revisadas · 3 descartadas.

@@ -732,3 +732,25 @@ tramos sin fallas ni tramos detenidos, en 30 min.
 
 `lista_atrasada.py`, `mapa_quitado.py` y `sin_leaflet.py` están en la evidencia, junto a los guiones de la
 auditoría.
+
+### Bloque 6 · Documentos y entrega (bloque 241 del proyecto; la aplicación sigue en la 1.0.5)
+
+El dueño decidió el 21-10-2026 la decisión 1 del § 8: el aviso de privacidad no se requiere; falta la constancia
+escrita de la Unidad de Transparencia.
+
+| Clave | Estado | Antes y después | Prueba |
+|---|---|---|---|
+| D1-01 | Corregido | Antes, 21 «[pendiente]» en el encabezado. Después, 6, que dependen del SIA o de la operación; los otros 15, tachados con su decisión | Revisión de coherencia |
+| D1-02 | Corregido | Antes, cuatro estados. Después, uno en todos los documentos y en el paquete | Revisión de coherencia |
+| D1-03 | Corregido | El § 5 del plan de traspaso, y también su § 1, § 3, § 4, § 6, § 7 y § 9 | Revisión de coherencia |
+| D1-04 | Corregido | En el bloque 5 | — |
+| D1-05 | Corregido | M397 hecha, M398 verificada, M171 descartada | — |
+| E1-01 | Corregido | Antes, dos datos internos en un documento público. Después, ninguno en los archivos del repositorio; siguen en el historial de git | Búsqueda en todos los archivos: 0 |
+| F5-01 | Corregido | El LEEME trae «Revertir» y «Si ya está instalada la versión 1». El diff se deshace limpio | `git apply -R --check` sobre `sia-backend` |
+| G2-01 | Corregido | `docs/FALLAS-COMPARTIDAS.md`, con el caso del módulo de procedencia | — |
+| Nuevo · el manual | Corregido | Antes, «hasta 20,000 renglones» y una herramienta que se atoraba desde la 1.0.2. Después, al día con la 1.0.5 | El manual se generó completo |
+| Nuevo · el paquete | Corregido | Armado otra vez sobre la versión vigente de `sia-backend` (20-10-2026): ensayo 18 de 18, binario 23 de 23, servidor 105 de 105, aplicación del paquete 120 de 120 | Ensayo de instalación |
+
+Criterio de cierre, «una nueva revisión de coherencia»: la hizo un revisor independiente, en sólo lectura. Encontró
+26 hallazgos, 3 de ellos altos; se corrigieron todos, salvo tres que se explican en la bitácora y tres dudas que
+no se pueden resolver desde aquí.

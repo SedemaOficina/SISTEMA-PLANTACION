@@ -14,7 +14,7 @@ que index.html pide exista en la copia y que nada de lo quitado se pida. Sólo u
 import os, re, shutil, sys
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ARCHIVOS = ['index.html', 'sw.js', 'manifest.webmanifest']
+ARCHIVOS = ['index.html', 'sw.js', 'manifest.webmanifest', 'VERSION']
 CARPETAS = ['css', 'js', 'vendor', 'assets']
 DE_PRUEBA = ['js/datos-ficticios.js', 'assets/catalogos/catalogo-vehiculos.js', 'js/demostracion.js', 'js/espejo.js']
 AVISO_DE_PRUEBA = '<!-- Sólo en la versión de prueba: la versión real no carga estos dos -->\n'

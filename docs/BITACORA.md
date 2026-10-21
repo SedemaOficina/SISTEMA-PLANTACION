@@ -5942,7 +5942,7 @@ de un atajo anterior. No se quitó nada.
 - En GitHub, la primera corrida (Linux, Chromium) pasó todos sus pasos en 33 min: la sintaxis, la hoja de estilos,
   la consistencia, la presentación y la prueba completa por tramos, sin fallas ni tramos detenidos, en 30 min.
   Su registro sólo se ve con sesión iniciada en GitHub, y de ahí no se leyó el número de comprobaciones. Desde la
-  corrida siguiente, las cifras quedan en la página de la corrida.
+  corrida siguiente, las cifras quedan en el resumen de la corrida, que también pide sesión iniciada.
 - Su único aviso: las tres acciones de GitHub del flujo corrían en Node 20, que GitHub retira. Pasaron a su versión
   7, que corre en Node 24.
 
@@ -5954,3 +5954,73 @@ No se probó:
 
 **Siguiente paso.** Liber decide si sigue con el bloque 6 (los documentos y la entrega) o con el 7 (las propuestas
 de pantalla). Antes de entregar al SIA, rearmar el paquete con esta versión y su `AVISOS-REVISADOS.txt`.
+
+## Bloque 241 — Los documentos y la entrega (21-10-2026)
+
+**Sin versión nueva de la aplicación: sigue la 1.0.5.** El bloque 6 del plan de corrección de la auditoría del
+19-10-2026 (`docs/AUDITORIA-2026-10-19.md`, § 11). Liber decidió el aviso de privacidad (D321).
+
+| Hallazgo | Qué pasaba | Qué pasa ahora |
+|---|---|---|
+| D1-01 | 21 «[pendiente]» en el encabezado de las decisiones, muchos ya resueltos | 15 tachados, con la decisión que los resolvió; quedan 6, del SIA o de la operación |
+| D1-02 | El aviso de privacidad tenía cuatro estados en cuatro documentos | Uno: no se requiere; falta la constancia escrita |
+| D1-03 | El plan de traspaso daba por faltantes el servicio y el paquete | Al día, igual que su punto de partida, sus fases y su siguiente paso |
+| D1-04 | El README tenía tiempos y la revisión de presentación atrasados | Ya corregido en el bloque 240 |
+| D1-05 | M397, M398 y M171 seguían «por hacer» | Hecha, verificada y descartada |
+| E1-01 | Un documento público nombraba dos datos internos del SIA | Ya no; quedan en el historial de git |
+| F5-01 | El paquete no decía cómo revertir la instalación | «Revertir», y «Si ya está instalada la versión 1» |
+| G2-01 | No había registro fijo de fallas de componentes compartidos | `docs/FALLAS-COMPARTIDAS.md` |
+| Nuevo: el manual | Decía «hasta 20,000 renglones por archivo»; su herramienta se atoraba desde la 1.0.2 | Al día con la 1.0.5 y la herramienta, con una fecha válida |
+| Nuevo: el paquete | Armado el 17-10 sobre una versión anterior de `sia-backend` | Otra vez armado, sobre la del 20-10-2026 |
+
+**Qué cambió.**
+- `docs/DECISIONES.md`: el encabezado y D321.
+- `docs/FALLAS-COMPARTIDAS.md` (nuevo).
+- `docs/PLAN-TRASPASO-SIA.md`, `docs/FASE2-Y-TRASPASO.md`, `docs/ALINEACION-SIA.md`, `docs/REVISION-SERVIDOR.md`,
+  `README.md` y `servidor/README.md`: lo que encontró la revisión de coherencia, el aviso de privacidad y
+  «Revertir».
+- `docs/manual/`: el texto, las capturas y el PDF.
+- `herramientas/manual_administracion.py`: la fecha de los árboles de ejemplo.
+- `herramientas/preparar_produccion.py`: la copia que se publica lleva `VERSION`.
+- `docs/MEJORAS.md`: M171, M397, M398, M523, M524 y el resumen.
+- El paquete `srp-v1.0.5-2026-10-21`, en `servidor/local/entrega-sia/`, fuera de git.
+
+**Pantalla: qué se agregó y qué se quitó.** Nada: la aplicación no cambió. Al tomar las capturas del manual se
+vio que la carga masiva, con una sola jornada, dice «Se formarán 1 jornada cerrada… marcadas»: queda en M523,
+para el bloque 7, porque cambia un texto de la pantalla.
+
+**Verificación.**
+- El paquete:
+  - ensayo de instalación con sus propios archivos, en la base local en limpio: 18 de 18;
+  - sobre una copia de `sia-backend` del 20-10-2026: el diff aplica limpio y se deshace limpio,
+    `npm run typecheck` sin errores y `npm run build` con el módulo;
+  - ese binario contra la base local: 23 de 23;
+  - las pruebas del servidor: 105 de 105;
+  - la aplicación del paquete contra el servicio: `prueba_conexion.py --app`, 120 de 120;
+  - el empaquetador: 116 archivos, los dos avisos revisados; las sumas del manifiesto y del ZIP, bien;
+    ninguna ruta personal.
+- Lo del SRP en `src/db.ts` y `src/index.ts` es igual al de la versión 1, salvo un comentario; la base y los
+  datos de arranque, iguales.
+- El manual: 25 capturas con la 1.0.5 y su PDF; el del paquete es el mismo.
+- La revisión de coherencia la hizo un revisor independiente, en sólo lectura, sobre todos los documentos, el
+  manual contra el código y el LEEME: 26 hallazgos (3 altos). Se corrigieron todos, salvo:
+  - D317 y D318 se contradicen en la hora de recepción: son decisiones con fecha y la segunda corrige a la
+    primera;
+  - la guía del SIA pide la verificación como `srp_api` al final, y el paquete la pone antes de los datos de
+    arranque: la guía es general y el orden del paquete es el que se probó;
+  - `servidor/README.md` nombra la base local de desarrollo: es la del equipo de desarrollo, no del SIA;
+  - tres dudas que no se pueden resolver desde aquí: si el SIA ya respondió las preguntas de la alineación
+    (§ 4), si las correcciones del catálogo de especies ya venían en el Excel y si la versión 1 llegó a
+    instalarse.
+- Auditorías: 144 sin hallazgos; hoja de estilos sin hallazgos; los guiones, sin avisos de sintaxis.
+- La aplicación no cambió: la prueba completa no se volvió a correr aquí; corre en GitHub con la subida.
+
+No se probó:
+- la instalación en el servidor del SIA, que la hace el SIA;
+- la actualización desde una versión 1 instalada: no hay una instalada aquí; se comprobó que lo del SRP en
+  `db.ts` e `index.ts` no cambia;
+- «Revertir» en una base con datos: se comprobó que el cambio a `sia-backend` se deshace limpio; la restauración
+  del respaldo ya está probada (auditoría, E2).
+
+**Siguiente paso.** Liber decide cuándo entrega el paquete al SIA. Queda el bloque 7: las propuestas de
+pantalla, con su antes y después.

@@ -2,7 +2,7 @@
 
 El formulario funciona entero en el dispositivo. Con datos de prueba no habla con ningún servidor.
 Con datos reales (`ES_FICTICIO: false`) entra con las cuentas del servicio del SRP (`servidor/`), que
-instala el SIA. La conexión se construye por partes (`docs/FASE2-Y-TRASPASO.md`): hoy, entrar, bajar
+instala el SIA. La conexión está completa desde la versión 1 (`docs/FASE2-Y-TRASPASO.md`): entrar, bajar
 catálogos, cuentas y parámetros, ver lo ya enviado, que llega del servidor, y enviar lo que se captura.
 
 La versión que corre se lee al pie de cada pantalla.
@@ -37,7 +37,7 @@ La versión que corre se lee al pie de cada pantalla.
 6. **Registros**: la lista de árboles con filtros, detalle, edición y eliminación que se deshace.
    **Configuración**, sólo para la Administración global, última pestaña de la barra de secciones:
    **Usuarios**, **Catálogos** (programas, áreas, especies, vehículos, instituciones y solicitantes),
-   **Parámetros** (sólo consulta), **Registro de cambios**, **Carga masiva** del histórico desde
+   **Parámetros** (se editan con datos reales; con datos de prueba, sólo consulta), **Registro de cambios**, **Carga masiva** del histórico desde
    Excel o CSV, que no vuelve a cargar lo que ya está y se deshace por lote, y **Acerca del sistema**. El catálogo de especies se descarga en Excel con la forma del libro de origen del SIA; desde Catálogos › Especies se abre **Especies escritas** (lo que se escribió en «Otra especie», para revisarlo fuera).
 7. **Instituciones**. Además de la Secretaría registran las alcaldías, otras
    dependencias del Gobierno de la CDMX (PAOT, SOBSE), empresas (Green Cover) y organizaciones
@@ -47,7 +47,7 @@ La versión que corre se lee al pie de cada pantalla.
    agrega la Administración en Catálogos. Cada cuenta y cada jornada llevan su institución;
    ninguna ve lo de otra. Programas: SEDEMA, todos; las demás, los que la Administración marca en
    Catálogos › Programas (de arranque: alcaldías, Gobierno de la CDMX y organizaciones civiles,
-   Reforestación Urbana; empresas, Palmeras). El cierre de las de fuera es encargado,
+   Reforestación Urbana, y el Gobierno de la CDMX también Centro Histórico; empresas, Palmeras). El cierre de las de fuera es encargado,
    observaciones y hora: personal, chófer y vehículo sólo los captura SEDEMA. Lo que plantan suma
    al total de la Ciudad; Supervisión y los informes de la Administración lo desglosan y filtran
    por institución.
@@ -70,7 +70,7 @@ se reintenta la próxima vez. Un árbol a medio capturar se guarda como borrador
 
 ## Cuentas de arranque
 
-El sistema arranca con once cuentas de prueba y **ninguna plantación**: se
+El sistema arranca con trece cuentas de prueba y **ninguna plantación**: se
 llena con lo que se capture.
 
 | Correo | Institución | Perfil | Qué puede hacer |
@@ -83,7 +83,7 @@ llena con lo que se capture.
 | coordinador.alcaldia@ejemplo.local | Alcaldía Iztapalapa | Coordinador | Igual que un coordinador, sólo con los cabos de su institución; sin área |
 | cabo.alcaldia@ejemplo.local | Alcaldía Iztapalapa | Cabo | Igual que un cabo; sin área; en el cierre, sin personal, chófer ni vehículo. Programa: Reforestación Urbana |
 | coordinador.gobierno@ejemplo.local | PAOT (Gobierno de la CDMX) | Coordinador | Ídem coordinador de fuera |
-| cabo.gobierno@ejemplo.local | PAOT (Gobierno de la CDMX) | Cabo | Ídem cabo de fuera. Programa: Reforestación Urbana |
+| cabo.gobierno@ejemplo.local | PAOT (Gobierno de la CDMX) | Cabo | Ídem cabo de fuera. Programas: Reforestación Urbana y Centro Histórico |
 | coordinador.empresa@ejemplo.local | Green Cover (Empresa privada) | Coordinador | Ídem coordinador de fuera |
 | cabo.empresa@ejemplo.local | Green Cover (Empresa privada) | Cabo | Ídem cabo de fuera. Programa: Palmeras |
 | coordinador.civil@ejemplo.local | Reforestamos México, A.C. (Organización civil) | Coordinador | Ídem coordinador de fuera |
@@ -253,6 +253,8 @@ docs/                   Memoria del proyecto
   AUDITORIA-INTEGRAL-APP.md  Auditoría de la aplicación: seguridad, integridad, accesibilidad, rendimiento y código
   AUDITORIA-COMPLETA.md  Auditoría de todo el proyecto: archivos, código, reglas, diseño, textos, botones y avisos
   REVISION-SERVIDOR.md  Revisión del servidor: seguridad, integridad, alineación con el SIA y mediciones
+  AUDITORIA-2026-10-19.md  Auditoría profesional del 19-10-2026, con su evidencia y el seguimiento de las correcciones
+  FALLAS-COMPARTIDAS.md  Fallas de componentes del SIA que usa el SRP, para el equipo del SIA
   manual/               Manual de la Administración global: el PDF, su fuente (manual-administracion.html) y sus capturas
   REVISION-PANTALLAS.md, REVISION-ARCHIVOS.md   Revisiones de las pantallas y de los archivos que se descargan
   DECISIONES.md         Decisiones numeradas (Dnn)
@@ -291,7 +293,8 @@ versión se escribe en un solo lugar del código.
 
 **El archivo `VERSION`, en la raíz, lleva el mismo número** (lo pide la guía del SIA, sección 8); la prueba
 falla si no coincide con la marca. Ese número se ve siempre en la franja fija de arriba. Hasta la 0.9.78 decía
-«Versión de prueba 0.9.N»; desde la versión 1, la que se entrega al SIA para instalar, dice «Versión 1».
+«Versión de prueba 0.9.N»; desde la versión 1, la que se entrega al SIA para instalar, dice «Versión» y el número de `VERSION`
+(hoy, «Versión 1.0.5»).
 
 Si aun así alguien cae en una mezcla, el sistema lo detecta al abrir y explica cómo forzar la
 recarga, en vez de quedarse en blanco.
@@ -310,7 +313,7 @@ falla si alguna pide más de ocho, o más de cuatro a la vista.
 `SELLO_DATOS`, en `js/config.js`, se cambia cada vez que cambian las cuentas o los catálogos de
 arranque. El dispositivo guarda el sello con el que cargó los datos de ejemplo; si no coincide y
 **no hay nada capturado** (árboles, jornadas o bitácora), los vuelve a cargar y lo avisa. Si hay
-capturas, **no se borra nada**: en la Etapa 1 el teléfono es la única copia. Por eso un
+capturas, **no se borra nada**: con datos de prueba el teléfono es la única copia. Por eso un
 cambio en la forma de los datos se resuelve con una migración numerada en `js/almacen.js`, que
 traslada lo guardado antes de retirar nada, y no con el sello.
 
@@ -347,26 +350,27 @@ reporte de una jornada no obliga a escribirlo otra vez.
 
 ## La base del dispositivo
 
-La estructura vive en migraciones numeradas (`MIGRACIONES` en `js/almacen.js`; hoy van tres) y los
+La estructura vive en migraciones numeradas (`MIGRACIONES` en `js/almacen.js`; hoy van diez) y los
 almacenes que el código espera se declaran en `ALMACENES`. **Lo capturado no se borra solo**:
 un cambio de estructura es una migración nueva que traslada lo guardado antes de retirar nada; una
 base a la que le falta un almacén, o de una versión posterior, se rehace conservando cada renglón;
 y el sello de datos sólo vuelve a cargar las cuentas y catálogos de ejemplo cuando no hay nada
 capturado. Al guardar el primer árbol se pide al navegador que no desaloje lo guardado.
 
-En la Etapa 1 todo vive en el navegador de cada teléfono: borrar los datos del navegador borra los
-registros. Por eso la guía «¿Qué hacer sin internet?» pide no borrar los datos del navegador y,
+Con datos de prueba todo vive en el navegador de cada teléfono; con datos reales, lo que aún no se envía.
+Borrar los datos del navegador borra eso. Por eso la guía «¿Qué hacer sin internet?» pide no borrar los datos del navegador y,
 cuando hay registros en cola, dice cuántos son y de qué días. No hay respaldo en el teléfono: proteger lo capturado es
-tarea del servidor y de su cola de envío en la Fase 2.
+tarea del servidor y de su cola de envío (`js/cola.js`).
 
 ## Mapa
 
-La capa base es imagen de satélite de Esri, con los nombres de vías y lugares encima. Las tres
-capas se declaran en `CAPAS`, dentro de `js/config.js`; cambiar de proveedor es cambiar esa lista
+Hay dos mapas base, los dos de Esri: «Satélite», la imagen con los nombres de vías y lugares encima, y
+«Calles». Sus capas se declaran en `CAPAS` y `CAPAS_CALLES`, dentro de `js/config.js`; cambiar de proveedor es cambiar esa lista
 y el dominio en la política de seguridad de `index.html`. Cada mapa —captura, jornada, ficha de
 revisión y detalle— muestra el crédito de cada capa tal como lo declara su servicio y «Powered by
-Esri»; el croquis del PDF lo lleva al pie. La licencia y el token de Esri están pendientes
-de confirmar antes de operar.
+Esri»; el croquis del PDF lo lleva al pie. Para producción está decidido CARTO para «Calles», con su clave en
+el servidor, y Esri en su modalidad gratuita para «Satélite» (D251). Falta el paso de CARTO por el servidor
+y confirmar los límites de uso de Esri.
 
 ## Sin señal
 
@@ -376,19 +380,19 @@ teléfono; sólo la imagen del mapa deja de cargar, y el sistema avisa y deja co
 vuelva a abrir sin red; se registra con la misma marca `?v=` de `index.html`, así que **subir la
 marca al cerrar un bloque sigue siendo lo único que hay que hacer** para que los teléfonos
 actualicen (el worker nuevo reemplaza al viejo al abrir con señal). `manifest.webmanifest` permite
-instalarla en la pantalla de inicio. En la Etapa 1 no hay servidor: los registros se quedan en el
-dispositivo; la pastilla del encabezado dice el estado de la conexión y del envío simulado, y al
+instalarla en la pantalla de inicio. Con datos de prueba no hay servidor: los registros se quedan en el
+dispositivo y el envío es simulado; con datos reales salen al servidor. La pastilla del encabezado dice el
+estado de la conexión y del envío, y al
 tocarla abre la guía con el estado del teléfono. No hay respaldo dentro del teléfono: lo capturado
 se protege enviándolo al servidor.
 
 ## Folio del ejemplar
 
 Nomenclatura adoptada: `AAA-000-00000` (celda UGA y consecutivo de la celda; 13 caracteres). El
-consecutivo corre en una secuencia perpetua por celda que no se reinicia nunca. La clave de especie queda fuera del folio. En la Etapa 1 **ningún registro
-tiene folio**: lo asigna el servidor una sola vez al sincronizar, y la pantalla y el PDF dicen
-PROVISIONAL. `js/folio.js` guarda el patrón, la validación y la etiqueta de campo —lo que el
-servidor reutilizará—; la emisión no existe todavía y depende de que el SIA entregue la malla UGA
-corregida y congelada.
+consecutivo corre en una secuencia perpetua por celda que no se reinicia nunca. La clave de especie queda fuera del folio. **El folio lo da el servidor**, una sola
+vez, al recibir el árbol, y no cambia (D292); mientras no llega, la pantalla y el PDF dicen PROVISIONAL.
+Con datos de prueba lo da el servidor simulado. `js/folio.js` guarda el patrón, la validación y la
+etiqueta de campo.
 
 ## Modelo de datos
 
@@ -412,7 +416,7 @@ distribución (Endémica · Nativa · Exótica · Exótica-Invasora), la forma d
 identificadores de CONABIO (`id_snib`, `id_enciclovida`) viajan con la especie y no se copian al
 registro. El formulario busca por nombre común, científico y **otros nombres comunes**, y dice por
 cuál coincidió, porque un mismo nombre («Fresno», «Colorín») señala a más de una especie. Las
-altas nuevas desde Catálogos reciben el consecutivo siguiente (`ESP-0077`…). Para cambiar una
+altas nuevas desde Catálogos reciben el consecutivo siguiente (hoy, `ESP-0080`). Para cambiar una
 especie del catálogo se corrige el Excel y se vuelve a correr el script; las altas y ediciones
 hechas en Catálogos viven en el almacén del dispositivo. Ver MAPEO-CAMPOS.
 
@@ -431,8 +435,8 @@ claves únicas, anillos cerrados y sistema de referencia antes de escribir nada.
 | Colonias | `colonias_iecm2022.geojson` | 1,837 unidades territoriales del IECM 2022 | `CVEUT` (`10-001`) | `colonia_cve` y `colonia` (nombre) |
 
 **Las tres capas son definitivas:** alcaldías y UGA del SIA y colonias del IECM 2022, la unidad oficial
-de reporte. La de colonias pesa 3 MB compactada —125 mil vértices—: si se queda en el teléfono o sólo
-en el servidor está en `docs/FASE2-Y-TRASPASO.md`.
+de reporte. La de colonias pesa 3 MB compactada —125 mil vértices— y se queda en el teléfono, para ver la
+colonia sin señal; el servidor vuelve a derivar con las de `territorio` (D251, D277).
 
 La capa de colonias no cubre el suelo de conservación (532 km² al sur sin colonia) ni 31 km²
 urbanos: un punto ahí se guarda con `colonia` nula y la pantalla dice «Sin colonia en la capa».
@@ -468,7 +472,7 @@ esté, con el servidor local levantado:
 pip install -r pruebas/requisitos.txt
 python3 -m playwright install chromium
 python3 pruebas/servir.py        (en otra terminal; no http.server: rechaza conexiones al abrir)
-python3 pruebas/por_tramos.py    # la prueba completa por tramos, unos 40 minutos, sola
+python3 pruebas/por_tramos.py    # la prueba completa por tramos, unos 45 minutos, sola
 python3 pruebas/auditoria.py     # unos 2 minutos
 python3 pruebas/revisar.py       # unos 2 minutos
 python3 pruebas/prueba_conexion.py   # unos 5 minutos; con la base local del servidor cargada

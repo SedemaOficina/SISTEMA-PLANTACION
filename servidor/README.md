@@ -120,9 +120,21 @@ la base y las variables van antes que el código. Un módulo por despliegue.
    <carpeta>`: con datos reales y sin los archivos de prueba.
 8. **La primera cuenta:** con `deploy/srp-cuenta-inicial.mjs` (ver abajo).
 
-El paquete de la versión 1 lleva todo eso: `app/`, `db/srp/`, `datos/srp-datos-arranque.sql`, `backend/`
+**Revertir**, en el orden contrario. Un paso que falla al instalar se detiene ahí: `instalar.sql` corre en una
+transacción y no deja nada a medias, y se vuelve al respaldo del paso 1.
+
+1. **El servidor web:** quitar `srp.conf` y recargar. La aplicación deja de publicarse; lo que los teléfonos
+   no enviaron se queda en ellos.
+2. **El backend:** desplegar el binario anterior, o deshacer el cambio (`git apply -R backend/srp.diff`),
+   compilar y desplegar. Sin el módulo, las variables `SRP_*` no se leen.
+3. **La base:** restaurar el respaldo del paso 1. Sólo antes de operar: después, restaurarlo borra lo que el
+   SRP recibió desde entonces. Ya en operación se revierte el código y la base se queda.
+4. **Las fotografías:** la carpeta de `SRP_FOTOS_DIR` va con la base. Si se restauró el respaldo de antes de
+   instalar, se puede retirar.
+
+El paquete (hoy, el de la versión 1.0.5) lleva todo eso: `app/`, `db/srp/`, `datos/srp-datos-arranque.sql`, `backend/`
 (el diff y los archivos completos), `deploy/`, `servidor-web/`, el manual de la Administración global en
-`manual/`, `VERSION` y su `LEEME.md` con estos pasos. El paquete se arma con
+`manual/`, `VERSION` y su `LEEME.md` con estos pasos, agrupados en cinco. El paquete se arma con
 `python herramientas/empaquetar.py <carpeta>`: escribe el manifiesto
 con la suma de cada archivo de todas las carpetas, el ZIP y su `.sha256`. Antes de escribir nada se detiene
 si el paquete trae archivos de trabajo (respaldos, temporales, bitácoras) o si algún archivo parece llevar una
@@ -449,9 +461,9 @@ proyecto. Ese servidor sirve la aplicación en `http://127.0.0.1:8099/` y reenv�
 aplicación habla con el servicio sólo con `ES_FICTICIO: false`. `pruebas/prueba_conexion.py` lo hace así en
 su navegador, sin cambiar el archivo.
 
-Las pruebas corren en este orden, una tras otra, y cada una tiene diez minutos para terminar. Primero
+Las pruebas corren una tras otra, y cada una tiene diez minutos para terminar. Primero
 `esquema.test.js`, que deja instalados los guiones de `db/srp/` tal como están: las demás corren sobre
-esa base y nunca sobre una instalación anterior.
+esa base y nunca sobre una instalación anterior. Le sigue `datos.test.js`, y después las demás.
 
 - `pruebas/esquema.test.js`: instala en limpio, comprueba que las tablas sean las del diccionario, que las
   reglas rechacen lo inválido y que `srp_api` tenga sólo sus permisos —`territorio` de sólo lectura,

@@ -210,7 +210,7 @@ def capturas(b):
     with open(archivo, 'w', encoding='utf-8', newline='') as f:
         f.write('Latitud,Longitud,Nombre científico,Fecha de plantación,Programa,Tipo de institución,Institución\n')
         for i in range(4):
-            f.write('%.6f,%.6f,Taxodium mucronatum,2024-05-10,Reforestación Urbana,Alcaldía,Iztapalapa\n' % (base_lat + i * 0.0001, -99.07 - i * 0.0001))
+            f.write('%.6f,%.6f,Taxodium mucronatum,2024-11-15,Reforestación Urbana,Alcaldía,Iztapalapa\n' % (base_lat + i * 0.0001, -99.07 - i * 0.0001))
     vista(pg, 'carga', 1500)
     pg.set_input_files('#carga-archivo', archivo); pg.wait_for_timeout(2500)
     pg.evaluate("() => document.getElementById('carga-revision').scrollIntoView({ block: 'start' })")

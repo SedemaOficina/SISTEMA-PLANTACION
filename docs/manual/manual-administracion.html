@@ -143,7 +143,7 @@
         <li><b>Carga masiva</b>: el histórico de árboles.</li>
         <li><b>Acerca del sistema</b>: la versión y los datos de este equipo. Si reporta un problema al SIA, diga la versión que aparece ahí.</li>
       </ul>
-      <p>Arriba, la franja <b>«Con conexión · Al día»</b> dice si el teléfono tiene conexión con el servidor. <b>Sin conexión, Configuración se puede consultar pero no cambia</b>: el sistema lo dice, y hay que volver a hacer el cambio cuando haya señal.</p>
+      <p>Arriba, la pastilla <b>«Con conexión · Al día»</b> dice si el teléfono tiene conexión con el servidor. <b>Sin conexión, Configuración se puede consultar pero no cambia</b>: el sistema lo dice, y hay que volver a hacer el cambio cuando haya señal.</p>
     </div>
   </div>
 <figure class="ancha"><img src="capturas/03b-configuracion-computadora.png" alt="Configuración en la computadora"><figcaption>La misma pantalla en la computadora: las pestañas van arriba.</figcaption></figure>
@@ -390,7 +390,7 @@
         <li>fecha de plantación;</li>
         <li>programa, tipo de institución e institución.</li>
       </ul>
-      <p>Hasta 20,000 renglones por archivo. Si son más, divídalos en varios archivos.</p>
+      <p>Hasta 5,000 renglones: es la carga histórica, que se hace una sola vez. Si ya hay una, antes de cargar otro archivo el sistema lo dice y pregunta si se carga también.</p>
       <h3>2. El archivo y su revisión</h3>
       <p>En «Archivo», elija el Excel o un CSV. Se revisa en el mismo equipo, renglón por renglón, y <b>nada se guarda hasta que usted confirme</b>. La revisión dice:</p>
       <ul>
@@ -407,7 +407,7 @@
       <ul>
         <li>Un punto fuera de la Ciudad.</li>
         <li>Una especie, un programa o una institución que no está en los catálogos.</li>
-        <li>Una fecha que no es válida o es posterior a hoy.</li>
+        <li>Una fecha que no es válida, posterior a hoy o anterior al 01-OCT-2024, cuando empezó el programa.</li>
         <li>Un renglón repetido en el archivo.</li>
         <li>Un árbol que ya está en el sistema, con el mismo punto, especie, fecha e institución. Pasa al subir dos veces el mismo archivo.</li>
       </ul>
@@ -475,6 +475,8 @@
     <tr><td>Usted olvidó su contraseña</td><td>Pídale a otra Administración global que se la restablezca. Si no hay otra, al SIA.</td></tr>
     <tr><td>Alguien deja de trabajar en el programa</td><td>Desactive su cuenta. Sus registros se conservan.</td></tr>
     <tr><td>Una cuenta se dio de alta con el correo mal escrito</td><td>Si nunca entró, elimínela y dé de alta otra con el correo correcto. Si ya entró, desactívela y dé de alta otra.</td></tr>
+    <tr><td>Al guardar una cuenta o un valor de catálogo dice «Alguien más cambió…»</td><td>Otra Administración lo cambió mientras usted lo editaba. El formulario ya trae lo que guardó la otra persona: revíselo y guarde otra vez.</td></tr>
+    <tr><td>No deja desactivar una Administración global, ni quitarle ese perfil</td><td>Es la única activa: active o dé de alta otra antes.</td></tr>
     <tr><td>Una institución nueva pide cuentas</td><td>Catálogos › Instituciones › «Agregar institución»; después, Usuarios › «Dar de alta».</td></tr>
     <tr><td>Una alcaldía empieza a usar el sistema</td><td>Catálogos › Instituciones: actívela; después dé de alta sus cuentas.</td></tr>
     <tr><td>Un cabo cambia de coordinador</td><td>Edite la cuenta del cabo y marque su nuevo coordinador.</td></tr>
@@ -483,6 +485,7 @@
     <tr><td>Un programa, especie o vehículo ya no se usa</td><td>Desactívelo: deja de ofrecerse y lo registrado no cambia.</td></tr>
     <tr><td>Hay parejas en «Posibles duplicados»</td><td>Revíselas (sección 8). Si son el mismo árbol, elimine uno.</td></tr>
     <tr><td>Se cargó un archivo equivocado</td><td>«Deshacer carga» en Configuración › Carga masiva, y vuelva a cargar el correcto.</td></tr>
+    <tr><td>Dice «El SRP se abrió en otra pestaña»</td><td>Se trabaja en una pestaña a la vez. Toque «Usar aquí» en la que quiere usar; la otra se detiene.</td></tr>
     <tr><td>No hay conexión</td><td>Configuración se consulta pero no cambia. Vuelva a intentar con señal.</td></tr>
     <tr><td>El sistema no abre para nadie, o algo dice que avise a la Administración</td><td>Avise al SIA con la versión que dice «Acerca del sistema» y lo que aparece en la pantalla.</td></tr>
   </table>
