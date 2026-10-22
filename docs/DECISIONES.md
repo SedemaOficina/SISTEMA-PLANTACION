@@ -4230,3 +4230,26 @@
   · **Si el SIA no lo garantiza**, se vuelve a considerar una copia temporal de lo enviado en el teléfono, sólo
     durante el piloto, de los últimos días y sin fotografías, para volver a enviarla. Reenviar no duplica (S-01).
   · Sin cambio en la aplicación ni en el servidor: la versión sigue en 1.1.
+- **D324. Lo aprendido del montaje de Categorías de Protección (bloque 244).**
+  22-10-2026. El SIA instaló el 21-10-2026 el Tablero de Categorías de Protección, otro proyecto de la Secretaría,
+  con su paquete tal cual. Funciona con entrada en la dirección del SIA. Se revisó cómo quedó montado, por dentro
+  (su paquete y `sia-backend`) y por fuera (sus respuestas sin sesión).
+  · **Cómo está montado:** todo cuelga de su propia dirección, también su API; el servidor web pide sesión antes de
+    entregar cualquier archivo del tablero; cuentas propias que opera la Oficina desde una vista de
+    administración, y el SIA sólo mantiene el servidor. El SIA cerró el camino directo a su API bajo `/api/`.
+  · **Quién opera las cuentas:** el SIA ya aceptó ahí lo mismo que propone el SRP. Queda como precedente para el
+    acuerdo por escrito (pregunta 1 del paquete).
+  · **La dirección de la API:** Liber decidió esperar la respuesta del SIA a la pregunta 2. Si pide `/srp/api/`,
+    como en Categorías, el SRP lo admite con la ruta de un renglón de `js/config.js`, `SRP_RUTA` para la cookie y
+    una ubicación más en `srp.conf`. La pregunta 2 del LEEME lo ofrece.
+  · **No se pide sesión para los archivos del SRP:** su código ya es público, esconderlo no protege nada y
+    complicaría el trabajo sin señal y las actualizaciones; los datos ya la piden.
+  · **Dos ajustes al paquete, aprobados por Liber:**
+    – `location ^~ /srp/` en `srp.conf`, como Categorías: ninguna regla de expresión regular del `server` se queda
+      con archivos de la aplicación. En un nginx real con una regla general de caché, sin el `^~` esa regla se
+      quedaba con las licencias (10 de 12); con él, 12 de 12. Lo que hace funcionar la aplicación ya salía bien,
+      porque el bloque trae sus propias reglas: es prevención;
+    – la comprobación al instalar: `/srp/sw.js` debe responder JavaScript. El servidor del SIA responde con su
+      página a cualquier dirección que no conoce, `/srp/` incluida hoy; sin el bloque, el teléfono recibiría esa
+      página en lugar del archivo que hace funcionar la aplicación sin señal, sin ningún error a la vista.
+  · Sin cambio en la aplicación ni en el servidor: la versión sigue en 1.1.

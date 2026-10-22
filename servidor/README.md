@@ -116,8 +116,11 @@ la base y las variables van antes que el código. Un módulo por despliegue.
    `src/index.ts`; `npm run typecheck`, `npm run build` y el despliegue. Al arrancar, el backend reporta
    el módulo conectado como `srp_api`, sin superusuario.
 7. **El servidor web y la aplicación:** `servidor-web/srp.conf`, que el SIA integra (rutas de disco y
-   destino suyos), y la copia de la aplicación que arma `python herramientas/preparar_produccion.py
-   <carpeta>`: con datos reales y sin los archivos de prueba.
+   destino suyos, y `location ^~ /srp/`, para que ninguna regla de expresión regular del `server` se quede con
+   archivos de la aplicación), y la copia de la aplicación que arma `python herramientas/preparar_produccion.py
+   <carpeta>`: con datos reales y sin los archivos de prueba. Después, `/srp/sw.js` debe responder JavaScript:
+   si responde `text/html`, el servidor da la página que da a cualquier dirección que no conoce y el bloque
+   no se aplicó.
 8. **La primera cuenta:** con `deploy/srp-cuenta-inicial.mjs` (ver abajo).
 
 **Revertir**, en el orden contrario. Un paso que falla al instalar se detiene ahí: `instalar.sql` corre en una

@@ -6143,3 +6143,48 @@ antes, los mismos 117 archivos, y sólo cambian el LEEME y el manifiesto.
 
 **Siguiente paso.** Liber decide cuándo entrega al SIA el paquete de la versión 1.1, ahora con la pregunta del
 respaldo.
+
+## Bloque 244 — Lo aprendido del montaje de Categorías de Protección (22-10-2026)
+
+**Sin versión nueva: la aplicación y el servidor no cambian.** Liber pidió ver cómo quedó montado en el SIA el
+Tablero de Categorías de Protección, que ya funciona con entrada en la dirección del SIA (D324).
+
+| | Categorías (instalado el 21-10-2026) | SRP (paquete 1.1) |
+|---|---|---|
+| Dirección | Su propia carpeta, con la API dentro | `/srp/`, con la API en `/api/srp/` |
+| Archivos de la página | Sólo con sesión | Públicos; los datos, con sesión |
+| Entrada | Página del servidor | Pantalla de la aplicación |
+| Sesión | 30 días | 7 días sin uso, renovada con cada uso |
+| Quién opera las cuentas | La Oficina, desde su administración | La Administración global, desde Usuarios |
+
+Desde fuera, hoy: el tablero sin sesión lleva a su entrada y sólo el logotipo se ve sin ella; su API no responde por
+el camino directo bajo `/api/`. `/srp/` responde con la página que el SIA da a cualquier dirección que no conoce, y
+`/api/srp/` llega al backend, que no tiene el módulo: el SRP no está instalado.
+
+**Qué cambió.**
+- `servidor/servidor-web/srp.conf`: `location ^~ /srp/`.
+- `servidor/README.md` y el LEEME del paquete: el `^~` y la comprobación de `/srp/sw.js` al instalar. El LEEME
+  dice también cómo se probó el bloque y, en la pregunta 2, que el SRP admite la API dentro de `/srp/`.
+- `docs/ALINEACION-SIA.md` y `docs/PLAN-TRASPASO-SIA.md`: el precedente de quién opera las cuentas, y el fragmento
+  del servidor web.
+- `docs/DECISIONES.md`: D324.
+- El paquete `srp-v1.1-2026-10-21`, otra vez armado con el mismo nombre; el ZIP de antes está en `_to_delete/`.
+
+**Pantalla.** Nada.
+
+**Verificación.** `srp.conf`, en un nginx real con la aplicación del paquete, una página comodín en `/` y, aparte,
+una regla general de caché por expresión regular:
+
+| | Sin la regla general | Con la regla general |
+|---|---|---|
+| Antes, sin `^~` | 12 de 12 | 10 de 12: la regla se quedaba con las dos licencias (`.md` y `.txt`) |
+| Después, con `^~` | 12 de 12 | 12 de 12 |
+
+Revisa la aplicación, `sw.js` como JavaScript y sin caché, lo versionado con 30 días, el manifiesto con su tipo,
+las licencias, el 404 de lo que no existe, la redirección relativa de `/srp` y las cabeceras del `server`. La
+comprobación al instalar distingue los dos casos: sin el bloque, `/srp/sw.js` da `200 text/html`; con él,
+`200 application/javascript`. La prueba vive fuera del repositorio, con el resto del trabajo sobre el SIA.
+
+No se probó: el bloque en el servidor del SIA, que no se conoce por dentro; la regla general es supuesta.
+
+**Siguiente paso.** Liber decide cuándo entrega al SIA el paquete de la versión 1.1.
