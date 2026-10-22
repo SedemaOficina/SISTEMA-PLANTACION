@@ -3,7 +3,7 @@
 Qué hay que hacer, en qué orden y quién, para que el SRP opere en los servidores de la Secretaría.
 Complementa a `FASE2-Y-TRASPASO.md`, que dice **qué** debe hacer el servidor; este archivo dice **cómo
 se llega**. Elaborado el 03-10-2026 con la descripción de la infraestructura que entregó el SIA; al día al
-21-10-2026.
+22-10-2026.
 
 Este repositorio es público. Aquí no se escriben direcciones de red, nombres de equipo, cuentas ni
 versiones exactas de los servidores: esos datos viven en la documentación interna del SIA.
@@ -98,7 +98,7 @@ Cada fase tiene un criterio de salida; no se pasa a la siguiente sin cumplirlo.
 | **2. Base de datos** | Esquema `srp` con las diez tablas, las de usuarios y sesiones, llaves foráneas, índices, secuencia del folio por celda y columnas de la cola de envío. Permisos de la cuenta de servicio. Alta en los respaldos | SRP (guion SQL, probado en una base local) y SIA (ejecución) | El esquema existe, la cuenta sólo ve lo suyo y `territorio` en lectura, y una restauración de prueba lo incluye |
 | **3. Servicios** | Servicio del SRP en `servidor/`: usuarios y sesión, catálogos, recepción idempotente de jornadas y árboles, folio, validación, permisos, bitácora, fotografías, bandeja de duplicados, consultas de Supervisión | SRP (desarrollo y pruebas locales), con `FASE2-Y-TRASPASO.md` como especificación; el SIA lo instala | Las filas del apartado 1 de ese archivo resueltas o diferidas por escrito |
 | **4. Aplicación** | Sustituir lo simulado (apartado 3 de `FASE2-Y-TRASPASO.md`): acceso, envío y folio. `ES_FICTICIO: false`. Publicar en la ruta. Retirar demostración y espejo de campos | SRP (cambios y pruebas contra el servicio local) y SIA (publicación) | La aplicación abre en la ruta definitiva, instala, trabaja sin señal y envía al volver la señal |
-| **5. Piloto** | Una cuadrilla, una semana, datos reales. Teléfonos iPhone y Android. Revisión diaria de lo recibido contra lo capturado | Oficina de la Secretaría, Reforestación Urbana y SIA | Cero árboles perdidos o duplicados; folios consecutivos por celda; reporte de jornada conforme |
+| **5. Piloto** | Una cuadrilla, una semana, datos reales. Teléfonos iPhone y Android. Revisión diaria de lo recibido contra lo capturado. Antes de empezar, el SIA confirma por escrito el respaldo diario del esquema `srp`, con su restauración de prueba, y el de la carpeta de fotografías. Cada día: la Coordinación descarga la tabla de Supervisión en CSV y las fotografías en ZIP a una carpeta de la Secretaría; nadie termina el día sin que la pastilla diga «Al día»; en iPhone, la aplicación va en la pantalla de inicio (D323) | Oficina de la Secretaría, Reforestación Urbana y SIA | Cero árboles perdidos o duplicados; folios consecutivos por celda; reporte de jornada conforme |
 | **6. Operación** | Alta de cuentas y catálogos reales, vehículos incluidos. Carga del histórico. Monitoreo de disco de fotografías. Archivo del repositorio público | SIA | Todas las cuadrillas capturan en producción; el repositorio de GitHub queda privado y archivado |
 
 Al 21-10-2026, lo que toca al SRP de las fases 2 a 4 está hecho y va en el paquete de la versión 1.1 (D315,
@@ -169,7 +169,7 @@ D321, D322): falta que el SIA lo instale. Después siguen el piloto y la operaci
 - **Servidor web y de mapas.** Holgados para los archivos de la aplicación (menos de 10 MB). La caché de
   teselas, si se usa ortofoto propia, sí requiere disco.
 - **Respaldos.** El esquema nuevo entra al respaldo de la base. Las fotografías viven fuera de la base:
-  hay que confirmar que ese volumen queda cubierto por un respaldo.
+  hay que confirmar, antes del piloto, que ese volumen queda cubierto por un respaldo (D323).
 
 ## 8. Riesgos
 
@@ -178,7 +178,8 @@ D321, D322): falta que el SIA lo instale. Después siguen el piloto y la operaci
 | Capas distintas entre teléfono y servidor | Árboles en otra colonia; folios de otra celda | Verificadas iguales (apartado 3); el servidor usa las mismas capas que la app |
 | Proveedor de identidad que no cubre instituciones externas | Alcaldías y empresas sin acceso | Decisión 2 de la fase 0; cuentas propias como salida |
 | Disco de fotografías insuficiente | El servidor rechaza capturas a media temporada | Ampliación previa y monitoreo con alerta al 70 % |
-| Fotografías sin respaldo | Pérdida irreversible de evidencia | Respaldo propio del volumen antes de operar |
+| Fotografías sin respaldo | Pérdida irreversible de evidencia | Respaldo propio del volumen antes del piloto (D323) |
+| Falla de la base durante el piloto | Se pierde lo recibido desde el último respaldo: el teléfono no guarda lo enviado (S-11) | Respaldo diario con restauración de prueba, confirmado antes del piloto, y la descarga diaria de la Coordinación (D323) |
 | Reenvíos que duplican | Doble conteo de árboles | El `id` de cada registro es la clave de idempotencia (S-01); se prueba en el piloto |
 | iPhone no envía con la aplicación cerrada | Datos retenidos en el teléfono | La aplicación lo avisa; el procedimiento de cierre de jornada pide abrirla con señal |
 | Administración sólo por red privada | Una falla de acceso detiene despliegues, no la captura | La aplicación sigue trabajando sin señal y envía después |
@@ -188,4 +189,5 @@ D321, D322): falta que el SIA lo instale. Después siguen el piloto y la operaci
 ## 9. Siguiente paso
 
 Entregar al SIA el paquete de la versión 1.1, que trae sus instrucciones de instalación, y pedirle las
-respuestas de sus «Preguntas abiertas». Con el sistema instalado, el piloto (fase 5).
+respuestas de sus «Preguntas abiertas», entre ellas la del respaldo (pregunta 7). Con el sistema instalado y
+el respaldo confirmado, el piloto (fase 5).

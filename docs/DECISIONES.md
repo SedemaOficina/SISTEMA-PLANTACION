@@ -4209,3 +4209,24 @@
     demostración decía lo mismo que la ventana y también cambió.
   · **El paquete de la 1.1** va sobre la versión de `sia-backend` del 21-10-2026, que trae otro módulo en
     `src/db.ts` y `src/index.ts`: lo del SRP es el mismo de la versión 1 y va después de ese módulo.
+- **D323. El respaldo para el piloto (bloque 243).**
+  22-10-2026. Liber volvió a pensar D175 antes del piloto y la mantiene: el teléfono no guarda una copia de lo
+  enviado (S-11, D301). Lo que ya recibió el servidor lo protege el respaldo del SIA, y se le pide antes del piloto.
+  · **Por qué no en el teléfono.** En campo, lo que más se puede perder es lo que todavía no se envía. Si el
+    teléfono se pierde, una copia en él se pierde con él, y para sacarla hace falta señal, con la que la cola ya
+    lo envió. Lo que el servidor no aceptó ya se queda en el teléfono con su motivo. Una copia de lo enviado sólo
+    ayudaría si la base del SIA perdiera lo ya recibido, y para eso está su respaldo.
+  · **Antes del piloto, del SIA y por escrito:**
+    – que el respaldo diario de la base incluya el esquema `srp`, con una restauración de prueba ya con el SRP
+      instalado: es el criterio de la fase 2 del plan de traspaso;
+    – que la carpeta de las fotografías tenga su propio respaldo, que el plan pedía antes de operar y ahora se
+      pide antes del piloto.
+    Va como pregunta 7 del LEEME del paquete de la 1.1 y en la fase 5 del plan de traspaso.
+  · **Cada día del piloto:**
+    – la Coordinación descarga la tabla de Supervisión en CSV y las fotografías en ZIP a una carpeta de la
+      Secretaría: es una copia que no depende del SIA ni del teléfono, y la misma que sirve para la revisión diaria;
+    – nadie termina el día sin que la pastilla diga «Al día»;
+    – en iPhone, la aplicación va en la pantalla de inicio.
+  · **Si el SIA no lo garantiza**, se vuelve a considerar una copia temporal de lo enviado en el teléfono, sólo
+    durante el piloto, de los últimos días y sin fotografías, para volver a enviarla. Reenviar no duplica (S-01).
+  · Sin cambio en la aplicación ni en el servidor: la versión sigue en 1.1.

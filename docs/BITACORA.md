@@ -6115,3 +6115,31 @@ No se probó:
 **Siguiente paso.** Con esto termina el plan de corrección de la auditoría. Quedan fuera del plan, como estaban en
 el informe, cuatro hallazgos bajos (E3-R1-09, E3-R2-10, E3-R2-15 y E3-R3-03, que se confirma con el SIA). Liber
 decide cuándo entrega al SIA el paquete de la versión 1.1.
+
+## Bloque 243 — El respaldo para el piloto (22-10-2026)
+
+**Sin versión nueva: la aplicación y el servidor no cambian.** Liber preguntó cómo probar el sistema en campo y
+cómo respaldar lo capturado durante el piloto, y volvió a pensar D175 (sin respaldo en el teléfono). La mantiene, y
+lo ya recibido lo protege el respaldo del SIA, que se pide antes del piloto (D323).
+
+| Momento del árbol | Qué lo protege |
+|---|---|
+| Capturado, sin enviar | La cola, que lo envía en cuanto hay señal; la regla de no terminar el día sin «Al día» |
+| Enviado y recibido | El respaldo diario del SIA, confirmado antes del piloto, y la descarga diaria de la Coordinación |
+| Rechazado por el servidor | Se queda en el teléfono con su motivo, como ya hacía |
+
+**Qué cambió.**
+- `docs/DECISIONES.md`: D323.
+- `docs/PLAN-TRASPASO-SIA.md`: la fase 5 dice qué se confirma antes del piloto y qué se hace cada día; el
+  respaldo de las fotografías se pide antes del piloto y no antes de operar; un riesgo nuevo, la falla de la
+  base durante el piloto.
+- El paquete `srp-v1.1-2026-10-21`, fuera de git: su LEEME trae la pregunta 7, sobre el respaldo, y el piloto
+  dice que va antes. Se volvió a armar con el mismo nombre; el ZIP de antes está en `_to_delete/`.
+
+**Pantalla.** Nada.
+
+**Verificación.** El ZIP coincide con su `.sha256` y el manifiesto con cada archivo. Comparado con el ZIP de
+antes, los mismos 117 archivos, y sólo cambian el LEEME y el manifiesto.
+
+**Siguiente paso.** Liber decide cuándo entrega al SIA el paquete de la versión 1.1, ahora con la pregunta del
+respaldo.
