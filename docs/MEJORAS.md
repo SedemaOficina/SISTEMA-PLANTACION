@@ -537,6 +537,7 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M168 | Auditoría 360 | Bloque «Publicación ligera», lo que queda: capas con su propia versión (que no se vuelvan a descargar con cada versión de la app) y aligeradas; licencia del mapa base (M2, M4) | Media | Pendiente | Decisiones 3 y 5 de la lista del 26-09-2026. Originales y jsPDF, hechos en B102 |
 | M170 | Auditoría 360 | Bloque «Pruebas en iPhone»: GitHub Actions con Chromium y WebKit, pruebas de migración e integridad (M17, M18) | Media | En curso | Desde la 1.0.5 (B240, D320) las pruebas corren en GitHub en cada subida, con Chromium. Falta WebKit |
 | M343 | Liber | Catálogo de especies: marcar cuáles son frutales, para filtrar y contar los árboles frutales plantados | Media | En curso | La marca y el filtro, hechos en B179 (M446 a M448). Falta contar los árboles con fruto comestible en Supervisión e informes |
+| M532 | Liber | «Entradas» en Configuración: quién entró, cuándo y desde qué equipo, los intentos fallidos y los bloqueos; y la última actividad de cada cuenta en Usuarios (en la computadora, en la columna «Estado», que pasa a «Actividad») | Media | Después del piloto | Muestras del 22-10-2026 en `servidor/local/muestras-entradas/`, fuera de git. Los datos ya los guarda el servidor; falta la consulta y la pantalla. Sería la 1.2 (D325) |
 
 ## 3. Verificadas sin falla
 

@@ -139,8 +139,9 @@ D321, D322): falta que el SIA lo instale. Después siguen el piloto y la operaci
 
 **Falta, del lado del SIA**
 
-- Instalar el paquete, cuyo LEEME trae los pasos y las preguntas abiertas, y lo del apartado 4 de
-  `FASE2-Y-TRASPASO.md`. Después, con la Secretaría, el piloto y la operación (fases 5 y 6).
+- Instalar el paquete, que baja del repositorio privado `srp-sia` por su etiqueta (D325) y cuyo LEEME trae los
+  pasos y las preguntas abiertas, y lo del apartado 4 de `FASE2-Y-TRASPASO.md`. Después, con la Secretaría, el
+  piloto y la operación (fases 5 y 6).
 
 ## 6. Decisiones que hay que tomar en la fase 0
 
@@ -188,6 +189,7 @@ D321, D322): falta que el SIA lo instale. Después siguen el piloto y la operaci
 
 ## 9. Siguiente paso
 
-Entregar al SIA el paquete de la versión 1.1, que trae sus instrucciones de instalación, y pedirle las
-respuestas de sus «Preguntas abiertas», entre ellas la del respaldo (pregunta 7). Con el sistema instalado y
-el respaldo confirmado, el piloto (fase 5).
+Dar al SIA acceso al repositorio privado `srp-sia`, con la entrega de la versión 1.1 en la etiqueta
+`entrega-2026-10-22` y sus instrucciones de instalación, y pedirle las respuestas de sus «Preguntas abiertas»,
+entre ellas la del respaldo (pregunta 7). Con el sistema instalado y el respaldo confirmado, el piloto (fase 5).
+La pantalla de entradas y la última actividad de cada cuenta van después del piloto (M532).

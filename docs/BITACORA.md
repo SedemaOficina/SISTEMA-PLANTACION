@@ -6188,3 +6188,41 @@ comprobación al instalar distingue los dos casos: sin el bloque, `/srp/sw.js` d
 No se probó: el bloque en el servidor del SIA, que no se conoce por dentro; la regla general es supuesta.
 
 **Siguiente paso.** Liber decide cuándo entrega al SIA el paquete de la versión 1.1.
+
+## Bloque 245 — La entrega por GitHub (22-10-2026)
+
+**Sin versión nueva: la aplicación y el servidor no cambian.** Liber decidió entregar la 1.1 ya, por un
+repositorio privado en GitHub y no como ZIP, y dejar para después del piloto la pantalla de entradas (D325).
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| Cómo llega al SIA | ZIP con su `.sha256` | Repositorio privado `srp-sia`, etiqueta `entrega-2026-10-22` |
+| `sia-backend` sobre el que se probó | El del 21-10-2026, antes de su panel nuevo | El más nuevo, del 21-10-2026, con su panel nuevo en `src/index.ts` |
+| `db.ts` e `index.ts` completos | Con saltos de renglón de Windows | Byte por byte como en el repositorio del SIA |
+| «Entradas» y la última actividad | — | Muestras hechas; M532, para después del piloto |
+
+**Qué cambió.**
+- La entrega, en `servidor/local/srp-sia/`, fuera de git de este repositorio: el contenido de la 1.1, el diff
+  rehecho, los dos archivos completos del SIA tal cual, `.gitattributes`, el aviso revisado de `db.ts` con su suma
+  nueva y el LEEME con «Cómo se baja y se comprueba», la versión de `sia-backend` probada y, en «Si ya está
+  instalada una versión anterior», el cambio de `srp.conf`. Su primer commit lleva la etiqueta `entrega-2026-10-22`.
+- `servidor/README.md`: cómo se arma y se sube una entrega.
+- `docs/PLAN-TRASPASO-SIA.md`: lo que falta del lado del SIA y el siguiente paso.
+- `docs/MEJORAS.md`: M532. `docs/DECISIONES.md`: D325.
+
+**Pantalla.** Nada.
+
+**Verificación.**
+- Sobre una copia de `sia-backend` del 21-10-2026 bajada byte por byte: el diff de la 1.1 no aplicaba; el rehecho
+  aplica limpio y se deshace limpio. Lo que agrega y quita el SRP es idéntico al de la 1.1. `npm run typecheck`
+  sin errores y `npm run build` con el módulo.
+- Ese binario, contra la base local: la prueba de humo, 23 de 23.
+- El ensayo de instalación con los archivos de la entrega y ese backend, en la base local en limpio: 18 de 18.
+- El empaquetador: 117 archivos, los dos avisos revisados. Dos clones de la entrega, con y sin la conversión de
+  saltos de renglón de git: las 117 sumas coinciden en los dos.
+- La revisión automática de los documentos: 144 comprobaciones sin hallazgos.
+
+No se probó: la subida a GitHub, porque el repositorio privado todavía no existe; ni la instalación en el SIA.
+
+**Siguiente paso.** Liber crea en GitHub el repositorio privado `SedemaOficina/srp-sia`, vacío, y le da acceso al
+SIA; con eso se suben `main` y la etiqueta.

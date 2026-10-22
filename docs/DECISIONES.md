@@ -4253,3 +4253,23 @@
       página a cualquier dirección que no conoce, `/srp/` incluida hoy; sin el bloque, el teléfono recibiría esa
       página en lugar del archivo que hace funcionar la aplicación sin señal, sin ningún error a la vista.
   · Sin cambio en la aplicación ni en el servidor: la versión sigue en 1.1.
+- **D325. La entrega por GitHub, y las entradas después del piloto (bloque 245).**
+  22-10-2026. Liber decidió dos cosas.
+  · **«Entradas», después del piloto.** Se prepararon las muestras con su antes y su después
+    (`servidor/local/muestras-entradas/`, fuera de git): la pantalla de quién entró, cuándo y desde qué equipo,
+    con los intentos fallidos y los bloqueos, y la última actividad de cada cuenta en Usuarios. En la computadora,
+    otra columna no cabe en una pantalla común; la actividad va en la columna «Estado», que pasa a «Actividad». Los
+    datos ya los guarda el servidor. Queda como M532, para la 1.2, y la 1.1 se entrega ya.
+  · **La entrega va por GitHub y no como ZIP**, igual que la del Tablero de Categorías de Protección, que el SIA ya
+    baja así: un repositorio privado aparte, `srp-sia`, con una etiqueta por entrega. La primera es
+    `entrega-2026-10-22`, con la versión 1.1. No puede ir en este repositorio, que es público: lleva las placas
+    reales y archivos del backend del SIA.
+  · **La entrega, otra vez probada sobre la versión de `sia-backend` del 21-10-2026**, la más nueva, que trae un
+    panel más en `src/index.ts`. El diff de la 1.1 ya no aplicaba ahí, porque cambiaron los renglones del SIA que lo
+    rodean; se rehízo, y lo que agrega el SRP es idéntico.
+  · **Los saltos de renglón.** Las copias de `sia-backend` para probar se bajaban con la conversión de git en
+    Windows, y los archivos completos `src/db.ts` y `src/index.ts` de los paquetes de la 1.0.5 y la 1.1 salieron
+    con saltos de Windows, distintos de los del SIA. El diff nunca los tuvo y aplica igual. Desde esta entrega, la
+    copia se baja byte por byte y los dos archivos completos van como en el repositorio del SIA. El repositorio de
+    la entrega lleva un `.gitattributes` que guarda cada archivo tal cual, para que las sumas del manifiesto
+    coincidan en cualquier equipo.

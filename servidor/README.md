@@ -149,6 +149,15 @@ con `--revision` y diciéndolo en el LEEME. El cambio a `sia-backend` (un diff y
 archivos completos) se arma sobre una copia del repositorio del SIA y lleva líneas suyas: vive sólo en
 `servidor/local/`, que no se sube.
 
+**La entrega va por GitHub** (D325), como la del Tablero de Categorías de Protección: el paquete es un repositorio
+privado aparte, `srp-sia`, cuya copia de trabajo es `servidor/local/srp-sia/`. Cada entrega es un commit con su
+etiqueta `entrega-AAAA-MM-DD`, y el SIA la baja por la etiqueta. Para una entrega nueva se actualizan los archivos,
+se corre `empaquetar.py` sobre esa carpeta (se salta `.git`; el ZIP que escribe al lado queda como copia), y se
+suben sólo `main` y la etiqueta nueva. Su `.gitattributes` guarda cada archivo tal cual: sin él, git en Windows
+cambiaría los saltos de renglón y las sumas del manifiesto no coincidirían en el SIA. El diff y los archivos
+completos se arman sobre una copia de `sia-backend` bajada con `git -c core.autocrlf=false archive`, para que
+sus archivos queden byte por byte como en su repositorio.
+
 ## El servicio: acceso, cuentas, catálogos, consultas y recepción
 
 En el SIA lo monta el backend central: `app.use("/api/srp", crearRutasSrp(poolSrp))`. Fuera de él,
