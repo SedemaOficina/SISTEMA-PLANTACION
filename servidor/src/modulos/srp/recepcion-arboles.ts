@@ -20,7 +20,12 @@ import type { Usuario } from "./sesiones";
 
 type Otras = NonNullable<Resultado["otras"]>;
 
-// Lo que se revisa de un árbol al darlo de alta o al editarlo: el punto, la especie y los comentarios
+// Suelo o macetón, como SRP.CONFIG.SITIOS_PLANTACION
+export const SITIOS_PLANTACION: Record<string, string> = { suelo: "Suelo", maceton: "Macetón" };
+// Sin sitio, el árbol viene de una versión anterior de la aplicación: se plantó en suelo, o donde el que sustituye
+const sitioDe = (x: unknown, sinDato = "suelo") => texto(x) || sinDato;
+
+// Lo que se revisa de un árbol al darlo de alta o al editarlo: el punto, la especie, el sitio y los comentarios
 async function revisarArbol(c: pg.PoolClient, v: Record<string, unknown>, especieAntes: string | null): Promise<{ errores: Errores; punto: Punto | null; territorio: Territorio | null }> {
   const errores: Errores = [];
   const punto = puntoDe(v);
@@ -36,6 +41,7 @@ async function revisarArbol(c: pg.PoolClient, v: Record<string, unknown>, especi
     }
   } else if (!v.especie_otra) errores.push(["especie_id", "Elija una especie de la lista o la opción «Otra especie»."]);
   else if (String(v.especie_otra).length > 120) errores.push(["especie_id", "El nombre de la especie lleva hasta 120 caracteres."]);
+  if (!Object.hasOwn(SITIOS_PLANTACION, String(v.sitio_plantacion))) errores.push(["sitio_plantacion", "Elija si se plantó en suelo o en macetón."]);
   if (String(v.comentarios ?? "").length > 500) errores.push(["comentarios", "Los comentarios llevan hasta 500 caracteres."]);
   return { errores, punto, territorio };
 }
@@ -46,6 +52,7 @@ interface Alta {
   territorio: Territorio;
   especieId: string | null;
   especieOtra: string;
+  sitio: string;
   comentarios: string;
   fecha: string;
   jornada: Fila;
@@ -62,14 +69,14 @@ async function insertarArbol(c: pg.PoolClient, u: Usuario, a: Alta): Promise<Fil
     `INSERT INTO srp.plantaciones (id, estatus, cabo_id, lat, lng, punto_origen, gps_precision_m, folio, especie_id, especie_otra,
         alcaldia_cve, alcaldia, colonia_cve, colonia, uga, uga_borde_m, capa_version, programa_id, fecha_plantacion, jornada_id,
         sustituye_id, motivo_sustitucion, comentarios, sustituido_por_id, motivo_sustitucion_otro, foto_base64, foto_id,
-        fecha_registro, fecha_ultima_edicion, editado_por_id)
+        fecha_registro, fecha_ultima_edicion, editado_por_id, sitio_plantacion)
      VALUES ($1, 'activo', $2, $3, $4, $5, $6, NULL, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,
-        $19, $20, $21, NULL, $22, NULL, $23, $24, NULL, NULL)
+        $19, $20, $21, NULL, $22, NULL, $23, $24, NULL, NULL, $25)
      ON CONFLICT (id) DO NOTHING
      RETURNING to_jsonb(plantaciones) - 'foto_base64' AS fila`,
     [a.id, u.id, p.lat, p.lng, p.punto_origen, p.gps_precision_m, a.especieId, a.especieOtra, t.alcaldia_cve, t.alcaldia, t.colonia_cve, t.colonia,
       t.uga, t.uga_borde_m, t.capa_version, a.jornada.programa_id, a.fecha, a.jornada.id, a.sustituye?.id ?? null, a.sustituye?.motivo ?? null,
-      a.comentarios, a.sustituye?.otro ?? "", a.fotoId, a.fechaRegistro],
+      a.comentarios, a.sustituye?.otro ?? "", a.fotoId, a.fechaRegistro, a.sitio],
   )).rows[0]?.fila;
   if (fila) await congelarPrioridad(c, "plantaciones", fila.id, p.lat, p.lng);
   return fila;
@@ -101,8 +108,8 @@ export async function crearArbol(c: pg.PoolClient, u: Usuario, d: Record<string,
   if (!puede("jornada.registrar", u, comoObjeto(jornada))) return sinPermiso(id, "jornada.registrar");
 
   const { especieId, especieOtra } = especieDe(d);
-  const comentarios = texto(d.comentarios);
-  const { errores, punto, territorio } = await revisarArbol(c, { ...d, especie_id: especieId, especie_otra: especieOtra, comentarios }, null);
+  const comentarios = texto(d.comentarios), sitio = sitioDe(d.sitio_plantacion);
+  const { errores, punto, territorio } = await revisarArbol(c, { ...d, especie_id: especieId, especie_otra: especieOtra, sitio_plantacion: sitio, comentarios }, null);
   // La fecha de plantación: entre el inicio de la jornada y hoy
   const fecha = d.fecha_plantacion;
   if (!esFecha(fecha)) errores.push(["fecha_plantacion", "Indique la fecha de plantación."]);
@@ -112,7 +119,7 @@ export async function crearArbol(c: pg.PoolClient, u: Usuario, d: Record<string,
   if (await fotoDeOtro(c, idDe(d.foto_id), id)) errores.push(FOTO_DE_OTRO);
   if (errores.length) return rechazo(id, "DATOS_INVALIDOS", "Revise los datos del árbol.", ordenar(errores));
 
-  let fila = await insertarArbol(c, u, { id, punto: punto as Punto, territorio: territorio as Territorio, especieId, especieOtra, comentarios,
+  let fila = await insertarArbol(c, u, { id, punto: punto as Punto, territorio: territorio as Territorio, especieId, especieOtra, sitio, comentarios,
     fecha: fecha as string, jornada, fotoId: idDe(d.foto_id), fechaRegistro: instante(d.fecha_registro) });
   if (!fila) return conDuplicado(c, u, repetida((await filaDe(c, "plantaciones", id)) as Fila, u));
   await anotarCambio(c, u, "CREADO", "plantacion", id);
@@ -121,8 +128,8 @@ export async function crearArbol(c: pg.PoolClient, u: Usuario, d: Record<string,
   return conDuplicado(c, u, recibido(fila, "aviso" in folio ? { aviso: folio.aviso } : {}));
 }
 
-// Los errores en el orden de los campos del formulario: ubicación, especie, fecha y comentarios
-const ORDEN = ["motivo_sustitucion", "motivo_sustitucion_otro", "lat", "especie_id", "fecha_plantacion", "comentarios", "foto_id"];
+// Los errores en el orden de los campos del formulario: ubicación, especie, fecha, sitio y comentarios
+const ORDEN = ["motivo_sustitucion", "motivo_sustitucion_otro", "lat", "especie_id", "fecha_plantacion", "sitio_plantacion", "comentarios", "foto_id"];
 const ordenar = (e: Errores): Errores => e.slice().sort((a, b) => ORDEN.indexOf(a[0]) - ORDEN.indexOf(b[0]));
 
 /* ---------- Lo que se le hace a un árbol que ya está en el servidor ---------- */
@@ -137,9 +144,9 @@ async function arbolParaCambiar(c: pg.PoolClient, d: Record<string, unknown>): P
 }
 const esResultado = (x: object): x is Resultado => "estado" in x;
 
-const EDITABLES = ["lat", "lng", "punto_origen", "gps_precision_m", "especie_id", "especie_otra", "fecha_plantacion", "comentarios", "foto_id"];
+const EDITABLES = ["lat", "lng", "punto_origen", "gps_precision_m", "especie_id", "especie_otra", "fecha_plantacion", "sitio_plantacion", "comentarios", "foto_id"];
 // Los que dice la bitácora al editar, y el territorio que se vuelve a calcular
-const DICHOS = ["lat", "lng", "punto_origen", "especie_id", "especie_otra", "programa_id", "fecha_plantacion", "comentarios", "foto_id"];
+const DICHOS = ["lat", "lng", "punto_origen", "especie_id", "especie_otra", "programa_id", "fecha_plantacion", "sitio_plantacion", "comentarios", "foto_id"];
 const TERRITORIO = ["alcaldia", "colonia", "uga", "capa_version"];
 const igual = (a: unknown, b: unknown) => (a ?? null) === (b ?? null) || ((a ?? "") === "" && (b ?? "") === "");
 
@@ -162,6 +169,7 @@ export async function editarArbol(c: pg.PoolClient, u: Usuario, d: Record<string
       : k === "gps_precision_m" ? (typeof x === "number" && x >= 0 ? Math.round(x) : null)
       : k === "foto_id" ? idDe(x)
       : k === "fecha_plantacion" ? x
+      : k === "sitio_plantacion" ? sitioDe(x)
       : texto(x) || (k === "especie_id" ? null : "");
   }
   if (v.especie_id) v.especie_otra = "";
@@ -182,10 +190,10 @@ export async function editarArbol(c: pg.PoolClient, u: Usuario, d: Record<string
   let fila = (await c.query<{ fila: Fila }>(
     `UPDATE srp.plantaciones SET lat = $2, lng = $3, punto_origen = $4, gps_precision_m = $5, especie_id = $6, especie_otra = $7,
         fecha_plantacion = $8, comentarios = $9, foto_id = $10, programa_id = $11, alcaldia_cve = $12, alcaldia = $13, colonia_cve = $14,
-        colonia = $15, uga = $16, uga_borde_m = $17, capa_version = $18, editado_por_id = $19, fecha_ultima_edicion = ${AHORA}
+        colonia = $15, uga = $16, uga_borde_m = $17, capa_version = $18, editado_por_id = $19, sitio_plantacion = $20, fecha_ultima_edicion = ${AHORA}
       WHERE id = $1 RETURNING to_jsonb(plantaciones) - 'foto_base64' AS fila`,
     [id, p.lat, p.lng, p.punto_origen, p.gps_precision_m, v.especie_id, v.especie_otra, v.fecha_plantacion, v.comentarios, v.foto_id, jornada.programa_id,
-      t.alcaldia_cve, t.alcaldia, t.colonia_cve, t.colonia, t.uga, t.uga_borde_m, t.capa_version, u.id],
+      t.alcaldia_cve, t.alcaldia, t.colonia_cve, t.colonia, t.uga, t.uga_borde_m, t.capa_version, u.id, v.sitio_plantacion],
   )).rows[0].fila;
 
   // La bitácora dice qué campos cambiaron, de dónde a dónde se movió el punto y si cambió su territorio
@@ -301,13 +309,13 @@ export async function sustituirArbol(c: pg.PoolClient, u: Usuario, d: Record<str
   else if (antesDelPrograma(fecha)) errores.push(["fecha_plantacion", noAntes("La fecha de la sustitución")]);
   else if (fecha < String(original.fecha_plantacion)) errores.push(["fecha_plantacion", "La fecha de la sustitución no puede ser anterior a la plantación del árbol perdido (" + fechaCorta(String(original.fecha_plantacion)) + ")."]);
   const { especieId, especieOtra } = especieDe(d);
-  const comentarios = texto(d.comentarios);
-  const revisado = await revisarArbol(c, { ...d, especie_id: especieId, especie_otra: especieOtra, comentarios }, null);
+  const comentarios = texto(d.comentarios), sitio = sitioDe(d.sitio_plantacion, texto(original.sitio_plantacion) || "suelo");
+  const revisado = await revisarArbol(c, { ...d, especie_id: especieId, especie_otra: especieOtra, sitio_plantacion: sitio, comentarios }, null);
   errores.push(...revisado.errores);
   if (await fotoDeOtro(c, idDe(d.foto_id), id)) errores.push(FOTO_DE_OTRO);
   if (errores.length) return rechazo(id, "DATOS_INVALIDOS", "Revise los datos de la sustitución.", ordenar(errores));
 
-  const nuevo = await insertarArbol(c, u, { id, punto: revisado.punto as Punto, territorio: revisado.territorio as Territorio, especieId, especieOtra, comentarios,
+  const nuevo = await insertarArbol(c, u, { id, punto: revisado.punto as Punto, territorio: revisado.territorio as Territorio, especieId, especieOtra, sitio, comentarios,
     fecha: fecha as string, jornada, fotoId: idDe(d.foto_id), fechaRegistro: instante(d.fecha_registro), sustituye: { id: original.id, motivo, otro } });
   if (!nuevo) return conDuplicado(c, u, repetida((await filaDe(c, "plantaciones", id)) as Fila, u));
   let fila = nuevo;

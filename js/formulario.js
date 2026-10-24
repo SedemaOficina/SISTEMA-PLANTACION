@@ -81,6 +81,16 @@ SRP.formulario = {
       if (SRP.espejo) SRP.espejo.refrescar();
     });
     this.el('btn-fecha-hoy').addEventListener('click', () => { fecha.value = SRP.util.fechaHoy(); fecha.dispatchEvent(new Event('change', { bubbles: true })); });
+    // Suelo o macetón: dos botones, uno siempre elegido
+    const esc = SRP.util.escapar;
+    this.el('sitio-botones').innerHTML = SRP.CONFIG.SITIOS_PLANTACION.map(([k, t]) => '<button type="button" class="chip" data-sitio="' + esc(k) + '" aria-pressed="false">' + esc(t) + '</button>').join('');
+    this.el('sitio-botones').addEventListener('click', (e) => {
+      const b = e.target.closest('.chip'); if (!b) return;
+      this.elegirSitio(b.dataset.sitio);
+      this.guardarBorrador();
+      if (SRP.espejo) SRP.espejo.refrescar();
+    });
+    this.elegirSitio('suelo');
     this.el('btn-resumen-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar</span>';
     this.el('btn-resumen-cerrar').innerHTML = SRP.ICONOS.svg('cerrar', 'grande');
     this.el('btn-resumen-cerrar').addEventListener('click', () => this.el('dlg-resumen').close());
@@ -111,9 +121,14 @@ SRP.formulario = {
     });
   },
 
+  elegirSitio(valor) {
+    this.el('sitio-botones').querySelectorAll('.chip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.sitio === valor)));
+    this.el('campo-sitio').value = valor;
+  },
+
   /* ---------- Borrador del árbol a medias ---------- */
 
-  /* EL ÁRBOL A MEDIAS NO SE PIERDE. Lo capturado y aún no guardado —punto, especie, comentarios,
+  /* EL ÁRBOL A MEDIAS NO SE PIERDE. Lo capturado y aún no guardado —punto, especie, sitio, comentarios,
      fecha y fotografía— se copia en este teléfono cada vez que cambia. Si la página se recarga, se
      cierra o el teléfono la descarga de la memoria al abrir la cámara, al volver a «Nuevo registro»
      con la misma cuenta y la misma jornada el árbol reaparece como estaba. Se borra al guardar el
@@ -129,7 +144,7 @@ SRP.formulario = {
       const b = { usuario: u.id, jornada: j.id, cuando: SRP.util.ahoraISO(),
         lat: SRP.mapa.lat, lng: SRP.mapa.lng, origen: SRP.mapa.origen, precision: SRP.mapa.precision,
         especie: this.estado.especieId, otra: otra ? this.el('campo-otra-especie').value : '',
-        comentarios: this.el('campo-comentarios').value, fecha: this.el('campo-fecha').value,
+        comentarios: this.el('campo-comentarios').value, fecha: this.el('campo-fecha').value, sitio: this.el('campo-sitio').value,
         foto: this.estado.foto, fotoId: this.estado.fotoId, fotoNombre: this.estado.fotoNombre };
       try { localStorage.setItem(this.CLAVE_BORRADOR, JSON.stringify(b)); }
       catch (e) {
@@ -157,6 +172,7 @@ SRP.formulario = {
       if (b.especie && (esOtra || SRP.ref.catalogoPorId[b.especie])) this.elegirEspecie(b.especie, esOtra ? (b.otra || ' ') : undefined);
       if (esOtra) this.el('campo-otra-especie').value = b.otra || '';
       this.el('campo-comentarios').value = b.comentarios || '';
+      if (b.sitio) this.elegirSitio(b.sitio);
       const campo = this.el('campo-fecha');
       if (b.fecha && !this.el('caja-fecha-arbol').hidden && (!campo.min || b.fecha >= campo.min) && b.fecha <= SRP.util.fechaHoy()) campo.value = b.fecha;
       if (b.foto && SRP.util.fotoSegura(b.foto)) this.ponerFoto(b.foto, b.fotoId || SRP.util.generarId(), b.fotoNombre);
@@ -430,6 +446,7 @@ SRP.formulario = {
       especie_otra: otra ? this.el('campo-otra-especie').value.trim() : '',
       programa_id: this.programaDeJornada(),   // el de la jornada
       fecha_plantacion: this.el('campo-fecha').value,
+      sitio_plantacion: this.el('campo-sitio').value || 'suelo',
       comentarios: this.el('campo-comentarios').value.trim(),
       foto_base64: this.estado.foto, foto_id: this.estado.fotoId
     };
@@ -544,6 +561,7 @@ SRP.formulario = {
       ['Programa', esc(SRP.ref.nombreCatalogo(v.programa_id)), null],
       ['Jornada', esc(this.nombreJornada()), null],
       ['Fecha de plantación', esc(SRP.util.formatearFecha(v.fecha_plantacion)), this.el('caja-fecha-arbol').hidden ? null : 'fecha'],
+      ['Sitio de plantación', esc(SRP.ref.sitio(v)), 'sitio'],
       ['Alcaldía', esc(SRP.ref.alcaldia(v.alcaldia)), null],
       ['Colonia', esc(SRP.ref.colonia(v.colonia)), null],
       ['Coordenadas', v.lat.toFixed(5) + ', ' + v.lng.toFixed(5), 'punto'],
@@ -614,6 +632,7 @@ SRP.formulario = {
       return;
     }
     if (campo === 'foto') { this.el('etq-foto').scrollIntoView({ block: 'center' }); this.el('foto-archivo').click(); return; }
+    if (campo === 'sitio') { const b = this.el('sitio-botones').querySelector('[aria-pressed="true"]'); b.scrollIntoView({ block: 'center' }); b.focus(); return; }
     const destino = { especie: 'campo-especie', fecha: 'campo-fecha', comentarios: 'campo-comentarios' }[campo];
     if (!destino) return;
     this.enfocar(destino);
@@ -665,8 +684,8 @@ SRP.formulario = {
     try {
       if (this.estado.editando) {
         const previo = this.estado.editando;
-        const cambiados = ['lat', 'lng', 'punto_origen', 'especie_id', 'especie_otra', 'programa_id', 'fecha_plantacion', 'comentarios', 'foto_id']
-          .filter(k => (previo[k] || null) !== (v[k] || null));
+        const cambiados = ['lat', 'lng', 'punto_origen', 'especie_id', 'especie_otra', 'programa_id', 'fecha_plantacion', 'sitio_plantacion', 'comentarios', 'foto_id']
+          .filter(k => (k === 'sitio_plantacion' ? previo[k] || 'suelo' : previo[k] || null) !== (v[k] || null));
         // Al editar se vuelve a derivar el territorio con las capas vigentes: si cambió —porque el
         // punto se movió o porque la capa es otra—, queda en el historial
         const territorio = ['alcaldia', 'colonia', 'uga', 'capa_version'].filter(k => (previo[k] || null) !== (v[k] || null));
@@ -738,12 +757,14 @@ SRP.formulario = {
   /* ---------- Sustitución ---------- */
 
   /* El formulario listo para el árbol que reemplaza a `original`, en morado, el color del sustituto: franja
-     fija con el árbol que se reemplaza, marco y «Guardar sustituto». Nada del árbol perdido llega
-     precargado, ni la especie: el primer botón rápido ofrece «La misma», que hay que tocar a propósito. */
+     fija con el árbol que se reemplaza, marco y «Guardar sustituto». Del árbol perdido sólo llega el sitio
+     de plantación: el nuevo va en el mismo lugar, en suelo o en el mismo macetón. La especie no: el primer
+     botón rápido ofrece «La misma», que hay que tocar a propósito. */
   // `reabierta`: la jornada cerrada que se reabrió para este sustituto; vuelve a cerrarse al terminar
   sustituir(original, motivo, otro, fecha, reabierta) {
     this.limpiar();
     this.estado.sustitucion = { original, motivo, otro, fecha: fecha || SRP.util.fechaHoy(), reabierta: reabierta || null };
+    this.elegirSitio(original.sitio_plantacion || 'suelo');
     this.el('titulo-registrar').textContent = 'Sustituir árbol';
     this.el('titulo-registrar').classList.remove('oculto-visual');
     const aviso = this.el('edicion-aviso');
@@ -915,6 +936,7 @@ SRP.formulario = {
     this.el('campo-fecha').value = registro.fecha_plantacion;
     this.el('campo-comentarios').value = registro.comentarios || '';
     SRP.util.pintarContador(this.el('campo-comentarios'));
+    this.elegirSitio(registro.sitio_plantacion || 'suelo');
     if (registro.especie_id) this.elegirEspecie(registro.especie_id);
     else this.elegirEspecie(this.OTRA, registro.especie_otra);
     this.ponerFoto(SRP.util.fotoSegura(registro.foto_base64) || null, registro.foto_id, '', 0, SRP.foto.fuente(registro));
@@ -953,6 +975,7 @@ SRP.formulario = {
     this.el('campo-fecha').value = '';
     this.el('caja-fecha-arbol').hidden = true;
     this.el('campo-comentarios').value = '';
+    this.elegirSitio('suelo');
     this.el('coord-lat').value = '';
     this.el('coord-lng').value = '';
     this.ponerFoto(null, null);

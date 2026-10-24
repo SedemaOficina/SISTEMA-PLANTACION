@@ -630,7 +630,8 @@ SRP.activa = {
 
   /* Lo que queda pendiente al cerrar: puntos por revisar y distancia a la meta. Es aviso, no
      impedimento: la jornada se puede cerrar así y reabrir después. Devuelve la confirmación
-     estructurada: lo pendiente en viñetas, para que no se pierda en un párrafo. */
+     estructurada: lo pendiente en viñetas, para que no se pierda en un párrafo. Con puntos por
+     revisar ofrece primero revisarlos (SRP.app.elegir devuelve 'otro') y «Cerrar jornada» va de contorno. */
   async confirmacionCierre(j) {
     const regs = await this.registrosDe(j);
     const vista = SRP.jornadas.jornadasAlcance ? (await SRP.jornadas.jornadasAlcance()).find(x => x.id === j.id) : null;
@@ -641,9 +642,11 @@ SRP.activa = {
     if (pend) avisos.push(pend === 1 ? '1 punto por revisar' : pend + ' puntos por revisar');
     if (meta !== null && n < meta) avisos.push((meta - n) + (meta - n === 1 ? ' árbol' : ' árboles') + ' por debajo de lo previsto (' + n + ' de ' + meta + ')');
     if (meta !== null && n > meta) avisos.push((n - meta) + (n - meta === 1 ? ' árbol' : ' árboles') + ' por encima de lo previsto (' + n + ' de ' + meta + ')');
-    return { titulo: 'Cerrar jornada', pregunta: '¿Cerrar la jornada «' + j.nombre + '» con ' + n + (n === 1 ? ' árbol' : ' árboles') + '?',
+    const revisar = pend ? { otro: { texto: pend === 1 ? 'Revisar el punto' : 'Revisar los ' + pend + ' puntos', icono: 'ver' }, linea: true,
+      nota: pend === 1 ? 'Puede revisarlo ahora o cerrar de todos modos y revisarlo después.' : 'Puede revisarlos ahora, uno por uno, o cerrar de todos modos y revisarlos después.' } : {};
+    return Object.assign({ titulo: 'Cerrar jornada', pregunta: '¿Cerrar la jornada «' + j.nombre + '» con ' + n + (n === 1 ? ' árbol' : ' árboles') + '?',
       puntosTitulo: 'Queda pendiente:', puntos: avisos.map(a => a.charAt(0).toUpperCase() + a.slice(1) + '.'),
-      nota: (avisos.length ? 'Se puede cerrar de todos modos y reabrir después.' : 'Se puede reabrir después.'), boton: 'Cerrar jornada', icono: 'candado' };
+      nota: (avisos.length ? 'Se puede cerrar de todos modos y reabrir después.' : 'Se puede reabrir después.'), boton: 'Cerrar jornada', icono: 'candado' }, revisar);
   },
 
   // `op.sinPreguntarSiCuadra`: viene de «Jornada completa»; si no queda nada pendiente, no se vuelve a preguntar
@@ -653,8 +656,14 @@ SRP.activa = {
     /* Desde «Jornada completa» ya se eligió cerrar: no se vuelve a preguntar. Lo que quede pendiente
        —puntos por revisar, datos de cierre— lo dice la ficha de la jornada, que es a donde se llega. */
     if (!(op && op.directo)) {
-      const c = await this.confirmacionCierre(j);
-      if (!(await SRP.app.confirmar(c))) return;
+      const r = await SRP.app.elegir(await this.confirmacionCierre(j));
+      // «Revisar los puntos»: la ficha de la jornada, en el primero; al terminar el último vuelve a preguntar
+      if (r === 'otro') {
+        Object.assign(SRP.jornadas, { actual: j.id, volverAlDetalle: true, revisionCierre: j.id });
+        SRP.app.mostrarVista('jornadas');
+        return;
+      }
+      if (r !== 'si') return;
       j = await this.ofrecerActualizarPrevistos(j);
     }
     if (!await this.cambiarEstatus(j, 'cerrada')) return;

@@ -144,6 +144,8 @@ function adaptar(tabla, fila, mapaVehiculos) {
     if (real) Object.assign(n, { vehiculo_id: real.id, vehiculo_placa: real.nombre, vehiculo_modelo: real.modelo, vehiculo_tipo: real.tipo_vehiculo });
   }
   if (tabla === 'bitacora' && ['plantacion', 'usuario', 'jornada', 'carga'].includes(n.entidad)) n.entidad_id = uuidDe(n.entidad_id);
+  // Un árbol exportado antes de que existiera el sitio de plantación se plantó en suelo
+  if (tabla === 'plantaciones' && !n.sitio_plantacion) n.sitio_plantacion = 'suelo';
   return n;
 }
 

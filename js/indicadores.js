@@ -273,7 +273,7 @@ SRP.indicadores = {
         const e = especieDe(r);
         return { folio: SRP.folio.valido(r.folio) ? r.folio : 'PROVISIONAL', fecha: r.fecha_plantacion, jornada: j.nombre, organizacion: SRP.ref.nombreOrganizacion(this.organizacionDe(j)),
           cabo: SRP.ref.nombreUsuario(r.cabo_id),
-          programa: SRP.ref.nombreCatalogo(r.programa_id) || '', especie: e.comun, cientifico: e.cientifico, distribucion: e.distribucion || '',
+          programa: SRP.ref.nombreCatalogo(r.programa_id) || '', especie: e.comun, cientifico: e.cientifico, distribucion: e.distribucion || '', sitio: SRP.ref.sitio(r),
           alcaldia: r.alcaldia || '', colonia: r.colonia || '', uga: r.uga || '', lat: r.lat, lng: r.lng, origen: SRP.mapa.textoOrigen(r.punto_origen),
           precision: r.punto_origen === 'gps' && r.gps_precision_m != null ? Math.round(r.gps_precision_m) : '', foto: r.foto_id || r.foto_base64 ? 'Sí' : 'No',
           reporte: j.dato && j.dato.reporte_en ? 'Generado' : 'Pendiente', sustituto: r.sustituye_id ? 'Sí' : 'No', motivo: SRP.ref.motivoSustitucion(r),

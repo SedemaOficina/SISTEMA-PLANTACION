@@ -27,16 +27,19 @@ SRP.informes = {
     return 'Periodo: ' + (desde === hasta ? F(desde) : 'del ' + F(desde) + ' al ' + F(hasta)) + (!corto && hasta > hoy ? ' (corte al ' + F(hoy) + ')' : '');
   },
 
-  // «Informe_semanal_2026-09-21_al_2026-09-27_Coyoacan.pdf»: sin acentos ni espacios
+  /* «Informe_semanal_2026-09-21_al_2026-09-27_Coyoacan.pdf»: sin acentos ni espacios. Si todo es de un
+     solo cabo —el cabo que lo descarga o el filtro «Quién registró»—, su nombre va al final, para
+     reconocer el archivo sin abrirlo; con varios cabos no lleva nombre. */
   nombreArchivo(m, prefijo, ext) {
     const p = m.periodo;
     const limpio = t => String(t).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
     const cuando = p.tipo === 'mes' ? p.desde.slice(0, 7) : p.tipo === 'anio' ? p.desde.slice(0, 4) : p.tipo === 'todo' ? 'todo' : p.desde + '_al_' + p.hasta;   // el nombre conserva su forma corta; las fechas van dentro
     const tipo = { semana: '_semanal', mes: '_mensual', anio: '_anual' }[p.tipo] || '';
-    const f = m.filtros;
+    const f = m.filtros, u = SRP.sesion.usuario;
     const org = f.organizacion ? SRP.ref.catalogoPorId[f.organizacion] : null;
+    const cabo = f.cabo ? SRP.ref.nombreUsuario(f.cabo) : SRP.permisos.de(u).alcance === 'propios' ? SRP.util.nombreCompleto(u) : '';
     return [prefijo + tipo, cuando, org ? limpio(org.clave || org.nombre) : '', f.alcaldia ? limpio(f.alcaldia) : '', f.programa ? limpio(SRP.ref.nombreCatalogo(f.programa)) : '',
-      f.cabo ? limpio(SRP.ref.nombreUsuario(f.cabo)) : ''].filter(Boolean).join('_') + '.' + ext;
+      cabo ? limpio(cabo) : ''].filter(Boolean).join('_') + '.' + ext;
   },
 
   // De quién es lo que se informa
@@ -214,7 +217,7 @@ SRP.informes = {
      tabulador o retorno) lleva un apóstrofo delante: Excel lo muestra como texto y no lo calcula.
      Las cifras —la longitud es negativa— quedan como están. */
   COLUMNAS: [['folio', 'Folio'], ['fecha', 'Fecha de plantación'], ['jornada', 'Jornada'], ['organizacion', 'Institución que ejecuta'], ['cabo', 'Quién registró'], ['programa', 'Programa'], ['especie', 'Especie'],
-    ['cientifico', 'Nombre científico'], ['distribucion', 'Distribución'], ['alcaldia', 'Alcaldía'], ['colonia', 'Colonia'], ['uga', 'Celda UGA'],
+    ['cientifico', 'Nombre científico'], ['distribucion', 'Distribución'], ['sitio', 'Sitio de plantación'], ['alcaldia', 'Alcaldía'], ['colonia', 'Colonia'], ['uga', 'Celda UGA'],
     ['lat', 'Latitud'], ['lng', 'Longitud'], ['origen', 'Origen del punto'], ['precision', 'Precisión GPS (m)'], ['foto', 'Con fotografía'], ['reporte', 'Reporte de la jornada'], ['sustituto', 'Sustituto'], ['motivo', 'Motivo de la sustitución'],
     ['solicitante', 'Quién lo solicita'], ['solicitudDescripcion', 'Descripción de la solicitud']],
 

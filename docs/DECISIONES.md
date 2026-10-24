@@ -4296,3 +4296,36 @@
     en el sistema y en lo que se descarga para trabajar los datos.
   · **La precisión se queda**, con su color y su nota: dice si el punto es confiable sin leer números.
   · Va en la misma versión 1.1.1.
+- **D328. Los cambios pedidos tras la prueba en campo (bloque 247).**
+  24-10-2026. Liber pasó ocho cambios del documento de la prueba en campo, con sus claves (RP-01 a RP-12; las que
+  faltan no se pidieron), y aprobó las muestras con el antes y el después (`servidor/local/muestras-b247/`, fuera
+  de git). Las figuras del documento no correspondían a la aplicación y no se tomaron en cuenta.
+  · **RP-01, suelo o macetón.** Cada árbol guarda `sitio_plantacion`: `suelo` o `maceton`. En «Nuevo registro» son
+    dos botones entre la especie y los comentarios. **Liber eligió que cada árbol empiece en «Suelo»**, no en lo
+    último de la jornada: casi siempre es suelo, y un macetón olvidado no se repite en los siguientes. El sustituto
+    toma el sitio del árbol que reemplaza, porque va en el mismo lugar; la carga masiva pone «Suelo», porque la
+    plantilla no lo pregunta. Se lee en la ficha de revisión y en el detalle. El reporte lleva la columna «Sitio»
+    sólo si algún árbol de la jornada quedó en macetón, como la de «Comentario»; el CSV de Supervisión la lleva
+    siempre. La base del teléfono pasa a la versión 11: los árboles ya guardados quedan en «Suelo». En el
+    servidor el campo vale `suelo` si no llega, para las versiones anteriores de la aplicación; el esquema
+    tiene su restricción de valores.
+  · **RP-03, sin folio en «Detalle del registro».** **Liber eligió quitarlo también de la ventana de la
+    fotografía**; se queda en la tarjeta de Registros, en el CSV y en la base. Tampoco va en «Sustituye a» ni en
+    la línea del historial en que el servidor lo asigna.
+  · **RP-04, «Sustituir árbol» en morado**, el color del árbol sustituto en el mapa: junto a «Editar», blanco, ya no
+    se confunden. El morado se suma a los colores por significado.
+  · **RP-05, el cabo no ve «Cabo» en Fotografías.** Sólo ve sus fotografías: el renglón repetía su nombre. La
+    coordinación, la dirección y la Administración global lo siguen viendo.
+  · **RP-06, la hora de finalización es obligatoria** en los datos de cierre. Sin ella no sale la vista previa:
+    el campo se marca, dice qué falta y recibe el foco. El servidor sigue aceptando jornadas sin hora: las
+    anteriores no la tienen.
+  · **RP-07, revisar antes de cerrar.** Al cerrar con puntos por revisar, la ventana ofrece primero «Revisar los N
+    puntos» y «Cerrar jornada» queda de contorno. Lleva a la ficha de la jornada, en el primer punto; cada punto
+    atendido («Está bien», corregido, movido o eliminado) lleva al siguiente, y sin ninguno pendiente vuelve a
+    preguntar si se cierra. Se puede cerrar de todos modos, como antes.
+  · **RP-09, el nombre del cabo en lo que se descarga.** El reporte de la jornada ya lo llevaba. Ahora también el
+    informe, el CSV y el ZIP de fotografías cuando son de un solo cabo: lo que descarga el cabo, lo filtrado por
+    «Quién registró» y, en el ZIP, una jornada. **Liber eligió que con varios cabos el archivo no lleve nombre.**
+  · **RP-12, el modo sol encendido desde el principio**, para leer a pleno sol. Si alguien lo apaga, se recuerda en
+    ese teléfono, y quien ya lo había apagado lo sigue teniendo apagado.
+  · Versión 1.2, porque la base cambia. La entrega al SIA se rehace con ella.

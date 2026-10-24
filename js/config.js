@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 246',
+  ETAPA: 'Bloque 247',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -35,7 +35,7 @@ SRP.CONFIG = {
      después del anterior («2026-09-30b-…» va después de «2026-09-30-…»). */
   SELLO_REINICIO: '2026-09-30b-coordinacion',
   CLAVE_SELLO: 'srp_sello_datos',
-  DB_VERSION: 10,   // 2: tabla jornadas; 3: índice de árboles por jornada; 4: vehículo sólo del catálogo; 5: campos depurados y renombrados; 6: sin marca de prueba ni campos sin uso; 7: capa de colonias definitiva; 8: cada catálogo en su tabla; 9: la solicitud es un programa, sin origen de la jornada; 10: la cola de envío
+  DB_VERSION: 11,   // 2: tabla jornadas; 3: índice de árboles por jornada; 4: vehículo sólo del catálogo; 5: campos depurados y renombrados; 6: sin marca de prueba ni campos sin uso; 7: capa de colonias definitiva; 8: cada catálogo en su tabla; 9: la solicitud es un programa, sin origen de la jornada; 10: la cola de envío; 11: el sitio de plantación
   CLAVE_SESION: 'srp_sesion_usuario_id',
   CLAVE_CONTRASTE: 'srp_contraste',
   CLAVE_SECUENCIAS_PRUEBA: 'srp_secuencias_folio_prueba',   // secuencias del servidor simulado
@@ -141,7 +141,9 @@ SRP.CONFIG = {
   PAGINA_POR_LISTA: { 'galeria-paginas': 25 },
   TAMANOS_PAGINA: [10, 25, 50, 100],   // lo que ofrece «Resultados por página»
   // Por qué se sustituyó un árbol: clave que se guarda y texto que se ve. «Otro» pide escribirlo
-  MOTIVOS_SUSTITUCION: [['VANDALISMO', 'Vandalismo'], ['IMPACTO_VEHICULAR', 'Impacto vehicular'], ['ROBO', 'Robo'], ['MUERTE', 'Muerte'], ['OTRO', 'Otro']]
+  MOTIVOS_SUSTITUCION: [['VANDALISMO', 'Vandalismo'], ['IMPACTO_VEHICULAR', 'Impacto vehicular'], ['ROBO', 'Robo'], ['MUERTE', 'Muerte'], ['OTRO', 'Otro']],
+  // Dónde quedó plantado el árbol: clave que se guarda y texto que se ve. Casi siempre es en suelo: cada árbol nuevo empieza ahí
+  SITIOS_PLANTACION: [['suelo', 'Suelo'], ['maceton', 'Macetón']]
 };
 
 // La base de esta versión: la de prueba o la real, nunca la misma

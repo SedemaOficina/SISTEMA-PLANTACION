@@ -400,6 +400,26 @@ test('la sustitución entra en la jornada del original con su folio y lo deja su
     'Se eliminó su sustituto: vuelve a contar como plantado', 'Sustituido por ' + especie + ': Otro: Lo atropelló una grúa', 'Vuelve su sustituto: Otro: Lo atropelló una grúa']);
 });
 
+test('el sitio de plantación: suelo si no llega, macetón si se elige, se corrige y el sustituto sin sitio toma el del árbol que reemplaza', async () => {
+  const t = await telefono(CABO);
+  const { J, A, version } = await conArbol(t);
+  assert.equal(A.sitio_plantacion, 'suelo', 'una versión anterior de la aplicación no lo manda: queda en suelo');
+  const M = arbol(J.id, { sitio_plantacion: 'maceton' });
+  assert.equal((await t.una('registro.crear', M)).fila.sitio_plantacion, 'maceton');
+  assert.deepEqual((await t.una('registro.crear', arbol(J.id, { sitio_plantacion: 'azotea' }))).errores, [['sitio_plantacion', 'Elija si se plantó en suelo o en macetón.']]);
+  // Se corrige como cualquier dato, y la bitácora lo dice
+  const r = await t.una('registro.editar', { id: A.id, version, cambios: { sitio_plantacion: 'maceton' } });
+  assert.deepEqual([r.estado, r.fila.sitio_plantacion], ['recibido', 'maceton']);
+  assert.equal((await bitacora(A.id)).find((b) => b[0] === 'EDITADO')[1], 'Campos: sitio_plantacion');
+  assert.deepEqual((await t.una('registro.editar', { id: A.id, version: r.version, cambios: { sitio_plantacion: 'azotea' } })).errores, [['sitio_plantacion', 'Elija si se plantó en suelo o en macetón.']]);
+  // El sustituto de un árbol en macetón, de una versión que no manda el sitio, va al mismo macetón
+  const S = await t.una('registro.sustituir', { id: uuid(), sustituye_id: A.id, motivo_sustitucion: 'ROBO', fecha_plantacion: HOY, ...PUNTO,
+    punto_origen: 'gps', gps_precision_m: 3, especie_id: ESPECIE, comentarios: '', fecha_registro: new Date().toISOString() });
+  assert.deepEqual([S.estado, S.fila.sitio_plantacion], ['recibido', 'maceton']);
+  // En la base, sólo esos dos valores
+  await assert.rejects(admin.query("UPDATE srp.plantaciones SET sitio_plantacion = 'azotea' WHERE id = $1", [M.id]), (e) => e.code === '23514');
+});
+
 test('mover lleva el árbol a otra jornada del mismo cabo, con la fecha y el programa de esa jornada; la de origen pierde su marca de revisado', async () => {
   const t = await telefono(CABO);
   const { J, A, version } = await conArbol(t, { fecha: dias(-3), nombre: 'Jornada de origen' });

@@ -6271,3 +6271,72 @@ página no los puede quitar.
 
 **Siguiente paso.** Liber prueba la 1.1.1 en el Android: si el menú trae «Cámara», queda; si no, se pasa a dos
 botones. Con la prueba en campo aprobada se rehace la entrega al SIA con la 1.1.1.
+
+## Bloque 247 — Los cambios pedidos tras la prueba en campo (24-10-2026)
+
+**Versión 1.2.** Ocho cambios del documento de la prueba en campo (claves RP-01 a RP-12; las que faltan no se
+pidieron), con las muestras del antes y el después aprobadas por Liber (D328).
+
+| Clave | Qué | Antes | Ahora |
+|---|---|---|---|
+| RP-01 | Sitio de plantación | No se registraba | «Suelo» o «Macetón» en cada árbol, empieza en «Suelo»; en la ficha, el detalle, el reporte (si hay macetón) y el CSV |
+| RP-03 | Folio en el detalle y en la ventana de la fotografía | Se mostraba | No se muestra; sigue en la tarjeta, el CSV y la base |
+| RP-04 | «Sustituir árbol» en el detalle | Blanco, igual que «Editar» | Relleno de morado |
+| RP-05 | «Cabo» en la ventana de una fotografía, para el cabo | Su propio nombre | No sale; la coordinación, la dirección y la Administración lo siguen viendo |
+| RP-06 | Hora de finalización del cierre | Opcional | Obligatoria: sin ella no sale la vista previa |
+| RP-07 | Cerrar con puntos por revisar | Sólo «Cerrar jornada» o «Cancelar» | Primero «Revisar los N puntos»: lleva a cada uno y al final vuelve a preguntar |
+| RP-09 | Nombre de lo que descarga un cabo | Informe, CSV y ZIP sin su nombre | Con su nombre (también con el filtro «Quién registró» y, el ZIP, con una jornada) |
+| RP-12 | Modo sol | Apagado de inicio | Encendido de inicio; si se apaga, se recuerda |
+
+**Qué cambió.**
+- `datos/esquema.json`: `plantaciones.sitio_plantacion` (`suelo` o `maceton`) con su dominio; la hora de la jornada
+  dice que es obligatoria para el reporte; la base del teléfono en la versión 11. De ahí se regeneraron
+  `js/esquema.js`, `datos/DICCIONARIO-DATOS.md` y `servidor/db/srp/02-srp-tablas.sql`.
+- `herramientas/generar_sql.py`: valor de arranque por campo (`PREDETERMINADOS`): `sitio_plantacion` vale `suelo`
+  si quien escribe no lo dice.
+- `js/config.js` (`SITIOS_PLANTACION`, `DB_VERSION` 11), `js/almacen.js` (migración 11), `js/referencias.js`
+  (`SRP.ref.sitio`), `js/formulario.js` (los dos botones, la ficha, la edición, el sustituto y el borrador),
+  `js/registros.js` (detalle sin folio y con el sitio), `js/galeria.js` (sin folio; sin «Cabo» para el cabo;
+  nombre del ZIP), `js/reportes.js` (columna «Sitio»; hora obligatoria), `js/indicadores.js` e `js/informes.js`
+  (columna del CSV; nombre del cabo), `js/jornada-activa.js` y `js/jornadas.js` (revisar antes de cerrar),
+  `js/app.js` (modo sol de inicio; «Cerrar jornada» de contorno cuando la acción es otra), `js/demostracion.js`
+  (uno de cada 37 árboles en macetón, sin cambiar el resto), `js/carga.js` (la carga masiva pone suelo),
+  `js/espejo.js`, `css/estilos.css` (`.btn-sustituir`, el morado en los colores por significado), `index.html`.
+- Servidor: `recepcion-arboles.ts` recibe, revisa y corrige el sitio; sin él, suelo, o el del árbol que se
+  sustituye. `cargar.js` pone suelo en lo exportado antes.
+- `README.md`, `datos/MAPEO-CAMPOS.md`, `docs/MEJORAS.md` (M535 a M542), `docs/DECISIONES.md` (D328).
+- Pruebas: `servidor/pruebas/recepcion.test.js`, una nueva; `esquema.test.js` inserta un árbol por posición de
+  columnas y se ajustó a la columna nueva. `pruebas/prueba.py`: sección ctx99 (25 comprobaciones) y los ajustes
+  de lo que cambió (base 11, detalle sin folio, hora en los cierres, nombre del informe, el cierre que ahora
+  pregunta con «Revisar»). Las pruebas corren con el modo sol apagado, como un teléfono donde se apagó; su
+  arranque encendido se prueba aparte.
+
+**Pantalla.**
+- Se agregó: «Sitio de plantación» (Suelo y Macetón) en Nuevo registro, y su renglón en la ficha y en el detalle;
+  la columna «Sitio» del reporte cuando hay un macetón; «Revisar los N puntos» al cerrar; el asterisco y el
+  aviso de la hora de finalización; el morado de «Sustituir árbol»; el modo sol encendido.
+- Se quitó: el folio del detalle y de la ventana de la fotografía; el renglón «Cabo» de esa ventana para el cabo.
+
+**Verificación.**
+- La prueba completa por tramos: 1,494 de 1,496 (82 tramos, con los 25 de la sección nueva). Las dos que fallan
+  son las mismas de la 1.1.1 y no tienen que ver con este bloque: los porcentajes de los totales por especie con
+  muchas especies de un árbol, y la hoja «especies» contra el libro de `originales/`, que se volvió a guardar con
+  otro orden (bloque 246).
+- En la corrida final se detuvo una vez el tramo 42 (jornada de varios días y relevo): al iniciar una jornada la
+  prueba no la encontró. Repetido dos veces, 35 de 35; en la primera corrida del bloque también pasó. Intermitente,
+  1 de 4; no se pudo reproducir.
+- Antes de esa corrida, las pruebas que esperaban la base 10, el folio en el detalle, el nombre del informe sin
+  cabo y los cierres sin hora se ajustaron a lo nuevo; una que reemplazaba la confirmación de cierre se quedaba
+  esperando, porque el cierre ahora pregunta con otra ventana: se ajustó.
+- La sección nueva, sola: 25 de 25.
+- Pruebas del servidor: 107 de 107 (una nueva). Prueba de conexión con el servidor local: 119 de 119.
+- La revisión automática: 145 sin hallazgos; la hoja de estilos sin hallazgos; `revisar.py` sin problemas (sus
+  capturas se movieron a `_to_delete/b247-capturas-revisar/`). El SQL generado, al día con el esquema.
+
+No se probó: en un teléfono de verdad (aquí no hay teléfonos), ni en WebKit. El modo sol de inicio se ve en el
+primer arranque de cada teléfono; en los que ya lo habían apagado sigue apagado.
+
+**Siguiente paso.** Liber prueba la 1.2 en campo con los pasos de la página «Prueba en campo SRP», que ya dicen
+1.2 (un árbol en macetón y el cierre sin hora). Con la prueba aprobada se rehace la entrega al SIA con la 1.2: la
+base lleva una columna nueva; si el SIA hubiera instalado ya una versión anterior, la entrega llevaría además
+cómo agregarla.

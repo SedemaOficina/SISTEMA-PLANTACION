@@ -3,7 +3,7 @@
   "version_esquema": "2026-10-04",
   "etapa": "Etapa 1 (Fase 1: dispositivo, sin servidor)",
   "almacenamiento": {
-    "motor": "IndexedDB del navegador: base `srp_db` en la versión de prueba y `srp_sia` en la real (SRP.CONFIG.DB_NOMBRE, según ES_FICTICIO), versión 10 (SRP.CONFIG.DB_VERSION). Nunca comparten datos",
+    "motor": "IndexedDB del navegador: base `srp_db` en la versión de prueba y `srp_sia` en la real (SRP.CONFIG.DB_NOMBRE, según ES_FICTICIO), versión 11 (SRP.CONFIG.DB_VERSION). Nunca comparten datos",
     "tablas": [
       "plantaciones",
       "usuarios",
@@ -99,6 +99,14 @@
       ],
       "codigo": "SRP.CONFIG.MOTIVOS_SUSTITUCION.map(m => m[0])",
       "fuente": "js/config.js MOTIVOS_SUSTITUCION"
+    },
+    "sitio_plantacion": {
+      "valores": [
+        "suelo",
+        "maceton"
+      ],
+      "codigo": "SRP.CONFIG.SITIOS_PLANTACION.map(s => s[0])",
+      "fuente": "js/config.js SITIOS_PLANTACION"
     },
     "estatus_jornada": {
       "valores": [
@@ -455,6 +463,15 @@
           "dominio": "→ plantaciones.id",
           "pantalla": "Detalle («Sustituido por»)",
           "regla": "Sólo en el árbol perdido, junto con estatus `sustituido`. Si se elimina el sustituto, vuelve a nulo y el árbol a `activo`"
+        },
+        {
+          "campo": "sitio_plantacion",
+          "tipo": "text",
+          "nulo": false,
+          "origen": "Persona",
+          "dominio": "sitio_plantacion",
+          "pantalla": "Sitio de plantación (Suelo o Macetón); detalle, ficha de revisión, reporte (columna «Sitio» si algún árbol está en macetón) y CSV",
+          "regla": "Cada árbol nuevo empieza en `suelo`; el sustituto toma el del árbol que reemplaza y la carga masiva pone `suelo`. Los árboles guardados antes de existir el campo quedan en `suelo` (migración 11 del teléfono); el servidor pone `suelo` si una versión anterior de la aplicación no lo manda"
         },
         {
           "campo": "comentarios",
@@ -1690,8 +1707,8 @@
           "nulo": false,
           "origen": "Persona",
           "dominio": "HH:MM, de 00:00 a 23:59; '' si no se elige",
-          "pantalla": "Hora de finalización (selector)",
-          "regla": ""
+          "pantalla": "Hora de finalización (selector, con «Ahora»), obligatoria para generar el reporte",
+          "regla": "La aplicación no arma la vista previa del reporte sin ella; '' en las jornadas que todavía no tienen datos de cierre y en las anteriores a esta regla"
         }
       ]
     }

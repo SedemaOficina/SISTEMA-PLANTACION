@@ -25,9 +25,9 @@ SRP.reportes = {
       dist: Object.fromEntries(this.DISTRIBUCION.map(d => [d.clave, c(d.color)])) };
   },
 
-  /* Campos del cierre. Todos opcionales y de texto libre: los reportes varían de una cuadrilla a
-     otra y de un día a otro, y encajonarlos obligaría a escribir de una forma que no es la suya.
-     El encargado no está en esta lista porque no se escribe: sale de la sesión. */
+  /* Campos del cierre. De texto libre: los reportes varían de una cuadrilla a otra y de un día a
+     otro, y encajonarlos obligaría a escribir de una forma que no es la suya. Sólo la hora de
+     finalización es obligatoria. El encargado no está en esta lista porque no se escribe: sale de la sesión. */
   // Placa, modelo y tipo no se escriben: se copian del catálogo al guardar
   CAMPOS: ['personal', 'apoyo', 'observaciones', 'chofer', 'hora'],
   jornadasTodas: [],   // para contar los vehículos que más usa cada encargado
@@ -59,6 +59,7 @@ SRP.reportes = {
       this.el('cie-hora').value = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
       this.el('cie-hora').dispatchEvent(new Event('input', { bubbles: true }));
     });
+    ['input', 'change'].forEach(ev => this.el('cie-hora').addEventListener(ev, () => { if (this.el('cie-hora').value) SRP.util.quitarErrorCampo(this.el('cie-hora')); }));
     this.el('btn-previa-generar').innerHTML = SRP.ICONOS.svg('palomita') + '<span>Generar PDF</span>';
     this.el('btn-previa-generar').addEventListener('click', async () => {
       const v = this.vistaPrevia; if (!v) return;
@@ -104,6 +105,7 @@ SRP.reportes = {
     const previo = await this.cierreDeJornada(jornada);
     this.contexto.previo = previo || null;
     this.CAMPOS.forEach(c => { this.el('cie-' + c).value = previo ? (previo[c] || '') : ''; });
+    SRP.util.quitarErrorCampo(this.el('cie-hora'));
     // El vehículo lo pone prepararVehiculo(), sólo del catálogo
     this.prepararEncargado(registros, previo);
     await this.prepararVehiculo(previo);
@@ -240,6 +242,10 @@ SRP.reportes = {
       const c = this.contexto;
       const previo = c.previo;
       if (!SRP.permisos.exigir('jornada.editar', previo || c.jornada.dato)) return;   // el cierre se guarda en la jornada
+      // Sin hora de finalización no hay reporte: se dice en el campo y el foco va a él
+      const hora = this.el('cie-hora');
+      SRP.util.erroresEnCampos(hora.value ? [] : [['cie-hora', 'Escriba la hora en que terminó la jornada o toque «Ahora».']], ['cie-hora']);
+      if (!hora.value) { hora.focus(); return; }
       // Aquí se guardan los datos del cierre; el reporte cuenta como generado al entregar el PDF
       const cierre = this.cierrePrevisto();
 
@@ -325,7 +331,8 @@ SRP.reportes = {
 
      ORDEN DEL REPORTE: el nombre del cabo y, en la misma franja, los datos que distinguen a la
      jornada (nombre, día, lugar, programa, hora, comentarios y observaciones); cinco cifras;
-     1 croquis; 2 ejemplares plantados, con el comentario de cada árbol si alguno lo tiene;
+     1 croquis; 2 ejemplares plantados, con el sitio de cada árbol si alguno quedó en macetón y su
+     comentario si alguno lo tiene;
      3 totales por especie, con la barra de su distribución; 4 personal; 5 vehículo; y al pie las
      notas. El croquis va primero para que quepa en la primera página. Cada dato dice su nombre en
      negritas («Chófer: …») y lo que está vacío no se imprime. El folio no va en el reporte. */
@@ -357,6 +364,8 @@ SRP.reportes = {
     /* COMENTARIOS: van en la tabla de ejemplares, en su
        propia columna, sólo si algún árbol tiene comentario */
     const conComentario = registros.some(r => this.textoComentario(r));
+    // SITIO: casi todo se planta en suelo; la columna sale sólo si algún árbol quedó en macetón
+    const conSitio = registros.some(r => (r.sitio_plantacion || 'suelo') !== 'suelo');
     const especieCon = e => e.comun + (e.cientifico ? ' (' + e.cientifico + ')' : '');
     // Una jornada de varios días dice sus días y cada árbol, el suyo
     const dias = SRP.util.diasJornada({ fecha }, registros), variosDias = dias.desde !== dias.hasta;
@@ -411,11 +420,12 @@ SRP.reportes = {
       /* Uno por renglón, en el orden en que se capturaron: el mismo número que en el croquis. La
          especie lleva el nombre científico entre paréntesis; la precisión, su nivel para el
          color (verde buena, ámbar aceptable, rojo baja). Sin coordenadas: dónde quedó cada árbol lo
-         dice el croquis, y la coordenada se queda en el sistema. */
+         dice el croquis, y la coordenada se queda en el sistema. `precision`: en qué columna va. */
       ejemplares: {
-        cabecera: ['N.º', 'Especie', 'Precisión'].concat(variosDias ? ['Fecha'] : [], conComentario ? ['Comentario'] : []),
-        filas: registros.map((r, i) => [String(i + 1), especieCon(SRP.ref.especieDe(r)), this.textoPrecision(r)]
-          .concat(variosDias ? [SRP.util.formatearFecha(r.fecha_plantacion)] : [], conComentario ? [this.textoComentario(r)] : [])),
+        cabecera: ['N.º', 'Especie'].concat(conSitio ? ['Sitio'] : [], ['Precisión'], variosDias ? ['Fecha'] : [], conComentario ? ['Comentario'] : []),
+        filas: registros.map((r, i) => [String(i + 1), especieCon(SRP.ref.especieDe(r))].concat(conSitio ? [SRP.ref.sitio(r)] : [], [this.textoPrecision(r)],
+          variosDias ? [SRP.util.formatearFecha(r.fecha_plantacion)] : [], conComentario ? [this.textoComentario(r)] : [])),
+        precision: conSitio ? 3 : 2,
         niveles: registros.map(r => this.nivelPrecision(r)),
         especies: registros.map(r => { const e = SRP.ref.especieDe(r); return [e.comun, e.cientifico || '']; })
       },
@@ -489,7 +499,7 @@ SRP.reportes = {
     h += apartado('Ejemplares plantados', '<div class="previa-tabla-caja"><table class="previa-tabla"><thead><tr>' + ej.cabecera.map((c, k) => '<th' + (k === 0 ? ' class="cifra"' : '') + '>' + esc(c) + '</th>').join('') + '</tr></thead><tbody>' +
       ej.filas.map((f, i) => '<tr>' + f.map((c, k) => k === 0 ? '<td class="cifra">' + esc(c) + '</td>'
         : k === 1 ? '<td>' + esc(ej.especies[i][0]) + (ej.especies[i][1] ? ' (<i>' + esc(ej.especies[i][1]) + '</i>)' : '') + '</td>'
-        : k === 2 ? '<td class="previa-precision" data-nivel="' + ej.niveles[i] + '">' + esc(c) + '</td>'
+        : k === ej.precision ? '<td class="previa-precision" data-nivel="' + ej.niveles[i] + '">' + esc(c) + '</td>'
         : ej.cabecera[k] === 'Comentario' ? '<td class="previa-comentario">' + esc(c) + '</td>' : '<td>' + esc(c) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>' +
       nota(m.notaPrecision));
     h += apartado('Totales por especie', '<div class="previa-tabla-caja"><table class="previa-tabla"><thead><tr><th>Especie</th><th>Distribución</th><th class="cifra">Ejemplares</th><th class="cifra">% del total</th></tr></thead><tbody>' +
@@ -799,8 +809,9 @@ SRP.reportes = {
     const colorNivel = { buena: C.exito, aceptable: C.atencion, baja: C.error };
     // La especie guarda su ancho: un comentario con una palabra muy larga (un enlace) se parte, no la aplasta
     tabla({ head: [m.ejemplares.cabecera.map((c, k) => k === 0 ? { content: c, styles: { halign: 'right' } } : c)], body: m.ejemplares.filas,
-      columnStyles: { 0: { cellWidth: 11, halign: 'right' }, 1: { minCellWidth: 45 }, 2: { cellWidth: 20 } },
-      didParseCell: d => { if (d.section === 'body' && d.column.index === 2 && colorNivel[m.ejemplares.niveles[d.row.index]]) { d.cell.styles.textColor = colorNivel[m.ejemplares.niveles[d.row.index]]; d.cell.styles.fontStyle = 'bold'; } } });
+      // La 2 es la precisión o, con la columna «Sitio», el sitio; la precisión, donde quede, del mismo ancho
+      columnStyles: { 0: { cellWidth: 11, halign: 'right' }, 1: { minCellWidth: 45 }, 2: { cellWidth: 20 }, [m.ejemplares.precision]: { cellWidth: 20 } },
+      didParseCell: d => { if (d.section === 'body' && d.column.index === m.ejemplares.precision && colorNivel[m.ejemplares.niveles[d.row.index]]) { d.cell.styles.textColor = colorNivel[m.ejemplares.niveles[d.row.index]]; d.cell.styles.fontStyle = 'bold'; } } });
     letra('italic', 7.5, C.gris); { const l = doc.splitTextToSize(m.notaPrecision, util); salto(l.length * 3.4 + 2); doc.text(l, M, y); y += l.length * 3.4 + 4; }
 
     // Totales por especie, con su distribución y el porcentaje del total: calculados

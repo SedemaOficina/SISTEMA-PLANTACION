@@ -446,15 +446,15 @@ SRP.registros = {
     this.el('btn-detalle-sustituir').hidden = !sustituible;
     this.el('detalle-pie').hidden = !SRP.permisos.puedeEditar(SRP.sesion.usuario, r, SRP.ref.usuarioPorId) && !sustituible;
     const esp = SRP.ref.especieDe(r);
-    /* Mismo orden que el formulario y la ficha de revisión, con el folio al frente: es como se nombra
-       al árbol. Celda, capas, identificador y envío son de la base de datos y no se muestran aquí. */
+    /* Mismo orden que el formulario y la ficha de revisión. Folio, celda, capas, identificador y envío son
+       de la base de datos y no se muestran aquí: el árbol se reconoce por su especie, su fecha y su lugar. */
     const jornada = r.jornada_id ? await SRP.almacen.uno('jornadas', r.jornada_id) : null;
     const filas = [
-      ['Folio', '<span class="folio-provisional">' + esc(SRP.folio.textoLargo(r)) + '</span>'],
       ['Especie', esc(esp.comun) + (esp.cientifico ? ' <i>(' + esc(esp.cientifico) + ')</i>' : '')],
       ['Programa', esc(SRP.ref.nombreCatalogo(r.programa_id))],
       ['Jornada', jornada ? esc(jornada.nombre) : 'Sin jornada'],
       ['Fecha de plantación', esc(SRP.util.formatearFecha(r.fecha_plantacion))],
+      ['Sitio de plantación', esc(SRP.ref.sitio(r))],
       ['Alcaldía', esc(SRP.ref.alcaldia(r.alcaldia))],
       ['Colonia', esc(SRP.ref.colonia(r.colonia))],
       ['Coordenadas', r.lat.toFixed(5) + ', ' + r.lng.toFixed(5)],
@@ -467,12 +467,13 @@ SRP.registros = {
       SRP.foto.fuente(r) ? ['Fotografía', '<img class="revision-foto" ' + SRP.foto.atributos(r) + ' alt="Fotografía del árbol registrado">'] : null
     ].filter(Boolean);
     const historial = await SRP.bitacora.historial(r);
-    // El folio lo asigna el servidor, no quien tenía la sesión abierta cuando llegó
-    const quien = h => h.accion === 'FOLIO_ASIGNADO' ? 'el servidor'
+    // El folio lo asigna el servidor, no quien tenía la sesión abierta cuando llegó; el número no se repite aquí
+    const folio = h => h.accion === 'FOLIO_ASIGNADO';
+    const quien = h => folio(h) ? 'el servidor'
       : esc(h.usuario_nombre) + ' (' + esc(SRP.PERFILES[h.perfil] ? SRP.PERFILES[h.perfil].etiqueta : h.perfil) + ')';
     const lineas = historial.length ? historial.map(h =>
       '<li>' + SRP.util.formatearFechaHora(h.fecha) + ': ' + esc(h.accion.toLowerCase().replace(/_/g, ' ')) + ' por ' + quien(h) +
-      (h.detalle ? '. ' + esc(h.detalle) : '') + '</li>').join('')
+      (h.detalle && !folio(h) ? '. ' + esc(h.detalle) : '') + '</li>').join('')
       : '<li>Sin movimientos registrados.</li>';
 
     this.el('dlg-detalle-cuerpo').innerHTML =
@@ -488,10 +489,10 @@ SRP.registros = {
 
   /* ---------- Sustituir un árbol perdido ---------- */
 
-  // Las filas del detalle que cuentan la sustitución, de ida (sustituto) o de vuelta (sustituido)
+  // Las filas del detalle que cuentan la sustitución, de ida (sustituto) o de vuelta (sustituido), sin folio
   async filasSustitucion(r) {
     const esc = SRP.util.escapar, filas = [];
-    const describe = x => x ? esc(SRP.ref.especieDe(x).comun) + ' · ' + esc(SRP.folio.texto(x)) + ' · ' + esc(SRP.util.formatearFecha(x.fecha_plantacion)) : 'Ya no está en el sistema';
+    const describe = x => x ? esc(SRP.ref.especieDe(x).comun) + ' · ' + esc(SRP.util.formatearFecha(x.fecha_plantacion)) : 'Ya no está en el sistema';
     if (r.sustituye_id) {
       filas.push(['Sustituye a', describe(await SRP.almacen.uno('plantaciones', r.sustituye_id))]);
       filas.push(['Motivo de la sustitución', '<span class="marca-sustituto">' + esc(SRP.ref.motivoSustitucion(r)) + '</span>']);

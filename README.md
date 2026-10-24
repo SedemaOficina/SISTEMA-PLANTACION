@@ -17,10 +17,11 @@ La versión que corre se lee al pie de cada pantalla.
    empieza: la jornada puede seguir abierta varios días y cada árbol lleva la fecha en que se plantó.
 2. **Nuevo árbol.** Con la jornada activa: ubicación (GPS, toque en el mapa o coordenadas a mano),
    especie, comentarios y fotografía opcional; si la jornada empezó otro día, también la fecha de
-   plantación. «Guardar» registra de una vez; sólo si hay algo que
+   plantación y si quedó en suelo o en macetón (empieza en «Suelo»). «Guardar» registra de una vez; sólo si hay algo que
    revisar (precisión baja, punto lejano, posible duplicado) abre la ficha de revisión.
 3. **Jornadas.** Cada jornada con su mapa y lista numerados, sus avisos y la conciliación con los
-   árboles previstos. Ahí se revisan los puntos y se cierra la jornada; la tuerca de cada punto edita, mueve a
+   árboles previstos. Ahí se revisan los puntos y se cierra la jornada; al cerrar con puntos por revisar se
+   ofrece revisarlos primero, uno tras otro, y al terminar vuelve a preguntar. La tuerca de cada punto edita, mueve a
    otra jornada, sustituye o elimina el árbol (un error de captura se corrige sin salir de la
    jornada). La coordinación hace ahí el **relevo de cabo**: pasa la jornada abierta a otro cabo de
    su cuadrilla, que sigue registrando en ella; el titular no cambia. La ficha de cada
@@ -33,8 +34,9 @@ La versión que corre se lee al pie de cada pantalla.
    gráfica; debajo, cada desglose plegado con su dato principal: por cabo, institución, alcaldía y
    prioridad con mapa, especie, programa y calidad del dato. De ahí salen los
    **informes** semanal, mensual, anual o por alcaldía en PDF con membrete, y la tabla de árboles en
-   CSV para Excel. Dentro están las **Fotografías** de los registros, con descarga en ZIP.
-6. **Registros**: la lista de árboles con filtros, detalle, edición y eliminación que se deshace.
+   CSV para Excel. Dentro están las **Fotografías** de los registros, con descarga en ZIP. Lo que es de un
+   solo cabo (lo que descarga el cabo, o con el filtro «Quién registró») lleva su nombre en el nombre del archivo.
+6. **Registros**: la lista de árboles con filtros, detalle (sin folio), edición y eliminación que se deshace.
    **Configuración**, sólo para la Administración global, última pestaña de la barra de secciones:
    **Usuarios**, **Catálogos** (programas, áreas, especies, vehículos, instituciones y solicitantes),
    **Parámetros** (se editan con datos reales; con datos de prueba, sólo consulta), **Registro de cambios**, **Carga masiva** del histórico desde
@@ -295,7 +297,7 @@ versión se escribe en un solo lugar del código.
 **El archivo `VERSION`, en la raíz, lleva el mismo número** (lo pide la guía del SIA, sección 8); la prueba
 falla si no coincide con la marca. Ese número se ve siempre en la franja fija de arriba. Hasta la 0.9.78 decía
 «Versión de prueba 0.9.N»; desde la versión 1, la que se entrega al SIA para instalar, dice «Versión» y el número de `VERSION`
-(hoy, «Versión 1.1.1»).
+(hoy, «Versión 1.2»).
 
 Si aun así alguien cae en una mezcla, el sistema lo detecta al abrir y explica cómo forzar la
 recarga, en vez de quedarse en blanco.
@@ -322,8 +324,8 @@ traslada lo guardado antes de retirar nada, y no con el sello.
 
 El reporte es el **parte de una jornada**, no de un día ni de un periodo: un día puede
 tener varias jornadas. Se genera desde la ficha de la jornada, en Jornadas. Primero se piden los **datos de cierre de la jornada**: personal,
-apoyo, encargado, observaciones, chófer, vehículo y hora de finalización. Todos opcionales, y
-los que quedan vacíos no se imprimen. El **vehículo** sale del catálogo: se elige la placa,
+apoyo, encargado, observaciones, chófer, vehículo y hora de finalización. La hora es obligatoria: sin ella no
+sale la vista previa. Los demás son opcionales, y los que quedan vacíos no se imprimen. El **vehículo** sale del catálogo: se elige la placa,
 agrupada por tipo, y el modelo y el tipo se ponen solos; arriba aparecen, a un toque, los tres que
 más ha usado el encargado. Sólo se eligen vehículos del catálogo: uno prestado o rentado se da de alta primero en Catálogos. El catálogo lo
 lleva la Administración en Catálogos › Vehículos (`assets/catalogos/catalogo-vehiculos.js` trae 16 de
@@ -338,7 +340,7 @@ previstos, avance, especies y porcentaje de nativas); luego 1) datos de identifi
 árboles previstos, hora de finalización, comentarios y observaciones), 2) personal (participantes, apoyo
 y chófer), 3) datos del vehículo (tipo, modelo y placas), 4) croquis, que encuadra todos los puntos
 y aparta los números que se enciman, 5) ejemplares plantados (número, especie, nombre científico,
-precisión, el comentario si algún árbol lo tiene y la fecha si la jornada duró varios días; sin coordenada ni folio: dónde quedó
+el sitio si algún árbol quedó en macetón, precisión, el comentario si algún árbol lo tiene y la fecha si la jornada duró varios días; sin coordenada ni folio: dónde quedó
 cada árbol lo dice el croquis), 6) totales por especie con su distribución y porcentaje y 7)
 distribución de las especies en una barra (el conteo por especie ya lo da la tabla de totales y el avance contra lo previsto, la franja de cifras). Cada
 dato dice su nombre en negritas.

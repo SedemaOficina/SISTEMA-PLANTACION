@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-contraste="alto">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -14,12 +14,12 @@
 <!-- Las peticiones al mapa no dicen desde qué sitio se hacen -->
 <meta name="referrer" content="no-referrer">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=1.1.1">
-<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=1.1.1" media="(max-width: 767px)">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=1.2">
+<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=1.2" media="(max-width: 767px)">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=1.1.1">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=1.1.1">
-<link rel="stylesheet" href="css/estilos.css?v=1.1.1">
+<link rel="stylesheet" href="vendor/leaflet.css?v=1.2">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=1.2">
+<link rel="stylesheet" href="css/estilos.css?v=1.2">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -34,8 +34,8 @@
   <div class="encabezado-interior">
     <!-- Logotipo: Gobierno CDMX · SEDEMA · SIA · Reforestación Urbana en pantalla ancha; en teléfono, SIA y Reforestación Urbana -->
     <picture>
-      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=1.1.1">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=1.1.1" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
+      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=1.2">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=1.2" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» -->
@@ -48,8 +48,9 @@
           <p><span id="usuario-perfil" class="insignia"></span></p>
           <div class="menu-cuenta-acciones">
             <!-- Opciones de texto, como en cualquier menú de cuenta; no botones -->
-            <!-- Modo sol: más contraste para leer a pleno sol; se recuerda en este teléfono -->
-            <button type="button" id="btn-contraste" class="menu-opcion" role="switch" aria-checked="false">
+            <!-- Modo sol: más contraste para leer a pleno sol. Arranca encendido (también aquí, para que la página
+                 no se vea un instante sin él); si se apaga, se recuerda en este teléfono -->
+            <button type="button" id="btn-contraste" class="menu-opcion" role="switch" aria-checked="true">
               <span>Modo sol (alto contraste)</span><span class="interruptor" aria-hidden="true"></span></button>
             <!-- Sólo con datos de prueba; desaparece con ES_FICTICIO: false -->
             <!-- Envío simulado: se comporta como sin conexión sin poner el teléfono en modo avión -->
@@ -358,6 +359,10 @@
       <div class="campo" id="caja-fecha-arbol" hidden><label for="campo-fecha">Fecha de plantación <span class="obligatorio" aria-hidden="true">*</span></label>
         <div class="fecha-con-hoy"><input type="date" id="campo-fecha" tabindex="-1" aria-describedby="fecha-arbol-ayuda"><button type="button" id="btn-fecha-hoy" class="btn btn-secundario btn-chico">Hoy</button></div>
         <p id="fecha-arbol-ayuda" class="nota ayuda-campo"></p></div>
+      <!-- Suelo o macetón: una respuesta, que empieza en «Suelo»; el campo oculto guarda la elegida -->
+      <div class="campo"><label for="campo-sitio" id="etq-sitio">Sitio de plantación <span class="obligatorio" aria-hidden="true">*</span></label>
+        <div id="sitio-botones" class="chips chips-campo" role="group" aria-labelledby="etq-sitio"></div>
+        <input id="campo-sitio" class="oculto-visual" tabindex="-1" aria-hidden="true"></div>
       <div class="campo">
         <label for="campo-comentarios">Comentarios <span class="opcional">(opcional)</span></label>
         <textarea id="campo-comentarios" class="texto-crece" rows="1" maxlength="500" placeholder="Observaciones del sitio, condición del ejemplar, incidencias…"></textarea>
@@ -985,7 +990,7 @@
   <!-- «Editar» al pie, fijo, como «Guardar» en la ficha de revisión -->
   <div id="detalle-pie" class="dialogo-pie dialogo-pie-doble" hidden>
     <button type="button" id="btn-detalle-editar" class="btn btn-editar btn-ancho"></button>
-    <button type="button" id="btn-detalle-sustituir" class="btn btn-editar btn-ancho" hidden></button>
+    <button type="button" id="btn-detalle-sustituir" class="btn btn-sustituir btn-ancho" hidden></button>
   </div>
 </dialog>
 
@@ -1077,7 +1082,7 @@
     </div>
   </div>
     <!-- La jornada y su fecha ya se ven en la ficha de atrás: aquí sólo la regla -->
-    <p class="nota">Todos opcionales: lo que quede vacío no sale en el reporte.</p>
+    <p class="nota">La hora de finalización es obligatoria. Lo demás es opcional: lo que quede vacío no sale en el reporte.</p>
     <p id="cie-recuperado" class="aviso-simulado" role="status" hidden>Se recuperó lo que había escrito antes de salir. Revíselo y toque «Ver vista previa».</p>
 
     <!-- El encargado abre el reporte: es el primer dato que se lee en el papel. Un cabo es el
@@ -1110,7 +1115,7 @@
       <select id="cie-vehiculo" aria-describedby="cie-vehiculo-ficha"></select>
       <p id="cie-vehiculo-ficha" class="nota" aria-live="polite"></p>
     </div>
-    <div class="campo"><label for="cie-hora">Hora de finalización</label>
+    <div class="campo"><label for="cie-hora">Hora de finalización <span class="obligatorio" aria-hidden="true">*</span></label>
       <div class="fecha-con-hoy"><input type="time" id="cie-hora" data-vacio="Elija la hora"><button type="button" id="btn-hora-ahora" class="btn btn-secundario btn-chico">Ahora</button></div></div>
 
     <!-- ESPEJO DEL CIERRE — sólo en la versión de prueba (ver js/espejo.js) -->
@@ -1273,67 +1278,67 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=1.1.1"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=1.1.1"></script>
-<script src="vendor/turf-pip.min.js?v=1.1.1"></script>
-<script src="vendor/jspdf.umd.min.js?v=1.1.1"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=1.1.1"></script>
+<script src="vendor/leaflet.js?v=1.2"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=1.2"></script>
+<script src="vendor/turf-pip.min.js?v=1.2"></script>
+<script src="vendor/jspdf.umd.min.js?v=1.2"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=1.2"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=1.1.1"></script>
-<script src="js/util.js?v=1.1.1"></script>
-<script src="js/filtros.js?v=1.1.1"></script>
-<script src="js/iconos.js?v=1.1.1"></script>
+<script src="js/config.js?v=1.2"></script>
+<script src="js/util.js?v=1.2"></script>
+<script src="js/filtros.js?v=1.2"></script>
+<script src="js/iconos.js?v=1.2"></script>
 <!-- Capas territoriales del SIA, compactadas por herramientas/generar_capas.py desde originales/ -->
-<script src="assets/capas/capa-alcaldias.js?v=1.1.1"></script>
-<script src="assets/capas/capa-uga.js?v=1.1.1"></script>
-<script src="assets/capas/capa-colonias.js?v=1.1.1"></script>
+<script src="assets/capas/capa-alcaldias.js?v=1.2"></script>
+<script src="assets/capas/capa-uga.js?v=1.2"></script>
+<script src="assets/capas/capa-colonias.js?v=1.2"></script>
 <!-- Colonias prioritarias para reforestar: capa de referencia del modelo de priorización -->
-<script src="assets/capas/capa-prioritarias.js?v=1.1.1"></script>
-<script src="assets/catalogos/catalogo-especies.js?v=1.1.1"></script>
-<script src="assets/catalogos/catalogos-arranque.js?v=1.1.1"></script>
+<script src="assets/capas/capa-prioritarias.js?v=1.2"></script>
+<script src="assets/catalogos/catalogo-especies.js?v=1.2"></script>
+<script src="assets/catalogos/catalogos-arranque.js?v=1.2"></script>
 <!-- Sólo en la versión de prueba: la versión real no carga estos dos -->
-<script src="assets/catalogos/catalogo-vehiculos.js?v=1.1.1"></script>
-<script src="js/datos-ficticios.js?v=1.1.1"></script>
-<script src="js/permisos.js?v=1.1.1"></script>
-<script src="js/derivacion.js?v=1.1.1"></script>
-<script src="js/prioritarias.js?v=1.1.1"></script>
-<script src="js/solicitud.js?v=1.1.1"></script>
-<script src="js/almacen.js?v=1.1.1"></script>
-<script src="js/servidor.js?v=1.1.1"></script>
-<script src="js/reloj.js?v=1.1.1"></script>
-<script src="js/remoto.js?v=1.1.1"></script>
-<script src="js/cola.js?v=1.1.1"></script>
-<script src="js/rechazos.js?v=1.1.1"></script>
-<script src="js/sesion.js?v=1.1.1"></script>
-<script src="js/referencias.js?v=1.1.1"></script>
-<script src="js/folio.js?v=1.1.1"></script>
+<script src="assets/catalogos/catalogo-vehiculos.js?v=1.2"></script>
+<script src="js/datos-ficticios.js?v=1.2"></script>
+<script src="js/permisos.js?v=1.2"></script>
+<script src="js/derivacion.js?v=1.2"></script>
+<script src="js/prioritarias.js?v=1.2"></script>
+<script src="js/solicitud.js?v=1.2"></script>
+<script src="js/almacen.js?v=1.2"></script>
+<script src="js/servidor.js?v=1.2"></script>
+<script src="js/reloj.js?v=1.2"></script>
+<script src="js/remoto.js?v=1.2"></script>
+<script src="js/cola.js?v=1.2"></script>
+<script src="js/rechazos.js?v=1.2"></script>
+<script src="js/sesion.js?v=1.2"></script>
+<script src="js/referencias.js?v=1.2"></script>
+<script src="js/folio.js?v=1.2"></script>
 <!-- Esquema generado de datos/esquema.json: relaciones entre tablas -->
-<script src="js/esquema.js?v=1.1.1"></script>
-<script src="js/conexion.js?v=1.1.1"></script>
-<script src="js/envio.js?v=1.1.1"></script>
-<script src="js/turno.js?v=1.1.1"></script>
-<script src="js/mapa.js?v=1.1.1"></script>
-<script src="js/foto.js?v=1.1.1"></script>
-<script src="js/jornada-activa.js?v=1.1.1"></script>
-<script src="js/formulario.js?v=1.1.1"></script>
+<script src="js/esquema.js?v=1.2"></script>
+<script src="js/conexion.js?v=1.2"></script>
+<script src="js/envio.js?v=1.2"></script>
+<script src="js/turno.js?v=1.2"></script>
+<script src="js/mapa.js?v=1.2"></script>
+<script src="js/foto.js?v=1.2"></script>
+<script src="js/jornada-activa.js?v=1.2"></script>
+<script src="js/formulario.js?v=1.2"></script>
 <!-- Sólo en la versión de prueba -->
-<script src="js/espejo.js?v=1.1.1"></script>
-<script src="js/registros.js?v=1.1.1"></script>
-<script src="js/galeria.js?v=1.1.1"></script>
-<script src="js/jornadas.js?v=1.1.1"></script>
-<script src="js/informes.js?v=1.1.1"></script>
-<script src="js/supervision.js?v=1.1.1"></script>
-<script src="js/indicadores.js?v=1.1.1"></script>
-<script src="js/demostracion.js?v=1.1.1"></script>
-<script src="js/croquis.js?v=1.1.1"></script>
-<script src="js/reportes.js?v=1.1.1"></script>
-<script src="js/catalogos.js?v=1.1.1"></script>
-<script src="js/usuarios.js?v=1.1.1"></script>
-<script src="js/excel.js?v=1.1.1"></script>
-<script src="js/carga.js?v=1.1.1"></script>
-<script src="js/duplicados.js?v=1.1.1"></script>
-<script src="js/configuracion.js?v=1.1.1"></script>
-<script src="js/especies-revision.js?v=1.1.1"></script>
-<script src="js/app.js?v=1.1.1"></script>
+<script src="js/espejo.js?v=1.2"></script>
+<script src="js/registros.js?v=1.2"></script>
+<script src="js/galeria.js?v=1.2"></script>
+<script src="js/jornadas.js?v=1.2"></script>
+<script src="js/informes.js?v=1.2"></script>
+<script src="js/supervision.js?v=1.2"></script>
+<script src="js/indicadores.js?v=1.2"></script>
+<script src="js/demostracion.js?v=1.2"></script>
+<script src="js/croquis.js?v=1.2"></script>
+<script src="js/reportes.js?v=1.2"></script>
+<script src="js/catalogos.js?v=1.2"></script>
+<script src="js/usuarios.js?v=1.2"></script>
+<script src="js/excel.js?v=1.2"></script>
+<script src="js/carga.js?v=1.2"></script>
+<script src="js/duplicados.js?v=1.2"></script>
+<script src="js/configuracion.js?v=1.2"></script>
+<script src="js/especies-revision.js?v=1.2"></script>
+<script src="js/app.js?v=1.2"></script>
 </body>
 </html>

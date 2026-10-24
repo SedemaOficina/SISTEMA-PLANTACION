@@ -19,6 +19,10 @@ SRP.ESQUEMA = {
    "MUERTE",
    "OTRO"
   ],
+  "sitio_plantacion": [
+   "suelo",
+   "maceton"
+  ],
   "estatus_jornada": [
    "abierta",
    "cerrada"
@@ -285,6 +289,14 @@ SRP.ESQUEMA = {
     null,
     "plantaciones",
     "Detalle («Sustituido por»)"
+   ],
+   [
+    "sitio_plantacion",
+    "text",
+    false,
+    "sitio_plantacion",
+    null,
+    "Sitio de plantación (Suelo o Macetón); detalle, ficha de revisión, reporte (columna «Sitio» si algún árbol está en macetón) y CSV"
    ],
    [
     "comentarios",
@@ -1334,7 +1346,7 @@ SRP.ESQUEMA = {
     false,
     null,
     null,
-    "Hora de finalización (selector)"
+    "Hora de finalización (selector, con «Ahora»), obligatoria para generar el reporte"
    ]
   ]
  }

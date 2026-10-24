@@ -37,6 +37,7 @@ SRP.jornadas = {
   turnoLista: 0,        // cada pintura de la lista lleva el suyo: si termina tarde una anterior, no pinta encima de la última
   actual: null,         // clave de la jornada abierta
   volverAlDetalle: false,
+  revisionCierre: null,   // la jornada cuyos puntos se revisan antes de cerrarla
   mapa: null,
   marcadores: {},
 
@@ -160,8 +161,9 @@ SRP.jornadas = {
       const j = await this.jornadaGuardada(this.jornada); if (!j) return;
       if (!SRP.permisos.exigir('jornada.editar', j)) return;
       if (j.estatus === 'abierta') {
-        const ok = await SRP.app.confirmar(await SRP.activa.confirmacionCierre(j));
-        if (!ok) return;
+        const r = await SRP.app.elegir(await SRP.activa.confirmacionCierre(j));
+        if (r === 'otro') { this.revisionCierre = j.id; this.irAPendiente(); return; }
+        if (r !== 'si') return;
         const libre = SRP.util.ocupado(this.el('btn-jornada-estado'), 'Cerrando…', 'candado');
         try { await SRP.activa.cambiarEstatus(await SRP.activa.ofrecerActualizarPrevistos(j), 'cerrada'); }
         finally { libre(); }
@@ -426,6 +428,7 @@ SRP.jornadas = {
       if (this.lista.some(j => j.clave === this.actual)) {
         await this.abrir(this.actual);
         if (this.trasCierre) { const j = this.trasCierre; this.trasCierre = null; await this.avisarCierre(j); this.enfocarSiguiente(); }
+        else if (this.revisionCierre === this.actual) await this.seguirRevision();
         return;
       }
     }
@@ -709,6 +712,7 @@ SRP.jornadas = {
     await this.pintarLista(true);
     const j = this.lista.find(x => x.clave === clave);
     if (!j) { this.cerrar(); return; }
+    if (clave !== this.revisionCierre) this.revisionCierre = null;
     this.actual = clave;
     this.jornada = j;
     this.mostrarDetalle(true);
@@ -866,6 +870,18 @@ SRP.jornadas = {
     const destino = b || this.el('jornada-siguiente');
     if (!b) destino.setAttribute('tabindex', '-1');
     destino.focus({ preventScroll: true });
+  },
+
+  /* REVISAR ANTES DE CERRAR. Desde «Cerrar jornada» con puntos por revisar: cada punto atendido —«Está
+     bien», corregido, movido o eliminado— lleva al siguiente, y sin ninguno pendiente vuelve a preguntar si
+     se cierra la jornada. Devuelve si hizo algo. */
+  async seguirRevision() {
+    if (this.revisionCierre !== this.actual || !this.jornada) return false;
+    if (this.pendientes(this.jornada, this.avisosActuales || {}, this.guardada).length) { this.irAPendiente(); return true; }
+    this.revisionCierre = null;
+    if (!this.guardada || this.guardada.estatus !== 'abierta') return false;
+    await this.cambiarEstado();
+    return true;
   },
 
   // «Revisar puntos»: al primer punto pendiente, en la lista y en el mapa, con el foco en «Está bien»
@@ -1231,7 +1247,7 @@ SRP.jornadas = {
       await this.guardarEnJornada({ puntos_revisados: prev }, 'Se deshizo la revisión del punto ' + num);
       await this.refrescar();
     } });
-    this.enfocarSiguiente();
+    if (!(await this.seguirRevision())) this.enfocarSiguiente();
   },
 
   /* TODOS LOS PUNTOS DE UNA VEZ. Cuando quien revisa ya vio en el mapa que los avisos no son
@@ -1260,7 +1276,7 @@ SRP.jornadas = {
       await this.guardarEnJornada({ puntos_revisados: prev }, 'Se deshizo la revisión de ' + pend.length + ' puntos');
       await this.refrescar();
     } });
-    this.enfocarSiguiente();
+    if (!(await this.seguirRevision())) this.enfocarSiguiente();
   },
 
   // Después de eliminar, restaurar o editar desde esta vista
@@ -1272,6 +1288,7 @@ SRP.jornadas = {
     if (!j) { await this.cerrar(); return; }
     this.jornada = j;
     await this.pintarDetalle(false);
+    await this.seguirRevision();
   },
 
   /* ---------- Salidas ---------- */

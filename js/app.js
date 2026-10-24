@@ -632,19 +632,18 @@ SRP.app = {
      quita sin evento (limpiar, editar, restaurar filtros): una revisión ligera cada medio segundo
      los alcanza sin tener que avisar desde cada módulo. */
   /* MODO SOL. Sube el contraste para leer a pleno sol: texto negro, contornos oscuros y
-     campos blancos con borde. Se recuerda en el dispositivo. Si el teléfono ya pide más contraste
-     (ajuste de accesibilidad) y la persona no ha elegido, arranca activado. */
+     campos blancos con borde. Se usa en campo, bajo el sol: arranca activado, y si la persona lo
+     apaga se recuerda en el dispositivo. */
   iniciarContraste() {
     const clave = SRP.CONFIG.CLAVE_CONTRASTE;
     let guardado = null;
     try { guardado = localStorage.getItem(clave); } catch (e) { /* almacenamiento bloqueado */ }
-    const pide = window.matchMedia && window.matchMedia('(prefers-contrast: more)').matches;
     const poner = (alto) => {
       if (alto) document.documentElement.dataset.contraste = 'alto';
       else delete document.documentElement.dataset.contraste;
       this.el('btn-contraste').setAttribute('aria-checked', String(alto));
     };
-    poner(guardado ? guardado === 'alto' : pide);
+    poner(guardado ? guardado === 'alto' : true);
     this.el('btn-contraste').addEventListener('click', () => {
       const alto = document.documentElement.dataset.contraste !== 'alto';
       poner(alto);
@@ -742,7 +741,7 @@ SRP.app = {
       const b = this.el('btn-confirmar-si');
       b.innerHTML = SRP.ICONOS.svg(o.icono || 'basura') + '<span>' + SRP.util.escapar(o.boton) + '</span>';
       // Color por significado (Norma 8.4): confirmar verde, cerrar en acento, eliminar rojo
-      b.className = 'btn ' + (o.soloAceptar ? 'btn-primario' : o.icono === 'palomita' ? 'btn-exito' : o.icono === 'candado' ? 'btn-primario' : o.linea ? 'btn-peligro-linea' : 'btn-peligro');
+      b.className = 'btn ' + (o.soloAceptar ? 'btn-primario' : o.icono === 'palomita' ? 'btn-exito' : o.icono === 'candado' ? (o.linea ? 'btn-secundario' : 'btn-primario') : o.linea ? 'btn-peligro-linea' : 'btn-peligro');
       const otro = this.el('btn-confirmar-otro');
       otro.hidden = !o.otro;
       otro.innerHTML = o.otro ? SRP.ICONOS.svg(o.otro.icono, 'medio') + '<span>' + SRP.util.escapar(o.otro.texto) + '</span>' : '';

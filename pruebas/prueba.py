@@ -119,7 +119,13 @@ def reporte_de(pg, nombre=None):
       const j = nombre ? c.find(x => x.nombre.includes(nombre)) : c[0];
       if (j) await SRP.reportes.abrir(j.registros, j.fecha, j.cabo_id, j); return c.length; }""", nombre)
     pg.wait_for_timeout(500)
+    con_hora(pg)
     return n
+
+
+def con_hora(pg, hora='12:00'):
+    """La hora de finalización es obligatoria: si el cierre la trae vacía, se escribe, como lo haría el cabo."""
+    pg.evaluate("h => { const e = document.getElementById('cie-hora'); if (e && !e.value) e.value = h; }", hora)
 
 def registrar(pg, busqueda, especie_id, programa='p-refor', fecha=None, foto=None):
     """Captura un árbol de principio a fin y devuelve el identificador con que se guardó.
@@ -185,6 +191,9 @@ with sync_playwright() as p:
       if (window.__filtrosComoEnTelefono) return;
       const p = document.getElementById('jornada-panel-filtros'); if (p) p.dataset.abierto = 'true';
     });"""
+    # El modo sol arranca encendido; las pruebas corren con él apagado, como un teléfono donde se apagó (sus
+    # colores son los que revisan). Su arranque se prueba en un contexto sin esto (contexto_sin_preferencias)
+    MODO_SOL_APAGADO = """try { if (localStorage.getItem('srp_contraste') === null) localStorage.setItem('srp_contraste', 'normal'); } catch (e) {}"""
     _contexto_nuevo = b.new_context
     def _contexto_base(*a, **k):
         # Firefox no emula un teléfono (is_mobile): el resto de la prueba vale igual
@@ -218,6 +227,7 @@ with sync_playwright() as p:
         if SRP_HOY: c.clock.install(time=datetime.datetime.now(datetime.timezone.utc) + DESFASE)
         c.add_init_script(PUNTO_JORNADA)
         c.add_init_script(FILTROS_ABIERTOS)
+        c.add_init_script(MODO_SOL_APAGADO)
         return c
     ATENDER_VENTANAS = """setInterval(() => {
       const c = document.getElementById('dlg-completa'); if (c && c.open) c.close();
@@ -289,7 +299,7 @@ with sync_playwright() as p:
     ok(pg.get_attribute('#btn-cuenta','aria-expanded')=='true' and pg.is_visible('#usuario-nombre') and pg.is_visible('#btn-cerrar-sesion'),'al tocarlo muestra nombre, perfil y cerrar sesión')
     ok(pg.is_visible('#btn-cambiar-perfil'),'y cambiar de usuario, mientras haya datos de prueba')
     # Modo sol: interruptor en el menú; sube el contraste y se recuerda en el dispositivo
-    ok(pg.get_attribute('#btn-contraste','role')=='switch' and pg.get_attribute('#btn-contraste','aria-checked')=='false','el menú ofrece «Modo sol», apagado de inicio')
+    ok(pg.get_attribute('#btn-contraste','role')=='switch' and pg.get_attribute('#btn-contraste','aria-checked')=='false','el menú ofrece «Modo sol»; en un teléfono donde se apagó, sigue apagado')
     pg.click('#btn-contraste'); pg.wait_for_timeout(150)
     sol=pg.evaluate("(() => ({ modo: document.documentElement.dataset.contraste, marcado: document.getElementById('btn-contraste').getAttribute('aria-checked'), texto: getComputedStyle(document.body).color, guardado: localStorage.getItem(SRP.CONFIG.CLAVE_CONTRASTE) }))()")
     ok(sol=={'modo':'alto','marcado':'true','texto':'rgb(0, 0, 0)','guardado':'alto'},'al activarlo el texto pasa a negro y la preferencia se guarda: %s' % sol)
@@ -752,7 +762,7 @@ with sync_playwright() as p:
       primero: document.querySelector('#dlg-detalle-cuerpo .revision-lista dt').textContent,
       sistema: !!document.querySelector('#dlg-detalle-cuerpo .revision-sistema'), folio: !!document.querySelector('#dlg-detalle-cuerpo .revision-lista .folio-provisional'),
       pie: !document.getElementById('detalle-pie').hidden && !!document.querySelector('#detalle-pie #btn-detalle-editar') })''')
-    ok(det=={'abierto':True,'primero':'Folio','sistema':False,'folio':True,'pie':True},'tocar la tarjeta abre el detalle, que empieza por el Folio, no trae «Datos del sistema» y deja Editar al pie: %s' % det)
+    ok(det=={'abierto':True,'primero':'Especie','sistema':False,'folio':False,'pie':True},'tocar la tarjeta abre el detalle, que empieza por la especie, sin folio ni «Datos del sistema», y deja Editar al pie: %s' % det)
     pg.click('#btn-detalle-cerrar'); pg.wait_for_timeout(200)
     pg.click('.chip[data-atajo=hoy]'); pg.wait_for_timeout(300)
     ok(pg.is_hidden('#filtros-activos') and pg.inner_text('#filtros-cuenta')=='1','con el panel abierto no se repite la ficha «Hoy»; «Filtros» sí cuenta 1')
@@ -781,8 +791,8 @@ with sync_playwright() as p:
     # Espejo en el detalle: los campos guardados que la ficha no enseña
     accion(pg,'#lista-registros','ver'); pg.wait_for_timeout(500)
     campos=pg.evaluate("[...document.querySelectorAll('#dlg-detalle .espejo .espejo-ocultos .espejo-campo')].map(e=>e.textContent)")
-    ok('colonia_cve' in campos and 'jornada_id' in campos and 'capa_version' in campos and 'uga' in campos and 'id' in campos and 'folio' not in campos,
-       'el detalle lleva su espejo con lo que no se ve: también la celda UGA, las capas y el identificador (%d campos)' % len(campos))
+    ok('colonia_cve' in campos and 'jornada_id' in campos and 'capa_version' in campos and 'uga' in campos and 'id' in campos and 'folio' in campos,
+       'el detalle lleva su espejo con lo que no se ve: también el folio, la celda UGA, las capas y el identificador (%d campos)' % len(campos))
     # Todas las ventanas con cabecera fija: título, × y acción arriba
     cab=pg.evaluate("""() => ['dlg-detalle','dlg-cierre','dlg-catalogo','dlg-usuario','dlg-senal'].map(id => {
       const d=document.getElementById(id); const c=d.querySelector('.dialogo-cabecera');
@@ -1037,7 +1047,7 @@ with sync_playwright() as p:
     pg.click('#btn-cancelar-edicion'); pg.wait_for_timeout(600)
     ok(pg.is_visible('#vista-jornadas') and pg.is_visible('#jornada-detalle') and pg.locator('#jornada-lista .punto-jornada').count()==4,'y al cancelar se vuelve a la misma jornada')
     # Reporte de la jornada y regreso a la lista
-    pg.click('#btn-jornada-reporte'); pg.wait_for_timeout(700)
+    pg.click('#btn-jornada-reporte'); pg.wait_for_timeout(700); con_hora(pg)
     ok(pg.is_visible('#vista-jornadas') and pg.is_visible('#dlg-cierre') and 'Jardín de prueba' in pg.evaluate("SRP.reportes.contexto.jornada.nombre + ' · ' + SRP.util.formatearFecha(SRP.reportes.contexto.fecha) + (SRP.reportes.contexto.jornada.total > 1 ? ' · Jornada ' + SRP.reportes.contexto.jornada.n + ' de ' + SRP.reportes.contexto.jornada.total : '')"),'«Generar reporte» abre el cierre de esa jornada sin salir de Jornadas')
     pg.click('#btn-cierre-generar'); pg.wait_for_timeout(500)
     cif=pg.eval_on_selector_all('#previa-hoja .previa-cifra','l=>l.map(x=>x.innerText.replace(/\\s+/g," "))')
@@ -1215,7 +1225,7 @@ with sync_playwright() as p:
     f2=[f for f in fichas if 'Parque Hundido' in f]
     ok(len(fichas)==3 and len(f2)==1 and 'Jornada 2 de 3' in f2[0] and 'Sin reporte todavía' in f2[0],'las tres jornadas cerradas de ese día tienen tarjeta; la 2 dice «Jornada 2 de 3» y aún no tiene reporte')
     pg.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg.wait_for_timeout(400)
-    pg.evaluate("async f => { const j = (await SRP.jornadas.jornadasAlcance()).find(x => x.nombre === 'Parque Hundido' && x.fecha === f); await SRP.reportes.abrir(j.registros, j.fecha, j.cabo_id, j); }", M['f']); pg.wait_for_timeout(500)
+    pg.evaluate("async f => { const j = (await SRP.jornadas.jornadasAlcance()).find(x => x.nombre === 'Parque Hundido' && x.fecha === f); await SRP.reportes.abrir(j.registros, j.fecha, j.cabo_id, j); }", M['f']); pg.wait_for_timeout(500); con_hora(pg)
     ok('Parque Hundido' in pg.evaluate("SRP.reportes.contexto.jornada.nombre + ' · ' + SRP.util.formatearFecha(SRP.reportes.contexto.fecha) + (SRP.reportes.contexto.jornada.total > 1 ? ' · Jornada ' + SRP.reportes.contexto.jornada.n + ' de ' + SRP.reportes.contexto.jornada.total : '')") and 'Jornada 2 de 3' in pg.evaluate("SRP.reportes.contexto.jornada.nombre + ' · ' + SRP.util.formatearFecha(SRP.reportes.contexto.fecha) + (SRP.reportes.contexto.jornada.total > 1 ? ' · Jornada ' + SRP.reportes.contexto.jornada.n + ' de ' + SRP.reportes.contexto.jornada.total : '')") and pg.evaluate("SRP.reportes.contexto.registros.length")==1,'el cierre es de la jornada 2: '+pg.evaluate("SRP.reportes.contexto.jornada.nombre + ' · ' + SRP.util.formatearFecha(SRP.reportes.contexto.fecha) + (SRP.reportes.contexto.jornada.total > 1 ? ' · Jornada ' + SRP.reportes.contexto.jornada.n + ' de ' + SRP.reportes.contexto.jornada.total : '')"))
     pg.click('#btn-cierre-generar'); pg.wait_for_timeout(600)
     ok('Jornada 2 de 3' in pg.inner_text('#previa-hoja') and pg.locator('#previa-hoja tbody tr').count()>=1 and 'Nombre de la jornada: Parque Hundido' in pg.inner_text('#previa-hoja'),'la vista previa dice «Jornada 2 de 3» y su nombre, y sólo trae sus ejemplares')
@@ -1778,7 +1788,7 @@ with sync_playwright() as p:
     ok(pg.evaluate("document.activeElement.id")=='btn-jornada-reporte','y el foco pasa a «Generar reporte», no se pierde')
     # El reporte cierra el ciclo
     pg.click('#btn-jornada-reporte'); pg.wait_for_timeout(900)
-    if pg.is_visible('#dlg-cierre'): pg.fill('#cie-personal','Cuadrilla de prueba'); pg.click('#form-cierre button[type=submit]'); pg.wait_for_timeout(700)
+    if pg.is_visible('#dlg-cierre'): pg.fill('#cie-personal','Cuadrilla de prueba'); con_hora(pg); pg.click('#form-cierre button[type=submit]'); pg.wait_for_timeout(700)
     pg.click('#btn-previa-generar')
     esperar(pg, "!document.getElementById('principal').hasAttribute('aria-busy')", 8000)
     ok('quedó completa' in pg.inner_text('#aviso'),'al generar el PDF el aviso cierra el ciclo: «La jornada … quedó completa»: '+pg.inner_text('#aviso'))
@@ -2162,7 +2172,7 @@ with sync_playwright() as p:
     pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(300)
     pg.click('#btn-jornada-cerrar'); pg.wait_for_timeout(400)
     nota=pg.inner_text('#dlg-confirmar-nota')
-    ok('respaldo' not in nota.lower() and 'reabrir' in nota,'al cerrar la jornada, la confirmación no pide guardar un respaldo: '+nota)
+    ok('respaldo' not in nota.lower() and 'de todos modos' in nota,'al cerrar la jornada, la confirmación no pide guardar un respaldo: '+nota)
     pg.click('#btn-confirmar-no'); pg.wait_for_timeout(200)
     # Espacio lleno: las acciones que escriben lo dicen con palabras
     pg.evaluate("() => { window.__guardar = SRP.almacen.guardarConBitacora; SRP.almacen.guardarConBitacora = () => Promise.reject(new DOMException('lleno', 'QuotaExceededError')); }")
@@ -2482,8 +2492,8 @@ with sync_playwright() as p:
     ctx14.close()
     # La base sube a la versión 3 con el índice de árboles por jornada, sin perder nada
     ind=pg.evaluate("""() => { const r = {}; for (const n of SRP.almacen.db.objectStoreNames) r[n] = [...SRP.almacen.db.transaction(n).objectStore(n).indexNames].sort(); return { v: SRP.almacen.db.version, r }; }""")
-    ok(ind['v']==10 and ind['r']['plantaciones']==['estatus','jornada_id'] and ind['r']['jornadas']==['cabo_id'] and ind['r']['envios']==['registro_id'] and 'catalogos' not in ind['r'] and all(ind['r'][t]==[] for t in ['programas','areas','especies','vehiculos','instituciones','solicitantes']),
-       'la base está en la versión 10, con cada catálogo en su tabla, con el índice de árboles por jornada, la cola de envío y sin los cinco índices que nadie consultaba: %s' % ind)
+    ok(ind['v']==11 and ind['r']['plantaciones']==['estatus','jornada_id'] and ind['r']['jornadas']==['cabo_id'] and ind['r']['envios']==['registro_id'] and 'catalogos' not in ind['r'] and all(ind['r'][t]==[] for t in ['programas','areas','especies','vehiculos','instituciones','solicitantes']),
+       'la base está en la versión 11, con cada catálogo en su tabla, con el índice de árboles por jornada, la cola de envío y sin los cinco índices que nadie consultaba: %s' % ind)
     # Y un teléfono con la base en la versión 2 sube a la 3 sin perder lo capturado
     ctx15=b.new_context(viewport={'width':390,'height':844}); pg15=ctx15.new_page()
     pg15.route('**/*.js*', lambda r: r.abort())
@@ -2499,7 +2509,7 @@ with sync_playwright() as p:
       r.onsuccess = () => { r.result.close(); ok(true); }; r.onerror = () => no(r.error); })""")
     pg15.unroute('**/*.js*'); pg15.reload(); pg15.wait_for_timeout(1500)
     v2=pg15.evaluate("async () => ({ v: SRP.almacen.db.version, arboles: (await SRP.almacen.porIndice('plantaciones', 'jornada_id', 'jr-v2')).map(r => r.id), jornadas: (await SRP.almacen.todos('jornadas')).map(j => j.id) })")
-    ok(v2=={'v':10,'arboles':['pl-v2'],'jornadas':['jr-v2']},'una base en la versión 2 sube a la 10 conservando árboles y jornadas, y el índice nuevo los encuentra: %s' % v2)
+    ok(v2=={'v':11,'arboles':['pl-v2'],'jornadas':['jr-v2']},'una base en la versión 2 sube a la 11 conservando árboles y jornadas, y el índice nuevo los encuentra: %s' % v2)
     ctx15.close()
 
     # ---------- TUERCA, SUBIR AL INICIO Y ERRORES EN LA JORNADA ----------
@@ -2837,7 +2847,7 @@ with sync_playwright() as p:
         t=' '.join((p.extract_text() or '') for p in _Pdf(ruta).pages)
         return d.value.suggested_filename, ' '.join(t.split()), os.path.getsize(ruta)
     n1,t1,peso1=pdf20()
-    ok(re.fullmatch(r'Informe_semanal_\d{4}-\d{2}-\d{2}_al_\d{4}-\d{2}-\d{2}\.pdf', n1) is not None and 'INFORME SEMANAL DE PLANTACIÓN' in t1 and 'Cabo: Fulana' in t1
+    ok(re.fullmatch(r'Informe_semanal_\d{4}-\d{2}-\d{2}_al_\d{4}-\d{2}-\d{2}_Fulana_de_Tal_Ejemplo\.pdf', n1) is not None and 'INFORME SEMANAL DE PLANTACIÓN' in t1 and 'Cabo: Fulana' in t1
        and 'POR QUIÉN REGISTRÓ' not in t1 and 'Árboles plantados' in t1 and peso1 < 200000,
        'el cabo descarga su informe semanal en PDF, con membrete y sin la tabla por cabo: %s (%d KB)' % (n1, peso1//1024))
     # La coordinación: informe mensual de una alcaldía, con sus colonias, y la tabla en CSV
@@ -3554,7 +3564,7 @@ with sync_playwright() as p:
     pg34.unroute('**/*.js*'); pg34.reload(); pg34.wait_for_timeout(1500)
     m34=pg34.evaluate("""async () => { const j = {}; (await SRP.almacen.todos('jornadas')).forEach(x => { j[x.id] = [x.vehiculo_id || null, x.vehiculo_placa || '', x.vehiculo_modelo || '', x.vehiculo_tipo || '', 'vehiculo' in x]; });
       return { v: SRP.almacen.db.version, j, chofer: (await SRP.almacen.uno('jornadas', 'jr-d')).chofer }; }""")
-    ok(m34['v']==10 and m34['j']['jr-a']==['v-PRU009','PRU 009','Internacional','Redilas',False],'la migración 4 enlaza con el catálogo la placa escrita a mano que sí está en él: %s' % m34['j']['jr-a'])
+    ok(m34['v']==11 and m34['j']['jr-a']==['v-PRU009','PRU 009','Internacional','Redilas',False],'la migración 4 enlaza con el catálogo la placa escrita a mano que sí está en él: %s' % m34['j']['jr-a'])
     ok(m34['j']['jr-b']==[None,'','','',False] and m34['j']['jr-c'][4]==False,'y quita lo escrito a mano que no está en el catálogo, y el `vehiculo` de versiones anteriores: %s · %s' % (m34['j']['jr-b'], m34['j']['jr-c']))
     ok(m34['j']['jr-d']==['v-PRU009','PRU 009','Internacional','Redilas',False] and m34['chofer']=='Fulano' and len(m34['j'])==4,'sin tocar las jornadas que ya tenían su vehículo del catálogo ni ningún otro dato')
     ok(not err34,'sin errores en consola: %s' % err34[:2])
@@ -3600,7 +3610,7 @@ with sync_playwright() as p:
         a: [a.arboles_previstos, 'meta_arboles' in a, 'creado_por_id' in a, 'fecha_creacion' in a, a.editado_por_id, a.fecha_ultima_edicion, a.vehiculo_tipo, a.lat, a.lng, a.chofer],
         b: [b.arboles_previstos, 'arboles_plantados' in b, b.editado_por_id, b.fecha_ultima_edicion],
         u: [u.fecha_creacion, u.creado_por_id, 'fecha_alta' in u, 'alta_por_id' in u] }; }""")
-    ok(m36['v']==10 and m36['esp']==[] and m36['cientifico']=='Acer negundo','la migración 5 quita género, epíteto y nota de discrepancia de las especies y deja el nombre científico: %s' % m36)
+    ok(m36['v']==11 and m36['esp']==[] and m36['cientifico']=='Acer negundo','la migración 5 quita género, epíteto y nota de discrepancia de las especies y deja el nombre científico: %s' % m36)
     ok(m36['a']==[7,False,False,False,None,None,'',19.432679,-99.133212,'Fulano'],
        'en la jornada: la meta pasa a arboles_previstos, se quitan quién la creó y cuándo, una jornada sin editar queda sin datos de edición, el vehículo sin nulos y el punto con seis decimales: %s' % m36['a'])
     ok(m36['b']==[3,False,'u-cabo-1','2026-09-21T12:00:00-06:00'],'una jornada editada conserva quién y cuándo, y el conteo viejo pasa a arboles_previstos: %s' % m36['b'])
@@ -3723,7 +3733,7 @@ with sync_playwright() as p:
         p: [p.lat, p.lng, p.especie_id, p.foto_id, p.foto_base64 ? 'foto' : ''], j: [j.nombre, j.reporte_en], u: u.nombre_completo, c: c.nombre_cientifico, b: b.accion,
         nombre: SRP.CONFIG.DB_NOMBRE, prueba: SRP.CONFIG.DB_NOMBRE_PRUEBA, real: SRP.CONFIG.DB_NOMBRE_REAL, ficticio: SRP.CONFIG.ES_FICTICIO,
         bases: indexedDB.databases ? (await indexedDB.databases()).map(d => d.name) : null }; }""")
-    ok(m38['v']==10 and m38['quedan']==[],'la migración 6 quita la marca de prueba de todas las tablas y del árbol el punto original, los folio_*, el nombre y peso de la foto y el estatus de especie: %s' % m38['quedan'])
+    ok(m38['v']==11 and m38['quedan']==[],'la migración 6 quita la marca de prueba de todas las tablas y del árbol el punto original, los folio_*, el nombre y peso de la foto y el estatus de especie: %s' % m38['quedan'])
     ok(m38['p']==[19.4326,-99.1332,'ESP-0002','f-6','foto'] and m38['j']==['Seis','2026-09-22T15:00:00-06:00'] and m38['u']=='Cabo' and m38['c']=='Fraxinus uhdei' and m38['b']=='CREADO',
        'sin perder nada más: el árbol conserva punto, especie y foto; la jornada su reporte_en; la cuenta (con su nombre ya en un solo campo), la especie y la bitácora sus datos: %s' % {k: m38[k] for k in 'pjucb'})
     ok(m38['nombre']=='srp_db' and m38['prueba']=='srp_db' and m38['real']=='srp_sia' and m38['ficticio'] is True and (m38['bases'] is None or 'srp_sia' not in m38['bases']),
@@ -3781,7 +3791,7 @@ with sync_playwright() as p:
     m39=pg39.evaluate("""async () => { const a = await SRP.almacen.uno('plantaciones', 'pl-7a'), b = await SRP.almacen.uno('plantaciones', 'pl-7b');
       return { v: SRP.almacen.db.version, a: a.capa_version, colonia: a.colonia, b: b.capa_version, capa: SRP.CAPAS.colonias.meta.version,
         vigente: SRP.derivacion.derivar(19.4326, -99.1332).capa_version, texto: SRP.ref.textoCapas(a.capa_version) }; }""")
-    ok(m39['v']==10 and m39['a']=='alcaldias=sia-2026-01-01;uga=sia-2026-09-22;colonias=iecm-2022' and m39['colonia']=='CENTRO I' and m39['b'] is None,
+    ok(m39['v']==11 and m39['a']=='alcaldias=sia-2026-01-01;uga=sia-2026-09-22;colonias=iecm-2022' and m39['colonia']=='CENTRO I' and m39['b'] is None,
        'la migración 7 cambia sólo el nombre de la versión de colonias en lo ya derivado, sin tocar la colonia ni lo que no tenía capas: %s' % m39)
     ok(m39['capa']=='iecm-2022' and m39['vigente'].endswith('colonias=iecm-2022') and m39['texto']=='Alcaldías sia-2026-01-01 · UGA sia-2026-09-22 · Colonias iecm-2022',
        'la capa de colonias del IECM es la definitiva: su versión no dice «prueba» ni el detalle «capa de prueba»: %s' % m39['texto'])
@@ -4441,7 +4451,7 @@ with sync_playwright() as p:
     # Acerca del sistema
     pg50.evaluate("SRP.app.mostrarVista('acerca')"); pg50.wait_for_timeout(800)
     a50=pg50.inner_text('#cfg-acerca')
-    ok(pg50.evaluate("SRP.CONFIG.VERSION + ' (' + SRP.CONFIG.ETAPA + ')'") in a50 and 'srp_db, versión 10' in a50 and 'sia-2026-09-22' in a50 and 'iecm-2022' in a50 and 'Pendientes de envío' in a50,
+    ok(pg50.evaluate("SRP.CONFIG.VERSION + ' (' + SRP.CONFIG.ETAPA + ')'") in a50 and 'srp_db, versión 11' in a50 and 'sia-2026-09-22' in a50 and 'iecm-2022' in a50 and 'Pendientes de envío' in a50,
        'Acerca del sistema dice versión, base, capas y pendientes de este equipo')
     anchos50=[]
     for v in ['configuracion','parametros','cambios','acerca']:
@@ -6194,8 +6204,8 @@ with sync_playwright() as p:
         ajenos: ['modelo', 'nombre_cientifico', 'tipo_organizacion'].some(k => k in filas.areas),
         memoria: ['p-b160', 'a-b160', 'ESP-9001', 'v-B160', 'o-b160', 's-b160'].map(id => (SRP.ref.catalogoPorId[id] || {}).tipo),
         usos: ['p-b160', 'v-B160', 'o-b160', 's-b160', 'a-b160'].map(id => usos[id] || null), uno: (await A.catalogo('v-B160')).tipo }; }""")
-    ok(m73['v'] == 10 and 'catalogos' not in m73['tablas'] and m73['tablas'] == sorted(['plantaciones','usuarios','bitacora','jornadas','programas','areas','especies','vehiculos','instituciones','solicitantes','envios']),
-       'la base queda en la versión 10, con sus diez tablas y la cola de envío, y sin la tabla única de catálogos: %s' % m73['tablas'])
+    ok(m73['v'] == 11 and 'catalogos' not in m73['tablas'] and m73['tablas'] == sorted(['plantaciones','usuarios','bitacora','jornadas','programas','areas','especies','vehiculos','instituciones','solicitantes','envios']),
+       'la base queda en la versión 11, con sus diez tablas y la cola de envío, y sin la tabla única de catálogos: %s' % m73['tablas'])
     ok(m73['todas'] and m73['sinTipo'] and m73['propios'] == [['Alcaldía'], 'Dodge', 'Empresa privada', 'Vecinos', 'Arbor centum'] and m73['ajenos'] is False,
        'cada catálogo pasó a su tabla con sus campos, sin `tipo` y sin campos de otro catálogo: %s' % m73['propios'])
     ok(m73['memoria'] == ['programa', 'area', 'especie', 'vehiculo', 'organizacion', 'solicitante'] and m73['uno'] == 'vehiculo',
@@ -6354,7 +6364,7 @@ with sync_playwright() as p:
     m77 = pg77.evaluate("""async () => { const A = SRP.almacen, p = await A.uno('jornadas', 'j-ped'), q = await A.uno('jornadas', 'j-pro'), ar = await A.todos('plantaciones');
       return { v: A.db.version, ped: [p.programa_id, 'origen' in p, 'pedido_descripcion' in p, p.solicitante_id, p.solicitud_descripcion], pro: [q.programa_id, 'origen' in q, q.solicitud_descripcion],
         arboles: Object.fromEntries(ar.map(a => [a.id, a.programa_id])), programa: !!(await A.uno('programas', 'p-solicitud')) }; }""")
-    ok(m77['v'] == 10 and m77['ped'] == ['p-solicitud', False, False, 's-sobse', 'Camellón'] and m77['pro'] == ['p-refor', False, ''] and m77['arboles'] == {'a-ped-1': 'p-solicitud', 'a-ped-2': 'p-solicitud', 'a-pro-1': 'p-refor'} and m77['programa'],
+    ok(m77['v'] == 11 and m77['ped'] == ['p-solicitud', False, False, 's-sobse', 'Camellón'] and m77['pro'] == ['p-refor', False, ''] and m77['arboles'] == {'a-ped-1': 'p-solicitud', 'a-ped-2': 'p-solicitud', 'a-pro-1': 'p-refor'} and m77['programa'],
        'la migración 9 pasa el pedido especial al programa «Solicitud especial», con sus árboles, conserva solicitante y descripción y retira el origen: %s' % m77)
     # Espejos: «Iniciar jornada», la ficha de la jornada, y el alta de una cuenta y de un valor de catálogo
     pg77.select_option('#sel-usuario-prueba', 'u-cabo-1'); pg77.click('#btn-entrar-prueba'); pg77.wait_for_timeout(900)
@@ -7412,12 +7422,12 @@ with sync_playwright() as p:
       } }""")
     # «Cerrar jornada» dos veces seguidas cierra una sola vez: la misma bitácora que un solo toque
     k98 = pg98.evaluate("""async () => {
-      const J = SRP.jornadas, ya = SRP.app.confirmar; SRP.app.confirmar = async () => true;
+      const J = SRP.jornadas, ya = SRP.app.confirmar, ya2 = SRP.app.elegir; SRP.app.confirmar = async () => true; SRP.app.elegir = async () => 'si';
       const cuenta = async (id) => (await SRP.almacen.todos('bitacora')).filter(x => x.entidad_id === id).length;
       SRP.app.mostrarVista('jornadas');
       await J.abrir('j98-otra'); let antes = await cuenta('j98-otra'); await J.cambiarEstado(); const uno = (await cuenta('j98-otra')) - antes;
       await J.abrir('j98-abierta'); antes = await cuenta('j98-abierta'); await Promise.all([J.cambiarEstado(), J.cambiarEstado()]); const dos = (await cuenta('j98-abierta')) - antes;
-      SRP.app.confirmar = ya;
+      SRP.app.confirmar = ya; SRP.app.elegir = ya2;
       return [uno, dos, (await SRP.almacen.uno('jornadas', 'j98-abierta')).estatus, document.getElementById('btn-jornada-estado').textContent.trim()]; }""")
     ok(k98[0] >= 1 and k98[1] == k98[0] and k98[2] == 'cerrada' and 'Cerrando' not in k98[3],
        '«Cerrar jornada» con doble toque cierra una sola vez: la misma bitácora que un toque (%s y %s), y el botón vuelve a su texto: %s' % (k98[0], k98[1], k98[3]))
@@ -7434,6 +7444,7 @@ with sync_playwright() as p:
     ok(b98 == ['Suelo compactado en la jardinera norte', 'Juan Pérez', False],
        'los datos de cierre escritos vuelven después de salir con «Atrás» y recargar, con el aviso de que se recuperaron: %s' % b98)
     # «Ver vista previa» dos veces seguidas guarda el cierre una sola vez
+    con_hora(pg98)
     p98 = pg98.evaluate("""async () => { const cuenta = async () => (await SRP.almacen.todos('bitacora')).filter(x => x.entidad_id === 'j98-cerrada' && /Datos de cierre/.test(x.detalle || '')).length;
       const antes = await cuenta(); await Promise.all([SRP.reportes.aceptar(), SRP.reportes.aceptar()]);
       return [(await cuenta()) - antes, document.getElementById('dlg-previa').open, localStorage.getItem('srp_borrador_cierre'),
@@ -7459,6 +7470,145 @@ with sync_playwright() as p:
        'el borrador de «Registrar jornada» no le aparece a otra cuenta')
     ok(not err98, 'sin errores en consola: %s' % err98[:2])
     ctx98.close()
+
+    # ---------- ctx99: cambios pedidos en campo: suelo o macetón, sin folio en el detalle, «Sustituir árbol» en morado, Fotografías del cabo sin «Cabo», hora de finalización obligatoria, revisar antes de cerrar, el cabo en el nombre de los archivos y el modo sol de inicio ----------
+    ctx99 = b.new_context(viewport={'width':390,'height':844}, geolocation={'latitude':19.4326,'longitude':-99.1332,'accuracy':5}, permissions=['geolocation'], timezone_id='America/Mexico_City')
+    pg99 = ctx99.new_page(); err99 = []
+    pg99.on('pageerror', lambda e: err99.append(str(e))); pg99.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err99.append(m.text))
+    pg99.goto(BASE); pg99.wait_for_selector('html[data-listo]')
+    entrar_como(pg99, 'u-cabo-1'); pg99.wait_for_function("() => SRP.sesion && SRP.sesion.usuario")
+    # Suelo o macetón: dos botones, con «Suelo» elegido
+    jid99 = iniciar_jornada(pg99, 'Jornada del macetón', HOY)
+    s99 = pg99.evaluate("""() => [[...document.querySelectorAll('#sitio-botones .chip')].map(b => b.textContent + ':' + b.getAttribute('aria-pressed')),
+      SRP.formulario.registroPrevisto().sitio_plantacion, !!document.querySelector('label[for=campo-sitio] .obligatorio')]""")
+    ok(s99 == [['Suelo:true', 'Macetón:false'], 'suelo', True], 'el formulario pregunta el sitio de plantación con «Suelo» y «Macetón», y cada árbol empieza en «Suelo»: %s' % s99)
+    pg99.click('#btn-ubicacion'); pg99.wait_for_timeout(700)
+    pg99.fill('#campo-especie', 'aile'); pg99.wait_for_timeout(200); pg99.dispatch_event('.combo-opcion[data-id="ESP-0002"]', 'mousedown'); pg99.wait_for_timeout(150)
+    pg99.click('#sitio-botones .chip[data-sitio=maceton]')
+    pg99.evaluate("async () => { await SRP.formulario.revisar([]); }"); pg99.wait_for_selector('#dlg-resumen[open]')
+    f99 = pg99.evaluate("""() => { const f = [...document.querySelectorAll('#revision-lista .revision-fila')].find(x => x.querySelector('dt').textContent === 'Sitio de plantación');
+      return f ? [f.querySelector('dd').textContent, !!f.querySelector('button[data-campo=sitio]')] : null; }""")
+    ok(f99 == ['Macetón', True], 'la ficha «Revise antes de guardar» dice el sitio y lleva su «Editar»: %s' % f99)
+    pg99.click('#btn-resumen-guardar'); pg99.wait_for_timeout(900)
+    g99 = pg99.evaluate("""async () => { const r = await SRP.almacen.uno('plantaciones', SRP.formulario.estado.ultimoGuardado);
+      return [r.id, r.sitio_plantacion, document.getElementById('campo-sitio').value, document.querySelector('#sitio-botones [aria-pressed=true]').dataset.sitio]; }""")
+    id99 = g99[0]
+    ok(g99[1:] == ['maceton', 'suelo', 'suelo'], 'el árbol se guarda en macetón y el formulario vuelve a «Suelo» para el siguiente: %s' % g99[1:])
+    registrar(pg99, 'aile', 'ESP-0002')
+    # La migración 11 deja en suelo lo que se guardó antes de que existiera el campo
+    m99 = pg99.evaluate("""() => new Promise((resolver, fallar) => {
+      const nombre = 'srp_prueba_migracion_' + Date.now(), a = indexedDB.open(nombre, 10);
+      a.onupgradeneeded = () => { const s = a.result.createObjectStore('plantaciones', { keyPath: 'id' }); s.put({ id: 'viejo' }); s.put({ id: 'maceta', sitio_plantacion: 'maceton' }); };
+      a.onerror = () => fallar(a.error);
+      a.onsuccess = () => { a.result.close(); const b = indexedDB.open(nombre, 11);
+        b.onupgradeneeded = () => SRP.almacen.MIGRACIONES[11](b.result, b.transaction);
+        b.onerror = () => fallar(b.error);
+        b.onsuccess = () => { const t = b.result.transaction('plantaciones').objectStore('plantaciones').getAll();
+          t.onsuccess = () => { const r = t.result.map(x => x.id + ':' + x.sitio_plantacion).sort(); b.result.close(); indexedDB.deleteDatabase(nombre); resolver(r); }; }; }; })""")
+    ok(m99 == ['maceta:maceton', 'viejo:suelo'] and pg99.evaluate("SRP.CONFIG.DB_VERSION") == 11, 'la migración 11 deja en «Suelo» los árboles guardados antes y no toca los que ya lo dicen: %s' % m99)
+    # Detalle del registro: sin folio, con el sitio, y «Sustituir árbol» relleno de morado
+    d99 = pg99.evaluate("""async id => { const r = await SRP.almacen.uno('plantaciones', id);
+      SRP.app.mostrarVista('registros'); await SRP.registros.verDetalle(r);
+      const c = document.getElementById('dlg-detalle-cuerpo'), filas = [...c.querySelectorAll('.revision-fila')].map(f => [f.querySelector('dt').textContent, f.querySelector('dd').textContent]);
+      const b = document.getElementById('btn-detalle-sustituir'), e = document.getElementById('btn-detalle-editar');
+      // Lo que se ve, sin el espejo de la base de la versión de prueba, que enseña todos los campos
+      const visto = c.cloneNode(true); visto.querySelectorAll('.espejo').forEach(x => x.remove());
+      return { primero: filas[0][0], etiquetas: filas.map(f => f[0]), sitio: (filas.find(f => f[0] === 'Sitio de plantación') || [])[1],
+        folio: !!r.folio && visto.textContent.includes(r.folio), provisional: visto.querySelector('.folio-provisional') !== null,
+        sustituir: [b.hidden, getComputedStyle(b).backgroundColor, getComputedStyle(b).color], editar: getComputedStyle(e).backgroundColor }; }""", id99)
+    ok(d99['primero'] == 'Especie' and 'Folio' not in d99['etiquetas'] and not d99['folio'] and not d99['provisional'] and d99['sitio'] == 'Macetón',
+       'el detalle del registro no trae el folio, ni en el historial, y dice el sitio de plantación: %s' % d99['etiquetas'])
+    ok(d99['sustituir'] == [False, 'rgb(107, 63, 160)', 'rgb(255, 255, 255)'] and d99['editar'] == 'rgb(255, 255, 255)',
+       '«Sustituir árbol» va relleno de morado, el color del sustituto, y «Editar» sigue blanco: %s' % d99['sustituir'])
+    pg99.click('#btn-detalle-cerrar'); pg99.wait_for_timeout(200)
+    # El sustituto llega con el sitio del árbol que reemplaza; la edición carga el del árbol y lo corrige
+    t99 = pg99.evaluate("""async id => { const r = await SRP.almacen.uno('plantaciones', id);
+      SRP.formulario.sustituir(r, 'ROBO', '', SRP.util.fechaHoy()); const sust = document.getElementById('campo-sitio').value; SRP.formulario.limpiar();
+      SRP.formulario.editar(r); await new Promise(x => setTimeout(x, 300)); const edita = document.getElementById('campo-sitio').value;
+      SRP.formulario.elegirSitio('suelo'); await SRP.formulario.guardar();
+      const n = await SRP.almacen.uno('plantaciones', id), h = (await SRP.bitacora.historial(n)).find(x => x.accion === 'EDITADO');
+      SRP.formulario.editar(n); await new Promise(x => setTimeout(x, 300)); SRP.formulario.elegirSitio('maceton'); await SRP.formulario.guardar();   // vuelve al macetón, para el reporte
+      return [sust, edita, n.sitio_plantacion, h ? h.detalle : '']; }""", id99)
+    ok(t99 == ['maceton', 'maceton', 'suelo', 'Campos: sitio_plantacion'], 'el sustituto toma el sitio del árbol que reemplaza; «Editar» carga el del árbol, lo corrige y el historial lo dice: %s' % t99)
+    # Fotografías: el cabo no ve el renglón «Cabo»; nadie ve el folio
+    FOTO99 = """async id => { const r = await SRP.almacen.uno('plantaciones', id); const c = document.createElement('canvas'); c.width = c.height = 8;
+      const f = Object.assign({}, r, { foto_base64: c.toDataURL('image/jpeg'), foto_id: r.foto_id || SRP.util.generarId() });
+      await SRP.galeria.abrir(f); const filas = [...document.querySelectorAll('#dlg-foto-datos dt')].map(x => x.textContent);
+      document.getElementById('dlg-foto').close();
+      const ya = SRP.reportes.entregarArchivo; let zip = ''; SRP.reportes.entregarArchivo = async (b, n) => { zip = n; return 'cancelado'; };
+      SRP.galeria.fotos = [f]; await SRP.galeria.descargarTodas(); SRP.reportes.entregarArchivo = ya;
+      return [filas, zip]; }"""
+    pg99.evaluate("SRP.app.mostrarVista('galeria')"); pg99.wait_for_timeout(600)
+    fc99 = pg99.evaluate(FOTO99, id99)
+    ok('Cabo' not in fc99[0] and 'Folio' not in fc99[0] and fc99[0][:2] == ['Jornada', 'Fecha de plantación'],
+       'la ventana de una fotografía, con la sesión del cabo, no dice quién registró ni el folio: %s' % fc99[0])
+    ok(fc99[1] == 'Fotografias_SRP_Fulana_de_Tal_Ejemplo.zip', 'el ZIP de las fotografías del cabo lleva su nombre: %s' % fc99[1])
+    # El cabo en el nombre del informe y del CSV
+    INFORME99 = """cabo => { const m = { periodo: { tipo: 'semana', desde: '2026-10-19', hasta: '2026-10-25' }, filtros: { alcaldia: '', programa: '', cabo, organizacion: '' } };
+      return [SRP.informes.nombreArchivo(m, 'Informe', 'pdf'), SRP.informes.nombreArchivo(m, 'Arboles', 'csv')]; }"""
+    n99 = pg99.evaluate(INFORME99, '')
+    ok(n99 == ['Informe_semanal_2026-10-19_al_2026-10-25_Fulana_de_Tal_Ejemplo.pdf', 'Arboles_semanal_2026-10-19_al_2026-10-25_Fulana_de_Tal_Ejemplo.csv'],
+       'el informe y el CSV que descarga el cabo llevan su nombre: %s' % n99)
+    ok(pg99.evaluate("SRP.informes.COLUMNAS.some(c => c[0] === 'sitio' && c[1] === 'Sitio de plantación')"), 'el CSV de Supervisión trae la columna «Sitio de plantación»')
+    # Cerrar con puntos por revisar: los dos árboles del mismo punto son un posible duplicado
+    pg99.evaluate("SRP.app.mostrarVista('registrar')"); pg99.wait_for_timeout(500)
+    pg99.click('#btn-jornada-cerrar'); pg99.wait_for_selector('#dlg-confirmar[open]')
+    c99 = pg99.evaluate("""() => [document.getElementById('btn-confirmar-otro').hidden, document.getElementById('btn-confirmar-otro').textContent,
+      document.getElementById('btn-confirmar-si').className, document.getElementById('dlg-confirmar-nota').textContent]""")
+    ok(c99[0] is False and c99[1] == 'Revisar los 2 puntos' and 'btn-secundario' in c99[2] and 'uno por uno' in c99[3],
+       'al cerrar con puntos por revisar se ofrece primero «Revisar los 2 puntos» y «Cerrar jornada» va de contorno: %s' % c99[:3])
+    pg99.click('#btn-confirmar-otro'); esperar(pg99, "!document.getElementById('jornada-detalle').hidden", 6000); pg99.wait_for_timeout(800)
+    v99 = pg99.evaluate("""id => [SRP.app.vista, SRP.jornadas.actual === id, SRP.jornadas.revisionCierre === id, document.activeElement && document.activeElement.dataset.accion,
+      SRP.jornadas.guardada.estatus]""", jid99)
+    ok(v99 == ['jornadas', True, True, 'bien', 'abierta'], 'lleva a la ficha de la jornada, sin cerrarla, con el foco en «Está bien» del primer punto: %s' % v99)
+    pg99.evaluate("document.activeElement.click()"); pg99.wait_for_timeout(900)
+    w99 = pg99.evaluate("""() => [document.getElementById('dlg-confirmar').open, document.activeElement && document.activeElement.dataset.accion,
+      document.querySelectorAll('#jornada-lista button[data-accion=bien]').length]""")
+    ok(w99 == [False, 'bien', 1], 'cada punto atendido lleva al siguiente: %s' % w99)
+    pg99.evaluate("document.activeElement.click()"); pg99.wait_for_selector('#dlg-confirmar[open]'); pg99.wait_for_timeout(300)
+    x99 = pg99.evaluate("""() => [document.getElementById('dlg-confirmar-texto').textContent, document.getElementById('btn-confirmar-otro').hidden]""")
+    ok(x99[0].startswith('¿Cerrar la jornada «Jornada del macetón»') and x99[1] is True, 'sin puntos por revisar vuelve a preguntar si se cierra, ya sin «Revisar»: %s' % x99[0])
+    pg99.click('#btn-confirmar-si'); pg99.wait_for_timeout(1500)
+    ok(pg99.evaluate("async id => (await SRP.almacen.uno('jornadas', id)).estatus", jid99) == 'cerrada', 'y al confirmar la jornada queda cerrada')
+    # Hora de finalización obligatoria: sin ella no hay vista previa
+    pg99.evaluate("""async id => { const j = (await SRP.jornadas.jornadasAlcance()).find(x => x.id === id); await SRP.reportes.abrir(j.registros, j.fecha, j.cabo_id, j);
+      document.getElementById('cie-hora').value = ''; }""", jid99)
+    pg99.wait_for_selector('#dlg-cierre[open]')
+    h99 = pg99.evaluate("""() => [!!document.querySelector('label[for=cie-hora] .obligatorio'), [...document.querySelectorAll('#form-cierre p.nota')].map(x => x.textContent).join(' ')]""")
+    ok(h99[0] and 'La hora de finalización es obligatoria' in h99[1], 'la hora de finalización lleva asterisco y la nota lo dice: %s' % h99[1][:60])
+    pg99.click('#btn-cierre-generar'); pg99.wait_for_timeout(600)
+    e99 = pg99.evaluate("""() => [document.getElementById('dlg-cierre').open, document.getElementById('dlg-previa').open, document.getElementById('cie-hora').getAttribute('aria-invalid'),
+      (document.getElementById('cie-hora-error') || {}).textContent, document.activeElement.id]""")
+    ok(e99 == [True, False, 'true', 'Escriba la hora en que terminó la jornada o toque «Ahora».', 'cie-hora'],
+       'sin hora de finalización el reporte no se arma: el campo se marca, dice qué falta y recibe el foco: %s' % e99)
+    pg99.click('#btn-hora-ahora'); pg99.wait_for_timeout(200)
+    ok(pg99.evaluate("document.getElementById('cie-hora-error') === null && !document.getElementById('cie-hora').hasAttribute('aria-invalid')"), '«Ahora» pone la hora y quita el aviso')
+    pg99.click('#btn-cierre-generar'); esperar(pg99, "document.getElementById('dlg-previa').open", 8000); pg99.wait_for_timeout(400)
+    p99 = pg99.evaluate("""() => { const t = [...document.querySelectorAll('#previa-hoja .previa-tabla')][0];
+      return [[...t.querySelectorAll('thead th')].map(x => x.textContent), [...t.querySelectorAll('tbody tr')].map(r => r.children[2].textContent)]; }""")
+    ok(p99[0][:4] == ['N.º', 'Especie', 'Sitio', 'Precisión'] and sorted(p99[1]) == ['Macetón', 'Suelo'],
+       'con la hora, la vista previa sale; con un árbol en macetón, la tabla lleva la columna «Sitio»: %s' % p99)
+    pg99.keyboard.press('Escape'); pg99.wait_for_timeout(300)
+    # La coordinación sí ve quién registró cada fotografía, y sin filtro de cabo el informe no lleva nombre
+    pg99.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-coord-1'])"); pg99.reload(); pg99.wait_for_selector('html[data-listo]')
+    pg99.wait_for_function("() => SRP.sesion && SRP.sesion.usuario && SRP.sesion.usuario.id === 'u-coord-1'")
+    pg99.evaluate("SRP.app.mostrarVista('galeria')"); pg99.wait_for_timeout(600)
+    fk99 = pg99.evaluate(FOTO99, id99)
+    ok('Cabo' in fk99[0] and 'Folio' not in fk99[0], 'la coordinación sí ve quién registró la fotografía, y tampoco el folio: %s' % fk99[0])
+    nk99 = pg99.evaluate(INFORME99, ''), pg99.evaluate(INFORME99, 'u-cabo-1')
+    ok(nk99[0][0] == 'Informe_semanal_2026-10-19_al_2026-10-25.pdf' and nk99[1][0].endswith('_Fulana_de_Tal_Ejemplo.pdf'),
+       'el informe de la coordinación lleva el nombre del cabo sólo si filtra por uno: %s' % [nk99[0][0], nk99[1][0]])
+    ok(not err99, 'sin errores en consola: %s' % err99[:2])
+    ctx99.close()
+    # El modo sol arranca encendido en un teléfono nuevo; si se apaga, sigue apagado
+    ctx99s = _contexto_base(viewport={'width':390,'height':844}); pg99s = ctx99s.new_page()
+    pg99s.goto(BASE); pg99s.wait_for_selector('html[data-listo]')
+    sol99 = pg99s.evaluate("() => [document.documentElement.dataset.contraste, document.getElementById('btn-contraste').getAttribute('aria-checked'), getComputedStyle(document.body).color]")
+    ok(sol99 == ['alto', 'true', 'rgb(0, 0, 0)'], 'un teléfono nuevo abre con el modo sol encendido: %s' % sol99)
+    pg99s.evaluate("document.getElementById('btn-contraste').click()"); pg99s.reload(); pg99s.wait_for_selector('html[data-listo]')
+    ok(pg99s.evaluate("[document.documentElement.dataset.contraste || null, document.getElementById('btn-contraste').getAttribute('aria-checked')]") == [None, 'false'],
+       'si se apaga, sigue apagado al volver a abrir')
+    ctx99s.close()
 
     b.close()
 

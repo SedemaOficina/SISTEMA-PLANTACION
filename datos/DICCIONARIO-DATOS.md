@@ -6,7 +6,7 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 
 ## 1. Dónde viven los datos
 
-- **Motor:** IndexedDB del navegador: base `srp_db` en la versión de prueba y `srp_sia` en la real (SRP.CONFIG.DB_NOMBRE, según ES_FICTICIO), versión 10 (SRP.CONFIG.DB_VERSION). Nunca comparten datos.
+- **Motor:** IndexedDB del navegador: base `srp_db` en la versión de prueba y `srp_sia` en la real (SRP.CONFIG.DB_NOMBRE, según ES_FICTICIO), versión 11 (SRP.CONFIG.DB_VERSION). Nunca comparten datos.
 - **Tablas (almacenes):** `plantaciones`, `usuarios`, `programas`, `areas`, `especies`, `vehiculos`, `instituciones`, `solicitantes`, `bitacora`, `jornadas`.
 
 | Dónde | Qué guarda | En Fase 2 |
@@ -42,6 +42,7 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 |---|---|---|
 | `estatus_plantacion` | `activo` · `eliminado` · `sustituido` | js/formulario.js registroPrevisto() y guardarSustituto(); js/registros.js eliminar() |
 | `motivo_sustitucion` | `VANDALISMO` · `IMPACTO_VEHICULAR` · `ROBO` · `MUERTE` · `OTRO` | js/config.js MOTIVOS_SUSTITUCION |
+| `sitio_plantacion` | `suelo` · `maceton` | js/config.js SITIOS_PLANTACION |
 | `estatus_jornada` | `abierta` · `cerrada` | js/jornada-activa.js iniciarJornada() y cambiarEstatus() |
 | `punto_origen` | `gps` · `mapa` · `manual` · `ajustado` | js/mapa.js ORIGENES |
 | `perfil` | `CABO` · `COORDINADOR` · `DIRECTIVO` · `ADMIN` | js/permisos.js SRP.PERFILES (DIRECTIVO es de sólo lectura) |
@@ -65,7 +66,7 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 Un renglón por ejemplar plantado. Es el registro individual de campo; todo lo demás (partes, tableros, cifra pública) se construye encima.
 
 - **Llave:** `id`. **Índices:** `estatus`, `jornada_id`. **Pantalla:** Nuevo registro (alta y edición), Registros (lista, detalle), reporte de la jornada.
-- **Campos:** 30.
+- **Campos:** 31.
 
 | Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
 |---|---|---|---|---|---|---|
@@ -93,6 +94,7 @@ Un renglón por ejemplar plantado. Es el registro individual de campo; todo lo d
 | `motivo_sustitucion` | text | Sí | Persona | dominio `motivo_sustitucion` | Ventana «Sustituir árbol» (obligatorio); detalle («Motivo de la sustitución») | Obligatorio en un sustituto; nulo en los demás |
 | `motivo_sustitucion_otro` | varchar(120) | No | Persona | Texto libre ≤ 120; '' salvo con motivo OTRO | «Escriba el motivo», sólo con «Otro» | Obligatorio cuando motivo_sustitucion es OTRO |
 | `sustituido_por_id` | uuid | Sí | Sistema | → plantaciones.id | Detalle («Sustituido por») | Sólo en el árbol perdido, junto con estatus `sustituido`. Si se elimina el sustituto, vuelve a nulo y el árbol a `activo` |
+| `sitio_plantacion` | text | No | Persona | dominio `sitio_plantacion` | Sitio de plantación (Suelo o Macetón); detalle, ficha de revisión, reporte (columna «Sitio» si algún árbol está en macetón) y CSV | Cada árbol nuevo empieza en `suelo`; el sustituto toma el del árbol que reemplaza y la carga masiva pone `suelo`. Los árboles guardados antes de existir el campo quedan en `suelo` (migración 11 del teléfono); el servidor pone `suelo` si una versión anterior de la aplicación no lo manda |
 | `comentarios` | varchar(500) | No | Persona | Texto libre ≤ 500; '' si no se escribe | Comentarios (opcional) | Entra al reporte PDF en «Comentarios por ejemplar», al final, sólo los árboles que lo tienen. Un registro sin la llave se lee como «Sin comentarios» |
 | `foto_base64` | text | Sí | Persona | data:image/jpeg;base64,… ya comprimida (≤ 800×600, calidad 0.7) | Fotografía (opcional) | Incrustada en el registro en Fase 1. En Fase 2 sale a archivo, como en los otros módulos del SIA (pendiente «Dónde viven las fotografías») |
 | `foto_id` | uuid | Sí | Sistema | UUID v4; null sin foto | No | Identificador de la imagen, para cuando viva como archivo |
@@ -311,7 +313,7 @@ Una jornada de plantación: se declara antes de registrar el primer árbol. Agru
 | `vehiculo_placa` | text | No | Catálogo | Copia de vehiculos.nombre (la placa) del vehículo elegido; '' sin vehículo | Vehículo (lista de placas) | Se copia del catálogo al guardar el cierre; no se escribe a mano |
 | `vehiculo_tipo` | text | No | Catálogo | Copia de vehiculos.tipo_vehiculo del vehículo elegido; '' sin vehículo | (se ve en la ficha bajo la lista de vehículos) | Se copia del catálogo al guardar el cierre; no se escribe a mano |
 | `vehiculo_id` | text | Sí | Persona | → vehiculos.id | Vehículo (lista de placas o botones de los más usados) | El vehículo del catálogo; nulo sin vehículo. Con él se cuentan los que más usa cada encargado. Sólo del catálogo: sin «Otro vehículo» |
-| `hora` | varchar(5) | No | Persona | HH:MM, de 00:00 a 23:59; '' si no se elige | Hora de finalización (selector) | — |
+| `hora` | varchar(5) | No | Persona | HH:MM, de 00:00 a 23:59; '' si no se elige | Hora de finalización (selector, con «Ahora»), obligatoria para generar el reporte | La aplicación no arma la vista previa del reporte sin ella; '' en las jornadas que todavía no tienen datos de cierre y en las anteriores a esta regla |
 
 ## 5. Relaciones entre tablas
 
@@ -532,6 +534,7 @@ CREATE TABLE plantaciones (
   motivo_sustitucion       text           NULL,
   motivo_sustitucion_otro  varchar(120)   NOT NULL,
   sustituido_por_id        uuid           NULL,
+  sitio_plantacion         text           NOT NULL,
   comentarios              varchar(500)   NOT NULL,
   foto_base64              text           NULL,
   foto_id                  uuid           NULL,

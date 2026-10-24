@@ -93,7 +93,7 @@ test('la cuenta del servicio sólo opera datos; la bitácora sólo crece', async
   const arbol = (id, extra = {}) => {
     const v = Object.assign({ especie_id: 'ESP-0029', especie_otra: '', folio: null, estatus: 'activo', sustituye_id: null, sustituido_por_id: null, motivo: null }, extra);
     return c.query(`INSERT INTO srp.plantaciones VALUES ($1, $2, $3, 19.432600, -99.133200, 'gps', 5, $4, $5, $6, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-      'p-refor', '2026-10-05', $7, $8, $9, '', $10, '', NULL, NULL, $11, NULL, NULL)`,
+      'p-refor', '2026-10-05', $7, $8, $9, '', $10, 'suelo', '', NULL, NULL, $11, NULL, NULL)`,
       [id, v.estatus, admin, v.folio, v.especie_id, v.especie_otra, jornada, v.sustituye_id, v.motivo, v.sustituido_por_id, ahora]);
   };
   await arbol('00000000-0000-4000-8000-0000000000b1', { folio: 'CUH-001-00001' });

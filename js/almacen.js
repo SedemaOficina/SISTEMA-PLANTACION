@@ -234,6 +234,15 @@ SRP.almacen = {
     10(db) {
       const en = db.createObjectStore('envios', { keyPath: 'n', autoIncrement: true });
       en.createIndex('registro_id', 'registro_id');
+    },
+    /* 11. EL SITIO DE PLANTACIÓN. Cada árbol dice si se plantó en suelo o en macetón; los que ya estaban
+       guardados se plantaron en suelo, que era lo único que se registraba. No se borra ningún registro. */
+    11(db, tx) {
+      tx.objectStore('plantaciones').openCursor().onsuccess = (e) => {
+        const cur = e.target.result; if (!cur) return;
+        if (!cur.value.sitio_plantacion) cur.update(Object.assign(cur.value, { sitio_plantacion: 'suelo' }));
+        cur.continue();
+      };
     }
   },
 

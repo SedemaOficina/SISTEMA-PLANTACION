@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 1.1.1 (Bloque 246)»**.
+Al pie de cualquier pantalla: **«Versión 1.2 (Bloque 247)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -500,6 +500,14 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M503 | Paso 4d | «No se pudo enviar», en rojo, en la tarjeta del árbol y en la de la jornada, y en la franja «Guardado» | Media | 0.9.69 (B224) | Registros, Jornadas y Nuevo registro, con datos reales | D304 |
 | M504 | Paso 4d | Ventana «Cambios que el servidor no aceptó»: de qué registro es cada cambio, qué se cambió, por qué y qué hacer | Alta | 0.9.69 (B224) | Franja › Revisar | D304 |
 | M505 | Prueba de conexión | Al volver a la entrada se cierra cualquier ventana que hubiera quedado abierta | Media | 0.9.69 (B224) | Sesión vencida con una ventana abierta | D304 |
+| M542 | Prueba en campo (RP-12) | El modo sol (alto contraste) viene encendido; si se apaga, se recuerda en el teléfono | Media | 1.2 (B247) | Abrir la app en un teléfono donde nunca se tocó: se ve en alto contraste. Menú de la cuenta › Modo sol | D328 |
+| M541 | Prueba en campo (RP-09) | El informe, el CSV y el ZIP de fotografías llevan el nombre del cabo cuando son de uno solo | Media | 1.2 (B247) | Con la cuenta de un cabo: Mi avance › Informe PDF, Tabla CSV y Fotografías › Descargar todas: el archivo termina con su nombre | D328 |
+| M540 | Prueba en campo (RP-07) | Al cerrar con puntos por revisar, «Revisar los N puntos» lleva a cada uno y al final vuelve a preguntar si se cierra | Alta | 1.2 (B247) | Una jornada con dos árboles en el mismo punto › Cerrar jornada › Revisar los 2 puntos › «Está bien» en cada uno | D328 |
+| M539 | Prueba en campo (RP-06) | La hora de finalización es obligatoria en los datos de cierre | Alta | 1.2 (B247) | Generar reporte › borrar la hora › Ver vista previa: el campo se marca en rojo y dice qué falta | D328 |
+| M538 | Prueba en campo (RP-05) | En Fotografías, el cabo ya no ve el renglón «Cabo» con su propio nombre | Baja | 1.2 (B247) | Con la cuenta de un cabo: Mi avance › Fotografías › una foto | D328 |
+| M537 | Prueba en campo (RP-04) | «Sustituir árbol» relleno de morado, distinto de «Editar» | Baja | 1.2 (B247) | Registros › un árbol › detalle: los dos botones del pie | D328 |
+| M536 | Prueba en campo (RP-03) | «Detalle del registro» y la ventana de una fotografía ya no muestran el folio | Media | 1.2 (B247) | Registros › un árbol; Fotografías › una foto | D328 |
+| M535 | Prueba en campo (RP-01) | Suelo o macetón: cada árbol dice dónde se plantó; empieza en «Suelo». Se ve en el detalle, en el reporte (si algún árbol quedó en macetón) y en el CSV | Alta | 1.2 (B247) | Nuevo registro: «Sitio de plantación» › Macetón › Guardar; el detalle lo dice | D328 |
 | M534 | Liber | Reporte de la jornada: la tabla de ejemplares sin coordenadas: N.º, Especie, Precisión y, si algún árbol lo tiene, Comentario | Media | 1.1.1 (B246) | Jornadas › una cerrada › Reporte › Ver vista previa, y el PDF | D327 |
 | M533 | Prueba en campo | «Agregar fotografía» vuelve a ofrecer la cámara en Android 14 y posteriores, no sólo las fotos guardadas | Alta | 1.1.1 (B246) | Android con Chrome: Nuevo registro › Agregar fotografía: el menú trae «Cámara». En el iPhone, el menú de siempre | D326 |
 | M531 | Auditoría (19-10-2026) | Accesibilidad: en teléfono los botones de orden escondidos salen del orden del teclado; la lista de Jornadas tiene nombre fijo; el mapa de cada pareja de duplicados es un grupo con su nombre; los nombres de cabos de Supervisión miden 30 px | Baja | 1.1 (B242) | Usuarios en el teléfono, con teclado: Tab no se detiene en el encabezado | D322 |
@@ -539,7 +547,7 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M168 | Auditoría 360 | Bloque «Publicación ligera», lo que queda: capas con su propia versión (que no se vuelvan a descargar con cada versión de la app) y aligeradas; licencia del mapa base (M2, M4) | Media | Pendiente | Decisiones 3 y 5 de la lista del 26-09-2026. Originales y jsPDF, hechos en B102 |
 | M170 | Auditoría 360 | Bloque «Pruebas en iPhone»: GitHub Actions con Chromium y WebKit, pruebas de migración e integridad (M17, M18) | Media | En curso | Desde la 1.0.5 (B240, D320) las pruebas corren en GitHub en cada subida, con Chromium. Falta WebKit |
 | M343 | Liber | Catálogo de especies: marcar cuáles son frutales, para filtrar y contar los árboles frutales plantados | Media | En curso | La marca y el filtro, hechos en B179 (M446 a M448). Falta contar los árboles con fruto comestible en Supervisión e informes |
-| M532 | Liber | «Entradas» en Configuración: quién entró, cuándo y desde qué equipo, los intentos fallidos y los bloqueos; y la última actividad de cada cuenta en Usuarios (en la computadora, en la columna «Estado», que pasa a «Actividad») | Media | Después del piloto | Muestras del 22-10-2026 en `servidor/local/muestras-entradas/`, fuera de git. Los datos ya los guarda el servidor; falta la consulta y la pantalla. Sería la 1.2 (D325) |
+| M532 | Liber | «Entradas» en Configuración: quién entró, cuándo y desde qué equipo, los intentos fallidos y los bloqueos; y la última actividad de cada cuenta en Usuarios (en la computadora, en la columna «Estado», que pasa a «Actividad») | Media | Después del piloto | Muestras del 22-10-2026 en `servidor/local/muestras-entradas/`, fuera de git. Los datos ya los guarda el servidor; falta la consulta y la pantalla. Sería una versión posterior a la 1.2 (D325) |
 
 ## 3. Verificadas sin falla
 

@@ -15,6 +15,7 @@ Qué sale del esquema:
     relación dice «Sin restricción» ni la de una lista (uuid[]), que comprueba el servicio.
   · Una restricción CHECK por cada campo cuyo dominio es una lista de valores del esquema.
   · UNIQUE en los campos cuyo dominio dice que el valor es único.
+  · El valor de arranque de los campos que lo tienen (PREDETERMINADOS, abajo).
   · Las reglas que el esquema escribe en prosa y no se deducen solas van en REGLAS, abajo.
   · Un comentario por tabla y por campo, para quien administre la base.
 
@@ -48,6 +49,8 @@ REGLAS = [
 ]
 # Valores que no pueden repetirse aunque el esquema no lo diga con la palabra «único»
 UNICOS = [('plantaciones', 'folio')]
+# Valor de un campo cuando quien escribe no lo dice: un árbol de una versión anterior de la aplicación
+PREDETERMINADOS = {('plantaciones', 'sitio_plantacion'): "'suelo'"}
 
 
 def literal(t):
@@ -72,7 +75,8 @@ def main():
         filas = []
         for c in campos:
             tipo = TIPOS.get(c['tipo'], c['tipo'])
-            filas.append('  %-26s %-14s %s' % (c['campo'], tipo, 'NULL' if c['nulo'] else 'NOT NULL'))
+            pre = PREDETERMINADOS.get((nombre, c['campo']))
+            filas.append('  %-26s %-14s %s' % (c['campo'], tipo, 'NULL' if c['nulo'] else 'NOT NULL') + (' DEFAULT ' + pre if pre else ''))
         filas.append('  CONSTRAINT %s_pk PRIMARY KEY (%s)' % (nombre, t['llave']))
         for c in campos:
             dom = str(c.get('dominio', ''))

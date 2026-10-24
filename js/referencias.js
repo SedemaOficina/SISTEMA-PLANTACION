@@ -144,6 +144,11 @@ SRP.ref = {
      también 31 km² urbanos, así que no se afirma que sea zona no urbana. */
   alcaldia(valor) { return valor || 'Sin alcaldía (territorio pendiente)'; },
   // «Robo», «Otro: lo atropelló una grúa»; vacío si el árbol no es sustituto
+  // «Suelo» o «Macetón». Un árbol guardado antes de que existiera el campo quedó en suelo
+  sitio(r) {
+    const k = (r && r.sitio_plantacion) || 'suelo';
+    return (SRP.CONFIG.SITIOS_PLANTACION.find(x => x[0] === k) || [k, k])[1];
+  },
   motivoSustitucion(r) {
     if (!r || !r.motivo_sustitucion) return '';
     const m = (SRP.CONFIG.MOTIVOS_SUSTITUCION.find(x => x[0] === r.motivo_sustitucion) || [null, r.motivo_sustitucion])[1];

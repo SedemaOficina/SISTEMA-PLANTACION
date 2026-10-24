@@ -267,7 +267,8 @@ SRP.demo = {
             folio: null,
             especie_id: especie(), especie_otra: '',
             alcaldia_cve: ta.alcaldia_cve, alcaldia: ta.alcaldia, colonia_cve: ta.colonia_cve, colonia: ta.colonia, uga: ta.uga, uga_borde_m: ta.uga_borde_m, capa_version: ta.capa_version,
-            programa_id: programa, fecha_plantacion: d, jornada_id: idj, comentarios: r() < 0.06 ? pick(['Junto a la banqueta.', 'Cerca de luminaria.', 'Cepa de 60 × 60 cm.', 'Con tutor.']) : '',
+            // Uno de cada 37 en macetón, sin sortearlo: el resto de la demostración sale igual que antes
+            programa_id: programa, fecha_plantacion: d, jornada_id: idj, sitio_plantacion: na % 37 === 0 ? 'maceton' : 'suelo', comentarios: r() < 0.06 ? pick(['Junto a la banqueta.', 'Cerca de luminaria.', 'Cepa de 60 × 60 cm.', 'Con tutor.']) : '',
             foto_base64: null, foto_id: null, fecha_registro: reg, fecha_ultima_edicion: null, editado_por_id: null,
             sustituye_id: null, motivo_sustitucion: null, motivo_sustitucion_otro: '', sustituido_por_id: null };
           // Un posible duplicado: la misma especie a un par de metros del anterior

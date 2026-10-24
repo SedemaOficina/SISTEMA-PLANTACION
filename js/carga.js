@@ -426,7 +426,8 @@ SRP.carga = {
       id: SRP.util.generarId(), estatus: 'activo', cabo_id: u.id, lat: a.lat, lng: a.lng, punto_origen: 'manual', gps_precision_m: null, folio: null,
       especie_id: a.especie.id, especie_otra: '',
       alcaldia_cve: a.t.alcaldia_cve, alcaldia: a.t.alcaldia, colonia_cve: a.t.colonia_cve, colonia: a.t.colonia, uga: a.t.uga, uga_borde_m: a.t.uga_borde_m, capa_version: a.t.capa_version,
-      programa_id: a.programa.id, fecha_plantacion: a.fecha, jornada_id: jornadaId, comentarios: '',
+      // La plantilla no pregunta el sitio: lo histórico se plantó en suelo
+      programa_id: a.programa.id, fecha_plantacion: a.fecha, jornada_id: jornadaId, sitio_plantacion: 'suelo', comentarios: '',
       foto_base64: null, foto_id: null, fecha_registro: ahora, fecha_ultima_edicion: null, editado_por_id: null,
       sustituye_id: null, motivo_sustitucion: null, motivo_sustitucion_otro: '', sustituido_por_id: null }));
   },

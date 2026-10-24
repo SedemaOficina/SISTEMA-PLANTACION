@@ -104,10 +104,12 @@ SRP.galeria = {
     SRP.util.pintarPaginador(this.el('galeria-paginas'), info, 'fotografía', 'fotografías', (p) => {
       this.pagina = p; this.pintar(); SRP.util.subirA(this.el('galeria-cuenta'));
     });
+    // El cabo sólo ve sus fotografías: su nombre no se le repite en cada una
+    const propias = SRP.permisos.de(SRP.sesion.usuario).alcance === 'propios';
     this.el('galeria-rejilla').innerHTML = info.items.map(r => {
       const e = SRP.ref.especieDe(r);
       const j = r.jornada_id && this.jornadasPorId[r.jornada_id];
-      return '<li><button type="button" class="galeria-foto" data-id="' + SRP.util.escapar(r.id) + '" aria-label="' + esc(e.comun) + ', ' + esc(SRP.util.formatearFecha(r.fecha_plantacion)) + (j ? ', ' + esc(j.nombre) : '') + ', ' + esc(SRP.ref.nombreUsuario(r.cabo_id)) + '">' +
+      return '<li><button type="button" class="galeria-foto" data-id="' + SRP.util.escapar(r.id) + '" aria-label="' + esc(e.comun) + ', ' + esc(SRP.util.formatearFecha(r.fecha_plantacion)) + (j ? ', ' + esc(j.nombre) : '') + (propias ? '' : ', ' + esc(SRP.ref.nombreUsuario(r.cabo_id))) + '">' +
         '<img ' + SRP.foto.atributos(r) + ' alt="" loading="lazy">' +
         '<span class="galeria-pie">' + esc(e.comun) + '<br>' + (j ? '<span class="galeria-jornada">' + esc(j.nombre) + '</span> · ' : '') + esc(SRP.util.formatearFecha(r.fecha_plantacion)) + '</span></button></li>';
     }).join('');
@@ -138,14 +140,16 @@ SRP.galeria = {
     img.src = src;
     img.toggleAttribute('data-foto-servidor', !src.startsWith('data:'));
     this.el('dlg-foto-img').alt = 'Fotografía del ' + e.comun + ' registrado el ' + SRP.util.formatearFecha(r.fecha_plantacion);
+    /* Sin folio, como el detalle del registro. Quién registró, sólo a quien ve las fotografías de varias
+       personas: el cabo ve sólo las suyas */
+    const propias = SRP.permisos.de(SRP.sesion.usuario).alcance === 'propios';
     this.el('dlg-foto-datos').innerHTML = [
       ['Jornada', jornada ? jornada.nombre : 'Sin jornada'],
       ['Fecha de plantación', SRP.util.formatearFecha(r.fecha_plantacion)],
-      ['Cabo', SRP.ref.nombreUsuario(r.cabo_id)],
+      propias ? null : ['Cabo', SRP.ref.nombreUsuario(r.cabo_id)],
       ['Lugar', [SRP.ref.alcaldia(r.alcaldia), r.colonia ? SRP.ref.colonia(r.colonia) : ''].filter(Boolean).join(', ')],
-      ['Folio', SRP.folio.textoLargo(r)],
       ['Archivo', this.nombreFoto(r) + (SRP.util.fotoSegura(r.foto_base64) ? ' · ' + SRP.foto.formatearPeso(SRP.foto.pesoDe(r.foto_base64)) : '')]
-    ].map(([k, v]) => '<div class="revision-fila revision-fila-sola"><dt>' + k + '</dt><dd>' + esc(v) + '</dd></div>').join('');
+    ].filter(Boolean).map(([k, v]) => '<div class="revision-fila revision-fila-sola"><dt>' + k + '</dt><dd>' + esc(v) + '</dd></div>').join('');
     this.el('dlg-foto').showModal();
   },
 
@@ -195,8 +199,11 @@ SRP.galeria = {
       const f = this.filtro;
       const limpio = t => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, '');
       const j = f.jornada && this.jornadasPorId[f.jornada];
-      // Con una jornada elegida, el ZIP lleva su nombre y su fecha
-      const nombre = 'Fotografias_SRP' + (j ? '_' + limpio(j.nombre).slice(0, 40) + '_' + j.fecha : (f.dia ? '_' + f.dia : '')) + (f.cabo ? '_' + limpio(SRP.ref.nombreUsuario(f.cabo)) : '') + '.zip';
+      /* Con una jornada elegida, el ZIP lleva su nombre y su fecha. Si las fotografías son de un solo cabo
+         —las suyas, las de quien se eligió en «Quién registró» o las de una jornada—, también su nombre */
+      const u = SRP.sesion.usuario;
+      const cabo = f.cabo ? SRP.ref.nombreUsuario(f.cabo) : SRP.permisos.de(u).alcance === 'propios' ? SRP.util.nombreCompleto(u) : j ? SRP.ref.nombreUsuario(j.cabo_id) : '';
+      const nombre = 'Fotografias_SRP' + (j ? '_' + limpio(j.nombre).slice(0, 40) + '_' + j.fecha : (f.dia ? '_' + f.dia : '')) + (cabo ? '_' + limpio(cabo) : '') + '.zip';
       const res = await SRP.reportes.entregarArchivo(blob, nombre, 'Fotografías de los registros');
       if (res !== 'cancelado') SRP.util.anunciar((entradas.length === 1 ? '1 fotografía' : entradas.length + ' fotografías') + ' en ' + nombre + ' (' + SRP.foto.formatearPeso(blob.size) + ').' +
         (faltan ? ' ' + (faltan === 1 ? '1 no se pudo bajar' : faltan + ' no se pudieron bajar') + ' del servidor.' : ''), faltan ? 'aviso' : undefined);

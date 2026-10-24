@@ -27,6 +27,7 @@ CREATE TABLE srp.plantaciones (
   motivo_sustitucion         text           NULL,
   motivo_sustitucion_otro    varchar(120)   NOT NULL,
   sustituido_por_id          uuid           NULL,
+  sitio_plantacion           text           NOT NULL DEFAULT 'suelo',
   comentarios                varchar(500)   NOT NULL,
   foto_base64                text           NULL,
   foto_id                    uuid           NULL,
@@ -37,6 +38,7 @@ CREATE TABLE srp.plantaciones (
   CONSTRAINT plantaciones_estatus_valido CHECK (estatus IN ('activo', 'eliminado', 'sustituido')),
   CONSTRAINT plantaciones_punto_origen_valido CHECK (punto_origen IN ('gps', 'mapa', 'manual', 'ajustado')),
   CONSTRAINT plantaciones_motivo_sustitucion_valido CHECK (motivo_sustitucion IN ('VANDALISMO', 'IMPACTO_VEHICULAR', 'ROBO', 'MUERTE', 'OTRO')),
+  CONSTRAINT plantaciones_sitio_plantacion_valido CHECK (sitio_plantacion IN ('suelo', 'maceton')),
   CONSTRAINT plantaciones_folio_unico UNIQUE (folio),
   CONSTRAINT plantaciones_folio_patron CHECK (folio ~ '^[A-Z]{3}-\d{3}-\d{5}$'),
   CONSTRAINT plantaciones_especie_id_patron CHECK (especie_id ~ '^ESP-\d{4}$'),
@@ -298,6 +300,7 @@ COMMENT ON COLUMN srp.plantaciones.sustituye_id IS '→ plantaciones.id; Sólo e
 COMMENT ON COLUMN srp.plantaciones.motivo_sustitucion IS 'motivo_sustitucion; Obligatorio en un sustituto; nulo en los demás';
 COMMENT ON COLUMN srp.plantaciones.motivo_sustitucion_otro IS 'Texto libre ≤ 120; '''' salvo con motivo OTRO; Obligatorio cuando motivo_sustitucion es OTRO';
 COMMENT ON COLUMN srp.plantaciones.sustituido_por_id IS '→ plantaciones.id; Sólo en el árbol perdido, junto con estatus `sustituido`. Si se elimina el sustituto, vuelve a nulo y el árbol a `activo`';
+COMMENT ON COLUMN srp.plantaciones.sitio_plantacion IS 'sitio_plantacion; Cada árbol nuevo empieza en `suelo`; el sustituto toma el del árbol que reemplaza y la carga masiva pone `suelo`. Los árboles guardados antes de existir el campo quedan en `suelo` (migración 11 del teléfono); el servidor pone `suelo` si una versión anterior de la aplicación no lo manda';
 COMMENT ON COLUMN srp.plantaciones.comentarios IS 'Texto libre ≤ 500; '''' si no se escribe; Entra al reporte PDF en «Comentarios por ejemplar», al final, sólo los árboles que lo tienen. Un registro sin la llave se lee como «Sin comentarios»';
 COMMENT ON COLUMN srp.plantaciones.foto_base64 IS 'data:image/jpeg;base64,… ya comprimida (≤ 800×600, calidad 0.7); Incrustada en el registro en Fase 1. En Fase 2 sale a archivo, como en los otros módulos del SIA (pendiente «Dónde viven las fotografías»)';
 COMMENT ON COLUMN srp.plantaciones.foto_id IS 'UUID v4; null sin foto; Identificador de la imagen, para cuando viva como archivo';
@@ -435,4 +438,4 @@ COMMENT ON COLUMN srp.jornadas.vehiculo_modelo IS 'Copia de vehiculos.modelo del
 COMMENT ON COLUMN srp.jornadas.vehiculo_placa IS 'Copia de vehiculos.nombre (la placa) del vehículo elegido; '''' sin vehículo; Se copia del catálogo al guardar el cierre; no se escribe a mano';
 COMMENT ON COLUMN srp.jornadas.vehiculo_tipo IS 'Copia de vehiculos.tipo_vehiculo del vehículo elegido; '''' sin vehículo; Se copia del catálogo al guardar el cierre; no se escribe a mano';
 COMMENT ON COLUMN srp.jornadas.vehiculo_id IS '→ vehiculos.id; El vehículo del catálogo; nulo sin vehículo. Con él se cuentan los que más usa cada encargado. Sólo del catálogo: sin «Otro vehículo»';
-COMMENT ON COLUMN srp.jornadas.hora IS 'HH:MM, de 00:00 a 23:59; '''' si no se elige';
+COMMENT ON COLUMN srp.jornadas.hora IS 'HH:MM, de 00:00 a 23:59; '''' si no se elige; La aplicación no arma la vista previa del reporte sin ella; '''' en las jornadas que todavía no tienen datos de cierre y en las anteriores a esta regla';
