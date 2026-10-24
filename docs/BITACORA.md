@@ -6226,3 +6226,48 @@ No se probó: la subida a GitHub, porque el repositorio privado todavía no exis
 
 **Siguiente paso.** Liber crea en GitHub el repositorio privado `SedemaOficina/srp-sia`, vacío, y le da acceso al
 SIA; con eso se suben `main` y la etiqueta.
+
+## Bloque 246 — La cámara en Android y el reporte sin coordenadas (24-10-2026)
+
+**Versión 1.1.1.** Dos cosas de la prueba en campo: en Android, «Agregar fotografía» no ofrecía la cámara (D326), y
+Liber pidió quitar las coordenadas de la tabla de árboles del reporte (D327).
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| «Agregar fotografía» en Android 14 y posteriores, con Chrome | Sólo las fotos guardadas | El menú del teléfono, con «Cámara» (por probar en el teléfono) |
+| Un archivo que no es imagen, elegido desde ese menú | Se rechazaba, sin prueba que lo cuidara | Se rechaza con su aviso; prueba nueva |
+| Tabla de árboles del reporte | N.º, Especie, Coordenada, Precisión (y Fecha y Comentario si hay) | N.º, Especie, Precisión (y Fecha y Comentario si hay) |
+
+**Qué cambió.**
+- `index.html`: el selector de la fotografía pide `image/*,android/allowCamera`; las marcas `?v=` pasan a 1.1.1.
+- `js/reportes.js`: la tabla de ejemplares sin la columna de la coordenada, en la vista previa y en el PDF; la
+  precisión, con su color, pasa a la tercera columna.
+- `VERSION`, `js/config.js` (etapa), `README.md` (versión y contenido del reporte), `docs/MEJORAS.md` (M533 y
+  M534), `docs/DECISIONES.md` (D326 y D327).
+- `pruebas/prueba.py`: el selector pide la cámara; un archivo que no es imagen se rechaza y no queda como foto; la
+  tabla de ejemplares sin coordenadas, con y sin comentarios; en el PDF, la columna «Precisión» guarda su lugar.
+
+**Pantalla.**
+- Se agregó: en Android, «Cámara» en el menú de «Agregar fotografía». El recuadro se ve igual.
+- Se quitó: la columna «Coordenada» del reporte de la jornada.
+
+**Verificación.**
+- La prueba completa por tramos: 1,469 de 1,471. Las dos que fallan fallan igual con la 1.1 sin cambios (sobre una
+  copia del commit anterior, servida aparte) y no tienen que ver con este bloque:
+  - los porcentajes de los totales por especie: con los datos de demostración de hoy, una jornada de 21 árboles
+    con 13 especies de un solo árbol. Cada una sale con 4 % (es 4.8 %) y la suma da 92 %; la regla de que
+    cantidades iguales lleven el mismo porcentaje no alcanza a repartir los puntos. La prueba admite hasta 3
+    puntos abajo. Queda como pendiente;
+  - la hoja «especies» del Excel de Catálogos contra el libro de origen: el libro de `originales/` se volvió a
+    guardar el 23-10-2026 con tres especies movidas al principio; el contenido es el mismo, sólo cambió el orden.
+- En una corrida anterior del primer tramo fallaron 3 comprobaciones de tiempos (catálogo y usuarios); repetido, 648
+  de 648.
+- La revisión automática: 144 sin hallazgos; `revisar.py` sin problemas; la hoja de estilos sin hallazgos.
+- La vista previa del reporte, a mano: N.º, Especie, Precisión y Comentario cuando algún árbol lo tiene.
+
+No se probó: el menú de la cámara en un teléfono Android ni el del iPhone, porque aquí no hay teléfonos. En el
+iPhone, «Seleccionar archivo» y las apps de archivos, como Google Drive, siguen en el menú: los pone el iPhone y una
+página no los puede quitar.
+
+**Siguiente paso.** Liber prueba la 1.1.1 en el Android: si el menú trae «Cámara», queda; si no, se pasa a dos
+botones. Con la prueba en campo aprobada se rehace la entrega al SIA con la 1.1.1.

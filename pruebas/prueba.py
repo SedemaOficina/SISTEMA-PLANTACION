@@ -582,6 +582,13 @@ with sync_playwright() as p:
     nav=pg.evaluate("(() => { const n=document.getElementById('navegacion'); const r=n.getBoundingClientRect(); const b=document.querySelector('.barra-guardar').getBoundingClientRect(); return { fija: getComputedStyle(n).position, abajo: Math.round(innerHeight - r.bottom) <= 1, barra_encima: b.bottom <= r.top + 1 }; })()")
     ok(nav=={'fija':'fixed','abajo':True,'barra_encima':True},'en teléfono las secciones van abajo y la barra de guardar queda encima: %s' % nav)
     ok(pg.get_attribute('#foto-archivo','capture') is None,'sin «capture»: el teléfono ofrece su propio menú')
+    ok(pg.get_attribute('#foto-archivo','accept')=='image/*,android/allowCamera','pide imágenes y que Chrome en Android ofrezca también la cámara')
+    pg.evaluate("document.getElementById('aviso').hidden = true")
+    pg.set_input_files('#foto-archivo', files=[{'name': 'notas.pdf', 'mimeType': 'application/pdf', 'buffer': b'%PDF-1.4\n' + b'0' * 100}])
+    esperar(pg, "() => !document.getElementById('aviso').hidden", 6000)
+    ok('El archivo no es una imagen.' in pg.evaluate("() => document.getElementById('aviso').textContent") and pg.is_hidden('#ficha-foto'),
+       'un archivo que no es imagen se rechaza con su aviso y no queda como fotografía')
+    pg.evaluate("document.getElementById('aviso').hidden = true")
     ok(pg.is_hidden('#ficha-foto'),'sin foto no hay ficha de archivo')
     pg.set_input_files('#foto-archivo',sal('arbol.jpg')); pg.wait_for_timeout(900)
     ok(pg.is_visible('#ficha-foto') and pg.inner_text('#foto-nombre')=='arbol.jpg','la ficha dice el nombre del archivo')
@@ -1047,8 +1054,8 @@ with sync_playwright() as p:
        'el reporte no imprime con qué capas se derivó el territorio; cada árbol lo guarda, con capas definitivas')
     cab=pg.evaluate("[...document.querySelector('#previa-hoja table').querySelectorAll('thead th')].map(x => x.textContent)")
     fil=pg.evaluate("[...document.querySelector('#previa-hoja table tbody tr').children].map(x => x.textContent)")
-    ok(cab==['N.º','Especie','Coordenada','Precisión'] and re.fullmatch(r'.+ \(.+\)', fil[1]) is not None and re.fullmatch(r'19\.\d{6}, -99\.\d{6}', fil[2]) is not None and re.fullmatch(r'±\d+ m|En el mapa|A mano', fil[3]) is not None,
-       'la tabla de ejemplares trae número, especie con su nombre científico entre paréntesis, coordenada y precisión, sin folio ni prioridad por árbol: %s' % fil)
+    ok(cab==['N.º','Especie','Precisión'] and re.fullmatch(r'.+ \(.+\)', fil[1]) is not None and re.fullmatch(r'±\d+ m|En el mapa|A mano', fil[2]) is not None and not re.search(r'19\.\d{4}', hoja),
+       'la tabla de ejemplares trae número, especie con su nombre científico entre paréntesis y precisión, sin coordenadas, folio ni prioridad por árbol: %s' % fil)
     enc=pg.evaluate("(() => { const e = SRP.croquis.encuadre([{lat:19.4326,lng:-99.1332},{lat:19.4336,lng:-99.1322}]); const p = SRP.croquis.aPixel(19.4326,-99.1332,e.z); return { z: e.z, dentro: p.x-e.origenX > 0 && p.x-e.origenX < 1000 && p.y-e.origenY > 0 && p.y-e.origenY < 620 }; })()")
     ok(enc['dentro'] and 15 <= enc['z'] <= 20,'el encuadre deja todos los puntos dentro del lienzo: %s' % enc)
     with pg.expect_download() as dj: pg.click('#btn-previa-generar')
@@ -3207,7 +3214,7 @@ with sync_playwright() as p:
     pg25.evaluate(abrir25 + '(false)'); pg25.wait_for_timeout(700)
     pg25.fill('#cie-hora','12:10'); pg25.click('#btn-cierre-generar'); pg25.wait_for_timeout(800)
     sin25=pg25.evaluate("[...document.querySelector('#previa-hoja table').querySelectorAll('thead th')].map(x => x.textContent)")
-    ok(sin25==['N.º','Especie','Coordenada','Precisión'],'sin comentarios en los árboles, la tabla de ejemplares no lleva la columna: %s' % sin25)
+    ok(sin25==['N.º','Especie','Precisión'],'sin comentarios en los árboles, la tabla de ejemplares no lleva la columna: %s' % sin25)
     pg25.evaluate("SRP.app.mostrarVista('jornadas')"); pg25.wait_for_timeout(600)
     pg25.evaluate(abrir25 + '(true)'); pg25.wait_for_timeout(700)
     pg25.fill('#cie-hora','12:10'); pg25.click('#btn-cierre-generar'); pg25.wait_for_timeout(800)
@@ -7218,17 +7225,17 @@ with sync_playwright() as p:
     d95.value.save_as(sal('reporte_largo.pdf')); pg95.wait_for_timeout(800)
     aviso95 = pg95.evaluate("() => document.getElementById('aviso').textContent")
     pdf95 = _Pdf95(sal('reporte_largo.pdf'))
-    # Dónde cae cada texto: nada debajo del filete del pie (16 mm del borde) salvo el pie, y la columna «Coordenada» en su lugar
+    # Dónde cae cada texto: nada debajo del filete del pie (16 mm del borde) salvo el pie, y la columna «Precisión» en su lugar
     fuera95, x95 = [], {}
     for n95, p95 in enumerate(pdf95.pages, 1):
         def v95(texto, cm, tm, fd, fs):
             t = texto.strip(); yy = tm[5] * cm[3] + cm[5]
             if t and yy < 16 * 72 / 25.4 and not (t.startswith('SEDEMA, Sistema de Registro') or t.startswith('Página')): fuera95.append((n95, round(yy), t[:40]))
-            if t == 'Coordenada' and 'x' not in x95: x95['x'] = (tm[4] * cm[0] + cm[4]) * 25.4 / 72
+            if t == 'Precisión' and 'x' not in x95: x95['x'] = (tm[4] * cm[0] + cm[4]) * 25.4 / 72
         p95.extract_text(visitor_text=v95)
     texto95 = ' '.join(' '.join((p.extract_text() or '').split()) for p in pdf95.pages)
     ok(not fuera95 and 'Observaciones del cierre' in texto95, 'con una solicitud de textos largos ningún dato se sale por el pie: el recuadro sigue en la página siguiente: %s' % fuera95[:3])
-    ok(x95.get('x', 0) >= 18 + 11 + 45, 'un enlace largo en un comentario no aplasta la columna «Especie»: «Coordenada» empieza a los %.0f mm' % x95.get('x', 0))
+    ok(x95.get('x', 0) >= 18 + 11 + 45, 'un enlace largo en un comentario no aplasta la columna «Especie»: «Precisión» empieza a los %.0f mm' % x95.get('x', 0))
     ok('José Peña' in texto95 and '🌳' not in texto95 and 'Árbol ?' in texto95 and aviso95.endswith('Algunos caracteres que la letra del PDF no tiene (emojis u otros alfabetos) salen como «?».'),
        'el acento escrito aparte se junta con su letra, lo que la letra no tiene sale como «?» y el aviso lo dice: %s' % aviso95[-120:])
     raiz95 = pdf95.trailer['/Root']; meta95 = pdf95.metadata or {}

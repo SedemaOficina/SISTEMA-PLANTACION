@@ -410,10 +410,11 @@ SRP.reportes = {
         .filter(([, v]) => v && String(v).trim()),
       /* Uno por renglón, en el orden en que se capturaron: el mismo número que en el croquis. La
          especie lleva el nombre científico entre paréntesis; la precisión, su nivel para el
-         color (verde buena, ámbar aceptable, rojo baja). */
+         color (verde buena, ámbar aceptable, rojo baja). Sin coordenadas: dónde quedó cada árbol lo
+         dice el croquis, y la coordenada se queda en el sistema. */
       ejemplares: {
-        cabecera: ['N.º', 'Especie', 'Coordenada', 'Precisión'].concat(variosDias ? ['Fecha'] : [], conComentario ? ['Comentario'] : []),
-        filas: registros.map((r, i) => [String(i + 1), especieCon(SRP.ref.especieDe(r)), this.textoCoordenada(r), this.textoPrecision(r)]
+        cabecera: ['N.º', 'Especie', 'Precisión'].concat(variosDias ? ['Fecha'] : [], conComentario ? ['Comentario'] : []),
+        filas: registros.map((r, i) => [String(i + 1), especieCon(SRP.ref.especieDe(r)), this.textoPrecision(r)]
           .concat(variosDias ? [SRP.util.formatearFecha(r.fecha_plantacion)] : [], conComentario ? [this.textoComentario(r)] : [])),
         niveles: registros.map(r => this.nivelPrecision(r)),
         especies: registros.map(r => { const e = SRP.ref.especieDe(r); return [e.comun, e.cientifico || '']; })
@@ -452,7 +453,6 @@ SRP.reportes = {
   },
   // El comentario en un solo párrafo por renglón: sin espacios de sobra ni renglones vacíos
   textoComentario(r) { return String(r.comentarios || '').split('\n').map(t => t.replace(/\s+/g, ' ').trim()).filter(Boolean).join('\n'); },
-  textoCoordenada(r) { return typeof r.lat === 'number' && typeof r.lng === 'number' ? r.lat.toFixed(6) + ', ' + r.lng.toFixed(6) : ''; },
   // «±6 m» con GPS; con el mapa o a mano no hay margen que decir
   // Nivel de la precisión para el color del reporte: el mismo corte que el resto de la app
   nivelPrecision(r) {
@@ -489,7 +489,7 @@ SRP.reportes = {
     h += apartado('Ejemplares plantados', '<div class="previa-tabla-caja"><table class="previa-tabla"><thead><tr>' + ej.cabecera.map((c, k) => '<th' + (k === 0 ? ' class="cifra"' : '') + '>' + esc(c) + '</th>').join('') + '</tr></thead><tbody>' +
       ej.filas.map((f, i) => '<tr>' + f.map((c, k) => k === 0 ? '<td class="cifra">' + esc(c) + '</td>'
         : k === 1 ? '<td>' + esc(ej.especies[i][0]) + (ej.especies[i][1] ? ' (<i>' + esc(ej.especies[i][1]) + '</i>)' : '') + '</td>'
-        : k === 3 ? '<td class="previa-precision" data-nivel="' + ej.niveles[i] + '">' + esc(c) + '</td>'
+        : k === 2 ? '<td class="previa-precision" data-nivel="' + ej.niveles[i] + '">' + esc(c) + '</td>'
         : ej.cabecera[k] === 'Comentario' ? '<td class="previa-comentario">' + esc(c) + '</td>' : '<td>' + esc(c) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>' +
       nota(m.notaPrecision));
     h += apartado('Totales por especie', '<div class="previa-tabla-caja"><table class="previa-tabla"><thead><tr><th>Especie</th><th>Distribución</th><th class="cifra">Ejemplares</th><th class="cifra">% del total</th></tr></thead><tbody>' +
@@ -799,8 +799,8 @@ SRP.reportes = {
     const colorNivel = { buena: C.exito, aceptable: C.atencion, baja: C.error };
     // La especie guarda su ancho: un comentario con una palabra muy larga (un enlace) se parte, no la aplasta
     tabla({ head: [m.ejemplares.cabecera.map((c, k) => k === 0 ? { content: c, styles: { halign: 'right' } } : c)], body: m.ejemplares.filas,
-      columnStyles: { 0: { cellWidth: 11, halign: 'right' }, 1: { minCellWidth: 45 }, 2: { cellWidth: 38 }, 3: { cellWidth: 20 } },
-      didParseCell: d => { if (d.section === 'body' && d.column.index === 3 && colorNivel[m.ejemplares.niveles[d.row.index]]) { d.cell.styles.textColor = colorNivel[m.ejemplares.niveles[d.row.index]]; d.cell.styles.fontStyle = 'bold'; } } });
+      columnStyles: { 0: { cellWidth: 11, halign: 'right' }, 1: { minCellWidth: 45 }, 2: { cellWidth: 20 } },
+      didParseCell: d => { if (d.section === 'body' && d.column.index === 2 && colorNivel[m.ejemplares.niveles[d.row.index]]) { d.cell.styles.textColor = colorNivel[m.ejemplares.niveles[d.row.index]]; d.cell.styles.fontStyle = 'bold'; } } });
     letra('italic', 7.5, C.gris); { const l = doc.splitTextToSize(m.notaPrecision, util); salto(l.length * 3.4 + 2); doc.text(l, M, y); y += l.length * 3.4 + 4; }
 
     // Totales por especie, con su distribución y el porcentaje del total: calculados

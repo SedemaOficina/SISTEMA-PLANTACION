@@ -295,7 +295,7 @@ versión se escribe en un solo lugar del código.
 **El archivo `VERSION`, en la raíz, lleva el mismo número** (lo pide la guía del SIA, sección 8); la prueba
 falla si no coincide con la marca. Ese número se ve siempre en la franja fija de arriba. Hasta la 0.9.78 decía
 «Versión de prueba 0.9.N»; desde la versión 1, la que se entrega al SIA para instalar, dice «Versión» y el número de `VERSION`
-(hoy, «Versión 1.1»).
+(hoy, «Versión 1.1.1»).
 
 Si aun así alguien cae en una mezcla, el sistema lo detecta al abrir y explica cómo forzar la
 recarga, en vez de quedarse en blanco.
@@ -338,9 +338,9 @@ previstos, avance, especies y porcentaje de nativas); luego 1) datos de identifi
 árboles previstos, hora de finalización, comentarios y observaciones), 2) personal (participantes, apoyo
 y chófer), 3) datos del vehículo (tipo, modelo y placas), 4) croquis, que encuadra todos los puntos
 y aparta los números que se enciman, 5) ejemplares plantados (número, especie, nombre científico,
-coordenada y precisión; sin folio), 6) totales por especie con su distribución y porcentaje, 7)
-distribución de las especies en una barra (el conteo por especie ya lo da la tabla de totales y el avance contra lo previsto, la franja de cifras) y 8) comentarios por ejemplar: sólo
-los árboles que tienen comentario, con su número y especie; si ninguno tiene, no sale. Cada
+precisión, el comentario si algún árbol lo tiene y la fecha si la jornada duró varios días; sin coordenada ni folio: dónde quedó
+cada árbol lo dice el croquis), 6) totales por especie con su distribución y porcentaje y 7)
+distribución de las especies en una barra (el conteo por especie ya lo da la tabla de totales y el avance contra lo previsto, la franja de cifras). Cada
 dato dice su nombre en negritas.
 
 Los totales por especie, los porcentajes, el total de ejemplares y las gráficas **se calculan** a

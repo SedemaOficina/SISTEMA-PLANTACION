@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 1.1 (Bloque 242)»**.
+Al pie de cualquier pantalla: **«Versión 1.1.1 (Bloque 246)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -500,6 +500,8 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M503 | Paso 4d | «No se pudo enviar», en rojo, en la tarjeta del árbol y en la de la jornada, y en la franja «Guardado» | Media | 0.9.69 (B224) | Registros, Jornadas y Nuevo registro, con datos reales | D304 |
 | M504 | Paso 4d | Ventana «Cambios que el servidor no aceptó»: de qué registro es cada cambio, qué se cambió, por qué y qué hacer | Alta | 0.9.69 (B224) | Franja › Revisar | D304 |
 | M505 | Prueba de conexión | Al volver a la entrada se cierra cualquier ventana que hubiera quedado abierta | Media | 0.9.69 (B224) | Sesión vencida con una ventana abierta | D304 |
+| M534 | Liber | Reporte de la jornada: la tabla de ejemplares sin coordenadas: N.º, Especie, Precisión y, si algún árbol lo tiene, Comentario | Media | 1.1.1 (B246) | Jornadas › una cerrada › Reporte › Ver vista previa, y el PDF | D327 |
+| M533 | Prueba en campo | «Agregar fotografía» vuelve a ofrecer la cámara en Android 14 y posteriores, no sólo las fotos guardadas | Alta | 1.1.1 (B246) | Android con Chrome: Nuevo registro › Agregar fotografía: el menú trae «Cámara». En el iPhone, el menú de siempre | D326 |
 | M531 | Auditoría (19-10-2026) | Accesibilidad: en teléfono los botones de orden escondidos salen del orden del teclado; la lista de Jornadas tiene nombre fijo; el mapa de cada pareja de duplicados es un grupo con su nombre; los nombres de cabos de Supervisión miden 30 px | Baja | 1.1 (B242) | Usuarios en el teléfono, con teclado: Tab no se detiene en el encabezado | D322 |
 | M530 | Auditoría (19-10-2026) | El punto «por revisar» del mapa lleva borde oscuro, como los demás: sobre «Calles» se distingue del fondo | Baja | 1.1 (B242) | Jornadas › una con puntos por revisar › mapa «Calles» | D322 |
 | M529 | Auditoría (19-10-2026) | Si el servidor rechaza algo por un valor del catálogo que se desactivó (especie, programa, solicitante o vehículo), el aviso lo nombra y dice que se desactivó | Media | 1.1 (B242) | Con datos reales: desactivar una especie y enviar un árbol con ella | D322 |

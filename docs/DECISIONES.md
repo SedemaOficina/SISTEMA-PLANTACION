@@ -4273,3 +4273,26 @@
     copia se baja byte por byte y los dos archivos completos van como en el repositorio del SIA. El repositorio de
     la entrega lleva un `.gitattributes` que guarda cada archivo tal cual, para que las sumas del manifiesto
     coincidan en cualquier equipo.
+- **D326. La cámara en Android (bloque 246).**
+  24-10-2026. En la prueba en campo, en un teléfono Android, «Agregar fotografía» abría sólo las fotos guardadas:
+  no ofrecía tomar la foto.
+  · **Por qué.** Desde Android 14, cuando una página pide sólo imágenes, Chrome abre el selector de fotos del
+    sistema, y ese selector no trae cámara. Le pasa a cualquier página, no sólo al SRP. La página no puede pedir
+    otro menú de forma oficial.
+  · **Liber eligió el menú del teléfono, como en el iPhone**, y no dos botones. El selector pide además
+    `android/allowCamera`, que no es un tipo de archivo: es una indicación no oficial con la que Chrome vuelve a
+    ofrecer «Cámara». Se reportó que funciona en Chrome 134 y 135, con Android 14 y 15.
+  · **Si Chrome deja de atenderla, no se rompe nada:** se abren las fotos guardadas, como antes.
+  · **Con la indicación, el menú puede dejar elegir otro tipo de archivo.** La aplicación ya rechaza lo que no es
+    imagen («El archivo no es una imagen.») y rehace la foto antes de guardarla; ahora hay una prueba de eso.
+  · **Si en el teléfono de la prueba no sale «Cámara»**, se pasa a dos botones, «Tomar foto» y «Galería», cuya
+    muestra ya vio Liber: funcionan en cualquier teléfono, pero cambian la pantalla.
+  · Versión 1.1.1. La entrega al SIA se rehace con ella cuando la prueba en campo quede aprobada.
+- **D327. El reporte de la jornada, sin coordenadas (bloque 246).**
+  24-10-2026. Liber pidió quitar las coordenadas de cada árbol del reporte: en el papel no sirven. La tabla de
+  ejemplares queda con N.º, Especie y Precisión; Comentario, como antes, sólo si algún árbol lo tiene, y la fecha
+  cuando la jornada duró varios días.
+  · **Dónde quedó cada árbol lo sigue diciendo el croquis**, con el mismo número que la tabla; la coordenada se queda
+    en el sistema y en lo que se descarga para trabajar los datos.
+  · **La precisión se queda**, con su color y su nota: dice si el punto es confiable sin leer números.
+  · Va en la misma versión 1.1.1.
