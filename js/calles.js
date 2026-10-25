@@ -185,6 +185,9 @@ SRP.calles = {
   async conCalle(regs, avance) {
     const ind = await this.indice();
     const faltan = regs.filter(r => r.lat != null && r.lng != null && (!r.calle_estado || r.calle_version !== ind.version));
+    // Las celdas que hacen falta se bajan de ocho en ocho, no una tras otra
+    const g = ind.celda_grados, claves = [...new Set(faltan.map(r => Math.floor(r.lng / g) + '_' + Math.floor(r.lat / g)))].filter(k => !this._celdas.has(k));
+    for (let i = 0; i < claves.length; i += 8) await Promise.all(claves.slice(i, i + 8).map(k => this.celda(...k.split('_').map(Number))));
     const salida = [];
     for (let i = 0; i < faltan.length; i++) {
       salida.push(Object.assign({}, faltan[i], await this.calcular(faltan[i].lat, faltan[i].lng)));
