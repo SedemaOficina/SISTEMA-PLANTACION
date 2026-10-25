@@ -7626,14 +7626,14 @@ with sync_playwright() as p:
     entrar_como(pg100, 'u-cabo-1'); pg100.wait_for_function("() => SRP.sesion && SRP.sesion.usuario")
     t100 = pg100.evaluate("""() => { const K = SRP.calles; return [
       K.entre({ calle_entre_1: 'A', calle_entre_2: 'B' }), K.entre({ calle_entre_1: 'A', calle_entre_2: 'A' }), K.entre({ calle_entre_2: 'B' }),
-      K.textoRed({ vialidad_red: 'primaria', vialidad_tipo: 'Vía de acceso controlado', calle_atiende: 'Gobierno Central' }),
-      K.textoRed({ vialidad_red: 'secundaria', calle_atiende: 'Por confirmar' }), K.textoRed({ vialidad_red: 'carretera o camino', calle_atiende: 'Gobierno Federal' }),
+      K.textoRed({ vialidad_red: 'primaria', vialidad_tipo: 'Vía de acceso controlado', calle_atiende: 'Gobierno de CDMX' }),
+      K.textoRed({ vialidad_red: 'secundaria', calle_atiende: null }), K.textoRed({ vialidad_red: 'carretera o camino', calle_atiende: 'Gobierno Federal' }),
       K.tramos([{ calle_entre_1: 'Pilares', calle_entre_2: 'Tlacoquemecatl' }, { calle_entre_1: 'Miguel Laurent', calle_entre_2: 'Tlacoquemecatl' },
         { calle_entre_1: 'Tlacoquemecatl', calle_entre_2: 'Miguel Laurent' }, { calle_entre_1: 'Amores', calle_entre_2: 'Amores' }]),
-      K.quienes(['Gobierno Central']), K.quienes(['A', 'B']), K.quienes(['A', 'B', 'C']), K.colonias(['a', 'b', 'c', 'd', 'e']),
+      K.quienes(['Gobierno de CDMX']), K.quienes(['A', 'B']), K.quienes(['A', 'B', 'C']), K.colonias(['a', 'b', 'c', 'd', 'e']),
       K.CAMPOS.every(c => SRP.cola.DEL_SERVIDOR.includes(c))]; }""")
-    ok(t100 == ['entre A y B', 'a la altura de A', 'a la altura de B', 'Vía de acceso controlado · Gobierno Central', 'Calle secundaria · quién la atiende, por confirmar',
-                'Carretera o camino · Gobierno Federal', ['entre Pilares y Miguel Laurent', 'a la altura de Amores'], 'Gobierno Central', 'A y B', 'A y 2 más', 'a, b, c y 2 más', True],
+    ok(t100 == ['entre A y B', 'a la altura de A', 'a la altura de B', 'Vía de acceso controlado · Gobierno de CDMX', 'Calle secundaria · quién la atiende, por confirmar',
+                'Carretera o camino · Gobierno Federal', ['entre Pilares y Miguel Laurent', 'a la altura de Amores'], 'Gobierno de CDMX', 'A y B', 'A y 2 más', 'a, b, c y 2 más', True],
        'la calle se dice «entre A y B» o «a la altura de», con su red y quién la atiende («por confirmar» no es la alcaldía); las cuadras seguidas se juntan en un tramo: %s' % t100)
     # Un árbol nuevo espera su calle; al enviar, el servidor simulado le pone la misma que pondría srp.calle
     iniciar_jornada(pg100, 'Jornada de la calle', HOY)
@@ -7657,7 +7657,7 @@ with sync_playwright() as p:
       await SRP.formulario.guardar(); await new Promise(x => setTimeout(x, 500));
       await SRP.envio.enviar({ silencioso: true }); const r2 = await SRP.almacen.uno('plantaciones', id);
       return [antes, r2.calle, r2.vialidad_red, r2.calle_atiende, SRP.calles.textoCelda(r2)]; }""", rid100)
-    ok(e100 == [[19.3155, None, None], 'Periférico (Canal de Garay)', 'primaria', 'Gobierno Central', 'Periférico (Canal de Garay), entre Calle Morelos y Calle Jacarandas (vialidad primaria)'],
+    ok(e100 == [[19.3155, None, None], 'Periférico (Canal de Garay)', 'primaria', 'Gobierno de CDMX', 'Periférico (Canal de Garay), entre Calle Morelos y Calle Jacarandas (vialidad primaria)'],
        'al corregir el punto, lo que se guarda va sin calle, y el siguiente envío pone la nueva; en el reporte, la vialidad primaria se marca: %s' % e100)
     # En medio del Zócalo no hay calle a 40 m
     ctx100.set_geolocation({'latitude':19.432600,'longitude':-99.133200,'accuracy':5})
@@ -7678,14 +7678,14 @@ with sync_playwright() as p:
       const csv = SRP.informes.texto(m).split('\\r\\n'), cab = csv[0].replace('\\ufeff', '').split('","').map(x => x.replace(/"/g, ''));
       return { sin: a.filter(x => x.lat != null && !x.calle_estado).length, redes: m.calles.porRed.map(x => x.red), primaria: m.calles.porRed[0].atiende[0],
         versiones: m.calles.versiones, cab: cab.slice(cab.indexOf('Colonia'), cab.indexOf('Colonia') + 5), suma: m.calles.porRed.reduce((s, x) => s + x.arboles, 0) + m.calles.lejos + m.calles.porAsignar === m.cifras.arboles }; }""")
-    ok(q100['sin'] == 0 and q100['redes'] == ['primaria', 'secundaria', 'carretera o camino'] and q100['primaria'] == 'Gobierno Central' and q100['versiones'] == ['1.0.0'] and q100['suma'],
-       'los datos de demostración llegan con su calle; por red vial, primarias del Gobierno Central, y todo árbol cuenta en una red, sin calle cercana o por asignar: %s' % {k: q100[k] for k in ('sin', 'redes', 'primaria', 'suma')})
+    ok(q100['sin'] == 0 and q100['redes'] == ['primaria', 'secundaria', 'carretera o camino'] and q100['primaria'] == 'Gobierno de CDMX' and q100['versiones'] == ['1.0.0'] and q100['suma'],
+       'los datos de demostración llegan con su calle; por red vial, primarias del Gobierno de CDMX, y todo árbol cuenta en una red, sin calle cercana o por asignar: %s' % {k: q100[k] for k in ('sin', 'redes', 'primaria', 'suma')})
     ok(q100['cab'] == ['Colonia', 'Calle', 'Entre calles', 'Red vial', 'Quién atiende la calle'], 'la tabla para Excel suma la calle, entre qué calles, la red vial y quién la atiende: %s' % q100['cab'])
     pg100.evaluate("SRP.app.mostrarVista('supervision')"); pg100.wait_for_timeout(1500)
     pg100.click('#sup-tipos .chip[data-tipo=anio]'); pg100.wait_for_timeout(1200)
     s100 = pg100.evaluate("""() => { const d = document.querySelector('details[data-seccion=calles]'); if (!d) return null;
       return [d.querySelector('summary').textContent, [...d.querySelectorAll('.sup-subtitulo')].map(x => x.textContent), d.querySelector('p.nota:last-child').textContent]; }""")
-    ok(s100 and 'en vialidades primarias' in s100[0] and len(s100[1]) >= 2 and s100[1][0].startswith('Vialidades primarias · Gobierno Central') and s100[1][1].startswith('Calles secundarias · Alcaldía ') and 'versión 1.0.0' in s100[2],
+    ok(s100 and 'en vialidades primarias' in s100[0] and len(s100[1]) >= 2 and s100[1][0].startswith('Vialidades primarias · Gobierno de CDMX') and s100[1][1].startswith('Calles secundarias · Alcaldía ') and 'versión 1.0.0' in s100[2],
        'Supervisión trae «Por calle»: una lista por red, con quién la atiende, y de dónde sale la capa: %s' % (s100 and s100[1]))
     ok(pg100.evaluate("(() => { const t = document.querySelector('details[data-seccion=calles] .sup-tramos'); return !!t && /^(entre|a la altura de) /.test(t.textContent); })()"),
        'bajo cada calle, entre qué calles quedaron sus árboles')

@@ -6476,3 +6476,44 @@ segunda prueba en campo.
 
 **Siguiente paso.** La segunda prueba en campo, con el protocolo de lecturas a los 5, 15, 30 y 60 s en un punto conocido.
 La guía de ajustes del teléfono para el equipo queda por hacer (M551).
+
+## Bloque 251 — La capa de calles final (25-10-2026)
+
+**Versión 1.3.2.** Liber terminó la capa de calles de la Ciudad de México y la dejó como la 1.0.0, por ser la primera que se
+entrega; el paquete con que se hizo la 1.3 era previo y llevaba el mismo número (D332).
+
+| Qué cambió en la capa | Tramos |
+|---|---|
+| Quién la atiende: «Gobierno Central» y «Por confirmar» pasan a «Gobierno de CDMX» | 13,961 |
+| Red vial: de secundaria a primaria, con su tipo de vía | 62 |
+| Dos nombres de prueba quedan sin nombre; cambian las calles «entre» de sus 4 vecinos | 2 |
+
+Los 178,771 tramos, sus trazos y sus claves son los mismos. Se comparó la copia ligera anterior con la nueva, tramo por
+tramo y campo por campo.
+
+**Qué cambió.**
+- `assets/calles/`: regenerada con `herramientas/generar_calles.py` sobre el paquete final (97 celdas, 18.8 MB, 5.2 MB
+  comprimidos; 93 celdas y el índice cambian). Fuente: `calles-cdmx-1.0.0.zip` (sha256 `64ac222d…a973`), su
+  `datos/calles_cdmx.gpkg` (sha256 `9ecc1236…400f`); la cita no cambió.
+- `datos/esquema.json`: `calle_atiende` con los valores de la capa final; de ahí `servidor/db/srp/02-srp-tablas.sql` y
+  `datos/DICCIONARIO-DATOS.md`. `datos/MAPEO-CAMPOS.md`, igual.
+- `js/calles.js`: «quién la atiende, por confirmar» sólo si un tramo no lo dijera; los comentarios, con «Gobierno de CDMX».
+- `pruebas/prueba.py` y `servidor/pruebas/recepcion.test.js`: lo que la capa dice ahora de Periférico y de las primarias.
+- README (huellas del paquete), `docs/DECISIONES.md` (D332), `docs/MEJORAS.md` (M552 hecha; por hacer, M553 jornada
+  compartida, M554 la Coordinación con toda su institución y M555 el manual de uso para el personal). Marcas de versión,
+  a 1.3.2.
+- Base local de desarrollo: la capa previa se movió a un esquema aparte, sin borrarla; la final se instaló con el
+  `instalar.sql` de su paquete (conteos de control correctos). Como el número no cambió, `srp.recalcular_calles()` no
+  rehacía nada: se vació la versión de los árboles y se recalcularon los 18,359.
+
+**Verificación.**
+- La prueba por tramos completa: 1,508 de 1,509. La que falla es la de siempre, la hoja de especies del Excel de
+  `originales/`, que no es de la aplicación.
+- Las pruebas del servidor: 108 de 108. La prueba con el servidor local: 120 de 120.
+- La revisión automática: 147 sin hallazgos.
+
+No se corrió la revisión de pantallas: ninguna pantalla cambió de forma, sólo los datos de la capa. No se probó en un
+teléfono de verdad. En la versión de prueba, los árboles ya enviados conservan la calle con que se enviaron.
+
+**Siguiente paso.** La 1.4: la jornada compartida (M553) y la Coordinación con toda su institución (M554), con las muestras
+que Liber aprobó.

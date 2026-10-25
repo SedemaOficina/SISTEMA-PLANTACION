@@ -27,11 +27,11 @@ SRP.calles = {
     return a && b && a !== b ? 'entre ' + a + ' y ' + b : a || b ? 'a la altura de ' + (a || b) : '';
   },
 
-  // «Calle secundaria · Alcaldía Benito Juárez», «Vía de acceso controlado · Gobierno Central»
+  // «Calle secundaria · Alcaldía Benito Juárez», «Vía de acceso controlado · Gobierno de CDMX»
   textoRed(r) {
     const red = r.vialidad_red === 'primaria' ? (r.vialidad_tipo === 'Vía de acceso controlado' ? 'Vía de acceso controlado' : 'Vialidad primaria')
       : r.vialidad_red === 'carretera o camino' ? 'Carretera o camino' : 'Calle secundaria';
-    return red + ' · ' + (!r.calle_atiende || r.calle_atiende === 'Por confirmar' ? 'quién la atiende, por confirmar' : r.calle_atiende);
+    return red + ' · ' + (r.calle_atiende || 'quién la atiende, por confirmar');
   },
 
   // El renglón «Calle» del detalle del árbol
@@ -90,7 +90,7 @@ SRP.calles = {
     return lista.slice(0, 3).join(', ') + (lista.length > 3 ? ' y ' + (lista.length - 3) + ' más' : '');
   },
 
-  // Quién atiende un grupo de calles, en pocas palabras: «Gobierno Central», «Alcaldía Benito Juárez y 2 más»
+  // Quién atiende un grupo de calles, en pocas palabras: «Gobierno de CDMX», «Alcaldía Benito Juárez y 2 más»
   quienes(lista) {
     return lista.length ? lista[0] + (lista.length === 2 ? ' y ' + lista[1] : lista.length > 2 ? ' y ' + (lista.length - 1) + ' más' : '') : '—';
   },

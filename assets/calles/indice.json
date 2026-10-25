@@ -2,7 +2,7 @@
  "capa": "calles-cdmx",
  "version": "1.0.0",
  "tramos": 178771,
- "sha256_fuente": "de1e1f811bb8b2a03156bd7c7dbabd985849201b82b08f869d46183eab3aca0e",
+ "sha256_fuente": "9ecc12364a88d5a0ccf1af183af4e459d9af663c08a4be31a09f52d77cae400f",
  "celda_grados": 0.04,
  "margen_grados": 0.0006,
  "escala": 1000000,

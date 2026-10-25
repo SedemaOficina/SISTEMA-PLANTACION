@@ -330,7 +330,7 @@ COMMENT ON COLUMN srp.plantaciones.calle_entre_2 IS 'La calle de la otra esquina
 COMMENT ON COLUMN srp.plantaciones.calle_esquina IS 'Otra calle casi igual de cerca: a menos de 4 m más que la del tramo; Avisa que el árbol podría contarse en la otra calle';
 COMMENT ON COLUMN srp.plantaciones.vialidad_red IS 'vialidad_red; `red_vial` del tramo';
 COMMENT ON COLUMN srp.plantaciones.vialidad_tipo IS 'En la red primaria, «Vía primaria» o «Vía de acceso controlado» (`tipo_via`); nulo en las demás';
-COMMENT ON COLUMN srp.plantaciones.calle_atiende IS 'Quién atiende el tramo (`atiende`): «Gobierno Central», «Alcaldía X», «Alcaldías X y Y», «Concesión», «Gobierno Federal», «Particular» o «Por confirmar»; «Por confirmar» no quiere decir «de la alcaldía»: la pantalla dice «quién la atiende, por confirmar»';
+COMMENT ON COLUMN srp.plantaciones.calle_atiende IS 'Quién atiende el tramo (`atiende`): «Gobierno de CDMX», «Alcaldía X», «Alcaldías X y Y», «Concesión», «Gobierno Federal» o «Particular»; Todo tramo de la capa lo dice; si faltara, la pantalla dice «quién la atiende, por confirmar», nunca «de la alcaldía»';
 COMMENT ON COLUMN srp.plantaciones.calle_llave IS 'Nombre para comparar (`llave`): sin tipo, acentos ni mayúsculas; nulo sin nombre; En el informe y en Supervisión, una misma calle es su llave dentro de la alcaldía del árbol';
 COMMENT ON COLUMN srp.plantaciones.calle_distancia_m IS 'Metros enteros del árbol al tramo, de 0 a 40';
 COMMENT ON TABLE srp.usuarios IS 'Cuentas del sistema. Una por persona; el perfil decide qué puede hacer (js/permisos.js, fuente única).';

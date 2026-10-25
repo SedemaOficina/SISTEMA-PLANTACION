@@ -112,7 +112,7 @@ Un renglón por ejemplar plantado. Es el registro individual de campo; todo lo d
 | `calle_esquina` | text | Sí | Servidor | Otra calle casi igual de cerca: a menos de 4 m más que la del tramo | Detalle («Junto a la esquina con …») | Avisa que el árbol podría contarse en la otra calle |
 | `vialidad_red` | text | Sí | Servidor | dominio `vialidad_red` | Detalle (junto a quién la atiende), informe y Supervisión («Por red vial»), CSV | `red_vial` del tramo |
 | `vialidad_tipo` | text | Sí | Servidor | En la red primaria, «Vía primaria» o «Vía de acceso controlado» (`tipo_via`); nulo en las demás | Detalle («Vía de acceso controlado») | — |
-| `calle_atiende` | text | Sí | Servidor | Quién atiende el tramo (`atiende`): «Gobierno Central», «Alcaldía X», «Alcaldías X y Y», «Concesión», «Gobierno Federal», «Particular» o «Por confirmar» | Detalle, informe y Supervisión («Quién la atiende»), CSV | «Por confirmar» no quiere decir «de la alcaldía»: la pantalla dice «quién la atiende, por confirmar» |
+| `calle_atiende` | text | Sí | Servidor | Quién atiende el tramo (`atiende`): «Gobierno de CDMX», «Alcaldía X», «Alcaldías X y Y», «Concesión», «Gobierno Federal» o «Particular» | Detalle, informe y Supervisión («Quién la atiende»), CSV | Todo tramo de la capa lo dice; si faltara, la pantalla dice «quién la atiende, por confirmar», nunca «de la alcaldía» |
 | `calle_llave` | text | Sí | Servidor | Nombre para comparar (`llave`): sin tipo, acentos ni mayúsculas; nulo sin nombre | No | En el informe y en Supervisión, una misma calle es su llave dentro de la alcaldía del árbol |
 | `calle_distancia_m` | integer | Sí | Servidor | Metros enteros del árbol al tramo, de 0 a 40 | No | — |
 

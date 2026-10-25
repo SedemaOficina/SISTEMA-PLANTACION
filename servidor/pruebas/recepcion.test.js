@@ -437,7 +437,7 @@ test('la calle de cada árbol: la pone la base al recibirlo y al corregir su pun
     'secundaria', null, 'Alcaldía Benito Juárez', 'parroquia', 7]);
   // Corregir el punto la vuelve a calcular; corregir otra cosa no la toca
   const r = await t.una('registro.editar', { id: A.id, version, cambios: { ...EN_PERIFERICO, punto_origen: 'mapa', gps_precision_m: null } });
-  assert.deepEqual([r.estado, r.fila.calle_estado, r.fila.calle, r.fila.vialidad_red, r.fila.calle_atiende], ['recibido', 'ok', 'Periférico (Canal de Garay)', 'primaria', 'Gobierno Central']);
+  assert.deepEqual([r.estado, r.fila.calle_estado, r.fila.calle, r.fila.vialidad_red, r.fila.calle_atiende], ['recibido', 'ok', 'Periférico (Canal de Garay)', 'primaria', 'Gobierno de CDMX']);
   const r2 = await t.una('registro.editar', { id: A.id, version: r.version, cambios: { comentarios: 'Otra cosa' } });
   assert.deepEqual([r2.estado, r2.fila.calle], ['recibido', 'Periférico (Canal de Garay)']);
   // Sin la capa, la base no falla: el árbol queda por calcular, y recalcular avisa que falta la capa

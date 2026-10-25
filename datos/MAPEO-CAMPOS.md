@@ -61,7 +61,7 @@ Pantalla **Nuevo registro**. Almacén `plantaciones`.
 | — | `calle_esquina` | No | Servidor | Otra calle casi igual de cerca, a menos de 4 m más: «Junto a la esquina con …» |
 | — | `vialidad_red` | No | Servidor | `primaria`, `secundaria` o `carretera o camino`, de la capa |
 | — | `vialidad_tipo` | No | Servidor | En la red primaria, «Vía primaria» o «Vía de acceso controlado» |
-| — | `calle_atiende` | No | Servidor | Quién atiende el tramo: «Gobierno Central», «Alcaldía X», «Alcaldías X y Y», «Concesión», «Gobierno Federal», «Particular» o «Por confirmar» (en pantalla, «quién la atiende, por confirmar») |
+| — | `calle_atiende` | No | Servidor | Quién atiende el tramo: «Gobierno de CDMX», «Alcaldía X», «Alcaldías X y Y», «Concesión», «Gobierno Federal» o «Particular» (si faltara, en pantalla, «quién la atiende, por confirmar») |
 | — | `calle_llave` | No | Servidor | El nombre sin tipo, acentos ni mayúsculas: en los informes, una misma calle es su llave dentro de la alcaldía del árbol |
 | — | `calle_distancia_m` | No | Servidor | Metros enteros del árbol al tramo, de 0 a 40 |
 | Especie | `especie_id` | Sí | Catálogo | Remite a `especies.id`: la clave `ESP-0000` del catálogo del SIA. Vacío cuando se eligió «Otra especie». En pantalla se elige por nombre común, científico o cualquiera de los otros nombres comunes; sólo viaja la clave |

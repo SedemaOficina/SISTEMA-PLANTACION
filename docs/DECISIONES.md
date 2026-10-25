@@ -4378,3 +4378,20 @@
     jornada (una sola lectura): se deciden con la segunda prueba y con datos reales.
   · **Pendiente (M551):** una guía para el equipo con los ajustes del teléfono y la indicación de usar siempre Chrome.
   · Versión 1.3.1. Va sobre la 1.3; la 1.2.1 que se entrega al SIA no lo lleva, salvo que se decida pasarlo.
+
+- **D332. La capa de calles final (bloque 251).**
+  25-10-2026. Liber terminó la capa de calles de la Ciudad de México y la dejó como la versión 1.0.0, por ser la primera que
+  se entrega. El paquete con que se hizo la 1.3 era previo y llevaba el mismo número. Frente a él, la capa final tiene los
+  mismos 178,771 tramos, con los mismos trazos y claves, y cambia en tres cosas:
+  · **Quién la atiende:** «Gobierno Central» y «Por confirmar» pasan a «Gobierno de CDMX» en 13,961 tramos. Todo tramo dice
+    quién lo atiende; la pantalla conserva «quién la atiende, por confirmar» sólo para un tramo que no lo dijera.
+  · **Red vial:** 62 tramos pasan de secundaria a primaria, con su tipo de vía.
+  · **Nombres:** dos nombres de prueba quedan sin nombre («calle sin nombre»), y con ellos cambian las calles «entre» de
+    cuatro tramos vecinos.
+  · La copia ligera de la versión de prueba se regeneró con el paquete final (97 celdas, 18.8 MB, 5.2 MB comprimidos), y
+    la base local de desarrollo lo tiene instalado.
+  · **Como el número no cambió, `srp.recalcular_calles()` no rehace lo que se calculó con el paquete previo.** En el SIA
+    no importa: la capa se instala una sola vez, ya final. En la base local se rehízo vaciando la versión de los árboles;
+    en la versión de prueba, los árboles ya enviados desde un teléfono conservan la calle que tenían. En adelante, un
+    cambio de datos sube la versión de la capa (1.1.0), como dice su paquete, y `recalcular_calles` lo toma solo.
+  · Versión 1.3.2.

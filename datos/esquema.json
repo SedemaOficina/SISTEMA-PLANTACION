@@ -630,9 +630,9 @@
           "tipo": "text",
           "nulo": true,
           "origen": "Servidor",
-          "dominio": "Quién atiende el tramo (`atiende`): «Gobierno Central», «Alcaldía X», «Alcaldías X y Y», «Concesión», «Gobierno Federal», «Particular» o «Por confirmar»",
+          "dominio": "Quién atiende el tramo (`atiende`): «Gobierno de CDMX», «Alcaldía X», «Alcaldías X y Y», «Concesión», «Gobierno Federal» o «Particular»",
           "pantalla": "Detalle, informe y Supervisión («Quién la atiende»), CSV",
-          "regla": "«Por confirmar» no quiere decir «de la alcaldía»: la pantalla dice «quién la atiende, por confirmar»"
+          "regla": "Todo tramo de la capa lo dice; si faltara, la pantalla dice «quién la atiende, por confirmar», nunca «de la alcaldía»"
         },
         {
           "campo": "calle_llave",

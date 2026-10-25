@@ -473,7 +473,7 @@ cerca del borde de su celda que la precisión del GPS, lo marca como «celda inc
 Cada árbol dice en qué calle quedó, entre qué calles va esa cuadra, si es vialidad primaria, calle
 secundaria o carretera, y quién la atiende. La pone el servidor al recibir el árbol y cada vez que se
 corrige su punto, con la capa de calles de la Ciudad de México, `territorio.calles` del SIA (paquete
-calles-cdmx 1.0.0, aprobado por Liber el 25-10-2026): el tramo más cercano, a 40 m o menos
+calles-cdmx 1.0.0 definitivo, aprobado por Liber el 25-10-2026): el tramo más cercano, a 40 m o menos
 (`servidor/db/srp/09-srp-calles.sql`). Nadie la escribe. La capa de toda la ciudad no cabe en el
 teléfono: el teléfono la enseña en el detalle, la columna «Calle» del reporte, «Por red vial» del
 informe y de Supervisión, y cuatro columnas del CSV. La jornada no lleva calle.
@@ -482,11 +482,11 @@ informe y de Supervisión, y cuatro columnas del CSV. La jornada no lleva calle.
   versión nueva, quien administra la base corre `SELECT srp.recalcular_calles();`.
 - **En la versión de prueba** no hay servidor: el servidor simulado (`js/calles.js`) la calcula al enviar,
   con las mismas reglas, sobre una copia ligera de la capa (`assets/calles/`, 18.8 MB en 97 celdas de
-  unos 4 km, 5.1 MB comprimidos). Cada árbol baja sólo la celda de su punto. La copia lleva sólo lo que usa
+  unos 4 km, 5.2 MB comprimidos). Cada árbol baja sólo la celda de su punto. La copia lleva sólo lo que usa
   el SRP: trazo, clave, nombre, entre qué calles, red vial, tipo de vía, quién la atiende y la llave del
   nombre. La versión del SIA no la lleva (`herramientas/preparar_produccion.py`).
-- **Fuente:** `calles-cdmx-1.0.0.zip` (sha256 `4d20356744197b4eca993ffc42ce2b192868affdfa2e36e61b4c68d93f58a882`),
-  su `datos/calles_cdmx.gpkg` (sha256 `de1e1f811bb8b2a03156bd7c7dbabd985849201b82b08f869d46183eab3aca0e`),
+- **Fuente:** `calles-cdmx-1.0.0.zip` (sha256 `64ac222da6721e2f2f6e9be322ebc1a98b359db50e27f4307f370348df36a973`),
+  su `datos/calles_cdmx.gpkg` (sha256 `9ecc12364a88d5a0ccf1af183af4e459d9af663c08a4be31a09f52d77cae400f`),
   del proyecto calles-cdmx. Se regenera con `python herramientas/generar_calles.py [ruta del gpkg]`.
 - **Cita obligatoria**, en el pie de «Por red vial» y en `assets/calles/indice.json`: elaborado por SEDEMA
   con información del INEGI (Marco Geoestadístico, Encuesta Intercensal 2025; Red Nacional de Caminos 2025,
