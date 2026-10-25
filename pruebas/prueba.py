@@ -1064,8 +1064,9 @@ with sync_playwright() as p:
        'el reporte no imprime con qué capas se derivó el territorio; cada árbol lo guarda, con capas definitivas')
     cab=pg.evaluate("[...document.querySelector('#previa-hoja table').querySelectorAll('thead th')].map(x => x.textContent)")
     fil=pg.evaluate("[...document.querySelector('#previa-hoja table tbody tr').children].map(x => x.textContent)")
-    ok(cab==['N.º','Especie','Precisión'] and re.fullmatch(r'.+ \(.+\)', fil[1]) is not None and re.fullmatch(r'±\d+ m|En el mapa|A mano', fil[2]) is not None and not re.search(r'19\.\d{4}', hoja),
-       'la tabla de ejemplares trae número, especie con su nombre científico entre paréntesis y precisión, sin coordenadas, folio ni prioridad por árbol: %s' % fil)
+    ok(cab==['N.º','Especie','Calle','Precisión'] and re.fullmatch(r'.+ \(.+\)', fil[1]) is not None and fil[2] == 'Sin calle a menos de 40 m'
+       and re.fullmatch(r'±\d+ m|En el mapa|A mano', fil[3]) is not None and not re.search(r'19\.\d{4}', hoja),
+       'la tabla de ejemplares trae número, especie con su nombre científico entre paréntesis, la calle (ya enviados; en medio del Zócalo no hay) y precisión, sin coordenadas, folio ni prioridad por árbol: %s' % fil)
     enc=pg.evaluate("(() => { const e = SRP.croquis.encuadre([{lat:19.4326,lng:-99.1332},{lat:19.4336,lng:-99.1322}]); const p = SRP.croquis.aPixel(19.4326,-99.1332,e.z); return { z: e.z, dentro: p.x-e.origenX > 0 && p.x-e.origenX < 1000 && p.y-e.origenY > 0 && p.y-e.origenY < 620 }; })()")
     ok(enc['dentro'] and 15 <= enc['z'] <= 20,'el encuadre deja todos los puntos dentro del lienzo: %s' % enc)
     with pg.expect_download() as dj: pg.click('#btn-previa-generar')
@@ -3224,7 +3225,7 @@ with sync_playwright() as p:
     pg25.evaluate(abrir25 + '(false)'); pg25.wait_for_timeout(700)
     pg25.fill('#cie-hora','12:10'); pg25.click('#btn-cierre-generar'); pg25.wait_for_timeout(800)
     sin25=pg25.evaluate("[...document.querySelector('#previa-hoja table').querySelectorAll('thead th')].map(x => x.textContent)")
-    ok(sin25==['N.º','Especie','Precisión'],'sin comentarios en los árboles, la tabla de ejemplares no lleva la columna: %s' % sin25)
+    ok(sin25==['N.º','Especie','Calle','Precisión'],'sin comentarios en los árboles, la tabla de ejemplares no lleva la columna (la de la calle sí: la demostración la trae): %s' % sin25)
     pg25.evaluate("SRP.app.mostrarVista('jornadas')"); pg25.wait_for_timeout(600)
     pg25.evaluate(abrir25 + '(true)'); pg25.wait_for_timeout(700)
     pg25.fill('#cie-hora','12:10'); pg25.click('#btn-cierre-generar'); pg25.wait_for_timeout(800)
@@ -7586,7 +7587,7 @@ with sync_playwright() as p:
     pg99.click('#btn-cierre-generar'); esperar(pg99, "document.getElementById('dlg-previa').open", 8000); pg99.wait_for_timeout(400)
     p99 = pg99.evaluate("""() => { const t = [...document.querySelectorAll('#previa-hoja .previa-tabla')][0];
       return [[...t.querySelectorAll('thead th')].map(x => x.textContent), [...t.querySelectorAll('tbody tr')].map(r => r.children[2].textContent)]; }""")
-    ok(p99[0][:4] == ['N.º', 'Especie', 'Sitio', 'Precisión'] and sorted(p99[1]) == ['Macetón', 'Suelo'],
+    ok(p99[0][:5] == ['N.º', 'Especie', 'Sitio', 'Calle', 'Precisión'] and sorted(p99[1]) == ['Macetón', 'Suelo'],
        'con la hora, la vista previa sale; con un árbol en macetón, la tabla lleva la columna «Sitio»: %s' % p99)
     pg99.keyboard.press('Escape'); pg99.wait_for_timeout(300)
     # La coordinación sí ve quién registró cada fotografía, y sin filtro de cabo el informe no lleva nombre
@@ -7609,6 +7610,82 @@ with sync_playwright() as p:
     ok(pg99s.evaluate("[document.documentElement.dataset.contraste || null, document.getElementById('btn-contraste').getAttribute('aria-checked')]") == [None, 'false'],
        'si se apaga, sigue apagado al volver a abrir')
     ctx99s.close()
+
+    # ---------- ctx100: la calle de cada árbol: el servidor simulado la pone al enviar, con las reglas de srp.calle; detalle, reporte, informe, Supervisión y CSV ----------
+    # Los mismos puntos que la prueba del servidor (servidor/pruebas/recepcion.test.js): una calle de Benito Juárez, Periférico y el centro del Zócalo
+    ctx100 = b.new_context(viewport={'width':1280,'height':900}, geolocation={'latitude':19.369020,'longitude':-99.168670,'accuracy':5}, permissions=['geolocation'], timezone_id='America/Mexico_City')
+    ctx100.add_init_script(MODO_SOL_APAGADO)
+    pg100 = ctx100.new_page(); err100 = []
+    pg100.on('pageerror', lambda e: err100.append(str(e))); pg100.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err100.append(m.text))
+    pg100.goto(BASE); pg100.wait_for_selector('html[data-listo]')
+    entrar_como(pg100, 'u-cabo-1'); pg100.wait_for_function("() => SRP.sesion && SRP.sesion.usuario")
+    t100 = pg100.evaluate("""() => { const K = SRP.calles; return [
+      K.entre({ calle_entre_1: 'A', calle_entre_2: 'B' }), K.entre({ calle_entre_1: 'A', calle_entre_2: 'A' }), K.entre({ calle_entre_2: 'B' }),
+      K.textoRed({ vialidad_red: 'primaria', vialidad_tipo: 'Vía de acceso controlado', calle_atiende: 'Gobierno Central' }),
+      K.textoRed({ vialidad_red: 'secundaria', calle_atiende: 'Por confirmar' }), K.textoRed({ vialidad_red: 'carretera o camino', calle_atiende: 'Gobierno Federal' }),
+      K.tramos([{ calle_entre_1: 'Pilares', calle_entre_2: 'Tlacoquemecatl' }, { calle_entre_1: 'Miguel Laurent', calle_entre_2: 'Tlacoquemecatl' },
+        { calle_entre_1: 'Tlacoquemecatl', calle_entre_2: 'Miguel Laurent' }, { calle_entre_1: 'Amores', calle_entre_2: 'Amores' }]),
+      K.quienes(['Gobierno Central']), K.quienes(['A', 'B']), K.quienes(['A', 'B', 'C']), K.colonias(['a', 'b', 'c', 'd', 'e']),
+      K.CAMPOS.every(c => SRP.cola.DEL_SERVIDOR.includes(c))]; }""")
+    ok(t100 == ['entre A y B', 'a la altura de A', 'a la altura de B', 'Vía de acceso controlado · Gobierno Central', 'Calle secundaria · quién la atiende, por confirmar',
+                'Carretera o camino · Gobierno Federal', ['entre Pilares y Miguel Laurent', 'a la altura de Amores'], 'Gobierno Central', 'A y B', 'A y 2 más', 'a, b, c y 2 más', True],
+       'la calle se dice «entre A y B» o «a la altura de», con su red y quién la atiende («por confirmar» no es la alcaldía); las cuadras seguidas se juntan en un tramo: %s' % t100)
+    # Un árbol nuevo espera su calle; al enviar, el servidor simulado le pone la misma que pondría srp.calle
+    iniciar_jornada(pg100, 'Jornada de la calle', HOY)
+    rid100 = registrar(pg100, 'aile', 'ESP-0002')
+    a100 = pg100.evaluate("async id => { const r = await SRP.almacen.uno('plantaciones', id); return [r.calle_estado || null, SRP.calles.htmlFicha(r).includes('Se asigna al enviar')]; }", rid100)
+    ok(a100 == [None, True], 'un árbol recién guardado no tiene calle: «Se asigna al enviar»: %s' % a100)
+    c100 = pg100.evaluate("""async id => { await SRP.envio.enviar({ silencioso: true }); const r = await SRP.almacen.uno('plantaciones', id);
+      return [SRP.calles.CAMPOS.map(k => r[k] === undefined ? null : r[k]), r.fecha_ultima_edicion || null]; }""", rid100)
+    ok(c100 == [['ok', '0901400010051900024', '1.0.0', 'Calle Parroquia', 'Eje 2 Poniente (Gabriel Mancera)', 'Calle López Cotilla', None, 'secundaria', None, 'Alcaldía Benito Juárez', 'parroquia', 7], None],
+       'al enviar, el árbol recibe la calle que le pone el servidor (la misma de srp.calle), sin contar como edición: %s' % c100)
+    d100 = pg100.evaluate("""async id => { const r = await SRP.almacen.uno('plantaciones', id); SRP.app.mostrarVista('registros'); await SRP.registros.verDetalle(r);
+      const f = [...document.querySelectorAll('#dlg-detalle-cuerpo .revision-fila')], i = f.findIndex(x => x.querySelector('dt').textContent === 'Calle');
+      const res = i < 1 ? null : [f[i - 1].querySelector('dt').textContent, f[i].querySelector('dd').innerText.split('\\n')];
+      document.getElementById('dlg-detalle').close(); return res; }""", rid100)
+    ok(d100 == ['Colonia', ['Calle Parroquia', 'entre Eje 2 Poniente (Gabriel Mancera) y Calle López Cotilla', 'Calle secundaria · Alcaldía Benito Juárez']],
+       'el detalle lleva la calle bajo la colonia: entre qué calles va, su red y quién la atiende: %s' % d100)
+    # Corregir el punto vacía la calle hasta el siguiente envío, que la vuelve a calcular
+    e100 = pg100.evaluate("""async id => { SRP.formulario.editar(await SRP.almacen.uno('plantaciones', id)); await new Promise(x => setTimeout(x, 400));
+      SRP.mapa.colocar(19.315500, -99.078000, 'Punto colocado en el mapa.', { origen: 'mapa' }); SRP.formulario.alMoverPunto(19.315500, -99.078000);
+      await new Promise(x => setTimeout(x, 300)); const v = SRP.formulario.registroPrevisto(), antes = [v.lat, v.calle_estado, v.calle];
+      await SRP.formulario.guardar(); await new Promise(x => setTimeout(x, 500));
+      await SRP.envio.enviar({ silencioso: true }); const r2 = await SRP.almacen.uno('plantaciones', id);
+      return [antes, r2.calle, r2.vialidad_red, r2.calle_atiende, SRP.calles.textoCelda(r2)]; }""", rid100)
+    ok(e100 == [[19.3155, None, None], 'Periférico (Canal de Garay)', 'primaria', 'Gobierno Central', 'Periférico (Canal de Garay), entre Calle Morelos y Calle Jacarandas (vialidad primaria)'],
+       'al corregir el punto, lo que se guarda va sin calle, y el siguiente envío pone la nueva; en el reporte, la vialidad primaria se marca: %s' % e100)
+    # En medio del Zócalo no hay calle a 40 m
+    ctx100.set_geolocation({'latitude':19.432600,'longitude':-99.133200,'accuracy':5})
+    rid100b = registrar(pg100, 'aile', 'ESP-0002')
+    l100 = pg100.evaluate("""async id => { await SRP.envio.enviar({ silencioso: true }); const r = await SRP.almacen.uno('plantaciones', id);
+      return [r.calle_estado, r.calle || null, r.calle_version, SRP.calles.htmlFicha(r).startsWith('Sin calle a menos de 40 m'), SRP.calles.textoCelda(r)]; }""", rid100b)
+    ok(l100 == ['lejos', None, '1.0.0', True, 'Sin calle a menos de 40 m'], 'lejos de toda calle, el árbol dice «Sin calle a menos de 40 m»: %s' % l100)
+    # El reporte lleva la columna «Calle» después de la especie, y la precisión sigue en su columna
+    r100 = pg100.evaluate("""async () => { const j = SRP.activa.jornada, regs = (await SRP.almacen.todos('plantaciones')).filter(r => r.jornada_id === j.id && r.estatus === 'activo');
+      const m = SRP.reportes.modelo(regs, {}, j.fecha, j); return [m.ejemplares.cabecera, m.ejemplares.precision, m.ejemplares.calle, m.ejemplares.filas.map(f => f[2])]; }""")
+    ok(r100 and r100[0][:4] == ['N.º', 'Especie', 'Calle', 'Precisión'] and r100[1:3] == [3, 2] and 'Sin calle a menos de 40 m' in r100[3],
+       'el reporte de la jornada lleva la columna «Calle» después de la especie: %s' % (r100 and r100[0]))
+    # Informe, Supervisión y CSV: por red vial, con quién la atiende, y las cuatro columnas de la calle
+    pg100.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-admin-1'])"); pg100.reload(); pg100.wait_for_selector('html[data-listo]')
+    pg100.wait_for_function("() => SRP.sesion && SRP.sesion.usuario && SRP.sesion.usuario.id === 'u-admin-1'")
+    q100 = pg100.evaluate("""async () => { const r = await SRP.demo.cargar(); const a = await SRP.almacen.todosLocales('plantaciones');
+      const d = await SRP.indicadores.cargar(), m = SRP.indicadores.calcular(d, SRP.indicadores.periodo('anio'), {});
+      const csv = SRP.informes.texto(m).split('\\r\\n'), cab = csv[0].replace('\\ufeff', '').split('","').map(x => x.replace(/"/g, ''));
+      return { sin: a.filter(x => x.lat != null && !x.calle_estado).length, redes: m.calles.porRed.map(x => x.red), primaria: m.calles.porRed[0].atiende[0],
+        versiones: m.calles.versiones, cab: cab.slice(cab.indexOf('Colonia'), cab.indexOf('Colonia') + 5), suma: m.calles.porRed.reduce((s, x) => s + x.arboles, 0) + m.calles.lejos + m.calles.porAsignar === m.cifras.arboles }; }""")
+    ok(q100['sin'] == 0 and q100['redes'] == ['primaria', 'secundaria', 'carretera o camino'] and q100['primaria'] == 'Gobierno Central' and q100['versiones'] == ['1.0.0'] and q100['suma'],
+       'los datos de demostración llegan con su calle; por red vial, primarias del Gobierno Central, y todo árbol cuenta en una red, sin calle cercana o por asignar: %s' % {k: q100[k] for k in ('sin', 'redes', 'primaria', 'suma')})
+    ok(q100['cab'] == ['Colonia', 'Calle', 'Entre calles', 'Red vial', 'Quién atiende la calle'], 'la tabla para Excel suma la calle, entre qué calles, la red vial y quién la atiende: %s' % q100['cab'])
+    pg100.evaluate("SRP.app.mostrarVista('supervision')"); pg100.wait_for_timeout(1500)
+    pg100.click('#sup-tipos .chip[data-tipo=anio]'); pg100.wait_for_timeout(1200)
+    s100 = pg100.evaluate("""() => { const d = document.querySelector('details[data-seccion=calles]'); if (!d) return null;
+      return [d.querySelector('summary').textContent, [...d.querySelectorAll('.sup-subtitulo')].map(x => x.textContent), d.querySelector('p.nota:last-child').textContent]; }""")
+    ok(s100 and 'en vialidades primarias' in s100[0] and len(s100[1]) >= 2 and s100[1][0].startswith('Vialidades primarias · Gobierno Central') and s100[1][1].startswith('Calles secundarias · Alcaldía ') and 'versión 1.0.0' in s100[2],
+       'Supervisión trae «Por calle»: una lista por red, con quién la atiende, y de dónde sale la capa: %s' % (s100 and s100[1]))
+    ok(pg100.evaluate("(() => { const t = document.querySelector('details[data-seccion=calles] .sup-tramos'); return !!t && /^(entre|a la altura de) /.test(t.textContent); })()"),
+       'bajo cada calle, entre qué calles quedaron sus árboles')
+    ok(not err100, 'sin errores en consola: %s' % err100[:2])
+    ctx100.close()
 
     b.close()
 

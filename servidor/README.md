@@ -59,7 +59,8 @@ repositorio:
 | `db/srp/06-srp-parametros.sql` | Los parámetros que la Administración global cambió; los de arranque los dice el módulo |
 | `db/srp/07-srp-duplicados.sql` | `srp.vecinos`, que busca los árboles cercanos de la misma especie que podrían ser el mismo, y la bandeja de posibles duplicados entre instituciones |
 | `db/srp/08-srp-cargas.sql` | Los lotes de carga masiva: subiendo (no se ven), completos (se ven) o deshechos (ocultos, con sus árboles eliminados), y `srp.de_carga_oculta`, que dice si una jornada no se ve |
-| `db/srp/09-srp-rol-y-grants.sql` | La cuenta `srp_api`, sin contraseña, con sus permisos mínimos y `territorio_lectura`; la versión 1 del esquema. Al final, la verificación para correr como la cuenta: lo que debe funcionar y lo que debe fallar |
+| `db/srp/09-srp-calles.sql` | La calle de cada árbol sobre `territorio.calles`: `srp.calle`, el disparador que la pone al recibir el árbol y al corregir su punto, y `srp.recalcular_calles`, para después de instalar la capa. Sin la capa, el árbol queda por asignar |
+| `db/srp/10-srp-rol-y-grants.sql` | La cuenta `srp_api`, sin contraseña, con sus permisos mínimos y `territorio_lectura`; la versión 1 del esquema. Al final, la verificación para correr como la cuenta: lo que debe funcionar y lo que debe fallar |
 | `db/srp/instalar.sql` | Corre los anteriores en orden, en una sola transacción |
 
 Todos los corre quien administra la base, que queda como dueño de lo que se crea. `02-srp-tablas.sql` sale
@@ -106,7 +107,10 @@ la base y las variables van antes que el código. Un módulo por despliegue.
    **Las fotografías:** una carpeta en el servidor de aplicaciones, fuera de lo que se publica, donde el
    backend pueda escribir, con su propio respaldo, y `SRP_FOTOS_DIR` con su ruta. Sin ella el módulo
    arranca igual y las fotografías responden que no están disponibles.
-4. **Verificación:** la del final de `09-srp-rol-y-grants.sql`, corrida como `srp_api`.
+4. **Verificación:** la del final de `10-srp-rol-y-grants.sql`, corrida como `srp_api`.
+5. **La calle:** si `territorio.calles` ya está instalada, `SELECT srp.recalcular_calles();` como quien administra la base. Si se
+   instala después, se corre entonces. En la base local de desarrollo, la capa se instala con el `instalar.sql` del paquete
+   calles-cdmx (`db/territorio_calles/`); las pruebas del servidor la necesitan.
 5. **Datos de arranque:** `psql -d <base> -v ON_ERROR_STOP=on -f srp-datos-arranque.sql`, como quien
    administra la base. El guion lo escribe `node datos-arranque.js <guion.sql> <vehiculos.csv>`: los
    programas, áreas, instituciones y solicitantes de `assets/catalogos/catalogos-arranque.js`, las especies,

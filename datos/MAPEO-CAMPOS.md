@@ -52,6 +52,18 @@ Pantalla **Nuevo registro**. Almacén `plantaciones`.
 | — | `uga` | No | Capa geográfica | Clave del hexágono de la malla UGA del SIA (~1 km², 1,624 celdas), p. ej. `TLP-318`. **El prefijo no es la alcaldía del punto**: es la alcaldía a la que se asignó la celda, y en la frontera difieren. La alcaldía sale de su propia capa |
 | — | `uga_borde_m` | No | Capa geográfica | Metros del punto al borde de su celda UGA. Si es menor que la precisión del GPS, la ficha y el detalle dicen «Celda incierta»: el servidor confirmará la celda |
 | — | `capa_version` | No | Sistema | Versión de cada capa con la que se derivó, p. ej. `alcaldias=sia-2026-01-01;uga=sia-2026-09-22;colonias=iecm-2022`. Permite rehacer el dato cuando una capa cambie |
+| Calle (detalle) | `calle_estado` | No | Servidor | `ok` (hay un tramo de calle a 40 m o menos) o `lejos` (no lo hay: «Sin calle a menos de 40 m»). La pone el servidor al recibir el árbol y cada vez que se corrige su punto, con la capa `territorio.calles` del SIA (paquete calles-cdmx). Nulo mientras no se calcula: un árbol sin enviar («Se asigna al enviar»), o un servidor que todavía no tiene la capa. Con datos de prueba la pone el servidor simulado al enviar, con la copia ligera de `assets/calles/`. La jornada no lleva calle |
+| — | `calle_clave` | No | Servidor | Clave INEGI del tramo más cercano (19 dígitos), válida sólo para su versión de la capa |
+| — | `calle_version` | No | Servidor | Versión de la capa con que se calculó, p. ej. `1.0.0`. Después de instalar o actualizar la capa, `srp.recalcular_calles()` calcula los árboles sin calle o de otra versión |
+| Calle | `calle` | No | Servidor | Nombre del tramo, como lo da la capa; «calle sin nombre» si no tiene. Se ve en el detalle, en el reporte (columna «Calle», si algún árbol ya la tiene), en el informe y en Supervisión («Por red vial») y en el CSV |
+| — | `calle_entre_1` | No | Servidor | La calle de una esquina del tramo; nula si no tiene salida por ese lado. Con `calle_entre_2` se dice «entre A y B»; con una sola, o la misma en las dos, «a la altura de A» |
+| — | `calle_entre_2` | No | Servidor | La calle de la otra esquina |
+| — | `calle_esquina` | No | Servidor | Otra calle casi igual de cerca, a menos de 4 m más: «Junto a la esquina con …» |
+| — | `vialidad_red` | No | Servidor | `primaria`, `secundaria` o `carretera o camino`, de la capa |
+| — | `vialidad_tipo` | No | Servidor | En la red primaria, «Vía primaria» o «Vía de acceso controlado» |
+| — | `calle_atiende` | No | Servidor | Quién atiende el tramo: «Gobierno Central», «Alcaldía X», «Alcaldías X y Y», «Concesión», «Gobierno Federal», «Particular» o «Por confirmar» (en pantalla, «quién la atiende, por confirmar») |
+| — | `calle_llave` | No | Servidor | El nombre sin tipo, acentos ni mayúsculas: en los informes, una misma calle es su llave dentro de la alcaldía del árbol |
+| — | `calle_distancia_m` | No | Servidor | Metros enteros del árbol al tramo, de 0 a 40 |
 | Especie | `especie_id` | Sí | Catálogo | Remite a `especies.id`: la clave `ESP-0000` del catálogo del SIA. Vacío cuando se eligió «Otra especie». En pantalla se elige por nombre común, científico o cualquiera de los otros nombres comunes; sólo viaja la clave |
 | Especifique la especie | `especie_otra` | Sólo con «Otra especie» | Persona | Texto libre, para lo que no está en el catálogo. La Administración global lo consulta agrupado en Configuración › Especies escritas |
 | Programa | `programa_id` | Sí | Jornada | Remite a `programas.id`. Es el de su jornada: no se pide por árbol, cambia cuando cambia el de la jornada y al mover el árbol toma el de la nueva. Se lee en la ficha de revisión y en el detalle |

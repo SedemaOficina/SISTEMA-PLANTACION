@@ -659,15 +659,17 @@ SRP.formulario = {
     const u = SRP.sesion.usuario;
     ahora = ahora || SRP.util.ahoraISO();
     if (this.estado.editando) {
-      return Object.assign({}, this.estado.editando, v,
+      const e = this.estado.editando;
+      // Si el punto se movió, la calle es otra: el servidor la vuelve a calcular al recibir el cambio
+      return Object.assign({}, e, v, e.lat !== v.lat || e.lng !== v.lng ? SRP.calles.vacia() : {},
         { fecha_ultima_edicion: ahora, editado_por_id: u ? u.id : null });
     }
     return Object.assign({
       id: this.estado.idPrevisto, estatus: 'activo',
       cabo_id: u ? u.id : null,
       fecha_registro: ahora, fecha_ultima_edicion: null, editado_por_id: null,
-      // El folio y lo que se congela con él los pone el servidor al sincronizar (R3, R8); aquí nacen nulos
-      folio: null,
+      // El folio y lo que se congela con él los pone el servidor al sincronizar (R3, R8); aquí nacen nulos, como la calle
+      folio: null, ...SRP.calles.vacia(),
       jornada_id: this.jornadaId(),   // la jornada declarada antes de registrar
       // Sustitución: el sustituto apunta al árbol que reemplaza y guarda por qué; el original, a su sustituto
       sustituye_id: s ? s.original.id : null, motivo_sustitucion: s ? s.motivo : null, motivo_sustitucion_otro: s ? s.otro : '',

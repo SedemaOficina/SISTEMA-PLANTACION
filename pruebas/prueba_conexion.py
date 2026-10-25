@@ -511,7 +511,9 @@ def main():
             loc = pg.evaluate(LOCAL, a1)
             ok(srv['arbol'] and re.match(r'^[A-Z]{3}-\d{3}-\d{5}$', srv['arbol']['folio'] or '') and loc['arbol'] and loc['arbol']['folio'] == srv['arbol']['folio'] and srv['fotos'] == 1,
                'el árbol registrado llega al servidor con su fotografía, y el folio que asignó el servidor vuelve al teléfono: %s' % srv['arbol'])
-            franja = pg.evaluate("() => document.getElementById('franja-guardado-envio') && document.getElementById('franja-guardado-envio').textContent")
+            ok(loc['arbol'] and loc['arbol'].get('calle_estado') in ('ok', 'lejos') and loc['arbol'].get('calle_version') == '1.0.0',
+               'y también la calle que le puso el servidor, con la versión de la capa: %s' % (loc['arbol'] and [loc['arbol'].get(k) for k in ('calle_estado', 'calle', 'calle_version')]))
+            franja =pg.evaluate("() => document.getElementById('franja-guardado-envio') && document.getElementById('franja-guardado-envio').textContent")
             ok(franja and franja.startswith('enviado '), 'la franja «Guardado» dice que se envió: %s' % franja)
 
             # Sin señal se queda en la cola, y sale al volver

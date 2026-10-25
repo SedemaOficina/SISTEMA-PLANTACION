@@ -8,7 +8,8 @@ Copia la aplicación (index.html, sw.js, el manifiesto, css/, js/, vendor/ y ass
   - quita los archivos que sólo usa la versión de prueba, con su <script> en index.html: las cuentas de
     prueba (js/datos-ficticios.js), los vehículos con placas ficticias (assets/catalogos/catalogo-vehiculos.js),
     la demostración (js/demostracion.js) y el espejo de campos (js/espejo.js). Sus botones y bloques se
-    quedan en index.html, ocultos: con ES_FICTICIO en false nunca se muestran.
+    quedan en index.html, ocultos: con ES_FICTICIO en false nunca se muestran;
+  - no copia la copia ligera de la capa de calles (assets/calles/): en el SIA la calle la pone el servidor.
 El repositorio no cambia. La carpeta destino debe no existir o estar vacía. Al terminar revisa que todo lo
 que index.html pide exista en la copia y que nada de lo quitado se pida. Sólo usa la biblioteca estándar."""
 import os, re, shutil, sys
@@ -46,7 +47,8 @@ def main():
     for a in ARCHIVOS:
         shutil.copy2(os.path.join(RAIZ, a), os.path.join(destino, a))
     for c in CARPETAS:
-        shutil.copytree(os.path.join(RAIZ, c), os.path.join(destino, c), ignore=shutil.ignore_patterns('__pycache__', '*.map'))
+        # La copia ligera de la capa de calles es del servidor simulado: en el SIA la calle la pone el servidor
+        shutil.copytree(os.path.join(RAIZ, c), os.path.join(destino, c), ignore=shutil.ignore_patterns('__pycache__', '*.map', *(['calles'] if c == 'assets' else [])))
 
     cambiar(os.path.join(destino, 'js', 'config.js'), '  ES_FICTICIO: true,', '  ES_FICTICIO: false,')
     pagina = os.path.join(destino, 'index.html')
@@ -74,7 +76,7 @@ def main():
             sys.exit('js/config.js no quedó con ES_FICTICIO en false')
     total = sum(len(n) for _, _, n in os.walk(destino))
     print('Versión %s, con datos reales: %d archivos en %s' % (version, total, visible))
-    print('Sin: ' + ', '.join(DE_PRUEBA))
+    print('Sin: ' + ', '.join(DE_PRUEBA + ['assets/calles/']))
 
 
 if __name__ == '__main__':

@@ -457,6 +457,7 @@ SRP.registros = {
       ['Sitio de plantación', esc(SRP.ref.sitio(r))],
       ['Alcaldía', esc(SRP.ref.alcaldia(r.alcaldia))],
       ['Colonia', esc(SRP.ref.colonia(r.colonia))],
+      ['Calle', SRP.calles.htmlFicha(r)],
       ['Coordenadas', r.lat.toFixed(5) + ', ' + r.lng.toFixed(5)],
       ['Cómo se obtuvo', SRP.formulario.textoOrigenRevision(r, false)],
       // Quien sólo ve lo suyo no necesita leer su propio nombre en cada árbol

@@ -94,6 +94,15 @@ SRP.ESQUEMA = {
    "catalogo",
    "jornada",
    "carga"
+  ],
+  "calle_estado": [
+   "ok",
+   "lejos"
+  ],
+  "vialidad_red": [
+   "primaria",
+   "secundaria",
+   "carretera o camino"
   ]
  },
  "tablas": {
@@ -345,6 +354,102 @@ SRP.ESQUEMA = {
     null,
     "usuarios",
     "Historial"
+   ],
+   [
+    "calle_estado",
+    "text",
+    true,
+    "calle_estado",
+    null,
+    "Detalle («Calle»): «Se asigna al enviar» mientras sea nulo; «Sin calle a menos de 40 m» si es `lejos`"
+   ],
+   [
+    "calle_clave",
+    "text",
+    true,
+    null,
+    null,
+    null
+   ],
+   [
+    "calle_version",
+    "text",
+    true,
+    null,
+    null,
+    null
+   ],
+   [
+    "calle",
+    "text",
+    true,
+    null,
+    null,
+    "Detalle («Calle»), reporte (columna «Calle»), informe y Supervisión («Por red vial»), CSV"
+   ],
+   [
+    "calle_entre_1",
+    "text",
+    true,
+    null,
+    null,
+    "Detalle y reporte («entre A y B»); el informe junta las cuadras seguidas de una calle en un tramo"
+   ],
+   [
+    "calle_entre_2",
+    "text",
+    true,
+    null,
+    null,
+    "Igual que calle_entre_1"
+   ],
+   [
+    "calle_esquina",
+    "text",
+    true,
+    null,
+    null,
+    "Detalle («Junto a la esquina con …»)"
+   ],
+   [
+    "vialidad_red",
+    "text",
+    true,
+    "vialidad_red",
+    null,
+    "Detalle (junto a quién la atiende), informe y Supervisión («Por red vial»), CSV"
+   ],
+   [
+    "vialidad_tipo",
+    "text",
+    true,
+    null,
+    null,
+    "Detalle («Vía de acceso controlado»)"
+   ],
+   [
+    "calle_atiende",
+    "text",
+    true,
+    null,
+    null,
+    "Detalle, informe y Supervisión («Quién la atiende»), CSV"
+   ],
+   [
+    "calle_llave",
+    "text",
+    true,
+    null,
+    null,
+    null
+   ],
+   [
+    "calle_distancia_m",
+    "integer",
+    true,
+    null,
+    null,
+    null
    ]
   ],
   "usuarios": [

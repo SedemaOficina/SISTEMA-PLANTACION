@@ -6375,3 +6375,64 @@ No se probó: en un teléfono de verdad, porque aquí no hay.
 
 **Siguiente paso.** Liber prueba la 1.2.1 en campo con la página «Prueba en campo SRP», que ya dice 1.2.1. Con la
 prueba aprobada se rehace la entrega al SIA con la 1.2.1.
+
+## Bloque 249 — La calle de cada árbol (25-10-2026)
+
+**Versión 1.3.** Los técnicos pidieron la calle de cada árbol y reportes por calle. Liber aprobó la capa de calles de la
+Ciudad de México (paquete calles-cdmx 1.0.0) y las muestras, eligió que se vea en Pages con una copia ligera de la capa y
+publicarla con su cita, y que la calle vaya en la entrega siguiente a la 1.2.1 (D330).
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| Detalle del árbol | Sin calle | «Calle», bajo la colonia: el nombre, entre qué calles, la esquina si hay otra casi igual de cerca, la red vial y quién la atiende; «Se asigna al enviar» o «Sin calle a menos de 40 m» |
+| Reporte de la jornada | N.º, Especie, (Sitio), Precisión | La columna «Calle» después de la especie, si algún árbol ya la tiene; la vialidad primaria se marca |
+| Informe y Supervisión | Sin calles | «Por red vial»: primarias, secundarias y carreteras, con quién las atiende, sin calle cercana y por asignar; una tabla de cada red con las cuadras seguidas juntas |
+| Tabla para Excel | Sin calle | Calle, entre calles, red vial y quién atiende la calle |
+| Servidor | Sin calle | La pone la base al recibir el árbol y al corregir su punto; sin la capa, por asignar, y `srp.recalcular_calles()` |
+
+**Qué cambió.**
+- `datos/esquema.json`: doce campos al final de `plantaciones` (`calle_estado` … `calle_distancia_m`), los dominios
+  `calle_estado` y `vialidad_red`, la capa y su derivación. De ahí se regeneraron `js/esquema.js`,
+  `datos/DICCIONARIO-DATOS.md` y `servidor/db/srp/02-srp-tablas.sql`. `datos/MAPEO-CAMPOS.md`, a mano.
+- Servidor: `db/srp/09-srp-calles.sql`, nuevo: `srp.calle` (el tramo más cercano a 40 m o menos de `territorio.calles`,
+  la esquina, «calle sin nombre»; vacía si la capa no está), el disparador al recibir y al corregir el punto, y
+  `srp.recalcular_calles()`. El guion de la cuenta pasa a `10-srp-rol-y-grants.sql`, con permiso sobre `srp.calle` y no
+  sobre recalcular. `instalar.sql`, `01-srp-esquema.sql`, `servidor/README.md`.
+- `herramientas/generar_calles.py`, nuevo: la copia ligera en `assets/calles/` (97 celdas de 0.04°, 18.8 MB; cada celda
+  con los tramos a 60 m o menos de ella; coordenadas en millonésimas de grado; cita y suma de la fuente en `indice.json`).
+  `herramientas/preparar_produccion.py` no la copia a la versión del SIA.
+- `js/calles.js`, nuevo: cómo se enseña y se cuenta la calle y el servidor simulado, con las reglas de `srp.calle`.
+  `js/registros.js` (detalle), `js/reportes.js` (columna), `js/indicadores.js`, `js/informes.js` y `js/supervision.js`
+  (por calle y por red; CSV), `js/formulario.js` (el árbol nuevo nace sin calle; al corregir el punto se vacía),
+  `js/cola.js` (la calle es de lo que pone el servidor), `js/envio.js` (el envío simulado la pone), `js/demostracion.js`
+  (la demostración llega con calles), `js/espejo.js`, `css/estilos.css`, `index.html`.
+- `README.md` (la sección «La calle de cada árbol», con la fuente, sus sumas y la cita), `docs/DECISIONES.md` (D330),
+  `docs/MEJORAS.md` (M544 a M548).
+- Pruebas: `servidor/pruebas/recepcion.test.js`, una nueva; `pruebas/prueba.py`, la sección ctx100 (12 comprobaciones).
+  La base local de desarrollo lleva ahora `territorio.calles`, instalada con el `instalar.sql` del paquete.
+
+**Pantalla.**
+- Se agregó: «Calle» en el detalle del árbol; la columna «Calle» del reporte; «Por calle» en Supervisión y «Por red vial»
+  en el informe; cuatro columnas en la tabla para Excel.
+
+**Verificación.**
+- La prueba completa por tramos: 1,507 de 1,508 (83 tramos, con los 12 de la sección nueva). La que falla es la de siempre:
+  la hoja «especies» contra el libro de `originales/`, que se volvió a guardar con otro orden. En la primera corrida
+  fallaron otras cuatro: tres pruebas esperaban el reporte sin la columna «Calle» (los árboles enviados y la
+  demostración ya la traen) y una encontró que «Por calle» no se abría con ancho, como los demás desgloses de
+  Supervisión: se corrigió. Repetidos esos tramos, 704 de 704; la segunda corrida completa es la de arriba.
+- El servidor y el servidor simulado dan la misma calle a los mismos puntos (Calle Parroquia, su clave, sus esquinas,
+  7 m; Periférico; el centro del Zócalo, sin calle): la prueba del servidor y la sección nueva lo comparan.
+- Pruebas del servidor: 108 de 108 (una nueva). Prueba de conexión con el servidor local: 120 de 120 (una nueva: la
+  calle que pone el servidor vuelve al teléfono). Su primera corrida no llegó al servicio porque el puerto 8098 lo
+  ocupaba el servidor de la copia de las muestras; detenido ese servidor, pasó completa.
+- La revisión automática: 147 sin hallazgos. La hoja de estilos marcó la primera vez una regla repetida, que se unió;
+  después, sin hallazgos. `revisar.py` sin problemas (sus capturas se movieron a `_to_delete/b249-capturas-revisar/`).
+- La copia para el SIA (`preparar_produccion.py`): 76 archivos, sin `assets/calles/`.
+- La demostración carga con calles en unos 4 segundos: de 18,646 árboles, 15,272 con calle y 3,374 sin calle cercana
+  (sus puntos caen al azar; con 20,000 árboles reales, el 93 % tuvo calle).
+
+No se probó: en un teléfono de verdad, ni con la capa instalada en el SIA (no se sabe todavía dónde va).
+
+**Siguiente paso.** Liber prueba en campo; con la prueba aprobada se entrega la 1.2.1 al SIA, y después la 1.3 con la
+calle. Antes de instalar la 1.3, el SIA instala la capa de calles, o se corre `srp.recalcular_calles()` cuando la instale.

@@ -1027,7 +1027,10 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .campo-ini-detectar .ini-detectado[data-tono="bien"] { color: var(--exito); }
 .campo-ini-detectar .campo-doble { margin-top: var(--e-2); }
 /* Tipo de distribución en la fila de Especie de la ficha de revisión */
-.revision-distribucion, .revision-sub { display: block; font-size: var(--t-xs); color: var(--gris); margin-top: 2px; }
+.revision-distribucion, .revision-sub, .sup-tramos { display: block; font-size: var(--t-xs); color: var(--gris); margin-top: 2px; }
+/* La calle: en la red primaria, su renglón se lee más fuerte; en Supervisión, el subtítulo de cada red */
+.calle-red[data-red=primaria] { color: var(--texto); font-weight: 600; }
+.sup-subtitulo { margin: var(--e-4) 0 var(--e-2); font-weight: 700; }
 /* Guardar en un toque: franja del último guardado, avisos de la ficha, especies recientes */
 .franja-guardado { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-2) var(--e-3); max-width: var(--ancho-max-tabla); margin: 0 auto var(--e-4);
   padding: var(--e-3) var(--e-4); border-radius: var(--radio-filtro); background: var(--exito-fondo); border-left: 4px solid var(--exito); scroll-margin-top: var(--e-4); }

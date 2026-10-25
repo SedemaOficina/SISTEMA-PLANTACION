@@ -168,6 +168,18 @@ SRP.indicadores = {
     const porAlcaldia = cuenta(arboles, a => a.r.alcaldia || 'Sin alcaldía', a => ({ alcaldia: a.r.alcaldia || 'Sin alcaldía' }));
     porAlcaldia.forEach(e => { const cols = new Set(arboles.filter(a => (a.r.alcaldia || 'Sin alcaldía') === e.clave && a.r.colonia).map(a => a.r.colonia)); e.colonias = cols.size; });
     const porColonia = cuenta(arboles.filter(a => a.r.colonia), a => a.r.colonia + '|' + (a.r.alcaldia || ''), a => ({ colonia: a.r.colonia, alcaldia: a.r.alcaldia || '' }));
+    /* Por calle: una misma calle es su llave dentro de la alcaldía del árbol (un tramo del límite puede ser de la
+       alcaldía vecina); sus cuadras se juntan en tramos. Por red vial, con quién atiende cada una */
+    const conCalle = arboles.filter(a => a.r.calle_estado === 'ok');
+    const llaveCalle = a => (a.r.calle_llave || '') + '|' + (a.r.alcaldia || '');
+    const porCalle = cuenta(conCalle, llaveCalle, a => ({ calle: a.r.calle_llave ? a.r.calle : 'Calles sin nombre', alcaldia: a.r.alcaldia || '', red: a.r.vialidad_red, colonias: new Set(), regs: [] }));
+    const deCalle = new Map(porCalle.map(e => [e.clave, e]));
+    conCalle.forEach(a => { const e = deCalle.get(llaveCalle(a)); if (a.r.colonia) e.colonias.add(a.r.colonia); e.regs.push(a.r); });
+    porCalle.forEach(e => { e.colonias = [...e.colonias]; e.tramos = e.calle === 'Calles sin nombre' ? [] : SRP.calles.tramos(e.regs); delete e.regs; });
+    const porRed = SRP.calles.REDES.map(k => { const suyos = conCalle.filter(a => a.r.vialidad_red === k);
+      return { red: k, arboles: suyos.length, calles: porCalle.filter(e => e.red === k).length, atiende: cuenta(suyos, a => a.r.calle_atiende || 'Por confirmar').map(x => x.clave) }; }).filter(x => x.arboles);
+    const calles = { porCalle, porRed, lejos: arboles.filter(a => a.r.calle_estado === 'lejos').length, porAsignar: arboles.filter(a => !a.r.calle_estado).length,
+      versiones: [...new Set(arboles.map(a => a.r.calle_version).filter(Boolean))].sort() };
     const porPrograma = cuenta(arboles, a => SRP.ref.nombreCatalogo(a.r.programa_id) || 'Sin programa', a => ({ programa: SRP.ref.nombreCatalogo(a.r.programa_id) || 'Sin programa' }));
     // Por institución: quién ejecutó, con su tipo; la Secretaría primero cuando empatan
     const porOrganizacion = cuenta(arboles, a => this.organizacionDe(a.j), a => {
@@ -256,7 +268,7 @@ SRP.indicadores = {
       },
       calidad,
       serie: this.serie(periodo, arboles, cerradas),
-      porCabo, porAlcaldia, porColonia, porEspecie, porPrograma, porOrganizacion, prioridad, solicitudes,
+      porCabo, porAlcaldia, porColonia, calles, porEspecie, porPrograma, porOrganizacion, prioridad, solicitudes,
       jornadas: cerradas.slice().sort((a, b) => b.fecha.localeCompare(a.fecha)).map(j => ({
         id: j.id, fecha: j.fecha, nombre: j.nombre, cabo: SRP.ref.nombreUsuario(j.cabo_id), cabo_id: j.cabo_id,
         organizacion: SRP.ref.nombreOrganizacion(this.organizacionDe(j)), externa: !SRP.ref.esSedema(this.organizacionDe(j)),
@@ -274,7 +286,9 @@ SRP.indicadores = {
         return { folio: SRP.folio.valido(r.folio) ? r.folio : 'PROVISIONAL', fecha: r.fecha_plantacion, jornada: j.nombre, organizacion: SRP.ref.nombreOrganizacion(this.organizacionDe(j)),
           cabo: SRP.ref.nombreUsuario(r.cabo_id),
           programa: SRP.ref.nombreCatalogo(r.programa_id) || '', especie: e.comun, cientifico: e.cientifico, distribucion: e.distribucion || '', sitio: SRP.ref.sitio(r),
-          alcaldia: r.alcaldia || '', colonia: r.colonia || '', uga: r.uga || '', lat: r.lat, lng: r.lng, origen: SRP.mapa.textoOrigen(r.punto_origen),
+          alcaldia: r.alcaldia || '', colonia: r.colonia || '',
+          calle: r.calle_estado === 'ok' ? r.calle : SRP.calles.textoCelda(r), entreCalles: r.calle_estado === 'ok' ? SRP.calles.entre(r) : '', redVial: SRP.calles.textoRedCorta(r),
+          atiende: r.calle_estado === 'ok' ? r.calle_atiende || 'Por confirmar' : '', uga: r.uga || '', lat: r.lat, lng: r.lng, origen: SRP.mapa.textoOrigen(r.punto_origen),
           precision: r.punto_origen === 'gps' && r.gps_precision_m != null ? Math.round(r.gps_precision_m) : '', foto: r.foto_id || r.foto_base64 ? 'Sí' : 'No',
           reporte: j.dato && j.dato.reporte_en ? 'Generado' : 'Pendiente', sustituto: r.sustituye_id ? 'Sí' : 'No', motivo: SRP.ref.motivoSustitucion(r),
           solicitante: SRP.solicitud.es(j.dato) ? SRP.solicitud.solicitanteCompleto(j.dato) : '', solicitudDescripcion: SRP.solicitud.es(j.dato) ? j.dato.solicitud_descripcion || '' : '' };

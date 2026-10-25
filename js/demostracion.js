@@ -357,6 +357,11 @@ SRP.demo = {
       await this.quitar();
       const d = await this.generar(avance);
       if (avance) avance(0.9);
+      // Cada árbol con su calle, como la pondría el servidor al recibirlos. Sin la capa (sin señal), la reciben al enviar
+      try {
+        const conCalle = new Map((await SRP.calles.conCalle(d.arboles, avance ? (i, n) => avance(0.9 + 0.08 * i / n) : null)).map(a => [a.id, a]));
+        d.arboles = d.arboles.map(a => conCalle.get(a.id) || a);
+      } catch (err) { /* la calle llega con el siguiente envío */ }
       await SRP.almacen._tx(this.ALMACENES, 'readwrite', (tx) => {
         d.cuentas.forEach(x => tx.objectStore('usuarios').put(x));
         d.jornadas.forEach(x => tx.objectStore('jornadas').put(x));

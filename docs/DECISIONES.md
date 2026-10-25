@@ -4335,3 +4335,29 @@
   «Cancelar» lleva el rojo. Es la regla de la aplicación para dos botones en la misma fila: junto a «Editar» se
   distinguen y ninguno compite. Al pasar el puntero, en computadora, se llena del morado suave de la marca de
   sustituto. Versión 1.2.1.
+- **D330. La calle de cada árbol (bloque 249).**
+  25-10-2026. Los técnicos pidieron la calle de cada árbol («Av. X entre calle Y y calle Z») y reportes por calle. Liber
+  aprobó la capa de calles de la Ciudad de México (paquete calles-cdmx 1.0.0) y las muestras con el antes y el después
+  (`servidor/local/muestras-calles/`, fuera de git), y pidió programarlo.
+  · **La pone el servidor**, como el folio: al recibir el árbol y cada vez que se corrige su punto, un disparador de
+    `srp.plantaciones` toma el tramo más cercano de `territorio.calles`, a 40 m o menos. Doce campos del árbol: el estado
+    (`ok`, `lejos` o nulo mientras no se calcula), la clave y la versión del tramo, el nombre, las dos esquinas, otra calle
+    casi igual de cerca (esquina, a menos de 4 m más), la red vial, el tipo de vía, quién la atiende, la llave del nombre y la
+    distancia. Lo que mande el teléfono en esos campos no cuenta. Sólo los árboles: la jornada no lleva calle.
+  · **Sin la capa, nada falla**: el SIA todavía no confirma dónde la instala. El árbol queda por asignar y
+    `srp.recalcular_calles()` calcula después los que no tienen calle o la tienen de otra versión. Las correcciones de la
+    capa (versión 1.1, cuando contesten la Secretaría, SEMOVI y las alcaldías) cambian datos, no campos: se recalcula.
+  · **Quién la atiende sale de la capa**, tramo por tramo: «Gobierno Central», «Alcaldía X», «Concesión», «Gobierno Federal»,
+    etc. «Por confirmar» se dice «quién la atiende, por confirmar», no se toma como de la alcaldía.
+  · **Cómo se enseña:** en el detalle, bajo la colonia; en el reporte, la columna «Calle» después de la especie, si algún
+    árbol ya la tiene; en el informe y en Supervisión, «Por red vial» con quién atiende cada red y una tabla de cada red, con
+    las cuadras seguidas juntas en un tramo; en el CSV, calle, entre calles, red vial y quién atiende la calle. Una misma
+    calle es su llave dentro de la alcaldía del árbol (un tramo del límite puede ser de la vecina). Con una sola esquina, o
+    con la misma calle en las dos, se dice «a la altura de».
+  · **En Pages**, la versión de prueba no tiene servidor. **Liber eligió que la calle se vea en Pages** con una copia ligera
+    de la capa (`assets/calles/`, por celdas de unos 4 km), y **eligió publicarla en el repositorio público con su cita**,
+    aunque el SIA no ha contestado si publica la capa abierta: todo sale de fuentes públicas. El servidor simulado la
+    calcula al enviar, con las mismas reglas; la prueba compara los dos con los mismos puntos. La versión del SIA no lleva
+    la copia.
+  · **Entrega:** Liber eligió entregar la 1.2.1 en cuanto apruebe la prueba en campo, y la calle en la entrega siguiente.
+  · Versión 1.3, porque la base cambia.

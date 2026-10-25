@@ -46,7 +46,8 @@ SRP.cola = {
     jornadas: ['nombre', 'ubicacion', 'programa_id', 'arboles_previstos', 'fecha', 'comentarios', 'solicitante_id', 'solicitante_otro', 'solicitud_descripcion']
   },
   // Lo que pone el servidor en un registro que todavía tiene cambios por enviar
-  DEL_SERVIDOR: ['folio', 'alcaldia_cve', 'alcaldia', 'colonia_cve', 'colonia', 'uga', 'uga_borde_m', 'capa_version'],
+  DEL_SERVIDOR: ['folio', 'alcaldia_cve', 'alcaldia', 'colonia_cve', 'colonia', 'uga', 'uga_borde_m', 'capa_version',
+    'calle_estado', 'calle_clave', 'calle_version', 'calle', 'calle_entre_1', 'calle_entre_2', 'calle_esquina', 'vialidad_red', 'vialidad_tipo', 'calle_atiende', 'calle_llave', 'calle_distancia_m'],
   LOTE: 100,
 
   activa() { return SRP.remoto.activo(); },

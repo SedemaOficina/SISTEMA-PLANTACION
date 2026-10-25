@@ -26,6 +26,7 @@
 --   · Buscar los vecinos de un árbol, anotar en la bandeja los posibles duplicados entre instituciones y
 --     marcarlos revisados; no los borra.
 --   · Leer territorio, por el rol de grupo territorio_lectura, y la capa propia de prioritarias.
+--   · Calcular la calle de un árbol; volver a calcular la de todos lo hace quien administra la base.
 -- Lo que no puede: crear, cambiar o borrar tablas; editar o borrar la bitácora; anotar versiones del
 -- esquema; escribir en territorio; ver otros esquemas del SIA.
 
@@ -76,14 +77,16 @@ GRANT SELECT ON srp.migraciones TO srp_api;
 
 -- La capa propia sólo se lee: la carga quien administra la base
 GRANT SELECT ON srp.capas, srp.capa_prioritarias TO srp_api;
-REVOKE ALL ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric), srp.especie_clave(text, text), srp.vecinos(uuid, numeric), srp.de_carga_oculta(uuid) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric), srp.especie_clave(text, text), srp.vecinos(uuid, numeric), srp.de_carga_oculta(uuid) TO srp_api;
+REVOKE ALL ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric), srp.especie_clave(text, text), srp.vecinos(uuid, numeric), srp.de_carga_oculta(uuid), srp.calle(numeric, numeric) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric), srp.especie_clave(text, text), srp.vecinos(uuid, numeric), srp.de_carga_oculta(uuid), srp.calle(numeric, numeric) TO srp_api;
+-- Volver a calcular la calle de todos los árboles es de quien administra la base, después de instalar la capa
+REVOKE ALL ON FUNCTION srp.recalcular_calles() FROM PUBLIC;
 
 -- territorio, de sólo lectura, como cualquier módulo del SIA
 GRANT territorio_lectura TO srp_api;
 
 INSERT INTO srp.migraciones (version, nombre)
-VALUES (1, 'Instalación: diez tablas del SRP, contraseñas, sesiones, registro de entradas, prioritarias, derivación sobre territorio, folio, fotografías, parámetros, prioridad congelada, posibles duplicados y lotes de carga masiva')
+VALUES (1, 'Instalación: diez tablas del SRP, contraseñas, sesiones, registro de entradas, prioritarias, derivación sobre territorio, folio, fotografías, parámetros, prioridad congelada, posibles duplicados, lotes de carga masiva y la calle de cada árbol')
 ON CONFLICT (version) DO NOTHING;
 
 /*
@@ -93,6 +96,7 @@ ON CONFLICT (version) DO NOTHING;
       SELECT count(*) FROM srp.plantaciones;
       SELECT count(*) FROM territorio.alcaldia;                  -- 16, por territorio_lectura
       SELECT * FROM srp.derivar(19.4326, -99.1332);              -- Cuauhtémoc, su colonia y su celda
+      SELECT * FROM srp.calle(19.4326, -99.1332);                -- su calle, si territorio.calles está instalada
       SELECT has_table_privilege('srp.bitacora', 'INSERT');      -- t
       SELECT has_table_privilege('srp.bitacora_acceso', 'INSERT');  -- t
       SHOW statement_timeout;                                    -- 50s
@@ -111,6 +115,7 @@ ON CONFLICT (version) DO NOTHING;
       CREATE TABLE srp.otra (x int);
       CREATE TABLE public.otra (x int);
       INSERT INTO srp.migraciones VALUES (2, 'x');
+      SELECT srp.recalcular_calles();
       UPDATE territorio.alcaldia SET nombre = 'x';
 
   Y el control global, que debe dar 0: ningún permiso directo fuera de srp

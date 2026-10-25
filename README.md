@@ -32,11 +32,11 @@ La versión que corre se lee al pie de cada pantalla.
    cabo, al final de su barra): lo plantado por semana, mes, año o rango, con filtros de alcaldía,
    programa y cabo; cuentan sólo las jornadas cerradas. Arriba, cifras, «Qué atender», descargas y
    gráfica; debajo, cada desglose plegado con su dato principal: por cabo, institución, alcaldía y
-   prioridad con mapa, especie, programa y calidad del dato. De ahí salen los
+   prioridad con mapa, por calle (red vial y quién la atiende), especie, programa y calidad del dato. De ahí salen los
    **informes** semanal, mensual, anual o por alcaldía en PDF con membrete, y la tabla de árboles en
    CSV para Excel. Dentro están las **Fotografías** de los registros, con descarga en ZIP. Lo que es de un
    solo cabo (lo que descarga el cabo, o con el filtro «Quién registró») lleva su nombre en el nombre del archivo.
-6. **Registros**: la lista de árboles con filtros, detalle (sin folio), edición y eliminación que se deshace.
+6. **Registros**: la lista de árboles con filtros, detalle (sin folio, con la calle), edición y eliminación que se deshace.
    **Configuración**, sólo para la Administración global, última pestaña de la barra de secciones:
    **Usuarios**, **Catálogos** (programas, áreas, especies, vehículos, instituciones y solicitantes),
    **Parámetros** (se editan con datos reales; con datos de prueba, sólo consulta), **Registro de cambios**, **Carga masiva** del histórico desde
@@ -205,6 +205,7 @@ js/                     La aplicación, un archivo por tema
   derivacion.js         Cruce punto-en-polígono (alcaldía, UGA, colonia)
   prioritarias.js       Colonias prioritarias para reforestar: prioridad de la jornada y de su colonia, y la capa en los mapas
   folio.js              Patrón, validación y etiqueta del folio; sólo lo emite el servidor simulado de prueba
+  calles.js             La calle de cada árbol: cómo se enseña y se cuenta; con datos de prueba, el servidor simulado la calcula
   conexion.js           Estado de la conexión (guía «¿Qué hacer sin internet?»)
   envio.js              Envío al servidor simulado con datos de prueba: cola, avisos de atraso, «Simular sin señal»
   esquema.js            Generado de datos/esquema.json por herramientas/generar_diccionario.py: no se edita a mano
@@ -231,6 +232,7 @@ js/                     La aplicación, un archivo por tema
 
 assets/
   capas/                capa-alcaldias.js, capa-uga.js, capa-colonias.js y capa-prioritarias.js: capas compactadas (generadas)
+  calles/               Copia ligera de la capa de calles, en 97 celdas de unos 4 km (sólo versión de prueba, generada)
   catalogos/            catalogo-especies.js (79 especies del SIA, generado), catalogos-arranque.js (los programas, áreas,
                         instituciones y solicitantes reales con que arranca el sistema) y catalogo-vehiculos.js (sólo
                         versión de prueba, placas ficticias)
@@ -266,6 +268,7 @@ docs/                   Memoria del proyecto
 
 herramientas/           Generan archivos del sitio a partir de originales/ y de datos/
   generar_capas.py      originales/*.geojson → assets/capas/
+  generar_calles.py     calles_cdmx.gpkg del paquete calles-cdmx → assets/calles/ (la copia ligera)
   huella_capas.py       assets/capas/ → datos/HUELLA-CAPAS.md y .json; con un archivo, compara contra otra fuente
   generar_especies.py   Excel de especies del SIA → assets/catalogos/catalogo-especies.js
   generar_diccionario.py  datos/esquema.json → datos/DICCIONARIO-DATOS.md y js/esquema.js
@@ -297,7 +300,7 @@ versión se escribe en un solo lugar del código.
 **El archivo `VERSION`, en la raíz, lleva el mismo número** (lo pide la guía del SIA, sección 8); la prueba
 falla si no coincide con la marca. Ese número se ve siempre en la franja fija de arriba. Hasta la 0.9.78 decía
 «Versión de prueba 0.9.N»; desde la versión 1, la que se entrega al SIA para instalar, dice «Versión» y el número de `VERSION`
-(hoy, «Versión 1.2.1»).
+(hoy, «Versión 1.3»).
 
 Si aun así alguien cae en una mezcla, el sistema lo detecta al abrir y explica cómo forzar la
 recarga, en vez de quedarse en blanco.
@@ -340,7 +343,7 @@ previstos, avance, especies y porcentaje de nativas); luego 1) datos de identifi
 árboles previstos, hora de finalización, comentarios y observaciones), 2) personal (participantes, apoyo
 y chófer), 3) datos del vehículo (tipo, modelo y placas), 4) croquis, que encuadra todos los puntos
 y aparta los números que se enciman, 5) ejemplares plantados (número, especie, nombre científico,
-el sitio si algún árbol quedó en macetón, precisión, el comentario si algún árbol lo tiene y la fecha si la jornada duró varios días; sin coordenada ni folio: dónde quedó
+el sitio si algún árbol quedó en macetón, la calle si el servidor ya la puso, precisión, el comentario si algún árbol lo tiene y la fecha si la jornada duró varios días; sin coordenada ni folio: dónde quedó
 cada árbol lo dice el croquis), 6) totales por especie con su distribución y porcentaje y 7)
 distribución de las especies en una barra (el conteo por especie ya lo da la tabla de totales y el avance contra lo previsto, la franja de cifras). Cada
 dato dice su nombre en negritas.
@@ -464,6 +467,33 @@ tres capas en su `capa_version` no recibe folio (nunca `EXT-000` por una capa au
 empieza con el **prefijo de la celda UGA, que no es la alcaldía del árbol** en el 4.3 % del
 territorio. El detalle y el PDF dicen con qué capas se derivó cada registro, y si el punto quedó más
 cerca del borde de su celda que la precisión del GPS, lo marca como «celda incierta».
+
+## La calle de cada árbol
+
+Cada árbol dice en qué calle quedó, entre qué calles va esa cuadra, si es vialidad primaria, calle
+secundaria o carretera, y quién la atiende. La pone el servidor al recibir el árbol y cada vez que se
+corrige su punto, con la capa de calles de la Ciudad de México, `territorio.calles` del SIA (paquete
+calles-cdmx 1.0.0, aprobado por Liber el 25-10-2026): el tramo más cercano, a 40 m o menos
+(`servidor/db/srp/09-srp-calles.sql`). Nadie la escribe. La capa de toda la ciudad no cabe en el
+teléfono: el teléfono la enseña en el detalle, la columna «Calle» del reporte, «Por red vial» del
+informe y de Supervisión, y cuatro columnas del CSV. La jornada no lleva calle.
+
+- **Sin la capa** el servidor no falla: el árbol queda «por asignar». Después de instalar la capa, o una
+  versión nueva, quien administra la base corre `SELECT srp.recalcular_calles();`.
+- **En la versión de prueba** no hay servidor: el servidor simulado (`js/calles.js`) la calcula al enviar,
+  con las mismas reglas, sobre una copia ligera de la capa (`assets/calles/`, 18.8 MB en 97 celdas de
+  unos 4 km, 5.1 MB comprimidos). Cada árbol baja sólo la celda de su punto. La copia lleva sólo lo que usa
+  el SRP: trazo, clave, nombre, entre qué calles, red vial, tipo de vía, quién la atiende y la llave del
+  nombre. La versión del SIA no la lleva (`herramientas/preparar_produccion.py`).
+- **Fuente:** `calles-cdmx-1.0.0.zip` (sha256 `4d20356744197b4eca993ffc42ce2b192868affdfa2e36e61b4c68d93f58a882`),
+  su `datos/calles_cdmx.gpkg` (sha256 `de1e1f811bb8b2a03156bd7c7dbabd985849201b82b08f869d46183eab3aca0e`),
+  del proyecto calles-cdmx. Se regenera con `python herramientas/generar_calles.py [ruta del gpkg]`.
+- **Cita obligatoria**, en el pie de «Por red vial» y en `assets/calles/indice.json`: elaborado por SEDEMA
+  con información del INEGI (Marco Geoestadístico, Encuesta Intercensal 2025; Red Nacional de Caminos 2025,
+  con SICT e IMT) y de SEMOVI (Vialidades primarias de la Ciudad de México, Portal de Datos Abiertos, CC BY
+  4.0, y el ACUERDO/CCV/016/3ORD/SEPTIEMBRE/2024). Licencias: Términos de Libre Uso de la Información del
+  INEGI y CC BY 4.0. SEDEMA unió, partió y clasificó los tramos y homologó sus nombres; esas
+  transformaciones no son del INEGI ni de SEMOVI.
 
 ## Pruebas
 

@@ -420,6 +420,48 @@ test('el sitio de plantación: suelo si no llega, macetón si se elige, se corri
   await assert.rejects(admin.query("UPDATE srp.plantaciones SET sitio_plantacion = 'azotea' WHERE id = $1", [M.id]), (e) => e.code === '23514');
 });
 
+/* La calle necesita territorio.calles en la base local: el paquete calles-cdmx, instalado con su instalar.sql.
+   Puntos de la capa 1.0.0: en medio del Zócalo no hay calle a 40 m; los otros dos, uno en una calle de Benito Juárez
+   y otro en Periférico. */
+const EN_PARROQUIA = { lat: 19.369020, lng: -99.168670 }, EN_PERIFERICO = { lat: 19.315500, lng: -99.078000 };
+const CAMPOS_CALLE = ['calle_estado', 'calle_clave', 'calle_version', 'calle', 'calle_entre_1', 'calle_entre_2', 'calle_esquina', 'vialidad_red', 'vialidad_tipo', 'calle_atiende', 'calle_llave', 'calle_distancia_m'];
+
+test('la calle de cada árbol: la pone la base al recibirlo y al corregir su punto, sin lo que mande el teléfono; sin la capa queda por calcular y srp.recalcular_calles() la pone', async () => {
+  assert.ok((await admin.query("SELECT to_regclass('territorio.calles') AS t")).rows[0].t, 'la base local necesita territorio.calles: instale el paquete calles-cdmx');
+  const t = await telefono(CABO);
+  const { J, A, version } = await conArbol(t);
+  assert.deepEqual([A.calle_estado, A.calle, A.calle_version], ['lejos', null, '1.0.0'], 'en medio del Zócalo no hay calle a 40 m');
+  // Lo que mande el teléfono en esos campos no cuenta
+  const P = await t.una('registro.crear', arbol(J.id, { ...EN_PARROQUIA, calle_estado: 'ok', calle: 'Calle inventada', calle_atiende: 'Nadie' }));
+  assert.deepEqual(CAMPOS_CALLE.map((k) => P.fila[k]), ['ok', '0901400010051900024', '1.0.0', 'Calle Parroquia', 'Eje 2 Poniente (Gabriel Mancera)', 'Calle López Cotilla', null,
+    'secundaria', null, 'Alcaldía Benito Juárez', 'parroquia', 7]);
+  // Corregir el punto la vuelve a calcular; corregir otra cosa no la toca
+  const r = await t.una('registro.editar', { id: A.id, version, cambios: { ...EN_PERIFERICO, punto_origen: 'mapa', gps_precision_m: null } });
+  assert.deepEqual([r.estado, r.fila.calle_estado, r.fila.calle, r.fila.vialidad_red, r.fila.calle_atiende], ['recibido', 'ok', 'Periférico (Canal de Garay)', 'primaria', 'Gobierno Central']);
+  const r2 = await t.una('registro.editar', { id: A.id, version: r.version, cambios: { comentarios: 'Otra cosa' } });
+  assert.deepEqual([r2.estado, r2.fila.calle], ['recibido', 'Periférico (Canal de Garay)']);
+  // Sin la capa, la base no falla: el árbol queda por calcular, y recalcular avisa que falta la capa
+  await admin.query('BEGIN');
+  try {
+    await admin.query('ALTER TABLE territorio.calles RENAME TO calles_sin_instalar');
+    assert.ok(Object.values((await admin.query('SELECT * FROM srp.calle($1, $2)', [EN_PARROQUIA.lat, EN_PARROQUIA.lng])).rows[0]).every((v) => v === null));
+    await admin.query('SAVEPOINT recalcular');
+    await assert.rejects(admin.query('SELECT srp.recalcular_calles()'), /no está instalada/);
+    await admin.query('ROLLBACK TO SAVEPOINT recalcular');
+  } finally {
+    await admin.query('ROLLBACK');
+  }
+  // Con la capa, recalcular pone la calle a los que no la tienen o la tienen de otra versión, y deja a los demás
+  await admin.query("UPDATE srp.plantaciones SET calle_estado = NULL, calle = NULL, calle_version = NULL WHERE id = $1", [P.fila.id]);
+  await admin.query("UPDATE srp.plantaciones SET calle_version = '0.9.0' WHERE id = $1", [A.id]);
+  assert.equal((await admin.query('SELECT srp.recalcular_calles() AS n')).rows[0].n, 2);
+  assert.deepEqual((await admin.query('SELECT calle, calle_version FROM srp.plantaciones WHERE id = ANY($1) ORDER BY calle', [[A.id, P.fila.id]])).rows.map((x) => [x.calle, x.calle_version]),
+    [['Calle Parroquia', '1.0.0'], ['Periférico (Canal de Garay)', '1.0.0']]);
+  assert.equal((await admin.query('SELECT srp.recalcular_calles() AS n')).rows[0].n, 0, 'otra vez, nada que hacer');
+  // La base sólo admite sus valores
+  await assert.rejects(admin.query("UPDATE srp.plantaciones SET vialidad_red = 'terciaria' WHERE id = $1", [A.id]), (e) => e.code === '23514');
+});
+
 test('mover lleva el árbol a otra jornada del mismo cabo, con la fecha y el programa de esa jornada; la de origen pierde su marca de revisado', async () => {
   const t = await telefono(CABO);
   const { J, A, version } = await conArbol(t, { fecha: dias(-3), nombre: 'Jornada de origen' });

@@ -241,6 +241,24 @@ SRP.supervision = {
       (m.filtros.alcaldia
         ? this.tabla(['Colonia', 'Árboles', '% del total', 'Jornadas'], cols.map(x => [conBarra(x.colonia, x.arboles, cols), num(x.arboles), x.pct + ' %', num(x.jornadas)]), [1, 2, 3], 'colonias')
         : this.tabla(['Alcaldía', 'Árboles', '% del total', 'Jornadas', 'Colonias'], alcs.map(x => [conBarra(x.clave, x.arboles, alcs), num(x.arboles), x.pct + ' %', num(x.jornadas), num(x.colonias)]), [1, 2, 3, 4])) + '</div></div>');
+    /* Por calle: cuántos árboles en cada red vial, con quién la atiende, y una lista de cada red con entre qué calles
+       quedaron (las cuadras seguidas, juntas) y su alcaldía o colonia */
+    const k = m.calles;
+    if (k.porCalle.length || k.lejos) {
+      const K = SRP.calles;
+      const bajo = x => [x.tramos.slice(0, 2).join('; ') + (x.tramos.length > 2 ? '; y ' + (x.tramos.length - 2) + ' más' : ''), m.filtros.alcaldia ? K.colonias(x.colonias) : x.alcaldia].filter(Boolean);
+      const lista = r => {
+        const cs = this.conPct(k.porCalle.filter(x => x.red === r.red), c.arboles);
+        return '<p class="sup-subtitulo">' + esc(K.TITULO[r.red] + ' · ' + K.quienes(r.atiende)) + '</p>' +
+          this.tabla(['Calle', 'Árboles', '% del total', 'Jornadas'], cs.map(x => [{ html: esc(x.calle) + bajo(x).map(t => '<small class="sup-tramos">' + esc(t) + '</small>').join('') + barra(x.arboles, cs[0].arboles) },
+            num(x.arboles), x.pct + ' %', num(x.jornadas)]), [1, 2, 3], 'calles-' + r.red.split(' ')[0]);
+      };
+      const filas = k.porRed.map(x => [K.TITULO[x.red], K.quienes(x.atiende), num(x.calles), num(x.arboles), (P(x.arboles, c.arboles) || 0) + ' %'])
+        .concat(k.lejos ? [['Sin calle cercana', '—', '—', num(k.lejos), (P(k.lejos, c.arboles) || 0) + ' %']] : [],
+          k.porAsignar ? [['Calle por asignar', '—', '—', num(k.porAsignar), (P(k.porAsignar, c.arboles) || 0) + ' %']] : []);
+      h += seccion('calles', 'sup-t-calles', 'Por calle', k.porRed.map(x => plural(x.arboles, 'árbol', 'árboles') + ' en ' + K.TITULO[x.red].toLowerCase()).join(' · ') || plural(k.lejos, 'árbol', 'árboles') + ' sin calle cercana',
+        this.tabla(['Red vial', 'Quién la atiende', 'Calles', 'Árboles', '% del total'], filas, [2, 3, 4]) + k.porRed.map(lista).join('') + '<p class="nota">' + esc(K.nota(k.versiones)) + '</p>');
+    }
     /* Por prioridad de la colonia: cuántos árboles quedaron en colonias de cada nivel del modelo de priorización,
        con el mapa de las colonias (más intenso, más prioridad) */
     if (m.prioridad) {
@@ -297,7 +315,7 @@ SRP.supervision = {
 
   /* Qué desgloses están abiertos. Con ancho se ven todos; en el teléfono, plegados, salvo «Por cabo»
      para quien supervisa. Lo que la persona abre o cierra se respeta mientras siga en la cuenta. */
-  SECCIONES: ['cabos', 'instituciones', 'alcaldias', 'prioridad', 'especies', 'programas', 'solicitudes', 'calidad'],
+  SECCIONES: ['cabos', 'instituciones', 'alcaldias', 'calles', 'prioridad', 'especies', 'programas', 'solicitudes', 'calidad'],
   abiertas: null,
   abierta(clave) {
     if (!this.abiertas) this.abiertas = new Set(window.matchMedia('(min-width: 701px)').matches ? this.SECCIONES : (this.esCabo() ? [] : ['cabos']));

@@ -366,6 +366,8 @@ SRP.reportes = {
     const conComentario = registros.some(r => this.textoComentario(r));
     // SITIO: casi todo se planta en suelo; la columna sale sólo si algún árbol quedó en macetón
     const conSitio = registros.some(r => (r.sitio_plantacion || 'suelo') !== 'suelo');
+    // La calle, si el servidor ya la puso en algún árbol
+    const conCalle = registros.some(r => r.calle_estado);
     const especieCon = e => e.comun + (e.cientifico ? ' (' + e.cientifico + ')' : '');
     // Una jornada de varios días dice sus días y cada árbol, el suyo
     const dias = SRP.util.diasJornada({ fecha }, registros), variosDias = dias.desde !== dias.hasta;
@@ -422,10 +424,11 @@ SRP.reportes = {
          color (verde buena, ámbar aceptable, rojo baja). Sin coordenadas: dónde quedó cada árbol lo
          dice el croquis, y la coordenada se queda en el sistema. `precision`: en qué columna va. */
       ejemplares: {
-        cabecera: ['N.º', 'Especie'].concat(conSitio ? ['Sitio'] : [], ['Precisión'], variosDias ? ['Fecha'] : [], conComentario ? ['Comentario'] : []),
-        filas: registros.map((r, i) => [String(i + 1), especieCon(SRP.ref.especieDe(r))].concat(conSitio ? [SRP.ref.sitio(r)] : [], [this.textoPrecision(r)],
+        cabecera: ['N.º', 'Especie'].concat(conSitio ? ['Sitio'] : [], conCalle ? ['Calle'] : [], ['Precisión'], variosDias ? ['Fecha'] : [], conComentario ? ['Comentario'] : []),
+        filas: registros.map((r, i) => [String(i + 1), especieCon(SRP.ref.especieDe(r))].concat(conSitio ? [SRP.ref.sitio(r)] : [], conCalle ? [SRP.calles.textoCelda(r)] : [], [this.textoPrecision(r)],
           variosDias ? [SRP.util.formatearFecha(r.fecha_plantacion)] : [], conComentario ? [this.textoComentario(r)] : [])),
-        precision: conSitio ? 3 : 2,
+        precision: 2 + (conSitio ? 1 : 0) + (conCalle ? 1 : 0),
+        calle: conCalle ? 2 + (conSitio ? 1 : 0) : null,
         niveles: registros.map(r => this.nivelPrecision(r)),
         especies: registros.map(r => { const e = SRP.ref.especieDe(r); return [e.comun, e.cientifico || '']; })
       },
@@ -810,7 +813,8 @@ SRP.reportes = {
     // La especie guarda su ancho: un comentario con una palabra muy larga (un enlace) se parte, no la aplasta
     tabla({ head: [m.ejemplares.cabecera.map((c, k) => k === 0 ? { content: c, styles: { halign: 'right' } } : c)], body: m.ejemplares.filas,
       // La 2 es la precisión o, con la columna «Sitio», el sitio; la precisión, donde quede, del mismo ancho
-      columnStyles: { 0: { cellWidth: 11, halign: 'right' }, 1: { minCellWidth: 45 }, 2: { cellWidth: 20 }, [m.ejemplares.precision]: { cellWidth: 20 } },
+      columnStyles: Object.assign({ 0: { cellWidth: 11, halign: 'right' }, 1: { minCellWidth: 45 }, 2: { cellWidth: 20 }, [m.ejemplares.precision]: { cellWidth: 20 } },
+        m.ejemplares.calle != null ? { [m.ejemplares.calle]: { cellWidth: 'auto', minCellWidth: 62 } } : {}),
       didParseCell: d => { if (d.section === 'body' && d.column.index === m.ejemplares.precision && colorNivel[m.ejemplares.niveles[d.row.index]]) { d.cell.styles.textColor = colorNivel[m.ejemplares.niveles[d.row.index]]; d.cell.styles.fontStyle = 'bold'; } } });
     letra('italic', 7.5, C.gris); { const l = doc.splitTextToSize(m.notaPrecision, util); salto(l.length * 3.4 + 2); doc.text(l, M, y); y += l.length * 3.4 + 4; }
 

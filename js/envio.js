@@ -168,6 +168,7 @@ SRP.envio = {
       // La señal puede irse a medio envío: nada se da por recibido sin confirmación
       if (!SRP.conexion.enLinea()) return { enviados: 0, pendientes: n, cortado: true };
       await SRP.folio.emitirPendientes();
+      try { await SRP.calles.asignarPendientes(); } catch (e) { /* la calle llega con el siguiente envío */ }
       const e = this.leer();
       const ahora = SRP.util.ahoraISO();
       const ids = cola.map(r => r.id);

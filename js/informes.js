@@ -156,6 +156,25 @@ SRP.informes = {
       titulo('Por alcaldía');
       tabla(['Alcaldía', 'Árboles', '% del total', 'Jornadas', 'Colonias'], SRP.supervision.conPct(m.porAlcaldia, c.arboles).map(x => [x.clave, num(x.arboles), pc(x.pct, x.arboles), num(x.jornadas), num(x.colonias)]), { derecha: [1, 2, 3, 4] });
     }
+    const k = m.calles;
+    if (k.porCalle.length || k.lejos) {
+      const P = SRP.indicadores.pct, K = SRP.calles;
+      titulo('Por red vial');
+      tabla(['Red vial', 'Quién la atiende', 'Calles', 'Árboles', '% del total'], k.porRed.map(x => [K.TITULO[x.red], K.quienes(x.atiende), num(x.calles), num(x.arboles), pc(P(x.arboles, c.arboles), x.arboles)])
+        .concat(k.lejos ? [['Sin calle cercana', '—', '—', num(k.lejos), pc(P(k.lejos, c.arboles), k.lejos)]] : [],
+          k.porAsignar ? [['Calle por asignar', '—', '—', num(k.porAsignar), pc(P(k.porAsignar, c.arboles), k.porAsignar)]] : []), { derecha: [2, 3, 4] });
+      const tramos = x => x.tramos.length ? x.tramos.slice(0, 3).join('; ') + (x.tramos.length > 3 ? '; y ' + (x.tramos.length - 3) + ' más' : '') : '—';
+      k.porRed.forEach(r => {
+        const todas = SRP.supervision.conPct(k.porCalle.filter(x => x.red === r.red), c.arboles);
+        const LIM = 15, resto = todas.slice(LIM), nResto = resto.reduce((s, x) => s + x.arboles, 0);
+        titulo(K.TITULO[r.red] + ' · ' + K.quienes(r.atiende));
+        tabla(['Calle', 'Entre calles', m.filtros.alcaldia ? 'Colonia' : 'Alcaldía', 'Árboles', '% del total', 'Jornadas'],
+          todas.slice(0, LIM).map(x => [x.calle, tramos(x), m.filtros.alcaldia ? K.colonias(x.colonias) : x.alcaldia, num(x.arboles), pc(x.pct, x.arboles), num(x.jornadas)])
+            .concat(resto.length ? [['Otras ' + num(resto.length) + ' calles', '', '', num(nResto), pc(P(nResto, c.arboles), nResto), '']] : []),
+          { derecha: [3, 4, 5], columnas: { 0: { cellWidth: 40 }, 1: { cellWidth: 56 } } });
+      });
+      nota(K.nota(k.versiones) + ' En el PDF van las 15 calles con más árboles de cada red; la lista completa, en la tabla para Excel.');
+    }
     if (m.prioridad && m.prioridad.total) {
       const p = m.prioridad, P = SRP.indicadores.pct;
       titulo('Por prioridad de la colonia');
@@ -217,7 +236,8 @@ SRP.informes = {
      tabulador o retorno) lleva un apóstrofo delante: Excel lo muestra como texto y no lo calcula.
      Las cifras —la longitud es negativa— quedan como están. */
   COLUMNAS: [['folio', 'Folio'], ['fecha', 'Fecha de plantación'], ['jornada', 'Jornada'], ['organizacion', 'Institución que ejecuta'], ['cabo', 'Quién registró'], ['programa', 'Programa'], ['especie', 'Especie'],
-    ['cientifico', 'Nombre científico'], ['distribucion', 'Distribución'], ['sitio', 'Sitio de plantación'], ['alcaldia', 'Alcaldía'], ['colonia', 'Colonia'], ['uga', 'Celda UGA'],
+    ['cientifico', 'Nombre científico'], ['distribucion', 'Distribución'], ['sitio', 'Sitio de plantación'], ['alcaldia', 'Alcaldía'], ['colonia', 'Colonia'],
+    ['calle', 'Calle'], ['entreCalles', 'Entre calles'], ['redVial', 'Red vial'], ['atiende', 'Quién atiende la calle'], ['uga', 'Celda UGA'],
     ['lat', 'Latitud'], ['lng', 'Longitud'], ['origen', 'Origen del punto'], ['precision', 'Precisión GPS (m)'], ['foto', 'Con fotografía'], ['reporte', 'Reporte de la jornada'], ['sustituto', 'Sustituto'], ['motivo', 'Motivo de la sustitución'],
     ['solicitante', 'Quién lo solicita'], ['solicitudDescripcion', 'Descripción de la solicitud']],
 

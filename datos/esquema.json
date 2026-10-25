@@ -236,6 +236,23 @@
     "id_especie": {
       "valores": "`ESP-0000`, consecutivo del SIA; hoy ESP-0001…ESP-0079 y las altas continúan en ESP-0080",
       "fuente": "assets/catalogos/catalogo-especies.js (16._Registro_plantaciones_catalogos_05_10_2026.xlsx)"
+    },
+    "calle_estado": {
+      "valores": [
+        "ok",
+        "lejos"
+      ],
+      "codigo": "SRP.calles.ESTADOS",
+      "fuente": "js/calles.js ESTADOS"
+    },
+    "vialidad_red": {
+      "valores": [
+        "primaria",
+        "secundaria",
+        "carretera o camino"
+      ],
+      "codigo": "SRP.calles.REDES",
+      "fuente": "js/calles.js REDES"
     }
   },
   "tablas": {
@@ -526,6 +543,114 @@
           "dominio": "→ usuarios.id",
           "pantalla": "Historial",
           "regla": "Quién hizo la última edición (o la eliminación)"
+        },
+        {
+          "campo": "calle_estado",
+          "tipo": "text",
+          "nulo": true,
+          "origen": "Servidor",
+          "dominio": "calle_estado",
+          "pantalla": "Detalle («Calle»): «Se asigna al enviar» mientras sea nulo; «Sin calle a menos de 40 m» si es `lejos`",
+          "regla": "Lo pone el servidor al recibir el árbol y cada vez que se corrige el punto, con la capa territorio.calles: `ok` si hay un tramo a 40 m o menos, `lejos` si no. Nulo mientras no se calcula: un árbol sin enviar, o un servidor que todavía no tiene la capa. Con datos de prueba lo pone el servidor simulado, con la copia ligera de la capa (assets/calles/)"
+        },
+        {
+          "campo": "calle_clave",
+          "tipo": "text",
+          "nulo": true,
+          "origen": "Servidor",
+          "dominio": "Clave INEGI del tramo, de 19 dígitos, válida para su calle_version",
+          "pantalla": "No",
+          "regla": "El tramo más cercano. Una clave sólo vale para su versión de la capa: con otra versión se pasa por territorio.calles_equivalencia"
+        },
+        {
+          "campo": "calle_version",
+          "tipo": "text",
+          "nulo": true,
+          "origen": "Servidor",
+          "dominio": "Versión de territorio.calles con que se calculó, como `1.0.0`",
+          "pantalla": "No",
+          "regla": "srp.recalcular_calles() vuelve a calcular los árboles sin calle o de otra versión, después de instalar o actualizar la capa"
+        },
+        {
+          "campo": "calle",
+          "tipo": "text",
+          "nulo": true,
+          "origen": "Servidor",
+          "dominio": "Nombre del tramo (`nombre` de la capa); «calle sin nombre» si no tiene",
+          "pantalla": "Detalle («Calle»), reporte (columna «Calle»), informe y Supervisión («Por red vial»), CSV",
+          "regla": "Sólo con calle_estado = ok; si no, nulo, como los demás campos de la calle"
+        },
+        {
+          "campo": "calle_entre_1",
+          "tipo": "text",
+          "nulo": true,
+          "origen": "Servidor",
+          "dominio": "La calle de una esquina del tramo (`entre_1`); nula si el tramo no tiene salida por ese lado",
+          "pantalla": "Detalle y reporte («entre A y B»); el informe junta las cuadras seguidas de una calle en un tramo",
+          "regla": "Con una sola esquina, o con la misma calle en las dos, la pantalla dice «a la altura de»"
+        },
+        {
+          "campo": "calle_entre_2",
+          "tipo": "text",
+          "nulo": true,
+          "origen": "Servidor",
+          "dominio": "La calle de la otra esquina (`entre_2`)",
+          "pantalla": "Igual que calle_entre_1",
+          "regla": ""
+        },
+        {
+          "campo": "calle_esquina",
+          "tipo": "text",
+          "nulo": true,
+          "origen": "Servidor",
+          "dominio": "Otra calle casi igual de cerca: a menos de 4 m más que la del tramo",
+          "pantalla": "Detalle («Junto a la esquina con …»)",
+          "regla": "Avisa que el árbol podría contarse en la otra calle"
+        },
+        {
+          "campo": "vialidad_red",
+          "tipo": "text",
+          "nulo": true,
+          "origen": "Servidor",
+          "dominio": "vialidad_red",
+          "pantalla": "Detalle (junto a quién la atiende), informe y Supervisión («Por red vial»), CSV",
+          "regla": "`red_vial` del tramo"
+        },
+        {
+          "campo": "vialidad_tipo",
+          "tipo": "text",
+          "nulo": true,
+          "origen": "Servidor",
+          "dominio": "En la red primaria, «Vía primaria» o «Vía de acceso controlado» (`tipo_via`); nulo en las demás",
+          "pantalla": "Detalle («Vía de acceso controlado»)",
+          "regla": ""
+        },
+        {
+          "campo": "calle_atiende",
+          "tipo": "text",
+          "nulo": true,
+          "origen": "Servidor",
+          "dominio": "Quién atiende el tramo (`atiende`): «Gobierno Central», «Alcaldía X», «Alcaldías X y Y», «Concesión», «Gobierno Federal», «Particular» o «Por confirmar»",
+          "pantalla": "Detalle, informe y Supervisión («Quién la atiende»), CSV",
+          "regla": "«Por confirmar» no quiere decir «de la alcaldía»: la pantalla dice «quién la atiende, por confirmar»"
+        },
+        {
+          "campo": "calle_llave",
+          "tipo": "text",
+          "nulo": true,
+          "origen": "Servidor",
+          "dominio": "Nombre para comparar (`llave`): sin tipo, acentos ni mayúsculas; nulo sin nombre",
+          "pantalla": "No",
+          "regla": "En el informe y en Supervisión, una misma calle es su llave dentro de la alcaldía del árbol"
+        },
+        {
+          "campo": "calle_distancia_m",
+          "tipo": "integer",
+          "nulo": true,
+          "origen": "Servidor",
+          "dominio": "Metros enteros del árbol al tramo, de 0 a 40",
+          "pantalla": "No",
+          "regla": ""
         }
       ]
     },
@@ -1895,6 +2020,12 @@
       "de": "La sesión",
       "cuando": "En cada movimiento",
       "ver": "Historial"
+    },
+    {
+      "campo": "plantaciones.calle_estado … calle_distancia_m",
+      "de": "lat, lng contra territorio.calles en el servidor (srp.calle); el tramo más cercano a 40 m o menos",
+      "cuando": "Al recibir el árbol y cada vez que se corrige su punto (disparador de srp.plantaciones); con datos de prueba, el servidor simulado al enviar (js/calles.js asignarPendientes)",
+      "ver": "Detalle («Calle»), reporte, informe, Supervisión y CSV"
     }
   ],
   "calculados_no_guardados": [
@@ -2511,6 +2642,13 @@
       "version": "2026-10-05",
       "alimenta": "especies",
       "estado": "Definitivo"
+    },
+    {
+      "capa": "calles",
+      "archivo": "En el servidor, territorio.calles del SIA (paquete calles-cdmx). En la versión de prueba, la copia ligera de assets/calles/ (herramientas/generar_calles.py)",
+      "version": "calles-cdmx 1.0.0",
+      "alimenta": "calle_estado, calle_clave, calle_version, calle, calle_entre_1, calle_entre_2, calle_esquina, vialidad_red, vialidad_tipo, calle_atiende, calle_llave, calle_distancia_m",
+      "estado": "Aprobada por Liber el 25-10-2026: 178,771 tramos del INEGI (Encuesta Intercensal 2025) y la Red Nacional de Caminos 2025, con la red vial y quién atiende de SEMOVI y el acuerdo de 2024. Falta que el SIA confirme dónde la instala. La copia ligera lleva sólo lo que usa el SRP, con su cita"
     }
   ]
 }

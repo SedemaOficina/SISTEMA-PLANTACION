@@ -58,6 +58,8 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 | `uga` | 1,624 claves `AAA-000` de la malla hexagonal | assets/capas/capa-uga.js (SIA, versión sia-2026-09-22; definitiva, con 8 celdas de prefijo distinto a su alcaldía) |
 | `colonia_cve` | Claves `CVEUT` del IECM 2022 (p. ej. `15-040`) | assets/capas/capa-colonias.js (IECM 2022, versión iecm-2022; definitiva) |
 | `id_especie` | `ESP-0000`, consecutivo del SIA; hoy ESP-0001…ESP-0079 y las altas continúan en ESP-0080 | assets/catalogos/catalogo-especies.js (16._Registro_plantaciones_catalogos_05_10_2026.xlsx) |
+| `calle_estado` | `ok` · `lejos` | js/calles.js ESTADOS |
+| `vialidad_red` | `primaria` · `secundaria` · `carretera o camino` | js/calles.js REDES |
 
 ## 4. Tablas
 
@@ -66,7 +68,7 @@ Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo,
 Un renglón por ejemplar plantado. Es el registro individual de campo; todo lo demás (partes, tableros, cifra pública) se construye encima.
 
 - **Llave:** `id`. **Índices:** `estatus`, `jornada_id`. **Pantalla:** Nuevo registro (alta y edición), Registros (lista, detalle), reporte de la jornada.
-- **Campos:** 31.
+- **Campos:** 43.
 
 | Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
 |---|---|---|---|---|---|---|
@@ -101,6 +103,18 @@ Un renglón por ejemplar plantado. Es el registro individual de campo; todo lo d
 | `fecha_registro` | timestamptz | No | Sistema | ISO 8601 con zona (-06:00) | Detalle | Cuándo se guardó por primera vez. Distinta de fecha_plantacion |
 | `fecha_ultima_edicion` | timestamptz | Sí | Sistema | ISO 8601 | Detalle e historial | Nula hasta la primera edición; también se pone al eliminar |
 | `editado_por_id` | uuid | Sí | Sesión | → usuarios.id | Historial | Quién hizo la última edición (o la eliminación) |
+| `calle_estado` | text | Sí | Servidor | dominio `calle_estado` | Detalle («Calle»): «Se asigna al enviar» mientras sea nulo; «Sin calle a menos de 40 m» si es `lejos` | Lo pone el servidor al recibir el árbol y cada vez que se corrige el punto, con la capa territorio.calles: `ok` si hay un tramo a 40 m o menos, `lejos` si no. Nulo mientras no se calcula: un árbol sin enviar, o un servidor que todavía no tiene la capa. Con datos de prueba lo pone el servidor simulado, con la copia ligera de la capa (assets/calles/) |
+| `calle_clave` | text | Sí | Servidor | Clave INEGI del tramo, de 19 dígitos, válida para su calle_version | No | El tramo más cercano. Una clave sólo vale para su versión de la capa: con otra versión se pasa por territorio.calles_equivalencia |
+| `calle_version` | text | Sí | Servidor | Versión de territorio.calles con que se calculó, como `1.0.0` | No | srp.recalcular_calles() vuelve a calcular los árboles sin calle o de otra versión, después de instalar o actualizar la capa |
+| `calle` | text | Sí | Servidor | Nombre del tramo (`nombre` de la capa); «calle sin nombre» si no tiene | Detalle («Calle»), reporte (columna «Calle»), informe y Supervisión («Por red vial»), CSV | Sólo con calle_estado = ok; si no, nulo, como los demás campos de la calle |
+| `calle_entre_1` | text | Sí | Servidor | La calle de una esquina del tramo (`entre_1`); nula si el tramo no tiene salida por ese lado | Detalle y reporte («entre A y B»); el informe junta las cuadras seguidas de una calle en un tramo | Con una sola esquina, o con la misma calle en las dos, la pantalla dice «a la altura de» |
+| `calle_entre_2` | text | Sí | Servidor | La calle de la otra esquina (`entre_2`) | Igual que calle_entre_1 | — |
+| `calle_esquina` | text | Sí | Servidor | Otra calle casi igual de cerca: a menos de 4 m más que la del tramo | Detalle («Junto a la esquina con …») | Avisa que el árbol podría contarse en la otra calle |
+| `vialidad_red` | text | Sí | Servidor | dominio `vialidad_red` | Detalle (junto a quién la atiende), informe y Supervisión («Por red vial»), CSV | `red_vial` del tramo |
+| `vialidad_tipo` | text | Sí | Servidor | En la red primaria, «Vía primaria» o «Vía de acceso controlado» (`tipo_via`); nulo en las demás | Detalle («Vía de acceso controlado») | — |
+| `calle_atiende` | text | Sí | Servidor | Quién atiende el tramo (`atiende`): «Gobierno Central», «Alcaldía X», «Alcaldías X y Y», «Concesión», «Gobierno Federal», «Particular» o «Por confirmar» | Detalle, informe y Supervisión («Quién la atiende»), CSV | «Por confirmar» no quiere decir «de la alcaldía»: la pantalla dice «quién la atiende, por confirmar» |
+| `calle_llave` | text | Sí | Servidor | Nombre para comparar (`llave`): sin tipo, acentos ni mayúsculas; nulo sin nombre | No | En el informe y en Supervisión, una misma calle es su llave dentro de la alcaldía del árbol |
+| `calle_distancia_m` | integer | Sí | Servidor | Metros enteros del árbol al tramo, de 0 a 40 | No | — |
 
 ### 4.2 `usuarios`
 
@@ -356,6 +370,7 @@ Se guardan en la tabla, pero nadie los teclea: salen de otro dato o de la sesió
 | especies.clave | Máximo ESP-0000 en uso + 1 | Al abrir el alta | Clave (sólo lectura) |
 | jornadas.encargado_id | La sesión si es cabo; elección entre cabos con registros ese día si no | Al abrir el cierre | Encargado (sólo quien ve a varias personas; a un cabo no se le muestra) |
 | bitacora.usuario_id, usuario_nombre, perfil | La sesión | En cada movimiento | Historial |
+| plantaciones.calle_estado … calle_distancia_m | lat, lng contra territorio.calles en el servidor (srp.calle); el tramo más cercano a 40 m o menos | Al recibir el árbol y cada vez que se corrige su punto (disparador de srp.plantaciones); con datos de prueba, el servidor simulado al enviar (js/calles.js asignarPendientes) | Detalle («Calle»), reporte, informe, Supervisión y CSV |
 
 ## 7. Lo que se calcula y no se guarda
 
@@ -503,6 +518,7 @@ Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras
 | colonias | assets/capas/capa-colonias.js (fuente originales/colonias_iecm2022.geojson) | iecm-2022 | colonia_cve, colonia | Definitiva desde el 28-09-2026: las colonias del IECM 2022 son la unidad oficial de reporte. Nueve geometrías se ajustan a la rejilla de seis decimales para que sigan válidas. En el 1.25 % del territorio la colonia cruza el límite de su alcaldía; la alcaldía siempre sale de su propia capa |
 | colonias prioritarias | assets/capas/capa-prioritarias.js (fuente originales/colonias_prioritarias_reforestacion.geojson) | priorizacion-2026-10-01 | Nada que se guarde: la prioridad de la jornada (escala al iniciarla, tarjeta, ficha y reporte), el polígono de su colonia en los mapas de campo y el indicador «Por prioridad de la colonia» | Capa de referencia del modelo de priorización (entregada el 01-10-2026): 2,243 colonias, prioridad 0 (Muy baja) a 4 (Muy alta). Se publican sólo colonia, alcaldía y prioridad. Sus colonias no son las unidades territoriales del IECM; polígonos simplificados (15 vértices en promedio) con 6.5 km² de solapes, donde gana el más pequeño; nueve geometrías ajustadas a la rejilla. Por confirmar con el SIA: versión oficial y geometría completa |
 | catálogo de especies | assets/catalogos/catalogo-especies.js (fuente originales/16._Registro_plantaciones_catalogos_05_10_2026.xlsx) | 2026-10-05 | especies | Definitivo |
+| calles | En el servidor, territorio.calles del SIA (paquete calles-cdmx). En la versión de prueba, la copia ligera de assets/calles/ (herramientas/generar_calles.py) | calles-cdmx 1.0.0 | calle_estado, calle_clave, calle_version, calle, calle_entre_1, calle_entre_2, calle_esquina, vialidad_red, vialidad_tipo, calle_atiende, calle_llave, calle_distancia_m | Aprobada por Liber el 25-10-2026: 178,771 tramos del INEGI (Encuesta Intercensal 2025) y la Red Nacional de Caminos 2025, con la red vial y quién atiende de SEMOVI y el acuerdo de 2024. Falta que el SIA confirme dónde la instala. La copia ligera lleva sólo lo que usa el SRP, con su cita |
 
 ## 13. Borrador de tablas para la Fase 2 (PostgreSQL)
 
@@ -541,6 +557,18 @@ CREATE TABLE plantaciones (
   fecha_registro           timestamptz    NOT NULL,
   fecha_ultima_edicion     timestamptz    NULL,
   editado_por_id           uuid           NULL,
+  calle_estado             text           NULL,
+  calle_clave              text           NULL,
+  calle_version            text           NULL,
+  calle                    text           NULL,
+  calle_entre_1            text           NULL,
+  calle_entre_2            text           NULL,
+  calle_esquina            text           NULL,
+  vialidad_red             text           NULL,
+  vialidad_tipo            text           NULL,
+  calle_atiende            text           NULL,
+  calle_llave              text           NULL,
+  calle_distancia_m        integer        NULL,
   PRIMARY KEY (id)
 );
 CREATE INDEX plantaciones_estatus ON plantaciones (estatus);

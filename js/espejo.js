@@ -57,13 +57,19 @@ SRP.espejo = {
     motivo_sustitucion: 'Sólo en un sustituto: vandalismo, impacto vehicular, robo, muerte u otro',
     motivo_sustitucion_otro: 'Lo escrito cuando el motivo es «Otro»',
     sitio_plantacion: 'Suelo o macetón; cada árbol nuevo empieza en suelo',
+    calle_estado: 'La pone el servidor al recibir el árbol y al corregir su punto: «ok» con calle a 40 m o menos, «lejos» sin ella; nulo mientras no se calcula',
+    calle_clave: 'Clave INEGI del tramo más cercano, válida para su versión de la capa', calle_version: 'Versión de la capa de calles con que se calculó',
+    calle: 'Nombre del tramo; «calle sin nombre» si no tiene', calle_entre_1: 'Calle de una esquina del tramo', calle_entre_2: 'Calle de la otra esquina',
+    calle_esquina: 'Otra calle casi igual de cerca, a menos de 4 m más', vialidad_red: 'Primaria, secundaria o carretera o camino',
+    vialidad_tipo: 'En la red primaria: vía primaria o vía de acceso controlado', calle_atiende: 'Quién atiende el tramo, según la capa',
+    calle_llave: 'El nombre sin tipo, acentos ni mayúsculas: una misma calle en los informes', calle_distancia_m: 'Metros del árbol al tramo',
     sustituido_por_id: 'Sólo en un árbol perdido: su sustituto. Ese árbol pasa a estatus «sustituido»'
   },
 
   // Lo que el detalle del registro sí enseña (registros.js, verDetalle): el resto va al espejo
   VISIBLES_DETALLE: ['lat', 'lng', 'punto_origen', 'gps_precision_m', 'alcaldia', 'colonia',
                      'especie_id', 'especie_otra', 'programa_id', 'fecha_plantacion', 'sitio_plantacion', 'cabo_id',
-                     'comentarios', 'foto_base64'],
+                     'comentarios', 'foto_base64', 'calle_estado', 'calle', 'calle_entre_1', 'calle_entre_2', 'calle_esquina', 'vialidad_red', 'vialidad_tipo', 'calle_atiende'],
 
   // Cierre del reporte: lo que se ve en el formulario son sus CAMPOS y el encargado
   NOTAS_CIERRE: {

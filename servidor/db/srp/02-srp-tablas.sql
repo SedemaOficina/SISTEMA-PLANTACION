@@ -34,11 +34,25 @@ CREATE TABLE srp.plantaciones (
   fecha_registro             timestamptz    NOT NULL,
   fecha_ultima_edicion       timestamptz    NULL,
   editado_por_id             uuid           NULL,
+  calle_estado               text           NULL,
+  calle_clave                text           NULL,
+  calle_version              text           NULL,
+  calle                      text           NULL,
+  calle_entre_1              text           NULL,
+  calle_entre_2              text           NULL,
+  calle_esquina              text           NULL,
+  vialidad_red               text           NULL,
+  vialidad_tipo              text           NULL,
+  calle_atiende              text           NULL,
+  calle_llave                text           NULL,
+  calle_distancia_m          integer        NULL,
   CONSTRAINT plantaciones_pk PRIMARY KEY (id),
   CONSTRAINT plantaciones_estatus_valido CHECK (estatus IN ('activo', 'eliminado', 'sustituido')),
   CONSTRAINT plantaciones_punto_origen_valido CHECK (punto_origen IN ('gps', 'mapa', 'manual', 'ajustado')),
   CONSTRAINT plantaciones_motivo_sustitucion_valido CHECK (motivo_sustitucion IN ('VANDALISMO', 'IMPACTO_VEHICULAR', 'ROBO', 'MUERTE', 'OTRO')),
   CONSTRAINT plantaciones_sitio_plantacion_valido CHECK (sitio_plantacion IN ('suelo', 'maceton')),
+  CONSTRAINT plantaciones_calle_estado_valido CHECK (calle_estado IN ('ok', 'lejos')),
+  CONSTRAINT plantaciones_vialidad_red_valido CHECK (vialidad_red IN ('primaria', 'secundaria', 'carretera o camino')),
   CONSTRAINT plantaciones_folio_unico UNIQUE (folio),
   CONSTRAINT plantaciones_folio_patron CHECK (folio ~ '^[A-Z]{3}-\d{3}-\d{5}$'),
   CONSTRAINT plantaciones_especie_id_patron CHECK (especie_id ~ '^ESP-\d{4}$'),
@@ -307,6 +321,18 @@ COMMENT ON COLUMN srp.plantaciones.foto_id IS 'UUID v4; null sin foto; Identific
 COMMENT ON COLUMN srp.plantaciones.fecha_registro IS 'ISO 8601 con zona (-06:00); Cuándo se guardó por primera vez. Distinta de fecha_plantacion';
 COMMENT ON COLUMN srp.plantaciones.fecha_ultima_edicion IS 'ISO 8601; Nula hasta la primera edición; también se pone al eliminar';
 COMMENT ON COLUMN srp.plantaciones.editado_por_id IS '→ usuarios.id; Quién hizo la última edición (o la eliminación)';
+COMMENT ON COLUMN srp.plantaciones.calle_estado IS 'calle_estado; Lo pone el servidor al recibir el árbol y cada vez que se corrige el punto, con la capa territorio.calles: `ok` si hay un tramo a 40 m o menos, `lejos` si no. Nulo mientras no se calcula: un árbol sin enviar, o un servidor que todavía no tiene la capa. Con datos de prueba lo pone el servidor simulado, con la copia ligera de la capa (assets/calles/)';
+COMMENT ON COLUMN srp.plantaciones.calle_clave IS 'Clave INEGI del tramo, de 19 dígitos, válida para su calle_version; El tramo más cercano. Una clave sólo vale para su versión de la capa: con otra versión se pasa por territorio.calles_equivalencia';
+COMMENT ON COLUMN srp.plantaciones.calle_version IS 'Versión de territorio.calles con que se calculó, como `1.0.0`; srp.recalcular_calles() vuelve a calcular los árboles sin calle o de otra versión, después de instalar o actualizar la capa';
+COMMENT ON COLUMN srp.plantaciones.calle IS 'Nombre del tramo (`nombre` de la capa); «calle sin nombre» si no tiene; Sólo con calle_estado = ok; si no, nulo, como los demás campos de la calle';
+COMMENT ON COLUMN srp.plantaciones.calle_entre_1 IS 'La calle de una esquina del tramo (`entre_1`); nula si el tramo no tiene salida por ese lado; Con una sola esquina, o con la misma calle en las dos, la pantalla dice «a la altura de»';
+COMMENT ON COLUMN srp.plantaciones.calle_entre_2 IS 'La calle de la otra esquina (`entre_2`)';
+COMMENT ON COLUMN srp.plantaciones.calle_esquina IS 'Otra calle casi igual de cerca: a menos de 4 m más que la del tramo; Avisa que el árbol podría contarse en la otra calle';
+COMMENT ON COLUMN srp.plantaciones.vialidad_red IS 'vialidad_red; `red_vial` del tramo';
+COMMENT ON COLUMN srp.plantaciones.vialidad_tipo IS 'En la red primaria, «Vía primaria» o «Vía de acceso controlado» (`tipo_via`); nulo en las demás';
+COMMENT ON COLUMN srp.plantaciones.calle_atiende IS 'Quién atiende el tramo (`atiende`): «Gobierno Central», «Alcaldía X», «Alcaldías X y Y», «Concesión», «Gobierno Federal», «Particular» o «Por confirmar»; «Por confirmar» no quiere decir «de la alcaldía»: la pantalla dice «quién la atiende, por confirmar»';
+COMMENT ON COLUMN srp.plantaciones.calle_llave IS 'Nombre para comparar (`llave`): sin tipo, acentos ni mayúsculas; nulo sin nombre; En el informe y en Supervisión, una misma calle es su llave dentro de la alcaldía del árbol';
+COMMENT ON COLUMN srp.plantaciones.calle_distancia_m IS 'Metros enteros del árbol al tramo, de 0 a 40';
 COMMENT ON TABLE srp.usuarios IS 'Cuentas del sistema. Una por persona; el perfil decide qué puede hacer (js/permisos.js, fuente única).';
 COMMENT ON COLUMN srp.usuarios.id IS 'UUID v4 (las de arranque: u-admin-1, u-coord-1, u-cabo-1)';
 COMMENT ON COLUMN srp.usuarios.correo IS 'Correo válido, en minúsculas, único; Identifica la cuenta y sirve para entrar; no se puede cambiar después. No tiene que ser institucional';
