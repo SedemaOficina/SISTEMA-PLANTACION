@@ -6431,6 +6431,8 @@ publicarla con su cita, y que la calle vaya en la entrega siguiente a la 1.2.1 (
 - La copia para el SIA (`preparar_produccion.py`): 76 archivos, sin `assets/calles/`.
 - La demostración carga con calles en unos 4 segundos: de 18,646 árboles, 15,272 con calle y 3,374 sin calle cercana
   (sus puntos caen al azar; con 20,000 árboles reales, el 93 % tuvo calle).
+- En Pages, publicado: la demostración llegó con calles y sin errores, pero tardaba 19 segundos en bajar las 97 celdas
+  una tras otra. Ahora se bajan de ocho en ocho: 6 segundos. La celda más grande viaja comprimida en 187 KB.
 
 No se probó: en un teléfono de verdad, ni con la capa instalada en el SIA (no se sabe todavía dónde va).
 
