@@ -1,5 +1,5 @@
 /* SUPERVISIÓN Y «MI AVANCE». Lo que se ha plantado en un periodo, dicho con los indicadores de
-   SRP.indicadores: la coordinación ve su cuadrilla, la administración todo y el cabo lo suyo,
+   SRP.indicadores: la coordinación ve su institución, la administración todo y el cabo lo suyo,
    con la misma pantalla. Para la coordinación y la administración es la primera sección al entrar
    y trae dentro las Fotografías; el cabo la encuentra al final de su barra como «Mi avance».
    Todo se calcula; nada se teclea. Los informes en PDF y CSV salen de este mismo modelo. */

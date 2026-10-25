@@ -486,9 +486,9 @@ SRP.app = {
     SRP.formulario.limpiar(true);
     this.campoClave(false);
     // La jornada abierta de quien entra queda activa; se avisa si es de otro día
-    SRP.activa.alEntrar().then(() => { if (this.vista === 'registrar') SRP.activa.preparar(); }).then(() => SRP.activa.avisarRelevos());
+    SRP.activa.alEntrar().then(() => { if (this.vista === 'registrar') SRP.activa.preparar(); }).then(() => SRP.activa.avisarRelevos()).then(() => SRP.activa.avisarApoyos());
     // Quien supervisa entra a Supervisión; el cabo, a registrar
-    this.mostrarVista(['equipo', 'institucion', 'todos'].includes(p.alcance) ? 'supervision' : p.registrar ? 'registrar' : 'registros');
+    this.mostrarVista(['institucion', 'todos'].includes(p.alcance) ? 'supervision' : p.registrar ? 'registrar' : 'registros');
     SRP.conexion.refrescar();
     // Datos de prueba: al entrar se envía lo pendiente y, si no sale, lo dice la franja
     SRP.conexion.sugerirInstalar();   // en iPhone desde Safari, una vez por sesión y antes de capturar

@@ -279,8 +279,8 @@ test('editar una cuenta sigue las reglas del formulario: el correo no cambia y l
   const a = cliente();
   await a.pedir('POST', '/acceso/entrar', { correo: ADMIN.correo, contrasena: ADMIN.clave });
   const coord = (await a.pedir('POST', '/cuentas', { correo: 'coord.prueba.editar@ejemplo.local', nombre_completo: 'Coordinación Prueba Editar', organizacion_id: 'o-prueba-acceso', cargo_rol: 'Coordinación', perfil: 'COORDINADOR' })).datos.usuario;
-  const cabo = (await a.pedir('POST', '/cuentas', { correo: 'cabo.prueba.editar@ejemplo.local', nombre_completo: 'Cabo Prueba Editar', organizacion_id: 'o-prueba-acceso', cargo_rol: 'Cabo', perfil: 'CABO', coordinadores_ids: [coord.id] })).datos.usuario;
-  const base = { organizacion_id: 'o-prueba-acceso', perfil: 'CABO', coordinadores_ids: [coord.id] };
+  const cabo = (await a.pedir('POST', '/cuentas', { correo: 'cabo.prueba.editar@ejemplo.local', nombre_completo: 'Cabo Prueba Editar', organizacion_id: 'o-prueba-acceso', cargo_rol: 'Cabo', perfil: 'CABO' })).datos.usuario;
+  const base = { organizacion_id: 'o-prueba-acceso', perfil: 'CABO' };
   const r = await a.pedir('PUT', '/cuentas/' + cabo.id, { ...base, correo: 'otro.prueba@ejemplo.local', nombre_completo: '  Cabo   Prueba Editado ', cargo_rol: 'Jefe de cuadrilla' });
   assert.deepEqual([r.estado, r.datos.usuario.nombre_completo, r.datos.usuario.cargo_rol, r.datos.usuario.correo], [200, 'Cabo Prueba Editado', 'Jefe de cuadrilla', 'cabo.prueba.editar@ejemplo.local']);
   const bit = (await admin.query("SELECT detalle FROM srp.bitacora WHERE entidad_id = $1 AND accion = 'EDITADO'", [cabo.id])).rows.map((b) => b.detalle);
@@ -288,9 +288,9 @@ test('editar una cuenta sigue las reglas del formulario: el correo no cambia y l
   const error = async (id, cuerpo) => { const x = await a.pedir('PUT', '/cuentas/' + id, cuerpo); return [x.estado, x.datos.errores && x.datos.errores[0]]; };
   // La Administración global es sólo de la Secretaría
   assert.deepEqual(await error(cabo.id, { ...base, nombre_completo: 'Cabo Prueba Editado', cargo_rol: 'X', perfil: 'ADMIN' }), [400, ['perfil', 'La Administración global es sólo de la Secretaría.']]);
-  // Quien coordina cabos no cambia de institución
-  assert.deepEqual(await error(coord.id, { organizacion_id: 'o-sedema', area_id: 'a-sia', nombre_completo: 'Coordinación Prueba Editar', cargo_rol: 'X', perfil: 'COORDINADOR' }),
-    [400, ['organizacion_id', 'Coordina a 1 cabo: asígnelos a otra persona antes de cambiarla de institución.']]);
+  // Los cabos ya no se asignan a una coordinación: lo que mande el teléfono en `coordinadores_ids` no se guarda
+  const conCoordinador = await a.pedir('PUT', '/cuentas/' + cabo.id, { ...base, nombre_completo: 'Cabo Prueba Editado', cargo_rol: 'Jefe de cuadrilla', coordinadores_ids: [coord.id], version: r.datos.usuario.fecha_ultima_edicion });
+  assert.deepEqual([conCoordinador.estado, conCoordinador.datos.usuario.coordinadores_ids], [200, []]);
   // Quien administra no se quita a sí mismo la Administración
   assert.deepEqual(await error(ADMIN.id, { organizacion_id: 'o-sedema', area_id: 'a-sia', nombre_completo: 'Administración Prueba Acceso', cargo_rol: 'X', perfil: 'DIRECTIVO' }),
     [400, ['perfil', 'No puede cambiar su propio perfil de administración. Pida a otra cuenta de administración que lo haga.']]);
@@ -311,16 +311,14 @@ test('eliminar una cuenta sólo si no aparece en nada; una que ya entró se desa
   await cliente().pedir('POST', '/acceso/entrar', { correo: 'cabo.prueba.entro@ejemplo.local', contrasena: entro.datos.temporal });
   const e = await a.pedir('DELETE', '/cuentas/' + entro.datos.usuario.id);
   assert.deepEqual([e.estado, e.datos.codigo, e.datos.mensaje], [409, 'EN_USO', 'No se puede eliminar: ya entró al sistema. Desactívela: eso sí se deshace.']);
-  // Quien coordina a un cabo no se elimina aunque nunca haya entrado: el cabo quedaría con un coordinador que no existe
+  // Una coordinación sin registros se elimina aunque su institución tenga cabos: ya no se le asignan
   const coord = (await a.pedir('POST', '/cuentas', { correo: 'coord.prueba.eliminar@ejemplo.local', nombre_completo: 'Coordinación Prueba Eliminar', organizacion_id: 'o-prueba-acceso', cargo_rol: 'Coordinación', perfil: 'COORDINADOR' })).datos.usuario;
   const suCabo = (await a.pedir('POST', '/cuentas', { correo: 'cabo.prueba.coordinado@ejemplo.local', nombre_completo: 'Cabo Prueba Coordinado', organizacion_id: 'o-prueba-acceso', cargo_rol: 'Cabo', perfil: 'CABO', coordinadores_ids: [coord.id] })).datos.usuario;
   const usos = (await a.pedir('GET', '/cuentas/usos')).datos;
-  assert.deepEqual([usos[coord.id], usos[suCabo.id], Object.keys(usos[entro.datos.usuario.id])], [{ usuarios: 1, cabos: 1 }, undefined, ['entradas']]);
+  assert.deepEqual([usos[coord.id], usos[suCabo.id], Object.keys(usos[entro.datos.usuario.id])], [undefined, undefined, ['entradas']]);
   assert.equal(usos[ADMIN.id].usuarios >= 4 && usos[ADMIN.id].entradas >= 1, true);
-  const ec = await a.pedir('DELETE', '/cuentas/' + coord.id);
-  assert.deepEqual([ec.estado, ec.datos.mensaje], [409, 'No se puede eliminar: coordina a 1 cabo. Desactívela: eso sí se deshace.']);
-  assert.equal((await a.pedir('DELETE', '/cuentas/' + suCabo.id)).estado, 200);
   assert.equal((await a.pedir('DELETE', '/cuentas/' + coord.id)).estado, 200);
+  assert.equal((await a.pedir('DELETE', '/cuentas/' + suCabo.id)).estado, 200);
   const propia = await a.pedir('DELETE', '/cuentas/' + ADMIN.id);
   assert.deepEqual([propia.estado, propia.datos.codigo], [400, 'PROPIA']);
   // Un cabo no edita ni elimina cuentas

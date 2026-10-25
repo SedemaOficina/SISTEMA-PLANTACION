@@ -3,7 +3,7 @@
    PARA QUÉ. Quien coordina o administra necesita ver las fotografías de los árboles registrados
    y llevárselas: para un informe, para revisar un sitio o para responder una solicitud. La
    galería enseña las fotografías de los registros activos que alcanza quien entró (las de su
-   cuadrilla o todas), con la zona de filtros compartida (js/filtros.js): buscar, periodo y, en «Más
+   institución o todas), con la zona de filtros compartida (js/filtros.js): buscar, periodo y, en «Más
    filtros», jornada, quién registró, especie, programa, alcaldía e institución.
 
    QUÉ SE PUEDE HACER. Tocar una fotografía la abre grande con los datos del árbol (especie,

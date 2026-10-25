@@ -107,13 +107,24 @@ SRP.jornadas = {
     this.el('btn-jornada-eliminar').innerHTML = SRP.ICONOS.svg('basura', 'medio') + '<span>Eliminar jornada</span>';
     this.el('btn-jornada-editar').addEventListener('click', () => this.abrirEditar(this.guardada));
     this.el('btn-jornada-eliminar').addEventListener('click', () => this.eliminarJornada());
-    // Relevo de cabo: la coordinación pasa la jornada abierta a otro cabo de su cuadrilla
+    // Relevo de cabo: la coordinación pasa la jornada abierta a otro cabo de la institución
     this.el('btn-jornada-relevo').innerHTML = SRP.ICONOS.svg('usuarios', 'medio') + '<span>Relevo de cabo</span>';
     this.el('btn-jornada-relevo').addEventListener('click', () => this.abrirRelevo());
     this.el('btn-relevo-cerrar').innerHTML = SRP.ICONOS.svg('cerrar', 'grande');
     this.el('btn-relevo-cerrar').addEventListener('click', () => this.el('dlg-relevo').close());
     this.el('btn-relevo-hacer').innerHTML = SRP.ICONOS.svg('palomita', 'medio') + '<span>Hacer el relevo</span>';
     this.el('btn-relevo-hacer').addEventListener('click', () => this.relevar(this.el('relevo-quien').value));
+    // Jornada compartida: la Coordinación que la abrió marca a sus cabos de apoyo
+    this.el('btn-jornada-apoyos').innerHTML = SRP.ICONOS.svg('usuarios', 'medio') + '<span>Cabos de apoyo</span>';
+    this.el('btn-jornada-apoyos').addEventListener('click', () => this.abrirApoyos());
+    this.el('btn-apoyos-cerrar').innerHTML = SRP.ICONOS.svg('cerrar', 'grande');
+    this.el('btn-apoyos-cerrar').addEventListener('click', () => this.el('dlg-apoyos').close());
+    this.el('apoyos-cabos').addEventListener('click', (e) => {
+      const b = e.target.closest('.chip'); if (!b) return;
+      b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'));
+      this.pintarBotonApoyos();
+    });
+    this.el('btn-apoyos-guardar').addEventListener('click', () => this.compartir([...this.el('apoyos-cabos').querySelectorAll('.chip[aria-pressed="true"]')].map(b => b.dataset.id)));
     this.el('relevo-quien').addEventListener('change', () => { this.el('relevo-error').hidden = true; });
     this.el('btn-ej-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar cambios</span>';
     SRP.solicitud.montar(this.el('ej-caja-solicitud'), 'ej');
@@ -719,6 +730,10 @@ SRP.jornadas = {
     await this.pintarDetalle(true);
     this.el('jornada-titulo').focus({ preventScroll: true });
     SRP.app.alInicio();   // la ficha empieza arriba
+    // Una jornada compartida se trae al día del servidor: lo que registraron sus cabos de apoyo y quién ya terminó
+    if (this.guardada && this.compartida(this.guardada) && SRP.remoto.activo()) {
+      SRP.remoto.alDia(this.guardada.id).then(x => { if (x && this.actual === clave) this.refrescar(); });
+    }
   },
 
   async cerrar() {
@@ -751,11 +766,13 @@ SRP.jornadas = {
     // Dos renglones: cuándo y quién; dónde, su prioridad, su estado y quién la solicita
     const cuando = [SRP.envio.diaEnLetra(j.fecha).split(' ')[0] + ' ' + SRP.util.textoDias(dias),
       j.total > 1 ? 'Jornada ' + j.n + ' de ' + j.total : '',
-      SRP.ref.nombreUsuario(j.cabo_id) + (relevo ? ' (titular) · relevo: ' + SRP.ref.nombreUsuario(relevo) : '')].filter(Boolean);
+      SRP.ref.nombreUsuario(j.cabo_id) + (relevo ? ' (titular) · relevo: ' + SRP.ref.nombreUsuario(relevo) : this.compartida(guardada) ? ' (Coordinación)' : '')].filter(Boolean);
     const otras = SRP.prioritarias.textoOtras(j.registros, j.dato);
     const donde = [lugarFicha ? esc(lugarFicha) : '', SRP.prioritarias.marca(j.prioridad), guardada.estatus === 'abierta' ? 'abierta' : 'cerrada',
+      this.compartida(guardada) ? '<b>compartida</b>' : '',
       otras ? esc(otras) : '', SRP.solicitud.es(guardada) ? esc('solicita ' + SRP.solicitud.solicitanteCompleto(guardada)) : ''].filter(Boolean);
-    this.el('jornada-sub').innerHTML = '<span class="ficha-renglon">' + esc(cuando.join(' · ')) + '</span><span class="ficha-renglon">' + donde.join(' · ') + '</span>';
+    this.el('jornada-sub').innerHTML = '<span class="ficha-renglon">' + esc(cuando.join(' · ')) + '</span><span class="ficha-renglon">' + donde.join(' · ') + '</span>' +
+      (this.compartida(guardada) ? '<span class="ficha-renglon">' + esc(this.textoApoyos(guardada)) + '</span>' : '');
     this.el('jornada-comentarios').hidden = !guardada.comentarios;
     this.el('jornada-comentarios').textContent = guardada.comentarios || '';
     // Cerrar o reabrir la jornada desde su revisión: quien registra en ella (el titular o el cabo del relevo)
@@ -766,7 +783,10 @@ SRP.jornadas = {
     const btnEstado = this.el('btn-jornada-estado');
     btnEstado.hidden = !puedeJornada;
     this.el('btn-jornada-editar').hidden = !puedeJornada;
-    this.el('btn-jornada-relevo').hidden = !SRP.permisos.puede('jornada.relevo', guardada);
+    // En la jornada que abrió la Coordinación, «Cabos de apoyo» ocupa el lugar de «Relevo de cabo»
+    const compartible = SRP.permisos.puede('jornada.compartir', guardada);
+    this.el('btn-jornada-apoyos').hidden = !compartible;
+    this.el('btn-jornada-relevo').hidden = compartible || !SRP.permisos.puede('jornada.relevo', guardada);
     const vacia = regs.length === 0 && !(await SRP.almacen.porIndice('plantaciones', 'jornada_id', j.id)).length;
     this.el('btn-jornada-eliminar').hidden = !(SRP.permisos.puede('jornada.eliminar', guardada) && vacia);
     // Cerrar no es aprobar: acción principal con candado; reabrir es corregir: neutro con lápiz
@@ -1295,7 +1315,9 @@ SRP.jornadas = {
 
   async registrarFaltante() {
     const j = await this.jornadaGuardada(this.jornada); if (!j) return;
-    if (SRP.activa.capturista(j) !== SRP.sesion.usuario.id) { SRP.util.anunciar('En esta jornada registra ' + SRP.ref.nombreUsuario(SRP.activa.capturista(j)) + '.', 'aviso'); return; }
+    if (SRP.activa.capturista(j) !== SRP.sesion.usuario.id && !SRP.permisos.apoyoVigente(j, SRP.sesion.usuario.id)) {
+      SRP.util.anunciar('En esta jornada registra ' + SRP.ref.nombreUsuario(SRP.activa.capturista(j)) + '.', 'aviso'); return;
+    }
     this.volverAlDetalle = false;
     if (j.estatus !== 'abierta') { if (!await SRP.activa.reabrir(j)) return; } else SRP.activa.jornada = j;
     SRP.formulario.limpiar();
@@ -1305,15 +1327,18 @@ SRP.jornadas = {
 
   /* ---------- Relevo de cabo ---------- */
 
-  /* Los cabos que pueden recibir la jornada: los activos de la cuadrilla de quien coordina y de la
-     institución de la jornada, menos el que ya registra en ella. Si hay relevo, el titular se ofrece
-     primero, para devolvérsela. */
-  candidatosRelevo(c) {
-    const u = SRP.sesion.usuario, actual = SRP.activa.capturista(c);
+  // Los cabos activos de la institución de la jornada, por nombre: para el relevo y para los cabos de apoyo
+  cabosDeLaInstitucion(c) {
     const org = c.organizacion_id || SRP.CONFIG.ORGANIZACION_SEDEMA;
-    const cabos = SRP.ref.usuarios.filter(x => x.activo && x.perfil === 'CABO' && (x.coordinadores_ids || []).includes(u.id) && x.id !== actual && x.id !== c.cabo_id &&
-      (x.organizacion_id || SRP.CONFIG.ORGANIZACION_SEDEMA) === org)
+    return SRP.ref.usuarios.filter(x => x.activo && x.perfil === 'CABO' && (x.organizacion_id || SRP.CONFIG.ORGANIZACION_SEDEMA) === org)
       .sort((a, b) => SRP.util.nombreCompleto(a).localeCompare(SRP.util.nombreCompleto(b), 'es'));
+  },
+
+  /* Los cabos que pueden recibir la jornada: los activos de la institución de la jornada, menos el que
+     ya registra en ella. Si hay relevo, el titular se ofrece primero, para devolvérsela. */
+  candidatosRelevo(c) {
+    const actual = SRP.activa.capturista(c);
+    const cabos = this.cabosDeLaInstitucion(c).filter(x => x.id !== actual && x.id !== c.cabo_id);
     const titular = actual !== c.cabo_id && SRP.ref.usuarioPorId[c.cabo_id] ? [[c.cabo_id, SRP.ref.nombreUsuario(c.cabo_id) + ' (titular: se la devuelve)']] : [];
     return titular.concat(cabos.map(x => [x.id, SRP.util.nombreCompleto(x)]));
   },
@@ -1324,7 +1349,7 @@ SRP.jornadas = {
     const opciones = this.candidatosRelevo(c);
     this.el('dlg-relevo-texto').textContent = 'Hoy registra en «' + c.nombre + '» ' + SRP.ref.nombreUsuario(actual) +
       (actual === c.cabo_id ? ', su titular.' : ', en relevo de ' + SRP.ref.nombreUsuario(c.cabo_id) + '.') + ' Elija quién sigue registrando en ella.';
-    this.el('relevo-quien').innerHTML = SRP.util.opciones(opciones.length ? 'Seleccione un cabo' : 'No hay otro cabo en su cuadrilla', opciones);
+    this.el('relevo-quien').innerHTML = SRP.util.opciones(opciones.length ? 'Seleccione un cabo' : 'No hay otro cabo en la institución', opciones);
     this.el('relevo-quien').disabled = !opciones.length;
     this.el('btn-relevo-hacer').disabled = !opciones.length;
     this.el('relevo-error').hidden = true;
@@ -1355,6 +1380,70 @@ SRP.jornadas = {
       : 'Relevo hecho: ' + SRP.ref.nombreUsuario(caboId) + ' registra ahora en «' + c.nombre + '». La jornada sigue a nombre de ' + SRP.ref.nombreUsuario(c.cabo_id) + '.', 'exito');
   },
 
+  /* ---------- Jornada compartida ---------- */
+
+  // Una jornada compartida: alguna vez tuvo cabos de apoyo
+  compartida(j) { return !!j && (j.cabos_apoyo || []).length > 0; },
+
+  // «Cabos de apoyo: Marisol Pérez, Julián Ortega (terminó)». Los que se quitaron ya no se dicen
+  textoApoyos(j) {
+    const lista = (j.cabos_apoyo || []).filter(a => a.fin !== 'quitado').map(a => SRP.ref.nombreUsuario(a.cabo_id) + (a.fin === 'terminado' ? ' (terminó)' : ''));
+    return 'Cabos de apoyo: ' + (lista.length ? lista.join(', ') : 'ninguno por ahora');
+  },
+
+  /* La ventana: los cabos activos de la institución de la jornada, uno por renglón, con los vigentes marcados. Los
+     que terminaron su parte salen sin marcar y lo dicen: marcarlos otra vez los deja registrar de nuevo. */
+  abrirApoyos() {
+    const c = this.guardada; if (!c || !SRP.permisos.exigir('jornada.compartir', c)) return;
+    const esc = SRP.util.escapar, vigentes = SRP.permisos.vigentes(c);
+    const terminados = new Set((c.cabos_apoyo || []).filter(a => a.fin === 'terminado').map(a => a.cabo_id));
+    const cabos = this.cabosDeLaInstitucion(c);
+    this.el('dlg-apoyos-texto').textContent = 'Marque a los cabos de su institución que registran en «' + c.nombre + '». Con ellos, la jornada pasa a ser compartida.';
+    this.el('apoyos-etiqueta').textContent = 'Cabos de ' + SRP.ref.nombreOrganizacion(c.organizacion_id || SRP.CONFIG.ORGANIZACION_SEDEMA);
+    this.el('apoyos-cabos').innerHTML = cabos.length ? cabos.map(x => '<button type="button" class="chip chip-renglon" data-id="' + esc(x.id) + '" aria-pressed="' + vigentes.includes(x.id) + '">' +
+      SRP.ICONOS.svg('palomita', 'chico') + '<span>' + esc(SRP.util.nombreCompleto(x)) + (terminados.has(x.id) ? ' <span class="nota">· terminó su parte</span>' : '') + '</span></button>').join('')
+      : '<p class="nota">No hay cabos activos en la institución.</p>';
+    this.apoyosAntes = vigentes;
+    this.el('apoyos-error').hidden = true;
+    this.pintarBotonApoyos();
+    this.el('dlg-apoyos').showModal();
+  },
+
+  // «Guardar: 3 cabos de apoyo»; sin cambios, el botón no hace nada que guardar
+  pintarBotonApoyos() {
+    const n = this.el('apoyos-cabos').querySelectorAll('.chip[aria-pressed="true"]').length;
+    this.el('btn-apoyos-guardar').innerHTML = SRP.ICONOS.svg('palomita', 'medio') + '<span>' + (n ? 'Guardar: ' + n + (n === 1 ? ' cabo de apoyo' : ' cabos de apoyo') : 'Guardar: sin cabos de apoyo') + '</span>';
+  },
+
+  /* Guarda los cabos marcados. Al que entra se le anota desde cuándo y quién lo puso; al que sale, hasta cuándo y
+     que lo quitaron; uno que vuelve queda vigente otra vez. Al servidor viaja lo que cambió (js/cola.js), no la
+     lista entera: si mientras tanto un cabo terminó su parte, eso no se deshace. */
+  async compartir(ids) {
+    const c = await this.jornadaGuardada(this.jornada); if (!c) return;
+    if (!SRP.permisos.exigir('jornada.compartir', c)) return;
+    const validos = new Set(this.cabosDeLaInstitucion(c).map(x => x.id));
+    const vigentes = SRP.permisos.vigentes(c);
+    const agregar = ids.filter(id => validos.has(id) && !vigentes.includes(id));
+    const quitar = vigentes.filter(id => !ids.includes(id));
+    if (!agregar.length && !quitar.length) { this.el('dlg-apoyos').close(); return; }
+    const u = SRP.sesion.usuario, ahora = SRP.util.ahoraISO(), lista = c.cabos_apoyo || [];
+    const nueva = lista.map(a => (agregar.includes(a.cabo_id) ? { cabo_id: a.cabo_id, desde: ahora, por_id: u.id, hasta: null, fin: null }
+      : quitar.includes(a.cabo_id) ? Object.assign({}, a, { hasta: ahora, fin: 'quitado' }) : a));
+    agregar.filter(id => !lista.some(a => a.cabo_id === id)).forEach(id => nueva.push({ cabo_id: id, desde: ahora, por_id: u.id, hasta: null, fin: null }));
+    const nombres = xs => xs.map(id => SRP.ref.nombreUsuario(id)).join(', ');
+    const dato = Object.assign({}, c, { cabos_apoyo: nueva, editado_por_id: u.id, fecha_ultima_edicion: ahora });
+    await SRP.almacen.guardarConBitacora('jornadas', dato, SRP.bitacora.entrada('APOYO', 'jornada', c.id,
+      [agregar.length ? 'Agrega: ' + nombres(agregar) : '', quitar.length ? 'Quita: ' + nombres(quitar) : ''].filter(Boolean).join('; ')), 'jornada.compartir');
+    if (SRP.activa.jornada && SRP.activa.jornada.id === c.id) SRP.activa.jornada = dato;
+    if (SRP.envio.simulado()) SRP.envio.enviar({ silencioso: true });
+    this.el('dlg-apoyos').close();
+    this.volverAlDetalle = true; this.actual = c.id;
+    await this.refrescar();
+    const n = SRP.permisos.vigentes(dato).length;
+    SRP.util.anunciar(n ? 'Jornada compartida: ' + n + (n === 1 ? ' cabo de apoyo registra' : ' cabos de apoyo registran') + ' en «' + c.nombre + '». Les llega a su teléfono la próxima vez que tengan señal.'
+      : 'La jornada «' + c.nombre + '» ya no tiene cabos de apoyo vigentes.', 'exito');
+  },
+
   // El reporte se genera desde la ficha de su jornada: datos del cierre, vista previa y PDF, sin salir de Jornadas
   irAlReporte() {
     const j = this.jornada;
@@ -1366,4 +1455,4 @@ SRP.jornadas = {
 
 // Acciones que escriben en el teléfono: si fallan, se dice qué no se pudo hacer
 SRP.util.proteger(SRP.jornadas, { mover: 'mover el árbol de jornada', guardarEnJornada: 'guardar la jornada', guardarEdicion: 'guardar los cambios de la jornada',
-  eliminarJornada: 'eliminar la jornada', relevar: 'hacer el relevo', marcarRevisado: 'marcar el punto como revisado', marcarTodosRevisados: 'marcar los puntos como revisados' });
+  eliminarJornada: 'eliminar la jornada', relevar: 'hacer el relevo', compartir: 'guardar los cabos de apoyo', marcarRevisado: 'marcar el punto como revisado', marcarTodosRevisados: 'marcar los puntos como revisados' });

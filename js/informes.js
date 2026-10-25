@@ -1,4 +1,4 @@
-/* INFORMES POR PERIODO: semanal, mensual, anual o de un rango, de toda la cuadrilla o de una
+/* INFORMES POR PERIODO: semanal, mensual, anual o de un rango, de todo lo que alcanza quien lo pide o de una
    alcaldía, en PDF con membrete y en CSV para Excel. Salen del mismo modelo que la pestaña
    Supervisión (SRP.indicadores): lo que se imprime es lo que se ve. El reporte de cada jornada
    (reportes.js) es el documento de campo; éste, el de seguimiento. */
@@ -46,7 +46,7 @@ SRP.informes = {
   alcance() {
     const u = SRP.sesion.usuario, a = SRP.permisos.de(u).alcance;
     if (a === 'propios') return 'Cabo: ' + SRP.util.nombreCompleto(u);
-    if (a === 'equipo') return 'Cuadrilla de ' + SRP.util.nombreCompleto(u) + ' (coordinación)' + (SRP.ref.esSedema(u.organizacion_id) ? '' : ' · ' + SRP.ref.nombreOrganizacion(u.organizacion_id));
+    if (u.perfil === 'COORDINADOR') return 'Coordinación: ' + SRP.util.nombreCompleto(u) + ' · ' + ((SRP.ref.organizacionDe(u) || {}).nombre || 'su institución');
     if (a === 'institucion') return ((SRP.ref.organizacionDe(u) || {}).nombre || 'Su institución') + ' (dirección)';
     return 'Toda la Ciudad (' + (u.perfil === 'DIRECTIVO' ? 'dirección' : 'administración') + ')';
   },

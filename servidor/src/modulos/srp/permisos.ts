@@ -7,11 +7,11 @@ import type { Usuario } from "./sesiones";
    acciones. Aquí se imponen; la pantalla sólo las refleja. Una prueba las compara una por una con las de
    la aplicación, para que no se separen: si cambia una regla, cambia en los dos lados.
 
-   El alcance dice qué registros toca cada quien: el cabo, los suyos; el coordinador, los suyos y los de
-   los cabos que lo tienen asignado; el directivo, todo si es de la Secretaría y sólo lo de su institución
-   si es de otra; la Administración global, todo. Un perfil que no existe no recibe nada. */
+   El alcance dice qué registros toca cada quien: el cabo, los suyos; el coordinador, todo lo de su
+   institución; el directivo, todo si es de la Secretaría y sólo lo de su institución si es de otra; la
+   Administración global, todo. Un perfil que no existe no recibe nada. */
 
-export type Alcance = "propios" | "equipo" | "institucion" | "todos" | "ninguno";
+export type Alcance = "propios" | "institucion" | "todos" | "ninguno";
 
 export interface Capacidades {
   etiqueta: string;
@@ -30,7 +30,7 @@ export const SEDEMA = "o-sedema";
 
 export const PERFILES: Readonly<Record<string, Capacidades>> = {
   CABO: { etiqueta: "Cabo", alcance: "propios", registrar: true, editar: true, eliminar: true, eliminarJornadaVacia: true, relevar: false, catalogos: false, usuarios: false, galeria: true },
-  COORDINADOR: { etiqueta: "Coordinador", alcance: "equipo", registrar: true, editar: true, eliminar: true, eliminarJornadaVacia: true, relevar: true, catalogos: false, usuarios: false, galeria: true },
+  COORDINADOR: { etiqueta: "Coordinador", alcance: "institucion", registrar: true, editar: true, eliminar: true, eliminarJornadaVacia: true, relevar: true, catalogos: false, usuarios: false, galeria: true },
   DIRECTIVO: { etiqueta: "Directivo", alcance: "todos", registrar: false, editar: false, eliminar: false, eliminarJornadaVacia: false, relevar: false, catalogos: false, usuarios: false, galeria: true },
   ADMIN: { etiqueta: "Administración global", alcance: "todos", registrar: false, editar: true, eliminar: true, eliminarJornadaVacia: true, relevar: false, catalogos: true, usuarios: true, galeria: true },
 };
@@ -43,10 +43,9 @@ export const SIN_PERMISOS: Capacidades = {
 /** Lo que de la cuenta deciden las reglas. */
 export type Cuenta = Pick<Usuario, "id" | "perfil" | "organizacion_id">;
 
-/** De quien capturó o tuvo a su cargo un registro: su institución y sus coordinadores. */
+/** De quien capturó o tuvo a su cargo un registro: su institución. */
 export interface Autor {
   organizacion_id: string;
-  coordinadores_ids: string[];
 }
 export type Autores = ReadonlyMap<string, Autor>;
 
@@ -55,6 +54,7 @@ export interface Objeto {
   cabo_id?: string | null;
   relevo_id?: string | null;
   relevos?: { cabo_id?: string | null }[] | null;
+  cabos_apoyo?: { cabo_id?: string | null; hasta?: string | null }[] | null;
   organizacion_id?: string | null;
   estatus?: string | null;
   sustituido_por_id?: string | null;
@@ -66,11 +66,20 @@ export function capacidadesDe(u: Pick<Usuario, "perfil" | "organizacion_id">): C
   return u.perfil === "DIRECTIVO" && u.organizacion_id !== SEDEMA ? { ...p, alcance: "institucion" } : p;
 }
 
-/** Quién responde de un registro: en un árbol, el cabo que lo capturó; en una jornada, su titular y los
- *  cabos que la recibieron en relevo, aunque después la hayan devuelto. */
+/** Quién responde de un registro: en un árbol, el cabo que lo capturó; en una jornada, su titular, los
+ *  cabos que la recibieron en relevo, aunque después la hayan devuelto, y sus cabos de apoyo, también los que
+ *  ya terminaron o se quitaron. */
 export function personasDe(x: Objeto): string[] {
-  return [x.cabo_id, x.relevo_id, ...(x.relevos ?? []).map((r) => r.cabo_id)].filter((id): id is string => Boolean(id));
+  return [x.cabo_id, x.relevo_id, ...(x.relevos ?? []).map((r) => r.cabo_id), ...(x.cabos_apoyo ?? []).map((a) => a.cabo_id)]
+    .filter((id): id is string => Boolean(id));
 }
+
+/** Un cabo de apoyo vigente de la jornada: no ha terminado su parte ni lo quitaron. */
+export const apoyoVigente = (x: Objeto, id: string): boolean => (x.cabos_apoyo ?? []).some((a) => a.cabo_id === id && !a.hasta);
+
+/** Está en la jornada sólo como cabo de apoyo: la ve con todos sus árboles, pero no cambia sus datos ni la cierra. */
+const soloDeApoyo = (x: Objeto, id: string): boolean =>
+  (x.cabos_apoyo ?? []).some((a) => a.cabo_id === id) && ![x.cabo_id, x.relevo_id, ...(x.relevos ?? []).map((r) => r.cabo_id)].includes(id);
 
 export function alcanza(u: Cuenta, x: Objeto, autores: Autores): boolean {
   const alcance = capacidadesDe(u).alcance;
@@ -82,13 +91,11 @@ export function alcanza(u: Cuenta, x: Objeto, autores: Autores): boolean {
     if (x.organizacion_id) return x.organizacion_id === u.organizacion_id;
     return personas.some((id) => autores.get(id)?.organizacion_id === u.organizacion_id);
   }
-  if (personas.includes(u.id)) return true;
-  if (alcance === "equipo") return personas.some((id) => (autores.get(id)?.coordinadores_ids ?? []).includes(u.id));
-  return false;
+  return personas.includes(u.id);
 }
 
-/** Qué árboles se ven: los de su alcance y, en una jornada donde estuvo de relevo sin ser su titular,
- *  todos los de esa jornada. */
+/** Qué árboles se ven: los de su alcance y, en una jornada donde estuvo de relevo o de apoyo sin ser su
+ *  titular, todos los de esa jornada. */
 export function veArbol(u: Cuenta, arbol: Objeto, jornada: Objeto | null, autores: Autores): boolean {
   if (alcanza(u, arbol, autores)) return true;
   return !!jornada && jornada.cabo_id !== u.id && personasDe(jornada).includes(u.id) && alcanza(u, jornada, autores);
@@ -106,12 +113,16 @@ export const ACCIONES = {
   "registro.sustituir": { texto: "sustituir este árbol", regla: (p, u, x, a) => p.registrar && x.estatus === "activo" && !x.sustituido_por_id && alcanza(u, x, a) },
   "registro.mover": { texto: "mover este registro de jornada", regla: (p, u, x, a) => p.editar && alcanza(u, x, a) },
   "jornada.crear": { texto: "iniciar jornadas", regla: (p) => p.registrar },
-  "jornada.editar": { texto: "modificar esta jornada", regla: (p, u, x, a) => p.editar && alcanza(u, x, a) },
-  "jornada.eliminar": { texto: "eliminar esta jornada", regla: (p, u, x, a) => p.eliminarJornadaVacia && alcanza(u, x, a) },
-  // Registrar en una jornada abierta: sólo quien la tiene a su cargo, el titular o el cabo del relevo
-  "jornada.registrar": { texto: "registrar en esta jornada", regla: (p, u, x) => p.registrar && x.estatus === "abierta" && (x.relevo_id || x.cabo_id) === u.id },
-  // Relevo: la coordinación pasa una jornada abierta a otro cabo de su cuadrilla
+  "jornada.editar": { texto: "modificar esta jornada", regla: (p, u, x, a) => p.editar && alcanza(u, x, a) && !soloDeApoyo(x, u.id) },
+  "jornada.eliminar": { texto: "eliminar esta jornada", regla: (p, u, x, a) => p.eliminarJornadaVacia && alcanza(u, x, a) && !soloDeApoyo(x, u.id) },
+  // Registrar en una jornada abierta: quien la tiene a su cargo, el titular o el cabo del relevo, y sus cabos de apoyo vigentes
+  "jornada.registrar": { texto: "registrar en esta jornada", regla: (p, u, x) => p.registrar && x.estatus === "abierta" && ((x.relevo_id || x.cabo_id) === u.id || apoyoVigente(x, u.id)) },
+  // Relevo: la coordinación pasa una jornada abierta a otro cabo de la institución de la jornada
   "jornada.relevo": { texto: "pasar esta jornada a otro cabo", regla: (p, u, x, a) => p.relevar && x.estatus === "abierta" && alcanza(u, x, a) },
+  // Jornada compartida: la Coordinación que la abrió marca a sus cabos de apoyo
+  "jornada.compartir": { texto: "elegir los cabos de apoyo de esta jornada", regla: (p, u, x) => p.relevar && x.estatus === "abierta" && x.cabo_id === u.id },
+  // «Terminar mi parte»: el cabo de apoyo vigente, con la jornada abierta
+  "jornada.terminar": { texto: "terminar su parte en esta jornada", regla: (p, u, x) => p.registrar && x.estatus === "abierta" && apoyoVigente(x, u.id) },
   "catalogo.administrar": { texto: "administrar los catálogos", regla: (p) => p.catalogos },
   "usuario.administrar": { texto: "administrar las cuentas", regla: (p) => p.usuarios },
   "carga.masiva": { texto: "cargar árboles en bloque", regla: (p) => p.usuarios && p.catalogos },
@@ -157,10 +168,11 @@ export class Parametros {
 
 type Tabla = "jornadas" | "plantaciones";
 
-// «`id` es una de las personas del registro». El árbol tiene sólo a su cabo; la jornada, también sus relevos
+// «`id` es una de las personas del registro». El árbol tiene sólo a su cabo; la jornada, también sus relevos y sus cabos de apoyo
 function esPersona(tabla: Tabla, x: string, id: string): string {
   if (tabla === "plantaciones") return `${x}.cabo_id = ${id}`;
-  return `(${x}.cabo_id = ${id} OR ${x}.relevo_id = ${id} OR ${x}.relevos @> jsonb_build_array(jsonb_build_object('cabo_id', (${id})::text)))`;
+  const enLista = (campo: string) => `${x}.${campo} @> jsonb_build_array(jsonb_build_object('cabo_id', (${id})::text))`;
+  return `(${x}.cabo_id = ${id} OR ${x}.relevo_id = ${id} OR ${enLista("relevos")} OR ${enLista("cabos_apoyo")})`;
 }
 
 /** Condición de SQL equivalente a `alcanza` para los renglones `x` de la tabla. */
@@ -173,10 +185,8 @@ export function alcanceSql(u: Cuenta, tabla: Tabla, x: string, p: Parametros): s
     const deAutor = `EXISTS (SELECT 1 FROM srp.usuarios a WHERE a.organizacion_id = ${org} AND ${esPersona(tabla, x, "a.id")})`;
     return tabla === "jornadas" ? `(CASE WHEN ${x}.organizacion_id <> '' THEN ${x}.organizacion_id = ${org} ELSE ${deAutor} END)` : deAutor;
   }
-  const yo = p.agregar(u.id) + "::uuid";
-  const suyos = esPersona(tabla, x, yo);
-  if (alcance === "propios") return suyos;
-  return `(${suyos} OR EXISTS (SELECT 1 FROM srp.usuarios a WHERE a.coordinadores_ids @> ARRAY[${yo}] AND ${esPersona(tabla, x, "a.id")}))`;
+  // Los suyos: el cabo
+  return esPersona(tabla, x, p.agregar(u.id) + "::uuid");
 }
 
 /** Condición de SQL equivalente a `veArbol` para los árboles `x`. */

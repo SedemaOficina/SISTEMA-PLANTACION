@@ -108,7 +108,7 @@ Pantalla **Usuarios**, sólo Administración global. Almacén `usuarios`.
 | Correo | `correo` | Sí | Persona | Identifica la cuenta y sirve para entrar. Único. No se puede cambiar después |
 | Cargo | `cargo_rol` | Sí | Persona | Texto libre; descriptivo, no gobierna permisos |
 | Perfil de captura | `perfil` | Sí | Persona | `CABO`, `COORDINADOR`, `DIRECTIVO` o `ADMIN`. Es lo que decide qué puede hacer. `DIRECTIVO` sólo ve y descarga: en la Secretaría, todo; en otra institución, lo de la suya. |
-| Coordinadores | `coordinadores_ids` | Sólo para cabos | Persona | Lista de `usuarios.id`, uno o varios, de la misma institución. Cada coordinador asignado ve y edita sus registros; sin ninguno, la lista va vacía |
+| No se muestra desde la 1.4 | `coordinadores_ids` | No | Persona | Sin uso desde la 1.4: la Coordinación trabaja con todos los cabos de su institución. Lo ya capturado se conserva; las altas nuevas lo dejan vacío |
 | Estado | `activo` | Sí | Persona | Una cuenta inactiva no puede entrar; sus registros se conservan |
 | — | `fecha_creacion`, `creado_por_id` | Sí | Sistema | Cuándo y quién dio de alta la cuenta (los mismos nombres que en catálogos) |
 | — | `fecha_ultima_edicion`, `editado_por_id` | No | Sistema | |
@@ -223,6 +223,7 @@ Almacén `jornadas`. Lo que ya vive en los registros
 | No como campo: «Quién registró» en filtros y tarjeta | `cabo_id` | Sí | Sesión | Titular: quien inició la jornada; no cambia con un relevo |
 | Relevo de cabo (ficha de la jornada) | `relevo_id` | No | Persona | Remite a `usuarios.id`: el cabo que registra en lugar del titular tras un relevo de la coordinación; nulo, registra el titular |
 | No como campo: la ficha y el reporte dicen el relevo | `relevos` | Sí | Sistema | Lista de los relevos hechos: a qué cabo se pasó, cuándo y quién lo hizo; `[]` sin relevos |
+| Cabos de apoyo (ficha de la jornada) | `cabos_apoyo` | Sí | Sistema | Jornada compartida: los cabos de apoyo que marca la Coordinación que la abrió, cada uno con desde cuándo y quién lo puso, y, cuando deja de registrar, hasta cuándo y por qué (`terminado` o `quitado`); `[]` en una jornada de un solo cabo |
 | Quién lo solicita | `solicitante_id` | No | Persona | Remite a `solicitantes.id`: quién solicita la jornada; no es quien ejecuta ni es una institución con cuentas. Se pide con el programa «Solicitud»; nulo con otro programa o si la instancia no está en el catálogo |
 | Nombre de la instancia | `solicitante_otro` | Sí | Persona | Nombre de la instancia que solicita cuando no está en el catálogo; `''` si no aplica |
 | Descripción de la solicitud | `solicitud_descripcion` | Sí | Persona | De qué se trata la solicitud, en varios renglones; obligatoria con el programa «Solicitud», `''` con otro |

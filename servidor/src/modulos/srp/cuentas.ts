@@ -52,14 +52,12 @@ interface Alta {
   area_id: string | null;
   cargo_rol: string;
   perfil: string;
-  coordinadores_ids: string[];
 }
 
 /* Las mismas reglas que el formulario de Usuarios de la aplicación (js/usuarios.js): institución
    activa, área en la Secretaría, nombre y al menos un apellido, correo válido y sin otra cuenta, cargo,
-   perfil, Administración global sólo en la Secretaría y coordinadores de la misma institución. Al editar
-   (`previa`), el correo no cambia y la institución sólo se revisa si cambió; quien coordina cabos no cambia de
-   institución, y quien administra no se quita a sí mismo la Administración. */
+   perfil y Administración global sólo en la Secretaría. Al editar (`previa`), el correo no cambia y la
+   institución sólo se revisa si cambió, y quien administra no se quita a sí mismo la Administración. */
 async function validarAlta(c: pg.PoolClient, d: Alta, previa: Usuario | null = null, actor: Usuario | null = null): Promise<[string, string][]> {
   const e: [string, string][] = [];
   const org = d.organizacion_id ? (await c.query<{ activo: boolean }>("SELECT activo FROM srp.instituciones WHERE id = $1", [d.organizacion_id])).rows[0] : undefined;
@@ -81,19 +79,6 @@ async function validarAlta(c: pg.PoolClient, d: Alta, previa: Usuario | null = n
   else if (d.cargo_rol.length > 120) e.push(["cargo_rol", "El cargo lleva hasta 120 caracteres."]);
   if (!Object.hasOwn(PERFILES, d.perfil)) e.push(["perfil", "Elija el perfil de captura."]);
   else if (d.perfil === "ADMIN" && !sedema) e.push(["perfil", "La Administración global es sólo de la Secretaría."]);
-  if (d.coordinadores_ids.length) {
-    const ok = (
-      await c.query<{ n: number }>(
-        "SELECT count(*)::int AS n FROM srp.usuarios WHERE id = ANY($1::uuid[]) AND perfil = 'COORDINADOR' AND organizacion_id = $2",
-        [d.coordinadores_ids, d.organizacion_id],
-      )
-    ).rows[0].n;
-    if (ok !== d.coordinadores_ids.length) e.push(["coordinadores_ids", "Los coordinadores del cabo son de su misma institución."]);
-  }
-  if (previa && previa.organizacion_id !== d.organizacion_id) {
-    const cabos = (await c.query<{ n: number }>("SELECT count(*)::int AS n FROM srp.usuarios WHERE coordinadores_ids @> ARRAY[$1::uuid]", [previa.id])).rows[0].n;
-    if (cabos) e.push(["organizacion_id", "Coordina a " + cabos + (cabos === 1 ? " cabo" : " cabos") + ": asígnelos a otra persona antes de cambiarla de institución."]);
-  }
   if (previa && actor && previa.id === actor.id && d.perfil !== "ADMIN") {
     e.push(["perfil", "No puede cambiar su propio perfil de administración. Pida a otra cuenta de administración que lo haga."]);
   }
@@ -120,29 +105,29 @@ const conVersion = (u: Usuario & { fecha_creacion?: unknown; fecha_ultima_edicio
 
 /* QUÉ CUENTAS VE CADA QUIEN, para decir quién registró, editó o tiene a su cargo lo que ve. La Administración
    global, todas, con su correo, para administrarlas. Los demás, sin correo: el directivo de la Secretaría,
-   todas; el de otra institución, las de la suya; la coordinación, la suya, las de su cuadrilla y las de sus
-   coordinadores; el cabo, la suya y las de sus coordinadores. Y todos, además, a quien aparezca en las
-   jornadas y los árboles que ven: titulares, relevos, encargados y quien los editó. */
+   todas; el de otra institución y la coordinación, las de su institución; el cabo, la suya. Y todos, además, a
+   quien aparezca en las jornadas y los árboles que ven: titulares, relevos, cabos de apoyo, encargados y quien
+   los editó. Las cuentas siguen trayendo `coordinadores_ids`, sin uso desde la 1.4. */
 const SIN_CORREO = ["id", "nombre_completo", "organizacion_id", "area_id", "cargo_rol", "perfil", "coordinadores_ids", "activo"];
 
-/* EN QUÉ APARECE CADA CUENTA, contado por renglón: árboles, jornadas (también en sus relevos), otras cuentas (las
-   que dio de alta o editó, y los cabos que coordina), catálogos, y las entradas al sistema, que dejan constancia.
+/* EN QUÉ APARECE CADA CUENTA, contado por renglón: árboles, jornadas (también en sus relevos y como cabo de apoyo),
+   otras cuentas (las que dio de alta o editó), catálogos, y las entradas al sistema, que dejan constancia.
    Lo mismo que cuenta la aplicación con datos de prueba, más las entradas. Quien revisó duplicados, cambió
    parámetros, hizo una carga o subió fotografías ya entró: las entradas lo cubren. */
 type OrigenCuenta = "plantaciones" | "jornadas" | "usuarios" | "catalogos" | "entradas";
-type UsosCuenta = Partial<Record<OrigenCuenta, number> & { cabos: number }>;
+type UsosCuenta = Partial<Record<OrigenCuenta, number>>;
 
 const ORIGENES_CUENTA: [OrigenCuenta, string][] = [
   ["plantaciones", "SELECT x.id::text AS fila, v FROM srp.plantaciones x, unnest(ARRAY[x.cabo_id::text, x.editado_por_id::text]) v"],
   ["jornadas", `SELECT x.id::text AS fila, v FROM srp.jornadas x, unnest(ARRAY[x.cabo_id::text, x.encargado_id::text, x.relevo_id::text, x.editado_por_id::text]
-      || ARRAY(SELECT y.r ->> k FROM jsonb_array_elements(x.relevos) y(r), unnest(ARRAY['cabo_id', 'por_id']) k)) v`],
+      || ARRAY(SELECT y.r ->> k FROM jsonb_array_elements(x.relevos || x.cabos_apoyo) y(r), unnest(ARRAY['cabo_id', 'por_id']) k)) v`],
   // Quien se nombra a sí mismo (editó su propia cuenta) no cuenta
-  ["usuarios", "SELECT x.id::text AS fila, v FROM srp.usuarios x, unnest(ARRAY[x.creado_por_id::text, x.editado_por_id::text] || x.coordinadores_ids::text[]) v WHERE v <> x.id::text"],
+  ["usuarios", "SELECT x.id::text AS fila, v FROM srp.usuarios x, unnest(ARRAY[x.creado_por_id::text, x.editado_por_id::text]) v WHERE v <> x.id::text"],
   ["catalogos", TABLAS.map((t) => `SELECT '${t}:' || x.id AS fila, v FROM srp.${t} x, unnest(ARRAY[x.creado_por_id::text, x.editado_por_id::text]) v`).join(" UNION ALL ")],
   ["entradas", "SELECT x.id::text AS fila, x.usuario_id::text AS v FROM srp.bitacora_acceso x"],
 ];
 
-// { id: { tabla: n } } de todas las cuentas, o sólo de `id`; `cabos`: cuántos cabos coordina, ya contados en `usuarios`
+// { id: { tabla: n } } de todas las cuentas, o sólo de `id`
 async function usosDeCuentas(bd: Consultable, id: string | null = null): Promise<Record<string, UsosCuenta>> {
   const usos: Record<string, UsosCuenta> = {};
   const solo = id ? " AND v = $1" : "";
@@ -151,9 +136,6 @@ async function usosDeCuentas(bd: Consultable, id: string | null = null): Promise
       `SELECT v AS id, count(DISTINCT fila)::int AS n FROM (${sql}) s WHERE v IS NOT NULL${solo} GROUP BY v`, id ? [id] : []);
     for (const r of rows) (usos[r.id] ??= {})[origen] = r.n;
   }
-  const { rows } = await bd.query<{ id: string; n: number }>(
-    `SELECT v::text AS id, count(*)::int AS n FROM srp.usuarios x, unnest(x.coordinadores_ids) v WHERE v <> x.id${id ? " AND v = $1" : ""} GROUP BY v`, id ? [id] : []);
-  for (const r of rows) (usos[r.id] ??= {}).cabos = r.n;
   return usos;
 }
 
@@ -161,13 +143,12 @@ const NOMBRES_USO: Record<Exclude<OrigenCuenta, "entradas">, [string, string]> =
   plantaciones: ["árbol", "árboles"], jornadas: ["jornada", "jornadas"], usuarios: ["cuenta", "cuentas"], catalogos: ["catálogo", "catálogos"],
 };
 
-// «coordina a 2 cabos, aparece en 12 árboles y 1 jornada y ya entró al sistema»; '' si no aparece en nada
+// «aparece en 12 árboles y 1 jornada y ya entró al sistema»; '' si no aparece en nada
 function textoUsosCuenta(u: UsosCuenta | undefined): string {
   if (!u) return "";
-  const resto = { ...u, usuarios: (u.usuarios ?? 0) - (u.cabos ?? 0) };
   const lista = (partes: string[]) => (partes.length > 1 ? partes.slice(0, -1).join(", ") + " y " + partes[partes.length - 1] : partes[0] || "");
-  const aparece = lista((Object.keys(NOMBRES_USO) as (keyof typeof NOMBRES_USO)[]).filter((t) => resto[t]).map((t) => resto[t] + " " + NOMBRES_USO[t][resto[t] === 1 ? 0 : 1]));
-  return lista([u.cabos ? "coordina a " + u.cabos + (u.cabos === 1 ? " cabo" : " cabos") : "", aparece ? "aparece en " + aparece : "", u.entradas ? "ya entró al sistema" : ""].filter(Boolean));
+  const aparece = lista((Object.keys(NOMBRES_USO) as (keyof typeof NOMBRES_USO)[]).filter((t) => u[t]).map((t) => u[t] + " " + NOMBRES_USO[t][u[t] === 1 ? 0 : 1]));
+  return lista([aparece ? "aparece en " + aparece : "", u.entradas ? "ya entró al sistema" : ""].filter(Boolean));
 }
 
 function cuentasVisiblesSql(u: Usuario, p: Parametros): string {
@@ -175,16 +156,11 @@ function cuentasVisiblesSql(u: Usuario, p: Parametros): string {
   if (alcance === "todos") return "true";
   if (alcance === "ninguno") return `x.id = ${p.agregar(u.id)}::uuid`;
   // Cada valor entra como parámetro sólo si se usa: uno sin usar no tiene tipo y la consulta no corre
-  let propias: string;
-  if (alcance === "institucion") propias = `x.organizacion_id = ${p.agregar(u.organizacion_id)}`;
-  else {
-    const yo = p.agregar(u.id) + "::uuid";
-    propias = `(x.id = ${yo} OR EXISTS (SELECT 1 FROM srp.usuarios y WHERE y.id = ${yo} AND x.id = ANY(y.coordinadores_ids))` +
-      (alcance === "equipo" ? ` OR x.coordinadores_ids @> ARRAY[${yo}])` : ")");
-  }
+  const propias = alcance === "institucion" ? `x.organizacion_id = ${p.agregar(u.organizacion_id)}` : `x.id = ${p.agregar(u.id)}::uuid`;
   // Alias propios: las condiciones de permisos.ts usan «a» y «j» por dentro
   const enJornadas = `EXISTS (SELECT 1 FROM srp.jornadas jor WHERE ${alcanceSql(u, "jornadas", "jor", p)} AND (jor.cabo_id = x.id OR jor.relevo_id = x.id
-    OR jor.encargado_id = x.id OR jor.editado_por_id = x.id OR jor.relevos @> jsonb_build_array(jsonb_build_object('cabo_id', x.id::text))))`;
+    OR jor.encargado_id = x.id OR jor.editado_por_id = x.id OR jor.relevos @> jsonb_build_array(jsonb_build_object('cabo_id', x.id::text))
+    OR jor.cabos_apoyo @> jsonb_build_array(jsonb_build_object('cabo_id', x.id::text))))`;
   const enArboles = `EXISTS (SELECT 1 FROM srp.plantaciones arb WHERE ${veArbolSql(u, "arb", p)} AND (arb.cabo_id = x.id OR arb.editado_por_id = x.id))`;
   return `(${propias} OR ${enJornadas} OR ${enArboles})`;
 }
@@ -220,11 +196,10 @@ export function rutasCuentas(pool: pg.Pool, config: ConfigSrp, sesion: RequestHa
       correo: limpio(b.correo).toLowerCase(),
       nombre_completo: limpio(b.nombre_completo),
       organizacion_id: limpio(b.organizacion_id),
-      // Sin área fuera de la Secretaría; coordinadores, sólo el cabo
+      // Sin área fuera de la Secretaría
       area_id: sedema ? limpio(b.area_id) || null : null,
       cargo_rol: limpio(b.cargo_rol),
       perfil: limpio(b.perfil),
-      coordinadores_ids: b.perfil === "CABO" && Array.isArray(b.coordinadores_ids) ? b.coordinadores_ids.filter((x: unknown) => typeof x === "string" && UUID.test(x)) : [],
     };
     const resultado = await enTransaccion(pool, async (c) => {
       const errores = await validarAlta(c, d);
@@ -232,7 +207,7 @@ export function rutasCuentas(pool: pg.Pool, config: ConfigSrp, sesion: RequestHa
       await c.query(
         `INSERT INTO srp.usuarios (id, correo, nombre_completo, organizacion_id, area_id, cargo_rol, perfil, coordinadores_ids, activo,
             fecha_creacion, creado_por_id, fecha_ultima_edicion, editado_por_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true, now(), $9, NULL, NULL)`,
-        [d.id, d.correo, d.nombre_completo, d.organizacion_id, d.area_id, d.cargo_rol, d.perfil, d.coordinadores_ids, actor.id],
+        [d.id, d.correo, d.nombre_completo, d.organizacion_id, d.area_id, d.cargo_rol, d.perfil, [], actor.id],
       );
       const t = await ponerTemporal(c, d.id, actor.id, config.acceso.temporalHoras);
       const org = (await c.query<{ nombre: string }>("SELECT nombre FROM srp.instituciones WHERE id = $1", [d.organizacion_id])).rows[0];
@@ -258,20 +233,19 @@ export function rutasCuentas(pool: pg.Pool, config: ConfigSrp, sesion: RequestHa
         area_id: sedema ? limpio(b.area_id) || null : null,
         cargo_rol: limpio(b.cargo_rol),
         perfil: limpio(b.perfil),
-        coordinadores_ids: b.perfil === "CABO" && Array.isArray(b.coordinadores_ids) ? b.coordinadores_ids.filter((x: unknown) => typeof x === "string" && UUID.test(x)) : [],
       };
       if (!(await mismaVersion(c, "usuarios", id, b.version))) return { vieja: true };
       const errores = await validarAlta(c, d, previa, actor);
       if (!errores.length && previa.perfil === "ADMIN" && d.perfil !== "ADMIN" && (await esLaUltimaAdministracion(c, id))) errores.push(["perfil", ULTIMA_PERFIL]);
       if (errores.length) return { errores };
       // La bitácora dice qué campos cambiaron, como en la aplicación
-      const campos = ["nombre_completo", "organizacion_id", "area_id", "cargo_rol", "perfil", "coordinadores_ids"] as const;
-      const valor = (o: Record<string, unknown>, k: string) => (k === "coordinadores_ids" ? [...((o[k] as string[]) ?? [])].sort().join(",") : String(o[k] ?? ""));
+      const campos = ["nombre_completo", "organizacion_id", "area_id", "cargo_rol", "perfil"] as const;
+      const valor = (o: Record<string, unknown>, k: string) => String(o[k] ?? "");
       const cambiados = campos.filter((k) => valor(previa as unknown as Record<string, unknown>, k) !== valor(d as unknown as Record<string, unknown>, k));
       const u = (await c.query<Usuario>(
-        `UPDATE srp.usuarios SET nombre_completo = $2, organizacion_id = $3, area_id = $4, cargo_rol = $5, perfil = $6, coordinadores_ids = $7,
-            fecha_ultima_edicion = now(), editado_por_id = $8 WHERE id = $1 RETURNING *`,
-        [id, d.nombre_completo, d.organizacion_id, d.area_id, d.cargo_rol, d.perfil, d.coordinadores_ids, actor.id],
+        `UPDATE srp.usuarios SET nombre_completo = $2, organizacion_id = $3, area_id = $4, cargo_rol = $5, perfil = $6,
+            fecha_ultima_edicion = now(), editado_por_id = $7 WHERE id = $1 RETURNING *`,
+        [id, d.nombre_completo, d.organizacion_id, d.area_id, d.cargo_rol, d.perfil, actor.id],
       )).rows[0];
       await anotarCambio(c, actor, "EDITADO", "usuario", id, "Campos: " + (cambiados.join(", ") || "ninguno"));
       return { usuario: conVersion(u) };

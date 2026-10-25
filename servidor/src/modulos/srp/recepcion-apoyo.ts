@@ -1,7 +1,7 @@
 import type pg from "pg";
 import { anotarCambio } from "./bitacora";
 import { valorParametro } from "./parametros";
-import { textoDe, type Accion, type Autores, type Objeto } from "./permisos";
+import { textoDe, type Accion, type Autores, type Objeto, personasDe } from "./permisos";
 import type { Usuario } from "./sesiones";
 
 /* LO COMÚN A LAS OPERACIONES QUE RECIBE EL SERVIDOR: la forma de la respuesta, la lectura de lo que manda el
@@ -128,11 +128,11 @@ export async function fotoDeOtro(c: pg.PoolClient, fotoId: string | null, arbolI
 }
 export const FOTO_DE_OTRO: [string, string] = ["foto_id", "Esa fotografía ya es de otro árbol."];
 
-// De quién es un registro: la institución y la coordinación de cada persona que responde de él
+// De quién es un registro: la institución de cada persona que responde de él
 export async function autoresDe(c: pg.PoolClient, x: Fila): Promise<Autores> {
-  const ids = [x.cabo_id, x.relevo_id, ...((x.relevos as { cabo_id?: string }[] | undefined) ?? []).map((r) => r.cabo_id)].filter(Boolean);
-  const { rows } = await c.query<{ id: string; organizacion_id: string; coordinadores_ids: string[] }>(
-    "SELECT id, organizacion_id, coordinadores_ids FROM srp.usuarios WHERE id = ANY($1::uuid[])",
+  const ids = personasDe(comoObjeto(x));
+  const { rows } = await c.query<{ id: string; organizacion_id: string }>(
+    "SELECT id, organizacion_id FROM srp.usuarios WHERE id = ANY($1::uuid[])",
     [ids],
   );
   return new Map(rows.map((r) => [r.id, r]));

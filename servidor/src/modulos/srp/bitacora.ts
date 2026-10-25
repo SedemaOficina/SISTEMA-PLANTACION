@@ -6,7 +6,7 @@ import type { Consultable, Usuario } from "./sesiones";
    de una misma operación —el alta de un árbol y su folio— quedan en el orden en que pasaron. */
 
 // Las de la regla de la tabla (02-srp-tablas.sql)
-export type Accion = "CREADO" | "EDITADO" | "ELIMINADO" | "RESTAURADO" | "SUSTITUIDO" | "RELEVO" | "ACTIVADO" | "DESACTIVADO" | "FOLIO_ASIGNADO";
+export type Accion = "CREADO" | "EDITADO" | "ELIMINADO" | "RESTAURADO" | "SUSTITUIDO" | "RELEVO" | "APOYO" | "ACTIVADO" | "DESACTIVADO" | "FOLIO_ASIGNADO";
 
 export async function anotarCambio(bd: Consultable, actor: Usuario, accion: Accion, entidad: string, entidadId: string, detalle = ""): Promise<void> {
   await bd.query(

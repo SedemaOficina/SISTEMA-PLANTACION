@@ -24,8 +24,8 @@ SRP.ref = {
      nombran, leído de las relaciones del esquema (SRP.ESQUEMA): cuentas, catálogos y jornadas se
      cuentan igual en todas las pantallas. Entran los árboles eliminados, que siguen en el historial
      y se pueden restaurar. La bitácora no cuenta: es la constancia, y guarda el nombre de quien
-     actuó. Contar sólo árboles permitiría eliminar un programa que usan jornadas o un coordinador
-     con cabos asignados. Devuelve { id: { tabla: n } }. */
+     actuó. Contar sólo árboles permitiría eliminar un programa que usan jornadas. Los coordinadores
+     de un cabo (`coordinadores_ids`) no cuentan: sin uso desde la 1.4. Devuelve { id: { tabla: n } }. */
   async usosDe(tabla) {
     const usos = {};
     // «catalogos» son las seis tablas de catálogo: se cuentan como una familia, igual que en pantalla
@@ -33,7 +33,7 @@ SRP.ref = {
     for (const [tablaOrigen, campos] of Object.entries(SRP.ESQUEMA.tablas)) {
       if (tablaOrigen === 'bitacora') continue;
       const origen = C.includes(tablaOrigen) ? 'catalogos' : tablaOrigen;
-      const refs = campos.filter(c => destinos.includes(c[4])).map(c => c[0]);
+      const refs = campos.filter(c => destinos.includes(c[4]) && c[0] !== 'coordinadores_ids').map(c => c[0]);
       if (!refs.length) continue;
       for (const fila of await SRP.almacen.todos(tablaOrigen)) {
         const ids = new Set();

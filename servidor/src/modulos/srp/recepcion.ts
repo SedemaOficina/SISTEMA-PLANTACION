@@ -4,7 +4,9 @@ import { sesionDe } from "./acceso";
 import { responder, traducir } from "./errores";
 import { crearArbol, editarArbol, eliminarArbol, moverArbol, restaurarArbol, sustituirArbol } from "./recepcion-arboles";
 import { idDe, rechazo, type Operacion, type Resultado } from "./recepcion-apoyo";
-import { cerrarJornada, cierreJornada, crearJornada, editarJornada, eliminarJornada, reabrirJornada, relevoJornada, reporteJornada, revisarPuntos } from "./recepcion-jornadas";
+import {
+  cerrarJornada, cierreJornada, compartirJornada, crearJornada, editarJornada, eliminarJornada, reabrirJornada, relevoJornada, reporteJornada, revisarPuntos, terminarParte,
+} from "./recepcion-jornadas";
 import { enTransaccion } from "./transaccion";
 
 /* RECEPCIÓN: lo que envían los teléfonos.
@@ -20,6 +22,8 @@ import { enTransaccion } from "./transaccion";
      jornada.cierre       { id, version, encargado_id, personal, apoyo, observaciones, chofer, vehiculo_id, hora }  (jornada.editar)
      jornada.reporte      { id, version }: el reporte se entregó  (jornada.editar)
      jornada.relevo       { id, version, cabo_id }
+     jornada.compartir    { id, agregar, quitar }: los cabos de apoyo que entran y salen de una jornada compartida
+     jornada.terminar     { id }: el cabo de apoyo terminó su parte
      jornada.eliminar     { id, version }: sólo sin árboles
      registro.crear       un árbol nuevo, en una jornada que ya está en el servidor
      registro.editar      { id, version, cambios }: sólo los campos que cambiaron
@@ -48,6 +52,8 @@ const OPERACIONES: Record<string, Operacion> = {
   "jornada.cierre": cierreJornada,
   "jornada.reporte": reporteJornada,
   "jornada.relevo": relevoJornada,
+  "jornada.compartir": compartirJornada,
+  "jornada.terminar": terminarParte,
   "jornada.eliminar": eliminarJornada,
   "registro.crear": crearArbol,
   "registro.editar": editarArbol,

@@ -1,6 +1,6 @@
 /* ADMINISTRACIÓN DE CUENTAS (sólo Administración global).
-   Una sola puerta de alta: aquí se crea la cuenta, se le asigna institución, perfil, área y
-   coordinador. Nadie se da de alta solo: la Secretaría da de alta también a las alcaldías, PAOT,
+   Una sola puerta de alta: aquí se crea la cuenta, se le asigna institución, perfil y área.
+   Nadie se da de alta solo: la Secretaría da de alta también a las alcaldías, PAOT,
    SOBSE, empresas y organizaciones civiles, cuando lo solicitan. Todo cambio queda en la bitácora.
    CON DATOS REALES cada cambio va al servidor, que lo vuelve a revisar, y sólo entonces cambia en el teléfono.
    El alta y «Restablecer contraseña» dan una contraseña temporal, que se ve una sola vez para dársela a la
@@ -8,9 +8,8 @@
    EL ALTA VA DE LO GENERAL A LO PARTICULAR. Primero el tipo de institución (cuatro, fijos); luego la
    institución de ese tipo: las 16 alcaldías, fijas, o las de los otros tres tipos, que la
    Administración agrega a solicitud en Catálogos › Instituciones. Sólo la Secretaría lleva área y
-   Administración global. Fuera, cada institución tiene cabos y coordinadores; el cabo depende de un
-   coordinador de su misma institución, así que nadie ve lo de otra. El nombre va completo, en un
-   solo campo. */
+   Administración global. Fuera, cada institución tiene cabos y coordinadores; la coordinación trabaja con
+   todos los cabos de su institución, y nadie ve lo de otra. El nombre va completo, en un solo campo. */
 window.SRP = window.SRP || {};
 
 SRP.usuarios = {
@@ -24,7 +23,7 @@ SRP.usuarios = {
     // La institución, en una sola lista agrupada por tipo; el perfil la acota
     this.el('usr-filtro-org').addEventListener('change', (e) => { this.filtroOrg = e.target.value; this.llenarFiltros(); this.filtrar(); });
     this.el('usr-filtro-perfil').addEventListener('change', (e) => { this.filtroPerfil = e.target.value; this.llenarFiltros(); this.filtrar(); });
-    // El tipo decide la lista de instituciones; la institución, el área, los perfiles y los coordinadores
+    // El tipo decide la lista de instituciones; la institución, el área y los perfiles
     this.el('usr-tipo-org').addEventListener('change', () => { this.llenarInstituciones(''); this.ajustarPorOrganizacion(); });
     this.el('usr-organizacion').addEventListener('change', () => this.ajustarPorOrganizacion());
     // Atajos de estado de la cuenta
@@ -36,14 +35,8 @@ SRP.usuarios = {
     });
     this.el('btn-usr-agregar').addEventListener('click', () => this.abrirFormulario(null));
     this.el('form-usuario').addEventListener('submit', (e) => { e.preventDefault(); this.guardar(); });
-    // El campo Coordinador sólo tiene sentido para un cabo. Sin saltos de foco automáticos
+    // La ayuda del perfil cambia con el perfil. Sin saltos de foco automáticos
     this.el('usr-perfil').addEventListener('change', () => this.ajustarPorPerfil());
-    this.el('usr-coordinadores').addEventListener('click', (e) => {
-      const b = e.target.closest('.chip'); if (!b) return;
-      b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'));
-      SRP.util.quitarErrorCampo(this.el('usr-coordinadores'));
-      this.pintarNotaCoordinadores();
-    });
     this.el('tabla-usuarios').addEventListener('click', (e) => {
       // Tocar la tarjeta (fuera de la tuerca) abre la edición
       if (!e.target.closest('.c-acciones, thead')) {
@@ -109,15 +102,12 @@ SRP.usuarios = {
       .sort((a, b) => SRP.util.nombreCompleto(a).localeCompare(SRP.util.nombreCompleto(b), 'es'));
 
     const cab = '<thead><tr><th scope="col">Nombre</th><th scope="col">Correo</th><th scope="col">Institución</th><th scope="col">Área</th>' +
-      '<th scope="col">Cargo</th><th scope="col">Perfil de captura</th><th scope="col">Coordinadores</th>' +
+      '<th scope="col">Cargo</th><th scope="col">Perfil de captura</th>' +
       '<th scope="col">Estado</th><th scope="col">Registros</th><th scope="col">Acciones</th></tr></thead>';
 
-    const cabos = {};
-    SRP.ref.usuarios.forEach(x => (x.coordinadores_ids || []).forEach(c => { cabos[c] = (cabos[c] || 0) + 1; }));
-    const coordinadoresDe = (x) => (x.coordinadores_ids || []).map(c => SRP.ref.nombreUsuario(c)).join(', ');
     // Lo que dice cada celda, para ordenar toda la lista y no sólo la página (en el orden de las columnas)
     const texto = (u, col) => [SRP.util.nombreCompleto(u), u.correo, SRP.ref.nombreOrganizacion(u.organizacion_id), SRP.ref.nombreCatalogo(u.area_id) || '—',
-      u.cargo_rol, SRP.permisos.de(u).etiqueta, coordinadoresDe(u) || '—', u.activo ? '' : 'Inactivo', this.uso[u.id] || 0][col];
+      u.cargo_rol, SRP.permisos.de(u).etiqueta, u.activo ? '' : 'Inactivo', this.uso[u.id] || 0][col];
     const info = SRP.util.paginar(SRP.util.ordenarLista(lista, 'tabla-usuarios', texto), this.pagina, 'usr-paginas');
     this.pagina = info.pagina;
     const filas = info.items.map(u => {
@@ -141,20 +131,16 @@ SRP.usuarios = {
         '<td class="c-movil-oculta" data-etiqueta="Área">' + esc(SRP.ref.nombreCatalogo(u.area_id) || '—') + '</td>' +
         '<td class="c-movil-oculta" data-etiqueta="Cargo">' + esc(u.cargo_rol) + '</td>' +
         '<td class="c-movil-oculta" data-etiqueta="Perfil de captura">' + esc(SRP.permisos.de(u).etiqueta) + '</td>' +
-        '<td class="c-movil-oculta" data-etiqueta="Coordinadores">' + esc(coordinadoresDe(u) || '—') + '</td>' +
         '<td class="c-movil-oculta" data-etiqueta="Estado">' + estado + '</td>' +
         '<td class="c-movil-oculta" data-etiqueta="Registros">' + n + '</td>' +
         '<td class="c-acciones" data-etiqueta="Acciones">' + SRP.ICONOS.menuAcciones(u.id, SRP.util.nombreCompleto(u), items) + '</td>' +
         '<td class="c-resumen">' + estado + '<span>' + [esc(SRP.permisos.de(u).etiqueta),
           // De la Secretaría se dice el área; de fuera, la institución
           esc(SRP.ref.esSedema(u.organizacion_id) ? SRP.ref.nombreCatalogo(u.area_id) : SRP.ref.nombreOrganizacion(u.organizacion_id)),
-          // «coordinador: …» en el cabo; «coordina a 2 cabos» en quien coordina
-          (u.coordinadores_ids || []).length ? ((u.coordinadores_ids.length === 1 ? 'coordinador: ' : 'coordinadores: ') + esc(coordinadoresDe(u))) : '',
-          cabos[u.id] ? 'coordina a ' + cabos[u.id] + (cabos[u.id] === 1 ? ' cabo' : ' cabos') : '',
           n + (n === 1 ? ' registro' : ' registros')].filter(Boolean).join(' · ') + '</span></td></tr>';
     }).join('');
 
-    this.el('tabla-usuarios').innerHTML = cab + '<tbody>' + (filas || '<tr><td colspan="10">Sin resultados.</td></tr>') + '</tbody>';
+    this.el('tabla-usuarios').innerHTML = cab + '<tbody>' + (filas || '<tr><td colspan="9">Sin resultados.</td></tr>') + '</tbody>';
     SRP.util.ordenable(this.el('tabla-usuarios'), () => this.pintar());
     SRP.util.pintarPaginador(this.el('usr-paginas'), info, 'cuenta', 'cuentas', (n) => { this.pagina = n; this.pintar(); SRP.util.subirA(this.el('usr-cuenta')); });
     const total = SRP.ref.usuarios.length;
@@ -192,9 +178,8 @@ SRP.usuarios = {
   },
 
   /* Lo que depende de la institución. Área: sólo la Secretaría. Perfiles: Administración global sólo
-     en la Secretaría; de fuera, cabo o coordinador. Coordinador del cabo: entre las cuentas activas
-     de coordinación (o administración, en la Secretaría) de su misma institución, nunca la persona
-     misma. Lo elegido se conserva si sigue siendo posible. */
+     en la Secretaría; de fuera, cabo o coordinador. Lo elegido se conserva si sigue siendo posible. Los
+     cabos no se asignan a nadie: la Coordinación trabaja con todos los de su institución. */
   ajustarPorOrganizacion() {
     const orgId = this.el('usr-organizacion').value;
     const sedema = SRP.ref.esSedema(orgId);
@@ -205,13 +190,6 @@ SRP.usuarios = {
     const perfiles = Object.keys(SRP.PERFILES).filter(k => sedema || k !== 'ADMIN');
     this.el('usr-perfil').innerHTML = SRP.util.opciones('Seleccione el perfil', perfiles.map(k => [k, SRP.PERFILES[k].etiqueta]));
     this.el('usr-perfil').value = perfiles.includes(perfil) ? perfil : '';
-
-    const elegidos = this.coordinadoresElegidos();
-    const yo = this.editando;
-    const coordinadores = !orgId ? [] : SRP.ref.usuarios
-      .filter(u => u.activo && u.organizacion_id === orgId && (u.perfil === 'COORDINADOR' || u.perfil === 'ADMIN') && (!yo || u.id !== yo.id))
-      .sort((a, b) => SRP.util.nombreCompleto(a).localeCompare(SRP.util.nombreCompleto(b), 'es'));
-    this.pintarCoordinadores(coordinadores, elegidos);
     this.ajustarPorPerfil();
   },
 
@@ -219,30 +197,6 @@ SRP.usuarios = {
     const perfil = this.el('usr-perfil').value;
     const p = SRP.PERFILES[perfil];
     this.el('usr-perfil-ayuda').textContent = p ? p.descripcion : '';
-    // Sólo el cabo tiene coordinador, de su misma institución: los demás perfiles no dependen de nadie
-    const conCoordinador = perfil === 'CABO' && !!this.el('usr-organizacion').value;
-    this.el('caja-usr-coordinador').hidden = !conCoordinador;
-    if (!conCoordinador) this.el('usr-coordinadores').querySelectorAll('.chip').forEach(b => b.setAttribute('aria-pressed', 'false'));
-    this.pintarNotaCoordinadores();
-  },
-
-  /* LOS COORDINADORES DEL CABO. Un cabo puede tener más de uno: se marcan en una lista de botones con
-     las cuentas de coordinación de su institución; sin ninguno marcado, queda sin coordinador. */
-  coordinadoresElegidos() {
-    return [...this.el('usr-coordinadores').querySelectorAll('.chip[aria-pressed="true"]')].map(b => b.dataset.id);
-  },
-  pintarCoordinadores(coordinadores, elegidos) {
-    const esc = SRP.util.escapar;
-    this.el('usr-coordinadores').innerHTML = coordinadores.map(u =>
-      '<button type="button" class="chip" data-id="' + esc(u.id) + '" aria-pressed="' + elegidos.includes(u.id) + '">' + esc(SRP.util.nombreCompleto(u)) + '</button>').join('');
-    this.el('usr-coordinadores').dataset.vacio = String(!coordinadores.length);
-    this.pintarNotaCoordinadores();
-  },
-  pintarNotaCoordinadores() {
-    const hay = this.el('usr-coordinadores').querySelectorAll('.chip').length, n = this.coordinadoresElegidos().length;
-    this.el('usr-coordinadores-nota').textContent = !hay ? 'Esta institución no tiene cuentas de coordinación activas: el cabo queda sin coordinador.'
-      : n === 0 ? 'Sin coordinador asignado. Puede marcar uno o varios: cada uno verá y editará los registros de este cabo.'
-      : n === 1 ? '1 coordinador asignado. Puede marcar más de uno.' : n + ' coordinadores asignados.';
   },
 
   abrirFormulario(usuario, cambiadaPorOtra) {
@@ -262,9 +216,6 @@ SRP.usuarios = {
     this.el('usr-cargo').value = usuario ? usuario.cargo_rol : '';
     this.el('usr-perfil').innerHTML = SRP.util.opciones('Seleccione el perfil', Object.keys(SRP.PERFILES).map(k => [k, SRP.PERFILES[k].etiqueta]));
     this.el('usr-perfil').value = usuario ? usuario.perfil : 'CABO';
-    // Los que ya tiene se marcan al armar la lista de su institución
-    this.el('usr-coordinadores').innerHTML = (usuario ? usuario.coordinadores_ids || [] : []).map(id =>
-      '<button type="button" class="chip" data-id="' + SRP.util.escapar(id) + '" aria-pressed="true"></button>').join('');
     this.ajustarPorOrganizacion();
     this.el('usr-errores').hidden = true;
     SRP.util.erroresEnCampos([], this.CAMPOS);
@@ -272,7 +223,7 @@ SRP.usuarios = {
     this.el('dlg-usuario').showModal();
   },
 
-  CAMPOS: ['usr-tipo-org', 'usr-organizacion', 'usr-area', 'usr-nombre-completo', 'usr-correo', 'usr-cargo', 'usr-perfil', 'usr-coordinadores'],
+  CAMPOS: ['usr-tipo-org', 'usr-organizacion', 'usr-area', 'usr-nombre-completo', 'usr-correo', 'usr-cargo', 'usr-perfil'],
 
   validar(d) {
     const errores = [];
@@ -292,13 +243,6 @@ SRP.usuarios = {
     if (!d.cargo_rol) errores.push(['usr-cargo', 'Escriba el cargo.']);
     if (!SRP.PERFILES[d.perfil]) errores.push(['usr-perfil', 'Elija el perfil de captura.']);
     else if (d.perfil === 'ADMIN' && d.organizacion_id && !sedema) errores.push(['usr-perfil', 'La Administración global es sólo de la Secretaría: fuera de ella, la cuenta es de cabo, de coordinación o directiva.']);
-    if ((d.coordinadores_ids || []).some(id => { const c = SRP.ref.usuarioPorId[id]; return !c || c.organizacion_id !== d.organizacion_id; }))
-      errores.push(['usr-coordinadores', 'Los coordinadores del cabo son de su misma institución.']);
-    // Quien coordina no cambia de institución con cabos asignados: la cuadrilla quedaría sin coordinación
-    if (this.editando && d.organizacion_id && this.editando.organizacion_id !== d.organizacion_id) {
-      const cabos = SRP.ref.usuarios.filter(x => (x.coordinadores_ids || []).includes(this.editando.id)).length;
-      if (cabos) errores.push(['usr-organizacion', 'Coordina a ' + cabos + (cabos === 1 ? ' cabo' : ' cabos') + ': asígnelos a otra persona antes de cambiarla de institución.']);
-    }
     // Quien administra no puede quitarse a sí mismo ese perfil: dejaría el sistema sin administración
     if (this.editando && this.editando.id === SRP.sesion.usuario.id && d.perfil !== 'ADMIN')
       errores.push(['usr-perfil', 'No puede cambiar su propio perfil de administración. Pida a otra cuenta de administración que lo haga.']);
@@ -314,10 +258,9 @@ SRP.usuarios = {
       tipo_organizacion: this.el('usr-tipo-org').value,
       nombre_completo: limpio('usr-nombre-completo'),
       correo: limpio('usr-correo').toLowerCase(), organizacion_id: orgId,
-      // Sin área fuera de la Secretaría; coordinador, sólo el cabo
+      // Sin área fuera de la Secretaría
       area_id: sedema ? this.el('usr-area').value : null,
-      cargo_rol: limpio('usr-cargo'), perfil: this.el('usr-perfil').value,
-      coordinadores_ids: this.el('usr-perfil').value === 'CABO' ? this.coordinadoresElegidos() : []
+      cargo_rol: limpio('usr-cargo'), perfil: this.el('usr-perfil').value
     };
     const errores = this.validar(d);
     if (SRP.util.resumenErrores(this.el('usr-errores'), errores, this.CAMPOS)) return;
@@ -325,19 +268,20 @@ SRP.usuarios = {
     const yo = SRP.sesion.usuario;
     const ahora = SRP.util.ahoraISO();
     const datos = { nombre_completo: d.nombre_completo, correo: d.correo, organizacion_id: d.organizacion_id, area_id: d.area_id,
-      cargo_rol: d.cargo_rol, perfil: d.perfil, coordinadores_ids: d.coordinadores_ids };
+      cargo_rol: d.cargo_rol, perfil: d.perfil };
     if (this.real()) { await this.guardarEnServidor(datos); return; }
     let u, entrada;
     if (this.editando) {
       const previo = this.editando;
-      const campos = ['nombre_completo', 'organizacion_id', 'area_id', 'cargo_rol', 'perfil', 'coordinadores_ids'];
-      const valor = (o, k) => k === 'coordinadores_ids' ? (o[k] || []).slice().sort().join(',') : (o[k] || '');
+      const campos = ['nombre_completo', 'organizacion_id', 'area_id', 'cargo_rol', 'perfil'];
+      const valor = (o, k) => o[k] || '';
       const cambiados = campos.filter(k => (k === 'nombre_completo' ? SRP.util.nombreCompleto(previo) : valor(previo, k)) !== valor(datos, k));
       u = Object.assign({}, previo, datos, { correo: previo.correo, editado_por_id: yo.id, fecha_ultima_edicion: ahora });
       delete u.nombre; delete u.apellido_paterno; delete u.apellido_materno;
       entrada = SRP.bitacora.entrada('EDITADO', 'usuario', u.id, 'Campos: ' + (cambiados.join(', ') || 'ninguno'));
     } else {
-      u = Object.assign({ id: SRP.util.generarId(), activo: true,
+      // Sin coordinadores: el campo sigue en la tabla, sin uso desde la 1.4
+      u = Object.assign({ id: SRP.util.generarId(), activo: true, coordinadores_ids: [],
         fecha_creacion: ahora, creado_por_id: yo.id, editado_por_id: null, fecha_ultima_edicion: null }, datos);
       entrada = SRP.bitacora.entrada('CREADO', 'usuario', u.id, 'Alta de ' + d.correo + ' con perfil ' + d.perfil + ' en ' + SRP.ref.nombreOrganizacion(d.organizacion_id));
     }
@@ -377,15 +321,12 @@ SRP.usuarios = {
     if (u.id === SRP.sesion.usuario.id) { SRP.util.anunciar('No puede eliminar su propia cuenta.', 'aviso'); return; }
     await this.preparar();                 // recuenta justo antes de decidir
     if (!this.usos) { this.noSePudo({ sinRed: true }, 'la cuenta no se eliminó'); return; }
-    // Cuenta en todas las tablas: árboles, jornadas de las que es cabo o encargado, cabos
-    // que coordina, cuentas y catálogos que dio de alta o editó; con datos reales, también si ya entró
+    // Cuenta en todas las tablas: árboles, jornadas de las que es cabo o encargado, cuentas y
+    // catálogos que dio de alta o editó; con datos reales, también si ya entró
     const usos = this.usos[u.id];
     if (SRP.ref.totalUsos(usos)) {
-      // Los cabos que coordina se dicen por su nombre: «aparece en 1 cuenta» no explicaba nada
-      const cabos = SRP.ref.usuarios.filter(x => (x.coordinadores_ids || []).includes(u.id)).length;
-      const resto = SRP.ref.textoUsos(Object.assign({}, usos, { usuarios: (usos.usuarios || 0) - cabos }));
-      const partes = [cabos ? 'coordina a ' + cabos + (cabos === 1 ? ' cabo' : ' cabos') : '', resto ? 'aparece en ' + resto : '',
-        usos.entradas ? 'ya entró al sistema' : ''].filter(Boolean);
+      const resto = SRP.ref.textoUsos(usos);
+      const partes = [resto ? 'aparece en ' + resto : '', usos.entradas ? 'ya entró al sistema' : ''].filter(Boolean);
       const motivo = partes.length > 1 ? partes.slice(0, -1).join(', ') + ' y ' + partes[partes.length - 1] : partes[0];
       SRP.util.anunciar('No se puede eliminar: ' + motivo + '. Desactive la cuenta: eso sí se deshace.', 'aviso');
       return;
@@ -419,7 +360,7 @@ SRP.usuarios = {
   // Los campos del servidor y los del formulario donde se dice su error
   CAMPO_DEL_SERVIDOR: {
     organizacion_id: 'usr-organizacion', area_id: 'usr-area', nombre_completo: 'usr-nombre-completo', correo: 'usr-correo',
-    cargo_rol: 'usr-cargo', perfil: 'usr-perfil', coordinadores_ids: 'usr-coordinadores'
+    cargo_rol: 'usr-cargo', perfil: 'usr-perfil'
   },
 
   // El alta o la edición va al servidor; si no la acepta, sus motivos van en el formulario, que sigue abierto

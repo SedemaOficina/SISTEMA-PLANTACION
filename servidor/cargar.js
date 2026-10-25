@@ -140,6 +140,8 @@ function adaptar(tabla, fila, mapaVehiculos) {
   }
   if (tabla === 'jornadas') {
     n.relevos = (n.relevos || []).map(r => Object.assign({}, r, { cabo_id: uuidDe(r.cabo_id), por_id: uuidDe(r.por_id) }));
+    // Una jornada exportada antes de la jornada compartida no tiene cabos de apoyo
+    n.cabos_apoyo = (n.cabos_apoyo || []).map(a => Object.assign({}, a, { cabo_id: uuidDe(a.cabo_id), por_id: uuidDe(a.por_id) }));
     const real = n.vehiculo_id && mapaVehiculos[n.vehiculo_id];
     if (real) Object.assign(n, { vehiculo_id: real.id, vehiculo_placa: real.nombre, vehiculo_modelo: real.modelo, vehiculo_tipo: real.tipo_vehiculo });
   }

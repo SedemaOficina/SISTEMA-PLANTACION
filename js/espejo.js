@@ -90,6 +90,7 @@ SRP.espejo = {
     cabo_id: 'Quien inició la jornada: su titular; no cambia con un relevo',
     relevo_id: 'El cabo que registra en lugar del titular, si la coordinación hizo un relevo; nulo: registra el titular',
     relevos: 'Los relevos hechos: a quién se pasó, cuándo y quién lo hizo',
+    cabos_apoyo: 'Jornada compartida: sus cabos de apoyo, desde cuándo y quién los puso; si ya no registran, hasta cuándo y por qué (terminó su parte o lo quitaron). [] en una jornada de un solo cabo',
     solicitante_id: 'Quién lo solicita, del catálogo de solicitantes; sólo con el programa «Solicitud especial». Nulo si es otra instancia o si la jornada es de otro programa',
     solicitante_otro: 'El nombre de la instancia que solicita, cuando no está en el catálogo',
     solicitud_descripcion: 'De qué se trata la solicitud; obligatoria con el programa «Solicitud especial», vacía con otro',

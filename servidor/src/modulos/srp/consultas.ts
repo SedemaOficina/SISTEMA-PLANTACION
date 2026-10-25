@@ -8,7 +8,9 @@ import { enTransaccion } from "./transaccion";
 /* CONSULTAS: las jornadas y los árboles que cada quien puede ver, con las reglas de permisos.ts.
 
    GET /jornadas        las jornadas de su alcance
-   GET /plantaciones    los árboles de su alcance y, de una jornada donde estuvo de relevo, todos los suyos
+   GET /plantaciones    los árboles de su alcance y, de una jornada donde estuvo de relevo o de apoyo, todos los suyos
+   GET /jornadas/:id    una jornada de su alcance con todos los árboles que ve de ella, para tenerla al día sin
+                        traer todo: la Coordinación, al cerrar una jornada compartida, ve qué cabos ya terminaron
 
    Lo de un lote de carga masiva que todavía sube o que se deshizo no se ve (cargas.ts).
 
@@ -56,6 +58,25 @@ export function rutasConsultas(pool: pg.Pool, sesion: RequestHandler): Router {
     if (typeof pagina === "string") return responder(res, 400, "CONSULTA_INVALIDA", pagina);
     const p = new Parametros();
     res.json(await listar(pool, "jornadas", alcanceSql(sesionDe(res).usuario, "jornadas", "x", p) + " AND NOT srp.de_carga_oculta(x.carga_id)", p, pagina));
+  });
+
+  r.get("/jornadas/:id", sesion, async (req: Request, res: Response) => {
+    const id = String(req.params.id);
+    if (!UUID.test(id)) return responder(res, 400, "CONSULTA_INVALIDA", "El identificador de la jornada no es válido.");
+    const u = sesionDe(res).usuario;
+    const p = new Parametros(), pid = p.agregar(id);
+    const datos = await enTransaccion(pool, async (c) => {
+      await c.query("SET LOCAL TIME ZONE 'UTC'");
+      const jornada = (await c.query<{ fila: Record<string, unknown> }>(
+        `SELECT to_jsonb(x) AS fila FROM srp.jornadas x WHERE x.id = ${pid}::uuid AND ${alcanceSql(u, "jornadas", "x", p)} AND NOT srp.de_carga_oculta(x.carga_id)`, p.valores)).rows[0];
+      if (!jornada) return null;
+      const q = new Parametros(), qid = q.agregar(id);
+      const arboles = (await c.query<{ fila: Record<string, unknown> }>(
+        `SELECT to_jsonb(x) - 'foto_base64' AS fila FROM srp.plantaciones x WHERE x.jornada_id = ${qid}::uuid AND ${veArbolSql(u, "x", q)} ORDER BY x.id`, q.valores)).rows;
+      return { jornada: jornada.fila, plantaciones: arboles.map((a) => a.fila) };
+    });
+    if (!datos) return responder(res, 404, "NO_EXISTE", "Esa jornada no está en el servidor o no es de su alcance.");
+    res.json(datos);
   });
 
   r.get("/plantaciones", sesion, async (req: Request, res: Response) => {

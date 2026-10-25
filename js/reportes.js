@@ -329,7 +329,8 @@ SRP.reportes = {
   /* UN SOLO MODELO DEL REPORTE. Lo que dice el reporte se decide aquí una vez; la vista
      previa y el PDF sólo lo pintan, cada uno a su manera.
 
-     ORDEN DEL REPORTE: el nombre del cabo y, en la misma franja, los datos que distinguen a la
+     ORDEN DEL REPORTE: el nombre del cabo (en una jornada compartida, quién la coordina, y sus cabos de
+     apoyo entre los datos) y, en la misma franja, los datos que distinguen a la
      jornada (nombre, día, lugar, programa, hora, comentarios y observaciones); cinco cifras;
      1 croquis; 2 ejemplares plantados, con el sitio de cada árbol si alguno quedó en macetón y su
      comentario si alguno lo tiene;
@@ -377,9 +378,15 @@ SRP.reportes = {
     const priJornada = hayPri ? SRP.prioritarias.deJornada(registros, cierre) : null;
     const relevos = (cierre.relevos || []).filter(x => x.cabo_id !== cierre.cabo_id)
       .map(x => SRP.ref.nombreUsuario(x.cabo_id) + ', desde el ' + SRP.util.formatearFecha(SRP.indicadores.dia(x.fecha)));
+    /* JORNADA COMPARTIDA: arriba, quién la coordina; sus cabos de apoyo, con cuántos árboles registró cada uno (los
+       que se quitaron sin registrar no se dicen), y en la tabla de ejemplares, quién registró cada árbol */
+    const compartida = SRP.jornadas.compartida(cierre);
+    const apoyos = !compartida ? [] : (cierre.cabos_apoyo || []).map(a => [a, registros.filter(r => r.cabo_id === a.cabo_id).length])
+      .filter(([a, k]) => k || a.fin !== 'quitado').map(([a, k]) => SRP.ref.nombreUsuario(a.cabo_id) + ' (' + k + (k === 1 ? ' árbol)' : ' árboles)'));
     return {
       titulo: 'Reporte de la jornada de plantación',
-      cabo: SRP.ref.nombreUsuario(encargado) || '',
+      rotuloCabo: compartida ? 'Jornada compartida, coordina:' : 'Nombre del cabo:',
+      cabo: SRP.ref.nombreUsuario(compartida ? cierre.cabo_id : encargado) || '',
       cifras: [
         { valor: String(n), texto: n === 1 ? 'árbol plantado' : 'árboles plantados' },
         { valor: meta === null ? '—' : String(meta), texto: 'previstos en la jornada' },
@@ -394,6 +401,7 @@ SRP.reportes = {
         variosDias ? ['Días de la jornada', 'Del ' + SRP.util.fechaLarga(dias.desde).replace(/^./, c => c.toLowerCase()) + ' al ' + SRP.util.fechaLarga(dias.hasta).replace(/^./, c => c.toLowerCase())]
           : ['Día de la jornada', SRP.util.fechaLarga(fecha) + (this.textoJornada(jornada) ? ' · ' + this.textoJornada(jornada) : '')],
         ['Relevo de cabo', relevos.join('; ')],
+        ['Cabos de apoyo', SRP.util.enumerar(apoyos)],
         ['Alcaldía', alcaldia],
         ['Colonia', cierre.colonia || ''],
         ['Dirección de la jornada', cierre.ubicacion || ''],
@@ -424,9 +432,10 @@ SRP.reportes = {
          color (verde buena, ámbar aceptable, rojo baja). Sin coordenadas: dónde quedó cada árbol lo
          dice el croquis, y la coordenada se queda en el sistema. `precision`: en qué columna va. */
       ejemplares: {
-        cabecera: ['N.º', 'Especie'].concat(conSitio ? ['Sitio'] : [], conCalle ? ['Calle'] : [], ['Precisión'], variosDias ? ['Fecha'] : [], conComentario ? ['Comentario'] : []),
+        cabecera: ['N.º', 'Especie'].concat(conSitio ? ['Sitio'] : [], conCalle ? ['Calle'] : [], ['Precisión'], variosDias ? ['Fecha'] : [], conComentario ? ['Comentario'] : [],
+          compartida ? ['Cabo'] : []),
         filas: registros.map((r, i) => [String(i + 1), especieCon(SRP.ref.especieDe(r))].concat(conSitio ? [SRP.ref.sitio(r)] : [], conCalle ? [SRP.calles.textoCelda(r)] : [], [this.textoPrecision(r)],
-          variosDias ? [SRP.util.formatearFecha(r.fecha_plantacion)] : [], conComentario ? [this.textoComentario(r)] : [])),
+          variosDias ? [SRP.util.formatearFecha(r.fecha_plantacion)] : [], conComentario ? [this.textoComentario(r)] : [], compartida ? [SRP.ref.nombreUsuario(r.cabo_id)] : [])),
         precision: 2 + (conSitio ? 1 : 0) + (conCalle ? 1 : 0),
         calle: conCalle ? 2 + (conSitio ? 1 : 0) : null,
         niveles: registros.map(r => this.nivelPrecision(r)),
@@ -494,7 +503,7 @@ SRP.reportes = {
     const nota = t => '<p class="previa-nota">' + esc(t) + '</p>';
     let h = '<p class="previa-titulo">' + esc(m.titulo) + '</p>';
     // El cabo y, en la misma franja, los datos que distinguen a la jornada
-    h += '<div class="previa-responsable">' + (m.cabo ? '<p class="previa-cabo"><b>Nombre del cabo:</b> ' + esc(m.cabo) + '</p>' : '') + datos(m.identificacion) + '</div>';
+    h += '<div class="previa-responsable">' + (m.cabo ? '<p class="previa-cabo"><b>' + esc(m.rotuloCabo) + '</b> ' + esc(m.cabo) + '</p>' : '') + datos(m.identificacion) + '</div>';
     h += '<div class="previa-cifras">' + m.cifras.map(c => '<div class="previa-cifra"><b>' + esc(c.valor) + '</b><span>' + esc(c.texto) + '</span></div>').join('') + '</div>';
     // Croquis de la jornada: se llena cuando la imagen está lista
     h += apartado('Croquis de la jornada', '<div id="previa-croquis" class="previa-croquis" aria-live="polite"><p class="previa-nota">Preparando el croquis…</p></div>');
@@ -768,8 +777,8 @@ SRP.reportes = {
       doc.setFillColor(...C.suave); doc.roundedRect(M, y, util, altoTramo, 1.5, 1.5, 'F');
       t.forEach(f => {
         if (f.cabo) {
-          letra('bold', 10, C.guinda); doc.text('Nombre del cabo:', M + 4, y + 6.6);
-          const lw = doc.getTextWidth('Nombre del cabo:') + 2;
+          letra('bold', 10, C.guinda); doc.text(m.rotuloCabo, M + 4, y + 6.6);
+          const lw = doc.getTextWidth(m.rotuloCabo) + 2;
           letra('bold', 11, C.tinta); doc.text(doc.splitTextToSize(m.cabo, util - lw - 8)[0], M + 4 + lw, y + 6.6);
         } else if (f.bloques) escribir(f);
         y += f.h + (f.bloques ? 0.6 : 0);

@@ -24,7 +24,9 @@ La versión que corre se lee al pie de cada pantalla.
    ofrece revisarlos primero, uno tras otro, y al terminar vuelve a preguntar. La tuerca de cada punto edita, mueve a
    otra jornada, sustituye o elimina el árbol (un error de captura se corrige sin salir de la
    jornada). La coordinación hace ahí el **relevo de cabo**: pasa la jornada abierta a otro cabo de
-   su cuadrilla, que sigue registrando en ella; el titular no cambia. La ficha de cada
+   su institución, que sigue registrando en ella; el titular no cambia. En una jornada que abrió ella
+   misma marca **cabos de apoyo**: la jornada es **compartida** y varios cabos registran a la vez, cada
+   uno desde su teléfono, hasta que tocan «Terminar mi parte». La ficha de cada
    jornada cerrada trae **«Generar reporte»**: datos de cierre, vista previa y PDF con croquis, sin
    salir de Jornadas; el vehículo se elige por su placa y el modelo y el tipo se ponen solos. El
    filtro «Reporte» deja las jornadas con reporte generado o sin generar. No hay sección Reportes.
@@ -80,7 +82,7 @@ llena con lo que se capture.
 |---|---|---|---|
 | administracion@ejemplo.local | SEDEMA (Sistema de Información Ambiental) | Administración global | Ve, edita y elimina todo, y lleva Catálogos y Usuarios. **No captura registros** |
 | direccion@ejemplo.local | SEDEMA (DGSANPAVA) | Directivo | Ve jornadas, registros, fotografías y avance de toda la Ciudad y descarga los reportes ya generados. **No registra ni modifica** |
-| coordinador@ejemplo.local | SEDEMA (DGSANPAVA) | Coordinador | Registra, y ve, edita y elimina los registros de su cuadrilla; elimina también las jornadas vacías y hace el relevo de cabo en una jornada abierta |
+| coordinador@ejemplo.local | SEDEMA (DGSANPAVA) | Coordinador | Registra, y ve, edita y elimina los registros de todos los cabos de su institución; elimina también las jornadas vacías, hace el relevo de cabo en una jornada abierta y abre jornadas compartidas |
 | cabo@ejemplo.local | SEDEMA (DGSANPAVA) | Cabo | Registra, y ve, edita y elimina sólo los suyos; descarga sus fotografías desde «Mi avance» |
 | direccion.alcaldia@ejemplo.local | Alcaldía Iztapalapa | Directivo | Igual que un directivo, sólo con lo de su institución |
 | coordinador.alcaldia@ejemplo.local | Alcaldía Iztapalapa | Coordinador | Igual que un coordinador, sólo con los cabos de su institución; sin área |
@@ -494,6 +496,28 @@ informe y de Supervisión, y cuatro columnas del CSV. La jornada no lleva calle.
   4.0, y el ACUERDO/CCV/016/3ORD/SEPTIEMBRE/2024). Licencias: Términos de Libre Uso de la Información del
   INEGI y CC BY 4.0. SEDEMA unió, partió y clasificó los tramos y homologó sus nombres; esas
   transformaciones no son del INEGI ni de SEMOVI.
+
+## La jornada compartida
+
+Para los eventos masivos, varios cabos registran en una misma jornada (D334, pedido en la prueba en campo como
+TD-01). La abre la Coordinación, el mismo día del evento, y queda como su titular. En su ficha, «Cabos de apoyo»
+marca a cabos activos de su institución, de cualquier cuadrilla; la ventana trae a la vista cómo funciona.
+
+- **Los cabos de apoyo** reciben la jornada en su teléfono la siguiente vez que tienen señal, con un aviso al
+  entrar. Registran como siempre; cada árbol queda a su nombre. Ven la jornada completa, pero sólo corrigen sus
+  árboles, y no cambian los datos de la jornada ni la cierran. Al acabar tocan **«Terminar mi parte»**: lo suyo se
+  envía y la jornada sale de su lista. La Coordinación puede quitarlos o volver a marcarlos.
+- **Al cerrar**, cada cabo de apoyo que no ha terminado es un pendiente más, con cuántos árboles suyos llegaron y a
+  qué hora el último: avisa, no impide. Con señal, la Coordinación trae antes la jornada al día del servidor
+  (`GET /jornadas/:id`).
+- **El reporte** dice «Jornada compartida, coordina:», el renglón «Cabos de apoyo» con los árboles de cada uno y la
+  columna «Cabo» en la tabla de ejemplares.
+- **En el servidor** son dos operaciones: `jornada.compartir`, que lleva sólo los cabos que entran y salen (si
+  mientras tanto uno terminó su parte, no se deshace), y `jornada.terminar`, que no cambia la versión de la jornada
+  para no chocar con lo que la Coordinación tenga por enviar. La lista va en `jornadas.cabos_apoyo`.
+
+Desde la misma versión, **la Coordinación trabaja con todos los cabos de su institución** (D333): los ve, corrige y
+elimina sus registros, y los elige para relevos y jornadas compartidas. Usuarios ya no asigna coordinadores.
 
 ## Pruebas
 

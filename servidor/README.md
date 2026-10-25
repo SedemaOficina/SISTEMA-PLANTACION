@@ -197,6 +197,7 @@ variables de entorno, está explicada en `src/modulos/srp/config.ts`. Las respue
 | `GET /duplicados` | La bandeja de posibles duplicados entre instituciones, por páginas | Administración global |
 | `POST /duplicados/revision` | Marca parejas como el mismo árbol o árboles distintos | Administración global |
 | `GET /jornadas` | Las jornadas de su alcance, por páginas | Con sesión |
+| `GET /jornadas/:id` | Una jornada de su alcance con los árboles que ve de ella, para tenerla al día sin traer todo | Con sesión |
 | `GET /plantaciones` | Los árboles de su alcance, por páginas, sin la fotografía | Con sesión |
 | `GET /plantaciones/:id/historial` | Lo que se le hizo a un árbol, en orden; de otro árbol, como si no existiera | Quien ve el árbol |
 | `PUT /cargas/:id/tandas/:n` | Una tanda de un lote de carga masiva, hasta 400 árboles con las jornadas que estrena; todo o nada. Una carga a la vez | Administración global |
@@ -267,7 +268,7 @@ validación con la de la aplicación caso por caso.
 `POST /envios` recibe hasta 100 operaciones por vez, en el orden en que se hicieron, cada una con el nombre
 de la acción de permisos que la autoriza, o de lo que hace: para las jornadas, `jornada.crear`,
 `jornada.editar`, `jornada.cerrar`, `jornada.reabrir`, `jornada.revisar`, `jornada.cierre`,
-`jornada.reporte`, `jornada.relevo` y `jornada.eliminar`; para los árboles, `registro.crear`,
+`jornada.reporte`, `jornada.relevo`, `jornada.compartir`, `jornada.terminar` y `jornada.eliminar`; para los árboles, `registro.crear`,
 `registro.editar`, `registro.eliminar`, `registro.restaurar`, `registro.sustituir` y `registro.mover`. La
 lista completa, con lo que lleva cada una, está al principio de `src/modulos/srp/recepcion.ts`. Cada operación va en su
 propia transacción, así que una rechazada no detiene a las demás. La respuesta dice, para cada una, si

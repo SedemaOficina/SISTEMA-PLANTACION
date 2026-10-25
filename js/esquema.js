@@ -84,6 +84,7 @@ SRP.ESQUEMA = {
    "RESTAURADO",
    "SUSTITUIDO",
    "RELEVO",
+   "APOYO",
    "ACTIVADO",
    "DESACTIVADO",
    "FOLIO_ASIGNADO"
@@ -515,7 +516,7 @@ SRP.ESQUEMA = {
     false,
     null,
     "usuarios",
-    "Coordinadores (sólo cabos)"
+    "No se muestra desde la 1.4"
    ],
    [
     "activo",
@@ -1452,6 +1453,14 @@ SRP.ESQUEMA = {
     null,
     null,
     "Hora de finalización (selector, con «Ahora»), obligatoria para generar el reporte"
+   ],
+   [
+    "cabos_apoyo",
+    "objeto[]",
+    false,
+    null,
+    null,
+    "Jornadas › Cabos de apoyo; la ficha, la franja y el reporte dicen quiénes"
    ]
   ]
  }

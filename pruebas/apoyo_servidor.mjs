@@ -8,6 +8,7 @@
      node pruebas/apoyo_servidor.mjs parametro  { clave, valor, id }   un parámetro cambiado por esa cuenta
      node pruebas/apoyo_servidor.mjs tocar      { id, comentarios, por }   otra persona (`por`) cambia un árbol en el servidor
      node pruebas/apoyo_servidor.mjs leer       { id }          cómo tiene el servidor un árbol o una jornada
+     node pruebas/apoyo_servidor.mjs apoyos     { id }          de una jornada compartida: su estado, sus cabos de apoyo y quién registró sus árboles
      node pruebas/apoyo_servidor.mjs catalogo   { tabla, clave }       cómo tiene el servidor un valor de catálogo
      node pruebas/apoyo_servidor.mjs otro_valor { tabla, id, clave, nombre, por }   otra persona da de alta un valor
      node pruebas/apoyo_servidor.mjs pareja     { llego, cercano, distancia }  una pareja en la bandeja de posibles duplicados
@@ -56,6 +57,10 @@ try {
     const j = (await c.query('SELECT estatus, reporte_en IS NOT NULL AS reporte, nombre FROM srp.jornadas WHERE id = $1', [d.id])).rows[0];
     const f = a && a.foto_id ? (await c.query('SELECT count(*)::int AS n FROM srp.fotografias WHERE id = $1', [a.foto_id])).rows[0].n : 0;
     salida = { arbol: a || null, jornada: j || null, fotos: f };
+  } else if (orden === 'apoyos') {
+    const j = (await c.query('SELECT estatus, cabos_apoyo FROM srp.jornadas WHERE id = $1', [d.id])).rows[0];
+    const a = (await c.query("SELECT cabo_id FROM srp.plantaciones WHERE jornada_id = $1 AND estatus = 'activo' ORDER BY fecha_registro", [d.id])).rows;
+    salida = { estatus: j ? j.estatus : null, apoyos: j ? j.cabos_apoyo.map((x) => [x.cabo_id, x.fin]) : null, arboles: a.map((x) => x.cabo_id) };
   } else if (orden === 'catalogo') {
     if (!TABLAS_CATALOGO.includes(d.tabla)) throw new Error('No es un catálogo: ' + d.tabla);
     salida = { fila: (await c.query(`SELECT to_jsonb(x) AS fila FROM srp.${d.tabla} x WHERE clave = $1`, [d.clave])).rows[0]?.fila ?? null };

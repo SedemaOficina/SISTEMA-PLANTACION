@@ -43,7 +43,7 @@ SRP.activa = {
     // Al volver a la aplicación, quizá ya es otro día
     document.addEventListener('visibilitychange', () => { if (!document.hidden && SRP.app.vista === 'registrar') this.alDia(); });
     this.el('btn-jornada-cambiar').addEventListener('click', () => this.abrirCambiar());
-    this.el('btn-jornada-cerrar').addEventListener('click', () => this.cerrarJornada());
+    this.el('btn-jornada-cerrar').addEventListener('click', () => (this.esApoyo(this.jornada) ? this.terminarParte() : this.cerrarJornada()));
     // La jornada se corrige sin salir de «Nuevo registro»: el mismo formulario de su ficha
     this.el('btn-franja-editar').innerHTML = SRP.ICONOS.svg('lapiz', 'medio') + '<span>Editar jornada</span>';
     this.el('btn-franja-editar').addEventListener('click', () => { if (this.jornada) SRP.jornadas.abrirEditar(this.jornada, true); });
@@ -101,12 +101,16 @@ SRP.activa = {
   // Quién registra en la jornada: el cabo del relevo, si lo hay; si no, el titular
   capturista(j) { return j ? (j.relevo_id || j.cabo_id) : null; },
 
-  // Las jornadas abiertas en que registra quien entró (las suyas y las que recibió en relevo), la más reciente primero
+  // Quien entró está en la jornada como cabo de apoyo: registra en ella, pero no es su titular ni su relevo
+  esApoyo(j) { const u = SRP.sesion.usuario; return !!(j && u && SRP.permisos.soloDeApoyo(j, u.id)); },
+
+  /* Las jornadas abiertas en que registra quien entró (las suyas, las que recibió en relevo y las compartidas
+     donde es cabo de apoyo vigente), la más reciente primero */
   async abiertas() {
     const u = SRP.sesion.usuario;
     if (!u || !SRP.almacen.db) return [];
     return (await SRP.almacen.todos('jornadas'))
-      .filter(j => j.estatus === 'abierta' && this.capturista(j) === u.id)
+      .filter(j => j.estatus === 'abierta' && (this.capturista(j) === u.id || SRP.permisos.apoyoVigente(j, u.id)))
       .sort((a, b) => b.fecha_inicio.localeCompare(a.fecha_inicio));
   },
 
@@ -152,9 +156,24 @@ SRP.activa = {
          puede durar varios días); iniciar la de hoy queda en «Cambiar de jornada». */
       const j = this.jornada;
       const relevo = j.relevo_id === SRP.sesion.usuario.id && j.cabo_id !== j.relevo_id ? ', que recibió en relevo de ' + SRP.ref.nombreUsuario(j.cabo_id) + ',' : '';
-      SRP.util.anunciar('Sigue abierta la jornada «' + j.nombre + '»' + relevo + ' iniciada el ' + SRP.util.formatearFecha(j.fecha) + '. Puede seguir registrando en ella: cada árbol lleva la fecha en que se planta. Si ya terminó, ciérrela.', 'aviso',
-        { deshacer: () => this.cerrarJornada(), textoAccion: 'Cerrar «' + j.nombre + '»' });
+      const apoyo = this.esApoyo(j);
+      SRP.util.anunciar('Sigue abierta la jornada «' + j.nombre + '»' + relevo + ' iniciada el ' + SRP.util.formatearFecha(j.fecha) + '. Puede seguir registrando en ella: cada árbol lleva la fecha en que se planta. ' +
+        (apoyo ? 'Si ya terminó, toque «Terminar mi parte».' : 'Si ya terminó, ciérrela.'), 'aviso',
+        apoyo ? { deshacer: () => this.terminarParte(), textoAccion: 'Terminar mi parte' } : { deshacer: () => this.cerrarJornada(), textoAccion: 'Cerrar «' + j.nombre + '»' });
     }
+  },
+
+  /* Con datos reales, lo enviado llega después de entrar: una jornada que vive en el servidor —la compartida de un
+     cabo de apoyo, la recibida en relevo— aparece entonces. Sin jornada activa, y sin una a medio iniciar, la toma;
+     y avisa lo nuevo. */
+  async alLlegarLoEnviado() {
+    if (!SRP.sesion.usuario || !SRP.almacen.db) return;
+    if (!this.jornada && !this.el('ini-nombre').value.trim()) {
+      const ab = await this.abiertas();
+      if (ab.length) { this.jornada = ab[0]; if (SRP.app.vista === 'registrar') await this.preparar(); }
+    }
+    await this.avisarRelevos();
+    await this.avisarApoyos();
   },
 
   /* AVISO DE RELEVO. Al entrar, quien recibió una jornada en relevo o dejó de registrar en una lo lee
@@ -162,7 +181,11 @@ SRP.activa = {
      cuándo. Lo ya leído se recuerda por cuenta en este dispositivo. */
   async avisarRelevos() {
     const u = SRP.sesion.usuario;
-    if (!u || !SRP.almacen.db) return;
+    if (!u || !SRP.almacen.db || this.avisandoRelevos) return;   // uno a la vez: al entrar y al llegar lo enviado
+    this.avisandoRelevos = true;
+    try { await this.avisarRelevosAhora(u); } finally { this.avisandoRelevos = false; }
+  },
+  async avisarRelevosAhora(u) {
     const clave = 'srp_relevos_vistos_' + u.id;
     let visto = ''; try { visto = localStorage.getItem(clave) || ''; } catch (e) { /* sin almacenamiento, se avisa cada vez */ }
     const lineas = []; let ultimo = visto;
@@ -399,20 +422,28 @@ SRP.activa = {
     this.el('franja-jornada-rotulo').textContent = editando ? 'Jornada del registro' : 'Jornada activa';
     if (editando) this.el('franja-guardado').hidden = true;
     const meta = SRP.jornadas.previstosDe(j);
+    // En una jornada compartida, el cabo de apoyo ve quién coordina y cuántos árboles son suyos
+    const apoyo = !editando && this.esApoyo(j), u = SRP.sesion.usuario;
+    const suyos = apoyo ? registros.filter(r => r.cabo_id === u.id).length : 0;
     this.el('franja-jornada-texto').innerHTML =
       '<span class="franja-jornada-titulo"><strong>' + esc(j.nombre) + '</strong></span>' +
+      (apoyo ? '<span class="franja-jornada-coordina">Jornada compartida · coordina <b>' + esc(SRP.ref.nombreUsuario(j.cabo_id)) + '</b></span>' : '') +
       // Lo que cambia con cada árbol va siempre a la vista: cuántos van, y su barra frente a lo previsto
       '<span class="franja-jornada-avance"><b>' + n + (meta !== null ? ' de ' + meta : '') + (n === 1 && meta === null ? ' árbol' : ' árboles') + '</b>' +
+        (apoyo ? ' · ' + suyos + (suyos === 1 ? ' suyo' : ' suyos') : '') +
         (meta ? '<svg class="jornada-barra" data-tono="' + (n >= meta ? 'ok' : 'curso') + '" viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true"><rect width="' + Math.min(100, Math.round(n / meta * 100)) + '" height="8"/></svg>' : '') + '</span>' +
       '<span class="franja-jornada-datos">' + esc(SRP.util.textoDias(SRP.util.diasJornada(j, registros))) + (this.lugarDe(j) ? ' · ' + esc(this.lugarDe(j)) : '') +
         // La prioridad de la jornada, la de la colonia donde se ubicó, junto a ella; después la dirección
         (SRP.prioritarias.marca(SRP.prioritarias.deJornada(registros, j)) ? ' · ' + SRP.prioritarias.marca(SRP.prioritarias.deJornada(registros, j)) : '') +
         (j.ubicacion ? ' · ' + esc(j.ubicacion) : '') + (j.programa_id ? ' · ' + esc(SRP.ref.nombreCatalogo(j.programa_id)) : '') + '' +
       (j.estatus === 'cerrada' ? ' · cerrada' : '') + (atrasada ? ' · <b>no es de hoy</b>' : '') +
-      (j.relevo_id && j.relevo_id !== j.cabo_id ? ' · relevo de ' + esc(SRP.ref.nombreUsuario(j.cabo_id)) : '') + '</span>' +
+      (j.relevo_id && j.relevo_id !== j.cabo_id ? ' · relevo de ' + esc(SRP.ref.nombreUsuario(j.cabo_id)) : '') +
+      (!apoyo && SRP.jornadas.compartida(j) ? ' · compartida' : '') + '</span>' +
       (SRP.solicitud.es(j) ? '<span class="franja-jornada-solicitud">' + SRP.solicitud.insignia(j) + '</span>' : '');
     this.el('franja-jornada-acciones').hidden = !!editando;
     this.el('btn-franja-editar').hidden = !!editando || !SRP.permisos.puede('jornada.editar', j);
+    this.el('btn-jornada-cerrar').innerHTML = apoyo ? SRP.ICONOS.svg('palomita', 'medio') + '<span>Terminar mi parte</span>'
+      : SRP.ICONOS.svg('candado', 'medio') + '<span>Cerrar jornada</span>';
     // En qué paso va. Al editar un registro se enseña la jornada del registro, no el flujo.
     const pasos = this.el('franja-pasos'), sig = this.el('franja-siguiente');
     pasos.hidden = !!editando;
@@ -598,7 +629,7 @@ SRP.activa = {
       editado_por_id: null, fecha_ultima_edicion: null,
       arboles_previstos: previstos, puntos_revisados: [], reporte_en: null, encargado_id: u.id,
       // Relevo: el cabo que registra en lugar del titular (nulo: el titular) y la lista de los relevos hechos
-      relevo_id: null, relevos: [],
+      relevo_id: null, relevos: [], cabos_apoyo: [],
       // Con el programa «Solicitud especial»: quién lo solicita y de qué se trata
       ...SRP.solicitud.leer('ini'),
       carga_id: null,   // sólo las jornadas de una carga masiva llevan la clave de su lote
@@ -633,12 +664,14 @@ SRP.activa = {
      estructurada: lo pendiente en viñetas, para que no se pierda en un párrafo. Con puntos por
      revisar ofrece primero revisarlos (SRP.app.elegir devuelve 'otro') y «Cerrar jornada» va de contorno. */
   async confirmacionCierre(j) {
+    // Con señal, la jornada compartida se trae al día: qué cabos ya terminaron y cuántos árboles suyos llegaron
+    if (SRP.jornadas.compartida(j)) j = (await SRP.remoto.alDia(j.id)) || j;
     const regs = await this.registrosDe(j);
     const vista = SRP.jornadas.jornadasAlcance ? (await SRP.jornadas.jornadasAlcance()).find(x => x.id === j.id) : null;
     const pend = vista ? SRP.jornadas.pendientes(vista, SRP.jornadas.avisos(vista), j).length : 0;
     const meta = SRP.jornadas.previstosDe(j);
     const n = regs.length;
-    const avisos = [];
+    const avisos = this.apoyosPendientes(j, regs);
     if (pend) avisos.push(pend === 1 ? '1 punto por revisar' : pend + ' puntos por revisar');
     if (meta !== null && n < meta) avisos.push((meta - n) + (meta - n === 1 ? ' árbol' : ' árboles') + ' por debajo de lo previsto (' + n + ' de ' + meta + ')');
     if (meta !== null && n > meta) avisos.push((n - meta) + (n - meta === 1 ? ' árbol' : ' árboles') + ' por encima de lo previsto (' + n + ' de ' + meta + ')');
@@ -646,7 +679,20 @@ SRP.activa = {
       nota: pend === 1 ? 'Puede revisarlo ahora o cerrar de todos modos y revisarlo después.' : 'Puede revisarlos ahora, uno por uno, o cerrar de todos modos y revisarlos después.' } : {};
     return Object.assign({ titulo: 'Cerrar jornada', pregunta: '¿Cerrar la jornada «' + j.nombre + '» con ' + n + (n === 1 ? ' árbol' : ' árboles') + '?',
       puntosTitulo: 'Queda pendiente:', puntos: avisos.map(a => a.charAt(0).toUpperCase() + a.slice(1) + '.'),
-      nota: (avisos.length ? 'Se puede cerrar de todos modos y reabrir después.' : 'Se puede reabrir después.'), boton: 'Cerrar jornada', icono: 'candado' }, revisar);
+      nota: SRP.permisos.vigentes(j).length ? 'Se puede cerrar de todos modos. Si después llegan árboles de un cabo de apoyo, se quedan en su teléfono hasta que se reabra la jornada.'
+        : avisos.length ? 'Se puede cerrar de todos modos y reabrir después.' : 'Se puede reabrir después.', boton: 'Cerrar jornada', icono: 'candado' }, revisar);
+  },
+
+  /* Los cabos de apoyo vigentes —los que no han tocado «Terminar mi parte»—, uno por renglón, con cuántos árboles
+     suyos llegaron y a qué hora el último: «Rocío Hernández no ha terminado su parte: 9 árboles recibidos, el
+     último a las 12:40» */
+  apoyosPendientes(j, regs) {
+    return SRP.permisos.vigentes(j).map(id => {
+      const suyos = regs.filter(r => r.cabo_id === id).sort((a, b) => String(a.fecha_registro).localeCompare(String(b.fecha_registro)));
+      const n = suyos.length, ultimo = n ? SRP.envio.hora(suyos[n - 1].fecha_registro) : '';
+      return SRP.ref.nombreUsuario(id) + ' no ha terminado su parte: ' +
+        (n ? n + (n === 1 ? ' árbol recibido, a las ' + ultimo : ' árboles recibidos, el último a las ' + ultimo) : 'todavía no llega ningún árbol suyo');
+    });
   },
 
   // `op.sinPreguntarSiCuadra`: viene de «Jornada completa»; si no queda nada pendiente, no se vuelve a preguntar
@@ -719,6 +765,52 @@ SRP.activa = {
     return true;
   },
 
+  /* «TERMINAR MI PARTE». El cabo de apoyo avisa que acabó: su lugar en la jornada compartida queda con la hora y
+     «terminado», lo que tenga por enviar sale, y la jornada deja su lista. La Coordinación lo ve al cerrar; si hace
+     falta que vuelva, lo marca otra vez. */
+  async terminarParte() {
+    const j = this.jornada; if (!j) return;
+    if (!SRP.permisos.exigir('jornada.terminar', j)) return;
+    const u = SRP.sesion.usuario;
+    const suyos = (await this.registrosDe(j)).filter(r => r.cabo_id === u.id).length;
+    const arboles = suyos + (suyos === 1 ? ' árbol suyo' : ' árboles suyos');
+    const ok = await SRP.app.confirmar({ titulo: 'Terminar mi parte', pregunta: '¿Terminar su parte en «' + j.nombre + '», con ' + arboles + '?',
+      puntos: ['Lo que tenga por enviar se envía en cuanto haya señal.', 'La jornada sale de su lista y ya no registra en ella.', 'La Coordinación cierra la jornada y genera el reporte.'],
+      boton: 'Terminar mi parte', icono: 'palomita' });
+    if (!ok) return;
+    const ahora = SRP.util.ahoraISO();
+    const nuevo = Object.assign({}, j, { cabos_apoyo: (j.cabos_apoyo || []).map(a => (a.cabo_id === u.id && !a.hasta ? Object.assign({}, a, { hasta: ahora, fin: 'terminado' }) : a)) });
+    await SRP.almacen.guardarConBitacora('jornadas', nuevo, SRP.bitacora.entrada('APOYO', 'jornada', j.id, 'Terminó su parte: ' + suyos + (suyos === 1 ? ' árbol' : ' árboles')), 'jornada.terminar');
+    if (SRP.envio.simulado()) SRP.envio.enviar({ silencioso: true });
+    this.jornada = null;
+    await this.preparar();
+    SRP.util.anunciar('Terminó su parte en «' + j.nombre + '», con ' + arboles + '.', 'exito');
+  },
+
+  /* AVISO DE JORNADA COMPARTIDA. Al entrar, el cabo que la Coordinación agregó a una jornada compartida lo lee una
+     vez, en una ventana con «Entendido»: qué jornada, quién coordina y cómo funciona. Lo ya leído se recuerda por
+     cuenta en este dispositivo. */
+  async avisarApoyos() {
+    const u = SRP.sesion.usuario;
+    if (!u || !SRP.almacen.db || this.avisandoApoyos) return;   // uno a la vez: al entrar y al llegar lo enviado
+    this.avisandoApoyos = true;
+    try { await this.avisarApoyosAhora(u); } finally { this.avisandoApoyos = false; }
+  },
+  async avisarApoyosAhora(u) {
+    const clave = 'srp_apoyos_vistos_' + u.id;
+    let visto = ''; try { visto = localStorage.getItem(clave) || ''; } catch (e) { /* sin almacenamiento, se avisa cada vez */ }
+    const nuevas = (await this.abiertas()).filter(j => this.esApoyo(j))
+      .map(j => [j, (j.cabos_apoyo || []).find(a => a.cabo_id === u.id && !a.hasta)]).filter(([, a]) => a && String(a.desde) > visto);
+    if (!nuevas.length) return;
+    const cuales = nuevas.map(([j]) => '«' + j.nombre + '», que coordina ' + SRP.ref.nombreUsuario(j.cabo_id));
+    const una = cuales.length === 1;
+    const ok = await SRP.app.confirmar({ titulo: 'Jornada compartida', boton: 'Entendido', icono: 'palomita', soloAceptar: true,
+      pregunta: 'Ahora es cabo de apoyo en ' + (una ? 'la jornada compartida ' : 'las jornadas compartidas ') + SRP.util.enumerar(cuales) + '. Ya puede registrar en ' + (una ? 'ella.' : 'ellas.'),
+      puntosTitulo: 'Cómo funciona:', puntos: ['Registran varios cabos a la vez; cada árbol queda a nombre de quien lo captura.', 'Usted corrige sólo sus árboles.',
+        'Al acabar, toque «Terminar mi parte»: se envía lo suyo y la Coordinación lo ve.', 'La Coordinación cierra la jornada y genera el reporte.'] });
+    if (ok) { try { localStorage.setItem(clave, nuevas.map(([, a]) => String(a.desde)).sort().pop()); } catch (e) { /* se volverá a avisar */ } }
+  },
+
   async abrirCambiar() {
     const ab = await this.abiertas();
     const esc = SRP.util.escapar;
@@ -727,7 +819,9 @@ SRP.activa = {
       '<li><button type="button" class="jornada-boton" data-id="' + SRP.util.escapar(j.id) + '" aria-pressed="' + String(this.jornada && this.jornada.id === j.id) + '">' +
       '<span class="jornada-datos"><span class="jornada-dia">' + esc(j.nombre) + '</span>' +
       '<span class="jornada-cifras">' + esc(SRP.util.textoDias(SRP.util.diasJornada(j, conteos[i]))) + ' · ' + conteos[i].length + (conteos[i].length === 1 ? ' árbol' : ' árboles') +
-      (j.cabo_id !== SRP.sesion.usuario.id ? ' · relevo de ' + esc(SRP.ref.nombreUsuario(j.cabo_id)) : '') +
+      (this.esApoyo(j) ? (n => ', ' + n + (n === 1 ? ' suyo' : ' suyos'))(conteos[i].filter(r => r.cabo_id === SRP.sesion.usuario.id).length) +
+        ' · compartida, coordina ' + esc(SRP.ref.nombreUsuario(j.cabo_id))
+        : j.cabo_id !== SRP.sesion.usuario.id ? ' · relevo de ' + esc(SRP.ref.nombreUsuario(j.cabo_id)) : '') +
       (this.jornada && this.jornada.id === j.id ? ' · activa' : '') + '</span></span></button></li>').join('')
       : '<li class="nota">No hay jornadas abiertas.</li>';
     this.el('dlg-cambiar-jornada').showModal();

@@ -200,7 +200,7 @@ CREATE TABLE srp.bitacora (
   detalle                    text           NOT NULL,
   CONSTRAINT bitacora_pk PRIMARY KEY (id),
   CONSTRAINT bitacora_perfil_valido CHECK (perfil IN ('CABO', 'COORDINADOR', 'DIRECTIVO', 'ADMIN')),
-  CONSTRAINT bitacora_accion_valido CHECK (accion IN ('CREADO', 'EDITADO', 'ELIMINADO', 'RESTAURADO', 'SUSTITUIDO', 'RELEVO', 'ACTIVADO', 'DESACTIVADO', 'FOLIO_ASIGNADO')),
+  CONSTRAINT bitacora_accion_valido CHECK (accion IN ('CREADO', 'EDITADO', 'ELIMINADO', 'RESTAURADO', 'SUSTITUIDO', 'RELEVO', 'APOYO', 'ACTIVADO', 'DESACTIVADO', 'FOLIO_ASIGNADO')),
   CONSTRAINT bitacora_entidad_valido CHECK (entidad IN ('plantacion', 'usuario', 'catalogo', 'jornada', 'carga'))
 );
 CREATE INDEX bitacora_entidad_id ON srp.bitacora (entidad_id);
@@ -246,11 +246,13 @@ CREATE TABLE srp.jornadas (
   vehiculo_tipo              text           NOT NULL,
   vehiculo_id                text           NULL,
   hora                       varchar(5)     NOT NULL,
+  cabos_apoyo                jsonb          NOT NULL DEFAULT '[]'::jsonb,
   CONSTRAINT jornadas_pk PRIMARY KEY (id),
   CONSTRAINT jornadas_estatus_valido CHECK (estatus IN ('abierta', 'cerrada')),
   CONSTRAINT jornadas_arboles_previstos_rango CHECK (arboles_previstos BETWEEN 1 AND 9999),
   CONSTRAINT jornadas_hora_formato CHECK (hora = '' OR hora ~ '^([01]\d|2[0-3]):[0-5]\d$'),
-  CONSTRAINT jornadas_relevos_lista CHECK (jsonb_typeof(relevos) = 'array')
+  CONSTRAINT jornadas_relevos_lista CHECK (jsonb_typeof(relevos) = 'array'),
+  CONSTRAINT jornadas_cabos_apoyo_lista CHECK (jsonb_typeof(cabos_apoyo) = 'array')
 );
 CREATE INDEX jornadas_cabo_id ON srp.jornadas (cabo_id);
 
@@ -341,7 +343,7 @@ COMMENT ON COLUMN srp.usuarios.organizacion_id IS '→ instituciones.id; La inst
 COMMENT ON COLUMN srp.usuarios.area_id IS '→ areas.id (DGSANPAVA, Oficina de la Secretaría, Sistema de Información Ambiental, DGEIRA); Obligatoria en cuentas de SEDEMA; nula en las de otras organizaciones';
 COMMENT ON COLUMN srp.usuarios.cargo_rol IS 'Texto libre; Descriptivo; no gobierna permisos';
 COMMENT ON COLUMN srp.usuarios.perfil IS 'perfil; Decide alcance y acciones. Una cuenta de administración no puede quitarse a sí misma el perfil ADMIN. Un perfil desconocido queda sin permisos y se avisa. ADMIN sólo en SEDEMA; fuera, CABO, COORDINADOR o DIRECTIVO';
-COMMENT ON COLUMN srp.usuarios.coordinadores_ids IS '→ usuarios.id con perfil COORDINADOR; [] si no tiene; Sólo en cabos; puede tener más de uno, todos de su misma institución; [] en los demás perfiles. Es lo que define la cuadrilla: cada coordinador ve y edita los registros de los cabos que lo tienen asignado, nunca los de otra institución';
+COMMENT ON COLUMN srp.usuarios.coordinadores_ids IS '→ usuarios.id con perfil COORDINADOR; [] si no tiene; Sin uso desde la 1.4 (D333): la Coordinación trabaja con todos los cabos de su institución, sin cuadrilla. Lo ya capturado se conserva; las altas nuevas lo dejan en []';
 COMMENT ON COLUMN srp.usuarios.activo IS 'true/false; Inactiva no puede entrar; sus registros se conservan a su nombre. Con registros a su nombre no se elimina, se desactiva';
 COMMENT ON COLUMN srp.usuarios.fecha_creacion IS 'ISO 8601; Cuándo se dio de alta la cuenta; mismo nombre que en catálogos';
 COMMENT ON COLUMN srp.usuarios.creado_por_id IS '→ usuarios.id; Quién dio de alta la cuenta; mismo nombre que en catálogos';
@@ -445,7 +447,7 @@ COMMENT ON COLUMN srp.jornadas.estatus IS 'estatus_jornada; Se cierra desde la f
 COMMENT ON COLUMN srp.jornadas.fecha_inicio IS 'ISO 8601; Ordena las jornadas del día: «Jornada 2 de 3»';
 COMMENT ON COLUMN srp.jornadas.fecha_cierre IS 'ISO 8601; Nulo mientras está abierta';
 COMMENT ON COLUMN srp.jornadas.encargado_id IS '→ usuarios.id; Para un cabo es él mismo (no se pregunta ni se muestra en el cierre; el reporte lo imprime); quien ve a varias personas lo elige sólo entre los cabos con registros ese día';
-COMMENT ON COLUMN srp.jornadas.relevo_id IS '→ usuarios.id; El cabo que registra en lugar del titular: lo elige la coordinación entre los cabos activos de su cuadrilla y de la institución de la jornada, con la jornada abierta. Nulo: registra el titular. Sólo quien registra en la jornada (este cabo o, sin relevo, el titular) agrega árboles en ella';
+COMMENT ON COLUMN srp.jornadas.relevo_id IS '→ usuarios.id; El cabo que registra en lugar del titular: lo elige la coordinación entre los cabos activos de la institución de la jornada, con la jornada abierta. Nulo: registra el titular. Sólo quien registra en la jornada (este cabo o, sin relevo, el titular) agrega árboles en ella';
 COMMENT ON COLUMN srp.jornadas.relevos IS '[{ cabo_id → usuarios.id, fecha ISO 8601, por_id → usuarios.id }]; [] sin relevos; Cada relevo hecho, también el que devuelve la jornada al titular: a quién se pasó, cuándo y quién lo hizo. Quien estuvo en un relevo sigue viendo la jornada y todos sus árboles, aunque sólo edita los suyos';
 COMMENT ON COLUMN srp.jornadas.solicitante_id IS '→ solicitantes.id; Quién solicita la jornada, del catálogo de solicitantes (Catálogos › Solicitantes), que es aparte del de instituciones. No es quien ejecuta (organizacion_id): quien solicita no es quien planta. Nulo si la jornada es de otro programa o si la instancia no está en el catálogo. Obligatorio, este o solicitante_otro, con el programa «Solicitud especial»';
 COMMENT ON COLUMN srp.jornadas.solicitante_otro IS 'Texto ≤ 120; '''' si no aplica; El nombre de la instancia que solicita cuando no está en el catálogo («Otra instancia»). Vacío con solicitante_id o en una jornada de otro programa';
@@ -465,3 +467,4 @@ COMMENT ON COLUMN srp.jornadas.vehiculo_placa IS 'Copia de vehiculos.nombre (la 
 COMMENT ON COLUMN srp.jornadas.vehiculo_tipo IS 'Copia de vehiculos.tipo_vehiculo del vehículo elegido; '''' sin vehículo; Se copia del catálogo al guardar el cierre; no se escribe a mano';
 COMMENT ON COLUMN srp.jornadas.vehiculo_id IS '→ vehiculos.id; El vehículo del catálogo; nulo sin vehículo. Con él se cuentan los que más usa cada encargado. Sólo del catálogo: sin «Otro vehículo»';
 COMMENT ON COLUMN srp.jornadas.hora IS 'HH:MM, de 00:00 a 23:59; '''' si no se elige; La aplicación no arma la vista previa del reporte sin ella; '''' en las jornadas que todavía no tienen datos de cierre y en las anteriores a esta regla';
+COMMENT ON COLUMN srp.jornadas.cabos_apoyo IS '[{ cabo_id → usuarios.id, desde ISO 8601, por_id → usuarios.id, hasta ISO 8601 o nulo, fin «terminado», «quitado» o nulo }]; [] en una jornada de un solo cabo; Jornada compartida: la abre la Coordinación, que queda como titular, y le agrega cabos activos de su institución, que registran a la vez. Un cabo de apoyo vigente (sin hasta) registra hasta que toca «Terminar mi parte» (fin «terminado») o la Coordinación lo quita (fin «quitado»); volver a marcarlo lo deja vigente otra vez. Cada cabo aparece una vez. Quien fue cabo de apoyo sigue viendo la jornada y todos sus árboles, pero sólo corrige los suyos; no cambia los datos de la jornada ni la cierra';

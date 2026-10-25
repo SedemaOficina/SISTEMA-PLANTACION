@@ -86,7 +86,7 @@ REVOKE ALL ON FUNCTION srp.recalcular_calles() FROM PUBLIC;
 GRANT territorio_lectura TO srp_api;
 
 INSERT INTO srp.migraciones (version, nombre)
-VALUES (1, 'Instalación: diez tablas del SRP, contraseñas, sesiones, registro de entradas, prioritarias, derivación sobre territorio, folio, fotografías, parámetros, prioridad congelada, posibles duplicados, lotes de carga masiva y la calle de cada árbol')
+VALUES (1, 'Instalación: diez tablas del SRP, contraseñas, sesiones, registro de entradas, prioritarias, derivación sobre territorio, folio, fotografías, parámetros, prioridad congelada, posibles duplicados, lotes de carga masiva, la calle de cada árbol y la jornada compartida')
 ON CONFLICT (version) DO NOTHING;
 
 /*

@@ -149,9 +149,8 @@ SRP.sesion = {
     await SRP.remoto.bajarCatalogos();
     const u = await this.ponerAlDia(r.datos.usuario);
     this.usuario = u;
-    // Si la Administración le cambió el perfil, la institución, el nombre o la coordinación, se vuelve a entrar con lo nuevo
-    if (['perfil', 'organizacion_id', 'nombre_completo', 'activo'].some(k => antes[k] !== u[k]) ||
-        String(antes.coordinadores_ids) !== String(u.coordinadores_ids)) SRP.app.entrar();
+    // Si la Administración le cambió el perfil, la institución o el nombre, se vuelve a entrar con lo nuevo
+    if (['perfil', 'organizacion_id', 'nombre_completo', 'activo'].some(k => antes[k] !== u[k])) SRP.app.entrar();
     SRP.remoto.cargar();
   },
 

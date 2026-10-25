@@ -570,8 +570,9 @@ fieldset.campo { margin-inline: 0; }
 .franja-jornada-datos { display: block; font-size: var(--t-xs); color: var(--gris); }
 .franja-jornada-acciones .btn { flex: 1 1 0; min-width: 0; padding-left: var(--e-25); padding-right: var(--e-25); gap: var(--e-15); }
 .franja-jornada-acciones { display: flex; gap: var(--e-2); }
-/* Cuántos árboles van y su barra: lo que cambia con cada registro, siempre a la vista */
-.franja-jornada-avance { display: block; margin-top: var(--e-1); font-size: var(--t-s); }
+/* Cuántos árboles van y su barra: lo que cambia con cada registro, siempre a la vista. En una jornada
+   compartida, el cabo de apoyo ve también quién coordina */
+.franja-jornada-avance, .franja-jornada-coordina { display: block; margin-top: var(--e-1); font-size: var(--t-s); }
 .franja-jornada-avance .jornada-barra { margin-top: var(--e-1); background: var(--fondo); max-width: 30rem; }
 .franja-detalle-boton { display: none; flex: none; text-decoration: underline; min-height: 40px; position: relative; }
 .franja-detalle-boton::after { content: ''; position: absolute; inset: -2px 0; }
@@ -1529,6 +1530,15 @@ dialog::backdrop { background: var(--velo-oscuro); }
 /* Notas en viñetas dentro de un diálogo (relevo de cabo) */
 .lista-nota { margin: 0 0 var(--e-3); padding-left: 1.25em; }
 .lista-nota li + li { margin-top: var(--e-1); }
+/* Una lista de personas para marcar: un renglón cada una, la palomita sólo en las marcadas */
+.chips.chips-renglones { grid-auto-flow: row; grid-template-columns: 1fr; max-width: none; }
+.chip-renglon { display: flex; align-items: center; gap: var(--e-2); text-align: left; border-radius: var(--radio); }
+.chip-renglon[aria-pressed="false"] svg { visibility: hidden; }
+/* Instrucciones a la vista, dentro de una ventana: recuadro neutro */
+.instrucciones { margin: 0 0 var(--e-4); padding: var(--e-3) var(--e-4); border: 1px solid var(--borde-suave); border-radius: var(--radio); background: var(--fondo-suave); }
+.instrucciones-titulo { margin: 0 0 var(--e-1); font-weight: 700; }
+.instrucciones ol { margin: 0; padding-left: 1.25em; }
+.instrucciones li + li { margin-top: var(--e-1); }
 
 /* Usuarios: el buscador conserva un ancho que deja leer su marcador y las tres listas se reparten el resto */
 .filtros-usuarios .campo-crece { flex: 2 1 16rem; }

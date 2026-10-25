@@ -46,11 +46,12 @@ REGLAS = [
     ('jornadas', 'arboles_previstos_rango', 'arboles_previstos BETWEEN 1 AND 9999'),
     ('jornadas', 'hora_formato', r"hora = '' OR hora ~ '^([01]\d|2[0-3]):[0-5]\d$'"),
     ('jornadas', 'relevos_lista', "jsonb_typeof(relevos) = 'array'"),
+    ('jornadas', 'cabos_apoyo_lista', "jsonb_typeof(cabos_apoyo) = 'array'"),
 ]
 # Valores que no pueden repetirse aunque el esquema no lo diga con la palabra «único»
 UNICOS = [('plantaciones', 'folio')]
 # Valor de un campo cuando quien escribe no lo dice: un árbol de una versión anterior de la aplicación
-PREDETERMINADOS = {('plantaciones', 'sitio_plantacion'): "'suelo'"}
+PREDETERMINADOS = {('plantaciones', 'sitio_plantacion'): "'suelo'", ('jornadas', 'cabos_apoyo'): "'[]'::jsonb"}
 
 
 def literal(t):

@@ -384,7 +384,7 @@ SRP.carga = {
         lat, lng, punto_origen: 'manual', gps_precision_m: null,
         alcaldia_cve: t.alcaldia_cve, alcaldia: t.alcaldia, colonia_cve: t.colonia_cve, colonia: t.colonia,
         fecha: a0.fecha, comentarios: 'Carga masiva del archivo «' + archivo + '».', cabo_id: u.id, organizacion_id: a0.org.id,
-        estatus: 'cerrada', fecha_inicio: ahora, fecha_cierre: ahora, encargado_id: u.id, relevo_id: null, relevos: [], ...SRP.solicitud.vacio(), editado_por_id: null, fecha_ultima_edicion: null,
+        estatus: 'cerrada', fecha_inicio: ahora, fecha_cierre: ahora, encargado_id: u.id, relevo_id: null, relevos: [], cabos_apoyo: [], ...SRP.solicitud.vacio(), editado_por_id: null, fecha_ultima_edicion: null,
         arboles_previstos: regs.length, puntos_revisados: revisados, reporte_en: null, carga_id: lote,
         vehiculo_id: null, vehiculo_placa: '', vehiculo_modelo: '', vehiculo_tipo: ''
       }, Object.fromEntries(SRP.reportes.CAMPOS.map(k => [k, '']))));

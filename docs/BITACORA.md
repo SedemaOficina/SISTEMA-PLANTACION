@@ -6517,3 +6517,65 @@ teléfono de verdad. En la versión de prueba, los árboles ya enviados conserva
 
 **Siguiente paso.** La 1.4: la jornada compartida (M553) y la Coordinación con toda su institución (M554), con las muestras
 que Liber aprobó.
+
+## Bloque 252 — La jornada compartida y la Coordinación con toda su institución (25-10-2026)
+
+**Versión 1.4.** La prueba en campo pidió (TD-01) que varios cabos registren en una misma jornada en los eventos
+masivos. Se presentó una propuesta con tres opciones y sus muestras; Liber aprobó la jornada compartida y decidió el
+nombre, que la abre la Coordinación, que el cierre sólo avisa y que puede ser cabo de apoyo cualquier cabo de la
+institución. Con eso cambió también una regla de fondo: la Coordinación trabaja con todos los cabos de su institución,
+no sólo con su cuadrilla (D333, D334).
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| Varios cabos en una jornada | Uno a la vez, con el relevo | Jornada compartida: la Coordinación la abre y marca cabos de apoyo, que registran a la vez |
+| Instrucciones | — | La ventana «Cabos de apoyo» explica en seis pasos cómo funciona, empezando por abrirla el mismo día; el cabo de apoyo recibe un aviso al entrar |
+| El cabo de apoyo | — | La jornada aparece entre las suyas; su franja dice quién coordina y cuántos árboles son suyos; «Terminar mi parte» en lugar de «Cerrar jornada» |
+| Cerrar | — | Cada cabo de apoyo que no ha terminado es un pendiente más, con sus árboles y la hora del último; avisa, no impide |
+| Reporte | «Nombre del cabo» | En una compartida, «Jornada compartida, coordina:», el renglón «Cabos de apoyo» y la columna «Cabo» |
+| Alcance de la Coordinación | Su cuadrilla (los cabos que la Administración le asignó) | Toda su institución |
+| Relevo | A un cabo de su cuadrilla | A cualquier cabo de la institución de la jornada |
+| Usuarios | Campo y columna «Coordinadores»; «coordina a N cabos» | Sin coordinadores; la ayuda de cada perfil dice con quién trabaja |
+
+**Qué cambió.**
+- `datos/esquema.json`: `jornadas.cabos_apoyo` (al final, con `[]` de arranque), la acción `APOYO`, la regla R-J07,
+  `coordinadores_ids` sin uso y las reglas de cuentas y de relevo al día. De ahí `servidor/db/srp/02-srp-tablas.sql`,
+  `datos/DICCIONARIO-DATOS.md` y `js/esquema.js`; `herramientas/generar_sql.py` con el valor de arranque y la regla de
+  la lista. `datos/MAPEO-CAMPOS.md`.
+- Servidor: `permisos.ts` (alcance «institución» para la Coordinación; `apoyoVigente`, `soloDeApoyo`; las acciones
+  `jornada.compartir` y `jornada.terminar`; el cabo de apoyo registra, pero no edita ni cierra), `recepcion-jornadas.ts`
+  (`compartirJornada`, que recibe sólo los cabos que entran y salen, y `terminarParte`, que no cambia la versión de la
+  jornada; el relevo con cualquier cabo de la institución), `recepcion.ts`, `consultas.ts` (`GET /jornadas/:id`),
+  `cuentas.ts` (sin validar ni guardar coordinadores; ya no cuentan para eliminar una cuenta), `bitacora.ts`,
+  `recepcion-apoyo.ts`, `cargar.js` y el registro de la instalación en `10-srp-rol-y-grants.sql`.
+- Aplicación: `js/permisos.js` (las mismas reglas), `js/jornadas.js` (la ficha de una compartida, la ventana y
+  `compartir()`), `js/jornada-activa.js` (las jornadas del cabo de apoyo, su franja, `terminarParte()`, el aviso al
+  entrar, los pendientes al cerrar y `alLlegarLoEnviado()`), `js/cola.js` (la operación lleva lo que cambió; el cabo
+  de apoyo suelta la jornada cuando ya no registra), `js/remoto.js` (`alDia()` y `tomarLocales()`), `js/reportes.js`,
+  `js/usuarios.js`, `js/referencias.js`, `js/indicadores.js`, `js/informes.js`, `js/registros.js`, `js/sesion.js`,
+  `js/app.js`, `js/espejo.js`, `js/carga.js`, `js/demostracion.js`, `index.html` (el botón, la ventana y sin el campo
+  de coordinadores) y `css/estilos.css`.
+- Dos cosas que salieron al programar: el teléfono no se enteraba de lo que otros cambiaban en una jornada que
+  guardaba (ahora toma la del servidor si nada suyo espera envío), y con el servidor de verdad la jornada del cabo de
+  apoyo —o la recibida en relevo— llegaba después de entrar, sin aviso ni jornada activa (ahora se revisa al llegar
+  lo enviado).
+- `docs/DECISIONES.md` (D333, D334), `docs/MEJORAS.md` (M553, M554, M556–M558; M555, el manual de uso, por hacer),
+  README y `servidor/README.md`. Marcas de versión, a 1.4.
+
+**Verificación.**
+- La prueba por tramos completa: 1,518 de 1,519. La que falla es la de siempre, la hoja de especies del Excel de
+  `originales/`. Incluye la sección nueva de la jornada compartida (15 de 15) y las secciones que esperaban la
+  cuadrilla o el campo de coordinadores, al día con la regla nueva.
+- Las pruebas del servidor: 109 de 109, con una nueva de la jornada compartida (quién la comparte, quién registra, quién
+  no la cambia ni la cierra, «Terminar mi parte» sin cambiar la versión, lo que viaja al agregar y quitar, y la jornada
+  al día) y la regla de alcance de la Coordinación en la prueba que compara la aplicación con la base.
+- La prueba con el servidor local: 125 de 125, con cinco nuevas: una Coordinación agrega un cabo de apoyo; el cabo, en
+  otro teléfono, recibe el aviso y la jornada activa, registra y termina su parte; al cerrar, la Coordinación trae la
+  jornada al día y ya no lo cuenta como pendiente.
+- La revisión automática: 147 sin hallazgos (una regla de estilos repetida se unió). La revisión de pantallas, sin
+  problemas.
+- Las pantallas ya programadas, capturadas en teléfono, coinciden con las muestras que Liber aprobó.
+
+No se probó en teléfonos de verdad: el recorrido de la Coordinación y dos cabos lo dice la siguiente prueba en campo.
+
+**Siguiente paso.** Probar la jornada compartida en campo, con la Coordinación y dos cabos en teléfonos distintos.

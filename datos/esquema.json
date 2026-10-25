@@ -205,6 +205,7 @@
         "RESTAURADO",
         "SUSTITUIDO",
         "RELEVO",
+        "APOYO",
         "ACTIVADO",
         "DESACTIVADO",
         "FOLIO_ASIGNADO"
@@ -729,8 +730,8 @@
           "nulo": false,
           "origen": "Persona",
           "dominio": "→ usuarios.id con perfil COORDINADOR; [] si no tiene",
-          "pantalla": "Coordinadores (sólo cabos)",
-          "regla": "Sólo en cabos; puede tener más de uno, todos de su misma institución; [] en los demás perfiles. Es lo que define la cuadrilla: cada coordinador ve y edita los registros de los cabos que lo tienen asignado, nunca los de otra institución"
+          "pantalla": "No se muestra desde la 1.4",
+          "regla": "Sin uso desde la 1.4 (D333): la Coordinación trabaja con todos los cabos de su institución, sin cuadrilla. Lo ya capturado se conserva; las altas nuevas lo dejan en []"
         },
         {
           "campo": "activo",
@@ -1662,7 +1663,7 @@
           "origen": "Persona",
           "dominio": "→ usuarios.id",
           "pantalla": "Jornadas › Relevo de cabo",
-          "regla": "El cabo que registra en lugar del titular: lo elige la coordinación entre los cabos activos de su cuadrilla y de la institución de la jornada, con la jornada abierta. Nulo: registra el titular. Sólo quien registra en la jornada (este cabo o, sin relevo, el titular) agrega árboles en ella"
+          "regla": "El cabo que registra en lugar del titular: lo elige la coordinación entre los cabos activos de la institución de la jornada, con la jornada abierta. Nulo: registra el titular. Sólo quien registra en la jornada (este cabo o, sin relevo, el titular) agrega árboles en ella"
         },
         {
           "campo": "relevos",
@@ -1834,6 +1835,15 @@
           "dominio": "HH:MM, de 00:00 a 23:59; '' si no se elige",
           "pantalla": "Hora de finalización (selector, con «Ahora»), obligatoria para generar el reporte",
           "regla": "La aplicación no arma la vista previa del reporte sin ella; '' en las jornadas que todavía no tienen datos de cierre y en las anteriores a esta regla"
+        },
+        {
+          "campo": "cabos_apoyo",
+          "tipo": "objeto[]",
+          "nulo": false,
+          "origen": "Sistema",
+          "dominio": "[{ cabo_id → usuarios.id, desde ISO 8601, por_id → usuarios.id, hasta ISO 8601 o nulo, fin «terminado», «quitado» o nulo }]; [] en una jornada de un solo cabo",
+          "pantalla": "Jornadas › Cabos de apoyo; la ficha, la franja y el reporte dicen quiénes",
+          "regla": "Jornada compartida: la abre la Coordinación, que queda como titular, y le agrega cabos activos de su institución, que registran a la vez. Un cabo de apoyo vigente (sin hasta) registra hasta que toca «Terminar mi parte» (fin «terminado») o la Coordinación lo quita (fin «quitado»); volver a marcarlo lo deja vigente otra vez. Cada cabo aparece una vez. Quien fue cabo de apoyo sigue viendo la jornada y todos sus árboles, pero sólo corrige los suyos; no cambia los datos de la jornada ni la cierra"
         }
       ]
     }
@@ -2108,7 +2118,7 @@
     },
     {
       "indicador": "Cabos que trabajaron",
-      "calculo": "Cabos distintos con al menos una jornada cerrada en el periodo, frente a los asignados: la cuadrilla de la coordinación, o los cabos activos para la administración. Con institución elegida, sólo los cabos de esa institución",
+      "calculo": "Cabos distintos con al menos una jornada cerrada en el periodo, frente a los asignados: los cabos activos de la institución de la coordinación, o los cabos activos para la administración. Con institución elegida, sólo los cabos de esa institución",
       "donde": "Cifras, por cabo, informes"
     },
     {
@@ -2397,7 +2407,7 @@
     {
       "id": "R-U02",
       "tabla": "usuarios",
-      "regla": "coordinadores_ids sólo con perfil CABO, uno o varios, todos de su misma institución; con otro perfil queda vacío",
+      "regla": "coordinadores_ids: sin uso desde la 1.4 (D333). Las altas lo dejan en []; lo ya capturado se conserva y no decide nada",
       "donde": "js/usuarios.js guardar()"
     },
     {
@@ -2409,13 +2419,13 @@
     {
       "id": "R-U04",
       "tabla": "usuarios",
-      "regla": "Si otro renglón la nombra no se elimina: se desactiva. Cuenta en todas las tablas: árboles (también eliminados), jornadas como cabo, encargado o quien la creó o editó, cabos que coordina y cuentas o catálogos que dio de alta o editó. Inactiva no puede entrar; sus registros siguen a su nombre",
+      "regla": "Si otro renglón la nombra no se elimina: se desactiva. Cuenta en todas las tablas: árboles (también eliminados), jornadas como cabo, encargado o quien la creó o editó y cuentas o catálogos que dio de alta o editó. Inactiva no puede entrar; sus registros siguen a su nombre",
       "donde": "js/referencias.js usosDe(); js/usuarios.js eliminar(), cambiarEstado(); js/sesion.js autenticar()"
     },
     {
       "id": "R-U05",
       "tabla": "usuarios",
-      "regla": "Institución obligatoria, elegida por tipo de la lista (no se crea desde el alta). Fuera de SEDEMA: sin área, perfil CABO y sin coordinador. Quien coordina cabos no cambia de institución hasta reasignarlos. Una cuenta cuya institución está desactivada no entra, tampoco con la sesión abierta",
+      "regla": "Institución obligatoria, elegida por tipo de la lista (no se crea desde el alta). Fuera de SEDEMA: sin área y perfil CABO. Una cuenta cuya institución está desactivada no entra, tampoco con la sesión abierta",
       "donde": "js/usuarios.js validar(), guardar(); js/sesion.js autenticar(), leer(); js/referencias.js accesoOrganizacion()"
     },
     {
@@ -2469,7 +2479,7 @@
     {
       "id": "R-J05",
       "tabla": "jornadas",
-      "regla": "Relevo de cabo: sólo la coordinación, en una jornada abierta de su alcance, la pasa a un cabo activo de su cuadrilla y de la institución de la jornada, o se la devuelve al titular. Registra en la jornada sólo quien la tiene a su cargo (relevo_id o, sin relevo, cabo_id); el titular no cambia y el relevo queda en relevos y en la bitácora (RELEVO)",
+      "regla": "Relevo de cabo: sólo la coordinación, en una jornada abierta de su alcance, la pasa a un cabo activo de la institución de la jornada, o se la devuelve al titular. Registra en la jornada quien la tiene a su cargo (relevo_id o, sin relevo, cabo_id) y sus cabos de apoyo vigentes (R-J07); el titular no cambia y el relevo queda en relevos y en la bitácora (RELEVO)",
       "donde": "js/permisos.js jornada.relevo, jornada.registrar; js/jornadas.js relevar(); js/jornada-activa.js abiertas()"
     },
     {
@@ -2477,6 +2487,12 @@
       "tabla": "jornadas",
       "regla": "Solicitud: una jornada del programa «Solicitud especial» lleva quién lo solicita, del catálogo de solicitantes (solicitante_id) o escrito (solicitante_otro), y su descripción (solicitud_descripcion), obligatoria; una jornada de otro programa lleva los tres vacíos. La solicitud sustituye al programa: sus árboles cuentan en «Solicitud especial». No cambia quién ejecuta. No se carga por archivo",
       "donde": "js/solicitud.js leer() y errores(); js/jornada-activa.js iniciarJornada(); js/jornadas.js guardarEdicion(); js/carga.js; js/almacen.js migración 9"
+    },
+    {
+      "id": "R-J07",
+      "tabla": "jornadas",
+      "regla": "Jornada compartida: sólo su titular, una cuenta de Coordinación, con la jornada abierta, marca o quita cabos de apoyo (activos, perfil CABO, de la institución de la jornada); queda en cabos_apoyo y en la bitácora (APOYO). Un cabo de apoyo vigente registra en ella y toca «Terminar mi parte» al acabar. Al cerrar, cada cabo de apoyo vigente es un pendiente más: avisa, no impide",
+      "donde": "js/permisos.js jornada.compartir, jornada.terminar, jornada.registrar; js/jornadas.js compartir(); js/jornada-activa.js terminarParte(), confirmacionCierre()"
     },
     {
       "id": "R-R01",
@@ -2573,7 +2589,7 @@
     {
       "id": "S-13",
       "que": "Jornada de varios días y relevo de cabo",
-      "detalle": "El servidor acepta en una jornada abierta árboles de días posteriores a su fecha, con fecha_plantacion entre jornadas.fecha y la fecha de recepción, y sólo de quien la tiene a su cargo (relevo_id o, sin relevo, cabo_id); la sustitución, de quien tenga el árbol perdido en su alcance. Al hacer un relevo entrega la jornada abierta y sus árboles al teléfono del cabo que la recibe, y el teléfono del titular deja de poder registrar en ella. Rechaza un relevo que no venga de la coordinación del titular o hacia un cabo de otra cuadrilla o institución. Avisa del relevo a los dos cabos en su teléfono (al que recibe la jornada y al que deja de registrar en ella, y al titular cuando vuelve a él): hoy el aviso sale al entrar, en el equipo donde se hizo el relevo",
+      "detalle": "El servidor acepta en una jornada abierta árboles de días posteriores a su fecha, con fecha_plantacion entre jornadas.fecha y la fecha de recepción, y sólo de quien la tiene a su cargo (relevo_id o, sin relevo, cabo_id) o de un cabo de apoyo vigente (cabos_apoyo); la sustitución, de quien tenga el árbol perdido en su alcance. Al hacer un relevo entrega la jornada abierta y sus árboles al teléfono del cabo que la recibe, y el teléfono del titular deja de poder registrar en ella. Rechaza un relevo que no venga de la coordinación del titular o hacia un cabo de otra cuadrilla o institución. Avisa del relevo a los dos cabos en su teléfono (al que recibe la jornada y al que deja de registrar en ella, y al titular cuando vuelve a él): hoy el aviso sale al entrar, en el equipo donde se hizo el relevo",
       "referencia": "FASE2-Y-TRASPASO"
     },
     {

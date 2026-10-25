@@ -4395,3 +4395,50 @@
     en la versión de prueba, los árboles ya enviados desde un teléfono conservan la calle que tenían. En adelante, un
     cambio de datos sube la versión de la capa (1.1.0), como dice su paquete, y `recalcular_calles` lo toma solo.
   · Versión 1.3.2.
+
+- **D333. La Coordinación trabaja con todos los cabos de su institución (bloque 252).**
+  25-10-2026. Al revisar la jornada compartida, Liber decidió que la Coordinación no se limite a su cuadrilla:
+  «así lo quiero». Sustituye la regla de D155 y la del alcance «equipo» (los cabos que la tenían asignada en
+  `coordinadores_ids`).
+  · **Alcance «institución»** para el perfil Coordinador, en el teléfono y en el servidor: ve, corrige y elimina los
+    registros de cualquier cabo de su institución, también los de otra coordinación; todo queda en el historial. Es
+    la misma regla que ya tenía la dirección de una institución que no es la Secretaría. Cada coordinación sigue sin
+    ver lo de otra institución.
+  · **El relevo** ofrece a cualquier cabo activo de la institución de la jornada.
+  · **Usuarios ya no asigna coordinadores** (Liber eligió quitar el campo): sin el campo en la cuenta del cabo, sin
+    la columna en la lista ni «coordina a N cabos» en el renglón. La ayuda de cada perfil lo dice. `coordinadores_ids`
+    sigue en la tabla, sin uso: lo ya capturado se conserva y las altas nuevas lo dejan vacío. Ya no cuenta para
+    impedir que una cuenta se elimine, y una coordinación puede cambiar de institución.
+  · Supervisión, Registros, Fotografías y los informes de la coordinación abarcan su institución; el informe dice
+    «Institución (coordinación: nombre)».
+  · Versión 1.4, con D334.
+
+- **D334. La jornada compartida (bloque 252).**
+  25-10-2026. La prueba en campo pidió (TD-01) que en los eventos masivos varios cabos registren en una misma
+  jornada, y que desarrollo presentara una propuesta. Se valoraron tres opciones: cabos de apoyo en la jornada, un
+  evento con varias jornadas y dejarlo como estaba. Liber aprobó la primera, con sus muestras, y decidió:
+  · **El nombre:** «jornada compartida». «Común» se descartó porque también quiere decir «normal».
+  · **Quién la abre:** la Coordinación, el mismo día del evento (una jornada no se abre con fecha futura), y queda
+    como titular: la cierra y genera el reporte.
+  · **Quién puede ser cabo de apoyo:** cualquier cabo activo de la institución (D333).
+  · **El cierre sólo avisa** si un cabo de apoyo no ha terminado su parte; no lo impide.
+  · **Las instrucciones, en pantalla:** la ventana «Cabos de apoyo» explica en seis pasos cómo funciona, empezando
+    por abrirla el mismo día, y el cabo de apoyo recibe un aviso al entrar.
+  · **Cómo funciona.** `jornadas.cabos_apoyo` guarda a cada cabo de apoyo: desde cuándo y quién lo puso, y, si deja
+    de registrar, hasta cuándo y por qué (`terminado` o `quitado`). Un cabo de apoyo vigente registra en la jornada;
+    la ve con todos sus árboles, pero sólo corrige los suyos, y no cambia sus datos ni la cierra. «Terminar mi parte»
+    envía lo suyo y saca la jornada de su lista. En la ficha, «Cabos de apoyo» ocupa el lugar de «Relevo de cabo»
+    en la jornada de la Coordinación; el relevo sigue igual en las jornadas de un cabo.
+  · **El cierre** dice, de cada cabo de apoyo vigente, cuántos árboles suyos llegaron y a qué hora el último. Si se
+    cierra antes, lo que le falte enviar se queda en su teléfono, sin perderse, hasta que se reabra la jornada.
+  · **El reporte** dice «Jornada compartida, coordina:», el renglón «Cabos de apoyo» con los árboles de cada uno y la
+    columna «Cabo»; las jornadas de un solo cabo no cambian.
+  · **Servidor:** `jornada.compartir` lleva sólo los cabos que entran y salen, para no deshacer lo que un cabo hizo
+    mientras tanto; `jornada.terminar` no cambia la versión de la jornada, para que lo que la Coordinación tenga por
+    enviar no choque. `GET /jornadas/:id` trae una jornada al día con sus árboles: la Coordinación lo pide al abrir
+    la ficha de una jornada compartida y al cerrarla. Al traer lo enviado, una jornada que el teléfono guarda sin
+    nada por enviar toma la del servidor, que otros pudieron cambiar (también un relevo). Acción nueva de la
+    bitácora: `APOYO`.
+  · **Pendiente:** si el SIA ya tuviera instalada una versión anterior, la 1.4 necesita agregar `cabos_apoyo` a
+    `srp.jornadas` y la acción `APOYO` a la regla de la bitácora. Hoy no hay nada instalado: se instala completa.
+  · Versión 1.4.

@@ -98,7 +98,8 @@ async function telefono(u) {
     return { estado: x.status, datos: await x.json() };
   };
   const una = async (tipo, datos) => (await enviar([{ tipo, datos }])).datos.resultados[0];
-  return { enviar, una };
+  const pedir = async (ruta) => { const x = await fetch(base + ruta, { headers: { cookie } }); return { estado: x.status, datos: await x.json() }; };
+  return { enviar, una, pedir };
 }
 
 // Como los arma el teléfono, con lo que el servidor no debe creerle
@@ -543,13 +544,13 @@ test('cerrar y reabrir; los datos de cierre y el reporte son de una jornada cerr
     [['personal', 'Personal, apoyo, chófer y vehículo sólo se piden en las jornadas de la Secretaría.']]);
 });
 
-test('el relevo pasa la jornada a un cabo de la cuadrilla, que desde entonces registra en ella; el titular no, hasta que se la devuelven', async () => {
+test('el relevo pasa la jornada a un cabo de la institución, que desde entonces registra en ella; el titular no, hasta que se la devuelven', async () => {
   const t = await telefono(CABO);
   const { J } = await conArbol(t);
   const coord = await telefono(COORD);
   const version = (await admin.query("SELECT to_jsonb(j) ->> 'fecha_inicio' AS v FROM srp.jornadas j WHERE id = $1", [J.id])).rows[0].v;
   assert.equal((await t.una('jornada.relevo', { id: J.id, version, cabo_id: CABO3.id })).mensaje, 'No tiene permiso para pasar esta jornada a otro cabo.');
-  assert.deepEqual((await coord.una('jornada.relevo', { id: J.id, version, cabo_id: CABO2.id })).errores, [['cabo_id', 'Elija el cabo que sigue registrando.']], 'sólo a su cuadrilla');
+  assert.deepEqual((await coord.una('jornada.relevo', { id: J.id, version, cabo_id: EXTERNO.id })).errores, [['cabo_id', 'Elija el cabo que sigue registrando.']], 'sólo a un cabo de la institución de la jornada');
   const r = await coord.una('jornada.relevo', { id: J.id, version, cabo_id: CABO3.id });
   assert.equal(r.estado, 'recibido', JSON.stringify(r));
   const ultimo = r.fila.relevos[r.fila.relevos.length - 1];
@@ -561,6 +562,47 @@ test('el relevo pasa la jornada a un cabo de la cuadrilla, que desde entonces re
   assert.equal(vuelve.fila.relevo_id, null);
   assert.deepEqual((await bitacora(J.id)).filter((b) => b[0] === 'RELEVO').map((b) => b[1]),
     ['Registra Prueba cabotres en lugar de Prueba cabo; titular: Prueba cabo', 'Registra Prueba cabo en lugar de Prueba cabotres: vuelve el titular']);
+});
+
+test('la jornada compartida: la Coordinación que la abrió agrega cabos de apoyo de su institución, que registran a la vez y terminan su parte, sin cambiarla ni cerrarla', async () => {
+  const coord = await telefono(COORD), c1 = await telefono(CABO), c2 = await telefono(CABO2), c3 = await telefono(CABO3);
+  const J = jornada({ nombre: 'Jornada compartida de prueba' });
+  const creada = await coord.una('jornada.crear', J);
+  assert.equal(creada.estado, 'recibido', JSON.stringify(creada));
+  assert.deepEqual(creada.fila.cabos_apoyo, []);
+  // Sólo la Coordinación que la abrió elige a sus cabos de apoyo, y sólo cabos activos de la institución de la jornada
+  assert.equal((await c1.una('jornada.compartir', { id: J.id, agregar: [CABO.id] })).mensaje, 'No tiene permiso para elegir los cabos de apoyo de esta jornada.');
+  assert.deepEqual((await coord.una('jornada.compartir', { id: J.id, agregar: [EXTERNO.id] })).errores, [['cabos_apoyo', 'Elija cabos activos de la institución de la jornada.']]);
+  const r = await coord.una('jornada.compartir', { id: J.id, agregar: [CABO.id, CABO2.id] });
+  assert.equal(r.estado, 'recibido', JSON.stringify(r));
+  assert.deepEqual(r.fila.cabos_apoyo.map((a) => [a.cabo_id, a.por_id, a.hasta, a.fin]), [[CABO.id, COORD.id, null, null], [CABO2.id, COORD.id, null, null]]);
+  assert.match(r.fila.cabos_apoyo[0].desde, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+  // Registran a la vez la Coordinación y sus cabos de apoyo; quien no es de la jornada, no
+  const regs = [[coord, arbol(J.id)], [c1, arbol(J.id)], [c2, arbol(J.id)]];
+  assert.deepEqual(await Promise.all(regs.map(async ([t, a]) => (await t.una('registro.crear', a)).estado)), ['recibido', 'recibido', 'recibido']);
+  assert.equal((await c3.una('registro.crear', arbol(J.id))).mensaje, 'No tiene permiso para registrar en esta jornada.');
+  // El cabo de apoyo no cambia los datos de la jornada ni la cierra
+  const vigente = (await admin.query("SELECT to_jsonb(j) ->> 'fecha_ultima_edicion' AS v FROM srp.jornadas j WHERE id = $1", [J.id])).rows[0].v;
+  assert.equal((await c1.una('jornada.editar', { id: J.id, version: vigente, cambios: { nombre: 'Otro nombre' } })).codigo, 'SIN_PERMISO');
+  assert.equal((await c1.una('jornada.cerrar', { id: J.id, version: vigente })).codigo, 'SIN_PERMISO');
+  // «Terminar mi parte»: deja de registrar, y la versión de la jornada no cambia
+  const t1 = await c1.una('jornada.terminar', { id: J.id });
+  assert.equal(t1.estado, 'recibido', JSON.stringify(t1));
+  assert.equal(Date.parse(t1.version), Date.parse(vigente), 'lo que la Coordinación tenga por enviar no choca con esto');
+  assert.deepEqual(t1.fila.cabos_apoyo.map((a) => [a.cabo_id, a.fin]), [[CABO.id, 'terminado'], [CABO2.id, null]]);
+  assert.equal((await c1.una('jornada.terminar', { id: J.id })).repetido, true, 'un reenvío no se repite');
+  assert.equal((await c1.una('registro.crear', arbol(J.id))).mensaje, 'No tiene permiso para registrar en esta jornada.');
+  assert.equal((await c3.una('jornada.terminar', { id: J.id })).codigo, 'SIN_PERMISO', 'quien no es de apoyo no termina nada');
+  // La Coordinación lo vuelve a agregar y quita al otro: viaja lo que cambió
+  const v = await coord.una('jornada.compartir', { id: J.id, agregar: [CABO.id], quitar: [CABO2.id] });
+  assert.deepEqual(v.fila.cabos_apoyo.map((a) => [a.cabo_id, a.fin, a.hasta === null]), [[CABO.id, null, true], [CABO2.id, 'quitado', false]]);
+  assert.equal((await c2.una('registro.crear', arbol(J.id))).mensaje, 'No tiene permiso para registrar en esta jornada.');
+  assert.equal((await coord.una('jornada.compartir', { id: J.id, agregar: [CABO.id] })).repetido, true, 'lo que ya está así no cambia nada');
+  // La jornada al día, sola: la Coordinación y quien fue de apoyo la ven con todos sus árboles; otra cuenta, no
+  const ver = async (t) => { const x = await t.pedir('/jornadas/' + J.id); return [x.estado, x.datos.jornada ? x.datos.plantaciones.length : null]; };
+  assert.deepEqual([await ver(coord), await ver(c2), (await ver(c3))[0]], [[200, 3], [200, 3], 404]);
+  assert.deepEqual((await bitacora(J.id)).filter((b) => b[0] === 'APOYO').map((b) => b[1]),
+    ['Agrega: Prueba cabo, Prueba otrocabo', 'Terminó su parte: 1 árbol', 'Agrega: Prueba cabo; Quita: Prueba otrocabo']);
 });
 
 test('los puntos revisados son árboles de la jornada, y la bitácora dice cuáles por su folio', async () => {

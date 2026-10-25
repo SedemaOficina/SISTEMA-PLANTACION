@@ -922,8 +922,8 @@ with sync_playwright() as p:
     reporte_de(pg)
     ok(pg.is_visible('#dlg-cierre'),'«Generar reporte» abre el cierre del reporte antes de generar')
     espejoC=pg.evaluate("[...document.querySelectorAll('#espejo-cierre-cuerpo .espejo-campo')].map(e=>e.textContent)")
-    ok('encargado_id' in espejoC and [c for c in espejoC if c!='encargado_id']==['id','nombre','ubicacion','fecha','comentarios','programa_id','cabo_id','estatus','organizacion_id','lat','lng','punto_origen','gps_precision_m','alcaldia_cve','alcaldia','colonia_cve','colonia','fecha_inicio','fecha_cierre','editado_por_id','fecha_ultima_edicion','arboles_previstos','puntos_revisados','reporte_en','relevo_id','relevos','solicitante_id','solicitante_otro','solicitud_descripcion','carga_id','vehiculo_id','vehiculo_placa','vehiculo_modelo','vehiculo_tipo'],
-       'el cierre lleva su espejo con los treinta y cinco campos de la jornada que no se ven (al cabo tampoco el encargado), con la institución que ejecuta, el relevo, los datos de la solicitud y la clave de carga masiva, que no se capturan aquí, con el vehículo y sus tres datos copiados del catálogo: '+', '.join(espejoC))
+    ok('encargado_id' in espejoC and [c for c in espejoC if c!='encargado_id']==['id','nombre','ubicacion','fecha','comentarios','programa_id','cabo_id','estatus','organizacion_id','lat','lng','punto_origen','gps_precision_m','alcaldia_cve','alcaldia','colonia_cve','colonia','fecha_inicio','fecha_cierre','editado_por_id','fecha_ultima_edicion','arboles_previstos','puntos_revisados','reporte_en','relevo_id','relevos','cabos_apoyo','solicitante_id','solicitante_otro','solicitud_descripcion','carga_id','vehiculo_id','vehiculo_placa','vehiculo_modelo','vehiculo_tipo'],
+       'el cierre lleva su espejo con los treinta y seis campos de la jornada que no se ven (al cabo tampoco el encargado), con la institución que ejecuta, el relevo, los cabos de apoyo, los datos de la solicitud y la clave de carga masiva, que no se capturan aquí, con el vehículo y sus tres datos copiados del catálogo: '+', '.join(espejoC))
     pg.fill('#cie-chofer','Mengano'); pg.wait_for_timeout(200)
     ok(pg.evaluate("SRP.reportes.cierrePrevisto().chofer")=='Mengano','y lo que se escribe entra al mismo objeto que se guarda')
     ok(pg.is_hidden('#caja-cie-encargado'), 'a un cabo no se le pregunta ni se le muestra el encargado: es él')
@@ -1574,7 +1574,7 @@ with sync_playwright() as p:
     ok(fila_yo.locator('button[data-accion=estado]').count()==0,'que no puede desactivarse a sí misma')
     fila_cabo=pg.locator('#tabla-usuarios tbody tr', has_text='Fulana')
     ok(fila_cabo.locator('button[data-accion=eliminar]').count()==0,'una cuenta con registros no ofrece Eliminar')
-    ok('Perengano' in fila_cabo.inner_text(),'y muestra quién es su coordinador')
+    ok('Perengano' not in fila_cabo.inner_text(),'y ya no dice quién la coordina: la coordinación trabaja con todos los cabos de su institución')
     tarj=pg.evaluate('''() => { const t=document.getElementById('tabla-usuarios'); const tr=t.querySelector('tbody tr[data-id]'); const r=tr.getBoundingClientRect();
       const g=tr.querySelector('.btn-tuerca').getBoundingClientRect(); const pie=document.getElementById('btn-usr-guardar').closest('.dialogo-pie');
       return { alto: Math.round(r.height), tuerca_arriba: g.top - r.top < 24, cuenta: document.getElementById('usr-cuenta').textContent, pie: !!pie }; }''')
@@ -1591,9 +1591,8 @@ with sync_playwright() as p:
     pg.click('#form-usuario button[type=submit]'); pg.wait_for_timeout(200)
     ok(pg.locator('#usr-errores li').count()==4,'el alta vacía señala los cuatro campos obligatorios: tipo de institución, nombre completo, correo y cargo')
     pg.select_option('#usr-tipo-org','Gobierno de la CDMX'); pg.wait_for_timeout(150); pg.select_option('#usr-organizacion','o-sedema'); pg.wait_for_timeout(150)
-    ok(pg.is_visible('#caja-usr-coordinador') and pg.is_visible('#caja-usr-area'),'en la Secretaría aparecen el área y, para perfil Cabo, el coordinador')
+    ok(pg.locator('#caja-usr-coordinador').count()==0 and pg.is_visible('#caja-usr-area'),'en la Secretaría aparece el área; el cabo ya no lleva coordinadores')
     pg.select_option('#usr-perfil','ADMIN'); pg.wait_for_timeout(200)
-    ok(pg.is_hidden('#caja-usr-coordinador'),'y desaparece para Administración')
     ok(pg.locator('#usr-perfil option').count()==5 and pg.locator('#usr-perfil option[value=VIEWER]').count()==0 and pg.locator('#usr-perfil option[value=DIRECTIVO]').count()==1,'el perfil ofrece cuatro opciones, con Directivo; no existe Consulta')
     ok('No captura' in pg.inner_text('#usr-perfil-ayuda'),'se explica qué puede hacer cada perfil')
     pg.select_option('#usr-perfil','CABO'); pg.wait_for_timeout(200)
@@ -1604,7 +1603,7 @@ with sync_playwright() as p:
     ok('correo válido' in pg.inner_text('#usr-errores'),'se rechaza un correo mal formado')
     pg.fill('#usr-correo','CABO@ejemplo.local'); pg.click('#form-usuario button[type=submit]'); pg.wait_for_timeout(200)
     ok('ya tiene cuenta' in pg.inner_text('#usr-errores'),'y un correo repetido')
-    pg.fill('#usr-correo','sutana@ejemplo.local'); pg.click('#usr-coordinadores .chip[data-id="u-coord-1"]')
+    pg.fill('#usr-correo','sutana@ejemplo.local')
     pg.click('#form-usuario button[type=submit]'); pg.wait_for_timeout(500)
     ok('Sutana Nueva Ejemplo' in pg.inner_text('#tabla-usuarios'),'se da de alta la cuenta nueva')
     pg.click('#btn-cuenta'); pg.click('#btn-cambiar-perfil'); pg.fill('#acceso-correo','sutana@ejemplo.local'); pg.fill('#acceso-clave','x')
@@ -2333,11 +2332,8 @@ with sync_playwright() as p:
     pg11.evaluate("async () => { await SRP.catalogos.eliminar(SRP.ref.catalogoPorId['%s']); }" % pid); pg11.wait_for_timeout(300)
     ok(uno11('programas',pid) is not None and 'aparece en 1 jornada' in aviso11(),'y aunque se llame a la función, no se borra: '+aviso11())
     pg11.evaluate("SRP.app.mostrarVista('usuarios')"); pg11.wait_for_timeout(500)
-    ok(pg11.locator('#tabla-usuarios tbody tr', has_text='Perengano').locator('button[data-accion=eliminar]').count()==0,'un coordinador con cabos asignados no ofrece Eliminar')
-    ok('coordina a 1 cabo' in pg11.locator('#tabla-usuarios tbody tr', has_text='coordinador@').inner_text() and 'coordinador: Perengano' in pg11.locator('#tabla-usuarios tbody tr', has_text='Fulana').inner_text(),
-       'la tarjeta del coordinador dice cuántos cabos coordina, y la del cabo quién es su coordinador')
-    pg11.evaluate("async () => { await SRP.usuarios.eliminar(SRP.ref.usuarioPorId['u-coord-1']); }"); pg11.wait_for_timeout(300)
-    ok(uno11('usuarios','u-coord-1') is not None and 'coordina a 1 cabo' in aviso11(),'y la función tampoco lo borra: '+aviso11())
+    ok('coordina a' not in pg11.locator('#tabla-usuarios tbody tr', has_text='coordinador@').inner_text() and 'coordinador:' not in pg11.locator('#tabla-usuarios tbody tr', has_text='Fulana').inner_text(),
+       'las tarjetas ya no dicen cuántos cabos coordina cada quien ni quién coordina a cada cabo')
     integ11=pg11.evaluate(INTEGRIDAD)
     ok(not integ11['fallas'],'tras mover, restaurar, cambiar la jornada y los intentos de borrar, todo sigue íntegro: %s' % integ11)
     ok(not err11,'y sin errores en consola: %s' % err11[:2])
@@ -2863,7 +2859,7 @@ with sync_playwright() as p:
     pg20.select_option('#sup-alcaldia','Cuauhtémoc'); pg20.wait_for_timeout(400)
     n2,t2,_=pdf20()
     ok(n2=='Informe_mensual_'+HOY[:7]+'_Cuauhtemoc.pdf' and 'ALCALDÍA CUAUHTÉMOC' in t2 and 'POR COLONIA' in t2 and 'POR QUIÉN REGISTRÓ' in t2 and 'Fulana' in t2
-       and 'Cuadrilla de' in t2 and 'Documento de prueba' in t2,
+       and 'Coordinación: Perengano' in t2 and 'Documento de prueba' in t2,
        'la coordinación descarga el informe mensual de una alcaldía, con sus colonias y la tabla por cabo: %s' % n2)
     with pg20.expect_download() as dc: pg20.click('#btn-sup-csv')
     dc.value.save_as(sal('arboles_prueba.csv'))
@@ -2961,10 +2957,11 @@ with sync_playwright() as p:
     cab21=pg21.evaluate("SRP.supervision.datos.cabos.slice().sort()")
     ok(pg21.inner_text('#sup-etiqueta').startswith('Semana') and pg21.inner_text('#sup-filtros-texto')=='Más filtros: quién registró, programa y alcaldía',
        'quien entra con otra cuenta empieza en la semana en curso y sin filtros: no hereda el año ni la alcaldía de la cuenta anterior')
-    ok(cab21==['u-cabo-1','u-demo-c1','u-demo-c2','u-demo-c3'],'la coordinación de prueba tiene su cuadrilla de demostración: %s' % cab21)
+    SED21=['u-cabo-1','u-demo-c1','u-demo-c2','u-demo-c3','u-demo-c4','u-demo-c5','u-demo-c6']
+    ok(cab21==SED21,'la coordinación de prueba ve a todos los cabos de la Secretaría, de cualquier cuadrilla: %s' % cab21)
     entrar21('u-demo-k1'); esperar(pg21,"SRP.supervision.datos && SRP.sesion.usuario && SRP.supervision.datos.usuario.id === SRP.sesion.usuario.id",30000); pg21.wait_for_timeout(300)
     cab21=pg21.evaluate("SRP.supervision.datos.cabos.slice().sort()")
-    ok(cab21==['u-demo-c4','u-demo-c5','u-demo-c6'] and pg21.is_visible('#vista-supervision'),'la coordinación de demostración entra a Supervisión con sus tres cabos')
+    ok(cab21==SED21 and pg21.is_visible('#vista-supervision'),'la coordinación de demostración entra a Supervisión con los cabos de su institución')
     entrar21('u-demo-c5')
     pg21.click('.pestana[data-vista=supervision]'); pg21.wait_for_timeout(500); pg21.click('#sup-tipos .chip[data-tipo=todo]'); pg21.wait_for_timeout(700)
     abrir_sup(pg21)
@@ -4008,8 +4005,8 @@ with sync_playwright() as p:
        and 'se activan en Catálogos' in pg43.inner_text('#usr-organizacion-ayuda'),
        'con «Alcaldía» salen sólo las activas, sin repetir la palabra, y se dice dónde activar las demás: %s' % al43)
     pg43.select_option('#usr-organizacion','o-alc-09007'); pg43.wait_for_timeout(200)
-    b43=[pg43.is_hidden('#caja-usr-area'), pg43.eval_on_selector_all('#usr-perfil option','l=>l.map(o=>o.value).filter(Boolean)'), pg43.is_hidden('#caja-usr-coordinador')]
-    ok(b43==[True,['CABO','COORDINADOR','DIRECTIVO'],False],'una cuenta de alcaldía es de cabo, de coordinación o directiva, sin área; el cabo lleva coordinador: %s' % b43)
+    b43=[pg43.is_hidden('#caja-usr-area'), pg43.eval_on_selector_all('#usr-perfil option','l=>l.map(o=>o.value).filter(Boolean)'), pg43.locator('#caja-usr-coordinador').count()==0]
+    ok(b43==[True,['CABO','COORDINADOR','DIRECTIVO'],True],'una cuenta de alcaldía es de cabo, de coordinación o directiva, sin área y sin coordinadores: %s' % b43)
     pg43.fill('#usr-nombre-completo','Ramiro Iztapalapa Ejemplo'); pg43.fill('#usr-correo','cabo.izp@ejemplo.local'); pg43.fill('#usr-cargo','Cabo de cuadrilla')
     pg43.click('#form-usuario button[type=submit]'); pg43.wait_for_timeout(600)
     cizp=pg43.evaluate("SRP.ref.usuarios.find(u => u.correo === 'cabo.izp@ejemplo.local')")
@@ -4033,8 +4030,8 @@ with sync_playwright() as p:
                area: v({ tipo_organizacion: 'Gobierno de la CDMX', organizacion_id: 'o-sedema', perfil: 'CABO' }), sinTipo: v({ tipo_organizacion: '', organizacion_id: '', perfil: 'CABO' }),
                sinAlc: v({ tipo_organizacion: 'Alcaldía', organizacion_id: '', perfil: 'CABO' }), unNombre: v({ tipo_organizacion: 'Alcaldía', organizacion_id: 'o-alc-09003', perfil: 'CABO', nombre_completo: 'Ana' }) }; })()""")
     FUERA='La Administración global es sólo de la Secretaría: fuera de ella, la cuenta es de cabo, de coordinación o directiva.'
-    ok(r43=={'admin':[FUERA],'coordP':[],'coord':['Los coordinadores del cabo son de su misma institución.'],'area':['Elija el área.'],'sinTipo':['Elija el tipo de institución.'],
-             'sinAlc':['Elija la alcaldía.'],'unNombre':['Escriba nombre y al menos un apellido.']},'las reglas de la cuenta: Administración sólo en SEDEMA, coordinación también fuera, el coordinador del cabo de su misma institución, área sólo en SEDEMA, tipo e institución obligatorios, nombre con apellido: %s' % r43)
+    ok(r43=={'admin':[FUERA],'coordP':[],'coord':[],'area':['Elija el área.'],'sinTipo':['Elija el tipo de institución.'],
+             'sinAlc':['Elija la alcaldía.'],'unNombre':['Escriba nombre y al menos un apellido.']},'las reglas de la cuenta: Administración sólo en SEDEMA, coordinación también fuera, sin coordinadores que revisar, área sólo en SEDEMA, tipo e institución obligatorios, nombre con apellido: %s' % r43)
     pg43.select_option('#usr-filtro-org','o-alc-09007'); pg43.wait_for_timeout(300)
     ok(pg43.inner_text('#usr-cuenta').startswith('4 de 15') and 'Alcaldía Iztapalapa' in pg43.inner_text('#tabla-usuarios tbody'),'Usuarios filtra por institución: %s' % pg43.inner_text('#usr-cuenta'))
     # El cabo de la alcaldía inicia una jornada: queda a nombre de la alcaldía, sin chófer ni vehículo
@@ -4231,31 +4228,25 @@ with sync_playwright() as p:
     ok(pr47=={'u-cabo-1':[['Reforestación Urbana','Centro Histórico','Compensaciones','Palmeras','Territorios de Paz','Utopías','Solicitud especial'],''],'u-coord-alc':[['Reforestación Urbana'],'p-refor'],'u-coord-gob':[['Reforestación Urbana','Centro Histórico'],''],
               'u-coord-emp':[['Palmeras'],'p-palmeras'],'u-coord-osc':[['Reforestación Urbana'],'p-refor']},
        'SEDEMA elige entre todos los programas, sin preselección; Gobierno de la CDMX, entre «Reforestación Urbana» y «Centro Histórico»; alcaldías y organizaciones civiles tienen sólo «Reforestación Urbana», y las empresas sólo «Palmeras», ya puesto: %s' % pr47)
-    # Alta: fuera de la Secretaría hay cabo y coordinador; el cabo elige coordinador de su institución
+    # Alta: fuera de la Secretaría hay cabo y coordinador; el cabo ya no se asigna a una coordinación
     entrar47('u-admin-1'); pg47.evaluate("SRP.app.mostrarVista('usuarios')"); pg47.wait_for_timeout(500)
     pg47.click('#btn-usr-agregar'); pg47.wait_for_timeout(300)
     pg47.select_option('#usr-tipo-org','Empresa privada'); pg47.wait_for_timeout(150); pg47.select_option('#usr-organizacion','o-green-cover'); pg47.wait_for_timeout(150)
     pf47=pg47.eval_on_selector_all('#usr-perfil option','l=>l.map(o=>o.textContent).filter(t=>!t.startsWith("Seleccione"))')
     pg47.select_option('#usr-perfil','CABO'); pg47.wait_for_timeout(150)
-    co47=[pg47.is_visible('#caja-usr-coordinador'), pg47.eval_on_selector_all('#usr-coordinadores .chip','l=>l.map(o=>o.textContent)')]
-    pg47.select_option('#usr-tipo-org','Alcaldía'); pg47.wait_for_timeout(150); pg47.select_option('#usr-organizacion','o-alc-09007'); pg47.wait_for_timeout(150)
-    ca47=pg47.eval_on_selector_all('#usr-coordinadores .chip','l=>l.map(o=>o.textContent)')
-    pg47.select_option('#usr-perfil','COORDINADOR'); pg47.wait_for_timeout(150)
-    cc47=pg47.is_hidden('#caja-usr-coordinador')
-    ok(pf47==['Cabo','Coordinador','Directivo'] and co47==[True,['Héctor Salinas Ejemplo']] and ca47==['Sergio Navarro Ejemplo'] and cc47,
-       'en el alta de una institución de fuera se elige cabo, coordinador o directivo; el cabo, un coordinador de su misma institución; el coordinador no depende de nadie: %s %s %s' % (pf47, co47, ca47))
-    pg47.select_option('#usr-tipo-org','Empresa privada'); pg47.wait_for_timeout(150); pg47.select_option('#usr-organizacion','o-green-cover'); pg47.wait_for_timeout(150)
-    pg47.select_option('#usr-perfil','CABO'); pg47.wait_for_timeout(150); pg47.click('#usr-coordinadores .chip[data-id="u-coord-emp"]')
+    co47=pg47.locator('#caja-usr-coordinador').count()==0
+    ok(pf47==['Cabo','Coordinador','Directivo'] and co47,
+       'en el alta de una institución de fuera se elige cabo, coordinador o directivo; el cabo ya no se asigna a un coordinador: %s' % pf47)
     pg47.fill('#usr-nombre-completo','Irma Palmera Ejemplo'); pg47.fill('#usr-correo','irma.palmera@ejemplo.local'); pg47.fill('#usr-cargo','Cabo de cuadrilla')
     pg47.click('#form-usuario button[type=submit]'); pg47.wait_for_timeout(600)
     n47=pg47.evaluate("(() => { const u = SRP.ref.usuarios.find(x => x.correo === 'irma.palmera@ejemplo.local'); return u ? [u.organizacion_id, u.perfil, u.coordinadores_ids, u.area_id] : null; })()")
-    ok(n47==['o-green-cover','CABO',['u-coord-emp'],None],'se da de alta un cabo de Green Cover con su coordinador de Green Cover: %s' % n47)
-    # Alcance del coordinador de fuera: sólo sus cabos
+    ok(n47==['o-green-cover','CABO',[],None],'se da de alta un cabo de Green Cover, sin coordinador asignado: %s' % n47)
+    # Alcance del coordinador de fuera: los cabos de su institución
     a47=pg47.evaluate("""(() => { const u = SRP.ref.usuarioPorId['u-coord-alc'], p = SRP.ref.usuarioPorId;
       return { cabos: SRP.indicadores.cabosAsignados(u), suyo: SRP.permisos.alcanza(u, { cabo_id: 'u-cabo-alc' }, p), sedema: SRP.permisos.alcanza(u, { cabo_id: 'u-cabo-1' }, p),
                paot: SRP.permisos.alcanza(u, { cabo_id: 'u-cabo-gob' }, p), emp: SRP.indicadores.cabosAsignados(p['u-coord-emp']).sort() }; })()""")
     ok(a47=={'cabos':['u-cabo-alc'],'suyo':True,'sedema':False,'paot':False,'emp':sorted([n47 and pg47.evaluate("SRP.ref.usuarios.find(x => x.correo === 'irma.palmera@ejemplo.local').id"),'u-cabo-emp'])},
-       'el coordinador de la alcaldía ve y corrige lo de sus cabos, nunca lo de SEDEMA ni lo de otra institución: %s' % a47)
+       'el coordinador de la alcaldía ve y corrige lo de los cabos de su institución, nunca lo de SEDEMA ni lo de otra; el de la empresa cuenta a todos los suyos: %s' % a47)
     # El cabo de la alcaldía cierra su jornada: sin personal ni vehículo; su coordinador la ve en Supervisión
     entrar47('u-cabo-alc')
     jz47=iniciar_jornada(pg47,'Camellón coordinado')
@@ -5085,8 +5076,8 @@ with sync_playwright() as p:
     vis58=pg58.is_visible('#btn-jornada-relevo')
     pg58.click('#btn-jornada-relevo'); pg58.wait_for_timeout(300)
     op58=pg58.eval_on_selector_all('#relevo-quien option','l=>l.map(o=>o.value).filter(Boolean)')
-    ok(vis58 and pg58.is_visible('#dlg-relevo') and 'u-cabo-1' not in op58 and 'u-demo-c1' in op58 and all(pg58.evaluate("id => SRP.ref.usuarioPorId[id].coordinadores_ids", x)==['u-coord-1'] for x in op58),
-       'la coordinación ve «Relevo de cabo» en una jornada abierta de su cuadrilla y elige entre los demás cabos de su cuadrilla: %s' % op58)
+    ok(vis58 and pg58.is_visible('#dlg-relevo') and 'u-cabo-1' not in op58 and 'u-demo-c1' in op58 and 'u-demo-c4' in op58 and all(pg58.evaluate("id => SRP.ref.usuarioPorId[id].organizacion_id", x)=='o-sedema' for x in op58),
+       'la coordinación ve «Relevo de cabo» en una jornada abierta y elige entre los demás cabos de su institución, de cualquier cuadrilla: %s' % op58)
     pg58.click('#btn-relevo-hacer'); esperar(pg58, "!!document.getElementById('relevo-error').innerText.trim()", 4000)
     ok(pg58.inner_text('#relevo-error')=='Elija el cabo que sigue registrando.','sin elegir cabo no se hace el relevo')
     pg58.select_option('#relevo-quien','u-demo-c1'); pg58.click('#btn-relevo-hacer'); pg58.wait_for_timeout(900)
@@ -5978,43 +5969,32 @@ with sync_playwright() as p:
     ok(r1 == ['a69-3', 'a69-2', 'a69-1'] and r2 == ['a69-1', 'a69-2', 'a69-3'], 'Registros se ordena de lo más reciente a lo más antiguo y a la inversa: %s → %s' % (r1, r2))
     pg69.select_option('#registros-orden select', 'reciente'); pg69.wait_for_timeout(300)
     # Reportes y Fotografías traen la misma lista
-    # Usuarios: etiquetas y un cabo con más de un coordinador
+    # Usuarios: etiquetas, sin coordinadores; la coordinación alcanza a todos los cabos de su institución
     entrar69('u-admin-1'); pg69.evaluate("SRP.app.mostrarVista('usuarios')"); pg69.wait_for_timeout(700)
     cab69 = pg69.eval_on_selector_all('#tabla-usuarios thead th', 'l => l.map(x => x.textContent.trim())')
-    ok('Cargo' in cab69 and 'Perfil de captura' in cab69 and 'Coordinadores' in cab69 and 'Cargo y rol' not in cab69 and pg69.inner_text('label[for=usr-filtro-perfil]') == 'Perfil de captura',
-       'Usuarios dice «Cargo», «Perfil de captura» y «Coordinadores»: %s' % cab69)
-    def alta69(nombre, correo, perfil, coords=()):
+    ok('Cargo' in cab69 and 'Perfil de captura' in cab69 and 'Coordinadores' not in cab69 and 'Cargo y rol' not in cab69 and pg69.inner_text('label[for=usr-filtro-perfil]') == 'Perfil de captura',
+       'Usuarios dice «Cargo» y «Perfil de captura», sin la columna «Coordinadores»: %s' % cab69)
+    def alta69(nombre, correo, perfil):
         pg69.click('#btn-usr-agregar'); pg69.wait_for_timeout(300)
         pg69.select_option('#usr-tipo-org', 'Gobierno de la CDMX'); pg69.wait_for_timeout(150); pg69.select_option('#usr-organizacion', 'o-sedema'); pg69.wait_for_timeout(150)
         pg69.select_option('#usr-area', 'a-dgsanpava'); pg69.fill('#usr-nombre-completo', nombre); pg69.fill('#usr-correo', correo); pg69.fill('#usr-cargo', 'Cuadrilla')
         pg69.select_option('#usr-perfil', perfil); pg69.wait_for_timeout(200)
-        for c in coords: pg69.click('#usr-coordinadores .chip[data-id="%s"]' % c)
     alta69('Segunda Coordinación Ejemplo', 'coordinacion.dos@ejemplo.local', 'COORDINADOR')
     et69 = [pg69.inner_text('label[for=usr-cargo]'), pg69.inner_text('label[for=usr-perfil]')]
     pg69.click('#form-usuario button[type=submit]'); pg69.wait_for_timeout(700)
     c2 = pg69.evaluate("SRP.ref.usuarios.find(u => u.correo === 'coordinacion.dos@ejemplo.local').id")
     ok(et69[0].startswith('Cargo') and 'rol' not in et69[0] and et69[1].startswith('Perfil de captura'), 'el alta dice «Cargo» y «Perfil de captura»: %s' % et69)
     alta69('Cabo Compartido Ejemplo', 'cabo.compartido@ejemplo.local', 'CABO')
-    n0 = pg69.inner_text('#usr-coordinadores-nota')
-    pg69.click('#usr-coordinadores .chip[data-id="u-coord-1"]'); n1 = pg69.inner_text('#usr-coordinadores-nota')
-    pg69.click('#usr-coordinadores .chip[data-id="%s"]' % c2); n2 = pg69.inner_text('#usr-coordinadores-nota')
+    sin69 = pg69.locator('#usr-coordinadores').count() == 0
     pg69.click('#form-usuario button[type=submit]'); pg69.wait_for_timeout(700)
-    cc69 = pg69.evaluate("(() => { const u = SRP.ref.usuarios.find(x => x.correo === 'cabo.compartido@ejemplo.local'); return u ? [u.id, u.coordinadores_ids.slice().sort(), 'coordinador_id' in u] : null; })()")
-    ok(n0.startswith('Sin coordinador asignado') and n1.startswith('1 coordinador asignado') and n2.startswith('2 coordinadores asignados') and cc69 and cc69[1] == sorted(['u-coord-1', c2]) and cc69[2] is False,
-       'un cabo puede tener más de un coordinador: se marcan en la lista y se guardan todos: %s' % (cc69 and cc69[1]))
-    fila69 = pg69.evaluate("id => [...document.querySelector('#tabla-usuarios tr[data-id=\"' + id + '\"]').querySelectorAll('td')].find(td => td.dataset.etiqueta === 'Coordinadores').textContent", cc69[0])
-    ok('Segunda Coordinación Ejemplo' in fila69 and ',' in fila69, 'la tabla de Usuarios enumera a sus coordinadores: %s' % fila69)
-    # Los dos coordinadores alcanzan lo del cabo y lo tienen en su cuadrilla
+    cc69 = pg69.evaluate("(() => { const u = SRP.ref.usuarios.find(x => x.correo === 'cabo.compartido@ejemplo.local'); return u ? [u.id, u.coordinadores_ids, 'coordinador_id' in u] : null; })()")
+    ok(sin69 and cc69 and cc69[1] == [] and cc69[2] is False, 'el alta de un cabo ya no pide coordinadores: queda sin ninguno: %s' % cc69)
+    # Las dos coordinaciones de la Secretaría alcanzan lo del cabo nuevo y lo cuentan con todos los de su institución
     al69 = pg69.evaluate("""([cabo, c2]) => { const P = SRP.ref.usuarioPorId, r = { cabo_id: cabo };
+      const sedema = SRP.ref.usuarios.filter(u => u.activo && u.perfil === 'CABO' && u.organizacion_id === 'o-sedema').length;
       return [SRP.permisos.alcanza(P['u-coord-1'], r, P), SRP.permisos.alcanza(P[c2], r, P), SRP.permisos.alcanza(P['u-coord-alc'], r, P),
-        SRP.indicadores.cabosAsignados(P['u-coord-1']).includes(cabo), SRP.indicadores.cabosAsignados(P[c2]).includes(cabo), SRP.indicadores.cabosAsignados(P[c2]).length]; }""", [cc69[0], c2])
-    ok(al69 == [True, True, False, True, True, 1], 'cada coordinador del cabo ve sus registros y lo cuenta en su cuadrilla; uno de otra institución, no: %s' % al69)
-    # Editar: quitar un coordinador deja el otro, con su renglón de bitácora
-    pg69.evaluate("id => SRP.usuarios.abrirFormulario(SRP.ref.usuarioPorId[id])", cc69[0]); pg69.wait_for_timeout(400)
-    ed69 = pg69.eval_on_selector_all('#usr-coordinadores .chip[aria-pressed="true"]', 'l => l.map(x => x.dataset.id).sort()')
-    pg69.click('#usr-coordinadores .chip[data-id="u-coord-1"]'); pg69.click('#form-usuario button[type=submit]'); pg69.wait_for_timeout(700)
-    q69 = pg69.evaluate("""async id => [SRP.ref.usuarioPorId[id].coordinadores_ids, (await SRP.almacen.todos('bitacora')).filter(x => x.entidad === 'usuario' && x.entidad_id === id && x.accion === 'EDITADO').map(x => x.detalle)]""", cc69[0])
-    ok(ed69 == sorted(['u-coord-1', c2]) and q69[0] == [c2] and any('coordinadores_ids' in t for t in q69[1]), 'al editar aparecen marcados sus coordinadores; quitar uno deja al otro y queda en la bitácora: %s' % q69)
+        SRP.indicadores.cabosAsignados(P['u-coord-1']).includes(cabo), SRP.indicadores.cabosAsignados(P[c2]).includes(cabo), SRP.indicadores.cabosAsignados(P[c2]).length === sedema]; }""", [cc69[0], c2])
+    ok(al69 == [True, True, False, True, True, True], 'cada coordinación de la Secretaría ve lo del cabo nuevo y lo cuenta con todos los de su institución; una de otra institución, no: %s' % al69)
     # Una cuenta guardada con un solo coordinador pasa a la lista al abrir
     v69 = pg69.evaluate("""async () => { const u = Object.assign({}, SRP.ref.usuarioPorId['u-cabo-1']); delete u.coordinadores_ids; u.coordinador_id = 'u-coord-1';
       await SRP.almacen.guardarConBitacora('usuarios', u, null); await SRP.almacen.normalizar(); const d = await SRP.almacen.uno('usuarios', 'u-cabo-1'); return [d.coordinadores_ids, 'coordinador_id' in d]; }""")
@@ -7691,6 +7671,90 @@ with sync_playwright() as p:
        'bajo cada calle, entre qué calles quedaron sus árboles')
     ok(not err100, 'sin errores en consola: %s' % err100[:2])
     ctx100.close()
+
+    # ---------- ctx101: la jornada compartida (la abre la Coordinación; sus cabos de apoyo registran a la vez y terminan su parte) y la Coordinación con toda su institución ----------
+    ctx101 = b.new_context(viewport={'width':390,'height':844}, geolocation={'latitude':19.432600,'longitude':-99.133200,'accuracy':5}, permissions=['geolocation'], timezone_id='America/Mexico_City')
+    ctx101.add_init_script(MODO_SOL_APAGADO)
+    pg101 = ctx101.new_page(); err101 = []
+    pg101.on('pageerror', lambda e: err101.append(str(e))); pg101.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err101.append(m.text))
+    pg101.goto(BASE); pg101.wait_for_selector('html[data-listo]')
+    entrar_como(pg101, 'u-admin-1'); pg101.wait_for_function("() => SRP.sesion && SRP.sesion.usuario")
+    pg101.evaluate("async () => { await SRP.demo.cargar(); }")
+    def como101(uid):
+        pg101.evaluate("id => SRP.sesion.iniciar(SRP.ref.usuarioPorId[id])", uid); pg101.reload(); pg101.wait_for_selector('html[data-listo]')
+        pg101.wait_for_function("id => SRP.sesion && SRP.sesion.usuario && SRP.sesion.usuario.id === id", arg=uid); pg101.wait_for_timeout(1200)
+    # La Coordinación abre la jornada: en su ficha, «Cabos de apoyo» en lugar de «Relevo de cabo»
+    como101('u-coord-1')
+    pg101.evaluate("() => document.querySelectorAll('dialog[open]').forEach(d => d.close())")
+    jid101 = iniciar_jornada(pg101, 'Evento masivo de prueba', HOY)
+    pg101.evaluate("async id => { SRP.app.mostrarVista('jornadas'); await SRP.jornadas.abrir(id); }", jid101); pg101.wait_for_timeout(1500)
+    ok(pg101.is_visible('#btn-jornada-apoyos') and pg101.is_hidden('#btn-jornada-relevo'), 'en la jornada que abrió la Coordinación, «Cabos de apoyo» ocupa el lugar de «Relevo de cabo»')
+    pg101.click('#btn-jornada-apoyos'); pg101.wait_for_selector('#dlg-apoyos[open]')
+    v101 = pg101.evaluate("""() => ({ ids: [...document.querySelectorAll('#apoyos-cabos .chip')].map(b => b.dataset.id), etiqueta: document.getElementById('apoyos-etiqueta').textContent,
+      instrucciones: document.querySelector('#dlg-apoyos .instrucciones').innerText, boton: document.getElementById('btn-apoyos-guardar').textContent })""")
+    ok({'u-cabo-1', 'u-demo-c4', 'u-demo-c1'} <= set(v101['ids']) and 'u-cabo-alc' not in v101['ids'] and 'Secretaría del Medio Ambiente' in v101['etiqueta'],
+       'la ventana ofrece a los cabos de toda la institución, de cualquier cuadrilla, y sólo de ella: %s' % v101['ids'][:6])
+    ok('el mismo día del evento' in v101['instrucciones'] and 'no se puede abrir con fecha futura' in v101['instrucciones'] and 'Terminar mi parte' in v101['instrucciones'] and v101['boton'] == 'Guardar: sin cabos de apoyo',
+       'las instrucciones de la jornada compartida, a la vista, empiezan por abrirla el mismo día: %s' % v101['instrucciones'][:90])
+    pg101.click('#apoyos-cabos .chip[data-id="u-cabo-1"]'); pg101.click('#apoyos-cabos .chip[data-id="u-demo-c4"]')
+    ok(pg101.inner_text('#btn-apoyos-guardar') == 'Guardar: 2 cabos de apoyo', 'el botón dice cuántos cabos de apoyo quedan')
+    pg101.click('#btn-apoyos-guardar'); pg101.wait_for_timeout(1200)
+    f101 = pg101.evaluate("""async id => { const j = await SRP.almacen.uno('jornadas', id); return { apoyos: j.cabos_apoyo.map(a => [a.cabo_id, a.por_id, a.fin]),
+      sub: document.getElementById('jornada-sub').innerText, bit: (await SRP.almacen.todos('bitacora')).filter(b => b.entidad_id === id && b.accion === 'APOYO').map(b => b.detalle) }; }""", jid101)
+    ok(f101['apoyos'] == [['u-cabo-1', 'u-coord-1', None], ['u-demo-c4', 'u-coord-1', None]] and 'compartida' in f101['sub'] and '(Coordinación)' in f101['sub']
+       and 'Cabos de apoyo: Fulana de Tal Ejemplo, Tomás Díaz Demo' in f101['sub'] and f101['bit'] == ['Agrega: Fulana de Tal Ejemplo, Tomás Díaz Demo'],
+       'quedan los dos cabos de apoyo, la ficha dice que es compartida, quién coordina y quiénes la apoyan, y el historial lo anota: %s' % f101)
+    # El cabo de apoyo: el aviso al entrar, la jornada entre las suyas, la franja y su árbol
+    como101('u-demo-c4')
+    a101 = pg101.evaluate("() => { const d = document.getElementById('dlg-confirmar'); return d.open ? [document.getElementById('dlg-confirmar-titulo').textContent, d.innerText] : null; }")
+    ok(a101 and a101[0] == 'Jornada compartida' and 'Ahora es cabo de apoyo en la jornada compartida «Evento masivo de prueba», que coordina Perengano Gómez Ejemplo' in a101[1] and 'Terminar mi parte' in a101[1],
+       'al entrar, el cabo de apoyo lee una vez qué jornada, quién coordina y cómo funciona: %s' % (a101 and a101[1][:120]))
+    if a101: pg101.click('#btn-confirmar-si'); pg101.wait_for_timeout(400)
+    pg101.evaluate("SRP.app.mostrarVista('registrar')"); pg101.wait_for_timeout(800)
+    pg101.click('#btn-jornada-cambiar'); pg101.wait_for_selector('#dlg-cambiar-jornada[open]')
+    c101 = pg101.inner_text('#lista-jornadas-abiertas button[data-id="%s"]' % jid101)
+    ok('compartida, coordina Perengano Gómez Ejemplo' in c101 and '0 suyos' in c101, 'la jornada compartida aparece entre las suyas, con quién coordina: %s' % c101)
+    pg101.click('#lista-jornadas-abiertas button[data-id="%s"]' % jid101); pg101.wait_for_timeout(800)
+    rid101 = registrar(pg101, 'aile', 'ESP-0002')
+    r101 = pg101.evaluate("""async ([id, rid]) => { const r = await SRP.almacen.uno('plantaciones', rid); const j = await SRP.almacen.uno('jornadas', id);
+      return { cabo: r.cabo_id, jornada: r.jornada_id, franja: document.getElementById('franja-jornada-texto').innerText, cerrar: document.getElementById('btn-jornada-cerrar').textContent,
+        editar: document.getElementById('btn-franja-editar').hidden, puedeEditar: SRP.permisos.puede('jornada.editar', j) }; }""", [jid101, rid101])
+    ok(r101['cabo'] == 'u-demo-c4' and r101['jornada'] == jid101 and 'Jornada compartida · coordina Perengano Gómez Ejemplo' in r101['franja'] and '1 suyo' in r101['franja'],
+       'el cabo de apoyo registra en la jornada compartida, a su nombre; la franja dice quién coordina y cuántos son suyos: %s' % r101['franja'])
+    ok(r101['cerrar'] == 'Terminar mi parte' and r101['editar'] and not r101['puedeEditar'], 'en lugar de «Cerrar jornada», «Terminar mi parte»; no edita los datos de la jornada')
+    pg101.click('#btn-jornada-cerrar'); pg101.wait_for_selector('#dlg-confirmar[open]')
+    t101 = pg101.inner_text('#dlg-confirmar')
+    pg101.click('#btn-confirmar-si'); pg101.wait_for_timeout(1000)
+    e101 = pg101.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); return [j.cabos_apoyo.map(a => a.fin), (await SRP.activa.abiertas()).some(x => x.id === id)]; }", jid101)
+    ok('¿Terminar su parte en «Evento masivo de prueba», con 1 árbol suyo?' in t101 and e101 == [[None, 'terminado'], False],
+       '«Terminar mi parte» pregunta con cuántos árboles suyos, lo anota y la jornada sale de su lista: %s' % e101)
+    # La Coordinación cierra: quien no ha terminado es un pendiente más; el reporte dice quién coordina y quién registró cada árbol
+    como101('u-coord-1')
+    p101 = pg101.evaluate("""async id => { const j = await SRP.almacen.uno('jornadas', id); const c = await SRP.activa.confirmacionCierre(j);
+      const regs = await SRP.activa.registrosDe(j); const m = SRP.reportes.modelo(regs, j, j.fecha, j);
+      return { puntos: c.puntos, nota: c.nota, rotulo: m.rotuloCabo, cabo: m.cabo, apoyos: (m.identificacion.find(x => x[0] === 'Cabos de apoyo') || [])[1],
+        cab: m.ejemplares.cabecera, fila: m.ejemplares.filas[0] }; }""", jid101)
+    ok(p101['puntos'][:1] == ['Fulana de Tal Ejemplo no ha terminado su parte: todavía no llega ningún árbol suyo.'] and 'árboles de un cabo de apoyo' in p101['nota'],
+       'al cerrar, el cabo de apoyo que no ha terminado es un pendiente más, y la nota dice qué pasa con lo suyo: %s' % p101['puntos'])
+    ok(p101['rotulo'] == 'Jornada compartida, coordina:' and p101['cabo'] == 'Perengano Gómez Ejemplo' and p101['apoyos'] == 'Fulana de Tal Ejemplo (0 árboles) y Tomás Díaz Demo (1 árbol)'
+       and p101['cab'][-1] == 'Cabo' and p101['fila'][-1] == 'Tomás Díaz Demo',
+       'el reporte dice quién coordina, sus cabos de apoyo con sus árboles y, en la tabla, quién registró cada uno: %s' % {k: p101[k] for k in ('rotulo', 'apoyos', 'cab')})
+    # La Coordinación trabaja con toda su institución: corrige el árbol de un cabo de otra cuadrilla, no el de otra institución
+    q101 = pg101.evaluate("""async () => { const ps = await SRP.almacen.todos('plantaciones');
+      const de = id => ps.find(p => p.cabo_id === id && p.estatus === 'activo');
+      return [SRP.permisos.de(SRP.sesion.usuario).alcance, SRP.permisos.puede('registro.editar', de('u-demo-c5')), SRP.permisos.puede('registro.editar', de('u-cabo-alc') || de('u-demo-z2'))]; }""")
+    ok(q101 == ['institucion', True, False], 'la Coordinación corrige los árboles de cualquier cabo de su institución, no los de otra: %s' % q101)
+    # Usuarios ya no asigna coordinadores
+    como101('u-admin-1')
+    pg101.evaluate("SRP.app.mostrarVista('usuarios')"); pg101.wait_for_timeout(1500)
+    u101 = pg101.evaluate("""() => { SRP.usuarios.abrirFormulario(SRP.ref.usuarioPorId['u-coord-1']);
+      const r = [!document.getElementById('caja-usr-coordinador'), [...document.querySelectorAll('#tabla-usuarios thead th')].map(t => t.textContent.replace(/[↑↓↕]/g, '').trim()).includes('Coordinadores'),
+        document.getElementById('usr-perfil-ayuda').textContent, document.querySelector('#tabla-usuarios .c-resumen').textContent];
+      document.getElementById('dlg-usuario').close(); return r; }""")
+    ok(u101[0] and not u101[1] and 'todos los cabos de su institución' in u101[2] and 'coordina' not in u101[3],
+       'Usuarios ya no asigna coordinadores: sin el campo, sin la columna, y la ayuda del perfil lo dice: %s' % u101[2:])
+    ok(not err101, 'sin errores en consola: %s' % err101[:2])
+    ctx101.close()
 
     b.close()
 

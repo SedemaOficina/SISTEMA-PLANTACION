@@ -7,10 +7,10 @@ SRP.PERFILES = {
   // eliminarJornadaVacia: una jornada sin ningún árbol, ni eliminado, se puede borrar
   CABO:        { etiqueta: 'Cabo',                   alcance: 'propios', registrar: true,  editar: true,  eliminar: true,  eliminarJornadaVacia: true, relevar: false, catalogos: false, usuarios: false, galeria: true,
                  descripcion: 'Registra plantaciones y ve, edita y elimina únicamente las suyas; descarga sus fotografías.' },
-  // Registra, edita y elimina lo de su cuadrilla: un árbol capturado por error se corrige sin
-  // esperar a Administración; ve la galería
-  COORDINADOR: { etiqueta: 'Coordinador',            alcance: 'equipo',  registrar: true,  editar: true,  eliminar: true,  eliminarJornadaVacia: true, relevar: true,  catalogos: false, usuarios: false, galeria: true,
-                 descripcion: 'Registra, y ve, edita y elimina los registros de los cabos que tiene asignados y los suyos. Elimina también las jornadas vacías y pasa una jornada abierta a otro cabo de su cuadrilla (relevo).' },
+  // Registra, edita y elimina lo de su institución: un árbol capturado por error se corrige sin
+  // esperar a Administración; ve la galería y abre jornadas compartidas
+  COORDINADOR: { etiqueta: 'Coordinador',            alcance: 'institucion',  registrar: true,  editar: true,  eliminar: true,  eliminarJornadaVacia: true, relevar: true,  catalogos: false, usuarios: false, galeria: true,
+                 descripcion: 'Registra, y ve, edita y elimina los registros de todos los cabos de su institución y los suyos. Elimina también las jornadas vacías, pasa una jornada abierta a otro cabo (relevo) y abre jornadas compartidas.' },
   /* Sólo ve: subdirecciones, direcciones de área y direcciones generales. El de la Secretaría ve toda
      la Ciudad; el de otra institución, sólo la suya (alcance «institucion», lo pone `de()`). No
      registra, no corrige y no genera reportes: descarga los que ya se generaron. */
@@ -56,14 +56,26 @@ SRP.permisos = {
       if (registro.organizacion_id) return registro.organizacion_id === usuario.organizacion_id;
       return personas.some(id => { const autor = usuariosPorId[id]; return !!autor && autor.organizacion_id === usuario.organizacion_id; });
     }
-    if (personas.includes(usuario.id)) return true;
-    if (alcance === 'equipo') return personas.some(id => { const autor = usuariosPorId[id]; return !!autor && (autor.coordinadores_ids || []).includes(usuario.id); });
-    return false;
+    return personas.includes(usuario.id);
   },
 
-  /* Quién responde de un registro: el cabo que capturó el árbol. En una jornada, su titular y
-     también los cabos que la recibieron en relevo, aunque después la hayan devuelto. */
-  personasDe(x) { return [x.cabo_id, x.relevo_id].concat((x.relevos || []).map(r => r.cabo_id)).filter(Boolean); },
+  /* Quién responde de un registro: el cabo que capturó el árbol. En una jornada, su titular, los cabos
+     que la recibieron en relevo, aunque después la hayan devuelto, y sus cabos de apoyo, también los que ya
+     terminaron o se quitaron. */
+  personasDe(x) {
+    return [x.cabo_id, x.relevo_id].concat((x.relevos || []).map(r => r.cabo_id), (x.cabos_apoyo || []).map(a => a.cabo_id)).filter(Boolean);
+  },
+
+  // Un cabo de apoyo vigente de la jornada: no ha terminado su parte ni lo quitaron
+  apoyoVigente(j, id) { return (j.cabos_apoyo || []).some(a => a.cabo_id === id && !a.hasta); },
+
+  // Los cabos de apoyo vigentes de la jornada, en el orden en que entraron
+  vigentes(j) { return (j.cabos_apoyo || []).filter(a => !a.hasta).map(a => a.cabo_id); },
+
+  // Está en la jornada sólo como cabo de apoyo: la ve con todos sus árboles, pero no cambia sus datos ni la cierra
+  soloDeApoyo(j, id) {
+    return (j.cabos_apoyo || []).some(a => a.cabo_id === id) && ![j.cabo_id, j.relevo_id].concat((j.relevos || []).map(r => r.cabo_id)).includes(id);
+  },
 
   puedeEditar(usuario, registro, usuariosPorId) {
     return this.de(usuario).editar && this.alcanza(usuario, registro, usuariosPorId);
@@ -88,12 +100,16 @@ SRP.permisos = {
     'registro.mover':       { texto: 'mover este registro de jornada',    regla: (p, u, r) => p.editar && SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId) },
     'jornada.crear':        { texto: 'iniciar jornadas',                  regla: (p) => p.registrar },
     // Editar, cerrar, reabrir, revisar sus puntos y llenar el cierre del reporte
-    'jornada.editar':       { texto: 'modificar esta jornada',            regla: (p, u, j) => p.editar && SRP.permisos.alcanza(u, j, SRP.ref.usuarioPorId) },
-    'jornada.eliminar':     { texto: 'eliminar esta jornada',             regla: (p, u, j) => p.eliminarJornadaVacia && SRP.permisos.alcanza(u, j, SRP.ref.usuarioPorId) },
-    // Registrar árboles en una jornada abierta: sólo quien la tiene a su cargo, el titular o el cabo del relevo
-    'jornada.registrar':    { texto: 'registrar en esta jornada',         regla: (p, u, j) => p.registrar && j.estatus === 'abierta' && (j.relevo_id || j.cabo_id) === u.id },
-    // Relevo: la coordinación pasa una jornada abierta a otro cabo de su cuadrilla; el titular no cambia
+    'jornada.editar':       { texto: 'modificar esta jornada',            regla: (p, u, j) => p.editar && SRP.permisos.alcanza(u, j, SRP.ref.usuarioPorId) && !SRP.permisos.soloDeApoyo(j, u.id) },
+    'jornada.eliminar':     { texto: 'eliminar esta jornada',             regla: (p, u, j) => p.eliminarJornadaVacia && SRP.permisos.alcanza(u, j, SRP.ref.usuarioPorId) && !SRP.permisos.soloDeApoyo(j, u.id) },
+    // Registrar árboles en una jornada abierta: quien la tiene a su cargo, el titular o el cabo del relevo, y sus cabos de apoyo vigentes
+    'jornada.registrar':    { texto: 'registrar en esta jornada',         regla: (p, u, j) => p.registrar && j.estatus === 'abierta' && ((j.relevo_id || j.cabo_id) === u.id || SRP.permisos.apoyoVigente(j, u.id)) },
+    // Relevo: la coordinación pasa una jornada abierta a otro cabo de la institución de la jornada; el titular no cambia
     'jornada.relevo':       { texto: 'pasar esta jornada a otro cabo',    regla: (p, u, j) => !!p.relevar && j.estatus === 'abierta' && SRP.permisos.alcanza(u, j, SRP.ref.usuarioPorId) },
+    // Jornada compartida: la Coordinación que la abrió marca a sus cabos de apoyo
+    'jornada.compartir':    { texto: 'elegir los cabos de apoyo de esta jornada', regla: (p, u, j) => !!p.relevar && j.estatus === 'abierta' && j.cabo_id === u.id },
+    // «Terminar mi parte»: el cabo de apoyo vigente, con la jornada abierta
+    'jornada.terminar':     { texto: 'terminar su parte en esta jornada', regla: (p, u, j) => p.registrar && j.estatus === 'abierta' && SRP.permisos.apoyoVigente(j, u.id) },
     'catalogo.administrar': { texto: 'administrar los catálogos',         regla: (p) => p.catalogos },
     'usuario.administrar':  { texto: 'administrar las cuentas',           regla: (p) => p.usuarios },
     'carga.masiva':         { texto: 'cargar árboles en bloque',          regla: (p) => p.usuarios && p.catalogos },

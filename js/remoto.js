@@ -91,7 +91,30 @@ SRP.remoto = {
     if (!j.ok || !p.ok) { this.cambiar((j.ok ? p : j).sinRed ? 'sin-senal' : 'error'); return; }
     this.jornadas = new Map(j.filas.map(f => [f.id, f]));
     this.plantaciones = new Map(p.filas.map(f => [f.id, f]));
+    await this.tomarLocales();
     this.cambiar('listo');
+  },
+
+  /* Una jornada que el teléfono guarda y que nada suyo espera envío toma la del servidor: otros pudieron cambiarla
+     —un relevo, los cabos de apoyo que terminaron su parte— y la del teléfono no lo sabría. */
+  async tomarLocales(ids) {
+    for (const local of await SRP.almacen.todosLocales('jornadas')) {
+      const f = this.jornadas.get(local.id);
+      if (f && (!ids || ids.includes(local.id)) && !SRP.cola.de(local.id).length) await SRP.almacen.ponerLocal('jornadas', f);
+    }
+  },
+
+  /* Una jornada al día, sin traer todo: ella y los árboles que se ven de ella (GET /jornadas/:id). La Coordinación la
+     pide al abrir la ficha de una jornada compartida y al cerrarla. Devuelve la jornada como queda, o null si no se
+     pudo. */
+  async alDia(id) {
+    if (!this.activo() || !SRP.conexion.enLinea()) return null;
+    const r = await SRP.servidor.pedir('GET', '/jornadas/' + encodeURIComponent(id));
+    if (!r.ok || !r.datos || !r.datos.jornada) return null;
+    this.jornadas.set(id, r.datos.jornada);
+    (r.datos.plantaciones || []).forEach(f => this.plantaciones.set(f.id, f));
+    await this.tomarLocales([id]);
+    return SRP.almacen.uno('jornadas', id);
   },
 
   // Al cerrar sesión no queda nada de lo enviado
@@ -120,6 +143,8 @@ SRP.remoto = {
   cambiar(estado) {
     this.estado = estado;
     this.pintar();
+    // Una jornada que vive en el servidor —compartida o recibida en relevo— se toma y se avisa al llegar
+    if (estado === 'listo' && SRP.sesion.usuario && SRP.activa) SRP.activa.alLlegarLoEnviado();
     // Lo que se ve se vuelve a pintar con lo que llegó o con lo que falta
     const v = SRP.app && SRP.app.vista;
     if (SRP.sesion.usuario && ['registros', 'jornadas', 'supervision', 'galeria'].includes(v)) SRP.app.mostrarVista(v, true);

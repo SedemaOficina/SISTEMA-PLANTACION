@@ -1,6 +1,6 @@
 import type pg from "pg";
 import { anotarCambio } from "./bitacora";
-import { capacidadesDe, puede, SEDEMA } from "./permisos";
+import { apoyoVigente, capacidadesDe, puede, SEDEMA } from "./permisos";
 import {
   AHORA, autoresDe, comoObjeto, conVigente, antesDelPrograma, esFecha, esVigente, fechaCorta, filaDe, hoyEnLaCiudad, idDe, instante, jornadaEliminada, puntoDe, rechazo, recibido,
   noAntes, repetida, seElimino, sinPermiso, texto, textoFolio, ubicar, versionVieja, congelarPrioridad, nombreDesactivado, type Errores, type Fila, type Punto, type Resultado, type Territorio,
@@ -339,8 +339,8 @@ export async function reporteJornada(c: pg.PoolClient, u: Usuario, d: Record<str
   return recibido(fila);
 }
 
-/* RELEVO: la coordinación pasa una jornada abierta a otro cabo activo de su cuadrilla y de la institución de
-   la jornada, o se la devuelve al titular. Queda en `relevo_id` (nulo si vuelve el titular), en la lista de
+/* RELEVO: la coordinación pasa una jornada abierta a otro cabo activo de la institución de la jornada, o se la
+   devuelve al titular. Queda en `relevo_id` (nulo si vuelve el titular), en la lista de
    relevos —con quién, cuándo y quién lo hizo— y en la bitácora. La jornada y sus árboles no cambian de dueño. */
 export async function relevoJornada(c: pg.PoolClient, u: Usuario, d: Record<string, unknown>): Promise<Resultado> {
   const leido = await jornadaParaCambiar(c, d);
@@ -352,11 +352,11 @@ export async function relevoJornada(c: pg.PoolClient, u: Usuario, d: Record<stri
   if (destino === capturista) return recibido(actual, { repetido: true });
   if (!(await esVigente(c, "jornadas", id, d.version))) return versionVieja(actual);
   const vuelve = destino === actual.cabo_id;
-  const deSuCuadrilla = !!destino && !vuelve && !!(await c.query(
-    `SELECT 1 FROM srp.usuarios WHERE id = $1 AND activo AND perfil = 'CABO' AND coordinadores_ids @> ARRAY[$2::uuid] AND organizacion_id = $3`,
-    [destino, u.id, actual.organizacion_id],
+  const deLaInstitucion = !!destino && !vuelve && !!(await c.query(
+    `SELECT 1 FROM srp.usuarios WHERE id = $1 AND activo AND perfil = 'CABO' AND organizacion_id = $2`,
+    [destino, actual.organizacion_id],
   )).rowCount;
-  if (!vuelve && !deSuCuadrilla) return conVigente(rechazo(id, "DATOS_INVALIDOS", "Revise el relevo.", [["cabo_id", "Elija el cabo que sigue registrando."]]), actual);
+  if (!vuelve && !deLaInstitucion) return conVigente(rechazo(id, "DATOS_INVALIDOS", "Revise el relevo.", [["cabo_id", "Elija el cabo que sigue registrando."]]), actual);
   const fila = (await c.query<{ fila: Fila }>(
     `UPDATE srp.jornadas SET relevo_id = $2,
         relevos = relevos || jsonb_build_array(jsonb_build_object('cabo_id', $3::text, 'fecha', to_char(${AHORA} AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'), 'por_id', $4::text)),
@@ -366,6 +366,75 @@ export async function relevoJornada(c: pg.PoolClient, u: Usuario, d: Record<stri
   )).rows[0].fila;
   await anotarCambio(c, u, "RELEVO", "jornada", id, "Registra " + (await nombreDe(c, destino)) + " en lugar de " + (await nombreDe(c, capturista)) +
     (vuelve ? ": vuelve el titular" : "; titular: " + (await nombreDe(c, actual.cabo_id))));
+  return recibido(fila);
+}
+
+// Un cabo de apoyo en la lista de la jornada (02-srp-tablas.sql, jornadas.cabos_apoyo)
+interface Apoyo {
+  cabo_id: string;
+  desde: string;
+  por_id: string;
+  hasta: string | null;
+  fin: "terminado" | "quitado" | null;
+}
+const apoyosDe = (j: Fila): Apoyo[] => (j.cabos_apoyo as Apoyo[] | null) ?? [];
+
+// Este momento, como lo escriben las listas de la jornada
+const ahoraIso = async (c: pg.PoolClient): Promise<string> =>
+  (await c.query<{ t: string }>(`SELECT to_char(${AHORA} AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS t`)).rows[0].t;
+
+/* JORNADA COMPARTIDA. Su titular, una cuenta de Coordinación, agrega o quita cabos de apoyo: cabos activos de la
+   institución de la jornada, que registran en ella a la vez. Llega lo que cambió en su teléfono —`agregar` y
+   `quitar`—, no la lista entera: si mientras tanto un cabo terminó su parte, eso no se deshace. Al que entra se le
+   anota desde cuándo y quién lo puso; al que sale, hasta cuándo y que lo quitaron; uno que vuelve queda vigente otra
+   vez. Cada cabo aparece una vez, y todo queda en la bitácora (APOYO). */
+export async function compartirJornada(c: pg.PoolClient, u: Usuario, d: Record<string, unknown>): Promise<Resultado> {
+  const leido = await jornadaParaCambiar(c, d);
+  if (esResultado(leido)) return leido;
+  const { id, actual } = leido;
+  if (!puede("jornada.compartir", u, comoObjeto(actual))) return sinPermiso(id, "jornada.compartir");
+  const ids = (v: unknown) => (Array.isArray(v) ? [...new Set(v.map(idDe).filter((x): x is string => !!x))] : []);
+  const vigente = (x: string) => apoyoVigente(comoObjeto(actual), x);
+  const agregar = ids(d.agregar).filter((x) => !vigente(x));
+  const quitar = ids(d.quitar).filter((x) => vigente(x) && !agregar.includes(x));
+  if (!agregar.length && !quitar.length) return recibido(actual, { repetido: true });
+  if (agregar.length) {
+    const { n } = (await c.query<{ n: number }>(
+      "SELECT count(*)::int AS n FROM srp.usuarios WHERE id = ANY($1::uuid[]) AND activo AND perfil = 'CABO' AND organizacion_id = $2",
+      [agregar, actual.organizacion_id],
+    )).rows[0];
+    if (n !== agregar.length) return conVigente(rechazo(id, "DATOS_INVALIDOS", "Revise los cabos de apoyo.", [["cabos_apoyo", "Elija cabos activos de la institución de la jornada."]]), actual);
+  }
+  const ahora = await ahoraIso(c), lista = apoyosDe(actual);
+  const nueva: Apoyo[] = lista.map((a) => (agregar.includes(a.cabo_id) ? { cabo_id: a.cabo_id, desde: ahora, por_id: u.id, hasta: null, fin: null }
+    : quitar.includes(a.cabo_id) ? { ...a, hasta: ahora, fin: "quitado" } : a));
+  for (const x of agregar) if (!lista.some((a) => a.cabo_id === x)) nueva.push({ cabo_id: x, desde: ahora, por_id: u.id, hasta: null, fin: null });
+  const fila = await actualizar(c, id, u, { cabos_apoyo: JSON.stringify(nueva) });
+  const nombres = async (xs: string[]) => (await Promise.all(xs.map((x) => nombreDe(c, x)))).join(", ");
+  await anotarCambio(c, u, "APOYO", "jornada", id,
+    [agregar.length ? "Agrega: " + (await nombres(agregar)) : "", quitar.length ? "Quita: " + (await nombres(quitar)) : ""].filter(Boolean).join("; "));
+  return recibido(fila);
+}
+
+/* «TERMINAR MI PARTE». El cabo de apoyo vigente avisa que acabó: queda hasta cuándo y que terminó, y deja de
+   registrar en la jornada. No cambia la versión de la jornada, para que lo que la Coordinación tenga por enviar de
+   ella no choque con esto. Si hace falta que vuelva, la Coordinación lo marca otra vez. */
+export async function terminarParte(c: pg.PoolClient, u: Usuario, d: Record<string, unknown>): Promise<Resultado> {
+  const leido = await jornadaParaCambiar(c, d);
+  if (esResultado(leido)) return leido;
+  const { id, actual } = leido;
+  const lista = apoyosDe(actual);
+  if (!apoyoVigente(comoObjeto(actual), u.id) && lista.some((a) => a.cabo_id === u.id && a.fin === "terminado")) return recibido(actual, { repetido: true });
+  if (!puede("jornada.terminar", u, comoObjeto(actual))) return sinPermiso(id, "jornada.terminar");
+  const ahora = await ahoraIso(c);
+  const nueva = lista.map((a) => (a.cabo_id === u.id && !a.hasta ? { ...a, hasta: ahora, fin: "terminado" } : a));
+  const fila = (await c.query<{ fila: Fila }>(
+    "UPDATE srp.jornadas SET cabos_apoyo = $2::jsonb WHERE id = $1 RETURNING to_jsonb(jornadas) AS fila",
+    [id, JSON.stringify(nueva)],
+  )).rows[0].fila;
+  const { n } = (await c.query<{ n: number }>(
+    "SELECT count(*)::int AS n FROM srp.plantaciones WHERE jornada_id = $1 AND cabo_id = $2 AND estatus = 'activo'", [id, u.id])).rows[0];
+  await anotarCambio(c, u, "APOYO", "jornada", id, "Terminó su parte: " + n + (n === 1 ? " árbol" : " árboles"));
   return recibido(fila);
 }
 

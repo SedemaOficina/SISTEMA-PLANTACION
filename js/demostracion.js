@@ -294,7 +294,7 @@ SRP.demo = {
           alcaldia_cve: t.alcaldia_cve, alcaldia: t.alcaldia, colonia_cve: t.colonia_cve, colonia: t.colonia, fecha: d, comentarios: r() < 0.15 ? 'Plantación con participación vecinal.' : '',
           cabo_id: cabo, organizacion_id: (usuarios[cabo] && usuarios[cabo].organizacion_id) || SRP.CONFIG.ORGANIZACION_SEDEMA,
           estatus: abierta ? 'abierta' : 'cerrada', fecha_inicio: inicio, fecha_cierre: abierta ? null : new Date(new Date(fin).getTime() + 25 * 60000).toISOString(),
-          encargado_id: cabo, relevo_id: null, relevos: [], editado_por_id: null, fecha_ultima_edicion: null,
+          encargado_id: cabo, relevo_id: null, relevos: [], cabos_apoyo: [], editado_por_id: null, fecha_ultima_edicion: null,
           ...(solicitud ? this.SOLICITUDES[(nj / 7) % this.SOLICITUDES.length] : SRP.solicitud.vacio()),
           arboles_previstos: Math.max(1, n + (r() < 0.6 ? 0 : r() < 0.75 ? 1 + Math.floor(r() * 4) : -1 - Math.floor(r() * 2))),
           puntos_revisados: !abierta && r() < 0.85 ? revisar : [], reporte_en: conReporte ? new Date(new Date(fin).getTime() + 90 * 60000).toISOString() : null, carga_id: null,

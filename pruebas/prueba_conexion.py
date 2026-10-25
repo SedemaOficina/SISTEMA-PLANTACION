@@ -62,7 +62,9 @@ cuenta = lambda nombre, perfil, **x: dict(id=str(uuid.uuid4()), correo='%s.conex
 CABO = cuenta('cabo', 'CABO')
 TEMPORAL = cuenta('temporal', 'CABO', temporal=True)
 ADMIN = cuenta('admin', 'ADMIN')
-CUENTAS = [CABO, TEMPORAL, ADMIN]
+COORD = cuenta('coord', 'COORDINADOR')
+APOYO = cuenta('apoyo', 'CABO')
+CUENTAS = [CABO, TEMPORAL, ADMIN, COORD, APOYO]
 
 resultados = []
 
@@ -1326,6 +1328,41 @@ def main():
                and pg.evaluate(CUENTA_SRV, 'sinred.conexion.prueba.%s@ejemplo.local' % CORRIDA) is None,
                'sin conexión el alta no se guarda, se dice y el formulario sigue abierto: %s' % aviso)
             ctx2.close()
+
+            # La jornada compartida, con el servidor: la Coordinación la abre y le agrega un cabo de apoyo; el cabo la recibe
+            # al entrar, con su aviso, registra y termina su parte; la Coordinación, al cerrar, la trae al día
+            def telefono_de(cuenta_):
+                c_ = b.new_context(service_workers='block', geolocation={'latitude': 19.357, 'longitude': -99.06, 'accuracy': 5}, permissions=['geolocation'])
+                c_.route('**/js/config.js*', config_real)
+                p_ = c_.new_page(); e_ = []
+                p_.on('pageerror', lambda e: e_.append(str(e)))
+                abrir(p_); entrar(p_, cuenta_['correo'], CLAVE); esperar_remoto(p_); p_.wait_for_timeout(1500)
+                return c_, p_, e_
+            ctxC, pgC, errC = telefono_de(COORD)
+            jc = iniciar_jornada(pgC, 'Jornada compartida con el servidor')
+            esperar_cola(pgC)
+            pgC.evaluate("async id => { SRP.app.mostrarVista('jornadas'); await SRP.jornadas.abrir(id); }", jc); pgC.wait_for_timeout(1500)
+            pgC.click('#btn-jornada-apoyos'); pgC.wait_for_selector('#dlg-apoyos[open]')
+            pgC.click('#apoyos-cabos .chip[data-id="%s"]' % APOYO['id']); pgC.click('#btn-apoyos-guardar')
+            esperar_cola(pgC)
+            ok(apoyo('apoyos', {'id': jc})['apoyos'] == [[APOYO['id'], None]], 'la Coordinación agrega un cabo de apoyo a su jornada y llega al servidor')
+            ctxA, pgA, errA = telefono_de(APOYO)
+            aviso = pgA.evaluate("() => document.getElementById('dlg-confirmar').open ? document.getElementById('dlg-confirmar-titulo').textContent : null")
+            if aviso: pgA.click('#btn-confirmar-si'); pgA.wait_for_timeout(400)
+            activa = pgA.evaluate("() => SRP.activa.jornada && SRP.activa.jornada.id")
+            ok(aviso == 'Jornada compartida' and activa == jc, 'el cabo de apoyo, al entrar, lee el aviso y la jornada compartida queda activa: %s' % [aviso, activa == jc])
+            registrar(pgA)
+            esperar_cola(pgA)
+            pgA.evaluate("SRP.app.mostrarVista('registrar')"); pgA.wait_for_timeout(500)
+            pgA.click('#btn-jornada-cerrar'); pgA.wait_for_selector('#dlg-confirmar[open]'); pgA.click('#btn-confirmar-si')
+            esperar_cola(pgA)
+            s = apoyo('apoyos', {'id': jc})
+            ok(s['apoyos'] == [[APOYO['id'], 'terminado']] and s['arboles'] == [APOYO['id']] and pgA.evaluate("id => SRP.almacen.unoLocal('jornadas', id).then(j => !j)", jc),
+               'su árbol llega a su nombre, «Terminar mi parte» llega al servidor y la jornada sale de su teléfono: %s' % s)
+            c = pgC.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); const x = await SRP.activa.confirmacionCierre(j); return [x.puntos, (await SRP.activa.registrosDe(await SRP.almacen.uno('jornadas', id))).length]; }", jc)
+            ok(not any('no ha terminado su parte' in p for p in c[0]) and c[1] == 1, 'al cerrar, la Coordinación trae la jornada al día: el cabo ya terminó y su árbol está: %s' % c)
+            ok(not errC and not errA, 'sin errores en los dos teléfonos: %s' % (errC + errA)[:2])
+            ctxC.close(); ctxA.close()
 
             ok(not errores, 'sin errores en la página: %s' % errores)
             ctx.close()

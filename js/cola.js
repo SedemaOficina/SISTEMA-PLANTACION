@@ -92,7 +92,8 @@ SRP.cola = {
     // Lo que el servidor no aceptó por sus datos, o porque su jornada ya no está, se vuelve a intentar con el registro corregido
     const corregidas = esperan.filter(o => o.rechazo && this.CORREGIBLES.includes(o.rechazo.codigo) && o.tipo !== 'foto');
     const nuevas = [];
-    if (!this.EDICIONES.includes(tipo)) nuevas.push({ tipo });
+    // De una jornada compartida viaja lo que cambió en sus cabos de apoyo, no la lista entera
+    if (!this.EDICIONES.includes(tipo)) nuevas.push(Object.assign({ tipo }, tipo === 'jornada.compartir' ? this.cambiosDeApoyo(antes, despues) : {}));
     // Con su alta o con otra edición esperando, la edición viaja con ésa; si ésa ya salió sin respuesta, va aparte
     else if (!esperan.some(o => !o.enviado && (this.ALTAS.includes(o.tipo) || o.tipo === tipo))) nuevas.push({ tipo, antes: antes || null });
     if (tabla === 'plantaciones' && despues && despues.foto_id && SRP.util.fotoSegura(despues.foto_base64) && (!antes || antes.foto_id !== despues.foto_id)) {
@@ -118,6 +119,12 @@ SRP.cola = {
     });
   },
 
+  // Los cabos de apoyo que entran y salen: si mientras tanto uno terminó su parte en el servidor, eso no se deshace
+  cambiosDeApoyo(antes, despues) {
+    const a = SRP.permisos.vigentes(antes || {}), d = SRP.permisos.vigentes(despues || {});
+    return { agregar: d.filter(x => !a.includes(x)), quitar: a.filter(x => !d.includes(x)) };
+  },
+
   /* ---------- Enviar ---------- */
 
   igual(a, b) { return JSON.stringify(a == null || a === '' ? null : a) === JSON.stringify(b == null || b === '' ? null : b); },
@@ -141,10 +148,11 @@ SRP.cola = {
     if (o.tipo === 'registro.mover') return Object.assign(base, { jornada_id: r.jornada_id });
     if (o.tipo === 'jornada.revisar') return Object.assign(base, { puntos_revisados: r.puntos_revisados || [] });
     if (o.tipo === 'jornada.relevo') return Object.assign(base, { cabo_id: r.relevo_id || r.cabo_id });
+    if (o.tipo === 'jornada.compartir') return Object.assign(base, { agregar: o.agregar || [], quitar: o.quitar || [] });
     if (o.tipo === 'jornada.cierre') {
       ['encargado_id', 'personal', 'apoyo', 'observaciones', 'chofer', 'vehiculo_id', 'hora'].forEach(k => { base[k] = r[k] == null ? null : r[k]; });
     }
-    return base;   // eliminar, restaurar, cerrar, reabrir, reporte y cierre
+    return base;   // eliminar, restaurar, cerrar, reabrir, reporte, cierre y terminar la parte de un cabo de apoyo
   },
 
   /* Envía lo de quien tiene la sesión. Devuelve { enviados: árboles recibidos, cortado: se fue la señal,
@@ -343,7 +351,10 @@ SRP.cola = {
     const [jornadas, arboles, cola] = await Promise.all(['jornadas', 'plantaciones', 'envios'].map(t => SRP.almacen.todosLocales(t)));
     const pendientes = new Set(cola.concat(this.ops).map(o => o.registro_id));
     const espera = id => pendientes.has(id);
-    const quedan = new Set(jornadas.filter(j => espera(j.id) || j.estatus === 'abierta' || !j.reporte_en).map(j => j.id));
+    // El cabo de apoyo guarda la jornada compartida mientras registra en ella: es de quien la coordina
+    const u = SRP.sesion.usuario;
+    const suya = j => !u || !SRP.permisos.soloDeApoyo(j, u.id) || (j.estatus === 'abierta' && SRP.permisos.apoyoVigente(j, u.id));
+    const quedan = new Set(jornadas.filter(j => espera(j.id) || ((j.estatus === 'abierta' || !j.reporte_en) && suya(j))).map(j => j.id));
     const fuera = {
       jornadas: jornadas.filter(j => !quedan.has(j.id)).map(j => j.id),
       plantaciones: arboles.filter(r => !espera(r.id) && !quedan.has(r.jornada_id)).map(r => r.id)

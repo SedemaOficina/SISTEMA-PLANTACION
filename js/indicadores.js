@@ -9,7 +9,7 @@
    - «Quién registró» es quien capturó cada árbol: en una jornada con relevo, cada cabo cuenta los
      suyos. Las jornadas, la meta y los pendientes son del titular.
    - Semana de lunes a domingo; mes y año de calendario; o un rango de fechas.
-   - Cada quien ve su alcance: el cabo lo suyo, la coordinación su cuadrilla y lo suyo, la
+   - Cada quien ve su alcance: el cabo lo suyo, la coordinación lo de su institución, la
      administración todo. Se calcula sobre lo que hay en este dispositivo.
    - Lo que plantan las alcaldías, PAOT, SOBSE y las empresas suma a las cifras de la Ciudad, y se
      desglosa por institución; el filtro de institución deja sólo la elegida.
@@ -88,13 +88,12 @@ SRP.indicadores = {
     return { jornadas, eliminados, ediciones, usuario: u, cabos: this.cabosAsignados(u), soloDe: SRP.permisos.de(u).alcance === 'propios' ? u.id : null };
   },
 
-  // Los cabos de quien entra: el propio cabo; los de la cuadrilla; los de su institución; todos los activos para quien ve la Ciudad
+  // Los cabos de quien entra: el propio cabo; los de su institución; todos los activos para quien ve la Ciudad
   cabosAsignados(u) {
     const alcance = SRP.permisos.de(u).alcance;
     if (alcance === 'propios') return [u.id];
     const cabos = SRP.ref.usuarios.filter(x => x.activo && x.perfil === 'CABO');
-    return (alcance === 'equipo' ? cabos.filter(x => (x.coordinadores_ids || []).includes(u.id))
-      : alcance === 'institucion' ? cabos.filter(x => x.organizacion_id === u.organizacion_id) : cabos).map(x => x.id);
+    return (alcance === 'institucion' ? cabos.filter(x => x.organizacion_id === u.organizacion_id) : cabos).map(x => x.id);
   },
 
   /* ---------- Cálculo ---------- */
