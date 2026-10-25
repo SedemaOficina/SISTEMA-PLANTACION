@@ -73,7 +73,6 @@
   --editar-fondo: #FFF4E0;
   --atencion-relleno: #F4A62A; /* punto por revisar: con número oscuro, 7.8:1 */
   --sustituto: #6B3FA0;        /* árbol que sustituye a uno perdido: morado, 7.6:1 con número blanco */
-  --sustituto-oscuro: #56328A;
   /* Colonias prioritarias: la paleta del modelo de priorización, de la prioridad muy baja (p0) a la muy alta (p4) */
   --p0: #F9E7BF; --p1: #F4C56E; --p2: #E88A2E; --p3: #C2421B; --p4: #7F1D12;
   --sustituto-fondo: #F1EAF8;
@@ -325,8 +324,8 @@ label svg, .encabezado-nombre svg { vertical-align: -0.2em; margin-right: var(--
 .btn-peligro { background: var(--error); color: var(--fondo); }
 .btn-exito { background: var(--exito); color: var(--fondo); }
 .btn-editar { background: var(--fondo); color: var(--texto); border-color: var(--borde-control); }   /* corregir: neutro con lápiz */
-/* Sustituir: relleno morado, el color del sustituto en el mapa; junto a «Editar» no se confunden */
-.btn-sustituir { background: var(--sustituto); color: var(--fondo); }
+/* Sustituir: contorno morado, el color del sustituto en el mapa; junto a «Editar» no se confunden y ninguno compite */
+.btn-sustituir { background: var(--fondo); color: var(--sustituto); border: 2px solid var(--sustituto); }
 /* Cancelar: rojo de contorno con tache; el rojo relleno queda para eliminar */
 .btn-cancelar, .btn-peligro-linea { background: var(--fondo); color: var(--error); border-color: var(--error); }
 /* Contorno por significado: confirmar en verde, eliminar en rojo, sin relleno para que
@@ -1505,7 +1504,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
   .menu-opcion:hover { background: var(--fondo-suave); outline: none; }
   /* El acento, no la guinda: al pasar el puntero, el botón principal seguía volviéndose guinda */
   .btn-primario:hover { background: var(--acento-oscuro); }
-  .btn-sustituir:hover { background: var(--sustituto-oscuro); }
+  .btn-sustituir:hover { background: var(--sustituto-fondo); }
   /* El nivel 3 toma el color de acento sólo al señalarlo: ahí ya no hay confusión posible,
      porque el puntero está encima y nada más cambia de color al mismo tiempo. */
   .btn-texto:hover, .desplegable summary:hover { color: var(--acento); }

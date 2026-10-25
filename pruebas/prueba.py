@@ -7506,7 +7506,7 @@ with sync_playwright() as p:
         b.onsuccess = () => { const t = b.result.transaction('plantaciones').objectStore('plantaciones').getAll();
           t.onsuccess = () => { const r = t.result.map(x => x.id + ':' + x.sitio_plantacion).sort(); b.result.close(); indexedDB.deleteDatabase(nombre); resolver(r); }; }; }; })""")
     ok(m99 == ['maceta:maceton', 'viejo:suelo'] and pg99.evaluate("SRP.CONFIG.DB_VERSION") == 11, 'la migración 11 deja en «Suelo» los árboles guardados antes y no toca los que ya lo dicen: %s' % m99)
-    # Detalle del registro: sin folio, con el sitio, y «Sustituir árbol» relleno de morado
+    # Detalle del registro: sin folio, con el sitio, y «Sustituir árbol» de contorno morado
     d99 = pg99.evaluate("""async id => { const r = await SRP.almacen.uno('plantaciones', id);
       SRP.app.mostrarVista('registros'); await SRP.registros.verDetalle(r);
       const c = document.getElementById('dlg-detalle-cuerpo'), filas = [...c.querySelectorAll('.revision-fila')].map(f => [f.querySelector('dt').textContent, f.querySelector('dd').textContent]);
@@ -7515,11 +7515,11 @@ with sync_playwright() as p:
       const visto = c.cloneNode(true); visto.querySelectorAll('.espejo').forEach(x => x.remove());
       return { primero: filas[0][0], etiquetas: filas.map(f => f[0]), sitio: (filas.find(f => f[0] === 'Sitio de plantación') || [])[1],
         folio: !!r.folio && visto.textContent.includes(r.folio), provisional: visto.querySelector('.folio-provisional') !== null,
-        sustituir: [b.hidden, getComputedStyle(b).backgroundColor, getComputedStyle(b).color], editar: getComputedStyle(e).backgroundColor }; }""", id99)
+        sustituir: [b.hidden, getComputedStyle(b).backgroundColor, getComputedStyle(b).color, getComputedStyle(b).borderTopColor], editar: getComputedStyle(e).backgroundColor }; }""", id99)
     ok(d99['primero'] == 'Especie' and 'Folio' not in d99['etiquetas'] and not d99['folio'] and not d99['provisional'] and d99['sitio'] == 'Macetón',
        'el detalle del registro no trae el folio, ni en el historial, y dice el sitio de plantación: %s' % d99['etiquetas'])
-    ok(d99['sustituir'] == [False, 'rgb(107, 63, 160)', 'rgb(255, 255, 255)'] and d99['editar'] == 'rgb(255, 255, 255)',
-       '«Sustituir árbol» va relleno de morado, el color del sustituto, y «Editar» sigue blanco: %s' % d99['sustituir'])
+    ok(d99['sustituir'] == [False, 'rgb(255, 255, 255)', 'rgb(107, 63, 160)', 'rgb(107, 63, 160)'] and d99['editar'] == 'rgb(255, 255, 255)',
+       '«Sustituir árbol» va de contorno morado, el color del sustituto, sin relleno, y «Editar» sigue blanco: %s' % d99['sustituir'])
     pg99.click('#btn-detalle-cerrar'); pg99.wait_for_timeout(200)
     # El sustituto llega con el sitio del árbol que reemplaza; la edición carga el del árbol y lo corrige
     t99 = pg99.evaluate("""async id => { const r = await SRP.almacen.uno('plantaciones', id);

@@ -6340,3 +6340,38 @@ primer arranque de cada teléfono; en los que ya lo habían apagado sigue apagad
 1.2 (un árbol en macetón y el cierre sin hora). Con la prueba aprobada se rehace la entrega al SIA con la 1.2: la
 base lleva una columna nueva; si el SIA hubiera instalado ya una versión anterior, la entrega llevaría además
 cómo agregarla.
+
+## Bloque 248 — «Sustituir árbol» de contorno morado (24-10-2026)
+
+**Versión 1.2.1.** Liber aclaró que el RP-04 pedía el morado en el borde del botón, no en el relleno que llevó la
+1.2. Eligió con la muestra del antes y el después (D329).
+
+| Qué | 1.1.1 | 1.2 | Ahora |
+|---|---|---|---|
+| «Sustituir árbol», en el pie del detalle | Blanco con contorno gris, igual que «Editar» | Relleno de morado, letra blanca | Blanco con contorno, letra e icono morados |
+
+**Qué cambió.**
+- `css/estilos.css`: `.btn-sustituir` con fondo blanco y borde de 2 px, letra e icono en el morado del sustituto;
+  al pasar el puntero, en computadora, el morado suave de la marca de sustituto. Sale `--sustituto-oscuro`, que
+  sólo usaba el relleno.
+- `index.html` (las marcas `?v=` pasan a 1.2.1), `VERSION`, `js/config.js` (etapa), `README.md` (versión),
+  `docs/MEJORAS.md` (M543), `docs/DECISIONES.md` (D329).
+- `pruebas/prueba.py`: la sección ctx99 pide ahora el fondo blanco, la letra morada y el borde morado.
+
+**Pantalla.**
+- Cambió: «Sustituir árbol» deja el relleno y queda de contorno morado. Lo demás del detalle se ve igual.
+
+**Verificación.**
+- Doce tramos de la prueba: los del detalle y la sustitución (41, 42, 43, 51, 52, 68, 72 y 82) y los que revisan
+  la versión, el trabajo sin señal y la búsqueda de la versión nueva (1, 35, 46 y 74): 854 de 855. La que falla es
+  la de siempre: la hoja «especies» contra el libro de `originales/`, que se volvió a guardar con otro orden. No se
+  corrió la prueba completa: el cambio es sólo de la hoja de estilos y de las marcas de versión.
+- El botón medido en el navegador, con el modo sol de inicio, a 390 y a 1280 px: fondo blanco, letra y borde
+  morados de 2 px. Las capturas, vistas a mano. El morado suave sólo sale con el puntero encima.
+- La revisión automática: 145 sin hallazgos; la hoja de estilos sin hallazgos; `revisar.py` sin problemas (sus
+  capturas se movieron a `_to_delete/b248-capturas-revisar/`).
+
+No se probó: en un teléfono de verdad, porque aquí no hay.
+
+**Siguiente paso.** Liber prueba la 1.2.1 en campo con la página «Prueba en campo SRP», que ya dice 1.2.1. Con la
+prueba aprobada se rehace la entrega al SIA con la 1.2.1.

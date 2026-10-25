@@ -4329,3 +4329,9 @@
   · **RP-12, el modo sol encendido desde el principio**, para leer a pleno sol. Si alguien lo apaga, se recuerda en
     ese teléfono, y quien ya lo había apagado lo sigue teniendo apagado.
   · Versión 1.2, porque la base cambia. La entrega al SIA se rehace con ella.
+- **D329. «Sustituir árbol» de contorno morado (bloque 248).**
+  24-10-2026. Liber aclaró que el RP-04 pedía el morado en el borde, no en el relleno que se puso en la 1.2 (D328).
+  Eligió con la muestra del antes y el después: fondo blanco, con el borde, la letra y el icono morados, como
+  «Cancelar» lleva el rojo. Es la regla de la aplicación para dos botones en la misma fila: junto a «Editar» se
+  distinguen y ninguno compite. Al pasar el puntero, en computadora, se llena del morado suave de la marca de
+  sustituto. Versión 1.2.1.

@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 1.2 (Bloque 247)»**.
+Al pie de cualquier pantalla: **«Versión 1.2.1 (Bloque 248)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -500,6 +500,7 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M503 | Paso 4d | «No se pudo enviar», en rojo, en la tarjeta del árbol y en la de la jornada, y en la franja «Guardado» | Media | 0.9.69 (B224) | Registros, Jornadas y Nuevo registro, con datos reales | D304 |
 | M504 | Paso 4d | Ventana «Cambios que el servidor no aceptó»: de qué registro es cada cambio, qué se cambió, por qué y qué hacer | Alta | 0.9.69 (B224) | Franja › Revisar | D304 |
 | M505 | Prueba de conexión | Al volver a la entrada se cierra cualquier ventana que hubiera quedado abierta | Media | 0.9.69 (B224) | Sesión vencida con una ventana abierta | D304 |
+| M543 | Liber (RP-04) | «Sustituir árbol» de contorno morado, sin relleno: lo pedido era el borde. Fondo blanco, con borde, letra e icono morados | Baja | 1.2.1 (B248) | Registros › un árbol › detalle: los dos botones del pie | D329 |
 | M542 | Prueba en campo (RP-12) | El modo sol (alto contraste) viene encendido; si se apaga, se recuerda en el teléfono | Media | 1.2 (B247) | Abrir la app en un teléfono donde nunca se tocó: se ve en alto contraste. Menú de la cuenta › Modo sol | D328 |
 | M541 | Prueba en campo (RP-09) | El informe, el CSV y el ZIP de fotografías llevan el nombre del cabo cuando son de uno solo | Media | 1.2 (B247) | Con la cuenta de un cabo: Mi avance › Informe PDF, Tabla CSV y Fotografías › Descargar todas: el archivo termina con su nombre | D328 |
 | M540 | Prueba en campo (RP-07) | Al cerrar con puntos por revisar, «Revisar los N puntos» lleva a cada uno y al final vuelve a preguntar si se cierra | Alta | 1.2 (B247) | Una jornada con dos árboles en el mismo punto › Cerrar jornada › Revisar los 2 puntos › «Está bien» en cada uno | D328 |
