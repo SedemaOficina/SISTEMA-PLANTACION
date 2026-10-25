@@ -4361,3 +4361,20 @@
     la copia.
   · **Entrega:** Liber eligió entregar la 1.2.1 en cuanto apruebe la prueba en campo, y la calle en la entrega siguiente.
   · Versión 1.3, porque la base cambia.
+- **D331. El GPS se escucha hasta 30 segundos (bloque 250).**
+  25-10-2026. En la prueba en campo, la precisión que dio cada teléfono fue: iPhone 17, ±7, 5 y 3 m; Motorola Edge 70,
+  ±8 y 12 m; Honor 400, ±25, 25 y 28 m; dos Redmi Note 13 Pro, ±23 y 28 m, y ±23, 28 y 30 m. El iPhone se cierra con cada
+  lectura, como un GPS que ya tomó satélites; el Honor y los Redmi se quedan en 23–30 m o empeoran, como una ubicación
+  por red. La aplicación dejaba de escuchar a los 8 s, contados desde que se toca el botón, y se quedaba con lo que
+  hubiera. Liber pidió ajustar ya lo que no dependa de repetir la prueba.
+  · **El GPS se escucha hasta 30 s** (`MAPA.GPS_AFINAR_MS`), y sigue parando en cuanto la precisión es buena, al revisar
+    o guardar, o si la persona pone el punto a mano. El punto aparece con la primera lectura y se puede guardar en
+    cualquier momento: con los teléfonos que ya dan ±10 m o menos no cambia nada. Mientras escucha, la franja dice
+    «Afinando la lectura del GPS, hasta 30 s. Mientras, puede llenar lo demás.», para que nadie se quede esperando.
+  · **Con precisión aceptable, el consejo dice cómo corregir:** «Revise en el mapa que el punto esté en el árbol; si no,
+    arrástrelo hasta él». Arrastrado, el punto queda como «ajustado», sin la precisión del GPS.
+  · **No se tocó:** los niveles de precisión (10 y 30 m): subirlos callaría el aviso, pero con ±25 m no se distingue un
+    árbol del de al lado. Tampoco la regla de duplicados del servidor (suma de las dos precisiones) ni la del punto de la
+    jornada (una sola lectura): se deciden con la segunda prueba y con datos reales.
+  · **Pendiente (M551):** una guía para el equipo con los ajustes del teléfono y la indicación de usar siempre Chrome.
+  · Versión 1.3.1. Va sobre la 1.3; la 1.2.1 que se entrega al SIA no lo lleva, salvo que se decida pasarlo.

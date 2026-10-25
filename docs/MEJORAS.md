@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-Al pie de cualquier pantalla: **«Versión 1.3 (Bloque 249)»**.
+Al pie de cualquier pantalla: **«Versión 1.3.1 (Bloque 250)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -500,6 +500,8 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M503 | Paso 4d | «No se pudo enviar», en rojo, en la tarjeta del árbol y en la de la jornada, y en la franja «Guardado» | Media | 0.9.69 (B224) | Registros, Jornadas y Nuevo registro, con datos reales | D304 |
 | M504 | Paso 4d | Ventana «Cambios que el servidor no aceptó»: de qué registro es cada cambio, qué se cambió, por qué y qué hacer | Alta | 0.9.69 (B224) | Franja › Revisar | D304 |
 | M505 | Prueba de conexión | Al volver a la entrada se cierra cualquier ventana que hubiera quedado abierta | Media | 0.9.69 (B224) | Sesión vencida con una ventana abierta | D304 |
+| M550 | Prueba en campo | Con precisión aceptable, el consejo bajo el mapa dice que el punto se arrastra hasta el árbol si no está en él | Media | 1.3.1 (B250) | Ubicar con ±20 m: «Revise en el mapa que el punto esté en el árbol; si no, arrástrelo hasta él» | D331 |
+| M549 | Prueba en campo | El GPS se escucha hasta 30 s, no 8, mientras la precisión no sea buena; la franja lo dice y avisa que mientras se puede llenar lo demás | Alta | 1.3.1 (B250) | Nuevo registro › Ubicar con un teléfono que tarda: «Afinando la lectura del GPS, hasta 30 s. Mientras, puede llenar lo demás.» | D331 |
 | M548 | Liber | En Pages, el servidor simulado pone la calle al enviar, con una copia ligera de la capa por celdas de unos 4 km; la demostración llega con calles | Media | 1.3 (B249) | En Pages: un árbol nuevo › Enviar › su detalle dice la calle | D330 |
 | M547 | Técnicos | La tabla para Excel suma la calle, entre qué calles, la red vial y quién atiende la calle | Media | 1.3 (B249) | Supervisión › Tabla CSV | D330 |
 | M546 | Técnicos | «Por red vial» en el informe y en Supervisión: cuántos árboles en vialidades primarias, calles secundarias y carreteras, con quién atiende cada red, y una tabla de cada red con entre qué calles quedaron | Alta | 1.3 (B249) | Supervisión › Por calle; Informe en PDF | D330 |
@@ -553,6 +555,7 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M168 | Auditoría 360 | Bloque «Publicación ligera», lo que queda: capas con su propia versión (que no se vuelvan a descargar con cada versión de la app) y aligeradas; licencia del mapa base (M2, M4) | Media | Pendiente | Decisiones 3 y 5 de la lista del 26-09-2026. Originales y jsPDF, hechos en B102 |
 | M170 | Auditoría 360 | Bloque «Pruebas en iPhone»: GitHub Actions con Chromium y WebKit, pruebas de migración e integridad (M17, M18) | Media | En curso | Desde la 1.0.5 (B240, D320) las pruebas corren en GitHub en cada subida, con Chromium. Falta WebKit |
 | M343 | Liber | Catálogo de especies: marcar cuáles son frutales, para filtrar y contar los árboles frutales plantados | Media | En curso | La marca y el filtro, hechos en B179 (M446 a M448). Falta contar los árboles con fruto comestible en Supervisión e informes |
+| M551 | Prueba en campo | Guía para el equipo: el teléfono listo para el GPS y la app siempre en Chrome. En Android: «Precisión de la ubicación de Google» activada; Chrome con la ubicación «Precisa»; en Xiaomi, Chrome «Sin restricciones» de batería; en Honor, Chrome a mano en «Inicio de aplicaciones»; abrir Google Maps unos 30 s antes del primer árbol para que encuentre los satélites. En iPhone, Chrome con «Ubicación exacta» | Alta | Pendiente | Pedida por Liber el 25-10-2026, tras las lecturas de la prueba en campo (Honor y Redmi en ±23–30 m; D331). Falta elegir el formato y probar los pasos en un Xiaomi y un Honor |
 | M532 | Liber | «Entradas» en Configuración: quién entró, cuándo y desde qué equipo, los intentos fallidos y los bloqueos; y la última actividad de cada cuenta en Usuarios (en la computadora, en la columna «Estado», que pasa a «Actividad») | Media | Después del piloto | Muestras del 22-10-2026 en `servidor/local/muestras-entradas/`, fuera de git. Los datos ya los guarda el servidor; falta la consulta y la pantalla. Sería una versión posterior a la 1.2 (D325) |
 
 ## 3. Verificadas sin falla

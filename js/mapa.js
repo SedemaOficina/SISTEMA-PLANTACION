@@ -278,17 +278,18 @@ SRP.mapa = {
   nivelPrecision(m) {
     const c = SRP.CONFIG.MAPA;
     if (m <= c.PRECISION_BUENA_M) return { nivel: 'buena', texto: 'Precisión buena', consejo: '' };
-    if (m <= c.PRECISION_ACEPTABLE_M) return { nivel: 'aceptable', texto: 'Precisión aceptable', consejo: 'Revise en el mapa que el punto esté en el árbol.' };
+    if (m <= c.PRECISION_ACEPTABLE_M) return { nivel: 'aceptable', texto: 'Precisión aceptable', consejo: 'Revise en el mapa que el punto esté en el árbol; si no, arrástrelo hasta él.' };
     return { nivel: 'baja', texto: 'Precisión baja', consejo: 'Espere unos segundos al aire libre y vuelva a ubicar o arrastre el punto hasta el árbol.' };
   },
 
   // La franja bajo el mapa con la insignia de precisión y el círculo del margen sobre el mapa.
-  // Mientras el GPS se sigue escuchando, lo dice en lugar del consejo
+  // Mientras el GPS se sigue escuchando, lo dice en lugar del consejo, con su tope: no hace falta esperarlo
   mostrarPrecision(m) {
     const n = this.nivelPrecision(m);
     const p = document.getElementById('mapa-estado');
     p.dataset.tipo = 'normal';
-    const consejo = this.vigilancia != null ? 'Afinando la lectura del GPS unos segundos…' : n.consejo;
+    const consejo = this.vigilancia != null
+      ? 'Afinando la lectura del GPS, hasta ' + Math.round(SRP.CONFIG.MAPA.GPS_AFINAR_MS / 1000) + ' s. Mientras, puede llenar lo demás.' : n.consejo;
     p.innerHTML = '<span class="precision" data-nivel="' + n.nivel + '"><span class="precision-punto" aria-hidden="true"></span>' +
       n.texto + ' · ±' + Math.round(m) + ' m</span>' + (consejo ? ' <span class="precision-consejo">' + consejo + '</span>' : '');
     this.dibujarMargen(m, n.nivel);

@@ -2367,7 +2367,7 @@
     {
       "id": "R-P13",
       "tabla": "plantaciones",
-      "regla": "El GPS se escucha hasta GPS_AFINAR_MS (8 s) y el punto queda con la lectura más precisa; se detiene al llegar a precisión buena, al revisar o guardar, o si la persona coloca el punto a mano",
+      "regla": "El GPS se escucha hasta GPS_AFINAR_MS (30 s) y el punto queda con la lectura más precisa; se detiene al llegar a precisión buena, al revisar o guardar, o si la persona coloca el punto a mano",
       "donde": "js/mapa.js ubicar(), detenerAfinado()"
     },
     {

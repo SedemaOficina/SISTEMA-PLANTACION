@@ -2372,7 +2372,8 @@ with sync_playwright() as p:
     # El GPS se sigue escuchando y se queda con la mejor lectura
     pg12.click('#btn-ubicacion'); pg12.wait_for_timeout(700)
     g1=pg12.evaluate("[SRP.mapa.precision, SRP.mapa.vigilancia != null, document.getElementById('mapa-estado').textContent]")
-    ok(g1[0]==60 and g1[1] and 'Afinando' in g1[2],'con ±60 m el punto aparece y el GPS se sigue escuchando unos segundos: %s' % g1[2])
+    ok(g1[0]==60 and g1[1] and 'Afinando la lectura del GPS, hasta 30 s. Mientras, puede llenar lo demás.' in g1[2],
+       'con ±60 m el punto aparece y el GPS se sigue escuchando hasta 30 s, sin pedir que se espere: %s' % g1[2])
     ctx12.set_geolocation({'latitude':19.4330,'longitude':-99.1336,'accuracy':8}); pg12.wait_for_timeout(800)
     g2=pg12.evaluate("[SRP.mapa.lat, SRP.mapa.precision, SRP.mapa.vigilancia != null]")
     ok(g2==[19.433,8,False],'una lectura mejor mueve el punto y, al llegar a precisión buena, deja de escuchar: %s' % g2)
@@ -2398,6 +2399,10 @@ with sync_playwright() as p:
     ok('fuera del límite' in pg12.inner_text('#mapa-aviso') and 'Tlalpan' in pg12.inner_text('#mapa-aviso') and pg12.inner_text('#dato-alcaldia')=='Tlalpan','un árbol junto al límite dice que toma la alcaldía más cercana')
     pg12.evaluate("SRP.mapa.colocar(19.4326, -99.1332, 'x', { origen: 'gps', precision: 6 })"); pg12.wait_for_timeout(150)
     ok('fuera del límite' not in pg12.inner_text('#mapa-aviso'),'y el aviso se va cuando el punto vuelve a la ciudad (el de la imagen, si la hay, se queda)')
+    # Con precisión aceptable, el consejo dice cómo se corrige el punto
+    pg12.evaluate("SRP.mapa.colocar(19.4326, -99.1332, 'x', { origen: 'gps', precision: 20 })"); pg12.wait_for_timeout(150)
+    ok('si no, arrástrelo hasta él' in pg12.inner_text('#mapa-estado'),'con precisión aceptable, el consejo dice que el punto se arrastra hasta el árbol: '+pg12.inner_text('#mapa-estado'))
+    pg12.evaluate("SRP.mapa.colocar(19.4326, -99.1332, 'x', { origen: 'gps', precision: 6 })"); pg12.wait_for_timeout(150)
     # Créditos completos en todos los mapas
     cred=pg12.inner_text('#mapa .leaflet-control-attribution')
     ok('Powered by Esri' in cred and 'Vantor' in cred and 'OpenStreetMap' in cred and 'Maxar' not in cred,'el mapa de captura acredita a Esri («Powered by Esri»), Vantor y OpenStreetMap: '+cred)

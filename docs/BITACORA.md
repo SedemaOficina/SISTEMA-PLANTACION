@@ -6438,3 +6438,41 @@ No se probó: en un teléfono de verdad, ni con la capa instalada en el SIA (no 
 
 **Siguiente paso.** Liber prueba en campo; con la prueba aprobada se entrega la 1.2.1 al SIA, y después la 1.3 con la
 calle. Antes de instalar la 1.3, el SIA instala la capa de calles, o se corre `srp.recalcular_calles()` cuando la instale.
+
+## Bloque 250 — El GPS se escucha hasta 30 segundos (25-10-2026)
+
+**Versión 1.3.1.** En la prueba en campo, el Honor 400 y los dos Redmi Note 13 Pro se quedaron en ±23–30 m sin mejorar,
+mientras el iPhone 17 llegó a ±3 m y el Motorola Edge 70 a ±8 m. Liber pidió el diagnóstico y después ajustar lo que no
+dependa de repetir la prueba (D331).
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| Escucha del GPS al ubicar el árbol | Hasta 8 s desde que se toca el botón | Hasta 30 s; sigue parando al llegar a precisión buena, al revisar o guardar, o al poner el punto a mano |
+| Franja mientras escucha | «Afinando la lectura del GPS unos segundos…» | «Afinando la lectura del GPS, hasta 30 s. Mientras, puede llenar lo demás.» |
+| Consejo con precisión aceptable | «Revise en el mapa que el punto esté en el árbol.» | «… ; si no, arrástrelo hasta él.» |
+
+**Qué cambió.**
+- `js/config.js`: `MAPA.GPS_AFINAR_MS` de 8000 a 30000, con el porqué.
+- `js/mapa.js`: el texto de la franja mientras se afina (toma el tope de la configuración) y el consejo de la precisión
+  aceptable.
+- `datos/esquema.json`: la regla R-P13 dice 30 s; de ahí se regeneró `datos/DICCIONARIO-DATOS.md`.
+- `pruebas/prueba.py`: la prueba del afinado lee el texto nuevo; una nueva, el consejo de la precisión aceptable.
+- `docs/DECISIONES.md` (D331), `docs/MEJORAS.md` (M549 y M550 hechas; M551 por hacer: la guía de ajustes del teléfono
+  para el equipo, con la indicación de usar siempre Chrome). Las marcas de versión, a 1.3.1.
+
+**No se tocó**, a propósito: los niveles de precisión (10 y 30 m), la regla de duplicados del servidor y el punto de la
+jornada. Se deciden con la segunda prueba en campo y con datos reales.
+
+**Verificación.**
+- La prueba por tramos, los dos que tocan esto: el recorrido inicial (con la ficha de revisión que se abre con ±40 m y
+  las marcas de versión) y «Territorio confiable» (el afinado y el consejo nuevo): 674 de 674, sin fallas. No se corrió
+  la prueba completa: el cambio es de un tiempo, dos textos y las marcas de versión.
+- La revisión automática: 147 sin hallazgos.
+- La franja medida en el navegador a 360 y 390 px, con ±25 m: el texto del afinado y el consejo caben en dos renglones,
+  con la misma altura que antes. Las capturas, vistas a mano.
+
+No se probó: en un teléfono de verdad, ni si 30 s le bastan al Honor y a los Redmi para tomar satélites. Eso lo dice la
+segunda prueba en campo.
+
+**Siguiente paso.** La segunda prueba en campo, con el protocolo de lecturas a los 5, 15, 30 y 60 s en un punto conocido.
+La guía de ajustes del teléfono para el equipo queda por hacer (M551).

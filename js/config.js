@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 249',
+  ETAPA: 'Bloque 250',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -121,8 +121,11 @@ SRP.CONFIG = {
     ],
     CREDITO_PROVEEDOR: 'Powered by Esri',
     GPS_ESPERA_MS: 15000,
-    // El GPS se escucha hasta este tiempo y se queda con la mejor lectura; para antes si llega a «buena»
-    GPS_AFINAR_MS: 8000,
+    /* El GPS se escucha hasta este tiempo, contado desde que se toca el botón, y se queda con la mejor
+       lectura; para antes si llega a «buena». Eran 8 s: en la prueba en campo (25-10-2026) tres Android se
+       quedaron en ±23–30 m sin mejorar. Un teléfono que aún no toma satélites da primero la ubicación por
+       red y puede tardar medio minuto en afinar. El punto ya está puesto y se puede guardar en cualquier momento. */
+    GPS_AFINAR_MS: 30000,
     // Colocar el punto tocando el mapa pide este acercamiento o más: a zoom 12 un toque abarca ~36 m
     ZOOM_TOQUE: 17,
     /* Niveles de la precisión del GPS que se muestran junto al mapa. Con ±10 m el punto cae
