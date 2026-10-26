@@ -28,7 +28,7 @@ SRP.jornadas = {
   /* Filtros. La fecha se elige con los atajos (Todas, Hoy, Un día, Un periodo); el mes y el año son
      periodos rápidos dentro de «Un periodo». Las listas viven plegadas en «Más filtros». Al entrar se
      ven todas. */
-  filtro: { texto: '', revision: '', dia: '', desde: '', hasta: '', cabo: '', programa: '', alcaldia: '', organizacion: '' },
+  filtro: { texto: '', revision: '', dia: '', desde: '', hasta: '', cabo: '', compartida: '', programa: '', alcaldia: '', organizacion: '' },
   // «Pendientes»: lo que le falta a cada jornada. El reporte es de una jornada cerrada con árboles
   REVISION: { pendiente: 'Con algo por atender', revisar: 'Con puntos por revisar', cuadra: 'No cuadran con lo previsto', sinreporte: 'Sin reporte todavía', lista: 'Sin pendientes' },
   diaAbierto: false,
@@ -73,6 +73,7 @@ SRP.jornadas = {
       this.filtro.cabo = this.el('jornada-cabo').value;
       this.pintarLista();
     });
+    this.el('jornada-compartida').addEventListener('change', (e) => { this.filtro.compartida = e.target.value; this.pintarLista(); });
     this.el('jornada-alcaldia').addEventListener('change', (e) => { this.filtro.alcaldia = e.target.value; this.pintarLista(); });
     this.el('jornada-programa').addEventListener('change', (e) => { this.filtro.programa = e.target.value; this.pintarLista(); });
     // «Quitar filtros» deja la lista como al entrar; cada ficha quita lo suyo
@@ -469,7 +470,7 @@ SRP.jornadas = {
 
   quitarFiltros(avisar) {
     const antes = Object.assign({}, this.filtro), dia = this.diaAbierto, per = this.periodoAbierto;
-    Object.assign(this.filtro, { texto: '', revision: '', cabo: '', programa: '', alcaldia: '', organizacion: '' });
+    Object.assign(this.filtro, { texto: '', revision: '', cabo: '', compartida: '', programa: '', alcaldia: '', organizacion: '' });
     this.el('jornada-buscar').value = ''; this.el('jornada-revision').value = '';
     this.aplicarAtajo('todas');
     if (avisar) SRP.util.anunciar('Filtros quitados: todas las jornadas.', 'exito', { deshacer: () => {
@@ -488,6 +489,7 @@ SRP.jornadas = {
     const periodo = SRP.util.textoPeriodo(f);
     if (periodo) salida.push(['periodo', periodo]);
     if (f.cabo) salida.push(['cabo', 'Registró: ' + SRP.ref.nombreUsuario(f.cabo)]);
+    if (f.compartida) salida.push(['compartida', this.fichaCompartida(f.compartida)]);
     if (f.programa) salida.push(['programa', 'Programa: ' + SRP.ref.nombreCatalogo(f.programa)]);
     if (f.alcaldia) salida.push(['alcaldia', 'Alcaldía: ' + f.alcaldia]);
     if (f.organizacion) salida.push(['institucion', 'Institución: ' + SRP.ref.nombreOrganizacion(f.organizacion)]);
@@ -504,9 +506,9 @@ SRP.jornadas = {
     // El resumen del acordeón dice qué hay elegido dentro, aunque esté plegado
     const conCabo = !this.el('caja-jornada-cabo').hidden, conOrg = !this.el('caja-jornada-org').hidden;
     this.el('jornada-mas-filtros').hidden = false;
-    const dentro = [f.cabo ? SRP.ref.nombreUsuario(f.cabo) : '', f.programa ? SRP.ref.nombreCatalogo(f.programa) : '',
+    const dentro = [f.cabo ? SRP.ref.nombreUsuario(f.cabo) : '', f.compartida ? this.COMPARTIDA[f.compartida].toLowerCase() : '', f.programa ? SRP.ref.nombreCatalogo(f.programa) : '',
       f.alcaldia, f.organizacion ? SRP.ref.nombreOrganizacion(f.organizacion) : ''].filter(Boolean);
-    const disponibles = [conCabo ? 'quién registró' : '', 'programa', 'alcaldía', conOrg ? 'institución' : ''].filter(Boolean);
+    const disponibles = [conCabo ? 'quién registró' : '', 'tipo de jornada', 'programa', 'alcaldía', conOrg ? 'institución' : ''].filter(Boolean);
     this.el('jornada-mas-filtros-texto').textContent = 'Más filtros: ' + (dentro.length ? dentro.join(' · ') : SRP.util.enumerar(disponibles));
     const fichas = this.fichas();
     SRP.util.pintarFichas(this.el('jornada-fichas'), fichas);
@@ -548,13 +550,14 @@ SRP.jornadas = {
   /* Alcaldía, para todos; institución, sólo para quien ve más de una. Las listas traen sólo lo que hay en las jornadas que se ven. */
   llenarListas() {
     const f = this.filtro, ver = SRP.permisos.de(SRP.sesion.usuario).alcance === 'todos';
-    const valores = { cabo: j => j.personas || [j.cabo_id], programa: j => j.dato && j.dato.programa_id, alcaldia: j => this.alcaldiasFiltro(j), organizacion: j => this.orgDe(j) };
+    const valores = { cabo: j => j.personas || [j.cabo_id], compartida: j => this.siCompartida(j.dato), programa: j => j.dato && j.dato.programa_id, alcaldia: j => this.alcaldiasFiltro(j), organizacion: j => this.orgDe(j) };
     if (!ver) { delete valores.organizacion; f.organizacion = ''; }
     const fac = SRP.util.facetas(this._todas, (j, ex) => this.cumpleListas(j, ex), valores);
     if (!this.el('caja-jornada-cabo').hidden) {
       this.el('jornada-cabo').innerHTML = SRP.util.opciones('Todos', SRP.util.paresPersonas([...fac.cabo].concat(f.cabo || [])));
       this.el('jornada-cabo').value = f.cabo;
     }
+    this.llenarCompartida(this.el('jornada-compartida'), fac.compartida, f);
     SRP.util.llenarLista(this.el('jornada-programa'), 'Todos', [...fac.programa].map(id => [id, SRP.ref.nombreCatalogo(id)]), f, 'programa', id => SRP.ref.nombreCatalogo(id));
     SRP.util.llenarLista(this.el('jornada-alcaldia'), 'Todas', [...fac.alcaldia].map(a => [a, a]), f, 'alcaldia');
     this.el('caja-jornada-org').hidden = !ver;
@@ -565,6 +568,7 @@ SRP.jornadas = {
   cumpleListas(j, excluir) {
     const f = this.filtro, x = k => !excluir || !excluir.has(k);
     return (!f.cabo || !x('cabo') || (j.personas || [j.cabo_id]).includes(f.cabo)) &&
+      (!f.compartida || !x('compartida') || this.siCompartida(j.dato) === f.compartida) &&
       (!f.programa || !x('programa') || (j.dato && j.dato.programa_id) === f.programa) &&
       (!f.alcaldia || !x('alcaldia') || this.alcaldiasFiltro(j).includes(f.alcaldia)) &&
       (!f.organizacion || !x('organizacion') || this.orgDe(j) === f.organizacion);
@@ -636,6 +640,7 @@ SRP.jornadas = {
       const abierta = j.estatus === 'abierta';
       const generado = (guardada || j.dato || {}).reporte_en;
       const relevo = guardada && guardada.relevo_id && guardada.relevo_id !== j.cabo_id ? guardada.relevo_id : '';
+      const compartida = this.compartida(guardada);
       const lugar = this.lugarDe(j);
       const ubic = (j.dato && j.dato.ubicacion) || '';
       const programa = (guardada || j.dato || {}).programa_id;
@@ -667,8 +672,9 @@ SRP.jornadas = {
         (!abierta && n && generado ? '<span class="jornada-reporte insignia-reporte">' + SRP.ICONOS.svg('reportes', 'chico') + '<span>Reporte: ' + esc(this.cuandoCorto(generado)) + '</span></span>' : '') + '</span>' +
         (lugar || ubic ? '<span class="jornada-lugar">' + SRP.ICONOS.svg('ubicacion', 'chico') + '<span>' + [esc(lugar), SRP.prioritarias.marca(j.prioridad),
           ubic ? '<span class="jornada-ubic">' + esc(ubic) + '</span>' : ''].filter(Boolean).join(' · ') + '</span></span>' : '') +
-        (programa || variosAutores || relevo ? '<span class="jornada-cabo">' + (programa ? '<span class="jornada-programa">' + esc(SRP.ref.nombreCatalogo(programa)) + '</span>' : '') +
-          (variosAutores || relevo ? (programa ? ' · ' : '') + '<b>' + esc(SRP.ref.nombreUsuario(j.cabo_id)) + '</b>' + (relevo ? ' · relevo: ' + esc(SRP.ref.nombreUsuario(relevo)) : '') : '') + '</span>' : '') +
+        (programa || variosAutores || relevo || compartida ? '<span class="jornada-cabo">' + (programa ? '<span class="jornada-programa">' + esc(SRP.ref.nombreCatalogo(programa)) + '</span>' : '') +
+          (variosAutores || relevo || compartida ? (programa ? ' · ' : '') + '<b>' + esc(SRP.ref.nombreUsuario(j.cabo_id)) + '</b>' + (relevo ? ' · relevo: ' + esc(SRP.ref.nombreUsuario(relevo)) : '') : '') +
+          (compartida ? ' · ' + esc(this.textoCompartida(guardada)) : '') + '</span>' : '') +
         (SRP.solicitud.es(guardada) ? '<span class="jornada-solicitud">' + SRP.solicitud.insignia(guardada) + '</span>' : '') +
         (marcas.length ? '<span class="jornada-marcas">' + marcas.join('') + '</span>' : '') +
         '</button></li>');
@@ -684,7 +690,7 @@ SRP.jornadas = {
     const vacio = this.el('jornadas-vacio');
     vacio.hidden = n > 0;
     // Estado vacío con salida
-    const filtrado = f.texto || f.revision || f.dia || f.desde || f.hasta || f.cabo || f.programa || f.alcaldia || f.organizacion;
+    const filtrado = f.texto || f.revision || f.dia || f.desde || f.hasta || f.cabo || f.compartida || f.programa || f.alcaldia || f.organizacion;
     const REVISION = { pendiente: 'con algo por atender', revisar: 'con puntos por revisar', cuadra: 'que no cuadren con lo previsto', sinreporte: 'sin reporte', lista: 'sin pendientes' };
     const puedeRegistrar = SRP.permisos.de(u).registrar;
     if (!n) vacio.innerHTML = filtrado
@@ -1385,16 +1391,35 @@ SRP.jornadas = {
   // Una jornada compartida: alguna vez tuvo cabos de apoyo
   compartida(j) { return !!j && (j.cabos_apoyo || []).length > 0; },
 
+  // El filtro «Tipo de jornada» de Registros, Jornadas, Supervisión y Fotografías
+  COMPARTIDA: { si: 'Compartidas', no: 'No compartidas' },
+  siCompartida(j) { return this.compartida(j) ? 'si' : 'no'; },
+  fichaCompartida(v) { return v === 'si' ? 'Jornadas compartidas' : 'Jornadas no compartidas'; },
+  // Como las demás listas, ofrece sólo lo que hay; lo elegido se queda aunque ya no tenga resultados
+  llenarCompartida(sel, hay, f) {
+    const valores = Object.keys(this.COMPARTIDA).filter(v => hay.has(v) || f.compartida === v);
+    sel.innerHTML = SRP.util.opciones('Todas', valores.map(v => [v, this.COMPARTIDA[v]]));
+    sel.value = f.compartida || '';
+  },
+
   // «Cabos de apoyo: Marisol Pérez, Julián Ortega (terminó)». Los que se quitaron ya no se dicen
   textoApoyos(j) {
     const lista = (j.cabos_apoyo || []).filter(a => a.fin !== 'quitado').map(a => SRP.ref.nombreUsuario(a.cabo_id) + (a.fin === 'terminado' ? ' (terminó)' : ''));
     return 'Cabos de apoyo: ' + (lista.length ? lista.join(', ') : 'ninguno por ahora');
   },
 
+  // En la tarjeta: «compartida con 3 cabos», sin contar a los que se quitaron
+  textoCompartida(j) {
+    const n = (j.cabos_apoyo || []).filter(a => a.fin !== 'quitado').length;
+    return n ? 'compartida con ' + n + (n === 1 ? ' cabo' : ' cabos') : 'compartida';
+  },
+
   /* La ventana: los cabos activos de la institución de la jornada, uno por renglón, con los vigentes marcados. Los
-     que terminaron su parte salen sin marcar y lo dicen: marcarlos otra vez los deja registrar de nuevo. */
-  abrirApoyos() {
-    const c = this.guardada; if (!c || !SRP.permisos.exigir('jornada.compartir', c)) return;
+     que terminaron su parte salen sin marcar y lo dicen: marcarlos otra vez los deja registrar de nuevo. Se abre
+     desde la ficha de la jornada o, con la jornada `c`, desde la franja de la jornada activa. */
+  abrirApoyos(c) {
+    c = c || this.guardada; if (!c || !SRP.permisos.exigir('jornada.compartir', c)) return;
+    this.apoyosDe = c;
     const esc = SRP.util.escapar, vigentes = SRP.permisos.vigentes(c);
     const terminados = new Set((c.cabos_apoyo || []).filter(a => a.fin === 'terminado').map(a => a.cabo_id));
     const cabos = this.cabosDeLaInstitucion(c);
@@ -1415,17 +1440,16 @@ SRP.jornadas = {
     this.el('btn-apoyos-guardar').innerHTML = SRP.ICONOS.svg('palomita', 'medio') + '<span>' + (n ? 'Guardar: ' + n + (n === 1 ? ' cabo de apoyo' : ' cabos de apoyo') : 'Guardar: sin cabos de apoyo') + '</span>';
   },
 
-  /* Guarda los cabos marcados. Al que entra se le anota desde cuándo y quién lo puso; al que sale, hasta cuándo y
-     que lo quitaron; uno que vuelve queda vigente otra vez. Al servidor viaja lo que cambió (js/cola.js), no la
-     lista entera: si mientras tanto un cabo terminó su parte, eso no se deshace. */
-  async compartir(ids) {
-    const c = await this.jornadaGuardada(this.jornada); if (!c) return;
-    if (!SRP.permisos.exigir('jornada.compartir', c)) return;
+  /* Guarda en la jornada `c` los cabos de apoyo `ids`. Al que entra se le anota desde cuándo y quién lo puso; al que
+     sale, hasta cuándo y que lo quitaron; uno que vuelve queda vigente otra vez. Al servidor viaja lo que cambió
+     (js/cola.js), no la lista entera: si mientras tanto un cabo terminó su parte, eso no se deshace. Devuelve la
+     jornada como quedó, o null si no cambió nada. La usan la ventana y «Iniciar jornada compartida». */
+  async guardarApoyos(c, ids) {
     const validos = new Set(this.cabosDeLaInstitucion(c).map(x => x.id));
     const vigentes = SRP.permisos.vigentes(c);
     const agregar = ids.filter(id => validos.has(id) && !vigentes.includes(id));
     const quitar = vigentes.filter(id => !ids.includes(id));
-    if (!agregar.length && !quitar.length) { this.el('dlg-apoyos').close(); return; }
+    if (!agregar.length && !quitar.length) return null;
     const u = SRP.sesion.usuario, ahora = SRP.util.ahoraISO(), lista = c.cabos_apoyo || [];
     const nueva = lista.map(a => (agregar.includes(a.cabo_id) ? { cabo_id: a.cabo_id, desde: ahora, por_id: u.id, hasta: null, fin: null }
       : quitar.includes(a.cabo_id) ? Object.assign({}, a, { hasta: ahora, fin: 'quitado' }) : a));
@@ -1436,9 +1460,18 @@ SRP.jornadas = {
       [agregar.length ? 'Agrega: ' + nombres(agregar) : '', quitar.length ? 'Quita: ' + nombres(quitar) : ''].filter(Boolean).join('; ')), 'jornada.compartir');
     if (SRP.activa.jornada && SRP.activa.jornada.id === c.id) SRP.activa.jornada = dato;
     if (SRP.envio.simulado()) SRP.envio.enviar({ silencioso: true });
+    return dato;
+  },
+
+  // «Guardar» de la ventana: desde la franja se repinta la jornada activa; desde la ficha, la ficha
+  async compartir(ids) {
+    const c = this.apoyosDe && ((await SRP.almacen.uno('jornadas', this.apoyosDe.id)) || this.apoyosDe); if (!c) return;
+    if (!SRP.permisos.exigir('jornada.compartir', c)) return;
+    const dato = await this.guardarApoyos(c, ids);
     this.el('dlg-apoyos').close();
-    this.volverAlDetalle = true; this.actual = c.id;
-    await this.refrescar();
+    if (!dato) return;
+    if (SRP.app.vista === 'registrar') await SRP.activa.preparar();
+    else { this.volverAlDetalle = true; this.actual = c.id; await this.refrescar(); }
     const n = SRP.permisos.vigentes(dato).length;
     SRP.util.anunciar(n ? 'Jornada compartida: ' + n + (n === 1 ? ' cabo de apoyo registra' : ' cabos de apoyo registran') + ' en «' + c.nombre + '». Les llega a su teléfono la próxima vez que tengan señal.'
       : 'La jornada «' + c.nombre + '» ya no tiene cabos de apoyo vigentes.', 'exito');

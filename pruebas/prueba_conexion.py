@@ -1361,6 +1361,23 @@ def main():
                'su árbol llega a su nombre, «Terminar mi parte» llega al servidor y la jornada sale de su teléfono: %s' % s)
             c = pgC.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); const x = await SRP.activa.confirmacionCierre(j); return [x.puntos, (await SRP.activa.registrosDe(await SRP.almacen.uno('jornadas', id))).length]; }", jc)
             ok(not any('no ha terminado su parte' in p for p in c[0]) and c[1] == 1, 'al cerrar, la Coordinación trae la jornada al día: el cabo ya terminó y su árbol está: %s' % c)
+            # Desde el formulario y sin señal, la jornada nace compartida: al volver la señal salen su alta y su cabo de apoyo, en orden
+            ctxC.route('**/api/srp/**', lambda r: r.abort())
+            pgC.evaluate("SRP.app.mostrarVista('registrar')"); pgC.wait_for_timeout(500)
+            if pgC.is_hidden('#panel-iniciar-jornada'):
+                pgC.click('#btn-jornada-cambiar'); pgC.wait_for_timeout(200); pgC.click('#btn-cambiar-nueva'); pgC.wait_for_timeout(300)
+            pgC.fill('#ini-nombre', 'Compartida desde el formulario'); pgC.fill('#ini-fecha', HOY); pgC.select_option('#ini-programa', 'p-refor'); pgC.fill('#ini-meta', '10')
+            pgC.click('#btn-ini-detectar'); pgC.wait_for_timeout(900)
+            pgC.click('#ini-quien .chip[data-quien="varios"]'); pgC.click('#ini-apoyos .chip[data-id="%s"]' % APOYO['id'])
+            pgC.click('#btn-iniciar-jornada'); pgC.wait_for_timeout(800)
+            jf = pgC.evaluate("SRP.activa.jornada && SRP.activa.jornada.id")
+            enCola = pgC.evaluate("id => SRP.cola.de(id).map(o => o.tipo + (o.agregar ? ' ' + o.agregar.length : ''))", jf)
+            ctxC.unroute('**/api/srp/**')
+            pgC.evaluate("() => SRP.envio.enviar({ manual: true })")
+            esperar_cola(pgC)
+            sf = apoyo('apoyos', {'id': jf})
+            ok(enCola == ['jornada.crear', 'jornada.compartir 1'] and sf['apoyos'] == [[APOYO['id'], None]] and pgC.is_visible('#btn-franja-apoyos'),
+               'desde el formulario y sin señal, la jornada nace compartida: al volver la señal llegan su alta y su cabo de apoyo, en orden: %s' % [enCola, sf['apoyos']])
             ok(not errC and not errA, 'sin errores en los dos teléfonos: %s' % (errC + errA)[:2])
             ctxC.close(); ctxA.close()
 

@@ -101,7 +101,9 @@ def fecha_correcta(pg):
 
 def iniciar_jornada(pg, nombre, fecha=None, comentarios='', programa='p-refor'):
     """Declara una jornada desde Nuevo registro. Si ya hay una activa, abre otra con «Cambiar de jornada»."""
-    if not pg.is_visible('#vista-registrar'): pg.evaluate("SRP.app.mostrarVista('registrar')"); pg.wait_for_timeout(400)
+    if not pg.is_visible('#vista-registrar'): pg.evaluate("SRP.app.mostrarVista('registrar')")
+    # Con muchos datos Nuevo registro tarda en prepararse: se espera a que esté listo, no un tiempo fijo
+    pg.wait_for_function("() => !document.getElementById('panel-iniciar-jornada').hidden || !document.getElementById('franja-jornada').hidden", timeout=20000)
     if pg.is_hidden('#panel-iniciar-jornada'):
         pg.click('#btn-jornada-cambiar'); pg.wait_for_timeout(200); pg.click('#btn-cambiar-nueva'); pg.wait_for_timeout(300)
     pg.fill('#ini-nombre', nombre); pg.fill('#ini-fecha', fecha or HOY)
@@ -993,7 +995,7 @@ with sync_playwright() as p:
     pg.keyboard.press('Escape'); pg.evaluate("SRP.app.menuCuenta(false)"); pg.wait_for_timeout(150)
     ok(pg.evaluate("(() => { const b=document.querySelector('#navegacion [data-vista=jornadas]'); const r=b.getBoundingClientRect(); return r.top > 700 && r.bottom <= 844; })()"),'y en teléfono va en la barra de abajo')
     ok([c for c in pg.eval_on_selector_all('#jornada-atajos .chip','b=>b.map(x=>x.dataset.atajo)')]==['todas','hoy','dia','periodo'],'con los atajos Todas, Hoy, Un día y Un periodo')
-    ok(pg.is_visible('#jornada-mas-filtros') and not pg.evaluate("document.getElementById('jornada-mas-filtros').open") and pg.locator('#jornada-mas-filtros select').count()==4 and 'Más filtros' in pg.inner_text('#jornada-mas-filtros summary'),'quién registró, programa, alcaldía e institución van plegados en «Más filtros»')
+    ok(pg.is_visible('#jornada-mas-filtros') and not pg.evaluate("document.getElementById('jornada-mas-filtros').open") and pg.locator('#jornada-mas-filtros select').count()==5 and 'Más filtros' in pg.inner_text('#jornada-mas-filtros summary'),'quién registró, tipo de jornada, programa, alcaldía e institución van plegados en «Más filtros»')
     tarj=pg.locator('#lista-jornadas .jornada')
     ok(tarj.count()>=2 and re.match(r'^\d+ jornadas · \d+ árboles$', pg.inner_text('#jornadas-total')) is not None,'cada jornada es una ficha y el total dice jornadas y árboles: '+pg.inner_text('#jornadas-total'))
     t=[x for x in pg.eval_on_selector_all('#lista-jornadas .jornada','l=>l.map(x=>x.textContent)') if 'Jardín de prueba' in x]
@@ -1046,6 +1048,9 @@ with sync_playwright() as p:
     ok(pg.is_visible('#vista-registrar') and pg.get_attribute('#navegacion [data-vista=jornadas]','aria-current')=='page','Editar desde la jornada abre el formulario con Jornadas marcada')
     pg.click('#btn-cancelar-edicion'); pg.wait_for_timeout(600)
     ok(pg.is_visible('#vista-jornadas') and pg.is_visible('#jornada-detalle') and pg.locator('#jornada-lista .punto-jornada').count()==4,'y al cancelar se vuelve a la misma jornada')
+    # La calle la pone el envío simulado, que baja la capa ligera por partes: se pide el envío y se espera a que la tengan los cuatro
+    pg.evaluate("SRP.envio.enviar({ silencioso: true })")
+    esperar(pg, "(async () => { const ids = %s; return (await SRP.almacen.todos('plantaciones')).filter(r => ids.includes(r.id)).every(r => r.calle_estado); })()" % json.dumps([J['ids'][i] for i in (0, 1, 2, 4)]), 30000)
     # Reporte de la jornada y regreso a la lista
     pg.click('#btn-jornada-reporte'); pg.wait_for_timeout(700); con_hora(pg)
     ok(pg.is_visible('#vista-jornadas') and pg.is_visible('#dlg-cierre') and 'Jardín de prueba' in pg.evaluate("SRP.reportes.contexto.jornada.nombre + ' · ' + SRP.util.formatearFecha(SRP.reportes.contexto.fecha) + (SRP.reportes.contexto.jornada.total > 1 ? ' · Jornada ' + SRP.reportes.contexto.jornada.n + ' de ' + SRP.reportes.contexto.jornada.total : '')"),'«Generar reporte» abre el cierre de esa jornada sin salir de Jornadas')
@@ -1466,7 +1471,7 @@ with sync_playwright() as p:
     # Quien ve a varias personas elige el encargado del reporte, y sólo entre quienes registraron
     pg.click('.pestana[data-vista=jornadas]'); pg.wait_for_timeout(700)
     pg.evaluate("document.getElementById('jornada-mas-filtros').open = true"); pg.wait_for_timeout(100)
-    ok(pg.is_visible('#caja-jornada-cabo') and pg.locator('#jornada-cabo option').count()>=2 and pg.locator('#jornada-cabo option[value=""]').count()==1 and pg.evaluate("SRP.jornadas._todas.filter(j => j.estatus === 'cerrada').length")>=1,'el coordinador filtra por cabo y ve las jornadas cerradas de su cuadrilla')
+    ok(pg.is_visible('#caja-jornada-cabo') and pg.locator('#jornada-cabo option').count()>=2 and pg.locator('#jornada-cabo option[value=""]').count()==1 and pg.evaluate("SRP.jornadas._todas.filter(j => j.estatus === 'cerrada' && !SRP.jornadas.compartida(j.dato)).length")>=1,'el coordinador filtra por cabo y ve las jornadas cerradas de su cuadrilla')
     reporte_de(pg)
     ok(pg.is_visible('#caja-cie-encargado') and pg.is_visible('#cie-encargado'),
        'al coordinador se le ofrece la lista de cabos responsables')
@@ -2886,6 +2891,10 @@ with sync_playwright() as p:
             if pg21.is_visible('#aviso .aviso-cerrar'): pg21.click('#aviso .aviso-cerrar'); pg21.wait_for_timeout(200)
             pg21.evaluate("SRP.app.menuCuenta(false)"); pg21.click('#btn-cuenta'); pg21.click('#btn-cambiar-perfil'); pg21.wait_for_timeout(200)
         entrar_como(pg21, uid); pg21.wait_for_timeout(900)
+        # Quien hoy es cabo de apoyo o recibió un relevo en la demostración lee su aviso al entrar
+        for _ in range(3):
+            if pg21.evaluate("document.getElementById('dlg-confirmar').open && ['Jornada compartida', 'Relevo de cabo'].includes(document.getElementById('dlg-confirmar-titulo').textContent)"):
+                pg21.click('#btn-confirmar-si'); pg21.wait_for_timeout(400)
     def estado21(): return pg21.inner_text('#demo-estado')
     def abrir_prueba21():
         # Un aviso flotante puede aparecer en cualquier momento y tapar el botón de la cuenta
@@ -2904,7 +2913,7 @@ with sync_playwright() as p:
        'en el menú de la cuenta, «Datos de prueba» abre la demostración, con «Cargar» y «Quitar» (apagado, no hay nada que quitar); el pie sólo dice la versión')
     pg21.click('#btn-demo-cargar'); pg21.wait_for_timeout(300)
     dlg21=pg21.inner_text('#dlg-confirmar')
-    ok('17,000 árboles' in dlg21 and 'otras instituciones' in dlg21 and 'no se toca' in dlg21,'antes de cargar se dice cuánto se agrega y que lo capturado no se toca')
+    ok('22,000 árboles' in dlg21 and 'otras instituciones' in dlg21 and 'jornadas compartidas' in dlg21 and 'no se toca' in dlg21,'antes de cargar se dice cuánto se agrega, que trae jornadas compartidas y relevos, y que lo capturado no se toca')
     t0=_t.time(); pg21.click('#btn-confirmar-si'); pg21.wait_for_timeout(300)
     ok(pg21.get_attribute('#btn-demo-cargar','aria-busy')=='true' and pg21.is_disabled('#btn-demo-quitar'),'mientras carga, el botón dice «Cargando…» y no se puede quitar')
     esperar(pg21,"document.getElementById('demo-estado').textContent.startsWith('Cargados')",90000)
@@ -2922,8 +2931,8 @@ with sync_playwright() as p:
     ANIOS21=[str(a) for a in range(2024, int(HOY[:4])+1)]; ANT21=str(int(HOY[:4])-1)
     ok(c21['j']>=1200 and c21['a']>=15000 and c21['u']==16 and c21['anios']==ANIOS21 and c21['cabos']==26,
        'se cargan %d jornadas y %d árboles de 2024 a este año, registrados por 26 cuentas (20 cabos y 6 coordinaciones, de SEDEMA y de fuera), con 16 cuentas de demostración, en %.1f s' % (c21['j'],c21['a'],seg21))
-    ok(c21['viejas']==2 and c21['deHoy']==2 and c21['sinReporte']>0 and c21['elim']>0 and c21['fotos']>0,
-       'con lo que la supervisión debe encontrar: 2 jornadas abiertas de días anteriores, 2 de hoy, %d sin reporte, %d eliminados, %d fotografías' % (c21['sinReporte'],c21['elim'],c21['fotos']))
+    ok(c21['viejas']==2 and c21['deHoy']==4 and c21['sinReporte']>0 and c21['elim']>0 and c21['fotos']>0,
+       'con lo que la supervisión debe encontrar: 2 jornadas abiertas de días anteriores, 4 de hoy (una compartida y una con relevo), %d sin reporte, %d eliminados, %d fotografías' % (c21['sinReporte'],c21['elim'],c21['fotos']))
     ok(c21['sinAlcaldia']==0 and c21['sinFolio']==0 and c21['bit']>c21['a'] and c21['propia'] and c21['sembr']==-1,
        'cada árbol con su territorio derivado, folio en lo anterior a hoy y su renglón de bitácora; lo propio sigue ahí')
     ok(not pg21.evaluate("document.getElementById('dlg-prueba').open") and 'Cargados: ' in estado21() and pg21.inner_text('#btn-demo-cargar')=='Volver a cargar' and not pg21.is_disabled('#btn-demo-quitar') and 'Cambiar usuario (pruebas)' in pg21.inner_text('#aviso'),
@@ -2955,7 +2964,7 @@ with sync_playwright() as p:
     ok(d21.value.suggested_filename=='Informe_anual_'+ANT21+'_Gustavo_A_Madero.pdf' and 'POR COLONIA' in txt21 and 'Marisol' in txt21,'el informe anual de una alcaldía sale con los datos de demostración: %s' % d21.value.suggested_filename)
     entrar21('u-coord-1'); esperar(pg21,"SRP.supervision.datos && SRP.sesion.usuario && SRP.supervision.datos.usuario.id === SRP.sesion.usuario.id",30000); pg21.wait_for_timeout(300)
     cab21=pg21.evaluate("SRP.supervision.datos.cabos.slice().sort()")
-    ok(pg21.inner_text('#sup-etiqueta').startswith('Semana') and pg21.inner_text('#sup-filtros-texto')=='Más filtros: quién registró, programa y alcaldía',
+    ok(pg21.inner_text('#sup-etiqueta').startswith('Semana') and pg21.inner_text('#sup-filtros-texto')=='Más filtros: quién registró, tipo de jornada, programa y alcaldía',
        'quien entra con otra cuenta empieza en la semana en curso y sin filtros: no hereda el año ni la alcaldía de la cuenta anterior')
     SED21=['u-cabo-1','u-demo-c1','u-demo-c2','u-demo-c3','u-demo-c4','u-demo-c5','u-demo-c6']
     ok(cab21==SED21,'la coordinación de prueba ve a todos los cabos de la Secretaría, de cualquier cuadrilla: %s' % cab21)
@@ -2983,8 +2992,8 @@ with sync_playwright() as p:
         u: u.filter(x=>SRP.demo.es(x.id)).map(x=>x.id).sort(), bit: bi.filter(x=>SRP.demo.es(x.id) || SRP.demo.es(x.entidad_id)).length,
         rec: Object.keys(SRP.envio.leer().recibidos).filter(id=>SRP.demo.es(id)).length, sel: [...document.querySelectorAll('#sel-usuario-prueba option')].map(o=>o.value).filter(v=>SRP.demo.es(v)).sort() } }""")
     ok(q21['a']==0 and q21['bit']==0 and q21['rec']==0 and q21['propio'] and q21['propia'],'se quitan los árboles, la bitácora y los envíos de demostración; la jornada y el árbol propios siguen')
-    ok(q21['j']==[jc21] and q21['u']==['u-demo-c6','u-demo-k1'] and q21['sel']==[],
-       'se conserva la jornada de demostración donde se registró un árbol propio, con su cabo y su coordinación: %s, %s' % (q21['j'], q21['u']))
+    ok(q21['j']==[jc21] and q21['u']==['u-demo-c6'] and q21['sel']==[],
+       'se conserva la jornada de demostración donde se registró un árbol propio, con quien registra en ella (las cuentas ya no guardan coordinación): %s, %s' % (q21['j'], q21['u']))
     entrar21('u-admin-1'); abrir_prueba21()
     ok(pg21.inner_text('#btn-demo-cargar')=='Recuperar datos de demostración' and pg21.is_disabled('#btn-demo-quitar') and 'de enero de 2024 a hoy' in estado21(),
        'después de quitarlos, la ventana ofrece «Recuperar datos de demostración»')
@@ -3160,8 +3169,8 @@ with sync_playwright() as p:
     # Una jornada de demostración con reporte, muchos árboles y observaciones
     pg24.evaluate("SRP.demo.cargar()"); pg24.evaluate("SRP.app.mostrarVista('jornadas')"); pg24.wait_for_timeout(1200)
     pg24.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg24.wait_for_timeout(800)
-    jid24=pg24.evaluate("(() => { const l = SRP.jornadas._todas.filter(j => j.estatus === 'cerrada').filter(j => j.registros.length >= 12 && j.dato && j.dato.vehiculo_id && j.dato.observaciones && j.dato.apoyo); return (l[0] || SRP.jornadas._todas.filter(j => j.estatus === 'cerrada').find(j => j.registros.length >= 12 && ((j.dato && j.dato.organizacion_id) || 'o-sedema') === 'o-sedema')).id; })()")
-    pg24.evaluate("(id => { const j = SRP.jornadas._todas.filter(j => j.estatus === 'cerrada').find(x => x.id === id); SRP.reportes.abrir(j.registros, j.fecha, j.cabo_id, j); })('%s')" % jid24); pg24.wait_for_timeout(800)
+    jid24=pg24.evaluate("(() => { const l = SRP.jornadas._todas.filter(j => j.estatus === 'cerrada' && !SRP.jornadas.compartida(j.dato)).filter(j => j.registros.length >= 12 && j.dato && j.dato.vehiculo_id && j.dato.observaciones && j.dato.apoyo); return (l[0] || SRP.jornadas._todas.filter(j => j.estatus === 'cerrada' && !SRP.jornadas.compartida(j.dato)).find(j => j.registros.length >= 12 && ((j.dato && j.dato.organizacion_id) || 'o-sedema') === 'o-sedema')).id; })()")
+    pg24.evaluate("(id => { const j = SRP.jornadas._todas.filter(j => j.estatus === 'cerrada' && !SRP.jornadas.compartida(j.dato)).find(x => x.id === id); SRP.reportes.abrir(j.registros, j.fecha, j.cabo_id, j); })('%s')" % jid24); pg24.wait_for_timeout(800)
     pg24.fill('#cie-hora','13:40'); pg24.click('#btn-cierre-generar'); pg24.wait_for_timeout(800)
     m24=pg24.evaluate("""(() => { const v = SRP.reportes.vistaPrevia; const m = SRP.reportes.modelo(v.registros, v.cierre, v.fecha, v.jornada);
       return { cabo: m.cabo, cifras: m.cifras.map(c => c.texto), ident: m.identificacion.map(x => x[0]), personal: m.personal.map(x => x[0]), vehiculo: m.vehiculo.map(x => x[0]),
@@ -3220,8 +3229,8 @@ with sync_playwright() as p:
     pg25.evaluate("SRP.demo.cargar()"); pg25.evaluate("SRP.app.mostrarVista('jornadas')"); pg25.wait_for_timeout(1200)
     pg25.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg25.wait_for_timeout(800)
     # Una jornada con varios árboles: sin comentarios, y luego con dos (uno de dos renglones y espacios de sobra)
-    abrir25 = """(conComentarios => { const j = SRP.jornadas._todas.filter(j => j.estatus === 'cerrada').find(x => x.registros.length >= 6 && ((x.dato && x.dato.organizacion_id) || 'o-sedema') === 'o-sedema');
-      const regs = j.registros.map(r => Object.assign({}, r, { comentarios: '' }));
+    abrir25 = """(conComentarios => { const j = SRP.jornadas._todas.filter(j => j.estatus === 'cerrada' && !SRP.jornadas.compartida(j.dato)).find(x => x.registros.length >= 6 && ((x.dato && x.dato.organizacion_id) || 'o-sedema') === 'o-sedema');
+      const regs = j.registros.map(r => Object.assign({}, r, { comentarios: '', sitio_plantacion: 'suelo' }));
       if (conComentarios) { regs[1].comentarios = '  Junto a la banqueta.\\n\\n Cepa   profunda. '; regs[4].comentarios = 'Tutor colocado.'; }
       SRP.reportes.abrir(regs, j.fecha, j.cabo_id, j); })"""
     pg25.evaluate(abrir25 + '(false)'); pg25.wait_for_timeout(700)
@@ -3303,7 +3312,7 @@ with sync_playwright() as p:
        'el PDF sigue en guinda, dorado y gris; la gráfica de origen va en verde, verde oscuro, dorado, rojo y gris claro: %s' % col26['dist'])
     pg26.evaluate("SRP.app.mostrarVista('jornadas')"); pg26.wait_for_timeout(800)
     pg26.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg26.wait_for_timeout(800)
-    pg26.evaluate("(() => { const j = SRP.jornadas._todas.filter(j => j.estatus === 'cerrada').find(x => x.registros.length >= 6 && ((x.dato && x.dato.organizacion_id) || 'o-sedema') === 'o-sedema'); SRP.reportes.abrir(j.registros, j.fecha, j.cabo_id, j); })()"); pg26.wait_for_timeout(700)
+    pg26.evaluate("(() => { const j = SRP.jornadas._todas.filter(j => j.estatus === 'cerrada' && !SRP.jornadas.compartida(j.dato)).find(x => x.registros.length >= 6 && ((x.dato && x.dato.organizacion_id) || 'o-sedema') === 'o-sedema'); SRP.reportes.abrir(j.registros, j.fecha, j.cabo_id, j); })()"); pg26.wait_for_timeout(700)
     pg26.fill('#cie-hora','12:10'); pg26.click('#btn-cierre-generar'); pg26.wait_for_timeout(800)
     pv26=pg26.evaluate("[getComputedStyle(document.querySelector('#previa-hoja .previa-titulo')).color, getComputedStyle(document.querySelector('#previa-hoja .previa-apartado h3')).backgroundColor]")
     ok(pv26==['rgb(157, 33, 72)','rgb(157, 33, 72)'],'la vista previa del reporte, que reproduce el PDF, sigue en guinda: %s' % pv26)
@@ -3355,7 +3364,7 @@ with sync_playwright() as p:
     # El reporte: «Otras N especies» con su propio porcentaje y la barra medida contra el total
     pg28.evaluate("SRP.app.mostrarVista('jornadas')"); pg28.wait_for_timeout(2500)
     pg28.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg28.wait_for_timeout(1500)
-    pg28.evaluate("(() => { const j = SRP.jornadas._todas.filter(j => j.estatus === 'cerrada').find(x => new Set(x.registros.map(r => r.especie_id)).size > 10 && ((x.dato && x.dato.organizacion_id) || 'o-sedema') === 'o-sedema') || SRP.jornadas._todas.filter(j => j.estatus === 'cerrada').find(x => x.registros.length >= 6 && ((x.dato && x.dato.organizacion_id) || 'o-sedema') === 'o-sedema'); SRP.reportes.abrir(j.registros, j.fecha, j.cabo_id, j); })()")
+    pg28.evaluate("(() => { const j = SRP.jornadas._todas.filter(j => j.estatus === 'cerrada' && !SRP.jornadas.compartida(j.dato)).find(x => new Set(x.registros.map(r => r.especie_id)).size > 10 && ((x.dato && x.dato.organizacion_id) || 'o-sedema') === 'o-sedema') || SRP.jornadas._todas.filter(j => j.estatus === 'cerrada' && !SRP.jornadas.compartida(j.dato)).find(x => x.registros.length >= 6 && ((x.dato && x.dato.organizacion_id) || 'o-sedema') === 'o-sedema'); SRP.reportes.abrir(j.registros, j.fecha, j.cabo_id, j); })()")
     pg28.wait_for_timeout(700); pg28.fill('#cie-hora','12:10'); pg28.click('#btn-cierre-generar'); pg28.wait_for_timeout(900)
     ot28=pg28.evaluate("""(() => { const v = SRP.reportes.vistaPrevia; const m = SRP.reportes.modelo(v.registros, v.cierre, v.fecha, v.jornada);
       return { sinBarras: !m.graficas.especies && !m.notaEspecies, especies: m.totales.length, suma: m.totales.reduce((s, t) => s + t.n, 0), total: m.total }; })()""")
@@ -3387,7 +3396,7 @@ with sync_playwright() as p:
     pg29.select_option('#sel-usuario-prueba','u-admin-1'); pg29.click('#btn-entrar-prueba'); pg29.wait_for_timeout(900)
     pg29.evaluate("SRP.demo.cargar()"); pg29.evaluate("SRP.app.mostrarVista('jornadas')"); pg29.wait_for_timeout(2500)
     pg29.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg29.wait_for_timeout(1500)
-    pg29.evaluate("""(() => { const j = SRP.jornadas._todas.filter(j => j.estatus === 'cerrada').find(x => x.registros.length >= 6 && ((x.dato && x.dato.organizacion_id) || 'o-sedema') === 'o-sedema');
+    pg29.evaluate("""(() => { const j = SRP.jornadas._todas.filter(j => j.estatus === 'cerrada' && !SRP.jornadas.compartida(j.dato)).find(x => x.registros.length >= 6 && ((x.dato && x.dato.organizacion_id) || 'o-sedema') === 'o-sedema');
       const regs = j.registros.map((r, i) => Object.assign({}, r, i === 0 ? { punto_origen: 'gps', gps_precision_m: 5 } : i === 1 ? { punto_origen: 'gps', gps_precision_m: 22 } : i === 2 ? { punto_origen: 'gps', gps_precision_m: 80 } : {}));
       SRP.reportes.abrir(regs, j.fecha, j.cabo_id, j); })()"""); pg29.wait_for_timeout(700)
     pg29.fill('#cie-hora','12:10'); pg29.click('#btn-cierre-generar'); pg29.wait_for_timeout(900)
@@ -4097,9 +4106,9 @@ with sync_playwright() as p:
       const ext = j.filter(x => x.organizacion_id !== 'o-sedema');
       return { orgs: Object.keys(porOrg).sort(), sinVeh: ext.every(x => !x.vehiculo_id && !x.chofer && !x.personal && !x.apoyo), emp: SRP.ref.catalogoPorId['demo-org-empresa'].tipo_organizacion,
                cuentas: SRP.ref.usuarios.filter(u => SRP.demo.es(u.id) && u.organizacion_id !== 'o-sedema').map(u => [u.perfil, u.area_id, (u.coordinadores_ids || [])[0] || null]) }; }""")
-    CU44=[['CABO',None,None]]*3+[['CABO',None,'u-coord-alc']]*2+[['CABO',None,'u-coord-gob'],['CABO',None,'u-coord-emp'],['CABO',None,'u-coord-osc'],['CABO',None,'u-coord-osc']]
+    CU44=[['CABO',None,None]]*9
     ok(d44['orgs']==sorted(['demo-org-empresa','o-alc-09003','o-alc-09007','o-green-cover','o-paot','o-reforestamos','o-sedema','o-sobse']) and d44['sinVeh'] and d44['emp']=='Empresa privada' and sorted(map(str,d44['cuentas']))==sorted(map(str,CU44)),
-       'los datos de demostración traen instituciones de fuera: sus jornadas sin personal, chófer ni vehículo; sus cabos, sin área, con el coordinador de su institución o sin coordinación: %s' % d44)
+       'los datos de demostración traen instituciones de fuera: sus jornadas sin personal, chófer ni vehículo; sus cabos, sin área y sin coordinadores guardados: %s' % d44)
     pg44.evaluate("SRP.app.mostrarVista('supervision')"); pg44.wait_for_timeout(600)
     abrir_sup(pg44)
     pg44.click('#sup-tipos .chip[data-tipo=todo]'); pg44.wait_for_timeout(900)
@@ -4117,7 +4126,7 @@ with sync_playwright() as p:
        'con la institución elegida quedan sólo sus árboles, sus 3 cabos (2 de demostración y el de arranque) y su coordinador, que también registra; «3 de 3 cabos» no cuenta al coordinador; y no se desglosa: %s' % f44)
     with pg44.expect_download() as dc44: pg44.click('#btn-sup-csv')
     csv44=open(dc44.value.path(), encoding='utf-8').read()
-    ok(dc44.value.suggested_filename=='Arboles_todo_ALC_IZP.csv' and csv44.split('\r\n')[0].startswith('﻿"Folio","Fecha de plantación","Jornada","Institución que ejecuta","Quién registró"') and '"Alcaldía Iztapalapa"' in csv44 and 'SEDEMA' not in csv44,
+    ok(dc44.value.suggested_filename=='Arboles_todo_ALC_IZP.csv' and csv44.split('\r\n')[0].startswith('﻿"Folio","Fecha de plantación","Jornada","Jornada compartida","Institución que ejecuta","Quién registró"') and '"Alcaldía Iztapalapa"' in csv44 and 'SEDEMA' not in csv44,
        'la tabla para Excel dice la institución que ejecuta y se nombra por ella: %s' % dc44.value.suggested_filename)
     pg44.select_option('#sup-organizacion',''); pg44.wait_for_timeout(900)
     anio_con_datos(pg44, 900)
@@ -4131,9 +4140,10 @@ with sync_playwright() as p:
     abrir_sup(pg44)
     # Con la base de demostración el cálculo tarda: se espera a que los datos sean ya los de esta cuenta
     esperar(pg44, "!!(SRP.supervision.datos && SRP.supervision.datos.usuario && SRP.supervision.datos.usuario.id === 'u-demo-z2')", 6000); pg44.wait_for_timeout(300)
-    z44=pg44.evaluate("""({ orgs: [...new Set(SRP.supervision.datos.jornadas.map(j => SRP.indicadores.organizacionDe(j)))], cabos: [...new Set(SRP.supervision.datos.jornadas.map(j => j.cabo_id))],
+    z44=pg44.evaluate("""({ orgs: [...new Set(SRP.supervision.datos.jornadas.map(j => SRP.indicadores.organizacionDe(j)))],
+      cabos: SRP.supervision.datos.jornadas.every(j => SRP.permisos.personasDe(j.dato || j).includes('u-demo-z2') || j.registros.some(r => r.cabo_id === 'u-demo-z2')) ? ['u-demo-z2'] : 'ajenas',
       titulo: document.getElementById('titulo-supervision').textContent, filtro: !document.getElementById('caja-sup-organizacion').hidden, desglose: !!document.querySelector('details[data-seccion=instituciones]') })""")
-    ok(z44=={'orgs':['o-alc-09007'],'cabos':['u-demo-z2'],'titulo':'Mi avance','filtro':False,'desglose':False},'un cabo de la alcaldía ve sólo lo suyo en «Mi avance», sin filtro ni desglose de instituciones: %s' % z44)
+    ok(z44=={'orgs':['o-alc-09007'],'cabos':['u-demo-z2'],'titulo':'Mi avance','filtro':False,'desglose':False},'un cabo de la alcaldía ve sólo las jornadas en que trabajó (suyas, en relevo o compartidas) en «Mi avance», sin filtro ni desglose de instituciones: %s' % z44)
     entrar44('u-admin-1')
     q44=pg44.evaluate("async () => { await SRP.demo.quitar(); return [!!(await SRP.almacen.catalogo('demo-org-empresa')), !!(await SRP.almacen.catalogo('o-alc-09007'))]; }")
     ok(q44==[False,True],'al quitar la demostración se va también la empresa de demostración; la alcaldía, que es de arranque, se queda')
@@ -4151,7 +4161,7 @@ with sync_playwright() as p:
               'Mengano Paz Ejemplo — Directivo, Alcaldía Iztapalapa','Sergio Navarro Ejemplo — Coordinador, Alcaldía Iztapalapa','Ramiro Torres Ejemplo — Cabo, Alcaldía Iztapalapa'],
        'la entrada de prueba ofrece una cuenta por rol distinto: los cuatro perfiles de la Secretaría y los tres de una alcaldía; las demás cuentas de arranque existen pero no se listan: %s' % op45)
     c45=pg45.evaluate("SRP.ref.usuarios.filter(u => !SRP.ref.esSedema(u.organizacion_id)).map(u => [u.perfil, u.area_id, (u.coordinadores_ids || []).length ? u.coordinadores_ids.every(c => SRP.ref.usuarioPorId[c].organizacion_id === u.organizacion_id) : null])")
-    ok(sorted(map(str,c45))==sorted(map(str,[['COORDINADOR',None,None]]*4+[['CABO',None,True]]*4+[['DIRECTIVO',None,None]])),'las cuentas de fuera no llevan área; cada cabo tiene un coordinador de su misma institución: %s' % c45)
+    ok(sorted(map(str,c45))==sorted(map(str,[['COORDINADOR',None,None]]*4+[['CABO',None,None]]*4+[['DIRECTIVO',None,None]])),'las cuentas de fuera no llevan área ni coordinadores guardados: la Coordinación trabaja con toda su institución: %s' % c45)
     # Con demostración, sus cuentas van aparte, en su grupo
     pg45.select_option('#sel-usuario-prueba','u-admin-1'); pg45.click('#btn-entrar-prueba'); pg45.wait_for_timeout(700)
     pg45.evaluate("SRP.demo.cargar()"); pg45.wait_for_timeout(200)
@@ -4877,8 +4887,8 @@ with sync_playwright() as p:
     pg56.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-cabo-alc'])"); pg56.reload(); pg56.wait_for_timeout(1800)
     pg56.evaluate("SRP.app.mostrarVista('supervision')"); pg56.wait_for_timeout(2500)
     abrir_sup(pg56)
-    ok(pg56.inner_text('#sup-filtros-texto')=='Más filtros: programa y alcaldía' and pg56.evaluate("document.querySelectorAll('#sup-programa option').length")<=2,
-       'el cabo ve en «Mi avance» sólo sus programas y el resumen dice «alcaldía y programa»: %s' % pg56.inner_text('#sup-filtros-texto'))
+    ok(pg56.inner_text('#sup-filtros-texto')=='Más filtros: tipo de jornada, programa y alcaldía' and pg56.evaluate("document.querySelectorAll('#sup-programa option').length")<=2,
+       'el cabo ve en «Mi avance» sólo sus programas y el resumen dice «tipo de jornada, programa y alcaldía»: %s' % pg56.inner_text('#sup-filtros-texto'))
     ok(not err56,'sin errores en consola: %s' % err56[:2])
     ctx56.close()
 
@@ -5098,7 +5108,7 @@ with sync_playwright() as p:
     # El cabo del relevo la tiene activa, ve lo ya plantado y registra a su nombre
     pg58.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-demo-c1'])"); pg58.reload(); esperar(pg58, "document.getElementById('dlg-confirmar').open", 6000)
     av58b=[pg58.is_visible('#dlg-confirmar'), pg58.inner_text('#dlg-confirmar-titulo') if pg58.is_visible('#dlg-confirmar') else '', pg58.inner_text('#dlg-confirmar-texto') if pg58.is_visible('#dlg-confirmar') else '', pg58.is_hidden('#btn-confirmar-no')]
-    ok(av58b[0] and av58b[1]=='Relevo de cabo' and 'Recibió la jornada «Relevo B140» en relevo de' in av58b[2] and 'ya puede registrar en ella' in av58b[2] and av58b[3],'el cabo que recibe la jornada lee que la recibió y de quién: %s' % av58b[2])
+    ok(av58b[0] and av58b[1]=='Relevo de cabo' and 'Recibió la jornada «Relevo B140» en relevo de' in pg58.inner_text('#dlg-confirmar') and 'ya puede registrar en ella' in pg58.inner_text('#dlg-confirmar') and av58b[3],'el cabo que recibe la jornada lee que la recibió y de quién: %s' % av58b[2])
     if pg58.is_visible('#dlg-confirmar'): pg58.click('#btn-confirmar-si'); pg58.wait_for_timeout(300)
     pg58.evaluate("SRP.app.mostrarVista('registrar')"); pg58.wait_for_timeout(600)
     pg58.evaluate("async (id) => { SRP.activa.jornada = await SRP.almacen.uno('jornadas', id); await SRP.activa.preparar(); }", jr); pg58.wait_for_timeout(400)
@@ -5117,6 +5127,12 @@ with sync_playwright() as p:
     pg58.select_option('#relevo-quien','u-cabo-1'); pg58.click('#btn-relevo-hacer'); pg58.wait_for_timeout(900)
     dv58=pg58.evaluate("async (id) => { const j = await SRP.almacen.uno('jornadas', id); return [j.relevo_id, j.relevos.length]; }", jr)
     ok(t1[0]=='u-cabo-1' and 'titular' in t1[1] and dv58==[None, 2],'la coordinación puede devolverla al titular, que aparece primero: %s %s' % (t1, dv58))
+    # Mientras sigue abierta, el titular lee al entrar que volvió a él
+    pg58.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-cabo-1'])"); pg58.reload(); pg58.wait_for_timeout(1800)
+    av58c=[pg58.is_visible('#dlg-confirmar'), pg58.inner_text('#dlg-confirmar-titulo') if pg58.is_visible('#dlg-confirmar') else '', pg58.inner_text('#dlg-confirmar-texto') if pg58.is_visible('#dlg-confirmar') else '', pg58.is_hidden('#btn-confirmar-no')]
+    ok(av58c[0] and av58c[1]=='Relevo de cabo' and 'volvió a usted' in av58c[2] and av58c[3],'cuando la coordinación se la devuelve, el titular lee que volvió a él: %s' % av58c[2])
+    if pg58.is_visible('#dlg-confirmar'): pg58.click('#btn-confirmar-si'); pg58.wait_for_timeout(300)
+    pg58.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-coord-1'])"); pg58.reload(); pg58.wait_for_timeout(1500)
     # Supervisión: cada quien con sus árboles; filtrar por el cabo del relevo encuentra la jornada
     pg58.evaluate("async (id) => { const j = await SRP.almacen.uno('jornadas', id); await SRP.activa.cambiarEstatus(j, 'cerrada'); }", jr); pg58.wait_for_timeout(300)
     sv58=pg58.evaluate("""async (id) => { const I = SRP.indicadores, d = await I.cargar(), p = I.periodo('rango', '%s', '%s');
@@ -5127,9 +5143,7 @@ with sync_playwright() as p:
     rep58=pg58.evaluate("async (id) => { const j = await SRP.almacen.uno('jornadas', id); const regs = await SRP.activa.registrosDe(j); return SRP.reportes.modelo(regs, j, j.fecha, j).identificacion.find(x => x[0] === 'Relevo de cabo'); }", jr)
     ok(rep58 is not None and 'desde el ' + HOY_TXT in rep58[1],'el reporte de la jornada dice el relevo: %s' % rep58)
     pg58.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-cabo-1'])"); pg58.reload(); pg58.wait_for_timeout(1800)
-    av58c=[pg58.is_visible('#dlg-confirmar'), pg58.inner_text('#dlg-confirmar-titulo') if pg58.is_visible('#dlg-confirmar') else '', pg58.inner_text('#dlg-confirmar-texto') if pg58.is_visible('#dlg-confirmar') else '', pg58.is_hidden('#btn-confirmar-no')]
-    ok(av58c[0] and av58c[1]=='Relevo de cabo' and 'volvió a usted' in av58c[2] and av58c[3],'cuando la coordinación se la devuelve, el titular lee que volvió a él: %s' % av58c[2])
-    if pg58.is_visible('#dlg-confirmar'): pg58.click('#btn-confirmar-si'); pg58.wait_for_timeout(300)
+    ok(not pg58.is_visible('#dlg-confirmar'), 'de una jornada ya cerrada no se avisa el relevo')
     pg58.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-admin-1'])"); pg58.reload(); pg58.wait_for_timeout(1300)
     ok(not pg58.evaluate("SRP.permisos.puede('jornada.relevo', { cabo_id: 'u-cabo-1', estatus: 'abierta' })"),'la Administración global no hace relevos: lo decide la coordinación')
     ok(not err58,'sin errores en consola: %s' % err58[:2])
@@ -5904,7 +5918,7 @@ with sync_playwright() as p:
     pg68.evaluate("async id => { await SRP.registros.eliminar(await SRP.almacen.uno('plantaciones', id)); }", d68); pg68.wait_for_timeout(800)
     ok(pg68.evaluate(PUNTOS68) == 3 and pg68.inner_text('#franja-siguiente').strip() == 'Siguiente: cerrar la jornada.', 'al eliminar un árbol desde «Nuevo registro» su punto sale del mapa y la franja vuelve a contar: %s' % pg68.evaluate(PUNTOS68))
     ok(pg68.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"), 'con los tres botones de la franja, la pantalla del teléfono no se desborda')
-    ok(pg68.evaluate("""(() => { const b = [...document.querySelectorAll('#franja-jornada-acciones .btn')].map(x => x.getBoundingClientRect()); return b.length === 3 && Math.abs(b[0].top - b[1].top) < 2 && b[0].height < 60 && b[1].height < 60 && b[2].top > b[0].bottom; })()"""),
+    ok(pg68.evaluate("""(() => { const b = [...document.querySelectorAll('#franja-jornada-acciones .btn')].filter(x => !x.hidden).map(x => x.getBoundingClientRect()); return b.length === 3 && Math.abs(b[0].top - b[1].top) < 2 && b[0].height < 60 && b[1].height < 60 && b[2].top > b[0].bottom; })()"""),
        'en teléfono, «Editar jornada» y «Cambiar jornada» van en un renglón sin partirse y «Cerrar jornada» debajo')
     # Ficha del registro en computadora: «Editar» y «Sustituir árbol» uno junto al otro; sustitución con calendario al tocar el campo y «Hoy»
     pg68.set_viewport_size({'width': 1280, 'height': 900}); pg68.wait_for_timeout(300)
@@ -7706,6 +7720,7 @@ with sync_playwright() as p:
        'quedan los dos cabos de apoyo, la ficha dice que es compartida, quién coordina y quiénes la apoyan, y el historial lo anota: %s' % f101)
     # El cabo de apoyo: el aviso al entrar, la jornada entre las suyas, la franja y su árbol
     como101('u-demo-c4')
+    esperar(pg101, "document.getElementById('dlg-confirmar').open", 10000)
     a101 = pg101.evaluate("() => { const d = document.getElementById('dlg-confirmar'); return d.open ? [document.getElementById('dlg-confirmar-titulo').textContent, d.innerText] : null; }")
     ok(a101 and a101[0] == 'Jornada compartida' and 'Ahora es cabo de apoyo en la jornada compartida «Evento masivo de prueba», que coordina Perengano Gómez Ejemplo' in a101[1] and 'Terminar mi parte' in a101[1],
        'al entrar, el cabo de apoyo lee una vez qué jornada, quién coordina y cómo funciona: %s' % (a101 and a101[1][:120]))
@@ -7755,6 +7770,132 @@ with sync_playwright() as p:
        'Usuarios ya no asigna coordinadores: sin el campo, sin la columna, y la ayuda del perfil lo dice: %s' % u101[2:])
     ok(not err101, 'sin errores en consola: %s' % err101[:2])
     ctx101.close()
+
+    # ---------- ctx102: abrir la jornada compartida desde el formulario y la franja, el filtro «Tipo de jornada» y los datos de demostración con compartidas y relevos ----------
+    ctx102 = b.new_context(viewport={'width':390,'height':844}, geolocation={'latitude':19.432600,'longitude':-99.133200,'accuracy':5}, permissions=['geolocation'], timezone_id='America/Mexico_City')
+    ctx102.add_init_script(MODO_SOL_APAGADO)
+    pg102 = ctx102.new_page(); err102 = []
+    pg102.on('pageerror', lambda e: err102.append(str(e))); pg102.on('console', lambda m: m.type=='error' and 'net::' not in m.text and 'Failed to load' not in m.text and err102.append(m.text))
+    pg102.goto(BASE); pg102.wait_for_selector('html[data-listo]')
+    entrar_como(pg102, 'u-admin-1'); pg102.wait_for_function("() => SRP.sesion && SRP.sesion.usuario")
+    pg102.evaluate("async () => { await SRP.demo.cargar(); }")
+    def como102(uid):
+        pg102.evaluate("id => SRP.sesion.iniciar(SRP.ref.usuarioPorId[id])", uid); pg102.reload(); pg102.wait_for_selector('html[data-listo]')
+        pg102.wait_for_function("id => SRP.sesion && SRP.sesion.usuario && SRP.sesion.usuario.id === id", arg=uid); pg102.wait_for_timeout(1200)
+        pg102.evaluate("() => document.querySelectorAll('dialog[open]').forEach(d => d.close())")
+    def formulario102():
+        pg102.evaluate("SRP.app.mostrarVista('registrar')"); pg102.wait_for_function("() => !document.getElementById('panel-iniciar-jornada').hidden || !document.getElementById('franja-jornada').hidden", timeout=20000)
+        if pg102.is_hidden('#panel-iniciar-jornada'):
+            pg102.click('#btn-jornada-cambiar'); pg102.wait_for_timeout(250); pg102.click('#btn-cambiar-nueva'); pg102.wait_for_timeout(400)
+    def elegir102(sel, valor):
+        pg102.evaluate("([s, v]) => { const e = document.querySelector(s); e.value = v; e.dispatchEvent(new Event('change', { bubbles: true })); }", [sel, valor]); pg102.wait_for_timeout(1200)
+    # Los datos de demostración traen compartidas y relevos; hoy, una compartida y un relevo abiertos; ninguna cuenta guarda coordinadores
+    d102 = pg102.evaluate("""async () => { const j = (await SRP.almacen.todos('jornadas')).filter(x => SRP.demo.es(x.id)), a = await SRP.almacen.todos('plantaciones'), u = await SRP.almacen.todos('usuarios');
+      const comp = j.filter(x => x.cabos_apoyo.length), rel = j.filter(x => x.relevos.length), hoy = SRP.util.fechaHoy();
+      const autores = x => new Set(a.filter(r => r.jornada_id === x.id && r.estatus === 'activo').map(r => r.cabo_id)).size;
+      const deSuInstitucion = x => x.cabos_apoyo.every(c => SRP.ref.usuarioPorId[c.cabo_id].organizacion_id === x.organizacion_id);
+      return { comp: comp.length, rel: rel.length, varios: comp.filter(x => autores(x) > 1).length, misma: comp.every(deSuInstitucion),
+        titulares: [...new Set(comp.map(x => SRP.ref.usuarioPorId[x.cabo_id].perfil))], fines: [...new Set(comp.flatMap(x => x.cabos_apoyo.map(c => String(c.fin))))].sort(),
+        abierta: comp.filter(x => x.estatus === 'abierta').map(x => [x.cabo_id, x.fecha === hoy, SRP.permisos.vigentes(x)]),
+        relevoHoy: rel.filter(x => x.estatus === 'abierta').map(x => [x.cabo_id, x.relevo_id, x.fecha === hoy]),
+        conCoord: u.filter(x => (x.coordinadores_ids || []).length).length }; }""")
+    ok(d102['comp'] >= 35 and d102['varios'] == d102['comp'] and d102['misma'] and d102['titulares'] == ['COORDINADOR'] and d102['fines'] == ['null', 'quitado', 'terminado'],
+       'la demostración trae unas 40 jornadas compartidas, abiertas por coordinaciones, con cabos de su institución que terminan, a los que quitan o que olvidan terminar: %s' % {k: d102[k] for k in ('comp', 'fines')})
+    ok(d102['rel'] >= 18 and d102['abierta'] == [['u-demo-k1', True, ['u-demo-c3', 'u-demo-c5']]] and d102['relevoHoy'] == [['u-demo-c2', 'u-demo-c1', True]] and d102['conCoord'] == 0,
+       'trae unos 20 relevos; hoy quedan abiertas la compartida de Estela (Rocío y Yolanda) y el relevo de Julián a Marisol; ninguna cuenta guarda coordinadores: %s' % {k: d102[k] for k in ('rel', 'abierta', 'relevoHoy', 'conCoord')})
+    # El cabo no ve «¿Quién registra en esta jornada?»; la Coordinación sí, con «Sólo yo»
+    como102('u-cabo-1'); formulario102()
+    sinPregunta102 = pg102.is_hidden('#ini-caja-quien')
+    como102('u-coord-1'); formulario102()
+    ok(sinPregunta102 and pg102.is_visible('#ini-caja-quien') and pg102.is_hidden('#ini-caja-apoyos') and pg102.get_attribute('#ini-quien .chip[data-quien="solo"]', 'aria-pressed') == 'true',
+       'sólo la Coordinación ve «¿Quién registra en esta jornada?», y arranca en «Sólo yo»')
+    pg102.fill('#ini-nombre', 'Evento desde el formulario'); pg102.select_option('#ini-programa', 'p-refor'); pg102.fill('#ini-meta', '60'); pg102.fill('#ini-fecha', HOY)
+    pg102.click('#btn-ini-detectar'); pg102.wait_for_timeout(800)
+    pg102.click('#ini-quien .chip[data-quien="varios"]'); pg102.wait_for_timeout(200)
+    f102 = pg102.evaluate("() => ({ ids: [...document.querySelectorAll('#ini-apoyos .chip')].map(b => b.dataset.id), boton: document.getElementById('btn-iniciar-jornada').textContent })")
+    ok({'u-cabo-1', 'u-demo-c1', 'u-demo-c4'} <= set(f102['ids']) and 'u-cabo-alc' not in f102['ids'] and f102['boton'] == 'Iniciar jornada compartida',
+       'con «Varios cabos» salen los cabos de su institución, y el botón dice «Iniciar jornada compartida»: %s' % f102['boton'])
+    pg102.click('#btn-iniciar-jornada'); pg102.wait_for_timeout(600)
+    ok(pg102.is_visible('#ini-apoyos-error') and 'Marque a los cabos que registran con usted' in pg102.inner_text('#ini-apoyos-error'), 'con «Varios cabos» y ninguno marcado, pide marcarlos o elegir «Sólo yo»')
+    pg102.click('#ini-apoyos .chip[data-id="u-cabo-1"]'); pg102.click('#ini-apoyos .chip[data-id="u-demo-c4"]')
+    pg102.reload(); pg102.wait_for_selector('html[data-listo]'); pg102.wait_for_timeout(1200)
+    pg102.evaluate("() => document.querySelectorAll('dialog[open]').forEach(d => d.close())"); formulario102()
+    ok(pg102.is_visible('#ini-caja-apoyos') and [pg102.get_attribute('#ini-apoyos .chip[data-id="%s"]' % x, 'aria-pressed') for x in ('u-cabo-1', 'u-demo-c4', 'u-demo-c1')] == ['true', 'true', 'false'],
+       'una recarga a medio llenar no pierde «Varios cabos» ni los cabos marcados')
+    pg102.fill('#ini-fecha', HOY); pg102.click('#btn-ini-detectar'); pg102.wait_for_timeout(800)
+    pg102.click('#btn-iniciar-jornada'); pg102.wait_for_timeout(1200)
+    aviso102 = pg102.inner_text('#aviso') if pg102.is_visible('#aviso') else ''
+    pg102.evaluate("() => document.querySelectorAll('dialog[open]').forEach(d => d.close())")
+    n102 = pg102.evaluate("""async () => { const j = await SRP.almacen.uno('jornadas', SRP.activa.jornada.id);
+      const bit = (await SRP.almacen.todos('bitacora')).filter(x => x.entidad_id === j.id).sort((a, b) => a.fecha.localeCompare(b.fecha) || (a.accion === 'CREADO' ? -1 : 1)).map(x => x.accion + ': ' + x.detalle);
+      return { id: j.id, vigentes: SRP.permisos.vigentes(j), titular: j.cabo_id, bit }; }""")
+    ok(n102['vigentes'] == ['u-cabo-1', 'u-demo-c4'] and n102['titular'] == 'u-coord-1' and n102['bit'][1].startswith('APOYO: Agrega: Fulana de Tal Ejemplo, Tomás Díaz Demo') and 'con 2 cabos de apoyo' in aviso102,
+       'la jornada nace compartida: la Coordinación, titular; sus cabos de apoyo, en la jornada y en la bitácora; el aviso dice con cuántos: %s' % n102['bit'])
+    # La franja: «Cabos de apoyo», y la ventana desde ahí, sin salir de Nuevo registro
+    ok(pg102.is_visible('#btn-franja-apoyos') and pg102.is_visible('#btn-jornada-cerrar'), 'en la franja de su jornada, la Coordinación tiene «Cabos de apoyo»')
+    pg102.click('#btn-franja-apoyos'); pg102.wait_for_selector('#dlg-apoyos[open]')
+    pg102.click('#apoyos-cabos .chip[data-id="u-demo-c1"]'); pg102.click('#btn-apoyos-guardar'); pg102.wait_for_timeout(1000)
+    v102 = pg102.evaluate("async id => [SRP.permisos.vigentes(await SRP.almacen.uno('jornadas', id)), SRP.app.vista, !document.getElementById('franja-jornada').hidden]", n102['id'])
+    ok(v102 == [['u-cabo-1', 'u-demo-c4', 'u-demo-c1'], 'registrar', True], 'desde la franja se agrega un cabo y se sigue en Nuevo registro: %s' % v102)
+    como102('u-demo-c4')
+    pg102.evaluate("async id => { SRP.activa.jornada = await SRP.almacen.uno('jornadas', id); SRP.app.mostrarVista('registrar'); await SRP.activa.preparar(); }", n102['id']); pg102.wait_for_timeout(800)
+    ok(pg102.is_hidden('#btn-franja-apoyos') and 'Terminar mi parte' in pg102.inner_text('#btn-jornada-cerrar'), 'el cabo de apoyo no tiene «Cabos de apoyo» en su franja')
+    # Con otra jornada suya abierta, iniciada después, el cabo de apoyo elige la compartida y se queda en ella
+    iniciar_jornada(pg102, 'Propia del cabo de apoyo', HOY)
+    pg102.evaluate("() => document.querySelectorAll('dialog[open]').forEach(d => d.close())")
+    pg102.click('#btn-jornada-cambiar'); pg102.wait_for_selector('#dlg-cambiar-jornada[open]')
+    pg102.click('#lista-jornadas-abiertas button[data-id="%s"]' % n102['id']); pg102.wait_for_timeout(1000)
+    ok(pg102.evaluate("SRP.activa.jornada && SRP.activa.jornada.id") == n102['id'] and 'Terminar mi parte' in pg102.inner_text('#btn-jornada-cerrar'),
+       'con otra jornada suya abierta más reciente, el cabo de apoyo puede elegir la compartida y Nuevo registro se queda en ella')
+    # El filtro «Tipo de jornada»: Jornadas, como Coordinación
+    como102('u-coord-1')
+    pg102.evaluate("SRP.app.mostrarVista('jornadas')"); pg102.wait_for_timeout(1500)
+    pg102.click('#jornada-atajos .chip[data-atajo="todas"]'); pg102.wait_for_timeout(1000)
+    elegir102('#jornada-compartida', 'si')
+    j102 = pg102.evaluate("""() => ({ opciones: [...document.getElementById('jornada-compartida').options].map(o => o.textContent), tarjetas: [...document.querySelectorAll('#lista-jornadas li.jornada')].map(li => (li.querySelector('.jornada-cabo') || {}).textContent || ''),
+      fichas: [...document.querySelectorAll('#jornada-fichas .ficha-filtro span')].map(x => x.textContent), resumen: document.getElementById('jornada-mas-filtros-texto').textContent,
+      total: SRP.jornadas.lista.length, todas: SRP.jornadas.lista.every(j => SRP.jornadas.compartida(j.dato)) })""")
+    ok(j102['opciones'] == ['Todas', 'Compartidas', 'No compartidas'] and j102['todas'] and j102['total'] >= 10 and all('compartida con' in t for t in j102['tarjetas'])
+       and j102['fichas'] == ['Jornadas compartidas'] and j102['resumen'] == 'Más filtros: compartidas',
+       'Jornadas: «Tipo de jornada» deja sólo las compartidas; cada tarjeta dice «compartida con N cabos»; la ficha y el resumen lo dicen: %s' % {k: j102[k] for k in ('total', 'fichas', 'resumen')})
+    elegir102('#jornada-compartida', 'no')
+    ok(pg102.evaluate("SRP.jornadas.lista.length > 0 && SRP.jornadas.lista.every(j => !SRP.jornadas.compartida(j.dato)) && ![...document.querySelectorAll('#lista-jornadas .jornada-cabo')].some(x => x.textContent.includes('compartida'))"),
+       'con «No compartidas» no queda ninguna compartida')
+    pg102.click('#jornada-quitar'); pg102.wait_for_timeout(800)
+    ok(pg102.evaluate("SRP.jornadas.filtro.compartida === '' && document.getElementById('jornada-compartida').value === ''"), '«Quitar filtros» quita también el tipo de jornada')
+    # Registros, como cabo de apoyo: sus árboles en compartidas
+    como102('u-demo-c3')
+    pg102.evaluate("SRP.app.mostrarVista('registros')"); pg102.wait_for_timeout(1500)
+    elegir102('#filtro-compartida', 'si')
+    r102 = pg102.evaluate("""async () => { const js = Object.fromEntries((await SRP.almacen.todos('jornadas')).map(j => [j.id, j]));
+      return [SRP.registros.filtrados.length, SRP.registros.filtrados.every(r => r.cabo_id === 'u-demo-c3' && SRP.jornadas.compartida(js[r.jornada_id])),
+        [...document.querySelectorAll('#filtros-activos .ficha-filtro span')].map(x => x.textContent)]; }""")
+    ok(r102[0] > 0 and r102[1] and r102[2] == ['Jornadas compartidas'], 'Registros: el cabo ve sus árboles de las jornadas compartidas en que participó: %s' % r102)
+    # Supervisión, como directivo: los indicadores, el informe y el CSV
+    como102('u-dir-1')
+    pg102.evaluate("SRP.app.mostrarVista('supervision')"); pg102.wait_for_timeout(2500)
+    pg102.evaluate("document.querySelector('#sup-tipos .chip[data-tipo=todo]').click()"); pg102.wait_for_timeout(1500)
+    elegir102('#sup-compartida', 'si')
+    s102 = pg102.evaluate("""async () => { const m = SRP.supervision.modelo, csv = SRP.informes.texto(m).split('\\r\\n'), cab = csv[0].split('","');
+      const i = cab.indexOf('Jornada compartida'), filas = csv.slice(1).filter(Boolean);
+      return { jornadas: m.cifras.jornadas, cerradas: (await SRP.almacen.todos('jornadas')).filter(j => j.estatus === 'cerrada' && SRP.jornadas.compartida(j)).length,
+        i, si: filas.every(f => f.split('","')[i] === 'Sí'), n: filas.length, archivo: SRP.informes.nombreArchivo(m, 'Informe', 'pdf'),
+        fichas: [...document.querySelectorAll('#sup-fichas .ficha-filtro span')].map(x => x.textContent) }; }""")
+    ok(s102['jornadas'] == s102['cerradas'] and s102['jornadas'] >= 35 and s102['i'] == 3 and s102['si'] and s102['n'] > 1000 and '_Compartidas' in s102['archivo'] and s102['fichas'] == ['Jornadas compartidas'],
+       'Supervisión: con «Compartidas» cuentan sólo ellas; el CSV trae «Jornada compartida» y el nombre del informe lo dice: %s' % {k: s102[k] for k in ('jornadas', 'cerradas', 'n', 'archivo')})
+    # Fotografías se queda con sus ocho filtros, el máximo: ahí la jornada compartida se elige en «Jornada»
+    como102('u-admin-1')
+    pg102.evaluate("SRP.app.mostrarVista('galeria')"); pg102.wait_for_timeout(2000)
+    ok(pg102.evaluate("!document.getElementById('galeria-compartida') && !document.getElementById('galeria-tipo')"), 'Fotografías no suma «Tipo de jornada»: se queda en ocho filtros')
+    # Quitar la demostración conserva la compartida donde alguien registró algo propio, con quienes registran en ella
+    q102 = pg102.evaluate("""async () => { const j = (await SRP.almacen.todos('jornadas')).find(x => SRP.demo.es(x.id) && x.estatus === 'abierta' && x.cabos_apoyo.length);
+      const a = (await SRP.almacen.todos('plantaciones')).find(r => r.jornada_id === j.id);
+      await SRP.almacen.ponerLocal('plantaciones', Object.assign({}, a, { id: 'propio-102', cabo_id: 'u-cabo-1', folio: null }));
+      const r = await SRP.demo.quitar();
+      return [r.jornadas, ['u-demo-k1', 'u-demo-c3', 'u-demo-c5'].every(id => !!SRP.ref.usuarioPorId[id]), !SRP.ref.usuarioPorId['u-demo-c6']]; }""")
+    ok(q102 == [1, True, True], 'quitar la demostración conserva la compartida con un árbol propio y a su coordinación y sus cabos de apoyo: %s' % q102)
+    ok(not err102, 'sin errores en consola: %s' % err102[:2])
+    ctx102.close()
 
     b.close()
 

@@ -4442,3 +4442,42 @@
   · **Pendiente:** si el SIA ya tuviera instalada una versión anterior, la 1.4 necesita agregar `cabos_apoyo` a
     `srp.jornadas` y la acción `APOYO` a la regla de la bitácora. Hoy no hay nada instalado: se instala completa.
   · Versión 1.4.
+
+- **D335. Abrir la jornada compartida desde el formulario, encontrarla con un filtro y datos de prueba al día (bloque 253).**
+  25-10-2026. Al probar la 1.4, Liber tardó en encontrar cómo abrir una jornada compartida: había que iniciarla
+  como cualquier otra, ir a Jornadas, abrir su ficha y buscar «Cabos de apoyo». Pidió también poder filtrar por
+  jornadas compartidas, para cabos, coordinación y directivos, y que los datos de prueba estuvieran al día. Se
+  presentaron muestras con el antes y el después, y Liber aprobó lo recomendado:
+  · **Desde el formulario.** En «Registrar jornada», sólo para la Coordinación, «¿Quién registra en esta jornada?»:
+    «Sólo yo» (arranca así) o «Varios cabos · jornada compartida». Con «Varios cabos» se marcan ahí a los cabos
+    activos de su institución, como en la ventana, y el botón dice «Iniciar jornada compartida». Sin ninguno
+    marcado lo pide. El borrador del formulario guarda la elección. Al iniciar se guardan el alta y, después, los
+    cabos de apoyo, como dos operaciones (`jornada.crear` y `jornada.compartir`): el servidor no cambia.
+  · **Desde la franja.** En la jornada activa de la Coordinación, «Cabos de apoyo» abre la misma ventana sin salir
+    de Nuevo registro: en el teléfono va en su propio renglón; en la computadora los cuatro botones van de dos en
+    dos, porque en un renglón apretaban el nombre y los pasos. El de la ficha se queda.
+  · **El filtro «Tipo de jornada»** (Todas, Compartidas, No compartidas) en «Más filtros» de Registros, Jornadas y
+    Supervisión, para todos los perfiles: como las demás listas, ofrece sólo lo que hay. Se propuso también en
+    Fotografías, pero ahí serían nueve filtros y la regla de D226 pide ocho como máximo: Liber eligió dejar
+    Fotografías como estaba (la compartida se elige en su lista «Jornada»). Jornadas queda justo en ocho. En el
+    código el filtro se llama `compartida` (`si` o `no`), y sus listas `*-compartida`. Una jornada
+    es compartida si alguna vez tuvo cabos de apoyo. El cabo ve las compartidas en que participó y sus árboles en
+    ellas. La tarjeta de Jornadas dice «compartida con N cabos» (sin contar a los que se quitaron). En Supervisión
+    los indicadores cuentan sólo las del tipo elegido; el informe en PDF lo dice bajo el periodo, su nombre de
+    archivo lo lleva y el CSV trae la columna «Jornada compartida» (Sí o No) después de «Jornada».
+  · **Datos de prueba.** Una cuarta pasada, con su propia semilla, agrega 39 jornadas compartidas (de las seis
+    coordinaciones, con 2 a 5 cabos de su institución; casi todos terminan su parte, a alguno lo quitan y alguno
+    la olvida) y 21 relevos (a veces la jornada vuelve al titular). Hoy quedan abiertas una compartida (coordina
+    Estela Ramírez; registran Rocío Hernández y Yolanda Cruz, con árboles de las tres y a medias de lo previsto) y un
+    relevo (de Julián Ortega a Marisol Pérez). Centro Histórico, como en las demás pasadas, sólo en Cuauhtémoc. Las
+    tres pasadas anteriores dan las mismas jornadas y árboles que antes. Ninguna cuenta de prueba guarda
+    coordinadores: corrige los árboles de un cabo la coordinación de su institución. Al quitar la demostración, la
+    jornada con algo propio se conserva con quienes registran en ella (titular, relevos y cabos de apoyo), ya no con
+    la coordinación de la cuenta.
+  · **El aviso de relevo** al entrar habla sólo de jornadas abiertas: con los relevos viejos de la demostración, un
+    cabo leía al entrar relevos de hace meses, y en un teléfono nuevo pasaría lo mismo.
+  · **Falla de la 1.4, corregida.** Si un cabo de apoyo tenía además una jornada suya abierta, iniciada después, al
+    elegir la compartida en «Cambiar jornada» Nuevo registro lo regresaba a la suya: sólo dejaba activa una jornada
+    donde fuera titular o relevo. Ahora también una compartida donde es cabo de apoyo vigente. Salió con los datos de
+    prueba nuevos, pasada la medianoche.
+  · Versión 1.4.1.

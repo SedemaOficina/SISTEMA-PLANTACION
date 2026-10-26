@@ -47,6 +47,23 @@ SRP.activa = {
     // La jornada se corrige sin salir de «Nuevo registro»: el mismo formulario de su ficha
     this.el('btn-franja-editar').innerHTML = SRP.ICONOS.svg('lapiz', 'medio') + '<span>Editar jornada</span>';
     this.el('btn-franja-editar').addEventListener('click', () => { if (this.jornada) SRP.jornadas.abrirEditar(this.jornada, true); });
+    // La Coordinación agrega o quita cabos de apoyo sin salir de «Nuevo registro»: la misma ventana de la ficha
+    this.el('btn-franja-apoyos').innerHTML = SRP.ICONOS.svg('usuarios', 'medio') + '<span>Cabos de apoyo</span>';
+    this.el('btn-franja-apoyos').addEventListener('click', async () => {
+      if (this.jornada) SRP.jornadas.abrirApoyos((await SRP.almacen.uno('jornadas', this.jornada.id)) || this.jornada);
+    });
+    // «¿Quién registra en esta jornada?»: con «Varios cabos» se marcan los cabos de apoyo y la jornada nace compartida
+    this.el('ini-quien').addEventListener('click', (e) => {
+      const b = e.target.closest('.chip[data-quien]'); if (!b) return;
+      this.ponerQuien(b.dataset.quien === 'varios');
+      this.guardarBorrador();
+    });
+    this.el('ini-apoyos').addEventListener('click', (e) => {
+      const b = e.target.closest('.chip[data-id]'); if (!b) return;
+      b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'));
+      SRP.util.quitarErrorCampo(this.el('ini-apoyos'));
+      this.guardarBorrador();
+    });
     // En teléfono el detalle de la jornada (fecha, lugar, programa, solicitante, prioridad y pasos) se despliega al pedirlo
     this.el('btn-franja-detalle').addEventListener('click', () => { this.detalleAbierto = !this.detalleAbierto; this.pintarDetalle(); });
     this.pintarDetalle();
@@ -93,7 +110,41 @@ SRP.activa = {
     const f = this.el('ini-fecha').value;
     const otroDia = f && f !== SRP.util.fechaHoy();
     const corta = otroDia ? f.slice(8, 10) + '-' + SRP.util.MESES_CORTOS[Number(f.slice(5, 7)) - 1] : '';
-    this.el('btn-iniciar-jornada').innerHTML = SRP.ICONOS.svg('palomita', 'medio') + '<span>' + (otroDia ? 'Iniciar jornada del ' + corta : 'Iniciar jornada') + '</span>';
+    this.el('btn-iniciar-jornada').innerHTML = SRP.ICONOS.svg('palomita', 'medio') + '<span>' + (this.compartidaElegida() ? 'Iniciar jornada compartida' : 'Iniciar jornada') +
+      (otroDia ? ' del ' + corta : '') + '</span>';
+  },
+
+  /* «¿QUIÉN REGISTRA EN ESTA JORNADA?» Sólo la ve quien puede compartir una jornada suya, la Coordinación. Con
+     «Varios cabos», los cabos activos de su institución salen uno por renglón, como en la ventana «Cabos de apoyo»,
+     con los `marcados` ya elegidos. */
+  puedeCompartir() { const u = SRP.sesion.usuario; return !!u && SRP.permisos.puede('jornada.compartir', { estatus: 'abierta', cabo_id: u.id }); },
+
+  pintarQuien(varios, marcados) {
+    const ver = this.puedeCompartir();
+    this.el('ini-caja-quien').hidden = !ver;
+    if (ver) {
+      const esc = SRP.util.escapar, cabos = SRP.jornadas.cabosDeLaInstitucion({ organizacion_id: SRP.sesion.usuario.organizacion_id });
+      this.el('ini-apoyos').innerHTML = cabos.length ? cabos.map(x => '<button type="button" class="chip chip-renglon" data-id="' + esc(x.id) + '" aria-pressed="' + (marcados || []).includes(x.id) + '">' +
+        SRP.ICONOS.svg('palomita', 'chico') + '<span>' + esc(SRP.util.nombreCompleto(x)) + '</span></button>').join('')
+        : '<p class="nota">No hay cabos activos en la institución.</p>';
+    }
+    this.ponerQuien(ver && !!varios);
+  },
+
+  ponerQuien(varios) {
+    this.el('ini-quien').querySelectorAll('.chip[data-quien]').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.quien === 'varios') === varios)));
+    this.el('ini-caja-apoyos').hidden = !varios;
+    if (!varios) SRP.util.quitarErrorCampo(this.el('ini-apoyos'));
+    this.pintarBotonIniciar();
+  },
+
+  compartidaElegida() { return !this.el('ini-caja-quien').hidden && !this.el('ini-caja-apoyos').hidden; },
+
+  // Los cabos de apoyo marcados: [] con «Sólo yo» (o sin la pregunta); null con «Varios cabos» y ninguno marcado
+  apoyosElegidos() {
+    if (!this.compartidaElegida()) return [];
+    const ids = [...this.el('ini-apoyos').querySelectorAll('.chip[aria-pressed="true"]')].map(b => b.dataset.id);
+    return ids.length ? ids : null;
   },
 
   /* ---------- Datos ---------- */
@@ -178,7 +229,8 @@ SRP.activa = {
 
   /* AVISO DE RELEVO. Al entrar, quien recibió una jornada en relevo o dejó de registrar en una lo lee
      una vez, en una ventana con «Entendido»: qué jornada, quién la tiene ahora, quién hizo el relevo y
-     cuándo. Lo ya leído se recuerda por cuenta en este dispositivo. */
+     cuándo. Lo ya leído se recuerda por cuenta en este dispositivo. Sólo de las jornadas abiertas: de una
+     cerrada ya no hay nada que hacer, y quien entra en otro teléfono no repasa relevos de hace meses. */
   async avisarRelevos() {
     const u = SRP.sesion.usuario;
     if (!u || !SRP.almacen.db || this.avisandoRelevos) return;   // uno a la vez: al entrar y al llegar lo enviado
@@ -190,7 +242,7 @@ SRP.activa = {
     let visto = ''; try { visto = localStorage.getItem(clave) || ''; } catch (e) { /* sin almacenamiento, se avisa cada vez */ }
     const lineas = []; let ultimo = visto;
     const N = id => SRP.ref.nombreUsuario(id);
-    (await SRP.almacen.todos('jornadas')).forEach(j => (j.relevos || []).forEach((x, i) => {
+    (await SRP.almacen.todos('jornadas')).filter(j => j.estatus === 'abierta').forEach(j => (j.relevos || []).forEach((x, i) => {
       if (String(x.fecha) <= visto || x.por_id === u.id) return;
       const antes = i ? j.relevos[i - 1].cabo_id : j.cabo_id;
       const cola = ' Lo hizo ' + N(x.por_id) + ' el ' + SRP.util.formatearFecha(SRP.indicadores.dia(x.fecha)) + ' a las ' + SRP.envio.hora(x.fecha) + '.';
@@ -309,11 +361,12 @@ SRP.activa = {
       this.el('ini-coord-lat').value = ''; this.el('ini-coord-lng').value = ''; this.el('ini-detalles-coord').open = false;
       this.llenarProgramas();
       SRP.solicitud.poner('ini', null);
+      this.pintarQuien(false, []);
       // La fecha se elige a propósito: vacía, con «Hoy» a un toque
       this.el('ini-fecha').value = '';
       this.el('ini-fecha').dispatchEvent(new Event('change', { bubbles: true }));
       this.el('ini-errores').hidden = true;
-      SRP.util.erroresEnCampos([], ['ini-nombre', 'ini-programa', 'ini-meta', 'ini-fecha'].concat(SRP.solicitud.ids('ini')));
+      SRP.util.erroresEnCampos([], ['ini-nombre', 'ini-programa', 'ini-meta', 'ini-fecha', 'ini-apoyos'].concat(SRP.solicitud.ids('ini')));
       SRP.util.refrescarContadores(this.el('panel-iniciar-jornada'));
       if (SRP.espejo) SRP.espejo.refrescarIniciar();
       this.el('ini-nombre').focus({ preventScroll: true });
@@ -333,9 +386,9 @@ SRP.activa = {
     if (this.pausaBorrador || !u || this.el('panel-iniciar-jornada').hidden) return;
     const v = (id) => this.el(id).value;
     const b = { usuario: u.id, nombre: v('ini-nombre'), fecha: v('ini-fecha'), ubicacion: v('ini-ubicacion'), comentarios: v('ini-comentarios'),
-      meta: v('ini-meta'), programa_id: v('ini-programa'), solicitud: SRP.solicitud.leer('ini') };
+      meta: v('ini-meta'), programa_id: v('ini-programa'), solicitud: SRP.solicitud.leer('ini'), varios: this.compartidaElegida(), apoyos: this.apoyosElegidos() || [] };
     try {
-      if ([b.nombre, b.fecha, b.ubicacion, b.comentarios, b.meta].some(x => String(x || '').trim())) localStorage.setItem(this.CLAVE_BORRADOR, JSON.stringify(b));
+      if (b.varios || [b.nombre, b.fecha, b.ubicacion, b.comentarios, b.meta].some(x => String(x || '').trim())) localStorage.setItem(this.CLAVE_BORRADOR, JSON.stringify(b));
       else localStorage.removeItem(this.CLAVE_BORRADOR);
     } catch (e) { /* almacenamiento bloqueado: se sigue sin borrador */ }
   },
@@ -359,8 +412,9 @@ SRP.activa = {
       sel.dispatchEvent(new Event('change', { bubbles: true }));
       if (b.programa_id === SRP.solicitud.programa()) SRP.solicitud.poner('ini', b.solicitud);
     }
+    if (b.varios) this.pintarQuien(true, b.apoyos);
     SRP.util.refrescarContadores(this.el('panel-iniciar-jornada'));
-    return [b.nombre, b.fecha, b.ubicacion, b.comentarios, b.meta].some(x => String(x || '').trim());
+    return !!b.varios || [b.nombre, b.fecha, b.ubicacion, b.comentarios, b.meta].some(x => String(x || '').trim());
   },
 
   /* Deja «Nuevo registro» como corresponde: sin jornada, la pantalla de inicio; con jornada, el
@@ -381,9 +435,10 @@ SRP.activa = {
       await SRP.formulario.pintarEspeciesRecientes();
       return;
     }
-    // La sustitución registra en la jornada del árbol perdido aunque la tenga otro; lo demás, sólo en las propias
-    const sust = SRP.formulario.estado.sustitucion;
-    if (!this.jornada || this.jornada.estatus !== 'abierta' || (!sust && this.capturista(this.jornada) !== (SRP.sesion.usuario || {}).id)) this.jornada = (await this.abiertas())[0] || null;
+    /* La sustitución registra en la jornada del árbol perdido aunque la tenga otro; lo demás, sólo en las propias y en
+       las compartidas donde es cabo de apoyo vigente */
+    const sust = SRP.formulario.estado.sustitucion, yo = (SRP.sesion.usuario || {}).id;
+    if (!this.jornada || this.jornada.estatus !== 'abierta' || (!sust && this.capturista(this.jornada) !== yo && !SRP.permisos.apoyoVigente(this.jornada, yo))) this.jornada = (await this.abiertas())[0] || null;
     if (!this.jornada) { SRP.mapa.pintarPlantados([], null); this.mostrarInicio(true); return; }
     this.el('panel-iniciar-jornada').hidden = true;
     this.el('registrar-columnas').hidden = false;
@@ -442,6 +497,8 @@ SRP.activa = {
       (SRP.solicitud.es(j) ? '<span class="franja-jornada-solicitud">' + SRP.solicitud.insignia(j) + '</span>' : '');
     this.el('franja-jornada-acciones').hidden = !!editando;
     this.el('btn-franja-editar').hidden = !!editando || !SRP.permisos.puede('jornada.editar', j);
+    this.el('btn-franja-apoyos').hidden = !!editando || !SRP.permisos.puede('jornada.compartir', j);
+    f.classList.toggle('con-apoyos', !this.el('btn-franja-apoyos').hidden);
     this.el('btn-jornada-cerrar').innerHTML = apoyo ? SRP.ICONOS.svg('palomita', 'medio') + '<span>Terminar mi parte</span>'
       : SRP.ICONOS.svg('candado', 'medio') + '<span>Cerrar jornada</span>';
     // En qué paso va. Al editar un registro se enseña la jornada del registro, no el flujo.
@@ -588,6 +645,7 @@ SRP.activa = {
     const programa_id = this.el('ini-programa').value;
     const metaTexto = this.el('ini-meta').value.trim();
     const previstos = metaTexto === '' ? null : Number(metaTexto);
+    const apoyos = this.apoyosElegidos();
     const errores = [];
     if (!nombre) errores.push(['ini-nombre', 'Escriba el nombre de la jornada: el parque, la calle o el sitio.']);
     // La jornada se ubica siempre: con el GPS o con las coordenadas a mano
@@ -599,14 +657,15 @@ SRP.activa = {
     if (!fecha) errores.push(['ini-fecha', 'Indique la fecha de la jornada.']);
     else if (fecha > SRP.util.fechaHoy()) errores.push(['ini-fecha', 'La fecha no puede ser posterior a hoy.']);
     else if (SRP.util.antesDelPrograma(fecha)) errores.push(['ini-fecha', SRP.util.textoAntesDelPrograma('La fecha')]);
+    if (apoyos === null) errores.push(['ini-apoyos', 'Marque a los cabos que registran con usted, o elija «Sólo yo».']);
     // Cada campo dice su error y arriba el resumen, igual que en todos los formularios
-    if (SRP.util.resumenErrores(this.el('ini-errores'), errores, ['ini-nombre', 'btn-ini-detectar', 'ini-programa', 'ini-meta', 'ini-fecha'].concat(SRP.solicitud.ids('ini')))) return;
+    if (SRP.util.resumenErrores(this.el('ini-errores'), errores, ['ini-nombre', 'btn-ini-detectar', 'ini-programa', 'ini-meta', 'ini-fecha', 'ini-apoyos'].concat(SRP.solicitud.ids('ini')))) return;
     if (!(await this.confirmarFechaVieja(fecha))) { this.el('ini-fecha').focus(); return; }
     // Un segundo toque mientras se guarda no inicia otra jornada igual
     if (this._iniciando) return;
     this._iniciando = true;
     const libre = SRP.util.ocupado(this.el('btn-iniciar-jornada'), 'Iniciando…', 'disco');
-    try { await this.guardarJornadaNueva({ nombre, ubicacion, fecha, comentarios, programa_id, previstos }); }
+    try { await this.guardarJornadaNueva({ nombre, ubicacion, fecha, comentarios, programa_id, previstos, apoyos }); }
     finally { this._iniciando = false; libre(); }
   },
 
@@ -645,15 +704,19 @@ SRP.activa = {
       programa_id: this.el('ini-programa').value, previstos: meta === '' ? null : Number(meta) });
   },
 
-  async guardarJornadaNueva({ nombre, ubicacion, fecha, comentarios, programa_id, previstos }) {
-    const j = this.armarJornada({ nombre, ubicacion, fecha, comentarios, programa_id, previstos });
+  async guardarJornadaNueva({ nombre, ubicacion, fecha, comentarios, programa_id, previstos, apoyos }) {
+    let j = this.armarJornada({ nombre, ubicacion, fecha, comentarios, programa_id, previstos });
     await SRP.almacen.guardarConBitacora('jornadas', j, SRP.bitacora.entrada('CREADO', 'jornada', j.id, 'Jornada «' + nombre + '» del ' + SRP.util.formatearFecha(fecha)), 'jornada.crear');
+    // Con «Varios cabos» nace compartida: sus cabos de apoyo se guardan como en la ventana, después del alta
+    if (apoyos && apoyos.length) j = (await SRP.jornadas.guardarApoyos(j, apoyos)) || j;
+    const n = SRP.permisos.vigentes(j).length;
     this.quitarBorrador();
     SRP.almacen.cuidarAlmacenamiento();   // ya hay algo que perder: se pide al navegador que no lo borre
     this.jornada = j;
     this.mostrarInicio(false);
     await this.preparar();
-    SRP.util.anunciar('Jornada «' + nombre + '» iniciada. Ya puede registrar árboles.');
+    SRP.util.anunciar(n ? 'Jornada compartida «' + nombre + '» iniciada con ' + n + (n === 1 ? ' cabo de apoyo' : ' cabos de apoyo') +
+      ': les llega a su teléfono la próxima vez que tengan señal. Ya puede registrar árboles.' : 'Jornada «' + nombre + '» iniciada. Ya puede registrar árboles.');
     // La captura empieza arriba, con la jornada a la vista: «Iniciar jornada» quedaba al fondo del formulario
     window.scrollTo(0, 0);
     SRP.formulario.el('btn-ubicacion').focus({ preventScroll: true });

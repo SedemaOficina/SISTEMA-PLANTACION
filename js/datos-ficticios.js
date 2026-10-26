@@ -38,9 +38,10 @@ window.SRP = window.SRP || {};
      Coordinación y Cabo); fuera, por tipo de institución (Alcaldía, Gobierno de la CDMX, Empresa
      privada, Organización civil), un coordinador y su cabo, sin área. Nombres inventados, apellido
      «Ejemplo»; correos en @ejemplo.local: dominio reservado, nunca entregable (Norma 3). */
-  const usuario = (id, correo, nombre_completo, area_id, cargo_rol, perfil, coordinador_id, organizacion_id) => ({
+  // Sin coordinadores: desde la 1.4 la Coordinación trabaja con todos los cabos de su institución
+  const usuario = (id, correo, nombre_completo, area_id, cargo_rol, perfil, organizacion_id) => ({
     id, correo, nombre_completo, organizacion_id: organizacion_id || 'o-sedema', area_id, cargo_rol, perfil,
-    coordinadores_ids: coordinador_id ? [coordinador_id] : [], activo: true,
+    coordinadores_ids: [], activo: true,
     fecha_creacion: F, creado_por_id: 'u-admin-1', fecha_ultima_edicion: null, editado_por_id: null
   });
 
@@ -48,16 +49,16 @@ window.SRP = window.SRP || {};
     usuario('u-admin-1', 'administracion@ejemplo.local', 'Administración SIA Ejemplo', 'a-sia', 'Administración global', 'ADMIN'),
     usuario('u-dir-1', 'direccion@ejemplo.local', 'Zutana Ríos Ejemplo', 'a-dgsanpava', 'Directora de área', 'DIRECTIVO'),
     usuario('u-coord-1', 'coordinador@ejemplo.local', 'Perengano Gómez Ejemplo', 'a-dgsanpava', 'Coordinador de cuadrilla', 'COORDINADOR'),
-    usuario('u-cabo-1', 'cabo@ejemplo.local', 'Fulana de Tal Ejemplo', 'a-dgsanpava', 'Cabo de cuadrilla', 'CABO', 'u-coord-1'),
-    usuario('u-dir-alc', 'direccion.alcaldia@ejemplo.local', 'Mengano Paz Ejemplo', null, 'Director de área', 'DIRECTIVO', null, 'o-alc-09007'),
-    usuario('u-coord-alc', 'coordinador.alcaldia@ejemplo.local', 'Sergio Navarro Ejemplo', null, 'Coordinador de cuadrilla', 'COORDINADOR', null, 'o-alc-09007'),
-    usuario('u-cabo-alc', 'cabo.alcaldia@ejemplo.local', 'Ramiro Torres Ejemplo', null, 'Cabo de cuadrilla', 'CABO', 'u-coord-alc', 'o-alc-09007'),
-    usuario('u-coord-gob', 'coordinador.gobierno@ejemplo.local', 'Mariana Vega Ejemplo', null, 'Coordinador de cuadrilla', 'COORDINADOR', null, 'o-paot'),
-    usuario('u-cabo-gob', 'cabo.gobierno@ejemplo.local', 'Lucía Méndez Ejemplo', null, 'Cabo de cuadrilla', 'CABO', 'u-coord-gob', 'o-paot'),
-    usuario('u-coord-emp', 'coordinador.empresa@ejemplo.local', 'Héctor Salinas Ejemplo', null, 'Coordinador de cuadrilla', 'COORDINADOR', null, 'o-green-cover'),
-    usuario('u-cabo-emp', 'cabo.empresa@ejemplo.local', 'Óscar Rivas Ejemplo', null, 'Cabo de cuadrilla', 'CABO', 'u-coord-emp', 'o-green-cover'),
-    usuario('u-coord-osc', 'coordinador.civil@ejemplo.local', 'Carmen Ibarra Ejemplo', null, 'Coordinador de cuadrilla', 'COORDINADOR', null, 'o-reforestamos'),
-    usuario('u-cabo-osc', 'cabo.civil@ejemplo.local', 'Andrea Solís Ejemplo', null, 'Cabo de cuadrilla', 'CABO', 'u-coord-osc', 'o-reforestamos')
+    usuario('u-cabo-1', 'cabo@ejemplo.local', 'Fulana de Tal Ejemplo', 'a-dgsanpava', 'Cabo de cuadrilla', 'CABO'),
+    usuario('u-dir-alc', 'direccion.alcaldia@ejemplo.local', 'Mengano Paz Ejemplo', null, 'Director de área', 'DIRECTIVO', 'o-alc-09007'),
+    usuario('u-coord-alc', 'coordinador.alcaldia@ejemplo.local', 'Sergio Navarro Ejemplo', null, 'Coordinador de cuadrilla', 'COORDINADOR', 'o-alc-09007'),
+    usuario('u-cabo-alc', 'cabo.alcaldia@ejemplo.local', 'Ramiro Torres Ejemplo', null, 'Cabo de cuadrilla', 'CABO', 'o-alc-09007'),
+    usuario('u-coord-gob', 'coordinador.gobierno@ejemplo.local', 'Mariana Vega Ejemplo', null, 'Coordinador de cuadrilla', 'COORDINADOR', 'o-paot'),
+    usuario('u-cabo-gob', 'cabo.gobierno@ejemplo.local', 'Lucía Méndez Ejemplo', null, 'Cabo de cuadrilla', 'CABO', 'o-paot'),
+    usuario('u-coord-emp', 'coordinador.empresa@ejemplo.local', 'Héctor Salinas Ejemplo', null, 'Coordinador de cuadrilla', 'COORDINADOR', 'o-green-cover'),
+    usuario('u-cabo-emp', 'cabo.empresa@ejemplo.local', 'Óscar Rivas Ejemplo', null, 'Cabo de cuadrilla', 'CABO', 'o-green-cover'),
+    usuario('u-coord-osc', 'coordinador.civil@ejemplo.local', 'Carmen Ibarra Ejemplo', null, 'Coordinador de cuadrilla', 'COORDINADOR', 'o-reforestamos'),
+    usuario('u-cabo-osc', 'cabo.civil@ejemplo.local', 'Andrea Solís Ejemplo', null, 'Cabo de cuadrilla', 'CABO', 'o-reforestamos')
   ];
 
   // Sin plantaciones: el sistema arranca vacío y se llena con lo que se capture.

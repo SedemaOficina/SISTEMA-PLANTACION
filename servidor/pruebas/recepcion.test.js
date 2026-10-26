@@ -480,7 +480,7 @@ test('mover lleva el árbol a otra jornada del mismo cabo, con la fecha y el pro
   assert.equal((await t.una('registro.mover', { id: A.id, version: m.version, jornada_id: ajena.id })).codigo, 'OTRO_CABO');
 });
 
-test('cada quien cambia lo de su alcance: la coordinación, lo de su cuadrilla; otro cabo y la dirección, nada', async () => {
+test('cada quien cambia lo de su alcance: la coordinación, lo de los cabos de su institución; otro cabo y la dirección, nada', async () => {
   const t = await telefono(CABO);
   const { A, version } = await conArbol(t);
   const ajeno = await (await telefono(CABO2)).una('registro.editar', { id: A.id, version, cambios: { comentarios: 'x' } });

@@ -38,7 +38,8 @@ SRP.informes = {
     const f = m.filtros, u = SRP.sesion.usuario;
     const org = f.organizacion ? SRP.ref.catalogoPorId[f.organizacion] : null;
     const cabo = f.cabo ? SRP.ref.nombreUsuario(f.cabo) : SRP.permisos.de(u).alcance === 'propios' ? SRP.util.nombreCompleto(u) : '';
-    return [prefijo + tipo, cuando, org ? limpio(org.clave || org.nombre) : '', f.alcaldia ? limpio(f.alcaldia) : '', f.programa ? limpio(SRP.ref.nombreCatalogo(f.programa)) : '',
+    return [prefijo + tipo, cuando, org ? limpio(org.clave || org.nombre) : '', f.alcaldia ? limpio(f.alcaldia) : '', f.compartida ? limpio(SRP.jornadas.COMPARTIDA[f.compartida]) : '',
+      f.programa ? limpio(SRP.ref.nombreCatalogo(f.programa)) : '',
       cabo ? limpio(cabo) : ''].filter(Boolean).join('_') + '.' + ext;
   },
 
@@ -107,7 +108,8 @@ SRP.informes = {
     doc.setFont(F, 'normal'); doc.setFontSize(10); doc.setTextColor(...C.gris);
     // El nombre del periodo cuando lo tiene (mes, año, todo) y, siempre, sus fechas
     const lineas = [['mes', 'anio', 'todo'].includes(m.periodo.tipo) ? m.periodo.etiqueta : '', this.textoPeriodo(m), this.alcance(),
-      [m.filtros.programa ? 'Programa: ' + SRP.ref.nombreCatalogo(m.filtros.programa) : '', m.filtros.cabo ? 'Registró: ' + SRP.ref.nombreUsuario(m.filtros.cabo) : ''].filter(Boolean).join(' · ')].filter(Boolean);
+      [m.filtros.compartida ? SRP.jornadas.fichaCompartida(m.filtros.compartida) : '', m.filtros.programa ? 'Programa: ' + SRP.ref.nombreCatalogo(m.filtros.programa) : '',
+        m.filtros.cabo ? 'Registró: ' + SRP.ref.nombreUsuario(m.filtros.cabo) : ''].filter(Boolean).join(' · ')].filter(Boolean);
     lineas.forEach((t, i) => doc.text(t, ancho / 2, 47 + i * 5, { align: 'center' }));
     y = 47 + lineas.length * 5 + 5;
 
@@ -235,7 +237,7 @@ SRP.informes = {
      acentos, y cada campo entre comillas. Un texto que empieza como fórmula («=», «+», «-», «@»,
      tabulador o retorno) lleva un apóstrofo delante: Excel lo muestra como texto y no lo calcula.
      Las cifras —la longitud es negativa— quedan como están. */
-  COLUMNAS: [['folio', 'Folio'], ['fecha', 'Fecha de plantación'], ['jornada', 'Jornada'], ['organizacion', 'Institución que ejecuta'], ['cabo', 'Quién registró'], ['programa', 'Programa'], ['especie', 'Especie'],
+  COLUMNAS: [['folio', 'Folio'], ['fecha', 'Fecha de plantación'], ['jornada', 'Jornada'], ['compartida', 'Jornada compartida'], ['organizacion', 'Institución que ejecuta'], ['cabo', 'Quién registró'], ['programa', 'Programa'], ['especie', 'Especie'],
     ['cientifico', 'Nombre científico'], ['distribucion', 'Distribución'], ['sitio', 'Sitio de plantación'], ['alcaldia', 'Alcaldía'], ['colonia', 'Colonia'],
     ['calle', 'Calle'], ['entreCalles', 'Entre calles'], ['redVial', 'Red vial'], ['atiende', 'Quién atiende la calle'], ['uga', 'Celda UGA'],
     ['lat', 'Latitud'], ['lng', 'Longitud'], ['origen', 'Origen del punto'], ['precision', 'Precisión GPS (m)'], ['foto', 'Con fotografía'], ['reporte', 'Reporte de la jornada'], ['sustituto', 'Sustituto'], ['motivo', 'Motivo de la sustitución'],

@@ -5,8 +5,8 @@ SRP.registros = {
   // El periodo es un día (dia) o un rango (desde/hasta), nunca los dos: elegir uno limpia el otro, para que
   // la pantalla no muestre dos criterios a la vez. Al entrar, el filtro es el día de hoy: en campo lo que
   // interesa es la jornada en curso.
-  filtro: { dia: '', desde: '', hasta: '', cabo: '', especie: '', programa: '', alcaldia: '', organizacion: '' },
-  filtroVacio() { return { dia: '', desde: '', hasta: '', cabo: '', especie: '', programa: '', alcaldia: '', organizacion: '' }; },
+  filtro: { dia: '', desde: '', hasta: '', cabo: '', compartida: '', especie: '', programa: '', alcaldia: '', organizacion: '' },
+  filtroVacio() { return { dia: '', desde: '', hasta: '', cabo: '', compartida: '', especie: '', programa: '', alcaldia: '', organizacion: '' }; },
   OTRA: '__otra',   // valor del filtro para «Otra especie» (sin especie del catálogo)
   primeraVez: true,
   visibles: [], filtrados: [], pagina: 1,
@@ -43,8 +43,8 @@ SRP.registros = {
       this.aplicar();
     });
     this.el('btn-reiniciar-filtros').addEventListener('click', () => this.reiniciarFiltros());
-    // Especie, programa, alcaldía e institución
-    ['especie', 'programa', 'alcaldia'].forEach(k => this.el('filtro-' + k).addEventListener('change', (e) => { this.filtro[k] = e.target.value; this.sincronizarControles(); this.aplicar(); }));
+    // Tipo de jornada, especie, programa, alcaldía e institución
+    ['compartida', 'especie', 'programa', 'alcaldia'].forEach(k => this.el('filtro-' + k).addEventListener('change', (e) => { this.filtro[k] = e.target.value; this.sincronizarControles(); this.aplicar(); }));
     this.el('filtro-org').addEventListener('change', (e) => { this.filtro.organizacion = e.target.value; this.sincronizarControles(); this.aplicar(); });
     // En teléfono los filtros se pliegan tras «Filtros»; en escritorio el botón no se ve
     this.el('btn-filtros').addEventListener('click', () => this.plegarFiltros(this.el('panel-filtros').dataset.abierto !== 'true'));
@@ -53,7 +53,7 @@ SRP.registros = {
       const b = e.target.closest('button[data-quitar]'); if (!b) return;
       if (b.dataset.quitar === 'periodo') this.aplicarAtajo('todos');
       if (b.dataset.quitar === 'cabo') { this.filtro.cabo = ''; this.el('filtro-cabo').value = ''; this.sincronizarControles(); this.aplicar(); }
-      if (['especie', 'programa', 'alcaldia'].includes(b.dataset.quitar)) { this.filtro[b.dataset.quitar] = ''; this.el('filtro-' + b.dataset.quitar).value = ''; this.sincronizarControles(); this.aplicar(); }
+      if (['compartida', 'especie', 'programa', 'alcaldia'].includes(b.dataset.quitar)) { this.filtro[b.dataset.quitar] = ''; this.el('filtro-' + b.dataset.quitar).value = ''; this.sincronizarControles(); this.aplicar(); }
       if (b.dataset.quitar === 'institucion') { this.filtro.organizacion = ''; this.llenarInstituciones(); this.sincronizarControles(); this.aplicar(); }
       SRP.util.anunciarSilencioso('Filtro quitado.');
     });
@@ -112,6 +112,8 @@ SRP.registros = {
     this.jornadasPorId = Object.fromEntries(jornadas.map(j => [j.id, j.nombre]));
     // La institución de un árbol es la de su jornada (o, sin jornada, la de quien lo registró)
     this.orgPorJornada = Object.fromEntries(jornadas.map(j => [j.id, j.organizacion_id]));
+    // Si su jornada es compartida, para el filtro «Tipo de jornada»
+    this.compartidaPorJornada = Object.fromEntries(jornadas.map(j => [j.id, SRP.jornadas.siCompartida(j)]));
     const todos = await SRP.almacen.porIndice('plantaciones', 'estatus', 'activo');
     this.visibles = todos.filter(r => SRP.permisos.alcanza(u, r, SRP.ref.usuarioPorId))
       .sort((a, b) => b.fecha_plantacion.localeCompare(a.fecha_plantacion) || b.fecha_registro.localeCompare(a.fecha_registro));
@@ -129,6 +131,7 @@ SRP.registros = {
   },
 
   orgDe(r) { return this.orgPorJornada[r.jornada_id] || (SRP.ref.usuarioPorId[r.cabo_id] || {}).organizacion_id || ''; },
+  compartidaDe(r) { return (this.compartidaPorJornada || {})[r.jornada_id] || 'no'; },
   especieDe(r) { return r.especie_id || this.OTRA; },
 
   /* Especie, programa y alcaldía: sólo los que hay en lo que la cuenta ve. Tipo de institución e
@@ -136,7 +139,7 @@ SRP.registros = {
   /* Cada lista ofrece sólo lo que queda con los demás filtros de lista (SRP.util.facetas): con una
      institución elegida, «Quién registró» trae sólo a su gente, y así con todas. */
   VALORES: {
-    cabo: r => r.cabo_id, especie: r => SRP.registros.especieDe(r), programa: r => r.programa_id,
+    cabo: r => r.cabo_id, compartida: r => SRP.registros.compartidaDe(r), especie: r => SRP.registros.especieDe(r), programa: r => r.programa_id,
     alcaldia: r => SRP.ref.alcaldia(r.alcaldia), organizacion: r => SRP.registros.orgDe(r)
   },
 
@@ -144,6 +147,7 @@ SRP.registros = {
   cumpleListas(r, excluir) {
     const f = this.filtro, x = k => !excluir || !excluir.has(k);
     return (!f.cabo || !x('cabo') || r.cabo_id === f.cabo) &&
+      (!f.compartida || !x('compartida') || this.compartidaDe(r) === f.compartida) &&
       (!f.especie || !x('especie') || this.especieDe(r) === f.especie) &&
       (!f.programa || !x('programa') || r.programa_id === f.programa) &&
       (!f.alcaldia || !x('alcaldia') || SRP.ref.alcaldia(r.alcaldia) === f.alcaldia) &&
@@ -162,6 +166,7 @@ SRP.registros = {
       this.el('filtro-cabo').innerHTML = SRP.util.opciones('Todos', personas);
       this.el('filtro-cabo').value = f.cabo;
     }
+    SRP.jornadas.llenarCompartida(this.el('filtro-compartida'), fac.compartida, f);
     SRP.util.llenarLista(this.el('filtro-especie'), 'Todas', pares('especie', especie), f, 'especie', especie);
     SRP.util.llenarLista(this.el('filtro-programa'), 'Todos', pares('programa', id => SRP.ref.nombreCatalogo(id)), f, 'programa', id => SRP.ref.nombreCatalogo(id));
     SRP.util.llenarLista(this.el('filtro-alcaldia'), 'Todas', pares('alcaldia', a => a), f, 'alcaldia');
@@ -175,6 +180,7 @@ SRP.registros = {
   elegidos() {
     const f = this.filtro;
     return [f.cabo ? ['cabo', 'Registró: ' + SRP.ref.nombreUsuario(f.cabo)] : null,
+      f.compartida ? ['compartida', SRP.jornadas.fichaCompartida(f.compartida)] : null,
       f.especie ? ['especie', 'Especie: ' + (f.especie === this.OTRA ? 'Otra especie' : SRP.ref.nombreCatalogo(f.especie))] : null,
       f.programa ? ['programa', 'Programa: ' + SRP.ref.nombreCatalogo(f.programa)] : null,
       f.alcaldia ? ['alcaldia', 'Alcaldía: ' + f.alcaldia] : null,
@@ -260,8 +266,8 @@ SRP.registros = {
     SRP.util.atajos.marcarRapidos(this.el('filtro-periodo'), f);
     // El acordeón «Más filtros»: su resumen dice lo elegido dentro; si nada de lo suyo aplica, no se ve
     const conCabo = !this.el('caja-filtro-cabo').hidden, conOrg = !this.el('caja-filtro-org').hidden;
-    const dentro = this.elegidos().map(e => e[1].replace(/^[^:]+: /, '')).filter(Boolean);
-    const disponibles = [conCabo ? 'quién registró' : '', 'especie', 'programa', 'alcaldía', conOrg ? 'institución' : ''].filter(Boolean);
+    const dentro = this.elegidos().map(e => e[0] === 'compartida' ? SRP.jornadas.COMPARTIDA[f.compartida].toLowerCase() : e[1].replace(/^[^:]+: /, '')).filter(Boolean);
+    const disponibles = [conCabo ? 'quién registró' : '', 'tipo de jornada', 'especie', 'programa', 'alcaldía', conOrg ? 'institución' : ''].filter(Boolean);
     this.el('filtro-mas-filtros').hidden = false;
     this.el('filtro-mas-filtros-texto').textContent = 'Más filtros: ' + (dentro.length ? dentro.join(' · ') : SRP.util.enumerar(disponibles));
   },

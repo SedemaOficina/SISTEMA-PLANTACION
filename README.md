@@ -169,9 +169,11 @@ como cuenta de prueba, y el pie de página deja cambiar de cuenta y restablecer 
 desaparece al poner `ES_FICTICIO: false`.
 
 **Datos de demostración.** Hasta abajo, en el pie, «Cargar datos de demostración» agrega casi
-tres años de trabajo inventado (enero de 2024 a hoy): unas 1,300 jornadas y 17,000 árboles de la
+tres años de trabajo inventado (enero de 2024 a hoy): unas 1,450 jornadas y 22,000 árboles de la
 Secretaría y de una institución de cada tipo —las alcaldías Iztapalapa y Coyoacán, PAOT, SOBSE,
-Green Cover, Reforestamos México y una empresa de demostración—, con los cuatro programas. Registran
+Green Cover, Reforestamos México y una empresa de demostración—, con los cuatro programas, unas 40
+jornadas compartidas y 20 con relevo (hoy quedan abiertas una compartida que coordina Estela Ramírez
+y una con relevo que empezó Julián Ortega). Registran
 todas las cuentas de prueba que capturan (cabos y coordinadores, de SEDEMA y de fuera) y 16 cuentas
 de demostración, para probar Supervisión, Mi avance y los informes con volumen. Con
 «Cambiar usuario (pruebas)», en el menú de la cuenta, se entra como cualquiera de sus cuentas (apellido «Demo»). «Quitar datos de
@@ -500,8 +502,10 @@ informe y de Supervisión, y cuatro columnas del CSV. La jornada no lleva calle.
 ## La jornada compartida
 
 Para los eventos masivos, varios cabos registran en una misma jornada (D334, pedido en la prueba en campo como
-TD-01). La abre la Coordinación, el mismo día del evento, y queda como su titular. En su ficha, «Cabos de apoyo»
-marca a cabos activos de su institución, de cualquier cuadrilla; la ventana trae a la vista cómo funciona.
+TD-01). La abre la Coordinación, el mismo día del evento, y queda como su titular. Desde la 1.4.1 se abre
+compartida desde el mismo formulario: «¿Quién registra en esta jornada?», «Sólo yo» o «Varios cabos», y con «Varios
+cabos» se marcan ahí a los cabos activos de su institución (D335). Después se agregan o quitan con «Cabos de apoyo»,
+en la franja de la jornada activa o en su ficha; la ventana trae a la vista cómo funciona.
 
 - **Los cabos de apoyo** reciben la jornada en su teléfono la siguiente vez que tienen señal, con un aviso al
   entrar. Registran como siempre; cada árbol queda a su nombre. Ven la jornada completa, pero sólo corrigen sus
@@ -512,6 +516,10 @@ marca a cabos activos de su institución, de cualquier cuadrilla; la ventana tra
   (`GET /jornadas/:id`).
 - **El reporte** dice «Jornada compartida, coordina:», el renglón «Cabos de apoyo» con los árboles de cada uno y la
   columna «Cabo» en la tabla de ejemplares.
+- **Para encontrarlas**, «Más filtros» trae «Tipo de jornada» (Todas, Compartidas o No compartidas) en Registros,
+  Jornadas y Supervisión, para todos los perfiles: el cabo ve las compartidas en que participó. En Jornadas la
+  tarjeta dice «compartida con N cabos»; el informe de Supervisión dice el filtro, y su CSV trae la columna «Jornada
+  compartida». Fotografías se queda con sus ocho filtros (D226): ahí la compartida se elige en «Jornada».
 - **En el servidor** son dos operaciones: `jornada.compartir`, que lleva sólo los cabos que entran y salen (si
   mientras tanto uno terminó su parte, no se deshace), y `jornada.terminar`, que no cambia la versión de la jornada
   para no chocar con lo que la Coordinación tenga por enviar. La lista va en `jornadas.cabos_apoyo`.

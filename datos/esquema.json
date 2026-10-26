@@ -1853,7 +1853,7 @@
       "de": "plantaciones.cabo_id",
       "a": "usuarios.id",
       "cardinalidad": "N:1",
-      "regla": "Obligatoria. Define el alcance: un cabo ve los suyos; un coordinador, los de los cabos que lo tienen en coordinadores_ids"
+      "regla": "Obligatoria. Define el alcance: un cabo ve los suyos; la Coordinación, los de todos los cabos de su institución (D333)"
     },
     {
       "de": "plantaciones.editado_por_id",
@@ -1883,7 +1883,7 @@
       "de": "usuarios.coordinadores_ids",
       "a": "usuarios.id",
       "cardinalidad": "N:M",
-      "regla": "Sólo con perfil CABO; cada elemento apunta a una cuenta COORDINADOR de su institución"
+      "regla": "Sin uso desde la 1.4 (D333): lo ya capturado se conserva y no decide nada; las altas lo dejan en []"
     },
     {
       "de": "usuarios.area_id",
@@ -2248,7 +2248,7 @@
     {
       "campo": "usuarios.coordinadores_ids",
       "aparece": "Sólo con perfil CABO",
-      "se_vacia": "Al cambiar a otro perfil; al cambiar de institución quedan sólo los de la nueva ([] si ninguno)"
+      "se_vacia": "Sin uso desde la 1.4 (D333): las altas lo dejan en []"
     },
     {
       "campo": "especies.nombre_cientifico … id_enciclovida",
@@ -2467,7 +2467,7 @@
     {
       "id": "R-J01",
       "tabla": "jornadas",
-      "regla": "Sólo se elimina sin ningún árbol, ni eliminado: los eliminados se conservan como constancia y siguen apuntando a ella. La eliminan quien la inició, su coordinador o administración",
+      "regla": "Sólo se elimina sin ningún árbol, ni eliminado: los eliminados se conservan como constancia y siguen apuntando a ella. La eliminan quien la inició, la Coordinación de su institución o la Administración",
       "donde": "js/jornadas.js eliminarJornada(), pintarDetalle()"
     },
     {

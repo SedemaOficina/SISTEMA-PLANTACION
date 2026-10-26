@@ -106,7 +106,7 @@ SRP.indicadores = {
   mediana(v) { if (!v.length) return null; const s = v.slice().sort((a, b) => a - b), k = s.length >> 1; return s.length % 2 ? s[k] : (s[k - 1] + s[k]) / 2; },
   pct(a, b) { return b ? Math.round(a * 100 / b) : null; },
 
-  /* El modelo de todo lo que se ve y se imprime. `filtros`: { alcaldia, programa, cabo, organizacion },
+  /* El modelo de todo lo que se ve y se imprime. `filtros`: { alcaldia, programa, cabo, compartida, organizacion },
      cada uno vacío para «todos». Con alcaldía, cuentan los árboles de esa alcaldía y las jornadas que
      tienen alguno ahí (o que la declararon, si no tienen árboles). `hoy`, sólo para probar. */
   calcular(datos, periodo, filtros, hoy) {
@@ -122,6 +122,7 @@ SRP.indicadores = {
     const enPeriodo = r => this.contiene(periodo, r.fecha_plantacion);
     const pasa = j => (!filtros.organizacion || this.organizacionDe(j) === filtros.organizacion) &&
       (!filtros.cabo || j.cabo_id === filtros.cabo || j.registros.some(r => r.cabo_id === filtros.cabo)) && (!filtros.programa || (j.dato && j.dato.programa_id) === filtros.programa) &&
+      (!filtros.compartida || SRP.jornadas.siCompartida(j.dato) === filtros.compartida) &&
       (!filtros.alcaldia || j.registros.some(esDeAlcaldia) || (!j.registros.length && j.dato && j.dato.alcaldia === filtros.alcaldia));
     const delPeriodo = datos.jornadas.filter(j => pasa(j) && (this.contiene(periodo, j.fecha) || j.registros.some(r => enPeriodo(r) && cuentaArbol(r))));
     const cerradas = delPeriodo.filter(j => j.estatus !== 'abierta');
@@ -209,7 +210,8 @@ SRP.indicadores = {
 
     // Trazabilidad del periodo: árboles eliminados y ediciones, del alcance y con los filtros
     const pasaArbol = r => (!filtros.organizacion || orgArbol(r) === filtros.organizacion) &&
-      delCabo(r) && (!filtros.programa || r.programa_id === filtros.programa) && esDeAlcaldia(r);
+      delCabo(r) && (!filtros.programa || r.programa_id === filtros.programa) && esDeAlcaldia(r) &&
+      (!filtros.compartida || SRP.jornadas.siCompartida(datoPorJornada[r.jornada_id]) === filtros.compartida);
     const eliminados = datos.eliminados.filter(r => this.contiene(periodo, this.dia(r.fecha_ultima_edicion)) && pasaArbol(r));
     const ediciones = datos.ediciones.filter(e => this.contiene(periodo, this.dia(e.fecha)) && pasaArbol(e.arbol));
 
@@ -282,7 +284,7 @@ SRP.indicadores = {
       // Un renglón por árbol contado: la tabla que se descarga en CSV
       detalle: arboles.map(({ r, j }) => {
         const e = especieDe(r);
-        return { folio: SRP.folio.valido(r.folio) ? r.folio : 'PROVISIONAL', fecha: r.fecha_plantacion, jornada: j.nombre, organizacion: SRP.ref.nombreOrganizacion(this.organizacionDe(j)),
+        return { folio: SRP.folio.valido(r.folio) ? r.folio : 'PROVISIONAL', fecha: r.fecha_plantacion, jornada: j.nombre, compartida: SRP.jornadas.compartida(j.dato) ? 'Sí' : 'No', organizacion: SRP.ref.nombreOrganizacion(this.organizacionDe(j)),
           cabo: SRP.ref.nombreUsuario(r.cabo_id),
           programa: SRP.ref.nombreCatalogo(r.programa_id) || '', especie: e.comun, cientifico: e.cientifico, distribucion: e.distribucion || '', sitio: SRP.ref.sitio(r),
           alcaldia: r.alcaldia || '', colonia: r.colonia || '',

@@ -1318,6 +1318,8 @@ dialog::backdrop { background: var(--velo-oscuro); }
   .franja-jornada > .franja-jornada-rotulo, .franja-jornada > .franja-guardado { grid-column: 1 / -1; }
   .franja-jornada > .franja-jornada-acciones { grid-column: 2; grid-row: 2 / span 2; align-self: center; }
   .franja-jornada-acciones .btn { flex: 0 0 auto; white-space: nowrap; }
+  /* Con «Cabos de apoyo», los botones van de dos en dos: en un renglón apretarían el nombre y los pasos */
+  .franja-jornada.con-apoyos > .franja-jornada-acciones { display: grid; grid-template-columns: auto auto; justify-content: end; }
   /* Regla 2: ninguna vista se queda en una columna corta pegada a la izquierda: Nuevo registro,
      Jornadas y Reportes son «vista-ancha» como las de tabla. Los textos de ayuda, línea corta. */
   .vista > .nota, .jornadas-lista-caja > .nota, .panel-iniciar > .nota, .vista .bloque > .nota { max-width: 62ch; }
@@ -1393,6 +1395,8 @@ dialog::backdrop { background: var(--velo-oscuro); }
   .franja-jornada-acciones .btn { flex: 1 1 9rem; }
   .franja-jornada-acciones .btn:not(.btn-primario) { flex: 1 1 0; white-space: nowrap; font-size: var(--t-s); }
   .franja-jornada-acciones .btn-primario { flex: 1 1 100%; }
+  /* «Cabos de apoyo» de la Coordinación: su propio renglón, para que los otros dos no se aprieten */
+  .franja-jornada-acciones .btn.btn-franja-apoyos { flex: 1 1 100%; }
   /* Filtros plegados en teléfono: quedan a la vista las fichas y el botón «Filtros» */
   .btn.btn-filtros { display: inline-flex; margin-left: 0; }
   .filtros[data-abierto="false"] { display: none; }

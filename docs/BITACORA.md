@@ -6579,3 +6579,62 @@ no sólo con su cuadrilla (D333, D334).
 No se probó en teléfonos de verdad: el recorrido de la Coordinación y dos cabos lo dice la siguiente prueba en campo.
 
 **Siguiente paso.** Probar la jornada compartida en campo, con la Coordinación y dos cabos en teléfonos distintos.
+
+## Bloque 253 — Abrir la jornada compartida desde el formulario, el filtro «Tipo de jornada» y datos de prueba al día (26-10-2026)
+
+**Versión 1.4.1.** Al probar la 1.4, Liber tardó en encontrar cómo abrir una jornada compartida, pidió poder filtrar
+por jornadas compartidas en todos los perfiles y que los datos de prueba estuvieran al día. Se presentaron muestras
+con el antes y el después y Liber aprobó lo recomendado (D335).
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| Abrir una jornada compartida | Iniciarla como cualquier otra, ir a Jornadas, abrir su ficha y buscar «Cabos de apoyo» | En «Registrar jornada», «¿Quién registra en esta jornada?»: «Sólo yo» o «Varios cabos», con los cabos marcados ahí y «Iniciar jornada compartida» |
+| Agregar un cabo después | Sólo desde la ficha | También desde la franja de la jornada activa, sin salir de Nuevo registro |
+| Encontrar las compartidas | No había cómo | «Tipo de jornada» en «Más filtros» de Registros, Jornadas y Supervisión, para todos los perfiles; Fotografías se queda en ocho filtros (D226) |
+| Tarjeta de Jornadas | Sólo el nombre de quien coordina | «compartida con N cabos» |
+| Informe de Supervisión | — | Dice el filtro; su CSV trae la columna «Jornada compartida» |
+| Datos de prueba | Sin compartidas ni relevos; 17 cuentas con coordinadores | 39 compartidas y 21 relevos, dos abiertos hoy; ninguna cuenta con coordinadores |
+| Aviso de relevo al entrar | De todos los relevos, también de jornadas cerradas hace meses | Sólo de jornadas abiertas |
+| Cabo de apoyo con otra jornada suya abierta | Al elegir la compartida, Nuevo registro lo regresaba a la suya (falla de la 1.4) | Se queda en la compartida |
+
+**Qué cambió.**
+- `js/jornada-activa.js`: la pregunta del formulario (`pintarQuien`, `ponerQuien`, `apoyosElegidos`), su borrador y su
+  error; `guardarJornadaNueva` guarda los cabos de apoyo después del alta; el botón de la franja; el aviso de relevo,
+  sólo de jornadas abiertas; `preparar` deja activa la compartida del cabo de apoyo.
+- `js/jornadas.js`: `guardarApoyos`, que usan la ventana y el formulario; la ventana se abre también desde la franja;
+  el filtro (`COMPARTIDA`, `siCompartida`, `fichaCompartida`, `llenarCompartida`) y la tarjeta (`textoCompartida`).
+- `js/registros.js` y `js/supervision.js`: el filtro en cada vista. `js/indicadores.js` y `js/informes.js`: los
+  indicadores, el informe, su nombre y la columna del CSV.
+- `js/demostracion.js`: la jornada de demostración en una función (`jornadaDe`), la cuarta pasada (`eventos`), las
+  cuentas sin coordinadores y lo que se conserva al quitar. `js/datos-ficticios.js`: las cuentas de arranque sin
+  coordinadores.
+- `index.html` (la pregunta, el botón de la franja y las tres listas) y `css/estilos.css` (el botón en su renglón en el
+  teléfono; en la computadora, los botones de dos en dos).
+- `datos/esquema.json` y `datos/DICCIONARIO-DATOS.md`: cuatro reglas que todavía hablaban de la cuadrilla, al día con
+  D333.
+- `docs/DECISIONES.md` (D335), `docs/MEJORAS.md` (M559–M562) y README. Marcas de versión, a 1.4.1.
+
+**Verificación.**
+- La prueba por tramos completa (tercera corrida, con todo): 1,536 de 1,539. Dos son las de siempre: la hoja de
+  especies del Excel de `originales/` y los porcentajes del reporte con muchas especies de un árbol, que esperan la
+  decisión de Liber y dependen de la fecha de los datos de prueba. La tercera, en la sección inicial, iba y venía:
+  el reporte salía sin la columna «Calle» porque el envío simulado aún no la ponía; ahora la prueba pide el envío
+  y la espera, y esa sección pasó 645 de 645. La sección nueva (ctx102) tiene 19 comprobaciones.
+- Las primeras corridas encontraron también: pruebas viejas que esperaban los filtros y el aviso de antes, o que
+  tomaban «la última jornada de la demostración» (ahora puede ser compartida); esperas fijas que con más datos no
+  alcanzaban; el choque de nombres con la lista retirada «Tipo de institución» (las listas nuevas se llaman
+  `*-compartida`); la regla de ocho filtros en Fotografías (Liber eligió dejarla como estaba); los vehículos que
+  faltaban en las jornadas de demostración nuevas; y, pasada la medianoche, la falla de la 1.4 del cabo de apoyo
+  con otra jornada suya abierta.
+- Las pruebas del servidor: 109 de 109 (sin cambios en el servidor; una prueba cambió sólo su título).
+- La prueba con el servidor local: 126 de 126, con una nueva: sin señal, la jornada nace compartida desde el
+  formulario y, al volver la señal, llegan su alta y su cabo de apoyo, en orden.
+- La revisión automática: 147 sin hallazgos (Jornadas queda justo en ocho filtros); la de la hoja de estilos, sin
+  hallazgos; la revisión de pantallas, sin problemas (capturas en `_to_delete/b253-capturas-revisar/`).
+- Las pantallas programadas, capturadas en teléfono y computadora, coinciden con las muestras aprobadas; en la
+  computadora, los botones de la franja de la Coordinación van de dos en dos.
+- Los datos de prueba: las tres pasadas anteriores dan las mismas jornadas y árboles que antes.
+
+No se probó en teléfonos de verdad.
+
+**Siguiente paso.** Probar la 1.4.1 en el teléfono con la página de la prueba en campo (pasos 11 y 12).

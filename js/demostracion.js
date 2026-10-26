@@ -16,6 +16,13 @@
       un cabo sin coordinación. Capturan también los cabos de prueba de fuera y los coordinadores
       (menos seguido que un cabo), así que cada una de las once cuentas de prueba que registra tiene
       datos. Cada institución con sus programas: Reforestación Urbana, o Palmeras las empresas.
+   4. Eventos masivos y relevos. Cada coordinación abre jornadas compartidas con 2 a 5 cabos de su
+      institución, que registran a la vez (cada árbol, a nombre de quien lo capturó); casi todos
+      terminan su parte, a alguno lo quitan a media jornada y alguno olvida terminarla. En otras
+      jornadas, la coordinación pasa la jornada de un cabo a otro (relevo) y a veces se la devuelve.
+      Hoy quedan abiertas una compartida (coordina Estela Ramírez; registran Rocío Hernández y
+      Yolanda Cruz) y una con relevo (la empezó Julián Ortega y sigue Marisol Pérez).
+   Las cuentas no guardan coordinadores: desde la 1.4 la coordinación trabaja con toda su institución.
    Fuera de la Secretaría no hay personal, chófer ni vehículo. Cada cabo trabaja en sus alcaldías, más en la
    temporada de lluvias que en secas y un poco más cada año. Cada jornada tiene su sitio dentro de
    una colonia real de la capa, de 5 a 22 árboles alrededor, meta, cierre y, casi siempre, reporte.
@@ -27,7 +34,8 @@
    CÓMO SE RECONOCEN. Todo lo cargado lleva identificador con prefijo «demo-» (las cuentas,
    «u-demo-»): así se quita sin tocar lo demás y sin agregar un campo al esquema. Si alguien
    capturó algo propio dentro de lo de demostración —un árbol en una jornada de demostración, o
-   entró con una cuenta de demostración y registró—, esa jornada y esa cuenta se conservan. */
+   entró con una cuenta de demostración y registró—, esa jornada y esa cuenta se conservan, con las
+   cuentas que registran en ella (su titular, sus relevos y sus cabos de apoyo). */
 window.SRP = window.SRP || {};
 
 SRP.demo = {
@@ -51,26 +59,26 @@ SRP.demo = {
     creado_por_id: 'u-admin-1', fecha_creacion: '2026-03-02T09:00:00-06:00', editado_por_id: null, fecha_ultima_edicion: null },
 
   /* Las cuentas: una coordinación más y seis cabos de la Secretaría; de fuera, dos cabos de la
-     Alcaldía Iztapalapa, con el coordinador de arranque de esa alcaldía, y uno de la empresa de
-     demostración, sin coordinación. Nombres inventados, apellido «Demo». La sexta columna es la
-     institución (SEDEMA si falta). */
+     Alcaldía Iztapalapa, que trabajan con el coordinador de arranque de esa alcaldía, y uno de la
+     empresa de demostración, sin coordinación. Nombres inventados, apellido «Demo». La quinta columna
+     es la institución (SEDEMA si falta). */
   CUENTAS: [
-    ['u-demo-k1', 'Estela', 'Ramírez', 'COORDINADOR', null],
-    ['u-demo-c1', 'Marisol', 'Pérez', 'CABO', 'u-coord-1'],
-    ['u-demo-c2', 'Julián', 'Ortega', 'CABO', 'u-coord-1'],
-    ['u-demo-c3', 'Rocío', 'Hernández', 'CABO', 'u-coord-1'],
-    ['u-demo-c4', 'Tomás', 'Díaz', 'CABO', 'u-demo-k1'],
-    ['u-demo-c5', 'Yolanda', 'Cruz', 'CABO', 'u-demo-k1'],
-    ['u-demo-c6', 'Arturo', 'Méndez', 'CABO', 'u-demo-k1'],
-    ['u-demo-z2', 'Ernesto', 'Luna', 'CABO', 'u-coord-alc', 'o-alc-09007'],
-    ['u-demo-z3', 'Paula', 'Sánchez', 'CABO', 'u-coord-alc', 'o-alc-09007'],
-    ['u-demo-e2', 'Nadia', 'Flores', 'CABO', null, 'demo-org-empresa'],
-    ['u-demo-g1', 'Gerardo', 'Paredes', 'CABO', 'u-coord-gob', 'o-paot'],
-    ['u-demo-s1', 'Silvia', 'Rangel', 'CABO', null, 'o-sobse'],
-    ['u-demo-v1', 'Valeria', 'Castro', 'CABO', 'u-coord-emp', 'o-green-cover'],
-    ['u-demo-o1', 'Omar', 'Fuentes', 'CABO', 'u-coord-osc', 'o-reforestamos'],
-    ['u-demo-o2', 'Olivia', 'Reyes', 'CABO', 'u-coord-osc', 'o-reforestamos'],
-    ['u-demo-z4', 'Zacarías', 'Molina', 'CABO', null, 'o-alc-09003']
+    ['u-demo-k1', 'Estela', 'Ramírez', 'COORDINADOR'],
+    ['u-demo-c1', 'Marisol', 'Pérez', 'CABO'],
+    ['u-demo-c2', 'Julián', 'Ortega', 'CABO'],
+    ['u-demo-c3', 'Rocío', 'Hernández', 'CABO'],
+    ['u-demo-c4', 'Tomás', 'Díaz', 'CABO'],
+    ['u-demo-c5', 'Yolanda', 'Cruz', 'CABO'],
+    ['u-demo-c6', 'Arturo', 'Méndez', 'CABO'],
+    ['u-demo-z2', 'Ernesto', 'Luna', 'CABO', 'o-alc-09007'],
+    ['u-demo-z3', 'Paula', 'Sánchez', 'CABO', 'o-alc-09007'],
+    ['u-demo-e2', 'Nadia', 'Flores', 'CABO', 'demo-org-empresa'],
+    ['u-demo-g1', 'Gerardo', 'Paredes', 'CABO', 'o-paot'],
+    ['u-demo-s1', 'Silvia', 'Rangel', 'CABO', 'o-sobse'],
+    ['u-demo-v1', 'Valeria', 'Castro', 'CABO', 'o-green-cover'],
+    ['u-demo-o1', 'Omar', 'Fuentes', 'CABO', 'o-reforestamos'],
+    ['u-demo-o2', 'Olivia', 'Reyes', 'CABO', 'o-reforestamos'],
+    ['u-demo-z4', 'Zacarías', 'Molina', 'CABO', 'o-alc-09003']
   ],
   // Dónde trabaja cada cabo, desde cuándo y hasta cuándo (Arturo dejó de trabajar en febrero)
   CUADRILLAS: [
@@ -181,13 +189,16 @@ SRP.demo = {
     const titulo = t => t.replace(/\s*\([^)]*\)/g, '').trim().toLowerCase().replace(/(^|[\s.-])(\p{L})/gu, (a, b, c) => b + c.toUpperCase());
     const usuarios = {}; SRP.ref.usuarios.forEach(u => { usuarios[u.id] = u; });
     const F0 = hora(this.DESDE, 8, 0);
-    const cuentas = this.CUENTAS.map(([id, nombre, ap, perfil, coord, org]) => ({
+    const cuentas = this.CUENTAS.map(([id, nombre, ap, perfil, org]) => ({
       id, correo: id.replace('u-demo-', 'demo.') + '@ejemplo.local', nombre_completo: nombre + ' ' + ap + ' Demo',
       organizacion_id: org || SRP.CONFIG.ORGANIZACION_SEDEMA, area_id: org ? null : 'a-dgsanpava',
-      cargo_rol: perfil === 'CABO' ? 'Cabo de cuadrilla' : 'Coordinación de cuadrilla', perfil, coordinadores_ids: coord ? [coord] : [],
+      cargo_rol: perfil === 'CABO' ? 'Cabo de cuadrilla' : 'Coordinación de cuadrilla', perfil, coordinadores_ids: [],
       activo: true, fecha_creacion: F0, creado_por_id: 'u-admin-1', fecha_ultima_edicion: null, editado_por_id: null }));
     cuentas.forEach(u => { usuarios[u.id] = u; });
     const nombre = id => usuarios[id] ? SRP.util.nombreCompleto(usuarios[id]) : id;
+    // La institución de cada cuenta y sus coordinaciones: corrigen los árboles de sus cabos y abren las compartidas
+    const orgDe = id => (usuarios[id] || {}).organizacion_id || SRP.CONFIG.ORGANIZACION_SEDEMA;
+    const coordsDe = o => Object.values(usuarios).filter(u => u.perfil === 'COORDINADOR' && orgDe(u.id) === o).map(u => u.id).sort();
     const colonias = this.coloniasPorAlcaldia();
     const jornadas = [], arboles = [], bitacora = [];
     const secuencias = SRP.folio.leerSecuencias(), recibidos = {};
@@ -211,6 +222,22 @@ SRP.demo = {
       const x = rv(), f = favoritos[cabo] || [vehiculos[0], vehiculos[1 % vehiculos.length]];
       return x < 0.6 ? f[0] : x < 0.9 ? f[1] : vehiculos[Math.floor(rv() * vehiculos.length)];
     };
+    /* La jornada de demostración, completa: lo que se escribe al iniciarla y al cerrarla. Sortea en el mismo orden
+       en todas las pasadas. De fuera de la Secretaría no se piden personal, chófer ni vehículo; el personal se sortea
+       igual y se descarta, así la demostración sale siempre igual. */
+    const jornadaDe = ({ idj, t, alc, lat, lng, d, cabo, abierta, inicio, fin, n, revisar, conReporte, externa, veh, solicitud, programa }) => ({ id: idj, nombre: pick(this.SITIOS) + ' · ' + titulo(t.colonia || alc), ubicacion: r() < 0.3 ? pick(['Frente al mercado', 'Entre las calles principales', 'Lado oriente', 'Junto a la escuela']) : '',
+      programa_id: programa, lat: +lat.toFixed(6), lng: +lng.toFixed(6), punto_origen: 'gps', gps_precision_m: 10,
+      alcaldia_cve: t.alcaldia_cve, alcaldia: t.alcaldia, colonia_cve: t.colonia_cve, colonia: t.colonia, fecha: d, comentarios: r() < 0.15 ? 'Plantación con participación vecinal.' : '',
+      cabo_id: cabo, organizacion_id: (usuarios[cabo] && usuarios[cabo].organizacion_id) || SRP.CONFIG.ORGANIZACION_SEDEMA,
+      estatus: abierta ? 'abierta' : 'cerrada', fecha_inicio: inicio, fecha_cierre: abierta ? null : new Date(new Date(fin).getTime() + 25 * 60000).toISOString(),
+      encargado_id: cabo, relevo_id: null, relevos: [], cabos_apoyo: [], editado_por_id: null, fecha_ultima_edicion: null,
+      ...(solicitud ? this.SOLICITUDES[(nj / 7) % this.SOLICITUDES.length] : SRP.solicitud.vacio()),
+      arboles_previstos: Math.max(1, n + (r() < 0.6 ? 0 : r() < 0.75 ? 1 + Math.floor(r() * 4) : -1 - Math.floor(r() * 2))),
+      puntos_revisados: !abierta && r() < 0.85 ? revisar : [], reporte_en: conReporte ? new Date(new Date(fin).getTime() + 90 * 60000).toISOString() : null, carga_id: null,
+      personal: (v => externa ? '' : v)(conReporte ? Array.from({ length: 3 + Math.floor(r() * 4) }, () => pick(this.PERSONAL)).filter((x, i, l) => l.indexOf(x) === i).join('\n') : ''),
+      apoyo: (v => externa ? '' : v)(conReporte && r() < 0.3 ? pick(this.PERSONAL) : ''), observaciones: conReporte && r() < 0.25 ? pick(this.OBSERVACIONES) : '',
+      chofer: conReporte && !externa ? pick(this.PERSONAL) : '', vehiculo_id: veh ? veh.id : null, vehiculo_placa: veh ? veh.nombre : '', vehiculo_modelo: veh ? veh.modelo : '', vehiculo_tipo: veh ? veh.tipo_vehiculo : '',
+      hora: conReporte ? '13:' + String(Math.floor(r() * 6) * 10).padStart(2, '0') : '' });
     /* Dos pasadas por el calendario: la Secretaría con su semilla y, después, las cuadrillas de
        fuera con otra. Así agregar organizaciones no cambia ni un árbol de lo que ya había. */
     const pasadas = [[this.CUADRILLAS, principal, 0, 0.6], [this.CUADRILLAS_EXTERNAS, this.azar(20260929), 0.6, 0.08], [this.CUADRILLAS_INSTITUCIONES, this.azar(20260930), 0.68, 0.14]];
@@ -244,8 +271,8 @@ SRP.demo = {
         const programa = solicitud ? SRP.CONFIG.PROGRAMA_SOLICITUD : deCatalogo;
         const n = forzada && d === hoy ? 3 + Math.floor(r() * 5) : 5 + Math.floor(r() * 18);
         const inicio = hora(d, 8, Math.floor(r() * 50));
-        // Quien corrige: su coordinación; si no tiene (fuera, o quien coordina), la propia persona (sin consumir azar de más)
-        const coord = ((usuarios[cabo] || {}).coordinadores_ids || [])[0] || (externa || (usuarios[cabo] || {}).perfil === 'COORDINADOR' ? cabo : 'u-coord-1');
+        // Quien corrige: la coordinación de su institución; sin ella, o si quien registra coordina, la propia persona
+        const coord = (usuarios[cabo] || {}).perfil === 'COORDINADOR' ? cabo : coordsDe(orgDe(cabo))[0] || cabo;
         const regs = [];
         let minuto = 0;
         for (let i = 0; i < n; i++) {
@@ -285,23 +312,8 @@ SRP.demo = {
         const revisar = Object.keys(flag);
         const viejo = I.sumarDias(hoy, -7) > d;
         const conReporte = !abierta && r() < (viejo ? 0.92 : 0.5);
-        /* De fuera de la Secretaría no se piden personal, chófer ni vehículo. El personal se sortea igual
-           y en el mismo orden, y se descarta: así la demostración sale siempre igual */
         const veh = conReporte && !externa ? vehiculoDe(cabo) : null;
-        const soloSedema = v => externa ? '' : v;
-        const j = { id: idj, nombre: pick(this.SITIOS) + ' · ' + titulo(t.colonia || alc), ubicacion: r() < 0.3 ? pick(['Frente al mercado', 'Entre las calles principales', 'Lado oriente', 'Junto a la escuela']) : '',
-          programa_id: programa, lat: +lat.toFixed(6), lng: +lng.toFixed(6), punto_origen: 'gps', gps_precision_m: 10,
-          alcaldia_cve: t.alcaldia_cve, alcaldia: t.alcaldia, colonia_cve: t.colonia_cve, colonia: t.colonia, fecha: d, comentarios: r() < 0.15 ? 'Plantación con participación vecinal.' : '',
-          cabo_id: cabo, organizacion_id: (usuarios[cabo] && usuarios[cabo].organizacion_id) || SRP.CONFIG.ORGANIZACION_SEDEMA,
-          estatus: abierta ? 'abierta' : 'cerrada', fecha_inicio: inicio, fecha_cierre: abierta ? null : new Date(new Date(fin).getTime() + 25 * 60000).toISOString(),
-          encargado_id: cabo, relevo_id: null, relevos: [], cabos_apoyo: [], editado_por_id: null, fecha_ultima_edicion: null,
-          ...(solicitud ? this.SOLICITUDES[(nj / 7) % this.SOLICITUDES.length] : SRP.solicitud.vacio()),
-          arboles_previstos: Math.max(1, n + (r() < 0.6 ? 0 : r() < 0.75 ? 1 + Math.floor(r() * 4) : -1 - Math.floor(r() * 2))),
-          puntos_revisados: !abierta && r() < 0.85 ? revisar : [], reporte_en: conReporte ? new Date(new Date(fin).getTime() + 90 * 60000).toISOString() : null, carga_id: null,
-          personal: soloSedema(conReporte ? Array.from({ length: 3 + Math.floor(r() * 4) }, () => pick(this.PERSONAL)).filter((x, i, l) => l.indexOf(x) === i).join('\n') : ''),
-          apoyo: soloSedema(conReporte && r() < 0.3 ? pick(this.PERSONAL) : ''), observaciones: conReporte && r() < 0.25 ? pick(this.OBSERVACIONES) : '',
-          chofer: conReporte && !externa ? pick(this.PERSONAL) : '', vehiculo_id: veh ? veh.id : null, vehiculo_placa: veh ? veh.nombre : '', vehiculo_modelo: veh ? veh.modelo : '', vehiculo_tipo: veh ? veh.tipo_vehiculo : '',
-          hora: conReporte ? '13:' + String(Math.floor(r() * 6) * 10).padStart(2, '0') : '' };
+        const j = jornadaDe({ idj, t, alc, lat, lng, d, cabo, abierta, inicio, fin, n, revisar, conReporte, externa, veh, solicitud, programa });
         jornadas.push(j);
         bit('CREADO', 'jornada', idj, inicio, cabo);
         // Eliminados y editados: la trazabilidad que ve la coordinación
@@ -321,6 +333,9 @@ SRP.demo = {
       }
     }
     }
+    if (avance) avance(0.8);
+    this.eventos({ jornadas, arboles, jornadaDe, bit, hora, especie, pick, colonias, usuarios, orgDe, coordsDe, nombre, hoy, vehiculoDe,
+      azar: x => { r = x; }, sig: { arbol: () => 'demo-a-' + String(++na).padStart(6, '0'), jornada: () => 'demo-j-' + String(++nj).padStart(5, '0') }, temporada });
     r = principal;
     // Folios y envío: lo anterior a hoy ya salió; lo de hoy espera, como en campo
     arboles.filter(a => a.fecha_plantacion < hoy && a.estatus === 'activo' && SRP.folio.puedeEmitir(a))
@@ -345,6 +360,140 @@ SRP.demo = {
       Object.assign(a, { foto_base64: datos, foto_id: 'demo-f-' + a.id.slice(7) });
     });
     return { cuentas, jornadas, arboles, bitacora, secuencias, recibidos, catalogos: [this.EMPRESA] };
+  },
+
+  /* 4. EVENTOS MASIVOS Y RELEVOS, con su propia semilla. `g` trae lo de generar(): las listas que se llenan, la
+     jornada de demostración (jornadaDe), la bitácora, el sorteo y los consecutivos. */
+  eventos(g) {
+    const I = SRP.indicadores, r = this.azar(20261025);
+    g.azar(r);   // pick y especie sortean con esta semilla
+    const todas = this.CUADRILLAS.concat(this.CUADRILLAS_EXTERNAS, this.CUADRILLAS_INSTITUCIONES);
+    const trabaja = (id, d) => todas.some(([c, , desde, hasta]) => c === id && d >= desde && (!hasta || d <= hasta));
+    const alcaldiasDe = id => (todas.find(([c]) => c === id) || [])[1] || ['Cuauhtémoc'];
+    const desdeDe = id => todas.filter(([c]) => c === id).map(x => x[2]).sort()[0] || this.DESDE;
+    const cabosDe = (o, d) => [...new Set(todas.map(x => x[0]))].filter(id => (g.usuarios[id] || {}).perfil === 'CABO' && g.orgDe(id) === o && trabaja(id, d)).sort();
+    const revolver = xs => xs.map(x => [r(), x]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
+    const ayer = I.sumarDias(g.hoy, -1);
+    // Un día de trabajo desde `desde`: entre semana, más en lluvias
+    const unDia = desde => {
+      const total = Math.round((I.aFecha(ayer) - I.aFecha(desde)) / 864e5);
+      for (let k = 0; k < 60; k++) {
+        const d = I.sumarDias(desde, Math.floor(r() * (total + 1)));
+        if (I.aFecha(d).getDay() !== 0 && r() < g.temporada[Number(d.slice(5, 7)) - 1]) return d;
+      }
+      return ayer;
+    };
+    const minutos = (d, m) => g.hora(d, 8 + Math.floor(m / 60), m % 60);
+    const masMin = (iso, m) => new Date(new Date(iso).getTime() + m * 60000).toISOString();
+    // El sitio: una colonia de las alcaldías de quien abre la jornada
+    const sitio = id => {
+      const alc = g.pick(alcaldiasDe(id));
+      const col = g.pick(g.colonias[alc] || g.colonias[Object.keys(g.colonias)[0]]);
+      const [lat, lng] = this.puntoEn(col, r);
+      return { alc, lat, lng, t: SRP.derivacion.derivar(+lat.toFixed(6), +lng.toFixed(6)) };
+    };
+    // Un árbol alrededor del sitio, a nombre de quien lo captura
+    const arbol = (s, d, idj, cabo, programa, m) => {
+      let la = +(s.lat + (r() - 0.5) * 0.0012).toFixed(6), lo = +(s.lng + (r() - 0.5) * 0.0012).toFixed(6);
+      let ta = SRP.derivacion.derivar(la, lo);
+      if (!ta.alcaldia) { la = +s.lat.toFixed(6); lo = +s.lng.toFixed(6); ta = s.t; }
+      const x = r(), origen = x < 0.85 ? 'gps' : x < 0.95 ? 'mapa' : 'manual';
+      const reg = minutos(d, m), id = g.sig.arbol();
+      g.bit('CREADO', 'plantacion', id, reg, cabo);
+      return { id, estatus: 'activo', cabo_id: cabo, lat: la, lng: lo, punto_origen: origen, gps_precision_m: origen === 'gps' ? 3 + Math.floor(r() * 18) : null, folio: null,
+        especie_id: g.especie(), especie_otra: '',
+        alcaldia_cve: ta.alcaldia_cve, alcaldia: ta.alcaldia, colonia_cve: ta.colonia_cve, colonia: ta.colonia, uga: ta.uga, uga_borde_m: ta.uga_borde_m, capa_version: ta.capa_version,
+        programa_id: programa, fecha_plantacion: d, jornada_id: idj, sitio_plantacion: 'suelo', comentarios: '',
+        foto_base64: null, foto_id: null, fecha_registro: reg, fecha_ultima_edicion: null, editado_por_id: null,
+        sustituye_id: null, motivo_sustitucion: null, motivo_sustitucion_otro: '', sustituido_por_id: null };
+    };
+    // La jornada, con sus árboles ya hechos; abierta o cerrada como corresponde
+    const cerrar = (s, d, idj, titular, regs, abierta, inicio, extra) => {
+      const fin = regs.length ? regs.map(a => a.fecha_registro).sort().pop() : inicio;
+      const externa = !SRP.ref.esSedema(g.orgDe(titular));
+      const conReporte = !abierta && r() < (I.sumarDias(g.hoy, -7) > d ? 0.92 : 0.5);
+      // El vehículo, del catálogo, como en las demás jornadas de la Secretaría con reporte
+      const veh = conReporte && !externa ? g.vehiculoDe(titular) : null;
+      const programa = regs.length ? regs[0].programa_id : 'p-refor';
+      const j = Object.assign(g.jornadaDe({ idj, t: s.t, alc: s.alc, lat: s.lat, lng: s.lng, d, cabo: titular, abierta, inicio, fin, n: regs.length,
+        revisar: Object.keys(SRP.jornadas.avisos({ registros: regs })), conReporte, externa, veh, solicitud: false, programa }), extra);
+      g.jornadas.push(j); g.arboles.push(...regs);
+      g.bit('CREADO', 'jornada', idj, inicio, titular);
+      return j;
+    };
+    // Las empresas, palmeras; la Secretaría, a veces Centro Histórico, que sólo va en Cuauhtémoc; lo demás, reforestación
+    const programaDe = (id, alc) => { const o = g.orgDe(id); return o === 'o-green-cover' ? 'p-palmeras' : SRP.ref.esSedema(o) && alc === 'Cuauhtémoc' && r() < 0.5 ? 'p-centro' : 'p-refor'; };
+
+    /* Jornadas compartidas: la coordinación abre, marca a sus cabos de apoyo y registra menos que ellos */
+    const compartida = (titular, d, apoyos, n, abierta) => {
+      const s = sitio(titular), idj = g.sig.jornada(), programa = programaDe(titular, s.alc);
+      const inicio = minutos(d, Math.floor(r() * 30));
+      const quitado = !abierta && apoyos.length > 2 && r() < 0.12 ? apoyos[apoyos.length - 1] : null;
+      const olvida = !abierta && !quitado && r() < 0.15 ? apoyos[0] : null;
+      const corte = 60 + Math.floor(r() * 60);
+      const reloj = {}, regs = [];
+      [titular].concat(apoyos).forEach(id => { reloj[id] = 10 + Math.floor(r() * 20); });
+      for (let i = 0; i < n; i++) {
+        // La coordinación captura la mitad que un cabo; en la abierta de hoy, por turno, para que cada quien tenga los suyos
+        let quien = abierta ? [titular].concat(apoyos)[i % (apoyos.length + 1)] : r() < 0.5 / (apoyos.length + 0.5) ? titular : apoyos[Math.floor(r() * apoyos.length)];
+        if (quien === quitado && reloj[quien] > corte) quien = titular;
+        reloj[quien] += 4 + Math.floor(r() * 6);
+        regs.push(arbol(s, d, idj, quien, programa, reloj[quien]));
+      }
+      const desde = masMin(inicio, 5);
+      const cabos_apoyo = apoyos.map(id => {
+        const suyos = regs.filter(a => a.cabo_id === id).map(a => a.fecha_registro).sort();
+        if (abierta || id === olvida) return { cabo_id: id, desde, por_id: titular, hasta: null, fin: null };
+        if (id === quitado) return { cabo_id: id, desde, por_id: titular, hasta: minutos(d, corte), fin: 'quitado' };
+        return { cabo_id: id, desde, por_id: titular, hasta: masMin(suyos.length ? suyos[suyos.length - 1] : desde, 5 + Math.floor(r() * 10)), fin: 'terminado' };
+      });
+      g.bit('APOYO', 'jornada', idj, desde, titular, 'Agrega: ' + apoyos.map(g.nombre).join(', '));
+      cabos_apoyo.filter(a => a.fin).forEach(a => {
+        const suyos = regs.filter(x => x.cabo_id === a.cabo_id).length;
+        if (a.fin === 'quitado') g.bit('APOYO', 'jornada', idj, a.hasta, titular, 'Quita: ' + g.nombre(a.cabo_id));
+        else g.bit('APOYO', 'jornada', idj, a.hasta, a.cabo_id, 'Terminó su parte: ' + suyos + (suyos === 1 ? ' árbol' : ' árboles'));
+      });
+      // La abierta de hoy va a medias: lo previsto es lo de un evento masivo
+      return cerrar(s, d, idj, titular, regs, abierta, inicio, abierta ? { cabos_apoyo, arboles_previstos: 60 } : { cabos_apoyo });
+    };
+    // Unas 40: nueve por coordinación de la Secretaría y cinco por cada una de fuera
+    [['u-coord-1', 9], ['u-demo-k1', 9], ['u-coord-alc', 5], ['u-coord-gob', 5], ['u-coord-emp', 5], ['u-coord-osc', 5]].forEach(([titular, veces]) => {
+      for (let k = 0; k < veces; k++) {
+        const d = unDia(desdeDe(titular));
+        const cabos = revolver(cabosDe(g.orgDe(titular), d));
+        if (cabos.length < 2) continue;
+        compartida(titular, d, cabos.slice(0, Math.min(cabos.length, 2 + Math.floor(r() * 4))), 40 + Math.floor(r() * 111), false);
+      }
+    });
+    // La de hoy, abierta: Estela coordina; Rocío y Yolanda registran y no han terminado
+    compartida('u-demo-k1', g.hoy, ['u-demo-c3', 'u-demo-c5'], 9, true);
+
+    /* Relevos: la coordinación pasa la jornada de un cabo a otro de la institución; a veces se la devuelve */
+    const relevo = (titular, otro, coord, d, n, abierta, vuelve) => {
+      const s = sitio(titular), idj = g.sig.jornada(), programa = programaDe(titular, s.alc);
+      const inicio = minutos(d, Math.floor(r() * 30));
+      const pasa = Math.max(1, Math.floor(n * (0.3 + r() * 0.4))), regresa = vuelve ? Math.min(n - 1, pasa + 2 + Math.floor(r() * 4)) : n;
+      const regs = [];
+      let m = 10;
+      for (let i = 0; i < n; i++) { m += 6 + Math.floor(r() * 10); regs.push(arbol(s, d, idj, i >= pasa && i < regresa ? otro : titular, programa, m)); }
+      const t1 = masMin(regs[pasa - 1].fecha_registro, 3), t2 = vuelve ? masMin(regs[regresa - 1].fecha_registro, 3) : null;
+      const relevos = [{ cabo_id: otro, fecha: t1, por_id: coord }].concat(vuelve ? [{ cabo_id: titular, fecha: t2, por_id: coord }] : []);
+      g.bit('RELEVO', 'jornada', idj, t1, coord, 'Registra ' + g.nombre(otro) + ' en lugar de ' + g.nombre(titular) + '; titular: ' + g.nombre(titular));
+      if (vuelve) g.bit('RELEVO', 'jornada', idj, t2, coord, 'Registra ' + g.nombre(titular) + ' en lugar de ' + g.nombre(otro) + ': vuelve el titular');
+      return cerrar(s, d, idj, titular, regs, abierta, inicio, { relevo_id: vuelve ? null : otro, relevos });
+    };
+    // Unos 20, en las instituciones con coordinación y dos cabos o más
+    const conCoordinacion = [SRP.CONFIG.ORGANIZACION_SEDEMA, 'o-alc-09007', 'o-paot', 'o-green-cover', 'o-reforestamos'];
+    for (let k = 0; k < 20; k++) {
+      const o = conCoordinacion[k % 2 ? 0 : 1 + (k >> 1) % 4], coord = g.coordsDe(o)[0];
+      const desde = [...new Set(todas.map(x => x[0]))].filter(id => g.orgDe(id) === o).map(desdeDe).sort().pop();
+      const d = unDia(desde > this.DESDE ? desde : this.DESDE);
+      const cabos = revolver(cabosDe(o, d));
+      if (!coord || cabos.length < 2) continue;
+      relevo(cabos[0], cabos[1], coord, d, 8 + Math.floor(r() * 12), false, r() < 0.25);
+    }
+    // El de hoy, abierto: Julián la empezó y sigue Marisol
+    relevo('u-demo-c2', 'u-demo-c1', 'u-coord-1', g.hoy, 5, true, false);
   },
 
   /* ---------- Cargar y quitar ---------- */
@@ -378,18 +527,16 @@ SRP.demo = {
 
   /* Quita todo lo que tenga prefijo de demostración, y lo que la bitácora diga de ello. Se
      conserva lo de demostración de que dependa algo propio: la jornada donde alguien puso un árbol
-     suyo, la cuenta con que se capturó y la coordinación de esa cuenta. De la jornada conservada
-     se quitan sus árboles de demostración; queda con los propios. */
+     suyo, la cuenta con que se capturó y las cuentas que registran en esa jornada. De la jornada
+     conservada se quitan sus árboles de demostración; queda con los propios. */
   async quitar() {
     const d = {};
     await Promise.all(this.ALMACENES.map(async n => { d[n] = await SRP.almacen.todos(n); }));
     const conservar = new Set();
     const guardar = (...ids) => ids.forEach(id => { if (this.es(id)) conservar.add(id); });
     d.plantaciones.filter(a => !this.es(a.id)).forEach(a => guardar(a.jornada_id, a.cabo_id));
-    d.jornadas.filter(j => !this.es(j.id)).forEach(j => guardar(j.cabo_id, j.encargado_id));
-    d.usuarios.filter(u => !this.es(u.id)).forEach(u => guardar(...(u.coordinadores_ids || [])));
-    d.jornadas.filter(j => conservar.has(j.id)).forEach(j => guardar(j.cabo_id));
-    d.usuarios.filter(u => conservar.has(u.id)).forEach(u => guardar(...(u.coordinadores_ids || [])));
+    d.jornadas.filter(j => !this.es(j.id)).forEach(j => guardar(...SRP.permisos.personasDe(j), j.encargado_id));
+    d.jornadas.filter(j => conservar.has(j.id)).forEach(j => guardar(...SRP.permisos.personasDe(j)));
     // La empresa de demostración se queda si una cuenta o jornada que se conserva es suya
     d.usuarios.filter(u => !this.es(u.id) || conservar.has(u.id)).forEach(u => guardar(u.organizacion_id));
     d.jornadas.filter(j => !this.es(j.id) || conservar.has(j.id)).forEach(j => guardar(j.organizacion_id));
@@ -431,7 +578,7 @@ SRP.demo = {
     const hay = c.jornadas > 0;
     this.el('demo-estado').textContent = hay
       ? 'Cargados: ' + c.jornadas.toLocaleString('es-MX') + ' jornadas y ' + c.arboles.toLocaleString('es-MX') + ' árboles de cabos y coordinaciones de la Secretaría y de otras instituciones, desde enero de 2024 hasta hoy.'
-      : 'Jornadas inventadas de enero de 2024 a hoy, de la Secretaría y de una institución de cada tipo —alcaldías, Gobierno de la CDMX, empresas y organizaciones civiles—, con cabos y coordinaciones de todas y los cuatro programas, para probar Supervisión, Mi avance y los informes. No tocan lo que usted capture.';
+      : 'Jornadas inventadas de enero de 2024 a hoy, de la Secretaría y de una institución de cada tipo —alcaldías, Gobierno de la CDMX, empresas y organizaciones civiles—, con cabos y coordinaciones de todas, jornadas compartidas, relevos y los cuatro programas, para probar Supervisión, Mi avance y los informes. No tocan lo que usted capture.';
     const cargar = this.el('btn-demo-cargar');
     cargar.querySelector('span').textContent = hay ? 'Volver a cargar' : this.huboAntes() ? 'Recuperar datos de demostración' : 'Cargar datos de demostración';
     cargar.disabled = this.cargando;
@@ -441,7 +588,8 @@ SRP.demo = {
 
   async alCargar() {
     const ok = await SRP.app.confirmar({ titulo: 'Datos de demostración', pregunta: '¿Cargar datos inventados, de enero de 2024 a hoy, en este equipo?',
-      puntosTitulo: 'Qué pasa:', puntos: ['Se agregan más de 1,300 jornadas y más de 17,000 árboles, de enero de 2024 a hoy, de cabos y coordinaciones de la Secretaría y de otras instituciones: alcaldías, Gobierno de la CDMX, empresas y organizaciones civiles.',
+      puntosTitulo: 'Qué pasa:', puntos: ['Se agregan más de 1,400 jornadas y más de 22,000 árboles, de enero de 2024 a hoy, de cabos y coordinaciones de la Secretaría y de otras instituciones: alcaldías, Gobierno de la CDMX, empresas y organizaciones civiles.',
+        'Entre ellas, unas 40 jornadas compartidas y 20 con relevo. Hoy quedan abiertas una compartida, que coordina Estela Ramírez, y una con relevo, que empezó Julián Ortega.',
         'Lo que usted haya capturado no se toca. Si ya había datos de demostración, se vuelven a cargar iguales.',
         'Tarda unos segundos. Se quitan con «Quitar datos de demostración».'], boton: 'Cargar', icono: 'descargar' });
     if (!ok) return;
