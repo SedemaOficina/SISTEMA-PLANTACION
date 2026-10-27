@@ -17,7 +17,9 @@
   li { margin-bottom: 1.2mm; }
   b { font-weight: 600; }
   .gris { color: var(--gris); }
-  .portada { height: 245mm; display: flex; flex-direction: column; justify-content: center; }
+  .portada { height: 240mm; display: flex; flex-direction: column; }
+  .portada .membrete { width: 100%; margin: 2mm 0 0; }
+  .portada .centro { flex: 1; display: flex; flex-direction: column; justify-content: center; }
   .portada .sistema { font-size: 13pt; color: var(--gris); margin-bottom: 14mm; }
   .portada .datos { margin-top: 20mm; font-size: 10.5pt; color: var(--gris); }
   .indice ol { padding-left: 6mm; columns: 1; }
@@ -43,10 +45,13 @@
 <body>
 
 <section class="portada">
+  <img class="membrete" src="../../assets/encabezado-ru-sia.png" alt="Gobierno de la Ciudad de México · Secretaría del Medio Ambiente · SIA · Reforestación Urbana">
+  <div class="centro">
   <p class="sistema">Sistema de Registro de Plantaciones (SRP)<br>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental</p>
   <h1>Manual de la<br>Administración global</h1>
   <p class="gris">Cómo dar de alta y cuidar las cuentas, los catálogos y los parámetros del sistema, revisar los posibles duplicados y subir el histórico de árboles.</p>
   <p class="datos">Versión del sistema: <span data-version>—</span><br>Fecha de este manual: <span data-fecha>—</span><br>Las capturas son de un teléfono, con datos de ejemplo.</p>
+  </div>
 </section>
 
 <section class="indice">
@@ -79,7 +84,7 @@
     <li>sube de una vez, desde un archivo, los árboles plantados antes de usar el sistema.</li>
   </ul>
   <p>Además ve, edita y elimina todo lo registrado en la Ciudad. <b>No captura registros</b>: no inicia jornadas ni registra árboles; eso lo hacen los cabos y la coordinación en campo.</p>
-  <div class="nota">Este manual no cubre el uso en campo ni la instalación del sistema. La instalación, el servidor, los respaldos y la dirección donde se abre el sistema son del Sistema de Información Ambiental (SIA).</div>
+  <div class="nota">El uso en campo, la coordinación y la consulta están en el <b>Manual del personal</b>. Este manual tampoco cubre la instalación del sistema. La instalación, el servidor, los respaldos y la dirección donde se abre el sistema son del Sistema de Información Ambiental (SIA).</div>
   <p>Los textos de los botones van entre comillas: «Dar de alta», «Guardar». Donde dice <b>tuerca</b> es el botón con un engrane que tiene cada renglón de una lista: abre sus acciones.</p>
 </section>
 
@@ -90,7 +95,7 @@
     <li><b>Entre y escriba su propia contraseña</b> (sección 3).</li>
     <li><b>Dé de alta una segunda Administración global</b> (sección 5). Si una sola persona olvida su contraseña o deja el puesto, nadie más podría administrar.</li>
     <li><b>Revise los catálogos</b> (sección 6): active las alcaldías que van a usar el sistema, agregue las demás instituciones que lo pidan, y revise programas, áreas, vehículos y solicitantes.</li>
-    <li><b>Dé de alta las cuentas</b>: primero las de coordinación y después las de cabos, para poder asignarles su coordinador.</li>
+    <li><b>Dé de alta las cuentas</b> de coordinación, cabos y dirección. La coordinación trabaja con todos los cabos de su institución: no hay que asignarle cabos.</li>
     <li><b>Si hay árboles plantados antes</b>, súbalos con la carga masiva (sección 9).</li>
   </ol>
 </section>
@@ -155,13 +160,12 @@
   <table>
     <tr><th style="width: 30mm">Perfil</th><th>Qué hace</th></tr>
     <tr><td><b>Cabo</b></td><td>Registra plantaciones y ve, edita y elimina únicamente las suyas; descarga sus fotografías.</td></tr>
-    <tr><td><b>Coordinador</b></td><td>Registra, y ve, edita y elimina los registros de los cabos que tiene asignados y los suyos. Elimina también las jornadas vacías y pasa una jornada abierta a otro cabo de su cuadrilla (relevo).</td></tr>
+    <tr><td><b>Coordinador</b></td><td>Registra, y ve, edita y elimina los registros de todos los cabos de su institución y los suyos. Elimina también las jornadas vacías, pasa una jornada abierta a otro cabo (relevo) y abre jornadas compartidas.</td></tr>
     <tr><td><b>Directivo</b></td><td>Ve las jornadas, los registros, las fotografías y el avance, y descarga los reportes ya generados. No registra ni modifica. En la Secretaría ve toda la Ciudad; en otra institución, sólo la suya.</td></tr>
     <tr><td><b>Administración global</b></td><td>Ve, edita y elimina todo, y administra los catálogos y las cuentas. No captura registros.</td></tr>
   </table>
   <ul>
     <li>La Administración global y el <b>área</b> son sólo de la Secretaría. En otra institución, la cuenta es de cabo, de coordinación o directiva.</li>
-    <li>Un cabo puede tener uno o varios <b>coordinadores</b>, siempre de su misma institución. Cada uno ve y edita los registros de ese cabo.</li>
   </ul>
 
   <div class="con-captura">
@@ -169,7 +173,7 @@
     <div>
       <h3>La lista</h3>
       <p>Configuración › Usuarios enseña todas las cuentas, de 10 en 10 en el teléfono y de 25 en la computadora; abajo están las páginas. Puede buscar por nombre, correo, área o institución, filtrar por perfil y por institución, y elegir «Activos», «Inactivos» o «Todos».</p>
-      <p>Cada tarjeta dice el perfil, el área o la institución, sus coordinadores o a cuántos cabos coordina, y cuántos registros tiene. Su cuenta lleva la marca «usted».</p>
+      <p>Cada tarjeta dice el perfil, el área (en la Secretaría) o la institución, y cuántos registros tiene. Su cuenta lleva la marca «usted».</p>
     </div>
   </div>
 
@@ -184,7 +188,6 @@
         <li><b>Nombre completo</b>: nombre y apellidos, como aparecerán en los registros y los reportes.</li>
         <li><b>Correo</b>: con él entra la persona. <b>No se puede cambiar después</b>: revíselo bien.</li>
         <li><b>Cargo</b> y <b>perfil de captura</b>.</li>
-        <li>Si es cabo, marque sus <b>coordinadores</b>. Puede dejarlo sin coordinador y asignarlo después.</li>
         <li>Toque «Guardar».</li>
       </ol>
       <p>Si algo falta o no cumple una regla, el formulario lo dice en su campo y no se guarda nada.</p>
@@ -220,11 +223,7 @@
       </ul>
       <p>En su propia cuenta sólo aparece «Editar»: nadie se desactiva, se elimina ni se restablece a sí mismo.</p>
       <h3>Editar</h3>
-      <p>Se cambian nombre, institución, área, cargo, perfil y coordinadores; el correo no. Dos reglas:</p>
-      <ul>
-        <li>quien coordina cabos no cambia de institución hasta que sus cabos tengan otro coordinador;</li>
-        <li>nadie se quita a sí mismo la Administración global: debe hacerlo otra cuenta de Administración.</li>
-      </ul>
+      <p>Se cambian nombre, institución, área, cargo y perfil; el correo no. Nadie se quita a sí mismo la Administración global: debe hacerlo otra cuenta de Administración.</p>
       <p>Un cambio de perfil o de institución vale de inmediato en el servidor; el teléfono de la persona se pone al día la próxima vez que abre la aplicación con señal.</p>
     </div>
   </div>
@@ -259,7 +258,7 @@
     <figure><img src="capturas/11-eliminar.png" alt="Confirmar eliminar una cuenta"><figcaption>Eliminar pide escribir el correo.</figcaption></figure>
     <div>
       <h3>Eliminar</h3>
-      <p>Eliminar es para una cuenta dada de alta por error: con el correo mal escrito, repetida o que nunca se usó. Sólo aparece si la cuenta no aparece en ningún árbol, jornada, cuenta ni catálogo, no coordina cabos y <b>nunca entró al sistema</b>.</p>
+      <p>Eliminar es para una cuenta dada de alta por error: con el correo mal escrito, repetida o que nunca se usó. Sólo aparece si la cuenta no aparece en ningún árbol, jornada, cuenta ni catálogo, y <b>nunca entró al sistema</b>.</p>
       <p>Para confirmar se escribe el correo de la cuenta. <b>No se puede deshacer</b>; el Registro de cambios conserva la constancia.</p>
       <p>Una cuenta que ya entró o que tiene registros no se elimina: se desactiva. La nota de la lista lo recuerda.</p>
     </div>
@@ -479,8 +478,7 @@
     <tr><td>No deja desactivar una Administración global, ni quitarle ese perfil</td><td>Es la única activa: active o dé de alta otra antes.</td></tr>
     <tr><td>Una institución nueva pide cuentas</td><td>Catálogos › Instituciones › «Agregar institución»; después, Usuarios › «Dar de alta».</td></tr>
     <tr><td>Una alcaldía empieza a usar el sistema</td><td>Catálogos › Instituciones: actívela; después dé de alta sus cuentas.</td></tr>
-    <tr><td>Un cabo cambia de coordinador</td><td>Edite la cuenta del cabo y marque su nuevo coordinador.</td></tr>
-    <tr><td>Un coordinador cambia de institución</td><td>Primero asigne sus cabos a otra persona, editando cada cabo; después edite su institución.</td></tr>
+    <tr><td>Alguien cambia de institución</td><td>Edite su cuenta y elija la nueva institución. Lo que ya registró se queda en las jornadas de su institución anterior.</td></tr>
     <tr><td>Una institución deja de participar</td><td>Desactívela en Catálogos › Instituciones: ninguna de sus cuentas podrá entrar.</td></tr>
     <tr><td>Un programa, especie o vehículo ya no se usa</td><td>Desactívelo: deja de ofrecerse y lo registrado no cambia.</td></tr>
     <tr><td>Hay parejas en «Posibles duplicados»</td><td>Revíselas (sección 8). Si son el mismo árbol, elimine uno.</td></tr>

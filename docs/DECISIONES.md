@@ -4481,3 +4481,47 @@
     donde fuera titular o relevo. Ahora también una compartida donde es cabo de apoyo vigente. Salió con los datos de
     prueba nuevos, pasada la medianoche.
   · Versión 1.4.1.
+
+- **D336. El manual del personal y el de la Administración al día (bloque 254).**
+  27-10-2026. Liber pidió el manual del personal (M555). Eligió lo recomendado: **un solo manual con un capítulo por
+  perfil** y **sólo en PDF**, como el de la Administración, sin nada nuevo dentro de la aplicación. Aprobó una muestra
+  (portada, índice y dos secciones) y pidió el membrete con las cuatro marcas: Gobierno de la Ciudad, Secretaría, SIA y
+  Reforestación Urbana.
+  · **Contenido.** 19 secciones: cinco para todos (cada perfil, el teléfono listo para el GPS, entrar, la pantalla y
+    sin señal), seis para cabos, cinco para coordinación, una para dirección, «Qué hacer si…» y buenas prácticas. La
+    guía del teléfono (M551) va completa en la sección 2.
+  · **Capturas.** `herramientas/manual_personal.py` las toma de la aplicación con datos reales contra el servicio local,
+    con cinco cuentas de ejemplo que borra al terminar. Nunca abre la lista de vehículos, que en la base local trae las
+    placas reales. La fotografía del árbol es un dibujo.
+  · **El PDF** lo arma `herramientas/manual_pdf.py`, igual para los dos manuales: la versión de `VERSION` en la portada,
+    el membrete chico arriba de cada página menos la portada (que trae el grande) y las capturas en JPEG. Así el manual
+    del personal pesa 3.8 MB y no 10.6, y se puede mandar por WhatsApp.
+  · **El manual de la Administración**, al día con la 1.4: ya no dice que a cada cabo se le asignan coordinadores, el
+    perfil de coordinación es el de `js/permisos.js` y «Qué hacer si…» dice qué hacer si alguien cambia de institución.
+    Sus capturas se volvieron a tomar.
+  · Al rearmar el paquete con la 1.0.0 se vuelven a correr los dos programas, para que la portada diga esa versión.
+
+- **D337. Lo que Liber decidió para la entrega al SIA (bloque 254).**
+  27-10-2026. Respuestas a las «Preguntas abiertas para el SIA» del paquete y decisiones nuevas. Entran al LEEME del
+  próximo paquete.
+  · **Quién opera las cuentas.** La Secretaría, con dos cuentas de Administración global. El SIA crea la primera con
+    `servidor/deploy/srp-cuenta-inicial.mjs`, que sigue creando una sola; quien la recibe da de alta la segunda desde
+    Usuarios, y las dos dan de alta las demás. Los correos van sólo en el paquete privado.
+  · **El registro de entradas** (`srp.bitacora_acceso`) se conserva un año y se borra solo; si el SIA tiene una regla
+    para sus sistemas, se usa la suya (la copia de sia-backend revisada no tiene ninguna). Se programa al armar el
+    paquete: una función del dueño, única excepción del disparador de inmutabilidad, que el servidor llama una vez al día.
+  · **No es difusión pública.** Es un sistema interno, con cuentas. Va en el dominio público sólo porque el personal de
+    campo entra desde su teléfono con datos móviles: el LEEME lo dice para que no quede sólo en la red interna.
+  · **Las siglas se quedan SRP.** Se pensó en SRU (Sistema de Reforestación Urbana) y se descartó: cambiarlas tocaba el
+    esquema, la cuenta de servicio, las rutas, el módulo y la cookie, y no valía el riesgo.
+  · **La primera versión que se instale en el SIA es la 1.0.0**, con una sola numeración: al armar el paquete, el
+    proyecto entero pasa de 1.4.x a 1.0.0, también la versión de prueba. Los teléfonos comparan la versión sólo por
+    igualdad, así que bajar el número no estorba la actualización. Al SIA no le ha llegado ningún paquete del SRP.
+  · **Prueba real y vaciado.** Con todo instalado, Liber probará en campo con datos ficticios y después dejará el
+    servidor en blanco. El paquete lleva un guion de vaciado que corre el SIA una vez, con una palabra de confirmación:
+    borra jornadas, árboles, fotografías, bitácoras, folios y lo que depende de ellos, y conserva catálogos, parámetros
+    y cuentas. Los folios vuelven a empezar en 1 (los reportes de la prueba se tiran). Un sello del servidor cambia al
+    vaciar y cada teléfono, al conectarse, borra lo que guardaba, para no reenviar datos de prueba.
+  · **La capa de calles.** El SRP la lee de `territorio.calles` en la base, no de GeoServer. Liber prefiere esperar a
+    que el SIA instale la capa antes de pedir la instalación del SRP.
+  · La lista real de vehículos sigue al día.

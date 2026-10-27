@@ -264,7 +264,8 @@ docs/                   Memoria del proyecto
   REVISION-SERVIDOR.md  Revisión del servidor: seguridad, integridad, alineación con el SIA y mediciones
   AUDITORIA-2026-10-19.md  Auditoría profesional del 19-10-2026, con su evidencia y el seguimiento de las correcciones
   FALLAS-COMPARTIDAS.md  Fallas de componentes del SIA que usa el SRP, para el equipo del SIA
-  manual/               Manual de la Administración global: el PDF, su fuente (manual-administracion.html) y sus capturas
+  manual/               Los dos manuales en PDF, con su fuente y sus capturas: el del personal (cabos, coordinación y dirección;
+                        manual-personal.html, capturas-personal/) y el de la Administración global (manual-administracion.html, capturas/)
   REVISION-PANTALLAS.md, REVISION-ARCHIVOS.md   Revisiones de las pantallas y de los archivos que se descargan
   DECISIONES.md         Decisiones numeradas (Dnn)
   BITACORA.md           Qué cambió en cada bloque y cómo se verificó
@@ -279,7 +280,9 @@ herramientas/           Generan archivos del sitio a partir de originales/ y de 
   generar_sql.py        datos/esquema.json → servidor/db/srp/02-srp-tablas.sql (las tablas del servidor)
   exportar_datos_app.py La base de un teléfono de prueba con la demostración → servidor/local/datos-app.json, para cargarla en la base local
   extraer_iconos.py     Set de iconografía CDMX (.ai) → trazados para js/iconos.js
-  manual_administracion.py  Capturas de la aplicación con datos reales, contra el servicio local, y el PDF del manual de la Administración global (docs/manual/)
+  manual_personal.py    Capturas de la aplicación con datos reales, contra el servicio local, y el PDF del manual del personal (docs/manual/)
+  manual_administracion.py  Lo mismo para el manual de la Administración global
+  manual_pdf.py         El PDF de los dos manuales: versión y fecha en la portada, el membrete arriba de cada página y las capturas en JPEG
   preparar_produccion.py  La copia de la aplicación que se publica en el SIA: datos reales y sin los archivos de prueba
   empaquetar.py         Una carpeta → paquete para el SIA: manifiesto con la suma de cada archivo, ZIP y su .sha256; pide VERSION (0.N sólo con --revision); se detiene ante archivos de trabajo y avisos sin revisar (AVISOS-REVISADOS.txt)
 

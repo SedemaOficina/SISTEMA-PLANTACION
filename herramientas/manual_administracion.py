@@ -16,7 +16,6 @@ Uso, desde la carpeta del proyecto (con la base local cargada):
   python herramientas/manual_administracion.py              las capturas y el PDF
   python herramientas/manual_administracion.py --solo-pdf   sólo el PDF, con las capturas que ya hay
 """
-import datetime
 import os
 import random
 import subprocess
@@ -27,6 +26,7 @@ import uuid
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(RAIZ, 'pruebas'))
 import prueba_conexion as pc  # noqa: E402  (el arranque del servicio, la aplicación con datos reales y el apoyo de la base)
+import manual_pdf  # noqa: E402  (el PDF, igual que el del manual del personal)
 from PIL import Image  # noqa: E402
 from playwright.sync_api import sync_playwright  # noqa: E402
 
@@ -244,21 +244,7 @@ def capturas(b):
 
 
 def armar_pdf(b):
-    pg = b.new_page()
-    pg.goto('file:///' + HTML.replace('\\', '/'))
-    pg.wait_for_load_state('load')
-    # La versión del sistema y la fecha del manual, en la portada
-    version = open(os.path.join(RAIZ, 'VERSION'), encoding='utf-8').read().strip()
-    meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
-    hoy = datetime.date.today()
-    pg.evaluate("""([v, f]) => { document.querySelectorAll('[data-version]').forEach(e => { e.textContent = v; });
-      document.querySelectorAll('[data-fecha]').forEach(e => { e.textContent = f; }); }""", [version, '%d de %s de %d' % (hoy.day, meses[hoy.month - 1], hoy.year)])
-    pie =('<div style="font: 8px sans-serif; color: #666; width: 100%; padding: 0 14mm; display: flex; justify-content: space-between;">'
-           '<span>Sistema de Registro de Plantaciones · Manual de la Administración global</span>'
-           '<span>Página <span class="pageNumber"></span> de <span class="totalPages"></span></span></div>')
-    pg.pdf(path=PDF, format='A4', print_background=True, display_header_footer=True, header_template='<span></span>', footer_template=pie,
-           margin={'top': '16mm', 'bottom': '18mm', 'left': '16mm', 'right': '16mm'})
-    pg.close()
+    manual_pdf.imprimir(b, HTML, PDF, 'Manual de la Administración global', 'capturas/')
 
 
 def main():

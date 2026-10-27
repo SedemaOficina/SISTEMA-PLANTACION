@@ -6638,3 +6638,41 @@ con el antes y el después y Liber aprobó lo recomendado (D335).
 No se probó en teléfonos de verdad.
 
 **Siguiente paso.** Probar la 1.4.1 en el teléfono con la página de la prueba en campo (pasos 11 y 12).
+
+## Bloque 254 — El manual del personal y el de la Administración al día (27-10-2026)
+
+**Sin cambio de versión: la aplicación no cambió.** Liber pidió el manual del personal (M555). Eligió un solo manual
+con un capítulo por perfil, sólo en PDF; aprobó una muestra y pidió el membrete con las cuatro marcas (D336). En la
+misma sesión decidió lo que falta para la entrega al SIA (D337).
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| Manual del personal | No existía; la guía del teléfono era un documento aparte | 35 páginas: cada perfil, el teléfono listo para el GPS, entrar, la pantalla, sin señal; seis secciones para cabos, cinco para coordinación, una para dirección, «Qué hacer si…» y buenas prácticas, con 31 capturas |
+| Manual de la Administración | Decía que a cada cabo se le asignan coordinadores | Al día con la 1.4, con capturas nuevas |
+| Membrete | Ninguno | Gobierno de la Ciudad, Secretaría, SIA y Reforestación Urbana: grande en la portada, chico arriba de cada página |
+| Peso del PDF | — | Personal: 3.8 MB; Administración: 2.7 MB. Las capturas van en JPEG |
+
+**Qué cambió.**
+- `docs/manual/manual-personal.html`, `docs/manual/capturas-personal/` y `docs/manual/Manual-Personal-SRP.pdf`.
+- `herramientas/manual_personal.py`: las capturas contra el servicio local, con cinco cuentas de ejemplo que borra al
+  terminar; recorta las capturas largas.
+- `herramientas/manual_pdf.py`: el PDF de los dos manuales. `herramientas/manual_administracion.py` lo usa.
+- `docs/manual/manual-administracion.html`: sin coordinadores asignados, el perfil de coordinación de
+  `js/permisos.js`, la portada con el membrete y la referencia al manual del personal; sus capturas, de nuevo.
+- `docs/DECISIONES.md` (D336, D337), `docs/MEJORAS.md` (M555 hecha, M551 al día, M564 nueva), README,
+  `docs/FASE2-Y-TRASPASO.md` y `docs/PLAN-TRASPASO-SIA.md` (quién opera las cuentas).
+
+**Hallado.**
+- La guía «Teléfono listo para el GPS» decía «Ubicar»: el botón dice «Registrar ubicación del punto» y, ya ubicado,
+  «Actualizar ubicación con mi posición». El manual usa los textos reales.
+- La nota de «Eliminar» en Usuarios todavía dice «cabos a su cargo» (M564).
+
+**Verificación.**
+- Los dos programas corrieron completos contra el servicio local, sin errores en la página.
+- Se revisaron las 35 páginas del manual del personal y las 24 del de la Administración.
+- Ninguna de las 16 placas reales aparece en el texto de los dos PDF ni en sus fuentes, y ninguna captura abre la
+  lista de vehículos.
+- `pruebas/auditoria.py`: 147 comprobaciones, 0 hallazgos.
+- No se corrió la prueba completa de la aplicación: no cambió ningún archivo de la aplicación.
+
+**Siguiente paso.** Liber revisa el manual. Después, la prueba en campo de la 1.4.1 y el paquete para el SIA con la 1.0.0.

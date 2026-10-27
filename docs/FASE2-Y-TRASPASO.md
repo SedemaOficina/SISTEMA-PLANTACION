@@ -164,7 +164,7 @@ no envía con la app cerrada: los datos salen cuando el cabo abre la app con se�
 |---|---|---|
 | Fotografías | Espacio y respaldo del volumen donde vivan | Ampliación solicitada antes de la operación plena |
 | Módulo de plantación actual del SIA, al final | Cuando el SRP opere: cargar su contenido como histórico (fila 16) o archivarlo. Hasta entonces conviven (D251) | — |
-| Cuentas de las personas (fila 31) | Cada proyecto guarda las suyas (lo construido: `srp.usuarios` con contraseñas) o el SIA tiene una tabla común con un solo acceso, y el SRP guarda sólo el perfil | Preguntar al SIA. El módulo Usuarios ya está conectado a las cuentas propias (D312); si el SIA elige la tabla común, se cambia como dice la fila 31 |
+| Cuentas de las personas (fila 31) | Cada proyecto guarda las suyas (lo construido: `srp.usuarios` con contraseñas) o el SIA tiene una tabla común con un solo acceso, y el SRP guarda sólo el perfil | Preguntar al SIA. El módulo Usuarios ya está conectado a las cuentas propias (D312); si el SIA elige la tabla común, se cambia como dice la fila 31. Quién las opera ya está decidido: dos cuentas de Administración global de la Secretaría (D337) |
 | Frutales (M343) | La marca ya está en el catálogo, «fruto comestible» (D252). Falta contar esos árboles en Supervisión y en los informes | Contarlos con el periodo y los filtros de siempre |
 
 Ya decididas (D249 a D251): colonias del IECM 2022 y capas verificadas; mapa base con CARTO y Esri; doble conteo entre instituciones (fila 8), histórico cargado a nombre de la
