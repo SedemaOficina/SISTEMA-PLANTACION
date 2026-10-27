@@ -1,6 +1,10 @@
 """EL PDF DE UN MANUAL, igual para los dos (herramientas/manual_administracion.py y herramientas/manual_personal.py):
 la versión y la fecha en la portada, el membrete de la aplicación arriba de cada página menos la portada, que ya
-trae el grande, y las capturas en JPEG para que el archivo se pueda mandar por WhatsApp."""
+trae el grande, y las capturas en JPEG para que el archivo se pueda mandar por WhatsApp.
+
+Con `--version X`, los dos programas hacen el manual de la versión X antes de que el proyecto la lleve: la portada
+la dice y la aplicación de las capturas la enseña, con la marca X en lugar de la de VERSION. Es la misma
+aplicación; sólo cambia el número."""
 import base64
 import datetime
 import io
@@ -20,7 +24,28 @@ def datos_uri(im, calidad=85):
     return 'data:image/jpeg;base64,' + base64.b64encode(b.getvalue()).decode('ascii')
 
 
-def imprimir(b, html, pdf, titulo, carpeta_capturas):
+def version_pedida(argv):
+    """El número que sigue a --version, o None."""
+    return argv[argv.index('--version') + 1] if '--version' in argv else None
+
+
+def version_actual():
+    return open(os.path.join(RAIZ, 'VERSION'), encoding='utf-8').read().strip()
+
+
+def marcar_version(ctx, base, version):
+    """La aplicación que abre `ctx` en `base` dice `version`: index.html llega con esa marca en cada archivo."""
+    if not version:
+        return
+    actual = version_actual()
+
+    def pagina(route):
+        r = route.fetch()
+        route.fulfill(response=r, body=r.text().replace('?v=' + actual, '?v=' + version))
+    ctx.route(lambda url: url.split('?')[0] in (base, base + 'index.html'), pagina)
+
+
+def imprimir(b, html, pdf, titulo, carpeta_capturas, version=None):
     """Imprime `html` en `pdf` con el navegador `b` de Playwright. `titulo` va en el pie y en las propiedades del
     archivo; las imágenes cuyo src empieza con `carpeta_capturas` van en JPEG."""
     pg = b.new_page()
@@ -35,7 +60,7 @@ def imprimir(b, html, pdf, titulo, carpeta_capturas):
         im = Image.open(os.path.join(carpeta, src)).convert('RGB')
         jpeg[src] = datos_uri(im.resize((im.width * 3 // 4, im.height * 3 // 4), Image.LANCZOS))
     pg.evaluate("m => Promise.all([...document.images].filter(i => m[i.getAttribute('src')]).map(i => { i.src = m[i.getAttribute('src')]; return i.decode(); }))", jpeg)
-    version = open(os.path.join(RAIZ, 'VERSION'), encoding='utf-8').read().strip()
+    version = version or version_actual()
     hoy = datetime.date.today()
     pg.evaluate("""([v, f]) => { document.querySelectorAll('[data-version]').forEach(e => { e.textContent = v; });
       document.querySelectorAll('[data-fecha]').forEach(e => { e.textContent = f; }); }""", [version, '%d de %s de %d' % (hoy.day, MESES[hoy.month - 1], hoy.year)])

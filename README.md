@@ -282,7 +282,8 @@ herramientas/           Generan archivos del sitio a partir de originales/ y de 
   extraer_iconos.py     Set de iconografía CDMX (.ai) → trazados para js/iconos.js
   manual_personal.py    Capturas de la aplicación con datos reales, contra el servicio local, y el PDF del manual del personal (docs/manual/)
   manual_administracion.py  Lo mismo para el manual de la Administración global
-  manual_pdf.py         El PDF de los dos manuales: versión y fecha en la portada, el membrete arriba de cada página y las capturas en JPEG
+  manual_pdf.py         El PDF de los dos manuales: versión y fecha en la portada, el membrete arriba de cada página y las capturas en JPEG;
+                        con --version X (en los dos programas), el manual de esa versión antes de que el proyecto la lleve
   preparar_produccion.py  La copia de la aplicación que se publica en el SIA: datos reales y sin los archivos de prueba
   empaquetar.py         Una carpeta → paquete para el SIA: manifiesto con la suma de cada archivo, ZIP y su .sha256; pide VERSION (0.N sólo con --revision); se detiene ante archivos de trabajo y avisos sin revisar (AVISOS-REVISADOS.txt)
 

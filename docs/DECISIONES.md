@@ -4525,3 +4525,18 @@
   · **La capa de calles.** El SRP la lee de `territorio.calles` en la base, no de GeoServer. Liber prefiere esperar a
     que el SIA instale la capa antes de pedir la instalación del SRP.
   · La lista real de vehículos sigue al día.
+
+- **D338. Los manuales ya con la 1.0.0, la nota de Usuarios y la guía del teléfono (bloque 255).**
+  27-10-2026. Liber pidió los dos manuales ya con la versión 1.0.0, la que se instalará en el SIA, y las dos
+  correcciones que dejó el bloque 254.
+  · **Los manuales con la 1.0.0.** El proyecto sigue en la 1.4.x hasta armar el paquete (D337). Los dos programas
+    aceptan `--version X`: la portada dice X y la aplicación de las capturas también, porque `index.html` llega con
+    la marca X. Es la misma aplicación; sólo cambia el número. Si la aplicación cambia antes del paquete, se vuelven a
+    generar igual.
+  · **La nota de Usuarios** (M564) ya no habla de «cabos a su cargo», que no existen desde la 1.4: «Una cuenta con
+    árboles o jornadas, o que ya entró al sistema, no se elimina: se desactiva». Con datos de prueba, sin «o que ya
+    entró al sistema», como antes. Liber pidió hacerla sin muestra previa: el antes y el después van en el cierre.
+  · **La guía «Teléfono listo para el GPS»** de Claude Docs decía «Ubicar»: ahora dice «Registrar ubicación del
+    punto» y, para volver a ubicar, «Actualizar ubicación con mi posición». La página de la prueba en campo no lo
+    decía en ningún paso.
+  · Versión 1.4.2.

@@ -15,6 +15,7 @@ Dos cuidados, porque el manual se publica:
 Uso, desde la carpeta del proyecto (con la base local cargada):
   python herramientas/manual_administracion.py              las capturas y el PDF
   python herramientas/manual_administracion.py --solo-pdf   sólo el PDF, con las capturas que ya hay
+  --version 1.0.0                                           el manual de esa versión (herramientas/manual_pdf.py)
 """
 import os
 import random
@@ -38,6 +39,7 @@ PUERTO_API, PUERTO_APP = 3112, 8096
 BASE = 'http://127.0.0.1:%d/' % PUERTO_APP
 TELEFONO = {'width': 390, 'height': 844}
 TEMPORAL_DE_EJEMPLO = 'kq7m-x3ft-9wbn'
+VERSION = manual_pdf.version_pedida(sys.argv)
 
 
 def cuenta(nombre, correo, perfil, cargo, **x):
@@ -112,6 +114,7 @@ def capturas(b):
     os.makedirs(CAPTURAS, exist_ok=True)
     ctx = b.new_context(viewport=TELEFONO, device_scale_factor=2, service_workers='block', locale='es-MX')
     ctx.route('**/js/config.js*', pc.config_real)
+    manual_pdf.marcar_version(ctx, BASE, VERSION)
     pg = ctx.new_page()
     errores = []
     pg.on('pageerror', lambda e: errores.append(str(e)))
@@ -126,6 +129,7 @@ def capturas(b):
     # «Cambie su contraseña», en el teléfono de quien recibió una temporal
     otro = b.new_context(viewport=TELEFONO, device_scale_factor=2, service_workers='block', locale='es-MX')
     otro.route('**/js/config.js*', pc.config_real)
+    manual_pdf.marcar_version(otro, BASE, VERSION)
     p2 = otro.new_page()
     pc.abrir(p2)
     pc.entrar(p2, NUEVA['correo'], NUEVA['clave'])
@@ -138,6 +142,7 @@ def capturas(b):
     foto(pg, '03-configuracion', entera=True)
     compu = b.new_context(viewport={'width': 1180, 'height': 760}, device_scale_factor=1.5, service_workers='block', locale='es-MX')
     compu.route('**/js/config.js*', pc.config_real)
+    manual_pdf.marcar_version(compu, BASE, VERSION)
     p3 = compu.new_page()
     pc.abrir(p3)
     pc.entrar(p3, ADMIN['correo'], ADMIN['clave']); p3.wait_for_timeout(4000)
@@ -244,7 +249,7 @@ def capturas(b):
 
 
 def armar_pdf(b):
-    manual_pdf.imprimir(b, HTML, PDF, 'Manual de la Administración global', 'capturas/')
+    manual_pdf.imprimir(b, HTML, PDF, 'Manual de la Administración global', 'capturas/', VERSION)
 
 
 def main():

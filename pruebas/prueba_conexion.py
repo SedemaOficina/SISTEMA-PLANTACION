@@ -1214,7 +1214,7 @@ def main():
             pg.evaluate("SRP.app.mostrarVista('usuarios')"); pg.wait_for_timeout(2000)
             menus = [pg.evaluate(MENU_DE, x['id']) for x in (ADMIN, CABO)]
             nota = pg.inner_text('#usr-nota-eliminar')
-            ok(menus[0] == ['editar'] and menus[1] == ['editar', 'restablecer', 'estado'] and 'o que ya entró al sistema, no se elimina' in nota,
+            ok(menus[0] == ['editar'] and menus[1] == ['editar', 'restablecer', 'estado'] and 'o que ya entró al sistema, no se elimina' in nota and 'a su cargo' not in nota,
                'en Usuarios, la cuenta propia sólo se edita; otra, ya con uso, ofrece «Restablecer contraseña» y no «Eliminar», y la nota dice que una que ya entró no se elimina: %s' % menus)
             NUEVA = {'nombre': 'Prueba Alta Conexión', 'correo': 'alta.conexion.prueba.%s@ejemplo.local' % CORRIDA}
             alta_usuario(pg, NUEVA['nombre'], NUEVA['correo'])

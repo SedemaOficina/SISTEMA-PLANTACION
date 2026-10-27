@@ -13,6 +13,7 @@ Tres cuidados, porque el manual se publica:
 Uso, desde la carpeta del proyecto (con la base local cargada):
   python herramientas/manual_personal.py              las capturas y el PDF
   python herramientas/manual_personal.py --solo-pdf   sólo el PDF, con las capturas que ya hay
+  --version 1.0.0                                     el manual de esa versión (herramientas/manual_pdf.py)
 """
 import datetime
 import os
@@ -37,6 +38,7 @@ BASE = 'http://127.0.0.1:%d/' % PUERTO_APP
 TELEFONO = {'width': 390, 'height': 844}
 SITIO = (19.411548, -99.169452)   # camellón de Amsterdam, Hipódromo
 HOY = datetime.date.today().isoformat()
+VERSION = manual_pdf.version_pedida(sys.argv)
 
 
 def cuenta(nombre, correo, perfil, cargo, **x):
@@ -169,6 +171,7 @@ def contexto(b, precision=6):
     ctx = b.new_context(viewport=TELEFONO, device_scale_factor=2, service_workers='block', locale='es-MX',
                         geolocation={'latitude': SITIO[0], 'longitude': SITIO[1], 'accuracy': precision}, permissions=['geolocation'])
     ctx.route('**/js/config.js*', pc.config_real)
+    manual_pdf.marcar_version(ctx, BASE, VERSION)
     return ctx
 
 
@@ -408,7 +411,7 @@ def capturas(b):
 
 
 def armar_pdf(b):
-    manual_pdf.imprimir(b, HTML, PDF, 'Manual del personal', 'capturas-personal/')
+    manual_pdf.imprimir(b, HTML, PDF, 'Manual del personal', 'capturas-personal/', VERSION)
 
 
 def main():

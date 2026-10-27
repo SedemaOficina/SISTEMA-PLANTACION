@@ -61,7 +61,7 @@ SRP.usuarios = {
     // Todo lo que la nombra: decide si se puede eliminar. Con datos reales lo cuenta el servidor; null si no respondió
     this.usos = this.real() ? await this.usosDelServidor() : await SRP.ref.usosDe('usuarios');
     // Con datos reales tampoco se elimina una cuenta que ya entró: el registro de entradas la nombra
-    if (this.real()) this.el('usr-nota-eliminar').textContent = 'Una cuenta con árboles, jornadas o cabos a su cargo, o que ya entró al sistema, no se elimina: se desactiva.';
+    if (this.real()) this.el('usr-nota-eliminar').textContent = 'Una cuenta con árboles o jornadas, o que ya entró al sistema, no se elimina: se desactiva.';
     this.llenarFiltros();
     this.pintar();
   },

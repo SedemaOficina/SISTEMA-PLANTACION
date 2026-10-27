@@ -6676,3 +6676,33 @@ misma sesión decidió lo que falta para la entrega al SIA (D337).
 - No se corrió la prueba completa de la aplicación: no cambió ningún archivo de la aplicación.
 
 **Siguiente paso.** Liber revisa el manual. Después, la prueba en campo de la 1.4.1 y el paquete para el SIA con la 1.0.0.
+
+## Bloque 255 — Los manuales con la 1.0.0 y dos correcciones (27-10-2026)
+
+**Versión 1.4.2.** Liber pidió los dos manuales ya con la versión 1.0.0 y las correcciones pendientes del bloque 254
+(D338).
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| Manuales | Decían versión 1.4.1 | Dicen 1.0.0, en la portada y en las capturas |
+| Nota de Usuarios | «Una cuenta con árboles, jornadas o cabos a su cargo, o que ya entró al sistema, no se elimina: se desactiva.» | «Una cuenta con árboles o jornadas, o que ya entró al sistema, no se elimina: se desactiva.» |
+| Guía del teléfono (Claude Docs) | «Ubicar» | «Registrar ubicación del punto» y «Actualizar ubicación con mi posición» |
+
+**Qué cambió.**
+- `js/usuarios.js` e `index.html`: la nota de Usuarios. Marcas de versión, `VERSION` y la etapa de `js/config.js`, a
+  1.4.2.
+- `herramientas/manual_pdf.py`: `version_pedida`, `marcar_version` y la versión en `imprimir`;
+  `herramientas/manual_personal.py` y `herramientas/manual_administracion.py` aceptan `--version`.
+- Los dos manuales y sus capturas, generados con `--version 1.0.0`.
+- `pruebas/prueba_conexion.py`: la nota de Usuarios ya no dice «a su cargo».
+- `docs/DECISIONES.md` (D338), `docs/MEJORAS.md` (M564 hecha, M551 al día) y README.
+- Fuera del repositorio: el documento «Teléfono listo para el GPS» y la página de la prueba en campo, a 1.4.2.
+
+**Verificación.**
+- `pruebas/prueba_conexion.py`: 126 de 126. La primera corrida se cayó en la prueba de dos cargas masivas a la vez:
+  leyó la revisión del archivo antes de que terminara. La segunda pasó completa.
+- `pruebas/auditoria.py`: 147 comprobaciones, 0 hallazgos.
+- Los dos PDF dicen «Versión del sistema: 1.0.0» y ningún 1.4; las capturas enseñan «Versión 1.0.0».
+- No se corrió la prueba completa de la aplicación: sólo cambiaron una nota y el número de versión.
+
+**Siguiente paso.** La prueba en campo, ahora con la 1.4.2, y la auditoría antes del paquete.
