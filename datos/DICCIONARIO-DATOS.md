@@ -1,6 +1,6 @@
 # Diccionario de datos e inventario de tablas
 
-**Generado de `esquema.json` por `herramientas/generar_diccionario.py`: no se edita a mano.** Versión del esquema: 2026-10-04. Etapa 1 (Fase 1: dispositivo, sin servidor).
+**Generado de `esquema.json` por `herramientas/generar_diccionario.py`: no se edita a mano.** Versión del esquema: 2026-10-28. Fase 2: el teléfono y el servidor.
 
 Qué guarda el sistema, tabla por tabla: cada campo con su tipo, si admite nulo, de dónde sale, qué valores admite y qué regla lo gobierna; qué se deriva sin verse en pantalla; qué se calcula y no se guarda; qué vive sólo en memoria mientras se captura; cómo se relacionan las tablas; y qué reglas aplican hoy en el dispositivo y cuáles esperan al servidor. `pruebas/auditoria.py` compara este esquema contra lo que el sistema guarda de verdad y contra los dominios del código, y avisa si algo sobra, falta o no está regenerado. `MAPEO-CAMPOS.md` sigue siendo la vista por pantalla (etiqueta ↔ campo, con la explicación larga de cada decisión); este documento es la vista por tabla, pensada para construir la base y la API de la Fase 2 sin volver a leer el código.
 
@@ -105,7 +105,7 @@ Un renglón por ejemplar plantado. Es el registro individual de campo; todo lo d
 | `editado_por_id` | uuid | Sí | Sesión | → usuarios.id | Historial | Quién hizo la última edición (o la eliminación) |
 | `calle_estado` | text | Sí | Servidor | dominio `calle_estado` | Detalle («Calle»): «Se asigna al enviar» mientras sea nulo; «Sin calle a menos de 40 m» si es `lejos` | Lo pone el servidor al recibir el árbol y cada vez que se corrige el punto, con la capa territorio.calles: `ok` si hay un tramo a 40 m o menos, `lejos` si no. Nulo mientras no se calcula: un árbol sin enviar, o un servidor que todavía no tiene la capa. Con datos de prueba lo pone el servidor simulado, con la copia ligera de la capa (assets/calles/) |
 | `calle_clave` | text | Sí | Servidor | Clave INEGI del tramo, de 19 dígitos, válida para su calle_version | No | El tramo más cercano. Una clave sólo vale para su versión de la capa: con otra versión se pasa por territorio.calles_equivalencia |
-| `calle_version` | text | Sí | Servidor | Versión de territorio.calles con que se calculó, como `1.0.0` | No | srp.recalcular_calles() vuelve a calcular los árboles sin calle o de otra versión, después de instalar o actualizar la capa |
+| `calle_version` | text | Sí | Servidor | Versión vigente de territorio.calles con que se calculó, como `1.0.0`: la de territorio.version_capa del SIA o, si no la registró, la del paquete (srp.version_calles) | No | CALL srp.recalcular_calles() vuelve a calcular, por tandas, los árboles sin calle o de otra versión, después de instalar o actualizar la capa |
 | `calle` | text | Sí | Servidor | Nombre del tramo (`nombre` de la capa); «calle sin nombre» si no tiene | Detalle («Calle»), reporte (columna «Calle»), informe y Supervisión («Por red vial»), CSV | Sólo con calle_estado = ok; si no, nulo, como los demás campos de la calle |
 | `calle_entre_1` | text | Sí | Servidor | La calle de una esquina del tramo (`entre_1`); nula si el tramo no tiene salida por ese lado | Detalle y reporte («entre A y B»); el informe junta las cuadras seguidas de una calle en un tramo | Con una sola esquina, o con la misma calle en las dos, la pantalla dice «a la altura de» |
 | `calle_entre_2` | text | Sí | Servidor | La calle de la otra esquina (`entre_2`) | Igual que calle_entre_1 | — |
@@ -121,7 +121,7 @@ Un renglón por ejemplar plantado. Es el registro individual de campo; todo lo d
 Cuentas del sistema. Una por persona; el perfil decide qué puede hacer (js/permisos.js, fuente única).
 
 - **Llave:** `id`. **Índices:** ninguno. **Pantalla:** Usuarios (sólo Administración global); Acceso.
-- **Campos:** 13.
+- **Campos:** 12.
 
 | Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
 |---|---|---|---|---|---|---|
@@ -132,7 +132,6 @@ Cuentas del sistema. Una por persona; el perfil decide qué puede hacer (js/perm
 | `area_id` | text | Sí | Catálogo | → areas.id (DGSANPAVA, Oficina de la Secretaría, Sistema de Información Ambiental, DGEIRA) | Área (sólo cuentas de la Secretaría) | Obligatoria en cuentas de SEDEMA; nula en las de otras organizaciones |
 | `cargo_rol` | text | No | Persona | Texto libre | Cargo | Descriptivo; no gobierna permisos |
 | `perfil` | text | No | Persona | dominio `perfil` | Perfil de captura | Decide alcance y acciones. Una cuenta de administración no puede quitarse a sí misma el perfil ADMIN. Un perfil desconocido queda sin permisos y se avisa. ADMIN sólo en SEDEMA; fuera, CABO, COORDINADOR o DIRECTIVO |
-| `coordinadores_ids` | uuid[] | No | Persona | → usuarios.id con perfil COORDINADOR; [] si no tiene | No se muestra desde la 1.4 | Sin uso desde la 1.4 (D333): la Coordinación trabaja con todos los cabos de su institución, sin cuadrilla. Lo ya capturado se conserva; las altas nuevas lo dejan en [] |
 | `activo` | boolean | No | Persona | true/false | Estado | Inactiva no puede entrar; sus registros se conservan a su nombre. Con registros a su nombre no se elimina, se desactiva |
 | `fecha_creacion` | timestamptz | No | Sistema | ISO 8601 | No | Cuándo se dio de alta la cuenta; mismo nombre que en catálogos |
 | `creado_por_id` | uuid | No | Sesión | → usuarios.id | No | Quién dio de alta la cuenta; mismo nombre que en catálogos |
@@ -339,11 +338,11 @@ Una jornada de plantación: se declara antes de registrar el primer árbol. Agru
 | plantaciones.especie_id | especies.id | N:1 | Nula sólo con «Otra especie» (entonces especie_otra obligatoria; es lo que la bandeja de especies de la Fase 2 resuelve) |
 | plantaciones.programa_id | programas.id | N:1 | Obligatoria; siempre la de su jornada |
 | plantaciones.alcaldia_cve / colonia_cve / uga | capas del SIA (alcaldías, colonias, UGA) | N:1 | No son llaves foráneas en la base del dispositivo: son derivaciones del punto, con capa_version para rehacerlas |
-| usuarios.coordinadores_ids | usuarios.id | N:M | Sin uso desde la 1.4 (D333): lo ya capturado se conserva y no decide nada; las altas lo dejan en [] |
 | usuarios.area_id | areas.id | N:1 | Obligatoria |
 | usuarios.creado_por_id / editado_por_id | usuarios.id | N:1 | — |
 | programas, areas, especies, vehiculos, instituciones y solicitantes: creado_por_id / editado_por_id | usuarios.id | N:1 | Nulo en las especies que vienen del SIA |
 | jornadas.cabo_id / encargado_id / relevo_id / editado_por_id | usuarios.id | N:1 | cabo_id es el titular, quien inició la jornada; relevo_id, el cabo que registra en su lugar tras un relevo |
+| jornadas.cabos_apoyo[].cabo_id / por_id | usuarios.id | N:M | Cada cabo de apoyo es un cabo activo de la institución de la jornada, y lo puso su titular: lo comprueba el servicio al agregarlo. La base exige la forma de cada elemento (jornadas_cabos_apoyo_forma) |
 | plantaciones.jornada_id | jornadas.id | N:1 | Cada árbol nace en la jornada activa y toma su fecha y su programa; «Mover a otra jornada» la cambia. Una jornada que tiene árboles, aun eliminados, no se borra |
 | jornadas.programa_id | programas.id | N:1 | Obligatoria; sus árboles la toman |
 | jornadas.puntos_revisados | plantaciones.id | N:M | Lista de ids; sólo árboles de la misma jornada |
@@ -436,7 +435,6 @@ Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras
 | plantaciones.especie_id | Con especie del catálogo | Con «Otra especie» (null) |
 | plantaciones.gps_precision_m | Sólo con punto_origen = gps | Al tocar el mapa, capturar a mano o arrastrar (null) |
 | plantaciones.foto_base64, foto_id | Al elegir una foto | Al quitarla (null, null) |
-| usuarios.coordinadores_ids | Sólo con perfil CABO | Sin uso desde la 1.4 (D333): las altas lo dejan en [] |
 | especies.nombre_cientifico … id_enciclovida | Sólo en tipo = especie | No existen en programas ni áreas |
 | vehiculos.modelo, tipo_vehiculo | Sólo en tipo = vehiculo | No existen en programas, áreas ni especies |
 | usuarios.area_id | Sólo con organización SEDEMA | Al elegir otra organización (null) |
@@ -469,7 +467,6 @@ Nada de esto llega a la base tal cual; es lo que el formulario necesita mientras
 | R-A01 | todas | Alcance por perfil: CABO ve/edita/elimina los suyos; COORDINADOR registra, ve, edita y elimina los de sus cabos y los suyos, y elimina jornadas vacías; DIRECTIVO sólo ve y descarga (reportes ya generados, tablas y fotografías): en SEDEMA, todo; en otra institución, lo de la suya, por jornadas.organizacion_id y por la institución de quien capturó el árbol; ADMIN todo, no captura. Un perfil desconocido no alcanza nada. Cada acción que escribe lo exige al empezar, no sólo esconde el botón | js/permisos.js PERFILES, ACCIONES, exigir() (fuente única); la interfaz sólo lo refleja |
 | R-A02 | todas | Toda alta, edición, eliminación, activación y desactivación escribe bitácora en la misma transacción | js/almacen.js guardarConBitacora(), borrarConBitacora() |
 | R-U01 | usuarios | Tipo de institución, institución, nombre completo (nombre y al menos un apellido), correo válido y único (insensible a mayúsculas/acentos), área, cargo y perfil válido obligatorios; el correo no cambia después | js/usuarios.js validar() |
-| R-U02 | usuarios | coordinadores_ids: sin uso desde la 1.4 (D333). Las altas lo dejan en []; lo ya capturado se conserva y no decide nada | js/usuarios.js guardar() |
 | R-U03 | usuarios | Una cuenta de administración no puede quitarse a sí misma el perfil ADMIN | js/usuarios.js validar() |
 | R-U04 | usuarios | Si otro renglón la nombra no se elimina: se desactiva. Cuenta en todas las tablas: árboles (también eliminados), jornadas como cabo, encargado o quien la creó o editó y cuentas o catálogos que dio de alta o editó. Inactiva no puede entrar; sus registros siguen a su nombre | js/referencias.js usosDe(); js/usuarios.js eliminar(), cambiarEstado(); js/sesion.js autenticar() |
 | R-U05 | usuarios | Institución obligatoria, elegida por tipo de la lista (no se crea desde el alta). Fuera de SEDEMA: sin área y perfil CABO. Una cuenta cuya institución está desactivada no entra, tampoco con la sesión abierta | js/usuarios.js validar(), guardar(); js/sesion.js autenticar(), leer(); js/referencias.js accesoOrganizacion() |
@@ -584,7 +581,6 @@ CREATE TABLE usuarios (
   area_id                  text           NULL,
   cargo_rol                text           NOT NULL,
   perfil                   text           NOT NULL,
-  coordinadores_ids        uuid[]         NOT NULL,
   activo                   boolean        NOT NULL,
   fecha_creacion           timestamptz    NOT NULL,
   creado_por_id            uuid           NOT NULL,

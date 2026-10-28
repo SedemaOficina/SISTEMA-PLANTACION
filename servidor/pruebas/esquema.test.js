@@ -84,7 +84,7 @@ test('la cuenta del servicio sólo opera datos; la bitácora sólo crece', async
   // Una cadena completa: institución, cuenta, catálogos, jornada y árbol
   await c.query("INSERT INTO srp.instituciones VALUES ('o-sedema', 'SEDEMA', 'Secretaría del Medio Ambiente', true, NULL, $1, NULL, NULL, 'Gobierno de la CDMX')", [ahora]);
   await c.query("INSERT INTO srp.areas VALUES ('a-sia', 'SIA', 'Sistema de Información Ambiental', true, NULL, $1, NULL, NULL)", [ahora]);
-  await c.query("INSERT INTO srp.usuarios VALUES ($1, 'administracion@ejemplo.local', 'Administración Ejemplo', 'o-sedema', 'a-sia', 'Administración global', 'ADMIN', '{}', true, $2, $1, NULL, NULL)", [admin, ahora]);
+  await c.query("INSERT INTO srp.usuarios VALUES ($1, 'administracion@ejemplo.local', 'Administración Ejemplo', 'o-sedema', 'a-sia', 'Administración global', 'ADMIN', true, $2, $1, NULL, NULL)", [admin, ahora]);
   await c.query("INSERT INTO srp.programas VALUES ('p-refor', 'REFORESTACION_URBANA', 'Reforestación Urbana', true, NULL, $1, NULL, NULL, '{Alcaldía}')", [ahora]);
   await c.query("INSERT INTO srp.especies VALUES ('ESP-0029', 'ESP-0029', 'Fresno', true, NULL, $1, NULL, NULL, 'Fraxinus uhdei', '', 'Nativa', 'Árbol', 'Sí', 'No', NULL, NULL)", [ahora]);
   const jornada = '00000000-0000-4000-8000-0000000000a1';
@@ -166,7 +166,7 @@ test('al eliminar una cuenta sin registros se van su contraseña y sus sesiones,
   await c.query('BEGIN');
   const id = '00000000-0000-4000-8000-000000000002';
   await c.query("INSERT INTO srp.instituciones VALUES ('o-x', 'X', 'Institución X', true, NULL, now(), NULL, NULL, 'Empresa privada')");
-  await c.query("INSERT INTO srp.usuarios VALUES ($1, 'cabo@ejemplo.local', 'Cabo Ejemplo', 'o-x', NULL, 'Cabo', 'CABO', '{}', true, now(), $1, NULL, NULL)", [id]);
+  await c.query("INSERT INTO srp.usuarios VALUES ($1, 'cabo@ejemplo.local', 'Cabo Ejemplo', 'o-x', NULL, 'Cabo', 'CABO', true, now(), $1, NULL, NULL)", [id]);
   await c.query("INSERT INTO srp.credenciales VALUES ($1, 'scrypt$x', true, now() + interval '1 day', 0, NULL, now(), $1)", [id]);
   await c.query("INSERT INTO srp.sesiones (testigo_resumen, usuario_id, expira_en) VALUES (repeat('a', 64), $1, now() + interval '1 day')", [id]);
   assert.equal(await codigoDeError(c, "INSERT INTO srp.sesiones (testigo_resumen, usuario_id, expira_en) VALUES ('no-es-un-resumen', $1, now())", [id]), VIOLA_CHECK, 'el resumen del testigo es sha256 en hexadecimal');
@@ -253,10 +253,47 @@ test('una cuenta que ya intentó entrar no se elimina: su registro de entradas l
   await c.query('BEGIN');
   const id = '00000000-0000-4000-8000-000000000003';
   await c.query("INSERT INTO srp.instituciones VALUES ('o-x', 'X', 'Institución X', true, NULL, now(), NULL, NULL, 'Empresa privada')");
-  await c.query("INSERT INTO srp.usuarios VALUES ($1, 'entro@ejemplo.local', 'Cabo Que Entró', 'o-x', NULL, 'Cabo', 'CABO', '{}', true, now(), $1, NULL, NULL)", [id]);
+  await c.query("INSERT INTO srp.usuarios VALUES ($1, 'entro@ejemplo.local', 'Cabo Que Entró', 'o-x', NULL, 'Cabo', 'CABO', true, now(), $1, NULL, NULL)", [id]);
   await c.query("INSERT INTO srp.bitacora_acceso (evento, usuario_id) VALUES ('ENTRADA', $1)", [id]);
   assert.equal(await codigoDeError(c, "INSERT INTO srp.bitacora_acceso (evento, usuario_id, correo_intentado) VALUES ('ENTRADA_FALLIDA', $1, 'entro@ejemplo.local')", [id]), VIOLA_CHECK, 'cuenta y correo a la vez');
   assert.equal(await codigoDeError(c, 'DELETE FROM srp.usuarios WHERE id = $1', [id]), VIOLA_FORANEA);
+  await c.query('ROLLBACK');
+});
+
+test('las funciones del SRP llevan su ruta de búsqueda fija, sin la de quien instala; recalcular las calles es sólo de quien administra la base', async () => {
+  const f = (await c.query("SELECT p.proname, p.prokind, p.proconfig FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'srp' ORDER BY 1")).rows;
+  const rutas = f.flatMap((x) => (x.proconfig || []).filter((v) => v.startsWith('search_path=')).map((v) => [x.proname, v]));
+  assert.ok(rutas.length >= 9, rutas.length + ' funciones con ruta');
+  assert.deepEqual(rutas.filter(([, v]) => !/^search_path=(srp, \w+|pg_catalog, pg_temp)$/.test(v)), [], 'sin "$user" ni otros esquemas');
+  assert.deepEqual(f.filter((x) => x.prokind === 'p').map((x) => [x.proname, x.proconfig]), [['recalcular_calles', null]], 'un procedimiento que confirma por tandas no lleva ruta propia');
+  await c.query('GRANT srp_api TO CURRENT_USER WITH INHERIT FALSE, SET TRUE');
+  await c.query('BEGIN');
+  await c.query('SET LOCAL ROLE srp_api');
+  assert.equal(await codigoDeError(c, 'CALL srp.recalcular_calles()'), PERMISO_DENEGADO);
+  await c.query('ROLLBACK');
+});
+
+test('el registro de entradas y las sesiones terminadas se guardan un año: sólo la función del recorte borra lo anterior', async () => {
+  await c.query('BEGIN');
+  const id = '00000000-0000-4000-8000-000000000004';
+  await c.query("INSERT INTO srp.instituciones VALUES ('o-y', 'Y', 'Institución Y', true, NULL, now(), NULL, NULL, 'Empresa privada')");
+  await c.query("INSERT INTO srp.usuarios VALUES ($1, 'anual@ejemplo.local', 'Cabo Anual', 'o-y', NULL, 'Cabo', 'CABO', true, now(), $1, NULL, NULL)", [id]);
+  for (const [dias, letra] of [[400, 'a'], [300, 'b']]) {
+    await c.query(`INSERT INTO srp.bitacora_acceso (momento, evento, usuario_id) VALUES (now() - interval '${dias} days', 'ENTRADA', $1)`, [id]);
+    await c.query(`INSERT INTO srp.sesiones (testigo_resumen, usuario_id, creada_en, ultima_actividad, expira_en, cerrada_en, motivo_cierre)
+      VALUES (repeat($2, 64), $1, now() - interval '${dias + 1} days', now() - interval '${dias} days', now() - interval '${dias - 10} days', now() - interval '${dias} days', 'SALIDA')`, [id, letra]);
+  }
+  // Ni quien administra la base lo borra a mano, ni la cuenta del servicio
+  assert.equal(await codigoDeError(c, 'DELETE FROM srp.bitacora_acceso WHERE usuario_id = $1', [id]), LO_IMPIDE_UN_DISPARADOR);
+  await c.query('GRANT srp_api TO CURRENT_USER WITH INHERIT FALSE, SET TRUE');
+  await c.query('SET LOCAL ROLE srp_api');
+  assert.equal(await codigoDeError(c, 'DELETE FROM srp.bitacora_acceso'), PERMISO_DENEGADO);
+  assert.equal(await codigoDeError(c, 'DELETE FROM srp.sesiones'), PERMISO_DENEGADO);
+  // La función del recorte sí, y sólo lo de hace más de un año
+  assert.deepEqual((await c.query('SELECT * FROM srp.recortar_acceso()')).rows[0], { entradas: 1, sesiones: 1 });
+  await c.query('RESET ROLE');
+  const quedan = (await c.query('SELECT (SELECT count(*) FROM srp.bitacora_acceso WHERE usuario_id = $1)::int AS entradas, (SELECT count(*) FROM srp.sesiones WHERE usuario_id = $1)::int AS sesiones', [id])).rows[0];
+  assert.deepEqual(quedan, { entradas: 1, sesiones: 1 }, 'lo de hace menos de un año se queda');
   await c.query('ROLLBACK');
 });
 

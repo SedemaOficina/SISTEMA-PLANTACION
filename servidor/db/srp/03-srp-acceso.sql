@@ -70,9 +70,9 @@ CREATE TABLE srp.bitacora_acceso (
 CREATE INDEX bitacora_acceso_usuario_id ON srp.bitacora_acceso (usuario_id, momento);
 -- Las entradas fallidas recientes de una misma dirección, que el servicio cuenta antes de verificar nada
 CREATE INDEX bitacora_acceso_ip ON srp.bitacora_acceso (ip, momento);
-COMMENT ON TABLE srp.bitacora_acceso IS 'Entradas, intentos fallidos, bloqueos, salidas y cambios de contraseña, con su procedencia. Sólo crece.';
+COMMENT ON TABLE srp.bitacora_acceso IS 'Entradas, intentos fallidos, bloqueos, salidas y cambios de contraseña, con su procedencia. Sólo crece; se guarda un año (srp.recortar_acceso).';
 COMMENT ON COLUMN srp.bitacora_acceso.usuario_id IS 'La cuenta del intento, si el correo existe. Una cuenta que ya intentó entrar no se elimina: se desactiva.';
-COMMENT ON COLUMN srp.bitacora_acceso.correo_intentado IS 'Sólo cuando el correo no tiene cuenta: el identificador no sirve para el forense y el correo sí.';
+COMMENT ON COLUMN srp.bitacora_acceso.correo_intentado IS 'Sólo cuando el correo no tiene cuenta: el identificador no sirve para el forense y el correo sí. Lo que no tiene forma de correo se anota como «(no es un correo)».';
 COMMENT ON COLUMN srp.bitacora_acceso.ip IS 'Dirección de origen de la petición, como la da el módulo común de procedencia del SIA.';
 ALTER TABLE srp.bitacora_acceso ADD CONSTRAINT bitacora_acceso_usuario_id_fk FOREIGN KEY (usuario_id) REFERENCES srp.usuarios (id) ON DELETE RESTRICT;
 
@@ -83,9 +83,15 @@ ALTER TABLE srp.sesiones ADD CONSTRAINT sesiones_usuario_id_fk FOREIGN KEY (usua
 
 -- LAS BITÁCORAS SÓLO CRECEN: la de los cambios y la de las entradas. La cuenta del servicio ya no puede
 -- editarlas ni borrarlas por sus permisos; los disparadores lo impiden también a quien administra la
--- base, aunque sea por error. Nada las recorta.
+-- base, aunque sea por error. La única excepción es el recorte de un año del registro de entradas, que
+-- hace srp.recortar_acceso(), abajo: sólo borra lo que tiene más de un año, y sólo desde esa función.
 CREATE FUNCTION srp.bitacora_inmutable() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
+  IF TG_OP = 'DELETE' AND TG_TABLE_NAME = 'bitacora_acceso' THEN
+    IF current_setting('srp.recorte_anual', true) = 'si' AND OLD.momento < now() - interval '1 year' THEN
+      RETURN OLD;
+    END IF;
+  END IF;
   RAISE EXCEPTION 'La bitácora del SRP no se edita ni se borra (%)', TG_TABLE_NAME;
 END $$;
 CREATE TRIGGER bitacora_inmutable BEFORE UPDATE OR DELETE ON srp.bitacora
@@ -96,6 +102,24 @@ CREATE TRIGGER bitacora_inmutable BEFORE UPDATE OR DELETE ON srp.bitacora_acceso
   FOR EACH ROW EXECUTE FUNCTION srp.bitacora_inmutable();
 CREATE TRIGGER bitacora_sin_vaciar BEFORE TRUNCATE ON srp.bitacora_acceso
   FOR EACH STATEMENT EXECUTE FUNCTION srp.bitacora_inmutable();
+
+/* UN AÑO DE REGISTRO DE ENTRADAS Y DE SESIONES. El registro de entradas y las sesiones que ya terminaron
+   (cerradas o vencidas) se guardan un año y se borran solos: el servicio llama a esta función una vez al día.
+   Corre con los permisos de quien instaló el esquema, porque la cuenta del servicio no borra ninguna de las dos
+   tablas; sólo ella puede llamarla, y sólo borra lo que tiene más de un año. Si el SIA fija otro plazo para sus
+   sistemas, se cambia aquí. Devuelve cuántos renglones borró de cada una. */
+CREATE FUNCTION srp.recortar_acceso(OUT entradas integer, OUT sesiones integer)
+  LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, pg_temp
+AS $$
+BEGIN
+  PERFORM set_config('srp.recorte_anual', 'si', true);
+  DELETE FROM srp.bitacora_acceso WHERE momento < now() - interval '1 year';
+  GET DIAGNOSTICS entradas = ROW_COUNT;
+  PERFORM set_config('srp.recorte_anual', '', true);
+  DELETE FROM srp.sesiones WHERE coalesce(cerrada_en, expira_en) < now() - interval '1 year';
+  GET DIAGNOSTICS sesiones = ROW_COUNT;
+END $$;
+COMMENT ON FUNCTION srp.recortar_acceso() IS 'Borra el registro de entradas y las sesiones terminadas de hace más de un año. La llama el servicio una vez al día.';
 
 -- El Registro de cambios de Configuración lee la bitácora por tipo, de lo más reciente a lo más antiguo, por
 -- páginas: así no recorre la de todos los árboles

@@ -32,10 +32,12 @@ import { enTransaccion } from "./transaccion";
 
 type EventoAcceso = "ENTRADA" | "ENTRADA_FALLIDA" | "BLOQUEO" | "SALIDA" | "CONTRASENA_CAMBIADA";
 
-// Un renglón del registro de entradas: de la cuenta, o del correo intentado si no tiene cuenta
+/* Un renglón del registro de entradas: de la cuenta, o del correo intentado si no tiene cuenta. Lo escrito en el
+   campo del correo se anota sólo si tiene forma de correo: quien teclea ahí su contraseña no la deja en claro un año */
+const FORMA_DE_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 async function anotar(bd: S.Consultable, req: Request, evento: EventoAcceso, quien: { usuarioId: string } | { correo: string }): Promise<void> {
   const usuarioId = "usuarioId" in quien ? quien.usuarioId : null;
-  const correo = "correo" in quien ? quien.correo.slice(0, 254) : null;
+  const correo = "correo" in quien ? (FORMA_DE_CORREO.test(quien.correo) ? quien.correo.slice(0, 254) : "(no es un correo)") : null;
   await bd.query("INSERT INTO srp.bitacora_acceso (evento, usuario_id, correo_intentado, ip, agente) VALUES ($1, $2, $3, $4, $5)", [
     evento,
     usuarioId,
@@ -63,7 +65,6 @@ export const cuentaPublica = (u: S.Usuario) => ({
   area_id: u.area_id,
   cargo_rol: u.cargo_rol,
   perfil: u.perfil,
-  coordinadores_ids: u.coordinadores_ids,
   activo: u.activo,
 });
 
@@ -135,6 +136,19 @@ export function rutasAcceso(pool: pg.Pool, config: ConfigSrp): { router: Router;
   const r = Router();
   const A = config.acceso;
 
+  /* El registro de entradas y las sesiones terminadas se guardan un año (srp.recortar_acceso). Se recorta una vez al
+     día, con la primera entrada: no se espera ni detiene a quien entra, y si falla se vuelve a intentar en la
+     siguiente entrada. */
+  let ultimoRecorte = 0;
+  const recortarSiToca = () => {
+    if (Date.now() - ultimoRecorte < 86_400_000) return;
+    ultimoRecorte = Date.now();
+    pool.query("SELECT * FROM srp.recortar_acceso()").catch((e: unknown) => {
+      ultimoRecorte = 0;
+      console.error(`🔥 [SRP] recorte del registro de entradas → ${e instanceof Error ? e.message : String(e)}`);
+    });
+  };
+
   r.post("/acceso/entrar", async (req: Request, res: Response) => {
     const correo = texto(req.body?.correo).trim().toLowerCase();
     const contrasena = texto(req.body?.contrasena);
@@ -184,6 +198,7 @@ export function rutasAcceso(pool: pg.Pool, config: ConfigSrp): { router: Router;
     }
     const testigo = await S.abrir(pool, u.id, { agente: req.get("user-agent") || "", inactividadDias: A.inactividadDias });
     await anotar(pool, req, "ENTRADA", quien);
+    recortarSiToca();
     S.ponerCookie(res, testigo, { ruta: config.ruta, segura: config.cookieSegura });
     res.json({ usuario: cuentaPublica(u), debeCambiar: Boolean(u.temporal) });
   });

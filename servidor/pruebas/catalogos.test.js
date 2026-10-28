@@ -123,7 +123,7 @@ before(async () => {
   await admin.query(`INSERT INTO srp.instituciones VALUES ($1, $2, $3, true, NULL, now(), NULL, NULL, 'Alcaldía')`, [ALCALDIA.id, 'ALC_PRUEBA_' + CORRIDA, ALCALDIA.nombre]);
   const derivada = await derivar(CLAVE);
   for (const [u, perfil, nombre] of [[ADMIN, 'ADMIN', 'Administración Prueba Catálogos'], [CABO, 'CABO', 'Cabo Prueba Catálogos']]) {
-    await admin.query(`INSERT INTO srp.usuarios VALUES ($1, $2, $3, 'o-sedema', 'a-sia', $4, $4, '{}', true, now(), $1, NULL, NULL)`, [u.id, u.correo, nombre, perfil]);
+    await admin.query(`INSERT INTO srp.usuarios VALUES ($1, $2, $3, 'o-sedema', 'a-sia', $4, $4, true, now(), $1, NULL, NULL)`, [u.id, u.correo, nombre, perfil]);
     await admin.query(`INSERT INTO srp.credenciales VALUES ($1, $2, false, NULL, 0, NULL, now(), $1)`, [u.id, derivada]);
   }
   await admin.query('COMMIT');

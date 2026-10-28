@@ -11,9 +11,9 @@ import { leerConfig, crearGrupo, crearApp, derivar } from '../dist/independiente
 const CORRIDA = Date.now();
 const CLAVE = 'Historial de prueba 2026';
 const uuid = () => crypto.randomUUID();
-const cuenta = (nombre, perfil, coordinadores = []) => ({ id: uuid(), nombre, perfil, coordinadores, correo: nombre + '.historial.prueba.' + CORRIDA + '@ejemplo.local' });
+const cuenta = (nombre, perfil) => ({ id: uuid(), nombre, perfil, correo: nombre + '.historial.prueba.' + CORRIDA + '@ejemplo.local' });
 const COORD = cuenta('coordinador', 'COORDINADOR');
-const CABO = cuenta('cabo', 'CABO', [COORD.id]);
+const CABO = cuenta('cabo', 'CABO');
 const OTRO = cuenta('otrocabo', 'CABO');
 const ADMIN = cuenta('admin', 'ADMIN');
 const CUENTAS = [COORD, CABO, OTRO, ADMIN];
@@ -33,7 +33,7 @@ before(async () => {
   await admin.query(`INSERT INTO srp.programas VALUES ($1, $2, $3, true, NULL, now(), NULL, NULL, '{}')`, [PROG, 'PRUEBA_HIST_' + CORRIDA, 'Programa de prueba del historial ' + CORRIDA]);
   const derivada = await derivar(CLAVE);
   for (const u of CUENTAS) {
-    await admin.query(`INSERT INTO srp.usuarios VALUES ($1, $2, $3, 'o-sedema', 'a-sia', $4, $4, $5, true, now(), $1, NULL, NULL)`, [u.id, u.correo, 'Prueba ' + u.nombre, u.perfil, u.coordinadores]);
+    await admin.query(`INSERT INTO srp.usuarios VALUES ($1, $2, $3, 'o-sedema', 'a-sia', $4, $4, true, now(), $1, NULL, NULL)`, [u.id, u.correo, 'Prueba ' + u.nombre, u.perfil]);
     await admin.query(`INSERT INTO srp.credenciales VALUES ($1, $2, false, NULL, 0, NULL, now(), $1)`, [u.id, derivada]);
   }
   await admin.query('COMMIT');

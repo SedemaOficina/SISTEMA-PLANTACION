@@ -22,18 +22,18 @@ const CORRIDA = Date.now();
 
 // Las cuentas de la prueba: cada perfil, de la Secretaría y de fuera, y cabos con y sin coordinación
 const U = {};
-const cuenta = (nombre, perfil, organizacion_id, coordinadores = []) => (U[nombre] = {
-  id: id(), correo: nombre.toLowerCase().replace(/_/g, '.') + '.permisos.prueba.' + CORRIDA + '@ejemplo.local', perfil, organizacion_id, coordinadores
+const cuenta = (nombre, perfil, organizacion_id) => (U[nombre] = {
+  id: id(), correo: nombre.toLowerCase().replace(/_/g, '.') + '.permisos.prueba.' + CORRIDA + '@ejemplo.local', perfil, organizacion_id
 });
 cuenta('ADMIN', 'ADMIN', SEDEMA);
 cuenta('DIR_SEDEMA', 'DIRECTIVO', SEDEMA);
 cuenta('DIR_A', 'DIRECTIVO', INST_A);
 cuenta('COORD_S', 'COORDINADOR', SEDEMA);
 cuenta('COORD_A', 'COORDINADOR', INST_A);
-cuenta('CABO_S1', 'CABO', SEDEMA, ['COORD_S']);
-cuenta('CABO_S2', 'CABO', SEDEMA, ['COORD_S']);
+cuenta('CABO_S1', 'CABO', SEDEMA);
+cuenta('CABO_S2', 'CABO', SEDEMA);
 cuenta('CABO_S3', 'CABO', SEDEMA);
-cuenta('CABO_A1', 'CABO', INST_A, ['COORD_A']);
+cuenta('CABO_A1', 'CABO', INST_A);
 cuenta('CABO_B1', 'CABO', INST_B);
 cuenta('TEMPORAL', 'CABO', SEDEMA);
 
@@ -80,7 +80,7 @@ function veArbolEnLaAplicacion(SRP, u, arbol, jornada) {
   return !!jornada && P.alcanza(u, jornada, porId) && jornada.cabo_id !== u.id && P.personasDe(jornada).includes(u.id);
 }
 
-const autoresDe = (usuarios) => new Map(usuarios.map((u) => [u.id, { organizacion_id: u.organizacion_id, coordinadores_ids: u.coordinadores_ids }]));
+const autoresDe = (usuarios) => new Map(usuarios.map((u) => [u.id, { organizacion_id: u.organizacion_id }]));
 const conjunto = (filas) => new Set(filas.map((f) => f.id));
 const diferencia = (a, b) => [...a].filter((x) => !b.has(x));
 
@@ -100,8 +100,8 @@ before(async () => {
   const derivada = await derivar(CLAVE);
   await admin.query('SET CONSTRAINTS ALL DEFERRED');
   for (const [nombre, u] of Object.entries(U)) {
-    await admin.query(`INSERT INTO srp.usuarios VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true, now(), $1, NULL, NULL)`,
-      [u.id, u.correo, 'Prueba ' + nombre.replace(/_/g, ' '), u.organizacion_id, u.organizacion_id === SEDEMA ? 'a-sia' : null, u.perfil, u.perfil, u.coordinadores.map((c) => U[c].id)]);
+    await admin.query(`INSERT INTO srp.usuarios VALUES ($1, $2, $3, $4, $5, $6, $7, true, now(), $1, NULL, NULL)`,
+      [u.id, u.correo, 'Prueba ' + nombre.replace(/_/g, ' '), u.organizacion_id, u.organizacion_id === SEDEMA ? 'a-sia' : null, u.perfil, u.perfil]);
     await admin.query(`INSERT INTO srp.credenciales VALUES ($1, $2, $3, $4, 0, NULL, now(), $1)`,
       [u.id, derivada, nombre === 'TEMPORAL', nombre === 'TEMPORAL' ? new Date(Date.now() + 3_600_000) : null]);
   }
@@ -143,9 +143,9 @@ after(async () => {
 });
 
 test('cada perfil puede lo mismo en el servidor que en la aplicación, acción por acción y registro por registro', () => {
-  const usuarios = Object.values(U).map((u) => ({ id: u.id, perfil: u.perfil, organizacion_id: u.organizacion_id, coordinadores_ids: u.coordinadores.map((c) => U[c].id) }));
+  const usuarios = Object.values(U).map((u) => ({ id: u.id, perfil: u.perfil, organizacion_id: u.organizacion_id }));
   // Y una cuenta con un perfil que no existe: no recibe nada en ningún lado
-  usuarios.push({ id: id(), perfil: 'CONSULTA', organizacion_id: SEDEMA, coordinadores_ids: [] });
+  usuarios.push({ id: id(), perfil: 'CONSULTA', organizacion_id: SEDEMA });
   const SRP = reglasDeLaAplicacion(usuarios);
   const autores = autoresDe(usuarios);
   const acciones = Object.keys(SRP.permisos.ACCIONES);
@@ -185,7 +185,7 @@ test('cada perfil puede lo mismo en el servidor que en la aplicación, acción p
 });
 
 test('la consulta en la base trae a cada cuenta lo mismo que le enseña la aplicación, con todos los datos que haya', async () => {
-  const usuarios = (await admin.query('SELECT id, perfil, organizacion_id, coordinadores_ids FROM srp.usuarios')).rows;
+  const usuarios = (await admin.query('SELECT id, perfil, organizacion_id FROM srp.usuarios')).rows;
   const todasJ = (await admin.query('SELECT id, cabo_id, relevo_id, relevos, cabos_apoyo, organizacion_id FROM srp.jornadas')).rows;
   const todosT = (await admin.query('SELECT id, cabo_id, jornada_id FROM srp.plantaciones')).rows;
   const SRP = reglasDeLaAplicacion(usuarios);
@@ -255,7 +255,7 @@ test('cada cuenta ve los nombres de quien aparece en lo suyo; sólo la Administr
     assert.equal(r.estado, 200, nombre);
     return r.datos.filas;
   };
-  const SIN_CORREO = ['activo', 'area_id', 'cargo_rol', 'coordinadores_ids', 'id', 'nombre_completo', 'organizacion_id', 'perfil'];
+  const SIN_CORREO = ['activo', 'area_id', 'cargo_rol', 'id', 'nombre_completo', 'organizacion_id', 'perfil'];
   // El cabo: el relevo de su jornada y el titular de la jornada donde estuvo de relevo
   const s1 = await ver('CABO_S1');
   assert.deepEqual(nuestras(s1), ['CABO_S1', 'CABO_S2', 'CABO_S3']);

@@ -14,9 +14,9 @@ const CORRIDA = Date.now();
 const CLAVE = 'Duplicados de prueba 2026';
 const uuid = () => crypto.randomUUID();
 const INST = 'o-prueba-dup-' + CORRIDA;
-const cuenta = (nombre, perfil, organizacion_id, coordinadores = []) => ({ id: uuid(), nombre, perfil, organizacion_id, coordinadores, correo: nombre + '.duplicados.prueba.' + CORRIDA + '@ejemplo.local' });
+const cuenta = (nombre, perfil, organizacion_id) => ({ id: uuid(), nombre, perfil, organizacion_id, correo: nombre + '.duplicados.prueba.' + CORRIDA + '@ejemplo.local' });
 const COORD = cuenta('coordinador', 'COORDINADOR', 'o-sedema');
-const CABO = cuenta('cabo', 'CABO', 'o-sedema', [COORD.id]);
+const CABO = cuenta('cabo', 'CABO', 'o-sedema');
 const VECINO = cuenta('vecino', 'CABO', 'o-sedema');
 const EXTERNO = cuenta('externo', 'CABO', INST);
 const ADMIN = cuenta('admin', 'ADMIN', 'o-sedema');
@@ -51,8 +51,8 @@ before(async () => {
   await admin.query(`INSERT INTO srp.programas VALUES ($1, $2, $3, true, NULL, now(), NULL, NULL, '{Empresa privada}')`, [PROG_EMP, 'PRUEBA_DUP_EMP_' + CORRIDA, 'Programa de empresas de prueba de duplicados ' + CORRIDA]);
   const derivada = await derivar(CLAVE);
   for (const u of CUENTAS) {
-    await admin.query(`INSERT INTO srp.usuarios VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true, now(), $1, NULL, NULL)`,
-      [u.id, u.correo, 'Prueba ' + u.nombre, u.organizacion_id, u.organizacion_id === 'o-sedema' ? 'a-sia' : null, u.perfil, u.perfil, u.coordinadores]);
+    await admin.query(`INSERT INTO srp.usuarios VALUES ($1, $2, $3, $4, $5, $6, $7, true, now(), $1, NULL, NULL)`,
+      [u.id, u.correo, 'Prueba ' + u.nombre, u.organizacion_id, u.organizacion_id === 'o-sedema' ? 'a-sia' : null, u.perfil, u.perfil]);
     await admin.query(`INSERT INTO srp.credenciales VALUES ($1, $2, false, NULL, 0, NULL, now(), $1)`, [u.id, derivada]);
   }
   await admin.query('COMMIT');

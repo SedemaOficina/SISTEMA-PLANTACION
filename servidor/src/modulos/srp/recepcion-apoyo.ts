@@ -79,7 +79,8 @@ export async function nombreDesactivado(c: pg.PoolClient, tabla: "especies" | "p
   return r.rows[0]?.nombre ?? null;
 }
 
-export const texto = (v: unknown): string => (typeof v === "string" ? v.replace(/\u0000/g, "").trim() : "");
+// Un texto sin el carácter nulo ni los de control de dirección, que voltean lo que se escribe después en un aviso
+export const texto = (v: unknown): string => (typeof v === "string" ? v.replace(/[\u0000\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, "").trim() : "");
 export const idDe = (v: unknown): string | null => (typeof v === "string" && UUID.test(v) ? v : null);
 // AAAA-MM-DD que sea un día del calendario; una fecha imposible (mes 13, día 45) no lo es, y no truena
 export const esFecha = (v: unknown): v is string => {

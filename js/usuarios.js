@@ -280,8 +280,7 @@ SRP.usuarios = {
       delete u.nombre; delete u.apellido_paterno; delete u.apellido_materno;
       entrada = SRP.bitacora.entrada('EDITADO', 'usuario', u.id, 'Campos: ' + (cambiados.join(', ') || 'ninguno'));
     } else {
-      // Sin coordinadores: el campo sigue en la tabla, sin uso desde la 1.4
-      u = Object.assign({ id: SRP.util.generarId(), activo: true, coordinadores_ids: [],
+      u = Object.assign({ id: SRP.util.generarId(), activo: true,
         fecha_creacion: ahora, creado_por_id: yo.id, editado_por_id: null, fecha_ultima_edicion: null }, datos);
       entrada = SRP.bitacora.entrada('CREADO', 'usuario', u.id, 'Alta de ' + d.correo + ' con perfil ' + d.perfil + ' en ' + SRP.ref.nombreOrganizacion(d.organizacion_id));
     }

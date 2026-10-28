@@ -32,7 +32,6 @@ export interface Usuario {
   area_id: string | null;
   cargo_rol: string;
   perfil: string;
-  coordinadores_ids: string[];
   activo: boolean;
 }
 

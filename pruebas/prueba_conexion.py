@@ -1255,7 +1255,7 @@ def main():
             pg.click('#tabla-usuarios tr[data-id="%s"] .c-titulo' % NUEVA['id']); pg.wait_for_selector('#dlg-usuario[open]')
             pg.evaluate("""id => { const u = SRP.ref.usuarioPorId[id];
               return SRP.servidor.pedir('PUT', '/cuentas/' + id, { nombre_completo: u.nombre_completo, organizacion_id: u.organizacion_id, area_id: u.area_id,
-                cargo_rol: 'Cambiado por otra persona', perfil: u.perfil, coordinadores_ids: u.coordinadores_ids || [] }); }""", NUEVA['id'])
+                cargo_rol: 'Cambiado por otra persona', perfil: u.perfil }); }""", NUEVA['id'])
             pg.fill('#usr-cargo', 'Encima'); pg.click('#btn-usr-guardar'); pg.wait_for_timeout(2500)
             ve = pg.evaluate("() => [document.getElementById('dlg-usuario').open, document.getElementById('usr-cargo').value, document.getElementById('usr-version').hidden ? '' : document.getElementById('usr-version').textContent]")
             ok(ve == [True, 'Cambiado por otra persona', 'Alguien más cambió esta cuenta mientras usted la editaba. El formulario ya tiene lo que guardó la otra persona: revíselo y vuelva a hacer su cambio.'] and pg.evaluate(CUENTA_SRV, NUEVA['correo']).get('cargo_rol') == 'Cambiado por otra persona',

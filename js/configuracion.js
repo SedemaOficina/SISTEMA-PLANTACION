@@ -263,7 +263,7 @@ SRP.configuracion = {
   TIPO: { programa: 'del programa', area: 'del área', especie: 'de la especie', vehiculo: 'del vehículo', organizacion: 'de la institución', solicitante: 'del solicitante' },
   // Los campos como se llaman en pantalla
   CAMPO: { nombre_completo: 'nombre completo', organizacion_id: 'institución', area_id: 'área', cargo_rol: 'cargo', perfil: 'perfil de captura',
-    coordinadores_ids: 'coordinadores', coordinador_id: 'coordinador', nombre: 'nombre', nombre_cientifico: 'nombre científico', tipo_distribucion: 'distribución',
+    nombre: 'nombre', nombre_cientifico: 'nombre científico', tipo_distribucion: 'distribución',
     otros_nombres_comunes: 'otros nombres comunes', formadecrecimiento: 'forma de crecimiento', paleta_vegetal: 'paleta vegetal', fruto_comestible: 'fruto comestible', id_snib: 'id SNIB', id_enciclovida: 'id EncicloVida',
     modelo: 'modelo', tipo_vehiculo: 'tipo de vehículo', tipo_organizacion: 'tipo de institución', tipo_solicitante: 'tipo de solicitante', tipos_organizacion: 'quién puede usarlo' },
 

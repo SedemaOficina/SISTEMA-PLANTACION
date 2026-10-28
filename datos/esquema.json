@@ -1,7 +1,8 @@
 {
   "_": "ESQUEMA DE DATOS DEL SRP: fuente única. De aquí se genera DICCIONARIO-DATOS.md con herramientas/generar_diccionario.py, y pruebas/auditoria.py lo compara contra lo que el sistema guarda y contra los dominios del código. Si un campo cambia en el código y no aquí, la auditoría falla.",
-  "version_esquema": "2026-10-04",
-  "etapa": "Etapa 1 (Fase 1: dispositivo, sin servidor)",
+  "version_esquema": "2026-10-28",
+  "huella_campos": "e68ad5aee16c7cfc",
+  "etapa": "Fase 2: el teléfono y el servidor",
   "almacenamiento": {
     "motor": "IndexedDB del navegador: base `srp_db` en la versión de prueba y `srp_sia` en la real (SRP.CONFIG.DB_NOMBRE, según ES_FICTICIO), versión 11 (SRP.CONFIG.DB_VERSION). Nunca comparten datos",
     "tablas": [
@@ -568,9 +569,9 @@
           "tipo": "text",
           "nulo": true,
           "origen": "Servidor",
-          "dominio": "Versión de territorio.calles con que se calculó, como `1.0.0`",
+          "dominio": "Versión vigente de territorio.calles con que se calculó, como `1.0.0`: la de territorio.version_capa del SIA o, si no la registró, la del paquete (srp.version_calles)",
           "pantalla": "No",
-          "regla": "srp.recalcular_calles() vuelve a calcular los árboles sin calle o de otra versión, después de instalar o actualizar la capa"
+          "regla": "CALL srp.recalcular_calles() vuelve a calcular, por tandas, los árboles sin calle o de otra versión, después de instalar o actualizar la capa"
         },
         {
           "campo": "calle",
@@ -723,15 +724,6 @@
           "dominio": "perfil",
           "pantalla": "Perfil de captura",
           "regla": "Decide alcance y acciones. Una cuenta de administración no puede quitarse a sí misma el perfil ADMIN. Un perfil desconocido queda sin permisos y se avisa. ADMIN sólo en SEDEMA; fuera, CABO, COORDINADOR o DIRECTIVO"
-        },
-        {
-          "campo": "coordinadores_ids",
-          "tipo": "uuid[]",
-          "nulo": false,
-          "origen": "Persona",
-          "dominio": "→ usuarios.id con perfil COORDINADOR; [] si no tiene",
-          "pantalla": "No se muestra desde la 1.4",
-          "regla": "Sin uso desde la 1.4 (D333): la Coordinación trabaja con todos los cabos de su institución, sin cuadrilla. Lo ya capturado se conserva; las altas nuevas lo dejan en []"
         },
         {
           "campo": "activo",
@@ -1880,12 +1872,6 @@
       "regla": "No son llaves foráneas en la base del dispositivo: son derivaciones del punto, con capa_version para rehacerlas"
     },
     {
-      "de": "usuarios.coordinadores_ids",
-      "a": "usuarios.id",
-      "cardinalidad": "N:M",
-      "regla": "Sin uso desde la 1.4 (D333): lo ya capturado se conserva y no decide nada; las altas lo dejan en []"
-    },
-    {
       "de": "usuarios.area_id",
       "a": "areas.id",
       "cardinalidad": "N:1",
@@ -1908,6 +1894,12 @@
       "a": "usuarios.id",
       "cardinalidad": "N:1",
       "regla": "cabo_id es el titular, quien inició la jornada; relevo_id, el cabo que registra en su lugar tras un relevo"
+    },
+    {
+      "de": "jornadas.cabos_apoyo[].cabo_id / por_id",
+      "a": "usuarios.id",
+      "cardinalidad": "N:M",
+      "regla": "Cada cabo de apoyo es un cabo activo de la institución de la jornada, y lo puso su titular: lo comprueba el servicio al agregarlo. La base exige la forma de cada elemento (jornadas_cabos_apoyo_forma)"
     },
     {
       "de": "plantaciones.jornada_id",
@@ -2246,11 +2238,6 @@
       "se_vacia": "Al quitarla (null, null)"
     },
     {
-      "campo": "usuarios.coordinadores_ids",
-      "aparece": "Sólo con perfil CABO",
-      "se_vacia": "Sin uso desde la 1.4 (D333): las altas lo dejan en []"
-    },
-    {
       "campo": "especies.nombre_cientifico … id_enciclovida",
       "aparece": "Sólo en tipo = especie",
       "se_vacia": "No existen en programas ni áreas"
@@ -2403,12 +2390,6 @@
       "tabla": "usuarios",
       "regla": "Tipo de institución, institución, nombre completo (nombre y al menos un apellido), correo válido y único (insensible a mayúsculas/acentos), área, cargo y perfil válido obligatorios; el correo no cambia después",
       "donde": "js/usuarios.js validar()"
-    },
-    {
-      "id": "R-U02",
-      "tabla": "usuarios",
-      "regla": "coordinadores_ids: sin uso desde la 1.4 (D333). Las altas lo dejan en []; lo ya capturado se conserva y no decide nada",
-      "donde": "js/usuarios.js guardar()"
     },
     {
       "id": "R-U03",

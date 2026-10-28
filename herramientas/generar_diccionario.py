@@ -9,15 +9,26 @@ Escribe además js/esquema.js: los campos, tipos, nulos, dominios y referencias 
 que lee el navegador (hoy, js/referencias.js para contar el uso de cuentas y catálogos). Tampoco
 se edita a mano.
 
+Cada cambio de campos (agregar, quitar o cambiar el tipo o el nulo de uno) sube la versión del esquema.
+`huella_campos` es la huella de los campos de esa versión: si los campos cambian y la versión no,
+pruebas/auditoria.py lo dice. Con --version se ponen las dos a la vez.
+
 Uso:  python3 herramientas/generar_diccionario.py           escribe datos/DICCIONARIO-DATOS.md y js/esquema.js
       python3 herramientas/generar_diccionario.py --texto   imprime el diccionario sin escribir
+      python3 herramientas/generar_diccionario.py --version AAAA-MM-DD
+                                                           sube la versión del esquema, con su huella, y escribe
 """
-import json, os, sys
+import hashlib, json, os, re, sys
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ESQUEMA = os.path.join(RAIZ, 'datos', 'esquema.json')
 SALIDA = os.path.join(RAIZ, 'datos', 'DICCIONARIO-DATOS.md')
 SALIDA_JS = os.path.join(RAIZ, 'js', 'esquema.js')
+
+def huella(d):
+    """Los campos de cada tabla, con su tipo y si admiten nulo, resumidos en 16 caracteres."""
+    campos = [[t, [[c['campo'], c['tipo'], bool(c['nulo'])] for c in info['campos']]] for t, info in sorted(d['tablas'].items())]
+    return hashlib.sha256(json.dumps(campos, ensure_ascii=False).encode('utf-8')).hexdigest()[:16]
 
 def generar_js(d):
     """El esquema en el navegador: por tabla, [campo, tipo, nulo, dominio, referencia, pantalla].
@@ -182,7 +193,20 @@ def generar(d):
     p('')
     return '\n'.join(L) + '\n'
 
+def subir_version(version):
+    """Pone la versión y la huella en esquema.json sin tocar lo demás del archivo."""
+    if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', version):
+        sys.exit('La versión del esquema es una fecha: AAAA-MM-DD')
+    texto = open(ESQUEMA, encoding='utf-8').read()
+    d = json.loads(texto)
+    texto = re.sub(r'"version_esquema": "[^"]*"', '"version_esquema": "%s"' % version, texto, count=1)
+    texto = re.sub(r'"huella_campos": "[^"]*"', '"huella_campos": "%s"' % huella(d), texto, count=1)
+    with open(ESQUEMA, 'w', encoding='utf-8', newline='\n') as s: s.write(texto)
+
 def main():
+    if '--version' in sys.argv:
+        i = sys.argv.index('--version')
+        subir_version(sys.argv[i + 1] if i + 1 < len(sys.argv) else '')
     d = json.load(open(ESQUEMA, encoding='utf-8'))
     texto = generar(d)
     if '--texto' in sys.argv:

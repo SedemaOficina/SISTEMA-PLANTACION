@@ -4042,7 +4042,7 @@ with sync_playwright() as p:
     pg43.fill('#usr-nombre-completo','Ramiro Iztapalapa Ejemplo'); pg43.fill('#usr-correo','cabo.izp@ejemplo.local'); pg43.fill('#usr-cargo','Cabo de cuadrilla')
     pg43.click('#form-usuario button[type=submit]'); pg43.wait_for_timeout(600)
     cizp=pg43.evaluate("SRP.ref.usuarios.find(u => u.correo === 'cabo.izp@ejemplo.local')")
-    ok(pg43.is_hidden('#dlg-usuario') and cizp and [cizp['organizacion_id'], cizp['area_id'], cizp['perfil'], cizp['coordinadores_ids'], cizp['nombre_completo']]==['o-alc-09007',None,'CABO',[],'Ramiro Iztapalapa Ejemplo'],
+    ok(pg43.is_hidden('#dlg-usuario') and cizp and [cizp['organizacion_id'], cizp['area_id'], cizp['perfil'], 'coordinadores_ids' in cizp, cizp['nombre_completo']]==['o-alc-09007',None,'CABO',False,'Ramiro Iztapalapa Ejemplo'],
        'se da de alta el cabo de la alcaldía: %s' % (cizp and [cizp['organizacion_id'], cizp['perfil'], cizp['nombre_completo']]))
     # En el alta sólo se elige: las instituciones nuevas se agregan en Catálogos
     pg43.click('#btn-usr-agregar'); pg43.wait_for_timeout(300)
@@ -4272,8 +4272,8 @@ with sync_playwright() as p:
        'en el alta de una institución de fuera se elige cabo, coordinador o directivo; el cabo ya no se asigna a un coordinador: %s' % pf47)
     pg47.fill('#usr-nombre-completo','Irma Palmera Ejemplo'); pg47.fill('#usr-correo','irma.palmera@ejemplo.local'); pg47.fill('#usr-cargo','Cabo de cuadrilla')
     pg47.click('#form-usuario button[type=submit]'); pg47.wait_for_timeout(600)
-    n47=pg47.evaluate("(() => { const u = SRP.ref.usuarios.find(x => x.correo === 'irma.palmera@ejemplo.local'); return u ? [u.organizacion_id, u.perfil, u.coordinadores_ids, u.area_id] : null; })()")
-    ok(n47==['o-green-cover','CABO',[],None],'se da de alta un cabo de Green Cover, sin coordinador asignado: %s' % n47)
+    n47=pg47.evaluate("(() => { const u = SRP.ref.usuarios.find(x => x.correo === 'irma.palmera@ejemplo.local'); return u ? [u.organizacion_id, u.perfil, 'coordinadores_ids' in u, u.area_id] : null; })()")
+    ok(n47==['o-green-cover','CABO',False,None],'se da de alta un cabo de Green Cover, sin coordinador asignado: %s' % n47)
     # Alcance del coordinador de fuera: los cabos de su institución
     a47=pg47.evaluate("""(() => { const u = SRP.ref.usuarioPorId['u-coord-alc'], p = SRP.ref.usuarioPorId;
       return { cabos: SRP.indicadores.cabosAsignados(u), suyo: SRP.permisos.alcanza(u, { cabo_id: 'u-cabo-alc' }, p), sedema: SRP.permisos.alcanza(u, { cabo_id: 'u-cabo-1' }, p),
@@ -6028,18 +6028,18 @@ with sync_playwright() as p:
     alta69('Cabo Compartido Ejemplo', 'cabo.compartido@ejemplo.local', 'CABO')
     sin69 = pg69.locator('#usr-coordinadores').count() == 0
     pg69.click('#form-usuario button[type=submit]'); pg69.wait_for_timeout(700)
-    cc69 = pg69.evaluate("(() => { const u = SRP.ref.usuarios.find(x => x.correo === 'cabo.compartido@ejemplo.local'); return u ? [u.id, u.coordinadores_ids, 'coordinador_id' in u] : null; })()")
-    ok(sin69 and cc69 and cc69[1] == [] and cc69[2] is False, 'el alta de un cabo ya no pide coordinadores: queda sin ninguno: %s' % cc69)
+    cc69 = pg69.evaluate("(() => { const u = SRP.ref.usuarios.find(x => x.correo === 'cabo.compartido@ejemplo.local'); return u ? [u.id, 'coordinadores_ids' in u, 'coordinador_id' in u] : null; })()")
+    ok(sin69 and cc69 and cc69[1] is False and cc69[2] is False, 'el alta de un cabo ya no pide coordinadores ni guarda el campo: %s' % cc69)
     # Las dos coordinaciones de la Secretaría alcanzan lo del cabo nuevo y lo cuentan con todos los de su institución
     al69 = pg69.evaluate("""([cabo, c2]) => { const P = SRP.ref.usuarioPorId, r = { cabo_id: cabo };
       const sedema = SRP.ref.usuarios.filter(u => u.activo && u.perfil === 'CABO' && u.organizacion_id === 'o-sedema').length;
       return [SRP.permisos.alcanza(P['u-coord-1'], r, P), SRP.permisos.alcanza(P[c2], r, P), SRP.permisos.alcanza(P['u-coord-alc'], r, P),
         SRP.indicadores.cabosAsignados(P['u-coord-1']).includes(cabo), SRP.indicadores.cabosAsignados(P[c2]).includes(cabo), SRP.indicadores.cabosAsignados(P[c2]).length === sedema]; }""", [cc69[0], c2])
     ok(al69 == [True, True, False, True, True, True], 'cada coordinación de la Secretaría ve lo del cabo nuevo y lo cuenta con todos los de su institución; una de otra institución, no: %s' % al69)
-    # Una cuenta guardada con un solo coordinador pasa a la lista al abrir
-    v69 = pg69.evaluate("""async () => { const u = Object.assign({}, SRP.ref.usuarioPorId['u-cabo-1']); delete u.coordinadores_ids; u.coordinador_id = 'u-coord-1';
-      await SRP.almacen.guardarConBitacora('usuarios', u, null); await SRP.almacen.normalizar(); const d = await SRP.almacen.uno('usuarios', 'u-cabo-1'); return [d.coordinadores_ids, 'coordinador_id' in d]; }""")
-    ok(v69 == [['u-coord-1'], False], 'una cuenta con el campo anterior de un solo coordinador pasa a la lista al abrir la base: %s' % v69)
+    # Una cuenta guardada con coordinadores, de antes de la 1.4, los pierde al abrir la base
+    v69 = pg69.evaluate("""async () => { const u = Object.assign({}, SRP.ref.usuarioPorId['u-cabo-1'], { coordinadores_ids: ['u-coord-1'], coordinador_id: 'u-coord-1' });
+      await SRP.almacen.guardarConBitacora('usuarios', u, null); await SRP.almacen.normalizar(); const d = await SRP.almacen.uno('usuarios', 'u-cabo-1'); return ['coordinadores_ids' in d, 'coordinador_id' in d]; }""")
+    ok(v69 == [False, False], 'una cuenta con coordinadores guardados los pierde al abrir la base: %s' % v69)
     pg69.evaluate("SRP.ref.recargar()"); pg69.wait_for_timeout(300)
     # Supervisión: el mapa de prioridad pinta sólo las colonias donde se plantó
     entrar69('u-coord-1'); pg69.evaluate("SRP.app.mostrarVista('supervision')"); pg69.wait_for_timeout(1500)

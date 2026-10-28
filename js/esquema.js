@@ -5,7 +5,7 @@
 window.SRP = window.SRP || {};
 
 SRP.ESQUEMA = {
- "version_esquema": "2026-10-04",
+ "version_esquema": "2026-10-28",
  "dominios": {
   "estatus_plantacion": [
    "activo",
@@ -509,14 +509,6 @@ SRP.ESQUEMA = {
     "perfil",
     null,
     "Perfil de captura"
-   ],
-   [
-    "coordinadores_ids",
-    "uuid[]",
-    false,
-    null,
-    "usuarios",
-    "No se muestra desde la 1.4"
    ],
    [
     "activo",

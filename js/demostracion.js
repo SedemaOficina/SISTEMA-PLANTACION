@@ -192,7 +192,7 @@ SRP.demo = {
     const cuentas = this.CUENTAS.map(([id, nombre, ap, perfil, org]) => ({
       id, correo: id.replace('u-demo-', 'demo.') + '@ejemplo.local', nombre_completo: nombre + ' ' + ap + ' Demo',
       organizacion_id: org || SRP.CONFIG.ORGANIZACION_SEDEMA, area_id: org ? null : 'a-dgsanpava',
-      cargo_rol: perfil === 'CABO' ? 'Cabo de cuadrilla' : 'Coordinación de cuadrilla', perfil, coordinadores_ids: [],
+      cargo_rol: perfil === 'CABO' ? 'Cabo de cuadrilla' : 'Coordinación de cuadrilla', perfil,
       activo: true, fecha_creacion: F0, creado_por_id: 'u-admin-1', fecha_ultima_edicion: null, editado_por_id: null }));
     cuentas.forEach(u => { usuarios[u.id] = u; });
     const nombre = id => usuarios[id] ? SRP.util.nombreCompleto(usuarios[id]) : id;

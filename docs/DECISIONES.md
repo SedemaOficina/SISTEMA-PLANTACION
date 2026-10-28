@@ -4575,3 +4575,26 @@
   · **La pantalla.** 6 a: «Coordinación» y «Dirección» en todo.
   · El plan de corrección de la sección 11 se sigue en orden. Las propuestas que cambian una pantalla se enseñan
     antes con su antes y después.
+
+- **D340. El bloque 4 antes que el 2 y el 3, y cómo quedaron sus decisiones (bloque 257).**
+  28-10-2026. Liber pidió seguir de noche sin detenerse. Los bloques 2, 3 y 5 cambian pantallas y esperan su visto
+  bueno (las muestras van en una página aparte); el 4 no cambia ninguna y sus decisiones ya estaban tomadas (D339), así
+  que se adelantó y sale como 1.4.4. Los bloques 2, 3 y 5 toman las versiones siguientes.
+  · **El registro de entradas y las sesiones, un año (12 a y 13 a).** `srp.recortar_acceso()` borra lo de hace más de un
+    año: las entradas, y las sesiones cerradas o vencidas. Corre con los permisos de quien instaló el esquema; sólo la
+    cuenta del servicio la puede llamar, y es la única excepción del disparador de la bitácora. El servicio la llama
+    con la primera entrada de cada día, sin detener a quien entra: así no hace falta un programador de tareas.
+  · **El correo intentado (14 a).** Lo que no tiene forma de correo se anota como «(no es un correo)».
+  · **La versión de la calle (11 a).** `srp.version_calles()` lee la vigente de `territorio.version_capa`, como las otras
+    tres capas; si el SIA todavía no la registró ahí, la del paquete de calles.
+  · **Recalcular las calles (16 a).** Pasa a ser un procedimiento: `CALL srp.recalcular_calles();`, fuera de una
+    transacción abierta, por tandas de 2,000 confirmadas una por una. Con 18,359 árboles tardó 11 segundos.
+  · **La ruta de búsqueda (E1-03).** La instalación la fija en «srp y el esquema de PostGIS» antes de crear las
+    funciones: ya no depende de la sesión de quien instala.
+  · **`coordinadores_ids` (18 a).** Sale del esquema, del servidor, de la aplicación y de las pruebas. Un teléfono que
+    lo tenga guardado lo pierde al abrir la base; un teléfono anterior que lo mande al servidor no guarda nada.
+  · **La versión del esquema.** Sube con cada cambio de campos: `huella_campos` es la huella de los campos de esa
+    versión, y `pruebas/auditoria.py` avisa si cambian sin subirla. Queda en 2026-10-28, «Fase 2: el teléfono y el
+    servidor».
+  · **Sin hacer: E1-05**, los permisos por columna para que la cuenta del servicio no escriba los campos de la calle. Era
+    opcional: el disparador los pone en cada alta y en cada cambio de punto, y ningún código los escribe.

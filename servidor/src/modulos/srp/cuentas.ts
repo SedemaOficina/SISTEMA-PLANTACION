@@ -17,7 +17,7 @@ import { enTransaccion } from "./transaccion";
    GET    /cuentas                   las cuentas que ve cada quien (abajo); con sesión
    GET    /cuentas/usos              en qué aparece cada cuenta: decide si se puede eliminar
    POST   /cuentas                   alta con contraseña temporal; responde la cuenta y la temporal
-   PUT    /cuentas/:id               edición: nombre, institución, área, cargo, perfil y coordinadores (el correo no cambia)
+   PUT    /cuentas/:id               edición: nombre, institución, área, cargo y perfil (el correo no cambia)
    POST   /cuentas/:id/restablecer   otra temporal; cierra las sesiones de la cuenta
    POST   /cuentas/:id/estado        { activo } → desactivar cierra las sesiones de la cuenta
    DELETE /cuentas/:id               elimina una cuenta que no aparece en nada; la que aparece, se desactiva
@@ -107,8 +107,8 @@ const conVersion = (u: Usuario & { fecha_creacion?: unknown; fecha_ultima_edicio
    global, todas, con su correo, para administrarlas. Los demás, sin correo: el directivo de la Secretaría,
    todas; el de otra institución y la coordinación, las de su institución; el cabo, la suya. Y todos, además, a
    quien aparezca en las jornadas y los árboles que ven: titulares, relevos, cabos de apoyo, encargados y quien
-   los editó. Las cuentas siguen trayendo `coordinadores_ids`, sin uso desde la 1.4. */
-const SIN_CORREO = ["id", "nombre_completo", "organizacion_id", "area_id", "cargo_rol", "perfil", "coordinadores_ids", "activo"];
+   los editó. */
+const SIN_CORREO = ["id", "nombre_completo", "organizacion_id", "area_id", "cargo_rol", "perfil", "activo"];
 
 /* EN QUÉ APARECE CADA CUENTA, contado por renglón: árboles, jornadas (también en sus relevos y como cabo de apoyo),
    otras cuentas (las que dio de alta o editó), catálogos, y las entradas al sistema, que dejan constancia.
@@ -205,9 +205,9 @@ export function rutasCuentas(pool: pg.Pool, config: ConfigSrp, sesion: RequestHa
       const errores = await validarAlta(c, d);
       if (errores.length) return { errores };
       await c.query(
-        `INSERT INTO srp.usuarios (id, correo, nombre_completo, organizacion_id, area_id, cargo_rol, perfil, coordinadores_ids, activo,
-            fecha_creacion, creado_por_id, fecha_ultima_edicion, editado_por_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true, now(), $9, NULL, NULL)`,
-        [d.id, d.correo, d.nombre_completo, d.organizacion_id, d.area_id, d.cargo_rol, d.perfil, [], actor.id],
+        `INSERT INTO srp.usuarios (id, correo, nombre_completo, organizacion_id, area_id, cargo_rol, perfil, activo,
+            fecha_creacion, creado_por_id, fecha_ultima_edicion, editado_por_id) VALUES ($1, $2, $3, $4, $5, $6, $7, true, now(), $8, NULL, NULL)`,
+        [d.id, d.correo, d.nombre_completo, d.organizacion_id, d.area_id, d.cargo_rol, d.perfil, actor.id],
       );
       const t = await ponerTemporal(c, d.id, actor.id, config.acceso.temporalHoras);
       const org = (await c.query<{ nombre: string }>("SELECT nombre FROM srp.instituciones WHERE id = $1", [d.organizacion_id])).rows[0];

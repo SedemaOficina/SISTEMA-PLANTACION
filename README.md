@@ -49,7 +49,7 @@ La versión que corre se lee en la franja fija de arriba de cada pantalla.
    dependencias del Gobierno de la CDMX (PAOT, SOBSE), empresas (Green Cover) y organizaciones
    civiles (Reforestamos México), con cuentas de cabo y de coordinación que da de alta la
    Secretaría: primero el tipo de institución, luego la institución, y el nombre completo en un solo
-   campo. El cabo depende de uno o varios coordinadores de su misma institución. Las instituciones nuevas las
+   campo. La Coordinación trabaja con todos los cabos de su institución. Las instituciones nuevas las
    agrega la Administración en Catálogos. Cada cuenta y cada jornada llevan su institución;
    ninguna ve lo de otra. Programas: SEDEMA, todos; las demás, los que la Administración marca en
    Catálogos › Programas (de arranque: alcaldías, Gobierno de la CDMX y organizaciones civiles,
@@ -98,8 +98,8 @@ llena con lo que se capture.
 
 Quien captura en campo es un **cabo**; quien lo dirige, un **coordinador**; quien sólo ve —subdirecciones,
 direcciones de área y generales—, un **directivo** (`DIRECTIVO`); el SIA es la **Administración global**. En el código son
-`CABO` y `COORDINADOR`, y los campos son `cabo_id` en las plantaciones y `coordinadores_ids` (una lista) en las
-cuentas.
+`CABO` y `COORDINADOR`, y el cabo de cada árbol es `cabo_id`. Las cuentas no llevan coordinadores: la Coordinación
+alcanza a todos los cabos de su institución.
 
 ## Cómo se entra
 
@@ -310,7 +310,7 @@ versión se escribe en un solo lugar del código.
 **El archivo `VERSION`, en la raíz, lleva el mismo número** (lo pide la guía del SIA, sección 8); la prueba
 falla si no coincide con la marca. Ese número se ve siempre en la franja fija de arriba. Hasta la 0.9.78 decía
 «Versión de prueba 0.9.N»; desde la versión 1, la que se entrega al SIA para instalar, dice «Versión» y el número de `VERSION`
-(hoy, «Versión 1.4.3»).
+(hoy, «Versión 1.4.4»).
 
 **Las pruebas de GitHub, en verde.** Cada subida corre la prueba completa en GitHub (`.github/workflows/pruebas.yml`;
 el indicador de arriba dice cómo salió la última). Antes de cerrar un bloque se revisa que la corrida del commit
@@ -494,7 +494,8 @@ teléfono: el teléfono la enseña en el detalle, la columna «Calle» del repor
 informe y de Supervisión, y cuatro columnas del CSV. La jornada no lleva calle.
 
 - **Sin la capa** el servidor no falla: el árbol queda «por asignar». Después de instalar la capa, o una
-  versión nueva, quien administra la base corre `SELECT srp.recalcular_calles();`.
+  versión nueva, quien administra la base corre `CALL srp.recalcular_calles();`. La versión de la capa es la que el SIA
+  tiene por vigente en `territorio.version_capa`.
 - **En la versión de prueba** no hay servidor: el servidor simulado (`js/calles.js`) la calcula al enviar,
   con las mismas reglas, sobre una copia ligera de la capa (`assets/calles/`, 18.8 MB en 97 celdas de
   unos 4 km, 5.2 MB comprimidos). Cada árbol baja sólo la celda de su punto. La copia lleva sólo lo que usa

@@ -39,7 +39,7 @@ try {
     await c.query('BEGIN');
     await c.query(`INSERT INTO srp.areas VALUES ('a-sia', 'SIA', 'Sistema de Información Ambiental', true, NULL, now(), NULL, NULL) ON CONFLICT DO NOTHING`);
     for (const u of d.cuentas) {
-      await c.query(`INSERT INTO srp.usuarios VALUES ($1, $2, $3, $4, $5, $6, $7, '{}', true, now(), $1, NULL, NULL)`,
+      await c.query(`INSERT INTO srp.usuarios VALUES ($1, $2, $3, $4, $5, $6, $7, true, now(), $1, NULL, NULL)`,
         [u.id, u.correo, u.nombre, u.organizacion_id, u.organizacion_id === 'o-sedema' ? 'a-sia' : null, u.cargo ?? u.perfil, u.perfil]);
       await c.query(`INSERT INTO srp.credenciales VALUES ($1, $2, $3, $4, 0, NULL, now(), $1)`,
         [u.id, await derivar(u.clave), Boolean(u.temporal), u.temporal ? new Date(Date.now() + 72 * 3600_000) : null]);

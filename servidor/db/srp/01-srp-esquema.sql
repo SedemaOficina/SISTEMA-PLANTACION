@@ -21,6 +21,10 @@ BEGIN
     RAISE EXCEPTION 'El esquema srp ya está instalado (versión %): los cambios van como migración, no como instalación',
       (SELECT max(version) FROM srp.migraciones);
   END IF;
+  -- Las funciones del SRP toman al crearse la ruta de búsqueda de esta transacción (SET search_path FROM CURRENT):
+  -- se fija aquí, para que no dependa de la sesión de quien instala. El esquema srp y el de PostGIS, nada más.
+  PERFORM set_config('search_path', 'srp, ' || (SELECT quote_ident(n.nspname) FROM pg_extension e JOIN pg_namespace n ON n.oid = e.extnamespace
+                                                 WHERE e.extname = 'postgis'), true);
 END $$;
 
 CREATE SCHEMA IF NOT EXISTS srp;

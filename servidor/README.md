@@ -53,13 +53,13 @@ repositorio:
 |---|---|
 | `db/srp/01-srp-esquema.sql` | Comprueba que estén PostGIS, `territorio` y `territorio_lectura`; crea el esquema `srp` y la tabla de versiones. Si el esquema ya está instalado, se detiene sin tocar nada |
 | `db/srp/02-srp-tablas.sql` | Las diez tablas, con sus llaves, reglas, índices y comentarios. **Generado**: no se edita a mano |
-| `db/srp/03-srp-acceso.sql` | Contraseñas (sólo derivadas con sal, nunca en claro), sesiones (sólo el resumen del testigo) y el registro de entradas; las dos bitácoras, que sólo crecen |
+| `db/srp/03-srp-acceso.sql` | Contraseñas (sólo derivadas con sal, nunca en claro), sesiones (sólo el resumen del testigo) y el registro de entradas; las dos bitácoras, que sólo crecen, y `srp.recortar_acceso`, la única excepción: borra el registro de entradas y las sesiones terminadas de hace más de un año |
 | `db/srp/04-srp-sobre-territorio.sql` | La capa propia (colonias prioritarias), el índice espacial de árboles y jornadas, `srp.derivar`, que da alcaldía, colonia y celda UGA de un punto sobre `territorio` con las mismas reglas que la aplicación, el folio (la secuencia de cada celda y lo que se congela con cada folio) y la prioridad de la colonia, congelada con cada árbol y cada jornada |
 | `db/srp/05-srp-fotografias.sql` | El registro de las fotografías: de qué árbol es cada una, su tipo, su peso, su huella y quién la mandó. Los archivos viven fuera de la base |
 | `db/srp/06-srp-parametros.sql` | Los parámetros que la Administración global cambió; los de arranque los dice el módulo |
 | `db/srp/07-srp-duplicados.sql` | `srp.vecinos`, que busca los árboles cercanos de la misma especie que podrían ser el mismo, y la bandeja de posibles duplicados entre instituciones |
 | `db/srp/08-srp-cargas.sql` | Los lotes de carga masiva: subiendo (no se ven), completos (se ven) o deshechos (ocultos, con sus árboles eliminados), y `srp.de_carga_oculta`, que dice si una jornada no se ve |
-| `db/srp/09-srp-calles.sql` | La calle de cada árbol sobre `territorio.calles`: `srp.calle`, el disparador que la pone al recibir el árbol y al corregir su punto, y `srp.recalcular_calles`, para después de instalar la capa. Sin la capa, el árbol queda por asignar |
+| `db/srp/09-srp-calles.sql` | La calle de cada árbol sobre `territorio.calles`: `srp.calle`, con la versión vigente de la capa (`srp.version_calles`: la de `territorio.version_capa` y, si el SIA no la registró ahí, la del paquete), el disparador que la pone al recibir el árbol y al corregir su punto, y el procedimiento `srp.recalcular_calles`, para después de instalar la capa, por tandas de 2,000 confirmadas una por una. Sin la capa, el árbol queda por asignar |
 | `db/srp/10-srp-rol-y-grants.sql` | La cuenta `srp_api`, sin contraseña, con sus permisos mínimos y `territorio_lectura`; la versión 1 del esquema. Al final, la verificación para correr como la cuenta: lo que debe funcionar y lo que debe fallar |
 | `db/srp/instalar.sql` | Corre los anteriores en orden, en una sola transacción |
 
@@ -88,6 +88,8 @@ de clave.
 - A las bitácoras, la de cambios y la de entradas, sólo les agrega renglones: no las edita ni las borra.
   Sus disparadores lo impiden también a quien administra la base. Una cuenta que ya intentó entrar no se
   elimina: su registro de entradas la sostiene, y se desactiva.
+- Una vez al día, con la primera entrada, llama a `srp.recortar_acceso()`: el registro de entradas y las sesiones
+  terminadas se guardan un año. Es la única excepción del disparador de la bitácora, y sólo esa función la hace.
 - Lee `territorio` y la capa propia; `srp.punto`, `srp.derivar`, `srp.prioridad`, `srp.especie_clave` y
   `srp.vecinos` las puede usar. No escribe en ninguna.
 - No tiene ningún permiso directo fuera de `srp`.
@@ -108,7 +110,8 @@ la base y las variables van antes que el código. Un módulo por despliegue.
    backend pueda escribir, con su propio respaldo, y `SRP_FOTOS_DIR` con su ruta. Sin ella el módulo
    arranca igual y las fotografías responden que no están disponibles.
 4. **Verificación:** la del final de `10-srp-rol-y-grants.sql`, corrida como `srp_api`.
-5. **La calle:** si `territorio.calles` ya está instalada, `SELECT srp.recalcular_calles();` como quien administra la base. Si se
+5. **La calle:** si `territorio.calles` ya está instalada, `CALL srp.recalcular_calles();` como quien administra la base, fuera de
+   una transacción abierta: confirma cada tanda de 2,000 árboles, y si se interrumpe, se vuelve a correr y sigue. Si la capa se
    instala después, se corre entonces. En la base local de desarrollo, la capa se instala con el `instalar.sql` del paquete
    calles-cdmx (`db/territorio_calles/`); las pruebas del servidor la necesitan.
 5. **Datos de arranque:** `psql -d <base> -v ON_ERROR_STOP=on -f srp-datos-arranque.sql`, como quien
@@ -238,7 +241,9 @@ variables de entorno, está explicada en `src/modulos/srp/config.ts`. Las respue
 
 - **Registro de entradas:** cada intento de entrar, logrado o no, cada bloqueo, cada salida y cada cambio
   de contraseña queda en `srp.bitacora_acceso`, con la procedencia y el navegador, como en `acceso.bitacora`
-  del SIA. Un correo sin cuenta se anota tal como se intentó. La procedencia la da el módulo común del SIA.
+  del SIA. Un correo sin cuenta se anota tal como se intentó; lo que no tiene forma de correo, como «(no es un
+  correo)», para que una contraseña escrita en ese campo no quede guardada. La procedencia la da el módulo común
+  del SIA. Se guarda un año.
 
 Los plazos, el largo mínimo, el bloqueo y el límite por procedencia son variables de entorno
 (`src/modulos/srp/config.ts`): se cambian sin tocar código. Un valor mal escrito no detiene el backend: se

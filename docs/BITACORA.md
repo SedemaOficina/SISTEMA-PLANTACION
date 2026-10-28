@@ -6750,3 +6750,57 @@ con las decisiones de Liber (D339). Sube también el informe de la auditoría y 
 
 **Siguiente paso.** El bloque 4 (servidor y base), que no cambia pantallas. Las muestras de los bloques 2, 3 y 5
 esperan la aprobación de Liber en una página aparte.
+
+## Bloque 257 — El servidor y la base (28-10-2026)
+
+**Versión 1.4.4.** El bloque 4 del plan de corrección de la auditoría del 27-10-2026, adelantado a los bloques 2 y 3:
+no cambia pantallas y sus decisiones ya estaban tomadas (D339, D340).
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| «Sustituir» un árbol eliminado (E1-01) | Devolvía el árbol entero, con sus comentarios, a quien no lo alcanzaba | Rechazo por permiso, sin datos; a quien lo alcanza, el árbol al día |
+| Registro de entradas y sesiones (D337) | Crecían sin fin | Se guardan un año: el servicio llama a `srp.recortar_acceso()` con la primera entrada del día |
+| El correo intentado (E1-04) | Se guardaba lo escrito, aunque fuera una contraseña | Lo que no tiene forma de correo queda como «(no es un correo)» |
+| Versión de la calle (F6-01) | De la tabla del paquete de calles | De la que el SIA tiene por vigente en `territorio.version_capa`; si falta, la del paquete |
+| Recalcular las calles (E2-01) | Una sola sentencia: si se interrumpía, no guardaba nada | `CALL srp.recalcular_calles();`, por tandas de 2,000 confirmadas una por una |
+| Ruta de búsqueda de las funciones (E1-03) | La de la sesión de quien instalaba (`"$user", public`) | Fija: `srp` y el esquema de PostGIS |
+| Bitácora al corregir el punto (E2-02) | No decía la calle | «Calle: sin calle a 40 m → Calle Parroquia, a 7 m» |
+| Lista de cabos mal formada (E3-03) | «Recibido, repetido», sin hacer nada | Error de datos |
+| Caracteres de dirección en los textos (E3-04) | Volteaban el aviso de la compartida | El servidor los quita |
+| Reglas en la base (D2-01) | La calle y los cabos de apoyo sólo dependían del servicio | La base exige su forma |
+| Versión del esquema (D2-02) | 2026-10-04 desde hace tres cambios de campos | 2026-10-28, con la huella de sus campos; la auditoría avisa si cambian sin subirla |
+| `coordinadores_ids` (F1-01) | Sin uso desde la 1.4, en cinco lugares | Fuera de todo |
+
+**Qué cambió.**
+- Base: `01-srp-esquema.sql` (la ruta), `03-srp-acceso.sql` (`srp.recortar_acceso` y la excepción del disparador),
+  `09-srp-calles.sql` (`srp.version_calles`, el procedimiento), `10-srp-rol-y-grants.sql` (permisos y verificación) y
+  `02-srp-tablas.sql`, generado otra vez.
+- Esquema: `datos/esquema.json` (sin `coordinadores_ids`, la relación de los cabos de apoyo, la versión y su huella),
+  `herramientas/generar_sql.py` (cinco reglas nuevas), `herramientas/generar_diccionario.py` (`--version` y la huella);
+  `DICCIONARIO-DATOS.md`, `js/esquema.js` y `MAPEO-CAMPOS.md` al día.
+- Servicio: `acceso.ts`, `sesiones.ts`, `cuentas.ts`, `recepcion-arboles.ts`, `recepcion-jornadas.ts` y
+  `recepcion-apoyo.ts`; `deploy/srp-cuenta-inicial.mjs`.
+- Aplicación, sin cambios en pantalla: `js/almacen.js` (quita el campo al abrir la base), `js/usuarios.js`,
+  `js/referencias.js`, `js/configuracion.js`, `js/datos-ficticios.js` y `js/demostracion.js`.
+- Pruebas: seis nuevas del servidor (`esquema`, `recepcion` y `acceso`) y las cuentas de prueba sin el campo;
+  `pruebas/auditoria.py` (la huella del esquema; tres comprobaciones del campo quitado se vuelven una);
+  `pruebas/prueba.py` y `pruebas/prueba_conexion.py`.
+- README, `servidor/README.md`, `VERSION`, marcas de `index.html`, etapa de `js/config.js`, `docs/MEJORAS.md`,
+  `docs/DECISIONES.md` (D340) y el seguimiento del informe de la auditoría.
+
+**Verificación.**
+- `npm test`: 115 de 115 (antes, 109): las seis nuevas y las de siempre, con las cuentas sin el campo quitado.
+- `pruebas/prueba_conexion.py`: 126 de 126. La primera corrida se detuvo al preparar sus cuentas:
+  `pruebas/apoyo_servidor.mjs` todavía las creaba con `coordinadores_ids`; se corrigió.
+- `pruebas/auditoria.py`: 147 comprobaciones, 0 hallazgos (antes, 149: las tres del campo quitado se vuelven una, y
+  entra la de la versión del esquema). La primera corrida encontró el campo en `MAPEO-CAMPOS.md`; se quitó.
+- `pruebas/por_tramos.py` (la prueba completa): 1,539 de 1,540, sin tramos detenidos, 46 min. Sólo falló el Excel de
+  `originales/`. La de los porcentajes no salió esta vez: depende de la fecha de los datos de demostración, y la
+  decisión R-1 sigue pendiente.
+- Recalcular las calles de los 18,359 árboles de la base local: 11 s, con un aviso cada 2,000.
+- GitHub, la corrida del commit anterior (bloque 256, número 40642306243): en verde, la primera desde el bloque 252.
+
+**Para el SIA.** Al instalar la capa de calles después del SRP, o una versión nueva: `CALL srp.recalcular_calles();`
+(antes era `SELECT`), fuera de una transacción. Va en el instructivo del paquete (bloque 6).
+
+**Siguiente paso.** Las muestras de los bloques 2, 3 y 5 esperan la aprobación de Liber; con ella, el bloque 2.

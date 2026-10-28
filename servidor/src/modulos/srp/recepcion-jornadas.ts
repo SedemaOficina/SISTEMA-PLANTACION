@@ -393,6 +393,9 @@ export async function compartirJornada(c: pg.PoolClient, u: Usuario, d: Record<s
   if (esResultado(leido)) return leido;
   const { id, actual } = leido;
   if (!puede("jornada.compartir", u, comoObjeto(actual))) return sinPermiso(id, "jornada.compartir");
+  // Cada lista falta o es una lista de identificadores; cualquier otra cosa es un error de datos, no «nada que hacer»
+  const malFormada = (v: unknown) => v !== undefined && (!Array.isArray(v) || v.some((x) => !idDe(x)));
+  if (malFormada(d.agregar) || malFormada(d.quitar)) return conVigente(rechazo(id, "DATOS_INVALIDOS", "Revise los cabos de apoyo.", [["cabos_apoyo", "Elija cabos activos de la institución de la jornada."]]), actual);
   const ids = (v: unknown) => (Array.isArray(v) ? [...new Set(v.map(idDe).filter((x): x is string => !!x))] : []);
   const vigente = (x: string) => apoyoVigente(comoObjeto(actual), x);
   const agregar = ids(d.agregar).filter((x) => !vigente(x));

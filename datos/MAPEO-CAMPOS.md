@@ -54,7 +54,7 @@ Pantalla **Nuevo registro**. Almacén `plantaciones`.
 | — | `capa_version` | No | Sistema | Versión de cada capa con la que se derivó, p. ej. `alcaldias=sia-2026-01-01;uga=sia-2026-09-22;colonias=iecm-2022`. Permite rehacer el dato cuando una capa cambie |
 | Calle (detalle) | `calle_estado` | No | Servidor | `ok` (hay un tramo de calle a 40 m o menos) o `lejos` (no lo hay: «Sin calle a menos de 40 m»). La pone el servidor al recibir el árbol y cada vez que se corrige su punto, con la capa `territorio.calles` del SIA (paquete calles-cdmx). Nulo mientras no se calcula: un árbol sin enviar («Se asigna al enviar»), o un servidor que todavía no tiene la capa. Con datos de prueba la pone el servidor simulado al enviar, con la copia ligera de `assets/calles/`. La jornada no lleva calle |
 | — | `calle_clave` | No | Servidor | Clave INEGI del tramo más cercano (19 dígitos), válida sólo para su versión de la capa |
-| — | `calle_version` | No | Servidor | Versión de la capa con que se calculó, p. ej. `1.0.0`. Después de instalar o actualizar la capa, `srp.recalcular_calles()` calcula los árboles sin calle o de otra versión |
+| — | `calle_version` | No | Servidor | Versión de la capa con que se calculó, p. ej. `1.0.0`. Es la versión vigente en `territorio.version_capa` del SIA. Después de instalar o actualizar la capa, `CALL srp.recalcular_calles()` calcula los árboles sin calle o de otra versión |
 | Calle | `calle` | No | Servidor | Nombre del tramo, como lo da la capa; «calle sin nombre» si no tiene. Se ve en el detalle, en el reporte (columna «Calle», si algún árbol ya la tiene), en el informe y en Supervisión («Por red vial») y en el CSV |
 | — | `calle_entre_1` | No | Servidor | La calle de una esquina del tramo; nula si no tiene salida por ese lado. Con `calle_entre_2` se dice «entre A y B»; con una sola, o la misma en las dos, «a la altura de A» |
 | — | `calle_entre_2` | No | Servidor | La calle de la otra esquina |
@@ -108,7 +108,6 @@ Pantalla **Usuarios**, sólo Administración global. Almacén `usuarios`.
 | Correo | `correo` | Sí | Persona | Identifica la cuenta y sirve para entrar. Único. No se puede cambiar después |
 | Cargo | `cargo_rol` | Sí | Persona | Texto libre; descriptivo, no gobierna permisos |
 | Perfil de captura | `perfil` | Sí | Persona | `CABO`, `COORDINADOR`, `DIRECTIVO` o `ADMIN`. Es lo que decide qué puede hacer. `DIRECTIVO` sólo ve y descarga: en la Secretaría, todo; en otra institución, lo de la suya. |
-| No se muestra desde la 1.4 | `coordinadores_ids` | No | Persona | Sin uso desde la 1.4: la Coordinación trabaja con todos los cabos de su institución. Lo ya capturado se conserva; las altas nuevas lo dejan vacío |
 | Estado | `activo` | Sí | Persona | Una cuenta inactiva no puede entrar; sus registros se conservan |
 | — | `fecha_creacion`, `creado_por_id` | Sí | Sistema | Cuándo y quién dio de alta la cuenta (los mismos nombres que en catálogos) |
 | — | `fecha_ultima_edicion`, `editado_por_id` | No | Sistema | |
@@ -254,7 +253,7 @@ Almacén `jornadas`. Lo que ya vive en los registros
 
 | Campo | Se origina en | Se reutiliza en |
 |---|---|---|
-| `usuarios.id` | Cuentas | `plantaciones.cabo_id`, `plantaciones.editado_por_id`, `usuarios.coordinadores_ids`, `usuarios.creado_por_id`, `usuarios.editado_por_id`, `creado_por_id` de las seis tablas de catálogo, `catalogos.editado_por_id`, `bitacora.usuario_id`, `jornadas.cabo_id`, `jornadas.encargado_id`, `jornadas.relevo_id`, `jornadas.editado_por_id` |
+| `usuarios.id` | Cuentas | `plantaciones.cabo_id`, `plantaciones.editado_por_id`, `usuarios.creado_por_id`, `usuarios.editado_por_id`, `creado_por_id` de las seis tablas de catálogo, `catalogos.editado_por_id`, `bitacora.usuario_id`, `jornadas.cabo_id`, `jornadas.encargado_id`, `jornadas.relevo_id`, `jornadas.editado_por_id` |
 | `especies.id` (= clave `ESP-0000`) | Catálogo del SIA | `plantaciones.especie_id` |
 | `programas.id` | Catálogos | `jornadas.programa_id`, y de ahí `plantaciones.programa_id` |
 | `jornadas.id` | Jornadas | `plantaciones.jornada_id` |

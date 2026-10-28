@@ -38,10 +38,10 @@ window.SRP = window.SRP || {};
      Coordinación y Cabo); fuera, por tipo de institución (Alcaldía, Gobierno de la CDMX, Empresa
      privada, Organización civil), un coordinador y su cabo, sin área. Nombres inventados, apellido
      «Ejemplo»; correos en @ejemplo.local: dominio reservado, nunca entregable (Norma 3). */
-  // Sin coordinadores: desde la 1.4 la Coordinación trabaja con todos los cabos de su institución
+  // La Coordinación trabaja con todos los cabos de su institución: las cuentas no llevan coordinadores
   const usuario = (id, correo, nombre_completo, area_id, cargo_rol, perfil, organizacion_id) => ({
     id, correo, nombre_completo, organizacion_id: organizacion_id || 'o-sedema', area_id, cargo_rol, perfil,
-    coordinadores_ids: [], activo: true,
+    activo: true,
     fecha_creacion: F, creado_por_id: 'u-admin-1', fecha_ultima_edicion: null, editado_por_id: null
   });
 

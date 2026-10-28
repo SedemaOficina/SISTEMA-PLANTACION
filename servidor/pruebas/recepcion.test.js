@@ -12,12 +12,12 @@ import { leerConfig, crearGrupo, crearApp, derivar } from '../dist/independiente
 const CORRIDA = Date.now();
 const CLAVE = 'Recepcion de prueba 2026';
 const uuid = () => crypto.randomUUID();
-const cuenta = (nombre, perfil, organizacion_id, coordinadores = []) => ({ id: uuid(), nombre, perfil, organizacion_id, coordinadores, correo: nombre.toLowerCase() + '.recepcion.prueba.' + CORRIDA + '@ejemplo.local' });
+const cuenta = (nombre, perfil, organizacion_id) => ({ id: uuid(), nombre, perfil, organizacion_id, correo: nombre.toLowerCase() + '.recepcion.prueba.' + CORRIDA + '@ejemplo.local' });
 const INST = 'o-prueba-rec-' + CORRIDA;
 const COORD = cuenta('coordinador', 'COORDINADOR', 'o-sedema');
-const CABO = cuenta('cabo', 'CABO', 'o-sedema', [COORD.id]);
+const CABO = cuenta('cabo', 'CABO', 'o-sedema');
 const CABO2 = cuenta('otrocabo', 'CABO', 'o-sedema');
-const CABO3 = cuenta('cabotres', 'CABO', 'o-sedema', [COORD.id]);
+const CABO3 = cuenta('cabotres', 'CABO', 'o-sedema');
 const EXTERNO = cuenta('externo', 'CABO', INST);
 const DIRECTIVO = cuenta('directivo', 'DIRECTIVO', 'o-sedema');
 const CUENTAS = [COORD, CABO, CABO2, CABO3, EXTERNO, DIRECTIVO];
@@ -53,8 +53,8 @@ before(async () => {
   await admin.query(`INSERT INTO srp.vehiculos VALUES ($1, $2, $3, true, NULL, now(), NULL, NULL, 'Modelo de prueba', 'Pipa')`, [VEHICULO.id, VEHICULO.placa.replace(' ', ''), VEHICULO.placa]);
   const derivada = await derivar(CLAVE);
   for (const u of CUENTAS) {
-    await admin.query(`INSERT INTO srp.usuarios VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true, now(), $1, NULL, NULL)`,
-      [u.id, u.correo, 'Prueba ' + u.nombre, u.organizacion_id, u.organizacion_id === 'o-sedema' ? 'a-sia' : null, u.perfil, u.perfil, u.coordinadores]);
+    await admin.query(`INSERT INTO srp.usuarios VALUES ($1, $2, $3, $4, $5, $6, $7, true, now(), $1, NULL, NULL)`,
+      [u.id, u.correo, 'Prueba ' + u.nombre, u.organizacion_id, u.organizacion_id === 'o-sedema' ? 'a-sia' : null, u.perfil, u.perfil]);
     await admin.query(`INSERT INTO srp.credenciales VALUES ($1, $2, false, NULL, 0, NULL, now(), $1)`, [u.id, derivada]);
   }
   await admin.query('COMMIT');
@@ -447,20 +447,73 @@ test('la calle de cada árbol: la pone la base al recibirlo y al corregir su pun
     await admin.query('ALTER TABLE territorio.calles RENAME TO calles_sin_instalar');
     assert.ok(Object.values((await admin.query('SELECT * FROM srp.calle($1, $2)', [EN_PARROQUIA.lat, EN_PARROQUIA.lng])).rows[0]).every((v) => v === null));
     await admin.query('SAVEPOINT recalcular');
-    await assert.rejects(admin.query('SELECT srp.recalcular_calles()'), /no está instalada/);
+    await assert.rejects(admin.query('CALL srp.recalcular_calles()'), /no está instalada/);
     await admin.query('ROLLBACK TO SAVEPOINT recalcular');
   } finally {
     await admin.query('ROLLBACK');
   }
   // Con la capa, recalcular pone la calle a los que no la tienen o la tienen de otra versión, y deja a los demás
-  await admin.query("UPDATE srp.plantaciones SET calle_estado = NULL, calle = NULL, calle_version = NULL WHERE id = $1", [P.fila.id]);
+  await admin.query('UPDATE srp.plantaciones SET (' + CAMPOS_CALLE.join(', ') + ') = (' + CAMPOS_CALLE.map(() => 'NULL').join(', ') + ') WHERE id = $1', [P.fila.id]);
   await admin.query("UPDATE srp.plantaciones SET calle_version = '0.9.0' WHERE id = $1", [A.id]);
-  assert.equal((await admin.query('SELECT srp.recalcular_calles() AS n')).rows[0].n, 2);
+  assert.equal((await admin.query('CALL srp.recalcular_calles()')).rows[0].calculados, 2);
   assert.deepEqual((await admin.query('SELECT calle, calle_version FROM srp.plantaciones WHERE id = ANY($1) ORDER BY calle', [[A.id, P.fila.id]])).rows.map((x) => [x.calle, x.calle_version]),
     [['Calle Parroquia', '1.0.0'], ['Periférico (Canal de Garay)', '1.0.0']]);
-  assert.equal((await admin.query('SELECT srp.recalcular_calles() AS n')).rows[0].n, 0, 'otra vez, nada que hacer');
+  assert.equal((await admin.query('CALL srp.recalcular_calles()')).rows[0].calculados, 0, 'otra vez, nada que hacer');
   // La base sólo admite sus valores
   await assert.rejects(admin.query("UPDATE srp.plantaciones SET vialidad_red = 'terciaria' WHERE id = $1", [A.id]), (e) => e.code === '23514');
+});
+
+test('la versión de la calle es la que el SIA tiene por vigente; corregir el punto deja la calle en la bitácora; la base sólo admite calles completas', async () => {
+  const t = await telefono(CABO);
+  const { A, version } = await conArbol(t);
+  // Manda la versión vigente de territorio.version_capa; si el SIA no tiene una vigente, la del paquete de calles
+  await admin.query('BEGIN');
+  try {
+    await admin.query("INSERT INTO territorio.version_capa (capa, version, fuente, filas, vigente) VALUES ('calles', '1.1.0', 'Prueba del SRP', 1, true)");
+    assert.equal((await admin.query('SELECT calle_version FROM srp.calle($1, $2)', [EN_PARROQUIA.lat, EN_PARROQUIA.lng])).rows[0].calle_version, '1.1.0');
+    await admin.query("UPDATE territorio.version_capa SET vigente = false WHERE capa = 'calles'");
+    assert.equal((await admin.query('SELECT srp.version_calles() AS v')).rows[0].v, '1.0.0', 'la que ya no es vigente no cuenta');
+  } finally {
+    await admin.query('ROLLBACK');
+  }
+  // Corregir el punto deja en la bitácora de qué calle a qué calle pasó
+  const r = await t.una('registro.editar', { id: A.id, version, cambios: { ...EN_PARROQUIA, punto_origen: 'mapa', gps_precision_m: null } });
+  assert.equal(r.estado, 'recibido', JSON.stringify(r));
+  assert.match((await bitacora(A.id)).find((b) => b[0] === 'EDITADO')[1], /Calle: sin calle a 40 m → Calle Parroquia, a 7 m$/);
+  // La base sólo admite una calle completa: «ok» con su tramo a 40 m o menos, «lejos» sin tramo, y sin calcular, todo vacío
+  for (const [cambio, regla] of [['calle = NULL', 'ok sin nombre'], ['calle_distancia_m = 41', 'a más de 40 m'], ["calle_estado = 'lejos'", 'lejos con tramo'], ['calle_estado = NULL', 'por calcular con tramo']]) {
+    await assert.rejects(admin.query(`UPDATE srp.plantaciones SET ${cambio} WHERE id = $1`, [A.id]), (e) => e.code === '23514', regla);
+  }
+});
+
+test('sustituir un árbol eliminado: quien lo alcanza lo recibe al día; los demás, el rechazo por permiso y ningún dato', async () => {
+  const t = await telefono(CABO), ext = await telefono(EXTERNO), otro = await telefono(CABO2);
+  const { A, version } = await conArbol(t, {}, { comentarios: 'Comentario que sólo ve quien alcanza el árbol' });
+  assert.equal((await t.una('registro.eliminar', { id: A.id, version })).estado, 'recibido');
+  const S = { sustituye_id: A.id, motivo_sustitucion: 'ROBO', fecha_plantacion: HOY, ...PUNTO, punto_origen: 'gps', gps_precision_m: 3, especie_id: ESPECIE,
+    comentarios: '', fecha_registro: new Date().toISOString() };
+  for (const [quien, nombre] of [[ext, 'un cabo de otra institución'], [otro, 'un cabo de la misma institución que no lo alcanza']]) {
+    const r = await quien.una('registro.sustituir', { ...S, id: uuid() });
+    assert.deepEqual([r.codigo, r.fila, r.otras], ['SIN_PERMISO', undefined, undefined], nombre);
+  }
+  const propio = await t.una('registro.sustituir', { ...S, id: uuid() });
+  assert.deepEqual([propio.codigo, propio.otras.map((o) => o.fila.id)], ['NO_SUSTITUIBLE', [A.id]]);
+});
+
+test('la lista de cabos de apoyo mal formada es un error de datos, y el nombre de la jornada llega sin caracteres que volteen el texto', async () => {
+  const coord = await telefono(COORD);
+  const J = jornada({ nombre: 'Parque \u202Eollebab \u2066Norte\u2069' });
+  const creada = await coord.una('jornada.crear', J);
+  assert.deepEqual([creada.estado, creada.fila.nombre], ['recibido', 'Parque ollebab Norte']);
+  for (const agregar of ['texto', null, {}, ['no-es-un-id'], [CABO.id.toUpperCase()]]) {
+    const r = await coord.una('jornada.compartir', { id: J.id, agregar });
+    assert.deepEqual([r.codigo, r.errores], ['DATOS_INVALIDOS', [['cabos_apoyo', 'Elija cabos activos de la institución de la jornada.']]], JSON.stringify(agregar));
+  }
+  assert.equal((await coord.una('jornada.compartir', { id: J.id, quitar: 'todos' })).codigo, 'DATOS_INVALIDOS');
+  // Y en la base, cada cabo de apoyo es un objeto con su cuenta, desde cuándo y quién lo puso
+  for (const lista of [['x'], [{ cabo_id: 'no-es-un-id', desde: 'x', por_id: 'y' }], [{ cabo_id: CABO.id, por_id: COORD.id }], [{ cabo_id: CABO.id, desde: 'x', por_id: COORD.id, fin: 'otro' }]]) {
+    await assert.rejects(admin.query('UPDATE srp.jornadas SET cabos_apoyo = $2 WHERE id = $1', [J.id, JSON.stringify(lista)]), (e) => e.code === '23514', JSON.stringify(lista));
+  }
 });
 
 test('mover lleva el árbol a otra jornada del mismo cabo, con la fecha y el programa de esa jornada; la de origen pierde su marca de revisado', async () => {

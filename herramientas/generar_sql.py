@@ -47,6 +47,13 @@ REGLAS = [
     ('jornadas', 'hora_formato', r"hora = '' OR hora ~ '^([01]\d|2[0-3]):[0-5]\d$'"),
     ('jornadas', 'relevos_lista', "jsonb_typeof(relevos) = 'array'"),
     ('jornadas', 'cabos_apoyo_lista', "jsonb_typeof(cabos_apoyo) = 'array'"),
+    # Cada cabo de apoyo: un objeto con su cuenta, desde cuándo y quién lo puso; si terminó, cómo
+    ('jornadas', 'cabos_apoyo_forma', 'NOT (cabos_apoyo @? \'$[*] ? (@.type() != "object" || !exists(@.cabo_id) || @.cabo_id.type() != "string" || !(@.cabo_id like_regex "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$") || !exists(@.desde) || !exists(@.por_id) || (exists(@.fin) && @.fin != null && @.fin != "terminado" && @.fin != "quitado"))\')'),
+    # La calle: «ok» trae su tramo, a 40 m o menos; «lejos» no trae ninguno; sin calcular, todo vacío
+    ('plantaciones', 'calle_distancia', 'calle_distancia_m IS NULL OR calle_distancia_m BETWEEN 0 AND 40'),
+    ('plantaciones', 'calle_ok', "calle_estado IS DISTINCT FROM 'ok' OR (calle_clave IS NOT NULL AND calle IS NOT NULL AND calle_distancia_m IS NOT NULL)"),
+    ('plantaciones', 'calle_lejos', "calle_estado IS DISTINCT FROM 'lejos' OR num_nonnulls(calle_clave, calle, calle_entre_1, calle_entre_2, calle_esquina, vialidad_red, vialidad_tipo, calle_atiende, calle_llave, calle_distancia_m) = 0"),
+    ('plantaciones', 'calle_por_calcular', "calle_estado IS NOT NULL OR num_nonnulls(calle_version, calle_clave, calle, calle_entre_1, calle_entre_2, calle_esquina, vialidad_red, vialidad_tipo, calle_atiende, calle_llave, calle_distancia_m) = 0"),
 ]
 # Valores que no pueden repetirse aunque el esquema no lo diga con la palabra «único»
 UNICOS = [('plantaciones', 'folio')]

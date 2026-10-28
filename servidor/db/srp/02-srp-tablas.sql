@@ -1,5 +1,5 @@
 -- TABLAS DEL SRP. Generado por herramientas/generar_sql.py a partir de datos/esquema.json
--- (versión del esquema 2026-10-04): no se edita a mano. Lo corre quien administra la base, dentro de
+-- (versión del esquema 2026-10-28): no se edita a mano. Lo corre quien administra la base, dentro de
 -- instalar.sql, después de 01-srp-esquema.sql.
 
 CREATE TABLE srp.plantaciones (
@@ -59,7 +59,11 @@ CREATE TABLE srp.plantaciones (
   CONSTRAINT plantaciones_especie_o_escrita CHECK (especie_id IS NOT NULL OR especie_otra <> ''),
   CONSTRAINT plantaciones_motivo_otro CHECK (motivo_sustitucion IS DISTINCT FROM 'OTRO' OR motivo_sustitucion_otro <> ''),
   CONSTRAINT plantaciones_gps_precision CHECK (gps_precision_m IS NULL OR gps_precision_m >= 0),
-  CONSTRAINT plantaciones_uga_borde CHECK (uga_borde_m IS NULL OR uga_borde_m >= 0)
+  CONSTRAINT plantaciones_uga_borde CHECK (uga_borde_m IS NULL OR uga_borde_m >= 0),
+  CONSTRAINT plantaciones_calle_distancia CHECK (calle_distancia_m IS NULL OR calle_distancia_m BETWEEN 0 AND 40),
+  CONSTRAINT plantaciones_calle_ok CHECK (calle_estado IS DISTINCT FROM 'ok' OR (calle_clave IS NOT NULL AND calle IS NOT NULL AND calle_distancia_m IS NOT NULL)),
+  CONSTRAINT plantaciones_calle_lejos CHECK (calle_estado IS DISTINCT FROM 'lejos' OR num_nonnulls(calle_clave, calle, calle_entre_1, calle_entre_2, calle_esquina, vialidad_red, vialidad_tipo, calle_atiende, calle_llave, calle_distancia_m) = 0),
+  CONSTRAINT plantaciones_calle_por_calcular CHECK (calle_estado IS NOT NULL OR num_nonnulls(calle_version, calle_clave, calle, calle_entre_1, calle_entre_2, calle_esquina, vialidad_red, vialidad_tipo, calle_atiende, calle_llave, calle_distancia_m) = 0)
 );
 CREATE INDEX plantaciones_estatus ON srp.plantaciones (estatus);
 CREATE INDEX plantaciones_jornada_id ON srp.plantaciones (jornada_id);
@@ -72,7 +76,6 @@ CREATE TABLE srp.usuarios (
   area_id                    text           NULL,
   cargo_rol                  text           NOT NULL,
   perfil                     text           NOT NULL,
-  coordinadores_ids          uuid[]         NOT NULL,
   activo                     boolean        NOT NULL,
   fecha_creacion             timestamptz    NOT NULL,
   creado_por_id              uuid           NOT NULL,
@@ -252,7 +255,8 @@ CREATE TABLE srp.jornadas (
   CONSTRAINT jornadas_arboles_previstos_rango CHECK (arboles_previstos BETWEEN 1 AND 9999),
   CONSTRAINT jornadas_hora_formato CHECK (hora = '' OR hora ~ '^([01]\d|2[0-3]):[0-5]\d$'),
   CONSTRAINT jornadas_relevos_lista CHECK (jsonb_typeof(relevos) = 'array'),
-  CONSTRAINT jornadas_cabos_apoyo_lista CHECK (jsonb_typeof(cabos_apoyo) = 'array')
+  CONSTRAINT jornadas_cabos_apoyo_lista CHECK (jsonb_typeof(cabos_apoyo) = 'array'),
+  CONSTRAINT jornadas_cabos_apoyo_forma CHECK (NOT (cabos_apoyo @? '$[*] ? (@.type() != "object" || !exists(@.cabo_id) || @.cabo_id.type() != "string" || !(@.cabo_id like_regex "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$") || !exists(@.desde) || !exists(@.por_id) || (exists(@.fin) && @.fin != null && @.fin != "terminado" && @.fin != "quitado"))'))
 );
 CREATE INDEX jornadas_cabo_id ON srp.jornadas (cabo_id);
 
@@ -325,7 +329,7 @@ COMMENT ON COLUMN srp.plantaciones.fecha_ultima_edicion IS 'ISO 8601; Nula hasta
 COMMENT ON COLUMN srp.plantaciones.editado_por_id IS '→ usuarios.id; Quién hizo la última edición (o la eliminación)';
 COMMENT ON COLUMN srp.plantaciones.calle_estado IS 'calle_estado; Lo pone el servidor al recibir el árbol y cada vez que se corrige el punto, con la capa territorio.calles: `ok` si hay un tramo a 40 m o menos, `lejos` si no. Nulo mientras no se calcula: un árbol sin enviar, o un servidor que todavía no tiene la capa. Con datos de prueba lo pone el servidor simulado, con la copia ligera de la capa (assets/calles/)';
 COMMENT ON COLUMN srp.plantaciones.calle_clave IS 'Clave INEGI del tramo, de 19 dígitos, válida para su calle_version; El tramo más cercano. Una clave sólo vale para su versión de la capa: con otra versión se pasa por territorio.calles_equivalencia';
-COMMENT ON COLUMN srp.plantaciones.calle_version IS 'Versión de territorio.calles con que se calculó, como `1.0.0`; srp.recalcular_calles() vuelve a calcular los árboles sin calle o de otra versión, después de instalar o actualizar la capa';
+COMMENT ON COLUMN srp.plantaciones.calle_version IS 'Versión vigente de territorio.calles con que se calculó, como `1.0.0`: la de territorio.version_capa del SIA o, si no la registró, la del paquete (srp.version_calles); CALL srp.recalcular_calles() vuelve a calcular, por tandas, los árboles sin calle o de otra versión, después de instalar o actualizar la capa';
 COMMENT ON COLUMN srp.plantaciones.calle IS 'Nombre del tramo (`nombre` de la capa); «calle sin nombre» si no tiene; Sólo con calle_estado = ok; si no, nulo, como los demás campos de la calle';
 COMMENT ON COLUMN srp.plantaciones.calle_entre_1 IS 'La calle de una esquina del tramo (`entre_1`); nula si el tramo no tiene salida por ese lado; Con una sola esquina, o con la misma calle en las dos, la pantalla dice «a la altura de»';
 COMMENT ON COLUMN srp.plantaciones.calle_entre_2 IS 'La calle de la otra esquina (`entre_2`)';
@@ -343,7 +347,6 @@ COMMENT ON COLUMN srp.usuarios.organizacion_id IS '→ instituciones.id; La inst
 COMMENT ON COLUMN srp.usuarios.area_id IS '→ areas.id (DGSANPAVA, Oficina de la Secretaría, Sistema de Información Ambiental, DGEIRA); Obligatoria en cuentas de SEDEMA; nula en las de otras organizaciones';
 COMMENT ON COLUMN srp.usuarios.cargo_rol IS 'Texto libre; Descriptivo; no gobierna permisos';
 COMMENT ON COLUMN srp.usuarios.perfil IS 'perfil; Decide alcance y acciones. Una cuenta de administración no puede quitarse a sí misma el perfil ADMIN. Un perfil desconocido queda sin permisos y se avisa. ADMIN sólo en SEDEMA; fuera, CABO, COORDINADOR o DIRECTIVO';
-COMMENT ON COLUMN srp.usuarios.coordinadores_ids IS '→ usuarios.id con perfil COORDINADOR; [] si no tiene; Sin uso desde la 1.4 (D333): la Coordinación trabaja con todos los cabos de su institución, sin cuadrilla. Lo ya capturado se conserva; las altas nuevas lo dejan en []';
 COMMENT ON COLUMN srp.usuarios.activo IS 'true/false; Inactiva no puede entrar; sus registros se conservan a su nombre. Con registros a su nombre no se elimina, se desactiva';
 COMMENT ON COLUMN srp.usuarios.fecha_creacion IS 'ISO 8601; Cuándo se dio de alta la cuenta; mismo nombre que en catálogos';
 COMMENT ON COLUMN srp.usuarios.creado_por_id IS '→ usuarios.id; Quién dio de alta la cuenta; mismo nombre que en catálogos';

@@ -49,9 +49,9 @@ INSERT INTO srp.instituciones (id, clave, nombre, activo, creado_por_id, fecha_c
   VALUES ('o-sedema', 'SEDEMA', 'Secretaría del Medio Ambiente (SEDEMA)', true, NULL, now(), NULL, NULL, 'Gobierno de la CDMX') ON CONFLICT (id) DO NOTHING;
 INSERT INTO srp.areas (id, clave, nombre, activo, creado_por_id, fecha_creacion, editado_por_id, fecha_ultima_edicion)
   VALUES ('a-sia', 'SIA', 'Sistema de Información Ambiental', true, NULL, now(), NULL, NULL) ON CONFLICT (id) DO NOTHING;
-INSERT INTO srp.usuarios (id, correo, nombre_completo, organizacion_id, area_id, cargo_rol, perfil, coordinadores_ids, activo,
+INSERT INTO srp.usuarios (id, correo, nombre_completo, organizacion_id, area_id, cargo_rol, perfil, activo,
     fecha_creacion, creado_por_id, fecha_ultima_edicion, editado_por_id)
-  VALUES (${lit(id)}, ${lit(correo.toLowerCase())}, ${lit(nombre)}, 'o-sedema', 'a-sia', ${lit(cargo)}, 'ADMIN', '{}', true, now(), ${lit(id)}, NULL, NULL);
+  VALUES (${lit(id)}, ${lit(correo.toLowerCase())}, ${lit(nombre)}, 'o-sedema', 'a-sia', ${lit(cargo)}, 'ADMIN', true, now(), ${lit(id)}, NULL, NULL);
 INSERT INTO srp.credenciales (usuario_id, derivada, temporal, temporal_expira_en, intentos_fallidos, bloqueada_hasta, cambiada_en, cambiada_por_id)
   VALUES (${lit(id)}, ${lit(resumen)}, true, now() + interval '${HORAS} hours', 0, NULL, now(), ${lit(id)});
 INSERT INTO srp.bitacora (id, fecha, usuario_id, usuario_nombre, perfil, accion, entidad, entidad_id, detalle)

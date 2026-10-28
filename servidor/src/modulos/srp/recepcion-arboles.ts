@@ -1,7 +1,7 @@
 import type pg from "pg";
 import { anotarCambio } from "./bitacora";
 import { conDuplicado } from "./duplicados";
-import { puede } from "./permisos";
+import { alcanza, capacidadesDe, puede } from "./permisos";
 import {
   AHORA, antesDelPrograma, asignarFolio, autoresDe, FOTO_DE_OTRO, fotoDeOtro, caducarReporte, comoObjeto, conVigente, esFecha, especieComun, esVigente, fechaCorta, fechaEnJornada, filaDe,
   hoyEnLaCiudad, idDe, instante, jornadaEliminada, MOTIVOS_SUSTITUCION, motivoSustitucion, noAntes, puntoDe, rechazo, recibido, repetida, seElimino, sinPermiso, texto, textoFolio,
@@ -196,13 +196,14 @@ export async function editarArbol(c: pg.PoolClient, u: Usuario, d: Record<string
       t.alcaldia_cve, t.alcaldia, t.colonia_cve, t.colonia, t.uga, t.uga_borde_m, t.capa_version, u.id, v.sitio_plantacion],
   )).rows[0].fila;
 
-  // La bitácora dice qué campos cambiaron, de dónde a dónde se movió el punto y si cambió su territorio
+  // La bitácora dice qué campos cambiaron, de dónde a dónde se movió el punto y si cambió su territorio o su calle
   const cambiados = DICHOS.filter((k) => !igual(actual[k], fila[k]));
   const punto2 = actual.lat !== fila.lat || actual.lng !== fila.lng
     ? "Punto: " + Number(actual.lat).toFixed(6) + ", " + Number(actual.lng).toFixed(6) + " → " + Number(fila.lat).toFixed(6) + ", " + Number(fila.lng).toFixed(6) : "";
   const territorio2 = TERRITORIO.filter((k) => !igual(actual[k], fila[k]));
   const detalle = [cambiados.length ? "Campos: " + cambiados.join(", ") : "", punto2,
     territorio2.length ? "Territorio recalculado: " + territorio2.map((k) => (k === "capa_version" ? "capas " + (fila[k] || "—") : k + " " + (actual[k] || "—") + " → " + (fila[k] || "—"))).join("; ") : "",
+    textoCalle(actual) !== textoCalle(fila) ? "Calle: " + textoCalle(actual) + " → " + textoCalle(fila) : "",
   ].filter(Boolean).join(". ");
   await anotarCambio(c, u, "EDITADO", "plantacion", id, detalle || "Sin cambios en los datos");
   const folio = fila.folio ? null : await asignarFolio(c, u, fila);
@@ -278,6 +279,10 @@ export async function restaurarArbol(c: pg.PoolClient, u: Usuario, d: Record<str
   return conDuplicado(c, u, recibido(fila, otras.length ? { otras } : {}));
 }
 
+// La calle de un árbol en la bitácora: su nombre y a cuántos metros, «sin calle a 40 m» o «sin calcular»
+const textoCalle = (x: Fila): string =>
+  x.calle_estado === "ok" ? String(x.calle) + ", a " + String(x.calle_distancia_m) + " m" : x.calle_estado === "lejos" ? "sin calle a 40 m" : "sin calcular";
+
 /* SUSTITUCIÓN de un árbol perdido: el sustituto entra en la jornada del original, con la fecha en que se
    planta y su propio folio, y el original pasa a «sustituido», en una sola operación. `id` es el del
    sustituto; `sustituye_id`, el del original. */
@@ -291,6 +296,8 @@ export async function sustituirArbol(c: pg.PoolClient, u: Usuario, d: Record<str
   const original = originalId ? await filaDe(c, "plantaciones", originalId, "FOR UPDATE") : undefined;
   if (!original) return rechazo(id, "NO_EXISTE", "El árbol que se sustituye no está en el servidor.");
   if (original.estatus !== "activo" || original.sustituido_por_id) {
+    // El árbol al día va sólo a quien lo alcanza; a los demás, el mismo rechazo por permiso, sin ningún dato
+    if (!capacidadesDe(u).registrar || !alcanza(u, comoObjeto(original), await autoresDe(c, original))) return sinPermiso(id, "registro.sustituir");
     return { ...rechazo(id, "NO_SUSTITUIBLE", "Ese árbol ya no se puede sustituir: se eliminó o ya tiene sustituto."), otras: [{ tabla: "plantaciones", fila: original }] };
   }
   if (!puede("registro.sustituir", u, comoObjeto(original), await autoresDe(c, original))) return sinPermiso(id, "registro.sustituir");

@@ -100,13 +100,9 @@ with sync_playwright() as p:
         areaInexistente: us.filter(u=>u.organizacion_id === SRP.CONFIG.ORGANIZACION_SEDEMA && !cat[u.area_id]).map(u=>u.correo),
         areaFuera: us.filter(u=>u.organizacion_id !== SRP.CONFIG.ORGANIZACION_SEDEMA && u.area_id).map(u=>u.correo),
         institucionInexistente: us.filter(u=>!cat[u.organizacion_id]).map(u=>u.correo),
-        coordinadorInexistente: us.filter(u=>(u.coordinadores_ids||[]).some(c=>!porId[c])).map(u=>u.correo),
-        // El coordinador del cabo es de su misma institución: así nadie ve lo de otra
-        coordinadorOtraInstitucion: us.filter(u=>(u.coordinadores_ids||[]).some(c=>porId[c] && porId[c].organizacion_id !== u.organizacion_id)).map(u=>u.correo),
         adminFuera: us.filter(u=>u.perfil === 'ADMIN' && u.organizacion_id !== SRP.CONFIG.ORGANIZACION_SEDEMA).map(u=>u.correo),
-        coordinadorSinPerfil: us.filter(u=>(u.coordinadores_ids||[]).some(c=>porId[c] && !['COORDINADOR','ADMIN'].includes(porId[c].perfil))).map(u=>u.correo),
-        coordinadoresSinLista: us.filter(u=>!Array.isArray(u.coordinadores_ids)).map(u=>u.correo),
-        campoViejoUsuarios: us.filter(u=>'jefe_id' in u || 'coordinador_id' in u).map(u=>u.correo)
+        // Las cuentas no llevan jefe ni coordinadores: la Coordinación trabaja con toda su institución
+        campoViejoUsuarios: us.filter(u=>'jefe_id' in u || 'coordinador_id' in u || 'coordinadores_ids' in u).map(u=>u.correo)
       };
     }""")
     mirar(d['total'] == 13, 'hay exactamente las trece cuentas de arranque: cuatro de la Secretaría, un coordinador y un cabo por tipo de institución y un directivo de alcaldía (%d)' % d['total'])
@@ -120,11 +116,8 @@ with sync_playwright() as p:
     mirar(not d['areaInexistente'], 'el área de cada cuenta de la Secretaría existe en el catálogo', str(d['areaInexistente']))
     mirar(not d['areaFuera'], 'las cuentas de fuera de la Secretaría no llevan área', str(d['areaFuera']))
     mirar(not d['institucionInexistente'], 'la institución de cada cuenta existe en el catálogo', str(d['institucionInexistente']))
-    mirar(not d['coordinadorInexistente'], 'el coordinador asignado existe', str(d['coordinadorInexistente']))
-    mirar(not d['coordinadorSinPerfil'], 'quien figura como coordinador tiene ese perfil', str(d['coordinadorSinPerfil']))
-    mirar(not d['coordinadorOtraInstitucion'], 'el coordinador de cada cabo es de su misma institución', str(d['coordinadorOtraInstitucion']))
     mirar(not d['adminFuera'], 'la Administración global es sólo de la Secretaría', str(d['adminFuera']))
-    mirar(not d['campoViejoUsuarios'], 'ninguna cuenta conserva el campo anterior', str(d['campoViejoUsuarios']))
+    mirar(not d['campoViejoUsuarios'], 'ninguna cuenta conserva jefe ni coordinadores', str(d['campoViejoUsuarios']))
 
     r = pg.evaluate("""() => new Promise(res=>{
       SRP.almacen.todos('plantaciones').then(ps=>{
@@ -341,6 +334,9 @@ with sync_playwright() as p:
     generado = generar_diccionario.generar(esquema)
     actual = open(os.path.join(APP, 'datos', 'DICCIONARIO-DATOS.md'), encoding='utf-8').read()
     mirar(generado == actual, 'DICCIONARIO-DATOS.md está regenerado a partir de esquema.json', 'corra herramientas/generar_diccionario.py')
+    # Cada cambio de campos sube la versión del esquema: la huella guardada es la de los campos de hoy
+    mirar(esquema.get('huella_campos') == generar_diccionario.huella(esquema), 'la versión del esquema (%s) es la de sus campos' % esquema['version_esquema'],
+          'los campos cambiaron y la versión no: corra herramientas/generar_diccionario.py --version AAAA-MM-DD')
     # Y el esquema que lee el navegador
     js_actual = open(os.path.join(APP, 'js', 'esquema.js'), encoding='utf-8').read()
     mirar(generar_diccionario.generar_js(esquema) == js_actual, 'js/esquema.js está regenerado a partir de esquema.json (lo lee js/referencias.js)', 'corra herramientas/generar_diccionario.py')

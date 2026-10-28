@@ -33,8 +33,10 @@ before(async () => {
   await admin.query(`INSERT INTO srp.instituciones VALUES ('o-sedema', 'SEDEMA', 'Secretaría del Medio Ambiente', true, NULL, now(), NULL, NULL, 'Gobierno de la CDMX') ON CONFLICT (id) DO NOTHING`);
   await admin.query(`INSERT INTO srp.areas VALUES ('a-sia', 'SIA', 'Sistema de Información Ambiental', true, NULL, now(), NULL, NULL) ON CONFLICT (id) DO NOTHING`);
   await admin.query(`INSERT INTO srp.instituciones VALUES ('o-prueba-acceso', 'PRUEBA_ACCESO', 'Institución de prueba del acceso', true, NULL, now(), NULL, NULL, 'Empresa privada') ON CONFLICT (id) DO NOTHING`);
-  await admin.query(`INSERT INTO srp.usuarios VALUES ($1, $2, 'Administración Prueba Acceso', 'o-sedema', 'a-sia', 'Administración global', 'ADMIN', '{}', true, now(), $1, NULL, NULL)`, [ADMIN.id, ADMIN.correo]);
+  await admin.query(`INSERT INTO srp.usuarios VALUES ($1, $2, 'Administración Prueba Acceso', 'o-sedema', 'a-sia', 'Administración global', 'ADMIN', true, now(), $1, NULL, NULL)`, [ADMIN.id, ADMIN.correo]);
   await admin.query(`INSERT INTO srp.credenciales VALUES ($1, $2, false, NULL, 0, NULL, now(), $1)`, [ADMIN.id, await derivar(ADMIN.clave)]);
+  // Un renglón de hace más de un año: lo recorta la primera entrada del día (la prueba del final)
+  await admin.query("INSERT INTO srp.bitacora_acceso (momento, evento, correo_intentado) VALUES (now() - interval '400 days', 'ENTRADA_FALLIDA', 'viejo.prueba.recorte@ejemplo.local')");
   await admin.query('COMMIT');
   grupo = crearGrupo({ rol: 'srp_api' });
   servidor = crearApp({ pool: grupo, config, proxy: 0 }).listen(0);
@@ -53,7 +55,7 @@ after(async () => {
     await admin.query('DELETE FROM srp.bitacora WHERE usuario_id = ANY($1::uuid[]) OR entidad_id = ANY($1::text[])', [ids]);
     await admin.query('ALTER TABLE srp.bitacora ENABLE TRIGGER bitacora_inmutable');
     await admin.query('ALTER TABLE srp.bitacora_acceso DISABLE TRIGGER bitacora_inmutable');
-    await admin.query("DELETE FROM srp.bitacora_acceso WHERE usuario_id = ANY($1::uuid[]) OR correo_intentado LIKE '%.prueba.%@ejemplo.local'", [ids]);
+    await admin.query("DELETE FROM srp.bitacora_acceso WHERE usuario_id = ANY($1::uuid[]) OR correo_intentado LIKE '%.prueba.%@ejemplo.local' OR correo_intentado = '(no es un correo)'", [ids]);
     await admin.query('ALTER TABLE srp.bitacora_acceso ENABLE TRIGGER bitacora_inmutable');
     await admin.query('DELETE FROM srp.credenciales WHERE usuario_id = ANY($1::uuid[])', [ids]);
     // La institución de prueba recuerda quién la activó y desactivó en Catálogos
@@ -273,6 +275,10 @@ test('el registro de entradas anota cada intento con su procedencia: entrada, ca
     body: JSON.stringify({ correo: intentado.toUpperCase(), contrasena: 'Lo que sea 123' }) });
   const sinCuenta = (await admin.query('SELECT evento, usuario_id, agente FROM srp.bitacora_acceso WHERE correo_intentado = $1', [intentado])).rows;
   assert.deepEqual(sinCuenta, [{ evento: 'ENTRADA_FALLIDA', usuario_id: null, agente: 'Prueba del registro' }]);
+  // Lo que no tiene forma de correo no se guarda: quien escribe ahí su contraseña no la deja en el registro
+  await cliente().pedir('POST', '/acceso/entrar', { correo: 'MiClave.Secreta2026', contrasena: 'Lo que sea 123' });
+  assert.deepEqual((await admin.query('SELECT correo_intentado FROM srp.bitacora_acceso WHERE usuario_id IS NULL ORDER BY id DESC LIMIT 1')).rows, [{ correo_intentado: '(no es un correo)' }]);
+  assert.equal((await admin.query("SELECT count(*)::int AS n FROM srp.bitacora_acceso WHERE correo_intentado ILIKE '%secreta%'")).rows[0].n, 0);
 });
 
 test('editar una cuenta sigue las reglas del formulario: el correo no cambia y la bitácora dice qué campos', async () => {
@@ -288,9 +294,9 @@ test('editar una cuenta sigue las reglas del formulario: el correo no cambia y l
   const error = async (id, cuerpo) => { const x = await a.pedir('PUT', '/cuentas/' + id, cuerpo); return [x.estado, x.datos.errores && x.datos.errores[0]]; };
   // La Administración global es sólo de la Secretaría
   assert.deepEqual(await error(cabo.id, { ...base, nombre_completo: 'Cabo Prueba Editado', cargo_rol: 'X', perfil: 'ADMIN' }), [400, ['perfil', 'La Administración global es sólo de la Secretaría.']]);
-  // Los cabos ya no se asignan a una coordinación: lo que mande el teléfono en `coordinadores_ids` no se guarda
+  // Los cabos no se asignan a una coordinación: un teléfono anterior que mande `coordinadores_ids` no guarda nada
   const conCoordinador = await a.pedir('PUT', '/cuentas/' + cabo.id, { ...base, nombre_completo: 'Cabo Prueba Editado', cargo_rol: 'Jefe de cuadrilla', coordinadores_ids: [coord.id], version: r.datos.usuario.fecha_ultima_edicion });
-  assert.deepEqual([conCoordinador.estado, conCoordinador.datos.usuario.coordinadores_ids], [200, []]);
+  assert.deepEqual([conCoordinador.estado, 'coordinadores_ids' in conCoordinador.datos.usuario], [200, false]);
   // Quien administra no se quita a sí mismo la Administración
   assert.deepEqual(await error(ADMIN.id, { organizacion_id: 'o-sedema', area_id: 'a-sia', nombre_completo: 'Administración Prueba Acceso', cargo_rol: 'X', perfil: 'DIRECTIVO' }),
     [400, ['perfil', 'No puede cambiar su propio perfil de administración. Pida a otra cuenta de administración que lo haga.']]);
@@ -465,4 +471,10 @@ test('desactivar una institución en Catálogos cierra al momento las sesiones d
   } finally {
     await a.pedir('POST', '/catalogos/instituciones/o-prueba-acceso/estado', { activo: true });
   }
+});
+
+test('una vez al día, con la primera entrada, se borra el registro de entradas de hace más de un año', async () => {
+  const viejos = async () => (await admin.query("SELECT count(*)::int AS n FROM srp.bitacora_acceso WHERE correo_intentado = 'viejo.prueba.recorte@ejemplo.local'")).rows[0].n;
+  for (let i = 0; i < 30 && (await viejos()); i++) await new Promise((r) => setTimeout(r, 100));
+  assert.equal(await viejos(), 0);
 });

@@ -27,6 +27,8 @@
 --     marcarlos revisados; no los borra.
 --   · Leer territorio, por el rol de grupo territorio_lectura, y la capa propia de prioritarias.
 --   · Calcular la calle de un árbol; volver a calcular la de todos lo hace quien administra la base.
+--   · Recortar una vez al día el registro de entradas y las sesiones de hace más de un año, sólo con la función
+--     que lo hace (srp.recortar_acceso).
 -- Lo que no puede: crear, cambiar o borrar tablas; editar o borrar la bitácora; anotar versiones del
 -- esquema; escribir en territorio; ver otros esquemas del SIA.
 
@@ -77,10 +79,10 @@ GRANT SELECT ON srp.migraciones TO srp_api;
 
 -- La capa propia sólo se lee: la carga quien administra la base
 GRANT SELECT ON srp.capas, srp.capa_prioritarias TO srp_api;
-REVOKE ALL ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric), srp.especie_clave(text, text), srp.vecinos(uuid, numeric), srp.de_carga_oculta(uuid), srp.calle(numeric, numeric) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric), srp.especie_clave(text, text), srp.vecinos(uuid, numeric), srp.de_carga_oculta(uuid), srp.calle(numeric, numeric) TO srp_api;
+REVOKE ALL ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric), srp.especie_clave(text, text), srp.vecinos(uuid, numeric), srp.de_carga_oculta(uuid), srp.calle(numeric, numeric), srp.version_calles(), srp.recortar_acceso() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric), srp.especie_clave(text, text), srp.vecinos(uuid, numeric), srp.de_carga_oculta(uuid), srp.calle(numeric, numeric), srp.version_calles(), srp.recortar_acceso() TO srp_api;
 -- Volver a calcular la calle de todos los árboles es de quien administra la base, después de instalar la capa
-REVOKE ALL ON FUNCTION srp.recalcular_calles() FROM PUBLIC;
+REVOKE ALL ON PROCEDURE srp.recalcular_calles(integer) FROM PUBLIC;
 
 -- territorio, de sólo lectura, como cualquier módulo del SIA
 GRANT territorio_lectura TO srp_api;
@@ -97,6 +99,7 @@ ON CONFLICT (version) DO NOTHING;
       SELECT count(*) FROM territorio.alcaldia;                  -- 16, por territorio_lectura
       SELECT * FROM srp.derivar(19.4326, -99.1332);              -- Cuauhtémoc, su colonia y su celda
       SELECT * FROM srp.calle(19.4326, -99.1332);                -- su calle, si territorio.calles está instalada
+      SELECT srp.version_calles();                               -- la versión vigente de la capa de calles
       SELECT has_table_privilege('srp.bitacora', 'INSERT');      -- t
       SELECT has_table_privilege('srp.bitacora_acceso', 'INSERT');  -- t
       SHOW statement_timeout;                                    -- 50s
@@ -115,7 +118,7 @@ ON CONFLICT (version) DO NOTHING;
       CREATE TABLE srp.otra (x int);
       CREATE TABLE public.otra (x int);
       INSERT INTO srp.migraciones VALUES (2, 'x');
-      SELECT srp.recalcular_calles();
+      CALL srp.recalcular_calles();
       UPDATE territorio.alcaldia SET nombre = 'x';
 
   Y el control global, que debe dar 0: ningún permiso directo fuera de srp

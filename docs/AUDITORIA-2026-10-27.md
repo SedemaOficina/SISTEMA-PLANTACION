@@ -1634,3 +1634,32 @@ dejar el aviso de body-parser escrito para el SIA en el instructivo (D339). El i
 
 Verificación del bloque: `prueba_conexion.py` 126 de 126; `auditoria.py` 149 comprobaciones y 0 hallazgos; la prueba
 completa, 1,538 de 1,540 y ningún tramo detenido (antes, 844 comprobaciones, 3 fallas y 3 tramos detenidos).
+
+### Bloque 4 · Servidor y base (bloque 257 del proyecto, versión 1.4.4)
+
+Se adelantó a los bloques 2 y 3 porque no cambia pantallas y sus decisiones ya estaban tomadas; los bloques 2, 3 y 5
+esperan la aprobación de sus muestras (D340).
+
+| Clave | Estado | Antes y después | Prueba permanente |
+|---|---|---|---|
+| E1-01 · decisión 10 | Corregido | «Sustituir» revisa el alcance antes de responder: a quien no alcanza el árbol, el rechazo por permiso sin ningún dato; a quien lo alcanza, el árbol al día | `recepcion.test.js`: un cabo de otra institución y uno de la misma sin alcance reciben `SIN_PERMISO` y nada más |
+| E1-03 | Corregido | La instalación fija la ruta de búsqueda en «srp y el esquema de PostGIS» antes de crear las funciones. Antes, las 9 funciones con ruta llevaban `"$user", public`; después, `srp, public` (y `pg_catalog, pg_temp` la del recorte) | `esquema.test.js`: ninguna función con `"$user"`; la cuenta del servicio no puede recalcular las calles |
+| E1-04 · decisión 14 | Corregido | Lo que no tiene forma de correo se anota como «(no es un correo)» | `acceso.test.js`: una «contraseña» escrita en el campo del correo no queda en el registro |
+| E1-05 | No se hizo | Era opcional: el disparador pone la calle en cada alta y cada cambio de punto, y ningún código la escribe (D340) | — |
+| E2-01 · decisión 16 | Corregido | `CALL srp.recalcular_calles();`, un procedimiento que confirma cada tanda de 2,000 árboles; si se interrumpe, lo confirmado se queda. Con 18,359 árboles, 11 s | `recepcion.test.js` |
+| E2-02 | Corregido | Al corregir el punto, la bitácora dice «Calle: sin calle a 40 m → Calle Parroquia, a 7 m» | `recepcion.test.js` |
+| E3-03 | Corregido | Una lista de cabos que no es una lista de identificadores se rechaza como error de datos, no como «recibido, repetido» | `recepcion.test.js`: texto, nulo, objeto, un identificador inválido y uno en mayúsculas |
+| E3-04 | Corregido en el servidor | Los textos llegan sin el carácter nulo ni los de control de dirección. En el teléfono de quien escribe, el nombre se ve como lo tecleó hasta que vuelve del servidor | `recepcion.test.js` |
+| D2-01 | Corregido | La base exige la forma de la calle («ok» con tramo a 40 m o menos, «lejos» sin tramo, sin calcular todo vacío) y la de cada cabo de apoyo; `esquema.json` declara su relación con las cuentas | `recepcion.test.js` |
+| D2-02 | Corregido | La versión del esquema sube con cada cambio de campos (2026-10-28) y guarda la huella de sus campos | `auditoria.py`: si los campos cambian y la versión no, lo dice |
+| F1-01 · decisión 18 | Corregido | `coordinadores_ids` sale del esquema, del servidor, de la aplicación y de las pruebas; un teléfono que lo tenga lo pierde al abrir la base | `auditoria.py` (ninguna cuenta lo guarda) y `prueba.py` |
+| F6-01 · decisión 11 | Corregido en el SRP · Para el SIA | `srp.version_calles()` lee la versión vigente de `territorio.version_capa` y, si falta, la del paquete. Falta que el SIA confirme por escrito su regla para actualizar capas (bloque 6) | `recepcion.test.js`: una versión vigente nueva en la tabla del SIA es la que toma la calle |
+| Registro de entradas (D337) · decisiones 12 y 13 | Corregido | `srp.recortar_acceso()` borra las entradas y las sesiones terminadas de hace más de un año; el servicio la llama con la primera entrada de cada día | `esquema.test.js` (sólo esa función borra, y sólo lo de hace más de un año) y `acceso.test.js` (la entrada la llama) |
+
+Las pruebas nuevas no se corrieron contra el código anterior: sin `coordinadores_ids`, el esquema cambió y no se pueden
+instalar sobre él. Cada una revisa algo que antes no existía o respondía distinto, y las fallas se habían reproducido 2 de
+2 en la auditoría.
+
+Verificación del bloque: `npm test` 115 de 115; `prueba_conexion.py` 126 de 126; `auditoria.py` 147 comprobaciones y
+0 hallazgos; la prueba completa, 1,539 de 1,540 (sólo el Excel) y ningún tramo detenido. GitHub, en verde con el bloque 1
+(corrida 40642306243).
