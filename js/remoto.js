@@ -30,7 +30,18 @@ SRP.remoto = {
   async bajarCatalogos() {
     const r = await SRP.servidor.pedir('GET', '/catalogos');
     if (!r.ok) return { ok: false, mensaje: r.sinRed ? 'No se pudieron bajar los catálogos: falta conexión con el servidor. Intente de nuevo.' : r.mensaje };
-    await SRP.almacen.reemplazar(Object.fromEntries(SRP.almacen.TABLAS_CATALOGO.map(t => [t, r.datos[t] || []])));
+    /* Sólo se reemplazan si cada catálogo llega como lista, con especies, programas e instituciones: una respuesta
+       vacía o dañada no borra lo que el teléfono tiene. Sin catálogos de antes, no se puede entrar */
+    const tablas = SRP.almacen.TABLAS_CATALOGO, d = r.datos;
+    const bien = !!d && typeof d === 'object' && tablas.every(t => Array.isArray(d[t])) && ['especies', 'programas', 'instituciones'].every(t => d[t].length);
+    if (!bien) {
+      if (!(await SRP.almacen.todos('instituciones')).length) {
+        return { ok: false, general: true, mensaje: 'El servidor respondió algo que no se entiende al bajar las listas de especies, programas y vehículos. Intente de nuevo en unos minutos.' };
+      }
+      setTimeout(() => SRP.util.anunciar('No se pudieron poner al día las listas de especies, programas y vehículos. Se conservan las que ya tenía; se intentará otra vez al volver a entrar.', 'aviso'), 600);
+      return { ok: true, conservados: true };
+    }
+    await SRP.almacen.reemplazar(Object.fromEntries(tablas.map(t => [t, d[t]])));
     return { ok: true };
   },
 
@@ -101,6 +112,16 @@ SRP.remoto = {
     for (const local of await SRP.almacen.todosLocales('jornadas')) {
       const f = this.jornadas.get(local.id);
       if (f && (!ids || ids.includes(local.id)) && !SRP.cola.de(local.id).length) await SRP.almacen.ponerLocal('jornadas', f);
+    }
+    /* La jornada abierta donde registra sin ser su titular —cabo de apoyo vigente o cabo del relevo— se guarda en el
+       teléfono: si la aplicación se cierra sin señal, sigue en Nuevo registro. Sólo la jornada, sin los árboles de los
+       demás; js/cola.js limpiar() la suelta cuando ya no registra en ella */
+    const u = SRP.sesion.usuario;
+    if (!u) return;
+    for (const f of this.jornadas.values()) {
+      if (ids && !ids.includes(f.id)) continue;
+      if (f.estatus !== 'abierta' || f.cabo_id === u.id || !(f.relevo_id === u.id || SRP.permisos.apoyoVigente(f, u.id))) continue;
+      if (!(await SRP.almacen.unoLocal('jornadas', f.id))) await SRP.almacen.ponerLocal('jornadas', f);
     }
   },
 

@@ -1710,3 +1710,18 @@ Con las muestras aprobadas por el dueño el 28-10-2026 (D342).
 | P-3 | Hecho | Quitar a un cabo de apoyo pide confirmar | `prueba.py` (ctx103, que entra con la segunda parte) |
 
 Verificación: `npm test` 117 de 117; `prueba_conexion.py` 126 de 126; `auditoria.py` 150 y 0 hallazgos; la prueba completa, 1,539 de 1,540 (sólo el Excel).
+
+### Bloque 2, segunda parte · La compartida en el teléfono (bloque 262 del proyecto, versión 1.4.7)
+
+| Clave | Estado | Antes y después | Prueba permanente |
+|---|---|---|---|
+| B6-01 · decisión 1 c | Corregido | Con la jornada cerrada, lo que el cabo capturó mientras estaba espera en su teléfono (`JORNADA_CERRADA`), sin pasar a «Revisar», y llega al reabrirla; Nuevo registro lo dice (P-1). Lo capturado después de salir va a «Revisar» con «Pasar a otra jornada» (`FUERA_DE_LA_JORNADA`). Antes, de 6 árboles llegaban 0 | `prueba_conexion.py`: el cabo registra 2 sin señal, la Coordinación lo quita y cierra; los 2 esperan con su aviso y llegan al reabrir. `recepcion.test.js`: los dos rechazos |
+| B6-02 · decisión 2 a | Corregido | La compartida y la de relevo se guardan en el teléfono mientras se registra en ellas; al abrir sin señal siguen activas. Antes, 2 de 2 desaparecían | `prueba_conexion.py`: recarga sin señal y la jornada sigue activa |
+| B6-04 | Corregido | Al enviar, la jornada que cerraron o de la que salió el cabo sale de Nuevo registro con su aviso (P-7) | `prueba_conexion.py` |
+| C5-01 | Corregido | El cierre dice a la vez los puntos por revisar y lo que pasa con los árboles de los cabos de apoyo (P-2) | `prueba.py` (ctx103) |
+| B5-01 | Corregido | Una respuesta vacía al bajar las listas las conserva, con su aviso (P-20) | `prueba_conexion.py` |
+| B5-02 | Corregido | Con listas dañadas y sin listas de antes no se entra, y se dice sin nombres internos ni «Falta corregir» (P-17) | `prueba_conexion.py` |
+| B6-05 | Corregido | Con datos de prueba, lo recibido sin calle la recibe al volver la red y al entrar | — |
+| P-3, P-4, P-21, P-22 (de la primera parte) | Hecho | La confirmación de quitar, la nota de la ficha y «Mover» del cabo de apoyo | `prueba.py` (ctx103) |
+
+Verificación: `npm test` 117 de 117; `prueba_conexion.py` 132 de 132; `auditoria.py` 150 y 0 hallazgos; la prueba completa, 1,545 de 1,548 (el Excel y dos comprobaciones de la prueba, corregidas y repetidas 3 de 3). Con esto el bloque 2 queda cerrado.

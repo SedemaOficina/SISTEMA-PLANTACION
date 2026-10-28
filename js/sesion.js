@@ -42,8 +42,8 @@ SRP.sesion = {
 
   // «Cerrar sesión» para todos; «Cambiar de perfil» (sólo pruebas) también pasa por aquí
   cerrar() {
-    // El servicio cierra la suya; sin señal, vence sola
-    if (this.delServidor() && this.usuario) SRP.servidor.pedir('POST', '/acceso/salir');
+    // El servicio cierra la suya; sin señal, vence sola. La jornada de otro titular que se guardaba, se suelta
+    if (this.delServidor() && this.usuario) { SRP.servidor.pedir('POST', '/acceso/salir'); SRP.cola.soltarAjenas(this.usuario); }
     this.olvidar();
   },
 
@@ -90,7 +90,7 @@ SRP.sesion = {
       const catalogos = await SRP.remoto.bajarCatalogos();
       if (!catalogos.ok && !(await SRP.almacen.todos('instituciones')).length) {
         SRP.servidor.pedir('POST', '/acceso/salir');
-        return { ok: false, motivo: catalogos.mensaje };
+        return { ok: false, motivo: catalogos.mensaje, general: !!catalogos.general };
       }
       u = await this.ponerAlDia(cuenta);
     } catch (err) {

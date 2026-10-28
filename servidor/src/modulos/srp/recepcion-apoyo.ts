@@ -28,6 +28,10 @@ export interface Resultado {
   aviso?: string;
   /** Otro árbol de la misma institución, de otra jornada, que podría ser el mismo (duplicados.ts). */
   duplicado?: Duplicado;
+  /** En un rechazo, el nombre de la jornada; y si el cabo de apoyo ya no estaba en ella, desde cuándo y por qué. */
+  jornada?: string;
+  hasta?: string | null;
+  fin?: string | null;
 }
 
 export interface Duplicado {

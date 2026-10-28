@@ -203,6 +203,19 @@ SRP.calles = {
     const nuevos = await this.conCalle(await SRP.almacen.todosLocales('plantaciones'));
     for (let i = 0; i < nuevos.length; i += 2000) await SRP.almacen.ponerLocales('plantaciones', nuevos.slice(i, i + 2000));
     return nuevos.length;
+  },
+
+  /* Lo ya recibido que se quedó sin calle porque sus celdas no bajaron —señal mala a medio envío— la recibe al volver
+     la red y al entrar, sin esperar otro envío. Lo que no se ha enviado sigue esperando el suyo. Si las celdas tampoco
+     bajan ahora, se intenta la próxima vez, sin aviso */
+  async asignarRecibidas() {
+    try {
+      if (!this.simulado() || !SRP.conexion.enLinea() || !SRP.sesion.usuario || !SRP.almacen.db) return 0;
+      const recibidos = SRP.envio.leer().recibidos;
+      const nuevos = await this.conCalle((await SRP.almacen.todosLocales('plantaciones')).filter(r => recibidos[r.id]));
+      for (let i = 0; i < nuevos.length; i += 2000) await SRP.almacen.ponerLocales('plantaciones', nuevos.slice(i, i + 2000));
+      return nuevos.length;
+    } catch (e) { return 0; }
   }
 };
 

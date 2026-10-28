@@ -104,7 +104,7 @@ SRP.rechazos = {
       ? (conArboles ? null : ['eliminar', jornada ? 'Eliminar esta jornada' : 'Eliminar este registro', 'btn-peligro-linea', 'basura'])
       : ['descartar', 'Descartar mi cambio', 'btn-peligro-linea', 'cerrar'];
     if (codigo === 'VERSION_VIEJA') return [['reenviar', 'Enviar mi cambio otra vez', 'btn-primario', 'senal'], ['servidor', 'Quedarme con lo del servidor', 'btn-secundario', 'palomita']];
-    if (codigo === 'JORNADA_ELIMINADA' && r) return [['mover', 'Pasar a otra jornada', 'btn-primario', 'jornadas'], quitar].filter(Boolean);
+    if ((codigo === 'JORNADA_ELIMINADA' || codigo === 'FUERA_DE_LA_JORNADA') && r) return [['mover', 'Pasar a otra jornada', 'btn-primario', 'jornadas'], quitar].filter(Boolean);
     const corregible = r && o.tipo !== 'foto' && (alta || SRP.cola.EDICIONES.includes(o.tipo)) && (codigo === 'DATOS_INVALIDOS' || (alta && jornada));
     return [
       this.DEL_SERVIDOR.includes(codigo) ? ['reenviar', 'Enviar otra vez', 'btn-primario', 'senal'] : null,

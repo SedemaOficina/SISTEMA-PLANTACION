@@ -423,9 +423,14 @@ test('nunca queda el sistema sin una Administración global activa, ni cuando do
     const perfil = (yo) => ({ organizacion_id: 'o-sedema', area_id: 'a-sia', nombre_completo: 'Administración Prueba Cambiada', cargo_rol: 'Dirección', perfil: 'DIRECTIVO', id: yo });
     const r = await Promise.all([uno.c.pedir('PUT', '/cuentas/' + dos.id, perfil(dos.id)), dos.c.pedir('PUT', '/cuentas/' + uno.id, perfil(uno.id))]);
     const quedan = (await admin.query("SELECT count(*)::int AS n FROM srp.usuarios WHERE perfil = 'ADMIN' AND activo AND id = ANY($1::uuid[])", [[uno.id, dos.id]])).rows[0].n;
-    const rechazo = r.find((x) => x.estado === 400);
+    const rechazo = r.find((x) => x.estado !== 200);
     assert.ok(quedan >= 1, 'al menos una sigue siendo Administración: ' + JSON.stringify(r.map((x) => x.datos)));
-    if (quedan === 1) assert.deepEqual(rechazo && rechazo.datos.errores, [['perfil', 'Es la única Administración global activa: no puede dejar de serlo. Active o dé de alta otra antes.']]);
+    // A la otra se le dice por qué no; o, si la primera ya le quitó el perfil, ya no tiene permiso de administrar cuentas
+    if (quedan === 1) {
+      assert.ok(rechazo && (rechazo.estado === 403 ||
+        JSON.stringify(rechazo.datos.errores) === JSON.stringify([['perfil', 'Es la única Administración global activa: no puede dejar de serlo. Active o dé de alta otra antes.']])),
+        JSON.stringify(r.map((x) => [x.estado, x.datos])));
+    }
   } finally {
     await admin.query('UPDATE srp.usuarios SET activo = true WHERE id = ANY($1::uuid[])', [otras]);
   }

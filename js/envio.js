@@ -214,9 +214,12 @@ SRP.envio = {
     // Sin la jornada activa, que se eliminó en el servidor, «Nuevo registro» pide elegir o iniciar otra
     const eliminadas = res.eliminadas.filter(Boolean);
     if (eliminadas.length && SRP.app.vista === 'registrar' && !SRP.formulario.estado.editando) await SRP.activa.preparar();
+    // Una compartida que cerraron, o de la que el cabo ya salió: se trae al día y deja Nuevo registro si ya no registra en ella
+    const salida = await SRP.activa.alSalirDeCompartidas(res);
     const n = res.enviados.size, pendientes = (await this.cola()).length;
     const fondo = { secundario: !op.manual };
-    if (eliminadas.length && !res.rechazados) SRP.util.anunciar((eliminadas.length === 1 ? 'La jornada «' + eliminadas[0] + '» se eliminó' : 'Las jornadas «' + eliminadas.join('», «') + '» se eliminaron') +
+    if (salida) SRP.util.anunciar(salida, 'aviso', fondo);
+    else if (eliminadas.length && !res.rechazados) SRP.util.anunciar((eliminadas.length === 1 ? 'La jornada «' + eliminadas[0] + '» se eliminó' : 'Las jornadas «' + eliminadas.join('», «') + '» se eliminaron') +
       ' en el servidor: ya no ' + (eliminadas.length === 1 ? 'está' : 'están') + ' en este teléfono.', 'aviso', fondo);
     else if (res.cortado) SRP.util.anunciar('Se perdió la señal durante el envío. ' + this.textoCuenta(Math.max(pendientes, 1)) + ' en el teléfono; ' + (pendientes === 1 ? 'se enviará' : 'se enviarán') + ' cuando vuelva.', 'aviso', fondo);
     else if (res.error) SRP.util.anunciar('No se pudo enviar: ' + res.error, 'aviso', fondo);

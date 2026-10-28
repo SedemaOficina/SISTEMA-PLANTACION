@@ -4614,3 +4614,17 @@
   reporte de jornada con un decimal y la nota del redondeo (R-1 A). P-5 y P-6 no hacen falta con la decisión 2 a.
   El bloque 2 va en dos partes: las reglas, en el servidor y en la aplicación a la par, y después lo que pasa en el
   teléfono.
+
+- **D343. Cómo se programó la compartida en campo (bloques 261 y 262).**
+  28-10-2026. Lo que el servidor y el teléfono se dicen, para quien mantenga el módulo:
+  · `jornada.compartir` y `jornada.terminar` llevan `desde`: lo que el teléfono conocía de cada cabo (nulo si no estaba).
+    El servidor aplica el cambio sólo si sigue igual; si no, responde «recibido, repetido».
+  · Al recibir un árbol de una compartida cuenta la hora en que se capturó (`fecha_registro`): un cabo de apoyo que ya
+    terminó o al que quitaron registra todavía lo de antes de esa hora. Con la jornada cerrada, lo que se recibiría
+    abierta se responde `JORNADA_CERRADA` y el teléfono lo vuelve a mandar solo; lo capturado después de salir,
+    `FUERA_DE_LA_JORNADA`, con la jornada, la hora y si terminó o lo quitaron.
+  · Eliminar una compartida con cabos de apoyo vigentes se responde `CON_APOYOS`, con sus nombres; mover un árbol de
+    una compartida sin ser la Coordinación, `COMPARTIDA`.
+  · El teléfono guarda la jornada donde registra sin ser titular (cabo de apoyo vigente o cabo del relevo) mientras está
+    abierta, y la suelta al cerrarse, al dejar de registrar en ella o al cerrar sesión. Es la excepción a D301 que
+    decidió Liber (2 a).

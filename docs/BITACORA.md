@@ -6935,3 +6935,48 @@ la aplicación a la par.
 - GitHub: la corrida del bloque 260 (40661981242), en verde.
 
 **Siguiente paso.** La segunda parte del bloque 2: lo que pasa en el teléfono del cabo de apoyo.
+
+## Bloque 262 — La jornada compartida: lo que pasa en el teléfono (28-10-2026)
+
+**Versión 1.4.7.** La segunda parte del bloque 2 del plan de corrección de la auditoría del 27-10-2026, con las
+muestras aprobadas (D342). Con ella el bloque 2 queda completo.
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| La compartida, y la recibida en relevo, al abrir sin señal (B6-02, decisión 2 a) | Desaparecía de Nuevo registro: no se guardaba en el teléfono | Se guarda mientras se registra en ella (sólo la jornada, sin los árboles de otros) y se suelta al cerrarse, al dejar de registrar en ella o al cerrar sesión |
+| Lo capturado para una jornada que la Coordinación ya cerró (B6-01, decisión 1 c) | Se rechazaba para siempre; la única salida era eliminarlo | Espera en el teléfono, sin pasar a «Revisar», y llega solo cuando la reabren. Nuevo registro lo dice: «La Coordinación cerró «…». Sus N árboles se enviarán cuando la reabra. Avísele.» (P-1) |
+| El cabo al que quitaron, o cuya jornada se cerró, con señal (B6-04) | La jornada seguía activa y cada árbol nuevo salía rechazado sin explicación | Al enviar, la jornada se trae al día y sale de Nuevo registro, con un aviso que dice por qué y desde qué hora (P-7). Lo capturado después de salir va a «Revisar», con «Pasar a otra jornada» y «Eliminar» |
+| El aviso al cerrar (C5-01) | Con puntos por revisar se perdía la advertencia de los cabos de apoyo | Dice las dos cosas (P-2) |
+| Las listas al entrar (B5-01, B5-02) | Una respuesta vacía las borraba sin aviso; una dañada decía «Falta corregir 1 dato · listas[t].forEach is not a function» | Se conservan las que había, con su aviso (P-20); sin listas de antes no se entra y se dice que el servidor respondió algo que no se entiende (P-17) |
+| La calle de lo recibido sin señal (B6-05, sólo versión de prueba) | Se quedaba sin calle hasta otro envío | La recibe al volver la red y al entrar |
+
+**Qué cambió.**
+- Servidor: `recepcion-arboles.ts` responde `JORNADA_CERRADA` (lo que se recibiría con la jornada abierta) y
+  `FUERA_DE_LA_JORNADA` (lo capturado después de salir, con la hora y el motivo); `recepcion-apoyo.ts`, sus campos.
+- Aplicación: `js/cola.js` (lo que espera, los dos rechazos y soltar la jornada ajena), `js/remoto.js` (guardar la
+  jornada donde se registra sin ser titular, y las listas), `js/jornada-activa.js` (el aviso de lo que espera, salir
+  de la compartida y la nota del cierre), `js/envio.js`, `js/rechazos.js`, `js/jornadas.js`, `js/sesion.js`,
+  `js/app.js`, `js/calles.js` y `js/conexion.js`; `index.html` (el aviso de lo que espera).
+- Pruebas: `servidor/pruebas/recepcion.test.js` (los dos rechazos nuevos), `servidor/pruebas/acceso.test.js` (una
+  espera que fallaba 1 de 4 veces), `pruebas/prueba.py` (sección ctx103) y `pruebas/prueba_conexion.py` (la
+  compartida en campo y las listas).
+- `VERSION`, marcas de `index.html`, etapa de `js/config.js`, README, `docs/MEJORAS.md` y el seguimiento del informe.
+
+**Verificación.**
+- `npm test`: 117 de 117. La primera corrida falló en dos: la de «cerrar y reabrir» esperaba el rechazo por permiso de
+  antes (ahora el árbol espera a que reabran, como se decidió) y una de la Administración global con dos cambios al
+  mismo tiempo, que falló 1 de 4 veces: la que llega segunda puede recibir «sin permiso» en lugar de la explicación,
+  porque la primera ya le quitó el perfil; siempre quedó una Administración. Se ajustaron las dos.
+- `pruebas/prueba_conexion.py`: 132 de 132, con 6 comprobaciones nuevas: la compartida guardada en el teléfono y
+  activa al abrir sin señal; los 2 árboles capturados sin señal que esperan con su aviso, sin «Revisar», cuando la
+  Coordinación quita al cabo y cierra; los mismos 2 que llegan al reabrir; las listas vacías que se conservan; y la
+  entrada con listas dañadas.
+- `pruebas/auditoria.py`: 150 comprobaciones, 0 hallazgos.
+- `pruebas/por_tramos.py` (la prueba completa, ahora de 86 tramos): 1,545 de 1,548, 47 min. Además del Excel de
+  `originales/`, fallaron dos comprobaciones de la prueba: la de ctx101 buscaba la nota de cierre de antes, y la nueva
+  de ctx103 esperaba la nota del relevo en la Administración global, que no hace relevos (la ve otra Coordinación de la
+  misma institución). Corregidas, los dos tramos pasan 3 de 3, una vez con el equipo 4 veces más lento.
+- GitHub: la corrida del bloque 261 (40671156804), en verde.
+
+**Siguiente paso.** El bloque 3, las cifras: el «% del total» por calle con un decimal (P-23 B), los cabos que
+trabajaron, las calles en dos redes, la cita de la capa y los porcentajes del reporte (R-1 A).

@@ -452,12 +452,13 @@ SRP.activa = {
        las compartidas donde es cabo de apoyo vigente */
     const sust = SRP.formulario.estado.sustitucion, yo = (SRP.sesion.usuario || {}).id;
     if (!this.jornada || this.jornada.estatus !== 'abierta' || (!sust && this.capturista(this.jornada) !== yo && !SRP.permisos.apoyoVigente(this.jornada, yo))) this.jornada = (await this.abiertas())[0] || null;
-    if (!this.jornada) { SRP.mapa.pintarPlantados([], null); this.mostrarInicio(true); return; }
+    if (!this.jornada) { SRP.mapa.pintarPlantados([], null); this.mostrarInicio(true); this.pintarEspera(); return; }
     this.el('panel-iniciar-jornada').hidden = true;
     this.el('registrar-columnas').hidden = false;
     this.el('titulo-arbol').hidden = false; this.el('titulo-arbol').textContent = 'Nuevo árbol';
     const deLaJornada = await this.registrosDe(this.jornada);
     this.pintarFranja(this.jornada, deLaJornada, false);
+    this.pintarEspera();
     // La fecha de plantación arranca como corresponde (la de la sustitución, si es una); el programa es el de la jornada; las especies recientes, a un toque
     SRP.formulario.el('campo-fecha').value = sust && sust.fecha ? sust.fecha : this.fechaInicial(this.jornada);
     this.pintarCampoFecha(this.jornada);
@@ -751,11 +752,15 @@ SRP.activa = {
     if (pend) avisos.push(pend === 1 ? '1 punto por revisar' : pend + ' puntos por revisar');
     if (meta !== null && n < meta) avisos.push((meta - n) + (meta - n === 1 ? ' árbol' : ' árboles') + ' por debajo de lo previsto (' + n + ' de ' + meta + ')');
     if (meta !== null && n > meta) avisos.push((n - meta) + (n - meta === 1 ? ' árbol' : ' árboles') + ' por encima de lo previsto (' + n + ' de ' + meta + ')');
+    // Los árboles que sus cabos de apoyo aún no envían no se recibirán hasta que se reabra: se dice siempre, también con puntos por revisar
+    const vigentes = SRP.permisos.vigentes(j), quienes = vigentes.map(id => SRP.ref.nombreUsuario(id)).join(', ');
+    const deApoyo = vigentes.length ? 'Los árboles que ' + quienes + (vigentes.length === 1 ? ' aún no envía' : ' aún no envían') + ' no se recibirán hasta que reabra la jornada.' : '';
     const revisar = pend ? { otro: { texto: pend === 1 ? 'Revisar el punto' : 'Revisar los ' + pend + ' puntos', icono: 'ver' }, linea: true,
-      nota: pend === 1 ? 'Puede revisarlo ahora o cerrar de todos modos y revisarlo después.' : 'Puede revisarlos ahora, uno por uno, o cerrar de todos modos y revisarlos después.' } : {};
+      nota: deApoyo ? (pend === 1 ? 'Puede revisarlo ahora o cerrar de todos modos. ' : 'Puede revisarlos ahora, uno por uno, o cerrar de todos modos. ') + deApoyo
+        : pend === 1 ? 'Puede revisarlo ahora o cerrar de todos modos y revisarlo después.' : 'Puede revisarlos ahora, uno por uno, o cerrar de todos modos y revisarlos después.' } : {};
     return Object.assign({ titulo: 'Cerrar jornada', pregunta: '¿Cerrar la jornada «' + j.nombre + '» con ' + n + (n === 1 ? ' árbol' : ' árboles') + '?',
       puntosTitulo: 'Queda pendiente:', puntos: avisos.map(a => a.charAt(0).toUpperCase() + a.slice(1) + '.'),
-      nota: SRP.permisos.vigentes(j).length ? 'Se puede cerrar de todos modos. Si después llegan árboles de un cabo de apoyo, se quedan en su teléfono hasta que se reabra la jornada.'
+      nota: deApoyo ? 'Se puede cerrar de todos modos. ' + deApoyo
         : avisos.length ? 'Se puede cerrar de todos modos y reabrir después.' : 'Se puede reabrir después.', boton: 'Cerrar jornada', icono: 'candado' }, revisar);
   },
 
@@ -844,6 +849,37 @@ SRP.activa = {
   /* «TERMINAR MI PARTE». El cabo de apoyo avisa que acabó: su lugar en la jornada compartida queda con la hora y
      «terminado», lo que tenga por enviar sale, y la jornada deja su lista. La Coordinación lo ve al cerrar; si hace
      falta que vuelva, lo marca otra vez. */
+  /* LOS ÁRBOLES EN ESPERA. Con datos reales, los de una jornada que la Coordinación cerró esperan en el teléfono y se
+     envían solos cuando la reabra (js/cola.js): Nuevo registro lo dice, para que el cabo le avise */
+  pintarEspera() {
+    const caja = this.el('registrar-espera');
+    const espera = SRP.cola.activa() ? SRP.cola.enEspera() : [];
+    caja.hidden = !espera.length;
+    caja.querySelector('.franja-remoto-texto').textContent = espera.map(e => 'La Coordinación cerró «' + (e.jornada || 'su jornada') + '». ' +
+      (e.n === 1 ? 'Su árbol se enviará' : 'Sus ' + e.n + ' árboles se enviarán') + ' cuando la reabra. Avísele.').join(' ');
+  },
+
+  /* UNA COMPARTIDA QUE CERRARON, O DE LA QUE EL CABO SALIÓ (B6-04). Al enviar, el servidor lo dijo: se trae la jornada al
+     día y, si ya no registra en ella, deja de ser la activa y Nuevo registro pide otra. Devuelve qué decir, o null. */
+  async alSalirDeCompartidas(res) {
+    const u = SRP.sesion.usuario, cerradas = res && res.cerradas ? [...res.cerradas] : [], fuera = (res && res.fuera) || [];
+    if (!u || (!cerradas.length && !fuera.length)) { this.pintarEspera(); return null; }
+    const avisos = [];
+    for (const id of new Set(cerradas.concat(fuera.map(f => f.jornada_id)))) {
+      const j = (await SRP.remoto.alDia(id)) || (await SRP.almacen.uno('jornadas', id));
+      if (!j || !this.jornada || this.jornada.id !== id || SRP.permisos.puede('jornada.registrar', j)) continue;
+      this.jornada = null;
+      const f = fuera.find(x => x.jornada_id === id);
+      if (j.estatus !== 'abierta') avisos.push('La Coordinación cerró «' + j.nombre + '»' + (j.fecha_ultima_edicion ? ' a las ' + SRP.envio.hora(j.fecha_ultima_edicion) : '') +
+        '. Sus árboles sin enviar se recibirán cuando la reabra.');
+      else if (f && f.fin === 'quitado') avisos.push('Ya no está en «' + j.nombre + '»: la Coordinación cerró su participación' + (f.hasta ? ' a las ' + SRP.envio.hora(f.hasta) : '') +
+        '. Lo que registró antes de esa hora se recibe; lo de después, páselo a otra jornada o elimínelo.');
+    }
+    if (SRP.app.vista === 'registrar' && !SRP.formulario.estado.editando) await this.preparar();
+    else this.pintarEspera();
+    return avisos.join(' ') || null;
+  },
+
   async terminarParte() {
     const j = this.jornada; if (!j) return;
     if (!SRP.permisos.exigir('jornada.terminar', j)) return;

@@ -7778,7 +7778,7 @@ with sync_playwright() as p:
       const regs = await SRP.activa.registrosDe(j); const m = SRP.reportes.modelo(regs, j, j.fecha, j);
       return { puntos: c.puntos, nota: c.nota, rotulo: m.rotuloCabo, cabo: m.cabo, apoyos: (m.identificacion.find(x => x[0] === 'Cabos de apoyo') || [])[1],
         cab: m.ejemplares.cabecera, fila: m.ejemplares.filas[0] }; }""", jid101)
-    ok(p101['puntos'][:1] == ['Fulana de Tal Ejemplo no ha terminado su parte: todavía no llega ningún árbol suyo.'] and 'árboles de un cabo de apoyo' in p101['nota'],
+    ok(p101['puntos'][:1] == ['Fulana de Tal Ejemplo no ha terminado su parte: todavía no llega ningún árbol suyo.'] and 'aún no envía no se recibirán hasta que reabra la jornada' in p101['nota'],
        'al cerrar, el cabo de apoyo que no ha terminado es un pendiente más, y la nota dice qué pasa con lo suyo: %s' % p101['puntos'])
     ok(p101['rotulo'] == 'Jornada compartida, coordina:' and p101['cabo'] == 'Perengano Gómez Ejemplo' and p101['apoyos'] == 'Fulana de Tal Ejemplo (0 árboles) y Tomás Díaz Demo (1 árbol)'
        and p101['cab'][-1] == 'Cabo' and p101['fila'][-1] == 'Tomás Díaz Demo',
@@ -7927,6 +7927,62 @@ with sync_playwright() as p:
     ok(q102 == [1, True, True], 'quitar la demostración conserva la compartida con un árbol propio y a su coordinación y sus cabos de apoyo: %s' % q102)
     ok(not err102, 'sin errores en consola: %s' % err102[:2])
     ctx102.close()
+
+    # ---------- ctx103: la compartida en campo: lo que no se puede se dice en la ficha, quitar a un cabo se confirma y el cierre avisa de sus árboles ----------
+    ctx103 = b.new_context(viewport={'width': 390, 'height': 844})
+    pg103 = ctx103.new_page(); err103 = []
+    pg103.on('pageerror', lambda e: err103.append(str(e))); pg103.on('console', lambda m: m.type == 'error' and 'net::' not in m.text and 'Failed to load' not in m.text and err103.append(m.text))
+    pg103.goto(BASE); pg103.wait_for_selector('html[data-listo]')
+    def como103(uid):
+        pg103.evaluate("id => SRP.sesion.iniciar(SRP.ref.usuarioPorId[id])", uid); pg103.reload(); pg103.wait_for_selector('html[data-listo]'); aceptar_avisos(pg103)
+    como103('u-coord-1')
+    j103 = iniciar_jornada(pg103, 'Compartida B261')
+    pg103.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); await SRP.jornadas.guardarApoyos(j, ['u-cabo-1']); }", j103)
+    def ficha103():
+        pg103.evaluate("async id => { SRP.app.mostrarVista('jornadas'); await SRP.jornadas.abrir(id); }", j103)
+        pg103.wait_for_function("() => document.getElementById('jornada-titulo').textContent.includes('Compartida B261')", timeout=20000)
+        return pg103.evaluate("""() => ({ nota: document.getElementById('jornada-nota-acciones').hidden ? '' : document.getElementById('jornada-nota-acciones').textContent,
+          eliminar: !document.getElementById('btn-jornada-eliminar').hidden, relevo: !document.getElementById('btn-jornada-relevo').hidden })""")
+    # La Coordinación titular, con su cabo trabajando y la jornada vacía: no la elimina, y se dice por qué
+    f103 = ficha103()
+    ok(f103['nota'] == 'No se puede eliminar: Fulana de Tal Ejemplo no ha terminado su parte y puede tener árboles sin enviar. Primero quite a Fulana de Tal Ejemplo en «Cabos de apoyo», o espere a que termine.'
+       and not f103['eliminar'] and not f103['relevo'], 'una compartida con su cabo trabajando no ofrece «Eliminar jornada» y dice qué falta: %s' % f103)
+    # El cierre lo dice: lo que el cabo aún no envía no se recibirá hasta reabrirla
+    c103 = pg103.evaluate("async id => (await SRP.activa.confirmacionCierre(await SRP.almacen.uno('jornadas', id))).nota", j103)
+    ok(c103 == 'Se puede cerrar de todos modos. Los árboles que Fulana de Tal Ejemplo aún no envía no se recibirán hasta que reabra la jornada.', 'el cierre dice qué pasa con los árboles del cabo de apoyo: %s' % c103)
+    # Quitar al cabo se confirma; «Cancelar» lo deja como estaba
+    def quitar103(confirmar):
+        pg103.click('#btn-jornada-apoyos'); pg103.wait_for_selector('#dlg-apoyos[open]')
+        pg103.click('#apoyos-cabos .chip[data-id="u-cabo-1"]'); pg103.click('#btn-apoyos-guardar')
+        pg103.wait_for_selector('#dlg-confirmar[open]')
+        d = pg103.evaluate("() => [document.getElementById('dlg-confirmar-titulo').textContent, document.getElementById('dlg-confirmar-texto').textContent, document.getElementById('dlg-confirmar-nota').textContent, document.getElementById('btn-confirmar-si').textContent]")
+        pg103.click('#btn-confirmar-si' if confirmar else '#btn-confirmar-no')
+        pg103.wait_for_function("() => !document.getElementById('dlg-confirmar').open", timeout=10000)
+        if not confirmar and pg103.evaluate("() => document.getElementById('dlg-apoyos').open"): pg103.evaluate("() => document.getElementById('dlg-apoyos').close()")
+        pg103.wait_for_timeout(600)
+        return d, pg103.evaluate("async id => SRP.permisos.vigentes(await SRP.almacen.uno('jornadas', id))", j103)
+    d103, v103 = quitar103(False)
+    ok(d103 == ['Quitar de la jornada', '¿Quitar a Fulana de Tal Ejemplo de «Compartida B261»?', 'Lo que registró hasta ahora se recibe, aunque llegue después porque estaba sin señal. Desde este momento ya no podrá registrar en ella.', 'Quitar']
+       and v103 == ['u-cabo-1'], 'quitar a un cabo de apoyo pide confirmar, y «Cancelar» lo deja: %s' % [d103, v103])
+    d103, v103 = quitar103(True)
+    ok(v103 == [], 'al confirmar, el cabo sale de la jornada: %s' % v103)
+    f103 = ficha103()
+    ok(f103['eliminar'] and not f103['relevo'] and f103['nota'] == '', 'sin cabos trabajando, la compartida vacía se puede eliminar; relevo, nunca: %s' % f103)
+    # Otra Coordinación de la misma institución ve por qué no hay «Relevo de cabo»
+    pg103.evaluate("""async id => { const j = await SRP.almacen.uno('jornadas', id); await SRP.jornadas.guardarApoyos(j, ['u-cabo-1']);
+      await SRP.almacen.guardarConBitacora('usuarios', Object.assign({}, SRP.ref.usuarioPorId['u-coord-1'], { id: 'u-coord-103', correo: 'coordinacion.103@ejemplo.local',
+        nombre_completo: 'Segunda Coordinación Ejemplo' }), null); await SRP.ref.recargar(); }""", j103)
+    como103('u-coord-103')
+    f103 = ficha103()
+    ok(not f103['relevo'] and 'Jornada compartida: no se pasa a otro cabo. La Coordinación agrega o quita cabos de apoyo.' in f103['nota'],
+       'en una compartida no hay relevo, y la ficha lo dice: %s' % f103)
+    # El cabo de apoyo no pasa los árboles de la compartida a otra jornada
+    como103('u-cabo-1')
+    pg103.evaluate("async id => { SRP.app.mostrarVista('jornadas'); await SRP.jornadas.abrirMover({ id: 'x103', jornada_id: id, cabo_id: 'u-cabo-1' }); }", j103)
+    pg103.wait_for_timeout(500)
+    ok('Es de una jornada compartida: sólo la Coordinación lo pasa a otra jornada.' in pg103.evaluate("() => document.getElementById('aviso').textContent"), 'el cabo de apoyo no mueve un árbol de la compartida: %s' % pg103.evaluate("() => document.getElementById('aviso').textContent"))
+    ok(not err103, 'sin errores en consola: %s' % err103[:2])
+    ctx103.close()
 
     b.close()
 

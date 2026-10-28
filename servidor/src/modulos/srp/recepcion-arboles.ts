@@ -106,10 +106,24 @@ export async function crearArbol(c: pg.PoolClient, u: Usuario, d: Record<string,
   }
   /* Registra en ella quien la tiene a su cargo —el titular o, durante un relevo, el cabo del relevo— y sus cabos de
      apoyo vigentes. Un cabo de apoyo que ya terminó su parte, o al que quitaron, registra todavía lo que capturó antes
-     de esa hora: llega tarde porque estaba sin señal */
-  const suyo = ((jornada.cabos_apoyo as { cabo_id: string; hasta: string | null }[] | null) ?? []).find((a) => a.cabo_id === u.id && a.hasta);
-  const antesDeSalir = jornada.estatus === "abierta" && !!suyo && new Date(instante(d.fecha_registro)).getTime() < new Date(String(suyo.hasta)).getTime();
-  if (!puede("jornada.registrar", u, comoObjeto(jornada)) && !antesDeSalir) return sinPermiso(id, "jornada.registrar");
+     de esa hora: llega tarde porque estaba sin señal.
+     · Con la jornada cerrada, lo que se recibiría abierta espera en el teléfono (JORNADA_CERRADA) y se vuelve a mandar
+       solo: llega cuando la Coordinación la reabra.
+     · Lo capturado después de salir de la jornada no llega a ella (FUERA_DE_LA_JORNADA): se pasa a otra o se elimina.
+     Los dos rechazos dicen la jornada, y el segundo, desde cuándo y por qué ya no estaba. */
+  const suyo = ((jornada.cabos_apoyo as { cabo_id: string; hasta: string | null; fin: string | null }[] | null) ?? []).find((a) => a.cabo_id === u.id && a.hasta);
+  const antesDeSalir = !!suyo && new Date(instante(d.fecha_registro)).getTime() < new Date(String(suyo.hasta)).getTime();
+  const abierta = { ...comoObjeto(jornada), estatus: "abierta" };
+  const nombre = String(jornada.nombre);
+  if (jornada.estatus !== "abierta" && (puede("jornada.registrar", u, abierta) || antesDeSalir)) {
+    return { ...rechazo(id, "JORNADA_CERRADA", "La Coordinación cerró la jornada «" + nombre + "»: el árbol se enviará cuando la reabra."), jornada: nombre };
+  }
+  if (!puede("jornada.registrar", u, comoObjeto(jornada)) && !antesDeSalir) {
+    if (!suyo) return sinPermiso(id, "jornada.registrar");
+    const hora = horaEnLaCiudad(String(suyo.hasta));
+    return { ...rechazo(id, "FUERA_DE_LA_JORNADA", "Este árbol se capturó después de que " + (suyo.fin === "terminado" ? "usted terminó su parte en «" + nombre + "»"
+      : "la Coordinación cerró su participación en «" + nombre + "»") + ", a las " + hora + ". Páselo a otra jornada o elimínelo."), jornada: nombre, fin: suyo.fin, hasta: suyo.hasta };
+  }
 
   const { especieId, especieOtra } = especieDe(d);
   const comentarios = texto(d.comentarios), sitio = sitioDe(d.sitio_plantacion);
@@ -131,6 +145,10 @@ export async function crearArbol(c: pg.PoolClient, u: Usuario, d: Record<string,
   if ("folio" in folio) fila = { ...fila, folio: folio.folio };
   return conDuplicado(c, u, recibido(fila, "aviso" in folio ? { aviso: folio.aviso } : {}));
 }
+
+// La hora de un momento en la Ciudad de México, como la dicen los avisos: «12:40»
+const horaEnLaCiudad = (iso: string): string =>
+  new Intl.DateTimeFormat("es-MX", { timeZone: "America/Mexico_City", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(iso));
 
 // Los errores en el orden de los campos del formulario: ubicación, especie, fecha, sitio y comentarios
 const ORDEN = ["motivo_sustitucion", "motivo_sustitucion_otro", "lat", "especie_id", "fecha_plantacion", "sitio_plantacion", "comentarios", "foto_id"];

@@ -1091,7 +1091,7 @@ SRP.jornadas = {
      va a una jornada abierta, la única donde el servidor lo recibe. */
   async abrirMover(r, desdeRevisar) {
     const origen = this.guardada && this.guardada.id === r.jornada_id ? this.guardada : await SRP.almacen.uno('jornadas', r.jornada_id);
-    if (origen && SRP.permisos.compartida(origen) && !SRP.permisos.de(SRP.sesion.usuario).relevar) {
+    if (!desdeRevisar && origen && SRP.permisos.compartida(origen) && !SRP.permisos.de(SRP.sesion.usuario).relevar) {
       SRP.util.anunciar('Es de una jornada compartida: sólo la Coordinación lo pasa a otra jornada.', 'aviso');
       return;
     }

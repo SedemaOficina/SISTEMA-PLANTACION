@@ -179,11 +179,11 @@ SRP.app = {
   /* ---------- Acceso ---------- */
 
   // Entrar falló por algo que no es un dato del formulario: el recuadro lo dice sin marcar ningún campo
-  noSePudoEntrar(caja, campos, err) {
+  noSePudoEntrar(caja, campos, err, texto) {
     SRP.util.erroresEnCampos([], campos);
-    const texto = SRP.util.esFaltaDeEspacio(err)
+    texto = texto || (SRP.util.esFaltaDeEspacio(err)
       ? 'El teléfono no tiene espacio libre para guardar los catálogos. Libere espacio (fotos o aplicaciones que no use) y vuelva a tocar «Entrar».'
-      : SRP.util.mensajeError(err, 'entrar');
+      : SRP.util.mensajeError(err, 'entrar'));
     caja.innerHTML = '<h2>No se pudo entrar</h2><p></p>';
     caja.querySelector('p').textContent = texto;
     caja.hidden = false;
@@ -212,6 +212,7 @@ SRP.app = {
       finally { boton.disabled = false; boton.removeAttribute('aria-busy'); }
       if (r.fallo) { this.noSePudoEntrar(caja, campos, r.fallo); return; }
       if (r.temporal) { caja.hidden = true; this.el('acceso-clave').value = ''; this.mostrarTemporal(r.cuenta); return; }
+      if (!r.ok && r.general) { this.noSePudoEntrar(caja, campos, null, r.motivo); return; }
       if (!r.ok) { SRP.util.resumenErrores(caja, [['acceso-correo', r.motivo]], campos); return; }
       caja.hidden = true;
       this.el('acceso-clave').value = '';
@@ -434,6 +435,7 @@ SRP.app = {
     // Con datos de prueba, al entrar se envía lo pendiente y, si no sale, lo dice la franja
     SRP.conexion.sugerirInstalar();   // en iPhone desde Safari, una vez por sesión y antes de capturar
     SRP.envio.alEntrar();   // la pastilla cuenta los registros del alcance de quien entró
+    SRP.calles.asignarRecibidas();   // con datos de prueba, lo recibido sin calle porque no bajaron sus celdas
     SRP.remoto.pintar();    // con datos reales, los avisos de lo enviado que todavía no llega
   },
 

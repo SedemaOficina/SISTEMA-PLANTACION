@@ -23,6 +23,7 @@ SRP.conexion = {
       await this.refrescar();
       await SRP.envio.pintarFranja();
       SRP.envio.enviar();
+      SRP.calles.asignarRecibidas();
     });
     window.addEventListener('offline', async () => { await this.refrescar(); await SRP.envio.pintarFranja(); });
     this.el('conexion').addEventListener('click', async () => { await this.pintarEstado(); this.el('dlg-senal').showModal(); });

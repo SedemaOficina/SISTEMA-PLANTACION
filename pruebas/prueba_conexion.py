@@ -1386,6 +1386,51 @@ def main():
             sf = apoyo('apoyos', {'id': jf})
             ok(enCola == ['jornada.crear', 'jornada.compartir 1'] and sf['apoyos'] == [[APOYO['id'], None]] and pgC.is_visible('#btn-franja-apoyos'),
                'desde el formulario y sin señal, la jornada nace compartida: al volver la señal llegan su alta y su cabo de apoyo, en orden: %s' % [enCola, sf['apoyos']])
+            # La compartida en campo (bloque 2). El cabo de apoyo guarda la jornada en su teléfono y registra sin señal aunque
+            # la aplicación se cierre; la Coordinación lo quita y la cierra: sus árboles esperan en su teléfono, con su aviso,
+            # y llegan solos cuando la reabre
+            ctxB, pgB, errB = telefono_de(APOYO)
+            if pgB.evaluate("() => document.getElementById('dlg-confirmar').open"): pgB.click('#btn-confirmar-si'); pgB.wait_for_timeout(400)
+            guardada = pgB.evaluate("id => SRP.almacen.unoLocal('jornadas', id).then(j => !!j)", jf)
+            ctxB.route('**/api/srp/**', lambda r: r.abort())
+            pgB.reload(); pgB.wait_for_selector('html[data-listo]'); pgB.wait_for_timeout(1500)
+            if pgB.evaluate("() => document.getElementById('dlg-confirmar').open"): pgB.click('#btn-confirmar-si'); pgB.wait_for_timeout(400)
+            pgB.evaluate("async () => { SRP.app.mostrarVista('registrar'); await SRP.activa.preparar(); }"); pgB.wait_for_timeout(500)
+            sinSenal = pgB.evaluate("() => SRP.activa.jornada && SRP.activa.jornada.id")
+            ok(guardada and sinSenal == jf, 'el cabo de apoyo guarda la compartida en su teléfono: al abrir sin señal sigue siendo su jornada activa: %s' % [guardada, sinSenal == jf])
+            registrar(pgB); registrar(pgB)
+            pgC.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); await SRP.jornadas.guardarApoyos(j, []); }", jf)
+            esperar_cola(pgC)
+            pgC.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); await SRP.activa.cambiarEstatus(j, 'cerrada'); }", jf)
+            esperar_cola(pgC)
+            ctxB.unroute('**/api/srp/**')
+            pgB.evaluate("() => SRP.envio.enviar({ manual: true })")
+            pgB.wait_for_function("() => !SRP.envio.enviando && SRP.cola.enEspera().length > 0", timeout=30000); pgB.wait_for_timeout(1500)
+            e = pgB.evaluate("""() => ({ espera: SRP.cola.enEspera(), rechazos: SRP.cola.rechazadas().length, activa: SRP.activa.jornada && SRP.activa.jornada.id,
+              texto: document.querySelector('#registrar-espera .franja-remoto-texto').textContent, visible: !document.getElementById('registrar-espera').hidden })""")
+            ok(e['espera'] == [{'jornada': 'Compartida desde el formulario', 'n': 2}] and e['rechazos'] == 0 and e['activa'] != jf and e['visible']
+               and 'Sus 2 árboles se enviarán cuando la reabra' in e['texto'],
+               'con la compartida cerrada, los árboles del cabo esperan en su teléfono, sin «Revisar», y Nuevo registro dice que llegarán al reabrir: %s' % e)
+            pgC.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); await SRP.activa.cambiarEstatus(j, 'abierta'); }", jf)
+            esperar_cola(pgC)
+            pgB.evaluate("() => SRP.envio.enviar({ manual: true })"); esperar_cola(pgB)
+            s2 = apoyo('apoyos', {'id': jf})
+            ok(s2['arboles'].count(APOYO['id']) == 2 and pgB.evaluate("() => SRP.cola.enEspera().length") == 0 and pgB.is_hidden('#registrar-espera'),
+               'al reabrir, los árboles capturados antes de que lo quitaran llegan a la compartida, a su nombre: %s' % s2)
+            # Una respuesta vacía al bajar las listas no las borra; sin listas de antes, no se entra y se dice sin nombres internos
+            n0 = pgB.evaluate("SRP.almacen.todos('especies').then(x => x.length)")
+            ctxB.route('**/api/srp/catalogos', lambda r: r.fulfill(status=200, content_type='application/json', body='{}'))
+            r0 = pgB.evaluate("SRP.remoto.bajarCatalogos()"); pgB.wait_for_timeout(900)
+            n1 = pgB.evaluate("SRP.almacen.todos('especies').then(x => x.length)")
+            ok(r0.get('conservados') and n1 == n0 > 0 and 'Se conservan las que ya tenía' in pgB.evaluate(AVISO), 'una respuesta vacía al bajar las listas no las borra, y se avisa: %s' % [n0, n1])
+            ctxN = b.new_context(service_workers='block'); ctxN.route('**/js/config.js*', config_real)
+            ctxN.route('**/api/srp/catalogos', lambda r: r.fulfill(status=200, content_type='application/json', body='{"especies": "x"}'))
+            pgN = ctxN.new_page(); abrir(pgN); entrar(pgN, APOYO['correo'], CLAVE)
+            caja = pgN.inner_text('#acceso-errores')
+            ok('El servidor respondió algo que no se entiende al bajar las listas' in caja and 'Falta corregir' not in caja and 'forEach' not in caja,
+               'sin listas de antes y con una respuesta dañada, no se entra y se dice sin nombres internos: %s' % caja[:120])
+            ok(not errB, 'sin errores en el teléfono del cabo de apoyo: %s' % errB[:2])
+            ctxN.close(); ctxB.close()
             ok(not errC and not errA, 'sin errores en los dos teléfonos: %s' % (errC + errA)[:2])
             ctxC.close(); ctxA.close()
 

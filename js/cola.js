@@ -38,8 +38,8 @@ SRP.cola = {
   sinSalir: new Map(),   // operación → desde cuándo no sale aunque hubo conexión, en esta sesión
   ALTAS: ['jornada.crear', 'registro.crear', 'registro.sustituir'],
   EDICIONES: ['jornada.editar', 'registro.editar'],
-  // Lo que el servidor no aceptó y se vuelve a intentar en cuanto se corrige el registro
-  CORREGIBLES: ['DATOS_INVALIDOS', 'JORNADA_ELIMINADA'],
+  // Lo que el servidor no aceptó y se vuelve a intentar en cuanto se corrige el registro (o se pasa a otra jornada)
+  CORREGIBLES: ['DATOS_INVALIDOS', 'JORNADA_ELIMINADA', 'FUERA_DE_LA_JORNADA'],
   // Los campos que viajan en una edición: los que el servidor deja cambiar
   CAMPOS: {
     plantaciones: ['lat', 'lng', 'punto_origen', 'gps_precision_m', 'especie_id', 'especie_otra', 'fecha_plantacion', 'comentarios', 'foto_id'],
@@ -72,6 +72,14 @@ SRP.cola = {
     if (!p.length) return 'recibido';
     if (p.some(o => o.rechazo)) return 'rechazado';
     return p.some(o => this.ALTAS.includes(o.tipo)) ? 'por_enviar' : 'cambios';
+  },
+
+  // Los árboles de quien tiene la sesión que esperan a que la Coordinación reabra su jornada: [{ jornada, n }]
+  enEspera() {
+    const u = SRP.sesion.usuario, por = new Map();
+    if (u) this.ops.filter(o => o.usuario_id === u.id && o.tabla === 'plantaciones' && !o.rechazo && o.espera && o.espera.codigo === 'JORNADA_CERRADA')
+      .forEach(o => { const k = o.espera.jornada || ''; por.set(k, (por.get(k) || 0) + 1); });
+    return [...por].map(([jornada, n]) => ({ jornada, n }));
   },
 
   // Lo que el servidor no aceptó de quien tiene la sesión
@@ -172,7 +180,7 @@ SRP.cola = {
   /* Envía lo de quien tiene la sesión. Devuelve { enviados: árboles recibidos, cortado: se fue la señal,
      rechazados, error }. */
   async enviar() {
-    const u = SRP.sesion.usuario, res = { enviados: new Set(), cortado: false, rechazados: 0, error: null, eliminadas: [] };
+    const u = SRP.sesion.usuario, res = { enviados: new Set(), cortado: false, rechazados: 0, error: null, eliminadas: [], cerradas: new Set(), fuera: [] };
     if (!this.activa() || !u || !SRP.turno.mia()) return res;
     await this.releer();
     await this.reparar(u);
@@ -213,6 +221,22 @@ SRP.cola = {
           // Su jornada todavía no llega, o el servidor no tuvo la base: se intenta después, con lo que se corrija
           esperan.add(o.registro_id);
           await this.noSalio(o);
+        } else if (x && x.codigo === 'JORNADA_CERRADA') {
+          /* La Coordinación cerró su jornada: el árbol espera en el teléfono, no en «Revisar», y se vuelve a mandar solo;
+             llega cuando la reabra. Nuevo registro lo dice (js/jornada-activa.js) */
+          esperan.add(o.registro_id);
+          o.espera = { codigo: x.codigo, jornada: x.jornada || null };
+          o.enviado = null;
+          await this.guardar(o);
+          const r = await SRP.almacen.unoLocal('plantaciones', o.registro_id);
+          if (r) res.cerradas.add(r.jornada_id);
+        } else if (x && x.codigo === 'FUERA_DE_LA_JORNADA') {
+          // Se capturó después de salir de la jornada: a «Revisar», para pasarlo a otra o eliminarlo
+          const r = await SRP.almacen.unoLocal('plantaciones', o.registro_id);
+          if (r) res.fuera.push({ jornada_id: r.jornada_id, jornada: x.jornada || null, fin: x.fin || null, hasta: x.hasta || null });
+          await this.rechazada(o, x);
+          res.rechazados++;
+          avanzo = true;
         } else if (x && x.codigo === 'JORNADA_ELIMINADA') {
           eliminadas.add(o.tabla === 'jornadas' ? o.registro_id : ((await SRP.almacen.unoLocal('plantaciones', o.registro_id)) || {}).jornada_id);
           if (o.tabla === 'plantaciones') { await this.rechazada(o, x); res.rechazados++; }
@@ -270,7 +294,7 @@ SRP.cola = {
   vigilar(u, res) {
     if (res.cortado || res.error) return;
     const ahora = Date.now(), siguen = new Set();
-    this.ops.filter(o => o.usuario_id === u.id && !o.rechazo).forEach(o => {
+    this.ops.filter(o => o.usuario_id === u.id && !o.rechazo && !o.espera).forEach(o => {
       siguen.add(o.n);
       if (!this.sinSalir.has(o.n)) this.sinSalir.set(o.n, ahora);
     });
@@ -365,15 +389,25 @@ SRP.cola = {
     const [jornadas, arboles, cola] = await Promise.all(['jornadas', 'plantaciones', 'envios'].map(t => SRP.almacen.todosLocales(t)));
     const pendientes = new Set(cola.concat(this.ops).map(o => o.registro_id));
     const espera = id => pendientes.has(id);
-    // El cabo de apoyo guarda la jornada compartida mientras registra en ella: es de quien la coordina
+    /* La jornada de otro titular —compartida, o recibida en relevo— se guarda mientras se registra en ella; al cerrarse,
+       al terminar su parte o al quitarlo, se suelta: es de quien la coordina */
     const u = SRP.sesion.usuario;
-    const suya = j => !u || !SRP.permisos.soloDeApoyo(j, u.id) || (j.estatus === 'abierta' && SRP.permisos.apoyoVigente(j, u.id));
+    const suya = j => !u || j.cabo_id === u.id || (j.estatus === 'abierta' && (j.relevo_id === u.id || SRP.permisos.apoyoVigente(j, u.id)));
     const quedan = new Set(jornadas.filter(j => espera(j.id) || ((j.estatus === 'abierta' || !j.reporte_en) && suya(j))).map(j => j.id));
     const fuera = {
       jornadas: jornadas.filter(j => !quedan.has(j.id)).map(j => j.id),
       plantaciones: arboles.filter(r => !espera(r.id) && !quedan.has(r.jornada_id)).map(r => r.id)
     };
     if (fuera.jornadas.length || fuera.plantaciones.length) await SRP.almacen.quitarLocales(fuera);
+  },
+
+  /* Al cerrar sesión se suelta la jornada de otro titular que se guardaba para registrar en ella sin señal, si nada
+     suyo espera envío: lo enviado no se queda en el teléfono (S-11) */
+  async soltarAjenas(u) {
+    if (!u) return;
+    const pendientes = new Set((await SRP.almacen.todosLocales('envios')).map(o => o.registro_id));
+    const ajenas = (await SRP.almacen.todosLocales('jornadas')).filter(j => j.cabo_id !== u.id && !pendientes.has(j.id)).map(j => j.id);
+    if (ajenas.length) await SRP.almacen.quitarLocales({ jornadas: ajenas });
   },
 
   /* ---------- Lo que el servidor no aceptó: lo que decide la persona ---------- */
