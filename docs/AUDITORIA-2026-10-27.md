@@ -1678,3 +1678,13 @@ Verificación del bloque: `npm test` 115 de 115; `prueba_conexion.py` 126 de 126
 | D1-07 | Corregido | La pregunta 1 de `ALINEACION-SIA.md` queda resuelta con D337 | — |
 
 Verificación: `auditoria.py` 149 comprobaciones y 0 hallazgos; `npm test` 115 de 115.
+
+### M563 y lo que quedaba de F4-03 (bloque 259 del proyecto, versión 1.4.5)
+
+| Clave | Estado | Antes y después | Prueba permanente |
+|---|---|---|---|
+| F4-03 | Corregido | `CUENTAS_POR_ROL` pasa a `js/herramientas-prueba.js`, que la copia para el SIA no lleva; con el bloque 258, ya no queda ningún resto de prueba en la copia ni en la base | `prueba_conexion.py --app` |
+| M563 (pedido de Liber) | Corregido | La copia anterior traía las seis frases de prueba en `index.html`, `js/app.js` y la hoja de estilos; la nueva no trae los bloques ni sus frases, y la aplicación funciona igual: 129 de 129 sobre la copia | `preparar_produccion.py` se detiene si queda una frase; `prueba_conexion.py --app` lo revisa en el navegador |
+
+Verificación: `prueba_conexion.py` 126 de 126 y, sobre la copia, 129 de 129; `auditoria.py` 149 y 0 hallazgos; la prueba
+completa, 1,539 de 1,540 (sólo el Excel).

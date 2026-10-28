@@ -232,9 +232,12 @@ js/                     La aplicación, un archivo por tema
   solicitud.js          Jornadas del programa «Solicitud especial»: quién lo solicita y de qué se trata
   mapa.js, foto.js, iconos.js, util.js, app.js  Mapa, fotografía, iconos, utilidades y arranque
   datos-ficticios.js    Cuentas de prueba y lo que siembra la versión de prueba (sólo versión de prueba)
+  herramientas-prueba.js  Entrar con una cuenta de prueba, «Datos de prueba», «Restablecer» y la franja de datos
+                        ficticios (sólo versión de prueba)
   demostracion.js       Datos de demostración del pie (sólo versión de prueba)
   espejo.js             Espejo de campos (sólo versión de prueba)
-                        La copia real que se publica en el SIA no lleva estos tres (herramientas/preparar_produccion.py)
+                        La copia real que se publica en el SIA no lleva estos cuatro, ni sus bloques de index.html
+                        (herramientas/preparar_produccion.py)
 
 assets/
   capas/                capa-alcaldias.js, capa-uga.js, capa-colonias.js y capa-prioritarias.js: capas compactadas (generadas)
@@ -310,7 +313,7 @@ versión se escribe en un solo lugar del código.
 **El archivo `VERSION`, en la raíz, lleva el mismo número** (lo pide la guía del SIA, sección 8); la prueba
 falla si no coincide con la marca. Ese número se ve siempre en la franja fija de arriba. Hasta la 0.9.78 decía
 «Versión de prueba 0.9.N»; desde la versión 1, la que se entrega al SIA para instalar, dice «Versión» y el número de `VERSION`
-(hoy, «Versión 1.4.4»).
+(hoy, «Versión 1.4.5»).
 
 **Las pruebas de GitHub, en verde.** Cada subida corre la prueba completa en GitHub (`.github/workflows/pruebas.yml`;
 el indicador de arriba dice cómo salió la última). Antes de cerrar un bloque se revisa que la corrida del commit

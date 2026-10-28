@@ -380,15 +380,23 @@ def main():
 
             # Con datos reales, nada de prueba
             abrir(pg)
-            v = pg.evaluate("""() => ({ proveedor: SRP.CONFIG.AUTENTICACION.PROVEEDOR, base: SRP.CONFIG.DB_NOMBRE,
-                prueba: !document.getElementById('acceso-prueba').hidden, banda: !document.getElementById('banda-ficticio').hidden,
-                acceso: !document.getElementById('vista-acceso').hidden })""")
+            # En la copia para el SIA los bloques de prueba ni siquiera existen; en la versión de prueba, ocultos
+            v = pg.evaluate("""() => { const visto = id => !!document.getElementById(id) && !document.getElementById(id).hidden;
+                return { proveedor: SRP.CONFIG.AUTENTICACION.PROVEEDOR, base: SRP.CONFIG.DB_NOMBRE, prueba: visto('acceso-prueba'), banda: visto('banda-ficticio'),
+                  acceso: visto('vista-acceso') }; }""")
             ok(v == {'proveedor': 'servidor', 'base': 'srp_sia', 'prueba': False, 'banda': False, 'acceso': True},
                'con datos reales se entra con el servidor, en la base real, sin «Usuario ficticio» ni la franja de datos de prueba: %s' % v)
             if COPIA:
-                s = pg.evaluate("() => [typeof SRP.DATOS_FICTICIOS, typeof SRP.CATALOGO_VEHICULOS, typeof SRP.demo, typeof SRP.espejo, !!SRP.CATALOGOS_ARRANQUE]")
-                ok(s == ['undefined', 'undefined', 'undefined', 'undefined', True],
-                   'la copia para el SIA no carga las cuentas de prueba, los vehículos de prueba, la demostración ni el espejo de campos: %s' % s)
+                s = pg.evaluate("() => [typeof SRP.DATOS_FICTICIOS, typeof SRP.CATALOGO_VEHICULOS, typeof SRP.prueba, typeof SRP.demo, typeof SRP.espejo, !!SRP.CATALOGOS_ARRANQUE]")
+                ok(s == ['undefined', 'undefined', 'undefined', 'undefined', 'undefined', True],
+                   'la copia para el SIA no carga las cuentas de prueba, los vehículos de prueba, las herramientas de prueba, la demostración ni el espejo de campos: %s' % s)
+                vistos = pg.evaluate("""() => ['banda-ficticio', 'btn-sin-senal', 'btn-datos-prueba', 'btn-cambiar-perfil', 'acceso-prueba', 'espejo-campos', 'dlg-prueba', 'espejo-cierre']
+                  .filter(id => document.getElementById(id))""")
+                ok(vistos == [], 'la copia para el SIA no trae, ni escondidos, los bloques de la versión de prueba: %s' % vistos)
+                frases = ['Entrar como usuario de prueba', 'Datos de prueba', 'Cambiar usuario (pruebas)', 'Simular sin señal (pruebas)', 'Lo que viaja a la base de datos', 'Datos ficticios de prueba']
+                dichas = sorted('%s: %s' % (os.path.relpath(os.path.join(d, n), COPIA), x) for d, _, ns in os.walk(COPIA) for n in ns if n.endswith(('.html', '.js', '.css'))
+                                for x in frases if x in open(os.path.join(d, n), encoding='utf-8', errors='replace').read())
+                ok(dichas == [], 'ningún archivo de la copia dice lo de la versión de prueba: %s' % dichas)
 
             # Lo que el servicio no acepta, con su mensaje
             entrar(pg, CABO['correo'], 'Otra contraseña 2026')

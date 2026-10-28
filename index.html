@@ -14,12 +14,12 @@
 <!-- Las peticiones al mapa no dicen desde qué sitio se hacen -->
 <meta name="referrer" content="no-referrer">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=1.4.4">
-<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=1.4.4" media="(max-width: 767px)">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=1.4.5">
+<link rel="preload" as="image" href="assets/encabezado-ru-sia-movil.png?v=1.4.5" media="(max-width: 767px)">
 <title>Registro de Plantaciones | SEDEMA</title>
-<link rel="stylesheet" href="vendor/leaflet.css?v=1.4.4">
-<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=1.4.4">
-<link rel="stylesheet" href="css/estilos.css?v=1.4.4">
+<link rel="stylesheet" href="vendor/leaflet.css?v=1.4.5">
+<link rel="stylesheet" href="vendor/leaflet-gesture-handling.min.css?v=1.4.5">
+<link rel="stylesheet" href="css/estilos.css?v=1.4.5">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -29,13 +29,15 @@
        0.N» mientras el SIA no lo instale; «Versión 1» al pasar. La escribe js/app.js con la marca ?v=;
        si no llega a escribirla, se queda diciendo que no se identificó. -->
   <p id="version-sia" class="version-sia version-sia-error" data-testid="version-sia">Versión sin identificar</p>
+  <!-- Sólo con datos de prueba: desde aquí -->
   <!-- Dentro del encabezado, para que quede en una región con nombre -->
   <p id="banda-ficticio" class="banda-ficticio" hidden>Datos ficticios de prueba. No usar para reportes oficiales.</p>
+  <!-- Sólo con datos de prueba: hasta aquí -->
   <div class="encabezado-interior">
     <!-- Logotipo: Gobierno CDMX · SEDEMA · SIA · Reforestación Urbana en pantalla ancha; en teléfono, SIA y Reforestación Urbana -->
     <picture>
-      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=1.4.4">
-      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=1.4.4" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
+      <source media="(max-width: 767px)" srcset="assets/encabezado-ru-sia-movil.png?v=1.4.5">
+      <img id="logo" class="encabezado-logo" src="assets/encabezado-ru-sia.png?v=1.4.5" alt="Gobierno de la Ciudad de México. Secretaría del Medio Ambiente. Sistema de Información Ambiental. Reforestación Urbana">
     </picture>
     <div id="encabezado-usuario" class="encabezado-usuario" hidden>
       <!-- Estado de la conexión: pastilla con icono, color y palabras; tocarla abre la guía «¿Qué hacer sin internet?» -->
@@ -52,12 +54,14 @@
                  no se vea un instante sin él); si se apaga, se recuerda en este teléfono -->
             <button type="button" id="btn-contraste" class="menu-opcion" role="switch" aria-checked="true">
               <span>Modo sol (alto contraste)</span><span class="interruptor" aria-hidden="true"></span></button>
+            <!-- Sólo con datos de prueba: desde aquí -->
             <!-- Sólo con datos de prueba; desaparece con ES_FICTICIO: false -->
             <!-- Envío simulado: se comporta como sin conexión sin poner el teléfono en modo avión -->
             <button type="button" id="btn-sin-senal" class="menu-opcion" role="switch" aria-checked="false" hidden>
               <span>Simular sin señal (pruebas)</span><span class="interruptor" aria-hidden="true"></span></button>
             <button type="button" id="btn-datos-prueba" class="menu-opcion" hidden>Datos de prueba</button>
             <button type="button" id="btn-cambiar-perfil" class="menu-opcion" hidden>Cambiar usuario (pruebas)</button>
+            <!-- Sólo con datos de prueba: hasta aquí -->
             <button type="button" id="btn-cerrar-sesion" class="menu-opcion menu-peligro">Cerrar sesión</button>
           </div>
         </div>
@@ -131,6 +135,7 @@
       <button type="button" id="btn-temporal-salir" class="btn btn-texto">Salir sin cambiarla</button>
     </form>
 
+    <!-- Sólo con datos de prueba: desde aquí -->
     <div id="acceso-prueba" class="tarjeta tarjeta-prueba" hidden>
       <h2>Entrar como usuario de prueba</h2>
       <p class="nota">Sólo en desarrollo: permite revisar cómo ve el sistema cada perfil, sin escribir credenciales.</p>
@@ -138,6 +143,7 @@
       <button type="button" id="btn-entrar-prueba" class="btn btn-secundario">Entrar con este usuario</button>
       <p class="aviso-simulado">La contraseña todavía no se verifica: basta un correo dado de alta. Con el servidor, cada cuenta entra con su correo y su contraseña.</p>
     </div>
+    <!-- Sólo con datos de prueba: hasta aquí -->
   </section>
 
   <!-- SUPERVISIÓN / MI AVANCE: lo plantado en un periodo, con sus indicadores (js/indicadores.js) -->
@@ -420,6 +426,7 @@
     </form>
     </div>
 
+    <!-- Sólo con datos de prueba: desde aquí -->
     <!-- ESPEJO DE CAMPOS — SÓLO EN LA VERSIÓN DE PRUEBA.
          Enseña los campos que llegan a la base sin tener lugar en la pantalla. Sólo aparece con
          datos de prueba. Para quitarlo, ver el encabezado de js/espejo.js: este bloque y el del
@@ -432,6 +439,7 @@
         <div id="espejo-contenido"></div>
       </details>
     </section>
+    <!-- Sólo con datos de prueba: hasta aquí -->
 
   </section>
 
@@ -801,6 +809,7 @@
   <p>Sistema de Registro de Plantaciones. Versión <span id="version"></span></p>
 </footer>
 
+<!-- Sólo con datos de prueba: desde aquí -->
 <!-- Datos de prueba: restablecer y datos de demostración. Sólo con datos de prueba; se abre desde
      el menú de la cuenta, para no ocupar el pie de cada sección -->
 <dialog id="dlg-prueba" aria-labelledby="dlg-prueba-titulo">
@@ -823,6 +832,7 @@
     <button type="button" id="btn-restablecer" class="btn btn-peligro-linea">Restablecer datos de prueba</button>
   </div>
 </dialog>
+<!-- Sólo con datos de prueba: hasta aquí -->
 
 <!-- Subir al inicio: aparece al bajar más de una pantalla, arriba de la barra inferior -->
 <button type="button" id="btn-subir" class="btn btn-subir" aria-label="Subir al inicio" title="Subir al inicio" data-visible="no"></button>
@@ -1167,11 +1177,13 @@
     <div class="campo"><label for="cie-hora">Hora de finalización <span class="obligatorio" aria-hidden="true">*</span></label>
       <div class="fecha-con-hoy"><input type="time" id="cie-hora" data-vacio="Elija la hora"><button type="button" id="btn-hora-ahora" class="btn btn-secundario btn-chico">Ahora</button></div></div>
 
+    <!-- Sólo con datos de prueba: desde aquí -->
     <!-- ESPEJO DEL CIERRE — sólo en la versión de prueba (ver js/espejo.js) -->
     <details id="espejo-cierre" class="desplegable espejo espejo-en-dialogo" hidden>
       <summary><span>Lo que viaja a la base de datos</span></summary>
       <div id="espejo-cierre-contenido"></div>
     </details>
+    <!-- Sólo con datos de prueba: hasta aquí -->
 
     <!-- La acción va al pie y lleva a la vista previa antes del PDF -->
   <div class="dialogo-pie">
@@ -1323,68 +1335,69 @@
      a la vez; js/config.js lee ese valor de su propia dirección, así que no se escribe dos veces.
      Sin esto, un teléfono que ya abrió el sitio mezcla archivos viejos y nuevos, y no arranca. -->
 <!-- Bibliotecas incluidas localmente: la app funciona sin señal y sin servidores externos -->
-<script src="vendor/leaflet.js?v=1.4.4"></script>
-<script src="vendor/leaflet-gesture-handling.min.js?v=1.4.4"></script>
-<script src="vendor/turf-pip.min.js?v=1.4.4"></script>
-<script src="vendor/jspdf.umd.min.js?v=1.4.4"></script>
-<script src="vendor/jspdf.plugin.autotable.min.js?v=1.4.4"></script>
+<script src="vendor/leaflet.js?v=1.4.5"></script>
+<script src="vendor/leaflet-gesture-handling.min.js?v=1.4.5"></script>
+<script src="vendor/turf-pip.min.js?v=1.4.5"></script>
+<script src="vendor/jspdf.umd.min.js?v=1.4.5"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=1.4.5"></script>
 <!-- Scripts clásicos (no módulos): los módulos ES no cargan al abrir con doble clic (file://) -->
-<script src="js/config.js?v=1.4.4"></script>
-<script src="js/util.js?v=1.4.4"></script>
-<script src="js/filtros.js?v=1.4.4"></script>
-<script src="js/iconos.js?v=1.4.4"></script>
+<script src="js/config.js?v=1.4.5"></script>
+<script src="js/util.js?v=1.4.5"></script>
+<script src="js/filtros.js?v=1.4.5"></script>
+<script src="js/iconos.js?v=1.4.5"></script>
 <!-- Capas territoriales del SIA, compactadas por herramientas/generar_capas.py desde originales/ -->
-<script src="assets/capas/capa-alcaldias.js?v=1.4.4"></script>
-<script src="assets/capas/capa-uga.js?v=1.4.4"></script>
-<script src="assets/capas/capa-colonias.js?v=1.4.4"></script>
+<script src="assets/capas/capa-alcaldias.js?v=1.4.5"></script>
+<script src="assets/capas/capa-uga.js?v=1.4.5"></script>
+<script src="assets/capas/capa-colonias.js?v=1.4.5"></script>
 <!-- Colonias prioritarias para reforestar: capa de referencia del modelo de priorización -->
-<script src="assets/capas/capa-prioritarias.js?v=1.4.4"></script>
-<script src="assets/catalogos/catalogo-especies.js?v=1.4.4"></script>
-<script src="assets/catalogos/catalogos-arranque.js?v=1.4.4"></script>
-<!-- Sólo en la versión de prueba: la versión real no carga estos dos -->
-<script src="assets/catalogos/catalogo-vehiculos.js?v=1.4.4"></script>
-<script src="js/datos-ficticios.js?v=1.4.4"></script>
-<script src="js/permisos.js?v=1.4.4"></script>
-<script src="js/derivacion.js?v=1.4.4"></script>
-<script src="js/prioritarias.js?v=1.4.4"></script>
-<script src="js/solicitud.js?v=1.4.4"></script>
-<script src="js/almacen.js?v=1.4.4"></script>
-<script src="js/servidor.js?v=1.4.4"></script>
-<script src="js/reloj.js?v=1.4.4"></script>
-<script src="js/remoto.js?v=1.4.4"></script>
-<script src="js/cola.js?v=1.4.4"></script>
-<script src="js/rechazos.js?v=1.4.4"></script>
-<script src="js/sesion.js?v=1.4.4"></script>
-<script src="js/referencias.js?v=1.4.4"></script>
-<script src="js/folio.js?v=1.4.4"></script>
-<script src="js/calles.js?v=1.4.4"></script>
+<script src="assets/capas/capa-prioritarias.js?v=1.4.5"></script>
+<script src="assets/catalogos/catalogo-especies.js?v=1.4.5"></script>
+<script src="assets/catalogos/catalogos-arranque.js?v=1.4.5"></script>
+<!-- Sólo en la versión de prueba: la versión real no carga estos tres -->
+<script src="assets/catalogos/catalogo-vehiculos.js?v=1.4.5"></script>
+<script src="js/datos-ficticios.js?v=1.4.5"></script>
+<script src="js/herramientas-prueba.js?v=1.4.5"></script>
+<script src="js/permisos.js?v=1.4.5"></script>
+<script src="js/derivacion.js?v=1.4.5"></script>
+<script src="js/prioritarias.js?v=1.4.5"></script>
+<script src="js/solicitud.js?v=1.4.5"></script>
+<script src="js/almacen.js?v=1.4.5"></script>
+<script src="js/servidor.js?v=1.4.5"></script>
+<script src="js/reloj.js?v=1.4.5"></script>
+<script src="js/remoto.js?v=1.4.5"></script>
+<script src="js/cola.js?v=1.4.5"></script>
+<script src="js/rechazos.js?v=1.4.5"></script>
+<script src="js/sesion.js?v=1.4.5"></script>
+<script src="js/referencias.js?v=1.4.5"></script>
+<script src="js/folio.js?v=1.4.5"></script>
+<script src="js/calles.js?v=1.4.5"></script>
 <!-- Esquema generado de datos/esquema.json: relaciones entre tablas -->
-<script src="js/esquema.js?v=1.4.4"></script>
-<script src="js/conexion.js?v=1.4.4"></script>
-<script src="js/envio.js?v=1.4.4"></script>
-<script src="js/turno.js?v=1.4.4"></script>
-<script src="js/mapa.js?v=1.4.4"></script>
-<script src="js/foto.js?v=1.4.4"></script>
-<script src="js/jornada-activa.js?v=1.4.4"></script>
-<script src="js/formulario.js?v=1.4.4"></script>
+<script src="js/esquema.js?v=1.4.5"></script>
+<script src="js/conexion.js?v=1.4.5"></script>
+<script src="js/envio.js?v=1.4.5"></script>
+<script src="js/turno.js?v=1.4.5"></script>
+<script src="js/mapa.js?v=1.4.5"></script>
+<script src="js/foto.js?v=1.4.5"></script>
+<script src="js/jornada-activa.js?v=1.4.5"></script>
+<script src="js/formulario.js?v=1.4.5"></script>
 <!-- Sólo en la versión de prueba -->
-<script src="js/espejo.js?v=1.4.4"></script>
-<script src="js/registros.js?v=1.4.4"></script>
-<script src="js/galeria.js?v=1.4.4"></script>
-<script src="js/jornadas.js?v=1.4.4"></script>
-<script src="js/informes.js?v=1.4.4"></script>
-<script src="js/supervision.js?v=1.4.4"></script>
-<script src="js/indicadores.js?v=1.4.4"></script>
-<script src="js/demostracion.js?v=1.4.4"></script>
-<script src="js/croquis.js?v=1.4.4"></script>
-<script src="js/reportes.js?v=1.4.4"></script>
-<script src="js/catalogos.js?v=1.4.4"></script>
-<script src="js/usuarios.js?v=1.4.4"></script>
-<script src="js/excel.js?v=1.4.4"></script>
-<script src="js/carga.js?v=1.4.4"></script>
-<script src="js/duplicados.js?v=1.4.4"></script>
-<script src="js/configuracion.js?v=1.4.4"></script>
-<script src="js/especies-revision.js?v=1.4.4"></script>
-<script src="js/app.js?v=1.4.4"></script>
+<script src="js/espejo.js?v=1.4.5"></script>
+<script src="js/registros.js?v=1.4.5"></script>
+<script src="js/galeria.js?v=1.4.5"></script>
+<script src="js/jornadas.js?v=1.4.5"></script>
+<script src="js/informes.js?v=1.4.5"></script>
+<script src="js/supervision.js?v=1.4.5"></script>
+<script src="js/indicadores.js?v=1.4.5"></script>
+<script src="js/demostracion.js?v=1.4.5"></script>
+<script src="js/croquis.js?v=1.4.5"></script>
+<script src="js/reportes.js?v=1.4.5"></script>
+<script src="js/catalogos.js?v=1.4.5"></script>
+<script src="js/usuarios.js?v=1.4.5"></script>
+<script src="js/excel.js?v=1.4.5"></script>
+<script src="js/carga.js?v=1.4.5"></script>
+<script src="js/duplicados.js?v=1.4.5"></script>
+<script src="js/configuracion.js?v=1.4.5"></script>
+<script src="js/especies-revision.js?v=1.4.5"></script>
+<script src="js/app.js?v=1.4.5"></script>
 </body>
 </html>

@@ -12,21 +12,18 @@ SRP.app = {
     I.poner(document.querySelector('label[for="acceso-correo"]'), 'correo', 'medio');
     I.poner(document.querySelector('label[for="acceso-clave"]'), 'candado', 'medio');
     I.poner(this.el('form-acceso').querySelector('button[type="submit"]'), 'entrar', 'medio');
-    I.poner(this.el('btn-entrar-prueba'), 'entrar', 'medio');
     const pestana = { supervision: 'avance', registrar: 'mas', registros: 'registros', jornadas: 'jornadas', configuracion: 'tuerca' };
     this.el('navegacion').querySelectorAll('.pestana').forEach(b => I.poner(b, pestana[b.dataset.vista], 'grande'));
     I.poner(this.el('btn-usr-agregar'), 'usuarioMas', 'medio');
     I.poner(this.el('btn-subir'), 'subir', 'grande');
     ['btn-ini-coord-aplicar', 'btn-coord-aplicar'].forEach(id => I.poner(this.el(id), 'ubicacion', 'medio'));
     ['btn-filtros', 'jornada-btn-filtros'].forEach(id => I.poner(this.el(id), 'filtros', 'medio'));
-    I.poner(this.el('btn-demo-cargar'), 'regenerar', 'medio');
-    I.poner(this.el('btn-demo-quitar'), 'basura', 'medio');
     // Menú de la cuenta con icono en cada opción: el sol y la puerta por petición del área, y el resto por consistencia
     // Cancelar lleva tache y va en rojo de contorno
     I.poner(this.el('btn-cancelar-edicion'), 'cerrar', 'medio');
     I.poner(this.el('btn-confirmar-no'), 'cerrar', 'medio');
-    [['btn-contraste', 'sol'], ['btn-sin-senal', 'sinSenal'], ['btn-datos-prueba', 'regenerar'], ['btn-cambiar-perfil', 'usuario'], ['btn-cerrar-sesion', 'salir']]
-      .forEach(([id, icono]) => I.poner(this.el(id), icono, 'medio'));
+    [['btn-contraste', 'sol'], ['btn-cerrar-sesion', 'salir']].forEach(([id, icono]) => I.poner(this.el(id), icono, 'medio'));
+    if (SRP.prueba) SRP.prueba.ponerIconos();
     // Los buscadores llevan la lupa dentro del campo, desde la hoja de estilos
     // Avisos informativos: el icono va al frente del texto
     document.querySelectorAll('.aviso-simulado').forEach(a => a.insertAdjacentHTML('afterbegin', I.svg('info', 'medio')));
@@ -40,7 +37,7 @@ SRP.app = {
     SRP.util.redDeSeguridad();     // ningún fallo se queda mudo
     SRP.turno.iniciar();           // se trabaja en una pestaña a la vez: ésta toma el turno
     this.el('version').textContent = SRP.util.textoVersion();
-    this.el('banda-ficticio').hidden = !SRP.CONFIG.ES_FICTICIO;
+    if (SRP.prueba) SRP.prueba.mostrarBanda();
     // Con datos reales, los últimos parámetros que mandó el servidor, antes de que los use nadie
     SRP.remoto.aplicarParametrosGuardados();
     try {
@@ -223,22 +220,14 @@ SRP.app = {
 
     this.iniciarTemporal();
 
-    this.el('btn-entrar-prueba').addEventListener('click', () => {
-      const u = SRP.ref.usuarioPorId[this.el('sel-usuario-prueba').value];
-      if (!u) return;
-      SRP.sesion.iniciar(u);
-      this.entrar();
-    });
-    // Cerrar sesión y cambiar de usuario hacen lo mismo por dentro; se separan porque una es
-    // del sistema y la otra sólo existe mientras haya datos de prueba.
+    // Cerrar sesión y cambiar de usuario (js/herramientas-prueba.js) hacen lo mismo por dentro; se separan porque una
+    // es del sistema y la otra sólo existe mientras haya datos de prueba.
     const salir = () => {
       SRP.formulario.limpiar(true);
       SRP.sesion.cerrar();
       this.mostrarAcceso();
     };
     this.el('btn-cerrar-sesion').addEventListener('click', async () => { this.menuCuenta(false); if (await this.salirConPendientes()) salir(); });
-    this.el('btn-cambiar-perfil').addEventListener('click', () => { this.menuCuenta(false); salir(); });
-    this.el('btn-datos-prueba').addEventListener('click', async () => { this.menuCuenta(false); await SRP.demo.pintar(); this.el('dlg-prueba').showModal(); });
     // Menú de la cuenta: abre y cierra con el botón; se cierra al tocar fuera o con Escape
     this.el('btn-cuenta').innerHTML = SRP.ICONOS.svg('usuario', 'grande');
     this.el('btn-cuenta').addEventListener('click', () => this.menuCuenta(this.el('menu-cuenta').hidden));
@@ -246,26 +235,7 @@ SRP.app = {
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !this.el('menu-cuenta').hidden) { this.menuCuenta(false); this.el('btn-cuenta').focus(); }
     });
-    // Restablecer es herramienta de prueba: con datos reales no se conecta
-    if (SRP.CONFIG.ES_FICTICIO) this.el('btn-restablecer').addEventListener('click', async () => {
-      // Lo que se pierde, con números: «todo lo capturado» no dice cuánto
-      const regs = (await SRP.almacen.todos('plantaciones')).filter(r => r.estatus !== 'eliminado').length;
-      const jors = (await SRP.almacen.todos('jornadas')).length;
-      const cola = SRP.envio.simulado() && SRP.sesion.usuario ? (await SRP.envio.cola()).length : 0;
-      const ok = await this.confirmar({ titulo: 'Restablecer los datos de prueba', pregunta: '¿Borrar lo capturado en este equipo y volver a los datos de ejemplo?',
-        puntosTitulo: 'Qué pasa:', puntos: [
-          'Se borran ' + regs + (regs === 1 ? ' registro' : ' registros') + ' y ' + jors + (jors === 1 ? ' jornada' : ' jornadas') + '.',
-          cola ? (cola === 1 ? '1 registro no se ha enviado y se perderá.' : cola + ' registros no se han enviado y se perderán.') : '',
-          'Se cierra la sesión.'], irreversible: true, boton: 'Restablecer', icono: 'basura' });
-      if (!ok) return;
-      this.cerrarDatosPrueba();
-      await SRP.almacen.restablecer();
-      await SRP.ref.recargar();
-      SRP.formulario.limpiar();
-      SRP.sesion.cerrar();
-      this.mostrarAcceso();
-      SRP.util.anunciar('Datos de prueba restablecidos.');
-    });
+    if (SRP.prueba) SRP.prueba.iniciar(salir);
   },
 
   /* Cerrar sesión con algo sin enviar: se queda en el teléfono y sale cuando esa persona vuelva a entrar aquí,
@@ -355,12 +325,6 @@ SRP.app = {
     });
   },
 
-  // La ventana «Datos de prueba» se cierra al terminar lo que hizo, para que se lea el aviso
-  cerrarDatosPrueba() { const d = this.el('dlg-prueba'); if (d.open) d.close(); },
-
-  // Las cuentas de prueba que se ofrecen al entrar: una por rol distinto
-  CUENTAS_POR_ROL: ['u-admin-1', 'u-dir-1', 'u-coord-1', 'u-cabo-1', 'u-dir-alc', 'u-coord-alc', 'u-cabo-alc'],
-
   /* CONTRASEÑA TEMPORAL. Con datos reales, quien entra con la temporal que le dio la Administración escribe
      una propia antes de seguir. Se revisa aquí con las reglas del servicio, para decir de una vez qué falta, y
      el servicio la vuelve a revisar. */
@@ -425,10 +389,7 @@ SRP.app = {
     this.menuCuenta(false);
     this.el('navegacion').hidden = true;
     this.el('encabezado-usuario').hidden = true;
-    this.el('herramientas-prueba').hidden = true;
-    this.el('caja-demo').hidden = true;
-    this.el('btn-datos-prueba').hidden = true;
-    this.cerrarDatosPrueba();
+    if (SRP.prueba) SRP.prueba.alSalir();
     // Ninguna ventana de la sesión que terminó se queda encima de la entrada
     document.querySelectorAll('dialog[open]').forEach(d => d.close());
     this.el('form-acceso').hidden = false;
@@ -437,26 +398,7 @@ SRP.app = {
     this.el('form-acceso').reset();
     this.el('acceso-errores').hidden = true;
     SRP.util.erroresEnCampos([], ['acceso-correo', 'acceso-clave']);
-    const prueba = this.el('acceso-prueba');
-    prueba.hidden = !SRP.CONFIG.ES_FICTICIO;
-    if (!prueba.hidden) {
-      /* UNA CUENTA POR ROL DISTINTO: los cuatro perfiles de la Secretaría y los tres de una
-         institución de fuera, que dicen cuál («Cabo, Alcaldía Iztapalapa»). Las demás cuentas de
-         arranque y las de los datos de demostración existen —son dueñas de sus jornadas— pero no
-         se listan: no enseñan nada distinto. Las que se dan de alta en Usuarios sí aparecen, en su
-         grupo, para probarlas. */
-      const esc = SRP.util.escapar, rango = { ADMIN: 0, DIRECTIVO: 1, COORDINADOR: 2, CABO: 3 };
-      const orden = u => [SRP.ref.esSedema(u.organizacion_id) ? 0 : 1, rango[u.perfil] ?? 4, SRP.util.nombreCompleto(u)];
-      const comparar = (a, b) => { const x = orden(a), y = orden(b); for (let i = 0; i < x.length; i++) { if (x[i] < y[i]) return -1; if (x[i] > y[i]) return 1; } return 0; };
-      const opcion = u => '<option value="' + esc(u.id) + '">' + esc(SRP.util.nombreCompleto(u) + ' — ' + SRP.permisos.de(u).etiqueta +
-        (SRP.ref.esSedema(u.organizacion_id) ? '' : ', ' + SRP.ref.nombreOrganizacion(u.organizacion_id))) + '</option>';
-      const pueden = SRP.ref.usuarios.filter(u => u.activo && SRP.ref.accesoOrganizacion(SRP.ref.organizacionDe(u)).ok).sort(comparar);
-      const deArranque = new Set(((SRP.DATOS_FICTICIOS || {}).usuarios || []).map(u => u.id));
-      const porRol = pueden.filter(u => this.CUENTAS_POR_ROL.includes(u.id));
-      const propias = pueden.filter(u => !deArranque.has(u.id) && !(SRP.demo && SRP.demo.es(u.id)));
-      this.el('sel-usuario-prueba').innerHTML = porRol.map(opcion).join('') +
-        (propias.length ? '<optgroup label="Cuentas dadas de alta en Usuarios">' + propias.map(opcion).join('') + '</optgroup>' : '');
-    }
+    if (SRP.prueba) SRP.prueba.ofrecerCuentas();
     this.mostrarVista('acceso');
   },
 
@@ -467,10 +409,8 @@ SRP.app = {
     this.el('btn-cuenta').setAttribute('aria-label', 'Cuenta: ' + SRP.util.nombreCompleto(u) + ', ' + p.etiqueta + '. Abrir menú');
     this.el('usuario-perfil').textContent = p.etiqueta;
     this.el('encabezado-usuario').hidden = false;
-    this.el('btn-cambiar-perfil').hidden = !SRP.CONFIG.ES_FICTICIO;
     this.el('navegacion').hidden = false;
-    this.el('herramientas-prueba').hidden = !SRP.CONFIG.ES_FICTICIO;
-    this.el('btn-datos-prueba').hidden = !SRP.CONFIG.ES_FICTICIO;
+    if (SRP.prueba) SRP.prueba.alEntrar();
     if (SRP.demo) SRP.demo.pintar();
     const nav = this.el('navegacion');
     nav.querySelector('[data-vista="registrar"]').hidden = !p.registrar;
@@ -491,7 +431,7 @@ SRP.app = {
     // Quien supervisa entra a Supervisión; el cabo, a registrar
     this.mostrarVista(['institucion', 'todos'].includes(p.alcance) ? 'supervision' : p.registrar ? 'registrar' : 'registros');
     SRP.conexion.refrescar();
-    // Datos de prueba: al entrar se envía lo pendiente y, si no sale, lo dice la franja
+    // Con datos de prueba, al entrar se envía lo pendiente y, si no sale, lo dice la franja
     SRP.conexion.sugerirInstalar();   // en iPhone desde Safari, una vez por sesión y antes de capturar
     SRP.envio.alEntrar();   // la pastilla cuenta los registros del alcance de quien entró
     SRP.remoto.pintar();    // con datos reales, los avisos de lo enviado que todavía no llega

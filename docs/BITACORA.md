@@ -6837,3 +6837,35 @@ generados otra vez; los tres documentos.
 pide sacar del arranque de `js/app.js` y `js/envio.js` lo que sólo usa la versión de prueba: se deja para hacerlo con
 Liber, junto con el guion de vaciado, el instructivo y la renumeración a 1.0.0. La herramienta del paquete de la skill
 `proyecto-sia` es otra copia y no cambió.
+
+## Bloque 259 — La copia para el SIA sin nada de prueba (28-10-2026)
+
+**Versión 1.4.5.** M563, el pedido de Liber del 26-10-2026, y lo que quedaba de F4-03 (auditoría del 27-10-2026): la
+copia que se instala en el SIA ya no lleva, ni escondidos, los bloques de la versión de prueba. No cambia nada en
+pantalla, ni en la versión de prueba ni en la real.
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| La copia para el SIA | Quitaba los archivos de prueba, pero `index.html` conservaba, ocultos, la franja de datos ficticios, «Entrar como usuario de prueba», «Simular sin señal», «Datos de prueba», «Cambiar usuario» y el espejo de campos; `js/app.js` y la hoja de estilos decían «Datos de prueba» | `preparar_produccion.py` quita los seis bloques marcados «Sólo con datos de prueba» y se detiene si algún archivo de la copia dice todavía una de esas frases |
+| El arranque (`js/app.js`) | Conectaba los botones de prueba aunque no se usaran | Lo de la versión de prueba (la entrada con una cuenta de ejemplo, «Datos de prueba», «Restablecer», «Cambiar usuario», la franja y las cuentas por rol) pasa a `js/herramientas-prueba.js`, que la copia no lleva; el arranque lo llama sólo si existe |
+
+**Qué cambió.**
+- `js/herramientas-prueba.js` (nuevo), `js/app.js` y `js/demostracion.js` (cierra la ventana con el archivo nuevo).
+- `index.html`: las marcas de los seis bloques y el `<script>` del archivo nuevo, con los otros dos de la versión de
+  prueba. `css/estilos.css`: un comentario sin la frase.
+- `herramientas/preparar_produccion.py`: quita los bloques marcados y el archivo nuevo, y revisa las frases.
+- `pruebas/prueba_conexion.py`: con `--app`, comprueba que la copia no trae esos bloques ni sus frases, ni carga las
+  herramientas de prueba.
+- README, `docs/FASE2-Y-TRASPASO.md`, `docs/MEJORAS.md` (M563 hecha), `VERSION`, marcas de `index.html` y etapa de
+  `js/config.js`.
+
+**Verificación.**
+- `pruebas/prueba_conexion.py --app` sobre la copia: 129 de 129. La primera corrida se cayó por un error de la prueba
+  nueva (llamé `b` a una lista y ese nombre era el del navegador); se corrigió.
+- La entrega anterior (1.1) traía las seis frases en `index.html`, y «Datos de prueba» también en `js/app.js` y en la
+  hoja de estilos: las comprobaciones nuevas habrían fallado con ella. La copia nueva no trae ninguna.
+- `pruebas/prueba_conexion.py`: 126 de 126. `pruebas/auditoria.py`: 149 comprobaciones, 0 hallazgos.
+- `pruebas/por_tramos.py` (la prueba completa): 1,539 de 1,540, sin tramos detenidos, 47 min; sólo falló el Excel de
+  `originales/`.
+- GitHub: la corrida del bloque 257 (40648783369) se canceló al subir el 258, que la reemplaza; la del 258
+  (40650447843), en verde.

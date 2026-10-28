@@ -186,7 +186,8 @@ copia que se publica en el SIA la arma `herramientas/preparar_produccion.py`.
 - [x] La entrada como usuario de prueba permite entrar sin contraseña: no existe con `ES_FICTICIO: false`.
       Sí puede conservarse en el ambiente de pruebas del SIA, con `ES_FICTICIO: true`.
 - [x] Los datos de demostración (`js/demostracion.js`) y el espejo de campos (`js/espejo.js`): la copia real
-      no los lleva; sus botones y bloques se quedan en `index.html`, ocultos.
+      no los lleva, ni sus bloques de `index.html`: `preparar_produccion.py` los quita, con las herramientas de
+      prueba (`js/herramientas-prueba.js`), y revisa que no quede ninguna de sus frases (M563).
 - [x] **Vehículos:** los del catálogo de la app son ficticios y la copia real no los lleva. La lista real,
       que está en `originales/` y no se publica, va en el guion de datos de arranque del paquete.
 - [x] Áreas, instituciones, programas y solicitantes de arranque: los reales, en

@@ -7,8 +7,11 @@ Copia la aplicación (index.html, sw.js, el manifiesto, css/, js/, vendor/ y ass
     del servicio y desaparecen la banda de datos ficticios y las herramientas de prueba;
   - quita los archivos que sólo usa la versión de prueba, con su <script> en index.html: las cuentas de
     prueba (js/datos-ficticios.js), los vehículos con placas ficticias (assets/catalogos/catalogo-vehiculos.js),
-    la demostración (js/demostracion.js) y el espejo de campos (js/espejo.js). Sus botones y bloques se
-    quedan en index.html, ocultos: con ES_FICTICIO en false nunca se muestran;
+    las herramientas de prueba (js/herramientas-prueba.js), la demostración (js/demostracion.js) y el espejo de
+    campos (js/espejo.js);
+  - quita de index.html los bloques que van entre «Sólo con datos de prueba: desde aquí» y «hasta aquí»: la
+    franja de datos ficticios, la entrada con una cuenta de prueba, sus opciones del menú de la cuenta, la ventana
+    de los datos de prueba y el espejo de campos. Al final revisa que ningún archivo de la copia diga sus frases;
   - no copia la copia ligera de la capa de calles (assets/calles/): en el SIA la calle la pone el servidor.
 El repositorio no cambia. La carpeta destino debe no existir o estar vacía. La copia se arma en una carpeta temporal
 y sólo pasa al destino si termina bien: un error no deja una copia a medias. Funciona con el fin de renglón que
@@ -19,8 +22,12 @@ import os, re, shutil, sys, tempfile
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ARCHIVOS = ['index.html', 'sw.js', 'manifest.webmanifest', 'VERSION']
 CARPETAS = ['css', 'js', 'vendor', 'assets']
-DE_PRUEBA = ['js/datos-ficticios.js', 'assets/catalogos/catalogo-vehiculos.js', 'js/demostracion.js', 'js/espejo.js']
-AVISO_DE_PRUEBA = '<!-- Sólo en la versión de prueba: la versión real no carga estos dos -->\n'
+DE_PRUEBA = ['js/datos-ficticios.js', 'assets/catalogos/catalogo-vehiculos.js', 'js/herramientas-prueba.js', 'js/demostracion.js', 'js/espejo.js']
+AVISO_DE_PRUEBA = '<!-- Sólo en la versión de prueba: la versión real no carga estos tres -->\n'
+# Los bloques de index.html que sólo existen con datos de prueba, y las frases que no deben quedar en la copia
+DESDE, HASTA = '<!-- Sólo con datos de prueba: desde aquí -->', '<!-- Sólo con datos de prueba: hasta aquí -->'
+FRASES_DE_PRUEBA = ['Entrar como usuario de prueba', 'Datos de prueba', 'Cambiar usuario (pruebas)', 'Simular sin señal (pruebas)',
+                    'Lo que viaja a la base de datos', 'Datos ficticios de prueba', DESDE, HASTA]
 PREFIJO = '\\\\?\\'
 
 
@@ -65,6 +72,17 @@ def armar(destino):
         cambiar(pagina, etiqueta.group(0).replace('\r\n', '\n'), '')
         os.remove(os.path.join(destino, rel.replace('/', os.sep)))
 
+    # Los bloques que sólo existen con datos de prueba, con sus marcas
+    with open(pagina, encoding='utf-8', newline='') as f:
+        html = f.read()
+    bloques = re.findall(r'[ \t]*%s.*?%s[ \t]*\r?\n' % (re.escape(DESDE), re.escape(HASTA)), html, flags=re.S)
+    if not bloques or html.count(DESDE) != len(bloques) or html.count(HASTA) != len(bloques):
+        sys.exit('index.html no trae sus bloques de prueba bien marcados: «%s» … «%s»' % (DESDE, HASTA))
+    for b in bloques:
+        html = html.replace(b, '', 1)
+    with open(pagina, 'w', encoding='utf-8', newline='') as f:
+        f.write(html)
+
     # Lo que index.html pide existe en la copia, y nada de lo quitado se pide
     with open(pagina, encoding='utf-8') as f:
         html = f.read()
@@ -76,6 +94,18 @@ def armar(destino):
     with open(os.path.join(destino, 'js', 'config.js'), encoding='utf-8') as f:
         if 'ES_FICTICIO: false,' not in f.read():
             sys.exit('js/config.js no quedó con ES_FICTICIO en false')
+    # Ningún archivo de texto de la copia dice lo que sólo existe en la versión de prueba
+    con_frases = []
+    for carpeta, _, nombres in os.walk(destino):
+        for n in nombres:
+            if n.rsplit('.', 1)[-1] in ('html', 'js', 'css', 'json', 'webmanifest', 'txt', 'md'):
+                with open(os.path.join(carpeta, n), encoding='utf-8', errors='replace') as f:
+                    texto = f.read()
+                dichas = [x for x in FRASES_DE_PRUEBA if x in texto]
+                if dichas:
+                    con_frases.append('%s: %s' % (os.path.relpath(visible(os.path.join(carpeta, n)), visible(destino)), ', '.join(dichas)))
+    if con_frases:
+        sys.exit('La copia todavía dice lo de la versión de prueba:\n  ' + '\n  '.join(con_frases))
     return re.search(r'js/config\.js\?v=([^"]+)"', html).group(1)
 
 

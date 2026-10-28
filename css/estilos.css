@@ -1225,7 +1225,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .sup-esp-barra rect { fill: var(--exito); }
 .sup-tabla-cabos .enlace-fila { display: inline; width: auto; min-height: 0; padding: var(--e-1) 0; border: 0; background: none; color: var(--acento); font-weight: 600;
   text-decoration: underline; text-underline-offset: 3px; }
-/* Ventana «Datos de prueba»: demostración y restablecer, separados por una línea */
+/* Ventana de las herramientas de prueba: demostración y restablecer, separados por una línea */
 .demo-caja { margin-top: var(--e-3); padding-top: var(--e-3); border-top: 1px dashed var(--borde-suave); }
 .dialogo-cabecera + .demo-caja { margin-top: 0; padding-top: 0; border-top: 0; }
 .demo-titulo { margin: 0 0 var(--e-1); font-size: var(--t-s); font-weight: 600; color: var(--texto); }
