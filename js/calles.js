@@ -27,11 +27,16 @@ SRP.calles = {
     return a && b && a !== b ? 'entre ' + a + ' y ' + b : a || b ? 'a la altura de ' + (a || b) : '';
   },
 
-  // «Calle secundaria · Alcaldía Benito Juárez», «Vía de acceso controlado · Gobierno de CDMX»
+  /* «Calle secundaria · la atiende la Alcaldía Benito Juárez», «Vía de acceso controlado · la atiende el Gobierno de
+     CDMX»: dicho así no se lee como la alcaldía del árbol, que va en otro renglón */
   textoRed(r) {
     const red = r.vialidad_red === 'primaria' ? (r.vialidad_tipo === 'Vía de acceso controlado' ? 'Vía de acceso controlado' : 'Vialidad primaria')
       : r.vialidad_red === 'carretera o camino' ? 'Carretera o camino' : 'Calle secundaria';
-    return red + ' · ' + (r.calle_atiende || 'quién la atiende, por confirmar');
+    return red + ' · ' + this.laAtiende(r.calle_atiende);
+  },
+  laAtiende(t) {
+    if (!t) return 'quién la atiende, por confirmar';
+    return /^Alcaldías /.test(t) ? 'la atienden las ' + t : /^Alcaldía /.test(t) ? 'la atiende la ' + t : /^Gobierno /.test(t) ? 'la atiende el ' + t : 'la atiende ' + t;
   },
 
   // El renglón «Calle» del detalle del árbol

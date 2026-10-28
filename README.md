@@ -313,7 +313,7 @@ versión se escribe en un solo lugar del código.
 **El archivo `VERSION`, en la raíz, lleva el mismo número** (lo pide la guía del SIA, sección 8); la prueba
 falla si no coincide con la marca. Ese número se ve siempre en la franja fija de arriba. Hasta la 0.9.78 decía
 «Versión de prueba 0.9.N»; desde la versión 1, la que se entrega al SIA para instalar, dice «Versión» y el número de `VERSION`
-(hoy, «Versión 1.4.8»).
+(hoy, «Versión 1.4.9»).
 
 **Las pruebas de GitHub, en verde.** Cada subida corre la prueba completa en GitHub (`.github/workflows/pruebas.yml`;
 el indicador de arriba dice cómo salió la última). Antes de cerrar un bloque se revisa que la corrida del commit
@@ -483,8 +483,9 @@ más cercana y la pantalla lo dice. La caja de `MAPA.LIMITES` sólo es el límit
 filtro. La aplicación no abre si falta alguna de las tres capas; un registro sin alcaldía o sin las
 tres capas en su `capa_version` no recibe folio (nunca `EXT-000` por una capa ausente). El folio
 empieza con el **prefijo de la celda UGA, que no es la alcaldía del árbol** en el 4.3 % del
-territorio. El detalle y el PDF dicen con qué capas se derivó cada registro, y si el punto quedó más
-cerca del borde de su celda que la precisión del GPS, lo marca como «celda incierta».
+territorio. Cada registro guarda con qué capas se derivó y a cuántos metros quedó del borde de su celda
+(`uga_borde_m`): si es menos que la precisión del GPS, la celda del folio podría ser la vecina y la decide el
+servidor.
 
 ## La calle de cada árbol
 

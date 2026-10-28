@@ -541,16 +541,12 @@ SRP.formulario = {
     cajaAvisos.innerHTML = avisos.length ? '<p class="revision-avisos-titulo">' + (avisos.length === 1 ? 'Hay algo que revisar' : 'Hay ' + avisos.length + ' cosas que revisar') + '</p><ul>' +
       avisos.map(a => '<li data-tipo="' + a.tipo + '">' + SRP.util.escapar(a.texto) + '</li>').join('') + '</ul>' : '';
 
-    // El identificador se fija aquí y es el que se guarda: así la ficha muestra el real.
+    // El identificador se fija aquí y es el que se guarda
     if (!this.estado.idPrevisto) this.estado.idPrevisto = SRP.util.generarId();
-    const id = this.estado.editando ? this.estado.editando.id : this.estado.idPrevisto;
 
     const v = this.valores();
     const esp = SRP.ref.especieDe(v);
     const esc = SRP.util.escapar;
-    const editando = this.estado.editando;
-    const folio = editando && SRP.folio.valido(editando.folio) ? SRP.folio.textoLargo(editando)
-      : await (async () => { const f = await SRP.folio.previsto(Object.assign({ id }, v)); return f || SRP.folio.PROVISIONAL; })();
 
     // Orden del formulario: primero lo que el cabo revisa; los datos que pone el sistema, al final
     // y en chico. La ubicación no se teclea: se corrige volviendo a colocar el punto.
@@ -570,12 +566,8 @@ SRP.formulario = {
       v.comentarios ? ['Comentarios', esc(v.comentarios), 'comentarios'] : null,
       ['Fotografía', SRP.util.fotoSegura(v.foto_base64)
         ? '<img class="revision-foto" src="' + SRP.util.fotoSegura(v.foto_base64) + '" alt="Fotografía del árbol que se va a registrar">'
-        : 'Sin fotografía', 'foto'],
-      // El folio va a la vista, bajo la fotografía, y con datos de prueba se enseña el que
-      // tocará; el identificador interno no se muestra
-      ['Folio', '<span class="folio-provisional">' + esc(folio) + '</span>' +
-        (SRP.folio.celdaIncierta(v) ? '<span class="revision-sub">' + esc(SRP.folio.celdaIncierta(v)) + '</span>' : ''), null],
-      ['Cabo', esc(this.nombreCabo()), null]
+        : 'Sin fotografía', 'foto']
+      // Sin folio ni «Cabo», igual que el detalle del árbol: el folio lo pone el servidor y quien registra es quien entró
     ];
 
     this.el('revision-lista').innerHTML = filas.filter(Boolean).map(([etiqueta, valor, campo]) => {
@@ -607,15 +599,6 @@ SRP.formulario = {
     return 'GPS del teléfono<br><span class="precision" data-nivel="' + n.nivel + '"><span class="precision-punto" aria-hidden="true"></span>' +
       n.texto + ' · ±' + Math.round(v.gps_precision_m) + ' m</span>' +
       (n.nivel === 'buena' || !conConsejo ? '' : '<span class="precision-consejo">Revise el punto; puede corregirlo con «Editar» en Coordenadas.</span>');
-  },
-
-  /* Quién queda como autor. En alta es quien tiene la sesión abierta —el encabezado lo dice
-     arriba, por eso no hay campo—; en edición sigue siendo el cabo que lo capturó, que no tiene
-     por qué ser quien corrige. */
-  nombreCabo() {
-    return this.estado.editando
-      ? SRP.ref.nombreUsuario(this.estado.editando.cabo_id)
-      : SRP.util.nombreCompleto(SRP.sesion.usuario);
   },
 
   dibujarMapaRevision(lat, lng) {

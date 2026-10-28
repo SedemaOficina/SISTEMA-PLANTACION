@@ -1741,3 +1741,21 @@ día), como Dirección, «Todo».
 | R-1 A | Hecho | Con 21 árboles, «20 %» y «4 %» y la columna en 92 %; ahora 19.0 % y 4.8 %, con la nota del redondeo. La comprobación que fallaba según la fecha ya no depende de ella | `prueba.py` (ctx104 y el reporte por secciones) |
 
 Verificación: la prueba completa, 1,562 de 1,563 (sólo el Excel conocido); ctx104, 15 de 15; `prueba_conexion.py` 132 de 132; `auditoria.py` 151 y 0 hallazgos; el recuento independiente de lo guardado, 0 diferencias en «Todo», «Compartidas» y «No compartidas»; el PDF revisado a la vista. Con esto el bloque 3 queda cerrado.
+
+### Bloque 5 · Pantalla y textos (bloque 264 del proyecto, versión 1.4.9)
+
+| Clave | Estado | Antes y después | Prueba permanente |
+|---|---|---|---|
+| C1-01 | Corregido | La franja de la Coordinación dice «Compartida · N cabos registrando, M terminó», a la vista en el teléfono, y abre «Cabos de apoyo» (P-8) | `prueba.py` (ctx105) |
+| C3-01 | Corregido | «Guardar» fijo al pie y a la vista sin desplazarse; instrucciones plegadas, abiertas la primera vez; buscador con más de 10 cabos; árboles de cada cabo y «tiene otra jornada abierta» (P-9) | `prueba.py` (ctx105 y ctx101) |
+| C6-01 | Corregido | El cabo marcado, con fondo azul claro, borde de 2 px y palomita (P-14) | `prueba.py` (ctx105) |
+| C5-03 | Corregido | El siguiente paso de una compartida dice que registran la Coordinación y sus cabos de apoyo (P-10) | `prueba.py` (ctx105) |
+| C2-01 | Corregido | «Terminar mi parte» dice que la seguirá viendo en Jornadas (P-13) | `prueba.py` (ctx105) |
+| C1-02 | Corregido | «la atiende la Alcaldía…» (P-11) | `prueba.py` (ctx100) |
+| C2-02 | Corregido | La cuenta de los segundos que faltan y el mensaje al terminar con precisión baja (P-12) | `prueba.py` (el GPS que afina) |
+| A6-01 | Corregido | El círculo, de 2.5 px sobre un halo blanco de 1 px (P-19) | `prueba.py` (la precisión a la vista) |
+| C5-02 · decisión 6 a | Corregido | «Coordinación» y «Dirección» en la aplicación, el servidor y los PDF (P-18). Los manuales se regeneran en el bloque 6 | `auditoria.py`: ningún «Coordinador», «Directivo» ni «(coordinación)» |
+| C5-04 | Corregido | «Revise antes de guardar» sin folio ni «Cabo», como el detalle (P-26) | `prueba.py` (la ficha) |
+| A1-05 | Resuelto antes | Con la decisión 19 b, en el bloque 256 (`<html data-avisos>`) | `prueba.py` (ctx102) |
+
+Verificación: la prueba completa, 1,552 de 1,554 (el Excel conocido y una prueba con el texto anterior de la calle, corregida) y ctx102 repetido 3 de 3 y con el equipo lento; ctx105, 9 de 9; `npm test` 117 de 117; `prueba_conexion.py` 132 de 132; `auditoria.py` 152 y 0 hallazgos; la franja y la ventana revisadas a la vista en el teléfono. Con esto el bloque 5 queda cerrado.

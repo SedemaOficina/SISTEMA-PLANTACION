@@ -52,6 +52,7 @@ SRP.activa = {
     this.el('btn-franja-apoyos').addEventListener('click', async () => {
       if (this.jornada) SRP.jornadas.abrirApoyos((await SRP.almacen.uno('jornadas', this.jornada.id)) || this.jornada);
     });
+    this.el('franja-jornada-texto').addEventListener('click', (e) => { if (e.target.closest('[data-apoyos]')) this.el('btn-franja-apoyos').click(); });
     // «¿Quién registra en esta jornada?»: con «Varios cabos» se marcan los cabos de apoyo y la jornada nace compartida
     this.el('ini-quien').addEventListener('click', (e) => {
       const b = e.target.closest('.chip[data-quien]'); if (!b) return;
@@ -480,6 +481,13 @@ SRP.activa = {
     b.textContent = this.detalleAbierto ? 'Ocultar detalle' : 'Ver detalle';
   },
 
+  // «Compartida · 1 cabo registrando, 1 terminó»: los cabos de apoyo vigentes y los que terminaron su parte
+  textoCompartida(j) {
+    const v = SRP.permisos.vigentes(j).length, t = (j.cabos_apoyo || []).filter(a => a.fin === 'terminado').length;
+    const partes = [v ? v + (v === 1 ? ' cabo registrando' : ' cabos registrando') : '', t ? t + (t === 1 ? ' terminó' : ' terminaron') : ''].filter(Boolean);
+    return 'Compartida' + (partes.length ? ' · ' + partes.join(', ') : '');
+  },
+
   pintarFranja(j, registros, editando) {
     const f = this.el('franja-jornada');
     f.hidden = !j;
@@ -494,6 +502,9 @@ SRP.activa = {
     // En una jornada compartida, el cabo de apoyo ve quién coordina y cuántos árboles son suyos
     const apoyo = !editando && this.esApoyo(j), u = SRP.sesion.usuario;
     const suyos = apoyo ? registros.filter(r => r.cabo_id === u.id).length : 0;
+    // La Coordinación ve, a la vista también en el teléfono, cómo van sus cabos de apoyo; al tocarlo, «Cabos de apoyo»
+    const comp = !editando && !apoyo && SRP.jornadas.compartida(j) ? this.textoCompartida(j) : '';
+    const tocaApoyos = comp && SRP.permisos.puede('jornada.compartir', j);
     this.el('franja-jornada-texto').innerHTML =
       '<span class="franja-jornada-titulo"><strong>' + esc(j.nombre) + '</strong></span>' +
       (apoyo ? '<span class="franja-jornada-coordina">Jornada compartida · coordina <b>' + esc(SRP.ref.nombreUsuario(j.cabo_id)) + '</b></span>' : '') +
@@ -501,13 +512,14 @@ SRP.activa = {
       '<span class="franja-jornada-avance"><b>' + n + (meta !== null ? ' de ' + meta : '') + (n === 1 && meta === null ? ' árbol' : ' árboles') + '</b>' +
         (apoyo ? ' · ' + suyos + (suyos === 1 ? ' suyo' : ' suyos') : '') +
         (meta ? '<svg class="jornada-barra" data-tono="' + (n >= meta ? 'ok' : 'curso') + '" viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true"><rect width="' + Math.min(100, Math.round(n / meta * 100)) + '" height="8"/></svg>' : '') + '</span>' +
+      (comp ? '<span class="franja-jornada-compartida">' + (tocaApoyos ? '<button type="button" class="franja-compartida-boton" data-apoyos>' + esc(comp) + '</button>' : esc(comp)) + '</span>' : '') +
       '<span class="franja-jornada-datos">' + esc(SRP.util.textoDias(SRP.util.diasJornada(j, registros))) + (this.lugarDe(j) ? ' · ' + esc(this.lugarDe(j)) : '') +
         // La prioridad de la jornada, la de la colonia donde se ubicó, junto a ella; después la dirección
         (SRP.prioritarias.marca(SRP.prioritarias.deJornada(registros, j)) ? ' · ' + SRP.prioritarias.marca(SRP.prioritarias.deJornada(registros, j)) : '') +
         (j.ubicacion ? ' · ' + esc(j.ubicacion) : '') + (j.programa_id ? ' · ' + esc(SRP.ref.nombreCatalogo(j.programa_id)) : '') + '' +
       (j.estatus === 'cerrada' ? ' · cerrada' : '') + (atrasada ? ' · <b>no es de hoy</b>' : '') +
       (j.relevo_id && j.relevo_id !== j.cabo_id ? ' · relevo de ' + esc(SRP.ref.nombreUsuario(j.cabo_id)) : '') +
-      (!apoyo && SRP.jornadas.compartida(j) ? ' · compartida' : '') + '</span>' +
+      '</span>' +
       (SRP.solicitud.es(j) ? '<span class="franja-jornada-solicitud">' + SRP.solicitud.insignia(j) + '</span>' : '');
     this.el('franja-jornada-acciones').hidden = !!editando;
     this.el('btn-franja-editar').hidden = !!editando || !SRP.permisos.puede('jornada.editar', j);
@@ -887,7 +899,7 @@ SRP.activa = {
     const suyos = (await this.registrosDe(j)).filter(r => r.cabo_id === u.id).length;
     const arboles = suyos + (suyos === 1 ? ' árbol suyo' : ' árboles suyos');
     const ok = await SRP.app.confirmar({ titulo: 'Terminar mi parte', pregunta: '¿Terminar su parte en «' + j.nombre + '», con ' + arboles + '?',
-      puntos: ['Lo que tenga por enviar se envía en cuanto haya señal.', 'La jornada sale de su lista y ya no registra en ella.', 'La Coordinación cierra la jornada y genera el reporte.'],
+      puntos: ['Lo que tenga por enviar se envía en cuanto haya señal.', 'Ya no podrá registrar en ella; la seguirá viendo en Jornadas.', 'La Coordinación cierra la jornada y genera el reporte.'],
       boton: 'Terminar mi parte', icono: 'palomita' });
     if (!ok) return;
     const ahora = SRP.util.ahoraISO();

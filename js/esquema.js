@@ -234,7 +234,7 @@ SRP.ESQUEMA = {
     true,
     null,
     null,
-    "Detalle › Datos del sistema («A N m del borde de la celda»); «Celda incierta» junto al folio si es menor que la precisión del GPS"
+    "No se muestra: va a la base"
    ],
    [
     "capa_version",

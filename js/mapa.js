@@ -282,26 +282,35 @@ SRP.mapa = {
     return { nivel: 'baja', texto: 'Precisión baja', consejo: 'Espere unos segundos al aire libre y vuelva a ubicar o arrastre el punto hasta el árbol.' };
   },
 
-  // La franja bajo el mapa con la insignia de precisión y el círculo del margen sobre el mapa.
-  // Mientras el GPS se sigue escuchando, lo dice en lugar del consejo, con su tope: no hace falta esperarlo
+  /* La franja bajo el mapa con la insignia de precisión y el círculo del margen sobre el mapa.
+     Mientras el GPS se sigue escuchando, lo dice en lugar del consejo, con los segundos que faltan: no hace falta
+     esperarlo. La cuenta cambia cada segundo sólo a la vista; el lector de pantalla oye «hasta 30 s» una vez, no un
+     número por segundo. Si se acabó el tiempo y la precisión sigue baja, dice qué hacer */
   mostrarPrecision(m) {
-    const n = this.nivelPrecision(m);
+    const n = this.nivelPrecision(m), tope = Math.round(SRP.CONFIG.MAPA.GPS_AFINAR_MS / 1000);
     const p = document.getElementById('mapa-estado');
     p.dataset.tipo = 'normal';
-    const consejo = this.vigilancia != null
-      ? 'Afinando la lectura del GPS, hasta ' + Math.round(SRP.CONFIG.MAPA.GPS_AFINAR_MS / 1000) + ' s. Mientras, puede llenar lo demás.' : n.consejo;
+    const consejo = this.vigilancia != null ? 'Afinando la lectura del GPS (<span aria-hidden="true">faltan <span data-faltan>' + this.faltanAfinado() + '</span> s</span>' +
+        '<span class="oculto-visual">hasta ' + tope + ' s</span>). Mientras, puede llenar lo demás.'
+      : this.sinMejora && n.nivel === 'baja' ? 'El GPS no mejoró en ' + tope + ' s. Vaya a un lugar abierto y toque «Actualizar ubicación», o arrastre el punto hasta el árbol.'
+      : n.consejo;
     p.innerHTML = '<span class="precision" data-nivel="' + n.nivel + '"><span class="precision-punto" aria-hidden="true"></span>' +
       n.texto + ' · ±' + Math.round(m) + ' m</span>' + (consejo ? ' <span class="precision-consejo">' + consejo + '</span>' : '');
     this.dibujarMargen(m, n.nivel);
   },
+  faltanAfinado() { return Math.max(1, Math.ceil((this.inicioAfinado + SRP.CONFIG.MAPA.GPS_AFINAR_MS - Date.now()) / 1000)); },
 
-  // Círculo con el margen del GPS: se ve cuánto terreno cabe en «±m». Sólo existe para puntos del GPS
+  /* Círculo con el margen del GPS: se ve cuánto terreno cabe en «±m». Sólo existe para puntos del GPS. El trazo de
+     2.5 px va sobre un halo blanco de 1 px a cada lado: se distingue sobre la imagen de satélite y sobre el mapa de calles */
   dibujarMargen(m, nivel) {
     if (this.margen) { this.margen.remove(); this.margen = null; }
     if (!this.mapa || m == null || this.lat == null) return;
     // Los mismos tres colores de la insignia de precisión, leídos de la hoja de estilos
-    const color = SRP.util.color({ buena: 'exito', aceptable: 'editar', baja: 'error' }[nivel]);
-    this.margen = L.circle([this.lat, this.lng], { radius: m, color, weight: 1.5, fillColor: color, fillOpacity: 0.12, interactive: false }).addTo(this.mapa);
+    const color = SRP.util.color({ buena: 'exito', aceptable: 'editar', baja: 'error' }[nivel]), punto = [this.lat, this.lng];
+    this.margen = L.layerGroup([
+      L.circle(punto, { radius: m, color: SRP.util.color('fondo'), weight: 4.5, fill: false, interactive: false }),
+      L.circle(punto, { radius: m, color, weight: 2.5, fillColor: color, fillOpacity: 0.12, interactive: false })
+    ]).addTo(this.mapa);
   },
 
   /* Coloca el punto y deja constancia de cómo llegó ahí.
@@ -381,14 +390,20 @@ SRP.mapa = {
     };
     this.vigilancia = navigator.geolocation.watchPosition(lectura, error, { enableHighAccuracy: true, timeout: c.GPS_ESPERA_MS, maximumAge: 0 });
     // Si no llega ninguna lectura, el tiempo de espera de la primera decide; si ya llegó, se afina hasta aquí
-    this.finAfinado = setTimeout(() => { if (mejor !== null) this.detenerAfinado(); }, c.GPS_AFINAR_MS);
+    this.inicioAfinado = Date.now();
+    this.finAfinado = setTimeout(() => { if (mejor !== null) this.detenerAfinado(true); }, c.GPS_AFINAR_MS);
+    // La cuenta de los segundos que faltan, cada segundo, aunque no llegue otra lectura
+    this.relojAfinado = setInterval(() => { const s = document.querySelector('#mapa-estado [data-faltan]'); if (s) s.textContent = this.faltanAfinado(); }, 1000);
   },
 
-  detenerAfinado() {
+  // `porTiempo`: se acabó el tiempo de afinar sin llegar a precisión buena
+  detenerAfinado(porTiempo) {
     const estaba = this.vigilancia != null;
     if (estaba && navigator.geolocation) navigator.geolocation.clearWatch(this.vigilancia);
     this.vigilancia = null;
+    this.sinMejora = !!porTiempo;
     clearTimeout(this.finAfinado); this.finAfinado = null;
+    clearInterval(this.relojAfinado); this.relojAfinado = null;
     if (estaba && this.origen === 'gps' && this.precision != null) this.mostrarPrecision(this.precision);
   },
 

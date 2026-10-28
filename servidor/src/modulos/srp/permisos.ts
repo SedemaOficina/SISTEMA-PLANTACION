@@ -30,8 +30,8 @@ export const SEDEMA = "o-sedema";
 
 export const PERFILES: Readonly<Record<string, Capacidades>> = {
   CABO: { etiqueta: "Cabo", alcance: "propios", registrar: true, editar: true, eliminar: true, eliminarJornadaVacia: true, relevar: false, catalogos: false, usuarios: false, galeria: true },
-  COORDINADOR: { etiqueta: "Coordinador", alcance: "institucion", registrar: true, editar: true, eliminar: true, eliminarJornadaVacia: true, relevar: true, catalogos: false, usuarios: false, galeria: true },
-  DIRECTIVO: { etiqueta: "Directivo", alcance: "todos", registrar: false, editar: false, eliminar: false, eliminarJornadaVacia: false, relevar: false, catalogos: false, usuarios: false, galeria: true },
+  COORDINADOR: { etiqueta: "Coordinación", alcance: "institucion", registrar: true, editar: true, eliminar: true, eliminarJornadaVacia: true, relevar: true, catalogos: false, usuarios: false, galeria: true },
+  DIRECTIVO: { etiqueta: "Dirección", alcance: "todos", registrar: false, editar: false, eliminar: false, eliminarJornadaVacia: false, relevar: false, catalogos: false, usuarios: false, galeria: true },
   ADMIN: { etiqueta: "Administración global", alcance: "todos", registrar: false, editar: true, eliminar: true, eliminarJornadaVacia: true, relevar: false, catalogos: true, usuarios: true, galeria: true },
 };
 

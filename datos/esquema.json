@@ -408,8 +408,8 @@
           "nulo": true,
           "origen": "Capa",
           "dominio": "Metros enteros ≥ 0; nulo sin celda",
-          "pantalla": "Detalle › Datos del sistema («A N m del borde de la celda»); «Celda incierta» junto al folio si es menor que la precisión del GPS",
-          "regla": "Distancia del punto al borde de su celda UGA, al derivar. Si es menor que gps_precision_m, la celda del folio podría ser la vecina: la pantalla lo dice y el servidor la confirma en la Fase 2"
+          "pantalla": "No se muestra: va a la base",
+          "regla": "Distancia del punto al borde de su celda UGA, al derivar. Si es menor que gps_precision_m, la celda del folio podría ser la vecina: el servidor la decide con la regla que fije el SIA"
         },
         {
           "campo": "capa_version",

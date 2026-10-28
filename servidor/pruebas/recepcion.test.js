@@ -110,6 +110,9 @@ const arbol = (jornadaId, extra = {}) => ({ id: uuid(), jornada_id: jornadaId, .
   fecha_plantacion: HOY, comentarios: 'Árbol de prueba', fecha_registro: new Date().toISOString(),
   programa_id: 'p-otro', folio: 'XXX-000-00001', uga: 'ZZZ-999', alcaldia: 'Inventada', cabo_id: uuid(), estatus: 'eliminado', ...extra });
 
+// Capturado claramente después de lo último que hizo el servidor: la misma hora, al milisegundo, cuenta como «antes»
+const despuesDeAhora = () => ({ fecha_registro: new Date(Date.now() + 2000).toISOString() });
+
 const ubicado = async () => (await admin.query('SELECT * FROM srp.derivar($1, $2)', [PUNTO.lat, PUNTO.lng])).rows[0];
 const consecutivo = (folio) => Number(folio.slice(-5));
 let J1, A1, A2;
@@ -644,14 +647,14 @@ test('la jornada compartida: la Coordinación que la abrió agrega cabos de apoy
   assert.equal(Date.parse(t1.version), Date.parse(vigente), 'lo que la Coordinación tenga por enviar no choca con esto');
   assert.deepEqual(t1.fila.cabos_apoyo.map((a) => [a.cabo_id, a.fin]), [[CABO.id, 'terminado'], [CABO2.id, null]]);
   assert.equal((await c1.una('jornada.terminar', { id: J.id })).repetido, true, 'un reenvío no se repite');
-  const tarde1 = await c1.una('registro.crear', arbol(J.id));
+  const tarde1 = await c1.una('registro.crear', arbol(J.id, despuesDeAhora()));
   assert.deepEqual([tarde1.codigo, tarde1.fin], ['FUERA_DE_LA_JORNADA', 'terminado']);
   assert.match(tarde1.mensaje, /^Este árbol se capturó después de que usted terminó su parte en «Jornada compartida de prueba», a las \d\d:\d\d\. Páselo a otra jornada o elimínelo\.$/);
   assert.equal((await c3.una('jornada.terminar', { id: J.id })).codigo, 'SIN_PERMISO', 'quien no es de apoyo no termina nada');
   // La Coordinación lo vuelve a agregar y quita al otro: viaja lo que cambió
   const v = await coord.una('jornada.compartir', { id: J.id, agregar: [CABO.id], quitar: [CABO2.id] });
   assert.deepEqual(v.fila.cabos_apoyo.map((a) => [a.cabo_id, a.fin, a.hasta === null]), [[CABO.id, null, true], [CABO2.id, 'quitado', false]]);
-  assert.equal((await c2.una('registro.crear', arbol(J.id))).codigo, 'FUERA_DE_LA_JORNADA', 'al que quitaron');
+  assert.equal((await c2.una('registro.crear', arbol(J.id, despuesDeAhora()))).codigo, 'FUERA_DE_LA_JORNADA', 'al que quitaron');
   assert.equal((await coord.una('jornada.compartir', { id: J.id, agregar: [CABO.id] })).repetido, true, 'lo que ya está así no cambia nada');
   // La jornada al día, sola: la Coordinación y quien fue de apoyo la ven con todos sus árboles; otra cuenta, no
   const ver = async (t) => { const x = await t.pedir('/jornadas/' + J.id); return [x.estado, x.datos.jornada ? x.datos.plantaciones.length : null]; };
@@ -673,7 +676,7 @@ test('la compartida en campo: llega lo capturado antes de salir, un reenvío no 
   assert.equal(q.fila.cabos_apoyo.find((a) => a.cabo_id === CABO.id).fin, 'quitado');
   const tarde = await c1.una('registro.crear', arbol(J.id, { fecha_registro: antes }));
   assert.equal(tarde.estado, 'recibido', 'capturado antes de que lo quitaran: ' + JSON.stringify(tarde));
-  const despues = await c1.una('registro.crear', arbol(J.id));
+  const despues = await c1.una('registro.crear', arbol(J.id, despuesDeAhora()));
   assert.deepEqual([despues.codigo, despues.jornada, despues.fin], ['FUERA_DE_LA_JORNADA', 'Compartida en campo', 'quitado'], 'capturado después');
   assert.match(despues.mensaje, /^Este árbol se capturó después de que la Coordinación cerró su participación en «Compartida en campo», a las \d\d:\d\d\. Páselo a otra jornada o elimínelo\.$/);
   // El primer «agregar», reenviado con lo que conocía el teléfono, no vuelve a poner al que ya quitaron

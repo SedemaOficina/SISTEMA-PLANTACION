@@ -67,6 +67,15 @@ for f in glob.glob(APP + '/js/*.js') + [APP + '/index.html']:
     t = re.sub(r'<!--.*?-->', '', t, flags=re.S) if f.endswith('.html') else re.sub(r'/\*.*?\*/|(?<!:)//[^\n]*', '', t, flags=re.S)
     dispositivo += [os.path.basename(f) + ': ' + m.group(0)[:60] for m in re.finditer(r'''['">][^'"<>]*\bdispositivo[^'"<>]*''', t, flags=re.I)]
 mirar(not dispositivo, 'los textos dicen «teléfono» o «este equipo», no «dispositivo»', '; '.join(dispositivo[:4]))
+# Un nombre por papel: «Coordinación» y «Dirección» en todo, nunca «Coordinador», «Directivo» ni «(coordinación)», en la
+# aplicación y en el servidor, que da los mismos nombres. Los datos de prueba quedan fuera: su «Coordinador de cuadrilla»
+# es el cargo de una persona, no el nombre del perfil
+papeles = []
+for f in [x for x in glob.glob(APP + '/js/*.js') if not x.endswith(('datos-ficticios.js', 'demostracion.js'))] + [APP + '/index.html'] + glob.glob(APP + '/servidor/src/modulos/srp/*.ts'):
+    t = open(f, encoding='utf-8').read()
+    t = re.sub(r'<!--.*?-->', '', t, flags=re.S) if f.endswith('.html') else re.sub(r'/\*.*?\*/|(?<!:)//[^\n]*', '', t, flags=re.S)
+    papeles += [os.path.basename(f) + ': ' + m.group(0)[:60] for m in re.finditer(r'''['"`>][^'"`<>\n]*(\bCoordinador\b|\bDirectivo\b|\(coordinación\))[^'"`<>\n]*''', t)]
+mirar(not papeles, 'cada perfil tiene un solo nombre: «Coordinación» y «Dirección», no «Coordinador», «Directivo» ni «(coordinación)»', '; '.join(papeles[:4]))
 # El pie de «Por calle» y del informe lleva la cita de la capa de calles tal como la trae su índice: las fuentes, su
 # licencia y lo que hizo SEDEMA (condición de uso de la capa)
 import json as _json
@@ -90,8 +99,8 @@ with sync_playwright() as p:
     mirar(sorted(perfiles) == ['ADMIN','CABO','COORDINADOR','DIRECTIVO'],
           'el catálogo de perfiles es el acordado', str(perfiles))
     etiquetas = pg.evaluate("Object.values(SRP.PERFILES).map(p=>p.etiqueta)")
-    mirar('Cabo' in etiquetas and 'Coordinador' in etiquetas,
-          'las etiquetas dicen Cabo y Coordinador', str(etiquetas))
+    mirar(etiquetas[:3] == ['Cabo', 'Coordinación', 'Dirección'],
+          'las etiquetas dicen Cabo, Coordinación y Dirección', str(etiquetas))
 
     # --- 3. Lo guardado en el dispositivo ---
     d = pg.evaluate("""() => {
@@ -200,7 +209,7 @@ with sync_playwright() as p:
     mirar(not [o for o in opciones if 'no reconocido' in o or o.endswith('— Consulta')],
           'ninguna cuenta aparece con perfil no reconocido', str(opciones))
     mirar(any('— Cabo' in o for o in opciones), 'aparecen cuentas de Cabo', str(opciones))
-    mirar(any('— Coordinador' in o for o in opciones), 'aparece la cuenta de Coordinador')
+    mirar(any('— Coordinación' in o for o in opciones), 'aparece la cuenta de Coordinación')
     mirar(any('— Administración global' in o for o in opciones), 'aparece la cuenta de Administración')
     desconocidos = pg.evaluate("[...SRP.permisos.perfilesDesconocidos]")
     mirar(not desconocidos, 'ningún perfil desconocido apareció al pintar', str(desconocidos))

@@ -7029,3 +7029,59 @@ D344.
 - GitHub: la corrida del bloque 262 (40679948558), en verde.
 
 **Siguiente paso.** El bloque 5, la pantalla y los textos (P-8 a P-14, P-18, P-19 y P-26), en dos partes.
+
+## Bloque 264 — La pantalla y los textos (28-10-2026)
+
+**Versión 1.4.9.** El bloque 5 del plan de corrección de la auditoría del 27-10-2026, con la decisión 6 a (D339) y las
+muestras aprobadas (D342): P-8 a P-14, P-18, P-19 y P-26. El aviso de entrada del cabo de apoyo (A1-05) ya se resolvió
+en el bloque 256 con la decisión 19 b.
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| La franja de la Coordinación en una compartida (C1-01, P-8) | «· compartida» escondido en el detalle, que en el teléfono va plegado | «Compartida · 2 cabos registrando, 1 terminó», a la vista también en el teléfono; al tocarlo se abre «Cabos de apoyo» |
+| La ventana «Cabos de apoyo» (C3-01, P-9) | Seis pasos de instrucciones a la vista y «Guardar» al final, a más de una pantalla en el teléfono; sin buscador | «Guardar» fijo al pie; las instrucciones plegadas en «Cómo funciona una jornada compartida», abiertas sólo la primera vez; con más de 10 cabos, «Buscar cabo»; cada cabo dice cuántos árboles lleva y si hoy tiene otra jornada abierta |
+| Un cabo marcado (C6-01, P-14) | Renglón azul relleno, igual que el botón «Guardar» | Fondo azul claro, borde azul de 2 px y palomita |
+| El siguiente paso de una compartida (C5-03, P-10) | «Siguiente: registrar los árboles que faltan (lo hace el cabo) (9 de 60).» | «Siguiente: registrar los árboles que faltan (9 de 60); los registran la Coordinación y sus cabos de apoyo.» |
+| «Terminar mi parte» (C2-01, P-13) | «La jornada sale de su lista y ya no registra en ella.» | «Ya no podrá registrar en ella; la seguirá viendo en Jornadas.» |
+| La calle en el detalle (C1-02, P-11) | «Calle secundaria · Alcaldía Xochimilco», que se leía como la alcaldía del árbol | «Calle secundaria · la atiende la Alcaldía Xochimilco» (y «el Gobierno de CDMX», «las Alcaldías…») |
+| El GPS mientras afina (C2-02, P-12) | «Afinando la lectura del GPS, hasta 30 s.» y, al terminar con precisión baja, «Espere unos segundos…» | «Afinando la lectura del GPS (faltan 24 s).», con la cuenta a la vista (el lector de pantalla oye «hasta 30 s» una vez); al terminar con precisión baja, «El GPS no mejoró en 30 s. Vaya a un lugar abierto y toque «Actualizar ubicación», o arrastre el punto hasta el árbol.» |
+| El círculo de precisión (A6-01, P-19) | Trazo de 1.5 px, que casi no se distingue sobre el mapa de calles | Trazo de 2.5 px sobre un halo blanco de 1 px |
+| El nombre de cada perfil (C5-02, decisión 6 a, P-18) | «Coordinador», «(coordinación)» y «Coordinación»; «Directivo» y «Dirección» | «Coordinación» y «Dirección» en todo: el menú, Usuarios, el historial, los filtros y los PDF |
+| «Revise antes de guardar» (C5-04, P-26) | Terminaba con el folio y el nombre del propio cabo, que el detalle ya no enseña | Sin folio ni «Cabo», igual que el detalle |
+
+**Qué cambió.**
+- `js/jornada-activa.js` (la línea de la compartida en la franja y el texto de «Terminar mi parte»), `js/jornadas.js`
+  (la ventana «Cabos de apoyo», su buscador y el siguiente paso), `index.html` (la ventana), `css/estilos.css` (el
+  cabo marcado, las instrucciones plegadas y la línea de la franja) y `js/config.js` (la marca de instrucciones vistas).
+- `js/calles.js` («la atiende…»), `js/mapa.js` (la cuenta del GPS, su mensaje al terminar y el círculo con halo).
+- `js/permisos.js` y `servidor/src/modulos/srp/permisos.ts` (las etiquetas de los perfiles, iguales en los dos lados) y
+  `js/util.js` («(Coordinación)» en las listas).
+- `js/formulario.js` (la ficha sin folio ni «Cabo») y `js/folio.js` (sin el folio previsto ni la «celda incierta»,
+  que sólo usaba esa ficha). `datos/esquema.json`, `DICCIONARIO-DATOS.md`, `MAPEO-CAMPOS.md`, `js/esquema.js`,
+  `servidor/db/srp/02-srp-tablas.sql` y el README: `uga_borde_m` ya no se muestra; la celda la decide el servidor.
+- Pruebas: `pruebas/prueba.py`, sección ctx105 nueva (9 comprobaciones), y las del GPS, el círculo, la ficha, la calle,
+  los perfiles y las instrucciones; `pruebas/auditoria.py`, un solo nombre por perfil. Además, dos pruebas que dependían
+  del tiempo: ctx102 esperaba tiempos fijos (con el equipo lento fallaba) y ahora espera a que se cumpla cada cosa; y
+  `servidor/pruebas/recepcion.test.js` capturaba los árboles «de después» en el mismo instante en que quitaban al cabo
+  (al milisegundo cuenta como «antes»), y ahora les pone una hora dos segundos posterior.
+- `VERSION`, marcas de `index.html`, etapa de `js/config.js`, README, `docs/MEJORAS.md` y el seguimiento del informe.
+- Los manuales se regeneran con la 1.0.0 (bloque 6): todavía dicen «Coordinador» y muestran el folio en la ficha.
+
+**Verificación.**
+- `pruebas/por_tramos.py` (la prueba completa, ahora de 88 tramos): 1,552 de 1,554 y un tramo detenido, en 89 min.
+  - La falla conocida del Excel de `originales/`.
+  - ctx100 esperaba el texto anterior de la calle («· Alcaldía Benito Juárez»); corregida, 12 de 12.
+  - ctx102 se detuvo por tiempo una vez. Repetido 3 de 3 sin fallas; con el equipo 4 veces más lento fallaba en sus
+    esperas fijas, que ahora esperan a que se cumpla cada cosa: 20 de 20 también así.
+  - El tramo nuevo (ctx105), 9 de 9.
+- A la vista, en un teléfono de 390 px: la franja con «Compartida · 2 cabos registrando», la ventana con los árboles de
+  cada cabo y «tiene otra jornada abierta», el cabo marcado y «Guardar» fijo al pie; las instrucciones, abiertas la
+  primera vez y plegadas la segunda.
+- `npm test`: 117 de 117. La primera corrida dio 116: la prueba del cabo al que quitaron capturaba su árbol en el mismo
+  milisegundo; corregida, como se dice arriba.
+- `pruebas/prueba_conexion.py`: 132 de 132.
+- `pruebas/auditoria.py`: 152 comprobaciones (una nueva: un solo nombre por perfil), 0 hallazgos.
+- GitHub: la corrida del bloque 263 (40732554940), en verde.
+
+**Siguiente paso.** El bloque 6, el paquete 1.0.0 para el SIA: el guion de vaciado con el aviso del teléfono, el
+instructivo, los manuales y el ensayo de instalación.

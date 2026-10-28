@@ -430,9 +430,9 @@ SRP.util = {
   },
 
   // Las personas de una lista, por nombre: el filtro de cabo de Registros, Jornadas y Fotografías
-  // Las personas de una lista «Quién registró»: la coordinación y la Administración dicen su perfil
+  // Las personas de una lista «Quién registró»: la Coordinación y la Administración dicen su perfil
   paresPersonas(ids) {
-    const perfil = id => ({ COORDINADOR: ' (coordinación)', ADMIN: ' (Administración)' })[(SRP.ref.usuarioPorId[id] || {}).perfil] || '';
+    const perfil = id => ({ COORDINADOR: ' (Coordinación)', ADMIN: ' (Administración)' })[(SRP.ref.usuarioPorId[id] || {}).perfil] || '';
     return [...new Set(ids)].filter(Boolean).map(id => [id, SRP.ref.nombreUsuario(id) + perfil(id)]).sort((a, b) => a[1].localeCompare(b[1], 'es'));
   },
 

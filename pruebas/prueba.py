@@ -572,6 +572,13 @@ with sync_playwright() as p:
     ok(prec['aceptable'][0]=='aceptable' and prec['aceptable'][3],'con ±25 m es aceptable y aconseja revisar el punto')
     ok(prec['baja'][0]=='baja' and prec['baja'][3],'con ±60 m es baja y dice qué hacer')
     ok(prec['manual'][0] is None and not prec['manual'][2],'un punto a mano no muestra insignia ni círculo')
+    # El círculo: trazo de 2.5 px sobre un halo blanco de 1 px a cada lado, para verse sobre cualquier mapa
+    c19=pg.evaluate("""() => { const antes = { lat: SRP.mapa.lat, lng: SRP.mapa.lng, origen: SRP.mapa.origen, precision: SRP.mapa.precision };
+      SRP.mapa.colocar(19.4326, -99.1332, 'x', { origen: 'gps', precision: 20 });
+      const capas = SRP.mapa.margen.getLayers().map(x => [x.options.weight, x.options.color, x.options.fill !== false]);
+      SRP.mapa.colocar(antes.lat, antes.lng, 'prueba', { origen: antes.origen, precision: antes.precision });
+      return [capas, SRP.util.color('fondo'), SRP.util.color('editar')]; }""")
+    ok(c19[0]==[[4.5,c19[1],False],[2.5,c19[2],True]],'el círculo de precisión lleva un trazo de 2.5 px sobre un halo blanco de 1 px: %s' % c19[0])
     ok(pg.evaluate("getComputedStyle(document.querySelector('.barra-guardar')).position")=='sticky','Revisar y guardar va en una barra fija al pie')
     pg.set_viewport_size({'width':1280,'height':900}); pg.wait_for_timeout(300)
     col=pg.evaluate("(() => { const m=document.getElementById('mapa').getBoundingClientRect(), f=document.getElementById('form-plantacion').getBoundingClientRect(); return { debajo: f.top >= m.bottom, mismo_borde: Math.abs(f.left - document.querySelector('.registrar-ubicacion').getBoundingClientRect().left) < 2 }; })()")
@@ -654,9 +661,7 @@ with sync_playwright() as p:
     ok(pg.locator('.revision-fila', has_text='Alcaldía').locator('button').count()==0,'la alcaldía no se edita: sale del punto')
     ok(pg.inner_text('button[data-campo=especie]').strip()=='Editar','la ficha usa la palabra Editar')
     ok(HOY_TXT in pg.inner_text('#revision-lista'),'las fechas se leen con el mes en letras: '+HOY_TXT)
-    fol=pg.inner_text('#revision-lista .folio-provisional')
-    sec=pg.evaluate("SRP.folio.leerSecuencias()")
-    ok(re.match(r'^[A-Z]{3}-\d{3}-\d{5}$', fol) is not None and int(fol[8:13])>sec.get(fol[:7],0),'con datos de prueba la ficha enseña el folio que tocará, sin gastar la secuencia: %s (secuencia %s)' % (fol, sec.get(fol[:7],0)))
+    ok(pg.locator('#revision-lista .folio-provisional').count()==0 and 'Folio' not in pg.inner_text('#revision-lista'),'la ficha no enseña el folio, igual que el detalle: lo pone el servidor')
     # Editar especie desde la ficha: el texto queda seleccionado y la lista ofrece todo, no sólo «Otra especie»
     pg.click('#revision-lista button[data-campo=especie]'); pg.wait_for_timeout(300)
     opc=pg.locator('#lista-especies .combo-opcion').count()
@@ -677,8 +682,8 @@ with sync_playwright() as p:
       return { pie: !!p && getComputedStyle(p).position==='sticky', ancho: br.width >= dr.width*0.8, abajo: br.top > dr.top + dr.height/2 }; }''')
     ok(all(pie.values()),'Guardar va al pie de la ficha, fijo y a todo el ancho: %s' % pie)
     orden=pg.evaluate("[...document.querySelectorAll('#revision-lista > .revision-fila dt')].map(x=>x.textContent)")
-    ok(orden[0]=='Especie' and orden[-1]=='Cabo' and orden[-2]=='Folio' and orden[-3]=='Fotografía' and pg.locator('.revision-sistema').count()==0,
-       'la ficha empieza por Especie y termina Fotografía, Folio, Cabo, sin «Datos del sistema»: %s' % orden[-3:])
+    ok(orden[0]=='Especie' and orden[-1]=='Fotografía' and 'Folio' not in orden and 'Cabo' not in orden and pg.locator('.revision-sistema').count()==0,
+       'la ficha empieza por Especie y termina en Fotografía, sin folio ni «Cabo», como el detalle, y sin «Datos del sistema»: %s' % orden[-3:])
     dist=pg.inner_text('#revision-lista .revision-fila:first-child dd')
     ok('revision-distribucion' in pg.inner_html('#revision-lista .revision-fila:first-child dd') and any(t in dist for t in ['Nativa','Introducida','Endémica','Exótica']),'la fila de Especie dice también el tipo de distribución del catálogo: '+dist.replace('\n',' · '))
     ok(pg.locator('.revision-fila', has_text='Cómo se obtuvo').locator('.precision').count()==1,'«Cómo se obtuvo» muestra la insignia de precisión del GPS')
@@ -2394,9 +2399,14 @@ with sync_playwright() as p:
     pg12.click('#btn-iniciar-jornada'); pg12.wait_for_timeout(600)
     # El GPS se sigue escuchando y se queda con la mejor lectura
     pg12.click('#btn-ubicacion'); pg12.wait_for_timeout(700)
-    g1=pg12.evaluate("[SRP.mapa.precision, SRP.mapa.vigilancia != null, document.getElementById('mapa-estado').textContent]")
-    ok(g1[0]==60 and g1[1] and 'Afinando la lectura del GPS, hasta 30 s. Mientras, puede llenar lo demás.' in g1[2],
-       'con ±60 m el punto aparece y el GPS se sigue escuchando hasta 30 s, sin pedir que se espere: %s' % g1[2])
+    VISTO12 = "(() => { const c = document.getElementById('mapa-estado').cloneNode(true); c.querySelectorAll('.oculto-visual').forEach(x => x.remove()); return c.textContent; })()"
+    g1=pg12.evaluate("[SRP.mapa.precision, SRP.mapa.vigilancia != null, " + VISTO12 + ", (document.querySelector('#mapa-estado .oculto-visual') || {}).textContent]")
+    m1=re.search(r'Afinando la lectura del GPS \(faltan (\d+) s\)\. Mientras, puede llenar lo demás\.', g1[2])
+    ok(g1[0]==60 and g1[1] and m1 and 28 <= int(m1.group(1)) <= 30 and g1[3]=='hasta 30 s',
+       'con ±60 m el punto aparece y el GPS se sigue escuchando, con los segundos que faltan a la vista (el lector de pantalla oye «hasta 30 s»): %s' % g1[2])
+    pg12.wait_for_timeout(2100)
+    m1b=re.search(r'faltan (\d+) s', pg12.evaluate(VISTO12))
+    ok(m1 and m1b and int(m1b.group(1)) < int(m1.group(1)), 'la cuenta baja cada segundo aunque no llegue otra lectura: %s → %s' % (m1 and m1.group(1), m1b and m1b.group(1)))
     ctx12.set_geolocation({'latitude':19.4330,'longitude':-99.1336,'accuracy':8}); pg12.wait_for_timeout(800)
     g2=pg12.evaluate("[SRP.mapa.lat, SRP.mapa.precision, SRP.mapa.vigilancia != null]")
     ok(g2==[19.433,8,False],'una lectura mejor mueve el punto y, al llegar a precisión buena, deja de escuchar: %s' % g2)
@@ -2408,6 +2418,13 @@ with sync_playwright() as p:
     pg12.evaluate("SRP.mapa.colocar(19.4328, -99.1334, 'Punto colocado en el mapa.', { origen: 'mapa' })")
     ctx12.set_geolocation({'latitude':19.4330,'longitude':-99.1336,'accuracy':5}); pg12.wait_for_timeout(800)
     ok(pg12.evaluate("[SRP.mapa.lat, SRP.mapa.origen, SRP.mapa.vigilancia]")==[19.4328,'mapa',None],'si la persona coloca el punto a mano, el GPS ya no lo mueve')
+    # Si se acaba el tiempo y la precisión sigue baja, dice qué hacer (aquí, con el tiempo de afinar en 1.5 s)
+    ctx12.set_geolocation({'latitude':19.4326,'longitude':-99.1332,'accuracy':60})
+    pg12.evaluate("SRP.CONFIG.MAPA.GPS_AFINAR_MS = 1500"); pg12.click('#btn-ubicacion')
+    pg12.wait_for_function("() => SRP.mapa.vigilancia == null && SRP.mapa.origen === 'gps'", timeout=15000)
+    fin12 = pg12.evaluate(VISTO12); pg12.evaluate("SRP.CONFIG.MAPA.GPS_AFINAR_MS = 30000")
+    ok('El GPS no mejoró en 2 s. Vaya a un lugar abierto y toque «Actualizar ubicación», o arrastre el punto hasta el árbol.' in fin12 and 'Afinando' not in fin12,
+       'al acabarse el tiempo con la precisión baja, dice qué hacer: %s' % fin12)
     # Tocar el mapa lejos acerca primero; con acercamiento suficiente coloca
     toque=pg12.evaluate("""() => { SRP.mapa.limpiar(); SRP.mapa.mapa.setZoom(12, { animate: false });
       SRP.mapa.alTocar({ lat: 19.4331, lng: -99.1337 }); const primero = [SRP.mapa.lat, SRP.mapa.mapa.getZoom(), document.getElementById('mapa-estado').textContent];
@@ -2445,10 +2462,8 @@ with sync_playwright() as p:
        'el detalle no dice la celda ni las capas: van a la base; la versión de las capas se sigue leyendo igual')
     ok('Powered by Esri' in pg12.inner_text('#detalle-mapa .leaflet-control-attribution'),'y su mapa lleva el crédito')
     pg12.click('#btn-detalle-cerrar'); pg12.wait_for_timeout(200)
-    # Celda incierta y folio sólo con territorio
+    # El folio, sólo con territorio
     fol=pg12.evaluate("""async () => { const f = SRP.folio;
-      const incierta = f.celdaIncierta({ uga_borde_m: 4, punto_origen: 'gps', gps_precision_m: 12 });
-      const segura = f.celdaIncierta({ uga_borde_m: 40, punto_origen: 'gps', gps_precision_m: 12 });
       const base = await SRP.almacen.uno('plantaciones', '%s');
       const sinAlc = Object.assign({}, base, { id: 'pl-b92-sin', alcaldia: null, alcaldia_cve: null, folio: null });
       const sinCapa = Object.assign({}, base, { id: 'pl-b92-capa', capa_version: 'alcaldias=sia-2026-01-01', uga: null, folio: null });
@@ -2457,9 +2472,8 @@ with sync_playwright() as p:
       const a = await SRP.almacen.uno('plantaciones', 'pl-b92-sin'), c = await SRP.almacen.uno('plantaciones', 'pl-b92-capa');
       const ext = (await SRP.almacen.todos('plantaciones')).filter(r => String(r.folio || '').startsWith('EXT-000')).length;
       for (const id of ['pl-b92-sin', 'pl-b92-capa']) { const tx = SRP.almacen.db.transaction('plantaciones', 'readwrite'); tx.objectStore('plantaciones').delete(id); await new Promise(r => tx.oncomplete = r); }
-      return { incierta, segura, sinAlc: a.folio, sinCapa: c.folio, previsto: await f.previsto(sinAlc), ext, conFolio: f.valido((await SRP.almacen.uno('plantaciones', base.id)).folio) }; }""" % rid12)
-    ok('Celda incierta' in fol['incierta'] and fol['segura']=='','si el punto está más cerca del borde de su celda que la precisión del GPS, se marca «celda incierta»')
-    ok(fol['sinAlc'] is None and fol['sinCapa'] is None and fol['previsto'] is None and fol['ext']==0 and fol['conFolio'],
+      return { sinAlc: a.folio, sinCapa: c.folio, ext, conFolio: f.valido((await SRP.almacen.uno('plantaciones', base.id)).folio) }; }""" % rid12)
+    ok(fol['sinAlc'] is None and fol['sinCapa'] is None and fol['ext']==0 and fol['conFolio'],
        'sin alcaldía o con capas incompletas no se emite folio, y nunca EXT-000 por una capa ausente; el registro completo sí lo tiene: %s' % fol)
     # Si al editar cambia el territorio, queda en el historial
     pg12.evaluate("async () => SRP.formulario.editar(await SRP.almacen.uno('plantaciones', '%s'))" % rid12); pg12.wait_for_timeout(700)
@@ -4181,8 +4195,8 @@ with sync_playwright() as p:
     pg45.goto(BASE); pg45.wait_for_timeout(1300)
     op45=pg45.eval_on_selector_all('#sel-usuario-prueba option','l=>l.map(o=>o.textContent)')
     PAOT='Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)'
-    ok(op45==['Administración SIA Ejemplo — Administración global','Zutana Ríos Ejemplo — Directivo','Perengano Gómez Ejemplo — Coordinador','Fulana de Tal Ejemplo — Cabo',
-              'Mengano Paz Ejemplo — Directivo, Alcaldía Iztapalapa','Sergio Navarro Ejemplo — Coordinador, Alcaldía Iztapalapa','Ramiro Torres Ejemplo — Cabo, Alcaldía Iztapalapa'],
+    ok(op45==['Administración SIA Ejemplo — Administración global','Zutana Ríos Ejemplo — Dirección','Perengano Gómez Ejemplo — Coordinación','Fulana de Tal Ejemplo — Cabo',
+              'Mengano Paz Ejemplo — Dirección, Alcaldía Iztapalapa','Sergio Navarro Ejemplo — Coordinación, Alcaldía Iztapalapa','Ramiro Torres Ejemplo — Cabo, Alcaldía Iztapalapa'],
        'la entrada de prueba ofrece una cuenta por rol distinto: los cuatro perfiles de la Secretaría y los tres de una alcaldía; las demás cuentas de arranque existen pero no se listan: %s' % op45)
     c45=pg45.evaluate("SRP.ref.usuarios.filter(u => !SRP.ref.esSedema(u.organizacion_id)).map(u => [u.perfil, u.area_id, (u.coordinadores_ids || []).length ? u.coordinadores_ids.every(c => SRP.ref.usuarioPorId[c].organizacion_id === u.organizacion_id) : null])")
     ok(sorted(map(str,c45))==sorted(map(str,[['COORDINADOR',None,None]]*4+[['CABO',None,None]]*4+[['DIRECTIVO',None,None]])),'las cuentas de fuera no llevan área ni coordinadores guardados: la Coordinación trabaja con toda su institución: %s' % c45)
@@ -4269,7 +4283,7 @@ with sync_playwright() as p:
     pf47=pg47.eval_on_selector_all('#usr-perfil option','l=>l.map(o=>o.textContent).filter(t=>!t.startsWith("Seleccione"))')
     pg47.select_option('#usr-perfil','CABO'); pg47.wait_for_timeout(150)
     co47=pg47.locator('#caja-usr-coordinador').count()==0
-    ok(pf47==['Cabo','Coordinador','Directivo'] and co47,
+    ok(pf47==['Cabo','Coordinación','Dirección'] and co47,
        'en el alta de una institución de fuera se elige cabo, coordinador o directivo; el cabo ya no se asigna a un coordinador: %s' % pf47)
     pg47.fill('#usr-nombre-completo','Irma Palmera Ejemplo'); pg47.fill('#usr-correo','irma.palmera@ejemplo.local'); pg47.fill('#usr-cargo','Cabo de cuadrilla')
     pg47.click('#form-usuario button[type=submit]'); pg47.wait_for_timeout(600)
@@ -4412,12 +4426,12 @@ with sync_playwright() as p:
     abrir_sup(pg49)
     # Mientras se lee lo suyo no queda en pantalla nada de la cuenta anterior
     previo49=pg49.eval_on_selector_all('#sup-cabo option','l=>l.map(o=>o.textContent).filter(t=>!t.startsWith("Todos"))')
-    ok(all(n in ('Andrea Solís Ejemplo','Carmen Ibarra Ejemplo (coordinación)','Olivia Reyes Demo','Omar Fuentes Demo') for n in previo49),
+    ok(all(n in ('Andrea Solís Ejemplo','Carmen Ibarra Ejemplo (Coordinación)','Olivia Reyes Demo','Omar Fuentes Demo') for n in previo49),
        'al entrar con otra cuenta, la lista de cabos no conserva los nombres de la cuenta anterior: %s' % previo49)
     esperar(pg49,"[...document.querySelectorAll('#sup-cabo option')].some(o => o.textContent.includes('Olivia'))",20000)
     pg49.click('#sup-tipos .chip[data-tipo=todo]'); pg49.wait_for_timeout(900)
     s49=pg49.eval_on_selector_all('#sup-cabo option','l=>l.map(o=>o.textContent).filter(t=>!t.startsWith("Todos"))')
-    ok(sorted(s49)==sorted(['Andrea Solís Ejemplo','Carmen Ibarra Ejemplo (coordinación)','Olivia Reyes Demo','Omar Fuentes Demo']) and 'árboles' in pg49.inner_text('#sup-cuerpo'),
+    ok(sorted(s49)==sorted(['Andrea Solís Ejemplo','Carmen Ibarra Ejemplo (Coordinación)','Olivia Reyes Demo','Omar Fuentes Demo']) and 'árboles' in pg49.inner_text('#sup-cuerpo'),
        'la coordinadora de Reforestamos ve en Supervisión a sus tres cabos y lo suyo, con cifras: %s' % s49)
     # Al quitarla, las cuentas de prueba se quedan sin sus jornadas de demostración
     q49=pg49.evaluate("async () => { await SRP.demo.quitar(); const j = await SRP.almacen.todos('jornadas'); return [j.filter(x => SRP.demo.es(x.id)).length, !!SRP.ref.usuarioPorId['u-coord-osc'], !!(await SRP.almacen.uno('usuarios', 'u-demo-o1'))]; }")
@@ -4867,7 +4881,7 @@ with sync_playwright() as p:
     pg56.evaluate("SRP.app.mostrarVista('registros')"); pg56.wait_for_timeout(1500)
     pg56.evaluate("document.getElementById('filtro-mas-filtros').open = true")
     et56=pg56.evaluate("[...document.querySelectorAll('label')].filter(l => /cabo$/.test(l.htmlFor) && !/caja/.test(l.htmlFor)).map(l => l.textContent)")
-    co56=pg56.evaluate("[...document.querySelectorAll('#filtro-cabo option')].slice(1).filter(o => SRP.ref.usuarioPorId[o.value].perfil === 'COORDINADOR').every(o => o.textContent.endsWith('(coordinación)'))")
+    co56=pg56.evaluate("[...document.querySelectorAll('#filtro-cabo option')].slice(1).filter(o => SRP.ref.usuarioPorId[o.value].perfil === 'COORDINADOR').every(o => o.textContent.endsWith('(Coordinación)'))")
     ok(set(et56)=={'Quién registró'} and len(et56)==4 and co56,'«Cabo» pasa a «Quién registró» en las cuatro pantallas que lo filtran, y la coordinación lleva su perfil en la lista: %s' % et56)
     antes56=pg56.evaluate("[document.querySelectorAll('#filtro-cabo option').length, document.querySelectorAll('#filtro-alcaldia option').length]")
     pg56.select_option('#filtro-org','o-paot'); pg56.wait_for_timeout(600)
@@ -5233,7 +5247,7 @@ with sync_playwright() as p:
     esperar(pg59, "document.querySelectorAll('#vista-usuarios tbody tr').length > 0", 6000)   # la tabla se pinta cuando termina de leer
     tu59=pg59.locator('#vista-usuarios tbody tr').count()
     pg59.select_option('#usr-filtro-perfil','COORDINADOR'); pg59.wait_for_timeout(500)
-    u1=pg59.evaluate("[document.querySelectorAll('#vista-usuarios tbody tr').length, [...document.querySelectorAll('#vista-usuarios tbody tr')].every(tr => tr.textContent.includes('Coordinador'))]")
+    u1=pg59.evaluate("[document.querySelectorAll('#vista-usuarios tbody tr').length, [...document.querySelectorAll('#vista-usuarios tbody tr')].every(tr => tr.textContent.includes('Coordinación'))]")
     u2=pg59.evaluate("[[...document.querySelectorAll('#usr-filtro-org optgroup')].map(g => g.label), document.getElementById('usr-filtro-tipo') === null, [...document.querySelectorAll('#usr-filtro-org optgroup')].every(g => [...g.children].every(o => SRP.ref.catalogoPorId[o.value].tipo_organizacion === g.label))]")
     alc59=pg59.evaluate("(document.querySelector('#usr-filtro-org optgroup[label=Alcaldía] option') || {}).value || ''")
     pg59.select_option('#usr-filtro-org', alc59); pg59.wait_for_timeout(500)
@@ -6166,7 +6180,7 @@ with sync_playwright() as p:
     d72 = pg72.evaluate("""(() => { const p = SRP.permisos, u = SRP.sesion.usuario, nav = document.getElementById('navegacion');
       return { etiqueta: p.de(u).etiqueta, alcance: p.de(u).alcance, vista: SRP.app.vista, registrar: nav.querySelector('[data-vista=registrar]').hidden,
         puede: ['registro.crear', 'jornada.crear', 'catalogo.administrar', 'usuario.administrar', 'carga.masiva'].map(a => p.puede(a)), fotos: p.puede('galeria.descargar'), config: document.querySelector('.pestana[data-vista=configuracion]').hidden }; })()""")
-    ok(d72 == {'etiqueta':'Directivo','alcance':'todos','vista':'supervision','registrar':True,'puede':[False]*5,'fotos':True,'config':True},
+    ok(d72 == {'etiqueta':'Dirección','alcance':'todos','vista':'supervision','registrar':True,'puede':[False]*5,'fotos':True,'config':True},
        'el directivo de la Secretaría entra a Supervisión, ve toda la Ciudad, no tiene «Nuevo registro» ni Configuración y sí Fotografías: %s' % d72)
     pg72.evaluate("SRP.app.mostrarVista('jornadas')"); pg72.wait_for_timeout(700); pg72.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg72.wait_for_timeout(500)
     n72 = pg72.evaluate("[SRP.jornadas._todas.map(j => j.nombre).sort(), SRP.jornadas._todas.every(j => !SRP.permisos.puede('jornada.editar', j.dato) && !SRP.permisos.puede('jornada.eliminar', j.dato)), !document.getElementById('caja-jornada-org') || true]")
@@ -6198,7 +6212,7 @@ with sync_playwright() as p:
     # En Usuarios, el perfil se ofrece dentro y fuera de la Secretaría
     entrar72('u-admin-1'); pg72.evaluate("SRP.app.mostrarVista('usuarios')"); pg72.wait_for_timeout(700)
     u72 = pg72.evaluate("[Object.keys(SRP.PERFILES), SRP.PERFILES.DIRECTIVO.etiqueta, SRP.ref.usuarios.filter(u => u.perfil === 'DIRECTIVO').map(u => u.id).sort()]")
-    ok(u72 == [['CABO','COORDINADOR','DIRECTIVO','ADMIN'], 'Directivo', ['u-dir-1','u-dir-alc']], 'el catálogo de perfiles tiene cuatro, con «Directivo», y hay una cuenta de prueba en la Secretaría y otra en una alcaldía: %s' % u72)
+    ok(u72 == [['CABO','COORDINADOR','DIRECTIVO','ADMIN'], 'Dirección', ['u-dir-1','u-dir-alc']], 'el catálogo de perfiles tiene cuatro, con «Dirección», y hay una cuenta de prueba en la Secretaría y otra en una alcaldía: %s' % u72)
     ctx72.close()
 
     # ---------- ctx73: cada catálogo en su tabla: la migración reparte la tabla única sin perder nada ----------
@@ -7650,13 +7664,15 @@ with sync_playwright() as p:
       K.entre({ calle_entre_1: 'A', calle_entre_2: 'B' }), K.entre({ calle_entre_1: 'A', calle_entre_2: 'A' }), K.entre({ calle_entre_2: 'B' }),
       K.textoRed({ vialidad_red: 'primaria', vialidad_tipo: 'Vía de acceso controlado', calle_atiende: 'Gobierno de CDMX' }),
       K.textoRed({ vialidad_red: 'secundaria', calle_atiende: null }), K.textoRed({ vialidad_red: 'carretera o camino', calle_atiende: 'Gobierno Federal' }),
+      K.textoRed({ vialidad_red: 'secundaria', calle_atiende: 'Alcaldía Xochimilco' }), K.textoRed({ vialidad_red: 'secundaria', calle_atiende: 'Alcaldías Tlalpan y Xochimilco' }),
       K.tramos([{ calle_entre_1: 'Pilares', calle_entre_2: 'Tlacoquemecatl' }, { calle_entre_1: 'Miguel Laurent', calle_entre_2: 'Tlacoquemecatl' },
         { calle_entre_1: 'Tlacoquemecatl', calle_entre_2: 'Miguel Laurent' }, { calle_entre_1: 'Amores', calle_entre_2: 'Amores' }]),
       K.quienes(['Gobierno de CDMX']), K.quienes(['A', 'B']), K.quienes(['A', 'B', 'C']), K.colonias(['a', 'b', 'c', 'd', 'e']),
       K.CAMPOS.every(c => SRP.cola.DEL_SERVIDOR.includes(c))]; }""")
-    ok(t100 == ['entre A y B', 'a la altura de A', 'a la altura de B', 'Vía de acceso controlado · Gobierno de CDMX', 'Calle secundaria · quién la atiende, por confirmar',
-                'Carretera o camino · Gobierno Federal', ['entre Pilares y Miguel Laurent', 'a la altura de Amores'], 'Gobierno de CDMX', 'A y B', 'A y 2 más', 'a, b, c y 2 más', True],
-       'la calle se dice «entre A y B» o «a la altura de», con su red y quién la atiende («por confirmar» no es la alcaldía); las cuadras seguidas se juntan en un tramo: %s' % t100)
+    ok(t100 == ['entre A y B', 'a la altura de A', 'a la altura de B', 'Vía de acceso controlado · la atiende el Gobierno de CDMX', 'Calle secundaria · quién la atiende, por confirmar',
+                'Carretera o camino · la atiende el Gobierno Federal', 'Calle secundaria · la atiende la Alcaldía Xochimilco', 'Calle secundaria · la atienden las Alcaldías Tlalpan y Xochimilco',
+                ['entre Pilares y Miguel Laurent', 'a la altura de Amores'], 'Gobierno de CDMX', 'A y B', 'A y 2 más', 'a, b, c y 2 más', True],
+       'la calle se dice «entre A y B» o «a la altura de», con su red y «la atiende la Alcaldía…» (no se lee como la alcaldía del árbol; «por confirmar» tampoco); las cuadras seguidas se juntan en un tramo: %s' % t100)
     # Un árbol nuevo espera su calle; al enviar, el servidor simulado le pone la misma que pondría srp.calle
     iniciar_jornada(pg100, 'Jornada de la calle', HOY)
     rid100 = registrar(pg100, 'aile', 'ESP-0002')
@@ -7670,8 +7686,8 @@ with sync_playwright() as p:
       const f = [...document.querySelectorAll('#dlg-detalle-cuerpo .revision-fila')], i = f.findIndex(x => x.querySelector('dt').textContent === 'Calle');
       const res = i < 1 ? null : [f[i - 1].querySelector('dt').textContent, f[i].querySelector('dd').innerText.split('\\n')];
       document.getElementById('dlg-detalle').close(); return res; }""", rid100)
-    ok(d100 == ['Colonia', ['Calle Parroquia', 'entre Eje 2 Poniente (Gabriel Mancera) y Calle López Cotilla', 'Calle secundaria · Alcaldía Benito Juárez']],
-       'el detalle lleva la calle bajo la colonia: entre qué calles va, su red y quién la atiende: %s' % d100)
+    ok(d100 == ['Colonia', ['Calle Parroquia', 'entre Eje 2 Poniente (Gabriel Mancera) y Calle López Cotilla', 'Calle secundaria · la atiende la Alcaldía Benito Juárez']],
+       'el detalle lleva la calle bajo la colonia: entre qué calles va, su red y quién la atiende («la atiende la Alcaldía…», no se lee como la alcaldía del árbol): %s' % d100)
     # Corregir el punto vacía la calle hasta el siguiente envío, que la vuelve a calcular
     e100 = pg100.evaluate("""async id => { SRP.formulario.editar(await SRP.almacen.uno('plantaciones', id)); await new Promise(x => setTimeout(x, 400));
       SRP.mapa.colocar(19.315500, -99.078000, 'Punto colocado en el mapa.', { origen: 'mapa' }); SRP.formulario.alMoverPunto(19.315500, -99.078000);
@@ -7733,11 +7749,11 @@ with sync_playwright() as p:
     ok(pg101.is_visible('#btn-jornada-apoyos') and pg101.is_hidden('#btn-jornada-relevo'), 'en la jornada que abrió la Coordinación, «Cabos de apoyo» ocupa el lugar de «Relevo de cabo»')
     pg101.click('#btn-jornada-apoyos'); pg101.wait_for_selector('#dlg-apoyos[open]')
     v101 = pg101.evaluate("""() => ({ ids: [...document.querySelectorAll('#apoyos-cabos .chip')].map(b => b.dataset.id), etiqueta: document.getElementById('apoyos-etiqueta').textContent,
-      instrucciones: document.querySelector('#dlg-apoyos .instrucciones').innerText, boton: document.getElementById('btn-apoyos-guardar').textContent })""")
+      instrucciones: document.querySelector('#dlg-apoyos .instrucciones').innerText, abiertas: document.getElementById('apoyos-instrucciones').open, boton: document.getElementById('btn-apoyos-guardar').textContent })""")
     ok({'u-cabo-1', 'u-demo-c4', 'u-demo-c1'} <= set(v101['ids']) and 'u-cabo-alc' not in v101['ids'] and 'Secretaría del Medio Ambiente' in v101['etiqueta'],
        'la ventana ofrece a los cabos de toda la institución, de cualquier cuadrilla, y sólo de ella: %s' % v101['ids'][:6])
-    ok('el mismo día del evento' in v101['instrucciones'] and 'no se puede abrir con fecha futura' in v101['instrucciones'] and 'Terminar mi parte' in v101['instrucciones'] and v101['boton'] == 'Guardar: sin cabos de apoyo',
-       'las instrucciones de la jornada compartida, a la vista, empiezan por abrirla el mismo día: %s' % v101['instrucciones'][:90])
+    ok(v101['abiertas'] and 'el mismo día del evento' in v101['instrucciones'] and 'no se puede abrir con fecha futura' in v101['instrucciones'] and 'Terminar mi parte' in v101['instrucciones'] and v101['boton'] == 'Guardar: sin cabos de apoyo',
+       'las instrucciones de la jornada compartida, abiertas la primera vez, empiezan por abrirla el mismo día: %s' % v101['instrucciones'][:90])
     pg101.click('#apoyos-cabos .chip[data-id="u-cabo-1"]'); pg101.click('#apoyos-cabos .chip[data-id="u-demo-c4"]')
     ok(pg101.inner_text('#btn-apoyos-guardar') == 'Guardar: 2 cabos de apoyo', 'el botón dice cuántos cabos de apoyo quedan')
     pg101.click('#btn-apoyos-guardar')
@@ -7820,6 +7836,10 @@ with sync_playwright() as p:
             pg102.click('#btn-jornada-cambiar'); pg102.wait_for_timeout(250); pg102.click('#btn-cambiar-nueva'); pg102.wait_for_timeout(400)
     def elegir102(sel, valor):
         pg102.evaluate("([s, v]) => { const e = document.querySelector(s); e.value = v; e.dispatchEvent(new Event('change', { bubbles: true })); }", [sel, valor]); pg102.wait_for_timeout(1200)
+    # Espera a que se cumpla, sin tiempo fijo: con el equipo lento la lista tarda más en rehacerse
+    def cumple102(expr, ms=30000):
+        try: pg102.wait_for_function(expr, timeout=ms); return True
+        except Exception: return False
     # Los datos de demostración traen compartidas y relevos; hoy, una compartida y un relevo abiertos; ninguna cuenta guarda coordinadores
     d102 = pg102.evaluate("""async () => { const j = (await SRP.almacen.todos('jornadas')).filter(x => SRP.demo.es(x.id)), a = await SRP.almacen.todos('plantaciones'), u = await SRP.almacen.todos('usuarios');
       const comp = j.filter(x => x.cabos_apoyo.length), rel = j.filter(x => x.relevos.length), hoy = SRP.util.fechaHoy();
@@ -7855,8 +7875,13 @@ with sync_playwright() as p:
     ok(pg102.is_visible('#ini-caja-apoyos') and [pg102.get_attribute('#ini-apoyos .chip[data-id="%s"]' % x, 'aria-pressed') for x in ('u-cabo-1', 'u-demo-c4', 'u-demo-c1')] == ['true', 'true', 'false'],
        'una recarga a medio llenar no pierde «Varios cabos» ni los cabos marcados')
     pg102.fill('#ini-fecha', HOY); pg102.click('#btn-ini-detectar'); pg102.wait_for_timeout(800)
-    pg102.click('#btn-iniciar-jornada'); pg102.wait_for_timeout(1200)
-    aviso102 = pg102.inner_text('#aviso') if pg102.is_visible('#aviso') else ''
+    pg102.click('#btn-iniciar-jornada')
+    cumple102("() => document.getElementById('aviso').textContent.includes('cabos de apoyo')")
+    aviso102 = pg102.evaluate("document.getElementById('aviso').textContent")
+    # La jornada y su bitácora se guardan juntas al iniciar: se espera a que estén, sin tiempo fijo
+    for _ in range(60):
+        if pg102.evaluate("async () => { const j = SRP.activa.jornada && await SRP.almacen.uno('jornadas', SRP.activa.jornada.id); return !!j && (await SRP.almacen.todos('bitacora')).some(x => x.entidad_id === j.id && x.accion === 'APOYO'); }"): break
+        pg102.wait_for_timeout(500)
     pg102.evaluate("() => document.querySelectorAll('dialog[open]').forEach(d => d.close())")
     n102 = pg102.evaluate("""async () => { const j = await SRP.almacen.uno('jornadas', SRP.activa.jornada.id);
       const bit = (await SRP.almacen.todos('bitacora')).filter(x => x.entidad_id === j.id).sort((a, b) => a.fecha.localeCompare(b.fecha) || (a.accion === 'CREADO' ? -1 : 1)).map(x => x.accion + ': ' + x.detalle);
@@ -7866,7 +7891,10 @@ with sync_playwright() as p:
     # La franja: «Cabos de apoyo», y la ventana desde ahí, sin salir de Nuevo registro
     ok(pg102.is_visible('#btn-franja-apoyos') and pg102.is_visible('#btn-jornada-cerrar'), 'en la franja de su jornada, la Coordinación tiene «Cabos de apoyo»')
     pg102.click('#btn-franja-apoyos'); pg102.wait_for_selector('#dlg-apoyos[open]')
-    pg102.click('#apoyos-cabos .chip[data-id="u-demo-c1"]'); pg102.click('#btn-apoyos-guardar'); pg102.wait_for_timeout(1000)
+    pg102.click('#apoyos-cabos .chip[data-id="u-demo-c1"]'); pg102.click('#btn-apoyos-guardar')
+    for _ in range(60):
+        if pg102.evaluate("async id => SRP.permisos.vigentes(await SRP.almacen.uno('jornadas', id)).length === 3 && !document.getElementById('dlg-apoyos').open", n102['id']): break
+        pg102.wait_for_timeout(500)
     v102 = pg102.evaluate("async id => [SRP.permisos.vigentes(await SRP.almacen.uno('jornadas', id)), SRP.app.vista, !document.getElementById('franja-jornada').hidden]", n102['id'])
     ok(v102 == [['u-cabo-1', 'u-demo-c4', 'u-demo-c1'], 'registrar', True], 'desde la franja se agrega un cabo y se sigue en Nuevo registro: %s' % v102)
     como102('u-demo-c4')
@@ -7884,6 +7912,7 @@ with sync_playwright() as p:
     pg102.evaluate("SRP.app.mostrarVista('jornadas')"); pg102.wait_for_timeout(1500)
     pg102.click('#jornada-atajos .chip[data-atajo="todas"]'); pg102.wait_for_timeout(1000)
     elegir102('#jornada-compartida', 'si')
+    cumple102("() => SRP.jornadas.filtro.compartida === 'si' && SRP.jornadas.lista.length > 0 && SRP.jornadas.lista.every(j => SRP.jornadas.compartida(j.dato)) && document.getElementById('jornada-mas-filtros-texto').textContent === 'Más filtros: compartidas' && [...document.querySelectorAll('#lista-jornadas li.jornada')].length > 0 && [...document.querySelectorAll('#lista-jornadas li.jornada')].every(li => ((li.querySelector('.jornada-cabo') || {}).textContent || '').includes('compartida con'))")
     j102 = pg102.evaluate("""() => ({ opciones: [...document.getElementById('jornada-compartida').options].map(o => o.textContent), tarjetas: [...document.querySelectorAll('#lista-jornadas li.jornada')].map(li => (li.querySelector('.jornada-cabo') || {}).textContent || ''),
       fichas: [...document.querySelectorAll('#jornada-fichas .ficha-filtro span')].map(x => x.textContent), resumen: document.getElementById('jornada-mas-filtros-texto').textContent,
       total: SRP.jornadas.lista.length, todas: SRP.jornadas.lista.every(j => SRP.jornadas.compartida(j.dato)) })""")
@@ -7891,10 +7920,10 @@ with sync_playwright() as p:
        and j102['fichas'] == ['Jornadas compartidas'] and j102['resumen'] == 'Más filtros: compartidas',
        'Jornadas: «Tipo de jornada» deja sólo las compartidas; cada tarjeta dice «compartida con N cabos»; la ficha y el resumen lo dicen: %s' % {k: j102[k] for k in ('total', 'fichas', 'resumen')})
     elegir102('#jornada-compartida', 'no')
-    ok(pg102.evaluate("SRP.jornadas.lista.length > 0 && SRP.jornadas.lista.every(j => !SRP.jornadas.compartida(j.dato)) && ![...document.querySelectorAll('#lista-jornadas .jornada-cabo')].some(x => x.textContent.includes('compartida'))"),
+    ok(cumple102("() => SRP.jornadas.lista.length > 0 && SRP.jornadas.lista.every(j => !SRP.jornadas.compartida(j.dato)) && ![...document.querySelectorAll('#lista-jornadas .jornada-cabo')].some(x => x.textContent.includes('compartida'))"),
        'con «No compartidas» no queda ninguna compartida')
-    pg102.click('#jornada-quitar'); pg102.wait_for_timeout(800)
-    ok(pg102.evaluate("SRP.jornadas.filtro.compartida === '' && document.getElementById('jornada-compartida').value === ''"), '«Quitar filtros» quita también el tipo de jornada')
+    pg102.click('#jornada-quitar')
+    ok(cumple102("() => SRP.jornadas.filtro.compartida === '' && document.getElementById('jornada-compartida').value === ''"), '«Quitar filtros» quita también el tipo de jornada')
     # Registros, como cabo de apoyo: sus árboles en compartidas
     como102('u-demo-c3')
     pg102.evaluate("SRP.app.mostrarVista('registros')"); pg102.wait_for_timeout(1500)
@@ -8088,6 +8117,84 @@ with sync_playwright() as p:
     pg104.evaluate("SRP.demo.quitar()")
     ok(not err104, 'sin errores en consola: %s' % err104[:2])
     ctx104.close()
+
+    # ---------- ctx105: la compartida en pantalla: la franja de la Coordinación, la ventana «Cabos de apoyo», el siguiente paso y «Terminar mi parte» ----------
+    ctx105 = b.new_context(viewport={'width': 390, 'height': 844}, timezone_id='America/Mexico_City')
+    pg105 = ctx105.new_page(); err105 = []
+    pg105.on('pageerror', lambda e: err105.append(str(e))); pg105.on('console', lambda m: m.type == 'error' and 'net::' not in m.text and 'Failed to load' not in m.text and err105.append(m.text))
+    pg105.goto(BASE); pg105.wait_for_selector('html[data-listo]')
+    entrar_como(pg105, 'u-admin-1'); pg105.wait_for_function("() => SRP.sesion && SRP.sesion.usuario")
+    pg105.evaluate("async () => { await SRP.demo.cargar(); }")
+    def como105(uid):
+        pg105.evaluate("id => SRP.sesion.iniciar(SRP.ref.usuarioPorId[id])", uid); pg105.reload(); pg105.wait_for_selector('html[data-listo]'); aceptar_avisos(pg105)
+        pg105.evaluate("() => document.querySelectorAll('dialog[open]').forEach(d => d.close())")
+    # La compartida de hoy de la demostración: la abrió Estela (u-demo-k1), con dos cabos de apoyo
+    como105('u-demo-k1')
+    jid105 = pg105.evaluate("async () => (await SRP.almacen.todos('jornadas')).find(j => SRP.demo.es(j.id) && j.estatus === 'abierta' && j.cabos_apoyo.length && j.fecha === SRP.util.fechaHoy()).id")
+    pg105.evaluate("async id => { SRP.app.mostrarVista('registrar'); SRP.activa.jornada = await SRP.almacen.uno('jornadas', id); await SRP.activa.preparar(); document.querySelectorAll('dialog[open]').forEach(d => d.close()); }", jid105)
+    pg105.wait_for_selector('#franja-jornada-texto .franja-jornada-compartida')
+    f105 = pg105.evaluate("""async id => { const j = await SRP.almacen.uno('jornadas', id), e = document.querySelector('#franja-jornada-texto .franja-jornada-compartida');
+      const r = e.getBoundingClientRect(), b = e.querySelector('button[data-apoyos]');
+      return { texto: e.textContent, esperado: SRP.activa.textoCompartida(j), visible: r.height > 0 && getComputedStyle(e).display !== 'none', boton: !!b, alto: b ? Math.round(b.getBoundingClientRect().height) : 0,
+        detalle: document.getElementById('franja-jornada').dataset.detalle, datos: document.querySelector('#franja-jornada-texto .franja-jornada-datos').textContent }; }""", jid105)
+    ok(re.fullmatch(r'Compartida · \d+ cabos? registrando(, \d+ (terminó|terminaron))?', f105['texto']) and f105['texto'] == f105['esperado'] and f105['visible'] and f105['boton'] and f105['alto'] >= 48
+       and f105['detalle'] == 'cerrado' and 'compartida' not in f105['datos'],
+       'la franja de la Coordinación dice cómo van sus cabos de apoyo, a la vista en el teléfono aun con el detalle cerrado, y se toca: %s' % f105)
+    # Al tocarla se abre «Cabos de apoyo»: con 10 cabos o menos, sin buscador; instrucciones abiertas la primera vez y «Guardar» fijo al pie
+    pg105.click('#franja-jornada-texto button[data-apoyos]'); pg105.wait_for_selector('#dlg-apoyos[open]')
+    pg105.wait_for_function("() => document.querySelectorAll('#apoyos-cabos .chip[data-id]').length > 0")
+    v105 = pg105.evaluate("""async id => { const d = document.getElementById('dlg-apoyos'), g = document.getElementById('btn-apoyos-guardar').getBoundingClientRect();
+      const regs = (await SRP.almacen.porIndice('plantaciones', 'jornada_id', id)).filter(r => r.estatus === 'activo'), cuenta = {};
+      regs.forEach(r => { cuenta[r.cabo_id] = (cuenta[r.cabo_id] || 0) + 1; });
+      const hoy = SRP.util.fechaHoy(), otras = new Set();
+      (await SRP.almacen.todos('jornadas')).filter(j => j.id !== id && j.estatus === 'abierta' && j.fecha === hoy).forEach(j => [j.relevo_id || j.cabo_id].concat(SRP.permisos.vigentes(j)).forEach(x => otras.add(x)));
+      const filas = [...document.querySelectorAll('#apoyos-cabos .chip[data-id]')].map(c => [c.dataset.id, c.textContent]);
+      const malArboles = filas.filter(([i, t]) => cuenta[i] ? !t.includes('· ' + cuenta[i] + (cuenta[i] === 1 ? ' árbol' : ' árboles')) : /· \\d+ árbol/.test(t)).map(f => f[0]);
+      const malOtras = filas.filter(([i, t]) => otras.has(i) !== t.includes('· tiene otra jornada abierta')).map(f => f[0]);
+      return { n: filas.length, buscar: !document.getElementById('apoyos-caja-buscar').hidden, instrucciones: document.getElementById('apoyos-instrucciones').open,
+        pie: !!document.getElementById('btn-apoyos-guardar').closest('.dialogo-pie'), guardarVisible: g.bottom <= window.innerHeight && g.top >= 0, malArboles, malOtras,
+        conArboles: filas.filter(([i]) => cuenta[i]).length, conOtras: filas.filter(([i]) => otras.has(i)).length }; }""", jid105)
+    ok(2 <= v105['n'] <= 10 and not v105['buscar'] and v105['instrucciones'] and v105['pie'] and v105['guardarVisible'],
+       'con %d cabos, «Cabos de apoyo» va sin buscador, con las instrucciones abiertas la primera vez y «Guardar» fijo al pie, a la vista sin desplazarse' % v105['n'])
+    ok(not v105['malArboles'] and not v105['malOtras'] and v105['conArboles'] >= 2 and v105['conOtras'] >= 1,
+       'cada cabo dice cuántos árboles lleva en la jornada y si hoy tiene otra jornada abierta (%d con árboles, %d con otra): %s' % (v105['conArboles'], v105['conOtras'], v105['malArboles'] + v105['malOtras']))
+    # Marcado: fondo azul claro, borde azul de 2 px y la palomita; sin marcar, sin palomita
+    m105 = pg105.evaluate("""() => { const s = c => { const g = getComputedStyle(c); return [g.backgroundColor, g.borderTopWidth, g.borderTopColor, getComputedStyle(c.querySelector('svg')).visibility]; };
+      return { si: s(document.querySelector('#apoyos-cabos .chip[aria-pressed="true"]')), no: s(document.querySelector('#apoyos-cabos .chip[aria-pressed="false"]')) }; }""")
+    ok(m105['si'] == ['rgb(231, 240, 250)', '2px', 'rgb(27, 95, 170)', 'visible'] and m105['no'][3] == 'hidden' and m105['no'][0] != m105['si'][0],
+       'un cabo marcado tiene fondo azul claro, borde azul de 2 px y palomita, y ya no parece un botón: %s' % m105)
+    # Con más de 10 cabos en la institución sale el buscador; la segunda vez, las instrucciones van plegadas
+    pg105.click('#btn-apoyos-cerrar'); pg105.wait_for_function("() => !document.getElementById('dlg-apoyos').open")
+    pg105.evaluate("""() => { ['Úrsula Ávila Prueba', 'Óscar Núñez Prueba', 'Iñaki Peña Prueba', 'Zoe Ruiz Prueba'].forEach((n, i) => {
+      const u = { id: 'u-105-' + i, nombre_completo: n, perfil: 'CABO', activo: true, organizacion_id: 'o-sedema' }; SRP.ref.usuarios.push(u); SRP.ref.usuarioPorId[u.id] = u; }); }""")
+    pg105.click('#franja-jornada-texto button[data-apoyos]'); pg105.wait_for_selector('#dlg-apoyos[open]')
+    pg105.wait_for_function("() => document.querySelectorAll('#apoyos-cabos .chip[data-id]').length > 10")
+    ok(pg105.evaluate("!document.getElementById('apoyos-caja-buscar').hidden && !document.getElementById('apoyos-instrucciones').open && document.getElementById('apoyos-buscar').value === ''"),
+       'con más de 10 cabos sale el buscador; la segunda vez, las instrucciones van plegadas')
+    # El buscador: con o sin acentos; sin coincidencias, lo dice
+    nombre105 = 'Óscar'
+    pg105.fill('#apoyos-buscar', nombre105.lower().replace('í', 'i').replace('á', 'a').replace('é', 'e').replace('ó', 'o').replace('ú', 'u'))
+    b105 = pg105.evaluate("() => [...document.querySelectorAll('#apoyos-cabos .chip[data-id]')].filter(c => !c.hidden).map(c => c.textContent)")
+    pg105.fill('#apoyos-buscar', 'zzzz')
+    z105 = pg105.evaluate("() => [[...document.querySelectorAll('#apoyos-cabos .chip[data-id]')].filter(c => !c.hidden).length, !document.getElementById('apoyos-sin-resultados').hidden]")
+    ok(len(b105) == 1 and nombre105 in b105[0] and z105 == [0, True],
+       'el buscador deja a la vista los cabos con ese nombre, sin importar acentos («oscar» halla a Óscar), y sin coincidencias dice «Ningún cabo con ese nombre.»: %s' % b105[:3])
+    pg105.click('#btn-apoyos-cerrar'); pg105.wait_for_function("() => !document.getElementById('dlg-apoyos').open")
+    # El cabo de apoyo: en la ficha, el siguiente paso dice quiénes registran; «Terminar mi parte» dice lo que de verdad pasa
+    como105('u-demo-c3')
+    pg105.evaluate("async id => { SRP.app.mostrarVista('jornadas'); await SRP.jornadas.abrir(id); }", jid105)
+    pg105.wait_for_function("() => !document.getElementById('jornada-siguiente').hidden && document.getElementById('jornada-siguiente').textContent.length > 0", timeout=20000)
+    s105 = pg105.evaluate("document.getElementById('jornada-siguiente').textContent")
+    ok(re.fullmatch(r'Siguiente: registrar (los árboles que faltan|el primer árbol)( \(\d+ de \d+\))?; los registran la Coordinación y sus cabos de apoyo\.', s105) is not None,
+       'en una compartida, el siguiente paso dice que registran la Coordinación y sus cabos de apoyo, no «(lo hace el cabo)»: %s' % s105)
+    pg105.evaluate("async id => { SRP.app.mostrarVista('registrar'); SRP.activa.jornada = await SRP.almacen.uno('jornadas', id); await SRP.activa.preparar(); SRP.activa.terminarParte(); }", jid105)
+    pg105.wait_for_selector('#dlg-confirmar[open]')
+    t105 = pg105.evaluate("document.getElementById('dlg-confirmar').innerText")
+    pg105.click('#btn-confirmar-no'); pg105.wait_for_function("() => !document.getElementById('dlg-confirmar').open")
+    ok('Ya no podrá registrar en ella; la seguirá viendo en Jornadas.' in t105 and 'sale de su lista' not in t105, '«Terminar mi parte» dice que ya no podrá registrar y que la seguirá viendo en Jornadas')
+    como105('u-admin-1'); pg105.evaluate("SRP.demo.quitar()")
+    ok(not err105, 'sin errores en consola: %s' % err105[:2])
+    ctx105.close()
 
     b.close()
 

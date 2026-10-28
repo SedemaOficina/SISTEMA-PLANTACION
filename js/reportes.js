@@ -294,7 +294,7 @@ SRP.reportes = {
      reglas (un apartado vacío no aparece), en pantalla y antes de generarlo: así se corrige un
      dato de cierre sin haber compartido todavía un documento equivocado. No es una imagen del
      PDF —en iPhone un PDF incrustado sólo enseña la primera página—, sino el mismo contenido. */
-  /* DESCARGA SIN ESCRIBIR. Quien no puede modificar la jornada (el perfil Directivo) no llena el cierre
+  /* DESCARGA SIN ESCRIBIR. Quien no puede modificar la jornada (la Dirección) no llena el cierre
      ni genera el reporte: ve y descarga el que ya se generó, tal como quedó, y nada cambia en la jornada. */
   async descargar(registros, fecha, caboId, jornada) {
     if (!registros.length || !jornada) return;

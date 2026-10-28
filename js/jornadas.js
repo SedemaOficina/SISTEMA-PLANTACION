@@ -126,6 +126,8 @@ SRP.jornadas = {
       this.pintarBotonApoyos();
     });
     this.el('btn-apoyos-guardar').addEventListener('click', () => this.compartir([...this.el('apoyos-cabos').querySelectorAll('.chip[aria-pressed="true"]')].map(b => b.dataset.id)));
+    // Con muchos cabos se busca por nombre; los marcados que no coinciden siguen marcados aunque no se vean
+    this.el('apoyos-buscar').addEventListener('input', () => this.filtrarApoyos());
     this.el('relevo-quien').addEventListener('change', () => { this.el('relevo-error').hidden = true; });
     this.el('btn-ej-guardar').innerHTML = SRP.ICONOS.svg('disco') + '<span>Guardar cambios</span>';
     SRP.solicitud.montar(this.el('ej-caja-solicitud'), 'ej');
@@ -380,16 +382,17 @@ SRP.jornadas = {
   },
 
   /* «Siguiente:» en una frase. `propia`: quien mira es quien registra en ella (si no, lo que sigue
-     lo hace el cabo). Devuelve { html, texto, tono } — texto plano para el aviso flotante. */
-  siguiente(p, propia) {
+     lo hace el cabo). En una `compartida` registran la Coordinación y sus cabos de apoyo, y se dice.
+     Devuelve { html, texto, tono } — texto plano para el aviso flotante. */
+  siguiente(p, propia, compartida) {
     const arboles = n => n + (n === 1 ? ' árbol' : ' árboles');
     const cuenta = p.meta !== null ? ' (' + p.n + ' de ' + p.meta + ')' : '';
     let que, cola = '', tono = 'neutro';
     if (p.actual === 'registrar') {
       if (!p.abierta) { que = 'reabrirla para registrar árboles, o eliminarla'; cola = ' (está cerrada y sin árboles)'; }
       else {
-        que = (p.n ? 'registrar los árboles que faltan' : 'registrar el primer árbol') + (propia ? '' : ' (lo hace el cabo)');
-        cola = cuenta;
+        que = (p.n ? 'registrar los árboles que faltan' : 'registrar el primer árbol') + (propia || compartida ? '' : ' (lo hace el cabo)');
+        cola = cuenta + (compartida ? '; los registran la Coordinación y sus cabos de apoyo' : '');
       }
     } else if (p.actual === 'cerrar') { que = 'cerrar la jornada'; cola = ' (' + (p.meta !== null ? p.n + ' de ' + p.meta + ' árboles' : arboles(p.n)) + ')'; }
     else if (p.actual === 'revisar') { que = 'revisar ' + (p.pend === 1 ? '1 punto marcado' : p.pend + ' puntos marcados'); tono = 'rev'; }
@@ -871,7 +874,7 @@ SRP.jornadas = {
     const p = this.pasos(j, guardada);
     this.pasosActuales = p;
     this.el('jornada-pasos').innerHTML = this.htmlPasos(p);
-    const s = this.siguiente(p, propia);
+    const s = this.siguiente(p, propia, this.compartida(guardada));
     const linea = this.el('jornada-siguiente');
     linea.dataset.tono = s.tono;
     /* El renglón «Siguiente» sólo cuando dice algo que los pasos y el botón no dicen: cuántos puntos
@@ -1437,24 +1440,48 @@ SRP.jornadas = {
     return n ? 'compartida con ' + n + (n === 1 ? ' cabo' : ' cabos') : 'compartida';
   },
 
-  /* La ventana: los cabos activos de la institución de la jornada, uno por renglón, con los vigentes marcados. Los
-     que terminaron su parte salen sin marcar y lo dicen: marcarlos otra vez los deja registrar de nuevo. Se abre
-     desde la ficha de la jornada o, con la jornada `c`, desde la franja de la jornada activa. */
-  abrirApoyos(c) {
+  /* La ventana: los cabos activos de la institución de la jornada, uno por renglón, con los vigentes marcados. Cada
+     renglón dice lo que ayuda a decidir: si terminó su parte (salen sin marcar: marcarlos otra vez los deja registrar
+     de nuevo), cuántos árboles lleva en ella y si hoy tiene otra jornada abierta. Con más de 10 cabos, el buscador.
+     Las instrucciones se abren solas sólo la primera vez. Se abre desde la ficha de la jornada o, con la jornada `c`,
+     desde la franja de la jornada activa. */
+  async abrirApoyos(c) {
     c = c || this.guardada; if (!c || !SRP.permisos.exigir('jornada.compartir', c)) return;
     this.apoyosDe = c;
-    const esc = SRP.util.escapar, vigentes = SRP.permisos.vigentes(c);
+    const esc = SRP.util.escapar, vigentes = SRP.permisos.vigentes(c), hoy = SRP.util.fechaHoy();
     const terminados = new Set((c.cabos_apoyo || []).filter(a => a.fin === 'terminado').map(a => a.cabo_id));
     const cabos = this.cabosDeLaInstitucion(c);
+    const arboles = {};
+    (await SRP.almacen.porIndice('plantaciones', 'jornada_id', c.id)).filter(r => r.estatus === 'activo').forEach(r => { arboles[r.cabo_id] = (arboles[r.cabo_id] || 0) + 1; });
+    // Otra jornada abierta hoy donde registra: como titular, como relevo o como cabo de apoyo vigente
+    const otras = new Set();
+    (await SRP.almacen.todos('jornadas')).filter(j => j.id !== c.id && j.estatus === 'abierta' && j.fecha === hoy)
+      .forEach(j => [j.relevo_id || j.cabo_id].concat(SRP.permisos.vigentes(j)).forEach(id => otras.add(id)));
+    const notas = x => [terminados.has(x.id) ? 'terminó su parte' : '', arboles[x.id] ? arboles[x.id] + (arboles[x.id] === 1 ? ' árbol' : ' árboles') : '',
+      otras.has(x.id) ? 'tiene otra jornada abierta' : ''].filter(Boolean).map(t => ' · ' + t).join('');
     this.el('dlg-apoyos-texto').textContent = 'Marque a los cabos de su institución que registran en «' + c.nombre + '». Con ellos, la jornada pasa a ser compartida.';
     this.el('apoyos-etiqueta').textContent = 'Cabos de ' + SRP.ref.nombreOrganizacion(c.organizacion_id || SRP.CONFIG.ORGANIZACION_SEDEMA);
-    this.el('apoyos-cabos').innerHTML = cabos.length ? cabos.map(x => '<button type="button" class="chip chip-renglon" data-id="' + esc(x.id) + '" aria-pressed="' + vigentes.includes(x.id) + '">' +
-      SRP.ICONOS.svg('palomita', 'chico') + '<span>' + esc(SRP.util.nombreCompleto(x)) + (terminados.has(x.id) ? ' <span class="nota">· terminó su parte</span>' : '') + '</span></button>').join('')
+    this.el('apoyos-cabos').innerHTML = cabos.length ? cabos.map(x => '<button type="button" class="chip chip-renglon" data-id="' + esc(x.id) + '" data-nombre="' + esc(SRP.util.normalizar(SRP.util.nombreCompleto(x))) + '" aria-pressed="' + vigentes.includes(x.id) + '">' +
+      SRP.ICONOS.svg('palomita', 'chico') + '<span>' + esc(SRP.util.nombreCompleto(x)) + (notas(x) ? ' <span class="nota">' + esc(notas(x)) + '</span>' : '') + '</span></button>').join('')
       : '<p class="nota">No hay cabos activos en la institución.</p>';
+    this.el('apoyos-caja-buscar').hidden = cabos.length <= 10;
+    this.el('apoyos-buscar').value = '';
+    this.filtrarApoyos();
+    let vistas = false;
+    try { vistas = localStorage.getItem(SRP.CONFIG.CLAVE_APOYOS_VISTO) === '1'; localStorage.setItem(SRP.CONFIG.CLAVE_APOYOS_VISTO, '1'); } catch (e) { /* sin persistencia: se abren cada vez */ }
+    this.el('apoyos-instrucciones').open = !vistas;
     this.apoyosAntes = vigentes;
     this.el('apoyos-error').hidden = true;
     this.pintarBotonApoyos();
     this.el('dlg-apoyos').showModal();
+  },
+
+  // El buscador de la ventana: deja a la vista los cabos cuyo nombre lleva lo escrito, con o sin acentos
+  filtrarApoyos() {
+    const q = SRP.util.normalizar(this.el('apoyos-buscar').value);
+    const chips = [...this.el('apoyos-cabos').querySelectorAll('.chip[data-id]')];
+    chips.forEach(b => { b.hidden = !!q && !b.dataset.nombre.includes(q); });
+    this.el('apoyos-sin-resultados').hidden = !q || chips.some(b => !b.hidden);
   },
 
   // «Guardar: 3 cabos de apoyo»; sin cambios, el botón no hace nada que guardar

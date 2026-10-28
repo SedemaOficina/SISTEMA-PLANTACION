@@ -38,15 +38,6 @@ SRP.folio = {
     return !!(r && r.alcaldia && typeof r.capa_version === 'string' && ['alcaldias=', 'uga=', 'colonias='].every(k => r.capa_version.includes(k)));
   },
 
-  /* Celda incierta: el punto está más cerca del borde de su celda UGA que la precisión con
-     que se tomó, así que la celda del folio podría ser la vecina. Se dice; el servidor la confirma. */
-  celdaIncierta(r) {
-    if (!r || r.uga_borde_m == null || r.punto_origen !== 'gps' || r.gps_precision_m == null) return '';
-    if (r.uga_borde_m >= r.gps_precision_m) return '';
-    return 'Celda incierta: el punto está a ' + r.uga_borde_m + ' m del borde de su celda UGA, menos que la precisión del GPS (±' +
-      Math.round(r.gps_precision_m) + ' m). El servidor confirmará la celda.';
-  },
-
   /* Arma un folio a partir de sus partes. Sólo valida y compone: el consecutivo lo da la tabla
      de secuencias del servidor (R5), nunca MAX(folio)+1 ni un conteo de registros. La celda
      EXT-000 es la reservada para un punto fuera de la malla. Un consecutivo fuera de 1–99999 se
@@ -105,20 +96,6 @@ SRP.folio = {
         SRP.bitacora.entrada('FOLIO_ASIGNADO', 'plantacion', r.id, 'Folio ' + folio + ' (simulado, datos de prueba)'));
     }
     return pendientes.length;
-  },
-
-  /* El folio que tocará a un registro nuevo, para la ficha «Revise antes de guardar»: con datos
-     de prueba, la celda del punto y el consecutivo que sigue, contando los registros de esa celda
-     que aún esperan folio. No incrementa la secuencia: la emisión sigue siendo una sola, al guardar
-     y sincronizar (R3). Sin simulación devuelve null. */
-  async previsto(registro) {
-    if (!this.simulado() || !SRP.almacen.db || !this.puedeEmitir(registro)) return null;
-    const celda = registro.uga && /^[A-Z]{3}-\d{3}$/.test(registro.uga) ? registro.uga : 'EXT-000';
-    const n = (this.leerSecuencias()[celda] || 0) + 1;
-    const enEspera = (await SRP.almacen.todos('plantaciones')).filter(r => !this.valido(r.folio) && r.id !== registro.id && this.puedeEmitir(r) &&
-      ((r.uga && /^[A-Z]{3}-\d{3}$/.test(r.uga) ? r.uga : 'EXT-000') === celda)).length;
-    if (n + enEspera > this.TECHO) return null;
-    return this.armar(celda, n + enEspera);
   },
 
   // Cómo se escribe el folio junto a su aviso: el folio, o «PROVISIONAL» si aún no tiene

@@ -573,6 +573,10 @@ fieldset.campo { margin-inline: 0; }
 /* Cuántos árboles van y su barra: lo que cambia con cada registro, siempre a la vista. En una jornada
    compartida, el cabo de apoyo ve también quién coordina */
 .franja-jornada-avance, .franja-jornada-coordina { display: block; margin-top: var(--e-1); font-size: var(--t-s); }
+/* La línea de los cabos de apoyo de una compartida: se toca para abrir «Cabos de apoyo» */
+.franja-jornada-compartida { display: block; font-size: var(--t-s); }
+.franja-compartida-boton { min-height: var(--toque); padding: 0; border: 0; background: none; color: var(--acento); font: inherit; font-weight: 600; text-align: left;
+  text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .franja-jornada-avance .jornada-barra { margin-top: var(--e-1); background: var(--fondo); max-width: 30rem; }
 .franja-detalle-boton { display: none; flex: none; text-decoration: underline; min-height: 40px; position: relative; }
 .franja-detalle-boton::after { content: ''; position: absolute; inset: -2px 0; }
@@ -1267,6 +1271,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
 [data-contraste="alto"] .chip { border-width: 2px; }
 [data-contraste="alto"] .chip[aria-pressed="true"] { background: var(--acento); color: var(--fondo); }
 [data-contraste="alto"] .chip[aria-pressed="true"] .chip-sub { color: var(--fondo); }
+[data-contraste="alto"] .chip-renglon[aria-pressed="true"] { background: var(--acento-suave); color: var(--texto); }
 [data-contraste="alto"] .registro, [data-contraste="alto"] .tabla tr { border-width: 2px; }
 [data-contraste="alto"] .btn.btn-subir { border: 2px solid var(--borde-control); }
 /* El texto guía no debe confundirse con lo escrito: más claro que el texto, sin negrita y en cursiva */
@@ -1519,6 +1524,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
   .zona-foto:hover { border-color: var(--acento); background: var(--fondo-suave); }
   .chip:hover { background: var(--fondo-campo); }
   .chip[aria-pressed="true"]:hover { background: var(--acento-oscuro); }
+  .chip-renglon[aria-pressed="true"]:hover { background: var(--acento-suave); border-color: var(--acento-oscuro); }
   /* Con ratón la opción bajo el cursor se marca igual que la elegida con teclado */
   .combo-opcion:hover { background: var(--fondo-suave); outline: 2px solid var(--acento); outline-offset: -2px; }
 }
@@ -1538,10 +1544,13 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .chips.chips-renglones { grid-auto-flow: row; grid-template-columns: 1fr; max-width: none; }
 .chip-renglon { display: flex; align-items: center; gap: var(--e-2); text-align: left; border-radius: var(--radio); }
 .chip-renglon[aria-pressed="false"] svg { visibility: hidden; }
-/* Instrucciones a la vista, dentro de una ventana: recuadro neutro */
-.instrucciones { margin: 0 0 var(--e-4); padding: var(--e-3) var(--e-4); border: 1px solid var(--borde-suave); border-radius: var(--radio); background: var(--fondo-suave); }
-.instrucciones-titulo { margin: 0 0 var(--e-1); font-weight: 700; }
-.instrucciones ol { margin: 0; padding-left: 1.25em; }
+.chip-renglon[hidden] { display: none; }
+/* Marcado: fondo azul claro, borde azul de 2 px y la palomita; no se confunde con un botón como «Guardar» */
+.chip-renglon[aria-pressed="true"] { background: var(--acento-suave); border: 2px solid var(--acento); color: var(--texto); }
+.chip-renglon[aria-pressed="true"] svg { color: var(--acento); }
+/* Instrucciones plegadas dentro de una ventana: recuadro neutro que se abre al tocar su título */
+.instrucciones { margin: 0 0 var(--e-4); padding: 0 var(--e-4); border: 1px solid var(--borde-suave); border-radius: var(--radio); background: var(--fondo-suave); }
+.instrucciones ol { margin: 0 0 var(--e-3); padding-left: 1.25em; }
 .instrucciones li + li { margin-top: var(--e-1); }
 
 /* Usuarios: el buscador conserva un ancho que deja leer su marcador y las tres listas se reparten el resto */

@@ -9,12 +9,12 @@ SRP.PERFILES = {
                  descripcion: 'Registra plantaciones y ve, edita y elimina únicamente las suyas; descarga sus fotografías.' },
   // Registra, edita y elimina lo de su institución: un árbol capturado por error se corrige sin
   // esperar a Administración; ve la galería y abre jornadas compartidas
-  COORDINADOR: { etiqueta: 'Coordinador',            alcance: 'institucion',  registrar: true,  editar: true,  eliminar: true,  eliminarJornadaVacia: true, relevar: true,  catalogos: false, usuarios: false, galeria: true,
+  COORDINADOR: { etiqueta: 'Coordinación',           alcance: 'institucion',  registrar: true,  editar: true,  eliminar: true,  eliminarJornadaVacia: true, relevar: true,  catalogos: false, usuarios: false, galeria: true,
                  descripcion: 'Registra, y ve, edita y elimina los registros de todos los cabos de su institución y los suyos. Elimina también las jornadas vacías, pasa una jornada abierta a otro cabo (relevo) y abre jornadas compartidas.' },
   /* Sólo ve: subdirecciones, direcciones de área y direcciones generales. El de la Secretaría ve toda
      la Ciudad; el de otra institución, sólo la suya (alcance «institucion», lo pone `de()`). No
      registra, no corrige y no genera reportes: descarga los que ya se generaron. */
-  DIRECTIVO:   { etiqueta: 'Directivo',              alcance: 'todos',   registrar: false, editar: false, eliminar: false, eliminarJornadaVacia: false, relevar: false, catalogos: false, usuarios: false, galeria: true,
+  DIRECTIVO:   { etiqueta: 'Dirección',              alcance: 'todos',   registrar: false, editar: false, eliminar: false, eliminarJornadaVacia: false, relevar: false, catalogos: false, usuarios: false, galeria: true,
                  descripcion: 'Ve las jornadas, los registros, las fotografías y el avance, y descarga los reportes ya generados. No registra ni modifica. En la Secretaría ve toda la Ciudad; en otra institución, sólo la suya.' },
   // No captura: administra. Quien registra en campo es el cabo, y el registro debe quedar
   // a nombre de quien plantó el árbol, no de quien administra el sistema.

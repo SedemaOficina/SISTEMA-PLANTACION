@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 263',
+  ETAPA: 'Bloque 264',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -38,6 +38,7 @@ SRP.CONFIG = {
   DB_VERSION: 11,   // 2: tabla jornadas; 3: índice de árboles por jornada; 4: vehículo sólo del catálogo; 5: campos depurados y renombrados; 6: sin marca de prueba ni campos sin uso; 7: capa de colonias definitiva; 8: cada catálogo en su tabla; 9: la solicitud es un programa, sin origen de la jornada; 10: la cola de envío; 11: el sitio de plantación
   CLAVE_SESION: 'srp_sesion_usuario_id',
   CLAVE_CONTRASTE: 'srp_contraste',
+  CLAVE_APOYOS_VISTO: 'srp_apoyos_instrucciones_vistas',   // «Cómo funciona una jornada compartida» ya se leyó una vez
   CLAVE_SECUENCIAS_PRUEBA: 'srp_secuencias_folio_prueba',   // secuencias del servidor simulado
   // Envío simulado: lo «recibido» por el servidor de prueba y el interruptor «Simular sin señal»
   CLAVE_ENVIOS_PRUEBA: 'srp_envios_prueba',
