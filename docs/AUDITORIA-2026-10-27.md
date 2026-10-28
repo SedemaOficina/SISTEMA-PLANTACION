@@ -1688,3 +1688,9 @@ Verificación: `auditoria.py` 149 comprobaciones y 0 hallazgos; `npm test` 115 d
 
 Verificación: `prueba_conexion.py` 126 de 126 y, sobre la copia, 129 de 129; `auditoria.py` 149 y 0 hallazgos; la prueba
 completa, 1,539 de 1,540 (sólo el Excel).
+
+### F4-01, la parte automática (bloque 260 del proyecto, sin versión nueva)
+
+| Clave | Estado | Antes y después | Prueba permanente |
+|---|---|---|---|
+| F4-01 | Corregido en parte | `empaquetar.py` se detiene si el instructivo no corresponde a los guiones del paquete o no dice lo de la calle; con el instructivo de la 1.1 y los guiones de hoy se detiene con tres motivos. El instructivo de la 1.0.0 es un borrador fuera del repositorio, con los 17 puntos; se termina en el bloque 6 | `auditoria.py`: un instructivo bien escrito arma el paquete; uno con el guion viejo o sin el recálculo, no |

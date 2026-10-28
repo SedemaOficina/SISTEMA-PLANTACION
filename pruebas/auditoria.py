@@ -496,6 +496,21 @@ try:
             _pasaron.append(_rel)
     mirar(not _pasaron, 'el paquete no se arma con un .env, un respaldo de la base, una lista con claves, una carpeta de editor, una captura ni un archivo de prueba',
           'pasaron: %s' % _pasaron)
+    # Con la base de hoy, el instructivo nombra sus guiones reales, el de la verificación y lo de la calle
+    _guiones = sorted(n for n in os.listdir(os.path.join(APP, 'servidor', 'db', 'srp')) if n.endswith('.sql'))
+    _bien = ('# SRP\n\nVersión 1.0.0\n\nLa capa territorio.calles va antes; si llega después, CALL srp.recalcular_calles();. '
+             'La verificación está al final de 10-srp-rol-y-grants.sql.\n')
+    _resultados = {}
+    for _nombre, _leeme in [('bien', _bien), ('guion-viejo', _bien + 'Verifique con 09-srp-rol-y-grants.sql.\n'),
+                            ('sin-recalculo', _bien.replace('CALL srp.recalcular_calles();', 'el recálculo'))]:
+        _r = _paquete('instructivo-' + _nombre)
+        os.makedirs(os.path.join(_r, 'db', 'srp'))
+        for _g in _guiones:
+            shutil.copy2(os.path.join(APP, 'servidor', 'db', 'srp', _g), os.path.join(_r, 'db', 'srp'))
+        open(os.path.join(_r, 'LEEME.md'), 'w', encoding='utf-8').write(_leeme)
+        _resultados[_nombre] = _empaquetar(_r).returncode
+    mirar(_resultados == {'bien': 0, 'guion-viejo': 1, 'sin-recalculo': 1},
+          'el paquete no se arma si el instructivo nombra un guion que no trae o no dice cómo recalcular la calle', str(_resultados))
 finally:
     shutil.rmtree(_tmp, ignore_errors=True)
 

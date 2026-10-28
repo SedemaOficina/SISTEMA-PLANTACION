@@ -6869,3 +6869,29 @@ pantalla, ni en la versión de prueba ni en la real.
   `originales/`.
 - GitHub: la corrida del bloque 257 (40648783369) se canceló al subir el 258, que la reemplaza; la del 258
   (40650447843), en verde.
+
+## Bloque 260 — El empaquetador revisa el instructivo (28-10-2026)
+
+**Sin versión nueva:** no cambia la aplicación. La parte automática de F4-01 (auditoría del 27-10-2026): el
+instructivo de la entrega 1.1 mandaba verificar en un guion que ya no existe y no decía nada de la capa de calles.
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| `herramientas/empaquetar.py`, con la base en el paquete | No revisaba el instructivo contra los guiones | Se detiene si `instalar.sql` no corre todos los guiones de `db/srp/`, si el LEEME nombra uno que no está, si no nombra el de la verificación de la cuenta del servicio, o si, con la calle, no dice `territorio.calles` y `recalcular_calles` |
+
+**Qué cambió.** `herramientas/empaquetar.py` y `pruebas/auditoria.py` (un instructivo bien escrito arma el paquete;
+uno que nombra `09-srp-rol-y-grants.sql` o que no dice cómo recalcular la calle, no).
+
+**El instructivo de la 1.0.0.** Un borrador fuera del repositorio, en la carpeta local del paquete
+(`servidor/local/borradores/`), con los 17 puntos de F4-01. Lo que todavía no existe o espera respuesta va marcado
+«[POR LLENAR]» o «[POR CONFIRMAR]»: el guion de vaciado, las cuentas iniciales, las cifras de la verificación y la
+confirmación del SIA de que no tiene nada instalado. Se termina en el bloque 6.
+
+**Verificación.**
+- La entrega anterior (1.1), copiada y empaquetada: se arma igual. Con su instructivo y los guiones de hoy, que es lo
+  que encontró la auditoría, se detiene con tres motivos: `instalar.sql` y la carpeta no coinciden, no nombra
+  `10-srp-rol-y-grants.sql` y no dice nada de la calle.
+- El borrador de la 1.0.0 pasa la revisión.
+- `pruebas/auditoria.py`: 150 comprobaciones, 0 hallazgos.
+- No se corrieron la prueba completa ni la de conexión: la aplicación y el servidor no cambiaron.
+- GitHub: la corrida del bloque 259 (40657880345), en verde. La página publicada sirve la 1.4.5.

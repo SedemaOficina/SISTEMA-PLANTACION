@@ -67,7 +67,34 @@ def revisar_version(raiz, para_revision):
                  'Si el SIA sólo lo revisa, use --revision.' % version)
     if para_revision and 'para revisión' not in texto.lower():
         sys.exit('Con --revision, el LEEME.md debe decir que el paquete es «para revisión».')
+    revisar_instructivo(raiz, texto)
     return version
+
+
+# Con la base en el paquete (db/srp/), el instructivo corresponde a sus guiones: instalar.sql corre todos los que hay, el
+# LEEME no nombra uno que no esté, nombra el de la verificación de la cuenta del servicio y, con la calle, dice que su
+# capa va antes y cómo se recalcula si llega después
+def revisar_instructivo(raiz, leeme):
+    carpeta = os.path.join(raiz, 'db', 'srp')
+    if not os.path.isdir(carpeta):
+        return
+    guiones = sorted(n for n in os.listdir(carpeta) if re.fullmatch(r'\d\d-srp-[\w-]+\.sql', n))
+    instalar = os.path.join(carpeta, 'instalar.sql')
+    corre = re.findall(r'(?m)^\\ir\s+(\S+)', open(instalar, encoding='utf-8').read()) if os.path.isfile(instalar) else []
+    faltas = []
+    if sorted(corre) != guiones:
+        faltas.append('db/srp/instalar.sql corre %s y la carpeta trae %s' % (corre, guiones))
+    nombrados = set(re.findall(r'\b\d\d-srp-[\w-]+\.sql\b', leeme))
+    if nombrados - set(guiones):
+        faltas.append('nombra guiones que el paquete no trae: %s' % sorted(nombrados - set(guiones)))
+    for n in guiones:
+        if 'VERIFICACIÓN' in open(os.path.join(carpeta, n), encoding='utf-8').read() and n not in nombrados:
+            faltas.append('no nombra %s, donde está la verificación de la cuenta del servicio' % n)
+    if any('calles' in n for n in guiones):
+        faltas += ['no dice «%s»: la capa de calles va antes, y si llega después se recalcula' % p
+                   for p in ('territorio.calles', 'recalcular_calles') if p not in leeme]
+    if faltas:
+        sys.exit('El LEEME.md no corresponde a la base del paquete:\n  ' + '\n  '.join(faltas))
 
 
 # AVISOS-REVISADOS.txt → { ruta: (sha256, motivo) }
